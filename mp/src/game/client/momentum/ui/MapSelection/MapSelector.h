@@ -1,9 +1,7 @@
-#ifndef MAPSELECTOR_H
-#define MAPSELECTOR_H
-
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "IMapSelector.h"
+#include "vgui_controls/PHandle.h"
 
 class CMapSelectorDialog;
 
@@ -26,5 +24,3 @@ private:
 };
 
 extern IMapSelector* mapselector;
-
-#endif

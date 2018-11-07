@@ -1,8 +1,6 @@
-#ifndef LOCALMAPS_H
-#define LOCALMAPS_H
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "BaseMapsPage.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: Local maps list
@@ -36,11 +34,11 @@ public:
     // Tell the game list what to put in there when there are no games found.
     virtual void SetEmptyListText();
 
-    void GetWorkshopItems();
+    /*void GetWorkshopItems();
     void OnWorkshopDownloadComplete(DownloadItemResult_t *pCallback, bool bIOFailure);
     CCallResult<CLocalMaps, DownloadItemResult_t> m_DownloadCompleteCallback;
 
-    void AddWorkshopItemToLocalMaps(PublishedFileId_t id);
+    void AddWorkshopItemToLocalMaps(PublishedFileId_t id);*/
 private:
     // context menu message handlers
     MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
@@ -51,5 +49,3 @@ private:
     //Fills a mapstruct with data read from local files
     static void FillMapstruct(mapstruct_t *);
 };
-
-#endif // LOCALMAPS_H

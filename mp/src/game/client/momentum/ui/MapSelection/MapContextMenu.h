@@ -1,8 +1,6 @@
-#ifndef MAPCONTEXTMENU_H
-#define MAPCONTEXTMENU_H
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "vgui_controls/Menu.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: Basic right-click context menu for servers
@@ -19,6 +17,3 @@ public:
         bool showMapStart,
         bool showViewGameInfo);
 };
-
-
-#endif // MAPCONTEXTMENU_H

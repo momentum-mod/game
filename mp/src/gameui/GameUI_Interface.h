@@ -11,9 +11,6 @@
 
 #include "GameUI/IGameUI.h"
 
-#include "vgui_controls/PHandle.h"
-#include "vgui_controls/Panel.h"
-#include "steam/steam_api.h"
 #include "view_shared.h"
 #include "ivrenderview.h"
 

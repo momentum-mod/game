@@ -1,4 +1,17 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+#include "filesystem.h"
+
+#include "MapSelectorDialog.h"
+#include "LocalMaps.h"
+#include "OnlineMaps.h"
+#include "MapContextMenu.h"
+#include "MapInfoDialog.h"
+
+#include "vgui_controls/PropertySheet.h"
+#include "vgui/IVGui.h"
+#include "vgui/ISurface.h"
+
+#include "tier0/memdbgon.h"
 
 static CMapSelectorDialog *s_InternetDlg = nullptr;
 
@@ -431,10 +444,10 @@ void CMapSelectorDialog::OnConnectToGame(KeyValues *pMessageValues)
     if (!ip || !queryPort)
         return;
 
-    memset(&m_CurrentConnection, 0, sizeof(gameserveritem_t));
+    /*memset(&m_CurrentConnection, 0, sizeof(gameserveritem_t));
     m_CurrentConnection.m_NetAdr.SetIP(ip);
     m_CurrentConnection.m_NetAdr.SetQueryPort(queryPort);
-    m_CurrentConnection.m_NetAdr.SetConnectionPort((unsigned short) connectionPort);
+    m_CurrentConnection.m_NetAdr.SetConnectionPort((unsigned short) connectionPort);*/
 #ifndef NO_STEAM
     //if (m_pHistory && SteamMatchmaking())
     //{
@@ -466,8 +479,8 @@ void CMapSelectorDialog::OnConnectToGame(KeyValues *pMessageValues)
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::OnDisconnectFromGame(void)
 {
-    m_bCurrentlyConnected = false;
-    memset(&m_CurrentConnection, 0, sizeof(gameserveritem_t));
+    m_bCurrentlyConnected = false;/*
+    memset(&m_CurrentConnection, 0, sizeof(gameserveritem_t));*/
 }
 
 //-----------------------------------------------------------------------------

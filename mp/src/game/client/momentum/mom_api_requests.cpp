@@ -226,7 +226,7 @@ bool CAPIRequests::CreateAPIRequest(HTTPRequestHandle &handle, const char* pszUR
 
     // Add the API key
     if (bAuth)
-        SteamHTTP()->SetHTTPRequestHeaderValue(handle, "Authorization", CFmtStr("Bearer %s", m_pAPIKey).Get());
+        SteamHTTP()->SetHTTPRequestHeaderValue(handle, "Authorization", CFmtStr1024("Bearer %s", m_pAPIKey).Get());
 
     return true;
 }

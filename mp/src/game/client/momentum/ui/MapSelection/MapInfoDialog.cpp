@@ -1,5 +1,17 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+
 #include "mom_api_requests.h"
+#include "mom_shareddefs.h"
+#include "util/mom_util.h"
+
+#include "MapInfoDialog.h"
+
+#include "vgui/IVGui.h"
+#include "vgui_controls/ListPanel.h"
+#include "vgui_controls/CvarToggleCheckButton.h"
+
+#include "tier0/memdbgon.h"
+
 
 using namespace vgui;
 //-----------------------------------------------------------------------------
@@ -159,9 +171,9 @@ void CDialogMapInfo::ConnectToServer()
 //-----------------------------------------------------------------------------
 // Purpose: called when the current refresh list is complete
 //-----------------------------------------------------------------------------
-void CDialogMapInfo::RefreshComplete(EMatchMakingServerResponse response)
+/*void CDialogMapInfo::RefreshComplete(EMatchMakingServerResponse response)
 {
-}
+}*/
 
 //-----------------------------------------------------------------------------
 // Purpose: player list received

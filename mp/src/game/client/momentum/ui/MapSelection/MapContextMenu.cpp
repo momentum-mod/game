@@ -1,4 +1,11 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+
+#include "MapContextMenu.h"
+
+#include "vgui/IInput.h"
+#include "vgui/ISurface.h"
+
+#include "tier0/memdbgon.h"
 
 using namespace vgui;
 

@@ -1,4 +1,21 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+
+#include "LocalMaps.h"
+#include "CMapListPanel.h"
+#include "MapContextMenu.h"
+#include "MapSelectorDialog.h"
+
+#include "filesystem.h"
+#include "util/mom_util.h"
+#include "mom_shareddefs.h"
+#include "run/mom_replay_base.h"
+
+#include "vgui_controls/Panel.h"
+#include "vgui_controls/ImageList.h"
+#include "vgui_controls/ToggleButton.h"
+
+#include "tier0/memdbgon.h"
+
 
 using namespace vgui;
 
@@ -29,7 +46,7 @@ void CLocalMaps::OnPageShow()
     if (!m_bLoadedMaps)
     {
         GetNewMapList();
-        GetWorkshopItems();
+        /*GetWorkshopItems();*/
     }
 
     StartRefresh();
@@ -241,7 +258,7 @@ void CLocalMaps::SetEmptyListText()
     m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 }
 
-void CLocalMaps::GetWorkshopItems()
+/*void CLocalMaps::GetWorkshopItems()
 {
     //get a vector of all the item handles
     const uint32 numItems = SteamUGC()->GetNumSubscribedItems();
@@ -315,7 +332,7 @@ void CLocalMaps::AddWorkshopItemToLocalMaps(PublishedFileId_t id)
 
     //now our workshop items are added, refresh the map list again
     StartRefresh();
-}
+}*/
 
 //-----------------------------------------------------------------------------
 // Purpose: opens context menu (user right clicked on a map)
