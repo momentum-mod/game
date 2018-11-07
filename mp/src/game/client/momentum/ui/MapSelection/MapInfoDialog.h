@@ -38,12 +38,10 @@ protected:
 
     // API
     void GetMapInfo(const char* mapname);
-    void GetMapInfoCallback(HTTPRequestCompleted_t*, bool);
-    CCallResult<CDialogMapInfo, HTTPRequestCompleted_t> cbGetMapInfoCallback;
+    void GetMapInfoCallback(KeyValues *pKvResponse);
 
     void Get10MapTimes(const char* mapname);
-    void Get10MapTimesCallback(HTTPRequestCompleted_t*, bool);
-    CCallResult<CDialogMapInfo, HTTPRequestCompleted_t> cbGet10MapTimesCallback;
+    void Get10MapTimesCallback(KeyValues *pKvResponse);
 
 
 private:

@@ -49,9 +49,8 @@ void Momentum::GameInit()
     }
 }
 
-CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystemPerFrame(pName), zones(nullptr),
-                                                       m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
-                                                       m_iAuthActualSize(0), m_pAPIKey(nullptr)
+CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystemPerFrame(pName), zones(nullptr)
+                                                       
 {
 }
 
@@ -60,7 +59,7 @@ void CMOMServerEvents::PostInit()
     TickSet::TickInit();
     MountAdditionalContent();
 
-    DoAuth();
+    
 
     // MOM_TODO: connect to site
     /*if (SteamAPI_IsSteamRunning())
@@ -72,11 +71,7 @@ void CMOMServerEvents::PostInit()
 void CMOMServerEvents::Shutdown()
 {
 
-    if (m_hAuthTicket != k_HAuthTicketInvalid)
-    {
-        SteamUser()->CancelAuthTicket(m_hAuthTicket);
-        delete[] m_bufAuthBuffer;
-    }
+
 }
 
 void CMOMServerEvents::LevelInitPreEntity()
@@ -130,151 +125,10 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
     }
 }
 
-void CMOMServerEvents::OnAuthHTTP(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
-{
-    DevWarning(2, "%s - Callback received.\n", __FUNCTION__);
-    if (bIOFailure)
-    {
-        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
-        return;
-    }
-
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
-    {
-        Warning("%s - k_EHTTPStatusCode404NotFound !\n", __FUNCTION__);
-        return;
-    }
-
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode4xxUnknown)
-    {
-        Warning("%s - No friends found on this map. You must be a teapot!\n", __FUNCTION__);
-        return;
-    }
-
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode500InternalServerError)
-    {
-        Warning("%s - INTERNAL SERVER ERROR!\n", __FUNCTION__);
-        return;
-    }
-
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-
-    if (size == 0)
-    {
-        Warning("%s - 0 body size!\n", __FUNCTION__);
-        return;
-    }
-
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-        {
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            CKeyValuesDumpContextAsDevMsg dump;
-            pResponse->Dump(&dump);
-            KeyValues::AutoDelete ad(pResponse);
-
-            uint32 tokenLength = pResponse->GetInt("length");
-
-            if (tokenLength)
-            {
-                m_pAPIKey = new char[tokenLength + 1];
-                Q_strncpy(m_pAPIKey, pResponse->GetString("token"), tokenLength + 1);
-            }
-        }
-    }
-    else
-    {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    }
-
-    // Last but not least, free resources
-    delete[] pData;
-    pData = nullptr;
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
-}
-
 void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
 {
     engine->ServerCommand("unpause\n");
 }
-
-void CMOMServerEvents::OnAuthTicket(GetAuthSessionTicketResponse_t* pParam)
-{
-    Msg("Ticket callback!\n");
-    if (pParam->m_eResult == k_EResultOK)
-    {
-        Msg("Ticket okay!\n");
-        if (pParam->m_hAuthTicket == m_hAuthTicket)
-        {
-            Msg("It's our ticket, we should send it to the site now!\n");
-            // Send it to the site
-
-            bool bSuccess = false;
-            if (SteamHTTP())
-            {
-                HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, "http://localhost:3002/api/auth/steam/user");
-
-                uint64 id = SteamUser()->GetSteamID().ConvertToUint64();
-                CFmtStr idStr("%llu", id);
-                Msg("Sending ID %s\n", idStr.Get());
-                SteamHTTP()->SetHTTPRequestHeaderValue(handle, "id", idStr.Get());
-
-                if (SteamHTTP()->SetHTTPRequestRawPostBody(handle, "application/octet-stream", m_bufAuthBuffer, m_iAuthActualSize))
-                    Msg("Body Set!\n");
-
-                SteamAPICall_t apiHandle;
-
-                if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-                {
-                    m_cAuthCallresult.Set(apiHandle, this, &CMOMServerEvents::OnAuthHTTP);
-                    bSuccess = true;
-                }
-                else
-                {
-                    Warning("Failed to send HTTP Request!\n");
-                    SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-                }
-            }
-            else
-            {
-                Warning("Steampicontext failure.\nCould not find Steam Api Context active");
-            }
-
-            if (bSuccess)
-                Msg("Sent out the request!\n");
-        }
-    }
-}
-
-void CMOMServerEvents::DoAuth()
-{
-    Msg("Getting the ticket...\n");
-    if (m_pAPIKey)
-        delete[] m_pAPIKey;
-    m_pAPIKey = nullptr;
-    if (m_bufAuthBuffer)
-        delete[] m_bufAuthBuffer;
-    m_bufAuthBuffer = nullptr;
-
-    m_bufAuthBuffer = new byte[1024];
-    m_hAuthTicket = SteamUser()->GetAuthSessionTicket(m_bufAuthBuffer, 1024, &m_iAuthActualSize);
-    if (m_hAuthTicket == k_HAuthTicketInvalid)
-        Warning("Initial call failed!\n");
-}
-
 
 void CMOMServerEvents::MountAdditionalContent()
 {
@@ -309,8 +163,3 @@ void CMOMServerEvents::MountAdditionalContent()
 }
 
 CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");
-
-CON_COMMAND(auth_test, "Auth test")
-{
-    g_MOMServerEvents.DoAuth();
-}

@@ -1,4 +1,5 @@
 #include "pch_mapselection.h"
+#include "mom_api_requests.h"
 
 using namespace vgui;
 //-----------------------------------------------------------------------------
@@ -55,11 +56,6 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, const char *mapname) : Frame(paren
 //-----------------------------------------------------------------------------
 CDialogMapInfo::~CDialogMapInfo()
 {
-    if (cbGetMapInfoCallback.IsActive())
-        cbGetMapInfoCallback.Cancel();
-
-    if (cbGet10MapTimesCallback.IsActive())
-        cbGet10MapTimesCallback.Cancel();
 }
 
 //-----------------------------------------------------------------------------
@@ -213,15 +209,13 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
 
 void CDialogMapInfo::GetMapInfo(const char* mapname)
 {
-    char szURL[BUFSIZ];
-    Q_snprintf(szURL, BUFSIZ, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
-    g_pMomentumUtil->CreateAndSendHTTPReq(szURL, &cbGetMapInfoCallback, &CDialogMapInfo::GetMapInfoCallback, this);
+    g_pAPIRequests->GetMapInfo(mapname, UtlMakeDelegate(this, &CDialogMapInfo::GetMapInfoCallback));
 }
 
-void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+void CDialogMapInfo::GetMapInfoCallback(KeyValues *pKvResponse)
 {
     // If something fails or the server tells us it could not find the map...
-    if (bIOFailure)
+    /*if (bIOFailure)
     {
         Warning("%s - bIOFailure is true!\n", __FUNCTION__);
         return;
@@ -341,19 +335,17 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     //Cleanup
     alloc.deallocate();
     SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
-    delete[] pData;
+    delete[] pData;*/
 }
 
 void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
-    char szURL[BUFSIZ];
-    Q_snprintf(szURL, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, mapname);
-    g_pMomentumUtil->CreateAndSendHTTPReq(szURL, &cbGet10MapTimesCallback, &CDialogMapInfo::Get10MapTimesCallback, this);
+    g_pAPIRequests->GetTop10MapTimes(mapname, UtlMakeDelegate(this, &CDialogMapInfo::Get10MapTimesCallback));
 }
 
-void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
 {
-    if (bIOFailure)
+    /*if (bIOFailure)
     {
         Warning("%s - bIOFailure is true!\n", __FUNCTION__);
         return;
@@ -436,6 +428,5 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
     }
     // Last but not least, free resources
     alloc.deallocate();
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
-    delete[] pData;
+    delete[] pData;*/
 }
