@@ -45,103 +45,65 @@ COnlineMaps::~COnlineMaps()
 
 void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
 {
-    /*if (bIOFailure)
+    KeyValues *pKvData = pKvResponse->FindKey("data");
+    KeyValues *pKvErr = pKvResponse->FindKey("error");
+    if (pKvData)
     {
-        RefreshComplete(eNoServerReturn);
-        return;
-    }
+        KeyValues *pMaps = pKvData->FindKey("maps");
 
-    if (pCallback->m_eStatusCode != k_EHTTPStatusCode200OK)
-    {
-        RefreshComplete(eServerBadReturn);
-        return;
-    }
-
-    EMapQueryOutputs returnCode = eSuccess;
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-
-    if (size == 0)
-    {
-        Warning("%s - 0 body size!\n", __FUNCTION__);
-        RefreshComplete(eNoServerReturn);
-        return;
-    }
-
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        if (pMaps && !pMaps->IsEmpty())
         {
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            KeyValues::AutoDelete ad(pResponse);
-            KeyValues *pRuns = pResponse->FindKey("maps");
-
-            if (pRuns && !pRuns->IsEmpty())
+            FOR_EACH_SUBKEY(pMaps, pMap)
             {
-                FOR_EACH_SUBKEY(pRuns, pRun)
+                mapdisplay_t map;
+                mapstruct_t m;
+                Q_strcpy(m.m_szMapName, pMap->GetString("name"));
+                /*m.m_bHasStages = !pRun->GetBool("linear");
+                m.m_iZoneCount = pRun->GetInt("zones");
+                m.m_iDifficulty = pRun->GetInt("difficulty");
+                m.m_iGameMode = pRun->GetInt("gamemode");*/
+                m.m_iMapId = pMap->GetInt("id");
+                Q_strncpy(m.m_szMapUrl, pMap->GetString("downloadURL"), MAX_PATH);
+                Q_strncpy(m.m_szMapHash, pMap->GetString("hash"), 40);
+                /*Q_strcpy(m.m_szBestTime, pRun->GetString("zones"));
+                Q_strcpy(m.m_szMapUrl, pRun->GetString("file_path"));
+                Q_strcpy(m.m_szZoneUrl, pRun->GetString("zone_file"));
+                Q_strcpy(m.m_szThumbnailUrl, pRun->GetString("thumbnail"));*/
+                map.m_mMap = m;
+                
+                if (Q_strlen(m.m_szThumbnailUrl) > 3)
                 {
-                    mapdisplay_t map;
-                    mapstruct_t m;
-                    Q_strcpy(m.m_szMapName, pRun->GetString("map_name"));
-                    m.m_bHasStages = !pRun->GetBool("linear");
-                    m.m_iZoneCount = pRun->GetInt("zones");
-                    m.m_iDifficulty = pRun->GetInt("difficulty");
-                    m.m_iGameMode = pRun->GetInt("gamemode");
-                    m.m_iMapId = pRun->GetInt("id");
-                    Q_strcpy(m.m_szBestTime, pRun->GetString("zones"));
-                    Q_strcpy(m.m_szMapUrl, pRun->GetString("file_path"));
-                    Q_strcpy(m.m_szZoneUrl, pRun->GetString("zone_file"));
-                    Q_strcpy(m.m_szThumbnailUrl, pRun->GetString("thumbnail"));
-                    map.m_mMap = m;
-                    KeyValues *kv = new KeyValues("map");
-                    if (Q_strlen(m.m_szThumbnailUrl) > 3)
-                    {
-                        // We ran into a good issue here because of the life time of imageDownloader. Thanks @Gocnak for noticing this after almost an hour
+                    // We ran into a good issue here because of the life time of imageDownloader. Thanks @Gocnak for noticing this after almost an hour
 
-                        // We fix it by creating a pointer, and it gets deleted when we finish the callback. We're too good
-                        CImageDownloader *imageDownloader = new CImageDownloader();
-                        if (imageDownloader->Process(m.m_szMapName, m.m_szThumbnailUrl, m_pMapList, map.m_iMapImageIndex))
-                            delete imageDownloader;
-                    }
-                    kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
-                    kv->SetString(KEYNAME_MAP_LAYOUT, m.m_bHasStages ? "STAGED" : "LINEAR");
-                    kv->SetInt(KEYNAME_MAP_ZONE_COUNT, m.m_iZoneCount);
-                    kv->SetInt(KEYNAME_MAP_DIFFICULTY, m.m_iDifficulty);
-                    kv->SetString(KEYNAME_MAP_BEST_TIME, m.m_szBestTime);
-                    kv->SetInt(KEYNAME_MAP_IMAGE, map.m_iMapImageIndex);
-                    kv->SetString(KEYNAME_MAP_PATH, m.m_szMapUrl);
-                    kv->SetString(KEYNAME_MAP_ZONE_PATH, m.m_szZoneUrl);
-                    map.m_iListID = m_pMapList->AddItem(kv, 0, false, false);
-                    m_vecMaps.AddToTail(map); 
+                    // We fix it by creating a pointer, and it gets deleted when we finish the callback. We're too good
+                    /*CImageDownloader *imageDownloader = new CImageDownloader();
+                    if (imageDownloader->Process(m.m_szMapName, m.m_szThumbnailUrl, m_pMapList, map.m_iMapImageIndex))
+                        delete imageDownloader;*/
                 }
+                KeyValues::AutoDelete kv("map");
+                kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
+                kv->SetString(KEYNAME_MAP_LAYOUT, m.m_bHasStages ? "STAGED" : "LINEAR");
+                kv->SetInt(KEYNAME_MAP_ZONE_COUNT, m.m_iZoneCount);
+                kv->SetInt(KEYNAME_MAP_DIFFICULTY, m.m_iDifficulty);
+                kv->SetString(KEYNAME_MAP_BEST_TIME, m.m_szBestTime);
+                kv->SetInt(KEYNAME_MAP_IMAGE, map.m_iMapImageIndex);
+                kv->SetString(KEYNAME_MAP_PATH, m.m_szMapUrl);
+                kv->SetString(KEYNAME_MAP_ZONE_PATH, m.m_szZoneUrl);
+                map.m_iListID = m_pMapList->AddItem(kv, 0, false, false);
+                m_vecMaps.AddToTail(map);
             }
-            else
-            {
-                returnCode = eNoMapsReturned;
-            }
+            RefreshComplete(eSuccess);
+        }
+        else
+        {
+            RefreshComplete(eNoMapsReturned);
         }
     }
-    else
+    if (pKvErr)
     {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-        returnCode = eServerBadReturn;
+        // MOM_TODO: error handle
+        RefreshComplete(pKvResponse->GetInt("code") == 0 ? eNoServerReturn : eServerBadReturn);
     }
-
-    // Last but not least, free resources
-    delete[] pData;
-    pData = nullptr;
-    RefreshComplete(returnCode);*/
 }
 
 
