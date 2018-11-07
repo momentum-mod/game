@@ -1,8 +1,4 @@
-#ifndef IMAPLIST_H
-#define IMAPLIST_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 //Used by mapdisplay_t, holds map information for filtering and displaying
 struct mapstruct_t
@@ -21,7 +17,7 @@ struct mapstruct_t
 
     mapstruct_t()
     {
-        m_iGameMode = MOMGM_UNKNOWN;
+        m_iGameMode = 3; // MOMGM_UNKNOWN
         m_bHasStages = false;
         m_bCompleted = false;
         m_iDifficulty = 1;
@@ -93,6 +89,3 @@ public:
     // invalid server index
     virtual int GetInvalidMapListID() = 0;
 };
-
-
-#endif // IMAPLIST_H

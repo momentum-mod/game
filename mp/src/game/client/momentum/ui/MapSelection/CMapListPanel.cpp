@@ -1,4 +1,9 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+
+#include "CMapListPanel.h"
+#include "BaseMapsPage.h"
+
+#include "tier0/memdbgon.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
