@@ -17,7 +17,7 @@ class CJsonToKeyValues
   private:
     static void Convert(JsonNode*, KeyValues *);
     // Maps a node (and later its children) to a keyvalue
-    static KeyValues *MapNode(JsonNode *);
+    static void MapArrayOrObject(JsonNode *, KeyValues*);
     // Maps a node and its children to the given keyvalue (recursively)
     static void MapNode(JsonNode *, KeyValues *);
 };
