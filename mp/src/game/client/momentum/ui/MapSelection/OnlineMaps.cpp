@@ -246,9 +246,11 @@ void COnlineMaps::StartRefresh()
     {
         SetRefreshing(true);
         ClearMapList();
-        //KeyValues *kvFilters = GetFilters();
-        g_pAPIRequests->GetMaps(UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
-        //kvFilters->deleteThis();
+        KeyValues::AutoDelete pKvFilters("filters");
+        if (GetFilters(pKvFilters))
+        {
+            g_pAPIRequests->GetMaps(pKvFilters, UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
+        }
     }
 }
 

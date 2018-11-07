@@ -21,25 +21,36 @@ m_iAuthActualSize(0), m_pAPIKey(nullptr)
 
 bool CAPIRequests::SendAuthTicket(CallbackFunc func)
 {
-    if (SteamHTTP())
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ("auth/steam/user"), k_EHTTPMethodPOST, false))
     {
-        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, API_REQ("auth/steam/user"));
-
         uint64 id = SteamUser()->GetSteamID().ConvertToUint64();
         SteamHTTP()->SetHTTPRequestHeaderValue(handle, "id", CFmtStr("%llu", id).Get());
         SteamHTTP()->SetHTTPRequestRawPostBody(handle, "application/octet-stream", m_bufAuthBuffer, m_iAuthActualSize);
 
-        return SendHTTPRequest(handle, func, __FUNCTION__);
+        return SendAPIRequest(handle, func, __FUNCTION__);
     }
-    
-    Warning("Unable to access the SteamHTTP API!\n");
 
     return false;
 }
 
-bool CAPIRequests::GetMaps(CallbackFunc func)
+bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
 {
-    AssertMsg(0, "%s Needs implementation!\n", __FUNCTION__);
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ("maps"), k_EHTTPMethodGET))
+    {
+        if (pKvFilters)
+        {
+            FOR_EACH_VALUE(pKvFilters, pKvFilter)
+            {
+                SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, pKvFilter->GetName(),
+                                                              pKvFilter->GetString());
+            }
+        }
+
+        return SendAPIRequest(handle, func, __FUNCTION__);
+    }
+
     return false;
 }
 
@@ -76,7 +87,7 @@ void CAPIRequests::Shutdown()
     }
 
     // This also cancels any outstanding API requests
-    m_mapAPICalls.RemoveAll();
+    m_mapAPICalls.PurgeAndDeleteElements();
 }
 
 void CAPIRequests::OnAuthTicket(GetAuthSessionTicketResponse_t* pParam)
@@ -136,17 +147,15 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
         // Okay cool, callback found
         APICallback *callback = m_mapAPICalls[callbackIndx];
 
-        // Let's create our main KeyValues object to operate on...
-        KeyValues *pKvResponse = new KeyValues("response");
-        // ... And properly clean it up out of this scope
-        KeyValues::AutoDelete del(pKvResponse);
+        // Let's create our main KeyValues object to operate on and properly clean it up out of this scope
+        KeyValues::AutoDelete response("response");
 
         // Secondly, let's set the code of the response. Even if it's an IO error.
-        pKvResponse->SetInt("code", pCallback->m_eStatusCode);
+        response->SetInt("code", pCallback->m_eStatusCode);
 
         // Thirdly, check if there are any errors early on. 
         // This populates the response with an appropriate "error" KeyValues object
-        if (CheckAPIResponse(pCallback, bIOFailure, pKvResponse))
+        if (CheckAPIResponse(pCallback, bIOFailure, response))
         {
             KeyValues *pKvBodyData = new KeyValues("data");
             if (pCallback->m_unBodySize > 0)
@@ -169,15 +178,16 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
                 }
                 else
                 {
-                    Warning("Failed to parse! %s\n", pKvResponse->GetString("err_parse"));
+                    Warning("Failed to parse! %s\n", response->GetString("err_parse"));
                 }
 
                 // Sixthly, free our data buffer 
                 delete[] pData;
                 pData = nullptr;
+                pDataPtr = nullptr;
             }
             // "else 0 body size" -- it's valid, but it'll be empty. Reading a 204 can still be done here
-            pKvResponse->AddSubKey(pKvBodyData);
+            response->AddSubKey(pKvBodyData);
         }
         else
         {
@@ -186,13 +196,13 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
 
         // Now actually call the callback. It should be reading the body by using `pKvResponse->FindKey("data")`
         // or any errors by using `pKvResponse->FindKey("error")`
-        callback->callbackFunc(pKvResponse);
+        callback->callbackFunc(response);
 
         // And remove it from the map
         m_mapAPICalls.RemoveAt(callbackIndx);
         // And delete it (no memory leek pls)
         delete callback;
-        // And delete the pKvResponse KeyValu- oh right the AutoDelete handles that here (out of scope)
+        // And delete the response KeyValu- oh right the AutoDelete handles that here (out of scope)
     }
     else
     {
@@ -204,7 +214,24 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
     SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
-bool CAPIRequests::SendHTTPRequest(HTTPRequestHandle hRequest, CallbackFunc func, const char* pRequest)
+bool CAPIRequests::CreateAPIRequest(HTTPRequestHandle &handle, const char* pszURL, EHTTPMethod kMethod, bool bAuth /* = true*/)
+{
+    if (!SteamHTTP())
+        return false;
+
+    if (bAuth && !m_pAPIKey)
+        return false;
+
+    handle = SteamHTTP()->CreateHTTPRequest(kMethod, pszURL);
+
+    // Add the API key
+    if (bAuth)
+        SteamHTTP()->SetHTTPRequestHeaderValue(handle, "Authorization", CFmtStr("Bearer %s", m_pAPIKey).Get());
+
+    return true;
+}
+
+bool CAPIRequests::SendAPIRequest(HTTPRequestHandle hRequest, CallbackFunc func, const char* pRequest)
 {
     SteamAPICall_t apiHandle;
     if (SteamHTTP()->SendHTTPRequest(hRequest, &apiHandle))

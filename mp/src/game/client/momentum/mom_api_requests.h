@@ -14,7 +14,7 @@ public:
     // === HTTP API METHODS ===
     // The way to call these is to create a delegate of a callback function, and pass that in.
     // Example:
-    //      `g_pAPIRequests->GetMaps(UtlMakeDelegate(this, &SomeClass::SomeCallbackFunc);`
+    //      `g_pAPIRequests->GetMaps(UtlMakeDelegate(this, &SomeClass::SomeCallbackFunc));`
     //      where SomeCallbackFunc is a method of SomeClass that takes a KeyValues pointer as the only parameter.
     // API requests will pass a KeyValues object (that will auto delete itself, no worries!) with:
     //      "code" -- The integer HTTP status code returned. 0 if it's an IO error
@@ -30,7 +30,7 @@ public:
     bool SendAuthTicket(CallbackFunc func);
 
     // ===== Maps ======
-    bool GetMaps(CallbackFunc func);
+    bool GetMaps(KeyValues *pKvFilters, CallbackFunc func);
     bool GetTop10MapTimes(const char* pMapName, CallbackFunc func);
     bool GetMapInfo(const char* pMapName, CallbackFunc func);
 
@@ -48,8 +48,11 @@ protected:
     // Base HTTP response method, the CallbackFunc is passed the JSON object here
     void OnHTTPResp(HTTPRequestCompleted_t *pParam, bool bIOFailure);
 private:
+    // Creates an HTTP request with the proper authorization header added. 
+    // If bAuth = true, it will add the API key to the request, and will also return false if the key isn't set
+    bool CreateAPIRequest(HTTPRequestHandle &handle, const char *pszURL, EHTTPMethod kMethod, bool bAuth = true);
     // Should be called after the HTTP request is prepared by the API calls (above)
-    bool SendHTTPRequest(HTTPRequestHandle hRequest, CallbackFunc func, const char *pRequest);
+    bool SendAPIRequest(HTTPRequestHandle hRequest, CallbackFunc func, const char *pRequest);
     // Check the response for errors, insert error objects in here
     bool CheckAPIResponse(HTTPRequestCompleted_t *pCallback, bool bIOFailure, KeyValues *pKvOut);
 
