@@ -1,6 +1,7 @@
 #include "pch_mapselection.h"
 #include "util/jsontokv.h"
 #include "view_scene.h"
+#include "mom_api_requests.h"
 
 using namespace vgui;
 
@@ -26,9 +27,9 @@ COnlineMaps::~COnlineMaps()
 }
 
 
-void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
+void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
 {
-    if (bIOFailure)
+    /*if (bIOFailure)
     {
         RefreshComplete(eNoServerReturn);
         return;
@@ -124,8 +125,7 @@ void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOF
     // Last but not least, free resources
     delete[] pData;
     pData = nullptr;
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
-    RefreshComplete(returnCode);
+    RefreshComplete(returnCode);*/
 }
 
 
@@ -246,10 +246,8 @@ void COnlineMaps::StartRefresh()
     {
         SetRefreshing(true);
         ClearMapList();
-        char szUrl[BUFSIZ];
-        Q_snprintf(szUrl, BUFSIZ, "%s/getmaps/2/0/0", MOM_APIDOMAIN);
         //KeyValues *kvFilters = GetFilters();
-        g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbMapsQuery, &COnlineMaps::MapsQueryCallback, this, k_EHTTPMethodGET);
+        g_pAPIRequests->GetMaps(UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
         //kvFilters->deleteThis();
     }
 }
@@ -284,7 +282,7 @@ bool CImageDownloader::Process(const char* szMapName, const char* szUrl, CMapLis
         m_iTargetIndex = m_pImageList->AddImage(nullptr);
         index = m_iTargetIndex;
         // If the request fails, then delete me, otherwise wait for the callback to.
-        return !g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbDownloadCallback, &CImageDownloader::Callback, this);
+        //return !g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbDownloadCallback, &CImageDownloader::Callback, this);
     }
 
     // If it exists, lets search it on the panel list, in case it's already there
@@ -382,9 +380,9 @@ bool CMapDownloader::Process(const char* szMapName, const char* szMapUrl, const 
     if (!g_pMomentumUtil->MapExists(szMapName))
     {
         // We have to delet this here only if both Reqs failed:
-        bool mapReq = !g_pMomentumUtil->CreateAndSendHTTPReq(szMapUrl, &cbMapDownloadCallback, &CMapDownloader::MapCallback, this);
+        /*bool mapReq = !g_pMomentumUtil->CreateAndSendHTTPReq(szMapUrl, &cbMapDownloadCallback, &CMapDownloader::MapCallback, this);
         bool zonReq = !g_pMomentumUtil->CreateAndSendHTTPReq(szZoneUrl, &cbZoneDownloadCallback, &CMapDownloader::ZoneCallback, this);
-        return mapReq && zonReq;
+        return mapReq && zonReq;*/
     }
     return true;
 }

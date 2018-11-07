@@ -14,21 +14,10 @@
 #include "materialsystem/imaterialvar.h"
 #endif
 
-#include "steam/steam_api.h"
-
 #include "tier0/memdbgon.h"
 
 extern IFileSystem *filesystem;
 
-inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
-{
-    if (pData)
-    {
-        delete[] pData;
-    }
-    pData = nullptr;
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
-}
 #if 0
 
 void MomentumUtil::DownloadMap(const char *szMapname)

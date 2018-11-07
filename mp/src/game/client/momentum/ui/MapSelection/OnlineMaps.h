@@ -50,8 +50,7 @@ public:
 
     //virtual void LoadFilterSettings() {};//MOM_TODO: make this filter online maps (by name/gametype/difficulty?)
 
-    CCallResult<COnlineMaps, HTTPRequestCompleted_t> cbMapsQuery;
-    void MapsQueryCallback(HTTPRequestCompleted_t *, bool);
+    void MapsQueryCallback(KeyValues* pKvResponse);
 
 protected:
     // vgui overrides

@@ -1,42 +1,36 @@
 #include "jsontokv.h"
+#include "gason.h"
+#include "fmtstr.h"
 
-KeyValues *CJsonToKeyValues::ConvertJsonToKeyValues(JsonNode *node)
+#include "tier0/memdbgon.h"
+
+void CJsonToKeyValues::Convert(JsonNode *node, KeyValues *pOut)
 {
     //This iterates through the base JsonObject node
-    KeyValues *pKvToReturn = new KeyValues("Response");
-    pKvToReturn->UsesEscapeSequences(true);
+    pOut->UsesEscapeSequences(true);
     while (node)
     {
-        MapNode(node, pKvToReturn);
+        MapNode(node, pOut);
         node = node->next;
     }
-    return pKvToReturn;
 }
 
-KeyValues* CJsonToKeyValues::ConvertJsonToKeyValues(const char* pJSONInput)
+bool CJsonToKeyValues::ConvertJsonToKeyValues(char *pInput, KeyValues *pOut)
 {
-    KeyValues *pToReturn = nullptr;
-
     JsonAllocator alloc; // Allocator
     JsonValue val; // Outer object
-    
-    // Setup our input buffer (const char* -> char *)
-    size_t input = Q_strlen(pJSONInput) + 1;
-    char *pInputBuffer = new char[input];
-    Q_strncpy(pInputBuffer, pJSONInput, input);
-
     char *endPtr; // Just for show, I guess
 
-    int status = jsonParse(pInputBuffer, &endPtr, &val, alloc);
+    int status = jsonParse(pInput, &endPtr, &val, alloc);
     if (status == JSON_OK)
     {
-        pToReturn = ConvertJsonToKeyValues(val.toNode());
+        Convert(val.toNode(), pOut);
+        return true;
     }
 
-    // Cleanup after ourselves
-    delete[] pInputBuffer;
-
-    return pToReturn;
+    pOut->SetString("err_parse", CFmtStr("%s at %zd", jsonStrError(status), endPtr - pInput).Get());
+    
+    return false;
 }
 
 void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)

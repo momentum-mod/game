@@ -117,21 +117,6 @@ typedef enum
     Warning("%s->%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
     __FILE__, __FUNCTION__, __LINE__, #steam_interface); return; }
 
-// I'm a deadbeat, so I did this to stop having to worry about what MOM_APIDOMAIN is
-// Set this macro to 0 to use momentum-mod.org as the webdomain, otherwise it uses the local domain (Or whatever you set)
-// Make sure this is 0 when you push!
-#define MOM_USINGLOCALWEB 1
-
-#if MOM_USINGLOCALWEB
-// What is the URL of the web?
-#define MOM_WEBDOMAIN "http://localhost:9000"
-#else
-#define MOM_WEBDOMAIN "https://momentum-mod.org"
-#endif
-
-// Where to query the api. In case it does not match the current WEBDOMAIN (How did you end up like this?), you can change it!
-#define MOM_APIDOMAIN MOM_WEBDOMAIN
-
 #define MAP_FOLDER "maps"
 #define RECORDING_PATH "recordings"
 #define RECORDING_ONLINE_PATH "online"
