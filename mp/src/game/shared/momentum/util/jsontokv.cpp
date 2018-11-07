@@ -49,7 +49,10 @@ void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)
         break;
     case JSON_ARRAY:
     case JSON_OBJECT:
-        kv->AddSubKey(MapNode(node));
+        {
+            KeyValues *pKv = kv->CreateNewKey();
+            MapArrayOrObject(node, pKv);
+        }
         break;
     case JSON_TRUE:
     case JSON_FALSE:
@@ -61,42 +64,20 @@ void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)
     }
 }
 
-KeyValues *CJsonToKeyValues::MapNode(JsonNode *node)
+void CJsonToKeyValues::MapArrayOrObject(JsonNode *node, KeyValues* pKvInto)
 {
-    // The parent KV holds the name of the first parent (Which, in case there is only 1 node/value, it will be the same
-    // as the only value it has)
-    if (!node)
-        return nullptr;
-
-    // @Ruben: When node->key is null on the json, key is not nullptr, but 0xffeeffee.
-    // MOM_TODO: Is it always that address? If not, when / how does it change?
+    // When node->key is null on the json, key is not nullptr, but 0xffeeffee.
+    // This value happens because JSON arrays of JSON objects don't have any name, and the
+    // allocator doesn't properly memset the allocated node to be fully null, so 0xffeeffee is
+    // the value.
     bool isKeyNull = node->key == nullptr || POINTER_TO_INT(node->key) == 0xffeeffee;
 
-    // @Gocnak: Note: The key should never be null in here. The only time it would be null is either
-    // you pass the first node into this method (handled by the Convert method), or if the response from the API is bad!
-    // But you never know, so *shrug*
-
     // Parent keyvalue.
-    KeyValues *pNodeValues = new KeyValues(isKeyNull ? "(null)" : node->key);
+    if (!isKeyNull)
+        pKvInto->SetName(node->key);
 
     for (auto i : node->value)
     {
-        // If what we're going to parse is an object, then we need to add it as a subkey.
-        if (i->value.getTag() == JSON_OBJECT || i->value.getTag() == JSON_ARRAY)
-        {
-            //Array or just normal object, make this into a subkey
-            KeyValues *pSub = MapNode(i);
-            //Add it to our parent
-            pNodeValues->AddSubKey(pSub);
-            //Iterate through it
-            MapNode(i->value.toNode(), pSub);
-        }
-        else 
-        {
-            // Otherwise (strings, numbers, booleans) we just add them as an entry of the current key
-            MapNode(i, pNodeValues);
-        }
+        MapNode(i, pKvInto);
     }
-
-    return pNodeValues;
 }
