@@ -4,12 +4,10 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef BASEGAMESPAGE_H
-#define BASEGAMESPAGE_H
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "IMapList.h"
+#include "vgui_controls/PropertyPage.h"
 
 #define KEYNAME_MAP_NAME "Name"
 #define KEYNAME_MAP_LAYOUT "MapLayout"
@@ -19,6 +17,7 @@
 #define KEYNAME_MAP_PATH "MapPath"
 #define KEYNAME_MAP_ZONE_COUNT "ZoneCount"
 #define KEYNAME_MAP_ZONE_PATH "ZonePath"
+
 
 class CMapListPanel;
 
@@ -148,8 +147,6 @@ protected:
     MESSAGE_FUNC_PTR_INT(OnButtonToggled, "ButtonToggled", panel, state);
 
 private:
-    void RequestServersResponse(int iServer, EMatchMakingServerResponse response, bool bLastServer); // callback for matchmaking interface
-
     void RecalculateFilterString();
 
     // If set, it uses the specified resfile name instead of its default one.
@@ -185,5 +182,3 @@ private:
     } HEADERS;
 
 };
-
-#endif // BASEGAMESPAGE_H

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "vgui_controls/ListPanel.h"
+
+class CBaseMapsPage;
+
 //-----------------------------------------------------------------------------
 // Purpose: Acts like a regular ListPanel but forwards enter key presses
 // to its outer control.

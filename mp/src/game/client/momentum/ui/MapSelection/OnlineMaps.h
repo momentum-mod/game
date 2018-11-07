@@ -1,8 +1,6 @@
-#ifndef INTERNETGAMES_H
-#define INTERNETGAMES_H
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "BaseMapsPage.h"
 
 namespace vgui
 {
@@ -70,7 +68,7 @@ private:
     int m_iCurrentPage;
 };
 
-class CImageDownloader
+/*class CImageDownloader
 {
     DECLARE_CLASS_NOBASE(CImageDownloader)
 
@@ -114,5 +112,4 @@ private:
 
     char m_szMapName[MAX_PATH];
     COnlineMaps *m_pMapTab;
-};
-#endif // INTERNETGAMES_H
+};*/

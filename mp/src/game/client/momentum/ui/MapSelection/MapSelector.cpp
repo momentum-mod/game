@@ -1,5 +1,10 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
 
+#include "MapSelector.h"
+#include "MapSelectorDialog.h"
+#include "IMapSelector.h"
+
+#include "tier0/memdbgon.h"
 
 static CMapSelector g_MapSelectorPanel;
 IMapSelector* mapselector = static_cast<CMapSelector*>(&g_MapSelectorPanel);

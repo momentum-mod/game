@@ -1,4 +1,18 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+
+#include "BaseMapsPage.h"
+#include "CMapListPanel.h"
+#include "MapSelectorDialog.h"
+
+#include "vgui/ILocalize.h"
+#include "vgui_controls/ListPanel.h"
+#include "vgui_controls/Button.h"
+#include "vgui_controls/ToggleButton.h"
+#include "vgui_controls/ImageList.h"
+#include "vgui_controls/ComboBox.h"
+#include "vgui_controls/CheckButton.h"
+
+#include "tier0/memdbgon.h"
 
 using namespace vgui; 
 

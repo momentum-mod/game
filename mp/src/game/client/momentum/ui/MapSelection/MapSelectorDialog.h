@@ -1,8 +1,13 @@
-#ifndef SERVERBROWSERDIALOG_H
-#define SERVERBROWSERDIALOG_H
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "vgui_controls/Frame.h"
+
+class CMapContextMenu;
+class CDialogMapInfo;
+class CLocalMaps;
+class COnlineMaps;
+class IMapList;
+struct mapstruct_t;
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -68,10 +73,10 @@ public:
     // forces the currently active page to refresh
     void		RefreshCurrentPage();
 
-    virtual gameserveritem_t *GetCurrentConnectedServer()
+    /*virtual gameserveritem_t *GetCurrentConnectedServer()
     {
         return &m_CurrentConnection;
-    }
+    }*/
 
 private:
 
@@ -111,11 +116,9 @@ private:
     CMapContextMenu *m_pContextMenu;
 
     // currently connected game
-    bool m_bCurrentlyConnected;
-    gameserveritem_t m_CurrentConnection;
+    bool m_bCurrentlyConnected;/*
+    gameserveritem_t m_CurrentConnection;*/
 };
 
 // singleton accessor
 extern CMapSelectorDialog &MapSelectorDialog();
-
-#endif // SERVERBROWSERDIALOG_H

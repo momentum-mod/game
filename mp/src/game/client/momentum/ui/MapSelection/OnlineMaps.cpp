@@ -1,7 +1,23 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+
+#include "filesystem.h"
+
+#include "OnlineMaps.h"
+#include "MapSelectorDialog.h"
+#include "CMapListPanel.h"
+#include "MapContextMenu.h"
+
 #include "util/jsontokv.h"
-#include "view_scene.h"
+#include "util/mom_util.h"
 #include "mom_api_requests.h"
+
+#include "vgui_controls/ImageList.h"
+#include "vgui_controls/CvarToggleCheckButton.h"
+
+#include <OfflineMode.h>
+
+#include "tier0/memdbgon.h"
+
 
 using namespace vgui;
 
@@ -165,10 +181,10 @@ void COnlineMaps::OnPageShow()
 void COnlineMaps::OnMapStart()
 {
     if (!m_pMapList->GetSelectedItemsCount()) return;
-    CMapDownloader* mapDownloader = new CMapDownloader;
-    KeyValues *kv = m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
-    if (mapDownloader->Process(kv->GetString(KEYNAME_MAP_NAME), kv->GetString(KEYNAME_MAP_PATH, nullptr), kv->GetString(KEYNAME_MAP_ZONE_PATH, nullptr), this))
-        delete mapDownloader;
+    //CMapDownloader* mapDownloader = new CMapDownloader;
+    // KeyValues *kv = m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
+    /*if (mapDownloader->Process(kv->GetString(KEYNAME_MAP_NAME), kv->GetString(KEYNAME_MAP_PATH, nullptr), kv->GetString(KEYNAME_MAP_ZONE_PATH, nullptr), this))
+        delete mapDownloader;*/
 }
 
 
@@ -268,7 +284,7 @@ void COnlineMaps::OnOpenContextMenu(int itemID)
     menu->ShowMenu(this, true, true);
 }
 
-bool CImageDownloader::Process(const char* szMapName, const char* szUrl, CMapListPanel* pTargetPanel, int &index)
+/*bool CImageDownloader::Process(const char* szMapName, const char* szUrl, CMapListPanel* pTargetPanel, int &index)
 {
     index = 0;
     if (!pTargetPanel || !pTargetPanel->GetImageList())
@@ -384,7 +400,7 @@ bool CMapDownloader::Process(const char* szMapName, const char* szMapUrl, const 
         // We have to delet this here only if both Reqs failed:
         /*bool mapReq = !g_pMomentumUtil->CreateAndSendHTTPReq(szMapUrl, &cbMapDownloadCallback, &CMapDownloader::MapCallback, this);
         bool zonReq = !g_pMomentumUtil->CreateAndSendHTTPReq(szZoneUrl, &cbZoneDownloadCallback, &CMapDownloader::ZoneCallback, this);
-        return mapReq && zonReq;*/
+        return mapReq && zonReq;#1#
     }
     return true;
 }
@@ -451,4 +467,4 @@ void CMapDownloader::MapCallback(HTTPRequestCompleted_t* pCallback, bool bIOFail
         m_pMapTab->StartSelectedMap();
         delete this;
     }
-}
+}*/

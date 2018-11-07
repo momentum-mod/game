@@ -1,8 +1,11 @@
-#ifndef DIALOGGAMEINFO_H
-#define DIALOGGAMEINFO_H
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "vgui_controls/Frame.h"
+
+namespace vgui 
+{
+    class ListPanelItem;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Dialog for displaying information about a game server
@@ -24,7 +27,7 @@ public:
     virtual void AddPlayerToList(KeyValues *pPlayerInfo);
 
     // called when the current refresh list is complete
-    virtual void RefreshComplete(EMatchMakingServerResponse response);
+    /*virtual void RefreshComplete(EMatchMakingServerResponse response);*/
 
     // player list received
     virtual void ClearPlayerList();
@@ -63,5 +66,3 @@ private:
     bool m_bConnecting;
     bool m_bPlayerListUpdatePending;
 };
-
-#endif // DIALOGGAMEINFO_H
