@@ -14,6 +14,7 @@ struct mapstruct_t
     int m_iMapId;//Map ID on Momentum's servers
     char m_szZoneUrl[MAX_PATH];//Where to find this map's .zon
     char m_szMapUrl[MAX_PATH];//Where to find this map's .bsp
+    char m_szMapHash[40]; // SHA1 hash of the map
 
     mapstruct_t()
     {
@@ -28,6 +29,7 @@ struct mapstruct_t
         m_iMapId = -1;
         m_szZoneUrl[0] = '\0';
         m_szMapUrl[0] = '\0';
+        m_szMapHash[0] = '\0';
     }
 };
 

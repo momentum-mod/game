@@ -39,7 +39,7 @@ bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
     HTTPRequestHandle handle;
     if (CreateAPIRequest(handle, API_REQ("maps"), k_EHTTPMethodGET))
     {
-        if (pKvFilters)
+        if (pKvFilters && !pKvFilters->IsEmpty())
         {
             FOR_EACH_VALUE(pKvFilters, pKvFilter)
             {
