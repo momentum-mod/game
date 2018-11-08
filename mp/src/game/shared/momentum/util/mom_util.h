@@ -51,7 +51,7 @@ public:
     void KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave);
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
 
-    bool MapExists(const char *pMapName);
+    bool MapExists(const char *pMapName, const char *pMapHash);
     bool MapThumbnailExists(const char *pMapName);
 
     void KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker, CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut);
