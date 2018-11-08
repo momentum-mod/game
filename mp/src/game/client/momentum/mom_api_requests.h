@@ -35,6 +35,9 @@ public:
     bool GetMapInfo(const char* pMapName, CallbackFunc func);
 
 
+    // === File Downloading ===
+    HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end);
+
 protected:
     // CAutoGameSystemPerFrame
     void PostInit() override;
@@ -44,6 +47,10 @@ protected:
     STEAM_CALLBACK(CAPIRequests, OnAuthTicket, GetAuthSessionTicketResponse_t);
     void OnAuthHTTP(KeyValues *pResponse);
     void DoAuth();
+
+    STEAM_CALLBACK(CAPIRequests, OnDownloadHTTPHeader, HTTPRequestHeadersReceived_t);
+    STEAM_CALLBACK(CAPIRequests, OnDownloadHTTPData, HTTPRequestDataReceived_t);
+    void OnDownloadHTTPComplete(HTTPRequestCompleted_t *pParam, bool bIO);
 
     // Base HTTP response method, the CallbackFunc is passed the JSON object here
     void OnHTTPResp(HTTPRequestCompleted_t *pParam, bool bIOFailure);
@@ -73,7 +80,29 @@ private:
         }
     };
     CUtlMap<HTTPRequestHandle, APICallback*> m_mapAPICalls;
-    
+
+    struct DownloadCall
+    {
+        DownloadCall() : handle(INVALID_HTTPREQUEST_HANDLE),/* headerResult(nullptr), dataResult(nullptr),*/ completeResult(nullptr) {}
+        ~DownloadCall()
+        {
+            if (completeResult)
+                delete completeResult;
+        }
+        HTTPRequestHandle handle;
+        CCallResult<CAPIRequests, HTTPRequestCompleted_t> *completeResult;
+
+        CallbackFunc startFunc;
+        CallbackFunc progressFunc;
+        CallbackFunc completeFunc;
+
+        bool operator==(const DownloadCall &other) const
+        {
+            return handle == other.handle;
+        }
+    };
+    CUtlMap<HTTPRequestHandle, DownloadCall*> m_mapDownloadCalls;
+
     // Auth ticket impl
     HAuthTicket m_hAuthTicket;
     byte* m_bufAuthBuffer;

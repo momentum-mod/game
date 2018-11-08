@@ -246,7 +246,7 @@ void CSHA1::Final()
 
 #if !defined(_MINIMUM_BUILD_)
 // Get the final hash as a pre-formatted string
-void CSHA1::ReportHash(char *szReport, unsigned char uReportType)
+void CSHA1::ReportHash(char *szReport, unsigned int maxLen, unsigned char uReportType)
 {
 	unsigned char i = 0;
 	char szTemp[12];
@@ -256,25 +256,33 @@ void CSHA1::ReportHash(char *szReport, unsigned char uReportType)
 	if(uReportType == REPORT_HEX)
 	{
 		sprintf(szTemp, "%02X", m_digest[0]);
-		strcat(szReport, szTemp);
+		strncat(szReport, szTemp, maxLen);
 
 		for(i = 1; i < k_cubHash; i++)
 		{
 			sprintf(szTemp, " %02X", m_digest[i]);
-			strcat(szReport, szTemp);
+			strncat(szReport, szTemp, maxLen);
 		}
 	}
 	else if(uReportType == REPORT_DIGIT)
 	{
 		sprintf(szTemp, "%u", m_digest[0]);
-		strcat(szReport, szTemp);
+		strncat(szReport, szTemp, maxLen);
 
 		for(i = 1; i < k_cubHash; i++)
 		{
 			sprintf(szTemp, " %u", m_digest[i]);
-			strcat(szReport, szTemp);
+			strncat(szReport, szTemp, maxLen);
 		}
 	}
+    else if (uReportType == REPORT_HEX_LOWERCASE_BUNDLED)
+    {
+        for (i = 0; i < k_cubHash; i++)
+        {
+            sprintf(szTemp, "%02x", m_digest[i]);
+            strncat(szReport, szTemp, maxLen);
+        }
+    }
 	else strcpy(szReport, "Error: Unknown report type!");
 }
 #endif // _MINIMUM_BUILD_

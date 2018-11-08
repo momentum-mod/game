@@ -9,6 +9,7 @@
 #include "run/run_compare.h"
 #include "run/run_stats.h"
 #include "effect_dispatch_data.h"
+#include "tier1/checksum_sha1.h"
 #ifdef CLIENT_DLL
 #include "ChangelogPanel.h"
 #include "materialsystem/imaterialvar.h"
@@ -488,15 +489,32 @@ void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, co
 
     te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
 }
-bool MomentumUtil::MapExists(const char* pMapName)
+bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
 {
-    if (!pMapName) return false;
+    bool bFile = false, bHash = false;
+    if (!(pMapName && pMapHash)) 
+        return false;
     FileFindHandle_t found;
     char szPath[MAX_PATH];
     Q_snprintf(szPath, MAX_PATH, "maps/%s.bsp", pMapName);
     const char *pStr = g_pFullFileSystem->FindFirstEx(szPath, "GAME", &found);
+    if (pStr)
+    {
+        bFile = true;
+        char outPath[MAX_PATH];
+        g_pFullFileSystem->RelativePathToFullPath_safe(szPath, "GAME", outPath);
+
+        CSHA1 sha1;
+        sha1.HashFile(outPath);
+        sha1.Final();
+        char hashHex[40] = {};
+        sha1.ReportHash(hashHex, 40, CSHA1::REPORT_HEX_LOWERCASE_BUNDLED);
+
+        bHash = FStrEq(hashHex, pMapHash);
+    }
     g_pFullFileSystem->FindClose(found);
-    return pStr ? true : false;
+
+    return bFile && bHash;
 }
 
 // Gross hack needed because scheme()->GetImage still returns an image even if it's null (returns the null texture)

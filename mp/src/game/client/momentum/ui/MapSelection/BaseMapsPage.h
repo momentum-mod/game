@@ -17,6 +17,7 @@
 #define KEYNAME_MAP_PATH "MapPath"
 #define KEYNAME_MAP_ZONE_COUNT "ZoneCount"
 #define KEYNAME_MAP_ZONE_PATH "ZonePath"
+#define KEYNAME_MAP_HASH "Hash"
 
 
 class CMapListPanel;
