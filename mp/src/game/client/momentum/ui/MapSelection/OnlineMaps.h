@@ -7,6 +7,8 @@ namespace vgui
     class ImageList;
 }
 
+typedef uint32 HTTPRequestHandle;
+
 //-----------------------------------------------------------------------------
 // Purpose: Internet games list
 //-----------------------------------------------------------------------------
@@ -34,6 +36,10 @@ public:
     MESSAGE_FUNC(GetNewMapList, "GetNewMapList");
 
     void StartSelectedMap();
+
+    void StartMapDownload(KeyValues *pKvHeader);
+    void MapDownloadProgress(KeyValues *pKvProgress);
+    void FinishMapDownload(KeyValues *pKvComplete);
 
 
     enum EMapQueryOutputs
@@ -66,6 +72,8 @@ private:
     bool m_bOfflineMode;
 
     int m_iCurrentPage;
+
+    CUtlMap<HTTPRequestHandle, FileHandle_t> m_mapFileDownloads; // Not to be confused with "Map File Downloads"!
 };
 
 /*class CImageDownloader

@@ -17,6 +17,7 @@ m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
 m_iAuthActualSize(0), m_pAPIKey(nullptr)
 {
     SetDefLessFunc(m_mapAPICalls);
+    SetDefLessFunc(m_mapDownloadCalls);
 }
 
 bool CAPIRequests::SendAuthTicket(CallbackFunc func)
@@ -64,6 +65,34 @@ bool CAPIRequests::GetMapInfo(const char* pMapName, CallbackFunc func)
 {
     AssertMsg(0, "%s Needs implementation!\n", __FUNCTION__);
     return false;
+}
+
+HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end)
+{
+    HTTPRequestHandle handle = INVALID_HTTPREQUEST_HANDLE;
+    if (CreateAPIRequest(handle, pszURL, k_EHTTPMethodGET))
+    {
+        SteamAPICall_t apiHandle;
+        if (SteamHTTP()->SendHTTPRequestAndStreamResponse(handle, &apiHandle))
+        {
+            DownloadCall *callback = new DownloadCall();
+            callback->handle = handle;
+            callback->startFunc = start;
+            callback->progressFunc = prog;
+            callback->completeFunc = end;
+            callback->completeResult = new CCallResult<CAPIRequests, HTTPRequestCompleted_t>();
+            callback->completeResult->Set(apiHandle, this, &CAPIRequests::OnDownloadHTTPComplete);
+            m_mapDownloadCalls.Insert(handle, callback);
+        }
+        else
+        {
+            Warning("%s --- Failed to send HTTP request for downloading!\n", __FUNCTION__);
+            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+            handle = INVALID_HTTPREQUEST_HANDLE;
+        }
+    }
+
+    return handle;
 }
 
 
@@ -136,6 +165,77 @@ void CAPIRequests::DoAuth()
     m_hAuthTicket = SteamUser()->GetAuthSessionTicket(m_bufAuthBuffer, 1024, &m_iAuthActualSize);
     if (m_hAuthTicket == k_HAuthTicketInvalid)
         Warning("Initial call to get the ticket failed!\n");
+}
+
+void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
+{
+    uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
+    if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
+    {
+        KeyValuesAD headers("Headers");
+        headers->SetUint64("request", pCallback->m_hRequest);
+
+        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+        uint32 size;
+        if (SteamHTTP()->GetHTTPResponseHeaderSize(pCallback->m_hRequest, "Content-Length", &size))
+        {
+            // Now read the actual data
+            uint8 *pData = new uint8[size + 1];
+            if (SteamHTTP()->GetHTTPResponseHeaderValue(pCallback->m_hRequest, "Content-Length", pData, size))
+            {
+                // Null-terminate
+                pData[size] = 0;
+                uint64 fileSize = Q_atoui64(reinterpret_cast<const char *>(pData));
+
+                headers->SetUint64("size", fileSize);
+                call->startFunc(headers);
+            }
+
+            delete[] pData;
+            pData = nullptr;
+        }
+    }
+}
+
+void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
+{
+    uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
+    if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
+    {
+        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+        uint8 *pDataTemp = new uint8[pCallback->m_cBytesReceived];
+        if (SteamHTTP()->GetHTTPStreamingResponseBodyData(pCallback->m_hRequest, pCallback->m_cOffset, pDataTemp, pCallback->m_cBytesReceived))
+        {
+            KeyValuesAD prog("Progress");
+            prog->SetUint64("request", pCallback->m_hRequest);
+            float percent = 0.0f;
+            if (SteamHTTP()->GetHTTPDownloadProgressPct(pCallback->m_hRequest, &percent))
+                prog->SetFloat("percent", percent);
+            prog->SetUint64("offset", pCallback->m_cOffset);
+            prog->SetInt("size", pCallback->m_cBytesReceived);
+            prog->SetPtr("data", pDataTemp);
+            call->progressFunc(prog);
+        }
+
+        delete[] pDataTemp;
+        pDataTemp = nullptr;
+    }
+}
+
+void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, bool bIO)
+{
+    uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
+    if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
+    {
+        KeyValuesAD comp("Complete");
+        comp->SetUint64("request", pCallback->m_hRequest);
+        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+        call->completeFunc(comp);
+        m_mapDownloadCalls.RemoveAt(downloadCallbackIndx);
+        delete call;
+    }
+
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
 void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
@@ -219,6 +319,9 @@ bool CAPIRequests::CreateAPIRequest(HTTPRequestHandle &handle, const char* pszUR
     if (!SteamHTTP())
         return false;
 
+    if (!pszURL)
+        return false;
+
     if (bAuth && !m_pAPIKey)
         return false;
 
@@ -286,3 +389,8 @@ bool CAPIRequests::CheckAPIResponse(HTTPRequestCompleted_t* pCallback, bool bIOF
 
 CAPIRequests s_APIRequests;
 CAPIRequests *g_pAPIRequests = &s_APIRequests;
+
+CON_COMMAND(hash_test, "Test hashing")
+{
+
+}

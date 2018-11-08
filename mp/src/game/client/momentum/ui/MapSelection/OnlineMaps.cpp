@@ -15,6 +15,7 @@
 #include "vgui_controls/CvarToggleCheckButton.h"
 
 #include <OfflineMode.h>
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -32,6 +33,7 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
     m_bOfflineMode = !IsSteamGameServerBrowsingEnabled();
     m_iCurrentPage = 0;
     LoadFilterSettings();
+    SetDefLessFunc(m_mapFileDownloads);
 }
 
 
@@ -89,6 +91,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
                 kv->SetInt(KEYNAME_MAP_IMAGE, map.m_iMapImageIndex);
                 kv->SetString(KEYNAME_MAP_PATH, m.m_szMapUrl);
                 kv->SetString(KEYNAME_MAP_ZONE_PATH, m.m_szZoneUrl);
+                kv->SetString(KEYNAME_MAP_HASH, m.m_szMapHash);
                 map.m_iListID = m_pMapList->AddItem(kv, 0, false, false);
                 m_vecMaps.AddToTail(map);
             }
@@ -143,10 +146,30 @@ void COnlineMaps::OnPageShow()
 void COnlineMaps::OnMapStart()
 {
     if (!m_pMapList->GetSelectedItemsCount()) return;
-    //CMapDownloader* mapDownloader = new CMapDownloader;
-    // KeyValues *kv = m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
-    /*if (mapDownloader->Process(kv->GetString(KEYNAME_MAP_NAME), kv->GetString(KEYNAME_MAP_PATH, nullptr), kv->GetString(KEYNAME_MAP_ZONE_PATH, nullptr), this))
-        delete mapDownloader;*/
+    KeyValues *kv =  m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
+
+    const char *pMapName = kv->GetString(KEYNAME_MAP_NAME);
+    // Firstly, check if we have this version of the map
+    if (g_pMomentumUtil->MapExists(pMapName, kv->GetString(KEYNAME_MAP_HASH)))
+        StartSelectedMap();
+    else
+    {
+        // We either don't have it, or it's outdated, so let's get the latest one!
+        HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(kv->GetString(KEYNAME_MAP_PATH, nullptr),
+                                     UtlMakeDelegate(this, &COnlineMaps::StartMapDownload), 
+                                     UtlMakeDelegate(this, &COnlineMaps::MapDownloadProgress),
+                                     UtlMakeDelegate(this, &COnlineMaps::FinishMapDownload));
+        if (handle != INVALID_HTTPREQUEST_HANDLE)
+        {
+            FileHandle_t fileHandle = g_pFullFileSystem->Open(CFmtStr("maps/%s.bsp", pMapName), "wb", "GAME");
+            // MOM_TODO: create/show progress bar component here?
+            m_mapFileDownloads.Insert(handle, fileHandle);
+        }
+        else
+        {
+            Warning("Failed to try to download the map %s!\n", pMapName);
+        }
+    }
 }
 
 
@@ -177,6 +200,37 @@ void COnlineMaps::GetNewMapList()
 void COnlineMaps::StartSelectedMap()
 {
     BaseClass::OnMapStart();
+}
+
+void COnlineMaps::StartMapDownload(KeyValues* pKvHeader)
+{
+    /*if (mapDownloader->Process(kv->GetString(KEYNAME_MAP_NAME), kv->GetString(KEYNAME_MAP_PATH, nullptr), kv->GetString(KEYNAME_MAP_ZONE_PATH, nullptr), this))
+    delete mapDownloader;*/
+
+}
+
+void COnlineMaps::MapDownloadProgress(KeyValues* pKvProgress)
+{
+    uint16 fileIndx = m_mapFileDownloads.Find(pKvProgress->GetUint64("request"));
+    if (fileIndx != m_mapFileDownloads.InvalidIndex())
+    {
+        DevLog("Progress: %0.2f!\n", pKvProgress->GetFloat("percent"));
+
+        g_pFullFileSystem->Write(pKvProgress->GetPtr("data"), pKvProgress->GetInt("size"), m_mapFileDownloads[fileIndx]);
+    }
+}
+
+void COnlineMaps::FinishMapDownload(KeyValues* pKvComplete)
+{
+    uint16 fileIndx = m_mapFileDownloads.Find(pKvComplete->GetUint64("request"));
+    if (fileIndx != m_mapFileDownloads.InvalidIndex())
+    {
+        DevLog("Got the file!\n");
+
+        g_pFullFileSystem->Close(m_mapFileDownloads[fileIndx]);
+
+        m_mapFileDownloads.RemoveAt(fileIndx);
+    }
 }
 
 void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
