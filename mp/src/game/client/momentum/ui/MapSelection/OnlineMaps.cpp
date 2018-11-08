@@ -66,7 +66,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
                 m.m_iGameMode = pRun->GetInt("gamemode");*/
                 m.m_iMapId = pMap->GetInt("id");
                 Q_strncpy(m.m_szMapUrl, pMap->GetString("downloadURL"), MAX_PATH);
-                Q_strncpy(m.m_szMapHash, pMap->GetString("hash"), 40);
+                Q_strncpy(m.m_szMapHash, pMap->GetString("hash"), 41);
                 /*Q_strcpy(m.m_szBestTime, pRun->GetString("zones"));
                 Q_strcpy(m.m_szMapUrl, pRun->GetString("file_path"));
                 Q_strcpy(m.m_szZoneUrl, pRun->GetString("zone_file"));

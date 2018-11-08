@@ -448,7 +448,7 @@ CBaseEntity::~CBaseEntity( )
 	PhysCleanupFrictionSounds( this );
 
 	Assert( !IsDynamicModelIndex( m_nModelIndex ) );
-	Verify( !sg_DynamicLoadHandlers.Remove( this ) );
+	Assert( !sg_DynamicLoadHandlers.Remove( this ) );
 
 	// In debug make sure that we don't call delete on an entity without setting
 	//  the disable flag first!

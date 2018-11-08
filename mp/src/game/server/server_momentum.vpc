@@ -239,4 +239,9 @@ $Project "Server (Momentum)"
             }
         }
     }
+
+    $Folder "Link Libraries"
+    {
+        $Lib "cryptopp"
+    }
 }        

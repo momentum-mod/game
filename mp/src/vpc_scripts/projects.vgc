@@ -20,6 +20,11 @@ $Project "client"
     "game\client\client_momentum.vpc"   [($WIN32 || $POSIX) && $MOMENTUM]
 }
 
+$Project "cryptopp"
+{
+    "cryptopp\cryptopp.vpc"
+}
+
 $Project "fgdlib"
 {
 	"fgdlib\fgdlib.vpc" [$WIN32]

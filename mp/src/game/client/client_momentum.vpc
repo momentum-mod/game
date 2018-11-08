@@ -382,4 +382,9 @@ $Project "Client (Momentum)"
             }
         }
     }
+
+    $Folder "Link Libraries"
+    {
+        $Lib "cryptopp"
+    }
 }

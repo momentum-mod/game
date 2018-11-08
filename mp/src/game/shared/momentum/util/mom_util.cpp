@@ -5,7 +5,6 @@
 #include "momentum/mom_shareddefs.h"
 #include "run/mom_replay_factory.h"
 #include "run/mom_replay_base.h"
-#include <gason.h>
 #include "run/run_compare.h"
 #include "run/run_stats.h"
 #include "effect_dispatch_data.h"
@@ -14,6 +13,10 @@
 #include "ChangelogPanel.h"
 #include "materialsystem/imaterialvar.h"
 #endif
+
+#include "cryptopp/sha.h"
+#include <cryptopp/files.h>
+#include <cryptopp/hex.h>
 
 #include "tier0/memdbgon.h"
 
@@ -504,13 +507,11 @@ bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
         char outPath[MAX_PATH];
         g_pFullFileSystem->RelativePathToFullPath_safe(szPath, "GAME", outPath);
 
-        CSHA1 sha1;
-        sha1.HashFile(outPath);
-        sha1.Final();
-        char hashHex[40] = {};
-        sha1.ReportHash(hashHex, 40, CSHA1::REPORT_HEX_LOWERCASE_BUNDLED);
-
-        bHash = FStrEq(hashHex, pMapHash);
+        CryptoPP::SHA1 sha1;
+        std::string digest;
+        CryptoPP::FileSource f(outPath, true, new CryptoPP::HashFilter(sha1, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest), false, 0, "")));
+        
+        bHash = FStrEq(digest.c_str(), pMapHash);
     }
     g_pFullFileSystem->FindClose(found);
 
