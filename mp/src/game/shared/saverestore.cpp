@@ -1631,7 +1631,7 @@ void CRestore::EndBlock()
 int CRestore::ReadFields( const char *pname, void *pBaseData, datamap_t *pRootMap, typedescription_t *pFields, int fieldCount )
 {
 	static int lastName = -1;
-	Verify( ReadShort() == sizeof(int) );			// First entry should be an int
+	Assert( ReadShort() == sizeof(int) );			// First entry should be an int
 	int symName = m_pData->FindCreateSymbol(pname);
 
 	// Check the struct name
