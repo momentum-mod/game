@@ -9,7 +9,7 @@
 #include "cryptlib.h"
 #include "secblock.h"
 #include "misc.h"
-#include "strciphr.h"
+#include "../../cryptopp/strciphr.h"
 #include "argnames.h"
 #include "algparam.h"
 

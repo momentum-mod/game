@@ -13,7 +13,7 @@
 #ifndef CRYPTOPP_CHACHA_H
 #define CRYPTOPP_CHACHA_H
 
-#include "strciphr.h"
+#include "../../cryptopp/strciphr.h"
 #include "secblock.h"
 
 NAMESPACE_BEGIN(CryptoPP)

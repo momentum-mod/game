@@ -7,20 +7,20 @@
 #ifndef CRYPTOPP_ECCRYPTO_H
 #define CRYPTOPP_ECCRYPTO_H
 
-#include "config.h"
-#include "cryptlib.h"
-#include "pubkey.h"
-#include "integer.h"
-#include "asn.h"
-#include "hmac.h"
-#include "sha.h"
-#include "gfpcrypt.h"
-#include "dh.h"
-#include "mqv.h"
-#include "hmqv.h"
-#include "fhmqv.h"
-#include "ecp.h"
-#include "ec2n.h"
+#include "../public/cryptopp/config.h"
+#include "../public/cryptopp/cryptlib.h"
+#include "../public/cryptopp/pubkey.h"
+#include "../public/cryptopp/integer.h"
+#include "../public/cryptopp/asn.h"
+#include "../public/cryptopp/hmac.h"
+#include "../public/cryptopp/sha.h"
+#include "../public/cryptopp/gfpcrypt.h"
+#include "../public/cryptopp/dh.h"
+#include "../public/cryptopp/mqv.h"
+#include "../public/cryptopp/hmqv.h"
+#include "../public/cryptopp/fhmqv.h"
+#include "../public/cryptopp/ecp.h"
+#include "../public/cryptopp/ec2n.h"
 
 #if CRYPTOPP_MSC_VERSION
 # pragma warning(push)

@@ -108,6 +108,8 @@ and getting us started on the manual.
 # pragma warning(disable: 4127 4189 4505 4702)
 #endif
 
+#undef Verify
+
 NAMESPACE_BEGIN(CryptoPP)
 
 // forward declarations

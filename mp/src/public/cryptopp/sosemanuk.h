@@ -7,7 +7,7 @@
 #ifndef CRYPTOPP_SOSEMANUK_H
 #define CRYPTOPP_SOSEMANUK_H
 
-#include "strciphr.h"
+#include "../../cryptopp/strciphr.h"
 #include "secblock.h"
 
 // Clang due to "Inline assembly operands don't work with .intel_syntax"

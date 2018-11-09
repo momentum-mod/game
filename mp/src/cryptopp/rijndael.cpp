@@ -78,6 +78,8 @@ being unloaded from L1 cache, until that round is finished.
 #include "misc.h"
 #include "cpu.h"
 
+#undef CRYPTOPP_AESNI_AVAILABLE
+
 NAMESPACE_BEGIN(CryptoPP)
 
 // Clang 3.3 integrated assembler crash on Linux
