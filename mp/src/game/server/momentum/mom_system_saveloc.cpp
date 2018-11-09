@@ -106,7 +106,7 @@ CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName),
     m_iCurrentSavelocIndx = -1;
     m_bUsingSavelocMenu = false;
 
-    g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &CMOMSaveLocSystem::OnSavelocRequestEvent));
+    //g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &CMOMSaveLocSystem::OnSavelocRequestEvent));
 }
 
 CMOMSaveLocSystem::~CMOMSaveLocSystem()
@@ -114,6 +114,11 @@ CMOMSaveLocSystem::~CMOMSaveLocSystem()
     if (m_pSavedLocsKV)
         m_pSavedLocsKV->deleteThis();
     m_pSavedLocsKV = nullptr;
+}
+
+void CMOMSaveLocSystem::PostInit()
+{
+    g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &CMOMSaveLocSystem::OnSavelocRequestEvent));
 }
 
 void CMOMSaveLocSystem::LevelInitPreEntity()

@@ -38,7 +38,7 @@ class CMOMSaveLocSystem : public CAutoGameSystem
 public:
     CMOMSaveLocSystem(const char* pName);
     ~CMOMSaveLocSystem();
-
+    void PostInit() OVERRIDE;
     void LevelInitPreEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
 
