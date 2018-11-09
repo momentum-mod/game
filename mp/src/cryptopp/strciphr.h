@@ -28,17 +28,17 @@
 #ifndef CRYPTOPP_STRCIPHR_H
 #define CRYPTOPP_STRCIPHR_H
 
-#include "config.h"
+#include "../public/cryptopp/config.h"
 
 #if CRYPTOPP_MSC_VERSION
 # pragma warning(push)
 # pragma warning(disable: 4127 4189 4231 4275)
 #endif
 
-#include "cryptlib.h"
-#include "seckey.h"
-#include "secblock.h"
-#include "argnames.h"
+#include "../public/cryptopp/cryptlib.h"
+#include "../public/cryptopp/seckey.h"
+#include "../public/cryptopp/secblock.h"
+#include "../public/cryptopp/argnames.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 

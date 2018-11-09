@@ -6,7 +6,7 @@
 #ifndef CRYPTOPP_SALSA_H
 #define CRYPTOPP_SALSA_H
 
-#include "strciphr.h"
+#include "../../cryptopp/strciphr.h"
 #include "secblock.h"
 
 // "Inline assembly operands don't work with .intel_syntax", http://llvm.org/bugs/show_bug.cgi?id=24232

@@ -10,7 +10,7 @@
 
 #include "cryptlib.h"
 #include "integer.h"
-#include "algebra.h"
+#include "../../cryptopp/algebra.h"
 #include "gf2n.h"
 
 NAMESPACE_BEGIN(CryptoPP)

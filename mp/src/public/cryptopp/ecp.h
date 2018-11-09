@@ -8,10 +8,10 @@
 
 #include "cryptlib.h"
 #include "integer.h"
-#include "algebra.h"
+#include "../../cryptopp/algebra.h"
 #include "modarith.h"
 #include "ecpoint.h"
-#include "eprecomp.h"
+#include "../../cryptopp/eprecomp.h"
 #include "smartptr.h"
 #include "pubkey.h"
 

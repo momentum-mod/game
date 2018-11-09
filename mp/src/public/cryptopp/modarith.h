@@ -10,7 +10,7 @@
 
 #include "cryptlib.h"
 #include "integer.h"
-#include "algebra.h"
+#include "../../cryptopp/algebra.h"
 #include "secblock.h"
 #include "misc.h"
 

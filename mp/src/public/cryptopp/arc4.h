@@ -8,7 +8,7 @@
 #define CRYPTOPP_ARC4_H
 
 #include "cryptlib.h"
-#include "strciphr.h"
+#include "../../cryptopp/strciphr.h"
 #include "secblock.h"
 #include "smartptr.h"
 
