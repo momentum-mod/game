@@ -7,8 +7,10 @@
 
 #include "tier0/memdbgon.h"
 
-#define BASE_API_URL "http://localhost:3002/api/"
+#define BASE_URL "http://localhost:3002"
+#define BASE_API_URL BASE_URL "/api/"
 #define API_REQ(url) BASE_API_URL url
+#define AUTH_REQ(url) BASE_URL url
 
 static MAKE_TOGGLE_CONVAR(mom_log_api_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, all API requests will be logged to console.\n");
 
@@ -23,7 +25,7 @@ m_iAuthActualSize(0), m_pAPIKey(nullptr)
 bool CAPIRequests::SendAuthTicket(CallbackFunc func)
 {
     HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ("auth/steam/user"), k_EHTTPMethodPOST, false))
+    if (CreateAPIRequest(handle, AUTH_REQ("/auth/steam/user"), k_EHTTPMethodPOST, false))
     {
         uint64 id = SteamUser()->GetSteamID().ConvertToUint64();
         SteamHTTP()->SetHTTPRequestHeaderValue(handle, "id", CFmtStr("%llu", id).Get());
