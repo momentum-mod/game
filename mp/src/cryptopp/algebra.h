@@ -6,9 +6,9 @@
 #ifndef CRYPTOPP_ALGEBRA_H
 #define CRYPTOPP_ALGEBRA_H
 
-#include "config.h"
-#include "integer.h"
-#include "misc.h"
+#include "../public/cryptopp/config.h"
+#include "../public/cryptopp/integer.h"
+#include "../public/cryptopp/misc.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 

@@ -6,10 +6,10 @@
 #ifndef CRYPTOPP_EPRECOMP_H
 #define CRYPTOPP_EPRECOMP_H
 
-#include "cryptlib.h"
-#include "integer.h"
+#include "../public/cryptopp/cryptlib.h"
+#include "../public/cryptopp/integer.h"
 #include "algebra.h"
-#include "stdcpp.h"
+#include "../public/cryptopp/stdcpp.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 

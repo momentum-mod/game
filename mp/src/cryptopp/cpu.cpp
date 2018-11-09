@@ -237,7 +237,7 @@ void DetectX86Features()
 	// cpuid1[2] & (1 << 27) is XSAVE/XRESTORE and signals OS support for SSE; use it to avoid probes.
 	// See http://github.com/weidai11/cryptopp/issues/511 and http://stackoverflow.com/a/22521619/608639
 	if ((cpuid1[3] & (1 << 26)) != 0)
-		g_hasSSE2 = ((cpuid1[2] & (1 << 27)) != 0) || CPU_ProbeSSE2();
+		g_hasSSE2 = ((cpuid1[2] & (1 << 27)) != 0);
 
 	g_hasSSSE3 = g_hasSSE2 && ((cpuid1[2] & (1<< 9)) != 0);
 	g_hasSSE41 = g_hasSSE2 && ((cpuid1[2] & (1<<19)) != 0);

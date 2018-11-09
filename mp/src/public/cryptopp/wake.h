@@ -8,7 +8,7 @@
 
 #include "seckey.h"
 #include "secblock.h"
-#include "strciphr.h"
+#include "../../cryptopp/strciphr.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 

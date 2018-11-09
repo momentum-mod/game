@@ -40,8 +40,8 @@ public:
 
 protected:
     // CAutoGameSystemPerFrame
-    void PostInit() override;
-    void Shutdown() override;
+    void PostInit() OVERRIDE;
+    void Shutdown() OVERRIDE;
 
     // Auth ticket impl
     STEAM_CALLBACK(CAPIRequests, OnAuthTicket, GetAuthSessionTicketResponse_t);

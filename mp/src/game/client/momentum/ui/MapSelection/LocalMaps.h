@@ -15,21 +15,21 @@ public:
     ~CLocalMaps();
 
     // property page handlers
-    virtual void OnPageShow() override;
+    virtual void OnPageShow() OVERRIDE;
 
     // IGameList handlers
     // returns true if the game list supports the specified ui elements
-    virtual bool SupportsItem(InterfaceItem_e item) override;
+    virtual bool SupportsItem(InterfaceItem_e item) OVERRIDE;
 
     // Control which button are visible.
     void ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool bShowFilter);
 
     //Filters based on the filter data
-    void StartRefresh() override;
-    void GetNewMapList() override;//called upon loading
+    void StartRefresh() OVERRIDE;
+    void GetNewMapList() OVERRIDE;//called upon loading
     void AddNewMapToVector(const char* mapname);
 
-    virtual void OnMapStart() override { BaseClass::OnMapStart(); }
+    virtual void OnMapStart() OVERRIDE { BaseClass::OnMapStart(); }
 
     // Tell the game list what to put in there when there are no games found.
     virtual void SetEmptyListText();
