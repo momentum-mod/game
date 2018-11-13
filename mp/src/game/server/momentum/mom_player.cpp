@@ -1,8 +1,8 @@
 #include "cbase.h"
-
 #include "in_buttons.h"
 #include "info_camera_link.h"
 #include "mom_player.h"
+#include "mom_tas.h"
 #include "mom_replay_entity.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"

@@ -1,3 +1,5 @@
+#ifndef MOMTAS_H
+#define MOMTAS_H
 #pragma once
 
 class CMomentumPlayer;
@@ -85,3 +87,4 @@ class CTASRecording
     int m_iChosenFrame, m_iPauseTickCount, m_iFramesElapsed, m_iSetFrame;
     float m_flTimeScale;
 };
+#endif

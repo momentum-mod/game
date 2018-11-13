@@ -4,6 +4,7 @@
 #include "ipredictionsystem.h"
 #include "iservervehicle.h"
 #include "mom_player.h"
+#include "mom_tas.h"
 #include "player.h"
 #include "player_command.h"
 #include "vehicle_base.h"
