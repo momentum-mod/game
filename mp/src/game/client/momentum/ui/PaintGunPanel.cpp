@@ -35,7 +35,7 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
     SetProportional(false);
     SetScheme("ClientScheme");
     SetMouseInputEnabled(true);
-
+    
     surface()->CreatePopup(GetVPanel(), false, false, false, true, false);
 
     m_pToggleViewmodel =

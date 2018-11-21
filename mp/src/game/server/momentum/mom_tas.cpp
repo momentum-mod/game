@@ -12,7 +12,11 @@ CON_COMMAND(mom_tas, "Set timer to tas mode.")
 
     if (pPlayer)
     {
-        pPlayer->m_SrvData.m_RunData.m_iRunFlags |= RUNFLAG_TAS;
+        if (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
+            pPlayer->m_SrvData.m_RunData.m_iRunFlags &= ~RUNFLAG_TAS;
+        else
+            pPlayer->m_SrvData.m_RunData.m_iRunFlags |= RUNFLAG_TAS;
+            
         pPlayer->m_TASRecords->m_Status = TAS_STOPPED;
     }
 }

@@ -36,6 +36,12 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\GhostEntityPanel.h"
                     $File "momentum\ui\GhostEntityPanel.cpp"
                 }
+
+                $Folder "TAS"
+                {
+                    $File "momentum\ui\TASPanel.h"
+                    $File "momentum\ui\TASPanel.cpp"
+                }
                 
                 $Folder "MapSelection"
                 {

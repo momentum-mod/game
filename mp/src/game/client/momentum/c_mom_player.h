@@ -73,6 +73,9 @@ class C_MomentumPlayer : public C_BasePlayer
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
+
+    bool m_bSimulatingMovements;
+    
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
