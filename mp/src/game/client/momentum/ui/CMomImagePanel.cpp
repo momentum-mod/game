@@ -5,7 +5,7 @@
 #include "filesystem.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "image/stb_image.h"
+#include "stb/image/stb_image.h"
 
 #include "tier0/memdbgon.h"
 
