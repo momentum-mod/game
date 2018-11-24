@@ -17,7 +17,7 @@
 	{
 		"ControlName"		"ToggleButton"
 		"fieldName"		"EnableTASMode"
-		"xpos"		"15"
+		"xpos"		"10"
 		"ypos"		"40"
 		"wide"		"170"
 		"tall"		"16"
@@ -39,7 +39,7 @@
 
     "VisPredMove"
     {
-        "ControlName" "ToggleButton"
+        "ControlName" "CvarToggleCheckButton"
         "fieldName" "VisPredMove"
         "xpos" "10"
         "ypos" "80"
@@ -51,6 +51,8 @@
         "labelText"		"#MOM_VisPredMove"
         "textAlignment" "west"
         "auto_wide_tocontents" "1"
+        "cvar_name" "mom_tas_vispredmove"
+        "cvar_value" "1"
     }
 
     "Autostrafe"
@@ -71,44 +73,12 @@
         "cvar_value" "1"
     }
 
-	"VisTicks"
-	{
-        "ControlName" "ToggleButton"
-        "fieldName" "VisTicks"
-        "xpos" "10"
-        "ypos" "160"
-		"wide"	"110"
-		"tall"	"16"
-        "visible"		"1"
-		"enabled"		"1"
-        "font" "DefaultSmall"
-        "labelText"		"#MOM_VisTicks"
-        "textAlignment" "west"
-        "auto_wide_tocontents" "1"
-	}
-
-	"VisTicks"
-	{
-        "ControlName" "ToggleButton"
-        "fieldName" "VisTicks"
-        "xpos" "10"
-        "ypos" "160"
-		"wide"	"110"
-		"tall"	"16"
-        "visible"		"1"
-		"enabled"		"1"
-        "font" "DefaultSmall"
-        "labelText"		"#MOM_VisTicks"
-        "textAlignment" "west"
-        "auto_wide_tocontents" "1"
-	}
-
 	"FunnyAngleHax"
 	{
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "FunnyAngleHax"
         "xpos" "10"
-        "ypos" "190"
+        "ypos" "160"
 		"wide"	"110"
 		"tall"	"16"
         "visible"		"1"

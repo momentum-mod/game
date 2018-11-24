@@ -7,6 +7,7 @@
 
 #include "ClientTimesDisplay.h"
 #include "IGameUIFuncs.h"
+#include "TASPanel.h"
 #include "clientmode_mom_normal.h"
 #include "hud.h"
 #include "ienginevgui.h"
@@ -278,10 +279,10 @@ int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector
 
 bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
 {
-	if (!cmd->command_number)
+    if (!cmd->command_number)
     {
         return BaseClass::CreateMove(flInputSampleTime, cmd);
-	}
+    }
 
     C_BasePlayer *local_player = C_BasePlayer::GetLocalPlayer();
     static int dominant_buttons = 0;
@@ -297,8 +298,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
     mdir = MovementDirection(cmd->viewangles, local_player->GetAbsVelocity());
 
     if (mom_release_forward_on_jump.GetBool() && prev_flags & FL_ONGROUND && FL_ONGROUND & local_player->GetFlags() &&
-        local_player->GetGroundEntity() &&
-        cmd->buttons & IN_JUMP)
+        local_player->GetGroundEntity() && cmd->buttons & IN_JUMP)
     {
         switch (mdir)
         {
@@ -333,7 +333,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         }
     }
 
-	if (!mom_enable_overlapping_keys.GetBool())
+    if (!mom_enable_overlapping_keys.GetBool())
     {
         // Holding both forward and backwards, which one was the last pressed of these?
         if ((cmd->buttons & (IN_FORWARD | IN_BACK)) == (IN_FORWARD | IN_BACK))
@@ -380,9 +380,16 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         {
             dominant_buttons &= ~(IN_MOVELEFT | IN_MOVERIGHT);
         }
-	}
+    }
 
     prev_flags = local_player->GetFlags();
 
-    return BaseClass::CreateMove(flInputSampleTime, cmd);
+    bool bCreateMove = BaseClass::CreateMove(flInputSampleTime, cmd);
+
+    if (vgui::g_pTASPanel != nullptr)
+    {
+        vgui::g_pTASPanel->m_pVisualPanel->VisPredMovements();
+    }
+
+    return bCreateMove;
 }

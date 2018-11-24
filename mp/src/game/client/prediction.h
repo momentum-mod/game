@@ -76,7 +76,7 @@ public:
 	virtual void	RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *moveHelper );
 
 // Internal
-protected:
+public:
 	virtual void	SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move );
 	virtual void	FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *move );
 	virtual void	SetIdealPitch ( C_BasePlayer *player, const Vector& origin, const QAngle& angles, const Vector& viewheight );
@@ -92,7 +92,7 @@ protected:
 	void			RunThink (C_BasePlayer *ent, double frametime );
 	void			RunPostThink( C_BasePlayer *player );
 
-private:
+public:
 	virtual void	_Update
 					( 
 						bool received_new_world_update,
@@ -129,7 +129,7 @@ private:
 protected:
 	// Last object the player was standing on
 	CHandle< C_BaseEntity > m_hLastGround;
-private:
+public:
 	bool			m_bInPrediction;
 	bool			m_bFirstTimePredicted;
 	bool			m_bOldCLPredictValue;

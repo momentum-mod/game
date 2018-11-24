@@ -64,9 +64,9 @@ public:
 	virtual unsigned int PlayerSolidMask( bool brushOnly = false );	///< returns the solid mask for the given player, so bots can have a more-restrictive set
 	CBasePlayer		*player;
 	CMoveData *GetMoveData() { return mv; }
-protected:
 	// Input/Output for this movement
 	CMoveData		*mv;
+protected:
 	
 	int				m_nOldWaterLevel;
 	float			m_flWaterEntryTime;

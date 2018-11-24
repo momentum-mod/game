@@ -4,8 +4,27 @@
 
 #include <vgui_controls/Frame.h>
 
+class C_MomentumPlayer;
+
 namespace vgui
 {
+class CTASVisPanel : public Panel
+{
+    DECLARE_CLASS_SIMPLE(CTASVisPanel, Panel);
+
+  public:
+    CTASVisPanel();
+    ~CTASVisPanel();
+
+    void Paint() OVERRIDE;
+
+    void VisPredMovements();
+    void RunVPM(C_MomentumPlayer *pPlayer);
+
+  private:
+    float m_flVPMTime, m_flOldFrametime, m_flOldCurtime;
+    CUtlVector<Vector> m_vecOrigins;
+};
 
 class CTASPanel : public Frame
 {
@@ -18,13 +37,12 @@ class CTASPanel : public Frame
     void OnThink() OVERRIDE;
     void OnCommand(const char *pCommand) OVERRIDE;
     void ToggleVisible();
-    void VisPredMovements();
-    void RunVPM(CBasePlayer* pPlayer);
+    CTASVisPanel *m_pVisualPanel;
 
   private:
-    bool m_bToggleVisible, m_bStopVPM_OnGround;
-    vgui::ToggleButton* m_pEnableTASMode;
-    float m_flVPMTime, m_flOldCurtime, m_flOldFrametime;
+    vgui::ToggleButton *m_pEnableTASMode;
 };
 
-};
+extern CTASPanel *g_pTASPanel;
+
+}; // namespace vgui

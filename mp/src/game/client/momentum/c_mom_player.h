@@ -75,6 +75,7 @@ class C_MomentumPlayer : public C_BasePlayer
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
 
     bool m_bSimulatingMovements;
+    CUserCmd m_LastCreateMoveCmd;
     
   private:
     // Ladder stuff
