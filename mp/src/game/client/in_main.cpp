@@ -62,6 +62,8 @@ ConVar cl_yawspeed( "cl_yawspeed", "210", FCVAR_ARCHIVE, "Client yaw speed.", tr
 ConVar cl_pitchspeed( "cl_pitchspeed", "225", FCVAR_NONE, "Client pitch speed.", true, -100000, true, 100000 );
 ConVar cl_pitchdown( "cl_pitchdown", "89", FCVAR_CHEAT );
 ConVar cl_pitchup( "cl_pitchup", "89", FCVAR_CHEAT );
+// MOM: We want those values for momentum-mod to respect css behaviors.
+#define CSTRIKE_DLL
 #if defined( CSTRIKE_DLL )
 ConVar cl_sidespeed( "cl_sidespeed", "400", FCVAR_CHEAT );
 ConVar cl_upspeed( "cl_upspeed", "320", FCVAR_ARCHIVE|FCVAR_CHEAT );
@@ -73,6 +75,7 @@ ConVar cl_upspeed( "cl_upspeed", "320", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar cl_forwardspeed( "cl_forwardspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif // CSTRIKE_DLL
+#undef CSTRIKE_DLL
 ConVar lookspring( "lookspring", "0", FCVAR_ARCHIVE );
 ConVar lookstrafe( "lookstrafe", "0", FCVAR_ARCHIVE );
 ConVar in_joystick( "joystick","0", FCVAR_ARCHIVE );
