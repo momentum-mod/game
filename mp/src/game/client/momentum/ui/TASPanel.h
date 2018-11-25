@@ -22,7 +22,7 @@ class CTASVisPanel : public Panel
     void RunVPM(C_MomentumPlayer *pPlayer);
 
   private:
-    float m_flVPMTime, m_flOldFrametime, m_flOldCurtime;
+    float m_flVPMTime;
     CUtlVector<Vector> m_vecOrigins;
 };
 

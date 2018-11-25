@@ -126,7 +126,14 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
     if (mom_tas_vispredmove.GetInt() <= 0 || pPlayer == nullptr)
         return;
 
-    pPlayer->m_bVPMSimulation = true;
+    bool bWasPredictable = true;
+    if (!pPlayer->GetPredictable())
+    {
+        pPlayer->InitPredictable();
+        bWasPredictable = false;
+    }
+
+    pPlayer->SaveData("Simulation", C_BaseEntity::SLOT_ORIGINALDATA, PC_EVERYTHING);
 
     float flMaxTime = mom_tas_max_vispredmove_ticks.GetInt() * gpGlobals->interval_per_tick;
 
@@ -134,18 +141,6 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
         m_vecOrigins.RemoveAll();
 
     m_flVPMTime = 0.0f;
-
-    m_flOldCurtime = gpGlobals->curtime;
-    m_flOldFrametime = gpGlobals->frametime;
-
-    gpGlobals->curtime = pPlayer->GetTimeBase();
-    gpGlobals->frametime = gpGlobals->interval_per_tick;
-
-    prediction->StartCommand(pPlayer, &pPlayer->m_LastCreateMoveCmd);
-
-    static CMoveData tmpData, tmpBackupData;
-    prediction->SetupMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, MoveHelper(), &tmpBackupData);
-    prediction->SetupMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, MoveHelper(), &tmpData);
 
     bool bFirstTimePredicted = prediction->m_bFirstTimePredicted, bInPred = prediction->m_bInPrediction;
 
@@ -155,16 +150,15 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
 
     while (m_flVPMTime <= flMaxTime)
     {
-        gpGlobals->curtime = m_flOldCurtime + m_flVPMTime;
-
         // Process last movement data we know.
         // This might be changed because it can more accurate during jumps.
         // Imagine having a circle around you wich says you where is the best speed gain and where you will land at
         // the same time.. That would be my feature project I guess.
 
+
         // If we want this without bugs we must have a proper ProcessMovement wich copies exactly the server's movement!
-        g_pMomentumGameMovement->ProcessMovement(pPlayer, &tmpData);
-        
+        prediction->RunCommand(pPlayer, &pPlayer->m_LastCreateMoveCmd, MoveHelper());
+
         // gpGlobals->curtime = m_flOldCurtime;
 
         m_flVPMTime += gpGlobals->frametime;
@@ -172,7 +166,7 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
         // Let's limit the rendering precision so we can eat less fps.
         if (mom_tas_vispredmove_interval.GetInt() == 1 ||
             (TIME_TO_TICKS(m_flVPMTime) % mom_tas_vispredmove_interval.GetInt()))
-            m_vecOrigins.AddToHead(tmpData.GetAbsOrigin());
+            m_vecOrigins.AddToHead(g_pMoveData->GetAbsOrigin());
 
         if (pPlayer->m_hGroundEntity != nullptr && mom_tas_vispredmove.GetInt() == 1)
         {
@@ -180,17 +174,13 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
         }
     }
 
-    prediction->FinishMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, &tmpBackupData);
-
     prediction->m_bFirstTimePredicted = bFirstTimePredicted;
     prediction->m_bInPrediction = bInPred;
 
-    prediction->FinishCommand(pPlayer);
+    pPlayer->RestoreData("Simulation", C_BaseEntity::SLOT_ORIGINALDATA, PC_EVERYTHING);
 
-    gpGlobals->curtime = m_flOldCurtime;
-    gpGlobals->frametime = m_flOldFrametime;
-
-    pPlayer->m_bVPMSimulation = false;
+    if (!bWasPredictable)
+        pPlayer->ShutdownPredictable();
 }
 
 void CTASVisPanel::Paint()
