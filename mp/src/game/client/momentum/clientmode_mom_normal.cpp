@@ -7,7 +7,6 @@
 
 #include "ClientTimesDisplay.h"
 #include "IGameUIFuncs.h"
-#include "TASPanel.h"
 #include "clientmode_mom_normal.h"
 #include "hud.h"
 #include "ienginevgui.h"
@@ -384,12 +383,5 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
 
     prev_flags = local_player->GetFlags();
 
-    bool bCreateMove = BaseClass::CreateMove(flInputSampleTime, cmd);
-
-    if (vgui::g_pTASPanel != nullptr)
-    {
-        vgui::g_pTASPanel->m_pVisualPanel->VisPredMovements();
-    }
-
-    return bCreateMove;
+    return BaseClass::CreateMove(flInputSampleTime, cmd);
 }

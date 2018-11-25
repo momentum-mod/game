@@ -37,7 +37,6 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 {
     // Bleh... we will wind up needing to access bones for attachments in here.
     C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
-    m_LastCreateMoveCmd = *pCmd;
 
     return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }

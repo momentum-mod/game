@@ -1,14 +1,16 @@
 #include "cbase.h"
-#include "kbutton.h"
-#include "input.h"
-#include "iclientmode.h"
-#include "momentum/mom_shareddefs.h"
 #include <game/client/iviewport.h>
+#include "TASPanel.h"
+#include "c_mom_player.h"
+#include "iclientmode.h"
+#include "input.h"
+#include "kbutton.h"
+#include "momentum/mom_shareddefs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-static	kbutton_t	in_times;
+static kbutton_t in_times;
 
 //-----------------------------------------------------------------------------
 // Purpose: HL Input interface
@@ -16,8 +18,8 @@ static	kbutton_t	in_times;
 class CMOMInput : public CInput
 {
     typedef CInput BaseClass;
-public:
-    
+
+  public:
     int GetButtonBits(int bResetState) OVERRIDE
     {
         int bits = 0;
@@ -41,7 +43,20 @@ public:
 
         BaseClass::LevelInit();
     }
-}; 
+
+    void CreateMove(int sequence_number, float input_sample_frametime, bool active) OVERRIDE
+    {
+        BaseClass::CreateMove(sequence_number, input_sample_frametime, active);
+
+        auto pPlayer = reinterpret_cast<C_MomentumPlayer *>(C_BasePlayer::GetLocalPlayer());
+        pPlayer->m_LastCreateMoveCmd = *input->GetUserCmd(sequence_number);
+
+        if (vgui::g_pTASPanel != nullptr)
+        {
+            vgui::g_pTASPanel->m_pVisualPanel->VisPredMovements();
+        }
+    }
+};
 
 void IN_TimesDown(const CCommand &args)
 {
@@ -66,4 +81,4 @@ static ConCommand endshowtimes("-showtimes", IN_TimesUp);
 
 // Expose this interface
 static CMOMInput g_Input;
-IInput *input = (IInput *) &g_Input;
+IInput *input = (IInput *)&g_Input;
