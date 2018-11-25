@@ -126,5 +126,6 @@ public:
 
 };
 
+extern CMoveData *g_pMoveData;
 
 #endif // IGAMEMOVEMENT_H
