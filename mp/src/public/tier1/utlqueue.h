@@ -110,7 +110,7 @@ inline CUtlQueue<T, M>::CUtlQueue( T *pMemory, int numElements ) :
 template <class T, class M>
 inline T CUtlQueue<T, M>::RemoveAtHead()
 {
-	T temp;
+	T temp{};
 	RemoveAtHead( temp );
 	return temp;
 }

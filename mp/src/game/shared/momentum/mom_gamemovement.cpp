@@ -705,7 +705,7 @@ void CMomentumGameMovement::Duck(void)
             if (player->m_Local.m_bDucking)
             {
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_DUCK) || !bIsSliding && player->GetGroundEntity() == nullptr ||
+                if ((duckseconds > TIME_TO_DUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr) ||
                     alreadyDucked)
                 {
                     FinishDuck();
@@ -722,7 +722,7 @@ void CMomentumGameMovement::Duck(void)
         {
             // Try to unduck unless automovement is not allowed
             // NOTE: When not onground, you can always unduck
-            if (player->m_Local.m_bAllowAutoMovement || !bIsSliding && player->GetGroundEntity() == nullptr)
+            if (player->m_Local.m_bAllowAutoMovement || (!bIsSliding && player->GetGroundEntity() == nullptr))
             {
                 if ((buttonsReleased & IN_DUCK) && (player->GetFlags() & FL_DUCKING))
                 {
@@ -739,7 +739,7 @@ void CMomentumGameMovement::Duck(void)
                     if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
                     {
                         // Finish ducking immediately if duck time is over or not on ground
-                        if ((duckseconds > TIME_TO_UNDUCK) || !bIsSliding && player->GetGroundEntity() == nullptr)
+                        if ((duckseconds > TIME_TO_UNDUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr))
                         {
                             FinishUnDuck();
                         }

@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -47,4 +47,4 @@ private:
 //-----------------------------------------------------------------------------
 #define CON_COMMAND_AUTOCOMPLETEFILE( name, func, description, subdirectory, extension )				\
    DECLARE_AUTOCOMPLETION_FUNCTION( name, subdirectory, extension )										\
-   static ConCommand name##_command( #name, func, description, 0, AUTOCOMPLETION_FUNCTION( name ) ); 
+   static ConCommand name##_command( #name, func, description, 0, AUTOCOMPLETION_FUNCTION( name ) );
