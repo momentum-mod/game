@@ -1,163 +1,148 @@
 //===== Copyright � 1996-2005, Valve Corporation, All rights reserved. ======//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //===========================================================================//
 
-
-#include "IRunGameEngine.h"
 #include "EngineInterface.h"
-#include "tier1/strtools.h"
 #include "IGameUIFuncs.h"
+#include "IRunGameEngine.h"
 #include "tier1/convar.h"
+#include "tier1/strtools.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Interface to running the engine from the UI dlls
 //-----------------------------------------------------------------------------
 class CRunGameEngine : public IRunGameEngine
 {
-public:
-	// Returns true if the engine is running, false otherwise.
-	virtual bool IsRunning()
-	{
-		return true;
-	}
+  public:
+    // Returns true if the engine is running, false otherwise.
+    virtual bool IsRunning() { return true; }
 
-	// Adds text to the engine command buffer. Only works if IsRunning()
-	// returns true on success, false on failure
-	virtual bool AddTextCommand(const char *text)
-	{
-		engine->ClientCmd_Unrestricted((char *)text);
-		return true;
-	}
+    // Adds text to the engine command buffer. Only works if IsRunning()
+    // returns true on success, false on failure
+    virtual bool AddTextCommand(const char *text)
+    {
+        engine->ClientCmd_Unrestricted((char *)text);
+        return true;
+    }
 
-	// runs the engine with the specified command line parameters.  Only works if !IsRunning()
-	// returns true on success, false on failure
-	virtual bool RunEngine(const char *gameName, const char *commandLineParams)
-	{
-		return false;
-	}
+    // runs the engine with the specified command line parameters.  Only works if !IsRunning()
+    // returns true on success, false on failure
+    virtual bool RunEngine(const char *gameName, const char *commandLineParams) { return false; }
 
-	virtual bool RunEngine2(const char *gameDir, const char *commandLineParams, bool isSourceGame)
-	{
-		return false;
-	}
+    virtual bool RunEngine2(const char *gameDir, const char *commandLineParams, bool isSourceGame) { return false; }
 
-	virtual ERunResult RunEngine( int iAppID, const char *gameDir, const char *commandLineParams )
-	{
-		return k_ERunResultOkay;
-	}
-	
-	// returns true if the player is currently connected to a game server
-	virtual bool IsInGame()
-	{
-		return engine->GetLevelName() && strlen(engine->GetLevelName()) > 0;
-	}
+    virtual ERunResult RunEngine(int iAppID, const char *gameDir, const char *commandLineParams)
+    {
+        return k_ERunResultOkay;
+    }
 
-	// gets information about the server the engine is currently connected to
-	// returns true on success, false on failure
-	virtual bool GetGameInfo(char *infoBuffer, int bufferSize)
-	{
-		//!! need to implement
-		return false;
-	}
+    // returns true if the player is currently connected to a game server
+    virtual bool IsInGame() { return engine->GetLevelName() && strlen(engine->GetLevelName()) > 0; }
 
-	virtual void SetTrackerUserID(int trackerID, const char *trackerName)
-	{
-		gameuifuncs->SetFriendsID(trackerID, trackerName);
+    // gets information about the server the engine is currently connected to
+    // returns true on success, false on failure
+    virtual bool GetGameInfo(char *infoBuffer, int bufferSize)
+    {
+        //!! need to implement
+        return false;
+    }
 
-		// update the player's name if necessary
-		ConVarRef name( "name" );
-		if ( name.IsValid() && trackerName && *trackerName && !Q_strcmp( name.GetString(), "unnamed" ) )
-		{
-			name.SetValue(trackerName);
-		}
-	}
+    virtual void SetTrackerUserID(int trackerID, const char *trackerName)
+    {
+        gameuifuncs->SetFriendsID(trackerID, trackerName);
 
-	// iterates users
-	// returns the number of user
-	virtual int GetPlayerCount()
-	{
-		return engine->GetMaxClients();
-	}
+        // update the player's name if necessary
+        ConVarRef name("name");
+        if (name.IsValid() && trackerName && *trackerName && !Q_strcmp(name.GetString(), "unnamed"))
+        {
+            name.SetValue(trackerName);
+        }
+    }
 
-	// returns a playerID for a player
-	// playerIndex is in the range [0, GetPlayerCount)
-	virtual unsigned int GetPlayerFriendsID(int playerIndex)
-	{
-		player_info_t pi;
+    // iterates users
+    // returns the number of user
+    virtual int GetPlayerCount() { return engine->GetMaxClients(); }
 
-		if  ( engine->GetPlayerInfo(playerIndex, &pi ) )
-			return pi.friendsID;
+    // returns a playerID for a player
+    // playerIndex is in the range [0, GetPlayerCount)
+    virtual unsigned int GetPlayerFriendsID(int playerIndex)
+    {
+        player_info_t pi;
 
-		return 0;
-	}
+        if (engine->GetPlayerInfo(playerIndex, &pi))
+            return pi.friendsID;
 
-	// gets the in-game name of another user, returns NULL if that user doesn't exists
-	virtual const char *GetPlayerName(int trackerID)
-	{
-		// find the player by their friendsID
-		player_info_t pi;
-		for (int i = 0; i < engine->GetMaxClients(); i++)
-		{
-			if  (engine->GetPlayerInfo(i, &pi ))
-			{
-				if (pi.friendsID == (uint)trackerID)
-				{
-					return pi.name;
-				}
-			}
-		}
+        return 0;
+    }
 
-		return NULL;
-	}
+    // gets the in-game name of another user, returns NULL if that user doesn't exists
+    virtual const char *GetPlayerName(int trackerID)
+    {
+        static char tmpName[sizeof(player_info_t::name)];
 
-	virtual const char *GetPlayerFriendsName(int trackerID)
-	{
-		// find the player by their friendsID
-		player_info_t pi;
-		for (int i = 0; i < engine->GetMaxClients(); i++)
-		{
-			if  (engine->GetPlayerInfo(i, &pi ))
-			{
-				if (pi.friendsID == (uint)trackerID)
-				{
-					return pi.friendsName;
-				}
-			}
-		}
+        // find the player by their friendsID
+        player_info_t pi;
+        for (int i = 0; i < engine->GetMaxClients(); i++)
+        {
+            if (engine->GetPlayerInfo(i, &pi))
+            {
+                if (pi.friendsID == (uint)trackerID)
+                {
+                    memcpy(tmpName, pi.name, sizeof(tmpName));
 
-		return NULL;
-	}
+                    return tmpName;
+                }
+            }
+        }
 
-	// return the build number of the engine
-	virtual unsigned int GetEngineBuildNumber()
-	{
-		return engine->GetEngineBuildNumber();
-	}
+        return NULL;
+    }
 
-	// return the product version of the mod being played (comes from steam.inf)
-	virtual const char *GetProductVersionString()
-	{
-		return engine->GetProductVersionString();
-	}
+    virtual const char *GetPlayerFriendsName(int trackerID)
+    {
+        static char tmpFriendsName[sizeof(player_info_t::friendsName)];
+
+        // find the player by their friendsID
+        player_info_t pi;
+        for (int i = 0; i < engine->GetMaxClients(); i++)
+        {
+            if (engine->GetPlayerInfo(i, &pi))
+            {
+                if (pi.friendsID == (uint)trackerID)
+                {
+                    memcpy(tmpFriendsName, pi.friendsName, sizeof(tmpFriendsName));
+
+                    return tmpFriendsName;
+                }
+            }
+        }
+
+        return NULL;
+    }
+
+    // return the build number of the engine
+    virtual unsigned int GetEngineBuildNumber() { return engine->GetEngineBuildNumber(); }
+
+    // return the product version of the mod being played (comes from steam.inf)
+    virtual const char *GetProductVersionString() { return engine->GetProductVersionString(); }
 };
 
 EXPOSE_SINGLE_INTERFACE(CRunGameEngine, IRunGameEngine, RUNGAMEENGINE_INTERFACE_VERSION);
 
-//namespace
+// namespace
 //{
 ////-----------------------------------------------------------------------------
 //// Purpose: Interface to running the game engine
 ////-----------------------------------------------------------------------------
-//abstract_class IRunGameEngine_Old : public IBaseInterface
+// abstract_class IRunGameEngine_Old : public IBaseInterface
 //{
-//public:
+// public:
 //	// Returns true if the engine is running, false otherwise.
 //	virtual bool IsRunning() = 0;
 //
@@ -197,7 +182,6 @@ EXPOSE_SINGLE_INTERFACE(CRunGameEngine, IRunGameEngine, RUNGAMEENGINE_INTERFACE_
 //#define RUNGAMEENGINE_INTERFACE_VERSION_OLD "RunGameEngine004"
 //
 //#ifndef _XBOX
-//EXPOSE_SINGLE_INTERFACE(CRunGameEngine, IRunGameEngine_Old, RUNGAMEENGINE_INTERFACE_VERSION_OLD);
+// EXPOSE_SINGLE_INTERFACE(CRunGameEngine, IRunGameEngine_Old, RUNGAMEENGINE_INTERFACE_VERSION_OLD);
 //#endif
 //}
-

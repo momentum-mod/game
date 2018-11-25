@@ -7716,7 +7716,10 @@ CBaseEntity *CAI_BaseNPC::BestEnemy( void )
 		if (!pEnemy || !pEnemy->IsAlive())
 		{
 			if ( pEnemy )
+			{
 				DbgEnemyMsg( this, "    %s rejected: dead\n", pEnemy->GetDebugName() );
+			}
+
 			continue;
 		}
 		
@@ -7791,7 +7794,9 @@ CBaseEntity *CAI_BaseNPC::BestEnemy( void )
 		{
 			DbgEnemyMsg( this, "    %s accepted (1)\n", pEnemy->GetDebugName() );
 			if ( pBestEnemy )
+			{
 				DbgEnemyMsg( this, "    (%s displaced)\n", pBestEnemy->GetDebugName() );
+			}
 
 			iBestPriority	 = IRelationPriority ( pEnemy );
 			iBestDistSq		 = (pEnemy->GetAbsOrigin() - GetAbsOrigin() ).LengthSqr();
@@ -7805,7 +7810,9 @@ CBaseEntity *CAI_BaseNPC::BestEnemy( void )
 		{
 			DbgEnemyMsg( this, "    %s accepted\n", pEnemy->GetDebugName() );
 			if ( pBestEnemy )
+			{
 				DbgEnemyMsg( this, "    (%s displaced due to priority, %d > %d )\n", pBestEnemy->GetDebugName(), IRelationPriority( pEnemy ), iBestPriority );
+			}
 			// this entity is disliked MORE than the entity that we
 			// currently think is the best visible enemy. No need to do
 			// a distance check, just get mad at this one for now.
@@ -7939,7 +7946,9 @@ CBaseEntity *CAI_BaseNPC::BestEnemy( void )
 
 			DbgEnemyMsg( this, "    %s accepted\n", pEnemy->GetDebugName() );
 			if ( pBestEnemy )
+			{
 				DbgEnemyMsg( this, "    (%s displaced due to distance/visibility)\n", pBestEnemy->GetDebugName() );
+			}
 			fBestSeen		 = fCurSeen;
 			fBestVisible	 = fCurVisible;
 			iBestDistSq		 = iDistSq;
@@ -8034,24 +8043,32 @@ float CAI_BaseNPC::CalcIdealYaw( const Vector &vecTarget )
 {
 	Vector	vecProjection;
 
+	Vector vecLocalOrigin = GetLocalOrigin();
+
 	// strafing npc needs to face 90 degrees away from its goal
 	if ( GetNavigator()->GetMovementActivity() == ACT_STRAFE_LEFT )
 	{
 		vecProjection.x = -vecTarget.y;
 		vecProjection.y = vecTarget.x;
 
-		return UTIL_VecToYaw( vecProjection - GetLocalOrigin() );
+		vecProjection.x = vecProjection.x - vecLocalOrigin.x;
+		vecProjection.y = vecProjection.y - vecLocalOrigin.x;
+
+		return UTIL_VecToYaw( vecProjection );
 	}
 	else if ( GetNavigator()->GetMovementActivity() == ACT_STRAFE_RIGHT )
 	{
 		vecProjection.x = vecTarget.y;
 		vecProjection.y = vecTarget.x;
 
-		return UTIL_VecToYaw( vecProjection - GetLocalOrigin() );
+		vecProjection.x = vecProjection.x - vecLocalOrigin.x;
+		vecProjection.y = vecProjection.y - vecLocalOrigin.x;
+
+		return UTIL_VecToYaw( vecProjection );
 	}
 	else
 	{
-		return UTIL_VecToYaw ( vecTarget - GetLocalOrigin() );
+		return UTIL_VecToYaw ( vecTarget - vecLocalOrigin );
 	}
 }
 
