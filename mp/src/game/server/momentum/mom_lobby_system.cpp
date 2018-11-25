@@ -879,7 +879,7 @@ void CMomentumLobbySystem::SetGameInfoStatus()
     }
     char gameInfoStr[64];// , connectStr[64];
     int numPlayers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
-    V_snprintf(gameInfoStr, 64, numPlayers < 1 ? "%s on %s" : "%s on %s with %i other player%s", gameMode, gpGlobals->mapname, numPlayers - 1, numPlayers > 2 ? "s" : "");
+    V_snprintf(gameInfoStr, 64, numPlayers < 1 ? "%s on %s" : "%s on %s with %i other player%s", gameMode, STRING(gpGlobals->mapname), numPlayers - 1, numPlayers > 2 ? "s" : "");
     //V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
 
     //SteamFriends()->SetRichPresence("connect", connectStr);

@@ -152,7 +152,7 @@ void CMOMRulerTool::Measure()
             char distString[BUFSIZ];
             Q_snprintf(distString, BUFSIZ, m_szDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
             m_pBeamConnector->EntityText(0, distString, mom_ruler_duration.GetFloat());
-            Msg(distString);
+            Msg("%s", distString);
         }
     }
     else

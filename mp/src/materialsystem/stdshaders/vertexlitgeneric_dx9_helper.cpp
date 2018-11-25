@@ -1462,7 +1462,7 @@ void DrawVertexLitGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** params, IS
 	{
 		bReceiveFlashlight = bReceiveFlashlight || ( GetIntParam( info.m_nReceiveFlashlight, params ) != 0 );
 	}
-	bool bHasFlashlight = bReceiveFlashlight && pShader->UsingFlashlight( params ) || bForceFlashlight;
+	bool bHasFlashlight = bReceiveFlashlight && ( pShader->UsingFlashlight( params ) || bForceFlashlight );
 
 	DrawVertexLitGeneric_DX9_Internal( pShader, params, pShaderAPI,
 		pShaderShadow, bVertexLitGeneric, bHasFlashlight, info, vertexCompression, pContextDataPtr );
