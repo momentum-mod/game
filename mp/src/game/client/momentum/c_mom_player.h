@@ -34,7 +34,7 @@ class C_MomentumPlayer : public C_BasePlayer
     void SurpressLadderChecks(const Vector &pos, const Vector &normal);
     bool CanGrabLadder(const Vector &pos, const Vector &normal);
     bool DidPlayerBhop() { return m_SrvData.m_bDidPlayerBhop; }
-    bool HasAutoBhop() { return m_SrvData.m_RunData.m_bAutoBhop; }
+    bool HasAutoBhop() { return m_bAutoBhop; }
     // void ResetStrafeSync();
 
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
@@ -74,8 +74,8 @@ class C_MomentumPlayer : public C_BasePlayer
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
 
-    bool m_bSimulatingMovements;
     CUserCmd m_LastCreateMoveCmd;
+    bool m_bVPMSimulation;
     
   private:
     // Ladder stuff
@@ -85,7 +85,8 @@ class C_MomentumPlayer : public C_BasePlayer
     float m_flGrabbableLadderTime;
 
     bool m_duckUntilOnGround;
-    float m_flStamina;
+    CNetworkVar(float, m_flStamina);
+    CNetworkVar(bool, m_bAutoBhop);
 
     int m_iIDEntIndex;
     C_MomentumOnlineGhostEntity *m_pViewTarget;

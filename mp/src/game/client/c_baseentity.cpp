@@ -1021,8 +1021,9 @@ void C_BaseEntity::Clear( void )
 	m_nOldRenderMode = 0;
 	SetRenderColor( 255, 255, 255, 255 );
 	m_nRenderFX = 0;
-	m_flFriction = 0.0f;       
-	m_flGravity = 0.0f;
+	m_flFriction = 0.0f;
+	// Fixes gravity       
+	m_flGravity = 1.0f;
 	SetCheckUntouch( false );
 	m_ShadowDirUseOtherEntity = NULL;
 

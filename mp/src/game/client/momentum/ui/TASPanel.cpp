@@ -30,8 +30,14 @@ using namespace vgui;
 
 CTASPanel *vgui::g_pTASPanel = nullptr;
 
+static MAKE_CONVAR(mom_tas_vispredmove_interval, "2", FCVAR_NONE,
+                   "Interval of ticks to record for visualizing lines of predicting movements.", 0, 100);
+
 static MAKE_CONVAR(mom_tas_max_vispredmove_ticks, "1000", FCVAR_NONE, "Ticks to visualize predicting movements.", 0,
                    INT_MAX);
+
+static MAKE_CONVAR(mom_tas_max_vispredmove_color, "255 255 255 255", FCVAR_NONE,
+                   "Color of lines to visualize predicting movements.", 0, INT_MAX);
 
 static MAKE_CONVAR(mom_tas_vispredmove, "1", FCVAR_NONE,
                    "0: Disabled, 1: Visualize predicted movements: stop when landing,"
@@ -117,8 +123,10 @@ void CTASPanel::ToggleVisible()
 
 void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
 {
-    if (pPlayer == nullptr)
+    if (mom_tas_vispredmove.GetInt() <= 0 || pPlayer == nullptr)
         return;
+
+    pPlayer->m_bVPMSimulation = true;
 
     float flMaxTime = mom_tas_max_vispredmove_ticks.GetInt() * gpGlobals->interval_per_tick;
 
@@ -136,62 +144,53 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
     prediction->StartCommand(pPlayer, &pPlayer->m_LastCreateMoveCmd);
 
     static CMoveData tmpData, tmpBackupData;
-    pPlayer->AvoidPhysicsProps(&pPlayer->m_LastCreateMoveCmd);
     prediction->SetupMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, MoveHelper(), &tmpBackupData);
+    prediction->SetupMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, MoveHelper(), &tmpData);
 
-    engine->Con_NPrintf(0, "%2f %2f %2f - %2f %2f %2f %f", tmpData.m_flForwardMove, tmpData.m_flSideMove,
-                        tmpData.m_flUpMove, tmpData.m_vecAbsViewAngles.x, tmpData.m_vecAbsViewAngles.y,
-                        tmpData.m_vecAbsViewAngles.z, pPlayer->GetGravity());
+    bool bFirstTimePredicted = prediction->m_bFirstTimePredicted, bInPred = prediction->m_bInPrediction;
 
-    pPlayer->m_bSimulatingMovements = true;
-
-    bool bFirstTimePredicted = prediction->m_bFirstTimePredicted;
-
+    // Remove any sounds.
     prediction->m_bFirstTimePredicted = false;
-
-    pPlayer->AvoidPhysicsProps(&pPlayer->m_LastCreateMoveCmd);
-    tmpData = tmpBackupData;
-
-    ConVarRef("sv_footsteps").SetInt(0);
+    prediction->m_bInPrediction = true;
 
     while (m_flVPMTime <= flMaxTime)
     {
-        // gpGlobals->curtime = m_flOldCurtime + m_flVPMTime;
+        gpGlobals->curtime = m_flOldCurtime + m_flVPMTime;
 
         // Process last movement data we know.
         // This might be changed because it can more accurate during jumps.
         // Imagine having a circle around you wich says you where is the best speed gain and where you will land at
         // the same time.. That would be my feature project I guess.
-        // prediction->SetupMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, MoveHelper(), &tmpData);
-        g_pMomentumGameMovement->ProcessMovement(pPlayer, &tmpData);
-        // prediction->FinishMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, &tmpData);
 
+        // If we want this without bugs we must have a proper ProcessMovement wich copies exactly the server's movement!
+        g_pMomentumGameMovement->ProcessMovement(pPlayer, &tmpData);
+        
         // gpGlobals->curtime = m_flOldCurtime;
 
         m_flVPMTime += gpGlobals->frametime;
 
-        if (pPlayer->m_hGroundEntity.Get() != nullptr && mom_tas_vispredmove.GetInt() == 1)
+        // Let's limit the rendering precision so we can eat less fps.
+        if (mom_tas_vispredmove_interval.GetInt() == 1 ||
+            (TIME_TO_TICKS(m_flVPMTime) % mom_tas_vispredmove_interval.GetInt()))
+            m_vecOrigins.AddToHead(tmpData.GetAbsOrigin());
+
+        if (pPlayer->m_hGroundEntity != nullptr && mom_tas_vispredmove.GetInt() == 1)
         {
             break;
         }
-
-        m_vecOrigins.AddToHead(tmpData.GetAbsOrigin());
     }
-
-    ConVarRef("sv_footsteps").SetInt(1);
 
     prediction->FinishMove(pPlayer, &pPlayer->m_LastCreateMoveCmd, &tmpBackupData);
 
     prediction->m_bFirstTimePredicted = bFirstTimePredicted;
-
-    engine->Con_NPrintf(2, "%i", m_vecOrigins.Count());
-
-    pPlayer->m_bSimulatingMovements = false;
+    prediction->m_bInPrediction = bInPred;
 
     prediction->FinishCommand(pPlayer);
 
     gpGlobals->curtime = m_flOldCurtime;
     gpGlobals->frametime = m_flOldFrametime;
+
+    pPlayer->m_bVPMSimulation = false;
 }
 
 void CTASVisPanel::Paint()

@@ -35,6 +35,8 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
 SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
     SendPropInt(SENDINFO(m_afButtonDisabled)),
+    SendPropBool(SENDINFO(m_bAutoBhop)),
+	SendPropFloat(SENDINFO(m_flStamina), 0, SPROP_NOSCALE|SPROP_CHANGES_OFTEN),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -113,7 +115,7 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 }
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
+    : m_duckUntilOnGround(false), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
     m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
       m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_TASRecords(nullptr)
 {
@@ -628,12 +630,12 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 
 void CMomentumPlayer::EnableAutoBhop()
 {
-    m_SrvData.m_RunData.m_bAutoBhop = true;
+    m_bAutoBhop = true;
     DevLog("Enabled autobhop\n");
 }
 void CMomentumPlayer::DisableAutoBhop()
 {
-    m_SrvData.m_RunData.m_bAutoBhop = false;
+    m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
 }
 

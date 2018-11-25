@@ -15,8 +15,7 @@ class CMOMRunEntityData
 public:
 
     CMOMRunEntityData();
-
-    bool m_bAutoBhop;// Is the player using auto bhop?
+    
     bool m_bIsInZone;//This is true if the player is in a CTriggerTimerStage zone
     bool m_bMapFinished;//Did the player finish the map?
     bool m_bTimerRunning;//Is the timer currently running for this ent?

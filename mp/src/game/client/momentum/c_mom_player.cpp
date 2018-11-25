@@ -5,7 +5,9 @@
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
-RecvPropInt(RECVINFO(m_afButtonDisabled)), END_RECV_TABLE();
+RecvPropInt(RECVINFO(m_afButtonDisabled)),	
+RecvPropBool(RECVINFO(m_bAutoBhop)),
+RecvPropFloat(RECVINFO(m_flStamina)), END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
 DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),

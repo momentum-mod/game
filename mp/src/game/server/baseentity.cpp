@@ -345,6 +345,9 @@ void CBaseEntityModelLoadProxy::Handler::OnModelLoadComplete( const model_t *pMo
 
 CBaseEntity::CBaseEntity( bool bServerOnly )
 {
+	// Fixes gravity.
+	m_flGravity = 1.0f;
+
 	m_pAttributes = NULL;
 
 	COMPILE_TIME_ASSERT( MOVETYPE_LAST < (1 << MOVETYPE_MAX_BITS) );

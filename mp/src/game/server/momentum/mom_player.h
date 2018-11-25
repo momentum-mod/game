@@ -87,13 +87,13 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     // used by CMomentumGameMovement
     bool m_duckUntilOnGround;
-    float m_flStamina;
+    CNetworkVar(float, m_flStamina);
 
     bool m_bAllowUserTeleports;
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
+    bool HasAutoBhop() const { return m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_SrvData.m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void OnPlayerJump() OVERRIDE;
@@ -218,6 +218,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     // for detecting bhop
     friend class CMomentumGameMovement;
+    CNetworkVar(bool, m_bAutoBhop);
     float m_flPunishTime;
     int m_iLastBlock;
 
