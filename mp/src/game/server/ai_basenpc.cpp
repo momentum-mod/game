@@ -8052,7 +8052,7 @@ float CAI_BaseNPC::CalcIdealYaw( const Vector &vecTarget )
 		vecProjection.y = vecTarget.x;
 
 		vecProjection.x = vecProjection.x - vecLocalOrigin.x;
-		vecProjection.y = vecProjection.y - vecLocalOrigin.x;
+		vecProjection.y = vecProjection.y - vecLocalOrigin.y;
 
 		return UTIL_VecToYaw( vecProjection );
 	}
@@ -8062,7 +8062,7 @@ float CAI_BaseNPC::CalcIdealYaw( const Vector &vecTarget )
 		vecProjection.y = vecTarget.x;
 
 		vecProjection.x = vecProjection.x - vecLocalOrigin.x;
-		vecProjection.y = vecProjection.y - vecLocalOrigin.x;
+		vecProjection.y = vecProjection.y - vecLocalOrigin.y;
 
 		return UTIL_VecToYaw( vecProjection );
 	}
