@@ -385,6 +385,7 @@ $Project "Client (Momentum)"
 
     $Folder "Link Libraries"
     {
-        $Lib "cryptopp"
+        $Lib "cryptopp" [$WIN32]
+        $Lib "libcryptopp" [$POSIX||$LINUX]
     }
 }
