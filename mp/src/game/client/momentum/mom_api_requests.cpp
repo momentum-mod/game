@@ -7,12 +7,11 @@
 
 #include "tier0/memdbgon.h"
 
-#define BASE_URL "http://localhost:3002"
-#define BASE_API_URL BASE_URL "/api/"
-#define API_REQ(url) BASE_API_URL url
-#define AUTH_REQ(url) BASE_URL url
+static MAKE_TOGGLE_CONVAR(mom_api_log_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, all API requests will be logged to console.\n");
+static ConVar mom_api_base_url("mom_api_base_url", "http://localhost:3002", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The base URL for the API requests.\n");
 
-static MAKE_TOGGLE_CONVAR(mom_log_api_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, all API requests will be logged to console.\n");
+#define API_REQ(url) CFmtStr1024("%s/api/%s", mom_api_base_url.GetString(), (url)).Get()
+#define AUTH_REQ(url) CFmtStr1024("%s%s", mom_api_base_url.GetString(), (url)).Get()
 
 CAPIRequests::CAPIRequests() : CAutoGameSystemPerFrame("CAPIRequests"), 
 m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
@@ -272,7 +271,7 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
                 if (CJsonToKeyValues::ConvertJsonToKeyValues(pDataPtr, pKvBodyData))
                 {
                     // Log out the request if needed
-                    if (mom_log_api_requests.GetBool())
+                    if (mom_api_log_requests.GetBool())
                     {
                         CKeyValuesDumpContextAsDevMsg dump;
                         pKvBodyData->Dump(&dump);
@@ -391,8 +390,3 @@ bool CAPIRequests::CheckAPIResponse(HTTPRequestCompleted_t* pCallback, bool bIOF
 
 CAPIRequests s_APIRequests;
 CAPIRequests *g_pAPIRequests = &s_APIRequests;
-
-CON_COMMAND(hash_test, "Test hashing")
-{
-
-}
