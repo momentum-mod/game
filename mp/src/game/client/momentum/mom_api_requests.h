@@ -83,7 +83,7 @@ private:
 
     struct DownloadCall
     {
-        DownloadCall() : handle(INVALID_HTTPREQUEST_HANDLE),/* headerResult(nullptr), dataResult(nullptr),*/ completeResult(nullptr) {}
+        DownloadCall() : handle(INVALID_HTTPREQUEST_HANDLE), completeResult(nullptr) {}
         ~DownloadCall()
         {
             if (completeResult)
