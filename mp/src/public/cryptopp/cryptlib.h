@@ -3,21 +3,22 @@
 /// \file cryptlib.h
 /// \brief Abstract base classes that provide a uniform interface to this library.
 
-/*!	\mainpage Crypto++ Library 7.0 API Reference
+/*!	\mainpage Crypto++ Library 7.1 API Reference
 <dl>
 <dt>Abstract Base Classes<dd>
 	cryptlib.h
 <dt>Authenticated Encryption Modes<dd>
 	CCM, EAX, \ref GCM "GCM (2K tables)", \ref GCM "GCM (64K tables)"
 <dt>Block Ciphers<dd>
-	\ref Rijndael "AES", ARIA, Weak::ARC4, Blowfish, BTEA, Camellia, CAST128, CAST256, DES,
-	\ref DES_EDE2 "2-key Triple-DES", \ref DES_EDE3 "3-key Triple-DES",	\ref DES_XEX3 "DESX",
-	GOST, IDEA, \ref LR "Luby-Rackoff", Kalyna (128/256/512), MARS, RC2, RC5, RC6, \ref SAFER_K
-	"SAFER-K", \ref SAFER_SK "SAFER-SK", SEED, Serpent, \ref SHACAL2 "SHACAL-2", SHARK, SKIPJACK,
-	SM4, Square, TEA, \ref ThreeWay "3-Way", \ref Threefish256 "Threefish (256/512/1024)", Twofish, XTEA
+	\ref Rijndael "AES", ARIA, Weak::ARC4, Blowfish, BTEA, \ref CHAM128 "CHAM (64/128)", Camellia,
+	\ref CAST128 "CAST (128/256)", DES, \ref DES_EDE2 "2-key Triple-DES", \ref DES_EDE3 "3-key Triple-DES",
+	\ref DES_XEX3 "DESX", GOST, HIGHT, IDEA, LEA, \ref LR "Luby-Rackoff", \ref Kalyna128 "Kalyna (128/256/512)",
+	MARS, RC2, RC5, RC6, \ref SAFER_K "SAFER-K", \ref SAFER_SK "SAFER-SK", SEED, Serpent,
+	\ref SHACAL2 "SHACAL-2", SHARK, \ref SIMECK64 "SIMECK (32/64)" SKIPJACK, SM4, Square, TEA,
+	\ref ThreeWay "3-Way", \ref Threefish256 "Threefish (256/512/1024)", Twofish, XTEA
 <dt>Stream Ciphers<dd>
-	ChaCha (ChaCha-8/12/20), \ref Panama "Panama-LE", \ref Panama "Panama-BE", Salsa20,
-	\ref SEAL "SEAL-LE", \ref SEAL "SEAL-BE", WAKE, XSalsa20
+	ChaCha (ChaCha-8/12/20), \ref HC128 "HC-128/256", \ref Panama "Panama-LE", \ref Panama "Panama-BE",
+	Rabbit, Salsa20, \ref SEAL "SEAL-LE", \ref SEAL "SEAL-BE", WAKE, XSalsa20
 <dt>Hash Functions<dd>
 	BLAKE2s, BLAKE2b, \ref Keccak "Keccak (F1600)", SHA1, SHA224, SHA256, SHA384, SHA512,
 	\ref SHA3 "SHA-3", SM3, Tiger, RIPEMD160, RIPEMD320, RIPEMD128, RIPEMD256, SipHash, Whirlpool,
@@ -47,9 +48,9 @@
 <dt>Compression<dd>
 	Deflator, Inflator, Gzip, Gunzip, ZlibCompressor, ZlibDecompressor
 <dt>Input Source Classes<dd>
-	StringSource, ArraySource, FileSource, SocketSource, WindowsPipeSource, RandomNumberSource
+	StringSource, ArraySource, VectorSource, FileSource, RandomNumberSource
 <dt>Output Sink Classes<dd>
-	StringSinkTemplate, StringSink, ArraySink, FileSink, SocketSink, WindowsPipeSink, RandomNumberSink
+	StringSinkTemplate, StringSink, VectorSink, ArraySink, FileSink, RandomNumberSink
 <dt>Filter Wrappers<dd>
 	StreamTransformationFilter, AuthenticatedEncryptionFilter, AuthenticatedDecryptionFilter, HashFilter,
 	HashVerificationFilter, SignerFilter, SignatureVerificationFilter
@@ -57,7 +58,7 @@
 	HexEncoder, HexDecoder, Base64Encoder, Base64Decoder, Base64URLEncoder, Base64URLDecoder, Base32Encoder,
 	Base32Decoder
 <dt>Wrappers for OS features<dd>
-	Timer, Socket, WindowsHandle, ThreadLocalStorage, ThreadUserTimer
+	Timer, ThreadUserTimer
 
 </dl>
 
@@ -108,8 +109,6 @@ and getting us started on the manual.
 # pragma warning(disable: 4127 4189 4505 4702)
 #endif
 
-#undef Verify
-
 NAMESPACE_BEGIN(CryptoPP)
 
 // forward declarations
@@ -133,7 +132,7 @@ const unsigned long INFINITE_TIME = ULONG_MAX;
 template <typename ENUM_TYPE, int VALUE>
 struct EnumToType
 {
-	static ENUM_TYPE ToEnum() {return (ENUM_TYPE)VALUE;}
+	static ENUM_TYPE ToEnum() {return static_cast<ENUM_TYPE>(VALUE);}
 };
 
 /// \brief Provides the byte ordering
@@ -394,6 +393,24 @@ public:
 	CRYPTOPP_DLL int GetIntValueWithDefault(const char *name, int defaultValue) const
 		{return GetValueWithDefault(name, defaultValue);}
 
+	/// \brief Get a named value with type word64
+	/// \param name the name of the value to retrieve
+	/// \param value the value retrieved upon success
+	/// \return true if an word64 value was retrieved, false otherwise
+	/// \sa GetValue(), GetValueWithDefault(), GetWord64ValueWithDefault(), GetIntValue(),
+	///   GetIntValueWithDefault(), GetRequiredParameter() and GetRequiredIntParameter()
+	CRYPTOPP_DLL bool GetWord64Value(const char *name, word64 &value) const
+		{return GetValue(name, value);}
+
+	/// \brief Get a named value with type word64, with default
+	/// \param name the name of the value to retrieve
+	/// \param defaultValue the default value if the name does not exist
+	/// \return the value retrieved on success or the default value
+	/// \sa GetValue(), GetValueWithDefault(), GetWord64Value(), GetIntValue(),
+	///   GetIntValueWithDefault(), GetRequiredParameter() and GetRequiredWord64Parameter()
+	CRYPTOPP_DLL word64 GetWord64ValueWithDefault(const char *name, word64 defaultValue) const
+		{return GetValueWithDefault(name, defaultValue);}
+
 	/// \brief Ensures an expected name and type is present
 	/// \param name the name of the value
 	/// \param stored the type that was stored for the name
@@ -589,11 +606,28 @@ public:
 
 	/// \brief Provides the name of this algorithm
 	/// \return the standard algorithm name
-	/// \details The standard algorithm name can be a name like \a AES or \a AES/GCM. Some algorithms
-	///   do not have standard names yet. For example, there is no standard algorithm name for
-	///   Shoup's ECIES.
-	/// \note  AlgorithmName is not universally implemented yet
+	/// \details The standard algorithm name can be a name like <tt>AES</tt> or <tt>AES/GCM</tt>.
+	///   Some algorithms do not have standard names yet. For example, there is no standard
+	///   algorithm name for Shoup's ECIES.
+	/// \note AlgorithmName is not universally implemented yet.
 	virtual std::string AlgorithmName() const {return "unknown";}
+
+	/// \brief Retrieve the provider of this algorithm
+	/// \return the algorithm provider
+	/// \details The algorithm provider can be a name like "C++", "SSE", "NEON", "AESNI",
+	///    "ARMv8" and "Power8". C++ is standard C++ code. Other labels, like SSE,
+	///    usually indicate a specialized implementation using instructions from a higher
+	///    instruction set architecture (ISA). Future labels may include external hardware
+	///    like a hardware security module (HSM).
+	/// \details Generally speaking Wei Dai's original IA-32 ASM code falls under "SSE2".
+	///    Labels like "SSSE3" and "SSE4.1" follow after Wei's code and use intrinsics
+	///    instead of ASM.
+	/// \details Algorithms which combine different instructions or ISAs provide the
+	///    dominant one. For example on x86 <tt>AES/GCM</tt> returns "AESNI" rather than
+	///    "CLMUL" or "AES+SSE4.1" or "AES+CLMUL" or "AES+SSE4.1+CLMUL".
+	/// \note Provider is not universally implemented yet.
+	/// \since Crypto++ 7.1
+	virtual std::string AlgorithmProvider() const {return "C++";}
 };
 
 /// \brief Interface for algorithms that take byte strings as keys
@@ -606,11 +640,13 @@ public:
 	/// \brief Returns smallest valid key length
 	/// \returns the minimum key length, in bytes
 	virtual size_t MinKeyLength() const =0;
+
 	/// \brief Returns largest valid key length
 	/// \returns the maximum key length, in bytes
 	virtual size_t MaxKeyLength() const =0;
+
 	/// \brief Returns default key length
-	/// \returns the default (recommended) key length, in bytes
+	/// \returns the default key length, in bytes
 	virtual size_t DefaultKeyLength() const =0;
 
 	/// \brief Returns a valid key length for the algorithm
@@ -649,7 +685,7 @@ public:
 	/// \brief Sets or reset the key of this object
 	/// \param key the key to use when keying the object
 	/// \param length the size of the key, in bytes
-	/// \param iv the intiialization vector to use when keying the object
+	/// \param iv the initialization vector to use when keying the object
 	/// \param ivLength the size of the iv, in bytes
 	/// \details SetKeyWithIV() calls SetKey() with a NameValuePairs
 	///   that only specifies IV. The IV is a byte buffer with size ivLength.
@@ -659,7 +695,7 @@ public:
 	/// \brief Sets or reset the key of this object
 	/// \param key the key to use when keying the object
 	/// \param length the size of the key, in bytes
-	/// \param iv the intiialization vector to use when keying the object
+	/// \param iv the initialization vector to use when keying the object
 	/// \details SetKeyWithIV() calls SetKey() with a NameValuePairs() object
 	///   that only specifies iv. iv is a byte buffer, and it must have
 	///   a size IVSize().
@@ -667,9 +703,12 @@ public:
 		{SetKeyWithIV(key, length, iv, IVSize());}
 
 	/// \brief Secure IVs requirements as enumerated values.
-	/// \details Provides secure IV requirements as a monotonically increasing enumerated values. Requirements can be
-	///   compared using less than (&lt;) and greater than (&gt;). For example, <tt>UNIQUE_IV &lt; RANDOM_IV</tt>
-	///   and <tt>UNPREDICTABLE_RANDOM_IV &gt; RANDOM_IV</tt>.
+	/// \details Provides secure IV requirements as a monotonically increasing enumerated values.
+	///   Requirements can be compared using less than (&lt;) and greater than (&gt;). For example,
+	///   <tt>UNIQUE_IV &lt; RANDOM_IV</tt> and <tt>UNPREDICTABLE_RANDOM_IV &gt; RANDOM_IV</tt>.
+	/// \details Objects that use SimpleKeyingInterface do not support an optional IV. That is,
+	///	  an IV must be present or it must be absent. If you wish to support an optional IV then
+	///   provide two classes - one with an IV and one without an IV.
 	/// \sa IsResynchronizable(), CanUseRandomIVs(), CanUsePredictableIVs(), CanUseStructuredIVs()
 	enum IV_Requirement {
 		/// \brief The IV must be unique
@@ -1414,7 +1453,7 @@ public:
 };
 
 /// \brief Interface for key derivation functions
-/// \since Crypto++ 6.2
+/// \since Crypto++ 7.0
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE KeyDerivationFunction : public Algorithm
 {
 public:
@@ -1478,7 +1517,7 @@ protected:
 };
 
 /// \brief Interface for password based key derivation functions
-/// \since Crypto++ 6.2
+/// \since Crypto++ 7.0
 struct PasswordBasedKeyDerivationFunction : public KeyDerivationFunction
 {
 };
@@ -2335,8 +2374,11 @@ public:
 	/// \details DoQuickSanityCheck() is for internal library use, and it should not be called by library users.
 	void DoQuickSanityCheck() const	{ThrowIfInvalid(NullRNG(), 0);}
 
-#if (defined(__SUNPRO_CC) && __SUNPRO_CC < 0x590)
-	// Sun Studio 11/CC 5.8 workaround: it generates incorrect code when casting to an empty virtual base class
+#if defined(__SUNPRO_CC)
+	// Sun Studio 11/CC 5.8 workaround: it generates incorrect code
+	// when casting to an empty virtual base class. JW, 2018: It is
+	// still a problem in Sun Studio 12.6/CC 5.15 on i386. Just enable
+	// it everywhere in case it affects SPARC (which we don't test).
 	char m_sunCCworkaround;
 #endif
 };

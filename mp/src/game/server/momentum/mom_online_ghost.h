@@ -33,8 +33,8 @@ public:
         Q_strncpy(m_pszGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
     }
 
-    void SetGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate = false);
-    LobbyGhostAppearance_t GetGhostAppearance() const { return m_CurrentAppearance; }
+    void SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate = false);
+    LobbyGhostAppearance_t GetLobbyGhostAppearance() const { return m_CurrentAppearance; }
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 

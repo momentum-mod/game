@@ -1,7 +1,12 @@
 #pragma once
 
-#include "mom_ghostdefs.h"
+#include "mom_shareddefs.h"
 
+struct MomentumPacket_t;
+struct DecalPacket_t;
+struct LobbyGhostAppearance_t;
+struct SavelocReqPacket_t;
+struct ghostAppearance_t;
 class CMomentumOnlineGhostEntity;
 
 class CMomentumLobbySystem
@@ -48,7 +53,7 @@ public:
     void SendDecalPacket(DecalPacket_t *packet);
 
     void SetGameInfoStatus();
-    LobbyGhostAppearance_t GetAppearanceFromMemberData(const CSteamID &member);
+    bool GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);

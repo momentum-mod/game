@@ -1,0 +1,225 @@
+//-----------------------------------------------------------------------------
+//	CRYPTOPP.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$macro SRCDIR		".."
+$include "$SRCDIR\vpc_scripts\source_lib_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+        $PreprocessorDefinitions    "$BASE;CRYPTOPP_DISABLE_AVX;CRYPTOPP_DISABLE_AVX2"
+        $PreprocessorDefinitions    "$BASE;CRYPTOPP_DISABLE_AESNI" [$POSIX||$LINUXALL]
+		$AdditionalIncludeDirectories	"$BASE;..\public\cryptopp"
+        // Precompiled Headers
+		$Create/UsePrecompiledHeader	"Use Precompiled Header (/Yu)"
+		$Create/UsePCHThroughFile		"pch.h"
+
+        $EnableC++Exceptions	"Yes (/EHsc)"
+	}
+}
+
+$Project "libcryptopp"
+{
+    $Folder "Source Files"
+    {
+        $File "3way.cpp"
+        $File "adler32.cpp"
+        $File "algebra.cpp"
+        $File "algparam.cpp"
+        $File "arc4.cpp"
+        $File "aria.cpp"
+        $File "ariatab.cpp"
+        $File "aria_simd.cpp"
+        $File "asn.cpp"
+        $File "authenc.cpp"
+        $File "base32.cpp"
+        $File "base64.cpp"
+        $File "basecode.cpp"
+        $File "bfinit.cpp"
+        $File "blake2.cpp"
+        $File "blake2b_simd.cpp"
+        $File "blake2s_simd.cpp"
+        $File "blowfish.cpp"
+        $File "blumshub.cpp"
+        $File "camellia.cpp"
+        $File "cast.cpp"
+        $File "casts.cpp"
+        $File "cbcmac.cpp"
+        $File "ccm.cpp"
+        $File "chacha.cpp"
+        $File "chacha_avx.cpp"
+        $File "chacha_simd.cpp"
+        $File "cham.cpp"
+        $File "cham_simd.cpp"
+        $File "channels.cpp"
+        $File "cmac.cpp"
+        $File "cpu.cpp"
+        $File "crc.cpp"
+        $File "crc_simd.cpp"
+        $File "cryptlib.cpp"
+        $File "default.cpp"
+        $File "des.cpp"
+        $File "dessp.cpp"
+        $File "dh.cpp"
+        $File "dh2.cpp"
+        $File "dll.cpp"
+        {
+			$Configuration
+			{
+				$Compiler
+				{
+					$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+				}
+			}
+		}
+        $File "dsa.cpp"
+        $File "eax.cpp"
+        $File "ec2n.cpp"
+        $File "eccrypto.cpp"
+        $File "ecp.cpp"
+        $File "elgamal.cpp"
+        $File "emsa2.cpp"
+        $File "eprecomp.cpp"
+        $File "esign.cpp"
+        $File "files.cpp"
+        $File "filters.cpp"
+        $File "fips140.cpp"
+        $File "fipstest.cpp"
+        $File "gcm.cpp"
+        $File "gcm_simd.cpp"
+        $File "gf256.cpp"
+        $File "gf2n.cpp"
+        $File "gf2_32.cpp"
+        $File "gfpcrypt.cpp"
+        $File "gost.cpp"
+        $File "gzip.cpp"
+        $File "hc128.cpp"
+        $File "hc256.cpp"
+        $File "hex.cpp"
+        $File "hight.cpp"
+        $File "hmac.cpp"
+        $File "hrtimer.cpp"
+        $File "ida.cpp"
+        $File "idea.cpp"
+        $File "integer.cpp"
+        $File "iterhash.cpp"
+        {
+			$Configuration
+			{
+				$Compiler
+				{
+					$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+				}
+			}
+		}
+        $File "kalyna.cpp"
+        $File "kalynatab.cpp"
+        $File "keccak.cpp"
+        $File "keccakc.cpp"
+        $File "lea.cpp"
+        $File "lea_simd.cpp"
+        $File "luc.cpp"
+        $File "mars.cpp"
+        $File "marss.cpp"
+        $File "md2.cpp"
+        $File "md4.cpp"
+        $File "md5.cpp"
+        $File "misc.cpp"
+        $File "modes.cpp"
+        $File "mqueue.cpp"
+        $File "mqv.cpp"
+        $File "nbtheory.cpp"
+        $File "neon_simd.cpp"
+        $File "oaep.cpp"
+        $File "osrng.cpp"
+        $File "padlkrng.cpp"
+        $File "panama.cpp"
+        $File "pkcspad.cpp"
+        $File "poly1305.cpp"
+        $File "polynomi.cpp"
+        $File "ppc_simd.cpp"
+        $File "pssr.cpp"
+        $File "pubkey.cpp"
+        $File "queue.cpp"
+        $File "rabbit.cpp"
+        $File "rabin.cpp"
+        $File "randpool.cpp"
+        $File "rc2.cpp"
+        $File "rc5.cpp"
+        $File "rc6.cpp"
+        $File "rdrand.cpp"
+        $File "rdtables.cpp"
+        $File "rijndael.cpp"
+        $File "rijndael_simd.cpp"
+        $File "ripemd.cpp"
+        $File "rng.cpp"
+        $File "rsa.cpp"
+        $File "rw.cpp"
+        $File "safer.cpp"
+        $File "salsa.cpp"
+        $File "scrypt.cpp"
+        $File "seal.cpp"
+        $File "seed.cpp"
+        $File "serpent.cpp"
+        $File "sha.cpp"
+        $File "sha3.cpp"
+        $File "shacal2.cpp"
+        $File "shacal2_simd.cpp"
+        $File "shark.cpp"
+        $File "sharkbox.cpp"
+        $File "sha_simd.cpp"
+        $File "simeck.cpp"
+        $File "simeck_simd.cpp"
+        $File "simon.cpp"
+        $File "simon128_simd.cpp"
+        $File "simon64_simd.cpp"
+        $File "simple.cpp"
+        $File "skipjack.cpp"
+        $File "sm3.cpp"
+        $File "sm4.cpp"
+        $File "sm4_simd.cpp"
+        $File "sosemanuk.cpp"
+        $File "speck.cpp"
+        $File "speck128_simd.cpp"
+        $File "speck64_simd.cpp"
+        $File "square.cpp"
+        $File "squaretb.cpp"
+        $File "sse_simd.cpp"
+        $File "strciphr.cpp"
+        $File "tea.cpp"
+        $File "tftables.cpp"
+        $File "threefish.cpp"
+        $File "tiger.cpp"
+        $File "tigertab.cpp"
+        $File "ttmac.cpp"
+        $File "tweetnacl.cpp"
+        $File "twofish.cpp"
+        $File "vmac.cpp"
+        $File "wake.cpp"
+        $File "whrlpool.cpp"
+        $File "xtr.cpp"
+        $File "xtrcrypt.cpp"
+        $File "zdeflate.cpp"
+        $File "zinflate.cpp"
+        $File "zlib.cpp"
+    }
+
+    $Folder	"Precompiled Header"
+    {
+        $File "pch.h"
+        $File "pch.cpp"
+        {
+            $Configuration
+            {
+                $Compiler
+                {
+                    $Create/UsePrecompiledHeader	"Create Precompiled Header (/Yc)"
+                }
+            }
+        }
+    }
+}

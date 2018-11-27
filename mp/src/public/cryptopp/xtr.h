@@ -8,7 +8,7 @@
 #include "cryptlib.h"
 #include "modarith.h"
 #include "integer.h"
-#include "../../cryptopp/algebra.h"
+#include "algebra.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
