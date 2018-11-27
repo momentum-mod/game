@@ -391,7 +391,7 @@ void CMomentumPlayer::Spawn()
         SetAbsVelocity(m_SrvData.m_RunData.m_vecLastVelocity);
         SetViewOffset(Vector(0,0, m_SrvData.m_RunData.m_fLastViewOffset));
         g_ReplaySystem.SetWasInReplay(false);
-        memcpy(m_RunStats.m_pData, g_ReplaySystem.SavedRunStats()->m_pData, sizeof(CMomRunStats::data));
+        // memcpy(m_RunStats.m_pData, g_ReplaySystem.SavedRunStats()->m_pData, sizeof(CMomRunStats::data));
         m_nAccelTicks = g_ReplaySystem.m_nSavedAccelTicks;
         m_nPerfectSyncTicks = g_ReplaySystem.m_nSavedPerfectSyncTicks;
         m_nStrafeTicks = g_ReplaySystem.m_nSavedStrafeTicks;
@@ -753,8 +753,7 @@ void CMomentumPlayer::OnPlayerLand()
             SetAbsVelocity(vecNewVelocity);
         }
         */
-
-        SetUsingCPMenu(false); // It'll get set to true if they teleport to a CP out of here
+        g_pMOMSavelocSystem->SetUsingSavelocMenu(false);
         ResetRunStats();       // Reset run stats
         m_SrvData.m_RunData.m_bMapFinished = false;
         m_SrvData.m_RunData.m_bTimerRunning = false;
@@ -976,11 +975,6 @@ void CMomentumPlayer::LimitSpeedInStartZone(Vector &vRealVelocity)
 {
     if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
     {
-        if (GetGroundEntity() == nullptr && !m_SrvData.m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
-            m_nTicksInAir++;
-        else
-            m_nTicksInAir = 0;
-
         // set bhop flag to true so we can't prespeed with practice mode
         if (m_SrvData.m_bHasPracticeMode)
             m_SrvData.m_bDidPlayerBhop = true;

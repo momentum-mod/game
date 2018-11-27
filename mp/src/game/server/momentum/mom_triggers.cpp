@@ -1027,9 +1027,6 @@ void CTriggerSlide::OnEndTouch(CBaseEntity *pOther)
             else
                 pPlayer->m_CurrentSlideTrigger = nullptr;
         }
-
-        g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
-        m_bTouching = false;
     }
 }
 

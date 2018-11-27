@@ -10,7 +10,7 @@ class CTriggerStage;
 class CTriggerTimerStop;
 class CMomentumPlayer;
 
-class CMomentumTimer : CAutoGameSystem
+class CMomentumTimer : public CAutoGameSystem
 {
   public:
     CMomentumTimer(const char *pName)
@@ -105,11 +105,7 @@ class CMomentumTimer : CAutoGameSystem
 
     int GetBonus() { return m_iBonusZone; }
 
-    void SetPaused(bool bEnable = true)
-    {
-        m_bPaused = bEnable;
-        g_ReplaySystem.SetPaused(bEnable);
-    }
+    void SetPaused(bool bEnable = true);
 
     bool GetPaused() { return m_bPaused; }
 
