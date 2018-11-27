@@ -56,6 +56,11 @@ $Project "server"
     "game\server\server_momentum.vpc"   [($WIN32||$POSIX) && $MOMENTUM]
 }
 
+$Project "libcryptopp"
+{
+    "cryptopp\libcryptopp.vpc"
+}
+
 $Project "mathlib"
 {
 	"mathlib\mathlib.vpc" [$WINDOWS||$X360||$POSIX]

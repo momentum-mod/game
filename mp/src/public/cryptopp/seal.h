@@ -7,7 +7,7 @@
 #ifndef CRYPTOPP_SEAL_H
 #define CRYPTOPP_SEAL_H
 
-#include "../../cryptopp/strciphr.h"
+#include "strciphr.h"
 #include "secblock.h"
 
 NAMESPACE_BEGIN(CryptoPP)

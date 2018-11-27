@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 struct PositionPacket_t;
 struct DecalPacket_t;
 struct SavelocReqPacket_t;

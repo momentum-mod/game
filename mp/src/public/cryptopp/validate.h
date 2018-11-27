@@ -5,8 +5,11 @@
 #define CRYPTOPP_VALIDATE_H
 
 #include "cryptlib.h"
-#include "integer.h"
 #include "misc.h"
+#include "files.h"
+#include "argnames.h"
+#include "algparam.h"
+#include "hex.h"
 
 #include <iostream>
 #include <sstream>
@@ -81,9 +84,21 @@ bool ValidateTwofish();
 bool ValidateSerpent();
 bool ValidateSHACAL2();
 bool ValidateARIA();
+bool ValidateSIMECK();
+bool ValidateCHAM();
+bool ValidateHIGHT();
+bool ValidateLEA();
+bool ValidateSIMON();
+bool ValidateSPECK();
 bool ValidateCamellia();
+
+bool ValidateHC128();
+bool ValidateHC256();
+bool ValidateRabbit();
 bool ValidateSalsa();
+bool ValidateChaCha();
 bool ValidateSosemanuk();
+
 bool ValidateVMAC();
 bool ValidateCCM();
 bool ValidateGCM();
@@ -137,60 +152,31 @@ bool TestRounding();
 bool TestHuffmanCodes();
 // http://github.com/weidai11/cryptopp/issues/346
 bool TestASN1Parse();
+// https://github.com/weidai11/cryptopp/pull/334
+bool TestStringSink();
 // Additional tests due to no coverage
 bool TestCompressors();
 bool TestEncryptors();
 bool TestMersenne();
 bool TestSharing();
+# if defined(CRYPTOPP_ALTIVEC_AVAILABLE)
+bool TestAltivecOps();
+# endif
 #endif
 
-#if 1
-// Coverity findings in benchmark and validation routines
-class StreamState
+class FixedRNG : public RandomNumberGenerator
 {
 public:
-	StreamState(std::ostream& out)
-		: m_out(out), m_prec(out.precision()), m_width(out.width()), m_fmt(out.flags()), m_fill(out.fill())
-	{
-	}
+	FixedRNG(BufferedTransformation &source) : m_source(source) {}
 
-	~StreamState()
+	void GenerateBlock(byte *output, size_t size)
 	{
-		m_out.fill(m_fill);
-		m_out.flags(m_fmt);
-		m_out.width(m_width);
-		m_out.precision(m_prec);
+		m_source.Get(output, size);
 	}
 
 private:
-	std::ostream& m_out;
-	std::streamsize m_prec;
-	std::streamsize m_width;
-	std::ios_base::fmtflags m_fmt;
-	std::ostream::char_type m_fill;
+	BufferedTransformation &m_source;
 };
-#endif
-
-#if 0
-class StreamState
-{
-public:
-	StreamState(std::ostream& out)
-		: m_out(out), m_state(NULLPTR)
-	{
-		m_state.copyfmt(m_out);
-	}
-
-	~StreamState()
-	{
-		m_out.copyfmt(m_state);
-	}
-
-private:
-	std::ostream& m_out;
-	std::ios m_state;
-};
-#endif
 
 // Safer functions on Windows for C&A, http://github.com/weidai11/cryptopp/issues/55
 inline std::string TimeToString(const time_t& t)
@@ -257,10 +243,47 @@ inline int StringToValue<int, true>(const std::string& str)
 	return r;
 }
 
-// Functions that need a RNG; uses AES inf CFB mode with Seed.
-CryptoPP::RandomNumberGenerator & GlobalRNG();
+// Definition in test.cpp
+RandomNumberGenerator & GlobalRNG();
 
-bool RunTestDataFile(const char *filename, const CryptoPP::NameValuePairs &overrideParameters=CryptoPP::g_nullNameValuePairs, bool thorough=true);
+// Definition in datatest.cpp
+bool RunTestDataFile(const char *filename, const NameValuePairs &overrideParameters=g_nullNameValuePairs, bool thorough=true);
+
+// Definitions in validat6.cpp
+bool CryptoSystemValidate(PK_Decryptor &priv, PK_Encryptor &pub, bool thorough = false);
+bool SimpleKeyAgreementValidate(SimpleKeyAgreementDomain &d);
+bool AuthenticatedKeyAgreementValidate(AuthenticatedKeyAgreementDomain &d);
+bool SignatureValidate(PK_Signer &priv, PK_Verifier &pub, bool thorough = false);
+
+// Miscellaneous PK definitions in validat6.cpp
+// Key Agreement definitions in validat7.cpp
+// Encryption and Decryption definitions in validat8.cpp
+// Sign and Verify definitions in validat9.cpp
+
+bool ValidateECP();
+bool ValidateEC2N();
+
+bool ValidateRSA_Encrypt();
+bool ValidateRSA_Sign();
+
+bool ValidateLUC_Encrypt();
+bool ValidateLUC_Sign();
+
+bool ValidateLUC_DL_Encrypt();
+bool ValidateLUC_DL_Sign();
+
+bool ValidateRabin_Encrypt();
+bool ValidateRabin_Sign();
+
+bool ValidateECP();
+bool ValidateECP_Agreement();
+bool ValidateECP_Encrypt();
+bool ValidateECP_Sign();
+
+bool ValidateEC2N();
+bool ValidateEC2N_Agreement();
+bool ValidateEC2N_Encrypt();
+bool ValidateEC2N_Sign();
 
 NAMESPACE_END  // Test
 NAMESPACE_END  // CryptoPP

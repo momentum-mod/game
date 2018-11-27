@@ -1,6 +1,7 @@
 #include "cbase.h"
+#include "filesystem.h"
+#include <cryptopp/base64.h>
 #include "mom_lobby_system.h"
-#include "base64.h"
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
 #include "mom_system_saveloc.h"
@@ -92,7 +93,7 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
         {
             CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[index];
             if (pEntity)
-                pEntity->SetGhostAppearance(pEntity->GetGhostAppearance(), true);
+                pEntity->SetLobbyGhostAppearance(pEntity->GetLobbyGhostAppearance(), true);
 
             index = m_mapLobbyGhosts.NextInorder(index);
         }
@@ -253,21 +254,42 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
     if (LobbyValid())
     {
         CHECK_STEAM_API(SteamMatchmaking());
-        char base64Appearance[1024];
-        base64_encode(&app, sizeof app, base64Appearance, 1024);
-        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
+        std::string base64Appearance;
+
+        CryptoPP::StringSource ss(static_cast<unsigned char *>(static_cast<void*>(&app)), 
+                                  sizeof ghostAppearance_t, 
+                                  true,
+                                  new CryptoPP::Base64Encoder(
+                                      new CryptoPP::StringSink(base64Appearance)
+                                  )
+        );
+
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance.c_str());
     }
 }
-LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member)
+bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out)
 {
-    LobbyGhostAppearance_t toReturn;
+    bool toReturn = false;
     const char *pAppearance = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, LOBBY_DATA_APPEARANCE);
-    Q_strncpy(toReturn.base64, pAppearance, sizeof(toReturn.base64));
     if (!FStrEq(pAppearance, ""))
     {
+        Q_strncpy(out.base64, pAppearance, sizeof(out.base64));
+
+        std::string encoded(pAppearance);
+
+        CryptoPP::Base64Decoder decoder;
+        decoder.Put((byte*)encoded.data(), encoded.size());
+        decoder.MessageEnd();
+
         ghostAppearance_t newAppearance;
-        base64_decode(pAppearance, &newAppearance, sizeof(ghostAppearance_t));
-        toReturn.appearance = newAppearance;
+
+        uint64 size = decoder.MaxRetrievable();
+        if (size && size == sizeof ghostAppearance_t)
+        {
+            decoder.Get((byte*)&newAppearance, sizeof ghostAppearance_t);
+            out.appearance = newAppearance;
+            toReturn = true;
+        }
     }
     return toReturn;
 }
@@ -387,7 +409,9 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
             CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(memberChanged);
             if (pEntity)
             {
-                pEntity->SetGhostAppearance(GetAppearanceFromMemberData(memberChanged));
+                LobbyGhostAppearance_t appear;
+                if (GetAppearanceFromMemberData(memberChanged, appear))
+                    pEntity->SetLobbyGhostAppearance(appear);
             }
 
             CheckToAdd(&memberChanged);
@@ -513,7 +537,9 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 newPlayer->SetGhostSteamID(*pID);
                 newPlayer->SetGhostName(pName);
                 newPlayer->Spawn();
-                newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID), true); // Appearance after spawn!
+                LobbyGhostAppearance_t appear;
+                if (GetAppearanceFromMemberData(*pID, appear))
+                    newPlayer->SetLobbyGhostAppearance(appear, true); // Appearance after spawn!
 
                 bool isSpectating = GetIsSpectatingFromMemberData(*pID);
 
