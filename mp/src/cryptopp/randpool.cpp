@@ -16,7 +16,7 @@
 
 // OldRandomPool
 #include "mdc.h"
-#include "cryptopp/modes.h"
+#include "modes.h"
 
 #include <time.h>
 

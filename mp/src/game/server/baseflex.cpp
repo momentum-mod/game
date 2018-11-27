@@ -22,7 +22,7 @@
 #include "sceneentity.h"
 #include "ai_baseactor.h"
 #include "datacache/imdlcache.h"
-#include "tier1/byteswap.h"
+#include "tier1/byteswap_valve.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

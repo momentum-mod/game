@@ -15,7 +15,7 @@
 #endif
 
 #include "tier1/utlmemory.h"
-#include "tier1/byteswap.h"
+#include "tier1/byteswap_valve.h"
 #include <stdarg.h>
 
 

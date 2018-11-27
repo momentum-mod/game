@@ -27,7 +27,7 @@
 #include <game/client/iviewport.h>
 #include <stdlib.h> // MAX_PATH define
 #include <stdio.h>
-#include "byteswap.h"
+#include "byteswap_valve.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

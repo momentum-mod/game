@@ -97,7 +97,7 @@ $Project "tier1"
 			$File	"snappy-stubs-internal.h"
 		}
 		$File	"$SRCDIR\public\tier1\bitbuf.h"
-		$File	"$SRCDIR\public\tier1\byteswap.h"
+		$File	"$SRCDIR\public\tier1\byteswap_valve.h"
 		$File	"$SRCDIR\public\tier1\callqueue.h"
 		$File	"$SRCDIR\public\tier1\characterset.h"
 		$File	"$SRCDIR\public\tier1\checksum_crc.h"
