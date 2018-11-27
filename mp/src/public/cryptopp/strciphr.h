@@ -683,7 +683,7 @@ public:
 NAMESPACE_END
 
 #ifdef CRYPTOPP_MANUALLY_INSTANTIATE_TEMPLATES
-#include "strciphr.cpp"
+#include "../../cryptopp/strciphr.cpp"
 #endif
 
 NAMESPACE_BEGIN(CryptoPP)

@@ -630,7 +630,7 @@ struct ECIES
 NAMESPACE_END
 
 #ifdef CRYPTOPP_MANUALLY_INSTANTIATE_TEMPLATES
-#include "eccrypto.cpp"
+#include "../../cryptopp/eccrypto.cpp"
 #endif
 
 NAMESPACE_BEGIN(CryptoPP)

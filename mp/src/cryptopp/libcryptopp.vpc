@@ -12,8 +12,8 @@ $Configuration
 	$Compiler
 	{
         $PreprocessorDefinitions    "$BASE;CRYPTOPP_DISABLE_AVX;CRYPTOPP_DISABLE_AVX2"
-        $PreprocessorDefinitions    "$BASE;CRYPTOPP_DISABLE_AESNI" [$POSIX||$LINUXALL]
-		$AdditionalIncludeDirectories	"$BASE;..\public\cryptopp"
+        $PreprocessorDefinitions    "$BASE;CRYPTOPP_DISABLE_AESNI;CRYPTOPP_DISABLE_SSSE3;CRYPTOPP_DISABLE_SSSE4" [$POSIX||$LINUXALL]
+		$AdditionalIncludeDirectories	"..\public\cryptopp"
         // Precompiled Headers
 		$Create/UsePrecompiledHeader	"Use Precompiled Header (/Yu)"
 		$Create/UsePCHThroughFile		"pch.h"
