@@ -100,8 +100,6 @@ and getting us started on the manual.
 #ifndef CRYPTOPP_CRYPTLIB_H
 #define CRYPTOPP_CRYPTLIB_H
 
-#undef Verify
-
 #include "config.h"
 #include "stdcpp.h"
 #include "trap.h"
