@@ -1689,6 +1689,7 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 void CHLClient::LevelInitPostEntity( )
 {
 	IGameSystem::LevelInitPostEntityAllSystems();
+    gHUD.LevelInitPostEntity();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
 }

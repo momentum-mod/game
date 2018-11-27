@@ -532,6 +532,15 @@ void CHud::LevelInit( void )
 	}
 }
 
+void CHud::LevelInitPostEntity()
+{
+    // Tell all the registered hud elements to LevelInitPostEnt
+    for (int i = 0; i < m_HudList.Size(); i++)
+    {
+        m_HudList[i]->LevelInitPostEntity();
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: LevelShutdown's called whenever a level is finishing
 //-----------------------------------------------------------------------------

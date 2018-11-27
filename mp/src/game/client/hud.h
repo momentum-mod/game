@@ -109,6 +109,7 @@ public:
 	void						Shutdown( void );
 	// LevelInit's called whenever a new level is starting
 	void						LevelInit( void );
+    void                        LevelInitPostEntity(void);
 	// LevelShutdown's called whenever a level is finishing
 	void						LevelShutdown( void );
 	
