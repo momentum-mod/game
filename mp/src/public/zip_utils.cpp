@@ -20,7 +20,7 @@
 #include "zip_utils.h"
 #include "zip_uncompressed.h"
 #include "checksum_crc.h"
-#include "byteswap.h"
+#include "byteswap_valve.h"
 #include "utlstring.h"
 
 #include "tier1/lzmaDecoder.h"
