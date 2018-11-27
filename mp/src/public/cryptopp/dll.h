@@ -22,7 +22,7 @@
 #include "dh.h"
 #include "dsa.h"
 #include "ec2n.h"
-#include "../../cryptopp/eccrypto.h"
+#include "eccrypto.h"
 #include "ecp.h"
 #include "files.h"
 #include "fips140.h"
@@ -40,7 +40,6 @@
 #include "rw.h"
 #include "sha.h"
 #include "skipjack.h"
-#include "trdlocal.h"
 
 #ifdef CRYPTOPP_IMPORTS
 

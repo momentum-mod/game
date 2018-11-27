@@ -16,7 +16,7 @@
 
 
 // Gamemode for momentum
-typedef enum
+enum GAMEMODES
 {
     MOMGM_SURF = 0, // Surfing (66t, 3500 maxvel)
     MOMGM_BHOP,     // Bhopping (100t, 10k maxvel)
@@ -24,10 +24,10 @@ typedef enum
     MOMGM_UNKNOWN,  // Non-recognized map (no prefix/info ents in it)
     MOMGM_ALLOWED,  // not "official gamemode" but must be allowed for other reasons
 
-} GAMEMODES;
+};
 
 // Run Flags
-typedef enum
+enum RUN_FLAG
 {
     RUNFLAG_NONE = 0,
     RUNFLAG_SCROLL = 1 << 0,
@@ -37,23 +37,23 @@ typedef enum
     RUNFLAG_BW = 1 << 4,
     RUNFLAG_BONUS = 1 << 5
     //MOM_TODO: Figure out the rest
-} RUN_FLAG;
+};
 
-typedef enum
+enum LOBBY_MSG_TYPE
 {
     LOBBY_UPDATE_MEMBER_JOIN = 0,        // Joined the lobby
     LOBBY_UPDATE_MEMBER_JOIN_MAP,        // Joined your map
     LOBBY_UPDATE_MEMBER_LEAVE,           // Left your lobby
     LOBBY_UPDATE_MEMBER_LEAVE_MAP,       // Left your map
-} LOBBY_MSG_TYPE;
+};
 
-typedef enum
+enum SPECTATE_MSG_TYPE
 {
     SPEC_UPDATE_JOIN = 0,           // Started spectating
     SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
     SPEC_UPDATE_STOP,           // Stopped spectating; respawned
     SPEC_UPDATE_LEAVE       // This player left the map/lobby
-} SPECTATE_MSG_TYPE;
+};
 
 #define PANEL_TIMES "times"
 #define IN_TIMES (1<<26)

@@ -10,7 +10,7 @@
 
 #include "cryptlib.h"
 #include "integer.h"
-#include "../../cryptopp/algebra.h"
+#include "algebra.h"
 #include "secblock.h"
 #include "misc.h"
 
@@ -47,12 +47,12 @@ public:
 	/// \brief Construct a ModularArithmetic
 	/// \param modulus congruence class modulus
 	ModularArithmetic(const Integer &modulus = Integer::One())
-		: AbstractRing<Integer>(), m_modulus(modulus), m_result((word)0, modulus.reg.size()) {}
+		: AbstractRing<Integer>(), m_modulus(modulus), m_result(static_cast<word>(0), modulus.reg.size()) {}
 
 	/// \brief Copy construct a ModularArithmetic
 	/// \param ma other ModularArithmetic
 	ModularArithmetic(const ModularArithmetic &ma)
-		: AbstractRing<Integer>(), m_modulus(ma.m_modulus), m_result((word)0, ma.m_modulus.reg.size()) {}
+		: AbstractRing<Integer>(), m_modulus(ma.m_modulus), m_result(static_cast<word>(0), ma.m_modulus.reg.size()) {}
 
 	/// \brief Construct a ModularArithmetic
 	/// \param bt BER encoded ModularArithmetic

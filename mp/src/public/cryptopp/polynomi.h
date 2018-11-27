@@ -8,7 +8,7 @@
 
 #include "cryptlib.h"
 #include "secblock.h"
-#include "../../cryptopp/algebra.h"
+#include "algebra.h"
 #include "misc.h"
 
 #include <iosfwd>

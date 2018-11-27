@@ -10,9 +10,9 @@
 #include "cryptlib.h"
 #include "gf2n.h"
 #include "integer.h"
-#include "../../cryptopp/algebra.h"
+#include "algebra.h"
 #include "ecpoint.h"
-#include "../../cryptopp/eprecomp.h"
+#include "eprecomp.h"
 #include "smartptr.h"
 #include "pubkey.h"
 

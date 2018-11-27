@@ -8,7 +8,7 @@
 
 #include "seckey.h"
 #include "secblock.h"
-#include "../../cryptopp/strciphr.h"
+#include "strciphr.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -53,22 +53,6 @@ struct WAKE_OFB : public WAKE_OFB_Info<B>, public SymmetricCipherDocumentation
 	typedef SymmetricCipherFinal<ConcretePolicyHolder<WAKE_Policy<B>, AdditiveCipherTemplate<> >,  WAKE_OFB_Info<B> > Encryption;
 	typedef Encryption Decryption;
 };
-
-/*
-template <class B = BigEndian>
-class WAKE_ROFB_Policy : public WAKE_Policy<B>
-{
-protected:
-	void Iterate(KeystreamOperation operation, byte *output, const byte *input, unsigned int iterationCount);
-};
-
-template <class B = BigEndian>
-struct WAKE_ROFB : public WAKE_Info<B>
-{
-	typedef SymmetricCipherTemplate<ConcretePolicyHolder<AdditiveCipherTemplate<>, WAKE_ROFB_Policy<B> > > Encryption;
-	typedef Encryption Decryption;
-};
-*/
 
 NAMESPACE_END
 
