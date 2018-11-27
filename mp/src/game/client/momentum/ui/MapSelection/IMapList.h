@@ -18,7 +18,7 @@ struct mapstruct_t
 
     mapstruct_t()
     {
-        m_iGameMode = GAMEMODE_UNKNOWN;
+        m_iGameMode = 3; // GAMEMODE_UNKNOWN
         m_bHasStages = false;
         m_bCompleted = false;
         m_iDifficulty = 1;

@@ -30,7 +30,7 @@ enum GAMEMODES
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
 
-} GAMEMODE;
+};
 
 // Run Flags
 enum RUN_FLAG

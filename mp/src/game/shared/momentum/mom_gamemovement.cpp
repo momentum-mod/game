@@ -2170,46 +2170,6 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     return blocked;
 }
 
-/*
-bool CTraceFilterOnlyTriggerSlide::ShouldHitEntity(IHandleEntity *pEntity, int contentsMask)
-{
-#ifdef CLIENT_DLL
-    auto pEnt = cl_entitylist->GetClientEntityFromHandle(pEntity->GetRefEHandle());
-#else
-    auto pEnt = gEntList.GetBaseEntity(pEntity->GetRefEHandle());
-#endif
-
-    if (pEnt != nullptr)
-    {
-#ifdef CLIENT_DLL
-        auto ClientClass = pEnt->GetClientClass();
-
-        if (!strcmp(ClientClass->GetName(), "CTriggerSlide"))
-        {
-            return true;
-        }
-#else
- 
-
-
-
-
-
-
-
-
-
-
-        if (!strcmp(pEnt->GetClassname(), "CTriggerSlide"))
-        {
-            return true;
-        }
-#endif
-    }
-
-    return false;
-}*/
-
 // Expose our interface.
 static CMomentumGameMovement g_GameMovement;
 CMomentumGameMovement *g_pMomentumGameMovement = &g_GameMovement;
