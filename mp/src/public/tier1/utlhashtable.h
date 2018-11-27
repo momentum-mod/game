@@ -701,7 +701,7 @@ void CUtlHashtable<KeyT, ValueT, KeyHashT, KeyIsEqualT, AltKeyT>::DbgCheckIntegr
 		if (m_table[i].IsValid())
 		{
 			Assert( Find(m_table[i]->m_key) == (handle_t)i );
-			Verify( clone.Remove(m_table[i]->m_key) );
+			Assert( clone.Remove(m_table[i]->m_key) );
 		}
 		else
 		{
