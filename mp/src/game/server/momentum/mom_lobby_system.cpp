@@ -257,7 +257,7 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
         std::string base64Appearance;
 
         CryptoPP::StringSource ss(static_cast<unsigned char *>(static_cast<void*>(&app)), 
-                                  sizeof ghostAppearance_t, 
+                                  sizeof(ghostAppearance_t), 
                                   true,
                                   new CryptoPP::Base64Encoder(
                                       new CryptoPP::StringSink(base64Appearance)
@@ -283,10 +283,10 @@ bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, L
 
         ghostAppearance_t newAppearance;
 
-        uint64 size = decoder.MaxRetrievable();
-        if (size && size == sizeof ghostAppearance_t)
+        CryptoPP::lword size = decoder.MaxRetrievable();
+        if (size && size == sizeof(ghostAppearance_t))
         {
-            decoder.Get((byte*)&newAppearance, sizeof ghostAppearance_t);
+            decoder.Get((byte*)&newAppearance, sizeof(ghostAppearance_t));
             out.appearance = newAppearance;
             toReturn = true;
         }

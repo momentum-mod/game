@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "shark.h"
 #include "misc.h"
-#include "cryptopp/modes.h"
+#include "modes.h"
 #include "gf256.h"
 
 #if CRYPTOPP_GCC_DIAGNOSTIC_AVAILABLE

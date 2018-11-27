@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "byteswap.h"
+#include "byteswap_valve.h"
 
 //-----------------------------------------------------------------------------
 // Copy a single field from the input buffer to the output buffer, swapping the bytes if necessary
