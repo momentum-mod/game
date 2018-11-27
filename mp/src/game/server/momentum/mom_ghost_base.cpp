@@ -43,6 +43,7 @@ void CMomentumGhostBaseEntity::Spawn()
     RemoveEffects(EF_NODRAW);
     //~~~The magic combo~~~ (collides with triggers, not with players)
     ClearSolidFlags();
+    AddFlag(FL_CLIENT);
     SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
     SetMoveType(MOVETYPE_STEP);
     SetSolid(SOLID_BBOX);
