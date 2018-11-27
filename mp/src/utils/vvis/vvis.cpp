@@ -21,7 +21,7 @@
 #include "ilaunchabledll.h"
 #include "tools_minidump.h"
 #include "loadcmdline.h"
-#include "byteswap.h"
+#include "byteswap_valve.h"
 
 
 int			g_numportals;
