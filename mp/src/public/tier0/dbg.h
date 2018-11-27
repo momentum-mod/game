@@ -369,7 +369,7 @@ DBG_INTERFACE struct SDL_Window * GetAssertDialogParent();
 #define  AssertFunc( _exp, _f )								((void)0)
 #define  AssertEquals( _exp, _expectedValue )				((void)0)
 #define  AssertFloatEquals( _exp, _expectedValue, _tol )	((void)0)
-#define  Verify( _exp )										(_exp)
+//#define  Verify( _exp )										(_exp)
 #define	 VerifyMsg1( _exp, _msg, a1 )						(_exp)
 #define	 VerifyMsg2( _exp, _msg, a1, a2 )					(_exp)
 #define	 VerifyMsg3( _exp, _msg, a1, a2, a3 )				(_exp)
