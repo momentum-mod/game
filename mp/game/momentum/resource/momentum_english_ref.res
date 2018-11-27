@@ -81,7 +81,7 @@
         "MOM_Stage" "Stage"
         "MOM_Stage_Start" "Stage %s1 Start"
         "MOM_Linear" "Linear Map"
-		"MOM_Staged" "Staged Map"
+        "MOM_Staged" "Staged Map"
         "MOM_Cheater_Message" "If you wish to submit your times,\nyou must turn sv_cheats off\nand restart the map!"
         "MOM_InsideStartZone" "Start Zone"
         "MOM_MapFinished" "Map Finished"
@@ -118,7 +118,7 @@
         "MOM_Gun" "Momentum Gun"
 
     //Map Selection
-		"MOM_MapSelector_OnlineMaps" "Online Maps"
+        "MOM_MapSelector_OnlineMaps" "Online Maps"
         "MOM_MapSelector_LocalMaps" "Local Maps"
         "MOM_MapSelector_Filter" "Filter"
         "MOM_MapSelector_All" "<All>"
