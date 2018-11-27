@@ -38,7 +38,8 @@ public:
 
 	// LevelInit's called whenever a new level is starting
 	virtual void				LevelInit( void ) { return; };
-	// LevelShutdown's called whenever a level is finishing
+    virtual void                LevelInitPostEntity(void) {};
+	// LevelShutdown's called whenever a level is finishing (post entity)
 	virtual void				LevelShutdown( void ) { return; };
 
 	// called whenever the hud receives "reset" message, which is (usually) every time the client respawns after getting killed
