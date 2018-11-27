@@ -376,6 +376,12 @@ void CMomentumTimer::ClearStartMark()
     m_pStartZoneMark = nullptr;
 }
 
+void CMomentumTimer::SetPaused(bool bEnable)
+{
+    m_bPaused = bEnable;
+    g_ReplaySystem.SetPaused(bEnable);
+}
+
 // Practice mode that stops the timer and allows the player to noclip.
 void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {

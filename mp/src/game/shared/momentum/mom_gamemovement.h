@@ -6,8 +6,6 @@
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
-class CMomentumPlayer;
-struct surface_data_t;
 class IMovementListener;
 class CMomentumPlayer;
 
@@ -102,14 +100,11 @@ class CMomentumGameMovement : public CGameMovement
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
 
   private:
-    bool m_bWasInAir;
-    float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
 
     bool m_bCheckForGrabbableLadder;
-    CTriggerSlide *m_TriggerSlide;
 };
 
 extern CMomentumGameMovement *g_pMomentumGameMovement;
