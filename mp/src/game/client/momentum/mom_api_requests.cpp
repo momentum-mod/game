@@ -56,15 +56,45 @@ bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
     return false;
 }
 
-bool CAPIRequests::GetTop10MapTimes(const char* pMapName, CallbackFunc func)
+bool CAPIRequests::GetTop10MapTimes(uint32 mapID, CallbackFunc func)
 {
     AssertMsg(0, "%s Needs implementation!\n", __FUNCTION__);
     return false;
 }
 
-bool CAPIRequests::GetMapInfo(const char* pMapName, CallbackFunc func)
+bool CAPIRequests::GetMapInfo(uint32 mapID, CallbackFunc func)
 {
-    AssertMsg(0, "%s Needs implementation!\n", __FUNCTION__);
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u", mapID).Get()), k_EHTTPMethodGET))
+    {
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "expand", "info");
+        return SendAPIRequest(handle, func, __FUNCTION__);
+    }
+    return false;
+}
+
+bool CAPIRequests::GetMapByName(const char *pMapName, CallbackFunc func)
+{
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ("maps"), k_EHTTPMethodGET))
+    {
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "search", pMapName);
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "limit", "1");
+        return SendAPIRequest(handle, func, __FUNCTION__);
+    }
+    return false;
+}
+
+bool CAPIRequests::SubmitRun(const CUtlBuffer &replayBuf, CallbackFunc func)
+{
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ("runs"), k_EHTTPMethodPOST))
+    {
+        SteamHTTP()->SetHTTPRequestRawPostBody(handle, "application/octet-stream", (uint8*) replayBuf.Base(), replayBuf.TellPut());
+
+        return SendAPIRequest(handle, func, __FUNCTION__);
+    }
+
     return false;
 }
 

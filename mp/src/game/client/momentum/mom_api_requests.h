@@ -31,9 +31,12 @@ public:
 
     // ===== Maps ======
     bool GetMaps(KeyValues *pKvFilters, CallbackFunc func);
-    bool GetTop10MapTimes(const char* pMapName, CallbackFunc func);
-    bool GetMapInfo(const char* pMapName, CallbackFunc func);
+    bool GetTop10MapTimes(uint32 mapID, CallbackFunc func);
+    bool GetMapInfo(uint32 mapID, CallbackFunc func);
+    bool GetMapByName(const char *pMapName, CallbackFunc func);
 
+    // ==== Leaderboards ====
+    bool SubmitRun(const CUtlBuffer &replayBuf, CallbackFunc func);
 
     // === File Downloading ===
     HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end);
