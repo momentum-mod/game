@@ -110,6 +110,8 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
         pPlayer->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
+        stageEvent->SetInt("ent", pPlayer->entindex());
+        stageEvent->SetInt("num", stageNum);
         if (g_pMomentumTimer->IsRunning())
         {
             pPlayer->m_RunStats.SetZoneExitSpeed(stageNum - 1, pPlayer->GetLocalVelocity().Length(),
@@ -126,6 +128,8 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
         if (pGhost)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
+            stageEvent->SetInt("ent", pGhost->entindex());
+            stageEvent->SetInt("num", stageNum);
             pGhost->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
         }
@@ -269,29 +273,27 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
     }
     else
     {
-        // This can't be done anymore here due that the player can start timer in start zone while jumping.
 
-        /*
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
             pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
             pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
-            pGhost->m_SrvData.m_RunData.m_bTimerRunning = true;
-            pGhost->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
-            pGhost->StartTimer(gpGlobals->tickcount);
+            //pGhost->m_SrvData.m_RunData.m_bTimerRunning = true;
+            //pGhost->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
+            //pGhost->StartTimer(gpGlobals->tickcount);
 
+            // This can't be done anymore here due that the player can start timer in start zone while jumping.
             // Needed for hud_comparisons
-            IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
+            /*IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
             if (timerStateEvent)
             {
                 timerStateEvent->SetInt("ent", pGhost->entindex());
                 timerStateEvent->SetBool("is_running", true);
 
                 gameeventmanager->FireEvent(timerStateEvent);
-            }
+            }*/
         }
-        */
     }
 
     BaseClass::OnEndTouch(pOther);
@@ -464,6 +466,8 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
 
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
+        stageEvent->SetInt("ent", pPlayer->entindex());
+        stageEvent->SetInt("num", m_iZoneNumber);
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
     }
     else
@@ -472,6 +476,8 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
         if (pGhost)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
+            stageEvent->SetInt("ent", pGhost->entindex());
+            stageEvent->SetInt("num", m_iZoneNumber);
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
             pGhost->m_SrvData.m_RunData.m_iOldZone = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
             pGhost->m_SrvData.m_RunData.m_iOldBonusZone = pGhost->m_SrvData.m_RunData.m_iBonusZone;

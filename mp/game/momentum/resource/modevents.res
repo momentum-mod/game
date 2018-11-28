@@ -27,8 +27,10 @@
 
 "modevents"
 {
-	"zone_enter"//When the player/ghost enters a checkpoint/stage trigger
+	"zone_enter"//When the player/ghost enters a zone trigger
 	{
+        "ent" "short"
+        "num" "short"
 	}
     "zone_exit"//When the player exits the start trigger for the stage
     {
