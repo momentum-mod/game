@@ -1,9 +1,10 @@
 #pragma once
 
-#include "cbase.h"
 #include <vgui_controls/Panel.h>
 #include <hudelement.h>
 #include "run/run_compare.h"
+
+class C_MomentumPlayer;
 
 class C_RunComparisons : public CHudElement, public vgui::Panel
 {
@@ -18,9 +19,12 @@ public:
     void Reset() OVERRIDE;
     void Paint() OVERRIDE;
     bool ShouldDraw() OVERRIDE;
-    void OnTick() OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
 
     void FireGameEvent(IGameEvent *event) OVERRIDE;
+
+    void UpdateCurrentEnt();
 
     void LoadComparisons();
     void LoadBogusComparisons();
@@ -36,18 +40,7 @@ public:
     int GetMaximumTall();
     void SetMaxWide(int);
 
-    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE
-    {
-        Panel::ApplySchemeSettings(pScheme);
-        m_hTextFont = pScheme->GetFont("HudHintTextSmall", true);
-        SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
-        m_cGain = GetSchemeColor("MOM.Compare.Gain", pScheme);
-        m_cLoss = GetSchemeColor("MOM.Compare.Loss", pScheme);
-        m_cTie = GetSchemeColor("MOM.Compare.Tie", pScheme);
-        GetSize(m_iDefaultWidth, m_iDefaultTall);//gets "wide" and "tall" from scheme .res file
-        m_iMaxWide = m_iDefaultWidth;
-        GetPos(m_iDefaultXPos, m_iDefaultYPos);//gets "xpos" and "ypos" from scheme .res file
-    }
+    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
     //Bogus Pulse is a flag-based variable, using the run_compare enum. Allows for multiple parsing.
     void SetBogusPulse(int i)
@@ -93,13 +86,9 @@ protected:
     //Number of pixels between each component of the comparison panel,
     //given mom_comparisons_format_output is 1
     CPanelAnimationVar(int, format_spacing, "format_spacing", "2");
-
     CPanelAnimationVar(float, bogus_alpha, "BogusAlpha", "255");
-
-    CPanelAnimationVarAliasType(float, text_xpos, "text_xpos", "1",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, text_ypos, "text_ypos", "2",
-        "proportional_float");
+    CPanelAnimationVarAliasType(float, text_xpos, "text_xpos", "1", "proportional_float");
+    CPanelAnimationVarAliasType(float, text_ypos, "text_ypos", "2", "proportional_float");
 
 
 private:
@@ -120,6 +109,8 @@ private:
     CMomRunStats::data m_bogusData;
     int m_nCurrentBogusPulse;
 
+    C_MomentumPlayer *m_pLocalPlayer;
+    ConVarRef m_cvarVelType;
 };
 
 //Really hacky way to interface this hud element, as opposed to calling the gHUD.FindElement everywhere
