@@ -11,7 +11,6 @@
 
 #include "mom_steam_helper.h"
 #include "mom_shareddefs.h"
-#include "util/jsontokv.h"
 #include "fmtstr.h"
 
 #include "vgui_controls/ImagePanel.h"

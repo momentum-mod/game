@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
+       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
        $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
     }
 }
@@ -224,15 +224,6 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
-                {
-                    $Configuration
-                    {
-                        $Compiler
-                        {
-                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-                        }
-                    }
-                }
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
                 {
@@ -349,22 +340,6 @@ $Project "Client (Momentum)"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
-        
-        $Folder "JSON Parser"
-        {
-            $File "$SRCDIR\thirdparty\gason\gason.h"
-            $File "$SRCDIR\thirdparty\gason\gason.cpp"
-            {
-                $Configuration
-                {
-                    $Compiler
-                    {
-                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-                        $TreatWarningsAsErrors "No"
-                    }
-                }
-            }
-        }
     }
 
     $Folder "Link Libraries"

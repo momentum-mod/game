@@ -1,83 +1,91 @@
+#include "cbase.h"
+
 #include "jsontokv.h"
-#include "gason.h"
+#include "rapidjson/document.h"
 #include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
-void CJsonToKeyValues::Convert(JsonNode *node, KeyValues *pOut)
+using namespace rapidjson;
+
+inline void IterObject(const char *pName, Value::ConstObject obj, KeyValues *kv);
+
+inline void MapNode(Value::ConstMemberIterator itr, KeyValues *kv)
 {
-    //This iterates through the base JsonObject node
-    pOut->UsesEscapeSequences(true);
-    while (node)
+    switch (itr->value.GetType())
     {
-        MapNode(node, pOut);
-        node = node->next;
+    case kNumberType:
+        {
+            if (itr->value.IsInt())
+                kv->SetInt(itr->name.GetString(), itr->value.GetInt());
+            else if (itr->value.IsUint64())
+                kv->SetUint64(itr->name.GetString(), itr->value.GetUint64());
+            else if (itr->value.IsLosslessFloat())
+                kv->SetFloat(itr->name.GetString(), itr->value.GetFloat());
+            else // Default to float
+                kv->SetFloat(itr->name.GetString(), itr->value.GetDouble());
+        }
+        break;
+    case kStringType:
+        kv->SetString(itr->name.GetString(), itr->value.GetString());
+        break;
+    case kArrayType:
+        {
+            KeyValues *pKv = kv->CreateNewKey();
+            pKv->SetName(itr->name.GetString());
+            for (Value::ConstValueIterator arrItr = itr->value.Begin(); arrItr != itr->value.End(); ++arrItr)
+            {
+                // We can only support arrays of objects... for now
+                if (arrItr->GetType() == kObjectType)
+                    IterObject(nullptr, arrItr->GetObject(), pKv);
+                // MOM_TODO: theoretically any array can work, it's just the keys would be disregarded, like the array of objects are
+                // Consider creating garbage keys for used values, and iterating over only values of the array.
+                // The thing to keep in mind is that whoever is reading the array would know what data type it should be...
+            }
+        }
+        break;
+    case kObjectType:
+        IterObject(itr->name.GetString(), itr->value.GetObject(), kv);
+        break;
+    case kTrueType:
+    case kFalseType:
+        kv->SetBool(itr->name.GetString(), itr->value.GetType() == kTrueType);
+        break;
+    case kNullType:
+        kv->SetString(itr->name.GetString(), nullptr);
+        break;
+    }
+}
+
+inline void IterObject(const char *pName, Value::ConstObject obj, KeyValues *kv)
+{
+    KeyValues *pKv = kv->CreateNewKey();
+    if (pName)
+        pKv->SetName(pName);
+
+    for (Value::ConstMemberIterator itr = obj.MemberBegin(); itr != obj.MemberEnd(); ++itr)
+    {
+        MapNode(itr, pKv);
     }
 }
 
 bool CJsonToKeyValues::ConvertJsonToKeyValues(char *pInput, KeyValues *pOut)
 {
-    JsonAllocator alloc; // Allocator
-    JsonValue val; // Outer object
-    char *endPtr; // Just for show, I guess
-
-    int status = jsonParse(pInput, &endPtr, &val, alloc);
-    if (status == JSON_OK)
+    Document doc;
+    doc.Parse(pInput);
+    if (doc.HasParseError())
     {
-        Convert(val.toNode(), pOut);
+        pOut->SetString("err_parse", CFmtStr("Error parsing JSON object! Code: %d", doc.GetParseError()).Get());
+    }
+    else
+    {
+        pOut->UsesEscapeSequences(true);
+        for (Value::ConstMemberIterator itr = doc.MemberBegin(); itr != doc.MemberEnd(); ++itr)
+        {
+            MapNode(itr, pOut);
+        }
         return true;
     }
 
-    pOut->SetString("err_parse", CFmtStr("%s at %zd", jsonStrError(status), endPtr - pInput).Get());
-    
     return false;
-}
-
-void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)
-{
-    if (!node || !kv)
-        return;
-    JsonValue value = node->value;
-    // What are we?
-    switch (value.getTag())
-    {
-    case JSON_NUMBER:
-        kv->SetFloat(node->key, value.toNumber());
-        break;
-    case JSON_STRING:
-        kv->SetString(node->key, value.toString());
-        break;
-    case JSON_ARRAY:
-    case JSON_OBJECT:
-        {
-            KeyValues *pKv = kv->CreateNewKey();
-            MapArrayOrObject(node, pKv);
-        }
-        break;
-    case JSON_TRUE:
-    case JSON_FALSE:
-        kv->SetBool(node->key, value.getTag() == JSON_TRUE);
-        break;
-    case JSON_NULL:
-        kv->SetString(node->key, nullptr);
-        break;
-    }
-}
-
-void CJsonToKeyValues::MapArrayOrObject(JsonNode *node, KeyValues* pKvInto)
-{
-    // When node->key is null on the json, key is not nullptr, but 0xffeeffee.
-    // This value happens because JSON arrays of JSON objects don't have any name, and the
-    // allocator doesn't properly memset the allocated node to be fully null, so 0xffeeffee is
-    // the value.
-    bool isKeyNull = node->key == nullptr || POINTER_TO_INT(node->key) == 0xffeeffee;
-
-    // Parent keyvalue.
-    if (!isKeyNull)
-        pKvInto->SetName(node->key);
-
-    for (auto i : node->value)
-    {
-        MapNode(i, pKvInto);
-    }
 }
