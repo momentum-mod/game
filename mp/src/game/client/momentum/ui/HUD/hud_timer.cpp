@@ -190,7 +190,7 @@ void C_HudTimer::Reset()
     m_bPlayerInZone = false;
     m_bMapFinished = false;
     m_bMapIsLinear = false;
-    m_iSavelocCount = m_iPlayerSavelocCount = m_iSavelocCurrent = m_iSavelocCurrent = 0;
+    m_iSavelocCount = m_iPlayerSavelocCount = m_iSavelocCurrent = 0;
     m_pRunStats = nullptr;
 }
 

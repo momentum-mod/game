@@ -13,7 +13,6 @@
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
-#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
@@ -165,7 +164,7 @@ void C_HudMapInfo::Paint()
         if (m_iBonusZone > 0)
         {
             char bufBonus[BUFSIZELOCL];
-            sprintf_s(bufBonus, bonusLocalized, m_iBonusZone);
+            Q_snprintf(bufBonus, BUFSIZELOCL, bonusLocalized, m_iBonusZone);
             // No stages/checkpoints found
             Q_strncpy(m_pszStringStages, bufBonus, sizeof(m_pszStringStages));
         }
@@ -191,7 +190,7 @@ void C_HudMapInfo::Paint()
             else
             {
                 char bufBonus[BUFSIZELOCL];
-                sprintf_s(bufBonus, bonusstartLocalized, m_iBonusZone);
+                Q_snprintf(bufBonus, BUFSIZELOCL, bonusstartLocalized, m_iBonusZone);
                 Q_strncpy(m_pszStringStatus, bufBonus, sizeof(m_pszStringStatus));
                 ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
             }
@@ -206,7 +205,7 @@ void C_HudMapInfo::Paint()
             else
             {
                 char bufBonus[BUFSIZELOCL];
-                sprintf_s(bufBonus, bonusendLocalized, m_iBonusZone);
+                Q_snprintf(bufBonus, BUFSIZELOCL, bonusendLocalized, m_iBonusZone);
                 Q_strncpy(m_pszStringStatus, bufBonus, sizeof(m_pszStringStatus));
                 ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
             }

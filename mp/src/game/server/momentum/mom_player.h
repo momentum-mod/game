@@ -9,6 +9,7 @@
 #include "GameEventListener.h"
 #include "mom_modulecomms.h"
 #include "IMovementListener.h"
+#include "utlvector.h"
 
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
