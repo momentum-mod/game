@@ -297,7 +297,7 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
                 pData[pCallback->m_unBodySize] = 0; // Make sure to null terminate
 
                 // Fifthly, parse this JSON and convert to KeyValues
-                char *pDataPtr = reinterpret_cast<char *>(pData);
+                char *pDataPtr = reinterpret_cast<char*>(pData);
                 if (CJsonToKeyValues::ConvertJsonToKeyValues(pDataPtr, pKvBodyData))
                 {
                     // Log out the request if needed
