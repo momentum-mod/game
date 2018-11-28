@@ -1,9 +1,14 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "GameEventListener.h"
+#include "igamesystem.h"
+
+#define ENABLE_STEAM_LEADERBOARDS 0
+#define ENABLE_HTTP_LEADERBOARDS 1
+
+#if ENABLE_STEAM_LEADERBOARDS
 #include "steam/steam_api.h"
+#endif
 
 class CRunPoster : public CGameEventListener, public CAutoGameSystem
 {
@@ -17,6 +22,16 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
+#if ENABLE_HTTP_LEADERBOARDS
+public:
+    void RunSubmitCallback(KeyValues *pKv);
+    void OnMapLoadRequest(KeyValues *pKv);
+private:
+    bool m_bShouldSubmitForMap;
+#endif
+
+#if ENABLE_STEAM_LEADERBOARDS
+public:
     SteamLeaderboard_t m_hCurrentLeaderboard;
     CCallResult<CRunPoster, LeaderboardFindResult_t> m_cLeaderboardFindResult;
     void OnLeaderboardFind(LeaderboardFindResult_t *pResult, bool bIOFailure);
@@ -36,4 +51,8 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
 private:
     char m_szFileName[MAX_PATH];
     char m_szFilePath[MAX_PATH];
+#endif
+
+private:
+    char m_szMapName[MAX_MAP_NAME];
 };

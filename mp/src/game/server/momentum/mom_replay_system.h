@@ -16,6 +16,7 @@ public:
     // inherited member from CAutoGameSystemPerFrame
     void FrameUpdatePostEntityThink() OVERRIDE;
 
+    void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
 
     void PostInit() OVERRIDE;
@@ -65,6 +66,8 @@ public:
     bool m_bWasInReplay;
     bool m_bPaused;
     //CMomRunStats m_SavedRunStats;
+    // Map SHA1 hash for version purposes
+    char m_szMapHash[41];
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;

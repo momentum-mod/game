@@ -492,11 +492,10 @@ void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, co
 
     te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
 }
-bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
+
+bool MomentumUtil::GetMapHash(const char* pMapName, char* pOut, size_t outLen)
 {
-    bool bFile = false, bHash = false;
-    if (!(pMapName && pMapHash)) 
-        return false;
+    bool bFile = false;
     FileFindHandle_t found;
     char szPath[MAX_PATH];
     Q_snprintf(szPath, MAX_PATH, "maps/%s.bsp", pMapName);
@@ -510,12 +509,25 @@ bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
         CryptoPP::SHA1 sha1;
         std::string digest;
         CryptoPP::FileSource f(outPath, true, new CryptoPP::HashFilter(sha1, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest), false, 0, "")));
-        
-        bHash = FStrEq(digest.c_str(), pMapHash);
+        Q_strncpy(pOut, digest.c_str(), outLen);
     }
     g_pFullFileSystem->FindClose(found);
 
-    return bFile && bHash;
+    return bFile;
+}
+
+bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
+{
+    if (!(pMapName && pMapHash)) 
+        return false;
+
+    char hashDigest[41];
+    if (GetMapHash(pMapName, hashDigest, 41))
+    {
+        return FStrEq(hashDigest, pMapHash);
+    }
+
+    return false;
 }
 
 // Gross hack needed because scheme()->GetImage still returns an image even if it's null (returns the null texture)

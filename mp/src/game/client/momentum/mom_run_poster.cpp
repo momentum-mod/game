@@ -3,15 +3,19 @@
 #include "filesystem.h"
 #include "mom_run_poster.h"
 #include "mom_shareddefs.h"
+#include "mom_api_requests.h"
 
 #include <tier0/memdbgon.h>
 
-extern IFileSystem *filesystem;
-
-#define ENABLE_HTTP_LEADERBOARDS 0
-
-CRunPoster::CRunPoster(): m_hCurrentLeaderboard(0)
+CRunPoster::CRunPoster()
 {
+#if ENABLE_STEAM_LEADERBOARDS
+    m_hCurrentLeaderboard = 0;
+#endif
+#if ENABLE_HTTP_LEADERBOARDS
+    m_bShouldSubmitForMap = false;
+#endif
+    m_szMapName[0] = '\0';
 }
 
 CRunPoster::~CRunPoster() {}
@@ -27,21 +31,39 @@ void CRunPoster::LevelInitPostEntity()
     const char *pMapName = MapName();
     if (pMapName)
     {
+        Q_strncpy(m_szMapName, pMapName, MAX_MAP_NAME);
+#if ENABLE_STEAM_LEADERBOARDS
         CHECK_STEAM_API(SteamUserStats());
         SteamAPICall_t findCall = SteamUserStats()->FindOrCreateLeaderboard(pMapName, k_ELeaderboardSortMethodAscending, k_ELeaderboardDisplayTypeTimeMilliSeconds);
         m_cLeaderboardFindResult.Set(findCall, this, &CRunPoster::OnLeaderboardFind);
+#endif
+
+#if ENABLE_HTTP_LEADERBOARDS
+        // MOM_TODO: Check a local map cache first before firing this
+        if (g_pAPIRequests->GetMapByName(pMapName, UtlMakeDelegate(this, &CRunPoster::OnMapLoadRequest)))
+        {
+            
+        }
+#endif
     }
 }
 
 void CRunPoster::LevelShutdownPreClearSteamAPIContext()
 {
+#if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
+#endif
+#if ENABLE_HTTP_LEADERBOARDS
+    m_bShouldSubmitForMap = false;
+#endif
+    m_szMapName[0] = '\0';
 }
 
 void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 {
     if (pEvent->GetBool("save"))
     {
+#if ENABLE_STEAM_LEADERBOARDS
         CHECK_STEAM_API(SteamUserStats());
 
         if (!m_hCurrentLeaderboard)
@@ -68,36 +90,33 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
         SteamAPICall_t uploadScore = SteamUserStats()->UploadLeaderboardScore(m_hCurrentLeaderboard, 
             k_ELeaderboardUploadScoreMethodKeepBest, runTime, nullptr, 0);
         m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
-
+#endif
 
 #if ENABLE_HTTP_LEADERBOARDS
-        CUtlBuffer buf;
-        if (SteamHTTP() && filesystem->ReadFile(filePath, "MOD", buf))
+        if (m_bShouldSubmitForMap)
         {
-            char szURL[MAX_PATH] = "http://momentum-mod.org/postscore/";
-            HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
-            int size = buf.Size();
-            char *data = new char[size];
-            buf.Get(data, size);
-            SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "file", data);
-
-            SteamAPICall_t apiHandle;
-
-            if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+            CUtlBuffer buf;
+            if (g_pFullFileSystem->ReadFile(pEvent->GetString("filepath"), "MOD", buf))
             {
-                Warning("Run sent.\n");
-                (&cbPostTimeCallback)->Set(apiHandle, this, &CRunPoster::PostTimeCallback);
+                if (g_pAPIRequests->SubmitRun(buf, UtlMakeDelegate(this, &CRunPoster::RunSubmitCallback)))
+                {
+                    DevLog(2, "Run submitted!\n");
+                }
+                else
+                {
+                    Warning("Failed to submit run; API call returned false!\n");
+                }
             }
             else
             {
-                Warning("Failed to send HTTP Request to send run!\n");
-                SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+                Warning("Failed to submit run: could not read file %s from %s !\n", pEvent->GetString("filename"), pEvent->GetString("filepath"));
             }
         }
 #endif
     }
 }
 
+#if ENABLE_STEAM_LEADERBOARDS
 void CRunPoster::OnLeaderboardFind(LeaderboardFindResult_t* pResult, bool bIOFailure)
 {
     if (bIOFailure)
@@ -197,72 +216,60 @@ void CRunPoster::OnFileShared(RemoteStorageFileShareResult_t* pResult, bool bIOF
     SteamAPICall_t UGCLeaderboardCall = SteamUserStats()->AttachLeaderboardUGC(m_hCurrentLeaderboard, pResult->m_hFile);
     m_cLeaderboardUGCSet.Set(UGCLeaderboardCall, this, &CRunPoster::OnLeaderboardUGCSet);
 }
+#endif
 
 #if ENABLE_HTTP_LEADERBOARDS
-void CRunPoster::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+void CRunPoster::RunSubmitCallback(KeyValues* pKv)
 {
-    // if (bIOFailure)
-    //    return;
-    // uint32 size;
-    // SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    // if (size == 0)
-    //{
-    //    Warning("MomentumUtil::PostTimeCallback: 0 body size!\n");
-    //    return;
-    //}
-    // DevLog("Size of body: %u\n", size);
-    // uint8 *pData = new uint8[size];
-    // SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        // MOM_TODO: parse the data object here
 
-    // IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
+        // Necessary so that the leaderboards and hud_mapfinished update appropriately
+        if (runUploadedEvent)
+        {
+            runUploadedEvent->SetBool("run_posted", true);
+            // MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
+            gameeventmanager->FireEvent(runUploadedEvent);
+        }
+    }
+    else if (pErr)
+    {
+        if (runUploadedEvent)
+        {
+            runUploadedEvent->SetBool("run_posted", false);
+            // TODO: send an error here
+            gameeventmanager->FireEvent(runUploadedEvent);
+        }
+    }
+}
 
-    // JsonValue val; // Outer object
-    // JsonAllocator alloc;
-    // char *pDataPtr = reinterpret_cast<char *>(pData);
-    // DevLog("pDataPtr: %s\n", pDataPtr);
-    // char *endPtr;
-    // int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    // if (status == JSON_OK)
-    //{
-    //    DevLog("JSON Parsed!\n");
-    //    if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-    //    {
-    //        // toNode() returns the >>payload<< of the JSON object !!!
-
-    //        DevLog("Outer is JSON OBJECT!\n");
-    //        JsonNode *node = val.toNode();
-    //        DevLog("Outer has key %s with value %s\n", node->key, node->value);
-
-    //        // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are
-    //        parsing
-    //        // the JSON
-    //        if (node && node->value.getTag() == JSON_TRUE)
-    //        {
-    //            DevLog("RESPONSE WAS TRUE!\n");
-    //            // Necessary so that the leaderboards and hud_mapfinished update appropriately
-    //            if (runUploadedEvent)
-    //            {
-    //                runUploadedEvent->SetBool("run_posted", true);
-    //                // MOM_TODO: Once the server updates this to contain more info, parse and do more with the
-    //                response
-    //                gameeventmanager->FireEvent(runUploadedEvent);
-    //            }
-    //        }
-    //    }
-    //}
-    // else
-    //{
-    //    Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    //}
-    //// Last but not least, free resources
-    // alloc.deallocate();
-    // if (pDataPtr)
-    //{
-    //    delete[] pDataPtr;
-    //}
-    // pDataPtr = nullptr;
-    // SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+void CRunPoster::OnMapLoadRequest(KeyValues* pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    // KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        KeyValues *pMapsData = pData->FindKey("maps");
+        if (pMapsData)
+        {
+            KeyValues *pMapData = pMapsData->FindKey("1");
+            if (pMapData)
+            {
+                // First check if the map is what we care about
+                if (FStrEq(pMapData->GetString("name"), m_szMapName))
+                {
+                    // Now check if the status is alright
+                    int status = pMapData->GetInt("statusFlag");
+                    if (status == MAP_APPROVED || status == MAP_PRIVATE_TESTING || status == MAP_PUBLIC_TESTING)
+                        m_bShouldSubmitForMap = true;
+                }
+            }
+        }
+    } // Otherwise it'll just be false for this map
 }
 #endif
 

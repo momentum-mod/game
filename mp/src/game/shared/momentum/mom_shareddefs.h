@@ -45,6 +45,18 @@ enum RUN_FLAG
     //MOM_TODO: Figure out the rest
 };
 
+enum MAP_UPLOAD_STATUS
+{
+    MAP_APPROVED = 0,
+    MAP_PENDING,
+    MAP_NEEDS_REVISION,
+    MAP_PRIVATE_TESTING,
+    MAP_PUBLIC_TESTING,
+    MAP_READY_FOR_RELEASE,
+    MAP_REJECTED,
+    MAP_REMOVED,
+};
+
 enum LOBBY_MSG_TYPE
 {
     LOBBY_UPDATE_MEMBER_JOIN = 0,        // Joined the lobby
