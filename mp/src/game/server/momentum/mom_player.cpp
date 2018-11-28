@@ -575,9 +575,9 @@ bool CMomentumPlayer::FindOnehopOnList(CTriggerOnehop *pTrigger) const
 
 void CMomentumPlayer::RemoveAllOnehops()
 {
-    for (auto i : m_vecOnehops)
+    FOR_EACH_VEC(m_vecOnehops, i)
     {
-        i->SethopNoLongerJumpableFired(false);
+        m_vecOnehops[i]->SethopNoLongerJumpableFired(false);
     }
 
     m_vecOnehops.RemoveAll();
