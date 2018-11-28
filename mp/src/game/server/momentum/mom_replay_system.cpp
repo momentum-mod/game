@@ -9,6 +9,7 @@
 #include "fmtstr.h"
 #include "steam/steam_api.h"
 #include "run/mom_replay_factory.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
@@ -25,6 +26,7 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     m_iStartTimerTick(-1),
     m_fRecEndTime(-1.0f)
 {
+    m_szMapHash[0] = '\0';
     m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
 }
 
@@ -43,6 +45,13 @@ void CMomentumReplaySystem::FrameUpdatePostEntityThink()
         UpdateRecordingParams();
 }
 
+void CMomentumReplaySystem::LevelInitPostEntity()
+{
+    // Get the map file's hash
+    if (!g_pMomentumUtil->GetMapHash(gpGlobals->mapname.ToCStr(), m_szMapHash, sizeof(m_szMapHash)))
+        Warning("Could not generate a hash for the current map!!!\n");
+}
+
 void CMomentumReplaySystem::LevelShutdownPostEntity()
 {
     //Stop a recording if there is one while the level shuts down
@@ -51,6 +60,9 @@ void CMomentumReplaySystem::LevelShutdownPostEntity()
 
     if (m_pPlaybackReplay)
         UnloadPlayback(true);
+
+    // Reset the map hash
+    m_szMapHash[0] = '\0';
 }
 
 void CMomentumReplaySystem::PostInit()
@@ -237,6 +249,8 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
 
     m_pPlaybackReplay = g_ReplayFactory.LoadReplayFile(pFileName, bFullLoad, pPathID);
 
+    // MOM_TODO: Verify the map hash of the replay here with m_szMapHash
+
     if (bFullLoad && m_pPlaybackReplay)
     {
         // Create the run entity here
@@ -260,6 +274,7 @@ void CMomentumReplaySystem::SetReplayInfo()
         return;
 
     m_pRecordingReplay->SetMapName(gpGlobals->mapname.ToCStr());
+    m_pRecordingReplay->SetMapHash(m_szMapHash);
     m_pRecordingReplay->SetPlayerName(m_player->GetPlayerName());
     ISteamUser *pUser = SteamUser();
     m_pRecordingReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);

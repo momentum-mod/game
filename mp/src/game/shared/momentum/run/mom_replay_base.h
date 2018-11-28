@@ -17,6 +17,7 @@ class CMomReplayBase : public ISerializable
   public:
     // All these are virtual so they can be overriden in later versions.
     virtual const char *GetMapName() { return m_rhHeader.m_szMapName; }
+    virtual const char *GetMapHash() { return m_rhHeader.m_szMapHash; }
     virtual const char *GetPlayerName() { return m_rhHeader.m_szPlayerName; }
     virtual uint64 GetPlayerSteamID() { return m_rhHeader.m_ulSteamID; }
     virtual float GetTickInterval() { return m_rhHeader.m_fTickInterval; }
@@ -28,8 +29,9 @@ class CMomReplayBase : public ISerializable
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
 
   public:
-    virtual void SetMapName(const char *name) { Q_strcpy(m_rhHeader.m_szMapName, name); }
-    virtual void SetPlayerName(const char *name) { Q_strcpy(m_rhHeader.m_szPlayerName, name); }
+    virtual void SetMapName(const char *name) { Q_strncpy(m_rhHeader.m_szMapName, name, sizeof(m_rhHeader.m_szMapName)); }
+    virtual void SetMapHash(const char *hash) { Q_strncpy(m_rhHeader.m_szMapHash, hash, sizeof(m_rhHeader.m_szMapHash));}
+    virtual void SetPlayerName(const char *name) { Q_strncpy(m_rhHeader.m_szPlayerName, name, sizeof(m_rhHeader.m_szPlayerName)); }
     virtual void SetPlayerSteamID(uint64 steamID) { m_rhHeader.m_ulSteamID = steamID; }
     virtual void SetTickInterval(float interval) { m_rhHeader.m_fTickInterval = interval; }
     virtual void SetRunTime(float runTime) { m_rhHeader.m_fRunTime = runTime; }

@@ -68,6 +68,7 @@ class CReplayHeader : public ISerializable
     CReplayHeader(CBinaryReader *reader)
     {
         reader->ReadString(m_szMapName, sizeof(m_szMapName) - 1);
+        reader->ReadString(m_szMapHash, sizeof(m_szMapHash) - 1);
         reader->ReadString(m_szPlayerName, sizeof(m_szPlayerName) - 1);
         m_ulSteamID = reader->ReadUInt64();
         m_fTickInterval = reader->ReadFloat();
@@ -82,6 +83,7 @@ class CReplayHeader : public ISerializable
     virtual void Serialize(CBinaryWriter *writer) OVERRIDE
     {
         writer->WriteString(m_szMapName);
+        writer->WriteString(m_szMapHash);
         writer->WriteString(m_szPlayerName);
         writer->WriteUInt64(m_ulSteamID);
         writer->WriteFloat(m_fTickInterval);
@@ -95,6 +97,7 @@ class CReplayHeader : public ISerializable
     virtual CReplayHeader &operator=(const CReplayHeader &other)
     {
         Q_strncpy(m_szMapName, other.m_szMapName, sizeof(m_szMapName));
+        Q_strncpy(m_szMapHash, other.m_szMapHash, sizeof(m_szMapHash));
         Q_strncpy(m_szPlayerName, other.m_szPlayerName, sizeof(m_szPlayerName));
         m_ulSteamID = other.m_ulSteamID;
         m_fTickInterval = other.m_fTickInterval;
@@ -108,6 +111,7 @@ class CReplayHeader : public ISerializable
 
   public:
     char m_szMapName[256];    // The map the run was done in.
+    char m_szMapHash[41];     // The SHA1 of the map the run was done in.
     char m_szPlayerName[256]; // The name of the player that did this run.
     uint64 m_ulSteamID;       // The steamID of the player that did this run.
     float m_fTickInterval;    // The tickrate of the run.

@@ -51,6 +51,7 @@ public:
     void KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave);
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
 
+    bool GetMapHash(const char *pMapName, char *pOut, size_t outLen);
     bool MapExists(const char *pMapName, const char *pMapHash);
     bool MapThumbnailExists(const char *pMapName);
 

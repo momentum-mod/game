@@ -221,7 +221,7 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
 
 void CDialogMapInfo::GetMapInfo(const char* mapname)
 {
-    g_pAPIRequests->GetMapInfo(mapname, UtlMakeDelegate(this, &CDialogMapInfo::GetMapInfoCallback));
+    // g_pAPIRequests->GetMapInfo(mapname, UtlMakeDelegate(this, &CDialogMapInfo::GetMapInfoCallback));
 }
 
 void CDialogMapInfo::GetMapInfoCallback(KeyValues *pKvResponse)
@@ -353,7 +353,7 @@ void CDialogMapInfo::GetMapInfoCallback(KeyValues *pKvResponse)
 
 void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
-    g_pAPIRequests->GetTop10MapTimes(mapname, UtlMakeDelegate(this, &CDialogMapInfo::Get10MapTimesCallback));
+    // g_pAPIRequests->GetTop10MapTimes(mapname, UtlMakeDelegate(this, &CDialogMapInfo::Get10MapTimesCallback));
 }
 
 void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
