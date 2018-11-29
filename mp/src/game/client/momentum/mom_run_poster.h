@@ -27,7 +27,7 @@ public:
     void RunSubmitCallback(KeyValues *pKv);
     void OnMapLoadRequest(KeyValues *pKv);
 private:
-    bool m_bShouldSubmitForMap;
+    uint32 m_iMapID;
 #endif
 
 #if ENABLE_STEAM_LEADERBOARDS

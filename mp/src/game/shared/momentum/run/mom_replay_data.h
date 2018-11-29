@@ -70,11 +70,15 @@ class CReplayHeader : public ISerializable
         reader->ReadString(m_szMapName, sizeof(m_szMapName) - 1);
         reader->ReadString(m_szMapHash, sizeof(m_szMapHash) - 1);
         reader->ReadString(m_szPlayerName, sizeof(m_szPlayerName) - 1);
-        m_ulSteamID = reader->ReadUInt64();
+        char steamID[20];
+        reader->ReadString(steamID, sizeof(steamID) - 1);
+        m_ulSteamID = Q_atoui64(steamID);
         m_fTickInterval = reader->ReadFloat();
         m_fRunTime = reader->ReadFloat();
         m_iRunFlags = reader->ReadUInt32();
-        m_iRunDate = reader->ReadInt64();
+        char date[20];
+        reader->ReadString(date, sizeof(date) - 1);
+        m_iRunDate = Q_atoui64(date);
         m_iStartDif = reader->ReadInt32();
         m_iBonusZone = reader->ReadInt32();
     }
@@ -85,11 +89,14 @@ class CReplayHeader : public ISerializable
         writer->WriteString(m_szMapName);
         writer->WriteString(m_szMapHash);
         writer->WriteString(m_szPlayerName);
-        writer->WriteUInt64(m_ulSteamID);
+        char temp[20];
+        Q_snprintf(temp, 20, "%llu", m_ulSteamID);
+        writer->WriteString(temp);
         writer->WriteFloat(m_fTickInterval);
         writer->WriteFloat(m_fRunTime);
         writer->WriteUInt32(m_iRunFlags);
-        writer->WriteInt64(m_iRunDate);
+        Q_snprintf(temp, 20, "%llu", m_iRunDate);
+        writer->WriteString(temp);
         writer->WriteInt32(m_iStartDif);
         writer->WriteInt32(m_iBonusZone);
     }
