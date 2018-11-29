@@ -4,7 +4,6 @@
 #include "igamesystem.h"
 
 #define ENABLE_STEAM_LEADERBOARDS 0
-#define ENABLE_HTTP_LEADERBOARDS 1
 
 #if ENABLE_STEAM_LEADERBOARDS
 #include "steam/steam_api.h"
@@ -22,13 +21,9 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
-#if ENABLE_HTTP_LEADERBOARDS
-public:
     void RunSubmitCallback(KeyValues *pKv);
     void OnMapLoadRequest(KeyValues *pKv);
-private:
     uint32 m_iMapID;
-#endif
 
 #if ENABLE_STEAM_LEADERBOARDS
 public:
@@ -56,3 +51,5 @@ private:
 private:
     char m_szMapName[MAX_MAP_NAME];
 };
+
+extern CRunPoster *g_pRunPoster;

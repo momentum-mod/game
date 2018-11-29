@@ -12,9 +12,7 @@ CRunPoster::CRunPoster()
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
 #endif
-#if ENABLE_HTTP_LEADERBOARDS
     m_iMapID = 0;
-#endif
     m_szMapName[0] = '\0';
 }
 
@@ -38,13 +36,8 @@ void CRunPoster::LevelInitPostEntity()
         m_cLeaderboardFindResult.Set(findCall, this, &CRunPoster::OnLeaderboardFind);
 #endif
 
-#if ENABLE_HTTP_LEADERBOARDS
         // MOM_TODO: Check a local map cache first before firing this
-        if (g_pAPIRequests->GetMapByName(pMapName, UtlMakeDelegate(this, &CRunPoster::OnMapLoadRequest)))
-        {
-            
-        }
-#endif
+        g_pAPIRequests->GetMapByName(pMapName, UtlMakeDelegate(this, &CRunPoster::OnMapLoadRequest));
     }
 }
 
@@ -53,9 +46,7 @@ void CRunPoster::LevelShutdownPreClearSteamAPIContext()
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
 #endif
-#if ENABLE_HTTP_LEADERBOARDS
     m_iMapID = 0;
-#endif
     m_szMapName[0] = '\0';
 }
 
@@ -92,7 +83,6 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
         m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
 #endif
 
-#if ENABLE_HTTP_LEADERBOARDS
         if (m_iMapID)
         {
             CUtlBuffer buf;
@@ -112,7 +102,6 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
                 Warning("Failed to submit run: could not read file %s from %s !\n", pEvent->GetString("filename"), pEvent->GetString("filepath"));
             }
         }
-#endif
     }
 }
 
@@ -218,7 +207,6 @@ void CRunPoster::OnFileShared(RemoteStorageFileShareResult_t* pResult, bool bIOF
 }
 #endif
 
-#if ENABLE_HTTP_LEADERBOARDS
 void CRunPoster::RunSubmitCallback(KeyValues* pKv)
 {
     IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
@@ -273,7 +261,6 @@ void CRunPoster::OnMapLoadRequest(KeyValues* pKv)
         }
     } // Otherwise it'll just be false for this map
 }
-#endif
 
 static CRunPoster s_momRunposter;
-CRunPoster *g_MOMRunPoster = &s_momRunposter;
+CRunPoster *g_pRunPoster = &s_momRunposter;
