@@ -57,6 +57,16 @@ enum MAP_UPLOAD_STATUS
     MAP_REMOVED,
 };
 
+enum USER_PERMISSIONS
+{
+    USER_MAPPER = 1 << 0,
+    USER_MODERATOR = 1 << 1,
+    USER_ADMIN = 1 << 2,
+    USER_BANNED_LEADERBOARDS = 1 << 3,
+    USER_BANNED_ALIAS = 1 << 4,
+    USER_BANNED_AVATAR = 1 << 5
+};
+
 enum LOBBY_MSG_TYPE
 {
     LOBBY_UPDATE_MEMBER_JOIN = 0,        // Joined the lobby

@@ -23,7 +23,8 @@
 #define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
 #define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
 
-#define ENABLE_HTTP_LEADERBOARDS 0
+#define ENABLE_HTTP_LEADERBOARDS 1
+#define ENABLE_STEAM_LEADERBOARDS 0
 
 class SavelocReqFrame;
 class LobbyMembersPanel;
@@ -107,7 +108,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
     MESSAGE_FUNC_CHARPTR(OnContextGoToMap, "ContextGoToMap", map);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
-    MESSAGE_FUNC_UINT64(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", UGC);
+    MESSAGE_FUNC_PARAMS(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", data);
     MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
     MESSAGE_FUNC_UINT64(OnContextReqSavelocs, "ContextReqSavelocs", target);
     MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
@@ -115,6 +116,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
 
+#if ENABLE_STEAM_LEADERBOARDS
     // Leaderboards API
     SteamLeaderboard_t m_hCurrentLeaderboard;
     CCallResult<CClientTimesDisplay, LeaderboardFindResult_t> m_cLeaderboardFindResult;
@@ -126,6 +128,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     CCallResult<CClientTimesDisplay, RemoteStorageDownloadUGCResult_t> m_cOnlineReplayDownloaded;
     void OnOnlineReplayDownloaded(RemoteStorageDownloadUGCResult_t *pResult, bool bIOFailure);
+#endif
 
     // Attempts to add the avatar for a given steam ID to the given image list, if it doesn't exist already
     // exist in the given ID to index map.
@@ -208,16 +211,12 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // Online API Pre-Alpha functions
 
 #if ENABLE_HTTP_LEADERBOARDS
-    void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
-    void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetPlayerDataForMapCallback;
-    void GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetFriendsTimesCallback;
-    void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetMapInfoCallback;
+    void GetTop10TimesCallback(KeyValues *pKv);
 
-    void ParseTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure, bool bFriendsTimes);
+    void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    void GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
 #endif
 
   private:
