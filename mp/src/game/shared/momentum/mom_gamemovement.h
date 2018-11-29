@@ -46,6 +46,7 @@ class CMomentumGameMovement : public CGameMovement
     virtual void PlayerMove(void);
     virtual void AirMove(void); // Overridden for rampboost fix
     virtual void WalkMove(void);
+    virtual void AirAccelerate(Vector &wishdir, float wishspeed, float accel);
 
     // Override fall damage
     virtual void CheckFalling();

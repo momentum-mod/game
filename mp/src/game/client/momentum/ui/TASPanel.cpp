@@ -30,6 +30,10 @@ using namespace vgui;
 
 CTASPanel *vgui::g_pTASPanel = nullptr;
 
+
+static MAKE_CONVAR(mom_tas_autostrafe, "1", FCVAR_NONE, "1) Only in air 2) On ground + air.", 0,
+                   2);
+
 static MAKE_CONVAR(mom_tas_max_vispredmove_ticks, "250", FCVAR_NONE, "Ticks to visualize predicting movements.", 0,
                    INT_MAX);
 
@@ -87,6 +91,7 @@ void CTASPanel::OnThink()
         m_pEnableTASMode->SetText((pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS) ? "#MOM_EnabledTASMode"
                                                                                            : "#MOM_DisabledTASMode");
         m_pEnableTASMode->SetSelected(pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS);
+        m_pEnableTASMode->SetArmed(pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS);
     }
 
     BaseClass::OnThink();
@@ -113,16 +118,16 @@ void CTASPanel::ToggleVisible()
 
 void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
 {
-    if (mom_tas_vispredmove.GetInt() <= 0 || pPlayer == nullptr)
-        return;
-
-    if (!(pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
-        return;
-
     static int iOldTickCount = 0;
 
     if (iOldTickCount != gpGlobals->tickcount)
     {
+        if (mom_tas_vispredmove.GetInt() <= 0 || pPlayer == nullptr)
+            return;
+
+        if (!(pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
+            return;
+
         bool bWasPredictable = true;
         if (!pPlayer->GetPredictable())
         {
@@ -143,6 +148,11 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
         // Remove any sounds.
         prediction->m_bFirstTimePredicted = false;
         prediction->m_bInPrediction = true;
+
+        static ConVarRef sv_footsteps("sv_footsteps");
+
+        int backup_sv_footsteps = sv_footsteps.GetInt();
+        sv_footsteps.SetValue("0");
 
         g_pMomentumGameMovement->StartTrackPredictionErrors(pPlayer);
         prediction->StartCommand(pPlayer, &pPlayer->m_LastCreateMoveCmd);
@@ -184,6 +194,8 @@ void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
                 break;
             }
         }
+
+        sv_footsteps.SetValue(backup_sv_footsteps);
 
         gpGlobals->curtime = flOldCurtime;
         gpGlobals->frametime = flOldFrametime;

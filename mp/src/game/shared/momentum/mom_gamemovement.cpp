@@ -1315,7 +1315,9 @@ void CMomentumGameMovement::FullWalkMove()
     if ((m_nOldWaterLevel == WL_NotInWater && player->GetWaterLevel() != WL_NotInWater) ||
         (m_nOldWaterLevel != WL_NotInWater && player->GetWaterLevel() == WL_NotInWater))
     {
-        PlaySwimSound();
+        if (sv_footsteps.GetInt() != 0)
+            PlaySwimSound();
+
 #if !defined(CLIENT_DLL)
         player->Splash();
 #endif
@@ -1345,41 +1347,150 @@ void CMomentumGameMovement::StuckGround(void)
     mv->SetAbsOrigin(vAbsOrigin);
 }
 
-void CMomentumGameMovement::AirMove(void)
+//-----------------------------------------------------------------------------
+// Purpose:
+// Input  : wishdir -
+//			accel -
+//-----------------------------------------------------------------------------
+void CMomentumGameMovement::AirAccelerate(Vector &wishdir, float wishspeed, float accel)
 {
     int i;
-    Vector wishvel;
-    float fmove, smove;
-    Vector wishdir;
+    float addspeed, accelspeed, currentspeed;
+    float wishspd;
+
+    wishspd = wishspeed;
+
+    if (player->pl.deadflag)
+        return;
+
+    if (player->m_flWaterJumpTime)
+        return;
+
+    // Cap speed
+    if (wishspd > GetAirSpeedCap())
+        wishspd = GetAirSpeedCap();
+
+    // Determine veer amount
+    currentspeed = mv->m_vecVelocity.Dot(wishdir);
+
+    // See how much to add
+    addspeed = wishspd - currentspeed;
+
+    // If not adding any, done.
+    if (addspeed <= 0)
+        return;
+
+    // Determine acceleration speed after acceleration
+    accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+
+    // Cap it
+    if (accelspeed > addspeed)
+        accelspeed = addspeed;
+
+    // Adjust pmove vel.
+    for (i = 0; i < 3; i++)
+    {
+        mv->m_vecVelocity[i] += accelspeed * wishdir[i];
+        mv->m_outWishVel[i] += accelspeed * wishdir[i];
+    }
+}
+
+void CMomentumGameMovement::AirMove(void)
+{
     float wishspeed;
+    Vector wishdir;
+    static ConVarRef mom_tas_autostrafe("mom_tas_autostrafe");
     Vector forward, right, up;
 
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
-    // Copy movement amounts
-    fmove = mv->m_flForwardMove;
-    smove = mv->m_flSideMove;
-
-    // Zero out z components of movement vectors
+        // Zero out z components of movement vectors
     forward[2] = 0;
     right[2] = 0;
     VectorNormalize(forward); // Normalize remainder of vectors
     VectorNormalize(right);   //
 
-    for (i = 0; i < 2; i++) // Determine x and y parts of velocity
-        wishvel[i] = forward[i] * fmove + right[i] * smove;
-    wishvel[2] = 0; // Zero out z part of velocity
-
-    VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
-    wishspeed = VectorNormalize(wishdir);
-
-    //
-    // clamp to server defined max speed
-    //
-    if (wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
+    // We must do this without touching the airaccelerate function so we can be sure that we respect the physics.
+    if (mom_tas_autostrafe.GetInt() > 0)
     {
-        VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
+        Vector vVelocity = mv->m_vecVelocity;
+        vVelocity.z = 0.0f;
+        vVelocity.NormalizeInPlace();
+
+        QAngle qVelocity;
+        VectorAngles(vVelocity, qVelocity);
+        qVelocity.x = AngleNormalize(qVelocity.x);
+        qVelocity.y = AngleNormalize(qVelocity.y);
+        qVelocity.z = AngleNormalize(qVelocity.z);
+
+        Vector vecrightvel;
+        AngleVectors(qVelocity, 0, &vecrightvel, 0);
+        vecrightvel.z = 0.0f;
+        VectorNormalizeFast(vecrightvel);
+
+        float smove = mv->m_flMaxSpeed;
+
+        float flYDif = AngleNormalize(mv->m_vecViewAngles.y - qVelocity.y);
+        if (flYDif > 0.0f)
+            smove = -smove;
+
+        for (int i = 0; i < 2; i++) // Determine x and y parts of velocity
+            wishdir[i] = vecrightvel[i] * smove;
+
+        wishdir[2] = 0; // Zero out z part of velocity
+
+        VectorNormalizeFast(wishdir);
+
+        //
+        // clamp to server defined max speed
+        //
+
         wishspeed = mv->m_flMaxSpeed;
+
+        Vector wanteddir = right * smove;
+        wanteddir.NormalizeInPlace();
+
+        // Determine veer amount
+        float curspeedwanteddir = mv->m_vecVelocity.Dot(wanteddir);
+        float curspeed = mv->m_vecVelocity.Dot(wishdir);
+
+        float dif = abs((GetAirSpeedCap() - ((GetAirSpeedCap() - curspeedwanteddir) - (GetAirSpeedCap() - curspeed))));
+
+        if (dif > GetAirSpeedCap())
+        {
+            for (int i = 0; i < 2; i++) // Determine x and y parts of velocity
+                wishdir[i] = right[i] * smove;
+
+            wishdir[2] = 0; // Zero out z part of velocity
+
+            VectorNormalizeFast(wishdir);
+        }
+    }
+    else
+    {
+        int i;
+        Vector wishvel;
+        float fmove, smove;
+
+        // Copy movement amounts
+        fmove = mv->m_flForwardMove;
+        smove = mv->m_flSideMove;
+
+        for (i = 0; i < 2; i++) // Determine x and y parts of velocity
+            wishvel[i] = forward[i] * fmove + right[i] * smove;
+        wishvel[2] = 0; // Zero out z part of velocity
+
+        VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
+        wishspeed = VectorNormalize(wishdir);
+
+        //
+        // clamp to server defined max speed
+        //
+        if (wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
+        {
+            VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
+            wishspeed = mv->m_flMaxSpeed;
+        }
     }
 
     AirAccelerate(wishdir, wishspeed, sv_airaccelerate.GetFloat());
@@ -1389,8 +1500,8 @@ void CMomentumGameMovement::AirMove(void)
 
     TryPlayerMove();
 
-    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or
-    // maybe another monster?)
+    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
+    // (or maybe another monster?)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
     if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
@@ -1489,7 +1600,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                                    (bumpcount * 2) * sv_ramp_initial_retrace_length.GetFloat()};
                 int valid_planes = 0;
 
-                // we have 0 plane info, so lets increase our bbox and search in all 27 directions to get a valid plane!
+                // we have 0 plane info, so lets increase our bbox and search in all 27 directions to get a valid
+                // plane!
                 for (i = 0; i < 3; i++)
                 {
                     for (j = 0; j < 3; j++)
@@ -1521,8 +1633,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                             UTIL_TraceRay(ray, PlayerSolidMask(), mv->m_nPlayerHandle.Get(),
                                           COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
 
-                            // Only use non deformed planes and planes with values where the start point is not from a
-                            // solid
+                            // Only use non deformed planes and planes with values where the start point is not from
+                            // a solid
                             if (fabs(pm.plane.normal.x) <= 1.0f && fabs(pm.plane.normal.y) <= 1.0f &&
                                 fabs(pm.plane.normal.z) <= 1.0f && pm.fraction > 0.0f && pm.fraction < 1.0f &&
                                 !pm.startsolid)
@@ -1703,8 +1815,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //
 
         // reflect player velocity
-        // Only give this a try for first impact plane because you can get yourself stuck in an acute corner by jumping
-        // in place
+        // Only give this a try for first impact plane because you can get yourself stuck in an acute corner by
+        // jumping in place
         //  and pressing forward and nobody was really using this bounce/reflection feature anyway...
         if (numplanes == 1 && player->GetMoveType() == MOVETYPE_WALK && player->GetGroundEntity() == nullptr)
         {
@@ -1763,8 +1875,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                     // and add the along the normal of the surf ramp they're currently riding down,
                     // essentially pushing them away from the ramp.
 
-                    // Note: Technically the 20.0 here can be 2.0, but that causes "jitters" sometimes, so I found 20
-                    // to be pretty safe and smooth. If it causes any unforeseen consequences, tweak it!
+                    // Note: Technically the 20.0 here can be 2.0, but that causes "jitters" sometimes, so I found
+                    // 20 to be pretty safe and smooth. If it causes any unforeseen consequences, tweak it!
                     VectorMA(original_velocity, 20.0f, planes[0], new_velocity);
                     mv->m_vecVelocity.x = new_velocity.x;
                     mv->m_vecVelocity.y = new_velocity.y;
@@ -1800,8 +1912,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     if (CloseEnough(allFraction, 0.0f, FLT_EPSILON))
     {
         // We dont want to touch this!
-        // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity that
-        // can build up for ever.
+        // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity
+        // that can build up for ever.
         VectorCopy(vec3_origin, mv->m_vecVelocity);
     }
 
@@ -2032,8 +2144,8 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
         // Avoid being stuck into the slope.. Or velocity reset incoming!
         // (Could be better by being more close to the slope, but for player it seems to be close enough)
         // @Gocnak: Technically the "adjust" code above does this, but to each axis, with a much higher value.
-        // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be 0.015 or
-        // 0.01
+        // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be
+        // 0.015 or 0.01
         mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick;
         DevMsg(2, "ClipVelocity: Fixed speed.\n");
     }
