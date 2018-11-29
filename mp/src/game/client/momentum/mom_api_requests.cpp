@@ -85,10 +85,10 @@ bool CAPIRequests::GetMapByName(const char *pMapName, CallbackFunc func)
     return false;
 }
 
-bool CAPIRequests::SubmitRun(const CUtlBuffer &replayBuf, CallbackFunc func)
+bool CAPIRequests::SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func)
 {
     HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ("runs"), k_EHTTPMethodPOST))
+    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodPOST))
     {
         SteamHTTP()->SetHTTPRequestRawPostBody(handle, "application/octet-stream", (uint8*) replayBuf.Base(), replayBuf.TellPut());
 
@@ -191,6 +191,8 @@ void CAPIRequests::DoAuth()
     if (m_bufAuthBuffer)
         delete[] m_bufAuthBuffer;
     m_bufAuthBuffer = nullptr;
+
+    CHECK_STEAM_API(SteamUser());
 
     m_bufAuthBuffer = new byte[1024];
     m_hAuthTicket = SteamUser()->GetAuthSessionTicket(m_bufAuthBuffer, 1024, &m_iAuthActualSize);
