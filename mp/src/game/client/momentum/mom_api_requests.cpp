@@ -13,6 +13,8 @@ static ConVar mom_api_base_url("mom_api_base_url", "http://localhost:3002", FCVA
 #define API_REQ(url) CFmtStr1024("%s/api/%s", mom_api_base_url.GetString(), (url)).Get()
 #define AUTH_REQ(url) CFmtStr1024("%s%s", mom_api_base_url.GetString(), (url)).Get()
 
+#define NOT_IMPL AssertMsg(0, "API Request %s is not implemented yet!", __FUNCTION__); return false;
+
 CAPIRequests::CAPIRequests() : CAutoGameSystemPerFrame("CAPIRequests"), 
 m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
 m_iAuthActualSize(0), m_pAPIKey(nullptr)
@@ -58,8 +60,18 @@ bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
 
 bool CAPIRequests::GetTop10MapTimes(uint32 mapID, CallbackFunc func)
 {
-    AssertMsg(0, "%s Needs implementation!\n", __FUNCTION__);
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodGET))
+    {
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "isPersonalBest", "true");
+        return SendAPIRequest(handle, func, __FUNCTION__);
+    }
     return false;
+}
+
+bool CAPIRequests::GetFriendsTimes(uint32 mapID, CallbackFunc func)
+{
+    NOT_IMPL;
 }
 
 bool CAPIRequests::GetMapInfo(uint32 mapID, CallbackFunc func)
