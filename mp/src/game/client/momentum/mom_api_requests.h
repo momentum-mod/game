@@ -36,7 +36,7 @@ public:
     bool GetMapByName(const char *pMapName, CallbackFunc func);
 
     // ==== Leaderboards ====
-    bool SubmitRun(const CUtlBuffer &replayBuf, CallbackFunc func);
+    bool SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func);
 
     // === File Downloading ===
     HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end);

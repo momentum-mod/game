@@ -13,7 +13,7 @@ CRunPoster::CRunPoster()
     m_hCurrentLeaderboard = 0;
 #endif
 #if ENABLE_HTTP_LEADERBOARDS
-    m_bShouldSubmitForMap = false;
+    m_iMapID = 0;
 #endif
     m_szMapName[0] = '\0';
 }
@@ -54,7 +54,7 @@ void CRunPoster::LevelShutdownPreClearSteamAPIContext()
     m_hCurrentLeaderboard = 0;
 #endif
 #if ENABLE_HTTP_LEADERBOARDS
-    m_bShouldSubmitForMap = false;
+    m_iMapID = 0;
 #endif
     m_szMapName[0] = '\0';
 }
@@ -93,12 +93,12 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 #endif
 
 #if ENABLE_HTTP_LEADERBOARDS
-        if (m_bShouldSubmitForMap)
+        if (m_iMapID)
         {
             CUtlBuffer buf;
             if (g_pFullFileSystem->ReadFile(pEvent->GetString("filepath"), "MOD", buf))
             {
-                if (g_pAPIRequests->SubmitRun(buf, UtlMakeDelegate(this, &CRunPoster::RunSubmitCallback)))
+                if (g_pAPIRequests->SubmitRun(m_iMapID, buf, UtlMakeDelegate(this, &CRunPoster::RunSubmitCallback)))
                 {
                     DevLog(2, "Run submitted!\n");
                 }
@@ -265,7 +265,9 @@ void CRunPoster::OnMapLoadRequest(KeyValues* pKv)
                     // Now check if the status is alright
                     int status = pMapData->GetInt("statusFlag");
                     if (status == MAP_APPROVED || status == MAP_PRIVATE_TESTING || status == MAP_PUBLIC_TESTING)
-                        m_bShouldSubmitForMap = true;
+                    {
+                        m_iMapID = pMapData->GetInt("id");
+                    }
                 }
             }
         }

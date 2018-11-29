@@ -188,6 +188,8 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         {
             SetMouseInputEnabled(false);
             engine->ServerCmd("mom_replay_play_loaded");
+            m_bRunSaved = false;
+            m_bRunUploaded = false;
         }
         else if (over == m_pNextZoneButton->GetVPanel())
         {
@@ -206,12 +208,16 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
             //The player either wants to repeat the replay (if spectating), or restart the map (not spec)
             engine->ServerCmd(m_bIsGhost ? "mom_replay_restart" : "mom_restart");
             FireMapFinishedClosedEvent(true);
+            m_bRunSaved = false;
+            m_bRunUploaded = false;
         }
         else if (over == m_pClosePanelButton->GetVPanel())
         {
             //This is where we unload comparisons, as well as the ghost if the player was speccing it
             SetMouseInputEnabled(false);
             FireMapFinishedClosedEvent(false);
+            m_bRunSaved = false;
+            m_bRunUploaded = false;
         }
     }
 }
