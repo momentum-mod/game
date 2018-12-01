@@ -96,7 +96,7 @@ class CReplayHeader : public ISerializable
         writer->WriteFloat(m_fRunTime);
         writer->WriteUInt32(m_iRunFlags);
         char date[20];
-        Q_snprintf(date, 20, "%llu", m_iRunDate);
+        Q_snprintf(date, 20, "%ld", m_iRunDate);
         writer->WriteString(date);
         writer->WriteInt32(m_iStartDif);
         writer->WriteInt32(m_iBonusZone);
