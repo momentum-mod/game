@@ -1424,7 +1424,6 @@ void CMomentumGameMovement::AirMove(void)
 
         // First we need to compute the right/left velocity vector.
         // The maximum possible velocity is the right/left vector of the velocity in our case in air.
-
         Vector vecNormalizedVel2D = mv->m_vecVelocity;
         vecNormalizedVel2D.z = 0.0f;
         VectorNormalizeFast(vecNormalizedVel2D);
@@ -1440,20 +1439,10 @@ void CMomentumGameMovement::AirMove(void)
         vecRightVel2D.z = 0.0f;
         VectorNormalizeFast(vecRightVel2D);
 
-        // Let's follow the viewangles the maximum possible now.
-        float flYDif = AngleNormalize(mv->m_vecViewAngles.y - qVel2D.y);
-
-        if (flYDif > 0.0f)
-            wishdir = -vecRightVel2D;
-        else
-            wishdir = vecRightVel2D;
-
-        wishdir.NormalizeInPlace();
-
         // This code must be processed in case the player would want to go in another direction than the max possible
         // velocity one. So we compute in both right and left direction the max velocity possible we can have and check
-        // the difference of the view and it's old view of the player is higher than the left + right direction. If yes
-        // then we apply normal behavior.
+        // the difference of the view and the old view of the player if it's is higher than the left + right direction.
+        // If yes then we apply normal behavior. Otherwhise max velocity possible one.
 
         // Backup velocity.
         Vector vel_backup = mv->m_vecVelocity, jump_backup = mv->m_outJumpVel;
@@ -1493,19 +1482,38 @@ void CMomentumGameMovement::AirMove(void)
         // We divide it by two because we go only in one direction, not two in the same time.
         float yDifVel = AngleNormalize(qBestVelLeft.y - qBestVelRight.y) / 2.0f;
 
-        static float OldViewY = 0.0f;
         float yDif = AngleNormalize(mv->m_vecViewAngles.y - m_pPlayer->m_flOldViewY);
 
+        // Let's follow the viewangles the most possible now.
+        float yDifForward = AngleNormalize(mv->m_vecViewAngles.y - qVel2D.y);
+
+        auto lambda_BestVelocity = [&yDifForward, &wishdir, &vecRightVel2D]() {
+            if (yDifForward > 0.0f)
+                wishdir = -vecRightVel2D;
+            else
+                wishdir = vecRightVel2D;
+        };
+
+        // If it's higher, we can apply normal behavior.
         if (abs(yDif) > yDifVel)
         {
             if (yDif < 0.0f)
                 wishdir = right;
             else if (yDif > 0.0f)
                 wishdir = -right;
-            // if the angle difference is 0 we apply maximum velocity possible behavior.
+            // If the angle difference is 0 we apply maximum velocity possible behavior.
+            else
+            {
+                lambda_BestVelocity();
+            }
+        }
+        else
+        {
+            // Otherwhise we apply maximum velocity possible behavior.
+            lambda_BestVelocity();
         }
 
-        engine->Con_NPrintf(1, "%f %f", yDifVel, yDif);
+        // engine->Con_NPrintf(1, "%f %f", yDifVel, yDif);
     }
     else
     {
