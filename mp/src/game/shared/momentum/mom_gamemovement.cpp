@@ -1404,67 +1404,108 @@ void CMomentumGameMovement::AirMove(void)
 
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
-        // Zero out z components of movement vectors
+    // Zero out z components of movement vectors
     forward[2] = 0;
     right[2] = 0;
     VectorNormalize(forward); // Normalize remainder of vectors
     VectorNormalize(right);   //
 
     // We must do this without touching the airaccelerate function so we can be sure that we respect the physics.
-    if (mom_tas_autostrafe.GetInt() > 0)
+    if (mom_tas_autostrafe.GetInt() > 0 && (m_pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
     {
-        Vector vVelocity = mv->m_vecVelocity;
-        vVelocity.z = 0.0f;
-        vVelocity.NormalizeInPlace();
+        auto lambda_NormalizeAngles = [](QAngle &angles) {
+            angles.x = AngleNormalize(angles.x);
+            angles.y = AngleNormalize(angles.y);
+            angles.z = AngleNormalize(angles.z);
+        };
 
-        QAngle qVelocity;
-        VectorAngles(vVelocity, qVelocity);
-        qVelocity.x = AngleNormalize(qVelocity.x);
-        qVelocity.y = AngleNormalize(qVelocity.y);
-        qVelocity.z = AngleNormalize(qVelocity.z);
-
-        Vector vecrightvel;
-        AngleVectors(qVelocity, 0, &vecrightvel, 0);
-        vecrightvel.z = 0.0f;
-        VectorNormalizeFast(vecrightvel);
-
-        float smove = mv->m_flMaxSpeed;
-
-        float flYDif = AngleNormalize(mv->m_vecViewAngles.y - qVelocity.y);
-        if (flYDif > 0.0f)
-            smove = -smove;
-
-        for (int i = 0; i < 2; i++) // Determine x and y parts of velocity
-            wishdir[i] = vecrightvel[i] * smove;
-
-        wishdir[2] = 0; // Zero out z part of velocity
-
-        VectorNormalizeFast(wishdir);
-
-        //
-        // clamp to server defined max speed
-        //
-
+        // Default max speed.
         wishspeed = mv->m_flMaxSpeed;
 
-        Vector wanteddir = right * smove;
-        wanteddir.NormalizeInPlace();
+        // First we need to compute the right/left velocity vector.
+        // The maximum possible velocity is the right/left vector of the velocity in our case in air.
 
-        // Determine veer amount
-        float curspeedwanteddir = mv->m_vecVelocity.Dot(wanteddir);
-        float curspeed = mv->m_vecVelocity.Dot(wishdir);
+        Vector vecNormalizedVel2D = mv->m_vecVelocity;
+        vecNormalizedVel2D.z = 0.0f;
+        VectorNormalizeFast(vecNormalizedVel2D);
 
-        float dif = abs((GetAirSpeedCap() - ((GetAirSpeedCap() - curspeedwanteddir) - (GetAirSpeedCap() - curspeed))));
+        QAngle qVel2D;
+        VectorAngles(vecNormalizedVel2D, qVel2D);
 
-        if (dif > GetAirSpeedCap())
+        lambda_NormalizeAngles(qVel2D);
+
+        Vector vecRightVel2D;
+        AngleVectors(qVel2D, nullptr, &vecRightVel2D, nullptr);
+
+        vecRightVel2D.z = 0.0f;
+        VectorNormalizeFast(vecRightVel2D);
+
+        // Let's follow the viewangles the maximum possible now.
+        float flYDif = AngleNormalize(mv->m_vecViewAngles.y - qVel2D.y);
+
+        if (flYDif > 0.0f)
+            wishdir = -vecRightVel2D;
+        else
+            wishdir = vecRightVel2D;
+
+        wishdir.NormalizeInPlace();
+
+        // This code must be processed in case the player would want to go in another direction than the max possible
+        // velocity one. So we compute in both right and left direction the max velocity possible we can have and check
+        // the difference of the view and it's old view of the player is higher than the left + right direction. If yes
+        // then we apply normal behavior.
+
+        // Backup velocity.
+        Vector vel_backup = mv->m_vecVelocity, jump_backup = mv->m_outJumpVel;
+
+        // Calculate maximum velocity possible on right direction.
+        Vector vecBestVelocityRight = vecRightVel2D;
+        AirAccelerate(vecBestVelocityRight, wishspeed, sv_airaccelerate.GetFloat());
+
+        vecBestVelocityRight = mv->m_vecVelocity;
+
+        mv->m_vecVelocity = vel_backup;
+        mv->m_outJumpVel = jump_backup;
+
+        // Calculate maximum velocity possible on left direction.
+        Vector vecBestVelocityLeft = -vecRightVel2D;
+        AirAccelerate(vecBestVelocityLeft, wishspeed, sv_airaccelerate.GetFloat());
+
+        vecBestVelocityLeft = mv->m_vecVelocity;
+
+        mv->m_vecVelocity = vel_backup;
+        mv->m_outJumpVel = jump_backup;
+
+        // Normalize dem.
+        vecBestVelocityLeft.z = vecBestVelocityRight.z = 0.0f;
+        vecBestVelocityLeft.NormalizeInPlace();
+        vecBestVelocityRight.NormalizeInPlace();
+
+        // Once it's done, we convert them into angles.
+        QAngle qBestVelLeft, qBestVelRight;
+        VectorAngles(vecBestVelocityLeft, qBestVelLeft);
+        lambda_NormalizeAngles(qBestVelLeft);
+
+        VectorAngles(vecBestVelocityRight, qBestVelRight);
+        lambda_NormalizeAngles(qBestVelRight);
+
+        // Then we compute its difference to know what is the ideal angle.
+        // We divide it by two because we go only in one direction, not two in the same time.
+        float yDifVel = AngleNormalize(qBestVelLeft.y - qBestVelRight.y) / 2.0f;
+
+        static float OldViewY = 0.0f;
+        float yDif = AngleNormalize(mv->m_vecViewAngles.y - m_pPlayer->m_flOldViewY);
+
+        if (abs(yDif) > yDifVel)
         {
-            for (int i = 0; i < 2; i++) // Determine x and y parts of velocity
-                wishdir[i] = right[i] * smove;
-
-            wishdir[2] = 0; // Zero out z part of velocity
-
-            VectorNormalizeFast(wishdir);
+            if (yDif < 0.0f)
+                wishdir = right;
+            else if (yDif > 0.0f)
+                wishdir = -right;
+            // if the angle difference is 0 we apply maximum velocity possible behavior.
         }
+
+        engine->Con_NPrintf(1, "%f %f", yDifVel, yDif);
     }
     else
     {

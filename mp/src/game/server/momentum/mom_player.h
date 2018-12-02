@@ -243,5 +243,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     float m_flTweenVelValue;
     // Trail pointer
     CBaseEntity* m_eTrail;
+
+    CNetworkVar(float, m_flOldViewY);
 };
 #endif // MOMPLAYER_H

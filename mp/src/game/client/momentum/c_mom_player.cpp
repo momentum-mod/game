@@ -7,7 +7,8 @@
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
 RecvPropInt(RECVINFO(m_afButtonDisabled)),	
 RecvPropBool(RECVINFO(m_bAutoBhop)),
-RecvPropFloat(RECVINFO(m_flStamina)), END_RECV_TABLE();
+RecvPropFloat(RECVINFO(m_flStamina)),
+RecvPropFloat(RECVINFO(m_flOldViewY)),  END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
 DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
@@ -26,6 +27,7 @@ C_MomentumPlayer::C_MomentumPlayer()
     m_flEndSpeed = 0.0f;
     m_duckUntilOnGround = false;
     m_flStamina = 0.0f;
+    m_flOldViewY = 0.0f;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer() {}

@@ -83,6 +83,7 @@ class CMomentumGameMovement : public CGameMovement
         Assert(m_pPlayer);
 
         BaseClass::ProcessMovement(pBasePlayer, pMove);
+        m_pPlayer->m_flOldViewY = pMove->m_vecViewAngles.y;
     }
 
     void Friction(void);

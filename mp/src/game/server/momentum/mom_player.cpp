@@ -37,6 +37,7 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
     SendPropInt(SENDINFO(m_afButtonDisabled)),
     SendPropBool(SENDINFO(m_bAutoBhop)),
 	SendPropFloat(SENDINFO(m_flStamina), 0, SPROP_NOSCALE|SPROP_CHANGES_OFTEN),
+    SendPropFloat(SENDINFO(m_flOldViewY), 0, SPROP_NOSCALE|SPROP_CHANGES_OFTEN),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -145,6 +146,8 @@ CMomentumPlayer::CMomentumPlayer()
 
     // Listen for when this player jumps and lands
     g_pMomentumGameMovement->AddMovementListener(this);
+
+    m_flOldViewY = 0.0f;
 }
 
 CMomentumPlayer::~CMomentumPlayer()

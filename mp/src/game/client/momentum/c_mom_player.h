@@ -86,6 +86,7 @@ class C_MomentumPlayer : public C_BasePlayer
     bool m_duckUntilOnGround;
     CNetworkVar(float, m_flStamina);
     CNetworkVar(bool, m_bAutoBhop);
+    CNetworkVar(float, m_flOldViewY);
 
     int m_iIDEntIndex;
     C_MomentumOnlineGhostEntity *m_pViewTarget;
