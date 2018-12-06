@@ -118,14 +118,14 @@ class CReplayHeader : public ISerializable
     }
 
   public:
-    char m_szMapName[256];    // The map the run was done in.
-    char m_szMapHash[41];     // The SHA1 of the map the run was done in.
-    char m_szPlayerName[256]; // The name of the player that did this run.
-    uint64 m_ulSteamID;       // The steamID of the player that did this run.
-    float m_fTickInterval;    // The tickrate of the run.
-    float m_fRunTime;         // The total runtime of the run in seconds.
-    uint32 m_iRunFlags;       // The flags the player ran with.
-    time_t m_iRunDate;        // The date this run was achieved.
-    int m_iStartDif;          // The difference between the tick of the start timer and record
-    int m_iBonusZone;         // The bonus zone. This will be needed for leaderboards to check the bonus runs.
+    char m_szMapName[MAX_MAP_NAME_SAVE];         // The map the run was done in.
+    char m_szMapHash[41];                        // The SHA1 of the map the run was done in.
+    char m_szPlayerName[MAX_PLAYER_NAME_LENGTH]; // The name of the player that did this run.
+    uint64 m_ulSteamID;                          // The steamID of the player that did this run.
+    float m_fTickInterval;                       // The tickrate of the run.
+    float m_fRunTime;                            // The total runtime of the run in seconds.
+    uint32 m_iRunFlags;                          // The flags the player ran with.
+    time_t m_iRunDate;                           // The date this run was achieved.
+    int m_iStartDif;                             // The difference between the tick of the start timer and record
+    int m_iBonusZone;                            // The bonus zone number
 };
