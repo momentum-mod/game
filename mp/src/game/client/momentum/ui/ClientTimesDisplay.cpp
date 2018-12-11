@@ -990,6 +990,7 @@ void CClientTimesDisplay::LoadOnlineTimes()
             if (g_pAPIRequests->GetTop10MapTimes(g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CClientTimesDisplay::GetTop10TimesCallback)))
             {
                 m_bOnlineNeedUpdate = false;
+                m_bOnlineTimesLoaded = true;
                 m_flLastOnlineTimeUpdate = gpGlobals->curtime;
 
                 m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
