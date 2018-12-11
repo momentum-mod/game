@@ -293,6 +293,7 @@ void CMomentumReplaySystem::SetRunStats()
 
     CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
     m_player->m_RunStats.FullyCopyStats(stats);
+    // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
 }
 
 void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
