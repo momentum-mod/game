@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "filesystem.h"
 #include "mom_system_saveloc.h"
 #include "mom_timer.h"
 #include "mom_shareddefs.h"

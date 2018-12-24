@@ -17,16 +17,16 @@ public:
     
     CMomRunStats(CMomRunStats::data* pData);
     CMomRunStats(CMomRunStats::data* pData, uint8 size);
-    CMomRunStats(CMomRunStats::data* pData, CBinaryReader *pReader);
+    CMomRunStats(CMomRunStats::data* pData, CUtlBuffer &reader);
 
     // Note: This needs updating every time the struct is updated!
     virtual void Init(uint8 size = MAX_STAGES);
 
     // Note: This needs updating every time the struct is updated!
-    virtual void Deserialize(CBinaryReader *reader);
+    virtual void Deserialize(CUtlBuffer &reader);
 
     // Note: This needs updating every time the struct is updated!
-    void Serialize(CBinaryWriter *writer) OVERRIDE;
+    void Serialize(CUtlBuffer &writer) OVERRIDE;
 
     // Note: This needs updating every time the struct is updated!
     CMomRunStats &operator=(const CMomRunStats &other);

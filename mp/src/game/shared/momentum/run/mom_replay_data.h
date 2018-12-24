@@ -1,6 +1,7 @@
 #pragma once
 
 #include <momentum/util/serialization.h>
+#include "utlbuffer.h"
 
 // A single frame of the replay.
 class CReplayFrame : public ISerializable
@@ -11,19 +12,19 @@ class CReplayFrame : public ISerializable
     {
     }
 
-    CReplayFrame(CBinaryReader *reader)
+    CReplayFrame(CUtlBuffer &reader)
     {
-        m_angEyeAngles.x = reader->ReadFloat();
-        m_angEyeAngles.y = reader->ReadFloat();
-        m_angEyeAngles.z = reader->ReadFloat();
+        m_angEyeAngles.x = reader.GetFloat();
+        m_angEyeAngles.y = reader.GetFloat();
+        m_angEyeAngles.z = reader.GetFloat();
 
-        m_vPlayerOrigin.x = reader->ReadFloat();
-        m_vPlayerOrigin.y = reader->ReadFloat();
-        m_vPlayerOrigin.z = reader->ReadFloat();
+        m_vPlayerOrigin.x = reader.GetFloat();
+        m_vPlayerOrigin.y = reader.GetFloat();
+        m_vPlayerOrigin.z = reader.GetFloat();
 
-        m_fPlayerViewOffset = reader->ReadFloat();
+        m_fPlayerViewOffset = reader.GetFloat();
 
-        m_iPlayerButtons = reader->ReadInt32();
+        m_iPlayerButtons = reader.GetInt();
     }
 
     CReplayFrame(const QAngle &eye, const Vector &origin, const Vector &viewoffset, int buttons)
@@ -32,19 +33,19 @@ class CReplayFrame : public ISerializable
     }
 
   public:
-    virtual void Serialize(CBinaryWriter *writer) OVERRIDE
+    virtual void Serialize(CUtlBuffer &writer) OVERRIDE
     {
-        writer->WriteFloat(m_angEyeAngles.x);
-        writer->WriteFloat(m_angEyeAngles.y);
-        writer->WriteFloat(m_angEyeAngles.z);
+        writer.PutFloat(m_angEyeAngles.x);
+        writer.PutFloat(m_angEyeAngles.y);
+        writer.PutFloat(m_angEyeAngles.z);
 
-        writer->WriteFloat(m_vPlayerOrigin.x);
-        writer->WriteFloat(m_vPlayerOrigin.y);
-        writer->WriteFloat(m_vPlayerOrigin.z);
+        writer.PutFloat(m_vPlayerOrigin.x);
+        writer.PutFloat(m_vPlayerOrigin.y);
+        writer.PutFloat(m_vPlayerOrigin.z);
 
-        writer->WriteFloat(m_fPlayerViewOffset);
+        writer.PutFloat(m_fPlayerViewOffset);
 
-        writer->WriteInt32(m_iPlayerButtons);
+        writer.PutInt(m_iPlayerButtons);
     }
 
   public:
@@ -65,41 +66,41 @@ class CReplayHeader : public ISerializable
   public:
     CReplayHeader() {}
 
-    CReplayHeader(CBinaryReader *reader)
+    CReplayHeader(CUtlBuffer &reader)
     {
-        reader->ReadString(m_szMapName, sizeof(m_szMapName) - 1);
-        reader->ReadString(m_szMapHash, sizeof(m_szMapHash) - 1);
-        reader->ReadString(m_szPlayerName, sizeof(m_szPlayerName) - 1);
+        reader.GetStringManualCharCount(m_szMapName, sizeof(m_szMapName));
+        reader.GetStringManualCharCount(m_szMapHash, sizeof(m_szMapHash));
+        reader.GetStringManualCharCount(m_szPlayerName, sizeof(m_szPlayerName));
         char steamID[20];
-        reader->ReadString(steamID, sizeof(steamID) - 1);
+        reader.GetStringManualCharCount(steamID, sizeof(steamID));
         m_ulSteamID = Q_atoui64(steamID);
-        m_fTickInterval = reader->ReadFloat();
-        m_fRunTime = reader->ReadFloat();
-        m_iRunFlags = reader->ReadUInt32();
+        m_fTickInterval = reader.GetFloat();
+        m_fRunTime = reader.GetFloat();
+        m_iRunFlags = reader.GetUnsignedInt();
         char date[20];
-        reader->ReadString(date, sizeof(date) - 1);
+        reader.GetStringManualCharCount(date, sizeof(date));
         m_iRunDate = Q_atoui64(date);
-        m_iStartDif = reader->ReadInt32();
-        m_iBonusZone = reader->ReadInt32();
+        m_iStartDif = reader.GetInt();
+        m_iBonusZone = reader.GetInt();
     }
 
   public:
-    virtual void Serialize(CBinaryWriter *writer) OVERRIDE
+    virtual void Serialize(CUtlBuffer &writer) OVERRIDE
     {
-        writer->WriteString(m_szMapName);
-        writer->WriteString(m_szMapHash);
-        writer->WriteString(m_szPlayerName);
+        writer.PutString(m_szMapName);
+        writer.PutString(m_szMapHash);
+        writer.PutString(m_szPlayerName);
         char temp[20];
         Q_snprintf(temp, 20, "%llu", m_ulSteamID);
-        writer->WriteString(temp);
-        writer->WriteFloat(m_fTickInterval);
-        writer->WriteFloat(m_fRunTime);
-        writer->WriteUInt32(m_iRunFlags);
+        writer.PutString(temp);
+        writer.PutFloat(m_fTickInterval);
+        writer.PutFloat(m_fRunTime);
+        writer.PutUnsignedInt(m_iRunFlags);
         char date[20];
         Q_snprintf(date, 20, "%ld", m_iRunDate);
-        writer->WriteString(date);
-        writer->WriteInt32(m_iStartDif);
-        writer->WriteInt32(m_iBonusZone);
+        writer.PutString(date);
+        writer.PutInt(m_iStartDif);
+        writer.PutInt(m_iBonusZone);
     }
 
     virtual CReplayHeader &operator=(const CReplayHeader &other)

@@ -1,6 +1,7 @@
 #include "cbase.h"
 
 #include "filesystem.h"
+#include "utlbuffer.h"
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "run/mom_replay_factory.h"
@@ -493,27 +494,29 @@ void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, co
     te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
 }
 
+bool MomentumUtil::GetSHA1Hash(const CUtlBuffer& buf, char* pOut, size_t outLen)
+{
+    CryptoPP::SHA1 hash;
+    byte digest[CryptoPP::SHA1::DIGESTSIZE];
+    hash.CalculateDigest(digest, (const byte*) buf.Base(), buf.TellPut());
+    std::string output;
+    CryptoPP::HexEncoder encoder(new CryptoPP::StringSink(output), false, 0, "");
+    encoder.Put(digest, sizeof(digest));
+    encoder.MessageEnd();
+    Q_strncpy(pOut, output.c_str(), outLen);
+    return true;
+}
+
 bool MomentumUtil::GetMapHash(const char* pMapName, char* pOut, size_t outLen)
 {
-    bool bFile = false;
-    FileFindHandle_t found;
     char szPath[MAX_PATH];
     Q_snprintf(szPath, MAX_PATH, "maps/%s.bsp", pMapName);
-    const char *pStr = g_pFullFileSystem->FindFirstEx(szPath, "GAME", &found);
-    if (pStr)
-    {
-        bFile = true;
-        char outPath[MAX_PATH];
-        g_pFullFileSystem->RelativePathToFullPath_safe(szPath, "GAME", outPath);
 
-        CryptoPP::SHA1 sha1;
-        std::string digest;
-        CryptoPP::FileSource f(outPath, true, new CryptoPP::HashFilter(sha1, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest), false, 0, "")));
-        Q_strncpy(pOut, digest.c_str(), outLen);
-    }
-    g_pFullFileSystem->FindClose(found);
+    CUtlBuffer mapBuffer;
+    if (g_pFullFileSystem->ReadFile(szPath, "GAME", mapBuffer))
+        return GetSHA1Hash(mapBuffer, pOut, outLen);
 
-    return bFile;
+    return false;
 }
 
 bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
@@ -534,12 +537,9 @@ bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
 bool MomentumUtil::MapThumbnailExists(const char* pMapName)
 {
     if (!pMapName) return false;
-    FileFindHandle_t found;
     char szPath[MAX_PATH];
     Q_snprintf(szPath, MAX_PATH, "materials/vgui/maps/%s.vmt", pMapName);
-    const char *pStr = g_pFullFileSystem->FindFirstEx(szPath, "GAME", &found);
-    g_pFullFileSystem->FindClose(found);
-    return pStr ? true : false;
+    return g_pFullFileSystem->FileExists(szPath, "GAME");
 }
 
 static MomentumUtil s_momentum_util;
