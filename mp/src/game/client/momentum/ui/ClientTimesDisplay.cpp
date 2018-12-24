@@ -1071,7 +1071,6 @@ void CClientTimesDisplay::GetTop10TimesCallback(KeyValues* pKv)
                 KeyValues *kvUserObj = pRun->FindKey("user");
                 if (kvUserObj)
                 {
-
                     uint64 steamID = Q_atoui64(kvUserObj->GetString("id"));
                     kvEntry->SetUint64("steamid", steamID);
 
@@ -1085,23 +1084,19 @@ void CClientTimesDisplay::GetTop10TimesCallback(KeyValues* pKv)
                     // MOM_TODO: Make this the actual permission
                     kvEntry->SetBool("vip", pRun->GetBool("vip"));
 
-                    KeyValues *kvProfile = kvUserObj->FindKey("profile");
-                    if (kvProfile)
-                    {
-                        kvEntry->SetString("personaname", kvProfile->GetString("alias"));
+                    kvEntry->SetString("personaname", kvUserObj->GetString("alias"));
 
-                        if (SteamFriends() && SteamUser())
+                    if (SteamFriends() && SteamUser())
+                    {
+                        uint64 localSteamID = SteamUser()->GetSteamID().ConvertToUint64();
+                        // These handle setting "avatar" for kvEntry
+                        if (localSteamID == steamID)
                         {
-                            uint64 localSteamID = SteamUser()->GetSteamID().ConvertToUint64();
-                            // These handle setting "avatar" for kvEntry
-                            if (localSteamID == steamID)
-                            {
-                                kvEntry->SetInt("avatar", TryAddAvatar(localSteamID, &m_mapAvatarsToImageList, m_pImageList));
-                            }
-                            else
-                            {
-                                UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
-                            }
+                            kvEntry->SetInt("avatar", TryAddAvatar(localSteamID, &m_mapAvatarsToImageList, m_pImageList));
+                        }
+                        else
+                        {
+                            UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
                         }
                     }
                 }

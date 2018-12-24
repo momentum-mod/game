@@ -18,6 +18,8 @@ public:
 	{
 		m_pszCommandName	= cmdname;
 		m_pszSubDir			= subdir;
+        if (extension[0] == '.')
+            extension++;
 		m_pszExtension		= extension;
 	}
 
@@ -33,7 +35,7 @@ private:
 	static int g_##command##_CompletionFunc( const char *partial,									\
 			char commands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ] )		\
 	{																								\
-		static CBaseAutoCompleteFileList command##Complete( #command, subdirectory, #extension );	\
+		static CBaseAutoCompleteFileList command##Complete( #command, subdirectory, extension );	\
 		return command##Complete.AutoCompletionFunc( partial, commands );							\
 	}
 

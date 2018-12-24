@@ -146,10 +146,10 @@ enum SPECTATE_MSG_TYPE
     __FILE__, __FUNCTION__, __LINE__, #steam_interface); return; }
 
 #define MAP_FOLDER "maps"
-#define RECORDING_PATH "recordings"
+#define RECORDING_PATH "replays"
 #define RECORDING_ONLINE_PATH "online"
 #define EXT_ZONE_FILE ".zon"
-#define EXT_RECORDING_FILE ".momrec"
+#define EXT_RECORDING_FILE ".mrf"
 
 // MOM_TODO: Replace this with the custom player model
 #define ENTITY_MODEL "models/player/player_shape_base.mdl"

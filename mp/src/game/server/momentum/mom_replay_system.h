@@ -28,9 +28,10 @@ public:
     void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); // Trims a replay's start down to only include a defined amount of time in the start trigger
 
-    void Start(bool firstperson);
     CMomReplayBase *LoadPlayback(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
     void UnloadPlayback(bool shutdown = false);
+    void LoadReplayGhost();
+    void StartPlayback(bool firstperson);
     void StopPlayback();
 
     void SetWasInReplay(bool bEnable = true) { m_bWasInReplay = bEnable; };
@@ -56,7 +57,7 @@ public:
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayInfo();
     void SetRunStats();
-    bool StoreReplay(const char *path, const char *pathID = "MOD");
+    bool StoreReplay(char *pPathOut, size_t outSize);
 
     bool m_bShouldStopRec;
     int m_iTickCount;          // MOM_TODO: Maybe remove me?
