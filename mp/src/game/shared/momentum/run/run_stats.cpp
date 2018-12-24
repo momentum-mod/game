@@ -16,10 +16,10 @@ CMomRunStats::CMomRunStats(CMomRunStats::data* pData, uint8 size)
     Init(size);
 }
 
-CMomRunStats::CMomRunStats(CMomRunStats::data* pData, CBinaryReader *pReader) : m_pData(nullptr) 
+CMomRunStats::CMomRunStats(CMomRunStats::data* pData, CUtlBuffer &reader) : m_pData(nullptr)
 {
     m_pData = pData;
-    Deserialize(pReader);
+    Deserialize(reader);
 }
 
 void CMomRunStats::Init(uint8 size)
@@ -48,9 +48,9 @@ void CMomRunStats::FullyCopyStats(CMomRunStats::data *to)
     memcpy(to, m_pData, sizeof(CMomRunStats::data));
 }
 
-void CMomRunStats::Deserialize(CBinaryReader *reader)
+void CMomRunStats::Deserialize(CUtlBuffer &reader)
 {
-    SetTotalZones(reader->ReadUInt8());
+    SetTotalZones(reader.GetUnsignedChar());
 
     // NOTE: This range checking might result in unread data.
     if (m_pData->m_iTotalZones > MAX_STAGES)
@@ -58,54 +58,54 @@ void CMomRunStats::Deserialize(CBinaryReader *reader)
 
     for (int i = 0; i < m_pData->m_iTotalZones + 1; ++i)
     {
-        SetZoneJumps(i, reader->ReadUInt32());
-        SetZoneStrafes(i, reader->ReadUInt32());
+        SetZoneJumps(i, reader.GetUnsignedInt());
+        SetZoneStrafes(i, reader.GetUnsignedInt());
 
-        SetZoneStrafeSyncAvg(i, reader->ReadFloat());
-        SetZoneStrafeSync2Avg(i, reader->ReadFloat());
-        SetZoneEnterTime(i, reader->ReadFloat());
-        SetZoneTime(i, reader->ReadFloat());
+        SetZoneStrafeSyncAvg(i, reader.GetFloat());
+        SetZoneStrafeSync2Avg(i, reader.GetFloat());
+        SetZoneEnterTime(i, reader.GetFloat());
+        SetZoneTime(i, reader.GetFloat());
 
         float vel3D = 0.0f, vel2D = 0.0f;
-        vel3D = reader->ReadFloat();
-        vel2D = reader->ReadFloat();
+        vel3D = reader.GetFloat();
+        vel2D = reader.GetFloat();
         SetZoneVelocityMax(i, vel3D, vel2D);
-        vel3D = reader->ReadFloat();
-        vel2D = reader->ReadFloat();
+        vel3D = reader.GetFloat();
+        vel2D = reader.GetFloat();
         SetZoneVelocityAvg(i, vel3D, vel2D);
-        vel3D = reader->ReadFloat();
-        vel2D = reader->ReadFloat();
+        vel3D = reader.GetFloat();
+        vel2D = reader.GetFloat();
         SetZoneEnterSpeed(i, vel3D, vel2D);
-        vel3D = reader->ReadFloat();
-        vel2D = reader->ReadFloat();
+        vel3D = reader.GetFloat();
+        vel2D = reader.GetFloat();
         SetZoneExitSpeed(i, vel3D, vel2D);
     }
 }
 
-void CMomRunStats::Serialize(CBinaryWriter *writer) 
+void CMomRunStats::Serialize(CUtlBuffer &writer) 
 {
-    writer->WriteUInt8(m_pData->m_iTotalZones);
+    writer.PutUnsignedChar(m_pData->m_iTotalZones);
 
     for (int i = 0; i < m_pData->m_iTotalZones + 1; ++i)
     {
         //Jumps/Strafes
-        writer->WriteUInt32(m_pData->m_iZoneJumps[i]);
-        writer->WriteUInt32(m_pData->m_iZoneStrafes[i]);
+        writer.PutUnsignedInt(m_pData->m_iZoneJumps[i]);
+        writer.PutUnsignedInt(m_pData->m_iZoneStrafes[i]);
         //Sync
-        writer->WriteFloat(m_pData->m_flZoneStrafeSyncAvg[i]);
-        writer->WriteFloat(m_pData->m_flZoneStrafeSync2Avg[i]);
+        writer.PutFloat(m_pData->m_flZoneStrafeSyncAvg[i]);
+        writer.PutFloat(m_pData->m_flZoneStrafeSync2Avg[i]);
         //Time
-        writer->WriteFloat(m_pData->m_flZoneEnterTime[i]);
-        writer->WriteFloat(m_pData->m_flZoneTime[i]);
+        writer.PutFloat(m_pData->m_flZoneEnterTime[i]);
+        writer.PutFloat(m_pData->m_flZoneTime[i]);
         //Velocity
-        writer->WriteFloat(m_pData->m_flZoneVelocityMax3D[i]);
-        writer->WriteFloat(m_pData->m_flZoneVelocityMax2D[i]);
-        writer->WriteFloat(m_pData->m_flZoneVelocityAvg3D[i]);
-        writer->WriteFloat(m_pData->m_flZoneVelocityAvg2D[i]);
-        writer->WriteFloat(m_pData->m_flZoneEnterSpeed3D[i]);
-        writer->WriteFloat(m_pData->m_flZoneEnterSpeed2D[i]);
-        writer->WriteFloat(m_pData->m_flZoneExitSpeed3D[i]);
-        writer->WriteFloat(m_pData->m_flZoneExitSpeed2D[i]);
+        writer.PutFloat(m_pData->m_flZoneVelocityMax3D[i]);
+        writer.PutFloat(m_pData->m_flZoneVelocityMax2D[i]);
+        writer.PutFloat(m_pData->m_flZoneVelocityAvg3D[i]);
+        writer.PutFloat(m_pData->m_flZoneVelocityAvg2D[i]);
+        writer.PutFloat(m_pData->m_flZoneEnterSpeed3D[i]);
+        writer.PutFloat(m_pData->m_flZoneEnterSpeed2D[i]);
+        writer.PutFloat(m_pData->m_flZoneExitSpeed3D[i]);
+        writer.PutFloat(m_pData->m_flZoneExitSpeed2D[i]);
     }
 }
 

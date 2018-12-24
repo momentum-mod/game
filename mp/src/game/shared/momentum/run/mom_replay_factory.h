@@ -4,7 +4,6 @@
 #define REPLAY_MAGIC_BE 0x4D4F4D52
 
 class CMomReplayBase;
-class CBinaryReader;
 
 class CMomReplayFactory
 {
@@ -14,7 +13,7 @@ class CMomReplayFactory
 
     //Pass 0 as a version number to get whatever the latest version is.
     CMomReplayBase *CreateEmptyReplay(uint8 version);
-    CMomReplayBase *CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad);
+    CMomReplayBase *CreateReplay(uint8 version, CUtlBuffer &reader, bool bFullLoad);
 
     //Returns a replay file and constructs a versioned replay object.
     CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");

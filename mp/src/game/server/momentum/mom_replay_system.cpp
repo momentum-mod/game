@@ -10,6 +10,7 @@
 #include "steam/steam_api.h"
 #include "run/mom_replay_factory.h"
 #include "util/mom_util.h"
+#include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
@@ -116,22 +117,8 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
         return;
     }
 
-    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[MAX_PATH], runDate[MAX_PATH];
-
     m_bShouldStopRec = false;
-
-    // Don't ask why, but these need to be formatted in their own strings.
-    Q_snprintf(runDate, MAX_PATH, "%li", g_pMomentumTimer->GetLastRunDate());
-    Q_snprintf(runTime, MAX_PATH, "%.3f", g_pMomentumTimer->GetLastRunTime());
-    // It's weird.
-
-    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s-%s%s", gpGlobals->mapname.ToCStr(), runDate, runTime,
-               EXT_RECORDING_FILE);
-
-    // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
-    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH);
-
-    
+    m_bRecording = false;
 
     DevLog("Before trimming: %i\n", m_iTickCount);
     TrimReplay();
@@ -142,25 +129,32 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 
     int postTrimTickCount = m_pRecordingReplay->GetFrameCount();
     DevLog("After trimming: %i\n", postTrimTickCount);
-    StoreReplay(newRecordingPath);
-    m_bRecording = false;
-    // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
-    Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
+    char newRecordingPath[MAX_PATH];
+    if (StoreReplay(newRecordingPath, MAX_PATH))
+    {
+        // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
+        Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
+
+        if (replaySavedEvent)
+        {
+            replaySavedEvent->SetBool("save", true);
+            // replaySavedEvent->SetString("filename", newRecordingName);
+            replaySavedEvent->SetString("filepath", newRecordingPath);
+            replaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
+            gameeventmanager->FireEvent(replaySavedEvent);
+        }
+        // Load the last run that we did in case we want to watch it
+        // MOM_TODO: Should we UnloadPlayback() => m_pPlaybackReplay = m_pRecordingReplay => m_pRecordingReplay = nullptr here?
+        LoadPlayback(newRecordingPath);
+    }
+    else
+    {
+        Warning("Unable to store replay file!\n");
+    }
 
     // Re-allow the player to teleport
     if (pPlayer)
         pPlayer->m_bAllowUserTeleports = true;
-
-    if (replaySavedEvent)
-    {
-        replaySavedEvent->SetBool("save", true);
-        replaySavedEvent->SetString("filename", newRecordingName);
-        replaySavedEvent->SetString("filepath", newRecordingPath);
-        replaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
-        gameeventmanager->FireEvent(replaySavedEvent);
-    }
-    // Load the last run that we did in case we want to watch it
-    LoadPlayback(newRecordingPath);
 
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
@@ -168,30 +162,27 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_pRecordingReplay->~CMomReplayBase();
 }
 
-bool CMomentumReplaySystem::StoreReplay(const char *path, const char *pathID)
+bool CMomentumReplaySystem::StoreReplay(char *pOut, size_t outSize)
 {
     if (!m_pRecordingReplay)
         return false;
 
-    auto file = filesystem->Open(path, "w+b", pathID);
+    // Serialize the replay
+    CUtlBuffer buf;
+    buf.PutUnsignedInt(REPLAY_MAGIC_LE);
+    buf.PutUnsignedChar(m_pRecordingReplay->GetVersion());
+    m_pRecordingReplay->Serialize(buf);
 
-    if (!file)
-    {
-        Log("Error saving file to path %s\n", path);
-        return false;
-    }
+    // Generate the SHA1 hash for this replay
+    char hash[41];
+    g_pMomentumUtil->GetSHA1Hash(buf, hash, 41);
+    DevLog("Replay Hash: %s\n", hash);
 
-    Log("Storing replay of version '%d' to '%s'...\n", g_ReplaySystem.m_pRecordingReplay->GetVersion(), path);
-
-    CBinaryWriter writer(file);
-
-    writer.WriteUInt32(REPLAY_MAGIC_LE);
-    writer.WriteUInt8(m_pRecordingReplay->GetVersion());
-    m_pRecordingReplay->Serialize(&writer);
-
-    filesystem->Close(file);
-
-    return true;
+    // Store the file
+    CFmtStr newRecordingName("%s-%s%s", gpGlobals->mapname.ToCStr(), hash, EXT_RECORDING_FILE);
+    V_ComposeFileName(RECORDING_PATH, newRecordingName.Get(), pOut, outSize);
+    Log("Storing replay of version '%d' to %s ...\n", m_pRecordingReplay->GetVersion(), pOut);
+    return g_pFullFileSystem->WriteFile(pOut, "MOD", buf);
 }
 
 void CMomentumReplaySystem::TrimReplay()
@@ -254,15 +245,7 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
     if (bFullLoad && m_pPlaybackReplay)
     {
         // Create the run entity here
-        CMomentumReplayGhostEntity *pGhost =
-            static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
-        pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
-        pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
-        pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
-        pGhost->m_SrvData.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
-        pGhost->SetPlaybackReplay(m_pPlaybackReplay);
-        pGhost->m_SrvData.m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
-        m_pPlaybackReplay->SetRunEntity(pGhost);
+        LoadReplayGhost();
     }
 
     return m_pPlaybackReplay;
@@ -270,9 +253,6 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
 
 void CMomentumReplaySystem::SetReplayInfo()
 {
-    if (!m_bRecording)
-        return;
-
     m_pRecordingReplay->SetMapName(gpGlobals->mapname.ToCStr());
     m_pRecordingReplay->SetMapHash(m_szMapHash);
     m_pRecordingReplay->SetPlayerName(m_player->GetPlayerName());
@@ -288,9 +268,6 @@ void CMomentumReplaySystem::SetReplayInfo()
 
 void CMomentumReplaySystem::SetRunStats()
 {
-    if (!m_bRecording)
-        return;
-
     CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
     m_player->m_RunStats.FullyCopyStats(stats);
     // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
@@ -298,7 +275,7 @@ void CMomentumReplaySystem::SetRunStats()
 
 void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
 
-void CMomentumReplaySystem::Start(bool firstperson)
+void CMomentumReplaySystem::StartPlayback(bool firstperson)
 {
     if (m_player)
     {
@@ -336,6 +313,22 @@ void CMomentumReplaySystem::UnloadPlayback(bool shutdown)
     m_pPlaybackReplay = nullptr;
 }
 
+void CMomentumReplaySystem::LoadReplayGhost()
+{
+    if (m_pPlaybackReplay->GetRunEntity())
+        return;
+
+    CMomentumReplayGhostEntity *pGhost =
+        static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
+    pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
+    pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
+    pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+    pGhost->m_SrvData.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
+    pGhost->SetPlaybackReplay(m_pPlaybackReplay);
+    pGhost->m_SrvData.m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
+    m_pPlaybackReplay->SetRunEntity(pGhost);
+}
+
 void CMomentumReplaySystem::StopPlayback()
 {
     if (!g_ReplaySystem.m_bPlayingBack)
@@ -371,7 +364,7 @@ class CMOMReplayCommands
             {
                 if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
                 {
-                    g_ReplaySystem.Start(firstperson);
+                    g_ReplaySystem.StartPlayback(firstperson);
                     mom_replay_timescale.SetValue(1.0f);
                     mom_replay_selection.SetValue(0);
                 }
@@ -387,16 +380,16 @@ class CMOMReplayCommands
 };
 
 CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play_ghost, CMOMReplayCommands::PlayReplayGhost,
-                             "Begins playback of a replay as a ghost.", RECORDING_PATH, momrec);
+                             "Begins playback of a replay as a ghost.", RECORDING_PATH, EXT_RECORDING_FILE);
 CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play, CMOMReplayCommands::PlayReplayFirstPerson,
-                             "Begins a playback of a replay in first-person mode.", RECORDING_PATH, momrec);
+                             "Begins a playback of a replay in first-person mode.", RECORDING_PATH, EXT_RECORDING_FILE);
 
 CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in first person), if there is one.")
 {
     auto pPlaybackReplay = g_ReplaySystem.m_pPlaybackReplay;
     if (pPlaybackReplay && !g_ReplaySystem.m_bPlayingBack)
     {
-        g_ReplaySystem.Start(true);
+        g_ReplaySystem.StartPlayback(true);
         mom_replay_timescale.SetValue(1.0f);
     }
 }

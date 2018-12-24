@@ -229,7 +229,7 @@ void CRunPoster::RunSubmitCallback(KeyValues* pKv)
         if (runUploadedEvent)
         {
             runUploadedEvent->SetBool("run_posted", false);
-            // TODO: send an error here
+            // MOM_TODO: send an error here
             gameeventmanager->FireEvent(runUploadedEvent);
         }
     }
