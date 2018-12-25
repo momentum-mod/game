@@ -54,6 +54,7 @@ static std::atomic_bool WasJustDisconnected{false};
 static std::atomic_bool GotErrorMessage{false};
 static std::atomic_bool WasJoinGame{false};
 static std::atomic_bool WasSpectateGame{false};
+static std::atomic_bool UpdatePresence{false};
 static char JoinGameSecret[256];
 static char SpectateGameSecret[256];
 static int LastErrorCode{0};
@@ -77,12 +78,8 @@ static int Nonce{1};
 #ifndef DISCORD_DISABLE_IO_THREAD
 static void Discord_UpdateConnection(void);
 class IoThreadHolder {
-public:
-	IoThreadHolder() {
-		keepRunning = true;
-	}
 private:
-    std::atomic_bool keepRunning;
+    std::atomic_bool keepRunning{true};
     std::mutex waitForIOMutex;
     std::condition_variable waitForIOActivity;
     std::thread ioThread;
@@ -93,10 +90,11 @@ public:
         keepRunning.store(true);
         ioThread = std::thread([&]() {
             const std::chrono::duration<int64_t, std::milli> maxWait{500LL};
+            Discord_UpdateConnection();
             while (keepRunning.load()) {
-                Discord_UpdateConnection();
                 std::unique_lock<std::mutex> lock(waitForIOMutex);
                 waitForIOActivity.wait_for(lock, maxWait);
+                Discord_UpdateConnection();
             }
         });
     }
@@ -122,7 +120,7 @@ public:
     void Notify() {}
 };
 #endif // DISCORD_DISABLE_IO_THREAD
-static IoThreadHolder IoThread;
+static IoThreadHolder* IoThread{nullptr};
 
 static void UpdateReconnectTime()
 {
@@ -217,17 +215,17 @@ static void Discord_UpdateConnection(void)
         }
 
         // writes
-        if (QueuedPresence.length) {
+        if (UpdatePresence.exchange(false) && QueuedPresence.length) {
             QueuedMessage local;
             {
-                // std::lock_guard<std::mutex> guard(PresenceMutex);
+                std::lock_guard<std::mutex> guard(PresenceMutex);
                 local.Copy(QueuedPresence);
-                QueuedPresence.length = 0;
             }
             if (!Connection->Write(local.buffer, local.length)) {
                 // if we fail to send, requeue
-                // std::lock_guard<std::mutex> guard(PresenceMutex);
+                std::lock_guard<std::mutex> guard(PresenceMutex);
                 QueuedPresence.Copy(local);
+                UpdatePresence.exchange(true);
             }
         }
 
@@ -241,7 +239,9 @@ static void Discord_UpdateConnection(void)
 
 static void SignalIOActivity()
 {
-    IoThread.Notify();
+    if (IoThread != nullptr) {
+        IoThread->Notify();
+    }
 }
 
 static bool RegisterForEvent(const char* evtName)
@@ -275,6 +275,11 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                                   int autoRegister,
                                                   const char* optionalSteamId)
 {
+    IoThread = new (std::nothrow) IoThreadHolder();
+    if (IoThread == nullptr) {
+        return;
+    }
+
     if (autoRegister) {
         if (optionalSteamId && optionalSteamId[0]) {
             Discord_RegisterSteamGame(applicationId, optionalSteamId);
@@ -306,6 +311,10 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     Connection = RpcConnection::Create(applicationId);
     Connection->onConnect = [](JsonDocument& readyMessage) {
         Discord_UpdateHandlers(&QueuedHandlers);
+        if (QueuedPresence.length > 0) {
+            UpdatePresence.exchange(true);
+            SignalIOActivity();
+        }
         auto data = GetObjMember(&readyMessage, "data");
         auto user = GetObjMember(data, "user");
         auto userId = GetStrMember(user, "id");
@@ -331,15 +340,11 @@ extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
     Connection->onDisconnect = [](int err, const char* message) {
         LastDisconnectErrorCode = err;
         StringCopy(LastDisconnectErrorMessage, message);
-        {
-            // std::lock_guard<std::mutex> guard(HandlerMutex);
-            Handlers = {};
-        }
         WasJustDisconnected.exchange(true);
         UpdateReconnectTime();
     };
 
-    IoThread.Start();
+    IoThread->Start();
 }
 
 extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
@@ -350,7 +355,14 @@ extern "C" DISCORD_EXPORT void Discord_Shutdown(void)
     Connection->onConnect = nullptr;
     Connection->onDisconnect = nullptr;
     Handlers = {};
-    IoThread.Stop();
+    QueuedPresence.length = 0;
+    UpdatePresence.exchange(false);
+    if (IoThread != nullptr) {
+        IoThread->Stop();
+        delete IoThread;
+        IoThread = nullptr;
+    }
+
     RpcConnection::Destroy(Connection);
 }
 
@@ -360,6 +372,7 @@ extern "C" DISCORD_EXPORT void Discord_UpdatePresence(const DiscordRichPresence*
         // std::lock_guard<std::mutex> guard(PresenceMutex);
         QueuedPresence.length = JsonWriteRichPresenceObj(
           QueuedPresence.buffer, sizeof(QueuedPresence.buffer), Nonce++, Pid, presence);
+        UpdatePresence.exchange(true);
     }
     SignalIOActivity();
 }

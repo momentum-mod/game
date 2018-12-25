@@ -2,35 +2,44 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using AOT;
 
 public class DiscordRpc
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ReadyCallback(ref DiscordUser connectedUser);
+    [MonoPInvokeCallback(typeof(OnReadyInfo))]
+    public static void ReadyCallback(ref DiscordUser connectedUser) { Callbacks.readyCallback(ref connectedUser); }
+    public delegate void OnReadyInfo(ref DiscordUser connectedUser);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void DisconnectedCallback(int errorCode, string message);
+    [MonoPInvokeCallback(typeof(OnDisconnectedInfo))]
+    public static void DisconnectedCallback(int errorCode, string message) { Callbacks.disconnectedCallback(errorCode, message); }
+    public delegate void OnDisconnectedInfo(int errorCode, string message);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ErrorCallback(int errorCode, string message);
+    [MonoPInvokeCallback(typeof(OnErrorInfo))]
+    public static void ErrorCallback(int errorCode, string message) { Callbacks.errorCallback(errorCode, message); }
+    public delegate void OnErrorInfo(int errorCode, string message);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void JoinCallback(string secret);
+    [MonoPInvokeCallback(typeof(OnJoinInfo))]
+    public static void JoinCallback(string secret) { Callbacks.joinCallback(secret); }
+    public delegate void OnJoinInfo(string secret);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SpectateCallback(string secret);
+    [MonoPInvokeCallback(typeof(OnSpectateInfo))]
+    public static void SpectateCallback(string secret) { Callbacks.spectateCallback(secret); }
+    public delegate void OnSpectateInfo(string secret);
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void RequestCallback(ref DiscordUser request);
+    [MonoPInvokeCallback(typeof(OnRequestInfo))]
+    public static void RequestCallback(ref DiscordUser request) { Callbacks.requestCallback(ref request); }
+    public delegate void OnRequestInfo(ref DiscordUser request);
+
+    static EventHandlers Callbacks { get; set; }
 
     public struct EventHandlers
     {
-        public ReadyCallback readyCallback;
-        public DisconnectedCallback disconnectedCallback;
-        public ErrorCallback errorCallback;
-        public JoinCallback joinCallback;
-        public SpectateCallback spectateCallback;
-        public RequestCallback requestCallback;
+        public OnReadyInfo readyCallback;
+        public OnDisconnectedInfo disconnectedCallback;
+        public OnErrorInfo errorCallback;
+        public OnJoinInfo joinCallback;
+        public OnSpectateInfo spectateCallback;
+        public OnRequestInfo requestCallback;
     }
 
     [Serializable, StructLayout(LayoutKind.Sequential)]
@@ -69,8 +78,23 @@ public class DiscordRpc
         Ignore = 2
     }
 
+    public static void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId)
+    {
+        Callbacks = handlers;
+
+        EventHandlers staticEventHandlers = new EventHandlers();
+        staticEventHandlers.readyCallback += DiscordRpc.ReadyCallback;
+        staticEventHandlers.disconnectedCallback += DiscordRpc.DisconnectedCallback;
+        staticEventHandlers.errorCallback += DiscordRpc.ErrorCallback;
+        staticEventHandlers.joinCallback += DiscordRpc.JoinCallback;
+        staticEventHandlers.spectateCallback += DiscordRpc.SpectateCallback;
+        staticEventHandlers.requestCallback += DiscordRpc.RequestCallback;
+
+        InitializeInternal(applicationId, ref staticEventHandlers, autoRegister, optionalSteamId);
+    }
+
     [DllImport("discord-rpc", EntryPoint = "Discord_Initialize", CallingConvention = CallingConvention.Cdecl)]
-    public static extern void Initialize(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId);
+    static extern void InitializeInternal(string applicationId, ref EventHandlers handlers, bool autoRegister, string optionalSteamId);
 
     [DllImport("discord-rpc", EntryPoint = "Discord_Shutdown", CallingConvention = CallingConvention.Cdecl)]
     public static extern void Shutdown();
@@ -129,20 +153,20 @@ public class DiscordRpc
                 FreeMem();
             }
 
-            _presence.state = StrToPtr(state, 128);
-            _presence.details = StrToPtr(details, 128);
+            _presence.state = StrToPtr(state);
+            _presence.details = StrToPtr(details);
             _presence.startTimestamp = startTimestamp;
             _presence.endTimestamp = endTimestamp;
-            _presence.largeImageKey = StrToPtr(largeImageKey, 32);
-            _presence.largeImageText = StrToPtr(largeImageText, 128);
-            _presence.smallImageKey = StrToPtr(smallImageKey, 32);
-            _presence.smallImageText = StrToPtr(smallImageText, 128);
-            _presence.partyId = StrToPtr(partyId, 128);
+            _presence.largeImageKey = StrToPtr(largeImageKey);
+            _presence.largeImageText = StrToPtr(largeImageText);
+            _presence.smallImageKey = StrToPtr(smallImageKey);
+            _presence.smallImageText = StrToPtr(smallImageText);
+            _presence.partyId = StrToPtr(partyId);
             _presence.partySize = partySize;
             _presence.partyMax = partyMax;
-            _presence.matchSecret = StrToPtr(matchSecret, 128);
-            _presence.joinSecret = StrToPtr(joinSecret, 128);
-            _presence.spectateSecret = StrToPtr(spectateSecret, 128);
+            _presence.matchSecret = StrToPtr(matchSecret);
+            _presence.joinSecret = StrToPtr(joinSecret);
+            _presence.spectateSecret = StrToPtr(spectateSecret);
             _presence.instance = instance;
 
             return _presence;
@@ -152,16 +176,18 @@ public class DiscordRpc
         /// Returns a pointer to a representation of the given string with a size of maxbytes
         /// </summary>
         /// <param name="input">String to convert</param>
-        /// <param name="maxbytes">Max number of bytes to use</param>
         /// <returns>Pointer to the UTF-8 representation of <see cref="input"/></returns>
-        private IntPtr StrToPtr(string input, int maxbytes)
+        private IntPtr StrToPtr(string input)
         {
             if (string.IsNullOrEmpty(input)) return IntPtr.Zero;
-            var convstr = StrClampBytes(input, maxbytes);
-            var convbytecnt = Encoding.UTF8.GetByteCount(convstr);
-            var buffer = Marshal.AllocHGlobal(convbytecnt);
+            var convbytecnt = Encoding.UTF8.GetByteCount(input);
+            var buffer = Marshal.AllocHGlobal(convbytecnt + 1);
+            for (int i = 0; i < convbytecnt + 1; i++)
+            {
+                Marshal.WriteByte(buffer, i, 0);
+            }
             _buffers.Add(buffer);
-            Marshal.Copy(Encoding.UTF8.GetBytes(convstr), 0, buffer, convbytecnt);
+            Marshal.Copy(Encoding.UTF8.GetBytes(input), 0, buffer, convbytecnt);
             return buffer;
         }
 
@@ -179,30 +205,6 @@ public class DiscordRpc
                 str += "\0\0";
             }
             return Encoding.UTF8.GetString(Encoding.UTF8.GetBytes(str));
-        }
-
-        /// <summary>
-        /// Clamp the string to the given byte length preserving null termination
-        /// </summary>
-        /// <param name="toclamp">string to clamp</param>
-        /// <param name="maxbytes">max bytes the resulting string should have (including null termination)</param>
-        /// <returns>null terminated string with a byte length less or equal to <see cref="maxbytes"/></returns>
-        private static string StrClampBytes(string toclamp, int maxbytes)
-        {
-            var str = StrToUtf8NullTerm(toclamp);
-            var strbytes = Encoding.UTF8.GetBytes(str);
-
-            if (strbytes.Length <= maxbytes)
-            {
-                return str;
-            }
-
-            var newstrbytes = new byte[] { };
-            Array.Copy(strbytes, 0, newstrbytes, 0, maxbytes - 1);
-            newstrbytes[newstrbytes.Length - 1] = 0;
-            newstrbytes[newstrbytes.Length - 2] = 0;
-
-            return Encoding.UTF8.GetString(newstrbytes);
         }
 
         /// <summary>
