@@ -182,7 +182,7 @@ $Project
 		$File	"$SRCDIR\game\shared\achievement_saverestore.h"
 		$File	"$SRCDIR\game\shared\achievementmgr.cpp"
 		$File	"$SRCDIR\game\shared\achievementmgr.h"
-		$File   "$SRCDIR\game\shared\achievements_and_stats_interface.h"
+		$File	"$SRCDIR\game\shared\achievements_and_stats_interface.h"
 		$File	"$SRCDIR\game\shared\achievements_hlx.cpp"
 		$File	"achievement_notification_panel.cpp"
 		$File	"achievement_notification_panel.h"
@@ -496,7 +496,7 @@ $Project
 		$File	"weapons_resource.cpp"
 		$File	"WorldDimsProxy.cpp"
 		$File	"vgui_video.cpp"
-		$File   "vgui_video_player.cpp"
+		$File	"vgui_video_player.cpp"
 		$File	"$SRCDIR\game\shared\mp_shareddefs.cpp"
 		$File	"$SRCDIR\game\client\c_vote_controller.h"
 		$File	"$SRCDIR\game\client\c_vote_controller.cpp"
@@ -873,7 +873,7 @@ $Project
 		$File	"weapon_selection.h"
 		$File	"weapons_resource.h"
 		$File	"vgui_video.h"
-		$File   "vgui_video_player.h"
+		$File	"vgui_video_player.h"
 	}
 
 	$Folder	"Public Header Files"
@@ -1099,8 +1099,8 @@ $Project
 		$File	"$SRCDIR\public\worldsize.h"
 		$File	"$SRCDIR\public\zip_uncompressed.h"
 		//Haptics
-		$File   "$SRCDIR\public\haptics\ihaptics.h"	[$WIN32]
-		$File   "$SRCDIR\public\haptics\haptic_utils.h"	[$WIN32]
+		$File	"$SRCDIR\public\haptics\ihaptics.h"	[$WIN32]
+		$File	"$SRCDIR\public\haptics\haptic_utils.h"	[$WIN32]
 	}
 
 	$Folder	"Game Shared Header Files"
@@ -1219,7 +1219,7 @@ $Project
 		$File	"$SRCDIR\game\shared\weapon_proficiency.h"
 		$File	"$SRCDIR\game\shared\weapon_ifmsteadycam.h"
 		$File	"$SRCDIR\game\shared\mp_shareddefs.h"
-    }
+	}
 
 	$Folder	"game_controls Header Files"
 	{
@@ -1252,22 +1252,22 @@ $Project
 		$Lib		vtf
 		$ImpLib		steam_api
 
-        $Lib            discord-rpc [$WIN32]
-        $Libexternal    discord-rpc [$LINUXALL]
-        $Libexternal    discord-rpc [$OSXALL]
+		$Lib			discord-rpc [$WIN32]
+		$Libexternal	discord-rpc [$LINUXALL]
+		$Libexternal	discord-rpc [$OSXALL]
 
-		$Libexternal $LIBCOMMON/libcrypto [$OSXALL]
-		$Libexternal "$SRCDIR\lib\common\$(CRYPTOPPDIR)\libcrypto" [$LINUXALL]
+		$Libexternal	$LIBCOMMON/libcrypto [$OSXALL]
+		$Libexternal	"$SRCDIR\lib\common\$(CRYPTOPPDIR)\libcrypto" [$LINUXALL]
 
-		$ImpLib	"$LIBCOMMON\curl"	  [$OSXALL]
+		$ImpLib	"$LIBCOMMON\curl" [$OSXALL]
 
 		$Lib	"$LIBCOMMON\libcurl" [$WIN32]
-		$Lib   "libz" [$WIN32]
+		$Lib	"libz" [$WIN32]
 
 		$Libexternal	libz [$LINUXALL]
-		$Libexternal "$LIBCOMMON/libcurl" [$LINUXALL]
-		$Libexternal "$LIBCOMMON/libcurlssl" [$LINUXALL]
-		$Libexternal "$SRCDIR\lib\common\$(CRYPTOPPDIR)\libssl" [$LINUXALL]
- 	}
+		$Libexternal	"$LIBCOMMON/libcurl" [$LINUXALL]
+		$Libexternal	"$LIBCOMMON/libcurlssl" [$LINUXALL]
+		$Libexternal	"$SRCDIR\lib\common\$(CRYPTOPPDIR)\libssl" [$LINUXALL]
+	}
 
 }
