@@ -49,6 +49,8 @@ struct WriteObject {
         writer.StartObject();
     }
     ~WriteObject() { writer.EndObject(); }
+
+    WriteObject& operator=(const WriteObject&) = delete;
 };
 
 struct WriteArray {
@@ -61,6 +63,8 @@ struct WriteArray {
         writer.StartArray();
     }
     ~WriteArray() { writer.EndArray(); }
+
+	WriteArray& operator=(const WriteArray&) = delete;
 };
 
 template <typename T>
