@@ -122,5 +122,8 @@ bool BaseConnection::Read(void* data, size_t length)
         }
         Close();
     }
+    else if (res == 0) {
+        Close();
+    }
     return res == (int)length;
 }
