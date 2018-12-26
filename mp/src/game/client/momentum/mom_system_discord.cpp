@@ -6,8 +6,7 @@
 
 #include "tier0/memdbgon.h"
 
-// MOM_TODO: Change this to the official Discord App ID (currently it is under Connor's test account)
-#define DISCORD_APP_ID "452297955718987776"
+#define DISCORD_APP_ID "378351756104564738"
 #define MOM_STEAM_ID "669270"
 
 // How many frames to wait before updating discord
