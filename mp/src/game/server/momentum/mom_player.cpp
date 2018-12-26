@@ -130,8 +130,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_iLandTick = 0;
 
 
-    
-    g_ReplaySystem.m_player = this;
+    g_ReplaySystem.m_pPlayer = this;
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
