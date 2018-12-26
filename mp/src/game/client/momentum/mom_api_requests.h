@@ -40,7 +40,8 @@ public:
     bool SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func);
 
     // === File Downloading ===
-    HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end);
+    HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end,
+                                   const char *pFileName, const char *pFilePathID = "GAME");
 
 protected:
     // CAutoGameSystemPerFrame
@@ -99,6 +100,10 @@ private:
         CallbackFunc startFunc;
         CallbackFunc progressFunc;
         CallbackFunc completeFunc;
+
+        char m_pszFileName[MAX_PATH];
+        char m_pszFilePathID[16];
+        CUtlBuffer m_bufFileData;
 
         bool operator==(const DownloadCall &other) const
         {

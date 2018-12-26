@@ -73,7 +73,7 @@ private:
 
     int m_iCurrentPage;
 
-    CUtlMap<HTTPRequestHandle, FileHandle_t> m_mapFileDownloads; // Not to be confused with "Map File Downloads"!
+    CUtlMap<HTTPRequestHandle, int> m_mapFileDownloads; // Not to be confused with "Map File Downloads"!
 };
 
 /*class CImageDownloader
