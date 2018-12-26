@@ -20,7 +20,7 @@ static MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or back
 
 CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     CAutoGameSystemPerFrame(pName), m_bRecording(false), m_bPlayingBack(false), m_pPlaybackReplay(nullptr),
-    m_player(nullptr),
+    m_pPlayer(nullptr),
     m_bShouldStopRec(false),
     m_iTickCount(0),
     m_iStartRecordingTick(-1),
@@ -77,7 +77,7 @@ void CMomentumReplaySystem::PostInit()
 void CMomentumReplaySystem::BeginRecording()
 {
     // don't record if we're watching a preexisting replay or in practice mode
-    if (!m_player->IsSpectatingGhost() && !m_player->m_SrvData.m_bHasPracticeMode)
+    if (!m_pPlayer->IsSpectatingGhost() && !m_pPlayer->m_SrvData.m_bHasPracticeMode)
     {
         m_bRecording = true;
         m_iTickCount = 1; // recording begins at 1 ;)
@@ -90,8 +90,6 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 {
     IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
     if (throwaway && replaySavedEvent)
     {
         replaySavedEvent->SetBool("save", false);
@@ -100,8 +98,8 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
         m_bRecording = false;
 
         // Re-allow the player to teleport
-        if (pPlayer)
-            pPlayer->m_bAllowUserTeleports = true;
+        if (m_pPlayer)
+            m_pPlayer->m_bAllowUserTeleports = true;
 
         return;
     }
@@ -109,8 +107,8 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     if (delay)
     {
         // Prevent the user from teleporting, potentially breaking this delay
-        if (pPlayer)
-            pPlayer->m_bAllowUserTeleports = false;
+        if (m_pPlayer)
+            m_pPlayer->m_bAllowUserTeleports = false;
 
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
@@ -143,23 +141,27 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
             replaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
             gameeventmanager->FireEvent(replaySavedEvent);
         }
+
         // Load the last run that we did in case we want to watch it
-        // MOM_TODO: Should we UnloadPlayback() => m_pPlaybackReplay = m_pRecordingReplay => m_pRecordingReplay = nullptr here?
-        LoadPlayback(newRecordingPath);
+        UnloadPlayback();
+        m_pPlaybackReplay = m_pRecordingReplay;
+        LoadReplayGhost();
     }
     else
     {
         Warning("Unable to store replay file!\n");
+        if (m_pRecordingReplay)
+            delete m_pRecordingReplay;
     }
 
     // Re-allow the player to teleport
-    if (pPlayer)
-        pPlayer->m_bAllowUserTeleports = true;
+    if (m_pPlayer)
+        m_pPlayer->m_bAllowUserTeleports = true;
 
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
     m_iStartTimerTick = -1;
-    m_pRecordingReplay->~CMomReplayBase();
+    m_pRecordingReplay = nullptr;
 }
 
 bool CMomentumReplaySystem::StoreReplay(char *pOut, size_t outSize)
@@ -213,10 +215,10 @@ void CMomentumReplaySystem::UpdateRecordingParams()
     // We only record frames that the player isn't pausing on
     if (m_bRecording && !engine->IsPaused() && !m_bPaused)
     {
-        if (!m_player->m_SrvData.m_bHasPracticeMode) // MOM_TODO: && !m_player->IsSpectating
+        if (!m_pPlayer->m_SrvData.m_bHasPracticeMode) // MOM_TODO: && !m_player->IsSpectating
         {
-            m_pRecordingReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->GetViewOffset(),
-                                             m_player->m_nButtons));
+            m_pRecordingReplay->AddFrame(CReplayFrame(m_pPlayer->EyeAngles(), m_pPlayer->GetAbsOrigin(), m_pPlayer->GetViewOffset(),
+                                             m_pPlayer->m_nButtons));
         }
         else
         {
@@ -255,12 +257,12 @@ void CMomentumReplaySystem::SetReplayInfo()
 {
     m_pRecordingReplay->SetMapName(gpGlobals->mapname.ToCStr());
     m_pRecordingReplay->SetMapHash(m_szMapHash);
-    m_pRecordingReplay->SetPlayerName(m_player->GetPlayerName());
+    m_pRecordingReplay->SetPlayerName(m_pPlayer->GetPlayerName());
     ISteamUser *pUser = SteamUser();
     m_pRecordingReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     m_pRecordingReplay->SetTickInterval(gpGlobals->interval_per_tick);
     m_pRecordingReplay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
-    m_pRecordingReplay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
+    m_pRecordingReplay->SetRunFlags(m_pPlayer->m_SrvData.m_RunData.m_iRunFlags);
     m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetBonusZone(g_pMomentumTimer->m_iBonusZone);
@@ -268,8 +270,8 @@ void CMomentumReplaySystem::SetReplayInfo()
 
 void CMomentumReplaySystem::SetRunStats()
 {
-    CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
-    m_player->m_RunStats.FullyCopyStats(stats);
+    CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(m_pPlayer->m_RunStats.GetTotalZones());
+    m_pPlayer->m_RunStats.FullyCopyStats(stats);
     // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
 }
 
@@ -277,18 +279,18 @@ void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
 
 void CMomentumReplaySystem::StartPlayback(bool firstperson)
 {
-    if (m_player)
+    if (m_pPlayer)
     {
         SetWasInReplay();
 
-        m_player->m_SrvData.m_RunData.m_vecLastPos = m_player->GetAbsOrigin();
-        m_player->m_SrvData.m_RunData.m_angLastAng = m_player->GetAbsAngles();
-        m_player->m_SrvData.m_RunData.m_vecLastVelocity = m_player->GetAbsVelocity();
-        m_player->m_SrvData.m_RunData.m_fLastViewOffset = m_player->GetViewOffset().z;
+        m_pPlayer->m_SrvData.m_RunData.m_vecLastPos = m_pPlayer->GetAbsOrigin();
+        m_pPlayer->m_SrvData.m_RunData.m_angLastAng = m_pPlayer->GetAbsAngles();
+        m_pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = m_pPlayer->GetAbsVelocity();
+        m_pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = m_pPlayer->GetViewOffset().z;
         //memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
-        m_nSavedAccelTicks = m_player->m_nAccelTicks;
-        m_nSavedPerfectSyncTicks = m_player->m_nPerfectSyncTicks;
-        m_nSavedStrafeTicks = m_player->m_nStrafeTicks;
+        m_nSavedAccelTicks = m_pPlayer->m_nAccelTicks;
+        m_nSavedPerfectSyncTicks = m_pPlayer->m_nPerfectSyncTicks;
+        m_nSavedStrafeTicks = m_pPlayer->m_nStrafeTicks;
         CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
 
         if (pGhost)

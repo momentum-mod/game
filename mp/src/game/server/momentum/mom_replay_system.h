@@ -48,7 +48,7 @@ public:
     bool m_bPlayingBack;
     CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
-    CMomentumPlayer *m_player;
+    CMomentumPlayer *m_pPlayer;
     int m_nSavedPerfectSyncTicks;
     int m_nSavedStrafeTicks;
     int m_nSavedAccelTicks;
