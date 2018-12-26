@@ -17,6 +17,7 @@ $Configuration
         $PreprocessorDefinitions        "$BASE;DISCORD_LINUX" [$LINUX]
         $PreprocessorDefinitions        "$BASE;DISCORD_OSX" [$OSX]
         $TreatWarningsAsErrors          "No (/WX-)"
+		$EnableC++Exceptions            "Yes (/EHsc)"
     }
 }
 
