@@ -9,6 +9,7 @@
 
 class CMomRunStats;
 class C_MOMRunEntityData;
+class C_MomentumPlayer;
 
 class CHudMapFinishedDialog : public CHudElement, public vgui::EditablePanel
 {
@@ -20,11 +21,14 @@ public:
 
     bool ShouldDraw() OVERRIDE;
     void Paint() OVERRIDE;
-    void OnThink() OVERRIDE;
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
     void SetVisible(bool) OVERRIDE;
     void FireGameEvent(IGameEvent*) OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
+
+    void SetMouseInputEnabled(bool state) OVERRIDE;
 
     bool IsBuildGroupEnabled() OVERRIDE { return false; }
 
@@ -87,6 +91,7 @@ private:
 
     CMomRunStats* m_pRunStats;
     C_MOMRunEntityData *m_pRunData;
+    C_MomentumPlayer *m_pPlayer;
 
     bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
 
