@@ -23,7 +23,7 @@ DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
 //NOTE: The "CHudMapFinishedDialog" (main panel) control settings are found in MapFinishedDialog.res
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
-CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
+CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog"), m_pPlayer(nullptr)
 {
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     SetProportional(true);
@@ -89,13 +89,12 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
         //We only care when this is false
         if (!pEvent->GetBool("is_running", true))
         {
-            C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-            if (pPlayer)
+            if (m_pPlayer)
             {
                 ConVarRef hvel("mom_speedometer_hvel");
                 m_iVelocityType = hvel.GetBool();
 
-                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+                C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
                 if (pGhost)
                 {
                     m_pRunStats = &pGhost->m_RunStats;
@@ -104,8 +103,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 }
                 else
                 {
-                    m_pRunStats = &pPlayer->m_RunStats;
-                    m_pRunData = &pPlayer->m_SrvData.m_RunData;
+                    m_pRunStats = &m_pPlayer->m_RunStats;
+                    m_pRunData = &m_pPlayer->m_SrvData.m_RunData;
                     m_bIsGhost = false;
                 }
 
@@ -131,14 +130,29 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     }
 }
 
+void CHudMapFinishedDialog::LevelInitPostEntity()
+{
+    m_pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+}
+
+void CHudMapFinishedDialog::LevelShutdown()
+{
+    m_pPlayer = nullptr;
+}
+
+void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
+{
+    BaseClass::SetMouseInputEnabled(state);
+    m_pDetachMouseLabel->SetVisible(!state);
+}
+
 bool CHudMapFinishedDialog::ShouldDraw()
 {
     bool shouldDrawLocal = false;
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (pPlayer)
+    if (m_pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        CMOMRunEntityData *pData = (pGhost ? &pGhost->m_SrvData.m_RunData : &pPlayer->m_SrvData.m_RunData);
+        C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
+        CMOMRunEntityData *pData = (pGhost ? &pGhost->m_SrvData.m_RunData : &m_pPlayer->m_SrvData.m_RunData);
         shouldDrawLocal = pData && pData->m_bMapFinished;
     }
 
@@ -443,10 +457,4 @@ void CHudMapFinishedDialog::Paint()
     m_pRunUploadStatus->SetFgColor(m_bRunUploaded ? COLOR_GREEN : COLOR_RED);
     // ----------------
     // ------------------------------
-}
-
-void CHudMapFinishedDialog::OnThink()
-{
-    BaseClass::OnThink();
-    m_pDetachMouseLabel->SetVisible(!IsMouseInputEnabled());
 }
