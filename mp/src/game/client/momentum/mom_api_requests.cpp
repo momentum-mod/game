@@ -4,6 +4,7 @@
 #include "util/jsontokv.h"
 #include "fmtstr.h"
 #include "mom_shareddefs.h"
+#include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
@@ -110,7 +111,8 @@ bool CAPIRequests::SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, Callback
     return false;
 }
 
-HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end)
+HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end, 
+                                             const char *pFileName, const char *pFilePathID /* = "GAME"*/)
 {
     HTTPRequestHandle handle = INVALID_HTTPREQUEST_HANDLE;
     if (CreateAPIRequest(handle, pszURL, k_EHTTPMethodGET))
@@ -123,6 +125,8 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc st
             callback->startFunc = start;
             callback->progressFunc = prog;
             callback->completeFunc = end;
+            Q_strncpy(callback->m_pszFileName, pFileName, sizeof(callback->m_pszFileName));
+            Q_strncpy(callback->m_pszFilePathID, pFilePathID, sizeof(callback->m_pszFilePathID));
             callback->completeResult = new CCallResult<CAPIRequests, HTTPRequestCompleted_t>();
             callback->completeResult->Set(apiHandle, this, &CAPIRequests::OnDownloadHTTPComplete);
             m_mapDownloadCalls.Insert(handle, callback);
@@ -251,6 +255,9 @@ void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
         uint8 *pDataTemp = new uint8[pCallback->m_cBytesReceived];
         if (SteamHTTP()->GetHTTPStreamingResponseBodyData(pCallback->m_hRequest, pCallback->m_cOffset, pDataTemp, pCallback->m_cBytesReceived))
         {
+            // Add the data to the download buffer
+            call->m_bufFileData.Put(pDataTemp, pCallback->m_cBytesReceived);
+
             KeyValuesAD prog("Progress");
             prog->SetUint64("request", pCallback->m_hRequest);
             float percent = 0.0f;
@@ -258,7 +265,6 @@ void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
                 prog->SetFloat("percent", percent);
             prog->SetUint64("offset", pCallback->m_cOffset);
             prog->SetInt("size", pCallback->m_cBytesReceived);
-            prog->SetPtr("data", pDataTemp);
             call->progressFunc(prog);
         }
 
@@ -272,9 +278,20 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
     uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
+        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+
         KeyValuesAD comp("Complete");
         comp->SetUint64("request", pCallback->m_hRequest);
-        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+        if (!pCallback->m_bRequestSuccessful || pCallback->m_eStatusCode != k_EHTTPStatusCode200OK)
+        {
+            comp->SetBool("error", true);
+            comp->SetInt("code", pCallback->m_eStatusCode);
+        }
+        else
+        {
+            bool bWrote = g_pFullFileSystem->WriteFile(call->m_pszFileName, call->m_pszFilePathID, call->m_bufFileData);
+            comp->SetBool("error", !bWrote);
+        }
         call->completeFunc(comp);
         m_mapDownloadCalls.RemoveAt(downloadCallbackIndx);
         delete call;

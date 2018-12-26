@@ -82,7 +82,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
                     if (imageDownloader->Process(m.m_szMapName, m.m_szThumbnailUrl, m_pMapList, map.m_iMapImageIndex))
                         delete imageDownloader;*/
                 }
-                KeyValues::AutoDelete kv("map");
+                KeyValuesAD kv("map");
                 kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
                 kv->SetString(KEYNAME_MAP_LAYOUT, m.m_bHasStages ? "STAGED" : "LINEAR");
                 kv->SetInt(KEYNAME_MAP_ZONE_COUNT, m.m_iZoneCount);
@@ -92,6 +92,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
                 kv->SetString(KEYNAME_MAP_PATH, m.m_szMapUrl);
                 kv->SetString(KEYNAME_MAP_ZONE_PATH, m.m_szZoneUrl);
                 kv->SetString(KEYNAME_MAP_HASH, m.m_szMapHash);
+                kv->SetInt(KEYNAME_MAP_ID, m.m_iMapId);
                 map.m_iListID = m_pMapList->AddItem(kv, 0, false, false);
                 m_vecMaps.AddToTail(map);
             }
@@ -149,25 +150,46 @@ void COnlineMaps::OnMapStart()
     KeyValues *kv =  m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
 
     const char *pMapName = kv->GetString(KEYNAME_MAP_NAME);
+    int mapID = kv->GetInt(KEYNAME_MAP_ID);
     // Firstly, check if we have this version of the map
     if (g_pMomentumUtil->MapExists(pMapName, kv->GetString(KEYNAME_MAP_HASH)))
         StartSelectedMap();
     else
     {
-        // We either don't have it, or it's outdated, so let's get the latest one!
-        HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(kv->GetString(KEYNAME_MAP_PATH, nullptr),
-                                     UtlMakeDelegate(this, &COnlineMaps::StartMapDownload), 
-                                     UtlMakeDelegate(this, &COnlineMaps::MapDownloadProgress),
-                                     UtlMakeDelegate(this, &COnlineMaps::FinishMapDownload));
-        if (handle != INVALID_HTTPREQUEST_HANDLE)
+        // Check if we're already downloading it
+        bool bFound = false;
+        unsigned short indx = m_mapFileDownloads.FirstInorder();
+        while (indx != m_mapFileDownloads.InvalidIndex())
         {
-            FileHandle_t fileHandle = g_pFullFileSystem->Open(CFmtStr("maps/%s.bsp", pMapName), "wb", "GAME");
-            // MOM_TODO: create/show progress bar component here?
-            m_mapFileDownloads.Insert(handle, fileHandle);
+            if (m_mapFileDownloads[indx] == mapID)
+            {
+                bFound = true;
+                break;
+            }
+
+            indx = m_mapFileDownloads.NextInorder(indx);
         }
-        else
+        if (bFound)
         {
-            Warning("Failed to try to download the map %s!\n", pMapName);
+            // Already downloading!
+            Log("Already downloading map %s!\n", pMapName);
+        }
+        else if (mapID)
+        {
+            // We either don't have it, or it's outdated, so let's get the latest one!
+            HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(kv->GetString(KEYNAME_MAP_PATH, nullptr),
+                                                                    UtlMakeDelegate(this, &COnlineMaps::StartMapDownload),
+                                                                    UtlMakeDelegate(this, &COnlineMaps::MapDownloadProgress),
+                                                                    UtlMakeDelegate(this, &COnlineMaps::FinishMapDownload),
+                                                                    CFmtStr("maps/%s.bsp", pMapName), "GAME");
+            if (handle != INVALID_HTTPREQUEST_HANDLE)
+            {
+                m_mapFileDownloads.Insert(handle, mapID);
+            }
+            else
+            {
+                Warning("Failed to try to download the map %s!\n", pMapName);
+            }
         }
     }
 }
@@ -207,6 +229,7 @@ void COnlineMaps::StartMapDownload(KeyValues* pKvHeader)
     /*if (mapDownloader->Process(kv->GetString(KEYNAME_MAP_NAME), kv->GetString(KEYNAME_MAP_PATH, nullptr), kv->GetString(KEYNAME_MAP_ZONE_PATH, nullptr), this))
     delete mapDownloader;*/
 
+    // MOM_TODO: Create the progress bar here
 }
 
 void COnlineMaps::MapDownloadProgress(KeyValues* pKvProgress)
@@ -216,7 +239,8 @@ void COnlineMaps::MapDownloadProgress(KeyValues* pKvProgress)
     {
         DevLog("Progress: %0.2f!\n", pKvProgress->GetFloat("percent"));
 
-        g_pFullFileSystem->Write(pKvProgress->GetPtr("data"), pKvProgress->GetInt("size"), m_mapFileDownloads[fileIndx]);
+        // MOM_TODO: update the progress bar here, but do not use the percent! Use the offset and size of the chunk!
+        // Percent seems to be cached, i.e. sends a lot of "100%" if Steam downloaded the file and is sending the chunks from cache to us
     }
 }
 
@@ -225,9 +249,16 @@ void COnlineMaps::FinishMapDownload(KeyValues* pKvComplete)
     uint16 fileIndx = m_mapFileDownloads.Find(pKvComplete->GetUint64("request"));
     if (fileIndx != m_mapFileDownloads.InvalidIndex())
     {
-        DevLog("Got the file!\n");
-
-        g_pFullFileSystem->Close(m_mapFileDownloads[fileIndx]);
+        if (pKvComplete->GetBool("error"))
+        {
+            // MOM_TODO: Show some sort of error icon on the progress bar
+            Warning("Could not download map! Error code: %i\n", pKvComplete->GetInt("code"));
+        }
+        else
+        {
+            // MOM_TODO: show success on the progress bar here
+            DevLog("Sucessfully downloaded the map with ID: %i\n", m_mapFileDownloads[fileIndx]);
+        }
 
         m_mapFileDownloads.RemoveAt(fileIndx);
     }
