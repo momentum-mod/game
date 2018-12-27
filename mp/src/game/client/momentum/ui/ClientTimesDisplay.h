@@ -213,6 +213,11 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 #if ENABLE_HTTP_LEADERBOARDS
     void GetTop10TimesCallback(KeyValues *pKv);
 
+    // Replay downloading
+    void OnReplayDownloadStart(KeyValues *pKv);
+    void OnReplayDownloadProgress(KeyValues *pKv);
+    void OnReplayDownloadEnd(KeyValues *pKv);
+
     void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     void GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
@@ -235,7 +240,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
 
-
+    CUtlMap<HTTPRequestHandle, uint64> m_mapReplayDownloads;
     
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline
@@ -252,7 +257,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
         explicit TimeOnline(KeyValues *kv)
         {
             m_kv = kv;
-            id = kv->GetInt("id", -1);
+            id = kv->GetUint64("id", 0);
             rank = kv->GetInt("rank", 0);
             time_sec = kv->GetFloat("time", -1);
             personaname = kv->GetString("personaname", "Unknown");

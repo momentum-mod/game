@@ -507,27 +507,24 @@ bool MomentumUtil::GetSHA1Hash(const CUtlBuffer& buf, char* pOut, size_t outLen)
     return true;
 }
 
-bool MomentumUtil::GetMapHash(const char* pMapName, char* pOut, size_t outLen)
+bool MomentumUtil::GetFileHash(char* pOut, size_t outLen, const char *pFileName, const char *pPathID /* = "GAME"*/)
 {
-    char szPath[MAX_PATH];
-    Q_snprintf(szPath, MAX_PATH, "maps/%s.bsp", pMapName);
-
-    CUtlBuffer mapBuffer;
-    if (g_pFullFileSystem->ReadFile(szPath, "GAME", mapBuffer))
-        return GetSHA1Hash(mapBuffer, pOut, outLen);
+    CUtlBuffer fileBuffer;
+    if (g_pFullFileSystem->ReadFile(pFileName, pPathID, fileBuffer))
+        return GetSHA1Hash(fileBuffer, pOut, outLen);
 
     return false;
 }
 
-bool MomentumUtil::MapExists(const char* pMapName, const char *pMapHash)
+bool MomentumUtil::FileExists(const char* pFileName, const char* pFileHash, const char* pPathID /* = "GAME"*/)
 {
-    if (!(pMapName && pMapHash)) 
+    if (!(pFileName && pFileHash))
         return false;
 
     char hashDigest[41];
-    if (GetMapHash(pMapName, hashDigest, 41))
+    if (GetFileHash(hashDigest, sizeof(hashDigest), pFileName, pPathID))
     {
-        return FStrEq(hashDigest, pMapHash);
+        return FStrEq(hashDigest, pFileHash);
     }
 
     return false;

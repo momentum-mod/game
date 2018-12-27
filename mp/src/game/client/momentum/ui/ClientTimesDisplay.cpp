@@ -205,6 +205,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     // be unnoticeable for most people... we'll see how big the memory leak impact really is.
     m_pImageList = new ImageList(false);
     SetupIcons();
+
+    SetDefLessFunc(m_mapReplayDownloads);
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
 #endif
@@ -695,15 +697,13 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(SectionedListPanel *list, int
 
 void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 {
-    /*SteamFriends()->RequestUserInformation()*/
     if (!m_bLocalTimesLoaded || m_bLocalTimesNeedUpdate)
     {
         // Clear the local times for a refresh
         m_vLocalTimes.PurgeAndDeleteElements();
 
-        const char *mapName = g_pGameRules->MapName();
         char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, mapName, EXT_RECORDING_FILE);
+        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, MapName(), EXT_RECORDING_FILE);
         V_FixSlashes(path);
 
         FileFindHandle_t found;
@@ -715,7 +715,7 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
             V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
 
             CMomReplayBase *pBase = g_ReplayFactory.LoadReplayFile(pReplayPath, false);
-            assert(pBase != nullptr);
+            Assert(pBase != nullptr);
             
             if (pBase)
                 m_vLocalTimes.InsertNoSort(pBase);
@@ -745,14 +745,9 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         CMomReplayBase *t = m_vLocalTimes[i];
 
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
-        char filename[MAX_PATH], runTime[MAX_PATH], runDate[MAX_PATH];
+        char filename[MAX_PATH];
 
-        // Don't ask why, but these need to be formatted in their own strings.
-        Q_snprintf(runDate, MAX_PATH, "%li", t->GetRunDate());
-        Q_snprintf(runTime, MAX_PATH, "%.3f", t->GetRunTime());
-        // It's weird.
-
-        Q_snprintf(filename, MAX_PATH, "%s-%s-%s%s", t->GetMapName(), runDate, runTime, EXT_RECORDING_FILE);
+        Q_snprintf(filename, MAX_PATH, "%s-%s%s", t->GetMapName(), t->GetRunHash(), EXT_RECORDING_FILE);
         kvLocalTimeFormatted->SetString("fileName", filename);
 
         kvLocalTimeFormatted->SetFloat("time_f", t->GetRunTime()); // Used for static compare
@@ -1063,10 +1058,13 @@ void CClientTimesDisplay::GetTop10TimesCallback(KeyValues* pKv)
                 kvEntry->SetString("date", pRun->GetString("dateAchieved"));
 
                 // ID
-                kvEntry->SetInt("id", pRun->GetInt("id"));
+                kvEntry->SetUint64("id", pRun->GetUint64("id"));
 
                 // File
                 kvEntry->SetString("file", pRun->GetString("file"));
+
+                // Hash
+                kvEntry->SetString("hash", pRun->GetString("hash"));
 
                 KeyValues *kvUserObj = pRun->FindKey("user");
                 if (kvUserObj)
@@ -1129,6 +1127,47 @@ void CClientTimesDisplay::GetTop10TimesCallback(KeyValues* pKv)
     {
         // MOM_TODO: Tell the player the reason this list isn't loading
         // Look into making the "SetEmptyListText" method from ListPanel into a custom SectionedListPanel class
+    }
+}
+
+void CClientTimesDisplay::OnReplayDownloadStart(KeyValues* pKvHeaders)
+{
+    // MOM_TODO: Create a progress bar here
+}
+
+void CClientTimesDisplay::OnReplayDownloadProgress(KeyValues* pKvProgress)
+{
+    uint16 fileIndx = m_mapReplayDownloads.Find(pKvProgress->GetUint64("request"));
+    if (fileIndx != m_mapReplayDownloads.InvalidIndex())
+    {
+        // DevLog("Progress: %0.2f!\n", pKvProgress->GetFloat("percent"));
+
+        // MOM_TODO: update the progress bar here, but do not use the percent! Use the offset and size of the chunk!
+        // Percent seems to be cached, i.e. sends a lot of "100%" if Steam downloaded the file and is sending the chunks from cache to us
+    }
+}
+
+void CClientTimesDisplay::OnReplayDownloadEnd(KeyValues* pKvEnd)
+{
+    uint16 fileIndx = m_mapReplayDownloads.Find(pKvEnd->GetUint64("request"));
+    if (fileIndx != m_mapReplayDownloads.InvalidIndex())
+    {
+        if (pKvEnd->GetBool("error"))
+        {
+            // MOM_TODO: Show some sort of error icon on the progress bar
+            Warning("Could not download replay! Error code: %i\n", pKvEnd->GetInt("code"));
+        }
+        else
+        {
+            // MOM_TODO: show success on the progress bar here
+            DevLog("Successfully downloaded the replay with ID: %i\n", m_mapReplayDownloads[fileIndx]);
+
+            // Play it
+            CFmtStr command("mom_replay_play %s/%s-%lld%s\n", RECORDING_ONLINE_PATH, MapName(), m_mapReplayDownloads[fileIndx], EXT_RECORDING_FILE);
+            engine->ClientCmd(command.Get());
+        }
+
+        m_mapReplayDownloads.RemoveAt(fileIndx);
     }
 }
 
@@ -1603,7 +1642,7 @@ int CClientTimesDisplay::FindItemIDForOnlineTime(int runID, LEADERBOARDS leaderb
         if (pLeaderboard->IsItemIDValid(i))
         {
             KeyValues *kv = pLeaderboard->GetItemData(i);
-            if (kv && (kv->GetInt("id", -1) == runID))
+            if (kv && (kv->GetUint64("id") == runID))
             {
                 return i;
             }
@@ -1796,11 +1835,13 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             pKv->SetUint64("profile", pKVItemData->GetUint64("steamid"));
             pContextMenu->AddMenuItem("VisitProfile", "#MOM_Leaderboards_SteamProfile", pKv, this);
 
-            KeyValues *data = new KeyValues("ContextWatchOnlineReplay");
+            KeyValues *data;
 #if ENABLE_HTTP_LEADERBOARDS
-            data->SetString("file", pKVItemData->GetString("file"));
+            data = pKVItemData->MakeCopy();
+            data->SetName("ContextWatchOnlineReplay");
 #endif
 #if ENABLE_STEAM_LEADERBOARDS
+            data = new KeyValues("ContextWatchOnlineReplay");
             data->SetUint64("UGC", pKVItemData->GetUint64("UGC"));
 #endif
             pContextMenu->AddMenuItem("WatchOnlineReplay", "#MOM_Leaderboards_WatchReplay", data, this);
@@ -1864,8 +1905,70 @@ void CClientTimesDisplay::OnContextWatchOnlineReplay(KeyValues *data)
     DevLog("Attempting to download UGC...\n");
 
 #if ENABLE_HTTP_LEADERBOARDS
-    DevLog("File: %s\n", data->GetString("file"));
-    // MOM_TODO: download me!
+    uint64 replayID = data->GetUint64("id");
+    const char *pFileURL = data->GetString("file", nullptr);
+    const char *pMapName = MapName();
+    const char *pReplayHash = data->GetString("hash");
+    CFmtStr fileNameLocal("%s-%s%s", pMapName, pReplayHash, EXT_RECORDING_FILE);
+    CFmtStr filePathLocal("%s/%s", RECORDING_PATH, fileNameLocal.Get());
+    CFmtStr fileNameOnline("%s-%lld%s", pMapName, replayID, EXT_RECORDING_FILE);
+    CFmtStr filePathOnline("%s/%s/%s", RECORDING_PATH, RECORDING_ONLINE_PATH, fileNameOnline.Get());
+    DevLog("File URL: %s\n", pFileURL);
+    DevLog("File name: %s\n", fileNameOnline.Get());
+    DevLog("ID: %lld\n", replayID);
+
+    // Check if we already have it
+    if (g_pFullFileSystem->FileExists(filePathLocal.Get(), "MOD"))
+    {
+        DevLog("Already had the replay locally, no need to download!\n");
+        CFmtStr comm("mom_replay_play %s\n", fileNameLocal.Get());
+        engine->ClientCmd(comm.Get());
+    }
+    else if (g_pMomentumUtil->FileExists(filePathOnline.Get(), pReplayHash, "MOD"))
+    {
+        DevLog("Already downloaded the replay, no need to download again!\n");
+        CFmtStr command("mom_replay_play %s/%s\n", RECORDING_ONLINE_PATH, fileNameOnline.Get());
+        engine->ClientCmd(command.Get());
+    }
+    else
+    {
+        // Check if we're already downloading it
+        bool bFound = false;
+        unsigned short indx = m_mapReplayDownloads.FirstInorder();
+        while (indx != m_mapReplayDownloads.InvalidIndex())
+        {
+            if (m_mapReplayDownloads[indx] == replayID)
+            {
+                bFound = true;
+                break;
+            }
+
+            indx = m_mapReplayDownloads.NextInorder(indx);
+        }
+        if (bFound)
+        {
+            // Already downloading!
+            Log("Already downloading replay %lld!\n", replayID);
+        }
+        else if (replayID)
+        {
+            // We either don't have it, or it's outdated, so let's get the latest one!
+            auto handle = g_pAPIRequests->DownloadFile(
+                pFileURL, UtlMakeDelegate(this, &CClientTimesDisplay::OnReplayDownloadStart),
+                UtlMakeDelegate(this, &CClientTimesDisplay::OnReplayDownloadProgress),
+                UtlMakeDelegate(this, &CClientTimesDisplay::OnReplayDownloadEnd),
+                filePathOnline.Get(),
+                "MOD");
+            if (handle != INVALID_HTTPREQUEST_HANDLE)
+            {
+                m_mapReplayDownloads.Insert(handle, replayID);
+            }
+            else
+            {
+                Warning("Failed to try to download the replay %lld!\n", replayID);
+            }
+        }
+    }
 #endif
 
 #if ENABLE_STEAM_LEADERBOARDS

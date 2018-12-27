@@ -125,7 +125,7 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc st
             callback->startFunc = start;
             callback->progressFunc = prog;
             callback->completeFunc = end;
-            Q_strncpy(callback->m_pszFileName, pFileName, sizeof(callback->m_pszFileName));
+            V_FixupPathName(callback->m_pszFileName, sizeof(callback->m_pszFileName), pFileName);
             Q_strncpy(callback->m_pszFilePathID, pFilePathID, sizeof(callback->m_pszFilePathID));
             callback->completeResult = new CCallResult<CAPIRequests, HTTPRequestCompleted_t>();
             callback->completeResult->Set(apiHandle, this, &CAPIRequests::OnDownloadHTTPComplete);

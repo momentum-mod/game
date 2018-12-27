@@ -52,8 +52,9 @@ public:
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
 
     bool GetSHA1Hash(const CUtlBuffer &buf, char *pOut, size_t outLen);
-    bool GetMapHash(const char *pMapName, char *pOut, size_t outLen);
-    bool MapExists(const char *pMapName, const char *pMapHash);
+    bool GetFileHash(char *pOut, size_t outLen, const char *pFileName, const char *pPath = "GAME");
+    // Check to see if a file exists via a known hash for it. Handles reading the file and getting its hash.
+    bool FileExists(const char *pFileName, const char *pFileHash, const char *pPath = "GAME");
     bool MapThumbnailExists(const char *pMapName);
 
     void KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker, CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut);
