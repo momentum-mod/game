@@ -49,7 +49,7 @@ void CMomentumReplaySystem::FrameUpdatePostEntityThink()
 void CMomentumReplaySystem::LevelInitPostEntity()
 {
     // Get the map file's hash
-    if (!g_pMomentumUtil->GetFileHash(m_szMapHash, sizeof(m_szMapHash), CFmtStr("maps/%s", gpGlobals->mapname.ToCStr())))
+    if (!g_pMomentumUtil->GetFileHash(m_szMapHash, sizeof(m_szMapHash), CFmtStr("maps/%s.bsp", gpGlobals->mapname.ToCStr())))
         Warning("Could not generate a hash for the current map!!!\n");
 }
 
