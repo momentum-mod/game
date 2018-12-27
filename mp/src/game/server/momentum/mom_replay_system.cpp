@@ -49,7 +49,7 @@ void CMomentumReplaySystem::FrameUpdatePostEntityThink()
 void CMomentumReplaySystem::LevelInitPostEntity()
 {
     // Get the map file's hash
-    if (!g_pMomentumUtil->GetMapHash(gpGlobals->mapname.ToCStr(), m_szMapHash, sizeof(m_szMapHash)))
+    if (!g_pMomentumUtil->GetFileHash(m_szMapHash, sizeof(m_szMapHash), CFmtStr("maps/%s", gpGlobals->mapname.ToCStr())))
         Warning("Could not generate a hash for the current map!!!\n");
 }
 
@@ -177,14 +177,21 @@ bool CMomentumReplaySystem::StoreReplay(char *pOut, size_t outSize)
 
     // Generate the SHA1 hash for this replay
     char hash[41];
-    g_pMomentumUtil->GetSHA1Hash(buf, hash, 41);
-    DevLog("Replay Hash: %s\n", hash);
+    if (g_pMomentumUtil->GetSHA1Hash(buf, hash, 41))
+    {
+        DevLog("Replay Hash: %s\n", hash);
 
-    // Store the file
-    CFmtStr newRecordingName("%s-%s%s", gpGlobals->mapname.ToCStr(), hash, EXT_RECORDING_FILE);
-    V_ComposeFileName(RECORDING_PATH, newRecordingName.Get(), pOut, outSize);
-    Log("Storing replay of version '%d' to %s ...\n", m_pRecordingReplay->GetVersion(), pOut);
-    return g_pFullFileSystem->WriteFile(pOut, "MOD", buf);
+        // For later
+        m_pRecordingReplay->SetRunHash(hash);
+
+        // Store the file
+        CFmtStr newRecordingName("%s-%s%s", gpGlobals->mapname.ToCStr(), hash, EXT_RECORDING_FILE);
+        V_ComposeFileName(RECORDING_PATH, newRecordingName.Get(), pOut, outSize);
+        Log("Storing replay of version '%d' to %s ...\n", m_pRecordingReplay->GetVersion(), pOut);
+        return g_pFullFileSystem->WriteFile(pOut, "MOD", buf);
+    }
+
+    return false;
 }
 
 void CMomentumReplaySystem::TrimReplay()

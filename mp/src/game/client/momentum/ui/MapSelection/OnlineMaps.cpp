@@ -152,7 +152,7 @@ void COnlineMaps::OnMapStart()
     const char *pMapName = kv->GetString(KEYNAME_MAP_NAME);
     int mapID = kv->GetInt(KEYNAME_MAP_ID);
     // Firstly, check if we have this version of the map
-    if (g_pMomentumUtil->MapExists(pMapName, kv->GetString(KEYNAME_MAP_HASH)))
+    if (g_pMomentumUtil->FileExists(CFmtStr("maps/%s", pMapName), kv->GetString(KEYNAME_MAP_HASH)))
         StartSelectedMap();
     else
     {
@@ -257,7 +257,7 @@ void COnlineMaps::FinishMapDownload(KeyValues* pKvComplete)
         else
         {
             // MOM_TODO: show success on the progress bar here
-            DevLog("Sucessfully downloaded the map with ID: %i\n", m_mapFileDownloads[fileIndx]);
+            DevLog("Successfully downloaded the map with ID: %i\n", m_mapFileDownloads[fileIndx]);
         }
 
         m_mapFileDownloads.RemoveAt(fileIndx);

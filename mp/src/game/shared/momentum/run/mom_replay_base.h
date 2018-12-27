@@ -9,7 +9,10 @@ class CMomRunStats;
 class CMomReplayBase : public ISerializable
 {
   protected:
-    CMomReplayBase(CReplayHeader header, bool bFull) : m_rhHeader(header), m_pEntity(nullptr) {}
+    CMomReplayBase(CReplayHeader header, bool bFull) : m_rhHeader(header), m_pEntity(nullptr)
+    {
+        m_pszRunHash[0] = '\0';
+    }
 
   public:
     virtual ~CMomReplayBase() {}
@@ -27,6 +30,7 @@ class CMomReplayBase : public ISerializable
     virtual time_t GetRunDate() { return m_rhHeader.m_iRunDate; }
     virtual int32 GetBonusZone() { return m_rhHeader.m_iBonusZone; }
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
+    virtual const char *GetRunHash() { return m_pszRunHash; }
 
   public:
     virtual void SetMapName(const char *name) { Q_strncpy(m_rhHeader.m_szMapName, name, sizeof(m_rhHeader.m_szMapName)); }
@@ -40,6 +44,7 @@ class CMomReplayBase : public ISerializable
     virtual void SetRunDate(time_t date) { m_rhHeader.m_iRunDate = date; }
     virtual void SetBonusZone(int32 bonus) { m_rhHeader.m_iBonusZone = bonus; }
     virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
+    virtual void SetRunHash(const char *pHash) { Q_strncpy(m_pszRunHash, pHash, sizeof(m_pszRunHash)); }
 
   public:
     virtual uint8 GetVersion() = 0;
@@ -54,4 +59,5 @@ class CMomReplayBase : public ISerializable
   protected:
     CReplayHeader m_rhHeader;
     CMomentumReplayGhostEntity *m_pEntity;
+    char m_pszRunHash[41];
 };

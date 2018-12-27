@@ -5,6 +5,7 @@
 #ifdef GAME_DLL
 #include "momentum/mom_replay_entity.h"
 #endif
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
@@ -72,7 +73,10 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
     Log("Loading replay '%s' of version '%d'...\n", pFileName, version);
 
     // MOM_TODO: Verify that replay parsing was successful.
-    CMomReplayBase * toReturn = CreateReplay(version, reader, bFullLoad);
+    CMomReplayBase *toReturn = CreateReplay(version, reader, bFullLoad);
+    char hash[41];
+    if (g_pMomentumUtil->GetSHA1Hash(reader, hash, sizeof(hash)))
+        toReturn->SetRunHash(hash);
 
     Log("Successfully loaded replay.\n");
 
