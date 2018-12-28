@@ -37,6 +37,7 @@ public:
     // ==== Leaderboards ====
     bool GetTop10MapTimes(uint32 mapID, CallbackFunc func);
     bool GetFriendsTimes(uint32 mapID, CallbackFunc func);
+    bool GetAroundTimes(uint32 mapID, CallbackFunc func);
     bool SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func);
 
     // === File Downloading ===

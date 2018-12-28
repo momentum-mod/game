@@ -81,10 +81,10 @@
 		"textinsety"	"0"
 		"auto_wide_tocontents" "0"
 	}
-	"LoadingOnlineTimes"
+	"OnlineTimesStatus"
 	{
 		"ControlName"	"Label"
-		"fieldName"		"LoadingOnlineTimes"
+		"fieldName"		"OnlineTimesStatus"
 		"xpos"			"c+1"
 		"ypos"			"c+4"
 		"wide"			"100"
@@ -124,6 +124,26 @@
 	{
 		"ControlName"	"SectionedListPanel"
 		"fieldName"		"OnlineLeaderboards"
+		"xpos"			"3"
+		"ypos"			"27"
+		"wide"			"468"
+		"tall"			"240"
+		"autoResize"	"0"
+		"pinCorner"		"0"
+		"visible"		"0"
+		"enabled"		"1"
+		"tabPosition"	"2"
+        "actionsignallevel" "1"
+        "paintborder" "1"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
+        "vertical_scrollbar" "0" // MOM_TODO: Do we want the player to be able to explore more?
+        //"linespacing" "32"
+	}
+    "AroundLeaderboards"
+	{
+		"ControlName"	"SectionedListPanel"
+		"fieldName"		"AroundLeaderboards"
 		"xpos"			"3"
 		"ypos"			"27"
 		"wide"			"468"
