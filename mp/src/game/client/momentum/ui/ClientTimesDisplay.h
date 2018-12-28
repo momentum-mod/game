@@ -4,24 +4,13 @@
 //
 // $NoKeywords: $
 //=============================================================================//
-
-#ifndef CLIENTTIMESDISPLAY_H
-#define CLIENTTIMESDISPLAY_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "steam/steam_api.h"
 #include "GameEventListener.h"
 #include <game/client/iviewport.h>
 #include "vgui_controls/EditablePanel.h"
 #include "mom_shareddefs.h"
-
-#define DELAY_NEXT_UPDATE 10.0f           // Delay for the next API update, in seconds
-#define MIN_ONLINE_UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
-#define MAX_ONLINE_UPDATE_INTERVAL 45.0f  // The amount of seconds maximum between online checks
-#define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
-#define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
 
 #define ENABLE_HTTP_LEADERBOARDS 1
 #define ENABLE_STEAM_LEADERBOARDS 0
@@ -53,11 +42,15 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     };
     // total = 340
 
-    enum LEADERBOARDS
+    enum TIME_TYPE
     {
-        FRIENDS_LEADERBOARDS = 0,
-        ONLINE_LEADERBOARDS,
-        LOCAL_LEADERBOARDS
+        TIMES_LOCAL = 0,
+        TIMES_TOP10,
+        TIMES_FRIENDS,
+        TIMES_AROUND,
+
+        // Should always be the last one
+        TIMES_COUNT,
     };
 
   public:
@@ -140,7 +133,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() OVERRIDE;
     void AddHeader(); // add the start header of the scoreboard
-    static int GetAdditionalHeight() { return 0; }
 
     void OnCommand(const char *pCommand) OVERRIDE;
 
@@ -156,8 +148,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // finds a local time in the scoreboard
     int FindItemIDForLocalTime(KeyValues *kvRef);
     // finds an online time in the scoreboard
-    int FindItemIDForOnlineTime(int runID, LEADERBOARDS);
-
+    int FindItemIDForOnlineTime(uint64 runID, TIME_TYPE type);
 
     int m_iSectionId; // the current section we are entering into
 
@@ -180,8 +171,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Label *m_pPlayerPersonalBest;
     vgui::Label *m_pPlayerGlobalRank;
     vgui::Label *m_pPlayerExperience;
-    vgui::Label *m_pLoadingOnlineTimes;
+    vgui::Label *m_pOnlineTimesStatus;
     vgui::SectionedListPanel *m_pOnlineLeaderboards;
+    vgui::SectionedListPanel *m_pAroundLeaderboards;
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
     vgui::ImagePanel *m_pPlayerAvatar;
@@ -212,15 +204,16 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
 #if ENABLE_HTTP_LEADERBOARDS
     void GetTop10TimesCallback(KeyValues *pKv);
+    void GetFriendsTimesCallback(KeyValues *pKv);
+    void GetAroundTimesCallback(KeyValues *pKv);
+    void ParseTimesCallback(KeyValues *pKv, TIME_TYPE type);
 
     // Replay downloading
     void OnReplayDownloadStart(KeyValues *pKv);
     void OnReplayDownloadProgress(KeyValues *pKv);
     void OnReplayDownloadEnd(KeyValues *pKv);
 
-    void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    void GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
 #endif
 
@@ -231,12 +224,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     float m_fLastHeaderUpdate;
     bool m_bFirstHeaderUpdate;
 
-    float m_flLastOnlineTimeUpdate;
-    bool m_bFirstOnlineTimesUpdate;
-
-    float m_flLastFriendsTimeUpdate;
-    bool m_bFirstFriendsTimesUpdate;
-
     IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
 
@@ -245,11 +232,11 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline
     {
-        int rank, id, avatar;
+        int rank, avatar;
         float time_sec, rate;
-        uint64 steamid;
+        uint64 steamid, id;
         time_t date;
-        const char *personaname;
+        char name[MAX_PLAYER_NAME_LENGTH];
         bool momember, vip, is_friend;
 
         KeyValues *m_kv;
@@ -260,7 +247,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
             id = kv->GetUint64("id", 0);
             rank = kv->GetInt("rank", 0);
             time_sec = kv->GetFloat("time", -1);
-            personaname = kv->GetString("personaname", "Unknown");
+            Q_strncpy(name, kv->GetString("personaname"), MAX_PLAYER_NAME_LENGTH);
             rate = kv->GetFloat("rate", 100);
             date = static_cast<time_t>(Q_atoi(kv->GetString("date", "0")));
             steamid = kv->GetUint64("steamid", 0);
@@ -275,20 +262,32 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
             if (m_kv)
                 m_kv->deleteThis();
             m_kv = nullptr;
-            personaname = nullptr;
         }
     };
 
     CUtlSortVector<CMomReplayBase*, CUtlSortVectorTimeValue> m_vLocalTimes;
     CUtlVector<TimeOnline *> m_vOnlineTimes;
+    CUtlVector<TimeOnline *> m_vAroundTimes;
     CUtlVector<TimeOnline *> m_vFriendsTimes;
 
-    bool m_bLocalTimesLoaded;
-    bool m_bLocalTimesNeedUpdate;
-    bool m_bOnlineNeedUpdate;
-    bool m_bOnlineTimesLoaded;
-    bool m_bFriendsNeedUpdate;
-    bool m_bFriendsTimesLoaded;
+    bool m_bTimesNeedUpdate[TIMES_COUNT];
+    bool m_bTimesLoading[TIMES_COUNT];
+    float m_flTimesLastUpdate[TIMES_COUNT];
+
+    enum ONLINE_TIMES_STATUS
+    {
+        STATUS_TIMES_LOADED = 0,
+        STATUS_TIMES_LOADING,
+        STATUS_NO_TIMES_RETURNED,
+        STATUS_SERVER_ERROR,
+        STATUS_NO_PB_SET,
+        STATUS_NO_FRIENDS,
+        STATUS_UNAUTHORIZED_FRIENDS_LIST,
+        // Should be last
+        STATUS_COUNT,
+    };
+    ONLINE_TIMES_STATUS m_eTimesStatus[TIMES_COUNT];
+
     bool m_bUnauthorizedFriendlist;
     // widths[0] == WIDTH FOR DATE
     // widths[1] == WIDTH FOR RANK
@@ -297,14 +296,15 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     // methods
     void FillScoreBoard();
-    void SetPlaceColors(vgui::SectionedListPanel* panel) const;
+    void SetPlaceColors(vgui::SectionedListPanel* panel, TIME_TYPE type) const;
     void FillScoreBoard(bool pFullUpdate);
     void LoadLocalTimes(KeyValues *kv);
     void LoadOnlineTimes();
+    void LoadAroundTimes();
     void LoadFriendsTimes();
     void ConvertLocalTimes(KeyValues *);
     // Place vector times into leaderboards panel (sectionlist)
-    void OnlineTimesVectorToLeaderboards(LEADERBOARDS);
+    void OnlineTimesVectorToLeaderboards(TIME_TYPE type);
 
     CLeaderboardsContextMenu *m_pLeaderboardReplayCMenu;
 
@@ -330,4 +330,3 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     RUN_FLAG flaggedRuns;
 };
-#endif // CLIENTSCOREBOARDDIALOG_H

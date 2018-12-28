@@ -72,7 +72,23 @@ bool CAPIRequests::GetTop10MapTimes(uint32 mapID, CallbackFunc func)
 
 bool CAPIRequests::GetFriendsTimes(uint32 mapID, CallbackFunc func)
 {
-    NOT_IMPL;
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs/friends", mapID).Get()), k_EHTTPMethodGET))
+    {
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "isPersonalBest", "true");
+        return SendAPIRequest(handle, func, __FUNCTION__);
+    }
+    return false;
+}
+
+bool CAPIRequests::GetAroundTimes(uint32 mapID, CallbackFunc func)
+{
+    HTTPRequestHandle handle;
+    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs/around", mapID).Get()), k_EHTTPMethodGET))
+    {
+        return SendAPIRequest(handle, func, __FUNCTION__);
+    }
+    return false;
 }
 
 bool CAPIRequests::GetMapInfo(uint32 mapID, CallbackFunc func)
