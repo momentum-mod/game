@@ -282,7 +282,7 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
 
         KeyValuesAD comp("Complete");
         comp->SetUint64("request", pCallback->m_hRequest);
-        if (!pCallback->m_bRequestSuccessful || pCallback->m_eStatusCode != k_EHTTPStatusCode200OK)
+        if (bIO || !pCallback->m_bRequestSuccessful || pCallback->m_eStatusCode != k_EHTTPStatusCode200OK)
         {
             comp->SetBool("error", true);
             comp->SetInt("code", pCallback->m_eStatusCode);
@@ -310,59 +310,54 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
         APICallback *callback = m_mapAPICalls[callbackIndx];
 
         // Let's create our main KeyValues object to operate on and properly clean it up out of this scope
-        KeyValues::AutoDelete response("response");
+        KeyValuesAD response("response");
 
         // Secondly, let's set the code of the response. Even if it's an IO error.
         response->SetInt("code", pCallback->m_eStatusCode);
 
-        // Thirdly, check if there are any errors early on. 
-        // This populates the response with an appropriate "error" KeyValues object
-        if (CheckAPIResponse(pCallback, bIOFailure, response))
+        // Thirdly, check if there are any errors
+        bool bRequestOK = CheckAPIResponse(pCallback, bIOFailure);
+
+        // Fourthly, knowing if there's an error or not, create the proper data
+        KeyValues *pKvBodyData = new KeyValues(bRequestOK ? "data" : "error");
+        if (pCallback->m_unBodySize > 0)
         {
-            KeyValues *pKvBodyData = new KeyValues("data");
-            if (pCallback->m_unBodySize > 0)
+            // Fourthly-A, read the body properly
+            uint8 *pData = new uint8[pCallback->m_unBodySize + 1];
+            SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, pCallback->m_unBodySize);
+            pData[pCallback->m_unBodySize] = 0; // Make sure to null terminate
+
+            // Fourthly-B, parse this JSON and convert to KeyValues
+            char *pDataPtr = reinterpret_cast<char*>(pData);
+            if (!CJsonToKeyValues::ConvertJsonToKeyValues(pDataPtr, pKvBodyData))
             {
-                // Fourthly, read the body properly
-                uint8 *pData = new uint8[pCallback->m_unBodySize + 1];
-                SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, pCallback->m_unBodySize);
-                pData[pCallback->m_unBodySize] = 0; // Make sure to null terminate
-
-                // Fifthly, parse this JSON and convert to KeyValues
-                char *pDataPtr = reinterpret_cast<char*>(pData);
-                if (CJsonToKeyValues::ConvertJsonToKeyValues(pDataPtr, pKvBodyData))
-                {
-                    // Log out the request if needed
-                    if (mom_api_log_requests.GetBool())
-                    {
-                        CKeyValuesDumpContextAsDevMsg dump;
-                        pKvBodyData->Dump(&dump);
-                    }
-                }
-                else
-                {
-                    Warning("Failed to parse! %s\n", response->GetString("err_parse"));
-                }
-
-                // Sixthly, free our data buffer 
-                delete[] pData;
-                pData = nullptr;
-                pDataPtr = nullptr;
+                pKvBodyData->SetName("error"); // Ensure it's passed as an error
+                Warning("Failed to parse! %s\n", pKvBodyData->GetString("err_parse"));
             }
-            // "else 0 body size" -- it's valid, but it'll be empty. Reading a 204 can still be done here
-            response->AddSubKey(pKvBodyData);
-        }
-        else
+
+            // Sixthly, free our data buffer 
+            delete[] pData;
+            pData = nullptr;
+            pDataPtr = nullptr;
+        } // "else 0 body size" -- it's valid, but it'll be empty. Reading a 204 can still be done here
+
+        // Fifthly, add our new body data
+        response->AddSubKey(pKvBodyData);
+
+        // Log out the response if desired
+        if (mom_api_log_requests.GetBool())
         {
-            // Errored out, either a server 4XX or 5XX error. Still valid, the callback func will want to know about it.
+            CKeyValuesDumpContextAsDevMsg dump;
+            response->Dump(&dump);
         }
 
-        // Now actually call the callback. It should be reading the body by using `pKvResponse->FindKey("data")`
+        // Sixthly, actually call the callback. It should be reading the body by using `pKvResponse->FindKey("data")`
         // or any errors by using `pKvResponse->FindKey("error")`
         callback->callbackFunc(response);
 
         // And remove it from the map
         m_mapAPICalls.RemoveAt(callbackIndx);
-        // And delete it (no memory leek pls)
+        // And delete it (no memory leak pls)
         delete callback;
         // And delete the response KeyValu- oh right the AutoDelete handles that here (out of scope)
     }
@@ -415,38 +410,11 @@ bool CAPIRequests::SendAPIRequest(HTTPRequestHandle hRequest, CallbackFunc func,
     return false;
 }
 
-bool CAPIRequests::CheckAPIResponse(HTTPRequestCompleted_t* pCallback, bool bIOFailure, KeyValues *pKvOut)
+bool CAPIRequests::CheckAPIResponse(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
 {
-    if (pCallback->m_eStatusCode >= k_EHTTPStatusCode200OK &&
-        pCallback->m_eStatusCode < k_EHTTPStatusCode300MultipleChoices)
-    {
-        return true; // Exit early
-    }
-    KeyValues *pKvErrStatus = nullptr;
-    if (bIOFailure || !pCallback->m_bRequestSuccessful)
-    {
-        DevWarning(2, "bIOFailure!\n");
-        pKvErrStatus = new KeyValues("error");
-        pKvErrStatus->SetString("msg", "IO Failure");
-    }
-    // MOM_TODO: Parse the body here and stuff the error object in it?
-    else if (pCallback->m_eStatusCode >= k_EHTTPStatusCode400BadRequest)
-    {
-        DevWarning(2, "Error in Request!\n");
-        pKvErrStatus = new KeyValues("error");
-        if (pCallback->m_eStatusCode >= k_EHTTPStatusCode500InternalServerError)
-            pKvErrStatus->SetString("msg", "Internal Server Error");
-        else
-            pKvErrStatus->SetString("msg", "Error 4XX");
-    }
-    
-    if (pKvErrStatus)
-    {
-        pKvOut->AddSubKey(pKvErrStatus);
-        return false;
-    }
-
-    return true;
+    return pCallback->m_eStatusCode >= k_EHTTPStatusCode200OK &&
+        pCallback->m_eStatusCode < k_EHTTPStatusCode300MultipleChoices && 
+        !bIOFailure && pCallback->m_bRequestSuccessful;
 }
 
 CAPIRequests s_APIRequests;

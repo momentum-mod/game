@@ -20,7 +20,7 @@ public:
     //      "code" -- The integer HTTP status code returned. 0 if it's an IO error
     //      "data" -- The response data, parsed JSON represented as KeyValues
     //      "error" -- An error object represented as KeyValues
-    //      "err_parse" -- If any parsing issue happens with JSON, it will be logged here as a string
+    //          "err_parse" -- If any parsing issue happens with JSON, it will be logged here as a string, inside error
     //
     // All API requests return `true` if the call succeeded in sending, else `false`.
 
@@ -66,7 +66,7 @@ private:
     // Should be called after the HTTP request is prepared by the API calls (above)
     bool SendAPIRequest(HTTPRequestHandle hRequest, CallbackFunc func, const char *pRequest);
     // Check the response for errors, insert error objects in here
-    bool CheckAPIResponse(HTTPRequestCompleted_t *pCallback, bool bIOFailure, KeyValues *pKvOut);
+    bool CheckAPIResponse(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
 
     struct APICallback
     {
