@@ -114,7 +114,7 @@ void CTASPanel::OnThink()
     if (pPlayer)
     {
         static bool wasTASMode;
-        
+
         if (wasTASMode != (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
         {
             m_pEnableTASMode->SetText((pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
@@ -126,6 +126,21 @@ void CTASPanel::OnThink()
         }
 
         wasTASMode = pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS;
+
+        static bool bDoOnce = true;
+        if (pPlayer->m_SrvData.m_RunData.m_bMapFinished)
+        {
+            m_pVisualPanel->SetVisible(false);
+            bDoOnce = false;
+        }
+        else
+        {
+            if (!bDoOnce)
+            {
+                m_pVisualPanel->SetVisible(true);
+                bDoOnce = true;
+            }
+        }
     }
 
     if (m_pToggleReplayUI->IsSelected())
@@ -202,6 +217,14 @@ void CTASPanel::SetVisible(bool state)
 void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
 {
     static int iOldTickCount = 0;
+
+    if (pPlayer != nullptr)
+    {
+        SetVisible(pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS);
+    }
+
+    if (!IsVisible())
+        return;
 
     if (iOldTickCount != gpGlobals->tickcount)
     {
@@ -327,12 +350,12 @@ void CTASVisPanel::Paint()
 
 void CTASVisPanel::VisPredMovements() { RunVPM(ToCMOMPlayer(C_BasePlayer::GetLocalPlayer())); }
 
-CTASVisPanel::CTASVisPanel() : BaseClass(g_pClientMode->GetViewport(), "tasvisgui")
+CTASVisPanel::CTASVisPanel() : BaseClass(nullptr, "tasvisgui")
 {
+    SetParent(g_pClientMode->GetViewport());
     SetVisible(true);
     SetMouseInputEnabled(false);
     SetKeyBoardInputEnabled(false);
-    surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 }
 
 CTASVisPanel::~CTASVisPanel() {}
