@@ -359,8 +359,8 @@ CTASVisPanel::CTASVisPanel() : BaseClass(nullptr, "tasvisgui")
     SetBgColor(Color(255, 255, 255, 255));
     SetFgColor(Color(255, 255, 255, 255));
     SetAlpha(0);
-    this->SetPaintBackgroundEnabled(false);
-    this->SetPaintBorderEnabled(false);
+    SetPaintBackgroundEnabled(false);
+    SetPaintBorderEnabled(false);
 }
 
 CTASVisPanel::~CTASVisPanel() {}
