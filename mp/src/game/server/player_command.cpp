@@ -274,7 +274,7 @@ void CPlayerMove::RunPreThink( CBasePlayer *player )
 //			clienttimebase - 
 // Output : void CPlayerMove::RunThink
 //-----------------------------------------------------------------------------
-void CPlayerMove::RunThink (CBasePlayer *player, double frametime )
+void CPlayerMove::RunThink (CBasePlayer *player)
 {
 	VPROF( "CPlayerMove::RunThink" );
 	int thinktick = player->GetNextThinkTick();
@@ -422,7 +422,7 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	RunPreThink( player );
 
 	// Call Think if one is set
-	RunThink( player, TICK_INTERVAL );
+	RunThink( player );
 
     player->m_vecOldOrigin = player->GetAbsOrigin();
 

@@ -50,7 +50,7 @@ protected:
 
 	// Helpers to call pre and post think for player, and to call think if a think function is set
 	void			RunPreThink( CBasePlayer *player );
-	void			RunThink (CBasePlayer *ent, double frametime );
+	void			RunThink (CBasePlayer *ent );
 	void			RunPostThink( CBasePlayer *player );
 };
 

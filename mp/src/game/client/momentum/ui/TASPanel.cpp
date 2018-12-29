@@ -54,9 +54,6 @@ CON_COMMAND(mom_tas_panel, "Toggle TAS panel")
 {
     if (engine->IsInGame() && g_pClientMode && g_pClientMode->GetViewport() != nullptr)
     {
-        if (g_pTASPanel == nullptr)
-            g_pTASPanel = new CTASPanel();
-
         g_pTASPanel->ToggleVisible();
     }
 }
@@ -65,43 +62,26 @@ CTASPanel::CTASPanel()
     : BaseClass(g_pClientMode->GetViewport(), "TASPanel"), m_pVisualPanel(nullptr), m_pReplayUI(nullptr),
       mom_tas_autostrafe("mom_tas_autostrafe")
 {
-    SetSize(2, 2);
     SetProportional(false);
-    SetScheme("ClientScheme");
     SetMouseInputEnabled(true);
     SetSizeable(false);
     SetClipToParent(true); // Needed so we won't go out of bounds
-
-    surface()->CreatePopup(GetVPanel(), false, false, false, true, false);
+    SetScheme("ClientScheme");
 
     LoadControlSettings("resource/ui/TASPanel.res");
+    surface()->CreatePopup(GetVPanel(), false, false, false, true, false);
 
     m_pEnableTASMode = FindControl<ToggleButton>("EnableTASMode");
     m_pToggleReplayUI = FindControl<ToggleButton>("ToggleReplayUI");
     m_pVisPredMove = FindControl<ToggleButton>("VisPredMove");
     m_pAutostrafe = FindControl<ToggleButton>("Autostrafe");
 
-    SetVisible(false);
-    SetTitle(L"TAS Panel", true);
+    m_pToggleReplayUI->SetSelected(false);
 
     m_pVisualPanel = new CTASVisPanel();
     m_pReplayUI = new C_TASMOMReplayUI();
-}
 
-CTASPanel::~CTASPanel()
-{
-    // Seems to make segfaults
-    /*if (m_pVisualPanel != nullptr)
-    {
-        delete m_pVisualPanel;
-        m_pVisualPanel = nullptr;
-    }
-
-    if (m_pReplayUI != nullptr)
-    {
-        delete m_pReplayUI;
-        m_pReplayUI = nullptr;
-    }*/
+    SetVisible(false);
 }
 
 void CTASPanel::OnThink()
@@ -126,21 +106,6 @@ void CTASPanel::OnThink()
         }
 
         wasTASMode = pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS;
-
-        static bool bDoOnce = true;
-        if (pPlayer->m_SrvData.m_RunData.m_bMapFinished)
-        {
-            m_pVisualPanel->SetVisible(false);
-            bDoOnce = false;
-        }
-        else
-        {
-            if (!bDoOnce)
-            {
-                m_pVisualPanel->SetVisible(true);
-                bDoOnce = true;
-            }
-        }
     }
 
     if (m_pToggleReplayUI->IsSelected())
@@ -212,6 +177,18 @@ void CTASPanel::SetVisible(bool state)
         engine->ClientCmd("mom_tas_record");
 
     BaseClass::SetVisible(state);
+}
+
+CTASVisPanel::CTASVisPanel() : BaseClass(g_pClientMode->GetViewport(), "tasvisgui")
+{
+    SetVisible(true);
+    SetMouseInputEnabled(false);
+    SetKeyBoardInputEnabled(false);
+    SetBgColor(Color(255, 255, 255, 255));
+    SetFgColor(Color(255, 255, 255, 255));
+    SetAlpha(0);
+    SetPaintBackgroundEnabled(false);
+    SetPaintBorderEnabled(false);
 }
 
 void CTASVisPanel::RunVPM(C_MomentumPlayer *pPlayer)
@@ -350,24 +327,8 @@ void CTASVisPanel::Paint()
 
 void CTASVisPanel::VisPredMovements() { RunVPM(ToCMOMPlayer(C_BasePlayer::GetLocalPlayer())); }
 
-CTASVisPanel::CTASVisPanel() : BaseClass(nullptr, "tasvisgui")
+C_TASMOMReplayUI::C_TASMOMReplayUI() : BaseClass(g_pClientMode->GetViewport(), "TASReplayControls")
 {
-    SetParent(g_pClientMode->GetViewport());
-    SetVisible(true);
-    SetMouseInputEnabled(false);
-    SetKeyBoardInputEnabled(false);
-    SetBgColor(Color(255, 255, 255, 255));
-    SetFgColor(Color(255, 255, 255, 255));
-    SetAlpha(0);
-    SetPaintBackgroundEnabled(false);
-    SetPaintBorderEnabled(false);
-}
-
-CTASVisPanel::~CTASVisPanel() {}
-
-C_TASMOMReplayUI::C_TASMOMReplayUI() : Frame(g_pClientMode->GetViewport(), "TASReplayControls")
-{
-    SetVisible(false);
     SetProportional(false);
     SetMoveable(true);
     SetSizeable(false);
@@ -407,6 +368,8 @@ C_TASMOMReplayUI::C_TASMOMReplayUI() : Frame(g_pClientMode->GetViewport(), "TASR
     FIND_LOCALIZATION(m_pwReplayTimeTick, "#MOM_ReplayTimeTick");
 
     m_pPlayPauseResume->SetText("Go!");
+
+    SetVisible(false);
 }
 
 void C_TASMOMReplayUI::OnThink()

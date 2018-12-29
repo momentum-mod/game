@@ -176,7 +176,18 @@ void CMOMPlayerMove::RunCommand(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper
     {
         pMOMPlayer->m_SavedUserCmd = *ucmd;
         pMOMPlayer->m_TASRecords->Think();
-    }
 
-    BaseClass::RunCommand(player, ucmd, moveHelper);
+        if (!(pMOMPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS &&
+              pMOMPlayer->m_TASRecords->m_Status == TAS_PAUSE))
+            BaseClass::RunCommand(player, ucmd, moveHelper);
+        else
+        {
+            // We need to interpolate somehow here.
+            BaseClass::RunPreThink(player);
+            BaseClass::RunThink(player);
+            BaseClass::RunPostThink(player);
+        }
+    }
+    else
+        BaseClass::RunCommand(player, ucmd, moveHelper);
 }

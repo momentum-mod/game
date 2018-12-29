@@ -1,12 +1,12 @@
 #include "cbase.h"
 #include "server_events.h"
+#include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "tickset.h"
 
 #include "tier0/memdbgon.h"
 
-
-//This is only called when "map ____" is called, if the user uses changelevel then...
+// This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
 void Momentum::GameInit()
 {
@@ -15,8 +15,8 @@ void Momentum::GameInit()
     const char *pMapName = map.GetString();
     // This will only happen if the user didn't use the map selector to start a map
     ConVarRef("sv_contact").SetValue("http://momentum-mod.org/contact");
-    //set gamemode depending on map name
-    //MOM_TODO: This needs to read map entity/momfile data and set accordingly
+    // set gamemode depending on map name
+    // MOM_TODO: This needs to read map entity/momfile data and set accordingly
 
     if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
     {
@@ -68,10 +68,9 @@ void CMOMServerEvents::LevelInitPreEntity()
     zones->SpawnMapZones();
 }
 
-
 void CMOMServerEvents::LevelInitPostEntity()
 {
-    //disable point_servercommand
+    // disable point_servercommand
     ConVarRef servercommand("sv_allow_point_servercommand");
     servercommand.SetValue(0);
 }
@@ -93,24 +92,28 @@ void CMOMServerEvents::LevelShutdownPostEntity()
     if (fullbright.IsValid() && fullbright.GetBool())
         fullbright.SetValue(0);
 }
+
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     if (!g_pMomentumTimer->GotCaughtCheating())
     {
         ConVarRef cheatsRef("sv_cheats");
+        CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
         if (cheatsRef.GetBool())
         {
+            if (pMOMPlayer != nullptr && pMOMPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
+            {
+                return;
+            }
+
             g_pMomentumTimer->SetCheating(true);
             g_pMomentumTimer->Stop(false);
         }
     }
 }
 
-void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
-{
-    engine->ServerCommand("unpause\n");
-}
-
+void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t *pParam) { engine->ServerCommand("unpause\n"); }
 
 void CMOMServerEvents::MountAdditionalContent()
 {

@@ -11,6 +11,8 @@
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"tabPosition"		"0"
+		"settitlebarvisible"		"1"
+		"title"		"#MOM_TASPanel"
 	}
 
 	"EnableTASMode"

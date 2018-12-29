@@ -7,6 +7,7 @@
 
 #include "ClientTimesDisplay.h"
 #include "IGameUIFuncs.h"
+#include "TASPanel.h"
 #include "clientmode_mom_normal.h"
 #include "hud.h"
 #include "ienginevgui.h"
@@ -210,6 +211,7 @@ void ClientModeMOMNormal::SetupPointers()
     m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
     m_pLeaderboards = dynamic_cast<CClientTimesDisplay *>(m_pViewport->FindPanelByName(PANEL_TIMES));
     m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+    g_pTASPanel = new CTASPanel();
 }
 
 int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector velocity)

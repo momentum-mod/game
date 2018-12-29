@@ -90,8 +90,7 @@ class CTASVisPanel : public Panel
 
   public:
     CTASVisPanel();
-    ~CTASVisPanel();
-
+    
     void Paint() OVERRIDE;
 
     void VisPredMovements();
@@ -108,7 +107,6 @@ class CTASPanel : public Frame
 
   public:
     CTASPanel();
-    ~CTASPanel();
 
     void OnThink() OVERRIDE;
     void OnCommand(const char *pCommand) OVERRIDE;

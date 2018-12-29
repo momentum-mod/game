@@ -5,6 +5,7 @@
 #include "mom_replay_system.h"
 #include "mom_tas.h"
 // clang-format: on
+static ConVarRef host_timescale("host_timescale");
 
 CON_COMMAND(mom_tas, "Set timer to tas mode.")
 {
@@ -13,11 +14,17 @@ CON_COMMAND(mom_tas, "Set timer to tas mode.")
     if (pPlayer)
     {
         if (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
+        {
+            sv_cheats->SetValue(0);
             pPlayer->m_SrvData.m_RunData.m_iRunFlags &= ~RUNFLAG_TAS;
+        }
         else
+        {
+            sv_cheats->SetValue(1);
             pPlayer->m_SrvData.m_RunData.m_iRunFlags |= RUNFLAG_TAS;
+        }
 
-        pPlayer->m_TASRecords->m_Status = TAS_STOPPED;
+        pPlayer->m_TASRecords->Reset();
         g_pMomentumTimer->Stop();
     }
 }
@@ -181,6 +188,7 @@ void CTASRecording::Reset()
     m_vecTASData.Purge();
     m_iChosenFrame = 0;
     m_Status = TAS_STOPPED;
+    host_timescale.SetValue(1.0f);
 }
 
 int CTASRecording::NumberOfFrames() { return m_vecTASData.Size(); }
@@ -188,7 +196,9 @@ int CTASRecording::NumberOfFrames() { return m_vecTASData.Size(); }
 void CTASRecording::Think()
 {
     if (!(m_pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
+    {
         return;
+    }
 
     m_flTimeScale = mom_tas_timescale.GetFloat();
 
@@ -224,7 +234,7 @@ void CTASRecording::Think()
         }
 
         // As think function is not called, we must do update it this way.
-        m_pPlayer->StdDataToPlayer(&m_pPlayer->m_SrvData);
+        // m_pPlayer->StdDataToPlayer(&m_pPlayer->m_SrvData);
     }
 
     if (m_Status == TAS_RECORDING)
@@ -249,6 +259,8 @@ void CTASRecording::Think()
     m_pPlayer->m_SrvData.m_tasData.m_Status = m_Status;
     m_pPlayer->m_SrvData.m_tasData.m_iTotalTimeTicks = NumberOfFrames();
     m_pPlayer->m_SrvData.m_tasData.m_iCurrentTick = m_iChosenFrame;
+    // Let the player chose the timescale he wants.
+    host_timescale.SetValue(m_flTimeScale);
 }
 
 void CTASRecording::Erase(int iFrames)
@@ -278,6 +290,7 @@ void CTASRecording::Stop()
 {
     if (m_pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
     {
-        m_Status = TAS_STOPPED;
+        // MOM_TODO: don't erase recording and put back timer at the right time.
+        Reset();
     }
 }
