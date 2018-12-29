@@ -19,7 +19,6 @@ public:
 
     // CAutoGameSystemPerFrame
     void PostInit() OVERRIDE;
-    void LevelInitPreEntity() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
     void Update(float frametime) OVERRIDE;
@@ -78,9 +77,6 @@ public:
     char m_szDiscordJoinSecret[DISCORD_MAX_BUFFER_SIZE];      // unique hashed string for chat invitations and Ask to Join
     int8_t m_iDiscordInstance;                            // [deprecated Notify Me feature, may be re-used in future]
 
-    // Payload helper fields
-    char m_szInMenusStatusString[DISCORD_MAX_BUFFER_SIZE];   // Status string to use when player is in the menu
-    char m_szInMenusLargeImage[DISCORD_MAX_BUFFER_SIZE];     // Large image key to use when player is in the menus
 
     // Static vars
     static const char* s_pDiscordAppID;
@@ -93,6 +89,7 @@ private:
     // Custom methods
     void DiscordInit();
     void DiscordUpdate();
+    void UpdateStatusString();
     void UpdateDiscordPartyIdFromSteam();
     void UpdateLobbyNumbers();
 

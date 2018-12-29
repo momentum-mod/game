@@ -2,12 +2,22 @@
 #include "fmtstr.h"
 #include "mom_system_discord.h"
 #include "mom_shareddefs.h"
+#include "mom_player_shared.h"
+#include "mom_event_listener.h"
 #include <time.h>
 
 #include "tier0/memdbgon.h"
 
-#define DISCORD_APP_ID "378351756104564738"
+#define DISCORD_APP_ID "527778972197453825"
 #define MOM_STEAM_ID "669270"
+
+#define MAIN_MENU_STR  "Main Menu"
+
+#define MOM_ICON_LOGO  "mom"
+#define MOM_ICON_BHOP  "mom_icon_bhop"
+#define MOM_ICON_SURF  "mom_icon_surf"
+#define MOM_ICON_KZ    "mom_icon_kz"
+#define MOM_ICON_TRIKZ "mom_icon_trikz" // unused atm
 
 // How many frames to wait before updating discord
 // (some things are still updated each frame such as checking callbacks)
@@ -49,8 +59,6 @@ CMomentumDiscord::CMomentumDiscord(const char *pName) {
     m_sSteamLobbyID = CSteamID();
     m_sSteamUserID = CSteamID();
 
-    V_strncpy(m_szInMenusStatusString, "In Menus", DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szInMenusLargeImage, "mom", DISCORD_MAX_BUFFER_SIZE);
 };
 
 // ---------------------------- CAutoGameSystem ----------------------------- //
@@ -62,42 +70,46 @@ void CMomentumDiscord::PostInit() {
     DiscordInit();
 
     // Default discord information
-    V_strncpy(m_szDiscordState, m_szInMenusStatusString, DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordLargeImageKey, m_szInMenusLargeImage, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
 
     GetSteamUserID();
 }
 
-// Called each time a map is joined before entities are initialized
-void CMomentumDiscord::LevelInitPreEntity() {
+// Called each time a map is joined after entities are initialized
+void CMomentumDiscord::LevelInitPostEntity() {
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (!pPlayer)
+        return;
+
     m_bInMap = true;
 
     ConVarRef gm("mom_gamemode");
-    switch (gm.GetInt()) {
-        case MOMGM_SURF:
-            V_strncpy(m_szDiscordState, "Surfing", DISCORD_MAX_BUFFER_SIZE);
-            break;
-        case MOMGM_BHOP:
-            V_strncpy(m_szDiscordState, "Bhopping", DISCORD_MAX_BUFFER_SIZE);
-            break;
-        case MOMGM_SCROLL:
-            V_strncpy(m_szDiscordState, "Scrolling", DISCORD_MAX_BUFFER_SIZE);
-            break;
-        case MOMGM_UNKNOWN:
-        default:
-            V_strncpy(m_szDiscordState, "Playing", DISCORD_MAX_BUFFER_SIZE);
-            break;
+    switch (gm.GetInt())
+    {
+    case MOMGM_SURF:
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_SURF, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        break;
+    case MOMGM_BHOP:
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_BHOP, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        break;
+    case MOMGM_SCROLL:
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_KZ, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        break;
+    case MOMGM_UNKNOWN:
+    default:
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        m_szDiscordSmallImageKey[0] = '\0';
+        break;
     }
 
     V_strncpy(m_szDiscordDetails, MapName(), DISCORD_MAX_BUFFER_SIZE);
     V_strncpy(m_szDiscordLargeImageText, MapName(), DISCORD_MAX_BUFFER_SIZE);
     m_iDiscordStartTimestamp = time(0);
-    // MOM_TODO: Add more / better information for discord
-    // (a badge for the small image, better large images such as an icon for each game type, current map stage, etc.)
-}
 
-// Called each time a map is joined after entities are initialized
-void CMomentumDiscord::LevelInitPostEntity() {
     // Check to see if we are joining this map to spectate a player
     if (m_kJoinSpectateState == WaitOnMap) {
         m_kJoinSpectateState = WaitOnNone;
@@ -109,8 +121,8 @@ void CMomentumDiscord::LevelInitPostEntity() {
 void CMomentumDiscord::LevelShutdownPreEntity() {
     m_bInMap = false;
     ClearDiscordFields(false); // Pass false to retain party/lobby related fields
-    V_strncpy(m_szDiscordState, m_szInMenusStatusString, DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordLargeImageKey, m_szInMenusLargeImage, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
 }
 
 // Called every frame
@@ -118,6 +130,8 @@ void CMomentumDiscord::Update(float frametime) {
     if (m_iUpdateFrame++ == DISCORD_FRAME_UPDATE_FREQ) {
         // Stuff that can be done every ~1 second
         m_iUpdateFrame = 0;
+		if (m_bInMap)
+			UpdateStatusString();
         UpdateDiscordPartyIdFromSteam();
         UpdateLobbyNumbers();
         DiscordUpdate();
@@ -172,14 +186,12 @@ void CMomentumDiscord::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam) {
 // Called when there is a game event we are listening for
 // Subscribe to events in `PostInit`
 void CMomentumDiscord::FireGameEvent(IGameEvent* event) {
-    //if (!Q_strcmp(event->GetName(), "lobby_leave")) {
-        m_sSteamLobbyID.Clear();
-        m_iDiscordPartySize = 0;
-        m_iDiscordPartyMax = 0;
-        m_szDiscordPartyId[0] = '\0';
-        m_szDiscordJoinSecret[0] = '\0';
-        m_szDiscordSpectateSecret[0] = '\0';
-    //}
+    m_sSteamLobbyID.Clear();
+    m_iDiscordPartySize = 0;
+    m_iDiscordPartyMax = 0;
+    m_szDiscordPartyId[0] = '\0';
+    m_szDiscordJoinSecret[0] = '\0';
+    m_szDiscordSpectateSecret[0] = '\0';
 }
 
 // ----------------------------- Custom Methods ----------------------------- //
@@ -294,6 +306,43 @@ void CMomentumDiscord::SpecPlayerFromSteamId(const char* steamID) {
     // MOM_TODO: We probably should check if the target player is already spectating someone, then set the spectate target them instead
     // Or we could adjust the `mom_spectate` command to handle this automatically
     DISPATCH_CON_COMMAND("mom_spectate", CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("mom_spectate %s", steamID));
+}
+
+// Updates the status string based on what we're doing
+void CMomentumDiscord::UpdateStatusString() {
+	C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+
+	if (pPlayer->IsObserver()) {
+        Q_strncpy(m_szDiscordState, "Spectating", DISCORD_MAX_BUFFER_SIZE);
+        return;
+	}
+
+    int currentZone = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
+	int zoneCount = g_MOMEventListener->m_iMapZoneCount; 
+	if (zoneCount > 0) {
+        
+        bool linearMap = g_MOMEventListener->m_bMapIsLinear;
+
+		Q_snprintf(m_szDiscordState, DISCORD_MAX_BUFFER_SIZE, "%s %i/%i",
+				   linearMap ? "Checkpoint" : "Stage",
+                   currentZone, // Current stage/checkpoint
+                   zoneCount    // Total number of stages/checkpoints
+		);
+    }
+    else {
+        Q_strncpy(m_szDiscordState, "Linear", DISCORD_MAX_BUFFER_SIZE);
+	}
+
+	bool playerInZone = pPlayer->m_SrvData.m_RunData.m_bIsInZone;
+	if (playerInZone) {
+        bool mapFinished = pPlayer->m_SrvData.m_RunData.m_bMapFinished;
+        if (currentZone == 1) {
+            Q_strncpy(m_szDiscordState, "Start Zone", DISCORD_MAX_BUFFER_SIZE);
+        }
+        else if (mapFinished) {
+            Q_strncpy(m_szDiscordState, "End Zone", DISCORD_MAX_BUFFER_SIZE);
+        }
+    }
 }
 
 // Updates the current and max party size based upon the current lobby
