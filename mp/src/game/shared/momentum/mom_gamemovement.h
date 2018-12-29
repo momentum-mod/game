@@ -81,8 +81,13 @@ class CMomentumGameMovement : public CGameMovement
     {
         m_pPlayer = ToCMOMPlayer(pBasePlayer);
         Assert(m_pPlayer);
+        
+        if (!(m_pPlayer->m_SrvData.m_tasData.m_Status == TAS_PAUSE &&
+              m_pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
+        {
+            BaseClass::ProcessMovement(pBasePlayer, pMove);
+        }
 
-        BaseClass::ProcessMovement(pBasePlayer, pMove);
         m_pPlayer->m_flOldViewY = pMove->m_vecViewAngles.y;
     }
 

@@ -10,6 +10,11 @@
 #include "tier0/memdbgon.h"
 
 // remove this eventually
+#ifdef CLIENT_DLL
+static MAKE_CONVAR(mom_tas_autostrafe, "1", FCVAR_ARCHIVE | FCVAR_USERINFO | FCVAR_SERVER_CAN_EXECUTE,
+                   "1) Only in air 2) On ground + air.", 0, 2);
+#endif
+
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
@@ -1399,7 +1404,6 @@ void CMomentumGameMovement::AirMove(void)
 {
     float wishspeed;
     Vector wishdir;
-    static ConVarRef mom_tas_autostrafe("mom_tas_autostrafe");
     Vector forward, right, up;
 
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
@@ -1410,9 +1414,16 @@ void CMomentumGameMovement::AirMove(void)
     VectorNormalize(forward); // Normalize remainder of vectors
     VectorNormalize(right);   //
 
+#ifdef CLIENT_DLL
     // We must do this without touching the airaccelerate function so we can be sure that we respect the physics.
     if (mom_tas_autostrafe.GetInt() > 0 && (m_pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
     {
+#else
+#define QUICKGETCVARVALUE(v) (engine->GetClientConVarValue(player->entindex(), v))
+    if (Q_atoi(QUICKGETCVARVALUE("mom_tas_autostrafe")) > 0 &&
+        (m_pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
+    {
+#endif
         auto lambda_NormalizeAngles = [](QAngle &angles) {
             angles.x = AngleNormalize(angles.x);
             angles.y = AngleNormalize(angles.y);

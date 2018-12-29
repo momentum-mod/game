@@ -1235,9 +1235,9 @@ void CMomentumPlayer::Think()
     if ((m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS) && (m_TASRecords->m_Status == TAS_PAUSE))
     {
         auto lambda_UpdateStep = [this](int Skip) {
-            if (ConVarRef("mom_tas_selection").GetInt() == 2)
+            if (ConVarRef("mom_tas_selection").GetInt() == 1)
                 m_TASRecords->m_iChosenFrame -= Skip;
-            else if (ConVarRef("mom_tas_selection").GetInt() == 1)
+            else if (ConVarRef("mom_tas_selection").GetInt() == 2)
                 m_TASRecords->m_iChosenFrame += Skip;
 
             m_TASRecords->m_iChosenFrame =

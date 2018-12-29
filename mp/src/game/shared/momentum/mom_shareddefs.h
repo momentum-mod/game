@@ -56,13 +56,6 @@ typedef enum
     SPEC_UPDATE_LEAVE       // This player left the map/lobby
 } SPECTATE_MSG_TYPE;
 
-typedef enum
-{
-    TAS_STOPPED = -1,
-    TAS_RECORDING,
-    TAS_PAUSE,
-} eStatusOfTAS;
-
 #define PANEL_TIMES "times"
 #define IN_TIMES (1<<26)
 

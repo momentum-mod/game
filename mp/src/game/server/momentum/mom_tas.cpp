@@ -16,8 +16,80 @@ CON_COMMAND(mom_tas, "Set timer to tas mode.")
             pPlayer->m_SrvData.m_RunData.m_iRunFlags &= ~RUNFLAG_TAS;
         else
             pPlayer->m_SrvData.m_RunData.m_iRunFlags |= RUNFLAG_TAS;
-            
+
         pPlayer->m_TASRecords->m_Status = TAS_STOPPED;
+        g_pMomentumTimer->Stop();
+    }
+}
+
+CON_COMMAND(mom_tas_pause, "Pause / tas mode.")
+{
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer)
+    {
+        if (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
+        {
+            if (pPlayer->m_TASRecords->m_Status != TAS_STOPPED)
+                pPlayer->m_TASRecords->m_Status = TAS_PAUSE;
+        }
+    }
+}
+
+CON_COMMAND(mom_tas_record, "Record / tas mode.")
+{
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer)
+    {
+        // Record again only if there is enough frames recorded. (so we know that we were inside a start zone before)
+        if (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS && pPlayer->m_TASRecords->NumberOfFrames() > 1)
+        {
+            pPlayer->m_TASRecords->m_Status = TAS_RECORDING;
+        }
+        else
+        {
+            pPlayer->m_TASRecords->m_Status = TAS_STOPPED;
+        }
+    }
+}
+
+CON_COMMAND(mom_tas_stop, "Stop / tas mode.")
+{
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer)
+    {
+        if (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
+        {
+            pPlayer->m_TASRecords->m_Status = TAS_STOPPED;
+        }
+    }
+}
+
+CON_COMMAND(mom_tas_restart, "Go to start / tas mode.")
+{
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer)
+    {
+        if (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS && pPlayer->m_TASRecords->m_Status == TAS_PAUSE)
+        {
+            pPlayer->m_TASRecords->m_iChosenFrame = 0;
+        }
+    }
+}
+
+CON_COMMAND(mom_tas_goto_end, "Go to end / tas mode.")
+{
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer)
+    {
+        if (pPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS && pPlayer->m_TASRecords->m_Status == TAS_PAUSE)
+        {
+            pPlayer->m_TASRecords->m_iChosenFrame = pPlayer->m_TASRecords->m_vecTASData.Size() - 1;
+        }
     }
 }
 
@@ -93,12 +165,15 @@ CTASRecording::CTASRecording(CMomentumPlayer *pPlayer)
 {
     m_vecTASData.Purge();
     m_pPlayer = pPlayer;
+    m_iChosenFrame = 0;
+    m_Status = TAS_STOPPED;
 }
 
 CTASRecording::~CTASRecording()
 {
     m_vecTASData.Purge();
     m_pPlayer = nullptr;
+    m_iChosenFrame = 0;
 }
 
 void CTASRecording::Reset()
@@ -171,6 +246,9 @@ void CTASRecording::Think()
     }
 
     m_OldStatus = m_Status;
+    m_pPlayer->m_SrvData.m_tasData.m_Status = m_Status;
+    m_pPlayer->m_SrvData.m_tasData.m_iTotalTimeTicks = NumberOfFrames();
+    m_pPlayer->m_SrvData.m_tasData.m_iCurrentTick = m_iChosenFrame;
 }
 
 void CTASRecording::Erase(int iFrames)

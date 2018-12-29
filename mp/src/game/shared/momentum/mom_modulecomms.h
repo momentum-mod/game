@@ -8,6 +8,20 @@
 #include "tier1/utllinkedlist.h"
 #include <utldelegate.h>
 
+typedef enum
+{
+    TAS_STOPPED = -1,
+    TAS_RECORDING,
+    TAS_PAUSE,
+} eStatusOfTAS;
+
+struct StdDataTASFromServer
+{
+    eStatusOfTAS m_Status;
+    int m_iTotalTimeTicks;
+    int m_iCurrentTick;
+};
+
 /*
  * Members of this class will be calculated server-side but updated
  * on the client every tick.
@@ -15,10 +29,11 @@
  * Note: different instances of this are used for replay entities and players!
  * Note: different functions are used to invoke a transfer on replay entities and players!
  */
+
 struct StdDataFromServer
 {
+    StdDataTASFromServer m_tasData;
     //MOM_TODO: Deprecate the usage of weapon data? (m_iLastZoom m_iShotsFired m_bResumeZoom m_iDirection)
-    
     bool m_bHasPracticeMode;
     bool m_bResumeZoom;
     bool m_bDidPlayerBhop;
