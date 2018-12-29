@@ -23,34 +23,6 @@
 
 extern IFileSystem *filesystem;
 
-#if 0
-
-void MomentumUtil::DownloadMap(const char *szMapname)
-{
-    if (!SteamHTTP())
-    {
-        Warning("Failed to download map, cannot access HTTP!\n");
-        return;
-    }
-    // MOM_TODO:
-    // This should only be called if the user has the outdated map version or
-    // doesn't have the map at all
-
-    // The two different URLs:
-    // cdn.momentum-mod.org/maps/MAPNAME/MAPNAME.bsp
-    // and
-    // cdn.momentum-mod.org/maps/MAPNAME/MAPNAME.zon
-    // We're going to need to build requests for and download both of these files
-
-    // Uncomment the following when we build the URLS (MOM_TODO)
-    // CreateAndSendHTTPReq(mapfileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
-    // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
-}
-
-
-
-#endif
-
 #ifdef CLIENT_DLL
 void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
 {
@@ -131,6 +103,88 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int preci
             Q_snprintf(pOut, BUFSIZETIME, "%s%d.%04d", negative, seconds, millis);
         break;
     }
+}
+
+bool MomentumUtil::GetTimeAgoString(time_t *input, char* pOut, size_t outLen)
+{
+    if (!input)
+        return false;
+
+    const char *pUnitString = nullptr;
+    int count = 0;
+    time_t now;
+    time(&now);
+    const auto diff = difftime(now, *input); // Diff in seconds
+
+    const int years = static_cast<int>(diff / 31557600.0f);
+    const int months = static_cast<int>(diff / 2629800.0f); // Average number of seconds per month
+    const int days = static_cast<int>(diff / 86400.0f);
+    const int hours = static_cast<int>(diff / 3600.0f);
+    const int minutes = static_cast<int>(diff / 60.0f);
+    if (years)
+    {
+        pUnitString = "year";
+        count = years;
+    }
+    else if (months)
+    {
+        pUnitString = "month";
+        count = months;
+    }
+    else if (days) 
+    {
+        pUnitString = "day";
+        count = days;
+    }
+    else if (hours)
+    {
+        pUnitString = "hour";
+        count = hours;
+    }
+    else if (minutes)
+    {
+        pUnitString = "minute";
+        count = minutes;
+    }
+    else if (diff)
+    {
+        pUnitString = "second";
+        count = diff;
+    }
+
+    if (!pUnitString || count == 0)
+        Q_strncpy(pOut, "just now", outLen);
+    else
+        Q_snprintf(pOut, outLen, "%i %s%s ago", count, pUnitString, (count > 1 ? "s" : ""));
+
+    return true;
+}
+
+bool MomentumUtil::GetTimeAgoString(const char* pISODate, char* pOut, size_t outLen)
+{
+    time_t temp;
+    if (ISODateToTimeT(pISODate, &temp))
+    {
+        return GetTimeAgoString(&temp, pOut, outLen);
+    }
+    return false;
+}
+
+bool MomentumUtil::ISODateToTimeT(const char* pISODate, time_t* out)
+{
+    if (!pISODate)
+        return false;
+    int year, month, day, hour, min, sec, millis;
+    sscanf(pISODate, "%d-%d-%dT%d:%d:%d.%dZ", &year, &month, &day, &hour, &min, &sec, &millis);
+    tm tim;
+    tim.tm_year = year - 1900;
+    tim.tm_mday = day;
+    tim.tm_mon = month - 1;
+    tim.tm_hour = hour;
+    tim.tm_min = min;
+    tim.tm_sec = sec;
+    *out = mktime(&tim) - timezone;
+    return true;
 }
 
 Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,

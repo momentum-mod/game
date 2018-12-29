@@ -98,13 +98,13 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
-    MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
+    MESSAGE_FUNC_INT_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", itemID, runName);
     MESSAGE_FUNC_CHARPTR(OnContextGoToMap, "ContextGoToMap", map);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
     MESSAGE_FUNC_PARAMS(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", data);
     MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
     MESSAGE_FUNC_UINT64(OnContextReqSavelocs, "ContextReqSavelocs", target);
-    MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
+    MESSAGE_FUNC_INT_CHARPTR(OnConfirmDeleteReplay, "ConfirmDeleteReplay", itemID, file);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
@@ -292,7 +292,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // widths[0] == WIDTH FOR DATE
     // widths[1] == WIDTH FOR RANK
     // widths[2] == WIDTH FOR TIME
-    int m_aiColumnWidths[3];
+    // widths[3] == WIDTH FOR DATE
+    int m_aiColumnWidths[4];
 
     // methods
     void FillScoreBoard();

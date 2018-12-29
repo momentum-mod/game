@@ -324,7 +324,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
         m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, GetScaledVal(m_aiColumnWidths[2]));
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, GetScaledVal(m_aiColumnWidths[0]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[0]));
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
@@ -345,15 +345,15 @@ void CClientTimesDisplay::InitScoreboardSections()
                                                    GetScaledVal(m_aiColumnWidths[1]));
         panel->AddColumnToSection(m_iSectionId, "avatar", "",
                                                    SectionedListPanel::COLUMN_IMAGE,
-                                                   DEFAULT_AVATAR_SIZE);
-        panel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
-                                                   SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
+                                                   DEFAULT_AVATAR_SIZE + 4);
         panel->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, 16);
         panel->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        panel->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE,
-                                                   16);
+        panel->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        panel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
+                                                   0, NAME_WIDTH);
         panel->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
-                                                   SectionedListPanel::COLUMN_CENTER, GetScaledVal(m_aiColumnWidths[2]));
+                                                   0, GetScaledVal(m_aiColumnWidths[2]));
+        panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[3]));
         // Scroll only icon
         panel->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
                                                    16);
@@ -394,10 +394,10 @@ void CClientTimesDisplay::PostApplySchemeSettings(IScheme *pScheme)
     m_pImageList->GetImage(i)->SetSize(SCALE(wide), SCALE(tall));
     }*/
 
-    const char *columnNames[] = {DATESTRING, RANKSTRING, TIMESTRING};
+    const char *columnNames[] = {DATESTRING, RANKSTRING, TIMESTRING, "59 minutes ago"};
 
     HFont font = pScheme->GetFont("Default", true);
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
         const char *currName = columnNames[i];
         const int len = Q_strlen(currName);
@@ -408,7 +408,6 @@ void CClientTimesDisplay::PostApplySchemeSettings(IScheme *pScheme)
         }
         m_aiColumnWidths[i] = pixels;
     }
-    // DevLog("Widths %i %i %i \n", m_aiColumnWidths[0], m_aiColumnWidths[1], m_aiColumnWidths[2]);
 
     if (m_pMapName)
         m_pMapName->SetVisible(true);
@@ -724,19 +723,16 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         kvLocalTimeFormatted->SetString("fileName", filename);
 
         kvLocalTimeFormatted->SetFloat("time_f", t->GetRunTime()); // Used for static compare
-        kvLocalTimeFormatted->SetInt("date_t", t->GetRunDate());       // Used for finding
+        kvLocalTimeFormatted->SetInt("date_t", t->GetRunDate());   // Used for finding
 
         char timeString[BUFSIZETIME];
         g_pMomentumUtil->FormatTime(t->GetRunTime(), timeString);
         kvLocalTimeFormatted->SetString("time", timeString); // Used for display
         
         char dateString[64];
-        tm *local;
         time_t date = t->GetRunDate();
-        local = localtime(&date);
-        if (local)
+        if (g_pMomentumUtil->GetTimeAgoString(&date, dateString, sizeof(dateString)))
         {
-            strftime(dateString, sizeof(dateString), "%d/%m/%Y %H:%M:%S", local);
             kvLocalTimeFormatted->SetString("date", dateString);
         }
         else
@@ -1075,7 +1071,11 @@ void CClientTimesDisplay::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
                 kvEntry->SetFloat("rate", pRun->GetFloat("tickRate"));
 
                 // Date
-                kvEntry->SetString("date", pRun->GetString("dateAchieved"));
+                char timeAgoStr[64];
+                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("dateAchieved"), timeAgoStr, sizeof(timeAgoStr)))
+                    kvEntry->SetString("date", timeAgoStr);
+                else
+                    kvEntry->SetString("date", pRun->GetString("dateAchieved"));
 
                 // ID
                 kvEntry->SetUint64("id", pRun->GetUint64("id"));
@@ -1810,30 +1810,28 @@ void CClientTimesDisplay::OnContextWatchReplay(const char *runName)
     }
 }
 
-void CClientTimesDisplay::OnContextDeleteReplay(const char* runName)
+void CClientTimesDisplay::OnContextDeleteReplay(int itemID, const char* runName)
 {
     if (runName)
     {
         char file[MAX_PATH];
         V_ComposeFileName(RECORDING_PATH, runName, file, MAX_PATH);
 
+        KeyValues *pCommand = new KeyValues("ConfirmDeleteReplay", "file", file);
+        pCommand->SetInt("itemID", itemID);
         messageboxpanel->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay", 
-            "#MOM_MB_DeleteRunConfirmation", new KeyValues("ConfirmDeleteReplay", "file", file),
+            "#MOM_MB_DeleteRunConfirmation", pCommand,
              nullptr, "#MOM_Leaderboards_DeleteReplay");
     }
 }
 
-void CClientTimesDisplay::OnConfirmDeleteReplay(KeyValues* data)
+void CClientTimesDisplay::OnConfirmDeleteReplay(int itemID, const char *file)
 {
-    if (data)
+    if (file)
     {
-        const char * file = data->GetString("file", nullptr);
-        if (file)
-        {
-            g_pFullFileSystem->RemoveFile(file, "MOD");
-            m_bTimesNeedUpdate[TIMES_LOCAL] = true;
-            FillScoreBoard();
-        }
+        g_pFullFileSystem->RemoveFile(file, "MOD");
+        m_bTimesNeedUpdate[TIMES_LOCAL] = true;
+        m_pLocalLeaderboards->RemoveItem(itemID);
     }
 }
 
@@ -1887,7 +1885,9 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             CLeaderboardsContextMenu *pContextMenu = GetLeaderboardContextMenu(pPanel->GetParent());
             pContextMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", new KeyValues("ContextWatchReplay", "runName", pFileName), this);
             pContextMenu->AddSeparator();
-            pContextMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", new KeyValues("ContextDeleteReplay", "runName", pFileName), this);
+            KeyValues *pMessage = new KeyValues("ContextDeleteReplay", "runName", pFileName);
+            pMessage->SetInt("itemID", itemID);
+            pContextMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", pMessage, this);
             pContextMenu->ShowMenu();
         }
         else if (CheckParent(pPanel, m_pFriendsLeaderboards, itemID) || CheckParent(pPanel, m_pOnlineLeaderboards, itemID) || CheckParent(pPanel, m_pAroundLeaderboards, itemID))
