@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 class CMomReplayBase;
 class CMomRunStats;
 
@@ -29,6 +27,14 @@ public:
     // Precision is miliseconds by default
     void FormatTime(float seconds, char *pOut, const int precision = 3, const bool fileName = false, const bool negativeTime = false) const;
 
+    // Taking an input time_t, formats the time difference between now and the given time, up to years of difference.
+    // Example output: "5 minutes ago"
+    // Returns true if worked, else false if bad input
+    bool GetTimeAgoString(time_t *input, char *pOut, size_t outLen);
+    bool GetTimeAgoString(const char *pISODate, char *pOut, size_t outLen);
+
+    // Converts an ISO-8601 date string to a time_t
+    bool ISODateToTimeT(const char *pISODate, time_t *out);
 
     CMomReplayBase *GetBestTime(const char *szMapName, float tickrate, uint32 flags = 0) const;
     bool GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into) const;

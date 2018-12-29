@@ -43,6 +43,7 @@
         "MOM_Name" "Name"
         "MOM_Time" "Time"
         "MOM_Date" "Date"
+        "MOM_Achieved" "Achieved"
         "MOM_Rank" "Rank"
         "MOM_MapRank" "Map Rank"
         "MOM_GlobalRank" "Global Rank"
