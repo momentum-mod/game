@@ -356,6 +356,11 @@ CTASVisPanel::CTASVisPanel() : BaseClass(nullptr, "tasvisgui")
     SetVisible(true);
     SetMouseInputEnabled(false);
     SetKeyBoardInputEnabled(false);
+    SetBgColor(Color(255, 255, 255, 255));
+    SetFgColor(Color(255, 255, 255, 255));
+    SetAlpha(0);
+    this->SetPaintBackgroundEnabled(false);
+    this->SetPaintBorderEnabled(false);
 }
 
 CTASVisPanel::~CTASVisPanel() {}
