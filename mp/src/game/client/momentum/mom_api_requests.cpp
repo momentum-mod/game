@@ -404,7 +404,7 @@ bool CAPIRequests::CreateAPIRequest(HTTPRequestHandle &handle, const char* pszUR
     if (bAuth)
         SteamHTTP()->SetHTTPRequestHeaderValue(handle, "Authorization", CFmtStr1024("Bearer %s", m_pAPIKey).Get());
 
-    return true;
+    return handle != INVALID_HTTPREQUEST_HANDLE;
 }
 
 bool CAPIRequests::SendAPIRequest(HTTPRequestHandle hRequest, CallbackFunc func, const char* pRequest)

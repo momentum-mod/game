@@ -152,7 +152,7 @@ void COnlineMaps::OnMapStart()
     const char *pMapName = kv->GetString(KEYNAME_MAP_NAME);
     int mapID = kv->GetInt(KEYNAME_MAP_ID);
     // Firstly, check if we have this version of the map
-    if (g_pMomentumUtil->FileExists(CFmtStr("maps/%s", pMapName), kv->GetString(KEYNAME_MAP_HASH)))
+    if (g_pMomentumUtil->FileExists(CFmtStr("maps/%s.bsp", pMapName), kv->GetString(KEYNAME_MAP_HASH)))
         StartSelectedMap();
     else
     {
