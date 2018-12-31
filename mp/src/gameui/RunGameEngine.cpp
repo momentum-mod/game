@@ -84,17 +84,16 @@ class CRunGameEngine : public IRunGameEngine
     // gets the in-game name of another user, returns NULL if that user doesn't exists
     virtual const char *GetPlayerName(int trackerID)
     {
-        static char tmpName[sizeof(player_info_t::name)];
-
         // find the player by their friendsID
         player_info_t pi;
+        static char tmpName[sizeof(pi.name)];
         for (int i = 0; i < engine->GetMaxClients(); i++)
         {
             if (engine->GetPlayerInfo(i, &pi))
             {
                 if (pi.friendsID == (uint)trackerID)
                 {
-                    memcpy(tmpName, pi.name, sizeof(tmpName));
+                    Q_strncpy(tmpName, pi.name, sizeof(tmpName));
 
                     return tmpName;
                 }
@@ -106,17 +105,16 @@ class CRunGameEngine : public IRunGameEngine
 
     virtual const char *GetPlayerFriendsName(int trackerID)
     {
-        static char tmpFriendsName[sizeof(player_info_t::friendsName)];
-
         // find the player by their friendsID
         player_info_t pi;
+        static char tmpFriendsName[sizeof(pi.name)];
         for (int i = 0; i < engine->GetMaxClients(); i++)
         {
             if (engine->GetPlayerInfo(i, &pi))
             {
                 if (pi.friendsID == (uint)trackerID)
                 {
-                    memcpy(tmpFriendsName, pi.friendsName, sizeof(tmpFriendsName));
+                    Q_strncpy(tmpFriendsName, pi.friendsName, sizeof(tmpFriendsName));
 
                     return tmpFriendsName;
                 }
