@@ -37,7 +37,7 @@
 using namespace vgui;
 
 #define RANKSTRING "00000"               // A max of 99999 ranks (too generous)
-#define DATESTRING "00/00/0000 00:00:00" // Entire date string
+#define DATESTRING "59 minutes ago" // Entire date string
 #define TIMESTRING "00:00:00.000"        // Entire time string
 
 #define UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
@@ -135,11 +135,15 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
         AssertMsg(0, "Null pointer(s) on scoreboards");
     }
 
+    // Pin to each other
+    m_pLeaderboards->PinToSibling(m_pHeader, PIN_TOPLEFT, PIN_BOTTOMLEFT);
+    m_pPlayerStats->PinToSibling(m_pLeaderboards, PIN_TOPLEFT, PIN_BOTTOMLEFT);
+    m_pFilterPanel->PinToSibling(m_pLeaderboards, PIN_TOPLEFT, PIN_TOPRIGHT);
+
     // Override the parents of the controls (the current parent is this)
     m_pMapName->SetParent(m_pHeader);
     m_pMapAuthor->SetParent(m_pHeader);
     m_pMapDetails->SetParent(m_pHeader);
-    m_pPlayerStats->SetParent(m_pLeaderboards);
     m_pPlayerAvatar->SetParent(m_pPlayerStats);
     m_pPlayerName->SetParent(m_pPlayerStats);
     m_pPlayerMapRank->SetParent(m_pPlayerStats);
@@ -353,7 +357,7 @@ void CClientTimesDisplay::InitScoreboardSections()
                                                    0, NAME_WIDTH);
         panel->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
                                                    0, GetScaledVal(m_aiColumnWidths[2]));
-        panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[3]));
+        panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[0]));
         // Scroll only icon
         panel->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
                                                    16);
@@ -394,10 +398,10 @@ void CClientTimesDisplay::PostApplySchemeSettings(IScheme *pScheme)
     m_pImageList->GetImage(i)->SetSize(SCALE(wide), SCALE(tall));
     }*/
 
-    const char *columnNames[] = {DATESTRING, RANKSTRING, TIMESTRING, "59 minutes ago"};
+    const char *columnNames[] = {DATESTRING, RANKSTRING, TIMESTRING};
 
     HFont font = pScheme->GetFont("Default", true);
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
         const char *currName = columnNames[i];
         const int len = Q_strlen(currName);
@@ -412,24 +416,11 @@ void CClientTimesDisplay::PostApplySchemeSettings(IScheme *pScheme)
     if (m_pMapName)
         m_pMapName->SetVisible(true);
 
-    // Center the "WAITING FOR API RESPONSE" text in the leaderboards
-    int textWidth, textHeight;
-    m_pOnlineTimesStatus->GetTextImage()->GetContentSize(textWidth, textHeight);
-    int xPos = m_pLocalLeaderboards->GetWide() / 2 - (textWidth / 2);
-    int yPos = m_pLocalLeaderboards->GetTall() / 2 - textHeight / 2;
-    m_pOnlineTimesStatus->SetPos(xPos, yPos);
-
     // Make it the size of the screen and center
     int screenWide, screenHeight;
     surface()->GetScreenSize(screenWide, screenHeight);
     MoveToCenterOfScreen();
     SetSize(screenWide, screenHeight);
-
-    // Place and size the Filter panel properly
-    xPos = m_pLeaderboards->GetXPos() + m_pLeaderboards->GetWide();
-    yPos = m_pLeaderboards->GetYPos();
-    m_pFilterPanel->SetPos(xPos + 4, yPos);
-    m_pFilterPanel->SetSize(scheme()->GetProportionalScaledValue(150), m_pFilterPanel->GetTall());
 
     // light up scoreboard a bit
     SetBgColor(Color(0, 0, 0, 0));
@@ -1149,8 +1140,6 @@ void CClientTimesDisplay::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
         {
             m_eTimesStatus[type] = STATUS_NO_TIMES_RETURNED;
         }
-
-        Update();
     }
     else if (pErr)
     {
@@ -1164,7 +1153,6 @@ void CClientTimesDisplay::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
         {
             if (code == 403) // User has not done a run yet
             {
-                DevLog("User has not done a run yet\n");
                 m_eTimesStatus[type] = STATUS_NO_PB_SET;
             }
         }
@@ -1172,17 +1160,18 @@ void CClientTimesDisplay::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
         {
             if (code == 409) // The profile is private, we cannot read their friends
             {
-                DevLog("User has unauthorized friends list\n");
                 m_eTimesStatus[type] = STATUS_UNAUTHORIZED_FRIENDS_LIST;
                 m_bUnauthorizedFriendlist = true;
-            } 
+            }
             else if (code == 418) // Short and stout~
             {
                 m_eTimesStatus[type] = STATUS_NO_FRIENDS;
-                DevLog("User has no friends :(\n");
             }
         }
     }
+
+    if (pData || pErr)
+        Update();
 }
 
 void CClientTimesDisplay::OnReplayDownloadStart(KeyValues* pKvHeaders)
@@ -1535,56 +1524,49 @@ void CClientTimesDisplay::SetPlaceColors(SectionedListPanel *panel, TIME_TYPE ty
 
 void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
 {
-
-    KeyValues *m_kvPlayerData = new KeyValues("playdata");
-    UpdatePlayerInfo(m_kvPlayerData, pFullUpdate);
+    KeyValuesAD kvPlayerData("playdata");
+    UpdatePlayerInfo(kvPlayerData, pFullUpdate);
     if (pFullUpdate)
         AddHeader();
 
     // Player Stats panel:
-    if (m_pPlayerStats && m_pPlayerAvatar && m_pPlayerName && m_pPlayerGlobalRank && m_pPlayerMapRank &&
-        m_kvPlayerData && !m_kvPlayerData->IsEmpty())
+    if (m_pPlayerStats && m_pPlayerName)
     {
         m_pPlayerStats->SetVisible(false); // Hidden so it is not seen being changed
 
-        KeyValues *playdata = m_kvPlayerData->FindKey("data");
+        KeyValues *playdata = kvPlayerData->FindKey("data");
         if (playdata)
             m_pPlayerName->SetText(playdata->GetString("name", "Unknown"));
 
         m_pPlayerStats->SetVisible(true); // And seen again!
     }
 
-    // Leaderboards
-    // @Gocnak: If we use event-driven updates and caching, it shouldn't overload the API.
-    // The idea is to cache things to show, which will be called every FillScoreBoard call,
-    // but it will only call the methods to update the data if booleans are set to.
-    // For example, if a local time was saved, the event "timer_timesaved" or something is passed here,
-    // and on the GetPlayerTimes passthrough, we'd update the local times, which then gets stored in
-    // the Panel object until next update
+    GetPlayerTimes(kvPlayerData, pFullUpdate);
 
-    GetPlayerTimes(m_kvPlayerData, pFullUpdate);
-
-    if (m_pLeaderboards && m_pOnlineLeaderboards && m_pAroundLeaderboards && m_pLocalLeaderboards && m_pFriendsLeaderboards && m_kvPlayerData &&
-        !m_kvPlayerData->IsEmpty())
+    if (m_pLeaderboards && m_pCurrentLeaderboards && m_pOnlineLeaderboards && m_pAroundLeaderboards 
+        && m_pLocalLeaderboards && m_pFriendsLeaderboards)
     {
         m_pLeaderboards->SetVisible(false);
 
         if (m_pCurrentLeaderboards == m_pLocalLeaderboards)
         {
-            KeyValues *kvLeaderboards = m_kvPlayerData->FindKey("leaderboards");
-            KeyValues *kvLocalTimes = kvLeaderboards->FindKey("local");
-            if (kvLocalTimes && !kvLocalTimes->IsEmpty())
+            KeyValues *kvLeaderboards = kvPlayerData->FindKey("leaderboards");
+            if (kvLeaderboards)
             {
-                FOR_EACH_SUBKEY(kvLocalTimes, kvLocalTime)
+                KeyValues *kvLocalTimes = kvLeaderboards->FindKey("local");
+                if (kvLocalTimes && !kvLocalTimes->IsEmpty())
                 {
-                    int itemID = FindItemIDForLocalTime(kvLocalTime);
-                    if (itemID == -1)
-                        m_pLocalLeaderboards->AddItem(m_iSectionId, kvLocalTime);
-                    else
-                        m_pLocalLeaderboards->ModifyItem(itemID, m_iSectionId, kvLocalTime);
-                }
+                    FOR_EACH_SUBKEY(kvLocalTimes, kvLocalTime)
+                    {
+                        int itemID = FindItemIDForLocalTime(kvLocalTime);
+                        if (itemID == -1)
+                            m_pLocalLeaderboards->AddItem(m_iSectionId, kvLocalTime);
+                        else
+                            m_pLocalLeaderboards->ModifyItem(itemID, m_iSectionId, kvLocalTime);
+                    }
 
-                SetPlaceColors(m_pLocalLeaderboards, TIMES_LOCAL);
+                    SetPlaceColors(m_pLocalLeaderboards, TIMES_LOCAL);
+                }
             }
         }
         // Online works slightly different, we use the vector content, not the ones from m_kvPlayerData
@@ -1603,7 +1585,6 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
 
         m_pLeaderboards->SetVisible(true);
     }
-    m_kvPlayerData->deleteThis();
 }
 
 void CClientTimesDisplay::OnlineTimesVectorToLeaderboards(TIME_TYPE type)
@@ -1629,6 +1610,10 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards(TIME_TYPE type)
     }
     if (pVector && pVector->Count() > 0 && pList)
     {
+        // To clear up any count discrepancies, just remove all items
+        if (pList->GetItemCount() != pVector->Count())
+            pList->DeleteAllItems();
+
         FOR_EACH_VEC(*pVector, entry)
         {
             TimeOnline *runEntry = pVector->Element(entry);
