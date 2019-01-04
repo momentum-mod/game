@@ -14,6 +14,9 @@
 #include "vgui_controls/TextImage.h"
 #include "vgui_controls/ToggleButton.h"
 #include "LeaderboardsContextMenu.h"
+#include "LeaderboardsHeader.h"
+#include "LeaderboardsStats.h"
+#include "LeaderboardsTimes.h"
 
 #include "filesystem.h"
 #include <util/mom_util.h>
@@ -77,7 +80,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_iSectionId = 0;
 
     m_bGetTop10Scores = true;
-    m_bLoadedLocalPlayerAvatar = false;
 
     m_pViewPort = pViewPort;
     // initialize dialog
@@ -95,22 +97,13 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pSavelocReqFrame = new SavelocReqFrame();
 
     m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
+    m_pHeader = new CLeaderboardsHeader(this);
+    m_pStats = new CLeaderboardsStats(this);
+    m_pTimes = new CLeaderboardsTimes(this);
 
     LoadControlSettings("resource/ui/leaderboards.res");
 
-    m_pHeader = FindChildByName("Header", true);
-    m_pMapName = FindControl<Label>("MapName", true);
-    m_pMapAuthor = FindControl<Label>("MapAuthor", true);
-    m_pMapDetails = FindControl<Label>("MapDetails", true);
-    m_pPlayerStats = FindChildByName("PlayerStats", true);
-    m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
-    m_pPlayerName = FindControl<Label>("PlayerName", true);
-    m_pPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
-    m_pPlayerPersonalBest = FindControl<Label>("PlayerPersonalBest", true);
-    m_pPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
-    m_pPlayerExperience = FindControl<Label>("PlayerExperience", true);
     m_pOnlineTimesStatus = FindControl<Label>("OnlineTimesStatus", true);
-    m_pLeaderboards = FindChildByName("Leaderboards", true);
     m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineLeaderboards", true);
     m_pAroundLeaderboards = FindControl<SectionedListPanel>("AroundLeaderboards", true);
     m_pLocalLeaderboards = FindControl<SectionedListPanel>("LocalLeaderboards", true);
@@ -126,43 +119,32 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 
     m_pCurrentLeaderboards = m_pLocalLeaderboards;
 
-    if (!m_pHeader || !m_pMapName || !m_pPlayerStats || !m_pPlayerAvatar || !m_pPlayerName ||
-        !m_pPlayerMapRank || !m_pPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards || !m_pAroundLeaderboards ||
-        !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_pPlayerPersonalBest || !m_pOnlineTimesStatus ||
-        !m_pPlayerExperience || !m_pGlobalLeaderboardsButton || !m_pFriendsLeaderboardsButton ||
+    if (!m_pHeader || !m_pTimes || !m_pStats || !m_pOnlineLeaderboards || !m_pAroundLeaderboards ||
+        !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_pOnlineTimesStatus || !m_pGlobalLeaderboardsButton || !m_pFriendsLeaderboardsButton ||
         !m_pGlobalTop10Button || !m_pGlobalAroundButton)
     {
         AssertMsg(0, "Null pointer(s) on scoreboards");
     }
 
     // Pin to each other
-    m_pLeaderboards->PinToSibling(m_pHeader, PIN_TOPLEFT, PIN_BOTTOMLEFT);
-    m_pPlayerStats->PinToSibling(m_pLeaderboards, PIN_TOPLEFT, PIN_BOTTOMLEFT);
-    m_pFilterPanel->PinToSibling(m_pLeaderboards, PIN_TOPLEFT, PIN_TOPRIGHT);
+    m_pTimes->PinToSibling(m_pHeader, PIN_TOPLEFT, PIN_BOTTOMLEFT);
+    m_pStats->PinToSibling(m_pTimes, PIN_TOPLEFT, PIN_BOTTOMLEFT);
+    m_pFilterPanel->PinToSibling(m_pTimes, PIN_TOPLEFT, PIN_TOPRIGHT);
 
     // Override the parents of the controls (the current parent is this)
-    m_pMapName->SetParent(m_pHeader);
-    m_pMapAuthor->SetParent(m_pHeader);
-    m_pMapDetails->SetParent(m_pHeader);
-    m_pPlayerAvatar->SetParent(m_pPlayerStats);
-    m_pPlayerName->SetParent(m_pPlayerStats);
-    m_pPlayerMapRank->SetParent(m_pPlayerStats);
-    m_pPlayerGlobalRank->SetParent(m_pPlayerStats);
-    m_pPlayerPersonalBest->SetParent(m_pPlayerStats);
-    m_pPlayerExperience->SetParent(m_pPlayerStats);
-    m_pOnlineLeaderboards->SetParent(m_pLeaderboards);
-    m_pAroundLeaderboards->SetParent(m_pLeaderboards);
-    m_pOnlineTimesStatus->SetParent(m_pLeaderboards);
-    m_pLocalLeaderboards->SetParent(m_pLeaderboards);
-    m_pFriendsLeaderboards->SetParent(m_pLeaderboards);
-    m_pGlobalLeaderboardsButton->SetParent(m_pLeaderboards);
-    m_pGlobalTop10Button->SetParent(m_pLeaderboards);
-    m_pGlobalAroundButton->SetParent(m_pLeaderboards);
-    m_pFriendsLeaderboardsButton->SetParent(m_pLeaderboards);
-    m_pLocalLeaderboardsButton->SetParent(m_pLeaderboards);
-    m_pRunFilterButton->SetParent(m_pLeaderboards);
+    m_pOnlineLeaderboards->SetParent(m_pTimes);
+    m_pAroundLeaderboards->SetParent(m_pTimes);
+    m_pOnlineTimesStatus->SetParent(m_pTimes);
+    m_pLocalLeaderboards->SetParent(m_pTimes);
+    m_pFriendsLeaderboards->SetParent(m_pTimes);
+    m_pGlobalLeaderboardsButton->SetParent(m_pTimes);
+    m_pGlobalTop10Button->SetParent(m_pTimes);
+    m_pGlobalAroundButton->SetParent(m_pTimes);
+    m_pFriendsLeaderboardsButton->SetParent(m_pTimes);
+    m_pLocalLeaderboardsButton->SetParent(m_pTimes);
+    m_pRunFilterButton->SetParent(m_pTimes);
 
-    m_pLobbyMembersPanel->SetParent(m_pPlayerStats);
+    m_pLobbyMembersPanel->SetParent(m_pStats);
 
     // Get rid of the scrollbars for the panels
     // MOM_TODO: Do we want the player to be able to explore the ranks?
@@ -177,12 +159,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     ListenForGameEvent("replay_save");
     ListenForGameEvent("run_upload");
 
-    m_fLastHeaderUpdate = 0.0f;
     m_flTimesLastUpdate[TIMES_TOP10] = m_flTimesLastUpdate[TIMES_AROUND] = m_flTimesLastUpdate[TIMES_FRIENDS] = 0.0f;
-
-    m_bFirstHeaderUpdate = true;
-
-    m_bMapInfoLoaded = false;
 
     flaggedRuns = RUNFLAG_NONE;
     SetDefLessFunc(m_umMapNames);
@@ -413,9 +390,6 @@ void CClientTimesDisplay::PostApplySchemeSettings(IScheme *pScheme)
         m_aiColumnWidths[i] = pixels;
     }
 
-    if (m_pMapName)
-        m_pMapName->SetVisible(true);
-
     // Make it the size of the screen and center
     int screenWide, screenHeight;
     surface()->GetScreenSize(screenWide, screenHeight);
@@ -485,6 +459,7 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
     else if (FStrEq(type, "run_upload"))
     {
         m_bTimesNeedUpdate[TIMES_TOP10] = m_bTimesNeedUpdate[TIMES_AROUND] = m_bTimesNeedUpdate[TIMES_FRIENDS] = event->GetBool("run_posted");
+        m_pStats->NeedsUpdate();
     }
 #endif
 
@@ -511,102 +486,6 @@ void CClientTimesDisplay::Update(bool pFullUpdate)
 #if ENABLE_ONLINE_LEADERBOARDS
     m_fNextUpdateTime = gpGlobals->curtime + UPDATE_INTERVAL;
 
-    // This starts as true on the constructor.
-    m_bFirstHeaderUpdate = false;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
-{
-    m_iSectionId = 0; // 0'th row is a header
-
-    // add the player to the list
-    KeyValues *playerData = new KeyValues("data");
-    UpdatePlayerAvatarStandalone();
-
-    player_info_t pi;
-    engine->GetPlayerInfo(engine->GetLocalPlayer(), &pi);
-    const char *oldName = playerData->GetString("name", pi.name);
-
-    char newName[MAX_PLAYER_NAME_LENGTH];
-    UTIL_MakeSafeName(oldName, newName, MAX_PLAYER_NAME_LENGTH);
-    playerData->SetString("name", newName);
-    // What this if is:
-    // We want to do a full update if (we ask for it with fullUpdate boolean AND (the minimum time has passed OR it is
-    // the first update)) OR the maximum time has passed
-    float flLastUp = gpGlobals->curtime - m_fLastHeaderUpdate;
-    if (fullUpdate && (flLastUp >= UPDATE_INTERVAL || m_bFirstHeaderUpdate))
-    {
-        char p_sCalculating[BUFSIZELOCL];
-        char p_sWaitingResponse[BUFSIZELOCL];
-        LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);
-        LOCALIZE_TOKEN(p_wcWaitingResponse, "MOM_API_WaitingForResponse", p_sWaitingResponse);
-
-        char p_sMapRank[BUFSIZELOCL];
-        char p_sGlobalRank[BUFSIZELOCL];
-        char p_sPersonalBest[BUFSIZELOCL];
-        char p_sExperiencePoints[BUFSIZELOCL];
-
-        char mrLocalized[BUFSIZELOCL];
-        char grLocalized[BUFSIZELOCL];
-        char pbLocalized[BUFSIZELOCL];
-        char xpLocalized[BUFSIZELOCL];
-
-        LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
-        LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
-        LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
-        LOCALIZE_TOKEN(p_wcExperiencePoints, "MOM_ExperiencePoints", p_sExperiencePoints);
-
-        Q_snprintf(mrLocalized, BUFSIZELOCL, "%s: %s", p_sMapRank, p_sCalculating);
-        Q_snprintf(grLocalized, BUFSIZELOCL, "%s: %s", p_sGlobalRank, p_sCalculating);
-        Q_snprintf(pbLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sWaitingResponse);
-        Q_snprintf(xpLocalized, BUFSIZELOCL, "%s: %s", p_sExperiencePoints, p_sWaitingResponse);
-
-        m_pPlayerMapRank->SetText(mrLocalized);
-        m_pPlayerGlobalRank->SetText(grLocalized);
-        m_pPlayerPersonalBest->SetText(pbLocalized);
-        m_pPlayerExperience->SetText(xpLocalized);
-
-#if ENABLE_HTTP_LEADERBOARDS
-        // MOM_TODO: Get player map rank info for this map
-        /*char requrl[MAX_PATH];
-        // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
-                   GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
-        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback, this);
-        m_fLastHeaderUpdate = gpGlobals->curtime;*/
-#endif
-    }
-
-    kv->AddSubKey(playerData);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: adds the top header of the scoreboars
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::AddHeader()
-{
-    if (m_pMapName)
-    {
-        m_pMapName->SetText(g_pGameRules->MapName());
-        // Set the author label to be at the end of this label
-        int wide, tall;
-        m_pMapName->GetContentSize(wide, tall);
-        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + GetScaledVal(4),
-                             m_pMapName->GetYPos() + tall - GetScaledVal(surface()->GetFontTall(m_pMapAuthor->GetFont())));
-    }
-
-#if ENABLE_HTTP_LEADERBOARDS
-    if (m_pMapDetails && !m_bMapInfoLoaded)
-    {
-        // MOM_TODO: actual API call for map info here
-        /*char requrl[MAX_PATH];
-        Q_snprintf(requrl, MAX_PATH, "%s/getmapinfo/%s", MOM_APIDOMAIN, g_pGameRules->MapName());
-        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetMapInfoCallback, &CClientTimesDisplay::GetMapInfoCallback, this);*/
-    }
 #endif
 }
 
@@ -1214,193 +1093,6 @@ void CClientTimesDisplay::OnReplayDownloadEnd(KeyValues* pKvEnd)
         m_mapReplayDownloads.RemoveAt(fileIndx);
     }
 }
-
-void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    /*Warning("%s - Callback received.\n", __FUNCTION__);
-    if (bIOFailure)
-        return;
-
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-
-    if (size == 0)
-    {
-        Warning("%s - size is 0!\n", __FUNCTION__);
-        return;
-    }
-
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-        {
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            KeyValues::AutoDelete ad(pResponse);
-
-            int mrank = -1;
-            int mtotal = -1;
-
-            int grank = -1;
-            int gtotal = -1;
-            int gexp = -1;
-
-            float seconds = 0.0f;
-
-            KeyValues *pRun = pResponse->FindKey("run");
-            if (pRun)
-            {
-                mrank = static_cast<int>(pRun->GetFloat("rank"));
-                seconds = pRun->GetFloat("time");
-            }
-
-            KeyValues *pMap = pResponse->FindKey("mapranking");
-            if (pMap)
-            {
-                mtotal = static_cast<int>(pMap->GetFloat("total", -1.0f));
-            }
-
-            KeyValues *pExperience = pResponse->FindKey("globalranking");
-            if (pExperience)
-            {
-                grank = static_cast<int>(pExperience->GetFloat("rank"));
-                gtotal = static_cast<int>(pExperience->GetFloat("total"));
-                gexp = static_cast<int>(pExperience->GetFloat("experience"));
-            }
-
-            if (mrank > -1 && mtotal > -1)
-            {
-                char p_sMapRank[BUFSIZELOCL];
-                char p_sLocalized[BUFSIZELOCL];
-                LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
-                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sMapRank, mrank, mtotal);
-                m_pPlayerMapRank->SetText(p_sLocalized);
-            }
-            if (seconds > 0.0f)
-            {
-                char p_sPersonalBestTime[BUFSIZETIME];
-                char p_sPersonalBest[BUFSIZELOCL];
-                char p_sLocalized[BUFSIZELOCL];
-                g_pMomentumUtil->FormatTime(seconds, p_sPersonalBestTime);
-                LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
-                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sPersonalBestTime);
-                m_pPlayerPersonalBest->SetText(p_sLocalized);
-            }
-
-            if (grank > -1 && gtotal > -1)
-            {
-                char p_sGlobalRank[BUFSIZELOCL];
-                char p_sLocalized[BUFSIZELOCL];
-                LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
-                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sGlobalRank, grank, gtotal);
-                m_pPlayerGlobalRank->SetText(p_sLocalized);
-
-                char p_sExperience[BUFSIZELOCL];
-                char p_sLocalized2[BUFSIZELOCL];
-                LOCALIZE_TOKEN(p_wcExperience, "MOM_ExperiencePoints", p_sExperience);
-                Q_snprintf(p_sLocalized2, BUFSIZELOCL, "%s: %i", p_sExperience, gexp);
-                m_pPlayerExperience->SetText(p_sLocalized2);
-            }
-            m_fLastHeaderUpdate = gpGlobals->curtime;
-        }
-    }
-    else
-    {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    }
-    // Last but not least, free resources
-    delete[] pData;
-    pData = nullptr;
-    alloc.deallocate();
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);*/
-}
-
-void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    /*Warning("%s - Callback received.\n", __FUNCTION__);
-    if (bIOFailure)
-    {
-        UpdateMapInfoLabel(); // Default param is nullptr, so it hides it
-        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
-        return;
-    }
-
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict ||
-        pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
-    {
-        char locl[BUFSIZELOCL];
-        LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
-        UpdateMapInfoLabel(locl);
-        Warning("%s - Map not found on server!\n", __FUNCTION__);
-        return;
-    }
-
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-
-    if (size == 0)
-    {
-        UpdateMapInfoLabel();
-        Warning("%s - size is 0!\n", __FUNCTION__);
-    }
-
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-        {
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            KeyValues::AutoDelete ad(pResponse);
-            if (pResponse)
-            {
-                const char *author = pResponse->GetString("submitter", "Unknown");
-                const int tier = pResponse->GetInt("difficulty", -1);
-                const int bonus = pResponse->GetInt("bonus", -1);
-                char layout[BUFSIZELOCL];
-                if (pResponse->GetBool("linear", false))
-                {
-                    LOCALIZE_TOKEN(linear, "MOM_Linear", layout);
-                }
-                else
-                {
-                    Q_snprintf(layout, BUFSIZELOCL, "%i STAGES", pResponse->GetInt("zones", -1));
-                }
-
-                UpdateMapInfoLabel(author, tier, layout, bonus);
-                m_bMapInfoLoaded = true; // Stop this info from being fetched again
-            }
-        }
-    }
-    else
-    {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    }
-    // Last but not least, free resources
-    delete[] pData;
-    pData = nullptr;
-    alloc.deallocate();
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);*/
-}
 #endif
 
 
@@ -1442,35 +1134,6 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
 
     kv->AddSubKey(pLeaderboards);
     return true;
-}
-
-void CClientTimesDisplay::UpdatePlayerAvatarStandalone()
-{
-    // Update their avatar
-    if (SteamUser())
-    {
-        if (!m_bLoadedLocalPlayerAvatar)
-        {
-            CSteamID steamIDForPlayer = SteamUser()->GetSteamID();
-
-            CAvatarImage *pImage = new CAvatarImage();
-            // 64 is enough up to full HD resolutions.
-            pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
-
-            pImage->SetDrawFriend(false);
-            pImage->SetAvatarSize(64, 64); // Deliberately non scaling, the ImagePanel does that for us
-
-            // Get rid of the other image if it was there
-            m_pPlayerAvatar->EvictImage();
-
-            m_pPlayerAvatar->SetImage(pImage);
-            m_bLoadedLocalPlayerAvatar = true;
-        }
-    }
-    else
-    {
-        m_pPlayerAvatar->SetImage("default_steam");
-    }
 }
 
 void CClientTimesDisplay::UpdateLeaderboardPlayerAvatar(uint64 steamid, KeyValues *kv)
@@ -1522,31 +1185,28 @@ void CClientTimesDisplay::SetPlaceColors(SectionedListPanel *panel, TIME_TYPE ty
     }
 }
 
-void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
+void CClientTimesDisplay::FillScoreBoard(bool bFullUpdate)
 {
+    m_iSectionId = 0;
     KeyValuesAD kvPlayerData("playdata");
-    UpdatePlayerInfo(kvPlayerData, pFullUpdate);
-    if (pFullUpdate)
-        AddHeader();
 
-    // Player Stats panel:
-    if (m_pPlayerStats && m_pPlayerName)
+    // Header
+    if (m_pHeader)
+        m_pHeader->LoadData(MapName(), bFullUpdate);
+
+    // Stats
+    if (m_pStats)
     {
-        m_pPlayerStats->SetVisible(false); // Hidden so it is not seen being changed
-
-        KeyValues *playdata = kvPlayerData->FindKey("data");
-        if (playdata)
-            m_pPlayerName->SetText(playdata->GetString("name", "Unknown"));
-
-        m_pPlayerStats->SetVisible(true); // And seen again!
+        m_pStats->LoadData(bFullUpdate);
     }
 
-    GetPlayerTimes(kvPlayerData, pFullUpdate);
+    // Times
+    GetPlayerTimes(kvPlayerData, bFullUpdate);
 
-    if (m_pLeaderboards && m_pCurrentLeaderboards && m_pOnlineLeaderboards && m_pAroundLeaderboards 
+    if (m_pTimes && m_pCurrentLeaderboards && m_pOnlineLeaderboards && m_pAroundLeaderboards 
         && m_pLocalLeaderboards && m_pFriendsLeaderboards)
     {
-        m_pLeaderboards->SetVisible(false);
+        m_pTimes->SetVisible(false);
 
         if (m_pCurrentLeaderboards == m_pLocalLeaderboards)
         {
@@ -1583,7 +1243,7 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
             OnlineTimesVectorToLeaderboards(TIMES_FRIENDS);
         }
 
-        m_pLeaderboards->SetVisible(true);
+        m_pTimes->SetVisible(true);
     }
 }
 
@@ -1761,7 +1421,8 @@ void CClientTimesDisplay::LevelInitPostEntity()
 {
     m_bTimesLoading[TIMES_TOP10] = m_bTimesLoading[TIMES_AROUND] = m_bTimesLoading[TIMES_FRIENDS] = false;
     m_bTimesNeedUpdate[TIMES_LOCAL] = m_bTimesNeedUpdate[TIMES_TOP10] = m_bTimesNeedUpdate[TIMES_AROUND] = m_bTimesNeedUpdate[TIMES_FRIENDS] = true;
-    m_bMapInfoLoaded = false;
+    m_pHeader->Reset();
+    m_pStats->NeedsUpdate();
 
     // Clear out the old index map and image list every map load
 #if ENABLE_ONLINE_LEADERBOARDS
@@ -2229,31 +1890,5 @@ void CClientTimesDisplay::OnCommand(const char *pCommand)
     else
     {
         DevLog("Caught an unhandled command: %s\n", pCommand);
-    }
-}
-
-void CClientTimesDisplay::UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus)
-{
-    if (m_pMapDetails && m_pMapAuthor)
-    {
-        char mapAuthor[MAX_PLAYER_NAME_LENGTH + 3];
-        Q_snprintf(mapAuthor, MAX_PLAYER_NAME_LENGTH + 3, "By %s", author);
-        m_pMapAuthor->SetText(mapAuthor);
-
-        char mapDetails[BUFSIZ];
-        Q_snprintf(mapDetails, BUFSIZ, "TIER %i - %s - %i BONUS", tier, layout, bonus);
-        UpdateMapInfoLabel(mapDetails);
-    }
-}
-
-void CClientTimesDisplay::UpdateMapInfoLabel(const char *text)
-{
-    if (m_pMapDetails)
-    {
-        m_pMapDetails->SetText(text);
-        if (text == nullptr)
-        {
-            m_pMapDetails->SetVisible(false);
-        }
     }
 }

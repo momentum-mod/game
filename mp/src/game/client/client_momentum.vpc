@@ -130,6 +130,12 @@ $Project "Client (Momentum)"
                 
                 $Folder "Leaderboards"
                 {
+                    $File   "momentum\ui\leaderboards\LeaderboardsHeader.h"
+                    $File   "momentum\ui\leaderboards\LeaderboardsHeader.cpp"
+                    $File   "momentum\ui\leaderboards\LeaderboardsStats.h"
+                    $File   "momentum\ui\leaderboards\LeaderboardsStats.cpp"
+                    $File   "momentum\ui\leaderboards\LeaderboardsTimes.h"
+                    $File   "momentum\ui\leaderboards\LeaderboardsTimes.cpp"
                     $File   "momentum\ui\leaderboards\ClientTimesDisplay.h"
                     $File   "momentum\ui\leaderboards\ClientTimesDisplay.cpp"
                     $File 	"momentum\ui\leaderboards\LeaderboardsContextMenu.h"
