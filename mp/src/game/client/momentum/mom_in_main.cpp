@@ -42,7 +42,7 @@ int CMOMInput::GetButtonBits(int bResetState)
 {
     int bits = 0;
     // First calculate all Momentum-specific toggle bits
-    CalcButtonBits(bits, IN_TIMES, s_ClearInputState, &in_times, bResetState);
+    CalcButtonBits(bits, IN_SCORE, s_ClearInputState, &in_times, bResetState);
 
     // Add on the normal input bits
     bits |= BaseClass::GetButtonBits(bResetState);

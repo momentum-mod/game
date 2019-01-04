@@ -89,7 +89,6 @@ enum SPECTATE_MSG_TYPE
 };
 
 #define PANEL_TIMES "times"
-#define IN_TIMES (1<<26)
 
 #define PANEL_REPLAY "replaycontrols"
 
