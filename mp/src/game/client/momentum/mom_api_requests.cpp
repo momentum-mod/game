@@ -253,12 +253,13 @@ void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
                 uint64 fileSize = Q_atoui64(reinterpret_cast<const char *>(pData));
 
                 headers->SetUint64("size", fileSize);
-                call->startFunc(headers);
             }
 
             delete[] pData;
             pData = nullptr;
         }
+
+        call->startFunc(headers);
     }
 }
 
@@ -280,7 +281,7 @@ void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
             if (SteamHTTP()->GetHTTPDownloadProgressPct(pCallback->m_hRequest, &percent))
                 prog->SetFloat("percent", percent);
             prog->SetUint64("offset", pCallback->m_cOffset);
-            prog->SetInt("size", pCallback->m_cBytesReceived);
+            prog->SetUint64("size", pCallback->m_cBytesReceived);
             call->progressFunc(prog);
         }
 
@@ -351,7 +352,7 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
                 Warning("Failed to parse! %s\n", pKvBodyData->GetString("err_parse"));
             }
 
-            // Sixthly, free our data buffer 
+            // Fourthly-C, free our data buffer 
             delete[] pData;
             pData = nullptr;
             pDataPtr = nullptr;
@@ -363,7 +364,7 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
         // Log out the response if desired
         if (mom_api_log_requests.GetBool())
         {
-            CKeyValuesDumpContextAsDevMsg dump;
+            CKeyValuesDumpContextAsDevMsg dump(0);
             response->Dump(&dump);
         }
 
@@ -379,8 +380,8 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
     }
     else
     {
-        // Should never happen... but you never know. It's 2018.
-        Warning("Somehow this class caught an unmapped HTTP request!\n");
+        // Should never happen... but you never know. It's <current year>.
+        Warning("Somehow APIRequests caught an unmapped HTTP request!\n");
     }
 
     // And finally free the request

@@ -14,8 +14,8 @@ public:
     // === HTTP API METHODS ===
     // The way to call these is to create a delegate of a callback function, and pass that in.
     // Example:
-    //      `g_pAPIRequests->GetMaps(UtlMakeDelegate(this, &SomeClass::SomeCallbackFunc));`
-    //      where SomeCallbackFunc is a method of SomeClass that takes a KeyValues pointer as the only parameter.
+    //      `g_pAPIRequests->GetMaps(nullptr, UtlMakeDelegate(this, &SomeClass::SomeCallbackFunc));`
+    //      where SomeCallbackFunc is a void of SomeClass that takes a KeyValues pointer as the only parameter.
     // API requests will pass a KeyValues object (that will auto delete itself, no worries!) with:
     //      "code" -- The integer HTTP status code returned. 0 if it's an IO error
     //      "data" -- The response data, parsed JSON represented as KeyValues
@@ -41,6 +41,15 @@ public:
     bool SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func);
 
     // === File Downloading ===
+    /**
+     * @param pszURL        The URL to the file
+     * @param start         The start function of the download, see DownloadCall for more info
+     * @param prog          The progress function of the download, see DownloadCall for more info
+     * @param end           The complete function of the download, see DownloadCall for more info
+     * @param pFileName     The file name (including any path) of where the file should be stored
+     * @param pFilePathID   (Optional) The pathID of where the file should be stored. Defaults to "GAME".
+     * @return The handle of the request
+     */
     HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end,
                                    const char *pFileName, const char *pFilePathID = "GAME");
 
@@ -89,7 +98,12 @@ private:
 
     struct DownloadCall
     {
-        DownloadCall() : handle(INVALID_HTTPREQUEST_HANDLE), completeResult(nullptr) {}
+        DownloadCall() : handle(INVALID_HTTPREQUEST_HANDLE), completeResult(nullptr)
+        {
+            m_pszFileName[0] = '\0';
+            m_pszFilePathID[0] = '\0';
+        }
+
         ~DownloadCall()
         {
             if (completeResult)
@@ -98,8 +112,23 @@ private:
         HTTPRequestHandle handle;
         CCallResult<CAPIRequests, HTTPRequestCompleted_t> *completeResult;
 
+        // The first function called, when the headers are returned for the download request.
+        // Data in the response KeyValues:
+        //  "request"   (uint64)    The request handle that the download operates under
+        //  "size"      (uint64)    The size of the download, in bytes. Will be 0 if the headers did not contain a Content-Length header
         CallbackFunc startFunc;
+        // The second function (repeatedly) called when data is transferred from the server to the client.
+        // Data in the response KeyValues:
+        //  "request"   (uint64)    The request handle that the download operates under
+        //  "percent"   (float)     The percent of download completion (NOTE: not very reliable for progress, use offset and size!)
+        //  "offset"    (uint64)    The offset (from 0) of the bytes being downloaded
+        //  "size"      (uint64)    The size of the chunk of data being downloaded, in bytes
         CallbackFunc progressFunc;
+        // The last function to be called when downloading a file.
+        // Data in the response KeyValues:
+        //  "request"   (uint64)    The request handle that the download operates under
+        //  "error"     (bool)      If the request fails in any way, will be true, otherwise false
+        //  "code"      (int)       The HTTP status code of the request if it failed, otherwise 0
         CallbackFunc completeFunc;
 
         char m_pszFileName[MAX_PATH];
