@@ -1,7 +1,7 @@
 #include "cbase.h"
 
 #include "AppearanceSettingsPage.h"
-#include "ModelPanel.h"
+
 #include "ienginevgui.h"
 #include "util/mom_util.h"
 #include "mom_shareddefs.h"
@@ -9,8 +9,8 @@
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/ComboBox.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
-
-#include "ColorPicker.h"
+#include "controls/ModelPanel.h"
+#include "controls/ColorPicker.h"
 
 #include "tier0/memdbgon.h"
 
