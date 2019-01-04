@@ -183,6 +183,13 @@ bool MomentumUtil::ISODateToTimeT(const char* pISODate, time_t* out)
     tim.tm_hour = hour;
     tim.tm_min = min;
     tim.tm_sec = sec;
+
+    // Determine local DST
+    time_t local;
+    time(&local);
+    tm *timLocal = localtime(&local);
+    tim.tm_isdst = timLocal->tm_isdst;
+
     *out = mktime(&tim) - timezone;
     return true;
 }
