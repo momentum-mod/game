@@ -5,13 +5,16 @@
 //=============================================================================
 #include "cbase.h"
 
-#include "ClientTimesDisplay.h"
+#include "leaderboards/ClientTimesDisplay.h"
+#include "HUD/hud_menu_static.h"
+#include "HUD/hud_mapfinished.h"
+#include "spectate/momSpectatorGUI.h"
+
 #include "IGameUIFuncs.h"
 #include "clientmode_mom_normal.h"
 #include "hud.h"
 #include "ienginevgui.h"
 #include "in_buttons.h"
-#include "momSpectatorGUI.h"
 #include "momentum/mom_shareddefs.h"
 
 #include "clienteffectprecachesystem.h"

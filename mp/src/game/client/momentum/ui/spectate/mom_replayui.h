@@ -1,18 +1,8 @@
 #pragma once
 
-#include "cbase.h"
-
-#include "PFrameButton.h"
 #include "game/client/iviewport.h"
-#include "momentum/mom_shareddefs.h"
-#include <vgui_controls/Button.h>
-#include <vgui_controls/Frame.h>
-#include <vgui_controls/Label.h>
-#include <vgui_controls/Panel.h>
-#include <vgui_controls/TextEntry.h>
-#include <vgui_controls/ToggleButton.h>
-#include <vgui_controls/CVarSlider.h>
-#include <vgui_controls/ScrubbableProgressBar.h>
+#include "vgui_controls/Frame.h"
+#include "mom_shareddefs.h"
 
 enum Selections
 {
@@ -20,6 +10,11 @@ enum Selections
     RUI_MOVEBW,
     RUI_MOVEFW,
 };
+
+namespace vgui
+{
+    class PFrameButton;
+}
 
 class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEventListener
 {

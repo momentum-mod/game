@@ -1,10 +1,11 @@
 #include "cbase.h"
 
+#include "PaintGunPanel.h"
+
 #include <vgui_controls/Button.h>
 #include <vgui_controls/CVarSlider.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
-#include "ColorPicker.h"
-#include "PaintGunPanel.h"
+#include "controls/ColorPicker.h"
 #include "clientmode_shared.h"
 #include "materialsystem/imaterialvar.h"
 #include "util/mom_util.h"

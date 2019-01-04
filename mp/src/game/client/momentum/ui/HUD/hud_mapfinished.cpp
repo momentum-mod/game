@@ -1,8 +1,9 @@
 #include "cbase.h"
+
 #include "hud_mapfinished.h"
-#include "mom_shareddefs.h"
+#include <vgui_controls/Label.h>
 #include <game/client/iviewport.h>
-#include "momSpectatorGUI.h"
+#include "spectate/momSpectatorGUI.h"
 #include "clientmode.h"
 #include "mom_player_shared.h"
 

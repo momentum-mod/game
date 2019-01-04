@@ -100,6 +100,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_menu_static.h"
                     $File "momentum\ui\HUD\hud_menu_static.cpp"
                     $File "momentum\ui\HUD\hud_fillablebar.h"
+                    $File "momentum\ui\HUD\hud_measuretool.cpp"
                     $File "hl2\hud_credits.cpp"
                     $File "hud_chat.cpp"
                     $File "hl2\hud_weaponselection.cpp"
@@ -109,26 +110,30 @@ $Project "Client (Momentum)"
                 
                 $Folder "Controls"
                 {
-                    $File "momentum\ui\PFrameButton.h"
-                    $File "momentum\ui\PFrameButton.cpp"
-                    $File "momentum\ui\ColorPicker.h"
-                    $File "momentum\ui\ColorPicker.cpp"
-                    $File "momentum\ui\ModelPanel.h"
-                    $File "momentum\ui\ModelPanel.cpp"
-                    $File "momentum\ui\CMomImagePanel.cpp"
-                    $File "momentum\ui\CMomImagePanel.h"
+                    $File "momentum\ui\controls\PFrameButton.h"
+                    $File "momentum\ui\controls\PFrameButton.cpp"
+                    $File "momentum\ui\controls\ColorPicker.h"
+                    $File "momentum\ui\controls\ColorPicker.cpp"
+                    $File "momentum\ui\controls\ModelPanel.h"
+                    $File "momentum\ui\controls\ModelPanel.cpp"
+                    $File "momentum\ui\controls\CMomImagePanel.cpp"
+                    $File "momentum\ui\controls\CMomImagePanel.h"
+                }
+
+                $Folder "Lobby"
+                {
+                    $File "momentum\ui\lobby\SavelocRequestFrame.h"
+                    $File "momentum\ui\lobby\SavelocRequestFrame.cpp"
+                    $File "momentum\ui\lobby\LobbyMembersPanel.h"
+                    $File "momentum\ui\lobby\LobbyMembersPanel.cpp"
                 }
                 
                 $Folder "Leaderboards"
                 {
-                    $File   "momentum\ui\ClientTimesDisplay.h"
-                    $File   "momentum\ui\ClientTimesDisplay.cpp"
-                    $File 	"momentum\ui\LeaderboardsContextMenu.h"
-                    $File 	"momentum\ui\LeaderboardsContextMenu.cpp"
-                    $File "momentum\ui\SavelocRequestFrame.h"
-                    $File "momentum\ui\SavelocRequestFrame.cpp"
-                    $File "momentum\ui\LobbyMembersPanel.h"
-                    $File "momentum\ui\LobbyMembersPanel.cpp"
+                    $File   "momentum\ui\leaderboards\ClientTimesDisplay.h"
+                    $File   "momentum\ui\leaderboards\ClientTimesDisplay.cpp"
+                    $File 	"momentum\ui\leaderboards\LeaderboardsContextMenu.h"
+                    $File 	"momentum\ui\leaderboards\LeaderboardsContextMenu.cpp"
                 }
                 
                 $Folder "Changelog"
@@ -147,10 +152,10 @@ $Project "Client (Momentum)"
                 
                 $Folder "Spectator"
                 {
-                    $File "momentum\ui\momSpectatorGUI.cpp"
-                    $File "momentum\ui\momSpectatorGUI.h"
-                    $File "momentum\ui\mom_replayui.cpp"
-                    $File "momentum\ui\mom_replayui.h"
+                    $File "momentum\ui\spectate\momSpectatorGUI.cpp"
+                    $File "momentum\ui\spectate\momSpectatorGUI.h"
+                    $File "momentum\ui\spectate\mom_replayui.cpp"
+                    $File "momentum\ui\spectate\mom_replayui.h"
                 }
                 
                 $Folder "PaintGun"
@@ -160,8 +165,6 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\PaintGunScreenPanel.h"
                     $File "momentum\ui\PaintGunScreenPanel.cpp"
                 }
-                
-                $File "momentum\ui\MeasureTool.cpp"
             }
 
             $Folder "API"

@@ -4,6 +4,10 @@
 #include <vgui_controls/Label.h>
 #include <vgui_controls/ProgressBar.h>
 #include <vgui_controls/TextEntry.h>
+#include <vgui_controls/ToggleButton.h>
+#include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/ScrubbableProgressBar.h>
+#include "controls/PFrameButton.h"
 
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
