@@ -292,8 +292,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // widths[0] == WIDTH FOR DATE
     // widths[1] == WIDTH FOR RANK
     // widths[2] == WIDTH FOR TIME
-    // widths[3] == WIDTH FOR DATE
-    int m_aiColumnWidths[4];
+    int m_aiColumnWidths[3];
 
     // methods
     void FillScoreBoard();
