@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "hudelement.h"
 #include <vgui_controls/EditablePanel.h>
 

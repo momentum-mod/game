@@ -6,21 +6,15 @@
 // $Date:         $
 // $NoKeywords: $
 //=============================================================================//
-#if !defined(CLIENTMODE_MOM_NORM_H)
-#define CLIENTMODE_MOM_NORM_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include <vgui/Cursor.h>
-#include <vgui_controls/EditablePanel.h>
-#include "ClientTimesDisplay.h"
 #include "clientmode_shared.h"
-#include "hud_mapfinished.h"
-#include "hud_menu_static.h"
-#include "momSpectatorGUI.h"
 
 class CHudViewport;
+class CHudMenuStatic;
+class CHudMapFinishedDialog;
+class CMOMSpectatorGUI;
+class CClientTimesDisplay;
 
 namespace vgui
 {
@@ -68,5 +62,3 @@ class ClientModeMOMNormal : public ClientModeShared
 
 extern IClientMode *GetClientModeNormal();
 extern vgui::HScheme g_hVGuiCombineScheme;
-
-#endif // CLIENTMODE_MOM_NORMAL
