@@ -18,6 +18,9 @@
 class SavelocReqFrame;
 class LobbyMembersPanel;
 class CLeaderboardsContextMenu;
+class CLeaderboardsHeader;
+class CLeaderboardsStats;
+class CLeaderboardsTimes;
 class CUtlSortVectorTimeValue;
 class CMomReplayBase;
 
@@ -63,8 +66,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void Reset() OVERRIDE;
     void Update() OVERRIDE;
-    void Update(bool pFullUpdate);
-    void Reset(bool pFullReset);
+    void Update(bool bFullUpdate);
+    void Reset(bool bFullReset);
     bool NeedsUpdate(void) OVERRIDE;
     
     bool HasInputElements(void) OVERRIDE { return true; }
@@ -82,8 +85,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void FireGameEvent(IGameEvent *event) OVERRIDE;
     
     //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
-    // Updates the local player's avatar image
-    void UpdatePlayerAvatarStandalone();
     // Updates an online player's avatar image
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
@@ -130,9 +131,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // functions to override
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
     void InitScoreboardSections();
-    void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() OVERRIDE;
-    void AddHeader(); // add the start header of the scoreboard
 
     void OnCommand(const char *pCommand) OVERRIDE;
 
@@ -155,28 +154,15 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     float m_fNextUpdateTime;
 
     void MoveToCenterOfScreen();
-    // Sets the text of the MapInfo label. If it's nullptr, it hides it
-    void UpdateMapInfoLabel(const char *text = nullptr);
-    void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
 
     vgui::ImageList *m_pImageList;
-    Panel *m_pHeader;
-    Panel *m_pPlayerStats;
-    Panel *m_pLeaderboards;
-    vgui::Label *m_pMapName;
-    vgui::Label *m_pMapAuthor;
-    vgui::Label *m_pMapDetails;
-    vgui::Label *m_pPlayerName;
-    vgui::Label *m_pPlayerMapRank;
-    vgui::Label *m_pPlayerPersonalBest;
-    vgui::Label *m_pPlayerGlobalRank;
-    vgui::Label *m_pPlayerExperience;
+    //Panel *m_pPlayerStats;
+    //Panel *m_pLeaderboards;
     vgui::Label *m_pOnlineTimesStatus;
     vgui::SectionedListPanel *m_pOnlineLeaderboards;
     vgui::SectionedListPanel *m_pAroundLeaderboards;
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
-    vgui::ImagePanel *m_pPlayerAvatar;
     vgui::Button *m_pLocalLeaderboardsButton;
     vgui::Button *m_pGlobalLeaderboardsButton;
     vgui::Button *m_pGlobalTop10Button;
@@ -185,6 +171,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     LobbyMembersPanel *m_pLobbyMembersPanel;
     SavelocReqFrame *m_pSavelocReqFrame;
+    CLeaderboardsHeader *m_pHeader;
+    CLeaderboardsStats *m_pStats;
+    CLeaderboardsTimes *m_pTimes;
 
     vgui::ToggleButton *m_pRunFilterButton;
     EditablePanel *m_pFilterPanel;
@@ -213,16 +202,11 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void OnReplayDownloadProgress(KeyValues *pKv);
     void OnReplayDownloadEnd(KeyValues *pKv);
 
-    void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
 #endif
 
   private:
     int m_iPlayerIndexSymbol;
     int m_iDesiredHeight;
-
-    float m_fLastHeaderUpdate;
-    bool m_bFirstHeaderUpdate;
 
     IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
@@ -312,7 +296,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     bool m_bGetTop10Scores;
 
-    bool m_bMapInfoLoaded;
 
     enum LEADERBOARD_ICONS
     {
@@ -324,7 +307,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     };
     int m_IconsIndex[ICON_TOTAL];
 
-    int m_bLoadedLocalPlayerAvatar;
 
     Color m_cFirstPlace, m_cSecondPlace, m_cThirdPlace;
 

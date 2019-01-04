@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cbase.h"
 #include <vgui_controls/Menu.h>
 
 //-----------------------------------------------------------------------------
