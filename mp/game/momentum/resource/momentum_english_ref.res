@@ -22,6 +22,7 @@
         "MOM_Controls_Practice" "Toggle Practice Mode"
         "MOM_Controls_ToggleTimes" "Toggle showing leaderboards"
         "MOM_Controls_Drop" "Drop current weapon"
+        "MOM_Controls_ToggleLobbyMembers" "Toggle showing lobby members"
 
     //Saveloc Menu
         "MOM_Menu_SaveCurLoc" "Save Current Location"
@@ -341,6 +342,7 @@
 
         //Other gameui tokens
         "MOM_ChangeLog" "Changelog"
+        "MOM_LobbyMembers" "Lobby Members"
 
         // WEB/API/SERVER RESPONSES
         "MOM_API_WaitingForResponse" "Waiting for API response..."

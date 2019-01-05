@@ -89,8 +89,8 @@ enum SPECTATE_MSG_TYPE
 };
 
 #define PANEL_TIMES "times"
-
 #define PANEL_REPLAY "replaycontrols"
+#define PANEL_LOBBY_MEMBERS "LobbyMembers"
 
 #define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
 

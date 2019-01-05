@@ -6,6 +6,7 @@
 #include "cbase.h"
 
 #include "leaderboards/ClientTimesDisplay.h"
+#include "lobby/LobbyMembersPanel.h"
 #include "HUD/hud_menu_static.h"
 #include "HUD/hud_mapfinished.h"
 #include "spectate/momSpectatorGUI.h"
@@ -68,7 +69,6 @@ class CHudViewport : public CBaseViewport
 
     IViewPortPanel *CreatePanelByName(const char *pzName) OVERRIDE
     {
-
         if (!Q_strcmp(PANEL_TIMES, pzName))
         {
             return new CClientTimesDisplay(this);
@@ -81,6 +81,10 @@ class CHudViewport : public CBaseViewport
         {
             return new C_MOMReplayUI(this);
         }
+        if (FStrEq(PANEL_LOBBY_MEMBERS, pzName))
+        {
+            return new LobbyMembersPanel(this);
+        }
 
         return BaseClass::CreatePanelByName(pzName);
     }
@@ -90,6 +94,7 @@ class CHudViewport : public CBaseViewport
         AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
+        AddNewPanel(CreatePanelByName(PANEL_LOBBY_MEMBERS), "PANEL_LOBBY_MEMBERS");
         // BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
     }
 };
@@ -103,6 +108,7 @@ ClientModeMOMNormal::ClientModeMOMNormal()
     m_pHudMapFinished = nullptr;
     m_pLeaderboards = nullptr;
     m_pSpectatorGUI = nullptr;
+    m_pLobbyMembers = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
@@ -156,6 +162,16 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
             // m_pLeaderboards->SetKeyBoardInputEnabled(!prior);
             // ButtonCode_t close = gameuifuncs->GetButtonCodeForBind("showtimes");
             // gViewPortInterface->PostMessageToPanel(PANEL_TIMES, new KeyValues("PollHideCode", "code", close));
+            return 0;
+        }
+    }
+
+    // Detach for the lobby members panel as well
+    if (m_pLobbyMembers && m_pLobbyMembers->IsVisible())
+    {
+        if (keynum == MOUSE_RIGHT)
+        {
+            m_pLobbyMembers->SetMouseInputEnabled(true);
             return 0;
         }
     }
@@ -229,6 +245,7 @@ void ClientModeMOMNormal::SetupPointers()
     m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
     m_pLeaderboards = dynamic_cast<CClientTimesDisplay *>(m_pViewport->FindPanelByName(PANEL_TIMES));
     m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+    m_pLobbyMembers = dynamic_cast<LobbyMembersPanel*>(m_pViewport->FindPanelByName(PANEL_LOBBY_MEMBERS));
 }
 
 int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector velocity)
