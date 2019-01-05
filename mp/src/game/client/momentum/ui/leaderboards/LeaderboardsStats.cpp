@@ -24,6 +24,9 @@ CLeaderboardsStats::CLeaderboardsStats(Panel* pParent) : BaseClass(pParent, "CLe
 
     LoadControlSettings("resource/ui/leaderboards/stats.res");
 
+    SetMouseInputEnabled(true);
+    SetKeyBoardInputEnabled(true);
+
     m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
     m_pPlayerName = FindControl<Label>("PlayerName", true);
     m_pPlayerMapRank = FindControl<Label>("PlayerMapRank", true);

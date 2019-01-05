@@ -15,6 +15,7 @@ class CHudMenuStatic;
 class CHudMapFinishedDialog;
 class CMOMSpectatorGUI;
 class CClientTimesDisplay;
+class LobbyMembersPanel;
 
 namespace vgui
 {
@@ -58,6 +59,7 @@ class ClientModeMOMNormal : public ClientModeShared
     CHudMapFinishedDialog *m_pHudMapFinished;
     CClientTimesDisplay *m_pLeaderboards;
     CMOMSpectatorGUI *m_pSpectatorGUI;
+    LobbyMembersPanel *m_pLobbyMembers;
 };
 
 extern IClientMode *GetClientModeNormal();

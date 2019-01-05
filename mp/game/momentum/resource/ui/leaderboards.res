@@ -357,25 +357,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"	"1"
-	}
-    
-    "LobbyMembers"
-    {
-        "ControlName" "SectionedListPanel"
-        "fieldName" "LobbyMembers"
-        "xpos"			"225"
-		"ypos"			"3"
-		"wide"			"240"
-		"tall"			"140"
-        "autoResize"	"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"	"2"
-        "actionsignallevel" "1"
-        "paintborder" "1"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
-        "vertical_scrollbar" "1"
-    }
+	}
 }
