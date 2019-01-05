@@ -65,12 +65,12 @@ enum eAllowPointServerCommand {
 
 #ifdef TF_DLL
 // The default value here should match the default of the convar
-eAllowPointServerCommand sAllowPointServerCommand = eAllowOfficial;
+eAllowPointServerCommand sAllowPointCommand = eAllowOfficial;
 #else
-eAllowPointServerCommand sAllowPointServerCommand = eAllowAlways;
+eAllowPointServerCommand sAllowPointCommand = eAllowAlways;
 #endif // TF_DLL
 
-void sv_allow_point_servercommand_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
+void sv_allow_point_command_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
 	ConVarRef var( pConVar );
 	if ( !var.IsValid() )
@@ -81,21 +81,21 @@ void sv_allow_point_servercommand_changed( IConVar *pConVar, const char *pOldStr
 	const char *pNewValue = var.GetString();
 	if ( V_strcasecmp ( pNewValue, "always" ) == 0 )
 	{
-		sAllowPointServerCommand = eAllowAlways;
+		sAllowPointCommand = eAllowAlways;
 	}
 #ifdef TF_DLL
 	else if ( V_strcasecmp ( pNewValue, "official" ) == 0 )
 	{
-		sAllowPointServerCommand = eAllowOfficial;
+		sAllowPointCommand = eAllowOfficial;
 	}
 #endif // TF_DLL
 	else
 	{
-		sAllowPointServerCommand = eAllowNever;
+		sAllowPointCommand = eAllowNever;
 	}
 }
 
-ConVar sv_allow_point_servercommand ( "sv_allow_point_servercommand",
+ConVar sv_allow_point_command ( "sv_allow_point_command",
 #ifdef TF_DLL
                                       // The default value here should match the default of the convar
                                       "official",
@@ -104,12 +104,12 @@ ConVar sv_allow_point_servercommand ( "sv_allow_point_servercommand",
                                       "always",
 #endif // TF_DLL
                                       FCVAR_NONE,
-                                      "Allow use of point_servercommand entities in map. Potentially dangerous for untrusted maps.\n"
+                                      "Allow use of point_servercommand & point_clientcommand entities in map. Potentially dangerous for untrusted maps.\n"
                                       "  disallow : Always disallow\n"
 #ifdef TF_DLL
                                       "  official : Allowed for valve maps only\n"
 #endif // TF_DLL
-                                      "  always   : Allow for all maps", sv_allow_point_servercommand_changed );
+                                      "  always   : Allow for all maps", sv_allow_point_command_changed );
 
 void ClientKill( edict_t *pEdict, const Vector &vecForce, bool bExplode = false )
 {
@@ -570,6 +570,20 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
+	bool bAllowed = (sAllowPointCommand == eAllowAlways);
+#ifdef TF_DLL
+    if (sAllowPointServerCommand == eAllowOfficial)
+    {
+        bAllowed = TFGameRules() && TFGameRules()->IsValveMap();
+    }
+#endif // TF_DLL
+
+    if (!bAllowed)
+    {
+        Warning("point_clientcommand usage blocked by sv_allow_point_command setting\n");
+        return;
+    }
+
 	edict_t *pClient = NULL;
 	if ( gpGlobals->maxClients == 1 )
 	{
@@ -623,9 +637,9 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
-	bool bAllowed = ( sAllowPointServerCommand == eAllowAlways );
+	bool bAllowed = ( sAllowPointCommand == eAllowAlways );
 #ifdef TF_DLL
-	if ( sAllowPointServerCommand == eAllowOfficial )
+	if ( sAllowPointCommand == eAllowOfficial )
 	{
 		bAllowed = TFGameRules() && TFGameRules()->IsValveMap();
 	}
@@ -637,7 +651,7 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	}
 	else
 	{
-		Warning( "point_servercommand usage blocked by sv_allow_point_servercommand setting\n" );
+		Warning( "point_servercommand usage blocked by sv_allow_point_command setting\n" );
 	}
 }
 
