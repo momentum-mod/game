@@ -93,9 +93,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     // SetScheme("ClientScheme");
     SetScheme(scheme()->LoadSchemeFromFile("resource/LeaderboardsScheme.res", "LeaderboardsScheme"));
 
-    m_pLobbyMembersPanel = new LobbyMembersPanel(this);
-    m_pSavelocReqFrame = new SavelocReqFrame();
-
     m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
     m_pHeader = new CLeaderboardsHeader(this);
     m_pStats = new CLeaderboardsStats(this);
@@ -143,8 +140,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pFriendsLeaderboardsButton->SetParent(m_pTimes);
     m_pLocalLeaderboardsButton->SetParent(m_pTimes);
     m_pRunFilterButton->SetParent(m_pTimes);
-
-    m_pLobbyMembersPanel->SetParent(m_pStats);
 
     // Get rid of the scrollbars for the panels
     // MOM_TODO: Do we want the player to be able to explore the ranks?
@@ -1481,35 +1476,6 @@ void CClientTimesDisplay::OnConfirmDeleteReplay(int itemID, const char *file)
     }
 }
 
-void CClientTimesDisplay::OnSpectateLobbyMember(uint64 target)
-{
-    char command[128];
-    Q_snprintf(command, 128, "mom_spectate %llu", target);
-    engine->ServerCmd(command);
-    ShowPanel(false);
-}
-
-void CClientTimesDisplay::OnContextReqSavelocs(uint64 target)
-{
-    KeyValues *pReq = new KeyValues("req_savelocs");
-    // Stage 1 is request the count, make the other player make a copy of their savelocs for us
-    pReq->SetInt("stage", 1);
-    pReq->SetUint64("target", target);
-    g_pModuleComms->FireEvent(pReq);
-
-    m_pSavelocReqFrame->Activate(target);
-}
-
-
-void CClientTimesDisplay::OnContextGoToMap(const char* map)
-{
-    // MOM_TODO: We're going to need to feed this into a map downloader first, if they don't have the map!
-    char command[128];
-    Q_snprintf(command, 128, "map %s\n", map);
-    ShowPanel(false);
-    engine->ClientCmd_Unrestricted(command);
-}
-
 
 inline bool CheckParent(Panel *pPanel, SectionedListPanel *pParentToCheck, int itemID)
 {
@@ -1559,47 +1525,6 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 
             pContextMenu->ShowMenu();
         }
-        else if (CheckParent(pPanel, m_pLobbyMembersPanel, itemID))
-        {
-            CLeaderboardsContextMenu *pContextMenu = GetLeaderboardContextMenu(m_pLobbyMembersPanel);
-
-            KeyValues *pKVData = m_pLobbyMembersPanel->GetItemData(itemID);
-
-            uint64 steamID = pKVData->GetUint64("steamid");
-            const char *pMap = pKVData->GetString("map");
-            const char *pOurMap = g_pGameRules->MapName();
-
-            KeyValues *pKv;
-
-            if (pOurMap && FStrEq(pMap, pOurMap))
-            {
-                pKv = new KeyValues("ContextSpectate");
-                pKv->SetUint64("target", steamID);
-                pContextMenu->AddMenuItem("SpectateLobbyMember", "#MOM_Leaderboards_Spectate", pKv, this);
-            }
-            else
-            {
-                pKv = new KeyValues("ContextGoToMap");
-                pKv->SetString("map", pMap);
-                pContextMenu->AddMenuItem("GoToMap", "#MOM_Leaderboards_GoToMap", pKv, this);
-            }
-
-            pKv = new KeyValues("ContextReqSavelocs");
-            pKv->SetUint64("target", steamID);
-            pContextMenu->AddMenuItem("ReqSavelocs", "#MOM_Saveloc_Frame", pKv, this);
-
-            // MOM_TODO: More options here, such as:
-            // kicking the player if we're the lobby leader
-            // hiding decals (maybe toggle paint, bullets separately?)
-            // etc
-            pContextMenu->AddSeparator();
-            // Visit profile
-            pKv = new KeyValues("ContextVisitProfile");
-            pKv->SetUint64("profile", steamID);
-            pContextMenu->AddMenuItem("VisitProfile", "#MOM_Leaderboards_SteamProfile", pKv, this);
-
-            pContextMenu->ShowMenu();
-        }
     }
 }
 
@@ -1608,6 +1533,7 @@ void CClientTimesDisplay::OnContextVisitProfile(uint64 profile)
     if (profile != 0 && SteamFriends())
     {
         SteamFriends()->ActivateGameOverlayToUser("steamid", CSteamID(profile));
+        ShowPanel(false);
     }
 }
 

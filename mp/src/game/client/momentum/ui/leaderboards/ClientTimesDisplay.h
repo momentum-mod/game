@@ -100,12 +100,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
     MESSAGE_FUNC_INT_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", itemID, runName);
-    MESSAGE_FUNC_CHARPTR(OnContextGoToMap, "ContextGoToMap", map);
-    MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
     MESSAGE_FUNC_PARAMS(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", data);
-    MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
-    MESSAGE_FUNC_UINT64(OnContextReqSavelocs, "ContextReqSavelocs", target);
     MESSAGE_FUNC_INT_CHARPTR(OnConfirmDeleteReplay, "ConfirmDeleteReplay", itemID, file);
+    MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
@@ -156,8 +153,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void MoveToCenterOfScreen();
 
     vgui::ImageList *m_pImageList;
-    //Panel *m_pPlayerStats;
-    //Panel *m_pLeaderboards;
     vgui::Label *m_pOnlineTimesStatus;
     vgui::SectionedListPanel *m_pOnlineLeaderboards;
     vgui::SectionedListPanel *m_pAroundLeaderboards;
@@ -169,8 +164,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Button *m_pGlobalAroundButton;
     vgui::Button *m_pFriendsLeaderboardsButton;
 
-    LobbyMembersPanel *m_pLobbyMembersPanel;
-    SavelocReqFrame *m_pSavelocReqFrame;
     CLeaderboardsHeader *m_pHeader;
     CLeaderboardsStats *m_pStats;
     CLeaderboardsTimes *m_pTimes;

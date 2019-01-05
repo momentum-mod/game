@@ -1,7 +1,10 @@
 #include "cbase.h"
+
 #include <vgui/ISurface.h>
 #include <vgui/IInput.h>
 #include "LeaderboardsContextMenu.h"
+
+#include "tier0/memdbgon.h"
 
 using namespace vgui;
 
@@ -33,11 +36,13 @@ void CLeaderboardsContextMenu::ShowMenu()
 }
 
 void CLeaderboardsContextMenu::OnCursorExitedMenuItem(int vpanel)
-{ 
+{
+    BaseClass::OnCursorExitedMenuItem(vpanel);
     int x, y;
     input()->GetCursorPosition(x, y);
     bool inside = IsWithin(x, y);
-    SetVisible(inside && IsVisible());
-    SetMouseInputEnabled(inside && IsVisible());
-    BaseClass::OnCursorExitedMenuItem(vpanel);
+    if (!inside)
+    {
+        SetVisible(false);
+    }
 }
