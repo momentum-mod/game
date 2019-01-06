@@ -1,4 +1,4 @@
-"resource/ui/leaderboards_filter.res"
+"resource/ui/leaderboards/filter_panel.res"
 {
 
     "InputLabel"
