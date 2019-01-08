@@ -84,6 +84,7 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int preci
         else
             Q_snprintf(pOut, BUFSIZETIME, "%s%d.%02d", negative, seconds, hundredths);
         break;
+    default:
     case 3:
         if (hours > 0)
             Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%03d", negative, hours, separator, minutes, separator,

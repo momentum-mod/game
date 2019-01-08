@@ -8,14 +8,13 @@ class CLeaderboardsHeader : public vgui::EditablePanel
     CLeaderboardsHeader(Panel *pParent);
 
     void LoadData(const char *pMapName, bool bFullUpdate);
-    void Reset() { m_bMapInfoLoaded = false;}
+    void Reset();
 
-    void OnGetPlayerDataForMap(KeyValues *pKv);
     void OnGetMapInfo(KeyValues *pKv);
 
     // Sets the text of the MapInfo label. If it's nullptr, it hides it
     void UpdateMapInfoLabel(const char *text = nullptr);
-    void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
+    void UpdateMapInfoLabel(CUtlVector<char*> &vecAuthors, int tier, bool bIsLinear, int numZones, int numBonuses);
 
 private:
     vgui::Label *m_pMapName;

@@ -46,13 +46,18 @@
         "MOM_Date" "Date"
         "MOM_Achieved" "Achieved"
         "MOM_Rank" "Rank"
-        "MOM_MapRank" "Map Rank"
-        "MOM_GlobalRank" "Global Rank"
         "MOM_Leaderboards_WatchReplay" "Watch Replay"
         "MOM_Leaderboards_SteamProfile" "Steam Profile"
         "MOM_Calculating" "Calculating..."
-        "MOM_PersonalBestTime" "Personal Best Time"
-        "MOM_ExperiencePoints" "Experience Points"
+        "MOM_MapRank" "Map Rank: %s1"
+        "MOM_GlobalRank" "Global Rank: %s1"
+        "MOM_PersonalBestTime" "Personal Best Time: %s1"
+        "MOM_RankXP" "Rank XP: %s1"
+        "MOM_CosXP" "Cosmetic XP: %s1"
+        "MOM_MapsCompleted" "Maps Completed: %s1"
+        "MOM_RunsSubmitted" "Runs Submitted: %s1"
+        "MOM_TotalJumps" "Total Jumps: %s1"
+        "MOM_TotalStrafes" "Total Strafes: %s1"
         "MOM_Leaderboards_Local" "Local"
         "MOM_Leaderboards_Global" "Global"
         "MOM_Leaderboards_Friends" "Friends"
@@ -343,6 +348,7 @@
         //Other gameui tokens
         "MOM_ChangeLog" "Changelog"
         "MOM_LobbyMembers" "Lobby Members"
+        "MOM_NotApplicable" "N/A"
 
         // WEB/API/SERVER RESPONSES
         "MOM_API_WaitingForResponse" "Waiting for API response..."
@@ -372,7 +378,7 @@
 
         //Misc
         "MOM_StartupMsg_NoSteamApiContext_Title" "Steam API Not Found!"
-        "MOM_StartupMsg_NoSteamApiContext" "PLEASE NOTE: The Steam Api Context or one of its componentes could not be found.\nIt is very likely that you won't be able to interact with the online side of Momentum.\nPlease make sure that Steam is running and that you have a Internet connection."
+        "MOM_StartupMsg_NoSteamApiContext" "PLEASE NOTE: One of the Steam API components could not be found.\nIt is very likely that you won't be able to interact with the online side of Momentum.\nPlease make sure that Steam is running and that you have a Internet connection!"
 
         "MOM_MB_TrySaveLoad_Title" "Save/Load Is Disabled"
         "MOM_MB_TrySaveLoad" "Saving and loading is disabled in Momentum!\nPlease use the checkpoint menu instead!"

@@ -9,12 +9,14 @@
 
 #include "mom_shareddefs.h"
 #include "mom_api_requests.h"
+#include "mom_run_poster.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-#define UPDATE_INTERVAL 15.0f // 15 seconds between updates
+#define UPDATE_INTERVAL 25.0f // 25 seconds between updates
 
 CLeaderboardsStats::CLeaderboardsStats(Panel* pParent) : BaseClass(pParent, "CLeaderboardsStats")
 {
@@ -22,17 +24,27 @@ CLeaderboardsStats::CLeaderboardsStats(Panel* pParent) : BaseClass(pParent, "CLe
     m_flLastUpdate = 0.0f;
     m_bNeedsUpdate = true;
 
+    m_pPlayerAvatar = new CAvatarImagePanel(this, "PlayerAvatar");
+
     LoadControlSettings("resource/ui/leaderboards/stats.res");
 
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
 
-    m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
-    m_pPlayerName = FindControl<Label>("PlayerName", true);
-    m_pPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
-    m_pPlayerPersonalBest = FindControl<Label>("PlayerPersonalBest", true);
-    m_pPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
-    m_pPlayerExperience = FindControl<Label>("PlayerExperience", true);
+    m_pPlayerName = FindControl<Label>("PlayerName");
+    m_pPlayerMapRank = FindControl<Label>("PlayerMapRank");
+    m_pPlayerPersonalBest = FindControl<Label>("PlayerPersonalBest");
+    m_pPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank");
+    m_pPlayerRankXP = FindControl<Label>("RankXP");
+    m_pPlayerCosXP = FindControl<Label>("CosXP");
+    m_pMapsCompleted = FindControl<Label>("MapsCompleted");
+    m_pRunsSubmitted = FindControl<Label>("RunsSubmitted");
+    m_pTotalJumps = FindControl<Label>("TotalJumps");
+    m_pTotalStrafes = FindControl<Label>("TotalStrafes");
+
+    m_pPlayerAvatar->SetDefaultAvatar(scheme()->GetImage("default_steam", false));
+    m_pPlayerAvatar->SetShouldScaleImage(true);
+    m_pPlayerAvatar->SetShouldDrawFriendIcon(false);
 }
 
 void CLeaderboardsStats::LoadData(bool bFullUpdate)
@@ -47,81 +59,120 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
     UTIL_MakeSafeName(pi.name, newName, MAX_PLAYER_NAME_LENGTH);
     m_pPlayerName->SetText(newName);
 
-    // What this if is:
-    // We want to do a full update if (we ask for it with fullUpdate boolean AND (the minimum time has passed OR it is
-    // the first update)) OR the maximum time has passed
     float flLastUp = gpGlobals->curtime - m_flLastUpdate;
-    if (bFullUpdate && (flLastUp >= UPDATE_INTERVAL || m_bNeedsUpdate))
+    if (bFullUpdate && ((g_pRunPoster->m_iMapID && flLastUp >= UPDATE_INTERVAL) || m_bNeedsUpdate))
     {
-        char p_sCalculating[BUFSIZELOCL];
-        char p_sWaitingResponse[BUFSIZELOCL];
-        LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);
-        LOCALIZE_TOKEN(p_wcWaitingResponse, "MOM_API_WaitingForResponse", p_sWaitingResponse);
+        wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
 
-        char p_sMapRank[BUFSIZELOCL];
-        char p_sGlobalRank[BUFSIZELOCL];
-        char p_sPersonalBest[BUFSIZELOCL];
-        char p_sExperiencePoints[BUFSIZELOCL];
+        m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), waiting));
+        m_pPlayerGlobalRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_GlobalRank"), waiting));
+        m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), waiting));
+        m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), waiting));
+        m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), waiting));
+        m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), waiting));
+        m_pRunsSubmitted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RunsSubmitted"), waiting));
+        m_pTotalJumps->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalJumps"), waiting));
+        m_pTotalStrafes->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalStrafes"), waiting));
 
-        char mrLocalized[BUFSIZELOCL];
-        char grLocalized[BUFSIZELOCL];
-        char pbLocalized[BUFSIZELOCL];
-        char xpLocalized[BUFSIZELOCL];
-
-        LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
-        LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
-        LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
-        LOCALIZE_TOKEN(p_wcExperiencePoints, "MOM_ExperiencePoints", p_sExperiencePoints);
-
-        Q_snprintf(mrLocalized, BUFSIZELOCL, "%s: %s", p_sMapRank, p_sCalculating);
-        Q_snprintf(grLocalized, BUFSIZELOCL, "%s: %s", p_sGlobalRank, p_sCalculating);
-        Q_snprintf(pbLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sWaitingResponse);
-        Q_snprintf(xpLocalized, BUFSIZELOCL, "%s: %s", p_sExperiencePoints, p_sWaitingResponse);
-
-        m_pPlayerMapRank->SetText(mrLocalized);
-        m_pPlayerGlobalRank->SetText(grLocalized);
-        m_pPlayerPersonalBest->SetText(pbLocalized);
-        m_pPlayerExperience->SetText(xpLocalized);
-
-        // MOM_TODO: Get player map rank info for this map
-        // g_pAPIRequests->GetPlayerStats()
+        uint64 uID = SteamUser()->GetSteamID().ConvertToUint64();
+        g_pAPIRequests->GetUserStatsAndMapRank(uID, g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CLeaderboardsStats::OnPlayerStats));
         m_flLastUpdate = gpGlobals->curtime;
-        /*char requrl[MAX_PATH];
-        // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
-                   GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
-        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback, this);
-        m_fLastHeaderUpdate = gpGlobals->curtime;*/
+        m_bNeedsUpdate = false;
     }
 
     SetVisible(true); // And seen again!
 }
 
-void CLeaderboardsStats::UpdatePlayerAvatarStandalone()
+void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
 {
-    // Update their avatar
-    if (SteamUser())
+    KeyValues *pData = kv->FindKey("data");
+    KeyValues *pErr = kv->FindKey("error");
+    if (pData)
     {
-        if (!m_bLoadedLocalPlayerAvatar)
+        int mrank = -1;
+        // int mtotal = -1; // MOM_TODO
+
+        int grank = -1; // MOM_TODO
+        int gtotal = -1; // MOM_TODO
+
+        float seconds = 0.0f;
+
+        KeyValues *pMapRank = pData->FindKey("mapRanks");
+        if (pMapRank)
         {
-            CSteamID steamIDForPlayer = SteamUser()->GetSteamID();
+            pMapRank = pMapRank->FindKey("1");
+            if (pMapRank)
+            {
+                mrank = pMapRank->GetInt("rank");
 
-            CAvatarImage *pImage = new CAvatarImage();
-            // 64 is enough up to full HD resolutions.
-            pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
+                KeyValues *pRun = pMapRank->FindKey("run");
+                if (pRun)
+                {
+                    seconds = pRun->GetFloat("time");
+                }
+            }
+        }
 
-            pImage->SetDrawFriend(false);
-            pImage->SetAvatarSize(64, 64); // Deliberately non scaling, the ImagePanel does that for us
+        KeyValues *pUserStats = pData->FindKey("stats");
+        if (pUserStats)
+        {
+            // MOM_TODO: fill in these
+            // grank = static_cast<int>(pExperience->GetFloat("rank"));
+            // gtotal = static_cast<int>(pExperience->GetFloat("total"));
 
-            // Get rid of the other image if it was there
-            m_pPlayerAvatar->EvictImage();
+            m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pUserStats->GetInt("rankXP")));
+            m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), pUserStats->GetInt("cosXP")));
+            m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), pUserStats->GetInt("mapsCompleted")));
+            m_pRunsSubmitted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RunsSubmitted"), pUserStats->GetInt("runsSubmitted")));
+            m_pTotalJumps->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalJumps"), pUserStats->GetInt("totalJumps")));
+            m_pTotalStrafes->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalStrafes"), pUserStats->GetInt("totalStrafes")));
+        }
 
-            m_pPlayerAvatar->SetImage(pImage);
-            m_bLoadedLocalPlayerAvatar = true;
+        if (mrank > -1)
+        {
+            m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), mrank));
+        }
+        else
+        {
+            m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), g_pVGuiLocalize->Find("MOM_NotApplicable")));
+        }
+        if (seconds > 0.0f)
+        {
+            char p_sPersonalBestTime[BUFSIZETIME];
+            wchar_t w_PB[BUFSIZETIME];
+            g_pMomentumUtil->FormatTime(seconds, p_sPersonalBestTime);
+            ANSI_TO_UNICODE(p_sPersonalBestTime, w_PB);
+            m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), w_PB));
+        }
+        else
+        {
+            m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), g_pVGuiLocalize->Find("MOM_NotApplicable")));
+        }
+        if (grank > -1 && gtotal > -1)
+        {
+            char p_sGlobalRank[BUFSIZELOCL];
+            char p_sLocalized[BUFSIZELOCL];
+            LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
+            Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sGlobalRank, grank, gtotal);
+            m_pPlayerGlobalRank->SetText(p_sLocalized);
         }
     }
-    else
+    else if (pErr)
     {
-        m_pPlayerAvatar->SetImage("default_steam");
+        // MOM_TODO: Handle errors
+    }
+}
+
+void CLeaderboardsStats::UpdatePlayerAvatarStandalone()
+{
+    CHECK_STEAM_API(SteamUser());
+    // Update their avatar only if need be
+    if (!m_bLoadedLocalPlayerAvatar)
+    {
+        CSteamID steamIDForPlayer = SteamUser()->GetSteamID();
+
+        m_pPlayerAvatar->SetPlayer(steamIDForPlayer, k_EAvatarSize64x64);
+
+        m_bLoadedLocalPlayerAvatar = true;
     }
 }
