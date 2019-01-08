@@ -180,7 +180,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_checkpoint_save_between_sessions"
+		"cvar_name"		"mom_saveloc_save_between_sessions"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
     }
