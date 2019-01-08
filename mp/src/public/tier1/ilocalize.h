@@ -285,6 +285,15 @@ public:
 // --------------------------------------------------------------------------
 
 template < >
+class CLocalizedStringArg<int> : public CLocalizedStringArgPrintfImpl<int>
+{
+public:
+    CLocalizedStringArg(int nValue) : CLocalizedStringArgPrintfImpl<int>(nValue, LOCCHAR("%d")) {}
+};
+
+// --------------------------------------------------------------------------
+
+template < >
 class CLocalizedStringArg<uint64> : public CLocalizedStringArgPrintfImpl<uint64>
 {
 public:

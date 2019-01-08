@@ -26,8 +26,8 @@
     {
         "ControlName"	"Label"
 		"fieldName"		"MapAuthor"
-		"xpos"			"3" // Determined in code
-		"ypos"			"3"
+		"xpos"			"5"
+		"ypos"			"0"
 		"wide"			"628"
 		"tall"			"24"
 		"autoResize"	"0"
@@ -43,6 +43,10 @@
 		"textinsetx"	"0"
 		"textinsety"	"0"
 		"auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
+        "pin_to_sibling" "MapName"
+        "pin_to_sibling_corner" "1"
+        "pin_sibling_to_corner" "0"
     }
 	"MapDetails"
 	{
@@ -57,7 +61,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"labelText"		""
-		"textAlignment"	"west"
+		"textAlignment"	"east"
 		"brighttext"	"1"
 		"Font"			"BigNoodleSmall"
 		"wrap"			"0"
