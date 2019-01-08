@@ -17,7 +17,7 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
 
     void PostInit() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
-    void LevelShutdownPreClearSteamAPIContext() OVERRIDE;
+    void LevelShutdownPostEntity() OVERRIDE;
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
