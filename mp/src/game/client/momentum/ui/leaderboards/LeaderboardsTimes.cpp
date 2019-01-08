@@ -14,6 +14,7 @@
 #include "IMessageboxPanel.h"
 #include "LeaderboardsContextMenu.h"
 
+#include "mom_shareddefs.h"
 #include "util/mom_util.h"
 #include "run/mom_replay_base.h"
 #include "mom_run_poster.h"
@@ -87,7 +88,7 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     for (int i = 1; i < 4; i++)
         m_eTimesStatus[i] = STATUS_TIMES_LOADING;
 
-    flaggedRuns = RUNFLAG_NONE;
+    m_iFlaggedRuns = RUNFLAG_NONE;
 
     m_pCurrentLeaderboards = m_pLocalLeaderboards;
 
@@ -959,7 +960,7 @@ void CLeaderboardsTimes::OnCommand(const char* pCommand)
     }
     else if (isReset)
     {
-        flaggedRuns = RUNFLAG_NONE;
+        m_iFlaggedRuns = RUNFLAG_NONE;
         for (int i = 0; i < m_pFilterPanel->GetChildCount(); i++)
         {
             ToggleButton *pChild = dynamic_cast<ToggleButton*>(m_pFilterPanel->GetChild(i));
@@ -972,27 +973,27 @@ void CLeaderboardsTimes::OnCommand(const char* pCommand)
     }
     else if (isFlagScrollOnly)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_SCROLL);
+        m_iFlaggedRuns ^= RUNFLAG_SCROLL;
     }
     else if (isFlagWOnly)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_W_ONLY);
+        m_iFlaggedRuns ^= RUNFLAG_W_ONLY;
     }
     else if (isFlagHSW)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_HSW);
+        m_iFlaggedRuns ^= RUNFLAG_HSW;
     }
     else if (isFlagSideways)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_SW);
+        m_iFlaggedRuns ^= RUNFLAG_SW;
     }
     else if (isFlagBackwards)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_BW);
+        m_iFlaggedRuns ^= RUNFLAG_BW;
     }
     else if (isFlagBonus)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_BONUS);
+        m_iFlaggedRuns ^= RUNFLAG_BONUS;
     }
     else
     {

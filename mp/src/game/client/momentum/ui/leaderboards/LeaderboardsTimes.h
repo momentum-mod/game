@@ -4,7 +4,6 @@
 #include "steam/steam_api.h"
 
 class CClientTimesDisplay;
-enum RUN_FLAG;
 class CMomReplayBase;
 class CUtlSortVectorTimeValue;
 class CLeaderboardsContextMenu;
@@ -146,7 +145,7 @@ private:
 
     int m_iSectionId; // the current section we are entering into
 
-    RUN_FLAG flaggedRuns;
+    uint32 m_iFlaggedRuns;
 
     CUtlMap<uint64, int> m_mapAvatarsToImageList;
 
