@@ -14,6 +14,8 @@
 #endif
 #include "steam/steam_api.h"
 
+#include "tier0/memdbgon.h"
+
 DECLARE_BUILD_FACTORY( CAvatarImagePanel );
 
 
@@ -147,10 +149,10 @@ void CAvatarImage::LoadAvatarImage()
 				if ( SteamUtils()->GetImageSize( iAvatar, &wide, &tall ) && wide > 0 && tall > 0 )
 				{
 					int destBufferSize = wide * tall * 4;
-					byte *rgbDest = (byte*)stackalloc( destBufferSize );
+					uint8 *rgbDest = (uint8*)stackalloc( destBufferSize );
 					if ( SteamUtils()->GetImageRGBA( iAvatar, rgbDest, destBufferSize ) )
 						InitFromRGBA( iAvatar, rgbDest, wide, tall );
-					
+
 					stackfree( rgbDest );
 				}
 			}
@@ -450,7 +452,10 @@ void CAvatarImagePanel::UpdateSize()
 
 void CAvatarImagePanel::ApplySettings( KeyValues *inResourceData )
 {
-	m_bScaleImage = inResourceData->GetInt("scaleImage", 0);
+	m_bScaleImage = inResourceData->GetBool("scaleImage");
+    const char *pDefaultImage = inResourceData->GetString("defaultImage", nullptr);
+    if (pDefaultImage)
+        m_pImage->SetDefaultImage(vgui::scheme()->GetImage(pDefaultImage, false));
 
 	BaseClass::ApplySettings(inResourceData);
 }

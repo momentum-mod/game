@@ -1,6 +1,5 @@
 "resource/ui/leaderboards/filter_panel.res"
 {
-
     "InputLabel"
     {
         "ControlName" "Label"
@@ -18,13 +17,14 @@
         "xpos" "5"
         "ypos" "15"
         "wide"		"88"
-		"tall"		"16"
+        "tall"		"16"
         "labelText" "#MOM_RunFlag_ScrollOnly"
         "auto_wide_tocontents" "1"
         "textAlignment"		"center"
         "command" "ToggleScrollOnly"
-        "actionsignallevel" "2" // Needed so that the leaderboards class can handle it
         "Font"			"BigNoodleSmall"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
     
     // Auto is when scroll isn't selected
@@ -46,13 +46,14 @@
         "xpos" "5"
         "ypos" "45"
         "wide"		"88"
-		"tall"		"16"
+        "tall"		"16"
         "labelText" "#MOM_RunFlag_WOnly"
         "auto_wide_tocontents" "1"
         "textAlignment"		"center"
         "command" "ToggleWOnly"
-        "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
     
     "HalfSideways"
@@ -62,13 +63,14 @@
         "xpos" "5"
         "ypos" "65"
         "wide"		"88"
-		"tall"		"16"
+        "tall"		"16"
         "labelText" "#MOM_RunFlag_HalfSideways"
         "auto_wide_tocontents" "1"
         "textAlignment"		"center"
         "command" "ToggleHSW"
-        "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
     
     "Sideways"
@@ -78,13 +80,14 @@
         "xpos" "5"
         "ypos" "85"
         "wide"		"88"
-		"tall"		"16"
+        "tall"		"16"
         "labelText" "#MOM_RunFlag_Sideways"
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ToggleSideways"
-        "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
     
     "Backwards"
@@ -94,13 +97,14 @@
         "xpos" "5"
         "ypos" "105"
         "wide"		"88"
-		"tall"		"16"
+        "tall"		"16"
         "labelText" "#MOM_RunFlag_Backwards"
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ToggleBackwards"
-        "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
     
     "Bonus"
@@ -110,28 +114,30 @@
         "xpos" "5"
         "ypos" "130"
         "wide"		"88"
-		"tall"		"16"
+        "tall"		"16"
         "labelText" "#MOM_RunFlag_Bonus"
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ToggleBonus"
-        "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
 
-	"Reset"
+    "Reset"
     {
         "ControlName" "Button"
         "fieldName" "Reset"
         "xpos" "5"
         "ypos" "190"
         "wide"		"88"
-		"tall"		"16"
+        "tall"		"16"
         "labelText" "#MOM_RunFlag_Reset"
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ResetFlags"
-        "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
     }
 }

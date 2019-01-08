@@ -187,13 +187,11 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
     {
         m_pTimes->OnRunSaved();
     }
-#if ENABLE_ONLINE_LEADERBOARDS
     else if (FStrEq(type, "run_upload"))
     {
         m_pTimes->OnRunPosted(event->GetBool("run_posted"));
         m_pStats->NeedsUpdate();
     }
-#endif
 }
 
 bool CClientTimesDisplay::NeedsUpdate(void) { return (m_flNextUpdateTime < gpGlobals->curtime); }

@@ -32,7 +32,7 @@ using namespace vgui;
 
 #define UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
 
-const char* const g_pszTimesStatusStrings[] = {
+static const char* const g_pszTimesStatusStrings[] = {
     "", // STATUS_TIMES_LOADED
     "#MOM_API_WaitingForResponse", // STATUS_TIMES_LOADING
     "#MOM_API_NoTimesReturned", // STATUS_NO_TIMES_RETURNED

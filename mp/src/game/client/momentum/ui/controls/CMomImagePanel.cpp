@@ -22,10 +22,6 @@ CMomImagePanel::~CMomImagePanel()
 
 void CMomImagePanel::LoadImageFrom(const char* pPath)
 {
-    // Clear up any previous texture
-    DestroyTexture();
-    // Create our new one
-    m_iTextureID = surface()->CreateNewTextureID(true);
     // Convert our path to the full drive path for loading
     char fullPath[MAX_PATH];
     g_pFullFileSystem->RelativePathToFullPath_safe(pPath, "MOD", fullPath);
@@ -40,10 +36,20 @@ void CMomImagePanel::LoadImageFrom(const char* pPath)
 
     DevMsg("CMomImagePanel: Image loaded from path: %s with %i channels, size (%i x %i)!\n", fullPath, channels, w, h);
 
-    // Image data gets memcpy'd over in this function...
-    surface()->DrawSetTextureRGBA(m_iTextureID, pImageData, w, h, 1, true);
+    LoadRGBAData(pImageData, w, h);
+
     // ... So we can clean up here
     stbi_image_free(pImageData);
+}
+
+void CMomImagePanel::LoadRGBAData(const uint8* rgba, int wide, int tall)
+{
+    // Clear up any previous texture
+    DestroyTexture();
+    // Create our new one
+    m_iTextureID = surface()->CreateNewTextureID(true);
+    // Image data gets memcpy'd over in this function...
+    surface()->DrawSetTextureRGBA(m_iTextureID, rgba, wide, tall, 1, true);
 }
 
 void CMomImagePanel::Paint()
