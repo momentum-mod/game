@@ -16,6 +16,17 @@ static ConVar mom_api_base_url("mom_api_base_url", "http://localhost:3002", FCVA
 
 #define NOT_IMPL AssertMsg(0, "API Request %s is not implemented yet!", __FUNCTION__); return false;
 
+static const char* const s_pHTTPMethods[] = {
+    "INVALID",
+    "GET",
+    "HEAD",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
+    "PATCH",
+};
+
 CAPIRequests::CAPIRequests() : CAutoGameSystemPerFrame("CAPIRequests"), 
 m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
 m_iAuthActualSize(0), m_pAPIKey(nullptr)
@@ -26,104 +37,133 @@ m_iAuthActualSize(0), m_pAPIKey(nullptr)
 
 bool CAPIRequests::SendAuthTicket(CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, AUTH_REQ("/auth/steam/user"), k_EHTTPMethodPOST, false))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, AUTH_REQ("/auth/steam/user"), k_EHTTPMethodPOST, false))
     {
         uint64 id = SteamUser()->GetSteamID().ConvertToUint64();
-        SteamHTTP()->SetHTTPRequestHeaderValue(handle, "id", CFmtStr("%llu", id).Get());
-        SteamHTTP()->SetHTTPRequestRawPostBody(handle, "application/octet-stream", m_bufAuthBuffer, m_iAuthActualSize);
+        SteamHTTP()->SetHTTPRequestHeaderValue(req->handle, "id", CFmtStr("%llu", id).Get());
+        SteamHTTP()->SetHTTPRequestRawPostBody(req->handle, "application/octet-stream", m_bufAuthBuffer, m_iAuthActualSize);
 
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
 
+    delete req;
     return false;
 }
 
 bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ("maps"), k_EHTTPMethodGET))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ("maps"), k_EHTTPMethodGET))
     {
         if (pKvFilters && !pKvFilters->IsEmpty())
         {
             FOR_EACH_VALUE(pKvFilters, pKvFilter)
             {
-                SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, pKvFilter->GetName(),
+                SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, pKvFilter->GetName(),
                                                               pKvFilter->GetString());
             }
         }
 
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
 
+    delete req;
     return false;
 }
 
 bool CAPIRequests::GetTop10MapTimes(uint32 mapID, CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodGET))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "isPersonalBest", "true");
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "isPersonalBest", "true");
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
+    delete req;
     return false;
 }
 
 bool CAPIRequests::GetFriendsTimes(uint32 mapID, CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs/friends", mapID).Get()), k_EHTTPMethodGET))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs/friends", mapID).Get()), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "isPersonalBest", "true");
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "isPersonalBest", "true");
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
+    delete req;
     return false;
 }
 
 bool CAPIRequests::GetAroundTimes(uint32 mapID, CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs/around", mapID).Get()), k_EHTTPMethodGET))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs/around", mapID).Get()), k_EHTTPMethodGET))
     {
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
+    delete req;
     return false;
 }
 
 bool CAPIRequests::GetMapInfo(uint32 mapID, CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u", mapID).Get()), k_EHTTPMethodGET))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u", mapID).Get()), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "expand", "info");
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "info,credits");
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
+    delete req;
     return false;
 }
 
 bool CAPIRequests::GetMapByName(const char *pMapName, CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ("maps"), k_EHTTPMethodGET))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ("maps"), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "search", pMapName);
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "limit", "1");
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "search", pMapName);
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "limit", "1");
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
+    delete req;
     return false;
 }
 
 bool CAPIRequests::SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func)
 {
-    HTTPRequestHandle handle;
-    if (CreateAPIRequest(handle, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodPOST))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodPOST))
     {
-        SteamHTTP()->SetHTTPRequestRawPostBody(handle, "application/octet-stream", (uint8*) replayBuf.Base(), replayBuf.TellPut());
+        SteamHTTP()->SetHTTPRequestRawPostBody(req->handle, "application/octet-stream", (uint8*) replayBuf.Base(), replayBuf.TellPut());
 
-        return SendAPIRequest(handle, func, __FUNCTION__);
+        return SendAPIRequest(req, func, __FUNCTION__);
     }
 
+    delete req;
+    return false;
+}
+
+bool CAPIRequests::GetUserStats(uint64 profileID, CallbackFunc func)
+{
+    return GetUserStatsAndMapRank(profileID, 0, func);
+}
+
+bool CAPIRequests::GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, CallbackFunc func)
+{
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("users/%lld", profileID).Get()), k_EHTTPMethodGET))
+    {
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "userStats");
+
+        if (mapID != 0)
+            SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "mapRank", CFmtStr("%u", mapID).Get());
+        
+        return SendAPIRequest(req, func, __FUNCTION__);
+    }
+    delete req;
     return false;
 }
 
@@ -131,18 +171,20 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc st
                                              const char *pFileName, const char *pFilePathID /* = "GAME"*/)
 {
     HTTPRequestHandle handle = INVALID_HTTPREQUEST_HANDLE;
-    if (CreateAPIRequest(handle, pszURL, k_EHTTPMethodGET))
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, pszURL, k_EHTTPMethodGET))
     {
+        handle = req->handle;
         SteamAPICall_t apiHandle;
         if (SteamHTTP()->SendHTTPRequestAndStreamResponse(handle, &apiHandle))
         {
-            DownloadCall *callback = new DownloadCall();
+            DownloadRequest *callback = new DownloadRequest();
             callback->handle = handle;
             callback->startFunc = start;
             callback->progressFunc = prog;
             callback->completeFunc = end;
-            V_FixupPathName(callback->m_pszFileName, sizeof(callback->m_pszFileName), pFileName);
-            Q_strncpy(callback->m_pszFilePathID, pFilePathID, sizeof(callback->m_pszFilePathID));
+            V_FixupPathName(callback->m_szFileName, sizeof(callback->m_szFileName), pFileName);
+            Q_strncpy(callback->m_szFilePathID, pFilePathID, sizeof(callback->m_szFilePathID));
             callback->completeResult = new CCallResult<CAPIRequests, HTTPRequestCompleted_t>();
             callback->completeResult->Set(apiHandle, this, &CAPIRequests::OnDownloadHTTPComplete);
             m_mapDownloadCalls.Insert(handle, callback);
@@ -155,6 +197,7 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc st
         }
     }
 
+    delete req;
     return handle;
 }
 
@@ -178,8 +221,9 @@ void CAPIRequests::Shutdown()
         delete[] m_pAPIKey;
     }
 
-    // This also cancels any outstanding API requests
+    // This also cancels any outstanding API/download requests
     m_mapAPICalls.PurgeAndDeleteElements();
+    m_mapDownloadCalls.PurgeAndDeleteElements();
 }
 
 void CAPIRequests::OnAuthTicket(GetAuthSessionTicketResponse_t* pParam)
@@ -240,7 +284,7 @@ void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
         KeyValuesAD headers("Headers");
         headers->SetUint64("request", pCallback->m_hRequest);
 
-        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+        DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
         uint32 size;
         if (SteamHTTP()->GetHTTPResponseHeaderSize(pCallback->m_hRequest, "Content-Length", &size))
         {
@@ -268,7 +312,7 @@ void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
     uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
-        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+        DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
         uint8 *pDataTemp = new uint8[pCallback->m_cBytesReceived];
         if (SteamHTTP()->GetHTTPStreamingResponseBodyData(pCallback->m_hRequest, pCallback->m_cOffset, pDataTemp, pCallback->m_cBytesReceived))
         {
@@ -295,7 +339,7 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
     uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
-        DownloadCall *call = m_mapDownloadCalls[downloadCallbackIndx];
+        DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
 
         KeyValuesAD comp("Complete");
         comp->SetUint64("request", pCallback->m_hRequest);
@@ -306,7 +350,7 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
         }
         else
         {
-            bool bWrote = g_pFullFileSystem->WriteFile(call->m_pszFileName, call->m_pszFilePathID, call->m_bufFileData);
+            bool bWrote = g_pFullFileSystem->WriteFile(call->m_szFileName, call->m_szFilePathID, call->m_bufFileData);
             comp->SetBool("error", !bWrote);
         }
         call->completeFunc(comp);
@@ -324,13 +368,15 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
     if (callbackIndx != m_mapAPICalls.InvalidIndex())
     {
         // Okay cool, callback found
-        APICallback *callback = m_mapAPICalls[callbackIndx];
+        APIRequest *req = m_mapAPICalls[callbackIndx];
 
         // Let's create our main KeyValues object to operate on and properly clean it up out of this scope
-        KeyValuesAD response("response");
+        KeyValuesAD response(req->m_szCallingFunc);
 
-        // Secondly, let's set the code of the response. Even if it's an IO error.
+        // Secondly, let's set the code, method, and URL of the response. Even if it's an IO error.
         response->SetInt("code", pCallback->m_eStatusCode);
+        response->SetString("method", req->m_szMethod);
+        response->SetString("URL", req->m_szURL);
 
         // Thirdly, check if there are any errors
         bool bRequestOK = CheckAPIResponse(pCallback, bIOFailure);
@@ -370,12 +416,12 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
 
         // Sixthly, actually call the callback. It should be reading the body by using `pKvResponse->FindKey("data")`
         // or any errors by using `pKvResponse->FindKey("error")`
-        callback->callbackFunc(response);
+        req->callbackFunc(response);
 
         // And remove it from the map
         m_mapAPICalls.RemoveAt(callbackIndx);
         // And delete it (no memory leak pls)
-        delete callback;
+        delete req;
         // And delete the response KeyValu- oh right the AutoDelete handles that here (out of scope)
     }
     else
@@ -388,9 +434,9 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
     SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
-bool CAPIRequests::CreateAPIRequest(HTTPRequestHandle &handle, const char* pszURL, EHTTPMethod kMethod, bool bAuth /* = true*/)
+bool CAPIRequests::CreateAPIRequest(APIRequest *request, const char* pszURL, EHTTPMethod kMethod, bool bAuth /* = true*/)
 {
-    if (!SteamHTTP())
+    if (!SteamHTTP() || !request)
         return false;
 
     if (!pszURL)
@@ -399,31 +445,33 @@ bool CAPIRequests::CreateAPIRequest(HTTPRequestHandle &handle, const char* pszUR
     if (bAuth && !m_pAPIKey)
         return false;
 
-    handle = SteamHTTP()->CreateHTTPRequest(kMethod, pszURL);
+    Q_strncpy(request->m_szMethod, s_pHTTPMethods[kMethod], sizeof(request->m_szMethod));
+    Q_strncpy(request->m_szURL, pszURL, sizeof(request->m_szURL));
+    request->handle = SteamHTTP()->CreateHTTPRequest(kMethod, pszURL);
 
     // Add the API key
     if (bAuth)
-        SteamHTTP()->SetHTTPRequestHeaderValue(handle, "Authorization", CFmtStr1024("Bearer %s", m_pAPIKey).Get());
+        SteamHTTP()->SetHTTPRequestHeaderValue(request->handle, "Authorization", CFmtStr1024("Bearer %s", m_pAPIKey).Get());
 
-    return handle != INVALID_HTTPREQUEST_HANDLE;
+    return request->handle != INVALID_HTTPREQUEST_HANDLE;
 }
 
-bool CAPIRequests::SendAPIRequest(HTTPRequestHandle hRequest, CallbackFunc func, const char* pRequest)
+bool CAPIRequests::SendAPIRequest(APIRequest *req, CallbackFunc func, const char* pCallingFunc)
 {
     SteamAPICall_t apiHandle;
-    if (SteamHTTP()->SendHTTPRequest(hRequest, &apiHandle))
+    if (SteamHTTP()->SendHTTPRequest(req->handle, &apiHandle))
     {
-        APICallback *callback = new APICallback();
-        callback->handle = hRequest;
-        callback->callbackFunc = func;
-        callback->callResult = new CCallResult<CAPIRequests, HTTPRequestCompleted_t>();
-        callback->callResult->Set(apiHandle, this, &CAPIRequests::OnHTTPResp);
-        m_mapAPICalls.Insert(hRequest, callback);
+        Q_strncpy(req->m_szCallingFunc, pCallingFunc, sizeof(req->m_szCallingFunc));
+        req->callbackFunc = func;
+        req->callResult = new CCallResult<CAPIRequests, HTTPRequestCompleted_t>();
+        req->callResult->Set(apiHandle, this, &CAPIRequests::OnHTTPResp);
+        m_mapAPICalls.Insert(req->handle, req);
         return true;
     }
 
-    Warning("%s --- Failed to send HTTP Request!\n", pRequest);
-    SteamHTTP()->ReleaseHTTPRequest(hRequest); // GC
+    Warning("%s --- Failed to send HTTP Request!\n", pCallingFunc);
+    SteamHTTP()->ReleaseHTTPRequest(req->handle); // GC
+    delete req;
     return false;
 }
 
