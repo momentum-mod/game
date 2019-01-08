@@ -19,6 +19,7 @@ namespace vgui
         ~CMomImagePanel();
 
         void LoadImageFrom(const char *pPath);
+        void LoadRGBAData(const uint8 *rgba, int wide, int tall);
 
     protected:
         void Paint() OVERRIDE;
