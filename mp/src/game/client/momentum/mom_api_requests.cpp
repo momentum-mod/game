@@ -9,6 +9,8 @@
 #include "tier0/memdbgon.h"
 
 static MAKE_TOGGLE_CONVAR(mom_api_log_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, all API requests will be logged to console.\n");
+static MAKE_TOGGLE_CONVAR(mom_api_log_requests_sensitive, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, API requests that are sensitive will also be logged to console.\n"
+"!!!!!!! DANGER! Only set this if you know what you are doing! This could potentially expose an API key! !!!!!!!");
 static ConVar mom_api_base_url("mom_api_base_url", "http://localhost:3002", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The base URL for the API requests.\n");
 
 #define API_REQ(url) CFmtStr1024("%s/api/%s", mom_api_base_url.GetString(), (url)).Get()
@@ -38,7 +40,7 @@ m_iAuthActualSize(0), m_pAPIKey(nullptr)
 bool CAPIRequests::SendAuthTicket(CallbackFunc func)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, AUTH_REQ("/auth/steam/user"), k_EHTTPMethodPOST, false))
+    if (CreateAPIRequest(req, AUTH_REQ("/auth/steam/user"), k_EHTTPMethodPOST, false, true))
     {
         uint64 id = SteamUser()->GetSteamID().ConvertToUint64();
         SteamHTTP()->SetHTTPRequestHeaderValue(req->handle, "id", CFmtStr("%llu", id).Get());
@@ -372,6 +374,7 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
 
         // Let's create our main KeyValues object to operate on and properly clean it up out of this scope
         KeyValuesAD response(req->m_szCallingFunc);
+        response->UsesEscapeSequences(true);
 
         // Secondly, let's set the code, method, and URL of the response. Even if it's an IO error.
         response->SetInt("code", pCallback->m_eStatusCode);
@@ -411,7 +414,27 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
         if (mom_api_log_requests.GetBool())
         {
             CKeyValuesDumpContextAsDevMsg dump(0);
-            response->Dump(&dump);
+
+            if (req->m_bSensitive && !mom_api_log_requests_sensitive.GetBool())
+            {
+                // If a request is sensitive, we censor the data in the log
+                KeyValuesAD sensitive(response->MakeCopy());
+                // Only need to clear data, not errors
+                KeyValues *pData = sensitive->FindKey("data");
+                if (pData)
+                {
+                    pData->Clear();
+                    pData->SetString("Censored", "for your own sake");
+                    pData->SetString("To", "uncensor, use the command \"mom_api_log_requests_sensitive 1\"");
+                }
+
+                sensitive->Dump(&dump);
+            }
+            else
+            {
+                // Log it like normal
+                response->Dump(&dump);
+            }
         }
 
         // Sixthly, actually call the callback. It should be reading the body by using `pKvResponse->FindKey("data")`
@@ -434,7 +457,7 @@ void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure
     SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
-bool CAPIRequests::CreateAPIRequest(APIRequest *request, const char* pszURL, EHTTPMethod kMethod, bool bAuth /* = true*/)
+bool CAPIRequests::CreateAPIRequest(APIRequest *request, const char* pszURL, EHTTPMethod kMethod, bool bAuth /* = true*/, bool bSensitive /* = false*/)
 {
     if (!SteamHTTP() || !request)
         return false;
@@ -448,6 +471,7 @@ bool CAPIRequests::CreateAPIRequest(APIRequest *request, const char* pszURL, EHT
     Q_strncpy(request->m_szMethod, s_pHTTPMethods[kMethod], sizeof(request->m_szMethod));
     Q_strncpy(request->m_szURL, pszURL, sizeof(request->m_szURL));
     request->handle = SteamHTTP()->CreateHTTPRequest(kMethod, pszURL);
+    request->m_bSensitive = bSensitive;
 
     // Add the API key
     if (bAuth)

@@ -15,6 +15,7 @@ struct APIRequest
         m_szURL[0] = '\0';
         m_szMethod[0] = '\0';
         m_szCallingFunc[0] = '\0';
+        m_bSensitive = false;
     }
     ~APIRequest()
     {
@@ -24,6 +25,7 @@ struct APIRequest
     char m_szCallingFunc[256];
     char m_szURL[256];
     char m_szMethod[12];
+    bool m_bSensitive;
     HTTPRequestHandle handle;
     CallbackFunc callbackFunc;
     CCallResult<CAPIRequests, HTTPRequestCompleted_t> *callResult;
@@ -158,7 +160,7 @@ protected:
 private:
     // Creates an HTTP request with the proper authorization header added. 
     // If bAuth = true, it will add the API key to the request, and will also return false if the key isn't set
-    bool CreateAPIRequest(APIRequest *request, const char *pszURL, EHTTPMethod kMethod, bool bAuth = true);
+    bool CreateAPIRequest(APIRequest *request, const char *pszURL, EHTTPMethod kMethod, bool bAuth = true, bool bSensitive = false);
     // Should be called after the HTTP request is prepared by the API calls (above)
     bool SendAPIRequest(APIRequest *request, CallbackFunc func, const char *pCallingFunction);
     // Check the response for errors, insert error objects in here
