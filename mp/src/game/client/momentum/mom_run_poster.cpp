@@ -41,7 +41,7 @@ void CRunPoster::LevelInitPostEntity()
     }
 }
 
-void CRunPoster::LevelShutdownPreClearSteamAPIContext()
+void CRunPoster::LevelShutdownPostEntity()
 {
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
