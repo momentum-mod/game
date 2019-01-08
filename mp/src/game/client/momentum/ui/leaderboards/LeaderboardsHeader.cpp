@@ -3,8 +3,13 @@
 #include "LeaderboardsHeader.h"
 
 #include <vgui_controls/Label.h>
+#include <vgui/ILocalize.h>
 
-#include <vgui/ISurface.h>
+#include "fmtstr.h"
+
+#include "mom_api_requests.h"
+#include "mom_run_poster.h"
+#include "mom_shareddefs.h"
 
 // Lastly
 #include "tier0/memdbgon.h"
@@ -27,209 +32,86 @@ void CLeaderboardsHeader::LoadData(const char *pMapName, bool bFullUpdate)
     if (m_pMapName && pMapName)
     {
         m_pMapName->SetText(pMapName);
-        // Set the author label to be at the end of this label
-        // MOM_TODO: use pinning to put it here instead of this
-
-        int wide, tall;
-        m_pMapName->GetContentSize(wide, tall);
-        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + GetScaledVal(4),
-                             m_pMapName->GetYPos() + tall - GetScaledVal(surface()->GetFontTall(m_pMapAuthor->GetFont())));
     }
 
     if (bFullUpdate && !m_bMapInfoLoaded)
     {
-        // MOM_TODO: actual API call for map info here
-        /*char requrl[MAX_PATH];
-        Q_snprintf(requrl, MAX_PATH, "%s/getmapinfo/%s", MOM_APIDOMAIN, g_pGameRules->MapName());
-        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetMapInfoCallback, &CClientTimesDisplay::GetMapInfoCallback, this);*/
+        // MOM_TODO: Use something better than the run poster to store map ID
+        if (g_pRunPoster->m_iMapID)
+        {
+            g_pAPIRequests->GetMapInfo(g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CLeaderboardsHeader::OnGetMapInfo));
+            wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
+            m_pMapAuthor->SetText(waiting);
+            m_pMapDetails->SetText(waiting);
+        }
+        else
+        {
+            m_bMapInfoLoaded = true;
+            m_pMapAuthor->SetVisible(false);
+            m_pMapDetails->SetVisible(false);
+        }
     }
 }
 
-void CLeaderboardsHeader::OnGetPlayerDataForMap(KeyValues* pKv)
+void CLeaderboardsHeader::Reset()
 {
-    /*Warning("%s - Callback received.\n", __FUNCTION__);
-    if (bIOFailure)
-        return;
-
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-
-    if (size == 0)
-    {
-        Warning("%s - size is 0!\n", __FUNCTION__);
-        return;
-    }
-
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-        {
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            KeyValues::AutoDelete ad(pResponse);
-
-            int mrank = -1;
-            int mtotal = -1;
-
-            int grank = -1;
-            int gtotal = -1;
-            int gexp = -1;
-
-            float seconds = 0.0f;
-
-            KeyValues *pRun = pResponse->FindKey("run");
-            if (pRun)
-            {
-                mrank = static_cast<int>(pRun->GetFloat("rank"));
-                seconds = pRun->GetFloat("time");
-            }
-
-            KeyValues *pMap = pResponse->FindKey("mapranking");
-            if (pMap)
-            {
-                mtotal = static_cast<int>(pMap->GetFloat("total", -1.0f));
-            }
-
-            KeyValues *pExperience = pResponse->FindKey("globalranking");
-            if (pExperience)
-            {
-                grank = static_cast<int>(pExperience->GetFloat("rank"));
-                gtotal = static_cast<int>(pExperience->GetFloat("total"));
-                gexp = static_cast<int>(pExperience->GetFloat("experience"));
-            }
-
-            if (mrank > -1 && mtotal > -1)
-            {
-                char p_sMapRank[BUFSIZELOCL];
-                char p_sLocalized[BUFSIZELOCL];
-                LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
-                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sMapRank, mrank, mtotal);
-                m_pPlayerMapRank->SetText(p_sLocalized);
-            }
-            if (seconds > 0.0f)
-            {
-                char p_sPersonalBestTime[BUFSIZETIME];
-                char p_sPersonalBest[BUFSIZELOCL];
-                char p_sLocalized[BUFSIZELOCL];
-                g_pMomentumUtil->FormatTime(seconds, p_sPersonalBestTime);
-                LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
-                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sPersonalBestTime);
-                m_pPlayerPersonalBest->SetText(p_sLocalized);
-            }
-
-            if (grank > -1 && gtotal > -1)
-            {
-                char p_sGlobalRank[BUFSIZELOCL];
-                char p_sLocalized[BUFSIZELOCL];
-                LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
-                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sGlobalRank, grank, gtotal);
-                m_pPlayerGlobalRank->SetText(p_sLocalized);
-
-                char p_sExperience[BUFSIZELOCL];
-                char p_sLocalized2[BUFSIZELOCL];
-                LOCALIZE_TOKEN(p_wcExperience, "MOM_ExperiencePoints", p_sExperience);
-                Q_snprintf(p_sLocalized2, BUFSIZELOCL, "%s: %i", p_sExperience, gexp);
-                m_pPlayerExperience->SetText(p_sLocalized2);
-            }
-            m_fLastHeaderUpdate = gpGlobals->curtime;
-        }
-    }
-    else
-    {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    }
-    // Last but not least, free resources
-    delete[] pData;
-    pData = nullptr;
-    alloc.deallocate();
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);*/
+    m_bMapInfoLoaded = false;
+    m_pMapAuthor->SetVisible(true);
+    m_pMapDetails->SetVisible(true);
+    m_pMapAuthor->SetText("");
+    m_pMapDetails->SetText("");
 }
 
 void CLeaderboardsHeader::OnGetMapInfo(KeyValues* pKv)
 {
-    /*Warning("%s - Callback received.\n", __FUNCTION__);
-    if (bIOFailure)
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
     {
-        UpdateMapInfoLabel(); // Default param is nullptr, so it hides it
-        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
-        return;
-    }
+        int tier = 0, numBonus = 0, numZones = 0;
+        bool isLinear = true;
+        CUtlStringList authors;
 
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict ||
-        pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
-    {
-        char locl[BUFSIZELOCL];
-        LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
-        UpdateMapInfoLabel(locl);
-        Warning("%s - Map not found on server!\n", __FUNCTION__);
-        return;
-    }
-
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-
-    if (size == 0)
-    {
-        UpdateMapInfoLabel();
-        Warning("%s - size is 0!\n", __FUNCTION__);
-    }
-
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        KeyValues *pInfo = pData->FindKey("info");
+        if (pInfo)
         {
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            KeyValues::AutoDelete ad(pResponse);
-            if (pResponse)
-            {
-                const char *author = pResponse->GetString("submitter", "Unknown");
-                const int tier = pResponse->GetInt("difficulty", -1);
-                const int bonus = pResponse->GetInt("bonus", -1);
-                char layout[BUFSIZELOCL];
-                if (pResponse->GetBool("linear", false))
-                {
-                    LOCALIZE_TOKEN(linear, "MOM_Linear", layout);
-                }
-                else
-                {
-                    Q_snprintf(layout, BUFSIZELOCL, "%i STAGES", pResponse->GetInt("zones", -1));
-                }
+            tier = pInfo->GetInt("difficulty");
+            numBonus = pInfo->GetInt("numBonuses");
+            numZones = pInfo->GetInt("numZones");
+            isLinear = pInfo->GetBool("isLinear");
+        }
 
-                UpdateMapInfoLabel(author, tier, layout, bonus);
-                m_bMapInfoLoaded = true; // Stop this info from being fetched again
+        KeyValues *pCredits = pData->FindKey("credits");
+        if (pCredits)
+        {
+            FOR_EACH_SUBKEY(pCredits, pCredit)
+            {
+                KeyValues *pUser = pCredit->FindKey("user");
+                if (pCredit->GetInt("type", -1) == CREDIT_AUTHOR && pUser)
+                {
+                    authors.CopyAndAddToTail(pUser->GetString("alias", "<NULL>"));
+                }
             }
         }
+
+        UpdateMapInfoLabel(authors, tier, isLinear, numZones, numBonus);
+        m_bMapInfoLoaded = true; // Stop this info from being fetched again
     }
-    else
+    else if (pErr)
     {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+        int code = pKv->GetInt("code");
+        if (code == k_EHTTPStatusCode404NotFound)
+        {
+            // Map not found, don't update again
+            m_pMapAuthor->SetVisible(false);
+            m_pMapDetails->SetVisible(false);
+        } 
+        else
+        {
+            // Some other error, may be worth retrying
+            m_bMapInfoLoaded = false;
+        }
     }
-    // Last but not least, free resources
-    delete[] pData;
-    pData = nullptr;
-    alloc.deallocate();
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);*/
 }
 
 void CLeaderboardsHeader::UpdateMapInfoLabel(const char* text)
@@ -244,16 +126,33 @@ void CLeaderboardsHeader::UpdateMapInfoLabel(const char* text)
     }
 }
 
-void CLeaderboardsHeader::UpdateMapInfoLabel(const char* author, const int tier, const char* layout, const int bonus)
+void CLeaderboardsHeader::UpdateMapInfoLabel(CUtlVector<char*>& vecAuthors, int tier, bool bIsLinear, int numZones, int numBonuses)
 {
-    if (m_pMapDetails && m_pMapAuthor)
+    if (m_pMapAuthor)
     {
-        char mapAuthor[MAX_PLAYER_NAME_LENGTH + 3];
-        Q_snprintf(mapAuthor, MAX_PLAYER_NAME_LENGTH + 3, "By %s", author);
-        m_pMapAuthor->SetText(mapAuthor);
+        if (vecAuthors.IsEmpty())
+        {
+            m_pMapAuthor->SetText("");
+        }
+        else
+        {
+            CUtlString authorsString("By ");
+            int count = vecAuthors.Count();
+            for (int i = 0; i < count; i++)
+            {
+                authorsString.Append(vecAuthors[i]);
+                if (i < count - 2)
+                    authorsString.Append(", ", 2);
+            }
 
-        char mapDetails[BUFSIZ];
-        Q_snprintf(mapDetails, BUFSIZ, "TIER %i - %s - %i BONUS", tier, layout, bonus);
-        UpdateMapInfoLabel(mapDetails);
+            m_pMapAuthor->SetText(authorsString.Get());
+        }
     }
+
+    CFmtStr layout("%s (%i zone%s)", bIsLinear ? "LINEAR" : "STAGED", numZones, numZones > 1 ? "s" : "");
+    CFmtStr bonuses(" - %i BONUS%s", numBonuses, numBonuses > 1 ? "ES" : "");
+
+    char mapDetails[BUFSIZ];
+    Q_snprintf(mapDetails, BUFSIZ, "TIER %i - %s%s", tier, layout.Get(), numBonuses ? bonuses.Get() : "");
+    UpdateMapInfoLabel(mapDetails);
 }
