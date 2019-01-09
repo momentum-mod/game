@@ -134,6 +134,20 @@ bool CAPIRequests::GetMapByName(const char *pMapName, CallbackFunc func)
     return false;
 }
 
+bool CAPIRequests::GetUserMapLibrary(CallbackFunc func)
+{
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ("user/maps/library"), k_EHTTPMethodGET))
+    {
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "gallery,submitter,inFavorites");
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "limit", "0");
+
+        return SendAPIRequest(req, func, __FUNCTION__);
+    }
+    delete req;
+    return false;
+}
+
 bool CAPIRequests::SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func)
 {
     APIRequest *req = new APIRequest;
@@ -203,10 +217,11 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc st
     return handle;
 }
 
-
-void CAPIRequests::PostInit()
+bool CAPIRequests::Init()
 {
     DoAuth();
+
+    return true;
 }
 
 void CAPIRequests::Shutdown()
@@ -242,6 +257,9 @@ void CAPIRequests::OnAuthTicket(GetAuthSessionTicketResponse_t* pParam)
 
 void CAPIRequests::OnAuthHTTP(KeyValues *pResponse)
 {
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("site_auth");
+    bool bSuccess = false;
+
     KeyValues *pData = pResponse->FindKey("data");
     KeyValues *pErr = pResponse->FindKey("error");
     if (pData)
@@ -252,12 +270,19 @@ void CAPIRequests::OnAuthHTTP(KeyValues *pResponse)
         {
             m_pAPIKey = new char[tokenLength + 1];
             Q_strncpy(m_pAPIKey, pData->GetString("token"), tokenLength + 1);
+            bSuccess = true;
         }
     }
     else if (pErr)
     {
         Warning("Error when trying to get an API key!\n");
         // MOM_TODO display the error here in the console
+    }
+
+    if (pEvent)
+    {
+        pEvent->SetBool("success", bSuccess);
+        gameeventmanager->FireEventClientSide(pEvent);
     }
 }
 
@@ -276,6 +301,11 @@ void CAPIRequests::DoAuth()
     m_hAuthTicket = SteamUser()->GetAuthSessionTicket(m_bufAuthBuffer, 1024, &m_iAuthActualSize);
     if (m_hAuthTicket == k_HAuthTicketInvalid)
         Warning("Initial call to get the ticket failed!\n");
+}
+
+bool CAPIRequests::IsAuthenticated() const
+{
+    return m_pAPIKey != nullptr;
 }
 
 void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)

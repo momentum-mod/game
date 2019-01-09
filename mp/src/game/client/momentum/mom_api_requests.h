@@ -106,11 +106,14 @@ public:
     // Sends an auth ticket to the server to get an API key to use for requests. 
     // This should be the first API call to make, and is done automatically on game boot.
     bool SendAuthTicket(CallbackFunc func);
+    // Returns true if authenticated with the server
+    bool IsAuthenticated() const;
 
     // ===== Maps ======
     bool GetMaps(KeyValues *pKvFilters, CallbackFunc func);
     bool GetMapInfo(uint32 mapID, CallbackFunc func);
     bool GetMapByName(const char *pMapName, CallbackFunc func);
+    bool GetUserMapLibrary(CallbackFunc func);
 
     // ==== Leaderboards ====
     bool GetTop10MapTimes(uint32 mapID, CallbackFunc func);
@@ -143,7 +146,7 @@ public:
 
 protected:
     // CAutoGameSystemPerFrame
-    void PostInit() OVERRIDE;
+    bool Init() OVERRIDE;
     void Shutdown() OVERRIDE;
 
     // Auth ticket impl
