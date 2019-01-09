@@ -113,3 +113,4 @@ mp/game/momentum/cfg/pet.txt
 *.exe
 mp/game/momentum/version.txt
 mp/game/momentum/downloadlists/
+mp/game/momentum/map_cache.dat

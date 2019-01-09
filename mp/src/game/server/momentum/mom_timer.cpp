@@ -332,7 +332,6 @@ void CMomentumTimer::SetGameModeConVars()
         sv_maxspeed.SetValue(250);
         break;
     case GAMEMODE_UNKNOWN:
-    case GAMEMODE_ALLOWED:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(150);
         sv_maxspeed.SetValue(260);

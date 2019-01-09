@@ -16,16 +16,15 @@
 
 
 // Gamemode for momentum
-enum GAMEMODES
+enum GAME_MODE
 {
     GAMEMODE_UNKNOWN = 0, // Non-recognized map (no info ents in it)
-    GAMEMODE_ALLOWED, // not "official gamemode" but must be allowed for other reasons
-    GAMEMODE_SURF,// Surfing (66t, 3500 maxvel)
-    GAMEMODE_BHOP, // Bhopping (100t, 10k maxvel)
-    GAMEMODE_KZ, // Scrolling/Stamina (currently activates with kz_)
-    GAMEMODE_TRICKSURF,
-    GAMEMODE_TRIKZ,
-    GAMEMODE_RJ,
+    GAMEMODE_SURF = 1,
+    GAMEMODE_BHOP = 2,
+    GAMEMODE_KZ = 3,
+    GAMEMODE_RJ = 4,
+    GAMEMODE_TRICKSURF = 5,
+    GAMEMODE_TRIKZ = 6,
     // MOM_TODO: etc
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
@@ -47,7 +46,8 @@ enum RUN_FLAG
 
 enum MAP_UPLOAD_STATUS
 {
-    MAP_APPROVED = 0,
+    STATUS_UNKNOWN = -1,
+    MAP_APPROVED,
     MAP_PENDING,
     MAP_NEEDS_REVISION,
     MAP_PRIVATE_TESTING,
@@ -59,7 +59,8 @@ enum MAP_UPLOAD_STATUS
 
 enum MAP_CREDIT_TYPE
 {
-    CREDIT_AUTHOR = 0,
+    CREDIT_UNKNOWN = -1,
+    CREDIT_AUTHOR,
     CREDIT_TESTER,
     CREDIT_SPECIAL_THANKS,
 };

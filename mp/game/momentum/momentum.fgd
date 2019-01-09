@@ -314,13 +314,12 @@
     gametype(choices) : "Game Type" : 0 : "The game type of the map." =
     [
         0 : "Unknown"
-        1 : "Allowed"
-        2 : "Surf"
-        3 : "Bhop"
-        4 : "Kz (Climbing)"
+        1 : "Surf"
+        2 : "Bhop"
+        3 : "Kz (Climbing)"
+        4 : "RJ"
         5 : "Tricksurf"
         6 : "Trikz"
-        7 : "RJ"
     ]
 ]
 
