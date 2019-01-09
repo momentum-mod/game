@@ -561,7 +561,7 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TIME_TYPE type)
 bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdate)
 {
     ConVarRef gm("mom_gamemode");
-    if (!outPlayerInfo || gm.GetInt() == GAMEMODE_ALLOWED)
+    if (!outPlayerInfo || gm.GetInt() == GAMEMODE_UNKNOWN)
         return false;
 
     KeyValues *pLeaderboards = new KeyValues("leaderboards");

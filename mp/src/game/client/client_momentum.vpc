@@ -179,6 +179,8 @@ $Project "Client (Momentum)"
                 $File "momentum\mom_api_requests.cpp"
                 $File "momentum\mom_run_poster.h"
                 $File "momentum\mom_run_poster.cpp"
+                $File "momentum\mom_map_cache.h"
+                $File "momentum\mom_map_cache.cpp"
             }
 
             $File   "momentum\client_events.h"

@@ -92,4 +92,8 @@
     "invalid_mdl_cache"
     {
     }
+    "site_auth"
+    {
+        "success" "bool"
+    }
 }

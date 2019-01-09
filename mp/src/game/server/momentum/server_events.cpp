@@ -36,7 +36,7 @@ void Momentum::GameInit()
     }
     else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
     {
-        gm.SetValue(GAMEMODE_ALLOWED);
+        // gm.SetValue(GAMEMODE_ALLOWED);
     }
     else
     {
