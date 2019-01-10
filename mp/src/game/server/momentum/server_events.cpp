@@ -1,49 +1,11 @@
 #include "cbase.h"
 #include "server_events.h"
-#include "mom_shareddefs.h"
 #include "tickset.h"
 #include "mapzones.h"
 #include "mom_timer.h"
 #include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
-
-//This is only called when "map ____" is called, if the user uses changelevel then...
-// \/(o_o)\/
-void Momentum::GameInit()
-{
-    ConVarRef gm("mom_gamemode");
-    ConVarRef map("host_map");
-    const char *pMapName = map.GetString();
-    // This will only happen if the user didn't use the map selector to start a map
-
-    //set gamemode depending on map name
-    //MOM_TODO: This needs to read map entity/momfile data and set accordingly
-    if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
-    {
-        DevLog("Setting game mode to surf (GM# %d)\n", GAMEMODE_SURF);
-        gm.SetValue(GAMEMODE_SURF);
-    }
-    else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
-    {
-        DevLog("Setting game mode to bhop (GM# %d)\n", GAMEMODE_BHOP);
-        gm.SetValue(GAMEMODE_BHOP);
-    }
-    else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
-    {
-        DevLog("Setting game mode to scroll (GM# %d)\n", GAMEMODE_KZ);
-        gm.SetValue(GAMEMODE_KZ);
-    }
-    else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
-    {
-        // gm.SetValue(GAMEMODE_ALLOWED);
-    }
-    else
-    {
-        DevLog("Setting game mode to unknown\n");
-        gm.SetValue(GAMEMODE_UNKNOWN);
-    }
-}
 
 CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystemPerFrame(pName), zones(nullptr)
                                                        
@@ -54,8 +16,6 @@ void CMOMServerEvents::PostInit()
 {
     TickSet::TickInit();
     MountAdditionalContent();
-
-    
 
     // MOM_TODO: connect to site
     /*if (SteamAPI_IsSteamRunning())

@@ -91,7 +91,6 @@
 #include "querycache.h"
 
 //Momentum
-#include "momentum/server_events.h"
 #include "momentum/tickset.h"
 
 
@@ -857,7 +856,6 @@ float CServerGameDLL::GetTickInterval( void ) const
 bool CServerGameDLL::GameInit( void )
 {
 	ResetGlobalState();
-    Momentum::GameInit();
 	engine->ServerCommand( "exec game.cfg\n" );
 	engine->ServerExecute( );
 	CBaseEntity::sm_bAccurateTriggerBboxChecks = true;

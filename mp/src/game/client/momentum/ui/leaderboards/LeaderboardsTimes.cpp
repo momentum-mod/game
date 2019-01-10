@@ -17,7 +17,7 @@
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
 #include "run/mom_replay_base.h"
-#include "mom_run_poster.h"
+#include "mom_map_cache.h"
 #include "mom_api_requests.h"
 #include "run/mom_replay_factory.h"
 #include "filesystem.h"
@@ -420,20 +420,19 @@ void CLeaderboardsTimes::LoadOnlineTimes(TIME_TYPE type)
 
     if (!m_bTimesLoading[type] && m_bTimesNeedUpdate[type])
     {
-        // MOM_TODO: Use a local map ID variable here when we get map info!
-        if (g_pRunPoster->m_iMapID)
+        if (g_pMapCache->GetCurrentMapID())
         {
             bool bCalled = false;
             switch (type)
             {
             case TIMES_TOP10:
-                bCalled = g_pAPIRequests->GetTop10MapTimes(g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CLeaderboardsTimes::GetTop10TimesCallback));
+                bCalled = g_pAPIRequests->GetTop10MapTimes(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsTimes::GetTop10TimesCallback));
                 break;
             case TIMES_FRIENDS:
-                bCalled = g_pAPIRequests->GetFriendsTimes(g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CLeaderboardsTimes::GetFriendsTimesCallback));
+                bCalled = g_pAPIRequests->GetFriendsTimes(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsTimes::GetFriendsTimesCallback));
                 break;
             case TIMES_AROUND:
-                bCalled = g_pAPIRequests->GetAroundTimes(g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CLeaderboardsTimes::GetAroundTimesCallback));
+                bCalled = g_pAPIRequests->GetAroundTimes(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsTimes::GetAroundTimesCallback));
             default:
                 break;
                 
