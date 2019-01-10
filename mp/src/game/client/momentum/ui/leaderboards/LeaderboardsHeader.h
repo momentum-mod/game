@@ -2,6 +2,8 @@
 
 #include "vgui_controls/EditablePanel.h"
 
+struct MapData;
+
 class CLeaderboardsHeader : public vgui::EditablePanel
 {
     DECLARE_CLASS_SIMPLE(CLeaderboardsHeader, EditablePanel);
@@ -10,11 +12,10 @@ class CLeaderboardsHeader : public vgui::EditablePanel
     void LoadData(const char *pMapName, bool bFullUpdate);
     void Reset();
 
-    void OnGetMapInfo(KeyValues *pKv);
+    void LoadMapData();
 
-    // Sets the text of the MapInfo label. If it's nullptr, it hides it
-    void UpdateMapInfoLabel(const char *text = nullptr);
-    void UpdateMapInfoLabel(CUtlVector<char*> &vecAuthors, int tier, bool bIsLinear, int numZones, int numBonuses);
+    // Sets the text of the MapInfo label
+    void UpdateMapInfoLabel(MapData *pData);
 
 private:
     vgui::Label *m_pMapName;

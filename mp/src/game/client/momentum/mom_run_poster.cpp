@@ -4,6 +4,7 @@
 #include "mom_run_poster.h"
 #include "mom_shareddefs.h"
 #include "mom_api_requests.h"
+#include "mom_map_cache.h"
 
 #include <tier0/memdbgon.h>
 
@@ -12,8 +13,6 @@ CRunPoster::CRunPoster()
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
 #endif
-    m_iMapID = 0;
-    m_szMapName[0] = '\0';
 }
 
 CRunPoster::~CRunPoster() {}
@@ -26,19 +25,16 @@ void CRunPoster::PostInit()
 
 void CRunPoster::LevelInitPostEntity()
 {
+#if ENABLE_STEAM_LEADERBOARDS
     const char *pMapName = MapName();
     if (pMapName)
     {
-        Q_strncpy(m_szMapName, pMapName, MAX_MAP_NAME);
-#if ENABLE_STEAM_LEADERBOARDS
         CHECK_STEAM_API(SteamUserStats());
         SteamAPICall_t findCall = SteamUserStats()->FindOrCreateLeaderboard(pMapName, k_ELeaderboardSortMethodAscending, k_ELeaderboardDisplayTypeTimeMilliSeconds);
         m_cLeaderboardFindResult.Set(findCall, this, &CRunPoster::OnLeaderboardFind);
-#endif
 
-        // MOM_TODO: Check a local map cache first before firing this
-        g_pAPIRequests->GetMapByName(pMapName, UtlMakeDelegate(this, &CRunPoster::OnMapLoadRequest));
     }
+#endif
 }
 
 void CRunPoster::LevelShutdownPostEntity()
@@ -46,8 +42,6 @@ void CRunPoster::LevelShutdownPostEntity()
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
 #endif
-    m_iMapID = 0;
-    m_szMapName[0] = '\0';
 }
 
 void CRunPoster::FireGameEvent(IGameEvent *pEvent)
@@ -83,12 +77,12 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
         m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
 #endif
 
-        if (m_iMapID)
+        if (CheckCurrentMap())
         {
             CUtlBuffer buf;
             if (g_pFullFileSystem->ReadFile(pEvent->GetString("filepath"), "MOD", buf))
             {
-                if (g_pAPIRequests->SubmitRun(m_iMapID, buf, UtlMakeDelegate(this, &CRunPoster::RunSubmitCallback)))
+                if (g_pAPIRequests->SubmitRun(g_pMapCache->GetCurrentMapID(), buf, UtlMakeDelegate(this, &CRunPoster::RunSubmitCallback)))
                 {
                     DevLog(2, "Run submitted!\n");
                 }
@@ -235,31 +229,19 @@ void CRunPoster::RunSubmitCallback(KeyValues* pKv)
     }
 }
 
-void CRunPoster::OnMapLoadRequest(KeyValues* pKv)
+bool CRunPoster::CheckCurrentMap()
 {
-    KeyValues *pData = pKv->FindKey("data");
-    // KeyValues *pErr = pKv->FindKey("error");
-    if (pData)
+    MapData *pData = g_pMapCache->GetCurrentMapData();
+    if (pData && pData->m_uID)
     {
-        KeyValues *pMapsData = pData->FindKey("maps");
-        if (pMapsData)
+        // Now check if the status is alright
+        MAP_UPLOAD_STATUS status = pData->m_eMapStatus;
+        if (status == MAP_APPROVED || status == MAP_PRIVATE_TESTING || status == MAP_PUBLIC_TESTING)
         {
-            KeyValues *pMapData = pMapsData->FindKey("1");
-            if (pMapData)
-            {
-                // First check if the map is what we care about
-                if (FStrEq(pMapData->GetString("name"), m_szMapName))
-                {
-                    // Now check if the status is alright
-                    int status = pMapData->GetInt("statusFlag");
-                    if (status == MAP_APPROVED || status == MAP_PRIVATE_TESTING || status == MAP_PUBLIC_TESTING)
-                    {
-                        m_iMapID = pMapData->GetInt("id");
-                    }
-                }
-            }
+            return true;
         }
-    } // Otherwise it'll just be false for this map
+    }
+    return false;
 }
 
 static CRunPoster s_momRunposter;

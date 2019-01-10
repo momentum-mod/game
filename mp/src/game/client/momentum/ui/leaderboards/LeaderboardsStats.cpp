@@ -8,8 +8,8 @@
 #include "vgui/ILocalize.h"
 
 #include "mom_shareddefs.h"
+#include "mom_map_cache.h"
 #include "mom_api_requests.h"
-#include "mom_run_poster.h"
 #include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
@@ -60,7 +60,7 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
     m_pPlayerName->SetText(newName);
 
     float flLastUp = gpGlobals->curtime - m_flLastUpdate;
-    if (bFullUpdate && ((g_pRunPoster->m_iMapID && flLastUp >= UPDATE_INTERVAL) || m_bNeedsUpdate))
+    if (bFullUpdate && ((g_pMapCache->GetCurrentMapID() && flLastUp >= UPDATE_INTERVAL) || m_bNeedsUpdate))
     {
         wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
 
@@ -75,7 +75,7 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
         m_pTotalStrafes->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalStrafes"), waiting));
 
         uint64 uID = SteamUser()->GetSteamID().ConvertToUint64();
-        g_pAPIRequests->GetUserStatsAndMapRank(uID, g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CLeaderboardsStats::OnPlayerStats));
+        g_pAPIRequests->GetUserStatsAndMapRank(uID, g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsStats::OnPlayerStats));
         m_flLastUpdate = gpGlobals->curtime;
         m_bNeedsUpdate = false;
     }
