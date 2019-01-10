@@ -3,13 +3,11 @@
 #include "LeaderboardsHeader.h"
 
 #include <vgui_controls/Label.h>
-#include <vgui/ILocalize.h>
 
 #include "fmtstr.h"
 
-#include "mom_api_requests.h"
-#include "mom_run_poster.h"
 #include "mom_shareddefs.h"
+#include "mom_map_cache.h"
 
 // Lastly
 #include "tier0/memdbgon.h"
@@ -36,20 +34,23 @@ void CLeaderboardsHeader::LoadData(const char *pMapName, bool bFullUpdate)
 
     if (bFullUpdate && !m_bMapInfoLoaded)
     {
-        // MOM_TODO: Use something better than the run poster to store map ID
-        if (g_pRunPoster->m_iMapID)
-        {
-            g_pAPIRequests->GetMapInfo(g_pRunPoster->m_iMapID, UtlMakeDelegate(this, &CLeaderboardsHeader::OnGetMapInfo));
-            wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
-            m_pMapAuthor->SetText(waiting);
-            m_pMapDetails->SetText(waiting);
-        }
-        else
-        {
-            m_bMapInfoLoaded = true;
-            m_pMapAuthor->SetVisible(false);
-            m_pMapDetails->SetVisible(false);
-        }
+        LoadMapData();
+    }
+}
+
+void CLeaderboardsHeader::LoadMapData()
+{
+    MapData *pData = g_pMapCache->GetCurrentMapData();
+    if (pData)
+    {
+        UpdateMapInfoLabel(pData);
+        m_bMapInfoLoaded = true; // Stop this info from being loaded again
+    }
+    else
+    {
+        m_bMapInfoLoaded = true;
+        m_pMapAuthor->SetVisible(false);
+        m_pMapDetails->SetVisible(false);
     }
 }
 
@@ -62,85 +63,29 @@ void CLeaderboardsHeader::Reset()
     m_pMapDetails->SetText("");
 }
 
-void CLeaderboardsHeader::OnGetMapInfo(KeyValues* pKv)
-{
-    KeyValues *pData = pKv->FindKey("data");
-    KeyValues *pErr = pKv->FindKey("error");
-    if (pData)
-    {
-        int tier = 0, numBonus = 0, numZones = 0;
-        bool isLinear = true;
-        CUtlStringList authors;
-
-        KeyValues *pInfo = pData->FindKey("info");
-        if (pInfo)
-        {
-            tier = pInfo->GetInt("difficulty");
-            numBonus = pInfo->GetInt("numBonuses");
-            numZones = pInfo->GetInt("numZones");
-            isLinear = pInfo->GetBool("isLinear");
-        }
-
-        KeyValues *pCredits = pData->FindKey("credits");
-        if (pCredits)
-        {
-            FOR_EACH_SUBKEY(pCredits, pCredit)
-            {
-                KeyValues *pUser = pCredit->FindKey("user");
-                if (pCredit->GetInt("type", -1) == CREDIT_AUTHOR && pUser)
-                {
-                    authors.CopyAndAddToTail(pUser->GetString("alias", "<NULL>"));
-                }
-            }
-        }
-
-        UpdateMapInfoLabel(authors, tier, isLinear, numZones, numBonus);
-        m_bMapInfoLoaded = true; // Stop this info from being fetched again
-    }
-    else if (pErr)
-    {
-        int code = pKv->GetInt("code");
-        if (code == k_EHTTPStatusCode404NotFound)
-        {
-            // Map not found, don't update again
-            m_pMapAuthor->SetVisible(false);
-            m_pMapDetails->SetVisible(false);
-        } 
-        else
-        {
-            // Some other error, may be worth retrying
-            m_bMapInfoLoaded = false;
-        }
-    }
-}
-
-void CLeaderboardsHeader::UpdateMapInfoLabel(const char* text)
-{
-    if (m_pMapDetails)
-    {
-        m_pMapDetails->SetText(text);
-        if (text == nullptr)
-        {
-            m_pMapDetails->SetVisible(false);
-        }
-    }
-}
-
-void CLeaderboardsHeader::UpdateMapInfoLabel(CUtlVector<char*>& vecAuthors, int tier, bool bIsLinear, int numZones, int numBonuses)
+void CLeaderboardsHeader::UpdateMapInfoLabel(MapData* pData)
 {
     if (m_pMapAuthor)
     {
-        if (vecAuthors.IsEmpty())
+        if (pData->m_vecCredits.IsEmpty())
         {
             m_pMapAuthor->SetText("");
         }
         else
         {
             CUtlString authorsString("By ");
-            int count = vecAuthors.Count();
+            CUtlStringList authors;
+            FOR_EACH_VEC(pData->m_vecCredits, i)
+            {
+                if (pData->m_vecCredits[i].m_eType == CREDIT_AUTHOR)
+                {
+                    authors.CopyAndAddToTail(pData->m_vecCredits[i].m_User.m_szAlias);
+                }
+            }
+            int count = authors.Count();
             for (int i = 0; i < count; i++)
             {
-                authorsString.Append(vecAuthors[i]);
+                authorsString.Append(authors[i]);
                 if (i < count - 2)
                     authorsString.Append(", ", 2);
             }
@@ -149,10 +94,14 @@ void CLeaderboardsHeader::UpdateMapInfoLabel(CUtlVector<char*>& vecAuthors, int 
         }
     }
 
-    CFmtStr layout("%s (%i zone%s)", bIsLinear ? "LINEAR" : "STAGED", numZones, numZones > 1 ? "s" : "");
-    CFmtStr bonuses(" - %i BONUS%s", numBonuses, numBonuses > 1 ? "ES" : "");
+    CFmtStr layout("%s (%i zone%s)", pData->m_Info.m_bIsLinear ? "LINEAR" : "STAGED", pData->m_Info.m_iNumZones, pData->m_Info.m_iNumZones > 1 ? "s" : "");
+    CFmtStr bonuses(" - %i BONUS%s", pData->m_Info.m_iNumBonuses, pData->m_Info.m_iNumBonuses > 1 ? "ES" : "");
 
     char mapDetails[BUFSIZ];
-    Q_snprintf(mapDetails, BUFSIZ, "TIER %i - %s%s", tier, layout.Get(), numBonuses ? bonuses.Get() : "");
-    UpdateMapInfoLabel(mapDetails);
+    Q_snprintf(mapDetails, BUFSIZ, "TIER %i - %s%s", pData->m_Info.m_iDifficulty, layout.Get(), pData->m_Info.m_iNumBonuses ? bonuses.Get() : "");
+
+    if (m_pMapDetails)
+    {
+        m_pMapDetails->SetText(mapDetails);
+    }
 }

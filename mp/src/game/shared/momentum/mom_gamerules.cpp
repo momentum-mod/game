@@ -246,8 +246,8 @@ static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldVal
     tr.SetValue(TickSet::GetTickrate());
 }
 
-static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", true, 0, false,
-                       0, OnGamemodeChanged);
+static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, 
+                       "", true, 0, false, 0, OnGamemodeChanged);
 
 static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
 

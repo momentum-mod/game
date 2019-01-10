@@ -22,8 +22,7 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     void RunSubmitCallback(KeyValues *pKv);
-    void OnMapLoadRequest(KeyValues *pKv);
-    uint32 m_iMapID;
+    bool CheckCurrentMap();
 
 #if ENABLE_STEAM_LEADERBOARDS
 public:
@@ -47,9 +46,6 @@ private:
     char m_szFileName[MAX_PATH];
     char m_szFilePath[MAX_PATH];
 #endif
-
-private:
-    char m_szMapName[MAX_MAP_NAME];
 };
 
 extern CRunPoster *g_pRunPoster;
