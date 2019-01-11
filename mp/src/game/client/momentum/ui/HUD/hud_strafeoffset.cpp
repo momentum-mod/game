@@ -48,7 +48,7 @@ class CHudStrafeOffset : public CHudElement, public Panel
         {
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("NewStrafeOffset");
         }
-        else //Must be timer_statem_hNumberFont
+        else // timer_state
         {
             if (pEvent->GetBool("is_running"))
                 Reset();
@@ -110,10 +110,18 @@ bool CHudStrafeOffset::ShouldDraw()
     }
     
     C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
+    if (pGhost)
+    {
+        // Don't draw for replays for now since it's kind of broken.
+        // Re-enable once we have a proper replay system that allows
+        // us to store strafe offset values directly in the replay.
+        return false;
+    }
+
     C_MOMRunEntityData *pData = pGhost ? &pGhost->m_SrvData.m_RunData : &m_pPlayer->m_SrvData.m_RunData;
     
-    //Cheese way to detect the animation being finished. Callbacks are too much work.
-    //We can only update the history once the numbers are in the right spot
+    // Cheese way to detect the animation being finished. Callbacks are too much work.
+    // We can only update the history once the numbers are in the right spot
     if (m_flHistOffset >= 43.99)
     {
         g_pClientMode->GetViewportAnimationController()->CancelAnimationsForPanel(this);
