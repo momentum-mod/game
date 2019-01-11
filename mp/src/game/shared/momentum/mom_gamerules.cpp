@@ -255,7 +255,6 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 {
     if (pPlayer)
     {
-
         ConVarRef map("host_map");
         const char *pMapName = map.GetString();
 
@@ -268,6 +267,13 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
         {
             // Turn them back on
             pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
+        }
+
+       // Handle game_player_equip ents
+        CBaseEntity *pWeaponEntity = nullptr;
+        while ((pWeaponEntity = gEntList.FindEntityByClassname(pWeaponEntity, "game_player_equip")) != nullptr)
+        {
+            pWeaponEntity->Touch(pPlayer);
         }
 
         // MOM_TODO: could this change to gamemode != ALLOWED ?
