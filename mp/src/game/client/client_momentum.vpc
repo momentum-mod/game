@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
+       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.momentum\ui\ultralight_ui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
        $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
     }
 }
@@ -154,6 +154,18 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\IMessageboxPanel.h"
                     $File "momentum\ui\MessageboxPanel.cpp"
                     $File "momentum\ui\MessageboxPanel.h"
+                }
+                
+                $Folder "Ultralight"
+                {
+                    $File "momentum\ui\ultralight_ui\win\ultralight_fontloader_win.h" [$WIN32]
+                    $File "momentum\ui\ultralight_ui\win\ultralight_fontloader_win.cpp" [$WIN32]
+                    $File "momentum\ui\ultralight_ui\ultralight_filesystem.h"
+                    $File "momentum\ui\ultralight_ui\ultralight_filesystem.cpp"
+                    $File "momentum\ui\ultralight_ui\ultralight_overlay.h"
+                    $File "momentum\ui\ultralight_ui\ultralight_overlay.cpp"
+                    $File "momentum\ui\ultralight_ui\ultralight_ui_system.h"
+                    $File "momentum\ui\ultralight_ui\ultralight_ui_system.cpp"
                 }
                 
                 $Folder "Spectator"
