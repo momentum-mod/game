@@ -66,21 +66,21 @@ $Project "Client (Momentum)"
                 {
                     $Folder "Headers"
                     {
-	                    $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
-	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
-	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
-	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
-	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
-	                    $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
+                        $File "momentum\ui\SettingsPanel\SettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\OnlineSettingsPage.h"
                     }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
                     $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
-	                $File "momentum\ui\SettingsPanel\GameplaySettingsPage.cpp"
-	                $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
-	                $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\OnlineSettingsPage.cpp"
                 }
                 
@@ -202,7 +202,7 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_lmg.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.cpp"
-				$File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.cpp"
                 
                 //CS guns
@@ -344,11 +344,14 @@ $Project "Client (Momentum)"
         }
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
-		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
+        $File   "$SRCDIR\game\shared\predicted_viewmodel.h"
     }
 
     $Folder "Link Libraries"
     {
         $Lib "libcryptopp"
+        $Lib "$LIBPUBLIC\Ultralight"
+        $Lib "$LIBPUBLIC\UltralightCore"
+        $Lib "$LIBPUBLIC\WebCore"
     }
 }
