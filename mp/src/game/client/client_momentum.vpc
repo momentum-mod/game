@@ -31,6 +31,12 @@ $Project "Client (Momentum)"
         {
             $Folder "UI"
             {
+                $Folder "Zone Menu"
+                {
+                    $File "momentum\ui\ZoneMenu\ZoneMenu.h"
+                    $File "momentum\ui\ZoneMenu\ZoneMenu.cpp"
+                }
+
                 $Folder "Ghost Entity Panel"
                 {
                     $File "momentum\ui\GhostEntityPanel.h"
@@ -181,7 +187,7 @@ $Project "Client (Momentum)"
                 }
             }
 
-            $Folder "API"
+			$Folder "API"
             {
                 $File "momentum\mom_api_requests.h"
                 $File "momentum\mom_api_requests.cpp"
