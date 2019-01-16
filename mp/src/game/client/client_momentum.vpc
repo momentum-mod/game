@@ -116,8 +116,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\controls\ColorPicker.cpp"
                     $File "momentum\ui\controls\ModelPanel.h"
                     $File "momentum\ui\controls\ModelPanel.cpp"
-                    $File "momentum\ui\controls\CMomImagePanel.cpp"
-                    $File "momentum\ui\controls\CMomImagePanel.h"
+                    $File "momentum\ui\controls\FileImage.cpp"
+                    $File "momentum\ui\controls\FileImage.h"
                 }
 
                 $Folder "Lobby"
