@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 #include <vgui_controls/Panel.h>
 
 enum
