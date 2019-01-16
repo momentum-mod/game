@@ -201,16 +201,22 @@ enum SPECTATE_MSG_TYPE
 // For some reason if calling console commands through the engine does not work, this seems to do the trick
 // Notes: It is wrapped in its own scope so pCommand is redefined if this is used more than once
 //        You cannot have an '\n' at the end of the `command_name` argument using this method
-#define DISPATCH_CON_COMMAND(command_name, full_command) { \
-    ConCommand* pCommand = g_pCVar->FindCommand(command_name); \
-    if (pCommand) { \
-        CCommand cc; \
-        cc.Tokenize(full_command); \
-        pCommand->Dispatch(cc); \
-    } else { \
-        Warning("%s->%s():%d -- Could not find console command: %s\n", \
-            __FILE__, __FUNCTION__, __LINE__, #command_name); \
-    }}
+#define DISPATCH_CON_COMMAND(command_name, full_command)                                                               \
+    {                                                                                                                  \
+        ConCommand *pCommand = g_pCVar->FindCommand(command_name);                                                     \
+        if (pCommand)                                                                                                  \
+        {                                                                                                              \
+            CCommand cc;                                                                                               \
+            cc.Tokenize(full_command);                                                                                 \
+            pCommand->Dispatch(cc);                                                                                    \
+        }                                                                                                              \
+        else                                                                                                           \
+        {                                                                                                              \
+            Warning("%s->%s():%d -- Could not find console command: %s\n", __FILE__, __FUNCTION__, __LINE__,           \
+                    #command_name);                                                                                    \
+        }                                                                                                              \
+    }
+
 #define MAP_FOLDER "maps"
 #define RECORDING_PATH "replays"
 #define RECORDING_ONLINE_PATH "online"
