@@ -68,7 +68,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_speedometer"
+		"cvar_name"		"mom_hud_speedometer"
 		"cvar_value"		"1"
 	}
     "SpeedoShowJump"
@@ -98,7 +98,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_speedometer_showlastjumpvel"
+		"cvar_name"		"mom_hud_speedometer_showlastjumpvel"
 		"cvar_value"		"1"
 	}
     "ShowSpeedoHvel"
@@ -128,7 +128,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_speedometer_hvel"
+		"cvar_name"		"mom_hud_speedometer_hvel"
 		"cvar_value"		"0"
 	}
     "SpeedoUnitsLabel"
@@ -292,7 +292,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_showkeypresses"
+		"cvar_name"		"mom_hud_showkeypresses"
 		"cvar_value"		"1"
 	}
     
@@ -353,7 +353,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_strafesync_draw"
+		"cvar_name"		"mom_hud_strafesync_draw"
 		"cvar_value"		"1"
 	}
 	"SyncShowBar"
@@ -383,7 +383,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_strafesync_drawbar"
+		"cvar_name"		"mom_hud_strafesync_drawbar"
 		"cvar_value"		"1"
 	}
 	"SyncTypeLabel"
@@ -544,7 +544,7 @@
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
 		"Default"		"0"
-		"cvar_name"		"mom_timer"
+		"cvar_name"		"mom_hud_timer"
 		"cvar_value"		"1"
 	}
 }
