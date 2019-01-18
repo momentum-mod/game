@@ -714,7 +714,7 @@ void ListPanel::SetColumnHeaderText(int col, const char *text)
 {
 	m_ColumnsData[m_CurrentColumns[col]].m_pHeader->SetText(text);
 }
-void ListPanel::SetColumnHeaderText(int col, wchar_t *text)
+void ListPanel::SetColumnHeaderText(int col, const wchar_t *text)
 {
 	m_ColumnsData[m_CurrentColumns[col]].m_pHeader->SetText(text);
 }
