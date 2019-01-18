@@ -21,10 +21,10 @@
 
 using namespace vgui;
 
-static ConVar mom_timer("mom_timer", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+static ConVar mom_timer("mom_hud_timer", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
                         "Toggle displaying the timer. 0 = OFF, 1 = ON\n", true, 0, true, 1);
 
-static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
+static ConVar timer_mode("mom_hud_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                          "Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Checkpoint\n");
 
 class C_HudTimer : public CHudElement, public Panel
