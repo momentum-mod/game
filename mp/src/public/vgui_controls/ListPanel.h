@@ -93,7 +93,7 @@ public:
 	virtual int  FindColumn(const char *columnName);
 	virtual void SetColumnHeaderHeight( int height );
 	virtual void SetColumnHeaderText(int column, const char *text);
-	virtual void SetColumnHeaderText(int column, wchar_t *text);
+	virtual void SetColumnHeaderText(int column, const wchar_t *text);
 	virtual void SetColumnHeaderImage(int column, int imageListIndex);
 	virtual void SetColumnHeaderTooltip(int column, const char *tooltipText);
 	virtual void SetColumnTextAlignment( int column, int align );
