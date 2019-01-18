@@ -4185,6 +4185,8 @@ void Panel::ApplyAutoResizeSettings(KeyValues *inResourceData)
 	}
 
 	SetAutoResize( pinCorner, autoResize, nPinnedCornerOffsetX, nPinnedCornerOffsetY, nUnpinnedCornerOffsetX, nUnpinnedCornerOffsetY );
+
+    CalculateAutoResize(pw, pt);
 }
 
 void Panel::CalculateAutoResize(int parentWide, int parentTall)
