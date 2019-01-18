@@ -18,13 +18,13 @@
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_mapname, "1", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_mapname, "1", FLAG_HUD_CVAR,
                           "Toggles showing the map name. 0 = OFF, 1 = ON");
 
-static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_author, "0", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_author, "0", FLAG_HUD_CVAR,
                           "Toggles showing the map author. 0 = OFF, 1 = ON");
 
-static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR,
                           "Toggles showing the map difficulty. 0 = OFF, 1 = ON");
 
 class C_HudMapInfo : public CHudElement, public Panel
@@ -263,7 +263,7 @@ void C_HudMapInfo::Paint()
     int toIncrement = surface()->GetFontTall(m_hMapInfoFont) + 2;
     surface()->DrawSetTextFont(m_hMapInfoFont);
     IViewPortPanel *pSpecGUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
-    if (mom_mapinfo_show_mapname.GetBool() && pSpecGUI && !pSpecGUI->IsVisible())
+    if (mom_hud_mapinfo_show_mapname.GetBool() && pSpecGUI && !pSpecGUI->IsVisible())
     {
         const char *pMapName = g_pGameRules->MapName();
         if (pMapName)
@@ -278,7 +278,7 @@ void C_HudMapInfo::Paint()
         }
     }
 
-    if (mom_mapinfo_show_author.GetBool())
+    if (mom_hud_mapinfo_show_author.GetBool())
     {
         // MOM_TODO: Map author(s)
 
@@ -288,7 +288,7 @@ void C_HudMapInfo::Paint()
         // surface()->DrawPrintText(mapAuthorUnicode, wcslen(mapAuthorUnicode));
     }
 
-    if (mom_mapinfo_show_difficulty.GetBool())
+    if (mom_hud_mapinfo_show_difficulty.GetBool())
     {
         // MOM_TODO: We need to determine difficulty of a map.
     }

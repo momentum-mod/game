@@ -22,7 +22,7 @@
 
 using namespace vgui;
 
-static ConVar showkeys("mom_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
+static ConVar showkeys("mom_hud_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "Toggles showing keypresses and strafe/jump counter\n");
 
 class CHudKeyPressDisplay : public CHudElement, public Panel
