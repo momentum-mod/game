@@ -15,20 +15,20 @@
 
 using namespace vgui;
 
-static ConVar strafesync_draw("mom_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+static ConVar strafesync_draw("mom_hud_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                               "Toggles displaying the strafesync data. (1 = only timer , 2 = always (except practice mode)) \n",
                               true, 0, true, 2);
 
-static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1",
+static ConVar strafesync_drawbar("mom_hud_strafesync_drawbar", "1",
                                  FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                  "Toggles displaying the visual strafesync bar.\n", true, 0, true, 1);
 
 static ConVar strafesync_type(
-    "mom_strafesync_type", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "mom_hud_strafesync_type", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "1: Sync1 (perfect strafe ticks / total strafe ticks)\n 2: Sync2 (accel ticks / total strafe ticks)\n", true, 1,
     true, 2);
 
-static ConVar strafesync_colorize("mom_strafesync_colorize", "2",
+static ConVar strafesync_colorize("mom_hud_strafesync_colorize", "2",
                                   FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                   "Toggles strafesync data colorization type based on acceleration. 0 to disable\n",
                                   true, 0, true, 2);
