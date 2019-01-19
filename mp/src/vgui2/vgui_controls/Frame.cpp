@@ -233,7 +233,7 @@ namespace
 			Panel::ApplySchemeSettings(pScheme);
 			bool isSmall = ((Frame *)GetParent())->IsSmallCaption();
 
-			_marlettFont = pScheme->GetFont( isSmall ? "MarlettSmall" : "Marlett", IsProportional());
+			_marlettFont = pScheme->GetFont( isSmall ? "MarlettSmall" : "Marlett");
 			SetFgColor(GetSchemeColor("FrameGrip.Color1", pScheme));
 			SetBgColor(GetSchemeColor("FrameGrip.Color2", pScheme));
 
