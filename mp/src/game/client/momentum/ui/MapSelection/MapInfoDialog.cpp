@@ -26,7 +26,7 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, const char *mapname) : Frame(paren
     m_bConnecting = false;
     m_bPlayerListUpdatePending = false;
 
-    LoadControlSettings("resource/ui/DialogMapInfo.res");
+    LoadControlSettings("resource/ui/MapSelector/DialogMapInfo.res");
 
     m_pConnectButton = FindControl<Button>("Connect", true);
     m_pCloseButton = FindControl<Button>("Close", true);

@@ -68,65 +68,9 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
     }
 }
 
-
-bool MapHasStages(const char* szMap)
-{
-    bool found = false;
-    if (filesystem && szMap)
-    {
-        KeyValues *kvMap = new KeyValues(szMap);
-        char path[MAX_PATH];
-        char fileName[FILENAME_MAX];
-        Q_snprintf(fileName, FILENAME_MAX, "%s%s", szMap, EXT_ZONE_FILE);
-        V_ComposeFileName(MAP_FOLDER, fileName, path, MAX_PATH);
-
-
-        if (kvMap->LoadFromFile(filesystem, path, "MOD"))
-        {
-            found = (kvMap->FindKey("stage") != nullptr);
-        }
-        kvMap->deleteThis();
-    }
-
-    return found;
-}
-
-void CLocalMaps::FillMapstruct(mapstruct_t *m)
-{
-    //Game mode
-    m->m_iGameMode = GAMEMODE_UNKNOWN;
-    float tickRate = 0.015f;
-    if (!V_strnicmp(m->m_szMapName, "surf_", 5))
-    {
-        m->m_iGameMode = GAMEMODE_SURF;
-    }
-    else if (!V_strnicmp(m->m_szMapName, "bhop_", 5))
-    {
-        m->m_iGameMode = GAMEMODE_BHOP;
-        tickRate = 0.01f;
-    }
-
-    // MOM_TODO: Determine difficulty
-    m->m_iDifficulty = 1;
-
-    //Map layout (liner/staged)
-    m->m_bHasStages = MapHasStages(m->m_szMapName);
-
-    //Completed/Best time
-    //MOM_TODO: have the tickrate and run flags as filters, load actual values
-    
-    CMomReplayBase *pBestTime = g_pMomentumUtil->GetBestTime(m->m_szMapName, tickRate);
-    if (pBestTime)
-    {
-        m->m_bCompleted = true;
-        Log("FOUND BEST TIME: %f\n", pBestTime->GetRunTime());
-        g_pMomentumUtil->FormatTime(pBestTime->GetRunTime(), m->m_szBestTime);
-    }
-}
-
 void CLocalMaps::GetNewMapList()
 {
-    ClearMapList();
+    /*ClearMapList();
     //Populate the main list
     FileFindHandle_t found;
     //MOM_TODO: make this by *.mom
@@ -140,12 +84,12 @@ void CLocalMaps::GetNewMapList()
 
     m_bLoadedMaps = true;
 
-    ApplyGameFilters();
+    ApplyGameFilters();*/
 }
 
 void CLocalMaps::AddNewMapToVector(const char* mapname)
 {
-    mapdisplay_t map = mapdisplay_t();
+    /*mapdisplay_t map = mapdisplay_t();
     mapstruct_t m = mapstruct_t();
     map.m_bDoNotRefresh = true;
 
@@ -163,7 +107,7 @@ void CLocalMaps::AddNewMapToVector(const char* mapname)
     }
 
     map.m_mMap = m;
-    m_vecMaps.AddToTail(map);
+    m_vecMaps.AddToTail(map);*/
 }
 
 //-----------------------------------------------------------------------------
@@ -171,7 +115,7 @@ void CLocalMaps::AddNewMapToVector(const char* mapname)
 //-----------------------------------------------------------------------------
 void CLocalMaps::StartRefresh()
 {
-    FOR_EACH_VEC(m_vecMaps, i)
+    /*FOR_EACH_VEC(m_vecMaps, i)
     {
         mapdisplay_t *pMap = &m_vecMaps[i];
         if (!pMap) continue;
@@ -239,18 +183,7 @@ void CLocalMaps::StartRefresh()
             m_pMapList->ApplyItemChanges(pMap->m_iListID);
             m_pMapList->SetItemVisible(pMap->m_iListID, true);
         }
-    }
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Control which button are visible.
-//-----------------------------------------------------------------------------
-void CLocalMaps::ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool bShowFilter)
-{
-    m_pStartMap->SetVisible(bShowConnect);
-    m_pQueryMaps->SetVisible(bShowRefreshAll);
-    m_pFilter->SetVisible(bShowFilter);
+    }*/
 }
 
 void CLocalMaps::SetEmptyListText()

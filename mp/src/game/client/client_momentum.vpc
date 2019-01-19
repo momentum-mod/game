@@ -51,6 +51,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\MapSelection\MapSelectorDialog.h"
                         $File "momentum\ui\MapSelection\OnlineMaps.h"
                         $File "momentum\ui\MapSelection\CMapListPanel.h"
+                        $File "momentum\ui\MapSelection\MapFilterPanel.h"
                     }
                     $File "momentum\ui\MapSelection\BaseMapsPage.cpp" \
                           "momentum\ui\MapSelection\LocalMaps.cpp" \ 
@@ -59,7 +60,8 @@ $Project "Client (Momentum)"
                           "momentum\ui\MapSelection\MapSelector.cpp" \
                           "momentum\ui\MapSelection\MapSelectorDialog.cpp" \
                           "momentum\ui\MapSelection\OnlineMaps.cpp" \
-                          "momentum\ui\MapSelection\CMapListPanel.cpp"
+                          "momentum\ui\MapSelection\CMapListPanel.cpp" \
+                          "momentum\ui\MapSelection\MapFilterPanel.cpp"
                 }
                 
                 $Folder "SettingsPanel"
