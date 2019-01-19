@@ -2,7 +2,17 @@
 
 #include "mom_shareddefs.h"
 
-struct User
+abstract_class APIModel 
+{
+public:
+    virtual ~APIModel() = default;
+    APIModel() : m_bValid(false), m_bFromAPI(true) {}
+    bool m_bValid, m_bFromAPI;
+    virtual void FromKV(KeyValues *pKv) = 0;
+    virtual void ToKV(KeyValues *pKv) const = 0;
+};
+
+struct User : APIModel
 {
     uint64 m_uID;
     char m_szAlias[MAX_PLAYER_NAME_LENGTH];
@@ -11,14 +21,12 @@ struct User
         m_szAlias[0] = '\0';
     }
 
-    void FromKV(KeyValues* pKv);
-
-    void ToKV(KeyValues* pKv) const;
-
+    void FromKV(KeyValues* pKv) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
     User& operator=(const User& src);
 };
 
-struct MapInfo
+struct MapInfo : APIModel
 {
     char m_szDescription[1001];
     int m_iNumBonuses;
@@ -31,12 +39,12 @@ struct MapInfo
         m_szDescription[0] = '\0';
     }
 
-    void FromKV(KeyValues* pKv, bool bAPI);
-    void ToKV(KeyValues* pKv) const;
+    void FromKV(KeyValues *pKv) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
     MapInfo& operator=(const MapInfo& other);
 };
 
-struct MapImage
+struct MapImage : APIModel
 {
     uint32 m_uID;
     char m_szURL[256];
@@ -48,10 +56,8 @@ struct MapImage
         m_szHash[0] = '\0';
     }
 
-    void FromKV(KeyValues* pKv);
-
-    void ToKV(KeyValues* pKv) const;
-
+    void FromKV(KeyValues* pKv) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
     bool operator==(const MapImage &other) const
     {
         return m_uID == other.m_uID;
@@ -60,34 +66,70 @@ struct MapImage
     MapImage& operator=(const MapImage& other);
 };
 
-struct MapGallery
+struct MapGallery : APIModel
 {
     MapImage m_Thumbnail;
     CUtlVector<MapImage> m_vecExtraImages;
     MapGallery() {}
     MapGallery(const MapGallery& other);
 
-    void FromKV(KeyValues* pKv, bool bAPI);
-
-    void ToKV(KeyValues* pKv) const;
-
+    void FromKV(KeyValues* pKv) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
     MapGallery& operator=(const MapGallery& src);
 };
 
-struct MapCredit
+struct MapCredit : APIModel
 {
     uint32 m_uID;
     MAP_CREDIT_TYPE m_eType;
     User m_User;
     MapCredit() : m_uID(0), m_eType(CREDIT_UNKNOWN) {}
 
-    void FromKV(KeyValues* pKv);
-    void ToKV(KeyValues* pKv) const;
+    void FromKV(KeyValues* pKv) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
     bool operator==(const MapCredit& other) const;
     MapCredit& operator=(const MapCredit& other);
 };
 
-struct MapData
+struct Run : APIModel
+{
+    uint64 m_uID;
+    bool m_bIsPersonalBest;
+    float m_fTickRate;
+    // dateAchieved : DATE
+    float m_fTime; // In seconds
+    uint32 m_uFlags;
+    char m_szDownloadURL[256];
+    char m_szFileHash[41];
+
+    Run(): m_uID(0), m_bIsPersonalBest(false), m_fTickRate(0.0f), m_fTime(.0f), m_uFlags(0)
+    {
+        m_szDownloadURL[0] = '\0';
+        m_szFileHash[0] = '\0';
+    }
+
+    void FromKV(KeyValues* pKv) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
+    bool operator==(const Run& other) const;
+    Run& operator=(const Run& other);
+};
+
+struct MapRank : APIModel
+{
+    uint32 m_iRank;
+    uint32 m_iRankXP;
+
+    Run m_Run;
+
+    MapRank() : m_iRank(0), m_iRankXP(0) {}
+
+    void FromKV(KeyValues* pKv) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
+    bool operator==(const MapRank& other) const;
+    MapRank& operator=(const MapRank& other);
+};
+
+struct MapData : APIModel
 {
     time_t m_tLastUpdated;
     bool m_bInFavorites;
@@ -103,14 +145,16 @@ struct MapData
 
     User m_Submitter;
     MapInfo m_Info;
+    MapRank m_Rank; // User's rank on a map, if they have one
     CUtlVector<MapCredit> m_vecCredits;
     MapGallery m_Gallery;
 
     MapData();
     MapData(const MapData& src);
-    void LoadFromKV(KeyValues* pMap, bool bAPI);
-    void ToKV(KeyValues* pKv) const;
+    void FromKV(KeyValues* pMap) OVERRIDE;
+    void ToKV(KeyValues* pKv) const OVERRIDE;
     MapData& operator=(const MapData& src);
+    bool operator==(const MapData& other) const;
 };
 
 class CMapCache : public CAutoGameSystem, public CGameEventListener
@@ -126,6 +170,8 @@ public:
 
     MapData *GetCurrentMapData() const { return m_pCurrentMapData; }
     uint32 GetCurrentMapID() const { return m_pCurrentMapData ? m_pCurrentMapData->m_uID : 0; }
+
+    void GetMapLibrary(CUtlVector<MapData*> &vecLibrary);
 
 protected:
     void PostInit() OVERRIDE;
