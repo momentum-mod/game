@@ -69,7 +69,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1", FLAG_HUD_CVAR,
 DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
 
 C_RunComparisons::C_RunComparisons(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName), m_cvarVelType("mom_speedometer_hvel")
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName), m_cvarVelType("mom_hud_speedometer_hvel")
 {
     SetProportional(true);
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?
