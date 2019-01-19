@@ -18,6 +18,7 @@ void User::FromKV(KeyValues* pKv)
 {
     m_uID = pKv->GetUint64("id");
     Q_strncpy(m_szAlias, pKv->GetString("alias"), sizeof(m_szAlias));
+    m_bValid = true;
 }
 
 void User::ToKV(KeyValues* pKv) const
@@ -30,20 +31,24 @@ User& User::operator=(const User& src)
 {
     m_uID = src.m_uID;
     Q_strncpy(m_szAlias, src.m_szAlias, sizeof(m_szAlias));
+    m_bValid = true;
     return *this;
 }
 
-void MapInfo::FromKV(KeyValues* pKv, bool bAPI)
+void MapInfo::FromKV(KeyValues* pKv)
 {
     Q_strncpy(m_szDescription, pKv->GetString("description"), sizeof(m_szDescription));
     m_iNumBonuses = pKv->GetInt("numBonuses");
     m_iNumZones = pKv->GetInt("numZones");
     m_bIsLinear = pKv->GetBool("isLinear");
     m_iDifficulty = pKv->GetInt("difficulty");
-    if (bAPI)
-        g_pMomentumUtil->ISODateToTimeT(pKv->GetString("creationDate"), &m_tCreationDate);
+    if (m_bFromAPI)
+        m_bValid = g_pMomentumUtil->ISODateToTimeT(pKv->GetString("creationDate"), &m_tCreationDate);
     else
+    {
         m_tCreationDate = (time_t)pKv->GetUint64("creationDate");
+        m_bValid = true;
+    }
 }
 
 void MapInfo::ToKV(KeyValues* pKv) const
@@ -64,6 +69,7 @@ MapInfo& MapInfo::operator=(const MapInfo& other)
     m_bIsLinear = other.m_bIsLinear;
     m_iDifficulty = other.m_iDifficulty;
     m_tCreationDate = other.m_tCreationDate;
+    m_bValid = true;
     return *this;
 }
 
@@ -72,6 +78,7 @@ void MapImage::FromKV(KeyValues* pKv)
     m_uID = pKv->GetInt("id");
     Q_strncpy(m_szURL, pKv->GetString("URL"), sizeof(m_szURL));
     Q_strncpy(m_szHash, pKv->GetString("hash"), sizeof(m_szHash));
+    m_bValid = true;
 }
 
 void MapImage::ToKV(KeyValues* pKv) const
@@ -86,6 +93,7 @@ MapImage& MapImage::operator=(const MapImage& other)
     m_uID = other.m_uID;
     Q_strncpy(m_szURL, other.m_szURL, sizeof(m_szURL));
     Q_strncpy(m_szHash, other.m_szHash, sizeof(m_szHash));
+    m_bValid = true;
     return *this;
 }
 
@@ -93,13 +101,17 @@ MapGallery::MapGallery(const MapGallery& other)
 {
     m_Thumbnail = other.m_Thumbnail;
     m_vecExtraImages.AddVectorToTail(other.m_vecExtraImages);
+    m_bValid = true;
 }
 
-void MapGallery::FromKV(KeyValues* pKv, bool bAPI)
+void MapGallery::FromKV(KeyValues* pKv)
 {
     KeyValues* pThumbnail = pKv->FindKey("thumbnail");
     if (pThumbnail)
+    {
         m_Thumbnail.FromKV(pThumbnail);
+        m_bValid = true;
+    }
     KeyValues* pExtraImages = pKv->FindKey("extraImages");
     if (pExtraImages)
     {
@@ -108,7 +120,7 @@ void MapGallery::FromKV(KeyValues* pKv, bool bAPI)
             MapImage mi;
             mi.FromKV(pExtraImage);
 
-            if (bAPI)
+            if (m_bFromAPI)
             {
                 uint16 indx = m_vecExtraImages.Find(mi);
                 if (m_vecExtraImages.IsValidIndex(indx))
@@ -146,6 +158,7 @@ MapGallery& MapGallery::operator=(const MapGallery& src)
     m_Thumbnail = src.m_Thumbnail;
     m_vecExtraImages.RemoveAll();
     m_vecExtraImages.AddVectorToTail(src.m_vecExtraImages);
+    m_bValid = true;
     return *this;
 }
 
@@ -157,6 +170,7 @@ void MapCredit::FromKV(KeyValues* pKv)
     if (pUser)
     {
         m_User.FromKV(pUser);
+        m_bValid = true;
     }
 }
 
@@ -179,6 +193,88 @@ MapCredit& MapCredit::operator=(const MapCredit& other)
     m_uID = other.m_uID;
     m_eType = other.m_eType;
     m_User = other.m_User;
+    m_bValid = true;
+    return *this;
+}
+
+void Run::FromKV(KeyValues* pKv)
+{
+    m_uID = pKv->GetUint64("id");
+    m_bIsPersonalBest = pKv->GetBool("isPersonalBest");
+    m_fTickRate = pKv->GetFloat("tickRate");
+    // MOM_TODO: dateAchieved: type.DATE,
+    m_fTime = pKv->GetFloat("time");
+    m_uFlags = pKv->GetInt("flags");
+    Q_strncpy(m_szDownloadURL, pKv->GetString("file"), sizeof(m_szDownloadURL));
+    Q_strncpy(m_szFileHash, pKv->GetString("hash"), sizeof(m_szFileHash));
+    m_bValid = true;
+}
+
+void Run::ToKV(KeyValues* pKv) const
+{
+    pKv->SetUint64("id", m_uID);
+    pKv->SetBool("isPersonalBest", m_bIsPersonalBest);
+    pKv->SetFloat("tickRate", m_fTickRate);
+    // MOM_TODO: dateAchieved: Date
+    pKv->SetFloat("time", m_fTime);
+    pKv->SetInt("flags", m_uFlags);
+    pKv->SetString("file", m_szDownloadURL);
+    pKv->SetString("hash", m_szFileHash);
+}
+
+bool Run::operator==(const Run& other) const
+{
+    return m_uID == other.m_uID;
+}
+
+Run& Run::operator=(const Run& other)
+{
+    m_uID = other.m_uID;
+    m_bIsPersonalBest = other.m_bIsPersonalBest;
+    m_fTickRate = other.m_fTickRate;
+    // MOM_TODO: dateAchieved: type.DATE,
+    m_fTime = other.m_fTime;
+    m_uFlags = other.m_uFlags;
+    Q_strncpy(m_szDownloadURL, other.m_szDownloadURL, sizeof(m_szDownloadURL));
+    Q_strncpy(m_szFileHash, other.m_szFileHash, sizeof(m_szFileHash));
+    m_bValid = true;
+    return *this;
+}
+
+void MapRank::FromKV(KeyValues* pKv)
+{
+    m_iRank = pKv->GetInt("rank");
+    m_iRankXP = pKv->GetInt("rankXP");
+
+    KeyValues *pRun = pKv->FindKey("run");
+    if (pRun)
+    {
+        m_Run.ToKV(pRun);
+        m_bValid = true;
+    }
+}
+
+void MapRank::ToKV(KeyValues* pKv) const
+{
+    pKv->SetInt("rank", m_iRank);
+    pKv->SetInt("rankXP", m_iRankXP);
+
+    KeyValues *pRun = new KeyValues("run");
+    m_Run.ToKV(pRun);
+    pKv->AddSubKey(pRun);
+}
+
+bool MapRank::operator==(const MapRank& other) const
+{
+    return m_Run == other.m_Run && m_iRank == other.m_iRank && m_iRankXP == other.m_iRankXP;
+}
+
+MapRank& MapRank::operator=(const MapRank& other)
+{
+    m_iRank = other.m_iRank;
+    m_iRankXP = other.m_iRankXP;
+    m_Run = other.m_Run;
+    m_bValid = true;
     return *this;
 }
 
@@ -216,9 +312,11 @@ MapData::MapData(const MapData& src)
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
     m_Gallery = src.m_Gallery;
+    m_Rank = src.m_Rank;
+    m_bValid = true;
 }
 
-void MapData::LoadFromKV(KeyValues* pMap, bool bAPI)
+void MapData::FromKV(KeyValues* pMap)
 {
     m_uID = pMap->GetInt("id");
     m_eType = (GAME_MODE)pMap->GetInt("type");
@@ -226,17 +324,21 @@ void MapData::LoadFromKV(KeyValues* pMap, bool bAPI)
     Q_strncpy(m_szHash, pMap->GetString("hash"), sizeof(m_szHash));
     Q_strncpy(m_szDownloadURL, pMap->GetString("downloadURL"), sizeof(m_szDownloadURL));
 
-    Q_strncpy(m_szMapName, bAPI ? pMap->GetString("name") : pMap->GetName(), sizeof(m_szMapName));
-    m_bInFavorites = bAPI ? pMap->FindKey("favorites") != nullptr : pMap->GetBool("inFavorites");
-    m_bInLibrary = bAPI ? true : pMap->GetBool("inLibrary");
-    m_tLastUpdated = bAPI ? time(nullptr) : (time_t)pMap->GetUint64("lastUpdated");
+    Q_strncpy(m_szMapName, m_bFromAPI ? pMap->GetString("name") : pMap->GetName(), sizeof(m_szMapName));
+    KeyValues *pFavorites = pMap->FindKey("favorites");
+    m_bInFavorites = m_bFromAPI ? pFavorites && !pFavorites->IsEmpty() : pMap->GetBool("inFavorites");
+    m_bInLibrary = m_bFromAPI ? true : pMap->GetBool("inLibrary");
+    m_tLastUpdated = m_bFromAPI ? time(nullptr) : (time_t)pMap->GetUint64("lastUpdated");
 
-    if (!bAPI)
+    if (!m_bFromAPI)
         Q_strncpy(m_szPath, pMap->GetString("path"), sizeof(m_szPath));
+
+    m_Info.m_bFromAPI = m_bFromAPI;
+    m_Gallery.m_bFromAPI = m_bFromAPI;
 
     KeyValues* pInfo = pMap->FindKey("info");
     if (pInfo)
-        m_Info.FromKV(pInfo, bAPI);
+        m_Info.FromKV(pInfo);
     KeyValues* pSubmitter = pMap->FindKey("submitter");
     if (pSubmitter)
         m_Submitter.FromKV(pSubmitter);
@@ -247,7 +349,7 @@ void MapData::LoadFromKV(KeyValues* pMap, bool bAPI)
         {
             MapCredit mc;
             mc.FromKV(pCredit);
-            if (bAPI)
+            if (m_bFromAPI)
             {
                 uint16 indx = m_vecCredits.Find(mc);
                 if (m_vecCredits.IsValidIndex(indx))
@@ -263,7 +365,20 @@ void MapData::LoadFromKV(KeyValues* pMap, bool bAPI)
 
     KeyValues* pGallery = pMap->FindKey("gallery");
     if (pGallery)
-        m_Gallery.FromKV(pGallery, bAPI);
+        m_Gallery.FromKV(pGallery);
+
+    KeyValues *pMapRank = pMap->FindKey("mapRanks");
+    if (pMapRank && !pMapRank->IsEmpty())
+    {
+        // MOM_TODO this is lame shit we need to fix
+        if (m_bFromAPI)
+            pMapRank = pMapRank->FindKey("1");
+
+        if (pMapRank)
+            m_Rank.FromKV(pMapRank);
+    }
+
+    m_bValid = m_Info.m_bValid && m_Submitter.m_bValid /*&& m_Gallery.m_bValid MOM_TODO uncomment*/;
 }
 
 void MapData::ToKV(KeyValues* pKv) const
@@ -301,6 +416,10 @@ void MapData::ToKV(KeyValues* pKv) const
     KeyValues* pGallery = new KeyValues("gallery");
     m_Gallery.ToKV(pGallery);
     pKv->AddSubKey(pGallery);
+
+    KeyValues *pMapRank = new KeyValues("mapRanks");
+    m_Rank.ToKV(pMapRank);
+    pKv->AddSubKey(pMapRank);
 }
 
 MapData& MapData::operator=(const MapData& src)
@@ -323,8 +442,14 @@ MapData& MapData::operator=(const MapData& src)
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
     m_Gallery = src.m_Gallery;
+    m_bValid = true;
 
     return *this;
+}
+
+bool MapData::operator==(const MapData& other) const
+{
+    return m_uID == other.m_uID;
 }
 
 // =============================================================================================
@@ -353,7 +478,7 @@ void CMapCache::OnPlayerMapLibrary(KeyValues* pKv)
                 if (pMap)
                 {
                     MapData d;
-                    d.LoadFromKV(pMap, true);
+                    d.FromKV(pMap);
 
                     uint16 indx = m_mapMapCache.Find(pMap->GetInt("id"));
                     if (m_mapMapCache.IsValidIndex(indx))
@@ -398,6 +523,19 @@ void CMapCache::FireGameEvent(IGameEvent* event)
     }
 }
 
+void CMapCache::GetMapLibrary(CUtlVector<MapData*> &vecLibrary)
+{
+    unsigned short indx = m_mapMapCache.FirstInorder();
+    while (indx != m_mapMapCache.InvalidIndex())
+    {
+        MapData *d = &m_mapMapCache.Element(indx);
+        if (d->m_bInLibrary)
+            vecLibrary.AddToTail(d);
+
+        indx = m_mapMapCache.NextInorder(indx);
+    }
+}
+
 void CMapCache::PostInit()
 {
     ListenForGameEvent("site_auth");
@@ -408,7 +546,8 @@ void CMapCache::PostInit()
         FOR_EACH_SUBKEY(m_pMapData, pMap)
         {
             MapData d;
-            d.LoadFromKV(pMap, false);
+            d.m_bFromAPI = false;
+            d.FromKV(pMap);
 
             m_dictMapNames.Insert(d.m_szMapName, d.m_uID);
             m_mapMapCache.Insert(d.m_uID, d);
@@ -429,15 +568,15 @@ void CMapCache::SetMapGamemode()
     }
     else
     {
-        if (!Q_strnicmp(MapName(), "surf_", strlen("surf_")))
+        if (!Q_strnicmp(MapName(), "surf_", 5))
         {
             gm.SetValue(GAMEMODE_SURF);
         }
-        else if (!Q_strnicmp(MapName(), "bhop_", strlen("bhop_")))
+        else if (!Q_strnicmp(MapName(), "bhop_", 5))
         {
             gm.SetValue(GAMEMODE_BHOP);
         }
-        else if (!Q_strnicmp(MapName(), "kz_", strlen("kz_")))
+        else if (!Q_strnicmp(MapName(), "kz_", 3))
         {
             gm.SetValue(GAMEMODE_KZ);
         }
