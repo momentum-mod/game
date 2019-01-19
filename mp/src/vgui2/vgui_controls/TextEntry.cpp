@@ -2872,7 +2872,7 @@ void TextEntry::InsertChar(wchar_t ch)
 
 	if (m_bAllowNumericInputOnly)
 	{
-		if (!iswdigit(ch) && ((char)ch != '.'))
+		if (!iswdigit(ch) && ((char)ch != '.') && ((char)ch != '-'))
 		{
 			surface()->PlaySound("Resource\\warning.wav");
 			return;
