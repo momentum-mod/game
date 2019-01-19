@@ -7,7 +7,7 @@ class CDialogMapInfo;
 class CLocalMaps;
 class COnlineMaps;
 class IMapList;
-struct mapstruct_t;
+class MapFilterPanel;
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -28,16 +28,11 @@ public:
     
     void OnClose() OVERRIDE;
 
-    // gets server info
-    mapstruct_t *GetMap(unsigned int serverID);
     // called every frame
     virtual void OnTick() OVERRIDE;
 
     // updates status text at bottom of window
     void UpdateStatusText(const char *format, ...);
-
-    // updates status text at bottom of window
-    void UpdateStatusText(wchar_t *unicode);
 
     // context menu access
     CMapContextMenu *GetContextMenu(Panel *pParent);
@@ -45,13 +40,6 @@ public:
     // returns a pointer to a static instance of this dialog
     // valid for use only in sort functions
     static CMapSelectorDialog *GetInstance();
-
-    // begins the process of joining a server from a game list
-    // the game info dialog it opens will also update the game list
-    CDialogMapInfo *JoinGame(IMapList *gameList, unsigned int serverIndex);
-
-    // joins a game by a specified IP, not attached to any game list
-    CDialogMapInfo *JoinGame(int serverIP, int serverPort);
 
     // opens a game info dialog from a game list
     CDialogMapInfo *OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap);
@@ -64,7 +52,9 @@ public:
     CDialogMapInfo *GetDialogGameInfoForFriend(uint64 ulSteamIDFriend);
 
     // accessor to the filter save data
-    KeyValues *GetFilterSaveData(const char *filterSet);
+    KeyValues *GetCurrentTabFilterData();
+    void LoadTabFilterData(const char *pTabName);
+    void ApplyFiltersToCurrentTab();
 
     // load/saves filter & favorites settings from disk
     void		LoadUserData();
@@ -73,22 +63,17 @@ public:
     // forces the currently active page to refresh
     void		RefreshCurrentPage();
 
-    /*virtual gameserveritem_t *GetCurrentConnectedServer()
-    {
-        return &m_CurrentConnection;
-    }*/
+    void OnSizeChanged(int wide, int tall) OVERRIDE;
 
 private:
 
     // current game list change
-    MESSAGE_FUNC(OnGameListChanged, "PageChanged");
-    void ReloadFilterSettings();
+    MESSAGE_FUNC(OnTabChanged, "PageChanged");
 
     // notification that we connected / disconnected
     MESSAGE_FUNC_PARAMS(OnConnectToGame, "ConnectedToGame", kv);
     MESSAGE_FUNC(OnDisconnectFromGame, "DisconnectedFromGame");
 
-    virtual bool GetDefaultScreenPosition(int &x, int &y, int &wide, int &tall);
     virtual void ActivateBuildMode();
 
 private:
@@ -96,7 +81,7 @@ private:
     CUtlVector<vgui::DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
 
     // pointer to current game list
-    IMapList *m_pGameList;
+    IMapList *m_pCurrentMapList;
 
     // Status text
     vgui::Label	*m_pStatusLabel;
@@ -105,8 +90,11 @@ private:
     vgui::PropertySheet *m_pTabPanel;
 
     //Map tabs
-    CLocalMaps *m_pLocal;
+    CLocalMaps *m_pLibraryMaps;
     COnlineMaps *m_pOnline;
+
+    // Filters
+    MapFilterPanel *m_pFilterPanel;
 
     //Filter data
     KeyValues *m_pSavedData;//Saved on disk filter data

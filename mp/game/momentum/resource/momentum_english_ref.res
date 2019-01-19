@@ -130,36 +130,40 @@
         "MOM_Gun" "Momentum Gun"
 
     //Map Selection
-        "MOM_MapSelector_OnlineMaps" "Online Maps"
-        "MOM_MapSelector_LocalMaps" "Local Maps"
-        "MOM_MapSelector_Filter" "Filter"
-        "MOM_MapSelector_All" "<All>"
-        "MOM_MapSelector_LessThanDiff2" "< 2"
-        "MOM_MapSelector_LessThanDiff3" "< 3"
-        "MOM_MapSelector_LessThanDiff4" "< 4"
-        "MOM_MapSelector_LessThanDiff5" "< 5"
-        "MOM_MapSelector_LessThanDiff6" "< 6"
-        //MOM_TODO: Is '6' the best difficulty tier to stop at?
+        "MOM_MapSelector_BrowseMaps" "Browse Maps"
+        "MOM_MapSelector_LibraryMaps" "Maps in Library"
         "MOM_MapSelector_MapCount" "Maps (%s1)"
         "MOM_MapSelector_Maps" "Maps"
-        "MOM_MapSelector_FilterCompletedMaps" "Hide completed maps"
+        "MOM_MapSelector_Difficulty" "Difficulty"
         "MOM_MapSelector_StartMap" "Start Map"
         "MOM_MapSelector_ShowMapInfo" "Show Map Info"
-        "MOM_MapSelector_SurfOnly" "Surf maps only"
-        "MOM_MapSelector_BhopOnly" "Bhop maps only"
         "MOM_MapSelector_Map" "Map Name"
-        "MOM_MapSelector_Difficulty" "Difficulty Tier"
         "MOM_MapSelector_SearchingForMaps" "Searching for maps..."
         "MOM_MapSelector_StopSearching" "Stop Searching"
         "MOM_MapSelector_Search" "Search..."
-        "MOM_MapSelector_NoMaps" "No maps found!"
+        "MOM_MapSelector_NoMaps" "No maps found."
         "MOM_MapSelector_BestTime" "Best Time"
-        "MOM_MapSelector_LinearOnly" "Linear Maps only"
-        "MOM_MapSelector_StagedOnly" "Staged Maps only"
         "MOM_MapSelector_MapLayout" "Map Layout"
         "MOM_MapSelector_MapLayout_Tooltip" "This column shows if the map is linear or has stages."
+        "MOM_All" "<All>"
 
-        //Map Info Dialog
+        "MOM_MapSelector_FilterReset" "Reset Filters"
+        "MOM_MapSelector_FilterApply" "Apply Filters"
+        "MOM_MapSelector_FilterCompletedMaps" "Hide completed maps"
+        "MOM_MapSelector_FilterDifficulty" "<= (difficulty) <="
+        "MOM_MapSelector_LinearOnly" "Linear Maps only"
+        "MOM_MapSelector_StagedOnly" "Staged Maps only"
+
+        // Gametypes
+        "MOM_GameType" "Game Type"
+        "MOM_GameType_Surf" "Surf"
+        "MOM_GameType_Bhop" "Bhop"
+        "MOM_GameType_KZ" "Climb (KZ)"
+        "MOM_GameType_RJ" "Jump"
+        "MOM_GameType_Tricksurf" "Tricksurf"
+        "MOM_GameType_Trikz" "Trikz"
+
+        // Map Info Dialog
         "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode: "
         "MOM_MapSelector_InfoDialog_Layout" "Layout: "
         "MOM_MapSelector_InfoDialog_Zones"  "Zones: "
@@ -170,7 +174,7 @@
         "MOM_LT" "<"
 
         // UI stuff
-        "MOM_Jump"      "JUMP"
+        "MOM_Jump" "JUMP"
         "MOM_Duck" "DUCK"
 
         // Map Finished Panel

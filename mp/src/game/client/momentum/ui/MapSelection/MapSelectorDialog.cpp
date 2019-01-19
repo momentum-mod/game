@@ -6,6 +6,7 @@
 #include "OnlineMaps.h"
 #include "MapContextMenu.h"
 #include "MapInfoDialog.h"
+#include "MapFilterPanel.h"
 
 #include "vgui_controls/PropertySheet.h"
 #include "vgui/IVGui.h"
@@ -17,7 +18,7 @@ static CMapSelectorDialog *s_InternetDlg = nullptr;
 
 CMapSelectorDialog &MapSelectorDialog()
 {
-    return *CMapSelectorDialog::GetInstance();
+    return *s_InternetDlg;
 }
 
 using namespace vgui;
@@ -25,37 +26,40 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
+CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
     SetParent(parent);
+    SetProportional(true);
     s_InternetDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
 
     LoadUserData();
 
-    m_pLocal = new CLocalMaps(this);
+    m_pLibraryMaps = new CLocalMaps(this);
     m_pOnline = new COnlineMaps(this);
 
-    SetMinimumSize(680, 400);
-    SetSize(680, 400);
-
-    m_pGameList = static_cast<IMapList*>(m_pLocal);
+    m_pCurrentMapList = static_cast<IMapList*>(m_pLibraryMaps);
 
     m_pContextMenu = new CMapContextMenu(this);
 
     // property sheet
-    m_pTabPanel = new vgui::PropertySheet(this, "MapTabs");
+    m_pTabPanel = new PropertySheet(this, "MapTabs");
     m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
-    m_pTabPanel->AddPage(m_pLocal, "#MOM_MapSelector_LocalMaps");
-    m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_OnlineMaps");
+    m_pTabPanel->SetSmallTabs(true);
+    m_pTabPanel->AddPage(m_pLibraryMaps, "#MOM_MapSelector_LibraryMaps");
+    m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_BrowseMaps");
 
     m_pTabPanel->AddActionSignalTarget(this);
 
-    m_pStatusLabel = new vgui::Label(this, "StatusLabel", "");
+    m_pStatusLabel = new Label(this, "StatusLabel", "");
 
-    LoadControlSettingsAndUserConfig("resource/ui/DialogMapSelector.res");
+    m_pFilterPanel = new MapFilterPanel(this);
+
+    LoadControlSettings("resource/ui/MapSelector/DialogMapSelector.res");
+
+    SetMinimumSize(680, 400);
 
     m_pStatusLabel->SetText("");
 
@@ -63,14 +67,14 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
     const char *mapList = m_pSavedData->GetString("MapList", "local");
     if (!Q_stricmp(mapList, "local"))
     {
-        m_pTabPanel->SetActivePage(m_pLocal);
+        m_pTabPanel->SetActivePage(m_pLibraryMaps);
     }
     else if (!Q_stricmp(mapList, "online"))
     {
         m_pTabPanel->SetActivePage(m_pOnline);
     }
 
-    ivgui()->AddTickSignal(GetVPanel());
+    // ivgui()->AddTickSignal(GetVPanel());
 }
 
 //-----------------------------------------------------------------------------
@@ -88,16 +92,6 @@ CMapSelectorDialog::~CMapSelectorDialog()
     {
         m_pSavedData->deleteThis();
     }
-
-    if (m_pLocal)
-    {
-        m_pLocal->DeletePanel();
-    }
-    
-    if (m_pOnline)
-    {
-        m_pOnline->DeletePanel();
-    }
 }
 
 
@@ -108,15 +102,7 @@ void CMapSelectorDialog::Initialize()
 {
     SetTitle("#MOM_MapSelector_Maps", true);
     SetVisible(false);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: returns a map in the list
-//-----------------------------------------------------------------------------
-mapstruct_t *CMapSelectorDialog::GetMap(unsigned int serverID)
-{
-    return m_pGameList->GetMap(serverID);
+    MoveToCenterOfScreen();
 }
 
 
@@ -174,13 +160,10 @@ void CMapSelectorDialog::LoadUserData()
         m_pFilterData = new KeyValues("Filters");
     }
 
-    int wide, tall;
-    surface()->GetScreenSize(wide, tall);
+    MoveToCenterOfScreen();
 
-    SetPos(wide / 2, tall / 3);
-
-    InvalidateLayout();
-    Repaint();
+    InvalidateLayout(true);
+    //Repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -194,11 +177,11 @@ void CMapSelectorDialog::SaveUserData()
     m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 
     // set the current tab
-    if (m_pGameList == m_pLocal)
+    if (m_pCurrentMapList == m_pLibraryMaps)
     {
         m_pSavedData->SetString("MapList", "local");
     }
-    else if (m_pGameList == m_pOnline)
+    else if (m_pCurrentMapList == m_pOnline)
     {
         m_pSavedData->SetString("MapList", "online");//MOM_TODO
     }
@@ -216,10 +199,15 @@ void CMapSelectorDialog::SaveUserData()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::RefreshCurrentPage()
 {
-    if (m_pGameList)
+    if (m_pCurrentMapList)
     {
-        m_pGameList->StartRefresh();
+        m_pCurrentMapList->StartRefresh();
     }
+}
+
+void CMapSelectorDialog::OnSizeChanged(int wide, int tall)
+{
+    BaseClass::OnSizeChanged(wide, tall);
 }
 
 //-----------------------------------------------------------------------------
@@ -248,33 +236,14 @@ void CMapSelectorDialog::UpdateStatusText(const char *fmt, ...)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Updates status test at bottom of window
-// Input  : wchar_t* (unicode string) - 
+// Purpose: Updates when the tabs are changed
 //-----------------------------------------------------------------------------
-void CMapSelectorDialog::UpdateStatusText(wchar_t *unicode)
+void CMapSelectorDialog::OnTabChanged()
 {
-    if (!m_pStatusLabel)
-        return;
+    m_pCurrentMapList = dynamic_cast<IMapList *>(m_pTabPanel->GetActivePage());
+    m_pCurrentMapList->LoadFilters();
 
-    if (unicode && wcslen(unicode) > 0)
-    {
-        m_pStatusLabel->SetText(unicode);
-    }
-    else
-    {
-        // clear
-        m_pStatusLabel->SetText("");
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Updates when the tabs are changed (online->Local and vice versa)
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::OnGameListChanged()
-{
-    m_pGameList = dynamic_cast<IMapList *>(m_pTabPanel->GetActivePage());
-
-    UpdateStatusText("");
+    UpdateStatusText(nullptr);
 
     InvalidateLayout();
     Repaint();
@@ -291,7 +260,7 @@ CMapSelectorDialog *CMapSelectorDialog::GetInstance()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CMapContextMenu *CMapSelectorDialog::GetContextMenu(vgui::Panel *pPanel)
+CMapContextMenu *CMapSelectorDialog::GetContextMenu(Panel *pPanel)
 {
     // create a drop down for this object's states
     if (m_pContextMenu)
@@ -310,36 +279,6 @@ CMapContextMenu *CMapSelectorDialog::GetContextMenu(vgui::Panel *pPanel)
 
     m_pContextMenu->SetVisible(false);
     return m_pContextMenu;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: begins the process of joining a server from a game list
-//			the game info dialog it opens will also update the game list
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::JoinGame(IMapList *gameList, unsigned int serverIndex)
-{
-    // open the game info dialog, then mark it to attempt to connect right away
-    //CDialogMapInfo *gameDialog = OpenMapInfoDialog(gameList, serverIndex);
-
-    // set the dialog name to be the server name
-    //gameDialog->Connect();
-
-    // return gameDialog;
-    return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: joins a game by a specified IP, not attached to any game list
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::JoinGame(int serverIP, int serverPort)
-{
-    // open the game info dialog, then mark it to attempt to connect right away
-    CDialogMapInfo *gameDialog = OpenMapInfoDialog(serverIP, serverPort, serverPort);
-
-    // set the dialog name to be the server name
-    gameDialog->Connect();
-
-    return gameDialog;
 }
 
 //-----------------------------------------------------------------------------
@@ -387,10 +326,10 @@ void CMapSelectorDialog::CloseAllMapInfoDialogs()
 {
     for (int i = 0; i < m_vecMapInfoDialogs.Count(); i++)
     {
-        vgui::Panel *dlg = m_vecMapInfoDialogs[i];
+        Panel *dlg = m_vecMapInfoDialogs[i];
         if (dlg)
         {
-            vgui::ivgui()->PostMessage(dlg->GetVPanel(), new KeyValues("Close"), NULL);
+            ivgui()->PostMessage(dlg->GetVPanel(), new KeyValues("Close"), NULL);
         }
     }
 }
@@ -416,18 +355,21 @@ CDialogMapInfo *CMapSelectorDialog::GetDialogGameInfoForFriend(uint64 ulSteamIDF
 //-----------------------------------------------------------------------------
 // Purpose: accessor to the filter save data
 //-----------------------------------------------------------------------------
-KeyValues *CMapSelectorDialog::GetFilterSaveData(const char *filterSet)
+KeyValues* CMapSelectorDialog::GetCurrentTabFilterData()
 {
-    return m_pFilterData->FindKey(filterSet, true);
+    return m_pFilterData->FindKey(m_pTabPanel->GetActivePage()->GetName(), true);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: resets all pages filter settings
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::ReloadFilterSettings()
+void CMapSelectorDialog::LoadTabFilterData(const char *pTabName)
 {
-    m_pLocal->LoadFilterSettings();
-    m_pOnline->LoadFilterSettings();
+    m_pFilterPanel->LoadFilterSettings(m_pFilterData->FindKey(pTabName, true));
+}
+
+void CMapSelectorDialog::ApplyFiltersToCurrentTab()
+{
+    CBaseMapsPage *pCurrent = dynamic_cast<CBaseMapsPage*>(m_pTabPanel->GetActivePage());
+    if (pCurrent)
+        pCurrent->ApplyFilters(m_pFilterPanel);
 }
 
 //-----------------------------------------------------------------------------
@@ -459,12 +401,12 @@ void CMapSelectorDialog::OnConnectToGame(KeyValues *pMessageValues)
     // to a server they were auto-retrying
     for (int i = 0; i < m_vecMapInfoDialogs.Count(); i++)
     {
-        vgui::Panel *dlg = m_vecMapInfoDialogs[i];
+        Panel *dlg = m_vecMapInfoDialogs[i];
         if (dlg)
         {
             KeyValues *kv = new KeyValues("ConnectedToGame", "ip", ip, "connectionport", connectionPort);
             kv->SetInt("queryport", queryPort);
-            vgui::ivgui()->PostMessage(dlg->GetVPanel(), kv, NULL);
+            ivgui()->PostMessage(dlg->GetVPanel(), kv, NULL);
         }
     }
 
@@ -493,19 +435,13 @@ void CMapSelectorDialog::ActivateBuildMode()
     if (!panel)
         return;
 
-    panel->ActivateBuildMode();
+    if (panel->GetBuildGroup()->IsEnabled())
+        BaseClass::ActivateBuildMode();
+    else
+        panel->ActivateBuildMode();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: gets the default position and size on the screen to appear the first time
-//-----------------------------------------------------------------------------
-bool CMapSelectorDialog::GetDefaultScreenPosition(int &x, int &y, int &wide, int &tall)
+CON_COMMAND(ms_reload, "Reload map selector res\n")
 {
-    int wx, wy, ww, wt;
-    surface()->GetWorkspaceBounds(wx, wy, ww, wt);
-    x = wx + (int) (ww * 0.05);
-    y = wy + (int) (wt * 0.4);
-    wide = (int) (ww * 0.5);
-    tall = (int) (wt * 0.55);
-    return true;
+    MapSelectorDialog().GetBuildGroup()->ReloadControlSettings();
 }

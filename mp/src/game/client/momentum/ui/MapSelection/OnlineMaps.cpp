@@ -7,7 +7,6 @@
 #include "CMapListPanel.h"
 #include "MapContextMenu.h"
 
-#include "util/jsontokv.h"
 #include "util/mom_util.h"
 #include "mom_api_requests.h"
 
@@ -32,7 +31,6 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
     m_bRequireUpdate = true;
     m_bOfflineMode = !IsSteamGameServerBrowsingEnabled();
     m_iCurrentPage = 0;
-    LoadFilterSettings();
     SetDefLessFunc(m_mapFileDownloads);
 }
 
@@ -55,7 +53,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
 
         if (pMaps && !pMaps->IsEmpty())
         {
-            FOR_EACH_SUBKEY(pMaps, pMap)
+            /*FOR_EACH_SUBKEY(pMaps, pMap)
             {
                 mapdisplay_t map;
                 mapstruct_t m;
@@ -63,14 +61,14 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
                 /*m.m_bHasStages = !pRun->GetBool("linear");
                 m.m_iZoneCount = pRun->GetInt("zones");
                 m.m_iDifficulty = pRun->GetInt("difficulty");
-                m.m_iGameMode = pRun->GetInt("gamemode");*/
+                m.m_iGameMode = pRun->GetInt("gamemode");#1#
                 m.m_iMapId = pMap->GetInt("id");
                 Q_strncpy(m.m_szMapUrl, pMap->GetString("downloadURL"), MAX_PATH);
                 Q_strncpy(m.m_szMapHash, pMap->GetString("hash"), 41);
                 /*Q_strcpy(m.m_szBestTime, pRun->GetString("zones"));
                 Q_strcpy(m.m_szMapUrl, pRun->GetString("file_path"));
                 Q_strcpy(m.m_szZoneUrl, pRun->GetString("zone_file"));
-                Q_strcpy(m.m_szThumbnailUrl, pRun->GetString("thumbnail"));*/
+                Q_strcpy(m.m_szThumbnailUrl, pRun->GetString("thumbnail"));#1#
                 map.m_mMap = m;
                 
                 if (Q_strlen(m.m_szThumbnailUrl) > 3)
@@ -80,7 +78,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
                     // We fix it by creating a pointer, and it gets deleted when we finish the callback. We're too good
                     /*CImageDownloader *imageDownloader = new CImageDownloader();
                     if (imageDownloader->Process(m.m_szMapName, m.m_szThumbnailUrl, m_pMapList, map.m_iMapImageIndex))
-                        delete imageDownloader;*/
+                        delete imageDownloader;#1#
                 }
                 KeyValuesAD kv("map");
                 kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
@@ -95,7 +93,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
                 kv->SetInt(KEYNAME_MAP_ID, m.m_iMapId);
                 map.m_iListID = m_pMapList->AddItem(kv, 0, false, false);
                 m_vecMaps.AddToTail(map);
-            }
+            }*/
             RefreshComplete(eSuccess);
         }
         else
@@ -125,10 +123,6 @@ void COnlineMaps::PerformLayout()
     if (m_bOfflineMode)
     {
         m_pMapList->SetEmptyListText("#ServerBrowser_OfflineMode");
-        m_pStartMap->SetEnabled(false);
-        m_pQueryMaps->SetEnabled(false);
-        m_pQueryMapsQuick->SetEnabled(false);
-        m_pFilter->SetEnabled(false);
     }
 
     BaseClass::PerformLayout();
@@ -267,7 +261,6 @@ void COnlineMaps::FinishMapDownload(KeyValues* pKvComplete)
 void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
 {
     SetRefreshing(false);
-    UpdateFilterSettings();
     switch (eResponse)
     {
         case eNoMapsReturned: 
@@ -309,11 +302,7 @@ void COnlineMaps::StartRefresh()
     {
         SetRefreshing(true);
         ClearMapList();
-        KeyValues::AutoDelete pKvFilters("filters");
-        if (GetFilters(pKvFilters))
-        {
-            g_pAPIRequests->GetMaps(pKvFilters, UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
-        }
+        // g_pAPIRequests->GetMaps(MapSelectorDialog().GetCurrentTabFilterData(), UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
     }
 }
 
