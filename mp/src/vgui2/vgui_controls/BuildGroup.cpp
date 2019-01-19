@@ -1098,12 +1098,9 @@ bool BuildGroup::SaveControlSettings( void )
 
 		// get the data from our controls
 		GetSettings( rDat );
-		
-		char fullpath[ 512 ];
-		g_pFullFileSystem->RelativePathToFullPath( m_pResourceName, m_pResourcePathID, fullpath, sizeof( fullpath ) );
 
 		// save the data out to a file
-		bSuccess = rDat->SaveToFile( g_pFullFileSystem, fullpath, nullptr );
+		bSuccess = rDat->SaveToFile( g_pFullFileSystem, m_pResourceName, m_pResourcePathID );
 		if (!bSuccess)
 		{
 			MessageBox *dlg = new MessageBox("BuildMode - Error saving file", "Error: Could not save changes.  File is most likely read only.");
