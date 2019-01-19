@@ -92,7 +92,7 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
         {
             if (m_pPlayer)
             {
-                ConVarRef hvel("mom_speedometer_hvel");
+                ConVarRef hvel("mom_hud_speedometer_hvel");
                 m_iVelocityType = hvel.GetBool();
 
                 C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
