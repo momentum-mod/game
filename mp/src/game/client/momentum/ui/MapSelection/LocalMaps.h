@@ -21,9 +21,6 @@ public:
     // returns true if the game list supports the specified ui elements
     virtual bool SupportsItem(InterfaceItem_e item) OVERRIDE;
 
-    // Control which button are visible.
-    void ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool bShowFilter);
-
     //Filters based on the filter data
     void StartRefresh() OVERRIDE;
     void GetNewMapList() OVERRIDE;//called upon loading
@@ -46,6 +43,4 @@ private:
     // true if we're broadcasting for servers
     bool m_bLoadedMaps;
 
-    //Fills a mapstruct with data read from local files
-    static void FillMapstruct(mapstruct_t *);
 };
