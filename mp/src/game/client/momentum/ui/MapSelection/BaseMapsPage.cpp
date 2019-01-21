@@ -60,7 +60,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetAllowUserModificationOfColumns(true);
     
     // Add the column headers
-    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(120), ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(120), ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT);
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);
     m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(75), GetScaledVal(75), GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
@@ -70,6 +70,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     //MOM_TODO: do we want tooltips?
     
     // Alignment
+    m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
+    m_pMapList->SetColumnHeaderTextAlignment(HEADER_DIFFICULTY, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_DIFFICULTY, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IMAGE, Label::a_center);
@@ -172,7 +174,6 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 
     // Images
     ImageList *imageList = new ImageList(false);
-    //MOM_TODO: Load custom images for the map selector
     imageList->AddImage(scheme()->GetImage("maps/invalid_map", false)); // The ? banner at index 1
     m_pMapList->SetImageList(imageList, true);
 
@@ -197,25 +198,27 @@ void CBaseMapsPage::LoadFilters()
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::ApplyFilters(MapFilterPanel *pFilters)
 {
+    if (!IsVisible())
+        return;
+
     // loop through all the maps checking filters
     FOR_EACH_VEC(m_vecMaps, i)
     {
-        mapdisplay_t map = m_vecMaps[i];
-        MapData* mapinfo = map.m_pMap;
-        //DevLog("CURRENTLY FILTERING %s\n", mapinfo->m_szMapName);
+        mapdisplay_t *map = &m_vecMaps[i];
+        MapData* mapinfo = map->m_pMap;
         if (!pFilters->MapPassesFilters(mapinfo))
         {
             //Failed filters, remove the map
-            map.m_bDoNotRefresh = true;
-            if (m_pMapList->IsValidItemID(map.m_iListID))
+            map->m_bDoNotRefresh = true;
+            if (m_pMapList->IsValidItemID(map->m_iListID))
             {
-                m_pMapList->SetItemVisible(map.m_iListID, false);
+                m_pMapList->SetItemVisible(map->m_iListID, false);
             }
         }
-        else if (BShowMap(map))
+        else if (BShowMap(*map))
         {
-            map.m_bDoNotRefresh = false;
-            if (!m_pMapList->IsValidItemID(map.m_iListID))
+            map->m_bDoNotRefresh = false;
+            if (!m_pMapList->IsValidItemID(map->m_iListID))
             {
                 //DevLog("ADDING MAP TO LIST! %s\n ", mapinfo->m_szMapName);
                 KeyValuesAD kv("Map");
@@ -224,7 +227,6 @@ void CBaseMapsPage::ApplyFilters(MapFilterPanel *pFilters)
                 // kv->SetInt(KEYNAME_MAP_GAME_MODE, mapinfo->m_iGameMode);
                 kv->SetInt(KEYNAME_MAP_DIFFICULTY, mapinfo->m_Info.m_iDifficulty);
                 kv->SetString(KEYNAME_MAP_LAYOUT, mapinfo->m_Info.m_bIsLinear ? "LINEAR" : "STAGED");
-                // kv->SetBool(KEYNAME_MAP_, mapinfo->m_Rank.m_bValid);
                 if (mapinfo->m_Rank.m_bValid)
                 {
                     char szBestTime[BUFSIZETIME];
@@ -232,13 +234,17 @@ void CBaseMapsPage::ApplyFilters(MapFilterPanel *pFilters)
 
                     kv->SetString(KEYNAME_MAP_BEST_TIME, szBestTime);
                 }
-                //MOM_TODO: Recalculate the image index just in case (only if it's 0)
-                kv->SetInt(KEYNAME_MAP_IMAGE, map.m_iMapImageIndex);
+                else
+                {
+                    kv->SetString(KEYNAME_MAP_BEST_TIME, "#MOM_NotApplicable");
+                }
 
-                map.m_iListID = m_pMapList->AddItem(kv, NULL, false, false);
+                kv->SetInt(KEYNAME_MAP_IMAGE, map->m_iMapImageIndex);
+
+                map->m_iListID = m_pMapList->AddItem(kv, NULL, false, false);
             }
             // make sure the map is visible
-            m_pMapList->SetItemVisible(map.m_iListID, true);
+            m_pMapList->SetItemVisible(map->m_iListID, true);
         }
     }
 
@@ -260,6 +266,7 @@ void CBaseMapsPage::UpdateStatus()
     else
     {
         m_pMapList->SetColumnHeaderText(HEADER_MAP_NAME, g_pVGuiLocalize->Find("#MOM_MapSelector_Maps"));
+        m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
     }
 }
 
@@ -493,7 +500,8 @@ bool CBaseMapsPage::IsRefreshing()
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::OnPageShow()
 {
-    StartRefresh();
+    if (IsVisible())
+        StartRefresh();
 }
 
 //-----------------------------------------------------------------------------

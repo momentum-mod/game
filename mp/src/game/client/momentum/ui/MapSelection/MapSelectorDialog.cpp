@@ -73,8 +73,6 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     {
         m_pTabPanel->SetActivePage(m_pOnline);
     }
-
-    // ivgui()->AddTickSignal(GetVPanel());
 }
 
 //-----------------------------------------------------------------------------
@@ -123,16 +121,6 @@ void CMapSelectorDialog::OnClose()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Called every frame, updates animations for this module
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::OnTick()
-{
-    BaseClass::OnTick();
-    //vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
-}
-
-
-//-----------------------------------------------------------------------------
 // Purpose: Loads filter settings from disk
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::LoadUserData()
@@ -163,7 +151,7 @@ void CMapSelectorDialog::LoadUserData()
     MoveToCenterOfScreen();
 
     InvalidateLayout(true);
-    //Repaint();
+    Repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -250,14 +238,6 @@ void CMapSelectorDialog::OnTabChanged()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: returns a pointer to a static instance of this dialog
-//-----------------------------------------------------------------------------
-CMapSelectorDialog *CMapSelectorDialog::GetInstance()
-{
-    return s_InternetDlg;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 CMapContextMenu *CMapSelectorDialog::GetContextMenu(Panel *pPanel)
@@ -334,24 +314,6 @@ void CMapSelectorDialog::CloseAllMapInfoDialogs()
     }
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: finds a dialog
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::GetDialogGameInfoForFriend(uint64 ulSteamIDFriend)
-{
-    //FOR_EACH_VEC(m_vecMapInfoDialogs, i)
-    //{
-    //    CDialogMapInfo *pDlg = m_vecMapInfoDialogs[i];
-    //    if (pDlg && pDlg->GetAssociatedFriend() == ulSteamIDFriend)
-    //    {
-    //        return pDlg;
-    //    }
-    //}
-    // We don't have friends
-    return nullptr;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: accessor to the filter save data
 //-----------------------------------------------------------------------------
@@ -421,8 +383,7 @@ void CMapSelectorDialog::OnConnectToGame(KeyValues *pMessageValues)
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::OnDisconnectFromGame(void)
 {
-    m_bCurrentlyConnected = false;/*
-    memset(&m_CurrentConnection, 0, sizeof(gameserveritem_t));*/
+    m_bCurrentlyConnected = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -439,9 +400,4 @@ void CMapSelectorDialog::ActivateBuildMode()
         BaseClass::ActivateBuildMode();
     else
         panel->ActivateBuildMode();
-}
-
-CON_COMMAND(ms_reload, "Reload map selector res\n")
-{
-    MapSelectorDialog().GetBuildGroup()->ReloadControlSettings();
 }
