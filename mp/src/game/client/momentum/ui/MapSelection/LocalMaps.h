@@ -24,7 +24,7 @@ public:
     //Filters based on the filter data
     void StartRefresh() OVERRIDE;
     void GetNewMapList() OVERRIDE;//called upon loading
-    void AddNewMapToVector(const char* mapname);
+    void AddMapToList(MapData *pData);
 
     virtual void OnMapStart() OVERRIDE { BaseClass::OnMapStart(); }
 

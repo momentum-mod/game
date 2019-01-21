@@ -6,20 +6,16 @@
 #include "MapSelectorDialog.h"
 
 #include "filesystem.h"
-#include "util/mom_util.h"
-#include "mom_shareddefs.h"
-#include "run/mom_replay_base.h"
+#include "mom_map_cache.h"
+#include "controls/FileImage.h"
 
 #include "vgui_controls/Panel.h"
 #include "vgui_controls/ImageList.h"
-#include "vgui_controls/ToggleButton.h"
 
 #include "tier0/memdbgon.h"
 
 
 using namespace vgui;
-
-extern IFileSystem *filesystem;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -43,13 +39,14 @@ CLocalMaps::~CLocalMaps()
 //-----------------------------------------------------------------------------
 void CLocalMaps::OnPageShow()
 {
+    if (!IsVisible())
+        return;
+
     if (!m_bLoadedMaps)
     {
         GetNewMapList();
-        /*GetWorkshopItems();*/
+        // GetWorkshopItems();
     }
-
-    StartRefresh();
 }
 
 //-----------------------------------------------------------------------------
@@ -70,44 +67,38 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
 
 void CLocalMaps::GetNewMapList()
 {
-    /*ClearMapList();
+    ClearMapList();
     //Populate the main list
-    FileFindHandle_t found;
-    //MOM_TODO: make this by *.mom
-    const char *pMapName = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "GAME", &found);
-    while (pMapName)
-    {       
-        AddNewMapToVector(pMapName);
-        pMapName = g_pFullFileSystem->FindNext(found);
+    CUtlVector<MapData*> vecLibrary;
+    g_pMapCache->GetMapLibrary(vecLibrary);
+
+    FOR_EACH_VEC(vecLibrary, i)
+    {
+        AddMapToList(vecLibrary[i]);
     }
-    g_pFullFileSystem->FindClose(found);
 
     m_bLoadedMaps = true;
 
-    ApplyGameFilters();*/
+    MapSelectorDialog().ApplyFiltersToCurrentTab();
 }
 
-void CLocalMaps::AddNewMapToVector(const char* mapname)
+void CLocalMaps::AddMapToList(MapData *pData)
 {
-    /*mapdisplay_t map = mapdisplay_t();
-    mapstruct_t m = mapstruct_t();
+    mapdisplay_t map;
+    map.m_pMap = pData;
     map.m_bDoNotRefresh = true;
 
-    //Map name
-    V_FileBase(mapname, m.m_szMapName, MAX_PATH);
-    FillMapstruct(&m);
-
     // Map image
-    if (g_pMomentumUtil->MapThumbnailExists(m.m_szMapName))
+    if (pData->m_Thumbnail.m_bValid)
     {
-        DevLog("FOUND IMAGE FOR %s!\n", m.m_szMapName);
-        char imagePath[MAX_PATH];
-        Q_snprintf(imagePath, MAX_PATH, "maps/%s", m.m_szMapName);
-        map.m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(scheme()->GetImage(imagePath, false));
+        URLImage *pImage = new URLImage;
+        if (pImage->LoadFromURL(pData->m_Thumbnail.m_szURLMedium))
+            map.m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(pImage);
+        else
+            delete pImage;
     }
 
-    map.m_mMap = m;
-    m_vecMaps.AddToTail(map);*/
+    m_vecMaps.AddToTail(map);
 }
 
 //-----------------------------------------------------------------------------
@@ -115,75 +106,6 @@ void CLocalMaps::AddNewMapToVector(const char* mapname)
 //-----------------------------------------------------------------------------
 void CLocalMaps::StartRefresh()
 {
-    /*FOR_EACH_VEC(m_vecMaps, i)
-    {
-        mapdisplay_t *pMap = &m_vecMaps[i];
-        if (!pMap) continue;
-        mapstruct_t pMapInfo = pMap->m_mMap;
-        // check filters
-        bool removeItem = false;
-        if (!CheckPrimaryFilters(pMapInfo))
-        {
-            // map has been filtered at a primary level
-            // remove from lists
-            pMap->m_bDoNotRefresh = true;
-
-            // remove from UI list
-            removeItem = true;
-        }
-        else if (!CheckSecondaryFilters(pMapInfo))
-        {
-            // we still ping this server in the future; however it is removed from UI list
-            removeItem = true;
-        }
-
-        if (removeItem)
-        {
-            if (m_pMapList->IsValidItemID(pMap->m_iListID))
-            {
-                m_pMapList->RemoveItem(pMap->m_iListID);
-                pMap->m_iListID = GetInvalidMapListID();
-            }
-            continue;
-        }
-
-        // update UI
-        KeyValues *kv;
-        if (m_pMapList->IsValidItemID(pMap->m_iListID))
-        {
-            // we're updating an existing entry
-            kv = m_pMapList->GetItem(pMap->m_iListID);
-        }
-        else
-        {
-            // new entry
-            kv = new KeyValues("Map");
-        }
-        
-        kv->SetString(KEYNAME_MAP_NAME, pMapInfo.m_szMapName);
-        kv->SetString(KEYNAME_MAP_LAYOUT, pMapInfo.m_bHasStages ? "STAGED" : "LINEAR");
-        kv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapInfo.m_iDifficulty);
-        kv->SetString(KEYNAME_MAP_BEST_TIME, pMapInfo.m_szBestTime);
-        kv->SetInt(KEYNAME_MAP_IMAGE, pMap->m_iMapImageIndex);
-        
-        if (!m_pMapList->IsValidItemID(pMap->m_iListID))
-        {
-            // new map, add to list
-            pMap->m_iListID = m_pMapList->AddItem(kv, NULL, false, false);
-            if (m_bAutoSelectFirstItemInGameList && m_pMapList->GetItemCount() == 1)
-            {
-                m_pMapList->AddSelectedItem(pMap->m_iListID);
-            }
-
-            kv->deleteThis();
-        }
-        else
-        {
-            // tell the list that we've changed the data
-            m_pMapList->ApplyItemChanges(pMap->m_iListID);
-            m_pMapList->SetItemVisible(pMap->m_iListID, true);
-        }
-    }*/
 }
 
 void CLocalMaps::SetEmptyListText()
