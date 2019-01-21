@@ -33,6 +33,7 @@ CAPIRequests::CAPIRequests() : CAutoGameSystemPerFrame("CAPIRequests"),
 m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
 m_iAuthActualSize(0), m_pAPIKey(nullptr)
 {
+    m_szAPIKeyHeader[0] = '\0';
     SetDefLessFunc(m_mapAPICalls);
     SetDefLessFunc(m_mapDownloadCalls);
 }
@@ -270,6 +271,7 @@ void CAPIRequests::OnAuthHTTP(KeyValues *pResponse)
         {
             m_pAPIKey = new char[tokenLength + 1];
             Q_strncpy(m_pAPIKey, pData->GetString("token"), tokenLength + 1);
+            Q_snprintf(m_szAPIKeyHeader, sizeof(m_szAPIKeyHeader), "Bearer %s", m_pAPIKey);
             bSuccess = true;
         }
     }
@@ -291,9 +293,12 @@ void CAPIRequests::DoAuth()
     if (m_pAPIKey)
         delete[] m_pAPIKey;
     m_pAPIKey = nullptr;
+
     if (m_bufAuthBuffer)
         delete[] m_bufAuthBuffer;
     m_bufAuthBuffer = nullptr;
+
+    m_szAPIKeyHeader[0] = '\0';
 
     CHECK_STEAM_API(SteamUser());
 
@@ -310,7 +315,7 @@ bool CAPIRequests::IsAuthenticated() const
 
 void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
 {
-    uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
+    const uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
         KeyValuesAD headers("Headers");
@@ -341,7 +346,7 @@ void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
 
 void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
 {
-    uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
+    const uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
         DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
@@ -368,7 +373,7 @@ void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
 
 void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, bool bIO)
 {
-    uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
+    const uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
         DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
@@ -396,7 +401,7 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
 void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
 {
     // Firstly, let's find the callback that corresponds to the API request we made
-    uint16 callbackIndx = m_mapAPICalls.Find(pCallback->m_hRequest);
+    const uint16 callbackIndx = m_mapAPICalls.Find(pCallback->m_hRequest);
     if (callbackIndx != m_mapAPICalls.InvalidIndex())
     {
         // Okay cool, callback found
@@ -505,7 +510,7 @@ bool CAPIRequests::CreateAPIRequest(APIRequest *request, const char* pszURL, EHT
 
     // Add the API key
     if (bAuth)
-        SteamHTTP()->SetHTTPRequestHeaderValue(request->handle, "Authorization", CFmtStr1024("Bearer %s", m_pAPIKey).Get());
+        SteamHTTP()->SetHTTPRequestHeaderValue(request->handle, "Authorization", m_szAPIKeyHeader);
 
     return request->handle != INVALID_HTTPREQUEST_HANDLE;
 }

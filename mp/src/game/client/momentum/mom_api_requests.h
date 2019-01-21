@@ -178,6 +178,8 @@ private:
     uint32 m_iAuthActualSize;
     // API key for requests
     char *m_pAPIKey;
+    // The header string for authorizing requests
+    char m_szAPIKeyHeader[1024];
 };
 
 extern CAPIRequests *g_pAPIRequests;
