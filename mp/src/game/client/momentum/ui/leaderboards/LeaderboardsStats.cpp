@@ -171,7 +171,7 @@ void CLeaderboardsStats::UpdatePlayerAvatarStandalone()
     {
         CSteamID steamIDForPlayer = SteamUser()->GetSteamID();
 
-        m_pPlayerAvatar->SetPlayer(steamIDForPlayer, k_EAvatarSize64x64);
+        m_pPlayerAvatar->SetPlayer(steamIDForPlayer, k_EAvatarSize184x184);
 
         m_bLoadedLocalPlayerAvatar = true;
     }
