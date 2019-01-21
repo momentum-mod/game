@@ -47,13 +47,15 @@ struct MapInfo : APIModel
 struct MapImage : APIModel
 {
     uint32 m_uID;
-    char m_szURL[256];
-    char m_szHash[41];
+    char m_szURLSmall[256], m_szURLMedium[256], m_szURLLarge[256];
+    char m_szLastUpdatedDate[32];
     MapImage()
     {
         m_uID = 0;
-        m_szURL[0] = '\0';
-        m_szHash[0] = '\0';
+        m_szURLSmall[0] = '\0';
+        m_szURLMedium[0] = '\0';
+        m_szURLLarge[0] = '\0';
+        m_szLastUpdatedDate[0] = '\0';
     }
 
     void FromKV(KeyValues* pKv) OVERRIDE;
@@ -147,7 +149,7 @@ struct MapData : APIModel
     MapInfo m_Info;
     MapRank m_Rank; // User's rank on a map, if they have one
     CUtlVector<MapCredit> m_vecCredits;
-    MapGallery m_Gallery;
+    MapImage m_Thumbnail;
 
     MapData();
     MapData(const MapData& src);
@@ -164,7 +166,6 @@ public:
 
     void OnPlayMap(const char *pMapName);
 
-    void OnPlayerMapLibrary(KeyValues *pKv);
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
@@ -175,11 +176,12 @@ public:
 
 protected:
     void PostInit() OVERRIDE;
-    void SetMapGamemode();
     void LevelInitPreEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
     void Shutdown() OVERRIDE;
 
+    void SetMapGamemode();
+    void OnPlayerMapLibrary(KeyValues *pKv);
 private:
     MapData *m_pCurrentMapData;
 
