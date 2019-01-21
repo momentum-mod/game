@@ -720,6 +720,11 @@ void ListPanel::SetColumnHeaderText(int col, const wchar_t *text)
 	m_ColumnsData[m_CurrentColumns[col]].m_pHeader->SetText(text);
 }
 
+void ListPanel::SetColumnHeaderTextAlignment(int col, int align)
+{
+    m_ColumnsData[m_CurrentColumns[col]].m_pHeader->SetContentAlignment((Label::Alignment)align);
+}
+
 void ListPanel::SetColumnTextAlignment( int col, int align )
 {
 	m_ColumnsData[m_CurrentColumns[col]].m_nContentAlignment = align;
