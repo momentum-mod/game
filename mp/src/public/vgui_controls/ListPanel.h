@@ -78,11 +78,12 @@ public:
 	// columns are resizable by default
 	enum ColumnFlags_e
 	{
-		COLUMN_FIXEDSIZE		= 0x01, // set to have the column be a fixed size
-		COLUMN_RESIZEWITHWINDOW	= 0x02, // set to have the column grow with the parent dialog growing
-		COLUMN_IMAGE			= 0x04,	// set if the column data is not text, but instead the index of the image to display
-		COLUMN_HIDDEN			= 0x08,	// column is hidden by default
-		COLUMN_UNHIDABLE		= 0x10,	// column is unhidable
+		COLUMN_FIXEDSIZE		= 1 << 0, // set to have the column be a fixed size
+		COLUMN_RESIZEWITHWINDOW	= 1 << 1, // set to have the column grow with the parent dialog growing
+		COLUMN_IMAGE			= 1 << 2,	// set if the column data is not text, but instead the index of the image to display
+		COLUMN_HIDDEN			= 1 << 3,	// column is hidden by default
+		COLUMN_UNHIDABLE		= 1 << 4,	// column is unhidable
+        COLUMN_IMAGE_SIZETOFIT  = 1 << 5, // If the column is an image, force its size to be at most as big as the cell
 	};
 
 	// adds a column header
@@ -303,6 +304,7 @@ private:
 		bool m_bUnhidable;
 		IndexRBTree_t m_SortedTree;		
 		int m_nContentAlignment;
+        bool m_bImageSizeBoundToCell;
 	};
 
 	// list of the column headers

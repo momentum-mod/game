@@ -611,6 +611,7 @@ void ListPanel::AddColumnHeader(int index, const char *columnName, const char *c
 	column.m_bHidden = false;
 	column.m_bUnhidable = (columnFlags & COLUMN_UNHIDABLE);
 	column.m_nContentAlignment = Label::a_west;
+    column.m_bImageSizeBoundToCell = (columnFlags & COLUMN_IMAGE_SIZETOFIT);
 
 	Dragger *dragger = new Dragger(index);
 	dragger->SetParent(this);
@@ -1609,6 +1610,16 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 		}
 
 		IImage *pIImage = GetCellImage(itemID, col);
+        if (pIImage && column.m_bImageSizeBoundToCell)
+        {
+            // Bound the size to the cell if need be
+            int imgWide, imgTall;
+            pIImage->GetSize(imgWide, imgTall);
+
+            pIImage->SetSize(min(imgWide, column.m_pHeader->GetWide() - 5), 
+                             min(m_iRowHeight, imgTall));
+        }
+
 		m_pLabel->SetImageAtIndex(0, pIImage, 0);
 
 		return m_pLabel;
