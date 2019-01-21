@@ -76,23 +76,29 @@ MapInfo& MapInfo::operator=(const MapInfo& other)
 void MapImage::FromKV(KeyValues* pKv)
 {
     m_uID = pKv->GetInt("id");
-    Q_strncpy(m_szURL, pKv->GetString("URL"), sizeof(m_szURL));
-    Q_strncpy(m_szHash, pKv->GetString("hash"), sizeof(m_szHash));
+    Q_strncpy(m_szURLSmall, pKv->GetString("small"), sizeof(m_szURLSmall));
+    Q_strncpy(m_szURLMedium, pKv->GetString("medium"), sizeof(m_szURLMedium));
+    Q_strncpy(m_szURLLarge, pKv->GetString("large"), sizeof(m_szURLLarge));
+    Q_strncpy(m_szLastUpdatedDate, pKv->GetString("updatedAt"), sizeof(m_szLastUpdatedDate));
     m_bValid = true;
 }
 
 void MapImage::ToKV(KeyValues* pKv) const
 {
     pKv->SetInt("id", m_uID);
-    pKv->SetString("URL", m_szURL);
-    pKv->SetString("hash", m_szHash);
+    pKv->SetString("small", m_szURLSmall);
+    pKv->SetString("medium", m_szURLMedium);
+    pKv->SetString("large", m_szURLLarge);
+    pKv->SetString("updatedAt", m_szLastUpdatedDate);
 }
 
 MapImage& MapImage::operator=(const MapImage& other)
 {
     m_uID = other.m_uID;
-    Q_strncpy(m_szURL, other.m_szURL, sizeof(m_szURL));
-    Q_strncpy(m_szHash, other.m_szHash, sizeof(m_szHash));
+    Q_strncpy(m_szURLSmall, other.m_szURLSmall, sizeof(m_szURLSmall));
+    Q_strncpy(m_szURLMedium, other.m_szURLMedium, sizeof(m_szURLMedium));
+    Q_strncpy(m_szURLLarge, other.m_szURLLarge, sizeof(m_szURLLarge));
+    Q_strncpy(m_szLastUpdatedDate, other.m_szLastUpdatedDate, sizeof(m_szLastUpdatedDate));
     m_bValid = true;
     return *this;
 }
@@ -311,7 +317,7 @@ MapData::MapData(const MapData& src)
     m_Submitter = src.m_Submitter;
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
-    m_Gallery = src.m_Gallery;
+    m_Thumbnail = src.m_Thumbnail;
     m_Rank = src.m_Rank;
     m_bValid = true;
 }
@@ -334,7 +340,6 @@ void MapData::FromKV(KeyValues* pMap)
         Q_strncpy(m_szPath, pMap->GetString("path"), sizeof(m_szPath));
 
     m_Info.m_bFromAPI = m_bFromAPI;
-    m_Gallery.m_bFromAPI = m_bFromAPI;
 
     KeyValues* pInfo = pMap->FindKey("info");
     if (pInfo)
@@ -363,9 +368,9 @@ void MapData::FromKV(KeyValues* pMap)
         }
     }
 
-    KeyValues* pGallery = pMap->FindKey("gallery");
-    if (pGallery)
-        m_Gallery.FromKV(pGallery);
+    KeyValues *pThumbnail = pMap->FindKey("thumbnail");
+    if (pThumbnail)
+        m_Thumbnail.FromKV(pThumbnail);
 
     KeyValues *pMapRank = pMap->FindKey("mapRanks");
     if (pMapRank && !pMapRank->IsEmpty())
@@ -413,9 +418,9 @@ void MapData::ToKV(KeyValues* pKv) const
         pKv->AddSubKey(pCredits);
     }
 
-    KeyValues* pGallery = new KeyValues("gallery");
-    m_Gallery.ToKV(pGallery);
-    pKv->AddSubKey(pGallery);
+    KeyValues *pThumbnail = new KeyValues("thumbnail");
+    m_Thumbnail.ToKV(pThumbnail);
+    pKv->AddSubKey(pThumbnail);
 
     KeyValues *pMapRank = new KeyValues("mapRanks");
     m_Rank.ToKV(pMapRank);
@@ -441,7 +446,7 @@ MapData& MapData::operator=(const MapData& src)
     m_Submitter = src.m_Submitter;
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
-    m_Gallery = src.m_Gallery;
+    m_Thumbnail = src.m_Thumbnail;
     m_bValid = true;
 
     return *this;
