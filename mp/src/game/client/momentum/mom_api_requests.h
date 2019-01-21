@@ -37,7 +37,7 @@ struct APIRequest
 
 struct DownloadRequest
 {
-    DownloadRequest() : handle(INVALID_HTTPREQUEST_HANDLE), completeResult(nullptr)
+    DownloadRequest() : handle(INVALID_HTTPREQUEST_HANDLE), completeResult(nullptr), m_bSaveToFile(true)
     {
         m_szFileName[0] = '\0';
         m_szFilePathID[0] = '\0';
@@ -69,11 +69,13 @@ struct DownloadRequest
     //  "request"   (uint64)    The request handle that the download operates under
     //  "error"     (bool)      If the request fails in any way, will be true, otherwise false
     //  "code"      (int)       The HTTP status code of the request if it failed, otherwise 0
+    //  "buf"       (pointer)   If the request was created with a nullptr filename, a pointer to the buffer is passed here
     CallbackFunc completeFunc;
 
     char m_szURL[256];
     char m_szFileName[MAX_PATH];
     char m_szFilePathID[16];
+    bool m_bSaveToFile;
     CUtlBuffer m_bufFileData;
 
     bool operator==(const DownloadRequest &other) const
@@ -82,12 +84,12 @@ struct DownloadRequest
     }
 };
 
-class CAPIRequests : public CAutoGameSystemPerFrame
+class CAPIRequests : public CAutoGameSystem
 {
 public:
     CAPIRequests();
 
-    // === HTTP API METHODS ===
+    // ==== HTTP API METHODS ====
     // The way to call these is to create a delegate of a callback function, and pass that in.
     // Example:
     //      `g_pAPIRequests->GetMaps(nullptr, UtlMakeDelegate(this, &SomeClass::SomeCallbackFunc));`
@@ -102,14 +104,14 @@ public:
     //
     // All API requests return `true` if the call succeeded in sending, else `false`.
 
-    // ===== Auth ======
+    // ==== Auth ====
     // Sends an auth ticket to the server to get an API key to use for requests. 
     // This should be the first API call to make, and is done automatically on game boot.
     bool SendAuthTicket(CallbackFunc func);
     // Returns true if authenticated with the server
     bool IsAuthenticated() const;
 
-    // ===== Maps ======
+    // ==== Maps ====
     bool GetMaps(KeyValues *pKvFilters, CallbackFunc func);
     bool GetMapInfo(uint32 mapID, CallbackFunc func);
     bool GetMapByName(const char *pMapName, CallbackFunc func);
@@ -131,21 +133,23 @@ public:
      */
     bool GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, CallbackFunc func);
 
-    // === File Downloading ===
+    // ==== File Downloading ====
     /**
      * @param pszURL        The URL to the file
      * @param start         The start function of the download, see DownloadRequest for more info
      * @param prog          The progress function of the download, see DownloadRequest for more info
      * @param end           The complete function of the download, see DownloadRequest for more info
-     * @param pFileName     The file name (including any path) of where the file should be stored
+     * @param pFileName     The file name (including any extra pathing) of where the file should be stored.
+     *                      If nullptr, the file will be downloaded to the buffer and passed through to the 
+     *                      end CallbackFunc, fetched by `->GetPtr("buf");`, and will not be saved to disk.
      * @param pFilePathID   (Optional) The pathID of where the file should be stored. Defaults to "GAME".
-     * @return The handle of the request
+     * @return The handle of the request, will be an invalid handle if the request fails
      */
     HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end,
                                    const char *pFileName, const char *pFilePathID = "GAME");
 
 protected:
-    // CAutoGameSystemPerFrame
+    // CAutoGameSystem
     bool Init() OVERRIDE;
     void Shutdown() OVERRIDE;
 

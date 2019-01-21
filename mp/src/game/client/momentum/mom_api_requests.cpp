@@ -29,7 +29,7 @@ static const char* const s_pHTTPMethods[] = {
     "PATCH",
 };
 
-CAPIRequests::CAPIRequests() : CAutoGameSystemPerFrame("CAPIRequests"), 
+CAPIRequests::CAPIRequests() : CAutoGameSystem("CAPIRequests"), 
 m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
 m_iAuthActualSize(0), m_pAPIKey(nullptr)
 {
@@ -200,8 +200,15 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc st
             callback->startFunc = start;
             callback->progressFunc = prog;
             callback->completeFunc = end;
-            V_FixupPathName(callback->m_szFileName, sizeof(callback->m_szFileName), pFileName);
-            Q_strncpy(callback->m_szFilePathID, pFilePathID, sizeof(callback->m_szFilePathID));
+            if (pFileName == nullptr)
+            {
+                callback->m_bSaveToFile = false;
+            }
+            else
+            {
+                V_FixupPathName(callback->m_szFileName, sizeof(callback->m_szFileName), pFileName);
+                Q_strncpy(callback->m_szFilePathID, pFilePathID, sizeof(callback->m_szFilePathID));
+            }
             callback->completeResult = new CCallResult<CAPIRequests, HTTPRequestCompleted_t>();
             callback->completeResult->Set(apiHandle, this, &CAPIRequests::OnDownloadHTTPComplete);
             m_mapDownloadCalls.Insert(handle, callback);
@@ -385,10 +392,14 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
             comp->SetBool("error", true);
             comp->SetInt("code", pCallback->m_eStatusCode);
         }
-        else
+        else if (call->m_bSaveToFile) 
         {
             bool bWrote = g_pFullFileSystem->WriteFile(call->m_szFileName, call->m_szFilePathID, call->m_bufFileData);
             comp->SetBool("error", !bWrote);
+        }
+        else
+        {
+            comp->SetPtr("buf", &call->m_bufFileData);
         }
         call->completeFunc(comp);
         m_mapDownloadCalls.RemoveAt(downloadCallbackIndx);
