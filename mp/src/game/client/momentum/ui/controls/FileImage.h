@@ -4,13 +4,19 @@
 
 namespace vgui
 {
+    // A class to load (almost) any type of image from disk to be used on panels and ImageLists.
+    // Uses STB image to parse JPG/PNG/GIF(non-animated)/TGA/BMP, functions very similarly to BitmapImage
+    // but allows for more types of images.
+    // Use LoadFromFile to load an image.
     class FileImage : public IImage
     {
     public:
         FileImage();
         ~FileImage();
 
+        /// Loads an image from file given the file name and pathID. Returns true if loaded, else false
         bool LoadFromFile(const char *pFileName, const char *pPathID = "GAME");
+        bool LoadFromUtlBuffer(CUtlBuffer &buf);
         void LoadFromRGBA(const uint8 *pData, int wide, int tall);
 
     protected:
@@ -22,13 +28,13 @@ namespace vgui
         void SetPos(int x, int y) OVERRIDE { m_iX = x; m_iY = y; }
 
         // Gets the size of the content
-        void GetContentSize(int &wide, int &tall) OVERRIDE { wide = m_iWide; tall = m_iTall; }
+        void GetContentSize(int &wide, int &tall) OVERRIDE { wide = m_iImageWide; tall = m_iImageTall; }
 
         // Get the size the image will actually draw in (usually defaults to the content size)
-        void GetSize(int &wide, int &tall) OVERRIDE { GetContentSize(wide, tall); }
+        void GetSize(int& wide, int& tall) OVERRIDE;
 
         // Sets the size of the image
-        void SetSize(int wide, int tall) OVERRIDE { m_iWide = wide; m_iTall = tall; }
+        void SetSize(int wide, int tall) OVERRIDE { m_iDesiredWide = wide; m_iDesiredTall = tall; }
 
         // Set the draw color 
         void SetColor(Color col) OVERRIDE { m_DrawColor = col; }
@@ -42,9 +48,9 @@ namespace vgui
         void SetFrame(int nFrame) OVERRIDE {}
         HTexture GetID() OVERRIDE { return (HTexture)0; }
 
+        Color m_DrawColor;
+        int m_iX, m_iY, m_iImageWide, m_iDesiredWide, m_iImageTall, m_iDesiredTall, m_iRotation, m_iTextureID;
     private:
         void DestroyTexture();
-        Color m_DrawColor;
-        int m_iX, m_iY, m_iWide, m_iTall, m_iRotation, m_iTextureID;
     };
 }
