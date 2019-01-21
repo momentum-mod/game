@@ -28,18 +28,11 @@ public:
     
     void OnClose() OVERRIDE;
 
-    // called every frame
-    virtual void OnTick() OVERRIDE;
-
     // updates status text at bottom of window
     void UpdateStatusText(const char *format, ...);
 
     // context menu access
     CMapContextMenu *GetContextMenu(Panel *pParent);
-
-    // returns a pointer to a static instance of this dialog
-    // valid for use only in sort functions
-    static CMapSelectorDialog *GetInstance();
 
     // opens a game info dialog from a game list
     CDialogMapInfo *OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap);
@@ -47,9 +40,8 @@ public:
     // opens a game info dialog by a specified IP, not attached to any game list
     CDialogMapInfo *OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort);
 
-    // closes all the game info dialogs
+    // closes all the map info dialogs
     void CloseAllMapInfoDialogs();
-    CDialogMapInfo *GetDialogGameInfoForFriend(uint64 ulSteamIDFriend);
 
     // accessor to the filter save data
     KeyValues *GetCurrentTabFilterData();
@@ -104,8 +96,7 @@ private:
     CMapContextMenu *m_pContextMenu;
 
     // currently connected game
-    bool m_bCurrentlyConnected;/*
-    gameserveritem_t m_CurrentConnection;*/
+    bool m_bCurrentlyConnected;
 };
 
 // singleton accessor
