@@ -6,6 +6,8 @@
 #include "vgui_controls/Controls.h"
 #include "vgui/ISurface.h"
 
+#include "mom_api_requests.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
 #define STBI_NO_HDR
@@ -131,5 +133,62 @@ void FileImage::DestroyTexture()
     {
         surface()->DestroyTextureID(m_iTextureID);
         m_iTextureID = -1;
+    }
+}
+
+URLImage::URLImage(): m_pDefaultImage(nullptr), m_hRequest(INVALID_HTTPREQUEST_HANDLE), m_bValid(false)
+{
+}
+
+bool URLImage::LoadFromURL(const char* pURL, IImage *pDefaultImage /*= nullptr*/)
+{
+    m_pDefaultImage = pDefaultImage;
+
+    m_hRequest = g_pAPIRequests->DownloadFile(pURL, 
+                                 UtlMakeDelegate(this, &URLImage::OnFileStreamStart),
+                                 UtlMakeDelegate(this, &URLImage::OnFileStreamProgress),
+                                 UtlMakeDelegate(this, &URLImage::OnFileStreamEnd),
+                                 nullptr);
+
+    return m_hRequest != INVALID_HTTPREQUEST_HANDLE;
+}
+
+void URLImage::Paint()
+{
+    if (m_bValid)
+        FileImage::Paint();
+    else if (m_pDefaultImage)
+    {
+        m_pDefaultImage->SetSize(m_iDesiredWide, m_iDesiredTall);
+        m_pDefaultImage->SetPos(m_iX, m_iY);
+        m_pDefaultImage->SetColor(m_DrawColor);
+        m_pDefaultImage->Paint();
+    }
+    // MOM_TODO: else { progressBar->Paint() }
+}
+
+void URLImage::OnFileStreamStart(KeyValues* pKv)
+{
+    // MOM_TODO also put a progress bar here and paint it, if no default image?
+}
+
+void URLImage::OnFileStreamProgress(KeyValues* pKv)
+{
+    // MOM_TODO update that progress bar here?
+}
+
+void URLImage::OnFileStreamEnd(KeyValues* pKv)
+{
+    if (pKv->GetBool("error"))
+    {
+        DevWarning("Could not load URLImage due to error!\n");
+    }
+    else
+    {
+        CUtlBuffer *pBuf = (CUtlBuffer*)pKv->GetPtr("buf");
+        if (pBuf)
+        {
+            m_bValid = LoadFromUtlBuffer(*pBuf);
+        }
     }
 }

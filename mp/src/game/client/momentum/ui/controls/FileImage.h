@@ -53,4 +53,28 @@ namespace vgui
     private:
         void DestroyTexture();
     };
+
+    // Like FileImage but streamed from the web (meaning not requiring to be locally downloaded & stored)
+    // Use LoadFromURL to load an image.
+    class URLImage : public FileImage
+    {
+    public:
+        URLImage();
+
+        /// Begins loading a file from the given URL. Returns true if loading, else false.
+        /// You may pass in a default image to use while loading, otherwise nothing will be drawn (while loading).
+        bool LoadFromURL(const char *pURL, IImage *pDefaultImage = nullptr);
+
+    protected:
+        void Paint() OVERRIDE;
+
+        void OnFileStreamStart(KeyValues *pKv);
+        void OnFileStreamProgress(KeyValues *pKv);
+        void OnFileStreamEnd(KeyValues *pKv);
+
+    private:
+        IImage *m_pDefaultImage;
+        uint64 m_hRequest;
+        bool m_bValid;
+    };
 }
