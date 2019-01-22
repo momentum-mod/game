@@ -480,9 +480,12 @@ ListPanel::ListPanel(Panel *parent, const char *panelName) : BaseClass(parent, p
 
 	m_pImageList = NULL;
 	m_bDeleteImageListWhenDone = false;
-	m_pEmptyListText = new TextImage("");
+	m_pEmptyListText = new Label(this, "EmptyListText", "");
+    m_pEmptyListText->SetVisible(false);
+    m_pEmptyListText->SetAutoTall(true);
 
 	m_nUserConfigFileVersion = 1;
+    m_bCenterEmptyListText = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -510,8 +513,6 @@ ListPanel::~ListPanel()
 	{
 		delete m_pImageList;
 	}
-
-	delete m_pEmptyListText;
 }
 
 //-----------------------------------------------------------------------------
@@ -2076,12 +2077,25 @@ void ListPanel::Paint()
 	m_pLabel->SetVisible(false);
 
 	// if the list is empty, draw some help text
-	if (m_VisibleItems.Count() < 1 && m_pEmptyListText)
+	if (m_VisibleItems.IsEmpty())
 	{
-		m_pEmptyListText->SetPos(m_iTableStartX + 8, m_iTableStartY + 4);
-		m_pEmptyListText->SetSize(wide - 8, m_iRowHeight);
-		m_pEmptyListText->Paint();
+        if (m_bCenterEmptyListText)
+        {
+            m_pEmptyListText->SetContentAlignment(Label::a_center);
+            m_pEmptyListText->SetPos(0, (tall + m_iTableStartY) / 2 - (m_pEmptyListText->GetTall() / 2));
+        }
+        else
+        {
+		    m_pEmptyListText->SetPos(m_iTableStartX + 8, m_iTableStartY + 4);
+        }
+
+        m_pEmptyListText->SetWide(wide - 8);
+
+        m_pEmptyListText->SetVisible(true);
+
 	}
+    else
+        m_pEmptyListText->SetVisible(false);
 
 //	endTime = system()->GetCurrentTime();
 //	ivgui()->DPrintf2("ListPanel::Paint() (%.3f sec)\n", (float)(endTime - startTime));
@@ -2678,7 +2692,7 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
 	m_SelectionFgColor = GetSchemeColor("ListPanel.SelectedTextColor", m_LabelFgColor, pScheme);
 	m_DisabledSelectionFgColor = GetSchemeColor("ListPanel.DisabledSelectedTextColor", m_LabelFgColor, pScheme);
 
-	m_pEmptyListText->SetColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
+	m_pEmptyListText->SetFgColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
 		
 	SetFont( pScheme->GetFont("Default", IsProportional() ) );
 	m_pEmptyListText->SetFont( pScheme->GetFont( "Default", IsProportional() ) );
