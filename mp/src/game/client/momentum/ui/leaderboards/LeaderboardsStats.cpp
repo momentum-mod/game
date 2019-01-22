@@ -97,19 +97,15 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
 
         float seconds = 0.0f;
 
-        KeyValues *pMapRank = pData->FindKey("mapRanks");
+        KeyValues *pMapRank = pData->FindKey("mapRank");
         if (pMapRank)
         {
-            pMapRank = pMapRank->FindKey("1");
-            if (pMapRank)
-            {
-                mrank = pMapRank->GetInt("rank");
+            mrank = pMapRank->GetInt("rank");
 
-                KeyValues *pRun = pMapRank->FindKey("run");
-                if (pRun)
-                {
-                    seconds = pRun->GetFloat("time");
-                }
+            KeyValues *pRun = pMapRank->FindKey("run");
+            if (pRun)
+            {
+                seconds = pRun->GetFloat("time");
             }
         }
 

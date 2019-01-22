@@ -140,7 +140,7 @@ bool CAPIRequests::GetUserMapLibrary(CallbackFunc func)
     APIRequest *req = new APIRequest;
     if (CreateAPIRequest(req, API_REQ("user/maps/library"), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "thumbnail,submitter,inFavorites,mapRank");
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "thumbnail,submitter,inFavorites,personalBest,worldRecord");
         SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "limit", "0");
 
         return SendAPIRequest(req, func, __FUNCTION__);
