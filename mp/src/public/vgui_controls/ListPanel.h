@@ -84,6 +84,7 @@ public:
 		COLUMN_HIDDEN			= 1 << 3,	// column is hidden by default
 		COLUMN_UNHIDABLE		= 1 << 4,	// column is unhidable
         COLUMN_IMAGE_SIZETOFIT  = 1 << 5, // If the column is an image, force its size to be at most as big as the cell
+        COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO = 1 << 6,
 	};
 
 	// adds a column header
@@ -306,6 +307,7 @@ private:
 		IndexRBTree_t m_SortedTree;		
 		int m_nContentAlignment;
         bool m_bImageSizeBoundToCell;
+        bool m_bImageSizeShouldMaintainAspectRatio;
 	};
 
 	// list of the column headers
