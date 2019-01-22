@@ -197,6 +197,7 @@ public:
 	// sets the text which is displayed when the list is empty
 	virtual void SetEmptyListText(const char *text);
 	virtual void SetEmptyListText(const wchar_t *text);
+    virtual void SetShouldCenterEmptyListText(bool bCenter) { m_bCenterEmptyListText = bCenter; }
 
 	// relayout the scroll bar in response to changing the items in the list panel
 	// do this if you RemoveAll()
@@ -349,6 +350,7 @@ private:
 	bool			m_bAllowUserAddDeleteColumns : 1;
 	bool 			m_bDeleteImageListWhenDone : 1;
 	bool			m_bIgnoreDoubleClick : 1;
+    bool            m_bCenterEmptyListText : 1;
 
 	int				m_iHeaderHeight;
 	int 			m_iRowHeight;
@@ -366,7 +368,7 @@ private:
 	Color		m_DisabledSelectionFgColor;
 
 	ImageList 	*m_pImageList;
-	TextImage 	*m_pEmptyListText;
+	Label 	*m_pEmptyListText;
 
 	PHandle		m_hEditModePanel;
 	int			m_iEditModeItemID;
