@@ -261,7 +261,7 @@ void MapRank::FromKV(KeyValues* pKv)
     KeyValues *pRun = pKv->FindKey("run");
     if (pRun)
     {
-        m_Run.ToKV(pRun);
+        m_Run.FromKV(pRun);
         m_bValid = true;
     }
 }
@@ -465,10 +465,11 @@ MapData& MapData::operator=(const MapData& src)
 
     m_Info = src.m_Info;
     m_Submitter = src.m_Submitter;
+    m_Rank = src.m_Rank;
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
     m_Thumbnail = src.m_Thumbnail;
-    m_bValid = true;
+    m_bValid = src.m_bValid;
 
     return *this;
 }
@@ -506,7 +507,7 @@ void CMapCache::OnPlayerMapLibrary(KeyValues* pKv)
                     MapData d;
                     d.FromKV(pMap);
 
-                    uint16 indx = m_mapMapCache.Find(pMap->GetInt("id"));
+                    uint16 indx = m_mapMapCache.Find(d.m_uID);
                     if (m_mapMapCache.IsValidIndex(indx))
                     {
                         // Update it

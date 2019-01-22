@@ -142,7 +142,7 @@
         "MOM_MapSelector_StopSearching" "Stop Searching"
         "MOM_MapSelector_Search" "Search..."
         "MOM_MapSelector_NoMaps" "No maps found."
-        "MOM_MapSelector_BestTime" "Best Time"
+        "MOM_MapSelector_BestTime" "Personal Best"
         "MOM_MapSelector_MapLayout" "Map Layout"
         "MOM_MapSelector_MapLayout_Tooltip" "This column shows if the map is linear or has stages."
         "MOM_All" "<All>"
