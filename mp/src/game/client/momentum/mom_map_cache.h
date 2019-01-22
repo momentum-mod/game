@@ -147,7 +147,8 @@ struct MapData : APIModel
 
     User m_Submitter;
     MapInfo m_Info;
-    MapRank m_Rank; // User's rank on a map, if they have one
+    MapRank m_PersonalBest; // User's rank on a map, if they have one
+    MapRank m_WorldRecord; // The world record for the map
     CUtlVector<MapCredit> m_vecCredits;
     MapImage m_Thumbnail;
 

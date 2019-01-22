@@ -182,9 +182,9 @@ bool MapFilterPanel::MapPassesFilters(MapData *pMap)
         return false;
     }
 
-    if (m_bFilterHideCompleted && pMap->m_Rank.m_bValid)
+    if (m_bFilterHideCompleted && pMap->m_PersonalBest.m_bValid)
     {
-        DevLog("Map is completed %i and the player is filtering maps %i \n", pMap->m_Rank.m_bValid, m_bFilterHideCompleted);
+        DevLog("Map is completed %i and the player is filtering maps %i \n", pMap->m_PersonalBest.m_bValid, m_bFilterHideCompleted);
         return false;
     }
 

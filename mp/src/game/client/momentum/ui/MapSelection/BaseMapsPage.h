@@ -13,6 +13,7 @@
 #define KEYNAME_MAP_LAYOUT "MapLayout"
 #define KEYNAME_MAP_DIFFICULTY "difficulty"
 #define KEYNAME_MAP_BEST_TIME "time"
+#define KEYNAME_MAP_WORLD_RECORD "WorldRecord"
 #define KEYNAME_MAP_IMAGE "MapImage"
 #define KEYNAME_MAP_PATH "MapPath"
 #define KEYNAME_MAP_ZONE_COUNT "ZoneCount"
@@ -115,6 +116,7 @@ private:
         HEADER_MAP_NAME,
         HEADER_MAP_LAYOUT,
         HEADER_DIFFICULTY,
+        HEADER_WORLD_RECORD,
         HEADER_BESTTIME
     } HEADERS;
 

@@ -327,7 +327,8 @@ MapData::MapData(const MapData& src)
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
     m_Thumbnail = src.m_Thumbnail;
-    m_Rank = src.m_Rank;
+    m_PersonalBest = src.m_PersonalBest;
+    m_WorldRecord = src.m_WorldRecord;
     m_bValid = src.m_bValid;
 }
 
@@ -381,16 +382,13 @@ void MapData::FromKV(KeyValues* pMap)
     if (pThumbnail)
         m_Thumbnail.FromKV(pThumbnail);
 
-    KeyValues *pMapRank = pMap->FindKey("mapRanks");
-    if (pMapRank)
-    {
-        // MOM_TODO this is lame shit we need to fix
-        if (m_bFromAPI)
-            pMapRank = pMapRank->FindKey("1");
+    KeyValues *pPersonalBest = pMap->FindKey("personalBest");
+    if (pPersonalBest && !pPersonalBest->IsEmpty())
+        m_PersonalBest.FromKV(pPersonalBest);
 
-        if (pMapRank && !pMapRank->IsEmpty())
-            m_Rank.FromKV(pMapRank);
-    }
+    KeyValues *pWorldRecord = pMap->FindKey("worldRecord");
+    if (pWorldRecord && !pWorldRecord->IsEmpty())
+        m_WorldRecord.FromKV(pWorldRecord);
 
     m_bValid = m_Info.m_bValid && m_Submitter.m_bValid && m_Thumbnail.m_bValid;
 }
@@ -440,11 +438,18 @@ void MapData::ToKV(KeyValues* pKv) const
         pKv->AddSubKey(pThumbnail);
     }
 
-    if (m_Rank.m_bValid)
+    if (m_PersonalBest.m_bValid)
     {
-        KeyValues *pMapRank = new KeyValues("mapRanks");
-        m_Rank.ToKV(pMapRank);
-        pKv->AddSubKey(pMapRank);
+        KeyValues *pPersonalBest = new KeyValues("personalBest");
+        m_PersonalBest.ToKV(pPersonalBest);
+        pKv->AddSubKey(pPersonalBest);
+    }
+
+    if (m_WorldRecord.m_bValid)
+    {
+        KeyValues *pWorldRecord = new KeyValues("worldRecord");
+        m_WorldRecord.ToKV(pWorldRecord);
+        pKv->AddSubKey(pWorldRecord);
     }
 }
 
@@ -465,7 +470,8 @@ MapData& MapData::operator=(const MapData& src)
 
     m_Info = src.m_Info;
     m_Submitter = src.m_Submitter;
-    m_Rank = src.m_Rank;
+    m_PersonalBest = src.m_PersonalBest;
+    m_WorldRecord = src.m_WorldRecord;
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
     m_Thumbnail = src.m_Thumbnail;
