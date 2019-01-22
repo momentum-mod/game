@@ -3076,9 +3076,14 @@ void ListPanel::OpenColumnChoiceMenu()
 	{
 		column_t &column = m_ColumnsData[m_CurrentColumns[i]];
 
+        const char *pName;
 		char name[128];
 		column.m_pHeader->GetText(name, sizeof(name));
-		int itemID = menu->AddCheckableMenuItem(name, new KeyValues("ToggleColumnVisible", "col", m_CurrentColumns[i]), this);
+        if (name[0] == '\0')
+            pName = column.m_pHeader->GetName();
+        else
+            pName = name;
+		int itemID = menu->AddCheckableMenuItem(pName, new KeyValues("ToggleColumnVisible", "col", m_CurrentColumns[i]), this);
 		menu->SetMenuItemChecked(itemID, !column.m_bHidden);
 
 		if (column.m_bUnhidable)
