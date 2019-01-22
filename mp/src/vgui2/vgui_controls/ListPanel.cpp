@@ -612,6 +612,7 @@ void ListPanel::AddColumnHeader(int index, const char *columnName, const char *c
 	column.m_bUnhidable = (columnFlags & COLUMN_UNHIDABLE);
 	column.m_nContentAlignment = Label::a_west;
     column.m_bImageSizeBoundToCell = (columnFlags & COLUMN_IMAGE_SIZETOFIT);
+    column.m_bImageSizeShouldMaintainAspectRatio = (columnFlags & COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
 
 	Dragger *dragger = new Dragger(index);
 	dragger->SetParent(this);
@@ -1619,10 +1620,21 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
         {
             // Bound the size to the cell if need be
             int imgWide, imgTall;
-            pIImage->GetSize(imgWide, imgTall);
+            pIImage->GetContentSize(imgWide, imgTall);
 
-            pIImage->SetSize(min(imgWide, column.m_pHeader->GetWide() - 5), 
-                             min(m_iRowHeight, imgTall));
+            int colWide = column.m_pHeader->GetWide() - 5;
+            int colHeight = m_iRowHeight - 2;
+
+            if (column.m_bImageSizeShouldMaintainAspectRatio && (imgWide > colWide || imgTall > colHeight))
+            {
+                double ar = (double)imgWide / (double)imgTall;
+
+                // Max height for the image will be colHeight, so scale the image based on that
+                imgWide = (int)(ar * (double)colHeight);
+            }
+
+            pIImage->SetSize(min(colWide, imgWide), 
+                             min(colHeight, imgTall));
         }
 
 		m_pLabel->SetImageAtIndex(0, pIImage, 0);
