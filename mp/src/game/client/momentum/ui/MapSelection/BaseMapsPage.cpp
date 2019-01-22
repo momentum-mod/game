@@ -36,6 +36,13 @@ static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::Lis
     return Q_stricmp(string1, string2);
 }
 
+static int __cdecl MapWorldRecordSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+{
+    const char *string1 = item1.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
+    const char *string2 = item2.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
+    return Q_stricmp(string1, string2);
+}
+
 static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
 {
     const char *i1 = item1.kv->GetString(KEYNAME_MAP_LAYOUT);
@@ -60,11 +67,12 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetAllowUserModificationOfColumns(true);
     
     // Add the column headers
-    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(120),ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(120), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);
     m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(75), GetScaledVal(75), GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
-    m_pMapList->AddColumnHeader(HEADER_BESTTIME, KEYNAME_MAP_BEST_TIME, "#MOM_MapSelector_BestTime", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW);
+    m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
+    m_pMapList->AddColumnHeader(HEADER_BESTTIME, KEYNAME_MAP_BEST_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW);
     
     //Tooltips
     //MOM_TODO: do we want tooltips?
@@ -77,7 +85,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IMAGE, Label::a_center);
 
     // Sort Functions
-    m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);  
+    m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
+    m_pMapList->SetSortFunc(HEADER_WORLD_RECORD, MapWorldRecordSortFunc);
     m_pMapList->SetSortFunc(HEADER_BESTTIME, MapCompletedSortFunc);
     m_pMapList->SetSortFunc(HEADER_MAP_LAYOUT, MapLayoutSortFunc);
 
@@ -220,23 +229,33 @@ void CBaseMapsPage::ApplyFilters(MapFilterPanel *pFilters)
             map->m_bDoNotRefresh = false;
             if (!m_pMapList->IsValidItemID(map->m_iListID))
             {
-                //DevLog("ADDING MAP TO LIST! %s\n ", mapinfo->m_szMapName);
                 KeyValuesAD kv("Map");
                 kv->SetString(KEYNAME_MAP_NAME, mapinfo->m_szMapName);
-                kv->SetString("map", mapinfo->m_szMapName);//I think this is needed somewhere
                 // kv->SetInt(KEYNAME_MAP_GAME_MODE, mapinfo->m_iGameMode);
                 kv->SetInt(KEYNAME_MAP_DIFFICULTY, mapinfo->m_Info.m_iDifficulty);
                 kv->SetString(KEYNAME_MAP_LAYOUT, mapinfo->m_Info.m_bIsLinear ? "LINEAR" : "STAGED");
-                if (mapinfo->m_Rank.m_bValid)
+                if (mapinfo->m_PersonalBest.m_bValid)
                 {
                     char szBestTime[BUFSIZETIME];
-                    g_pMomentumUtil->FormatTime(mapinfo->m_Rank.m_Run.m_fTime, szBestTime);
+                    g_pMomentumUtil->FormatTime(mapinfo->m_PersonalBest.m_Run.m_fTime, szBestTime);
 
                     kv->SetString(KEYNAME_MAP_BEST_TIME, szBestTime);
                 }
                 else
                 {
                     kv->SetString(KEYNAME_MAP_BEST_TIME, "#MOM_NotApplicable");
+                }
+
+                if (mapinfo->m_WorldRecord.m_bValid)
+                {
+                    char szBestTime[BUFSIZETIME];
+                    g_pMomentumUtil->FormatTime(mapinfo->m_WorldRecord.m_Run.m_fTime, szBestTime);
+
+                    kv->SetString(KEYNAME_MAP_WORLD_RECORD, szBestTime);
+                }
+                else
+                {
+                    kv->SetString(KEYNAME_MAP_WORLD_RECORD, "#MOM_NotApplicable");
                 }
 
                 kv->SetInt(KEYNAME_MAP_IMAGE, map->m_iMapImageIndex);
