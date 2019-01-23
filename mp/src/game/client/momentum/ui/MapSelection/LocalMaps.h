@@ -11,22 +11,17 @@ class CLocalMaps : public CBaseMapsPage
 
 public: 
 
-    CLocalMaps(vgui::Panel *parent);
+    CLocalMaps(Panel *parent);
     ~CLocalMaps();
 
     // property page handlers
     virtual void OnPageShow() OVERRIDE;
 
-    // IGameList handlers
-    // returns true if the game list supports the specified ui elements
-    virtual bool SupportsItem(InterfaceItem_e item) OVERRIDE;
+    MapListType_e GetMapListType() OVERRIDE { return MAP_LIST_LIBRARY; }
 
     //Filters based on the filter data
     void StartRefresh() OVERRIDE;
     void GetNewMapList() OVERRIDE;//called upon loading
-    void AddMapToList(MapData *pData);
-
-    virtual void OnMapStart() OVERRIDE { BaseClass::OnMapStart(); }
 
     // Tell the game list what to put in there when there are no games found.
     virtual void SetEmptyListText();

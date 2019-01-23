@@ -14,12 +14,25 @@
 #include "vgui_controls/Button.h"
 #include "vgui_controls/ImageList.h"
 #include "vgui_controls/ComboBox.h"
+#include "controls/FileImage.h"
 
 #include "tier0/memdbgon.h"
 
-using namespace vgui; 
+using namespace vgui;
 
-#undef wcscat
+// Map keynames
+#define KEYNAME_MAP_ID "id"
+#define KEYNAME_MAP_NAME "name"
+#define KEYNAME_MAP_HASH "hash"
+#define KEYNAME_MAP_TIME "time"
+#define KEYNAME_MAP_TYPE "MapType"
+#define KEYNAME_MAP_STATUS "MapStatus"
+#define KEYNAME_MAP_ZONE_COUNT "numZones"
+#define KEYNAME_MAP_LAYOUT "MapLayout"
+#define KEYNAME_MAP_DIFFICULTY "difficulty"
+#define KEYNAME_MAP_WORLD_RECORD "WorldRecord"
+#define KEYNAME_MAP_IMAGE "MapImage"
+#define KEYNAME_MAP_PATH "MapPath"
 
 //Sort functions
 static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
@@ -31,8 +44,8 @@ static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPane
 
 static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
 {
-    const char *string1 = item1.kv->GetString(KEYNAME_MAP_BEST_TIME);
-    const char *string2 = item2.kv->GetString(KEYNAME_MAP_BEST_TIME);
+    const char *string1 = item1.kv->GetString(KEYNAME_MAP_TIME);
+    const char *string2 = item2.kv->GetString(KEYNAME_MAP_TIME);
     return Q_stricmp(string1, string2);
 }
 
@@ -65,14 +78,15 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     // Init UI
     m_pMapList = new CMapListPanel(this, "MapList");
     m_pMapList->SetAllowUserModificationOfColumns(true);
+    m_pMapList->SetShouldCenterEmptyListText(true);
     
     // Add the column headers
-    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(120), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
-    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);
-    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(75), GetScaledVal(75), GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), 9001, ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
+    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(75), GetScaledVal(75), GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
-    m_pMapList->AddColumnHeader(HEADER_BESTTIME, KEYNAME_MAP_BEST_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW);
+    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), 9001, 0);
     
     //Tooltips
     //MOM_TODO: do we want tooltips?
@@ -87,7 +101,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     // Sort Functions
     m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
     m_pMapList->SetSortFunc(HEADER_WORLD_RECORD, MapWorldRecordSortFunc);
-    m_pMapList->SetSortFunc(HEADER_BESTTIME, MapCompletedSortFunc);
+    m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapCompletedSortFunc);
     m_pMapList->SetSortFunc(HEADER_MAP_LAYOUT, MapLayoutSortFunc);
 
     // disable sort for certain columns
@@ -99,6 +113,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_bAutoSelectFirstItemInGameList = false;
 
     LoadControlSettings(CFmtStr("resource/ui/MapSelector/%sPage.res", name));
+
+    ListenForGameEvent("map_cache_update");
 }
 
 //-----------------------------------------------------------------------------
@@ -114,6 +130,20 @@ CBaseMapsPage::~CBaseMapsPage()
 int CBaseMapsPage::GetInvalidMapListID()
 {
     return m_pMapList->InvalidItemID();
+}
+
+MapDisplay_t *CBaseMapsPage::GetMapDisplayByID(uint32 id)
+{
+    if (m_vecMaps.IsEmpty())
+        return nullptr;
+
+    FOR_EACH_VEC(m_vecMaps, i)
+    {
+        if (m_vecMaps[i].m_pMap->m_uID == id)
+            return &m_vecMaps[i];
+    }
+
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -179,8 +209,6 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    // OnButtonToggled(m_pFilter, false);
-
     // Images
     ImageList *imageList = new ImageList(false);
     imageList->AddImage(scheme()->GetImage("maps/invalid_map", false)); // The ? banner at index 1
@@ -205,65 +233,23 @@ void CBaseMapsPage::LoadFilters()
 //-----------------------------------------------------------------------------
 // Purpose: applies only the game filter to the current list
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::ApplyFilters(MapFilterPanel *pFilters)
+void CBaseMapsPage::ApplyFilters(KeyValues *pFilters)
 {
-    if (!IsVisible())
-        return;
-
     // loop through all the maps checking filters
     FOR_EACH_VEC(m_vecMaps, i)
     {
-        mapdisplay_t *map = &m_vecMaps[i];
-        MapData* mapinfo = map->m_pMap;
-        if (!pFilters->MapPassesFilters(mapinfo))
+        MapDisplay_t *map = &m_vecMaps[i];
+
+        // Now we can check the filters
+        if (!MapPassesFilters(map->m_pMap, pFilters))
         {
-            //Failed filters, remove the map
-            map->m_bDoNotRefresh = true;
-            if (m_pMapList->IsValidItemID(map->m_iListID))
-            {
-                m_pMapList->SetItemVisible(map->m_iListID, false);
-            }
+            m_pMapList->SetItemVisible(map->m_iListID, false);
+            map->m_bNeedsShown = true;
         }
-        else if (BShowMap(*map))
+        else if (map->m_bNeedsShown)
         {
-            map->m_bDoNotRefresh = false;
-            if (!m_pMapList->IsValidItemID(map->m_iListID))
-            {
-                KeyValuesAD kv("Map");
-                kv->SetString(KEYNAME_MAP_NAME, mapinfo->m_szMapName);
-                // kv->SetInt(KEYNAME_MAP_GAME_MODE, mapinfo->m_iGameMode);
-                kv->SetInt(KEYNAME_MAP_DIFFICULTY, mapinfo->m_Info.m_iDifficulty);
-                kv->SetString(KEYNAME_MAP_LAYOUT, mapinfo->m_Info.m_bIsLinear ? "LINEAR" : "STAGED");
-                if (mapinfo->m_PersonalBest.m_bValid)
-                {
-                    char szBestTime[BUFSIZETIME];
-                    g_pMomentumUtil->FormatTime(mapinfo->m_PersonalBest.m_Run.m_fTime, szBestTime);
-
-                    kv->SetString(KEYNAME_MAP_BEST_TIME, szBestTime);
-                }
-                else
-                {
-                    kv->SetString(KEYNAME_MAP_BEST_TIME, "#MOM_NotApplicable");
-                }
-
-                if (mapinfo->m_WorldRecord.m_bValid)
-                {
-                    char szBestTime[BUFSIZETIME];
-                    g_pMomentumUtil->FormatTime(mapinfo->m_WorldRecord.m_Run.m_fTime, szBestTime);
-
-                    kv->SetString(KEYNAME_MAP_WORLD_RECORD, szBestTime);
-                }
-                else
-                {
-                    kv->SetString(KEYNAME_MAP_WORLD_RECORD, "#MOM_NotApplicable");
-                }
-
-                kv->SetInt(KEYNAME_MAP_IMAGE, map->m_iMapImageIndex);
-
-                map->m_iListID = m_pMapList->AddItem(kv, NULL, false, false);
-            }
-            // make sure the map is visible
             m_pMapList->SetItemVisible(map->m_iListID, true);
+            map->m_bNeedsShown = false;
         }
     }
 
@@ -273,12 +259,58 @@ void CBaseMapsPage::ApplyFilters(MapFilterPanel *pFilters)
     Repaint();
 }
 
+bool CBaseMapsPage::MapPassesFilters(MapData *pMap, KeyValues *pFilters)
+{
+    if (!(pMap && pFilters))
+        return false;
+
+    // Needs to pass map name filter
+    // compare the first few characters of the filter
+    const char *szMapNameFilter = pFilters->GetString("name");
+    int count = Q_strlen(szMapNameFilter);
+
+    if (count && !Q_strstr(pMap->m_szMapName, szMapNameFilter))//strstr returns null if the substring is not in the base string
+        return false;
+
+    // Difficulty
+    int iDiffLowBound = pFilters->GetInt("difficulty_low");
+    int iDiffHighBound = pFilters->GetInt("difficulty_high");
+    bool bPassesLower = true;
+    bool bPassesHigher = true;
+    if (iDiffLowBound)
+    {
+        bPassesLower = pMap->m_Info.m_iDifficulty >= iDiffLowBound;
+    }
+    if (iDiffHighBound)
+    {
+        bPassesHigher = pMap->m_Info.m_iDifficulty <= iDiffHighBound;
+    }
+    if (!(bPassesLower && bPassesHigher))
+        return false;
+
+    //Game mode (if it's a surf/bhop/etc map or not)
+    int iGameModeFilter = pFilters->GetInt("type");
+    if (iGameModeFilter && iGameModeFilter != pMap->m_eType)
+        return false;
+
+    bool bHideCompleted = pFilters->GetBool("HideCompleted");
+    if (bHideCompleted && pMap->m_PersonalBest.m_bValid)
+        return false;
+
+    // Map layout (0 = all, 1 = show staged maps only, 2 = show linear maps only)
+    int iMapLayoutFilter = pFilters->GetInt("layout");
+    if (iMapLayoutFilter && pMap->m_Info.m_bIsLinear + 1 == iMapLayoutFilter)
+        return false;
+
+    return true;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Resets UI map count
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::UpdateStatus()
 {
-    if (m_pMapList->GetItemCount() > 1)
+    if (m_pMapList->GetItemCount() > 0)
     {
         m_pMapList->SetColumnHeaderText(HEADER_MAP_NAME, CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_MapSelector_MapCount"), m_pMapList->GetItemCount()));
     }
@@ -286,6 +318,122 @@ void CBaseMapsPage::UpdateStatus()
     {
         m_pMapList->SetColumnHeaderText(HEADER_MAP_NAME, g_pVGuiLocalize->Find("#MOM_MapSelector_Maps"));
         m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
+    }
+}
+
+void CBaseMapsPage::AddMapToList(MapData* pData)
+{
+    // Only add it if it doesn't exist already
+    // Updates are handled by an event
+    FOR_EACH_VEC(m_vecMaps, i)
+    {
+        if (m_vecMaps[i].m_pMap->m_uID == pData->m_uID)
+            return;
+    }
+
+    MapDisplay_t map;
+    map.m_pMap = pData;
+    map.m_bNeedsShown = true;
+
+    // Add the map to the m_pMapList
+    UpdateMapListData(&map, true, true, true, true, true);
+
+    m_vecMaps.AddToTail(map);
+}
+
+void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail)
+{
+    KeyValuesAD kv("Map");
+    MapData *pMapData = pMap->m_pMap;
+    if (bMain)
+    {
+        kv->SetString(KEYNAME_MAP_NAME, pMapData->m_szMapName);
+        kv->SetInt(KEYNAME_MAP_ID, pMapData->m_uID);
+        kv->SetInt(KEYNAME_MAP_TYPE, pMapData->m_eType);
+        kv->SetInt(KEYNAME_MAP_STATUS, pMapData->m_eMapStatus);
+    }
+
+    if (bInfo)
+    {
+        kv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapData->m_Info.m_iDifficulty);
+        kv->SetString(KEYNAME_MAP_LAYOUT, pMapData->m_Info.m_bIsLinear ? "LINEAR" : "STAGED");
+    }
+
+    if (bPB)
+    {
+        if (pMapData->m_PersonalBest.m_bValid)
+        {
+            char szBestTime[BUFSIZETIME];
+            g_pMomentumUtil->FormatTime(pMapData->m_PersonalBest.m_Run.m_fTime, szBestTime);
+
+            kv->SetString(KEYNAME_MAP_TIME, szBestTime);
+        }
+        else
+        {
+            kv->SetString(KEYNAME_MAP_TIME, "#MOM_NotApplicable");
+        }
+    }
+
+    if (bWR)
+    {
+        if (pMapData->m_WorldRecord.m_bValid)
+        {
+            char szBestTime[BUFSIZETIME];
+            g_pMomentumUtil->FormatTime(pMapData->m_WorldRecord.m_Run.m_fTime, szBestTime);
+
+            kv->SetString(KEYNAME_MAP_WORLD_RECORD, szBestTime);
+        }
+        else
+        {
+            kv->SetString(KEYNAME_MAP_WORLD_RECORD, "#MOM_NotApplicable");
+        }
+    }
+
+    if (bThumbnail)
+    {
+        // Remove the old image if there
+        if (pMap->m_pImage)
+        {
+            delete pMap->m_pImage;
+            pMap->m_pImage = nullptr;
+        }
+
+        URLImage *pImage = new URLImage;
+        if (pImage->LoadFromURL(pMapData->m_Thumbnail.m_szURLSmall))
+        {
+            pMap->m_pImage = pImage;
+
+            if (pMap->m_iMapImageIndex > 1)
+            {
+                m_pMapList->GetImageList()->SetImageAtIndex(pMap->m_iMapImageIndex, pImage);
+            }
+            else
+            {
+                // Otherwise just add it
+                pMap->m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(pImage);
+            }
+        }
+        else
+        {
+            pMap->m_iMapImageIndex = 1;
+            delete pImage;
+        }
+    }
+
+    kv->SetInt(KEYNAME_MAP_IMAGE, pMap->m_iMapImageIndex);
+
+    KeyValues *pItem = m_pMapList->GetItem(pMap->m_iListID);
+    // If it's a valid index, we're just normally updating
+    if (pItem)
+    {
+        pItem->Clear();
+        kv->CopySubkeys(pItem);
+        m_pMapList->ApplyItemChanges(pMap->m_iListID);
+    }
+    else
+    {
+        // Otherwise we need to add it
+        pMap->m_iListID = m_pMapList->AddItem(kv, NULL, false, false);
     }
 }
 
@@ -389,6 +537,19 @@ void CBaseMapsPage::OnKeyCodePressed(vgui::KeyCode code)
     }
 }
 
+void CBaseMapsPage::FireGameEvent(IGameEvent* event)
+{
+    // Map updated from cache, do it here
+    uint32 id = event->GetInt("id");
+    MapDisplay_t *map = GetMapDisplayByID(id);
+    if (map)
+    {
+        UpdateMapListData(map, event->GetBool("main"), event->GetBool("info"), 
+                          event->GetBool("pb"), event->GetBool("wr"), 
+                          event->GetBool("thumbnail"));
+    }
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Handle enter pressed in the games list page. Return true
@@ -408,11 +569,15 @@ int CBaseMapsPage::GetSelectedItemsCount()
     return m_pMapList->GetSelectedItemsCount();
 }
 
+KeyValues* CBaseMapsPage::GetFilters()
+{
+    return MapSelectorDialog().GetTabFilterData(GetName());
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: removes the server from the UI list
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::RemoveMap(mapdisplay_t &map)
+void CBaseMapsPage::RemoveMap(MapDisplay_t &map)
 {
     if (m_pMapList->IsValidItemID(map.m_iListID))
     {
@@ -425,32 +590,6 @@ void CBaseMapsPage::RemoveMap(mapdisplay_t &map)
     }
 
     UpdateStatus();
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: refreshes a single server
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::OnRefreshServer(int serverID)
-{
-    //MOM_TODO: for the mp/ port?
-    /*
-#ifndef NO_STEAM
-    if (!SteamMatchmakingServers())
-    return;
-
-    // walk the list of selected servers refreshing them
-    for (int i = 0; i < m_pGameList->GetSelectedItemsCount(); i++)
-    {
-    int serverID = m_pGameList->GetItemUserData(m_pGameList->GetSelectedItem(i));
-
-    // refresh this server
-    SteamMatchmakingServers()->RefreshServer(m_eMatchMakingType, serverID);
-    }
-
-    SetRefreshing(IsRefreshing());
-    #endif
-    */
 }
 
 
@@ -519,8 +658,7 @@ bool CBaseMapsPage::IsRefreshing()
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::OnPageShow()
 {
-    if (IsVisible())
-        StartRefresh();
+    StartRefresh();
 }
 
 //-----------------------------------------------------------------------------
@@ -539,19 +677,10 @@ void CBaseMapsPage::OnMapStart()
     if (!m_pMapList->GetSelectedItemsCount())
         return;
 
-    // get the map
-    //MOM_TODO: get the mapstruct_t data instead of KVs here
+    if (!m_pMapList->GetSelectedItemsCount()) return;
     KeyValues *kv = m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
-    // Stop the current search (online maps)
-    StopRefresh();
-    
-    //MOM_TODO: set global gamemode, which sets tick settings etc
-    //TickSet::SetTickrate(MOMGM_BHOP);
-    //engine->ServerCmd(VarArgs("mom_gamemode %i", MOMGM_BHOP));//MOM_TODO this is testing, replace with m.m_iGamemode
 
-    // Start the map
-    // Originally this was kv->GetString("map") but did not work for Online maps. WHy it was maps and not what it's now?
-    engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString(KEYNAME_MAP_NAME)));
+    g_pMapCache->PlayMap(kv->GetInt(KEYNAME_MAP_ID)); // MOM_TODO handle downloads
 }
 
 //-----------------------------------------------------------------------------
