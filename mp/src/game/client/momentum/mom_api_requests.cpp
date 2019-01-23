@@ -185,11 +185,11 @@ bool CAPIRequests::GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, Callba
 }
 
 HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end, 
-                                             const char *pFileName, const char *pFilePathID /* = "GAME"*/)
+                                             const char *pFileName, const char *pFilePathID /* = "GAME"*/, bool bAuth /*= false*/)
 {
     HTTPRequestHandle handle = INVALID_HTTPREQUEST_HANDLE;
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, pszURL, k_EHTTPMethodGET))
+    if (CreateAPIRequest(req, pszURL, k_EHTTPMethodGET, bAuth))
     {
         handle = req->handle;
         SteamAPICall_t apiHandle;
@@ -234,7 +234,6 @@ bool CAPIRequests::Init()
 
 void CAPIRequests::Shutdown()
 {
-
     if (m_hAuthTicket != k_HAuthTicketInvalid)
     {
         SteamUser()->CancelAuthTicket(m_hAuthTicket);
