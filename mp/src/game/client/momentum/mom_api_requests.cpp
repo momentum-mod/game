@@ -68,6 +68,9 @@ bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
             }
         }
 
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", 
+                                                      "info,thumbnail,submitter,inLibrary,inFavorites,personalBest,worldRecord");
+
         return SendAPIRequest(req, func, __FUNCTION__);
     }
 
