@@ -2,8 +2,6 @@
 
 #include "vgui_controls/EditablePanel.h"
 
-struct MapData;
-
 class MapFilterPanel : public vgui::EditablePanel
 {
     DECLARE_CLASS_SIMPLE(MapFilterPanel, vgui::EditablePanel);
@@ -16,10 +14,6 @@ class MapFilterPanel : public vgui::EditablePanel
     void UpdateFilterSettings(bool bApply = true);
     void ApplyFilters();
     void ResetFilters();
-
-    // filtering methods
-    // returns true if filters passed; false if failed
-    bool MapPassesFilters(MapData *pData);
 
 protected:
     void OnCommand(const char* command) OVERRIDE;

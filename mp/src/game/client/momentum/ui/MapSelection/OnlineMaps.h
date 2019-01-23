@@ -2,13 +2,6 @@
 
 #include "BaseMapsPage.h"
 
-namespace vgui
-{
-    class ImageList;
-}
-
-typedef uint32 HTTPRequestHandle;
-
 //-----------------------------------------------------------------------------
 // Purpose: Internet games list
 //-----------------------------------------------------------------------------
@@ -18,29 +11,19 @@ class COnlineMaps : public CBaseMapsPage
     DECLARE_CLASS_SIMPLE(COnlineMaps, CBaseMapsPage);
 
 public:
-    COnlineMaps(vgui::Panel *parent, const char *panelName = "OnlineMaps");
+    COnlineMaps(Panel *parent, const char *panelName = "OnlineMaps");
     ~COnlineMaps();
 
     // property page handlers
     virtual void OnPageShow();
 
-    void OnMapStart() OVERRIDE;
-
-    // returns true if the game list supports the specified ui elements
-    virtual bool SupportsItem(IMapList::InterfaceItem_e item);
+    MapListType_e GetMapListType() OVERRIDE { return MAP_LIST_BROWSE; }
 
     // Starts the map query
     void StartRefresh() OVERRIDE;
 
     // gets a new server list
     MESSAGE_FUNC(GetNewMapList, "GetNewMapList");
-
-    void StartSelectedMap();
-
-    void StartMapDownload(KeyValues *pKvHeader);
-    void MapDownloadProgress(KeyValues *pKvProgress);
-    void FinishMapDownload(KeyValues *pKvComplete);
-
 
     enum EMapQueryOutputs
     {
@@ -52,14 +35,13 @@ public:
 
     void RefreshComplete(EMapQueryOutputs response);
 
-    //virtual void LoadFilterSettings() {};//MOM_TODO: make this filter online maps (by name/gametype/difficulty?)
-
     void MapsQueryCallback(KeyValues* pKvResponse);
+
+    void FillMapList();
 
 protected:
     // vgui overrides
     virtual void PerformLayout();
-    virtual void OnTick();
 private:
 
     // Called once per frame to check re-send request to master server
@@ -73,51 +55,4 @@ private:
 
     int m_iCurrentPage;
 
-    CUtlMap<HTTPRequestHandle, int> m_mapFileDownloads; // Not to be confused with "Map File Downloads"!
 };
-
-/*class CImageDownloader
-{
-    DECLARE_CLASS_NOBASE(CImageDownloader)
-
-public:
-    CImageDownloader()
-    {
-        m_iTargetIndex = -1;
-        m_pImageList = nullptr;
-    }
-
-    // Downloads the preview image if needed. The boolean determines if the OnlineMaps class should delete it.
-    // Return true for YES DELETE ME, otherwise false (the callback will delete me)
-    bool Process(const char *szMapName, const char *szUrl, CMapListPanel* pTargetPanel, int&);
-private:
-
-    CCallResult<CImageDownloader, HTTPRequestCompleted_t> cbDownloadCallback;
-    void Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailure);
-
-    char m_szMapName[MAX_PATH];
-    char m_szImageUrl[MAX_PATH];
-    int m_iTargetIndex;
-    vgui::ImageList *m_pImageList;
-};
-
-class CMapDownloader
-{
-    DECLARE_CLASS_NOBASE(CMapDownloader)
-
-public:
-    CMapDownloader() {}
-
-    // Downloads the map if needed.
-    // MOM_TODO: Map versioning!
-    bool Process(const char *szMapName, const char *szUrl, const char* szZoneUrl, COnlineMaps *pMapTab);
-private:
-
-    CCallResult<CMapDownloader, HTTPRequestCompleted_t> cbMapDownloadCallback;
-    CCallResult<CMapDownloader, HTTPRequestCompleted_t> cbZoneDownloadCallback;
-    void MapCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure);
-    void ZoneCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure);
-
-    char m_szMapName[MAX_PATH];
-    COnlineMaps *m_pMapTab;
-};*/

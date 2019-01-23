@@ -96,4 +96,13 @@
     {
         "success" "bool"
     }
+    "map_cache_update"
+    {
+        "id" "long"
+        "main" "bool"
+        "info" "bool"
+        "pb" "bool"
+        "wr" "bool"
+        "thumbnail" "bool"
+    }
 }

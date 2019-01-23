@@ -7,12 +7,15 @@
 #include "MapContextMenu.h"
 #include "MapInfoDialog.h"
 #include "MapFilterPanel.h"
+#include "mom_map_cache.h"
 
 #include "vgui_controls/PropertySheet.h"
 #include "vgui/IVGui.h"
 #include "vgui/ISurface.h"
 
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 static CMapSelectorDialog *s_InternetDlg = nullptr;
 
@@ -21,8 +24,6 @@ CMapSelectorDialog &MapSelectorDialog()
     return *s_InternetDlg;
 }
 
-using namespace vgui;
-
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -30,6 +31,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
 {
     SetParent(parent);
     SetProportional(true);
+    SetSize(680, 400);
     s_InternetDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
@@ -48,6 +50,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
     m_pTabPanel->SetSmallTabs(true);
+    // Defaults to m_pLibraryMaps being selected here, since it is added first
     m_pTabPanel->AddPage(m_pLibraryMaps, "#MOM_MapSelector_LibraryMaps");
     m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_BrowseMaps");
 
@@ -64,12 +67,8 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     m_pStatusLabel->SetText("");
 
     // load current tab
-    const char *mapList = m_pSavedData->GetString("MapList", "local");
-    if (!Q_stricmp(mapList, "local"))
-    {
-        m_pTabPanel->SetActivePage(m_pLibraryMaps);
-    }
-    else if (!Q_stricmp(mapList, "online"))
+    MapListType_e current = (MapListType_e) m_pSavedData->GetInt("current", MAP_LIST_LIBRARY);
+    if (current == MAP_LIST_BROWSE)
     {
         m_pTabPanel->SetActivePage(m_pOnline);
     }
@@ -100,7 +99,6 @@ void CMapSelectorDialog::Initialize()
 {
     SetTitle("#MOM_MapSelector_Maps", true);
     SetVisible(false);
-    MoveToCenterOfScreen();
 }
 
 
@@ -109,6 +107,7 @@ void CMapSelectorDialog::Initialize()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::Open()
 {
+    MoveToCenterOfScreen();
     BaseClass::Activate();
     m_pTabPanel->RequestFocus();
 }
@@ -127,31 +126,12 @@ void CMapSelectorDialog::LoadUserData()
 {
     // free any old filters
     if (m_pSavedData)
-    {
         m_pSavedData->deleteThis();
-    }
 
     m_pSavedData = new KeyValues("Filters");
-    if (!m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD"))
-    {
-        // doesn't matter if the file is not found, defaults will work successfully and file will be created on exit
-    }
+    m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 
-    KeyValues *filters = m_pSavedData->FindKey("Filters", false);
-    if (filters)
-    {
-        m_pFilterData = filters->MakeCopy();
-        m_pSavedData->RemoveSubKey(filters);
-    }
-    else
-    {
-        m_pFilterData = new KeyValues("Filters");
-    }
-
-    MoveToCenterOfScreen();
-
-    InvalidateLayout(true);
-    Repaint();
+    m_pFilterData = m_pSavedData->FindKey("Filters", true);
 }
 
 //-----------------------------------------------------------------------------
@@ -161,21 +141,9 @@ void CMapSelectorDialog::SaveUserData()
 {
     if (!g_pFullFileSystem) return;
 
-    m_pSavedData->Clear();
-    m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
-
     // set the current tab
-    if (m_pCurrentMapList == m_pLibraryMaps)
-    {
-        m_pSavedData->SetString("MapList", "local");
-    }
-    else if (m_pCurrentMapList == m_pOnline)
-    {
-        m_pSavedData->SetString("MapList", "online");//MOM_TODO
-    }
+    m_pSavedData->SetInt("current", m_pCurrentMapList->GetMapListType());
 
-    m_pSavedData->RemoveSubKey(m_pSavedData->FindKey("Filters")); // remove the saved subkey and add our subkey
-    m_pSavedData->AddSubKey(m_pFilterData->MakeCopy());
     m_pSavedData->SaveToFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 
     // save per-page config
@@ -191,11 +159,6 @@ void CMapSelectorDialog::RefreshCurrentPage()
     {
         m_pCurrentMapList->StartRefresh();
     }
-}
-
-void CMapSelectorDialog::OnSizeChanged(int wide, int tall)
-{
-    BaseClass::OnSizeChanged(wide, tall);
 }
 
 //-----------------------------------------------------------------------------
@@ -282,7 +245,6 @@ CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyVal
     int i = m_vecMapInfoDialogs.AddToTail();
     m_vecMapInfoDialogs[i] = gameDialog;
     return gameDialog;
-    //return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -319,7 +281,12 @@ void CMapSelectorDialog::CloseAllMapInfoDialogs()
 //-----------------------------------------------------------------------------
 KeyValues* CMapSelectorDialog::GetCurrentTabFilterData()
 {
-    return m_pFilterData->FindKey(m_pTabPanel->GetActivePage()->GetName(), true);
+    return GetTabFilterData(m_pTabPanel->GetActivePage()->GetName());
+}
+
+KeyValues* CMapSelectorDialog::GetTabFilterData(const char* pTabName)
+{
+    return m_pFilterData->FindKey(pTabName, true);
 }
 
 void CMapSelectorDialog::LoadTabFilterData(const char *pTabName)
@@ -329,9 +296,8 @@ void CMapSelectorDialog::LoadTabFilterData(const char *pTabName)
 
 void CMapSelectorDialog::ApplyFiltersToCurrentTab()
 {
-    CBaseMapsPage *pCurrent = dynamic_cast<CBaseMapsPage*>(m_pTabPanel->GetActivePage());
-    if (pCurrent)
-        pCurrent->ApplyFilters(m_pFilterPanel);
+    if (m_pCurrentMapList)
+        m_pCurrentMapList->ApplyFilters(GetCurrentTabFilterData());
 }
 
 //-----------------------------------------------------------------------------

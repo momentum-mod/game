@@ -1,13 +1,23 @@
 #pragma once
 
 #include "mom_shareddefs.h"
+#include "steam/isteamhttp.h"
+#include "IMapList.h"
+
+enum APIModelSource
+{
+    MODEL_FROM_DISK = 0,
+    MODEL_FROM_LIBRARY_API_CALL,
+    MODEL_FROM_SEARCH_API_CALL,
+};
 
 abstract_class APIModel 
 {
 public:
     virtual ~APIModel() = default;
-    APIModel() : m_bValid(false), m_bFromAPI(true) {}
-    bool m_bValid, m_bFromAPI;
+    APIModel() : m_bValid(false), m_bUpdated(false), m_eSource(MODEL_FROM_DISK) {}
+    bool m_bValid, m_bUpdated;
+    APIModelSource m_eSource;
     virtual void FromKV(KeyValues *pKv) = 0;
     virtual void ToKV(KeyValues *pKv) const = 0;
 };
@@ -24,6 +34,7 @@ struct User : APIModel
     void FromKV(KeyValues* pKv) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;
     User& operator=(const User& src);
+    bool operator==(const User &other) const { return m_uID == other.m_uID && FStrEq(m_szAlias, other.m_szAlias); }
 };
 
 struct MapInfo : APIModel
@@ -33,15 +44,17 @@ struct MapInfo : APIModel
     int m_iNumZones;
     bool m_bIsLinear;
     int m_iDifficulty;
-    time_t m_tCreationDate;
-    MapInfo() : m_iNumBonuses(0), m_iNumZones(0), m_bIsLinear(false), m_iDifficulty(0), m_tCreationDate(0)
+    char m_szCreationDate[32];
+    MapInfo() : m_iNumBonuses(0), m_iNumZones(0), m_bIsLinear(false), m_iDifficulty(0)
     {
         m_szDescription[0] = '\0';
+        m_szCreationDate[0] = '\0';
     }
 
     void FromKV(KeyValues *pKv) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;
     MapInfo& operator=(const MapInfo& other);
+    bool operator==(const MapInfo &other) const;
 };
 
 struct MapImage : APIModel
@@ -68,18 +81,6 @@ struct MapImage : APIModel
     MapImage& operator=(const MapImage& other);
 };
 
-struct MapGallery : APIModel
-{
-    MapImage m_Thumbnail;
-    CUtlVector<MapImage> m_vecExtraImages;
-    MapGallery() {}
-    MapGallery(const MapGallery& other);
-
-    void FromKV(KeyValues* pKv) OVERRIDE;
-    void ToKV(KeyValues* pKv) const OVERRIDE;
-    MapGallery& operator=(const MapGallery& src);
-};
-
 struct MapCredit : APIModel
 {
     uint32 m_uID;
@@ -98,7 +99,7 @@ struct Run : APIModel
     uint64 m_uID;
     bool m_bIsPersonalBest;
     float m_fTickRate;
-    // dateAchieved : DATE
+    char m_szDateAchieved[32]; // ISO date
     float m_fTime; // In seconds
     uint32 m_uFlags;
     char m_szDownloadURL[256];
@@ -108,6 +109,7 @@ struct Run : APIModel
     {
         m_szDownloadURL[0] = '\0';
         m_szFileHash[0] = '\0';
+        m_szDateAchieved[0] = '\0';
     }
 
     void FromKV(KeyValues* pKv) OVERRIDE;
@@ -124,7 +126,8 @@ struct MapRank : APIModel
     Run m_Run;
 
     MapRank() : m_iRank(0), m_iRankXP(0) {}
-
+    bool NeedsUpdate() const { return m_bUpdated || m_Run.m_bUpdated; }
+    void ResetUpdate() { m_bUpdated = m_Run.m_bUpdated = false; }
     void FromKV(KeyValues* pKv) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;
     bool operator==(const MapRank& other) const;
@@ -133,7 +136,7 @@ struct MapRank : APIModel
 
 struct MapData : APIModel
 {
-    time_t m_tLastUpdated;
+    char m_szLastUpdated[32]; // ISO date
     bool m_bInFavorites;
     bool m_bInLibrary;
     char m_szPath[MAX_PATH];
@@ -154,6 +157,9 @@ struct MapData : APIModel
 
     MapData();
     MapData(const MapData& src);
+    bool NeedsUpdate() const;
+    void SendUpdate();
+    void ResetUpdate();
     void FromKV(KeyValues* pMap) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;
     MapData& operator=(const MapData& src);
@@ -165,15 +171,21 @@ class CMapCache : public CAutoGameSystem, public CGameEventListener
 public:
     CMapCache();
 
-    void OnPlayMap(const char *pMapName);
+    bool PlayMap(uint32 uID);
 
+    bool AddMapToLibrary();
+    bool RemoveMapFromLibrary();
+    bool AddMapToFavorites();
+    bool RemoveMapFromFavorites();
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
     MapData *GetCurrentMapData() const { return m_pCurrentMapData; }
     uint32 GetCurrentMapID() const { return m_pCurrentMapData ? m_pCurrentMapData->m_uID : 0; }
+    MapData *GetMapDataByID(uint32 uMapID);
 
-    void GetMapLibrary(CUtlVector<MapData*> &vecLibrary);
+    void GetMapList(CUtlVector<MapData*> &vecMaps, MapListType_e type);
+    bool AddMapsToCache(KeyValues *pData, APIModelSource source);
 
 protected:
     void PostInit() OVERRIDE;
@@ -181,14 +193,23 @@ protected:
     void LevelShutdownPostEntity() OVERRIDE;
     void Shutdown() OVERRIDE;
 
+    void LoadMapCacheFromDisk();
+    void SaveMapCacheToDisk();
+
     void SetMapGamemode();
     void OnPlayerMapLibrary(KeyValues *pKv);
+
+    // Map downloading
+    void StartMapDownload(KeyValues *pKvHeader);
+    void MapDownloadProgress(KeyValues *pKvProgress);
+    void FinishMapDownload(KeyValues *pKvComplete);
 private:
     MapData *m_pCurrentMapData;
 
     CUtlDict<uint32> m_dictMapNames;
     CUtlMap<uint32, MapData> m_mapMapCache;
-    KeyValues *m_pMapData;
+
+    CUtlMap<HTTPRequestHandle, uint32> m_mapFileDownloads;
 };
 
 extern CMapCache* g_pMapCache;
