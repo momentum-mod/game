@@ -143,10 +143,11 @@ public:
      *                      If nullptr, the file will be downloaded to the buffer and passed through to the 
      *                      end CallbackFunc, fetched by `->GetPtr("buf");`, and will not be saved to disk.
      * @param pFilePathID   (Optional) The pathID of where the file should be stored. Defaults to "GAME".
+     * @param bAuth         (Optional) Whether this request should be authenticated. Defaults to false.
      * @return The handle of the request, will be an invalid handle if the request fails
      */
     HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end,
-                                   const char *pFileName, const char *pFilePathID = "GAME");
+                                   const char *pFileName, const char *pFilePathID = "GAME", bool bAuth = false);
 
 protected:
     // CAutoGameSystem
