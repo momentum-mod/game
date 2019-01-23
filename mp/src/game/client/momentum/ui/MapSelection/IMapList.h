@@ -2,39 +2,47 @@
 
 struct MapData;
 
-// Used by the MapSelectorDialog, encapsulates a map object for the list
-struct mapdisplay_t
+namespace vgui
 {
-    mapdisplay_t()
+    class IImage;
+}
+
+// Used by the MapSelectorDialog, encapsulates a map object for the list
+struct MapDisplay_t
+{
+    MapDisplay_t()
     {
         m_iMapImageIndex = 1; // Defaults to 1 as it's the invalid map index
         m_iListID = -1;
-        m_bDoNotRefresh = true;
+        m_bNeedsShown = true;
+        m_bNeedsUpdate = true;
         m_pMap = nullptr;
+        m_pImage = nullptr;
     }
     MapData *m_pMap;      // the map struct, containing the information for the map
     int m_iListID;        // the VGUI2 list panel index for displaying this server
     int m_iMapImageIndex; // the map's image index in the map list's image list
-    bool m_bDoNotRefresh;
-    bool operator==(const mapdisplay_t &rhs) const { return m_iListID == rhs.m_iListID; }
+    vgui::IImage *m_pImage; // The map's image
+    bool m_bNeedsShown, m_bNeedsUpdate;
+    bool operator==(const MapDisplay_t &rhs) const { return m_iListID == rhs.m_iListID; }
+};
+
+enum MapListType_e
+{
+    MAP_LIST_BROWSE = 0,
+    MAP_LIST_LIBRARY,
+    MAP_LIST_FAVORITES,
+    MAP_LIST_TESTING,
 };
 
 //-----------------------------------------------------------------------------
 // Purpose: Interface to accessing a game list
 //-----------------------------------------------------------------------------
-class IMapList
+abstract_class IMapList
 {
   public:
-    enum InterfaceItem_e
-    {
-        FILTERS,
-        GETNEWLIST,       // MOM_TODO: Change this to be "MAPSEARCH" ? Local uses its own update methods
-        ADDSERVER,        // MOM_TODO: remove?
-        ADDCURRENTSERVER, // MOM_TODO: remove?
-    };
-
-    // returns true if the game list supports the specified ui elements
-    virtual bool SupportsItem(InterfaceItem_e item) = 0;
+    // Gets the map list type
+    virtual MapListType_e GetMapListType() = 0;
 
     // starts the servers refreshing
     virtual void StartRefresh() = 0;
@@ -47,6 +55,9 @@ class IMapList
 
     // Loads the filters from disk
     virtual void LoadFilters() = 0;
+
+    // Applies filters to the list
+    virtual void ApplyFilters(KeyValues *pFilters) = 0;
 
     // returns true if the list is currently refreshing servers
     virtual bool IsRefreshing() = 0;

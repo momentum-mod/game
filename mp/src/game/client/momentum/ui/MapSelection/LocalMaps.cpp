@@ -7,7 +7,6 @@
 
 #include "filesystem.h"
 #include "mom_map_cache.h"
-#include "controls/FileImage.h"
 
 #include "vgui_controls/Panel.h"
 #include "vgui_controls/ImageList.h"
@@ -20,8 +19,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CLocalMaps::CLocalMaps(vgui::Panel *parent) :
-CBaseMapsPage(parent, "LocalMaps")
+CLocalMaps::CLocalMaps(vgui::Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
 {
     m_bLoadedMaps = false;
 }
@@ -39,29 +37,10 @@ CLocalMaps::~CLocalMaps()
 //-----------------------------------------------------------------------------
 void CLocalMaps::OnPageShow()
 {
-    if (!IsVisible())
-        return;
-
     if (!m_bLoadedMaps)
     {
         GetNewMapList();
         // GetWorkshopItems();
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: returns true if the game list supports the specified ui elements
-//-----------------------------------------------------------------------------
-bool CLocalMaps::SupportsItem(InterfaceItem_e item)
-{
-    switch (item)
-    {
-    case FILTERS:
-        return true;
-
-    case GETNEWLIST:
-    default:
-        return false;
     }
 }
 
@@ -70,7 +49,7 @@ void CLocalMaps::GetNewMapList()
     ClearMapList();
     //Populate the main list
     CUtlVector<MapData*> vecLibrary;
-    g_pMapCache->GetMapLibrary(vecLibrary);
+    g_pMapCache->GetMapList(vecLibrary, MAP_LIST_LIBRARY);
 
     FOR_EACH_VEC(vecLibrary, i)
     {
@@ -80,25 +59,6 @@ void CLocalMaps::GetNewMapList()
     m_bLoadedMaps = true;
 
     MapSelectorDialog().ApplyFiltersToCurrentTab();
-}
-
-void CLocalMaps::AddMapToList(MapData *pData)
-{
-    mapdisplay_t map;
-    map.m_pMap = pData;
-    map.m_bDoNotRefresh = true;
-
-    // Map image
-    if (pData->m_Thumbnail.m_bValid)
-    {
-        URLImage *pImage = new URLImage;
-        if (pImage->LoadFromURL(pData->m_Thumbnail.m_szURLMedium))
-            map.m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(pImage);
-        else
-            delete pImage;
-    }
-
-    m_vecMaps.AddToTail(map);
 }
 
 //-----------------------------------------------------------------------------

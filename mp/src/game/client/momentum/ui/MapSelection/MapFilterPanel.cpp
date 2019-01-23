@@ -146,58 +146,6 @@ void MapFilterPanel::ResetFilters()
     m_bFilterHideCompleted = false;
 }
 
-bool MapFilterPanel::MapPassesFilters(MapData *pMap)
-{
-    if (!pMap)
-        return false;
-
-    // Needs to pass map name filter
-    // compare the first few characters of the filter
-    int count = Q_strlen(m_szMapNameFilter);
-
-    if (count && !Q_strstr(pMap->m_szMapName, m_szMapNameFilter))//strstr returns null if the substring is not in the base string
-    {
-        DevLog("Map %s does not pass filter %s \n", pMap->m_szMapName, m_szMapNameFilter);
-        return false;
-    }
-
-    //Difficulty needs to pass as well
-    bool bPassesLower = true;
-    bool bPassesHigher = true;
-    if (m_iDifficultyLowBound)
-    {
-        bPassesLower = pMap->m_Info.m_iDifficulty >= m_iDifficultyLowBound;
-    }
-    if (m_iDifficultyHighBound)
-    {
-        bPassesHigher = pMap->m_Info.m_iDifficulty <= m_iDifficultyHighBound;
-    }
-    if (!(bPassesLower && bPassesHigher))
-        return false;
-
-    //Game mode (if it's a surf/bhop/etc map or not)
-    if (m_iGameModeFilter != 0 && m_iGameModeFilter != pMap->m_eType)
-    {
-        DevLog("Map %s's gamemode %i is not filter gamemode %i !\n", pMap->m_szMapName, pMap->m_eType, m_iGameModeFilter);
-        return false;
-    }
-
-    if (m_bFilterHideCompleted && pMap->m_PersonalBest.m_bValid)
-    {
-        DevLog("Map is completed %i and the player is filtering maps %i \n", pMap->m_PersonalBest.m_bValid, m_bFilterHideCompleted);
-        return false;
-    }
-
-    // Map layout (0 = all, 1 = show staged maps only, 2 = show linear maps only)
-    if (m_iMapLayoutFilter && pMap->m_Info.m_bIsLinear + 1 == m_iMapLayoutFilter)
-    {
-        DevLog("Map %s has stages %i and the user is filtering maps %i\n", pMap->m_szMapName, pMap->m_Info.m_bIsLinear, m_iMapLayoutFilter);
-        return false;
-    }
-
-    return true;
-}
-
 void MapFilterPanel::OnCommand(const char* command)
 {
     if (FStrEq(command, "ApplyFilters"))

@@ -959,7 +959,7 @@ int ListPanel::GetItem(const char *itemName)
 KeyValues *ListPanel::GetItem(int itemID)
 {
 	if ( !m_DataItems.IsValidIndex(itemID) )
-		return NULL;
+		return nullptr;
 
 	return m_DataItems[itemID]->kv;
 }

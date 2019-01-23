@@ -45,6 +45,7 @@ public:
 
     // accessor to the filter save data
     KeyValues *GetCurrentTabFilterData();
+    KeyValues *GetTabFilterData(const char *pTabName);
     void LoadTabFilterData(const char *pTabName);
     void ApplyFiltersToCurrentTab();
 
@@ -54,8 +55,6 @@ public:
 
     // forces the currently active page to refresh
     void		RefreshCurrentPage();
-
-    void OnSizeChanged(int wide, int tall) OVERRIDE;
 
 private:
 

@@ -41,11 +41,6 @@ void CMapContextMenu::ShowMenu(
         AddMenuItem("ViewMapInfo", "#MOM_MapSelector_ShowMapInfo", new KeyValues("ViewMapInfo"), target);
     }
 
-    //if (showRefresh)
-    //{
-    //    AddMenuItem("RefreshServer", "#ServerBrowser_RefreshServer", new KeyValues("RefreshServer", "serverID", serverID), target);
-    //}
-
     int x, y, gx, gy;
     input()->GetCursorPos(x, y);
     ipanel()->GetPos(surface()->GetEmbeddedPanel(), gx, gy);
