@@ -201,7 +201,13 @@ void MapRank::FromKV(KeyValues* pKv)
     if (pRun)
     {
         m_Run.FromKV(pRun);
-        m_bValid = true;
+
+        KeyValues *pUser = pKv->FindKey("user");
+        if (pUser)
+        {
+            m_User.FromKV(pUser);
+            m_bValid = true;
+        }
     }
 }
 
@@ -216,6 +222,12 @@ void MapRank::ToKV(KeyValues* pKv) const
         m_Run.ToKV(pRun);
         pKv->AddSubKey(pRun);
     }
+    if (m_User.m_bValid)
+    {
+        KeyValues *pUser = new KeyValues("user");
+        m_User.ToKV(pUser);
+        pKv->AddSubKey(pUser);
+    }
 }
 
 bool MapRank::operator==(const MapRank& other) const
@@ -229,6 +241,7 @@ MapRank& MapRank::operator=(const MapRank& other)
     m_iRank = other.m_iRank;
     m_iRankXP = other.m_iRankXP;
     m_Run = other.m_Run;
+    m_User = other.m_User;
     m_bValid = other.m_bValid;
     return *this;
 }
@@ -609,6 +622,10 @@ bool CMapCache::AddMapsToCache(KeyValues* pData, APIModelSource source)
 
             m_dictMapNames.Insert(d.m_szMapName, d.m_uID);
             m_mapMapCache.Insert(d.m_uID, d);
+
+            // Force an update event if not from disk
+            if (source != MODEL_FROM_DISK)
+                d.SendUpdate();
         }
     }
 
@@ -660,6 +677,9 @@ void CMapCache::OnPlayerMapLibrary(KeyValues* pKv)
     {
         KeyValues *pEntries = pData->FindKey("entries");
         AddMapsToCache(pEntries, MODEL_FROM_LIBRARY_API_CALL);
+        IGameEvent *pEvent = gameeventmanager->CreateEvent("map_library_updated");
+        if (pEvent)
+            gameeventmanager->FireEventClientSide(pEvent);
     }
     else if (pErr)
     {
