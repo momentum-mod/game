@@ -11,11 +11,11 @@ enum APIModelSource
     MODEL_FROM_SEARCH_API_CALL,
 };
 
-abstract_class APIModel 
+abstract_class APIModel
 {
 public:
     virtual ~APIModel() = default;
-    APIModel() : m_bValid(false), m_bUpdated(false), m_eSource(MODEL_FROM_DISK) {}
+    APIModel() : m_bValid(false), m_bUpdated(true), m_eSource(MODEL_FROM_DISK) {}
     bool m_bValid, m_bUpdated;
     APIModelSource m_eSource;
     virtual void FromKV(KeyValues *pKv) = 0;
@@ -124,6 +124,7 @@ struct MapRank : APIModel
     uint32 m_iRankXP;
 
     Run m_Run;
+    User m_User;
 
     MapRank() : m_iRank(0), m_iRankXP(0) {}
     bool NeedsUpdate() const { return m_bUpdated || m_Run.m_bUpdated; }

@@ -105,4 +105,7 @@
         "wr" "bool"
         "thumbnail" "bool"
     }
+    "map_library_updated"
+    {
+    }
 }

@@ -53,9 +53,6 @@ public:
     void		LoadUserData();
     void		SaveUserData();
 
-    // forces the currently active page to refresh
-    void		RefreshCurrentPage();
-
 private:
 
     // current game list change

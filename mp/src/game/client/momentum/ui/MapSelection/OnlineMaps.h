@@ -19,9 +19,6 @@ public:
 
     MapListType_e GetMapListType() OVERRIDE { return MAP_LIST_BROWSE; }
 
-    // Starts the map query
-    void StartRefresh() OVERRIDE;
-
     // gets a new server list
     MESSAGE_FUNC(GetNewMapList, "GetNewMapList");
 

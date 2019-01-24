@@ -26,7 +26,8 @@ public:
 
     virtual void PerformLayout();
     virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-    
+
+    virtual void SetListCellColors(MapData *pData, KeyValues *pKvInto);
 
     // Called by CGameList when the enter key is pressed.
     // This is overridden in the add server dialog - since there is no Connect button, the message
@@ -41,12 +42,10 @@ public:
     virtual KeyValues *GetFilters();
     void ApplyFilters(KeyValues *pFilters) OVERRIDE;
     virtual bool MapPassesFilters(MapData *pData, KeyValues *pFilters);
-    
-protected:
-    virtual void OnCommand(const char *command);
-    virtual void OnKeyCodePressed(vgui::KeyCode code);
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
+protected:
+    virtual void OnCommand(const char *command);
     
     MESSAGE_FUNC(OnItemSelected, "ItemSelected");
 
@@ -66,10 +65,6 @@ protected:
     MapDisplay_t *GetMapDisplayByID(uint32 id);
 
     virtual void GetNewMapList();
-    virtual void StartRefresh();
-    virtual void StopRefresh();
-    virtual bool IsRefreshing();
-    virtual void SetRefreshing(bool state);
     virtual void OnPageShow();
     virtual void OnPageHide();
 

@@ -19,9 +19,10 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CLocalMaps::CLocalMaps(vgui::Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
+CLocalMaps::CLocalMaps(Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
 {
     m_bLoadedMaps = false;
+    ListenForGameEvent("map_library_updated");
 }
 
 //-----------------------------------------------------------------------------
@@ -46,31 +47,32 @@ void CLocalMaps::OnPageShow()
 
 void CLocalMaps::GetNewMapList()
 {
-    ClearMapList();
+    // ClearMapList();
     //Populate the main list
     CUtlVector<MapData*> vecLibrary;
     g_pMapCache->GetMapList(vecLibrary, MAP_LIST_LIBRARY);
 
     FOR_EACH_VEC(vecLibrary, i)
-    {
         AddMapToList(vecLibrary[i]);
-    }
 
-    m_bLoadedMaps = true;
+    m_bLoadedMaps = m_vecMaps.IsEmpty();
 
-    MapSelectorDialog().ApplyFiltersToCurrentTab();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: starts the maps refreshing
-//-----------------------------------------------------------------------------
-void CLocalMaps::StartRefresh()
-{
+    ApplyFilters(GetFilters());
 }
 
 void CLocalMaps::SetEmptyListText()
 {
     m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
+}
+
+void CLocalMaps::FireGameEvent(IGameEvent* event)
+{
+    if (FStrEq(event->GetName(), "map_library_updated"))
+    {
+        GetNewMapList();
+    }
+
+    BaseClass::FireGameEvent(event);
 }
 
 /*void CLocalMaps::GetWorkshopItems()

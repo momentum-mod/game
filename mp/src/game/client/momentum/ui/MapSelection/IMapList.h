@@ -44,23 +44,14 @@ abstract_class IMapList
     // Gets the map list type
     virtual MapListType_e GetMapListType() = 0;
 
-    // starts the servers refreshing
-    virtual void StartRefresh() = 0;
-
     // gets a new map list
     virtual void GetNewMapList() = 0;
-
-    // stops current refresh/GetNewServerList()
-    virtual void StopRefresh() = 0;
 
     // Loads the filters from disk
     virtual void LoadFilters() = 0;
 
     // Applies filters to the list
     virtual void ApplyFilters(KeyValues *pFilters) = 0;
-
-    // returns true if the list is currently refreshing servers
-    virtual bool IsRefreshing() = 0;
 
     // called when Connect button is pressed
     virtual void OnMapStart() = 0;
