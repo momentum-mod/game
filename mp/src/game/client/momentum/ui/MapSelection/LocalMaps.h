@@ -20,11 +20,15 @@ public:
     MapListType_e GetMapListType() OVERRIDE { return MAP_LIST_LIBRARY; }
 
     //Filters based on the filter data
-    void StartRefresh() OVERRIDE;
     void GetNewMapList() OVERRIDE;//called upon loading
 
     // Tell the game list what to put in there when there are no games found.
     virtual void SetEmptyListText();
+
+    // Empty (for now?)
+    void SetListCellColors(MapData* pData, KeyValues* pKvInto) OVERRIDE {}
+
+    void FireGameEvent(IGameEvent* event) OVERRIDE;
 
     /*void GetWorkshopItems();
     void OnWorkshopDownloadComplete(DownloadItemResult_t *pCallback, bool bIOFailure);

@@ -58,8 +58,6 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
             FillMapList();
 
             RefreshComplete(eSuccess);
-
-            MapSelectorDialog().ApplyFiltersToCurrentTab();
         }
         else
             RefreshComplete(eNoMapsReturned);
@@ -73,6 +71,8 @@ void COnlineMaps::FillMapList()
 
     FOR_EACH_VEC(vecMaps, i)
         AddMapToList(vecMaps[i]);
+
+    ApplyFilters(GetFilters());
 }
 
 
@@ -117,12 +117,14 @@ void COnlineMaps::GetNewMapList()
     m_iCurrentPage = 0;
     FillMapList();
 
-    StartRefresh();
+    if (SteamHTTP())
+    {
+        g_pAPIRequests->GetMaps(GetFilters(), UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
+    }
 }
 
 void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
 {
-    SetRefreshing(false);
     switch (eResponse)
     {
         case eNoMapsReturned: 
@@ -139,16 +141,6 @@ void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
 
     UpdateStatus();
 }
-
-void COnlineMaps::StartRefresh()
-{
-    if (SteamHTTP())
-    {
-        SetRefreshing(true);
-        g_pAPIRequests->GetMaps(GetFilters(), UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
-    }
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: opens context menu (user right clicked on a server)

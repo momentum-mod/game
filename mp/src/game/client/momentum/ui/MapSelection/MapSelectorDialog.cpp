@@ -151,17 +151,6 @@ void CMapSelectorDialog::SaveUserData()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: refreshes the page currently visible
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::RefreshCurrentPage()
-{
-    if (m_pCurrentMapList)
-    {
-        m_pCurrentMapList->StartRefresh();
-    }
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Updates status test at bottom of window
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::UpdateStatusText(const char *fmt, ...)
