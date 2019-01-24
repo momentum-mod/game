@@ -1494,9 +1494,55 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 	
 	column_t &column = m_ColumnsData[ m_CurrentColumns[col] ];
 
-	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
+    KeyValues *item = GetItem(itemID);
 
 	m_pLabel->SetContentAlignment( (Label::Alignment)column.m_nContentAlignment );
+    // Reset to normal bg color
+    m_pLabel->SetBgColor(m_BgColor);
+
+    // Determine selection state or other bg color, if set
+    bool bSelected = false, bHasBg = false;
+    if (m_SelectedItems.HasElement(itemID) && (!m_bCanSelectIndividualCells || col == m_iSelectedColumn))
+    {
+        bSelected = true;
+        VPANEL focus = input()->GetFocus();
+        // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
+        if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
+        {
+            m_pLabel->SetBgColor(m_SelectionBgColor);
+        }
+        else
+        {
+            m_pLabel->SetBgColor(m_SelectionOutOfFocusBgColor);
+        }
+    }
+    else
+    {
+        KeyValues *pCellBg = item->FindKey("cellbgcolor");
+        if (pCellBg && !pCellBg->IsEmpty())
+        {
+            // Check the type
+            if (pCellBg->GetDataType() == KeyValues::TYPE_NONE)
+            {
+                // It's an array of cells, try to find this cell in particular
+                char num[4];
+                V_snprintf(num, 4, "%i", col);
+                KeyValues *pThisCell = pCellBg->FindKey(num);
+                if (pThisCell)
+                    m_pLabel->SetBgColor(pThisCell->GetColor("color"));
+            }
+            else
+            {
+                // It's just a color, apply to all cells in the row
+                m_pLabel->SetBgColor(item->GetColor("cellbgcolor"));
+            }
+
+            bHasBg = true;
+        }
+
+    }
+
+    m_pLabel->SetPaintBackgroundEnabled(bSelected || bHasBg);
 
 	if ( column.m_bTypeIsText ) 
 	{
@@ -1504,7 +1550,6 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 
 		// Grab cell text
 		GetCellText( itemID, col, tempText, 256 );
-		KeyValues *item = GetItem( itemID );
 		m_pTextImage->SetText(tempText);
         int cw, tall;
         m_pTextImage->GetContentSize(cw, tall);
@@ -1516,54 +1561,35 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 
 		m_pLabel->SetTextImageIndex( 0 );
 		m_pLabel->SetImageAtIndex(0, m_pTextImage, 3);
-			
-		bool selected = false;
-		if ( m_SelectedItems.HasElement(itemID) && ( !m_bCanSelectIndividualCells || col == m_iSelectedColumn ) )
-		{
-			selected = true;
-            VPANEL focus = input()->GetFocus();
-            // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
-            if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedBgColor", pScheme));
-    			// selection
-            }
-            else
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme));
-            }
 
-			if ( item->IsEmpty("cellcolor") == false )
-			{
-	            m_pTextImage->SetColor( item->GetColor( "cellcolor" ) );
-			}
-			else if ( item->GetInt("disabled", 0) == 0 )
-			{
-	            m_pTextImage->SetColor(m_SelectionFgColor);
-			}
-			else 
-			{
-	            m_pTextImage->SetColor(m_DisabledSelectionFgColor);
-			}
+        if (item->GetInt("disabled"))
+        {
+            m_pTextImage->SetColor(bSelected ? m_DisabledSelectionFgColor : m_DisabledColor);
+        }
+        else
+        {
+            m_pTextImage->SetColor(bSelected ? m_SelectionFgColor : m_LabelFgColor);
 
-            m_pLabel->SetPaintBackgroundEnabled(true);
-		}
-		else
-		{
-			if ( item->IsEmpty("cellcolor") == false )
-			{
-	            m_pTextImage->SetColor( item->GetColor( "cellcolor" ) );
-			}
-			else if ( item->GetInt("disabled", 0) == 0 )
-			{
-				m_pTextImage->SetColor(m_LabelFgColor);
-			}
-			else
-			{
-				m_pTextImage->SetColor(m_DisabledColor);
-			}
-			m_pLabel->SetPaintBackgroundEnabled(false);
-		}
+            KeyValues *pCellColorKey = item->FindKey("cellcolor");
+            if (!bSelected && pCellColorKey && !pCellColorKey->IsEmpty())
+            {
+                // Check the type
+                if (pCellColorKey->GetDataType() == KeyValues::TYPE_NONE)
+                {
+                    // It's an array of cells, try to find this cell in particular
+                    char num[4];
+                    V_snprintf(num, 4, "%i", col);
+                    KeyValues *pThisCell = pCellColorKey->FindKey(num);
+                    if (pThisCell)
+                        m_pTextImage->SetColor(pThisCell->GetColor("color"));
+                }
+                else
+                {
+                    // It's just a color, apply to all cells in the row
+                    m_pTextImage->SetColor(item->GetColor("cellcolor"));
+                }
+            }
+        }
 
 		FastSortListPanelItem *listItem = m_DataItems[ itemID ];
 		if ( col == 0 &&
@@ -1576,7 +1602,7 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 			}
 			else
 			{
-				int imageIndex = selected ? listItem->m_nImageIndexSelected : listItem->m_nImageIndex;
+				int imageIndex = bSelected ? listItem->m_nImageIndexSelected : listItem->m_nImageIndex;
 				if ( m_pImageList->IsValidIndex(imageIndex) )
 				{
 					pImage = m_pImageList->GetImage(imageIndex);
@@ -1593,55 +1619,33 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 		
 		return m_pLabel;
 	}
-	else 	// if its an Image Panel
-	{
-		if ( m_SelectedItems.HasElement(itemID) && ( !m_bCanSelectIndividualCells || col == m_iSelectedColumn ) )
-		{
-            VPANEL focus = input()->GetFocus();
-            // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
-            if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedBgColor", pScheme));
-    			// selection
-            }
-            else
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme));
-            }
-			// selection
-			m_pLabel->SetPaintBackgroundEnabled(true);
-		}
-		else
-		{
-			m_pLabel->SetPaintBackgroundEnabled(false);
-		}
 
-		IImage *pIImage = GetCellImage(itemID, col);
-        if (pIImage && column.m_bImageSizeBoundToCell)
+	// Else it's an Image Panel
+	IImage *pIImage = GetCellImage(itemID, col);
+    if (pIImage && column.m_bImageSizeBoundToCell)
+    {
+        // Bound the size to the cell if need be
+        int imgWide, imgTall;
+        pIImage->GetContentSize(imgWide, imgTall);
+
+        int colWide = column.m_pHeader->GetWide() - 5;
+        int colHeight = m_iRowHeight - 2;
+
+        if (column.m_bImageSizeShouldMaintainAspectRatio && (imgWide > colWide || imgTall > colHeight))
         {
-            // Bound the size to the cell if need be
-            int imgWide, imgTall;
-            pIImage->GetContentSize(imgWide, imgTall);
+            double ar = (double)imgWide / (double)imgTall;
 
-            int colWide = column.m_pHeader->GetWide() - 5;
-            int colHeight = m_iRowHeight - 2;
-
-            if (column.m_bImageSizeShouldMaintainAspectRatio && (imgWide > colWide || imgTall > colHeight))
-            {
-                double ar = (double)imgWide / (double)imgTall;
-
-                // Max height for the image will be colHeight, so scale the image based on that
-                imgWide = (int)(ar * (double)colHeight);
-            }
-
-            pIImage->SetSize(min(colWide, imgWide), 
-                             min(colHeight, imgTall));
+            // Max height for the image will be colHeight, so scale the image based on that
+            imgWide = (int)(ar * (double)colHeight);
         }
 
-		m_pLabel->SetImageAtIndex(0, pIImage, 0);
+        pIImage->SetSize(min(colWide, imgWide), 
+                         min(colHeight, imgTall));
+    }
 
-		return m_pLabel;
-	}
+	m_pLabel->SetImageAtIndex(0, pIImage, 0);
+
+	return m_pLabel;
 }
 
 //-----------------------------------------------------------------------------
@@ -2682,15 +2686,18 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
 
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	SetBgColor(GetSchemeColor("ListPanel.BgColor", pScheme));
+    m_BgColor = GetSchemeColor("ListPanel.BgColor", pScheme);
+	SetBgColor(m_BgColor);
 	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
 
-	m_pLabel->SetBgColor(GetSchemeColor("ListPanel.BgColor", pScheme));
+	m_pLabel->SetBgColor(m_BgColor);
 
 	m_LabelFgColor = GetSchemeColor("ListPanel.TextColor", pScheme);
 	m_DisabledColor = GetSchemeColor("ListPanel.DisabledTextColor", m_LabelFgColor, pScheme);
 	m_SelectionFgColor = GetSchemeColor("ListPanel.SelectedTextColor", m_LabelFgColor, pScheme);
 	m_DisabledSelectionFgColor = GetSchemeColor("ListPanel.DisabledSelectedTextColor", m_LabelFgColor, pScheme);
+    m_SelectionBgColor = GetSchemeColor("ListPanel.SelectedBgColor", pScheme);
+    m_SelectionOutOfFocusBgColor = GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme);
 
 	m_pEmptyListText->SetFgColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
 		
