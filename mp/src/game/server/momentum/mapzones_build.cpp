@@ -311,7 +311,10 @@ void CMomPointZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
 
 void CMomPointZoneBuilder::Add(CBasePlayer *pPlayer, const Vector &vecAim)
 {
-    m_vPoints.AddToTail(vecAim);
+    if (!m_bGetHeight && !IsDone())
+    {
+        m_vPoints.AddToTail(vecAim);
+    }
 }
 
 void CMomPointZoneBuilder::Remove(CBasePlayer *pPlayer, const Vector &vecAim)
