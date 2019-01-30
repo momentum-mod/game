@@ -25,7 +25,7 @@ ZoneMenu::ZoneMenu(Panel* pParentPanel) : Frame(pParentPanel, "ZoneMenu")
     ListenForGameEvent("zone_enter");
     ListenForGameEvent("zone_exit");
 
-    m_bBindMouseToMark = false;
+    m_bBindKeys = false;
 
     SetSize(450, 250);
     SetPos(20, 180);
@@ -58,8 +58,39 @@ ZoneMenu::ZoneMenu(Panel* pParentPanel) : Frame(pParentPanel, "ZoneMenu")
     SetKeyBoardInputEnabled(false);
 }
 
-void ZoneMenu::FireGameEvent(IGameEvent* event)
-{ Log("Event fired!"); }
+int ZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
+{
+    if (keynum == MOUSE_RIGHT)
+    {
+        engine->ExecuteClientCmd("mom_zone_cancel");
+        ConVarRef mom_zone_edit("mom_zone_edit");
+        mom_zone_edit.SetValue(false);
+        g_pZoneMenu->SetMouseInputEnabled(true);
+        return true;
+    }
+    else if (ShouldBindKeys() && down)
+    {
+        if (keynum == MOUSE_LEFT)
+        {
+            engine->ExecuteClientCmd("mom_zone_mark");
+            return true;
+        }
+        else if (keynum == KEY_DELETE)
+        {
+            engine->ExecuteClientCmd("mom_zone_back");
+            return true;
+        }
+        else if (keynum == KEY_ENTER)
+        {
+            engine->ExecuteClientCmd("mom_zone_create");
+            return true;
+		}
+    }
+
+	return false;
+}
+
+void ZoneMenu::FireGameEvent(IGameEvent* event) { Log("Event fired!"); }
 
 void ZoneMenu::OnMousePressed( MouseCode code )
 {
@@ -71,11 +102,12 @@ void ZoneMenu::OnMousePressed( MouseCode code )
 
 void ZoneMenu::OnCreateNewZone()
 {
+    engine->ExecuteClientCmd("mom_zone_usenewmethod 1");
     ConVarRef mom_zone_edit("mom_zone_edit");
     mom_zone_edit.SetValue(true);
 
-    m_bBindMouseToMark = mom_zone_edit.GetBool();
-	if (m_bBindMouseToMark)
+    m_bBindKeys = mom_zone_edit.GetBool();
+	if (m_bBindKeys)
     {
 		// return control to game so they can start zoning immediately
         SetMouseInputEnabled(false);

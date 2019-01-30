@@ -205,21 +205,12 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         }
     }
 
-	if( g_pZoneMenu && g_pZoneMenu->IsVisible() )
+	if (g_pZoneMenu && g_pZoneMenu->IsVisible())
 	{
-        if (keynum == MOUSE_RIGHT)
-		{
-            DISPATCH_CON_COMMAND("mom_zone_cancel", "mom_zone_cancel");
-            ConVarRef mom_zone_edit("mom_zone_edit");
-            mom_zone_edit.SetValue(false);
-            g_pZoneMenu->SetMouseInputEnabled(true);
-            return 0;
-		}
-        else if (keynum == MOUSE_LEFT && down && g_pZoneMenu->BindMouseToMark())
+        if (g_pZoneMenu->HandleKeyInput(down, keynum))
         {
-            DISPATCH_CON_COMMAND("mom_zone_mark", "mom_zone_mark");
             return 0;
-		}
+        }
 	}
 
     return BaseClass::HudElementKeyInput(down, keynum, pszCurrentBinding);
