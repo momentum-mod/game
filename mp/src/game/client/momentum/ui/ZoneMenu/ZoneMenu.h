@@ -20,7 +20,9 @@ class ZoneMenu : public vgui::Frame, public CGameEventListener
 	void FireGameEvent(IGameEvent *event) OVERRIDE;
 
   public:
-	bool BindMouseToMark() const { return m_bBindMouseToMark; }
+	bool ShouldBindKeys() const { return m_bBindKeys; }
+    int HandleKeyInput(int down, ButtonCode_t keynum);
+
   private:
     vgui::Label *m_pEditorTitleLabel;
     vgui::Label *m_pZoneInfoLabel;
@@ -29,7 +31,7 @@ class ZoneMenu : public vgui::Frame, public CGameEventListener
     vgui::Button *m_pDeleteZoneButton;
     vgui::Button *m_pEditZoneButton;
 
-	bool m_bBindMouseToMark;
+	bool m_bBindKeys;
 };
 
 extern ZoneMenu *g_pZoneMenu;
