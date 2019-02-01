@@ -287,7 +287,6 @@ void CMomZoneEdit::OnCreate(int zonetype)
     Vector pos;
     GetCurrentBuildSpot(pPlayer, pos);
 
-
     auto pBuild = GetBuilder();
     if (!pBuild->BuildZone(pPlayer, &pos))
     {
@@ -314,6 +313,7 @@ void CMomZoneEdit::OnCreate(int zonetype)
 
 
     pBuild->FinishZone(pEnt);
+    pBuild->Reset();
 
     
     pEnt->Activate();
