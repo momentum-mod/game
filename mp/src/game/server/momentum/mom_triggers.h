@@ -4,7 +4,6 @@
 #include "func_break.h"
 #include "modelentities.h"
 #include "triggers.h"
-#include "mapzones_build.h"
 
 class CMomentumPlayer;
 
@@ -52,9 +51,7 @@ class CBaseMomentumTrigger : public CTriggerMultiple
     void InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs);
     virtual bool TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr) OVERRIDE;
 
-    // Create a new zone builder (remember to delete!)
-    CMomBaseZoneBuilder* GetZoneBuilder() const;
-
+    const CUtlVector<Vector> &GetZonePoints() const { return m_vZonePoints; }
   private:
     // Point-based zone editing
     CUtlVector<Vector> m_vZonePoints;
