@@ -7,6 +7,9 @@
 
 #include "tier0/memdbgon.h"
 
+static CMomBaseZoneBuilder *GetZoneBuilderForMethod(int method);
+static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flOldValue);
+static int GetZoneTypeToCreate(const char *szDefaultZone = nullptr);
 
 ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
 static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n", true, 0, true, 1);
@@ -17,72 +20,14 @@ static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT, "Set st
 static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT, "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
 //static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
 ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
-ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT, "Use the fancy new zone building method?\n");
-
+ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT, "Use the fancy new zone building method?\n", OnZoningMethodChanged);
 
 bool CMomZoneEdit::m_bFirstEdit = false;
 
 
 CMomZoneEdit g_MomZoneEdit;
 
-int GetZoneTypeToCreate(const char* szDefaultZone = nullptr)
-{
-    int zonetype;
-    if (szDefaultZone)
-    {
-        zonetype = g_MomZoneEdit.ShortNameToZoneType(szDefaultZone);
-    }
-    else
-    {
-        zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
-    }
-
-    if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
-    {
-        // Count zones to make sure we don't create multiple instances.
-        int startnum = 0;
-        int endnum = 0;
-
-        CBaseEntity *pEnt;
-
-        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
-        while (pEnt)
-        {
-            startnum++;
-            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
-        }
-
-        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
-        while (pEnt)
-        {
-            endnum++;
-            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
-        }
-
-        DevMsg("Found %i starts and %i ends (previous)\n", startnum, endnum);
-
-        if (!mom_zone_ignorewarning.GetBool() && startnum && endnum)
-        {
-            // g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
-
-            ConMsg("Map already has a start and an end! Use mom_zone_defzone to set another type.\n");
-
-            return -1;
-        }
-
-        // The user is trying to make multiple starts?
-        if (zonetype == MOMZONETYPE_START)
-        {
-            // Switch between start and end.
-            zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
-        }
-        // else the zonetype can be STOP, allowing for multiple stop triggers to be created
-    }
-
-    return zonetype;
-}
-
-void CC_Mom_ZoneZoomIn()
+static void CC_Mom_ZoneZoomIn()
 {
     g_MomZoneEdit.DecreaseZoom((float) mom_zone_grid.GetInt());
 }
@@ -90,7 +35,7 @@ void CC_Mom_ZoneZoomIn()
 static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n", FCVAR_CHEAT);
 
 
-void CC_Mom_ZoneZoomOut()
+static void CC_Mom_ZoneZoomOut()
 {
     g_MomZoneEdit.IncreaseZoom((float) mom_zone_grid.GetInt());
 }
@@ -98,7 +43,7 @@ void CC_Mom_ZoneZoomOut()
 static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n", FCVAR_CHEAT);
 
 
-void CC_Mom_ZoneDelete(const CCommand &args)
+static void CC_Mom_ZoneDelete(const CCommand &args)
 {
     if (!mom_zone_edit.GetBool()) return;
 
@@ -136,8 +81,43 @@ void CC_Mom_ZoneDelete(const CCommand &args)
 
 static ConCommand mom_zone_delete("mom_zone_delete", CC_Mom_ZoneDelete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT);
 
+static void CC_Mom_ZoneEdit(const CCommand &args)
+{
+    if (!mom_zone_edit.GetBool())
+        return;
 
-void CC_Mom_ZoneSetLook(const CCommand &args)
+    if (args.ArgC() > 1)
+    {
+        DevMsg("Attempting to edit '%s'\n", args[1]);
+
+        int entindex = atoi(args[1]);
+
+        if (entindex != 0)
+        {
+            CBaseEntity *pEnt = CBaseEntity::Instance(INDEXENT(entindex));
+
+            if (pEnt && g_MomZoneEdit.GetEntityZoneType(pEnt) != -1)
+            {
+                auto pZone = static_cast<CBaseMomentumTrigger*>(pEnt);
+                g_MomZoneEdit.SetBuilder(CreateZoneBuilderFromExisting(pZone));
+                UTIL_Remove(pEnt);
+            }
+            else
+            {
+                Warning("Invalid entity index: %s. Must be a valid zone trigger entity.\n", args[1]);
+            }
+        }
+        else
+        {
+            Warning("Invalid entity index: %s. Must be a number greater than 0.\n", args[1]);
+        }
+    }
+}
+
+static ConCommand mom_zone_edit_existing("mom_zone_edit_existing", CC_Mom_ZoneEdit,
+                                  "Edit an existing zone. Requires entity index.\n", FCVAR_CHEAT);
+
+static void CC_Mom_ZoneSetLook(const CCommand &args)
 {
     if (!mom_zone_edit.GetBool()) return;
 
@@ -178,7 +158,7 @@ void CC_Mom_ZoneSetLook(const CCommand &args)
 static ConCommand mom_zone_start_setlook("mom_zone_start_setlook", CC_Mom_ZoneSetLook, "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n", FCVAR_CHEAT);
 
 
-void CC_Mom_ZoneMark(const CCommand &args)
+static void CC_Mom_ZoneMark(const CCommand &args)
 {
     if (!mom_zone_edit.GetBool()) return;
 
@@ -192,7 +172,7 @@ void CC_Mom_ZoneMark(const CCommand &args)
 static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.\n", FCVAR_CHEAT);
 
 
-void CC_Mom_ZoneCancel()
+static void CC_Mom_ZoneCancel()
 {
     if (!mom_zone_edit.GetBool()) return;
 
@@ -203,7 +183,7 @@ void CC_Mom_ZoneCancel()
 static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel the zone building.\n", FCVAR_CHEAT);
 
 
-void CC_Mom_ZoneBack()
+static void CC_Mom_ZoneBack()
 {
     if (!mom_zone_edit.GetBool()) return;
 
@@ -214,7 +194,7 @@ void CC_Mom_ZoneBack()
 static ConCommand mom_zone_back("mom_zone_back", CC_Mom_ZoneBack, "Go back a step when zone building.\n", FCVAR_CHEAT);
 
 
-void CC_Mom_ZoneCreate()
+static void CC_Mom_ZoneCreate()
 {
     if (!mom_zone_edit.GetBool()) return;
 
@@ -232,8 +212,6 @@ CMomZoneEdit::CMomZoneEdit() : CAutoGameSystemPerFrame("MomentumZoneBuilder")
 
     m_flReticleDist = 1024.0f;
 
-
-    m_iPrevBuilder = -1;
     m_pBuilder = nullptr;
 }
 
@@ -246,12 +224,9 @@ void CMomZoneEdit::StopEditing()
     m_bEditing = false;
 
 
-    mom_zone_edit.SetValue( 0 );
+    mom_zone_edit.SetValue(0);
 
-
-    m_iPrevBuilder = -1;
-    delete m_pBuilder;
-    m_pBuilder = nullptr;
+    SetBuilder(nullptr);
 }
 
 void CMomZoneEdit::OnMark(int zonetype)
@@ -373,25 +348,19 @@ bool CMomZoneEdit::GetCurrentBuildSpot(CMomentumPlayer *pPlayer, Vector &vecPos)
 
 CMomBaseZoneBuilder *CMomZoneEdit::GetBuilder()
 {
-    int method = mom_zone_usenewmethod.GetInt();
-
-    if (m_iPrevBuilder != method || !m_pBuilder)
+    if (!m_pBuilder)
     {
-        delete m_pBuilder;
-
-        if (method)
-        {
-            m_pBuilder = new CMomPointZoneBuilder;
-        }
-        else
-        {
-            m_pBuilder = new CMomBoxZoneBuilder;
-        }
+        int method = mom_zone_usenewmethod.GetInt();
+        SetBuilder(GetZoneBuilderForMethod(method));
     }
 
-    m_iPrevBuilder = method;
-
     return m_pBuilder;
+}
+
+void CMomZoneEdit::SetBuilder(CMomBaseZoneBuilder *pNewBuilder)
+{
+    delete m_pBuilder;
+    m_pBuilder = pNewBuilder;
 }
 
 CMomentumPlayer *CMomZoneEdit::GetPlayerBuilder() const
@@ -610,4 +579,81 @@ int CMomZoneEdit::ShortNameToZoneType(const char *in)
     }
 
     return -1;
+}
+
+static CMomBaseZoneBuilder *GetZoneBuilderForMethod(int method)
+{
+    switch (mom_zone_usenewmethod.GetInt())
+    {
+    case 0:
+        return new CMomBoxZoneBuilder;
+    case 1:
+        return new CMomPointZoneBuilder;
+    default:
+        // default to box zone
+        return new CMomBoxZoneBuilder;
+    }
+}
+
+static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flOldValue)
+{
+    CMomBaseZoneBuilder *pBuilder = GetZoneBuilderForMethod(mom_zone_usenewmethod.GetInt());
+    g_MomZoneEdit.SetBuilder(pBuilder);
+}
+
+static int GetZoneTypeToCreate(const char *szDefaultZone)
+{
+    int zonetype;
+    if (szDefaultZone)
+    {
+        zonetype = g_MomZoneEdit.ShortNameToZoneType(szDefaultZone);
+    }
+    else
+    {
+        zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
+    }
+
+    if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
+    {
+        // Count zones to make sure we don't create multiple instances.
+        int startnum = 0;
+        int endnum = 0;
+
+        CBaseEntity *pEnt;
+
+        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
+        while (pEnt)
+        {
+            startnum++;
+            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
+        }
+
+        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
+        while (pEnt)
+        {
+            endnum++;
+            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
+        }
+
+        DevMsg("Found %i starts and %i ends (previous)\n", startnum, endnum);
+
+        if (!mom_zone_ignorewarning.GetBool() && startnum && endnum)
+        {
+            // g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
+
+            ConMsg("Map already has a start and an end! Use mom_zone_defzone to set another type.\n");
+
+            return -1;
+        }
+
+        // The user is trying to make multiple starts?
+        if (zonetype == MOMZONETYPE_START)
+        {
+            // Switch between start and end.
+            zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
+        }
+        // else the zonetype can be STOP, allowing for multiple stop triggers to be created
+    }
+
+    return zonetype;
 }

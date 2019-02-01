@@ -20,22 +20,6 @@ void CBaseMomentumTrigger::Spawn()
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
 
-CMomBaseZoneBuilder* CBaseMomentumTrigger::GetZoneBuilder() const
-{
-    if (m_vZonePoints.Count() > 0)
-    {
-        auto pBuilder = new CMomPointZoneBuilder;
-        pBuilder->LoadFromZone(this);
-        return pBuilder;
-    }
-    else
-    {
-        auto pBuilder = new CMomBoxZoneBuilder;
-        pBuilder->LoadFromZone(this);
-        return pBuilder;
-    }
-}
-
 bool CBaseMomentumTrigger::TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr)
 {
     auto pPhys = VPhysicsGetObject();

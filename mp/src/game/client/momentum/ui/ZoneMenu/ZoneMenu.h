@@ -14,7 +14,7 @@ class ZoneMenu : public vgui::Frame, public CGameEventListener
 
     MESSAGE_FUNC(OnCreateNewZone, "CreateNewZone");
     MESSAGE_FUNC(OnDeleteZone, "DeleteZone");
-    MESSAGE_FUNC(OnEditZone, "DeleteZone");
+    MESSAGE_FUNC(OnEditZone, "EditZone");
 
   public: // CGameEventListener
     void FireGameEvent(IGameEvent *event) OVERRIDE;

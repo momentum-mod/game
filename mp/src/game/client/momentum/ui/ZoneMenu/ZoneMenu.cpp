@@ -107,6 +107,7 @@ void ZoneMenu::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_RIGHT)
     {
+        m_bBindKeys = false;
         SetMouseInputEnabled(false);
     }
 }
@@ -117,12 +118,9 @@ void ZoneMenu::OnCreateNewZone()
     ConVarRef mom_zone_edit("mom_zone_edit");
     mom_zone_edit.SetValue(true);
 
-    m_bBindKeys = mom_zone_edit.GetBool();
-    if (m_bBindKeys)
-    {
-        // return control to game so they can start zoning immediately
-        SetMouseInputEnabled(false);
-    }
+    // return control to game so they can start zoning immediately
+    m_bBindKeys = true;
+    SetMouseInputEnabled(false);
 }
 
 void ZoneMenu::OnDeleteZone()
@@ -144,4 +142,23 @@ void ZoneMenu::OnDeleteZone()
     }
 }
 
-void ZoneMenu::OnEditZone() {}
+void ZoneMenu::OnEditZone()
+{
+    if (m_iCurrentZone > -1)
+    {
+        ConVarRef mom_zone_edit("mom_zone_edit");
+        mom_zone_edit.SetValue(true);
+
+        char cmd[128];
+        Q_snprintf(cmd, sizeof(cmd), "mom_zone_edit_existing %i", m_iCurrentZone);
+        engine->ExecuteClientCmd(cmd);
+
+        // return control to game so they can start zoning immediately
+        m_bBindKeys = true;
+        SetMouseInputEnabled(false);
+    }
+    else
+    {
+        Warning("You must be standing in a zone to edit it");
+    }
+}

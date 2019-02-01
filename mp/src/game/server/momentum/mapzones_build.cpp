@@ -574,7 +574,7 @@ CPhysCollide* CMomPointZoneBuilder::BuildPhysCollide(pvertarray_t **ppHulls, int
     }
 
     // Combine the convex shapes
-    auto pPhysCollide = physcollision->ConvertConvexToCollide(ppPhysConvex, nConvexes);
+    CPhysCollide* pPhysCollide = physcollision->ConvertConvexToCollide(ppPhysConvex, nConvexes);
     if (!pPhysCollide)
     {
         Warning("Failed to convert convexes to collide!\n");
@@ -999,4 +999,22 @@ void CMomBoxZoneBuilder::SetBounds(const Vector &center, const Vector &mins, con
 {
     m_vecStart = center + mins;
     m_vecEnd = center + maxs;
+}
+
+CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt)
+{
+    const CUtlVector<Vector> &points = pEnt->GetZonePoints();
+
+        if (points.Count() > 0)
+        {
+            auto pBuilder = new CMomPointZoneBuilder;
+            pBuilder->LoadFromZone(pEnt);
+            return pBuilder;
+        }
+        else
+        {
+            auto pBuilder = new CMomBoxZoneBuilder;
+            pBuilder->LoadFromZone(pEnt);
+            return pBuilder;
+        }
 }

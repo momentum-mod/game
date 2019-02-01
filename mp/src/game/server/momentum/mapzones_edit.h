@@ -47,6 +47,7 @@ public:
     static int                      ShortNameToZoneType(const char *in);
 
     CMomBaseZoneBuilder     *GetBuilder();
+    void                    SetBuilder(CMomBaseZoneBuilder *pNewBuilder);
     CMomentumPlayer         *GetPlayerBuilder() const;
 
 private:
@@ -55,7 +56,6 @@ private:
 
     float m_flReticleDist;
 
-    int m_iPrevBuilder;
     CMomBaseZoneBuilder* m_pBuilder;
 };
 
