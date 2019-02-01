@@ -3,7 +3,7 @@
 class C_BaseMomentumTrigger : public C_BaseEntity
 {
     DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseEntity);
-  public:};
+};
 
 class C_TriggerTimerStart : public C_BaseMomentumTrigger
 {

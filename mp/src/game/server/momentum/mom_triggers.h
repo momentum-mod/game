@@ -313,19 +313,19 @@ class CTriggerUserInput : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    enum key
+    enum Key
     {
-        forward,
-        back,
-        moveleft,
-        moveright,
-        jump,
-        duck,
-        attack,
-        attack2,
-        reload
+        KEY_FORWARD = 0,
+        KEY_BACK,
+        KEY_MOVELEFT,
+        KEY_MOVERIGHT,
+        KEY_JUMP,
+        KEY_DUCK,
+        KEY_ATTACK,
+        KEY_ATTACK2,
+        KEY_RELOAD
     };
-    key m_eKey;
+    Key m_eKey;
     void Think() OVERRIDE;
     void Spawn() OVERRIDE;
     COutputEvent m_OnKeyPressed;
