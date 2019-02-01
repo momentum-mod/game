@@ -25,6 +25,62 @@ bool CMomZoneEdit::m_bFirstEdit = false;
 
 CMomZoneEdit g_MomZoneEdit;
 
+int GetZoneTypeToCreate(const char* szDefaultZone = nullptr)
+{
+    int zonetype;
+	if (szDefaultZone)
+    {
+        zonetype = g_MomZoneEdit.ShortNameToZoneType(szDefaultZone);
+    }
+    else
+    {
+        zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
+	}
+
+    if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
+    {
+        // Count zones to make sure we don't create multiple instances.
+        int startnum = 0;
+        int endnum = 0;
+
+        CBaseEntity *pEnt;
+
+        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
+        while (pEnt)
+        {
+            startnum++;
+            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
+        }
+
+        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
+        while (pEnt)
+        {
+            endnum++;
+            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
+        }
+
+        DevMsg("Found %i starts and %i ends (previous)\n", startnum, endnum);
+
+        if (!mom_zone_ignorewarning.GetBool() && startnum && endnum)
+        {
+            // g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
+
+            ConMsg("Map already has a start and an end! Use mom_zone_defzone to set another type.\n");
+
+            return -1;
+        }
+
+        // The user is trying to make multiple starts?
+        if (zonetype == MOMZONETYPE_START)
+        {
+            // Switch between start and end.
+            zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
+        }
+        // else the zonetype can be STOP, allowing for multiple stop triggers to be created
+    }
+
+	return zonetype;
+}
 
 void CC_Mom_ZoneZoomIn()
 {
@@ -127,60 +183,8 @@ void CC_Mom_ZoneMark(const CCommand &args)
     if (!mom_zone_edit.GetBool()) return;
 
     int zonetype = -1;
-
-    //if (g_MapzoneEdit.GetBuildStage() >= BUILDSTAGE_END)
-    {
-        if (args.ArgC() > 1)
-        {
-            zonetype = g_MomZoneEdit.ShortNameToZoneType(args[1]);
-        }
-        else
-        {
-            zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
-        }
-
-        if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
-        {
-            // Count zones to make sure we don't create multiple instances.
-            int startnum = 0;
-            int endnum = 0;
-
-            CBaseEntity *pEnt;
-
-            pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
-            while (pEnt)
-            {
-                startnum++;
-                pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
-            }
-
-            pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
-            while (pEnt)
-            {
-                endnum++;
-                pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
-            }
-
-            DevMsg("Found %i starts and %i ends (previous)\n", startnum, endnum);
-
-            if (!mom_zone_ignorewarning.GetBool() && startnum && endnum)
-            {
-                //g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
-
-                ConMsg("Map already has a start and an end! Use mom_zone_defzone to set another type.\n");
-
-                return;
-            }
-
-            //The user is trying to make multiple starts?
-            if (zonetype == MOMZONETYPE_START)
-            {
-                 // Switch between start and end.
-                 zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
-            }
-            //else the zonetype can be STOP, allowing for multiple stop triggers to be created
-        }
-    }
+    if (args.ArgC())
+		zonetype = GetZoneTypeToCreate(args[1]);
 
     g_MomZoneEdit.OnMark(zonetype);
 }
@@ -293,12 +297,15 @@ void CMomZoneEdit::OnCreate(int zonetype)
         return;
     }
 
+	int type = zonetype != -1 ? zonetype : GetZoneTypeToCreate();
+    if (type == -1)
+    {
+        // it it's still -1 somethings wrong
+        return;
+    }
 
 
     DevMsg("Creating entity...\n");
-
-
-    int type = zonetype != -1 ? zonetype : ShortNameToZoneType(mom_zone_defzone.GetString());
 
 
     auto pEnt = CreateZoneEntity(type);
