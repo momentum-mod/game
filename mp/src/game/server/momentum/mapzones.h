@@ -20,47 +20,47 @@ class CMapzone
 {
 public:
     CMapzone();
-    CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
+    CMapzone(const int, Vector, QAngle, Vector, Vector,
         const int, const bool, const bool, const float, 
         const bool, const float, const float,
         const string_t, const bool, 
         const int, const int, const int, const bool,
         const CUtlVector<Vector>&, const float);
-    ~CMapzone();
+    ~CMapzone(){};
 
     void SpawnZone();
     void RemoveZone();
 
-    int GetType() { return m_type; }
-    Vector* GetPosition() { return m_pos; }
-    QAngle* GetRotation() { return m_rot; }
-    Vector* GetScaleMins() { return m_scaleMins; }
-    Vector* GetScaleMaxs() { return m_scaleMaxs; }
+    int GetType() { return m_iType; }
+    Vector GetPosition() { return m_vecPos; }
+    QAngle GetRotation() { return m_angRot; }
+    Vector GetScaleMins() { return m_vecScaleMins; }
+    Vector GetScaleMaxs() { return m_vecScaleMaxs; }
 
 private:
-    int m_type; // Zone type, look above
+    int m_iType; // Zone type, look above
     int m_index; // Ignored when not a checkpoint
     bool m_shouldStopOnTeleport; // Stop player on teleport?
     bool m_shouldResetAngles; // Reset the player's angles?
     float m_holdTimeBeforeTeleport; // How much to wait for before teleporting
     // startTrigger
-    bool m_limitingspeed; // Limit leave speed?
-    bool m_onlyxycheck; // Only checking speed in XY?
-    bool m_limitbhop;
-    float m_maxleavespeed; // Max speed allowed
-    float m_bhopleavespeed; // Max speed if player bhopped
-    float m_yaw; // Teleport yaw for start zone.
-    string_t m_linkedent; // Entity name for teleporting to this entity (YESYES, It can be null!)
-    Vector* m_pos;
-    QAngle* m_rot;
-    Vector* m_scaleMins;
-    Vector* m_scaleMaxs;
-    CBaseEntity* m_trigger;
+    bool m_bLimitingSpeed; // Limit leave speed?
+    bool m_bOnlyXYCheck; // Only checking speed in XY?
+    bool m_bLimitBhop;
+    float m_flMaxLeaveSpeed; // Max speed allowed
+    float m_flBhopLeaveSpeed; // Max speed if player bhopped
+    float m_flYaw; // Teleport yaw for start zone.
+    string_t m_szLinkedEnt; // Entity name for teleporting to this entity (YESYES, It can be null!)
+    Vector m_vecPos;
+    QAngle m_angRot;
+    Vector m_vecScaleMins;
+    Vector m_vecScaleMaxs;
+    CBaseEntity* m_pTrigger;
     CUtlVector<Vector> m_vZonePoints; 
-    float m_pointzoneheight;
-    int m_iendzonenumber, m_istartzonenumber;
-    int m_ilimittype;
-    bool m_bstartonjump;
+    float m_flPointZoneHeight;
+    int m_iEndZoneNumber, m_iStartZoneNumber;
+    int m_iLimitType;
+    bool m_bStartOnJump;
 };
 
 class CMapzoneData

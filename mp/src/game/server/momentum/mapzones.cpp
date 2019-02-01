@@ -9,145 +9,163 @@
 
 #define NO_LOOK -190.0f
 
-CMapzone::~CMapzone()
+CMapzone::CMapzone(const int iType, Vector vPos, QAngle vRot, Vector vScaleMins, Vector vScaleMaxs,
+                    const int iIndex, const bool bShouldStop,
+                    const bool bShouldTilt, const float flHoldTime,
+                    const bool bLimitSpeed, const float flBhopLeaveSpeed,
+                    const float flYaw, const string_t szLinkedEnt,
+                    const bool bCheckOnlyXY, const int iStartZoneNumber,
+                    const int iEndZoneNumber, const int iLimitType,
+                    const bool bStartJump,
+                    const CUtlVector<Vector> &points, float flHeight)
 {
-    if (m_pos)
-    {
-        delete m_pos;
-        m_pos = nullptr;
-    }
-    if (m_rot)
-    {
-        delete m_rot;
-        m_rot = nullptr;
-    }
-    if (m_scaleMins)
-    {
-        delete m_scaleMins;
-        m_scaleMins = nullptr;
-    }
-    if (m_scaleMaxs)
-    {
-        delete m_scaleMaxs;
-        m_scaleMaxs = nullptr;
-    }
-}
-
-CMapzone::CMapzone(const int pType, Vector *pPos, QAngle *pRot, Vector *pScaleMins, Vector *pScaleMaxs,
-                    const int pIndex, const bool pShouldStop,
-                    const bool pShouldTilt, const float pHoldTime,
-                    const bool pLimitSpeed, const float pBhopLeaveSpeed,
-                    const float flYaw, const string_t pLinkedEnt,
-                    const bool pCheckOnlyXY, const int istartzonenumber,
-                    const int iendzonenumber, const int ilimittype,
-                    const bool bstartjump,
-                    const CUtlVector<Vector> &points, float height)
-{
-    m_type = pType;
-    m_pos = pPos;
-    m_rot = pRot;
-    m_scaleMins = pScaleMins;
-    m_scaleMaxs = pScaleMaxs;
-    m_index = pIndex;
-    m_shouldStopOnTeleport = pShouldStop;
-    m_shouldResetAngles = pShouldTilt;
-    m_holdTimeBeforeTeleport = pHoldTime;
-    m_limitingspeed = pLimitSpeed;
-    m_bhopleavespeed = pBhopLeaveSpeed;
-    m_yaw = flYaw;
-    m_linkedent = pLinkedEnt;
-    m_onlyxycheck = pCheckOnlyXY;
-    m_istartzonenumber = istartzonenumber;
-    m_iendzonenumber = iendzonenumber;
-    m_ilimittype = ilimittype;
-    m_limitbhop = false;
-    m_maxleavespeed = 0.0f;
-    m_bstartonjump = bstartjump;
-    m_trigger = nullptr;
+    m_iType = iType;
+    m_vecPos = vPos;
+    m_angRot = vRot;
+    m_vecScaleMins = vScaleMins;
+    m_vecScaleMaxs = vScaleMaxs;
+    m_index = iIndex;
+    m_shouldStopOnTeleport = bShouldStop;
+    m_shouldResetAngles = bShouldTilt;
+    m_holdTimeBeforeTeleport = flHoldTime;
+    m_bLimitingSpeed = bLimitSpeed;
+    m_flBhopLeaveSpeed = flBhopLeaveSpeed;
+    m_flYaw = flYaw;
+    m_szLinkedEnt = szLinkedEnt;
+    m_bOnlyXYCheck = bCheckOnlyXY;
+    m_iStartZoneNumber = iStartZoneNumber;
+    m_iEndZoneNumber = iEndZoneNumber;
+    m_iLimitType = iLimitType;
+    m_bLimitBhop = false;
+    m_flMaxLeaveSpeed = 0.0f;
+    m_bStartOnJump = bStartJump;
+    m_pTrigger = nullptr;
     m_vZonePoints.CopyArray(points.Base(), points.Count());
-    m_pointzoneheight = height;
+    m_flPointZoneHeight = flHeight;
 }
 
 void CMapzone::SpawnZone()
 {
-    switch (m_type)
+    switch (m_iType)
     {
     case MOMZONETYPE_START:
-        m_trigger = (CTriggerTimerStart *)CreateEntityByName("trigger_momentum_timer_start");
-        ((CTriggerTimerStart *)m_trigger)->SetIsLimitingSpeed(m_limitingspeed);
-        ((CTriggerTimerStart *)m_trigger)->SetMaxLeaveSpeed(m_bhopleavespeed);
-        ((CTriggerTimerStart *)m_trigger)->ZoneNumber() = m_istartzonenumber;
-        ((CTriggerTimerStart *)m_trigger)->LimitSpeedType() = m_ilimittype;
-        ((CTriggerTimerStart *)m_trigger)->StartOnJump() = m_bstartonjump;
-        if (m_yaw != NO_LOOK)
+    {
+		auto zone = (CTriggerTimerStart *)CreateEntityByName("trigger_momentum_timer_start");
+
+        zone->SetIsLimitingSpeed(m_bLimitingSpeed);
+        zone->SetMaxLeaveSpeed(m_flBhopLeaveSpeed);
+        zone->ZoneNumber() = m_iStartZoneNumber;
+        zone->LimitSpeedType() = m_iLimitType;
+        zone->StartOnJump() = m_bStartOnJump;
+        if (m_flYaw != NO_LOOK)
         {
-            ((CTriggerTimerStart *)m_trigger)->SetHasLookAngles(true);
-            ((CTriggerTimerStart *)m_trigger)->SetLookAngles(QAngle(0, m_yaw, 0));
+            zone->SetHasLookAngles(true);
+            zone->SetLookAngles(QAngle(0, m_flYaw, 0));
         }
         else
         {
-            ((CTriggerTimerStart *)m_trigger)->SetHasLookAngles(false);
+            zone->SetHasLookAngles(false);
         }
+        zone->SetName(MAKE_STRING("Start Trigger"));
+        g_pMomentumTimer->SetStartTrigger(zone);
 
-        m_trigger->SetName(MAKE_STRING("Start Trigger"));
-        g_pMomentumTimer->SetStartTrigger((CTriggerTimerStart *)m_trigger);
-        break;
-    case MOMZONETYPE_CP:
-        m_trigger = (CTriggerCheckpoint *)CreateEntityByName("trigger_momentum_timer_checkpoint");
-        m_trigger->SetName(MAKE_STRING("Checkpoint Trigger"));
-        ((CTriggerCheckpoint *)m_trigger)->SetCheckpointNumber(m_index);
-        break;
-    case MOMZONETYPE_STOP:
-        m_trigger = (CTriggerTimerStop *)CreateEntityByName("trigger_momentum_timer_stop");
-        ((CTriggerTimerStart *)m_trigger)->ZoneNumber() = m_iendzonenumber;
-        m_trigger->SetName(MAKE_STRING("End Trigger"));
-        break;
-    case MOMZONETYPE_ONEHOP:
-        m_trigger = (CTriggerOnehop *)CreateEntityByName("trigger_momentum_onehop");
-        m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
-        m_trigger->m_target = m_linkedent;
-        //((CTriggerOnehop *) m_trigger)->SetDestinationIndex(m_destinationIndex);
-        //((CTriggerOnehop *) m_trigger)->SetDestinationName(m_linkedtrigger);
-        ((CTriggerOnehop *)m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
-        ((CTriggerOnehop *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        ((CTriggerOnehop *)m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
-        break;
-    case MOMZONETYPE_RESETONEHOP:
-        m_trigger = (CTriggerResetOnehop *)CreateEntityByName("trigger_momentum_resetonehop");
-        m_trigger->SetName(MAKE_STRING("ResetOnehop Trigger"));
-        break;
-    case MOMZONETYPE_CPTELE:
-        m_trigger = (CTriggerTeleportCheckpoint *)CreateEntityByName("trigger_momentum_teleport_checkpoint");
-        m_trigger->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
-        m_trigger->m_target = m_linkedent;
-        //((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointNumber(m_destinationIndex);
-        //((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointName(m_linkedtrigger);
-        ((CTriggerTeleportCheckpoint *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        ((CTriggerTeleportCheckpoint *)m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
-        break;
-    case MOMZONETYPE_MULTIHOP:
-        m_trigger = (CTriggerMultihop *)CreateEntityByName("trigger_momentum_onehop");
-        m_trigger->SetName(MAKE_STRING("Mutihop Trigger"));
-        m_trigger->m_target = m_linkedent;
-        //((CTriggerMultihop *) m_trigger)->SetDestinationIndex(m_destinationIndex);
-        //((CTriggerMultihop *) m_trigger)->SetDestinationName(m_linkedent);
-        ((CTriggerMultihop *)m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
-        ((CTriggerMultihop *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        ((CTriggerMultihop *)m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
-        break;
-    case MOMZONETYPE_STAGE:
-        m_trigger = (CTriggerStage *)CreateEntityByName("trigger_momentum_timer_stage");
-        m_trigger->SetName(MAKE_STRING("Stage Trigger"));
-        ((CTriggerStage *)m_trigger)->SetStageNumber(m_index);
-        break;
-        // MOM_TODO: add trigger_momentum_teleport, and momentum_trigger_userinput
-    default:
+		m_pTrigger = zone;
         break;
     }
-
-    if (m_trigger)
+    case MOMZONETYPE_CP:
     {
-        auto pMomTrigger = static_cast<CBaseMomentumTrigger *>(m_trigger);
+        auto zone = (CTriggerCheckpoint *)CreateEntityByName("trigger_momentum_timer_checkpoint");
+
+        zone->SetCheckpointNumber(m_index);
+        zone->SetName(MAKE_STRING("Checkpoint Trigger"));
+
+        m_pTrigger = zone;
+        break;
+    }
+    case MOMZONETYPE_STOP:
+    {
+        auto zone = (CTriggerTimerStop *)CreateEntityByName("trigger_momentum_timer_stop");
+
+        zone->ZoneNumber() = m_iEndZoneNumber;
+        zone->SetName(MAKE_STRING("End Trigger"));
+
+        m_pTrigger = zone;
+        break;
+    }
+    case MOMZONETYPE_ONEHOP:
+    {
+        auto zone = (CTriggerOnehop *)CreateEntityByName("trigger_momentum_onehop");
+
+        zone->m_target = m_szLinkedEnt;
+        // zone->SetDestinationIndex(m_destinationIndex);
+        // zone->SetDestinationName(m_linkedtrigger);
+        zone->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
+        zone->SetShouldStopPlayer(m_shouldStopOnTeleport);
+        zone->SetShouldResetAngles(m_shouldResetAngles);
+        zone->SetName(MAKE_STRING("Onehop Trigger"));
+
+        m_pTrigger = zone;
+        break;
+    }
+    case MOMZONETYPE_RESETONEHOP:
+    {
+		auto zone = (CTriggerResetOnehop *)CreateEntityByName("trigger_momentum_resetonehop");
+
+        zone->SetName(MAKE_STRING("ResetOnehop Trigger"));
+
+        m_pTrigger = zone;
+        break;
+    }
+    case MOMZONETYPE_CPTELE:
+    {
+        auto zone = (CTriggerTeleportCheckpoint *)CreateEntityByName("trigger_momentum_teleport_checkpoint");
+
+        zone->m_target = m_szLinkedEnt;
+        // zone->SetDestinationCheckpointNumber(m_destinationIndex);
+        // zone->SetDestinationCheckpointName(m_linkedtrigger);
+        zone->SetShouldStopPlayer(m_shouldStopOnTeleport);
+        zone->SetShouldResetAngles(m_shouldResetAngles);
+        zone->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
+
+        m_pTrigger = zone;
+        break;
+    }
+    case MOMZONETYPE_MULTIHOP:
+    {
+        auto zone = (CTriggerMultihop *)CreateEntityByName("trigger_momentum_onehop");
+
+        zone->m_target = m_szLinkedEnt;
+        // zone->SetDestinationIndex(m_destinationIndex);
+        // zone->SetDestinationName(m_szLinkedEnt);
+        zone->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
+        zone->SetShouldStopPlayer(m_shouldStopOnTeleport);
+        zone->SetShouldResetAngles(m_shouldResetAngles);
+        m_pTrigger->SetName(MAKE_STRING("Mutihop Trigger"));
+
+        m_pTrigger = zone;
+        break;
+    }
+    case MOMZONETYPE_STAGE:
+    {
+        auto zone = (CTriggerStage *)CreateEntityByName("trigger_momentum_timer_stage");
+
+        zone->SetStageNumber(m_index);
+        zone->SetName(MAKE_STRING("Stage Trigger"));
+
+        m_pTrigger = zone;
+        break;
+    }
+    // MOM_TODO: add trigger_momentum_teleport, and momentum_trigger_userinput
+    default:
+    {
+        AssertMsg(false, "Unhandled zone type");
+        break;
+    }
+    }
+
+    if (m_pTrigger)
+    {
+        auto pMomTrigger = static_cast<CBaseMomentumTrigger *>(m_pTrigger);
 
 
         // HACK - STREAMLINE ME
@@ -158,7 +176,7 @@ void CMapzone::SpawnZone()
             auto pBuilder = new CMomPointZoneBuilder;
 
             pBuilder->CopyPoints(m_vZonePoints);
-            pBuilder->SetHeight(m_pointzoneheight);
+            pBuilder->SetHeight(m_flPointZoneHeight);
 
             pBaseBuilder = pBuilder;
         }
@@ -166,17 +184,17 @@ void CMapzone::SpawnZone()
         {
             auto pBuilder = new CMomBoxZoneBuilder;
 
-            pBuilder->SetBounds(*m_pos, *m_scaleMins, *m_scaleMaxs);
+            pBuilder->SetBounds(m_vecPos, m_vecScaleMins, m_vecScaleMaxs);
 
             pBaseBuilder = pBuilder;
         }
 
-        m_trigger->Spawn();
+        m_pTrigger->Spawn();
 
         pBaseBuilder->BuildZone();
         pBaseBuilder->FinishZone(pMomTrigger);
 
-        m_trigger->Activate();
+        m_pTrigger->Activate();
 
         delete pBaseBuilder;
     }
@@ -334,11 +352,11 @@ bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, name);
     while (pEnt)
     {
-        if (pEnt->GetAbsOrigin() == *mZone->GetPosition() && pEnt->GetAbsAngles() == *mZone->GetRotation())
+        if (pEnt->GetAbsOrigin() == mZone->GetPosition() && pEnt->GetAbsAngles() == mZone->GetRotation())
         {
             // Only check WorldAlignMaxs/Mins if collision prop bounds are not in entity space, to avoid assertions
             if (pEnt->CollisionProp()->IsBoundsDefinedInEntitySpace() ||
-                (pEnt->WorldAlignMaxs() == *mZone->GetScaleMaxs() && pEnt->WorldAlignMins() == *mZone->GetScaleMins()))
+                (pEnt->WorldAlignMaxs() == mZone->GetScaleMaxs() && pEnt->WorldAlignMins() == mZone->GetScaleMins()))
             {
                 DevLog("Already found a %s spawned on the map! Not spawning it from zone file...\n", name);
                 toReturn = true;
@@ -394,12 +412,10 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             }
 
             // Load position information (will default to 0 if the keys don't exist)
-            Vector *pos = new Vector(cp->GetFloat("xPos"), cp->GetFloat("yPos"), cp->GetFloat("zPos"));
-            QAngle *rot = new QAngle(cp->GetFloat("xRot"), cp->GetFloat("yRot"), cp->GetFloat("zRot"));
-            Vector *scaleMins =
-                new Vector(cp->GetFloat("xScaleMins"), cp->GetFloat("yScaleMins"), cp->GetFloat("zScaleMins"));
-            Vector *scaleMaxs =
-                new Vector(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
+            Vector pos(cp->GetFloat("xPos"), cp->GetFloat("yPos"), cp->GetFloat("zPos"));
+            QAngle rot(cp->GetFloat("xRot"), cp->GetFloat("yRot"), cp->GetFloat("zRot"));
+            Vector scaleMins(cp->GetFloat("xScaleMins"), cp->GetFloat("yScaleMins"), cp->GetFloat("zScaleMins"));
+            Vector scaleMaxs(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
 
             // Do specific things for different types of checkpoints
             // 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport, 6 = Multihop, 7
