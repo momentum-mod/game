@@ -22,17 +22,18 @@
 //   local      : if set to 1, event is not networked to clients
 //   unreliable : networked, but unreliable
 //   suppress   : never fire this event
-//   time	: firing server time
-//   eventid	: holds the event ID
+//   time       : firing server time
+//   eventid    : holds the event ID
 
 "modevents"
 {
-	"zone_enter"//When the player/ghost enters a zone trigger
-	{
+    "zone_enter" // When the player/ghost enters a zone trigger
+    {
         "ent" "short"
+        "zone_ent" "short"
         "num" "short"
-	}
-    "zone_exit"//When the player exits the start trigger for the stage
+    }
+    "zone_exit" // When the player exits the start trigger for the stage
     {
         "ent" "short"
         "num" "short"
@@ -40,13 +41,13 @@
     "run_upload"
     {
         "run_posted" "bool"
-        "web_msg" "string"//MOM_TODO: fill this with more stuff?
+        "web_msg" "string" // MOM_TODO: fill this with more stuff?
     }
-	"timer_state"
-	{
+    "timer_state"
+    {
         "ent" "short"
-		"is_running"	"bool"
-	}
+        "is_running"    "bool"
+    }
     "map_init"
     {
         "is_linear" "bool"
@@ -59,13 +60,13 @@
     {
         "restart" "bool"
     }
-	"replay_save"
-	{
-		"filename" "string" // the file name itself with extension
+    "replay_save"
+    {
+        "filename" "string" // the file name itself with extension
         "filepath" "string" // the full path + file name, used for file writing
-        "save" "bool"
-        "time" "long" // time in milliseconds
-	}
+        "save"     "bool"
+        "time"     "long"   // time in milliseconds
+    }
     "gravity_change"
     {
         "newgravity" "float"
@@ -83,10 +84,10 @@
     {
     }
     "achievement_earned"
-	{
-		"player"	"byte"		// entindex of the player
-		"achievement"	"short"		// achievement ID
-	}
+    {
+        "player"      "byte"    // entindex of the player
+        "achievement" "short"   // achievement ID
+    }
     "paintgun_panel"
     {
         "show" "bool"
