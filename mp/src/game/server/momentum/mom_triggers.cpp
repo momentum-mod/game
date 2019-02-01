@@ -111,6 +111,7 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
         stageEvent->SetInt("ent", pPlayer->entindex());
+        stageEvent->SetInt("zone_ent", entindex());
         stageEvent->SetInt("num", stageNum);
         if (g_pMomentumTimer->IsRunning())
         {
@@ -129,6 +130,7 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
             stageEvent->SetInt("ent", pGhost->entindex());
+            stageEvent->SetInt("zone_ent", entindex());
             stageEvent->SetInt("num", stageNum);
             pGhost->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
@@ -471,6 +473,7 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
 
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
         stageEvent->SetInt("ent", pPlayer->entindex());
+        stageEvent->SetInt("zone_ent", entindex());
         stageEvent->SetInt("num", m_iZoneNumber);
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
     }
@@ -481,6 +484,7 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
             stageEvent->SetInt("ent", pGhost->entindex());
+            stageEvent->SetInt("zone_ent", pGhost->entindex());
             stageEvent->SetInt("num", m_iZoneNumber);
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
             pGhost->m_SrvData.m_RunData.m_iOldZone = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
