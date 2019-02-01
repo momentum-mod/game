@@ -28,14 +28,14 @@ CMomZoneEdit g_MomZoneEdit;
 int GetZoneTypeToCreate(const char* szDefaultZone = nullptr)
 {
     int zonetype;
-	if (szDefaultZone)
+    if (szDefaultZone)
     {
         zonetype = g_MomZoneEdit.ShortNameToZoneType(szDefaultZone);
     }
     else
     {
         zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
-	}
+    }
 
     if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
     {
@@ -79,7 +79,7 @@ int GetZoneTypeToCreate(const char* szDefaultZone = nullptr)
         // else the zonetype can be STOP, allowing for multiple stop triggers to be created
     }
 
-	return zonetype;
+    return zonetype;
 }
 
 void CC_Mom_ZoneZoomIn()
@@ -184,7 +184,7 @@ void CC_Mom_ZoneMark(const CCommand &args)
 
     int zonetype = -1;
     if (args.ArgC())
-		zonetype = GetZoneTypeToCreate(args[1]);
+        zonetype = GetZoneTypeToCreate(args[1]);
 
     g_MomZoneEdit.OnMark(zonetype);
 }
@@ -297,7 +297,7 @@ void CMomZoneEdit::OnCreate(int zonetype)
         return;
     }
 
-	int type = zonetype != -1 ? zonetype : GetZoneTypeToCreate();
+    int type = zonetype != -1 ? zonetype : GetZoneTypeToCreate();
     if (type == -1)
     {
         // it it's still -1 somethings wrong

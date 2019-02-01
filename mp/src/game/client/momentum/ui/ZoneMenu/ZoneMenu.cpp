@@ -136,12 +136,12 @@ void ZoneMenu::OnDeleteZone()
         Q_snprintf(cmd, sizeof(cmd), "mom_zone_delete %i", m_iCurrentZone);
         engine->ExecuteClientCmd(cmd);
 
-		mom_zone_edit.SetValue(false);
+        mom_zone_edit.SetValue(false);
     }
     else
     {
         Warning("You must be standing in a zone to delete it");
-	}
+    }
 }
 
 void ZoneMenu::OnEditZone() {}
