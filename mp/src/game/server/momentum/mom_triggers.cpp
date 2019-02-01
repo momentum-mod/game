@@ -797,37 +797,39 @@ void CTriggerUserInput::Spawn()
 {
     switch (m_eKey)
     {
-    case forward:
+    case KEY_FORWARD:
         m_ButtonRep = IN_FORWARD;
         break;
-    case back:
+    case KEY_BACK:
         m_ButtonRep = IN_BACK;
         break;
-    case moveleft:
+    case KEY_MOVELEFT:
         m_ButtonRep = IN_MOVELEFT;
         break;
-    case moveright:
+    case KEY_MOVERIGHT:
         m_ButtonRep = IN_MOVERIGHT;
         break;
-    case jump:
+    case KEY_JUMP:
         m_ButtonRep = IN_JUMP;
         break;
-    case duck:
+    case KEY_DUCK:
         m_ButtonRep = IN_DUCK;
         break;
-    case attack:
+    case KEY_ATTACK:
         m_ButtonRep = IN_ATTACK;
         break;
-    case attack2:
+    case KEY_ATTACK2:
         m_ButtonRep = IN_ATTACK2;
         break;
-    case reload:
+    case KEY_RELOAD:
         m_ButtonRep = IN_RELOAD;
         break;
     default:
         DevWarning("Passed unhandled key press");
+        m_ButtonRep = 0;
         break;
     }
+
     BaseClass::Spawn();
 }
 //-----------------------------------------------------------------------------------------------
