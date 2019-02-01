@@ -220,4 +220,6 @@ private:
     QAngle m_angRot;
 };
 
+CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt);
+
 #endif // MAPZONES_BUILD_H

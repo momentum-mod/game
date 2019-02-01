@@ -4,6 +4,7 @@
 #include "mapzones.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
+#include "mapzones_build.h"
 
 #include "tier0/memdbgon.h"
 
@@ -293,7 +294,7 @@ static void saveZonFile(const char *szMapName)
         {
             auto pMomTrigger = static_cast<CBaseMomentumTrigger*>(pEnt);
 
-            auto pBuilder = pMomTrigger->GetZoneBuilder();
+            CMomBaseZoneBuilder *pBuilder = CreateZoneBuilderFromExisting(pMomTrigger);
 
             if (!pBuilder->Save(subKey))
             {
