@@ -20,7 +20,8 @@ class CMapzone
 {
 public:
     CMapzone();
-    CMapzone(const int, Vector, QAngle, Vector, Vector,
+	// MOM_TODO: get rid of this monstrosity
+    CMapzone(const int, const Vector&, const QAngle&, const Vector&, const Vector &,
         const int, const bool, const bool, const float, 
         const bool, const float, const float,
         const string_t, const bool, 
@@ -32,17 +33,17 @@ public:
     void RemoveZone();
 
     int GetType() { return m_iType; }
-    Vector GetPosition() { return m_vecPos; }
-    QAngle GetRotation() { return m_angRot; }
-    Vector GetScaleMins() { return m_vecScaleMins; }
-    Vector GetScaleMaxs() { return m_vecScaleMaxs; }
+    const Vector& GetPosition() const { return m_vecPos; }
+    const QAngle& GetRotation() const { return m_angRot; }
+    const Vector& GetScaleMins() const { return m_vecScaleMins; }
+    const Vector& GetScaleMaxs() const { return m_vecScaleMaxs; }
 
 private:
     int m_iType; // Zone type, look above
-    int m_index; // Ignored when not a checkpoint
-    bool m_shouldStopOnTeleport; // Stop player on teleport?
-    bool m_shouldResetAngles; // Reset the player's angles?
-    float m_holdTimeBeforeTeleport; // How much to wait for before teleporting
+    int m_iIndex; // Ignored when not a checkpoint
+    bool m_bShouldStopOnTeleport; // Stop player on teleport?
+    bool m_bShouldResetAngles; // Reset the player's angles?
+    float m_flHoldTimeBeforeTeleport; // How much to wait for before teleporting
     // startTrigger
     bool m_bLimitingSpeed; // Limit leave speed?
     bool m_bOnlyXYCheck; // Only checking speed in XY?
@@ -72,10 +73,10 @@ public:
     
     void SpawnMapZones();
     void RemoveMapZones();
-    bool MapZoneSpawned(CMapzone*);
-    bool LoadFromFile(const char*);
+    bool MapZoneSpawned(CMapzone *pZone);
+    bool LoadFromFile(const char *szMapName);
 
-private:
+  private:
     CUtlVector<CMapzone*> m_zones;
 };
 

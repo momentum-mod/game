@@ -10,7 +10,7 @@
 
 #define NO_LOOK -190.0f
 
-CMapzone::CMapzone(const int iType, Vector vPos, QAngle vRot, Vector vScaleMins, Vector vScaleMaxs,
+CMapzone::CMapzone(const int iType, const Vector &vPos, const QAngle &vRot, const Vector &vScaleMins, const Vector &vScaleMaxs,
                     const int iIndex, const bool bShouldStop,
                     const bool bShouldTilt, const float flHoldTime,
                     const bool bLimitSpeed, const float flBhopLeaveSpeed,
@@ -25,10 +25,10 @@ CMapzone::CMapzone(const int iType, Vector vPos, QAngle vRot, Vector vScaleMins,
     m_angRot = vRot;
     m_vecScaleMins = vScaleMins;
     m_vecScaleMaxs = vScaleMaxs;
-    m_index = iIndex;
-    m_shouldStopOnTeleport = bShouldStop;
-    m_shouldResetAngles = bShouldTilt;
-    m_holdTimeBeforeTeleport = flHoldTime;
+    m_iIndex = iIndex;
+    m_bShouldStopOnTeleport = bShouldStop;
+    m_bShouldResetAngles = bShouldTilt;
+    m_flHoldTimeBeforeTeleport = flHoldTime;
     m_bLimitingSpeed = bLimitSpeed;
     m_flBhopLeaveSpeed = flBhopLeaveSpeed;
     m_flYaw = flYaw;
@@ -77,7 +77,7 @@ void CMapzone::SpawnZone()
     {
         auto zone = (CTriggerCheckpoint *)CreateEntityByName("trigger_momentum_timer_checkpoint");
 
-        zone->SetCheckpointNumber(m_index);
+        zone->SetCheckpointNumber(m_iIndex);
         zone->SetName(MAKE_STRING("Checkpoint Trigger"));
 
         m_pTrigger = zone;
@@ -100,9 +100,9 @@ void CMapzone::SpawnZone()
         zone->m_target = m_szLinkedEnt;
         // zone->SetDestinationIndex(m_destinationIndex);
         // zone->SetDestinationName(m_linkedtrigger);
-        zone->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
-        zone->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        zone->SetShouldResetAngles(m_shouldResetAngles);
+        zone->SetHoldTeleportTime(m_flHoldTimeBeforeTeleport);
+        zone->SetShouldStopPlayer(m_bShouldStopOnTeleport);
+        zone->SetShouldResetAngles(m_bShouldResetAngles);
         zone->SetName(MAKE_STRING("Onehop Trigger"));
 
         m_pTrigger = zone;
@@ -124,8 +124,8 @@ void CMapzone::SpawnZone()
         zone->m_target = m_szLinkedEnt;
         // zone->SetDestinationCheckpointNumber(m_destinationIndex);
         // zone->SetDestinationCheckpointName(m_linkedtrigger);
-        zone->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        zone->SetShouldResetAngles(m_shouldResetAngles);
+        zone->SetShouldStopPlayer(m_bShouldStopOnTeleport);
+        zone->SetShouldResetAngles(m_bShouldResetAngles);
         zone->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
 
         m_pTrigger = zone;
@@ -138,9 +138,9 @@ void CMapzone::SpawnZone()
         zone->m_target = m_szLinkedEnt;
         // zone->SetDestinationIndex(m_destinationIndex);
         // zone->SetDestinationName(m_szLinkedEnt);
-        zone->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
-        zone->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        zone->SetShouldResetAngles(m_shouldResetAngles);
+        zone->SetHoldTeleportTime(m_flHoldTimeBeforeTeleport);
+        zone->SetShouldStopPlayer(m_bShouldStopOnTeleport);
+        zone->SetShouldResetAngles(m_bShouldResetAngles);
         m_pTrigger->SetName(MAKE_STRING("Mutihop Trigger"));
 
         m_pTrigger = zone;
@@ -150,7 +150,7 @@ void CMapzone::SpawnZone()
     {
         auto zone = (CTriggerStage *)CreateEntityByName("trigger_momentum_timer_stage");
 
-        zone->SetStageNumber(m_index);
+        zone->SetStageNumber(m_iIndex);
         zone->SetName(MAKE_STRING("Stage Trigger"));
 
         m_pTrigger = zone;
@@ -201,7 +201,7 @@ void CMapzone::SpawnZone()
     }
 }
 
-static void saveZonFile(const char *szMapName)
+static void SaveZonFile(const char *szMapName)
 {
     KeyValues *zoneKV = new KeyValues(szMapName);
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_*");
@@ -323,14 +323,14 @@ CMapzoneData::CMapzoneData(const char *szMapName)
     if (!LoadFromFile(szMapName))
     {
         Log("Unable to find map zones! Trying to create them...\n");
-        saveZonFile(szMapName); // try making the zon file if the map has the entities
+        SaveZonFile(szMapName); // try making the zon file if the map has the entities
         LoadFromFile(szMapName);
     }
 }
 
-static void saveZonFile_f() { saveZonFile(gpGlobals->mapname.ToCStr()); }
+static void CC_Mom_GenerateZoneFile() { SaveZonFile(gpGlobals->mapname.ToCStr()); }
 
-static ConCommand mom_generate_zone_file("mom_zone_generate", saveZonFile_f, "Generates a zone file.");
+static ConCommand mom_generate_zone_file("mom_zone_generate", CC_Mom_GenerateZoneFile, "Generates a zone file.");
 
 CMapzoneData::~CMapzoneData()
 {
@@ -340,35 +340,33 @@ CMapzoneData::~CMapzoneData()
     }
 }
 
-bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
+bool CMapzoneData::MapZoneSpawned(CMapzone *pZone)
 {
-    bool toReturn = false;
-    if (!mZone)
+    if (!pZone)
         return false;
 
     char name[128];
-    if (!ZoneTypeToClass(mZone->GetType(), name))
+    if (!ZoneTypeToClass(pZone->GetType(), name))
         return false;
 
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, name);
     while (pEnt)
     {
-        if (pEnt->GetAbsOrigin() == mZone->GetPosition() && pEnt->GetAbsAngles() == mZone->GetRotation())
+        if (pEnt->GetAbsOrigin() == pZone->GetPosition() && pEnt->GetAbsAngles() == pZone->GetRotation())
         {
             // Only check WorldAlignMaxs/Mins if collision prop bounds are not in entity space, to avoid assertions
             if (pEnt->CollisionProp()->IsBoundsDefinedInEntitySpace() ||
-                (pEnt->WorldAlignMaxs() == mZone->GetScaleMaxs() && pEnt->WorldAlignMins() == mZone->GetScaleMins()))
+                (pEnt->WorldAlignMaxs() == pZone->GetScaleMaxs() && pEnt->WorldAlignMins() == pZone->GetScaleMins()))
             {
                 DevLog("Already found a %s spawned on the map! Not spawning it from zone file...\n", name);
-                toReturn = true;
-                break;
+                return true;
             }
         }
 
         pEnt = gEntList.FindEntityByClassname(pEnt, name);
     }
 
-    return toReturn;
+    return false;
 }
 
 void CMapzoneData::SpawnMapZones()
