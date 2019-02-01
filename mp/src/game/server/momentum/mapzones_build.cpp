@@ -211,7 +211,6 @@ bool CMomPointZoneBuilder::BuildZone(CBasePlayer *pPlayer, const Vector *vecAim)
         }
 
         m_flHeight = CMomBoxZoneBuilder::GetZoneHeightToPlayer(pPlayer, m_vPoints[0]);
-        m_bGetHeight = false;
     }
 
 
@@ -299,6 +298,8 @@ void CMomPointZoneBuilder::ResetMe()
 
 void CMomPointZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
 {
+    m_bGetHeight = false;
+
     pEnt->SetAbsOrigin( m_vecCenter );
 
     // We're handing the phys collide object to the entity now.
