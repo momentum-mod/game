@@ -540,6 +540,12 @@ void CMomPointZoneBuilder::BuildVertArray(CMomHulls_t &hulls, pvertarray_t ***pp
 
 CPhysCollide* CMomPointZoneBuilder::BuildPhysCollide(pvertarray_t **ppHulls, int nHulls)
 {
+	if (m_pPhysCollide && m_bFreePhysCollide)
+    {
+        physcollision->DestroyCollide(m_pPhysCollide);
+	}
+    m_bFreePhysCollide = true;
+
     // Vertices -> convex
     CPhysConvex** ppPhysConvex = new CPhysConvex*[nHulls];
 
