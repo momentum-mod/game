@@ -31,7 +31,10 @@ class ZoneMenu : public vgui::Frame, public CGameEventListener
     vgui::Button *m_pDeleteZoneButton;
     vgui::Button *m_pEditZoneButton;
 
+	// Whether or not menu should bind mouse/keyboard input to zoning commands
 	bool m_bBindKeys;
+	// Ent index of zone that player is currently standing in (or -1 if not in zone)
+    int m_iCurrentZone;
 };
 
 extern ZoneMenu *g_pZoneMenu;
