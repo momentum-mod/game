@@ -90,7 +90,7 @@ int ZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
 	return false;
 }
 
-void ZoneMenu::FireGameEvent(IGameEvent* event) { Log("Event fired!"); }
+void ZoneMenu::FireGameEvent(IGameEvent* event) { Log("Event fired!\n"); }
 
 void ZoneMenu::OnMousePressed( MouseCode code )
 {
