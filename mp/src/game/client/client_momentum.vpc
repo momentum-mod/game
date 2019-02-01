@@ -152,8 +152,8 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\leaderboards\LeaderboardsTimes.cpp"
                     $File   "momentum\ui\leaderboards\ClientTimesDisplay.h"
                     $File   "momentum\ui\leaderboards\ClientTimesDisplay.cpp"
-                    $File 	"momentum\ui\leaderboards\LeaderboardsContextMenu.h"
-                    $File 	"momentum\ui\leaderboards\LeaderboardsContextMenu.cpp"
+                    $File   "momentum\ui\leaderboards\LeaderboardsContextMenu.h"
+                    $File   "momentum\ui\leaderboards\LeaderboardsContextMenu.cpp"
                 }
                 
                 $Folder "Changelog"
@@ -187,7 +187,7 @@ $Project "Client (Momentum)"
                 }
             }
 
-			$Folder "API"
+            $Folder "API"
             {
                 $File "momentum\mom_api_requests.h"
                 $File "momentum\mom_api_requests.cpp"
@@ -326,7 +326,7 @@ $Project "Client (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.h"
             $File   "momentum\c_mom_player.cpp"
             $File   "momentum\c_mom_player.h"
-			$File   "momentum\c_mom_triggers.cpp"
+            $File   "momentum\c_mom_triggers.cpp"
             $File   "momentum\c_mom_triggers.h"
             $File   "momentum\c_te_shotgun_shot.cpp"
             $File   "momentum\fx_mom_weaponfx.cpp"
@@ -361,7 +361,7 @@ $Project "Client (Momentum)"
         }
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
-		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
+        $File   "$SRCDIR\game\shared\predicted_viewmodel.h"
     }
 
     $Folder "Link Libraries"
