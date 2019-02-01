@@ -50,7 +50,7 @@ void CMapzone::SpawnZone()
     {
     case MOMZONETYPE_START:
     {
-		auto zone = (CTriggerTimerStart *)CreateEntityByName("trigger_momentum_timer_start");
+        auto zone = (CTriggerTimerStart *)CreateEntityByName("trigger_momentum_timer_start");
 
         zone->SetIsLimitingSpeed(m_bLimitingSpeed);
         zone->SetMaxLeaveSpeed(m_flBhopLeaveSpeed);
@@ -69,7 +69,7 @@ void CMapzone::SpawnZone()
         zone->SetName(MAKE_STRING("Start Trigger"));
         g_pMomentumTimer->SetStartTrigger(zone);
 
-		m_pTrigger = zone;
+        m_pTrigger = zone;
         break;
     }
     case MOMZONETYPE_CP:
@@ -109,7 +109,7 @@ void CMapzone::SpawnZone()
     }
     case MOMZONETYPE_RESETONEHOP:
     {
-		auto zone = (CTriggerResetOnehop *)CreateEntityByName("trigger_momentum_resetonehop");
+        auto zone = (CTriggerResetOnehop *)CreateEntityByName("trigger_momentum_resetonehop");
 
         zone->SetName(MAKE_STRING("ResetOnehop Trigger"));
 

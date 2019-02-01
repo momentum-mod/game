@@ -205,13 +205,13 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         }
     }
 
-	if (g_pZoneMenu && g_pZoneMenu->IsVisible())
-	{
+    if (g_pZoneMenu && g_pZoneMenu->IsVisible())
+    {
         if (g_pZoneMenu->HandleKeyInput(down, keynum))
         {
             return 0;
         }
-	}
+    }
 
     return BaseClass::HudElementKeyInput(down, keynum, pszCurrentBinding);
 }
@@ -341,10 +341,10 @@ int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector
 
 bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
 {
-	if (!cmd->command_number)
+    if (!cmd->command_number)
     {
         return BaseClass::CreateMove(flInputSampleTime, cmd);
-	}
+    }
 
     C_BasePlayer *local_player = C_BasePlayer::GetLocalPlayer();
     static int dominant_buttons = 0;
@@ -396,7 +396,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         }
     }
 
-	if (!mom_enable_overlapping_keys.GetBool())
+    if (!mom_enable_overlapping_keys.GetBool())
     {
         // Holding both forward and backwards, which one was the last pressed of these?
         if ((cmd->buttons & (IN_FORWARD | IN_BACK)) == (IN_FORWARD | IN_BACK))
@@ -443,7 +443,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         {
             dominant_buttons &= ~(IN_MOVELEFT | IN_MOVERIGHT);
         }
-	}
+    }
 
     prev_flags = local_player->GetFlags();
 
