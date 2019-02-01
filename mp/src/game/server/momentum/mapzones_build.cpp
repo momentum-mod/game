@@ -1005,16 +1005,16 @@ CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt)
 {
     const CUtlVector<Vector> &points = pEnt->GetZonePoints();
 
-        if (points.Count() > 0)
-        {
-            auto pBuilder = new CMomPointZoneBuilder;
-            pBuilder->LoadFromZone(pEnt);
-            return pBuilder;
-        }
-        else
-        {
-            auto pBuilder = new CMomBoxZoneBuilder;
-            pBuilder->LoadFromZone(pEnt);
-            return pBuilder;
-        }
+    if (points.Count() > 0)
+    {
+        auto pBuilder = new CMomPointZoneBuilder;
+        pBuilder->LoadFromZone(pEnt);
+        return pBuilder;
+    }
+    else
+    {
+        auto pBuilder = new CMomBoxZoneBuilder;
+        pBuilder->LoadFromZone(pEnt);
+        return pBuilder;
+    }
 }
