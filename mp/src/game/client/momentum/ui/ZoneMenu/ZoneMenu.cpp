@@ -41,8 +41,8 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pEditorTitleLabel->SetWide(200);
 
     m_pGridSizeLabel = new Label(this, "GridSizeLabel", "Grid Size:");
-    m_pEditorTitleLabel->SetPos(250, 70);
-    m_pEditorTitleLabel->SetWide(200);
+    m_pGridSizeLabel->SetPos(250, 70);
+    m_pGridSizeLabel->SetWide(200);
     m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "Grid Size", 1.0f, 64.0f, "mom_zone_grid");
     m_pGridSizeSlider->SetPos(250, 90);
     m_pGridSizeSlider->SetWide(180);
