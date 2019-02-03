@@ -34,12 +34,6 @@ public:
     void IncreaseZoom( float dist ) { m_flReticleDist = fminf( m_flReticleDist + dist, 2048.0f ); }
     void DecreaseZoom( float dist ) { m_flReticleDist = fmaxf( m_flReticleDist - dist, 16.0f ); }
 
-
-    static void     VectorSnapToGrid(Vector &dest, float gridsize);
-    static float    SnapToGrid(float fl, float gridsize);
-    static void     DrawReticle(const Vector &pos, float retsize);
-    static void     DrawZoneLine(const Vector &start, const Vector &end, float t);
-
     static int                      GetEntityZoneType(CBaseEntity *pEnt);
     static CBaseMomentumTrigger     *CreateZoneEntity(int type);
     static void                     SetZoneProps(CBaseEntity *pEnt);
