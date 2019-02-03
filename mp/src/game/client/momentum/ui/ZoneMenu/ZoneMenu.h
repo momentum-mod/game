@@ -29,6 +29,10 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
     int HandleKeyInput(int down, ButtonCode_t keynum);
 
   private:
+    // Releases control from menu and gives it to game while binding some keys to zoning commands
+    void EnterEditMode();
+    // Gives control back to menu
+    void ExitEditMode();
     void CancelZoning();
 
   private:
@@ -38,6 +42,7 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
     vgui::Label         *m_pGridSizeLabel;
     vgui::CvarSlider    *m_pGridSizeSlider;
     vgui::CvarTextEntry *m_pGridSizeTextEntry;
+    bool m_bUpdateSlider = true;
 
     vgui::Button *m_pCreateNewZoneButton;
     vgui::Button *m_pDeleteZoneButton;
