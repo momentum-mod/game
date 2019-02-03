@@ -4,10 +4,9 @@
 #pragma once
 #endif
 
-#include "mapzones_build.h"
-
 class CBaseMomentumTrigger;
 class CMomentumPlayer;
+class CMomBaseZoneBuilder;
 
 class CMomZoneEdit : public CAutoGameSystemPerFrame
 {
