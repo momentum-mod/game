@@ -6,11 +6,12 @@
 
 class ZoneMenu : public vgui::Frame, public CGameEventListener
 {
-  public: // vgui::Frame
     DECLARE_CLASS_SIMPLE(ZoneMenu, vgui::Frame);
 
+  public: // vgui::Frame
     ZoneMenu(vgui::Panel *pParentPanel);
     virtual void OnMousePressed(vgui::MouseCode code) OVERRIDE;
+    virtual void OnClose() OVERRIDE;
 
     MESSAGE_FUNC(OnCreateNewZone, "CreateNewZone");
     MESSAGE_FUNC(OnDeleteZone, "DeleteZone");
