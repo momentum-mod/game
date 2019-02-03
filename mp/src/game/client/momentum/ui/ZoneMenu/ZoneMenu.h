@@ -16,6 +16,7 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
     MESSAGE_FUNC(OnCreateNewZone, "CreateNewZone");
     MESSAGE_FUNC(OnDeleteZone, "DeleteZone");
     MESSAGE_FUNC(OnEditZone, "EditZone");
+    MESSAGE_FUNC(OnCancelZone, "CancelZone");
 
   public: // CGameEventListener
     void FireGameEvent(IGameEvent *event) OVERRIDE;
@@ -25,12 +26,16 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
     int HandleKeyInput(int down, ButtonCode_t keynum);
 
   private:
+    void CancelZoning();
+
+  private:
     vgui::Label *m_pEditorTitleLabel;
     vgui::Label *m_pZoneInfoLabel;
 
     vgui::Button *m_pCreateNewZoneButton;
     vgui::Button *m_pDeleteZoneButton;
     vgui::Button *m_pEditZoneButton;
+    vgui::Button *m_pCancelZoneButton;
 
     // Whether or not menu should bind mouse/keyboard input to zoning commands
     bool m_bBindKeys;

@@ -6,9 +6,6 @@
 
 #include "tier0/memdbgon.h"
 
-
-extern ConVar mom_zone_debug;
-
 vertarray_t* vertarray_t::Create(int num)
 {
     Assert(num > 0);
@@ -774,6 +771,7 @@ void CMomPointZoneBuilder::DrawDebugLines(CMomHulls_t &hulls) const
 {
     // Draw the hulls
     // Very useful for debugging
+    ConVarRef mom_zone_debug("mom_zone_debug");
 
     if (mom_zone_debug.GetInt() == 0)
         return;

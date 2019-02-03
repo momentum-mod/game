@@ -50,10 +50,14 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pEditZoneButton = new Button(this, "EditZone", "Edit Zone", this);
     m_pEditZoneButton->SetPos(30, 110);
     m_pEditZoneButton->SetWide(200);
+    m_pCancelZoneButton = new Button(this, "CancelZone", "Cancel Zone", this);
+    m_pCancelZoneButton->SetPos(30, 150);
+    m_pCancelZoneButton->SetWide(200);
 
     m_pCreateNewZoneButton->SetCommand(new KeyValues("CreateNewZone"));
     m_pDeleteZoneButton->SetCommand(new KeyValues("DeleteZone"));
     m_pEditZoneButton->SetCommand(new KeyValues("EditZone"));
+    m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
 
     SetMouseInputEnabled(false);
     SetKeyBoardInputEnabled(false);
@@ -88,6 +92,15 @@ int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
     return false;
 }
 
+void CMomZoneMenu::CancelZoning()
+{
+    ConVarRef mom_zone_edit("mom_zone_edit");
+
+    engine->ExecuteClientCmd("mom_zone_cancel");
+    mom_zone_edit.SetValue(false);
+    m_bBindKeys = false;
+}
+
 void CMomZoneMenu::FireGameEvent(IGameEvent *event)
 {
     if (Q_strcmp(event->GetName(), "zone_enter") == 0)
@@ -108,14 +121,7 @@ void CMomZoneMenu::OnMousePressed(MouseCode code)
     }
 }
 
-void CMomZoneMenu::OnClose()
-{
-    ConVarRef mom_zone_edit("mom_zone_edit");
-
-    engine->ExecuteClientCmd("mom_zone_cancel");
-    mom_zone_edit.SetValue(false);
-    m_bBindKeys = false;
-}
+void CMomZoneMenu::OnClose() { CancelZoning(); }
 
 void CMomZoneMenu::OnCreateNewZone()
 {
@@ -171,3 +177,5 @@ void CMomZoneMenu::OnEditZone()
         Warning("You must be standing in a zone to edit it");
     }
 }
+
+void CMomZoneMenu::OnCancelZone() { CancelZoning(); }
