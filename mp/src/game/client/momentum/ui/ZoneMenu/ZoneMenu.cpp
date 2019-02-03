@@ -4,14 +4,16 @@
 #include "icliententitylist.h"
 #include "mom_player_shared.h"
 #include "util\mom_util.h"
-#include "vgui_controls/Button.h"
-#include "vgui_controls/Label.h"
+#include <vgui_controls/Button.h>
+#include <vgui_controls/Label.h>
+#include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/CVarTextEntry.h>
 
 using namespace vgui;
 
 CMomZoneMenu *g_pZoneMenu = nullptr;
 
-CON_COMMAND(show_zonemenu, "Shows zoning menu")
+CON_COMMAND(mom_show_zonemenu, "Shows zoning menu")
 {
     if (!g_pZoneMenu)
     {
@@ -28,7 +30,7 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_bBindKeys = false;
     m_iCurrentZone = -1;
 
-    SetSize(450, 250);
+    SetSize(600, 250);
     SetPos(20, 180);
     SetTitle("Zoning Menu", true);
     SetSizeable(false);
@@ -37,9 +39,17 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pEditorTitleLabel = new Label(this, "ZoneMenuEditorLabel", "Editor Controls");
     m_pEditorTitleLabel->SetPos(30, 50);
     m_pEditorTitleLabel->SetWide(200);
-    m_pZoneInfoLabel = new Label(this, "ZoneMenuInfoLabel", "Zone Info");
-    m_pZoneInfoLabel->SetPos(250, 50);
-    m_pZoneInfoLabel->SetVisible(false);
+
+    m_pGridSizeLabel = new Label(this, "GridSizeLabel", "Grid Size:");
+    m_pEditorTitleLabel->SetPos(250, 70);
+    m_pEditorTitleLabel->SetWide(200);
+    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "Grid Size", 1.0f, 64.0f, "mom_zone_grid");
+    m_pGridSizeSlider->SetPos(250, 90);
+    m_pGridSizeSlider->SetWide(180);
+    m_pGridSizeSlider->SetTall(50);
+    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid");
+    m_pGridSizeTextEntry->SetPos(440, 90);
+    m_pGridSizeTextEntry->SetWide(50);
 
     m_pCreateNewZoneButton = new Button(this, "CreateNewZone", "Create a new Zone", this);
     m_pCreateNewZoneButton->SetPos(30, 70);
@@ -60,7 +70,6 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
 
     SetMouseInputEnabled(false);
-    SetKeyBoardInputEnabled(false);
 }
 
 int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
@@ -119,12 +128,38 @@ void CMomZoneMenu::OnMousePressed(MouseCode code)
     {
         SetMouseInputEnabled(false);
     }
+
+    BaseClass::OnMousePressed(code);
 }
 
 void CMomZoneMenu::OnClose()
 {
     CancelZoning();
+
     BaseClass::OnClose();
+}
+
+void CMomZoneMenu::OnControlModified(Panel* pPanel)
+{
+    if (pPanel == m_pGridSizeSlider)
+    {
+        // Round val to whole number, because no one wants to align to 6.1238765426
+        float flVal = roundf(m_pGridSizeSlider->GetSliderValue());
+        m_pGridSizeSlider->SetSliderValue(flVal);
+        m_pGridSizeSlider->ApplyChanges();
+		// update textentry control
+        char szVal[32];
+        Q_snprintf(szVal, sizeof(szVal), "%.0f", flVal);
+        m_pGridSizeTextEntry->SetText(szVal);
+    }
+}
+
+void CMomZoneMenu::OnTextChanged(Panel *pPanel)
+{
+    if (pPanel == m_pGridSizeTextEntry)
+    {
+        m_pGridSizeTextEntry->ApplyChanges();
+    }
 }
 
 void CMomZoneMenu::OnCreateNewZone()
