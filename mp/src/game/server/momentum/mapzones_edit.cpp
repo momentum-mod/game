@@ -12,7 +12,7 @@ static CMomBaseZoneBuilder *GetZoneBuilderForMethod(int method);
 static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flOldValue);
 static int GetZoneTypeToCreate(const char *szDefaultZone = nullptr);
 
-ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
+static ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
 static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n", true, 0, true, 1);
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
 static ConVar mom_zone_defzone("mom_zone_defzone", "start", FCVAR_CHEAT, "If no zone type is passed to mom_zone_mark, use this.\n");
@@ -20,8 +20,8 @@ static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1"
 static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
 static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT, "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
 //static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
-ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
-ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT, "Use the fancy new zone building method?\n", OnZoningMethodChanged);
+static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
+static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT, "Use the fancy new zone building method?\n", OnZoningMethodChanged);
 
 bool CMomZoneEdit::m_bFirstEdit = false;
 
