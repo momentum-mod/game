@@ -1,7 +1,7 @@
 #include "cbase.h"
 
 #include "OnlineSettingsPage.h"
-#include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/CvarSlider.h"
 #include "vgui_controls/TextEntry.h"
 #include <vgui_controls/CvarToggleCheckButton.h>
 

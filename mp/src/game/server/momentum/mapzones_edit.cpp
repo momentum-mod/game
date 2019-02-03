@@ -50,6 +50,7 @@ static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Incr
 
 static void CC_Mom_ZoneDelete(const CCommand &args)
 {
+	// MOM_TODO: Deleting a zone while a player is inside it causes some weird issues, need to investigate
     if (!mom_zone_edit.GetBool()) return;
 
 

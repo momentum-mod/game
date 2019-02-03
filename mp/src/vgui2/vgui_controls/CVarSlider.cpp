@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //
 //=============================================================================//
-#include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/CvarSlider.h>
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
 #include <vgui_controls/Panel.h>
