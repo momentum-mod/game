@@ -11,10 +11,11 @@ namespace vgui
     public:
         CvarSlider(Panel *parent, const char *panelName);
         CvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
-            char const *cvarname, bool bAllowOutOfRange = false);
+            char const *cvarname, bool bAllowOutOfRange = false, bool bAutoApplyChanges = false);
         ~CvarSlider();
 
-        void SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange);
+        void SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange,
+                         bool bAutoApplyChanges);
 
         void SetCVarName(char const *cvarname);
         void SetMinMaxValues(float minValue, float maxValue, bool bSetTickdisplay = true);
@@ -25,6 +26,9 @@ namespace vgui
         void ApplySettings(KeyValues *inResourceData) OVERRIDE;
         void GetSettings(KeyValues *outResourceData) OVERRIDE;
         void InitSettings() OVERRIDE;
+
+        bool ShouldAutoApplyChanges() const { return m_bAutoApplyChanges; }
+        void SetAutoApplyChanges(bool val) { m_bAutoApplyChanges = val; }
 
         void ApplyChanges();
         float GetSliderValue();
@@ -45,6 +49,7 @@ namespace vgui
         char m_szCvarName[64];
         ConVarRef m_cvar;
 
+        bool m_bAutoApplyChanges;
         bool m_bCreatedInCode;
         float m_flMinValue;
         float m_flMaxValue;
