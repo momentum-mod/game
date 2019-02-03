@@ -26,7 +26,7 @@ DECLARE_BUILD_FACTORY(CvarSlider);
 CvarSlider::CvarSlider(Panel *parent, const char *name) : Slider(parent, name), m_cvar("", true)
 {
     InitSettings();
-    SetupSlider(0.0f, 1.0f, "", false);
+    SetupSlider(0.0f, 1.0f, "", false, false);
     m_bCreatedInCode = false;
 
     AddActionSignalTarget(this);
@@ -36,13 +36,13 @@ CvarSlider::CvarSlider(Panel *parent, const char *name) : Slider(parent, name), 
 // Purpose:
 //-----------------------------------------------------------------------------
 CvarSlider::CvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
-                         char const *cvarname, bool bAllowOutOfRange)
+                         char const *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges)
     : Slider(parent, panelName), m_cvar(cvarname)
 {
     InitSettings();
     AddActionSignalTarget(this);
 
-    SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange);
+    SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges);
 
     // For backwards compatability. Ignore .res file settings for forced setup sliders.
     m_bCreatedInCode = true;
@@ -51,7 +51,7 @@ CvarSlider::CvarSlider(Panel *parent, const char *panelName, char const *caption
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CvarSlider::SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange)
+void CvarSlider::SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges)
 {
     m_flMinValue = minValue;
     m_flMaxValue = maxValue;
@@ -71,6 +71,7 @@ void CvarSlider::SetupSlider(float minValue, float maxValue, const char *cvarnam
     m_cvar = ConVarRef(m_szCvarName, cvarname[0] == '\0');
 
     m_bModifiedOnce = false;
+    m_bAutoApplyChanges = bAutoApplyChanges;
     m_bAllowOutOfRange = bAllowOutOfRange;
 
     // Set slider to current value
@@ -93,9 +94,10 @@ void CvarSlider::ApplySettings(KeyValues *inResourceData)
     float maxValue = inResourceData->GetFloat("maxvalue", 1.0f);
     const char *cvarname = inResourceData->GetString("cvar_name");
     bool bAllowOutOfRange = inResourceData->GetBool("allowoutofrange");
+    bool bAutoApplyChanges = inResourceData->GetBool("autoapply", false);
 
     if (!m_bCreatedInCode)
-        SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange);
+        SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges);
 
     if (GetParent())
     {
@@ -278,6 +280,12 @@ void CvarSlider::OnSliderMoved()
         m_iLastSliderValue = GetValue();
         m_fCurrentValue = static_cast<float>(m_iLastSliderValue) / CVARSLIDER_SCALE_FACTOR;
         m_bModifiedOnce = true;
+
+        if (ShouldAutoApplyChanges())
+        {
+            ApplyChanges();
+        }
+
         // tell parent that we've been modified
         PostActionSignal(new KeyValues("ControlModified"));
     }
