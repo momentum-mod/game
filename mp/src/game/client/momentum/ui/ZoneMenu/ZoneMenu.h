@@ -13,6 +13,9 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
     virtual void OnMousePressed(vgui::MouseCode code) OVERRIDE;
     virtual void OnClose() OVERRIDE;
 
+	MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
+    MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
+
     MESSAGE_FUNC(OnCreateNewZone, "CreateNewZone");
     MESSAGE_FUNC(OnDeleteZone, "DeleteZone");
     MESSAGE_FUNC(OnEditZone, "EditZone");
@@ -30,7 +33,11 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
 
   private:
     vgui::Label *m_pEditorTitleLabel;
-    vgui::Label *m_pZoneInfoLabel;
+
+    // Grid size setting
+    vgui::Label         *m_pGridSizeLabel;
+    vgui::CvarSlider    *m_pGridSizeSlider;
+    vgui::CvarTextEntry *m_pGridSizeTextEntry;
 
     vgui::Button *m_pCreateNewZoneButton;
     vgui::Button *m_pDeleteZoneButton;
