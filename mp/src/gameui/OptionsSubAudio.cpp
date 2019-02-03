@@ -9,7 +9,7 @@
 #include "ModInfo.h"
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/QueryBox.h"
-#include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/CvarSlider.h"
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
