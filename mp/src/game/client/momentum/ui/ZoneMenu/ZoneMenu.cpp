@@ -70,13 +70,15 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
 
     SetMouseInputEnabled(false);
+    SetKeyBoardInputEnabled(false);
 }
 
 int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
 {
     if (keynum == MOUSE_RIGHT)
     {
-        g_pZoneMenu->SetMouseInputEnabled(true);
+        SetMouseInputEnabled(true);
+        SetKeyBoardInputEnabled(true);
         return true;
     }
     else if (ShouldBindKeys() && down)
@@ -127,6 +129,7 @@ void CMomZoneMenu::OnMousePressed(MouseCode code)
     if (code == MOUSE_RIGHT)
     {
         SetMouseInputEnabled(false);
+        SetKeyBoardInputEnabled(false);
     }
 
     BaseClass::OnMousePressed(code);
@@ -143,11 +146,18 @@ void CMomZoneMenu::OnControlModified(Panel* pPanel)
 {
     if (pPanel == m_pGridSizeSlider)
     {
+		// Don't retrigger the cvar change if it was already updated by textentry
+		if (!m_bUpdateSlider)
+        {
+            m_bUpdateSlider = true;
+            return;
+		}
+
         // Round val to whole number, because no one wants to align to 6.1238765426
         float flVal = roundf(m_pGridSizeSlider->GetSliderValue());
         m_pGridSizeSlider->SetSliderValue(flVal);
         m_pGridSizeSlider->ApplyChanges();
-		// update textentry control
+        // update textentry control
         char szVal[32];
         Q_snprintf(szVal, sizeof(szVal), "%.0f", flVal);
         m_pGridSizeTextEntry->SetText(szVal);
@@ -158,6 +168,7 @@ void CMomZoneMenu::OnTextChanged(Panel *pPanel)
 {
     if (pPanel == m_pGridSizeTextEntry)
     {
+        m_bUpdateSlider = false;
         m_pGridSizeTextEntry->ApplyChanges();
     }
 }
@@ -173,6 +184,7 @@ void CMomZoneMenu::OnCreateNewZone()
     // return control to game so they can start zoning immediately
     m_bBindKeys = true;
     SetMouseInputEnabled(false);
+    SetKeyBoardInputEnabled(false);
 }
 
 void CMomZoneMenu::OnDeleteZone()
@@ -210,6 +222,7 @@ void CMomZoneMenu::OnEditZone()
         // return control to game so they can start zoning immediately
         m_bBindKeys = true;
         SetMouseInputEnabled(false);
+        SetKeyBoardInputEnabled(false);
     }
     else
     {
