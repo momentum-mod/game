@@ -1,9 +1,10 @@
 #include "cbase.h"
+#include "mapzones_edit.h"
 
 #include "mom_triggers.h"
 #include "mom_player.h"
 #include "mapzones.h"
-#include "mapzones_edit.h"
+#include "mapzones_build.h"
 
 #include "tier0/memdbgon.h"
 
