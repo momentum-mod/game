@@ -23,8 +23,8 @@ public:
     virtual void FrameUpdatePostEntityThink() OVERRIDE;
 
 
-    void OnCreate(int zonetype);
-    void OnMark(int zonetype);
+    void OnCreate(int zonetype = -1);
+    void OnMark();
     void OnRemove();
     void OnCancel();
 

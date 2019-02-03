@@ -55,7 +55,7 @@ void CMapzone::SpawnZone()
 
         zone->SetIsLimitingSpeed(m_bLimitingSpeed);
         zone->SetMaxLeaveSpeed(m_flBhopLeaveSpeed);
-        zone->ZoneNumber() = m_iStartZoneNumber;
+        zone->SetZoneNumber(m_iStartZoneNumber);
         zone->LimitSpeedType() = m_iLimitType;
         zone->StartOnJump() = m_bStartOnJump;
         if (m_flYaw != NO_LOOK)
@@ -87,7 +87,7 @@ void CMapzone::SpawnZone()
     {
         auto zone = (CTriggerTimerStop *)CreateEntityByName("trigger_momentum_timer_stop");
 
-        zone->ZoneNumber() = m_iEndZoneNumber;
+        zone->SetZoneNumber(m_iEndZoneNumber);
         zone->SetName(MAKE_STRING("End Trigger"));
 
         m_pTrigger = zone;
@@ -218,7 +218,7 @@ static void SaveZonFile(const char *szMapName)
                 subKey->SetBool("limitingspeed", pTrigger->IsLimitingSpeed());
                 subKey->SetBool("StartOnJump", pTrigger->StartOnJump());
                 subKey->SetInt("LimitSpeedType", pTrigger->LimitSpeedType());
-                subKey->SetInt("ZoneNumber", pTrigger->ZoneNumber());
+                subKey->SetInt("ZoneNumber", pTrigger->GetZoneNumber());
                 if (pTrigger->HasLookAngles())
                     subKey->SetFloat("yaw", pTrigger->GetLookAngles()[YAW]);
             }
@@ -227,7 +227,7 @@ static void SaveZonFile(const char *szMapName)
         {
             CTriggerTimerStop *pTrigger = dynamic_cast<CTriggerTimerStop *>(pEnt);
             subKey = new KeyValues("end");
-            subKey->SetInt("ZoneNumber", pTrigger->ZoneNumber());
+            subKey->SetInt("ZoneNumber", pTrigger->GetZoneNumber());
         }
         else if (pEnt->ClassMatches("trigger_momentum_timer_checkpoint"))
         {
