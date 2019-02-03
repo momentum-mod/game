@@ -9,18 +9,18 @@
 
 using namespace vgui;
 
-ZoneMenu *g_pZoneMenu = nullptr;
+CMomZoneMenu *g_pZoneMenu = nullptr;
 
 CON_COMMAND(show_zonemenu, "Shows zoning menu")
 {
     if (!g_pZoneMenu)
     {
-        g_pZoneMenu = new ZoneMenu(g_pClientMode->GetViewport());
+        g_pZoneMenu = new CMomZoneMenu(g_pClientMode->GetViewport());
     }
     g_pZoneMenu->Activate();
 }
 
-ZoneMenu::ZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu")
+CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu")
 {
     ListenForGameEvent("zone_enter");
     ListenForGameEvent("zone_exit");
@@ -59,7 +59,7 @@ ZoneMenu::ZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu")
     SetKeyBoardInputEnabled(false);
 }
 
-int ZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
+int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
 {
     if (keynum == MOUSE_RIGHT)
     {
@@ -88,7 +88,7 @@ int ZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
     return false;
 }
 
-void ZoneMenu::FireGameEvent(IGameEvent *event)
+void CMomZoneMenu::FireGameEvent(IGameEvent *event)
 {
     if (Q_strcmp(event->GetName(), "zone_enter") == 0)
     {
@@ -100,7 +100,7 @@ void ZoneMenu::FireGameEvent(IGameEvent *event)
     }
 }
 
-void ZoneMenu::OnMousePressed(MouseCode code)
+void CMomZoneMenu::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_RIGHT)
     {
@@ -108,7 +108,7 @@ void ZoneMenu::OnMousePressed(MouseCode code)
     }
 }
 
-void ZoneMenu::OnClose()
+void CMomZoneMenu::OnClose()
 {
     ConVarRef mom_zone_edit("mom_zone_edit");
 
@@ -117,7 +117,7 @@ void ZoneMenu::OnClose()
     m_bBindKeys = false;
 }
 
-void ZoneMenu::OnCreateNewZone()
+void CMomZoneMenu::OnCreateNewZone()
 {
     ConVarRef mom_zone_edit("mom_zone_edit");
     ConVarRef mom_zone_usenewmoethod("mom_zone_usenewmethod");
@@ -130,7 +130,7 @@ void ZoneMenu::OnCreateNewZone()
     SetMouseInputEnabled(false);
 }
 
-void ZoneMenu::OnDeleteZone()
+void CMomZoneMenu::OnDeleteZone()
 {
     ConVarRef mom_zone_edit("mom_zone_edit");
 
@@ -150,7 +150,7 @@ void ZoneMenu::OnDeleteZone()
     }
 }
 
-void ZoneMenu::OnEditZone()
+void CMomZoneMenu::OnEditZone()
 {
     ConVarRef mom_zone_edit("mom_zone_edit");
 
