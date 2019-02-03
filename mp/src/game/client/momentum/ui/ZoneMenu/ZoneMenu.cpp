@@ -63,9 +63,6 @@ int ZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
 {
     if (keynum == MOUSE_RIGHT)
     {
-        engine->ExecuteClientCmd("mom_zone_cancel");
-        ConVarRef mom_zone_edit("mom_zone_edit");
-        mom_zone_edit.SetValue(false);
         g_pZoneMenu->SetMouseInputEnabled(true);
         return true;
     }
@@ -107,15 +104,25 @@ void ZoneMenu::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_RIGHT)
     {
-        m_bBindKeys = false;
         SetMouseInputEnabled(false);
     }
 }
 
+void ZoneMenu::OnClose()
+{
+    ConVarRef mom_zone_edit("mom_zone_edit");
+
+    engine->ExecuteClientCmd("mom_zone_cancel");
+    mom_zone_edit.SetValue(false);
+    m_bBindKeys = false;
+}
+
 void ZoneMenu::OnCreateNewZone()
 {
-    engine->ExecuteClientCmd("mom_zone_usenewmethod 1");
     ConVarRef mom_zone_edit("mom_zone_edit");
+    ConVarRef mom_zone_usenewmoethod("mom_zone_usenewmethod");
+
+    mom_zone_usenewmoethod.SetValue(true);
     mom_zone_edit.SetValue(true);
 
     // return control to game so they can start zoning immediately
@@ -125,9 +132,10 @@ void ZoneMenu::OnCreateNewZone()
 
 void ZoneMenu::OnDeleteZone()
 {
+    ConVarRef mom_zone_edit("mom_zone_edit");
+
     if (m_iCurrentZone > -1)
     {
-        ConVarRef mom_zone_edit("mom_zone_edit");
         mom_zone_edit.SetValue(true);
 
         char cmd[128];
@@ -144,9 +152,10 @@ void ZoneMenu::OnDeleteZone()
 
 void ZoneMenu::OnEditZone()
 {
+    ConVarRef mom_zone_edit("mom_zone_edit");
+
     if (m_iCurrentZone > -1)
     {
-        ConVarRef mom_zone_edit("mom_zone_edit");
         mom_zone_edit.SetValue(true);
 
         char cmd[128];
