@@ -6,6 +6,7 @@
 #include "util\mom_util.h"
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Label.h>
+#include <vgui_controls/ComboBox.h>
 #include <vgui_controls/CvarSlider.h>
 #include <vgui_controls/CvarTextEntry.h>
 
@@ -40,17 +41,6 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pEditorTitleLabel->SetPos(30, 50);
     m_pEditorTitleLabel->SetWide(200);
 
-    m_pGridSizeLabel = new Label(this, "GridSizeLabel", "Grid Size:");
-    m_pGridSizeLabel->SetPos(250, 70);
-    m_pGridSizeLabel->SetWide(200);
-    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "Grid Size", 1.0f, 64.0f, "mom_zone_grid");
-    m_pGridSizeSlider->SetPos(250, 90);
-    m_pGridSizeSlider->SetWide(180);
-    m_pGridSizeSlider->SetTall(50);
-    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid");
-    m_pGridSizeTextEntry->SetPos(440, 90);
-    m_pGridSizeTextEntry->SetWide(50);
-
     m_pCreateNewZoneButton = new Button(this, "CreateNewZone", "Create a new Zone", this);
     m_pCreateNewZoneButton->SetPos(30, 70);
     m_pCreateNewZoneButton->SetWide(200);
@@ -68,6 +58,34 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pDeleteZoneButton->SetCommand(new KeyValues("DeleteZone"));
     m_pEditZoneButton->SetCommand(new KeyValues("EditZone"));
     m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
+
+	m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "Zone Type:");
+    m_pZoneTypeLabel->SetPos(260, 50);
+    m_pZoneTypeLabel->SetWide(200);
+    m_pZoneTypeCombo = new ComboBox(this, "ZoneTypeCombo", 7, false);
+    m_pZoneTypeCombo->SetPos(260, 70);
+    m_pZoneTypeCombo->SetWide(180);
+    m_pZoneTypeCombo->SetEditable(false);
+    m_pZoneTypeCombo->AddItem("Auto",        new KeyValues("vals", "zone_type", "auto",  "bonus", "0"));
+    m_pZoneTypeCombo->AddItem("Start",       new KeyValues("vals", "zone_type", "start", "bonus", "0"));
+    m_pZoneTypeCombo->AddItem("End",         new KeyValues("vals", "zone_type", "end",   "bonus", "0"));
+    m_pZoneTypeCombo->AddItem("Bonus Start", new KeyValues("vals", "zone_type", "start", "bonus", "1"));
+    m_pZoneTypeCombo->AddItem("Bonus End",   new KeyValues("vals", "zone_type", "end",   "bonus", "1"));
+    m_pZoneTypeCombo->AddItem("Stage",       new KeyValues("vals", "zone_type", "stage", "bonus", "0"));
+    m_pZoneTypeCombo->AddItem("Checkpoint",  new KeyValues("vals", "zone_type", "cp",    "bonus", "0"));
+    m_pZoneTypeCombo->ActivateItemByRow(0);
+
+    m_pGridSizeLabel = new Label(this, "GridSizeLabel", "Grid Size:");
+    m_pGridSizeLabel->SetPos(260, 100);
+    m_pGridSizeLabel->SetWide(200);
+    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "Grid Size", 1.0f, 64.0f, "mom_zone_grid");
+    m_pGridSizeSlider->SetPos(260, 120);
+    m_pGridSizeSlider->SetWide(180);
+    m_pGridSizeSlider->SetTall(50);
+    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid");
+    m_pGridSizeTextEntry->SetPos(450, 120);
+    m_pGridSizeTextEntry->SetWide(50);
+    m_bUpdateGridSizeSlider = false;
 
     SetMouseInputEnabled(false);
     SetKeyBoardInputEnabled(false);
@@ -147,9 +165,9 @@ void CMomZoneMenu::OnControlModified(Panel* pPanel)
     if (pPanel == m_pGridSizeSlider)
     {
         // Don't retrigger the cvar change if it was already updated by textentry
-        if (!m_bUpdateSlider)
+        if (!m_bUpdateGridSizeSlider)
         {
-            m_bUpdateSlider = true;
+            m_bUpdateGridSizeSlider = true;
             return;
         }
 
@@ -168,8 +186,17 @@ void CMomZoneMenu::OnTextChanged(Panel *pPanel)
 {
     if (pPanel == m_pGridSizeTextEntry)
     {
-        m_bUpdateSlider = false;
+        m_bUpdateGridSizeSlider = false;
         m_pGridSizeTextEntry->ApplyChanges();
+    }
+    else if (pPanel == m_pZoneTypeCombo)
+    {
+        static ConVarRef mom_zone_type("mom_zone_type");
+        static ConVarRef mom_zone_bonus("mom_zone_bonus");
+
+        KeyValues *pData = m_pZoneTypeCombo->GetActiveItemUserData();
+        mom_zone_type.SetValue(pData->GetString("zone_type"));
+        mom_zone_bonus.SetValue(pData->GetInt("bonus"));
     }
 }
 
