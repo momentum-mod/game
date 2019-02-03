@@ -427,7 +427,7 @@ void VectorSnapToGrid(Vector &dest, float gridsize)
 {
     dest.x = SnapToGrid(dest.x, gridsize);
     dest.y = SnapToGrid(dest.y, gridsize);
-	// Don't snap z so that point can hit ground
+    // Don't snap z so that point can hit ground
 }
 
 float SnapToGrid(float fl, float gridsize)

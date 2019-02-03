@@ -146,12 +146,12 @@ void CMomZoneMenu::OnControlModified(Panel* pPanel)
 {
     if (pPanel == m_pGridSizeSlider)
     {
-		// Don't retrigger the cvar change if it was already updated by textentry
-		if (!m_bUpdateSlider)
+        // Don't retrigger the cvar change if it was already updated by textentry
+        if (!m_bUpdateSlider)
         {
             m_bUpdateSlider = true;
             return;
-		}
+        }
 
         // Round val to whole number, because no one wants to align to 6.1238765426
         float flVal = roundf(m_pGridSizeSlider->GetSliderValue());
