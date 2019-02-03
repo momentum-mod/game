@@ -6,8 +6,8 @@
 #include "util\mom_util.h"
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Label.h>
-#include <vgui_controls/CVarSlider.h>
-#include <vgui_controls/CVarTextEntry.h>
+#include <vgui_controls/CvarSlider.h>
+#include <vgui_controls/CvarTextEntry.h>
 
 using namespace vgui;
 

@@ -14,7 +14,7 @@
 #include "vgui_controls/PropertyPage.h"
 #include <language.h>
 #include "vgui_controls/Frame.h"
-#include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/CvarSlider.h>
 #include "vgui/KeyCode.h"
 
 class CLabeledCommandComboBox;
