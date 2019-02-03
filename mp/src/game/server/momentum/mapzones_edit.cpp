@@ -12,6 +12,10 @@ static CMomBaseZoneBuilder *GetZoneBuilderForMethod(int method);
 static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flOldValue);
 static int GetZoneTypeToCreate(const char *szDefaultZone = nullptr);
 
+static void VectorSnapToGrid(Vector &dest, float gridsize);
+static float SnapToGrid(float fl, float gridsize);
+static void DrawReticle(const Vector &pos, float retsize);
+
 static ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
 static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n", true, 0, true, 1);
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
@@ -419,14 +423,14 @@ void CMomZoneEdit::FrameUpdatePostEntityThink()
     DrawReticle(vecAim,8.0f);
 }
 
-void CMomZoneEdit::VectorSnapToGrid(Vector &dest, float gridsize)
+void VectorSnapToGrid(Vector &dest, float gridsize)
 {
     dest.x = SnapToGrid(dest.x, gridsize);
     dest.y = SnapToGrid(dest.y, gridsize);
-    dest.z = SnapToGrid(dest.z, gridsize);
+	// Don't snap z so that point can hit ground
 }
 
-float CMomZoneEdit::SnapToGrid(float fl, float gridsize)
+float SnapToGrid(float fl, float gridsize)
 {
     float closest;
     float dif;
@@ -447,7 +451,7 @@ float CMomZoneEdit::SnapToGrid(float fl, float gridsize)
     return closest;
 }
 
-void CMomZoneEdit::DrawReticle(const Vector &pos, float retsize)
+void DrawReticle(const Vector &pos, float retsize)
 {
     Vector p1, p2, p3, p4, p5, p6;
 
