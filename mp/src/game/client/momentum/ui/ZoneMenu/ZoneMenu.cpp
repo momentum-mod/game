@@ -121,7 +121,11 @@ void CMomZoneMenu::OnMousePressed(MouseCode code)
     }
 }
 
-void CMomZoneMenu::OnClose() { CancelZoning(); }
+void CMomZoneMenu::OnClose()
+{
+    CancelZoning();
+    BaseClass::OnClose();
+}
 
 void CMomZoneMenu::OnCreateNewZone()
 {
