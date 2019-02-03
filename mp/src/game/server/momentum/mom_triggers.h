@@ -75,7 +75,8 @@ class CTriggerTimerStop : public CBaseMomentumTrigger
         return SetTransmitState(FL_EDICT_ALWAYS);
     }
 
-    int &ZoneNumber() { return m_iZoneNumber; };
+    int GetZoneNumber() const { return m_iZoneNumber; };
+    void SetZoneNumber(int num) { m_iZoneNumber = num; }
 
   private:
     int m_iZoneNumber;
@@ -189,7 +190,8 @@ class CTriggerTimerStart : public CTriggerStage
     bool HasLookAngles() const { return HasSpawnFlags(SF_USE_LOOKANGLES); }
     bool &StartOnJump() { return m_bTimerStartOnJump; }
     int &LimitSpeedType() { return m_iLimitSpeedType; }
-    int &ZoneNumber() { return m_iZoneNumber; }
+    int GetZoneNumber() const { return m_iZoneNumber; }
+    void SetZoneNumber(int num) { m_iZoneNumber = num; }
 
   private:
     QAngle m_angLook;

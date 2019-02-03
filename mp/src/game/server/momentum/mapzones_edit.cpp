@@ -10,7 +10,7 @@
 
 static CMomBaseZoneBuilder *GetZoneBuilderForMethod(int method);
 static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flOldValue);
-static int GetZoneTypeToCreate(const char *szDefaultZone = nullptr);
+static int GetZoneTypeToCreate();
 
 static void VectorSnapToGrid(Vector &dest, float gridsize);
 static float SnapToGrid(float fl, float gridsize);
@@ -19,7 +19,10 @@ static void DrawReticle(const Vector &pos, float retsize);
 static ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
 static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n", true, 0, true, 1);
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
-static ConVar mom_zone_defzone("mom_zone_defzone", "start", FCVAR_CHEAT, "If no zone type is passed to mom_zone_mark, use this.\n");
+static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
+                            "The zone type that will be created when using mom_zone_mark/create. 'auto' creates a "
+                            "start zone unless one already exists, in which case an end zone is created.f\n");
+static ConVar mom_zone_bonus("mom_zone_bonus", "0", FCVAR_CHEAT, "Whether the zone that is created will be a bonuz zone or not", true, 0, false, 0);
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT, "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true, 0, true, 1);
 static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
 static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT, "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
@@ -34,7 +37,7 @@ CMomZoneEdit g_MomZoneEdit;
 
 static void CC_Mom_ZoneZoomIn()
 {
-    g_MomZoneEdit.DecreaseZoom((float) mom_zone_grid.GetInt());
+    g_MomZoneEdit.DecreaseZoom(mom_zone_grid.GetFloat());
 }
 
 static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n", FCVAR_CHEAT);
@@ -42,7 +45,7 @@ static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decreas
 
 static void CC_Mom_ZoneZoomOut()
 {
-    g_MomZoneEdit.IncreaseZoom((float) mom_zone_grid.GetInt());
+    g_MomZoneEdit.IncreaseZoom(mom_zone_grid.GetFloat());
 }
 
 static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n", FCVAR_CHEAT);
@@ -168,11 +171,7 @@ static void CC_Mom_ZoneMark(const CCommand &args)
 {
     if (!mom_zone_edit.GetBool()) return;
 
-    int zonetype = -1;
-    if (args.ArgC())
-        zonetype = GetZoneTypeToCreate(args[1]);
-
-    g_MomZoneEdit.OnMark(zonetype);
+    g_MomZoneEdit.OnMark();
 }
 
 static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.\n", FCVAR_CHEAT);
@@ -205,7 +204,7 @@ static void CC_Mom_ZoneCreate()
     if (!mom_zone_edit.GetBool()) return;
 
 
-    g_MomZoneEdit.OnCreate(-1);
+    g_MomZoneEdit.OnCreate();
 }
 
 static ConCommand mom_zone_create("mom_zone_create", CC_Mom_ZoneCreate, "Create the zone.\n", FCVAR_CHEAT);
@@ -235,7 +234,7 @@ void CMomZoneEdit::StopEditing()
     SetBuilder(nullptr);
 }
 
-void CMomZoneEdit::OnMark(int zonetype)
+void CMomZoneEdit::OnMark()
 {
     // Player wants to mark a point (ie. "next build step" in the old method)
 
@@ -260,7 +259,7 @@ void CMomZoneEdit::OnMark(int zonetype)
     // Builder may want to create the zone NOW, instead of manually.
     if (pBuilder->CheckOnMark() && pBuilder->IsReady())
     {
-        OnCreate(zonetype);
+        OnCreate();
     }
 }
 
@@ -281,7 +280,8 @@ void CMomZoneEdit::OnCreate(int zonetype)
     int type = zonetype != -1 ? zonetype : GetZoneTypeToCreate();
     if (type == -1)
     {
-        // it it's still -1 somethings wrong
+        // It's still -1, something's wrong
+        Warning("Failed to create zone");
         return;
     }
 
@@ -501,31 +501,32 @@ CBaseMomentumTrigger* CMomZoneEdit::CreateZoneEntity(int type)
 
 void CMomZoneEdit::SetZoneProps(CBaseEntity *pEnt)
 {
-    CTriggerTimerStart *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
-    //validate pointers
-    if (pStart)
+    if (auto *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt))
     {
-        ConVarRef ref("mom_zone_start_maxbhopleavespeed");
         //bhop speed limit
-        if (ref.GetFloat() > 0.0)
+        if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
         {
-            pStart->SetMaxLeaveSpeed(ref.GetFloat());
+            pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
             pStart->SetIsLimitingSpeed(true);
         }
         else
         {
             pStart->SetIsLimitingSpeed(false);
         }
-        return;
-    }
 
-    CTriggerStage *pStage = dynamic_cast<CTriggerStage *>(pEnt);
-    if (pStage)
+        pStart->SetZoneNumber(mom_zone_bonus.GetInt());
+    }
+    
+    else if (auto *pStop = dynamic_cast<CTriggerTimerStop *>(pEnt))
     {
-        ConVarRef ref("mom_zone_stage_num");
-        if (ref.GetInt() > 0)
+        pStop->SetZoneNumber(mom_zone_bonus.GetInt());
+    }
+    
+    else if (auto *pStage = dynamic_cast<CTriggerStage *>(pEnt))
+    {
+        if (mom_zone_stage_num.GetInt() > 0)
         {
-            pStage->SetStageNumber(ref.GetInt());
+            pStage->SetStageNumber(mom_zone_stage_num.GetInt());
         }
         else
         {
@@ -547,8 +548,6 @@ void CMomZoneEdit::SetZoneProps(CBaseEntity *pEnt)
 
             pStage->SetStageNumber(higheststage + 1);
         }
-
-        return;
     }
 }
 
@@ -583,6 +582,10 @@ int CMomZoneEdit::ShortNameToZoneType(const char *in)
     {
         return MOMZONETYPE_STAGE;
     }
+    else if (Q_stricmp(in, "cp") == 0 || Q_stricmp(in, "checkpoint") == 0)
+    {
+        return MOMZONETYPE_CP;
+	}
 
     return -1;
 }
@@ -607,17 +610,15 @@ static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flO
     g_MomZoneEdit.SetBuilder(pBuilder);
 }
 
-static int GetZoneTypeToCreate(const char *szDefaultZone)
+static int GetZoneTypeToCreate()
 {
-    int zonetype;
-    if (szDefaultZone)
+    int zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_type.GetString());
+    bool bAutoCreate = false;
+	if (zonetype == -1 && Q_stricmp(mom_zone_type.GetString(), "auto") == 0)
     {
-        zonetype = g_MomZoneEdit.ShortNameToZoneType(szDefaultZone);
-    }
-    else
-    {
-        zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
-    }
+        zonetype = MOMZONETYPE_START;
+        bAutoCreate = true;
+	}
 
     if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
     {
@@ -630,30 +631,39 @@ static int GetZoneTypeToCreate(const char *szDefaultZone)
         pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
         while (pEnt)
         {
-            startnum++;
+            auto pTrigger = static_cast<CTriggerTimerStart *>(pEnt);
+            if (pTrigger->GetZoneNumber() == mom_zone_bonus.GetInt())
+            {
+                startnum++;
+            }
+
             pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
         }
 
         pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
         while (pEnt)
         {
-            endnum++;
+            auto pTrigger = static_cast<CTriggerTimerStop *>(pEnt);
+            if (pTrigger->GetZoneNumber() == mom_zone_bonus.GetInt())
+            {
+                endnum++;
+            }
+
             pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
         }
 
-        DevMsg("Found %i starts and %i ends (previous)\n", startnum, endnum);
+        DevMsg("Found %i starts and %i ends for bonus %i (previous)\n", startnum, endnum, mom_zone_bonus.GetInt());
 
         if (!mom_zone_ignorewarning.GetBool() && startnum && endnum)
         {
             // g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
 
-            ConMsg("Map already has a start and an end! Use mom_zone_defzone to set another type.\n");
+            ConMsg("Map already has a start and an end for this track! Use mom_zone_type to set another zone type.\n");
 
             return -1;
         }
 
-        // The user is trying to make multiple starts?
-        if (zonetype == MOMZONETYPE_START)
+        if (bAutoCreate)
         {
             // Switch between start and end.
             zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
