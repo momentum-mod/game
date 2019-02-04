@@ -234,7 +234,6 @@ static void CC_Mom_GetZoneInfo()
             // Stop the trace if this entity is solid.
             if (pEnt->IsSolid())
             {
-            
                 return false;
             }
 
@@ -261,11 +260,8 @@ static void CC_Mom_GetZoneInfo()
         return;
     }
 
-    Vector start = pPlayer->GetLocalOrigin();
-
-    Vector end;
-    AngleVectors(pPlayer->GetAbsAngles(), &end);
-    end.NormalizeInPlace();
+    Vector start, end;
+    pPlayer->EyePositionAndVectors(&start, &end, nullptr, nullptr);
     end = start + end * MAX_TRACE_LENGTH;
 
     Ray_t ray;
