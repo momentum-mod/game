@@ -1,10 +1,11 @@
 #include "cbase.h"
 #include "mapzones_edit.h"
 
-#include "mom_triggers.h"
-#include "mom_player.h"
 #include "mapzones.h"
 #include "mapzones_build.h"
+#include "mom_player.h"
+#include "mom_triggers.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -17,45 +18,48 @@ static float SnapToGrid(float fl, float gridsize);
 static void DrawReticle(const Vector &pos, float retsize);
 
 static ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
-static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n", true, 0, true, 1);
+static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT,
+                                     "Lets you create zones despite map already having start and end.\n", true, 0, true,
+                                     1);
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
 static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
                             "The zone type that will be created when using mom_zone_mark/create. 'auto' creates a "
                             "start zone unless one already exists, in which case an end zone is created.f\n");
-static ConVar mom_zone_bonus("mom_zone_bonus", "0", FCVAR_CHEAT, "Whether the zone that is created will be a bonuz zone or not", true, 0, false, 0);
-static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT, "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true, 0, true, 1);
-static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
-static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT, "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
-//static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
+static ConVar mom_zone_bonus("mom_zone_bonus", "0", FCVAR_CHEAT,
+                             "Whether the zone that is created will be a bonuz zone or not", true, 0, false, 0);
+static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
+                                            "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
+                                            0, true, 1);
+static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT,
+                                 "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0,
+                                 false, 0);
+static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT,
+                                               "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
+// static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one."
+// );
 static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
-static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT, "Use the fancy new zone building method?\n", OnZoningMethodChanged);
+static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT,
+                                    "Use the fancy new zone building method?\n", OnZoningMethodChanged);
 
 bool CMomZoneEdit::m_bFirstEdit = false;
 
-
 CMomZoneEdit g_MomZoneEdit;
 
-static void CC_Mom_ZoneZoomIn()
-{
-    g_MomZoneEdit.DecreaseZoom(mom_zone_grid.GetFloat());
-}
+static void CC_Mom_ZoneZoomIn() { g_MomZoneEdit.DecreaseZoom(mom_zone_grid.GetFloat()); }
 
-static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n", FCVAR_CHEAT);
+static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n",
+                                  FCVAR_CHEAT);
 
+static void CC_Mom_ZoneZoomOut() { g_MomZoneEdit.IncreaseZoom(mom_zone_grid.GetFloat()); }
 
-static void CC_Mom_ZoneZoomOut()
-{
-    g_MomZoneEdit.IncreaseZoom(mom_zone_grid.GetFloat());
-}
-
-static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n", FCVAR_CHEAT);
-
+static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n",
+                                   FCVAR_CHEAT);
 
 static void CC_Mom_ZoneDelete(const CCommand &args)
 {
-	// MOM_TODO: Deleting a zone while a player is inside it causes some weird issues, need to investigate
-    if (!mom_zone_edit.GetBool()) return;
-
+    // MOM_TODO: Deleting a zone while a player is inside it causes some weird issues, need to investigate
+    if (!mom_zone_edit.GetBool())
+        return;
 
     if (args.ArgC() > 1)
     {
@@ -88,7 +92,8 @@ static void CC_Mom_ZoneDelete(const CCommand &args)
     }
 }
 
-static ConCommand mom_zone_delete("mom_zone_delete", CC_Mom_ZoneDelete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT);
+static ConCommand mom_zone_delete("mom_zone_delete", CC_Mom_ZoneDelete,
+                                  "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT);
 
 static void CC_Mom_ZoneEdit(const CCommand &args)
 {
@@ -107,7 +112,7 @@ static void CC_Mom_ZoneEdit(const CCommand &args)
 
             if (pEnt && g_MomZoneEdit.GetEntityZoneType(pEnt) != -1)
             {
-                auto pZone = static_cast<CBaseMomentumTrigger*>(pEnt);
+                auto pZone = static_cast<CBaseMomentumTrigger *>(pEnt);
                 g_MomZoneEdit.SetBuilder(CreateZoneBuilderFromExisting(pZone));
                 UTIL_Remove(pEnt);
             }
@@ -124,15 +129,16 @@ static void CC_Mom_ZoneEdit(const CCommand &args)
 }
 
 static ConCommand mom_zone_edit_existing("mom_zone_edit_existing", CC_Mom_ZoneEdit,
-                                  "Edit an existing zone. Requires entity index.\n", FCVAR_CHEAT);
+                                         "Edit an existing zone. Requires entity index.\n", FCVAR_CHEAT);
 
 static void CC_Mom_ZoneSetLook(const CCommand &args)
 {
-    if (!mom_zone_edit.GetBool()) return;
+    if (!mom_zone_edit.GetBool())
+        return;
 
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (!pPlayer) return;
-
+    if (!pPlayer)
+        return;
 
     float yaw;
 
@@ -157,77 +163,148 @@ static void CC_Mom_ZoneSetLook(const CCommand &args)
             pStart->SetHasLookAngles(true);
             pStart->SetLookAngles(QAngle(0, yaw, 0));
 
-            DevMsg("Set start zone angles to: %.1f, %.1f, %.1f\n", pStart->GetLookAngles()[0], pStart->GetLookAngles()[1], pStart->GetLookAngles()[2]);
+            DevMsg("Set start zone angles to: %.1f, %.1f, %.1f\n", pStart->GetLookAngles()[0],
+                   pStart->GetLookAngles()[1], pStart->GetLookAngles()[2]);
         }
 
         pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
     }
 }
 
-static ConCommand mom_zone_start_setlook("mom_zone_start_setlook", CC_Mom_ZoneSetLook, "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n", FCVAR_CHEAT);
-
+static ConCommand mom_zone_start_setlook(
+    "mom_zone_start_setlook", CC_Mom_ZoneSetLook,
+    "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n",
+    FCVAR_CHEAT);
 
 static void CC_Mom_ZoneMark(const CCommand &args)
 {
-    if (!mom_zone_edit.GetBool()) return;
+    if (!mom_zone_edit.GetBool())
+        return;
 
     g_MomZoneEdit.OnMark();
 }
 
 static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.\n", FCVAR_CHEAT);
 
-
 static void CC_Mom_ZoneCancel()
 {
-    if (!mom_zone_edit.GetBool()) return;
-
+    if (!mom_zone_edit.GetBool())
+        return;
 
     g_MomZoneEdit.OnCancel();
 }
 
 static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel the zone building.\n", FCVAR_CHEAT);
 
-
 static void CC_Mom_ZoneBack()
 {
-    if (!mom_zone_edit.GetBool()) return;
-
+    if (!mom_zone_edit.GetBool())
+        return;
 
     g_MomZoneEdit.OnRemove();
 }
 
 static ConCommand mom_zone_back("mom_zone_back", CC_Mom_ZoneBack, "Go back a step when zone building.\n", FCVAR_CHEAT);
 
-
 static void CC_Mom_ZoneCreate()
 {
-    if (!mom_zone_edit.GetBool()) return;
-
+    if (!mom_zone_edit.GetBool())
+        return;
 
     g_MomZoneEdit.OnCreate();
 }
 
 static ConCommand mom_zone_create("mom_zone_create", CC_Mom_ZoneCreate, "Create the zone.\n", FCVAR_CHEAT);
 
+static void CC_Mom_GetZoneInfo()
+{
+    class CZoneTriggerTraceEnum : public IEntityEnumerator
+    {
+      public:
+        CZoneTriggerTraceEnum()
+        {
+            m_pZone = nullptr;
+        }
+
+        // Return true to continue enumerating or false to stop
+        virtual bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE
+        {
+            CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
+
+            // Stop the trace if this entity is solid.
+            if (pEnt->IsSolid())
+            {
+            
+                return false;
+            }
+
+            m_pZone = dynamic_cast<CBaseMomentumTrigger *>(pEnt);
+            if (m_pZone != nullptr)
+            {
+                // Found our target, stop here
+                return false;
+            }
+            
+            // No dice, let's keep searching
+            return true;
+        }
+
+        CBaseMomentumTrigger *GetZone() const { return m_pZone; }
+
+      private:
+        CBaseMomentumTrigger *m_pZone;
+    };
+
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (!pPlayer)
+    {
+        return;
+    }
+
+    Vector start = pPlayer->GetLocalOrigin();
+
+    Vector end;
+    AngleVectors(pPlayer->GetAbsAngles(), &end);
+    end.NormalizeInPlace();
+    end = start + end * MAX_TRACE_LENGTH;
+
+    Ray_t ray;
+    ray.Init(start, end, pPlayer->CollisionProp()->OBBMins(), pPlayer->CollisionProp()->OBBMaxs());
+
+    // Only EnumerateEntities can hit triggers, normal TraceRay can't
+    CZoneTriggerTraceEnum zoneTriggerTraceEnum;
+    enginetrace->EnumerateEntities(ray, true, &zoneTriggerTraceEnum); 
+    CBaseMomentumTrigger *pZone = zoneTriggerTraceEnum.GetZone();
+    int zoneidx = pZone ? pZone->entindex() : -1;
+    int zonetype = pZone ? g_MomZoneEdit.GetEntityZoneType(pZone) : -1;
+
+    CSingleUserRecipientFilter user(pPlayer);
+    user.MakeReliable();
+
+    UserMessageBegin(user, "ZoneInfo");
+        WRITE_LONG(zoneidx);
+        WRITE_LONG(zonetype);
+    MessageEnd();
+}
+
+static ConCommand
+    mom_zone_info("mom_zone_info", CC_Mom_GetZoneInfo,
+                  "Sends info about the trigger that is being looked at (if one exists). Internal usage only.\n");
 
 CMomZoneEdit::CMomZoneEdit() : CAutoGameSystemPerFrame("MomentumZoneBuilder")
 {
     m_bEditing = false;
-
 
     m_flReticleDist = 1024.0f;
 
     m_pBuilder = nullptr;
 }
 
-CMomZoneEdit::~CMomZoneEdit()
-{
-}
+CMomZoneEdit::~CMomZoneEdit() {}
 
 void CMomZoneEdit::StopEditing()
 {
     m_bEditing = false;
-
 
     mom_zone_edit.SetValue(0);
 
@@ -242,14 +319,10 @@ void CMomZoneEdit::OnMark()
     if (!pPlayer)
         return;
 
-
     auto pBuilder = GetBuilder();
 
     Vector pos;
     GetCurrentBuildSpot(pPlayer, pos);
-
-
-    
 
     if (pBuilder->IsDone())
         pBuilder->Reset();
@@ -285,9 +358,7 @@ void CMomZoneEdit::OnCreate(int zonetype)
         return;
     }
 
-
     DevMsg("Creating entity...\n");
-
 
     auto pEnt = CreateZoneEntity(type);
     if (!pEnt)
@@ -299,16 +370,12 @@ void CMomZoneEdit::OnCreate(int zonetype)
     pEnt->AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     pEnt->Spawn();
 
-
     pBuild->FinishZone(pEnt);
     pBuild->Reset();
 
-    
     pEnt->Activate();
 
-
     SetZoneProps(pEnt);
-
 
     DevMsg("Created zone entity %i.\n", pEnt->entindex());
 }
@@ -320,13 +387,11 @@ void CMomZoneEdit::OnRemove()
     if (!pPlayer)
         return;
 
-
     Vector pos;
     GetCurrentBuildSpot(pPlayer, pos);
 
     GetBuilder()->Remove(pPlayer, pos);
 }
-
 
 void CMomZoneEdit::OnCancel()
 {
@@ -341,10 +406,10 @@ bool CMomZoneEdit::GetCurrentBuildSpot(CMomentumPlayer *pPlayer, Vector &vecPos)
 
     pPlayer->EyeVectors(&fwd);
 
-    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + fwd * m_flReticleDist, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
+    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + fwd * m_flReticleDist, MASK_PLAYERSOLID, pPlayer,
+                   COLLISION_GROUP_NONE, &tr);
 
     vecPos = tr.endpos;
-
 
     if (mom_zone_grid.GetInt() > 0)
         VectorSnapToGrid(vecPos, (float)mom_zone_grid.GetInt());
@@ -374,10 +439,7 @@ CMomentumPlayer *CMomZoneEdit::GetPlayerBuilder() const
     return static_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());
 }
 
-void CMomZoneEdit::LevelInitPostEntity()
-{
-    StopEditing();
-}
+void CMomZoneEdit::LevelInitPostEntity() { StopEditing(); }
 
 void CMomZoneEdit::FrameUpdatePostEntityThink()
 {
@@ -400,13 +462,11 @@ void CMomZoneEdit::FrameUpdatePostEntityThink()
     }
     else
     {
-        if ( IsEditing() )
+        if (IsEditing())
             StopEditing();
 
         return;
     }
-
-
 
     auto pPlayer = GetPlayerBuilder();
     if (!pPlayer)
@@ -416,12 +476,9 @@ void CMomZoneEdit::FrameUpdatePostEntityThink()
     if (!GetCurrentBuildSpot(pPlayer, vecAim))
         return;
 
-
     GetBuilder()->OnFrame(pPlayer, vecAim);
-    
 
-
-    DrawReticle(vecAim,8.0f);
+    DrawReticle(vecAim, 8.0f);
 }
 
 void VectorSnapToGrid(Vector &dest, float gridsize)
@@ -481,7 +538,7 @@ void DrawReticle(const Vector &pos, float retsize)
 
 extern bool ZoneTypeToClass(int type, char *dest);
 
-CBaseMomentumTrigger* CMomZoneEdit::CreateZoneEntity(int type)
+CBaseMomentumTrigger *CMomZoneEdit::CreateZoneEntity(int type)
 {
     char szClass[64];
     if (!ZoneTypeToClass(type, szClass))
@@ -490,7 +547,7 @@ CBaseMomentumTrigger* CMomZoneEdit::CreateZoneEntity(int type)
     }
 
     auto pEnt = CreateEntityByName(szClass);
-    auto pRet = dynamic_cast<CBaseMomentumTrigger*>(pEnt);
+    auto pRet = dynamic_cast<CBaseMomentumTrigger *>(pEnt);
 
     // Not a valid momentum trigger, delete it.
     if (!pRet && pEnt)
@@ -503,7 +560,7 @@ void CMomZoneEdit::SetZoneProps(CBaseEntity *pEnt)
 {
     if (auto *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt))
     {
-        //bhop speed limit
+        // bhop speed limit
         if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
         {
             pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
@@ -516,12 +573,12 @@ void CMomZoneEdit::SetZoneProps(CBaseEntity *pEnt)
 
         pStart->SetZoneNumber(mom_zone_bonus.GetInt());
     }
-    
+
     else if (auto *pStop = dynamic_cast<CTriggerTimerStop *>(pEnt))
     {
         pStop->SetZoneNumber(mom_zone_bonus.GetInt());
     }
-    
+
     else if (auto *pStage = dynamic_cast<CTriggerStage *>(pEnt))
     {
         if (mom_zone_stage_num.GetInt() > 0)
@@ -554,16 +611,19 @@ void CMomZoneEdit::SetZoneProps(CBaseEntity *pEnt)
 int CMomZoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
 {
     CTriggerTimerStart *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
-    if (pStart) return MOMZONETYPE_START;
+    if (pStart)
+        return MOMZONETYPE_START;
 
     /*CTriggerTeleportCheckpoint *pCP = dynamic_cast<CTriggerTeleportCheckpoint *>( pEnt );
     if ( pCP ) return 1;*/
 
     CTriggerTimerStop *pStop = dynamic_cast<CTriggerTimerStop *>(pEnt);
-    if (pStop) return MOMZONETYPE_STOP;
+    if (pStop)
+        return MOMZONETYPE_STOP;
 
     CTriggerStage *pStage = dynamic_cast<CTriggerStage *>(pEnt);
-    if (pStage) return MOMZONETYPE_STAGE;
+    if (pStage)
+        return MOMZONETYPE_STAGE;
 
     return -1;
 }
@@ -585,7 +645,7 @@ int CMomZoneEdit::ShortNameToZoneType(const char *in)
     else if (Q_stricmp(in, "cp") == 0 || Q_stricmp(in, "checkpoint") == 0)
     {
         return MOMZONETYPE_CP;
-	}
+    }
 
     return -1;
 }
@@ -614,11 +674,11 @@ static int GetZoneTypeToCreate()
 {
     int zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_type.GetString());
     bool bAutoCreate = false;
-	if (zonetype == -1 && Q_stricmp(mom_zone_type.GetString(), "auto") == 0)
+    if (zonetype == -1 && Q_stricmp(mom_zone_type.GetString(), "auto") == 0)
     {
         zonetype = MOMZONETYPE_START;
         bAutoCreate = true;
-	}
+    }
 
     if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
     {
