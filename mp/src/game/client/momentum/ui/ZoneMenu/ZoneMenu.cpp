@@ -31,41 +31,28 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_bBindKeys = false;
     m_eZoneAction = ZONEACTION_NONE;
 
+	LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
+
     SetSize(600, 250);
     SetPos(20, 180);
     SetTitle("Zoning Menu", true);
     SetSizeable(false);
     SetMoveable(true);
 
-    m_pEditorTitleLabel = new Label(this, "ZoneMenuEditorLabel", "Editor Controls");
-    m_pEditorTitleLabel->SetPos(30, 50);
-    m_pEditorTitleLabel->SetWide(200);
+    m_pEditorTitleLabel = FindControl<Label>("ZoneMenuEditorLabel");
 
-    m_pCreateNewZoneButton = new Button(this, "CreateNewZone", "Create a new Zone", this);
-    m_pCreateNewZoneButton->SetPos(30, 70);
-    m_pCreateNewZoneButton->SetWide(200);
-    m_pDeleteZoneButton = new Button(this, "DeleteZone", "Delete Zone", this);
-    m_pDeleteZoneButton->SetPos(30, 90);
-    m_pDeleteZoneButton->SetWide(200);
-    m_pEditZoneButton = new Button(this, "EditZone", "Edit Zone", this);
-    m_pEditZoneButton->SetPos(30, 110);
-    m_pEditZoneButton->SetWide(200);
-    m_pCancelZoneButton = new Button(this, "CancelZone", "Cancel Zone", this);
-    m_pCancelZoneButton->SetPos(30, 150);
-    m_pCancelZoneButton->SetWide(200);
+    m_pCreateNewZoneButton = FindControl<Button>("CreateNewZoneButton");
+    m_pDeleteZoneButton    = FindControl<Button>("DeleteZoneButton");
+    m_pEditZoneButton      = FindControl<Button>("EditZoneButton");
+    m_pCancelZoneButton    = FindControl<Button>("CancelZoneButton");
 
     m_pCreateNewZoneButton->SetCommand(new KeyValues("CreateNewZone"));
     m_pDeleteZoneButton->SetCommand(new KeyValues("DeleteZone"));
     m_pEditZoneButton->SetCommand(new KeyValues("EditZone"));
     m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
 
-    m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "Zone Type:");
-    m_pZoneTypeLabel->SetPos(260, 50);
-    m_pZoneTypeLabel->SetWide(200);
-    m_pZoneTypeCombo = new ComboBox(this, "ZoneTypeCombo", 7, false);
-    m_pZoneTypeCombo->SetPos(260, 70);
-    m_pZoneTypeCombo->SetWide(180);
-    m_pZoneTypeCombo->SetEditable(false);
+    m_pZoneTypeLabel = FindControl<Label>("ZoneTypeLabel");
+    m_pZoneTypeCombo = FindControl<ComboBox>("ZoneTypeCombo");
     m_pZoneTypeCombo->AddItem("Auto",        new KeyValues("vals", "zone_type", "auto",  "bonus", "0"));
     m_pZoneTypeCombo->AddItem("Start",       new KeyValues("vals", "zone_type", "start", "bonus", "0"));
     m_pZoneTypeCombo->AddItem("End",         new KeyValues("vals", "zone_type", "end",   "bonus", "0"));
@@ -75,20 +62,10 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pZoneTypeCombo->AddItem("Checkpoint",  new KeyValues("vals", "zone_type", "cp",    "bonus", "0"));
     m_pZoneTypeCombo->ActivateItemByRow(0);
 
-    m_pGridSizeLabel = new Label(this, "GridSizeLabel", "Grid Size:");
-    m_pGridSizeLabel->SetPos(260, 100);
-    m_pGridSizeLabel->SetWide(200);
-    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "Grid Size", 1.0f, 64.0f, "mom_zone_grid");
-    m_pGridSizeSlider->SetPos(260, 120);
-    m_pGridSizeSlider->SetWide(180);
-    m_pGridSizeSlider->SetTall(50);
-    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid");
-    m_pGridSizeTextEntry->SetPos(450, 120);
-    m_pGridSizeTextEntry->SetWide(50);
+    m_pGridSizeLabel        = FindControl<Label>("GridSizeLabel");
+    m_pGridSizeSlider       = FindControl<CvarSlider>("GridSizeSlider");
+    m_pGridSizeTextEntry    = FindControl<CvarTextEntry>("GridSizeTextEntry");
     m_bUpdateGridSizeSlider = false;
-
-    SetMouseInputEnabled(false);
-    SetKeyBoardInputEnabled(false);
 }
 
 int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
