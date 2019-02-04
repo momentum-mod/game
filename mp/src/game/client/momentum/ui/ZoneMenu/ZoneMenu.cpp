@@ -33,12 +33,6 @@ C_MomZoneMenu::C_MomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMen
 
 	LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
 
-    SetSize(600, 250);
-    SetPos(20, 180);
-    SetTitle("Zoning Menu", true);
-    SetSizeable(false);
-    SetMoveable(true);
-
     m_pEditorTitleLabel = FindControl<Label>("ZoneMenuEditorLabel");
 
     m_pCreateNewZoneButton = FindControl<Button>("CreateNewZoneButton");
