@@ -4,6 +4,7 @@
 #include "icliententitylist.h"
 #include "mom_player_shared.h"
 #include "util\mom_util.h"
+#include <usermessages.h>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/ComboBox.h>
@@ -25,11 +26,10 @@ CON_COMMAND(mom_show_zonemenu, "Shows zoning menu")
 
 CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu")
 {
-    ListenForGameEvent("zone_enter");
-    ListenForGameEvent("zone_exit");
+    usermessages->HookMessage("ZoneInfo", OnZoneInfoThunk);
 
     m_bBindKeys = false;
-    m_iCurrentZone = -1;
+    m_eZoneAction = ZONEACTION_NONE;
 
     SetSize(600, 250);
     SetPos(20, 180);
@@ -59,7 +59,7 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_pEditZoneButton->SetCommand(new KeyValues("EditZone"));
     m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
 
-	m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "Zone Type:");
+    m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "Zone Type:");
     m_pZoneTypeLabel->SetPos(260, 50);
     m_pZoneTypeLabel->SetWide(200);
     m_pZoneTypeCombo = new ComboBox(this, "ZoneTypeCombo", 7, false);
@@ -121,25 +121,71 @@ int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
     return false;
 }
 
+void CMomZoneMenu::OnZoneInfoThunk(bf_read &msg) { g_pZoneMenu->OnZoneInfo(msg); }
+
+void CMomZoneMenu::OnZoneInfo(bf_read &msg)
+{
+    if (m_eZoneAction == ZONEACTION_NONE)
+    {
+        // Nothing to do :/
+        return;
+    }
+
+    static ConVarRef mom_zone_edit("mom_zone_edit");
+    int zoneidx = msg.ReadLong();
+    int zonetype = msg.ReadLong();
+    (void)zonetype;
+
+    if (zoneidx == -1)
+    {
+        // No zone found
+        Warning("No zones found\n");
+        return;
+    }
+
+    switch (m_eZoneAction)
+    {
+    case ZONEACTION_DELETE:
+    {
+        bool old = mom_zone_edit.GetBool();
+        mom_zone_edit.SetValue(true);
+
+        char buf[64];
+        Q_snprintf(buf, sizeof(buf), "mom_zone_delete %i", zoneidx);
+        engine->ExecuteClientCmd(buf);
+
+        mom_zone_edit.SetValue(old);
+
+		break;
+    }
+    case ZONEACTION_EDIT:
+    {
+        mom_zone_edit.SetValue(true);
+
+        char buf[64];
+        Q_snprintf(buf, sizeof(buf), "mom_zone_edit_existing %i", zoneidx);
+        engine->ExecuteClientCmd(buf);
+
+		break;
+    }
+    default:
+    {
+        AssertMsg(false, "Unhandled zone action (%i)", m_eZoneAction);
+        break;
+	}
+    }
+
+    // Clear the command
+    m_eZoneAction = ZONEACTION_NONE;
+}
+
 void CMomZoneMenu::CancelZoning()
 {
-    ConVarRef mom_zone_edit("mom_zone_edit");
+    static ConVarRef mom_zone_edit("mom_zone_edit");
 
     engine->ExecuteClientCmd("mom_zone_cancel");
     mom_zone_edit.SetValue(false);
     m_bBindKeys = false;
-}
-
-void CMomZoneMenu::FireGameEvent(IGameEvent *event)
-{
-    if (Q_strcmp(event->GetName(), "zone_enter") == 0)
-    {
-        m_iCurrentZone = event->GetInt("zone_ent", -1);
-    }
-    else // zone_exit
-    {
-        m_iCurrentZone = -1;
-    }
 }
 
 void CMomZoneMenu::OnMousePressed(MouseCode code)
@@ -216,45 +262,14 @@ void CMomZoneMenu::OnCreateNewZone()
 
 void CMomZoneMenu::OnDeleteZone()
 {
-    ConVarRef mom_zone_edit("mom_zone_edit");
-
-    if (m_iCurrentZone > -1)
-    {
-        mom_zone_edit.SetValue(true);
-
-        char cmd[128];
-        Q_snprintf(cmd, sizeof(cmd), "mom_zone_delete %i", m_iCurrentZone);
-        engine->ExecuteClientCmd(cmd);
-
-        mom_zone_edit.SetValue(false);
-    }
-    else
-    {
-        Warning("You must be standing in a zone to delete it");
-    }
+    m_eZoneAction = ZONEACTION_DELETE;
+    engine->ExecuteClientCmd("mom_zone_info");
 }
 
 void CMomZoneMenu::OnEditZone()
 {
-    ConVarRef mom_zone_edit("mom_zone_edit");
-
-    if (m_iCurrentZone > -1)
-    {
-        mom_zone_edit.SetValue(true);
-
-        char cmd[128];
-        Q_snprintf(cmd, sizeof(cmd), "mom_zone_edit_existing %i", m_iCurrentZone);
-        engine->ExecuteClientCmd(cmd);
-
-        // return control to game so they can start zoning immediately
-        m_bBindKeys = true;
-        SetMouseInputEnabled(false);
-        SetKeyBoardInputEnabled(false);
-    }
-    else
-    {
-        Warning("You must be standing in a zone to edit it");
-    }
+    m_eZoneAction = ZONEACTION_EDIT;
+    engine->ExecuteClientCmd("mom_zone_info");
 }
 
 void CMomZoneMenu::OnCancelZone() { CancelZoning(); }
