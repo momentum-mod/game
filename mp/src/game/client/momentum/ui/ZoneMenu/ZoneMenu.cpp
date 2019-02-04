@@ -13,18 +13,18 @@
 
 using namespace vgui;
 
-CMomZoneMenu *g_pZoneMenu = nullptr;
+C_MomZoneMenu *g_pZoneMenu = nullptr;
 
 CON_COMMAND(mom_show_zonemenu, "Shows zoning menu")
 {
     if (!g_pZoneMenu)
     {
-        g_pZoneMenu = new CMomZoneMenu(g_pClientMode->GetViewport());
+        g_pZoneMenu = new C_MomZoneMenu(g_pClientMode->GetViewport());
     }
     g_pZoneMenu->Activate();
 }
 
-CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu")
+C_MomZoneMenu::C_MomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu")
 {
     usermessages->HookMessage("ZoneInfo", OnZoneInfoThunk);
 
@@ -68,7 +68,7 @@ CMomZoneMenu::CMomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu"
     m_bUpdateGridSizeSlider = false;
 }
 
-int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
+int C_MomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
 {
     if (keynum == MOUSE_RIGHT)
     {
@@ -98,9 +98,9 @@ int CMomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
     return false;
 }
 
-void CMomZoneMenu::OnZoneInfoThunk(bf_read &msg) { g_pZoneMenu->OnZoneInfo(msg); }
+void C_MomZoneMenu::OnZoneInfoThunk(bf_read &msg) { g_pZoneMenu->OnZoneInfo(msg); }
 
-void CMomZoneMenu::OnZoneInfo(bf_read &msg)
+void C_MomZoneMenu::OnZoneInfo(bf_read &msg)
 {
     if (m_eZoneAction == ZONEACTION_NONE)
     {
@@ -156,7 +156,7 @@ void CMomZoneMenu::OnZoneInfo(bf_read &msg)
     m_eZoneAction = ZONEACTION_NONE;
 }
 
-void CMomZoneMenu::CancelZoning()
+void C_MomZoneMenu::CancelZoning()
 {
     static ConVarRef mom_zone_edit("mom_zone_edit");
 
@@ -165,7 +165,7 @@ void CMomZoneMenu::CancelZoning()
     m_bBindKeys = false;
 }
 
-void CMomZoneMenu::OnMousePressed(MouseCode code)
+void C_MomZoneMenu::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_RIGHT)
     {
@@ -176,14 +176,14 @@ void CMomZoneMenu::OnMousePressed(MouseCode code)
     BaseClass::OnMousePressed(code);
 }
 
-void CMomZoneMenu::OnClose()
+void C_MomZoneMenu::OnClose()
 {
     CancelZoning();
 
     BaseClass::OnClose();
 }
 
-void CMomZoneMenu::OnControlModified(Panel* pPanel)
+void C_MomZoneMenu::OnControlModified(Panel* pPanel)
 {
     if (pPanel == m_pGridSizeSlider)
     {
@@ -205,7 +205,7 @@ void CMomZoneMenu::OnControlModified(Panel* pPanel)
     }
 }
 
-void CMomZoneMenu::OnTextChanged(Panel *pPanel)
+void C_MomZoneMenu::OnTextChanged(Panel *pPanel)
 {
     if (pPanel == m_pGridSizeTextEntry)
     {
@@ -223,7 +223,7 @@ void CMomZoneMenu::OnTextChanged(Panel *pPanel)
     }
 }
 
-void CMomZoneMenu::OnCreateNewZone()
+void C_MomZoneMenu::OnCreateNewZone()
 {
     ConVarRef mom_zone_edit("mom_zone_edit");
     ConVarRef mom_zone_usenewmoethod("mom_zone_usenewmethod");
@@ -237,16 +237,16 @@ void CMomZoneMenu::OnCreateNewZone()
     SetKeyBoardInputEnabled(false);
 }
 
-void CMomZoneMenu::OnDeleteZone()
+void C_MomZoneMenu::OnDeleteZone()
 {
     m_eZoneAction = ZONEACTION_DELETE;
     engine->ExecuteClientCmd("mom_zone_info");
 }
 
-void CMomZoneMenu::OnEditZone()
+void C_MomZoneMenu::OnEditZone()
 {
     m_eZoneAction = ZONEACTION_EDIT;
     engine->ExecuteClientCmd("mom_zone_info");
 }
 
-void CMomZoneMenu::OnCancelZone() { CancelZoning(); }
+void C_MomZoneMenu::OnCancelZone() { CancelZoning(); }

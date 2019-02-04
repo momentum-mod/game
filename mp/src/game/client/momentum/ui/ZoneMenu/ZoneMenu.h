@@ -4,12 +4,12 @@
 #include "hudelement.h"
 #include "c_mom_triggers.h"
 
-class CMomZoneMenu : public vgui::Frame
+class C_MomZoneMenu : public vgui::Frame
 {
-    DECLARE_CLASS_SIMPLE(CMomZoneMenu, vgui::Frame);
+    DECLARE_CLASS_SIMPLE(C_MomZoneMenu, vgui::Frame);
 
   public: // vgui::Frame
-    CMomZoneMenu(vgui::Panel *pParentPanel);
+    C_MomZoneMenu(vgui::Panel *pParentPanel);
     virtual void OnMousePressed(vgui::MouseCode code) OVERRIDE;
     virtual void OnClose() OVERRIDE;
 
@@ -62,4 +62,4 @@ class CMomZoneMenu : public vgui::Frame
     ZoneAction m_eZoneAction;
 };
 
-extern CMomZoneMenu *g_pZoneMenu;
+extern C_MomZoneMenu *g_pZoneMenu;
