@@ -17,21 +17,21 @@ void RegisterUserMessages(void)
     usermessages->Register("SayText2", -1);
     usermessages->Register("TextMsg", -1);
     usermessages->Register("HudMsg", -1);
-    usermessages->Register("ResetHUD", 1);		// called every respawn
+    usermessages->Register("ResetHUD", 1);      // called every respawn
     usermessages->Register("GameTitle", 0);
     usermessages->Register("ItemPickup", -1);
     usermessages->Register("ShowMenu", -1);
     usermessages->Register("Shake", 13);
     usermessages->Register("Fade", 10);
-    usermessages->Register("VGUIMenu", -1);	// Show VGUI menu
-    usermessages->Register("Rumble", 3);	// Send a rumble to a controller
+    usermessages->Register("VGUIMenu", -1);     // Show VGUI menu
+    usermessages->Register("Rumble", 3);        // Send a rumble to a controller
     //usermessages->Register("Battery", 2);
-    usermessages->Register("Damage", 18);		// BUG: floats are sent for coords, no variable bitfields in hud & fixed size Msg
+    usermessages->Register("Damage", 18);       // BUG: floats are sent for coords, no variable bitfields in hud & fixed size Msg
     usermessages->Register("VoiceMask", VOICE_MAX_PLAYERS_DW * 4 * 2 + 1);
     usermessages->Register("RequestState", 0);
     usermessages->Register("CloseCaption", -1); // Show a caption (by string id number)(duration in 10th of a second)
-    usermessages->Register("HintText", -1);	// Displays hint text display
-    usermessages->Register("KeyHintText", -1);	// Displays hint text display
+    usermessages->Register("HintText", -1);     // Displays hint text display
+    usermessages->Register("KeyHintText", -1);  // Displays hint text display
     //usermessages->Register("SquadMemberDied", 0);
     usermessages->Register("AmmoDenied", 2);
     usermessages->Register("CreditsMsg", 1);
@@ -39,8 +39,8 @@ void RegisterUserMessages(void)
     usermessages->Register("AchievementEvent", -1);
     //usermessages->Register("UpdateJalopyRadar", -1);
 
-    usermessages->Register("ReloadEffect", 2);			// a player reloading..
-    usermessages->Register("PlayerAnimEvent", -1);	// jumping, firing, reload, etc.
+    usermessages->Register("ReloadEffect", 2);      // a player reloading..
+    usermessages->Register("PlayerAnimEvent", -1);  // jumping, firing, reload, etc.
 
     usermessages->Register("Timer_State", 1);
     usermessages->Register("Timer_PauseTime", -1);
@@ -48,6 +48,7 @@ void RegisterUserMessages(void)
     usermessages->Register("Timer_Checkpoint", 9);
     usermessages->Register("Timer_Stage", 4);
     usermessages->Register("Timer_StageCount", 4);
+    usermessages->Register("ZoneInfo", 8);
     //usermessages->Register("Timer_GameMode", 4);
     usermessages->Register("MB_PlayerTriedSaveOrLoad", 0);
     usermessages->Register("MB_NoStartOrEnd", 0);

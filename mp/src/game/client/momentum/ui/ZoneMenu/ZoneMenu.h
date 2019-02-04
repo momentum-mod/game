@@ -4,7 +4,7 @@
 #include "hudelement.h"
 #include "c_mom_triggers.h"
 
-class CMomZoneMenu : public vgui::Frame, public CGameEventListener
+class CMomZoneMenu : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CMomZoneMenu, vgui::Frame);
 
@@ -21,18 +21,27 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
     MESSAGE_FUNC(OnEditZone, "EditZone");
     MESSAGE_FUNC(OnCancelZone, "CancelZone");
 
-  public: // CGameEventListener
-    void FireGameEvent(IGameEvent *event) OVERRIDE;
-
   public:
     bool ShouldBindKeys() const { return m_bBindKeys; }
     int HandleKeyInput(int down, ButtonCode_t keynum);
 
   private:
+    static void OnZoneInfoThunk(bf_read &msg);
+    void OnZoneInfo(bf_read &msg);
+
     void CancelZoning();
 
   private:
     vgui::Label *m_pEditorTitleLabel;
+
+    vgui::Button *m_pCreateNewZoneButton;
+    vgui::Button *m_pDeleteZoneButton;
+    vgui::Button *m_pEditZoneButton;
+    vgui::Button *m_pCancelZoneButton;
+
+    // Zone type
+    vgui::Label    *m_pZoneTypeLabel;
+    vgui::ComboBox *m_pZoneTypeCombo;
 
     // Grid size setting
     vgui::Label         *m_pGridSizeLabel;
@@ -40,19 +49,17 @@ class CMomZoneMenu : public vgui::Frame, public CGameEventListener
     vgui::CvarTextEntry *m_pGridSizeTextEntry;
     bool                 m_bUpdateGridSizeSlider;
 
-	// Zone type
-    vgui::Label    *m_pZoneTypeLabel;
-    vgui::ComboBox *m_pZoneTypeCombo;
-
-    vgui::Button *m_pCreateNewZoneButton;
-    vgui::Button *m_pDeleteZoneButton;
-    vgui::Button *m_pEditZoneButton;
-    vgui::Button *m_pCancelZoneButton;
-
     // Whether or not menu should bind mouse/keyboard input to zoning commands
     bool m_bBindKeys;
-    // Ent index of zone that player is currently standing in (or -1 if not in zone)
-    int m_iCurrentZone;
+    
+    enum ZoneAction
+    {
+        ZONEACTION_NONE =  0,
+        ZONEACTION_DELETE,
+        ZONEACTION_EDIT
+    };
+    // What action to execute when mom_zone_info returns the info we want
+    ZoneAction m_eZoneAction;
 };
 
 extern CMomZoneMenu *g_pZoneMenu;
