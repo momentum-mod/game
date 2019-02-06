@@ -1,9 +1,14 @@
 #include "BaseVSShader.h"
 
+#include "ul_fill_path_vs30.inc"
+#include "ul_fill_path_ps30.inc"
+
 BEGIN_VS_SHADER(UL_FILL_PATH, "Fill path shader for Ultralight UI")
 
     BEGIN_SHADER_PARAMS
         SHADER_PARAM(STATE, SHADER_PARAM_TYPE_VEC4, "[0 0 0 0]", "State vector")
+
+        SHADER_PARAM(TRANSFORM, SHADER_PARAM_TYPE_MATRIX, "[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]", "Transform matrix")
 
         SHADER_PARAM(CLIP0, SHADER_PARAM_TYPE_MATRIX, "[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]", "Clip matrix 0")
         SHADER_PARAM(CLIP1, SHADER_PARAM_TYPE_MATRIX, "[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]", "Clip matrix 1")
@@ -52,19 +57,25 @@ BEGIN_VS_SHADER(UL_FILL_PATH, "Fill path shader for Ultralight UI")
             pShaderShadow->EnableDepthTest(false);
             pShaderShadow->EnableSRGBWrite(false);
 
-            pShaderShadow->VertexShaderVertexFormat(VERTEX_POSITION | VERTEX_COLOR | VERTEX_TEXCOORD_SIZE(0, 2), 1, nullptr, 0);
+            pShaderShadow->VertexShaderVertexFormat(VERTEX_POSITION | VERTEX_COLOR | VERTEX_TEXCOORD_SIZE(0, 2), 1,
+                                                    nullptr, 0);
 
-            pShaderShadow->SetVertexShader("ul_fill_path_vs20", 0);
-            pShaderShadow->SetPixelShader("ul_fill_path_ps20", 0);
+            DECLARE_STATIC_VERTEX_SHADER(ul_fill_path_vs30);
+            SET_STATIC_VERTEX_SHADER(ul_fill_path_vs30);
+            DECLARE_STATIC_PIXEL_SHADER(ul_fill_path_ps30);
+            SET_STATIC_PIXEL_SHADER(ul_fill_path_ps30);
         }
         DYNAMIC_STATE
         {
             pShaderAPI->SetDefaultState();
 
-            pShaderAPI->SetVertexShaderIndex(0);
-            pShaderAPI->SetPixelShaderIndex(0);
+            DECLARE_DYNAMIC_VERTEX_SHADER(ul_fill_path_ps30);
+            SET_DYNAMIC_VERTEX_SHADER(ul_fill_path_ps30);
+            DECLARE_DYNAMIC_PIXEL_SHADER(ul_fill_path_ps30);
+            SET_DYNAMIC_PIXEL_SHADER(ul_fill_path_ps30);
 
-            pShaderAPI->SetVertexShaderConstant(0, params[STATE]->GetVecValue());
+            pShaderAPI->SetVertexShaderConstant(217, params[STATE]->GetVecValue());
+            pShaderAPI->SetVertexShaderConstant(218, params[TRANSFORM]->GetMatrixValue().Base(), 4);
 
             int clipsize[4];
             clipsize[0] = params[CLIP_SIZE]->GetIntValue();

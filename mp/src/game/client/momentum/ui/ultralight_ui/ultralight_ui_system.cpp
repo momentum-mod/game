@@ -8,6 +8,7 @@
 #include "materialsystem/itexture.h"
 #include "ultralight_filesystem.h"
 #include "ultralight_overlay.h"
+#include <pixelwriter.h>
 
 #define TEXTURE_GROUP_ULTRALIGHT "UL textures"
 
@@ -21,26 +22,15 @@ static FontLoader *g_pUltralightFontLoader = nullptr;
 
 static UltralightOverlay *g_pTestOverlay = nullptr;
 
-class SourceGPUDriver : public GPUDriver, ITextureRegenerator
+class SourceGPUDriver : public GPUDriver
 {
   public:
-    SourceGPUDriver() : m_iTextureCount(1), m_iGeometryCount(0), m_iRenderBufferCount(0), m_pCurrentBitmap(nullptr)
+    SourceGPUDriver() : m_iTextureCount(1), m_iGeometryCount(0), m_iRenderBufferCount(0)
     {
         m_FillDrawMaterial.Init("__ulFill", new KeyValues("UL_FILL"));
         m_FillDrawMaterial->Refresh();
         m_FillPathDrawMaterial.Init("__ulFillPath", new KeyValues("UL_FILL_PATH"));
         m_FillDrawMaterial->Refresh();
-    }
-
-  public: // ITextureRegenerator
-    virtual void Release() OVERRIDE {}
-    virtual void RegenerateTextureBits(ITexture *pTexture, IVTFTexture *pVTFTexture, Rect_t *pSubRect)
-    {
-        if (m_pCurrentBitmap)
-        {
-            memcpy(pVTFTexture->ImageData(), m_pCurrentBitmap->raw_pixels(), m_pCurrentBitmap->size());
-            m_pCurrentBitmap = nullptr;
-        }
     }
 
   public: // GPUDriver
@@ -54,22 +44,13 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
     virtual void CreateTexture(uint32_t texture_id, Ref<Bitmap> bitmap)
     {
         ImageFormat format = Ultralight2SourceImageFormat(bitmap->format());
-        ITexture *texture;
-
-        char szTextureName[128];
-        Q_snprintf(szTextureName, sizeof(szTextureName), "texture_%i", texture_id);
+        ITexture *texture = nullptr;
 
         if (!bitmap->IsEmpty())
         {
-            m_pCurrentBitmap = bitmap;
-            texture = g_pMaterialSystem->CreateProceduralTexture(szTextureName, "ultralight_ui", bitmap->width(),
-                                                                 bitmap->height(), format, TEXTUREFLAGS_PROCEDURAL);
-            texture->SetTextureRegenerator(this);
-            texture->Download();
-        }
-        else
-        {
-            texture = nullptr;
+            texture = g_pMaterialSystem->CreateTextureFromBits(bitmap->width(), bitmap->height(), 0, format,
+                                                               bitmap->size(), (byte *)bitmap->raw_pixels());
+            Assert(!texture->IsError());
         }
         m_Textures.AddToTail(TextureEntry(texture_id, texture, format));
     }
@@ -79,11 +60,17 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
     {
         for (int i = 0; i < m_Textures.Size(); i++)
         {
-            if (m_Textures[i].id == texture_id)
+            TextureEntry &entry = m_Textures[i];
+            if (entry.id == texture_id)
             {
-                m_pCurrentBitmap = bitmap;
-                // It's called "Download", but what it really means is "ReconstructBits"
-                m_Textures[i].texture->Download();
+                // HACK: We're recreating the texture every time we want to update it because the procedural/dynamic textures just wouldn't work for me
+                ImageFormat format = Ultralight2SourceImageFormat(bitmap->format());
+
+                entry.texture->Release();
+                entry.texture->DeleteIfUnreferenced();
+                entry.texture = g_pMaterialSystem->CreateTextureFromBits(
+                                bitmap->width(), bitmap->height(), 0, format, bitmap->size(), (byte *)bitmap->raw_pixels());
+                return;
             }
         }
     }
@@ -97,7 +84,7 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
             if (entry.id == texture_id)
             {
                 char buf[32];
-                Q_snprintf(buf, sizeof(buf), "$TEXTURE%i", texture_id);
+                Q_snprintf(buf, sizeof(buf), "$TEXTURE%i", texture_unit);
                 m_FillDrawMaterial->FindVar(buf, nullptr)->SetTextureValue(entry.texture);
                 return;
             }
@@ -149,9 +136,13 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
             return;
         }
 
+        g_pMaterialSystem->BeginRenderTargetAllocation();
+
         MaterialRenderTargetDepth_t depth = buffer.has_depth_buffer ? MATERIAL_RT_DEPTH_SHARED : MATERIAL_RT_DEPTH_NONE;
         entry->texture = g_pMaterialSystem->CreateRenderTargetTexture(buffer.width, buffer.height, RT_SIZE_OFFSCREEN,
                                                                       entry->format, depth);
+
+        g_pMaterialSystem->EndRenderTargetAllocation();
 
         entry->texture->AddRef();
         m_RenderBuffers.AddToTail(RenderBufferEntry(render_buffer_id, entry->texture));
@@ -160,6 +151,12 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
     // Bind a render buffer
     virtual void BindRenderBuffer(uint32_t render_buffer_id)
     {
+        if (render_buffer_id == 0)
+        {
+            g_pMaterialSystem->GetRenderContext()->SetRenderTarget(nullptr);
+            return;
+        }
+
         for (int i = 0; i < m_RenderBuffers.Size(); i++)
         {
             if (m_RenderBuffers[i].id == render_buffer_id)
@@ -262,8 +259,10 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
             return;
         }
 
-        IMaterial *pMat =
-            (pGeometry->format == kVertexBufferFormat_2f_4ub_2f) ? m_FillPathDrawMaterial : m_FillDrawMaterial;
+        BindRenderBuffer(state.render_buffer_id);
+        g_pMaterialSystem->GetRenderContext()->Viewport(0, 0, (int)state.viewport_width, (int)state.viewport_height);
+
+        IMaterial *pMat = (state.shader_type == kShaderType_FillPath) ? m_FillPathDrawMaterial : m_FillDrawMaterial;
 
         UpdateMaterialVars(state, pMat);
 
@@ -330,13 +329,11 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
     {
         switch (format)
         {
-        case BitmapFormat::kBitmapFormat_A8:
-            return IMAGE_FORMAT_A8;
         case BitmapFormat::kBitmapFormat_RGBA8:
-            return IMAGE_FORMAT_RGBA8888;
+            return IMAGE_FORMAT_BGRA8888;
         default:
             AssertMsg(false, "Unrecognised Ultralight texture format");
-            return IMAGE_FORMAT_RGBA8888;
+            return IMAGE_FORMAT_BGRA8888;
         }
     }
 
@@ -402,9 +399,9 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
             builder.AdvanceVertex();
         }
 
-        for (uint32_t i = 0; i < indices.size / sizeof(unsigned int); i++)
+        for (uint32_t i = 0; i < indices.size / sizeof(IndexType); i++)
         {
-            auto pIndices = reinterpret_cast<unsigned int *>(indices.data);
+            auto pIndices = reinterpret_cast<IndexType *>(indices.data);
             builder.FastIndex((unsigned short)pIndices[i]);
         }
     }
@@ -478,8 +475,6 @@ class SourceGPUDriver : public GPUDriver, ITextureRegenerator
     CMaterialReference m_FillPathDrawMaterial;
     CUtlVector<Command> m_CommandList;
 
-    RefPtr<Bitmap> m_pCurrentBitmap;
-
     uint32_t m_iTextureCount;
     struct TextureEntry
     {
@@ -532,8 +527,8 @@ bool UltralightUISystem::Init()
 
     m_pRenderer = Renderer::Create();
 
-    g_pTestOverlay = new UltralightOverlay(*m_pRenderer, m_pGPUDriver, 300, 300, 0, 0);
-    g_pTestOverlay->view()->LoadHTML("<h1 color='red'>HTML UI!!!!</h1>");
+    g_pTestOverlay = new UltralightOverlay(*m_pRenderer, m_pGPUDriver, 300, 300, 150, 150);
+    g_pTestOverlay->view()->LoadHTML("<p color='green'>HTML UI!!!!</p>");
 
     return true;
 }

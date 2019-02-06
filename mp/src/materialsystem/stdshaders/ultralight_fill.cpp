@@ -1,5 +1,8 @@
 #include "BaseVSShader.h"
 
+#include "ul_fill_vs30.inc"
+#include "ul_fill_ps30.inc"
+
 BEGIN_VS_SHADER(UL_FILL, "Fill shader for Ultralight UI")
 
     BEGIN_SHADER_PARAMS
@@ -74,11 +77,11 @@ BEGIN_VS_SHADER(UL_FILL, "Fill shader for Ultralight UI")
 
     SHADER_INIT
     {
-        if (params[TEXTURE0]->IsDefined() && params[TEXTURE0]->GetTextureValue())
+        if (params[TEXTURE0]->IsDefined())
         {
             LoadTexture(TEXTURE0);
         }
-        if (params[TEXTURE1]->IsDefined() && params[TEXTURE1]->GetTextureValue())
+        if (params[TEXTURE1]->IsDefined())
         {
             LoadTexture(TEXTURE1);
         }
@@ -94,6 +97,7 @@ BEGIN_VS_SHADER(UL_FILL, "Fill shader for Ultralight UI")
             pShaderShadow->EnableDepthWrites(false);
             pShaderShadow->EnableDepthTest(false);
             pShaderShadow->EnableSRGBWrite(false);
+            pShaderShadow->EnableBlending(true);
 
             int dimensions[8] = {2, 2, 4, 4, 4, 4, 4, 4};
 
@@ -107,19 +111,23 @@ BEGIN_VS_SHADER(UL_FILL, "Fill shader for Ultralight UI")
             pShaderShadow->EnableTexture(SHADER_SAMPLER0, true);
             pShaderShadow->EnableTexture(SHADER_SAMPLER1, true);
 
-            pShaderShadow->SetVertexShader("ul_fill_vs20", 0);
-            pShaderShadow->SetPixelShader("ul_fill_ps20", 0);
+            DECLARE_STATIC_VERTEX_SHADER(ul_fill_vs30);
+            SET_STATIC_VERTEX_SHADER(ul_fill_vs30);
+            DECLARE_STATIC_PIXEL_SHADER(ul_fill_ps30);
+            SET_STATIC_PIXEL_SHADER(ul_fill_ps30);
         }
         DYNAMIC_STATE
         {
             pShaderAPI->SetDefaultState();
 
-            pShaderAPI->SetVertexShaderIndex(0);
-            pShaderAPI->SetPixelShaderIndex(0);
+            DECLARE_DYNAMIC_VERTEX_SHADER(ul_fill_vs30);
+            SET_DYNAMIC_VERTEX_SHADER(ul_fill_vs30);
+            DECLARE_DYNAMIC_PIXEL_SHADER(ul_fill_ps30);
+            SET_DYNAMIC_PIXEL_SHADER(ul_fill_ps30);
 
             // Vertex shader constants
-            pShaderAPI->SetVertexShaderConstant(0, params[STATE]->GetVecValue());
-            pShaderAPI->SetVertexShaderConstant(1, params[TRANSFORM]->GetMatrixValue().Base(), 4);
+            pShaderAPI->SetVertexShaderConstant(217, params[STATE]->GetVecValue());
+            pShaderAPI->SetVertexShaderConstant(218, params[TRANSFORM]->GetMatrixValue().Base(), 4);
 
             // Pixel shader constants
             pShaderAPI->SetPixelShaderConstant(0, params[STATE]->GetVecValue());
@@ -146,11 +154,11 @@ BEGIN_VS_SHADER(UL_FILL, "Fill shader for Ultralight UI")
 
             if (params[TEXTURE0]->IsDefined() && params[TEXTURE0]->GetTextureValue())
             {
-                BindTexture(SHADER_SAMPLER0, TEXTURE0);
+                BindTexture(SHADER_SAMPLER0, TEXTURE0, -1);
             }
             if (params[TEXTURE1]->IsDefined() && params[TEXTURE1]->GetTextureValue())
             {
-                BindTexture(SHADER_SAMPLER1, TEXTURE1);
+                BindTexture(SHADER_SAMPLER1, TEXTURE1, -1);
             }
         }
 

@@ -14,7 +14,7 @@ static IndexType patternCCW[] = { 0, 3, 1, 1, 3, 2 };
 UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer,
   GPUDriver* driver,
   int width, int height, int x, int y) :
-  view_(renderer->CreateView(width, height, false)), width_(width), height_(height),
+  view_(renderer->CreateView(width, height, true)), width_(width), height_(height),
   x_(x), y_(y), needs_update_(true), driver_(driver) 
 {
 }
