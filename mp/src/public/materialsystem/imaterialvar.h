@@ -157,10 +157,10 @@ public:
 		return m_intVal;
 	}
 
-    FORCEINLINE void SetIntValueFast( const int &val )
-    {
-        m_intVal = val;
-    }
+	FORCEINLINE void SetIntValueFast( int val )
+	{
+		m_intVal = val;
+	}
 
 	FORCEINLINE float GetFloatValueFast( void ) const
 	{
@@ -172,11 +172,13 @@ public:
 		return m_VecVal.Base();
 	}
 
-    FORCEINLINE void SetFloatValueFast(const float &val)
-    {
-        for (int i = 0; i < 4; i++)
-            m_VecVal[i] = val;
-    }
+	FORCEINLINE void SetFloatValueFast( float val )
+	{
+		for( int i=0; i < 4; i++ )
+		{
+			m_VecVal[i] = val;
+		}
+	}
 
 	FORCEINLINE void GetVecValueFast( float *val, int numcomps ) const 
 	{

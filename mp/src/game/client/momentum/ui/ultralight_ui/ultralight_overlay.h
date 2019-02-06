@@ -12,8 +12,8 @@
 class UltralightOverlay
 {
 public:
-    UltralightOverlay(ultralight::Ref<ultralight::Renderer> renderer, ultralight::GPUDriver *driver, int width,
-                      int height, int x, int y);
+  UltralightOverlay(ultralight::Ref<ultralight::Renderer> renderer, ultralight::GPUDriver *driver, int width,
+                    int height, int x, int y);
   virtual ~UltralightOverlay();
 
   ultralight::Ref<ultralight::View> view() { return view_; }

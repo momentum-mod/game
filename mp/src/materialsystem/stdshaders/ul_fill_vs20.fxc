@@ -1,0 +1,58 @@
+const float4 State : register(c0);
+const float4x4 Transform : register(c1);
+};
+
+float Time() { return State[0]; }
+float ScreenWidth() { return State[1]; }
+float ScreenHeight() { return State[2]; }
+
+float2 ScreenToDeviceCoords(float2 screen_coord)
+{
+	screen_coord *= 2.0 / float2(ScreenWidth(), -ScreenHeight());
+	screen_coord += float2(-1.0, 1.0);
+	return screen_coord;
+}
+
+struct PS_INPUT
+{
+	float4 Position		:	POSITION;
+	float4 Color		:	COLOR0;
+	float2 TexCoord		:	TEXCOORD0;
+	float4 Data0		:	TEXCOORD1;
+	float4 Data1		:	TEXCOORD2;
+	float4 Data2		:	TEXCOORD3;
+	float4 Data3		:	TEXCOORD4;
+	float4 Data4		:	TEXCOORD5;
+	float4 Data5		:	TEXCOORD6;
+	float4 Data6		:	TEXCOORD7;
+	float2 ObjectCoord	:	TEXCOORD8;
+	float2 ScreenCoord	:	TEXCOORD9;
+};
+
+VS_OUTPUT VS(float2 Position	:	POSITION,
+			uint4  Color		:	COLOR0,
+			float2 TexCoord		:	TEXCOORD0,
+			float2 ObjCoord		:	TEXCOORD1,
+			float4 Data0		:	TEXCOORD2,
+			float4 Data1		:	TEXCOORD3,
+			float4 Data2		:	TEXCOORD4,
+			float4 Data3		:	TEXCOORD5,
+			float4 Data4		:	TEXCOORD6,
+			float4 Data5		:	TEXCOORD7,
+			float4 Data6		:	USERDATA0)
+{
+	VS_OUTPUT output;
+	output.ObjectCoord = ObjCoord;
+	output.ScreenCoord = mul(Transform, float4(Position, 1.0, 1.0)).xy;
+	output.Position = float4(ScreenToDeviceCoords(output.ScreenCoord), 1.0, 1.0);
+	output.Color = float4(Color) / 255.0;
+	output.TexCoord = TexCoord;
+	output.Data0 = Data0;
+	output.Data1 = Data1;
+	output.Data2 = Data2;
+	output.Data3 = Data3;
+	output.Data4 = Data4;
+	output.Data5 = Data5;
+	output.Data6 = Data6;
+	return output;
+}

@@ -87,7 +87,7 @@ String16 SourceFileSystem::GetDirectoryNameFromPath(const String16 &path)
     char szDirBase[MAX_PATH];
     Q_FileBase(ToUTF8(path), szDirBase, sizeof(szDirBase));
 
-	return String16(szDirBase);
+    return String16(szDirBase);
 }
 
 bool SourceFileSystem::GetVolumeFreeSpace(const String16 &path, uint64_t &result) { return false; }
@@ -109,7 +109,7 @@ Ref<String16Vector> SourceFileSystem::ListDirectory(const String16 &path, const 
 
     g_pFullFileSystem->FindClose(hfind);
 
-	return result;
+    return result;
 }
 
 String16 SourceFileSystem::OpenTemporaryFile(const String16 &prefix, FileHandle &handle) { return String16(); }

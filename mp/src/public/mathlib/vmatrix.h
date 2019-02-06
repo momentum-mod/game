@@ -51,6 +51,9 @@ public:
 		vec_t m30, vec_t m31, vec_t m32, vec_t m33
 		);
 
+	// Sets from array (must have 16 values)
+	VMatrix( const vec_t* pValues );
+
 	// Creates a matrix where the X axis = forward
 	// the Y axis = left, and the Z axis = up
 	VMatrix( const Vector& forward, const Vector& left, const Vector& up );
@@ -67,6 +70,8 @@ public:
 		vec_t m30, vec_t m31, vec_t m32, vec_t m33 
 		);
 
+	// Sets from array (must have 16 values)
+	void Init( const vec_t *pValues );
 
 	// Initialize from a 3x4
 	void		Init( const matrix3x4_t& matrix3x4 );
@@ -439,6 +444,11 @@ inline VMatrix::VMatrix(
 		);
 }
 
+inline VMatrix::VMatrix( const vec_t* pValues )
+{
+	Init( pValues );
+}
+
 
 inline VMatrix::VMatrix( const matrix3x4_t& matrix3x4 )
 {
@@ -497,6 +507,14 @@ inline void VMatrix::Init(
 	m[3][1] = m31;
 	m[3][2] = m32;
 	m[3][3] = m33;
+}
+
+inline void VMatrix::Init( const vec_t* pValues )
+{
+    Init(pValues[0], pValues[1], pValues[2], pValues[3],
+		pValues[4], pValues[5], pValues[6], pValues[7],
+		pValues[8], pValues[9], pValues[10], pValues[11],
+		pValues[12], pValues[13], pValues[14], pValues[15]);
 }
 
 

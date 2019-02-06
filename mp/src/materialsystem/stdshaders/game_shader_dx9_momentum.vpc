@@ -63,6 +63,8 @@ $Project "Shaders (Momentum)"
 		$File	"vertexlitgeneric_dx9.cpp"
 		$File	"vertexlitgeneric_dx9_helper.cpp"
 		$File	"worldvertextransition.cpp"
+		$File	"ultralight_fill.cpp"
+		$File	"ultralight_fill_path.cpp"
     
         $File   "gaussian_blur_3x3.cpp"
 

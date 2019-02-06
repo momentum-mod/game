@@ -1,0 +1,38 @@
+// Includes
+#include "common_vs_fxc.h"
+
+const float4 State : register(c0);
+
+float ScreenWidth() { return State.x; }
+float ScreenHeight() { return State.y; }
+
+float2 ScreenToDeviceCoords(float2 screen_coord) {
+	screen_coord *= 2.0 / float2(ScreenWidth(), -ScreenHeight());
+	screen_coord += float2(-1.0, 1.0);
+	return screen_coord;
+}
+
+struct VS_INPUT
+{
+	float4 vPosition	:	POSITION;
+	float4 vColor_0		:	COLOR0;
+	float2 vObjCoord	:	TEXCOORD0;
+};
+
+struct VS_OUTPUT
+{
+	float4 Position		:	POSITION;
+	float4 Color		:	COLOR0;
+	float2 ObjectCoord	:	TEXCOORD0;
+};
+
+// Entry point
+VS_OUTPUT main( const VS_INPUT In )
+{
+	VS_OUTPUT output;
+	float2 screen_coord = mul(Transform, float4(Position, 1.0, 1.0)).xy;
+	output.Position = float4(ScreenToDeviceCoords(screen_coord), 1.0, 1.0);
+	output.Color = float4(Color) / 255.0;
+	output.ObjectCoord = ObjCoord;
+	return output;
+}

@@ -17,7 +17,7 @@ class UltralightUISystem : public CAutoGameSystemPerFrame
     virtual bool Init() OVERRIDE;
     virtual void Shutdown() OVERRIDE;
 
-	virtual void PreRender() OVERRIDE;
+    virtual void PreRender() OVERRIDE;
     virtual void PostRender() OVERRIDE;
 
   private:

@@ -73,11 +73,13 @@ class Vector;
 //-----------------------------------------------------------------------------
 // Macros for construction..
 //-----------------------------------------------------------------------------
-#define VERTEX_BONEWEIGHT( _n )				((_n) << VERTEX_BONE_WEIGHT_BIT)
-#define VERTEX_USERDATA_SIZE( _n )			((_n) << USER_DATA_SIZE_BIT)
-#define VERTEX_TEXCOORD_MASK( _coord )		(( 0x7ULL ) << ( TEX_COORD_SIZE_BIT + 3 * (_coord) ))
+#define VERTEX_BONEWEIGHT( _n )					((_n) << VERTEX_BONE_WEIGHT_BIT)
+#define VERTEX_USERDATA_SIZE( _n )				((_n) << USER_DATA_SIZE_BIT)
+#define VERTEX_TEXCOORD_MASK( _coord )			(( 0x7ULL ) << ( TEX_COORD_SIZE_BIT + 3 * (_coord) ))
 
-inline VertexFormat_t VERTEX_TEXCOORD_SIZE( int nIndex, int nNumCoords )
+#define VERTEX_TEXCOORD_SIZE( _index, _coords )	(_VertexTexCoordSize((_index), (_coords)))
+
+inline VertexFormat_t _VertexTexCoordSize(int nIndex, int nNumCoords)
 {
 	uint64 n64=nNumCoords;
 	uint64 nShift=TEX_COORD_SIZE_BIT + (3*nIndex);
