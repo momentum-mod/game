@@ -26,6 +26,5 @@ class UltralightUISystem : public CAutoGameSystemPerFrame
 };
 
 CBaseGameSystemPerFrame *UltralightUI();
-ultralight::FontLoader *CreateULPlatformFontLoader();
 
 #endif

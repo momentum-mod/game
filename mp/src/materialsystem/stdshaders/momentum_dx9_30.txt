@@ -1,11 +1,6 @@
 gauss_blur_3x3_ps30.fxc
 gauss_blur_3x3_vs30.fxc
 
-ul_fill_path_vs30.fxc
-ul_fill_path_ps30.fxc
-ul_fill_vs30.fxc
-ul_fill_ps30.fxc
-
 SDK_skin_ps20b.fxc
 SDK_skin_vs20.fxc
 //SDK_vertexlit_and_unlit_generic_bump_ps20b.fxc

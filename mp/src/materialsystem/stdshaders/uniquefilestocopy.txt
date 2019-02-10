@@ -4,4 +4,3 @@ C:\Program Files (x86)\Steam\steamapps\common\Momentum Mod\bin\shadercompile.exe
 C:\Program Files (x86)\Steam\steamapps\common\Momentum Mod\bin\shadercompile_dll.dll 
 C:\Program Files (x86)\Steam\steamapps\common\Momentum Mod\bin\tier0.dll 
 C:\Program Files (x86)\Steam\steamapps\common\Momentum Mod\bin\vstdlib.dll 
-ul_fill_ps30.fxc

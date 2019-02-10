@@ -5,31 +5,60 @@
 #include <Ultralight/Buffer.h>
 #include <Ultralight/platform/Platform.h>
 #include <Ultralight/platform/Config.h>
+#include <vgui/ISurface.h>
+#include <clientmode.h>
 
 using namespace ultralight;
+using namespace vgui;
 
 static IndexType patternCW[] = { 0, 1, 3, 1, 2, 3 };
-static IndexType patternCCW[] = { 0, 3, 1, 1, 3, 2 };
+static IndexType patternCCW[] = {0, 3, 1, 1, 3, 2};
+
+static ImageFormat Ultralight2SourceImageFormat(BitmapFormat format)
+{
+    switch (format)
+    {
+    case BitmapFormat::kBitmapFormat_RGBA8:
+        return IMAGE_FORMAT_RGBA8888;
+    default:
+        AssertMsg(false, "Unrecognised Ultralight texture format");
+        return IMAGE_FORMAT_ARGB8888;
+    }
+}
 
 UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer,
   GPUDriver* driver,
-  int width, int height, int x, int y) :
+  int x, int y, int width, int height) :
   view_(renderer->CreateView(width, height, true)), width_(width), height_(height),
-  x_(x), y_(y), needs_update_(true), driver_(driver) 
+  x_(x), y_(y), needs_update_(true), driver_(driver)
 {
+  texture_id_ = surface()->CreateNewTextureID(true);
 }
 
 UltralightOverlay::~UltralightOverlay()
 {
   if (vertices_.Size())
     driver_->DestroyGeometry(geometry_id_);
+  surface()->DestroyTextureID(texture_id_);
 }
 
 void UltralightOverlay::Draw()
 {
   UpdateGeometry();
-
   driver_->DrawGeometry(geometry_id_, 6, 0, gpu_state_);
+
+  bool dirty = view()->is_bitmap_dirty();
+  const RefPtr<Bitmap> bitmap = view()->bitmap();
+  if (dirty)
+  {
+    surface()->DrawSetTextureRGBAEx(texture_id_, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(), bitmap->height(),
+                                    Ultralight2SourceImageFormat(bitmap->format()));
+  }
+  else
+  {
+    surface()->DrawSetTexture(texture_id_);
+  }
+  surface()->DrawTexturedRect(x_, y_, x_ + width(), y_ + height());
 }
 
 void UltralightOverlay::FireKeyEvent(const KeyEvent &evt) {

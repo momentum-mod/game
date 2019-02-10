@@ -1,9 +1,5 @@
 fxctmp9_tmp\gauss_blur_3x3_ps30.inc
 fxctmp9_tmp\gauss_blur_3x3_vs30.inc
-fxctmp9_tmp\ul_fill_path_vs30.inc
-fxctmp9_tmp\ul_fill_path_ps30.inc
-fxctmp9_tmp\ul_fill_vs30.inc
-fxctmp9_tmp\ul_fill_ps30.inc
 fxctmp9_tmp\SDK_skin_ps30.inc
 fxctmp9_tmp\SDK_skin_vs30.inc
 fxctmp9_tmp\SDK_vertexlit_and_unlit_generic_bump_ps30.inc

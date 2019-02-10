@@ -8,12 +8,14 @@
 #include <Ultralight/View.h>
 #include <Ultralight/Renderer.h>
 #include <Ultralight/platform/GPUDriver.h>
+#include <hudelement.h>
+#include <vgui_controls/Panel.h>
 
 class UltralightOverlay
 {
 public:
-  UltralightOverlay(ultralight::Ref<ultralight::Renderer> renderer, ultralight::GPUDriver *driver, int width,
-                    int height, int x, int y);
+  UltralightOverlay(ultralight::Ref<ultralight::Renderer> renderer, ultralight::GPUDriver *driver, int x,
+                    int y, int width, int height);
   virtual ~UltralightOverlay();
 
   ultralight::Ref<ultralight::View> view() { return view_; }
@@ -54,6 +56,8 @@ protected:
   bool needs_update_;
   uint32_t geometry_id_;
   ultralight::GPUState gpu_state_;
+
+  int texture_id_;
 };
 
 #endif

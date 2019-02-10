@@ -53,6 +53,9 @@
 #include "clientmode_shared.h"
 #include "sourcevr/isourcevirtualreality.h"
 #include "client_virtualreality.h"
+#include "ultralight_ui/ultralight_overlay.h"
+
+extern UltralightOverlay *g_pTestOverlay;
 
 #ifdef PORTAL
 //#include "C_Portal_Player.h"
@@ -2401,6 +2404,7 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 //-----------------------------------------------------------------------------
 void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
 {
+	g_pTestOverlay->Draw();
 }
 
 //-----------------------------------------------------------------------------
