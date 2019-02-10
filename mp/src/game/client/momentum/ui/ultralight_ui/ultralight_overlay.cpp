@@ -1,17 +1,17 @@
 #include "cbase.h"
 #include "ultralight_overlay.h"
 
-#include <Ultralight/Renderer.h>
 #include <Ultralight/Buffer.h>
-#include <Ultralight/platform/Platform.h>
+#include <Ultralight/Renderer.h>
 #include <Ultralight/platform/Config.h>
-#include <vgui/ISurface.h>
+#include <Ultralight/platform/Platform.h>
 #include <clientmode.h>
+#include <vgui/ISurface.h>
 
 using namespace ultralight;
 using namespace vgui;
 
-static IndexType patternCW[] = { 0, 1, 3, 1, 2, 3 };
+static IndexType patternCW[] = {0, 1, 3, 1, 2, 3};
 static IndexType patternCCW[] = {0, 3, 1, 1, 3, 2};
 
 static ImageFormat Ultralight2SourceImageFormat(BitmapFormat format)
@@ -26,183 +26,180 @@ static ImageFormat Ultralight2SourceImageFormat(BitmapFormat format)
     }
 }
 
-UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer,
-  GPUDriver* driver,
-  int x, int y, int width, int height) :
-  view_(renderer->CreateView(width, height, true)), width_(width), height_(height),
-  x_(x), y_(y), needs_update_(true), driver_(driver)
+UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer, GPUDriver *driver, int x, int y, int width, int height)
+    : m_pView(renderer->CreateView(width, height, true)), m_iWidth(width), m_iHeight(height), m_iXPos(x), m_iYPos(y),
+      m_bDirty(true), m_pDriver(driver)
 {
-  texture_id_ = surface()->CreateNewTextureID(true);
+    m_iTextureId = surface()->CreateNewTextureID(true);
 }
 
 UltralightOverlay::~UltralightOverlay()
 {
-  if (vertices_.Size())
-    driver_->DestroyGeometry(geometry_id_);
-  surface()->DestroyTextureID(texture_id_);
+    if (m_vVertices.Size())
+        m_pDriver->DestroyGeometry(m_iGeometryId);
+    surface()->DestroyTextureID(m_iTextureId);
 }
 
 void UltralightOverlay::Draw()
 {
-  UpdateGeometry();
-  driver_->DrawGeometry(geometry_id_, 6, 0, gpu_state_);
+    UpdateGeometry();
+    m_pDriver->DrawGeometry(m_iGeometryId, 6, 0, m_GPUState);
 
-  bool dirty = view()->is_bitmap_dirty();
-  const RefPtr<Bitmap> bitmap = view()->bitmap();
-  if (dirty)
-  {
-    surface()->DrawSetTextureRGBAEx(texture_id_, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(), bitmap->height(),
-                                    Ultralight2SourceImageFormat(bitmap->format()));
-  }
-  else
-  {
-    surface()->DrawSetTexture(texture_id_);
-  }
-  surface()->DrawTexturedRect(x_, y_, x_ + width(), y_ + height());
+    bool dirty = view()->is_bitmap_dirty();
+    const RefPtr<Bitmap> bitmap = view()->bitmap();
+    if (dirty)
+    {
+        surface()->DrawSetTextureRGBAEx(m_iTextureId, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(),
+                                        bitmap->height(), Ultralight2SourceImageFormat(bitmap->format()));
+    }
+    else
+    {
+        surface()->DrawSetTexture(m_iTextureId);
+    }
+    surface()->DrawTexturedRect(m_iXPos, m_iYPos, m_iXPos + width(), m_iYPos + height());
 }
 
-void UltralightOverlay::FireKeyEvent(const KeyEvent &evt) {
-  view()->FireKeyEvent(evt);
-}
+void UltralightOverlay::FireKeyEvent(const KeyEvent &evt) { view()->FireKeyEvent(evt); }
 
 void UltralightOverlay::FireMouseEvent(const MouseEvent &evt)
 {
-  if (evt.type == MouseEvent::kType_MouseDown &&
-      evt.button == MouseEvent::kButton_Left)
-    has_focus_ = Contains(evt.x, evt.y);
-  else if (evt.type == MouseEvent::kType_MouseMoved)
-    has_hover_ = Contains(evt.x, evt.y);
+    if (evt.type == MouseEvent::kType_MouseDown && evt.button == MouseEvent::kButton_Left)
+        m_bHasFocus = Contains(evt.x, evt.y);
+    else if (evt.type == MouseEvent::kType_MouseMoved)
+        m_bHasHover = Contains(evt.x, evt.y);
 
-  MouseEvent rel_evt = evt;
-  rel_evt.x -= x_;
-  rel_evt.y -= y_;
+    MouseEvent rel_evt = evt;
+    rel_evt.x -= m_iXPos;
+    rel_evt.y -= m_iYPos;
 
-  view()->FireMouseEvent(rel_evt);
+    view()->FireMouseEvent(rel_evt);
 }
 
 void UltralightOverlay::FireScrollEvent(const ScrollEvent &evt)
 {
-  //if (has_hover_)
+    // if (m_bHasHover)
     view()->FireScrollEvent(evt);
 }
 
 void UltralightOverlay::Resize(int width, int height)
 {
-  if (width == width_ && height == height_)
-    return;
+    if (width == m_iWidth && height == m_iHeight)
+        return;
 
-  view_->Resize(width, height);
-  
-  width_ = width;
-  height_ = height;
-  needs_update_ = true;
-  UpdateGeometry();
+    m_pView->Resize(width, height);
 
-  // Update these now since they were invalidated
-  RenderTarget target = view_->render_target();
-  gpu_state_.texture_1_id = target.texture_id;
+    m_iWidth = width;
+    m_iHeight = height;
+    m_bDirty = true;
+    UpdateGeometry();
+
+    // Update these now since they were invalidated
+    RenderTarget target = m_pView->render_target();
+    m_GPUState.texture_1_id = target.texture_id;
 }
 
 void UltralightOverlay::UpdateGeometry()
 {
-  bool initial_creation = false;
-  RenderTarget target = view_->render_target();
+    bool initial_creation = false;
+    RenderTarget target = m_pView->render_target();
 
-  if (vertices_.IsEmpty())
-  {
-    vertices_.SetSize(4);
-    indices_.SetSize(6);
+    if (m_vVertices.IsEmpty())
+    {
+        m_vVertices.SetSize(4);
+        m_vIndices.SetSize(6);
 
-    auto& config = Platform::instance().config();
-    if (config.face_winding == kFaceWinding_Clockwise)
-      memcpy(indices_.Base(), patternCW, sizeof(IndexType) * indices_.Size());
+        auto &config = Platform::instance().config();
+        if (config.face_winding == kFaceWinding_Clockwise)
+            memcpy(m_vIndices.Base(), patternCW, sizeof(IndexType) * m_vIndices.Size());
+        else
+            memcpy(m_vIndices.Base(), patternCCW, sizeof(IndexType) * m_vIndices.Size());
+
+        memset(&m_GPUState, 0, sizeof(m_GPUState));
+        Matrix identity;
+        identity.SetIdentity();
+
+        int width, height;
+        engine->GetScreenSize(width, height);
+        m_GPUState.viewport_width = (float)width;
+        m_GPUState.viewport_height = (float)height;
+        m_GPUState.transform = ConvertAffineTo4x4(identity);
+        m_GPUState.enable_blend = true;
+        m_GPUState.enable_texturing = true;
+        m_GPUState.shader_type = kShaderType_Fill;
+        m_GPUState.render_buffer_id = 0; // default render target view (screen)
+        m_GPUState.texture_1_id = target.texture_id;
+
+        initial_creation = true;
+    }
+
+    if (!m_bDirty)
+        return;
+
+    Vertex_2f_4ub_2f_2f_28f v;
+    memset(&v, 0, sizeof(v));
+
+    v.data0[0] = 1; // Fill Type: Image
+
+    v.color[0] = 255;
+    v.color[1] = 255;
+    v.color[2] = 255;
+    v.color[3] = 255;
+
+    float left = static_cast<float>(m_iXPos);
+    float top = static_cast<float>(m_iYPos);
+    float right = static_cast<float>(m_iXPos + width());
+    float bottom = static_cast<float>(m_iYPos + height());
+
+    // TOP LEFT
+    v.pos[0] = v.obj[0] = left;
+    v.pos[1] = v.obj[1] = top;
+    v.tex[0] = target.uv_coords.left;
+    v.tex[1] = target.uv_coords.top;
+
+    m_vVertices[0] = v;
+
+    // TOP RIGHT
+    v.pos[0] = v.obj[0] = right;
+    v.pos[1] = v.obj[1] = top;
+    v.tex[0] = target.uv_coords.right;
+    v.tex[1] = target.uv_coords.top;
+
+    m_vVertices[1] = v;
+
+    // BOTTOM RIGHT
+    v.pos[0] = v.obj[0] = right;
+    v.pos[1] = v.obj[1] = bottom;
+    v.tex[0] = target.uv_coords.right;
+    v.tex[1] = target.uv_coords.bottom;
+
+    m_vVertices[2] = v;
+
+    // BOTTOM LEFT
+    v.pos[0] = v.obj[0] = left;
+    v.pos[1] = v.obj[1] = bottom;
+    v.tex[0] = target.uv_coords.left;
+    v.tex[1] = target.uv_coords.bottom;
+
+    m_vVertices[3] = v;
+
+    ultralight::VertexBuffer vbuffer;
+    vbuffer.format = ultralight::kVertexBufferFormat_2f_4ub_2f_2f_28f;
+    vbuffer.size = static_cast<uint32_t>(sizeof(ultralight::Vertex_2f_4ub_2f_2f_28f) * m_vVertices.Size());
+    vbuffer.data = (uint8_t *)m_vVertices.Base();
+
+    ultralight::IndexBuffer ibuffer;
+    ibuffer.size = static_cast<uint32_t>(sizeof(ultralight::IndexType) * m_vIndices.Size());
+    ibuffer.data = (uint8_t *)m_vIndices.Base();
+
+    if (initial_creation)
+    {
+        m_iGeometryId = m_pDriver->NextGeometryId();
+        m_pDriver->CreateGeometry(m_iGeometryId, vbuffer, ibuffer);
+    }
     else
-      memcpy(indices_.Base(), patternCCW, sizeof(IndexType) * indices_.Size());
+    {
+        m_pDriver->UpdateGeometry(m_iGeometryId, vbuffer, ibuffer);
+    }
 
-    memset(&gpu_state_, 0, sizeof(gpu_state_));
-    Matrix identity;
-    identity.SetIdentity();
-
-    int width, height;
-    engine->GetScreenSize(width, height);
-    gpu_state_.viewport_width = (float)width;
-    gpu_state_.viewport_height = (float)height;
-    gpu_state_.transform = ConvertAffineTo4x4(identity);
-    gpu_state_.enable_blend = true;
-    gpu_state_.enable_texturing = true;
-    gpu_state_.shader_type = kShaderType_Fill;
-    gpu_state_.render_buffer_id = 0; // default render target view (screen)
-    gpu_state_.texture_1_id = target.texture_id;
-
-    initial_creation = true;
-  }
-
-  if (!needs_update_)
-    return;
-
-  Vertex_2f_4ub_2f_2f_28f v;
-  memset(&v, 0, sizeof(v));
-
-  v.data0[0] = 1; // Fill Type: Image
-
-  v.color[0] = 255;
-  v.color[1] = 255;
-  v.color[2] = 255;
-  v.color[3] = 255;
-
-  float left = static_cast<float>(x_);
-  float top = static_cast<float>(y_);
-  float right = static_cast<float>(x_ + width());
-  float bottom = static_cast<float>(y_ + height());
-
-  // TOP LEFT
-  v.pos[0] = v.obj[0] = left;
-  v.pos[1] = v.obj[1] = top;
-  v.tex[0] = target.uv_coords.left;
-  v.tex[1] = target.uv_coords.top;
-
-  vertices_[0] = v;
-
-  // TOP RIGHT
-  v.pos[0] = v.obj[0] = right;
-  v.pos[1] = v.obj[1] = top;
-  v.tex[0] = target.uv_coords.right;
-  v.tex[1] = target.uv_coords.top;
-
-  vertices_[1] = v;
-
-  // BOTTOM RIGHT
-  v.pos[0] = v.obj[0] = right;
-  v.pos[1] = v.obj[1] = bottom;
-  v.tex[0] = target.uv_coords.right;
-  v.tex[1] = target.uv_coords.bottom;
-
-  vertices_[2] = v;
-
-  // BOTTOM LEFT
-  v.pos[0] = v.obj[0] = left;
-  v.pos[1] = v.obj[1] = bottom;
-  v.tex[0] = target.uv_coords.left;
-  v.tex[1] = target.uv_coords.bottom;
-
-  vertices_[3] = v;
-
-  ultralight::VertexBuffer vbuffer;
-  vbuffer.format = ultralight::kVertexBufferFormat_2f_4ub_2f_2f_28f;
-  vbuffer.size = static_cast<uint32_t>(sizeof(ultralight::Vertex_2f_4ub_2f_2f_28f) * vertices_.Size());
-  vbuffer.data = (uint8_t*)vertices_.Base();
-
-  ultralight::IndexBuffer ibuffer;
-  ibuffer.size = static_cast<uint32_t>(sizeof(ultralight::IndexType) * indices_.Size());
-  ibuffer.data = (uint8_t *)indices_.Base();
-
-  if (initial_creation) {
-    geometry_id_ = driver_->NextGeometryId();
-    driver_->CreateGeometry(geometry_id_, vbuffer, ibuffer);
-  }
-  else {
-    driver_->UpdateGeometry(geometry_id_, vbuffer, ibuffer);
-  }
-
-  needs_update_ = false;
+    m_bDirty = false;
 }
