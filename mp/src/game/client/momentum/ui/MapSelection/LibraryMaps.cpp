@@ -2,8 +2,6 @@
 
 #include "LibraryMaps.h"
 #include "CMapListPanel.h"
-#include "MapContextMenu.h"
-#include "MapSelectorDialog.h"
 
 #include "filesystem.h"
 #include "mom_map_cache.h"
@@ -19,7 +17,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
+CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps")
 {
     m_bLoadedMaps = false;
 }

@@ -5,7 +5,7 @@
 class CMapContextMenu;
 class CDialogMapInfo;
 class CLibraryMaps;
-class COnlineMaps;
+class CBrowseMaps;
 class IMapList;
 class MapFilterPanel;
 
@@ -79,7 +79,7 @@ private:
 
     //Map tabs
     CLibraryMaps *m_pLibraryMaps;
-    COnlineMaps *m_pOnline;
+    CBrowseMaps *m_pOnline;
 
     // Filters
     MapFilterPanel *m_pFilterPanel;

@@ -3,7 +3,7 @@
 
 #include "MapSelectorDialog.h"
 #include "LibraryMaps.h"
-#include "OnlineMaps.h"
+#include "BrowseMaps.h"
 #include "MapContextMenu.h"
 #include "MapInfoDialog.h"
 #include "MapFilterPanel.h"
@@ -39,7 +39,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     LoadUserData();
 
     m_pLibraryMaps = new CLibraryMaps(this);
-    m_pOnline = new COnlineMaps(this);
+    m_pOnline = new CBrowseMaps(this);
 
     m_pCurrentMapList = static_cast<IMapList*>(m_pLibraryMaps);
 
