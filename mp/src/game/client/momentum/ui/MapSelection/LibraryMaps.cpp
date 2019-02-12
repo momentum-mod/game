@@ -52,14 +52,9 @@ void CLibraryMaps::GetNewMapList()
     FOR_EACH_VEC(vecLibrary, i)
         AddMapToList(vecLibrary[i]);
 
-    m_bLoadedMaps = m_vecMaps.IsEmpty();
+    m_bLoadedMaps = !m_vecMaps.IsEmpty();
 
     ApplyFilters(GetFilters());
-}
-
-void CLibraryMaps::SetEmptyListText()
-{
-    m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 }
 
 void CLibraryMaps::FireGameEvent(IGameEvent* event)
