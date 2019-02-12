@@ -22,7 +22,6 @@ using namespace vgui;
 CLocalMaps::CLocalMaps(Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
 {
     m_bLoadedMaps = false;
-    ListenForGameEvent("map_library_updated");
 }
 
 //-----------------------------------------------------------------------------
@@ -67,9 +66,41 @@ void CLocalMaps::SetEmptyListText()
 
 void CLocalMaps::FireGameEvent(IGameEvent* event)
 {
-    if (FStrEq(event->GetName(), "map_library_updated"))
+    if (FStrEq(event->GetName(), "map_cache_updated"))
     {
-        GetNewMapList();
+        if (event->GetInt("source") == MODEL_FROM_LIBRARY_API_CALL)
+            GetNewMapList();
+    }
+    else if (FStrEq(event->GetName(), "map_data_update"))
+    {
+        if (event->GetBool("main"))
+        {
+            int id = event->GetInt("id");
+            MapDisplay_t *pDisplay = GetMapDisplayByID(id);
+            
+            if (pDisplay)
+            {
+                // Remove this map only if we have it and it's no longer in the library
+                if (pDisplay->m_pMap && !pDisplay->m_pMap->m_bInLibrary)
+                {
+                    RemoveMap(*pDisplay);
+                    return;
+                }
+            }
+            else
+            {
+                MapData *pMapData = g_pMapCache->GetMapDataByID(id);
+                if (pMapData)
+                {
+                    // Add this map if it was added to library
+                    if (pMapData->m_bInLibrary)
+                    {
+                        AddMapToList(pMapData);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     BaseClass::FireGameEvent(event);
@@ -150,16 +181,3 @@ void CLocalMaps::AddWorkshopItemToLocalMaps(PublishedFileId_t id)
     //now our workshop items are added, refresh the map list again
     StartRefresh();
 }*/
-
-//-----------------------------------------------------------------------------
-// Purpose: opens context menu (user right clicked on a map)
-//-----------------------------------------------------------------------------
-void CLocalMaps::OnOpenContextMenu(int row)
-{
-    if (!m_pMapList->GetSelectedItemsCount())
-        return;
-
-    // Activate context menu
-    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
-    menu->ShowMenu(this, true, true);
-}

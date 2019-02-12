@@ -293,7 +293,7 @@ bool MapData::NeedsUpdate() const
 
 void MapData::SendUpdate()
 {
-    IGameEvent *pEvent = gameeventmanager->CreateEvent("map_cache_update");
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("map_data_update");
     if (pEvent)
     {
         pEvent->SetInt("id", m_uID);
@@ -335,7 +335,7 @@ void MapData::FromKV(KeyValues* pMap)
     {
         Q_strncpy(m_szMapName, pMap->GetString("name"), sizeof(m_szMapName));
         KeyValues *pFavorites = pMap->FindKey("favorites");
-        m_bInFavorites = pFavorites && !pFavorites->IsEmpty();
+        m_bInFavorites = m_eSource == MODEL_FROM_FAVORITES_API_CALL || pFavorites && !pFavorites->IsEmpty();
         KeyValues *pLibrary = pMap->FindKey("libraryEntries");
         m_bInLibrary = m_eSource == MODEL_FROM_LIBRARY_API_CALL || pLibrary && !pLibrary->IsEmpty();
     }
@@ -544,19 +544,60 @@ bool CMapCache::PlayMap(uint32 uID)
     return false;
 }
 
+bool CMapCache::AddMapToLibrary(uint32 uID)
+{
+    MapData *pMap = GetMapDataByID(uID);
+    if (pMap)
+    {
+        return g_pAPIRequests->AddMapToLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToLibrary));
+    }
+
+    return false;
+}
+
+bool CMapCache::RemoveMapFromLibrary(uint32 uID)
+{
+    MapData *pMap = GetMapDataByID(uID);
+    if (pMap)
+    {
+        return g_pAPIRequests->RemoveMapFromLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromLibrary));
+    }
+
+    return false;
+}
+
+bool CMapCache::AddMapToFavorites(uint32 uID)
+{
+    MapData *pMap = GetMapDataByID(uID);
+    if (pMap)
+    {
+        return g_pAPIRequests->AddMapToFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToFavorites));
+    }
+
+    return false;
+}
+
+bool CMapCache::RemoveMapFromFavorites(uint32 uID)
+{
+    MapData *pMap = GetMapDataByID(uID);
+    if (pMap)
+    {
+        return g_pAPIRequests->RemoveMapFromFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromFavorites));
+    }
+
+    return false;
+}
 
 void CMapCache::FireGameEvent(IGameEvent* event)
 {
+    // event->GetName() == "site_auth"
     if (g_pAPIRequests->IsAuthenticated())
     {
-        if (g_pAPIRequests->GetUserMapLibrary(UtlMakeDelegate(this, &CMapCache::OnPlayerMapLibrary)))
-        {
+        if (g_pAPIRequests->GetUserMapLibrary(UtlMakeDelegate(this, &CMapCache::OnFetchPlayerMapLibrary)))
             DevLog("Requested the library!\n");
-        }
-        else
-        {
-            DevLog("Failed to request the library\n");
-        }
+
+        if (g_pAPIRequests->GetUserMapFavorites(UtlMakeDelegate(this, &CMapCache::OnFetchPlayerMapFavorites)))
+            DevLog("Requested favorites!\n");
     }
     else
     {
@@ -566,7 +607,7 @@ void CMapCache::FireGameEvent(IGameEvent* event)
 
 MapData *CMapCache::GetMapDataByID(uint32 uMapID)
 {
-    auto indx = m_mapMapCache.Find(uMapID);
+    const auto indx = m_mapMapCache.Find(uMapID);
     if (m_mapMapCache.IsValidIndex(indx))
     {
         return &m_mapMapCache.Element(indx);
@@ -584,6 +625,8 @@ void CMapCache::GetMapList(CUtlVector<MapData*>& vecMaps, MapListType_e type)
         bool bShouldAdd = d->m_eMapStatus == MAP_APPROVED;
         if (type == MAP_LIST_LIBRARY)
             bShouldAdd = d->m_bInLibrary;
+        else if (type == MAP_LIST_FAVORITES)
+            bShouldAdd = d->m_bInFavorites;
         else if (type == MAP_LIST_TESTING)
             bShouldAdd = d->m_eMapStatus == MAP_PRIVATE_TESTING || d->m_eMapStatus == MAP_PUBLIC_TESTING;
 
@@ -603,7 +646,7 @@ bool CMapCache::AddMapsToCache(KeyValues* pData, APIModelSource source)
     {
         MapData d;
         d.m_eSource = source;
-        if (source == MODEL_FROM_LIBRARY_API_CALL)
+        if (source == MODEL_FROM_LIBRARY_API_CALL || source == MODEL_FROM_FAVORITES_API_CALL)
             pMap = pMap->FindKey("map");
         d.FromKV(pMap);
 
@@ -629,15 +672,17 @@ bool CMapCache::AddMapsToCache(KeyValues* pData, APIModelSource source)
         }
     }
 
+    if (source != MODEL_FROM_DISK)
+    {
+        IGameEvent *pEvent = gameeventmanager->CreateEvent("map_cache_updated");
+        if (pEvent)
+        {
+            pEvent->SetInt("source", source);
+            gameeventmanager->FireEventClientSide(pEvent);
+        }
+    }
+
     return true;
-}
-
-void CMapCache::PostInit()
-{
-    ListenForGameEvent("site_auth");
-
-    // Load the cache from disk
-    LoadMapCacheFromDisk();
 }
 
 void CMapCache::SetMapGamemode()
@@ -668,7 +713,7 @@ void CMapCache::SetMapGamemode()
     }
 }
 
-void CMapCache::OnPlayerMapLibrary(KeyValues* pKv)
+void CMapCache::OnFetchPlayerMapLibrary(KeyValues* pKv)
 {
     KeyValues *pData = pKv->FindKey("data");
     KeyValues *pErr = pKv->FindKey("error");
@@ -677,9 +722,110 @@ void CMapCache::OnPlayerMapLibrary(KeyValues* pKv)
     {
         KeyValues *pEntries = pData->FindKey("entries");
         AddMapsToCache(pEntries, MODEL_FROM_LIBRARY_API_CALL);
-        IGameEvent *pEvent = gameeventmanager->CreateEvent("map_library_updated");
-        if (pEvent)
-            gameeventmanager->FireEventClientSide(pEvent);
+    }
+    else if (pErr)
+    {
+        // MOM_TODO error handle here
+    }
+}
+
+void CMapCache::OnFetchPlayerMapFavorites(KeyValues* pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+
+    if (pData)
+    {
+        KeyValues *pEntries = pData->FindKey("favorites");
+        AddMapsToCache(pEntries, MODEL_FROM_FAVORITES_API_CALL);
+    }
+    else if (pErr)
+    {
+        // MOM_TODO error handle here
+    }
+}
+
+void CMapCache::OnMapAddedToLibrary(KeyValues* pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        // Actually update the map in question, fire off an update
+        int id = pData->GetInt("mapID");
+        MapData *pMapData = GetMapDataByID(id);
+        if (pMapData)
+        {
+            pMapData->m_bInLibrary = true;
+            pMapData->m_bUpdated = true;
+            pMapData->SendUpdate();
+        }
+    }
+    else if (pErr)
+    {
+        // MOM_TODO error handle here
+    }
+}
+
+void CMapCache::OnMapRemovedFromLibrary(KeyValues* pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        // Actually update the map in question, fire off an update
+        int id = pData->GetInt("mapID");
+        MapData *pMapData = GetMapDataByID(id);
+        if (pMapData)
+        {
+            pMapData->m_bInLibrary = false;
+            pMapData->m_bUpdated = true;
+            pMapData->SendUpdate();
+        }
+    }
+    else if (pErr)
+    {
+        // MOM_TODO error handle here
+    }
+}
+
+void CMapCache::OnMapAddedToFavorites(KeyValues* pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        // Actually update the map in question, fire off an update
+        int id = pData->GetInt("mapID");
+        MapData *pMapData = GetMapDataByID(id);
+        if (pMapData)
+        {
+            pMapData->m_bInFavorites = true;
+            pMapData->m_bUpdated = true;
+            pMapData->SendUpdate();
+        }
+    }
+    else if (pErr)
+    {
+        // MOM_TODO error handle here
+    }
+}
+
+void CMapCache::OnMapRemovedFromFavorites(KeyValues* pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        // Actually update the map in question, fire off an update
+        int id = pData->GetInt("mapID");
+        MapData *pMapData = GetMapDataByID(id);
+        if (pMapData)
+        {
+            pMapData->m_bInFavorites = false;
+            pMapData->m_bUpdated = true;
+            pMapData->SendUpdate();
+        }
     }
     else if (pErr)
     {
@@ -722,6 +868,14 @@ void CMapCache::FinishMapDownload(KeyValues* pKvComplete)
 
         m_mapFileDownloads.RemoveAt(fileIndx);
     }
+}
+
+void CMapCache::PostInit()
+{
+    ListenForGameEvent("site_auth");
+
+    // Load the cache from disk
+    LoadMapCacheFromDisk();
 }
 
 void CMapCache::LevelInitPreEntity()

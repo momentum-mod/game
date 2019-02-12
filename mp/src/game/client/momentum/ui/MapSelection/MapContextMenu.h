@@ -2,6 +2,8 @@
 
 #include "vgui_controls/Menu.h"
 
+struct MapData;
+
 //-----------------------------------------------------------------------------
 // Purpose: Basic right-click context menu for servers
 //-----------------------------------------------------------------------------
@@ -13,7 +15,6 @@ public:
 
     // call this to Activate the menu
     void ShowMenu(
-        vgui::Panel *target,
-        bool showMapStart,
-        bool showViewGameInfo);
+        Panel *target,
+        MapData *pMapData);
 };

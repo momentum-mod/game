@@ -20,8 +20,6 @@ using namespace vgui;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
-//			NOTE:	m_Servers can not use more than 96 sockets, else it will
-//					cause internet explorer to Stop working under win98 SE!
 //-----------------------------------------------------------------------------
 COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMapsPage(parent, panelName)
 {
@@ -140,17 +138,4 @@ void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
     }
 
     UpdateStatus();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: opens context menu (user right clicked on a server)
-//-----------------------------------------------------------------------------
-void COnlineMaps::OnOpenContextMenu(int itemID)
-{
-    if (!m_pMapList->GetSelectedItemsCount())
-        return;
-
-    // Activate context menu
-    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
-    menu->ShowMenu(this, true, true);
 }
