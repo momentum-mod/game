@@ -1,9 +1,9 @@
-"resource/ui/MapSelector/LocalMapsPage.res"
+"resource/ui/MapSelector/LibraryMapsPage.res"
 {
-    "LocalMaps"
+    "LibraryMaps"
     {
-        "ControlName"       "CLocalMaps"
-        "fieldName"     "LocalMaps"
+        "ControlName"       "CLibraryMaps"
+        "fieldName"     "LibraryMaps"
         "xpos"      "0"
         "ypos"      "13"
         "wide"      "624"

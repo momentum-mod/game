@@ -1,9 +1,9 @@
-"resource/ui/OnlineMapsPage.res"
+"resource/ui/BrowseMapsPage.res"
 {
-    "OnlineMaps"
+    "BrowseMaps"
     {
-        "ControlName"       "COnlineMaps"
-        "fieldName"     "OnlineMaps"
+        "ControlName"       "CBrowseMaps"
+        "fieldName"     "BrowseMaps"
         "xpos"      "0"
         "ypos"      "13"
         "wide"      "624"

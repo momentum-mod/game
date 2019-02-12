@@ -1,9 +1,8 @@
 #include "cbase.h"
 
-#include "OnlineMaps.h"
+#include "BrowseMaps.h"
 #include "MapSelectorDialog.h"
 #include "CMapListPanel.h"
-#include "MapContextMenu.h"
 
 #include "util/mom_util.h"
 #include "mom_api_requests.h"
@@ -21,7 +20,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMapsPage(parent, panelName)
+CBrowseMaps::CBrowseMaps(Panel *parent) : CBaseMapsPage(parent, "BrowseMaps")
 {
     m_bRequireUpdate = true;
     m_bOfflineMode = !IsSteamGameServerBrowsingEnabled();
@@ -32,12 +31,12 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
 //-----------------------------------------------------------------------------
-COnlineMaps::~COnlineMaps()
+CBrowseMaps::~CBrowseMaps()
 {
 }
 
 
-void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
+void CBrowseMaps::MapsQueryCallback(KeyValues *pKvResponse)
 {
     KeyValues *pKvData = pKvResponse->FindKey("data");
     KeyValues *pKvErr = pKvResponse->FindKey("error");
@@ -62,7 +61,7 @@ void COnlineMaps::MapsQueryCallback(KeyValues *pKvResponse)
     }
 }
 
-void COnlineMaps::FillMapList()
+void CBrowseMaps::FillMapList()
 {
     CUtlVector<MapData*> vecMaps;
     g_pMapCache->GetMapList(vecMaps, MAP_LIST_BROWSE);
@@ -77,7 +76,7 @@ void COnlineMaps::FillMapList()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void COnlineMaps::PerformLayout()
+void CBrowseMaps::PerformLayout()
 {
     if (!m_bOfflineMode && m_bRequireUpdate && MapSelectorDialog().IsVisible())
     {
@@ -97,7 +96,7 @@ void COnlineMaps::PerformLayout()
 //-----------------------------------------------------------------------------
 // Purpose: Activates the page, starts refresh if needed
 //-----------------------------------------------------------------------------
-void COnlineMaps::OnPageShow()
+void CBrowseMaps::OnPageShow()
 {
     GetNewMapList();
 }
@@ -106,7 +105,7 @@ void COnlineMaps::OnPageShow()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void COnlineMaps::GetNewMapList()
+void CBrowseMaps::GetNewMapList()
 {
     UpdateStatus();
 
@@ -117,11 +116,11 @@ void COnlineMaps::GetNewMapList()
 
     if (SteamHTTP())
     {
-        g_pAPIRequests->GetMaps(GetFilters(), UtlMakeDelegate(this, &COnlineMaps::MapsQueryCallback));
+        g_pAPIRequests->GetMaps(GetFilters(), UtlMakeDelegate(this, &CBrowseMaps::MapsQueryCallback));
     }
 }
 
-void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
+void CBrowseMaps::RefreshComplete(EMapQueryOutputs eResponse)
 {
     switch (eResponse)
     {
