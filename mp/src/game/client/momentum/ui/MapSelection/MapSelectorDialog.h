@@ -4,7 +4,7 @@
 
 class CMapContextMenu;
 class CDialogMapInfo;
-class CLocalMaps;
+class CLibraryMaps;
 class COnlineMaps;
 class IMapList;
 class MapFilterPanel;
@@ -78,7 +78,7 @@ private:
     vgui::PropertySheet *m_pTabPanel;
 
     //Map tabs
-    CLocalMaps *m_pLibraryMaps;
+    CLibraryMaps *m_pLibraryMaps;
     COnlineMaps *m_pOnline;
 
     // Filters

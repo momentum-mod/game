@@ -44,7 +44,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\MapSelection\BaseMapsPage.h"
                         $File "momentum\ui\MapSelection\IMapList.h"
                         $File "momentum\ui\MapSelection\IMapSelector.h"
-                        $File "momentum\ui\MapSelection\LocalMaps.h"
+                        $File "momentum\ui\MapSelection\LibraryMaps.h"
                         $File "momentum\ui\MapSelection\MapContextMenu.h"
                         $File "momentum\ui\MapSelection\MapInfoDialog.h"
                         $File "momentum\ui\MapSelection\MapSelector.h"
@@ -54,7 +54,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\MapSelection\MapFilterPanel.h"
                     }
                     $File "momentum\ui\MapSelection\BaseMapsPage.cpp" \
-                          "momentum\ui\MapSelection\LocalMaps.cpp" \ 
+                          "momentum\ui\MapSelection\LibraryMaps.cpp" \ 
                           "momentum\ui\MapSelection\MapContextMenu.cpp" \
                           "momentum\ui\MapSelection\MapInfoDialog.cpp" \ 
                           "momentum\ui\MapSelection\MapSelector.cpp" \

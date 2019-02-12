@@ -1,6 +1,6 @@
 #include "cbase.h"
 
-#include "LocalMaps.h"
+#include "LibraryMaps.h"
 #include "CMapListPanel.h"
 #include "MapContextMenu.h"
 #include "MapSelectorDialog.h"
@@ -19,7 +19,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CLocalMaps::CLocalMaps(Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
+CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
 {
     m_bLoadedMaps = false;
 }
@@ -27,7 +27,7 @@ CLocalMaps::CLocalMaps(Panel *parent) : CBaseMapsPage(parent, "LocalMaps")
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
 //-----------------------------------------------------------------------------
-CLocalMaps::~CLocalMaps()
+CLibraryMaps::~CLibraryMaps()
 {
 }
 
@@ -35,7 +35,7 @@ CLocalMaps::~CLocalMaps()
 //-----------------------------------------------------------------------------
 // Purpose: Activates the page, starts refresh
 //-----------------------------------------------------------------------------
-void CLocalMaps::OnPageShow()
+void CLibraryMaps::OnPageShow()
 {
     if (!m_bLoadedMaps)
     {
@@ -44,7 +44,7 @@ void CLocalMaps::OnPageShow()
     }
 }
 
-void CLocalMaps::GetNewMapList()
+void CLibraryMaps::GetNewMapList()
 {
     // ClearMapList();
     //Populate the main list
@@ -59,12 +59,12 @@ void CLocalMaps::GetNewMapList()
     ApplyFilters(GetFilters());
 }
 
-void CLocalMaps::SetEmptyListText()
+void CLibraryMaps::SetEmptyListText()
 {
     m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 }
 
-void CLocalMaps::FireGameEvent(IGameEvent* event)
+void CLibraryMaps::FireGameEvent(IGameEvent* event)
 {
     if (FStrEq(event->GetName(), "map_cache_updated"))
     {
