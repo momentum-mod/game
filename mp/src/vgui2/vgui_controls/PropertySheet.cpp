@@ -893,7 +893,12 @@ void PropertySheet::ApplySchemeSettings(IScheme *pScheme)
 	SetBorder(pBorder);
 	m_flPageTransitionEffectTime = atof(pScheme->GetResourceString("PropertySheet.TransitionEffectTime"));
 
-	m_tabFont = pScheme->GetFont( m_bSmallTabs ? "DefaultVerySmall" : "Default" );
+    const char *pTabFontName = pScheme->GetResourceString(m_bSmallTabs ? "PropertySheet.TabFontSmall" : "PropertySheet.TabFont");
+
+    if (!pTabFontName)
+	    pTabFontName = m_bSmallTabs ? "DefaultVerySmall" : "Default";
+    
+    m_tabFont = pScheme->GetFont(pTabFontName, IsProportional());
 
 	if ( m_pTabKV )
 	{
