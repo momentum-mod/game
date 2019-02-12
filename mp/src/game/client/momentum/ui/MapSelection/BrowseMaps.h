@@ -5,14 +5,12 @@
 //-----------------------------------------------------------------------------
 // Purpose: Internet games list
 //-----------------------------------------------------------------------------
-class COnlineMaps : public CBaseMapsPage
+class CBrowseMaps : public CBaseMapsPage
 {
+    DECLARE_CLASS_SIMPLE(CBrowseMaps, CBaseMapsPage);
 
-    DECLARE_CLASS_SIMPLE(COnlineMaps, CBaseMapsPage);
-
-public:
-    COnlineMaps(Panel *parent, const char *panelName = "OnlineMaps");
-    ~COnlineMaps();
+    CBrowseMaps(Panel *parent);
+    ~CBrowseMaps();
 
     // property page handlers
     virtual void OnPageShow();
