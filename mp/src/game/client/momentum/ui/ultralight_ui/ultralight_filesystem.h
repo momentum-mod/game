@@ -8,7 +8,7 @@
 #include "platform.h"
 
 // This only implements some of the functions in the interface, most of them aren't used by ultralight anyway.
-class SourceFileSystem : public ultralight::FileSystem
+class UltralightFileSystem : public ultralight::FileSystem
 {
   public:
     // Check if file path exists, return true if exists.

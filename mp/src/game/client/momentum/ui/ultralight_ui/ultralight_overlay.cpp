@@ -7,6 +7,9 @@
 #include <Ultralight/platform/Platform.h>
 #include <clientmode.h>
 #include <vgui/ISurface.h>
+#include <vgui/IInput.h>
+
+#include "tier0/memdbgon.h"
 
 using namespace ultralight;
 using namespace vgui;
@@ -26,11 +29,30 @@ static ImageFormat Ultralight2SourceImageFormat(BitmapFormat format)
     }
 }
 
-UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer, GPUDriver *driver, int x, int y, int width, int height)
-    : m_pView(renderer->CreateView(width, height, true)), m_iWidth(width), m_iHeight(height), m_iXPos(x), m_iYPos(y),
-      m_bDirty(true), m_pDriver(driver)
+static ultralight::MouseEvent::Button Source2UltralightMouseCode(MouseCode code)
 {
+    switch (code)
+    {
+    case MOUSE_LEFT:
+        return MouseEvent::kButton_Left;
+    case MOUSE_RIGHT:
+        return MouseEvent::kButton_Right;
+    case MOUSE_MIDDLE:
+        return MouseEvent::kButton_Middle;
+    default:
+        return MouseEvent::kButton_None;
+    }
+}
+
+UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer, GPUDriver *driver, Panel *pParentPanel, int x, int y, int width, int height)
+    : m_pView(renderer->CreateView(width, height, true)), m_iWidth(width), m_iHeight(height), m_iXPos(x), m_iYPos(y),
+      m_bDirty(true), m_pDriver(driver), BaseClass(pParentPanel, "UltralightUIOverlay")
+{
+    SetSize(width, height);
     m_iTextureId = surface()->CreateNewTextureID(true);
+
+    SetMouseInputEnabled(true);
+    SetKeyBoardInputEnabled(true);
 }
 
 UltralightOverlay::~UltralightOverlay()
@@ -40,8 +62,10 @@ UltralightOverlay::~UltralightOverlay()
     surface()->DestroyTextureID(m_iTextureId);
 }
 
-void UltralightOverlay::Draw()
+void UltralightOverlay::Paint()
 {
+    BaseClass::Paint();
+
     UpdateGeometry();
     m_pDriver->DrawGeometry(m_iGeometryId, 6, 0, m_GPUState);
 
@@ -52,14 +76,56 @@ void UltralightOverlay::Draw()
         surface()->DrawSetTextureRGBAEx(m_iTextureId, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(),
                                         bitmap->height(), Ultralight2SourceImageFormat(bitmap->format()));
     }
-    else
-    {
-        surface()->DrawSetTexture(m_iTextureId);
-    }
+
+    surface()->DrawSetTexture(m_iTextureId);
+    surface()->DrawSetColor(255, 255, 255, 255);
     surface()->DrawTexturedRect(m_iXPos, m_iYPos, m_iXPos + width(), m_iYPos + height());
 }
 
-void UltralightOverlay::FireKeyEvent(const KeyEvent &evt) { view()->FireKeyEvent(evt); }
+void UltralightOverlay::OnMousePressed(MouseCode code)
+{
+    MouseEvent evt;
+    evt.type = MouseEvent::kType_MouseDown;
+    evt.button = Source2UltralightMouseCode(code);
+    if (evt.button == MouseEvent::kButton_None)
+    {
+        return;
+    }
+
+    int x, y;
+    input()->GetCursorPosition(x, y);
+    x -= GetXPos();
+    y -= GetYPos();
+
+    FireMouseEvent(evt);
+}
+
+void UltralightOverlay::OnMouseReleased(MouseCode code)
+{
+    MouseEvent evt;
+    evt.type = MouseEvent::kType_MouseUp;
+    evt.button = Source2UltralightMouseCode(code);
+    if (evt.button == MouseEvent::kButton_None)
+    {
+        return;
+    }
+
+    int x, y;
+    input()->GetCursorPosition(x, y);
+
+    x -= GetParent()->GetXPos();
+    y -= GetParent()->GetYPos();
+
+    FireMouseEvent(evt);
+}
+
+void UltralightOverlay::OnMouseWheeled(int delta)
+{
+    ScrollEvent evt;
+    evt.type = ScrollEvent::kType_ScrollByPixel;
+    evt.delta_x = delta;
+    evt.delta_y = 0;
+}
 
 void UltralightOverlay::FireMouseEvent(const MouseEvent &evt)
 {
@@ -81,6 +147,8 @@ void UltralightOverlay::FireScrollEvent(const ScrollEvent &evt)
     view()->FireScrollEvent(evt);
 }
 
+void UltralightOverlay::FireKeyEvent(const KeyEvent &evt) { view()->FireKeyEvent(evt); }
+
 void UltralightOverlay::Resize(int width, int height)
 {
     if (width == m_iWidth && height == m_iHeight)
@@ -96,6 +164,8 @@ void UltralightOverlay::Resize(int width, int height)
     // Update these now since they were invalidated
     RenderTarget target = m_pView->render_target();
     m_GPUState.texture_1_id = target.texture_id;
+
+	SetSize(width, height);
 }
 
 void UltralightOverlay::UpdateGeometry()

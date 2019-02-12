@@ -2404,7 +2404,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 //-----------------------------------------------------------------------------
 void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
 {
-	g_pTestOverlay->Draw();
 }
 
 //-----------------------------------------------------------------------------

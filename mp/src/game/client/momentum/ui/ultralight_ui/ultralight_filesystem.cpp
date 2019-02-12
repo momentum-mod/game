@@ -13,34 +13,34 @@ static const char *ToUTF8(const String16 &str)
     return utf8_str.utf8().data();
 }
 
-bool SourceFileSystem::FileExists(const String16 &path) { return g_pFullFileSystem->FileExists(ToUTF8(path)); }
+bool UltralightFileSystem::FileExists(const String16 &path) { return g_pFullFileSystem->FileExists(ToUTF8(path)); }
 
-bool SourceFileSystem::DeleteFile_(const String16 &path)
+bool UltralightFileSystem::DeleteFile_(const String16 &path)
 {
     g_pFullFileSystem->RemoveFile(ToUTF8(path));
     return true;
 }
 
-bool SourceFileSystem::DeleteEmptyDirectory(const String16 &path) { return false; }
+bool UltralightFileSystem::DeleteEmptyDirectory(const String16 &path) { return false; }
 
-bool SourceFileSystem::MoveFile_(const String16 &old_path, const String16 &new_path)
+bool UltralightFileSystem::MoveFile_(const String16 &old_path, const String16 &new_path)
 {
     return g_pFullFileSystem->RenameFile(ToUTF8(old_path), ToUTF8(new_path));
 }
 
-bool SourceFileSystem::GetFileSize(const String16 &path, int64_t &result)
+bool UltralightFileSystem::GetFileSize(const String16 &path, int64_t &result)
 {
     result = (int64_t)g_pFullFileSystem->Size(ToUTF8(path));
     return true;
 }
 
-bool SourceFileSystem::GetFileSize(FileHandle handle, int64_t &result)
+bool UltralightFileSystem::GetFileSize(FileHandle handle, int64_t &result)
 {
     result = (int64_t)g_pFullFileSystem->Size((FileHandle_t)handle);
     return true;
 }
 
-bool SourceFileSystem::GetFileMimeType(const String16 &path, String16 &result)
+bool UltralightFileSystem::GetFileMimeType(const String16 &path, String16 &result)
 {
     const char *szPath = ToUTF8(path);
     const char *szExtension = &Q_GetFileExtension(szPath)[1];
@@ -49,31 +49,31 @@ bool SourceFileSystem::GetFileMimeType(const String16 &path, String16 &result)
     return true;
 }
 
-bool SourceFileSystem::GetFileModificationTime(const String16 &path, time_t &result) { return false; }
+bool UltralightFileSystem::GetFileModificationTime(const String16 &path, time_t &result) { return false; }
 
-bool SourceFileSystem::GetFileCreationTime(const String16 &path, time_t &result) { return false; }
+bool UltralightFileSystem::GetFileCreationTime(const String16 &path, time_t &result) { return false; }
 
-MetadataType SourceFileSystem::GetMetadataType(const String16 &path)
+MetadataType UltralightFileSystem::GetMetadataType(const String16 &path)
 {
     return g_pFullFileSystem->IsDirectory(ToUTF8(path)) ? MetadataType::kMetadataType_Directory
                                                         : MetadataType::kMetadataType_File;
 }
 
-String16 SourceFileSystem::GetPathByAppendingComponent(const String16 &path, const String16 &component)
+String16 UltralightFileSystem::GetPathByAppendingComponent(const String16 &path, const String16 &component)
 {
     return path + component;
 }
 
-bool SourceFileSystem::CreateDirectory_(const String16 &path) { return false; }
+bool UltralightFileSystem::CreateDirectory_(const String16 &path) { return false; }
 
-String16 SourceFileSystem::GetHomeDirectory()
+String16 UltralightFileSystem::GetHomeDirectory()
 {
     char szPath[MAX_PATH];
     g_pFullFileSystem->RelativePathToFullPath(".", "MOD", szPath, sizeof(szPath));
     return String16(szPath);
 }
 
-String16 SourceFileSystem::GetFilenameFromPath(const String16 &path)
+String16 UltralightFileSystem::GetFilenameFromPath(const String16 &path)
 {
     char szFileBase[MAX_PATH];
     Q_FileBase(ToUTF8(path), szFileBase, sizeof(szFileBase));
@@ -82,7 +82,7 @@ String16 SourceFileSystem::GetFilenameFromPath(const String16 &path)
     return String16(szFileBase);
 }
 
-String16 SourceFileSystem::GetDirectoryNameFromPath(const String16 &path)
+String16 UltralightFileSystem::GetDirectoryNameFromPath(const String16 &path)
 {
     char szDirBase[MAX_PATH];
     Q_FileBase(ToUTF8(path), szDirBase, sizeof(szDirBase));
@@ -90,11 +90,11 @@ String16 SourceFileSystem::GetDirectoryNameFromPath(const String16 &path)
     return String16(szDirBase);
 }
 
-bool SourceFileSystem::GetVolumeFreeSpace(const String16 &path, uint64_t &result) { return false; }
+bool UltralightFileSystem::GetVolumeFreeSpace(const String16 &path, uint64_t &result) { return false; }
 
-int32_t SourceFileSystem::GetVolumeId(const String16 &path) { return false; }
+int32_t UltralightFileSystem::GetVolumeId(const String16 &path) { return false; }
 
-Ref<String16Vector> SourceFileSystem::ListDirectory(const String16 &path, const String16 &filter)
+Ref<String16Vector> UltralightFileSystem::ListDirectory(const String16 &path, const String16 &filter)
 {
     auto result = String16Vector::Create();
     const char *searchpath = ToUTF8(path);
@@ -112,34 +112,34 @@ Ref<String16Vector> SourceFileSystem::ListDirectory(const String16 &path, const 
     return result;
 }
 
-String16 SourceFileSystem::OpenTemporaryFile(const String16 &prefix, FileHandle &handle) { return String16(); }
+String16 UltralightFileSystem::OpenTemporaryFile(const String16 &prefix, FileHandle &handle) { return String16(); }
 
-FileHandle SourceFileSystem::OpenFile(const String16 &path, bool open_for_writing)
+FileHandle UltralightFileSystem::OpenFile(const String16 &path, bool open_for_writing)
 {
     return (FileHandle)g_pFullFileSystem->Open(ToUTF8(path), open_for_writing ? "w" : "r");
 }
 
-void SourceFileSystem::CloseFile(FileHandle &handle) { g_pFullFileSystem->Close((FileHandle_t)handle); }
+void UltralightFileSystem::CloseFile(FileHandle &handle) { g_pFullFileSystem->Close((FileHandle_t)handle); }
 
-int64_t SourceFileSystem::SeekFile(FileHandle handle, int64_t offset, FileSeekOrigin origin)
+int64_t UltralightFileSystem::SeekFile(FileHandle handle, int64_t offset, FileSeekOrigin origin)
 {
     g_pFullFileSystem->Seek((FileHandle_t)handle, (int)offset, (FileSystemSeek_t)origin);
     return 0;
 }
 
-bool SourceFileSystem::TruncateFile(FileHandle handle, int64_t offset) { return false; }
+bool UltralightFileSystem::TruncateFile(FileHandle handle, int64_t offset) { return false; }
 
-int64_t SourceFileSystem::WriteToFile(FileHandle handle, const char *data, int64_t length)
+int64_t UltralightFileSystem::WriteToFile(FileHandle handle, const char *data, int64_t length)
 {
     return (int64_t)g_pFullFileSystem->Write(data, (int)length, (FileHandle_t)handle);
 }
 
-int64_t SourceFileSystem::ReadFromFile(FileHandle handle, char *data, int64_t length)
+int64_t UltralightFileSystem::ReadFromFile(FileHandle handle, char *data, int64_t length)
 {
     return (int64_t)g_pFullFileSystem->Read(data, length, (FileHandle_t)handle);
 }
 
-bool SourceFileSystem::CopyFile_(const String16 &source_path, const String16 &destination_path) { return false; }
+bool UltralightFileSystem::CopyFile_(const String16 &source_path, const String16 &destination_path) { return false; }
 
 const char *FileExtensionToMimeType(const char *ext)
 {

@@ -9,9 +9,17 @@
 
 #include <Ultralight/Ultralight.h>
 
+class UltralightOverlay;
+namespace vgui
+{
+    class Panel;
+}
+
 class UltralightUISystem : public CAutoGameSystemPerFrame
 {
   public:
+    UltralightUISystem();
+
     virtual char const *Name() { return "Ultralight UI"; }
 
     virtual bool Init() OVERRIDE;
@@ -20,11 +28,12 @@ class UltralightUISystem : public CAutoGameSystemPerFrame
     virtual void PreRender() OVERRIDE;
     virtual void PostRender() OVERRIDE;
 
+	UltralightOverlay *CreateOverlay(vgui::Panel *pParentPanel, int x, int y, int width, int height);
   private:
     ultralight::RefPtr<ultralight::Renderer> m_pRenderer;
     ultralight::GPUDriver *m_pGPUDriver;
 };
 
-CBaseGameSystemPerFrame *UltralightUI();
+UltralightUISystem *UltralightUI();
 
 #endif

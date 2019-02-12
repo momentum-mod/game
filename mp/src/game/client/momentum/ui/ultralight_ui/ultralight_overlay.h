@@ -7,14 +7,15 @@
 #include <Ultralight/Renderer.h>
 #include <Ultralight/View.h>
 #include <Ultralight/platform/GPUDriver.h>
-#include <hudelement.h>
 #include <utlvector.h>
 #include <vgui_controls/Panel.h>
 
-class UltralightOverlay
+class UltralightOverlay : public vgui::Panel
 {
+    DECLARE_CLASS_SIMPLE(UltralightOverlay, vgui::Panel);
   public:
-    UltralightOverlay(ultralight::Ref<ultralight::Renderer> renderer, ultralight::GPUDriver *driver, int x, int y,
+    UltralightOverlay(ultralight::Ref<ultralight::Renderer> renderer, ultralight::GPUDriver *driver,
+                      Panel *pParentPanel, int x, int y,
                       int width, int height);
     virtual ~UltralightOverlay();
 
@@ -43,13 +44,15 @@ class UltralightOverlay
         return x >= m_iXPos && y >= m_iYPos && x < m_iXPos + m_iWidth && y < m_iYPos + m_iHeight;
     }
 
-    virtual void Draw();
+    virtual void Paint() OVERRIDE;
 
-    virtual void FireKeyEvent(const ultralight::KeyEvent &evt);
+	virtual void OnMousePressed(vgui::MouseCode code) OVERRIDE;
+    virtual void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
+    virtual void OnMouseWheeled(int delta) OVERRIDE;
 
     virtual void FireMouseEvent(const ultralight::MouseEvent &evt);
-
     virtual void FireScrollEvent(const ultralight::ScrollEvent &evt);
+    virtual void FireKeyEvent(const ultralight::KeyEvent &evt);
 
     virtual void Resize(int width, int height);
 
