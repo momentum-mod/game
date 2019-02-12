@@ -5,14 +5,14 @@
 //-----------------------------------------------------------------------------
 // Purpose: Local maps list
 //-----------------------------------------------------------------------------
-class CLocalMaps : public CBaseMapsPage
+class CLibraryMaps : public CBaseMapsPage
 {
-    DECLARE_CLASS_SIMPLE(CLocalMaps, CBaseMapsPage);
+    DECLARE_CLASS_SIMPLE(CLibraryMaps, CBaseMapsPage);
 
 public: 
 
-    CLocalMaps(Panel *parent);
-    ~CLocalMaps();
+    CLibraryMaps(Panel *parent);
+    ~CLibraryMaps();
 
     // property page handlers
     virtual void OnPageShow() OVERRIDE;
