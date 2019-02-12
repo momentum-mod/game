@@ -180,6 +180,7 @@ bool CAPIRequests::GetUserMapFavorites(CallbackFunc func)
     if (CreateAPIRequest(req, API_REQ("user/maps/favorites"), k_EHTTPMethodGET))
     {
         SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "limit", "0");
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "inLibrary,worldRecord,personalBest");
 
         return SendAPIRequest(req, func, __FUNCTION__);
     }
