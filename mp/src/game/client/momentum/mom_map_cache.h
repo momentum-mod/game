@@ -9,6 +9,7 @@ enum APIModelSource
     MODEL_FROM_DISK = 0,
     MODEL_FROM_LIBRARY_API_CALL,
     MODEL_FROM_SEARCH_API_CALL,
+    MODEL_FROM_FAVORITES_API_CALL,
 };
 
 abstract_class APIModel
@@ -174,10 +175,10 @@ public:
 
     bool PlayMap(uint32 uID);
 
-    bool AddMapToLibrary();
-    bool RemoveMapFromLibrary();
-    bool AddMapToFavorites();
-    bool RemoveMapFromFavorites();
+    bool AddMapToLibrary(uint32 uID);
+    bool RemoveMapFromLibrary(uint32 uID);
+    bool AddMapToFavorites(uint32 uID);
+    bool RemoveMapFromFavorites(uint32 uID);
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
@@ -198,7 +199,15 @@ protected:
     void SaveMapCacheToDisk();
 
     void SetMapGamemode();
-    void OnPlayerMapLibrary(KeyValues *pKv);
+
+    // HTTP callbacks
+    void OnFetchPlayerMapLibrary(KeyValues *pKv);
+    void OnFetchPlayerMapFavorites(KeyValues *pKv);
+
+    void OnMapAddedToLibrary(KeyValues *pKv);
+    void OnMapRemovedFromLibrary(KeyValues *pKv);
+    void OnMapAddedToFavorites(KeyValues *pKv);
+    void OnMapRemovedFromFavorites(KeyValues *pKv);
 
     // Map downloading
     void StartMapDownload(KeyValues *pKvHeader);

@@ -53,9 +53,6 @@ abstract_class IMapList
     // Applies filters to the list
     virtual void ApplyFilters(KeyValues *pFilters) = 0;
 
-    // called when Connect button is pressed
-    virtual void OnMapStart() = 0;
-
     // invalid server index
     virtual int GetInvalidMapListID() = 0;
 };
