@@ -36,8 +36,6 @@ public:
 
     void AddWorkshopItemToLocalMaps(PublishedFileId_t id);*/
 private:
-    // context menu message handlers
-    MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
 
     // true if we're broadcasting for servers
     bool m_bLoadedMaps;

@@ -96,7 +96,7 @@
     {
         "success" "bool"
     }
-    "map_cache_update"
+    "map_data_update"
     {
         "id" "long"
         "main" "bool"
@@ -105,7 +105,8 @@
         "wr" "bool"
         "thumbnail" "bool"
     }
-    "map_library_updated"
+    "map_cache_updated"
     {
+        "source" "byte"
     }
 }

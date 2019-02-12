@@ -13,6 +13,20 @@ class MapFilterPanel;
 class CMapListPanel;
 struct MapData;
 
+// Map keynames
+#define KEYNAME_MAP_ID "id"
+#define KEYNAME_MAP_NAME "name"
+#define KEYNAME_MAP_HASH "hash"
+#define KEYNAME_MAP_TIME "time"
+#define KEYNAME_MAP_TYPE "MapType"
+#define KEYNAME_MAP_STATUS "MapStatus"
+#define KEYNAME_MAP_ZONE_COUNT "numZones"
+#define KEYNAME_MAP_LAYOUT "MapLayout"
+#define KEYNAME_MAP_DIFFICULTY "difficulty"
+#define KEYNAME_MAP_WORLD_RECORD "WorldRecord"
+#define KEYNAME_MAP_IMAGE "MapImage"
+#define KEYNAME_MAP_PATH "MapPath"
+
 //-----------------------------------------------------------------------------
 // Purpose: Base property page for all the games lists (internet/favorites/lan/etc.)
 //-----------------------------------------------------------------------------
@@ -49,7 +63,7 @@ protected:
     
     MESSAGE_FUNC(OnItemSelected, "ItemSelected");
 
-    // updates server count UI
+    // updates map count
     void UpdateStatus();
 
     virtual void AddMapToList(MapData *pData);
@@ -68,10 +82,18 @@ protected:
     virtual void OnPageShow();
     virtual void OnPageHide();
 
-    // called when Connect button is pressed
-    MESSAGE_FUNC(OnMapStart, "StartMap");
-    // called to look at game info
-    MESSAGE_FUNC(OnViewMapInfo, "ViewMapInfo");
+    // Called when map should be started
+    MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
+    // called to look at map info
+    MESSAGE_FUNC_INT(OnViewMapInfo, "ViewMapInfo", id);
+    // Called when map should be added to/removed from library
+    MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
+    MESSAGE_FUNC_INT(OnRemoveFromLibrary, "RemoveFromLibrary", id);
+    // Called when map should be added to/removed from favorites
+    MESSAGE_FUNC_INT(OnAddToFavorites, "AddToFavorites", id);
+    MESSAGE_FUNC_INT(OnRemoveFromFavorites, "RemoveFromFavorites", id);
+    // Right clicking a map
+    MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
 
     // If true, then we automatically select the first item that comes into the games list.
     bool m_bAutoSelectFirstItemInGameList;

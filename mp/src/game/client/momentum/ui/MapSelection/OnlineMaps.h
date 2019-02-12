@@ -40,16 +40,7 @@ protected:
     // vgui overrides
     virtual void PerformLayout();
 private:
-
-    // Called once per frame to check re-send request to master server
-    //void CheckRetryRequest(ESteamServerType serverType);
-    // opens context menu (user right clicked on a server)
-    MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
-
     bool m_bRequireUpdate;	// checks whether we need an update upon opening
-
     bool m_bOfflineMode;
-
     int m_iCurrentPage;
-
 };

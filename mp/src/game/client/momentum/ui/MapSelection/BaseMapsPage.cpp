@@ -4,6 +4,7 @@
 #include "CMapListPanel.h"
 #include "MapSelectorDialog.h"
 #include "MapFilterPanel.h"
+#include "MapContextMenu.h"
 #include "mom_map_cache.h"
 #include "util/mom_util.h"
 
@@ -19,20 +20,6 @@
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
-
-// Map keynames
-#define KEYNAME_MAP_ID "id"
-#define KEYNAME_MAP_NAME "name"
-#define KEYNAME_MAP_HASH "hash"
-#define KEYNAME_MAP_TIME "time"
-#define KEYNAME_MAP_TYPE "MapType"
-#define KEYNAME_MAP_STATUS "MapStatus"
-#define KEYNAME_MAP_ZONE_COUNT "numZones"
-#define KEYNAME_MAP_LAYOUT "MapLayout"
-#define KEYNAME_MAP_DIFFICULTY "difficulty"
-#define KEYNAME_MAP_WORLD_RECORD "WorldRecord"
-#define KEYNAME_MAP_IMAGE "MapImage"
-#define KEYNAME_MAP_PATH "MapPath"
 
 //Sort functions
 static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
@@ -113,7 +100,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     LoadControlSettings(CFmtStr("resource/ui/MapSelector/%sPage.res", name));
 
-    ListenForGameEvent("map_cache_update");
+    ListenForGameEvent("map_data_update");
+    ListenForGameEvent("map_cache_updated");
 }
 
 //-----------------------------------------------------------------------------
@@ -169,7 +157,7 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 
     //Font
     m_hFont = pScheme->GetFont("MapListFont", IsProportional());
-    if (!m_hFont)
+    if (m_hFont == INVALID_FONT)
         m_hFont = pScheme->GetFont("DefaultSmall", IsProportional());
     m_pMapList->SetFont(m_hFont);
 }
@@ -234,7 +222,8 @@ bool CBaseMapsPage::MapPassesFilters(MapData *pMap, KeyValues *pFilters)
     const char *szMapNameFilter = pFilters->GetString("name");
     int count = Q_strlen(szMapNameFilter);
 
-    if (count && !Q_strstr(pMap->m_szMapName, szMapNameFilter))//strstr returns null if the substring is not in the base string
+    // strstr returns null if the substring is not in the base string
+    if (count && !Q_strstr(pMap->m_szMapName, szMapNameFilter))
         return false;
 
     // Difficulty
@@ -392,6 +381,7 @@ void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo
     // If it's a valid index, we're just normally updating
     if (pItem)
     {
+        kv->RecursiveMergeKeyValues(pItem);
         pItem->Clear();
         kv->CopySubkeys(pItem);
         m_pMapList->ApplyItemChanges(pMap->m_iListID);
@@ -410,7 +400,7 @@ void CBaseMapsPage::OnCommand(const char *command)
 {
     if (!Q_stricmp(command, "StartMap"))
     {
-        OnMapStart();
+        // OnMapStart();
     }
     else if (!Q_stricmp(command, "GetNewList"))
     {
@@ -432,14 +422,17 @@ void CBaseMapsPage::OnItemSelected()
 
 void CBaseMapsPage::FireGameEvent(IGameEvent* event)
 {
-    // Map updated from cache, do it here
-    uint32 id = event->GetInt("id");
-    MapDisplay_t *map = GetMapDisplayByID(id);
-    if (map)
+    if (FStrEq(event->GetName(), "map_data_update"))
     {
-        UpdateMapListData(map, event->GetBool("main"), event->GetBool("info"), 
-                          event->GetBool("pb"), event->GetBool("wr"), 
-                          event->GetBool("thumbnail"));
+        // Map updated from cache, do it here
+        uint32 id = event->GetInt("id");
+        MapDisplay_t *map = GetMapDisplayByID(id);
+        if (map)
+        {
+            UpdateMapListData(map, event->GetBool("main"), event->GetBool("info"), 
+                              event->GetBool("pb"), event->GetBool("wr"), 
+                              event->GetBool("thumbnail"));
+        }
     }
 }
 
@@ -475,11 +468,15 @@ void CBaseMapsPage::RemoveMap(MapDisplay_t &map)
     if (m_pMapList->IsValidItemID(map.m_iListID))
     {
         // don't remove the server from list, just hide since this is a lot faster
-        m_pMapList->SetItemVisible(map.m_iListID, false);
+        // m_pMapList->SetItemVisible(map.m_iListID, false);
+
+        // Delete its image to free resources
+        if (map.m_iMapImageIndex > 1)
+            delete map.m_pImage;
 
         // find the row in the list and kill
-        //	m_pGameList->RemoveItem(server.listEntryID);
-        //	server.listEntryID = GetInvalidServerListID();
+        m_pMapList->RemoveItem(map.m_iListID);
+        m_vecMaps.FindAndRemove(map);
     }
 
     UpdateStatus();
@@ -524,21 +521,18 @@ void CBaseMapsPage::OnPageHide()
 //-----------------------------------------------------------------------------
 // Purpose: initiates map loading
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::OnMapStart()
+void CBaseMapsPage::OnMapStart(int id)
 {
     if (!m_pMapList->GetSelectedItemsCount())
         return;
 
-    if (!m_pMapList->GetSelectedItemsCount()) return;
-    KeyValues *kv = m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
-
-    g_pMapCache->PlayMap(kv->GetInt(KEYNAME_MAP_ID)); // MOM_TODO handle downloads
+    g_pMapCache->PlayMap(id); // MOM_TODO handle downloads
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Displays the current map info (from contextmenu)
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::OnViewMapInfo()
+void CBaseMapsPage::OnViewMapInfo(int id)
 {
     if (!m_pMapList->GetSelectedItemsCount())
         return;
@@ -555,4 +549,42 @@ void CBaseMapsPage::OnViewMapInfo()
 
     // View the map info
     MapSelectorDialog().OpenMapInfoDialog(this, pMap);
+}
+
+void CBaseMapsPage::OnAddMapToLibrary(int id)
+{
+    g_pMapCache->AddMapToLibrary(id);
+}
+
+void CBaseMapsPage::OnRemoveFromLibrary(int id)
+{
+    g_pMapCache->RemoveMapFromLibrary(id);
+}
+
+void CBaseMapsPage::OnAddToFavorites(int id)
+{
+    g_pMapCache->AddMapToFavorites(id); 
+}
+
+void CBaseMapsPage::OnRemoveFromFavorites(int id)
+{
+    g_pMapCache->RemoveMapFromFavorites(id);
+}
+
+void CBaseMapsPage::OnOpenContextMenu(int itemID)
+{
+    if (!m_pMapList->GetSelectedItemsCount())
+        return;
+
+    KeyValues *pData = m_pMapList->GetItem(itemID);
+    if (!pData)
+        return;
+
+    MapData *pMapData = g_pMapCache->GetMapDataByID(pData->GetInt(KEYNAME_MAP_ID));
+    if (!pMapData)
+        return;
+
+    // Activate context menu
+    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
+    menu->ShowMenu(this, pMapData);
 }

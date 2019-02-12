@@ -116,6 +116,11 @@ public:
     bool GetMapInfo(uint32 mapID, CallbackFunc func);
     bool GetMapByName(const char *pMapName, CallbackFunc func);
     bool GetUserMapLibrary(CallbackFunc func);
+    bool AddMapToLibrary(uint32 mapID, CallbackFunc func);
+    bool RemoveMapFromLibrary(uint32 mapID, CallbackFunc func);
+    bool GetUserMapFavorites(CallbackFunc func);
+    bool AddMapToFavorites(uint32 mapID, CallbackFunc func);
+    bool RemoveMapFromFavorites(uint32 mapID, CallbackFunc func);
 
     // ==== Leaderboards ====
     bool GetTop10MapTimes(uint32 mapID, CallbackFunc func);
@@ -171,7 +176,7 @@ private:
     bool CreateAPIRequest(APIRequest *request, const char *pszURL, EHTTPMethod kMethod, bool bAuth = true, bool bSensitive = false);
     // Should be called after the HTTP request is prepared by the API calls (above)
     bool SendAPIRequest(APIRequest *request, CallbackFunc func, const char *pCallingFunction);
-    // Check the response for errors, insert error objects in here
+    // Check the response for errors
     bool CheckAPIResponse(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
 
     CUtlMap<HTTPRequestHandle, APIRequest*> m_mapAPICalls;
