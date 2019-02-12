@@ -1,8 +1,6 @@
 #pragma once
 
-#include "cbase.h"
 #include "c_mom_ghost_base.h"
-#include "steam/steam_api.h"
 
 class CGhostEntityPanel;
 
@@ -24,7 +22,7 @@ public:
     //recieved from CMomentumOnlineGhostEntity serverclass 
     char m_pszGhostName[MAX_PLAYER_NAME_LENGTH]; 
     uint32 m_uiAccountID;
-    CSteamID m_SteamID;
+    uint64 m_SteamID;
     int m_nGhostButtons;
     bool m_bSpectating; /// Is this ghost currently spectating?
 

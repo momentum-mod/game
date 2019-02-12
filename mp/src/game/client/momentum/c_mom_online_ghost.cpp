@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "c_mom_online_ghost.h"
+#include "steam/steam_api.h"
 #include "mom_player_shared.h"
 #include "GhostEntityPanel.h"
 
@@ -15,7 +16,7 @@ END_RECV_TABLE();
 C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false), m_bSpectated(false), m_pEntityPanel(nullptr)
 {
     m_pszGhostName[0] = '\0';
-    m_SteamID = k_steamIDNil;
+    m_SteamID = 0;
     m_nGhostButtons = 0;
 }
 
@@ -39,11 +40,10 @@ void C_MomentumOnlineGhostEntity::ClientThink()
 {
     SetNextClientThink(CLIENT_THINK_ALWAYS);
 
-    if (m_uiAccountID > 0 && !m_SteamID.IsValid() && SteamUtils())
+    if (m_uiAccountID > 0 && m_SteamID == 0 && SteamUtils())
     {
-        m_SteamID = CSteamID(m_uiAccountID, k_EUniversePublic, SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
+        m_SteamID = CSteamID(m_uiAccountID, k_EUniversePublic, SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual).ConvertToUint64();
     }
-
 
     m_pEntityPanel->SetVisible(!(m_bSpectating || m_bSpectated));
 }

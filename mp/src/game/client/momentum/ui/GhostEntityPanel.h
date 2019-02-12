@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cbase.h"
 #include <vgui_controls/Panel.h>
 
 class C_MomentumOnlineGhostEntity;
