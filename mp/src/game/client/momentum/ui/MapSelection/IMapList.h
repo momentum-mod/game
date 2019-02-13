@@ -114,6 +114,9 @@ abstract_class IMapList
     // gets a new map list
     virtual void GetNewMapList() = 0;
 
+    // When the map selection dialog selects this tab
+    virtual void OnTabSelected() = 0;
+
     // Loads the filters from disk
     virtual void LoadFilters() = 0;
 

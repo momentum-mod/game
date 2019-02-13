@@ -9,11 +9,9 @@
 
 #include "mom_map_cache.h"
 
-#include <OfflineMode.h>
 #include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
-
 
 using namespace vgui;
 
@@ -24,9 +22,6 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CBrowseMaps::CBrowseMaps(Panel *parent) : CBaseMapsPage(parent, "BrowseMaps")
 {
-    m_bRequireUpdate = true;
-    m_bOfflineMode = !IsSteamGameServerBrowsingEnabled();
-    m_iCurrentPage = 0;
     m_fPrevSearchTime = 0.0f;
     m_pMapList->SetSortColumnEx(HEADER_DATE_CREATED, HEADER_DIFFICULTY, true);
 }
@@ -129,29 +124,9 @@ void CBrowseMaps::ApplyFilters(MapFilters_t filters)
 
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CBrowseMaps::PerformLayout()
-{
-    if (!m_bOfflineMode && m_bRequireUpdate && MapSelectorDialog().IsVisible())
-    {
-        PostMessage(this, new KeyValues("GetNewServerList"), 0.1f);
-        m_bRequireUpdate = false;
-    }
-
-    if (m_bOfflineMode)
-    {
-        m_pMapList->SetEmptyListText("#ServerBrowser_OfflineMode");
-    }
-
-    BaseClass::PerformLayout();
-}
-
-
-//-----------------------------------------------------------------------------
 // Purpose: Activates the page, starts refresh if needed
 //-----------------------------------------------------------------------------
-void CBrowseMaps::OnPageShow()
+void CBrowseMaps::OnTabSelected()
 {
     GetNewMapList();
     ApplyFilters(GetFilters());
@@ -163,11 +138,6 @@ void CBrowseMaps::OnPageShow()
 //-----------------------------------------------------------------------------
 void CBrowseMaps::GetNewMapList()
 {
-    UpdateStatus();
-
-    m_bRequireUpdate = false;
-
-    m_iCurrentPage = 0;
     FillMapList();
 }
 
