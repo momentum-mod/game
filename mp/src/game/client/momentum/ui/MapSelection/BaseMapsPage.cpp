@@ -525,20 +525,9 @@ void CBaseMapsPage::GetNewMapList()
     // StartRefresh();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Activates the page, starts refresh
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::OnPageShow()
+void CBaseMapsPage::OnTabSelected()
 {
-    // StartRefresh();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called on page hide, stops any refresh
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::OnPageHide()
-{
-    // StopRefresh();
+    GetNewMapList();
 }
 
 //-----------------------------------------------------------------------------

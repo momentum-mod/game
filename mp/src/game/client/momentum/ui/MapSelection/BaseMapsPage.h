@@ -104,8 +104,7 @@ protected:
     MapDisplay_t *GetMapDisplayByID(uint32 id);
 
     virtual void GetNewMapList();
-    virtual void OnPageShow();
-    virtual void OnPageHide();
+    virtual void OnTabSelected();
 
     // Called when map should be started
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
