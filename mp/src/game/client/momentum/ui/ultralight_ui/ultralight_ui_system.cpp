@@ -63,13 +63,13 @@ UltralightUISystem::UltralightUISystem()
     m_pRenderer = Renderer::Create();
 }
 
-UltralightOverlay *UltralightUISystem::CreateOverlay(vgui::Panel *pParentPanel, int x, int y, int width, int height)
+UltralightOverlay *UltralightUISystem::CreateOverlay(vgui::Panel *pParentPanel, bool bTransparent)
 {
     if (!m_pRenderer || !m_pGPUDriver)
     {
         return nullptr;
     }
 
-    auto pOverlay = new UltralightOverlay(*m_pRenderer, m_pGPUDriver, pParentPanel, x, y, width, height);
+    auto pOverlay = new UltralightOverlay(*m_pRenderer, pParentPanel, bTransparent);
     return pOverlay;
 }
