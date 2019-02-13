@@ -22,9 +22,8 @@ $Group "game"
 	"server"
 	"tier1"
 	"vgui_controls"
-    "game_shader_dx9"
-    "GameUI"
-	"discord-rpc"
+	"game_shader_dx9"
+	"GameUI"
 	"libcryptopp"
 }
 
@@ -59,9 +58,8 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
-    "GameUI"
-    "discord-rpc"
-    "libcryptopp"
+	"GameUI"
+	"libcryptopp"
 }
 
 $Group "dedicated"
