@@ -20,6 +20,7 @@ using namespace vgui;
 CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps")
 {
     m_bLoadedMaps = false;
+    m_pMapList->SetColumnVisible(HEADER_MAP_IN_LIBRARY, false);
 }
 
 //-----------------------------------------------------------------------------

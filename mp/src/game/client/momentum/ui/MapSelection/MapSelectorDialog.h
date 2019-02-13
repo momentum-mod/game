@@ -2,6 +2,8 @@
 
 #include "vgui_controls/Frame.h"
 
+struct MapFilters_t;
+struct MapData;
 class CMapContextMenu;
 class CDialogMapInfo;
 class CLibraryMaps;
@@ -35,10 +37,7 @@ public:
     CMapContextMenu *GetContextMenu(Panel *pParent);
 
     // opens a game info dialog from a game list
-    CDialogMapInfo *OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap);
-
-    // opens a game info dialog by a specified IP, not attached to any game list
-    CDialogMapInfo *OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort);
+    CDialogMapInfo *OpenMapInfoDialog(IMapList *gameList, MapData *pMapData);
 
     // closes all the map info dialogs
     void CloseAllMapInfoDialogs();
@@ -47,7 +46,7 @@ public:
     KeyValues *GetCurrentTabFilterData();
     KeyValues *GetTabFilterData(const char *pTabName);
     void LoadTabFilterData(const char *pTabName);
-    void ApplyFiltersToCurrentTab();
+    void ApplyFiltersToCurrentTab(MapFilters_t filters);
 
     // load/saves filter & favorites settings from disk
     void		LoadUserData();

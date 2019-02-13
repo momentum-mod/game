@@ -123,7 +123,7 @@
     //hud_mapinfo
         "MOM_Status_NoZones" "No zones found"
         "MOM_Map_Name" "Map: "
-        "MOM_Map_Author" "Author: "
+        "MOM_Map_Author" "Author(s): "
         "MOM_Map_Difficulty" "Difficulty: "
 
     //Guns
@@ -149,6 +149,7 @@
         "MOM_MapSelector_NoMaps" "No maps found."
         "MOM_PersonalBest" "Personal Best"
         "MOM_WorldRecord" "World Record"
+        "MOM_MapSelector_CreationDate" "Date Created"
 
         "MOM_MapSelector_MapLayout" "Map Layout"
         "MOM_MapSelector_MapLayout_Tooltip" "This column shows if the map is linear or has stages."
@@ -171,9 +172,10 @@
         "MOM_GameType_Trikz" "Trikz"
 
         // Map Info Dialog
+        "MOM_MapSelector_InfoDialog" "Map Info"
         "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode: "
         "MOM_MapSelector_InfoDialog_Layout" "Layout: "
-        "MOM_MapSelector_InfoDialog_Zones"  "Zones: "
+        "MOM_MapSelector_InfoDialog_Zones"  "Number of Zones: "
 
         // Misc
         "MOM_BuildVersion" "Build Version"

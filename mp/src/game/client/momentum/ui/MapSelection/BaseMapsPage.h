@@ -26,6 +26,23 @@ struct MapData;
 #define KEYNAME_MAP_WORLD_RECORD "WorldRecord"
 #define KEYNAME_MAP_IMAGE "MapImage"
 #define KEYNAME_MAP_PATH "MapPath"
+#define KEYNAME_MAP_CREATION_DATE "creationDate"
+#define KEYNAME_MAP_CREATION_DATE_SORT "creationDate_s"
+#define KEYNAME_MAP_IN_LIBRARY "inLibrary"
+#define KEYNAME_MAP_IN_FAVORITES "inFavorites"
+
+enum HEADERS
+{
+    HEADER_MAP_IMAGE = 0,
+    HEADER_MAP_IN_LIBRARY,
+    HEADER_MAP_IN_FAVORITES,
+    HEADER_MAP_NAME,
+    HEADER_MAP_LAYOUT,
+    HEADER_DIFFICULTY,
+    HEADER_WORLD_RECORD,
+    HEADER_BEST_TIME,
+    HEADER_DATE_CREATED
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: Base property page for all the games lists (internet/favorites/lan/etc.)
@@ -53,11 +70,19 @@ public:
     // Filters
     // loads filter settings from disk
     virtual void LoadFilters();
-    virtual KeyValues *GetFilters();
-    void ApplyFilters(KeyValues *pFilters) OVERRIDE;
-    virtual bool MapPassesFilters(MapData *pData, KeyValues *pFilters);
+    virtual MapFilters_t GetFilters();
+    void ApplyFilters(MapFilters_t filters) OVERRIDE;
+    virtual void OnApplyFilters(MapFilters_t filters);
+    virtual bool MapPassesFilters(MapData *pData, MapFilters_t filters);
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
+
+    // Called when map should be added to/removed from library
+    MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
+    MESSAGE_FUNC_INT(OnRemoveMapFromLibrary, "RemoveFromLibrary", id);
+    // Called when map should be added to/removed from favorites
+    MESSAGE_FUNC_INT(OnAddMapToFavorites, "AddToFavorites", id);
+    MESSAGE_FUNC_INT(OnRemoveMapFromFavorites, "RemoveFromFavorites", id);
 protected:
     virtual void OnCommand(const char *command);
     
@@ -86,35 +111,13 @@ protected:
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
     // called to look at map info
     MESSAGE_FUNC_INT(OnViewMapInfo, "ViewMapInfo", id);
-    // Called when map should be added to/removed from library
-    MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
-    MESSAGE_FUNC_INT(OnRemoveFromLibrary, "RemoveFromLibrary", id);
-    // Called when map should be added to/removed from favorites
-    MESSAGE_FUNC_INT(OnAddToFavorites, "AddToFavorites", id);
-    MESSAGE_FUNC_INT(OnRemoveFromFavorites, "RemoveFromFavorites", id);
     // Right clicking a map
     MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
-
-    // If true, then we automatically select the first item that comes into the games list.
-    bool m_bAutoSelectFirstItemInGameList;
 
     CMapListPanel *m_pMapList;
 
     CUtlVector<MapDisplay_t> m_vecMaps;
 
-    int m_iOnlineMapsCount;
-
 private:
     vgui::HFont m_hFont;
-
-    typedef enum
-    {
-        HEADER_MAP_IMAGE = 0,
-        HEADER_MAP_NAME,
-        HEADER_MAP_LAYOUT,
-        HEADER_DIFFICULTY,
-        HEADER_WORLD_RECORD,
-        HEADER_BEST_TIME
-    } HEADERS;
-
 };

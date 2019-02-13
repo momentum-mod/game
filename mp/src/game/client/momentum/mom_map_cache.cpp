@@ -11,14 +11,13 @@
 
 #include "tier0/memdbgon.h"
 
-#define UPDATE_INTERVAL 3600 // 1 hour between updates
 #define MAP_CACHE_FILE_NAME "map_cache.dat"
 
 void User::FromKV(KeyValues* pKv)
 {
     m_uID = pKv->GetUint64("id");
     Q_strncpy(m_szAlias, pKv->GetString("alias"), sizeof(m_szAlias));
-    m_bValid = true;
+    m_bValid = m_uID > 0 && Q_strlen(m_szAlias) > 0;
 }
 
 void User::ToKV(KeyValues* pKv) const
@@ -29,10 +28,14 @@ void User::ToKV(KeyValues* pKv) const
 
 User& User::operator=(const User& src)
 {
-    m_bUpdated = !(*this == src);
-    m_uID = src.m_uID;
-    Q_strncpy(m_szAlias, src.m_szAlias, sizeof(m_szAlias));
-    m_bValid = src.m_bValid;
+    if (src.m_bValid)
+    {
+        m_bUpdated = !(*this == src);
+        m_uID = src.m_uID;
+        Q_strncpy(m_szAlias, src.m_szAlias, sizeof(m_szAlias));
+        m_bValid = src.m_bValid;
+    }
+
     return *this;
 }
 
@@ -44,7 +47,7 @@ void MapInfo::FromKV(KeyValues* pKv)
     m_bIsLinear = pKv->GetBool("isLinear");
     m_iDifficulty = pKv->GetInt("difficulty");
     Q_strncpy(m_szCreationDate, pKv->GetString("creationDate"), sizeof(m_szCreationDate));
-    m_bValid = true;
+    m_bValid = m_iDifficulty && Q_strlen(m_szDescription);
 }
 
 void MapInfo::ToKV(KeyValues* pKv) const
@@ -59,14 +62,18 @@ void MapInfo::ToKV(KeyValues* pKv) const
 
 MapInfo& MapInfo::operator=(const MapInfo& other)
 {
-    m_bUpdated = !(*this == other);
-    Q_strncpy(m_szDescription, other.m_szDescription, sizeof(m_szDescription));
-    m_iNumBonuses = other.m_iNumBonuses;
-    m_iNumZones = other.m_iNumZones;
-    m_bIsLinear = other.m_bIsLinear;
-    m_iDifficulty = other.m_iDifficulty;
-    Q_strncpy(m_szCreationDate, other.m_szCreationDate, sizeof(m_szCreationDate));
-    m_bValid = other.m_bValid;
+    if (other.m_bValid)
+    {
+        m_bUpdated = !(*this == other);
+        Q_strncpy(m_szDescription, other.m_szDescription, sizeof(m_szDescription));
+        m_iNumBonuses = other.m_iNumBonuses;
+        m_iNumZones = other.m_iNumZones;
+        m_bIsLinear = other.m_bIsLinear;
+        m_iDifficulty = other.m_iDifficulty;
+        Q_strncpy(m_szCreationDate, other.m_szCreationDate, sizeof(m_szCreationDate));
+        m_bValid = other.m_bValid;
+    }
+
     return *this;
 }
 
@@ -84,7 +91,7 @@ void MapImage::FromKV(KeyValues* pKv)
     Q_strncpy(m_szURLMedium, pKv->GetString("medium"), sizeof(m_szURLMedium));
     Q_strncpy(m_szURLLarge, pKv->GetString("large"), sizeof(m_szURLLarge));
     Q_strncpy(m_szLastUpdatedDate, pKv->GetString("updatedAt"), sizeof(m_szLastUpdatedDate));
-    m_bValid = true;
+    m_bValid = m_uID > 0;
 }
 
 void MapImage::ToKV(KeyValues* pKv) const
@@ -98,13 +105,17 @@ void MapImage::ToKV(KeyValues* pKv) const
 
 MapImage& MapImage::operator=(const MapImage& other)
 {
-    m_bUpdated = !(*this == other);
-    m_uID = other.m_uID;
-    Q_strncpy(m_szURLSmall, other.m_szURLSmall, sizeof(m_szURLSmall));
-    Q_strncpy(m_szURLMedium, other.m_szURLMedium, sizeof(m_szURLMedium));
-    Q_strncpy(m_szURLLarge, other.m_szURLLarge, sizeof(m_szURLLarge));
-    Q_strncpy(m_szLastUpdatedDate, other.m_szLastUpdatedDate, sizeof(m_szLastUpdatedDate));
-    m_bValid = other.m_bValid;
+    if (other.m_bValid)
+    {
+        m_bUpdated = !(*this == other);
+        m_uID = other.m_uID;
+        Q_strncpy(m_szURLSmall, other.m_szURLSmall, sizeof(m_szURLSmall));
+        Q_strncpy(m_szURLMedium, other.m_szURLMedium, sizeof(m_szURLMedium));
+        Q_strncpy(m_szURLLarge, other.m_szURLLarge, sizeof(m_szURLLarge));
+        Q_strncpy(m_szLastUpdatedDate, other.m_szLastUpdatedDate, sizeof(m_szLastUpdatedDate));
+        m_bValid = other.m_bValid;
+    }
+
     return *this;
 }
 
@@ -114,10 +125,8 @@ void MapCredit::FromKV(KeyValues* pKv)
     m_eType = (MAP_CREDIT_TYPE)pKv->GetInt("type", CREDIT_UNKNOWN);
     KeyValues* pUser = pKv->FindKey("user");
     if (pUser)
-    {
         m_User.FromKV(pUser);
-        m_bValid = true;
-    }
+    m_bValid = m_uID > 0;
 }
 
 void MapCredit::ToKV(KeyValues* pKv) const
@@ -139,11 +148,14 @@ bool MapCredit::operator==(const MapCredit& other) const
 
 MapCredit& MapCredit::operator=(const MapCredit& other)
 {
-    m_bUpdated = !(*this == other);
-    m_uID = other.m_uID;
-    m_eType = other.m_eType;
-    m_User = other.m_User;
-    m_bValid = other.m_bValid;
+    if (other.m_bValid)
+    {
+        m_bUpdated = !(*this == other);
+        m_uID = other.m_uID;
+        m_eType = other.m_eType;
+        m_User = other.m_User;
+        m_bValid = other.m_bValid;
+    }
     return *this;
 }
 
@@ -157,7 +169,7 @@ void Run::FromKV(KeyValues* pKv)
     m_uFlags = pKv->GetInt("flags");
     Q_strncpy(m_szDownloadURL, pKv->GetString("file"), sizeof(m_szDownloadURL));
     Q_strncpy(m_szFileHash, pKv->GetString("hash"), sizeof(m_szFileHash));
-    m_bValid = true;
+    m_bValid = m_uID > 0;
 }
 
 void Run::ToKV(KeyValues* pKv) const
@@ -179,16 +191,20 @@ bool Run::operator==(const Run& other) const
 
 Run& Run::operator=(const Run& other)
 {
-    m_bUpdated = !(*this == other);
-    m_uID = other.m_uID;
-    m_bIsPersonalBest = other.m_bIsPersonalBest;
-    m_fTickRate = other.m_fTickRate;
-    Q_strncpy(m_szDateAchieved, other.m_szDateAchieved, sizeof(m_szDateAchieved));
-    m_fTime = other.m_fTime;
-    m_uFlags = other.m_uFlags;
-    Q_strncpy(m_szDownloadURL, other.m_szDownloadURL, sizeof(m_szDownloadURL));
-    Q_strncpy(m_szFileHash, other.m_szFileHash, sizeof(m_szFileHash));
-    m_bValid = other.m_bValid;
+    if (other.m_bValid)
+    {
+        m_bUpdated = !(*this == other);
+        m_uID = other.m_uID;
+        m_bIsPersonalBest = other.m_bIsPersonalBest;
+        m_fTickRate = other.m_fTickRate;
+        Q_strncpy(m_szDateAchieved, other.m_szDateAchieved, sizeof(m_szDateAchieved));
+        m_fTime = other.m_fTime;
+        m_uFlags = other.m_uFlags;
+        Q_strncpy(m_szDownloadURL, other.m_szDownloadURL, sizeof(m_szDownloadURL));
+        Q_strncpy(m_szFileHash, other.m_szFileHash, sizeof(m_szFileHash));
+        m_bValid = other.m_bValid;
+    }
+
     return *this;
 }
 
@@ -206,9 +222,10 @@ void MapRank::FromKV(KeyValues* pKv)
         if (pUser)
         {
             m_User.FromKV(pUser);
-            m_bValid = true;
         }
     }
+
+    m_bValid = m_iRank > 0;
 }
 
 void MapRank::ToKV(KeyValues* pKv) const
@@ -237,12 +254,16 @@ bool MapRank::operator==(const MapRank& other) const
 
 MapRank& MapRank::operator=(const MapRank& other)
 {
-    m_bUpdated = !(*this == other);
-    m_iRank = other.m_iRank;
-    m_iRankXP = other.m_iRankXP;
-    m_Run = other.m_Run;
-    m_User = other.m_User;
-    m_bValid = other.m_bValid;
+    if (other.m_bValid)
+    {
+        m_bUpdated = !(*this == other);
+        m_iRank = other.m_iRank;
+        m_iRankXP = other.m_iRankXP;
+        m_Run = other.m_Run;
+        m_User = other.m_User;
+        m_bValid = other.m_bValid;
+    }
+
     return *this;
 }
 
@@ -258,6 +279,7 @@ MapData::MapData()
     m_eType = GAMEMODE_UNKNOWN;
     m_eMapStatus = STATUS_UNKNOWN;
     m_szDownloadURL[0] = '\0';
+    m_bMapUpdated = false;
 }
 
 MapData::MapData(const MapData& src)
@@ -267,6 +289,7 @@ MapData::MapData(const MapData& src)
     m_eMapStatus = src.m_eMapStatus;
     Q_strncpy(m_szHash, src.m_szHash, sizeof(m_szHash));
     Q_strncpy(m_szDownloadURL, src.m_szDownloadURL, sizeof(m_szDownloadURL));
+    m_bMapUpdated = src.m_bMapUpdated;
 
     Q_strncpy(m_szMapName, src.m_szMapName, sizeof(m_szMapName));
     m_bInFavorites = src.m_bInFavorites;
@@ -285,13 +308,13 @@ MapData::MapData(const MapData& src)
     m_bValid = src.m_bValid;
 }
 
-bool MapData::NeedsUpdate() const
+bool MapData::WasUpdated() const
 {
     return m_bUpdated || m_Info.m_bUpdated || m_PersonalBest.NeedsUpdate() || 
         m_WorldRecord.NeedsUpdate() || m_Thumbnail.m_bUpdated;
 }
 
-void MapData::SendUpdate()
+void MapData::SendDataUpdate()
 {
     IGameEvent *pEvent = gameeventmanager->CreateEvent("map_data_update");
     if (pEvent)
@@ -308,11 +331,48 @@ void MapData::SendUpdate()
     }
 }
 
+void MapData::SendMapFileUpdate()
+{
+    if (m_bMapUpdated)
+    {
+        IGameEvent *pEventMap = gameeventmanager->CreateEvent("map_file_updated");
+        if (pEventMap)
+        {
+            pEventMap->SetInt("id", m_uID);
+            gameeventmanager->FireEventClientSide(pEventMap);
+            // m_bMapUpdated gets reset when the new map finishes downloading
+        }
+    }
+}
+
 void MapData::ResetUpdate()
 {
     m_PersonalBest.ResetUpdate();
     m_WorldRecord.ResetUpdate();
     m_bUpdated = m_Info.m_bUpdated = m_Thumbnail.m_bUpdated = false;
+}
+
+bool MapData::GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType)
+{
+    if (m_vecCredits.IsEmpty() || !pOut)
+        return false;
+
+    CUtlStringList people;
+    FOR_EACH_VEC(m_vecCredits, i)
+    {
+        if (m_vecCredits[i].m_eType == creditType)
+        {
+            people.CopyAndAddToTail(m_vecCredits[i].m_User.m_szAlias);
+        }
+    }
+    int count = people.Count();
+    for (int i = 0; i < count; i++)
+    {
+        pOut->Append(people[i]);
+        if (i < count - 2)
+            pOut->Append(", ", 2);
+    }
+    return true;
 }
 
 void MapData::FromKV(KeyValues* pMap)
@@ -330,6 +390,7 @@ void MapData::FromKV(KeyValues* pMap)
         m_bInFavorites = pMap->GetBool("inFavorites");
         m_bInLibrary = pMap->GetBool("inLibrary");
         Q_strncpy(m_szPath, pMap->GetString("path"), sizeof(m_szPath));
+        m_bMapUpdated = pMap->GetBool("mapNeedsUpdate");
     }
     else
     {
@@ -379,7 +440,7 @@ void MapData::FromKV(KeyValues* pMap)
     if (pWorldRecord && !pWorldRecord->IsEmpty())
         m_WorldRecord.FromKV(pWorldRecord);
 
-    m_bValid = m_Info.m_bValid && m_Submitter.m_bValid && m_Thumbnail.m_bValid;
+    m_bValid = m_uID > 0;
 }
 
 void MapData::ToKV(KeyValues* pKv) const
@@ -393,6 +454,7 @@ void MapData::ToKV(KeyValues* pKv) const
     pKv->SetBool("inFavorites", m_bInFavorites);
     pKv->SetBool("inLibrary", m_bInLibrary);
     pKv->SetString("updatedAt", m_szLastUpdated);
+    pKv->SetBool("mapNeedsUpdate", m_bMapUpdated);
     pKv->SetString("path", m_szPath);
 
     if (m_Info.m_bValid)
@@ -444,28 +506,39 @@ void MapData::ToKV(KeyValues* pKv) const
 
 MapData& MapData::operator=(const MapData& src)
 {
-    m_bUpdated = !(*this == src);
-    m_uID = src.m_uID;
-    m_eType = src.m_eType;
-    m_eMapStatus = src.m_eMapStatus;
-    Q_strncpy(m_szHash, src.m_szHash, sizeof(m_szHash));
-    Q_strncpy(m_szDownloadURL, src.m_szDownloadURL, sizeof(m_szDownloadURL));
+    if (src.m_bValid)
+    {
+        m_bUpdated = !(*this == src);
+        
+        m_uID = src.m_uID;
+        m_eType = src.m_eType;
+        m_eMapStatus = src.m_eMapStatus;
 
-    Q_strncpy(m_szMapName, src.m_szMapName, sizeof(m_szMapName));
-    m_bInFavorites = src.m_bInFavorites;
-    m_bInLibrary = src.m_bInLibrary;
-    Q_strncpy(m_szLastUpdated, src.m_szLastUpdated, sizeof(m_szLastUpdated));
+        m_bMapUpdated = !m_bValid || !FStrEq(m_szHash, src.m_szHash);
 
-    Q_strncpy(m_szPath, src.m_szPath, sizeof(m_szPath));
+        Q_strncpy(m_szHash, src.m_szHash, sizeof(m_szHash));
+        Q_strncpy(m_szDownloadURL, src.m_szDownloadURL, sizeof(m_szDownloadURL));
+
+        Q_strncpy(m_szMapName, src.m_szMapName, sizeof(m_szMapName));
+        m_bInFavorites = src.m_bInFavorites;
+        m_bInLibrary = src.m_bInLibrary;
+        Q_strncpy(m_szLastUpdated, src.m_szLastUpdated, sizeof(m_szLastUpdated));
+
+        Q_strncpy(m_szPath, src.m_szPath, sizeof(m_szPath));
+
+        m_bValid = src.m_bValid;
+    }
 
     m_Info = src.m_Info;
     m_Submitter = src.m_Submitter;
     m_PersonalBest = src.m_PersonalBest;
     m_WorldRecord = src.m_WorldRecord;
-    m_vecCredits.RemoveAll();
-    m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
+    if (src.m_vecCredits.Count())
+    {
+        m_vecCredits.RemoveAll();
+        m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
+    }
     m_Thumbnail = src.m_Thumbnail;
-    m_bValid = src.m_bValid;
 
     return *this;
 }
@@ -546,46 +619,22 @@ bool CMapCache::PlayMap(uint32 uID)
 
 bool CMapCache::AddMapToLibrary(uint32 uID)
 {
-    MapData *pMap = GetMapDataByID(uID);
-    if (pMap)
-    {
-        return g_pAPIRequests->AddMapToLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToLibrary));
-    }
-
-    return false;
+    return g_pAPIRequests->AddMapToLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToLibrary));
 }
 
 bool CMapCache::RemoveMapFromLibrary(uint32 uID)
 {
-    MapData *pMap = GetMapDataByID(uID);
-    if (pMap)
-    {
-        return g_pAPIRequests->RemoveMapFromLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromLibrary));
-    }
-
-    return false;
+    return g_pAPIRequests->RemoveMapFromLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromLibrary));
 }
 
 bool CMapCache::AddMapToFavorites(uint32 uID)
 {
-    MapData *pMap = GetMapDataByID(uID);
-    if (pMap)
-    {
-        return g_pAPIRequests->AddMapToFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToFavorites));
-    }
-
-    return false;
+    return g_pAPIRequests->AddMapToFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToFavorites));
 }
 
 bool CMapCache::RemoveMapFromFavorites(uint32 uID)
 {
-    MapData *pMap = GetMapDataByID(uID);
-    if (pMap)
-    {
-        return g_pAPIRequests->RemoveMapFromFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromFavorites));
-    }
-
-    return false;
+    return g_pAPIRequests->RemoveMapFromFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromFavorites));
 }
 
 void CMapCache::FireGameEvent(IGameEvent* event)
@@ -644,45 +693,85 @@ bool CMapCache::AddMapsToCache(KeyValues* pData, APIModelSource source)
 
     FOR_EACH_SUBKEY(pData, pMap)
     {
-        MapData d;
-        d.m_eSource = source;
         if (source == MODEL_FROM_LIBRARY_API_CALL || source == MODEL_FROM_FAVORITES_API_CALL)
             pMap = pMap->FindKey("map");
-        d.FromKV(pMap);
 
-        auto indx = m_mapMapCache.Find(d.m_uID);
-        if  (m_mapMapCache.IsValidIndex(indx))
-        {
-            // Update it
-            m_mapMapCache[indx] = d;
-            // Update other UI about this update if need be
-            if (m_mapMapCache[indx].NeedsUpdate())
-                m_mapMapCache[indx].SendUpdate();
-        }
-        else
-        {
-            // MOM_TODO check the download variable, if auto-download, do so here
-
-            m_dictMapNames.Insert(d.m_szMapName, d.m_uID);
-            m_mapMapCache.Insert(d.m_uID, d);
-
-            // Force an update event if not from disk
-            if (source != MODEL_FROM_DISK)
-                d.SendUpdate();
-        }
+        AddMapToCache(pMap, source);
     }
 
     if (source != MODEL_FROM_DISK)
     {
-        IGameEvent *pEvent = gameeventmanager->CreateEvent("map_cache_updated");
-        if (pEvent)
-        {
-            pEvent->SetInt("source", source);
-            gameeventmanager->FireEventClientSide(pEvent);
-        }
+        FireMapCacheUpdateEvent(source);
     }
 
     return true;
+}
+
+void CMapCache::AddMapToCache(KeyValues* pMap, APIModelSource source)
+{
+    MapData d;
+    d.m_eSource = source;
+    d.FromKV(pMap);
+
+    auto indx = m_mapMapCache.Find(d.m_uID);
+    if (m_mapMapCache.IsValidIndex(indx))
+    {
+        // Update it
+        m_mapMapCache[indx] = d;
+        // Update other UI about this update if need be
+        if (m_mapMapCache[indx].WasUpdated())
+            m_mapMapCache[indx].SendDataUpdate();
+        // If the map file itself needs updating, send the event here
+        if (m_mapMapCache[indx].m_bMapUpdated)
+            m_mapMapCache[indx].SendMapFileUpdate();
+    }
+    else
+    {
+        m_dictMapNames.Insert(d.m_szMapName, d.m_uID);
+        m_mapMapCache.Insert(d.m_uID, d);
+
+        // Force an update event if not from disk
+        if (source != MODEL_FROM_DISK)
+        {
+            d.SendDataUpdate();
+            d.SendMapFileUpdate();
+            // MOM_TODO something will need to check the download variable, if auto-download, do so here
+        }
+    }
+}
+
+void CMapCache::FireMapCacheUpdateEvent(APIModelSource source)
+{
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("map_cache_updated");
+    if (pEvent)
+    {
+        pEvent->SetInt("source", source);
+        gameeventmanager->FireEventClientSide(pEvent);
+    }
+}
+
+bool CMapCache::UpdateMapInfo(uint32 uMapID)
+{
+    MapData *pData = GetMapDataByID(uMapID);
+    if (pData)
+    {
+        return g_pAPIRequests->GetMapInfo(uMapID, UtlMakeDelegate(this, &CMapCache::OnFetchMapInfo));
+    }
+
+    return false;
+}
+
+uint32 CMapCache::GetUpdateIntervalForMap(MapData* pData)
+{
+    switch (pData->m_eMapStatus)
+    {
+    case MAP_PRIVATE_TESTING:
+    case MAP_PUBLIC_TESTING:
+        return 300; // 5 minutes
+    case MAP_APPROVED:
+    default:
+        return 3600; // One hour
+    }
 }
 
 void CMapCache::SetMapGamemode()
@@ -745,6 +834,22 @@ void CMapCache::OnFetchPlayerMapFavorites(KeyValues* pKv)
     }
 }
 
+void CMapCache::OnFetchMapInfo(KeyValues* pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+
+    if (pData)
+    {
+        AddMapToCache(pData, MODEL_FROM_INFO_API_CALL);
+        FireMapCacheUpdateEvent(MODEL_FROM_INFO_API_CALL);
+    }
+    else if (pErr)
+    {
+        // MOM_TODO error handle here
+    }
+}
+
 void CMapCache::OnMapAddedToLibrary(KeyValues* pKv)
 {
     KeyValues *pData = pKv->FindKey("data");
@@ -758,7 +863,7 @@ void CMapCache::OnMapAddedToLibrary(KeyValues* pKv)
         {
             pMapData->m_bInLibrary = true;
             pMapData->m_bUpdated = true;
-            pMapData->SendUpdate();
+            pMapData->SendDataUpdate();
         }
     }
     else if (pErr)
@@ -780,7 +885,7 @@ void CMapCache::OnMapRemovedFromLibrary(KeyValues* pKv)
         {
             pMapData->m_bInLibrary = false;
             pMapData->m_bUpdated = true;
-            pMapData->SendUpdate();
+            pMapData->SendDataUpdate();
         }
     }
     else if (pErr)
@@ -802,7 +907,7 @@ void CMapCache::OnMapAddedToFavorites(KeyValues* pKv)
         {
             pMapData->m_bInFavorites = true;
             pMapData->m_bUpdated = true;
-            pMapData->SendUpdate();
+            pMapData->SendDataUpdate();
         }
     }
     else if (pErr)
@@ -824,7 +929,7 @@ void CMapCache::OnMapRemovedFromFavorites(KeyValues* pKv)
         {
             pMapData->m_bInFavorites = false;
             pMapData->m_bUpdated = true;
-            pMapData->SendUpdate();
+            pMapData->SendDataUpdate();
         }
     }
     else if (pErr)
@@ -892,19 +997,12 @@ void CMapCache::LevelInitPreEntity()
             m_pCurrentMapData = &m_mapMapCache[mapIndx];
 
             // Check the update need & severity
-            time_t currentMapLastUpdate;
-            if (g_pMomentumUtil->ISODateToTimeT(m_pCurrentMapData->m_szLastUpdated, &currentMapLastUpdate))
+            /*if (time(nullptr) - m_pCurrentMapData->m_tLastUpdateCheck > GetUpdateIntervalForMap(m_pCurrentMapData))
             {
-                if (time(nullptr) - currentMapLastUpdate > UPDATE_INTERVAL)
-                {
-                    // Needs update
-                    DevLog("The map needs updating!\n");
-                }
-                else
-                {
-                    // Is fine
-                }
-            }
+                // Needs update
+                DevLog("The map needs updating!\n");
+                UpdateMapInfo(m_pCurrentMapData->m_uID);
+            }*/
         }
     }
     else

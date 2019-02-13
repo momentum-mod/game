@@ -69,7 +69,7 @@ bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
         }
 
         SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", 
-                                                      "info,thumbnail,submitter,inLibrary,inFavorites,personalBest,worldRecord");
+                                                      "thumbnail,inLibrary,inFavorites,personalBest,worldRecord");
 
         return SendAPIRequest(req, func, __FUNCTION__);
     }
@@ -118,7 +118,7 @@ bool CAPIRequests::GetMapInfo(uint32 mapID, CallbackFunc func)
     APIRequest *req = new APIRequest;
     if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u", mapID).Get()), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "info,credits");
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "info,credits,inLibrary,inFavorites,submitter,images");
         return SendAPIRequest(req, func, __FUNCTION__);
     }
     delete req;
@@ -143,7 +143,7 @@ bool CAPIRequests::GetUserMapLibrary(CallbackFunc func)
     APIRequest *req = new APIRequest;
     if (CreateAPIRequest(req, API_REQ("user/maps/library"), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "thumbnail,submitter,inFavorites,personalBest,worldRecord");
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "info,thumbnail,inFavorites,personalBest,worldRecord");
         SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "limit", "0");
 
         return SendAPIRequest(req, func, __FUNCTION__);
@@ -180,7 +180,7 @@ bool CAPIRequests::GetUserMapFavorites(CallbackFunc func)
     if (CreateAPIRequest(req, API_REQ("user/maps/favorites"), k_EHTTPMethodGET))
     {
         SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "limit", "0");
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "inLibrary,worldRecord,personalBest");
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "info,inLibrary,worldRecord,personalBest");
 
         return SendAPIRequest(req, func, __FUNCTION__);
     }
