@@ -6,7 +6,6 @@
 
 #include <Ultralight/Renderer.h>
 #include <Ultralight/View.h>
-#include <Ultralight/platform/GPUDriver.h>
 #include <utlvector.h>
 #include <vgui_controls/Panel.h>
 
@@ -19,7 +18,29 @@ class UltralightOverlay : public vgui::Panel
                       bool bTransparent);
     virtual ~UltralightOverlay();
 
-    ultralight::Ref<ultralight::View> view() { return m_pView; }
+    virtual void LoadHTMLFromFile(const char *filename);
+    virtual void LoadHTMLFromURL(const char *url);
+    virtual void LoadHTMLFromString(const char *html);
+
+    JSContextRef GetJSContext();
+    // Evaluates javascript code and returns result
+    virtual JSValueRef EvaluateScript(const char *script);
+
+    // Can navigate backwards in history
+    virtual bool CanGoBack();
+    // Can navigate forwards in history
+    virtual bool CanGoForward();
+    // Navigate backwards in history
+    virtual void GoBack();
+    // Navigate forwards in history
+    virtual void GoForward();
+    // Navigates to arbitrary offset in history
+    virtual void GoToHistoryOffset(int offset);
+
+    // Reload current page
+    virtual void Reload();
+    // Stop all page loads
+    virtual void Stop();
 
     bool Contains(int x, int y)
     {
@@ -62,10 +83,15 @@ class UltralightOverlay : public vgui::Panel
 
     bool IsLinkedToConsole() const { return m_bLinkToConsole; }
     void SetLinkedToConsole(bool linked) { m_bLinkToConsole = linked; }
+
+  protected:
+    ultralight::Ref<ultralight::View> view() { return m_pView; }
+
   protected:
     bool m_bHasFocus;
     bool m_bHasHover;
     bool m_bLinkToConsole;
+
     ultralight::Ref<ultralight::View> m_pView;
     ultralight::ViewListener *m_pViewListener;
     ultralight::LoadListener *m_pLoadListener;

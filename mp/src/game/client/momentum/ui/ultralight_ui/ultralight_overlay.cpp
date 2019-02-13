@@ -2,7 +2,6 @@
 #include "ultralight_overlay.h"
 
 #include <Ultralight/Buffer.h>
-#include <Ultralight/Renderer.h>
 #include <Ultralight/platform/Config.h>
 #include <Ultralight/platform/Platform.h>
 #include <clientmode.h>
@@ -95,9 +94,10 @@ UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer, Panel *pParentPanel
     m_iTextureId = surface()->CreateNewTextureID(true);
 
     m_pViewListener = new ULViewListener(this);
-    m_pView->set_view_listener(m_pViewListener);
+    view()->set_view_listener(m_pViewListener);
     m_pLoadListener = new ULLoadListener(this);
-    m_pView->set_load_listener(m_pLoadListener);
+    view()->set_load_listener(m_pLoadListener);
+
 
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
@@ -109,6 +109,35 @@ UltralightOverlay::~UltralightOverlay()
     delete m_pViewListener;
     delete m_pLoadListener;
 }
+
+void UltralightOverlay::LoadHTMLFromFile(const char *filename)
+{
+    char url[MAX_PATH + 8];
+    Q_snprintf(url, sizeof(url), "file:///%s", filename);
+    view()->LoadURL(url);
+}
+
+void UltralightOverlay::LoadHTMLFromURL(const char *url) { view()->LoadURL(url); }
+
+void UltralightOverlay::LoadHTMLFromString(const char *html) { view()->LoadHTML(html); }
+
+JSContextRef UltralightOverlay::GetJSContext() { return view()->js_context(); }
+
+JSValueRef UltralightOverlay::EvaluateScript(const char *script) { return view()->EvaluateScript(script); }
+
+bool UltralightOverlay::CanGoBack() { return view()->CanGoBack(); }
+
+bool UltralightOverlay::CanGoForward() { return view()->CanGoForward(); }
+
+void UltralightOverlay::GoBack() { view()->GoBack(); }
+
+void UltralightOverlay::GoForward() { view()->GoForward(); }
+
+void UltralightOverlay::GoToHistoryOffset(int offset) { view()->GoToHistoryOffset(offset); }
+
+void UltralightOverlay::Reload() { view()->Reload(); }
+
+void UltralightOverlay::Stop() { view()->Stop(); }
 
 void UltralightOverlay::Paint()
 {
@@ -184,7 +213,7 @@ void UltralightOverlay::OnCursorMoved(int x, int y)
     FireMouseEvent(evt);
 }
 
-void UltralightOverlay::OnCursorExited() { input()->SetCursorOveride(dc_none); }
+void UltralightOverlay::OnCursorExited() { input()->SetCursorOveride(dc_user); }
 
 void UltralightOverlay::OnKeyCodePressed(KeyCode code)
 {
@@ -199,8 +228,6 @@ void UltralightOverlay::OnKeyCodePressed(KeyCode code)
 
     evt.native_key_code = 0;
     GetKeyIdentifierFromVirtualKeyCode(evt.virtual_key_code, evt.key_identifier);
-    String text;
-    text += GetKeyCodeChar(code, evt.modifiers & KeyEvent::kMod_ShiftKey);
     evt.text = GetKeyCodeChar(code, evt.modifiers & KeyEvent::kMod_ShiftKey);
     evt.unmodified_text = GetKeyCodeChar(code, false);
     evt.is_keypad = IsKeypad(code);
