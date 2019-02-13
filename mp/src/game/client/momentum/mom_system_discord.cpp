@@ -87,19 +87,18 @@ void CMomentumDiscord::LevelInitPostEntity() {
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
     {
-    case MOMGM_SURF:
+    case GAMEMODE_SURF:
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_SURF, DISCORD_MAX_BUFFER_SIZE);
         V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
         break;
-    case MOMGM_BHOP:
+    case GAMEMODE_BHOP:
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_BHOP, DISCORD_MAX_BUFFER_SIZE);
         V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
         break;
-    case MOMGM_SCROLL:
+    case GAMEMODE_KZ:
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_KZ, DISCORD_MAX_BUFFER_SIZE);
         V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
         break;
-    case MOMGM_UNKNOWN:
     default:
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
         m_szDiscordSmallImageKey[0] = '\0';
