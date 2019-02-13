@@ -9,6 +9,7 @@
 #include "util/mom_util.h"
 
 #include "fmtstr.h"
+#include <ctime>
 
 #include "vgui/ILocalize.h"
 #include "vgui_controls/ListPanel.h"
@@ -50,16 +51,21 @@ static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPa
     return Q_stricmp(i1, i2);
 }
 
+static int __cdecl MapCreationDateSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+{
+    const char *i1 = item1.kv->GetString(KEYNAME_MAP_CREATION_DATE_SORT);
+    const char *i2 = item2.kv->GetString(KEYNAME_MAP_CREATION_DATE_SORT);
+    return Q_stricmp(i1, i2);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
 CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPage(parent, name)
 {
     SetSize(664, 294);
-    
-    m_iOnlineMapsCount = 0;
 
-    m_hFont = NULL;
+    m_hFont = INVALID_FONT;
 
     // Init UI
     m_pMapList = new CMapListPanel(this, "MapList");
@@ -68,15 +74,18 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(10), GetScaledVal(10), GetScaledVal(12), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(10), GetScaledVal(10), GetScaledVal(12), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), 9001, ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
     m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(75), GetScaledVal(75), GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
-    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), 9001, 0);
-    
-    //Tooltips
+    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
+    m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW);
+
+    // Tooltips
     //MOM_TODO: do we want tooltips?
-    
+
     // Alignment
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_DIFFICULTY, Label::a_center);
@@ -89,14 +98,13 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetSortFunc(HEADER_WORLD_RECORD, MapWorldRecordSortFunc);
     m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapCompletedSortFunc);
     m_pMapList->SetSortFunc(HEADER_MAP_LAYOUT, MapLayoutSortFunc);
+    m_pMapList->SetSortFunc(HEADER_DATE_CREATED, MapCreationDateSortFunc);
 
     // disable sort for certain columns
     m_pMapList->SetColumnSortable(HEADER_MAP_IMAGE, false);
 
     // Sort by map name by default
     m_pMapList->SetSortColumn(HEADER_MAP_NAME);
-
-    m_bAutoSelectFirstItemInGameList = false;
 
     LoadControlSettings(CFmtStr("resource/ui/MapSelector/%sPage.res", name));
 
@@ -186,7 +194,12 @@ void CBaseMapsPage::LoadFilters()
 //-----------------------------------------------------------------------------
 // Purpose: applies only the game filter to the current list
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::ApplyFilters(KeyValues *pFilters)
+void CBaseMapsPage::ApplyFilters(MapFilters_t filters)
+{
+    OnApplyFilters(filters);
+}
+
+void CBaseMapsPage::OnApplyFilters(MapFilters_t filters)
 {
     // loop through all the maps checking filters
     FOR_EACH_VEC(m_vecMaps, i)
@@ -194,7 +207,7 @@ void CBaseMapsPage::ApplyFilters(KeyValues *pFilters)
         MapDisplay_t *map = &m_vecMaps[i];
 
         // Now we can check the filters
-        if (!MapPassesFilters(map->m_pMap, pFilters))
+        if (!MapPassesFilters(map->m_pMap, filters))
         {
             m_pMapList->SetItemVisible(map->m_iListID, false);
             map->m_bNeedsShown = true;
@@ -212,14 +225,14 @@ void CBaseMapsPage::ApplyFilters(KeyValues *pFilters)
     Repaint();
 }
 
-bool CBaseMapsPage::MapPassesFilters(MapData *pMap, KeyValues *pFilters)
+bool CBaseMapsPage::MapPassesFilters(MapData *pMap, MapFilters_t filters)
 {
-    if (!(pMap && pFilters))
+    if (!pMap)
         return false;
 
     // Needs to pass map name filter
     // compare the first few characters of the filter
-    const char *szMapNameFilter = pFilters->GetString("name");
+    const char *szMapNameFilter = filters.m_szMapName;
     int count = Q_strlen(szMapNameFilter);
 
     // strstr returns null if the substring is not in the base string
@@ -227,8 +240,8 @@ bool CBaseMapsPage::MapPassesFilters(MapData *pMap, KeyValues *pFilters)
         return false;
 
     // Difficulty
-    int iDiffLowBound = pFilters->GetInt("difficulty_low");
-    int iDiffHighBound = pFilters->GetInt("difficulty_high");
+    int iDiffLowBound = filters.m_iDifficultyLow;
+    int iDiffHighBound = filters.m_iDifficultyHigh;
     bool bPassesLower = true;
     bool bPassesHigher = true;
     if (iDiffLowBound)
@@ -243,16 +256,16 @@ bool CBaseMapsPage::MapPassesFilters(MapData *pMap, KeyValues *pFilters)
         return false;
 
     //Game mode (if it's a surf/bhop/etc map or not)
-    int iGameModeFilter = pFilters->GetInt("type");
+    int iGameModeFilter = filters.m_iGameMode;
     if (iGameModeFilter && iGameModeFilter != pMap->m_eType)
         return false;
 
-    bool bHideCompleted = pFilters->GetBool("HideCompleted");
+    bool bHideCompleted = filters.m_bHideCompleted;
     if (bHideCompleted && pMap->m_PersonalBest.m_bValid)
         return false;
 
     // Map layout (0 = all, 1 = show staged maps only, 2 = show linear maps only)
-    int iMapLayoutFilter = pFilters->GetInt("layout");
+    int iMapLayoutFilter = filters.m_iMapLayout;
     if (iMapLayoutFilter && pMap->m_Info.m_bIsLinear + 1 == iMapLayoutFilter)
         return false;
 
@@ -305,13 +318,23 @@ void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo
         kv->SetInt(KEYNAME_MAP_ID, pMapData->m_uID);
         kv->SetInt(KEYNAME_MAP_TYPE, pMapData->m_eType);
         kv->SetInt(KEYNAME_MAP_STATUS, pMapData->m_eMapStatus);
-        SetListCellColors(pMapData, kv);
+        kv->SetInt(KEYNAME_MAP_IN_LIBRARY, pMapData->m_bInLibrary);
+        kv->SetInt(KEYNAME_MAP_IN_FAVORITES, pMapData->m_bInFavorites);
+        // SetListCellColors(pMapData, kv);
     }
 
     if (bInfo)
     {
         kv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapData->m_Info.m_iDifficulty);
         kv->SetString(KEYNAME_MAP_LAYOUT, pMapData->m_Info.m_bIsLinear ? "LINEAR" : "STAGED");
+
+        kv->SetString(KEYNAME_MAP_CREATION_DATE_SORT, pMapData->m_Info.m_szCreationDate);
+
+        time_t creationDateTime;
+        g_pMomentumUtil->ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime);
+        char date[32];
+        strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
+        kv->SetString(KEYNAME_MAP_CREATION_DATE, date);
     }
 
     if (bPB)
@@ -417,7 +440,7 @@ void CBaseMapsPage::OnCommand(const char *command)
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::OnItemSelected()
 {
-    
+
 }
 
 void CBaseMapsPage::FireGameEvent(IGameEvent* event)
@@ -455,9 +478,12 @@ int CBaseMapsPage::GetSelectedItemsCount()
     return m_pMapList->GetSelectedItemsCount();
 }
 
-KeyValues* CBaseMapsPage::GetFilters()
+MapFilters_t CBaseMapsPage::GetFilters()
 {
-    return MapSelectorDialog().GetTabFilterData(GetName());
+    KeyValues *pKv = MapSelectorDialog().GetTabFilterData(GetName());
+    MapFilters_t filters;
+    filters.FromKV(pKv);
+    return filters;
 }
 
 //-----------------------------------------------------------------------------
@@ -467,9 +493,6 @@ void CBaseMapsPage::RemoveMap(MapDisplay_t &map)
 {
     if (m_pMapList->IsValidItemID(map.m_iListID))
     {
-        // don't remove the server from list, just hide since this is a lot faster
-        // m_pMapList->SetItemVisible(map.m_iListID, false);
-
         // Delete its image to free resources
         if (map.m_iMapImageIndex > 1)
             delete map.m_pImage;
@@ -538,17 +561,12 @@ void CBaseMapsPage::OnViewMapInfo(int id)
         return;
 
     // get the map
-    KeyValues *pMap = m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
-
-    //MOM_TODO: pass mapstruct_t data over to the map info dialog!
-    //m_vecMaps.
-
-    //This is how the ServerBrowser did it, they used UserData from the list,
-    //and called the CUtlMap<int <---(ID), mapstruct_t> Get() method
-    //int serverID = m_pGameList->GetItemUserData(m_pGameList->GetSelectedItem(0));
+    MapData *pMapData = g_pMapCache->GetMapDataByID(id);
+    if (!pMapData)
+        return;
 
     // View the map info
-    MapSelectorDialog().OpenMapInfoDialog(this, pMap);
+    MapSelectorDialog().OpenMapInfoDialog(this, pMapData);
 }
 
 void CBaseMapsPage::OnAddMapToLibrary(int id)
@@ -556,17 +574,17 @@ void CBaseMapsPage::OnAddMapToLibrary(int id)
     g_pMapCache->AddMapToLibrary(id);
 }
 
-void CBaseMapsPage::OnRemoveFromLibrary(int id)
+void CBaseMapsPage::OnRemoveMapFromLibrary(int id)
 {
     g_pMapCache->RemoveMapFromLibrary(id);
 }
 
-void CBaseMapsPage::OnAddToFavorites(int id)
+void CBaseMapsPage::OnAddMapToFavorites(int id)
 {
     g_pMapCache->AddMapToFavorites(id); 
 }
 
-void CBaseMapsPage::OnRemoveFromFavorites(int id)
+void CBaseMapsPage::OnRemoveMapFromFavorites(int id)
 {
     g_pMapCache->RemoveMapFromFavorites(id);
 }

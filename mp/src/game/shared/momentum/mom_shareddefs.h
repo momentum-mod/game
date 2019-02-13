@@ -31,6 +31,16 @@ enum GAME_MODE
 
 };
 
+const char * const g_szGameModes[] = {
+    "#MOM_NotApplicable",
+    "#MOM_GameType_Surf",
+    "#MOM_GameType_Bhop",
+    "#MOM_GameType_KZ",
+    "#MOM_GameType_RJ",
+    "#MOM_GameType_Tricksurf",
+    "#MOM_GameType_Trikz"
+};
+
 // Run Flags
 enum RUN_FLAG
 {

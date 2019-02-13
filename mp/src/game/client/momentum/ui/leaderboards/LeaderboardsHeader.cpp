@@ -67,31 +67,11 @@ void CLeaderboardsHeader::UpdateMapInfoLabel(MapData* pData)
 {
     if (m_pMapAuthor)
     {
-        if (pData->m_vecCredits.IsEmpty())
-        {
-            m_pMapAuthor->SetText("");
-        }
-        else
-        {
-            CUtlString authorsString("By ");
-            CUtlStringList authors;
-            FOR_EACH_VEC(pData->m_vecCredits, i)
-            {
-                if (pData->m_vecCredits[i].m_eType == CREDIT_AUTHOR)
-                {
-                    authors.CopyAndAddToTail(pData->m_vecCredits[i].m_User.m_szAlias);
-                }
-            }
-            int count = authors.Count();
-            for (int i = 0; i < count; i++)
-            {
-                authorsString.Append(authors[i]);
-                if (i < count - 2)
-                    authorsString.Append(", ", 2);
-            }
-
-            m_pMapAuthor->SetText(authorsString.Get());
-        }
+        CUtlString authorsString("By ");
+        if (!pData->GetCreditString(&authorsString, CREDIT_AUTHOR))
+            authorsString.Clear();
+            
+        m_pMapAuthor->SetText(authorsString.Get());
     }
 
     CFmtStr layout("%s (%i zone%s)", pData->m_Info.m_bIsLinear ? "LINEAR" : "STAGED", pData->m_Info.m_iNumZones, pData->m_Info.m_iNumZones > 1 ? "s" : "");

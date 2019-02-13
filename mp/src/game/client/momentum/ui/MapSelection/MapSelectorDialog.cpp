@@ -110,6 +110,7 @@ void CMapSelectorDialog::Open()
     MoveToCenterOfScreen();
     BaseClass::Activate();
     m_pTabPanel->RequestFocus();
+    dynamic_cast<PropertyPage*>(m_pTabPanel->GetActivePage())->OnPageShow();
 }
 
 void CMapSelectorDialog::OnClose()
@@ -216,35 +217,14 @@ CMapContextMenu *CMapSelectorDialog::GetContextMenu(Panel *pPanel)
 //-----------------------------------------------------------------------------
 // Purpose: opens a game info dialog from a game list
 //-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap)
+CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, MapData *pMapData)
 {
-    //mapstruct_t *pServer = gameList->GetMap(serverIndex);
-    //if (!pServer)
-    
-
-    //MOM_TODO: complete the following so people can see information on the map 
-
     //We're going to send just the map name to the CDialogMapInfo() constructor,
     //then to the server and populate it with leaderboard times, replays, personal bests, etc
-    const char *pMapName = pMap->GetString("name", "");
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, pMapName);
-    gameDialog->SetParent(GetVParent());
+    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, pMapData);
+    gameDialog->SetParent(GetVPanel());
     gameDialog->AddActionSignalTarget(this);
-    gameDialog->Run(pMapName);
-    int i = m_vecMapInfoDialogs.AddToTail();
-    m_vecMapInfoDialogs[i] = gameDialog;
-    return gameDialog;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: opens a game info dialog by a specified IP, not attached to any game list
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort)
-{
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, "");
-    gameDialog->AddActionSignalTarget(this);
-    gameDialog->SetParent(GetVParent());
-    gameDialog->Run("");
+    gameDialog->Run();
     int i = m_vecMapInfoDialogs.AddToTail();
     m_vecMapInfoDialogs[i] = gameDialog;
     return gameDialog;
@@ -283,10 +263,10 @@ void CMapSelectorDialog::LoadTabFilterData(const char *pTabName)
     m_pFilterPanel->LoadFilterSettings(m_pFilterData->FindKey(pTabName, true));
 }
 
-void CMapSelectorDialog::ApplyFiltersToCurrentTab()
+void CMapSelectorDialog::ApplyFiltersToCurrentTab(MapFilters_t filters)
 {
     if (m_pCurrentMapList)
-        m_pCurrentMapList->ApplyFilters(GetCurrentTabFilterData());
+        m_pCurrentMapList->ApplyFilters(filters);
 }
 
 //-----------------------------------------------------------------------------
