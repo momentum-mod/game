@@ -14,9 +14,6 @@ public:
     CLibraryMaps(Panel *parent);
     ~CLibraryMaps();
 
-    // property page handlers
-    void OnPageShow() OVERRIDE;
-
     MapListType_e GetMapListType() OVERRIDE { return MAP_LIST_LIBRARY; }
 
     //Filters based on the filter data
@@ -26,6 +23,8 @@ public:
     void SetListCellColors(MapData* pData, KeyValues* pKvInto) OVERRIDE {}
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
+
+    void OnTabSelected() OVERRIDE;
 
     /*void GetWorkshopItems();
     void OnWorkshopDownloadComplete(DownloadItemResult_t *pCallback, bool bIOFailure);

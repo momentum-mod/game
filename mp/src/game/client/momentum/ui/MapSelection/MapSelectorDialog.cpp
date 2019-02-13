@@ -110,7 +110,7 @@ void CMapSelectorDialog::Open()
     MoveToCenterOfScreen();
     BaseClass::Activate();
     m_pTabPanel->RequestFocus();
-    dynamic_cast<PropertyPage*>(m_pTabPanel->GetActivePage())->OnPageShow();
+    m_pCurrentMapList->OnTabSelected();
 }
 
 void CMapSelectorDialog::OnClose()
@@ -183,6 +183,7 @@ void CMapSelectorDialog::OnTabChanged()
 {
     m_pCurrentMapList = dynamic_cast<IMapList *>(m_pTabPanel->GetActivePage());
     m_pCurrentMapList->LoadFilters();
+    m_pCurrentMapList->OnTabSelected();
 
     UpdateStatusText(nullptr);
 

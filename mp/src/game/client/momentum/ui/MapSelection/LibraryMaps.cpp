@@ -30,22 +30,8 @@ CLibraryMaps::~CLibraryMaps()
 {
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: Activates the page, starts refresh
-//-----------------------------------------------------------------------------
-void CLibraryMaps::OnPageShow()
-{
-    if (!m_bLoadedMaps)
-    {
-        GetNewMapList();
-        // GetWorkshopItems();
-    }
-}
-
 void CLibraryMaps::GetNewMapList()
 {
-    // ClearMapList();
     //Populate the main list
     CUtlVector<MapData*> vecLibrary;
     g_pMapCache->GetMapList(vecLibrary, MAP_LIST_LIBRARY);
@@ -98,6 +84,15 @@ void CLibraryMaps::FireGameEvent(IGameEvent* event)
     }
 
     BaseClass::FireGameEvent(event);
+}
+
+void CLibraryMaps::OnTabSelected()
+{
+    if (!m_bLoadedMaps)
+    {
+        GetNewMapList();
+        // GetWorkshopItems();
+    }
 }
 
 /*void CLocalMaps::GetWorkshopItems()
