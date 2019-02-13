@@ -14,7 +14,7 @@ $Configuration
     $Compiler
     {
        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\discord-rpc\include"
-       $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL;DISCORD_DISABLE_IO_THREAD=1"
+       $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
     }
 }
 
@@ -270,8 +270,8 @@ $Project "Client (Momentum)"
                     }
                 }
 
-                $File "$SRCDIR\game\client\momentum\mom_system_discord.h"
-                $File "$SRCDIR\game\client\momentum\mom_system_discord.cpp"
+                $File "$SRCDIR\game\client\momentum\mom_system_discord.h"   [$WIN32]
+                $File "$SRCDIR\game\client\momentum\mom_system_discord.cpp" [$WIN32]
 
             }
 
@@ -364,5 +364,6 @@ $Project "Client (Momentum)"
     $Folder "Link Libraries"
     {
         $Lib "libcryptopp"
+        $ImpLib "discord-rpc" [$WIN32]
     }
 }
