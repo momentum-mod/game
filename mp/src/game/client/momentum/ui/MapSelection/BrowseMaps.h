@@ -34,10 +34,17 @@ class CBrowseMaps : public CBaseMapsPage
 
     void FillMapList();
 
+    void GetSearchFilters(KeyValues *pInto);
+    // Searches maps using the current filters
+    void SearchMaps();
+    void ApplyFilters(MapFilters_t filters) OVERRIDE;
+
 protected:
     // vgui overrides
     virtual void PerformLayout();
 private:
+    MapFilters_t m_PreviousFilters;
+    float m_fPrevSearchTime;
     bool m_bRequireUpdate;	// checks whether we need an update upon opening
     bool m_bOfflineMode;
     int m_iCurrentPage;

@@ -109,4 +109,8 @@
     {
         "source" "byte"
     }
+    "map_file_updated"
+    {
+        "id" "long"
+    }
 }

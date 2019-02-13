@@ -3,9 +3,11 @@
 #include "mom_api_requests.h"
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
+#include "mom_map_cache.h"
 
 #include "MapInfoDialog.h"
 
+#include "fmtstr.h"
 #include "vgui/IVGui.h"
 #include "vgui_controls/ListPanel.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
@@ -17,12 +19,13 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CDialogMapInfo::CDialogMapInfo(Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo")
+CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent, "DialogMapInfo"), m_pMapData(pMapData)
 {
+    // SetProportional(true);
     SetBounds(0, 0, 512, 512);
     SetMinimumSize(416, 340);
     SetDeleteSelfOnClose(true);
-
+    
     m_bConnecting = false;
     m_bPlayerListUpdatePending = false;
 
@@ -34,19 +37,22 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, const char *mapname) : Frame(paren
 
     if (!m_pConnectButton || !m_pCloseButton || !m_pPlayerList)
     {
-        Assert("Nullptr pointers on CDialogMapInfo");
+        AssertMsg(0, "Nullptr pointers on CDialogMapInfo");
     }
     // set the defaults for sorting
     // hack, need to make this more explicit functions in ListPanel
     if (m_pPlayerList)
     {
-        m_pPlayerList->AddColumnHeader(0, "PlayerName", "#MOM_Name", 166);
-        m_pPlayerList->AddColumnHeader(1, "Rank", "#MOM_Rank", 54);
-        m_pPlayerList->AddColumnHeader(2, "Time", "#MOM_Time", 64);
+        m_pPlayerList->AddColumnHeader(0, "rank", "#MOM_Rank", 54);
+        m_pPlayerList->AddColumnHeader(1, "name", "#MOM_Name", 166);
+        m_pPlayerList->AddColumnHeader(2, "time", "#MOM_Time", 64);
+        m_pPlayerList->AddColumnHeader(3, "date", "#MOM_Achieved", 100);
 
         m_pPlayerList->SetSortFunc(2, &PlayerTimeColumnSortFunc);
 
         m_pPlayerList->SetSortColumn(2);
+
+        m_pPlayerList->SetEmptyListText("#MOM_API_NoTimesReturned");
     }
     if (m_pConnectButton)
     {
@@ -57,10 +63,11 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, const char *mapname) : Frame(paren
         m_pCloseButton->SetCommand(new KeyValues("Close"));
     }
 
-    // let us be ticked every frame
-    ivgui()->AddTickSignal(GetVPanel());
-
     MoveToCenterOfScreen();
+
+    SetTitle("#MOM_MapSelector_InfoDialog", true);
+
+    ListenForGameEvent("map_data_update");
 }
 
 //-----------------------------------------------------------------------------
@@ -73,19 +80,10 @@ CDialogMapInfo::~CDialogMapInfo()
 //-----------------------------------------------------------------------------
 // Purpose: Activates the dialog
 //-----------------------------------------------------------------------------
-void CDialogMapInfo::Run(const char *titleName)
+void CDialogMapInfo::Run()
 {
-
-    SetTitle("#ServerBrowser_GameInfoWithNameTitle", true);
-
-    SetDialogVariable("game", titleName);
-
-    
-    //MOM_TODO: LoadLocalInfo(); //Loads the local information (local PBs, local replays)
-    // We ask for some info of this map to the web. IF it is a valid map, we'll fill the info
-    SetControlString("MapText", titleName);
     // get the info for the map
-    RequestInfo(titleName);
+    RequestInfo();
     Activate();
 }
 
@@ -98,8 +96,6 @@ void CDialogMapInfo::PerformLayout()
     // Conditions that allow for a map to be played: none, always playable
     m_pConnectButton->SetEnabled(true);
     
-    m_pPlayerList->SetEmptyListText("Nobody has run this map!");
-    
     Repaint();
 }
 
@@ -111,6 +107,12 @@ void CDialogMapInfo::Connect()
     OnConnect();
 }
 
+void CDialogMapInfo::FireGameEvent(IGameEvent* event)
+{
+    if (event->GetBool("info") || event->GetBool("main"))
+        FillMapInfo();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Connects the user to this game
 //-----------------------------------------------------------------------------
@@ -119,43 +121,25 @@ void CDialogMapInfo::OnConnect()
     // flag that we are attempting connection
     m_bConnecting = true;
 
-    InvalidateLayout();
-
-    ApplyConnectCommand(GetControlString("MapText"));
+    ApplyConnectCommand();
     Close();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Requests the right info from the server
 //-----------------------------------------------------------------------------
-void CDialogMapInfo::RequestInfo(const char* mapName)
+void CDialogMapInfo::RequestInfo()
 {
-    GetMapInfo(mapName);
-    Get10MapTimes(mapName);
+    GetMapInfo();
+    GetTop10MapTimes();
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Called every frame, handles resending network messages
+// Purpose: Starts the map, or starts downloading a map if not downloading
 //-----------------------------------------------------------------------------
-void CDialogMapInfo::OnTick()
+void CDialogMapInfo::ApplyConnectCommand()
 {
-    BaseClass::OnTick();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Constructs a command to send a running game to connect to a server,
-// based on the server type
-//
-// TODO it would be nice to push this logic into the IRunGameEngine interface; that
-// way we could ask the engine itself to construct arguments in ways that fit.
-// Might be worth the effort as we start to add more engines.
-//-----------------------------------------------------------------------------
-void CDialogMapInfo::ApplyConnectCommand(const char *mapName)
-{
-    char command[256];
-    // send engine command to change servers
-    Q_snprintf(command, Q_ARRAYSIZE(command), "map %s\n", mapName);
-    engine->ExecuteClientCmd(command);
+    g_pMapCache->PlayMap(m_pMapData->m_uID);
 }
 
 //-----------------------------------------------------------------------------
@@ -169,13 +153,6 @@ void CDialogMapInfo::ConnectToServer()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: called when the current refresh list is complete
-//-----------------------------------------------------------------------------
-/*void CDialogMapInfo::RefreshComplete(EMatchMakingServerResponse response)
-{
-}*/
-
-//-----------------------------------------------------------------------------
 // Purpose: player list received
 //-----------------------------------------------------------------------------
 void CDialogMapInfo::ClearPlayerList()
@@ -185,31 +162,12 @@ void CDialogMapInfo::ClearPlayerList()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: on individual player added
-//-----------------------------------------------------------------------------
-void CDialogMapInfo::AddPlayerToList(KeyValues* pPlayerInfo)
-{
-    if (m_bPlayerListUpdatePending)
-    {
-        m_bPlayerListUpdatePending = false;
-        m_pPlayerList->RemoveAll();
-    }
-
-    char buf[BUFSIZETIME];
-    g_pMomentumUtil->FormatTime(pPlayerInfo->GetFloat("TimeSec"), buf);
-    pPlayerInfo->SetString("Time", buf);
-
-    m_pPlayerList->AddItem(pPlayerInfo, 0, false, true);
-    pPlayerInfo->deleteThis();
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Sorting function for time column
 //-----------------------------------------------------------------------------
 int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2)
 {
-    float p1time = p1.kv->GetFloat("TimeSec");
-    float p2time = p2.kv->GetFloat("TimeSec");
+    float p1time = p1.kv->GetFloat("time_f");
+    float p2time = p2.kv->GetFloat("time_f");
 
     if (p1time > p2time)
         return 1;
@@ -219,227 +177,105 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
     return 0;
 }
 
-void CDialogMapInfo::GetMapInfo(const char* mapname)
+void CDialogMapInfo::GetMapInfo()
 {
-    // g_pAPIRequests->GetMapInfo(mapname, UtlMakeDelegate(this, &CDialogMapInfo::GetMapInfoCallback));
+    // Update it, map cache can return false here meaning it doesn't need to
+    g_pMapCache->UpdateMapInfo(m_pMapData->m_uID);
+
+    FillMapInfo();
 }
 
-void CDialogMapInfo::GetMapInfoCallback(KeyValues *pKvResponse)
+void CDialogMapInfo::FillMapInfo()
 {
-    // If something fails or the server tells us it could not find the map...
-    /*if (bIOFailure)
-    {
-        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
-        return;
-    }
+    // Name
+    SetControlString("MapText", m_pMapData->m_szMapName);
 
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict || pCallback->m_eStatusCode ==
-    k_EHTTPStatusCode404NotFound)
-    {
-        char locl[BUFSIZELOCL];
-        LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
-        SetControlString("DifficultyText", locl);
-        SetControlString("GamemodeText", locl);
-        SetControlString("AuthorText", locl);
-        SetControlString("LayoutText", locl);
-        Warning("%s - Map not found on server!\n", __FUNCTION__);
-        return;
-    }
+    //Difficulty
+    SetControlString("DifficultyText", CFmtStr("Tier %i", m_pMapData->m_Info.m_iDifficulty));
 
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        Warning("%s - 0 body size!\n", __FUNCTION__);
-        return;
-    }
+    //Layout
+    SetControlString("LayoutText", m_pMapData->m_Info.m_bIsLinear ?
+                     g_pVGuiLocalize->Find("#MOM_Linear") :
+                     g_pVGuiLocalize->Find("#MOM_Staged"));
 
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    //Zones
+    SetControlString("NumZones", CFmtStr("%i", m_pMapData->m_Info.m_iNumZones));
 
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-        {
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            KeyValues::AutoDelete ad(pResponse);
-            KeyValues *pMapInfo = pResponse->FindKey("mapinfo");
-            if (pMapInfo)
-            {
-                //Difficulty
-                char buffer[32];
-                Q_snprintf(buffer, sizeof(buffer), "Tier %d", pMapInfo->GetInt("difficulty"));
-                SetControlString("DifficultyText", buffer);
-
-                V_memset(buffer, 0, sizeof(buffer));
-
-                //Layout
-                bool linear = pMapInfo->GetBool("linear");
-
-                if (linear)
-                {
-                    LOCALIZE_TOKEN(linear, "MOM_Linear", buffer);
-                }
-                else
-                {
-                    LOCALIZE_TOKEN(staged, "MOM_Staged", buffer);
-                }
-                SetControlString("LayoutText", buffer);
-
-                V_memset(buffer, 0, sizeof(buffer));
-
-                //Zones
-                int zones = static_cast<int>(pMapInfo->GetInt("zones"));
-
-                char locl[BUFSIZELOCL];
-                LOCALIZE_TOKEN(staged, "MOM_AmountZones", locl);
-                Q_snprintf(buffer, sizeof(buffer), locl, zones);
-
-                SetControlString("NumZones", buffer);
-
-                //Author
-
-                SetControlString("AuthorText", pMapInfo->GetString("mapper_nick"));
+    //Author
+    CUtlString authors;
+    m_pMapData->GetCreditString(&authors, CREDIT_AUTHOR);
+    SetControlString("AuthorText", authors.Get());
 
 
-                //Game mode
-                //MOM_TODO: Potentially have this part of the site?
-                int gameMode = static_cast<int>(pMapInfo->GetFloat("gamemode"));
-                const char *gameType;
-                switch (gameMode)
-                {
-                    case GAMEMODE_SURF:
-                        gameType = "Surf";
-                        break;
-                    case GAMEMODE_BHOP:
-                        gameType = "Bunnyhop";
-                        break;
-                    default:
-                        gameType = "Unknown";
-                        break;
-                }
-                SetControlString("GamemodeText", gameType);
-            }
-            else
-            {
-                char locl[BUFSIZELOCL];
-                LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
-                SetControlString("DifficultyText", locl);
-                SetControlString("GamemodeText", locl);
-                SetControlString("AuthorText", locl);
-                SetControlString("LayoutText", locl);
-            }
-        }
-    }
-    else
-    {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    }
-
-    //Cleanup
-    alloc.deallocate();
-    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
-    delete[] pData;*/
+    //Game mode
+    SetControlString("GamemodeText", g_szGameModes[m_pMapData->m_eType]);
 }
 
-void CDialogMapInfo::Get10MapTimes(const char* mapname)
+void CDialogMapInfo::GetTop10MapTimes()
 {
-    // g_pAPIRequests->GetTop10MapTimes(mapname, UtlMakeDelegate(this, &CDialogMapInfo::Get10MapTimesCallback));
+    g_pAPIRequests->GetTop10MapTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::Get10MapTimesCallback));
 }
 
 void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
 {
-    /*if (bIOFailure)
+    KeyValues *pData = pKvResponse->FindKey("data");
+    KeyValues *pErr = pKvResponse->FindKey("error");
+    if (pData)
     {
-        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
-        return;
-    }
+        KeyValues *pRuns = pData->FindKey("runs");
 
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
-    {
-        Warning("%s - k_EHTTPStatusCode404NotFound !\n", __FUNCTION__);
-        return;
-    }
-
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict)
-    {
-        Warning("%s - No runs found for the map!\n", __FUNCTION__);
-        return;
-    }
-
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-
-    if (size == 0)
-    {
-        Warning("%s - 0 body size!\n", __FUNCTION__);
-        return;
-    }
-
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        if (pRuns && pData->GetInt("count") > 0)
         {
-            // If there is something there (not sure how it would be there at this point) remove it
             ClearPlayerList();
 
-            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
-            KeyValues::AutoDelete ad(pResponse);
-
-            KeyValues *pRuns = pResponse->FindKey("runs");
-
-            if (pRuns && !pRuns->IsEmpty())
+            // Iterate through each loaded run
+            FOR_EACH_SUBKEY(pRuns, pRun)
             {
-                // Iterate through each loaded run
-                FOR_EACH_SUBKEY(pRuns, pRun)
+                KeyValuesAD kvEntry("Entry");
+
+                float fTime = pRun->GetFloat("time");
+                kvEntry->SetFloat("time_f", fTime);
+                char buf[BUFSIZETIME];
+                g_pMomentumUtil->FormatTime(fTime, buf);
+                kvEntry->SetString("time", buf);
+
+                // Date
+                char timeAgoStr[64];
+                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("dateAchieved"), timeAgoStr, sizeof(timeAgoStr)))
+                    kvEntry->SetString("date", timeAgoStr);
+                else
+                    kvEntry->SetString("date", pRun->GetString("dateAchieved"));
+
+                KeyValues *kvUserObj = pRun->FindKey("user");
+                if (kvUserObj)
                 {
-                    KeyValues *kvEntry = new KeyValues("Entry");
-                    //Time is handled by the converter
-                    kvEntry->SetFloat("TimeSec", pRun->GetFloat("time"));
+                    /*uint64 steamID = Q_atoui64(kvUserObj->GetString("id"));
+                    kvEntry->SetUint64("steamid", steamID);
 
-                    //Persona name for the time they accomplished the run
-                    const char * pPerName = pRun->GetString("personaname_t");
-                    kvEntry->SetString("PlayerName", !Q_strcmp(pPerName, "") ? "< blank >" : pRun->GetString("personaname_t"));
+                    int permissions = kvUserObj->GetInt("permissions");*/
 
-                    //Rank
-                    kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
-
-                    //This handles deleting the kvEntry
-                    AddPlayerToList(kvEntry);
+                    // MOM_TODO: check if alias banned
+                    kvEntry->SetString("name", kvUserObj->GetString("alias"));
                 }
 
-                //Update the control with this new info
-                InvalidateLayout();
-                m_pPlayerList->InvalidateLayout();
-                Repaint();
+                // Rank
+                KeyValues *kvRankObj = pRun->FindKey("rank");
+                if (kvRankObj)
+                {
+                    kvEntry->SetInt("rank", kvRankObj->GetInt("rank"));
+                }
+
+                m_pPlayerList->AddItem(kvEntry, 0, false, true);
             }
+
+            //Update the control with this new info
+            InvalidateLayout();
+            m_pPlayerList->InvalidateLayout();
+            Repaint();
         }
     }
-    else
+    else if (pErr)
     {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+        // MOM_TODO error handle
     }
-    // Last but not least, free resources
-    alloc.deallocate();
-    delete[] pData;*/
 }

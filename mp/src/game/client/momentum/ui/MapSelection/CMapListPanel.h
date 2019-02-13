@@ -16,6 +16,7 @@ public:
     CMapListPanel(CBaseMapsPage *pOuter, const char *pName);
 
     virtual void OnKeyCodeTyped(vgui::KeyCode code);
+    void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
 
     virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
     virtual void SetFont(vgui::HFont font)

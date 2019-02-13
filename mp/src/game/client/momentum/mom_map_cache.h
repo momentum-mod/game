@@ -10,6 +10,7 @@ enum APIModelSource
     MODEL_FROM_LIBRARY_API_CALL,
     MODEL_FROM_SEARCH_API_CALL,
     MODEL_FROM_FAVORITES_API_CALL,
+    MODEL_FROM_INFO_API_CALL,
 };
 
 abstract_class APIModel
@@ -138,7 +139,7 @@ struct MapRank : APIModel
 
 struct MapData : APIModel
 {
-    char m_szLastUpdated[32]; // ISO date
+    char m_szLastUpdated[32]; // ISO date, from the site
     bool m_bInFavorites;
     bool m_bInLibrary;
     char m_szPath[MAX_PATH];
@@ -157,11 +158,16 @@ struct MapData : APIModel
     CUtlVector<MapCredit> m_vecCredits;
     MapImage m_Thumbnail;
 
+    // Internal
+    bool m_bMapUpdated;
+
     MapData();
     MapData(const MapData& src);
-    bool NeedsUpdate() const;
-    void SendUpdate();
+    bool WasUpdated() const;
+    void SendDataUpdate();
+    void SendMapFileUpdate();
     void ResetUpdate();
+    bool GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType);
     void FromKV(KeyValues* pMap) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;
     MapData& operator=(const MapData& src);
@@ -188,6 +194,11 @@ public:
 
     void GetMapList(CUtlVector<MapData*> &vecMaps, MapListType_e type);
     bool AddMapsToCache(KeyValues *pData, APIModelSource source);
+    void AddMapToCache(KeyValues *pMap, APIModelSource source);
+    void FireMapCacheUpdateEvent(APIModelSource source);
+
+    bool UpdateMapInfo(uint32 uMapID);
+    uint32 GetUpdateIntervalForMap(MapData *pData);
 
 protected:
     void PostInit() OVERRIDE;
@@ -203,6 +214,7 @@ protected:
     // HTTP callbacks
     void OnFetchPlayerMapLibrary(KeyValues *pKv);
     void OnFetchPlayerMapFavorites(KeyValues *pKv);
+    void OnFetchMapInfo(KeyValues *pKv);
 
     void OnMapAddedToLibrary(KeyValues *pKv);
     void OnMapRemovedFromLibrary(KeyValues *pKv);
