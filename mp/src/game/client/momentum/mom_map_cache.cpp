@@ -803,15 +803,35 @@ void CMapCache::SetMapGamemode()
     }
 }
 
-void CMapCache::OnFetchPlayerMapLibrary(KeyValues* pKv)
+void CMapCache::UpdateFetchedMaps(KeyValues *pKv, bool bIsLibrary)
 {
     KeyValues *pData = pKv->FindKey("data");
     KeyValues *pErr = pKv->FindKey("error");
 
     if (pData)
     {
-        KeyValues *pEntries = pData->FindKey("entries");
-        AddMapsToCache(pEntries, MODEL_FROM_LIBRARY_API_CALL);
+        CUtlVector<MapData *> vecOldMaps;
+        GetMapList(vecOldMaps, bIsLibrary ? MAP_LIST_LIBRARY : MAP_LIST_FAVORITES);
+
+        // Precheck by setting to false
+        FOR_EACH_VEC(vecOldMaps, i)
+        {
+            (bIsLibrary ? vecOldMaps[i]->m_bInLibrary : vecOldMaps[i]->m_bInFavorites) = false;
+        }
+
+        KeyValues *pEntries = pData->FindKey(bIsLibrary ? "entries" : "favorites");
+        AddMapsToCache(pEntries, bIsLibrary ? MODEL_FROM_LIBRARY_API_CALL : MODEL_FROM_FAVORITES_API_CALL);
+
+        // Remove ones no longer in library
+        FOR_EACH_VEC(vecOldMaps, i)
+        {
+            if (!(bIsLibrary ? vecOldMaps[i]->m_bInLibrary : vecOldMaps[i]->m_bInFavorites))
+            {
+                // Actually remove it
+                vecOldMaps[i]->m_bUpdated = true;
+                vecOldMaps[i]->SendDataUpdate();
+            }
+        }
     }
     else if (pErr)
     {
@@ -819,20 +839,14 @@ void CMapCache::OnFetchPlayerMapLibrary(KeyValues* pKv)
     }
 }
 
+void CMapCache::OnFetchPlayerMapLibrary(KeyValues* pKv)
+{
+    UpdateFetchedMaps(pKv, true);
+}
+
 void CMapCache::OnFetchPlayerMapFavorites(KeyValues* pKv)
 {
-    KeyValues *pData = pKv->FindKey("data");
-    KeyValues *pErr = pKv->FindKey("error");
-
-    if (pData)
-    {
-        KeyValues *pEntries = pData->FindKey("favorites");
-        AddMapsToCache(pEntries, MODEL_FROM_FAVORITES_API_CALL);
-    }
-    else if (pErr)
-    {
-        // MOM_TODO error handle here
-    }
+    UpdateFetchedMaps(pKv, false);
 }
 
 void CMapCache::OnFetchMapInfo(KeyValues* pKv)
@@ -851,7 +865,7 @@ void CMapCache::OnFetchMapInfo(KeyValues* pKv)
     }
 }
 
-void CMapCache::OnMapAddedToLibrary(KeyValues* pKv)
+void CMapCache::ToggleMapLibraryOrFavorite(KeyValues* pKv, bool bIsLibrary, bool bAdded)
 {
     KeyValues *pData = pKv->FindKey("data");
     KeyValues *pErr = pKv->FindKey("error");
@@ -862,7 +876,7 @@ void CMapCache::OnMapAddedToLibrary(KeyValues* pKv)
         MapData *pMapData = GetMapDataByID(id);
         if (pMapData)
         {
-            pMapData->m_bInLibrary = true;
+            (bIsLibrary ? pMapData->m_bInLibrary : pMapData->m_bInFavorites) = bAdded;
             pMapData->m_bUpdated = true;
             pMapData->SendDataUpdate();
         }
@@ -871,72 +885,26 @@ void CMapCache::OnMapAddedToLibrary(KeyValues* pKv)
     {
         // MOM_TODO error handle here
     }
+}
+
+void CMapCache::OnMapAddedToLibrary(KeyValues* pKv)
+{
+    ToggleMapLibraryOrFavorite(pKv, true, true);
 }
 
 void CMapCache::OnMapRemovedFromLibrary(KeyValues* pKv)
 {
-    KeyValues *pData = pKv->FindKey("data");
-    KeyValues *pErr = pKv->FindKey("error");
-    if (pData)
-    {
-        // Actually update the map in question, fire off an update
-        int id = pData->GetInt("mapID");
-        MapData *pMapData = GetMapDataByID(id);
-        if (pMapData)
-        {
-            pMapData->m_bInLibrary = false;
-            pMapData->m_bUpdated = true;
-            pMapData->SendDataUpdate();
-        }
-    }
-    else if (pErr)
-    {
-        // MOM_TODO error handle here
-    }
+    ToggleMapLibraryOrFavorite(pKv, true ,false);
 }
 
 void CMapCache::OnMapAddedToFavorites(KeyValues* pKv)
 {
-    KeyValues *pData = pKv->FindKey("data");
-    KeyValues *pErr = pKv->FindKey("error");
-    if (pData)
-    {
-        // Actually update the map in question, fire off an update
-        int id = pData->GetInt("mapID");
-        MapData *pMapData = GetMapDataByID(id);
-        if (pMapData)
-        {
-            pMapData->m_bInFavorites = true;
-            pMapData->m_bUpdated = true;
-            pMapData->SendDataUpdate();
-        }
-    }
-    else if (pErr)
-    {
-        // MOM_TODO error handle here
-    }
+    ToggleMapLibraryOrFavorite(pKv, false, true);
 }
 
 void CMapCache::OnMapRemovedFromFavorites(KeyValues* pKv)
 {
-    KeyValues *pData = pKv->FindKey("data");
-    KeyValues *pErr = pKv->FindKey("error");
-    if (pData)
-    {
-        // Actually update the map in question, fire off an update
-        int id = pData->GetInt("mapID");
-        MapData *pMapData = GetMapDataByID(id);
-        if (pMapData)
-        {
-            pMapData->m_bInFavorites = false;
-            pMapData->m_bUpdated = true;
-            pMapData->SendDataUpdate();
-        }
-    }
-    else if (pErr)
-    {
-        // MOM_TODO error handle here
-    }
+    ToggleMapLibraryOrFavorite(pKv, false, false);
 }
 
 void CMapCache::StartMapDownload(KeyValues* pKvHeader)

@@ -307,6 +307,7 @@ void CBaseMapsPage::AddMapToList(MapData* pData)
     UpdateMapListData(&map, true, true, true, true, true);
 
     m_vecMaps.AddToTail(map);
+    UpdateStatus();
 }
 
 void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail)
