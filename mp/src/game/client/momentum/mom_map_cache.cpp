@@ -693,10 +693,11 @@ bool CMapCache::AddMapsToCache(KeyValues* pData, APIModelSource source)
 
     FOR_EACH_SUBKEY(pData, pMap)
     {
+        KeyValues *pMapPtr = pMap;
         if (source == MODEL_FROM_LIBRARY_API_CALL || source == MODEL_FROM_FAVORITES_API_CALL)
-            pMap = pMap->FindKey("map");
+            pMapPtr = pMap->FindKey("map");
 
-        AddMapToCache(pMap, source);
+        AddMapToCache(pMapPtr, source);
     }
 
     if (source != MODEL_FROM_DISK)

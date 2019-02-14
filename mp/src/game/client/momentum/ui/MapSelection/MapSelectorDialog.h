@@ -8,6 +8,7 @@ class CMapContextMenu;
 class CDialogMapInfo;
 class CLibraryMaps;
 class CBrowseMaps;
+class CFavoriteMaps;
 class IMapList;
 class MapFilterPanel;
 
@@ -78,7 +79,8 @@ private:
 
     //Map tabs
     CLibraryMaps *m_pLibraryMaps;
-    CBrowseMaps *m_pOnline;
+    CBrowseMaps *m_pBrowseMaps;
+    CFavoriteMaps *m_pFavoriteMaps;
 
     // Filters
     MapFilterPanel *m_pFilterPanel;

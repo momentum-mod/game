@@ -17,7 +17,7 @@ public:
     MapListType_e GetMapListType() OVERRIDE { return MAP_LIST_LIBRARY; }
 
     //Filters based on the filter data
-    void GetNewMapList() OVERRIDE;//called upon loading
+    void OnGetNewMapList() OVERRIDE;
 
     // Empty (for now?)
     void SetListCellColors(MapData* pData, KeyValues* pKvInto) OVERRIDE {}
@@ -33,7 +33,6 @@ public:
     void AddWorkshopItemToLocalMaps(PublishedFileId_t id);*/
 private:
 
-    // true if we're broadcasting for servers
     bool m_bLoadedMaps;
 
 };
