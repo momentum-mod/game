@@ -117,3 +117,16 @@ mp/game/momentum/version.txt
 mp/game/momentum/downloadlists/
 mp/game/momentum/map_cache.dat
 mp/game/momentum/maps/*.bsp
+
+# Shader output
+mp/src/materialsystem/stdshaders/filestocopy.txt
+mp/src/materialsystem/stdshaders/filelist.txt
+mp/src/materialsystem/stdshaders/filelistgen.txt
+fxctmp9_tmp/
+mp/src/materialsystem/stdshaders/inclist.txt
+mp/src/materialsystem/stdshaders/vcslist.txt
+mp/src/materialsystem/stdshaders/uniquefilestocopy.txt
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b.copy
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30.copy
