@@ -43,7 +43,7 @@ bool UltralightFileSystem::GetFileSize(FileHandle handle, int64_t &result)
 bool UltralightFileSystem::GetFileMimeType(const String16 &path, String16 &result)
 {
     const char *szPath = ToUTF8(path);
-    const char *szExtension = &Q_GetFileExtension(szPath)[1];
+    const char *szExtension = Q_GetFileExtension(szPath);
     result = String16(FileExtensionToMimeType(szExtension));
 
     return true;

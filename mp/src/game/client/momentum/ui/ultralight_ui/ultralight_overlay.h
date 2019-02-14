@@ -8,6 +8,9 @@
 #include <Ultralight/View.h>
 #include <utlvector.h>
 #include <vgui_controls/Panel.h>
+#ifdef _DEBUG
+#include <FileWatchdog.h>
+#endif
 
 class UltralightOverlay : public vgui::Panel
 {
@@ -97,6 +100,12 @@ class UltralightOverlay : public vgui::Panel
     ultralight::LoadListener *m_pLoadListener;
 
     int m_iTextureId;
+#ifdef _DEBUG
+    FileWatchHandle_t m_hFileWatchHandle;
+
+    void OnFileChanged(const char *filename);
+    void StopWatchingFile();
+#endif
 };
 
 #endif

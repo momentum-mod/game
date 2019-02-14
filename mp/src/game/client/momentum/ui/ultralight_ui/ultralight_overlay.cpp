@@ -7,6 +7,8 @@
 #include <clientmode.h>
 #include <vgui/IInput.h>
 #include <vgui/ISurface.h>
+#include <filesystem.h>
+#include <chrono>
 
 #include "tier0/memdbgon.h"
 
@@ -98,9 +100,12 @@ UltralightOverlay::UltralightOverlay(Ref<Renderer> renderer, Panel *pParentPanel
     m_pLoadListener = new ULLoadListener(this);
     view()->set_load_listener(m_pLoadListener);
 
-
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
+
+#ifdef _DEBUG
+    m_hFileWatchHandle = INVALID_WATCH_HANDLE;
+#endif
 }
 
 UltralightOverlay::~UltralightOverlay()
@@ -108,6 +113,10 @@ UltralightOverlay::~UltralightOverlay()
     surface()->DestroyTextureID(m_iTextureId);
     delete m_pViewListener;
     delete m_pLoadListener;
+
+#ifdef _DEBUG
+    StopWatchingFile();
+#endif
 }
 
 void UltralightOverlay::LoadHTMLFromFile(const char *filename)
@@ -115,11 +124,28 @@ void UltralightOverlay::LoadHTMLFromFile(const char *filename)
     char url[MAX_PATH + 8];
     Q_snprintf(url, sizeof(url), "file:///%s", filename);
     view()->LoadURL(url);
+
+#ifdef _DEBUG
+    StopWatchingFile();
+    m_hFileWatchHandle = g_pFileWatchdog->AddFileChangeListener(filename, UtlMakeDelegate(this, &UltralightOverlay::OnFileChanged));
+#endif
 }
 
-void UltralightOverlay::LoadHTMLFromURL(const char *url) { view()->LoadURL(url); }
+void UltralightOverlay::LoadHTMLFromURL(const char *url)
+{
+#ifdef _DEBUG
+    StopWatchingFile();
+#endif
+    view()->LoadURL(url);
+}
 
-void UltralightOverlay::LoadHTMLFromString(const char *html) { view()->LoadHTML(html); }
+void UltralightOverlay::LoadHTMLFromString(const char *html)
+{
+#ifdef _DEBUG
+    StopWatchingFile();
+#endif
+    view()->LoadHTML(html);
+}
 
 JSContextRef UltralightOverlay::GetJSContext() { return view()->js_context(); }
 
@@ -139,24 +165,29 @@ void UltralightOverlay::Reload() { view()->Reload(); }
 
 void UltralightOverlay::Stop() { view()->Stop(); }
 
+extern std::chrono::time_point<std::chrono::high_resolution_clock> g_iULStartTime;
+extern bool g_bULMeasure;
 void UltralightOverlay::Paint()
 {
     BaseClass::Paint();
 
-    bool dirty = view()->is_bitmap_dirty();
+    //bool dirty = view()->is_bitmap_dirty();
     const RefPtr<Bitmap> bitmap = view()->bitmap();
-    if (dirty)
-    {
-        surface()->DrawSetTextureRGBAEx(m_iTextureId, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(),
-                                        bitmap->height(), Ultralight2SourceImageFormat(bitmap->format()));
-    }
-
+    surface()->DrawSetTextureRGBAEx(m_iTextureId, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(),
+                                    bitmap->height(), Ultralight2SourceImageFormat(bitmap->format()));
     surface()->DrawSetTexture(m_iTextureId);
     surface()->DrawSetColor(255, 255, 255, 255);
 
     int x, y, width, height;
     GetBounds(x, y, width, height);
     surface()->DrawTexturedRect(x, y, x + width, y + height);
+
+	if (g_bULMeasure)
+    {
+        auto now = std::chrono::high_resolution_clock::now();
+        Log("Took %fms to execute and render\n", std::chrono::duration<float, std::milli>(now - g_iULStartTime).count());
+        g_bULMeasure = false;
+	}
 }
 
 void UltralightOverlay::OnSizeChanged(int newWide, int newTall)
@@ -363,6 +394,22 @@ void UltralightOverlay::OnAddConsoleMessage(ultralight::MessageSource source, ul
     pMessage->SetString("source_id", source_id);
     PostActionSignal(pMessage);
 }
+
+#ifdef _DEBUG
+void UltralightOverlay::OnFileChanged(const char *filename)
+{
+    Reload();
+}
+
+void UltralightOverlay::StopWatchingFile()
+{
+    if (m_hFileWatchHandle != INVALID_WATCH_HANDLE)
+    {
+        g_pFileWatchdog->RemoveFileChangeListener(m_hFileWatchHandle);
+        m_hFileWatchHandle = INVALID_WATCH_HANDLE;
+    }
+}
+#endif
 
 ImageFormat Ultralight2SourceImageFormat(BitmapFormat format)
 {

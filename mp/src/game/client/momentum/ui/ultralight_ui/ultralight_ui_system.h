@@ -31,7 +31,6 @@ class UltralightUISystem : public CAutoGameSystemPerFrame
     UltralightOverlay *CreateOverlay(vgui::Panel *pParentPanel, bool bTransparent = true);
   private:
     ultralight::RefPtr<ultralight::Renderer> m_pRenderer;
-    ultralight::GPUDriver *m_pGPUDriver;
 };
 
 UltralightUISystem *UltralightUI();
