@@ -14,7 +14,7 @@ class CBrowseMaps : public CBaseMapsPage
 
     MapListType_e GetMapListType() OVERRIDE { return MAP_LIST_BROWSE; }
 
-    void GetNewMapList() OVERRIDE;
+    void OnGetNewMapList() OVERRIDE;
 
     enum EMapQueryOutputs
     {
@@ -27,8 +27,6 @@ class CBrowseMaps : public CBaseMapsPage
     void RefreshComplete(EMapQueryOutputs response);
 
     void MapsQueryCallback(KeyValues* pKvResponse);
-
-    void FillMapList();
 
     void GetSearchFilters(KeyValues *pInto);
     // Searches maps using the current filters

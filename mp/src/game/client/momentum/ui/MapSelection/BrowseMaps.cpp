@@ -51,24 +51,13 @@ void CBrowseMaps::MapsQueryCallback(KeyValues *pKvResponse)
         KeyValues *pMaps = pKvData->FindKey("maps");
         if (g_pMapCache->AddMapsToCache(pMaps, MODEL_FROM_SEARCH_API_CALL))
         {
-            FillMapList();
-
+            GetNewMapList();
+            
             RefreshComplete(eSuccess);
         }
         else
             RefreshComplete(eNoMapsReturned);
     }
-}
-
-void CBrowseMaps::FillMapList()
-{
-    CUtlVector<MapData*> vecMaps;
-    g_pMapCache->GetMapList(vecMaps, MAP_LIST_BROWSE);
-
-    FOR_EACH_VEC(vecMaps, i)
-        AddMapToList(vecMaps[i]);
-
-    OnApplyFilters(GetFilters());
 }
 
 void CBrowseMaps::GetSearchFilters(KeyValues* pInto)
@@ -132,13 +121,9 @@ void CBrowseMaps::OnTabSelected()
     ApplyFilters(GetFilters());
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CBrowseMaps::GetNewMapList()
+void CBrowseMaps::OnGetNewMapList()
 {
-    FillMapList();
+    OnApplyFilters(GetFilters());
 }
 
 void CBrowseMaps::RefreshComplete(EMapQueryOutputs eResponse)

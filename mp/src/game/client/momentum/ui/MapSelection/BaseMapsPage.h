@@ -103,8 +103,9 @@ protected:
     virtual int GetInvalidMapListID();
     MapDisplay_t *GetMapDisplayByID(uint32 id);
 
-    virtual void GetNewMapList();
     virtual void OnTabSelected();
+    virtual void GetNewMapList();
+    virtual void OnGetNewMapList();
 
     // Called when map should be started
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);

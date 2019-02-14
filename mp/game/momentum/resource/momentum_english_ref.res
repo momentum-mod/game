@@ -130,9 +130,9 @@
         "MOM_Gun" "Momentum Gun"
 
     //Map Selection
-        "MOM_MapSelector_BrowseMaps" "Browse Maps"
-        "MOM_MapSelector_LibraryMaps" "Maps in Library"
-        "MOM_MapSelector_FavoriteMaps" "Favorited Maps"
+        "MOM_MapSelector_BrowseMaps" "Browse"
+        "MOM_MapSelector_LibraryMaps" "Library"
+        "MOM_MapSelector_FavoriteMaps" "Favorites"
         "MOM_MapSelector_MapCount" "Maps (%s1)"
         "MOM_MapSelector_Maps" "Maps"
         "MOM_MapSelector_Difficulty" "Difficulty"
