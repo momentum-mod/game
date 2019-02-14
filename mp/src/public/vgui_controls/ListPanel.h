@@ -104,12 +104,14 @@ public:
 	// Get information about the column headers.
 	virtual int GetNumColumnHeaders() const;
 	virtual bool GetColumnHeaderText( int index, char *pOut, int maxLen );
+    virtual bool GetColumnHeaderName(int col, char *pOut, size_t maxLen);
 
 	virtual void SetSortFunc(int column, SortFunc *func);
 	virtual void SetSortColumn(int column);
 	virtual void SortList( void );
 	virtual void SetColumnSortable(int column, bool sortable);
 	virtual void SetColumnVisible(int column, bool visible);
+    virtual bool IsColumnVisible(int column) { return !m_ColumnsData[m_CurrentColumns[column]].m_bHidden; }
 	int GetSortColumn() const;
 
 	// sets whether the user can add/remove columns (defaults to off)

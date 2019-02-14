@@ -764,10 +764,18 @@ bool ListPanel::GetColumnHeaderText( int index, char *pOut, int maxLen )
 		m_ColumnsData[m_CurrentColumns[index]].m_pHeader->GetText( pOut, maxLen );
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	
+    return false;
+}
+
+bool ListPanel::GetColumnHeaderName(int col, char* pOut, size_t maxLen)
+{
+    if (col < m_CurrentColumns.Count())
+    {
+        Q_strncpy(pOut, m_ColumnsData[m_CurrentColumns[col]].m_pHeader->GetName(), maxLen);
+        return true;
+    }
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -2658,6 +2666,9 @@ bool ListPanel::GetCellAtPos(int x, int y, int &row, int &col)
 		int startx = 0;
 		for ( col = 0 ; col < m_CurrentColumns.Count() ; col++ )
 		{
+            if (m_ColumnsData[m_CurrentColumns[col]].m_bHidden)
+                continue;
+
 			startx += m_ColumnsData[m_CurrentColumns[col]].m_pHeader->GetWide();
 
 			if ( x < startx )

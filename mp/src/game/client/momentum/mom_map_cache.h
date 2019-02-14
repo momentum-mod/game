@@ -226,6 +226,10 @@ protected:
     void MapDownloadProgress(KeyValues *pKvProgress);
     void FinishMapDownload(KeyValues *pKvComplete);
 private:
+
+    void UpdateFetchedMaps(KeyValues *pKv, bool bIsLibrary);
+    void ToggleMapLibraryOrFavorite(KeyValues *pKv, bool bIsLibrary, bool bAdded);
+
     MapData *m_pCurrentMapData;
 
     CUtlDict<uint32> m_dictMapNames;

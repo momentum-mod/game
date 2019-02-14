@@ -40,20 +40,23 @@ void CMapListPanel::OnMouseReleased(MouseCode code)
         {
             int itemID = GetItemIDFromRow(row);
             KeyValues *pMap = GetItem(itemID);
-            uint32 mapID = pMap->GetInt(KEYNAME_MAP_ID);
-            if (col == HEADER_MAP_IN_LIBRARY)
+            if (pMap)
             {
-                if (pMap->GetInt(KEYNAME_MAP_IN_LIBRARY))
-                    m_pOuter->OnRemoveMapFromLibrary(mapID);
-                else
-                    m_pOuter->OnAddMapToLibrary(mapID);
-            }
-            else if (col == HEADER_MAP_IN_FAVORITES)
-            {
-                if (pMap->GetInt(KEYNAME_MAP_IN_FAVORITES))
-                    m_pOuter->OnRemoveMapFromFavorites(mapID);
-                else
-                    m_pOuter->OnAddMapToFavorites(mapID);
+                uint32 mapID = pMap->GetInt(KEYNAME_MAP_ID);
+                if (col == HEADER_MAP_IN_LIBRARY)
+                {
+                    if (pMap->GetInt(KEYNAME_MAP_IN_LIBRARY))
+                        m_pOuter->OnRemoveMapFromLibrary(mapID);
+                    else
+                        m_pOuter->OnAddMapToLibrary(mapID);
+                }
+                else if (col == HEADER_MAP_IN_FAVORITES)
+                {
+                    if (pMap->GetInt(KEYNAME_MAP_IN_FAVORITES))
+                        m_pOuter->OnRemoveMapFromFavorites(mapID);
+                    else
+                        m_pOuter->OnAddMapToFavorites(mapID);
+                }
             }
         }
     }
