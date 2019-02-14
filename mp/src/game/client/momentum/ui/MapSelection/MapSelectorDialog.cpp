@@ -4,6 +4,7 @@
 #include "MapSelectorDialog.h"
 #include "LibraryMaps.h"
 #include "BrowseMaps.h"
+#include "FavoriteMaps.h"
 #include "MapContextMenu.h"
 #include "MapInfoDialog.h"
 #include "MapFilterPanel.h"
@@ -39,9 +40,8 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     LoadUserData();
 
     m_pLibraryMaps = new CLibraryMaps(this);
-    m_pOnline = new CBrowseMaps(this);
-
-    m_pCurrentMapList = static_cast<IMapList*>(m_pLibraryMaps);
+    m_pBrowseMaps = new CBrowseMaps(this);
+    m_pFavoriteMaps = new CFavoriteMaps(this);
 
     m_pContextMenu = new CMapContextMenu(this);
 
@@ -50,9 +50,10 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
     m_pTabPanel->SetSmallTabs(true);
-    // Defaults to m_pLibraryMaps being selected here, since it is added first
+    // Defaults to first added page
+    m_pTabPanel->AddPage(m_pBrowseMaps, "#MOM_MapSelector_BrowseMaps");
+    m_pTabPanel->AddPage(m_pFavoriteMaps, "#MOM_MapSelector_FavoriteMaps");
     m_pTabPanel->AddPage(m_pLibraryMaps, "#MOM_MapSelector_LibraryMaps");
-    m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_BrowseMaps");
 
     m_pTabPanel->AddActionSignalTarget(this);
 
@@ -67,11 +68,23 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     m_pStatusLabel->SetText("");
 
     // load current tab
-    MapListType_e current = (MapListType_e) m_pSavedData->GetInt("current", MAP_LIST_LIBRARY);
-    if (current == MAP_LIST_BROWSE)
+    MapListType_e current = (MapListType_e) m_pSavedData->GetInt("current", MAP_LIST_BROWSE);
+    CBaseMapsPage *pCurrentTab;
+    switch (current)
     {
-        m_pTabPanel->SetActivePage(m_pOnline);
+    case MAP_LIST_LIBRARY:
+        pCurrentTab = m_pLibraryMaps;
+        break;
+    case MAP_LIST_FAVORITES:
+        pCurrentTab = m_pFavoriteMaps;
+        break;
+    case MAP_LIST_BROWSE:
+    default:
+        pCurrentTab = m_pBrowseMaps;
+        break;
     }
+
+    m_pTabPanel->SetActivePage(pCurrentTab);
 }
 
 //-----------------------------------------------------------------------------
@@ -182,8 +195,12 @@ void CMapSelectorDialog::UpdateStatusText(const char *fmt, ...)
 void CMapSelectorDialog::OnTabChanged()
 {
     m_pCurrentMapList = dynamic_cast<IMapList *>(m_pTabPanel->GetActivePage());
-    m_pCurrentMapList->LoadFilters();
-    m_pCurrentMapList->OnTabSelected();
+
+    if (IsVisible())
+    {
+        m_pCurrentMapList->LoadFilters();
+        m_pCurrentMapList->OnTabSelected();
+    }
 
     UpdateStatusText(nullptr);
 

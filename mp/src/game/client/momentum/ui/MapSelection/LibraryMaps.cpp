@@ -30,18 +30,11 @@ CLibraryMaps::~CLibraryMaps()
 {
 }
 
-void CLibraryMaps::GetNewMapList()
+void CLibraryMaps::OnGetNewMapList()
 {
-    //Populate the main list
-    CUtlVector<MapData*> vecLibrary;
-    g_pMapCache->GetMapList(vecLibrary, MAP_LIST_LIBRARY);
-
-    FOR_EACH_VEC(vecLibrary, i)
-        AddMapToList(vecLibrary[i]);
-
     m_bLoadedMaps = !m_vecMaps.IsEmpty();
 
-    ApplyFilters(GetFilters());
+    BaseClass::OnGetNewMapList();
 }
 
 void CLibraryMaps::FireGameEvent(IGameEvent* event)

@@ -104,7 +104,7 @@ void MapFilterPanel::LoadFilterSettings(KeyValues *pTabFilters)
 
     // apply to the controls and update
     ApplyFiltersToControls();
-    UpdateFilterSettings();
+    UpdateFilterSettings(false);
 }
 
 void MapFilterPanel::UpdateFilterSettings(bool bApply /* = true*/)

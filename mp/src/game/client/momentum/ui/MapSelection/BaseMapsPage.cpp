@@ -71,6 +71,11 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList = new CMapListPanel(this, "MapList");
     m_pMapList->SetAllowUserModificationOfColumns(true);
     m_pMapList->SetShouldCenterEmptyListText(true);
+
+    // Images
+    ImageList *imageList = new ImageList(false);
+    imageList->AddImage(scheme()->GetImage("maps/invalid_map", false)); // The ? banner at index 1
+    m_pMapList->SetImageList(imageList, true);
     
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
@@ -157,11 +162,6 @@ void CBaseMapsPage::PerformLayout()
 void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-
-    // Images
-    ImageList *imageList = new ImageList(false);
-    imageList->AddImage(scheme()->GetImage("maps/invalid_map", false)); // The ? banner at index 1
-    m_pMapList->SetImageList(imageList, true);
 
     //Font
     m_hFont = pScheme->GetFont("MapListFont", IsProportional());
@@ -294,7 +294,8 @@ void CBaseMapsPage::AddMapToList(MapData* pData)
     // Updates are handled by an event
     FOR_EACH_VEC(m_vecMaps, i)
     {
-        if (m_vecMaps[i].m_pMap->m_uID == pData->m_uID)
+        MapData *pDat = m_vecMaps[i].m_pMap;
+        if (pDat->m_uID == pData->m_uID)
             return;
     }
 
@@ -516,18 +517,25 @@ void CBaseMapsPage::ClearMapList()
     m_pMapList->RemoveAll();
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: get a new list of maps from the backend
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::GetNewMapList()
-{
-    // StartRefresh();
-}
-
 void CBaseMapsPage::OnTabSelected()
 {
     GetNewMapList();
+}
+
+void CBaseMapsPage::GetNewMapList()
+{
+    CUtlVector<MapData*> vecMaps;
+    g_pMapCache->GetMapList(vecMaps, GetMapListType());
+
+    FOR_EACH_VEC(vecMaps, i)
+        AddMapToList(vecMaps[i]);
+
+    OnGetNewMapList();
+}
+
+void CBaseMapsPage::OnGetNewMapList()
+{
+    ApplyFilters(GetFilters());
 }
 
 //-----------------------------------------------------------------------------
