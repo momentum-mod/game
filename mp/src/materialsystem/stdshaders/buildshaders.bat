@@ -21,7 +21,7 @@ REM ****************
 
 setlocal
 set arg_filename=%1
-set shadercompilecommand=shadercompile.exe
+set shadercompilecommand=%SDKBINDIR%\shadercompile.exe
 set targetdir=shaders
 set SrcDirBase=..\..
 set shaderDir=shaders
