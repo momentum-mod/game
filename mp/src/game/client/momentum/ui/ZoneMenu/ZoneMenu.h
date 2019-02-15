@@ -1,4 +1,8 @@
+#ifndef ZONEMENU_H
+#define ZONEMENU_H
+#ifdef _WIN32
 #pragma once
+#endif
 
 #include "vgui_controls/Frame.h"
 #include "hudelement.h"
@@ -63,3 +67,4 @@ class C_MomZoneMenu : public vgui::Frame
 };
 
 extern C_MomZoneMenu *g_pZoneMenu;
+#endif
