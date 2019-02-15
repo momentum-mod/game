@@ -11,6 +11,8 @@
 #include <vgui_controls/CvarSlider.h>
 #include <vgui_controls/CvarTextEntry.h>
 
+#include "tier0/memdbgon.h"
+
 using namespace vgui;
 
 C_MomZoneMenu *g_pZoneMenu = nullptr;
@@ -31,7 +33,7 @@ C_MomZoneMenu::C_MomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMen
     m_bBindKeys = false;
     m_eZoneAction = ZONEACTION_NONE;
 
-	LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
+    LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
 
     m_pEditorTitleLabel = FindControl<Label>("ZoneMenuEditorLabel");
 
@@ -127,7 +129,7 @@ void C_MomZoneMenu::OnZoneInfo(bf_read &msg)
 
         mom_zone_edit.SetValue(old);
 
-		break;
+        break;
     }
     case ZONEACTION_EDIT:
     {
@@ -137,13 +139,13 @@ void C_MomZoneMenu::OnZoneInfo(bf_read &msg)
         Q_snprintf(buf, sizeof(buf), "mom_zone_edit_existing %i", zoneidx);
         engine->ExecuteClientCmd(buf);
 
-		break;
+        break;
     }
     default:
     {
         AssertMsg(false, "Unhandled zone action (%i)", m_eZoneAction);
         break;
-	}
+    }
     }
 
     // Clear the command
