@@ -11,6 +11,20 @@
 
 #include "tier0/memdbgon.h"
 
+class CTimeTriggerTraceEnum : public IEntityEnumerator
+{
+  public:
+    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity) : m_vecVelocity(velocity), m_pRay(pRay) { m_flOffset = 0.0f; }
+
+    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
+    float GetOffset() { return m_flOffset; }
+
+  private:
+    float m_flOffset;
+    Vector m_vecVelocity;
+    Ray_t *m_pRay;
+};
+
 void CMomentumTimer::Start(int start, int iBonusZone)
 {
     static ConVarRef mom_zone_edit("mom_zone_edit");
@@ -23,10 +37,11 @@ void CMomentumTimer::Start(int start, int iBonusZone)
 
     pPlayer->m_SrvData.m_bIsTimerPaused = false;
 
-	// Perform all the checks to ensure player can start
-    // MOM_TODO: Allow it based on gametype
+    // Perform all the checks to ensure player can start
+    // MOM_TODO: Display this info properly to client?
     if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
     {
+        // MOM_TODO: Allow it based on gametype
         Warning("Cannot start timer while using save loc menu!\n");
         return;
     }
@@ -458,7 +473,7 @@ class CTimerCommands
     static void ResetToStart()
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
-        if (!pPlayer || !pPlayer->m_bAllowUserTeleports)
+        if (!pPlayer || !pPlayer->AllowUserTeleports())
             return;
         CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
         if (start)
@@ -491,7 +506,7 @@ class CTimerCommands
     {
         CTriggerStage *stage = g_pMomentumTimer->GetCurrentStage();
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
-        if (stage && pPlayer && pPlayer->m_bAllowUserTeleports)
+        if (stage && pPlayer && pPlayer->AllowUserTeleports())
         {
             pPlayer->Teleport(&stage->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
@@ -500,7 +515,7 @@ class CTimerCommands
     static void PracticeMove()
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-        if (!pPlayer || !pPlayer->m_bAllowUserTeleports || pPlayer->IsSpectatingGhost())
+        if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->IsSpectatingGhost())
             return;
 
         if (!pPlayer->m_SrvData.m_bHasPracticeMode)
@@ -534,7 +549,7 @@ class CTimerCommands
         const QAngle *pAng = nullptr;
         if (pPlayer && args.ArgC() >= 2)
         {
-            if (!pPlayer->m_bAllowUserTeleports)
+            if (!pPlayer->AllowUserTeleports())
                 return;
 
             // We get the desried index from the command (Remember that for us, args are 1 indexed)

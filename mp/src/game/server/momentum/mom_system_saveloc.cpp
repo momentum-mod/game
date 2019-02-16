@@ -99,7 +99,7 @@ void SavedLocation_t::Write(CUtlBuffer& mem)
     test->deleteThis();
 }
 
-CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName), gamemode("mom_gamemode")
+CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName)
 {
     m_pSavedLocsKV = new KeyValues(pName);
     m_iRequesting = 0;
@@ -430,7 +430,7 @@ void CMOMSaveLocSystem::GotoPrevSaveloc()
 
 void CMOMSaveLocSystem::TeleportToSavelocIndex(int indx)
 {
-    if (indx < 0 || indx > m_rcSavelocs.Count() || !m_pPlayer || !m_pPlayer->m_bAllowUserTeleports)
+    if (indx < 0 || indx > m_rcSavelocs.Count() || !m_pPlayer || !m_pPlayer->AllowUserTeleports())
         return;
     // Check if the timer is running and if we should stop it
     CheckTimer();
@@ -451,6 +451,8 @@ void CMOMSaveLocSystem::SetUsingSavelocMenu(bool bIsUsingSLMenu)
 
 void CMOMSaveLocSystem::CheckTimer()
 {
+    static ConVarRef gamemode("mom_gamemode");
+
     if (g_pMomentumTimer->IsRunning())
     {
         // MOM_TODO: consider

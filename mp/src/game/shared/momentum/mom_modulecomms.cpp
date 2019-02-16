@@ -12,32 +12,31 @@ StdReplayDataBuffer g_MomReplayDataBuf;
 
 DLL_EXPORT void StdDataToPlayer(StdDataFromServer *from)
 {
-    g_MomServerDataBuf._mutex.Lock();
+    CAutoLock guard(g_MomServerDataBuf._mutex);
+
     g_MomServerDataBuf.m_bWritten = true;
     memcpy(&g_MomServerDataBuf, from, sizeof(StdDataFromServer));
-    g_MomServerDataBuf._mutex.Unlock();
 }
 
 DLL_EXPORT void StdDataToReplay(StdReplayDataFromServer *from)
 {
+    CAutoLock guard(g_MomServerDataBuf._mutex);
 
-    g_MomReplayDataBuf._mutex.Lock();
     g_MomReplayDataBuf.m_bWritten = true;
     memcpy(&g_MomReplayDataBuf, from, sizeof(StdReplayDataFromServer));
-    g_MomReplayDataBuf._mutex.Unlock();
 }
 
 void FetchStdData(C_MomentumPlayer *pPlayer)
 {
     if(pPlayer)
     {
-        g_MomServerDataBuf._mutex.Lock();
+        CAutoLock guard(g_MomServerDataBuf._mutex);
+
         if (!g_MomServerDataBuf.m_bWritten)
             return;
         
         g_MomServerDataBuf.m_bWritten = false;
         memcpy(&pPlayer->m_SrvData, &g_MomServerDataBuf, sizeof(StdDataFromServer));
-        g_MomServerDataBuf._mutex.Unlock();
     }
 }
 
@@ -45,13 +44,13 @@ void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost)
 {
     if (pGhost)
     {
-        g_MomReplayDataBuf._mutex.Lock();
+        CAutoLock guard(g_MomServerDataBuf._mutex);
+
         if (!g_MomReplayDataBuf.m_bWritten)
             return;
         
         g_MomReplayDataBuf.m_bWritten = false;
         memcpy(&pGhost->m_SrvData, &g_MomReplayDataBuf, sizeof(StdReplayDataFromServer));
-        g_MomReplayDataBuf._mutex.Unlock();
     }
 }
 

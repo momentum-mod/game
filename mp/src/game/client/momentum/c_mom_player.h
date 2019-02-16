@@ -24,10 +24,6 @@ class C_MomentumPlayer : public C_BasePlayer
     void Spawn() OVERRIDE;
     virtual void ClientThink(void);
 
-    Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
-
-    void SurpressLadderChecks(const Vector &pos, const Vector &normal);
-    bool CanGrabLadder(const Vector &pos, const Vector &normal);
     bool DidPlayerBhop() { return m_SrvData.m_bDidPlayerBhop; }
     bool HasAutoBhop() { return m_SrvData.m_RunData.m_bAutoBhop; }
     // void ResetStrafeSync();
@@ -74,7 +70,6 @@ class C_MomentumPlayer : public C_BasePlayer
     bool m_duckUntilOnGround;
     float m_flStamina;
 
-    int m_iIDEntIndex;
     C_MomentumOnlineGhostEntity *m_pViewTarget;
     C_MomentumOnlineGhostEntity *m_pSpectateTarget;
 

@@ -100,7 +100,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 
         // Re-allow the player to teleport
         if (m_pPlayer)
-            m_pPlayer->m_bAllowUserTeleports = true;
+            m_pPlayer->SetAllowUserTeleports(true);
 
         return;
     }
@@ -109,7 +109,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     {
         // Prevent the user from teleporting, potentially breaking this delay
         if (m_pPlayer)
-            m_pPlayer->m_bAllowUserTeleports = false;
+            m_pPlayer->SetAllowUserTeleports(false);
 
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
@@ -157,7 +157,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 
     // Re-allow the player to teleport
     if (m_pPlayer)
-        m_pPlayer->m_bAllowUserTeleports = true;
+        m_pPlayer->SetAllowUserTeleports(true);
 
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;

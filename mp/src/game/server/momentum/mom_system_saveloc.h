@@ -107,8 +107,6 @@ private:
 
     CMomentumPlayer *m_pPlayer;
 
-    ConVarRef gamemode;
-
     CUtlVector<SavedLocation_t*> m_rcSavelocs;
     int m_iCurrentSavelocIndx;
     bool m_bUsingSavelocMenu;

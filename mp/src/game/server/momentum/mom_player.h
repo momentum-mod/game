@@ -77,22 +77,13 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     bool CanBreatheUnderwater() const OVERRIDE { return true; }
 
-    // LADDERS
-    void SurpressLadderChecks(const Vector &pos, const Vector &normal);
-    bool CanGrabLadder(const Vector &pos, const Vector &normal);
-    Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
+    void SetAllowUserTeleports(bool allow) { m_bAllowUserTeleports = allow; }
+    bool AllowUserTeleports() const { return m_bAllowUserTeleports; }
 
     // SPAWNING
     CBaseEntity *EntSelectSpawnPoint() OVERRIDE;
 
-    // used by CMomentumGameMovement
-    bool m_duckUntilOnGround;
-    float m_flStamina;
-
-    bool m_bAllowUserTeleports;
-
     void SetDisableBhop(bool bState);
-
     void EnableAutoBhop();
     void DisableAutoBhop();
     bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
@@ -108,7 +99,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void TweenSlowdownPlayer();
     void ResetRunStats();
     void CalculateAverageStats();
-    void LimitSpeedInStartZone(Vector &vRealVelocity);
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
     CNetworkHandle(CTriggerSlide, m_CurrentSlideTrigger);
@@ -133,9 +123,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     // Used by g_MOMBlockFix door/button fix code
     void Touch(CBaseEntity *) OVERRIDE;
     int GetLastBlock() const { return m_iLastBlock; }
+    void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
     float GetPunishTime() const { return m_flPunishTime; }
     void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
-    void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
 
     // Replay stuff
     
@@ -211,16 +201,24 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
+
   private:
+    // Spawn stuff
+    bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
+
+  private:
+    // used by CMomentumGameMovement
+    bool m_duckUntilOnGround;
+    float m_flStamina;
+
+    bool m_bAllowUserTeleports;
+
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
     float m_flGrabbableLadderTime;
 
-    // Spawn stuff
-    EHANDLE g_pLastSpawn;
-    bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;

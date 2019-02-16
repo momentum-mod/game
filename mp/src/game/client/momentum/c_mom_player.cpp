@@ -15,7 +15,7 @@ DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE)
 DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_iIDEntIndex(0), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
+C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
@@ -100,45 +100,6 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 	//SetNextClientThink(CLIENT_THINK_ALWAYS);
 
 	BaseClass::PostDataUpdate(updateType);
-}
-
-
-void C_MomentumPlayer::SurpressLadderChecks(const Vector& pos, const Vector& normal)
-{
-    m_ladderSurpressionTimer.Start(1.0f);
-    m_lastLadderPos = pos;
-    m_lastLadderNormal = normal;
-}
-
-bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
-{
-    if (m_ladderSurpressionTimer.GetRemainingTime() <= 0.0f)
-    {
-        return true;
-    }
-
-    const float MaxDist = 64.0f;
-    if (pos.AsVector2D().DistToSqr(m_lastLadderPos.AsVector2D()) < MaxDist * MaxDist)
-    {
-        return false;
-    }
-
-    if (normal != m_lastLadderNormal)
-    {
-        return true;
-    }
-
-    return false;
-}
-
-C_MomentumReplayGhostEntity* C_MomentumPlayer::GetReplayEnt() const
-{
-    return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
-}
-
-C_MomentumOnlineGhostEntity* C_MomentumPlayer::GetOnlineGhostEnt() const
-{
-    return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
 }
 
 // Overridden for Ghost entity
