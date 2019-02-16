@@ -1533,6 +1533,10 @@ void Menu::OnKeyTyped(wchar_t unichar)
 		OnTypeAhead(unichar);
 		return;
 
+	case NO_TYPE_AHEAD_MODE:
+		// Don't do anything, let's just leave
+		return;
+
 	case COMPAT_MODE:
 	default:
 		break;

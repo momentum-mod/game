@@ -56,6 +56,7 @@ C_MomZoneMenu::C_MomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMen
     m_pZoneTypeCombo->AddItem("Bonus End",   new KeyValues("vals", "zone_type", "end",   "bonus", "1"));
     m_pZoneTypeCombo->AddItem("Stage",       new KeyValues("vals", "zone_type", "stage", "bonus", "0"));
     m_pZoneTypeCombo->AddItem("Checkpoint",  new KeyValues("vals", "zone_type", "cp",    "bonus", "0"));
+    m_pZoneTypeCombo->GetMenu()->SetTypeAheadMode(Menu::NO_TYPE_AHEAD_MODE); // Disable the annoying type ahead
     m_pZoneTypeCombo->SetNumberOfEditLines(7); // Make sure they're all visible at once
     m_pZoneTypeCombo->ActivateItemByRow(0);
 
