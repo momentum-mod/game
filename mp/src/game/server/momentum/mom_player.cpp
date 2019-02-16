@@ -726,11 +726,9 @@ void CMomentumPlayer::OnPlayerJump()
     if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
         m_SrvData.m_RunData.m_bTimerStartOnJump)
     {
-        bool bCheating = GetMoveType() == MOVETYPE_NOCLIP;
-
         // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning() && !m_SrvData.m_bHasPracticeMode && !bCheating)
+        if (!g_pMomentumTimer->IsRunning())
         {
             g_pMomentumTimer->m_bShouldUseStartZoneOffset = false;
 
