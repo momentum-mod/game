@@ -195,10 +195,10 @@ void CMomentumPlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
     {
         VectorCopy(ucmd->viewangles, pl.v_angle.GetForModify());
     }
-	else if (pl.fixangle == FIXANGLE_ABSOLUTE)
-	{
-		VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
-	}
+    else if (pl.fixangle == FIXANGLE_ABSOLUTE)
+    {
+        VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
+    }
 
     // Handle FL_FROZEN.
     if (GetFlags() & FL_FROZEN)
@@ -441,7 +441,6 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&p
         {
             if (pStart->HasSpawnFlags(1)) // SF_PLAYER_START_MASTER
             {
-                g_pLastSpawn = pStart;
                 return true;
             }
         }
@@ -450,7 +449,6 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&p
     }
     if (pLast)
     {
-        g_pLastSpawn = pLast;
         pStart = pLast;
         return true;
     }
@@ -530,12 +528,9 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     {
         CWeaponBase *pWeapon = dynamic_cast<CWeaponBase *>(GetActiveWeapon());
 
-        if (pWeapon)
+        if (pWeapon && pWeapon->GetWeaponID() != WEAPON_GRENADE)
         {
-            if (pWeapon->GetWeaponID() != WEAPON_GRENADE)
-            {
-                MomentumWeaponDrop(pWeapon);
-            }
+           MomentumWeaponDrop(pWeapon);
         }
 
         return true;
@@ -555,7 +550,7 @@ void CMomentumPlayer::AddOnehop(CTriggerOnehop* pTrigger)
 {
     if (m_vecOnehops.Count() > 0)
     {
-        // Go backwards so we don't have to worry about anything
+        // Go backwards so we don't have to worry about vector being invalidated once we remove an entry
         FOR_EACH_VEC_BACK(m_vecOnehops, i)
         {
             CTriggerOnehop *pOnehop = m_vecOnehops[i];
@@ -1011,74 +1006,7 @@ void CMomentumPlayer::CalculateAverageStats()
     // think once per 0.1 second interval so we avoid making the totals extremely large
     SetNextThink(gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
 }
-// This limits the player's speed in the start zone, depending on which gamemode the player is currently playing.
-// On surf/other, it only limits practice mode speed. On bhop/scroll, it limits the movement speed above a certain
-// threshhold, and clamps the player's velocity if they go above it.
-// This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
-// bhop.
-// MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
-void CMomentumPlayer::LimitSpeedInStartZone(Vector &vRealVelocity)
-{
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
-    {
-        // set bhop flag to true so we can't prespeed with practice mode
-        if (m_SrvData.m_bHasPracticeMode)
-            m_SrvData.m_bDidPlayerBhop = true;
 
-        // depending on gamemode, limit speed outright when player exceeds punish vel
-        ConVarRef gm("mom_gamemode");
-        CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
-        // This does not look pretty but saves us a branching. The checks are:
-        // no nullptr, correct gamemode, is limiting leave speed and
-        //    enough ticks on air have passed
-        if (startTrigger && startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
-        {
-            bool bShouldLimitSpeed = true;
-
-            if (GetGroundEntity() != nullptr)
-            {
-                if (m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_INAIR)
-                {
-                    bShouldLimitSpeed = false;
-                }
-
-                if (!m_bWasInAir && m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_ONLAND)
-                {
-                    bShouldLimitSpeed = false;
-                }
-
-                m_bWasInAir = false;
-            }
-            else
-            {
-                if (m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_GROUND)
-                {
-                    bShouldLimitSpeed = false;
-                }
-
-                m_bWasInAir = true;
-            }
-
-            if (bShouldLimitSpeed)
-            {
-                Vector velocity = vRealVelocity;
-                float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
-
-                if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
-                {
-                    float flOldz = velocity.z;
-                    VectorNormalizeFast(velocity);
-                    velocity *= startTrigger->GetMaxLeaveSpeed();
-                    velocity.z = flOldz;
-                    // New velocity is the unitary form of the current vel vector times the max speed amount
-                    vRealVelocity = velocity;
-                    m_bShouldLimitSpeed = true;
-                }
-            }
-        }
-    }
-    // SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
-}
 // override of CBasePlayer::IsValidObserverTarget that allows us to spectate ghosts
 bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 {

@@ -90,11 +90,11 @@ class CMomentumTimer : public CAutoGameSystem
 
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() const { return m_bWereCheatsActivated; };
-    void SetCheating(bool newBool)
+    void SetCheating(bool cheating)
     {
         UTIL_ShowMessage("CHEATER", UTIL_GetLocalPlayer());
         Stop(false);
-        m_bWereCheatsActivated = newBool;
+        m_bWereCheatsActivated = cheating;
     }
 
     void SetGameModeConVars();
@@ -144,20 +144,6 @@ class CMomentumTimer : public CAutoGameSystem
     float m_flDistFixTraceCorners[8]; // array of floats representing the trace distance from each corner of the
                                       // player's collision hull
     typedef enum { ZONETYPE_END, ZONETYPE_START } zoneType;
-};
-
-class CTimeTriggerTraceEnum : public IEntityEnumerator
-{
-  public:
-    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity) : m_vecVelocity(velocity), m_pRay(pRay) { m_flOffset = 0.0f; }
-
-    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
-    float GetOffset() { return m_flOffset; }
-
-  private:
-    float m_flOffset;
-    Vector m_vecVelocity;
-    Ray_t *m_pRay;
 };
 
 extern CMomentumTimer *g_pMomentumTimer;

@@ -109,28 +109,57 @@ void CMomRunStats::Serialize(CUtlBuffer &writer)
     }
 }
 
-uint8 CMomRunStats::GetTotalZones() { return m_pData->m_iTotalZones; }
-uint32 CMomRunStats::GetZoneJumps(int zone) { return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_iZoneJumps[zone]; }
-uint32 CMomRunStats::GetZoneStrafes(int zone) { return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_iZoneStrafes[zone]; }
-float CMomRunStats::GetZoneTime(int zone) { return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_flZoneTime[zone]; }
-float CMomRunStats::GetZoneEnterTime(int zone) { return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_flZoneEnterTime[zone]; }
-float CMomRunStats::GetZoneStrafeSyncAvg(int zone) { return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_flZoneStrafeSyncAvg[zone]; }
-float CMomRunStats::GetZoneStrafeSync2Avg(int zone) { return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_flZoneStrafeSync2Avg[zone]; }
+uint8 CMomRunStats::GetTotalZones()
+{
+    return m_pData->m_iTotalZones;
+}
+uint32 CMomRunStats::GetZoneJumps(int zone)
+{
+    return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_iZoneJumps[zone];
+}
+uint32 CMomRunStats::GetZoneStrafes(int zone)
+{
+    return zone > m_pData->m_iTotalZones ? 0 : m_pData->m_iZoneStrafes[zone];
+}
+float CMomRunStats::GetZoneTime(int zone)
+{
+    return zone > m_pData->m_iTotalZones ? 0.0f : m_pData->m_flZoneTime[zone];
+}
+float CMomRunStats::GetZoneEnterTime(int zone)
+{
+    return zone > m_pData->m_iTotalZones ? 0.0f : m_pData->m_flZoneEnterTime[zone];
+}
+float CMomRunStats::GetZoneStrafeSyncAvg(int zone)
+{
+    return zone > m_pData->m_iTotalZones ? 0.0f : m_pData->m_flZoneStrafeSyncAvg[zone];
+}
+float CMomRunStats::GetZoneStrafeSync2Avg(int zone)
+{
+    return zone > m_pData->m_iTotalZones ? 0.0f : m_pData->m_flZoneStrafeSync2Avg[zone];
+}
 float CMomRunStats::GetZoneEnterSpeed(int zone, bool vel2D)
 {
-    return zone > m_pData->m_iTotalZones ? 0.0f : (vel2D ? m_pData->m_flZoneEnterSpeed2D[zone] : m_pData->m_flZoneEnterSpeed3D[zone]);
+    return zone > m_pData->m_iTotalZones
+               ? 0.0f
+               : (vel2D ? m_pData->m_flZoneEnterSpeed2D[zone] : m_pData->m_flZoneEnterSpeed3D[zone]);
 }
 float CMomRunStats::GetZoneExitSpeed(int zone, bool vel2D)
 {
-    return zone > m_pData->m_iTotalZones ? 0.0f : (vel2D ? m_pData->m_flZoneExitSpeed2D[zone] : m_pData->m_flZoneExitSpeed3D[zone]);
+    return zone > m_pData->m_iTotalZones
+               ? 0.0f
+               : (vel2D ? m_pData->m_flZoneExitSpeed2D[zone] : m_pData->m_flZoneExitSpeed3D[zone]);
 }
 float CMomRunStats::GetZoneVelocityMax(int zone, bool vel2D)
 {
-    return zone > m_pData->m_iTotalZones ? 0.0f : (vel2D ? m_pData->m_flZoneVelocityMax2D[zone] : m_pData->m_flZoneVelocityMax3D[zone]);
+    return zone > m_pData->m_iTotalZones
+               ? 0.0f
+               : (vel2D ? m_pData->m_flZoneVelocityMax2D[zone] : m_pData->m_flZoneVelocityMax3D[zone]);
 }
 float CMomRunStats::GetZoneVelocityAvg(int zone, bool vel2D)
 {
-    return zone > m_pData->m_iTotalZones ? 0.0f : (vel2D ? m_pData->m_flZoneVelocityAvg2D[zone] : m_pData->m_flZoneVelocityAvg3D[zone]);
+    return zone > m_pData->m_iTotalZones
+               ? 0.0f
+               : (vel2D ? m_pData->m_flZoneVelocityAvg2D[zone] : m_pData->m_flZoneVelocityAvg3D[zone]);
 }
 
 void CMomRunStats::SetTotalZones(uint8 zones) { m_pData->m_iTotalZones = zones > MAX_STAGES ? MAX_STAGES : zones; }

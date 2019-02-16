@@ -72,7 +72,7 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     if (!g_pMomentumTimer->GotCaughtCheating())
     {
-        ConVarRef cheatsRef("sv_cheats");
+        static ConVarRef cheatsRef("sv_cheats");
         if (cheatsRef.GetBool())
         {
             g_pMomentumTimer->SetCheating(true);
