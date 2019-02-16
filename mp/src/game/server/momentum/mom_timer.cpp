@@ -13,8 +13,9 @@
 
 void CMomentumTimer::Start(int start, int iBonusZone)
 {
+    static ConVarRef mom_zone_edit("mom_zone_edit");
+
     SetPaused(false);
-    g_ReplaySystem.SetPaused(false);
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (!pPlayer)
@@ -22,11 +23,29 @@ void CMomentumTimer::Start(int start, int iBonusZone)
 
     pPlayer->m_SrvData.m_bIsTimerPaused = false;
 
+	// Perform all the checks to ensure player can start
     // MOM_TODO: Allow it based on gametype
     if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
+    {
+        Warning("Cannot start timer while using save loc menu!\n");
         return;
-    if (ConVarRef("mom_zone_edit").GetBool())
+    }
+    if (mom_zone_edit.GetBool())
+    {
+        Warning("Cannot start timer while editing zones!\n");
         return;
+    }
+    if (pPlayer->m_SrvData.m_bHasPracticeMode)
+    {
+        Warning("Cannot start timer while in practice mode!\n");
+        return;
+    }
+    if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP)
+    {
+        Warning("Cannot start timer while in noclip!\n");
+        return;
+    }
+
     m_iStartTick = start;
     m_iEndTick = 0;
     m_iLastRunDate = 0;
@@ -403,7 +422,9 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
         // MOM_TODO: Mark this as a "entered practice mode" event in the replay
     }
     else
+    {
         Stop(false); // Keep running
+    }
 }
 
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
@@ -489,7 +510,7 @@ class CTimerCommands
                 bool safeGuard = (pPlayer->m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
                 if (safeGuard)
                 {
-                    Warning("You cannot enable practice mode while moving, while the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
+                    Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
                     return;
                 }
             }
@@ -497,7 +518,9 @@ class CTimerCommands
             g_pMomentumTimer->EnablePractice(pPlayer);
         }
         else
+        {
             g_pMomentumTimer->DisablePractice(pPlayer);
+        }
     }
 
     static void MarkStart() { g_pMomentumTimer->CreateStartMark(); }
