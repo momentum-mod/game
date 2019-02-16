@@ -197,6 +197,7 @@ public:
 		COMPAT_MODE = 0,
 		HOT_KEY_MODE,
 		TYPE_AHEAD_MODE,
+		NO_TYPE_AHEAD_MODE, // Doesn't do any type ahead, keyboard clicks don't affect selected item at all
 	};
 	virtual void SetTypeAheadMode(MenuTypeAheadMode mode);
 	virtual int GetTypeAheadMode();
