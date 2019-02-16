@@ -323,7 +323,7 @@ private:
 	CUtlLinkedList<MenuItem*, int> 	m_MenuItems;
 
 	CUtlVector<int>					m_VisibleSortedItems;
-	CUtlVector<int>					m_SortedItems;		// used for visual 
+	CUtlVector<int>					m_SortedItems;      // used for visual 
 	CUtlVector<int>					m_Separators;       // menu item ids after  which separators should be shown
 	CUtlVector<MenuSeparator *>		m_SeparatorPanels;
 
