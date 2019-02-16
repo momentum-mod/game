@@ -200,7 +200,7 @@ int Menu::AddMenuItemCharCommand(MenuItem *item, const char *command, Panel *tar
 //			*itemText - Name of item text that will appear in the manu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 // Output:  itemID - ID of this item
 //-----------------------------------------------------------------------------
@@ -251,7 +251,7 @@ int Menu::AddMenuItem( const char *itemText, const char *command, Panel *target,
 //			*itemText - Name of item text that will appear in the manu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddMenuItem( const char *itemName, const char *itemText, KeyValues *message, Panel *target, const KeyValues *userData  )
@@ -272,7 +272,7 @@ int Menu::AddMenuItem( const char *itemName, const wchar_t *wszItemText, KeyValu
 //						This will also be used as the name of the menu item panel.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddMenuItem( const char *itemText, KeyValues *message, Panel *target, const KeyValues *userData  )
@@ -286,7 +286,7 @@ int Menu::AddMenuItem( const char *itemText, KeyValues *message, Panel *target, 
 //						This will also be the text of the command sent when the
 //						item is selected.
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddMenuItem( const char *itemText, Panel *target , const KeyValues *userData )
@@ -319,7 +319,7 @@ int Menu::AddCheckableMenuItem( const char *itemName, const wchar_t *wszItemText
 //						This will also be used as the name of the menu item panel.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCheckableMenuItem( const char *itemText, const char *command, Panel *target, const KeyValues *userData  )
@@ -333,7 +333,7 @@ int Menu::AddCheckableMenuItem( const char *itemText, const char *command, Panel
 //			*itemText - Name of item text that will appear in the manu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCheckableMenuItem( const char *itemName, const char *itemText, KeyValues *message, Panel *target, const KeyValues *userData  )
@@ -354,7 +354,7 @@ int Menu::AddCheckableMenuItem( const char *itemName, const wchar_t *wszItemText
 //						This will also be used as the name of the menu item panel.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCheckableMenuItem( const char *itemText, KeyValues *message, Panel *target, const KeyValues *userData  )
@@ -368,7 +368,7 @@ int Menu::AddCheckableMenuItem( const char *itemText, KeyValues *message, Panel 
 //						This will also be the text of the command sent when the
 //						item is selected.
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCheckableMenuItem( const char *itemText, Panel *target, const KeyValues *userData  )
@@ -382,7 +382,7 @@ int Menu::AddCheckableMenuItem( const char *itemText, Panel *target, const KeyVa
 //			*itemText - Name of item text that will appear in the manu.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCascadingMenuItem( const char *itemName, const char *itemText, const char *command, Panel *target, Menu *cascadeMenu , const KeyValues *userData )
@@ -403,7 +403,7 @@ int Menu::AddCascadingMenuItem( const char *itemName, const wchar_t *wszItemText
 //						This will also be used as the name of the menu item panel.
 //			*command -  Command text to be sent when menu item is selected	
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCascadingMenuItem( const char *itemText, const char *command, Panel *target, Menu *cascadeMenu , const KeyValues *userData )
@@ -417,7 +417,7 @@ int Menu::AddCascadingMenuItem( const char *itemText, const char *command, Panel
 //			*itemText - Name of item text that will appear in the manu.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCascadingMenuItem( const char *itemName, const char *itemText, KeyValues *message, Panel *target, Menu *cascadeMenu, const KeyValues *userData )
@@ -438,7 +438,7 @@ int Menu::AddCascadingMenuItem( const char *itemName, const wchar_t *wszItemText
 //						This will also be used as the name of the menu item panel.
 //			*message - pointer to the message to send when the item is selected
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCascadingMenuItem( const char *itemText, KeyValues *message, Panel *target, Menu *cascadeMenu, const KeyValues *userData )
@@ -452,7 +452,7 @@ int Menu::AddCascadingMenuItem( const char *itemText, KeyValues *message, Panel 
 //						This will also be the text of the command sent when the
 //						item is selected.
 //			*target - Target panel of the command
-//          *cascadeMenu - if the menu item opens a cascading menu, this is a 
+//			*cascadeMenu - if the menu item opens a cascading menu, this is a 
 //							ptr to the menu that opens on selecting the item
 //-----------------------------------------------------------------------------
 int Menu::AddCascadingMenuItem( const char *itemText, Panel *target, Menu *cascadeMenu, const KeyValues *userData )
@@ -594,11 +594,11 @@ void Menu::PositionRelativeToPanel( Panel *relative, MenuDirection_e direction, 
 	}
 	else if ( direction == ALIGN_WITH_PARENT && relative->GetVParent() )
 	{
-	   rx = 0, ry = 0;
-	   relative->ParentLocalToScreen(rx, ry);
-	   rx -= 1; // take border into account
-	   ry += rh + nAdditionalYOffset;
-	   rw = rh = 0;
+		rx = 0, ry = 0;
+		relative->ParentLocalToScreen(rx, ry);
+		rx -= 1; // take border into account
+		ry += rh + nAdditionalYOffset;
+		rw = rh = 0;
 	}
 	else
 	{
@@ -947,19 +947,19 @@ void Menu::CalculateWidth()
 	{
 		// find the biggest menu item
 		FOR_EACH_LL( m_MenuItems, i )
-		{		
+		{
 			int wide, tall;
 			m_MenuItems[i]->GetContentSize(wide, tall);
 			if (wide > _menuWide - Label::Content)
 			{
-				_menuWide =  wide + Label::Content;	
+				_menuWide =  wide + Label::Content;
 			}
-		}	
+		}
 	}
 	
 	// enfoce a minimumWidth 
 	if (_menuWide < m_iMinimumWidth)
-	{		
+	{
 		_menuWide = m_iMinimumWidth;
 	}
 
@@ -974,7 +974,7 @@ void Menu::LayoutScrollBar()
 	//!! need to make it recalculate scroll positions
 	m_pScroller->SetEnabled(false);
 	m_pScroller->SetRangeWindow( m_VisibleSortedItems.Count() );
-	m_pScroller->SetRange( 0, CountVisibleItems() );	
+	m_pScroller->SetRange( 0, CountVisibleItems() );
 	m_pScroller->SetButtonPressedScrollValue( 1 );
 	
 	int wide, tall;
@@ -1065,7 +1065,7 @@ void Menu::SizeMenuItems()
 		{
 			// labels do thier own sizing. this will size the label to the width of the menu,
 			// this will put the cascading menu arrow on the right side automatically.	
-			child->SetWide(_menuWide - ileft - iright);			
+			child->SetWide(_menuWide - ileft - iright);
 		}
 	}
 }
@@ -1138,7 +1138,7 @@ void Menu::LayoutMenuBorder()
 	IBorder *menuBorder;
 	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
 
-	menuBorder = pScheme->GetBorder("MenuBorder");	   
+	menuBorder = pScheme->GetBorder("MenuBorder");
 	
 	if ( menuBorder )
 	{
@@ -1152,27 +1152,27 @@ void Menu::LayoutMenuBorder()
 void Menu::Paint()
 {
 	if ( m_pScroller->IsVisible() )
-	{			
+	{
 		// draw black bar
 		int wide, tall;
 		GetSize (wide, tall);
 		surface()->DrawSetColor(_borderDark);
-        // MOM_TODO: Find out what is supposed to go here
+		// MOM_TODO: Find out what is supposed to go here
 		/*if( IsProportional() )
 		{
-			surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);	
+			surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);
 		}
 		else
 		{
-			surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);	
+			surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);
 		}*/
-        surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);
+		surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);
 	}	
 }
 
 
 //-----------------------------------------------------------------------------
-// Purpose:	sets the max number of items visible (scrollbar appears with more)
+// Purpose: sets the max number of items visible (scrollbar appears with more)
 // Input  : numItems - 
 //-----------------------------------------------------------------------------
 void Menu::SetNumberOfVisibleItems( int numItems )
@@ -1280,7 +1280,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 	case KEY_UP:
 	case KEY_XBUTTON_UP: 
 	case KEY_XSTICK1_UP: 
-		{	
+		{
 			MoveAlongMenuItemList(MENU_UP, 0);
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
 			{
@@ -1299,7 +1299,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 			MoveAlongMenuItemList(MENU_DOWN, 0);
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
 			{
-				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();	
+				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();
 			}
 			else
 			{
@@ -1380,7 +1380,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
 			{
-				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();	
+				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();
 			}
 			break;
 		}
@@ -1406,7 +1406,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
 			{
-				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();	
+				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();
 			}
 			break;
 		}
@@ -1416,7 +1416,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 			MoveAlongMenuItemList( MENU_UP * m_iCurrentlySelectedItemID, 0 );
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
 			{
-				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();	
+				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();
 			}
 			break;
 		}
@@ -1427,7 +1427,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 			MoveAlongMenuItemList(MENU_DOWN * ( GetItemCount() - m_iCurrentlySelectedItemID - 1), 0);
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
 			{
-				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();	
+				m_MenuItems[m_iCurrentlySelectedItemID]->ArmItem();
 			}
 			break;
 		}
@@ -1496,10 +1496,10 @@ void Menu::OnTypeAhead(wchar_t unichar)
 
 		// This is supposed to be case insensitive but we don't have a portable case
 		// insensitive wide-character routine.
-		if ( wcsncmp( m_szTypeAheadBuf, menuItemName, m_iNumTypeAheadChars) == 0 )			
+		if ( wcsncmp( m_szTypeAheadBuf, menuItemName, m_iNumTypeAheadChars) == 0 )
 		{
 			itemToSelect = i;
-			break;			
+			break;
 		}
 
 		i = (i+1) % m_MenuItems.Count();
@@ -1527,11 +1527,11 @@ void Menu::OnKeyTyped(wchar_t unichar)
 	{
 	case HOT_KEY_MODE:
 		OnHotKey(unichar);
-		return;		
+		return;
 
 	case TYPE_AHEAD_MODE:
 		OnTypeAhead(unichar);
-		return;		
+		return;
 
 	case COMPAT_MODE:
 	default:
@@ -1545,7 +1545,7 @@ void Menu::OnKeyTyped(wchar_t unichar)
 	}
 
 	int i;
-    wchar_t menuItemName[255];
+	wchar_t menuItemName[255];
 
 	i = itemToSelect + 1;
 	if ( i >= m_MenuItems.Count() )
@@ -1555,12 +1555,12 @@ void Menu::OnKeyTyped(wchar_t unichar)
 
 	while ( i != itemToSelect )
 	{
-		 m_MenuItems[i]->GetText(menuItemName, 254);
+		m_MenuItems[i]->GetText(menuItemName, 254);
 
 		if ( tolower( unichar ) == tolower( menuItemName[0] ) )
 		{
 			itemToSelect = i;
-			break;			
+			break;
 		}
 
 		i++;
@@ -1571,7 +1571,7 @@ void Menu::OnKeyTyped(wchar_t unichar)
 	}
 
 	if ( itemToSelect >= 0 )
-    {
+	{
 		SetCurrentlyHighlightedItem( itemToSelect );
 		InvalidateLayout();
 	}
@@ -1601,7 +1601,7 @@ void Menu::OnMouseWheeled(int delta)
 	int val = m_pScroller->GetValue();
 	val -= delta;
 	
-	m_pScroller->SetValue(val);	
+	m_pScroller->SetValue(val);
 
 	// moving the slider redraws the scrollbar,
 	// and so we should redraw the menu since the
@@ -2262,7 +2262,7 @@ void Menu::OnKeyCodePressed(KeyCode code)
 // Purpose: Sets the item currently highlighted in the menu by ptr
 //-----------------------------------------------------------------------------
 void Menu::SetCurrentlySelectedItem(MenuItem *item)
-{	
+{
 	int itemNum = -1;
 	// find it in our list of menuitems
 	FOR_EACH_LL( m_MenuItems, i )
@@ -2333,11 +2333,11 @@ void Menu::SetCurrentlyHighlightedItem(int itemID)
 		// so just snap the scroll bar straight to the item.
 		if ( ( row >  m_pScroller->GetValue() + m_iNumVisibleLines - 1 ) ||
 			 ( row < m_pScroller->GetValue() ) )
-		{				
+		{
 			if ( !m_pScroller->IsVisible() )
 				return;
 			
-			m_pScroller->SetValue(row);	
+			m_pScroller->SetValue(row);
 		}
 	}
 
@@ -2437,11 +2437,11 @@ void Menu::MoveAlongMenuItemList(int direction, int loopCount)
 	if ( m_pScroller->IsVisible() )
 	{
 		if ( row > m_pScroller->GetValue() + m_iNumVisibleLines - 1)
-		{				
+		{
 			int val = m_pScroller->GetValue();
 			val -= -direction;
 			
-			m_pScroller->SetValue(val);	
+			m_pScroller->SetValue(val);
 			
 			// moving the slider redraws the scrollbar,
 			// and so we should redraw the menu since the
@@ -2449,16 +2449,16 @@ void Menu::MoveAlongMenuItemList(int direction, int loopCount)
 			InvalidateLayout();
 		}
 		else if ( row < m_pScroller->GetValue() )
-		{				
-			int val = m_pScroller->GetValue();	
+		{
+			int val = m_pScroller->GetValue();
 			val -= -direction;
 			
-			m_pScroller->SetValue(val);	
+			m_pScroller->SetValue(val);
 			
 			// moving the slider redraws the scrollbar,
 			// and so we should redraw the menu since the
 			// menu draws the black border to the right of the scrollbar.
-			InvalidateLayout();	
+			InvalidateLayout();
 		}
 	
 		// now if we are still off the scroll bar, it means we moved the scroll bar
@@ -2467,8 +2467,8 @@ void Menu::MoveAlongMenuItemList(int direction, int loopCount)
 		// so just snap the scroll bar straight to the item.
 		if ( ( row > m_pScroller->GetValue() + m_iNumVisibleLines - 1) ||
 			 ( row < m_pScroller->GetValue() ) )
-		{				
-			m_pScroller->SetValue(row);	
+		{
+			m_pScroller->SetValue(row);
 		}
 	}
 
