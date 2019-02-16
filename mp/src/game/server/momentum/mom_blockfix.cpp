@@ -6,6 +6,25 @@
 
 #include "tier0/memdbgon.h"
 
+class CTeleportTriggerTraceEnum : public IEntityEnumerator
+{
+  public:
+    CTeleportTriggerTraceEnum(Ray_t *pRay)
+        : m_pRay(pRay), m_pTeleportEnt(nullptr)
+    {
+    }
+
+    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
+    CBaseEntity *GetTeleportEntity() { return m_pTeleportEnt; }
+
+  private:
+    void SetTeleportEntity(CBaseEntity *pEnt) { m_pTeleportEnt = pEnt; }
+
+  private:
+    CBaseEntity *m_pTeleportEnt;
+    Ray_t *m_pRay;
+};
+
 CMOMBhopBlockFixSystem::CMOMBhopBlockFixSystem(const char* pName) : CAutoGameSystem(pName)
 {
     SetDefLessFunc(m_mapBlocks);
@@ -144,14 +163,19 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
     // Do the TraceLine, and write our results to our trace_t class, tr.
     Ray_t ray;
     ray.Init(vecAbsStart, vecAbsEnd);
-    CTeleportTriggerTraceEnum triggerTraceEnum(&ray, pBlockEnt, isDoor);
-
+    CTeleportTriggerTraceEnum triggerTraceEnum(&ray);
     enginetrace->EnumerateEntities(ray, true, &triggerTraceEnum);
+
+    CBaseEntity *pTeleportEntity = triggerTraceEnum.GetTeleportEntity();
+    if (pTeleportEntity != nullptr)
+    {
+        AddBhopBlock(pBlockEnt, pTeleportEntity, isDoor);
+    }
 }
 
 void CMOMBhopBlockFixSystem::AddBhopBlock(CBaseEntity* pBlockEnt, CBaseEntity* pTeleportEnt, bool isDoor)
 {
-    bhop_block_t block = bhop_block_t();
+    bhop_block_t block;
     block.m_pBlockEntity = pBlockEnt;
     block.m_pTeleportTrigger = pTeleportEnt;
     block.m_bIsDoor = isDoor;
@@ -175,10 +199,10 @@ bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
         // arguments are initilized in the constructor of CTeleportTriggerTraceEnum
-        g_MOMBlockFixer->AddBhopBlock(pEntBlock, pEnt, bIsDoor);
-        return false;//Stop, we hit our target.
+        SetTeleportEntity(pEnt);
+        return false; // Stop, we hit our target.
     }
-    //Continue until fraction == 1.0f
+    // Continue until fraction == 1.0f
     return true;
 }
 

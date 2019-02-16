@@ -15,6 +15,8 @@
 #else
 #include "env_player_surface_trigger.h"
 #include "momentum/mom_triggers.h"
+#include "momentum/mom_system_saveloc.h"
+#include "momentum/mom_timer.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -512,7 +514,7 @@ bool CMomentumGameMovement::CanUnduck()
     }
     else
     {
-        // If in air an letting go of croush, make sure we can offset origin to make
+        // If in air and letting go of crouch, make sure we can offset origin to make
         //  up for uncrouching
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
@@ -1369,10 +1371,73 @@ void CMomentumGameMovement::FullWalkMove()
     }
 }
 
+// This limits the player's speed in the start zone, depending on which gamemode the player is currently playing.
+// On surf/other, it only limits practice mode speed. On bhop/scroll, it limits the movement speed above a certain
+// threshhold, and clamps the player's velocity if they go above it.
+// This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
+// bhop.
+// MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumGameMovement::LimitStartZoneSpeed(void)
 {
 #ifndef CLIENT_DLL
-    m_pPlayer->LimitSpeedInStartZone(mv->m_vecVelocity);
+    if (m_pPlayer->m_SrvData.m_RunData.m_bIsInZone && m_pPlayer->m_SrvData.m_RunData.m_iCurrentZone == 1 &&
+        !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
+    {
+        // set bhop flag to true so we can't prespeed with practice mode
+        if (m_pPlayer->m_SrvData.m_bHasPracticeMode)
+            m_pPlayer->m_SrvData.m_bDidPlayerBhop = true;
+
+        // depending on gamemode, limit speed outright when player exceeds punish vel
+        ConVarRef gm("mom_gamemode");
+        CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
+        // This does not look pretty but saves us a branching. The checks are:
+        // no nullptr, correct gamemode, is limiting leave speed and
+        //    enough ticks on air have passed
+        if (startTrigger && startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
+        {
+            bool bShouldLimitSpeed = true;
+
+            if (m_pPlayer->GetGroundEntity() != nullptr)
+            {
+                if (m_pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_INAIR)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                if (!m_pPlayer->m_bWasInAir && m_pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_ONLAND)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                m_pPlayer->m_bWasInAir = false;
+            }
+            else
+            {
+                if (m_pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_GROUND)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                m_pPlayer->m_bWasInAir = true;
+            }
+
+            if (bShouldLimitSpeed)
+            {
+                Vector& velocity = mv->m_vecVelocity;
+                float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
+
+                if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
+                {
+                    float flOldz = velocity.z;
+                    VectorNormalizeFast(velocity);
+                    velocity *= startTrigger->GetMaxLeaveSpeed();
+                    velocity.z = flOldz;
+                    // New velocity is the unitary form of the current vel vector times the max speed amount
+                    m_pPlayer->m_bShouldLimitSpeed = true;
+                }
+            }
+        }
+    }
 #endif
 }
 
@@ -2150,7 +2215,7 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     // Check if we loose speed while going on a slope in front of us.
 
     // MOM_TODO: Make this only bhop gametype?
-    // Enable this when we konw that we are sliding.
+    // Enable this when we know that we are sliding.
     Vector dif = mv->m_vecVelocity - out;
     if ((dif.Length2D() > 0.0f && (angle >= 0.7f) && (out[2] > 0.0f)) &&
         (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bFixUpsideSlope))

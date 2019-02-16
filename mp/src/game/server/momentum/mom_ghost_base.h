@@ -77,7 +77,7 @@ protected:
     virtual void CreateTrail();
     virtual void RemoveTrail();
 
-    bool CanUnduck(CMomentumGhostBaseEntity *pGhost);
+    static bool CanUnduck(CMomentumGhostBaseEntity *pGhost);
     CMomentumPlayer *m_pCurrentSpecPlayer;
     ghostAppearance_t m_ghostAppearance;
 
