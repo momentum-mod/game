@@ -205,11 +205,9 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
             pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = false;
         }
 
-        bool bCheating = pPlayer->GetMoveType() == MOVETYPE_NOCLIP;
-
         // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating)
+        if (!g_pMomentumTimer->IsRunning())
         {
             /*
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
