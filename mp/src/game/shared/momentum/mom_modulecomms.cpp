@@ -96,17 +96,17 @@ void ModuleCommunication::Shutdown()
 }
 
 
-void ModuleCommunication::FireEvent(KeyValues* pKv, bool fireLocal /* = true */)
+void ModuleCommunication::FireEvent(KeyValues* pKv, EVENT_FIRE_TYPE type /* = FIRE_BOTH */)
 {
-    KeyValues *pCopy = fireLocal ? pKv->MakeCopy() : nullptr;
+    KeyValues *pCopy = type == FIRE_BOTH ? pKv->MakeCopy() : nullptr;
 
     // This fires across the DLL boundary
-    if (CallMeToFireEvent)
+    if (CallMeToFireEvent && (type == FIRE_BOTH || type == FIRE_FOREIGN_ONLY))
         CallMeToFireEvent(pKv); // pKv->deleteThis is called in here
 
     // This fires it for the DLL we're currently on, allowing "local" listeners for events
-    if (fireLocal)
-        OnEvent(pCopy); //pCopy->deleteThis is called in here
+    if (type == FIRE_BOTH || type == FIRE_LOCAL_ONLY)
+        OnEvent(type == FIRE_BOTH ? pCopy : pKv); //pCopy->deleteThis is called in here
 }
 
 void ModuleCommunication::ListenForEvent(const char* pName, CUtlDelegate<void (KeyValues*)> listener)
