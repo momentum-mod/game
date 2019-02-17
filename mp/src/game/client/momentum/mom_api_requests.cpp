@@ -428,8 +428,8 @@ void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
             float percent = 0.0f;
             if (SteamHTTP()->GetHTTPDownloadProgressPct(pCallback->m_hRequest, &percent))
                 prog->SetFloat("percent", percent);
-            prog->SetUint64("offset", pCallback->m_cOffset);
-            prog->SetUint64("size", pCallback->m_cBytesReceived);
+            prog->SetInt("offset", pCallback->m_cOffset);
+            prog->SetInt("size", pCallback->m_cBytesReceived);
             call->progressFunc(prog);
         }
 
