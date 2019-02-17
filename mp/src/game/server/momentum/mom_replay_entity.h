@@ -38,8 +38,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
-	
-	CReplayFrame *m_LastFrame;
+
+    CReplayFrame *m_LastFrame;
 
     bool IsReplayEnt() { return true; }
     void (*StdDataToReplay)(StdReplayDataFromServer *from);
@@ -68,14 +68,14 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     ConVarRef m_cvarReplaySelection;
 
-	
-	bool m_bKeyChanged;
-	bool m_bDirChanged;
-	float m_fPrevDtAng;
-	int m_nKeyTransTick;
-	int m_nAngTransTick;
-	
-	// for faking strafe sync calculations
+
+    bool m_bKeyChanged;
+    bool m_bDirChanged;
+    float m_fPrevDtAng;
+    int m_nKeyTransTick;
+    int m_nAngTransTick;
+
+    // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;

@@ -150,8 +150,8 @@ private:
 		float	interpolationParameter;
 		float startTime;
 		float duration;
-        void (*callback)(vgui::Panel *hudelement);
-        vgui::Panel *callbackParent;
+		void (*callback)(vgui::Panel *hudelement);
+		vgui::Panel *callbackParent;
 
 		AnimAlign_t align;
 
@@ -201,8 +201,8 @@ private:
 		float interpolatorParam;
 		float startTime;
 		float endTime;
-        void (*callback)(vgui::Panel *hudelement);
-        vgui::Panel *callbackParent;
+		void (*callback)(vgui::Panel *hudelement);
+		vgui::Panel *callbackParent;
 
 		AnimAlign_t align;
 	};

@@ -487,7 +487,7 @@
 		"unicode"		"0"
         "font" "DefaultVerySmall"
 	}
-    "StrafeOffsetDrawLabel"
+	"StrafeOffsetDrawLabel"
 	{
 		"ControlName"		"Label"
 		"fieldName"		"StrafeOffsetDrawLabel"
@@ -535,7 +535,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"0"
 		"unicode"		"0"
-        "font" "DefaultVerySmall"
+		"font" "DefaultVerySmall"
 	}
 
     // Timer

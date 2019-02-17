@@ -516,7 +516,8 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
          */
         if (!(currentStep->PlayerButtons() & IN_MOVERIGHT && currentStep->PlayerButtons() & IN_MOVELEFT))
         {
-            if (currentStep->PlayerButtons() & IN_MOVELEFT) {
+            if (currentStep->PlayerButtons() & IN_MOVELEFT)
+            {
                 if ((m_nOldReplayButtons & IN_MOVERIGHT && m_nOldReplayButtons & IN_MOVELEFT) || !(m_nOldReplayButtons & IN_MOVELEFT))
                 {
                     m_bKeyChanged = EvaluateTransition_Keys(IN_MOVELEFT, dtAng, m_bDirChanged);
@@ -526,7 +527,8 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
                         m_bDirChanged = false;
                 }
             }
-            else if (currentStep->PlayerButtons() & IN_MOVERIGHT) {
+            else if (currentStep->PlayerButtons() & IN_MOVERIGHT)
+            {
                 if ((m_nOldReplayButtons & IN_MOVERIGHT && m_nOldReplayButtons & IN_MOVELEFT) || !(m_nOldReplayButtons & IN_MOVERIGHT))
                 {
                     m_bKeyChanged = EvaluateTransition_Keys(IN_MOVERIGHT, dtAng, m_bDirChanged);
@@ -585,7 +587,9 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 
     if ((currentStep->PlayerButtons() & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) ||
         (currentStep->PlayerButtons() & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)))
+    {
         m_SrvData.m_iTotalStrafes++;
+    }
 
     m_flLastSyncVelocity = SyncVelocity;
     m_angLastEyeAngle = EyeAngles();

@@ -71,7 +71,7 @@ void HudSettingsPage::OnApplyChanges()
 
     ConVarRef units("mom_hud_speedometer_units"), sync_type("mom_hud_strafesync_type"),
         sync_color("mom_hud_strafesync_colorize"), speed_color("mom_hud_speedometer_colorize"),
-		strafe_offset("mom_strafeoffset_draw");
+        strafe_offset("mom_strafeoffset_draw");
 
     units.SetValue(m_pSpeedometerUnits->GetActiveItem() + 1);
     sync_type.SetValue(m_pSyncType->GetActiveItem() + 1); // Sync type needs +1 added to it before setting convar!
@@ -84,7 +84,8 @@ void HudSettingsPage::LoadSettings()
 {
     ConVarRef units("mom_hud_speedometer_units"), sync_type("mom_hud_strafesync_type"),
         sync_color("mom_hud_strafesync_colorize"), speed_color("mom_hud_speedometer_colorize"),
-		strafe_offset("mom_strafeoffset_draw");
+        strafe_offset("mom_strafeoffset_draw");
+
     m_pSpeedometerUnits->ActivateItemByRow(units.GetInt() - 1);
     m_pSyncType->ActivateItemByRow(sync_type.GetInt() - 1);
     m_pSyncColorize->ActivateItemByRow(sync_color.GetInt());
