@@ -60,6 +60,17 @@ static int __cdecl MapCreationDateSortFunc(vgui::ListPanel *pPanel, const vgui::
     return Q_stricmp(i1, i2);
 }
 
+static int __cdecl MapLastPlayedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+{
+    uint64 left = item1.kv->GetUint64(KEYNAME_MAP_LAST_PLAYED_SORT);
+    uint64 right = item2.kv->GetUint64(KEYNAME_MAP_LAST_PLAYED_SORT);
+    if (left < right)
+        return -1;
+    if (left == right)
+        return 0;
+    return 1;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -87,6 +98,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
     m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW);
+    m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW);
 
     // Images
     m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_LIBRARY, INDX_MAP_IN_LIBRARY);
@@ -115,6 +127,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapCompletedSortFunc);
     m_pMapList->SetSortFunc(HEADER_MAP_LAYOUT, MapLayoutSortFunc);
     m_pMapList->SetSortFunc(HEADER_DATE_CREATED, MapCreationDateSortFunc);
+    m_pMapList->SetSortFunc(HEADER_LAST_PLAYED, MapLastPlayedSortFunc);
 
     // disable sort for certain columns
     m_pMapList->SetColumnSortable(HEADER_MAP_IMAGE, false);
@@ -333,6 +346,18 @@ void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo
         kv->SetInt(KEYNAME_MAP_STATUS, pMapData->m_eMapStatus);
         kv->SetInt(KEYNAME_MAP_IN_LIBRARY, pMapData->m_bInLibrary ? INDX_MAP_IN_LIBRARY : INDX_MAP_NOT_IN_LIBRARY);
         kv->SetInt(KEYNAME_MAP_IN_FAVORITES, pMapData->m_bInFavorites ? INDX_MAP_IN_FAVORITES : INDX_MAP_NOT_IN_FAVORITES);
+
+        kv->SetUint64(KEYNAME_MAP_LAST_PLAYED_SORT, pMapData->m_tLastPlayed);
+
+        if (pMapData->m_tLastPlayed > 0)
+        {
+            char timeAgo[16];
+            bool bRes = g_pMomentumUtil->GetTimeAgoString(&pMapData->m_tLastPlayed, timeAgo, 16);
+            kv->SetString(KEYNAME_MAP_LAST_PLAYED, bRes ? timeAgo : "#MOM_NotApplicable");
+        }
+        else
+            kv->SetString(KEYNAME_MAP_LAST_PLAYED, "#MOM_NotApplicable");
+
         // SetListCellColors(pMapData, kv);
     }
 

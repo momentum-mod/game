@@ -280,6 +280,7 @@ MapData::MapData()
     m_eMapStatus = STATUS_UNKNOWN;
     m_szDownloadURL[0] = '\0';
     m_bMapUpdated = false;
+    m_tLastPlayed = 0;
 }
 
 MapData::MapData(const MapData& src)
@@ -305,6 +306,7 @@ MapData::MapData(const MapData& src)
     m_Thumbnail = src.m_Thumbnail;
     m_PersonalBest = src.m_PersonalBest;
     m_WorldRecord = src.m_WorldRecord;
+    m_tLastPlayed = src.m_tLastPlayed;
     m_bValid = src.m_bValid;
 }
 
@@ -391,6 +393,7 @@ void MapData::FromKV(KeyValues* pMap)
         m_bInLibrary = pMap->GetBool("inLibrary");
         Q_strncpy(m_szPath, pMap->GetString("path"), sizeof(m_szPath));
         m_bMapUpdated = pMap->GetBool("mapNeedsUpdate");
+        m_tLastPlayed = pMap->GetUint64("lastPlayed");
     }
     else
     {
@@ -456,6 +459,7 @@ void MapData::ToKV(KeyValues* pKv) const
     pKv->SetString("updatedAt", m_szLastUpdated);
     pKv->SetBool("mapNeedsUpdate", m_bMapUpdated);
     pKv->SetString("path", m_szPath);
+    pKv->SetUint64("lastPlayed", m_tLastPlayed);
 
     if (m_Info.m_bValid)
     {
@@ -525,6 +529,9 @@ MapData& MapData::operator=(const MapData& src)
         Q_strncpy(m_szLastUpdated, src.m_szLastUpdated, sizeof(m_szLastUpdated));
 
         Q_strncpy(m_szPath, src.m_szPath, sizeof(m_szPath));
+
+        if (src.m_tLastPlayed > m_tLastPlayed)
+            m_tLastPlayed = src.m_tLastPlayed;
 
         m_bValid = src.m_bValid;
     }
@@ -984,6 +991,14 @@ void CMapCache::LevelInitPreEntity()
 
 void CMapCache::LevelShutdownPostEntity()
 {
+    if (m_pCurrentMapData)
+    {
+        // Update last played
+        m_pCurrentMapData->m_tLastPlayed = time(nullptr);
+        m_pCurrentMapData->m_bUpdated = true;
+        m_pCurrentMapData->SendDataUpdate();
+    }
+
     m_pCurrentMapData = nullptr;
     // MOM_TODO redundant save to disk?
 }
