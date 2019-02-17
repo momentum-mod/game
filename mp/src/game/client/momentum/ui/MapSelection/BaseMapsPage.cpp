@@ -82,7 +82,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), ListPanel::COLUMN_IMAGE);
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), ListPanel::COLUMN_IMAGE);
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), 9001, ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
-    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(75), GetScaledVal(75), GetScaledVal(100), 0);
+    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(50), GetScaledVal(50), GetScaledVal(50), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
     m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
@@ -93,6 +93,9 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_FAVORITES, INDX_MAP_IN_FAVORITES);
 
     // Tooltips
+    m_pMapList->SetColumnHeaderTooltip(HEADER_MAP_LAYOUT, "#MOM_MapSelector_MapLayout_Tooltip");
+    m_pMapList->SetColumnHeaderTooltip(HEADER_MAP_IN_LIBRARY, "#MOM_MapSelector_Library_Tooltip");
+    m_pMapList->SetColumnHeaderTooltip(HEADER_MAP_IN_FAVORITES, "#MOM_MapSelector_Favorites_Tooltip");
     //MOM_TODO: we do want tooltips
 
     // Alignment
@@ -336,7 +339,7 @@ void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo
     if (bInfo)
     {
         kv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapData->m_Info.m_iDifficulty);
-        kv->SetString(KEYNAME_MAP_LAYOUT, pMapData->m_Info.m_bIsLinear ? "LINEAR" : "STAGED");
+        kv->SetInt(KEYNAME_MAP_LAYOUT, pMapData->m_Info.m_bIsLinear ? INDX_MAP_IS_LINEAR : INDX_MAP_IS_STAGED);
 
         kv->SetString(KEYNAME_MAP_CREATION_DATE_SORT, pMapData->m_Info.m_szCreationDate);
 
@@ -629,8 +632,11 @@ void CBaseMapsPage::LoadDefaultImageList()
     // Work backwards, since the first call will do the growth and fill with nulls,
     // and subsequent calls only replace nulls with actual images
     IImage *pNullImage = scheme()->GetImage("", false);
-    int wide = GetScaledVal(HEADER_ICON_SIZE);
-    int tall = GetScaledVal(HEADER_ICON_SIZE);
+    const int wide = GetScaledVal(HEADER_ICON_SIZE);
+    const int tall = GetScaledVal(HEADER_ICON_SIZE);
+    const int layoutDim = GetScaledVal(20);
+    imageList->SetImageAtIndex(INDX_MAP_IS_STAGED, LoadFileImage("materials/vgui/icon/map_selector/Staged.png", layoutDim, layoutDim, pNullImage));
+    imageList->SetImageAtIndex(INDX_MAP_IS_LINEAR, LoadFileImage("materials/vgui/icon/map_selector/Linear.png", layoutDim, layoutDim, pNullImage));
     imageList->SetImageAtIndex(INDX_MAP_NOT_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/NotInFavorites.png", wide, tall, pNullImage));
     imageList->SetImageAtIndex(INDX_MAP_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/InFavorites.png", wide, tall, pNullImage));
     imageList->SetImageAtIndex(INDX_MAP_NOT_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/NotInLibrary.png", wide, tall, pNullImage));

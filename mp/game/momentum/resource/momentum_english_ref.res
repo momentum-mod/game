@@ -151,8 +151,10 @@
         "MOM_WorldRecord" "World Record"
         "MOM_MapSelector_CreationDate" "Date Created"
 
-        "MOM_MapSelector_MapLayout" "Map Layout"
+        "MOM_MapSelector_MapLayout" "Layout"
         "MOM_MapSelector_MapLayout_Tooltip" "This column shows if the map is linear or has stages."
+        "MOM_MapSelector_Library_Tooltip" "This column shows if the map is in your library or not.\nClick the icon to add/remove the map to/from your library."
+        "MOM_MapSelector_Favorites_Tooltip" "This column shows if the map is in your favorites or not.\nClick the icon to add/remove the map to/from your favorites."
         "MOM_All" "<All>"
 
         "MOM_MapSelector_FilterReset" "Reset Filters"
