@@ -44,6 +44,20 @@ enum HEADERS
     HEADER_DATE_CREATED
 };
 
+enum RESERVED_IMAGE_INDICES
+{
+    // Start index is 1 because the 0th element is a BlankImage inside ImageLists
+    INDX_MAP_THUMBNAIL_UNKNOWN = 1,
+    INDX_MAP_IN_LIBRARY,
+    INDX_MAP_NOT_IN_LIBRARY,
+    INDX_MAP_IN_FAVORITES,
+    INDX_MAP_NOT_IN_FAVORITES,
+
+
+    // MAKE SURE THIS IS LAST!
+    INDX_RESERVED_COUNT,
+};
+
 //-----------------------------------------------------------------------------
 // Purpose: Base property page for all the games lists (internet/favorites/lan/etc.)
 //-----------------------------------------------------------------------------
@@ -119,5 +133,6 @@ protected:
     CUtlVector<MapDisplay_t> m_vecMaps;
 
 private:
+    void LoadDefaultImageList();
     vgui::HFont m_hFont;
 };

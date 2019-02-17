@@ -17,8 +17,8 @@
 
 using namespace vgui;
 
-FileImage::FileImage(): m_iX(0), m_iY(0), m_iImageWide(0), m_iDesiredWide(0), m_iImageTall(0), m_iDesiredTall(0),
-                        m_iRotation(0), m_iTextureID(-1)
+FileImage::FileImage(IImage *pDefaultImage /* = nullptr*/): m_iX(0), m_iY(0), m_iImageWide(0), 
+    m_iDesiredWide(0), m_iImageTall(0), m_iDesiredTall(0), m_iRotation(0), m_iTextureID(-1), m_pDefaultImage(pDefaultImage)
 {
     m_DrawColor = Color(255, 255, 255, 255);
 }
@@ -75,7 +75,7 @@ void FileImage::LoadFromRGBA(const uint8* pData, int wide, int tall)
 
 void FileImage::Paint()
 {
-    if (m_iTextureID > -1)
+    if (m_iTextureID != -1)
     {
         surface()->DrawSetColor(m_DrawColor);
         surface()->DrawSetTexture(m_iTextureID);
@@ -114,6 +114,13 @@ void FileImage::Paint()
             surface()->DrawTexturedPolygon(4, verts);
         }
     }
+    else if (m_pDefaultImage)
+    {
+        m_pDefaultImage->SetSize(m_iDesiredWide, m_iDesiredTall);
+        m_pDefaultImage->SetPos(m_iX, m_iY);
+        m_pDefaultImage->SetColor(m_DrawColor);
+        m_pDefaultImage->Paint();
+    }
 }
 
 void FileImage::GetSize(int& wide, int& tall)
@@ -136,14 +143,13 @@ void FileImage::DestroyTexture()
     }
 }
 
-URLImage::URLImage(): m_pDefaultImage(nullptr), m_hRequest(INVALID_HTTPREQUEST_HANDLE), m_bValid(false)
+URLImage::URLImage(IImage *pDefaultImage/* = nullptr*/, bool bDrawProgress /* = false*/) : FileImage(pDefaultImage), 
+        m_hRequest(INVALID_HTTPREQUEST_HANDLE), m_bDrawProgressBar(bDrawProgress)
 {
 }
 
-bool URLImage::LoadFromURL(const char* pURL, IImage *pDefaultImage /*= nullptr*/)
+bool URLImage::LoadFromURL(const char* pURL)
 {
-    m_pDefaultImage = pDefaultImage;
-
     m_hRequest = g_pAPIRequests->DownloadFile(pURL, 
                                  UtlMakeDelegate(this, &URLImage::OnFileStreamStart),
                                  UtlMakeDelegate(this, &URLImage::OnFileStreamProgress),
@@ -155,30 +161,28 @@ bool URLImage::LoadFromURL(const char* pURL, IImage *pDefaultImage /*= nullptr*/
 
 void URLImage::Paint()
 {
-    if (m_bValid)
-        FileImage::Paint();
-    else if (m_pDefaultImage)
+    if (m_hRequest != INVALID_HTTPREQUEST_HANDLE && m_bDrawProgressBar)
     {
-        m_pDefaultImage->SetSize(m_iDesiredWide, m_iDesiredTall);
-        m_pDefaultImage->SetPos(m_iX, m_iY);
-        m_pDefaultImage->SetColor(m_DrawColor);
-        m_pDefaultImage->Paint();
+        // MOM_TODO: m_pProgressBar->Paint();
     }
-    // MOM_TODO: else { progressBar->Paint() }
+    else
+        FileImage::Paint();
 }
 
 void URLImage::OnFileStreamStart(KeyValues* pKv)
 {
-    // MOM_TODO also put a progress bar here and paint it, if no default image?
+    // MOM_TODO also put a progress bar here and paint it, if no default image
 }
 
 void URLImage::OnFileStreamProgress(KeyValues* pKv)
 {
-    // MOM_TODO update that progress bar here?
+    // MOM_TODO update that progress bar here
 }
 
 void URLImage::OnFileStreamEnd(KeyValues* pKv)
 {
+    m_hRequest = INVALID_HTTPREQUEST_HANDLE;
+
     if (pKv->GetBool("error"))
     {
         DevWarning("Could not load URLImage due to error!\n");
@@ -188,7 +192,7 @@ void URLImage::OnFileStreamEnd(KeyValues* pKv)
         CUtlBuffer *pBuf = (CUtlBuffer*)pKv->GetPtr("buf");
         if (pBuf)
         {
-            m_bValid = LoadFromUtlBuffer(*pBuf);
+            LoadFromUtlBuffer(*pBuf);
         }
     }
 }

@@ -11,7 +11,8 @@ namespace vgui
     class FileImage : public IImage
     {
     public:
-        FileImage();
+        /// Creates a new FileImage, using the pDefaultImage to render if the image does not/fails to load
+        FileImage(IImage *pDefaultImage = nullptr);
         ~FileImage();
 
         /// Loads an image from file given the file name and pathID. Returns true if loaded, else false
@@ -19,7 +20,6 @@ namespace vgui
         bool LoadFromUtlBuffer(CUtlBuffer &buf);
         void LoadFromRGBA(const uint8 *pData, int wide, int tall);
 
-    protected:
         // Call to Paint the image
         // Image will draw within the current panel context at the specified position
         void Paint() OVERRIDE;
@@ -46,10 +46,12 @@ namespace vgui
         bool Evict() OVERRIDE { return false; }
         int GetNumFrames() OVERRIDE { return 0; }
         void SetFrame(int nFrame) OVERRIDE {}
-        HTexture GetID() OVERRIDE { return (HTexture)0; }
+        HTexture GetID() OVERRIDE { return (HTexture) 0; }
 
+    protected:
         Color m_DrawColor;
         int m_iX, m_iY, m_iImageWide, m_iDesiredWide, m_iImageTall, m_iDesiredTall, m_iRotation, m_iTextureID;
+        IImage *m_pDefaultImage;
     private:
         void DestroyTexture();
     };
@@ -59,22 +61,25 @@ namespace vgui
     class URLImage : public FileImage
     {
     public:
-        URLImage();
+        /// Constructs a URL image.
+        /// If bDrawProgress is true, a progress bar is drawn while the image loads to show stream progress.
+        /// If pDefaultImage is non-null, the image is drawn while loading if bDrawProgress is false, 
+        /// and regardless if the image fails to load.
+        URLImage(IImage *pDefaultImage = nullptr, bool bDrawProgress = false);
 
         /// Begins loading a file from the given URL. Returns true if loading, else false.
-        /// You may pass in a default image to use while loading, otherwise nothing will be drawn (while loading).
-        bool LoadFromURL(const char *pURL, IImage *pDefaultImage = nullptr);
+        /// If you passed in a default image in the constructor, it will draw while loading,
+        /// otherwise if bDrawProgress is true, a progress bar will denote progress until loaded.
+        bool LoadFromURL(const char *pURL);
 
-    protected:
         void Paint() OVERRIDE;
-
+    protected:
         void OnFileStreamStart(KeyValues *pKv);
         void OnFileStreamProgress(KeyValues *pKv);
         void OnFileStreamEnd(KeyValues *pKv);
 
     private:
-        IImage *m_pDefaultImage;
         uint64 m_hRequest;
-        bool m_bValid;
+        bool m_bDrawProgressBar;
     };
 }
