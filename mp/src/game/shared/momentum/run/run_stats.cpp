@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "run_stats.h"
 #include "mom_player_shared.h"
+#include "utlbuffer.h"
 
 #include "tier0/memdbgon.h"
 
