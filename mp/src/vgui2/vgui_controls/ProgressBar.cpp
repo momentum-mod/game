@@ -83,6 +83,7 @@ void ProgressBar::PaintSegment( int &x, int &y, int tall, int wide )
 	switch( m_iProgressDirection )
 	{
 	case PROGRESS_EAST:
+    default:
 		x += _segmentGap;
 		surface()->DrawFilledRect(x, y, x + _segmentWide, y + tall - (y * 2));
 		x += _segmentWide;
@@ -129,6 +130,7 @@ void ProgressBar::Paint()
 		break;
 
 	case PROGRESS_EAST:
+    default:
 		wide -= 2 * m_iBarMargin;
 		x = m_iBarMargin;
 		y = m_iBarInset;
@@ -411,6 +413,7 @@ void ContinuousProgressBar::Paint()
 	switch( m_iProgressDirection )
 	{
 	case PROGRESS_EAST:
+    default:
 		surface()->DrawFilledRect( x, y, x + (int)( wide * _progress ), y + tall );
 		break;
 

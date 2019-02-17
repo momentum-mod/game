@@ -123,6 +123,7 @@ void CMapSelectorDialog::Open()
     MoveToCenterOfScreen();
     BaseClass::Activate();
     m_pTabPanel->RequestFocus();
+    m_pCurrentMapList->LoadFilters();
     m_pCurrentMapList->OnTabSelected();
 }
 

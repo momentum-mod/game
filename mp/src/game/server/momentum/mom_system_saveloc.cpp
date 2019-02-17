@@ -478,7 +478,7 @@ void CMOMSaveLocSystem::FireUpdateEvent()
     pSavelocInit->SetBool("using", m_bUsingSavelocMenu);
 
     // Fire only to the Client DLL
-    g_pModuleComms->FireEvent(pSavelocInit, false);
+    g_pModuleComms->FireEvent(pSavelocInit, FIRE_FOREIGN_ONLY);
 }
 
 void CMOMSaveLocSystem::UpdateRequesters()
