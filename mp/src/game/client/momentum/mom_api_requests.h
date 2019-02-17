@@ -61,8 +61,8 @@ struct DownloadRequest
     // Data in the response KeyValues:
     //  "request"   (uint64)    The request handle that the download operates under
     //  "percent"   (float)     The percent of download completion (NOTE: not very reliable for progress, use offset and size!)
-    //  "offset"    (uint64)    The offset (from 0) of the bytes being downloaded
-    //  "size"      (uint64)    The size of the chunk of data being downloaded, in bytes
+    //  "offset"    (uint32)    The offset (from 0) of the bytes being downloaded
+    //  "size"      (uint32)    The size of the chunk of data being downloaded, in bytes
     CallbackFunc progressFunc;
     // The last function to be called when downloading a file.
     // Data in the response KeyValues:
