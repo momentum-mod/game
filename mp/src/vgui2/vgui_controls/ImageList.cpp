@@ -72,10 +72,7 @@ int ImageList::AddImage(vgui::IImage *image)
 void ImageList::SetImageAtIndex(int index, vgui::IImage *image)
 {
 	// allocate more images if necessary
-	while (m_Images.Count() <= index)
-	{
-		m_Images.AddToTail(NULL);
-	}
+    m_Images.EnsureCount(index + 1);
 
 	m_Images[index] = image;
 }

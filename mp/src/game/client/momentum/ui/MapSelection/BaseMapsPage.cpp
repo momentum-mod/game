@@ -22,6 +22,8 @@
 
 using namespace vgui;
 
+#define HEADER_ICON_SIZE 14
+
 //Sort functions
 static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
 {
@@ -73,14 +75,12 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetShouldCenterEmptyListText(true);
 
     // Images
-    ImageList *imageList = new ImageList(false);
-    imageList->AddImage(scheme()->GetImage("maps/invalid_map", false)); // The ? banner at index 1
-    m_pMapList->SetImageList(imageList, true);
+    LoadDefaultImageList();
     
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
-    m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(10), GetScaledVal(10), GetScaledVal(12), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
-    m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(10), GetScaledVal(10), GetScaledVal(12), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), ListPanel::COLUMN_IMAGE);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), ListPanel::COLUMN_IMAGE);
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), 9001, ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
     m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(75), GetScaledVal(75), GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
@@ -88,15 +88,23 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_RESIZEWITHWINDOW);
 
+    // Images
+    m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_LIBRARY, INDX_MAP_IN_LIBRARY);
+    m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_FAVORITES, INDX_MAP_IN_FAVORITES);
+
     // Tooltips
-    //MOM_TODO: do we want tooltips?
+    //MOM_TODO: we do want tooltips
 
     // Alignment
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_DIFFICULTY, Label::a_center);
+    m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_IN_LIBRARY, Label::a_center);
+    m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_IN_FAVORITES, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_DIFFICULTY, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IMAGE, Label::a_center);
+    m_pMapList->SetColumnTextAlignment(HEADER_MAP_IN_LIBRARY, Label::a_center);
+    m_pMapList->SetColumnTextAlignment(HEADER_MAP_IN_FAVORITES, Label::a_center);
 
     // Sort Functions
     m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
@@ -320,8 +328,8 @@ void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo
         kv->SetInt(KEYNAME_MAP_ID, pMapData->m_uID);
         kv->SetInt(KEYNAME_MAP_TYPE, pMapData->m_eType);
         kv->SetInt(KEYNAME_MAP_STATUS, pMapData->m_eMapStatus);
-        kv->SetInt(KEYNAME_MAP_IN_LIBRARY, pMapData->m_bInLibrary);
-        kv->SetInt(KEYNAME_MAP_IN_FAVORITES, pMapData->m_bInFavorites);
+        kv->SetInt(KEYNAME_MAP_IN_LIBRARY, pMapData->m_bInLibrary ? INDX_MAP_IN_LIBRARY : INDX_MAP_NOT_IN_LIBRARY);
+        kv->SetInt(KEYNAME_MAP_IN_FAVORITES, pMapData->m_bInFavorites ? INDX_MAP_IN_FAVORITES : INDX_MAP_NOT_IN_FAVORITES);
         // SetListCellColors(pMapData, kv);
     }
 
@@ -333,10 +341,12 @@ void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo
         kv->SetString(KEYNAME_MAP_CREATION_DATE_SORT, pMapData->m_Info.m_szCreationDate);
 
         time_t creationDateTime;
-        g_pMomentumUtil->ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime);
-        char date[32];
-        strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
-        kv->SetString(KEYNAME_MAP_CREATION_DATE, date);
+        if (g_pMomentumUtil->ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime))
+        {
+            char date[32];
+            strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
+            kv->SetString(KEYNAME_MAP_CREATION_DATE, date);
+        }
     }
 
     if (bPB)
@@ -603,4 +613,29 @@ void CBaseMapsPage::OnOpenContextMenu(int itemID)
     // Activate context menu
     CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
     menu->ShowMenu(this, pMapData);
+}
+
+inline IImage* LoadFileImage(const char *pPath, int wide, int tall, IImage *pDefault)
+{
+    FileImage *pFileImage = new FileImage(pDefault);
+    if (pFileImage->LoadFromFile(pPath))
+        pFileImage->SetSize(wide, tall);
+    return pFileImage;
+}
+
+void CBaseMapsPage::LoadDefaultImageList()
+{
+    ImageList *imageList = new ImageList(false);
+    // Work backwards, since the first call will do the growth and fill with nulls,
+    // and subsequent calls only replace nulls with actual images
+    IImage *pNullImage = scheme()->GetImage("", false);
+    int wide = GetScaledVal(HEADER_ICON_SIZE);
+    int tall = GetScaledVal(HEADER_ICON_SIZE);
+    imageList->SetImageAtIndex(INDX_MAP_NOT_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/NotInFavorites.png", wide, tall, pNullImage));
+    imageList->SetImageAtIndex(INDX_MAP_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/InFavorites.png", wide, tall, pNullImage));
+    imageList->SetImageAtIndex(INDX_MAP_NOT_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/NotInLibrary.png", wide, tall, pNullImage));
+    imageList->SetImageAtIndex(INDX_MAP_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/InLibrary.png", wide, tall, pNullImage));
+    imageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, scheme()->GetImage("maps/invalid_map", false));
+
+    m_pMapList->SetImageList(imageList, true);
 }

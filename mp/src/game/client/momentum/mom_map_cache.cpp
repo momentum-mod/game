@@ -47,7 +47,7 @@ void MapInfo::FromKV(KeyValues* pKv)
     m_bIsLinear = pKv->GetBool("isLinear");
     m_iDifficulty = pKv->GetInt("difficulty");
     Q_strncpy(m_szCreationDate, pKv->GetString("creationDate"), sizeof(m_szCreationDate));
-    m_bValid = m_iDifficulty && Q_strlen(m_szDescription);
+    m_bValid = m_iNumZones && Q_strlen(m_szDescription);
 }
 
 void MapInfo::ToKV(KeyValues* pKv) const
