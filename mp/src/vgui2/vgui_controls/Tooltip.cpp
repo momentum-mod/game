@@ -228,6 +228,7 @@ TextTooltip::TextTooltip(Panel *parent, const char *text) : BaseTooltip( parent,
 	if (!s_TooltipWindow.Get())
 	{
 		s_TooltipWindow = new TextEntry(NULL, "tooltip");
+        s_TooltipWindow->SetProportional(parent->IsProportional());
 
  		s_TooltipWindow->InvalidateLayout(false, true);
 
