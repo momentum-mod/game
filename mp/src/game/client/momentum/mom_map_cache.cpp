@@ -609,7 +609,7 @@ bool CMapCache::PlayMap(uint32 uID)
                                                                     UtlMakeDelegate(this, &CMapCache::StartMapDownload),
                                                                     UtlMakeDelegate(this, &CMapCache::MapDownloadProgress),
                                                                     UtlMakeDelegate(this, &CMapCache::FinishMapDownload),
-                                                                    pFilePath, "GAME");
+                                                                    pFilePath, "GAME", true);
             if (handle != INVALID_HTTPREQUEST_HANDLE)
             {
                 m_mapFileDownloads.Insert(handle, uID);
