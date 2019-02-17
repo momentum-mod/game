@@ -8,7 +8,6 @@
 #include <vgui/IInput.h>
 #include <vgui/ISurface.h>
 #include <filesystem.h>
-#include <chrono>
 
 #include "tier0/memdbgon.h"
 
@@ -165,29 +164,23 @@ void UltralightOverlay::Reload() { view()->Reload(); }
 
 void UltralightOverlay::Stop() { view()->Stop(); }
 
-extern std::chrono::time_point<std::chrono::high_resolution_clock> g_iULStartTime;
-extern bool g_bULMeasure;
 void UltralightOverlay::Paint()
 {
     BaseClass::Paint();
 
-    //bool dirty = view()->is_bitmap_dirty();
+    bool dirty = view()->is_bitmap_dirty();
     const RefPtr<Bitmap> bitmap = view()->bitmap();
-    surface()->DrawSetTextureRGBAEx(m_iTextureId, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(),
-                                    bitmap->height(), Ultralight2SourceImageFormat(bitmap->format()));
+    if (dirty)
+    {
+        surface()->DrawSetTextureRGBAEx(m_iTextureId, (const unsigned char *)bitmap->raw_pixels(), bitmap->width(),
+                                        bitmap->height(), Ultralight2SourceImageFormat(bitmap->format()));
+    }
     surface()->DrawSetTexture(m_iTextureId);
     surface()->DrawSetColor(255, 255, 255, 255);
 
     int x, y, width, height;
     GetBounds(x, y, width, height);
     surface()->DrawTexturedRect(x, y, x + width, y + height);
-
-	if (g_bULMeasure)
-    {
-        auto now = std::chrono::high_resolution_clock::now();
-        Log("Took %fms to execute and render\n", std::chrono::duration<float, std::milli>(now - g_iULStartTime).count());
-        g_bULMeasure = false;
-	}
 }
 
 void UltralightOverlay::OnSizeChanged(int newWide, int newTall)
