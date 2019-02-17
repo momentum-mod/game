@@ -173,7 +173,7 @@ bool MomentumUtil::GetTimeAgoString(const char* pISODate, char* pOut, size_t out
 
 bool MomentumUtil::ISODateToTimeT(const char* pISODate, time_t* out)
 {
-    if (!pISODate)
+    if (!pISODate || pISODate[0] == '\0')
         return false;
     int year, month, day, hour, min, sec, millis;
     sscanf(pISODate, "%d-%d-%dT%d:%d:%d.%dZ", &year, &month, &day, &hour, &min, &sec, &millis);

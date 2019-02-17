@@ -1986,8 +1986,8 @@ void ListPanel::Paint()
 	}
 
 	// draw selection areas if any
-	int wide, tall;
-  	GetSize( wide, tall );
+	int panelWide, tall;
+  	GetSize( panelWide, tall );
 
 	m_iTableStartX = 0; 
 	m_iTableStartY = m_iHeaderHeight + 1;
@@ -2003,7 +2003,7 @@ void ListPanel::Paint()
 	}
 
 	int vbarInset = m_vbar->IsVisible() ? m_vbar->GetWide() : 0;
-	int maxw = wide - vbarInset - 8;
+	int maxw = panelWide - vbarInset - 8;
 
 //	debug timing functions
 //	double startTime, endTime;
@@ -2029,7 +2029,7 @@ void ListPanel::Paint()
 			if (!header->IsVisible())
 				continue;
 
-			int wide = header->GetWide();
+			int colWide = header->GetWide();
 
 			if (render)
 			{
@@ -2042,11 +2042,11 @@ void ListPanel::Paint()
 				{
 					render->SetVisible(true);
 				}
-				int xpos = x + m_iTableStartX + 2;
+				int xpos = x + m_iTableStartX;
 
 				render->SetPos( xpos, (drawcount * m_iRowHeight) + m_iTableStartY);
 
-				int right = min( xpos + wide, maxw );
+				int right = min( xpos + colWide, maxw );
 				int usew = right - xpos;
 				render->SetSize( usew, m_iRowHeight - 1 );
 
@@ -2055,7 +2055,6 @@ void ListPanel::Paint()
 				surface()->SolveTraverse(render->GetVPanel());
 				int x0, y0, x1, y1;
 				render->GetClipRect(x0, y0, x1, y1);
-				//if ((y1 - y0) < (m_iRowHeight - 3))
                 if ((y1 - y0) == 0)
 				{
 					bDone = true;
@@ -2063,24 +2062,8 @@ void ListPanel::Paint()
 				}
 				surface()->PaintTraverse(render->GetVPanel());
 			}
-			/*
-			// work in progress, optimized paint for text
-			else
-			{
-				// just paint it ourselves
-				char tempText[256];
-				// Grab cell text
-				GetCellText(i, j, tempText, sizeof(tempText));
-				surface()->DrawSetTextPos(x + m_iTableStartX + 2, (drawcount * m_iRowHeight) + m_iTableStartY);
 
-				for (const char *pText = tempText; *pText != 0; pText++)
-				{
-					surface()->DrawUnicodeChar((wchar_t)*pText);
-				}
-			}
-			*/
-
-			x += wide;
+			x += colWide;
 		}
 
 		drawcount++;
@@ -2101,7 +2084,7 @@ void ListPanel::Paint()
 		    m_pEmptyListText->SetPos(m_iTableStartX + 8, m_iTableStartY + 4);
         }
 
-        m_pEmptyListText->SetWide(wide - 8);
+        m_pEmptyListText->SetWide(panelWide - 8);
 
         m_pEmptyListText->SetVisible(true);
 

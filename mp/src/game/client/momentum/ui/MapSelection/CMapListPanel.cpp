@@ -45,14 +45,14 @@ void CMapListPanel::OnMouseReleased(MouseCode code)
                 uint32 mapID = pMap->GetInt(KEYNAME_MAP_ID);
                 if (col == HEADER_MAP_IN_LIBRARY)
                 {
-                    if (pMap->GetInt(KEYNAME_MAP_IN_LIBRARY))
+                    if (pMap->GetInt(KEYNAME_MAP_IN_LIBRARY) == INDX_MAP_IN_LIBRARY)
                         m_pOuter->OnRemoveMapFromLibrary(mapID);
                     else
                         m_pOuter->OnAddMapToLibrary(mapID);
                 }
                 else if (col == HEADER_MAP_IN_FAVORITES)
                 {
-                    if (pMap->GetInt(KEYNAME_MAP_IN_FAVORITES))
+                    if (pMap->GetInt(KEYNAME_MAP_IN_FAVORITES) == INDX_MAP_IN_FAVORITES)
                         m_pOuter->OnRemoveMapFromFavorites(mapID);
                     else
                         m_pOuter->OnAddMapToFavorites(mapID);
