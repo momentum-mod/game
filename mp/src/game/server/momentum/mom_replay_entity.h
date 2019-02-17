@@ -39,7 +39,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
 
-    CReplayFrame *m_LastFrame;
+    CReplayFrame *m_pLastFrame;
 
     bool IsReplayEnt() { return true; }
     void (*StdDataToReplay)(StdReplayDataFromServer *from);
@@ -71,7 +71,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     bool m_bKeyChanged;
     bool m_bDirChanged;
-    float m_fPrevDtAng;
+    float m_flPrevDtAng;
     int m_nKeyTransTick;
     int m_nAngTransTick;
 

@@ -135,7 +135,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 
 void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 {
-    m_LastFrame = GetCurrentStep();
+    m_pLastFrame = GetCurrentStep();
     
     // Managed by replayui now
     if (!m_pPlaybackReplay)
@@ -478,7 +478,7 @@ inline static bool EvaluateTransition_Ang(int keys, float dtAng, bool otherStatu
 
 void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 {
-    float dtAng = EyeAngles().y - m_LastFrame->EyeAngles().y;
+    float dtAng = EyeAngles().y - m_pLastFrame->EyeAngles().y;
     if (dtAng > 180.0)
         dtAng -= 360;
     else if (dtAng < -180.0)
@@ -539,7 +539,7 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
                 }
             }
         }
-        if (dtAng != 0.0 && ((dtAng < 0.0 && m_fPrevDtAng > 0.0) || (dtAng > 0.0 && m_fPrevDtAng < 0.0) || m_fPrevDtAng == 0.0))
+        if (dtAng != 0.0 && ((dtAng < 0.0 && m_flPrevDtAng > 0.0) || (dtAng > 0.0 && m_flPrevDtAng < 0.0) || m_flPrevDtAng == 0.0))
         {
             m_bDirChanged = EvaluateTransition_Ang(currentStep->PlayerButtons(), dtAng, m_bKeyChanged);
             if (m_bDirChanged)
@@ -554,7 +554,7 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
             m_bDirChanged = false;
             if (t > -26 && t < 26)
             {
-                m_SrvData.m_strafeOffset = t;
+                m_SrvData.m_iStrafeOffset = t;
                 m_bShouldFireOffsetEvent = true;
             }
         }
@@ -564,7 +564,7 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
         m_bDirChanged = false;
         m_bKeyChanged = false;
     }
-    m_fPrevDtAng = dtAng;
+    m_flPrevDtAng = dtAng;
 
     if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
     {

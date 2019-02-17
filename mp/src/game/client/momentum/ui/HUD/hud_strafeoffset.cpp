@@ -12,7 +12,7 @@
 
 using namespace vgui;
 
-static ConVar strafeoffset_draw("mom_strafeoffset_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+static ConVar strafeoffset_draw("mom_hud_strafeoffset_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                 "Toggles displaying the strafeoffset data. (0 = Don't draw , 1 = only timer , 2 = always (except practice mode))\n",
                                 true, 0, true, 2);
 
@@ -33,12 +33,12 @@ class CHudStrafeOffset : public CHudElement, public Panel
     // 0 = current, 1-4 = history, with 4 being oldest
     CUtlVectorFixed<int, 5> m_vecHistInts;
     
-    float m_fAvgOffset;
-    float m_fMovingAvg;
+    float m_flAvgOffset;
+    float m_flMovingAvg;
     int m_nOffsetCt;
     
-    int m_NormFontY;
-    int m_SmallFontY;
+    int m_iNormFontY;
+    int m_iSmallFontY;
 
     CPanelAnimationVar(float, m_flHistOffset, "HistOffset", "0.0");
     
@@ -58,7 +58,6 @@ class CHudStrafeOffset : public CHudElement, public Panel
     void PaintOffset(int offset, int index);
     
     C_MomentumPlayer *m_pPlayer;
-    //Color m_ColorArray[5];
     HFont m_hNumberFont;
 };
 
@@ -66,14 +65,14 @@ DECLARE_NAMED_HUDELEMENT(CHudStrafeOffset, HudStrafeOffset);
 
 CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName),
-    m_vecHistInts(0, 5), m_NormFontY(0), m_pPlayer(nullptr)
+    m_vecHistInts(0, 5), m_iNormFontY(0), m_pPlayer(nullptr)
 {
     ListenForGameEvent("strafe_offset");
     ListenForGameEvent("timer_state");
     SetPaintBackgroundEnabled(false);
     for (int i = 0; i < 5; i++)
         m_vecHistInts.AddToHead(0);
-    m_NormFontY = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
+    m_iNormFontY = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
     m_colors[0] = Color(200, 200, 200, 255);
     m_colors[1] = Color(30, 150, 210, 245);
     m_colors[2] = Color(30, 150, 210, 220);
@@ -86,8 +85,8 @@ void CHudStrafeOffset::Reset()
     m_vecHistInts.RemoveAll();
     for (int i = 0; i < 5; i++)
         m_vecHistInts.AddToHead(0);
-    m_fAvgOffset = 0;
-    m_fMovingAvg = 0;
+    m_flAvgOffset = 0;
+    m_flMovingAvg = 0;
     m_nOffsetCt = 0;
 }
 
@@ -127,12 +126,12 @@ bool CHudStrafeOffset::ShouldDraw()
         g_pClientMode->GetViewportAnimationController()->CancelAnimationsForPanel(this);
         m_flHistOffset = 0.0;
         
-        int offset = pGhost ? pGhost->m_SrvData.m_strafeOffset : m_pPlayer->m_SrvData.m_strafeOffset;
+        int offset = pGhost ? pGhost->m_SrvData.m_iStrafeOffset : m_pPlayer->m_SrvData.m_iStrafeOffset;
         
-        float avgTemp = static_cast<float>(m_nOffsetCt) * m_fAvgOffset;
+        float avgTemp = static_cast<float>(m_nOffsetCt) * m_flAvgOffset;
         ++m_nOffsetCt;
-        m_fAvgOffset = (avgTemp + static_cast<float>(abs(offset))) / static_cast<float>(m_nOffsetCt);
-        m_fMovingAvg = fabs(static_cast<float>(m_vecHistInts[0] + m_vecHistInts[1] + m_vecHistInts[2] + m_vecHistInts[3] + offset) / min(5.0, (float) m_nOffsetCt));
+        m_flAvgOffset = (avgTemp + static_cast<float>(abs(offset))) / static_cast<float>(m_nOffsetCt);
+        m_flMovingAvg = fabs(static_cast<float>(m_vecHistInts[0] + m_vecHistInts[1] + m_vecHistInts[2] + m_vecHistInts[3] + offset) / min(5.0, (float) m_nOffsetCt));
         
         // Discard oldest history
         m_vecHistInts.Remove(4);
@@ -148,7 +147,7 @@ void CHudStrafeOffset::PaintOffset(int offset, int indx)
     wchar_t uOffset[64];
     V_snwprintf(uOffset, 64, L"%i", m_vecHistInts[indx]);
     int xpos = (GetWide() - UTIL_ComputeStringWidth(m_hNumberFont, uOffset)) / 2;
-    surface()->DrawSetTextPos(xpos - offset, m_NormFontY);
+    surface()->DrawSetTextPos(xpos - offset, m_iNormFontY);
     surface()->DrawSetTextColor(m_colors[indx]);
     surface()->DrawPrintText(uOffset, wcslen(uOffset));
 }
@@ -165,18 +164,18 @@ void CHudStrafeOffset::Paint()
     
     char avgOffsetStr[6], movingAvgOffsetStr[6]; //3 digits, a '.', a '-', and a null
     wchar_t uavgOffsetStr[6]{null}, umovingAvgOffsetStr[6]{null};
-    Q_snprintf(avgOffsetStr, sizeof(avgOffsetStr), "%.2f", m_fAvgOffset);
-    Q_snprintf(movingAvgOffsetStr, sizeof(movingAvgOffsetStr), "%.1f", m_fMovingAvg);
+    Q_snprintf(avgOffsetStr, sizeof(avgOffsetStr), "%.2f", m_flAvgOffset);
+    Q_snprintf(movingAvgOffsetStr, sizeof(movingAvgOffsetStr), "%.1f", m_flMovingAvg);
     ANSI_TO_UNICODE(avgOffsetStr, uavgOffsetStr);
     ANSI_TO_UNICODE(movingAvgOffsetStr, umovingAvgOffsetStr);
     
     int avgwidth = UTIL_ComputeStringWidth(m_hNumberFont, uavgOffsetStr);
     int movingavgwidth = UTIL_ComputeStringWidth(m_hNumberFont, umovingAvgOffsetStr);
     
-    surface()->DrawSetTextPos((GetWide() - movingavgwidth) / 2 + 144, m_NormFontY);
+    surface()->DrawSetTextPos((GetWide() - movingavgwidth) / 2 + 144, m_iNormFontY);
     surface()->DrawSetTextColor(m_colors[1]);
     surface()->DrawPrintText(umovingAvgOffsetStr, wcslen(umovingAvgOffsetStr));
-    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 72, m_NormFontY);
+    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 72, m_iNormFontY);
     surface()->DrawSetTextColor(m_colors[1]);
     surface()->DrawPrintText(uavgOffsetStr, Q_wcslen(uavgOffsetStr));
     

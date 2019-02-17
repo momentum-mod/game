@@ -217,7 +217,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     // Strafe offsets stuff
     bool m_bKeyChanged;
     bool m_bDirChanged;
-    float m_fPrevDtAng;
+    float m_flPrevDtAng;
     int m_nKeyTransTick;
     int m_nAngTransTick;
 

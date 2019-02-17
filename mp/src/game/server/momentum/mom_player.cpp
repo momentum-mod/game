@@ -985,7 +985,7 @@ bool CMomentumPlayer::UpdateStrafeOffset(float dtAng)
             }
         }
         if (dtAng != 0.0 &&
-            ((dtAng < 0.0 && m_fPrevDtAng > 0.0) || (dtAng > 0.0 && m_fPrevDtAng < 0.0) || m_fPrevDtAng == 0.0))
+            ((dtAng < 0.0 && m_flPrevDtAng > 0.0) || (dtAng > 0.0 && m_flPrevDtAng < 0.0) || m_flPrevDtAng == 0.0))
         {
             m_bDirChanged = EvaluateTransition_Ang(m_nButtons, dtAng, m_bKeyChanged);
             if (m_bDirChanged)
@@ -1000,7 +1000,7 @@ bool CMomentumPlayer::UpdateStrafeOffset(float dtAng)
             m_bDirChanged = false;
             if (t > -26 && t < 26)
             {
-                m_SrvData.m_strafeOffset = t;
+                m_SrvData.m_iStrafeOffset = t;
                 retval = true;
             }
         }
@@ -1010,7 +1010,7 @@ bool CMomentumPlayer::UpdateStrafeOffset(float dtAng)
         m_bDirChanged = false;
         m_bKeyChanged = false;
     }
-    m_fPrevDtAng = dtAng;
+    m_flPrevDtAng = dtAng;
     return retval;
 }
 

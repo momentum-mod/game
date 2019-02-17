@@ -27,7 +27,7 @@ struct StdDataFromServer
     int m_iDirection;
     int m_iLastZoom;
     int m_iSuccessiveBhops;
-    int m_strafeOffset;
+    int m_iStrafeOffset;
     bool m_bShouldLimitPlayerSpeed;
     CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
@@ -42,7 +42,7 @@ struct StdReplayDataFromServer
     int m_iTotalJumps;
     int m_nReplayButtons;
     int m_iCurrentTick;
-    int m_strafeOffset;
+    int m_iStrafeOffset;
     float m_flTickRate;
     int m_iTotalTimeTicks; // The total tick count of the playback
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
