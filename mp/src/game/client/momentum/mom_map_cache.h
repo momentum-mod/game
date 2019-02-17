@@ -160,6 +160,7 @@ struct MapData : APIModel
 
     // Internal
     bool m_bMapUpdated;
+    time_t m_tLastPlayed;
 
     MapData();
     MapData(const MapData& src);

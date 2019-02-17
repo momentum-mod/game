@@ -150,6 +150,7 @@
         "MOM_PersonalBest" "Personal Best"
         "MOM_WorldRecord" "World Record"
         "MOM_MapSelector_CreationDate" "Date Created"
+        "MOM_MapSelector_LastPlayed" "Last Played"
 
         "MOM_MapSelector_MapLayout" "Layout"
         "MOM_MapSelector_MapLayout_Tooltip" "This column shows if the map is linear or has stages."
