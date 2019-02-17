@@ -94,13 +94,12 @@ typedef void (*DataToReplayFn)(StdReplayDataFromServer*);
  */
 typedef void (*EventFireFn)(KeyValues *pKv);
 
-/*
-abstract_class EventListener
+enum EVENT_FIRE_TYPE
 {
-public:
-    virtual void FireEvent(KeyValues *pKv) = 0;
+    FIRE_BOTH = 0,
+    FIRE_FOREIGN_ONLY,
+    FIRE_LOCAL_ONLY
 };
-*/
 
 struct EventListenerContainer
 {
@@ -121,8 +120,8 @@ public:
 
     // The event needs to be fired and sent out,
     // The KeyValues here are deleted inside this call!
-    // fireLocal is controlling whether the event is fired on the same DLL it is created on
-    void FireEvent(KeyValues *pKv, bool fireLocal = true);
+    // type can control which way the event is fired, see EVENT_FIRE_TYPE
+    void FireEvent(KeyValues *pKv, EVENT_FIRE_TYPE type = FIRE_BOTH);
     void OnEvent(KeyValues *pKv); // The event has been caught by the recieving end
     void ListenForEvent(const char *pName, CUtlDelegate<void (KeyValues *)> listener);
 
