@@ -1913,7 +1913,7 @@ void ListPanel::PerformLayout()
 	if ( m_hEditModePanel.Get() )
 	{
 		m_iTableStartX = 0; 
-		m_iTableStartY = m_iHeaderHeight + 1;
+		m_iTableStartY = m_vbar->GetWide();
 
 		int nTotalRows = m_VisibleItems.Count();
 		int nRowsPerPage = GetRowsPerPage();
@@ -1950,7 +1950,7 @@ void ListPanel::PerformLayout()
 				{
 
 					m_hEditModePanel->SetPos( x + m_iTableStartX + 2, (drawcount * m_iRowHeight) + m_iTableStartY);
-					m_hEditModePanel->SetSize( wide, m_iRowHeight - 1 );
+					m_hEditModePanel->SetSize( wide, m_iRowHeight);
 
 					bDone = true;
 				}
@@ -1991,7 +1991,7 @@ void ListPanel::Paint()
   	GetSize( panelWide, tall );
 
 	m_iTableStartX = 0; 
-	m_iTableStartY = m_iHeaderHeight + 1;
+	m_iTableStartY = m_vbar->GetWide();
 
 	int nTotalRows = m_VisibleItems.Count();
 	int nRowsPerPage = GetRowsPerPage();
@@ -2049,7 +2049,7 @@ void ListPanel::Paint()
 
 				int right = min( xpos + colWide, maxw );
 				int usew = right - xpos;
-				render->SetSize( usew, m_iRowHeight - 1 );
+				render->SetSize( usew, m_iRowHeight);
 
 				// mark the panel to draw immediately (since it will probably be recycled to draw other cells)
 				render->Repaint();
@@ -3028,7 +3028,7 @@ void ListPanel::SetItemDisabled(int itemID, bool state)
 //-----------------------------------------------------------------------------
 float ListPanel::GetRowsPerPage()
 {
-	float rowsperpage = (float)( GetTall() - m_iHeaderHeight ) / (float)m_iRowHeight;
+	float rowsperpage = (float)( GetTall() - m_vbar->GetWide() ) / (float)m_iRowHeight;
 	return rowsperpage;
 }
 

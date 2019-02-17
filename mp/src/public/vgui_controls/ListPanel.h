@@ -231,7 +231,7 @@ public:
 
 protected:
 	// PAINTING
-	virtual Panel *GetCellRenderer(int row, int column);
+	virtual Panel *GetCellRenderer(int itemID, int column);
 
 	// overrides
 	virtual void OnMouseWheeled(int delta);
