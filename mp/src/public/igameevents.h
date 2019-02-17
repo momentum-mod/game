@@ -84,6 +84,17 @@ public:
 	virtual void SetString( const char *keyName, const char *value ) = 0;
 };
 
+inline void EventSetUInt64(IGameEvent *pEvent, const char *key, uint64 src)
+{
+    char tmp[32];
+    Q_snprintf(tmp, 32, "%lld", src);
+    pEvent->SetString(key, tmp);
+}
+
+inline uint64 EventGetUint64(IGameEvent *pEvent, const char *pKeyNameBase)
+{
+    return Q_atoui64(pEvent->GetString(pKeyNameBase));
+}
 
 abstract_class IGameEventListener2
 {
