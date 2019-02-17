@@ -745,11 +745,12 @@ void ListPanel::SetColumnHeaderImage(int column, int imageListIndex)
 //-----------------------------------------------------------------------------
 // Purpose: associates a tooltip with the column header
 //-----------------------------------------------------------------------------
-void ListPanel::SetColumnHeaderTooltip(int column, const char *tooltipText)
+void ListPanel::SetColumnHeaderTooltip(int column, const char *tooltipText, bool bSingleLine /* = false*/, int delay /* = 0*/)
 {
 	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetText(tooltipText);
-	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipFormatToSingleLine();
-	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipDelay(0);
+    if (bSingleLine)
+	    m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipFormatToSingleLine();
+	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipDelay(delay);
 }
 
 int ListPanel::GetNumColumnHeaders() const

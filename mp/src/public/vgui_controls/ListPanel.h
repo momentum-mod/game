@@ -98,7 +98,7 @@ public:
 	virtual void SetColumnHeaderText(int column, const wchar_t *text);
     virtual void SetColumnHeaderTextAlignment(int column, int align);
 	virtual void SetColumnHeaderImage(int column, int imageListIndex);
-	virtual void SetColumnHeaderTooltip(int column, const char *tooltipText);
+	virtual void SetColumnHeaderTooltip(int column, const char *tooltipText, bool bSingleLine = false, int delay = 0);
 	virtual void SetColumnTextAlignment( int column, int align );
 
 	// Get information about the column headers.
