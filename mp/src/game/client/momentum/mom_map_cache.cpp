@@ -5,6 +5,7 @@
 #include "mom_map_cache.h"
 #include "mom_api_requests.h"
 #include "util/mom_util.h"
+#include "mom_modulecomms.h"
 
 #include "filesystem.h"
 #include "fmtstr.h"
@@ -916,18 +917,28 @@ void CMapCache::OnMapRemovedFromFavorites(KeyValues* pKv)
 
 void CMapCache::StartMapDownload(KeyValues* pKvHeader)
 {
-    // MOM_TODO: Create the progress bar here
+    auto indx = m_mapFileDownloads.Find(pKvHeader->GetUint64("request"));
+    if (m_mapFileDownloads.IsValidIndex(indx))
+    {
+        uint32 id = m_mapFileDownloads[indx];
+
+        KeyValues *pEvent = pKvHeader->MakeCopy();
+        pEvent->SetName("map_download_start");
+        pEvent->SetInt("id", id);
+        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+    }
 }
 
 void CMapCache::MapDownloadProgress(KeyValues* pKvProgress)
 {
-    uint16 fileIndx = m_mapFileDownloads.Find(pKvProgress->GetUint64("request"));
+    auto fileIndx = m_mapFileDownloads.Find(pKvProgress->GetUint64("request"));
     if (fileIndx != m_mapFileDownloads.InvalidIndex())
     {
-        DevLog("Progress: %0.2f!\n", pKvProgress->GetFloat("percent"));
-
-        // MOM_TODO: update the progress bar here, but do not use the percent! Use the offset and size of the chunk!
-        // Percent seems to be cached, i.e. sends a lot of "100%" if Steam downloaded the file and is sending the chunks from cache to us
+        uint32 id = m_mapFileDownloads[fileIndx];
+        KeyValues *pEvent = pKvProgress->MakeCopy();
+        pEvent->SetName("map_download_progress");
+        pEvent->SetInt("id", id);
+        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
     }
 }
 
@@ -936,15 +947,19 @@ void CMapCache::FinishMapDownload(KeyValues* pKvComplete)
     uint16 fileIndx = m_mapFileDownloads.Find(pKvComplete->GetUint64("request"));
     if (fileIndx != m_mapFileDownloads.InvalidIndex())
     {
+        uint32 id = m_mapFileDownloads[fileIndx];
+        KeyValues *pEvent = pKvComplete->MakeCopy();
+        pEvent->SetName("map_download_end");
+        pEvent->SetInt("id", id);
+        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+
         if (pKvComplete->GetBool("error"))
         {
-            // MOM_TODO: Show some sort of error icon on the progress bar
             Warning("Could not download map! Error code: %i\n", pKvComplete->GetInt("code"));
         }
         else
         {
-            // MOM_TODO: show success on the progress bar here
-            DevLog("Successfully downloaded the map with ID: %i\n", m_mapFileDownloads[fileIndx]);
+            DevLog("Successfully downloaded the map with ID: %i\n", id);
         }
 
         m_mapFileDownloads.RemoveAt(fileIndx);

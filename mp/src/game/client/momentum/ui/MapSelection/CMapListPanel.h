@@ -2,7 +2,18 @@
 
 #include "vgui_controls/ListPanel.h"
 
+struct MapDisplay_t;
 class CBaseMapsPage;
+
+
+struct MapDownloadComponent
+{
+    MapDisplay_t *pMap;
+    vgui::Panel *m_pOverridePanel;
+    vgui::ProgressBar *m_pProgress;
+    vgui::Label *m_pMapLabel;
+    uint64 m_ulDownloadSize;
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: Acts like a regular ListPanel but forwards enter key presses
@@ -15,21 +26,20 @@ public:
 
     CMapListPanel(CBaseMapsPage *pOuter, const char *pName);
 
-    virtual void OnKeyCodeTyped(vgui::KeyCode code);
+    void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
     void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-    virtual void SetFont(vgui::HFont font)
-    {
-        int oldHeight = GetRowHeight();
-        BaseClass::SetFont(font);
-        SetRowHeight(oldHeight);
-    }
+    Panel* GetCellRenderer(int itemID, int column) OVERRIDE;
 
-protected:
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
-    MESSAGE_FUNC(OnSliderMoved, "ScrollBarSliderMoved");
+    void SetFont(vgui::HFont font) OVERRIDE;
+
+    void MapDownloadStart(KeyValues *pKv, MapDisplay_t *pDisplay);
+    void MapDownloadProgress(KeyValues *pKv, MapDisplay_t *pDisplay);
+    void MapDownloadEnd(KeyValues *pKv, MapDisplay_t *pDisplay);
 
 private:
     CBaseMapsPage *m_pOuter;
+    CUtlMap<int, MapDownloadComponent> m_mapDownloads;
 };

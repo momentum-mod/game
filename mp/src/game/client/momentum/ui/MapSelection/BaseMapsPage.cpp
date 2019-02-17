@@ -7,6 +7,7 @@
 #include "MapContextMenu.h"
 #include "mom_map_cache.h"
 #include "util/mom_util.h"
+#include "mom_modulecomms.h"
 
 #include "fmtstr.h"
 #include <ctime>
@@ -139,6 +140,9 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     ListenForGameEvent("map_data_update");
     ListenForGameEvent("map_cache_updated");
+    g_pModuleComms->ListenForEvent("map_download_start", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadStart));
+    g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadProgress));
+    g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadEnd));
 }
 
 //-----------------------------------------------------------------------------
@@ -496,6 +500,36 @@ void CBaseMapsPage::FireGameEvent(IGameEvent* event)
                               event->GetBool("pb"), event->GetBool("wr"), 
                               event->GetBool("thumbnail"));
         }
+    }
+}
+
+void CBaseMapsPage::OnMapDownloadStart(KeyValues* pEvent)
+{
+    uint32 id = pEvent->GetInt("id");
+    MapDisplay_t *map = GetMapDisplayByID(id);
+    if (map)
+    {
+        m_pMapList->MapDownloadStart(pEvent, map);
+    }
+}
+
+void CBaseMapsPage::OnMapDownloadProgress(KeyValues* pKv)
+{
+    uint32 id = pKv->GetInt("id");
+    MapDisplay_t *map = GetMapDisplayByID(id);
+    if (map)
+    {
+        m_pMapList->MapDownloadProgress(pKv, map);
+    }
+}
+
+void CBaseMapsPage::OnMapDownloadEnd(KeyValues* pKv)
+{
+    uint32 id = pKv->GetInt("id");
+    MapDisplay_t *map = GetMapDisplayByID(id);
+    if (map)
+    {
+        m_pMapList->MapDownloadEnd(pKv, map);
     }
 }
 

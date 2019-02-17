@@ -95,6 +95,9 @@ public:
     virtual bool MapPassesFilters(MapData *pData, MapFilters_t filters);
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
+    void OnMapDownloadStart(KeyValues *pEvent);
+    void OnMapDownloadProgress(KeyValues *pKv);
+    void OnMapDownloadEnd(KeyValues *pKv);
 
     // Called when map should be added to/removed from library
     MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
