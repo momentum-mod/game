@@ -22,6 +22,7 @@ public:
 
     Color GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
                                 const Color &decreasecolor) const;
+    Color ColorLerp(float prog, const Color& A, const Color& B);
     // Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours,
     // etc
     // Precision is miliseconds by default

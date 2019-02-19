@@ -210,6 +210,28 @@ Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone,
     return pFinalColor;
 }
 
+Color MomentumUtil::ColorLerp(float prog, const Color& A, const Color& B)
+{
+    // To linear color
+    float A0 = (float) A[0] / 255.0;
+    float A1 = (float) A[1] / 255.0;
+    float A2 = (float) A[2] / 255.0;
+    float A3 = (float) A[3] / 255.0;
+
+    float B0 = (float) B[0] / 255.0;
+    float B1 = (float) B[1] / 255.0;
+    float B2 = (float) B[2] / 255.0;
+    float B3 = (float) B[3] / 255.0;
+
+    // Lerping colors
+    Color ret;
+    ret[0] = static_cast<unsigned char>(Lerp(prog, A0, B0) * 255.0f);
+    ret[1] = static_cast<unsigned char>(Lerp(prog, A1, B1) * 255.0f);
+    ret[2] = static_cast<unsigned char>(Lerp(prog, A2, B2) * 255.0f);
+    ret[3] = static_cast<unsigned char>(Lerp(prog, A3, B3) * 255.0f);
+    return ret;
+}
+
 bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
 {
     uint32 hex = strtoul(hexColor, nullptr, 16);
