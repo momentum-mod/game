@@ -13,11 +13,13 @@
 
 #define MAIN_MENU_STR  "Main Menu"
 
-#define MOM_ICON_LOGO  "mom"
-#define MOM_ICON_BHOP  "mom_icon_bhop"
-#define MOM_ICON_SURF  "mom_icon_surf"
-#define MOM_ICON_KZ    "mom_icon_kz"
-#define MOM_ICON_TRIKZ "mom_icon_trikz" // unused atm
+#define MOM_ICON_LOGO      "mom"
+#define MOM_ICON_BHOP      "mom_icon_bhop"
+#define MOM_ICON_SURF      "mom_icon_surf"
+#define MOM_ICON_KZ        "mom_icon_kz"
+#define MOM_ICON_TRIKZ     "mom_icon_trikz"
+#define MOM_ICON_TRICKSURF "mom_icon_tricksurf" // unused
+#define MOM_ICON_RJ        "mom_icon_rj" // unused
 
 // How many frames to wait before updating discord
 // (some things are still updated each frame such as checking callbacks)
@@ -97,6 +99,10 @@ void CMomentumDiscord::LevelInitPostEntity() {
         break;
     case GAMEMODE_KZ:
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_KZ, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        break;
+    case GAMEMODE_TRIKZ:
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_TRIKZ, DISCORD_MAX_BUFFER_SIZE);
         V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
         break;
     default:
