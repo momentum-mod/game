@@ -12,7 +12,6 @@
 
 #include "vgui_controls/PropertySheet.h"
 #include "vgui/IVGui.h"
-#include "vgui/ISurface.h"
 
 #include "tier0/memdbgon.h"
 
@@ -31,6 +30,7 @@ CMapSelectorDialog &MapSelectorDialog()
 CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
     SetParent(parent);
+    SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
     SetSize(680, 400);
     s_InternetDlg = this;
@@ -122,15 +122,16 @@ void CMapSelectorDialog::Open()
 {
     MoveToCenterOfScreen();
     BaseClass::Activate();
+    PostActionSignal(new KeyValues("MapSelectorOpened"));
     m_pTabPanel->RequestFocus();
     m_pCurrentMapList->LoadFilters();
-    m_pCurrentMapList->OnTabSelected();
 }
 
 void CMapSelectorDialog::OnClose()
 {
     SaveUserData();
     BaseClass::OnClose();
+    PostActionSignal(new KeyValues("MapSelectorClosed"));
 }
 
 
