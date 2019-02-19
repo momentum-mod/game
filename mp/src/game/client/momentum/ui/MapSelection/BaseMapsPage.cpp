@@ -80,6 +80,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     SetSize(664, 294);
 
     m_hFont = INVALID_FONT;
+    parent->AddActionSignalTarget(this);
 
     // Init UI
     m_pMapList = new CMapListPanel(this, "MapList");

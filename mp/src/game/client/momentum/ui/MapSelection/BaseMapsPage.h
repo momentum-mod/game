@@ -99,6 +99,8 @@ public:
     void OnMapDownloadProgress(KeyValues *pKv);
     void OnMapDownloadEnd(KeyValues *pKv);
 
+    // Called when the map selector opens
+    MESSAGE_FUNC(OnMapSelectorOpened, "MapSelectorOpened") { OnTabSelected(); }
     // Called when map should be added to/removed from library
     MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
     MESSAGE_FUNC_INT(OnRemoveMapFromLibrary, "RemoveFromLibrary", id);
