@@ -11,18 +11,16 @@
 Scheme
 {
 	//////////////////////// COLORS ///////////////////////////
-	//////////////////////// COLORS ///////////////////////////
+	// color details
+	// this is a list of all the colors used by the scheme
 	Colors
 	{
 		// base colors
 		"White"				"255 255 255 255"
-		"Light Gray"		"211 211 211 100"
+		"Light Gray"		"211 211 211 20"
 		"Gray" 				"128 128 128 150"
 		"Dark Gray" 		"64 64 64 200"
 		
-        "Light Blue" "51 122 183 255"
-        "Dark Blue" "22 69 119 255"
-        
 		"Red"                "192 28 0 140"
 		"Black"                "0 0 0 196"
 		"TransparentBlack"    "0 0 0 196"
@@ -30,301 +28,200 @@ Scheme
 	
 		"Blank"                "0 0 0 1"
 
-		//"MOM.Panel.Bg"				"211 211 211 50"
+		"MOM.Panel.Fg"				"255 255 255 125"
+		"MOM.Panel.Bg"				"211 211 211 50"
 		"MomentumBlue"	"30 150 210 255"
 		"MomentumRed"	"255 75 75 255"
-
-		"MOM.Panel.Fg"				"255 255 255 125"
-		"MOM.Panel.Bg"				"0 0 0 76"
-		"MOM.Speedometer.Normal"	"255 255 255 125"
-		"MOM.Speedometer.Increase"	"30 150 210 255"
-		"MOM.Speedometer.Decrease"	"255 75 75 255"
-        "MOM.Compare.Gain" "30 150 210 255"
-        "MOM.Compare.Loss" "255 75 75 255"
-        "MOM.Compare.Tie" "255 255 255 255"
 	}
-	
+
 	///////////////////// BASE SETTINGS ////////////////////////
 	//
 	// default settings for all panels
 	// controls use these to determine their settings
 	BaseSettings
 	{
-		"FgColor"			"255 255 255 255"
-		"BgColor"			"0 0 0 76"
+		// vgui_controls color specifications
+		Border.Bright					"200 200 200 255"	// the lit side of a control
+		Border.Dark						"40 40 40 100"		// the dark/unlit side of a control
+		Border.Selection				"0 0 0 76"			// the additional border color for displaying the default/selected button
+		Border.DarkSolid				"40 40 40 255"
+		Border.Subtle					"80 80 80 255"
 
-		"Panel.FgColor"			"255 255 255 255"
-		"Panel.BgColor"			"0 0 0 76"
-		
-		"BrightFg"		"128 255 255 255"
-
-		"DamagedBg"			"180 0 0 200"
-		"DamagedFg"			"180 0 0 230"
-		"BrightDamagedFg"		"255 0 0 255"
-
-		// weapon selection colors
-		"SelectionNumberFg"		"255 255 255 255"
-		"SelectionTextFg"		"255 255 255 255"
-		"SelectionEmptyBoxBg" 	"32 0 0 128"
-		"SelectionBoxBg" 		"0 0 0 80"
-		"SelectionSelectedBoxBg" "0 0 0 128"
-		
-		"ZoomReticleColor"	"255 0 0 255"
-
-		// HL1-style HUD colors
-		"Yellowish"			"0 128 255 255"
-		"Normal"			"0 80 255 255"
-		"Caution"			"255 48 0 255"
-
-		// Top-left corner of the "Half-Life 2" on the main screen
-    		"Main.Title1.X"   "32"
-   		"Main.Title1.Y"   "180"
-   		"Main.Title1.Color" "255 255 255 180"
-
-    		"Main.Title2.X"   "31"
-    		"Main.Title2.Y"   "179"
-    		"Main.Title2.Color" "81 81 212 255"
-
-		// Top-left corner of the menu on the main screen
-		"Main.Menu.X"		"100"//32
-		"Main.Menu.Y"		"248"
-
-		// Blank space to leave beneath the menu on the main screen
-		"Main.BottomBorder"	"32"
-
-
-///HERE
-				// vgui_controls color specifications
-		Border.Bright					"Gray"		// the lit side of a control
-		Border.Dark						"Gray"		// the dark/unlit side of a control
-		Border.Selection				"Blank"				// the additional border color for displaying the default/selected button
-
-		Button.TextColor				"White"
-		Button.BgColor					"Blank"
-		Button.ArmedTextColor			"White"
-		Button.ArmedBgColor				"MomentumBlue"
+		Button.TextColor				"82 82 82 255"
+		Button.BgColor					"227 227 227 255"
+		Button.ArmedTextColor			"46 114 178 255"
+		Button.ArmedBgColor				"240 240 240 255"	
 		Button.DepressedTextColor		"White"
-		Button.DepressedBgColor			"MomentumBlue"
+		Button.DepressedBgColor			"84 178 245 255"
+		Button.FocusBorderColor			"82 82 82 20"
 
 		CheckButton.TextColor			"White"
 		CheckButton.SelectedTextColor	"White"
-		CheckButton.BgColor				"TransparentBlack"
-		CheckButton.Border1  			"Border.Dark" 		// the left checkbutton border
-		CheckButton.Border2  			"Border.Bright"		// the right checkbutton border
-		CheckButton.Check				"White"				// color of the check itself
+		CheckButton.BgColor				"MOM.Panel.Bg"
+		CheckButton.Border1  			"Border.Subtle" 		// the left checkbutton border
+		CheckButton.Border2  			"Border.Subtle"		// the right checkbutton border
+		CheckButton.Check				"118 189 118 255"	// color of the check itself
+		CheckButton.HighlightFgColor	"OffWhite"
+		CheckButton.ArmedBgColor		"Blank"
+		CheckButton.DepressedBgColor	"Blank"
+		CheckButton.DisabledBgColor	   	"153 153 153 255"
+				
+		ComboBoxButton.ArrowColor		"81 81 81 255"
+		ComboBoxButton.ArmedArrowColor	"MomentumBlue"
+		ComboBoxButton.BgColor			"MOM.Panel.Bg"
+		ComboBoxButton.DisabledBgColor	"Light Gray"
 
-		ComboBoxButton.ArrowColor		"White"
-		ComboBoxButton.ArmedArrowColor	"White"
-		ComboBoxButton.BgColor			"TransparentBlack"
-		ComboBoxButton.DisabledBgColor	"Blank"
-
-		Frame.BgColor					"TransparentBlack"
-		Frame.OutOfFocusBgColor			"TransparentBlack"
-		Frame.FocusTransitionEffectTime	"0.0"	// time it takes for a window to fade in/out on focus/out of focus
-		Frame.TransitionEffectTime		"0.0"	// time it takes for a window to fade in/out on open/close
+		Frame.TitleTextInsetX			16
+		Frame.ClientInsetX				8
+		Frame.ClientInsetY				6
+		Frame.BgColor					"MOM.Panel.Bg"	
+		Frame.OutOfFocusBgColor			"97 100 102 240"	
+		Frame.FocusTransitionEffectTime	"0.3"					// time it takes for a window to fade in/out on focus/out of focus
+		Frame.TransitionEffectTime		"0.3"					// time it takes for a window to fade in/out on open/close
 		Frame.AutoSnapRange				"0"
-		FrameGrip.Color1				"Blank"
-		FrameGrip.Color2				"Blank"
+		FrameGrip.Color1				"200 200 200 196"
+		FrameGrip.Color2				"0 0 0 196"
 		FrameTitleButton.FgColor		"200 200 200 196"
 		FrameTitleButton.BgColor		"Blank"
-		FrameTitleButton.DisabledFgColor	"200 200 200 196"
+		FrameTitleButton.DisabledFgColor	"255 255 255 192"
 		FrameTitleButton.DisabledBgColor	"Blank"
 		FrameSystemButton.FgColor		"Blank"
 		FrameSystemButton.BgColor		"Blank"
 		FrameSystemButton.Icon			""
 		FrameSystemButton.DisabledIcon	""
-		FrameTitleBar.TextColor			"White"
+		FrameTitleBar.Font				"DefaultSmall"		
+		FrameTitleBar.TextColor			"255 255 255 204"
 		FrameTitleBar.BgColor			"Blank"
-		FrameTitleBar.DisabledTextColor	"White"
+		FrameTitleBar.DisabledTextColor	"255 255 255 91"
 		FrameTitleBar.DisabledBgColor	"Blank"
 
 		GraphPanel.FgColor				"White"
 		GraphPanel.BgColor				"TransparentBlack"
 
-		Label.TextDullColor				"White"
+		Label.TextDullColor				"DullWhite"
 		Label.TextColor					"White"
 		Label.TextBrightColor			"White"
 		Label.SelectedTextColor			"White"
 		Label.BgColor					"Blank"
-		Label.DisabledFgColor1			"Blank"
-		Label.DisabledFgColor2			"Gray"
+		Label.DisabledFgColor1			"110 110 110 255"
+		Label.DisabledFgColor2			"50 50 50 255"
 
 		ListPanel.TextColor					"White"
-		ListPanel.BgColor					"TransparentBlack"
-		ListPanel.SelectedTextColor			"Black"
-		ListPanel.SelectedBgColor			"Light Blue"
-		ListPanel.SelectedOutOfFocusBgColor	"Dark Blue"
+		ListPanel.TextBgColor				"Blank"
+		ListPanel.BgColor					"MOM.Panel.Bg"
+		ListPanel.SelectedTextColor			"White"
+		ListPanel.SelectedBgColor			"MomentumBlue"
+		ListPanel.OutOfFocusSelectedTextColor	"Gray"
+		ListPanel.SelectedOutOfFocusBgColor	"132 183 241 100"
 		ListPanel.EmptyListInfoTextColor	"White"
 
 		Menu.TextColor					"White"
-		Menu.BgColor					"TransparentBlack"
+		Menu.BgColor					"Gray"
 		Menu.ArmedTextColor				"White"
-		Menu.ArmedBgColor				"Light Blue"
+		Menu.ArmedBgColor				"MomentumBlue"
 		Menu.TextInset					"6"
 
-		Chat.TypingText					"White"
+		Panel.FgColor					"Gray"
+		Panel.BgColor					"Blank"
 
-		Panel.FgColor					"WhiteDim"
-		Panel.BgColor					"blank"
+		ProgressBar.FgColor				"White"
+		ProgressBar.BgColor				"MOM.Panel.Bg"
 
-		ProgressBar.FgColor				"Light Blue"
-		ProgressBar.BgColor				"TransparentBlack"
-
-		PropertySheet.TextColor			"White"
-		PropertySheet.SelectedTextColor	"White"
+		PropertySheet.TextColor			"10 10 10 200"
+		PropertySheet.SelectedTextColor	"10 10 10 255"
+		PropertySheet.SelectedBgColor	"10 10 10 255"
 		PropertySheet.TransitionEffectTime	"0.25"	// time to change from one tab to another
-        PropertySheet.TabFont "Default"
+		PropertySheet.BgColor "0 0 0 255"
 
 		RadioButton.TextColor			"White"
-		RadioButton.SelectedTextColor	"White"
+		RadioButton.SelectedTextColor	"MomentumBlue"
 
 		RichText.TextColor				"White"
-		RichText.BgColor				"Blank"
-		RichText.SelectedTextColor		"White"
-		RichText.SelectedBgColor		"Blank"
+		RichText.BgColor				"TransparentBlack"
+		RichText.SelectedTextColor		"MomentumBlue"
+		RichText.SelectedBgColor		"Light Gray"//"MOM.Panel.Bg"
 
-		ScrollBarButton.FgColor				"White"
-		ScrollBarButton.BgColor				"Blank"
-		ScrollBarButton.ArmedFgColor		"White"
-		ScrollBarButton.ArmedBgColor		"Blank"
-		ScrollBarButton.DepressedFgColor	"White"
-		ScrollBarButton.DepressedBgColor	"Blank"
+		ScrollBar.Wide					"15"
 
-		ScrollBarSlider.FgColor				"Blank"		// nob color
-		ScrollBarSlider.BgColor				"Blank"		// slider background color
+		ScrollBarButton.FgColor				"60 60 60 255"
+		ScrollBarButton.BgColor				"207 207 207 255"
+		ScrollBarButton.ArmedFgColor		"20 65 72 255"
+		ScrollBarButton.ArmedBgColor		"210 237 255 255"
+		ScrollBarButton.DepressedFgColor	"9 119 226 255"
+		ScrollBarButton.DepressedBgColor	"31 207 248 255"
+
+		ScrollBarSlider.FgColor				"220 220 220 255"			// nob color
+		ScrollBarSlider.BgColor				"184 184 184 229"	// slider background color
 
 		SectionedListPanel.HeaderTextColor	"White"
 		SectionedListPanel.HeaderBgColor	"Blank"
-		SectionedListPanel.DividerColor		"Black"
-		SectionedListPanel.TextColor		"White"
+		SectionedListPanel.DividerColor		"Dark Gray"
+		SectionedListPanel.TextColor		"Light Gray"
 		SectionedListPanel.BrightTextColor	"White"
-		SectionedListPanel.BgColor			"TransparentLightBlack"
+		SectionedListPanel.BgColor			"TransparentBlack"
 		SectionedListPanel.SelectedTextColor			"White"
-		SectionedListPanel.SelectedBgColor				"Dark Blue"
+		SectionedListPanel.SelectedBgColor				"MomentumBlue"
 		SectionedListPanel.OutOfFocusSelectedTextColor	"White"
-		SectionedListPanel.OutOfFocusSelectedBgColor	"Light Blue"
+		SectionedListPanel.OutOfFocusSelectedBgColor	"132 183 241 100"
 
-		Slider.NobColor				"White"//"108 108 108 255"
-		Slider.TextColor			"White"//"127 140 127 255"
+		Slider.NobColor				"White"
+		Slider.TextColor			"White"
         Slider.BgColor              "Blank"
-		Slider.TrackColor			"31 31 31 255"
-		Slider.DisabledTextColor1	"117 117 117 255"
-		Slider.DisabledTextColor2	"30 30 30 255"
+		Slider.TrackColor			"White"
+		Slider.DisabledTextColor1	"Dark Gray"
+		Slider.DisabledTextColor2	"50 50 50 255"
 
 		TextEntry.TextColor			"White"
-		TextEntry.BgColor			"TransparentBlack"
-		TextEntry.CursorColor		"Light Gray"
-		TextEntry.DisabledTextColor	"White"
-		TextEntry.DisabledBgColor	"Blank"
-		TextEntry.SelectedTextColor	"Light Gray"
-		TextEntry.SelectedBgColor	"Dark Blue"
-		TextEntry.OutOfFocusSelectedBgColor	"Light Blue"
-		TextEntry.FocusEdgeColor	"TransparentBlack"
+		TextEntry.BgColor			"MOM.Panel.Bg"
+		TextEntry.CursorColor		"Black"
+		TextEntry.DisabledTextColor	"Light Gray"
+		TextEntry.DisabledBgColor	"TransparentBlack"
+		TextEntry.SelectedTextColor	"White"
+		TextEntry.SelectedBgColor	"MomentumBlue"
+		TextEntry.OutOfFocusSelectedBgColor	"132 183 241 100"
+		TextEntry.FocusEdgeColor	"0 0 0 196"
 
 		ToggleButton.SelectedTextColor	"White"
 
 		Tooltip.TextColor			"White"
-		Tooltip.BgColor				"Red"
+		Tooltip.BgColor				"MOM.Panel.Bg"
 
-		TreeView.BgColor			"TransparentBlack"
+		TreeView.BgColor			"Light Gray"
 
 		WizardSubPanel.BgColor		"Blank"
 
-		// scheme-specific colors
-		"FgColor"		"White"
-		"BgColor"		"TransparentBlack"
-
-		"ViewportBG"		"Blank"
-		"team0"			"204 204 204 255" // Spectators
-		"team1"			"255 64 64 255" // CT's
-		"team2"			"153 204 255 255" // T's
-
-		"MapDescriptionText"	"White" // the text used in the map description window
-		"CT_Blue"			"153 204 255 255"
-		"T_Red"				"255 64 64 255"
-		"Hostage_Yellow"	"Panel.FgColor"
-		"HudIcon_Green"		"0 160 0 255"
-		"HudIcon_Red"		"160 0 0 255"
-
-		// CHudMenu/CHudStaticMenu
-		"ItemColor"		"255 167 42 200"	// default 255 167 42 255
-		"MenuColor"		"233 208 173 255"
-		"MenuBoxBg"		"0 0 0 100"
-
-		// weapon selection colors
-		"SelectionNumberFg"		"255 220 0 200"
-		"SelectionTextFg"		"255 220 0 200"
-		"SelectionEmptyBoxBg" 	"0 0 0 80"
-		"SelectionBoxBg" 		"0 0 0 80"
-		"SelectionSelectedBoxBg" "0 0 0 190"
-
-		// Hint message colors
-		"HintMessageFg"			"255 255 255 255"
-		"HintMessageBg" 		"0 0 0 60"
-
-		"ProgressBarFg"			"255 30 13 255"
-
-		// Top-left corner of the "Counter-Strike" on the main screen
-		"Main.Title1.X"		"32"
-		"Main.Title1.Y"		"180"
-		"Main.Title1.Color"	"255 255 255 255"
-
-		// Top-left corner of the "SOURCE" on the main screen
-		"Main.Title2.X"		"380"	
-		"Main.Title2.Y"		"205"
-		"Main.Title2.Color"	"255 255 255 80"
-
-		// Top-left corner of the "BETA" on the main screen
-		"Main.Title3.X"		"460"
-		"Main.Title3.Y"		"-10"
-		"Main.Title3.Color"	"255 255 0 255"
-
-		// Top-left corner of the menu on the main screen
-		"Main.Menu.X"		"32"
-		"Main.Menu.Y"		"248"
-
-		// Blank space to leave beneath the menu on the main screen
-		"Main.BottomBorder"	"32"
+		Console.TextColor			"White"
+		Console.DevTextColor		"MomentumBlue"
 	}
-	
+
 	//////////////////////// FONTS /////////////////////////////
 	//
 	// describes all the fonts
 	Fonts
 	{
-		MomentumIcons
+		// fonts are used in order that they are listed
+		// fonts listed later in the order will only be used if they fulfill a range not already filled
+		// if a font fails to load then the subsequent fonts will replace
+		// fonts are used in order that they are listed
+        "MapListFont"
 		{
 			"1"
 			{
-				"name"		"MomIcons"
-				"tall"		"12"
-				"weight"	"0"
+				"name" "BigNoodleTitling"
+				"tall" "20"
+				"weight" "0"
 				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
+                "custom" "1"
 			}
 		}
         
-        MomHudDropText
-        {
-            "1"
-			{
-				"name"		"Verdana"
-				"tall"		"12"
-				"weight"	"500"
-				"antialias" "1"
-                "dropshadow" "1"
-			}
-        }
-		// fonts are used in order that they are listed
-		// fonts are used in order that they are listed
 		"DebugFixed"
 		{
 			"1"
 			{
 				"name"		"Courier New"
-				"tall"		"14"
-				"weight"	"400"
+				"tall"		"10"
+				"weight"	"500"
 				"antialias" "1"
 			}
 		}
@@ -334,468 +231,268 @@ Scheme
 			"1"
 			{
 				"name"		"Courier New"
-				"tall"		"14"
-				"weight"	"400"
+				"tall"		"7"
+				"weight"	"500"
 				"antialias" "1"
 			}
 		}
-		// fonts listed later in the order will only be used if they fulfill a range not already filled
-		// if a font fails to load then the subsequent fonts will replace
-		Default
+		"DefaultFixedOutline"
 		{
 			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"9"
-				"weight"	"700"
-				"antialias" "1"
-				"yres"	"1 599"
+				"name"		 "Lucida Console" [$WINDOWS]
+				"name"		 "Lucida Console" [$X360]
+				"name"		 "Lucida Console" [$OSX]
+				"name"		 "Verdana" [$LINUX]
+				"tall"		"14" [$LINUX]
+				"tall"		 "10"
+				"tall_lodef" "15"
+				"tall_hidef" "20"
+				"weight"	 "0"
+				"outline"	 "1"
 			}
-			"2"
+		}
+		"Default"
+		{
+			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"12"
-				"weight"	"700"
-				"antialias" "1"
-				"yres"	"600 767"
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
+				"tall"		"16"
+				"weight"	"500"
+                "antialias" "1"
 			}
-			"3"
+		}
+		"DefaultBold"
+		{
+			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"14"
-				"weight"	"900"
-				"antialias" "1"
-				"yres"	"768 1023"
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana Bold" [$LINUX]
+				"tall"		"16"
+				"weight"	"1000"
+                "antialias" "1"
 			}
-			"4"
+		}
+        "DefaultBoldLarge"
+        {
+			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"20"
-				"weight"	"900"
-				"antialias" "1"
-				"yres"	"1024 1199"
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana Bold" [$LINUX]
+				"tall"		"18"
+				"weight"	"1000"
+                "antialias" "1"
 			}
-			"5"
+		}
+        
+		"DefaultUnderline"
+		{
+			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"24"
-				"weight"	"900"
-				"antialias" "1"
-				"yres"	"1200 10000"
-				"additive"	"1"
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
+				"tall"		"16"
+				"weight"	"500"
+				"underline" "1"
 			}
 		}
 		"DefaultSmall"
 		{
 			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"12"
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
+				"tall"		"12" [!$LINUX]
+				"tall"		"16" [$LINUX]
 				"weight"	"0"
-				"range"		"0x0000 0x017F"
-				"yres"	"480 599"
+                "antialias" "1"
 			}
-			"2"
+		}
+		"DefaultSmallDropShadow"
+		{
+			"1"
 			{
-				"name"		"Verdana"
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
 				"tall"		"13"
 				"weight"	"0"
-				"range"		"0x0000 0x017F"
-				"yres"	"600 767"
-			}
-			"3"
-			{
-				"name"		"Verdana"
-				"tall"		"14"
-				"weight"	"0"
-				"range"		"0x0000 0x017F"
-				"yres"	"768 1023"
-				"antialias"	"1"
-			}
-			"4"
-			{
-				"name"		"Verdana"
-				"tall"		"20"
-				"weight"	"0"
-				"range"		"0x0000 0x017F"
-				"yres"	"1024 1199"
-				"antialias"	"1"
-			}
-			"5"
-			{
-				"name"		"Verdana"
-				"tall"		"24"
-				"weight"	"0"
-				"range"		"0x0000 0x017F"
-				"yres"	"1200 6000"
-				"antialias"	"1"
-			}
-			"6"
-			{
-				"name"		"Verdana"//Arial
-				"tall"		"12"
-				"range" 		"0x0000 0x00FF"
-				"weight"		"0"
+				"dropshadow" "1"
+                "antialias" "1"
 			}
 		}
 		"DefaultVerySmall"
 		{
 			"1"
 			{
-				"name"		"Verdana"
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
+				"tall"		"11"
+				"weight"	"0"
+                "antialias" "1"
+			}
+		}
+
+		"DefaultLarge"
+		{
+			"1"
+			{
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
+				"tall"		"18"
+				"weight"	"0"
+                "antialias" "1"
+			}
+		}
+        "DefaultLargeDropShadow"
+        {
+            "1"
+			{
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
+				"tall"		"18"
+				"weight"	"0"
+				"dropshadow" "1"
+                "antialias" "1"
+			}
+        }
+        "DefaultVeryLarge"
+        {
+            "1"
+            {
+                "name" "Tahoma" [!$LINUX]
+                "name" "Verdana" [$LINUX]
+                "tall" "22"
+                "antialias" "1"
+            }
+        }
+        
+		"UiBold"
+		{
+			"1"	[$WIN32]
+			{
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
 				"tall"		"12"
-				"weight"	"0"
-				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
-				"yres"	"480 599"
+				"weight"	"1000"
 			}
-			"2"
+			"1"	[$X360]
 			{
-				"name"		"Verdana"
-				"tall"		"13"
-				"weight"	"0"
-				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
-				"yres"	"600 767"
+				"name"		"Tahoma"
+				"tall"		"24"
+				"weight"	"2000"
+				"outline"	"1"
 			}
-			"3"
+		}
+		"ChapterTitle"	[$X360]
+		{
+			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"14"
-				"weight"	"0"
-				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
-				"yres"	"768 1023"
-				"antialias"	"1"
+				"name"			"Tahoma"
+				"tall"			"20"
+				"tall_hidef"	"28"
+				"weight"		"2000"
+				"outline"		"1"
 			}
-			"4"
+		}
+		"ChapterTitleBlur"	[$X360]
+		{
+			"1"
+			{
+				"name"			"Tahoma"
+				"tall"			"20"
+				"tall_hidef"	"28"
+				"weight"		"2000"
+				"blur"			"3"
+				"blur_hidef"	"5"
+			}
+		}
+		"MenuLarge"
+		{
+			"1"
+			{
+				"name"		"Verdana" 
+				"tall"		"16" 
+				"weight"	"1000"
+				"antialias" "1"
+			}
+		}
+		"AchievementTitleFont"
+		{
+			"1"
 			{
 				"name"		"Verdana"
 				"tall"		"20"
-				"weight"	"0"
-				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
-				"yres"	"1024 1199"
-				"antialias"	"1"
-			}
-			"5"
-			{
-				"name"		"Verdana"
-				"tall"		"24"
-				"weight"	"0"
-				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
-				"yres"	"1200 6000"
-				"antialias"	"1"
-			}
-			"6"
-			{
-				"name"		"Verdana"
-				"tall"		"12"
-				"range" 		"0x0000 0x00FF"
-				"weight"		"0"
-			}
-			"7"
-			{
-				"name"		"Arial"
-				"tall"		"11"
-				"range" 		"0x0000 0x00FF"
-				"weight"		"0"
-			}
-		}
-		WeaponIcons
-		{
-			"1"
-			{
-				"name"		"MomIcons"
-				"tall"		"64"
-				"weight"	"0"
+				"weight"	"1200"
 				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
+				"outline" "1"
 			}
 		}
-		WeaponIconsSelected
-		{
-			"1"
-			{
-				"name"		"MomIcons"
-				"tall"		"64"
-				"weight"	"0"
-				"antialias" "1"
-				"blur"		"5"
-				"scanlines"	"2"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-        WeaponIconsSmall
-		{
-			"1"
-			{
-				"name"		"MomIcons"
-				"tall"		"32"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		Crosshairs
-		{
-			"1"
-			{
-				"name"		"HalfLife2"
-				"tall"		"40"
-				"weight"	"0"
-				"antialias" "0"
-				"additive"	"1"
-				"custom"	"1"
-				"yres"		"1 10000"
-			}
-		}
-		QuickInfo
-		{
-			"1"
-			{
-				"name"		"HL2cross"
-				"tall"		"28"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		SquadIcons
-		{
-			"1"
-			{
-				"name"		"HalfLife2"
-				"tall"		"32"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		HudNumbers
+		
+		"AchievementTitleFontSmaller"
 		{
 			"1"
 			{
 				"name"		"Verdana"
-				"tall"		"32"
-				"weight"	"0"
+				"tall"		"18"
+				"weight"	"1200"
 				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
+				//"outline" "1"
 			}
 		}
-		HudNumbersGlow
+		
+		
+		"AchievementDescriptionFont"
 		{
 			"1"
 			{
 				"name"		"Verdana"
-				"tall"		"32"
-				"weight"	"0"
-				"blur"		"4"
-				"scanlines" "2"
+				"tall"		"15"
+				"weight"	"1200"
 				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		HudNumbersSmall
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"16"
-				"weight"	"1000"
-				"additive"	"1"
-				"antialias" "1"
-				"custom"	"1"
-			}
-		}
-		HudNumbersSmallBold
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"16"
-				"weight"	"1000"
-				"additive"	"1"
-				"antialias" "1"
-				"custom"	"1"
-				"bold"	"1"
-			}
-		}
-		HudNumbersVerySmall
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"11"
-				"weight"	"1000"
-				"additive"	"1"
-				"antialias" "1"
-				"custom"	"1"
-			}
-		}
-		HudNumbersExtremelySmall
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"9"
-				"weight"	"600"
-				"additive"	"1"
-				"antialias" "1"
-				"custom"	"1"
-			}
-		}
-		HudNumbersSmallGlow
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"16"
-				"weight"	"1000"
-				"blur"		"2" //4
-				"scanlines" "1" //2
-				"additive"	"1"
-				"antialias" "1"
-				"custom"	"1"
-			}
-		}
-		HudSelectionNumbers
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"11"
-				"weight"	"700"
-				"antialias" "1"
-				"additive"	"1"
-			}
-		}
-		HudHintTextLarge
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"14"
-				"weight"	"1000"
-				"antialias" "1"
-				"additive"	"1"
-			}
-		}
-		HudHintTextSmall
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"11"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-			}
-		}
-		HudSelectionText
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"8"
-				"weight"	"700"
-				"antialias" "1"
-				"yres"	"1 599"
+				"outline" "1"
+				"yres"		"0 480"
 			}
 			"2"
 			{
 				"name"		"Verdana"
-				"tall"		"10"
-				"weight"	"700"
+				"tall"		"20"
+				"weight"	"1200"
 				"antialias" "1"
-				"yres"	"600 767"
-			}
-			"3"
-			{
-				"name"		"Verdana"
-				"tall"		"12"
-				"weight"	"900"
-				"antialias" "1"
-				"yres"	"768 1023"
-			}
-			"4"
-			{
-				"name"		"Verdana"
-				"tall"		"16"
-				"weight"	"900"
-				"antialias" "1"
-				"yres"	"1024 1199"
-			}
-			"5"
-			{
-				"name"		"Verdana"
-				"tall"		"17"
-				"weight"	"1000"
-				"antialias" "1"
-				"yres"	"1200 10000"
+				"outline" "1"
+				"yres"	 "481 10000"
 			}
 		}
-		BudgetLabel
+		
+		GameUIButtons
+		{
+			"1"	[$X360]
+			{
+				"bitmap"	"1"
+				"name"		"Buttons"
+				"scalex"	"0.63"
+				"scaley"	"0.63"
+				"scalex_hidef"	"1.0"
+				"scaley_hidef"	"1.0"
+				"scalex_lodef"	"0.75"
+				"scaley_lodef"	"0.75"
+			}
+		}
+		"ConsoleText"
 		{
 			"1"
 			{
-				"name"		"Courier New"
-				"tall"		"14"
-				"weight"	"400"
-				"outline"	"1"
-			}
-		}
-		DebugOverlay
-		{
-			"1"
-			{
-				"name"		"Courier New"
-				"tall"		"14"
-				"weight"	"400"
-				"outline"	"1"
-			}
-		}
-		"CloseCaption_Normal"
-		{
-			"1"
-			{
-				"name"		"Tahoma"
-				"tall"		"26"
+				"name"		 "Lucida Console" [$WINDOWS]
+				"name"		 "Lucida Console" [$X360]
+				"name"		 "Lucida Console" [$OSX]
+				"name"		 "Verdana" [$LINUX]
+				"tall"		"14" [$LINUX]
+				"tall"		"8"
 				"weight"	"500"
+                "antialias" "1"
 			}
 		}
-		"CloseCaption_Italic"
-		{
-			"1"
-			{
-				"name"		"Tahoma"
-				"tall"		"26"
-				"weight"	"500"
-				"italic"	"1"
-			}
-		}
-		"CloseCaption_Bold"
-		{
-			"1"
-			{
-				"name"		"Tahoma"
-				"tall"		"26"
-				"weight"	"900"
-			}
-		}
-		"CloseCaption_BoldItalic"
-		{
-			"1"
-			{
-				"name"		"Tahoma"
-				"tall"		"26"
-				"weight"	"900"
-				"italic"	"1"
-			}
-		}
+
 		// this is the symbol font
 		"Marlett"
 		{
@@ -807,6 +504,7 @@ Scheme
 				"symbol"	"1"
 			}
 		}
+
 		"Trebuchet24"
 		{
 			"1"
@@ -814,11 +512,19 @@ Scheme
 				"name"		"Trebuchet MS"
 				"tall"		"24"
 				"weight"	"900"
-				"range"		"0x0000 0x007F"	//	Basic Latin
-				"antialias" "1"
-				"additive"	"1"
 			}
 		}
+
+		"Trebuchet20"
+		{
+			"1"
+			{
+				"name"		"Trebuchet MS"
+				"tall"		"20"
+				"weight"	"900"
+			}
+		}
+
 		"Trebuchet18"
 		{
 			"1"
@@ -828,239 +534,372 @@ Scheme
 				"weight"	"900"
 			}
 		}
-		ClientTitleFont
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"50"
-				"weight"	"0"
-				"antialias" "1"
-				"blur"		"2"
-				"scanlines"	"2"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		ClientVoteSystem
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"25"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		Merchantmenu
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"15"
-				"weight"	"0"
-				"antialias" "1"
-				//"blur"		"2"
-				//"scanlines"	"2"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		CreditsLogo
-		{
-			"1"
-			{
-				"name"		"HalfLife2"
-				"tall"		"128"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		CreditsText
+
+		// HUD numbers
+		// We use multiple fonts to 'pulse' them in the HUD, hence the need for many of near size
+		"HUDNumber"
 		{
 			"1"
 			{
 				"name"		"Trebuchet MS"
-				"tall"		"20"
+				"tall"		"40"
 				"weight"	"900"
-				"antialias" "1"
-				"additive"	"1"
 			}
 		}
-		CreditsOutroLogos
+		"HUDNumber1"
+		{
+			"1"
+			{
+				"name"		"Trebuchet MS"
+				"tall"		"41"
+				"weight"	"900"
+			}
+		}
+		"HUDNumber2"
+		{
+			"1"
+			{
+				"name"		"Trebuchet MS"
+				"tall"		"42"
+				"weight"	"900"
+			}
+		}
+		"HUDNumber3"
+		{
+			"1"
+			{
+				"name"		"Trebuchet MS"
+				"tall"		"43"
+				"weight"	"900"
+			}
+		}
+		"HUDNumber4"
+		{
+			"1"
+			{
+				"name"		"Trebuchet MS"
+				"tall"		"44"
+				"weight"	"900"
+			}
+		}
+		"HUDNumber5"
+		{
+			"1"
+			{
+				"name"		"Trebuchet MS"
+				"tall"		"45"
+				"weight"	"900"
+			}
+		}
+		"DefaultFixed"
+		{
+			"1"
+			{
+				"name"		 "Lucida Console" [$WINDOWS]
+				"name"		 "Lucida Console" [$X360]
+				"name"		 "Verdana" [$LINUX]
+				"tall"		"11" [$LINUX]
+				"tall"		"10"
+				"weight"	"0"
+			}
+//			"1"
+//			{
+//				"name"		"FixedSys"
+//				"tall"		"20"
+//				"weight"	"0"
+//			}
+		}
+
+		"DefaultFixedDropShadow"
+		{
+			"1"
+			{
+				"name"		 "Lucida Console" [$WINDOWS]
+				"name"		 "Lucida Console" [$X360]
+				"name"		 "Lucida Console" [$OSX]
+				"name"		 "Courier" [$LINUX]
+				"tall"		"14" [$LINUX]
+				"tall"		"10"
+				"weight"	"0"
+				"dropshadow" "1"
+			}
+//			"1"
+//			{
+//				"name"		"FixedSys"
+//				"tall"		"20"
+//				"weight"	"0"
+//			}
+		}
+
+		"CloseCaption_Normal"
+		{
+			"1"
+			{
+				"name"		"Tahoma" [!$POSIX]
+				"name"		"Verdana" [$POSIX]
+				"tall"		"16"
+				"weight"	"500"
+			}
+		}
+		"CloseCaption_Italic"
+		{
+			"1"
+			{
+				"name"		"Tahoma"
+				"tall"		"16"
+				"weight"	"500"
+				"italic"	"1"
+			}
+		}
+		"CloseCaption_Bold"
+		{
+			"1"
+			{
+				"name"		"Tahoma" [!$POSIX]
+				"name"		"Verdana Bold" [$POSIX]
+				"tall"		"16"
+				"weight"	"900"
+			}
+		}
+		"CloseCaption_BoldItalic"
+		{
+			"1"
+			{
+				"name"		"Tahoma" [!$POSIX]
+				"name"		"Verdana Bold Italic" [$POSIX]
+				"tall"		"16"
+				"weight"	"900"
+				"italic"	"1"
+			}
+		}
+
+		TitleFont
 		{
 			"1"
 			{
 				"name"		"HalfLife2"
-				"tall"		"48"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
+				"tall"		"72"
+				"weight"	"400"
+				"antialias"	"1"
 				"custom"	"1"
 			}
 		}
-		CreditsOutroText
+
+		TitleFont2
 		{
 			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"9"
-				"weight"	"900"
+				"name"		"HalfLife2"
+				"tall"		"120"
+				"weight"	"400"
+				"antialias"	"1"
+				"custom"	"1"
+			}
+		}
+
+		AppchooserGameTitleFont	[$X360]
+		{
+			"1"
+			{
+				"name"			"Trebuchet MS"
+				"tall"			"16"
+				"tall_hidef"	"24"
+				"weight"		"900"
+				"antialias"		"1"
+			}
+		}
+
+		AppchooserGameTitleFontBlur	[$X360]
+		{
+			"1"
+			{
+				"name"			"Trebuchet MS"
+				"tall"			"16"
+				"tall_hidef"	"24"
+				"weight"		"900"
+				"blur"			"3"
+				"blur_hidef"	"5"
+				"antialias"		"1"
+			}
+		}
+		
+		StatsTitle	[$WIN32]
+		{
+			"1"
+			{
+				"name"		"Arial" [!$POSIX]
+				"name"		"Verdana Bold" [$POSIX]
+				"weight"		"2000"
+				"tall"			"20"
+				"antialias"		"1"
+			}
+		}
+		
+		StatsText	[$WIN32]
+		{
+			"1"
+			{
+				"name"		"Arial" [!$POSIX]
+				"name"		"Verdana Bold" [$POSIX]
+				"weight"		"2000"
+				"tall"			"18"
+				"antialias"		"1"
+			}
+		}
+		
+		AchievementItemTitle	[$WIN32]
+		{
+			"1"
+			{
+				"name"		"Arial" [!$POSIX]
+				"name"		"Verdana Bold" [$POSIX]
+				"weight"		"1500"
+				"tall"			"16" [!$POSIX]
+				"tall"			"18" [$POSIX]
+				"antialias"		"1"
+			}
+		}
+
+		AchievementItemDate	[$WIN32]
+		{
+			"1"
+			{
+				"name"		"Arial" [!$POSIX]
+				"name"		"Verdana Bold" [$POSIX]
+				"weight"		"1500"
+				"tall"			"16"
+				"antialias"		"1"
+			}
+		}
+
+		
+		StatsPageText
+		{
+			"1"
+			{
+				"name"		"Arial" [!$POSIX]
+				"name"		"Verdana Bold" [$POSIX]
+				"weight"		"1500"
+				"tall"			"14" [!$POSIX]
+				"tall"			"16" [$POSIX]
+				"antialias"		"1"
+			}
+		}
+		
+		AchievementItemTitleLarge	[$WIN32]
+		{
+			"1"
+			{
+				"name"		"Arial" [!$POSIX]
+				"name"		"Verdana Bold" [$POSIX]
+				"weight"		"1500"
+				"tall"			"18" [!$POSIX]
+				"tall"			"19" [$POSIX]
+				"antialias"		"1"
+			}
+		}
+		
+		AchievementItemDescription	[$WIN32]
+		{
+			"1"
+			{
+				"name"		"Arial" [!$POSIX]
+				"name"		"Verdana" [$POSIX]
+				"weight"		"1000"
+				"tall"			"14" [!$POSIX]
+				"tall"			"15" [$POSIX]
+				"antialias"		"1"
+			}
+		}
+
+		
+		"ServerBrowserTitle"
+		{
+			"1"
+			{
+				"name"		"Tahoma" [!$POSIX]
+				"name"		"Verdana" [$POSIX]
+				"tall"		"35"
+				"tall_lodef"	"40"
+				"weight"	"500"
+				"additive"	"0"
 				"antialias" "1"
 			}
 		}
-		CreditsOutroTextLarge
+
+		"ServerBrowserSmall"
 		{
 			"1"
 			{
-				"name"		"Verdana"
+				"name"		"Tahoma"
 				"tall"		"16"
-				"weight"	"900"
-				"antialias" "1"
-			}
-		}
-		CreditsOutroTextExtraLarge
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"48"
-				"weight"	"900"
-				"antialias" "1"
-			}
-		}
-		CenterPrintText
-		{
-			// note that this scales with the screen resolution
-			"1"
-			{
-				"name"		"TYPIST"
-				"tall"		"18"
-				"weight"	"900"
-				"antialias" "1"
-				"additive"	"1"
-			}
-		}
-		"ChatFont"
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"12"
-				"weight"	"700"
+				"weight"	"0"
+				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
 				"yres"	"480 599"
-				"dropshadow"	"1"
 			}
 			"2"
 			{
-				"name"		"Verdana"
-				"tall"		"13"
-				"weight"	"700"
+				"name"		"Tahoma"
+				"tall"		"16"
+				"weight"	"0"
+				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
 				"yres"	"600 767"
-				"dropshadow"	"1"
 			}
 			"3"
 			{
-				"name"		"Verdana"
-				"tall"		"14"
-				"weight"	"700"
+				"name"		"Tahoma"
+				"tall"		"16"
+				"weight"	"0"
+				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
 				"yres"	"768 1023"
-				"dropshadow"	"1"
+				"antialias"	"1"
 			}
 			"4"
 			{
-				"name"		"Verdana"
-				"tall"		"20"
-				"weight"	"700"
+				"name"		"Tahoma"
+				"tall"		"19"
+				"weight"	"0"
+				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
 				"yres"	"1024 1199"
-				"dropshadow"	"1"
+				"antialias"	"1"
 			}
 			"5"
 			{
-				"name"		"Verdana"
-				"tall"		"24"
-				"weight"	"700"
-				"yres"	"1200 10000"
-				"dropshadow"	"1"
+				"name"		"Tahoma"
+				"tall"		"19"
+				"weight"	"0"
+				"range"		"0x0000 0x017F" //	Basic Latin, Latin-1 Supplement, Latin Extended-A
+				"yres"	"1200 6000"
+				"antialias"	"1"
 			}
 		}
-		"TargetID"
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"24"
-				"weight"	"900"
-				"range"		"0x0000 0x007F"	//	Basic Latin
-				"antialias" "1"
-				"additive"	"0"
-			}
-		}
-		"NPCTargetID" // Hyperjag: This is so the npc info is smaller
-		{
-			"1"
-			{
-				"name"		"Verdana"
-				"tall"		"12"
-				"weight"	"750"
-				"range"		"0x0000 0x007F"	//	Basic Latin
-				"antialias" "1"
-				"additive"	"0"
-			}
-		}
-		"HL2MPTypeDeath"
-		{
-		   "1"
-		   {
-				"name"  "HL2MP"
-				"tall"  "32"
-				"weight" "0"
-				"additive" "1"
-				"antialias" "1"
-		   }
-		}
-		"BigNoodle"
-		{
-			"1"
-			{
-				"name" "BigNoodleTitling"
-				"tall" "32"
-				"weight" "0"
-				"additive" "1"
-				"antialias" "1"
-			}
-		}
-		"BigNoodleSmall"
-		{
-			"1"
-			{
-				"name" "BigNoodleTitling"
-				"tall" "16"
-				"weight" "0"
-				"additive" "1"
-				"antialias" "1"
-			}
-		}
+	
 	}
 
-		//////////////////// BORDERS //////////////////////////////
+	//
+	//////////////////// BORDERS //////////////////////////////
 	//
 	// describes all the border types
 	Borders
 	{
-		BaseBorder
+		BaseBorder		SubtleBorder
+		ButtonBorder	RaisedBorder
+		ComboBoxBorder	DepressedBorder
+		MenuBorder		SubtleBorder
+		BrowserBorder	DepressedBorder
+		PropertySheetBorder	RaisedBorder
+
+		FrameBorder
 		{
-			"inset" "0 0 1 1"
+			// rounded corners for frames
+			//"backgroundtype" "2"
+
 			Left
 			{
 				"1"
 				{
-					"color" "Border.Dark"
-					"offset" "0 1"
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
 				}
 			}
 
@@ -1068,8 +907,8 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Bright"
-					"offset" "1 0"
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
 				}
 			}
 
@@ -1077,7 +916,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1086,17 +925,136 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Bright"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
 		}
-        
-        TitleButtonBorder
+
+		SubtleBorder
+		{
+			"inset" "0 0 0 0"
+			Left
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+
+			Right
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+
+			Top
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+
+			Bottom
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+		}
+
+		DepressedBorder
+		{
+			"inset" "0 0 0 0"
+			Left
+			{
+				"1"
+				{
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
+				}
+			}
+
+			Right
+			{
+				"1"
+				{
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
+				}
+			}
+
+			Top
+			{
+				"1"
+				{
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
+				}
+			}
+
+			Bottom
+			{
+				"1"
+				{
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
+				}
+			}
+		}
+		RaisedBorder
+		{
+			"inset" "0 0 0 0"
+			Left
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+
+			Right
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+
+			Top
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+
+			Bottom
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+		}
+		
+		TitleButtonBorder
 		{
 			"backgroundtype" "0"
 		}
-		
+
 		TitleButtonDisabledBorder
 		{
 			"backgroundtype" "0"
@@ -1109,13 +1067,13 @@ Scheme
 
 		ScrollBarButtonBorder
 		{
-			"inset" "1 0 0 0"
+			"inset" "0 0 0 0"
 			Left
 			{
 				"1"
 				{
-					"color" "Border.Bright"
-					"offset" "0 1"
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
 				}
 			}
 
@@ -1123,8 +1081,8 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
-					"offset" "1 0"
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
 				}
 			}
 
@@ -1132,7 +1090,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Bright"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1141,61 +1099,21 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-		}
-
-		ScrollBarButtonDepressedBorder
-		{
-			"inset" "2 2 0 0"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
 		}
 		
-		ButtonBorder
+		ScrollBarButtonDepressedBorder
 		{
 			"inset" "0 0 0 0"
 			Left
 			{
 				"1"
 				{
-					"color" "Border.Bright"
-					"offset" "0 1"
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
 				}
 			}
 
@@ -1203,7 +1121,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1212,8 +1130,8 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Bright"
-					"offset" "1 1"
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
 				}
 			}
 
@@ -1221,47 +1139,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-		}
-
-		FrameBorder
-		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "ControlBG"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "ControlBG"
-					"offset" "0 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "ControlBG"
-					"offset" "0 1"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "ControlBG"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1269,52 +1147,37 @@ Scheme
 
 		TabBorder
 		{
-			"inset" "0 0 1 1"
-			Left
+			"inset" "1 1 1 1"
+
+			render 
 			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 1"
-				}
+				"0" "fill( x0, y0, x1, y1, Black )"
 			}
 
-			Right
+			render_bg 
 			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "1 0"
-				}
+				"0" "fill( x0, y0, x1, y1, Orange )"
 			}
 
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
 		}
 
 		TabActiveBorder
 		{
-			"inset" "0 0 1 0"
+			"inset" "1 1 1 1"
 			Left
 			{
 				"1"
 				{
-					"color" "Border.Bright"
+					"color" "Border.Subtle"
+					"offset" "0 0"
+				}
+			}
+
+			Top
+			{
+				"1"
+				{
+					"color" "Border.Subtle"
 					"offset" "0 0"
 				}
 			}
@@ -1323,28 +1186,11 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Bright"
+					"color" "Border.Subtle"
 					"offset" "0 0"
 				}
 			}
 
-			Bottom
-			{
-				"1"
-				{
-					"color" "ControlBG"
-					"offset" "6 2"
-				}
-			}
 		}
 
 
@@ -1355,7 +1201,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1364,8 +1210,8 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
-					"offset" "1 0"
+					"color" "Border.DarkSolid"
+					"offset" "0 0"
 				}
 			}
 
@@ -1373,7 +1219,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1382,7 +1228,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1396,34 +1242,31 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Bright"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Dark"
+					"color" "Border.Selection"
 					"offset" "0 0"
 				}
 			}
-
 			Top
 			{
 				"1"
 				{
-					"color" "Border.Bright"
-					"offset" "1 1"
+					"color" "Border.Selection"
+					"offset" "0 0"
 				}
 			}
-
+			Right
+			{
+				"1"
+				{
+					"color" "Border.Selection"
+					"offset" "0 0"
+				}
+			}
 			Bottom
 			{
 				"1"
 				{
-					"color" "Border.Dark"
+					"color" "Border.Selection"
 					"offset" "0 0"
 				}
 			}
@@ -1436,7 +1279,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Bright"
+					"color" "Border.DarkSolid"
 					"offset" "0 1"
 				}
 			}
@@ -1445,47 +1288,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "1 1"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-		}
-
-		ComboBoxBorder
-		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
+					"color" "Border.DarkSolid"
 					"offset" "1 0"
 				}
 			}
@@ -1494,7 +1297,7 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Dark"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
@@ -1503,104 +1306,21 @@ Scheme
 			{
 				"1"
 				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-		}
-
-		MenuBorder
-		{
-			"inset" "1 1 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-		}
-		BrowserBorder
-		{
-			"inset" "0 0 0 0"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
+					"color" "Border.DarkSolid"
 					"offset" "0 0"
 				}
 			}
 		}
 	}
 
-	
 	//////////////////////// CUSTOM FONT FILES /////////////////////////////
 	//
 	// specifies all the custom (non-system) font files that need to be loaded to service the above described fonts
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
-		"1"		"resource/font/MomIcons.ttf"
-		//"2"		"resource/HL2MP.ttf"
-		"3"		"resource/HL2crosshairs.ttf"
-		//"4"		"resource/cs.ttf"
-        "1" "resource/font/BigNoodleTitling.ttf"
+		"2"		"resource/font/HL2EP2.ttf"
+		"3"     "resource/marlett.ttf"	
+        "1"     "resource/font/BigNoodleTitling.ttf"
 	}
-
 }
