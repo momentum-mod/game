@@ -510,7 +510,7 @@ void CBaseMapsPage::OnMapDownloadStart(KeyValues* pEvent)
     MapDisplay_t *map = GetMapDisplayByID(id);
     if (map)
     {
-        m_pMapList->MapDownloadStart(pEvent, map);
+        m_pMapList->OnMapDownloadStart(pEvent, map);
     }
 }
 
@@ -520,7 +520,7 @@ void CBaseMapsPage::OnMapDownloadProgress(KeyValues* pKv)
     MapDisplay_t *map = GetMapDisplayByID(id);
     if (map)
     {
-        m_pMapList->MapDownloadProgress(pKv, map);
+        m_pMapList->OnMapDownloadProgress(pKv, map);
     }
 }
 
@@ -530,7 +530,7 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues* pKv)
     MapDisplay_t *map = GetMapDisplayByID(id);
     if (map)
     {
-        m_pMapList->MapDownloadEnd(pKv, map);
+        m_pMapList->OnMapDownloadEnd(pKv, map);
     }
 }
 

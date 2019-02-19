@@ -47,6 +47,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\MapSelection\LibraryMaps.h"
                         $File "momentum\ui\MapSelection\FavoriteMaps.h"
                         $File "momentum\ui\MapSelection\MapContextMenu.h"
+                        $File "momentum\ui\MapSelection\MapDownloadProgress.h"
                         $File "momentum\ui\MapSelection\MapInfoDialog.h"
                         $File "momentum\ui\MapSelection\MapSelector.h"
                         $File "momentum\ui\MapSelection\MapSelectorDialog.h"
@@ -58,6 +59,7 @@ $Project "Client (Momentum)"
                           "momentum\ui\MapSelection\FavoriteMaps.cpp" \
                           "momentum\ui\MapSelection\LibraryMaps.cpp" \ 
                           "momentum\ui\MapSelection\MapContextMenu.cpp" \
+                          "momentum\ui\MapSelection\MapDownloadProgress.cpp" \
                           "momentum\ui\MapSelection\MapInfoDialog.cpp" \ 
                           "momentum\ui\MapSelection\MapSelector.cpp" \
                           "momentum\ui\MapSelection\MapSelectorDialog.cpp" \

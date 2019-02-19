@@ -364,12 +364,13 @@ private:
 	int 		m_iTableStartX;
 	int	 		m_iTableStartY;
 
+protected:
     Color       m_BgColor;
 	Color 		m_LabelFgColor;
 	Color		m_DisabledColor;
 	Color 		m_SelectionFgColor, m_SelectionBgColor, m_SelectionOutOfFocusBgColor;
 	Color		m_DisabledSelectionFgColor;
-
+private:
 	ImageList 	*m_pImageList;
 	Label 	*m_pEmptyListText;
 
