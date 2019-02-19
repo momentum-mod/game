@@ -2,11 +2,12 @@
 
 #include "CMapListPanel.h"
 #include "BaseMapsPage.h"
+#include "MapDownloadProgress.h"
 #include "vgui/IInput.h"
 #include "mom_map_cache.h"
+#include "fmtstr.h"
 
 #include "vgui_controls/ProgressBar.h"
-#include "vgui_controls/URLLabel.h"
 
 #include "tier0/memdbgon.h"
 
@@ -76,7 +77,26 @@ Panel* CMapListPanel::GetCellRenderer(int itemID, int column)
         char name[16];
         if (GetColumnHeaderName(column, name, 16) && FStrEq(name, KEYNAME_MAP_NAME))
         {
-            return m_mapDownloads[indx].m_pOverridePanel;
+            MapDownloadProgress *pPanel = m_mapDownloads[indx].m_pOverridePanel;
+            if (IsItemSelected(itemID))
+            {
+                pPanel->SetPaintBackgroundEnabled(true);
+                VPANEL focus = input()->GetFocus();
+                // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
+                if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
+                {
+                    pPanel->SetBgColor(m_SelectionBgColor);
+                }
+                else
+                {
+                    pPanel->SetBgColor(m_SelectionOutOfFocusBgColor);
+                }
+            }
+            else
+            {
+                pPanel->SetPaintBackgroundEnabled(false);
+            }
+            return pPanel;
         }
     }
 
@@ -97,7 +117,7 @@ void CMapListPanel::SetFont(vgui::HFont font)
     SetRowHeight(oldHeight);
 }
 
-void CMapListPanel::MapDownloadStart(KeyValues* pKv, MapDisplay_t* pDisplay)
+void CMapListPanel::OnMapDownloadStart(KeyValues* pKv, MapDisplay_t* pDisplay)
 {
     int itemID = pDisplay->m_iListID;
 
@@ -115,24 +135,13 @@ void CMapListPanel::MapDownloadStart(KeyValues* pKv, MapDisplay_t* pDisplay)
     uint64 size = pKv->GetUint64("size");
     MapDownloadComponent comp;
     comp.pMap = pDisplay;
-    comp.m_pOverridePanel = new Panel();
-    comp.m_pMapLabel = new Label(comp.m_pOverridePanel, "MapName", pDisplay->m_pMap->m_szMapName);
-    comp.m_pMapLabel->SetFgColor(COLOR_YELLOW);
-    comp.m_pMapLabel->SetAutoTall(true);
-    comp.m_pMapLabel->SetAutoWide(true);
-    comp.m_pMapLabel->DisableMouseInputForThisPanel(true);
-    comp.m_pProgress = new ContinuousProgressBar(comp.m_pOverridePanel, "progress_bar");
-    comp.m_pProgress->PinToSibling(comp.m_pMapLabel,  PIN_TOPLEFT, PIN_BOTTOMLEFT);
-    comp.m_pProgress->SetSize(wide, 20);
-    comp.m_pProgress->DisableMouseInputForThisPanel(true);
-    comp.m_pOverridePanel->DisableMouseInputForThisPanel(true);
-    comp.m_pOverridePanel->InvalidateLayout(true, false);
+    comp.m_pOverridePanel = new MapDownloadProgress(pDisplay->m_pMap->m_szMapName);
     comp.m_ulDownloadSize = size;
 
     m_mapDownloads.Insert(itemID, comp);
 }
 
-void CMapListPanel::MapDownloadProgress(KeyValues* pKv, MapDisplay_t* pDisplay)
+void CMapListPanel::OnMapDownloadProgress(KeyValues* pKv, MapDisplay_t* pDisplay)
 {
     auto indx = m_mapDownloads.Find(pDisplay->m_iListID);
     if (m_mapDownloads.IsValidIndex(indx))
@@ -143,7 +152,7 @@ void CMapListPanel::MapDownloadProgress(KeyValues* pKv, MapDisplay_t* pDisplay)
         uint32 chunkSize = pKv->GetInt("size");
         offset += chunkSize;
 
-        comp->m_pProgress->SetProgress(double(offset) / double(comp->m_ulDownloadSize));
+        comp->m_pOverridePanel->SetDownloadProgress(float(double(offset) / double(comp->m_ulDownloadSize)));
     }
     else
     {
@@ -151,14 +160,18 @@ void CMapListPanel::MapDownloadProgress(KeyValues* pKv, MapDisplay_t* pDisplay)
     }
 }
 
-void CMapListPanel::MapDownloadEnd(KeyValues* pKv, MapDisplay_t* pDisplay)
+void CMapListPanel::OnMapDownloadEnd(KeyValues* pKv, MapDisplay_t* pDisplay)
 {
     auto indx = m_mapDownloads.Find(pDisplay->m_iListID);
     if (m_mapDownloads.IsValidIndex(indx))
     {
         MapDownloadComponent *comp = &m_mapDownloads[indx];
-        comp->m_pMapLabel->SetFgColor(COLOR_GREEN);
         comp->m_pOverridePanel->DeletePanel();
+
+        KeyValues *pKvInto = GetItem(pDisplay->m_iListID);
+        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? COLOR_RED : COLOR_GREEN);
+        ApplyItemChanges(pDisplay->m_iListID);
+
         m_mapDownloads.RemoveAt(indx);
     }
     else

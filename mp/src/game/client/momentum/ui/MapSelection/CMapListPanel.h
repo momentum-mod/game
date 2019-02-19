@@ -4,14 +4,13 @@
 
 struct MapDisplay_t;
 class CBaseMapsPage;
+class MapDownloadProgress;
 
 
 struct MapDownloadComponent
 {
     MapDisplay_t *pMap;
-    vgui::Panel *m_pOverridePanel;
-    vgui::ProgressBar *m_pProgress;
-    vgui::Label *m_pMapLabel;
+    MapDownloadProgress *m_pOverridePanel;
     uint64 m_ulDownloadSize;
 };
 
@@ -35,9 +34,9 @@ public:
 
     void SetFont(vgui::HFont font) OVERRIDE;
 
-    void MapDownloadStart(KeyValues *pKv, MapDisplay_t *pDisplay);
-    void MapDownloadProgress(KeyValues *pKv, MapDisplay_t *pDisplay);
-    void MapDownloadEnd(KeyValues *pKv, MapDisplay_t *pDisplay);
+    void OnMapDownloadStart(KeyValues *pKv, MapDisplay_t *pDisplay);
+    void OnMapDownloadProgress(KeyValues *pKv, MapDisplay_t *pDisplay);
+    void OnMapDownloadEnd(KeyValues *pKv, MapDisplay_t *pDisplay);
 
 private:
     CBaseMapsPage *m_pOuter;
