@@ -4222,7 +4222,7 @@ void Panel::CalculateAutoResize(int parentWide, int parentTall)
 
         if (pinCorner == PIN_BOTTOMLEFT || pinCorner == PIN_BOTTOMRIGHT)
         {
-            // move along with the right edge
+            // move along with the bottom edge
             ey = parentTall + py;
             y = bResizeVert ? oy : ey - h;
         }
