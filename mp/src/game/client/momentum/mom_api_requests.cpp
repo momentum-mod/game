@@ -385,10 +385,6 @@ void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
     const uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
-        KeyValuesAD headers("Headers");
-        headers->SetUint64("request", pCallback->m_hRequest);
-
-        DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
         uint32 size;
         if (SteamHTTP()->GetHTTPResponseHeaderSize(pCallback->m_hRequest, "Content-Length", &size))
         {
@@ -400,14 +396,21 @@ void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
                 pData[size] = 0;
                 uint64 fileSize = Q_atoui64(reinterpret_cast<const char *>(pData));
 
-                headers->SetUint64("size", fileSize);
+                if (fileSize)
+                {
+                    KeyValuesAD headers("Headers");
+                    headers->SetUint64("request", pCallback->m_hRequest);
+                    headers->SetUint64("size", fileSize);
+
+                    DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
+                    call->m_bufFileData.EnsureCapacity(fileSize);
+                    call->startFunc(headers);
+                }
             }
 
             delete[] pData;
             pData = nullptr;
         }
-
-        call->startFunc(headers);
     }
 }
 
@@ -416,10 +419,10 @@ void CAPIRequests::OnDownloadHTTPData(HTTPRequestDataReceived_t* pCallback)
     const uint16 downloadCallbackIndx = m_mapDownloadCalls.Find(pCallback->m_hRequest);
     if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
     {
-        DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
         uint8 *pDataTemp = new uint8[pCallback->m_cBytesReceived];
         if (SteamHTTP()->GetHTTPStreamingResponseBodyData(pCallback->m_hRequest, pCallback->m_cOffset, pDataTemp, pCallback->m_cBytesReceived))
         {
+            DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
             // Add the data to the download buffer
             call->m_bufFileData.Put(pDataTemp, pCallback->m_cBytesReceived);
 
