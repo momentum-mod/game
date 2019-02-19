@@ -10,12 +10,14 @@
 #include <stdio.h>
 
 #include <vgui_controls/ProgressBar.h>
+#include "vgui_controls/Label.h"
 #include <vgui_controls/Controls.h>
 
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <KeyValues.h>
+#include "fmtstr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -31,6 +33,11 @@ ProgressBar::ProgressBar(Panel *parent, const char *panelName) : Panel(parent, p
 {
     InitSettings();
 	_progress = 0.0f;
+    m_pProgressPercent = new Label(this, "ProgressPercent", "");
+    m_pProgressPercent->SetContentAlignment(Label::a_center);
+    m_pProgressPercent->SetMouseInputEnabled(false);
+    m_pProgressPercent->SetKeyBoardInputEnabled(false);
+    m_pProgressPercent->SetVisible(false);
 	m_pszDialogVar = nullptr;
 	SetSegmentInfo( 4, 8 );
 	SetBarInset( 4 );
@@ -162,6 +169,15 @@ void ProgressBar::Paint()
 	}
 }
 
+void ProgressBar::PerformLayout()
+{
+    BaseClass::PerformLayout();
+
+    int wide, tall;
+    GetSize(wide, tall);
+    m_pProgressPercent->SetSize(wide, tall);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -180,6 +196,12 @@ void ProgressBar::SetProgress(float progress)
 		}
 
 		_progress = progress;
+
+        if (m_pProgressPercent->IsVisible())
+        {
+            m_pProgressPercent->SetText(CFmtStr("%.1f%%", _progress * 100.0f));
+        }
+
 		Repaint();
 	}
 }
@@ -202,6 +224,13 @@ void ProgressBar::ApplySchemeSettings(IScheme *pScheme)
 	SetFgColor(GetSchemeColor("ProgressBar.FgColor", pScheme));
 	SetBgColor(GetSchemeColor("ProgressBar.BgColor", pScheme));
 	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+    HFont hProgressFont = pScheme->GetFont(pScheme->GetResourceString("ProgressBar.ProgressTextFont"), IsProportional());
+    if (hProgressFont == INVALID_FONT)
+        hProgressFont = pScheme->GetFont("DefaultSmall", IsProportional());
+
+    Color progressColor = pScheme->GetColor("ProgressBar.ProgressTextColor", Color(0, 0, 0, 255));
+    m_pProgressPercent->SetFgColor(progressColor);
+    m_pProgressPercent->SetFont(hProgressFont);
 }
 
 //-----------------------------------------------------------------------------
@@ -332,6 +361,11 @@ int ProgressBar::GetMargin()
 	return m_iBarMargin;
 }
 
+void ProgressBar::SetShouldDrawPercentString(bool bDraw)
+{
+    m_pProgressPercent->SetVisible(bDraw);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -349,6 +383,8 @@ void ProgressBar::ApplySettings(KeyValues *inResourceData)
 		m_pszDialogVar = dialogVar;
 	}
 
+    SetShouldDrawPercentString(inResourceData->GetBool("draw_percent"));
+
 	BaseClass::ApplySettings(inResourceData);
 }
 
@@ -362,6 +398,7 @@ void ProgressBar::GetSettings(KeyValues *outResourceData)
     outResourceData->SetInt("segment_gap", _segmentGap);
     outResourceData->SetInt("segment_width", _segmentWide);
 	outResourceData->SetString("variable", m_pszDialogVar);
+    outResourceData->SetBool("draw_percent", m_pProgressPercent->IsVisible());
 }
 
 void ProgressBar::InitSettings()
@@ -370,7 +407,8 @@ void ProgressBar::InitSettings()
     {"progress", TYPE_STRING},
     {"segment_gap", TYPE_INTEGER},
     {"segment_width", TYPE_INTEGER},
-    {"variable", TYPE_STRING}
+    {"variable", TYPE_STRING},
+    {"draw_percent", TYPE_BOOL},
     END_PANEL_SETTINGS();
 }
 

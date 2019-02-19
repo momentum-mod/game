@@ -42,6 +42,8 @@ public:
 	int GetBarInset( void );
 	void SetMargin( int pixels );
 	int GetMargin();
+
+    void SetShouldDrawPercentString(bool bDraw);
 	
 	virtual void ApplySettings(KeyValues *inResourceData);
 	virtual void GetSettings(KeyValues *outResourceData);
@@ -63,6 +65,7 @@ public:
 
 protected:
 	virtual void Paint();
+    void PerformLayout() OVERRIDE;
 	void PaintSegment( int &x, int &y, int tall, int wide );
 	virtual void PaintBackground();
 	virtual void ApplySchemeSettings(IScheme *pScheme);
@@ -83,6 +86,7 @@ private:
 	int m_iBarInset;
 	int m_iBarMargin;
 	CUtlString m_pszDialogVar;
+    Label *m_pProgressPercent;
 };
 
 //-----------------------------------------------------------------------------
