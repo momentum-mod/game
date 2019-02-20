@@ -61,7 +61,7 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
 }
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
 
-CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName), m_cvarHostTimescale("host_timescale")
+CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName)
 {
 }
 
@@ -136,7 +136,9 @@ void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpec
 
 void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
 {
-    if (CloseEnough(m_cvarHostTimescale.GetFloat(), 1.0f, FLT_EPSILON))
+    static ConVarRef host_timescale("host_timescale");
+
+    if (CloseEnough(host_timescale.GetFloat(), 1.0f, FLT_EPSILON))
     {
         // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(packet);
         g_pMomentumLobbySystem->SendDecalPacket(packet);

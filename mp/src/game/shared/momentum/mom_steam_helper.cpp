@@ -127,8 +127,8 @@ void CMomentumSteamHelper::OnNumberOfCurrentPlayers(NumberOfCurrentPlayers_t* pP
     {
         m_i32CurrentTotalPlayers = pParam->m_cPlayers;
         char currentPlayers[11];
-        Q_snprintf(currentPlayers, 11, "%010d", pParam->m_cPlayers);
-        Q_strtowcs(currentPlayers, 11, m_wsCurrentTotalPlayers, BUFSIZ);
+        Q_snprintf(currentPlayers, sizeof(currentPlayers), "%010d", pParam->m_cPlayers);
+        Q_strtowcs(currentPlayers, sizeof(currentPlayers), m_wsCurrentTotalPlayers, ARRAYSIZE(m_wsCurrentTotalPlayers));
     }
 }
 
