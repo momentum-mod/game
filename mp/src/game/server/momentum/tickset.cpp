@@ -54,17 +54,17 @@ bool TickSet::TickInit()
     auto moduleSize = info.SizeOfImage;
 
     unsigned char pattern[] = { 0x8B, 0x0D, '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 0xFF, '?', 0xD9, 0x15, '?', '?',
-		'?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
+        '?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
     auto p = reinterpret_cast<uintptr_t>(FindPattern(moduleBase, moduleSize, pattern, "xx????????????x?xx????xx????xxxx????xxxxxxxxxx"));
     if (p)
         interval_per_tick = *reinterpret_cast<float**>(p + 18);
-	
+
 #else //POSIX
-	void *base;
-	size_t length;
-	
-	if (GetModuleInformation(ENGINE_DLL_NAME, &base, &length))
-		return false;
+    void *base;
+    size_t length;
+
+    if (GetModuleInformation(ENGINE_DLL_NAME, &base, &length))
+        return false;
 
 #ifdef __linux__
 
@@ -75,22 +75,21 @@ bool TickSet::TickInit()
         interval_per_tick = *(float**)(addr + 2); //MOM_TODO: fix pointer arithmetic on void pointer?
 
 #elif defined (OSX)
-	
-	if (length == 12581936) //magic engine.dylib file size as of august 2017
-	{
-		interval_per_tick = reinterpret_cast<float*>((char*)base + 0x7DC120); //use offset since it's quicker than searching
-		printf("engine.dylib not updated. using offset! address: %#08x\n", interval_per_tick);
-	}
-	else //valve updated engine, try to use search pattern...
-	{
-		unsigned char pattern[] = {0x8F, 0xC2, 0x75, 0x3C, 0x78, '?', '?', 0x0C, 0x6C, '?', '?', '?', 0x01, 0x00};
-		auto addr = reinterpret_cast<uintptr_t>(FindPattern(base, length, pattern, "xxxxx??xx???xx"));
-		if (addr)
-		{
-			interval_per_tick = reinterpret_cast<float*>(addr);
-			printf("Found interval_per_tick using search! address: %#08x\n", interval_per_tick);
-		}
-	}
+    if (length == 12581936) //magic engine.dylib file size as of august 2017
+    {
+        interval_per_tick = reinterpret_cast<float*>((char*)base + 0x7DC120); //use offset since it's quicker than searching
+        printf("engine.dylib not updated. using offset! address: %#08x\n", interval_per_tick);
+    }
+    else //valve updated engine, try to use search pattern...
+    {
+        unsigned char pattern[] = {0x8F, 0xC2, 0x75, 0x3C, 0x78, '?', '?', 0x0C, 0x6C, '?', '?', '?', 0x01, 0x00};
+        auto addr = reinterpret_cast<uintptr_t>(FindPattern(base, length, pattern, "xxxxx??xx???xx"));
+        if (addr)
+        {
+            interval_per_tick = reinterpret_cast<float*>(addr);
+            printf("Found interval_per_tick using search! address: %#08x\n", interval_per_tick);
+        }
+    }
 #endif //__linux__ or OSX
 #endif //WIN32
     return interval_per_tick ? true : false;
@@ -153,14 +152,14 @@ bool TickSet::SetTickrate(Tickrate trNew)
     return false;
 }
 
-static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
+static void OnTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
 {
     ConVarRef tr(var);
     float tickrate = tr.GetFloat();
     if (CloseEnough(tickrate, TickSet::GetTickrate(), FLT_EPSILON)) return;
-	//MOM_TODO: Re-implement the bound
-	
-	/*
+    //MOM_TODO: Re-implement the bound
+
+    /*
     if (toCheck < 0.01f || toCheck > 0.015f)
     {
         Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
@@ -171,4 +170,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
 }
 
 static ConVar intervalPerTick("sv_interval_per_tick", "0.015", 0,
-					   "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01", onTickRateChange);
+                              "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01",
+                              OnTickRateChange);

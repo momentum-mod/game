@@ -44,13 +44,14 @@ void CMapzone::SpawnZone()
     ZoneTypeToClass(m_iType, classname, sizeof(classname));
     m_pTrigger = dynamic_cast<CBaseMomentumTrigger *>(CreateEntityByName(classname));
     AssertMsg(m_pTrigger, "Unhandled zone type");
-    if (m_iType == MOMZONETYPE_START)
-    {
-        g_pMomentumTimer->SetStartTrigger(static_cast<CTriggerTimerStart *>(m_pTrigger));
-    }
 
     if (m_pTrigger)
     {
+        if (m_iType == MOMZONETYPE_START)
+        {
+            g_pMomentumTimer->SetStartTrigger(static_cast<CTriggerTimerStart *>(m_pTrigger));
+        }
+
         bool success = m_pTrigger->LoadFromKeyValues(m_pZoneValues);
         if (!success)
         {
