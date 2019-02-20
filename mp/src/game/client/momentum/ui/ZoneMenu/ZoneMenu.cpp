@@ -41,11 +41,13 @@ C_MomZoneMenu::C_MomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMen
     m_pDeleteZoneButton    = FindControl<Button>("DeleteZoneButton");
     m_pEditZoneButton      = FindControl<Button>("EditZoneButton");
     m_pCancelZoneButton    = FindControl<Button>("CancelZoneButton");
+    m_pSaveZonesButton     = FindControl<Button>("SaveZonesButton");
 
     m_pCreateNewZoneButton->SetCommand(new KeyValues("CreateNewZone"));
     m_pDeleteZoneButton->SetCommand(new KeyValues("DeleteZone"));
     m_pEditZoneButton->SetCommand(new KeyValues("EditZone"));
     m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
+    m_pSaveZonesButton->SetCommand(new KeyValues("SaveZones"));
 
     m_pZoneTypeLabel = FindControl<Label>("ZoneTypeLabel");
     m_pZoneTypeCombo = FindControl<ComboBox>("ZoneTypeCombo");
@@ -248,3 +250,5 @@ void C_MomZoneMenu::OnEditZone()
 }
 
 void C_MomZoneMenu::OnCancelZone() { CancelZoning(); }
+
+void C_MomZoneMenu::OnSaveZones() { engine->ExecuteClientCmd("mom_zone_generate"); }

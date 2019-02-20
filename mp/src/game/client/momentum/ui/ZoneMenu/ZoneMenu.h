@@ -24,6 +24,7 @@ class C_MomZoneMenu : public vgui::Frame
     MESSAGE_FUNC(OnDeleteZone, "DeleteZone");
     MESSAGE_FUNC(OnEditZone, "EditZone");
     MESSAGE_FUNC(OnCancelZone, "CancelZone");
+    MESSAGE_FUNC(OnSaveZones, "SaveZones");
 
   public:
     bool ShouldBindKeys() const { return m_bBindKeys; }
@@ -42,6 +43,7 @@ class C_MomZoneMenu : public vgui::Frame
     vgui::Button *m_pDeleteZoneButton;
     vgui::Button *m_pEditZoneButton;
     vgui::Button *m_pCancelZoneButton;
+    vgui::Button *m_pSaveZonesButton;
 
     // Zone type
     vgui::Label    *m_pZoneTypeLabel;
