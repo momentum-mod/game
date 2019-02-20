@@ -79,7 +79,7 @@ static void CC_Mom_ZoneDelete(const CCommand &args)
         else
         {
             char szDelete[64];
-            if (ZoneTypeToClass(g_MomZoneEdit.ShortNameToZoneType(args[1]), szDelete))
+            if (ZoneTypeToClass(g_MomZoneEdit.ShortNameToZoneType(args[1]), szDelete, sizeof(szDelete)))
             {
                 CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, szDelete);
                 while (pEnt)
@@ -532,12 +532,10 @@ void DrawReticle(const Vector &pos, float retsize)
     DebugDrawLine(p5, p6, 0, 0, 255, true, -1.0f);
 }
 
-extern bool ZoneTypeToClass(int type, char *dest);
-
 CBaseMomentumTrigger *CMomZoneEdit::CreateZoneEntity(int type)
 {
     char szClass[64];
-    if (!ZoneTypeToClass(type, szClass))
+    if (!ZoneTypeToClass(type, szClass, sizeof(szClass)))
     {
         return nullptr;
     }

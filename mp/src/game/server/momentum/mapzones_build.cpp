@@ -1016,3 +1016,22 @@ CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt)
         return pBuilder;
     }
 }
+
+CMomBaseZoneBuilder *CreateZoneBuilderFromKeyValues(KeyValues *kv)
+{
+    CMomBaseZoneBuilder *pBuilder = nullptr;
+    if (kv->FindKey("point_points"))
+    {
+        pBuilder = new CMomPointZoneBuilder();
+    }
+    else
+    {
+        // must be the box zone
+        pBuilder = new CMomBoxZoneBuilder();
+    }
+
+    Assert(pBuilder);
+    pBuilder->Load(kv);
+
+    return pBuilder;
+}
