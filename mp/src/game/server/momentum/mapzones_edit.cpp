@@ -45,17 +45,17 @@ bool CMomZoneEdit::m_bFirstEdit = false;
 
 CMomZoneEdit g_MomZoneEdit;
 
-static void CC_Mom_ZoneZoomIn() { g_MomZoneEdit.DecreaseZoom(mom_zone_grid.GetFloat()); }
+CON_COMMAND_F(mom_zone_zoomin, "Decrease reticle maximum distance.\n", FCVAR_CHEAT)
+{
+    g_MomZoneEdit.DecreaseZoom(mom_zone_grid.GetFloat());
+}
 
-static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n",
-                                  FCVAR_CHEAT);
+CON_COMMAND_F(mom_zone_zoomout, "Increase reticle maximum distance.\n", FCVAR_CHEAT)
+{
+    g_MomZoneEdit.IncreaseZoom(mom_zone_grid.GetFloat());
+}
 
-static void CC_Mom_ZoneZoomOut() { g_MomZoneEdit.IncreaseZoom(mom_zone_grid.GetFloat()); }
-
-static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n",
-                                   FCVAR_CHEAT);
-
-static void CC_Mom_ZoneDelete(const CCommand &args)
+CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT)
 {
     // MOM_TODO: Deleting a zone while a player is inside it causes some weird issues, need to investigate
     if (!mom_zone_edit.GetBool())
@@ -92,10 +92,7 @@ static void CC_Mom_ZoneDelete(const CCommand &args)
     }
 }
 
-static ConCommand mom_zone_delete("mom_zone_delete", CC_Mom_ZoneDelete,
-                                  "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT);
-
-static void CC_Mom_ZoneEdit(const CCommand &args)
+CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity index.\n", FCVAR_CHEAT)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -128,10 +125,9 @@ static void CC_Mom_ZoneEdit(const CCommand &args)
     }
 }
 
-static ConCommand mom_zone_edit_existing("mom_zone_edit_existing", CC_Mom_ZoneEdit,
-                                         "Edit an existing zone. Requires entity index.\n", FCVAR_CHEAT);
-
-static void CC_Mom_ZoneSetLook(const CCommand &args)
+CON_COMMAND_F(mom_zone_start_setlook,
+              "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n",
+              FCVAR_CHEAT)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -171,12 +167,7 @@ static void CC_Mom_ZoneSetLook(const CCommand &args)
     }
 }
 
-static ConCommand mom_zone_start_setlook(
-    "mom_zone_start_setlook", CC_Mom_ZoneSetLook,
-    "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n",
-    FCVAR_CHEAT);
-
-static void CC_Mom_ZoneMark(const CCommand &args)
+CON_COMMAND_F(mom_zone_mark, "Starts building a zone.\n", FCVAR_CHEAT)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -184,9 +175,7 @@ static void CC_Mom_ZoneMark(const CCommand &args)
     g_MomZoneEdit.OnMark();
 }
 
-static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.\n", FCVAR_CHEAT);
-
-static void CC_Mom_ZoneCancel()
+CON_COMMAND_F(mom_zone_cancel, "Cancel the building of the current zone.\n", FCVAR_CHEAT)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -194,9 +183,7 @@ static void CC_Mom_ZoneCancel()
     g_MomZoneEdit.OnCancel();
 }
 
-static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel the zone building.\n", FCVAR_CHEAT);
-
-static void CC_Mom_ZoneBack()
+CON_COMMAND_F(mom_zone_back, "Go back a step when zone building.\n", FCVAR_CHEAT)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -204,9 +191,7 @@ static void CC_Mom_ZoneBack()
     g_MomZoneEdit.OnRemove();
 }
 
-static ConCommand mom_zone_back("mom_zone_back", CC_Mom_ZoneBack, "Go back a step when zone building.\n", FCVAR_CHEAT);
-
-static void CC_Mom_ZoneCreate()
+CON_COMMAND_F(mom_zone_create, "Create the zone.\n", FCVAR_CHEAT)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -214,9 +199,9 @@ static void CC_Mom_ZoneCreate()
     g_MomZoneEdit.OnCreate();
 }
 
-static ConCommand mom_zone_create("mom_zone_create", CC_Mom_ZoneCreate, "Create the zone.\n", FCVAR_CHEAT);
-
-static void CC_Mom_GetZoneInfo()
+CON_COMMAND_F(mom_zone_info,
+              "Sends info about the trigger that is being looked at (if one exists). Internal usage only.\n",
+              FCVAR_HIDDEN)
 {
     class CZoneTriggerTraceEnum : public IEntityEnumerator
     {
@@ -282,10 +267,6 @@ static void CC_Mom_GetZoneInfo()
         WRITE_LONG(zonetype);
     MessageEnd();
 }
-
-static ConCommand
-    mom_zone_info("mom_zone_info", CC_Mom_GetZoneInfo,
-                  "Sends info about the trigger that is being looked at (if one exists). Internal usage only.\n");
 
 CMomZoneEdit::CMomZoneEdit() : CAutoGameSystemPerFrame("MomentumZoneBuilder")
 {
