@@ -173,6 +173,28 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
         gameeventmanager->FireEvent(stageEvent);
     }
 }
+
+KeyValues *CTriggerStage::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("stage");
+    kv->SetInt("number", GetStageNumber());
+
+    return kv;
+}
+
+bool CTriggerStage::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "stage"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("Stage Trigger"));
+
+    SetStageNumber(kv->GetInt("number"));
+
+    return true;
+};
 //------------------------------------------------------------------------------------------
 
 //---------- CTriggerTimerStart ------------------------------------------------------------
@@ -192,7 +214,54 @@ END_SEND_TABLE()
 
 CTriggerTimerStart::CTriggerTimerStart()
     : m_angLook(vec3_angle), m_fBhopLeaveSpeed(250), m_bTimerStartOnJump(false), m_iZoneNumber(0),
-      m_iLimitSpeedType(SPEED_NORMAL_LIMIT){};
+      m_iLimitSpeedType(SPEED_NORMAL_LIMIT)
+{
+}
+KeyValues *CTriggerTimerStart::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("start");
+    kv->SetFloat("bhopleavespeed", GetMaxLeaveSpeed());
+    kv->SetBool("limitingspeed", IsLimitingSpeed());
+    kv->SetBool("StartOnJump", StartOnJump());
+    kv->SetInt("LimitSpeedType", GetLimitSpeedType());
+    kv->SetInt("ZoneNumber", GetZoneNumber());
+    if (HasLookAngles())
+    {
+        kv->SetFloat("yaw", GetLookAngles()[YAW]);
+    }
+
+    return kv;
+};
+
+bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "start"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("Start Trigger"));
+
+    SetMaxLeaveSpeed(kv->GetFloat("bhopleavespeed"));
+    SetIsLimitingSpeed(kv->GetBool("limitingspeed"));
+    SetStartOnJump(kv->GetBool("StartOnJump"));
+    SetLimitSpeedType(kv->GetInt("LimitSpeedType"));
+    SetZoneNumber(kv->GetInt("ZoneNumber"));
+
+    const float nolook = -190.0f;
+    float yaw = kv->GetFloat("yaw", nolook);
+    if (!CloseEnough(yaw, nolook))
+    {
+        SetHasLookAngles(true);
+        SetLookAngles(QAngle(0.0f, yaw, 0.0f));
+    }
+    else
+    {
+        SetHasLookAngles(false);
+    }
+
+    return true;
+};
 
 void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
 {
@@ -538,6 +607,28 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
 
     BaseClass::OnEndTouch(pOther);
 }
+
+KeyValues *CTriggerTimerStop::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("end");
+    kv->SetInt("ZoneNumber", GetZoneNumber());
+
+    return kv;
+}
+
+bool CTriggerTimerStop::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "end"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("End Trigger"));
+
+    SetZoneNumber(kv->GetInt("ZoneNumber"));
+
+    return true;
+};
 //----------------------------------------------------------------------------------------------
 
 //---------- CTriggerCheckpoint ----------------------------------------------------------------
@@ -558,6 +649,28 @@ void CTriggerCheckpoint::OnStartTouch(CBaseEntity *pOther)
         pPlayer->RemoveAllOnehops();
     }
 }
+
+KeyValues *CTriggerCheckpoint::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("checkpoint");
+    kv->SetInt("number", GetCheckpointNumber());
+
+    return kv;
+}
+
+bool CTriggerCheckpoint::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "checkpoint"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("Checkpoint Trigger"));
+
+    SetCheckpointNumber(kv->GetInt("number"));
+
+    return true;
+};
 //----------------------------------------------------------------------------------------------
 
 //------------- CFilterCheckpoint --------------------------------------------------------------
@@ -607,10 +720,10 @@ void CTriggerTeleportEnt::HandleTeleport(CBaseEntity *pOther)
 {
     if (pOther)
     {
-        if (!pDestinationEnt)
+        if (!m_pDestinationEnt)
         {
             if (m_target != NULL_STRING)
-                pDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+                m_pDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
             else
             {
                 DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
@@ -621,13 +734,13 @@ void CTriggerTeleportEnt::HandleTeleport(CBaseEntity *pOther)
         if (!PassesTriggerFilters(pOther))
             return;
 
-        if (pDestinationEnt) // ensuring not null
+        if (m_pDestinationEnt) // ensuring not null
         {
-            Vector tmp = pDestinationEnt->GetAbsOrigin();
+            Vector tmp = m_pDestinationEnt->GetAbsOrigin();
             // make origin adjustments. (origin in center, not at feet)
             tmp.z -= pOther->WorldAlignMins().z;
 
-            pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : nullptr,
+            pOther->Teleport(&tmp, m_bResetAngles ? &m_pDestinationEnt->GetAbsAngles() : nullptr,
                              m_bResetVelocity ? &vec3_origin : nullptr);
             AfterTeleport();
         }
@@ -646,6 +759,33 @@ void CTriggerTeleportCheckpoint::OnStartTouch(CBaseEntity *pOther)
         SetDestinationEnt(pPlayer->GetCurrentCheckpointTrigger());
     BaseClass::OnStartTouch(pOther);
 }
+
+KeyValues *CTriggerTeleportCheckpoint::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("checkpoint_teleport");
+    // kv->SetInt("destination", GetDestinationCheckpointNumber());
+    kv->SetBool("stop", ShouldStopPlayer());
+    kv->SetBool("resetang", ShouldResetAngles());
+    kv->SetString("destinationname", m_target.ToCStr());
+
+    return kv;
+}
+
+bool CTriggerTeleportCheckpoint::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "checkpoint_teleport"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
+
+    SetShouldResetAngles(kv->GetBool("stop"));
+    SetShouldResetAngles(kv->GetBool("resetang"));
+    m_target = MAKE_STRING(kv->GetString("destinationname"));
+
+    return true;
+};
 //-----------------------------------------------------------------------------------------------
 
 //------------ CTriggerOnehop -------------------------------------------------------------------
@@ -705,6 +845,34 @@ void CTriggerOnehop::OnEndTouch(CBaseEntity *pOther)
     }
 }
 
+KeyValues *CTriggerOnehop::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("onehop");
+    // kv->SetInt("destination", GetDestinationIndex());
+    kv->SetBool("stop", ShouldStopPlayer());
+    kv->SetBool("resetang", ShouldResetAngles());
+    kv->SetFloat("hold", GetHoldTeleportTime());
+    kv->SetString("destinationname", m_target.ToCStr());
+
+    return kv;
+}
+
+bool CTriggerOnehop::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "onehop"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("Onehop Trigger"));
+
+    SetShouldStopPlayer(kv->GetBool("stop"));
+    SetShouldResetAngles(kv->GetBool("resetang"));
+    SetHoldTeleportTime(kv->GetFloat("hold"));
+    m_target = MAKE_STRING(kv->GetString("destinationname"));
+
+    return true;
+};
 //-----------------------------------------------------------------------------------------------
 
 //------- CTriggerResetOnehop -------------------------------------------------------------------
@@ -724,6 +892,25 @@ void CTriggerResetOnehop::OnStartTouch(CBaseEntity *pOther)
         pPlayer->RemoveAllOnehops();
     }
 }
+
+KeyValues *CTriggerResetOnehop::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("resetonehop");
+
+    return kv;
+}
+
+bool CTriggerResetOnehop::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "resetonehop"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("ResetOnehop Trigger"));
+
+    return true;
+};
 //-----------------------------------------------------------------------------------------------
 
 //---------- CTriggerMultihop -------------------------------------------------------------------
@@ -761,6 +948,35 @@ void CTriggerMultihop::Think()
         HandleTeleport(pPlayer);
     }
 }
+
+KeyValues *CTriggerMultihop::ToKeyValues() const
+{
+    KeyValues *kv = new KeyValues("multihop");
+    // kv->SetInt("destination", GetDestinationIndex());
+    kv->SetBool("stop", ShouldStopPlayer());
+    kv->SetFloat("hold", GetHoldTeleportTime());
+    kv->SetBool("resetang", ShouldResetAngles());
+    kv->SetString("destinationname", m_target.ToCStr());
+
+    return kv;
+}
+
+bool CTriggerMultihop::LoadFromKeyValues(KeyValues *kv)
+{
+    if (!FStrEq(kv->GetName(), "multihop"))
+    {
+        return false;
+    }
+
+    SetName(MAKE_STRING("Multihop Trigger"));
+
+    SetShouldStopPlayer(kv->GetBool("stop"));
+    SetShouldResetAngles(kv->GetBool("resetang"));
+    SetHoldTeleportTime(kv->GetFloat("hold"));
+    m_target = MAKE_STRING(kv->GetString("destinationname"));
+
+    return true;
+};
 //-----------------------------------------------------------------------------------------------
 
 //--------- CTriggerUserInput -------------------------------------------------------------------
