@@ -118,9 +118,7 @@ CMapzoneData::CMapzoneData(const char *szMapName)
 {
     if (!LoadFromFile(szMapName))
     {
-        Log("Unable to find map zones! Trying to create them...\n");
-        SaveZonFile(szMapName); // try making the zon file if the map has the entities
-        LoadFromFile(szMapName);
+        DevLog("No existing .zon file found!\n");
     }
 }
 
