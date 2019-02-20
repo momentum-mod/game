@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "filesystem.h"
 #include "server_events.h"
 #include "tickset.h"
 #include "mapzones.h"

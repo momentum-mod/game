@@ -39,8 +39,6 @@ public:
     static bool CreateNewNetFrame(PositionPacket_t &frame);
 
     static CMomentumPlayer *m_pPlayer;
-private:
-    ConVarRef m_cvarHostTimescale;
 };
 
 extern CMomentumGhostClient *g_pMomentumGhostClient;
