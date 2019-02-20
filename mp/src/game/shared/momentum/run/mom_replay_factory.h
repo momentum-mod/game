@@ -9,13 +9,13 @@ class CMomReplayFactory
 {
   public:
     CMomReplayFactory();
-    //~CMomReplayFactory();
+    // ~CMomReplayFactory();
 
-    //Pass 0 as a version number to get whatever the latest version is.
+    // Pass 0 as a version number to get whatever the latest version is.
     CMomReplayBase *CreateEmptyReplay(uint8 version);
     CMomReplayBase *CreateReplay(uint8 version, CUtlBuffer &reader, bool bFullLoad);
 
-    //Returns a replay file and constructs a versioned replay object.
+    // Returns a replay file and constructs a versioned replay object.
     CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
 
     uint8 m_ucCurrentVersion;
