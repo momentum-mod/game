@@ -39,8 +39,10 @@ SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
-    END_DATADESC();
+    DEFINE_THINKFUNC(UpdateRunStats),
+    DEFINE_THINKFUNC(CalculateAverageStats),
+    /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
+END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
