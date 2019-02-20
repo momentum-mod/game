@@ -76,7 +76,7 @@ void CBaseMomentumTrigger::InitCustomCollision(CPhysCollide *pPhysCollide, const
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, CTriggerStage);
 
 BEGIN_DATADESC(CTriggerStage)
-DEFINE_KEYFIELD(m_iStageNumber, FIELD_INTEGER, "stage")
+    DEFINE_KEYFIELD(m_iStageNumber, FIELD_INTEGER, "stage")
 END_DATADESC()
 
 void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
@@ -201,13 +201,14 @@ bool CTriggerStage::LoadFromKeyValues(KeyValues *kv)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-// Since the  m_fBhopLeaveSpeed key is mostly used in a lot of cases, we will use this as reference instead.
-// Don't know if we should use m_flMaxSpeed instead, but yeah.
-DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
+    // Since the  m_fBhopLeaveSpeed key is mostly used in a lot of cases, we will use this as reference instead.
+    // Don't know if we should use m_flMaxSpeed instead, but yeah.
+    DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
     DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles"),
     DEFINE_KEYFIELD(m_bTimerStartOnJump, FIELD_BOOLEAN, "StartOnJump"),
     DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "LimitSpeedType"),
-    DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "ZoneNumber") END_DATADESC();
+    DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "ZoneNumber")
+END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
 END_SEND_TABLE()
@@ -452,8 +453,8 @@ void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
 BEGIN_DATADESC(CTriggerTimerStop)
-DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "ZoneNumber")
-END_DATADESC();
+    DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "ZoneNumber")
+END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStop, DT_TriggerTimerStop)
 END_SEND_TABLE()
@@ -635,8 +636,9 @@ bool CTriggerTimerStop::LoadFromKeyValues(KeyValues *kv)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
-DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"),
-    DEFINE_OUTPUT(m_ResetOnehops, "OnResetOnehops") END_DATADESC();
+    DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"),
+    DEFINE_OUTPUT(m_ResetOnehops, "OnResetOnehops")
+END_DATADESC()
 
 void CTriggerCheckpoint::OnStartTouch(CBaseEntity *pOther)
 {
@@ -677,8 +679,8 @@ bool CTriggerCheckpoint::LoadFromKeyValues(KeyValues *kv)
 LINK_ENTITY_TO_CLASS(filter_activator_checkpoint, CFilterCheckpoint);
 
 BEGIN_DATADESC(CFilterCheckpoint)
-DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint")
-END_DATADESC();
+    DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint")
+END_DATADESC()
 
 bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
@@ -692,8 +694,9 @@ bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEnt
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerTeleportEnt);
 
 BEGIN_DATADESC(CTriggerTeleportEnt)
-DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop")
-, DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"), END_DATADESC();
+    DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
+    DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
+END_DATADESC()
 
 void CTriggerTeleportEnt::OnStartTouch(CBaseEntity *pOther)
 {
@@ -792,8 +795,9 @@ bool CTriggerTeleportCheckpoint::LoadFromKeyValues(KeyValues *kv)
 LINK_ENTITY_TO_CLASS(trigger_momentum_onehop, CTriggerOnehop);
 
 BEGIN_DATADESC(CTriggerOnehop)
-DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
-    DEFINE_OUTPUT(m_hopNoLongerJumpable, "OnHopNoLongerJumpable") END_DATADESC();
+    DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
+    DEFINE_OUTPUT(m_hopNoLongerJumpable, "OnHopNoLongerJumpable")
+END_DATADESC()
 
 CTriggerOnehop::CTriggerOnehop() : m_fOnStartTouchedTime(-1.0), m_fMaxHoldSeconds(1){};
 
@@ -879,8 +883,8 @@ bool CTriggerOnehop::LoadFromKeyValues(KeyValues *kv)
 LINK_ENTITY_TO_CLASS(trigger_momentum_resetonehop, CTriggerResetOnehop);
 
 BEGIN_DATADESC(CTriggerResetOnehop)
-DEFINE_OUTPUT(m_ResetOnehops, "OnResetOnehops")
-END_DATADESC();
+    DEFINE_OUTPUT(m_ResetOnehops, "OnResetOnehops")
+END_DATADESC()
 
 void CTriggerResetOnehop::OnStartTouch(CBaseEntity *pOther)
 {
@@ -917,8 +921,8 @@ bool CTriggerResetOnehop::LoadFromKeyValues(KeyValues *kv)
 LINK_ENTITY_TO_CLASS(trigger_momentum_multihop, CTriggerMultihop);
 
 BEGIN_DATADESC(CTriggerMultihop)
-DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
-END_DATADESC();
+    DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
+END_DATADESC()
 
 CTriggerMultihop::CTriggerMultihop() : m_fOnStartTouchedTime(0.0), m_fMaxHoldSeconds(1) {}
 
@@ -983,7 +987,9 @@ bool CTriggerMultihop::LoadFromKeyValues(KeyValues *kv)
 LINK_ENTITY_TO_CLASS(trigger_momentum_userinput, CTriggerUserInput);
 
 BEGIN_DATADESC(CTriggerUserInput)
-DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"), DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"), END_DATADESC();
+    DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"),
+    DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"),
+END_DATADESC()
 
 void CTriggerUserInput::Think()
 {
@@ -1098,9 +1104,10 @@ void CTriggerLimitMovement::ToggleButtons(T* pEnt, bool bEnable)
 LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
 
 BEGIN_DATADESC(CFuncShootBoost)
-DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir")
-, DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"), DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
-    END_DATADESC();
+    DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
+    DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+END_DATADESC()
 
 void CFuncShootBoost::Spawn()
 {
@@ -1162,9 +1169,10 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
 LINK_ENTITY_TO_CLASS(trigger_momentum_push, CTriggerMomentumPush);
 
 BEGIN_DATADESC(CTriggerMomentumPush)
-DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir")
-, DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
-    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase") END_DATADESC();
+    DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
+    DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase")
+END_DATADESC()
 
 CTriggerMomentumPush::CTriggerMomentumPush(){};
 
@@ -1220,13 +1228,12 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
 BEGIN_DATADESC(CTriggerSlide)
-DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
+    DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
     DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
     DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity"),
     DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope"),
-
-    //,DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
-    END_DATADESC();
+    //DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
+END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
 SendPropBool(SENDINFO(m_bStuckOnGround)), SendPropBool(SENDINFO(m_bAllowingJump)),
@@ -1270,10 +1277,11 @@ void CTriggerSlide::OnEndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_reversespeed, CTriggerReverseSpeed);
 
 BEGIN_DATADESC(CTriggerReverseSpeed)
-DEFINE_KEYFIELD(m_bReverseHorizontalSpeed, FIELD_BOOLEAN, "ReverseHorizontal")
-, DEFINE_KEYFIELD(m_bReverseVerticalSpeed, FIELD_BOOLEAN, "ReverseVertical"),
+    DEFINE_KEYFIELD(m_bReverseHorizontalSpeed, FIELD_BOOLEAN, "ReverseHorizontal"),
+    DEFINE_KEYFIELD(m_bReverseVerticalSpeed, FIELD_BOOLEAN, "ReverseVertical"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
-    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink") END_DATADESC();
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink")
+END_DATADESC()
 
 void CTriggerReverseSpeed::OnStartTouch(CBaseEntity *pOther)
 {
@@ -1403,13 +1411,14 @@ void CTriggerReverseSpeed::OnEndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_setspeed, CTriggerSetSpeed);
 
 BEGIN_DATADESC(CTriggerSetSpeed)
-DEFINE_KEYFIELD(m_bKeepHorizontalSpeed, FIELD_BOOLEAN, "KeepHorizontalSpeed"),
+    DEFINE_KEYFIELD(m_bKeepHorizontalSpeed, FIELD_BOOLEAN, "KeepHorizontalSpeed"),
     DEFINE_KEYFIELD(m_bKeepVerticalSpeed, FIELD_BOOLEAN, "KeepVerticalSpeed"),
     DEFINE_KEYFIELD(m_flHorizontalSpeedAmount, FIELD_FLOAT, "HorizontalSpeedAmount"),
     DEFINE_KEYFIELD(m_flVerticalSpeedAmount, FIELD_FLOAT, "VerticalSpeedAmount"),
     DEFINE_KEYFIELD(m_angWishDirection, FIELD_VECTOR, "Direction"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
-    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink") END_DATADESC();
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink")
+END_DATADESC()
 
 void CTriggerSetSpeed::OnStartTouch(CBaseEntity *pOther)
 {
@@ -1571,26 +1580,26 @@ void CTriggerSpeedThreshold::OnEndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_speedthreshold, CTriggerSpeedThreshold);
 
 BEGIN_DATADESC(CTriggerSpeedThreshold)
-DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
+    DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
     DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "Vertical"),
     DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
     DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
     DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), 
-DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
     DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") 
-END_DATADESC();
+END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(func_momentum_brush, CFuncMomentumBrush);
 
 BEGIN_DATADESC(CFuncMomentumBrush)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"), 
-DEFINE_KEYFIELD(m_iDisabledAlpha, FIELD_CHARACTER, "DisabledAlpha"),
-DEFINE_KEYFIELD(m_bInverted, FIELD_BOOLEAN, "Invert"),
-DEFINE_KEYFIELD(m_bDisableUI, FIELD_BOOLEAN, "DisableUI"),
-END_DATADESC();
+    DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+    DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"), 
+    DEFINE_KEYFIELD(m_iDisabledAlpha, FIELD_CHARACTER, "DisabledAlpha"),
+    DEFINE_KEYFIELD(m_bInverted, FIELD_BOOLEAN, "Invert"),
+    DEFINE_KEYFIELD(m_bDisableUI, FIELD_BOOLEAN, "DisableUI"),
+END_DATADESC()
 
 CFuncMomentumBrush::CFuncMomentumBrush()
 {
@@ -1692,9 +1701,9 @@ void CFuncMomentumBrush::EndTouch(CBaseEntity* pOther)
 
 LINK_ENTITY_TO_CLASS(filter_momentum_progress, CFilterMomentumProgress);
 BEGIN_DATADESC(CFilterMomentumProgress)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage")
-END_DATADESC();
+    DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+    DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage")
+END_DATADESC()
 
 CFilterMomentumProgress::CFilterMomentumProgress()
 {
@@ -1716,11 +1725,11 @@ bool CFilterMomentumProgress::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity
 LINK_ENTITY_TO_CLASS(trigger_momentum_campaign_changelevel, CTriggerCampaignChangelevel);
 
 BEGIN_DATADESC(CTriggerCampaignChangelevel)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
-DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
-DEFINE_KEYFIELD(m_MapOverride, FIELD_STRING, "map_name_override")
-END_DATADESC();
+    DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+    DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
+    DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
+    DEFINE_KEYFIELD(m_MapOverride, FIELD_STRING, "map_name_override")
+END_DATADESC()
 
 CTriggerCampaignChangelevel::CTriggerCampaignChangelevel()
 {
@@ -1781,11 +1790,11 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
 LINK_ENTITY_TO_CLASS(info_momentum_map, CMomentumMapInfo);
 
 BEGIN_DATADESC(CMomentumMapInfo)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
-DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
-DEFINE_KEYFIELD(m_MapAuthor, FIELD_STRING, "author")
-END_DATADESC();
+    DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+    DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
+    DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
+    DEFINE_KEYFIELD(m_MapAuthor, FIELD_STRING, "author")
+END_DATADESC()
 
 CMomentumMapInfo::CMomentumMapInfo(): m_iWorld(-1), m_iStage(0), m_iGametype(0)
 {

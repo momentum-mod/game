@@ -204,12 +204,16 @@ class CPointServerSettings : public CPointEntity
 LINK_ENTITY_TO_CLASS(point_momentum_serversettings, CPointServerSettings);
 
 BEGIN_DATADESC(CPointServerSettings)
-DEFINE_KEYFIELD(m_flGravity, FIELD_FLOAT, "Gravity"), DEFINE_KEYFIELD(m_flMaxVelocity, FIELD_FLOAT, "MaxVelocity"),
+    DEFINE_KEYFIELD(m_flGravity, FIELD_FLOAT, "Gravity"),
+    DEFINE_KEYFIELD(m_flMaxVelocity, FIELD_FLOAT, "MaxVelocity"),
     DEFINE_KEYFIELD(m_flWaterAccelerate, FIELD_FLOAT, "WaterAccelerate"),
     DEFINE_KEYFIELD(m_flAirAccelerate, FIELD_FLOAT, "AirAccelerate"),
     DEFINE_KEYFIELD(m_flAccelerate, FIELD_FLOAT, "Accelerate"),
     DEFINE_KEYFIELD(m_iFrictionType, FIELD_INTEGER, "Friction"),
-    DEFINE_KEYFIELD(m_flBackSpeed, FIELD_FLOAT, "BackSpeed"), DEFINE_KEYFIELD(m_flStopSpeed, FIELD_FLOAT, "StopSpeed"),
-    DEFINE_KEYFIELD(m_flStepSize, FIELD_FLOAT, "StepSize"), DEFINE_KEYFIELD(m_flWaterDist, FIELD_FLOAT, "WaterDist"),
+    DEFINE_KEYFIELD(m_flBackSpeed, FIELD_FLOAT, "BackSpeed"),
+    DEFINE_KEYFIELD(m_flStopSpeed, FIELD_FLOAT, "StopSpeed"),
+    DEFINE_KEYFIELD(m_flStepSize, FIELD_FLOAT, "StepSize"),
+    DEFINE_KEYFIELD(m_flWaterDist, FIELD_FLOAT, "WaterDist"),
     DEFINE_KEYFIELD(m_iFootSteps, FIELD_INTEGER, "FootSteps"),
-    DEFINE_KEYFIELD(m_iSwimSound, FIELD_INTEGER, "SwimSound"), END_DATADESC()
+    DEFINE_KEYFIELD(m_iSwimSound, FIELD_INTEGER, "SwimSound"),
+END_DATADESC()
