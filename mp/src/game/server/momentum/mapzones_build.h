@@ -221,5 +221,6 @@ private:
 };
 
 CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt);
+CMomBaseZoneBuilder *CreateZoneBuilderFromKeyValues(KeyValues *kv);
 
 #endif // MAPZONES_BUILD_H

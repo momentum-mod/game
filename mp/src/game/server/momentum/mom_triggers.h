@@ -46,12 +46,20 @@ class CBaseMomentumTrigger : public CTriggerMultiple
     // Used to calculate if a position is inside of this trigger's bounds
     bool ContainsPosition(const Vector &pos) { return CollisionProp()->IsPointInBounds(pos); }
 
-
     // Point-based zones need a custom collision check
     void InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs);
     virtual bool TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr) OVERRIDE;
 
+    // Override this function to have the game save this zone type to the .zon file
+    // If you override this make sure to also override LoadFromKeyValues to load values from .zon file
+    // Returns nullptr by default to signify that it is not convertible to KeyValues and won't be saved
+    virtual KeyValues *ToKeyValues() const { return nullptr; }
+    // Override this function to load zone specific values from .zon file
+    // Return true to signify success
+    virtual bool LoadFromKeyValues(KeyValues *kv) { return false; }
+
     const CUtlVector<Vector> &GetZonePoints() const { return m_vZonePoints; }
+
   private:
     // Point-based zone editing
     CUtlVector<Vector> m_vZonePoints;
@@ -75,6 +83,9 @@ class CTriggerTimerStop : public CBaseMomentumTrigger
         return SetTransmitState(FL_EDICT_ALWAYS);
     }
 
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
+
     int GetZoneNumber() const { return m_iZoneNumber; };
     void SetZoneNumber(int num) { m_iZoneNumber = num; }
 
@@ -93,7 +104,7 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
     void OnStartTouch(CBaseEntity *) OVERRIDE;
     void OnEndTouch(CBaseEntity *) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
-    void SetDestinationEnt(CBaseEntity *ent) { pDestinationEnt = ent; }
+    void SetDestinationEnt(CBaseEntity *ent) { m_pDestinationEnt = ent; }
     bool ShouldStopPlayer() const { return m_bResetVelocity; }
     bool ShouldResetAngles() const { return m_bResetAngles; }
     void SetShouldStopPlayer(const bool newB) { m_bResetVelocity = newB; }
@@ -107,7 +118,7 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
   private:
     bool m_bResetVelocity;
     bool m_bResetAngles;
-    CBaseEntity *pDestinationEnt;
+    CBaseEntity *m_pDestinationEnt;
 };
 
 // CTriggerCheckpoint, used by mappers for teleporting
@@ -122,6 +133,9 @@ class CTriggerCheckpoint : public CBaseMomentumTrigger
     virtual int GetCheckpointNumber() const { return m_iCheckpointNumber; }
     // The following is used by mapzones.cpp
     void SetCheckpointNumber(int newInt) { m_iCheckpointNumber = newInt; }
+
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
   private:
     int m_iCheckpointNumber;
@@ -149,6 +163,9 @@ class CTriggerStage : public CTriggerCheckpoint
     void SetStageNumber(const int newInt) { m_iStageNumber = newInt; }
     // Override, use GetStageNumber()
     int GetCheckpointNumber() const OVERRIDE { return -1; }
+
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
   private:
     int m_iStageNumber;
@@ -188,10 +205,15 @@ class CTriggerTimerStart : public CTriggerStage
     void SetIsLimitingSpeed(const bool pIsLimitingSpeed);
     void SetHasLookAngles(const bool bHasLook);
     bool HasLookAngles() const { return HasSpawnFlags(SF_USE_LOOKANGLES); }
-    bool &StartOnJump() { return m_bTimerStartOnJump; }
-    int &LimitSpeedType() { return m_iLimitSpeedType; }
+    bool StartOnJump() const { return m_bTimerStartOnJump; }
+    void SetStartOnJump(const bool bStartOnJump) { m_bTimerStartOnJump = bStartOnJump; }
+    int GetLimitSpeedType() const { return m_iLimitSpeedType; }
+    void SetLimitSpeedType(const int type) { m_iLimitSpeedType = type; }
     int GetZoneNumber() const { return m_iZoneNumber; }
-    void SetZoneNumber(int num) { m_iZoneNumber = num; }
+    void SetZoneNumber(const int num) { m_iZoneNumber = num; }
+
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
   private:
     QAngle m_angLook;
@@ -226,6 +248,9 @@ class CTriggerTeleportCheckpoint : public CTriggerTeleportEnt
 
   public:
     void OnStartTouch(CBaseEntity *) OVERRIDE;
+
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 };
 
 // CTriggerOnehop
@@ -251,6 +276,9 @@ class CTriggerOnehop : public CTriggerTeleportEnt
 
     void SethopNoLongerJumpableFired(bool bState) { m_bhopNoLongerJumpableFired = bState; }
 
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
+
   private:
     // The time that the player initally touched the trigger
     float m_fOnStartTouchedTime;
@@ -271,6 +299,9 @@ class CTriggerResetOnehop : public CBaseMomentumTrigger
 
   public:
     void OnStartTouch(CBaseEntity *) OVERRIDE;
+
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
   private:
     // Fires when it resets all one hops.
@@ -298,6 +329,9 @@ class CTriggerMultihop : public CTriggerTeleportEnt
         SetDestinationEnt(nullptr);
     }
 
+    virtual KeyValues *ToKeyValues() const OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
+
   private:
     // The time that the player initally touched the trigger. -1 if not checking for teleport
     float m_fOnStartTouchedTime;
@@ -324,13 +358,13 @@ class CTriggerUserInput : public CBaseMomentumTrigger
         KEY_ATTACK2,
         KEY_RELOAD
     };
-    Key m_eKey;
     void Think() OVERRIDE;
     void Spawn() OVERRIDE;
-    COutputEvent m_OnKeyPressed;
 
   private:
     int m_ButtonRep;
+    Key m_eKey;
+    COutputEvent m_OnKeyPressed;
 };
 
 #define FL_BHOP_TIMER 0.15f
@@ -501,7 +535,7 @@ class CTriggerSpeedThreshold : public CBaseMomentumTrigger
 
 class CFuncMomentumBrush : public CFuncBrush
 {
-public:
+  public:
     DECLARE_CLASS(CFuncMomentumBrush, CFuncBrush);
     DECLARE_DATADESC();
 
@@ -513,8 +547,8 @@ public:
     void TurnOn() OVERRIDE;
     void TurnOff() OVERRIDE;
 
-    void StartTouch(CBaseEntity* pOther) OVERRIDE;
-    void EndTouch(CBaseEntity* pOther) OVERRIDE;
+    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
     int m_iStage;
     int m_iWorld;
@@ -525,47 +559,47 @@ public:
 
 class CFilterMomentumProgress : public CBaseFilter
 {
-public:
+  public:
     DECLARE_CLASS(CFilterMomentumProgress, CBaseFilter);
     DECLARE_DATADESC();
 
     CFilterMomentumProgress();
 
-protected:
-    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) OVERRIDE;
+  protected:
+    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) OVERRIDE;
 
-private:
+  private:
     int m_iWorld, m_iStage;
 };
 
 class CTriggerCampaignChangelevel : public CBaseMomentumTrigger
 {
-public:
+  public:
     DECLARE_CLASS(CTriggerCampaignChangelevel, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
     CTriggerCampaignChangelevel();
 
-protected:
-    void OnStartTouch(CBaseEntity* pOther) OVERRIDE;
+  protected:
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
 
-private:
+  private:
     int m_iWorld, m_iStage, m_iGametype;
     string_t m_MapOverride;
 };
 
 class CMomentumMapInfo : public CPointEntity
 {
-public:
+  public:
     DECLARE_CLASS(CMomentumMapInfo, CPointEntity);
     DECLARE_DATADESC();
 
     CMomentumMapInfo();
 
-protected:
+  protected:
     void Spawn() OVERRIDE;
 
-private:
+  private:
     int m_iWorld, m_iStage, m_iGametype;
     string_t m_MapAuthor;
 };
