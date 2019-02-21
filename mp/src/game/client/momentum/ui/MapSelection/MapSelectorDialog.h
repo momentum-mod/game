@@ -12,6 +12,8 @@ class CFavoriteMaps;
 class IMapList;
 class MapFilterPanel;
 
+class MapDownloadProgress;
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -53,6 +55,14 @@ public:
     void		LoadUserData();
     void		SaveUserData();
 
+    // Callbacks for download
+    void OnMapDownloadStart(KeyValues *pKv);
+    void OnMapDownloadSize(KeyValues *pKv);
+    void OnMapDownloadProgress(KeyValues *pKv);
+    void OnMapDownloadEnd(KeyValues *pKv);
+
+    MapDownloadProgress *GetDownloadProgressPanel(uint32 uMapID);
+
 private:
 
     // current game list change
@@ -67,6 +77,9 @@ private:
 private:
     // list of all open game info dialogs
     CUtlVector<vgui::DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
+
+    // Map of all downloads
+    CUtlMap<uint32, MapDownloadProgress*> m_mapMapDownloads;
 
     // pointer to current game list
     IMapList *m_pCurrentMapList;

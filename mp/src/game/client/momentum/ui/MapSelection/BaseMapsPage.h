@@ -95,8 +95,7 @@ public:
     virtual bool MapPassesFilters(MapData *pData, MapFilters_t filters);
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
-    void OnMapDownloadStart(KeyValues *pEvent);
-    void OnMapDownloadProgress(KeyValues *pKv);
+
     void OnMapDownloadEnd(KeyValues *pKv);
 
     // Called when the map selector opens
