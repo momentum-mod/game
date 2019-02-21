@@ -8,7 +8,7 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_TOGGLE_CONVAR(mom_api_log_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, all API requests will be logged to console.\n");
+static MAKE_TOGGLE_CONVAR(mom_api_log_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, API requests will be logged to console.\n");
 static MAKE_TOGGLE_CONVAR(mom_api_log_requests_sensitive, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, API requests that are sensitive will also be logged to console.\n"
 "!!!!!!! DANGER! Only set this if you know what you are doing! This could potentially expose an API key! !!!!!!!");
 static ConVar mom_api_base_url("mom_api_base_url", "http://localhost:3002", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The base URL for the API requests.\n");
@@ -245,7 +245,7 @@ bool CAPIRequests::GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, Callba
     return false;
 }
 
-HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end, 
+HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc size, CallbackFunc prog, CallbackFunc end, 
                                              const char *pFileName, const char *pFilePathID /* = "GAME"*/, bool bAuth /*= false*/)
 {
     HTTPRequestHandle handle = INVALID_HTTPREQUEST_HANDLE;
@@ -258,7 +258,7 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc st
         {
             DownloadRequest *callback = new DownloadRequest();
             callback->handle = handle;
-            callback->startFunc = start;
+            callback->sizeFunc = size;
             callback->progressFunc = prog;
             callback->completeFunc = end;
             if (pFileName == nullptr)
@@ -394,7 +394,7 @@ void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
             {
                 // Null-terminate
                 pData[size] = 0;
-                uint64 fileSize = Q_atoui64(reinterpret_cast<const char *>(pData));
+                const uint64 fileSize = Q_atoui64(reinterpret_cast<const char *>(pData));
 
                 if (fileSize)
                 {
@@ -404,7 +404,7 @@ void CAPIRequests::OnDownloadHTTPHeader(HTTPRequestHeadersReceived_t* pCallback)
 
                     DownloadRequest *call = m_mapDownloadCalls[downloadCallbackIndx];
                     call->m_bufFileData.EnsureCapacity(fileSize);
-                    call->startFunc(headers);
+                    call->sizeFunc(headers);
                 }
             }
 
@@ -475,7 +475,7 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
 void CAPIRequests::OnHTTPResp(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
 {
     // Firstly, let's find the callback that corresponds to the API request we made
-    const uint16 callbackIndx = m_mapAPICalls.Find(pCallback->m_hRequest);
+    const auto callbackIndx = m_mapAPICalls.Find(pCallback->m_hRequest);
     if (callbackIndx != m_mapAPICalls.InvalidIndex())
     {
         // Okay cool, callback found
