@@ -96,21 +96,4 @@
     {
         "success" "bool"
     }
-    "map_data_update"
-    {
-        "id" "long"
-        "main" "bool"
-        "info" "bool"
-        "pb" "bool"
-        "wr" "bool"
-        "thumbnail" "bool"
-    }
-    "map_cache_updated"
-    {
-        "source" "byte"
-    }
-    "map_file_updated"
-    {
-        "id" "long"
-    }
 }

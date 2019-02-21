@@ -879,10 +879,11 @@ int ListPanel::FindColumn(const char *columnName)
 //			data->GetName() is used to uniquely identify an item
 //			data sub items are matched against column header name to be used in the table
 //-----------------------------------------------------------------------------
-int ListPanel::AddItem( const KeyValues *item, unsigned int userData, bool bScrollToItem, bool bSortOnAdd)
+int ListPanel::AddItem( KeyValues *item, unsigned int userData, bool bScrollToItem, bool bSortOnAdd, bool bCopyData /* = true*/)
 {
 	FastSortListPanelItem *newitem = new FastSortListPanelItem;
-	newitem->kv = item->MakeCopy();
+	newitem->kv = bCopyData ? item->MakeCopy() : item;
+    newitem->m_bDataCopied = bCopyData;
 	newitem->userData = userData;
 	newitem->m_pDragData = NULL;
 	newitem->m_bImage = newitem->kv->GetInt( "image" ) != 0 ? true : false;
@@ -1176,7 +1177,7 @@ void ListPanel::CleanupItem( FastSortListPanelItem *data )
 {
 	if ( data )
 	{
-		if (data->kv)
+		if (data->kv && data->m_bDataCopied)
 		{
 			data->kv->deleteThis();
 		}

@@ -280,7 +280,7 @@ MapData::MapData()
     m_eType = GAMEMODE_UNKNOWN;
     m_eMapStatus = STATUS_UNKNOWN;
     m_szDownloadURL[0] = '\0';
-    m_bMapUpdated = false;
+    m_bMapFileNeedsUpdate = false;
     m_tLastPlayed = 0;
 }
 
@@ -291,7 +291,7 @@ MapData::MapData(const MapData& src)
     m_eMapStatus = src.m_eMapStatus;
     Q_strncpy(m_szHash, src.m_szHash, sizeof(m_szHash));
     Q_strncpy(m_szDownloadURL, src.m_szDownloadURL, sizeof(m_szDownloadURL));
-    m_bMapUpdated = src.m_bMapUpdated;
+    m_bMapFileNeedsUpdate = src.m_bMapFileNeedsUpdate;
 
     Q_strncpy(m_szMapName, src.m_szMapName, sizeof(m_szMapName));
     m_bInFavorites = src.m_bInFavorites;
@@ -319,32 +319,27 @@ bool MapData::WasUpdated() const
 
 void MapData::SendDataUpdate()
 {
-    IGameEvent *pEvent = gameeventmanager->CreateEvent("map_data_update");
-    if (pEvent)
-    {
-        pEvent->SetInt("id", m_uID);
-        pEvent->SetBool("main", m_bUpdated);
-        pEvent->SetBool("info", m_Info.m_bUpdated);
-        pEvent->SetBool("pb", m_PersonalBest.NeedsUpdate());
-        pEvent->SetBool("wr", m_WorldRecord.NeedsUpdate());
-        pEvent->SetBool("thumbnail", m_Thumbnail.m_bUpdated);
+    KeyValues *pEvent = new KeyValues("map_data_update");
 
-        if (gameeventmanager->FireEventClientSide(pEvent))
-            ResetUpdate();
-    }
+    pEvent->SetInt("id", m_uID);
+    pEvent->SetBool("main", m_bUpdated);
+    pEvent->SetBool("info", m_Info.m_bUpdated);
+    pEvent->SetBool("pb", m_PersonalBest.NeedsUpdate());
+    pEvent->SetBool("wr", m_WorldRecord.NeedsUpdate());
+    pEvent->SetBool("thumbnail", m_Thumbnail.m_bUpdated);
+
+    g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+    ResetUpdate();
 }
 
 void MapData::SendMapFileUpdate()
 {
-    if (m_bMapUpdated)
+    if (m_bMapFileNeedsUpdate)
     {
-        IGameEvent *pEventMap = gameeventmanager->CreateEvent("map_file_updated");
-        if (pEventMap)
-        {
-            pEventMap->SetInt("id", m_uID);
-            gameeventmanager->FireEventClientSide(pEventMap);
-            // m_bMapUpdated gets reset when the new map finishes downloading
-        }
+        KeyValues *pEvent = new KeyValues("map_file_updated");
+        pEvent->SetInt("id", m_uID);
+        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+        // m_bMapUpdated gets reset when the new map finishes downloading successfully
     }
 }
 
@@ -393,7 +388,7 @@ void MapData::FromKV(KeyValues* pMap)
         m_bInFavorites = pMap->GetBool("inFavorites");
         m_bInLibrary = pMap->GetBool("inLibrary");
         Q_strncpy(m_szPath, pMap->GetString("path"), sizeof(m_szPath));
-        m_bMapUpdated = pMap->GetBool("mapNeedsUpdate");
+        m_bMapFileNeedsUpdate = pMap->GetBool("mapNeedsUpdate");
         m_tLastPlayed = pMap->GetUint64("lastPlayed");
     }
     else
@@ -458,7 +453,7 @@ void MapData::ToKV(KeyValues* pKv) const
     pKv->SetBool("inFavorites", m_bInFavorites);
     pKv->SetBool("inLibrary", m_bInLibrary);
     pKv->SetString("updatedAt", m_szLastUpdated);
-    pKv->SetBool("mapNeedsUpdate", m_bMapUpdated);
+    pKv->SetBool("mapNeedsUpdate", m_bMapFileNeedsUpdate);
     pKv->SetString("path", m_szPath);
     pKv->SetUint64("lastPlayed", m_tLastPlayed);
 
@@ -519,7 +514,7 @@ MapData& MapData::operator=(const MapData& src)
         m_eType = src.m_eType;
         m_eMapStatus = src.m_eMapStatus;
 
-        m_bMapUpdated = !m_bValid || !FStrEq(m_szHash, src.m_szHash);
+        m_bMapFileNeedsUpdate = !m_bValid || !FStrEq(m_szHash, src.m_szHash);
 
         Q_strncpy(m_szHash, src.m_szHash, sizeof(m_szHash));
         Q_strncpy(m_szDownloadURL, src.m_szDownloadURL, sizeof(m_szDownloadURL));
@@ -720,7 +715,7 @@ void CMapCache::AddMapToCache(KeyValues* pMap, APIModelSource source)
         if (m_mapMapCache[indx].WasUpdated())
             m_mapMapCache[indx].SendDataUpdate();
         // If the map file itself needs updating, send the event here
-        if (m_mapMapCache[indx].m_bMapUpdated)
+        if (m_mapMapCache[indx].m_bMapFileNeedsUpdate)
             m_mapMapCache[indx].SendMapFileUpdate();
     }
     else
@@ -740,12 +735,9 @@ void CMapCache::AddMapToCache(KeyValues* pMap, APIModelSource source)
 
 void CMapCache::FireMapCacheUpdateEvent(APIModelSource source)
 {
-    IGameEvent *pEvent = gameeventmanager->CreateEvent("map_cache_updated");
-    if (pEvent)
-    {
-        pEvent->SetInt("source", source);
-        gameeventmanager->FireEventClientSide(pEvent);
-    }
+    KeyValues *pEvent = new KeyValues("map_cache_updated");
+    pEvent->SetInt("source", source);
+    g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
 }
 
 bool CMapCache::UpdateMapInfo(uint32 uMapID)
@@ -956,6 +948,10 @@ void CMapCache::MapDownloadEnd(KeyValues* pKvComplete)
         }
         else
         {
+            MapData *pMap = GetMapDataByID(id);
+            if (pMap)
+                pMap->m_bMapFileNeedsUpdate = false;
+
             DevLog("Successfully downloaded the map with ID: %i\n", id);
         }
 

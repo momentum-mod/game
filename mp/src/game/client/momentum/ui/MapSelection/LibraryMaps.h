@@ -22,7 +22,8 @@ public:
     // Empty (for now?)
     void SetListCellColors(MapData* pData, KeyValues* pKvInto) OVERRIDE {}
 
-    void FireGameEvent(IGameEvent* event) OVERRIDE;
+    void OnMapCacheUpdated(KeyValues *pKv);
+    void OnMapListDataUpdate(int id) OVERRIDE;
 
     void OnTabSelected() OVERRIDE;
 

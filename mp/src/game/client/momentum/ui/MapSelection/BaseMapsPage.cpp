@@ -6,7 +6,6 @@
 #include "MapFilterPanel.h"
 #include "MapContextMenu.h"
 #include "mom_map_cache.h"
-#include "util/mom_util.h"
 #include "mom_modulecomms.h"
 
 #include "fmtstr.h"
@@ -16,14 +15,10 @@
 #include "vgui_controls/ListPanel.h"
 #include "vgui_controls/Button.h"
 #include "vgui_controls/ImageList.h"
-#include "vgui_controls/ComboBox.h"
-#include "controls/FileImage.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
-
-#define HEADER_ICON_SIZE 14
 
 //Sort functions
 static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
@@ -77,6 +72,8 @@ static int __cdecl MapLastPlayedSortFunc(vgui::ListPanel *pPanel, const vgui::Li
 //-----------------------------------------------------------------------------
 CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPage(parent, name)
 {
+    SetDefLessFunc(m_mapMaps);
+
     SetSize(664, 294);
 
     m_hFont = INVALID_FONT;
@@ -88,7 +85,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetShouldCenterEmptyListText(true);
 
     // Images
-    LoadDefaultImageList();
+    m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
     
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
@@ -139,9 +136,6 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     LoadControlSettings(CFmtStr("resource/ui/MapSelector/%sPage.res", name));
 
-    ListenForGameEvent("map_data_update");
-    ListenForGameEvent("map_cache_updated");
-
     g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadEnd));
 }
 
@@ -162,14 +156,12 @@ int CBaseMapsPage::GetInvalidMapListID()
 
 MapDisplay_t *CBaseMapsPage::GetMapDisplayByID(uint32 id)
 {
-    if (m_vecMaps.IsEmpty())
+    if (m_mapMaps.Count() == 0)
         return nullptr;
 
-    FOR_EACH_VEC(m_vecMaps, i)
-    {
-        if (m_vecMaps[i].m_pMap->m_uID == id)
-            return &m_vecMaps[i];
-    }
+    const auto indx = m_mapMaps.Find(id);
+    if (m_mapMaps.IsValidIndex(indx))
+        return &m_mapMaps[indx];
 
     return nullptr;
 }
@@ -230,20 +222,19 @@ void CBaseMapsPage::ApplyFilters(MapFilters_t filters)
 void CBaseMapsPage::OnApplyFilters(MapFilters_t filters)
 {
     // loop through all the maps checking filters
-    FOR_EACH_VEC(m_vecMaps, i)
+    FOR_EACH_MAP_FAST(m_mapMaps, i)
     {
-        MapDisplay_t *map = &m_vecMaps[i];
-
+        MapDisplay_t *pMap = &m_mapMaps[i];
         // Now we can check the filters
-        if (!MapPassesFilters(map->m_pMap, filters))
+        if (!MapPassesFilters(pMap->m_pMap, filters))
         {
-            m_pMapList->SetItemVisible(map->m_iListID, false);
-            map->m_bNeedsShown = true;
+            m_pMapList->SetItemVisible(pMap->m_iListID, false);
+            pMap->m_bNeedsShown = true;
         }
-        else if (map->m_bNeedsShown)
+        else if (pMap->m_bNeedsShown)
         {
-            m_pMapList->SetItemVisible(map->m_iListID, true);
-            map->m_bNeedsShown = false;
+            m_pMapList->SetItemVisible(pMap->m_iListID, true);
+            pMap->m_bNeedsShown = false;
         }
     }
 
@@ -320,143 +311,38 @@ void CBaseMapsPage::AddMapToList(MapData* pData)
 {
     // Only add it if it doesn't exist already
     // Updates are handled by an event
-    FOR_EACH_VEC(m_vecMaps, i)
-    {
-        MapData *pDat = m_vecMaps[i].m_pMap;
-        if (pDat->m_uID == pData->m_uID)
-            return;
-    }
+    MapDisplay_t *pFound = GetMapDisplayByID(pData->m_uID);
+    if (pFound)
+        return;
 
     MapDisplay_t map;
     map.m_pMap = pData;
     map.m_bNeedsShown = true;
+    m_mapMaps.Insert(pData->m_uID, map);
 
     // Add the map to the m_pMapList
-    UpdateMapListData(&map, true, true, true, true, true);
+    OnMapListDataUpdate(pData->m_uID);
 
-    m_vecMaps.AddToTail(map);
     UpdateStatus();
 }
 
-void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail)
+void CBaseMapsPage::OnMapListDataUpdate(int mapID)
 {
-    KeyValuesAD kv("Map");
-    MapData *pMapData = pMap->m_pMap;
-    if (bMain)
+    MapDisplay_t *pMapDisplay = GetMapDisplayByID(mapID);
+
+    if (pMapDisplay)
     {
-        kv->SetString(KEYNAME_MAP_NAME, pMapData->m_szMapName);
-        kv->SetInt(KEYNAME_MAP_ID, pMapData->m_uID);
-        kv->SetInt(KEYNAME_MAP_TYPE, pMapData->m_eType);
-        kv->SetInt(KEYNAME_MAP_STATUS, pMapData->m_eMapStatus);
-        kv->SetInt(KEYNAME_MAP_IN_LIBRARY, pMapData->m_bInLibrary ? INDX_MAP_IN_LIBRARY : INDX_MAP_NOT_IN_LIBRARY);
-        kv->SetInt(KEYNAME_MAP_IN_FAVORITES, pMapData->m_bInFavorites ? INDX_MAP_IN_FAVORITES : INDX_MAP_NOT_IN_FAVORITES);
-
-        kv->SetUint64(KEYNAME_MAP_LAST_PLAYED_SORT, pMapData->m_tLastPlayed);
-
-        if (pMapData->m_tLastPlayed > 0)
+        if (m_pMapList->IsValidItemID(pMapDisplay->m_iListID))
         {
-            char timeAgo[16];
-            bool bRes = g_pMomentumUtil->GetTimeAgoString(&pMapData->m_tLastPlayed, timeAgo, 16);
-            kv->SetString(KEYNAME_MAP_LAST_PLAYED, bRes ? timeAgo : "#MOM_NotApplicable");
-        }
-        else
-            kv->SetString(KEYNAME_MAP_LAST_PLAYED, "#MOM_NotApplicable");
-
-        // SetListCellColors(pMapData, kv);
-    }
-
-    if (bInfo)
-    {
-        kv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapData->m_Info.m_iDifficulty);
-        kv->SetInt(KEYNAME_MAP_LAYOUT, pMapData->m_Info.m_bIsLinear ? INDX_MAP_IS_LINEAR : INDX_MAP_IS_STAGED);
-
-        kv->SetString(KEYNAME_MAP_CREATION_DATE_SORT, pMapData->m_Info.m_szCreationDate);
-
-        time_t creationDateTime;
-        if (g_pMomentumUtil->ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime))
-        {
-            char date[32];
-            strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
-            kv->SetString(KEYNAME_MAP_CREATION_DATE, date);
-        }
-    }
-
-    if (bPB)
-    {
-        if (pMapData->m_PersonalBest.m_bValid)
-        {
-            char szBestTime[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(pMapData->m_PersonalBest.m_Run.m_fTime, szBestTime);
-
-            kv->SetString(KEYNAME_MAP_TIME, szBestTime);
+            m_pMapList->ApplyItemChanges(pMapDisplay->m_iListID);
         }
         else
         {
-            kv->SetString(KEYNAME_MAP_TIME, "#MOM_NotApplicable");
+            // Otherwise we need to add it
+            MapListData *pData = MapSelectorDialog().GetMapListDataByID(mapID);
+            if (pData)
+                pMapDisplay->m_iListID = m_pMapList->AddItem(pData->m_pKv, mapID, false, false, false);
         }
-    }
-
-    if (bWR)
-    {
-        if (pMapData->m_WorldRecord.m_bValid)
-        {
-            char szBestTime[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(pMapData->m_WorldRecord.m_Run.m_fTime, szBestTime);
-
-            kv->SetString(KEYNAME_MAP_WORLD_RECORD, szBestTime);
-        }
-        else
-        {
-            kv->SetString(KEYNAME_MAP_WORLD_RECORD, "#MOM_NotApplicable");
-        }
-    }
-
-    if (bThumbnail)
-    {
-        // Remove the old image if there
-        if (pMap->m_pImage)
-        {
-            delete pMap->m_pImage;
-            pMap->m_pImage = nullptr;
-        }
-
-        URLImage *pImage = new URLImage;
-        if (pImage->LoadFromURL(pMapData->m_Thumbnail.m_szURLSmall))
-        {
-            pMap->m_pImage = pImage;
-
-            if (pMap->m_iMapImageIndex > 1)
-            {
-                m_pMapList->GetImageList()->SetImageAtIndex(pMap->m_iMapImageIndex, pImage);
-            }
-            else
-            {
-                // Otherwise just add it
-                pMap->m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(pImage);
-            }
-        }
-        else
-        {
-            pMap->m_iMapImageIndex = 1;
-            delete pImage;
-        }
-    }
-
-    kv->SetInt(KEYNAME_MAP_IMAGE, pMap->m_iMapImageIndex);
-
-    KeyValues *pItem = m_pMapList->GetItem(pMap->m_iListID);
-    // If it's a valid index, we're just normally updating
-    if (pItem)
-    {
-        kv->RecursiveMergeKeyValues(pItem);
-        pItem->Clear();
-        kv->CopySubkeys(pItem);
-        m_pMapList->ApplyItemChanges(pMap->m_iListID);
-    }
-    else
-    {
-        // Otherwise we need to add it
-        pMap->m_iListID = m_pMapList->AddItem(kv, pMapData->m_uID, false, false);
     }
 }
 
@@ -485,22 +371,6 @@ void CBaseMapsPage::OnCommand(const char *command)
 void CBaseMapsPage::OnItemSelected()
 {
 
-}
-
-void CBaseMapsPage::FireGameEvent(IGameEvent* event)
-{
-    if (FStrEq(event->GetName(), "map_data_update"))
-    {
-        // Map updated from cache, do it here
-        uint32 id = event->GetInt("id");
-        MapDisplay_t *map = GetMapDisplayByID(id);
-        if (map)
-        {
-            UpdateMapListData(map, event->GetBool("main"), event->GetBool("info"), 
-                              event->GetBool("pb"), event->GetBool("wr"), 
-                              event->GetBool("thumbnail"));
-        }
-    }
 }
 
 void CBaseMapsPage::OnMapDownloadEnd(KeyValues* pKv)
@@ -549,26 +419,20 @@ void CBaseMapsPage::RemoveMap(MapDisplay_t &map)
 {
     if (m_pMapList->IsValidItemID(map.m_iListID))
     {
-        // Delete its image to free resources
-        if (map.m_iMapImageIndex > 1)
-            delete map.m_pImage;
-
         // find the row in the list and kill
         m_pMapList->RemoveItem(map.m_iListID);
-        m_vecMaps.FindAndRemove(map);
+        m_mapMaps.Remove(map.m_pMap->m_uID);
     }
 
     UpdateStatus();
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Remove all the maps we currently have
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::ClearMapList()
 {
-    m_vecMaps.RemoveAll();
+    m_mapMaps.RemoveAll();
     m_pMapList->RemoveAll();
 }
 
@@ -601,7 +465,7 @@ void CBaseMapsPage::OnMapStart(int id)
     if (!m_pMapList->GetSelectedItemsCount())
         return;
 
-    g_pMapCache->PlayMap(id); // MOM_TODO handle downloads
+    g_pMapCache->PlayMap(id);
 }
 
 //-----------------------------------------------------------------------------
@@ -618,7 +482,7 @@ void CBaseMapsPage::OnViewMapInfo(int id)
         return;
 
     // View the map info
-    MapSelectorDialog().OpenMapInfoDialog(this, pMapData);
+    MapSelectorDialog().OpenMapInfoDialog(pMapData);
 }
 
 void CBaseMapsPage::OnAddMapToLibrary(int id)
@@ -657,32 +521,4 @@ void CBaseMapsPage::OnOpenContextMenu(int itemID)
     // Activate context menu
     CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
     menu->ShowMenu(this, pMapData);
-}
-
-inline IImage* LoadFileImage(const char *pPath, int wide, int tall, IImage *pDefault)
-{
-    FileImage *pFileImage = new FileImage(pDefault);
-    if (pFileImage->LoadFromFile(pPath))
-        pFileImage->SetSize(wide, tall);
-    return pFileImage;
-}
-
-void CBaseMapsPage::LoadDefaultImageList()
-{
-    ImageList *imageList = new ImageList(false);
-    // Work backwards, since the first call will do the growth and fill with nulls,
-    // and subsequent calls only replace nulls with actual images
-    IImage *pNullImage = scheme()->GetImage("", false);
-    const int wide = GetScaledVal(HEADER_ICON_SIZE);
-    const int tall = GetScaledVal(HEADER_ICON_SIZE);
-    const int layoutDim = GetScaledVal(20);
-    imageList->SetImageAtIndex(INDX_MAP_IS_STAGED, LoadFileImage("materials/vgui/icon/map_selector/Staged.png", layoutDim, layoutDim, pNullImage));
-    imageList->SetImageAtIndex(INDX_MAP_IS_LINEAR, LoadFileImage("materials/vgui/icon/map_selector/Linear.png", layoutDim, layoutDim, pNullImage));
-    imageList->SetImageAtIndex(INDX_MAP_NOT_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/NotInFavorites.png", wide, tall, pNullImage));
-    imageList->SetImageAtIndex(INDX_MAP_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/InFavorites.png", wide, tall, pNullImage));
-    imageList->SetImageAtIndex(INDX_MAP_NOT_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/NotInLibrary.png", wide, tall, pNullImage));
-    imageList->SetImageAtIndex(INDX_MAP_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/InLibrary.png", wide, tall, pNullImage));
-    imageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, scheme()->GetImage("maps/invalid_map", false));
-
-    m_pMapList->SetImageList(imageList, true);
 }
