@@ -44,7 +44,8 @@ public:
 		m_bImage( false ),
 		m_nImageIndex( -1 ),
 		m_nImageIndexSelected( -1 ),
-		m_pIcon( 0 )
+		m_pIcon( 0 ),
+        m_bDataCopied(true)
 	{
 	}
 
@@ -55,6 +56,7 @@ public:
 	int				m_nImageIndex;
 	int				m_nImageIndexSelected;
 	IImage			*m_pIcon;
+    bool            m_bDataCopied;
 };
 
 typedef int __cdecl SortFunc( 
@@ -120,7 +122,7 @@ public:
 	// DATA HANDLING
 	// data->GetName() is used to uniquely identify an item
 	// data sub items are matched against column header name to be used in the table
-	virtual int AddItem(const KeyValues *data, unsigned int userData, bool bScrollToItem, bool bSortOnAdd); // Takes a copy of the data for use in the table. Returns the index the item is at.
+	virtual int AddItem(KeyValues *data, unsigned int userData, bool bScrollToItem, bool bSortOnAdd, bool bCopyData = true); // Takes a copy of the data for use in the table. Returns the index the item is at.
 	void SetItemDragData( int itemID, const KeyValues *data ); // Makes a copy of the keyvalues to store in the table. Used when dragging from the table. Only used if the caller enables drag support
 	virtual int	GetItemCount( void );			// returns the number of VISIBLE items
 	virtual int GetItem(const char *itemName);	// gets the row index of an item by name (data->GetName())

@@ -47,26 +47,10 @@ enum HEADERS
     HEADER_LAST_PLAYED,
 };
 
-enum RESERVED_IMAGE_INDICES
-{
-    // Start index is 1 because the 0th element is a BlankImage inside ImageLists
-    INDX_MAP_THUMBNAIL_UNKNOWN = 1,
-    INDX_MAP_IN_LIBRARY,
-    INDX_MAP_NOT_IN_LIBRARY,
-    INDX_MAP_IN_FAVORITES,
-    INDX_MAP_NOT_IN_FAVORITES,
-    INDX_MAP_IS_LINEAR,
-    INDX_MAP_IS_STAGED,
-
-
-    // MAKE SURE THIS IS LAST!
-    INDX_RESERVED_COUNT,
-};
-
 //-----------------------------------------------------------------------------
 // Purpose: Base property page for all the games lists (internet/favorites/lan/etc.)
 //-----------------------------------------------------------------------------
-class CBaseMapsPage : public vgui::PropertyPage, public IMapList, public CGameEventListener
+class CBaseMapsPage : public vgui::PropertyPage, public IMapList
 {
     DECLARE_CLASS_SIMPLE(CBaseMapsPage, vgui::PropertyPage);
 
@@ -94,10 +78,10 @@ public:
     virtual void OnApplyFilters(MapFilters_t filters);
     virtual bool MapPassesFilters(MapData *pData, MapFilters_t filters);
 
-    void FireGameEvent(IGameEvent* event) OVERRIDE;
-
     void OnMapDownloadEnd(KeyValues *pKv);
 
+    // Called when the map selector has a map updated in its list
+    MESSAGE_FUNC_INT(OnMapListDataUpdate, "MapListDataUpdate", id);
     // Called when the map selector opens
     MESSAGE_FUNC(OnMapSelectorOpened, "MapSelectorOpened") { OnTabSelected(); }
     // Called when map should be added to/removed from library
@@ -115,7 +99,6 @@ protected:
     void UpdateStatus();
 
     virtual void AddMapToList(MapData *pData);
-    void UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail);
 
     // Removes map from list
     void RemoveMap(MapDisplay_t&);
@@ -139,9 +122,8 @@ protected:
 
     CMapListPanel *m_pMapList;
 
-    CUtlVector<MapDisplay_t> m_vecMaps;
+    CUtlMap<uint32, MapDisplay_t> m_mapMaps;
 
 private:
-    void LoadDefaultImageList();
     vgui::HFont m_hFont;
 };

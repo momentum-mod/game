@@ -14,8 +14,22 @@
 
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
+
+
+static int __cdecl PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2)
+{
+    float p1time = p1.kv->GetFloat("time_f");
+    float p2time = p2.kv->GetFloat("time_f");
+
+    if (p1time > p2time)
+        return 1;
+    if (p1time < p2time)
+        return -1;
+
+    return 0;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -66,8 +80,6 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
     MoveToCenterOfScreen();
 
     SetTitle("#MOM_MapSelector_InfoDialog", true);
-
-    ListenForGameEvent("map_data_update");
 }
 
 //-----------------------------------------------------------------------------
@@ -107,9 +119,9 @@ void CDialogMapInfo::Connect()
     OnConnect();
 }
 
-void CDialogMapInfo::FireGameEvent(IGameEvent* event)
+void CDialogMapInfo::OnMapDataUpdate(KeyValues* pKv)
 {
-    if (event->GetBool("info") || event->GetBool("main"))
+    if (pKv->GetBool("info") || pKv->GetBool("main"))
         FillMapInfo();
 }
 
@@ -159,22 +171,6 @@ void CDialogMapInfo::ClearPlayerList()
 {
     m_pPlayerList->DeleteAllItems();
     Repaint();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Sorting function for time column
-//-----------------------------------------------------------------------------
-int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2)
-{
-    float p1time = p1.kv->GetFloat("time_f");
-    float p2time = p2.kv->GetFloat("time_f");
-
-    if (p1time > p2time)
-        return 1;
-    if (p1time < p2time)
-        return -1;
-
-    return 0;
 }
 
 void CDialogMapInfo::GetMapInfo()

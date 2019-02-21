@@ -12,7 +12,7 @@ namespace vgui
 //-----------------------------------------------------------------------------
 // Purpose: Dialog for displaying information about a game server
 //-----------------------------------------------------------------------------
-class CDialogMapInfo : public vgui::Frame, public CGameEventListener
+class CDialogMapInfo : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CDialogMapInfo, vgui::Frame);
 
@@ -25,7 +25,7 @@ public:
     // forces the dialog to attempt to connect to the server
     void Connect();
 
-    void FireGameEvent(IGameEvent* event) OVERRIDE;
+    void OnMapDataUpdate(KeyValues *pKv);
 
     // player list received
     virtual void ClearPlayerList();
@@ -44,9 +44,6 @@ protected:
     void Get10MapTimesCallback(KeyValues *pKvResponse);
 
 private:
-
-    static int PlayerTimeColumnSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &p1, const vgui::ListPanelItem &p2);
-
     // methods
     void RequestInfo();
     void ConnectToServer();

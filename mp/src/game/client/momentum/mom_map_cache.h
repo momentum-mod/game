@@ -159,7 +159,7 @@ struct MapData : APIModel
     MapImage m_Thumbnail;
 
     // Internal
-    bool m_bMapUpdated;
+    bool m_bMapFileNeedsUpdate;
     time_t m_tLastPlayed;
 
     MapData();

@@ -3,11 +3,10 @@
 #include "LibraryMaps.h"
 #include "CMapListPanel.h"
 
-#include "filesystem.h"
 #include "mom_map_cache.h"
+#include "mom_modulecomms.h"
 
 #include "vgui_controls/Panel.h"
-#include "vgui_controls/ImageList.h"
 
 #include "tier0/memdbgon.h"
 
@@ -21,6 +20,8 @@ CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps")
 {
     m_bLoadedMaps = false;
     m_pMapList->SetColumnVisible(HEADER_MAP_IN_LIBRARY, false);
+
+    g_pModuleComms->ListenForEvent("map_cache_updated", UtlMakeDelegate(this, &CLibraryMaps::OnMapCacheUpdated));
 }
 
 //-----------------------------------------------------------------------------
@@ -32,51 +33,41 @@ CLibraryMaps::~CLibraryMaps()
 
 void CLibraryMaps::OnGetNewMapList()
 {
-    m_bLoadedMaps = !m_vecMaps.IsEmpty();
+    m_bLoadedMaps = m_mapMaps.Count() > 0;
 
     BaseClass::OnGetNewMapList();
 }
 
-void CLibraryMaps::FireGameEvent(IGameEvent* event)
+void CLibraryMaps::OnMapCacheUpdated(KeyValues* pKv)
 {
-    if (FStrEq(event->GetName(), "map_cache_updated"))
+    if (pKv->GetInt("source") == MODEL_FROM_LIBRARY_API_CALL)
+        GetNewMapList();
+}
+
+void CLibraryMaps::OnMapListDataUpdate(int id)
+{
+    MapDisplay_t *pDisplay = GetMapDisplayByID(id);
+    if (pDisplay)
     {
-        if (event->GetInt("source") == MODEL_FROM_LIBRARY_API_CALL)
-            GetNewMapList();
-    }
-    else if (FStrEq(event->GetName(), "map_data_update"))
-    {
-        if (event->GetBool("main"))
+        // Remove this map only if we have it and it's no longer in the library
+        if (pDisplay->m_pMap && !pDisplay->m_pMap->m_bInLibrary)
         {
-            int id = event->GetInt("id");
-            MapDisplay_t *pDisplay = GetMapDisplayByID(id);
-            
-            if (pDisplay)
-            {
-                // Remove this map only if we have it and it's no longer in the library
-                if (pDisplay->m_pMap && !pDisplay->m_pMap->m_bInLibrary)
-                {
-                    RemoveMap(*pDisplay);
-                    return;
-                }
-            }
-            else
-            {
-                MapData *pMapData = g_pMapCache->GetMapDataByID(id);
-                if (pMapData)
-                {
-                    // Add this map if it was added to library
-                    if (pMapData->m_bInLibrary)
-                    {
-                        AddMapToList(pMapData);
-                        return;
-                    }
-                }
-            }
+            RemoveMap(*pDisplay);
+            return;
+        }
+    }
+    else
+    {
+        MapData *pMapData = g_pMapCache->GetMapDataByID(id);
+        if (pMapData && pMapData->m_bInLibrary)
+        {
+            // Add this map if it was added to library
+            AddMapToList(pMapData);
+            return;
         }
     }
 
-    BaseClass::FireGameEvent(event);
+    BaseClass::OnMapListDataUpdate(id);
 }
 
 void CLibraryMaps::OnTabSelected()

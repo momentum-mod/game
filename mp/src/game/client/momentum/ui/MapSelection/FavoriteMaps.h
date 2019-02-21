@@ -13,7 +13,8 @@ class CFavoriteMaps : public CBaseMapsPage
     void OnTabSelected() OVERRIDE;
     void OnGetNewMapList() OVERRIDE;
 
-    void FireGameEvent(IGameEvent* event) OVERRIDE;
+    void OnMapCacheUpdated(KeyValues *pKv);
+    void OnMapListDataUpdate(int id) OVERRIDE;
 
 private:
     bool m_bLoadedMaps;
