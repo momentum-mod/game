@@ -55,8 +55,8 @@ struct DownloadRequest
     // The first function called, when the headers are returned for the download request.
     // Data in the response KeyValues:
     //  "request"   (uint64)    The request handle that the download operates under
-    //  "size"      (uint64)    The size of the download, in bytes. Will be 0 if the headers did not contain a Content-Length header
-    CallbackFunc startFunc;
+    //  "size"      (uint64)    The size of the download, in bytes.
+    CallbackFunc sizeFunc;
     // The second function (repeatedly) called when data is transferred from the server to the client.
     // Data in the response KeyValues:
     //  "request"   (uint64)    The request handle that the download operates under
@@ -99,7 +99,7 @@ public:
     //      "URL"               The URL of the request
     //      "method"            The method used for the request (GET, POST, etc)
     //      "data"              The response data, parsed JSON represented as KeyValues
-    //      "error"             An error object, parson JSON represented as KeyValues
+    //      "error"             An error object, parsed JSON represented as KeyValues
     //          "err_parse"     If any parsing issue happens with JSON, it will be logged here as a string, inside error
     //
     // All API requests return `true` if the call succeeded in sending, else `false`.
@@ -141,7 +141,7 @@ public:
     // ==== File Downloading ====
     /**
      * @param pszURL        The URL to the file
-     * @param start         The start function of the download, see DownloadRequest for more info
+     * @param size          The size function of the download, see DownloadRequest for more info
      * @param prog          The progress function of the download, see DownloadRequest for more info
      * @param end           The complete function of the download, see DownloadRequest for more info
      * @param pFileName     The file name (including any extra pathing) of where the file should be stored.
@@ -151,7 +151,7 @@ public:
      * @param bAuth         (Optional) Whether this request should be authenticated. Defaults to false.
      * @return The handle of the request, will be an invalid handle if the request fails
      */
-    HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc start, CallbackFunc prog, CallbackFunc end,
+    HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc size, CallbackFunc prog, CallbackFunc end,
                                    const char *pFileName, const char *pFilePathID = "GAME", bool bAuth = false);
 
 protected:
