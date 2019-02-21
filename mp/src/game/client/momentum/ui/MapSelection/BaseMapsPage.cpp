@@ -141,8 +141,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     ListenForGameEvent("map_data_update");
     ListenForGameEvent("map_cache_updated");
-    g_pModuleComms->ListenForEvent("map_download_start", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadStart));
-    g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadProgress));
+
     g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadEnd));
 }
 
@@ -457,7 +456,7 @@ void CBaseMapsPage::UpdateMapListData(MapDisplay_t *pMap, bool bMain, bool bInfo
     else
     {
         // Otherwise we need to add it
-        pMap->m_iListID = m_pMapList->AddItem(kv, NULL, false, false);
+        pMap->m_iListID = m_pMapList->AddItem(kv, pMapData->m_uID, false, false);
     }
 }
 
@@ -504,33 +503,15 @@ void CBaseMapsPage::FireGameEvent(IGameEvent* event)
     }
 }
 
-void CBaseMapsPage::OnMapDownloadStart(KeyValues* pEvent)
-{
-    uint32 id = pEvent->GetInt("id");
-    MapDisplay_t *map = GetMapDisplayByID(id);
-    if (map)
-    {
-        m_pMapList->OnMapDownloadStart(pEvent, map);
-    }
-}
-
-void CBaseMapsPage::OnMapDownloadProgress(KeyValues* pKv)
-{
-    uint32 id = pKv->GetInt("id");
-    MapDisplay_t *map = GetMapDisplayByID(id);
-    if (map)
-    {
-        m_pMapList->OnMapDownloadProgress(pKv, map);
-    }
-}
-
 void CBaseMapsPage::OnMapDownloadEnd(KeyValues* pKv)
 {
     uint32 id = pKv->GetInt("id");
     MapDisplay_t *map = GetMapDisplayByID(id);
     if (map)
     {
-        m_pMapList->OnMapDownloadEnd(pKv, map);
+        KeyValues *pKvInto = m_pMapList->GetItem(map->m_iListID);
+        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? COLOR_RED : COLOR_GREEN);
+        m_pMapList->ApplyItemChanges(map->m_iListID);
     }
 }
 

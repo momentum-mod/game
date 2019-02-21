@@ -8,13 +8,14 @@ class MapDownloadProgress : public vgui::EditablePanel
 
     MapDownloadProgress(const char *pMapName);
 
-    void SetDownloadProgress(float prog);
+    void SetDownloadSize(uint32 size);
+    void SetDownloadProgress(uint32 offset);
 
     void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
 private:
-    char m_szMapName[MAX_MAP_NAME];
     vgui::ProgressBar *m_pProgress;
     vgui::Label *m_pMapLabel;
     Color m_cDownloadStart, m_cDownloadEnd;
+    uint32 m_uDownloadSize;
 };
