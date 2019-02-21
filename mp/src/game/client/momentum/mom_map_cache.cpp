@@ -573,32 +573,20 @@ CMapCache::CMapCache() : CAutoGameSystem("CMapCache"), m_pCurrentMapData(nullptr
 
 bool CMapCache::PlayMap(uint32 uID)
 {
-    MapData *dat = GetMapDataByID(uID);
-    if (dat)
+    MapData *pData = GetMapDataByID(uID);
+    if (pData)
     {
-        const char *pMapName = dat->m_szMapName;
+        const char *pMapName = pData->m_szMapName;
         // Firstly, check if we have this version of the map, and exit early
         const char *pFilePath = CFmtStr("maps/%s.bsp", pMapName).Get();
-        if (g_pMomentumUtil->FileExists(pFilePath, dat->m_szHash))
+        if (g_pMomentumUtil->FileExists(pFilePath, pData->m_szHash))
         {
             engine->ClientCmd_Unrestricted(CFmtStr("map %s\n", pMapName));
             return true;
         }
 
         // Check if we're already downloading it
-        bool bFound = false;
-        unsigned short indx = m_mapFileDownloads.FirstInorder();
-        while (indx != m_mapFileDownloads.InvalidIndex())
-        {
-            if (m_mapFileDownloads[indx] == uID)
-            {
-                bFound = true;
-                break;
-            }
-
-            indx = m_mapFileDownloads.NextInorder(indx);
-        }
-        if (bFound)
+        if (IsMapDownloading(uID))
         {
             // Already downloading!
             Log("Already downloading map %s!\n", pMapName);
@@ -606,14 +594,15 @@ bool CMapCache::PlayMap(uint32 uID)
         else if (uID)
         {
             // We either don't have it, or it's outdated, so let's get the latest one!
-            HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(dat->m_szDownloadURL,
-                                                                    UtlMakeDelegate(this, &CMapCache::StartMapDownload),
+            HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(pData->m_szDownloadURL,
+                                                                    UtlMakeDelegate(this, &CMapCache::MapDownloadSize),
                                                                     UtlMakeDelegate(this, &CMapCache::MapDownloadProgress),
-                                                                    UtlMakeDelegate(this, &CMapCache::FinishMapDownload),
+                                                                    UtlMakeDelegate(this, &CMapCache::MapDownloadEnd),
                                                                     pFilePath, "GAME", true);
             if (handle != INVALID_HTTPREQUEST_HANDLE)
             {
                 m_mapFileDownloads.Insert(handle, uID);
+                MapDownloadStart(pData);
             }
             else
             {
@@ -915,7 +904,15 @@ void CMapCache::OnMapRemovedFromFavorites(KeyValues* pKv)
     ToggleMapLibraryOrFavorite(pKv, false, false);
 }
 
-void CMapCache::StartMapDownload(KeyValues* pKvHeader)
+void CMapCache::MapDownloadStart(MapData *pData)
+{
+    KeyValues *pKvEvent = new KeyValues("map_download_start");
+    pKvEvent->SetInt("id", pData->m_uID);
+    pKvEvent->SetString("name", pData->m_szMapName);
+    g_pModuleComms->FireEvent(pKvEvent, FIRE_LOCAL_ONLY);
+}
+
+void CMapCache::MapDownloadSize(KeyValues* pKvHeader)
 {
     auto indx = m_mapFileDownloads.Find(pKvHeader->GetUint64("request"));
     if (m_mapFileDownloads.IsValidIndex(indx))
@@ -923,7 +920,7 @@ void CMapCache::StartMapDownload(KeyValues* pKvHeader)
         uint32 id = m_mapFileDownloads[indx];
 
         KeyValues *pEvent = pKvHeader->MakeCopy();
-        pEvent->SetName("map_download_start");
+        pEvent->SetName("map_download_size");
         pEvent->SetInt("id", id);
         g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
     }
@@ -942,7 +939,7 @@ void CMapCache::MapDownloadProgress(KeyValues* pKvProgress)
     }
 }
 
-void CMapCache::FinishMapDownload(KeyValues* pKvComplete)
+void CMapCache::MapDownloadEnd(KeyValues* pKvComplete)
 {
     uint16 fileIndx = m_mapFileDownloads.Find(pKvComplete->GetUint64("request"));
     if (fileIndx != m_mapFileDownloads.InvalidIndex())
@@ -964,6 +961,21 @@ void CMapCache::FinishMapDownload(KeyValues* pKvComplete)
 
         m_mapFileDownloads.RemoveAt(fileIndx);
     }
+}
+
+bool CMapCache::IsMapDownloading(uint32 uMapID)
+{
+    auto indx = m_mapFileDownloads.FirstInorder();
+    while (indx != m_mapFileDownloads.InvalidIndex())
+    {
+        if (m_mapFileDownloads[indx] == uMapID)
+        {
+            return true;
+        }
+
+        indx = m_mapFileDownloads.NextInorder(indx);
+    }
+    return false;
 }
 
 void CMapCache::PostInit()
