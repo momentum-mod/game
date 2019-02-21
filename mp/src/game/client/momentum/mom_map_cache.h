@@ -201,6 +201,7 @@ public:
     bool UpdateMapInfo(uint32 uMapID);
     uint32 GetUpdateIntervalForMap(MapData *pData);
 
+    bool IsMapDownloading(uint32 uMapID);
 protected:
     void PostInit() OVERRIDE;
     void LevelInitPreEntity() OVERRIDE;
@@ -223,11 +224,11 @@ protected:
     void OnMapRemovedFromFavorites(KeyValues *pKv);
 
     // Map downloading
-    void StartMapDownload(KeyValues *pKvHeader);
+    void MapDownloadStart(MapData *pData);
+    void MapDownloadSize(KeyValues *pKvHeader);
     void MapDownloadProgress(KeyValues *pKvProgress);
-    void FinishMapDownload(KeyValues *pKvComplete);
+    void MapDownloadEnd(KeyValues *pKvComplete);
 private:
-
     void UpdateFetchedMaps(KeyValues *pKv, bool bIsLibrary);
     void ToggleMapLibraryOrFavorite(KeyValues *pKv, bool bIsLibrary, bool bAdded);
 
