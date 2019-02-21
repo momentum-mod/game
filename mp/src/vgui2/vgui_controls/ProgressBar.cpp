@@ -37,6 +37,7 @@ ProgressBar::ProgressBar(Panel *parent, const char *panelName) : Panel(parent, p
     m_pProgressPercent->SetContentAlignment(Label::a_center);
     m_pProgressPercent->SetMouseInputEnabled(false);
     m_pProgressPercent->SetKeyBoardInputEnabled(false);
+    SetProgressText();
     m_pProgressPercent->SetVisible(false);
 	m_pszDialogVar = nullptr;
 	SetSegmentInfo( 4, 8 );
@@ -60,6 +61,14 @@ void ProgressBar::SetSegmentInfo( int gap, int width )
 {
 	_segmentGap = gap;
 	_segmentWide = width;
+}
+
+void ProgressBar::SetProgressText()
+{
+    if (m_pProgressPercent->IsVisible())
+    {
+        m_pProgressPercent->SetText(CFmtStr("%.1f%%", _progress * 100.0f));
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -197,10 +206,7 @@ void ProgressBar::SetProgress(float progress)
 
 		_progress = progress;
 
-        if (m_pProgressPercent->IsVisible())
-        {
-            m_pProgressPercent->SetText(CFmtStr("%.1f%%", _progress * 100.0f));
-        }
+        SetProgressText();
 
 		Repaint();
 	}
