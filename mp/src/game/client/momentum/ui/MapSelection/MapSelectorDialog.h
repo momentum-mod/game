@@ -2,6 +2,7 @@
 
 #include "vgui_controls/Frame.h"
 
+struct MapDisplay_t;
 struct MapFilters_t;
 struct MapData;
 class CMapContextMenu;
@@ -11,36 +12,61 @@ class CBrowseMaps;
 class CFavoriteMaps;
 class IMapList;
 class MapFilterPanel;
-
 class MapDownloadProgress;
 
+struct MapListData
+{
+    MapData *m_pMapData;
+    KeyValues *m_pKv;
+    int m_iThumbnailImageIndx;
+    vgui::IImage *m_pImage;
+
+    MapListData();
+    ~MapListData();
+};
+
+enum RESERVED_IMAGE_INDICES
+{
+    // Start index is 1 because the 0th element is a BlankImage inside ImageLists
+    INDX_MAP_THUMBNAIL_UNKNOWN = 1,
+    INDX_MAP_IN_LIBRARY,
+    INDX_MAP_NOT_IN_LIBRARY,
+    INDX_MAP_IN_FAVORITES,
+    INDX_MAP_NOT_IN_FAVORITES,
+    INDX_MAP_IS_LINEAR,
+    INDX_MAP_IS_STAGED,
+
+
+    // MAKE SURE THIS IS LAST!
+    INDX_RESERVED_COUNT,
+};
+
+#define HEADER_ICON_SIZE 14
+
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 class CMapSelectorDialog : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CMapSelectorDialog, vgui::Frame);
 
-public:
+  public:
     // Construction/destruction
     CMapSelectorDialog(vgui::VPANEL parent);
     ~CMapSelectorDialog(void);
 
-    void		Initialize(void);
+    void Initialize(void);
 
     // displays the dialog, moves it into focus, updates if it has to
-    void		Open(void);
-    
-    void OnClose() OVERRIDE;
+    void Open(void);
 
-    // updates status text at bottom of window
-    void UpdateStatusText(const char *format, ...);
+    void OnClose() OVERRIDE;
 
     // context menu access
     CMapContextMenu *GetContextMenu(Panel *pParent);
 
     // opens a game info dialog from a game list
-    CDialogMapInfo *OpenMapInfoDialog(IMapList *gameList, MapData *pMapData);
+    void OpenMapInfoDialog(MapData *pMapData);
 
     // closes all the map info dialogs
     void CloseAllMapInfoDialogs();
@@ -52,8 +78,17 @@ public:
     void ApplyFiltersToCurrentTab(MapFilters_t filters);
 
     // load/saves filter & favorites settings from disk
-    void		LoadUserData();
-    void		SaveUserData();
+    void LoadUserData();
+    void SaveUserData();
+
+    void LoadDefaultImageList();
+    vgui::ImageList *GetImageList() { return m_pImageList; }
+
+    // Map data handling
+    void OnMapDataUpdated(KeyValues *pKv);
+    void CreateMapListData(MapData *pData);
+    void UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail);
+    MapListData *GetMapListDataByID(uint32 uMapID);
 
     // Callbacks for download
     void OnMapDownloadStart(KeyValues *pKv);
@@ -63,34 +98,31 @@ public:
 
     MapDownloadProgress *GetDownloadProgressPanel(uint32 uMapID);
 
-private:
-
+  private:
     // current game list change
     MESSAGE_FUNC(OnTabChanged, "PageChanged");
 
-    // notification that we connected / disconnected
-    MESSAGE_FUNC_PARAMS(OnConnectToGame, "ConnectedToGame", kv);
-    MESSAGE_FUNC(OnDisconnectFromGame, "DisconnectedFromGame");
-
     virtual void ActivateBuildMode();
 
-private:
     // list of all open game info dialogs
-    CUtlVector<vgui::DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
+    CUtlMap<uint32, vgui::DHANDLE<CDialogMapInfo>> m_mapMapInfoDialogs;
+
+    // Map of all map list data
+    CUtlMap<uint32, MapListData*> m_mapMapListData;
 
     // Map of all downloads
-    CUtlMap<uint32, MapDownloadProgress*> m_mapMapDownloads;
+    CUtlMap<uint32, MapDownloadProgress *> m_mapMapDownloads;
 
     // pointer to current game list
     IMapList *m_pCurrentMapList;
 
-    // Status text
-    vgui::Label	*m_pStatusLabel;
+    // Map image list
+    vgui::ImageList *m_pImageList;
 
     // property sheet
     vgui::PropertySheet *m_pTabPanel;
 
-    //Map tabs
+    // Map tabs
     CLibraryMaps *m_pLibraryMaps;
     CBrowseMaps *m_pBrowseMaps;
     CFavoriteMaps *m_pFavoriteMaps;
@@ -98,15 +130,12 @@ private:
     // Filters
     MapFilterPanel *m_pFilterPanel;
 
-    //Filter data
-    KeyValues *m_pSavedData;//Saved on disk filter data
-    KeyValues *m_pFilterData;//Current filter data in the Dialog
+    // Filter data
+    KeyValues *m_pSavedData;  // Saved on disk filter data
+    KeyValues *m_pFilterData; // Current filter data in the Dialog
 
     // context menu
     CMapContextMenu *m_pContextMenu;
-
-    // currently connected game
-    bool m_bCurrentlyConnected;
 };
 
 // singleton accessor

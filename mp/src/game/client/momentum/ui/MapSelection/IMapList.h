@@ -12,19 +12,14 @@ struct MapDisplay_t
 {
     MapDisplay_t()
     {
-        m_iMapImageIndex = 1; // Defaults to 1 as it's the invalid map index
         m_iListID = -1;
         m_bNeedsShown = true;
         m_bNeedsUpdate = true;
         m_pMap = nullptr;
-        m_pImage = nullptr;
     }
     MapData *m_pMap;      // the map struct, containing the information for the map
     int m_iListID;        // the VGUI2 list panel index for displaying this server
-    int m_iMapImageIndex; // the map's image index in the map list's image list
-    vgui::IImage *m_pImage; // The map's image
     bool m_bNeedsShown, m_bNeedsUpdate;
-    bool operator==(const MapDisplay_t &rhs) const { return m_iListID == rhs.m_iListID; }
 };
 
 // Used by map filter panel
