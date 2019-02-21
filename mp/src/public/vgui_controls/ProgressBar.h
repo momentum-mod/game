@@ -34,6 +34,7 @@ public:
 	MESSAGE_FUNC_FLOAT( SetProgress, "SetProgress", progress );
 	float GetProgress();
 	virtual void SetSegmentInfo( int gap, int width );
+    virtual void SetProgressText();
 
 	// utility function for calculating a time remaining string
 	static bool ConstructTimeRemainingString(OUT_Z_BYTECAP(outputBufferSizeInBytes) wchar_t *output, int outputBufferSizeInBytes, float startTime, float currentTime, float currentProgress, float lastProgressUpdateTime, bool addRemainingSuffix);
