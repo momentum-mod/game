@@ -12,19 +12,20 @@ using namespace vgui;
 
 MapDownloadProgress::MapDownloadProgress(const char *pMapName) : BaseClass(nullptr, "MapDownloadProgress")
 {
-    Q_strncpy(m_szMapName, pMapName, sizeof(m_szMapName));
     m_pMapLabel = nullptr;
     m_pProgress = nullptr;
+    m_uDownloadSize = 0;
 
     SetProportional(true);
     SetSize(10, 10);
     SetScheme("MapSelectorScheme");
 
-    m_pMapLabel = new Label(this, "MapName", m_szMapName);
+    m_pMapLabel = new Label(this, "MapName", pMapName);
     m_pProgress = new ContinuousProgressBar(this, "ProgressBar");
 
     LoadControlSettings("resource/ui/MapSelector/MapDownloadProgress.res");
 
+    m_pMapLabel->SetText(pMapName);
     m_pMapLabel->DisableMouseInputForThisPanel(true);
     m_pProgress->DisableMouseInputForThisPanel(true);
     DisableMouseInputForThisPanel(true);
@@ -32,14 +33,21 @@ MapDownloadProgress::MapDownloadProgress(const char *pMapName) : BaseClass(nullp
     MakeReadyForUse();
 }
 
-void MapDownloadProgress::SetDownloadProgress(float prog)
+void MapDownloadProgress::SetDownloadSize(uint32 size)
 {
-    m_pMapLabel->SetText(m_szMapName);
+    m_uDownloadSize = size;
+}
+
+void MapDownloadProgress::SetDownloadProgress(uint32 offset)
+{
+    const float fProgress = float(double(offset) / double(m_uDownloadSize));
+
+    m_pProgress->SetProgress(fProgress);
+
     // Interpolate the color
-    Color interp = g_pMomentumUtil->ColorLerp(prog, m_cDownloadStart, m_cDownloadEnd);
-    m_pMapLabel->SetFgColor(interp);
-    m_pProgress->SetProgress(prog);
-    m_pProgress->SetFgColor(interp);
+    const Color lerpedColor = g_pMomentumUtil->ColorLerp(fProgress, m_cDownloadStart, m_cDownloadEnd);
+    m_pMapLabel->SetFgColor(lerpedColor);
+    m_pProgress->SetFgColor(lerpedColor);
 }
 
 void MapDownloadProgress::ApplySchemeSettings(vgui::IScheme* pScheme)

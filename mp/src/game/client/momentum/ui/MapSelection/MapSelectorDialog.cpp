@@ -8,7 +8,10 @@
 #include "MapContextMenu.h"
 #include "MapInfoDialog.h"
 #include "MapFilterPanel.h"
+#include "MapDownloadProgress.h"
+
 #include "mom_map_cache.h"
+#include "mom_modulecomms.h"
 
 #include "vgui_controls/PropertySheet.h"
 #include "vgui/IVGui.h"
@@ -29,6 +32,8 @@ CMapSelectorDialog &MapSelectorDialog()
 //-----------------------------------------------------------------------------
 CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
+    SetDefLessFunc(m_mapMapDownloads);
+
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
@@ -112,6 +117,12 @@ void CMapSelectorDialog::Initialize()
 {
     SetTitle("#MOM_MapSelector_Maps", true);
     SetVisible(false);
+
+    // Listen for download events
+    g_pModuleComms->ListenForEvent("map_download_start", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadStart));
+    g_pModuleComms->ListenForEvent("map_download_size", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadSize));
+    g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadProgress));
+    g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadEnd));
 }
 
 
@@ -164,6 +175,69 @@ void CMapSelectorDialog::SaveUserData()
 
     // save per-page config
     SaveUserConfig();
+}
+
+void CMapSelectorDialog::OnMapDownloadStart(KeyValues* pKv)
+{
+    const uint32 uID = pKv->GetInt("id");
+
+    // First check if we're downloading already
+    const auto indx = m_mapMapDownloads.Find(uID);
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        DevLog("Already downloading!\n");
+        return;
+    }
+
+    m_mapMapDownloads.Insert(uID, new MapDownloadProgress(pKv->GetString("name")));
+}
+
+void CMapSelectorDialog::OnMapDownloadSize(KeyValues* pKv)
+{
+    const auto indx = m_mapMapDownloads.Find(pKv->GetInt("id"));
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        m_mapMapDownloads[indx]->SetDownloadSize(pKv->GetUint64("size"));
+    }
+}
+
+void CMapSelectorDialog::OnMapDownloadProgress(KeyValues* pKv)
+{
+    const auto indx = m_mapMapDownloads.Find(pKv->GetInt("id"));
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        m_mapMapDownloads[indx]->SetDownloadProgress(pKv->GetInt("offset") + pKv->GetInt("size"));
+    }
+    else
+    {
+        Warning("Map download end with invalid index!\n");
+    }
+}
+
+void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
+{
+    uint32 uID = pKv->GetInt("id");
+    const auto indx = m_mapMapDownloads.Find(uID);
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        m_mapMapDownloads[indx]->DeletePanel();
+
+        m_mapMapDownloads.RemoveAt(indx);
+    }
+    else
+    {
+        Warning("Map download end with invalid index!\n");
+    }
+}
+
+MapDownloadProgress* CMapSelectorDialog::GetDownloadProgressPanel(uint32 uMapID)
+{
+    const auto indx = m_mapMapDownloads.Find(uMapID);
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        return m_mapMapDownloads[indx];
+    }
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
