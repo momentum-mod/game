@@ -16,6 +16,7 @@
 #include "util/mom_util.h"
 #include "controls/FileImage.h"
 
+#include "IMessageboxPanel.h"
 #include "vgui_controls/PropertySheet.h"
 #include "vgui_controls/ImageList.h"
 #include "vgui/IVGui.h"
@@ -49,6 +50,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     SetDefLessFunc(m_mapMapDownloads);
     SetDefLessFunc(m_mapMapListData);
     SetDefLessFunc(m_mapMapInfoDialogs);
+    SetDefLessFunc(m_mapCancelConfirmDlgs);
 
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
@@ -434,6 +436,12 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
     {
         Warning("Map download end with invalid index!\n");
     }
+
+    const auto indxCancel = m_mapCancelConfirmDlgs.Find(uID);
+    if (m_mapCancelConfirmDlgs.IsValidIndex(indxCancel))
+    {
+        m_mapCancelConfirmDlgs[indxCancel]->OnCommand("Close");
+    }
 }
 
 bool CMapSelectorDialog::IsMapDownloading(uint32 uMapID) const
@@ -458,13 +466,31 @@ void CMapSelectorDialog::OnStartMapDownload(int id)
 
 void CMapSelectorDialog::OnCancelMapDownload(int id)
 {
-    // MOM_TODO: use a messagebox panel here to confirm cancel
+    if (ConVarRef("mom_map_download_cancel_confirm").GetBool())
+    {
+        const auto indx = m_mapCancelConfirmDlgs.Find(id);
+        if (!m_mapCancelConfirmDlgs.IsValidIndex(indx))
+        {
+            Panel *pConfirm = messageboxpanel->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmCancel", "#MOM_MapSelector_ConfirmCancelMsg",
+                                                                     new KeyValues("ConfirmCancelDownload", "id", id),
+                                                                     new KeyValues("RejectCancelDownload", "id", id),
+                                                                     "#GameUI_Yes", "#GameUI_No");
+            m_mapCancelConfirmDlgs.Insert(id, pConfirm);
+        }
+    }
+    else
+        g_pMapCache->CancelDownload(id);
+}
+
+void CMapSelectorDialog::OnConfirmCancelMapDownload(int id)
+{
+    m_mapCancelConfirmDlgs.RemoveAt(m_mapCancelConfirmDlgs.Find(id));
     g_pMapCache->CancelDownload(id);
 }
 
-void CMapSelectorDialog::OnConfirmCancelMapDownload(KeyValues *pKv)
+void CMapSelectorDialog::OnRejectCancelMapDownload(int id)
 {
-    
+    m_mapCancelConfirmDlgs.RemoveAt(m_mapCancelConfirmDlgs.Find(id));
 }
 
 void CMapSelectorDialog::OnAddMapToFavorites(int id)

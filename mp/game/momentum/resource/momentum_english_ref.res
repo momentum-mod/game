@@ -150,6 +150,8 @@
         "MOM_MapSelector_LastPlayed" "Last Played"
         "MOM_MapSelector_DownloadMap" "Download Map"
         "MOM_MapSelector_CancelDownload" "Cancel Download"
+        "MOM_MapSelector_ConfirmCancel" "Cancel Download?"
+        "MOM_MapSelector_ConfirmCancelMsg" "Are you sure you want to cancel this map download?"
 
         "MOM_MapSelector_MapLayout" "Layout"
         "MOM_MapSelector_MapLayout_Tooltip" "This column shows if the map is linear or has stages."
