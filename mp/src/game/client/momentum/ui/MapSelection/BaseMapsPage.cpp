@@ -342,6 +342,8 @@ void CBaseMapsPage::OnMapListDataUpdate(int mapID)
             MapListData *pData = MapSelectorDialog().GetMapListDataByID(mapID);
             if (pData)
                 pMapDisplay->m_iListID = m_pMapList->AddItem(pData->m_pKv, mapID, false, false, false);
+            else
+                MapSelectorDialog().CreateMapListData(pMapDisplay->m_pMap);
         }
     }
 }
@@ -457,68 +459,20 @@ void CBaseMapsPage::OnGetNewMapList()
     ApplyFilters(GetFilters());
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: initiates map loading
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::OnMapStart(int id)
-{
-    if (!m_pMapList->GetSelectedItemsCount())
-        return;
-
-    g_pMapCache->PlayMap(id);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Displays the current map info (from contextmenu)
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::OnViewMapInfo(int id)
-{
-    if (!m_pMapList->GetSelectedItemsCount())
-        return;
-
-    // get the map
-    MapData *pMapData = g_pMapCache->GetMapDataByID(id);
-    if (!pMapData)
-        return;
-
-    // View the map info
-    MapSelectorDialog().OpenMapInfoDialog(pMapData);
-}
-
-void CBaseMapsPage::OnAddMapToLibrary(int id)
-{
-    g_pMapCache->AddMapToLibrary(id);
-}
-
-void CBaseMapsPage::OnRemoveMapFromLibrary(int id)
-{
-    g_pMapCache->RemoveMapFromLibrary(id);
-}
-
-void CBaseMapsPage::OnAddMapToFavorites(int id)
-{
-    g_pMapCache->AddMapToFavorites(id); 
-}
-
-void CBaseMapsPage::OnRemoveMapFromFavorites(int id)
-{
-    g_pMapCache->RemoveMapFromFavorites(id);
-}
-
 void CBaseMapsPage::OnOpenContextMenu(int itemID)
 {
     if (!m_pMapList->GetSelectedItemsCount())
         return;
 
-    KeyValues *pData = m_pMapList->GetItem(itemID);
-    if (!pData)
+    uint32 uMapID = m_pMapList->GetItemUserData(itemID);
+    if (uMapID == 0)
         return;
 
-    MapData *pMapData = g_pMapCache->GetMapDataByID(pData->GetInt(KEYNAME_MAP_ID));
+    MapData *pMapData = g_pMapCache->GetMapDataByID(uMapID);
     if (!pMapData)
         return;
 
     // Activate context menu
-    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
-    menu->ShowMenu(this, pMapData);
+    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu();
+    menu->ShowMenu(pMapData);
 }

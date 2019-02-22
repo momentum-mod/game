@@ -33,7 +33,7 @@ public:
 
     void AddWorkshopItemToLocalMaps(PublishedFileId_t id);*/
 private:
-
+    ConVarRef m_cvarAutoDownload, m_cvarDeleteQueue;
     bool m_bLoadedMaps;
 
 };

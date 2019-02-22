@@ -84,16 +84,11 @@ public:
     MESSAGE_FUNC_INT(OnMapListDataUpdate, "MapListDataUpdate", id);
     // Called when the map selector opens
     MESSAGE_FUNC(OnMapSelectorOpened, "MapSelectorOpened") { OnTabSelected(); }
-    // Called when map should be added to/removed from library
-    MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
-    MESSAGE_FUNC_INT(OnRemoveMapFromLibrary, "RemoveFromLibrary", id);
-    // Called when map should be added to/removed from favorites
-    MESSAGE_FUNC_INT(OnAddMapToFavorites, "AddToFavorites", id);
-    MESSAGE_FUNC_INT(OnRemoveMapFromFavorites, "RemoveFromFavorites", id);
+    // Right clicking a map
+    MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
+    MESSAGE_FUNC(OnItemSelected, "ItemSelected");
 protected:
     virtual void OnCommand(const char *command);
-    
-    MESSAGE_FUNC(OnItemSelected, "ItemSelected");
 
     // updates map count
     void UpdateStatus();
@@ -112,13 +107,6 @@ protected:
     virtual void OnTabSelected();
     virtual void GetNewMapList();
     virtual void OnGetNewMapList();
-
-    // Called when map should be started
-    MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
-    // called to look at map info
-    MESSAGE_FUNC_INT(OnViewMapInfo, "ViewMapInfo", id);
-    // Right clicking a map
-    MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
 
     CMapListPanel *m_pMapList;
 
