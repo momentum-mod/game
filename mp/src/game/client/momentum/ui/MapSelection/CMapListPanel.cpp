@@ -51,16 +51,16 @@ void CMapListPanel::OnMouseReleased(MouseCode code)
                 if (col == HEADER_MAP_IN_LIBRARY)
                 {
                     if (pMap->GetInt(KEYNAME_MAP_IN_LIBRARY) == INDX_MAP_IN_LIBRARY)
-                        m_pOuter->OnRemoveMapFromLibrary(mapID);
+                        MapSelectorDialog().OnRemoveMapFromLibrary(mapID);
                     else
-                        m_pOuter->OnAddMapToLibrary(mapID);
+                        MapSelectorDialog().OnAddMapToLibrary(mapID);
                 }
                 else if (col == HEADER_MAP_IN_FAVORITES)
                 {
                     if (pMap->GetInt(KEYNAME_MAP_IN_FAVORITES) == INDX_MAP_IN_FAVORITES)
-                        m_pOuter->OnRemoveMapFromFavorites(mapID);
+                        MapSelectorDialog().OnRemoveMapFromFavorites(mapID);
                     else
-                        m_pOuter->OnAddMapToFavorites(mapID);
+                        MapSelectorDialog().OnAddMapToFavorites(mapID);
                 }
             }
         }

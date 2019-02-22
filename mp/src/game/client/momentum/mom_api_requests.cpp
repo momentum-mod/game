@@ -294,6 +294,7 @@ bool CAPIRequests::CancelDownload(HTTPRequestHandle handle)
         HTTPRequestCompleted_t mock;
         mock.m_hRequest = handle;
         mock.m_bRequestSuccessful = false;
+        mock.m_eStatusCode = k_EHTTPStatusCode410Gone;
 
         OnDownloadHTTPComplete(&mock, true);
         return true;
@@ -469,6 +470,7 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
         {
             comp->SetBool("error", true);
             comp->SetInt("code", pCallback->m_eStatusCode);
+            comp->SetBool("bIO", bIO);
         }
         else if (call->m_bSaveToFile)
         {

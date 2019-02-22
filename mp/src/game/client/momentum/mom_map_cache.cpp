@@ -14,6 +14,12 @@
 
 #define MAP_CACHE_FILE_NAME "map_cache.dat"
 
+static MAKE_TOGGLE_CONVAR(mom_map_delete_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to be deleted upon game close.\nIf 0, maps are deleted the moment they are confirmed to have been removed from library.\n");
+static MAKE_TOGGLE_CONVAR(mom_map_download_auto, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will automatically download when updated/added to library.\n");
+static MAKE_TOGGLE_CONVAR(mom_map_download_queue, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to download, allowing mom_map_download_queue_parallel parallel downloads.\n");
+static MAKE_CONVAR(mom_map_download_queue_parallel, "3", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The number of parallel map downloads if mom_map_download_queue is 1.\n", 1, 20);
+static MAKE_TOGGLE_CONVAR(mom_map_download_cancel_confirm, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, a messagebox will be created to ask to confirm cancelling downloads.\n");
+
 void User::FromKV(KeyValues* pKv)
 {
     m_uID = pKv->GetUint64("id");
@@ -273,7 +279,7 @@ MapData::MapData()
     m_szLastUpdated[0] = '\0';
     m_bInLibrary = false;
     m_bInFavorites = false;
-    m_szPath[0] = '\0';
+    m_bMapFileExists = false;
     m_uID = 0;
     m_szMapName[0] = '\0';
     m_szHash[0] = '\0';
@@ -292,13 +298,12 @@ MapData::MapData(const MapData& src)
     Q_strncpy(m_szHash, src.m_szHash, sizeof(m_szHash));
     Q_strncpy(m_szDownloadURL, src.m_szDownloadURL, sizeof(m_szDownloadURL));
     m_bMapFileNeedsUpdate = src.m_bMapFileNeedsUpdate;
+    m_bMapFileExists = src.m_bMapFileExists;
 
     Q_strncpy(m_szMapName, src.m_szMapName, sizeof(m_szMapName));
     m_bInFavorites = src.m_bInFavorites;
     m_bInLibrary = src.m_bInLibrary;
     Q_strncpy(m_szLastUpdated, src.m_szLastUpdated, sizeof(m_szLastUpdated));
-
-    Q_strncpy(m_szPath, src.m_szPath, sizeof(m_szPath));
 
     m_Info = src.m_Info;
     m_Submitter = src.m_Submitter;
@@ -332,17 +337,6 @@ void MapData::SendDataUpdate()
     ResetUpdate();
 }
 
-void MapData::SendMapFileUpdate()
-{
-    if (m_bMapFileNeedsUpdate)
-    {
-        KeyValues *pEvent = new KeyValues("map_file_updated");
-        pEvent->SetInt("id", m_uID);
-        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
-        // m_bMapUpdated gets reset when the new map finishes downloading successfully
-    }
-}
-
 void MapData::ResetUpdate()
 {
     m_PersonalBest.ResetUpdate();
@@ -373,6 +367,18 @@ bool MapData::GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType)
     return true;
 }
 
+void MapData::DeleteMapFile()
+{
+    if (m_bMapFileExists)
+    {
+        // MOM_TODO when we allow different map library folders, construct full path here
+        const char *pFilePath = CFmtStr("maps/%s.bsp", m_szMapName).Get();
+        if (g_pFullFileSystem->FileExists(pFilePath, "GAME"))
+            g_pFullFileSystem->RemoveFile(pFilePath, "GAME");
+        m_bMapFileExists = false;
+    }
+}
+
 void MapData::FromKV(KeyValues* pMap)
 {
     m_uID = pMap->GetInt("id");
@@ -387,7 +393,7 @@ void MapData::FromKV(KeyValues* pMap)
         Q_strncpy(m_szMapName, pMap->GetName(), sizeof(m_szMapName));
         m_bInFavorites = pMap->GetBool("inFavorites");
         m_bInLibrary = pMap->GetBool("inLibrary");
-        Q_strncpy(m_szPath, pMap->GetString("path"), sizeof(m_szPath));
+        m_bMapFileExists = pMap->GetBool("mapFileExists");
         m_bMapFileNeedsUpdate = pMap->GetBool("mapNeedsUpdate");
         m_tLastPlayed = pMap->GetUint64("lastPlayed");
     }
@@ -398,6 +404,7 @@ void MapData::FromKV(KeyValues* pMap)
         m_bInFavorites = m_eSource == MODEL_FROM_FAVORITES_API_CALL || pFavorites && !pFavorites->IsEmpty();
         KeyValues *pLibrary = pMap->FindKey("libraryEntries");
         m_bInLibrary = m_eSource == MODEL_FROM_LIBRARY_API_CALL || pLibrary && !pLibrary->IsEmpty();
+        m_bMapFileNeedsUpdate = m_eSource == MODEL_FROM_LIBRARY_API_CALL;
     }
 
     KeyValues* pInfo = pMap->FindKey("info");
@@ -454,7 +461,7 @@ void MapData::ToKV(KeyValues* pKv) const
     pKv->SetBool("inLibrary", m_bInLibrary);
     pKv->SetString("updatedAt", m_szLastUpdated);
     pKv->SetBool("mapNeedsUpdate", m_bMapFileNeedsUpdate);
-    pKv->SetString("path", m_szPath);
+    pKv->SetBool("mapFileExists", m_bMapFileExists);
     pKv->SetUint64("lastPlayed", m_tLastPlayed);
 
     if (m_Info.m_bValid)
@@ -514,7 +521,8 @@ MapData& MapData::operator=(const MapData& src)
         m_eType = src.m_eType;
         m_eMapStatus = src.m_eMapStatus;
 
-        m_bMapFileNeedsUpdate = !m_bValid || !FStrEq(m_szHash, src.m_szHash);
+        // MOM_TODO: is src.m_bInLibrary always set properly? Make sure the API requests have it!
+        m_bMapFileNeedsUpdate = m_bMapFileNeedsUpdate || (src.m_bInLibrary && !FStrEq(m_szHash, src.m_szHash));
 
         Q_strncpy(m_szHash, src.m_szHash, sizeof(m_szHash));
         Q_strncpy(m_szDownloadURL, src.m_szDownloadURL, sizeof(m_szDownloadURL));
@@ -523,8 +531,6 @@ MapData& MapData::operator=(const MapData& src)
         m_bInFavorites = src.m_bInFavorites;
         m_bInLibrary = src.m_bInLibrary;
         Q_strncpy(m_szLastUpdated, src.m_szLastUpdated, sizeof(m_szLastUpdated));
-
-        Q_strncpy(m_szPath, src.m_szPath, sizeof(m_szPath));
 
         if (src.m_tLastPlayed > m_tLastPlayed)
             m_tLastPlayed = src.m_tLastPlayed;
@@ -566,29 +572,63 @@ CMapCache::CMapCache() : CAutoGameSystem("CMapCache"), m_pCurrentMapData(nullptr
     SetDefLessFunc(m_mapFileDownloads);
 }
 
+CMapCache::~CMapCache()
+{
+    m_mapMapCache.PurgeAndDeleteElements();
+}
+
 bool CMapCache::PlayMap(uint32 uID)
+{
+    MapData *pData = GetMapDataByID(uID);
+    if (MapFileExists(pData))
+    {
+        engine->ClientCmd_Unrestricted(CFmtStr("map %s\n", pData->m_szMapName));
+        return true;
+    }
+
+    pData->m_bMapFileExists = false;
+    pData->m_bMapFileNeedsUpdate = pData->m_bInLibrary;
+    pData->m_bUpdated = true;
+    pData->SendDataUpdate();
+
+    return false;
+}
+
+bool CMapCache::MapFileExists(MapData* pData)
+{
+    if (!pData)
+        return false;
+
+    const char *pFilePath = CFmtStr("maps/%s.bsp", pData->m_szMapName).Get();
+    return g_pMomentumUtil->FileExists(pFilePath, pData->m_szHash);
+}
+
+bool CMapCache::DownloadMap(uint32 uID)
 {
     MapData *pData = GetMapDataByID(uID);
     if (pData)
     {
-        const char *pMapName = pData->m_szMapName;
         // Firstly, check if we have this version of the map, and exit early
-        const char *pFilePath = CFmtStr("maps/%s.bsp", pMapName).Get();
-        if (g_pMomentumUtil->FileExists(pFilePath, pData->m_szHash))
+        if (MapFileExists(pData))
         {
-            engine->ClientCmd_Unrestricted(CFmtStr("map %s\n", pMapName));
-            return true;
+            pData->m_bMapFileNeedsUpdate = false;
+            pData->m_bMapFileExists = true;
+            pData->m_bUpdated = true;
+            pData->SendDataUpdate();
+            Log("Map already exists!\n");
+            return false;
         }
 
         // Check if we're already downloading it
         if (IsMapDownloading(uID))
         {
             // Already downloading!
-            Log("Already downloading map %s!\n", pMapName);
+            Log("Already downloading map %s!\n", pData->m_szMapName);
         }
         else if (uID)
         {
             // We either don't have it, or it's outdated, so let's get the latest one!
+            const char *pFilePath = CFmtStr("maps/%s.bsp", pData->m_szMapName).Get();
             HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(pData->m_szDownloadURL,
                                                                     UtlMakeDelegate(this, &CMapCache::MapDownloadSize),
                                                                     UtlMakeDelegate(this, &CMapCache::MapDownloadProgress),
@@ -598,14 +638,28 @@ bool CMapCache::PlayMap(uint32 uID)
             {
                 m_mapFileDownloads.Insert(handle, uID);
                 MapDownloadStart(pData);
+                return true;
             }
-            else
-            {
-                Warning("Failed to try to download the map %s!\n", pMapName);
-            }
+            
+            Warning("Failed to try to download the map %s!\n", pData->m_szMapName);
         }
     }
 
+    return false;
+}
+
+bool CMapCache::CancelDownload(uint32 uID)
+{
+    auto indx = m_mapFileDownloads.FirstInorder();
+    while (indx != m_mapFileDownloads.InvalidIndex())
+    {
+        if (m_mapFileDownloads[indx] == uID)
+        {
+            return g_pAPIRequests->CancelDownload(m_mapFileDownloads.Key(indx));
+        }
+
+        indx = m_mapFileDownloads.NextInorder(indx);
+    }
     return false;
 }
 
@@ -651,7 +705,7 @@ MapData *CMapCache::GetMapDataByID(uint32 uMapID)
     const auto indx = m_mapMapCache.Find(uMapID);
     if (m_mapMapCache.IsValidIndex(indx))
     {
-        return &m_mapMapCache.Element(indx);
+        return m_mapMapCache.Element(indx);
     }
 
     return nullptr;
@@ -662,7 +716,7 @@ void CMapCache::GetMapList(CUtlVector<MapData*>& vecMaps, MapListType_e type)
     auto indx = m_mapMapCache.FirstInorder();
     while (indx != m_mapMapCache.InvalidIndex())
     {
-        MapData *d = &m_mapMapCache.Element(indx);
+        MapData *d = m_mapMapCache.Element(indx);
         bool bShouldAdd = d->m_eMapStatus == MAP_APPROVED;
         if (type == MAP_LIST_LIBRARY)
             bShouldAdd = d->m_bInLibrary;
@@ -672,7 +726,7 @@ void CMapCache::GetMapList(CUtlVector<MapData*>& vecMaps, MapListType_e type)
             bShouldAdd = d->m_eMapStatus == MAP_PRIVATE_TESTING || d->m_eMapStatus == MAP_PUBLIC_TESTING;
 
         if (bShouldAdd)
-            vecMaps.AddToTail(&m_mapMapCache[indx]);
+            vecMaps.AddToTail(m_mapMapCache[indx]);
 
         indx = m_mapMapCache.NextInorder(indx);
     }
@@ -702,33 +756,30 @@ bool CMapCache::AddMapsToCache(KeyValues* pData, APIModelSource source)
 
 void CMapCache::AddMapToCache(KeyValues* pMap, APIModelSource source)
 {
-    MapData d;
-    d.m_eSource = source;
-    d.FromKV(pMap);
+    MapData *pData = new MapData;
+    pData->m_eSource = source;
+    pData->FromKV(pMap);
 
-    auto indx = m_mapMapCache.Find(d.m_uID);
+    const auto indx = m_mapMapCache.Find(pData->m_uID);
     if (m_mapMapCache.IsValidIndex(indx))
     {
         // Update it
-        m_mapMapCache[indx] = d;
+        *m_mapMapCache[indx] = *pData;
         // Update other UI about this update if need be
-        if (m_mapMapCache[indx].WasUpdated())
-            m_mapMapCache[indx].SendDataUpdate();
-        // If the map file itself needs updating, send the event here
-        if (m_mapMapCache[indx].m_bMapFileNeedsUpdate)
-            m_mapMapCache[indx].SendMapFileUpdate();
+        if (m_mapMapCache[indx]->WasUpdated())
+            m_mapMapCache[indx]->SendDataUpdate();
+
+        delete pData;
     }
     else
     {
-        m_dictMapNames.Insert(d.m_szMapName, d.m_uID);
-        m_mapMapCache.Insert(d.m_uID, d);
+        m_dictMapNames.Insert(pData->m_szMapName, pData->m_uID);
+        m_mapMapCache.Insert(pData->m_uID, pData);
 
         // Force an update event if not from disk
         if (source != MODEL_FROM_DISK)
         {
-            d.SendDataUpdate();
-            d.SendMapFileUpdate();
-            // MOM_TODO something will need to check the download variable, if auto-download, do so here
+            pData->SendDataUpdate();
         }
     }
 }
@@ -936,26 +987,34 @@ void CMapCache::MapDownloadEnd(KeyValues* pKvComplete)
     uint16 fileIndx = m_mapFileDownloads.Find(pKvComplete->GetUint64("request"));
     if (fileIndx != m_mapFileDownloads.InvalidIndex())
     {
-        uint32 id = m_mapFileDownloads[fileIndx];
-        KeyValues *pEvent = pKvComplete->MakeCopy();
-        pEvent->SetName("map_download_end");
-        pEvent->SetInt("id", id);
-        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+        const auto id = m_mapFileDownloads[fileIndx];
 
         if (pKvComplete->GetBool("error"))
         {
-            Warning("Could not download map! Error code: %i\n", pKvComplete->GetInt("code"));
+            int code = pKvComplete->GetInt("code");
+            if (pKvComplete->GetBool("bIO") && code == k_EHTTPStatusCode410Gone) // This is internal for cancelled
+                Log("Download of map %u cancelled successfully.\n", id);
+            else
+                Warning("Could not download map! Error code: %i\n", code);
         }
         else
         {
             MapData *pMap = GetMapDataByID(id);
             if (pMap)
+            {
                 pMap->m_bMapFileNeedsUpdate = false;
+                pMap->m_bMapFileExists = true;
+            }
 
             DevLog("Successfully downloaded the map with ID: %i\n", id);
         }
 
         m_mapFileDownloads.RemoveAt(fileIndx);
+
+        KeyValues *pEvent = pKvComplete->MakeCopy();
+        pEvent->SetName("map_download_end");
+        pEvent->SetInt("id", id);
+        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
     }
 }
 
@@ -993,7 +1052,7 @@ void CMapCache::LevelInitPreEntity()
         uint16 mapIndx = m_mapMapCache.Find(mapID);
         if (m_mapMapCache.IsValidIndex(mapIndx))
         {
-            m_pCurrentMapData = &m_mapMapCache[mapIndx];
+            m_pCurrentMapData = m_mapMapCache[mapIndx];
 
             // Check the update need & severity
             /*if (time(nullptr) - m_pCurrentMapData->m_tLastUpdateCheck > GetUpdateIntervalForMap(m_pCurrentMapData))
@@ -1028,6 +1087,8 @@ void CMapCache::LevelShutdownPostEntity()
 
 void CMapCache::Shutdown()
 {
+    // MOM_TODO: loop through the queued removal maps and delete files, update data
+
     SaveMapCacheToDisk();
 }
 
@@ -1052,7 +1113,7 @@ void CMapCache::SaveMapCacheToDisk()
     while (indx != m_mapMapCache.InvalidIndex())
     {
         KeyValues *pMap = pMapData->CreateNewKey();
-        m_mapMapCache[indx].ToKV(pMap);
+        m_mapMapCache[indx]->ToKV(pMap);
 
         indx = m_mapMapCache.NextInorder(indx);
     }

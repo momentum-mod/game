@@ -2,6 +2,7 @@
 
 #include "LibraryMaps.h"
 #include "CMapListPanel.h"
+#include "MapSelectorDialog.h"
 
 #include "mom_map_cache.h"
 #include "mom_modulecomms.h"
@@ -16,7 +17,8 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps")
+CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps"), m_cvarAutoDownload("mom_map_download_auto"),
+    m_cvarDeleteQueue("mom_map_delete_queue")
 {
     m_bLoadedMaps = false;
     m_pMapList->SetColumnVisible(HEADER_MAP_IN_LIBRARY, false);
@@ -49,11 +51,40 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
     MapDisplay_t *pDisplay = GetMapDisplayByID(id);
     if (pDisplay)
     {
-        // Remove this map only if we have it and it's no longer in the library
-        if (pDisplay->m_pMap && !pDisplay->m_pMap->m_bInLibrary)
+        MapData *pMapData = pDisplay->m_pMap;
+        if (pMapData)
         {
-            RemoveMap(*pDisplay);
-            return;
+            if (pMapData->m_bInLibrary)
+            {
+                // Check to see if we should download
+                if (pMapData->m_bMapFileNeedsUpdate && m_cvarAutoDownload.GetBool() && !MapSelectorDialog().IsMapDownloading(id))
+                {
+                    g_pMapCache->DownloadMap(id);
+                }
+            }
+            else
+            {
+                // Remove this map only if we have it and it's no longer in the library
+                if (pMapData->m_bMapFileExists)
+                {
+                    if (m_cvarDeleteQueue.GetBool())
+                    {
+                        // MOM_TODO Queue the file to delete on shutdown
+                    }
+                    else
+                    {
+                        // Delete the file now
+                        pMapData->DeleteMapFile();
+                    }
+                }
+
+                RemoveMap(*pDisplay);
+
+                pMapData->m_bMapFileNeedsUpdate = false;
+                pMapData->m_bUpdated = true;
+                pMapData->SendDataUpdate();
+                return;
+            }
         }
     }
     else
@@ -61,8 +92,39 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
         MapData *pMapData = g_pMapCache->GetMapDataByID(id);
         if (pMapData && pMapData->m_bInLibrary)
         {
+            if (pMapData->m_bMapFileExists)
+            {
+                // MOM_TODO check if the map file was updated if the map is in testing
+            }
+            else
+            {
+                // We need the map, force this true
+                pMapData->m_bMapFileNeedsUpdate = true;
+            }
+
             // Add this map if it was added to library
             AddMapToList(pMapData);
+
+            if (pMapData->m_bMapFileNeedsUpdate)
+            {
+                bool bSend = false;
+                if (m_cvarAutoDownload.GetBool())
+                {
+                    if (g_pMapCache->DownloadMap(id))
+                        bSend = true;
+                }
+                else
+                {
+                    bSend = true;
+                }
+
+                if (bSend)
+                {
+                    pMapData->m_bUpdated = true;
+                    pMapData->SendDataUpdate();
+                }
+            }
+
             return;
         }
     }

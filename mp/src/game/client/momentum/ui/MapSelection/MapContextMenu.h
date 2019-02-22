@@ -3,6 +3,7 @@
 #include "vgui_controls/Menu.h"
 
 struct MapData;
+class CMapSelectorDialog;
 
 //-----------------------------------------------------------------------------
 // Purpose: Basic right-click context menu for servers
@@ -10,11 +11,12 @@ struct MapData;
 class CMapContextMenu : public vgui::Menu
 {
 public:
-    CMapContextMenu(vgui::Panel *parent);
+    CMapContextMenu(CMapSelectorDialog *parent);
     ~CMapContextMenu();
 
     // call this to Activate the menu
-    void ShowMenu(
-        Panel *target,
-        MapData *pMapData);
+    void ShowMenu(MapData *pMapData);
+
+private:
+    CMapSelectorDialog *m_pParent;
 };

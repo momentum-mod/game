@@ -142,7 +142,6 @@ struct MapData : APIModel
     char m_szLastUpdated[32]; // ISO date, from the site
     bool m_bInFavorites;
     bool m_bInLibrary;
-    char m_szPath[MAX_PATH];
 
     uint32 m_uID;
     char m_szMapName[MAX_MAP_NAME];
@@ -159,6 +158,7 @@ struct MapData : APIModel
     MapImage m_Thumbnail;
 
     // Internal
+    bool m_bMapFileExists;
     bool m_bMapFileNeedsUpdate;
     time_t m_tLastPlayed;
 
@@ -166,9 +166,9 @@ struct MapData : APIModel
     MapData(const MapData& src);
     bool WasUpdated() const;
     void SendDataUpdate();
-    void SendMapFileUpdate();
     void ResetUpdate();
     bool GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType);
+    void DeleteMapFile();
     void FromKV(KeyValues* pMap) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;
     MapData& operator=(const MapData& src);
@@ -179,8 +179,12 @@ class CMapCache : public CAutoGameSystem, public CGameEventListener
 {
 public:
     CMapCache();
+    ~CMapCache();
 
     bool PlayMap(uint32 uID);
+    bool MapFileExists(MapData *pData);
+    bool DownloadMap(uint32 uID);
+    bool CancelDownload(uint32 uID);
 
     bool AddMapToLibrary(uint32 uID);
     bool RemoveMapFromLibrary(uint32 uID);
@@ -235,7 +239,7 @@ private:
     MapData *m_pCurrentMapData;
 
     CUtlDict<uint32> m_dictMapNames;
-    CUtlMap<uint32, MapData> m_mapMapCache;
+    CUtlMap<uint32, MapData*> m_mapMapCache;
 
     CUtlMap<HTTPRequestHandle, uint32> m_mapFileDownloads;
 };
