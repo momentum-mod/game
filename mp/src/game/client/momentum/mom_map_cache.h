@@ -186,6 +186,9 @@ public:
     bool DownloadMap(uint32 uID);
     bool CancelDownload(uint32 uID);
 
+    bool AddMapToDeleteQueue(MapData *pData);
+    bool RemoveMapFromDeleteQueue(MapData *pData);
+
     bool AddMapToLibrary(uint32 uID);
     bool RemoveMapFromLibrary(uint32 uID);
     bool AddMapToFavorites(uint32 uID);
@@ -240,7 +243,7 @@ private:
 
     CUtlDict<uint32> m_dictMapNames;
     CUtlMap<uint32, MapData*> m_mapMapCache;
-
+    CUtlMap<uint32, MapData*> m_mapQueuedDelete;
     CUtlMap<HTTPRequestHandle, uint32> m_mapFileDownloads;
 };
 

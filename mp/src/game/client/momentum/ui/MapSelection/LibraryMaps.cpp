@@ -69,7 +69,7 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
                 {
                     if (m_cvarDeleteQueue.GetBool())
                     {
-                        // MOM_TODO Queue the file to delete on shutdown
+                        g_pMapCache->AddMapToDeleteQueue(pMapData);
                     }
                     else
                     {
@@ -94,7 +94,9 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
         {
             if (pMapData->m_bMapFileExists)
             {
-                // MOM_TODO check if the map file was updated if the map is in testing
+                // MOM_TODO also check if the map file was updated if the map is in testing
+
+                g_pMapCache->RemoveMapFromDeleteQueue(pMapData);
             }
             else
             {

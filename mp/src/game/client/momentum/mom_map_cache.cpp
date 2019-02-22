@@ -570,6 +570,7 @@ CMapCache::CMapCache() : CAutoGameSystem("CMapCache"), m_pCurrentMapData(nullptr
 {
     SetDefLessFunc(m_mapMapCache);
     SetDefLessFunc(m_mapFileDownloads);
+    SetDefLessFunc(m_mapQueuedDelete);
 }
 
 CMapCache::~CMapCache()
@@ -660,6 +661,30 @@ bool CMapCache::CancelDownload(uint32 uID)
 
         indx = m_mapFileDownloads.NextInorder(indx);
     }
+    return false;
+}
+
+bool CMapCache::AddMapToDeleteQueue(MapData* pData)
+{
+    if (!pData || m_mapQueuedDelete.IsValidIndex(m_mapQueuedDelete.Find(pData->m_uID)))
+        return false;
+
+    m_mapQueuedDelete.Insert(pData->m_uID, pData);
+    return true;
+}
+
+bool CMapCache::RemoveMapFromDeleteQueue(MapData* pData)
+{
+    if (!pData)
+        return false;
+
+    const auto indx = m_mapQueuedDelete.Find(pData->m_uID);
+    if (m_mapQueuedDelete.IsValidIndex(indx))
+    {
+        m_mapQueuedDelete.RemoveAt(indx);
+        return true;
+    }
+
     return false;
 }
 
@@ -1087,7 +1112,13 @@ void CMapCache::LevelShutdownPostEntity()
 
 void CMapCache::Shutdown()
 {
-    // MOM_TODO: loop through the queued removal maps and delete files, update data
+    if (m_mapQueuedDelete.Count())
+    {
+        FOR_EACH_MAP_FAST(m_mapQueuedDelete, i)
+        {
+            m_mapQueuedDelete[i]->DeleteMapFile();
+        }
+    }
 
     SaveMapCacheToDisk();
 }
