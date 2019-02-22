@@ -6,6 +6,8 @@
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include "hud_macros.h"
 
+#include "tier0/memdbgon.h"
+
 static MAKE_TOGGLE_CONVAR(mom_toggle_nostartorend, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if No Start or End should be shown.\n");
 static MAKE_TOGGLE_CONVAR(mom_toggle_versionwarn, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if the initial version warning should be shown.\n");
 
