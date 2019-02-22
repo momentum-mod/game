@@ -154,6 +154,12 @@ public:
     HTTPRequestHandle DownloadFile(const char *pszURL, CallbackFunc size, CallbackFunc prog, CallbackFunc end,
                                    const char *pFileName, const char *pFilePathID = "GAME", bool bAuth = false);
 
+    /**
+     * @param handle    The handle of the request to cancel
+     * @return true if the download was cancelled, otherwise false
+     */
+    bool CancelDownload(HTTPRequestHandle handle);
+
 protected:
     // CAutoGameSystem
     bool Init() OVERRIDE;
