@@ -1581,7 +1581,7 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
             m_pTextImage->SetColor(bSelected ? m_SelectionFgColor : m_LabelFgColor);
 
             KeyValues *pCellColorKey = item->FindKey("cellcolor");
-            if (!bSelected && pCellColorKey && !pCellColorKey->IsEmpty())
+            if (pCellColorKey && !pCellColorKey->IsEmpty())
             {
                 // Check the type
                 if (pCellColorKey->GetDataType() == KeyValues::TYPE_NONE)
