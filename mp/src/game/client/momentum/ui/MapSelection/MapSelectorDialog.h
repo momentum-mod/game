@@ -63,7 +63,7 @@ class CMapSelectorDialog : public vgui::Frame
     void OnClose() OVERRIDE;
 
     // context menu access
-    CMapContextMenu *GetContextMenu(Panel *pParent);
+    CMapContextMenu *GetContextMenu();
 
     // opens a game info dialog from a game list
     void OpenMapInfoDialog(MapData *pMapData);
@@ -96,8 +96,23 @@ class CMapSelectorDialog : public vgui::Frame
     void OnMapDownloadProgress(KeyValues *pKv);
     void OnMapDownloadEnd(KeyValues *pKv);
 
+    bool IsMapDownloading(uint32 uMapID) const;
     MapDownloadProgress *GetDownloadProgressPanel(uint32 uMapID);
 
+    // Called when map should be added to/removed from library
+    MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
+    MESSAGE_FUNC_INT(OnRemoveMapFromLibrary, "RemoveFromLibrary", id);
+    // Called when map should be added to/removed from favorites
+    MESSAGE_FUNC_INT(OnAddMapToFavorites, "AddToFavorites", id);
+    MESSAGE_FUNC_INT(OnRemoveMapFromFavorites, "RemoveFromFavorites", id);
+    // Called when user wants to download/cancel download
+    MESSAGE_FUNC_INT(OnStartMapDownload, "DownloadMap", id);
+    MESSAGE_FUNC_INT(OnCancelMapDownload, "CancelDownload", id);
+    MESSAGE_FUNC_PARAMS(OnConfirmCancelMapDownload, "ConfirmCancelDownload", kv);
+    // Called when map should be started
+    MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
+    // called to look at map info
+    MESSAGE_FUNC_INT(OnViewMapInfo, "ViewMapInfo", id);
   private:
     // current game list change
     MESSAGE_FUNC(OnTabChanged, "PageChanged");

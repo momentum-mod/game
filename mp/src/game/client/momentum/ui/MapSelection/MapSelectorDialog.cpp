@@ -117,11 +117,10 @@ CMapSelectorDialog::~CMapSelectorDialog()
     
     // Attempt to save user data, if not that's okay
     SaveUserData();
-
     if (m_pSavedData)
-    {
         m_pSavedData->deleteThis();
-    }
+
+    m_mapMapListData.PurgeAndDeleteElements();
 }
 
 
@@ -223,7 +222,7 @@ void CMapSelectorDialog::OnMapDataUpdated(KeyValues *pKv)
 {
     // Map updated from cache, do it here
     uint32 mapID = pKv->GetInt("id");
-    UpdateMapListData(pKv->GetInt("id"), pKv->GetBool("main"), pKv->GetBool("info"),
+    UpdateMapListData(mapID, pKv->GetBool("main"), pKv->GetBool("info"),
                       pKv->GetBool("pb"), pKv->GetBool("wr"),
                       pKv->GetBool("thumbnail"));
 
@@ -268,7 +267,6 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         pDataKv->SetInt(KEYNAME_MAP_IN_FAVORITES, pMapData->m_bInFavorites ? INDX_MAP_IN_FAVORITES : INDX_MAP_NOT_IN_FAVORITES);
 
         pDataKv->SetUint64(KEYNAME_MAP_LAST_PLAYED_SORT, pMapData->m_tLastPlayed);
-
         if (pMapData->m_tLastPlayed > 0)
         {
             char timeAgo[16];
@@ -277,6 +275,22 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         }
         else
             pDataKv->SetString(KEYNAME_MAP_LAST_PLAYED, "#MOM_NotApplicable");
+
+        // Set colors based on download state
+        if (pMapData->m_bMapFileNeedsUpdate)
+        {
+            if (!IsMapDownloading(uMapID))
+                pDataKv->SetColor("cellcolor", COLOR_RED); // MOM_TODO make this a scheme color
+        }
+        else
+        {
+            KeyValues *pCell = pDataKv->FindKey("cellcolor");
+            if (pCell)
+            {
+                pDataKv->RemoveSubKey(pCell);
+                pCell->deleteThis();
+            }
+        }
     }
 
     if (bInfo)
@@ -422,6 +436,11 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
     }
 }
 
+bool CMapSelectorDialog::IsMapDownloading(uint32 uMapID) const
+{
+    return m_mapMapDownloads.IsValidIndex(m_mapMapDownloads.Find(uMapID));
+}
+
 MapDownloadProgress* CMapSelectorDialog::GetDownloadProgressPanel(uint32 uMapID)
 {
     const auto indx = m_mapMapDownloads.Find(uMapID);
@@ -431,6 +450,59 @@ MapDownloadProgress* CMapSelectorDialog::GetDownloadProgressPanel(uint32 uMapID)
     }
     return nullptr;
 }
+
+void CMapSelectorDialog::OnStartMapDownload(int id)
+{
+    g_pMapCache->DownloadMap(id);
+}
+
+void CMapSelectorDialog::OnCancelMapDownload(int id)
+{
+    // MOM_TODO: use a messagebox panel here to confirm cancel
+    g_pMapCache->CancelDownload(id);
+}
+
+void CMapSelectorDialog::OnConfirmCancelMapDownload(KeyValues *pKv)
+{
+    
+}
+
+void CMapSelectorDialog::OnAddMapToFavorites(int id)
+{
+    g_pMapCache->AddMapToFavorites(id);
+}
+
+void CMapSelectorDialog::OnAddMapToLibrary(int id)
+{
+    g_pMapCache->AddMapToLibrary(id);
+}
+
+void CMapSelectorDialog::OnMapStart(int id)
+{
+    g_pMapCache->PlayMap(id);
+}
+
+void CMapSelectorDialog::OnRemoveMapFromFavorites(int id)
+{
+    g_pMapCache->RemoveMapFromFavorites(id);
+}
+
+void CMapSelectorDialog::OnRemoveMapFromLibrary(int id)
+{
+    g_pMapCache->RemoveMapFromLibrary(id);
+}
+
+void CMapSelectorDialog::OnViewMapInfo(int id)
+{
+    // get the map
+    MapData *pMapData = g_pMapCache->GetMapDataByID(id);
+    if (!pMapData)
+        return;
+
+    // View the map info
+    OpenMapInfoDialog(pMapData);
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Updates when the tabs are changed
@@ -452,23 +524,13 @@ void CMapSelectorDialog::OnTabChanged()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CMapContextMenu *CMapSelectorDialog::GetContextMenu(Panel *pPanel)
+CMapContextMenu *CMapSelectorDialog::GetContextMenu()
 {
     // create a drop down for this object's states
     if (m_pContextMenu)
         delete m_pContextMenu;
     m_pContextMenu = new CMapContextMenu(this);
     m_pContextMenu->SetAutoDelete(false);
-
-    if (!pPanel)
-    {
-        m_pContextMenu->SetParent(this);
-    }
-    else
-    {
-        m_pContextMenu->SetParent(pPanel);
-    }
-
     m_pContextMenu->SetVisible(false);
     return m_pContextMenu;
 }
