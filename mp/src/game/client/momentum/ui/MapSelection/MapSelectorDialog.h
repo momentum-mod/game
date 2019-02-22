@@ -108,7 +108,8 @@ class CMapSelectorDialog : public vgui::Frame
     // Called when user wants to download/cancel download
     MESSAGE_FUNC_INT(OnStartMapDownload, "DownloadMap", id);
     MESSAGE_FUNC_INT(OnCancelMapDownload, "CancelDownload", id);
-    MESSAGE_FUNC_PARAMS(OnConfirmCancelMapDownload, "ConfirmCancelDownload", kv);
+    MESSAGE_FUNC_INT(OnConfirmCancelMapDownload, "ConfirmCancelDownload", id);
+    MESSAGE_FUNC_INT(OnRejectCancelMapDownload, "RejectCancelDownload", id);
     // Called when map should be started
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
     // called to look at map info
@@ -121,6 +122,9 @@ class CMapSelectorDialog : public vgui::Frame
 
     // list of all open game info dialogs
     CUtlMap<uint32, vgui::DHANDLE<CDialogMapInfo>> m_mapMapInfoDialogs;
+
+    // Map of all cancel map dialogs
+    CUtlMap<uint32, Panel*> m_mapCancelConfirmDlgs;
 
     // Map of all map list data
     CUtlMap<uint32, MapListData*> m_mapMapListData;
