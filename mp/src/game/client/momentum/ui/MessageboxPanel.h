@@ -1,10 +1,6 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "IMessageboxPanel.h"
-#include <vgui/ILocalize.h>
-#include <vgui/ISystem.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/MessageBox.h>
 
