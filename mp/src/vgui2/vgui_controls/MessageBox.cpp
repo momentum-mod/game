@@ -120,7 +120,7 @@ void MessageBox::OnCommand( const char *pCommand )
 			PostActionSignal(m_OkCommand->MakeCopy());
 		}
 	}
-	else if ( !Q_stricmp( pCommand, "OnCancel" ) )
+	else if ( !Q_stricmp( pCommand, "OnCancel" ) || !Q_stricmp(pCommand, "Close") )
 	{
 		if ( m_CancelCommand )
 		{
