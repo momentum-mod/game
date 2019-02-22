@@ -286,6 +286,21 @@ HTTPRequestHandle CAPIRequests::DownloadFile(const char* pszURL, CallbackFunc si
     return handle;
 }
 
+bool CAPIRequests::CancelDownload(HTTPRequestHandle handle)
+{
+    const auto downloadCallbackIndx = m_mapDownloadCalls.Find(handle);
+    if (downloadCallbackIndx != m_mapDownloadCalls.InvalidIndex())
+    {
+        HTTPRequestCompleted_t mock;
+        mock.m_hRequest = handle;
+        mock.m_bRequestSuccessful = false;
+
+        OnDownloadHTTPComplete(&mock, true);
+        return true;
+    }
+    return false;
+}
+
 bool CAPIRequests::Init()
 {
     DoAuth();
@@ -455,7 +470,7 @@ void CAPIRequests::OnDownloadHTTPComplete(HTTPRequestCompleted_t* pCallback, boo
             comp->SetBool("error", true);
             comp->SetInt("code", pCallback->m_eStatusCode);
         }
-        else if (call->m_bSaveToFile) 
+        else if (call->m_bSaveToFile)
         {
             bool bWrote = g_pFullFileSystem->WriteFile(call->m_szFileName, call->m_szFilePathID, call->m_bufFileData);
             comp->SetBool("error", !bWrote);
