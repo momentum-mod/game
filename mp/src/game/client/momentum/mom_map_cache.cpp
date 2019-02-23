@@ -14,10 +14,20 @@
 
 #define MAP_CACHE_FILE_NAME "map_cache.dat"
 
+void DownloadQueueCallback(IConVar *var, const char *pOldValue, float flOldValue)
+{
+    g_pMapCache->OnDownloadQueueToggled();
+}
+
+void DownloadQueueParallelCallback(IConVar *var, const char *pOldValue, float flOldValue)
+{
+    g_pMapCache->OnDownloadQueueSizeChanged();   
+}
+
 static MAKE_TOGGLE_CONVAR(mom_map_delete_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to be deleted upon game close.\nIf 0, maps are deleted the moment they are confirmed to have been removed from library.\n");
 static MAKE_TOGGLE_CONVAR(mom_map_download_auto, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will automatically download when updated/added to library.\n");
-static MAKE_TOGGLE_CONVAR(mom_map_download_queue, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to download, allowing mom_map_download_queue_parallel parallel downloads.\n");
-static MAKE_CONVAR(mom_map_download_queue_parallel, "3", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The number of parallel map downloads if mom_map_download_queue is 1.\n", 1, 20);
+static MAKE_TOGGLE_CONVAR_C(mom_map_download_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to download, allowing mom_map_download_queue_parallel parallel downloads.\n", DownloadQueueCallback);
+static MAKE_CONVAR_C(mom_map_download_queue_parallel, "3", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The number of parallel map downloads if mom_map_download_queue is 1.\n", 1, 20, DownloadQueueParallelCallback);
 static MAKE_TOGGLE_CONVAR(mom_map_download_cancel_confirm, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, a messagebox will be created to ask to confirm cancelling downloads.\n");
 
 void User::FromKV(KeyValues* pKv)
@@ -571,6 +581,7 @@ CMapCache::CMapCache() : CAutoGameSystem("CMapCache"), m_pCurrentMapData(nullptr
     SetDefLessFunc(m_mapMapCache);
     SetDefLessFunc(m_mapFileDownloads);
     SetDefLessFunc(m_mapQueuedDelete);
+    SetDefLessFunc(m_mapQueuedDownload);
 }
 
 CMapCache::~CMapCache()
@@ -626,28 +637,71 @@ bool CMapCache::DownloadMap(uint32 uID)
             // Already downloading!
             Log("Already downloading map %s!\n", pData->m_szMapName);
         }
+        else if (IsMapQueuedToDownload(uID))
+        {
+            // Move it to download if our queue can fit it
+            if ((unsigned)mom_map_download_queue_parallel.GetInt() > m_mapFileDownloads.Count())
+            {
+                return StartDownloadingMap(pData);
+            }
+        }
         else if (uID)
         {
-            // We either don't have it, or it's outdated, so let's get the latest one!
-            const char *pFilePath = CFmtStr("maps/%s.bsp", pData->m_szMapName).Get();
-            HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(pData->m_szDownloadURL,
-                                                                    UtlMakeDelegate(this, &CMapCache::MapDownloadSize),
-                                                                    UtlMakeDelegate(this, &CMapCache::MapDownloadProgress),
-                                                                    UtlMakeDelegate(this, &CMapCache::MapDownloadEnd),
-                                                                    pFilePath, "GAME", true);
-            if (handle != INVALID_HTTPREQUEST_HANDLE)
+            if (mom_map_download_queue.GetBool())
             {
-                m_mapFileDownloads.Insert(handle, uID);
-                MapDownloadStart(pData);
-                return true;
+                return AddMapToDownloadQueue(pData);
             }
-            
-            Warning("Failed to try to download the map %s!\n", pData->m_szMapName);
+            else
+            {
+                return StartDownloadingMap(pData);
+            }
         }
     }
 
     return false;
 }
+
+bool CMapCache::StartDownloadingMap(MapData* pData)
+{
+    // We either don't have it, or it's outdated, so let's get the latest one!
+    const char *pFilePath = CFmtStr("maps/%s.bsp", pData->m_szMapName).Get();
+    HTTPRequestHandle handle = g_pAPIRequests->DownloadFile(pData->m_szDownloadURL,
+                                                            UtlMakeDelegate(this, &CMapCache::MapDownloadSize),
+                                                            UtlMakeDelegate(this, &CMapCache::MapDownloadProgress),
+                                                            UtlMakeDelegate(this, &CMapCache::MapDownloadEnd),
+                                                            pFilePath, "GAME", true);
+    if (handle != INVALID_HTTPREQUEST_HANDLE)
+    {
+        m_mapFileDownloads.Insert(handle, pData->m_uID);
+        // Remove from queue if it was there
+        RemoveMapFromDownloadQueue(pData->m_uID);
+        MapDownloadStart(pData);
+        return true;
+    }
+
+    Warning("Failed to try to download the map %s!\n", pData->m_szMapName);
+    return false;
+}
+
+bool CMapCache::AddMapToDownloadQueue(MapData *pData)
+{
+    if (!pData)
+        return false;
+
+    // Is it already queued for download?
+    if (m_mapQueuedDownload.IsValidIndex(m_mapQueuedDownload.Find(pData->m_uID)))
+        return false;
+
+    // Is our current download count less than the max parallel?
+    if ((unsigned)mom_map_download_queue_parallel.GetInt() > m_mapFileDownloads.Count())
+        return StartDownloadingMap(pData); // Just add it to the active downloads
+
+    m_mapQueuedDownload.Insert(pData->m_uID, pData);
+    MapDownloadQueued(pData, true);
+
+    return true;
+}
+
 
 bool CMapCache::CancelDownload(uint32 uID)
 {
@@ -678,14 +732,8 @@ bool CMapCache::RemoveMapFromDeleteQueue(MapData* pData)
     if (!pData)
         return false;
 
-    const auto indx = m_mapQueuedDelete.Find(pData->m_uID);
-    if (m_mapQueuedDelete.IsValidIndex(indx))
-    {
-        m_mapQueuedDelete.RemoveAt(indx);
-        return true;
-    }
-
-    return false;
+    m_mapQueuedDelete.RemoveAt(m_mapQueuedDelete.Find(pData->m_uID));
+    return true;
 }
 
 bool CMapCache::AddMapToLibrary(uint32 uID)
@@ -741,14 +789,14 @@ void CMapCache::GetMapList(CUtlVector<MapData*>& vecMaps, MapListType_e type)
     auto indx = m_mapMapCache.FirstInorder();
     while (indx != m_mapMapCache.InvalidIndex())
     {
-        MapData *d = m_mapMapCache.Element(indx);
-        bool bShouldAdd = d->m_eMapStatus == MAP_APPROVED;
+        MapData *pData = m_mapMapCache[indx];
+        bool bShouldAdd = pData->m_eMapStatus == MAP_APPROVED;
         if (type == MAP_LIST_LIBRARY)
-            bShouldAdd = d->m_bInLibrary;
+            bShouldAdd = pData->m_bInLibrary;
         else if (type == MAP_LIST_FAVORITES)
-            bShouldAdd = d->m_bInFavorites;
+            bShouldAdd = pData->m_bInFavorites;
         else if (type == MAP_LIST_TESTING)
-            bShouldAdd = d->m_eMapStatus == MAP_PRIVATE_TESTING || d->m_eMapStatus == MAP_PUBLIC_TESTING;
+            bShouldAdd = pData->m_eMapStatus == MAP_PRIVATE_TESTING || pData->m_eMapStatus == MAP_PUBLIC_TESTING;
 
         if (bShouldAdd)
             vecMaps.AddToTail(m_mapMapCache[indx]);
@@ -972,6 +1020,14 @@ void CMapCache::OnMapRemovedFromFavorites(KeyValues* pKv)
     ToggleMapLibraryOrFavorite(pKv, false, false);
 }
 
+void CMapCache::MapDownloadQueued(MapData* pData, bool bAdded)
+{
+    KeyValues *pKvEvent = new KeyValues("map_download_queued");
+    pKvEvent->SetInt("id", pData->m_uID);
+    pKvEvent->SetBool("added", bAdded);
+    g_pModuleComms->FireEvent(pKvEvent, FIRE_LOCAL_ONLY);
+}
+
 void CMapCache::MapDownloadStart(MapData *pData)
 {
     KeyValues *pKvEvent = new KeyValues("map_download_start");
@@ -1040,6 +1096,10 @@ void CMapCache::MapDownloadEnd(KeyValues* pKvComplete)
         pEvent->SetName("map_download_end");
         pEvent->SetInt("id", id);
         g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+
+        // Check and add to download
+        if (m_mapQueuedDownload.Count())
+            DownloadMap(m_mapQueuedDownload.Key(m_mapQueuedDownload.FirstInorder()));
     }
 }
 
@@ -1056,6 +1116,64 @@ bool CMapCache::IsMapDownloading(uint32 uMapID)
         indx = m_mapFileDownloads.NextInorder(indx);
     }
     return false;
+}
+
+bool CMapCache::IsMapQueuedToDownload(uint32 uMapID) const
+{
+    return m_mapQueuedDownload.IsValidIndex(m_mapQueuedDownload.Find(uMapID));
+}
+
+void CMapCache::OnDownloadQueueSizeChanged()
+{
+    // We only care if it got bigger, and if we have queued maps... smaller/no queue doesn't affect anything
+    if (m_mapQueuedDownload.Count())
+    {
+        const int diff = mom_map_download_queue_parallel.GetInt() - m_mapFileDownloads.Count();
+        if (diff > 0)
+        {
+            int count = 0;
+            // Work backwards as adding to active downloads is going to remove from here
+            for(auto i = m_mapQueuedDownload.MaxElement(); m_mapQueuedDownload.IsValidIndex(i) && count < diff; i--)
+            {
+                if (StartDownloadingMap(m_mapQueuedDownload[i]))
+                    count++;
+            }
+        }
+    }
+}
+
+void CMapCache::OnDownloadQueueToggled()
+{
+    // We only care if there's a queue and it was turned off
+    if (m_mapQueuedDownload.Count() && !mom_map_download_queue.GetBool())
+    {
+        // Only start downloading if auto is 1
+        if (mom_map_download_auto.GetBool())
+        {
+            // Work backwards as adding to active downloads is going to remove from here
+            for (auto i = m_mapQueuedDownload.MaxElement(); m_mapQueuedDownload.IsValidIndex(i); i--)
+                StartDownloadingMap(m_mapQueuedDownload[i]);
+        }
+        else
+        {
+            // Cancel all outstanding queued maps
+            FOR_EACH_MAP_FAST(m_mapQueuedDownload, i)
+                MapDownloadQueued(m_mapQueuedDownload[i], false);
+            m_mapQueuedDownload.RemoveAll();
+        }
+    }
+}
+
+void CMapCache::RemoveMapFromDownloadQueue(uint32 uMapID, bool bSendEvent /* = false*/)
+{
+    const auto indx = m_mapQueuedDownload.Find(uMapID);
+    if (m_mapQueuedDownload.IsValidIndex(indx))
+    {
+        if (bSendEvent)
+            MapDownloadQueued(m_mapQueuedDownload[indx], false);
+
+        m_mapQueuedDownload.RemoveAt(indx);
+    }
 }
 
 void CMapCache::PostInit()
@@ -1140,13 +1258,10 @@ void CMapCache::SaveMapCacheToDisk()
 {
     KeyValuesAD pMapData("MapCacheData");
 
-    auto indx = m_mapMapCache.FirstInorder();
-    while (indx != m_mapMapCache.InvalidIndex())
+    FOR_EACH_MAP(m_mapMapCache, i)
     {
         KeyValues *pMap = pMapData->CreateNewKey();
-        m_mapMapCache[indx]->ToKV(pMap);
-
-        indx = m_mapMapCache.NextInorder(indx);
+        m_mapMapCache[i]->ToKV(pMap);
     }
 
     if (!pMapData->SaveToFile(g_pFullFileSystem, MAP_CACHE_FILE_NAME, "MOD"))

@@ -137,6 +137,7 @@ void CMapSelectorDialog::Initialize()
     // Listen for map cache events
     g_pModuleComms->ListenForEvent("map_data_update", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDataUpdated));
     // Listen for download events
+    g_pModuleComms->ListenForEvent("map_download_queued", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadQueued));
     g_pModuleComms->ListenForEvent("map_download_start", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadStart));
     g_pModuleComms->ListenForEvent("map_download_size", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadSize));
     g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadProgress));
@@ -282,7 +283,12 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         if (pMapData->m_bMapFileNeedsUpdate)
         {
             if (!IsMapDownloading(uMapID))
-                pDataKv->SetColor("cellcolor", COLOR_RED); // MOM_TODO make this a scheme color
+            {
+                if (g_pMapCache->IsMapQueuedToDownload(uMapID))
+                    pDataKv->SetColor("cellcolor", COLOR_BLUE); // MOM_TODO make this a scheme color
+                else
+                    pDataKv->SetColor("cellcolor", COLOR_RED); // MOM_TODO make this a scheme color
+            }
         }
         else
         {
@@ -385,6 +391,12 @@ MapListData* CMapSelectorDialog::GetMapListDataByID(uint32 uMapID)
     return nullptr;
 }
 
+void CMapSelectorDialog::OnMapDownloadQueued(KeyValues* pKv)
+{
+    const uint32 uID = pKv->GetInt("id");
+    UpdateMapListData(uID, true, false, false, false, false);
+}
+
 void CMapSelectorDialog::OnMapDownloadStart(KeyValues* pKv)
 {
     const uint32 uID = pKv->GetInt("id");
@@ -462,6 +474,11 @@ MapDownloadProgress* CMapSelectorDialog::GetDownloadProgressPanel(uint32 uMapID)
 void CMapSelectorDialog::OnStartMapDownload(int id)
 {
     g_pMapCache->DownloadMap(id);
+}
+
+void CMapSelectorDialog::OnRemoveFromQueue(int id)
+{
+    g_pMapCache->RemoveMapFromDownloadQueue(id);
 }
 
 void CMapSelectorDialog::OnCancelMapDownload(int id)

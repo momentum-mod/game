@@ -37,6 +37,9 @@ void CMapContextMenu::ShowMenu(MapData *pMapData)
             if (m_pParent->IsMapDownloading(pMapData->m_uID))
                 AddMenuItem("CancelDownload", "#MOM_MapSelector_CancelDownload", 
                             new KeyValues("CancelDownload", "id", pMapData->m_uID), m_pParent);
+            else if (g_pMapCache->IsMapQueuedToDownload(pMapData->m_uID))
+                AddMenuItem("RemoveFromQueue", "#MOM_MapSelector_RemoveFromQueue",
+                            new KeyValues("RemoveFromQueue", "id", pMapData->m_uID), m_pParent);
             else
                 AddMenuItem("DownloadMap", "#MOM_MapSelector_DownloadMap",
                             new KeyValues("DownloadMap", "id", pMapData->m_uID), m_pParent);

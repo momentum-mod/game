@@ -91,6 +91,7 @@ class CMapSelectorDialog : public vgui::Frame
     MapListData *GetMapListDataByID(uint32 uMapID);
 
     // Callbacks for download
+    void OnMapDownloadQueued(KeyValues *pKv);
     void OnMapDownloadStart(KeyValues *pKv);
     void OnMapDownloadSize(KeyValues *pKv);
     void OnMapDownloadProgress(KeyValues *pKv);
@@ -107,6 +108,7 @@ class CMapSelectorDialog : public vgui::Frame
     MESSAGE_FUNC_INT(OnRemoveMapFromFavorites, "RemoveFromFavorites", id);
     // Called when user wants to download/cancel download
     MESSAGE_FUNC_INT(OnStartMapDownload, "DownloadMap", id);
+    MESSAGE_FUNC_INT(OnRemoveFromQueue, "RemoveFromQueue", id);
     MESSAGE_FUNC_INT(OnCancelMapDownload, "CancelDownload", id);
     MESSAGE_FUNC_INT(OnConfirmCancelMapDownload, "ConfirmCancelDownload", id);
     MESSAGE_FUNC_INT(OnRejectCancelMapDownload, "RejectCancelDownload", id);
