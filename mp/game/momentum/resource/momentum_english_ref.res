@@ -149,6 +149,7 @@
         "MOM_MapSelector_CreationDate" "Date Created"
         "MOM_MapSelector_LastPlayed" "Last Played"
         "MOM_MapSelector_DownloadMap" "Download Map"
+        "MOM_MapSelector_RemoveFromQueue" "Remove from Download Queue"
         "MOM_MapSelector_CancelDownload" "Cancel Download"
         "MOM_MapSelector_ConfirmCancel" "Cancel Download?"
         "MOM_MapSelector_ConfirmCancelMsg" "Are you sure you want to cancel this map download?"

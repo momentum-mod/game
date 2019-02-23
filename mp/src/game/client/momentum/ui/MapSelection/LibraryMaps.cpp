@@ -78,6 +78,15 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
                     }
                 }
 
+                if (g_pMapCache->IsMapDownloading(pMapData->m_uID))
+                {
+                    g_pMapCache->CancelDownload(pMapData->m_uID);
+                }
+                else if (g_pMapCache->IsMapQueuedToDownload(pMapData->m_uID))
+                {
+                    g_pMapCache->RemoveMapFromDownloadQueue(pMapData->m_uID);
+                }
+
                 RemoveMap(*pDisplay);
 
                 pMapData->m_bMapFileNeedsUpdate = false;
@@ -109,18 +118,7 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
 
             if (pMapData->m_bMapFileNeedsUpdate)
             {
-                bool bSend = false;
-                if (m_cvarAutoDownload.GetBool())
-                {
-                    if (g_pMapCache->DownloadMap(id))
-                        bSend = true;
-                }
-                else
-                {
-                    bSend = true;
-                }
-
-                if (bSend)
+                if (!m_cvarAutoDownload.GetBool())
                 {
                     pMapData->m_bUpdated = true;
                     pMapData->SendDataUpdate();
