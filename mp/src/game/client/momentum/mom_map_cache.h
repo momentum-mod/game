@@ -209,6 +209,10 @@ public:
     uint32 GetUpdateIntervalForMap(MapData *pData);
 
     bool IsMapDownloading(uint32 uMapID);
+    bool IsMapQueuedToDownload(uint32 uMapID) const;
+    void OnDownloadQueueSizeChanged();
+    void OnDownloadQueueToggled();
+    void RemoveMapFromDownloadQueue(uint32 uMapID, bool bSendEvent = false);
 protected:
     void PostInit() OVERRIDE;
     void LevelInitPreEntity() OVERRIDE;
@@ -231,6 +235,7 @@ protected:
     void OnMapRemovedFromFavorites(KeyValues *pKv);
 
     // Map downloading
+    void MapDownloadQueued(MapData *pData, bool bAdded);
     void MapDownloadStart(MapData *pData);
     void MapDownloadSize(KeyValues *pKvHeader);
     void MapDownloadProgress(KeyValues *pKvProgress);
@@ -238,12 +243,15 @@ protected:
 private:
     void UpdateFetchedMaps(KeyValues *pKv, bool bIsLibrary);
     void ToggleMapLibraryOrFavorite(KeyValues *pKv, bool bIsLibrary, bool bAdded);
+    bool StartDownloadingMap(MapData *pData);
+    bool AddMapToDownloadQueue(MapData *pData);
 
     MapData *m_pCurrentMapData;
 
     CUtlDict<uint32> m_dictMapNames;
     CUtlMap<uint32, MapData*> m_mapMapCache;
     CUtlMap<uint32, MapData*> m_mapQueuedDelete;
+    CUtlMap<uint32, MapData*> m_mapQueuedDownload;
     CUtlMap<HTTPRequestHandle, uint32> m_mapFileDownloads;
 };
 
