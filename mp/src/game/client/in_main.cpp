@@ -630,7 +630,7 @@ DetermineKeySpeed
 
 ==============================
 */
-static ConVar in_usekeyboardsampletime( "in_usekeyboardsampletime", "1", 0, "Use keyboard sample time smoothing." );
+static ConVar in_usekeyboardsampletime( "in_usekeyboardsampletime", "0", 0, "Use keyboard sample time smoothing." );
 
 float CInput::DetermineKeySpeed( float frametime )
 {
