@@ -67,9 +67,12 @@ class CMapSelectorDialog : public vgui::Frame
 
     // opens a game info dialog from a game list
     void OpenMapInfoDialog(MapData *pMapData);
+    void UpdateMapInfoDialog(uint32 uMapID);
 
     // closes all the map info dialogs
     void CloseAllMapInfoDialogs();
+    void CloseMapInfoDialog(uint32 uMapID);
+    void RemoveMapInfoDialog(uint32 uMapID);
 
     // accessor to the filter save data
     KeyValues *GetCurrentTabFilterData();
