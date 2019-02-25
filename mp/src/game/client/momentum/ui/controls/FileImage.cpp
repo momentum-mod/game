@@ -148,6 +148,12 @@ URLImage::URLImage(IImage *pDefaultImage/* = nullptr*/, bool bDrawProgress /* = 
 {
 }
 
+URLImage::URLImage(const char* pURL, IImage* pDefault, bool bDrawProgress) : FileImage(pDefault), m_hRequest(INVALID_HTTPREQUEST_HANDLE),
+        m_bDrawProgressBar(bDrawProgress)
+{
+    LoadFromURL(pURL);
+}
+
 bool URLImage::LoadFromURL(const char* pURL)
 {
     m_hRequest = g_pAPIRequests->DownloadFile(pURL, 
