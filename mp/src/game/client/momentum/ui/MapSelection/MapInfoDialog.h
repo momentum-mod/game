@@ -3,6 +3,7 @@
 #include "vgui_controls/Frame.h"
 
 struct MapData;
+class ImageGallery;
 
 namespace vgui 
 {
@@ -16,7 +17,6 @@ class CDialogMapInfo : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CDialogMapInfo, vgui::Frame);
 
-public:
     CDialogMapInfo(Panel *parent, MapData *pMapData);
     ~CDialogMapInfo();
 
@@ -30,9 +30,9 @@ public:
     // player list received
     virtual void ClearPlayerList();
 
+    void UpdateMapDownloadState();
+
 protected:
-    // message handlers
-    MESSAGE_FUNC(OnConnect, "Connect");
     // vgui overrides
     void PerformLayout() OVERRIDE;
 
@@ -46,15 +46,10 @@ protected:
 private:
     // methods
     void RequestInfo();
-    void ConnectToServer();
-    void ApplyConnectCommand();
 
-    vgui::Button *m_pConnectButton;
-    vgui::Button *m_pCloseButton;
-    vgui::ListPanel *m_pPlayerList;
+    vgui::Button *m_pMapActionButton;
+    vgui::ListPanel *m_pTimesList;
+    ImageGallery *m_pImageGallery;
 
-    // true if we should try connect to the server when it refreshes
-    bool m_bConnecting;
-    bool m_bPlayerListUpdatePending;
     MapData *m_pMapData;
 };

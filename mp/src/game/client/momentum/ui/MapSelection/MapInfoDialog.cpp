@@ -1,16 +1,19 @@
 #include "cbase.h"
 
+#include "MapInfoDialog.h"
+
 #include "mom_api_requests.h"
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
 #include "mom_map_cache.h"
 
-#include "MapInfoDialog.h"
+#include "MapSelectorDialog.h"
 
 #include "fmtstr.h"
-#include "vgui/IVGui.h"
 #include "vgui_controls/ListPanel.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
+#include "controls/ImageGallery.h"
+#include "controls/FileImage.h"
 
 #include "tier0/memdbgon.h"
 
@@ -35,51 +38,34 @@ static int __cdecl PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelIt
 //-----------------------------------------------------------------------------
 CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent, "DialogMapInfo"), m_pMapData(pMapData)
 {
-    // SetProportional(true);
+    SetProportional(true);
     SetBounds(0, 0, 512, 512);
     SetMinimumSize(416, 340);
     SetDeleteSelfOnClose(true);
-    
-    m_bConnecting = false;
-    m_bPlayerListUpdatePending = false;
+
+    m_pMapActionButton = new Button(this, "MapActionButton", "#MOM_MapSelector_StartMap", parent, "Connect");
+    m_pTimesList = new ListPanel(this, "TimesList");
+    m_pImageGallery = new ImageGallery(this, "MapGallery", true);
 
     LoadControlSettings("resource/ui/MapSelector/DialogMapInfo.res");
+    SetTitleBarVisible(false);
+    SetCloseButtonVisible(true);
 
-    m_pConnectButton = FindControl<Button>("Connect", true);
-    m_pCloseButton = FindControl<Button>("Close", true);
-    m_pPlayerList = FindControl<ListPanel>("PlayerList", true);
+    m_pTimesList->AddColumnHeader(0, "rank", "#MOM_Rank", 54);
+    m_pTimesList->AddColumnHeader(1, "name", "#MOM_Name", 166);
+    m_pTimesList->AddColumnHeader(2, "time", "#MOM_Time", 120);
+    m_pTimesList->AddColumnHeader(3, "date", "#MOM_Achieved", 100);
 
-    if (!m_pConnectButton || !m_pCloseButton || !m_pPlayerList)
-    {
-        AssertMsg(0, "Nullptr pointers on CDialogMapInfo");
-    }
-    // set the defaults for sorting
-    // hack, need to make this more explicit functions in ListPanel
-    if (m_pPlayerList)
-    {
-        m_pPlayerList->AddColumnHeader(0, "rank", "#MOM_Rank", 54);
-        m_pPlayerList->AddColumnHeader(1, "name", "#MOM_Name", 166);
-        m_pPlayerList->AddColumnHeader(2, "time", "#MOM_Time", 64);
-        m_pPlayerList->AddColumnHeader(3, "date", "#MOM_Achieved", 100);
+    m_pTimesList->SetSortFunc(2, &PlayerTimeColumnSortFunc);
+    m_pTimesList->SetSortColumn(2);
 
-        m_pPlayerList->SetSortFunc(2, &PlayerTimeColumnSortFunc);
+    m_pTimesList->SetIgnoreDoubleClick(true);
 
-        m_pPlayerList->SetSortColumn(2);
-
-        m_pPlayerList->SetEmptyListText("#MOM_API_NoTimesReturned");
-    }
-    if (m_pConnectButton)
-    {
-        m_pConnectButton->SetCommand(new KeyValues("Connect"));
-    }
-    if (m_pCloseButton)
-    {
-        m_pCloseButton->SetCommand(new KeyValues("Close"));
-    }
+    m_pTimesList->SetEmptyListText("#MOM_API_NoTimesReturned");
+    m_pTimesList->SetShouldCenterEmptyListText(true);
+    m_pTimesList->MakeReadyForUse();
 
     MoveToCenterOfScreen();
-
-    SetTitle("#MOM_MapSelector_InfoDialog", true);
 }
 
 //-----------------------------------------------------------------------------
@@ -87,6 +73,8 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
 //-----------------------------------------------------------------------------
 CDialogMapInfo::~CDialogMapInfo()
 {
+    MapSelectorDialog().RemoveMapInfoDialog(m_pMapData->m_uID);
+    m_pMapData = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -97,6 +85,7 @@ void CDialogMapInfo::Run()
     // get the info for the map
     RequestInfo();
     Activate();
+    UpdateMapDownloadState();
 }
 
 //-----------------------------------------------------------------------------
@@ -105,37 +94,19 @@ void CDialogMapInfo::Run()
 void CDialogMapInfo::PerformLayout()
 {
     BaseClass::PerformLayout();
-    // Conditions that allow for a map to be played: none, always playable
-    m_pConnectButton->SetEnabled(true);
     
     Repaint();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Forces the game info dialog to try and connect
-//-----------------------------------------------------------------------------
-void CDialogMapInfo::Connect()
-{
-    OnConnect();
 }
 
 void CDialogMapInfo::OnMapDataUpdate(KeyValues* pKv)
 {
     if (pKv->GetBool("info") || pKv->GetBool("main"))
+    {
         FillMapInfo();
+        UpdateMapDownloadState();
+    }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Connects the user to this game
-//-----------------------------------------------------------------------------
-void CDialogMapInfo::OnConnect()
-{
-    // flag that we are attempting connection
-    m_bConnecting = true;
-
-    ApplyConnectCommand();
-    Close();
-}
 
 //-----------------------------------------------------------------------------
 // Purpose: Requests the right info from the server
@@ -147,30 +118,40 @@ void CDialogMapInfo::RequestInfo()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Starts the map, or starts downloading a map if not downloading
-//-----------------------------------------------------------------------------
-void CDialogMapInfo::ApplyConnectCommand()
-{
-    g_pMapCache->PlayMap(m_pMapData->m_uID);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Connects to the server
-//-----------------------------------------------------------------------------
-void CDialogMapInfo::ConnectToServer()
-{
-    m_bConnecting = false;
-    // close this dialog
-    PostMessage(this, new KeyValues("Close"));
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: player list received
 //-----------------------------------------------------------------------------
 void CDialogMapInfo::ClearPlayerList()
 {
-    m_pPlayerList->DeleteAllItems();
+    m_pTimesList->DeleteAllItems();
     Repaint();
+}
+
+void CDialogMapInfo::UpdateMapDownloadState()
+{
+    KeyValues *pCmd = new KeyValues("_");
+    pCmd->SetInt("id", m_pMapData->m_uID);
+    if (g_pMapCache->IsMapDownloading(m_pMapData->m_uID))
+    {
+        m_pMapActionButton->SetText("#MOM_MapSelector_CancelDownload");
+        pCmd->SetName("CancelDownload");
+    }
+    else if (g_pMapCache->IsMapQueuedToDownload(m_pMapData->m_uID))
+    {
+        m_pMapActionButton->SetText("#MOM_MapSelector_RemoveFromQueue");
+        pCmd->SetName("RemoveFromQueue");
+    }
+    else if (m_pMapData->m_bInLibrary)
+    {
+        m_pMapActionButton->SetText(m_pMapData->m_bMapFileNeedsUpdate ? "#MOM_MapSelector_DownloadMap" : "#MOM_MapSelector_StartMap");
+        pCmd->SetName(m_pMapData->m_bMapFileNeedsUpdate ? "DownloadMap" : "StartMap");
+    }
+    else
+    {
+        m_pMapActionButton->SetText("#MOM_MapSelector_AddToLibrary");
+        pCmd->SetName("AddToLibrary");
+    }
+
+    m_pMapActionButton->SetCommand(pCmd);
 }
 
 void CDialogMapInfo::GetMapInfo()
@@ -183,28 +164,46 @@ void CDialogMapInfo::GetMapInfo()
 
 void CDialogMapInfo::FillMapInfo()
 {
+    if (!m_pMapData)
+        return;
+
+    KeyValues *pLoc = new KeyValues("Loc");
+    KeyValuesAD whatever(pLoc);
+
     // Name
-    SetControlString("MapText", m_pMapData->m_szMapName);
+    SetControlString("MapLabel", m_pMapData->m_szMapName);
 
-    //Difficulty
-    SetControlString("DifficultyText", CFmtStr("Tier %i", m_pMapData->m_Info.m_iDifficulty));
+    // Author
+    CUtlString authors;
+    m_pMapData->GetCreditString(&authors, CREDIT_AUTHOR);
+    pLoc->SetString("authors", authors.Get());
+    SetControlString("AuthorLabel", CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_Map_Author"), pLoc));
 
-    //Layout
-    SetControlString("LayoutText", m_pMapData->m_Info.m_bIsLinear ?
+    // Difficulty
+    pLoc->SetInt("difficulty", m_pMapData->m_Info.m_iDifficulty);
+    SetControlString("DifficultyLabel", CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_Map_Difficulty"), pLoc));
+    
+    // Layout
+    SetControlString("LayoutLabel", m_pMapData->m_Info.m_bIsLinear ?
                      g_pVGuiLocalize->Find("#MOM_Linear") :
                      g_pVGuiLocalize->Find("#MOM_Staged"));
 
-    //Zones
+    // Zones
     SetControlString("NumZones", CFmtStr("%i", m_pMapData->m_Info.m_iNumZones));
 
-    //Author
-    CUtlString authors;
-    m_pMapData->GetCreditString(&authors, CREDIT_AUTHOR);
-    SetControlString("AuthorText", authors.Get());
-
-
-    //Game mode
+    // Game mode
     SetControlString("GamemodeText", g_szGameModes[m_pMapData->m_eType]);
+
+    // Update images
+    if (!m_pMapData->m_vecImages.IsEmpty())
+    {
+        m_pImageGallery->RemoveAllImages();
+
+        FOR_EACH_VEC(m_pMapData->m_vecImages, i)
+        {
+            m_pImageGallery->AddImage(new URLImage(m_pMapData->m_vecImages[i].m_szURLLarge));
+        }
+    }
 }
 
 void CDialogMapInfo::GetTop10MapTimes()
@@ -261,12 +260,12 @@ void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
                     kvEntry->SetInt("rank", kvRankObj->GetInt("rank"));
                 }
 
-                m_pPlayerList->AddItem(kvEntry, 0, false, true);
+                m_pTimesList->AddItem(kvEntry, 0, false, true);
             }
 
             //Update the control with this new info
             InvalidateLayout();
-            m_pPlayerList->InvalidateLayout();
+            m_pTimesList->InvalidateLayout();
             Repaint();
         }
     }

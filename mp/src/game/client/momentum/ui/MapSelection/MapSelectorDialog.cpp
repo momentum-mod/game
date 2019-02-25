@@ -395,6 +395,7 @@ void CMapSelectorDialog::OnMapDownloadQueued(KeyValues* pKv)
 {
     const uint32 uID = pKv->GetInt("id");
     UpdateMapListData(uID, true, false, false, false, false);
+    UpdateMapInfoDialog(uID);
 }
 
 void CMapSelectorDialog::OnMapDownloadStart(KeyValues* pKv)
@@ -410,6 +411,8 @@ void CMapSelectorDialog::OnMapDownloadStart(KeyValues* pKv)
     }
 
     m_mapMapDownloads.Insert(uID, new MapDownloadProgress(pKv->GetString("name")));
+
+    UpdateMapInfoDialog(uID);
 }
 
 void CMapSelectorDialog::OnMapDownloadSize(KeyValues* pKv)
@@ -443,6 +446,8 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
         m_mapMapDownloads[indx]->DeletePanel();
 
         m_mapMapDownloads.RemoveAt(indx);
+
+        UpdateMapInfoDialog(uID);
     }
     else
     {
@@ -522,7 +527,10 @@ void CMapSelectorDialog::OnAddMapToLibrary(int id)
 
 void CMapSelectorDialog::OnMapStart(int id)
 {
-    g_pMapCache->PlayMap(id);
+    if (g_pMapCache->PlayMap(id))
+    {
+        CloseMapInfoDialog(id);
+    }
 }
 
 void CMapSelectorDialog::OnRemoveMapFromFavorites(int id)
@@ -592,13 +600,27 @@ void CMapSelectorDialog::OpenMapInfoDialog(MapData *pMapData)
     else
     {
         // Add a new one
-        CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, pMapData);
-        gameDialog->SetParent(GetVPanel());
+        CDialogMapInfo *gameDialog = new CDialogMapInfo(this, pMapData);
         gameDialog->AddActionSignalTarget(this);
         gameDialog->Run();
         const auto newIndx = m_mapMapInfoDialogs.Insert(pMapData->m_uID);
         m_mapMapInfoDialogs[newIndx] = gameDialog;
     }
+}
+
+void CMapSelectorDialog::UpdateMapInfoDialog(uint32 uMapID)
+{
+    const auto indx = m_mapMapInfoDialogs.Find(uMapID);
+    if (m_mapMapInfoDialogs.IsValidIndex(indx))
+    {
+        m_mapMapInfoDialogs[indx]->UpdateMapDownloadState();
+    }
+}
+
+inline void CloseInfoDialog(Panel *pDlg)
+{
+    if (pDlg)
+        ivgui()->PostMessage(pDlg->GetVPanel(), new KeyValues("Close"), NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -609,9 +631,23 @@ void CMapSelectorDialog::CloseAllMapInfoDialogs()
     FOR_EACH_MAP_FAST(m_mapMapInfoDialogs, i)
     {
         Panel *pDlg = m_mapMapInfoDialogs[i];
-        if (pDlg)
-            ivgui()->PostMessage(pDlg->GetVPanel(), new KeyValues("Close"), NULL);
+        CloseInfoDialog(pDlg);
     }
+}
+
+void CMapSelectorDialog::CloseMapInfoDialog(uint32 uMapID)
+{
+    const auto indx = m_mapMapInfoDialogs.Find(uMapID);
+    if (m_mapMapInfoDialogs.IsValidIndex(indx))
+    {
+        Panel *pDlg = m_mapMapInfoDialogs[indx];
+        CloseInfoDialog(pDlg);
+    }
+}
+
+void CMapSelectorDialog::RemoveMapInfoDialog(uint32 uMapID)
+{
+    m_mapMapInfoDialogs.RemoveAt(m_mapMapInfoDialogs.Find(uMapID));
 }
 
 //-----------------------------------------------------------------------------
