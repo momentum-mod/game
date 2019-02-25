@@ -274,7 +274,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetRunFlags(m_pPlayer->m_SrvData.m_RunData.m_iRunFlags);
     m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
-    m_pRecordingReplay->SetBonusZone(g_pMomentumTimer->m_iBonusZone);
+    m_pRecordingReplay->SetBonusZone(g_pMomentumTimer->GetBonus());
 }
 
 void CMomentumReplaySystem::SetRunStats()

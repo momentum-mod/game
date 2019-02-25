@@ -9,7 +9,6 @@
 #include "tier0/memdbgon.h"
 
 CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystemPerFrame(pName), zones(nullptr)
-                                                       
 {
 }
 
@@ -68,18 +67,6 @@ void CMOMServerEvents::LevelShutdownPostEntity()
     // Shut off fullbright if the map enabled it
     if (fullbright.IsValid() && fullbright.GetBool())
         fullbright.SetValue(0);
-}
-void CMOMServerEvents::FrameUpdatePreEntityThink()
-{
-    if (!g_pMomentumTimer->GotCaughtCheating())
-    {
-        static ConVarRef sv_cheats("sv_cheats");
-        if (sv_cheats.GetBool())
-        {
-            g_pMomentumTimer->SetCheating(true);
-            g_pMomentumTimer->Stop(false);
-        }
-    }
 }
 
 void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)

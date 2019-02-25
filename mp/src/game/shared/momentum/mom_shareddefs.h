@@ -10,6 +10,22 @@
 // If you have any doubts, please refer to http://semver.org/
 #define MOM_CURRENT_VERSION "0.7.2"
 
+// Zone types enum
+// NOTE: If adding a new zone type make sure to add a case for it
+// in CMapzoneData::LoadFromFile & override ToKeyValues/LoadFromKeyValues
+// for the associated trigger class.
+enum MomZoneType_t
+{
+    MOMZONETYPE_INVALID = -1,
+    MOMZONETYPE_START = 0,
+    MOMZONETYPE_CP,
+    MOMZONETYPE_STOP,
+    MOMZONETYPE_ONEHOP,
+    MOMZONETYPE_RESETONEHOP,
+    MOMZONETYPE_CPTELE,
+    MOMZONETYPE_MULTIHOP,
+    MOMZONETYPE_STAGE,
+};
 
 // Gamemode for momentum
 enum GAME_MODE
