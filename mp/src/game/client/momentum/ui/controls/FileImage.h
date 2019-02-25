@@ -66,7 +66,7 @@ namespace vgui
         /// If pDefaultImage is non-null, the image is drawn while loading if bDrawProgress is false, 
         /// and regardless if the image fails to load.
         URLImage(IImage *pDefaultImage = nullptr, bool bDrawProgress = false);
-
+        URLImage(const char *pURL, IImage *pDefault = nullptr, bool bDrawProgress = false);
         /// Begins loading a file from the given URL. Returns true if loading, else false.
         /// If you passed in a default image in the constructor, it will draw while loading,
         /// otherwise if bDrawProgress is true, a progress bar will denote progress until loaded.
