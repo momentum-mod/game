@@ -161,6 +161,19 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
     DispatchTimerStateMessage(pPlayer, m_bIsRunning);
 }
 
+void CMomentumTimer::FrameUpdatePreEntityThink()
+{
+    if (!GotCaughtCheating())
+    {
+        static ConVarRef sv_cheats("sv_cheats");
+        if (sv_cheats.GetBool())
+        {
+            SetCheating(true);
+            Stop();
+        }
+    }
+}
+
 void CMomentumTimer::DispatchMapInfo() const
 {
     IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init", true);
@@ -292,7 +305,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
 
     // Since EndTouch is called after PostThink (which is where previous origins are stored) we need to go 1 more tick
     // in the previous data to get the real previous origin.
-    if (zoneType == ZONETYPE_START) // EndTouch
+    if (zoneType == MOMZONETYPE_START) // EndTouch
     {
         start = pPlayer->GetLocalOrigin();
         end = pPlayer->GetPreviousOrigin(1);
@@ -308,7 +321,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
 
     DevLog("Time offset was %f seconds (%s)\n", endTriggerTraceEnum.GetOffset(),
-           zoneType == ZONETYPE_START ? "EndTouch" : "StartTouch");
+           zoneType == MOMZONETYPE_START ? "EndTouch" : "StartTouch");
     SetIntervalOffset(GetCurrentZoneNumber(), endTriggerTraceEnum.GetOffset());
 }
 

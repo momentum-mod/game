@@ -212,7 +212,7 @@ inline void FireMapFinishedClosedEvent(bool restart)
     if (pClosePanel)
     {
         pClosePanel->SetBool("restart", restart);
-        //Fire this event so other classes can get at this
+        // Fire this event so other classes can get at this
         gameeventmanager->FireEvent(pClosePanel);
     }
 }
