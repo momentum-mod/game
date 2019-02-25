@@ -37,11 +37,6 @@
 
 using namespace vgui;
 
-enum 
-{
-	WINDOW_BORDER_WIDTH=2 // the width of the window's border
-};
-
 
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
@@ -551,7 +546,7 @@ void ListPanel::SetColumnHeaderHeight( int height )
 // If the initial window size is larger than the sum of the original widths of the columns,
 // you can wind up with the columns "snapping" to size after the first window focus
 // This is because the dxPerBar being calculated in PerformLayout()
-// is making resizable bounded headers exceed thier maxWidths at the Start. 
+// is making resizable bounded headers exceed their maxWidths at the Start. 
 // Solution is to either put in support for redistributing the extra dx being truncated and
 // therefore added to the last column on window opening, which is what causes the snapping.
 // OR to
@@ -1685,11 +1680,11 @@ void ListPanel::PerformLayout()
 
 	int wide, tall;
 	GetSize( wide, tall );
-	m_vbar->SetPos(wide - (m_vbar->GetWide()+WINDOW_BORDER_WIDTH), 0);
-	m_vbar->SetSize(m_vbar->GetWide(), tall - 2);
+	m_vbar->SetPos(wide - m_vbar->GetWide(), 0);
+	m_vbar->SetSize(m_vbar->GetWide(), tall);
 	m_vbar->InvalidateLayout();
 
-	int buttonMaxXPos = wide - (m_vbar->GetWide()+WINDOW_BORDER_WIDTH);
+	int buttonMaxXPos = wide - m_vbar->GetWide();
 	
 	int nColumns = m_CurrentColumns.Count();
 	// number of bars that can be resized
@@ -1785,129 +1780,70 @@ void ListPanel::PerformLayout()
 			header->SetWide( column.m_iMinWidth );
 	}
 
-	// This was a while(1) loop and we hit an infinite loop case, so now we max out the # of times it can loop.
-	for ( int iLoopSanityCheck=0; iLoopSanityCheck < 1000; iLoopSanityCheck++ )
+	// Place headers as is
+	int x = -1;
+	int i;
+	for ( i = 0; i < nColumns; i++)
 	{
-		// try and place headers as is - before we have to force items to be minimum width
-		int x = -1;
-		int i;
-		for ( i = 0; i < nColumns; i++)
+		column_t &column = m_ColumnsData[m_CurrentColumns[i]];
+		Panel *header = column.m_pHeader;
+		if (column.m_bHidden)
 		{
-			column_t &column = m_ColumnsData[m_CurrentColumns[i]];
-			Panel *header = column.m_pHeader;
-			if (column.m_bHidden)
-			{
-				header->SetVisible(false);
-				continue;
-			}
+			header->SetVisible(false);
+			continue;
+		}
 
-			header->SetPos(x, 0);
-			header->SetVisible(true);
+		header->SetPos(x, 0);
+		header->SetVisible(true);
 
-			// if we couldn't fit this column - then we need to force items to be minimum width
-			if ( x+column.m_iMinWidth >= buttonMaxXPos && !bForceShrink )
-			{
-				break;
-			}
-	
-			int hWide = header->GetWide();
+		int hWide = header->GetWide();
 
-			// calculate the column's width
-			// make it so the last column always attaches to the scroll bar
-			if ( i == lastColumnIndex )
+		// calculate the column's width
+		// make it so the last column always attaches to the scroll bar
+		if ( i == lastColumnIndex )
+		{
+			hWide = buttonMaxXPos-x; 
+		}
+		else if (i == m_iColumnDraggerMoved ) // column resizing using dragger
+		{
+			hWide += dxPerBar; // adjust width of column
+		}
+		else if ( m_iColumnDraggerMoved == -1 )		// window is resizing
+		{
+			// either this column is allowed to resize OR we are forcing it because we're shrinking all columns
+			if ( column.m_bResizesWithWindow || bForceShrink )
 			{
-				hWide = buttonMaxXPos-x; 
-			}
-			else if (i == m_iColumnDraggerMoved ) // column resizing using dragger
-			{
+				Assert ( column.m_iMinWidth <= column.m_iMaxWidth );
 				hWide += dxPerBar; // adjust width of column
 			}
-			else if ( m_iColumnDraggerMoved == -1 )		// window is resizing
-			{
-				// either this column is allowed to resize OR we are forcing it because we're shrinking all columns
-				if ( column.m_bResizesWithWindow || bForceShrink )
-				{
-					Assert ( column.m_iMinWidth <= column.m_iMaxWidth );
-					hWide += dxPerBar; // adjust width of column
-				}
-			}
-
-			// enforce column mins and max's - unless we're FORCING it to shrink
-			if ( hWide < column.m_iMinWidth && !bForceShrink ) 
-			{
-				hWide = column.m_iMinWidth; // adjust width of column
-			}
-			else if ( hWide > column.m_iMaxWidth )
-			{
-				hWide = column.m_iMaxWidth;
-			}
-	
-			header->SetSize(hWide, m_vbar->GetWide());
-			x += hWide;
-	
-			// set the resizers
-			Panel *sizer = column.m_pResizer;
-			if ( i == lastColumnIndex )
-			{
-				sizer->SetVisible(false);
-			}
-			else
-			{
-				sizer->SetVisible(true);
-			}
-			sizer->MoveToFront();
-			sizer->SetPos(x - 4, 0);
-			sizer->SetSize(8, m_vbar->GetWide());
 		}
 
-		// we made it all the way through
-		if ( i == nColumns )
-			break;
-	
-		// we do this AFTER trying first, to let as many columns as possible try and get to their
-		// desired width before we forcing the minimum width on them
-
-		// get the total desired width of all the columns
-		int totalDesiredWidth = 0;
-		for ( i = 0 ; i < nColumns ; i++ )
+		// enforce column mins and max's - unless we're FORCING it to shrink
+		if ( hWide < column.m_iMinWidth && !bForceShrink ) 
 		{
-			if (!m_ColumnsData[m_CurrentColumns[i]].m_bHidden)
-			{
-				Panel *pHeader = m_ColumnsData[m_CurrentColumns[i]].m_pHeader;
-				totalDesiredWidth += pHeader->GetWide();
-			}
+			hWide = column.m_iMinWidth; // adjust width of column
 		}
-
-		// shrink from the most right column to minimum width until we can fit them all
-		Assert(totalDesiredWidth > buttonMaxXPos);
-		for ( i = nColumns-1; i >= 0 ; i--)
+		else if ( hWide > column.m_iMaxWidth )
 		{
-			column_t &column = m_ColumnsData[m_CurrentColumns[i]];
-			if (!column.m_bHidden)
-			{
-				Panel *pHeader = column.m_pHeader;
-
-				totalDesiredWidth -= pHeader->GetWide();
-				if ( totalDesiredWidth + column.m_iMinWidth <= buttonMaxXPos )
-				{
-					int newWidth = buttonMaxXPos - totalDesiredWidth;
-					pHeader->SetSize( newWidth, m_vbar->GetWide() );
-					break;
-				}
-
-				totalDesiredWidth += column.m_iMinWidth;
-				pHeader->SetSize(column.m_iMinWidth, m_vbar->GetWide());
-			}
+			hWide = column.m_iMaxWidth;
 		}
-		// If we don't allow this to shrink, then as we resize, it can get stuck in an infinite loop.
-		dxPerBar -= 5;
-		if ( dxPerBar < 0 )
-			dxPerBar = 0;
 
-		if ( i == -1 )
+		header->SetSize(hWide, m_vbar->GetWide());
+		x += hWide;
+
+		// set the resizers
+		Panel *sizer = column.m_pResizer;
+		if ( i == lastColumnIndex )
 		{
-			break;
+			sizer->SetVisible(false);
 		}
+		else
+		{
+			sizer->SetVisible(true);
+		}
+		sizer->MoveToFront();
+		sizer->SetPos(x - 4, 0);
+		sizer->SetSize(8, m_vbar->GetWide());
 	}
 
 	// setup edit mode
@@ -2005,7 +1941,7 @@ void ListPanel::Paint()
 	}
 
 	int vbarInset = m_vbar->IsVisible() ? m_vbar->GetWide() : 0;
-	int maxw = panelWide - vbarInset - 8;
+	int maxw = panelWide - vbarInset;
 
 //	debug timing functions
 //	double startTime, endTime;
@@ -2927,7 +2863,7 @@ void ListPanel::OnColumnResized(int col, int delta)
 		column_t& nextCol = m_ColumnsData[m_CurrentColumns[i]];
 		restColumnsMinWidth += nextCol.m_iMinWidth;
 	}
-	panelWide -= ( x + restColumnsMinWidth + m_vbar->GetWide() + WINDOW_BORDER_WIDTH );
+	panelWide -= x + restColumnsMinWidth + m_vbar->GetWide();
 	if ( wide > panelWide )
 	{
 		wide = panelWide;
