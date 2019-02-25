@@ -49,15 +49,15 @@
         "MOM_Leaderboards_WatchReplay" "Watch Replay"
         "MOM_Leaderboards_SteamProfile" "Steam Profile"
         "MOM_Calculating" "Calculating..."
-        "MOM_MapRank" "Map Rank: %s1"
-        "MOM_GlobalRank" "Global Rank: %s1"
-        "MOM_PersonalBestTime" "Personal Best Time: %s1"
-        "MOM_RankXP" "Rank XP: %s1"
-        "MOM_CosXP" "Cosmetic XP: %s1"
-        "MOM_MapsCompleted" "Maps Completed: %s1"
-        "MOM_RunsSubmitted" "Runs Submitted: %s1"
-        "MOM_TotalJumps" "Total Jumps: %s1"
-        "MOM_TotalStrafes" "Total Strafes: %s1"
+        "MOM_MapRank" "Map Rank: %mRank%"
+        "MOM_GlobalRank" "Global Rank: %gRank% / %gTotal%"
+        "MOM_PersonalBestTime" "Personal Best Time: %time%"
+        "MOM_RankXP" "Rank XP: %rankXP%"
+        "MOM_CosXP" "Cosmetic XP: %cosXP%"
+        "MOM_MapsCompleted" "Maps Completed: %mapsCompleted%"
+        "MOM_RunsSubmitted" "Runs Submitted: %runsSubmitted%"
+        "MOM_TotalJumps" "Total Jumps: %totalJumps%"
+        "MOM_TotalStrafes" "Total Strafes: %totalStrafes%"
         "MOM_Leaderboards_Local" "Local"
         "MOM_Leaderboards_Global" "Global"
         "MOM_Leaderboards_Friends" "Friends"
@@ -123,8 +123,8 @@
     //hud_mapinfo
         "MOM_Status_NoZones" "No zones found"
         "MOM_Map_Name" "Map: "
-        "MOM_Map_Author" "Author(s): "
-        "MOM_Map_Difficulty" "Difficulty: "
+        "MOM_Map_Author" "By: %authors%"
+        "MOM_Map_Difficulty" "Tier: %difficulty%"
 
     //Guns
         "MOM_Gun" "Momentum Gun"
@@ -177,7 +177,6 @@
         "MOM_GameType_Trikz" "Trikz"
 
         // Map Info Dialog
-        "MOM_MapSelector_InfoDialog" "Map Info"
         "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode: "
         "MOM_MapSelector_InfoDialog_Layout" "Layout: "
         "MOM_MapSelector_InfoDialog_Zones"  "Number of Zones: "

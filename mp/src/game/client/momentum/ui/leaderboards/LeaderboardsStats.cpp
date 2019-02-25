@@ -89,23 +89,33 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
     KeyValues *pErr = kv->FindKey("error");
     if (pData)
     {
-        int mrank = -1;
         // int mtotal = -1; // MOM_TODO
 
-        int grank = -1; // MOM_TODO
-        int gtotal = -1; // MOM_TODO
+        // int grank = -1; // MOM_TODO
+        // int gtotal = -1; // MOM_TODO
 
-        float seconds = 0.0f;
 
         KeyValues *pMapRank = pData->FindKey("mapRank");
         if (pMapRank)
         {
-            mrank = pMapRank->GetInt("rank");
+            int iMapRank = pMapRank->GetInt("rank", -1);
+            if (iMapRank == -1)
+                pMapRank->SetWString("mRank", g_pVGuiLocalize->Find("MOM_NotApplicable"));
+            else
+                pMapRank->SetInt("mRank", iMapRank);
 
+
+            pMapRank->SetWString("time", g_pVGuiLocalize->Find("MOM_NotApplicable"));
             KeyValues *pRun = pMapRank->FindKey("run");
             if (pRun)
             {
-                seconds = pRun->GetFloat("time");
+                float seconds = pRun->GetFloat("time");
+                if (seconds > 0.0f)
+                {
+                    char sPersonalBestTime[BUFSIZETIME];
+                    g_pMomentumUtil->FormatTime(seconds, sPersonalBestTime);
+                    pMapRank->SetString("time", sPersonalBestTime);
+                }
             }
         }
 
@@ -116,42 +126,25 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
             // grank = static_cast<int>(pExperience->GetFloat("rank"));
             // gtotal = static_cast<int>(pExperience->GetFloat("total"));
 
-            m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pUserStats->GetInt("rankXP")));
-            m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), pUserStats->GetInt("cosXP")));
-            m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), pUserStats->GetInt("mapsCompleted")));
-            m_pRunsSubmitted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RunsSubmitted"), pUserStats->GetInt("runsSubmitted")));
-            m_pTotalJumps->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalJumps"), pUserStats->GetInt("totalJumps")));
-            m_pTotalStrafes->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalStrafes"), pUserStats->GetInt("totalStrafes")));
+            m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pUserStats));
+            m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), pUserStats));
+            m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), pUserStats));
+            m_pRunsSubmitted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RunsSubmitted"), pUserStats));
+            m_pTotalJumps->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalJumps"), pUserStats));
+            m_pTotalStrafes->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalStrafes"), pUserStats));
         }
 
-        if (mrank > -1)
-        {
-            m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), mrank));
-        }
-        else
-        {
-            m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), g_pVGuiLocalize->Find("MOM_NotApplicable")));
-        }
-        if (seconds > 0.0f)
-        {
-            char p_sPersonalBestTime[BUFSIZETIME];
-            wchar_t w_PB[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(seconds, p_sPersonalBestTime);
-            ANSI_TO_UNICODE(p_sPersonalBestTime, w_PB);
-            m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), w_PB));
-        }
-        else
-        {
-            m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), g_pVGuiLocalize->Find("MOM_NotApplicable")));
-        }
-        if (grank > -1 && gtotal > -1)
+        m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), pMapRank));
+        m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), pMapRank));
+
+        /*if (grank > -1 && gtotal > -1)
         {
             char p_sGlobalRank[BUFSIZELOCL];
             char p_sLocalized[BUFSIZELOCL];
             LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
             Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sGlobalRank, grank, gtotal);
             m_pPlayerGlobalRank->SetText(p_sLocalized);
-        }
+        }*/
     }
     else if (pErr)
     {
