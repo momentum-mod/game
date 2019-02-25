@@ -37,10 +37,11 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-ImageList::ImageList(bool deleteImagesWhenDone)
+ImageList::ImageList(bool deleteImagesWhenDone, bool bAddBlank /* = true*/)
 {
 	m_bDeleteImagesWhenDone = deleteImagesWhenDone;
-	AddImage(new BlankImage());
+    if (bAddBlank)
+	    AddImage(new BlankImage());
 }
 
 //-----------------------------------------------------------------------------
