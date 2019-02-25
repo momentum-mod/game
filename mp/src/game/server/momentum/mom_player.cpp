@@ -727,7 +727,7 @@ void CMomentumPlayer::OnPlayerJump()
         // do not start timer if player is in practice mode or it's already running.
         if (!g_pMomentumTimer->IsRunning())
         {
-            g_pMomentumTimer->m_bShouldUseStartZoneOffset = false;
+            g_pMomentumTimer->SetShouldUseStartZoneOffset(false);
 
             g_pMomentumTimer->Start(gpGlobals->tickcount, m_SrvData.m_RunData.m_iBonusZone);
             // The Start method could return if CP menu or prac mode is activated here
@@ -753,7 +753,7 @@ void CMomentumPlayer::OnPlayerJump()
         }
         else
         {
-            g_pMomentumTimer->m_bShouldUseStartZoneOffset = true;
+            g_pMomentumTimer->SetShouldUseStartZoneOffset(true);
             // MOM_TODO: Find a better way of doing this
             // If we can't start the run, play a warning sound
             // EmitSound("Watermelon.Scrape");

@@ -10,14 +10,14 @@ class CTriggerStage;
 class CTriggerTimerStop;
 class CMomentumPlayer;
 
-class CMomentumTimer : public CAutoGameSystem
+class CMomentumTimer : public CAutoGameSystemPerFrame
 {
   public:
     CMomentumTimer(const char *pName)
-        : CAutoGameSystem(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0),
-          m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr),
-          m_pEndTrigger(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr),
-          m_bPaused(false), m_iPausedTick(0)
+        : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
+          m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
+          m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr),
+          m_pStartZoneMark(nullptr), m_bPaused(false), m_iPausedTick(0)
     {
     }
 
@@ -84,6 +84,8 @@ class CMomentumTimer : public CAutoGameSystem
     void LevelShutdownPreEntity() OVERRIDE;
     void DispatchMapInfo() const;
 
+	virtual void FrameUpdatePreEntityThink();
+
     // Practice mode- noclip mode that stops timer
     void EnablePractice(CMomentumPlayer *pPlayer);
     void DisablePractice(CMomentumPlayer *pPlayer);
@@ -106,9 +108,14 @@ class CMomentumTimer : public CAutoGameSystem
     int GetBonus() { return m_iBonusZone; }
 
     void SetPaused(bool bEnable = true);
-
     bool GetPaused() { return m_bPaused; }
 
+	bool ShouldUseStartZoneOffset() const { return m_bShouldUseStartZoneOffset; }
+    void SetShouldUseStartZoneOffset(bool use) { m_bShouldUseStartZoneOffset = use; }
+
+	// creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
+    void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
+    void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
   private:
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick, m_iPausedTick;
@@ -128,22 +135,17 @@ class CMomentumTimer : public CAutoGameSystem
 
     SavedLocation_t *m_pStartZoneMark;
 
-  public:
-    // PRECISION FIX:
+    int m_iBonusZone;
+
+	// PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the
     // start trigger
     // also, subtract the ending offset from the time, since we end after we actually enter the ending trigger
     float m_flTickOffsetFix[MAX_STAGES]; // index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
     float m_flZoneEnterTime[MAX_STAGES];
     bool m_bShouldUseStartZoneOffset;
-    int m_iBonusZone;
-
-    // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
-    void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
-    void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
     float m_flDistFixTraceCorners[8]; // array of floats representing the trace distance from each corner of the
                                       // player's collision hull
-    typedef enum { ZONETYPE_END, ZONETYPE_START } zoneType;
 };
 
 extern CMomentumTimer *g_pMomentumTimer;

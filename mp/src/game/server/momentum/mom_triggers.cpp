@@ -101,7 +101,7 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
         {
             pPlayer->m_RunStats.SetZoneExitSpeed(stageNum - 1, pPlayer->GetLocalVelocity().Length(),
                                                  pPlayer->GetLocalVelocity().Length2D());
-            g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_END);
+            g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
             pPlayer->m_RunStats.SetZoneEnterTime(stageNum, g_pMomentumTimer->CalculateStageTime(stageNum));
             pPlayer->m_RunStats.SetZoneTime(stageNum - 1, pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
                                                               pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
@@ -139,7 +139,7 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
         if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             // This handles both the start and stage triggers
-            g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_START);
+            g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_START);
 
             float enterVel3D = pPlayer->GetLocalVelocity().Length(),
                   enterVel2D = pPlayer->GetLocalVelocity().Length2D();
@@ -295,7 +295,7 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
                 
             }
             */
-            g_pMomentumTimer->m_bShouldUseStartZoneOffset = true;
+            g_pMomentumTimer->SetShouldUseStartZoneOffset(true);
 
             g_pMomentumTimer->Start(gpGlobals->tickcount, pPlayer->m_SrvData.m_RunData.m_iBonusZone);
             // The Start method could return if CP menu or prac mode is activated here
@@ -321,7 +321,7 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
         }
         else
         {
-            g_pMomentumTimer->m_bShouldUseStartZoneOffset = false;
+            g_pMomentumTimer->SetShouldUseStartZoneOffset(false);
             // MOM_TODO: Find a better way of doing this
             // If we can't start the run, play a warning sound
             // pPlayer->EmitSound("Watermelon.Scrape");
@@ -487,7 +487,7 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
             else
             {
                 DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_END);
+                g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
             }
 
             // This is needed for the final stage

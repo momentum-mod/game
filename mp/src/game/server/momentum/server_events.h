@@ -12,7 +12,7 @@ namespace Momentum {
 void GameInit();
 } // namespace Momentum
 
-class CMOMServerEvents : CAutoGameSystemPerFrame
+class CMOMServerEvents : CAutoGameSystem
 {
 public:
     CMOMServerEvents(const char* pName);
@@ -23,7 +23,6 @@ public:
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
-    void FrameUpdatePreEntityThink() OVERRIDE;
 
     STEAM_CALLBACK(CMOMServerEvents, OnGameOverlay, GameOverlayActivated_t);
 
