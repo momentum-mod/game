@@ -155,6 +155,7 @@ struct MapData : APIModel
     MapRank m_PersonalBest; // User's rank on a map, if they have one
     MapRank m_WorldRecord; // The world record for the map
     CUtlVector<MapCredit> m_vecCredits;
+    CUtlVector<MapImage> m_vecImages;
     MapImage m_Thumbnail;
 
     // Internal

@@ -319,6 +319,8 @@ MapData::MapData(const MapData& src)
     m_Submitter = src.m_Submitter;
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
+    m_vecImages.RemoveAll();
+    m_vecImages.AddVectorToTail(src.m_vecImages);
     m_Thumbnail = src.m_Thumbnail;
     m_PersonalBest = src.m_PersonalBest;
     m_WorldRecord = src.m_WorldRecord;
@@ -456,6 +458,27 @@ void MapData::FromKV(KeyValues* pMap)
     if (pWorldRecord && !pWorldRecord->IsEmpty())
         m_WorldRecord.FromKV(pWorldRecord);
 
+    KeyValues *pImages = pMap->FindKey("images");
+    if (pImages)
+    {
+        FOR_EACH_SUBKEY(pImages, pImage)
+        {
+            MapImage mi;
+            mi.FromKV(pImage);
+            if (m_eSource > MODEL_FROM_DISK)
+            {
+                const auto indx = m_vecImages.Find(mi);
+                if (m_vecImages.IsValidIndex(indx))
+                {
+                    m_vecImages[indx] = mi;
+                    continue;
+                }
+            }
+
+            m_vecImages.AddToTail(mi);
+        }
+    }
+
     m_bValid = m_uID > 0;
 }
 
@@ -493,8 +516,7 @@ void MapData::ToKV(KeyValues* pKv) const
         KeyValues* pCredits = new KeyValues("credits");
         FOR_EACH_VEC(m_vecCredits, i)
         {
-            KeyValues* pCredit = pCredits->CreateNewKey();
-            m_vecCredits[i].ToKV(pCredit);
+            m_vecCredits[i].ToKV(pCredits->CreateNewKey());
         }
         pKv->AddSubKey(pCredits);
     }
@@ -518,6 +540,16 @@ void MapData::ToKV(KeyValues* pKv) const
         KeyValues *pWorldRecord = new KeyValues("worldRecord");
         m_WorldRecord.ToKV(pWorldRecord);
         pKv->AddSubKey(pWorldRecord);
+    }
+
+    if (!m_vecImages.IsEmpty())
+    {
+        KeyValues *pImages = new KeyValues("images");
+        FOR_EACH_VEC(m_vecImages, i)
+        {
+            m_vecImages[i].ToKV(pImages->CreateNewKey());
+        }
+        pKv->AddSubKey(pImages);
     }
 }
 
@@ -556,6 +588,11 @@ MapData& MapData::operator=(const MapData& src)
     {
         m_vecCredits.RemoveAll();
         m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
+    }
+    if (src.m_vecImages.Count())
+    {
+        m_vecImages.RemoveAll();
+        m_vecImages.AddVectorToTail(src.m_vecImages);
     }
     m_Thumbnail = src.m_Thumbnail;
 
