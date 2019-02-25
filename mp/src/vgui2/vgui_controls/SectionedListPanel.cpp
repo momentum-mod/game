@@ -50,6 +50,7 @@ SectionedListPanelHeader::SectionedListPanelHeader(SectionedListPanel *parent, c
 {
 	m_pListPanel = parent;
 	m_iSectionID = sectionID;
+    m_bShouldDraw = true;
 	SetTextImageIndex(-1);
 	ClearImages();
 	SetPaintBackgroundEnabled( false );
@@ -61,6 +62,7 @@ SectionedListPanelHeader::SectionedListPanelHeader(SectionedListPanel *parent, c
 	SetVisible(false);
 	m_pListPanel = parent;
 	m_iSectionID = sectionID;
+    m_bShouldDraw = true;
 	SetTextImageIndex(-1);
 	ClearImages();
 }
@@ -946,7 +948,7 @@ void SectionedListPanel::LayoutPanels(int &contentTall)
 		// [tj] Only draw the header if it is enabled
 		//=============================================================================
 		int nMinNextSectionY = y + section.m_iMinimumHeight;
-		if (m_bDrawSectionHeaders)
+		if (m_bDrawSectionHeaders && section.m_pHeader->ShouldDraw())
 		{
 			// draw the header
 			section.m_pHeader->SetBounds(x, y, wide, tall);
@@ -1400,6 +1402,14 @@ void SectionedListPanel::SetSectionMinimumHeight(int sectionID, int iMinimumHeig
 
 	m_Sections[sectionID].m_iMinimumHeight = iMinimumHeight;
 	InvalidateLayout();
+}
+void SectionedListPanel::SetSectionHeaderVisible(int sectionID, bool bVisible)
+{
+    if (!m_Sections.IsValidIndex(sectionID))
+        return;
+
+    m_Sections[sectionID].m_pHeader->SetShouldDraw(bVisible);
+    InvalidateLayout();
 }
 
 //-----------------------------------------------------------------------------
