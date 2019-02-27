@@ -116,7 +116,7 @@ String16 UltralightFileSystem::OpenTemporaryFile(const String16 &prefix, FileHan
 
 FileHandle UltralightFileSystem::OpenFile(const String16 &path, bool open_for_writing)
 {
-    return (FileHandle)g_pFullFileSystem->Open(ToUTF8(path), open_for_writing ? "w" : "r");
+    return (FileHandle)g_pFullFileSystem->Open(ToUTF8(path), open_for_writing ? "wb" : "rb");
 }
 
 void UltralightFileSystem::CloseFile(FileHandle &handle) { g_pFullFileSystem->Close((FileHandle_t)handle); }
