@@ -33,7 +33,7 @@ class ULLoadListener : public ultralight::LoadListener
     virtual void OnFinishLoading(ultralight::View *caller) OVERRIDE { m_pOverlay->OnFinishLoading(); }
 
     // Called when the history (back/forward state) is modified
-    virtual void OnUpdateHistory(ultralight::View *caller) OVERRIDE { m_pOverlay->OnFinishLoading(); }
+    virtual void OnUpdateHistory(ultralight::View *caller) OVERRIDE { m_pOverlay->OnUpdateHistory(); }
 
     // Called when all JavaScript has been parsed and the document is ready.
     // This is the best time to make any initial JavaScript calls to your page.

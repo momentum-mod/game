@@ -2,6 +2,7 @@
 #include "ultralight_ui_system.h"
 
 #include "ultralight_filesystem.h"
+#include "ultralight_font_loader.h"
 #include "ultralight_overlay.h"
 
 #include "tier0/memdbgon.h"
@@ -12,6 +13,7 @@ static UltralightUISystem g_UltralightSystem;
 UltralightUISystem *UltralightUI() { return &g_UltralightSystem; }
 
 static UltralightFileSystem g_UltralightFileSystem;
+static UltralightFontLoader g_UltralightFontLoader;
 
 UltralightUISystem::UltralightUISystem()
 {
@@ -24,7 +26,7 @@ UltralightUISystem::UltralightUISystem()
     Platform &platform = Platform::instance();
     platform.set_config(config);
     platform.set_file_system(&g_UltralightFileSystem);
-    platform.set_font_loader(DefaultFontLoader());
+    platform.set_font_loader(&g_UltralightFontLoader);
 
     m_pRenderer = Renderer::Create();
 }

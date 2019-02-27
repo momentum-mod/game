@@ -158,6 +158,8 @@ $Project "Client (Momentum)"
                 
                 $Folder "Ultralight"
                 {
+                    $File "momentum\ui\ultralight_ui\ultralight_font_loader.h"
+                    $File "momentum\ui\ultralight_ui\ultralight_font_loader.cpp"
                     $File "momentum\ui\ultralight_ui\ultralight_filesystem.h"
                     $File "momentum\ui\ultralight_ui\ultralight_filesystem.cpp"
                     $File "momentum\ui\ultralight_ui\ultralight_overlay.h"
