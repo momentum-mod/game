@@ -346,6 +346,8 @@ private:
 	int				   _charCount;
 	int				   _maxCharCount;  // max number of chars that can be in the text buffer
 	HFont              _font;		   // font of chars in the text buffer
+    CUtlString          _fontName;
+    CUtlString          _smallFontName;
 	HFont			   _smallfont;
 	bool			   _dataChanged;   // whether anything in the window has changed.
 	bool			   _multiline;	   // whether buffer is multiline or just a single line
