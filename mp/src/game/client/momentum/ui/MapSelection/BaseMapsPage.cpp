@@ -99,9 +99,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate", GetScaledVal(90), GetScaledVal(90), GetScaledVal(90), ListPanel::COLUMN_FIXEDSIZE);
     m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_FIXEDSIZE);
 
-    // Images
-    m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_LIBRARY, INDX_MAP_IN_LIBRARY);
-    m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_FAVORITES, INDX_MAP_IN_FAVORITES);
+    // Images happen in ApplySchemeSettings
 
     // Tooltips
     m_pMapList->SetColumnHeaderTooltip(HEADER_MAP_LAYOUT, "#MOM_MapSelector_MapLayout_Tooltip");
@@ -184,6 +182,13 @@ void CBaseMapsPage::PerformLayout()
 void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
+
+    // Apply images
+    if (m_pMapList->GetImageList()->GetImageCount() > 1)
+    {
+        m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_LIBRARY, INDX_MAP_IN_LIBRARY);
+        m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_FAVORITES, INDX_MAP_IN_FAVORITES);
+    }
 
     //Font
     m_hFont = pScheme->GetFont("MapListFont", IsProportional());

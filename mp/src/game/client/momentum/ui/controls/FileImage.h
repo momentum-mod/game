@@ -42,8 +42,10 @@ namespace vgui
         // Set the rotation of the image in degrees
         void SetRotation(int iRotation) OVERRIDE { m_iRotation = iRotation; }
 
+        // Overridden to cause a reload
+        bool Evict() OVERRIDE;
+
         // Unused
-        bool Evict() OVERRIDE { return false; }
         int GetNumFrames() OVERRIDE { return 0; }
         void SetFrame(int nFrame) OVERRIDE {}
         HTexture GetID() OVERRIDE { return (HTexture) 0; }
@@ -53,7 +55,10 @@ namespace vgui
         int m_iX, m_iY, m_iImageWide, m_iDesiredWide, m_iImageTall, m_iDesiredTall, m_iRotation, m_iTextureID;
         IImage *m_pDefaultImage;
     private:
+        bool LoadFromFileInternal();
         void DestroyTexture();
+        char m_szFileName[MAX_PATH];
+        char m_szPathID[16];
     };
 
     // Like FileImage but streamed from the web (meaning not requiring to be locally downloaded & stored)
@@ -72,14 +77,20 @@ namespace vgui
         /// otherwise if bDrawProgress is true, a progress bar will denote progress until loaded.
         bool LoadFromURL(const char *pURL);
 
+        // Overrides from FileImage
         void Paint() OVERRIDE;
+        bool Evict() OVERRIDE;
     protected:
-        void OnFileStreamStart(KeyValues *pKv);
+        void OnFileStreamSize(KeyValues *pKv);
         void OnFileStreamProgress(KeyValues *pKv);
         void OnFileStreamEnd(KeyValues *pKv);
 
     private:
+        bool LoadFromURLInternal();
+        char m_szURL[256];
         uint64 m_hRequest;
         bool m_bDrawProgressBar;
+        float m_fProgress;
+        uint32 m_uTotalSize;
     };
 }

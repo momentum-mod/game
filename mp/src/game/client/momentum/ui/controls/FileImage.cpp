@@ -7,6 +7,7 @@
 #include "vgui/ISurface.h"
 
 #include "mom_api_requests.h"
+#include "util/mom_util.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
@@ -21,6 +22,8 @@ FileImage::FileImage(IImage *pDefaultImage /* = nullptr*/): m_iX(0), m_iY(0), m_
     m_iDesiredWide(0), m_iImageTall(0), m_iDesiredTall(0), m_iRotation(0), m_iTextureID(-1), m_pDefaultImage(pDefaultImage)
 {
     m_DrawColor = Color(255, 255, 255, 255);
+    m_szFileName[0] = '\0';
+    m_szPathID[0] = '\0';
 }
 
 FileImage::~FileImage()
@@ -30,9 +33,16 @@ FileImage::~FileImage()
 
 bool FileImage::LoadFromFile(const char* pFileName, const char* pPathID /* = "GAME"*/)
 {
-    // Convert our path to the full drive path for loading
+    Q_strncpy(m_szFileName, pFileName, sizeof(m_szFileName));
+    Q_strncpy(m_szPathID, pPathID, sizeof(m_szPathID));
+
+    return LoadFromFileInternal();
+}
+
+bool FileImage::LoadFromFileInternal()
+{
     CUtlBuffer fileBuf;
-    if (!g_pFullFileSystem->ReadFile(pFileName, pPathID, fileBuf))
+    if (!g_pFullFileSystem->ReadFile(m_szFileName, m_szPathID, fileBuf))
         return false;
 
     return LoadFromUtlBuffer(fileBuf);
@@ -134,6 +144,13 @@ void FileImage::GetSize(int& wide, int& tall)
     }
 }
 
+bool FileImage::Evict()
+{
+    if (m_szFileName[0])
+        return LoadFromFileInternal();
+    return false;
+}
+
 void FileImage::DestroyTexture()
 {
     if (surface() && m_iTextureID != -1)
@@ -146,6 +163,9 @@ void FileImage::DestroyTexture()
 URLImage::URLImage(IImage *pDefaultImage/* = nullptr*/, bool bDrawProgress /* = false*/) : FileImage(pDefaultImage), 
         m_hRequest(INVALID_HTTPREQUEST_HANDLE), m_bDrawProgressBar(bDrawProgress)
 {
+    m_szURL[0] = '\0';
+    m_fProgress = 0.0f;
+    m_uTotalSize = 0;
 }
 
 URLImage::URLImage(const char* pURL, IImage* pDefault, bool bDrawProgress) : FileImage(pDefault), m_hRequest(INVALID_HTTPREQUEST_HANDLE),
@@ -156,33 +176,58 @@ URLImage::URLImage(const char* pURL, IImage* pDefault, bool bDrawProgress) : Fil
 
 bool URLImage::LoadFromURL(const char* pURL)
 {
-    m_hRequest = g_pAPIRequests->DownloadFile(pURL, 
-                                 UtlMakeDelegate(this, &URLImage::OnFileStreamStart),
-                                 UtlMakeDelegate(this, &URLImage::OnFileStreamProgress),
-                                 UtlMakeDelegate(this, &URLImage::OnFileStreamEnd),
-                                 nullptr);
+    Q_strncpy(m_szURL, pURL, sizeof(m_szURL));
+
+    return LoadFromURLInternal();
+}
+
+bool URLImage::LoadFromURLInternal()
+{
+    m_fProgress = 0.0f;
+    m_uTotalSize = 0;
+    m_hRequest = g_pAPIRequests->DownloadFile(m_szURL,
+                                              UtlMakeDelegate(this, &URLImage::OnFileStreamSize),
+                                              UtlMakeDelegate(this, &URLImage::OnFileStreamProgress),
+                                              UtlMakeDelegate(this, &URLImage::OnFileStreamEnd),
+                                              nullptr);
 
     return m_hRequest != INVALID_HTTPREQUEST_HANDLE;
 }
+
 
 void URLImage::Paint()
 {
     if (m_hRequest != INVALID_HTTPREQUEST_HANDLE && m_bDrawProgressBar)
     {
-        // MOM_TODO: m_pProgressBar->Paint();
+        surface()->DrawSetColor(Color(0, 0, 0, 255));
+        surface()->DrawOutlinedRect(m_iX, m_iY, m_iDesiredWide, m_iDesiredTall);
+        // Interp colors
+        const Color interp = g_pMomentumUtil->ColorLerp(m_fProgress, COLOR_RED, COLOR_GREEN);
+        surface()->DrawSetColor(interp);
+        // Determine width
+        const int wide = max(int(float(m_iDesiredWide) * m_fProgress), 0);
+        surface()->DrawFilledRect(m_iX + 2, m_iY + 2, wide - 2, m_iDesiredTall - 2);
     }
     else
         FileImage::Paint();
 }
 
-void URLImage::OnFileStreamStart(KeyValues* pKv)
+bool URLImage::Evict()
 {
-    // MOM_TODO also put a progress bar here and paint it, if no default image
+    if (m_szURL[0])
+        return LoadFromURLInternal();
+    return false;
+}
+
+void URLImage::OnFileStreamSize(KeyValues* pKv)
+{
+    m_uTotalSize = pKv->GetInt("size");
 }
 
 void URLImage::OnFileStreamProgress(KeyValues* pKv)
 {
-    // MOM_TODO update that progress bar here
+    if (m_uTotalSize)
+        m_fProgress = float(pKv->GetInt("offset") + pKv->GetInt("size")) / float(m_uTotalSize);
 }
 
 void URLImage::OnFileStreamEnd(KeyValues* pKv)
@@ -195,7 +240,7 @@ void URLImage::OnFileStreamEnd(KeyValues* pKv)
     }
     else
     {
-        CUtlBuffer *pBuf = (CUtlBuffer*)pKv->GetPtr("buf");
+        CUtlBuffer *pBuf = static_cast<CUtlBuffer*>(pKv->GetPtr("buf"));
         if (pBuf)
         {
             LoadFromUtlBuffer(*pBuf);
