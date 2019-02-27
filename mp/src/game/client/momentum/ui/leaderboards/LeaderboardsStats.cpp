@@ -24,23 +24,25 @@ CLeaderboardsStats::CLeaderboardsStats(Panel* pParent) : BaseClass(pParent, "CLe
     m_flLastUpdate = 0.0f;
     m_bNeedsUpdate = true;
 
+    SetSize(10, 10);
+
     m_pPlayerAvatar = new CAvatarImagePanel(this, "PlayerAvatar");
+
+    m_pPlayerName = new Label(this, "PlayerName", "");
+    m_pPlayerMapRank = new Label(this, "PlayerMapRank", "");
+    m_pPlayerPersonalBest = new Label(this, "PlayerPersonalBest", "");
+    m_pPlayerGlobalRank = new Label(this, "PlayerGlobalRank", "");
+    m_pPlayerRankXP = new Label(this, "RankXP", "");
+    m_pPlayerCosXP = new Label(this, "CosXP", "");
+    m_pMapsCompleted = new Label(this, "MapsCompleted", "");
+    m_pRunsSubmitted = new Label(this, "RunsSubmitted", "");
+    m_pTotalJumps = new Label(this, "TotalJumps", "");
+    m_pTotalStrafes = new Label(this, "TotalStrafes", "");
 
     LoadControlSettings("resource/ui/leaderboards/stats.res");
 
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
-
-    m_pPlayerName = FindControl<Label>("PlayerName");
-    m_pPlayerMapRank = FindControl<Label>("PlayerMapRank");
-    m_pPlayerPersonalBest = FindControl<Label>("PlayerPersonalBest");
-    m_pPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank");
-    m_pPlayerRankXP = FindControl<Label>("RankXP");
-    m_pPlayerCosXP = FindControl<Label>("CosXP");
-    m_pMapsCompleted = FindControl<Label>("MapsCompleted");
-    m_pRunsSubmitted = FindControl<Label>("RunsSubmitted");
-    m_pTotalJumps = FindControl<Label>("TotalJumps");
-    m_pTotalStrafes = FindControl<Label>("TotalStrafes");
 
     m_pPlayerAvatar->SetDefaultAvatar(scheme()->GetImage("default_steam", false));
     m_pPlayerAvatar->SetShouldScaleImage(true);

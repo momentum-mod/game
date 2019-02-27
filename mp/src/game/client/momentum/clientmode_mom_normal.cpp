@@ -42,6 +42,7 @@ extern ConVar cl_sidespeed;
 
 HScheme g_hVGuiCombineScheme = 0;
 
+
 // Instance the singleton and expose the interface to it.
 IClientMode *GetClientModeNormal()
 {
@@ -96,6 +97,13 @@ class CHudViewport : public CBaseViewport
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
         AddNewPanel(CreatePanelByName(PANEL_LOBBY_MEMBERS), "PANEL_LOBBY_MEMBERS");
         // BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
+    }
+
+    void OnScreenSizeChanged(int iOldWide, int iOldTall) OVERRIDE
+    {
+        BaseClass::OnScreenSizeChanged(iOldWide, iOldTall);
+
+        static_cast<ClientModeMOMNormal*>(g_pClientMode)->SetupPointers();
     }
 };
 
