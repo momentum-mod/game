@@ -356,7 +356,7 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
             pMap->m_pImage = nullptr;
         }
 
-        URLImage *pImage = new URLImage;
+        URLImage *pImage = new URLImage(m_pImageList->GetImage(INDX_MAP_THUMBNAIL_UNKNOWN));
         if (pImage->LoadFromURL(pMapData->m_Thumbnail.m_szURLSmall))
         {
             pMap->m_pImage = pImage;
@@ -552,6 +552,19 @@ void CMapSelectorDialog::OnViewMapInfo(int id)
 
     // View the map info
     OpenMapInfoDialog(pMapData);
+}
+
+void CMapSelectorDialog::ApplySchemeSettings(vgui::IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    // Reload them
+    for (int i = 0; i < m_pImageList->GetImageCount(); i++)
+    {
+        IImage *pImage = m_pImageList->GetImage(i);
+        if (pImage)
+            pImage->Evict();
+    }
 }
 
 

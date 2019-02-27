@@ -119,6 +119,10 @@ class CMapSelectorDialog : public vgui::Frame
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
     // called to look at map info
     MESSAGE_FUNC_INT(OnViewMapInfo, "ViewMapInfo", id);
+
+protected:
+    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
+
   private:
     // current game list change
     MESSAGE_FUNC(OnTabChanged, "PageChanged");
