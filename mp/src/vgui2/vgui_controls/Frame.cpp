@@ -11,14 +11,15 @@
 
 #include "tier1/utlstring.h"
 #include "vgui/Cursor.h"
-#include "vgui/MouseCode.h"
 #include "vgui/IBorder.h"
 #include "vgui/IInput.h"
 #include "vgui/ILocalize.h"
 #include "vgui/IPanel.h"
-#include "vgui/ISurface.h"
 #include "vgui/IScheme.h"
+#include "vgui/ISurface.h"
+#include "vgui/IVGui.h"
 #include "vgui/KeyCode.h"
+#include "vgui/MouseCode.h"
 
 #include "vgui_controls/AnimationController.h"
 #include "vgui_controls/Controls.h"
@@ -2197,12 +2198,11 @@ void Frame::OnKeyCodeTyped(KeyCode code)
 			// reload the data file
 			scheme()->ReloadSchemes();
 
-			Panel *panel = ipanel()->GetPanel(top, GetModuleName());
-			if (panel)
-			{
-				// make the top-level panel reload it's scheme, it will chain down to all the child panels
-				panel->InvalidateLayout(false, true);
-			}
+            // We need to do this because apparently reloadscheme doesn't work
+            int wi, ta;
+            surface()->GetScreenSize(wi, ta);
+            ivgui()->PostMessage(top, new KeyValues("OnScreenSizeChanged", "oldwide", wi, "oldtall", ta), NULL);
+            ivgui()->RunFrame();
 		}
 	}
 	else if (alt && code == KEY_F4)
