@@ -76,7 +76,6 @@ void ColumnButton::ApplySchemeSettings(IScheme *pScheme)
 {
 	Button::ApplySchemeSettings(pScheme);
 
-	SetContentAlignment(Label::a_west);
 	SetFont(pScheme->GetFont("DefaultSmall", IsProportional()));
 }
 
