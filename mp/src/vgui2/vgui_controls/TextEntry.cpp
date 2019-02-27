@@ -144,8 +144,8 @@ void TextEntry::ApplySchemeSettings(IScheme *pScheme)
 
 	SetBorder( pScheme->GetBorder("ButtonDepressedBorder"));
 
-	if ( _font == INVALID_FONT ) _font = pScheme->GetFont("Default", IsProportional() );
-	if ( _smallfont == INVALID_FONT ) _smallfont = pScheme->GetFont( "DefaultVerySmall", IsProportional() );
+	_font = pScheme->GetFont(_fontName.IsEmpty() ? "Default" : _fontName.Get(), IsProportional() );
+	_smallfont = pScheme->GetFont(_smallFontName.IsEmpty() ? "DefaultVerySmall" : _smallFontName.Get(), IsProportional() );
 
 	SetFont( _font );
 }
@@ -3821,7 +3821,9 @@ void TextEntry::ApplySettings( KeyValues *inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
 
-	_font = scheme()->GetIScheme( GetScheme() )->GetFont( inResourceData->GetString( "font", "Default" ), IsProportional() );
+    _fontName = inResourceData->GetString("font", "Default");
+    _smallFontName = inResourceData->GetString("fontSmall", "DefaultVerySmall");
+	_font = scheme()->GetIScheme( GetScheme() )->GetFont( _fontName, IsProportional() );
 	SetFont( _font );
 
 	SetTextHidden(inResourceData->GetBool("textHidden", false));
@@ -3844,13 +3846,15 @@ void TextEntry::GetSettings( KeyValues *outResourceData )
 	outResourceData->SetBool("NumericInputOnly", m_bAllowNumericInputOnly);
 	outResourceData->SetBool("unicode", m_bAllowNonAsciiCharacters);
     outResourceData->SetBool("selectallonfirstfocus", _selectAllOnFirstFocus);
-    outResourceData->SetString("font", scheme()->GetIScheme(GetScheme())->GetFontName(_font));
+    outResourceData->SetString("font", _fontName);
+    outResourceData->SetString("fontSmall", _smallFontName);
 }
 
 void TextEntry::InitSettings()
 {
     BEGIN_PANEL_SETTINGS()
     {"font", TYPE_STRING},
+    {"fontSmall", TYPE_STRING},
     {"textHidden", TYPE_BOOL},
     {"editable", TYPE_BOOL},
     {"maxchars", TYPE_INTEGER},
