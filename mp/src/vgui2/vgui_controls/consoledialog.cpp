@@ -1053,7 +1053,7 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bS
 	m_pConsolePanel = new CConsolePanel( this, "ConsolePage", bStatusVersion );
 	m_pConsolePanel->AddActionSignalTarget( this );
 
-    HScheme consoleScheme = scheme()->LoadSchemeFromFile("ConsoleScheme.res", "ConsoleScheme");
+    HScheme consoleScheme = scheme()->LoadSchemeFromFile("resource/ConsoleScheme.res", "ConsoleScheme");
     if (consoleScheme)
     {
         SetScheme(consoleScheme);
