@@ -17,12 +17,13 @@ using namespace vgui;
 CLeaderboardsHeader::CLeaderboardsHeader(Panel* pParent) : BaseClass(pParent, "CLeaderboardsHeader")
 {
     m_bMapInfoLoaded = false;
+    SetSize(10, 10);
+
+    m_pMapName = new Label(this, "MapName", "<Map Name Here>");
+    m_pMapAuthor = new Label(this, "MapAuthor", "");
+    m_pMapDetails = new Label(this, "MapDetails", "");
 
     LoadControlSettings("resource/ui/leaderboards/header.res");
-
-    m_pMapName = FindControl<Label>("MapName", true);
-    m_pMapAuthor = FindControl<Label>("MapAuthor", true);
-    m_pMapDetails = FindControl<Label>("MapDetails", true);
 }
 
 void CLeaderboardsHeader::LoadData(const char *pMapName, bool bFullUpdate)

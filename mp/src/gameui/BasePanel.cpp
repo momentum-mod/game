@@ -80,7 +80,6 @@ bool CBasePanel::IsInLoading() const
 
 void CBasePanel::RunFrame()
 {
-    InvalidateLayout();
     GetAnimationController()->UpdateAnimations(engine->Time());
 
     UpdateBackgroundState();
