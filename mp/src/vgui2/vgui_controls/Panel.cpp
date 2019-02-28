@@ -1483,6 +1483,18 @@ void Panel::OnSizeChanged(int newWide, int newTall)
 	InvalidateLayout(); // our size changed so force us to layout again
 }
 
+void Panel::OnReloadControls()
+{
+    const auto count = GetChildCount();
+    for (int i = 0; i < count; i++)
+    {
+        Panel *pChild = GetChild(i);
+        if (pChild)
+            pChild->OnReloadControls();
+    }
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: sets Z ordering - lower numbers are always behind higher z's
 //-----------------------------------------------------------------------------

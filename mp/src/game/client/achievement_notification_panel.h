@@ -22,7 +22,6 @@ public:
 	CAchievementNotificationPanel( const char *pElementName );
 
 	virtual void	Init();
-	virtual void	ApplySchemeSettings(vgui::IScheme *scheme );
 	virtual bool	ShouldDraw( void );
 	virtual void	PerformLayout( void );
 	virtual void	LevelInit( void ) { m_flHideTime = 0; }

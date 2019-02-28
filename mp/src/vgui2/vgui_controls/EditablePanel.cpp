@@ -619,6 +619,14 @@ void EditablePanel::OnClose()
 	SaveUserConfig();
 }
 
+void EditablePanel::OnReloadControls()
+{
+    if (_buildGroup)
+        _buildGroup->ReloadControlSettings();
+
+    BaseClass::OnReloadControls();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Handle information requests
 //-----------------------------------------------------------------------------

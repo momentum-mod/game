@@ -448,6 +448,7 @@ class Panel : public IClientPanel, virtual IForceVirtualInheritancePanel
     virtual void OnThink();           // called every frame before painting, but only if panel is visible
     virtual void OnChildAdded(VPANEL child);              // called when a child has been added to this panel
     virtual void OnSizeChanged(int newWide, int newTall); // called after the size of a panel has been changed
+    MESSAGE_FUNC(OnReloadControls, "ReloadControls");
 
     // called every frame if ivgui()->AddTickSignal() is called
     virtual void OnTick();

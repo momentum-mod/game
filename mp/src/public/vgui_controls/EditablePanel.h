@@ -132,6 +132,7 @@ protected:
 	virtual void OnChildAdded(VPANEL child);
 	virtual void OnSizeChanged(int wide, int tall);
 	virtual void OnClose();
+    virtual void OnReloadControls() OVERRIDE;
 
 	// user configuration settings
 	// this is used for any control details the user wants saved between sessions

@@ -78,6 +78,8 @@ BuildGroup::BuildGroup(Panel *parentPanel, Panel *contextPanel)
 		_rulerNumber[i] = nullptr;
 	SetContextPanel(contextPanel);
 	_showRulers = false;
+    m_pResourceName[0] = '\0';
+    m_pResourcePathID[0] = '\0';
 
 }
 
@@ -89,9 +91,6 @@ BuildGroup::~BuildGroup()
 	if (m_hBuildDialog)
 		delete m_hBuildDialog.Get();
 	m_hBuildDialog = nullptr;
-
-    m_pResourceName.Purge();
-    m_pResourcePathID.Purge();
 
 	for (int i=0; i <4; ++i)
 	{
@@ -867,6 +866,8 @@ void BuildGroup::PanelAdded(Panel *panel)
 //-----------------------------------------------------------------------------
 void BuildGroup::LoadControlSettings(const char *controlResourceName, const char *pathID, KeyValues *pPreloadedKeyValues, KeyValues *pConditions)
 {
+    if (pathID && !pathID[0])
+        pathID = nullptr;
 	// make sure the file is registered
 	RegisterControlSettingsFile(controlResourceName, pathID);
 
@@ -911,13 +912,11 @@ void BuildGroup::LoadControlSettings(const char *controlResourceName, const char
 	}
 
 	// save off the resource name
-    m_pResourceName.Purge();
-    m_pResourceName = controlResourceName;
+    Q_strncpy(m_pResourceName, controlResourceName, sizeof(m_pResourceName));
 
 	if (pathID)
 	{
-        m_pResourcePathID.Purge();
-        m_pResourcePathID = pathID;
+        Q_strncpy(m_pResourcePathID, pathID, sizeof(m_pResourcePathID));
 	}
 
 	// delete any controls not in both files
@@ -928,7 +927,7 @@ void BuildGroup::LoadControlSettings(const char *controlResourceName, const char
 
 	if (m_pParentPanel)
 	{
-		m_pParentPanel->InvalidateLayout(true);
+		m_pParentPanel->InvalidateLayout(true, true);
 	}
 
 	if ( rDat != pPreloadedKeyValues )
@@ -1018,8 +1017,13 @@ const char *BuildGroup::GetRegisteredControlSettingsFileByIndex(int index)
 //-----------------------------------------------------------------------------
 void BuildGroup::ReloadControlSettings()
 {
-	delete m_hBuildDialog.Get(); 
-	m_hBuildDialog = nullptr;
+    bool bWasVisible = false;
+    if (m_hBuildDialog.Get())
+    {
+        bWasVisible = m_hBuildDialog->IsVisible();
+        m_hBuildDialog->DeletePanel();
+        m_hBuildDialog = nullptr;
+    }
 
 	// loop though objects in the current control group and remove them all
 	// the 0th panel is always the contextPanel which is not deletable 
@@ -1042,7 +1046,7 @@ void BuildGroup::ReloadControlSettings()
 		}		
 	}	
 
-	if (!m_pResourceName.IsEmpty())
+	if (m_pResourceName[0])
 	{
 		EditablePanel *edit = dynamic_cast<EditablePanel *>(m_pParentPanel);
 		if (edit)
@@ -1057,7 +1061,10 @@ void BuildGroup::ReloadControlSettings()
 
 	_controlGroup.RemoveAll();	
 
-	ActivateBuildDialog();	
+    m_hBuildDialog = CreateBuildDialog();
+
+    if (bWasVisible)
+	    ActivateBuildDialog();	
 }
 
 //-----------------------------------------------------------------------------
@@ -1092,7 +1099,7 @@ void BuildGroup::ChangeControlSettingsFile(const char *controlResourceName)
 bool BuildGroup::SaveControlSettings( void )
 {
 	bool bSuccess = false;
-	if ( !m_pResourceName.IsEmpty() )
+	if ( m_pResourceName[0] )
 	{
 		KeyValues *rDat = new KeyValues( m_pResourceName );
 
