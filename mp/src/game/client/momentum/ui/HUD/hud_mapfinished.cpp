@@ -40,37 +40,39 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
+    m_pClosePanelButton = new ImagePanel(this, "Close_Panel");
+    m_pNextZoneButton = new ImagePanel(this, "Next_Zone");
+    m_pPrevZoneButton = new ImagePanel(this, "Prev_Zone");
+    m_pPlayReplayButton = new ImagePanel(this, "Replay_Icon");
+    m_pRepeatButton = new ImagePanel(this, "Repeat_Button");
+    m_pDetachMouseLabel = new Label(this, "Detach_Mouse", "#MOM_MF_DetachMouse");
+    m_pCurrentZoneLabel = new Label(this, "Current_Zone", "#MOM_MF_OverallStats");
+    m_pZoneOverallTime = new Label(this, "Zone_Overall_Time", "#MOM_MF_RunTime");
+    m_pZoneEnterTime = new Label(this, "Zone_Enter_Time", "#MOM_MF_Zone_Enter");
+    m_pZoneJumps = new Label(this, "Zone_Jumps", "#MOM_MF_Jumps");
+    m_pZoneStrafes = new Label(this, "Zone_Strafes", "#MOM_MF_Strafes");
+    m_pZoneVelEnter = new Label(this, "Zone_Vel_Enter", "#MOM_MF_Velocity_Enter");
+    m_pZoneVelExit = new Label(this, "Zone_Vel_Exit", "#MOM_MF_Velocity_Exit");
+    m_pZoneVelAvg = new Label(this, "Zone_Vel_Avg", "#MOM_MF_Velocity_Avg");
+    m_pZoneVelMax = new Label(this, "Zone_Vel_Max", "#MOM_MF_Velocity_Max");
+    m_pZoneSync1 = new Label(this, "Zone_Sync1", "#MOM_MF_Sync1");
+    m_pZoneSync2 = new Label(this, "Zone_Sync2", "#MOM_MF_Sync2");
+    m_pRunSaveStatus = new Label(this, "Run_Save_Status", "#MOM_MF_RunNotSaved");
+    m_pRunUploadStatus = new Label(this, "Run_Upload_Status", "#MOM_MF_RunNotUploaded");
+
     LoadControlSettings("resource/ui/MapFinishedDialog.res");
-    m_pNextZoneButton = FindControl<ImagePanel>("Next_Zone");
+
     m_pNextZoneButton->SetMouseInputEnabled(true);
     m_pNextZoneButton->InstallMouseHandler(this);
-    m_pPrevZoneButton = FindControl<ImagePanel>("Prev_Zone");
     m_pPrevZoneButton->SetMouseInputEnabled(true);
     m_pPrevZoneButton->InstallMouseHandler(this);
-    m_pPlayReplayButton = FindControl<ImagePanel>("Replay_Icon");
     m_pPlayReplayButton->SetMouseInputEnabled(true);
     m_pPlayReplayButton->InstallMouseHandler(this);
-    m_pRepeatButton = FindControl<ImagePanel>("Repeat_Button");
     m_pRepeatButton->SetMouseInputEnabled(true);
     m_pRepeatButton->InstallMouseHandler(this);
-    m_pClosePanelButton = FindControl<ImagePanel>("Close_Panel");
     m_pClosePanelButton->SetMouseInputEnabled(true);
     m_pClosePanelButton->InstallMouseHandler(this);
-    m_pDetachMouseLabel = FindControl<Label>("Detach_Mouse");
-    m_pCurrentZoneLabel = FindControl<Label>("Current_Zone");
     m_iCurrentZoneOrigX = m_pCurrentZoneLabel->GetXPos();
-    m_pZoneOverallTime = FindControl<Label>("Zone_Overall_Time");
-    m_pZoneEnterTime = FindControl<Label>("Zone_Enter_Time");
-    m_pZoneJumps = FindControl<Label>("Zone_Jumps");
-    m_pZoneStrafes = FindControl<Label>("Zone_Strafes");
-    m_pZoneVelEnter = FindControl<Label>("Zone_Vel_Enter");
-    m_pZoneVelExit = FindControl<Label>("Zone_Vel_Exit");
-    m_pZoneVelAvg = FindControl<Label>("Zone_Vel_Avg");
-    m_pZoneVelMax = FindControl<Label>("Zone_Vel_Max");
-    m_pZoneSync1 = FindControl<Label>("Zone_Sync1");
-    m_pZoneSync2 = FindControl<Label>("Zone_Sync2");
-    m_pRunSaveStatus = FindControl<Label>("Run_Save_Status");
-    m_pRunUploadStatus = FindControl<Label>("Run_Upload_Status");
 
     SetPaintBackgroundEnabled(true);
     SetPaintBackgroundType(2);
@@ -324,12 +326,6 @@ void CHudMapFinishedDialog::Paint()
     if (m_iCurrentPage == 0)
     {
         V_wcscpy_safe(currentPageTitle, m_pwCurrentPageOverall);
-        if (m_iMaxPageTitleWidth == 0)
-        {
-            HFont font = m_pCurrentZoneLabel->GetFont();
-            m_iMaxPageTitleWidth = UTIL_ComputeStringWidth(font, currentPageTitle);
-            m_pNextZoneButton->SetPos(m_pCurrentZoneLabel->GetXPos() + m_iMaxPageTitleWidth + 2, m_pCurrentZoneLabel->GetYPos());
-        }
     }
     else
     {
@@ -338,11 +334,6 @@ void CHudMapFinishedDialog::Paint()
     }
     
     m_pCurrentZoneLabel->SetText(currentPageTitle);
-    int currentPageTitleWidth = UTIL_ComputeStringWidth(m_hTextFont, currentPageTitle) + 2;
-    int newX = m_iCurrentZoneOrigX + ((m_iMaxPageTitleWidth / 2) - currentPageTitleWidth / 2);
-    m_pCurrentZoneLabel->SetPos(newX, m_pCurrentZoneLabel->GetYPos());
-
-    
 
     //// --- RUN TIME ---
     wchar_t currentZoneOverall[BUFSIZELOCL];
