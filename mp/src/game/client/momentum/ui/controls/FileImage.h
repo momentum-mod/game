@@ -91,6 +91,6 @@ namespace vgui
         uint64 m_hRequest;
         bool m_bDrawProgressBar;
         float m_fProgress;
-        uint32 m_uTotalSize;
+        uint64 m_uTotalSize;
     };
 }
