@@ -10,6 +10,7 @@
 #include "HUD/hud_menu_static.h"
 #include "HUD/hud_mapfinished.h"
 #include "spectate/momSpectatorGUI.h"
+#include "spectate/mom_replayui.h"
 
 #include "IGameUIFuncs.h"
 #include "clientmode_mom_normal.h"
@@ -36,6 +37,15 @@ static MAKE_TOGGLE_CONVAR(
 static MAKE_TOGGLE_CONVAR(mom_release_forward_on_jump, "0", FCVAR_ARCHIVE,
                           "When enabled the game will auto release the forward key which is determined by movement, so "
                           "it can be used on all styles except \"half\" styles e.g. HSW.");
+
+CON_COMMAND(hud_reloadcontrols, "Reloads the control res files for hud elements.")
+{
+    Panel *pViewport = g_pClientMode->GetViewport();
+    if (pViewport)
+    {
+        pViewport->PostMessage(pViewport, new KeyValues("ReloadControls"));
+    }
+}
 
 extern ConVar cl_forwardspeed;
 extern ConVar cl_sidespeed;
