@@ -16,7 +16,7 @@
         "ControlName"   "ImagePanel"
         "fieldName"     "Prev_Zone"
         "xpos"          "2"
-        "ypos"          "2"
+        "ypos"          "4"
         "wide"          "8"
         "tall"          "8"
         "scaleImage"    "1"
@@ -26,12 +26,36 @@
         "image"         "left_arrow_button_grey"
     }
     
+    "Current_Zone"//This is the label that shows what the current zone on the map finished panel
+    {
+        "ControlName" "Label"
+        "fieldName"  "Current_Zone"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
+        "wide"          "100"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "labelText"     "#MOM_MF_OverallStats"//This changes based on page number
+        "textAlignment" "center"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "textinsetx" "4"
+        "auto_wide_tocontents" "1"
+        "pin_to_sibling" "Prev_Zone"
+        "pin_corner_to_sibling" "0"
+        "pin_to_sibling_corner" "1"
+    }
+    
     "Next_Zone"
     {
         "ControlName"   "ImagePanel"
         "fieldName"     "Next_Zone"
-        "xpos"          "50"//Determined by code
-        "ypos"          "2"
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "8"
         "tall"          "8"
         "pinCorner"     "0"
@@ -39,6 +63,9 @@
         "enabled"       "1"
         "scaleImage"    "1"
         "image"         "right_arrow_button_grey"
+        "pin_to_sibling" "Current_Zone"
+        "pin_corner_to_sibling" "0"
+        "pin_to_sibling_corner" "1"
     } 
     
     "Replay_Icon"
@@ -87,25 +114,6 @@
         "image"         "close_button"
     }
     
-    "Current_Zone"//This is the label that shows what the current zone on the map finished panel
-    {
-        "ControlName" "Label"
-        "fieldName"  "Current_Zone"
-        "font"          "Default"//Set by "TextFont" 
-        "xpos"          "13"
-        "ypos"          "2"
-        "wide"          "100"
-        "tall"          "10"//Set by font size
-        "autoResize"    "1"
-        "pinCorner"     "0"
-        "visible"       "1"
-        "enabled"       "1"
-        "labelText"     "#MOM_MF_OverallStats"//This changes based on page number
-        "textAlignment" "west"
-        "dulltext"      "0"
-        "brighttext"    "0"
-    }
-    
     "Zone_Overall_Time"// or "ZoneTime"
     {
         "ControlName" "Label"
@@ -123,6 +131,7 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Enter_Time"
@@ -145,6 +154,7 @@
         "pin_to_sibling"		"Zone_Overall_Time"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Strafes"
@@ -167,6 +177,7 @@
         "pin_to_sibling"		"Zone_Enter_Time"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Jumps"
@@ -189,6 +200,7 @@
         "pin_to_sibling"		"Zone_Strafes"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Vel_Enter"
@@ -211,6 +223,7 @@
         "pin_to_sibling"		"Zone_Jumps"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Vel_Exit"
@@ -233,6 +246,7 @@
         "pin_to_sibling"		"Zone_Vel_Enter"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Vel_Avg"
@@ -255,6 +269,7 @@
         "pin_to_sibling"		"Zone_Vel_Exit"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Vel_Max"
@@ -277,6 +292,7 @@
         "pin_to_sibling"		"Zone_Vel_Avg"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Sync1"
@@ -299,6 +315,7 @@
         "pin_to_sibling"		"Zone_Vel_Max"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Zone_Sync2"
@@ -321,6 +338,7 @@
         "pin_to_sibling"		"Zone_Sync1"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Run_Save_Status"
@@ -343,6 +361,7 @@
         "pin_to_sibling"		"Zone_Sync2"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Run_Upload_Status"
@@ -365,6 +384,7 @@
         "pin_to_sibling"		"Run_Save_Status"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
     }
     
     "Detach_Mouse"
