@@ -42,21 +42,17 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
 
     // Actual model preview
     m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
-    m_pModelPreview->SetPaintBorderEnabled(true);
-    m_pModelPreview->SetBorder(scheme()->GetIScheme(GetScheme())->GetBorder("Default"));
-
-    m_pModelPreview->SetVisible(true);
     m_pModelPreview->MakeReadyForUse();
+    m_pModelPreview->SetVisible(true);
 
-    m_pEnableTrail = FindControl<CvarToggleCheckButton>("EnableTrail");
-    m_pPickTrailColorButton = FindControl<Button>("PickTrailColorButton");
+    m_pEnableTrail = new CvarToggleCheckButton(this, "EnableTrail", "#MOM_Settings_Enable_Trail", "mom_trail_enable");
+    m_pPickTrailColorButton = new Button(this, "PickTrailColorButton", "", this, "picker_trail");
 
-    m_pPickBodyColorButton = FindControl<Button>("PickBodyColorButton");
+    m_pPickBodyColorButton = new Button(this, "PickBodyColorButton", "", this, "picker_body");
 
-    m_pTrailLengthEntry = FindControl<TextEntry>("TrailEntry");
+    m_pTrailLengthEntry = new TextEntry(this, "TrailEntry");
 
-    m_pBodygroupCombo = FindControl<ComboBox>("BodygroupCombo");
-    m_pBodygroupCombo->SetNumberOfEditLines(15);
+    m_pBodygroupCombo = new ComboBox(this, "BodygroupCombo", 15, false);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_0", nullptr);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_1", nullptr);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_2", nullptr);
@@ -76,6 +72,8 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
 
     // Color Picker is shared for trail and body
     m_pColorPicker = new ColorPicker(this, this);
+
+    LoadControlSettings("resource/ui/SettingsPanel_AppearanceSettings.res");
 }
 
 AppearanceSettingsPage::~AppearanceSettingsPage()

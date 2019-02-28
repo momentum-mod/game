@@ -1,21 +1,5 @@
 "resource\ui\ReplayUI.res"
 {
-	"ReplayControls"
-	{
-		"ControlName"		"C_MOMReplayUI"
-		"fieldName"		"ReplayControls"
-		"xpos"		"20"
-		"ypos"		"100"
-		"wide"		"310"
-		"tall"		"210"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"settitlebarvisible"		"1"
-		"title"		"#MOM_ReplayControls"
-	}
 	"ReplayPlayPauseResume"
 	{
 		"ControlName"		"ToggleButton"

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "SettingsPage.h"
-#include <vgui_controls/Frame.h>
-#include "vgui_controls/CVarSlider.h"
 
 class OnlineSettingsPage : public SettingsPage
 {
@@ -26,7 +24,6 @@ class OnlineSettingsPage : public SettingsPage
 
 private:
     void UpdateSliderSettings();
-
 
     vgui::CvarSlider *m_pAlphaOverrideSlider;
     vgui::TextEntry *m_pAlphaOverrideInput;

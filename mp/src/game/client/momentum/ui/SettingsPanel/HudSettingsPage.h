@@ -1,9 +1,6 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "SettingsPage.h"
-#include <vgui_controls/Frame.h>
 
 class HudSettingsPage : public SettingsPage
 {

@@ -5,21 +5,35 @@
 #include <vgui_controls/CVarSlider.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 
+#include "tier0/memdbgon.h"
+
 using namespace vgui;
 
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
-    m_pYawSpeedSlider = FindControl<CvarSlider>("YawSpeed");
-    m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
+    m_pYawSpeedSlider = new CvarSlider(this, "YawSpeed", nullptr, 0.0f, 360.0f, "cl_yawspeed", false);
+    m_pYawSpeedSlider->AddActionSignalTarget(this);
+    m_pYawSpeedEntry = new TextEntry(this, "YawSpeedEntry");
+    m_pYawSpeedEntry->SetAllowNumericInputOnly(true);
+    m_pYawSpeedEntry->AddActionSignalTarget(this);
 
-    m_pLowerSpeedCVarEntry = FindControl<CvarTextEntry>("LowerSpeedEntry");
-    m_pLowerSpeed = FindControl<CvarToggleCheckButton>("LowerWeaponButton");
+    m_pLowerSpeedCVarEntry = new CvarTextEntry(this, "LowerSpeedEntry", "mom_weapon_speed_lower");
+    m_pLowerSpeedCVarEntry->SetAllowNumericInputOnly(true);
+    m_pLowerSpeedCVarEntry->AddActionSignalTarget(this);
+    m_pLowerSpeed = new CvarToggleCheckButton(this, "LowerWeaponButton", "#MOM_Settings_LowerWeapon", "mom_weapon_speed_lower_enable");
+    m_pLowerSpeed->AddActionSignalTarget(this);
     
-    m_pOverlappingKeys = FindControl<CvarToggleCheckButton>("OverlappingKeys");
-    m_pReleaseForwardOnJump = FindControl<CvarToggleCheckButton>("ReleaseForwardOnJump");
+    m_pOverlappingKeys = new CvarToggleCheckButton(this, "OverlappingKeys", "#MOM_Settings_Overlapping_Keys", "mom_enable_overlapping_keys");
+    m_pOverlappingKeys->AddActionSignalTarget(this);
+    m_pReleaseForwardOnJump = new CvarToggleCheckButton(this, "ReleaseForwardOnJump", "#MOM_Settings_Release_Forward_On_Jump", "mom_release_forward_on_jump");
+    m_pReleaseForwardOnJump->AddActionSignalTarget(this);
 
-    m_pPlayBlockSound = FindControl<CvarToggleCheckButton>("PlayBlockSound");
-    m_pSaveCheckpoints = FindControl<CvarToggleCheckButton>("SaveCheckpoints");
+    m_pPlayBlockSound = new CvarToggleCheckButton(this, "PlayBlockSound", "#MOM_Settings_Play_BlockSound", "mom_bhop_playblocksound");
+    m_pPlayBlockSound->AddActionSignalTarget(this);
+    m_pSaveCheckpoints = new CvarToggleCheckButton(this, "SaveCheckpoints", "#MOM_Settings_Save_Checkpoints", "mom_saveloc_save_between_sessions");
+    m_pSaveCheckpoints->AddActionSignalTarget(this);
+
+    LoadControlSettings("resource/ui/SettingsPanel_GameplaySettings.res");
 }
 
 void GameplaySettingsPage::LoadSettings()

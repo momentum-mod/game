@@ -21,7 +21,6 @@
 #include <vgui_controls/MenuItem.h>
 #include <vgui_controls/TextImage.h>
 
-#include "IGameUIFuncs.h" // for key bindings
 #include "mom_replayui.h"
 #include <imapoverview.h>
 #include <shareddefs.h>
@@ -46,9 +45,6 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr, PANEL_SPECGUI)
 {
-    // 	m_bHelpShown = false;
-    //	m_bInsetVisible = false;
-    //	m_iDuckKey = KEY_NONE;
     SetSize(10, 10); // Quiet "parent not sized yet" spew
     m_bSpecScoreboard = false;
     m_pViewPort = pViewPort;
@@ -68,36 +64,27 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     // load the new scheme early!!
     SetScheme("ClientScheme");
 
-    LoadControlSettings(GetResFile());
-    m_pTopBar = FindControl<Panel>("TopBar");
-    m_pPlayerLabel = FindControl<Label>("PlayerLabel");
-    m_pReplayLabel = FindControl<Label>("ReplayLabel");
-    m_pMapLabel = FindControl<Label>("MapLabel");
-    m_pTimeLabel = FindControl<Label>("TimeLabel");
-    m_pGainControlLabel = FindControl<Label>("DetachInfo");
+    m_pTopBar = new Panel(this, "TopBar");
+    m_pPlayerLabel = new Label(this, "PlayerLabel", "#MOM_ReplayPlayer");
+    m_pReplayLabel = new Label(this, "ReplayLabel", "#MOM_WatchingReplay");
+    m_pMapLabel = new Label(this, "MapLabel", "#Spec_Map");
+    m_pTimeLabel = new Label(this, "TimeLabel", "#MOM_MF_RunTime");
+    m_pGainControlLabel = new Label(this, "DetachInfo", "#MOM_SpecGUI_GainControl");
+    m_pCloseButton = new ImagePanel(this, "ClosePanel");
+    m_pShowControls = new ImagePanel(this, "ShowControls");
+    m_pPrevPlayerButton = new ImagePanel(this, "PrevPlayerButton");
+    m_pNextPlayerButton = new ImagePanel(this, "NextPlayerButton");
 
-    m_pCloseButton = FindControl<ImagePanel>("ClosePanel");
+    LoadControlSettings("resource/ui/Spectator.res");
+
     m_pCloseButton->InstallMouseHandler(this);
 
-    m_pShowControls = FindControl<ImagePanel>("ShowControls");
     m_pShowControls->InstallMouseHandler(this);
     
-    m_pPrevPlayerButton = FindControl<ImagePanel>("PrevPlayerButton");
     m_pPrevPlayerButton->InstallMouseHandler(this);
-    m_pNextPlayerButton = FindControl<ImagePanel>("NextPlayerButton");
     m_pNextPlayerButton->InstallMouseHandler(this);
 
     m_pReplayControls = dynamic_cast<C_MOMReplayUI *>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
-
-    TextImage *image = m_pPlayerLabel->GetTextImage();
-    if (image)
-    {
-        HFont hFallbackFont = scheme()->GetIScheme(GetScheme())->GetFont("DefaultVerySmallFallBack", false);
-        if (INVALID_FONT != hFallbackFont)
-        {
-            image->SetUseFallbackFont(true, hFallbackFont);
-        }
-    }
 
     SetMouseInputEnabled(false);
     InvalidateLayout();
@@ -115,14 +102,25 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::ApplySchemeSettings(IScheme *pScheme)
 {
-    m_pTopBar->SetVisible(true);
-
     BaseClass::ApplySchemeSettings(pScheme);
+
+    m_pTopBar->SetVisible(true);
     SetBgColor(Color(0, 0, 0, 0)); // make the background transparent
-    m_pTopBar->SetBgColor(GetBlackBarColor());
+    m_cBarColor = pScheme->GetColor("SpecUI.TopBarColor", Color(0, 0, 0, 196));
+    m_pTopBar->SetBgColor(m_cBarColor);
     SetPaintBorderEnabled(false);
 
     SetBorder(nullptr);
+
+    TextImage *image = m_pPlayerLabel->GetTextImage();
+    if (image)
+    {
+        HFont hFallbackFont = pScheme->GetFont("DefaultVerySmallFallBack", IsProportional());
+        if (INVALID_FONT != hFallbackFont)
+        {
+            image->SetUseFallbackFont(true, hFallbackFont);
+        }
+    }
 }
 
 void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
@@ -150,6 +148,17 @@ void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
     }
 }
 
+void CMOMSpectatorGUI::FireGameEvent(IGameEvent* pEvent)
+{
+    if (!Q_strcmp(pEvent->GetName(), "spec_target_updated"))
+    {
+        // So apparently calling Update from here doesn't work, due to some weird
+        // thing that happens upon the player's m_hObserverTarget getting updated.
+        // Pushing this back three ticks is more than long enough to delay the Update()
+        // to fill the panel with the replay's info.
+        m_flNextUpdateTime = gpGlobals->curtime + gpGlobals->interval_per_tick * 3.0f;
+    }
+}
 //-----------------------------------------------------------------------------
 // Purpose: makes the GUI fill the screen
 //-----------------------------------------------------------------------------
@@ -174,6 +183,14 @@ void CMOMSpectatorGUI::OnThink()
     }
 
     BaseClass::OnThink();
+}
+
+void CMOMSpectatorGUI::SetMouseInputEnabled(bool bState)
+{
+    BaseClass::SetMouseInputEnabled(bState);
+
+    if (m_pReplayControls && m_pReplayControls->IsVisible())
+        m_pReplayControls->SetMouseInputEnabled(bState);
 }
 
 //-----------------------------------------------------------------------------
@@ -264,41 +281,30 @@ void CMOMSpectatorGUI::Update()
         if (isOnlineGhost || isReplayGhost )
         {
             // Current player name
-            wchar_t wPlayerName[BUFSIZELOCL], szPlayerInfo[BUFSIZELOCL];
+            wchar_t wPlayerName[BUFSIZELOCL];
             ANSI_TO_UNICODE(isReplayGhost ? pReplayEnt->m_SrvData.m_pszPlayerName : pOnlineGhostEnt->m_pszGhostName, wPlayerName);
-            g_pVGuiLocalize->ConstructString(szPlayerInfo, sizeof(szPlayerInfo), m_pwReplayPlayer, 1, wPlayerName);
-
-            if (m_pPlayerLabel)
-                m_pPlayerLabel->SetText(szPlayerInfo);
+            m_pPlayerLabel->SetText(CConstructLocalizedString(m_pwReplayPlayer, wPlayerName));
 
             if (isReplayGhost)
             {
                 // Run time label
                 char tempRunTime[BUFSIZETIME];
-                wchar_t wTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
+                wchar_t wTime[BUFSIZETIME];
                 g_pMomentumUtil->FormatTime(pReplayEnt->m_SrvData.m_RunData.m_flRunTime, tempRunTime);
                 ANSI_TO_UNICODE(tempRunTime, wTime);
-                g_pVGuiLocalize->ConstructString(wTimeLabel, sizeof(wTimeLabel), m_pwRunTime, 1, wTime);
-
-                if (m_pTimeLabel) m_pTimeLabel->SetText(wTimeLabel);
+                m_pTimeLabel->SetText(CConstructLocalizedString(m_pwRunTime, wTime));
 
                 // "REPLAY" label
-                if (m_pReplayLabel) m_pReplayLabel->SetText(m_pwWatchingReplay);
+                m_pReplayLabel->SetText(m_pwWatchingReplay);
 
                 // Show the current map
-                wchar_t szMapName[1024];
-                char tempstr[128];
                 wchar_t wMapName[BUFSIZELOCL];
-                Q_FileBase(engine->GetLevelName(), tempstr, sizeof(tempstr));
-                ANSI_TO_UNICODE(tempstr, wMapName);
-                g_pVGuiLocalize->ConstructString(szMapName, sizeof(szMapName), m_pwSpecMap, 1, wMapName);
+                ANSI_TO_UNICODE(g_pGameRules->MapName(), wMapName);
+                m_pMapLabel->SetText(CConstructLocalizedString(m_pwSpecMap, wMapName));
 
-                if (m_pMapLabel) m_pMapLabel->SetText(szMapName);
+                m_pShowControls->SetVisible(true);
 
-                if (m_pShowControls)
-                    m_pShowControls->SetVisible(true);
-
-                if (m_pReplayControls && !m_pReplayControls->IsVisible())
+                if (!m_pReplayControls->IsVisible())
                     m_pReplayControls->ShowPanel(true);
                 
                 //MOM_TODO: check if an online ghost has spawned, and don't hide spec buttons?
@@ -308,30 +314,23 @@ void CMOMSpectatorGUI::Update()
             if (isOnlineGhost)
             {
                 // "REPLAY" label
-                if (m_pReplayLabel) m_pReplayLabel->SetText(m_pwWatchingGhost);
-
-                if (m_pMapLabel) m_pMapLabel->SetText("");
-
-                if (m_pTimeLabel) m_pTimeLabel->SetText("");
+                m_pReplayLabel->SetText(m_pwWatchingGhost);
+                m_pMapLabel->SetText("");
+                m_pTimeLabel->SetText("");
 
                 // We don't need replay controls in online spectating!
                 m_pShowControls->SetVisible(false);
                 m_pReplayControls->ShowPanel(false);
                 m_pPrevPlayerButton->SetVisible(true);
                 m_pNextPlayerButton->SetVisible(true);
-
             }
         }
         else
         {
-            if (m_pReplayLabel) 
-                m_pReplayLabel->SetText("");
-            if (m_pMapLabel) 
-                m_pMapLabel->SetText("");
-            if (m_pTimeLabel) 
-                m_pTimeLabel->SetText("");
-            if (m_pPlayerLabel)
-                m_pPlayerLabel->SetText("");
+            m_pReplayLabel->SetText("");
+            m_pMapLabel->SetText("");
+            m_pTimeLabel->SetText("");
+            m_pPlayerLabel->SetText("");
         }
     }
 }
