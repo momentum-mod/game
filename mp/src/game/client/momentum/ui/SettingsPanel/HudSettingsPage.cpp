@@ -4,58 +4,57 @@
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
 
+#include "tier0/memdbgon.h"
+
 using namespace vgui;
 
 HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettings")
 {
-    m_pSpeedometerUnits = FindControl<ComboBox>("SpeedoUnits");
-    m_pSpeedometerUnits->SetNumberOfEditLines(3);
+    m_pSpeedometerUnits = new ComboBox(this, "SpeedoUnits", 3, false);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_UPS", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_KPH", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_MPH", nullptr);
     m_pSpeedometerUnits->AddActionSignalTarget(this);
 
-    m_pSyncType = FindControl<ComboBox>("SyncType");
-    m_pSyncType->SetNumberOfEditLines(2);
+    m_pSyncType = new ComboBox(this, "SyncType", 2, false);
     m_pSyncType->AddItem("#MOM_Settings_Sync_Type_Sync1", nullptr);
     m_pSyncType->AddItem("#MOM_Settings_Sync_Type_Sync2", nullptr);
     m_pSyncType->AddActionSignalTarget(this);
 
-    m_pSyncColorize = FindControl<ComboBox>("SyncColorize");
-    m_pSyncColorize->SetNumberOfEditLines(3);
+    m_pSyncColorize = new ComboBox(this, "SyncColorize", 3, false);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_None", nullptr);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_1", nullptr);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
     m_pSyncColorize->AddActionSignalTarget(this);
 
-    m_pSpeedometerShow = FindControl<CvarToggleCheckButton>("SpeedoShow");
+    m_pSpeedometerShow = new CvarToggleCheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_speedometer");
     m_pSpeedometerShow->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowLastJump = FindControl<CvarToggleCheckButton>("SpeedoShowJump");
+    m_pSpeedometerShowLastJump = new CvarToggleCheckButton(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", "mom_speedometer_showlastjumpvel");
     m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowVerticalVel = FindControl<CvarToggleCheckButton>("ShowSpeedoHvel");
+    m_pSpeedometerShowVerticalVel = new CvarToggleCheckButton(this, "ShowSpeedoHvel", "#MOM_Settings_Speedometer_Show_Hvel", "mom_speedometer_hvel");
     m_pSpeedometerShowVerticalVel->AddActionSignalTarget(this);
 
-
-    m_pSpeedometerColorize = FindControl<ComboBox>("SpeedoShowColor");
-    m_pSpeedometerColorize->SetNumberOfEditLines(3);
+    m_pSpeedometerColorize = new ComboBox(this, "SpeedoShowColor", 3, false);
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_None", nullptr);
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_1", nullptr);
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_2", nullptr);
     m_pSpeedometerColorize->AddActionSignalTarget(this);
 
-    m_pSyncShow = FindControl<CvarToggleCheckButton>("SyncShow");
+    m_pSyncShow = new CvarToggleCheckButton(this, "SyncShow", "#MOM_Settings_Sync_Show", "mom_strafesync_draw");
     m_pSyncShow->AddActionSignalTarget(this);
 
-    m_pSyncShowBar = FindControl<CvarToggleCheckButton>("SyncShowBar");
+    m_pSyncShowBar = new CvarToggleCheckButton(this, "SyncShowBar", "#MOM_Settings_Sync_Show_Bar", "mom_strafesync_drawbar");
     m_pSyncShowBar->AddActionSignalTarget(this);
 
-    m_pButtonsShow = FindControl<CvarToggleCheckButton>("ButtonsShow");
+    m_pButtonsShow = new CvarToggleCheckButton(this, "ButtonsShow", "#MOM_Settings_Buttons_Show", "mom_showkeypresses");
     m_pButtonsShow->AddActionSignalTarget(this);
 
-    m_pTimerShow = FindControl<CvarToggleCheckButton>("TimerShow");
+    m_pTimerShow = new CvarToggleCheckButton(this, "TimerShow", "#MOM_Settings_Timer_Show", "mom_timer");
     m_pTimerShow->AddActionSignalTarget(this);
+
+    LoadControlSettings("resource/ui/SettingsPanel_HudSettings.res");
 }
 
 void HudSettingsPage::OnApplyChanges()

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "SettingsPage.h"
 
 class GameplaySettingsPage : public SettingsPage

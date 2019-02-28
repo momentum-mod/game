@@ -360,22 +360,19 @@ void ColorPicker::Init()
         RGB2HSV(m_vecColor, m_vecHSV);
     }
 
+    m_pSelect_Hue = new HSV_Select_Hue(this, "pick_hue");
+    m_pSelect_SV = new HSV_Select_SV(this, "pick_sv");
+    m_pText_HEX = new TextEntry(this, "col_hex");
+
+    m_pAlphaSlider = new Slider(this, "AlphaSlider");
+    m_pColorPreview = new Panel(this, "colorpreview");
+
     LoadControlSettings("resource/ui/ColorPicker.res");
 
-    m_pColorPreview = FindControl<Panel>("colorpreview");
-    if (m_pColorPreview)
-    {
-        m_pColorPreview->SetPaintEnabled(false);
-        m_pColorPreview->SetPaintBackgroundEnabled(false);
-    }
+    m_pColorPreview->SetPaintEnabled(false);
+    m_pColorPreview->SetPaintBackgroundEnabled(false);
 
-    m_pSelect_Hue = FindControl<HSV_Select_Hue>("pick_hue");
-    m_pSelect_SV = FindControl<HSV_Select_SV>("pick_sv");
-    m_pText_HEX = FindControl<TextEntry>("col_hex");
-
-    m_pAlphaSlider = FindControl<Slider>("AlphaSlider");
-    if (m_pAlphaSlider)
-        m_pAlphaSlider->SetValue(255, false);
+    m_pAlphaSlider->SetValue(255, false);
 
     for (int i = 0; i < 4; i++)
     {
@@ -432,18 +429,15 @@ void ColorPicker::Paint()
     sy += __EXTRUDE_BORDER * 2;
     surface()->DrawFilledRect(x, y, x + sx, y + sy);
 
-    if (m_pColorPreview)
-    {
-        m_pColorPreview->GetBounds(x, y, sx, sy);
-        surface()->DrawSetColor(Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, m_vecColor.w * 255));
-        surface()->DrawFilledRect(x, y, x + sx, y + sy);
+    m_pColorPreview->GetBounds(x, y, sx, sy);
+    surface()->DrawSetColor(Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, m_vecColor.w * 255));
+    surface()->DrawFilledRect(x, y, x + sx, y + sy);
 
-        x -= __EXTRUDE_BORDER;
-        y -= __EXTRUDE_BORDER;
-        sx += __EXTRUDE_BORDER * 2;
-        sy += __EXTRUDE_BORDER * 2;
-        surface()->DrawFilledRect(x, y, x + sx, y + sy);
-    }
+    x -= __EXTRUDE_BORDER;
+    y -= __EXTRUDE_BORDER;
+    sx += __EXTRUDE_BORDER * 2;
+    sy += __EXTRUDE_BORDER * 2;
+    surface()->DrawFilledRect(x, y, x + sx, y + sy);
 }
 
 void ColorPicker::OnThink()

@@ -39,14 +39,23 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
 
     surface()->CreatePopup(GetVPanel(), false, false, false, true, false);
 
-    m_pToggleViewmodel =
-        new CvarToggleCheckButton(this, "ToggleViewmodel", "#MOM_PaintGunPanel_Viewmodel", "mom_paintgun_drawmodel");
+    m_pToggleViewmodel = new CvarToggleCheckButton(this, "ToggleViewmodel", "#MOM_PaintGunPanel_Viewmodel", "mom_paintgun_drawmodel");
+    m_pToggleViewmodel->AddActionSignalTarget(this);
 
     m_pToggleSound = new CvarToggleCheckButton(this, "ToggleSound", "#MOM_PaintGunPanel_Sound", "mom_paintgun_shoot_sound");
+    m_pToggleSound->AddActionSignalTarget(this);
+
+    m_pPickColorButton = new Button(this, "PickColorButton", "", this, "picker");
+    m_pSliderScale = new CvarSlider(this, "SliderScale");
+
+    m_pTextSliderScale = new TextEntry(this, "TextSliderScale");
+    m_pTextSliderScale->AddActionSignalTarget(this);
+    m_pTextSliderScale->SetAllowNumericInputOnly(true);
+
+    m_pLabelSliderScale = new Label(this, "LabelSliderScale", "#MOM_PaintGunPanel_SliderText");
+    m_pLabelColorButton = new Label(this, "LabelColorButton", "#MOM_PaintGunPanel_Color");
 
     LoadControlSettings("resource/ui/PaintGunPanel.res");
-
-    m_pPickColorButton = FindControl<Button>("PickColorButton");
 
     Color TextureColor;
     if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
@@ -55,13 +64,6 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
         m_pPickColorButton->SetArmedColor(TextureColor, TextureColor);
         m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
     }
-
-    m_pSliderScale = FindControl<CvarSlider>("SliderScale");
-
-    m_pTextSliderScale = FindControl<TextEntry>("TextSliderScale");
-
-    m_pLabelSliderScale = FindControl<Label>("LabelSliderScale");
-    m_pLabelColorButton = FindControl<Label>("LabelColorButton");
 
     SetLabelText();
     m_pColorPicker = new ColorPicker(this, this);

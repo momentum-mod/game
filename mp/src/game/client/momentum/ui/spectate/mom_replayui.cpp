@@ -45,29 +45,44 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
     SetScheme("ClientScheme");
-    LoadControlSettings("resource/ui/ReplayUI.res");
 
-    m_pPlayPauseResume = FindControl<ToggleButton>("ReplayPlayPauseResume");
+    m_pPlayPauseResume = new ToggleButton(this, "ReplayPlayPauseResume", "#MOM_ReplayStatusPlaying");
+    m_pPlayPauseResume->AddActionSignalTarget(this);
 
-    m_pGoStart = FindControl<Button>("ReplayGoStart");
-    m_pGoEnd = FindControl<Button>("ReplayGoEnd");
-    m_pPrevFrame = FindControl<Button>("ReplayPrevFrame");
-    m_pNextFrame = FindControl<Button>("ReplayNextFrame");
-    m_pFastForward = FindControl<PFrameButton>("ReplayFastForward");
-    m_pFastBackward = FindControl<PFrameButton>("ReplayFastBackward");
-    m_pGo = FindControl<Button>("ReplayGo");
+    m_pGoStart = new Button(this, "ReplayGoStart", "|<", this, "reload");
+    m_pGoEnd = new Button(this, "ReplayGoEnd", ">|", this, "gotoend");
+    m_pPrevFrame = new Button(this, "ReplayPrevFrame", "<", this, "prevframe");
+    m_pNextFrame = new Button(this, "ReplayNextFrame", ">", this, "nextframe");
+    m_pFastForward = new PFrameButton(this, "ReplayFastForward", ">>");
+    m_pFastForward->AddActionSignalTarget(this);
+    m_pFastBackward = new PFrameButton(this, "ReplayFastBackward", "<<");
+    m_pFastBackward->AddActionSignalTarget(this);
+    m_pGo = new Button(this, "ReplayGo", "#MOM_ReplayGoto", this, "gototick");
 
-    m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
+    m_pGotoTick = new TextEntry(this, "ReplayGoToTick");
+    m_pGotoTick->SetAllowNumericInputOnly(true);
+    m_pGotoTick->AddActionSignalTarget(this);
 
-    m_pTimescaleSlider = FindControl<CvarSlider>("TimescaleSlider");
-    m_pTimescaleLabel = FindControl<Label>("TimescaleLabel");
-    m_pTimescaleEntry = FindControl<TextEntry>("TimescaleEntry");
+    m_pTimescaleSlider = new CvarSlider(this, "TimescaleSlider", nullptr, 0.1f, 10.0f, "mom_replay_timescale");
+    m_pTimescaleSlider->AddActionSignalTarget(this);
+    m_pTimescaleLabel = new Label(this, "TimescaleLabel", "#MOM_ReplayTimescale");
+    m_pTimescaleEntry = new TextEntry(this, "TimescaleEntry");
+    m_pTimescaleEntry->SetAllowNumericInputOnly(true);
+    m_pTimescaleEntry->AddActionSignalTarget(this);
     SetLabelText();
 
-    m_pProgress = FindControl<ScrubbableProgressBar>("ReplayProgress");
+    m_pProgress = new ScrubbableProgressBar(this, "ReplayProgress");
+    m_pProgress->AddActionSignalTarget(this);
 
-    m_pProgressLabelFrame = FindControl<Label>("ReplayProgressLabelFrame");
-    m_pProgressLabelTime = FindControl<Label>("ReplayProgressLabelTime");
+    m_pProgressLabelFrame = new Label(this, "ReplayProgressLabelFrame", "");
+    m_pProgressLabelTime = new Label(this, "ReplayProgressLabelTime", "");
+
+    LoadControlSettings("resource/ui/ReplayUI.res");
+
+    SetVisible(false);
+    SetBounds(20, 100, GetScaledVal(310), GetScaledVal(210));
+    SetTitleBarVisible(true);
+    SetTitle("#MOM_ReplayControls", true);
 
     FIND_LOCALIZATION(m_pwReplayTime, "#MOM_ReplayTime");
     FIND_LOCALIZATION(m_pwReplayTimeTick, "#MOM_ReplayTimeTick");
