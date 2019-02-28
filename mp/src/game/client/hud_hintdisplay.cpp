@@ -48,7 +48,6 @@ protected:
 protected:
 	vgui::HFont m_hFont;
 	Color		m_bgColor;
-	vgui::Label *m_pLabel;
 	CUtlVector<vgui::Label *> m_Labels;
 	CPanelAnimationVarAliasType( int, m_iTextX, "text_xpos", "8", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iTextY, "text_ypos", "8", "proportional_int" );
@@ -68,12 +67,9 @@ DECLARE_HUD_MESSAGE( CHudHintDisplay, HintText );
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CHudHintDisplay::CHudHintDisplay( const char *pElementName ) : BaseClass(NULL, "HudHintDisplay"), CHudElement( pElementName )
+CHudHintDisplay::CHudHintDisplay( const char *pElementName ) : BaseClass(g_pClientMode->GetViewport(), "HudHintDisplay"), CHudElement( pElementName )
 {
-	vgui::Panel *pParent = g_pClientMode->GetViewport();
-	SetParent( pParent );
 	SetVisible( false );
-	m_pLabel = new vgui::Label( this, "HudHintDisplayLabel", "" );
 }
 
 //-----------------------------------------------------------------------------
@@ -106,9 +102,6 @@ void CHudHintDisplay::ApplySchemeSettings( vgui::IScheme *pScheme )
 
 	SetFgColor( GetSchemeColor("HintMessageFg", pScheme) );
 	m_hFont = pScheme->GetFont( "HudHintText", true );
-	m_pLabel->SetBgColor( GetSchemeColor("HintMessageBg", pScheme) );
-	m_pLabel->SetPaintBackgroundType( 2 );
-	m_pLabel->SetSize( 0, GetTall() );		// Start tiny, it'll grow.
 }
 
 //-----------------------------------------------------------------------------
@@ -225,7 +218,6 @@ void CHudHintDisplay::PerformLayout()
 	y = MAX(y,0);
 
 	iDesiredLabelWide = MIN(iDesiredLabelWide,wide);
-	m_pLabel->SetBounds( x, y, iDesiredLabelWide, labelTall );
 
 	// now lay out the sub-labels
 	for ( i=0; i<m_Labels.Count(); ++i )
@@ -240,7 +232,6 @@ void CHudHintDisplay::PerformLayout()
 //-----------------------------------------------------------------------------
 void CHudHintDisplay::OnThink()
 {
-	m_pLabel->SetFgColor(GetFgColor());
 	for (int i = 0; i < m_Labels.Count(); i++)
 	{
 		m_Labels[i]->SetFgColor(GetFgColor());
