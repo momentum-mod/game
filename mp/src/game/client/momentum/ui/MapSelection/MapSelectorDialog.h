@@ -122,6 +122,7 @@ class CMapSelectorDialog : public vgui::Frame
 
 protected:
     void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
+    void OnReloadControls() OVERRIDE;
 
   private:
     // current game list change

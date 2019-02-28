@@ -55,7 +55,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
-    SetSize(680, 400);
+    SetSize(GetScaledVal(680), GetScaledVal(400));
     s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
@@ -87,7 +87,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
 
     LoadControlSettings("resource/ui/MapSelector/DialogMapSelector.res");
 
-    SetMinimumSize(680, 400);
+    SetMinimumSize(GetScaledVal(340), GetScaledVal(200));
 
     // load current tab
     MapListType_e current = (MapListType_e) m_pSavedData->GetInt("current", MAP_LIST_BROWSE);
@@ -565,6 +565,13 @@ void CMapSelectorDialog::ApplySchemeSettings(vgui::IScheme* pScheme)
         if (pImage)
             pImage->Evict();
     }
+}
+
+void CMapSelectorDialog::OnReloadControls()
+{
+    BaseClass::OnReloadControls();
+
+    MoveToCenterOfScreen();
 }
 
 
