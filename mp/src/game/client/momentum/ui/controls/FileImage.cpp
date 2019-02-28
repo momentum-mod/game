@@ -221,13 +221,13 @@ bool URLImage::Evict()
 
 void URLImage::OnFileStreamSize(KeyValues* pKv)
 {
-    m_uTotalSize = pKv->GetInt("size");
+    m_uTotalSize = pKv->GetUint64("size");
 }
 
 void URLImage::OnFileStreamProgress(KeyValues* pKv)
 {
     if (m_uTotalSize)
-        m_fProgress = float(pKv->GetInt("offset") + pKv->GetInt("size")) / float(m_uTotalSize);
+        m_fProgress = float(pKv->GetUint64("offset") + pKv->GetUint64("size")) / float(m_uTotalSize);
 }
 
 void URLImage::OnFileStreamEnd(KeyValues* pKv)
