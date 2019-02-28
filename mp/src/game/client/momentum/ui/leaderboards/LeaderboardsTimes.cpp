@@ -71,14 +71,16 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     m_pFriendsLeaderboards = new SectionedListPanel(this, "FriendsLeaderboards");
     m_pLocalLeaderboards = new SectionedListPanel(this, "LocalLeaderboards");
 
-    LoadControlSettings("resource/ui/leaderboards/times.res");
+    m_pGlobalLeaderboardsButton = new Button(this, "GlobalLeaderboardsButton", "#MOM_Leaderboards_Global", this, "ShowGlobal");
+    m_pGlobalTop10Button = new Button(this, "GlobalTop10Button", "#MOM_Leaderboards_Top10", this, "GlobalTypeTop10");
+    m_pGlobalAroundButton = new Button(this, "GlobalAroundButton", "#MOM_Leaderboards_Around", this, "GlobalTypeAround");
+    m_pFriendsLeaderboardsButton = new Button(this, "FriendsLeaderboardsButton", "#MOM_Leaderboards_Friends", this, "ShowFriends");
+    m_pLocalLeaderboardsButton = new Button(this, "LocalLeaderboardsButton", "#MOM_Leaderboards_Local", this, "ShowLocal");
+    m_pRunFilterButton = new ToggleButton(this, "FilterButton", "#MOM_Leaderboards_Filter");
+    m_pRunFilterButton->SetCommand("ShowFilter");
+    m_pRunFilterButton->AddActionSignalTarget(this);
 
-    m_pGlobalLeaderboardsButton = FindControl<Button>("GlobalLeaderboardsButton", true);
-    m_pGlobalTop10Button = FindControl<Button>("GlobalTop10Button", true);
-    m_pGlobalAroundButton = FindControl<Button>("GlobalAroundButton", true);
-    m_pFriendsLeaderboardsButton = FindControl<Button>("FriendsLeaderboardsButton", true);
-    m_pLocalLeaderboardsButton = FindControl<Button>("LocalLeaderboardsButton", true);
-    m_pRunFilterButton = FindControl<ToggleButton>("FilterButton", true);
+    LoadControlSettings("resource/ui/leaderboards/times.res");
 
     // Get rid of the scrollbars for the panels
     m_pTop10Leaderboards->SetVerticalScrollbar(false);
