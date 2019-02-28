@@ -74,7 +74,9 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 {
     SetDefLessFunc(m_mapMaps);
 
-    SetSize(664, 294);
+    int pWide, pTall;
+    parent->GetSize(pWide, pTall);
+    SetSize(pWide, pTall);
 
     m_hFont = INVALID_FONT;
     parent->AddActionSignalTarget(this);
@@ -83,6 +85,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList = new CMapListPanel(this, "MapList");
     m_pMapList->SetAllowUserModificationOfColumns(true);
     m_pMapList->SetShouldCenterEmptyListText(true);
+    m_pMapList->SetAutoResize(PIN_TOPLEFT, AUTORESIZE_DOWNANDRIGHT, 0, 0, 0, 0);
+    m_pMapList->CalculateAutoResize(pWide, pTall);
 
     // Images
     m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
@@ -134,8 +138,6 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     m_pMapList->MakeReadyForUse();
 
-    LoadControlSettings(CFmtStr("resource/ui/MapSelector/%sPage.res", name));
-
     g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadEnd));
 }
 
@@ -164,15 +166,6 @@ MapDisplay_t *CBaseMapsPage::GetMapDisplayByID(uint32 id)
         return &m_mapMaps[indx];
 
     return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::PerformLayout()
-{
-    BaseClass::PerformLayout();
-    Repaint();
 }
 
 
