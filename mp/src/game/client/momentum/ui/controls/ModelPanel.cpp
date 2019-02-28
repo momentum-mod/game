@@ -31,6 +31,7 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     __ViewProjNDC.Identity();
 
     ListenForGameEvent("invalid_mdl_cache");
+    SetPaintBorderEnabled(true);
 }
 
 CRenderPanel::~CRenderPanel()
@@ -197,6 +198,12 @@ void CRenderPanel::OnMouseWheeled(int delta)
     float amt = RemapVal(m_flDist, 0, 100, 2, 25);
     m_flDist -= delta * amt;
     m_flDist = clamp(m_flDist, 5, 16000);
+}
+
+void CRenderPanel::ApplySchemeSettings(IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+    SetBorder(pScheme->GetBorder("Default"));
 }
 
 void CRenderPanel::DestroyModel()
