@@ -58,7 +58,6 @@ public:
     CBaseMapsPage(Panel *parent, const char *name);
     ~CBaseMapsPage();
 
-    virtual void PerformLayout();
     virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 
     virtual void SetListCellColors(MapData *pData, KeyValues *pKvInto);
