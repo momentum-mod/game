@@ -2189,6 +2189,10 @@ void Frame::OnKeyCodeTyped(KeyCode code)
 		// enable build mode
 		ActivateBuildMode();
 	}
+    else if (ctrl && shift && alt && code == KEY_C)
+    {
+        OnReloadControls();
+    }
 	else if (ctrl && shift && alt && code == KEY_R)
 	{
 		// reload the scheme

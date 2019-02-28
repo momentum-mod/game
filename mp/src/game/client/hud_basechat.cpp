@@ -498,13 +498,11 @@ CHudChatFilterPanel::CHudChatFilterPanel( Panel *pParent, const char *pName ) : 
     //=============================================================================
     // HPE_END
     //=============================================================================
-    
+    LoadControlSettings("resource/UI/ChatFilters.res");
 }
 
 void CHudChatFilterPanel::ApplySchemeSettings(IScheme *pScheme)
 {
-	LoadControlSettings( "resource/UI/ChatFilters.res" );
-
 	BaseClass::ApplySchemeSettings( pScheme );
 
 	Color cColor = pScheme->GetColor( "DullWhite", GetBgColor() );
@@ -602,11 +600,8 @@ int CBaseHudChat::m_nLineCounter = 1;
 // Purpose: Text chat input/output hud element
 //-----------------------------------------------------------------------------
 CBaseHudChat::CBaseHudChat( const char *pElementName )
-: CHudElement( pElementName ), BaseClass( NULL, "HudChat" )
+: CHudElement( pElementName ), BaseClass(g_pClientMode->GetViewport(), "HudChat" )
 {
-	Panel *pParent = g_pClientMode->GetViewport();
-	SetParent( pParent );
-
 	HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ChatScheme.res", "ChatScheme" );
 	SetScheme(scheme);
 
@@ -640,6 +635,8 @@ CBaseHudChat::CBaseHudChat( const char *pElementName )
 	GetChatFilterPanel();
 
 	m_iFilterFlags = cl_chatfilters.GetInt();
+
+    LoadControlSettings("resource/UI/BaseChat.res");
 }
 
 void CBaseHudChat::CreateChatInputLine( void )
@@ -692,8 +689,6 @@ CHudChatFilterPanel *CBaseHudChat::GetChatFilterPanel( void )
 
 void CBaseHudChat::ApplySchemeSettings( IScheme *pScheme )
 {
-	LoadControlSettings( "resource/UI/BaseChat.res" );
-
 	BaseClass::ApplySchemeSettings( pScheme );
 
 	SetPaintBackgroundType( 2 );
