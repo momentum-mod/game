@@ -109,18 +109,21 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetColumnHeaderTooltip(HEADER_MAP_LAYOUT, "#MOM_MapSelector_MapLayout_Tooltip");
     m_pMapList->SetColumnHeaderTooltip(HEADER_MAP_IN_LIBRARY, "#MOM_MapSelector_Library_Tooltip");
     m_pMapList->SetColumnHeaderTooltip(HEADER_MAP_IN_FAVORITES, "#MOM_MapSelector_Favorites_Tooltip");
-    //MOM_TODO: we do want tooltips
 
     // Alignment
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_DIFFICULTY, Label::a_center);
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_IN_LIBRARY, Label::a_center);
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_MAP_IN_FAVORITES, Label::a_center);
+    m_pMapList->SetColumnHeaderTextAlignment(HEADER_WORLD_RECORD, Label::a_center);
+    m_pMapList->SetColumnHeaderTextAlignment(HEADER_BEST_TIME, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_DIFFICULTY, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IMAGE, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IN_LIBRARY, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IN_FAVORITES, Label::a_center);
+    m_pMapList->SetColumnTextAlignment(HEADER_WORLD_RECORD, Label::a_center);
+    m_pMapList->SetColumnTextAlignment(HEADER_BEST_TIME, Label::a_center);
 
     // Sort Functions
     m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
