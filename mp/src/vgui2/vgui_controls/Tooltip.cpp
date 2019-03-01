@@ -227,17 +227,13 @@ TextTooltip::TextTooltip(Panel *parent, const char *text) : BaseTooltip( parent,
 {
 	if (!s_TooltipWindow.Get())
 	{
-		s_TooltipWindow = new TextEntry(NULL, "tooltip");
+		s_TooltipWindow = new TextEntry(nullptr, "tooltip");
         s_TooltipWindow->SetProportional(parent->IsProportional());
 
  		s_TooltipWindow->InvalidateLayout(false, true);
 
 		// this bit of hackery is necessary because tooltips don't get ApplySchemeSettings called from their parents
-		IScheme *pScheme = scheme()->GetIScheme( s_TooltipWindow->GetScheme() );
-		s_TooltipWindow->SetBgColor(s_TooltipWindow->GetSchemeColor("Tooltip.BgColor", s_TooltipWindow->GetBgColor(), pScheme));
-		s_TooltipWindow->SetFgColor(s_TooltipWindow->GetSchemeColor("Tooltip.TextColor", s_TooltipWindow->GetFgColor(), pScheme));
-		s_TooltipWindow->SetBorder(pScheme->GetBorder("ToolTipBorder"));
-		s_TooltipWindow->SetFont( pScheme->GetFont("DefaultSmall", s_TooltipWindow->IsProportional()));
+        ApplySchemeSettings(parent->GetScheme());
 	}
 	s_iTooltipWindowCount++;
 
@@ -280,17 +276,23 @@ void TextTooltip::SetText(const char *text)
 	if (s_TooltipWindow.Get())
 	{
 		s_TooltipWindow->SetText(m_Text.Base());
+        SizeTextWindow();
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: gets the font from the scheme
 //-----------------------------------------------------------------------------
-void TextTooltip::ApplySchemeSettings(IScheme *pScheme)
+void TextTooltip::ApplySchemeSettings(HScheme hScheme)
 {
-	if ( s_TooltipWindow )
+    IScheme *pScheme = scheme()->GetIScheme(hScheme);
+	if ( s_TooltipWindow && pScheme )
 	{
-		s_TooltipWindow->SetFont(pScheme->GetFont("DefaultSmall", s_TooltipWindow->IsProportional()));
+        s_TooltipWindow->SetBgColor(s_TooltipWindow->GetSchemeColor("Tooltip.BgColor", s_TooltipWindow->GetBgColor(), pScheme));
+        s_TooltipWindow->SetFgColor(s_TooltipWindow->GetSchemeColor("Tooltip.TextColor", s_TooltipWindow->GetFgColor(), pScheme));
+        s_TooltipWindow->SetBorder(pScheme->GetBorder("ToolTipBorder"));
+        const char *pFontName = pScheme->GetResourceString("Tooltip.TextFont");
+        s_TooltipWindow->SetFont(pScheme->GetFont(pFontName ? pFontName : "DefaultSmall", s_TooltipWindow->IsProportional()));
 	}
 }
 
@@ -310,9 +312,10 @@ void TextTooltip::ShowTooltip(Panel *currentPanel)
 
 		Panel *pCurrentParent = s_TooltipWindow->GetParent();
 
-		_isDirty = _isDirty || ( pCurrentParent != currentPanel );
-		s_TooltipWindow->SetText( m_Text.Base() );
+		_isDirty = _isDirty || pCurrentParent != currentPanel;
 		s_TooltipWindow->SetParent(currentPanel);
+        ApplySchemeSettings(currentPanel->GetScheme());
+		s_TooltipWindow->SetText( m_Text.Base() );
 	}
 	BaseTooltip::ShowTooltip( currentPanel );
 }
@@ -364,9 +367,9 @@ void TextTooltip::SizeTextWindow()
 		int wide, tall;
 		s_TooltipWindow->GetSize( wide, tall );
 		double newWide = sqrt( (2.0/1) * wide * tall );
-		double newTall = (1/2) * newWide;
+		int newTall = newWide / 2;
 		s_TooltipWindow->SetMultiline(true);
-		s_TooltipWindow->SetSize((int)newWide, (int)newTall );
+		s_TooltipWindow->SetSize(int(newWide), newTall );
 		s_TooltipWindow->SetToFullHeight();
 		
 		s_TooltipWindow->GetSize( wide, tall );
