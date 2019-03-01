@@ -1094,10 +1094,6 @@ void Panel::Think()
 	if (IsVisible())
 	{	
 		// update any tooltips
-		if (m_pTooltips)
-		{
-			m_pTooltips->PerformLayout();
-		}
 		if ( _flags.IsFlagSet( NEEDS_LAYOUT ) )
 		{
 			InternalPerformLayout();
@@ -1770,13 +1766,10 @@ void Panel::InternalCursorMoved(int x, int y)
 	if (m_pTooltips)
 	{
 		if ( !_tooltipText.IsEmpty() )
-		{
 			m_pTooltips->SetText( _tooltipText );
-		}
+
         if (m_pTooltips->IsVisible())
             m_pTooltips->PositionWindow();
-        //else
-        //    m_pTooltips->ShowTooltip(this);
 	}
 
 	ScreenToLocal(x, y);
@@ -1797,9 +1790,8 @@ void Panel::InternalCursorEntered()
 		m_pTooltips->ResetDelay();
 
 		if ( !_tooltipText.IsEmpty() )
-		{
 			m_pTooltips->SetText( _tooltipText );
-		}
+
 		m_pTooltips->ShowTooltip(this);
 	}
 
@@ -4918,13 +4910,9 @@ void Panel::GetSettings( KeyValues *outResourceData )
 	{
 		outResourceData->SetInt( "ypos", y );
 	}
-	if (m_pTooltips)
-	{
-		if (Q_strlen(m_pTooltips->GetText()) > 0)
-		{
-			outResourceData->SetString("tooltiptext", m_pTooltips->GetText());
-		}
-	}
+	if (!_tooltipText.IsEmpty())
+		outResourceData->SetString("tooltiptext", _tooltipText.Get());
+
 	int wide, tall;
 	GetSize( wide, tall );
 	if ( IsProportional() )
