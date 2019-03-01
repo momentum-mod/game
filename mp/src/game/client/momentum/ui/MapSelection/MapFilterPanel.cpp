@@ -47,10 +47,13 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     m_pGameModeFilter->AddItem("#MOM_GameType_Trikz", nullptr);
     m_pGameModeFilter->AddActionSignalTarget(this);
 
+    m_pMapNameFilter->SetMaximumCharCount(MAX_MAP_NAME);
     m_pMapNameFilter->AddActionSignalTarget(this);
-    
+
+    m_pDifficultyLowerBound->SetMaximumCharCount(3);
     m_pDifficultyLowerBound->SetAllowNumericInputOnly(true);
     m_pDifficultyLowerBound->AddActionSignalTarget(this);
+    m_pDifficultyHigherBound->SetMaximumCharCount(3);
     m_pDifficultyHigherBound->SetAllowNumericInputOnly(true);
     m_pDifficultyHigherBound->AddActionSignalTarget(this);
 

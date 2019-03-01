@@ -60,7 +60,7 @@ Scheme
 		CheckButton.BgColor				"MOM.Panel.Bg"
 		CheckButton.Border1  			"Border.Subtle" 		// the left checkbutton border
 		CheckButton.Border2  			"Border.Subtle"		// the right checkbutton border
-		CheckButton.Check				"118 189 118 255"	// color of the check itself
+		CheckButton.Check				"MomentumBlue"	// color of the check itself
 		CheckButton.HighlightFgColor	"OffWhite"
 		CheckButton.ArmedBgColor		"Blank"
 		CheckButton.DepressedBgColor	"Blank"
@@ -185,6 +185,7 @@ Scheme
 
 		Tooltip.TextColor			"White"
 		Tooltip.BgColor				"MOM.Panel.Bg"
+        Tooltip.TextFont            "ToolTipText"
 
 		TreeView.BgColor			"Light Gray"
 
@@ -214,6 +215,17 @@ Scheme
                 "custom" "1"
 			}
 		}
+        "ToolTipText"
+        {
+            "1"
+            {
+                "name" "BigNoodleTitling"
+                "tall" "14"
+                "weight" "0"
+                "antialias" "1"
+                "custom" "1"
+            }
+        }
         
 		"DebugFixed"
 		{
@@ -256,11 +268,11 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"Tahoma" [!$LINUX]
-				"name"		"Verdana" [$LINUX]
+				"name"		"BigNoodleTitling"
 				"tall"		"16"
-				"weight"	"500"
+				"weight"	"400"
                 "antialias" "1"
+                "custom" "1"
 			}
 		}
 		"DefaultBold"
