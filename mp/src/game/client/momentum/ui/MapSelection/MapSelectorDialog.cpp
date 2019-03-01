@@ -87,7 +87,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
 
     LoadControlSettings("resource/ui/MapSelector/DialogMapSelector.res");
 
-    SetMinimumSize(GetScaledVal(340), GetScaledVal(200));
+    SetMinimumSize(GetScaledVal(340), GetScaledVal(250));
 
     // load current tab
     MapListType_e current = (MapListType_e) m_pSavedData->GetInt("current", MAP_LIST_BROWSE);
