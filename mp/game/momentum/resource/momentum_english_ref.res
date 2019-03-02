@@ -124,7 +124,7 @@
         "MOM_Status_NoZones" "No zones found"
         "MOM_Map_Name" "Map: "
         "MOM_Map_Author" "By: %authors%"
-        "MOM_Map_Difficulty" "Tier: %difficulty%"
+        "MOM_Map_Difficulty" "Tier: "
 
     //Guns
         "MOM_Gun" "Momentum Gun"
@@ -179,7 +179,10 @@
         // Map Info Dialog
         "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode: "
         "MOM_MapSelector_InfoDialog_Layout" "Layout: "
-        "MOM_MapSelector_InfoDialog_Zones"  "Number of Zones: "
+        "MOM_MapSelector_InfoDialog_Zones"  "# of Zones: "
+        "MOM_MapSelector_InfoDialog_NumBonus" "# of Bonuses: "
+        "MOM_MapSelector_InfoDialog_CreationDate" "Date Created: "
+        "MOM_MapSelector_InfoDialog_ReleaseDate" "Date Released: "
 
         // Misc
         "MOM_BuildVersion" "Build Version"

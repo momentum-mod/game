@@ -19,7 +19,7 @@ Scheme
 		"White"				"255 255 255 255"
 		"Light Gray"		"211 211 211 20"
 		"Gray" 				"128 128 128 150"
-		"Dark Gray" 		"64 64 64 200"
+		"Dark Gray" 		"58 56 56 255"
 		
 		"Red"                "192 28 0 140"
 		"Black"                "0 0 0 196"
@@ -97,6 +97,13 @@ Scheme
 
 		GraphPanel.FgColor				"White"
 		GraphPanel.BgColor				"TransparentBlack"
+
+        GalleryNavButton.DefaultFgColor "White"
+        GalleryNavButton.DefaultBgColor "TransparentBlack"
+        GalleryNavButton.ArmedFgColor "MomentumBlue"
+        GalleryNavButton.ArmedBgColor "TransparentBlack"
+        GalleryNavButton.PressedFgColor "MomentumBlue"
+        GalleryNavButton.PressedBgColor "MomentumBlue"
 
 		Label.TextDullColor				"DullWhite"
 		Label.TextColor					"White"
@@ -226,28 +233,6 @@ Scheme
                 "custom" "1"
             }
         }
-        
-		"DebugFixed"
-		{
-			"1"
-			{
-				"name"		"Courier New"
-				"tall"		"10"
-				"weight"	"500"
-				"antialias" "1"
-			}
-		}
-		// fonts are used in order that they are listed
-		"DebugFixedSmall"
-		{
-			"1"
-			{
-				"name"		"Courier New"
-				"tall"		"7"
-				"weight"	"500"
-				"antialias" "1"
-			}
-		}
 		"DefaultFixedOutline"
 		{
 			"1"
@@ -279,22 +264,22 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"Tahoma" [!$LINUX]
-				"name"		"Verdana Bold" [$LINUX]
+				"name"		"BigNoodleTitling"
 				"tall"		"16"
 				"weight"	"1000"
                 "antialias" "1"
+                "custom" "1"
 			}
 		}
         "DefaultBoldLarge"
         {
 			"1"
 			{
-				"name"		"Tahoma" [!$LINUX]
-				"name"		"Verdana Bold" [$LINUX]
-				"tall"		"18"
+				"name"		"BigNoodleTitling"
+				"tall"		"20"
 				"weight"	"1000"
                 "antialias" "1"
+                "custom" "1"
 			}
 		}
         
@@ -313,12 +298,11 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"Tahoma" [!$LINUX]
-				"name"		"Verdana" [$LINUX]
-				"tall"		"12" [!$LINUX]
-				"tall"		"16" [$LINUX]
-				"weight"	"0"
+				"name"		"BigNoodleTitling"
+				"tall"		"12"
+				"weight"	"400"
                 "antialias" "1"
+                "custom" "1"
 			}
 		}
 		"DefaultSmallDropShadow"
@@ -337,11 +321,11 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"Tahoma" [!$LINUX]
-				"name"		"Verdana" [$LINUX]
-				"tall"		"11"
-				"weight"	"0"
+				"name"		"BigNoodleTitling"
+				"tall"		"14"
+				"weight"	"200"
                 "antialias" "1"
+                "custom" "1"
 			}
 		}
 
@@ -372,10 +356,10 @@ Scheme
         {
             "1"
             {
-                "name" "Tahoma" [!$LINUX]
-                "name" "Verdana" [$LINUX]
-                "tall" "22"
+                "name" "BigNoodleTitling"
+                "tall" "25"
                 "antialias" "1"
+                "custom" "1"
             }
         }
         
@@ -708,32 +692,6 @@ Scheme
 				"custom"	"1"
 			}
 		}
-
-		AppchooserGameTitleFont	[$X360]
-		{
-			"1"
-			{
-				"name"			"Trebuchet MS"
-				"tall"			"16"
-				"tall_hidef"	"24"
-				"weight"		"900"
-				"antialias"		"1"
-			}
-		}
-
-		AppchooserGameTitleFontBlur	[$X360]
-		{
-			"1"
-			{
-				"name"			"Trebuchet MS"
-				"tall"			"16"
-				"tall_hidef"	"24"
-				"weight"		"900"
-				"blur"			"3"
-				"blur_hidef"	"5"
-				"antialias"		"1"
-			}
-		}
 		
 		StatsTitle	[$WIN32]
 		{
@@ -900,6 +858,10 @@ Scheme
 		MenuBorder		SubtleBorder
 		BrowserBorder	DepressedBorder
 		PropertySheetBorder	RaisedBorder
+
+        GalleryNavButton.DefaultBorder RaisedBorder
+        GalleryNavButton.KeyFocusBorder RaisedBorder
+        GalleryNavButton.DepressedBorder RaisedBorder
 
 		FrameBorder
 		{
