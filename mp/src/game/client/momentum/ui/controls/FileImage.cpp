@@ -153,7 +153,7 @@ bool FileImage::Evict()
 
 void FileImage::DestroyTexture()
 {
-    if (surface() && m_iTextureID != -1)
+    if (surface() && m_iTextureID > -1)
     {
         surface()->DestroyTextureID(m_iTextureID);
         m_iTextureID = -1;
@@ -172,6 +172,12 @@ URLImage::URLImage(const char* pURL, IImage* pDefault, bool bDrawProgress) : Fil
         m_bDrawProgressBar(bDrawProgress)
 {
     LoadFromURL(pURL);
+}
+
+URLImage::~URLImage()
+{
+    if (m_hRequest != INVALID_HTTPREQUEST_HANDLE)
+        g_pAPIRequests->CancelDownload(m_hRequest);
 }
 
 bool URLImage::LoadFromURL(const char* pURL)
