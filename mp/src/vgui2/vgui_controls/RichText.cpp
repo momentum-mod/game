@@ -753,7 +753,7 @@ int RichText::DrawString(int iFirst, int iLast, TRenderState &renderState, HFont
                 {
                     m_bAllTextAlphaIsZero = false;
                     surface()->DrawSetTextPos(renderState.x, renderState.y);
-                    surface()->DrawPrintText(&m_TextStream[iFirst], normalText1Length + 1);
+                    surface()->DrawPrintText(&m_TextStream[iFirst], normalText1Length);
                 }
 
                 //Print the highlighted text sandwich
