@@ -144,6 +144,7 @@ DECLARE_BUILD_FACTORY( RichText );
 RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
     InitSettings();
+    SetTriplePressAllowed(true);
 	m_bAllTextAlphaIsZero = false;
 	_font = INVALID_FONT;
 	m_hFontUnderline = INVALID_FONT;
@@ -1828,13 +1829,14 @@ void RichText::OnMouseDoublePressed(MouseCode code)
 		GotoWordRight();
 		selectSpot[1] = _cursorPos;
 		
-		if ( _cursorPos > 0 && (_cursorPos-1) < m_TextStream.Count() )
+		while ( _cursorPos > 0 && (_cursorPos-1) < m_TextStream.Count() )
 		{
 			if (iswspace(m_TextStream[_cursorPos-1]))
 			{
 				selectSpot[1]--;
 				_cursorPos--;
 			}
+            else break;
 		}
 		
 		_select[0] = selectSpot[0];
@@ -1842,6 +1844,42 @@ void RichText::OnMouseDoublePressed(MouseCode code)
 		_mouseSelection = true;
 	}
 	
+}
+
+void RichText::OnMouseTriplePressed(MouseCode code)
+{
+    if (!m_bInteractive)
+        return;
+
+    // left triple clicking on a word selects the line
+    if (code == MOUSE_LEFT)
+    {
+        // move the cursor to where the mouse was pressed
+        int x, y;
+        input()->GetCursorPos(x, y);
+        ScreenToLocal(x, y);
+
+        _cursorPos = PixelToCursorSpace(x, y);
+        // then find the start and end of the line we are in to highlight it.
+        int curLine = GetCursorLine();
+        int selectSpot[2];
+        if (curLine)
+        {
+            // Our selection should be (curLine - 1) <-> curLine
+            selectSpot[0] = m_LineBreaks[curLine - 1];
+            selectSpot[1] = m_LineBreaks[curLine] - 1;
+        }
+        else
+        {
+            // It's 0, we're on the first (maybe even only) line
+            selectSpot[0] = 0;
+            selectSpot[1] = m_LineBreaks[curLine] - 1;
+        }
+
+        _select[0] = selectSpot[0];
+        _select[1] = selectSpot[1];
+        _mouseSelection = true;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1887,6 +1925,11 @@ void RichText::OnKeyCodeTyped(KeyCode code)
 				GotoTextEnd();
 				break;
 			}
+        case KEY_A:
+		    {
+		        SelectAllText();
+                break;
+		    }
 		default:
 			{
 				fallThrough = true;
@@ -1964,9 +2007,6 @@ void RichText::OnKeyCodeTyped(KeyCode code)
 		}
 	}
 	
-	// select[1] is the location in the line where the blinking cursor started
-	_select[1] = _cursorPos;
-	
 	// chain back on some keys
 	if (fallThrough)
 	{
@@ -2019,10 +2059,15 @@ void RichText::SetMaximumCharCount(int maxChars)
 //-----------------------------------------------------------------------------
 int RichText::GetCursorLine()
 {
-	// always returns the last place
-	int pos = m_LineBreaks[m_LineBreaks.Count() - 1];
-	Assert(pos == MAX_BUFFER_SIZE);
-	return pos;
+    // find which line the cursor is on
+    int cursorLine;
+    for (cursorLine = 0; cursorLine < m_LineBreaks.Count(); cursorLine++)
+    {
+        if (_cursorPos < m_LineBreaks[cursorLine])
+            break;
+    }
+
+    return cursorLine;
 }
 
 //-----------------------------------------------------------------------------
