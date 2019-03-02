@@ -20,20 +20,25 @@ DECLARE_BUILD_FACTORY(ImageGallery);
 class GalleryNavButton : public Button
 {
     DECLARE_CLASS_SIMPLE(GalleryNavButton, Button);
-    GalleryNavButton(Panel *pParent, bool bNext);
+    GalleryNavButton(Panel *pParent, bool bNext, bool bDrawTall = false);
     void FadeIn();
     void FadeOut();
+    void Update(ImageGallery *pGallery);
+    void SetDrawTall(bool bTall) { m_bDrawTall = bTall; }
 protected:
     void OnThink() OVERRIDE;
+    void PerformLayout() OVERRIDE;
+    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
+private:
+    bool m_bNextButton, m_bDrawTall;
 };
 
-GalleryNavButton::GalleryNavButton(Panel* pParent, bool bNext) : 
+GalleryNavButton::GalleryNavButton(Panel* pParent, bool bNext, bool bTall) : m_bNextButton(bNext), m_bDrawTall(bTall),
 Button(pParent, bNext ? "NextButton" : "PrevButton", bNext ? ">" : "<", pParent, bNext ? "NextImage" : "PreviousImage")
 {
     SetZPos(1);
     SetSize(64, 64);
     SetContentAlignment(a_center);
-    SetPaintBackgroundEnabled(false);
     SetVisible(false);
     SetShouldPaint(false);
 }
@@ -56,6 +61,15 @@ void GalleryNavButton::FadeOut()
                                                       0, 0.15f, AnimationController::INTERPOLATOR_SIMPLESPLINE);
 }
 
+void GalleryNavButton::Update(ImageGallery *pGallery)
+{
+    const auto iCurIndx = pGallery->GetCurrentIndex();
+    const auto imgCount = pGallery->GetImageCount();
+    SetEnabled(iCurIndx != (m_bNextButton ? imgCount - 1 : 0) && imgCount > 1);
+    SetShouldPaint(imgCount > 1);
+    InvalidateLayout(true);
+}
+
 void GalleryNavButton::OnThink()
 {
     BaseClass::OnThink();
@@ -63,18 +77,66 @@ void GalleryNavButton::OnThink()
         SetVisible(false);
 }
 
+void GalleryNavButton::PerformLayout()
+{
+    BaseClass::PerformLayout();
+
+    int wide, tall;
+    GetParent()->GetSize(wide, tall);
+
+    if (m_bDrawTall)
+    {
+        SetBounds(m_bNextButton ? (wide - GetWide()) : 0, 0, GetWide(), tall);
+    }
+    else
+    {
+        SetPos(m_bNextButton ? wide - GetWide() : 0, (tall - GetTall()) / 2);
+    }
+}
+
+void GalleryNavButton::ApplySchemeSettings(IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    SetDefaultBorder(pScheme->GetBorder("GalleryNavButton.DefaultBorder"));
+    SetKeyFocusBorder(pScheme->GetBorder("GalleryNavButton.KeyFocusBorder"));
+    SetDepressedBorder(pScheme->GetBorder("GalleryNavButton.DepressedBorder"));
+
+    const Color defaultFgColor = GetSchemeColor("GalleryNavButton.DefaultFgColor", COLOR_WHITE, pScheme);
+    const Color defaultBgColor = GetSchemeColor("GalleryNavButton.DefaultBgColor", Color(0, 0, 0, 128), pScheme);
+    SetDefaultColor(defaultFgColor, defaultBgColor);
+    const Color armedFgColor = GetSchemeColor("GalleryNavButton.ArmedFgColor", pScheme->GetColor("MomentumBlue", COLOR_BLUE), pScheme);
+    const Color armedBgColor = GetSchemeColor("GalleryNavButton.ArmedBgColor", Color(0, 0, 0, 128), pScheme);
+    SetArmedColor(armedFgColor, armedBgColor);
+    const Color pressedFgColor = GetSchemeColor("GalleryNavButton.PressedFgColor", pScheme->GetColor("MomentumBlue", COLOR_BLUE), pScheme);
+    const Color pressedBgColor = GetSchemeColor("GalleryNavButton.PressedBgColor", Color(0, 0, 0, 128), pScheme);
+    SetDepressedColor(pressedFgColor, pressedBgColor);
+    SetSelectedColor(pressedFgColor, pressedBgColor);
+}
+
 class GalleryModalViewPanel : public Frame
 {
     DECLARE_CLASS_SIMPLE(GalleryModalViewPanel, Frame);
-    GalleryModalViewPanel(IImage *pImage) : Frame(nullptr, "GalleryModalViewPanel")
+    GalleryModalViewPanel(ImageGallery *pGallery) : Frame(pGallery, "GalleryModalViewPanel"), m_pGallery(pGallery)
     {
-        SetProportional(true);
+        m_pImagePanel = new ImagePanel(this, "GalleryModelImage");
+        m_pImagePanel->SetShouldScaleImage(true);
+        m_pImagePanel->SetAutoResize(PIN_TOPLEFT, AUTORESIZE_DOWNANDRIGHT, 5, 5, -5, -5);
+        m_pImagePanel->SetZPos(-5);
+        m_pImagePanel->SetImage(m_pGallery->GetCurrentImage());
+        m_pImagePanel->AddActionSignalTarget(this); // For OnCursorEnter/Exit
 
-        m_pImage = new ImagePanel(this, "GalleryImage");
-        m_pImage->SetShouldScaleImage(true);
-        m_pImage->SetImage(pImage);
-        m_pImage->SetAutoResize(PIN_TOPLEFT, AUTORESIZE_DOWNANDRIGHT, 5, 5, -5, -5);
-        m_pImage->SetZPos(-5);
+        m_pNextButton = new GalleryNavButton(m_pImagePanel, true, false);
+        m_pNextButton->AddActionSignalTarget(this); // For OnCursorEnter/Exit
+        m_pNextButton->AddActionSignalTarget(m_pGallery); // For clicking them
+        m_pNextButton->Update(m_pGallery);
+
+        m_pPrevButton = new GalleryNavButton(m_pImagePanel, false, false);
+        m_pPrevButton->AddActionSignalTarget(this); 
+        m_pPrevButton->AddActionSignalTarget(m_pGallery);
+        m_pPrevButton->Update(m_pGallery);
+
+        m_pGallery->AddActionSignalTarget(this); // For IndexChange
 
         SetTitleBarVisible(false);
         SetCloseButtonVisible(true);
@@ -83,7 +145,55 @@ class GalleryModalViewPanel : public Frame
         SetMoveable(false);
     }
 
+    ~GalleryModalViewPanel()
+    {
+        m_pGallery->RemoveActionSignalTarget(this);
+    }
+
 protected:
+
+    MESSAGE_FUNC_INT(OnImageIndxChange, "IndexChange", newIndx)
+    {
+        m_pImagePanel->SetImage(m_pGallery->GetCurrentImage());
+        InvalidateLayout(true);
+        m_pNextButton->Update(m_pGallery);
+        m_pPrevButton->Update(m_pGallery);
+    }
+
+    MESSAGE_FUNC_PARAMS(CursorEntered, "OnCursorEntered", pKv)
+    {
+        Panel *pPanel = (Panel*)pKv->GetPtr("panel");
+        if (pPanel == m_pGallery)
+            return;
+
+        m_pNextButton->FadeIn();
+        m_pPrevButton->FadeIn();
+    }
+
+    MESSAGE_FUNC_PARAMS(CursorExited, "OnCursorExited", pKv)
+    {
+        Panel *pPanel = (Panel*) pKv->GetPtr("panel");
+        if (pPanel == m_pGallery)
+            return;
+
+        const VPANEL over = input()->GetMouseOver();
+        if (over != m_pImagePanel->GetVPanel() && over != m_pNextButton->GetVPanel() && over != m_pPrevButton->GetVPanel())
+        {
+            // We genuinely exited, play our animations
+            m_pNextButton->FadeOut();
+            m_pPrevButton->FadeOut();
+        }
+    }
+
+    void OnKeyCodeReleased(KeyCode code) OVERRIDE
+    {
+        if (code == KEY_LEFT)
+            m_pGallery->PreviousImage();
+        else if (code == KEY_RIGHT)
+            m_pGallery->NextImage();
+    }
+
+
     void PerformLayout() OVERRIDE 
     {
         BaseClass::PerformLayout();
@@ -92,7 +202,7 @@ protected:
         surface()->GetScreenSize(screenWide, screenTall);
 
         int imgContWide, imgContTall;
-        m_pImage->GetImage()->GetContentSize(imgContWide, imgContTall);
+        m_pGallery->GetCurrentImage()->GetContentSize(imgContWide, imgContTall);
 
         int frameWide = int(0.95f * float(screenWide));
         int frameTall = int(0.95f * float(screenTall));
@@ -108,7 +218,9 @@ protected:
     }
 
 private:
-    ImagePanel *m_pImage;
+    ImageGallery *m_pGallery;
+    ImagePanel *m_pImagePanel;
+    GalleryNavButton *m_pNextButton, *m_pPrevButton;
 };
 
 ImageGallery::ImageGallery(Panel *pParent, const char *pName, bool bDeleteImagesWhenDone /* = false*/) : EditablePanel(pParent, pName), 
@@ -119,8 +231,8 @@ ImageGallery::ImageGallery(Panel *pParent, const char *pName, bool bDeleteImages
     m_pImages = new ImageList(bDeleteImagesWhenDone, false);
     m_pCurrentImage = nullptr;
 
-    m_pPrevButton = new GalleryNavButton(this, false);
-    m_pNextButton = new GalleryNavButton(this, true);
+    m_pPrevButton = new GalleryNavButton(this, false, true);
+    m_pNextButton = new GalleryNavButton(this, true, true);
 
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
@@ -144,6 +256,11 @@ int ImageGallery::AddImage(IImage* pImage, bool bShowAdded /* = false*/)
     return index;
 }
 
+int ImageGallery::GetImageCount()
+{
+    return m_pImages->GetImageCount();
+}
+
 bool ImageGallery::RemoveAllImages()
 {
     m_iCurrentIndex = 0;
@@ -162,7 +279,7 @@ bool ImageGallery::RemoveAllImages()
 
 void ImageGallery::SetCurrentIndex(int indx)
 {
-    if (indx < 0 || indx > m_pImages->GetImageCount())
+    if (indx < 0 || indx >= m_pImages->GetImageCount())
         return;
 
     m_iCurrentIndex = indx;
@@ -171,12 +288,14 @@ void ImageGallery::SetCurrentIndex(int indx)
     // Update our buttons
     UpdateButtonStates();
 
+    PostActionSignal(new KeyValues("IndexChange", "newIndx", m_iCurrentIndex));
+
     Repaint();
 }
 
-void ImageGallery::OnNextImage()
+IImage* ImageGallery::GetCurrentImage()
 {
-    SetCurrentIndex(m_iCurrentIndex + 1);
+    return m_pCurrentImage;
 }
 
 void ImageGallery::OnCursorEntered()
@@ -200,36 +319,13 @@ void ImageGallery::OnCursorExited()
     }
 }
 
-void ImageGallery::ApplySchemeSettings(vgui::IScheme* pScheme)
-{
-    BaseClass::ApplySchemeSettings(pScheme);
-
-    m_pNextButton->SetFgColor(COLOR_WHITE);
-    m_pPrevButton->SetFgColor(COLOR_WHITE);
-}
-
-void ImageGallery::OnPreviousImage()
+void ImageGallery::PreviousImage()
 {
     SetCurrentIndex(m_iCurrentIndex - 1);
 }
-
-void ImageGallery::PerformLayout()
+void ImageGallery::NextImage()
 {
-    BaseClass::PerformLayout();
-
-    int wide, tall;
-    GetSize(wide, tall);
-
-    if (m_bUseTallButtons)
-    {
-        m_pPrevButton->SetBounds(0, 0, m_pPrevButton->GetWide(), tall);
-        m_pNextButton->SetBounds(wide - m_pNextButton->GetWide(), 0, m_pNextButton->GetWide(), tall);
-    }
-    else
-    {
-        m_pPrevButton->SetPos(0, (tall - m_pPrevButton->GetTall()) / 2);
-        m_pNextButton->SetPos(wide - m_pNextButton->GetWide(), (tall - m_pNextButton->GetTall()) / 2);
-    }
+    SetCurrentIndex(m_iCurrentIndex + 1);
 }
 
 void ImageGallery::Paint()
@@ -246,29 +342,36 @@ void ImageGallery::Paint()
     }
 }
 
-void ImageGallery::OnMouseReleased(MouseCode code)
+void ImageGallery::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_LEFT)
     {
         // Pop open a modal frame with just the full res photo
-        GalleryModalViewPanel *pPanel = new GalleryModalViewPanel(m_pCurrentImage);
+        GalleryModalViewPanel *pPanel = new GalleryModalViewPanel(this);
         pPanel->DoModal();
     }
 }
 
-void ImageGallery::OnKeyCodeReleased(vgui::KeyCode code)
+void ImageGallery::OnKeyCodeReleased(KeyCode code)
 {
     if (code == KEY_RIGHT)
-        OnNextImage();
+        NextImage();
     else if (code == KEY_LEFT)
-        OnPreviousImage();
+        PreviousImage();
+}
+
+void ImageGallery::OnCommand(const char* command)
+{
+    if (FStrEq(command, "NextImage"))
+        NextImage();
+    else if (FStrEq(command, "PreviousImage"))
+        PreviousImage();
+    else
+        BaseClass::OnCommand(command);
 }
 
 void ImageGallery::UpdateButtonStates()
 {
-    const int count = m_pImages->GetImageCount();
-    m_pPrevButton->SetEnabled(m_iCurrentIndex != 0 && count > 1);
-    m_pNextButton->SetEnabled(m_iCurrentIndex != count - 1 && count > 1);
-    m_pPrevButton->SetShouldPaint(count > 1);
-    m_pNextButton->SetShouldPaint(count > 1);
+    m_pPrevButton->Update(this);
+    m_pNextButton->Update(this);
 }
