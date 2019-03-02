@@ -6,19 +6,21 @@
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
 #include "mom_map_cache.h"
+#include <ctime>
 
 #include "MapSelectorDialog.h"
 
 #include "fmtstr.h"
 #include "vgui_controls/ListPanel.h"
-#include "vgui_controls/CvarToggleCheckButton.h"
+#include "vgui_controls/Button.h"
+#include "vgui_controls/RichText.h"
 #include "controls/ImageGallery.h"
 #include "controls/FileImage.h"
+#include "vgui/ILocalize.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
-
 
 static int __cdecl PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2)
 {
@@ -39,15 +41,19 @@ static int __cdecl PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelIt
 CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent, "DialogMapInfo"), m_pMapData(pMapData)
 {
     SetProportional(true);
-    SetBounds(0, 0, 512, 512);
-    SetMinimumSize(416, 340);
+    SetBounds(0, 0, GetScaledVal(300), GetScaledVal(350));
+    SetMinimumSize(GetScaledVal(300), GetScaledVal(350));
     SetDeleteSelfOnClose(true);
 
     m_pMapActionButton = new Button(this, "MapActionButton", "#MOM_MapSelector_StartMap", parent, "Connect");
     m_pTimesList = new ListPanel(this, "TimesList");
     m_pImageGallery = new ImageGallery(this, "MapGallery", true);
+    m_pMapDescription = new RichText(this, "MapDescription");
+    m_pMapInfoPanel = new EditablePanel(this, "MapInfoPanel");
 
     LoadControlSettings("resource/ui/MapSelector/DialogMapInfo.res");
+    m_pMapInfoPanel->LoadControlSettings("resource/ui/MapSelector/MapInformationPanel.res");
+
     SetTitleBarVisible(false);
     SetCloseButtonVisible(true);
 
@@ -179,29 +185,56 @@ void CDialogMapInfo::FillMapInfo()
     pLoc->SetString("authors", authors.Get());
     SetControlString("AuthorLabel", CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_Map_Author"), pLoc));
 
+    // Info stuff
+    m_pMapData->m_Info.ToKV(pLoc);
+
+    // Game mode
+    m_pMapInfoPanel->SetControlString("GamemodeText", g_szGameModes[m_pMapData->m_eType]);
+
     // Difficulty
-    pLoc->SetInt("difficulty", m_pMapData->m_Info.m_iDifficulty);
-    SetControlString("DifficultyLabel", CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_Map_Difficulty"), pLoc));
+    m_pMapInfoPanel->SetControlString("DifficultyText", pLoc->GetWString("difficulty"));
     
     // Layout
-    SetControlString("LayoutLabel", m_pMapData->m_Info.m_bIsLinear ?
+    m_pMapInfoPanel->SetControlString("LayoutText", m_pMapData->m_Info.m_bIsLinear ?
                      g_pVGuiLocalize->Find("#MOM_Linear") :
                      g_pVGuiLocalize->Find("#MOM_Staged"));
 
     // Zones
-    SetControlString("NumZones", CFmtStr("%i", m_pMapData->m_Info.m_iNumZones));
+    m_pMapInfoPanel->SetControlString("NumZones", pLoc->GetWString("numZones"));
 
-    // Game mode
-    SetControlString("GamemodeText", g_szGameModes[m_pMapData->m_eType]);
+    // Bonuses
+    m_pMapInfoPanel->SetControlString("NumBonusText", pLoc->GetWString("numBonuses"));
+
+    // Creation Date
+    time_t creationDateTime;
+    if (g_pMomentumUtil->ISODateToTimeT(m_pMapData->m_Info.m_szCreationDate, &creationDateTime))
+    {
+        char date[32];
+        strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
+        m_pMapInfoPanel->SetControlString("CreationDateText", date);
+    }
+
+    // Release date
+    time_t releaseDateTime;
+    if (g_pMomentumUtil->ISODateToTimeT(m_pMapData->m_szCreatedAt, &releaseDateTime))
+    {
+        char date[32];
+        strftime(date, 32, "%b %d, %Y", localtime(&releaseDateTime));
+        m_pMapInfoPanel->SetControlString("ReleaseDateText", date);
+    }
+
+    // Description
+    m_pMapDescription->SetText(m_pMapData->m_Info.m_szDescription);
+    m_pMapDescription->GotoTextStart();
 
     // Update images
-    if (!m_pMapData->m_vecImages.IsEmpty())
+    if (m_pMapData->m_vecImages.Count() != m_pImageGallery->GetImageCount())
     {
         m_pImageGallery->RemoveAllImages();
 
         FOR_EACH_VEC(m_pMapData->m_vecImages, i)
         {
-            m_pImageGallery->AddImage(new URLImage(m_pMapData->m_vecImages[i].m_szURLLarge));
+            m_pImageGallery->AddImage(new URLImage(m_pMapData->m_vecImages[i].m_szURLLarge, nullptr, true));
         }
     }
 }
