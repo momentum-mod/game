@@ -13,22 +13,24 @@ class ImageGallery : public vgui::EditablePanel
 
     // Adds an image to the gallery. If bShowAdded is true, the panel changes current index to it.
     virtual int AddImage(vgui::IImage *pImage, bool bShowAdded = false);
+    virtual int GetImageCount();
     virtual bool RemoveAllImages();
     virtual void SetCurrentIndex(int indx);
+    virtual vgui::IImage *GetCurrentImage();
+    virtual int GetCurrentIndex() { return m_iCurrentIndex; }
 
     virtual void SetUseTallButtons(bool bTall) { m_bUseTallButtons = bTall; }
 
+    virtual void PreviousImage();
+    virtual void NextImage();
 protected:
     MESSAGE_FUNC(OnCursorExited, "OnCursorExited");
     MESSAGE_FUNC(OnCursorEntered, "OnCursorEntered");
-    MESSAGE_FUNC(OnPreviousImage, "PreviousImage");
-    MESSAGE_FUNC(OnNextImage, "NextImage");
 
-    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
-    void PerformLayout() OVERRIDE;
     void Paint() OVERRIDE;
-    void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
+    void OnMousePressed(vgui::MouseCode code) OVERRIDE;
     void OnKeyCodeReleased(vgui::KeyCode code) OVERRIDE;
+    void OnCommand(const char* command) OVERRIDE;
 
 private:
     void UpdateButtonStates();
