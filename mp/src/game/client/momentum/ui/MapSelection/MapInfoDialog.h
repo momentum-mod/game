@@ -50,6 +50,8 @@ private:
     vgui::Button *m_pMapActionButton;
     vgui::ListPanel *m_pTimesList;
     ImageGallery *m_pImageGallery;
+    EditablePanel *m_pMapInfoPanel;
+    vgui::RichText *m_pMapDescription;
 
     MapData *m_pMapData;
 };
