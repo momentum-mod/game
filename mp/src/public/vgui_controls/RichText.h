@@ -143,6 +143,7 @@ protected:
 	virtual void OnCursorMoved(int x, int y);  // respond to moving the cursor with mouse button down
 	virtual void OnMousePressed(MouseCode code); // respond to mouse down events
 	virtual void OnMouseDoublePressed(MouseCode code);
+    virtual void OnMouseTriplePressed(MouseCode code);
 	virtual void OnMouseReleased(MouseCode code);	// respond to mouse up events
 
 	virtual void OnMouseFocusTicked(); // do while window has mouse focus
