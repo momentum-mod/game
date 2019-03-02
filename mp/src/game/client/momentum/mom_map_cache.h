@@ -140,6 +140,7 @@ struct MapRank : APIModel
 struct MapData : APIModel
 {
     char m_szLastUpdated[32]; // ISO date, from the site
+    char m_szCreatedAt[32]; // ISO date, from the site
     bool m_bInFavorites;
     bool m_bInLibrary;
 

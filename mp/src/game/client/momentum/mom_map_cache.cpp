@@ -287,6 +287,7 @@ MapRank& MapRank::operator=(const MapRank& other)
 MapData::MapData()
 {
     m_szLastUpdated[0] = '\0';
+    m_szCreatedAt[0] = '\0';
     m_bInLibrary = false;
     m_bInFavorites = false;
     m_bMapFileExists = false;
@@ -314,6 +315,7 @@ MapData::MapData(const MapData& src)
     m_bInFavorites = src.m_bInFavorites;
     m_bInLibrary = src.m_bInLibrary;
     Q_strncpy(m_szLastUpdated, src.m_szLastUpdated, sizeof(m_szLastUpdated));
+    Q_strncpy(m_szCreatedAt, src.m_szCreatedAt, sizeof(m_szCreatedAt));
 
     m_Info = src.m_Info;
     m_Submitter = src.m_Submitter;
@@ -399,6 +401,7 @@ void MapData::FromKV(KeyValues* pMap)
     Q_strncpy(m_szHash, pMap->GetString("hash"), sizeof(m_szHash));
     Q_strncpy(m_szDownloadURL, pMap->GetString("downloadURL"), sizeof(m_szDownloadURL));
     Q_strncpy(m_szLastUpdated, pMap->GetString("updatedAt"), sizeof(m_szLastUpdated));
+    Q_strncpy(m_szCreatedAt, pMap->GetString("createdAt"), sizeof(m_szCreatedAt));
 
     if (m_eSource == MODEL_FROM_DISK)
     {
@@ -493,6 +496,7 @@ void MapData::ToKV(KeyValues* pKv) const
     pKv->SetBool("inFavorites", m_bInFavorites);
     pKv->SetBool("inLibrary", m_bInLibrary);
     pKv->SetString("updatedAt", m_szLastUpdated);
+    pKv->SetString("createdAt", m_szCreatedAt);
     pKv->SetBool("mapNeedsUpdate", m_bMapFileNeedsUpdate);
     pKv->SetBool("mapFileExists", m_bMapFileExists);
     pKv->SetUint64("lastPlayed", m_tLastPlayed);
@@ -573,6 +577,7 @@ MapData& MapData::operator=(const MapData& src)
         m_bInFavorites = src.m_bInFavorites;
         m_bInLibrary = src.m_bInLibrary;
         Q_strncpy(m_szLastUpdated, src.m_szLastUpdated, sizeof(m_szLastUpdated));
+        Q_strncpy(m_szCreatedAt, src.m_szCreatedAt, sizeof(m_szCreatedAt));
 
         if (src.m_tLastPlayed > m_tLastPlayed)
             m_tLastPlayed = src.m_tLastPlayed;
@@ -602,6 +607,7 @@ MapData& MapData::operator=(const MapData& src)
 bool MapData::operator==(const MapData& other) const
 {
     return m_uID == other.m_uID && FStrEq(m_szLastUpdated, other.m_szLastUpdated) &&
+        FStrEq(m_szCreatedAt, other.m_szCreatedAt) &&
         FStrEq(m_szMapName, other.m_szMapName) &&
         FStrEq(m_szHash, other.m_szHash) &&
         m_eType == other.m_eType && 
