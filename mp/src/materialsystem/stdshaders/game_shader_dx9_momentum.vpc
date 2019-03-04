@@ -67,8 +67,6 @@ $Project "Shaders (Momentum)"
         $File   "gaussian_blur_3x3.cpp"
 
 		$File "color_picker.cpp"
-		$File "fringe.cpp"
-		$File "gui_blur_blend.cpp"
     }
     
     $Folder	"Header Files"

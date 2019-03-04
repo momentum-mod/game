@@ -779,13 +779,6 @@ CLIENTEFFECT_REGISTER_END()
 #endif
 
 CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffects)
-
-    // Precache menu blur
-    CLIENTEFFECT_MATERIAL("dev/blurx")
-    CLIENTEFFECT_MATERIAL("dev/blury")
-    CLIENTEFFECT_MATERIAL("dev/fringe")
-    CLIENTEFFECT_MATERIAL("dev/gui_blend")
-
 	CLIENTEFFECT_MATERIAL( "dev/blurfiltery_and_add_nohdr" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx_nohdr" )
@@ -2177,25 +2170,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		}
 
 	}
-
-    if (gameui)
-    {
-        if (ConVarRef("mom_menu_blur").GetBool())
-            DoMenuBlurring();
-
-        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
-        if (maskTexture)
-        {
-            CMatRenderContextPtr renderContext(materials);
-            renderContext->PushRenderTargetAndViewport(maskTexture);
-            renderContext->ClearColor4ub(0, 0, 0, 255);
-            renderContext->ClearBuffers(true, true, true);
-            renderContext->PopRenderTargetAndViewport();
-            gameui->SetFrustum(GetFrustum());
-            gameui->SetView(view);
-            gameui->SetMaskTexture(maskTexture);
-        }
-    }
 
 	if ( mat_viewportupscale.GetBool() && mat_viewportscale.GetFloat() < 1.0f ) 
 	{
