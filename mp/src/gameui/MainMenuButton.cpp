@@ -1,4 +1,4 @@
-#include "button_mainmenu.h"
+#include "MainMenuButton.h"
 #include "GameUI_Interface.h"
 
 #include "vgui/ILocalize.h"
@@ -9,17 +9,27 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-DECLARE_BUILD_FACTORY_DEFAULT_TEXT(Button_MainMenu, Button_MainMenu);
-
 using namespace vgui;
 
-Button_MainMenu::Button_MainMenu(Panel *parent, Panel *pActionSignalTarget, const char *pCmd)
-    : BaseClass(parent, "", "", pActionSignalTarget, pCmd), m_ButtonText(nullptr), m_ButtonDescription(nullptr)
+MainMenuButton::MainMenuButton(Panel *parent) : BaseClass(parent, "", "", parent, ""),
+    m_ButtonText(nullptr), m_ButtonDescription(nullptr)
 {
-    Init();
+    SetProportional(true);
+    m_bIsBlank = false;
+    m_iPriority = 0;
+    m_iTextAlignment = LEFT;
+    m_nType = SHARED;
+
+    SetScheme(scheme()->GetScheme("SchemeMainMenu"));
+
+    SetPaintBorderEnabled(false);
+    SetPaintBackgroundEnabled(false);
+    SetEnabled(true);
+    SetVisible(false);
+    SetAutoDelete(true);
 }
 
-void Button_MainMenu::SetButtonText(const char *text)
+void MainMenuButton::SetButtonText(const char *text)
 {
     if (m_ButtonText)
     {
@@ -30,7 +40,7 @@ void Button_MainMenu::SetButtonText(const char *text)
     GameUI().GetLocalizedString(text, &m_ButtonText);
 }
 
-void Button_MainMenu::SetButtonDescription(const char *description)
+void MainMenuButton::SetButtonDescription(const char *description)
 {
     if (m_ButtonDescription)
     {
@@ -41,41 +51,19 @@ void Button_MainMenu::SetButtonDescription(const char *description)
     GameUI().GetLocalizedString(description, &m_ButtonDescription);
 }
 
-void Button_MainMenu::SetCommand(const char* pCmd)
+void MainMenuButton::SetCommand(const char* pCmd)
 {
-    BaseClass::SetCommand(new KeyValues("MenuButtonCommand", "command", pCmd));
+    if (pCmd)
+        BaseClass::SetCommand(new KeyValues("MenuButtonCommand", "command", pCmd));
 }
 
-void Button_MainMenu::SetEngineCommand(const char* cmd)
+void MainMenuButton::SetEngineCommand(const char* pCmd)
 {
-    BaseClass::SetCommand(new KeyValues("MenuButtonCommand", "EngineCommand", cmd));
+    if (pCmd)
+        BaseClass::SetCommand(new KeyValues("MenuButtonCommand", "EngineCommand", pCmd));
 }
 
-void Button_MainMenu::Init()
-{
-    SetProportional(true);
-    m_bIsBlank = false;
-    m_iPriority = 0;
-    m_iTextAlignment = LEFT;
-    m_nType = SHARED;
-
-    HScheme menuScheme = scheme()->GetScheme("SchemeMainMenu");
-    // Load this scheme only if it doesn't exist yet
-    if (!menuScheme)
-        scheme()->LoadSchemeFromFile("resource/schememainmenu.res", "SchemeMainMenu");
-
-    SetScheme(menuScheme);
-
-    SetPaintBorderEnabled(false);
-    SetPaintBackgroundEnabled(false);
-    SetEnabled(true);
-    SetVisible(false);
-    SetAutoDelete(true);
-}
-
-#define SC(val) scheme()->GetProportionalScaledValueEx(GetScheme(), val)
-
-void Button_MainMenu::ApplySchemeSettings(IScheme *pScheme)
+void MainMenuButton::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
@@ -88,21 +76,21 @@ void Button_MainMenu::ApplySchemeSettings(IScheme *pScheme)
     SetDepressedSound(pScheme->GetResourceString("MainMenu.Button.Sound.Depressed"));
     SetReleasedSound(pScheme->GetResourceString("MainMenu.Button.Sound.Released"));
     
-    m_iWidth = m_iWidthOut = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Out")));
-    m_iWidthOver = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Over")));
-    m_iWidthPressed = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Pressed")));
-    m_iWidthReleased = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Released")));
+    m_iWidth = m_iWidthOut = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Out")));
+    m_iWidthOver = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Over")));
+    m_iWidthPressed = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Pressed")));
+    m_iWidthReleased = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Released")));
 
-    m_iHeight = m_iHeightOut = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Out")));
-    m_iHeightOver = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Over")));
-    m_iHeightPressed = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Pressed")));
-    m_iHeightReleased = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Released")));
+    m_iHeight = m_iHeightOut = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Out")));
+    m_iHeightOver = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Over")));
+    m_iHeightPressed = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Pressed")));
+    m_iHeightReleased = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Released")));
 
-    m_iTextOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetX")));
-    m_iTextOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetY")));
+    m_iTextOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetX")));
+    m_iTextOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetY")));
 
-    m_iDescriptionOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetX")));
-    m_iDescriptionOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetY")));
+    m_iDescriptionOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetX")));
+    m_iDescriptionOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetY")));
 
     m_bDescriptionHideOut = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Out"));
     m_bDescriptionHideOver = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Over"));
@@ -147,7 +135,7 @@ void Button_MainMenu::ApplySchemeSettings(IScheme *pScheme)
     m_sButtonState = m_sButtonStateOld = Out;
 }
 
-void Button_MainMenu::Animations()
+void MainMenuButton::Animations()
 {
     if (m_sButtonStateOld != m_sButtonState)
     {
@@ -252,7 +240,7 @@ void Button_MainMenu::Animations()
     SetSize(m_iWidth, m_iHeight);
 }
 
-void Button_MainMenu::OnThink()
+void MainMenuButton::OnThink()
 {
     BaseClass::OnThink();
 
@@ -263,7 +251,7 @@ void Button_MainMenu::OnThink()
     AdditionalCursorCheck();
 }
 
-void Button_MainMenu::DrawButton()
+void MainMenuButton::DrawButton()
 {
     surface()->DrawSetColor(m_cBackground);
     surface()->DrawFilledRect(0, 0, m_iWidth, m_iHeight);
@@ -272,13 +260,13 @@ void Button_MainMenu::DrawButton()
     surface()->DrawOutlinedRect(0, 0, m_iWidth, m_iHeight);
 }
 
-void Button_MainMenu::DrawButton_Blur()
+void MainMenuButton::DrawButton_Blur()
 {
     surface()->DrawSetColor(m_cBackgroundBlurAlpha);
     surface()->DrawFilledRect(0, 0, m_iWidth + 0, m_iHeight + 0);
 }
 
-void Button_MainMenu::CalculateTextX(int textOffset, int textWide, int &out)
+void MainMenuButton::CalculateTextX(int textOffset, int textWide, int &out)
 {
     switch (m_iTextAlignment)
     {
@@ -295,7 +283,7 @@ void Button_MainMenu::CalculateTextX(int textOffset, int textWide, int &out)
     }
 }
 
-int Button_MainMenu::CalculateDescOffsetX(int descWide)
+int MainMenuButton::CalculateDescOffsetX(int descWide)
 {
     int toReturn;
     int descOffset = m_iDescriptionOffsetX;
@@ -318,7 +306,7 @@ int Button_MainMenu::CalculateDescOffsetX(int descWide)
     return toReturn;
 }
 
-void Button_MainMenu::DrawText()
+void MainMenuButton::DrawText()
 {
     surface()->DrawSetTextColor(m_cText);
     surface()->DrawSetTextFont(m_fTextFont);
@@ -331,7 +319,7 @@ void Button_MainMenu::DrawText()
     surface()->DrawPrintText(m_ButtonText, Q_wcslen(m_ButtonText));
 }
 
-void Button_MainMenu::DrawDescription()
+void MainMenuButton::DrawDescription()
 {
     if ((m_sButtonState == Out && m_bDescriptionHideOut) ||
         (m_sButtonState == Over && m_bDescriptionHideOver) ||
@@ -351,7 +339,7 @@ void Button_MainMenu::DrawDescription()
     surface()->DrawPrintText(m_ButtonDescription, Q_wcslen(m_ButtonDescription));
 }
 
-void Button_MainMenu::Paint()
+void MainMenuButton::Paint()
 {
     if (m_bIsBlank)
         return;
@@ -363,15 +351,7 @@ void Button_MainMenu::Paint()
     DrawDescription();
 }
 
-void Button_MainMenu::PaintBlurMask()
-{
-    BaseClass::PaintBlurMask();
-
-    if (GameUI().IsInBackgroundLevel())
-        DrawButton_Blur();
-}
-
-void Button_MainMenu::OnCursorExited()
+void MainMenuButton::OnCursorExited()
 {
     if (m_bIsBlank)
         return;
@@ -381,7 +361,7 @@ void Button_MainMenu::OnCursorExited()
     m_sButtonState = Out;
 }
 
-void Button_MainMenu::OnCursorEntered()
+void MainMenuButton::OnCursorEntered()
 {
     if (m_bIsBlank)
         return;
@@ -391,7 +371,7 @@ void Button_MainMenu::OnCursorEntered()
     m_sButtonState = Over;
 }
 
-void Button_MainMenu::AdditionalCursorCheck()
+void MainMenuButton::AdditionalCursorCheck()
 {
     if (!input())
         return;
@@ -408,7 +388,7 @@ void Button_MainMenu::AdditionalCursorCheck()
         m_sButtonState = Out;
 }
 
-void Button_MainMenu::OnMousePressed(MouseCode code)
+void MainMenuButton::OnMousePressed(MouseCode code)
 {
     if (m_bIsBlank)
         return;
@@ -421,7 +401,7 @@ void Button_MainMenu::OnMousePressed(MouseCode code)
     BaseClass::OnMousePressed(code);
 }
 
-void Button_MainMenu::OnMouseReleased(MouseCode code)
+void MainMenuButton::OnMouseReleased(MouseCode code)
 {
     if (m_bIsBlank)
         return;
