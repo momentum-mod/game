@@ -16,6 +16,7 @@ enum APIModelSource
 abstract_class APIModel
 {
 public:
+    virtual ~APIModel() {}
     APIModel() : m_bValid(false), m_bUpdated(true), m_eSource(MODEL_FROM_DISK) {}
     bool m_bValid, m_bUpdated;
     APIModelSource m_eSource;
