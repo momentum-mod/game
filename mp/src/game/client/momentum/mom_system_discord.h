@@ -1,21 +1,21 @@
 #pragma once
 
-#include "cbase.h"
 #include "steam/steam_api.h"
 #include "GameEventListener.h"
-#include "discord_rpc.h"
 
 // Set by the discord API as the max
 #define DISCORD_MAX_BUFFER_SIZE 128
+
+struct DiscordUser;
 
 // A class to manage the Discord Rich Presence feature
 // Uses the discord-rpc library
 // Libary source code is here: https://github.com/discordapp/discord-rpc
 // Docs are here: https://discordapp.com/developers/docs/rich-presence/how-to
-class CMomentumDiscord : public CAutoGameSystemPerFrame, public CGameEventListener {
-
+class CMomentumDiscord : public CAutoGameSystemPerFrame, public CGameEventListener 
+{
 public:
-    CMomentumDiscord(const char *pName);
+    CMomentumDiscord();
 
     // CAutoGameSystemPerFrame
     void PostInit() OVERRIDE;
@@ -63,8 +63,8 @@ public:
     // https://discordapp.com/developers/docs/rich-presence/how-to#updating-presence
     char m_szDiscordState[DISCORD_MAX_BUFFER_SIZE];           // the user's current party status
     char m_szDiscordDetails[DISCORD_MAX_BUFFER_SIZE];         // what the player is currently doing
-    int64_t m_iDiscordStartTimestamp;                     // epoch seconds for game start - including will show time as "elapsed"
-    int64_t m_iDiscordEndTimestamp;                       // epoch seconds for game end - including will show time as "remaining"
+    int64 m_iDiscordStartTimestamp;                     // epoch seconds for game start - including will show time as "elapsed"
+    int64 m_iDiscordEndTimestamp;                       // epoch seconds for game end - including will show time as "remaining"
     char m_szDiscordLargeImageKey[DISCORD_MAX_BUFFER_SIZE];   // name of the uploaded image for the large profile artwork
     char m_szDiscordLargeImageText[DISCORD_MAX_BUFFER_SIZE];  // tooltip for the largeImageKey
     char m_szDiscordSmallImageKey[DISCORD_MAX_BUFFER_SIZE];   // name of the uploaded image for the small profile artwork
@@ -75,7 +75,7 @@ public:
     char m_szDiscordMatchSecret[DISCORD_MAX_BUFFER_SIZE];     // [deprecated Notify Me feature, may be re-used in future]
     char m_szDiscordSpectateSecret[DISCORD_MAX_BUFFER_SIZE];  // unique hashed string for Spectate button
     char m_szDiscordJoinSecret[DISCORD_MAX_BUFFER_SIZE];      // unique hashed string for chat invitations and Ask to Join
-    int8_t m_iDiscordInstance;                            // [deprecated Notify Me feature, may be re-used in future]
+    int8 m_iDiscordInstance;                            // [deprecated Notify Me feature, may be re-used in future]
 
 
     // Static vars
