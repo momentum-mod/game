@@ -22,6 +22,8 @@
 
 using namespace vgui;
 
+#define UPDATE_INTERVAL 5.0f
+
 static int __cdecl PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2)
 {
     float p1time = p1.kv->GetFloat("time_f");
@@ -50,9 +52,16 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
     m_pImageGallery = new ImageGallery(this, "MapGallery", true);
     m_pMapDescription = new RichText(this, "MapDescription");
     m_pMapInfoPanel = new EditablePanel(this, "MapInfoPanel");
+    m_pTop10Button = new Button(this, "Top10Toggle", "#MOM_Leaderboards_Top10", this, "Top10");
+    m_pAroundButton = new Button(this, "AroundToggle", "#MOM_Leaderboards_Around", this, "Around");
+    m_pFriendsButton = new Button(this, "FriendsToggle", "#MOM_Leaderboards_Friends", this, "Friends");
 
     LoadControlSettings("resource/ui/MapSelector/DialogMapInfo.res");
     m_pMapInfoPanel->LoadControlSettings("resource/ui/MapSelector/MapInformationPanel.res");
+
+    m_pTop10Button->SetStaySelectedOnClick(true);
+    m_pAroundButton->SetStaySelectedOnClick(true);
+    m_pFriendsButton->SetStaySelectedOnClick(true);
 
     SetTitleBarVisible(false);
     SetCloseButtonVisible(true);
@@ -72,6 +81,9 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
     m_pTimesList->MakeReadyForUse();
 
     MoveToCenterOfScreen();
+
+    m_bUnauthorizedFriendsList = false;
+    V_memset(m_fRequestDelays, 0, sizeof(m_fRequestDelays));
 }
 
 //-----------------------------------------------------------------------------
@@ -90,6 +102,7 @@ void CDialogMapInfo::Run()
 {
     // get the info for the map
     RequestInfo();
+    m_pTop10Button->DoClick(); // Start with top 10
     Activate();
     UpdateMapDownloadState();
 }
@@ -102,6 +115,29 @@ void CDialogMapInfo::PerformLayout()
     BaseClass::PerformLayout();
     
     Repaint();
+}
+
+void CDialogMapInfo::OnCommand(const char* command)
+{
+    if (FStrEq(command, "Top10"))
+    {
+        GetMapTimes(TIMES_TOP10);
+        m_pAroundButton->SetSelected(false);
+        m_pFriendsButton->SetSelected(false);
+    }
+    else if (FStrEq(command, "Around"))
+    {
+        GetMapTimes(TIMES_AROUND);
+        m_pTop10Button->SetSelected(false);
+        m_pFriendsButton->SetSelected(false);
+    }
+    else if (FStrEq(command, "Friends"))
+    {
+        GetMapTimes(TIMES_FRIENDS);
+        m_pAroundButton->SetSelected(false);
+        m_pTop10Button->SetSelected(false);
+    }
+    else BaseClass::OnCommand(command);
 }
 
 void CDialogMapInfo::OnMapDataUpdate(KeyValues* pKv)
@@ -120,7 +156,6 @@ void CDialogMapInfo::OnMapDataUpdate(KeyValues* pKv)
 void CDialogMapInfo::RequestInfo()
 {
     GetMapInfo();
-    GetTop10MapTimes();
 }
 
 //-----------------------------------------------------------------------------
@@ -239,12 +274,47 @@ void CDialogMapInfo::FillMapInfo()
     }
 }
 
-void CDialogMapInfo::GetTop10MapTimes()
+void CDialogMapInfo::GetMapTimes(TIME_TYPE type)
 {
-    g_pAPIRequests->GetTop10MapTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::Get10MapTimesCallback));
+    if (gpGlobals->curtime - UPDATE_INTERVAL < m_fRequestDelays[type])
+        return;
+
+    bool bSent = false;
+
+    if (type == TIMES_TOP10)
+        bSent = g_pAPIRequests->GetTop10MapTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnTop10TimesCallback));
+    else if (type == TIMES_AROUND)
+        bSent = g_pAPIRequests->GetAroundTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnAroundTimesCallback));
+    else if (type == TIMES_FRIENDS)
+    {
+        if (m_bUnauthorizedFriendsList)
+            m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_UNAUTHORIZED_FRIENDS_LIST]);
+        else
+            bSent = g_pAPIRequests->GetFriendsTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnFriendsTimesCallback));
+    }
+
+    if (bSent)
+        ClearPlayerList();
+
+    m_fRequestDelays[type] = gpGlobals->curtime + UPDATE_INTERVAL;
 }
 
-void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
+void CDialogMapInfo::OnTop10TimesCallback(KeyValues *pKvResponse)
+{
+    ParseAPITimes(pKvResponse, TIMES_TOP10);
+}
+
+void CDialogMapInfo::OnAroundTimesCallback(KeyValues* pKvResponse)
+{
+    ParseAPITimes(pKvResponse, TIMES_AROUND);
+}
+
+void CDialogMapInfo::OnFriendsTimesCallback(KeyValues* pKvResponse)
+{
+    ParseAPITimes(pKvResponse, TIMES_FRIENDS);
+}
+
+void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
 {
     KeyValues *pData = pKvResponse->FindKey("data");
     KeyValues *pErr = pKvResponse->FindKey("error");
@@ -252,16 +322,25 @@ void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
     {
         KeyValues *pRuns = pData->FindKey("runs");
 
+        ClearPlayerList();
+
         if (pRuns && pData->GetInt("count") > 0)
         {
-            ClearPlayerList();
-
             // Iterate through each loaded run
             FOR_EACH_SUBKEY(pRuns, pRun)
             {
                 KeyValuesAD kvEntry("Entry");
 
-                float fTime = pRun->GetFloat("time");
+                // Around does UserMapRank -> Run instead of the other way around, so we do some funny business here
+                KeyValues *pOuter = nullptr;
+                if (type == TIMES_AROUND)
+                {
+                    pOuter = pRun;
+                    pRun = pOuter->FindKey("run");
+                    AssertMsg(pRun, "Around times didn't work!");
+                }
+
+                const float fTime = pRun->GetFloat("time");
                 kvEntry->SetFloat("time_f", fTime);
                 char buf[BUFSIZETIME];
                 g_pMomentumUtil->FormatTime(fTime, buf);
@@ -287,10 +366,18 @@ void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
                 }
 
                 // Rank
-                KeyValues *kvRankObj = pRun->FindKey("rank");
-                if (kvRankObj)
+                if (type != TIMES_AROUND)
                 {
-                    kvEntry->SetInt("rank", kvRankObj->GetInt("rank"));
+                    KeyValues *kvRankObj = pRun->FindKey("rank");
+                    if (kvRankObj)
+                    {
+                        kvEntry->SetInt("rank", kvRankObj->GetInt("rank"));
+                    }
+                }
+                else
+                {
+                    kvEntry->SetInt("rank", pOuter->GetInt("rank"));
+                    pRun = pOuter; // Make sure to reset to outer so we can continue the loop
                 }
 
                 m_pTimesList->AddItem(kvEntry, 0, false, true);
@@ -301,9 +388,37 @@ void CDialogMapInfo::Get10MapTimesCallback(KeyValues *pKvResponse)
             m_pTimesList->InvalidateLayout();
             Repaint();
         }
+        else
+        {
+            m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_NO_TIMES_RETURNED]);
+        }
     }
     else if (pErr)
     {
-        // MOM_TODO error handle
+        const int code = pKvResponse->GetInt("code");
+
+        // Handle general errors
+        m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_SERVER_ERROR]);
+
+        // Handle specific error cases
+        if (type == TIMES_AROUND)
+        {
+            if (code == 403) // User has not done a run yet
+            {
+                m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_NO_PB_SET]);
+            }
+        }
+        else if (type == TIMES_FRIENDS)
+        {
+            if (code == 409) // The profile is private, we cannot read their friends
+            {
+                m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_UNAUTHORIZED_FRIENDS_LIST]);
+                m_bUnauthorizedFriendsList = true;
+            }
+            else if (code == 418) // Short and stout~
+            {
+                m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_NO_FRIENDS]);
+            }
+        }
     }
 }

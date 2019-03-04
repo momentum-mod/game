@@ -52,6 +52,7 @@ public:
 	virtual void SetSelected(bool state);
 	// Check selected state
 	virtual bool IsSelected( void );
+    virtual void SetStaySelectedOnClick(bool state) { m_bStaySelectedOnClick = state; }
 
 	virtual void SetBlink(bool state);
 	virtual bool IsBlinking( void );
