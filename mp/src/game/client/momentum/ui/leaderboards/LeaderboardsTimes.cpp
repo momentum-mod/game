@@ -33,16 +33,6 @@ using namespace vgui;
 
 #define UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
 
-static const char* const g_pszTimesStatusStrings[] = {
-    "", // STATUS_TIMES_LOADED
-    "#MOM_API_WaitingForResponse", // STATUS_TIMES_LOADING
-    "#MOM_API_NoTimesReturned", // STATUS_NO_TIMES_RETURNED
-    "#MOM_API_ServerError", // STATUS_SERVER_ERROR
-    "#MOM_API_NoPBSet", // STATUS_NO_PB_SET
-    "#MOM_API_NoFriends", // STATUS_NO_FRIENDS
-    "#MOM_API_UnauthFriendsList", // STATUS_UNAUTHORIZED_FRIENDS_LIST
-};
-
 class CUtlSortVectorTimeValue
 {
 public:
@@ -183,7 +173,7 @@ void CLeaderboardsTimes::InitLeaderboardSections()
         panel->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
         panel->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
         panel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
-                                  0, NAME_WIDTH);
+                                  0, 160);
         panel->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
                                   0, GetScaledVal(m_aiColumnWidths[2]));
         panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[0]));
@@ -554,7 +544,7 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TIME_TYPE type)
             m_pOnlineTimesStatus->SetVisible(false);
         else
         {
-            m_pOnlineTimesStatus->SetText(g_pszTimesStatusStrings[m_eTimesStatus[type]]);
+            m_pOnlineTimesStatus->SetText(g_szTimesStatusStrings[m_eTimesStatus[type]]);
             m_pOnlineTimesStatus->SetVisible(true);
             m_pOnlineTimesStatus->InvalidateLayout(true);
         }
