@@ -16,14 +16,18 @@
 #define MOM_STEAM_ID "669270"
 
 #define MAIN_MENU_STR "Main Menu"
-
 #define MOM_ICON_LOGO "mom"
-#define MOM_ICON_SURF "mom_icon_surf"
-#define MOM_ICON_BHOP "mom_icon_bhop"
-#define MOM_ICON_KZ "mom_icon_kz"
-#define MOM_ICON_TRICKSURF "mom_icon_tricksurf"
-#define MOM_ICON_TRIKZ "mom_icon_trikz"
-#define MOM_ICON_RJ "mom_icon_rj"
+
+const char * const szGamemodeIcons[]
+{
+    MOM_ICON_LOGO,
+    "mom_icon_surf",
+    "mom_icon_bhop",
+    "mom_icon_kz",
+    "mom_icon_rj",
+    "mom_icon_tricksurf",
+    "mom_icon_trikz"
+};
 
 // How many frames to wait before updating discord
 // (some things are still updated each frame such as checking callbacks)
@@ -93,33 +97,16 @@ void CMomentumDiscord::LevelInitPostEntity()
 
     m_bInMap = true;
 
-    V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
-
-    ConVarRef gm("mom_gamemode");
-    switch (gm.GetInt())
+    const int gameMode = clamp<int>(ConVarRef("mom_gamemode").GetInt(), GAMEMODE_UNKNOWN, GAMEMODE_COUNT - 1);
+    if (gameMode == GAMEMODE_UNKNOWN)
     {
-    case GAMEMODE_SURF:
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_SURF, DISCORD_MAX_BUFFER_SIZE);
-        break;
-    case GAMEMODE_BHOP:
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_BHOP, DISCORD_MAX_BUFFER_SIZE);
-        break;
-    case GAMEMODE_KZ:
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_KZ, DISCORD_MAX_BUFFER_SIZE);
-        break;
-    case GAMEMODE_TRICKSURF:
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_TRICKSURF, DISCORD_MAX_BUFFER_SIZE);
-        break;
-    case GAMEMODE_TRIKZ:
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_TRIKZ, DISCORD_MAX_BUFFER_SIZE);
-        break;
-    case GAMEMODE_RJ:
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_RJ, DISCORD_MAX_BUFFER_SIZE);
-        break;
-    default:
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
         m_szDiscordSmallImageKey[0] = '\0';
-        break;
+    }
+    else
+    {
+        V_strncpy(m_szDiscordLargeImageKey, szGamemodeIcons[gameMode], DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
     }
 
     V_strncpy(m_szDiscordDetails, MapName(), DISCORD_MAX_BUFFER_SIZE);
