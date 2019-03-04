@@ -106,7 +106,6 @@ void CBasePanel::OnGameUIActivated()
     {
         // Layout the first time to avoid focus issues (setting menus visible will grab focus)
         //UpdateGameMenus();
-        // MOM_TODO do something with the HTML menu here?
 
         m_bEverActivated = true;
     }
@@ -321,17 +320,6 @@ void CBasePanel::OnThink()
 
     if (ipanel())
         SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
-}
-
-void CBasePanel::PaintBlurMask()
-{
-    BaseClass::PaintBlurMask();
-
-    if (GameUI().IsInLevel())
-    {
-        surface()->DrawSetColor(Color(255, 255, 255, 255));
-        surface()->DrawFilledRect(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
-    }
 }
 
 void CBasePanel::ApplySchemeSettings(IScheme* pScheme)

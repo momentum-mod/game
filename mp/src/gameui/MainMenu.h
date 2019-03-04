@@ -1,9 +1,9 @@
 #pragma once
 
-#include "vgui2d/panel2d.h"
+#include "vgui_controls/EditablePanel.h"
 #include "igameevents.h"
 
-#include "button_mainmenu.h"
+class MainMenuButton;
 
 enum SortFlags_t
 {
@@ -12,9 +12,9 @@ enum SortFlags_t
     FL_SORT_MENU = 1 << 2
 };
 
-class MainMenu : public Panel2D, public IGameEventListener2
+class MainMenu : public vgui::EditablePanel, public IGameEventListener2
 {
-    DECLARE_CLASS_SIMPLE(MainMenu, Panel2D);
+    DECLARE_CLASS_SIMPLE(MainMenu, vgui::EditablePanel);
 
     MainMenu(Panel *parent);
     ~MainMenu();
@@ -33,22 +33,17 @@ class MainMenu : public Panel2D, public IGameEventListener2
     void CheckVersion();
     void Paint() OVERRIDE;
 
-    void Activate()
-    {
-        MoveToFront();
-        SetVisible(true);
-        SetEnabled(true);
-    }
+    void Activate();
 
     MESSAGE_FUNC_PARAMS(OnMenuButtonCommand, "MenuButtonCommand", pKv);
 
 private:
-    CUtlVector<Button_MainMenu *> m_pButtons;
+    CUtlVector<MainMenuButton *> m_pButtons;
 
     // Our own buttons...
-    Button_MainMenu *m_pButtonLobby;
-    Button_MainMenu *m_pButtonInviteFriends;
-    Button_MainMenu *m_pButtonSpectate;
+    MainMenuButton *m_pButtonLobby;
+    MainMenuButton *m_pButtonInviteFriends;
+    MainMenuButton *m_pButtonSpectate;
 
     char m_pszMenuOpenSound[MAX_PATH];
     char m_pszMenuCloseSound[MAX_PATH];

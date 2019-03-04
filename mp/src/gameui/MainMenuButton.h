@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vgui2d/button2d.h"
+#include "vgui_controls/Button.h"
 
 enum ButtonState
 {
@@ -24,14 +24,13 @@ enum TextAlignment
     RIGHT
 };
 
-class Button_MainMenu : public Button2D
+class MainMenuButton : public vgui::Button
 {
-    DECLARE_CLASS_SIMPLE(Button_MainMenu, Button2D);
+    DECLARE_CLASS_SIMPLE(MainMenuButton, vgui::Button);
 
   public:
-    Button_MainMenu(Panel *parent, Panel *pActionSignalTarget = nullptr, const char *pCmd = "");
+    MainMenuButton(Panel *parent);
 
-    virtual void Init();
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnThink() OVERRIDE;
     virtual void DrawButton();
@@ -39,7 +38,6 @@ class Button_MainMenu : public Button2D
     virtual void DrawText();
     virtual void DrawDescription();
     void Paint() OVERRIDE;
-    void PaintBlurMask() OVERRIDE;
     virtual void Animations();
 
     virtual void AdditionalCursorCheck();

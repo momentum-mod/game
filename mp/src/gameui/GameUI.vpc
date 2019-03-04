@@ -44,7 +44,7 @@ $Project "GameUI"
 		$File	"$SRCDIR\public\vgui_controls\vgui_controls.cpp"
 		$File	"$SRCDIR\common\language.cpp"
         $File   "MainMenu.cpp"
-        $File "button_mainmenu.cpp"
+        $File "MainMenuButton.cpp"
 	}
 
 	$Folder	"Header Files"
@@ -59,7 +59,7 @@ $Project "GameUI"
 		$File	"PanelListPanel.h"
 		$File	"TextEntryBox.h"
         $File   "MainMenu.h"
-        $File "button_mainmenu.h"
+        $File "MainMenuButton.h"
         $File "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
         $File "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
 	}
@@ -115,16 +115,6 @@ $Project "GameUI"
 		$File	"OptionsSubMouse.h"
 		$File	"OptionsSubVideo.cpp"
 		$File	"OptionsSubVideo.h"
-	}
-    
-    $Folder	"VGUI 2D"
-	{
-        $File	"vgui2d\button2d.cpp"
-        $File	"vgui2d\button2d.h"
-        $File	"vgui2d\frame2d.cpp"
-        $File	"vgui2d\frame2d.h"
-        $File	"vgui2d\panel2d.cpp"
-        $File	"vgui2d\panel2d.h"
 	}
     
     $File 	"$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
