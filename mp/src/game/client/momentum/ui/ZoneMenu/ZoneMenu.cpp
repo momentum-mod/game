@@ -66,6 +66,8 @@ C_MomZoneMenu::C_MomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMen
     m_bUpdateGridSizeSlider = false;
 
     LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
+
+    SetSizeable(false);
 }
 
 int C_MomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
