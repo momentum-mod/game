@@ -15,6 +15,8 @@
 
 #include "mom_modulecomms.h"
 
+#include "steam/steam_api.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;

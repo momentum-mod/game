@@ -1,14 +1,9 @@
-#ifndef MOM_STEAM_HELPER_H
-#define MOM_STEAM_HELPER_H
-#ifdef _WIN32
 #pragma once
-#endif
-
-#include <platform.h>
-#include <strtools.h>
 
 #include <tier1/utlvector.h>
-#include "steam/steam_api.h"
+#include "steam/steam_api_common.h"
+#include "steam/isteammatchmaking.h"
+#include "steam/isteamuserstats.h"
 #include "../GameEventListener.h"
 
 class CMomentumSteamHelper : public CGameEventListener
@@ -78,5 +73,3 @@ private:
 };
 
 extern CMomentumSteamHelper *g_pMomentumSteamHelper;
-
-#endif // MOM_STEAM_HELPER_H
