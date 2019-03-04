@@ -117,7 +117,7 @@
 		"Font"		"Default"
 		"wrap"		"0"
 	}
-	"SaveZones"
+	"SaveZonesButton"
 	{
 		"ControlName"		"Button"
 		"fieldName"		"SaveZonesButton"
