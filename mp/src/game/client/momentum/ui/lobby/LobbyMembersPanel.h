@@ -1,7 +1,8 @@
 #pragma once
 
 #include "vgui_controls/EditablePanel.h"
-#include "steam/steam_api.h"
+#include "steam/steam_api_common.h"
+#include "steam/isteammatchmaking.h"
 #include "GameEventListener.h"
 #include "game/client/iviewport.h"
 

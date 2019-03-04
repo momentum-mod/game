@@ -1,7 +1,9 @@
 #pragma once
 
 #include "igamesystem.h"
-#include "steam/steam_api.h"
+#include "steam/steam_api_common.h"
+#include "steam/isteamhttp.h"
+#include "steam/isteamuser.h"
 #include "utldelegate.h"
 
 typedef CUtlDelegate<void (KeyValues *pKv)> CallbackFunc;

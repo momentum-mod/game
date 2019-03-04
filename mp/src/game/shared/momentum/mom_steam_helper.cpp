@@ -1,5 +1,8 @@
 #include "mom_steam_helper.h"
+
 #include "steam/steam_api.h"
+
+#include "tier0/memdbgon.h"
 
 extern IGameEventManager2 *gameeventmanager;
 

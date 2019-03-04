@@ -9,6 +9,7 @@
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
+#include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
 

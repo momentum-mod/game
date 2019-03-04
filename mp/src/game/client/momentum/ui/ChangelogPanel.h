@@ -1,10 +1,9 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "IChangelogPanel.h"
 #include <vgui_controls/Frame.h>
-#include "steam/steam_api.h"
+#include "steam/steam_api_common.h"
+#include "steam/isteamhttp.h"
 
 // CChangelogPanel class
 class CChangelogPanel : public vgui::Frame

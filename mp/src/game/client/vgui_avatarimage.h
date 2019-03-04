@@ -12,7 +12,8 @@
 
 #include <vgui_controls/Image.h>
 #include <vgui_controls/ImagePanel.h>
-#include "steam/steam_api.h"
+#include "steam/steam_api_common.h"
+#include "steam/isteamfriends.h"
 
 // size of the friend background frame (see texture ico_friend_indicator_avatar)
 #define FRIEND_ICON_SIZE_X	(1)	

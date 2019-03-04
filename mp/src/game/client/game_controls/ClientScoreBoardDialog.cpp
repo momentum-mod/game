@@ -32,6 +32,7 @@
 #include <igameresources.h>
 
 #include "vgui_avatarimage.h"
+#include "steam/steam_api.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "steam/steam_api.h"
+#include "steam/steam_api_common.h"
+#include "steam/isteammatchmaking.h"
 #include "GameEventListener.h"
 
 // Set by the discord API as the max
