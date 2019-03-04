@@ -24,7 +24,7 @@ enum GAME_MODE
     // MOM_TODO: etc
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
-
+    GAMEMODE_COUNT // Should be last
 };
 
 const char * const g_szGameModes[] = {
