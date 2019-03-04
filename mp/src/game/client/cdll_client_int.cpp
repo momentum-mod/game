@@ -223,10 +223,6 @@ IReplaySystem *g_pReplay = NULL;
 
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
-
-CSysModule *g_pGameUIModule = nullptr;
-CGameUI *gameui = nullptr;
-
 //=============================================================================
 // HPE_BEGIN
 // [dwenger] Necessary for stats display
@@ -1167,28 +1163,6 @@ void CHLClient::PostInit()
 		}
 	}
 #endif
-
-    g_pGameUIModule = filesystem->LoadModule("GameUI", "EXECUTABLE_PATH");
-    if (g_pGameUIModule)
-    {
-        ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui!\n");
-
-        CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUIModule);
-
-        gameui = appSystemFactory ? static_cast<CGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr)) : NULL;
-        if (gameui)
-        {
-            ConColorMsg(Color(0, 148, 255, 255), "Initialized IGameUI interface!\n");
-        }
-        else
-        {
-            ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI interface.\n");
-        }
-    }
-    else
-    {
-        ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui.dll!\n");
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1232,9 +1206,6 @@ void CHLClient::Shutdown( void )
 
     gHUD.Shutdown(); 
 	VGui_Shutdown();
-
-    if (g_pGameUIModule)
-        Sys_UnloadModule(g_pGameUIModule);
 
 	ParticleMgr()->Term();
 	
