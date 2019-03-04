@@ -12,17 +12,13 @@
 #pragma once
 #endif
 
-#include <vgui/VGUI.h>
-#include <vgui/IImage.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/PHandle.h>
 #include <vgui_controls/FileOpenDialog.h>
 #include <vgui_controls/TextEntry.h>
 #include <tier1/utlmap.h>
-#ifndef VERSION_SAFE_STEAM_API_INTERFACES
-#define VERSION_SAFE_STEAM_API_INTERFACES
-#endif
-#include "steam/steam_api.h"
+#include "steam/steam_api_common.h"
+#include "steam/isteamhtmlsurface.h"
 
 namespace vgui
 {
@@ -158,27 +154,27 @@ protected:
 
 	vgui::Menu *m_pContextMenu;
 
-	STEAM_CALLBACK( HTML, BrowserNeedsPaint, HTML_NeedsPaint_t, m_NeedsPaint );
-	STEAM_CALLBACK( HTML, BrowserStartRequest, HTML_StartRequest_t, m_StartRequest );
-	STEAM_CALLBACK( HTML, BrowserURLChanged, HTML_URLChanged_t, m_URLChanged );
-	STEAM_CALLBACK( HTML, BrowserFinishedRequest, HTML_FinishedRequest_t, m_FinishedRequest );
-	STEAM_CALLBACK( HTML, BrowserOpenNewTab, HTML_OpenLinkInNewTab_t, m_LinkInNewTab );
-	STEAM_CALLBACK( HTML, BrowserSetHTMLTitle, HTML_ChangedTitle_t, m_ChangeTitle );
-	STEAM_CALLBACK( HTML, BrowserPopupHTMLWindow, HTML_NewWindow_t, m_NewWindow );
-	STEAM_CALLBACK( HTML, BrowserFileLoadDialog, HTML_FileOpenDialog_t, m_FileLoadDialog );
-	STEAM_CALLBACK( HTML, BrowserSearchResults, HTML_SearchResults_t, m_SearchResults );
-	STEAM_CALLBACK( HTML, BrowserClose, HTML_CloseBrowser_t, m_CloseBrowser );
-	STEAM_CALLBACK( HTML, BrowserHorizontalScrollBarSizeResponse, HTML_HorizontalScroll_t, m_HorizScroll );
-	STEAM_CALLBACK( HTML, BrowserVerticalScrollBarSizeResponse, HTML_VerticalScroll_t, m_VertScroll );
-	STEAM_CALLBACK( HTML, BrowserLinkAtPositionResponse, HTML_LinkAtPosition_t, m_LinkAtPosResp );
-	STEAM_CALLBACK( HTML, BrowserJSAlert, HTML_JSAlert_t, m_JSAlert );
-	STEAM_CALLBACK( HTML, BrowserJSConfirm, HTML_JSConfirm_t, m_JSConfirm );
-	STEAM_CALLBACK( HTML, BrowserCanGoBackandForward, HTML_CanGoBackAndForward_t, m_CanGoBackForward );
-	STEAM_CALLBACK( HTML, BrowserSetCursor, HTML_SetCursor_t, m_SetCursor );
-	STEAM_CALLBACK( HTML, BrowserStatusText, HTML_StatusText_t, m_StatusText );
-	STEAM_CALLBACK( HTML, BrowserShowToolTip, HTML_ShowToolTip_t, m_ShowTooltip );
-	STEAM_CALLBACK( HTML, BrowserUpdateToolTip, HTML_UpdateToolTip_t, m_UpdateTooltip );
-	STEAM_CALLBACK( HTML, BrowserHideToolTip, HTML_HideToolTip_t, m_HideTooltip );
+	STEAM_CALLBACK( HTML, BrowserNeedsPaint, HTML_NeedsPaint_t);
+	STEAM_CALLBACK( HTML, BrowserStartRequest, HTML_StartRequest_t);
+	STEAM_CALLBACK( HTML, BrowserURLChanged, HTML_URLChanged_t);
+	STEAM_CALLBACK( HTML, BrowserFinishedRequest, HTML_FinishedRequest_t );
+	STEAM_CALLBACK( HTML, BrowserOpenNewTab, HTML_OpenLinkInNewTab_t );
+	STEAM_CALLBACK( HTML, BrowserSetHTMLTitle, HTML_ChangedTitle_t );
+	STEAM_CALLBACK( HTML, BrowserPopupHTMLWindow, HTML_NewWindow_t );
+	STEAM_CALLBACK( HTML, BrowserFileLoadDialog, HTML_FileOpenDialog_t );
+	STEAM_CALLBACK( HTML, BrowserSearchResults, HTML_SearchResults_t );
+	STEAM_CALLBACK( HTML, BrowserClose, HTML_CloseBrowser_t );
+	STEAM_CALLBACK( HTML, BrowserHorizontalScrollBarSizeResponse, HTML_HorizontalScroll_t );
+	STEAM_CALLBACK( HTML, BrowserVerticalScrollBarSizeResponse, HTML_VerticalScroll_t );
+	STEAM_CALLBACK( HTML, BrowserLinkAtPositionResponse, HTML_LinkAtPosition_t );
+	STEAM_CALLBACK( HTML, BrowserJSAlert, HTML_JSAlert_t );
+	STEAM_CALLBACK( HTML, BrowserJSConfirm, HTML_JSConfirm_t );
+	STEAM_CALLBACK( HTML, BrowserCanGoBackandForward, HTML_CanGoBackAndForward_t );
+	STEAM_CALLBACK( HTML, BrowserSetCursor, HTML_SetCursor_t );
+	STEAM_CALLBACK( HTML, BrowserStatusText, HTML_StatusText_t );
+	STEAM_CALLBACK( HTML, BrowserShowToolTip, HTML_ShowToolTip_t );
+	STEAM_CALLBACK( HTML, BrowserUpdateToolTip, HTML_UpdateToolTip_t );
+	STEAM_CALLBACK( HTML, BrowserHideToolTip, HTML_HideToolTip_t);
 
 	void OnBrowserReady( HTML_BrowserReady_t *pBrowserReady, bool bIOFailure );
 

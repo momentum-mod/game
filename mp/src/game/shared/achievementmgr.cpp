@@ -235,15 +235,6 @@ static CAchievementSaveThread g_AchievementSaveThread;
 //=============================================================================
 
 CAchievementMgr::CAchievementMgr( SteamCloudPersisting ePersistToSteamCloud ) : CAutoGameSystemPerFrame( "CAchievementMgr" )
-
-//=============================================================================
-// HPE_END
-//=============================================================================
-
-#if !defined(NO_STEAM)
-, m_CallbackUserStatsReceived( this, &CAchievementMgr::Steam_OnUserStatsReceived ),
-m_CallbackUserStatsStored( this, &CAchievementMgr::Steam_OnUserStatsStored )
-#endif
 {
 	SetDefLessFunc( m_mapAchievement );
 	SetDefLessFunc( m_mapMetaAchievement );

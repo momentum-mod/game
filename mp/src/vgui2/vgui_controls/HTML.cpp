@@ -19,6 +19,8 @@
 #undef PostMessage
 #undef MessageBox
 
+#include "steam/steam_api.h"
+
 #include "OfflineMode.h"
 
 // memdbgon must be the last include file in a .cpp file
@@ -111,28 +113,7 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-HTML::HTML(Panel *parent, const char *name, bool allowJavaScript, bool bPopupWindow) : Panel(parent, name), 
-m_NeedsPaint( this, &HTML::BrowserNeedsPaint ),
-m_StartRequest( this, &HTML::BrowserStartRequest ),
-m_URLChanged( this, &HTML::BrowserURLChanged ),
-m_FinishedRequest( this, &HTML::BrowserFinishedRequest ),
-m_LinkInNewTab( this, &HTML::BrowserOpenNewTab ),
-m_ChangeTitle( this, &HTML::BrowserSetHTMLTitle ),
-m_NewWindow( this, &HTML::BrowserPopupHTMLWindow ),
-m_FileLoadDialog( this, &HTML::BrowserFileLoadDialog ),
-m_SearchResults( this, &HTML::BrowserSearchResults ),
-m_CloseBrowser( this, &HTML::BrowserClose ),
-m_HorizScroll( this, &HTML::BrowserHorizontalScrollBarSizeResponse ),
-m_VertScroll( this, &HTML::BrowserVerticalScrollBarSizeResponse ),
-m_LinkAtPosResp( this, &HTML::BrowserLinkAtPositionResponse ),
-m_JSAlert( this, &HTML::BrowserJSAlert ),
-m_JSConfirm( this, &HTML::BrowserJSConfirm ),
-m_CanGoBackForward( this, &HTML::BrowserCanGoBackandForward ),
-m_SetCursor( this, &HTML::BrowserSetCursor ),
-m_StatusText( this, &HTML::BrowserStatusText ),
-m_ShowTooltip( this, &HTML::BrowserShowToolTip ),
-m_UpdateTooltip( this, &HTML::BrowserUpdateToolTip ),
-m_HideTooltip( this, &HTML::BrowserHideToolTip )
+HTML::HTML(Panel *parent, const char *name, bool allowJavaScript, bool bPopupWindow) : Panel(parent, name)
 {
 	m_iHTMLTextureID = 0;
 	m_bCanGoBack = false;
@@ -147,7 +128,7 @@ m_HideTooltip( this, &HTML::BrowserHideToolTip )
 	SetPostChildPaintEnabled( true );
 
 	m_unBrowserHandle = INVALID_HTMLBROWSER;
-    SteamAPI_InitSafe();
+    SteamAPI_Init();
 	if ( SteamHTMLSurface() )
 	{
 		SteamHTMLSurface()->Init();
