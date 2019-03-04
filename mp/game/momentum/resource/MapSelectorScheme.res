@@ -54,6 +54,8 @@ Scheme
         Button.DepressedTextColor		"White"
         Button.DepressedBgColor			"84 178 245 255"
         Button.FocusBorderColor			"82 82 82 20"
+        Button.SelectedTextColor        "White"
+        Button.SelectedBgColor          "MomentumBlue"
 
         CheckButton.TextColor			"White"
         CheckButton.SelectedTextColor	"White"

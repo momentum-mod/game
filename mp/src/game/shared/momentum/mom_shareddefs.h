@@ -1,8 +1,4 @@
-﻿#ifndef MOM_SHAREDDEFS_H
-#define MOM_SHAREDDEFS_H
-#ifdef _WIN32
-#pragma once
-#endif
+﻿#pragma once
 
 #ifndef GHOST_SERVER
 #include "const.h"
@@ -52,6 +48,41 @@ enum RUN_FLAG
     RUNFLAG_BW = 1 << 4,
     RUNFLAG_BONUS = 1 << 5
     //MOM_TODO: Figure out the rest
+};
+
+enum TIME_TYPE
+{
+    TIMES_LOCAL = 0,
+    TIMES_TOP10,
+    TIMES_FRIENDS,
+    TIMES_AROUND,
+
+    // Should always be the last one
+    TIMES_COUNT,
+};
+
+enum ONLINE_TIMES_STATUS
+{
+    STATUS_TIMES_LOADED = 0,
+    STATUS_TIMES_LOADING,
+    STATUS_NO_TIMES_RETURNED,
+    STATUS_SERVER_ERROR,
+    STATUS_NO_PB_SET,
+    STATUS_NO_FRIENDS,
+    STATUS_UNAUTHORIZED_FRIENDS_LIST,
+
+    // Should be last
+    STATUS_COUNT,
+};
+
+const char* const g_szTimesStatusStrings[] = {
+    "", // STATUS_TIMES_LOADED
+    "#MOM_API_WaitingForResponse", // STATUS_TIMES_LOADING
+    "#MOM_API_NoTimesReturned", // STATUS_NO_TIMES_RETURNED
+    "#MOM_API_ServerError", // STATUS_SERVER_ERROR
+    "#MOM_API_NoPBSet", // STATUS_NO_PB_SET
+    "#MOM_API_NoFriends", // STATUS_NO_FRIENDS
+    "#MOM_API_UnauthFriendsList", // STATUS_UNAUTHORIZED_FRIENDS_LIST
 };
 
 enum MAP_UPLOAD_STATUS
@@ -187,5 +218,3 @@ enum SPECTATE_MSG_TYPE
 #define LOBBY_DATA_IS_SPEC "isSpectating"
 
 static const unsigned long long MOM_STEAM_GROUP_ID64 = 103582791441609755;
-
-#endif // MOM_SHAREDDEFS_H

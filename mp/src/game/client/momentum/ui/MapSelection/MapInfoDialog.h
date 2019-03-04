@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vgui_controls/Frame.h"
+#include "mom_shareddefs.h"
 
 struct MapData;
 class ImageGallery;
@@ -35,23 +36,31 @@ class CDialogMapInfo : public vgui::Frame
 protected:
     // vgui overrides
     void PerformLayout() OVERRIDE;
+    void OnCommand(const char* command) OVERRIDE;
 
     // API
     void GetMapInfo();
     void FillMapInfo();
 
-    void GetTop10MapTimes();
-    void Get10MapTimesCallback(KeyValues *pKvResponse);
+    void GetMapTimes(TIME_TYPE type);
+    void OnTop10TimesCallback(KeyValues *pKvResponse);
+    void OnAroundTimesCallback(KeyValues *pKvResponse);
+    void OnFriendsTimesCallback(KeyValues *pKvResponse);
+    void ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type);
 
 private:
     // methods
     void RequestInfo();
 
-    vgui::Button *m_pMapActionButton;
+    float m_fRequestDelays[TIMES_COUNT];
+
+    vgui::Button *m_pMapActionButton, *m_pTop10Button, *m_pAroundButton, *m_pFriendsButton;
     vgui::ListPanel *m_pTimesList;
     ImageGallery *m_pImageGallery;
     EditablePanel *m_pMapInfoPanel;
     vgui::RichText *m_pMapDescription;
+
+    bool m_bUnauthorizedFriendsList;
 
     MapData *m_pMapData;
 };

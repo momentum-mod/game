@@ -1,23 +1,13 @@
 #pragma once
 
 #include "vgui_controls/EditablePanel.h"
-#include "steam/steam_api.h"
+#include "steam/isteamhttp.h"
+#include "mom_shareddefs.h"
 
 class CClientTimesDisplay;
 class CMomReplayBase;
 class CUtlSortVectorTimeValue;
 class CLeaderboardsContextMenu;
-
-enum TIME_TYPE
-{
-    TIMES_LOCAL = 0,
-    TIMES_TOP10,
-    TIMES_FRIENDS,
-    TIMES_AROUND,
-
-    // Should always be the last one
-    TIMES_COUNT,
-};
 
 struct TimeOnline
 {
@@ -53,18 +43,6 @@ struct TimeOnline
         m_kv = nullptr;
     }
 };
-
-// column widths at 640
-enum SIZES
-{
-    NAME_WIDTH = 160,
-    SCORE_WIDTH = 60,
-    DEATH_WIDTH = 60,
-    PING_WIDTH = 80,
-    VOICE_WIDTH = 0,
-    FRIENDS_WIDTH = 0
-};
-// total = 340
 
 class CLeaderboardsTimes : public vgui::EditablePanel
 {
@@ -158,18 +136,6 @@ private:
     bool m_bTimesLoading[TIMES_COUNT];
     float m_flTimesLastUpdate[TIMES_COUNT];
 
-    enum ONLINE_TIMES_STATUS
-    {
-        STATUS_TIMES_LOADED = 0,
-        STATUS_TIMES_LOADING,
-        STATUS_NO_TIMES_RETURNED,
-        STATUS_SERVER_ERROR,
-        STATUS_NO_PB_SET,
-        STATUS_NO_FRIENDS,
-        STATUS_UNAUTHORIZED_FRIENDS_LIST,
-        // Should be last
-        STATUS_COUNT,
-    };
     ONLINE_TIMES_STATUS m_eTimesStatus[TIMES_COUNT];
 
     enum LEADERBOARD_ICONS
