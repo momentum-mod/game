@@ -18,7 +18,6 @@ public:
     ~CHudMapFinishedDialog();
 
     bool ShouldDraw() OVERRIDE;
-    void Paint() OVERRIDE;
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
     void SetVisible(bool) OVERRIDE;
@@ -33,6 +32,11 @@ public:
     void OnMousePressed(vgui::MouseCode code) OVERRIDE;
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
+
+    void SetCurrentPage(int pageNum);
+
+    void SetRunSaved(bool bState);
+    void SetRunUploaded(bool bState);
 
 protected:
     CPanelAnimationVar(vgui::HFont, m_hTextFont, "TextFont", "Default");
@@ -55,17 +59,8 @@ private:
     wchar_t m_pwJumpsZone[BUFSIZELOCL];
     wchar_t m_pwStrafesOverall[BUFSIZELOCL];
     wchar_t m_pwStrafesZone[BUFSIZELOCL];
-    wchar_t m_pwRunSavedLabel[BUFSIZELOCL];
-    wchar_t m_pwRunNotSavedLabel[BUFSIZELOCL];
-    wchar_t m_pwRunUploadedLabel[BUFSIZELOCL];
-    wchar_t m_pwRunNotUploadedLabel[BUFSIZELOCL];
 
     char m_pszEndRunTime[BUFSIZETIME];
-    char m_pszRepeatToolTipMap[BUFSIZELOCL];
-    char m_pszRepeatToolTipReplay[BUFSIZELOCL];
-    char m_pszPlayReplayToolTip[BUFSIZELOCL];
-    char m_pszRightArrowToolTip[BUFSIZELOCL];
-    char m_pszLeftArrowToolTip[BUFSIZELOCL];
 
     vgui::ImagePanel *m_pPlayReplayButton;
     vgui::ImagePanel *m_pClosePanelButton;
@@ -94,5 +89,4 @@ private:
     bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
 
     int m_iCurrentPage, m_iVelocityType;
-    int m_iMaxPageTitleWidth, m_iCurrentZoneOrigX;
 };
