@@ -23,8 +23,8 @@ protected:
 
 DECLARE_HUDELEMENT(CHudVersionInfo);
 
-CHudVersionInfo::CHudVersionInfo(const char *pElementName)
-    : CHudElement(pElementName), Label(g_pClientMode->GetViewport(), "CHudVersionInfo", "")
+CHudVersionInfo::CHudVersionInfo(const char *pElementName) : CHudElement(pElementName),
+    Label(g_pClientMode->GetViewport(), "CHudVersionInfo", "")
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
@@ -40,7 +40,7 @@ void CHudVersionInfo::VidInit()
     KeyValuesAD loc("Version");
     loc->SetWString("verLabel", g_pVGuiLocalize->Find("#MOM_StartupMsg_Prealpha_Title"));
     loc->SetString("verNum", MOM_CURRENT_VERSION);
-    SetText(CConstructLocalizedString(L"%verLabel% %verNum%", loc.operator KeyValues*()));
+    SetText(CConstructLocalizedString(L"%verLabel% %verNum%", (KeyValues*)loc));
     InvalidateLayout();
 }
 
