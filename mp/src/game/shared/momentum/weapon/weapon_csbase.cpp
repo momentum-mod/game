@@ -359,13 +359,13 @@ float CWeaponCSBase::GetMaxSpeed() const
 }
 
 
-const CCSWeaponInfo &CWeaponCSBase::GetCSWpnData() const
+const CWeaponInfo &CWeaponCSBase::GetCSWpnData() const
 {
     const FileWeaponInfo_t *pWeaponInfo = &GetWpnData();
-    const CCSWeaponInfo *pCSInfo;
+    const CWeaponInfo *pCSInfo;
 
 #ifdef _DEBUG
-    pCSInfo = dynamic_cast< const CCSWeaponInfo* >( pWeaponInfo );
+    pCSInfo = dynamic_cast< const CWeaponInfo* >( pWeaponInfo );
     Assert( pCSInfo );
 #else
     pCSInfo = static_cast<const CCSWeaponInfo*>(pWeaponInfo);

@@ -21,7 +21,7 @@ class CMomentumSMG : public CWeaponCSBaseGun
 
     void PrimaryAttack() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SMG; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SMG; }
 
   private:
     void SMGFire();

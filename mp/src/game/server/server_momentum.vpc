@@ -130,8 +130,8 @@ $Project "Server (Momentum)"
                 
                 //CS guns
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"    
-                $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\mom_weapon_parse.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\mom_weapon_parse.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbasegun.cpp"

@@ -4,10 +4,7 @@ WeaponData
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "m249"
-    "MuzzleFlashScale"          "1.5"
-    "MuzzleFlashStyle"          "CS_MUZZLEFLASH_X"
 
-    
     // Weapon characteristics:
     "Penetration"       "2"
     "Damage"            "35"

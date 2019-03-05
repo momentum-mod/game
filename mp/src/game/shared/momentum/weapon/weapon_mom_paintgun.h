@@ -21,7 +21,7 @@ class CMomentumPaintGun : public CWeaponCSBaseGun
 
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PAINTGUN; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PAINTGUN; }
 
     void RifleFire();
     

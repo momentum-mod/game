@@ -20,7 +20,7 @@ class CMomentumSniper : public CWeaponCSBaseGun
 
     float GetMaxSpeed() const OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
 
   private:
     void SniperFire();
