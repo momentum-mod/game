@@ -2,97 +2,91 @@
 {
     //Speedometer
     HudSpeedMeter
-        {
-                "fieldName"     "HudSpeedMeter"
-                "xpos"          "c-60"
-                "ypos"          "310"
-                "wide"          "120"
-                "tall"          "80"
-                "visible"       "1"
-                "enabled"       "1"
-                "NumberFont"    "HudNumbersSmallBold"
-                "SmallNumberFont" "HudNumbersExtremelySmall"
-                "text_ypos"     "5"
-                "digit_ypos"    "15"
-                "digit2_ypos"   "30"
-                "PrimaryValueColor" "MOM.Panel.Fg"
-                "SecondaryValueColor" "Light Gray"
-                "LabelColor"    "MOM.Panel.Fg"
-                "BgColor"   "Blank"
-                "StageAlpha" "0.0"//Used for fading
-                "JumpAlpha" "0.0"//Used for fading
-        }
+    {
+        "fieldName"     "HudSpeedMeter"
+        "xpos"          "c-60"
+        "ypos"          "310"
+        "wide"          "120"
+        "tall"          "80"
+        "visible"       "1"
+        "enabled"       "1"
+        "NumberFont"    "HudNumbersSmallBold"
+        "SmallNumberFont" "HudNumbersExtremelySmall"
+        "text_ypos"     "5"
+        "digit_ypos"    "15"
+        "digit2_ypos"   "30"
+        "PrimaryValueColor" "MOM.Panel.Fg"
+        "SecondaryValueColor" "Light Gray"
+        "LabelColor"    "MOM.Panel.Fg"
+        "BgColor"   "Blank"
+        "StageAlpha" "0.0"//Used for fading
+        "JumpAlpha" "0.0"//Used for fading
+    }
     //Timer
     HudTimer
-        {
-                "fieldName"     "HudTimer"
-                "xpos"          "c-50"
-                "ypos"          "c+140"
-                "wide"          "100"
-                "tall"          "55"
-                "visible"       "1"
-                "enabled"       "1"
-                "PaintBackgroundType" "2"
-                "TimerFont" "HudNumbersSmallBold"
-                "TextFont"      "HudHintTextLarge"
-                "SmallTextFont" "HudHintTextSmall"
-                "TextColor" "MOM.Panel.Fg"
-                "centerTime"    "1" //If true, won't use time_xpos, centering the text instead
-                "time_xpos"     "50"
-                "time_ypos"     "3"
-                "centerCps"     "1" //If true, won't use cps_xpos, centering the text instead
-                "cps_xpos"      "50"//Note: checkpoints only show when there's no run (and therefore splits) 
-                "cps_ypos"      "19"
-                "centerSplit"   "1" //If true, won't use stage_xpos, centering the stage split
-                "split_xpos"    "50"
-                "split_ypos"    "19"
-        }
+    {
+        "fieldName"     "HudTimer"
+        "xpos"          "c-50"
+        "ypos"          "c+140"
+        "wide"          "100"
+        "tall"          "55"
+        "visible"       "1"
+        "enabled"       "1"
+        "PaintBackgroundType" "2"
+        "TimerFont" "HudNumbersSmallBold"
+        "TextFont"      "HudHintTextLarge"
+        "SmallTextFont" "HudHintTextSmall"
+        "TextColor" "MOM.Panel.Fg"
+        "centerTime"    "1" //If true, won't use time_xpos, centering the text instead
+        "time_xpos"     "50"
+        "time_ypos"     "3"
+        "centerCps"     "1" //If true, won't use cps_xpos, centering the text instead
+        "cps_xpos"      "50"//Note: checkpoints only show when there's no run (and therefore splits) 
+        "cps_ypos"      "19"
+        "centerSplit"   "1" //If true, won't use stage_xpos, centering the stage split
+        "split_xpos"    "50"
+        "split_ypos"    "19"
+    }
     //Strafe Sync Meter
     CHudSyncMeter
-        {
-                "fieldName"     "CHudSyncMeter"
-                "xpos"          "c-25"
-                "ypos"          "c+198"
-                "wide"          "50"
-                "tall"          "30"
-                "visible"       "1"
-                "enabled"       "1"
-                "TextFont"      "HudNumbersVerySmall"
-                "NumberFont"    "HudNumbersSmall"
-                "SmallNumberFont" "HudNumbersVerySmall"
-                "PaintBackgroundType" "2"
-                "text_xpos"     "15"
-                "text_ypos"     "2"
-                "digit_xpos"    "12"
-                "digit_ypos"    "12"
-                "digit2_xpos"   "30"
-                "digit2_ypos"   "16"
-                "PrimaryValueColor" "MOM.Panel.Fg"
-                "SecondaryValueColor" "MOM.Panel.Fg"
-                "LabelColor"    "White"
-                "BgColor"   "Blank"
-        }
+    {
+        "fieldName"     "CHudSyncMeter"
+        "xpos"          "c-25"
+        "ypos"          "c+198"
+        "wide"          "50"
+        "tall"          "30"
+        "visible"       "1"
+        "enabled"       "1"
+        "TextFont"      "HudNumbersVerySmall"
+        "NumberFont"    "HudNumbersSmall"
+        "SmallNumberFont" "HudNumbersVerySmall"
+        "PaintBackgroundType" "2"
+        "text_xpos"     "15"
+        "text_ypos"     "2"
+        "digit_xpos"    "12"
+        "digit_ypos"    "12"
+        "digit2_xpos"   "30"
+        "digit2_ypos"   "16"
+        "PrimaryValueColor" "MOM.Panel.Fg"
+        "SecondaryValueColor" "MOM.Panel.Fg"
+        "LabelColor"    "White"
+        "BgColor"   "Blank"
+    }
     //The design for in-game menus            
     CHudMenuStatic
     {
          "fieldName" "CHudMenuStatic"
          // To override the menu colors, look inside of the ClientScheme.res file (for "MenuColor/MenuBoxColor/MenuItemColor)"!
     }
-    // Version warning
+    // Version label
     CHudVersionInfo
     {
         "fieldName"     "CHudVersionInfo"
-        "xpos"          "10" // This is basically the X pin offset
-        "ypos"          "rs1.0" // Used to shove it in the bottom left corner
+        "xpos"          "5"
+        "ypos"          "465" // Used to shove it in the bottom left corner
         "visible"       "1"
         "enabled"       "1"
-        "wide"          "20"
-        "tall"          "20"
         "TextFont"      "MomHudDropText"
-        "AutoResize" "3"
-        "PinCorner" "2"
-        "PinnedCornerOffsetX" "10"
-        "PinnedCornerOffsetY" "5"
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
     }
