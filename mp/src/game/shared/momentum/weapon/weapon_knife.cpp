@@ -1,9 +1,3 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
 #include "cbase.h"
 #include "effect_dispatch_data.h"
 #include "mom_player_shared.h"
@@ -129,7 +123,7 @@ void CKnife::Holster(int skiplocal)
 {
     if (GetPlayerOwner())
     {
-        GetPlayerOwner()->m_flNextAttack = gpGlobals->curtime + 0.5;
+        GetPlayerOwner()->m_flNextAttack = gpGlobals->curtime + 0.5f;
     }
 }
 
@@ -249,5 +243,3 @@ void CKnife::ItemPostFrame(void)
 
     BaseClass::ItemPostFrame();
 }
-
-bool CKnife::CanDrop() { return true; }

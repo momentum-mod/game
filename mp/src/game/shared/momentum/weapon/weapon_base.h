@@ -3,7 +3,7 @@
 #include "mom_weapon_parse.h"
 
 #if defined(CLIENT_DLL)
-#define CWeaponCSBase C_WeaponCSBase
+#define CWeaponBase C_WeaponBase
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
@@ -34,7 +34,7 @@ extern int GetShellForAmmoType(const char *ammoname);
 
 // Given an ammo type (like from a weapon's GetPrimaryAmmoType()), this compares it
 // against the ammo name you specify.
-// MIKETODO: this should use indexing instead of searching and strcmp()'ing all the time.
+// MOM_TODO: this should use indexing instead of searching and strcmp()'ing all the time.
 bool IsAmmoType(int iAmmoType, const char *pAmmoName);
 
 typedef enum {
@@ -55,14 +55,14 @@ CWeaponID GetClientWeaponID(bool primary);
 //--------------------------------------------------------------------------------------------------------------
 CWeaponInfo *GetWeaponInfo(CWeaponID weaponID);
 
-class CWeaponCSBase : public CBaseCombatWeapon
+class CWeaponBase : public CBaseCombatWeapon
 {
   public:
-    DECLARE_CLASS(CWeaponCSBase, CBaseCombatWeapon);
+    DECLARE_CLASS(CWeaponBase, CBaseCombatWeapon);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CWeaponCSBase();
+    CWeaponBase();
 
 #ifdef GAME_DLL
     DECLARE_DATADESC();
@@ -160,7 +160,7 @@ class CWeaponCSBase : public CBaseCombatWeapon
   private:
     float m_flDecreaseShotsFired;
 
-    CWeaponCSBase(const CWeaponCSBase &);
+    CWeaponBase(const CWeaponBase &);
 
     int m_iExtraPrimaryAmmo;
 

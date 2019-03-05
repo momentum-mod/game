@@ -1,6 +1,6 @@
 #pragma once
 
-#include "weapon_csbase.h"
+#include "weapon_base.h"
 
 #if defined(CLIENT_DLL)
 #define CKnife C_Knife
@@ -10,10 +10,10 @@
 // CKnife class definition.
 // ----------------------------------------------------------------------------- //
 
-class CKnife : public CWeaponCSBase
+class CKnife : public CWeaponBase
 {
   public:
-    DECLARE_CLASS(CKnife, CWeaponCSBase);
+    DECLARE_CLASS(CKnife, CWeaponBase);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
@@ -40,7 +40,6 @@ class CKnife : public CWeaponCSBase
 
     bool Deploy() OVERRIDE;
     void Holster(int skiplocal = 0);
-    bool CanDrop();
 
     void WeaponIdle() OVERRIDE;
 

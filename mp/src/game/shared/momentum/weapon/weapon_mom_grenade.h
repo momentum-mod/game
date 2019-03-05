@@ -1,15 +1,15 @@
 #pragma once
 
-#include "weapon_csbase.h"
+#include "weapon_base.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumGrenade C_MomentumGrenade
 #endif
 
-class CMomentumGrenade : public CWeaponCSBase
+class CMomentumGrenade : public CWeaponBase
 {
   public:
-    DECLARE_CLASS(CMomentumGrenade, CWeaponCSBase);
+    DECLARE_CLASS(CMomentumGrenade, CWeaponBase);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 

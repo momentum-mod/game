@@ -8,7 +8,7 @@
 #include "weapon/mom_weapon_parse.h"
 #include "mom_grenade_projectile.h"
 #include "te_effect_dispatch.h"
-#include "weapon/weapon_csbase.h"
+#include "weapon/weapon_base.h"
 
 #include "tier0/memdbgon.h"
 
