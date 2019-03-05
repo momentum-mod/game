@@ -554,7 +554,7 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TIME_TYPE type)
 bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdate)
 {
     ConVarRef gm("mom_gamemode");
-    if (!outPlayerInfo || gm.GetInt() == GAMEMODE_UNKNOWN)
+    if (!outPlayerInfo)
         return false;
 
     KeyValues *pLeaderboards = new KeyValues("leaderboards");
@@ -564,21 +564,23 @@ bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdat
     LoadLocalTimes(pLocal);
     pLeaderboards->AddSubKey(pLocal);
 
-    // Skip over local
-    for (int i = 1; i < TIMES_COUNT; i++)
+    if (gm.GetInt() > GAMEMODE_UNKNOWN)
     {
-        // Only if we need to calculate it
-        if (!m_bTimesNeedUpdate[i])
+        for (int i = 1; i < TIMES_COUNT; i++) // Skip over local
         {
-            float lastUp = gpGlobals->curtime - m_flTimesLastUpdate[i];
-            m_bTimesNeedUpdate[i] = fullUpdate && lastUp >= UPDATE_INTERVAL;
+            // Only if we need to calculate it
+            if (!m_bTimesNeedUpdate[i])
+            {
+                float lastUp = gpGlobals->curtime - m_flTimesLastUpdate[i];
+                m_bTimesNeedUpdate[i] = fullUpdate && lastUp >= UPDATE_INTERVAL;
+            }
         }
-    }
 
-    // Fill online times only if needed
-    LoadOnlineTimes(TIMES_TOP10);
-    LoadOnlineTimes(TIMES_AROUND);
-    LoadOnlineTimes(TIMES_FRIENDS);
+        // Fill online times only if needed
+        LoadOnlineTimes(TIMES_TOP10);
+        LoadOnlineTimes(TIMES_AROUND);
+        LoadOnlineTimes(TIMES_FRIENDS);
+    }
 
     outPlayerInfo->AddSubKey(pLeaderboards);
     return true;
