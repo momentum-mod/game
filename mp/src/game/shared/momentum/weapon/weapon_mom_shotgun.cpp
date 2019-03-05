@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "weapon_mom_shotgun.h"
 #include "fx_mom_shared.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 

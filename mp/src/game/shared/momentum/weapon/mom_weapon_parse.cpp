@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "cs_weapon_parse.h"
+#include "mom_weapon_parse.h"
 #include "weapon_csbase.h"
 
 #include "tier0/memdbgon.h"
@@ -11,7 +11,7 @@ static const char *WeaponNames[WEAPON_MAX] = {
     "weapon_knife",        "weapon_momentum_paintgun"};
 
 //--------------------------------------------------------------------------------------------------------------
-CCSWeaponInfo *GetWeaponInfo(CSWeaponID weaponID)
+CWeaponInfo *GetWeaponInfo(CWeaponID weaponID)
 {
     if (weaponID == WEAPON_NONE)
         return nullptr;
@@ -23,12 +23,12 @@ CCSWeaponInfo *GetWeaponInfo(CSWeaponID weaponID)
         return nullptr;
     }
 
-    CCSWeaponInfo *pWeaponInfo = dynamic_cast<CCSWeaponInfo *>(GetFileWeaponInfoFromHandle(hWpnInfo));
+    CWeaponInfo *pWeaponInfo = dynamic_cast<CWeaponInfo *>(GetFileWeaponInfoFromHandle(hWpnInfo));
 
     return pWeaponInfo;
 }
 
-CCSWeaponInfo::CCSWeaponInfo()
+CWeaponInfo::CWeaponInfo()
     : m_iCrosshairMinDistance(4), m_iCrosshairDeltaDistance(3), m_iPenetration(1), m_iDamage(42),
       m_flRange(8192.0f), m_flRangeModifier(0.98f), m_iBullets(1)
 {
@@ -37,9 +37,9 @@ CCSWeaponInfo::CCSWeaponInfo()
     m_szSilencerModel[0] = '\0';
 }
 
-FileWeaponInfo_t *CreateWeaponInfo() { return new CCSWeaponInfo(); }
+FileWeaponInfo_t *CreateWeaponInfo() { return new CWeaponInfo(); }
 
-void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
+void CWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
 {
     BaseClass::Parse(pKeyValuesData, szWeaponName);
 

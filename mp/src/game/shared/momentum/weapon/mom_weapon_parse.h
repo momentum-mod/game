@@ -2,7 +2,7 @@
 
 #include "weapon_parse.h"
 
-enum CSWeaponID
+enum CWeaponID
 {
     WEAPON_NONE = 0,
 
@@ -21,12 +21,12 @@ enum CSWeaponID
 
 
 //--------------------------------------------------------------------------------------------------------
-class CCSWeaponInfo : public FileWeaponInfo_t
+class CWeaponInfo : public FileWeaponInfo_t
 {
   public:
-    DECLARE_CLASS_GAMEROOT(CCSWeaponInfo, FileWeaponInfo_t);
+    DECLARE_CLASS_GAMEROOT(CWeaponInfo, FileWeaponInfo_t);
 
-    CCSWeaponInfo();
+    CWeaponInfo();
 
     void Parse(KeyValues *pKeyValuesData, const char *szWeaponName) OVERRIDE;
 

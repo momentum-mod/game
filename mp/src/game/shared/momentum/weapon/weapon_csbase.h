@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cs_weapon_parse.h"
+#include "mom_weapon_parse.h"
 
 #if defined(CLIENT_DLL)
 #define CWeaponCSBase C_WeaponCSBase
@@ -48,12 +48,12 @@ typedef enum {
 /**
 *  Returns the client's ID_* value for the currently owned weapon, or ID_NONE if no weapon is owned
 */
-CSWeaponID GetClientWeaponID(bool primary);
+CWeaponID GetClientWeaponID(bool primary);
 
 #endif
 
 //--------------------------------------------------------------------------------------------------------------
-CCSWeaponInfo *GetWeaponInfo(CSWeaponID weaponID);
+CWeaponInfo *GetWeaponInfo(CWeaponID weaponID);
 
 class CWeaponCSBase : public CBaseCombatWeapon
 {
@@ -99,13 +99,10 @@ class CWeaponCSBase : public CBaseCombatWeapon
     virtual float GetMaxSpeed() const; // What's the player's max speed while holding this weapon.
 
     // Get CS-specific weapon data.
-    CCSWeaponInfo const &GetCSWpnData() const;
+    CWeaponInfo const &GetCSWpnData() const;
 
     // Get specific weapon ID
-    virtual CSWeaponID GetWeaponID(void) const { return WEAPON_NONE; }
-
-    // return true if this weapon has a silencer equipped
-    virtual bool IsSilenced(void) const { return false; }
+    virtual CWeaponID GetWeaponID(void) const { return WEAPON_NONE; }
 
     virtual void SetWeaponModelIndex(const char *pName);
 

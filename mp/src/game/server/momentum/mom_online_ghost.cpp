@@ -1,9 +1,11 @@
 #include "cbase.h"
 #include "mom_online_ghost.h"
+#include "mom_player_shared.h"
+
 #include "in_buttons.h"
 #include "fx_mom_shared.h"
 #include "util/mom_util.h"
-#include "weapon/cs_weapon_parse.h"
+#include "weapon/mom_weapon_parse.h"
 #include "mom_grenade_projectile.h"
 #include "te_effect_dispatch.h"
 #include "weapon/weapon_csbase.h"
@@ -132,7 +134,7 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     // Play the paintgun sound
     if (mom_paintgun_shoot_sound.GetBool())
     {
-        CCSWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
+        CWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
         if (pWeaponInfo)
         {
             // If we have some sounds from the weapon classname.txt file, play a random one of them
@@ -161,7 +163,7 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)
 {
-    CCSWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
+    CWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
     if (pGrenadeInfo)
     {
         // Vector values stored in a QAngle, shhh~
