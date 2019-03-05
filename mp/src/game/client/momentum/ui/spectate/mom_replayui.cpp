@@ -1,13 +1,10 @@
 #include "cbase.h"
 
-#include <vgui_controls/BuildGroup.h>
-#include <vgui_controls/Label.h>
-#include <vgui_controls/ProgressBar.h>
-#include <vgui_controls/TextEntry.h>
-#include <vgui_controls/ToggleButton.h>
-#include <vgui_controls/CVarSlider.h>
-#include <vgui_controls/ScrubbableProgressBar.h>
+#include "vgui_controls/ToggleButton.h"
 #include "controls/PFrameButton.h"
+#include "vgui_controls/CvarTextEntry.h"
+#include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/ScrubbableProgressBar.h"
 
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
@@ -20,6 +17,7 @@
 #include "momentum/util/mom_util.h"
 #include "momSpectatorGUI.h"
 #include "c_mom_replay_entity.h"
+#include "fmtstr.h"
 
 #include <tier0/memdbgon.h>
 
@@ -29,11 +27,12 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
 {
     m_pViewport = pViewport;
 
-    SetProportional(false);
+    SetProportional(true);
     SetMoveable(true);
     SetSizeable(false);
     SetMaximizeButtonVisible(false);
     SetMinimizeButtonVisible(false);
+    SetMenuButtonVisible(false);
     SetMenuButtonResponsive(false);
     SetClipToParent(true); // Needed so we won't go out of bounds
 
@@ -81,8 +80,7 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     LoadControlSettings("resource/ui/ReplayUI.res");
 
     SetVisible(false);
-    SetBounds(20, 100, GetScaledVal(310), GetScaledVal(210));
-    SetTitleBarVisible(true);
+    SetBounds(20, 100, GetScaledVal(280), GetScaledVal(150));
     SetTitle("#MOM_ReplayControls", true);
 
     FIND_LOCALIZATION(m_pwReplayTime, "#MOM_ReplayTime");
@@ -220,6 +218,8 @@ void C_MOMReplayUI::ShowPanel(bool state)
 {
     SetVisible(state);
     SetMouseInputEnabled(state);
+    if (state)
+        MoveToFront();
 }
 
 void C_MOMReplayUI::FireGameEvent(IGameEvent *pEvent)
@@ -235,38 +235,38 @@ void C_MOMReplayUI::OnCommand(const char *command)
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     C_MomentumReplayGhostEntity *pGhost = pPlayer ? pPlayer->GetReplayEnt() : nullptr;
-    if (!Q_strcasecmp(command, "play"))
+    if (FStrEq(command, "play"))
     {
         engine->ClientCmd("mom_replay_pause"); // Handles the toggle state
     }
-    else if (!Q_strcasecmp(command, "reload"))
+    else if (FStrEq(command, "reload"))
     {
         engine->ServerCmd("mom_replay_restart");
     }
-    else if (!Q_strcasecmp(command, "gotoend"))
+    else if (FStrEq(command, "gotoend"))
     {
         engine->ServerCmd("mom_replay_goto_end");
     }
-    else if (!Q_strcasecmp(command, "prevframe") && pGhost)
+    else if (FStrEq(command, "prevframe") && pGhost)
     {
         if (pGhost->m_SrvData.m_iCurrentTick > 0)
         {
-            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_SrvData.m_iCurrentTick - 1));
+            engine->ServerCmd(CFmtStr("mom_replay_goto %i", pGhost->m_SrvData.m_iCurrentTick - 1));
         }
     }
-    else if (!Q_strcasecmp(command, "nextframe") && pGhost)
+    else if (FStrEq(command, "nextframe") && pGhost)
     {
         if (pGhost->m_SrvData.m_iCurrentTick < pGhost->m_SrvData.m_iTotalTimeTicks)
         {
-            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_SrvData.m_iCurrentTick + 1));
+            engine->ServerCmd(CFmtStr("mom_replay_goto %i", pGhost->m_SrvData.m_iCurrentTick + 1));
         }
     }
-    else if (!Q_strcasecmp(command, "gototick") && pGhost)
+    else if (FStrEq(command, "gototick") && pGhost)
     {
         // Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
-        engine->ServerCmd(VarArgs("mom_replay_goto %s", tick));
+        engine->ServerCmd(CFmtStr("mom_replay_goto %s", tick));
         m_pGotoTick->SetText("");
     }
     else if (FStrEq("close", command))
