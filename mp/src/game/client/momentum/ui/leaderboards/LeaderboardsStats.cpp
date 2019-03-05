@@ -53,6 +53,8 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
 {
     SetVisible(false); // Hidden so it is not seen being changed
 
+    CHECK_STEAM_API(SteamUser());
+
     UpdatePlayerAvatarStandalone();
 
     player_info_t pi;
@@ -61,7 +63,7 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
     UTIL_MakeSafeName(pi.name, newName, MAX_PLAYER_NAME_LENGTH);
     m_pPlayerName->SetText(newName);
 
-    float flLastUp = gpGlobals->curtime - m_flLastUpdate;
+    const float flLastUp = gpGlobals->curtime - m_flLastUpdate;
     if (bFullUpdate && ((g_pMapCache->GetCurrentMapID() && flLastUp >= UPDATE_INTERVAL) || m_bNeedsUpdate))
     {
         wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
@@ -156,7 +158,6 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
 
 void CLeaderboardsStats::UpdatePlayerAvatarStandalone()
 {
-    CHECK_STEAM_API(SteamUser());
     // Update their avatar only if need be
     if (!m_bLoadedLocalPlayerAvatar)
     {
