@@ -89,16 +89,8 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     SetDefLessFunc(m_mapAvatarsToImageList);
     SetDefLessFunc(m_mapReplayDownloads);
 
-    // MOM_TODO: HACKHACK: this is changed to false because deleting a scheme image is a no-no.
-    // While we do know that the image list will only hold scheme and avatar images, we cannot delete
-    // either one. We do not have to delete the scheme images, as they are cached, and the avatar images
-    // are also cached, but indefinitely. There's a memory leak with avatar images, since every image just
-    // keeps creating Texture IDs and never destroying them, so if you download a lot of *different* avatars 
-    // (play a lot of maps and look at the leaderboards for them), you could start to see the perf impact of it.
-    // I'll leave it as a HACKHACK for now because this is ugly and that memory needs freed after a while, but may
-    // be unnoticeable for most people... we'll see how big the memory leak impact really is.
-    m_pImageList = new ImageList(false);
-    SetupIcons();
+    m_pImageList = nullptr;
+    LevelInit();
 }
 
 CLeaderboardsTimes::~CLeaderboardsTimes()
@@ -118,6 +110,14 @@ void CLeaderboardsTimes::LevelInit()
     if (m_pImageList)
         delete m_pImageList;
 
+    // MOM_TODO: HACKHACK: this is changed to false because deleting a scheme image is a no-no.
+    // While we do know that the image list will only hold scheme and avatar images, we cannot delete
+    // either one. We do not have to delete the scheme images, as they are cached, and the avatar images
+    // are also cached, but indefinitely. There's a memory leak with avatar images, since every image just
+    // keeps creating Texture IDs and never destroying them, so if you download a lot of *different* avatars 
+    // (play a lot of maps and look at the leaderboards for them), you could start to see the perf impact of it.
+    // I'll leave it as a HACKHACK for now because this is ugly and that memory needs freed after a while, but may
+    // be unnoticeable for most people... we'll see how big the memory leak impact really is.
     m_pImageList = new ImageList(false);
     m_mapAvatarsToImageList.RemoveAll();
 
