@@ -1,0 +1,20 @@
+"lightmappedreflective"
+{
+	"%tooltexture" "dev/flat_normal"
+	"$refracttexture" "console/bg_00_widescreen"
+	"$refractamount" "0"
+	"$refracttint" "[1 1 1]"
+
+	"$reflecttexture" "console/bg_00_widescreen"
+	"$reflectamount" "0"
+	"$reflecttint" "[0 0 0]"
+
+	"$fresnelpower" "0"
+	"$minreflectivity" "0"
+	"$maxreflectivity" "0"
+	
+	"$normalmap" "dev/flat_normal"
+
+	"$surfaceprop" "glass"
+	"$bumpframe" "0"
+}
