@@ -15,6 +15,7 @@
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
+#include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
 

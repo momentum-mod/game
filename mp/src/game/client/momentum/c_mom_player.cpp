@@ -1,10 +1,9 @@
 #include "cbase.h"
 #include "c_mom_player.h"
-#include "view.h"
-#include "c_mom_triggers.h"
+#include "c_mom_replay_entity.h"
+#include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
-
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
@@ -130,6 +129,16 @@ bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
     }
 
     return false;
+}
+
+C_MomentumReplayGhostEntity* C_MomentumPlayer::GetReplayEnt() const
+{
+    return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
+}
+
+C_MomentumOnlineGhostEntity* C_MomentumPlayer::GetOnlineGhostEnt() const
+{
+    return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
 }
 
 // Overridden for Ghost entity

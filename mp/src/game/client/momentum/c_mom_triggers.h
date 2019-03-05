@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 class C_BaseMomentumTrigger : public C_BaseEntity
 {
     DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseEntity);
