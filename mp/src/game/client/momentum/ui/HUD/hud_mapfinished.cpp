@@ -24,8 +24,8 @@ using namespace vgui;
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
 //NOTE: The "CHudMapFinishedDialog" (main panel) control settings are found in MapFinishedDialog.res
-CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
-CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog"), m_pPlayer(nullptr)
+CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName),
+    BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog"), m_pPlayer(nullptr)
 {
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     SetProportional(true);
@@ -33,7 +33,6 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_pRunStats = nullptr;
     m_bIsGhost = false;
     m_iCurrentPage = 0;
-    m_iMaxPageTitleWidth = 0;
 
     ListenForGameEvent("timer_state");
     ListenForGameEvent("replay_save");
@@ -60,7 +59,7 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_pZoneSync2 = new Label(this, "Zone_Sync2", "#MOM_MF_Sync2");
     m_pRunSaveStatus = new Label(this, "Run_Save_Status", "#MOM_MF_RunNotSaved");
     m_pRunUploadStatus = new Label(this, "Run_Upload_Status", "#MOM_MF_RunNotUploaded");
-
+    
     LoadControlSettings("resource/ui/MapFinishedDialog.res");
 
     m_pNextZoneButton->SetMouseInputEnabled(true);
@@ -73,7 +72,6 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_pRepeatButton->InstallMouseHandler(this);
     m_pClosePanelButton->SetMouseInputEnabled(true);
     m_pClosePanelButton->InstallMouseHandler(this);
-    m_iCurrentZoneOrigX = m_pCurrentZoneLabel->GetXPos();
 
     SetPaintBackgroundEnabled(true);
     SetPaintBackgroundType(2);
@@ -88,7 +86,7 @@ CHudMapFinishedDialog::~CHudMapFinishedDialog()
 
 void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
 {
-    if (!Q_strcmp(pEvent->GetName(), "timer_state"))
+    if (FStrEq(pEvent->GetName(), "timer_state"))
     {
         //We only care when this is false
         if (!pEvent->GetBool("is_running", true))
@@ -115,7 +113,7 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 m_pPlayReplayButton->SetVisible(!m_bIsGhost);
                 m_pRunUploadStatus->SetVisible(!m_bIsGhost);
                 m_pRunSaveStatus->SetVisible(!m_bIsGhost);
-                m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? m_pszRepeatToolTipReplay : m_pszRepeatToolTipMap);
+                m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? "#MOM_MF_Restart_Replay" : "#MOM_MF_Restart_Map");
 
                 CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
                 if (pPanel && pPanel->IsVisible())
@@ -125,12 +123,13 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     }
     else if (FStrEq(pEvent->GetName(), "replay_save"))
     {
-        m_bRunSaved = pEvent->GetBool("save");
+        SetRunSaved(pEvent->GetBool("save"));
+        SetCurrentPage(m_iCurrentPage);
         // MOM_TODO: There's a file name parameter as well, do we want to use it here?
     }
     else if (FStrEq(pEvent->GetName(), "run_upload"))
     {
-        m_bRunUploaded = pEvent->GetBool("run_posted");
+        SetRunUploaded(pEvent->GetBool("run_posted"));
     }
 }
 
@@ -142,6 +141,7 @@ void CHudMapFinishedDialog::LevelInitPostEntity()
 void CHudMapFinishedDialog::LevelShutdown()
 {
     m_pPlayer = nullptr;
+    m_pRunStats = nullptr;
 }
 
 void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
@@ -169,6 +169,7 @@ bool CHudMapFinishedDialog::ShouldDraw()
 void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
+
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
     m_pDetachMouseLabel->SetFont(m_hTextFont);
     m_pCurrentZoneLabel->SetFont(m_hTextFont);
@@ -184,6 +185,25 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     m_pZoneSync2->SetFont(m_hTextFont);
     m_pRunSaveStatus->SetFont(m_hTextFont);
     m_pRunUploadStatus->SetFont(m_hTextFont);
+
+    m_pPlayReplayButton->GetTooltip()->SetText("#MOM_MF_PlayReplay");
+    m_pNextZoneButton->GetTooltip()->SetText("#MOM_MF_Right_Arrow");
+    m_pPrevZoneButton->GetTooltip()->SetText("#MOM_MF_Left_Arrow");
+}
+
+void CHudMapFinishedDialog::SetRunSaved(bool bState)
+{
+    m_bRunSaved = bState;
+    m_pRunSaveStatus->SetText(m_bRunSaved ? "#MOM_MF_RunSaved" : "#MOM_MF_RunNotSaved");
+    m_pRunSaveStatus->SetFgColor(m_bRunSaved ? COLOR_GREEN : COLOR_RED);
+}
+
+void CHudMapFinishedDialog::SetRunUploaded(bool bState)
+{
+    m_bRunUploaded = bState;
+    //MOM_TODO: Should we have custom error messages here? One for server not responding, one for failed accept, etc
+    m_pRunUploadStatus->SetText(m_bRunUploaded ? "#MOM_MF_RunUploaded" : "#MOM_MF_RunNotUploaded");
+    m_pRunUploadStatus->SetFgColor(m_bRunUploaded ? COLOR_GREEN : COLOR_RED);
 }
 
 inline void FireMapFinishedClosedEvent(bool restart)
@@ -206,19 +226,19 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         {
             SetMouseInputEnabled(false);
             engine->ServerCmd("mom_replay_play_loaded");
-            m_bRunSaved = false;
-            m_bRunUploaded = false;
+            SetRunSaved(false);
+            SetRunUploaded(false);
         }
         else if (over == m_pNextZoneButton->GetVPanel())
         {
             //MOM_TODO (beta+): Play animations?
-            m_iCurrentPage = (m_iCurrentPage + 1) % (g_MOMEventListener->m_iMapZoneCount + 1);//;
+            SetCurrentPage((m_iCurrentPage + 1) % (g_MOMEventListener->m_iMapZoneCount + 1));
         }
         else if (over == m_pPrevZoneButton->GetVPanel())
         {
             //MOM_TODO: (beta+) play animations?
             int newPage = m_iCurrentPage - 1;
-            m_iCurrentPage = newPage < 0 ? g_MOMEventListener->m_iMapZoneCount : newPage;
+            SetCurrentPage(newPage < 0 ? g_MOMEventListener->m_iMapZoneCount : newPage);
         }
         else if (over == m_pRepeatButton->GetVPanel())
         {
@@ -226,41 +246,24 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
             //The player either wants to repeat the replay (if spectating), or restart the map (not spec)
             engine->ServerCmd(m_bIsGhost ? "mom_replay_restart" : "mom_restart");
             FireMapFinishedClosedEvent(true);
-            m_bRunSaved = false;
-            m_bRunUploaded = false;
+            SetRunSaved(false);
+            SetRunUploaded(false);
         }
         else if (over == m_pClosePanelButton->GetVPanel())
         {
             //This is where we unload comparisons, as well as the ghost if the player was speccing it
             SetMouseInputEnabled(false);
             FireMapFinishedClosedEvent(false);
-            m_bRunSaved = false;
-            m_bRunUploaded = false;
+            SetRunSaved(false);
+            SetRunUploaded(false);
         }
     }
 }
-
 
 void CHudMapFinishedDialog::Init()
 {
     Reset();
     // --- cache localization tokens ---
-    //Label Tooltips
-    LOCALIZE_TOKEN(repeatToolTipMap, "#MOM_MF_Restart_Map", m_pszRepeatToolTipMap);
-    LOCALIZE_TOKEN(repeatToolTipReplay, "#MOM_MF_Restart_Replay", m_pszRepeatToolTipReplay);
-    LOCALIZE_TOKEN(playReplatTooltip, "#MOM_MF_PlayReplay", m_pszPlayReplayToolTip);
-    m_pPlayReplayButton->GetTooltip()->SetText(m_pszPlayReplayToolTip);
-    LOCALIZE_TOKEN(rightArrowTT, "#MOM_MF_Right_Arrow", m_pszRightArrowToolTip);
-    m_pNextZoneButton->GetTooltip()->SetText(m_pszRightArrowToolTip);
-    LOCALIZE_TOKEN(leftTokenTT, "#MOM_MF_Left_Arrow", m_pszLeftArrowToolTip);
-    m_pPrevZoneButton->GetTooltip()->SetText(m_pszLeftArrowToolTip);
-    
-    //Run saving/uploading
-    FIND_LOCALIZATION(m_pwRunSavedLabel, "#MOM_MF_RunSaved");
-    FIND_LOCALIZATION(m_pwRunNotSavedLabel, "#MOM_MF_RunNotSaved");
-    FIND_LOCALIZATION(m_pwRunUploadedLabel, "#MOM_MF_RunUploaded");
-    FIND_LOCALIZATION(m_pwRunNotUploadedLabel, "#MOM_MF_RunNotUploaded");
-
     // Stats
     FIND_LOCALIZATION(m_pwCurrentPageOverall, "#MOM_MF_OverallStats");
     FIND_LOCALIZATION(m_pwCurrentPageZoneNum, "#MOM_MF_ZoneNum");
@@ -284,93 +287,52 @@ void CHudMapFinishedDialog::Init()
 void CHudMapFinishedDialog::Reset()
 {
     //default values
-    m_pRunStats = nullptr;
-    strcpy(m_pszEndRunTime, "00:00:00.000");
+    Q_strncpy(m_pszEndRunTime, "00:00:00.000", sizeof(m_pszEndRunTime));
 }
 
 void CHudMapFinishedDialog::SetVisible(bool b)
 {
     BaseClass::SetVisible(b);
     //We reset the page to 0 when this this panel is shown because Reset() is not always called.
-    if (b) 
-        m_iCurrentPage = 0;
+    if (b)
+        SetCurrentPage(0);
 }
 
-#define MAKE_UNI_NUM(name, size, number, format) \
-    wchar_t name[size]; \
-    V_snwprintf(name, size, format, number)
-
-inline void PaintLabel(Label *label, wchar_t *wFormat, float value, bool isInt)
+void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
 {
-    wchar_t temp[BUFSIZELOCL], tempNum[BUFSIZESHORT];
-    if (isInt)
-    {
-        int intVal = static_cast<int>(value);
-        V_snwprintf(tempNum, BUFSIZESHORT, L"%i", intVal);
-    }
-    else
-    {
-        V_snwprintf(tempNum, BUFSIZESHORT, L"%.4f", value);
-    }
-    g_pVGuiLocalize->ConstructString(temp, sizeof(temp), wFormat, 1, tempNum);
-    label->SetText(temp);
-}
+    m_iCurrentPage = pageNum;
 
-void CHudMapFinishedDialog::Paint()
-{
-    //text color
-    surface()->DrawSetTextFont(m_hTextFont);
-    surface()->DrawSetTextColor(GetFgColor());
-
-    // --- CURRENT PAGE TITLE (ZONE) ---
-    wchar_t currentPageTitle[BUFSIZELOCL];
-    if (m_iCurrentPage == 0)
-    {
-        V_wcscpy_safe(currentPageTitle, m_pwCurrentPageOverall);
-    }
-    else
-    {
-        MAKE_UNI_NUM(num, 3, m_iCurrentPage, L"%i");
-        g_pVGuiLocalize->ConstructString(currentPageTitle, sizeof(currentPageTitle), m_pwCurrentPageZoneNum, 1, num);
-    }
-    
-    m_pCurrentZoneLabel->SetText(currentPageTitle);
-
-    //// --- RUN TIME ---
-    wchar_t currentZoneOverall[BUFSIZELOCL];
     wchar_t unicodeTime[BUFSIZETIME];
     //"Time:" shows up when m_iCurrentPage  == 0
     if (m_iCurrentPage < 1)// == 0, but I'm lazy to do an else-if
     {
+        m_pCurrentZoneLabel->SetText(m_pwCurrentPageOverall);
+
         g_pMomentumUtil->FormatTime(m_pRunData ? m_pRunData->m_flRunTime : 0.0f, m_pszEndRunTime);
         ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
-        g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwOverallTime, 1, unicodeTime);
-
-        m_pZoneOverallTime->SetText(currentZoneOverall);//"Time" (overall run time)
+        m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwOverallTime, unicodeTime));//"Time" (overall run time)
 
         m_pZoneEnterTime->SetVisible(false);
         m_pZoneEnterTime->SetEnabled(false);
     }
     else
     {
+        m_pCurrentZoneLabel->SetText(CConstructLocalizedString(m_pwCurrentPageZoneNum, m_iCurrentPage));
+
         //"Zone Time:" shows up when m_iCurrentPage > 0
         char ansiTime[BUFSIZETIME];
         g_pMomentumUtil->FormatTime(m_pRunStats ? m_pRunStats->GetZoneTime(m_iCurrentPage) : 0.0f, ansiTime);
         ANSI_TO_UNICODE(ansiTime, unicodeTime);
-        g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwZoneTime, 1, unicodeTime);
-        m_pZoneOverallTime->SetText(currentZoneOverall);//"Zone time" (time for that zone)
-
+        m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwZoneTime, unicodeTime));//"Zone time" (time for that zone)
 
         //"Zone Enter Time:" shows up when m_iCurrentPage > 1
         if (m_iCurrentPage > 1)
         {
             m_pZoneEnterTime->SetEnabled(true);
             m_pZoneEnterTime->SetVisible(true);
-            wchar_t zoneEnterTime[BUFSIZELOCL];
             g_pMomentumUtil->FormatTime(m_pRunStats ? m_pRunStats->GetZoneEnterTime(m_iCurrentPage) : 0.0f, ansiTime);
             ANSI_TO_UNICODE(ansiTime, unicodeTime);
-            g_pVGuiLocalize->ConstructString(zoneEnterTime, sizeof(zoneEnterTime), m_pwZoneEnterTime, 1, unicodeTime);
-            m_pZoneEnterTime->SetText(zoneEnterTime);//"Zone enter time:" (time entered that zone)
+            m_pZoneEnterTime->SetText(CConstructLocalizedString(m_pwZoneEnterTime, unicodeTime));//"Zone enter time:" (time entered that zone)
         }
         else
         {
@@ -378,76 +340,26 @@ void CHudMapFinishedDialog::Paint()
             m_pZoneEnterTime->SetEnabled(false);
         }
     }
-    //// ---------------------
 
     //MOM_TODO: Set every label's Y pos higher if there's no ZoneEnterTime visible
 
-    //// --- JUMP COUNT ---
-    PaintLabel(m_pZoneJumps, 
-        m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone,
-        m_pRunStats ? m_pRunStats->GetZoneJumps(m_iCurrentPage) : 0, 
-        true);
-    //// ---------------------
+    m_pZoneJumps->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone,
+                                                    m_pRunStats ? m_pRunStats->GetZoneJumps(m_iCurrentPage) : 0));
 
-    //// --- STRAFE COUNT ---
-    PaintLabel(m_pZoneStrafes,
-        m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone,
-        m_pRunStats ? m_pRunStats->GetZoneStrafes(m_iCurrentPage) : 0,
-        true);
-    //// ---------------------
+    m_pZoneStrafes->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone,
+                                                      m_pRunStats ? m_pRunStats->GetZoneStrafes(m_iCurrentPage) : 0));
 
-    //// --- SYNC1 ---
-    PaintLabel(m_pZoneSync1,
-        m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone,
-        m_pRunStats ? m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage) : 0.0f,
-        false);
-    //// ---------------------
+    m_pZoneSync1->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone,
+                                                    m_pRunStats ? m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage) : 0.0f));
 
-    //// --- SYNC2---
-    PaintLabel(m_pZoneSync2,
-        m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone,
-        m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f,
-        false);
-    //// ---------------------
+    m_pZoneSync2->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone,
+                                                    m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f));
 
-    //// --- STARTING VELOCITY---
-    PaintLabel(m_pZoneVelEnter,
-        m_pwVelZoneEnter,
-        m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f,
-        false);
-    //// ---------------------
+    m_pZoneVelEnter->SetText(CConstructLocalizedString(m_pwVelZoneEnter, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f));
 
-    //// --- ENDING VELOCITY---
-    PaintLabel(m_pZoneVelExit,
-        m_pwVelZoneExit,
-        m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f,
-        false);
-    //// ---------------------
+    m_pZoneVelExit->SetText(CConstructLocalizedString(m_pwVelZoneExit, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f));
 
-    //// --- AVG VELOCITY---
-    PaintLabel(m_pZoneVelAvg,
-        m_pwVelAvg,
-        m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, m_iVelocityType) : 0.0f,
-        false);
-    //// ---------------------
+    m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, m_iVelocityType) : 0.0f));
 
-    //// --- MAX VELOCITY---
-    PaintLabel(m_pZoneVelMax,
-        m_pwVelMax,
-        m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, m_iVelocityType) : 0.0f,
-        false);
-    //// ---------------------
-
-    //// ---- RUN SAVING AND UPLOADING ----
-
-    //// -- run save --
-    m_pRunSaveStatus->SetText(m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel);
-    m_pRunSaveStatus->SetFgColor(m_bRunSaved ? COLOR_GREEN : COLOR_RED);
-
-    //// -- run upload --
-    //MOM_TODO: Should we have custom error messages here? One for server not responding, one for failed accept, etc
-    m_pRunUploadStatus->SetText(m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel);
-    m_pRunUploadStatus->SetFgColor(m_bRunUploaded ? COLOR_GREEN : COLOR_RED);
-    // ----------------
-    // ------------------------------
+    m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, m_iVelocityType) : 0.0f));
 }

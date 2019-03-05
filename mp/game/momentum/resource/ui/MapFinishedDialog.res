@@ -66,38 +66,7 @@
         "pin_to_sibling" "Current_Zone"
         "pin_corner_to_sibling" "0"
         "pin_to_sibling_corner" "1"
-    } 
-    
-    "Replay_Icon"
-    {
-        "ControlName"   "ImagePanel"
-        "fieldName"     "Replay_Icon"
-        "xpos"          "180"
-        "ypos"          "80"
-        "wide"          "32"
-        "tall"          "32"
-        "pinCorner"     "0"
-        "visible"       "1"
-        "enabled"       "1"
-        "scaleImage"    "1"
-        "image"         "replay_icon_grey"
     }
-    
-    "Repeat_Button"
-    {
-        "ControlName"   "ImagePanel"
-        "fieldName"     "Repeat_Button"
-        "xpos"          "180"
-        "ypos"          "120"
-        "wide"          "32"
-        "tall"          "32"
-        "pinCorner"     "0"
-        "visible"       "1"
-        "enabled"       "1"
-        "scaleImage"    "1"
-        "image"         "loop_button_grey"
-    }
-    
     "Close_Panel"
     {
         "ControlName"   "ImagePanel"
@@ -113,6 +82,40 @@
         "scaleImage"    "1"
         "image"         "close_button"
     }
+    "Repeat_Button"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "Repeat_Button"
+        "xpos"          "0"
+        "ypos"          "25"
+        "wide"          "32"
+        "tall"          "32"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "scaleImage"    "1"
+        "image"         "loop_button_grey"
+        "pin_to_sibling" "Close_Panel"
+        "pin_to_sibling_corner" "2"
+        "pin_corner_to_sibling" "0"
+    }
+    "Replay_Icon"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "Replay_Icon"
+        "xpos"          "0"
+        "ypos"          "5"
+        "wide"          "32"
+        "tall"          "32"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "scaleImage"    "1"
+        "image"         "replay_icon_grey"
+        "pin_to_sibling" "Repeat_Button"
+        "pin_to_sibling_corner" "2"
+        "pin_corner_to_sibling" "0"
+    }
     
     "Zone_Overall_Time"// or "ZoneTime"
     {
@@ -120,7 +123,7 @@
         "fieldName"  "Zone_Overall_Time"
         "font"          "Default"//Set by "TextFont" 
         "xpos"          "12"
-        "ypos"          "15"
+        "ypos"          "12"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -347,7 +350,7 @@
         "fieldName"  "Run_Save_Status"
         "font"          "Default"//Set by "TextFont" 
         "xpos"          "0"
-        "ypos"          "15"
+        "ypos"          "6"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -392,8 +395,8 @@
         "ControlName" "Label"
         "fieldName" "Detach_Mouse"
         "font"          "Default"//Set by "TextFont" 
-        "xpos"          "0"
-        "ypos"          "rs1.5"
+        "xpos"          "12"
+        "ypos"          "5"
         "wide"          "f0"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -405,14 +408,10 @@
         "dulltext"      "0"
         "brighttext"    "0"
         "proportionalToParent" "1"
-    }
-    
-    styles
-    {
-        status
-        {
-            bgcolor="PropertySheetBG"
-            inset="8 0 0 0"
-        }
+        "pin_to_sibling" "Run_Upload_Status"
+        "pin_to_sibling_corner" "2"
+        "pin_corner_to_sibling" "0"
+        "auto_wide_tocontents" "0"
+        "auto_tall_tocontents" "1"
     }
 }

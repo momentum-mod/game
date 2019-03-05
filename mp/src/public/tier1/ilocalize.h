@@ -306,14 +306,7 @@ template < >
 class CLocalizedStringArg<float> : public CLocalizedStringArgPrintfImpl<float>
 {
 public:
-	// Display one decimal point if we've got a value less than one, and no point
-	// if we're greater than one or are effectively zero.
-	CLocalizedStringArg( float fValue )
-		: CLocalizedStringArgPrintfImpl<float>( fValue,
-												fabsf( fValue ) <= FLT_EPSILON || fabsf( fValue ) >= 1.0f ? LOCCHAR("%.0f") : LOCCHAR("%.1f") )
-	{
-		//
-	}
+    CLocalizedStringArg( float fValue ) : CLocalizedStringArgPrintfImpl<float>( fValue, LOCCHAR("%.2f") ) {}
 };
 
 // --------------------------------------------------------------------------
