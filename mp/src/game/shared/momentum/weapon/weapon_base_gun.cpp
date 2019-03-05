@@ -1,30 +1,24 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
 #include "cbase.h"
 #include "fx_mom_shared.h"
 #include "mom_player_shared.h"
-#include "weapon_csbasegun.h"
+#include "weapon_base_gun.h"
 
 #include "tier0/memdbgon.h"
 
-IMPLEMENT_NETWORKCLASS_ALIASED(WeaponCSBaseGun, DT_WeaponCSBaseGun)
+IMPLEMENT_NETWORKCLASS_ALIASED(WeaponBaseGun, DT_WeaponBaseGun)
 
-BEGIN_NETWORK_TABLE(CWeaponCSBaseGun, DT_WeaponCSBaseGun)
+BEGIN_NETWORK_TABLE(CWeaponBaseGun, DT_WeaponBaseGun)
 END_NETWORK_TABLE()
 
-BEGIN_PREDICTION_DATA(CWeaponCSBaseGun)
+BEGIN_PREDICTION_DATA(CWeaponBaseGun)
 END_PREDICTION_DATA()
 
-LINK_ENTITY_TO_CLASS(weapon_csbase_gun, CWeaponCSBaseGun);
+LINK_ENTITY_TO_CLASS(weapon_base_gun, CWeaponBaseGun);
 
 static ConVar mom_weapon_speed_lower("mom_weapon_speed_lower", "300", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Controls from what speed the weapon will be lowered.\n", true, 0.0f, false, 0.0f);
 static MAKE_TOGGLE_CONVAR(mom_weapon_speed_lower_enable, "1", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Controls if the wepaon should get lowered if going faster than mom_weapon_speed_lower.\n");
 
-CWeaponCSBaseGun::CWeaponCSBaseGun()
+CWeaponBaseGun::CWeaponBaseGun()
 {
     m_flTimeToIdleAfterFire = 2.0f;
     m_flIdleInterval = 20.0f;
@@ -32,7 +26,7 @@ CWeaponCSBaseGun::CWeaponCSBaseGun()
     m_bWeaponIsLowered = false;
 }
 
-void CWeaponCSBaseGun::Spawn()
+void CWeaponBaseGun::Spawn()
 {
     m_flAccuracy = 0.2;
     m_bDelayFire = false;
@@ -41,7 +35,7 @@ void CWeaponCSBaseGun::Spawn()
     BaseClass::Spawn();
 }
 
-bool CWeaponCSBaseGun::Deploy()
+bool CWeaponBaseGun::Deploy()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -55,7 +49,7 @@ bool CWeaponCSBaseGun::Deploy()
     return BaseClass::Deploy();
 }
 
-void CWeaponCSBaseGun::ItemPostFrame()
+void CWeaponBaseGun::ItemPostFrame()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
@@ -81,7 +75,7 @@ void CWeaponCSBaseGun::ItemPostFrame()
     BaseClass::ItemPostFrame();
 }
 
-void CWeaponCSBaseGun::ProcessAnimationEvents()
+void CWeaponBaseGun::ProcessAnimationEvents()
 {
     // Lowers the weapon once the player goes faster than the limit speed
     // Credit: This is a modified version of 
@@ -113,13 +107,13 @@ void CWeaponCSBaseGun::ProcessAnimationEvents()
     }
 }
 
-void CWeaponCSBaseGun::PrimaryAttack()
+void CWeaponBaseGun::PrimaryAttack()
 {
     // Derived classes should implement this and call CSBaseGunFire.
     Assert(false);
 }
 
-bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode)
+bool CWeaponBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode)
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -170,7 +164,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
     return true;
 }
 
-void CWeaponCSBaseGun::DoFireEffects()
+void CWeaponBaseGun::DoFireEffects()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
@@ -179,7 +173,7 @@ void CWeaponCSBaseGun::DoFireEffects()
 }
 
 #ifdef WEAPONS_USE_AMMO
-bool CWeaponCSBaseGun::Reload()
+bool CWeaponBaseGun::Reload()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -209,7 +203,7 @@ bool CWeaponCSBaseGun::Reload()
 }
 #endif
 
-void CWeaponCSBaseGun::WeaponIdle()
+void CWeaponBaseGun::WeaponIdle()
 {
     if (m_flTimeWeaponIdle > gpGlobals->curtime)
         return;

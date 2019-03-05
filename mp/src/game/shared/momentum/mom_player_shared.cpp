@@ -1,6 +1,6 @@
 #include "cbase.h"
-#include "mom_player_shared.h"
 
+#include "mom_player_shared.h"
 
 #include "effect_dispatch_data.h"
 #ifdef GAME_DLL
@@ -10,7 +10,7 @@
 #endif
 #include "decals.h"
 #include "engine/ivdebugoverlay.h"
-#include "weapon/weapon_csbase.h"
+#include "weapon/weapon_base.h"
 
 #include "tier0/memdbgon.h"
 

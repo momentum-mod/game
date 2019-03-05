@@ -12,7 +12,7 @@
 #include "mom_triggers.h"
 #include "player_command.h"
 #include "predicted_viewmodel.h"
-#include "weapon/weapon_csbasegun.h"
+#include "weapon/weapon_base_gun.h"
 #include "mom_system_saveloc.h"
 #include "util/mom_util.h"
 #include "mom_replay_system.h"
@@ -528,7 +528,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     }
     if (FStrEq(cmd, "drop"))
     {
-        CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
+        CWeaponBase *pWeapon = dynamic_cast<CWeaponBase *>(GetActiveWeapon());
 
         if (pWeapon)
         {
@@ -585,7 +585,7 @@ void CMomentumPlayer::RemoveAllOnehops()
 void CMomentumPlayer::DoMuzzleFlash()
 {
     // Don't do the muzzle flash for the paint gun
-    CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
+    CWeaponBase *pWeapon = dynamic_cast<CWeaponBase *>(GetActiveWeapon());
     if (!(pWeapon && pWeapon->GetWeaponID() == WEAPON_PAINTGUN))
     {
         BaseClass::DoMuzzleFlash();

@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "mom_weapon_parse.h"
-#include "weapon_csbase.h"
+#include "weapon_base.h"
 
 #include "tier0/memdbgon.h"
 

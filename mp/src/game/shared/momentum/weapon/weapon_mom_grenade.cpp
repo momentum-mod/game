@@ -5,7 +5,7 @@
 #include "engine/IEngineSound.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
-#include "weapon_csbase.h"
+#include "weapon_base.h"
 
 #ifdef GAME_DLL
 #include "items.h"
