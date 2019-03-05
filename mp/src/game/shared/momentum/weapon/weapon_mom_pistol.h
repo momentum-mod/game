@@ -31,7 +31,7 @@ class CMomentumPistol : public CWeaponCSBaseGun
 #endif
     void WeaponIdle() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
 
   private:
     CMomentumPistol(const CMomentumPistol &);

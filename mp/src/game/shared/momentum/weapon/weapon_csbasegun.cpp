@@ -9,6 +9,8 @@
 #include "mom_player_shared.h"
 #include "weapon_csbasegun.h"
 
+#include "tier0/memdbgon.h"
+
 IMPLEMENT_NETWORKCLASS_ALIASED(WeaponCSBaseGun, DT_WeaponCSBaseGun)
 
 BEGIN_NETWORK_TABLE(CWeaponCSBaseGun, DT_WeaponCSBaseGun)
