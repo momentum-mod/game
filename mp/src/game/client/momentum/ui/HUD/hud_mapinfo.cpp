@@ -12,6 +12,7 @@
 #include "baseviewport.h"
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
+#include "c_mom_replay_entity.h"
 #include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"

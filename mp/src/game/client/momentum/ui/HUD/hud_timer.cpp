@@ -16,6 +16,7 @@
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
+#include "c_mom_replay_entity.h"
 
 #include "tier0/memdbgon.h"
 

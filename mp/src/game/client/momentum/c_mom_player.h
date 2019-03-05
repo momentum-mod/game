@@ -1,18 +1,11 @@
-#ifndef C_MOMPLAYER_H
-#define C_MOMPLAYER_H
-#ifdef WIN32
 #pragma once
-#endif
 
-#include "cbase.h"
 #include <mom_modulecomms.h>
-#include <momentum/mom_shareddefs.h>
-#include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
-#include "c_mom_online_ghost.h"
-#include "c_mom_replay_entity.h"
+#include "c_mom_triggers.h"
 
-class C_TriggerSlide;
+class C_MomentumOnlineGhostEntity;
+class C_MomentumReplayGhostEntity;
 
 class C_MomentumPlayer : public C_BasePlayer
 {
@@ -42,15 +35,8 @@ class C_MomentumPlayer : public C_BasePlayer
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
 
     // Returns the replay entity that the player is watching (first person only)
-    C_MomentumReplayGhostEntity *GetReplayEnt() const
-    {
-        return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
-    }
-
-    C_MomentumOnlineGhostEntity *GetOnlineGhostEnt() const
-    {
-        return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
-    }
+    C_MomentumReplayGhostEntity* GetReplayEnt() const;
+    C_MomentumOnlineGhostEntity* GetOnlineGhostEnt() const;
 
     // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
@@ -94,5 +80,3 @@ class C_MomentumPlayer : public C_BasePlayer
 
     friend class CMomentumGameMovement;
 };
-
-#endif
