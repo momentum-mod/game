@@ -357,7 +357,7 @@
         // Code
         "MOM_ReplayStatusPlaying" "Playing"
         "MOM_ReplayStatusPaused" "Paused"
-        "MOM_ReplayTimeTick" "Tick: %i / %i"
+        "MOM_ReplayTimeTick" "Tick: %s1 / %s2"
         "MOM_ReplayTime" "Time: %s1 -> %s2"
 
         // Controls in res file
