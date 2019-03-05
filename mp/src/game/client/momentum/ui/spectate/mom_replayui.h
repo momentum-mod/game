@@ -11,6 +11,8 @@ enum Selections
     RUI_MOVEFW,
 };
 
+class CMOMSpectatorGUI;
+
 namespace vgui
 {
     class PFrameButton;
@@ -78,6 +80,7 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
 
     vgui::TextEntry *m_pGotoTick;
 
+    CMOMSpectatorGUI *m_pSpecGUI;
     IViewPort *m_pViewport;
 
     int m_iTotalDuration, m_iPlayButtonSelected;
