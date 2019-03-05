@@ -45,7 +45,7 @@ BaseTooltip::BaseTooltip(Panel *parent, const char *text)
 	_isDirty = false;
 	_enabled = true;
 
-	_tooltipDelay = 500; // default delay for opening tooltips
+	_tooltipDelay = 0; // default delay for opening tooltips
 	_delay = 0;
 }
 
@@ -291,8 +291,14 @@ void TextTooltip::ApplySchemeSettings(HScheme hScheme)
         s_TooltipWindow->SetBgColor(s_TooltipWindow->GetSchemeColor("Tooltip.BgColor", s_TooltipWindow->GetBgColor(), pScheme));
         s_TooltipWindow->SetFgColor(s_TooltipWindow->GetSchemeColor("Tooltip.TextColor", s_TooltipWindow->GetFgColor(), pScheme));
         s_TooltipWindow->SetBorder(pScheme->GetBorder("ToolTipBorder"));
+
         const char *pFontName = pScheme->GetResourceString("Tooltip.TextFont");
-        s_TooltipWindow->SetFont(pScheme->GetFont(pFontName ? pFontName : "DefaultSmall", s_TooltipWindow->IsProportional()));
+        HFont font = INVALID_FONT;
+	    if (pFontName && pFontName[0] != '\0') 
+            font = pScheme->GetFont(pFontName, s_TooltipWindow->IsProportional());
+        if (font == INVALID_FONT)
+	        font = pScheme->GetFont("DefaultSmall", s_TooltipWindow->IsProportional());
+        s_TooltipWindow->SetFont(font);
 	}
 }
 
