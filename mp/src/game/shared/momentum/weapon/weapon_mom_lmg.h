@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cbase.h"
 #include "weapon_csbasegun.h"
 
 #ifdef CLIENT_DLL
@@ -14,14 +13,10 @@ public:
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumLMG()
-    {
-        m_flTimeToIdleAfterFire = 1.6f;
-        m_flIdleInterval = 20.0f;
-    };
+    CMomentumLMG();
 
     void PrimaryAttack() OVERRIDE;
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_LMG; }
+    CSWeaponID GetWeaponID() const OVERRIDE { return WEAPON_LMG; }
 
 private:
     CMomentumLMG(const CMomentumLMG &);

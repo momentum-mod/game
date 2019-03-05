@@ -1,5 +1,7 @@
 #include "cbase.h"
+
 #include "weapon_mom_smg.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 

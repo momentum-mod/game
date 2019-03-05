@@ -3,7 +3,6 @@ WeaponData
     "CrosshairMinDistance"      "9"
     "CrosshairDeltaDistance"    "4"
     "BuiltRightHanded"          "1"
-    "MuzzleFlashScale"          "1.3"
     
     // Weapon characteristics:
     "Penetration"       "1"

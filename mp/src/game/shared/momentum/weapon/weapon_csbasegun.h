@@ -1,21 +1,10 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
-#ifndef WEAPON_CSBASE_GUN_H
-#define WEAPON_CSBASE_GUN_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "weapon_csbase.h"
 
 // This is the base class for pistols and rifles.
 #if defined(CLIENT_DLL)
 #define CWeaponCSBaseGun C_WeaponCSBaseGun
-#else
 #endif
 
 class CWeaponCSBaseGun : public CWeaponCSBase
@@ -54,5 +43,3 @@ class CWeaponCSBaseGun : public CWeaponCSBase
   private:
     CWeaponCSBaseGun(const CWeaponCSBaseGun &);
 };
-
-#endif // WEAPON_CSBASE_GUN_H

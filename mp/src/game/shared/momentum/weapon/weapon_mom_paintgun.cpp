@@ -1,6 +1,7 @@
 #include "cbase.h"
 
 #include "weapon_mom_paintgun.h"
+
 #ifdef CLIENT_DLL
 #include "PaintGunPanel.h"
 #endif

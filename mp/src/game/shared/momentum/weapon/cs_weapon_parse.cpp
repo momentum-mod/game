@@ -1,13 +1,6 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
 #include "cbase.h"
 #include "cs_weapon_parse.h"
 #include "weapon_csbase.h"
-#include <KeyValues.h>
 
 #include "tier0/memdbgon.h"
 
@@ -36,11 +29,12 @@ CCSWeaponInfo *GetWeaponInfo(CSWeaponID weaponID)
 }
 
 CCSWeaponInfo::CCSWeaponInfo()
-    : m_iCrosshairMinDistance(4), m_iCrosshairDeltaDistance(3),
-      m_iMuzzleFlashStyle(CS_MUZZLEFLASH_NORM), m_flMuzzleScale(1.0f), m_iPenetration(1), m_iDamage(42),
+    : m_iCrosshairMinDistance(4), m_iCrosshairDeltaDistance(3), m_iPenetration(1), m_iDamage(42),
       m_flRange(8192.0f), m_flRangeModifier(0.98f), m_iBullets(1)
 {
-    m_szAddonModel[0] = 0;
+    m_szAddonModel[0] = '\0';
+    m_szDroppedModel[0] = '\0';
+    m_szSilencerModel[0] = '\0';
 }
 
 FileWeaponInfo_t *CreateWeaponInfo() { return new CCSWeaponInfo(); }
@@ -51,25 +45,6 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
 
     m_iCrosshairMinDistance = pKeyValuesData->GetInt("CrosshairMinDistance", 4);
     m_iCrosshairDeltaDistance = pKeyValuesData->GetInt("CrosshairDeltaDistance", 3);
-    m_flMuzzleScale = pKeyValuesData->GetFloat("MuzzleFlashScale", 1);
-
-    const char *pMuzzleFlashStyle = pKeyValuesData->GetString("MuzzleFlashStyle", "CS_MUZZLEFLASH_NORM");
-
-    if (pMuzzleFlashStyle)
-    {
-        if (Q_stricmp(pMuzzleFlashStyle, "CS_MUZZLEFLASH_X") == 0)
-        {
-            m_iMuzzleFlashStyle = CS_MUZZLEFLASH_X;
-        }
-        else if (Q_stricmp(pMuzzleFlashStyle, "CS_MUZZLEFLASH_NONE") == 0)
-        {
-            m_iMuzzleFlashStyle = CS_MUZZLEFLASH_NONE;
-        }
-        else
-        {
-            m_iMuzzleFlashStyle = CS_MUZZLEFLASH_NORM;
-        }
-    }
 
     m_iPenetration = pKeyValuesData->GetInt("Penetration", 1);
     m_iDamage = pKeyValuesData->GetInt("Damage", 42); // Douglas Adams 1952 - 2001

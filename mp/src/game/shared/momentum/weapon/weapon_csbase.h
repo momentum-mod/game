@@ -1,32 +1,17 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
-#ifndef WEAPON_CSBASE_H
-#define WEAPON_CSBASE_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "cs_weapon_parse.h"
-#include "mom_player_shared.h"
 
 #if defined(CLIENT_DLL)
 #define CWeaponCSBase C_WeaponCSBase
+#define CMomentumPlayer C_MomentumPlayer
 #endif
 
-extern int ClassnameToWeaponID(const char *classname);
+class CMomentumPlayer;
+
 extern int AliasToWeaponID(const char *alias);
 extern const char *WeaponIDToAlias(int id);
-extern bool IsPrimaryWeapon(int id);
-extern bool IsSecondaryWeapon(int id);
 extern int GetShellForAmmoType(const char *ammoname);
-
-#define CS_MUZZLEFLASH_NONE -1
-#define CS_MUZZLEFLASH_NORM 0
-#define CS_MUZZLEFLASH_X 1
 
 // These are the names of the ammo types that go in the CAmmoDefs and that the
 // weapon script files reference.
@@ -134,7 +119,6 @@ class CWeaponCSBase : public CBaseCombatWeapon
     void DrawCrosshair() OVERRIDE;
     void OnDataChanged(DataUpdateType_t type) OVERRIDE;
 
-    virtual int GetMuzzleAttachment(void);
     virtual bool HideViewModelWhenZoomed(void) { return true; }
 
     float m_flCrosshairDistance;
@@ -143,7 +127,6 @@ class CWeaponCSBase : public CBaseCombatWeapon
     int m_iScopeTextureID;
     int m_iCrosshairTextureID; // for white additive texture
 
-    virtual int GetMuzzleFlashStyle(void);
     bool m_bInReloadAnimation;
 #else
 
@@ -189,5 +172,3 @@ class CWeaponCSBase : public CBaseCombatWeapon
 
     int m_iDefaultExtraAmmo;
 };
-
-#endif // WEAPON_CSBASE_H
