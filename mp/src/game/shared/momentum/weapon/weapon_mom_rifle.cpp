@@ -1,8 +1,9 @@
 #include "cbase.h"
+
+#include "mom_player_shared.h"
 #include "weapon_mom_rifle.h"
 
 #include "tier0/memdbgon.h"
-
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumRifle, DT_MomentumRifle)
 
@@ -15,6 +16,11 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS(weapon_momentum_rifle, CMomentumRifle);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rifle);
 
+CMomentumRifle::CMomentumRifle()
+{
+    m_flTimeToIdleAfterFire = 1.9f;
+    m_flIdleInterval = 20.0f;
+}
 
 void CMomentumRifle::RifleFire()
 {

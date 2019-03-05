@@ -103,41 +103,6 @@ const char *WeaponIDToAlias(int id)
     return s_WeaponAliasInfo[id];
 }
 
-//--------------------------------------------------------------------------------------------------------
-//
-// Return true if given weapon ID is a primary weapon
-//
-bool IsPrimaryWeapon(int id)
-{
-    switch (id)
-    {
-    case WEAPON_SNIPER:
-    case WEAPON_RIFLE:
-    case WEAPON_SHOTGUN:
-    case WEAPON_SMG:
-    case WEAPON_LMG:
-    case WEAPON_PAINTGUN:
-        return true;
-    }
-
-    return false;
-}
-
-//--------------------------------------------------------------------------------------------------------
-//
-// Return true if given weapon ID is a secondary weapon
-//
-bool IsSecondaryWeapon(int id)
-{
-    switch (id)
-    {
-    case WEAPON_PISTOL:
-        return true;
-    }
-
-    return false;
-}
-
 #ifdef CLIENT_DLL
 int GetShellForAmmoType(const char *ammoname)
 {
@@ -285,7 +250,7 @@ bool CWeaponCSBase::PlayEmptySound()
 
 CMomentumPlayer* CWeaponCSBase::GetPlayerOwner() const
 {
-    return dynamic_cast<CMomentumPlayer*>(GetOwner());
+    return ToCMOMPlayer(GetOwner());
 }
 
 void CWeaponCSBase::ItemPostFrame()
@@ -871,42 +836,9 @@ bool CWeaponCSBase::OnFireEvent(C_BaseViewModel *pViewModel, const Vector& origi
         CMomentumPlayer *pPlayer = GetPlayerOwner();
         if (pPlayer && pPlayer->GetFOV() < pPlayer->GetDefaultFOV() && HideViewModelWhenZoomed())
             return true;
-
-        CEffectData data;
-        data.m_fFlags = 0;
-        data.m_hEntity = pViewModel->GetRefEHandle();
-        data.m_nAttachmentIndex = 1;
-        data.m_flScale = GetCSWpnData().m_flMuzzleScale;
-
-        switch (GetMuzzleFlashStyle())
-        {
-        case CS_MUZZLEFLASH_NONE:
-            break;
-
-        case CS_MUZZLEFLASH_X:
-            DispatchEffect("CS_MuzzleFlash_X", data);
-            break;
-
-        case CS_MUZZLEFLASH_NORM:
-        default:
-            DispatchEffect("CS_MuzzleFlash", data);
-            break;
-        }
-
-        return true;
     }
 
     return BaseClass::OnFireEvent(pViewModel, origin, angles, event, options);
-}
-
-int CWeaponCSBase::GetMuzzleFlashStyle(void)
-{
-    return GetCSWpnData().m_iMuzzleFlashStyle;
-}
-
-int CWeaponCSBase::GetMuzzleAttachment(void)
-{
-    return LookupAttachment("muzzle_flash");
 }
 
 #else		

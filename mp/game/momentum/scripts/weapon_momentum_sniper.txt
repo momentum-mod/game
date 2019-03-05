@@ -4,7 +4,6 @@ WeaponData
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "scout"
-    "MuzzleFlashScale"          "1.1"
     
     // Weapon characteristics:
     "Penetration"       "3"

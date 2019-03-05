@@ -5,6 +5,7 @@
 #include "voice_gamemgr.h"
 #include "weapon/cs_ammodef.h"
 #include "weapon/weapon_csbase.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 

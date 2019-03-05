@@ -70,7 +70,7 @@ static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXEC
 // as well as changing the appearance locally.
 void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer*>(UTIL_GetLocalPlayer());
 
     ConVarRef cVar(var);
 
