@@ -4,9 +4,6 @@ WeaponData
     "CrosshairDeltaDistance"    "4"
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "ak"
-    "MuzzleFlashScale"          "1.6"
-    "MuzzleFlashStyle"          "CS_MUZZLEFLASH_X"
-    
     
     // Weapon characteristics:
     "Penetration"       "2"
@@ -14,7 +11,6 @@ WeaponData
     "Range"             "8192"
     "RangeModifier"     "0.98"
     "Bullets"           "1"
-    "CycleTime"         "0.1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Rifle"

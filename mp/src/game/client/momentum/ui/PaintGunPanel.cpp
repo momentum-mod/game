@@ -11,7 +11,7 @@
 #include "util/mom_util.h"
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
-#include "weapon/weapon_csbase.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 

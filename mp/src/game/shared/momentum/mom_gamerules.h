@@ -1,10 +1,5 @@
-#ifndef MOM_GAMERULES_H
-#define MOM_GAMERULES_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "cbase.h"
 #include "singleplay_gamerules.h"
 
 #ifdef CLIENT_DLL
@@ -60,10 +55,8 @@ class CMomentumGameRules : public CSingleplayRules
     // float AdjustPlayerDamageInflicted(float damage);
     Vector DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins, const Vector &vMaxs);
 
-    int DefaultFOV(void) OVERRIDE;// { return 90; }
+    int DefaultFOV(void) OVERRIDE;
 #endif
 };
 
 inline CMomentumGameRules *GetMomentumGamerules() { return static_cast<CMomentumGameRules *>(g_pGameRules); }
-
-#endif // MOM_GAMERULES_H

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cbase.h"
 #include "weapon_csbasegun.h"
 
 #ifdef CLIENT_DLL

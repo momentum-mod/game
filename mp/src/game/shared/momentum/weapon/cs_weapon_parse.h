@@ -1,19 +1,7 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
-#ifndef CS_WEAPON_PARSE_H
-#define CS_WEAPON_PARSE_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "networkvar.h"
 #include "weapon_parse.h"
 
-//--------------------------------------------------------------------------------------------------------
 enum CSWeaponID
 {
     WEAPON_NONE = 0,
@@ -30,9 +18,6 @@ enum CSWeaponID
 
     WEAPON_MAX, // number of weapons weapon index
 };
-
-//--------------------------------------------------------------------------------------------------------
-enum CSWeaponID;
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -54,9 +39,6 @@ class CCSWeaponInfo : public FileWeaponInfo_t
                                                // holds
     char m_szSilencerModel[MAX_WEAPON_STRING]; // Alternate model with silencer attached
 
-    int m_iMuzzleFlashStyle;
-    float m_flMuzzleScale;
-
     // Parameters for FX_FireBullets:
     int m_iPenetration;
     int m_iDamage;
@@ -64,5 +46,3 @@ class CCSWeaponInfo : public FileWeaponInfo_t
     float m_flRangeModifier;
     int m_iBullets;
 };
-
-#endif // CS_WEAPON_PARSE_H
