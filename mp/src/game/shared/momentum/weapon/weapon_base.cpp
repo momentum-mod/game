@@ -1,14 +1,8 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose: Laser Rifle & Shield combo
-//
-// $NoKeywords: $
-//=============================================================================//
-
 #include "cbase.h"
+
 #include "in_buttons.h"
 #include "takedamageinfo.h"
-#include "weapon_csbase.h"
+#include "weapon_base.h"
 #include "ammodef.h"
 #include "mom_player_shared.h"
 #include "movevars_shared.h"
@@ -77,22 +71,6 @@ int AliasToWeaponID(const char *alias)
 
 //--------------------------------------------------------------------------------------------------------
 //
-// Given a classname, return the associated weapon ID
-//
-int ClassnameToWeaponID(const char *classname)
-{
-    if (classname)
-    {
-        for (int i = 0; s_WeaponAliasInfo[i] != nullptr; ++i)
-            if (Q_stristr(classname, s_WeaponAliasInfo[i]))
-                return i;
-    }
-
-    return WEAPON_NONE;
-}
-
-//--------------------------------------------------------------------------------------------------------
-//
 // Given a weapon ID, return its alias
 //
 const char *WeaponIDToAlias(int id)
@@ -131,12 +109,12 @@ int GetShellForAmmoType(const char *ammoname)
 
 
 // ----------------------------------------------------------------------------- //
-// CWeaponCSBase tables.
+// CWeaponBase tables.
 // ----------------------------------------------------------------------------- //
 
-IMPLEMENT_NETWORKCLASS_ALIASED(WeaponCSBase, DT_WeaponCSBase)
+IMPLEMENT_NETWORKCLASS_ALIASED(WeaponBase, DT_WeaponBase)
 
-BEGIN_NETWORK_TABLE(CWeaponCSBase, DT_WeaponCSBase)
+BEGIN_NETWORK_TABLE(CWeaponBase, DT_WeaponBase)
 #ifdef CLIENT_DLL
 
 #else
@@ -150,17 +128,17 @@ SendPropExclude("DT_BaseAnimating", "m_nSequence"),
 END_NETWORK_TABLE()
 
 #if defined CLIENT_DLL
-BEGIN_PREDICTION_DATA(CWeaponCSBase)
+BEGIN_PREDICTION_DATA(CWeaponBase)
 DEFINE_PRED_FIELD(m_flTimeWeaponIdle, FIELD_FLOAT, FTYPEDESC_OVERRIDE | FTYPEDESC_NOERRORCHECK),
 END_PREDICTION_DATA()
 #endif
 
-LINK_ENTITY_TO_CLASS(weapon_cs_base, CWeaponCSBase);
+LINK_ENTITY_TO_CLASS(weapon_cs_base, CWeaponBase);
 
 
 #ifdef GAME_DLL
 
-BEGIN_DATADESC(CWeaponCSBase)
+BEGIN_DATADESC(CWeaponBase)
 
 //DEFINE_FUNCTION( DefaultTouch ),
 DEFINE_FUNCTION(FallThink)
@@ -180,9 +158,9 @@ ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR
 
 
 // ----------------------------------------------------------------------------- //
-// CWeaponCSBase implementation. 
+// CWeaponBase implementation. 
 // ----------------------------------------------------------------------------- //
-CWeaponCSBase::CWeaponCSBase()
+CWeaponBase::CWeaponBase()
 {
     SetPredictionEligible(true);
     m_bDelayFire = true;
@@ -205,7 +183,7 @@ CWeaponCSBase::CWeaponCSBase()
 
 
 #ifndef CLIENT_DLL
-bool CWeaponCSBase::KeyValue(const char *szKeyName, const char *szValue)
+bool CWeaponBase::KeyValue(const char *szKeyName, const char *szValue)
 {
     if (!BaseClass::KeyValue(szKeyName, szValue))
     {
@@ -225,7 +203,7 @@ bool CWeaponCSBase::KeyValue(const char *szKeyName, const char *szValue)
 }
 #endif
 
-bool CWeaponCSBase::PlayEmptySound()
+bool CWeaponBase::PlayEmptySound()
 {
     //MIKETODO: certain weapons should override this to make it empty:
     //	C4
@@ -248,12 +226,12 @@ bool CWeaponCSBase::PlayEmptySound()
     return false;
 }
 
-CMomentumPlayer* CWeaponCSBase::GetPlayerOwner() const
+CMomentumPlayer* CWeaponBase::GetPlayerOwner() const
 {
     return ToCMOMPlayer(GetOwner());
 }
 
-void CWeaponCSBase::ItemPostFrame()
+void CWeaponBase::ItemPostFrame()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
@@ -353,13 +331,13 @@ void CWeaponCSBase::ItemPostFrame()
 }
 
 
-float CWeaponCSBase::GetMaxSpeed() const
+float CWeaponBase::GetMaxSpeed() const
 {
     return sv_maxspeed.GetFloat();
 }
 
 
-const CWeaponInfo &CWeaponCSBase::GetCSWpnData() const
+const CWeaponInfo &CWeaponBase::GetCSWpnData() const
 {
     const FileWeaponInfo_t *pWeaponInfo = &GetWpnData();
     const CWeaponInfo *pCSInfo;
@@ -378,7 +356,7 @@ const CWeaponInfo &CWeaponCSBase::GetCSWpnData() const
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is ignored in the base class here*/) const
+const char *CWeaponBase::GetViewModel(int /*viewmodelindex = 0 -- this is ignored in the base class here*/) const
 {
     CMomentumPlayer *pOwner = GetPlayerOwner();
 
@@ -392,7 +370,7 @@ const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is igno
 
 // Overridden for the CS gun overrides, since GetClassname returns the weapon_glock etc, instead
 // of the weapon_momentum_* class. So we do a little workaround with the weapon ID.
-void CWeaponCSBase::Precache(void)
+void CWeaponBase::Precache(void)
 {
     m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
     PrecacheScriptSound("Default.ClipEmpty_Pistol");
@@ -467,12 +445,12 @@ void CWeaponCSBase::Precache(void)
     }
 }
 
-Activity CWeaponCSBase::GetDeployActivity(void)
+Activity CWeaponBase::GetDeployActivity(void)
 {
     return ACT_VM_DRAW;
 }
 
-bool CWeaponCSBase::DefaultDeploy(char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt)
+bool CWeaponBase::DefaultDeploy(char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt)
 {
     // Msg( "deploy %s at %f\n", GetClassname(), gpGlobals->curtime );
     CMomentumPlayer *pOwner = GetPlayerOwner();
@@ -496,12 +474,12 @@ bool CWeaponCSBase::DefaultDeploy(char *szViewModel, char *szWeaponModel, int iA
     return true;
 }
 
-void CWeaponCSBase::SetWeaponModelIndex(const char *pName)
+void CWeaponBase::SetWeaponModelIndex(const char *pName)
 {
     m_iWorldModelIndex = modelinfo->GetModelIndex(pName);
 }
 
-bool CWeaponCSBase::CanBeSelected(void)
+bool CWeaponBase::CanBeSelected(void)
 {
     if (!VisibleInWeaponSelection())
         return false;
@@ -509,7 +487,7 @@ bool CWeaponCSBase::CanBeSelected(void)
     return true;
 }
 
-bool CWeaponCSBase::CanDeploy(void)
+bool CWeaponBase::CanDeploy(void)
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -518,7 +496,7 @@ bool CWeaponCSBase::CanDeploy(void)
     return BaseClass::CanDeploy();
 }
 
-bool CWeaponCSBase::Holster(CBaseCombatWeapon *pSwitchingTo)
+bool CWeaponBase::Holster(CBaseCombatWeapon *pSwitchingTo)
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -532,7 +510,7 @@ bool CWeaponCSBase::Holster(CBaseCombatWeapon *pSwitchingTo)
     return BaseClass::Holster(pSwitchingTo);
 }
 
-bool CWeaponCSBase::Deploy()
+bool CWeaponBase::Deploy()
 {
 #ifdef CLIENT_DLL
     m_iAlpha = 80;
@@ -555,7 +533,7 @@ bool CWeaponCSBase::Deploy()
 }
 
 #ifndef CLIENT_DLL
-bool CWeaponCSBase::IsRemoveable()
+bool CWeaponBase::IsRemoveable()
 {
     if (BaseClass::IsRemoveable() == true)
     {
@@ -569,7 +547,7 @@ bool CWeaponCSBase::IsRemoveable()
 }
 #endif
 
-void CWeaponCSBase::Drop(const Vector &vecVelocity)
+void CWeaponBase::Drop(const Vector &vecVelocity)
 {
 
 #ifdef CLIENT_DLL
@@ -598,7 +576,7 @@ void CWeaponCSBase::Drop(const Vector &vecVelocity)
     m_nextPrevOwnerTouchTime = gpGlobals->curtime + 0.8f;
     m_prevOwner = GetPlayerOwner();
 
-    SetTouch(&CWeaponCSBase::DefaultTouch);
+    SetTouch(&CWeaponBase::DefaultTouch);
 
     IPhysicsObject *pObj = VPhysicsGetObject();
     if (pObj != nullptr)
@@ -620,7 +598,7 @@ void CWeaponCSBase::Drop(const Vector &vecVelocity)
 
 // whats going on here is that if the player drops this weapon, they shouldn't take it back themselves
 // for a little while.  But if they throw it at someone else, the other player should get it immediately.
-void CWeaponCSBase::DefaultTouch(CBaseEntity *pOther)
+void CWeaponBase::DefaultTouch(CBaseEntity *pOther)
 {
     if (m_prevOwner && (pOther == m_prevOwner) && (gpGlobals->curtime < m_nextPrevOwnerTouchTime))
     {
@@ -635,7 +613,7 @@ void CWeaponCSBase::DefaultTouch(CBaseEntity *pOther)
 //-----------------------------------------------------------------------------
 // Purpose: Draw the weapon's crosshair
 //-----------------------------------------------------------------------------
-void CWeaponCSBase::DrawCrosshair()
+void CWeaponBase::DrawCrosshair()
 {
     if (!crosshair.GetInt())
         return;
@@ -807,7 +785,7 @@ void CWeaponCSBase::DrawCrosshair()
 }
 
 
-void CWeaponCSBase::OnDataChanged(DataUpdateType_t type)
+void CWeaponBase::OnDataChanged(DataUpdateType_t type)
 {
     BaseClass::OnDataChanged(type);
 
@@ -816,7 +794,7 @@ void CWeaponCSBase::OnDataChanged(DataUpdateType_t type)
 }
 
 
-bool CWeaponCSBase::ShouldPredict()
+bool CWeaponBase::ShouldPredict()
 {
     if (GetOwner() && GetOwner() == C_BasePlayer::GetLocalPlayer())
         return true;
@@ -824,12 +802,12 @@ bool CWeaponCSBase::ShouldPredict()
     return BaseClass::ShouldPredict();
 }
 
-void CWeaponCSBase::ProcessMuzzleFlashEvent()
+void CWeaponBase::ProcessMuzzleFlashEvent()
 {
     // This is handled from the player's animstate, so it can match up to the beginning of the fire animation
 }
 
-bool CWeaponCSBase::OnFireEvent(C_BaseViewModel *pViewModel, const Vector& origin, const QAngle& angles, int event, const char *options)
+bool CWeaponBase::OnFireEvent(C_BaseViewModel *pViewModel, const Vector& origin, const QAngle& angles, int event, const char *options)
 {
     if (event == 5001)
     {
@@ -846,7 +824,7 @@ bool CWeaponCSBase::OnFireEvent(C_BaseViewModel *pViewModel, const Vector& origi
 //-----------------------------------------------------------------------------
 // Purpose: Get the accuracy derived from weapon and player, and return it
 //-----------------------------------------------------------------------------
-const Vector& CWeaponCSBase::GetBulletSpread()
+const Vector& CWeaponBase::GetBulletSpread()
 {
     static Vector cone = VECTOR_CONE_8DEGREES;
     return cone;
@@ -855,7 +833,7 @@ const Vector& CWeaponCSBase::GetBulletSpread()
 //-----------------------------------------------------------------------------
 // Purpose: Match the anim speed to the weapon speed while crouching
 //-----------------------------------------------------------------------------
-float CWeaponCSBase::GetDefaultAnimSpeed()
+float CWeaponBase::GetDefaultAnimSpeed()
 {
     return 1.0;
 }
@@ -863,12 +841,12 @@ float CWeaponCSBase::GetDefaultAnimSpeed()
 //-----------------------------------------------------------------------------
 // Purpose: Draw the laser rifle effect
 //-----------------------------------------------------------------------------
-void CWeaponCSBase::BulletWasFired(const Vector &vecStart, const Vector &vecEnd)
+void CWeaponBase::BulletWasFired(const Vector &vecStart, const Vector &vecEnd)
 {
 }
 
 
-bool CWeaponCSBase::ShouldRemoveOnRoundRestart()
+bool CWeaponBase::ShouldRemoveOnRoundRestart()
 {
     if (GetPlayerOwner())
         return false;
@@ -878,9 +856,9 @@ bool CWeaponCSBase::ShouldRemoveOnRoundRestart()
 
 
 //=========================================================
-// Materialize - make a CWeaponCSBase visible and tangible
+// Materialize - make a CWeaponBase visible and tangible
 //=========================================================
-void CWeaponCSBase::Materialize()
+void CWeaponBase::Materialize()
 {
     if (IsEffectActive(EF_NODRAW))
     {
@@ -891,7 +869,7 @@ void CWeaponCSBase::Materialize()
 
     AddSolidFlags(FSOLID_TRIGGER);
 
-    //SetTouch( &CWeaponCSBase::DefaultTouch );
+    //SetTouch( &CWeaponBase::DefaultTouch );
 
     SetThink(NULL);
 }
@@ -900,7 +878,7 @@ void CWeaponCSBase::Materialize()
 // CheckRespawn - a player is taking this weapon, should 
 // it respawn?
 //=========================================================
-void CWeaponCSBase::CheckRespawn()
+void CWeaponBase::CheckRespawn()
 {
     //GOOSEMAN : Do not respawn weapons!
     return;
@@ -911,7 +889,7 @@ void CWeaponCSBase::CheckRespawn()
 // Respawn- this item is already in the world, but it is
 // invisible and intangible. Make it visible and tangible.
 //=========================================================
-CBaseEntity* CWeaponCSBase::Respawn()
+CBaseEntity* CWeaponBase::Respawn()
 {
     // make a copy of this weapon that is invisible and inaccessible to players (no touch function). The weapon spawn/respawn code
     // will decide when to make the weapon visible and touchable.
@@ -937,7 +915,7 @@ CBaseEntity* CWeaponCSBase::Respawn()
     return pNewWeapon;
 }
 
-bool CWeaponCSBase::Reload()
+bool CWeaponBase::Reload()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -957,7 +935,7 @@ bool CWeaponCSBase::Reload()
     return retval;
 }
 
-void CWeaponCSBase::Spawn()
+void CWeaponBase::Spawn()
 {
     BaseClass::Spawn();
 
@@ -979,7 +957,7 @@ void CWeaponCSBase::Spawn()
 #endif
 }
 
-bool CWeaponCSBase::DefaultReload(int iClipSize1, int iClipSize2, int iActivity)
+bool CWeaponBase::DefaultReload(int iClipSize1, int iClipSize2, int iActivity)
 {
     if (BaseClass::DefaultReload(iClipSize1, iClipSize2, iActivity))
     {
@@ -992,7 +970,7 @@ bool CWeaponCSBase::DefaultReload(int iClipSize1, int iClipSize2, int iActivity)
     }
 }
 
-void CWeaponCSBase::SendReloadEvents()
+void CWeaponBase::SendReloadEvents()
 {
     //CMomentumPlayer *pPlayer = GetPlayerOwner();
     //if ( !pPlayer )
@@ -1005,7 +983,7 @@ void CWeaponCSBase::SendReloadEvents()
 #endif
 
 
-bool CWeaponCSBase::DefaultPistolReload()
+bool CWeaponBase::DefaultPistolReload()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -1026,7 +1004,7 @@ bool CWeaponCSBase::DefaultPistolReload()
     return true;
 }
 
-bool CWeaponCSBase::IsUseable()
+bool CWeaponBase::IsUseable()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -1058,7 +1036,7 @@ static ConVar	cl_bobup("cl_bobup", "0.5", FCVAR_CHEAT);
 // Purpose: 
 // Output : float
 //-----------------------------------------------------------------------------
-float CWeaponCSBase::CalcViewmodelBob(void)
+float CWeaponBase::CalcViewmodelBob(void)
 {
     static	float bobtime;
     static	float lastbobtime;
@@ -1146,7 +1124,7 @@ float CWeaponCSBase::CalcViewmodelBob(void)
 //			&angles - 
 //			viewmodelindex - 
 //-----------------------------------------------------------------------------
-void CWeaponCSBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAngle &angles)
+void CWeaponBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAngle &angles)
 {
     Vector	forward, right;
     AngleVectors(angles, &forward, &right, nullptr);
@@ -1170,12 +1148,12 @@ void CWeaponCSBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, Q
 
 #else
 
-void CWeaponCSBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAngle &angles)
+void CWeaponBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAngle &angles)
 {
 
 }
 
-float CWeaponCSBase::CalcViewmodelBob(void)
+float CWeaponBase::CalcViewmodelBob(void)
 {
     return 0.0f;
 }
@@ -1183,7 +1161,7 @@ float CWeaponCSBase::CalcViewmodelBob(void)
 #endif
 
 #ifndef CLIENT_DLL
-bool CWeaponCSBase::PhysicsSplash(const Vector &centerPoint, const Vector &normal, float rawSpeed, float scaledSpeed)
+bool CWeaponBase::PhysicsSplash(const Vector &centerPoint, const Vector &normal, float rawSpeed, float scaledSpeed)
 {
     if (rawSpeed > 20)
     {

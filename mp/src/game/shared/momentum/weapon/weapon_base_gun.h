@@ -1,20 +1,20 @@
 #pragma once
 
-#include "weapon_csbase.h"
+#include "weapon_base.h"
 
 // This is the base class for pistols and rifles.
 #if defined(CLIENT_DLL)
-#define CWeaponCSBaseGun C_WeaponCSBaseGun
+#define CWeaponBaseGun C_WeaponBaseGun
 #endif
 
-class CWeaponCSBaseGun : public CWeaponCSBase
+class CWeaponBaseGun : public CWeaponBase
 {
   public:
-    DECLARE_CLASS(CWeaponCSBaseGun, CWeaponCSBase);
+    DECLARE_CLASS(CWeaponBaseGun, CWeaponBase);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CWeaponCSBaseGun();
+    CWeaponBaseGun();
 
     virtual void PrimaryAttack();
     virtual void Spawn();
@@ -41,5 +41,5 @@ class CWeaponCSBaseGun : public CWeaponCSBase
     bool m_bWeaponIsLowered;
 
   private:
-    CWeaponCSBaseGun(const CWeaponCSBaseGun &);
+    CWeaponBaseGun(const CWeaponBaseGun &);
 };
