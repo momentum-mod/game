@@ -15,6 +15,7 @@
 
 #include "mom_event_listener.h"
 #include "util/mom_util.h"
+#include "c_mom_replay_entity.h"
 
 #include "tier0/memdbgon.h"
 

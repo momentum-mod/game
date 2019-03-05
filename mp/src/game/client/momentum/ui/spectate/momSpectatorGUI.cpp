@@ -31,6 +31,8 @@
 
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
+#include "c_mom_replay_entity.h"
+#include "c_mom_online_ghost.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

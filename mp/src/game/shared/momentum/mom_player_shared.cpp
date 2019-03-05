@@ -21,57 +21,55 @@ ConVar
 void CMomentumPlayer::GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,
                                               bool &bPaint)
 {
-
-    // MIKETODO: make ammo types come from a script file.
     if (IsAmmoType(iBulletType, BULLET_PLAYER_50AE))
     {
-        fPenetrationPower = 30;
-        flPenetrationDistance = 1000.0;
+        fPenetrationPower = 30.0f;
+        flPenetrationDistance = 1000.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_762MM))
     {
-        fPenetrationPower = 39;
-        flPenetrationDistance = 5000.0;
+        fPenetrationPower = 39.0f;
+        flPenetrationDistance = 5000.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_556MM) || IsAmmoType(iBulletType, BULLET_PLAYER_556MM_BOX))
     {
-        fPenetrationPower = 35;
-        flPenetrationDistance = 4000.0;
+        fPenetrationPower = 35.0f;
+        flPenetrationDistance = 4000.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_338MAG))
     {
-        fPenetrationPower = 45;
-        flPenetrationDistance = 8000.0;
+        fPenetrationPower = 45.0f;
+        flPenetrationDistance = 8000.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_9MM))
     {
-        fPenetrationPower = 21;
-        flPenetrationDistance = 800.0;
+        fPenetrationPower = 21.0f;
+        flPenetrationDistance = 800.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_BUCKSHOT))
     {
-        fPenetrationPower = 0;
-        flPenetrationDistance = 0.0;
+        fPenetrationPower = 0.0f;
+        flPenetrationDistance = 0.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_45ACP))
     {
-        fPenetrationPower = 15;
-        flPenetrationDistance = 500.0;
+        fPenetrationPower = 15.0f;
+        flPenetrationDistance = 500.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_357SIG))
     {
-        fPenetrationPower = 25;
-        flPenetrationDistance = 800.0;
+        fPenetrationPower = 25.0f;
+        flPenetrationDistance = 800.0f;
     }
     else if (IsAmmoType(iBulletType, BULLET_PLAYER_57MM))
     {
-        fPenetrationPower = 30;
-        flPenetrationDistance = 2000.0;
+        fPenetrationPower = 30.0f;
+        flPenetrationDistance = 2000.0f;
     }
     else if (IsAmmoType(iBulletType, AMMO_TYPE_PAINT))
     {
-        fPenetrationPower = 0;
-        flPenetrationDistance = 0.0;
+        fPenetrationPower = .0f;
+        flPenetrationDistance = 0.0f;
         bPaint = true;
     }
     else
@@ -136,7 +134,6 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
     Vector vecDirShooting, vecRight, vecUp;
     AngleVectors(shootAngles, &vecDirShooting, &vecRight, &vecUp);
 
-    // MIKETODO: put all the ammo parameters into a script file and allow for CS-specific params.
     float flPenetrationPower = 0.0f;    // thickness of a wall that this bullet can penetrate
     float flPenetrationDistance = 0.0f; // distance at which the bullet is capable of penetrating a wall
     float flDamageModifier = 0.5f;    // default modification of bullets power after they go through a wall.
@@ -188,7 +185,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
 
         // GetMaterialParameters(iEnterMaterial, flPenetrationModifier, flDamageModifier);
 
-        bool hitGrate = ((tr.contents & CONTENTS_GRATE) == 1);
+        bool hitGrate = ((tr.contents & CONTENTS_GRATE) == CONTENTS_GRATE);
 
         // since some railings in de_inferno are CONTENTS_GRATE but CHAR_TEX_CONCRETE, we'll trust the
         // CONTENTS_GRATE and use a high damage modifier.
