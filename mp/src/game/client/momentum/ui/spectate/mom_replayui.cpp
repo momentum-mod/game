@@ -11,11 +11,10 @@
 #include <vgui/IInput.h>
 
 #include "hud_mapfinished.h"
+#include "momSpectatorGUI.h"
 #include "mom_player_shared.h"
 #include "mom_replayui.h"
-#include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
-#include "momSpectatorGUI.h"
 #include "c_mom_replay_entity.h"
 #include "fmtstr.h"
 
@@ -85,6 +84,7 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
 
     FIND_LOCALIZATION(m_pwReplayTime, "#MOM_ReplayTime");
     FIND_LOCALIZATION(m_pwReplayTimeTick, "#MOM_ReplayTimeTick");
+    m_pSpecGUI = nullptr;
 }
 
 void C_MOMReplayUI::OnThink()
@@ -94,7 +94,16 @@ void C_MOMReplayUI::OnThink()
     // HACKHACK for focus, Blame Valve
     int x, y;
     input()->GetCursorPosition(x, y);
-    SetKeyBoardInputEnabled(IsWithin(x, y));
+    const bool bWithin = IsWithin(x, y);
+    SetKeyBoardInputEnabled(bWithin);
+    if (!IsMouseInputEnabled() && bWithin)
+    {
+        SetMouseInputEnabled(true); 
+        if (!m_pSpecGUI)
+            m_pSpecGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+        if (m_pSpecGUI && !m_pSpecGUI->IsMouseInputEnabled())
+            m_pSpecGUI->SetMouseInputEnabled(true);
+    }
 
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
@@ -138,9 +147,7 @@ void C_MOMReplayUI::OnThink()
 
             bool negativeTime = pGhost->m_SrvData.m_iCurrentTick < pGhost->m_SrvData.m_RunData.m_iStartTickD;
             // Print "Tick: %i / %i"
-            wchar_t wLabelFrame[BUFSIZELOCL];
-            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, pGhost->m_SrvData.m_iCurrentTick, m_iTotalDuration);
-            m_pProgressLabelFrame->SetText(wLabelFrame);
+            m_pProgressLabelFrame->SetText(CConstructLocalizedString(m_pwReplayTimeTick, pGhost->m_SrvData.m_iCurrentTick, m_iTotalDuration));
 
             // Print "Time: X:XX.XX -> X:XX.XX"
             char curtime[BUFSIZETIME], totaltime[BUFSIZETIME];
@@ -152,10 +159,7 @@ void C_MOMReplayUI::OnThink()
             // Convert to Unicode
             ANSI_TO_UNICODE(curtime, wCurtime);
             ANSI_TO_UNICODE(totaltime, wTotaltime);
-            wchar_t pwTime[BUFSIZELOCL];
-            g_pVGuiLocalize->ConstructString(pwTime, sizeof(pwTime), m_pwReplayTime, 2, wCurtime, wTotaltime);
-            //V_snwprintf(pwTime, BUFSIZELOCL, m_pwReplayTime, wCurtime, wTotaltime);
-            m_pProgressLabelTime->SetText(pwTime);
+            m_pProgressLabelTime->SetText(CConstructLocalizedString(m_pwReplayTime, wCurtime, wTotaltime));
 
             if (pGhost->m_SrvData.m_RunData.m_bMapFinished)
             {
