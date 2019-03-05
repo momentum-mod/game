@@ -16,7 +16,8 @@ inline bool IsSteamInOfflineMode()
 	int offline = 0;
 	vgui::system()->GetRegistryInteger( STEAM_OFFLINE_MODE, offline );
 	return ( offline == 1 );
-}inline bool IsSteamInAuthenticationFailSafeMode()
+}
+inline bool IsSteamInAuthenticationFailSafeMode()
 {
 	int offline = 0;
 	vgui::system()->GetRegistryInteger( STEAM_AFS_MODE, offline );
