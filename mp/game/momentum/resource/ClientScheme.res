@@ -223,7 +223,8 @@ Scheme
 		ToggleButton.SelectedTextColor	"White"
 
 		Tooltip.TextColor			"White"
-		Tooltip.BgColor				"Red"
+		Tooltip.BgColor				"TransparentBlack"
+        Tooltip.TextFont    "Default"
 
 		TreeView.BgColor			"TransparentBlack"
 
