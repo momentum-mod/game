@@ -1,0 +1,22 @@
+UnlitGeneric
+{
+	"$basetexture" "console/startup_loading"
+
+	"$translucent" "1"
+
+	"$vertexcolor" "1"
+	"$vertexalpha" "1"
+	"$no_fullbright" "1"
+
+	"$nomip" "1"
+
+	Proxies
+	{
+		AnimatedTexture
+		{
+			animatedtexturevar $basetexture
+			animatedtextureframenumvar $frame
+			animatedtextureframerate 8
+		}
+	}
+}
