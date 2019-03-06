@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "hudelement.h"
 #include <vgui_controls/Panel.h>
 
@@ -71,7 +69,8 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
 
   private:
     CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
-    CPanelAnimationVar(vgui::HFont, textFont, "TextFont", "Default");
+    CPanelAnimationStringVar(32, m_szTextFont, "TextFont", "Default");
+    vgui::HFont m_hTextFont;
     CPanelAnimationVar(float, m_flOpenCloseTime, "OpenCloseTime", "1");
 
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -80,8 +79,10 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     CPanelAnimationVar(float, m_flAlphaOverride, "Alpha", "255.0");
     CPanelAnimationVar(float, m_flSelectionAlphaOverride, "SelectionAlpha", "255.0");
 
-    CPanelAnimationVar(vgui::HFont, m_hItemFont, "ItemFont", "Default");
-    CPanelAnimationVar(vgui::HFont, m_hItemFontPulsing, "ItemFontPulsing", "Default"); //"MenuItemFontPulsing");
+    CPanelAnimationStringVar(32, m_szItemFont, "ItemFont", "Default");
+    vgui::HFont m_hItemFont;
+    CPanelAnimationStringVar(32, m_szItemFontPulsing, "ItemFontPulsing", "Default"); //"MenuItemFontPulsing");
+    vgui::HFont m_hItemFontPulsing;
 
     CPanelAnimationVar(Color, m_MenuColor, "MenuColor", "MenuColor");
     CPanelAnimationVar(Color, m_ItemColor, "MenuItemColor", "ItemColor");
