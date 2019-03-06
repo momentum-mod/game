@@ -67,20 +67,39 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
     if (bFullUpdate && ((g_pMapCache->GetCurrentMapID() && flLastUp >= UPDATE_INTERVAL) || m_bNeedsUpdate))
     {
         wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
+        wchar_t *unavail = g_pVGuiLocalize->Find("MOM_API_Unavailable");
 
-        m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), waiting));
-        m_pPlayerGlobalRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_GlobalRank"), waiting));
-        m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), waiting));
-        m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), waiting));
-        m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), waiting));
-        m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), waiting));
-        m_pRunsSubmitted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RunsSubmitted"), waiting));
-        m_pTotalJumps->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalJumps"), waiting));
-        m_pTotalStrafes->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalStrafes"), waiting));
+        const uint64 uID = SteamUser()->GetSteamID().ConvertToUint64();
+        const bool bSuccess = g_pAPIRequests->GetUserStatsAndMapRank(uID,
+                                                               g_pMapCache->GetCurrentMapID(),
+                                                               UtlMakeDelegate(this, &CLeaderboardsStats::OnPlayerStats));
 
-        uint64 uID = SteamUser()->GetSteamID().ConvertToUint64();
-        g_pAPIRequests->GetUserStatsAndMapRank(uID, g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CLeaderboardsStats::OnPlayerStats));
-        m_flLastUpdate = gpGlobals->curtime;
+        KeyValuesAD dummyObj("dummy");
+        dummyObj->SetWString("mRank", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("time", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("gRank", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("gRank", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("rankXP", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("cosXP", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("mapsCompleted", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("runsSubmitted", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("totalJumps", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("totalStrafes", bSuccess ? waiting : unavail);
+        KeyValues *pDumDum = dummyObj;
+
+        m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), pDumDum));
+        m_pPlayerGlobalRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_GlobalRank"), pDumDum));
+        m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), pDumDum));
+        m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pDumDum));
+        m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), pDumDum));
+        m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), pDumDum));
+        m_pRunsSubmitted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RunsSubmitted"), pDumDum));
+        m_pTotalJumps->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalJumps"), pDumDum));
+        m_pTotalStrafes->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_TotalStrafes"), pDumDum));
+        
+        if (bSuccess)
+            m_flLastUpdate = gpGlobals->curtime;
+
         m_bNeedsUpdate = false;
     }
 
