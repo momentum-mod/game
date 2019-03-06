@@ -651,6 +651,11 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
         g_MOMBlockFixer->PlayerTouch(this, pOther);
 }
 
+void CMomentumPlayer::SetDisableBhop(bool bState)
+{
+    m_SrvData.m_bPreventPlayerBhop = bState;
+}
+
 void CMomentumPlayer::EnableAutoBhop()
 {
     m_SrvData.m_RunData.m_bAutoBhop = true;

@@ -357,6 +357,9 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
         SF_LIMIT_CROUCH = 1 << 18,  // prevent player from crouching
         SF_LIMIT_BHOP = 1 << 19     // prevent player from bhopping
     };
+private:
+    template <class T>
+    void ToggleButtons(T *pEnt, bool bEnable);
 };
 
 // CFuncShootBoost
