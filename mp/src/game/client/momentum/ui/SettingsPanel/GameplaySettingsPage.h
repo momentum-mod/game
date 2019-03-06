@@ -31,4 +31,5 @@ private:
 
     vgui::CvarTextEntry *m_pLowerSpeedCVarEntry;
     vgui::CvarToggleCheckButton *m_pLowerSpeed;
+    vgui::Label *m_pLowerSpeedLabel;
 };

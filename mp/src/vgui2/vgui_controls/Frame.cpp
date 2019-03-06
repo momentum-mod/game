@@ -761,6 +761,9 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 		MakePopup(showTaskbarIcon);
 	}
 
+    m_iTitleTextInsetXOverride = 0;
+    m_iTitleTextInsetYOverride = 0;
+
 	m_hPreviousModal = 0;
 
 	_title=null;
@@ -1445,7 +1448,7 @@ void Frame::GetClientArea(int &x, int &y, int &wide, int &tall)
 
 		yinset += m_iTitleTextInsetYOverride;
 
-		y = yinset + captionTall + border + 1;
+		y = yinset + captionTall + border + GetScaledVal(3);
 		tall = (tall - yinset) - y;
 	}
 	

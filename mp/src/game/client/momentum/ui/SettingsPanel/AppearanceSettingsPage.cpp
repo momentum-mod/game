@@ -32,16 +32,22 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
     m_pModelPreviewFrame->SetMoveable(false);
     m_pModelPreviewFrame->MoveToFront();
     m_pModelPreviewFrame->SetSizeable(false);
-    m_pModelPreviewFrame->SetTitle("Preview", false); // MOM_TODO: Localize me
+    m_pModelPreviewFrame->SetTitle("#MOM_Settings_Tab_Appearance", false);
     m_pModelPreviewFrame->SetTitleBarVisible(true);
     m_pModelPreviewFrame->SetMenuButtonResponsive(false);
-    m_pModelPreviewFrame->SetCloseButtonVisible(true);
+    m_pModelPreviewFrame->SetCloseButtonVisible(false);
     m_pModelPreviewFrame->SetMinimizeButtonVisible(false);
     m_pModelPreviewFrame->SetMaximizeButtonVisible(false);
     m_pModelPreviewFrame->PinToSibling("CMomentumSettingsPanel", PIN_TOPRIGHT, PIN_TOPLEFT);
+    m_pModelPreviewFrame->InvalidateLayout(true);
+    m_pModelPreviewFrame->MakeReadyForUse();
 
     // Actual model preview
     m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
+    int x, y, wid, tall;
+    m_pModelPreviewFrame->GetClientArea(x, y, wid, tall);
+    m_pModelPreview->SetBounds(x, y, wid, tall);
+    m_pModelPreview->SetPaintBorderEnabled(false);
     m_pModelPreview->MakeReadyForUse();
     m_pModelPreview->SetVisible(true);
 
