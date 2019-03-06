@@ -17,6 +17,7 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pYawSpeedEntry->SetAllowNumericInputOnly(true);
     m_pYawSpeedEntry->AddActionSignalTarget(this);
 
+    m_pLowerSpeedLabel = new Label(this, "LowerSpeedLabel", "#MOM_Settings_SpeedToLower");
     m_pLowerSpeedCVarEntry = new CvarTextEntry(this, "LowerSpeedEntry", "mom_weapon_speed_lower");
     m_pLowerSpeedCVarEntry->SetAllowNumericInputOnly(true);
     m_pLowerSpeedCVarEntry->AddActionSignalTarget(this);
@@ -77,6 +78,7 @@ void GameplaySettingsPage::OnCheckboxChecked(Panel* p)
     if (p == m_pLowerSpeed && m_pLowerSpeedCVarEntry)
     {
         m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
+        m_pLowerSpeedLabel->SetEnabled(m_pLowerSpeed->IsSelected());
     }
 }
 

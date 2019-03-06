@@ -4,11 +4,7 @@
 	{
 		"ControlName"		"CMomentumSettingsPanel"
 		"fieldName"		"CMomentumSettingsPanel"
-		"xpos"		"304"
-		"ypos"		"144"
-		"wide"		"266"
-		"tall"		"266"
-		"autoResize"		"1"
+		"autoResize"		"0"
 		"pinCorner"		"0"
 		"RoundedCorners"		"15"
 		"pin_corner_to_sibling"		"0"
@@ -17,6 +13,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"settitlebarvisible"		"1"
+        "sheetinset_bottom" "24"
 		"title"		"#MOM_Settings_Title"
 	}
     "Sheet"
@@ -24,34 +21,6 @@
         "ControlName" "PropertySheet"
         "fieldName" "Sheet"
     }
-    
-    "OKButton"
-    {
-       "ControlName" "Button"
-       "fieldName" "OKButton"
-       "auto_wide_tocontents" "1"
-       "textAlignment"		"center"
-       //"font" "DefaultSmall"
-    }
-    
-    "CancelButton"
-    {
-       "ControlName" "Button"
-       "fieldName" "CancelButton"
-       "auto_wide_tocontents" "1"
-       "textAlignment"		"center"
-       //"font" "DefaultSmall"
-    }
-    
-    "ApplyButton"
-    {
-       "ControlName" "Button"
-       "fieldName" "ApplyButton"
-       "auto_wide_tocontents" "1"
-       "textAlignment"		"center"
-       //"font" "DefaultSmall"
-    }
-    
     
 	"frame_topGrip"
 	{

@@ -64,6 +64,8 @@ class SettingsPageScrollPanel : public vgui::ScrollableEditablePanel
 
     SettingsPageScrollPanel(Panel *pParent, EditablePanel *pChild, const char *pName) : BaseClass(pParent, pChild, pName)
     {
+        SetSize(10, 10);
+        SetProportional(true);
         m_pChild = dynamic_cast<SettingsPage*>(pChild);
     }
 
