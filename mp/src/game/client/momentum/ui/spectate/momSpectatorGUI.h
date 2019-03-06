@@ -4,7 +4,6 @@
 #include <vgui_controls/EditablePanel.h>
 #include <game/client/iviewport.h>
 
-class IBaseFileSystem;
 class C_MOMReplayUI;
 
 //-----------------------------------------------------------------------------

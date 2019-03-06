@@ -77,6 +77,8 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     m_pPrevPlayerButton = new ImagePanel(this, "PrevPlayerButton");
     m_pNextPlayerButton = new ImagePanel(this, "NextPlayerButton");
 
+    m_pReplayControls = dynamic_cast<C_MOMReplayUI *>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
+
     LoadControlSettings("resource/ui/Spectator.res");
 
     m_pCloseButton->InstallMouseHandler(this);
@@ -85,8 +87,6 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     
     m_pPrevPlayerButton->InstallMouseHandler(this);
     m_pNextPlayerButton->InstallMouseHandler(this);
-
-    m_pReplayControls = dynamic_cast<C_MOMReplayUI *>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
 
     SetMouseInputEnabled(false);
     InvalidateLayout();
@@ -123,6 +123,8 @@ void CMOMSpectatorGUI::ApplySchemeSettings(IScheme *pScheme)
             image->SetUseFallbackFont(true, hFallbackFont);
         }
     }
+
+    Update();
 }
 
 void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
@@ -269,8 +271,7 @@ void CMOMSpectatorGUI::Update()
     // Duck bind to release mouse
     wchar_t tempControl[BUFSIZELOCL];
     UTIL_ReplaceKeyBindings(m_pwGainControl, sizeof m_pwGainControl, tempControl, sizeof tempControl);
-    if (m_pGainControlLabel)
-        m_pGainControlLabel->SetText(tempControl);
+    m_pGainControlLabel->SetText(tempControl);
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
