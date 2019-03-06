@@ -4010,9 +4010,14 @@ void Panel::PinToSibling(Panel* pSibling, PinCorner_e pinOurCorner, PinCorner_e 
 //-----------------------------------------------------------------------------
 void Panel::PinToSibling( const char *pszSibling, PinCorner_e pinOurCorner, PinCorner_e pinSibling )
 {
+    // Don't pin to the same thing again
 	if ( m_pinSibling.Get() && _pinToSibling.IsEqual_CaseSensitive(pszSibling) &&
         pinOurCorner == _pinCornerToSibling && pinSibling == _pinCornerToSibling)
 		return;
+
+    // Don't pin to ourselves
+    if (_pinToSibling.IsEqual_CaseInsensitive(_panelName))
+        return;
 
     _pinCornerToSibling = pinOurCorner;
     _pinToSiblingCorner = pinSibling;
