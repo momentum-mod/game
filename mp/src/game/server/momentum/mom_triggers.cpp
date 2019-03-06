@@ -520,6 +520,7 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
         pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
         pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
         pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
+        pMomPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
     }
     else
     {
@@ -821,20 +822,13 @@ void CTriggerLimitMovement::OnStartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        if (m_spawnflags & SF_LIMIT_FORWARD)
-            pPlayer->DisableButtons(IN_FORWARD);
-        if (m_spawnflags & SF_LIMIT_LEFT)
-            pPlayer->DisableButtons(IN_MOVELEFT);
-        if (m_spawnflags & SF_LIMIT_RIGHT)
-            pPlayer->DisableButtons(IN_MOVERIGHT);
-        if (m_spawnflags & SF_LIMIT_BACK)
-            pPlayer->DisableButtons(IN_BACK);
-        if (m_spawnflags & SF_LIMIT_JUMP)
-            pPlayer->DisableButtons(IN_JUMP);
-        if (m_spawnflags & SF_LIMIT_CROUCH)
-            pPlayer->DisableButtons(IN_DUCK);
-        if (m_spawnflags & SF_LIMIT_BHOP)
-            pPlayer->m_SrvData.m_bPreventPlayerBhop = true;
+        ToggleButtons(pPlayer, false);
+    }
+    else
+    {
+        CMomentumGhostBaseEntity *pGhostEnt = dynamic_cast<CMomentumGhostBaseEntity*>(pOther);
+        if (pGhostEnt)
+            ToggleButtons(pGhostEnt, false);
     }
 
     BaseClass::OnStartTouch(pOther);
@@ -845,24 +839,37 @@ void CTriggerLimitMovement::OnEndTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        if (m_spawnflags & SF_LIMIT_FORWARD)
-            pPlayer->EnableButtons(IN_FORWARD);
-        if (m_spawnflags & SF_LIMIT_LEFT)
-            pPlayer->EnableButtons(IN_MOVELEFT);
-        if (m_spawnflags & SF_LIMIT_RIGHT)
-            pPlayer->EnableButtons(IN_MOVERIGHT);
-        if (m_spawnflags & SF_LIMIT_BACK)
-            pPlayer->EnableButtons(IN_BACK);
-        if (m_spawnflags & SF_LIMIT_JUMP)
-            pPlayer->EnableButtons(IN_JUMP);
-        if (m_spawnflags & SF_LIMIT_CROUCH)
-            pPlayer->EnableButtons(IN_DUCK);
-        if (m_spawnflags & SF_LIMIT_BHOP)
-            pPlayer->m_SrvData.m_bPreventPlayerBhop = false;
+        ToggleButtons(pPlayer, true);
+    }
+    else
+    {
+        CMomentumGhostBaseEntity *pGhostEnt = dynamic_cast<CMomentumGhostBaseEntity*>(pOther);
+        if (pGhostEnt)
+            ToggleButtons(pGhostEnt, true);
     }
 
     BaseClass::OnEndTouch(pOther);
 }
+
+template <class T>
+void CTriggerLimitMovement::ToggleButtons(T* pEnt, bool bEnable)
+{
+    if (m_spawnflags & SF_LIMIT_FORWARD)
+        bEnable ? pEnt->EnableButtons(IN_FORWARD) : pEnt->DisableButtons(IN_FORWARD);
+    if (m_spawnflags & SF_LIMIT_LEFT)
+        bEnable ? pEnt->EnableButtons(IN_MOVELEFT) : pEnt->DisableButtons(IN_MOVELEFT);
+    if (m_spawnflags & SF_LIMIT_RIGHT)
+        bEnable ? pEnt->EnableButtons(IN_MOVERIGHT) : pEnt->DisableButtons(IN_MOVERIGHT);
+    if (m_spawnflags & SF_LIMIT_BACK)
+        bEnable ? pEnt->EnableButtons(IN_BACK) : pEnt->DisableButtons(IN_BACK);
+    if (m_spawnflags & SF_LIMIT_JUMP)
+        bEnable ? pEnt->EnableButtons(IN_JUMP) : pEnt->DisableButtons(IN_JUMP);
+    if (m_spawnflags & SF_LIMIT_CROUCH)
+        bEnable ? pEnt->EnableButtons(IN_DUCK) : pEnt->DisableButtons(IN_DUCK);
+    if (m_spawnflags & SF_LIMIT_BHOP)
+        pEnt->SetDisableBhop(!bEnable);
+}
+
 //-----------------------------------------------------------------------------------------------
 
 //---------- CFuncShootBoost --------------------------------------------------------------------

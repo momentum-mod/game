@@ -91,6 +91,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     bool m_bAllowUserTeleports;
 
+    void SetDisableBhop(bool bState);
+
     void EnableAutoBhop();
     void DisableAutoBhop();
     bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }

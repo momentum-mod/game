@@ -36,6 +36,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     void OnThink() OVERRIDE;
     void Paint() OVERRIDE;
     void Init() OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
     void LevelShutdown() OVERRIDE;
     void Reset() OVERRIDE;
     void DrawKeyTemplates();
@@ -115,6 +116,11 @@ void CHudKeyPressDisplay::Init()
 
     m_nButtons = 0;
     m_nDisabledButtons = 0;
+}
+
+void CHudKeyPressDisplay::LevelInitPostEntity()
+{
+    m_pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
 }
 
 void CHudKeyPressDisplay::LevelShutdown()
@@ -237,14 +243,14 @@ void CHudKeyPressDisplay::Paint()
 }
 void CHudKeyPressDisplay::OnThink()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (pPlayer)
+    if (m_pPlayer)
     {
-        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
-        C_MomentumOnlineGhostEntity *pOnlineEnt = pPlayer->GetOnlineGhostEnt();
+        C_MomentumReplayGhostEntity *pReplayEnt = m_pPlayer->GetReplayEnt();
+        C_MomentumOnlineGhostEntity *pOnlineEnt = m_pPlayer->GetOnlineGhostEnt();
         if (pReplayEnt)
         {
             m_bShouldDrawCounts = false; // Not worth it
+            m_nDisabledButtons = pReplayEnt->m_iDisabledButtons;
             m_nButtons = pReplayEnt->m_SrvData.m_nReplayButtons;
             m_nStrafes = pReplayEnt->m_SrvData.m_iTotalStrafes;
             m_nJumps = pReplayEnt->m_SrvData.m_iTotalJumps;
@@ -253,18 +259,19 @@ void CHudKeyPressDisplay::OnThink()
         {
             m_bShouldDrawCounts = false;
             m_nButtons = pOnlineEnt->m_nGhostButtons;
+            m_nDisabledButtons = pReplayEnt->m_iDisabledButtons;
         }
         else
         {
             m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
-            m_nDisabledButtons = pPlayer->m_afButtonDisabled;
+            m_nDisabledButtons = m_pPlayer->m_afButtonDisabled;
             if (g_MOMEventListener)
             {
                 // we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = pPlayer->m_SrvData.m_RunData.m_bTimerRunning;
+                m_bShouldDrawCounts = m_pPlayer->m_SrvData.m_RunData.m_bTimerRunning;
                 if (m_bShouldDrawCounts)
                 {
-                    CMomRunStats *stats = &pPlayer->m_RunStats;
+                    CMomRunStats *stats = &m_pPlayer->m_RunStats;
                     m_nStrafes = stats->GetZoneStrafes(0);
                     m_nJumps = stats->GetZoneJumps(0);
                 }
@@ -279,9 +286,6 @@ void CHudKeyPressDisplay::Reset()
     m_nDisabledButtons = 0;
     m_fDuckColorUntil = 0;
     m_fJumpColorUntil = 0;
-
-    // Set our player pointer every spawn, better than every frame
-    m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
 }
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 {
