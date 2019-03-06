@@ -168,6 +168,10 @@ void C_MOMReplayUI::OnThink()
                 ShowPanel(false);
             }
         }
+        else
+        {
+            ShowPanel(false);
+        }
     }
 }
 
