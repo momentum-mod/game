@@ -1,15 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================//
-
-#ifndef HUD_CHAT_H
-#define HUD_CHAT_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include <hud_basechat.h>
 #include "steam/steam_api.h"
@@ -20,10 +9,10 @@ class CHudChat : public CBaseHudChat
 {
     DECLARE_CLASS_SIMPLE(CHudChat, CBaseHudChat);
 
-public:
+  public:
     CHudChat(const char *pElementName);
 
-    virtual void	Init(void);
+    virtual void Init(void);
 
     void MsgFunc_SayText(bf_read &msg);
     void MsgFunc_SpecUpdateMsg(bf_read &msg);
@@ -36,22 +25,20 @@ public:
     void StartMessageMode(int) OVERRIDE;
     void StopMessageMode() OVERRIDE;
 
-    void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
     Color GetDefaultTextColor() OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
-private:
+  private:
     void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
 
     CUtlVector<CSteamID> m_vTypingMembers;
     CUtlVector<CSteamID> m_vMomentumOfficers;
 
-    vgui::HFont m_hfInfoTextFont;
-    Color m_cInfoTextColor, m_cDefaultTextColor;
+    Color m_cDefaultTextColor;
     bool m_bTyping;
     bool m_bIsVisible;
 
+    vgui::Label *m_pTypingMembers;
     CHudSpectatorInfo *m_pSpectatorInfo;
 };
-
-#endif	//HUD_CHAT_H

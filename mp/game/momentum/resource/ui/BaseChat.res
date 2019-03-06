@@ -14,7 +14,7 @@
 	}
     "ChatInputLine"
     {
-        "ControlName" "EditablePanel"
+        "ControlName" "Panel"
         "fieldName" "ChatInputLine"
         "visible" "1"
         "enabled" "1"
@@ -63,4 +63,20 @@
 		"font"			"ChatFont"
 		"maxchars"		"-1"
 	}
+
+    "TypingMembers"
+    {
+        "ControlName" "Label"
+        "fieldName" "TypingMembers"
+        "xpos" "0"
+        "ypos" "2"
+        "visible" "0"
+        "pin_to_sibling" "ChatFiltersButton"
+        "pin_to_sibling_corner" "2"
+        "pin_sibling_to_corner" "0"
+        "auto_wide_tocontents" "1"
+        "paintbackground" "0"
+        "font" "ChatFont"
+        "fgcolor_override" "OffWhite"
+    }
 }

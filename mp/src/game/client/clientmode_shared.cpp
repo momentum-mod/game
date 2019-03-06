@@ -831,12 +831,6 @@ void ClientModeShared::LevelInit( const char *newmap )
 {
 	m_pViewport->GetAnimationController()->StartAnimationSequence("LevelInit");
 
-	// Tell the Chat Interface
-	if ( m_pChatElement )
-	{
-		m_pChatElement->LevelInit( newmap );
-	}
-
 	// we have to fake this event clientside, because clients connect after that
 	IGameEvent *event = gameeventmanager->CreateEvent( "game_newmap" );
 	if ( event )
@@ -864,10 +858,6 @@ void ClientModeShared::LevelShutdown( void )
 	// Reset the third person camera so we don't crash
 	g_ThirdPersonManager.Init();
 
-	if ( m_pChatElement )
-	{
-		m_pChatElement->LevelShutdown();
-	}
 	if ( s_hVGuiContext != DEFAULT_VGUI_CONTEXT )
 	{
 		ivgui()->DestroyContext( s_hVGuiContext );

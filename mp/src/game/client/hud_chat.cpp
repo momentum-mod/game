@@ -1,9 +1,3 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
 #include "cbase.h"
 
 #include <vgui/ILocalize.h>
@@ -36,22 +30,16 @@ using namespace vgui;
 
 CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName), m_pSpectatorInfo(nullptr)
 {
-    m_vTypingMembers = CUtlVector<CSteamID>();
-    m_hfInfoTextFont = 0;
-
     m_bIsVisible = m_bTyping = false;
+
+    m_pTypingMembers = new Label(this, "TypingMembers", "");
+
+    LoadControlSettings("resource/ui/BaseChat.res");
 }
 
 void CHudChat::Init(void)
 {
     BaseClass::Init();
-    IScheme *pChatScheme = scheme()->GetIScheme(scheme()->GetScheme("ChatScheme"));
-    if (pChatScheme)
-    {
-        m_hfInfoTextFont = pChatScheme->GetFont("ChatFont");
-        m_cInfoTextColor = pChatScheme->GetColor("OffWhite", COLOR_WHITE);
-        m_cDefaultTextColor = pChatScheme->GetColor("OffWhite", COLOR_WHITE);
-    }
 
     HOOK_HUD_MESSAGE(CHudChat, SayText);
     HOOK_HUD_MESSAGE(CHudChat, SayText2);
@@ -81,15 +69,7 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
         return;
     }
     */
-    bool isMomentumTeam = false;
-    FOR_EACH_VEC(m_vMomentumOfficers, i)
-    {
-        if (m_vMomentumOfficers[i] == msgSender)
-        {
-            isMomentumTeam = true;
-            break;
-        }
-    }
+    const bool isMomentumTeam = m_vMomentumOfficers.Find(msgSender);
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
@@ -183,6 +163,7 @@ void CHudChat::StartMessageMode(int iMessageMode)
 {
     BaseClass::StartMessageMode(iMessageMode);
     m_bIsVisible = true;
+    m_pTypingMembers->SetVisible(true);
 }
 
 void CHudChat::StopMessageMode()
@@ -193,10 +174,13 @@ void CHudChat::StopMessageMode()
 
     // Can't be typing if we close the chat
     m_bIsVisible = m_bTyping = false;
+    m_pTypingMembers->SetVisible(false);
 }
 
 void CHudChat::OnThink()
 {
+    BaseClass::OnThink();
+
     if (g_pMomentumSteamHelper->IsLobbyValid() && GetMessageMode() != 0 && GetInputPanel())
     {
         const int isSomethingTyped = GetInputPanel()->GetTextLength() > 0;
@@ -210,6 +194,27 @@ void CHudChat::OnThink()
             g_pMomentumSteamHelper->SetLobbyMemberData(LOBBY_DATA_TYPING, nullptr);
             m_bTyping = false;
         }
+    }
+
+    const int count = m_vTypingMembers.Count();
+    if (count > 0 && m_bIsVisible)
+    {
+        CUtlString typingText;
+        if (count <= 3)
+        {
+            FOR_EACH_VEC(m_vTypingMembers, i)
+            {
+                typingText.Append(SteamFriends()->GetFriendPersonaName(m_vTypingMembers[i]));
+                typingText.Append(i < count - 1 ? ", " : " ");
+            }
+            typingText.Append("typing...");
+        }
+        else
+        {
+            typingText.Format("%d people are typing...", count);
+        }
+
+        m_pTypingMembers->SetText(typingText.Get());
     }
 }
 
@@ -236,45 +241,16 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
     }
 }
 
-void CHudChat::Paint()
-{
-    BaseClass::Paint();
-    if (m_vTypingMembers.Count() > 0 && m_bIsVisible)
-    {
-        char typingText[BUFSIZ];
-        // This line is a shameful reminder of my lack of control over C-strings
-        typingText[0] = '\0';
-        wchar_t wcTypingText[BUFSIZ];
-        if (m_vTypingMembers.Count() <= 3)
-        {
-            char nameChunk[MAX_PLAYER_NAME_LENGTH + 3];
-            for (int i = 0; i < m_vTypingMembers.Count(); i++)
-            {
-                V_strncpy(nameChunk,
-                          SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])),
-                          MAX_PLAYER_NAME_LENGTH);
-                V_strcat(nameChunk, i < m_vTypingMembers.Count() - 1 ? ", " : " ", MAX_PLAYER_NAME_LENGTH + 2);
-                V_strcat(typingText, nameChunk, BUFSIZ);
-            }
-            V_strcat(typingText, "typing...", BUFSIZ);
-        }
-        else
-        {
-            V_snprintf(typingText, BUFSIZ, "%d people typing...", m_vTypingMembers.Count());
-        }
-        const int count = g_pVGuiLocalize->ConvertANSIToUnicode(typingText, wcTypingText, BUFSIZ);
-        int w, h;
-        GetSize(w, h);
-        surface()->DrawSetTextFont(m_hfInfoTextFont);
-        surface()->DrawSetTextPos(20, h - 24);
-        surface()->DrawSetTextColor(m_cInfoTextColor);
-        surface()->DrawPrintText(wcTypingText, count);
-    }
-}
-
 Color CHudChat::GetDefaultTextColor(void) // why the fuck is this not a .res file color in CHudBaseChat !?!?!?
 {
     return m_cDefaultTextColor;
+}
+
+void CHudChat::ApplySchemeSettings(vgui::IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    m_cDefaultTextColor = pScheme->GetColor("OffWhite", COLOR_WHITE);
 }
 
 void CHudChat::SpectatorUpdate(const CSteamID &personID, const CSteamID &target)
