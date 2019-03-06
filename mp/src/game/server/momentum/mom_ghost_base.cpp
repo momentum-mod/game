@@ -9,6 +9,8 @@
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumGhostBaseEntity, DT_MOM_GHOST_BASE)
+SendPropInt(SENDINFO(m_iDisabledButtons)),
+SendPropBool(SENDINFO(m_bBhopDisabled))
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
@@ -27,6 +29,7 @@ static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED
 
 CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
 {
+    m_iDisabledButtons = 0;
 }
 
 void CMomentumGhostBaseEntity::Precache()
@@ -55,6 +58,41 @@ void CMomentumGhostBaseEntity::Spawn()
     SetViewOffset(VEC_VIEW_SCALED(this));
     UnHideGhost();
 }
+
+void CMomentumGhostBaseEntity::DisableButtons(int flags)
+{
+    m_iDisabledButtons |= flags;
+}
+
+void CMomentumGhostBaseEntity::EnableButtons(int flags)
+{
+    m_iDisabledButtons &= ~flags;
+}
+
+void CMomentumGhostBaseEntity::SetDisableBhop(bool bState)
+{
+    m_bBhopDisabled = bState;
+}
+
+void CMomentumGhostBaseEntity::HideGhost()
+{
+    // don't render the model when we're in first person mode
+    if (GetRenderMode() != kRenderNone)
+    {
+        SetRenderMode(kRenderNone);
+        AddEffects(EF_NOSHADOW);
+    }
+}
+
+void CMomentumGhostBaseEntity::UnHideGhost()
+{
+    if (GetRenderMode() != kRenderTransColor)
+    {
+        SetRenderMode(kRenderTransColor);
+        RemoveEffects(EF_NOSHADOW);
+    }
+}
+
 void CMomentumGhostBaseEntity::Think()
 {
     BaseClass::Think();
@@ -120,6 +158,13 @@ void CMomentumGhostBaseEntity::StopTimer()
         g_pMomentumTimer->DispatchTimerStateMessage(m_pCurrentSpecPlayer, false);
     }
 }
+
+void CMomentumGhostBaseEntity::RemoveSpectator()
+{
+    m_pCurrentSpecPlayer = nullptr;
+    UnHideGhost();
+}
+
 // Ripped from gamemovement for slightly better collision
 bool CMomentumGhostBaseEntity::CanUnduck(CMomentumGhostBaseEntity *pGhost)
 {

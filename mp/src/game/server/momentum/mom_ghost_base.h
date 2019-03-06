@@ -54,31 +54,17 @@ public:
     virtual bool IsOnlineGhost() const { return false; }
 
     void SetSpectator(CMomentumPlayer *player) { m_pCurrentSpecPlayer = player; }
-    void RemoveSpectator()
-    {
-        m_pCurrentSpecPlayer = nullptr;
-        UnHideGhost();
-    }
+    void RemoveSpectator();
     CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
 
+    CNetworkVar(int, m_iDisabledButtons);
+    CNetworkVar(bool, m_bBhopDisabled);
+    void DisableButtons(int flags);
+    void EnableButtons(int flags);
+    void SetDisableBhop(bool bState);
 
-    void HideGhost()
-    {
-        // don't render the model when we're in first person mode
-        if (GetRenderMode() != kRenderNone)
-        {
-            SetRenderMode(kRenderNone);
-            AddEffects(EF_NOSHADOW);
-        }
-    }
-    void UnHideGhost()
-    {
-        if (GetRenderMode() != kRenderTransColor)
-        {
-            SetRenderMode(kRenderTransColor);
-            RemoveEffects(EF_NOSHADOW);
-        }
-    }
+    void HideGhost();
+    void UnHideGhost();
 
 protected:
     virtual void Think(void);

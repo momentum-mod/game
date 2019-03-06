@@ -1,5 +1,4 @@
 #pragma once
-#include "cbase.h"
 
 class C_MomentumGhostBaseEntity : public C_BaseAnimating
 {
@@ -14,6 +13,9 @@ public:
 
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
+
+    CNetworkVar(int, m_iDisabledButtons);
+    CNetworkVar(bool, m_bBhopDisabled);
 
     CInterpolatedVar<Vector> m_iv_vecViewOffset;
 
