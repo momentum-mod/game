@@ -66,6 +66,7 @@ protected:
 	virtual void ActivateBuildMode();
 	virtual void OnKeyCodeTyped(KeyCode code);
 	virtual void RequestFocus(int direction = 0);
+    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
 
 	MESSAGE_FUNC( OnApplyButtonEnable, "ApplyButtonEnable" );
 	void EnableApplyButton(bool bEnable);

@@ -28,23 +28,36 @@ PropertyDialog::PropertyDialog(Panel *parent, const char *panelName) : Frame(par
 	_propertySheet->SetTabPosition(1);
 
 	// add the buttons
-	_okButton = new Button(this, "OKButton", "#PropertyDialog_OK");
-	_okButton->AddActionSignalTarget(this);
+	_okButton = new Button(this, "OKButton", "#PropertyDialog_OK", this, "OK");
 	_okButton->SetTabPosition(2);
-	_okButton->SetCommand("OK");
+    _okButton->SetAutoWide(true);
+    _okButton->SetAutoTall(true);
+    _okButton->SetContentAlignment(Label::a_center);
+    _okButton->SetPos(5, 0);
+    _okButton->SetTextInset(10, 0);
 	GetFocusNavGroup().SetDefaultButton(_okButton);
 
-	_cancelButton = new Button(this, "CancelButton", "#PropertyDialog_Cancel");
-	_cancelButton->AddActionSignalTarget(this);
+	_cancelButton = new Button(this, "CancelButton", "#PropertyDialog_Cancel", this, "Cancel");
 	_cancelButton->SetTabPosition(3);
-	_cancelButton->SetCommand("Cancel");
+    _cancelButton->SetAutoWide(true);
+    _cancelButton->SetAutoTall(true);
+    _cancelButton->SetContentAlignment(Label::a_center);
+    _cancelButton->SetPos(5, 0);
+    _cancelButton->SetTextInset(10, 0);
 
-	_applyButton = new Button(this, "ApplyButton", "#PropertyDialog_Apply");
-	_applyButton->AddActionSignalTarget(this);
+	_applyButton = new Button(this, "ApplyButton", "#PropertyDialog_Apply", this, "Apply");
 	_applyButton->SetTabPosition(4);
 	_applyButton->SetVisible(false);		// default to not visible
     _applyButton->SetEnabled(false);        // default to not enabled
-	_applyButton->SetCommand("Apply");
+    _applyButton->SetAutoWide(true);
+    _applyButton->SetAutoTall(true);
+    _applyButton->SetPos(0, 5);
+    _applyButton->SetTextInset(10, 0);
+    _applyButton->SetContentAlignment(Label::a_center);
+
+    _applyButton->PinToSibling("Sheet", PIN_TOPRIGHT, PIN_BOTTOMRIGHT);
+    _cancelButton->PinToSibling("ApplyButton", PIN_TOPRIGHT, PIN_TOPLEFT);
+    _okButton->PinToSibling("CancelButton", PIN_TOPRIGHT, PIN_TOPLEFT);
 
 	SetSizeable(false);
 }
@@ -114,25 +127,6 @@ void PropertyDialog::PerformLayout()
 	int x, y, wide, tall;
 	GetClientArea(x, y, wide, tall);
 	_propertySheet->SetBounds(x, y, wide, tall - iBottom);
-
-
-	// move the buttons to the bottom-right corner
-	int xpos = x + wide - 80;
-	int ypos = tall + y - 28;
-
-	if (_applyButton->IsVisible())
-	{
-		_applyButton->SetBounds(xpos, ypos, 72, 24);
-		xpos -= 80;
-	}
-
-	if (_cancelButton->IsVisible())
-	{
-		_cancelButton->SetBounds(xpos, ypos, 72, 24);
-		xpos -= 80;
-	}
-
-	_okButton->SetBounds(xpos, ypos, 72, 24);
 
 	_propertySheet->InvalidateLayout(); // tell the propertysheet to redraw!
 	Repaint();
@@ -300,4 +294,21 @@ void PropertyDialog::EnableApplyButton(bool bEnable)
 void PropertyDialog::RequestFocus(int direction)
 {
     _propertySheet->RequestFocus(direction);
+}
+
+void PropertyDialog::ApplySchemeSettings(IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    const char *pFontName = pScheme->GetResourceString("PropertyDialog.ButtonFont");
+    if (pFontName && pFontName[0])
+    {
+        HFont font = pScheme->GetFont(pFontName, IsProportional());
+        if (font)
+        {
+            _okButton->SetFont(font);
+            _applyButton->SetFont(font);
+            _cancelButton->SetFont(font);
+        }
+    }
 }
