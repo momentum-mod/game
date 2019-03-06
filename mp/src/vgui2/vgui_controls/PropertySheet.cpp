@@ -557,14 +557,7 @@ void PropertySheet::SetDraggableTabs( bool state )
 void PropertySheet::SetSmallTabs( bool state )
 {
 	m_bSmallTabs = state;
-	m_tabFont = scheme()->GetIScheme( GetScheme() )->GetFont( m_bSmallTabs ? "DefaultVerySmall" : "Default" );
-	int c = m_PageTabs.Count();
-	for ( int i = 0; i < c ; ++i )
-	{
-		PageTab *tab = m_PageTabs[ i ];
-		Assert( tab );
-		tab->SetFont( m_tabFont );
-	}
+    InvalidateLayout(false, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -895,18 +888,18 @@ void PropertySheet::ApplySchemeSettings(IScheme *pScheme)
 
     const char *pTabFontName = pScheme->GetResourceString(m_bSmallTabs ? "PropertySheet.TabFontSmall" : "PropertySheet.TabFont");
 
-    if (!pTabFontName)
+    if (!pTabFontName || !pTabFontName[0])
 	    pTabFontName = m_bSmallTabs ? "DefaultVerySmall" : "Default";
     
     m_tabFont = pScheme->GetFont(pTabFontName, IsProportional());
 
-	if ( m_pTabKV )
-	{
-		for (int i = 0; i < m_PageTabs.Count(); i++)
-		{
-			m_PageTabs[i]->ApplySettings( m_pTabKV );
-		}
-	}
+    for (int i = 0; i < m_PageTabs.Count(); i++)
+    {
+        if (m_pTabKV)
+            m_PageTabs[i]->ApplySettings(m_pTabKV);
+
+        m_PageTabs[i]->SetFont(m_tabFont);
+    }
 
 
 	//=============================================================================
