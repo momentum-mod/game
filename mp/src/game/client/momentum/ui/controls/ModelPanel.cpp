@@ -6,6 +6,8 @@
 #include "vgui/ISurface.h"
 #include "view_shared.h"
 
+#include "tier0/memdbgon.h"
+
 using namespace vgui;
 
 CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)

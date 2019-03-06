@@ -11,7 +11,7 @@ class C_RunComparisons : public CHudElement, public vgui::Panel
     DECLARE_CLASS_SIMPLE(C_RunComparisons, Panel);
 
 public:
-    C_RunComparisons(const char* pElementName);
+    C_RunComparisons(const char* pElementName, Panel *pParent = nullptr);
     ~C_RunComparisons();
 
     void OnThink() OVERRIDE;

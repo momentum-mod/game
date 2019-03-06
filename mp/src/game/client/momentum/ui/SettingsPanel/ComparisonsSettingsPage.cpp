@@ -69,8 +69,9 @@ ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pPa
     m_pStrafeShow->AddActionSignalTarget(this);
 
     m_pComparisonsFrame = nullptr;
+    m_pBogusComparisonsPanel = nullptr;
 
-    LoadControlSettings("resource/ui/SettingsPanel_ComparisonSettings.res");
+    LoadControlSettings("resource/ui/SettingsPanel_ComparisonsSettings.res");
 }
 
 ComparisonsSettingsPage::~ComparisonsSettingsPage()
@@ -79,9 +80,6 @@ ComparisonsSettingsPage::~ComparisonsSettingsPage()
 
 void ComparisonsSettingsPage::DestroyBogusComparePanel()
 {
-    if (m_pBogusComparisonsPanel)
-        m_pBogusComparisonsPanel->DeletePanel();
-
     if (m_pComparisonsFrame)
         m_pComparisonsFrame->DeletePanel();
 
@@ -101,29 +99,23 @@ void ComparisonsSettingsPage::InitBogusComparePanel()
     m_pComparisonsFrame->SetTitle("#MOM_Settings_Compare_Bogus_Run", false);
     m_pComparisonsFrame->SetTitleBarVisible(true);
     m_pComparisonsFrame->SetMenuButtonResponsive(false);
-    m_pComparisonsFrame->SetCloseButtonVisible(true);
+    m_pComparisonsFrame->SetCloseButtonVisible(false);
     m_pComparisonsFrame->SetMinimizeButtonVisible(false);
     m_pComparisonsFrame->SetMaximizeButtonVisible(false);
     m_pComparisonsFrame->PinToSibling("CMomentumSettingsPanel", PIN_TOPRIGHT, PIN_TOPLEFT);
+    m_pComparisonsFrame->InvalidateLayout(true);
 
     //Initialize a bogus version of the HUD element
-    m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel");
-    m_pBogusComparisonsPanel->SetParent(m_pComparisonsFrame);
+    m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel", m_pComparisonsFrame);
     m_pBogusComparisonsPanel->AddActionSignalTarget(this);
     m_pBogusComparisonsPanel->SetPaintBackgroundEnabled(true);
     m_pBogusComparisonsPanel->SetPaintBackgroundType(2);
     m_pBogusComparisonsPanel->Init();
-    m_pBogusComparisonsPanel->SetSize(200, 150);
-    m_pBogusComparisonsPanel->SetPos(14, 30);
+    int x, y, wid, tal;
+    m_pComparisonsFrame->GetClientArea(x, y, wid, tal);
+    m_pBogusComparisonsPanel->SetBounds(x, y, wid, tal);
     m_pBogusComparisonsPanel->LoadBogusComparisons();
-    IScheme *pClientScheme = scheme()->GetIScheme(scheme()->GetScheme("ClientScheme"));
-    if (!pClientScheme)
-    {
-        //Only load this if we haven't already
-        scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
-        pClientScheme = scheme()->GetIScheme(scheme()->GetScheme("ClientScheme"));
-    }
-    m_pBogusComparisonsPanel->ApplySchemeSettings(pClientScheme);
+    m_pBogusComparisonsPanel->SetScheme(scheme()->GetScheme("ClientScheme"));
     m_pBogusComparisonsPanel->SetVisible(true);
     m_pBogusComparisonsPanel->MakeReadyForUse();
 
