@@ -8,7 +8,7 @@
 
 #include "tier0/memdbgon.h"
 
-CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystemPerFrame(pName), zones(nullptr)
+CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystem(pName), zones(nullptr)
 {
 }
 
