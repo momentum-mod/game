@@ -256,6 +256,22 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
+void CMomentumPlayer::FlashlightTurnOn()
+{
+    AddEffects(EF_DIMLIGHT);
+    EmitSound(SND_FLASHLIGHT_ON);
+    m_playerAppearanceProps.FlashlightOn = true;
+    SendAppearance();
+}
+
+void CMomentumPlayer::FlashlightTurnOff()
+{
+    RemoveEffects(EF_DIMLIGHT);
+    EmitSound(SND_FLASHLIGHT_OFF);
+    m_playerAppearanceProps.FlashlightOn = false;
+    SendAppearance();
+}
+
 void CMomentumPlayer::SendAppearance() { g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps); }
 
 void CMomentumPlayer::Spawn()
