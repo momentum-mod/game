@@ -98,8 +98,8 @@ class CWeaponBase : public CBaseCombatWeapon
 
     virtual float GetMaxSpeed() const; // What's the player's max speed while holding this weapon.
 
-    // Get CS-specific weapon data.
-    CWeaponInfo const &GetCSWpnData() const;
+    // Get Momentum-specific weapon data.
+    CWeaponInfo const &GetMomWpnData() const;
 
     // Get specific weapon ID
     virtual CWeaponID GetWeaponID(void) const { return WEAPON_NONE; }
