@@ -60,6 +60,8 @@ class CBaseMomentumTrigger : public CTriggerMultiple
 
     const CUtlVector<Vector> &GetZonePoints() const { return m_vZonePoints; }
 
+    virtual int GetZoneType();
+
   private:
     // Point-based zone editing
     CUtlVector<Vector> m_vZonePoints;
@@ -88,6 +90,8 @@ class CTriggerTimerStop : public CBaseMomentumTrigger
 
     int GetZoneNumber() const { return m_iZoneNumber; };
     void SetZoneNumber(int num) { m_iZoneNumber = num; }
+
+    int GetZoneType() OVERRIDE;
 
   private:
     int m_iZoneNumber;
@@ -137,6 +141,7 @@ class CTriggerCheckpoint : public CBaseMomentumTrigger
     virtual KeyValues *ToKeyValues() const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
+    int GetZoneType() OVERRIDE;
   private:
     int m_iCheckpointNumber;
     // Fires when it resets all one hops.
@@ -167,6 +172,7 @@ class CTriggerStage : public CTriggerCheckpoint
     virtual KeyValues *ToKeyValues() const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
+    int GetZoneType() OVERRIDE;
   private:
     int m_iStageNumber;
 };
@@ -215,6 +221,7 @@ class CTriggerTimerStart : public CTriggerStage
     virtual KeyValues *ToKeyValues() const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
+    int GetZoneType() OVERRIDE;
   private:
     QAngle m_angLook;
 
@@ -251,6 +258,7 @@ class CTriggerTeleportCheckpoint : public CTriggerTeleportEnt
 
     virtual KeyValues *ToKeyValues() const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
+    int GetZoneType() OVERRIDE;
 };
 
 // CTriggerOnehop
@@ -279,6 +287,7 @@ class CTriggerOnehop : public CTriggerTeleportEnt
     virtual KeyValues *ToKeyValues() const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
+    int GetZoneType() OVERRIDE;
   private:
     // The time that the player initally touched the trigger
     float m_fOnStartTouchedTime;
@@ -303,6 +312,7 @@ class CTriggerResetOnehop : public CBaseMomentumTrigger
     virtual KeyValues *ToKeyValues() const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
+    int GetZoneType() OVERRIDE;
   private:
     // Fires when it resets all one hops.
     COutputEvent m_ResetOnehops;
@@ -332,6 +342,7 @@ class CTriggerMultihop : public CTriggerTeleportEnt
     virtual KeyValues *ToKeyValues() const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
+    int GetZoneType() OVERRIDE;
   private:
     // The time that the player initally touched the trigger. -1 if not checking for teleport
     float m_fOnStartTouchedTime;

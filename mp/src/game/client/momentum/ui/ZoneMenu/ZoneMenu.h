@@ -1,43 +1,31 @@
-#ifndef ZONEMENU_H
-#define ZONEMENU_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "vgui_controls/Frame.h"
-#include "hudelement.h"
-#include "c_mom_triggers.h"
 
 class C_MomZoneMenu : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(C_MomZoneMenu, vgui::Frame);
 
   public: // vgui::Frame
-    C_MomZoneMenu(vgui::Panel *pParentPanel);
-    virtual void OnMousePressed(vgui::MouseCode code) OVERRIDE;
-    virtual void OnClose() OVERRIDE;
+    C_MomZoneMenu();
 
 	MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
+    MESSAGE_FUNC_PTR_INT(OnButtonChecked, "CheckButtonChecked", panel, state);
 
-    MESSAGE_FUNC(OnCreateNewZone, "CreateNewZone");
-    MESSAGE_FUNC(OnDeleteZone, "DeleteZone");
-    MESSAGE_FUNC(OnEditZone, "EditZone");
-    MESSAGE_FUNC(OnCancelZone, "CancelZone");
-    MESSAGE_FUNC(OnSaveZones, "SaveZones");
+protected:
+    void OnCommand(const char* command) OVERRIDE;
+    void OnMousePressed(vgui::MouseCode code) OVERRIDE;
+    void OnClose() OVERRIDE;
 
   public:
-    bool ShouldBindKeys() const { return m_bBindKeys; }
     int HandleKeyInput(int down, ButtonCode_t keynum);
 
   private:
     static void OnZoneInfoThunk(bf_read &msg);
     void OnZoneInfo(bf_read &msg);
 
-    void CancelZoning();
-
-  private:
-    vgui::Label *m_pEditorTitleLabel;
+    vgui::CvarToggleCheckButton *m_pToggleZoneEdit, *m_pToggleUsePointMethod;
 
     vgui::Button *m_pCreateNewZoneButton;
     vgui::Button *m_pDeleteZoneButton;
@@ -69,4 +57,3 @@ class C_MomZoneMenu : public vgui::Frame
 };
 
 extern C_MomZoneMenu *g_pZoneMenu;
-#endif
