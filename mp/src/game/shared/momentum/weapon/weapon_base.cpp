@@ -337,19 +337,19 @@ float CWeaponBase::GetMaxSpeed() const
 }
 
 
-const CWeaponInfo &CWeaponBase::GetCSWpnData() const
+const CWeaponInfo &CWeaponBase::GetMomWpnData() const
 {
     const FileWeaponInfo_t *pWeaponInfo = &GetWpnData();
-    const CWeaponInfo *pCSInfo;
+    const CWeaponInfo *pInfo;
 
 #ifdef _DEBUG
-    pCSInfo = dynamic_cast< const CWeaponInfo* >( pWeaponInfo );
-    Assert( pCSInfo );
+    pInfo = dynamic_cast< const CWeaponInfo* >( pWeaponInfo );
+    Assert( pInfo );
 #else
-    pCSInfo = static_cast<const CCSWeaponInfo*>(pWeaponInfo);
+    pInfo = static_cast<const CWeaponInfo*>(pWeaponInfo);
 #endif
 
-    return *pCSInfo;
+    return *pInfo;
 }
 
 
@@ -365,7 +365,7 @@ const char *CWeaponBase::GetViewModel(int /*viewmodelindex = 0 -- this is ignore
         return BaseClass::GetViewModel();
     }
 
-    return GetCSWpnData().szViewModel;
+    return GetMomWpnData().szViewModel;
 }
 
 // Overridden for the CS gun overrides, since GetClassname returns the weapon_glock etc, instead
@@ -389,22 +389,22 @@ void CWeaponBase::Precache(void)
         if (ReadWeaponDataFromFileForSlot(filesystem, wpnName, &m_hWeaponFileInfo, GetEncryptionKey()))
         {
             // Get the ammo indexes for the ammo's specified in the data file
-            if (GetCSWpnData().szAmmo1[0])
+            if (GetMomWpnData().szAmmo1[0])
             {
-                m_iPrimaryAmmoType = GetAmmoDef()->Index(GetCSWpnData().szAmmo1);
+                m_iPrimaryAmmoType = GetAmmoDef()->Index(GetMomWpnData().szAmmo1);
                 if (m_iPrimaryAmmoType == -1)
                 {
                     Msg("ERROR: Weapon (%s) using undefined primary ammo type (%s)\n", GetClassname(),
-                        GetCSWpnData().szAmmo1);
+                        GetMomWpnData().szAmmo1);
                 }
             }
-            if (GetCSWpnData().szAmmo2[0])
+            if (GetMomWpnData().szAmmo2[0])
             {
-                m_iSecondaryAmmoType = GetAmmoDef()->Index(GetCSWpnData().szAmmo2);
+                m_iSecondaryAmmoType = GetAmmoDef()->Index(GetMomWpnData().szAmmo2);
                 if (m_iSecondaryAmmoType == -1)
                 {
                     Msg("ERROR: Weapon (%s) using undefined secondary ammo type (%s)\n", GetClassname(),
-                        GetCSWpnData().szAmmo2);
+                        GetMomWpnData().szAmmo2);
                 }
             }
 #if defined(CLIENT_DLL)
@@ -642,9 +642,9 @@ void CWeaponBase::DrawCrosshair()
     if (GetWeaponID() == WEAPON_SNIPER)
         return;
 
-    int iDistance = GetCSWpnData().m_iCrosshairMinDistance; // The minimum distance the crosshair can achieve...
+    int iDistance = GetMomWpnData().m_iCrosshairMinDistance; // The minimum distance the crosshair can achieve...
 
-    int iDeltaDistance = GetCSWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
+    int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
 
     if (cl_dynamiccrosshair.GetBool())
     {
@@ -992,7 +992,7 @@ bool CWeaponBase::DefaultPistolReload()
     if (pPlayer->GetAmmoCount(GetPrimaryAmmoType()) <= 0)
         return true;
 
-    if (!DefaultReload(GetCSWpnData().iDefaultClip1, 0, ACT_VM_RELOAD))
+    if (!DefaultReload(GetMomWpnData().iDefaultClip1, 0, ACT_VM_RELOAD))
         return false;
 
     pPlayer->m_SrvData.m_iShotsFired = 0;
