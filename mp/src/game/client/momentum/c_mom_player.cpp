@@ -27,6 +27,7 @@ C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_
     m_flEndSpeed = 0.0f;
     m_duckUntilOnGround = false;
     m_flStamina = 0.0f;
+    m_flGrabbableLadderTime = 0.0f;
 
     m_CurrentSlideTrigger = nullptr;
 }

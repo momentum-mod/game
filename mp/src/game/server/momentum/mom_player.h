@@ -1,15 +1,10 @@
-#ifndef MOMPLAYER_H
-#define MOMPLAYER_H
-#ifdef WIN32
 #pragma once
-#endif
 
 #include "mom_ghostdefs.h"
 #include "mom_shareddefs.h"
 #include "GameEventListener.h"
 #include "mom_modulecomms.h"
 #include "IMovementListener.h"
-#include "utlvector.h"
 
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
@@ -40,22 +35,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     }
 
     int FlashlightIsOn() OVERRIDE { return IsEffectActive(EF_DIMLIGHT); }
-
-    void FlashlightTurnOn() OVERRIDE
-    {
-        AddEffects(EF_DIMLIGHT);
-        EmitSound(SND_FLASHLIGHT_ON);
-        m_playerAppearanceProps.FlashlightOn = true;
-        SendAppearance();
-    }
-
-    void FlashlightTurnOff() OVERRIDE
-    {
-        RemoveEffects(EF_DIMLIGHT);
-        EmitSound(SND_FLASHLIGHT_OFF);
-        m_playerAppearanceProps.FlashlightOn = false;
-        SendAppearance();
-    }
+    void FlashlightTurnOn() OVERRIDE;
+    void FlashlightTurnOff() OVERRIDE;
 
     void SendAppearance();
 
@@ -72,9 +53,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     // void InitHUD() OVERRIDE;
 
     void CommitSuicide(bool bExplode = false, bool bForce = false) OVERRIDE{};
-
     void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false) OVERRIDE{};
-
     bool CanBreatheUnderwater() const OVERRIDE { return true; }
 
     void SetAllowUserTeleports(bool allow) { m_bAllowUserTeleports = allow; }
@@ -214,9 +193,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool m_bAllowUserTeleports;
 
     // Ladder stuff
-    CountdownTimer m_ladderSurpressionTimer;
-    Vector m_lastLadderNormal;
-    Vector m_lastLadderPos;
     float m_flGrabbableLadderTime;
 
 
@@ -246,4 +222,3 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool m_bWasInAir;
     bool m_bShouldLimitSpeed;
 };
-#endif // MOMPLAYER_H
