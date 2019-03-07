@@ -10,6 +10,7 @@
 #include "tier0/memdbgon.h"
 
 static CMomBaseZoneBuilder *GetZoneBuilderForMethod(int method);
+static void OnZoneEditingToggled(IConVar *var, const char *pOldVal, float fOldVal);
 static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flOldValue);
 static int GetZoneTypeToCreate();
 
@@ -17,16 +18,14 @@ static void VectorSnapToGrid(Vector &dest, float gridsize);
 static float SnapToGrid(float fl, float gridsize);
 static void DrawReticle(const Vector &pos, float retsize);
 
-static ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
-static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT,
-                                     "Lets you create zones despite map already having start and end.\n", true, 0, true,
-                                     1);
+static MAKE_TOGGLE_CONVAR_C(mom_zone_edit, "0", FCVAR_CHEAT, "Toggle zone editing.\n", OnZoneEditingToggled);
+static MAKE_TOGGLE_CONVAR(mom_zone_ignorewarning, "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n");
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
 static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
                             "The zone type that will be created when using mom_zone_mark/create. 'auto' creates a "
                             "start zone unless one already exists, in which case an end zone is created.f\n");
 static ConVar mom_zone_bonus("mom_zone_bonus", "0", FCVAR_CHEAT,
-                             "Whether the zone that is created will be a bonuz zone or not", true, 0, false, 0);
+                             "Whether the zone that is created will be a bonus zone or not", true, 0, false, 0);
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
                                             "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
                                             0, true, 1);
@@ -39,11 +38,7 @@ static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed
 // );
 static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
 static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT,
-                                    "Use the fancy new zone building method?\n", OnZoningMethodChanged);
-
-bool CMomZoneEdit::m_bFirstEdit = false;
-
-CMomZoneEdit g_MomZoneEdit;
+                                    "If 1, use a new point-based zoning method (by Mehis).\n", OnZoningMethodChanged);
 
 CON_COMMAND_F(mom_zone_zoomin, "Decrease reticle maximum distance.\n", FCVAR_CHEAT)
 {
@@ -101,7 +96,7 @@ CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity in
     {
         DevMsg("Attempting to edit '%s'\n", args[1]);
 
-        int entindex = atoi(args[1]);
+        const int entindex = Q_atoi(args[1]);
 
         if (entindex != 0)
         {
@@ -140,7 +135,7 @@ CON_COMMAND_F(mom_zone_start_setlook,
 
     if (args.ArgC() > 1)
     {
-        yaw = atof(args[1]);
+        yaw = Q_atof(args[1]);
     }
     else
     {
@@ -148,11 +143,10 @@ CON_COMMAND_F(mom_zone_start_setlook,
     }
 
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
-    CTriggerTimerStart *pStart;
 
     while (pEnt)
     {
-        pStart = static_cast<CTriggerTimerStart *>(pEnt);
+        CTriggerTimerStart *pStart = static_cast<CTriggerTimerStart *>(pEnt);
 
         if (pStart)
         {
@@ -324,14 +318,17 @@ void CMomZoneEdit::OnCreate(int zonetype)
     auto pBuild = GetBuilder();
     if (!pBuild->BuildZone(pPlayer, &pos))
     {
+        pBuild->Reset();
+        Warning("Failed to build zone!\n");
         return;
     }
 
     int type = zonetype != -1 ? zonetype : GetZoneTypeToCreate();
     if (type == -1)
     {
+        pBuild->Reset();
         // It's still -1, something's wrong
-        Warning("Failed to create zone");
+        Warning("Failed to create zone\n");
         return;
     }
 
@@ -340,6 +337,7 @@ void CMomZoneEdit::OnCreate(int zonetype)
     auto pEnt = CreateZoneEntity(type);
     if (!pEnt)
     {
+        pBuild->Reset();
         Warning("Couldn't create zone ent!\n");
         return;
     }
@@ -397,18 +395,22 @@ bool CMomZoneEdit::GetCurrentBuildSpot(CMomentumPlayer *pPlayer, Vector &vecPos)
 CMomBaseZoneBuilder *CMomZoneEdit::GetBuilder()
 {
     if (!m_pBuilder)
-    {
-        int method = mom_zone_usenewmethod.GetInt();
-        SetBuilder(GetZoneBuilderForMethod(method));
-    }
+        SetBuilder(GetZoneBuilderForMethod(mom_zone_usenewmethod.GetInt()));
 
     return m_pBuilder;
 }
 
 void CMomZoneEdit::SetBuilder(CMomBaseZoneBuilder *pNewBuilder)
 {
-    delete m_pBuilder;
+    if (m_pBuilder)
+        delete m_pBuilder;
     m_pBuilder = pNewBuilder;
+}
+
+void CMomZoneEdit::ResetBuilder()
+{
+    SetBuilder(nullptr);
+    GetBuilder();
 }
 
 CMomentumPlayer *CMomZoneEdit::GetPlayerBuilder() const
@@ -420,32 +422,17 @@ void CMomZoneEdit::LevelInitPostEntity() { StopEditing(); }
 
 void CMomZoneEdit::FrameUpdatePostEntityThink()
 {
-    if (mom_zone_edit.GetBool())
+    if (!mom_zone_edit.GetBool())
     {
-        if (!IsEditing())
-        {
-            m_bEditing = true;
-
-            // Send message to client to excuse bad zone building
-            if (!m_bFirstEdit)
-            {
-                CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
-                filter.MakeReliable();
-                UserMessageBegin(filter, "MB_EditingZone");
-                MessageEnd();
-            }
-            m_bFirstEdit = true;
-        }
-    }
-    else
-    {
-        if (IsEditing())
+        if (m_bEditing)
             StopEditing();
-
         return;
     }
 
-    auto pPlayer = GetPlayerBuilder();
+    if (!m_bEditing)
+        m_bEditing = true;
+
+    const auto pPlayer = GetPlayerBuilder();
     if (!pPlayer)
         return;
 
@@ -531,74 +518,69 @@ CBaseMomentumTrigger *CMomZoneEdit::CreateZoneEntity(int type)
     return pRet;
 }
 
-void CMomZoneEdit::SetZoneProps(CBaseEntity *pEnt)
+void CMomZoneEdit::SetZoneProps(CBaseMomentumTrigger *pEnt)
 {
-    if (auto *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt))
+    switch (pEnt->GetZoneType())
     {
-        // bhop speed limit
-        if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
+    case MOMZONETYPE_START:
         {
-            pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
-            pStart->SetIsLimitingSpeed(true);
-        }
-        else
-        {
-            pStart->SetIsLimitingSpeed(false);
-        }
-
-        pStart->SetZoneNumber(mom_zone_bonus.GetInt());
-    }
-
-    else if (auto *pStop = dynamic_cast<CTriggerTimerStop *>(pEnt))
-    {
-        pStop->SetZoneNumber(mom_zone_bonus.GetInt());
-    }
-
-    else if (auto *pStage = dynamic_cast<CTriggerStage *>(pEnt))
-    {
-        if (mom_zone_stage_num.GetInt() > 0)
-        {
-            pStage->SetStageNumber(mom_zone_stage_num.GetInt());
-        }
-        else
-        {
-            int higheststage = 1;
-            CTriggerStage *pTempStage;
-
-            CBaseEntity *pTemp = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage");
-            while (pTemp)
+            auto *pStart = static_cast<CTriggerTimerStart *>(pEnt);
+            // bhop speed limit
+            if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
             {
-                pTempStage = static_cast<CTriggerStage *>(pTemp);
-
-                if (pTempStage && pTempStage->GetStageNumber() > higheststage)
-                {
-                    higheststage = pTempStage->GetStageNumber();
-                }
-
-                pTemp = gEntList.FindEntityByClassname(pTemp, "trigger_momentum_timer_stage");
+                pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
+                pStart->SetIsLimitingSpeed(true);
+            }
+            else
+            {
+                pStart->SetIsLimitingSpeed(false);
             }
 
-            pStage->SetStageNumber(higheststage + 1);
+            pStart->SetZoneNumber(mom_zone_bonus.GetInt());
         }
+        break;
+    case MOMZONETYPE_STOP:
+        {
+            static_cast<CTriggerTimerStop *>(pEnt)->SetZoneNumber(mom_zone_bonus.GetInt());
+        }
+        break;
+    case MOMZONETYPE_STAGE:
+        {
+            auto *pStage = static_cast<CTriggerStage *>(pEnt);
+            if (mom_zone_stage_num.GetInt() > 0)
+            {
+                pStage->SetStageNumber(mom_zone_stage_num.GetInt());
+            }
+            else
+            {
+                int higheststage = 1;
+
+                CBaseEntity *pTemp = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage");
+                while (pTemp)
+                {
+                    CTriggerStage *pTempStage = static_cast<CTriggerStage *>(pTemp);
+
+                    if (pTempStage && pTempStage->GetStageNumber() > higheststage)
+                    {
+                        higheststage = pTempStage->GetStageNumber();
+                    }
+
+                    pTemp = gEntList.FindEntityByClassname(pTemp, "trigger_momentum_timer_stage");
+                }
+
+                pStage->SetStageNumber(higheststage + 1);
+            }
+        }
+    default:
+        break;
     }
 }
 
 int CMomZoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
 {
-    CTriggerTimerStart *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
-    if (pStart)
-        return MOMZONETYPE_START;
-
-    /*CTriggerTeleportCheckpoint *pCP = dynamic_cast<CTriggerTeleportCheckpoint *>( pEnt );
-    if ( pCP ) return 1;*/
-
-    CTriggerTimerStop *pStop = dynamic_cast<CTriggerTimerStop *>(pEnt);
-    if (pStop)
-        return MOMZONETYPE_STOP;
-
-    CTriggerStage *pStage = dynamic_cast<CTriggerStage *>(pEnt);
-    if (pStage)
-        return MOMZONETYPE_STAGE;
+    CBaseMomentumTrigger *pTrigger = dynamic_cast<CBaseMomentumTrigger*>(pEnt);
+    if (pTrigger)
+        return pTrigger->GetZoneType();
 
     return -1;
 }
@@ -641,8 +623,16 @@ static CMomBaseZoneBuilder *GetZoneBuilderForMethod(int method)
 
 static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flOldValue)
 {
-    CMomBaseZoneBuilder *pBuilder = GetZoneBuilderForMethod(mom_zone_usenewmethod.GetInt());
-    g_MomZoneEdit.SetBuilder(pBuilder);
+    g_MomZoneEdit.ResetBuilder();
+}
+
+void OnZoneEditingToggled(IConVar* var, const char* pOldVal, float fOldVal)
+{
+    ConVarRef varRef(var);
+    if (!varRef.GetBool())
+    {
+        g_MomZoneEdit.OnCancel();
+    }
 }
 
 static int GetZoneTypeToCreate()
@@ -708,3 +698,7 @@ static int GetZoneTypeToCreate()
 
     return zonetype;
 }
+
+
+// Expose to DLL
+CMomZoneEdit g_MomZoneEdit;

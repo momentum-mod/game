@@ -1,8 +1,4 @@
-#ifndef MAPZONES_EDIT_H
-#define MAPZONES_EDIT_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 class CBaseMomentumTrigger;
 class CMomentumPlayer;
@@ -10,18 +6,15 @@ class CMomBaseZoneBuilder;
 
 class CMomZoneEdit : public CAutoGameSystemPerFrame
 {
-public:
+  public:
     CMomZoneEdit();
     ~CMomZoneEdit();
-
 
     bool IsEditing() const { return m_bEditing; }
     void StopEditing();
 
-
     virtual void LevelInitPostEntity() OVERRIDE;
     virtual void FrameUpdatePostEntityThink() OVERRIDE;
-
 
     void OnCreate(int zonetype = -1);
     void OnMark();
@@ -30,28 +23,25 @@ public:
 
     bool GetCurrentBuildSpot(CMomentumPlayer *pPlayer, Vector &vecPos);
 
+    void IncreaseZoom(float dist) { m_flReticleDist = fminf(m_flReticleDist + dist, 2048.0f); }
+    void DecreaseZoom(float dist) { m_flReticleDist = fmaxf(m_flReticleDist - dist, 16.0f); }
 
-    void IncreaseZoom( float dist ) { m_flReticleDist = fminf( m_flReticleDist + dist, 2048.0f ); }
-    void DecreaseZoom( float dist ) { m_flReticleDist = fmaxf( m_flReticleDist - dist, 16.0f ); }
+    int GetEntityZoneType(CBaseEntity *pEnt);
+    CBaseMomentumTrigger *CreateZoneEntity(int type);
+    void SetZoneProps(CBaseMomentumTrigger *pEnt);
+    int ShortNameToZoneType(const char *in);
 
-    static int                      GetEntityZoneType(CBaseEntity *pEnt);
-    static CBaseMomentumTrigger     *CreateZoneEntity(int type);
-    static void                     SetZoneProps(CBaseEntity *pEnt);
-    static int                      ShortNameToZoneType(const char *in);
+    CMomBaseZoneBuilder *GetBuilder();
+    void SetBuilder(CMomBaseZoneBuilder *pNewBuilder);
+    void ResetBuilder();
+    CMomentumPlayer *GetPlayerBuilder() const;
 
-    CMomBaseZoneBuilder     *GetBuilder();
-    void                    SetBuilder(CMomBaseZoneBuilder *pNewBuilder);
-    CMomentumPlayer         *GetPlayerBuilder() const;
-
-private:
+  private:
     bool m_bEditing;
-    static bool m_bFirstEdit;
 
     float m_flReticleDist;
 
-    CMomBaseZoneBuilder* m_pBuilder;
+    CMomBaseZoneBuilder *m_pBuilder;
 };
 
 extern CMomZoneEdit g_MomZoneEdit;
-
-#endif // MAPZONES_EDIT_H

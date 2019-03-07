@@ -31,6 +31,11 @@ bool CBaseMomentumTrigger::TestCollision(const Ray_t &ray, unsigned int mask, tr
     return true;
 }
 
+int CBaseMomentumTrigger::GetZoneType()
+{
+    return MOMZONETYPE_INVALID;
+}
+
 void CBaseMomentumTrigger::InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs)
 {
     // We are able to create a vphysics object just fine, but how physics work IN vphysics is no good for us.
@@ -194,7 +199,12 @@ bool CTriggerStage::LoadFromKeyValues(KeyValues *kv)
     SetStageNumber(kv->GetInt("number"));
 
     return true;
-};
+}
+
+int CTriggerStage::GetZoneType()
+{
+    return MOMZONETYPE_STAGE;
+}
 //------------------------------------------------------------------------------------------
 
 //---------- CTriggerTimerStart ------------------------------------------------------------
@@ -262,7 +272,12 @@ bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *kv)
     }
 
     return true;
-};
+}
+
+int CTriggerTimerStart::GetZoneType()
+{
+    return MOMZONETYPE_START;
+}
 
 void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
 {
@@ -629,7 +644,13 @@ bool CTriggerTimerStop::LoadFromKeyValues(KeyValues *kv)
     SetZoneNumber(kv->GetInt("ZoneNumber"));
 
     return true;
-};
+}
+
+int CTriggerTimerStop::GetZoneType()
+{
+    return MOMZONETYPE_STOP;
+}
+
 //----------------------------------------------------------------------------------------------
 
 //---------- CTriggerCheckpoint ----------------------------------------------------------------
@@ -672,7 +693,13 @@ bool CTriggerCheckpoint::LoadFromKeyValues(KeyValues *kv)
     SetCheckpointNumber(kv->GetInt("number"));
 
     return true;
-};
+}
+
+int CTriggerCheckpoint::GetZoneType()
+{
+    return MOMZONETYPE_CP;
+}
+
 //----------------------------------------------------------------------------------------------
 
 //------------- CFilterCheckpoint --------------------------------------------------------------
@@ -788,7 +815,12 @@ bool CTriggerTeleportCheckpoint::LoadFromKeyValues(KeyValues *kv)
     m_target = MAKE_STRING(kv->GetString("destinationname"));
 
     return true;
-};
+}
+
+int CTriggerTeleportCheckpoint::GetZoneType()
+{
+    return MOMZONETYPE_CPTELE;
+}
 //-----------------------------------------------------------------------------------------------
 
 //------------ CTriggerOnehop -------------------------------------------------------------------
@@ -876,7 +908,12 @@ bool CTriggerOnehop::LoadFromKeyValues(KeyValues *kv)
     m_target = MAKE_STRING(kv->GetString("destinationname"));
 
     return true;
-};
+}
+
+int CTriggerOnehop::GetZoneType()
+{
+    return MOMZONETYPE_ONEHOP;
+}
 //-----------------------------------------------------------------------------------------------
 
 //------- CTriggerResetOnehop -------------------------------------------------------------------
@@ -914,7 +951,12 @@ bool CTriggerResetOnehop::LoadFromKeyValues(KeyValues *kv)
     SetName(MAKE_STRING("ResetOnehop Trigger"));
 
     return true;
-};
+}
+
+int CTriggerResetOnehop::GetZoneType()
+{
+    return MOMZONETYPE_RESETONEHOP;
+}
 //-----------------------------------------------------------------------------------------------
 
 //---------- CTriggerMultihop -------------------------------------------------------------------
@@ -980,7 +1022,13 @@ bool CTriggerMultihop::LoadFromKeyValues(KeyValues *kv)
     m_target = MAKE_STRING(kv->GetString("destinationname"));
 
     return true;
-};
+}
+
+int CTriggerMultihop::GetZoneType()
+{
+    return MOMZONETYPE_MULTIHOP;
+}
+
 //-----------------------------------------------------------------------------------------------
 
 //--------- CTriggerUserInput -------------------------------------------------------------------

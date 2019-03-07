@@ -1,15 +1,17 @@
 #include "cbase.h"
+
+#include <usermessages.h>
 #include "ZoneMenu.h"
 #include "clientmode.h"
-#include "icliententitylist.h"
-#include "mom_player_shared.h"
-#include "util\mom_util.h"
-#include <usermessages.h>
+
 #include <vgui_controls/Button.h>
-#include <vgui_controls/Label.h>
 #include <vgui_controls/ComboBox.h>
 #include <vgui_controls/CvarSlider.h>
 #include <vgui_controls/CvarTextEntry.h>
+#include <vgui_controls/Label.h>
+#include "vgui_controls/CvarToggleCheckButton.h"
+
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -17,57 +19,56 @@ using namespace vgui;
 
 C_MomZoneMenu *g_pZoneMenu = nullptr;
 
-CON_COMMAND(mom_show_zonemenu, "Shows zoning menu")
+CON_COMMAND(mom_zone_showmenu, "Shows zoning menu")
 {
     if (!g_pZoneMenu)
     {
-        g_pZoneMenu = new C_MomZoneMenu(g_pClientMode->GetViewport());
+        g_pZoneMenu = new C_MomZoneMenu();
     }
     g_pZoneMenu->Activate();
 }
 
-C_MomZoneMenu::C_MomZoneMenu(Panel *pParentPanel) : Frame(pParentPanel, "ZoneMenu")
+C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
 {
     usermessages->HookMessage("ZoneInfo", OnZoneInfoThunk);
-
+    SetProportional(true);
+    SetBounds(9, 96, 270, 150);
     m_bBindKeys = false;
     m_eZoneAction = ZONEACTION_NONE;
 
-    m_pEditorTitleLabel = new Label(this, "ZoneMenuEditorLabel", "");
+    m_pToggleZoneEdit = new CvarToggleCheckButton(this, "ToggleZoneEdit", "#MOM_ZoneMenu_ToggleEdit", "mom_zone_edit");
+    m_pToggleZoneEdit->AddActionSignalTarget(this);
 
-    m_pCreateNewZoneButton = new Button(this, "CreateNewZoneButton", "");
-    m_pDeleteZoneButton    = new Button(this, "DeleteZoneButton", "");
-    m_pEditZoneButton      = new Button(this, "EditZoneButton", "");
-    m_pCancelZoneButton    = new Button(this, "CancelZoneButton", "");
-    m_pSaveZonesButton     = new Button(this, "SaveZonesButton", "");
+    m_pToggleUsePointMethod = new CvarToggleCheckButton(this, "TogglePointMethod", "#MOM_ZoneMenu_TogglePointMethod", "mom_zone_usenewmethod");
+    m_pToggleUsePointMethod->AddActionSignalTarget(this);
 
-    m_pCreateNewZoneButton->SetCommand(new KeyValues("CreateNewZone"));
-    m_pDeleteZoneButton->SetCommand(new KeyValues("DeleteZone"));
-    m_pEditZoneButton->SetCommand(new KeyValues("EditZone"));
-    m_pCancelZoneButton->SetCommand(new KeyValues("CancelZone"));
-    m_pSaveZonesButton->SetCommand(new KeyValues("SaveZones"));
+    m_pCreateNewZoneButton = new Button(this, "CreateNewZoneButton", "#MOM_ZoneMenu_CreateNewZone", this, "CreateNewZone");
+    m_pDeleteZoneButton = new Button(this, "DeleteZoneButton", "#MOM_ZoneMenu_DeleteZone", this, "DeleteZone");
+    m_pEditZoneButton = new Button(this, "EditZoneButton", "#MOM_ZoneMenu_EditZone", this, "EditZone");
+    m_pCancelZoneButton = new Button(this, "CancelZoneButton", "#MOM_ZoneMenu_CancelZone", this, "CancelZone");
+    m_pSaveZonesButton = new Button(this, "SaveZonesButton", "#MOM_ZoneMenu_SaveZones", this, "SaveZones");
 
-    m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "");
+    m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "#MOM_ZoneMenu_ZoneType");
     m_pZoneTypeCombo = new ComboBox(this, "ZoneTypeCombo", 7, false);
-    m_pZoneTypeCombo->AddItem("Auto",        new KeyValues("vals", "zone_type", "auto",  "bonus", "0"));
-    m_pZoneTypeCombo->AddItem("Start",       new KeyValues("vals", "zone_type", "start", "bonus", "0"));
-    m_pZoneTypeCombo->AddItem("End",         new KeyValues("vals", "zone_type", "end",   "bonus", "0"));
-    m_pZoneTypeCombo->AddItem("Bonus Start", new KeyValues("vals", "zone_type", "start", "bonus", "1"));
-    m_pZoneTypeCombo->AddItem("Bonus End",   new KeyValues("vals", "zone_type", "end",   "bonus", "1"));
-    m_pZoneTypeCombo->AddItem("Stage",       new KeyValues("vals", "zone_type", "stage", "bonus", "0"));
-    m_pZoneTypeCombo->AddItem("Checkpoint",  new KeyValues("vals", "zone_type", "cp",    "bonus", "0"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Auto", new KeyValues("vals", "zone_type", "auto"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Start", new KeyValues("vals", "zone_type", "start"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_End", new KeyValues("vals", "zone_type", "end"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_BStart", new KeyValues("vals", "zone_type", "start", "bonus", "1"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_BEnd", new KeyValues("vals", "zone_type", "end", "bonus", "1"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Stage", new KeyValues("vals", "zone_type", "stage"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Checkpoint", new KeyValues("vals", "zone_type", "cp"));
     m_pZoneTypeCombo->GetMenu()->SetTypeAheadMode(Menu::NO_TYPE_AHEAD_MODE); // Disable the annoying type ahead
-    m_pZoneTypeCombo->SetNumberOfEditLines(7); // Make sure they're all visible at once
     m_pZoneTypeCombo->ActivateItemByRow(0);
 
-    m_pGridSizeLabel        = new Label(this, "GridSizeLabel", "");
-    m_pGridSizeSlider       = new CvarSlider(this, "GridSizeSlider");
-    m_pGridSizeTextEntry    = new CvarTextEntry(this, "GridSizeTextEntry", "");
+    m_pGridSizeLabel = new Label(this, "GridSizeLabel", "");
+    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider");
+    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid");
     m_bUpdateGridSizeSlider = false;
 
     LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
 
     SetSizeable(false);
+    SetClipToParent(true);
 }
 
 int C_MomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
@@ -78,19 +79,30 @@ int C_MomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
         SetKeyBoardInputEnabled(true);
         return true;
     }
-    else if (ShouldBindKeys() && down)
+    if (m_bBindKeys && down)
     {
         if (keynum == MOUSE_LEFT)
         {
             engine->ExecuteClientCmd("mom_zone_mark");
             return true;
         }
-        else if (keynum == KEY_DELETE)
+        if (keynum == KEY_DELETE)
+        {
+            m_eZoneAction = ZONEACTION_DELETE;
+            engine->ExecuteClientCmd("mom_zone_info");
+            return true;
+        }
+        if (keynum == KEY_BACKSPACE)
         {
             engine->ExecuteClientCmd("mom_zone_back");
             return true;
         }
-        else if (keynum == KEY_ENTER)
+        if (keynum == KEY_END)
+        {
+            engine->ExecuteClientCmd("mom_zone_cancel");
+            return true;
+        }
+        if (keynum == KEY_ENTER || keynum == KEY_PAD_ENTER)
         {
             engine->ExecuteClientCmd("mom_zone_create");
             return true;
@@ -129,9 +141,7 @@ void C_MomZoneMenu::OnZoneInfo(bf_read &msg)
         bool old = mom_zone_edit.GetBool();
         mom_zone_edit.SetValue(true);
 
-        char buf[64];
-        Q_snprintf(buf, sizeof(buf), "mom_zone_delete %i", zoneidx);
-        engine->ExecuteClientCmd(buf);
+        engine->ExecuteClientCmd(CFmtStr("mom_zone_delete %i", zoneidx));
 
         mom_zone_edit.SetValue(old);
 
@@ -141,9 +151,7 @@ void C_MomZoneMenu::OnZoneInfo(bf_read &msg)
     {
         mom_zone_edit.SetValue(true);
 
-        char buf[64];
-        Q_snprintf(buf, sizeof(buf), "mom_zone_edit_existing %i", zoneidx);
-        engine->ExecuteClientCmd(buf);
+        engine->ExecuteClientCmd(CFmtStr("mom_zone_edit_existing %i", zoneidx));
 
         break;
     }
@@ -156,15 +164,6 @@ void C_MomZoneMenu::OnZoneInfo(bf_read &msg)
 
     // Clear the command
     m_eZoneAction = ZONEACTION_NONE;
-}
-
-void C_MomZoneMenu::CancelZoning()
-{
-    static ConVarRef mom_zone_edit("mom_zone_edit");
-
-    engine->ExecuteClientCmd("mom_zone_cancel");
-    mom_zone_edit.SetValue(false);
-    m_bBindKeys = false;
 }
 
 void C_MomZoneMenu::OnMousePressed(MouseCode code)
@@ -180,12 +179,12 @@ void C_MomZoneMenu::OnMousePressed(MouseCode code)
 
 void C_MomZoneMenu::OnClose()
 {
-    CancelZoning();
+    engine->ExecuteClientCmd("mom_zone_edit 0");
 
     BaseClass::OnClose();
 }
 
-void C_MomZoneMenu::OnControlModified(Panel* pPanel)
+void C_MomZoneMenu::OnControlModified(Panel *pPanel)
 {
     if (pPanel == m_pGridSizeSlider)
     {
@@ -205,6 +204,10 @@ void C_MomZoneMenu::OnControlModified(Panel* pPanel)
         Q_snprintf(szVal, sizeof(szVal), "%.0f", flVal);
         m_pGridSizeTextEntry->SetText(szVal);
     }
+    else if (pPanel == m_pToggleZoneEdit)
+        m_pToggleZoneEdit->ApplyChanges();
+    else if (pPanel == m_pToggleUsePointMethod)
+        m_pToggleUsePointMethod->ApplyChanges();
 }
 
 void C_MomZoneMenu::OnTextChanged(Panel *pPanel)
@@ -221,36 +224,56 @@ void C_MomZoneMenu::OnTextChanged(Panel *pPanel)
 
         KeyValues *pData = m_pZoneTypeCombo->GetActiveItemUserData();
         mom_zone_type.SetValue(pData->GetString("zone_type"));
-        mom_zone_bonus.SetValue(pData->GetInt("bonus"));
+        mom_zone_bonus.SetValue(pData->GetBool("bonus"));
     }
 }
 
-void C_MomZoneMenu::OnCreateNewZone()
+void C_MomZoneMenu::OnButtonChecked(Panel *pPanel, int state)
 {
-    ConVarRef mom_zone_edit("mom_zone_edit");
-    ConVarRef mom_zone_usenewmoethod("mom_zone_usenewmethod");
-
-    mom_zone_usenewmoethod.SetValue(true);
-    mom_zone_edit.SetValue(true);
-
-    // return control to game so they can start zoning immediately
-    m_bBindKeys = true;
-    SetMouseInputEnabled(false);
-    SetKeyBoardInputEnabled(false);
+    if (pPanel == m_pToggleZoneEdit)
+    {
+        m_pToggleUsePointMethod->SetEnabled(state);
+        m_pCreateNewZoneButton->SetEnabled(state);
+        m_pEditZoneButton->SetEnabled(state);
+        m_pCancelZoneButton->SetEnabled(state);
+        m_pDeleteZoneButton->SetEnabled(state);
+        m_pSaveZonesButton->SetEnabled(state);
+        m_bBindKeys = state;
+    }
+    else if (pPanel == m_pToggleUsePointMethod)
+    {
+        engine->ExecuteClientCmd("mom_zone_cancel");
+    }
 }
 
-void C_MomZoneMenu::OnDeleteZone()
+
+void C_MomZoneMenu::OnCommand(const char *command)
 {
-    m_eZoneAction = ZONEACTION_DELETE;
-    engine->ExecuteClientCmd("mom_zone_info");
+    if (FStrEq(command, "CreateNewZone"))
+    {
+        // return control to game so they can start zoning immediately
+        m_bBindKeys = true;
+        SetMouseInputEnabled(false);
+        SetKeyBoardInputEnabled(false);
+    }
+    else if (FStrEq(command, "DeleteZone"))
+    {
+        m_eZoneAction = ZONEACTION_DELETE;
+        engine->ExecuteClientCmd("mom_zone_info");
+    }
+    else if (FStrEq(command, "EditZone"))
+    {
+        m_eZoneAction = ZONEACTION_EDIT;
+        engine->ExecuteClientCmd("mom_zone_info");
+    }
+    else if (FStrEq(command, "CancelZone"))
+    {
+        engine->ExecuteClientCmd("mom_zone_cancel");
+    }
+    else if (FStrEq(command, "SaveZones"))
+    {
+        engine->ExecuteClientCmd("mom_zone_generate");
+    }
+    else
+        BaseClass::OnCommand(command);
 }
-
-void C_MomZoneMenu::OnEditZone()
-{
-    m_eZoneAction = ZONEACTION_EDIT;
-    engine->ExecuteClientCmd("mom_zone_info");
-}
-
-void C_MomZoneMenu::OnCancelZone() { CancelZoning(); }
-
-void C_MomZoneMenu::OnSaveZones() { engine->ExecuteClientCmd("mom_zone_generate"); }
