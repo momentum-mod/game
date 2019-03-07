@@ -102,6 +102,16 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 	BaseClass::PostDataUpdate(updateType);
 }
 
+C_MomentumReplayGhostEntity* C_MomentumPlayer::GetReplayEnt() const
+{
+    return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
+}
+
+C_MomentumOnlineGhostEntity* C_MomentumPlayer::GetOnlineGhostEnt() const
+{
+    return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
+}
+
 // Overridden for Ghost entity
 Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
 {
