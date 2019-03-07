@@ -162,6 +162,8 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
                 pPlayer->m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
+            stageEvent->SetInt("ent", pPlayer->entindex());
+            stageEvent->SetInt("num", stageNum);
         }
 
         // Status
@@ -175,6 +177,8 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
             pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
+            stageEvent->SetInt("ent", pGhost->entindex());
+            stageEvent->SetInt("num", stageNum);
         }
     }
 
@@ -513,6 +517,7 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
 }
 void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
 {
+    IGameEvent *pStageEvent = nullptr;
     CMomentumPlayer *pMomPlayer = ToCMOMPlayer(pOther);
     if (pMomPlayer)
     {
@@ -521,6 +526,10 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
         pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
         pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
         pMomPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
+
+        pStageEvent = gameeventmanager->CreateEvent("zone_enter");
+        pStageEvent->SetInt("ent", pMomPlayer->entindex());
+        pStageEvent->SetInt("num", m_iZoneNumber);
     }
     else
     {
@@ -530,8 +539,17 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
             pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
             pGhost->m_SrvData.m_RunData.m_iCurrentZone = pGhost->m_SrvData.m_RunData.m_iOldZone;
             pGhost->m_SrvData.m_RunData.m_iBonusZone = pGhost->m_SrvData.m_RunData.m_iOldBonusZone;
+
+            pStageEvent = gameeventmanager->CreateEvent("zone_enter");
+            pStageEvent->SetInt("ent", pGhost->entindex());
+            pStageEvent->SetInt("num", m_iZoneNumber);
         }
     }
+    if (pStageEvent)
+    {
+        gameeventmanager->FireEvent(pStageEvent);
+    }
+
     BaseClass::OnEndTouch(pOther);
 }
 //----------------------------------------------------------------------------------------------

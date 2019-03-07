@@ -43,7 +43,7 @@ CON_COMMAND(mom_discord_debug, "Help debug discord integration\n")
 }
 #endif
 
-CMomentumDiscord::CMomentumDiscord() : CAutoGameSystemPerFrame("DiscordRPC")
+CMomentumDiscord::CMomentumDiscord() : CAutoGameSystemPerFrame("DiscordRPC"), m_pPlayer(nullptr)
 {
     m_ulSpectateTargetUser = 0;
     m_szSpectateTargetUser[0] = '\0';
@@ -55,6 +55,7 @@ CMomentumDiscord::CMomentumDiscord() : CAutoGameSystemPerFrame("DiscordRPC")
     m_iDiscordInstance = 0;
     m_iUpdateFrame = 0;
     m_bInMap = false;
+    m_bValid = false;
 
     m_szSpectateTargetLobby[0] = '\0';
 
@@ -78,23 +79,38 @@ CMomentumDiscord::CMomentumDiscord() : CAutoGameSystemPerFrame("DiscordRPC")
 // Called once on game start
 void CMomentumDiscord::PostInit()
 {
-    ListenForGameEvent("lobby_leave");
+    if (!(SteamUser() && SteamMatchmaking()))
+    {
+        Warning("Couldn't load required Steam APIs for Discord RPC!\n");
+        m_bValid = false;
+    }
+    else
+    {
+        ListenForGameEvent("lobby_leave");
+        ListenForGameEvent("zone_enter");
+        ListenForGameEvent("zone_exit");
+        ListenForGameEvent("spec_target_updated");
+        ListenForGameEvent("spec_start");
+        ListenForGameEvent("spec_end");
 
-    DiscordInit();
+        DiscordInit();
 
-    // Default discord information
-    V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        // Default discord information
+        V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
 
-    GetSteamUserID();
+        m_sSteamUserID = SteamUser()->GetSteamID();
+        m_bValid = true;
+    }
 }
 
 // Called each time a map is joined after entities are initialized
 void CMomentumDiscord::LevelInitPostEntity()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (!pPlayer)
+    if (!m_bValid)
         return;
+
+    m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
 
     m_bInMap = true;
 
@@ -110,6 +126,7 @@ void CMomentumDiscord::LevelInitPostEntity()
         V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
     }
 
+    V_strncpy(m_szDiscordState, "Playing", DISCORD_MAX_BUFFER_SIZE);
     V_strncpy(m_szDiscordDetails, MapName(), DISCORD_MAX_BUFFER_SIZE);
     V_strncpy(m_szDiscordLargeImageText, MapName(), DISCORD_MAX_BUFFER_SIZE);
     m_iDiscordStartTimestamp = time(nullptr);
@@ -125,6 +142,9 @@ void CMomentumDiscord::LevelInitPostEntity()
 // Called each time a map is left
 void CMomentumDiscord::LevelShutdownPreEntity()
 {
+    if (!m_bValid)
+        return;
+
     m_bInMap = false;
     ClearDiscordFields(false); // Pass false to retain party/lobby related fields
     V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
@@ -134,14 +154,13 @@ void CMomentumDiscord::LevelShutdownPreEntity()
 // Called every frame
 void CMomentumDiscord::Update(float frametime)
 {
+    if (!m_bValid)
+        return;
+
     if (m_iUpdateFrame++ == DISCORD_FRAME_UPDATE_FREQ)
     {
         // Stuff that can be done every ~1 second
         m_iUpdateFrame = 0;
-        if (m_bInMap)
-            UpdateStatusString();
-        UpdateDiscordPartyIdFromSteam();
-        UpdateLobbyNumbers();
         DiscordUpdate();
     }
 
@@ -155,8 +174,8 @@ void CMomentumDiscord::Update(float frametime)
 // Called on game quit
 void CMomentumDiscord::Shutdown()
 {
-    DevLog("Shutting down Discord\n");
-    Discord_Shutdown();
+    if (m_bValid)
+        Discord_Shutdown();
 }
 
 // -------------------------- Steam API Callbacks --------------------------- //
@@ -172,6 +191,7 @@ void CMomentumDiscord::HandleLobbyEnter(LobbyEnter_t *pParam)
 
     m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
     UpdateDiscordPartyIdFromSteam();
+    UpdateLobbyNumbers();
 }
 
 void CMomentumDiscord::HandleLobbyDataUpdate(LobbyDataUpdate_t *pParam)
@@ -202,33 +222,72 @@ void CMomentumDiscord::HandleLobbyChatUpdate(LobbyChatUpdate_t *pParam)
 // Subscribe to events in `PostInit`
 void CMomentumDiscord::FireGameEvent(IGameEvent *event)
 {
-    m_sSteamLobbyID.Clear();
-    m_iDiscordPartySize = 0;
-    m_iDiscordPartyMax = 0;
-    m_szDiscordPartyId[0] = '\0';
-    m_szDiscordJoinSecret[0] = '\0';
-    m_szDiscordSpectateSecret[0] = '\0';
+    const char *pName = event->GetName();
+    const bool bZoneEnter = FStrEq(pName, "zone_enter");
+    const bool bZoneExit = FStrEq(pName, "zone_exit");
+    if (FStrEq(pName, "lobby_leave"))
+    {
+        m_sSteamLobbyID.Clear();
+        m_iDiscordPartySize = 0;
+        m_iDiscordPartyMax = 0;
+        m_szDiscordPartyId[0] = '\0';
+        m_szDiscordJoinSecret[0] = '\0';
+        m_szDiscordSpectateSecret[0] = '\0';
+    }
+    else if (bZoneEnter || bZoneExit)
+    {
+        const int entIndx = event->GetInt("ent");
+        if (entIndx == m_pPlayer->entindex())
+        {
+            const int currentZone = event->GetInt("num", -1);
+            const int zoneCount = g_MOMEventListener->m_iMapZoneCount;
+            if (bZoneEnter && currentZone == 1)
+            {
+                Q_strncpy(m_szDiscordState, "Start Zone", DISCORD_MAX_BUFFER_SIZE);
+            }
+            else if (bZoneEnter && currentZone == 0)
+            {
+                Q_strncpy(m_szDiscordState, "End Zone", DISCORD_MAX_BUFFER_SIZE);
+            }
+            else if (zoneCount > 0)
+            {
+                const bool linearMap = g_MOMEventListener->m_bMapIsLinear;
+
+                Q_snprintf(m_szDiscordState, DISCORD_MAX_BUFFER_SIZE, "%s %i/%i", linearMap ? "Checkpoint" : "Stage",
+                           currentZone, // Current stage/checkpoint
+                           zoneCount    // Total number of stages/checkpoints
+                );
+            }
+            else
+            {
+                Q_strncpy(m_szDiscordState, "Playing", DISCORD_MAX_BUFFER_SIZE);
+            }
+        }
+    }
+    else if (FStrEq(pName, "spec_start") || FStrEq(pName, "spec_target_updated"))
+    {
+        Q_strncpy(m_szDiscordState, "Spectating", DISCORD_MAX_BUFFER_SIZE);
+    }
+    else if (FStrEq(pName, "spec_stop"))
+    {
+        Q_strncpy(m_szDiscordState, "Playing", DISCORD_MAX_BUFFER_SIZE);
+    }
+
+    DiscordUpdate();
 }
 
 // ----------------------------- Custom Methods ----------------------------- //
 
-// Gets the current user's steam ID
-void CMomentumDiscord::GetSteamUserID()
-{
-    CHECK_STEAM_API(SteamUser());
-    m_sSteamUserID = SteamUser()->GetSteamID();
-}
-
 // Get the current map of a player from their steam ID
 const char *CMomentumDiscord::GetMapOfPlayerFromSteamID(CSteamID *steamID)
 {
-    if (!SteamMatchmaking() || !g_pMomentumDiscord->m_sSteamLobbyID.IsValid())
+    if (!SteamMatchmaking() || !m_sSteamLobbyID.IsValid())
     {
         return "";
     }
     else
     {
-        return SteamMatchmaking()->GetLobbyMemberData(g_pMomentumDiscord->m_sSteamLobbyID, *steamID, LOBBY_DATA_MAP);
+        return SteamMatchmaking()->GetLobbyMemberData(m_sSteamLobbyID, *steamID, LOBBY_DATA_MAP);
     }
 }
 
@@ -236,21 +295,20 @@ const char *CMomentumDiscord::GetMapOfPlayerFromSteamID(CSteamID *steamID)
 // returns true if we had to change the lobby
 bool CMomentumDiscord::JoinSteamLobbyFromID(const char *lobbyID)
 {
-    if (g_pMomentumDiscord->m_sSteamLobbyID.IsValid() &&
-        !V_strcmp(lobbyID,
-                  CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("%lld", g_pMomentumDiscord->m_sSteamLobbyID.ConvertToUint64())))
+    if (m_sSteamLobbyID.IsValid() &&
+        !V_strcmp(lobbyID, CFmtStr("%lld", m_sSteamLobbyID.ConvertToUint64())))
     {
         // If we are already in the lobby, don't join
         return false;
     }
-    else if (g_pMomentumDiscord->m_sSteamLobbyID.IsValid())
+    else if (m_sSteamLobbyID.IsValid())
     {
         // If we are in a different lobby we need to leave
         DISPATCH_CON_COMMAND("mom_lobby_leave", "mom_lobby_leave");
     }
 
     // Finally join the new lobby
-    DISPATCH_CON_COMMAND("connect_lobby", CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("connect_lobby %s", lobbyID));
+    DISPATCH_CON_COMMAND("connect_lobby", CFmtStr("connect_lobby %s", lobbyID));
 
     return true;
 }
@@ -267,7 +325,7 @@ bool CMomentumDiscord::JoinMapFromUserSteamID(uint64 steamID)
         return false;
     }
 
-    if (g_pMomentumDiscord->MapName() && !V_strcmp(targetMapName, g_pMomentumDiscord->MapName()))
+    if (MapName() && !V_strcmp(targetMapName, MapName()))
     {
         // Already on the same map
         return false;
@@ -294,6 +352,8 @@ void CMomentumDiscord::OnSteamLobbyUpdate()
         m_kJoinSpectateState = WaitOnNone;
         SpectateTargetFromDiscord();
     }
+
+    UpdateLobbyNumbers();
 }
 
 // Handle spectating a player (spectating is more complicated than it would seem)
@@ -341,60 +401,16 @@ void CMomentumDiscord::SpectateTargetFromDiscord()
 // Causes the current player to start spectating the target user
 void CMomentumDiscord::SpecPlayerFromSteamId(const char *steamID)
 {
-    DevWarning("CMomentumDiscord::SpecPlayerFromSteamId(%s)\n", steamID);
+    DevLog("CMomentumDiscord::SpecPlayerFromSteamId(%s)\n", steamID);
 
     // MOM_TODO: We probably should check if the target player is already spectating someone, then set the spectate
     // target them instead Or we could adjust the `mom_spectate` command to handle this automatically
     DISPATCH_CON_COMMAND("mom_spectate", CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("mom_spectate %s", steamID));
 }
 
-// Updates the status string based on what we're doing
-void CMomentumDiscord::UpdateStatusString()
-{
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-
-    if (pPlayer->IsObserver())
-    {
-        Q_strncpy(m_szDiscordState, "Spectating", DISCORD_MAX_BUFFER_SIZE);
-        return;
-    }
-
-    int currentZone = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
-    int zoneCount = g_MOMEventListener->m_iMapZoneCount;
-    if (zoneCount > 0)
-    {
-
-        bool linearMap = g_MOMEventListener->m_bMapIsLinear;
-
-        Q_snprintf(m_szDiscordState, DISCORD_MAX_BUFFER_SIZE, "%s %i/%i", linearMap ? "Checkpoint" : "Stage",
-                   currentZone, // Current stage/checkpoint
-                   zoneCount    // Total number of stages/checkpoints
-        );
-    }
-    else
-    {
-        Q_strncpy(m_szDiscordState, "Linear", DISCORD_MAX_BUFFER_SIZE);
-    }
-
-    bool playerInZone = pPlayer->m_SrvData.m_RunData.m_bIsInZone;
-    if (playerInZone)
-    {
-        bool mapFinished = pPlayer->m_SrvData.m_RunData.m_bMapFinished;
-        if (currentZone == 1)
-        {
-            Q_strncpy(m_szDiscordState, "Start Zone", DISCORD_MAX_BUFFER_SIZE);
-        }
-        else if (mapFinished)
-        {
-            Q_strncpy(m_szDiscordState, "End Zone", DISCORD_MAX_BUFFER_SIZE);
-        }
-    }
-}
-
 // Updates the current and max party size based upon the current lobby
 void CMomentumDiscord::UpdateLobbyNumbers()
 {
-    CHECK_STEAM_API(SteamMatchmaking());
     if (m_sSteamLobbyID.IsValid())
     {
         m_iDiscordPartySize = SteamMatchmaking()->GetNumLobbyMembers(m_sSteamLobbyID);
@@ -410,12 +426,6 @@ void CMomentumDiscord::UpdateDiscordPartyIdFromSteam()
         // The party ID is just the Steam Lobby ID
         V_strncpy(m_szDiscordPartyId, CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("%lld", m_sSteamLobbyID.ConvertToUint64()),
                   DISCORD_MAX_BUFFER_SIZE);
-
-        if (!m_sSteamUserID.IsValid())
-        {
-            // If the steam user ID is not valid, try and get it
-            GetSteamUserID();
-        }
 
         // We could do something to further "encrypt" the secrets but it's probably fine
         if (m_sSteamUserID.IsValid())
@@ -483,12 +493,12 @@ void CMomentumDiscord::DiscordInit()
 {
     DiscordEventHandlers handlers;
     memset(&handlers, 0, sizeof(handlers));
-    handlers.ready = CMomentumDiscord::HandleDiscordReady;
-    handlers.disconnected = CMomentumDiscord::HandleDiscordDisconnected;
-    handlers.errored = CMomentumDiscord::HandleDiscordError;
-    handlers.joinGame = CMomentumDiscord::HandleDiscordJoin;
-    handlers.spectateGame = CMomentumDiscord::HandleDiscordSpectate;
-    handlers.joinRequest = CMomentumDiscord::HandleDiscordJoinRequest;
+    handlers.ready = HandleDiscordReady;
+    handlers.disconnected = HandleDiscordDisconnected;
+    handlers.errored = HandleDiscordError;
+    handlers.joinGame = HandleDiscordJoin;
+    handlers.spectateGame = HandleDiscordSpectate;
+    handlers.joinRequest = HandleDiscordJoinRequest;
     Discord_Initialize(DISCORD_APP_ID, &handlers, 1, MOM_STEAM_ID);
 }
 
@@ -533,7 +543,7 @@ void CMomentumDiscord::HandleDiscordDisconnected(int errcode, const char *messag
 // On an error
 void CMomentumDiscord::HandleDiscordError(int errcode, const char *message)
 {
-    DevLog("\nDiscord-RPC: error (%d: %s)\n", errcode, message);
+    DevWarning("\nDiscord-RPC: error (%d: %s)\n", errcode, message);
 }
 
 // When a user has been invited to or requested to join a lobby and was granted
@@ -551,7 +561,7 @@ void CMomentumDiscord::HandleDiscordJoin(const char *secret)
 
         if (steamIDs.Count() > 0)
         {
-            JoinSteamLobbyFromID(&steamIDs[0][1]);
+            g_pMomentumDiscord->JoinSteamLobbyFromID(&steamIDs[0][1]);
         }
         else
         {
@@ -575,8 +585,8 @@ void CMomentumDiscord::HandleDiscordSpectate(const char *secret)
     // spectate secret[0] should be a 'S' placed there in `UpdateDiscordPartyIdFromSteam`
     if (secret && secret[0] == 'S')
     {
-        CUtlVector<char *, CUtlMemory<char *, int>>
-            steamIDs; // PurgeAndDeleteElements() must be called on this when done otherwise memory will leak
+        // PurgeAndDeleteElements() must be called on this when done otherwise memory will leak
+        CUtlVector<char *, CUtlMemory<char *, int>> steamIDs;
         V_SplitString(secret, ";", steamIDs);
 
         if (steamIDs.Count() != 2)
@@ -602,7 +612,7 @@ void CMomentumDiscord::HandleDiscordSpectate(const char *secret)
         // Try to get our target's current map
         g_pMomentumDiscord->m_ulSpectateTargetUser = V_atoui64(g_pMomentumDiscord->m_szSpectateTargetUser);
         CSteamID targetPlayerSteamID = CSteamID(g_pMomentumDiscord->m_ulSpectateTargetUser);
-        const char *targetMapName = GetMapOfPlayerFromSteamID(&targetPlayerSteamID);
+        const char *targetMapName = g_pMomentumDiscord->GetMapOfPlayerFromSteamID(&targetPlayerSteamID);
 
         bool inSameLobby = g_pMomentumDiscord->m_sSteamLobbyID.ConvertToUint64() ==
                            V_atoui64(g_pMomentumDiscord->m_szSpectateTargetLobby);

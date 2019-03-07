@@ -34,6 +34,8 @@
 	}
     "zone_exit"//When the player exits the start trigger for the stage
     {
+        "ent" "short"
+        "num" "short"
     }
     "run_upload"
     {
