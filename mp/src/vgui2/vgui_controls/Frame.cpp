@@ -1748,13 +1748,13 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 	inResourceData->SetInt("visible", -1);
 	BaseClass::ApplySettings(inResourceData);
 
-	SetCloseButtonVisible( inResourceData->GetBool( "setclosebuttonvisible", true ) );
+	// if "title" is "0" then don't draw the title bar
+    if (!inResourceData->GetBool("settitlebarvisible", true))
+        SetTitleBarVisible(false);
+    SetCloseButtonVisible(inResourceData->GetBool("setclosebuttonvisible", true));
 
-	if( !inResourceData->GetInt("settitlebarvisible", 1 ) ) // if "title" is "0" then don't draw the title bar
-	{
-		SetTitleBarVisible( false );
-	}
-	
+    SetClipToParent(inResourceData->GetBool("cliptoparent"));
+
 	// set the title
 	const char *title = inResourceData->GetString("title", "");
 	if (title && *title)
@@ -1789,6 +1789,7 @@ void Frame::GetSettings(KeyValues *outResourceData)
 
     outResourceData->SetBool("setclosebuttonvisible", _closeButton->IsVisible());
 	outResourceData->SetBool("settitlebarvisible", _drawTitleBar );
+    outResourceData->SetBool("cliptoparent", m_bClipToParent);
 
 	if (_title)
 	{
@@ -1822,7 +1823,8 @@ void Frame::InitSettings()
     {"setclosebuttonvisible", TYPE_BOOL},
     {"settitlebarvisible", TYPE_BOOL},
     {"title_font", TYPE_STRING},
-    {"clientinsetx_override", TYPE_INTEGER}
+    {"clientinsetx_override", TYPE_INTEGER},
+    {"cliptoparent", TYPE_BOOL}
     END_PANEL_SETTINGS();
 }
 
