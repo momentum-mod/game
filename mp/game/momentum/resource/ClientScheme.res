@@ -498,6 +498,50 @@ Scheme
 				"weight"		"0"
 			}
 		}
+        DefaultLarge
+		{
+			"1"
+			{
+				"name"		"Verdana"
+				"tall"		"16"
+				"weight"	"700"
+				"antialias" "1"
+				"yres"	"1 599"
+			}
+			"2"
+			{
+				"name"		"Verdana"
+				"tall"		"19"
+				"weight"	"700"
+				"antialias" "1"
+				"yres"	"600 767"
+			}
+			"3"
+			{
+				"name"		"Verdana"
+				"tall"		"21"
+				"weight"	"900"
+				"antialias" "1"
+				"yres"	"768 1023"
+			}
+			"4"
+			{
+				"name"		"Verdana"
+				"tall"		"23"
+				"weight"	"900"
+				"antialias" "1"
+				"yres"	"1024 1199"
+			}
+			"5"
+			{
+				"name"		"Verdana"
+				"tall"		"26"
+				"weight"	"900"
+				"antialias" "1"
+				"yres"	"1200 10000"
+				"additive"	"1"
+			}
+		}
 		WeaponIcons
 		{
 			"1"

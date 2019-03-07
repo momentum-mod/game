@@ -379,6 +379,25 @@
         "MOM_API_NoFriends" "Unable to get friends runs because you do not have any friends :("
         "MOM_API_UnauthFriendsList" "Unable to get friends runs due to a private friends list"
 
+        // Zone Menu (Zoning)
+        "MOM_ZoneMenu_Title" "Zoning Menu"
+        "MOM_ZoneMenu_ToggleEdit" "Enable zone editing"
+        "MOM_ZoneMenu_TogglePointMethod" "Use point-based zone construction"
+        "MOM_ZoneMenu_CreateNewZone" "Create Zone"
+        "MOM_ZoneMenu_DeleteZone" "Delete Zone"
+        "MOM_ZoneMenu_EditZone" "Edit Zone"
+        "MOM_ZoneMenu_CancelZone" "Cancel Zone"
+        "MOM_ZoneMenu_SaveZones" "Save Zones"
+        "MOM_ZoneMenu_ZoneType" "Zone Type"
+        "MOM_ZoneMenu_ZoneType_Auto" "Auto"
+        "MOM_ZoneMenu_ZoneType_Start" "Start"
+        "MOM_ZoneMenu_ZoneType_End" "End"
+        "MOM_ZoneMenu_ZoneType_BStart" "Bonus Start"
+        "MOM_ZoneMenu_ZoneType_BEnd" "Bonus End"
+        "MOM_ZoneMenu_ZoneType_Stage" "Stage"
+        "MOM_ZoneMenu_ZoneType_Checkpoint" "Checkpoint"
+        "MOM_ZoneMenu_GridSize" "Grid Snap Size"
+
 
         //MessageBoxPanel
         // Buttons

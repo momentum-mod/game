@@ -1,4 +1,3 @@
-// The following include files are necessary to allow The Panel .cpp to compile.
 #include "cbase.h"
 
 #include "MessageboxPanel.h"
@@ -20,11 +19,6 @@ void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 void __MsgFunc_MB_NoStartOrEnd(bf_read &msg)
 {
     messageboxpanel->CreateMessageboxVarRef("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd", "mom_toggle_nostartorend");
-}
-
-void __MsgFunc_MB_EditingZone(bf_read &msg)
-{
-    messageboxpanel->CreateMessagebox("#MOM_MB_EditingZone_Title", "#MOM_MB_EditingZone");
 }
 
 MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvar) : MessageBox(title, msg)
@@ -104,7 +98,6 @@ CMessageboxPanel::CMessageboxPanel(VPANEL parent) : BaseClass(nullptr, "Messageb
 
     HOOK_MESSAGE(MB_PlayerTriedSaveOrLoad);
     HOOK_MESSAGE(MB_NoStartOrEnd);
-    HOOK_MESSAGE(MB_EditingZone);
 }
 
 CMessageboxPanel::~CMessageboxPanel() { }
