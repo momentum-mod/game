@@ -15,7 +15,7 @@ WeaponData
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Shotgun"
     "viewmodel"         "models/weapons/v_mom_shotgun.mdl"
-    "playermodel"       "models/weapons/w_mom_shotgun.mdl"
+    "playermodel"       "models/weapons/mom_shotgun.mdl"
     
     "anim_prefix"       "anim"
     "bucket"            "0"
