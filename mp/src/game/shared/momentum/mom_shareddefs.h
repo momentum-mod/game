@@ -195,8 +195,8 @@ enum SPECTATE_MSG_TYPE
 
 #define CHECK_STEAM_API(steam_interface) \
     if (!steam_interface) { \
-    Warning("%s->%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
-    __FILE__, __FUNCTION__, __LINE__, #steam_interface); return; }
+    Warning("%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
+    __FUNCTION__, __LINE__, #steam_interface); return; }
 
 // For some reason if calling console commands through the engine does not work, this seems to do the trick
 // Notes: It is wrapped in its own scope so pCommand is redefined if this is used more than once

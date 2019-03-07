@@ -8,6 +8,7 @@
 #define DISCORD_MAX_BUFFER_SIZE 128
 
 struct DiscordUser;
+class C_MomentumPlayer;
 
 // A class to manage the Discord Rich Presence feature
 // Uses the discord-rpc library
@@ -43,12 +44,11 @@ public:
     bool m_bInMap;
     
     // Custom methods
-    static const char* GetMapOfPlayerFromSteamID(CSteamID* steamID);
-    static bool JoinSteamLobbyFromID(const char* lobbyID);
-    static bool JoinMapFromUserSteamID(uint64 steamID);
-    static void SpecPlayerFromSteamId(const char* steamID);
+    const char* GetMapOfPlayerFromSteamID(CSteamID* steamID);
+    bool JoinSteamLobbyFromID(const char* lobbyID);
+    bool JoinMapFromUserSteamID(uint64 steamID);
+    void SpecPlayerFromSteamId(const char* steamID);
     void ClearDiscordFields(bool clearPartyFields=true);
-    void GetSteamUserID();
     void OnSteamLobbyUpdate();
     void SpectateTargetFromDiscord();
 
@@ -84,15 +84,16 @@ public:
     static const char* s_pSteamAppID;
 
 private:
-    // Custom members
     int m_iUpdateFrame;
+    bool m_bValid;
 
     // Custom methods
     void DiscordInit();
     void DiscordUpdate();
-    void UpdateStatusString();
     void UpdateDiscordPartyIdFromSteam();
     void UpdateLobbyNumbers();
+
+    C_MomentumPlayer *m_pPlayer;
 
     // Discord callbacks
     static void HandleDiscordReady(const DiscordUser* connectedUser);
