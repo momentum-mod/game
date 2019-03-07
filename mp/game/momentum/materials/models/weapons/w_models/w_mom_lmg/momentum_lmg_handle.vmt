@@ -1,13 +1,12 @@
 VertexLitGeneric
 {
-	"$basetexture" "models/weapons/w_models/w_mom_lmg/mom_lmg_unique_ao"
-	"$bumpmap" "models/weapons/w_models/w_mom_lmg/mom_lmg_unique_n"
+	"$basetexture" "models/weapons/w_models/w_mom_lmg/mom_unique_lmg_d"
+	"$bumpmap" "models/weapons/w_models/w_mom_lmg/mom_unique_lmg_n"
 	"$surfaceprop" "Weapon"
 
 	"$phong" "1"
-	"$phongfresnelranges" "[0.5 0.75 1]"
-	"$phongexponent" "19"
-	"$phongboost" "2.6"
-
-	"$color2" "[0.50 0.50 0.50]"
+	"$phongexponenttexture" "models/weapons/w_models/w_mom_lmg/mom_unique_lmg_e"
+	"$phongfresnelranges" "[0.8 0.9 1]"
+	"$phongalbedotint" "1"
+	"$phongboost" "0.51"
 }
