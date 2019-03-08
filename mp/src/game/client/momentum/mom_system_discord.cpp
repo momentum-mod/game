@@ -91,7 +91,7 @@ void CMomentumDiscord::PostInit()
         ListenForGameEvent("zone_exit");
         ListenForGameEvent("spec_target_updated");
         ListenForGameEvent("spec_start");
-        ListenForGameEvent("spec_end");
+        ListenForGameEvent("spec_stop");
 
         DiscordInit();
 
