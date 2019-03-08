@@ -22,7 +22,6 @@ CTriggerOutlineRenderer::CTriggerOutlineRenderer()
 {
     m_pVertices = nullptr;
     m_vertexCount = 0;
-    m_Outline.Init(g_pDynamicRenderTargets->GetTriggerOutlineMat());
 }
 
 CTriggerOutlineRenderer::~CTriggerOutlineRenderer()
@@ -30,7 +29,6 @@ CTriggerOutlineRenderer::~CTriggerOutlineRenderer()
     if (m_pVertices)
         MemAlloc_FreeAligned(m_pVertices);
     m_pVertices = nullptr;
-    m_Outline.Shutdown();
 }
 
 bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity, IBrushSurface* pBrushSurface)
@@ -40,17 +38,15 @@ bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity
     {
         m_vertexCount = vertices;
         if (m_pVertices)
-            m_pVertices = static_cast<BrushVertex_t *>(MemAlloc_ReallocAligned(
-                m_pVertices, sizeof(BrushVertex_t) * m_vertexCount, 64));
+            m_pVertices = static_cast<BrushVertex_t *>(MemAlloc_ReallocAligned(m_pVertices, sizeof(BrushVertex_t) * m_vertexCount, 64));
         else
-            m_pVertices = static_cast<BrushVertex_t *>(MemAlloc_AllocAligned(sizeof(BrushVertex_t) * m_vertexCount, 64)
-            );
+            m_pVertices = static_cast<BrushVertex_t *>(MemAlloc_AllocAligned(sizeof(BrushVertex_t) * m_vertexCount, 64));
     }
     pBrushSurface->GetVertexData(m_pVertices);
     CMatRenderContextPtr pRenderContext(materials);
 
     CMeshBuilder builder;
-    builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, m_Outline),
+    builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
                   MATERIAL_LINE_LOOP, vertices);
     for (int i = 0; i < vertices; i++)
     {
