@@ -1,5 +1,18 @@
 #pragma once
 
+class CTriggerOutlineRenderer : public IBrushRenderer
+{
+public:
+    CTriggerOutlineRenderer();
+    virtual ~CTriggerOutlineRenderer();
+    bool RenderBrushModelSurface(IClientEntity* pBaseEntity, IBrushSurface* pBrushSurface) OVERRIDE;
+    Color outlineColor;
+private:
+    BrushVertex_t *m_pVertices;
+    int m_vertexCount;
+    CMaterialReference m_Outline;
+};
+
 class C_BaseMomentumTrigger : public C_BaseEntity
 {
     DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseEntity);
@@ -12,6 +25,8 @@ class C_TriggerTimerStart : public C_BaseMomentumTrigger
     DECLARE_CLIENTCLASS();
     bool ShouldDraw(void) OVERRIDE;
     int DrawModel(int flags) OVERRIDE;
+private:
+    CTriggerOutlineRenderer m_OutlineRenderer;
 };
 
 class C_TriggerTimerStop : public C_BaseMomentumTrigger
@@ -21,6 +36,9 @@ class C_TriggerTimerStop : public C_BaseMomentumTrigger
     DECLARE_CLIENTCLASS();
     bool ShouldDraw(void) OVERRIDE;
     int DrawModel(int flags) OVERRIDE;
+
+private:
+    CTriggerOutlineRenderer m_OutlineRenderer;
 };
 
 class C_TriggerSlide : public C_BaseMomentumTrigger
