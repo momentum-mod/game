@@ -62,7 +62,6 @@ void CMapzone::SpawnZone()
         CMomBaseZoneBuilder* pBaseBuilder = CreateZoneBuilderFromKeyValues(m_pZoneValues);
 
         pBaseBuilder->BuildZone();
-        m_pTrigger->AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
         m_pTrigger->Spawn();
         pBaseBuilder->FinishZone(m_pTrigger);
 
