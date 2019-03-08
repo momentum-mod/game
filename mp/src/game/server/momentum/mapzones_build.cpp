@@ -801,7 +801,7 @@ bool CMomBoxZoneBuilder::BuildZone(CBasePlayer *pPlayer, const Vector *vecAim)
 {
     VectorMin(m_vecStart, m_vecEnd, m_vecMins);
     VectorMax(m_vecStart, m_vecEnd, m_vecMaxs);
-    m_vecCenter = (m_vecMaxs - m_vecMins) * 0.5f;
+    VectorLerp(m_vecMins, m_vecMaxs, 0.5f, m_vecCenter);
 
     m_vecMins -= m_vecCenter;
     m_vecMaxs -= m_vecCenter;
@@ -815,7 +815,6 @@ bool CMomBoxZoneBuilder::LoadFromZone(const CBaseMomentumTrigger *pEnt)
     m_angRot = pEnt->GetAbsAngles();
     m_vecMins = pEnt->WorldAlignMins();
     m_vecMaxs = pEnt->WorldAlignMaxs();
-
     return true;
 }
 
@@ -825,7 +824,7 @@ bool CMomBoxZoneBuilder::Load(KeyValues *kv)
     m_angRot = QAngle(kv->GetFloat("xRot"), kv->GetFloat("yRot"), kv->GetFloat("zRot"));
     m_vecMins = Vector(kv->GetFloat("xScaleMins"), kv->GetFloat("yScaleMins"), kv->GetFloat("zScaleMins"));
     m_vecMaxs = Vector(kv->GetFloat("xScaleMaxs"), kv->GetFloat("yScaleMaxs"), kv->GetFloat("zScaleMaxs"));
-
+    SetBounds(m_vecCenter, m_vecMins, m_vecMaxs);
     return true;
 }
 
@@ -983,8 +982,8 @@ void CMomBoxZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
     pEnt->SetAbsOrigin(m_vecCenter);
     pEnt->SetAbsAngles(m_angRot);
 
-    pEnt->SetCollisionBounds(m_vecMins, m_vecMaxs);
     pEnt->SetSolid(SOLID_BBOX);
+    pEnt->SetCollisionBounds(m_vecMins, m_vecMaxs);
 }
 
 void CMomBoxZoneBuilder::SetBounds(const Vector &wmins, const Vector &wmaxs)
