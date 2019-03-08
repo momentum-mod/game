@@ -135,9 +135,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     void ToggleDuckThisFrame(bool bState);
 
-    int &GetPerfectSyncTicks() { return m_nPerfectSyncTicks; }
-    int &GetStrafeTicks() { return m_nStrafeTicks; }
-    int &GetAccelTicks() { return m_nAccelTicks; }
+    int GetPerfectSyncTicks() const { return m_nPerfectSyncTicks; }
+    void SetPerfectSyncTicks(int ticks) { m_nPerfectSyncTicks = ticks; }
+    int GetStrafeTicks() { return m_nStrafeTicks; }
+    void SetStrafeTicks(int ticks) { m_nStrafeTicks = ticks; }
+    int GetAccelTicks() { return m_nAccelTicks; }
+    void SetAccelTicks(int ticks) { m_nAccelTicks = ticks; }
 
     // Trail Methods
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
@@ -164,6 +167,22 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pCheckpoint) { m_pCurrentCheckpoint = pCheckpoint; }
     CTriggerCheckpoint *GetCurrentCheckpointTrigger() const { return m_pCurrentCheckpoint; }
 
+    void DoMuzzleFlash() OVERRIDE;
+    void PostThink() OVERRIDE;
+
+    // Ladder stuff
+    float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
+    void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
+
+    void SetLastEyeAngles(const QAngle &ang) { m_qangLastAngle = ang; }
+    const QAngle &LastEyeAngles() const { return m_qangLastAngle; }
+
+    bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
+  private:
+    // Spawn stuff
+    bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
+
+  private:
     CSteamID m_sSpecTargetSteamID;
 
     bool m_bInAirDueToJump;
@@ -174,18 +193,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     int m_nAccelTicks;
     QAngle m_qangLastAngle;
 
-    void DoMuzzleFlash() OVERRIDE;
-    void PostThink() OVERRIDE;
-
-    // Ladder stuff
-    float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
-    void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
-
-  private:
-    // Spawn stuff
-    bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
-
-  private:
     // used by CMomentumGameMovement
     bool m_duckUntilOnGround;
     float m_flStamina;

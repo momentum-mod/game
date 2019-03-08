@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 // This class handles networking all of the overlap between players and
 // replay files. From an OOP standpoint, this is more efficient than having
 // two classes network the same variables.

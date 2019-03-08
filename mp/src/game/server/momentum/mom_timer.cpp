@@ -187,12 +187,25 @@ void CMomentumTimer::DispatchMapInfo() const
     }
 }
 
+void CMomentumTimer::DispatchNoZonesMsg() const
+{
+    if (!GetZoneCount())
+    {
+        CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+        filter.MakeReliable();
+        UserMessageBegin(filter, "MB_NoStartOrEnd");
+        MessageEnd();
+    }
+}
+
 void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
     RequestZoneCount();
     ClearStartMark();
+    DispatchMapInfo();
+    DispatchNoZonesMsg();
 }
 
 void CMomentumTimer::LevelShutdownPreEntity()
@@ -266,7 +279,7 @@ float CMomentumTimer::GetLastRunTime()
     }
 }
 
-void CMomentumTimer::DispatchResetMessage()
+void CMomentumTimer::DispatchResetMessage() const
 {
     CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
     user.MakeReliable();
@@ -469,7 +482,7 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
         pPlayer->m_SrvData.m_RunData.m_iCurrentZone = pPlayer->m_SrvData.m_RunData.m_iOldZone;
         pPlayer->Teleport(&pPlayer->m_SrvData.m_RunData.m_vecLastPos, &pPlayer->m_SrvData.m_RunData.m_angLastAng, &pPlayer->m_SrvData.m_RunData.m_vecLastVelocity);
         pPlayer->SetViewOffset(Vector(0, 0, pPlayer->m_SrvData.m_RunData.m_fLastViewOffset));
-        pPlayer->m_qangLastAngle = pPlayer->m_SrvData.m_RunData.m_angLastAng;
+        pPlayer->SetLastEyeAngles(pPlayer->m_SrvData.m_RunData.m_angLastAng);
 
         // MOM_TODO : Mark this as a "exited practice mode" event in the replay
     }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cbase.h"
 #include "beam_shared.h"
 
 class CMOMRulerToolMarker : public CBaseAnimating
