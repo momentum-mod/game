@@ -93,8 +93,6 @@ private:
     void UpdateDiscordPartyIdFromSteam();
     void UpdateLobbyNumbers();
 
-    C_MomentumPlayer *m_pPlayer;
-
     // Discord callbacks
     static void HandleDiscordReady(const DiscordUser* connectedUser);
     static void HandleDiscordDisconnected(int errcode, const char* message);
