@@ -3,6 +3,8 @@
 #include "materialsystem/imaterialsystemhardwareconfig.h"
 #include "materialsystem/itexture.h"
 
+#include "tier0/memdbgon.h"
+
 void CDynamicRenderTargets::InitClientRenderTargets(IMaterialSystem *pMaterialSystem,
                                                     IMaterialSystemHardwareConfig *pHardwareConfig)
 {
@@ -51,6 +53,29 @@ void CDynamicRenderTargets::UpdateDynamicRenderTargets()
 
         m_pOldViewport = GetViewport();
     }
+}
+
+void CDynamicRenderTargets::PostInit()
+{
+    KeyValues *pVMTKeyValues = new KeyValues("unlitgeneric");
+    pVMTKeyValues->SetString("$vertexcolor", "1");
+    pVMTKeyValues->SetString("$vertexalpha", "1");
+    pVMTKeyValues->SetString("$additive", "1");
+    pVMTKeyValues->SetString("$ignorez", "0"); // Change this to 1 to see it through walls
+    pVMTKeyValues->SetString("$halflambert", "1");
+    pVMTKeyValues->SetString("$selfillum", "1");
+    pVMTKeyValues->SetString("$nofog", "1");
+    pVMTKeyValues->SetString("$nocull", "1");
+    pVMTKeyValues->SetString("$model", "1");
+    /*IMaterial *pMat = m_pMaterialSystem->CreateMaterial(); // Refcount = 1
+    pMat->DecrementReferenceCount(); // Init adds a ref, so we bring refcount back to 0*/
+    m_TriggerOutlineMat.Init("__utilOutlineColor", pVMTKeyValues);
+    m_TriggerOutlineMat->Refresh();
+}
+
+void CDynamicRenderTargets::Shutdown()
+{
+    m_TriggerOutlineMat.Shutdown();
 }
 
 Vector2D CDynamicRenderTargets::GetViewport()
