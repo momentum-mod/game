@@ -1,7 +1,5 @@
 #pragma once
 
-#include "game/client/iclientrendertargets.h"
-#include "materialsystem/imaterialsystem.h"
 #include "baseclientrendertargets.h"
 
 class IMaterialSystem;
@@ -9,27 +7,36 @@ class IMaterialSystemHardwareConfig;
 
 class CDynamicRenderTargets : public CBaseClientRenderTargets, public CAutoGameSystemPerFrame
 {
-	DECLARE_CLASS_GAMEROOT(CDynamicRenderTargets, CBaseClientRenderTargets);
-public:
-	virtual void		InitClientRenderTargets(IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig);
-	virtual void		InitDynamicRenderTargets();
+    DECLARE_CLASS_GAMEROOT(CDynamicRenderTargets, CBaseClientRenderTargets);
 
-	virtual void		ShutdownClientRenderTargets();
-	virtual void		ShutdownDynamicRenderTargets();
+  public:
+    virtual void InitClientRenderTargets(IMaterialSystem *pMaterialSystem,
+                                         IMaterialSystemHardwareConfig *pHardwareConfig);
+    virtual void InitDynamicRenderTargets();
 
-	virtual void		PreRender();
-	virtual void		UpdateDynamicRenderTargets();
+    virtual void ShutdownClientRenderTargets();
+    virtual void ShutdownDynamicRenderTargets();
 
-protected:
-	virtual Vector2D	GetViewport();
+    virtual void PreRender();
+    virtual void UpdateDynamicRenderTargets();
 
-    virtual ITexture*   CreateDepthBufferTexture();
-private:
-	Vector2D			m_pOldViewport;
+    void PostInit() OVERRIDE;
+    void Shutdown() OVERRIDE;
 
-    CTextureReference   m_DepthBufferTexture;
+    CMaterialReference GetTriggerOutlineMat() const { return m_TriggerOutlineMat; }
 
-	IMaterialSystem*	m_pMaterialSystem;
+  protected:
+    virtual Vector2D GetViewport();
+
+    virtual ITexture *CreateDepthBufferTexture();
+
+  private:
+    Vector2D m_pOldViewport;
+
+    CTextureReference m_DepthBufferTexture;
+    CMaterialReference m_TriggerOutlineMat;
+
+    IMaterialSystem *m_pMaterialSystem;
 };
 
-extern CDynamicRenderTargets* g_pDynamicRenderTargets;
+extern CDynamicRenderTargets *g_pDynamicRenderTargets;
