@@ -4,8 +4,6 @@
 #pragma once
 #endif
 
-#include "cbase.h"
-
 #define MAX_BHOPBLOCKS 1024
 #define BLOCK_TELEPORT 0.11
 #define BLOCK_COOLDOWN 1.0

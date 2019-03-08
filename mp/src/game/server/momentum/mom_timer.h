@@ -20,9 +20,8 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
           m_pStartZoneMark(nullptr), m_bPaused(false), m_iPausedTick(0)
     {
     }
-
     //-------- HUD Messages --------------------
-    void DispatchResetMessage();
+    void DispatchResetMessage() const;
     // Plays the hud_timer effects to a specific player
     void DispatchTimerStateMessage(CBasePlayer *pPlayer, bool isRunning) const;
 
@@ -82,9 +81,8 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // Level init/shutdown hooks
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
-    void DispatchMapInfo() const;
 
-	virtual void FrameUpdatePreEntityThink();
+    virtual void FrameUpdatePreEntityThink();
 
     // Practice mode- noclip mode that stops timer
     void EnablePractice(CMomentumPlayer *pPlayer);
@@ -110,12 +108,17 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void SetPaused(bool bEnable = true);
     bool GetPaused() { return m_bPaused; }
 
-	bool ShouldUseStartZoneOffset() const { return m_bShouldUseStartZoneOffset; }
+    bool ShouldUseStartZoneOffset() const { return m_bShouldUseStartZoneOffset; }
     void SetShouldUseStartZoneOffset(bool use) { m_bShouldUseStartZoneOffset = use; }
 
-	// creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
+    // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
+
+  private:
+    void DispatchMapInfo() const;
+    void DispatchNoZonesMsg() const;
+
   private:
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick, m_iPausedTick;
@@ -137,7 +140,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     int m_iBonusZone;
 
-	// PRECISION FIX:
+    // PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the
     // start trigger
     // also, subtract the ending offset from the time, since we end after we actually enter the ending trigger

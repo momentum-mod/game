@@ -328,7 +328,7 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
                 pPlayer->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
 
                 // Are we in mid air when we started? If so, our first jump should be 1, not 0
-                if (pPlayer->m_bInAirDueToJump)
+                if (pPlayer->IsInAirDueToJump())
                 {
                     pPlayer->m_RunStats.SetZoneJumps(0, 1);
                     pPlayer->m_RunStats.SetZoneJumps(pPlayer->m_SrvData.m_RunData.m_iCurrentZone, 1);
