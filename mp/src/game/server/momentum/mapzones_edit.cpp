@@ -340,7 +340,6 @@ void CMomZoneEdit::OnCreate(int zonetype)
         return;
     }
 
-    pEnt->AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     pEnt->Spawn();
 
     pBuild->FinishZone(pEnt);

@@ -15,6 +15,7 @@
 // CBaseMomentumTrigger
 void CBaseMomentumTrigger::Spawn()
 {
+    AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     BaseClass::Spawn();
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
