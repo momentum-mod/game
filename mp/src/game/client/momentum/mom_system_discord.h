@@ -8,7 +8,6 @@
 #define DISCORD_MAX_BUFFER_SIZE 128
 
 struct DiscordUser;
-class C_MomentumPlayer;
 
 // A class to manage the Discord Rich Presence feature
 // Uses the discord-rpc library
