@@ -374,10 +374,15 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
 {
-    g_pMomentumTimer->SetStartTrigger(this);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
+        g_pMomentumTimer->SetStartTrigger(this);
+
+        // First of all, hard-cap speed, regardless of re-entry
+        if (pPlayer->GetAbsVelocity().IsLengthGreaterThan(300.0f))
+            pPlayer->SetAbsVelocity(vec3_origin);
+
         pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
         pPlayer->m_SrvData.m_RunData.m_bTimerStartOnJump = m_bTimerStartOnJump;
         pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType = m_iLimitSpeedType;
@@ -422,7 +427,7 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
 void CTriggerTimerStart::Spawn()
 {
     // We don't want negative velocities (We're checking against an absolute value)
-    m_fBhopLeaveSpeed = abs(m_fBhopLeaveSpeed);
+    m_fBhopLeaveSpeed = fabs(m_fBhopLeaveSpeed);
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
 }
