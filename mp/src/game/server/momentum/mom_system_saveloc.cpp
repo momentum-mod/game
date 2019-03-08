@@ -451,22 +451,16 @@ void CMOMSaveLocSystem::SetUsingSavelocMenu(bool bIsUsingSLMenu)
 
 void CMOMSaveLocSystem::CheckTimer()
 {
-    static ConVarRef gamemode("mom_gamemode");
+    // static ConVarRef gamemode("mom_gamemode");
 
     if (g_pMomentumTimer->IsRunning())
     {
+
+        g_pMomentumTimer->Stop(false);
+
         // MOM_TODO: consider
         // 1. having a local timer running, as people may want to time their routes they're using CP menu for
         // 2. gamemodes (KZ) where this is allowed
-
-        switch (gamemode.GetInt())
-        {
-        case GAMEMODE_SURF:
-        case GAMEMODE_BHOP:
-            g_pMomentumTimer->Stop(false);
-        default:
-            break;
-        }
     }
 
     m_bUsingSavelocMenu = true;
