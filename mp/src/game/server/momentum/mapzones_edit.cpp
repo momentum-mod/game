@@ -318,8 +318,6 @@ void CMomZoneEdit::OnCreate(int zonetype)
     auto pBuild = GetBuilder();
     if (!pBuild->BuildZone(pPlayer, &pos))
     {
-        pBuild->Reset();
-        Warning("Failed to build zone!\n");
         return;
     }
 

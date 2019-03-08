@@ -1,8 +1,4 @@
-#ifndef MAPZONES_H
-#define MAPZONES_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 class CMapzone;
 
@@ -20,5 +16,3 @@ public:
 };
 
 bool ZoneTypeToClass(int type, char *dest, int maxlen);
-
-#endif

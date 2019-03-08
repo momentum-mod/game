@@ -1,12 +1,6 @@
-#ifndef MAPZONES_BUILD_H
-#define MAPZONES_BUILD_H
-#ifdef _WIN32
 #pragma once
-#endif
-
 
 class CBaseMomentumTrigger;
-
 
 // These are used for convenience-sake, only allocating once.
 
@@ -222,5 +216,3 @@ private:
 
 CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt);
 CMomBaseZoneBuilder *CreateZoneBuilderFromKeyValues(KeyValues *kv);
-
-#endif // MAPZONES_BUILD_H

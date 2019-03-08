@@ -1,5 +1,4 @@
 #include "cbase.h"
-#include "KeyValues.h"
 #include "filesystem.h"
 #include "mapzones.h"
 #include "mom_timer.h"
@@ -62,9 +61,9 @@ void CMapzone::SpawnZone()
 
         CMomBaseZoneBuilder* pBaseBuilder = CreateZoneBuilderFromKeyValues(m_pZoneValues);
 
-        m_pTrigger->Spawn();
-
         pBaseBuilder->BuildZone();
+        m_pTrigger->AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
+        m_pTrigger->Spawn();
         pBaseBuilder->FinishZone(m_pTrigger);
 
         m_pTrigger->Activate();
@@ -75,7 +74,7 @@ void CMapzone::SpawnZone()
 
 static void SaveZonFile(const char *szMapName)
 {
-    KeyValues *zoneKV = new KeyValues(szMapName);
+    KeyValuesAD zoneKV(szMapName);
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_*");
     while (pEnt)
     {
@@ -106,11 +105,9 @@ static void SaveZonFile(const char *szMapName)
     if (zoneKV->GetFirstSubKey()) // not empty
     {
         char zoneFilePath[MAX_PATH];
-        Q_strcpy(zoneFilePath, "maps/");
-        Q_strcat(zoneFilePath, szMapName, MAX_PATH);
-        Q_strncat(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
+        V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
+        V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
         zoneKV->SaveToFile(filesystem, zoneFilePath, "MOD");
-        zoneKV->deleteThis();
     }
 }
 
@@ -150,9 +147,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
     V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
     DevLog("Looking for zone file: %s \n", zoneFilePath);
 
-    bool toReturn = false;
-
-    KeyValues *zoneKV = new KeyValues(szMapName);
+    KeyValuesAD zoneKV(szMapName);
     if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))
     {
         // Go through checkpoints
@@ -208,10 +203,9 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
         }
 
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
-        toReturn = true;
+        return true;
     }
-    zoneKV->deleteThis();
-    return toReturn;
+    return false;
 }
 
 bool ZoneTypeToClass(int type, char *dest, int maxlen)
