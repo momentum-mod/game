@@ -32,7 +32,7 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
 {
     usermessages->HookMessage("ZoneInfo", OnZoneInfoThunk);
     SetProportional(true);
-    SetBounds(9, 96, 270, 150);
+    SetBounds(9, 96, 245, 135);
     m_bBindKeys = false;
     m_eZoneAction = ZONEACTION_NONE;
 
