@@ -10,7 +10,6 @@ public:
 private:
     BrushVertex_t *m_pVertices;
     int m_vertexCount;
-    CMaterialReference m_Outline;
 };
 
 class C_BaseMomentumTrigger : public C_BaseEntity

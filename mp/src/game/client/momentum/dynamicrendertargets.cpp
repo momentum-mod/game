@@ -67,15 +67,14 @@ void CDynamicRenderTargets::PostInit()
     pVMTKeyValues->SetString("$nofog", "1");
     pVMTKeyValues->SetString("$nocull", "1");
     pVMTKeyValues->SetString("$model", "1");
-    /*IMaterial *pMat = m_pMaterialSystem->CreateMaterial(); // Refcount = 1
-    pMat->DecrementReferenceCount(); // Init adds a ref, so we bring refcount back to 0*/
-    m_TriggerOutlineMat.Init("__utilOutlineColor", pVMTKeyValues);
-    m_TriggerOutlineMat->Refresh();
+    m_pTriggerOutlineMat = m_pMaterialSystem->CreateMaterial("__utilOutlineColor", pVMTKeyValues); // Refcount = 1
+    m_pTriggerOutlineMat->Refresh();
 }
 
 void CDynamicRenderTargets::Shutdown()
 {
-    m_TriggerOutlineMat.Shutdown();
+    m_pTriggerOutlineMat->DecrementReferenceCount();
+    m_pTriggerOutlineMat = nullptr;
 }
 
 Vector2D CDynamicRenderTargets::GetViewport()
