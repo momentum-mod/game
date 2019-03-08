@@ -43,7 +43,7 @@ CON_COMMAND(mom_discord_debug, "Help debug discord integration\n")
 }
 #endif
 
-CMomentumDiscord::CMomentumDiscord() : CAutoGameSystemPerFrame("DiscordRPC"), m_pPlayer(nullptr)
+CMomentumDiscord::CMomentumDiscord() : CAutoGameSystemPerFrame("DiscordRPC")
 {
     m_ulSpectateTargetUser = 0;
     m_szSpectateTargetUser[0] = '\0';
@@ -109,8 +109,6 @@ void CMomentumDiscord::LevelInitPostEntity()
 {
     if (!m_bValid)
         return;
-
-    m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
 
     m_bInMap = true;
 
@@ -237,7 +235,7 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
     else if (bZoneEnter || bZoneExit)
     {
         const int entIndx = event->GetInt("ent");
-        if (entIndx == m_pPlayer->entindex())
+        if (entIndx == engine->GetLocalPlayer())
         {
             const int currentZone = event->GetInt("num", -1);
             const int zoneCount = g_MOMEventListener->m_iMapZoneCount;
