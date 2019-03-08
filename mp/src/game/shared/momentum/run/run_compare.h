@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cbase.h"
 #include "run_stats.h"
 
 struct RunCompare_t

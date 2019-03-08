@@ -27,7 +27,9 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 
     if (pPlayer && !g_pMomentumTimer->IsRunning())
     {
-        pPlayer->GetStrafeTicks() = pPlayer->GetPerfectSyncTicks() = pPlayer->GetAccelTicks() = 0;
+        pPlayer->SetStrafeTicks(0);
+        pPlayer->SetPerfectSyncTicks(0);
+        pPlayer->SetAccelTicks(0);
         pPlayer->m_SrvData.m_RunData.m_flStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync2 = 0.0f;
     }
 }
@@ -292,32 +294,17 @@ void CMomentumPlayer::Spawn()
     case GAMEMODE_KZ:
         DisableAutoBhop();
         break;
-    case GAMEMODE_BHOP:
-    case GAMEMODE_SURF:
-    {
-        if (!g_pMomentumTimer->GetZoneCount())
-        {
-            CSingleUserRecipientFilter filter(this);
-            filter.MakeReliable();
-            UserMessageBegin(filter, "MB_NoStartOrEnd");
-            MessageEnd();
-        }
-    }
-    case GAMEMODE_UNKNOWN:
     default:
         EnableAutoBhop();
         break;
     }
-    // Reset all bool gameevents
-    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("replay_save");
-    IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
+
     m_bAllowUserTeleports = true;
 
-    bool bWasInReplay = false;
+    bool bWasInReplay = g_ReplaySystem.GetWasInReplay();
 
     // Reset only if we were not in a replay.
-    if (!g_ReplaySystem.GetWasInReplay())
+    if (!bWasInReplay)
     {
         m_SrvData.m_RunData.m_bIsInZone = false;
         m_SrvData.m_RunData.m_bMapFinished = false;
@@ -327,31 +314,14 @@ void CMomentumPlayer::Spawn()
         m_SrvData.m_iLandTick = 0;
         ResetRunStats();
     }
-    // Else we set our previous angles and position.
-    else
-    {
-        bWasInReplay = true;
-    }
 
-    if (runSaveEvent)
-    {
-        runSaveEvent->SetBool("save", false);
-        gameeventmanager->FireEvent(runSaveEvent);
-    }
-    if (runUploadEvent)
-    {
-        runUploadEvent->SetBool("run_posted", false);
-        runUploadEvent->SetString("web_msg", "");
-        gameeventmanager->FireEvent(runUploadEvent);
-    }
+    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     if (timerStartEvent)
     {
         timerStartEvent->SetInt("ent", entindex());
         timerStartEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timerStartEvent);
     }
-    // Linear/etc map
-    g_pMomentumTimer->DispatchMapInfo();
 
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("THINK_AVERAGE_STATS");
@@ -404,7 +374,7 @@ void CMomentumPlayer::Spawn()
         SetAbsOrigin(m_SrvData.m_RunData.m_vecLastPos);
         // SetAbsAngles or SetLocalAngles won't work, we need to make it for the fix_angle.
         SnapEyeAngles(m_SrvData.m_RunData.m_angLastAng);
-        m_qangLastAngle = m_SrvData.m_RunData.m_angLastAng;
+        SetLastEyeAngles(m_SrvData.m_RunData.m_angLastAng);
         SetAbsVelocity(m_SrvData.m_RunData.m_vecLastVelocity);
         SetViewOffset(Vector(0,0, m_SrvData.m_RunData.m_fLastViewOffset));
         g_ReplaySystem.SetWasInReplay(false);
@@ -412,9 +382,6 @@ void CMomentumPlayer::Spawn()
         m_nAccelTicks = g_ReplaySystem.m_nSavedAccelTicks;
         m_nPerfectSyncTicks = g_ReplaySystem.m_nSavedPerfectSyncTicks;
         m_nStrafeTicks = g_ReplaySystem.m_nSavedStrafeTicks;
-
-        // if (g_pMomentumTimer->IsRunning())
-        // g_pMomentumTimer->TogglePause();
     }
 }
 
@@ -874,7 +841,7 @@ void CMomentumPlayer::UpdateRunSync()
     {
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
-            float dtAngle = EyeAngles().y - m_qangLastAngle.y;
+            float dtAngle = EyeAngles().y - LastEyeAngles().y;
             if (dtAngle > 180.f)
                 dtAngle -= 360.f;
             else if (dtAngle < -180.f)
@@ -905,7 +872,7 @@ void CMomentumPlayer::UpdateRunSync()
             m_SrvData.m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f;
         }
 
-        m_qangLastAngle = EyeAngles();
+        SetLastEyeAngles(EyeAngles());
     }
 }
 

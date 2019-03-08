@@ -1,8 +1,6 @@
 #ifndef SHEDITSYSTEM_H
 #define SHEDITSYSTEM_H
 
-#include "cbase.h"
-
 #include "datacache/imdlcache.h"
 
 #include "iviewrender.h"

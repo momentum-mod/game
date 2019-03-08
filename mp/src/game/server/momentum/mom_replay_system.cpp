@@ -305,9 +305,9 @@ void CMomentumReplaySystem::StartPlayback(bool firstperson)
         m_pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = m_pPlayer->GetAbsVelocity();
         m_pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = m_pPlayer->GetViewOffset().z;
         //memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
-        m_nSavedAccelTicks = m_pPlayer->m_nAccelTicks;
-        m_nSavedPerfectSyncTicks = m_pPlayer->m_nPerfectSyncTicks;
-        m_nSavedStrafeTicks = m_pPlayer->m_nStrafeTicks;
+        m_nSavedAccelTicks = m_pPlayer->GetAccelTicks();
+        m_nSavedPerfectSyncTicks = m_pPlayer->GetPerfectSyncTicks();
+        m_nSavedStrafeTicks = m_pPlayer->GetStrafeTicks();
         CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
 
         if (pGhost)
