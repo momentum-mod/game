@@ -4,7 +4,6 @@
 #include "in_buttons.h"
 #include "info_camera_link.h"
 #include "mom_blockfix.h"
-#include "mom_gamemovement.h"
 #include "mom_online_ghost.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
@@ -134,16 +133,13 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_iLandTick = 0;
 
 
-    g_ReplaySystem.m_pPlayer = this;
+    g_ReplaySystem.SetPlayer(this);
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
     ListenForGameEvent("mapfinished_panel_closed");
 
     g_pMOMSavelocSystem->SetPlayer(this);
-
-    // Listen for when this player jumps and lands
-    g_pMomentumGameMovement->AddMovementListener(this);
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -155,9 +151,6 @@ CMomentumPlayer::~CMomentumPlayer()
     g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
 
     g_pMOMSavelocSystem->SetPlayer(nullptr);
-
-    // Remove us from the gamemovement listener list
-    g_pMomentumGameMovement->RemoveMovementListener(this);
 }
 
 void CMomentumPlayer::Precache()
@@ -251,7 +244,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
         SetLaggedMovementValue(1.0f);
 
         // Fix for the replay system not being able to listen to events
-        if (g_ReplaySystem.m_pPlaybackReplay && !pEvent->GetBool("restart"))
+        if (g_ReplaySystem.GetPlaybackReplay() && !pEvent->GetBool("restart"))
         {
             g_ReplaySystem.UnloadPlayback();
         }
@@ -284,20 +277,10 @@ void CMomentumPlayer::Spawn()
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
+
     // this removes the flag that was added while switching to spectator mode which prevented the player from activating
     // triggers
     RemoveSolidFlags(FSOLID_NOT_SOLID);
-    // do this here because we can't get a local player in the timer class
-    ConVarRef gm("mom_gamemode");
-    switch (gm.GetInt())
-    {
-    case GAMEMODE_KZ:
-        DisableAutoBhop();
-        break;
-    default:
-        EnableAutoBhop();
-        break;
-    }
 
     m_bAllowUserTeleports = true;
 
@@ -315,14 +298,6 @@ void CMomentumPlayer::Spawn()
         ResetRunStats();
     }
 
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
-    if (timerStartEvent)
-    {
-        timerStartEvent->SetInt("ent", entindex());
-        timerStartEvent->SetBool("is_running", false);
-        gameeventmanager->FireEvent(timerStartEvent);
-    }
-
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("THINK_AVERAGE_STATS");
     // RegisterThinkContext("CURTIME_FOR_START");
@@ -335,30 +310,23 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
     // initilize appearance properties based on Convars
-    if (g_pMomentumUtil)
-    {
-        uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
-        m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
-        m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
-        m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
+    uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
+    m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
+    m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
+    m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
 
-        newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
-        m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
-        Color newColor;
-        if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
-            SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+    newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
+    m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
+    Color newColor;
+    if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
 
-        int bGroup = mom_ghost_bodygroup.GetInt();
-        m_playerAppearanceProps.GhostModelBodygroup = bGroup;
-        SetBodygroup(1, bGroup);
+    int bodyGroup = mom_ghost_bodygroup.GetInt();
+    m_playerAppearanceProps.GhostModelBodygroup = bodyGroup;
+    SetBodygroup(1, bodyGroup);
 
-        // Send our appearance to the server/lobby if we're in one
-        SendAppearance();
-    }
-    else
-    {
-        Warning("Could not set appearance properties! g_pMomentumUtil is NULL!\n");
-    }
+    // Send our appearance to the server/lobby if we're in one
+    SendAppearance();
 
     // If wanted, create trail
     if (mom_trail_enable.GetBool())
@@ -379,9 +347,9 @@ void CMomentumPlayer::Spawn()
         SetViewOffset(Vector(0,0, m_SrvData.m_RunData.m_fLastViewOffset));
         g_ReplaySystem.SetWasInReplay(false);
         // memcpy(m_RunStats.m_pData, g_ReplaySystem.SavedRunStats()->m_pData, sizeof(CMomRunStats::data));
-        m_nAccelTicks = g_ReplaySystem.m_nSavedAccelTicks;
-        m_nPerfectSyncTicks = g_ReplaySystem.m_nSavedPerfectSyncTicks;
-        m_nStrafeTicks = g_ReplaySystem.m_nSavedStrafeTicks;
+        m_nAccelTicks = g_ReplaySystem.GetSavedAccelTicks();
+        m_nPerfectSyncTicks = g_ReplaySystem.GetSavedPerfectSyncTicks();
+        m_nStrafeTicks = g_ReplaySystem.GetSavedStrafeTicks();
     }
 }
 
@@ -689,124 +657,6 @@ void CMomentumPlayer::DisableAutoBhop()
 {
     m_SrvData.m_RunData.m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
-}
-
-void CMomentumPlayer::OnPlayerJump()
-{
-    // OnCheckBhop code
-    m_SrvData.m_bDidPlayerBhop = gpGlobals->tickcount - m_SrvData.m_iLandTick < NUM_TICKS_TO_BHOP;
-    if (!m_SrvData.m_bDidPlayerBhop)
-        m_SrvData.m_iSuccessiveBhops = 0;
-
-    m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
-    m_SrvData.m_iSuccessiveBhops++;
-
-    m_bInAirDueToJump = true;
-
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
-        m_SrvData.m_RunData.m_bTimerStartOnJump)
-    {
-        // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
-        // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning())
-        {
-            g_pMomentumTimer->SetShouldUseStartZoneOffset(false);
-
-            g_pMomentumTimer->Start(gpGlobals->tickcount, m_SrvData.m_RunData.m_iBonusZone);
-            // The Start method could return if CP menu or prac mode is activated here
-            if (g_pMomentumTimer->IsRunning())
-            {
-                // Used for trimming later on
-                if (g_ReplaySystem.m_bRecording)
-                {
-                    g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
-                }
-
-                m_SrvData.m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
-                // Used for spectating later on
-                m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
-
-                // Are we in mid air when we started? If so, our first jump should be 1, not 0
-                if (m_bInAirDueToJump)
-                {
-                    m_RunStats.SetZoneJumps(0, 1);
-                    m_RunStats.SetZoneJumps(m_SrvData.m_RunData.m_iCurrentZone, 1);
-                }
-            }
-        }
-        else
-        {
-            g_pMomentumTimer->SetShouldUseStartZoneOffset(true);
-            // MOM_TODO: Find a better way of doing this
-            // If we can't start the run, play a warning sound
-            // EmitSound("Watermelon.Scrape");
-        }
-
-        m_SrvData.m_RunData.m_bMapFinished = false;
-    }
-
-    // Set our runstats jump count
-    if (g_pMomentumTimer->IsRunning())
-    {
-        int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
-        m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);                     // Increment total jumps
-        m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
-    }
-}
-
-void CMomentumPlayer::OnPlayerLand()
-{
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
-        m_SrvData.m_RunData.m_bTimerStartOnJump)
-    {
-
-        // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
-        // MOM_TODO: Check what's wrong.
-
-        /*
-        Vector vecNewVelocity = GetAbsVelocity();
-
-        float flMaxSpeed = GetPlayerMaxSpeed();
-
-        if (m_SrvData.m_bShouldLimitPlayerSpeed && vecNewVelocity.Length2D() > flMaxSpeed)
-        {
-            float zSaved = vecNewVelocity.z;
-
-            VectorNormalizeFast(vecNewVelocity);
-
-            vecNewVelocity *= flMaxSpeed;
-            vecNewVelocity.z = zSaved;
-            SetAbsVelocity(vecNewVelocity);
-        }
-        */
-        g_pMOMSavelocSystem->SetUsingSavelocMenu(false);
-        ResetRunStats();       // Reset run stats
-        m_SrvData.m_RunData.m_bMapFinished = false;
-        m_SrvData.m_RunData.m_bTimerRunning = false;
-        m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
-
-        if (g_pMomentumTimer->IsRunning())
-        {
-            g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
-            g_pMomentumTimer->DispatchResetMessage();
-        }
-        else
-        {
-            // Reset last jump velocity when we enter the start zone without a timer
-            m_SrvData.m_RunData.m_flLastJumpVel = 0;
-
-            // Handle the replay recordings
-            if (g_ReplaySystem.m_bRecording)
-                g_ReplaySystem.StopRecording(true, false);
-
-            g_ReplaySystem.BeginRecording();
-        }
-    }
-
-    // Set the tick that we landed on something solid (can jump off of this)
-    m_SrvData.m_iLandTick = gpGlobals->tickcount;
-
-    m_bInAirDueToJump = false;
 }
 
 void CMomentumPlayer::UpdateRunStats()
@@ -1128,9 +978,9 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
                 CMomentumOnlineGhostEntity *onlineEnt = dynamic_cast<CMomentumOnlineGhostEntity*>(entity);
 
                 CMomentumGhostBaseEntity *pCurrentReplayEnt = nullptr;
-                if (g_ReplaySystem.m_pPlaybackReplay)
+                if (g_ReplaySystem.GetPlaybackReplay())
                 {
-                    pCurrentReplayEnt = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+                    pCurrentReplayEnt = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
                 }
 
                 if (onlineEnt)
@@ -1180,9 +1030,9 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
     }
     else
     {
-        if (g_ReplaySystem.m_pPlaybackReplay)
+        if (g_ReplaySystem.GetPlaybackReplay())
         {
-            return g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+            return g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         }
         else
         {

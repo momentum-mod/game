@@ -27,16 +27,18 @@ class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
     virtual void FireGameEvent(IGameEvent *event) OVERRIDE;
 
   public:
-    //-------- HUD Messages --------------------
+    // HUD messages
     void DispatchResetMessage() const;
-    // Plays the hud_timer effects to a specific player
-    void DispatchTimerStateMessage(CBasePlayer *pPlayer, bool isRunning) const;
+    void DispatchTimerStateMessage(CBasePlayer *pPlayer, bool running) const;
 
     // ------------- Timer state related messages --------------------------
     // Starts the timer for the given starting tick
-    void Start(int startTick, int iBonusZone);
+	// Returns true if timer successfully started, otherwise false
+    bool Start(int startTick, int iBonusZone);
     // Stops the timer
     void Stop(bool endTrigger = false, bool bStopRecording = true);
+    // Resets timer as well as all player stats
+    void Reset();
     // Pauses the timer
     void TogglePause();
     // Is the timer running?
@@ -117,6 +119,14 @@ class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
 
   private:
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer);
+    void OnPlayerJump(KeyValues *kv);
+    void OnPlayerLand(KeyValues *kv);
+    void OnPlayerExitZone(CMomentumPlayer *pPlayer, int zonenum);
+
+    // tries to start timer, if successful also sets all the player vars and starts replay
+    void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
+
     void DispatchMapInfo() const;
     void DispatchNoZonesMsg() const;
 

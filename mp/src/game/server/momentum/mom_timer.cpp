@@ -36,6 +36,10 @@ CMomentumTimer::CMomentumTimer(const char *pName)
 void CMomentumTimer::PostInit()
 {
     ListenForGameEvent("player_spawn");
+    ListenForGameEvent("zone_exit");
+
+    g_pModuleComms->ListenForEvent("player_jump", UtlMakeDelegate(this, &CMomentumTimer::OnPlayerJump));
+    g_pModuleComms->ListenForEvent("player_land", UtlMakeDelegate(this, &CMomentumTimer::OnPlayerLand));
 }
 
 void CMomentumTimer::LevelInitPostEntity()
@@ -72,10 +76,26 @@ void CMomentumTimer::FrameUpdatePreEntityThink()
 
 void CMomentumTimer::FireGameEvent(IGameEvent *event)
 {
-    DispatchNoZonesMsg();
+    const char *name = event->GetName();
+    if (FStrEq(name, "player_spawn"))
+    {
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+        OnPlayerSpawn(pPlayer);
+    }
+    else // zone_exit
+    {
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(event->GetInt("ent")));
+        int zonenum = event->GetInt("num");
+
+        // Can also be a replay ghost
+        if (pPlayer)
+        {
+            OnPlayerExitZone(pPlayer, zonenum);
+        }
+    }
 }
 
-void CMomentumTimer::Start(int start, int iBonusZone)
+bool CMomentumTimer::Start(int start, int iBonusZone)
 {
     static ConVarRef mom_zone_edit("mom_zone_edit");
 
@@ -83,7 +103,7 @@ void CMomentumTimer::Start(int start, int iBonusZone)
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (!pPlayer)
-        return;
+        return false;
 
     pPlayer->m_SrvData.m_bIsTimerPaused = false;
 
@@ -93,22 +113,22 @@ void CMomentumTimer::Start(int start, int iBonusZone)
     {
         // MOM_TODO: Allow it based on gametype
         Warning("Cannot start timer while using save loc menu!\n");
-        return;
+        return false;
     }
     if (mom_zone_edit.GetBool())
     {
         Warning("Cannot start timer while editing zones!\n");
-        return;
+        return false;
     }
     if (pPlayer->m_SrvData.m_bHasPracticeMode)
     {
         Warning("Cannot start timer while in practice mode!\n");
-        return;
+        return false;
     }
     if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP)
     {
         Warning("Cannot start timer while in noclip!\n");
-        return;
+        return false;
     }
 
     m_iStartTick = start;
@@ -117,16 +137,17 @@ void CMomentumTimer::Start(int start, int iBonusZone)
     SetRunning(true);
 
     // Dispatch a start timer message for the local player
-    DispatchTimerStateMessage(pPlayer, m_bIsRunning);
+    DispatchTimerStateMessage(pPlayer, IsRunning());
 
     IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_state");
-
     if (timeStartEvent)
     {
         timeStartEvent->SetInt("ent", pPlayer->entindex());
         timeStartEvent->SetBool("is_running", true);
         gameeventmanager->FireEvent(timeStartEvent);
     }
+
+	return true;
 }
 
 ////MOM_TODO: REMOVEME
@@ -204,11 +225,174 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
     }
 
     // Stop replay recording, if there was any
-    if (g_ReplaySystem.m_bRecording && stopRecording)
+    if (g_ReplaySystem.IsRecording() && stopRecording)
         g_ReplaySystem.StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
 
     SetRunning(false);
-    DispatchTimerStateMessage(pPlayer, m_bIsRunning);
+    DispatchTimerStateMessage(pPlayer, IsRunning());
+}
+
+void CMomentumTimer::Reset()
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
+    pPlayer->ResetRunStats();                        // Reset run stats
+    pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
+    pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
+    pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
+
+    if (g_pMomentumTimer->IsRunning())
+    {
+        g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
+        g_pMomentumTimer->DispatchResetMessage();
+    }
+    else
+    {
+        // Reset last jump velocity when we enter the start zone without a timer
+        pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0;
+
+        // Handle the replay recordings
+        if (g_ReplaySystem.IsRecording())
+            g_ReplaySystem.StopRecording(true, false);
+
+        g_ReplaySystem.BeginRecording();
+    }
+}
+
+void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    DispatchNoZonesMsg();
+
+    // MOM_TODO
+    // If we do implement a gamemode interface this would be much better suited there
+    static ConVarRef mom_gamemode("mom_gamemode");
+    switch (mom_gamemode.GetInt())
+    {
+    case GAMEMODE_KZ:
+        pPlayer->DisableAutoBhop();
+        break;
+    default:
+        pPlayer->EnableAutoBhop();
+        break;
+    }
+
+    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
+    if (timerStartEvent)
+    {
+        timerStartEvent->SetInt("ent", pPlayer->entindex());
+        timerStartEvent->SetBool("is_running", false);
+        gameeventmanager->FireEvent(timerStartEvent);
+    }
+}
+
+void CMomentumTimer::OnPlayerJump(KeyValues *kv)
+{
+    int playerIndex = kv->GetInt("player_ent");
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(playerIndex));
+    StdDataFromServer &srvdat = pPlayer->m_SrvData;
+
+	// OnCheckBhop code
+    srvdat.m_bDidPlayerBhop = gpGlobals->tickcount - srvdat.m_iLandTick < NUM_TICKS_TO_BHOP;
+    if (!srvdat.m_bDidPlayerBhop)
+        srvdat.m_iSuccessiveBhops = 0;
+
+    srvdat.m_RunData.m_flLastJumpVel = pPlayer->GetLocalVelocity().Length2D();
+    srvdat.m_iSuccessiveBhops++;
+
+    if (srvdat.m_RunData.m_bIsInZone && srvdat.m_RunData.m_iCurrentZone == 1 && srvdat.m_RunData.m_bTimerStartOnJump)
+    {
+        TryStart(pPlayer, false);
+    }
+
+    // Set our runstats jump count
+    if (IsRunning())
+    {
+        int currentZone = srvdat.m_RunData.m_iCurrentZone;
+        pPlayer->m_RunStats.SetZoneJumps(0, pPlayer->m_RunStats.GetZoneJumps(0) + 1);                     // Increment total jumps
+        pPlayer->m_RunStats.SetZoneJumps(currentZone, pPlayer->m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
+    }
+}
+
+void CMomentumTimer::OnPlayerLand(KeyValues *kv)
+{
+    int playerIndex = kv->GetInt("player_ent");
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(playerIndex));
+    StdDataFromServer &srvdat = pPlayer->m_SrvData;
+
+	if (srvdat.m_RunData.m_bIsInZone && srvdat.m_RunData.m_iCurrentZone == 1 && srvdat.m_RunData.m_bTimerStartOnJump)
+    {
+
+        // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
+        // MOM_TODO: Check what's wrong.
+
+        /*
+        Vector vecNewVelocity = GetAbsVelocity();
+
+        float flMaxSpeed = GetPlayerMaxSpeed();
+
+        if (m_SrvData.m_bShouldLimitPlayerSpeed && vecNewVelocity.Length2D() > flMaxSpeed)
+        {
+            float zSaved = vecNewVelocity.z;
+
+            VectorNormalizeFast(vecNewVelocity);
+
+            vecNewVelocity *= flMaxSpeed;
+            vecNewVelocity.z = zSaved;
+            SetAbsVelocity(vecNewVelocity);
+        }
+        */
+
+        // If we start timer on jump then we should reset on land
+        Reset();
+    }
+}
+
+void CMomentumTimer::OnPlayerExitZone(CMomentumPlayer *pPlayer, int zonenum)
+{
+    // This handles both the start and stage triggers
+    CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_START);
+
+    TryStart(pPlayer, true);
+}
+
+void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset)
+{
+    StdDataFromServer &srvdat = pPlayer->m_SrvData;
+
+    // do not start timer if player is in practice mode or it's already running.
+    if (!IsRunning())
+    {
+        SetShouldUseStartZoneOffset(bUseStartZoneOffset);
+
+        Start(gpGlobals->tickcount, srvdat.m_RunData.m_iBonusZone);
+        // The Start method could return if CP menu or prac mode is activated here
+        if (IsRunning())
+        {
+            // Used for trimming later on
+            if (g_ReplaySystem.IsRecording())
+            {
+                g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
+            }
+
+            srvdat.m_RunData.m_bTimerRunning = true;
+            // Used for spectating later on
+            srvdat.m_RunData.m_iStartTick = gpGlobals->tickcount;
+
+            // Are we in mid air when we started? If so, our first jump should be 1, not 0
+            if (pPlayer->IsInAirDueToJump())
+            {
+                pPlayer->m_RunStats.SetZoneJumps(0, 1);
+                pPlayer->m_RunStats.SetZoneJumps(srvdat.m_RunData.m_iCurrentZone, 1);
+            }
+        }
+    }
+    else
+    {
+        SetShouldUseStartZoneOffset(!bUseStartZoneOffset);
+    }
+
+    srvdat.m_RunData.m_bMapFinished = false;
 }
 
 void CMomentumTimer::DispatchMapInfo() const
@@ -231,6 +415,26 @@ void CMomentumTimer::DispatchNoZonesMsg() const
         CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
         filter.MakeReliable();
         UserMessageBegin(filter, "MB_NoStartOrEnd");
+        MessageEnd();
+    }
+}
+
+void CMomentumTimer::DispatchResetMessage() const
+{
+    CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+    user.MakeReliable();
+    UserMessageBegin(user, "Timer_Reset");
+    MessageEnd();
+}
+
+void CMomentumTimer::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool running) const
+{
+    if (pPlayer)
+    {
+        CSingleUserRecipientFilter user(pPlayer);
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_State");
+        WRITE_BOOL(running);
         MessageEnd();
     }
 }
@@ -291,26 +495,6 @@ float CMomentumTimer::GetLastRunTime()
     else
     {
         return originalTime - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
-    }
-}
-
-void CMomentumTimer::DispatchResetMessage() const
-{
-    CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
-    user.MakeReliable();
-    UserMessageBegin(user, "Timer_Reset");
-    MessageEnd();
-}
-
-void CMomentumTimer::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool isRunning) const
-{
-    if (pPlayer)
-    {
-        CSingleUserRecipientFilter user(pPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_State");
-        WRITE_BOOL(isRunning);
-        MessageEnd();
     }
 }
 

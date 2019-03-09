@@ -4,8 +4,8 @@
 #include "mom_shareddefs.h"
 #include "GameEventListener.h"
 #include "mom_modulecomms.h"
-#include "IMovementListener.h"
 
+// MOM_TODO: 
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 class CTriggerSlide;
@@ -17,7 +17,7 @@ class CTriggerSlide;
 
 class CMomentumGhostBaseEntity;
 
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IMovementListener
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -68,8 +68,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_SrvData.m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
-    void OnPlayerJump() OVERRIDE;
-    void OnPlayerLand() OVERRIDE;
     void UpdateRunStats();
     void UpdateRunSync();
     void UpdateJumpStrafes();
@@ -177,6 +175,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void SetLastEyeAngles(const QAngle &ang) { m_qangLastAngle = ang; }
     const QAngle &LastEyeAngles() const { return m_qangLastAngle; }
 
+	void SetIsInAirDueToJump(bool val) { m_bInAirDueToJump = val; }
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
   private:
     // Spawn stuff
