@@ -147,7 +147,7 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
         gameeventmanager->FireEvent(timeStartEvent);
     }
 
-	return true;
+    return true;
 }
 
 ////MOM_TODO: REMOVEME
@@ -292,7 +292,7 @@ void CMomentumTimer::OnPlayerJump(KeyValues *kv)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(playerIndex));
     StdDataFromServer &srvdat = pPlayer->m_SrvData;
 
-	// OnCheckBhop code
+    // OnCheckBhop code
     srvdat.m_bDidPlayerBhop = gpGlobals->tickcount - srvdat.m_iLandTick < NUM_TICKS_TO_BHOP;
     if (!srvdat.m_bDidPlayerBhop)
         srvdat.m_iSuccessiveBhops = 0;
@@ -320,7 +320,7 @@ void CMomentumTimer::OnPlayerLand(KeyValues *kv)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(playerIndex));
     StdDataFromServer &srvdat = pPlayer->m_SrvData;
 
-	if (srvdat.m_RunData.m_bIsInZone && srvdat.m_RunData.m_iCurrentZone == 1 && srvdat.m_RunData.m_bTimerStartOnJump)
+    if (srvdat.m_RunData.m_bIsInZone && srvdat.m_RunData.m_iCurrentZone == 1 && srvdat.m_RunData.m_bTimerStartOnJump)
     {
 
         // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.

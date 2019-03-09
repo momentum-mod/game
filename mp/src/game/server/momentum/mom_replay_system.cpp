@@ -296,25 +296,25 @@ void CMomentumReplaySystem::SetTeleportedThisFrame()
 
 void CMomentumReplaySystem::StartPlayback(bool firstperson)
 {
-	if (m_pPlayer)
-	{
-		SetWasInReplay();
+    if (m_pPlayer)
+    {
+        SetWasInReplay();
 
-		m_pPlayer->m_SrvData.m_RunData.m_vecLastPos = m_pPlayer->GetAbsOrigin();
-		m_pPlayer->m_SrvData.m_RunData.m_angLastAng = m_pPlayer->GetAbsAngles();
-		m_pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = m_pPlayer->GetAbsVelocity();
-		m_pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = m_pPlayer->GetViewOffset().z;
-		//memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
-		m_nSavedAccelTicks = m_pPlayer->GetAccelTicks();
-		m_nSavedPerfectSyncTicks = m_pPlayer->GetPerfectSyncTicks();
-		m_nSavedStrafeTicks = m_pPlayer->GetStrafeTicks();
-		CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
+        m_pPlayer->m_SrvData.m_RunData.m_vecLastPos = m_pPlayer->GetAbsOrigin();
+        m_pPlayer->m_SrvData.m_RunData.m_angLastAng = m_pPlayer->GetAbsAngles();
+        m_pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = m_pPlayer->GetAbsVelocity();
+        m_pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = m_pPlayer->GetViewOffset().z;
+        // memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
+        m_nSavedAccelTicks = m_pPlayer->GetAccelTicks();
+        m_nSavedPerfectSyncTicks = m_pPlayer->GetPerfectSyncTicks();
+        m_nSavedStrafeTicks = m_pPlayer->GetStrafeTicks();
+        CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
 
-		if (pGhost)
-			pGhost->StartRun(firstperson);
+        if (pGhost)
+            pGhost->StartRun(firstperson);
 
-		m_bPlayingBack = true;
-	}
+        m_bPlayingBack = true;
+    }
 }
 
 void CMomentumReplaySystem::UnloadPlayback(bool shutdown)
