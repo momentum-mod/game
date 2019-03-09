@@ -6,7 +6,6 @@
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
-class IMovementListener;
 class CMomentumPlayer;
 
 #define NO_REFL_NORMAL_CHANGE -2.0f
@@ -23,9 +22,6 @@ class CMomentumPlayer;
 #define DUCK_SPEED_MULTIPLIER 0.34f
 
 #define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
-
-#define FIRE_GAMEMOVEMENT_EVENT(event)                                                                                 \
-    FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event(); }
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -95,14 +91,8 @@ class CMomentumGameMovement : public CGameMovement
     virtual void LimitStartZoneSpeed(void);
     virtual int ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce);
 
-    // Movement Listener
-    void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
-    void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
-
   private:
     CMomentumPlayer *m_pPlayer;
-    CUtlVector<IMovementListener *> m_vecListeners;
-    ConVarRef mom_gamemode;
 
     bool m_bCheckForGrabbableLadder;
 };

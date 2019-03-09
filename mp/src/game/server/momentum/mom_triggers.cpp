@@ -144,9 +144,6 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
         // Timer won't be running if it's the start trigger
         if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_SrvData.m_bHasPracticeMode)
         {
-            // This handles both the start and stage triggers
-            g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_START);
-
             float enterVel3D = pPlayer->GetLocalVelocity().Length(),
                   enterVel2D = pPlayer->GetLocalVelocity().Length2D();
             pPlayer->m_RunStats.SetZoneEnterSpeed(stageNum, enterVel3D, enterVel2D);
@@ -291,59 +288,7 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
             pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = false;
         }
 
-        // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
-        // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning())
-        {
-            /*
-            if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
-            {
-                
-                Vector velocity = pOther->GetAbsVelocity();
-                // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
-                // It only has a NormalizeInPlace... Not simple enough for me
-                Vector2D vel2D = velocity.AsVector2D();
-                if (velocity.AsVector2D().IsLengthGreaterThan(m_fBhopLeaveSpeed))
-                {
-                    vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));
-                    pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
-                }
-                
-            }
-            */
-            g_pMomentumTimer->SetShouldUseStartZoneOffset(true);
-
-            g_pMomentumTimer->Start(gpGlobals->tickcount, pPlayer->m_SrvData.m_RunData.m_iBonusZone);
-            // The Start method could return if CP menu or prac mode is activated here
-            if (g_pMomentumTimer->IsRunning())
-            {
-                // Used for trimming later on
-                if (g_ReplaySystem.m_bRecording)
-                {
-                    g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
-                }
-
-                pPlayer->m_SrvData.m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
-                // Used for spectating later on
-                pPlayer->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
-
-                // Are we in mid air when we started? If so, our first jump should be 1, not 0
-                if (pPlayer->IsInAirDueToJump())
-                {
-                    pPlayer->m_RunStats.SetZoneJumps(0, 1);
-                    pPlayer->m_RunStats.SetZoneJumps(pPlayer->m_SrvData.m_RunData.m_iCurrentZone, 1);
-                }
-            }
-        }
-        else
-        {
-            g_pMomentumTimer->SetShouldUseStartZoneOffset(false);
-            // MOM_TODO: Find a better way of doing this
-            // If we can't start the run, play a warning sound
-            // pPlayer->EmitSound("Watermelon.Scrape");
-        }
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
-        pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
     }
     else
     {
@@ -384,32 +329,12 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
         if (pPlayer->GetAbsVelocity().IsLengthGreaterThan(300.0f))
             pPlayer->SetAbsVelocity(vec3_origin);
 
-        pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
+		pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
         pPlayer->m_SrvData.m_RunData.m_bTimerStartOnJump = m_bTimerStartOnJump;
         pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType = m_iLimitSpeedType;
-        g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
-        pPlayer->ResetRunStats(); // Reset run stats
-        pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
-        pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
-        pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
         pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = IsLimitingSpeed();
 
-        if (g_pMomentumTimer->IsRunning())
-        {
-            g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
-            g_pMomentumTimer->DispatchResetMessage();
-        }
-        else
-        {
-            // Reset last jump velocity when we enter the start zone without a timer
-            pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0;
-
-            // Handle the replay recordings
-            if (g_ReplaySystem.m_bRecording)
-                g_ReplaySystem.StopRecording(true, false);
-
-            g_ReplaySystem.BeginRecording();
-        }
+        g_pMomentumTimer->Reset();
     }
     else
     {
