@@ -4,9 +4,9 @@
 #include <GameEventListener.h>
 
 struct SavedLocation_t;
+class CBaseMomentumTrigger;
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
-class CTriggerOnehop;
 class CTriggerStage;
 class CTriggerTimerStop;
 class CMomentumPlayer;
@@ -122,7 +122,8 @@ class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
     void OnPlayerSpawn(CMomentumPlayer *pPlayer);
     void OnPlayerJump(KeyValues *kv);
     void OnPlayerLand(KeyValues *kv);
-    void OnPlayerExitZone(CMomentumPlayer *pPlayer, int zonenum);
+    void OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum);
+    void OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum);
 
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
