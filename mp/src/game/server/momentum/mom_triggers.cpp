@@ -159,6 +159,7 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
             stageEvent->SetInt("ent", pPlayer->entindex());
+            stageEvent->SetInt("zone_ent", entindex());
             stageEvent->SetInt("num", stageNum);
         }
 
@@ -174,6 +175,7 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
             stageEvent->SetInt("ent", pGhost->entindex());
+            stageEvent->SetInt("zone_ent", entindex());
             stageEvent->SetInt("num", stageNum);
         }
     }
@@ -489,7 +491,7 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
             stageEvent->SetInt("ent", pGhost->entindex());
-            stageEvent->SetInt("zone_ent", pGhost->entindex());
+            stageEvent->SetInt("zone_ent", entindex());
             stageEvent->SetInt("num", m_iZoneNumber);
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
             pGhost->m_SrvData.m_RunData.m_iOldZone = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
@@ -536,8 +538,9 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
         pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
         pMomPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
 
-        pStageEvent = gameeventmanager->CreateEvent("zone_enter");
+        pStageEvent = gameeventmanager->CreateEvent("zone_exit");
         pStageEvent->SetInt("ent", pMomPlayer->entindex());
+        pStageEvent->SetInt("zone_ent", entindex());
         pStageEvent->SetInt("num", m_iZoneNumber);
     }
     else
@@ -549,8 +552,9 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
             pGhost->m_SrvData.m_RunData.m_iCurrentZone = pGhost->m_SrvData.m_RunData.m_iOldZone;
             pGhost->m_SrvData.m_RunData.m_iBonusZone = pGhost->m_SrvData.m_RunData.m_iOldBonusZone;
 
-            pStageEvent = gameeventmanager->CreateEvent("zone_enter");
+            pStageEvent = gameeventmanager->CreateEvent("zone_exit");
             pStageEvent->SetInt("ent", pGhost->entindex());
+            pStageEvent->SetInt("zone_ent", entindex());
             pStageEvent->SetInt("num", m_iZoneNumber);
         }
     }
