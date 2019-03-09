@@ -336,7 +336,7 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
         if (pPlayer->GetAbsVelocity().IsLengthGreaterThan(300.0f))
             pPlayer->SetAbsVelocity(vec3_origin);
 
-		pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
+        pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
         pPlayer->m_SrvData.m_RunData.m_bTimerStartOnJump = m_bTimerStartOnJump;
         pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType = m_iLimitSpeedType;
         pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = IsLimitingSpeed();

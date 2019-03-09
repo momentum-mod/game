@@ -51,7 +51,7 @@ public:
     const CMomReplayBase *GetPlaybackReplay() const { return m_pPlaybackReplay; }
     CMomReplayBase *GetPlaybackReplay() { return m_pPlaybackReplay; }
 
-	int GetSavedPerfectSyncTicks() const { return m_nSavedPerfectSyncTicks; }
+    int GetSavedPerfectSyncTicks() const { return m_nSavedPerfectSyncTicks; }
     int GetSavedStrafeTicks() const { return m_nSavedStrafeTicks; }
     int GetSavedAccelTicks() const { return m_nSavedAccelTicks; }
 
