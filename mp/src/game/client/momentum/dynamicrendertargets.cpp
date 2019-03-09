@@ -60,14 +60,11 @@ void CDynamicRenderTargets::PostInit()
     KeyValues *pVMTKeyValues = new KeyValues("unlitgeneric");
     pVMTKeyValues->SetString("$vertexcolor", "1");
     pVMTKeyValues->SetString("$vertexalpha", "1");
-    pVMTKeyValues->SetString("$additive", "1");
     pVMTKeyValues->SetString("$ignorez", "0"); // Change this to 1 to see it through walls
-    pVMTKeyValues->SetString("$halflambert", "1");
     pVMTKeyValues->SetString("$selfillum", "1");
     pVMTKeyValues->SetString("$nofog", "1");
     pVMTKeyValues->SetString("$nocull", "1");
-    pVMTKeyValues->SetString("$model", "1");
-    m_pTriggerOutlineMat = m_pMaterialSystem->CreateMaterial("__utilOutlineColor", pVMTKeyValues); // Refcount = 1
+    m_pTriggerOutlineMat = m_pMaterialSystem->CreateMaterial("__utilOutlineColor", pVMTKeyValues);
     m_pTriggerOutlineMat->Refresh();
 }
 

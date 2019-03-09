@@ -10,7 +10,14 @@
 #include "mom_system_progress.h"
 #include "fmtstr.h"
 
+#include "dt_utlvector_send.h"
+
 #include "tier0/memdbgon.h"
+
+IMPLEMENT_SERVERCLASS_ST(CBaseMomentumTrigger, DT_BaseMomentumTrigger)
+SendPropUtlVector(SENDINFO_UTLVECTOR(m_vecZonePoints), 32, SendPropVector(NULL, 0, sizeof(Vector))),
+SendPropFloat(SENDINFO(m_flZoneHeight)),
+END_SEND_TABLE();
 
 // CBaseMomentumTrigger
 void CBaseMomentumTrigger::Spawn()
