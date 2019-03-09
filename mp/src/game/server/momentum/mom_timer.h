@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mom_shareddefs.h"
+#include <GameEventListener.h>
 
 struct SavedLocation_t;
 class CTriggerTimerStart;
@@ -10,16 +11,22 @@ class CTriggerStage;
 class CTriggerTimerStop;
 class CMomentumPlayer;
 
-class CMomentumTimer : public CAutoGameSystemPerFrame
+class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
 {
   public:
-    CMomentumTimer(const char *pName)
-        : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
-          m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
-          m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr),
-          m_pStartZoneMark(nullptr), m_bPaused(false), m_iPausedTick(0)
-    {
-    }
+    CMomentumTimer(const char *pName);
+
+  public: // CAutoGameSystemPerFrame
+    void PostInit();
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPreEntity() OVERRIDE;
+
+    virtual void FrameUpdatePreEntityThink() OVERRIDE;
+
+  public: // CGameEventListener
+    virtual void FireGameEvent(IGameEvent *event) OVERRIDE;
+
+  public:
     //-------- HUD Messages --------------------
     void DispatchResetMessage() const;
     // Plays the hud_timer effects to a specific player
@@ -77,12 +84,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     //-------- Online-related timer commands -----------------------------
     // MOM_TODO: void LoadOnlineTimes();
-
-    // Level init/shutdown hooks
-    void LevelInitPostEntity() OVERRIDE;
-    void LevelShutdownPreEntity() OVERRIDE;
-
-    virtual void FrameUpdatePreEntityThink();
 
     // Practice mode- noclip mode that stops timer
     void EnablePractice(CMomentumPlayer *pPlayer);

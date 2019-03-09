@@ -137,9 +137,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     int GetPerfectSyncTicks() const { return m_nPerfectSyncTicks; }
     void SetPerfectSyncTicks(int ticks) { m_nPerfectSyncTicks = ticks; }
-    int GetStrafeTicks() { return m_nStrafeTicks; }
+    int GetStrafeTicks() const { return m_nStrafeTicks; }
     void SetStrafeTicks(int ticks) { m_nStrafeTicks = ticks; }
-    int GetAccelTicks() { return m_nAccelTicks; }
+    int GetAccelTicks() const { return m_nAccelTicks; }
     void SetAccelTicks(int ticks) { m_nAccelTicks = ticks; }
 
     // Trail Methods
