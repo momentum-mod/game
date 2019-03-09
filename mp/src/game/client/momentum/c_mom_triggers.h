@@ -15,6 +15,15 @@ private:
 class C_BaseMomentumTrigger : public C_BaseEntity
 {
     DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseEntity);
+    DECLARE_CLIENTCLASS();
+
+public:
+    C_BaseMomentumTrigger();
+
+    void DrawOutlineModel(const Color &outlineColor);
+
+    CUtlVector<Vector> m_vecZonePoints;
+    float m_flZoneHeight;
 };
 
 class C_TriggerTimerStart : public C_BaseMomentumTrigger

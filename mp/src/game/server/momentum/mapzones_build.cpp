@@ -303,8 +303,9 @@ void CMomPointZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
     m_bFreePhysCollide = false;
     pEnt->InitCustomCollision(GetPhysCollide(), m_vecMins, m_vecMaxs);
 
-    pEnt->m_vZonePoints.CopyArray( m_vPoints.Base(), m_vPoints.Count() );
-    pEnt->m_flPointZoneHeight = GetHeight();
+    pEnt->m_vecZonePoints.CopyArray(m_vPoints.Base(), m_vPoints.Count());
+    pEnt->NetworkStateChanged(&pEnt->m_vecZonePoints);
+    pEnt->m_flZoneHeight = GetHeight();
 }
 
 void CMomPointZoneBuilder::Add(CBasePlayer *pPlayer, const Vector &vecAim)
@@ -345,12 +346,12 @@ void CMomPointZoneBuilder::OnFrame(CBasePlayer *pPlayer, const Vector &vecAim)
     // Draw bottom
     for (i = 0; i < nPoints-1; i++)
     {
-        CMomBaseZoneBuilder::DrawZoneLine(m_vPoints[i], m_vPoints[i+1], -1.0f);
+        DrawZoneLine(m_vPoints[i], m_vPoints[i+1], -1.0f);
     }
 
     if (nPoints > 0 && (m_bGetHeight || IsDone()))
     {
-        CMomBaseZoneBuilder::DrawZoneLine(m_vPoints[0], m_vPoints[nPoints-1], -1.0f);
+        DrawZoneLine(m_vPoints[0], m_vPoints[nPoints-1], -1.0f);
     }
 
 
@@ -367,7 +368,7 @@ void CMomPointZoneBuilder::OnFrame(CBasePlayer *pPlayer, const Vector &vecAim)
             p0.z += h;
             p1 = m_vPoints[i+1];
             p1.z += h;
-            CMomBaseZoneBuilder::DrawZoneLine(p0, p1, -1.0f);
+            DrawZoneLine(p0, p1, -1.0f);
         }
 
         p0 = m_vPoints[0];
@@ -375,7 +376,7 @@ void CMomPointZoneBuilder::OnFrame(CBasePlayer *pPlayer, const Vector &vecAim)
         p1 = m_vPoints[nPoints-1];
         p1.z += h;
 
-        CMomBaseZoneBuilder::DrawZoneLine(p0, p1, -1.0f);
+        DrawZoneLine(p0, p1, -1.0f);
 
 
         // Draw bottom to top
@@ -383,7 +384,7 @@ void CMomPointZoneBuilder::OnFrame(CBasePlayer *pPlayer, const Vector &vecAim)
         {
             p1 = m_vPoints[i];
             p1.z += h;
-            CMomBaseZoneBuilder::DrawZoneLine(m_vPoints[i], p1, -1.0f);
+            DrawZoneLine(m_vPoints[i], p1, -1.0f);
         }
     }
 
@@ -395,9 +396,9 @@ void CMomPointZoneBuilder::OnFrame(CBasePlayer *pPlayer, const Vector &vecAim)
     // Draw the aim spot
     if (nPoints > 0)
     {
-        CMomBaseZoneBuilder::DrawZoneLine(m_vPoints[0], vecAim, -1.0f);
+        DrawZoneLine(m_vPoints[0], vecAim, -1.0f);
         if (m_vPoints.Count() > 1)
-            CMomBaseZoneBuilder::DrawZoneLine(m_vPoints[nPoints-1], vecAim, -1.0f);
+            DrawZoneLine(m_vPoints[nPoints-1], vecAim, -1.0f);
     }
     
 
@@ -417,12 +418,12 @@ void CMomPointZoneBuilder::OnFrame(CBasePlayer *pPlayer, const Vector &vecAim)
 bool CMomPointZoneBuilder::LoadFromZone(const CBaseMomentumTrigger *pEnt)
 {
     // No points to save!
-    if (!pEnt->m_vZonePoints.Count())
+    if (!pEnt->m_vecZonePoints.Count())
         return false;
 
 
-    m_vPoints.CopyArray(pEnt->m_vZonePoints.Base(), pEnt->m_vZonePoints.Count());
-    SetHeight( pEnt->m_flPointZoneHeight );
+    m_vPoints.CopyArray(pEnt->m_vecZonePoints.Base(), pEnt->m_vecZonePoints.Count());
+    SetHeight( pEnt->m_flZoneHeight );
 
     return true;
 }
@@ -825,6 +826,7 @@ bool CMomBoxZoneBuilder::Load(KeyValues *kv)
     m_vecMins = Vector(kv->GetFloat("xScaleMins"), kv->GetFloat("yScaleMins"), kv->GetFloat("zScaleMins"));
     m_vecMaxs = Vector(kv->GetFloat("xScaleMaxs"), kv->GetFloat("yScaleMaxs"), kv->GetFloat("zScaleMaxs"));
     SetBounds(m_vecCenter, m_vecMins, m_vecMaxs);
+    m_flHeight = m_vecEnd.z - m_vecStart.z;
     return true;
 }
 
@@ -962,7 +964,8 @@ void CMomBoxZoneBuilder::Add(CBasePlayer *pPlayer, const Vector &vecAim)
         m_vecEnd.z = m_vecStart.z;
         break;
     case BUILDSTAGE_HEIGHT:
-        m_vecEnd.z = m_vecStart.z + GetZoneHeightToPlayer(pPlayer, m_vecStart);
+        m_flHeight = GetZoneHeightToPlayer(pPlayer, m_vecStart);
+        m_vecEnd.z = m_vecStart.z + m_flHeight;
         break;
     default:
         m_iBuildStage = BUILDSTAGE_START;
@@ -984,6 +987,14 @@ void CMomBoxZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
 
     pEnt->SetSolid(SOLID_BBOX);
     pEnt->SetCollisionBounds(m_vecMins, m_vecMaxs);
+
+    pEnt->m_flZoneHeight = m_flHeight;
+    // Add the four base verts to the vector
+    pEnt->m_vecZonePoints.AddToTail(m_vecStart); // upperleft
+    pEnt->m_vecZonePoints.AddToTail(Vector(m_vecEnd.x, m_vecStart.y, m_vecStart.z)); // top right 
+    pEnt->m_vecZonePoints.AddToTail(Vector(m_vecEnd.x, m_vecEnd.y, m_vecStart.z)); // bottom right
+    pEnt->m_vecZonePoints.AddToTail(Vector(m_vecStart.x, m_vecEnd.y, m_vecStart.z)); // bottom left 
+    pEnt->NetworkStateChanged(&pEnt->m_vecZonePoints);
 }
 
 void CMomBoxZoneBuilder::SetBounds(const Vector &wmins, const Vector &wmaxs)
@@ -1000,9 +1011,7 @@ void CMomBoxZoneBuilder::SetBounds(const Vector &center, const Vector &mins, con
 
 CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt)
 {
-    const CUtlVector<Vector> &points = pEnt->GetZonePoints();
-
-    if (points.Count() > 0)
+    if (pEnt->m_vecZonePoints.Count() > 0)
     {
         auto pBuilder = new CMomPointZoneBuilder;
         pBuilder->LoadFromZone(pEnt);

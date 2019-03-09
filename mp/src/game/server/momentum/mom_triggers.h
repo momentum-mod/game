@@ -40,6 +40,7 @@ enum
 class CBaseMomentumTrigger : public CTriggerMultiple
 {
     DECLARE_CLASS(CBaseMomentumTrigger, CTriggerMultiple);
+    DECLARE_NETWORKCLASS();
 
   public:
     void Spawn() OVERRIDE;
@@ -58,14 +59,13 @@ class CBaseMomentumTrigger : public CTriggerMultiple
     // Return true to signify success
     virtual bool LoadFromKeyValues(KeyValues *kv) { return false; }
 
-    const CUtlVector<Vector> &GetZonePoints() const { return m_vZonePoints; }
-
     virtual int GetZoneType();
 
-  private:
+    CNetworkVar(float, m_flZoneHeight);
     // Point-based zone editing
-    CUtlVector<Vector> m_vZonePoints;
-    float m_flPointZoneHeight;
+    CUtlVector<Vector> m_vecZonePoints;
+
+  private:
 
     friend class CMomPointZoneBuilder;
 };
