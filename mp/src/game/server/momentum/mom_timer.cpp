@@ -25,6 +25,56 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
+CMomentumTimer::CMomentumTimer(const char *pName)
+    : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
+      m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
+      m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr),
+      m_pStartZoneMark(nullptr), m_bPaused(false), m_iPausedTick(0)
+{
+}
+
+void CMomentumTimer::PostInit()
+{
+    ListenForGameEvent("player_spawn");
+}
+
+void CMomentumTimer::LevelInitPostEntity()
+{
+    SetGameModeConVars();
+    m_bWereCheatsActivated = false;
+    RequestZoneCount();
+    ClearStartMark();
+    DispatchMapInfo();
+}
+
+void CMomentumTimer::LevelShutdownPreEntity()
+{
+    if (IsRunning())
+        Stop(false);
+    m_bWereCheatsActivated = false;
+    SetStartTrigger(nullptr);
+    SetCurrentZone(nullptr);
+    ClearStartMark();
+}
+
+void CMomentumTimer::FrameUpdatePreEntityThink()
+{
+    if (!GotCaughtCheating())
+    {
+        static ConVarRef sv_cheats("sv_cheats");
+        if (sv_cheats.GetBool())
+        {
+            SetCheating(true);
+            Stop();
+        }
+    }
+}
+
+void CMomentumTimer::FireGameEvent(IGameEvent *event)
+{
+    DispatchNoZonesMsg();
+}
+
 void CMomentumTimer::Start(int start, int iBonusZone)
 {
     static ConVarRef mom_zone_edit("mom_zone_edit");
@@ -161,19 +211,6 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
     DispatchTimerStateMessage(pPlayer, m_bIsRunning);
 }
 
-void CMomentumTimer::FrameUpdatePreEntityThink()
-{
-    if (!GotCaughtCheating())
-    {
-        static ConVarRef sv_cheats("sv_cheats");
-        if (sv_cheats.GetBool())
-        {
-            SetCheating(true);
-            Stop();
-        }
-    }
-}
-
 void CMomentumTimer::DispatchMapInfo() const
 {
     IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init", true);
@@ -198,54 +235,32 @@ void CMomentumTimer::DispatchNoZonesMsg() const
     }
 }
 
-void CMomentumTimer::LevelInitPostEntity()
-{
-    SetGameModeConVars();
-    m_bWereCheatsActivated = false;
-    RequestZoneCount();
-    ClearStartMark();
-    DispatchMapInfo();
-    DispatchNoZonesMsg();
-}
-
-void CMomentumTimer::LevelShutdownPreEntity()
-{
-    if (IsRunning())
-        Stop(false);
-    m_bWereCheatsActivated = false;
-    SetStartTrigger(nullptr);
-    SetCurrentZone(nullptr);
-    ClearStartMark();
-}
-
 int CMomentumTimer::GetCurrentZoneNumber() const
 {
     return m_pCurrentZone && m_pCurrentZone->GetStageNumber();
-} 
+}
 
-// MOM_TODO: This needs to update to include checkpoint triggers placed in linear
-// maps to allow players to compare at certain points.
+static int GetNumEntitiesByClassname(const char* classname)
+{
+    int count = 0;
+
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, classname);
+    while (pEnt)
+    {
+        count++;
+        pEnt = gEntList.FindEntityByClassname(pEnt, classname);
+    }
+
+    return count;
+}
+
 void CMomentumTimer::RequestZoneCount()
 {
-    CTriggerStage *stage =
-        static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage"));
-
-    int iCount = 0;
-    while (stage)
-    {
-        iCount++;
-        stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage"));
-    }
-
-    // If there is a zone and atleast a stage, then we can add the start zone.
-    if (iCount > 0)
-    {
-        if (gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start"))
-            iCount += 1;
-    }
-
-    m_iZoneCount = iCount;
+    m_iZoneCount = GetNumEntitiesByClassname("trigger_momentum_timer_start") +
+                   GetNumEntitiesByClassname("trigger_momentum_timer_stage") +
+                   GetNumEntitiesByClassname("trigger_momentum_timer_checkpoint");
 }
+
 // This function is called every time CTriggerStage::StartTouch is called
 float CMomentumTimer::CalculateStageTime(int stage)
 {
