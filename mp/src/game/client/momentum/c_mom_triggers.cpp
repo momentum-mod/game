@@ -7,6 +7,7 @@
 #include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
+#include "dt_utlvector_recv.h"
 
 static MAKE_TOGGLE_CONVAR(mom_startzone_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable drawing an outline for start zone.");
 
@@ -48,9 +49,11 @@ bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity
     CMeshBuilder builder;
     builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
                   MATERIAL_LINE_LOOP, vertices);
+
     for (int i = 0; i < vertices; i++)
     {
         const BrushVertex_t& vertex = m_pVertices[i];
+
         builder.Position3fv(vertex.m_Pos.Base());
         builder.Normal3fv(vertex.m_Normal.Base());
         builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
@@ -59,6 +62,73 @@ bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity
 
     builder.End(false, true);
     return false;
+}
+
+IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseMomentumTrigger, CBaseMomentumTrigger)
+RecvPropUtlVector(RECVINFO_UTLVECTOR(m_vecZonePoints), 32, RecvPropVector(NULL, 0, sizeof(Vector))),
+RecvPropFloat(RECVINFO(m_flZoneHeight)),
+END_RECV_TABLE();
+
+C_BaseMomentumTrigger::C_BaseMomentumTrigger()
+{
+    m_flZoneHeight = 0.0f;
+}
+
+void C_BaseMomentumTrigger::DrawOutlineModel(const Color& outlineColor)
+{
+    const int iNum = m_vecZonePoints.Count();
+
+    if (iNum <= 0)
+        return;
+
+    CMatRenderContextPtr pRenderContext(materials);
+    CMeshBuilder builder;
+
+    // Bottom
+    builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
+                  MATERIAL_LINE_LOOP, iNum);
+    for (int i = 0; i < iNum; i++)
+    {
+        const Vector &cur = m_vecZonePoints[i];
+
+        builder.Position3fv(cur.Base());
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
+    }
+    builder.End(false, true);
+
+    // Connecting lines
+    for (int i = 0; i < iNum; i++)
+    {
+        const Vector &cur = m_vecZonePoints[i];
+
+        // Connecting lines
+        builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
+                          MATERIAL_LINES, 2);
+
+        builder.Position3fv(cur.Base());
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
+
+        const Vector next(cur.x, cur.y, cur.z + m_flZoneHeight);
+        builder.Position3fv(next.Base());
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
+
+        builder.End(false, true);
+    }
+
+    // Top
+    builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
+                  MATERIAL_LINE_LOOP, iNum);
+    for (int i = 0; i < iNum; i++)
+    {
+        const Vector next(m_vecZonePoints[i].x, m_vecZonePoints[i].y, m_vecZonePoints[i].z + m_flZoneHeight);
+        builder.Position3fv(next.Base());
+        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
+        builder.AdvanceVertex();
+    }
+    builder.End(false, true);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, C_TriggerTimerStart);
@@ -75,9 +145,17 @@ int C_TriggerTimerStart::DrawModel(int flags)
     {
         if (g_pMomentumUtil->GetColorFromHex(mom_startzone_color.GetString(), m_OutlineRenderer.outlineColor))
         {
-            render->InstallBrushSurfaceRenderer(&m_OutlineRenderer);
-            BaseClass::DrawModel(STUDIO_RENDER);
-            render->InstallBrushSurfaceRenderer(nullptr);
+            if (GetModel())
+            {
+                render->InstallBrushSurfaceRenderer(&m_OutlineRenderer);
+                BaseClass::DrawModel(flags);
+                render->InstallBrushSurfaceRenderer(nullptr);
+            }
+            else
+            {
+                DrawOutlineModel(m_OutlineRenderer.outlineColor);
+                return 1;
+            }
         }
     }
 
@@ -101,13 +179,22 @@ int C_TriggerTimerStop::DrawModel(int flags)
     {
         if (g_pMomentumUtil->GetColorFromHex(mom_endzone_color.GetString(), m_OutlineRenderer.outlineColor))
         {
-            render->InstallBrushSurfaceRenderer(&m_OutlineRenderer);
-            BaseClass::DrawModel(STUDIO_RENDER);
-            render->InstallBrushSurfaceRenderer(nullptr);
-            if (IsEffectActive(EF_NODRAW))
+            if (GetModel())
+            {
+                render->InstallBrushSurfaceRenderer(&m_OutlineRenderer);
+                BaseClass::DrawModel(flags);
+                render->InstallBrushSurfaceRenderer(nullptr);
+            }
+            else
+            {
+                DrawOutlineModel(m_OutlineRenderer.outlineColor);
                 return 1;
+            }
         }
     }
+
+    if (IsEffectActive(EF_NODRAW))
+        return 1;
 
     return BaseClass::DrawModel(flags);
 }
