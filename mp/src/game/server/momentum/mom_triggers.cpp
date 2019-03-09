@@ -1,12 +1,11 @@
 #include "cbase.h"
 
+#include "mom_triggers.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
-#include "mom_timer.h"
-#include "mom_triggers.h"
 #include "mom_system_progress.h"
 #include "fmtstr.h"
 
@@ -101,8 +100,6 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        // Set the current stage to this
-        g_pMomentumTimer->SetCurrentZone(this);
         // Set player run data
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
         pPlayer->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
@@ -110,15 +107,6 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
         stageEvent->SetInt("ent", pPlayer->entindex());
         stageEvent->SetInt("zone_ent", entindex());
         stageEvent->SetInt("num", stageNum);
-        if (g_pMomentumTimer->IsRunning())
-        {
-            pPlayer->m_RunStats.SetZoneExitSpeed(stageNum - 1, pPlayer->GetLocalVelocity().Length(),
-                                                 pPlayer->GetLocalVelocity().Length2D());
-            g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
-            pPlayer->m_RunStats.SetZoneEnterTime(stageNum, g_pMomentumTimer->CalculateStageTime(stageNum));
-            pPlayer->m_RunStats.SetZoneTime(stageNum - 1, pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
-                                                              pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
-        }
     }
     else
     {
@@ -148,23 +136,13 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
     IGameEvent *stageEvent = nullptr;
     if (pPlayer)
     {
-        // Timer won't be running if it's the start trigger
-        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_SrvData.m_bHasPracticeMode)
-        {
-            float enterVel3D = pPlayer->GetLocalVelocity().Length(),
-                  enterVel2D = pPlayer->GetLocalVelocity().Length2D();
-            pPlayer->m_RunStats.SetZoneEnterSpeed(stageNum, enterVel3D, enterVel2D);
-            if (stageNum == 1)
-                pPlayer->m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
-
-            stageEvent = gameeventmanager->CreateEvent("zone_exit");
-            stageEvent->SetInt("ent", pPlayer->entindex());
-            stageEvent->SetInt("zone_ent", entindex());
-            stageEvent->SetInt("num", stageNum);
-        }
-
         // Status
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
+
+        stageEvent = gameeventmanager->CreateEvent("zone_exit");
+        stageEvent->SetInt("ent", pPlayer->entindex());
+        stageEvent->SetInt("zone_ent", entindex());
+        stageEvent->SetInt("num", stageNum);
     }
     else
     {
@@ -332,8 +310,6 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        g_pMomentumTimer->SetStartTrigger(this);
-
         // First of all, hard-cap speed, regardless of re-entry
         if (pPlayer->GetAbsVelocity().IsLengthGreaterThan(300.0f))
             pPlayer->SetAbsVelocity(vec3_origin);
@@ -342,8 +318,6 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_bTimerStartOnJump = m_bTimerStartOnJump;
         pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType = m_iLimitSpeedType;
         pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = IsLimitingSpeed();
-
-        g_pMomentumTimer->Reset();
     }
     else
     {
@@ -421,55 +395,6 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-
-        g_pMomentumTimer->SetEndTrigger(this);
-
-        if (g_pMomentumTimer->IsRunning() && !pPlayer->IsSpectatingGhost() &&
-            pPlayer->m_SrvData.m_RunData.m_iBonusZone == m_iZoneNumber && !pPlayer->m_SrvData.m_bHasPracticeMode)
-        {
-            int zoneNum = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
-
-            // This is needed so we have an ending velocity.
-
-            const float endvel = pPlayer->GetLocalVelocity().Length();
-            const float endvel2D = pPlayer->GetLocalVelocity().Length2D();
-
-            pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
-
-            // Check to see if we should calculate the timer offset fix
-            if (ContainsPosition(pPlayer->GetPreviousOrigin()))
-                DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
-            else
-            {
-                DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
-            }
-
-            // This is needed for the final stage
-            pPlayer->m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
-                                                         pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
-
-            // Ending velocity checks
-
-            float finalVel = endvel;
-            float finalVel2D = endvel2D;
-
-            if (endvel <= pPlayer->m_RunStats.GetZoneVelocityMax(0, false))
-                finalVel = pPlayer->m_RunStats.GetZoneVelocityMax(0, false);
-
-            if (endvel2D <= pPlayer->m_RunStats.GetZoneVelocityMax(0, true))
-                finalVel2D = pPlayer->m_RunStats.GetZoneVelocityMax(0, true);
-
-            pPlayer->m_RunStats.SetZoneVelocityMax(0, finalVel, finalVel2D);
-            pPlayer->m_RunStats.SetZoneExitSpeed(0, endvel, endvel2D);
-
-            // Stop the timer
-            g_pMomentumTimer->Stop(true);
-            pPlayer->m_SrvData.m_RunData.m_flRunTime = g_pMomentumTimer->GetLastRunTime();
-            // The map is now finished, show the mapfinished panel
-            pPlayer->m_SrvData.m_RunData.m_bMapFinished = true;
-            pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
-        }
 
         // Set only if timer is starting, so the previous stage is saved if the map is not complete even if they go
         // to the end zone?
