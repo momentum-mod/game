@@ -2,7 +2,6 @@
 
 #include <rumble_shared.h>
 #include <stdarg.h>
-#include "IMovementListener.h"
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
 #include "mom_modulecomms.h"
@@ -20,6 +19,8 @@
 #endif
 
 #include "tier0/memdbgon.h"
+
+static ConVarRef mom_gamemode("mom_gamemode");
 
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
@@ -46,7 +47,7 @@ static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPL
                           "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
-CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr), mom_gamemode("mom_gamemode") {}
+CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr) {}
 
 void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *data)
 {
@@ -1038,8 +1039,13 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     // Flag that we jumped.
     mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
+
+#ifndef CLIENT_DLL
+    m_pPlayer->SetIsInAirDueToJump(true);
     // Fire that we jumped
-    FIRE_GAMEMOVEMENT_EVENT(OnPlayerJump);
+    g_pModuleComms->FireEvent(new KeyValues("player_jump", "player_ent", m_pPlayer->entindex()), FIRE_LOCAL_ONLY);
+#endif
+
     return true;
 }
 
@@ -1388,7 +1394,6 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
             m_pPlayer->m_SrvData.m_bDidPlayerBhop = true;
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
-        ConVarRef gm("mom_gamemode");
         CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
         // This does not look pretty but saves us a branching. The checks are:
         // no nullptr, correct gamemode, is limiting leave speed and
@@ -2053,7 +2058,15 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
     player->SetGroundEntity(newGround);
 
     if (bLanded)
-        FIRE_GAMEMOVEMENT_EVENT(OnPlayerLand);
+    {
+#ifndef CLIENT_DLL
+        m_pPlayer->SetIsInAirDueToJump(false);
+
+        // Set the tick that we landed on something solid (can jump off of this)
+        m_pPlayer->m_SrvData.m_iLandTick = gpGlobals->tickcount;
+        g_pModuleComms->FireEvent(new KeyValues("player_land", "player_ent", m_pPlayer->entindex()), FIRE_LOCAL_ONLY);
+#endif
+    }
 
     // If we are on something...
     if (newGround)

@@ -26,6 +26,8 @@ public:
 
     void BeginRecording();
     void StopRecording(bool throwaway, bool delay);
+    bool IsRecording() const { return m_bRecording; }
+    bool IsPlayingBack() const { return m_bPlayingBack; }
     void TrimReplay(); // Trims a replay's start down to only include a defined amount of time in the start trigger
 
     CMomReplayBase *LoadPlayback(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
@@ -42,10 +44,26 @@ public:
     void TogglePause();
 
     void SetTeleportedThisFrame(); // Call me when player teleports.
+    void SetPlayer(CMomentumPlayer *pPlayer) { m_pPlayer = pPlayer; }
+
+    const CMomReplayBase *GetRecordingReplay() const { return m_pRecordingReplay; }
+    CMomReplayBase *GetRecordingReplay() { return m_pRecordingReplay; }
+    const CMomReplayBase *GetPlaybackReplay() const { return m_pPlaybackReplay; }
+    CMomReplayBase *GetPlaybackReplay() { return m_pPlaybackReplay; }
+
+	int GetSavedPerfectSyncTicks() const { return m_nSavedPerfectSyncTicks; }
+    int GetSavedStrafeTicks() const { return m_nSavedStrafeTicks; }
+    int GetSavedAccelTicks() const { return m_nSavedAccelTicks; }
 
     //CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
 
-  public:
+  private:
+    void UpdateRecordingParams(); // called every game frame after entities think and update
+    void SetReplayInfo();
+    void SetRunStats();
+    bool StoreReplay(char *pPathOut, size_t outSize);
+
+  private:
     bool m_bRecording;
     bool m_bPlayingBack;
     CMomReplayBase *m_pRecordingReplay;
@@ -54,12 +72,6 @@ public:
     int m_nSavedPerfectSyncTicks;
     int m_nSavedStrafeTicks;
     int m_nSavedAccelTicks;
-
-  private:
-    void UpdateRecordingParams(); // called every game frame after entities think and update
-    void SetReplayInfo();
-    void SetRunStats();
-    bool StoreReplay(char *pPathOut, size_t outSize);
 
     bool m_bShouldStopRec;
     int m_iTickCount;          // MOM_TODO: Maybe remove me?
