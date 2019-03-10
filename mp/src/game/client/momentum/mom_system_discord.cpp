@@ -110,6 +110,14 @@ void CMomentumDiscord::LevelInitPostEntity()
     if (!m_bValid)
         return;
 
+    // Ignore background map(s) and credits
+    if (!Q_strncmp(MapName(), "bg_", 3) || FStrEq(MapName(), "credits"))
+    {
+        V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        return;
+    }
+
     m_bInMap = true;
 
     const int gameMode = clamp<int>(ConVarRef("mom_gamemode").GetInt(), GAMEMODE_UNKNOWN, GAMEMODE_COUNT - 1);
