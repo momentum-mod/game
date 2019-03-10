@@ -483,11 +483,11 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            if (pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone == GetZoneNumber())
+            if (pGhost->m_SrvData.m_RunData.m_iCurrentZone == 0)
             {
                 pGhost->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
-                pGhost->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
-                pGhost->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
+                pGhost->m_SrvData.m_RunData.m_iCurrentZone = pGhost->m_SrvData.m_RunData.m_iOldZone;
+                pGhost->m_SrvData.m_RunData.m_iBonusZone = pGhost->m_SrvData.m_RunData.m_iOldBonusZone;
             }
 
             pStageEvent = gameeventmanager->CreateEvent("zone_exit");
