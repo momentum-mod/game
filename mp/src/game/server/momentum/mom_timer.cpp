@@ -36,7 +36,7 @@ CMomentumTimer::CMomentumTimer(const char *pName)
 void CMomentumTimer::PostInit()
 {
     ListenForGameEvent("player_spawn");
-	ListenForGameEvent("zone_enter");
+    ListenForGameEvent("zone_enter");
     ListenForGameEvent("zone_exit");
 
     g_pModuleComms->ListenForEvent("player_jump", UtlMakeDelegate(this, &CMomentumTimer::OnPlayerJump));
@@ -94,7 +94,7 @@ void CMomentumTimer::FireGameEvent(IGameEvent *event)
         {
             OnPlayerEnterZone(pPlayer, pTrigger, zonenum);
         }
-	}
+    }
     else // zone_exit
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(event->GetInt("ent")));
@@ -464,7 +464,7 @@ void CMomentumTimer::OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomentumTri
             if (zonenum == 1)
                 pPlayer->m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
         }
-	}
+    }
 }
 
 void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset)

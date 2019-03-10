@@ -137,7 +137,12 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         // Status
-        pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
+        // Only clear players zone if they didn't enter another zone before exiting this one
+        // Needs to be done because OnStartTouch is called before OnEndTouch
+        if (pPlayer->m_SrvData.m_RunData.m_iCurrentZone == stageNum)
+        {
+            pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
+        }
 
         stageEvent = gameeventmanager->CreateEvent("zone_exit");
         stageEvent->SetInt("ent", pPlayer->entindex());
@@ -149,7 +154,10 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
+            if (pGhost->m_SrvData.m_RunData.m_iCurrentZone == stageNum)
+            {
+                pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
+            }
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
             stageEvent->SetInt("ent", pGhost->entindex());
@@ -270,12 +278,7 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
-        if (pPlayer)
-        {
-            pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = false;
-        }
-
-        pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
+        pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = false;
     }
     else
     {
@@ -283,7 +286,10 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
+            if (pGhost->m_SrvData.m_RunData.m_iCurrentZone == GetZoneNumber())
+            {
+                pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
+            }
             pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             //pGhost->m_SrvData.m_RunData.m_bTimerRunning = true;
             //pGhost->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
@@ -458,9 +464,13 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
     if (pMomPlayer)
     {
         pMomPlayer->SetLaggedMovementValue(1.0f);            // Reset slow motion
-        pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
-        pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
-        pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
+
+		if (pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone == 0)
+        {
+            pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
+            pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
+            pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
+        }
         pMomPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
 
         pStageEvent = gameeventmanager->CreateEvent("zone_exit");
@@ -473,9 +483,12 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
-            pGhost->m_SrvData.m_RunData.m_iCurrentZone = pGhost->m_SrvData.m_RunData.m_iOldZone;
-            pGhost->m_SrvData.m_RunData.m_iBonusZone = pGhost->m_SrvData.m_RunData.m_iOldBonusZone;
+            if (pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone == GetZoneNumber())
+            {
+                pGhost->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
+                pGhost->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
+                pGhost->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
+            }
 
             pStageEvent = gameeventmanager->CreateEvent("zone_exit");
             pStageEvent->SetInt("ent", pGhost->entindex());
