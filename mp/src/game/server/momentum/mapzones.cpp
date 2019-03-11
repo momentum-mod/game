@@ -147,7 +147,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
     DevLog("Looking for zone file: %s \n", zoneFilePath);
 
     KeyValuesAD zoneKV(szMapName);
-    if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))
+    if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
     {
         // Go through checkpoints
         for (KeyValues *cp = zoneKV->GetFirstSubKey(); cp; cp = cp->GetNextKey())
