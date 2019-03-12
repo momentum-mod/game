@@ -1,14 +1,17 @@
 VertexLitGeneric
 {
-	"$basetexture" "models/weapons/w_models/w_mom_sniper/mom_sniper_ao"
+	"$basetexture" "models/weapons/w_models/w_mom_sniper/mom_sniper_d_a"
 	"$bumpmap" "models/weapons/w_models/w_mom_sniper/mom_sniper_n"
 	"$surfaceprop" "Weapon"
 
+	"$envmap" "env_cubemap"
+	"$envmapcontrast" "1"
+	"$envmapfresnel" "1"
+
 	"$phong" "1"
 	"$phongexponenttexture" "models/weapons/w_models/w_mom_sniper/mom_sniper_ao"
-	"$phongfresnelranges" "[0.95 0.97 1]"
-	"$phongboost" "2.03"
-	"$phongalbedoboost" "1.01"
-
-	"$color2" "[0.50 0.50 0.50]"
+	"$phongfresnelranges" "[0.02 0.51 1]"
+	"$phongalbedotint" "1"
+	"$phongboost" "0.78"
+	"$phongalbedoboost" "8"
 }
