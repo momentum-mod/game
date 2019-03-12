@@ -781,6 +781,13 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     {
         Stop(false); // Keep running
     }
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
+    if (pEvent)
+    {
+        pEvent->SetBool("enabled", true);
+        gameeventmanager->FireEvent(pEvent);
+    }
 }
 
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
@@ -800,6 +807,13 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
         pPlayer->SetLastEyeAngles(pPlayer->m_SrvData.m_RunData.m_angLastAng);
 
         // MOM_TODO : Mark this as a "exited practice mode" event in the replay
+    }
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
+    if (pEvent)
+    {
+        pEvent->SetBool("enabled", false);
+        gameeventmanager->FireEvent(pEvent);
     }
 }
 

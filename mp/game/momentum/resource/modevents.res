@@ -49,6 +49,10 @@
         "ent" "short"
         "is_running"    "bool"
     }
+    "practice_mode"
+    {
+        "enabled" "bool"
+    }
     "map_init"
     {
         "is_linear" "bool"
