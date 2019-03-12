@@ -1,9 +1,8 @@
 #pragma once
 
-#include "run/mom_replay_base.h"
-
 class CMomentumReplayGhostEntity;
 class CMomentumPlayer;
+class CMomReplayBase;
 
 class CMomentumReplaySystem : public CAutoGameSystemPerFrame
 {
@@ -23,6 +22,7 @@ public:
 
     // Sets the start timer tick, this is used for trimming later on
     void SetTimerStartTick(int tick) { m_iStartTimerTick = tick; }
+    void SetTimerStopTick(int tick) { m_iStopTimerTick = tick; }
 
     void BeginRecording();
     void StopRecording(bool throwaway, bool delay);
@@ -77,6 +77,7 @@ public:
     int m_iTickCount;          // MOM_TODO: Maybe remove me?
     int m_iStartRecordingTick; // The tick that the replay started, used for trimming.
     int m_iStartTimerTick;     // The tick that the player's timer starts, used for trimming.
+    int m_iStopTimerTick;      // The tick that the player's timer stopped, used for the hud
     float m_fRecEndTime;       // The time to end the recording, if delay was passed as true to StopRecording()
     bool m_bWasInReplay;
     bool m_bPaused;

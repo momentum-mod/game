@@ -7,7 +7,7 @@
 #include "util/mom_util.h"
 #include "util/os_utils.h"
 #include "mom_player_shared.h"
-#include "mom_replay_system.h"
+#include "run/mom_replay_base.h"
 #include "in_buttons.h"
 
 #include "tier0/memdbgon.h"

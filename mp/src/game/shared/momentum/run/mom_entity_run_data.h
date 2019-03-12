@@ -30,6 +30,7 @@ class CMOMRunEntityData
     int m_iStartTick;                         // Tick that the entity started its timer
     int m_iStartTickD;                        // The tick difference between timer and record
     float m_flRunTime;                        // The time taken to do their most recent run
+    int m_iRunTimeTicks;                      // The time taken to do their most recent run, in ticks
     bool m_bTimerStartOnJump;                 // The timer should start or not while jumping?
     int m_iLimitSpeedType;                    // Limit speed only when touching ground?
     Vector m_vecLastPos;                      // Saved location before the replay was played or practice mode.
