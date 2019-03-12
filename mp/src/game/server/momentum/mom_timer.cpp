@@ -510,14 +510,16 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
 
 void CMomentumTimer::DispatchMapInfo() const
 {
-    IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init", true);
+    IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init");
     if (mapInitEvent)
     {
         // MOM_TODO: for now it's assuming stages are on staged maps, load this from
         // either the RequestStageCount() method, or something else (map info file?)
         mapInitEvent->SetBool("is_linear", m_iZoneCount == 0);
         mapInitEvent->SetInt("num_zones", m_iZoneCount);
+        IGameEvent *pCopy = gameeventmanager->DuplicateEvent(mapInitEvent);
         gameeventmanager->FireEvent(mapInitEvent);
+        gameeventmanager->FireEventClientSide(pCopy);
     }
 }
 
