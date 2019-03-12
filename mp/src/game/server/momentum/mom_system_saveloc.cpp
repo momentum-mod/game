@@ -392,7 +392,6 @@ void CMOMSaveLocSystem::GotoNextSaveloc()
     {
         SetCurrentSavelocMenuIndex((m_iCurrentSavelocIndx + 1) % count);
         TeleportToCurrentSaveloc();
-        FireUpdateEvent();
     }
 }
 
@@ -402,7 +401,6 @@ void CMOMSaveLocSystem::GotoFirstSaveloc()
     {
         SetCurrentSavelocMenuIndex(0);
         TeleportToCurrentSaveloc();
-        FireUpdateEvent();
     }
 }
 
@@ -413,7 +411,6 @@ void CMOMSaveLocSystem::GotoLastSaveloc()
     {
         SetCurrentSavelocMenuIndex(count - 1);
         TeleportToCurrentSaveloc();
-        FireUpdateEvent();
     }
 }
 
@@ -424,7 +421,6 @@ void CMOMSaveLocSystem::GotoPrevSaveloc()
     {
         SetCurrentSavelocMenuIndex(m_iCurrentSavelocIndx == 0 ? count - 1 : m_iCurrentSavelocIndx - 1);
         TeleportToCurrentSaveloc();
-        FireUpdateEvent();
     }
 }
 
@@ -466,7 +462,7 @@ void CMOMSaveLocSystem::CheckTimer()
     m_bUsingSavelocMenu = true;
 }
 
-void CMOMSaveLocSystem::FireUpdateEvent()
+void CMOMSaveLocSystem::FireUpdateEvent() const
 {
     KeyValues *pSavelocInit = new KeyValues("saveloc_upd8");
     pSavelocInit->SetInt("count", m_rcSavelocs.Count());

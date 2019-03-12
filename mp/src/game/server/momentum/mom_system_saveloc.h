@@ -98,7 +98,7 @@ public:
 
 private:
     void CheckTimer(); // Check the timer to see if we should stop it
-    void FireUpdateEvent(); // Fire tan event to the UI when we change our saveloc vector in any way, or stop using the saveloc menu
+    void FireUpdateEvent() const; // Fire tan event to the UI when we change our saveloc vector in any way, or stop using the saveloc menu
     void UpdateRequesters(); // Update any requesters with the updated saveloc count
 
     KeyValues *m_pSavedLocsKV;
