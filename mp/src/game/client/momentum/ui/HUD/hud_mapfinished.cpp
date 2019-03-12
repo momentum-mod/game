@@ -27,7 +27,7 @@ DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName),
     BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog"), m_pPlayer(nullptr)
 {
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetProportional(true);
     SetSize(10, 10); // Fix "not sized yet" spew
     m_pRunStats = nullptr;

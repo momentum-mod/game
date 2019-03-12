@@ -86,9 +86,8 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     void OnThink() OVERRIDE;
 
     bool ShouldDraw() OVERRIDE
-    { 
-        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-        return mom_hud_speedometer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
+    {
+        return mom_hud_speedometer.GetBool() && CHudElement::ShouldDraw(); 
     }
 
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
@@ -145,7 +144,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     m_bRanFadeOutJumpSpeed = false;
     m_pRunStats = nullptr;
     m_iCurrentZone = 0;
@@ -337,7 +336,7 @@ void CHudSpeedMeter::Paint()
         Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), stageStartAlpha);
 
 
-        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_iCurrentZone, enterVelANSITemp,
+        g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_iCurrentZone, enterVelANSITemp,
                                              enterVelANSICompTemp, &compareColor);
 
         Q_snprintf(enterVelANSI, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelANSITemp))));
@@ -347,7 +346,7 @@ void CHudSpeedMeter::Paint()
         // Get the width of the split velocity
         int enterVelANSIWidth = UTIL_ComputeStringWidth(m_hSmallNumberFont, enterVelANSI);
 
-        bool loadedComparison = g_MOMRunCompare->LoadedComparison();
+        bool loadedComparison = g_pMOMRunCompare->LoadedComparison();
         int increaseX = 0;
 
         // Calculate the split comparison string

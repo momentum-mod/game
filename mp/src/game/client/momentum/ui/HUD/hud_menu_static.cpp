@@ -19,7 +19,7 @@ using namespace vgui;
 CHudMenuStatic::CHudMenuStatic(const char *pElementName)
     : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMenuStatic")
 {
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetPaintBackgroundEnabled(false);
 };
 
