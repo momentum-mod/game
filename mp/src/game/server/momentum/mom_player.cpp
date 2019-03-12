@@ -15,6 +15,7 @@
 #include "mom_system_saveloc.h"
 #include "util/mom_util.h"
 #include "mom_replay_system.h"
+#include "run/mom_replay_base.h"
 
 #include "tier0/memdbgon.h"
 

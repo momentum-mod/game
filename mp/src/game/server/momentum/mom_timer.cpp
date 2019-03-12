@@ -224,6 +224,7 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
         if (endTrigger && !m_bWereCheatsActivated)
         {
             m_iEndTick = gpGlobals->tickcount;
+            g_ReplaySystem.SetTimerStopTick(m_iEndTick);
             time(&m_iLastRunDate); // Set the last run date for the replay
         }
 
@@ -413,6 +414,7 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTr
             // Stop the timer
             Stop(true);
             pPlayer->m_SrvData.m_RunData.m_flRunTime = GetLastRunTime();
+            pPlayer->m_SrvData.m_RunData.m_iRunTimeTicks = m_iEndTick - m_iStartTick;
             // The map is now finished, show the mapfinished panel
             pPlayer->m_SrvData.m_RunData.m_bMapFinished = true;
             pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
@@ -596,17 +598,18 @@ float CMomentumTimer::GetLastRunTime()
     if (m_iEndTick == 0)
         return 0.0f;
 
-    float originalTime = static_cast<float>(m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick;
+    const float originalTime = static_cast<float>(m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick;
     // apply precision fix, adding offset from start as well as subtracting offset from end.
     // offset from end is 1 tick - fraction offset, since we started trace outside of the end zone.
-    if (m_bShouldUseStartZoneOffset)
+    return originalTime;
+    /*if (m_bShouldUseStartZoneOffset)
     {
         return originalTime + m_flTickOffsetFix[1] - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
     }
     else
     {
         return originalTime - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
-    }
+    }*/
 }
 
 void CMomentumTimer::SetRunning(bool isRunning)
