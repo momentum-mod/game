@@ -31,6 +31,7 @@ class C_MomentumPlayer : public C_BasePlayer
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
 
     // Returns the replay entity that the player is watching (first person only)
+    int GetSpecEntIndex() const;
     C_MomentumReplayGhostEntity* GetReplayEnt() const;
     C_MomentumOnlineGhostEntity* GetOnlineGhostEnt() const;
 
