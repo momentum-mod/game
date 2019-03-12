@@ -103,6 +103,11 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 	BaseClass::PostDataUpdate(updateType);
 }
 
+int C_MomentumPlayer::GetSpecEntIndex() const
+{
+    return m_hObserverTarget.ToInt();
+}
+
 C_MomentumReplayGhostEntity* C_MomentumPlayer::GetReplayEnt() const
 {
     return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());

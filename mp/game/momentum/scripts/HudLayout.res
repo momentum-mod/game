@@ -26,26 +26,7 @@
     HudTimer
     {
         "fieldName"     "HudTimer"
-        "xpos"          "c-50"
-        "ypos"          "c+140"
-        "wide"          "100"
-        "tall"          "55"
-        "visible"       "1"
-        "enabled"       "1"
-        "PaintBackgroundType" "2"
-        "TimerFont" "HudNumbersSmallBold"
-        "TextFont"      "HudHintTextLarge"
-        "SmallTextFont" "HudHintTextSmall"
-        "TextColor" "MOM.Panel.Fg"
-        "centerTime"    "1" //If true, won't use time_xpos, centering the text instead
-        "time_xpos"     "50"
-        "time_ypos"     "3"
-        "centerCps"     "1" //If true, won't use cps_xpos, centering the text instead
-        "cps_xpos"      "50"//Note: checkpoints only show when there's no run (and therefore splits) 
-        "cps_ypos"      "19"
-        "centerSplit"   "1" //If true, won't use stage_xpos, centering the stage split
-        "split_xpos"    "50"
-        "split_ypos"    "19"
+        // See resource/ui/Timer.res for changing settings
     }
     //Strafe Sync Meter
     CHudSyncMeter
