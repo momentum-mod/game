@@ -38,11 +38,6 @@ class C_HudMapInfo : public CHudElement, public Panel
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
     void Paint() OVERRIDE;
-    bool ShouldDraw() OVERRIDE
-    {
-        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-        return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible();
-    }
 
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
@@ -81,18 +76,18 @@ class C_HudMapInfo : public CHudElement, public Panel
 
 DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
 
-C_HudMapInfo::C_HudMapInfo(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
+C_HudMapInfo::C_HudMapInfo(const char *pElementName): CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     m_iZoneCurrent = 0;
     m_iZoneCount = 0;
     m_bPlayerInZone = false;
     m_bMapFinished = false;
+    m_bMapLinear = false;
 }
 
 void C_HudMapInfo::OnThink()
@@ -142,11 +137,7 @@ void C_HudMapInfo::Init()
 
 void C_HudMapInfo::Reset()
 {
-    m_iZoneCount = 0;
-    m_iZoneCurrent = 0;
-    m_bMapLinear = false;
-    m_bPlayerInZone = false;
-    m_bMapFinished = false;
+
 }
 
 void C_HudMapInfo::Paint()

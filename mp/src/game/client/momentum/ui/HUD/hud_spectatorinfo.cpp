@@ -18,11 +18,10 @@ static MAKE_TOGGLE_CONVAR(mom_hud_spectator_info_show_names, "1", FLAG_HUD_CVAR,
 static MAKE_CONVAR(mom_hud_spectator_info_name_count, "5", FLAG_HUD_CVAR, "Controls the max number of names to print of who is spectating you."
     "\n0 = unlimited (as many as the panel can handle)\n", 0, 100);
 
-CHudSpectatorInfo::CHudSpectatorInfo(const char *pName) : CHudElement(pName), BaseClass(g_pClientMode->GetViewport(), pName),
-m_pLeaderboards(nullptr)
+CHudSpectatorInfo::CHudSpectatorInfo(const char *pName) : CHudElement(pName), BaseClass(g_pClientMode->GetViewport(), pName)
 {
     SetProportional(true);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetDefLessFunc(m_mapNameMap);
@@ -35,19 +34,15 @@ m_pLeaderboards(nullptr)
 
 CHudSpectatorInfo::~CHudSpectatorInfo()
 {
-    m_pLeaderboards = nullptr;
 }
 
 bool CHudSpectatorInfo::ShouldDraw()
 {
-    if (!m_pLeaderboards)
-        m_pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-
     m_iSpecCount = m_mapNameMap.Count();
-    int showVal = mom_hud_spectator_info_show.GetInt();
-    bool showFromCount = showVal == 2 || (showVal == 1 && m_iSpecCount > 0);
+    const int showVal = mom_hud_spectator_info_show.GetInt();
+    const bool showFromCount = showVal == 2 || (showVal == 1 && m_iSpecCount > 0);
 
-    return showFromCount && CHudElement::ShouldDraw() && !m_pLeaderboards->IsVisible();
+    return showFromCount && CHudElement::ShouldDraw();
 }
 
 void CHudSpectatorInfo::Paint()

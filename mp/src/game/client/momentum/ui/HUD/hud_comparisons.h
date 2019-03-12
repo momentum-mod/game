@@ -36,7 +36,7 @@ public:
     void UnloadBogusComparisons();
     void DrawComparisonString(ComparisonString_t, int stage, int Ypos);
     void GetComparisonString(ComparisonString_t type, CMomRunStats *pStats, int zone, char *ansiActualBufferOut, char *ansiCompareBufferOut, Color *compareColorOut);
-    void GetDiffColor(float diff, Color *into, bool positiveIsGain);
+    void GetDiffColor(float diff, Color *into, bool positiveIsGain = true);
     int GetMaximumTall();
     void SetMaxWide(int);
 
@@ -113,13 +113,4 @@ private:
     ConVarRef m_cvarVelType;
 };
 
-//Really hacky way to interface this hud element, as opposed to calling the gHUD.FindElement everywhere
-static C_RunComparisons *GetComparisons()
-{
-    static C_RunComparisons *s_runcompare;
-    if (!s_runcompare)
-        s_runcompare = dynamic_cast<C_RunComparisons *>(gHUD.FindElement("CHudCompare"));
-    return s_runcompare;
-}
-
-#define g_MOMRunCompare GetComparisons()
+extern C_RunComparisons *g_pMOMRunCompare;

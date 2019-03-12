@@ -261,13 +261,13 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 
         if (gpGlobals->eLoadType == MapLoad_Background || !Q_strcmp(pMapName, "credits"))
         {
-            // Hide timer/speedometer on background maps
-            pPlayer->m_Local.m_iHideHUD |= HIDEHUD_WEAPONSELECTION;
+            // Hide HUD on background maps
+            pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;
         }
         else
         {
             // Turn them back on
-            pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
+            pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_ALL;
         }
 
        // Handle game_player_equip ents

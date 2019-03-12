@@ -45,10 +45,6 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     void OnThink() OVERRIDE;
     bool ShouldDraw() OVERRIDE
     {
-        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-        if (pLeaderboards && pLeaderboards->IsVisible())
-            return false;
-
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
         bool shouldDrawLocal = false;
         if (pPlayer)
@@ -111,7 +107,7 @@ DECLARE_HUDELEMENT(CHudStrafeSyncDisplay);
 CHudStrafeSyncDisplay::CHudStrafeSyncDisplay(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "CHudSyncMeter")
 {
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
 }
 void CHudStrafeSyncDisplay::OnThink()
 {
@@ -275,7 +271,7 @@ DECLARE_NAMED_HUDELEMENT(CHudStrafeSyncBar, CHudSyncBar);
 
 CHudStrafeSyncBar::CHudStrafeSyncBar(const char *pElementName) : CHudElement(pElementName), CHudFillableBar(g_pClientMode->GetViewport(), pElementName)
 {
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
 }
 void CHudStrafeSyncBar::Paint()
 {

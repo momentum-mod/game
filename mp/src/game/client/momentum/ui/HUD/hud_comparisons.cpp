@@ -67,7 +67,16 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_jumps_show, "1", FLAG_HUD_CVAR,
 static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1", FLAG_HUD_CVAR,
                           "Toggle showing total stage strafes comparison. 0 = OFF, 1 = ON");
 
-DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
+//DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
+static CHudElement *Create_CHudCompare(void)							
+{
+    auto pPanel = new C_RunComparisons("CHudCompare");
+    g_pMOMRunCompare = pPanel;
+    return pPanel;
+};
+static CHudElementHelper g_CHudCompare_Helper( Create_CHudCompare, 50 );
+
+C_RunComparisons *g_pMOMRunCompare = nullptr;
 
 C_RunComparisons::C_RunComparisons(const char *pElementName, Panel *pParent /* = nullptr*/)
     : CHudElement(pElementName), Panel(pParent ? pParent : g_pClientMode->GetViewport(), pElementName),
@@ -76,7 +85,7 @@ C_RunComparisons::C_RunComparisons(const char *pElementName, Panel *pParent /* =
     SetProportional(true);
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     m_iCurrentZone = 0;
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
@@ -358,10 +367,10 @@ int C_RunComparisons::GetMaximumTall()
     return toReturn + 5; // extra padding
 }
 
-void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain = true)
+void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain /*= true*/)
 {
-    int gainColor = positiveIsGain ? m_cGain.GetRawColor() : m_cLoss.GetRawColor();
-    int lossColor = positiveIsGain ? m_cLoss.GetRawColor() : m_cGain.GetRawColor();
+    const int gainColor = positiveIsGain ? m_cGain.GetRawColor() : m_cLoss.GetRawColor();
+    const int lossColor = positiveIsGain ? m_cLoss.GetRawColor() : m_cGain.GetRawColor();
     int rawColor;
     if (CloseEnough(diff, 0.0f, FLT_EPSILON))
         rawColor = m_cTie.GetRawColor();
