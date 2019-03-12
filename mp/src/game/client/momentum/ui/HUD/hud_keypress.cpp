@@ -90,7 +90,7 @@ CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
 }
 
 bool CHudKeyPressDisplay::ShouldDraw()

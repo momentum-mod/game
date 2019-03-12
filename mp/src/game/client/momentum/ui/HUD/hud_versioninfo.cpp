@@ -30,7 +30,6 @@ CHudVersionInfo::CHudVersionInfo(const char *pElementName) : CHudElement(pElemen
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     SetAutoWide(true);
     SetAutoTall(true);
 }

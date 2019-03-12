@@ -3,8 +3,6 @@
 #include "vgui_controls/Panel.h"
 #include "hudelement.h"
 
-class IViewPortPanel;
-
 class CHudSpectatorInfo : public CHudElement, public vgui::Panel
 {
     
@@ -24,7 +22,6 @@ protected:
     CPanelAnimationVar(vgui::HFont, m_hTextFont, "TextFont", "Default");
 
 private:
-    IViewPortPanel *m_pLeaderboards;
     CUtlMap<uint64, wchar_t *> m_mapNameMap;
 
     uint64 m_idLocal;
