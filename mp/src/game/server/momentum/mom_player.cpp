@@ -352,6 +352,8 @@ void CMomentumPlayer::Spawn()
         m_nPerfectSyncTicks = g_ReplaySystem.GetSavedPerfectSyncTicks();
         m_nStrafeTicks = g_ReplaySystem.GetSavedStrafeTicks();
     }
+
+    g_pMomentumTimer->OnPlayerSpawn(this);
 }
 
 // Obtains a player's previous origin X ticks backwards (0 is still previous, depends when this is called ofc!)
