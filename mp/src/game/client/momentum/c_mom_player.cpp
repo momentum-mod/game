@@ -79,7 +79,6 @@ void C_MomentumPlayer::ClientThink()
             m_pSpectateTarget = nullptr;
         }
     }
-
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
@@ -105,7 +104,7 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 
 int C_MomentumPlayer::GetSpecEntIndex() const
 {
-    return m_hObserverTarget.ToInt();
+    return m_hObserverTarget.GetEntryIndex();
 }
 
 C_MomentumReplayGhostEntity* C_MomentumPlayer::GetReplayEnt() const
