@@ -141,7 +141,7 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
         // Status
         // Only clear players zone if they didn't enter another zone before exiting this one
         // Needs to be done because OnStartTouch is called before OnEndTouch
-        if (pPlayer->m_SrvData.m_RunData.m_iCurrentZone == stageNum)
+        if (pPlayer->m_SrvData.m_RunData.m_iCurrentZone == stageNum && pPlayer->GetObserverMode() == OBS_MODE_NONE)
         {
             pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
 
