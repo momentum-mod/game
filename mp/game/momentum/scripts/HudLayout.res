@@ -127,30 +127,17 @@
         "text_ypos" "2"
     }
     
-    CHudMapInfo
+    HudMapInfo
     {
-        "fieldName" "CHudMapInfo"
-        "visible" "1"
-        "enabled" "1"
-        "centerStatus" "1"//If this is 1, the status will be centered above the timer, otherwise the status_xpos will be used
-        "status_xpos" "0"
-        "status_ypos" "c+125"//y-pos for the map status 
-        "mapinfo_xpos" "10"//xpos for the map info (author/difficulty/etc)
-        "mapinfo_ypos" "10"//ypos for the map info
-        "StatusFont" "MomHudDropText"//Font for the current map area/status
-        "MapInfoFont" "MomHudDropText"//Font for the map information
-        "TextColor" "MOM.Panel.Fg"
+        "fieldName" "HudMapInfo"
+        // See resource/ui/HudMapInfo.res
     }
     
     "CHudMapFinishedDialog"
     {
         "fieldName"     "CHudMapFinishedDialog"
         "TextFont"      "Default"
-        // See resource/ui/MapFinishedDialog.res to change these
-        //"xpos"          "c-110"
-        //"ypos"          "c-150"
-        //"wide"          "220"
-        //"tall"          "180"
+        // See resource/ui/MapFinishedDialog.res to change
     }
     
     CHudSpectatorInfo

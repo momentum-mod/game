@@ -84,20 +84,9 @@
 
     //Timer
         "MOM_SavedLocation" "Saveloc %s1/%s2"
-        "MOM_Checkpoint" "Checkpoint %s1"
-        "MOM_Stage" "Stage %s1"
-		"MOM_Bonus_Start" "Bonus %s1 Start"
-		"MOM_Bonus" "Bonus %s1"
-		"MOM_Bonus_End" "Bonus %s1 End"
-        "MOM_Stage_Start" "Stage %s1 Start"
-        "MOM_Linear" "Linear Map"
-        "MOM_Staged" "Staged Map"
         "MOM_Cheater_Message" "If you wish to submit your times,\nyou must turn sv_cheats off\nand restart the map!"
-        "MOM_InsideStartZone" "Main Start Zone"
-	    "MOM_InsideEndZone" "Main End Zone"
-        "MOM_MapFinished" "Map Finished"
-        "MOM_PracticeMode" "Practice Mode"
         "MOM_NoTimer" "No Timer"
+        "MOM_PracticeMode" "Practice Mode"
 
     // Ruler
         "MOM_Ruler_FirstPoint" "First point"
@@ -121,9 +110,20 @@
 
     //hud_mapinfo
         "MOM_Status_NoZones" "No zones found"
-        "MOM_Map_Name" "Map: "
-        "MOM_Map_Author" "By: %authors%"
-        "MOM_Map_Difficulty" "Tier: "
+        "MOM_Map_Name" "Map: %mapName%"
+        "MOM_Map_Authors" "By: %authors%"
+        "MOM_Map_Difficulty" "Tier: %difficulty%"
+        "MOM_InsideStartZone" "Main Start Zone"
+	    "MOM_InsideEndZone" "Main End Zone"
+        "MOM_MapFinished" "Map Finished"
+        "MOM_Checkpoint" "Checkpoint %s1"
+        "MOM_Stage" "Stage %s1"
+		"MOM_Bonus_Start" "Bonus %s1 Start"
+		"MOM_Bonus" "Bonus %s1"
+		"MOM_Bonus_End" "Bonus %s1 End"
+        "MOM_Stage_Start" "Stage %s1 Start"
+        "MOM_Linear" "Linear Map"
+        "MOM_Staged" "Staged Map"
 
     //Guns
         "MOM_Gun" "Momentum Gun"
