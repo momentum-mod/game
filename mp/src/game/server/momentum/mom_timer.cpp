@@ -28,17 +28,13 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 CMomentumTimer::CMomentumTimer(const char *pName)
     : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
-      m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr),
+      m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr),
       m_pStartZoneMark(nullptr), m_bPaused(false), m_iPausedTick(0)
 {
 }
 
 void CMomentumTimer::PostInit()
 {
-    ListenForGameEvent("player_spawn");
-    ListenForGameEvent("zone_enter");
-    ListenForGameEvent("zone_exit");
-
     g_pModuleComms->ListenForEvent("player_jump", UtlMakeDelegate(this, &CMomentumTimer::OnPlayerJump));
     g_pModuleComms->ListenForEvent("player_land", UtlMakeDelegate(this, &CMomentumTimer::OnPlayerLand));
 }
@@ -71,40 +67,6 @@ void CMomentumTimer::FrameUpdatePreEntityThink()
         {
             SetCheating(true);
             Stop();
-        }
-    }
-}
-
-void CMomentumTimer::FireGameEvent(IGameEvent *event)
-{
-    const char *name = event->GetName();
-    if (FStrEq(name, "player_spawn"))
-    {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-        OnPlayerSpawn(pPlayer);
-    }
-    else if (FStrEq(name, "zone_enter"))
-    {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(event->GetInt("ent")));
-        auto pTrigger = static_cast<CBaseMomentumTrigger *>(UTIL_EntityByIndex(event->GetInt("zone_ent")));
-        int zonenum = event->GetInt("num");
-
-        // Can also be a replay ghost
-        if (pPlayer)
-        {
-            OnPlayerEnterZone(pPlayer, pTrigger, zonenum);
-        }
-    }
-    else // zone_exit
-    {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(event->GetInt("ent")));
-        auto pTrigger = static_cast<CBaseMomentumTrigger *>(UTIL_EntityByIndex(event->GetInt("zone_ent")));
-        int zonenum = event->GetInt("num");
-
-        // Can also be a replay ghost
-        if (pPlayer)
-        {
-            OnPlayerExitZone(pPlayer, pTrigger, zonenum);
         }
     }
 }
@@ -163,29 +125,6 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
 
     return true;
 }
-
-////MOM_TODO: REMOVEME
-// CON_COMMAND(mom_test_hash, "Tests SHA1 Hashing\n")
-//{
-//    char pathToZone[MAX_PATH];
-//    char mapName[MAX_PATH];
-//    V_ComposeFileName("maps", gpGlobals->mapname.ToCStr(), mapName, MAX_PATH);
-//    Q_strncat(mapName, ".zon", MAX_PATH);
-//    filesystem->RelativePathToFullPath(mapName, "MOD", pathToZone, MAX_PATH);
-//    Log("File path is: %s\n", pathToZone);
-//
-//    CSHA1 sha1;
-//    sha1.HashFile(pathToZone);
-//    sha1.Final();
-//    unsigned char hash[20];
-//    sha1.GetHash(hash);
-//    Log("The hash for %s is: ", mapName);
-//    for (int i = 0; i < 20; i++)
-//    {
-//        Log("%02x", hash[i]);
-//    }
-//    Log("\n");
-//}
 
 void CMomentumTimer::TogglePause()
 {
@@ -364,7 +303,7 @@ void CMomentumTimer::OnPlayerLand(KeyValues *kv)
 
 void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum)
 {
-    int zonetype = pTrigger->GetZoneType();
+    const int zonetype = pTrigger->GetZoneType();
     if (zonetype == MOMZONETYPE_STOP)
     {
         // We've reached end zone, stop here
@@ -425,24 +364,23 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTr
         auto pStageTrigger = static_cast<CTriggerStage *>(pTrigger);
         SetCurrentZone(pStageTrigger);
 
-        if (IsRunning())
-        {
-            pPlayer->m_RunStats.SetZoneExitSpeed(zonenum - 1, pPlayer->GetLocalVelocity().Length(),
-                                                 pPlayer->GetLocalVelocity().Length2D());
-            CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
-            pPlayer->m_RunStats.SetZoneEnterTime(zonenum, CalculateStageTime(zonenum));
-            pPlayer->m_RunStats.SetZoneTime(zonenum - 1, pPlayer->m_RunStats.GetZoneEnterTime(zonenum) -
-                                                         pPlayer->m_RunStats.GetZoneEnterTime(zonenum - 1));
-        }
-
         // Reset timer when we enter start zone
         if (zonetype == MOMZONETYPE_START)
         {
             SetStartTrigger(static_cast<CTriggerTimerStart *>(pTrigger));
             Reset();
         }
+        else if (m_bIsRunning)
+        {
+            pPlayer->m_RunStats.SetZoneExitSpeed(zonenum - 1, pPlayer->GetLocalVelocity().Length(),
+                                                 pPlayer->GetLocalVelocity().Length2D());
+            CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
+            const float fCurrentZoneEnterTime = CalculateStageTime(zonenum);
+            pPlayer->m_RunStats.SetZoneEnterTime(zonenum, fCurrentZoneEnterTime);
+            pPlayer->m_RunStats.SetZoneTime(zonenum - 1, fCurrentZoneEnterTime -
+                                                         CalculateStageTime(zonenum - 1));
+        }
     }
-    
 }
 
 void CMomentumTimer::OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum)
