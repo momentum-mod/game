@@ -1,12 +1,18 @@
 VertexLitGeneric
 {
-	"$basetexture" "models/weapons/w_models/w_mom_shotgun/shotgun_remaster_d"
-	"$bumpmap" "models/weapons/w_models/w_mom_shotgun/shotgun_remaster_n_a"
+	"$basetexture" "models/weapons/w_models/w_mom_shotgun/shotgun_remake_d"
+	"$bumpmap" "models/weapons/w_models/w_mom_shotgun/shotgun_remake_n_a"
 	"$surfaceprop" "Weapon"
 
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "1"
+	"$envmaptint" "[0.28 0.28 0.28]"
+	"$envmapcontrast" "1"
+	"$envmapfresnel" "1"
+
 	"$phong" "1"
-	"$phongfresnelranges" "[0.77 0.89 1]"
+	"$phongfresnelranges" "[0.35 0.68 0.8]"
 	"$phongalbedotint" "1"
-	"$phongexponent" "16"
+	"$phongexponent" "7"
 	"$phongboost" "8"
 }
