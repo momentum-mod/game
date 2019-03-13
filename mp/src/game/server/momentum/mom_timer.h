@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mom_shareddefs.h"
-#include <GameEventListener.h>
 
 struct SavedLocation_t;
 class CBaseMomentumTrigger;
@@ -11,7 +10,7 @@ class CTriggerStage;
 class CTriggerTimerStop;
 class CMomentumPlayer;
 
-class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
+class CMomentumTimer : public CAutoGameSystemPerFrame
 {
   public:
     CMomentumTimer(const char *pName);
@@ -22,9 +21,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
     void LevelShutdownPreEntity() OVERRIDE;
 
     virtual void FrameUpdatePreEntityThink() OVERRIDE;
-
-  public: // CGameEventListener
-    virtual void FireGameEvent(IGameEvent *event) OVERRIDE;
 
   public:
     // HUD messages
@@ -118,12 +114,13 @@ class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
 
-  private:
-    void OnPlayerSpawn(CMomentumPlayer *pPlayer);
-    void OnPlayerJump(KeyValues *kv);
-    void OnPlayerLand(KeyValues *kv);
     void OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum);
     void OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum);
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer);
+
+  private:
+    void OnPlayerJump(KeyValues *kv);
+    void OnPlayerLand(KeyValues *kv);
 
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
@@ -144,9 +141,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame, public CGameEventListener
     CTriggerTimerStart *m_pStartTrigger;
     CTriggerTimerStop *m_pEndTrigger;
     CTriggerStage *m_pCurrentZone; // MOM_TODO: Change to be the generic Zone trigger
-
-    KeyValues *m_pLocalTimes;
-    // MOM_TODO: KeyValues *m_pOnlineTimes;
 
     SavedLocation_t *m_pStartZoneMark;
 

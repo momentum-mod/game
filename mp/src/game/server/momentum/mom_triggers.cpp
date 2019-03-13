@@ -4,10 +4,9 @@
 #include "in_buttons.h"
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
-#include "mom_replay_system.h"
-#include "mom_system_saveloc.h"
 #include "mom_system_progress.h"
 #include "fmtstr.h"
+#include "mom_timer.h"
 
 #include "dt_utlvector_send.h"
 
@@ -103,6 +102,9 @@ void CTriggerStage::OnStartTouch(CBaseEntity *pOther)
         // Set player run data
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
         pPlayer->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
+
+        g_pMomentumTimer->OnPlayerEnterZone(pPlayer, this, stageNum);
+
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
         stageEvent->SetInt("ent", pPlayer->entindex());
         stageEvent->SetInt("zone_ent", entindex());
@@ -148,6 +150,7 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
         stageEvent->SetInt("ent", pPlayer->entindex());
         stageEvent->SetInt("zone_ent", entindex());
         stageEvent->SetInt("num", stageNum);
+            g_pMomentumTimer->OnPlayerExitZone(pPlayer, this, stageNum);
     }
     else
     {
@@ -409,6 +412,8 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_iCurrentZone = 0;
         pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
 
+        g_pMomentumTimer->OnPlayerEnterZone(pPlayer, this, m_iZoneNumber);
+
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
         stageEvent->SetInt("ent", pPlayer->entindex());
         stageEvent->SetInt("zone_ent", entindex());
@@ -470,6 +475,8 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
             pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
             pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
             pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
+
+            g_pMomentumTimer->OnPlayerExitZone(pMomPlayer, this, m_iZoneNumber);
         }
         pMomPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
 
