@@ -144,13 +144,14 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
         if (pPlayer->m_SrvData.m_RunData.m_iCurrentZone == stageNum)
         {
             pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
-        }
 
-        stageEvent = gameeventmanager->CreateEvent("zone_exit");
-        stageEvent->SetInt("ent", pPlayer->entindex());
-        stageEvent->SetInt("zone_ent", entindex());
-        stageEvent->SetInt("num", stageNum);
             g_pMomentumTimer->OnPlayerExitZone(pPlayer, this, stageNum);
+
+            stageEvent = gameeventmanager->CreateEvent("zone_exit");
+            stageEvent->SetInt("ent", pPlayer->entindex());
+            stageEvent->SetInt("zone_ent", entindex());
+            stageEvent->SetInt("num", stageNum);
+        }
     }
     else
     {
@@ -160,12 +161,12 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
             if (pGhost->m_SrvData.m_RunData.m_iCurrentZone == stageNum)
             {
                 pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
-            }
 
-            stageEvent = gameeventmanager->CreateEvent("zone_exit");
-            stageEvent->SetInt("ent", pGhost->entindex());
-            stageEvent->SetInt("zone_ent", entindex());
-            stageEvent->SetInt("num", stageNum);
+                stageEvent = gameeventmanager->CreateEvent("zone_exit");
+                stageEvent->SetInt("ent", pGhost->entindex());
+                stageEvent->SetInt("zone_ent", entindex());
+                stageEvent->SetInt("num", stageNum);
+            }
         }
     }
 
@@ -277,6 +278,8 @@ int CTriggerTimerStart::GetZoneType()
 
 void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
 {
+    BaseClass::OnEndTouch(pOther);
+
     if (pOther->IsPlayer())
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
@@ -310,12 +313,11 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
             }*/
         }
     }
-
-    BaseClass::OnEndTouch(pOther);
 }
 
 void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
 {
+    BaseClass::OnStartTouch(pOther);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
@@ -338,8 +340,6 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
             pGhost->m_SrvData.m_RunData.m_bTimerRunning = false; // Fixed
         }
     }
-
-    BaseClass::OnStartTouch(pOther);
 }
 
 void CTriggerTimerStart::Spawn()
@@ -399,6 +399,7 @@ END_SEND_TABLE()
 
 void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
 {
+    BaseClass::OnStartTouch(pOther);
     IGameEvent *stageEvent = nullptr;
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
     if (pOther->IsPlayer())
@@ -459,56 +460,56 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
     {
         gameeventmanager->FireEvent(stageEvent);
     }
-
-    BaseClass::OnStartTouch(pOther);
 }
 void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
 {
+    BaseClass::OnEndTouch(pOther);
+
     IGameEvent *pStageEvent = nullptr;
     CMomentumPlayer *pMomPlayer = ToCMOMPlayer(pOther);
     if (pMomPlayer)
     {
         pMomPlayer->SetLaggedMovementValue(1.0f);            // Reset slow motion
 
-		if (pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone == 0)
+		if (pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone == m_iZoneNumber)
         {
             pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
             pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
             pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
 
             g_pMomentumTimer->OnPlayerExitZone(pMomPlayer, this, m_iZoneNumber);
+
+            pStageEvent = gameeventmanager->CreateEvent("zone_exit");
+            pStageEvent->SetInt("ent", pMomPlayer->entindex());
+            pStageEvent->SetInt("zone_ent", entindex());
+            pStageEvent->SetInt("num", m_iZoneNumber);
         }
         pMomPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
-
-        pStageEvent = gameeventmanager->CreateEvent("zone_exit");
-        pStageEvent->SetInt("ent", pMomPlayer->entindex());
-        pStageEvent->SetInt("zone_ent", entindex());
-        pStageEvent->SetInt("num", m_iZoneNumber);
     }
     else
     {
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            if (pGhost->m_SrvData.m_RunData.m_iCurrentZone == 0)
+            if (pGhost->m_SrvData.m_RunData.m_iCurrentZone == m_iZoneNumber)
             {
                 pGhost->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
                 pGhost->m_SrvData.m_RunData.m_iCurrentZone = pGhost->m_SrvData.m_RunData.m_iOldZone;
                 pGhost->m_SrvData.m_RunData.m_iBonusZone = pGhost->m_SrvData.m_RunData.m_iOldBonusZone;
+
+                pStageEvent = gameeventmanager->CreateEvent("zone_exit");
+                pStageEvent->SetInt("ent", pGhost->entindex());
+                pStageEvent->SetInt("zone_ent", entindex());
+                pStageEvent->SetInt("num", m_iZoneNumber);
             }
 
-            pStageEvent = gameeventmanager->CreateEvent("zone_exit");
-            pStageEvent->SetInt("ent", pGhost->entindex());
-            pStageEvent->SetInt("zone_ent", entindex());
-            pStageEvent->SetInt("num", m_iZoneNumber);
+            pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
         }
     }
     if (pStageEvent)
     {
         gameeventmanager->FireEvent(pStageEvent);
     }
-
-    BaseClass::OnEndTouch(pOther);
 }
 
 KeyValues *CTriggerTimerStop::ToKeyValues() const
