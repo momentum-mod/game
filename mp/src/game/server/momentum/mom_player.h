@@ -5,7 +5,6 @@
 #include "GameEventListener.h"
 #include "mom_modulecomms.h"
 
-// MOM_TODO: 
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 class CTriggerSlide;
