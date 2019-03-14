@@ -1952,15 +1952,6 @@ void CServerGameDLL::Status( void (*print) (const char *fmt, ...) )
 }
 
 //-----------------------------------------------------------------------------
-void CServerGameDLL::PrepareLevelResources( /* in/out */ char *pszMapName, size_t nMapNameSize,
-                                            /* in/out */ char *pszMapFile, size_t nMapFileSize )
-{
-#ifdef TF_DLL
-	TFMapsWorkshop()->PrepareLevelResources( pszMapName, nMapNameSize, pszMapFile, nMapFileSize );
-#endif // TF_DLL
-}
-
-//-----------------------------------------------------------------------------
 IServerGameDLL::ePrepareLevelResourcesResult
 CServerGameDLL::AsyncPrepareLevelResources( /* in/out */ char *pszMapName, size_t nMapNameSize,
                                             /* in/out */ char *pszMapFile, size_t nMapFileSize,
