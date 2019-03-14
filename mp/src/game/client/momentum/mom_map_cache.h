@@ -217,14 +217,14 @@ public:
     void RemoveMapFromDownloadQueue(uint32 uMapID, bool bSendEvent = false);
 protected:
     void PostInit() OVERRIDE;
-    void LevelInitPreEntity() OVERRIDE;
+    void PreLevelInit(KeyValues *pKv); // Called from server before Server's LevelInitPre/Post entity
     void LevelShutdownPostEntity() OVERRIDE;
     void Shutdown() OVERRIDE;
 
     void LoadMapCacheFromDisk();
     void SaveMapCacheToDisk();
 
-    void SetMapGamemode();
+    void SetMapGamemode(const char *pMapName = nullptr);
 
     // HTTP callbacks
     void OnFetchPlayerMapLibrary(KeyValues *pKv);
