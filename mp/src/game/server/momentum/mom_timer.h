@@ -16,7 +16,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     CMomentumTimer(const char *pName);
 
   public: // CAutoGameSystemPerFrame
-    void PostInit();
+    void PostInit() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
 

@@ -931,24 +931,34 @@ uint32 CMapCache::GetUpdateIntervalForMap(MapData* pData)
     }
 }
 
-void CMapCache::SetMapGamemode()
+void CMapCache::SetMapGamemode(const char *pMapName /* = nullptr*/)
 {
     ConVarRef gm("mom_gamemode");
+
+    if (!pMapName)
+        pMapName = MapName();
+
+    if (!pMapName)
+    {
+        gm.SetValue(GAMEMODE_UNKNOWN);
+        return;
+    }
+
     if (m_pCurrentMapData)
     {
         gm.SetValue(m_pCurrentMapData->m_eType);
     }
-    else
+    else // Backup method, use map name for unofficial maps
     {
-        if (!Q_strnicmp(MapName(), "surf_", 5))
+        if (!Q_strnicmp(pMapName, "surf_", 5))
         {
             gm.SetValue(GAMEMODE_SURF);
         }
-        else if (!Q_strnicmp(MapName(), "bhop_", 5))
+        else if (!Q_strnicmp(pMapName, "bhop_", 5))
         {
             gm.SetValue(GAMEMODE_BHOP);
         }
-        else if (!Q_strnicmp(MapName(), "kz_", 3))
+        else if (!Q_strnicmp(pMapName, "kz_", 3))
         {
             gm.SetValue(GAMEMODE_KZ);
         }
@@ -1223,14 +1233,16 @@ void CMapCache::PostInit()
 {
     ListenForGameEvent("site_auth");
 
+    g_pModuleComms->ListenForEvent("pre_level_init", UtlMakeDelegate(this, &CMapCache::PreLevelInit));
+
     // Load the cache from disk
     LoadMapCacheFromDisk();
 }
 
-void CMapCache::LevelInitPreEntity()
+void CMapCache::PreLevelInit(KeyValues* pKv)
 {
-    // Check if the map was updated recently
-    const char *pMapName = MapName();
+    const char *pMapName = pKv->GetString("map");
+
     int dictIndx = m_dictMapNames.Find(pMapName);
     if (m_dictMapNames.IsValidIndex(dictIndx))
     {
@@ -1254,7 +1266,7 @@ void CMapCache::LevelInitPreEntity()
         m_pCurrentMapData = nullptr;
     }
 
-    SetMapGamemode();
+    SetMapGamemode(pMapName);
 }
 
 void CMapCache::LevelShutdownPostEntity()
