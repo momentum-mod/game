@@ -26,10 +26,11 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // HUD messages
     void DispatchResetMessage() const;
     void DispatchTimerStateMessage(CBasePlayer *pPlayer, bool running) const;
+    void DispatchMapInfo();
 
     // ------------- Timer state related messages --------------------------
     // Starts the timer for the given starting tick
-	// Returns true if timer successfully started, otherwise false
+    // Returns true if timer successfully started, otherwise false
     bool Start(int startTick, int iBonusZone);
     // Stops the timer
     void Stop(bool endTrigger = false, bool bStopRecording = true);
@@ -125,7 +126,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
 
-    void DispatchMapInfo() const;
     void DispatchNoZonesMsg() const;
 
   private:
