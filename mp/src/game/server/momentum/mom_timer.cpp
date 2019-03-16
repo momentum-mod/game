@@ -43,7 +43,6 @@ void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
-    RequestZoneCount();
     ClearStartMark();
     DispatchMapInfo();
 }
@@ -446,8 +445,11 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
     srvdat.m_RunData.m_bMapFinished = false;
 }
 
-void CMomentumTimer::DispatchMapInfo() const
+void CMomentumTimer::DispatchMapInfo()
 {
+    // Make sure zone count is up to date
+    RequestZoneCount();
+
     IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init");
     if (mapInitEvent)
     {

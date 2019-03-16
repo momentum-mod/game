@@ -475,7 +475,7 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
     {
         pMomPlayer->SetLaggedMovementValue(1.0f);            // Reset slow motion
 
-		if (pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone == m_iZoneNumber)
+        if (pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone == m_iZoneNumber)
         {
             pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
             pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;

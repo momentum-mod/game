@@ -6,6 +6,7 @@
 #include "mom_player.h"
 #include "mom_triggers.h"
 #include "mom_player_shared.h"
+#include "mom_timer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -69,6 +70,9 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
             if (pEnt && g_MomZoneEdit.GetEntityZoneType(pEnt) != -1)
             {
                 UTIL_Remove(pEnt);
+
+                // Update zone count
+                g_pMomentumTimer->DispatchMapInfo();
             }
         }
         else
@@ -82,6 +86,9 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
                     UTIL_Remove(pEnt);
                     pEnt = gEntList.FindEntityByClassname(pEnt, szDelete);
                 }
+
+                // Update zone count
+                g_pMomentumTimer->DispatchMapInfo();
             }
         }
     }
@@ -350,6 +357,9 @@ void CMomZoneEdit::OnCreate(int zonetype)
     SetZoneProps(pEnt);
 
     DevMsg("Created zone entity %i.\n", pEnt->entindex());
+
+    // Update zone count
+    g_pMomentumTimer->DispatchMapInfo();
 }
 
 void CMomZoneEdit::OnRemove()
