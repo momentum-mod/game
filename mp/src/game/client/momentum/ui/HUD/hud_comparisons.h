@@ -92,7 +92,8 @@ protected:
 
 
 private:
-    char stLocalized[BUFSIZELOCL], compareLocalized[BUFSIZELOCL],
+    wchar_t m_wStage[BUFSIZELOCL], m_wCheckpoint[BUFSIZELOCL];
+    char compareLocalized[BUFSIZELOCL],
         stageTimeLocalized[BUFSIZELOCL], overallTimeLocalized[BUFSIZELOCL],
         velocityAvgLocalized[BUFSIZELOCL], velocityMaxLocalized[BUFSIZELOCL],
         velocityStartLocalized[BUFSIZELOCL], velocityExitLocalized[BUFSIZELOCL],
