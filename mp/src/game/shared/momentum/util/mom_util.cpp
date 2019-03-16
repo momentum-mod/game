@@ -396,12 +396,12 @@ void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &a
 
 inline void FindHullIntersection(const Vector &vecSrc, trace_t &tr, const Vector &mins, const Vector &maxs, CBaseEntity *pEntity)
 {
-    int			i, j, k;
-    float		distance;
-    Vector minmaxs[2] = { mins, maxs };
+    int     i, j, k;
+    float   distance;
+    Vector  minmaxs[2] = { mins, maxs };
     trace_t tmpTrace;
-    Vector		vecHullEnd = tr.endpos;
-    Vector		vecEnd;
+    Vector  vecHullEnd = tr.endpos;
+    Vector  vecEnd;
 
     distance = 1e6f;
 
@@ -467,7 +467,7 @@ void MomentumUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, 
             CBaseEntity *pHit = trOutput->m_pEnt;
             if (!pHit || pHit->IsBSPModel())
                 FindHullIntersection(vecSrc, *trOutput, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, pAttacker);
-            //vecEnd = trOutput->endpos;	// This is the point on the actual surface (the hull could have hit space)
+            //vecEnd = trOutput->endpos; // This is the point on the actual surface (the hull could have hit space)
         }
     }
 
@@ -521,7 +521,7 @@ void MomentumUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, 
             }
             else
             {
-                // subsequent swings do less	
+                // subsequent swings do less
                 flDamage = 15;
             }*/
             flDamage = 20.0f;
@@ -573,7 +573,7 @@ void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, co
 
     CPASFilter filter(data.m_vOrigin);
     data.m_vAngles = lookAng;
-    data.m_fFlags = 0x1;	//IMPACT_NODECAL;
+    data.m_fFlags = 0x1; //IMPACT_NODECAL;
 
     te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
 }

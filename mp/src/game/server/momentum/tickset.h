@@ -45,16 +45,16 @@ public:
     static bool SetTickrate(int gameMode);
 
     static Tickrate GetCurrentTickrate() { return (m_trCurrent.fTickRate > 0.0f ? m_trCurrent : s_DefinedRates[TICKRATE_66]); }
-	
+
     static bool SetTickrate(Tickrate trNew);
-	static bool SetTickrate(float);
+    static bool SetTickrate(float);
     static float GetTickrate() { return *interval_per_tick; }
 
 private:
     // RevEng things
-	static inline bool DataCompare(const unsigned char*, const unsigned char*, const char*);
-	static void *FindPattern(const void*, size_t, const unsigned char*, const char*);
-	static float *interval_per_tick;
+    static inline bool DataCompare(const unsigned char*, const unsigned char*, const char*);
+    static void *FindPattern(const void*, size_t, const unsigned char*, const char*);
+    static float *interval_per_tick;
 
     static Tickrate m_trCurrent;
     static bool m_bInGameUpdate;

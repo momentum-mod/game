@@ -73,7 +73,7 @@ const char *GetGameDescription()
 
 //-----------------------------------------------------------------------------
 // Purpose: Given a player and optional name returns the entity of that
-//			classname that the player is nearest facing
+//          classname that the player is nearest facing
 //
 // Input  :
 // Output :

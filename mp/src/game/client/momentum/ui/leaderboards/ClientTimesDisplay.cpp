@@ -245,7 +245,7 @@ void CClientTimesDisplay::FillScoreBoard(bool bFullUpdate)
 
 //-----------------------------------------------------------------------------
 // Purpose: Center the dialog on the screen.  (vgui has this method on
-//			Frame, but we're an EditablePanel, need to roll our own.)
+//          Frame, but we're an EditablePanel, need to roll our own.)
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::MoveToCenterOfScreen()
 {

@@ -68,7 +68,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1", FLAG_HUD_CVAR,
                           "Toggle showing total stage strafes comparison. 0 = OFF, 1 = ON");
 
 //DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
-static CHudElement *Create_CHudCompare(void)							
+static CHudElement *Create_CHudCompare(void)
 {
     auto pPanel = new C_RunComparisons("CHudCompare");
     g_pMOMRunCompare = pPanel;

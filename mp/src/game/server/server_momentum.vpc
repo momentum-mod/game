@@ -59,18 +59,18 @@ $Project "Server (Momentum)"
                 }
             }
             $Folder "Network"
-	        {
-	        	 $Folder "Ghost Client"
-		        {
+            {
+                $Folder "Ghost Client"
+                {
 
-	            	$File "$SRCDIR\game\server\momentum\ghost_client.h"
-	                $File "$SRCDIR\game\server\momentum\ghost_client.cpp"
-	            	$File "$SRCDIR\game\server\momentum\mom_online_ghost.h"
-	                $File "$SRCDIR\game\server\momentum\mom_online_ghost.cpp"
+                    $File "$SRCDIR\game\server\momentum\ghost_client.h"
+                    $File "$SRCDIR\game\server\momentum\ghost_client.cpp"
+                    $File "$SRCDIR\game\server\momentum\mom_online_ghost.h"
+                    $File "$SRCDIR\game\server\momentum\mom_online_ghost.cpp"
 
-	                $File "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
+                    $File "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
 
-	            }
+                }
                 $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
                 $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
                 {
@@ -82,7 +82,7 @@ $Project "Server (Momentum)"
                         }
                     }
                 }
-            	$File "$SRCDIR\game\server\momentum\mom_lobby_system.h"
+                $File "$SRCDIR\game\server\momentum\mom_lobby_system.h"
                 $File "$SRCDIR\game\server\momentum\mom_lobby_system.cpp"
 
             }
@@ -146,7 +146,7 @@ $Project "Server (Momentum)"
             $File   "momentum\mapzones_build.cpp"
             $File   "momentum\mapzones_edit.h"
             $File   "momentum\mapzones_edit.cpp"
-			$File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.h"
             $File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_gamemovement.h"
@@ -182,14 +182,14 @@ $Project "Server (Momentum)"
             $File "momentum\mom_ruler.cpp"
             $File "momentum\mom_timer.h"
             $File "momentum\mom_timer.cpp"
-         	$File "momentum\mom_ghost_base.h"
+            $File "momentum\mom_ghost_base.h"
             $File "momentum\mom_ghost_base.cpp"
         }
         
         $File "hl2\Func_Monitor.cpp"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
-		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
+        $File   "$SRCDIR\game\shared\predicted_viewmodel.h"
         
     }
 
