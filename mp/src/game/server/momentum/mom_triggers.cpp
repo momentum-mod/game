@@ -284,6 +284,10 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
+        if (pPlayer->m_SrvData.m_RunData.m_iCurrentZone == GetZoneNumber())
+        {
+            pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
+        }
         pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = false;
     }
     else
