@@ -109,7 +109,8 @@ void C_RunComparisons::Init()
     ListenForGameEvent("spec_stop");
 
     // LOCALIZE STUFF HERE
-    LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
+    FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
+    FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
     LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Zone", stageTimeLocalized);
     LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
     LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
@@ -388,7 +389,6 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
                                            char *ansiActualBufferOut, char *ansiCompareBufferOut,
                                            Color *compareColorOut)
 {
-    Assert(stats);
     if (!stats)
         return;
     int velType = m_cvarVelType.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
@@ -711,14 +711,8 @@ void C_RunComparisons::Paint()
         // stages. (So if there's 20 stages, we only show the last X stages, not all.)
         if (i >= (currentStage - STAGE_BUFFER))
         {
-            char stageString[BUFSIZELOCL];
-            wchar_t stageStringUnicode[BUFSIZELOCL];
-            // MOM_TODO: LINEAR MAPS WILL NEED "Checkpoint: " here!
-            Q_snprintf(stageString, BUFSIZELOCL, "%s %i ",
-                       stLocalized, // "Stage" localization
-                       i);          // Stage number
-
-            ANSI_TO_UNICODE(stageString, stageStringUnicode);
+            const wchar_t *pwZoneStr = CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpoint : m_wStage, i);
+            const size_t zoneStrLen = Q_wcslen(pwZoneStr);
 
             Color fgColorOverride = GetFgColor();
 
@@ -730,7 +724,7 @@ void C_RunComparisons::Paint()
             // print "Stage ## "
             surface()->DrawSetTextColor(fgColorOverride);
             surface()->DrawSetTextPos(text_xpos, Y);
-            surface()->DrawPrintText(stageStringUnicode, wcslen(stageStringUnicode));
+            surface()->DrawPrintText(pwZoneStr, zoneStrLen);
 
             if (i == (currentStage - 1))
             {
@@ -817,7 +811,7 @@ void C_RunComparisons::Paint()
                 wchar_t timeComparisonStringUnicode[BUFSIZELOCL];
 
                 int newXPos = text_xpos                                           // Base starting X pos
-                              + UTIL_ComputeStringWidth(m_hTextFont, stageString) //"Stage ## "
+                              + UTIL_ComputeStringWidth(m_hTextFont, pwZoneStr) //"Stage ## "
                               + 2;                                                // Padding
 
                 Color comparisonColor = Color(GetFgColor());
