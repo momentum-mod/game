@@ -174,7 +174,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SetLastEyeAngles(const QAngle &ang) { m_qangLastAngle = ang; }
     const QAngle &LastEyeAngles() const { return m_qangLastAngle; }
 
-	void SetIsInAirDueToJump(bool val) { m_bInAirDueToJump = val; }
+    void SetIsInAirDueToJump(bool val) { m_bInAirDueToJump = val; }
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
   private:
     // Spawn stuff

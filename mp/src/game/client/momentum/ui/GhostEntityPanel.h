@@ -32,10 +32,10 @@ private:
     vgui::ImagePanel *m_pAvatarImagePanel;
     CAvatarImage *m_pAvatarImage;
 
-    int				m_iOrgWidth;
-    int				m_iOrgHeight;
-    int				m_iOrgOffsetX;
-    int				m_iOrgOffsetY;
+    int m_iOrgWidth;
+    int m_iOrgHeight;
+    int m_iOrgOffsetX;
+    int m_iOrgOffsetY;
     // Offset from entity that we should draw
     int m_OffsetX, m_OffsetY;
     // Position of the panel
