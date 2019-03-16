@@ -45,16 +45,16 @@ void C_MomentumPlayer::Spawn()
 //-----------------------------------------------------------------------------
 bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 {
-	// Bleh... we will wind up needing to access bones for attachments in here.
-	C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
+    // Bleh... we will wind up needing to access bones for attachments in here.
+    C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
 
-	return BaseClass::CreateMove(flInputSampleTime, pCmd);
+    return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }
 
 
 void C_MomentumPlayer::ClientThink()
 {
-	SetNextClientThink(CLIENT_THINK_ALWAYS);
+    SetNextClientThink(CLIENT_THINK_ALWAYS);
     FetchStdData(this);
 
     if (IsObserver())
@@ -83,23 +83,23 @@ void C_MomentumPlayer::ClientThink()
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
-	//SetNextClientThink(CLIENT_THINK_ALWAYS);
+    //SetNextClientThink(CLIENT_THINK_ALWAYS);
 
-	BaseClass::OnDataChanged(type);
+    BaseClass::OnDataChanged(type);
 
-	UpdateVisibility();
+    UpdateVisibility();
 }
 
 
 void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 {
-	// C_BaseEntity assumes we're networking the entity's angles, so pretend that it
-	// networked the same value we already have.
-	SetNetworkAngles(GetLocalAngles());
+    // C_BaseEntity assumes we're networking the entity's angles, so pretend that it
+    // networked the same value we already have.
+    SetNetworkAngles(GetLocalAngles());
 
-	//SetNextClientThink(CLIENT_THINK_ALWAYS);
+    //SetNextClientThink(CLIENT_THINK_ALWAYS);
 
-	BaseClass::PostDataUpdate(updateType);
+    BaseClass::PostDataUpdate(updateType);
 }
 
 int C_MomentumPlayer::GetSpecEntIndex() const

@@ -12,15 +12,15 @@ CMoveData *g_pMoveData = &g_MoveData;
 
 class CMOMPrediction : public CPrediction
 {
-	DECLARE_CLASS(CMOMPrediction, CPrediction);
+    DECLARE_CLASS(CMOMPrediction, CPrediction);
 
-public:
-	void SetupMove(C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move) OVERRIDE
-	{
-		player->AvoidPhysicsProps(ucmd);
+  public:
+    void SetupMove(C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move) OVERRIDE
+    {
+        player->AvoidPhysicsProps(ucmd);
 
-		BaseClass::SetupMove(player, ucmd, pHelper, move);
-	}
+        BaseClass::SetupMove(player, ucmd, pHelper, move);
+    }
 };
 
 // Expose interface to engine
