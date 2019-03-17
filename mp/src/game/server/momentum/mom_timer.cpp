@@ -112,15 +112,7 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
     SetRunning(true);
 
     // Dispatch a start timer message for the local player
-    DispatchTimerStateMessage(pPlayer, IsRunning());
-
-    IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_state");
-    if (timeStartEvent)
-    {
-        timeStartEvent->SetInt("ent", pPlayer->entindex());
-        timeStartEvent->SetBool("is_running", true);
-        gameeventmanager->FireEvent(timeStartEvent);
-    }
+    DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STARTED);
 
     return true;
 }
@@ -151,10 +143,10 @@ void CMomentumTimer::TogglePause()
 void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* = true*/)
 {
     SetPaused(false);
+    SetRunning(false);
     g_ReplaySystem.SetPaused(false);
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (pPlayer)
     {
@@ -166,23 +158,14 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
             time(&m_iLastRunDate); // Set the last run date for the replay
         }
 
-        // Fire off the timer_state event
-        if (timerStateEvent)
-        {
-            timerStateEvent->SetInt("ent", pPlayer->entindex());
-            timerStateEvent->SetBool("is_running", false);
-            gameeventmanager->FireEvent(timerStateEvent);
-        }
-
         pPlayer->m_SrvData.m_bIsTimerPaused = false;
+
+        DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STOPPED);
     }
 
     // Stop replay recording, if there was any
     if (g_ReplaySystem.IsRecording() && stopRecording)
         g_ReplaySystem.StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
-
-    SetRunning(false);
-    DispatchTimerStateMessage(pPlayer, IsRunning());
 }
 
 void CMomentumTimer::Reset()
@@ -230,13 +213,7 @@ void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
         break;
     }
 
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
-    if (timerStartEvent)
-    {
-        timerStartEvent->SetInt("ent", pPlayer->entindex());
-        timerStartEvent->SetBool("is_running", false);
-        gameeventmanager->FireEvent(timerStartEvent);
-    }
+    DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STOPPED);
 }
 
 void CMomentumTimer::OnPlayerJump(KeyValues *kv)
@@ -415,9 +392,8 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
     {
         SetShouldUseStartZoneOffset(bUseStartZoneOffset);
 
-        Start(gpGlobals->tickcount, srvdat.m_RunData.m_iBonusZone);
-        // The Start method could return if CP menu or prac mode is activated here
-        if (IsRunning())
+        // The Start method could fail if CP menu or prac mode is activated here
+        if (Start(gpGlobals->tickcount, srvdat.m_RunData.m_iBonusZone))
         {
             // Used for trimming later on
             if (g_ReplaySystem.IsRecording())
@@ -435,6 +411,10 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
                 pPlayer->m_RunStats.SetZoneJumps(0, 1);
                 pPlayer->m_RunStats.SetZoneJumps(srvdat.m_RunData.m_iCurrentZone, 1);
             }
+        }
+        else
+        {
+            DispatchTimerEventMessage(pPlayer, TIMER_EVENT_FAILED);
         }
     }
     else
@@ -482,16 +462,22 @@ void CMomentumTimer::DispatchResetMessage() const
     MessageEnd();
 }
 
-void CMomentumTimer::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool running) const
+void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) const
 {
-    if (pPlayer)
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("timer_event");
+    if (pEvent)
     {
-        CSingleUserRecipientFilter user(pPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_State");
-        WRITE_BOOL(running);
-        MessageEnd();
+        pEvent->SetInt("ent", pPlayer->entindex());
+        pEvent->SetInt("type", type);
+        gameeventmanager->FireEvent(pEvent);
     }
+
+    CSingleUserRecipientFilter user(pPlayer);
+    user.MakeReliable();
+
+    UserMessageBegin(user, "Timer_Event");
+        WRITE_LONG(type);
+    MessageEnd();
 }
 
 int CMomentumTimer::GetCurrentZoneNumber() const

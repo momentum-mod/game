@@ -441,13 +441,13 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
             pGhost->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
 
             // Needed for hud_comparisons
-            IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
-            if (timerStateEvent)
+            IGameEvent *pEvent = gameeventmanager->CreateEvent("timer_event");
+            if (pEvent)
             {
-                timerStateEvent->SetInt("ent", pGhost->entindex());
-                timerStateEvent->SetBool("is_running", false);
+                pEvent->SetInt("ent", pGhost->entindex());
+                pEvent->SetInt("type", TIMER_EVENT_STOPPED);
 
-                gameeventmanager->FireEvent(timerStateEvent);
+                gameeventmanager->FireEvent(pEvent);
             }
 
             pGhost->m_SrvData.m_RunData.m_bMapFinished = true;

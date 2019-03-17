@@ -27,6 +27,13 @@ enum MomZoneType_t
     MOMZONETYPE_STAGE,
 };
 
+enum MomTimerEvent_t
+{
+    TIMER_EVENT_STARTED = 0,
+    TIMER_EVENT_STOPPED,
+    TIMER_EVENT_FAILED // fired when the timer attempted to start but failed
+};
+
 // Gamemode for momentum
 enum GAME_MODE
 {
