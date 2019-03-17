@@ -49,7 +49,7 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
     if (pPlayer)
     {
         pPlayer->StopSpectating();
-        g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
+        g_pMomentumTimer->DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STOPPED);
         // We're piggybacking on this event because it's basically the same as the X on the mapfinished panel
         IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
         if (pClosePanel)

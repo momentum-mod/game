@@ -44,10 +44,10 @@
         "run_posted" "bool"
         "web_msg" "string" // MOM_TODO: fill this with more stuff?
     }
-    "timer_state"
+    "timer_event" // Fired when timer starts/stops/fails to start
     {
         "ent" "short"
-        "is_running"    "bool"
+        "type" "short"
     }
     "practice_mode"
     {

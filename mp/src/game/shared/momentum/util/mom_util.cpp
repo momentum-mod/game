@@ -551,11 +551,11 @@ void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, co
 
         if (trIn.m_pEnt->IsPlayer())
         {
-            pSoundSource->EmitSound(filter, pSoundSource->entindex(), bStab ? "Weapon_Knife.Stab" : "Weapon_Knife.Hit");
+            CBaseEntity::EmitSound(filter, pSoundSource->entindex(), bStab ? "Weapon_Knife.Stab" : "Weapon_Knife.Hit");
         }
         else
         {
-            pSoundSource->EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.HitWall");
+            CBaseEntity::EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.HitWall");
         }
     }
 
