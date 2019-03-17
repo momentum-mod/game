@@ -35,7 +35,7 @@ class CHudTimer : public CHudElement, public EditablePanel
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
-    void MsgFunc_Timer_State(bf_read &msg);
+    void MsgFunc_Timer_Event(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);
     float GetCurrentTime();
 
@@ -66,7 +66,7 @@ class CHudTimer : public CHudElement, public EditablePanel
 };
 
 DECLARE_HUDELEMENT(CHudTimer);
-DECLARE_HUD_MESSAGE(CHudTimer, Timer_State);
+DECLARE_HUD_MESSAGE(CHudTimer, Timer_Event);
 DECLARE_HUD_MESSAGE(CHudTimer, Timer_Reset);
 
 CHudTimer::CHudTimer(const char *pElementName): CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudTimer")
@@ -101,7 +101,7 @@ void CHudTimer::Init()
     m_iOldTickCount = 0;
     m_pCurrentGhostTicks = nullptr;
     m_iCurrentSpecTargetEntIndx = -1;
-    HOOK_HUD_MESSAGE(CHudTimer, Timer_State);
+    HOOK_HUD_MESSAGE(CHudTimer, Timer_Event);
     HOOK_HUD_MESSAGE(CHudTimer, Timer_Reset);
     m_pRunStats = nullptr;
     m_pRunData = nullptr;
@@ -223,21 +223,21 @@ void CHudTimer::ApplySchemeSettings(IScheme* pScheme)
 }
 
 // This void handles playing effects for run start and run stop
-void CHudTimer::MsgFunc_Timer_State(bf_read &msg)
+void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (!pPlayer)
         return;
 
-    bool started = msg.ReadOneBit();
+    const int type = msg.ReadLong();
 
-    if (started)
+    if (type == TIMER_EVENT_STARTED)
     {
         // VGUI_ANIMATE("TimerStart");
 
         pPlayer->EmitSound("Momentum.StartTimer");
     }
-    else
+    else if (type == TIMER_EVENT_STOPPED)
     {
         // Compare times.
         if (m_bWereCheatsActivated) // EY, CHEATER, STOP
@@ -256,6 +256,10 @@ void CHudTimer::MsgFunc_Timer_State(bf_read &msg)
         pPlayer->EmitSound("Momentum.StopTimer");
 
         // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
+    }
+    else if (type == TIMER_EVENT_FAILED)
+    {
+        pPlayer->EmitSound("Momentum.FailedStartTimer");
     }
 }
 

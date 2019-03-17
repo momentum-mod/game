@@ -174,13 +174,13 @@ void CMomentumReplayGhostEntity::Think()
         StartTimer(gpGlobals->tickcount);
 
         // Needed for hud_comparisons
-        IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
-        if (timerStateEvent)
+        IGameEvent *pEvent = gameeventmanager->CreateEvent("timer_event");
+        if (pEvent)
         {
-            timerStateEvent->SetInt("ent", entindex());
-            timerStateEvent->SetBool("is_running", true);
+            pEvent->SetInt("ent", entindex());
+            pEvent->SetInt("type", TIMER_EVENT_STARTED);
 
-            gameeventmanager->FireEvent(timerStateEvent);
+            gameeventmanager->FireEvent(pEvent);
         }
     }
 

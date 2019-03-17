@@ -34,7 +34,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_bIsGhost = false;
     m_iCurrentPage = 0;
 
-    ListenForGameEvent("timer_state");
+    ListenForGameEvent("timer_event");
     ListenForGameEvent("replay_save");
     ListenForGameEvent("run_upload");
 
@@ -86,10 +86,11 @@ CHudMapFinishedDialog::~CHudMapFinishedDialog()
 
 void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
 {
-    if (FStrEq(pEvent->GetName(), "timer_state"))
+    if (FStrEq(pEvent->GetName(), "timer_event"))
     {
-        //We only care when this is false
-        if (!pEvent->GetBool("is_running", true))
+        const int type = pEvent->GetInt("type");
+        //We only care when timer is stopped
+        if (type == TIMER_EVENT_STOPPED)
         {
             if (m_pPlayer)
             {
