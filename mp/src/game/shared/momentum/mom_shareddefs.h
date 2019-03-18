@@ -26,7 +26,8 @@ enum MomZoneType_t
 enum MomTimerEvent_t
 {
     TIMER_EVENT_STARTED = 0,
-    TIMER_EVENT_STOPPED,
+    TIMER_EVENT_FINISHED, // timer successfully finished after player reached end zone
+    TIMER_EVENT_STOPPED, // timer stopped prematurely
     TIMER_EVENT_FAILED // fired when the timer attempted to start but failed
 };
 
