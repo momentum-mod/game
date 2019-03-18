@@ -35,7 +35,11 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // Returns true if timer successfully started, otherwise false
     bool Start(int startTick, int iBonusZone);
     // Stops the timer
-    void Stop(bool endTrigger = false, bool bStopRecording = true);
+    // If bFinished is true the timer will dispatch a TIMER_EVENT_FINISHED event leading to the time being saved,
+    // otherwise TIMER_EVENT_STOPPED is dispatched.
+    // If bStopRecording is true the timer will stop the replay recording. If bFinished is true an
+    // attempt will be made to also save the replay
+    void Stop(bool bFinished = false, bool bStopRecording = true);
     // Resets timer as well as all player stats
     void Reset();
     // Is the timer running?

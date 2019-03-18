@@ -79,7 +79,7 @@
     "wave"    "timer/timer_start-001.wav"
 }
 
-"Momentum.StopTimer"
+"Momentum.FinishTimer"
 {
     "channel"    "CHAN_ITEM"
     "volume"    "0.32"
@@ -87,6 +87,16 @@
     "pitch"    "PITCH_NORM"
 
     "wave"    "timer/timer_end-001.wav"
+}
+
+"Momentum.StopTimer"
+{
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
+
+    "wave"    "timer/timer_reset.wav"
 }
 
 "Momentum.FailedStartTimer"

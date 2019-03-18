@@ -90,7 +90,7 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     {
         const int type = pEvent->GetInt("type");
         //We only care when timer is stopped
-        if (type == TIMER_EVENT_STOPPED)
+        if (type == TIMER_EVENT_FINISHED)
         {
             if (m_pPlayer)
             {

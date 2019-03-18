@@ -44,7 +44,7 @@ public:
     virtual ghostAppearance_t GetAppearance() { return m_ghostAppearance; }
 
     virtual void StartTimer(int m_iStartTick);
-    virtual void StopTimer();
+    virtual void FinishTimer();
 
     //Pure virtual functions
     virtual void HandleGhost() = 0;
