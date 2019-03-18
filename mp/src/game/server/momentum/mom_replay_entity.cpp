@@ -533,7 +533,7 @@ void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
 
 void CMomentumReplayGhostEntity::EndRun()
 {
-    StopTimer(); // Stop the timer for all spectating us
+    FinishTimer(); // Stop the timer for all spectating us
     m_bIsActive = false;
 
     // Make everybody stop spectating me. Goes backwards since players remove themselves.

@@ -116,14 +116,13 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
 void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* = true*/)
 {
     SetRunning(false);
-    g_ReplaySystem.SetPaused(false);
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     if (pPlayer)
     {
         // Set our end time and date
-        if (endTrigger && !m_bWereCheatsActivated)
+        if (bFinished && !m_bWereCheatsActivated)
         {
             m_iEndTick = gpGlobals->tickcount;
             g_ReplaySystem.SetTimerStopTick(m_iEndTick);
@@ -134,8 +133,8 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
     }
 
     // Stop replay recording, if there was any
-    if (g_ReplaySystem.IsRecording() && stopRecording)
-        g_ReplaySystem.StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
+    if (g_ReplaySystem.IsRecording() && bStopRecording)
+        g_ReplaySystem.StopRecording(!bFinished || m_bWereCheatsActivated, bFinished);
 }
 
 void CMomentumTimer::Reset()

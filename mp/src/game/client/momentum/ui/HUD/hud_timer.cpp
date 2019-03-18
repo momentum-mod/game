@@ -233,7 +233,7 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
 
         pPlayer->EmitSound("Momentum.StartTimer");
     }
-    else if (type == TIMER_EVENT_STOPPED)
+    else if (type == TIMER_EVENT_FINISHED)
     {
         // Compare times.
         if (m_bWereCheatsActivated) // EY, CHEATER, STOP
@@ -249,9 +249,13 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
         }
 
         // VGUI_ANIMATE("TimerStop");
-        pPlayer->EmitSound("Momentum.StopTimer");
+        pPlayer->EmitSound("Momentum.FinishTimer");
 
         // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
+    }
+    else if (type == TIMER_EVENT_STOPPED)
+    {
+        pPlayer->EmitSound("Momentum.StopTimer");
     }
     else if (type == TIMER_EVENT_FAILED)
     {
