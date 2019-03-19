@@ -30,7 +30,7 @@ void CMomentumLMG::PrimaryAttack(void)
 
 void CMomentumLMG::LMGFire()
 {
-    if (!CSBaseGunFire(0.0f, 0.08f, true))
+    if (!BaseGunFire(0.0f, 0.08f, true))
         return;
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();

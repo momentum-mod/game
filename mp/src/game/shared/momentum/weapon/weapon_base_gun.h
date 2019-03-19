@@ -25,7 +25,7 @@ class CWeaponBaseGun : public CWeaponBase
     virtual void WeaponIdle();
 
     // Derived classes call this to fire a bullet.
-    bool CSBaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode);
+    bool BaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode);
 
     // Usually plays the shot sound. Guns with silencers can play different sounds.
     virtual void DoFireEffects();
