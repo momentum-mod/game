@@ -2,7 +2,6 @@
 
 #include "run/run_stats.h"
 #include "threadtools.h"
-#include "run/mom_entity_run_data.h"
 #include "tier1/utllinkedlist.h"
 #include <utldelegate.h>
 
@@ -15,35 +14,13 @@
  */
 struct StdDataFromServer
 {
-    //MOM_TODO: Deprecate the usage of weapon data? (m_iLastZoom m_iShotsFired m_bResumeZoom m_iDirection)
-    bool m_bIsTimerPaused;
-    bool m_bHasPracticeMode;
-    bool m_bResumeZoom;
-    bool m_bDidPlayerBhop;
-    bool m_bPreventPlayerBhop;
-    int m_iLandTick; // Tick at which the player landed on the ground
-    int m_iShotsFired;
-    int m_iDirection;
-    int m_iLastZoom;
-    int m_iSuccessiveBhops;
-    bool m_bShouldLimitPlayerSpeed;
-    CMOMRunEntityData m_RunData;
+    // CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };
 
 struct StdReplayDataFromServer
 {
-    bool m_bHasPracticeMode;
-    bool m_bWasInRun;
-    bool m_bIsPaused;
-    int m_iTotalStrafes;
-    int m_iTotalJumps;
-    int m_nReplayButtons;
-    int m_iCurrentTick;
-    float m_flTickRate;
-    int m_iTotalTimeTicks; // The total tick count of the playback
-    char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
-    CMOMRunEntityData m_RunData;
+    // CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };
 #ifdef CLIENT_DLL

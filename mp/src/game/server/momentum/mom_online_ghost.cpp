@@ -15,10 +15,8 @@
 LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
-    SendPropString(SENDINFO(m_pszGhostName)),
-    SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
-    SendPropInt(SENDINFO(m_nGhostButtons)),
-    SendPropBool(SENDINFO(m_bSpectating)),
+SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
+SendPropBool(SENDINFO(m_bSpectating)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
@@ -177,6 +175,11 @@ void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)
 void CMomentumOnlineGhostEntity::Precache(void)
 {
     BaseClass::Precache();
+}
+
+void CMomentumOnlineGhostEntity::SetGhostName(const char *pGhostName)
+{
+    Q_strncpy(m_szGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
 }
 
 void CMomentumOnlineGhostEntity::SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate /*= false*/)

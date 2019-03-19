@@ -286,8 +286,8 @@ void CWeaponBase::ItemPostFrame()
         {
             m_bDelayFire = false;
 
-            if (pPlayer->m_SrvData.m_iShotsFired > 15)
-                pPlayer->m_SrvData.m_iShotsFired = 15;
+            if (pPlayer->m_iShotsFired > 15)
+                pPlayer->m_iShotsFired = 15;
 
             m_flDecreaseShotsFired = gpGlobals->curtime + 0.4;
         }
@@ -297,14 +297,14 @@ void CWeaponBase::ItemPostFrame()
         // if it's a pistol then set the shots fired to 0 after the player releases a button
         if (IsPistol())
         {
-            pPlayer->m_SrvData.m_iShotsFired = 0;
+            pPlayer->m_iShotsFired = 0;
         }
         else
         {
-            if ((pPlayer->m_SrvData.m_iShotsFired > 0) && (m_flDecreaseShotsFired < gpGlobals->curtime))
+            if ((pPlayer->m_iShotsFired > 0) && (m_flDecreaseShotsFired < gpGlobals->curtime))
             {
                 m_flDecreaseShotsFired = gpGlobals->curtime + 0.0225;
-                --pPlayer->m_SrvData.m_iShotsFired;
+                --pPlayer->m_iShotsFired;
             }
         }
 
@@ -522,9 +522,9 @@ bool CWeaponBase::Deploy()
 
     if (pPlayer)
     {
-        pPlayer->m_SrvData.m_iShotsFired = 0;
-        pPlayer->m_SrvData.m_bResumeZoom = false;
-        pPlayer->m_SrvData.m_iLastZoom = 0;
+        pPlayer->m_iShotsFired = 0;
+        pPlayer->m_bResumeZoom = false;
+        pPlayer->m_iLastZoom = 0;
         pPlayer->SetFOV(pPlayer, 0);
     }
 #endif
@@ -656,7 +656,7 @@ void CWeaponBase::DrawCrosshair()
             iDistance *= 1.5f;
     }
 
-    if (pPlayer->m_SrvData.m_iShotsFired > m_iAmmoLastCheck)
+    if (pPlayer->m_iShotsFired > m_iAmmoLastCheck)
     {
         m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance);
     }
@@ -665,7 +665,7 @@ void CWeaponBase::DrawCrosshair()
         m_flCrosshairDistance -= 0.1f + m_flCrosshairDistance * 0.013;
     }
 
-    m_iAmmoLastCheck = pPlayer->m_SrvData.m_iShotsFired;
+    m_iAmmoLastCheck = pPlayer->m_iShotsFired;
 
     if (m_flCrosshairDistance < iDistance)
         m_flCrosshairDistance = iDistance;
@@ -921,7 +921,7 @@ bool CWeaponBase::Reload()
     if (!pPlayer)
         return false;
 
-    pPlayer->m_SrvData.m_iShotsFired = 0;
+    pPlayer->m_iShotsFired = 0;
 
     bool retval = BaseClass::Reload();
 
@@ -995,7 +995,7 @@ bool CWeaponBase::DefaultPistolReload()
     if (!DefaultReload(GetMomWpnData().iDefaultClip1, 0, ACT_VM_RELOAD))
         return false;
 
-    pPlayer->m_SrvData.m_iShotsFired = 0;
+    pPlayer->m_iShotsFired = 0;
 
 #ifdef CLIENT_DLL
     m_bInReloadAnimation = true;

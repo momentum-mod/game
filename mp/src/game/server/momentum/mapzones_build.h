@@ -1,6 +1,6 @@
 #pragma once
 
-class CBaseMomentumTrigger;
+class CBaseMomZoneTrigger;
 
 // These are used for convenience-sake, only allocating once.
 
@@ -52,7 +52,7 @@ public:
     virtual void OnFrame(CBasePlayer *pPlayer, const Vector &vecAim) {}
 
 
-    virtual bool LoadFromZone(const CBaseMomentumTrigger *pEnt) { return false; }
+    virtual bool LoadFromZone(const CBaseMomZoneTrigger *pEnt) { return false; }
     virtual bool Load(KeyValues *kv) { return false; }
     virtual bool Save(KeyValues *kv) { return false; }
 
@@ -67,7 +67,7 @@ public:
     // We've created the zone entity?
     virtual bool IsDone() const = 0;
 
-    virtual void FinishZone(CBaseMomentumTrigger *pEnt) {}
+    virtual void FinishZone(CBaseMomZoneTrigger *pEnt) {}
 
 
 
@@ -98,7 +98,7 @@ public:
     virtual void OnFrame(CBasePlayer *pPlayer, const Vector &vecAim) OVERRIDE;
 
 
-    virtual bool LoadFromZone(const CBaseMomentumTrigger *pEnt) OVERRIDE;
+    virtual bool LoadFromZone(const CBaseMomZoneTrigger *pEnt) OVERRIDE;
     virtual bool Load(KeyValues *kv) OVERRIDE;
     virtual bool Save(KeyValues *kv) OVERRIDE;
 
@@ -108,7 +108,7 @@ public:
     virtual bool IsReady() const OVERRIDE;
     virtual bool IsDone() const OVERRIDE;
 
-    virtual void FinishZone(CBaseMomentumTrigger *pEnt) OVERRIDE;
+    virtual void FinishZone(CBaseMomZoneTrigger *pEnt) OVERRIDE;
 
 
 
@@ -170,7 +170,7 @@ public:
     virtual void OnFrame(CBasePlayer *pPlayer, const Vector &vecAim) OVERRIDE;
 
 
-    virtual bool LoadFromZone(const CBaseMomentumTrigger *pEnt) OVERRIDE;
+    virtual bool LoadFromZone(const CBaseMomZoneTrigger *pEnt) OVERRIDE;
     virtual bool Load(KeyValues *kv) OVERRIDE;
     virtual bool Save(KeyValues *kv) OVERRIDE;
 
@@ -182,7 +182,7 @@ public:
     virtual bool IsReady() const OVERRIDE;
     virtual bool IsDone() const OVERRIDE;
 
-    virtual void FinishZone(CBaseMomentumTrigger *pEnt) OVERRIDE;
+    virtual void FinishZone(CBaseMomZoneTrigger *pEnt) OVERRIDE;
 
 
     void    SetBounds(const Vector &wmins, const Vector &wmaxs);
@@ -214,5 +214,5 @@ private:
     QAngle m_angRot;
 };
 
-CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt);
+CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomZoneTrigger *pEnt);
 CMomBaseZoneBuilder *CreateZoneBuilderFromKeyValues(KeyValues *kv);

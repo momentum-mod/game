@@ -6,7 +6,7 @@
 #include "mom_shareddefs.h"
 
 class CMomRunStats;
-class C_MOMRunEntityData;
+class C_MomRunEntityData;
 class C_MomentumPlayer;
 
 class CHudMapFinishedDialog : public CHudElement, public vgui::EditablePanel
@@ -83,7 +83,7 @@ private:
     vgui::Label *m_pRunUploadStatus;
 
     CMomRunStats* m_pRunStats;
-    C_MOMRunEntityData *m_pRunData;
+    C_MomRunEntityData *m_pRunData;
     C_MomentumPlayer *m_pPlayer;
 
     bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;

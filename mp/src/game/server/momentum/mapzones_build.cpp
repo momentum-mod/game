@@ -3,7 +3,6 @@
 #include "mom_triggers.h"
 #include "mapzones_build.h"
 
-
 #include "tier0/memdbgon.h"
 
 vertarray_t* vertarray_t::Create(int num)
@@ -293,7 +292,7 @@ void CMomPointZoneBuilder::ResetMe()
     m_vPoints.Purge();
 }
 
-void CMomPointZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
+void CMomPointZoneBuilder::FinishZone(CBaseMomZoneTrigger *pEnt)
 {
     m_bGetHeight = false;
 
@@ -415,7 +414,7 @@ void CMomPointZoneBuilder::OnFrame(CBasePlayer *pPlayer, const Vector &vecAim)
 }
 
 
-bool CMomPointZoneBuilder::LoadFromZone(const CBaseMomentumTrigger *pEnt)
+bool CMomPointZoneBuilder::LoadFromZone(const CBaseMomZoneTrigger *pEnt)
 {
     // No points to save!
     if (!pEnt->m_vecZonePoints.Count())
@@ -810,7 +809,7 @@ bool CMomBoxZoneBuilder::BuildZone(CBasePlayer *pPlayer, const Vector *vecAim)
     return true;
 }
 
-bool CMomBoxZoneBuilder::LoadFromZone(const CBaseMomentumTrigger *pEnt)
+bool CMomBoxZoneBuilder::LoadFromZone(const CBaseMomZoneTrigger *pEnt)
 {
     m_vecCenter = pEnt->GetAbsOrigin();
     m_angRot = pEnt->GetAbsAngles();
@@ -980,7 +979,7 @@ void CMomBoxZoneBuilder::Remove(CBasePlayer *pPlayer, const Vector &vecAim)
     m_vecEnd.z = m_vecStart.z;
 }
 
-void CMomBoxZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
+void CMomBoxZoneBuilder::FinishZone(CBaseMomZoneTrigger *pEnt)
 {
     pEnt->SetAbsOrigin(m_vecCenter);
     pEnt->SetAbsAngles(m_angRot);
@@ -1009,7 +1008,7 @@ void CMomBoxZoneBuilder::SetBounds(const Vector &center, const Vector &mins, con
     m_vecEnd = center + maxs;
 }
 
-CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomentumTrigger *pEnt)
+CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomZoneTrigger *pEnt)
 {
     if (pEnt->m_vecZonePoints.Count() > 0)
     {

@@ -350,6 +350,9 @@ $Project "Client (Momentum)"
             $File "momentum\worldlight.h"
             $File "momentum\worldlight.cpp"
             
+            
+            $File "$SRCDIR\game\shared\momentum\run\mom_run_entity.h"
+            $File "$SRCDIR\game\shared\momentum\run\mom_run_entity.cpp"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.cpp"
             

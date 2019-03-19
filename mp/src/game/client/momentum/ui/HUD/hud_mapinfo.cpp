@@ -41,7 +41,7 @@ class C_HudMapInfo : public CHudElement, public EditablePanel
     int m_iSpecEntIndex;
     C_MomentumPlayer *m_pPlayer;
 
-    C_MOMRunEntityData *m_pRunData;
+    CMomRunEntityData *m_pRunData;
 
     Label *m_pMainStatusLabel, *m_pMapNameLabel, *m_pMapAuthorLabel, *m_pMapDifficultyLabel;
 
@@ -104,12 +104,12 @@ void C_HudMapInfo::OnThink()
             if (pGhost)
             {
                 // m_pSpecTarget = pGhost;
-                m_pRunData = &pGhost->m_SrvData.m_RunData;
+                m_pRunData = pGhost->GetRunEntData();
             }
         }
         else
         {
-            m_pRunData = &m_pPlayer->m_SrvData.m_RunData;
+            m_pRunData = m_pPlayer->GetRunEntData();
         }
     }
 
@@ -121,13 +121,13 @@ void C_HudMapInfo::OnThink()
             {
                 m_pMainStatusLabel->SetText(m_pRunData->m_iBonusZone == 0 ? 
                                             m_wMainStart :
-                                            CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iBonusZone));
+                                            CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iBonusZone.Get()));
             }
             else if (m_iCurrentZone == 0) // End zone
             {
                 m_pMainStatusLabel->SetText(m_pRunData->m_iBonusZone == 0 ? 
                                             m_wMainEnd :
-                                            CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iBonusZone));
+                                            CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iBonusZone.Get()));
             }
             else if (m_pRunData->m_bMapFinished) // MOM_TODO does this even need to be here anymore? "Main End Zone" covers this
             {
@@ -144,7 +144,7 @@ void C_HudMapInfo::OnThink()
         {
             if (m_pRunData->m_iBonusZone > 0)
             {
-                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iBonusZone));
+                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iBonusZone.Get()));
             }
             else if (g_MOMEventListener->m_iMapZoneCount > 0)
             {
@@ -248,7 +248,7 @@ void C_HudMapInfo::FireGameEvent(IGameEvent* event)
     {
         if (m_pPlayer)
         {
-            m_pRunData = &m_pPlayer->m_SrvData.m_RunData;
+            m_pRunData = m_pPlayer->GetRunEntData();
             m_bInZone = m_pRunData->m_bIsInZone;
             m_iCurrentZone = m_pRunData->m_iCurrentZone;
         }

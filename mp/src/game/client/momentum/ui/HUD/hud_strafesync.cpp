@@ -5,10 +5,8 @@
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "momentum/util/mom_util.h"
-#include "vphysics_interface.h"
 #include <math.h>
 
 #include "tier0/memdbgon.h"
@@ -53,14 +51,14 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
             {
                 // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-                shouldDrawLocal = pGhost->m_SrvData.m_RunData.m_bTimerRunning && !pGhost->m_SrvData.m_RunData.m_bMapFinished;
+                shouldDrawLocal = pGhost->m_Data.m_bTimerRunning && !pGhost->m_Data.m_bMapFinished;
             }
             else
             {
-                shouldDrawLocal = !pPlayer->m_SrvData.m_RunData.m_bMapFinished &&
-                                  ((!pPlayer->m_SrvData.m_bHasPracticeMode &&
+                shouldDrawLocal = !pPlayer->m_Data.m_bMapFinished &&
+                                  ((!pPlayer->m_bHasPracticeMode &&
                                     strafesync_draw.GetInt() == 2) ||
-                                   pPlayer->m_SrvData.m_RunData.m_bTimerRunning);
+                                   pPlayer->m_Data.m_bTimerRunning);
             }
         }
         return strafesync_draw.GetInt() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -121,16 +119,16 @@ void CHudStrafeSyncDisplay::OnThink()
     if (pReplayEnt)
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pReplayEnt->m_Data.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pReplayEnt->m_Data.m_flStrafeSync2;
     }
     else
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pPlayer->m_Data.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pPlayer->m_Data.m_flStrafeSync2;
     }
 
     float clampedStrafeSync = clamp(m_localStrafeSync, 0, 100);
@@ -225,14 +223,14 @@ class CHudStrafeSyncBar : public CHudElement, public CHudFillableBar
             {
                 // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-                shouldDrawLocal = pGhost->m_SrvData.m_RunData.m_bTimerRunning && !pGhost->m_SrvData.m_RunData.m_bMapFinished;
+                shouldDrawLocal = pGhost->m_Data.m_bTimerRunning && !pGhost->m_Data.m_bMapFinished;
             }
             else
             {
-                shouldDrawLocal = !pPlayer->m_SrvData.m_RunData.m_bMapFinished &&
-                                  ((!pPlayer->m_SrvData.m_bHasPracticeMode &&
+                shouldDrawLocal = !pPlayer->m_Data.m_bMapFinished &&
+                                  ((!pPlayer->m_bHasPracticeMode &&
                                     strafesync_draw.GetInt() == 2) ||
-                                   pPlayer->m_SrvData.m_RunData.m_bTimerRunning);
+                                   pPlayer->m_Data.m_bTimerRunning);
             }
         }
         return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -288,16 +286,16 @@ void CHudStrafeSyncBar::OnThink()
     if (pReplayEnt)
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pReplayEnt->m_Data.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pReplayEnt->m_Data.m_flStrafeSync2;
     }
     else
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pPlayer->m_Data.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pPlayer->m_Data.m_flStrafeSync2;
     }
 
     switch (strafesync_colorize.GetInt())

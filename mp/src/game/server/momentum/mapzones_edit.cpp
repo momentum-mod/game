@@ -111,7 +111,7 @@ CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity in
 
             if (pEnt && g_MomZoneEdit.GetEntityZoneType(pEnt) != -1)
             {
-                auto pZone = static_cast<CBaseMomentumTrigger *>(pEnt);
+                auto pZone = static_cast<CBaseMomZoneTrigger *>(pEnt);
                 g_MomZoneEdit.SetBuilder(CreateZoneBuilderFromExisting(pZone));
                 UTIL_Remove(pEnt);
             }
@@ -507,7 +507,7 @@ void DrawReticle(const Vector &pos, float retsize)
     DebugDrawLine(p5, p6, 0, 0, 255, true, -1.0f);
 }
 
-CBaseMomentumTrigger *CMomZoneEdit::CreateZoneEntity(int type)
+CBaseMomZoneTrigger *CMomZoneEdit::CreateZoneEntity(int type)
 {
     char szClass[64];
     if (!ZoneTypeToClass(type, szClass, sizeof(szClass)))
@@ -516,7 +516,7 @@ CBaseMomentumTrigger *CMomZoneEdit::CreateZoneEntity(int type)
     }
 
     auto pEnt = CreateEntityByName(szClass);
-    auto pRet = dynamic_cast<CBaseMomentumTrigger *>(pEnt);
+    auto pRet = dynamic_cast<CBaseMomZoneTrigger *>(pEnt);
 
     // Not a valid momentum trigger, delete it.
     if (!pRet && pEnt)
@@ -525,13 +525,13 @@ CBaseMomentumTrigger *CMomZoneEdit::CreateZoneEntity(int type)
     return pRet;
 }
 
-void CMomZoneEdit::SetZoneProps(CBaseMomentumTrigger *pEnt)
+void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
 {
     switch (pEnt->GetZoneType())
     {
-    case MOMZONETYPE_START:
+    case ZONE_TYPE_START:
         {
-            auto *pStart = static_cast<CTriggerTimerStart *>(pEnt);
+            auto pStart = static_cast<CTriggerTimerStart *>(pEnt);
             // bhop speed limit
             if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
             {
@@ -543,20 +543,24 @@ void CMomZoneEdit::SetZoneProps(CBaseMomentumTrigger *pEnt)
                 pStart->SetIsLimitingSpeed(false);
             }
 
-            pStart->SetZoneNumber(mom_zone_bonus.GetInt());
+            pStart->SetZoneNumber(1);
+            // MOM_TODO pStart->SetTrackNumber()
         }
         break;
-    case MOMZONETYPE_STOP:
+    case ZONE_TYPE_STOP:
         {
-            static_cast<CTriggerTimerStop *>(pEnt)->SetZoneNumber(mom_zone_bonus.GetInt());
+            auto pStop = static_cast<CTriggerTimerStop *>(pEnt);
+            pStop->SetZoneNumber(0);
+            // MOM_TODO pStop->SetTrackNumber
         }
         break;
-    case MOMZONETYPE_STAGE:
+    case ZONE_TYPE_STAGE:
+        // MOM_TODO: case ZONE_TYPE_CHECKPOINT:
         {
             auto *pStage = static_cast<CTriggerStage *>(pEnt);
             if (mom_zone_stage_num.GetInt() > 0)
             {
-                pStage->SetStageNumber(mom_zone_stage_num.GetInt());
+                pStage->SetZoneNumber(mom_zone_stage_num.GetInt());
             }
             else
             {
@@ -567,16 +571,17 @@ void CMomZoneEdit::SetZoneProps(CBaseMomentumTrigger *pEnt)
                 {
                     CTriggerStage *pTempStage = static_cast<CTriggerStage *>(pTemp);
 
-                    if (pTempStage && pTempStage->GetStageNumber() > higheststage)
+                    if (pTempStage && pTempStage->GetZoneNumber() > higheststage)
                     {
-                        higheststage = pTempStage->GetStageNumber();
+                        higheststage = pTempStage->GetZoneNumber();
                     }
 
                     pTemp = gEntList.FindEntityByClassname(pTemp, "trigger_momentum_timer_stage");
                 }
 
-                pStage->SetStageNumber(higheststage + 1);
+                pStage->SetZoneNumber(higheststage + 1);
             }
+            // MOM_TODO ( pStage || pCheckpoint )->SetTrackNumber
         }
     default:
         break;
@@ -585,7 +590,7 @@ void CMomZoneEdit::SetZoneProps(CBaseMomentumTrigger *pEnt)
 
 int CMomZoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
 {
-    CBaseMomentumTrigger *pTrigger = dynamic_cast<CBaseMomentumTrigger*>(pEnt);
+    CBaseMomZoneTrigger *pTrigger = dynamic_cast<CBaseMomZoneTrigger*>(pEnt);
     if (pTrigger)
         return pTrigger->GetZoneType();
 
@@ -596,19 +601,19 @@ int CMomZoneEdit::ShortNameToZoneType(const char *in)
 {
     if (Q_stricmp(in, "start") == 0)
     {
-        return MOMZONETYPE_START;
+        return ZONE_TYPE_START;
     }
     else if (Q_stricmp(in, "end") == 0 || Q_stricmp(in, "stop") == 0)
     {
-        return MOMZONETYPE_STOP;
+        return ZONE_TYPE_STOP;
     }
     else if (Q_stricmp(in, "stage") == 0)
     {
-        return MOMZONETYPE_STAGE;
+        return ZONE_TYPE_STAGE;
     }
     else if (Q_stricmp(in, "cp") == 0 || Q_stricmp(in, "checkpoint") == 0)
     {
-        return MOMZONETYPE_CP;
+        return ZONE_TYPE_CHECKPOINT;
     }
 
     return -1;
@@ -648,11 +653,11 @@ static int GetZoneTypeToCreate()
     bool bAutoCreate = false;
     if (zonetype == -1 && Q_stricmp(mom_zone_type.GetString(), "auto") == 0)
     {
-        zonetype = MOMZONETYPE_START;
+        zonetype = ZONE_TYPE_START;
         bAutoCreate = true;
     }
 
-    if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
+    if (zonetype == ZONE_TYPE_START || zonetype == ZONE_TYPE_STOP)
     {
         // Count zones to make sure we don't create multiple instances.
         int startnum = 0;
@@ -698,7 +703,7 @@ static int GetZoneTypeToCreate()
         if (bAutoCreate)
         {
             // Switch between start and end.
-            zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
+            zonetype = (startnum <= endnum) ? ZONE_TYPE_START : ZONE_TYPE_STOP;
         }
         // else the zonetype can be STOP, allowing for multiple stop triggers to be created
     }

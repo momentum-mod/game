@@ -359,15 +359,15 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     float flKickUp;
     float flKickLateral;
 
-    if (m_SrvData.m_iShotsFired == 1) // This is the first round fired
+    if (m_iShotsFired == 1) // This is the first round fired
     {
         flKickUp = up_base;
         flKickLateral = lateral_base;
     }
     else
     {
-        flKickUp = up_base + m_SrvData.m_iShotsFired * up_modifier;
-        flKickLateral = lateral_base + m_SrvData.m_iShotsFired * lateral_modifier;
+        flKickUp = up_base + m_iShotsFired * up_modifier;
+        flKickLateral = lateral_base + m_iShotsFired * lateral_modifier;
     }
 
     QAngle angle = GetPunchAngle();
@@ -376,7 +376,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     if (angle.x < -1 * up_max)
         angle.x = -1 * up_max;
 
-    if (m_SrvData.m_iDirection == 1)
+    if (m_iDirection == 1)
     {
         angle.y += flKickLateral;
         if (angle.y > lateral_max)
@@ -390,7 +390,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     }
 
     if (!SharedRandomInt("KickBack", 0, direction_change))
-        m_SrvData.m_iDirection = 1 - m_SrvData.m_iDirection;
+        m_iDirection = 1 - m_iDirection;
 
     SetPunchAngle(angle);
 }

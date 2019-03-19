@@ -1,23 +1,18 @@
 #include "cbase.h"
 #include "c_mom_online_ghost.h"
 #include "steam/steam_api.h"
-#include "mom_player_shared.h"
 #include "GhostEntityPanel.h"
 
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumOnlineGhostEntity, DT_MOM_OnlineGhost, CMomentumOnlineGhostEntity)
-    RecvPropString(RECVINFO(m_pszGhostName)),
     RecvPropInt(RECVINFO(m_uiAccountID), SPROP_UNSIGNED),
-    RecvPropInt(RECVINFO(m_nGhostButtons)),
     RecvPropBool(RECVINFO(m_bSpectating))
 END_RECV_TABLE();
 
 C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false), m_bSpectated(false), m_pEntityPanel(nullptr)
 {
-    m_pszGhostName[0] = '\0';
     m_SteamID = 0;
-    m_nGhostButtons = 0;
 }
 
 C_MomentumOnlineGhostEntity::~C_MomentumOnlineGhostEntity()
