@@ -2,11 +2,13 @@
 
 #include "mom_shareddefs.h"
 
+class CBaseMomZoneTrigger;
 struct SavedLocation_t;
 class CBaseMomentumTrigger;
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
 class CTriggerStage;
+class CTriggerZone;
 class CTriggerTimerStop;
 class CMomentumPlayer;
 
@@ -36,8 +38,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void Stop(bool endTrigger = false, bool bStopRecording = true);
     // Resets timer as well as all player stats
     void Reset();
-    // Pauses the timer
-    void TogglePause();
     // Is the timer running?
     bool IsRunning() const { return m_bIsRunning; }
     // Set the running status of the timer
@@ -47,7 +47,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // Gets the current starting trigger
     CTriggerTimerStart *GetStartTrigger() const { return m_pStartTrigger; }
     CTriggerTimerStop *GetEndTrigger() const { return m_pEndTrigger; }
-    CTriggerStage *GetCurrentStage() const { return m_pCurrentZone; }
+    CTriggerZone *GetCurrentZone() const { return m_pCurrentZone; }
 
     // Sets the given trigger as the start trigger
     void SetStartTrigger(CTriggerTimerStart *pTrigger)
@@ -57,12 +57,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     }
 
     void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger = pTrigger; }
-    //MOM_TODO: Change this to be the CTriggerZone class
-    void SetCurrentZone(CTriggerStage *pTrigger)
-    {
-        m_pCurrentZone = pTrigger;
-    }
-
+    void SetCurrentZone(CTriggerZone *pTrigger) { m_pCurrentZone = pTrigger; }
     int GetCurrentZoneNumber() const;
 
     // Calculates the stage count
@@ -103,10 +98,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     SavedLocation_t *GetStartMark() const { return m_pStartZoneMark; }
     void ClearStartMark();
 
-    int GetBonus() { return m_iBonusZone; }
-
-    void SetPaused(bool bEnable = true);
-    bool GetPaused() { return m_bPaused; }
+    int GetBonus() const { return m_iBonusZone; }
 
     bool ShouldUseStartZoneOffset() const { return m_bShouldUseStartZoneOffset; }
     void SetShouldUseStartZoneOffset(bool use) { m_bShouldUseStartZoneOffset = use; }
@@ -115,8 +107,8 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
 
-    void OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum);
-    void OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum);
+    void OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum);
+    void OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum);
     void OnPlayerSpawn(CMomentumPlayer *pPlayer);
 
   private:
@@ -130,17 +122,16 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
   private:
     int m_iZoneCount;
-    int m_iStartTick, m_iEndTick, m_iPausedTick;
+    int m_iStartTick, m_iEndTick;
     int m_iLastZone;
     time_t m_iLastRunDate;
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
     bool m_bMapIsLinear;
-    bool m_bPaused;
 
     CTriggerTimerStart *m_pStartTrigger;
     CTriggerTimerStop *m_pEndTrigger;
-    CTriggerStage *m_pCurrentZone; // MOM_TODO: Change to be the generic Zone trigger
+    CTriggerZone *m_pCurrentZone;
 
     SavedLocation_t *m_pStartZoneMark;
 

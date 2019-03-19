@@ -4,9 +4,10 @@
 #include "mom_shareddefs.h"
 #include "GameEventListener.h"
 #include "mom_modulecomms.h"
+#include "run/mom_run_entity.h"
 
 class CTriggerOnehop;
-class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
+class CTriggerProgress;
 class CTriggerSlide;
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
@@ -16,7 +17,7 @@ class CTriggerSlide;
 
 class CMomentumGhostBaseEntity;
 
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -64,8 +65,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SetDisableBhop(bool bState);
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
-    bool DidPlayerBhop() const { return m_SrvData.m_bDidPlayerBhop; }
+    bool HasAutoBhop() const { return m_bAutoBhop; }
+    bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void UpdateRunStats();
     void UpdateRunSync();
@@ -80,6 +81,36 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     CNetworkHandle(CTriggerSlide, m_CurrentSlideTrigger);
 
     CUtlVector<CTriggerSlide*> m_vecSlideTriggers;
+
+    // Run entity stuff
+    virtual RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }
+    virtual void ToggleButtons(int iButtonFlags, bool bEnable) OVERRIDE;
+    virtual void ToggleBhop(bool bEnable) OVERRIDE;
+    virtual void OnZoneEnter(CTriggerZone* pTrigger, CBaseEntity *pEnt) OVERRIDE;
+    virtual void OnZoneExit(CTriggerZone* pTrigger, CBaseEntity *pEnt) OVERRIDE;
+    CNetworkVarEmbedded(CMomRunEntityData, m_Data);
+    virtual CMomRunEntityData *GetRunEntData() override { return &m_Data;}
+
+
+    CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
+    CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
+    CNetworkVar(int, m_iLandTick); // Tick at which the player landed on the ground
+    CNetworkVar(bool, m_bResumeZoom); // Used by various weapon code
+    CNetworkVar(int, m_iShotsFired); // Used in various weapon code
+    CNetworkVar(int, m_iDirection); // Used in kickback effects for player
+    CNetworkVar(int, m_iLastZoom); // Last FOV when zooming
+
+    bool m_bDidPlayerBhop; // MOM_TODO needs networking?
+    bool m_bShouldLimitPlayerSpeed;
+    bool m_bTimerStartOnJump; // The timer should start or not while jumping?
+    int m_iLimitSpeedType;    // Limit speed only when touching ground?
+    int m_iSuccessiveBhops;   // How many successive bhops this player has
+    CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
+
+    Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
+    QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
+    Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
+    float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
 
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
@@ -161,8 +192,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // Removes all onehops
     void RemoveAllOnehops();
 
-    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pCheckpoint) { m_pCurrentCheckpoint = pCheckpoint; }
-    CTriggerCheckpoint *GetCurrentCheckpointTrigger() const { return m_pCurrentCheckpoint; }
+    void SetCurrentProgressTrigger(CTriggerProgress *pCheckpoint) { m_CurrentProgress.Set(pCheckpoint); }
+    CTriggerProgress *GetCurrentProgressTrigger() const { return m_CurrentProgress.Get(); }
 
     void DoMuzzleFlash() OVERRIDE;
     void PostThink() OVERRIDE;
@@ -203,7 +234,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;
-    CTriggerCheckpoint *m_pCurrentCheckpoint;
+    CHandle<CTriggerProgress> m_CurrentProgress;
 
     // for detecting bhop
     friend class CMomentumGameMovement;

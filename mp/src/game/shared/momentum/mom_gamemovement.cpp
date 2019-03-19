@@ -950,8 +950,8 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // Prevent jump if needed
-    const bool bPlayerBhopBlocked = m_pPlayer->m_SrvData.m_bPreventPlayerBhop &&
-                                    gpGlobals->tickcount - m_pPlayer->m_SrvData.m_iLandTick < BHOP_DELAY_TIME;
+    const bool bPlayerBhopBlocked = m_pPlayer->m_bPreventPlayerBhop &&
+                                    gpGlobals->tickcount - m_pPlayer->m_iLandTick < BHOP_DELAY_TIME;
     if (bPlayerBhopBlocked)
     {
         m_pPlayer->m_afButtonDisabled |= IN_BULLRUSH; // For the HUD
@@ -973,7 +973,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     SetGroundEntity(nullptr);
 
     // Set the last jump time
-    m_pPlayer->m_SrvData.m_RunData.m_flLastJumpTime = gpGlobals->curtime;
+    m_pPlayer->m_Data.m_flLastJumpTime = gpGlobals->curtime;
 
     player->PlayStepSound(const_cast<Vector &>(mv->GetAbsOrigin()), player->m_pSurfaceData, 1.0, true);
 
@@ -1043,7 +1043,9 @@ bool CMomentumGameMovement::CheckJumpButton()
 #ifndef CLIENT_DLL
     m_pPlayer->SetIsInAirDueToJump(true);
     // Fire that we jumped
-    g_pModuleComms->FireEvent(new KeyValues("player_jump", "player_ent", m_pPlayer->entindex()), FIRE_LOCAL_ONLY);
+    KeyValues *pEvent = new KeyValues("player_jump");
+    pEvent->SetPtr("player", m_pPlayer);
+    g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
 #endif
 
     return true;
@@ -1386,12 +1388,12 @@ void CMomentumGameMovement::FullWalkMove()
 void CMomentumGameMovement::LimitStartZoneSpeed(void)
 {
 #ifndef CLIENT_DLL
-    if (m_pPlayer->m_SrvData.m_RunData.m_bIsInZone && m_pPlayer->m_SrvData.m_RunData.m_iCurrentZone == 1 &&
+    if (m_pPlayer->m_Data.m_bIsInZone && m_pPlayer->m_Data.m_iCurrentZone == 1 &&
         !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
     {
         // set bhop flag to true so we can't prespeed with practice mode
-        if (m_pPlayer->m_SrvData.m_bHasPracticeMode)
-            m_pPlayer->m_SrvData.m_bDidPlayerBhop = true;
+        if (m_pPlayer->m_bHasPracticeMode)
+            m_pPlayer->m_bDidPlayerBhop = true;
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
         CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
@@ -1404,12 +1406,12 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
 
             if (m_pPlayer->GetGroundEntity() != nullptr)
             {
-                if (m_pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_INAIR)
+                if (m_pPlayer->m_iLimitSpeedType == SPEED_LIMIT_INAIR)
                 {
                     bShouldLimitSpeed = false;
                 }
 
-                if (!m_pPlayer->m_bWasInAir && m_pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_ONLAND)
+                if (!m_pPlayer->m_bWasInAir && m_pPlayer->m_iLimitSpeedType == SPEED_LIMIT_ONLAND)
                 {
                     bShouldLimitSpeed = false;
                 }
@@ -1418,7 +1420,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
             }
             else
             {
-                if (m_pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_GROUND)
+                if (m_pPlayer->m_iLimitSpeedType == SPEED_LIMIT_GROUND)
                 {
                     bShouldLimitSpeed = false;
                 }
@@ -2063,8 +2065,10 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         m_pPlayer->SetIsInAirDueToJump(false);
 
         // Set the tick that we landed on something solid (can jump off of this)
-        m_pPlayer->m_SrvData.m_iLandTick = gpGlobals->tickcount;
-        g_pModuleComms->FireEvent(new KeyValues("player_land", "player_ent", m_pPlayer->entindex()), FIRE_LOCAL_ONLY);
+        m_pPlayer->m_iLandTick = gpGlobals->tickcount;
+        KeyValues *pEvent = new KeyValues("player_land");
+        pEvent->SetPtr("player", m_pPlayer);
+        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
 #endif
     }
 

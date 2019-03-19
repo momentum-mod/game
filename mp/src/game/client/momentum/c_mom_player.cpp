@@ -6,22 +6,31 @@
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
+RecvPropBool(RECVINFO(m_bHasPracticeMode)),
+RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
+RecvPropInt(RECVINFO(m_iLandTick)),
+RecvPropBool(RECVINFO(m_bResumeZoom)),
+RecvPropInt(RECVINFO(m_iShotsFired)),
+RecvPropInt(RECVINFO(m_iDirection)),
+RecvPropInt(RECVINFO(m_iLastZoom)),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
+RecvPropBool(RECVINFO(m_bAutoBhop)),
+RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
-DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
-DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
 C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
-    m_SrvData.m_RunData.m_bMapFinished = false;
-    m_SrvData.m_RunData.m_flLastJumpTime = 0.0f;
-    m_SrvData.m_bHasPracticeMode = false;
+    m_Data.m_bMapFinished = false;
+    m_Data.m_flLastJumpTime = 0.0f;
+    m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
     m_flStartSpeed = 0.0f;
     m_flEndSpeed = 0.0f;
@@ -29,6 +38,7 @@ C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_
     m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
 
+    m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
 }
 

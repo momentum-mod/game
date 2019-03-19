@@ -28,10 +28,7 @@ public:
         m_uiAccountID = m_GhostSteamID.ConvertToUint64();
     }
     CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
-    void SetGhostName(const char* pGhostName)
-    {
-        Q_strncpy(m_pszGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
-    }
+    void SetGhostName(const char *pGhostName);
 
     void SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate = false);
     LobbyGhostAppearance_t GetLobbyGhostAppearance() const { return m_CurrentAppearance; }
@@ -45,9 +42,7 @@ public:
 
     void UpdatePlayerSpectate();
 
-    CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(uint32, m_uiAccountID);
-    CNetworkString(m_pszGhostName, MAX_PLAYER_NAME_LENGTH);
     CNetworkVar(bool, m_bSpectating);
 
     QAngle m_vecLookAngles; // Used for storage reasons

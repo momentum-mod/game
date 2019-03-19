@@ -5,9 +5,9 @@
 #include "util/mom_util.h"
 
 #include "mom_shareddefs.h"
+#include "dt_utlvector_recv.h"
 
 #include "tier0/memdbgon.h"
-#include "dt_utlvector_recv.h"
 
 static MAKE_TOGGLE_CONVAR(mom_startzone_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable drawing an outline for start zone.");
 
@@ -64,17 +64,19 @@ bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity
     return false;
 }
 
-IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseMomentumTrigger, CBaseMomentumTrigger)
+IMPLEMENT_CLIENTCLASS_DT(C_BaseMomZoneTrigger, DT_BaseMomZoneTrigger, CBaseMomZoneTrigger)
+RecvPropInt(RECVINFO(m_iTrackNumber)),
 RecvPropUtlVector(RECVINFO_UTLVECTOR(m_vecZonePoints), 32, RecvPropVector(NULL, 0, sizeof(Vector))),
 RecvPropFloat(RECVINFO(m_flZoneHeight)),
 END_RECV_TABLE();
 
-C_BaseMomentumTrigger::C_BaseMomentumTrigger()
+C_BaseMomZoneTrigger::C_BaseMomZoneTrigger()
 {
     m_flZoneHeight = 0.0f;
+    m_iTrackNumber = -1; // TRACK_ALL
 }
 
-void C_BaseMomentumTrigger::DrawOutlineModel(const Color& outlineColor)
+void C_BaseMomZoneTrigger::DrawOutlineModel(const Color& outlineColor)
 {
     const int iNum = m_vecZonePoints.Count();
 

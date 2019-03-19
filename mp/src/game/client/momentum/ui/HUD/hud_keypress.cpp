@@ -96,7 +96,7 @@ CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
 bool CHudKeyPressDisplay::ShouldDraw()
 {
     // don't show during map finished dialog
-    return showkeys.GetBool() && m_pPlayer && !m_pPlayer->m_SrvData.m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
+    return showkeys.GetBool() && m_pPlayer && !m_pPlayer->m_Data.m_bMapFinished && CHudElement::ShouldDraw();
 }
 
 void CHudKeyPressDisplay::Init()
@@ -251,9 +251,9 @@ void CHudKeyPressDisplay::OnThink()
         {
             m_bShouldDrawCounts = false; // Not worth it
             m_nDisabledButtons = pReplayEnt->m_iDisabledButtons;
-            m_nButtons = pReplayEnt->m_SrvData.m_nReplayButtons;
-            m_nStrafes = pReplayEnt->m_SrvData.m_iTotalStrafes;
-            m_nJumps = pReplayEnt->m_SrvData.m_iTotalJumps;
+            m_nButtons = pReplayEnt->m_nGhostButtons;
+            m_nStrafes = pReplayEnt->m_SrvData.m_RunStatsData.m_iZoneStrafes[0];
+            m_nJumps = pReplayEnt->m_SrvData.m_RunStatsData.m_iZoneJumps[0];
         }
         else if (pOnlineEnt)
         {
@@ -268,7 +268,7 @@ void CHudKeyPressDisplay::OnThink()
             if (g_MOMEventListener)
             {
                 // we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = m_pPlayer->m_SrvData.m_RunData.m_bTimerRunning;
+                m_bShouldDrawCounts = m_pPlayer->m_Data.m_bTimerRunning;
                 if (m_bShouldDrawCounts)
                 {
                     CMomRunStats *stats = &m_pPlayer->m_RunStats;

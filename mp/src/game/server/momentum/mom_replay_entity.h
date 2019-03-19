@@ -32,8 +32,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     bool IsReplayGhost() const OVERRIDE { return true; }
 
     void SetRunStats(CMomRunStats *stats) { m_SrvData.m_RunStatsData = *stats->m_pData; }
-    inline void SetTickRate(float rate) { m_SrvData.m_flTickRate = rate; }
-    inline void SetRunFlags(uint32 flags) { m_SrvData.m_RunData.m_iRunFlags = flags; }
+    inline void SetTickRate(float rate) { m_Data.m_flTickRate = rate; }
+    inline void SetRunFlags(uint32 flags) { m_Data.m_iRunFlags = flags; }
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
     CReplayFrame* GetCurrentStep();
@@ -45,6 +45,15 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
+
+    RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_REPLAY; }
+    virtual void OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt) OVERRIDE;
+    virtual void OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt) OVERRIDE;
+    // Ghost-only
+    CNetworkVar(bool, m_bIsPaused); // Is the replay paused?
+    CNetworkVar(int, m_iCurrentTick); // Current tick of the replay
+    CNetworkVar(int, m_iStartTickD); // The tick difference between timer and record
+    CNetworkVar(int, m_iTotalTicks); // Total ticks for the replay (run time + start + end)
 
     StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
