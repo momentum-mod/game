@@ -3,6 +3,11 @@
 #include <momentum/util/serialization.h>
 #include "utlbuffer.h"
 
+
+// HACK: To keep compatibility, store teleport flag in the buttons
+// Remember to update me if more button flags are added!!!
+#define IN_REPLAY_TELEPORTED            (1 << 27)
+
 // A single frame of the replay.
 class CReplayFrame : public ISerializable
 {
@@ -27,9 +32,11 @@ class CReplayFrame : public ISerializable
         m_iPlayerButtons = reader.GetInt();
     }
 
-    CReplayFrame(const QAngle &eye, const Vector &origin, const Vector &viewoffset, int buttons)
+    CReplayFrame(const QAngle &eye, const Vector &origin, const Vector &viewoffset, int buttons, bool teleported)
         : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_fPlayerViewOffset(viewoffset.z), m_iPlayerButtons(buttons)
     {
+        if ( teleported )
+            m_iPlayerButtons |= IN_REPLAY_TELEPORTED;
     }
 
   public:
@@ -53,6 +60,7 @@ class CReplayFrame : public ISerializable
     inline Vector PlayerOrigin() const { return m_vPlayerOrigin; }
     inline float PlayerViewOffset() const { return m_fPlayerViewOffset; }
     inline int PlayerButtons() const { return m_iPlayerButtons; }
+    inline bool Teleported() const { return (m_iPlayerButtons & IN_REPLAY_TELEPORTED) ? true : false; }
 
   private:
     QAngle m_angEyeAngles;

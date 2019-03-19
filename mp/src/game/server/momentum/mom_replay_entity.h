@@ -38,6 +38,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
+    CReplayFrame *GetPreviousStep();
 
     bool IsReplayEnt() { return true; }
     void (*StdDataToReplay)(StdReplayDataFromServer *from);
