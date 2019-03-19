@@ -109,11 +109,11 @@ void CWeaponBaseGun::ProcessAnimationEvents()
 
 void CWeaponBaseGun::PrimaryAttack()
 {
-    // Derived classes should implement this and call CSBaseGunFire.
+    // Derived classes should implement this and call BaseGunFire
     Assert(false);
 }
 
-bool CWeaponBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode)
+bool CWeaponBaseGun::BaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode)
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
