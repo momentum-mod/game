@@ -77,8 +77,8 @@ void CGhostEntityPanel::OnThink()
         {
             char check[MAX_PLAYER_NAME_LENGTH];
             m_pNameLabel->GetText(check, MAX_PLAYER_NAME_LENGTH);
-            if (!FStrEq(check, m_pEntity->m_pszGhostName))
-                m_pNameLabel->SetText(m_pEntity->m_pszGhostName);
+            if (!FStrEq(check, m_pEntity->m_szGhostName.Get()))
+                m_pNameLabel->SetText(m_pEntity->m_szGhostName.Get());
         }
         m_pNameLabel->SetVisible(m_bPaintName);
     }
@@ -168,7 +168,7 @@ void CGhostEntityPanel::ComputeAndSetSize()
     {
         HFont font = m_pNameLabel->GetFont();
         wchar_t playerName[MAX_PLAYER_NAME_LENGTH];
-        ANSI_TO_UNICODE(m_pEntity->m_pszGhostName, playerName);
+        ANSI_TO_UNICODE(m_pEntity->m_szGhostName.Get(), playerName);
         int nameWide = UTIL_ComputeStringWidth(font, playerName) + 6;
         int fontHeight = surface()->GetFontTall(font);
 

@@ -9,8 +9,11 @@
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumGhostBaseEntity, DT_MOM_GHOST_BASE)
+SendPropInt(SENDINFO(m_nGhostButtons)),
 SendPropInt(SENDINFO(m_iDisabledButtons)),
-SendPropBool(SENDINFO(m_bBhopDisabled))
+SendPropBool(SENDINFO(m_bBhopDisabled)),
+SendPropString(SENDINFO(m_szGhostName)),
+SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
@@ -23,13 +26,15 @@ void RefreshGhostData(IConVar *var, const char *pValue, float oldValue)
 
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, 
-    "Toggle overriding other player's ghost alpha values to the one defined in \"mom_ghost_color_alpha_override\".\n", RefreshGhostData);
+    "Toggle overriding other player's ghost alpha values to the one defined in \"mom_ghost_online_color_alpha_override\".\n", RefreshGhostData);
 static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 
 CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
 {
+    m_nGhostButtons = 0;
     m_iDisabledButtons = 0;
+    m_szGhostName.GetForModify()[0] = '\0';
 }
 
 void CMomentumGhostBaseEntity::Precache()
@@ -59,21 +64,6 @@ void CMomentumGhostBaseEntity::Spawn()
     UnHideGhost();
 }
 
-void CMomentumGhostBaseEntity::DisableButtons(int flags)
-{
-    m_iDisabledButtons |= flags;
-}
-
-void CMomentumGhostBaseEntity::EnableButtons(int flags)
-{
-    m_iDisabledButtons &= ~flags;
-}
-
-void CMomentumGhostBaseEntity::SetDisableBhop(bool bState)
-{
-    m_bBhopDisabled = bState;
-}
-
 void CMomentumGhostBaseEntity::HideGhost()
 {
     // don't render the model when we're in first person mode
@@ -91,6 +81,19 @@ void CMomentumGhostBaseEntity::UnHideGhost()
         SetRenderMode(kRenderTransColor);
         RemoveEffects(EF_NOSHADOW);
     }
+}
+
+void CMomentumGhostBaseEntity::ToggleButtons(int iButtonFlags, bool bEnable)
+{
+    if (bEnable)
+        m_iDisabledButtons |= iButtonFlags;
+    else
+        m_iDisabledButtons &= ~iButtonFlags;
+}
+
+void CMomentumGhostBaseEntity::ToggleBhop(bool bEnable)
+{
+    m_bBhopDisabled = !bEnable;
 }
 
 void CMomentumGhostBaseEntity::Think()

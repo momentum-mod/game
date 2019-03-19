@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mom_ghostdefs.h"
+#include "run/mom_run_entity.h"
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
 
@@ -25,7 +26,7 @@ enum ghostModelBodyGroup
     BODY_CYLINDER,
     LAST
 };
-class CMomentumGhostBaseEntity : public CBaseAnimating
+class CMomentumGhostBaseEntity : public CBaseAnimating, public CMomRunEntity
 {
     DECLARE_CLASS(CMomentumGhostBaseEntity, CBaseAnimating);
     DECLARE_DATADESC();
@@ -57,14 +58,20 @@ public:
     void RemoveSpectator();
     CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
 
+    CNetworkString(m_szGhostName, MAX_PLAYER_NAME_LENGTH);
+    CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(int, m_iDisabledButtons);
     CNetworkVar(bool, m_bBhopDisabled);
-    void DisableButtons(int flags);
-    void EnableButtons(int flags);
-    void SetDisableBhop(bool bState);
 
     void HideGhost();
     void UnHideGhost();
+
+    // Run entity stuff
+    virtual RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_GHOST; }
+    virtual void ToggleButtons(int iButtonFlags, bool bEnable) OVERRIDE;
+    virtual void ToggleBhop(bool bEnable) OVERRIDE;
+    CNetworkVarEmbedded(CMomRunEntityData, m_Data);
+    virtual CMomRunEntityData *GetRunEntData() override { return &m_Data; }
 
 protected:
     virtual void Think(void);

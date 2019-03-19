@@ -285,7 +285,7 @@ void CMOMSpectatorGUI::Update()
         {
             // Current player name
             wchar_t wPlayerName[BUFSIZELOCL];
-            ANSI_TO_UNICODE(isReplayGhost ? pReplayEnt->m_SrvData.m_pszPlayerName : pOnlineGhostEnt->m_pszGhostName, wPlayerName);
+            ANSI_TO_UNICODE(isReplayGhost ? pReplayEnt->m_szGhostName : pOnlineGhostEnt->m_szGhostName, wPlayerName);
             m_pPlayerLabel->SetText(CConstructLocalizedString(m_pwReplayPlayer, wPlayerName));
 
             if (isReplayGhost)
@@ -293,7 +293,7 @@ void CMOMSpectatorGUI::Update()
                 // Run time label
                 char tempRunTime[BUFSIZETIME];
                 wchar_t wTime[BUFSIZETIME];
-                g_pMomentumUtil->FormatTime(pReplayEnt->m_SrvData.m_RunData.m_flRunTime, tempRunTime);
+                g_pMomentumUtil->FormatTime(pReplayEnt->m_Data.m_flRunTime, tempRunTime);
                 ANSI_TO_UNICODE(tempRunTime, wTime);
                 m_pTimeLabel->SetText(CConstructLocalizedString(m_pwRunTime, wTime));
 

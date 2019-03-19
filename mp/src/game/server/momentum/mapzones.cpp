@@ -7,6 +7,10 @@
 
 #include "tier0/memdbgon.h"
 
+static void SaveZonFile(const char *pMapName);
+static void CC_Mom_GenerateZoneFile() { SaveZonFile(gpGlobals->mapname.ToCStr()); }
+static ConCommand mom_generate_zone_file("mom_zone_generate", CC_Mom_GenerateZoneFile, "Generates a zone file.");
+
 class CMapzone
 {
   public:
@@ -22,7 +26,7 @@ class CMapzone
     // KeyValues containing all the values describing the zone
     KeyValues *m_pZoneValues;
 
-    CBaseMomentumTrigger *m_pTrigger;
+    CBaseMomZoneTrigger *m_pTrigger;
 };
 
 CMapzone::CMapzone(const int type, const KeyValues *values)
@@ -41,17 +45,17 @@ void CMapzone::SpawnZone()
 {
     char classname[64];
     ZoneTypeToClass(m_iType, classname, sizeof(classname));
-    m_pTrigger = dynamic_cast<CBaseMomentumTrigger *>(CreateEntityByName(classname));
+    m_pTrigger = dynamic_cast<CBaseMomZoneTrigger *>(CreateEntityByName(classname));
     AssertMsg(m_pTrigger, "Unhandled zone type");
 
     if (m_pTrigger)
     {
-        if (m_iType == MOMZONETYPE_START)
+        if (m_iType == ZONE_TYPE_START)
         {
             g_pMomentumTimer->SetStartTrigger(static_cast<CTriggerTimerStart *>(m_pTrigger));
         }
 
-        bool success = m_pTrigger->LoadFromKeyValues(m_pZoneValues);
+        const bool success = m_pTrigger->LoadFromKeyValues(m_pZoneValues);
         if (!success)
         {
             Warning("Failed to load zone of type '%s' (Invalid zone data)", classname);
@@ -77,15 +81,15 @@ static void SaveZonFile(const char *szMapName)
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_*");
     while (pEnt)
     {
-        CBaseMomentumTrigger *pTrigger = dynamic_cast<CBaseMomentumTrigger *>(pEnt);
+        CBaseMomZoneTrigger *pTrigger = dynamic_cast<CBaseMomZoneTrigger*>(pEnt);
         if (!pTrigger)
         {
             AssertMsg(false, "Entity with classname trigger_momentum_* was not a momentum trigger");
             continue;
         }
 
-        KeyValues *pSubKey = pTrigger->ToKeyValues();
-        if (pSubKey)
+        KeyValues *pSubKey = zoneKV->CreateNewKey();
+        if (pTrigger->ToKeyValues(pSubKey))
         {
             CMomBaseZoneBuilder *pBuilder = CreateZoneBuilderFromExisting(pTrigger);
 
@@ -95,8 +99,11 @@ static void SaveZonFile(const char *szMapName)
             }
 
             delete pBuilder;
-
-            zoneKV->AddSubKey(pSubKey);
+        }
+        else
+        {
+            zoneKV->RemoveSubKey(pSubKey);
+            pSubKey->deleteThis();
         }
 
         pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_*");
@@ -117,10 +124,6 @@ CMapzoneData::CMapzoneData(const char *szMapName)
         DevLog("No existing .zon file found!\n");
     }
 }
-
-static void CC_Mom_GenerateZoneFile() { SaveZonFile(gpGlobals->mapname.ToCStr()); }
-
-static ConCommand mom_generate_zone_file("mom_zone_generate", CC_Mom_GenerateZoneFile, "Generates a zone file.");
 
 CMapzoneData::~CMapzoneData()
 {
@@ -153,43 +156,24 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
         for (KeyValues *cp = zoneKV->GetFirstSubKey(); cp; cp = cp->GetNextKey())
         {
             // Load position information (will default to 0 if the keys don't exist)
-            // Do specific things for different types of checkpoints
-            // 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport, 6 = Multihop, 7
-            // = stage
-            int zoneType = MOMZONETYPE_INVALID;
+            int zoneType = ZONE_TYPE_INVALID;
 
             const char *name = cp->GetName();
             if (FStrEq(name, "start"))
             {
-                zoneType = MOMZONETYPE_START;
+                zoneType = ZONE_TYPE_START;
             }
             else if (FStrEq(name, "checkpoint"))
             {
-                zoneType = MOMZONETYPE_CP;
+                zoneType = ZONE_TYPE_CHECKPOINT;
             }
             else if (FStrEq(name, "end"))
             {
-                zoneType = MOMZONETYPE_STOP;
-            }
-            else if (FStrEq(name, "onehop"))
-            {
-                zoneType = MOMZONETYPE_ONEHOP;
-            }
-            else if (FStrEq(name, "resetonehop"))
-            {
-                zoneType = MOMZONETYPE_RESETONEHOP;
-            }
-            else if (FStrEq(name, "checkpoint_teleport"))
-            {
-                zoneType = MOMZONETYPE_CPTELE;
-            }
-            else if (FStrEq(name, "multihop"))
-            {
-                zoneType = MOMZONETYPE_MULTIHOP;
+                zoneType = ZONE_TYPE_STOP;
             }
             else if (FStrEq(name, "stage"))
             {
-                zoneType = MOMZONETYPE_STAGE;
+                zoneType = ZONE_TYPE_STAGE;
             }
             else
             {
@@ -211,31 +195,19 @@ bool ZoneTypeToClass(int type, char *dest, int maxlen)
 {
     switch (type)
     {
-    case MOMZONETYPE_START:
+    case ZONE_TYPE_START:
         Q_strncpy(dest, "trigger_momentum_timer_start", maxlen);
         return true;
-    case MOMZONETYPE_CP:
+    case ZONE_TYPE_CHECKPOINT:
         Q_strncpy(dest, "trigger_momentum_timer_checkpoint", maxlen);
         return true;
-    case MOMZONETYPE_STOP:
+    case ZONE_TYPE_STOP:
         Q_strncpy(dest, "trigger_momentum_timer_stop", maxlen);
         return true;
-    case MOMZONETYPE_ONEHOP:
-        Q_strncpy(dest, "trigger_momentum_onehop", maxlen);
-        return true;
-    case MOMZONETYPE_RESETONEHOP:
-        Q_strncpy(dest, "trigger_momentum_timer_resetonehop", maxlen);
-        return true;
-    case MOMZONETYPE_CPTELE:
-        Q_strncpy(dest, "trigger_momentum_teleport_checkpoint", maxlen);
-        return true;
-    case MOMZONETYPE_MULTIHOP:
-        Q_strncpy(dest, "trigger_momentum_multihop", maxlen);
-        return true;
-    case MOMZONETYPE_STAGE:
+    case ZONE_TYPE_STAGE:
         Q_strncpy(dest, "trigger_momentum_timer_stage", maxlen);
         return true;
+    default:
+        return false;
     }
-
-    return false;
 }

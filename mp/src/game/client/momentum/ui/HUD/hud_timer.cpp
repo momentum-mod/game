@@ -42,12 +42,14 @@ class CHudTimer : public CHudElement, public EditablePanel
     void OnSavelocUpdateEvent(KeyValues *pKv);
 
   private:
+    void SetToNoTimer();
+
     int m_iZoneCurrent;
     int m_iTotalTicks, m_iOldTickCount;
     bool m_bIsReplay;
     int *m_pCurrentGhostTicks;
     int m_iCurrentSpecTargetEntIndx;
-    C_MomentumGhostBaseEntity *m_pSpecTarget;
+    C_MomentumReplayGhostEntity *m_pSpecTarget;
 
     Label *m_pMainStatusLabel, *m_pInfoLabel, *m_pSplitLabel, *m_pComparisonLabel;
 
@@ -62,7 +64,7 @@ class CHudTimer : public CHudElement, public EditablePanel
     bool m_bWasUsingSavelocMenu;
     bool m_bInPracticeMode;
     CMomRunStats *m_pRunStats;
-    C_MOMRunEntityData *m_pRunData;
+    CMomRunEntityData *m_pRunData;
 };
 
 DECLARE_HUDELEMENT(CHudTimer);
@@ -129,10 +131,7 @@ void CHudTimer::Reset()
 
     if (!(m_pRunData && m_pRunData->m_bTimerRunning))
     {
-        m_pMainStatusLabel->SetText(m_wNoTimer);
-        m_pInfoLabel->SetText("");
-        m_pSplitLabel->SetText("");
-        m_pComparisonLabel->SetText("");
+        SetToNoTimer();
     }
 }
 
@@ -146,35 +145,32 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
         if (entIndx == engine->GetLocalPlayer() || entIndx == m_iCurrentSpecTargetEntIndx)
         {
             const int zoneNum = event->GetInt("num");
-            if (m_iZoneCurrent != zoneNum)
+            const bool bChanged = m_iZoneCurrent != zoneNum;
+            m_iZoneCurrent = zoneNum;
+
+            if (zoneNum == 1) // Start trigger
+                SetToNoTimer();
+
+            if (m_pRunData && m_pRunData->m_bTimerRunning && bChanged && m_iZoneCurrent > 1)
             {
-                m_iZoneCurrent = zoneNum;
-                if (m_pRunData && m_pRunData->m_bTimerRunning && m_iZoneCurrent > 1)
+                // Set the info label
+                m_pInfoLabel->SetText(CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpointNum : m_wStageNum, m_iZoneCurrent - 1));
+
+                ConVarRef timeType("mom_comparisons_time_type");
+                // This void works even if there is no comparison loaded
+                Color compareColor = GetFgColor();
+                char actualANSI[BUFSIZELOCL], comparisonANSI[BUFSIZELOCL];
+                g_pMOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_pRunStats,
+                                                     m_iZoneCurrent - 1, actualANSI, comparisonANSI, &compareColor);
+
+                // Set our actual time
+                m_pSplitLabel->SetText(actualANSI);
+
+                // Set the comparison label
+                if (g_pMOMRunCompare->LoadedComparison())
                 {
-                    // Set the info label
-                    m_pInfoLabel->SetText(CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpointNum : m_wStageNum, m_iZoneCurrent - 1));
-
-                    ConVarRef timeType("mom_comparisons_time_type");
-                    // This void works even if there is no comparison loaded
-                    Color compareColor = GetFgColor();
-                    char actualANSI[BUFSIZELOCL], comparisonANSI[BUFSIZELOCL];
-                    g_pMOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_pRunStats,
-                                                         m_iZoneCurrent - 1, actualANSI, comparisonANSI, &compareColor);
-
-                    // Set our actual time
-                    m_pSplitLabel->SetText(actualANSI);
-
-                    // Set the comparison label
-                    if (g_pMOMRunCompare->LoadedComparison())
-                    {
-                        m_pComparisonLabel->SetFgColor(compareColor);
-                        m_pComparisonLabel->SetText(comparisonANSI);
-                    }
-                }
-                else
-                {
-                    m_pSplitLabel->SetText("");
-                    m_pComparisonLabel->SetText("");
+                    m_pComparisonLabel->SetFgColor(compareColor);
+                    m_pComparisonLabel->SetText(comparisonANSI);
                 }
             }
         }
@@ -185,7 +181,7 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
         if (m_bInPracticeMode)
             m_pMainStatusLabel->SetText(m_wPracticeMode);
         else if (!m_pRunData->m_bTimerRunning)
-            m_pMainStatusLabel->SetText(m_wNoTimer);
+            SetToNoTimer();
     }
     else if (FStrEq(pName, "spec_target_updated"))
     {
@@ -205,10 +201,10 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
     else if (FStrEq(pName, "spec_stop") || FStrEq(pName, "player_spawn"))
     {
         C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        m_pRunData = &pLocal->m_SrvData.m_RunData;
+        m_pRunData = pLocal->GetRunEntData();
         m_pRunStats = &pLocal->m_RunStats;
         if (!m_pRunData->m_bTimerRunning)
-            m_pMainStatusLabel->SetText(m_wNoTimer);
+            SetToNoTimer();
     }
     else if (FStrEq(pName, "mapfinished_panel_closed"))
     {
@@ -267,10 +263,10 @@ void CHudTimer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
 float CHudTimer::GetCurrentTime()
 {
-    if (m_bIsReplay)
+    if (m_bIsReplay && m_pSpecTarget)
     {
         if (m_pRunData->m_bTimerRunning && m_pCurrentGhostTicks)
-            m_iTotalTicks = (*m_pCurrentGhostTicks) - m_pRunData->m_iStartTickD;
+            m_iTotalTicks = m_pSpecTarget->m_iCurrentTick - m_pSpecTarget->m_iStartTickD;
         else
             m_iTotalTicks = m_pRunData->m_iRunTimeTicks;
     }
@@ -307,6 +303,14 @@ void CHudTimer::OnSavelocUpdateEvent(KeyValues* pKv)
         m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, current, count));
 }
 
+void CHudTimer::SetToNoTimer()
+{
+    m_pMainStatusLabel->SetText(m_wNoTimer);
+    m_pInfoLabel->SetText("");
+    m_pSplitLabel->SetText("");
+    m_pComparisonLabel->SetText("");
+}
+
 void CHudTimer::OnThink()
 {
     if (m_iCurrentSpecTargetEntIndx != -1 && !m_pSpecTarget)
@@ -318,8 +322,7 @@ void CHudTimer::OnThink()
             m_pSpecTarget = pGhost;
             m_bIsReplay = true;
             m_pRunStats = &pGhost->m_RunStats;
-            m_pRunData = &pGhost->m_SrvData.m_RunData;
-            m_pCurrentGhostTicks = &pGhost->m_SrvData.m_iCurrentTick;
+            m_pRunData = pGhost->GetRunEntData();
         }
     }
 

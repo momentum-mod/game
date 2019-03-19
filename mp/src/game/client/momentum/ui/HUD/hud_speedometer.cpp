@@ -160,7 +160,7 @@ void CHudSpeedMeter::OnThink()
     {
         //This will be null if the player is not watching a replay first person
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        C_MOMRunEntityData *pData = pGhost ? &pGhost->m_SrvData.m_RunData : &pPlayer->m_SrvData.m_RunData;
+        CMomRunEntityData *pData = pGhost ? pGhost->GetRunEntData() : pPlayer->GetRunEntData();
         //Note: Velocity is also set to the player when watching first person
         velocity = pPlayer->GetAbsVelocity();
 

@@ -1,6 +1,6 @@
 #pragma once
 
-class CBaseMomentumTrigger;
+class CBaseMomZoneTrigger;
 class CMomentumPlayer;
 class CMomBaseZoneBuilder;
 
@@ -27,8 +27,8 @@ class CMomZoneEdit : public CAutoGameSystemPerFrame
     void DecreaseZoom(float dist) { m_flReticleDist = fmaxf(m_flReticleDist - dist, 16.0f); }
 
     int GetEntityZoneType(CBaseEntity *pEnt);
-    CBaseMomentumTrigger *CreateZoneEntity(int type);
-    void SetZoneProps(CBaseMomentumTrigger *pEnt);
+    CBaseMomZoneTrigger *CreateZoneEntity(int type);
+    void SetZoneProps(CBaseMomZoneTrigger *pEnt);
     int ShortNameToZoneType(const char *in);
 
     CMomBaseZoneBuilder *GetBuilder();

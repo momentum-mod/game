@@ -11,6 +11,7 @@
 #include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
+#include "mom_triggers.h"
 
 #undef CreateEvent
 
@@ -20,6 +21,10 @@ static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0", FCVAR_CLIE
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
+SendPropBool(SENDINFO(m_bIsPaused)),
+SendPropInt(SENDINFO(m_iCurrentTick)),
+SendPropInt(SENDINFO(m_iStartTickD), -1, SPROP_UNSIGNED),
+SendPropInt(SENDINFO(m_iTotalTicks), -1, SPROP_UNSIGNED),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
@@ -33,8 +38,6 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     StdDataToReplay = (DataToReplayFn)(GetProcAddress(GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
 
     // Set networked vars here
-    m_SrvData.m_nReplayButtons = 0;
-    m_SrvData.m_iTotalStrafes = 0;
     m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pCurrentSpecPlayer = nullptr;
@@ -51,7 +54,7 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
     {
         if (pEvent->GetBool("restart"))
         {
-            m_SrvData.m_RunData.m_bMapFinished = false;
+            m_Data.m_bMapFinished = false;
         }
         else
             EndRun();
@@ -81,20 +84,18 @@ void CMomentumReplayGhostEntity::Spawn()
     }
 
     if (m_pPlaybackReplay)
-        Q_strcpy(m_SrvData.m_pszPlayerName, m_pPlaybackReplay->GetPlayerName());
+        Q_strncpy(m_szGhostName.GetForModify(), m_pPlaybackReplay->GetPlayerName(), MAX_PLAYER_NAME_LENGTH);
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 {
     m_bReplayFirstPerson = firstPerson;
-    m_SrvData.m_bWasInRun = g_pMomentumTimer->GetPaused();
 
     Spawn();
-    m_SrvData.m_iTotalStrafes = 0;
-    m_SrvData.m_RunData.m_bMapFinished = false;
+    m_Data.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
-    m_SrvData.m_bIsPaused = false;
+    m_bIsPaused = false;
 
     if (m_pPlaybackReplay)
     {
@@ -110,18 +111,18 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
             }
         }
 
-        if (!CloseEnough(m_SrvData.m_flTickRate, gpGlobals->interval_per_tick, FLT_EPSILON))
+        if (!CloseEnough(m_Data.m_flTickRate, gpGlobals->interval_per_tick, FLT_EPSILON))
         {
-            Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_SrvData.m_flTickRate,
+            Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_Data.m_flTickRate,
                     gpGlobals->interval_per_tick);
             EndRun();
             return;
         }
 
-        m_SrvData.m_iCurrentTick = 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick)->PlayerOrigin());
+        m_iCurrentTick = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
 
-        m_SrvData.m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
+        m_iTotalTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
@@ -138,19 +139,19 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
     if (!m_pPlaybackReplay)
         return;
 
-    if (m_SrvData.m_bIsPaused)
+    if (m_bIsPaused)
     {
         if (ConVarRef("mom_replay_selection").GetInt() == 1)
-            m_SrvData.m_iCurrentTick -= Skip;
+            m_iCurrentTick -= Skip;
         else if (ConVarRef("mom_replay_selection").GetInt() == 2)
-            m_SrvData.m_iCurrentTick += Skip;
+            m_iCurrentTick += Skip;
     }
     else
     {
-        m_SrvData.m_iCurrentTick += Skip;
+        m_iCurrentTick += Skip;
     }
 
-    m_SrvData.m_iCurrentTick = clamp<int>(m_SrvData.m_iCurrentTick, 0, m_SrvData.m_iTotalTimeTicks);
+    m_iCurrentTick = clamp<int>(m_iCurrentTick, 0, m_iTotalTicks);
 }
 
 void CMomentumReplayGhostEntity::Think()
@@ -165,12 +166,12 @@ void CMomentumReplayGhostEntity::Think()
         return;
     }
 
-    if (m_SrvData.m_iCurrentTick == m_SrvData.m_RunData.m_iStartTickD)
+    if (m_iCurrentTick == m_iStartTickD)
     {
-        m_SrvData.m_RunData.m_bIsInZone = false;
-        m_SrvData.m_RunData.m_bMapFinished = false;
-        m_SrvData.m_RunData.m_bTimerRunning = true;
-        m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
+        m_Data.m_bIsInZone = false;
+        m_Data.m_bMapFinished = false;
+        m_Data.m_bTimerRunning = true;
+        m_Data.m_iStartTick = gpGlobals->tickcount;
         StartTimer(gpGlobals->tickcount);
 
         // Needed for hud_comparisons
@@ -187,7 +188,7 @@ void CMomentumReplayGhostEntity::Think()
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
     // move the ghost
-    if (m_SrvData.m_iCurrentTick < 0 || m_SrvData.m_iCurrentTick + 1 >= m_SrvData.m_iTotalTimeTicks)
+    if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_iTotalTicks)
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
@@ -339,7 +340,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             currentStep = GetCurrentStep();
             prevStep = GetPreviousStep();
 
-            m_SrvData.m_bHasPracticeMode = false;
         }
 
         SetAbsOrigin(currentStep->PlayerOrigin());
@@ -408,15 +408,15 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             SetAbsVelocity(interpolatedVel);
 
         // networked var that allows the replay to control keypress display on the client
-        m_SrvData.m_nReplayButtons = currentStep->PlayerButtons();
+        m_nGhostButtons = currentStep->PlayerButtons();
 
-        if (m_SrvData.m_RunData.m_bTimerRunning)
+        if (m_Data.m_bTimerRunning)
             UpdateStats(interpolatedVel);
 
         SetViewOffset(Vector(0, 0, currentStep->PlayerViewOffset()));
 
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-        if (m_SrvData.m_nReplayButtons & IN_DUCK)
+        if (m_nGhostButtons & IN_DUCK)
         {
             if (!isDucking)
             {
@@ -456,7 +456,6 @@ void CMomentumReplayGhostEntity::HandleGhost()
         // Otherwhise process normally.
         currentStep = GetCurrentStep();
 
-        m_SrvData.m_bHasPracticeMode = false;
     }
 
     SetAbsOrigin(currentStep->PlayerOrigin());
@@ -500,9 +499,9 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     }
     if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
     {
-        m_SrvData.m_RunData.m_flStrafeSync =
+        m_Data.m_flStrafeSync =
             (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks strafing perfectly / ticks strafing
-        m_SrvData.m_RunData.m_flStrafeSync2 =
+        m_Data.m_flStrafeSync2 =
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
 
@@ -517,9 +516,9 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
         m_SrvData.m_iTotalJumps++;
     }*/
 
-    if ((currentStep->PlayerButtons() & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) ||
+    /*if ((currentStep->PlayerButtons() & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) ||
         (currentStep->PlayerButtons() & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)))
-        m_SrvData.m_iTotalStrafes++;
+        m_SrvData.m_iTotalStrafes++;*/
 
     m_flLastSyncVelocity = SyncVelocity;
     m_angLastEyeAngle = EyeAngles();
@@ -528,7 +527,7 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 
 void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
 {
-    m_SrvData.m_RunData.m_iStartTick = m_iStartTick;
+    m_Data.m_iStartTick = m_iStartTick;
     BaseClass::StartTimer(m_iStartTick);
 }
 
@@ -551,14 +550,14 @@ void CMomentumReplayGhostEntity::EndRun()
 
 CReplayFrame* CMomentumReplayGhostEntity::GetCurrentStep()
 {
-    return m_pPlaybackReplay->GetFrame(max(min(m_SrvData.m_iCurrentTick, m_pPlaybackReplay->GetFrameCount() - 1), 0));
+    return m_pPlaybackReplay->GetFrame(max(min(m_iCurrentTick, m_pPlaybackReplay->GetFrameCount() - 1), 0));
 }
 
 CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = m_SrvData.m_iCurrentTick;
+    int nextStep = m_iCurrentTick;
 
-    if ((m_cvarReplaySelection.GetInt() == 1) && m_SrvData.m_bIsPaused)
+    if ((m_cvarReplaySelection.GetInt() == 1) && m_bIsPaused)
     {
         --nextStep;
 
@@ -576,9 +575,9 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 
 CReplayFrame *CMomentumReplayGhostEntity::GetPreviousStep()
 {
-    int nextStep = m_SrvData.m_iCurrentTick;
+    int nextStep = m_iCurrentTick;
 
-    if ((m_cvarReplaySelection.GetInt() == 1) && m_SrvData.m_bIsPaused)
+    if ((m_cvarReplaySelection.GetInt() == 1) && m_bIsPaused)
     {
         ++nextStep;
 
@@ -593,6 +592,68 @@ CReplayFrame *CMomentumReplayGhostEntity::GetPreviousStep()
 
     return m_pPlaybackReplay->GetFrame(nextStep);
 }
+
+void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+{
+     // Zone-specific things first
+    switch (pTrigger->GetZoneType())
+    {
+    case ZONE_TYPE_START:
+        m_Data.m_iBonusZone = pTrigger->GetZoneNumber();
+        m_Data.m_bMapFinished = false;
+        m_Data.m_bTimerRunning = false;
+        break;
+    case ZONE_TYPE_STOP:
+        {
+            // Needed for hud_comparisons
+            IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
+            if (timerStateEvent)
+            {
+                timerStateEvent->SetInt("ent", entindex());
+                timerStateEvent->SetBool("is_running", false);
+
+                gameeventmanager->FireEvent(timerStateEvent);
+            }
+
+            m_Data.m_bMapFinished = true;
+            m_Data.m_bTimerRunning = false;
+
+            StopTimer();
+            // MOM_TODO: Maybe play effects if the player is racing against us and lost?
+        }
+        break;
+    case ZONE_TYPE_CHECKPOINT:
+        break;
+    case ZONE_TYPE_STAGE:
+
+    default:
+        break;
+    }
+
+    CMomRunEntity::OnZoneEnter(pTrigger, pEnt);
+}
+
+void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+{
+    // Zone-specific things first
+    switch (pTrigger->GetZoneType())
+    {
+    case ZONE_TYPE_START:
+        break;
+    case ZONE_TYPE_STOP:
+
+        break;
+    case ZONE_TYPE_CHECKPOINT:
+        break;
+    case ZONE_TYPE_STAGE:
+
+    default:
+        break;
+    }
+
+    CMomRunEntity::OnZoneExit(pTrigger, pEnt);
+}
+
 
 void CMomentumReplayGhostEntity::CreateTrail()
 {

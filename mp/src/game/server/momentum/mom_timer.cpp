@@ -29,7 +29,7 @@ CMomentumTimer::CMomentumTimer(const char *pName)
     : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
       m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr),
-      m_pStartZoneMark(nullptr), m_bPaused(false), m_iPausedTick(0)
+      m_pStartZoneMark(nullptr), m_iBonusZone(0), m_bShouldUseStartZoneOffset(false)
 {
 }
 
@@ -74,13 +74,9 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
 {
     static ConVarRef mom_zone_edit("mom_zone_edit");
 
-    SetPaused(false);
-
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (!pPlayer)
         return false;
-
-    pPlayer->m_SrvData.m_bIsTimerPaused = false;
 
     // Perform all the checks to ensure player can start
     // MOM_TODO: Display this info properly to client?
@@ -95,7 +91,7 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
         Warning("Cannot start timer while editing zones!\n");
         return false;
     }
-    if (pPlayer->m_SrvData.m_bHasPracticeMode)
+    if (pPlayer->m_bHasPracticeMode)
     {
         Warning("Cannot start timer while in practice mode!\n");
         return false;
@@ -117,32 +113,8 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
     return true;
 }
 
-void CMomentumTimer::TogglePause()
-{
-    m_bPaused = !m_bPaused;
-
-    g_ReplaySystem.TogglePause();
-
-    // Add pause counter.
-
-    if (!m_bPaused)
-    {
-        m_iStartTick += (gpGlobals->tickcount - m_iPausedTick);
-    }
-
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
-    if (pPlayer)
-    {
-        pPlayer->m_SrvData.m_bIsTimerPaused = m_bPaused;
-    }
-
-    m_iPausedTick = gpGlobals->tickcount;
-}
-
 void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* = true*/)
 {
-    SetPaused(false);
     SetRunning(false);
     g_ReplaySystem.SetPaused(false);
 
@@ -158,9 +130,14 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
             time(&m_iLastRunDate); // Set the last run date for the replay
         }
 
-        pPlayer->m_SrvData.m_bIsTimerPaused = false;
-
         DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STOPPED);
+        // Fire off the timer_state event
+        if (timerStateEvent)
+        {
+            timerStateEvent->SetInt("ent", pPlayer->entindex());
+            timerStateEvent->SetBool("is_running", false);
+            gameeventmanager->FireEvent(timerStateEvent);
+        }
     }
 
     // Stop replay recording, if there was any
@@ -174,9 +151,9 @@ void CMomentumTimer::Reset()
 
     g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
     pPlayer->ResetRunStats();                        // Reset run stats
-    pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
-    pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
-    pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
+    pPlayer->m_Data.m_bMapFinished = false;
+    pPlayer->m_Data.m_bTimerRunning = false;
+    pPlayer->m_Data.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
 
     if (g_pMomentumTimer->IsRunning())
     {
@@ -186,7 +163,7 @@ void CMomentumTimer::Reset()
     else
     {
         // Reset last jump velocity when we enter the start zone without a timer
-        pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0;
+        pPlayer->m_Data.m_flLastJumpVel = 0;
 
         // Handle the replay recordings
         if (g_ReplaySystem.IsRecording())
@@ -218,19 +195,19 @@ void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::OnPlayerJump(KeyValues *kv)
 {
-    int playerIndex = kv->GetInt("player_ent");
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(playerIndex));
-    StdDataFromServer &srvdat = pPlayer->m_SrvData;
+    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(kv->GetPtr("player"));
+    if (!pPlayer)
+        return;
 
     // OnCheckBhop code
-    srvdat.m_bDidPlayerBhop = gpGlobals->tickcount - srvdat.m_iLandTick < NUM_TICKS_TO_BHOP;
-    if (!srvdat.m_bDidPlayerBhop)
-        srvdat.m_iSuccessiveBhops = 0;
+    pPlayer->m_bDidPlayerBhop = gpGlobals->tickcount - pPlayer->m_iLandTick < NUM_TICKS_TO_BHOP;
+    if (!pPlayer->m_bDidPlayerBhop)
+        pPlayer->m_iSuccessiveBhops = 0;
 
-    srvdat.m_RunData.m_flLastJumpVel = pPlayer->GetLocalVelocity().Length2D();
-    srvdat.m_iSuccessiveBhops++;
+    pPlayer->m_Data.m_flLastJumpVel = pPlayer->GetLocalVelocity().Length2D();
+    pPlayer->m_iSuccessiveBhops++;
 
-    if (srvdat.m_RunData.m_bIsInZone && srvdat.m_RunData.m_iCurrentZone == 1 && srvdat.m_RunData.m_bTimerStartOnJump)
+    if (pPlayer->m_Data.m_bIsInZone && pPlayer->m_Data.m_iCurrentZone == 1 && pPlayer->m_bTimerStartOnJump)
     {
         TryStart(pPlayer, false);
     }
@@ -238,7 +215,7 @@ void CMomentumTimer::OnPlayerJump(KeyValues *kv)
     // Set our runstats jump count
     if (IsRunning())
     {
-        int currentZone = srvdat.m_RunData.m_iCurrentZone;
+        const int currentZone = pPlayer->m_Data.m_iCurrentZone;
         pPlayer->m_RunStats.SetZoneJumps(0, pPlayer->m_RunStats.GetZoneJumps(0) + 1);                     // Increment total jumps
         pPlayer->m_RunStats.SetZoneJumps(currentZone, pPlayer->m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
     }
@@ -246,11 +223,11 @@ void CMomentumTimer::OnPlayerJump(KeyValues *kv)
 
 void CMomentumTimer::OnPlayerLand(KeyValues *kv)
 {
-    int playerIndex = kv->GetInt("player_ent");
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(playerIndex));
-    StdDataFromServer &srvdat = pPlayer->m_SrvData;
+    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(kv->GetPtr("player"));
+    if (!pPlayer)
+        return;
 
-    if (srvdat.m_RunData.m_bIsInZone && srvdat.m_RunData.m_iCurrentZone == 1 && srvdat.m_RunData.m_bTimerStartOnJump)
+    if (pPlayer->m_Data.m_bIsInZone && pPlayer->m_Data.m_iCurrentZone == 1 && pPlayer->m_bTimerStartOnJump)
     {
         // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
         // MOM_TODO: Check what's wrong.
@@ -277,20 +254,20 @@ void CMomentumTimer::OnPlayerLand(KeyValues *kv)
     }
 }
 
-void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum)
+void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum)
 {
     const int zonetype = pTrigger->GetZoneType();
-    if (zonetype == MOMZONETYPE_STOP)
+    if (zonetype == ZONE_TYPE_STOP)
     {
         // We've reached end zone, stop here
         auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
         SetEndTrigger(pStopTrigger);
 
         if (IsRunning() && !pPlayer->IsSpectatingGhost() &&
-            pPlayer->m_SrvData.m_RunData.m_iBonusZone == pStopTrigger->GetZoneNumber() &&
-            !pPlayer->m_SrvData.m_bHasPracticeMode)
+            pPlayer->m_Data.m_iBonusZone == pStopTrigger->GetZoneNumber() &&
+            !pPlayer->m_bHasPracticeMode)
         {
-            int zoneNum = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
+            int zoneNum = pPlayer->m_Data.m_iCurrentZone;
 
             // This is needed so we have an ending velocity.
 
@@ -305,7 +282,7 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTr
             else
             {
                 DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
+                CalculateTickIntervalOffset(pPlayer, ZONE_TYPE_STOP);
             }
 
             // This is needed for the final stage
@@ -328,20 +305,20 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTr
 
             // Stop the timer
             Stop(true);
-            pPlayer->m_SrvData.m_RunData.m_flRunTime = GetLastRunTime();
-            pPlayer->m_SrvData.m_RunData.m_iRunTimeTicks = m_iEndTick - m_iStartTick;
+            pPlayer->m_Data.m_flRunTime = GetLastRunTime();
+            pPlayer->m_Data.m_iRunTimeTicks = m_iEndTick - m_iStartTick;
             // The map is now finished, show the mapfinished panel
-            pPlayer->m_SrvData.m_RunData.m_bMapFinished = true;
-            pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
+            pPlayer->m_Data.m_bMapFinished = true;
+            pPlayer->m_Data.m_bTimerRunning = false;
         }
     }
-    else if (zonetype == MOMZONETYPE_STAGE || zonetype == MOMZONETYPE_START)
+    else if (zonetype == ZONE_TYPE_STAGE || zonetype == ZONE_TYPE_START)
     {
         auto pStageTrigger = static_cast<CTriggerStage *>(pTrigger);
         SetCurrentZone(pStageTrigger);
 
         // Reset timer when we enter start zone
-        if (zonetype == MOMZONETYPE_START)
+        if (zonetype == ZONE_TYPE_START)
         {
             SetStartTrigger(static_cast<CTriggerTimerStart *>(pTrigger));
             Reset();
@@ -350,7 +327,7 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTr
         {
             pPlayer->m_RunStats.SetZoneExitSpeed(zonenum - 1, pPlayer->GetLocalVelocity().Length(),
                                                  pPlayer->GetLocalVelocity().Length2D());
-            CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_STOP);
+            CalculateTickIntervalOffset(pPlayer, ZONE_TYPE_STOP);
             const float fCurrentZoneEnterTime = CalculateStageTime(zonenum);
             pPlayer->m_RunStats.SetZoneEnterTime(zonenum, fCurrentZoneEnterTime);
             pPlayer->m_RunStats.SetZoneTime(zonenum - 1, fCurrentZoneEnterTime -
@@ -359,20 +336,20 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomentumTr
     }
 }
 
-void CMomentumTimer::OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomentumTrigger *pTrigger, int zonenum)
+void CMomentumTimer::OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum)
 {
-    if (pTrigger->GetZoneType() == MOMZONETYPE_START)
+    if (pTrigger->GetZoneType() == ZONE_TYPE_START)
     {
         // This handles both the start and stage triggers
-        CalculateTickIntervalOffset(pPlayer, MOMZONETYPE_START);
+        CalculateTickIntervalOffset(pPlayer, ZONE_TYPE_START);
 
         TryStart(pPlayer, true);
     }
 
-    if (pTrigger->GetZoneType() == MOMZONETYPE_START || pTrigger->GetZoneType() == MOMZONETYPE_STAGE)
+    if (pTrigger->GetZoneType() == ZONE_TYPE_START || pTrigger->GetZoneType() == ZONE_TYPE_STAGE)
     {
         // Timer won't be running if it's the start trigger
-        if ((zonenum == 1 || IsRunning()) && !pPlayer->m_SrvData.m_bHasPracticeMode)
+        if ((zonenum == 1 || IsRunning()) && !pPlayer->m_bHasPracticeMode)
         {
             float enterVel3D = pPlayer->GetLocalVelocity().Length(),
                   enterVel2D = pPlayer->GetLocalVelocity().Length2D();
@@ -385,15 +362,13 @@ void CMomentumTimer::OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomentumTri
 
 void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset)
 {
-    StdDataFromServer &srvdat = pPlayer->m_SrvData;
-
     // do not start timer if player is in practice mode or it's already running.
     if (!IsRunning())
     {
         SetShouldUseStartZoneOffset(bUseStartZoneOffset);
 
         // The Start method could fail if CP menu or prac mode is activated here
-        if (Start(gpGlobals->tickcount, srvdat.m_RunData.m_iBonusZone))
+        if (Start(gpGlobals->tickcount, pPlayer->m_Data.m_iBonusZone))
         {
             // Used for trimming later on
             if (g_ReplaySystem.IsRecording())
@@ -401,15 +376,15 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
                 g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
             }
 
-            srvdat.m_RunData.m_bTimerRunning = true;
+            pPlayer->m_Data.m_bTimerRunning = true;
             // Used for spectating later on
-            srvdat.m_RunData.m_iStartTick = gpGlobals->tickcount;
+            pPlayer->m_Data.m_iStartTick = gpGlobals->tickcount;
 
             // Are we in mid air when we started? If so, our first jump should be 1, not 0
             if (pPlayer->IsInAirDueToJump())
             {
                 pPlayer->m_RunStats.SetZoneJumps(0, 1);
-                pPlayer->m_RunStats.SetZoneJumps(srvdat.m_RunData.m_iCurrentZone, 1);
+                pPlayer->m_RunStats.SetZoneJumps(pPlayer->m_Data.m_iCurrentZone, 1);
             }
         }
         else
@@ -422,7 +397,7 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
         SetShouldUseStartZoneOffset(!bUseStartZoneOffset);
     }
 
-    srvdat.m_RunData.m_bMapFinished = false;
+    pPlayer->m_Data.m_bMapFinished = false;
 }
 
 void CMomentumTimer::DispatchMapInfo()
@@ -482,7 +457,7 @@ void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) c
 
 int CMomentumTimer::GetCurrentZoneNumber() const
 {
-    return m_pCurrentZone && m_pCurrentZone->GetStageNumber();
+    return m_pCurrentZone && m_pCurrentZone->GetZoneNumber();
 }
 
 static int GetNumEntitiesByClassname(const char* classname)
@@ -546,7 +521,7 @@ void CMomentumTimer::SetRunning(bool isRunning)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        pPlayer->m_SrvData.m_RunData.m_bTimerRunning = isRunning;
+        pPlayer->m_Data.m_bTimerRunning = isRunning;
     }
 }
 void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType)
@@ -559,7 +534,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
 
     // Since EndTouch is called after PostThink (which is where previous origins are stored) we need to go 1 more tick
     // in the previous data to get the real previous origin.
-    if (zoneType == MOMZONETYPE_START) // EndTouch
+    if (zoneType == ZONE_TYPE_START) // EndTouch
     {
         start = pPlayer->GetLocalOrigin();
         end = pPlayer->GetPreviousOrigin(1);
@@ -575,7 +550,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
 
     DevLog("Time offset was %f seconds (%s)\n", endTriggerTraceEnum.GetOffset(),
-           zoneType == MOMZONETYPE_START ? "EndTouch" : "StartTouch");
+           zoneType == ZONE_TYPE_START ? "EndTouch" : "StartTouch");
     SetIntervalOffset(GetCurrentZoneNumber(), endTriggerTraceEnum.GetOffset());
 }
 
@@ -676,12 +651,6 @@ void CMomentumTimer::ClearStartMark()
     m_pStartZoneMark = nullptr;
 }
 
-void CMomentumTimer::SetPaused(bool bEnable)
-{
-    m_bPaused = bEnable;
-    g_ReplaySystem.SetPaused(bEnable);
-}
-
 // Practice mode that stops the timer and allows the player to noclip.
 void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {
@@ -689,17 +658,17 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    pPlayer->m_SrvData.m_bHasPracticeMode = true;
+    pPlayer->m_bHasPracticeMode = true;
 
     // Only when timer is running;
     if (m_bIsRunning)
     {
-        pPlayer->m_SrvData.m_RunData.m_iOldBonusZone = pPlayer->m_SrvData.m_RunData.m_iBonusZone;
-        pPlayer->m_SrvData.m_RunData.m_iOldZone = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
-        pPlayer->m_SrvData.m_RunData.m_vecLastPos = pPlayer->GetAbsOrigin();
-        pPlayer->m_SrvData.m_RunData.m_angLastAng = pPlayer->GetAbsAngles();
-        pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = pPlayer->GetAbsVelocity();
-        pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = pPlayer->GetViewOffset().z;
+        pPlayer->m_Data.m_iOldBonusZone = pPlayer->m_Data.m_iBonusZone;
+        pPlayer->m_Data.m_iOldZone = pPlayer->m_Data.m_iCurrentZone;
+        pPlayer->m_vecLastPos = pPlayer->GetAbsOrigin();
+        pPlayer->m_angLastAng = pPlayer->GetAbsAngles();
+        pPlayer->m_vecLastVelocity = pPlayer->GetAbsVelocity();
+        pPlayer->m_fLastViewOffset = pPlayer->GetViewOffset().z;
 
         // MOM_TODO: Mark this as a "entered practice mode" event in the replay
     }
@@ -721,16 +690,16 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
-    pPlayer->m_SrvData.m_bHasPracticeMode = false;
+    pPlayer->m_bHasPracticeMode = false;
 
     // Only when timer is running;
     if (m_bIsRunning)
     {
-        pPlayer->m_SrvData.m_RunData.m_iBonusZone = pPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
-        pPlayer->m_SrvData.m_RunData.m_iCurrentZone = pPlayer->m_SrvData.m_RunData.m_iOldZone;
-        pPlayer->Teleport(&pPlayer->m_SrvData.m_RunData.m_vecLastPos, &pPlayer->m_SrvData.m_RunData.m_angLastAng, &pPlayer->m_SrvData.m_RunData.m_vecLastVelocity);
-        pPlayer->SetViewOffset(Vector(0, 0, pPlayer->m_SrvData.m_RunData.m_fLastViewOffset));
-        pPlayer->SetLastEyeAngles(pPlayer->m_SrvData.m_RunData.m_angLastAng);
+        pPlayer->m_Data.m_iBonusZone = pPlayer->m_Data.m_iOldBonusZone;
+        pPlayer->m_Data.m_iCurrentZone = pPlayer->m_Data.m_iOldZone;
+        pPlayer->Teleport(&pPlayer->m_vecLastPos, &pPlayer->m_angLastAng, &pPlayer->m_vecLastVelocity);
+        pPlayer->SetViewOffset(Vector(0, 0, pPlayer->m_fLastViewOffset));
+        pPlayer->SetLastEyeAngles(pPlayer->m_angLastAng);
 
         // MOM_TODO : Mark this as a "exited practice mode" event in the replay
     }
@@ -785,11 +754,12 @@ class CTimerCommands
 
     static void ResetToCheckpoint()
     {
-        CTriggerStage *stage = g_pMomentumTimer->GetCurrentStage();
+        CTriggerZone *pStage = g_pMomentumTimer->GetCurrentZone();
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
-        if (stage && pPlayer && pPlayer->AllowUserTeleports())
+        if (pStage && pPlayer && pPlayer->AllowUserTeleports())
         {
-            pPlayer->Teleport(&stage->WorldSpaceCenter(), nullptr, &vec3_origin);
+            // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
+            pPlayer->Teleport(&pStage->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
     }
 
@@ -799,7 +769,7 @@ class CTimerCommands
         if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->IsSpectatingGhost())
             return;
 
-        if (!pPlayer->m_SrvData.m_bHasPracticeMode)
+        if (!pPlayer->m_bHasPracticeMode)
         {
             if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
             {
@@ -863,7 +833,7 @@ class CTimerCommands
                 while ((pStage = static_cast<CTriggerStage *>(
                             gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
                 {
-                    if (pStage && pStage->GetStageNumber() == desiredIndex)
+                    if (pStage && pStage->GetZoneNumber() == desiredIndex)
                     {
                         pVec = &pStage->GetAbsOrigin();
                         pAng = &pStage->GetAbsAngles();

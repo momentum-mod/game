@@ -42,7 +42,7 @@ bool CWeaponBaseGun::Deploy()
         return false;
 
     m_flAccuracy = 0.2;
-    pPlayer->m_SrvData.m_iShotsFired = 0;
+    pPlayer->m_iShotsFired = 0;
     m_bDelayFire = false;
     m_zoomFullyActiveTime = -1.0f;
 
@@ -56,18 +56,18 @@ void CWeaponBaseGun::ItemPostFrame()
     if (!pPlayer)
         return;
 
-    if ((m_flNextPrimaryAttack <= gpGlobals->curtime) && (pPlayer->m_SrvData.m_bResumeZoom))
+    if ((m_flNextPrimaryAttack <= gpGlobals->curtime) && (pPlayer->m_bResumeZoom))
     {
 #ifndef CLIENT_DLL
-        pPlayer->SetFOV(pPlayer, pPlayer->m_SrvData.m_iLastZoom, 0.05f);
-        m_zoomFullyActiveTime =
-            gpGlobals->curtime +
-            0.05f; // Make sure we think that we are zooming on the server so we don't get instant acc bonus
+        pPlayer->SetFOV(pPlayer, pPlayer->m_iLastZoom, 0.05f);
+        
+        // Make sure we think that we are zooming on the server so we don't get instant acc bonus
+        m_zoomFullyActiveTime = gpGlobals->curtime + 0.05f; 
 
-        if (pPlayer->GetFOV() == pPlayer->m_SrvData.m_iLastZoom)
+        if (pPlayer->GetFOV() == pPlayer->m_iLastZoom)
         {
             // return the fade level in zoom.
-            pPlayer->m_SrvData.m_bResumeZoom = false;
+            pPlayer->m_bResumeZoom = false;
         }
 #endif
     }
@@ -120,7 +120,7 @@ bool CWeaponBaseGun::BaseGunFire(float flSpread, float flCycleTime, bool bPrimar
         return false;
 
     m_bDelayFire = true;
-    pPlayer->m_SrvData.m_iShotsFired++;
+    pPlayer->m_iShotsFired++;
 
 // Out of ammo?
 #ifdef WEAPONS_USE_AMMO

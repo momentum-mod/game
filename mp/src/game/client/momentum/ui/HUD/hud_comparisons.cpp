@@ -131,7 +131,7 @@ bool C_RunComparisons::ShouldDraw()
     {
         // MOM_TODO: Should we have a convar against letting a ghost compare?
         C_MomentumReplayGhostEntity *pGhost = m_pLocalPlayer->GetReplayEnt();
-        C_MOMRunEntityData *runData = pGhost ? &pGhost->m_SrvData.m_RunData : &m_pLocalPlayer->m_SrvData.m_RunData;
+        CMomRunEntityData *runData = pGhost ? pGhost->GetRunEntData() : m_pLocalPlayer->GetRunEntData();
 
         if (runData)
         {
@@ -198,13 +198,13 @@ void C_RunComparisons::LoadComparisons()
 
         if (pGhost)
         {
-            tickRate = pGhost->m_SrvData.m_flTickRate;
-            runFlags = pGhost->m_SrvData.m_RunData.m_iRunFlags;
+            tickRate = pGhost->m_Data.m_flTickRate;
+            runFlags = pGhost->m_Data.m_iRunFlags;
         }
         else
         {
             tickRate = gpGlobals->interval_per_tick;
-            runFlags = m_pLocalPlayer->m_SrvData.m_RunData.m_iRunFlags;
+            runFlags = m_pLocalPlayer->m_Data.m_iRunFlags;
         }
 
         m_rcCurrentComparison = new RunCompare_t();
