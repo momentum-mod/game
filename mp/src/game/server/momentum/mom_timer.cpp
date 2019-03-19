@@ -113,7 +113,7 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
     return true;
 }
 
-void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* = true*/)
+void CMomentumTimer::Stop(bool bFinished /* = false */, bool bStopRecording /* = true*/)
 {
     SetRunning(false);
 
