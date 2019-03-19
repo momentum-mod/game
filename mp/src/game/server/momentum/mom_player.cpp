@@ -616,6 +616,50 @@ void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngle
     // No need to remove the trail here, CreateTrail() already does it for us
     BaseClass::Teleport(newPosition, newAngles, newVelocity);
     CreateTrail();
+
+    g_ReplaySystem.SetTeleportedThisFrame();
+}
+
+bool CMomentumPlayer::KeyValue( const char *szKeyName, const char *szValue )
+{
+    //
+    // It's possible for some maps to use "AddOutput -> origin x y z
+    // for teleports.
+    //
+    if ( FStrEq( szKeyName, "origin" ) )
+    {
+        // Copy of CBaseEntity::KeyValue
+        Vector vecOrigin;
+        UTIL_StringToVector( vecOrigin.Base(), szValue );
+
+        // If you're hitting this assert, it's probably because you're
+        // calling SetLocalOrigin from within a KeyValues method.. use SetAbsOrigin instead!
+        Assert( (GetMoveParent() == NULL) && !IsEFlagSet( EFL_DIRTY_ABSTRANSFORM ) );
+        SetAbsOrigin( vecOrigin );
+
+
+
+        // TODO: Throw this into OnTeleport() or something?
+        CreateTrail();
+
+        g_ReplaySystem.SetTeleportedThisFrame();
+
+        return true;
+    }
+
+    return BaseClass::KeyValue(szKeyName, szValue);
+}
+
+// These two are overridden because of a weird compiler error,
+// otherwise they serve no purpose.
+bool CMomentumPlayer::KeyValue( const char *szKeyName, float flValue ) 
+{
+    return BaseClass::KeyValue(szKeyName, flValue);
+}
+
+bool CMomentumPlayer::KeyValue(const char *szKeyName, const Vector &vecValue)
+{
+    return BaseClass::KeyValue(szKeyName, vecValue);
 }
 
 void CMomentumPlayer::CreateTrail()

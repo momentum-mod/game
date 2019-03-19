@@ -25,7 +25,8 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     m_iTickCount(0),
     m_iStartRecordingTick(-1),
     m_iStartTimerTick(-1),
-    m_fRecEndTime(-1.0f)
+    m_fRecEndTime(-1.0f),
+    m_bTeleportedThisFrame(false)
 {
     m_szMapHash[0] = '\0';
     m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
@@ -225,7 +226,8 @@ void CMomentumReplaySystem::UpdateRecordingParams()
         if (!m_pPlayer->m_SrvData.m_bHasPracticeMode) // MOM_TODO: && !m_player->IsSpectating
         {
             m_pRecordingReplay->AddFrame(CReplayFrame(m_pPlayer->EyeAngles(), m_pPlayer->GetAbsOrigin(), m_pPlayer->GetViewOffset(),
-                                             m_pPlayer->m_nButtons));
+                                             m_pPlayer->m_nButtons, m_bTeleportedThisFrame));
+            m_bTeleportedThisFrame = false;
         }
         else
         {
@@ -283,6 +285,14 @@ void CMomentumReplaySystem::SetRunStats()
 }
 
 void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
+
+void CMomentumReplaySystem::SetTeleportedThisFrame()
+{
+    if ( m_bRecording )
+    {
+        m_bTeleportedThisFrame = true;
+    }
+}
 
 void CMomentumReplaySystem::StartPlayback(bool firstperson)
 {

@@ -172,6 +172,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     // Trail Methods
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
+    bool KeyValue(const char *szKeyName, const char *szValue) OVERRIDE;
+    bool KeyValue(const char *szKeyName, float flValue) OVERRIDE;
+    bool KeyValue(const char *szKeyName, const Vector &vecValue) OVERRIDE;
     void CreateTrail();
     void RemoveTrail();
      

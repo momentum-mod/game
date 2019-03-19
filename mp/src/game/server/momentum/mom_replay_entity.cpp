@@ -316,6 +316,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
     {
         CReplayFrame *currentStep = nullptr;
         CReplayFrame *nextStep = nullptr;
+        CReplayFrame *prevStep = nullptr;
 
         // MOM_TODO
         // If the player is in practice, let's stuck the player, if the current tick is between the start and end of
@@ -336,6 +337,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             // Otherwhise process normally.
             nextStep = GetNextStep();
             currentStep = GetCurrentStep();
+            prevStep = GetPreviousStep();
 
             m_SrvData.m_bHasPracticeMode = false;
         }
@@ -367,14 +369,40 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             }
         }
 
-        // interpolate vel from difference in origin
-        const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
-        const Vector &pPlayerNextOrigin = nextStep->PlayerOrigin();
-        const float distX = fabs(pPlayerCurrentOrigin.x - pPlayerNextOrigin.x);
-        const float distY = fabs(pPlayerCurrentOrigin.y - pPlayerNextOrigin.y);
-        const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
-        const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+
+        bool bTeleportedThisFrame = (m_cvarReplaySelection.GetInt() == 1) // Going backwards?
+            ? prevStep->Teleported() : currentStep->Teleported();
+
+        bool bTeleportedNextFrame = nextStep->Teleported();
+
+        Vector interpolatedVel;
         const float maxvel = sv_maxvelocity.GetFloat();
+        static Vector lastVel = vec3_origin;
+
+        if ( !bTeleportedNextFrame )
+        {
+            // interpolate vel from difference in origin
+            const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
+            const Vector &pPlayerNextOrigin = nextStep->PlayerOrigin();
+            const float distX = fabs(pPlayerCurrentOrigin.x - pPlayerNextOrigin.x);
+            const float distY = fabs(pPlayerCurrentOrigin.y - pPlayerNextOrigin.y);
+            const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
+            interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+
+            lastVel = interpolatedVel;
+        }
+        else
+        {
+            // HACK: Can't interpolate so just assume last one.
+            interpolatedVel = lastVel;
+        }
+
+        if ( bTeleportedThisFrame )
+        {
+            // Fix teleporting being interpolated.
+            IncrementInterpolationFrame();
+        }
+
 
         // Fixes an issue with teleporting
         if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
@@ -546,6 +574,27 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 
     return m_pPlaybackReplay->GetFrame(nextStep);
 }
+
+CReplayFrame *CMomentumReplayGhostEntity::GetPreviousStep()
+{
+    int nextStep = m_SrvData.m_iCurrentTick;
+
+    if ((m_cvarReplaySelection.GetInt() == 1) && m_SrvData.m_bIsPaused)
+    {
+        ++nextStep;
+
+        nextStep = max(nextStep, 0);
+    }
+    else
+    {
+        --nextStep;
+
+        nextStep = min(nextStep, m_pPlaybackReplay->GetFrameCount() - 1);
+    }
+
+    return m_pPlaybackReplay->GetFrame(nextStep);
+}
+
 void CMomentumReplayGhostEntity::CreateTrail()
 {
     if (!mom_replay_trail_enable.GetBool())
