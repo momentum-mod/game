@@ -618,7 +618,7 @@ void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity
             m_Data.m_bMapFinished = true;
             m_Data.m_bTimerRunning = false;
 
-            StopTimer();
+            FinishTimer();
             // MOM_TODO: Maybe play effects if the player is racing against us and lost?
         }
         break;
