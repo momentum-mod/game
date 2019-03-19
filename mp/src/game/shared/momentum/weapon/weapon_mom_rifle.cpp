@@ -25,7 +25,7 @@ CMomentumRifle::CMomentumRifle()
 void CMomentumRifle::RifleFire()
 {
     //Hardcoded here so people don't change the text files for easy spam
-    if (!CSBaseGunFire(0.0f, 0.1f, true))
+    if (!BaseGunFire(0.0f, 0.1f, true))
         return;
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();

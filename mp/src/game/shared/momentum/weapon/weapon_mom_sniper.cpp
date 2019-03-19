@@ -82,7 +82,7 @@ void CMomentumSniper::SniperFire()
 #endif
     }
 
-    if (!CSBaseGunFire(0.0f, 1.25f, true))
+    if (!BaseGunFire(0.0f, 1.25f, true))
         return;
 
     QAngle angle = pPlayer->GetPunchAngle();
