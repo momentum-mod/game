@@ -1,0 +1,10 @@
+LightmappedGeneric
+{
+	"$basetexture" "tools/tools_teleport"
+
+	"$translucent" "1"
+
+	"%keywords" "momentum,tools,trigger,timer,stage,stop"
+
+	"%compiletrigger" "1"
+}

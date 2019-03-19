@@ -1,0 +1,10 @@
+LightmappedGeneric
+{
+	"$basetexture" "tools/tools_start"
+
+	"$translucent" "1"
+
+	"%keywords" "momentum,tools,trigger,timer,stage,start"
+
+	"%compiledetail" "1"
+}
