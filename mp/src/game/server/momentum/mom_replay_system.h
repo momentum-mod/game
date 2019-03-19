@@ -41,6 +41,8 @@ public:
 
     void TogglePause();
 
+    void SetTeleportedThisFrame(); // Call me when player teleports.
+
     //CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
 
   public:
@@ -69,6 +71,7 @@ public:
     //CMomRunStats m_SavedRunStats;
     // Map SHA1 hash for version purposes
     char m_szMapHash[41];
+    bool m_bTeleportedThisFrame;
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;
