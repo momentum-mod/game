@@ -131,13 +131,6 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
         }
 
         DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STOPPED);
-        // Fire off the timer_state event
-        if (timerStateEvent)
-        {
-            timerStateEvent->SetInt("ent", pPlayer->entindex());
-            timerStateEvent->SetBool("is_running", false);
-            gameeventmanager->FireEvent(timerStateEvent);
-        }
     }
 
     // Stop replay recording, if there was any
