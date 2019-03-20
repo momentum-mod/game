@@ -379,7 +379,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         const float maxvel = sv_maxvelocity.GetFloat();
         static Vector lastVel = vec3_origin;
 
-        if ( !bTeleportedNextFrame )
+        if (!bTeleportedNextFrame)
         {
             // interpolate vel from difference in origin
             const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
@@ -397,7 +397,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             interpolatedVel = lastVel;
         }
 
-        if ( bTeleportedThisFrame )
+        if (bTeleportedThisFrame)
         {
             // Fix teleporting being interpolated.
             IncrementInterpolationFrame();
