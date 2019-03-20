@@ -101,13 +101,13 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
                 if (pGhost)
                 {
-                    m_pRunStats = &pGhost->m_RunStats;
+                    m_pRunStats = pGhost->GetRunStats();
                     m_pRunData = pGhost->GetRunEntData();
                     m_bIsGhost = true;
                 }
                 else
                 {
-                    m_pRunStats = &pPlayer->m_RunStats;
+                    m_pRunStats = pPlayer->GetRunStats();
                     m_pRunData = pPlayer->GetRunEntData();
                     m_bIsGhost = false;
                 }
