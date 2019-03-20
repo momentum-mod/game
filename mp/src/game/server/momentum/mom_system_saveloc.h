@@ -93,9 +93,6 @@ public:
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
-    // Sets the momentum player
-    void SetPlayer(CMomentumPlayer* pPlayer) { m_pPlayer = pPlayer; }
-
 private:
     void CheckTimer(); // Check the timer to see if we should stop it
     void FireUpdateEvent() const; // Fire tan event to the UI when we change our saveloc vector in any way, or stop using the saveloc menu
@@ -104,8 +101,6 @@ private:
     KeyValues *m_pSavedLocsKV;
     CUtlVector<uint64> m_vecRequesters;
     uint64 m_iRequesting; // The Steam ID of the person we are requesting savelocs from, if any
-
-    CMomentumPlayer *m_pPlayer;
 
     CUtlVector<SavedLocation_t*> m_rcSavelocs;
     int m_iCurrentSavelocIndx;

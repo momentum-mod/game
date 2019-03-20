@@ -25,7 +25,7 @@ DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
 //NOTE: The "CHudMapFinishedDialog" (main panel) control settings are found in MapFinishedDialog.res
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName),
-    BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog"), m_pPlayer(nullptr)
+    BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetProportional(true);
@@ -92,12 +92,13 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
         //We only care when timer is stopped
         if (type == TIMER_EVENT_FINISHED)
         {
-            if (m_pPlayer)
+            const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+            if (pPlayer)
             {
                 ConVarRef hvel("mom_hud_speedometer_hvel");
                 m_iVelocityType = hvel.GetBool();
 
-                C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
+                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
                 if (pGhost)
                 {
                     m_pRunStats = &pGhost->m_RunStats;
@@ -106,8 +107,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 }
                 else
                 {
-                    m_pRunStats = &m_pPlayer->m_RunStats;
-                    m_pRunData = m_pPlayer->GetRunEntData();
+                    m_pRunStats = &pPlayer->m_RunStats;
+                    m_pRunData = pPlayer->GetRunEntData();
                     m_bIsGhost = false;
                 }
 
@@ -134,14 +135,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     }
 }
 
-void CHudMapFinishedDialog::LevelInitPostEntity()
-{
-    m_pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-}
-
 void CHudMapFinishedDialog::LevelShutdown()
 {
-    m_pPlayer = nullptr;
     m_pRunStats = nullptr;
 }
 
@@ -154,10 +149,11 @@ void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
 bool CHudMapFinishedDialog::ShouldDraw()
 {
     bool shouldDrawLocal = false;
-    if (m_pPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
-        CMomRunEntityData *pData = (pGhost ? pGhost->GetRunEntData() : m_pPlayer->GetRunEntData());
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        CMomRunEntityData *pData = (pGhost ? pGhost->GetRunEntData() : pPlayer->GetRunEntData());
         shouldDrawLocal = pData && pData->m_bMapFinished;
     }
 

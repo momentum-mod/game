@@ -36,8 +36,6 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     void OnThink() OVERRIDE;
     void Paint() OVERRIDE;
     void Init() OVERRIDE;
-    void LevelInitPostEntity() OVERRIDE;
-    void LevelShutdown() OVERRIDE;
     void Reset() OVERRIDE;
     void DrawKeyTemplates();
 
@@ -77,8 +75,6 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     wchar_t m_pwStrafe[BUFSIZELOCL];
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
-
-    CMomentumPlayer *m_pPlayer;
 };
 
 DECLARE_HUDELEMENT(CHudKeyPressDisplay);
@@ -86,7 +82,6 @@ DECLARE_HUDELEMENT(CHudKeyPressDisplay);
 CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
     : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudKeyPressDisplay")
 {
-    m_pPlayer = nullptr;
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
@@ -96,7 +91,8 @@ CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
 bool CHudKeyPressDisplay::ShouldDraw()
 {
     // don't show during map finished dialog
-    return showkeys.GetBool() && m_pPlayer && !m_pPlayer->m_Data.m_bMapFinished && CHudElement::ShouldDraw();
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    return showkeys.GetBool() && pPlayer && !pPlayer->m_Data.m_bMapFinished && CHudElement::ShouldDraw();
 }
 
 void CHudKeyPressDisplay::Init()
@@ -116,16 +112,6 @@ void CHudKeyPressDisplay::Init()
 
     m_nButtons = 0;
     m_nDisabledButtons = 0;
-}
-
-void CHudKeyPressDisplay::LevelInitPostEntity()
-{
-    m_pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-}
-
-void CHudKeyPressDisplay::LevelShutdown()
-{
-    m_pPlayer = nullptr;
 }
 
 // Checks to see if this input was blocked, and if so, paint it red.
@@ -243,10 +229,11 @@ void CHudKeyPressDisplay::Paint()
 }
 void CHudKeyPressDisplay::OnThink()
 {
-    if (m_pPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pReplayEnt = m_pPlayer->GetReplayEnt();
-        C_MomentumOnlineGhostEntity *pOnlineEnt = m_pPlayer->GetOnlineGhostEnt();
+        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
+        C_MomentumOnlineGhostEntity *pOnlineEnt = pPlayer->GetOnlineGhostEnt();
         if (pReplayEnt)
         {
             m_bShouldDrawCounts = false; // Not worth it
@@ -264,14 +251,14 @@ void CHudKeyPressDisplay::OnThink()
         else
         {
             m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
-            m_nDisabledButtons = m_pPlayer->m_afButtonDisabled;
+            m_nDisabledButtons = pPlayer->m_afButtonDisabled;
             if (g_MOMEventListener)
             {
                 // we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = m_pPlayer->m_Data.m_bTimerRunning;
+                m_bShouldDrawCounts = pPlayer->m_Data.m_bTimerRunning;
                 if (m_bShouldDrawCounts)
                 {
-                    CMomRunStats *stats = &m_pPlayer->m_RunStats;
+                    CMomRunStats *stats = &pPlayer->m_RunStats;
                     m_nStrafes = stats->GetZoneStrafes(0);
                     m_nJumps = stats->GetZoneJumps(0);
                 }
@@ -287,6 +274,7 @@ void CHudKeyPressDisplay::Reset()
     m_fDuckColorUntil = 0;
     m_fJumpColorUntil = 0;
 }
+
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 {
     return GetWide() / 2 - UTIL_ComputeStringWidth(font, wstring) / 2;

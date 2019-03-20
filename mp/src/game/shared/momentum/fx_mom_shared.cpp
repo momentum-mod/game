@@ -167,9 +167,9 @@ void FX_FireBullets(int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngl
     {
         bLocalPlayerFired = false;
 #ifdef GAME_DLL
-        pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+        pPlayer = CMomentumPlayer::GetLocalPlayer();
 #elif defined(CLIENT_DLL)
-        pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+        pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
 #endif
         if (!pPlayer) // If we still can't get a player to shoot through, then get outta 'ere
             return;

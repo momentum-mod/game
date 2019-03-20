@@ -68,7 +68,7 @@ void CMomentumReplayGhostEntity::Spawn()
 
     // MOM_TODO: Read the appearance data from the header of the replay and set it here?
     // Set the appearance to the player's appearance, pending update after spawned in
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
         SetGhostAppearance(pPlayer->m_playerAppearanceProps);
@@ -99,7 +99,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
         if (m_bReplayFirstPerson)
         {
             if (!m_pCurrentSpecPlayer)
-                m_pCurrentSpecPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+                m_pCurrentSpecPlayer = CMomentumPlayer::GetLocalPlayer();
 
             if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() != this)
             {

@@ -240,11 +240,9 @@ CON_COMMAND_F(mom_zone_info,
         CBaseMomentumTrigger *m_pZone;
     };
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
-    {
         return;
-    }
 
     Vector start, end;
     pPlayer->EyePositionAndVectors(&start, &end, nullptr, nullptr);

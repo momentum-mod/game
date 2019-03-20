@@ -4,7 +4,6 @@ struct PositionPacket_t;
 struct DecalPacket_t;
 struct SavelocReqPacket_t;
 struct ghostAppearance_t;
-class CMomentumPlayer;
 class CMomentumOnlineGhostEntity;
 
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
@@ -37,8 +36,6 @@ public:
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineGhostMap();
 
     static bool CreateNewNetFrame(PositionPacket_t &frame);
-
-    static CMomentumPlayer *m_pPlayer;
 };
 
 extern CMomentumGhostClient *g_pMomentumGhostClient;

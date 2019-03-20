@@ -76,7 +76,7 @@ bool CMomentumTimer::Start(int start, int iTrackNum)
 {
     static ConVarRef mom_zone_edit("mom_zone_edit");
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return false;
 
@@ -120,7 +120,7 @@ void CMomentumTimer::Stop(bool bFinished /* = false */, bool bStopRecording /* =
 {
     SetRunning(false);
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
 
     if (pPlayer)
     {
@@ -142,7 +142,7 @@ void CMomentumTimer::Stop(bool bFinished /* = false */, bool bStopRecording /* =
 
 void CMomentumTimer::Reset()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
 
     g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
     pPlayer->ResetRunStats();                        // Reset run stats
@@ -511,7 +511,7 @@ float CMomentumTimer::GetLastRunTime()
 void CMomentumTimer::SetRunning(bool isRunning)
 {
     m_bIsRunning = isRunning;
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
         pPlayer->m_Data.m_bTimerRunning = isRunning;
@@ -615,7 +615,7 @@ void CMomentumTimer::SetGameModeConVars()
 
 void CMomentumTimer::CreateStartMark()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return;
 
@@ -715,7 +715,7 @@ class CTimerCommands
   public:
     static void ResetToStart()
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
+        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
         if (!pPlayer || !pPlayer->AllowUserTeleports())
             return;
         CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
@@ -748,7 +748,7 @@ class CTimerCommands
     static void ResetToCheckpoint()
     {
         CTriggerZone *pStage = g_pMomentumTimer->GetCurrentZone();
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
+        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
         if (pStage && pPlayer && pPlayer->AllowUserTeleports())
         {
             // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
@@ -758,7 +758,7 @@ class CTimerCommands
 
     static void PracticeMove()
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
         if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->IsSpectatingGhost())
             return;
 
@@ -788,7 +788,7 @@ class CTimerCommands
 
     static void TeleToStage(const CCommand &args)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
         const Vector *pVec = nullptr;
         const QAngle *pAng = nullptr;
         if (pPlayer && args.ArgC() >= 2)

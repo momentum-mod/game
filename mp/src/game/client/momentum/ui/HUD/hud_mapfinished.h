@@ -21,7 +21,6 @@ public:
     void Reset() OVERRIDE;
     void SetVisible(bool) OVERRIDE;
     void FireGameEvent(IGameEvent*) OVERRIDE;
-    void LevelInitPostEntity() OVERRIDE;
     void LevelShutdown() OVERRIDE;
 
     void SetMouseInputEnabled(bool state) OVERRIDE;
@@ -83,7 +82,6 @@ private:
 
     CMomRunStats* m_pRunStats;
     C_MomRunEntityData *m_pRunData;
-    C_MomentumPlayer *m_pPlayer;
 
     bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
 

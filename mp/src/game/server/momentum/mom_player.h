@@ -26,11 +26,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CMomentumPlayer();
     ~CMomentumPlayer(void);
 
-    static CMomentumPlayer *CreatePlayer(const char *className, edict_t *ed)
-    {
-        s_PlayerEdict = ed;
-        return static_cast<CMomentumPlayer *>(CreateEntityByName(className));
-    }
+    static CMomentumPlayer* CreatePlayer(const char *className, edict_t *ed);
+    static CMomentumPlayer* GetLocalPlayer();
 
     int FlashlightIsOn() OVERRIDE { return IsEffectActive(EF_DIMLIGHT); }
     void FlashlightTurnOn() OVERRIDE;

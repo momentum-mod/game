@@ -103,7 +103,6 @@ CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName)
 {
     m_pSavedLocsKV = new KeyValues(pName);
     m_iRequesting = 0;
-    m_pPlayer = nullptr;
     m_iCurrentSavelocIndx = -1;
     m_bUsingSavelocMenu = false;
 
@@ -166,7 +165,7 @@ void CMOMSaveLocSystem::LevelInitPreEntity()
 
 void CMOMSaveLocSystem::LevelShutdownPreEntity()
 {
-    if (m_pPlayer && m_pSavedLocsKV && mom_saveloc_save_between_sessions.GetBool())
+    if (CMomentumPlayer::GetLocalPlayer() && m_pSavedLocsKV && mom_saveloc_save_between_sessions.GetBool())
     {
         DevLog("Saving map %s savelocs to %s ...\n", gpGlobals->mapname.ToCStr(), SAVELOC_FILE_NAME);
         // Make the KV to save into and save into it
@@ -281,10 +280,6 @@ void CMOMSaveLocSystem::SetRequestingSavelocsFrom(const uint64& from)
 
 bool CMOMSaveLocSystem::FillSavelocReq(const bool sending, SavelocReqPacket_t *input, SavelocReqPacket_t *outputBuf)
 {
-    // Get the local player, cancel if we can't get at him
-    if (!m_pPlayer)
-        return false;
-
     if (sending)
     {
         int count = 0;
@@ -331,7 +326,8 @@ bool CMOMSaveLocSystem::FillSavelocReq(const bool sending, SavelocReqPacket_t *i
 
 SavedLocation_t* CMOMSaveLocSystem::CreateSaveloc()
 {
-    return m_pPlayer ? new SavedLocation_t(m_pPlayer) : nullptr;
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    return pPlayer ? new SavedLocation_t(pPlayer) : nullptr;
 }
 
 void CMOMSaveLocSystem::CreateAndSaveLocation()
@@ -340,7 +336,7 @@ void CMOMSaveLocSystem::CreateAndSaveLocation()
     if (created)
     {
         AddSaveloc(created);
-        ClientPrint(m_pPlayer, HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
+        ClientPrint(CMomentumPlayer::GetLocalPlayer(), HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
         UpdateRequesters();
     }
 }
@@ -426,11 +422,12 @@ void CMOMSaveLocSystem::GotoPrevSaveloc()
 
 void CMOMSaveLocSystem::TeleportToSavelocIndex(int indx)
 {
-    if (indx < 0 || indx > m_rcSavelocs.Count() || !m_pPlayer || !m_pPlayer->AllowUserTeleports())
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (indx < 0 || indx > m_rcSavelocs.Count() || !pPlayer || !pPlayer->AllowUserTeleports())
         return;
     // Check if the timer is running and if we should stop it
     CheckTimer();
-    m_rcSavelocs[indx]->Teleport(m_pPlayer);
+    m_rcSavelocs[indx]->Teleport(pPlayer);
 }
 
 void CMOMSaveLocSystem::TeleportToCurrentSaveloc()

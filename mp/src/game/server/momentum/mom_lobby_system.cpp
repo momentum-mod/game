@@ -230,7 +230,7 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
     // Set our own data
     SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
     // Note: Our appearance is also set on spawn, so no worries if we're null here.
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
         DevLog("Sending our appearance.\n");
@@ -364,9 +364,10 @@ void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
 
 void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
 {
-    if (CMomentumGhostClient::m_pPlayer)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer)
     {
-        CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+        CSingleUserRecipientFilter user(pPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "LobbyUpdateMsg");
         WRITE_BYTE(type);
@@ -377,9 +378,10 @@ void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
 
 void CMomentumLobbySystem::WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID)
 {
-    if (CMomentumGhostClient::m_pPlayer)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer)
     {
-        CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+        CSingleUserRecipientFilter user(pPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "SpecUpdateMsg");
         WRITE_BYTE(type);

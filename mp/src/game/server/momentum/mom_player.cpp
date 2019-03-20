@@ -123,6 +123,8 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
     }
 }
 
+static CMomentumPlayer *s_pPlayer = nullptr;
+
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f),
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
@@ -148,24 +150,35 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
 
-    g_ReplaySystem.SetPlayer(this);
-
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
     ListenForGameEvent("mapfinished_panel_closed");
-
-    g_pMOMSavelocSystem->SetPlayer(this);
 }
 
 CMomentumPlayer::~CMomentumPlayer()
 {
+    if (this == s_pPlayer)
+        s_pPlayer = nullptr;
+
     RemoveTrail();
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
     g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
+}
 
-    g_pMOMSavelocSystem->SetPlayer(nullptr);
+CMomentumPlayer* CMomentumPlayer::CreatePlayer(const char *className, edict_t *ed)
+{
+    s_PlayerEdict = ed;
+    auto toRet = static_cast<CMomentumPlayer *>(CreateEntityByName(className));
+    if (ed->m_EdictIndex == 1)
+        s_pPlayer = toRet;
+    return toRet;
+}
+
+CMomentumPlayer* CMomentumPlayer::GetLocalPlayer()
+{
+    return s_pPlayer;
 }
 
 void CMomentumPlayer::Precache()
