@@ -28,7 +28,7 @@ END_DATADESC();
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_bHasJumped(false),
       m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0), m_nOldReplayButtons(0),
-      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_cvarReplaySelection("mom_replay_selection")
+      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_cvarReplaySelection("mom_replay_selection"), m_vecLastVel(vec3_origin)
 {
     StdDataToReplay = (DataToReplayFn)(GetProcAddress(GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
 
@@ -377,7 +377,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         Vector interpolatedVel;
         const float maxvel = sv_maxvelocity.GetFloat();
-        static Vector lastVel = vec3_origin;
 
         if (!bTeleportedNextFrame)
         {
@@ -389,12 +388,12 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
             interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
 
-            lastVel = interpolatedVel;
+            m_vecLastVel = interpolatedVel;
         }
         else
         {
             // HACK: Can't interpolate so just assume last one.
-            interpolatedVel = lastVel;
+            interpolatedVel = m_vecLastVel;
         }
 
         if (bTeleportedThisFrame)
