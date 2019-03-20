@@ -48,12 +48,28 @@ bool CBaseMomentumTrigger::PassesTriggerFilters(CBaseEntity* pOther)
 LINK_ENTITY_TO_CLASS(filter_momentum_track_number, CFilterTrackNumber);
 
 BEGIN_DATADESC(CFilterTrackNumber)
+    DEFINE_KEYFIELD(m_iTrackNumber, FIELD_INTEGER, "track_number"),
 END_DATADESC();
+
+CFilterTrackNumber::CFilterTrackNumber()
+{
+    m_iTrackNumber = -1;
+}
+
+bool CFilterTrackNumber::KeyValue(const char *szKeyName, const char *szValue)
+{
+    if (FStrEq(szKeyName, "track_number"))
+    {
+        m_iTrackNumber = clamp<int>(Q_atoi(szValue), -1, 255);
+        return true;
+    }
+    return BaseClass::KeyValue(szKeyName, szValue);
+}
 
 bool CFilterTrackNumber::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pEntity);
-    return (pEnt && pEnt->GetRunEntData()->m_iCurrentTrack == m_iTrackNumber);
+    return (m_iTrackNumber > -1 && pEnt && pEnt->GetRunEntData()->m_iCurrentTrack == m_iTrackNumber);
 }
 
 // -------------- BaseMomZoneTrigger ------------------------------
