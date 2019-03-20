@@ -20,12 +20,20 @@ class C_BaseMomZoneTrigger : public C_BaseEntity
 public:
     C_BaseMomZoneTrigger();
 
+    virtual bool ShouldDrawOutline() { return false; }
+    virtual bool GetOutlineColor() { return false; }
+
     void DrawOutlineModel(const Color &outlineColor);
+    bool ShouldDraw() OVERRIDE;
+    int DrawModel(int flags) OVERRIDE;
 
     int m_iTrackNumber;
 
     CUtlVector<Vector> m_vecZonePoints;
     float m_flZoneHeight;
+
+protected:
+    CTriggerOutlineRenderer m_OutlineRenderer;
 };
 
 class C_TriggerTimerStart : public C_BaseMomZoneTrigger
@@ -33,10 +41,8 @@ class C_TriggerTimerStart : public C_BaseMomZoneTrigger
   public:
     DECLARE_CLASS(C_TriggerTimerStart, C_BaseMomZoneTrigger);
     DECLARE_CLIENTCLASS();
-    bool ShouldDraw(void) OVERRIDE;
-    int DrawModel(int flags) OVERRIDE;
-private:
-    CTriggerOutlineRenderer m_OutlineRenderer;
+    bool ShouldDrawOutline() OVERRIDE;
+    bool GetOutlineColor() OVERRIDE;
 };
 
 class C_TriggerTimerStop : public C_BaseMomZoneTrigger
@@ -44,11 +50,29 @@ class C_TriggerTimerStop : public C_BaseMomZoneTrigger
   public:
     DECLARE_CLASS(C_TriggerTimerStop, C_BaseMomZoneTrigger);
     DECLARE_CLIENTCLASS();
-    bool ShouldDraw(void) OVERRIDE;
-    int DrawModel(int flags) OVERRIDE;
 
-private:
-    CTriggerOutlineRenderer m_OutlineRenderer;
+    bool ShouldDrawOutline() OVERRIDE;
+    bool GetOutlineColor() OVERRIDE;
+};
+
+class C_TriggerStage : public C_BaseMomZoneTrigger
+{
+public:
+    DECLARE_CLASS(C_TriggerStage, C_BaseMomZoneTrigger);
+    DECLARE_CLIENTCLASS();
+
+    bool ShouldDrawOutline() OVERRIDE;
+    bool GetOutlineColor() OVERRIDE;
+};
+
+class C_TriggerCheckpoint : public C_BaseMomZoneTrigger
+{
+public:
+    DECLARE_CLASS(C_TriggerCheckpoint, C_BaseMomZoneTrigger);
+    DECLARE_CLIENTCLASS();
+
+    bool ShouldDrawOutline() OVERRIDE;
+    bool GetOutlineColor() OVERRIDE;
 };
 
 class C_TriggerSlide : public C_BaseMomZoneTrigger

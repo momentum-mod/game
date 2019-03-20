@@ -152,6 +152,10 @@ class CTriggerCheckpoint : public CTriggerZone
 {
 public:
     DECLARE_CLASS(CTriggerCheckpoint, CTriggerZone);
+    DECLARE_NETWORKCLASS();
+
+    // always send to all clients
+    int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
 
     virtual bool LoadFromKeyValues(KeyValues* pKvFrom) OVERRIDE;
     virtual bool ToKeyValues(KeyValues* pKvInto) const OVERRIDE;
@@ -170,6 +174,10 @@ class CTriggerStage : public CTriggerZone
 {
 public:
     DECLARE_CLASS(CTriggerStage, CTriggerZone);
+    DECLARE_NETWORKCLASS();
+
+    // always send to all clients
+    int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
 
     virtual bool ToKeyValues(KeyValues *pKvInto) const OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
@@ -190,10 +198,8 @@ class CTriggerTimerStart : public CTriggerZone
 
     CTriggerTimerStart();
 
-    int UpdateTransmitState() // always send to all clients
-    {
-        return SetTransmitState(FL_EDICT_ALWAYS);
-    }
+    // always send to all clients
+    int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
 
     void Spawn() OVERRIDE;
 

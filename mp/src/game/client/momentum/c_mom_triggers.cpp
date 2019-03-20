@@ -9,15 +9,15 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_TOGGLE_CONVAR(mom_startzone_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable drawing an outline for start zone.");
+static MAKE_TOGGLE_CONVAR(mom_zone_start_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable drawing an outline for start zone.");
+static MAKE_TOGGLE_CONVAR(mom_zone_end_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable outline for end zone.");
+static MAKE_TOGGLE_CONVAR(mom_zone_stage_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable outline for stage zone(s).");
+static MAKE_TOGGLE_CONVAR(mom_zone_checkpoint_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable outline for checkpoint zone(s).");
 
-static MAKE_TOGGLE_CONVAR(mom_endzone_outline_enable, "1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Enable outline for end zone.");
-
-static ConVar mom_startzone_color("mom_startzone_color", "00FF00FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                  "Color of the start zone.");
-
-static ConVar mom_endzone_color("mom_endzone_color", "FF0000FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                "Color of the end zone.");
+static ConVar mom_zone_start_outline_color("mom_zone_start_outline_color", "00FF00FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the start zone.");
+static ConVar mom_zone_end_outline_color("mom_zone_end_outline_color", "FF0000FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the end zone.");
+static ConVar mom_zone_stage_outline_color("mom_zone_stage_outline_color", "0000FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the stage zone(s).");
+static ConVar mom_zone_checkpoint_outline_color("mom_zone_checkpoint_outline_color", "FFFF00FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Color of the checkpoint zone(s).");
 
 CTriggerOutlineRenderer::CTriggerOutlineRenderer()
 {
@@ -133,30 +133,30 @@ void C_BaseMomZoneTrigger::DrawOutlineModel(const Color& outlineColor)
     builder.End(false, true);
 }
 
-LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, C_TriggerTimerStart);
-
-IMPLEMENT_CLIENTCLASS_DT(C_TriggerTimerStart, DT_TriggerTimerStart, CTriggerTimerStart)
-END_RECV_TABLE();
-
-bool C_TriggerTimerStart::ShouldDraw() { return true; }
-
-int C_TriggerTimerStart::DrawModel(int flags)
+bool C_BaseMomZoneTrigger::ShouldDraw()
 {
-    if (mom_startzone_outline_enable.GetBool() && (flags & STUDIO_RENDER) != 0 &&
-        (flags & (STUDIO_SHADOWDEPTHTEXTURE | STUDIO_SHADOWDEPTHTEXTURE)) == 0)
+    return true;
+}
+
+int C_BaseMomZoneTrigger::DrawModel(int flags)
+{
+    if (ShouldDrawOutline())
     {
-        if (g_pMomentumUtil->GetColorFromHex(mom_startzone_color.GetString(), m_OutlineRenderer.outlineColor))
+        if ((flags & STUDIO_RENDER) && (flags & (STUDIO_SHADOWDEPTHTEXTURE | STUDIO_SHADOWDEPTHTEXTURE)) == 0)
         {
-            if (GetModel())
+            if (GetOutlineColor())
             {
-                render->InstallBrushSurfaceRenderer(&m_OutlineRenderer);
-                BaseClass::DrawModel(flags);
-                render->InstallBrushSurfaceRenderer(nullptr);
-            }
-            else
-            {
-                DrawOutlineModel(m_OutlineRenderer.outlineColor);
-                return 1;
+                if (GetModel())
+                {
+                    render->InstallBrushSurfaceRenderer(&m_OutlineRenderer);
+                    BaseClass::DrawModel(flags);
+                    render->InstallBrushSurfaceRenderer(nullptr);
+                }
+                else
+                {
+                    DrawOutlineModel(m_OutlineRenderer.outlineColor);
+                    return 1;
+                }
             }
         }
     }
@@ -167,38 +167,64 @@ int C_TriggerTimerStart::DrawModel(int flags)
     return BaseClass::DrawModel(flags);
 }
 
+LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, C_TriggerTimerStart);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerTimerStart, DT_TriggerTimerStart, CTriggerTimerStart)
+END_RECV_TABLE();
+
+bool C_TriggerTimerStart::ShouldDrawOutline()
+{
+    return mom_zone_start_outline_enable.GetBool();
+}
+
+bool C_TriggerTimerStart::GetOutlineColor()
+{
+    return g_pMomentumUtil->GetColorFromHex(mom_zone_start_outline_color.GetString(), m_OutlineRenderer.outlineColor);
+}
+
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, C_TriggerTimerStop);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerTimerStop, DT_TriggerTimerStop, CTriggerTimerStop)
 END_RECV_TABLE();
 
-bool C_TriggerTimerStop::ShouldDraw() { return true; }
-
-int C_TriggerTimerStop::DrawModel(int flags)
+bool C_TriggerTimerStop::ShouldDrawOutline()
 {
-    if (mom_endzone_outline_enable.GetBool() && (flags & STUDIO_RENDER) != 0 &&
-        (flags & (STUDIO_SHADOWDEPTHTEXTURE | STUDIO_SHADOWDEPTHTEXTURE)) == 0)
-    {
-        if (g_pMomentumUtil->GetColorFromHex(mom_endzone_color.GetString(), m_OutlineRenderer.outlineColor))
-        {
-            if (GetModel())
-            {
-                render->InstallBrushSurfaceRenderer(&m_OutlineRenderer);
-                BaseClass::DrawModel(flags);
-                render->InstallBrushSurfaceRenderer(nullptr);
-            }
-            else
-            {
-                DrawOutlineModel(m_OutlineRenderer.outlineColor);
-                return 1;
-            }
-        }
-    }
+    return mom_zone_end_outline_enable.GetBool();
+}
 
-    if (IsEffectActive(EF_NODRAW))
-        return 1;
+bool C_TriggerTimerStop::GetOutlineColor()
+{
+    return g_pMomentumUtil->GetColorFromHex(mom_zone_end_outline_color.GetString(), m_OutlineRenderer.outlineColor);
+}
 
-    return BaseClass::DrawModel(flags);
+LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, C_TriggerStage);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerStage, DT_TriggerStage, CTriggerStage)
+END_RECV_TABLE();
+
+bool C_TriggerStage::ShouldDrawOutline()
+{
+    return mom_zone_stage_outline_enable.GetBool();
+}
+
+bool C_TriggerStage::GetOutlineColor()
+{
+    return g_pMomentumUtil->GetColorFromHex(mom_zone_stage_outline_color.GetString(), m_OutlineRenderer.outlineColor);
+}
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, C_TriggerCheckpoint);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerCheckpoint, DT_TriggerCheckpoint, CTriggerCheckpoint)
+END_RECV_TABLE();
+
+bool C_TriggerCheckpoint::ShouldDrawOutline()
+{
+    return mom_zone_checkpoint_outline_enable.GetBool();
+}
+
+bool C_TriggerCheckpoint::GetOutlineColor()
+{
+    return g_pMomentumUtil->GetColorFromHex(mom_zone_checkpoint_outline_color.GetString(), m_OutlineRenderer.outlineColor);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
