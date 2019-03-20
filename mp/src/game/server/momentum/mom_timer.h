@@ -33,19 +33,19 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // ------------- Timer state related messages --------------------------
     // Starts the timer for the given starting tick
     // Returns true if timer successfully started, otherwise false
-    bool Start(int startTick, int iTrackNum);
+    bool Start(CMomentumPlayer *pPlayer);
     // Stops the timer
     // If bFinished is true the timer will dispatch a TIMER_EVENT_FINISHED event leading to the time being saved,
     // otherwise TIMER_EVENT_STOPPED is dispatched.
     // If bStopRecording is true the timer will stop the replay recording. If bFinished is true an
     // attempt will be made to also save the replay
-    void Stop(bool bFinished = false, bool bStopRecording = true);
+    void Stop(CMomentumPlayer *pPlayer, bool bFinished = false, bool bStopRecording = true);
     // Resets timer as well as all player stats
-    void Reset();
+    void Reset(CMomentumPlayer *pPlayer);
     // Is the timer running?
     bool IsRunning() const { return m_bIsRunning; }
     // Set the running status of the timer
-    void SetRunning(bool running);
+    void SetRunning(CMomentumPlayer *pPlayer, bool running);
 
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
@@ -72,6 +72,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     float CalculateStageTime(int stageNum);
     // Gets the time for the last run, if there was one
     float GetLastRunTime();
+    int GetLastRunTimeTicks();
     // Gets the date achieved for the last run.
     time_t GetLastRunDate() const { return m_iLastRunDate; }
 
@@ -111,16 +112,13 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
 
-    void OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum);
-    void OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum);
     void OnPlayerSpawn(CMomentumPlayer *pPlayer);
-
-  private:
-    void OnPlayerJump(KeyValues *kv);
-    void OnPlayerLand(KeyValues *kv);
 
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
+  private:
+    void OnPlayerJump(KeyValues *kv);
+    void OnPlayerLand(KeyValues *kv);
 
     void DispatchNoZonesMsg() const;
 

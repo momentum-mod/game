@@ -63,40 +63,33 @@ void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
 {
     CMomRunEntityData *pData = GetRunEntData();
 
-    // Needs to be done because OnStartTouch is called before OnEndTouch, when 
-    // teleporting out of this zone (saveloc, spectating, etc)
-    if (pData->m_iCurrentZone == pTrigger->GetZoneNumber())
+    // Zone-specific things first
+    switch (pTrigger->GetZoneType())
     {
-        // Zone-specific things first
-        switch (pTrigger->GetZoneType())
-        {
-        case ZONE_TYPE_START:
-            break;
-        case ZONE_TYPE_STOP:
-            pData->m_iCurrentTrack = pData->m_iOldTrack;
-            pData->m_iCurrentZone = pData->m_iOldZone;
-            break;
+    case ZONE_TYPE_START:
+        break;
+    case ZONE_TYPE_STOP:
+        pData->m_iCurrentTrack = pData->m_iOldTrack;
+        pData->m_iCurrentZone = pData->m_iOldZone;
+        break;
+    case ZONE_TYPE_CHECKPOINT:
+        break;
+    case ZONE_TYPE_STAGE:
 
-        case ZONE_TYPE_CHECKPOINT:
-            break;
-        case ZONE_TYPE_STAGE:
+    default:
+        break;
+    }
 
-        default:
-            break;
-        }
+    pData->m_bMapFinished = false;
+    pData->m_bIsInZone = false;
 
-
-        pData->m_bMapFinished = false;
-        pData->m_bIsInZone = false;
-
-        IGameEvent *pEvent = gameeventmanager->CreateEvent("zone_exit");
-        if (pEvent)
-        {
-            pEvent->SetInt("ent", pEnt->entindex());
-            pEvent->SetInt("zone_ent", pTrigger->entindex());
-            pEvent->SetInt("num", pTrigger->GetZoneNumber());
-            gameeventmanager->FireEvent(pEvent);
-        }
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("zone_exit");
+    if (pEvent)
+    {
+        pEvent->SetInt("ent", pEnt->entindex());
+        pEvent->SetInt("zone_ent", pTrigger->entindex());
+        pEvent->SetInt("num", pTrigger->GetZoneNumber());
+        gameeventmanager->FireEvent(pEvent);
     }
 }
 

@@ -1,8 +1,4 @@
-#ifndef DOORFIX_H
-#define DOORFIX_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #define MAX_BHOPBLOCKS 1024
 #define BLOCK_TELEPORT 0.11
@@ -38,5 +34,3 @@ class CMOMBhopBlockFixSystem : public CAutoGameSystem
 };
 
 extern CMOMBhopBlockFixSystem *g_MOMBlockFixer;
-
-#endif // DOORFIX_H

@@ -682,7 +682,8 @@ void CMomentumPlayer::ToggleBhop(bool bEnable)
 void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
 {
     // Zone-specific things first
-    switch (pTrigger->GetZoneType())
+    const auto iZoneType = pTrigger->GetZoneType();
+    switch (iZoneType)
     {
     case ZONE_TYPE_START:
         {
@@ -696,22 +697,88 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
             m_bTimerStartOnJump = pStartTrigger->StartOnJump();
             m_iLimitSpeedType = pStartTrigger->GetLimitSpeedType();
             m_bShouldLimitPlayerSpeed = pStartTrigger->IsLimitingSpeed();
+
+            // Reset timer when we enter start zone
+            g_pMomentumTimer->SetStartTrigger(pStartTrigger);
+            g_pMomentumTimer->SetCurrentZone(pStartTrigger);
+            g_pMomentumTimer->Reset(this);
         }
         break;
     case ZONE_TYPE_STOP:
-        // N/A
-        break;
+        {
+            // We've reached end zone, stop here
+            auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
+            g_pMomentumTimer->SetEndTrigger(pStopTrigger);
 
+            if (g_pMomentumTimer->IsRunning() && !IsSpectatingGhost() && !m_bHasPracticeMode)
+            {
+                const int zoneNum = m_Data.m_iCurrentZone;
+
+                // This is needed so we have an ending velocity.
+
+                const float endvel = GetLocalVelocity().Length();
+                const float endvel2D = GetLocalVelocity().Length2D();
+
+                m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
+
+                // Check to see if we should calculate the timer offset fix
+                if (pStopTrigger->ContainsPosition(GetPreviousOrigin()))
+                    DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
+                else
+                {
+                    DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
+                    g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP);
+                }
+
+                // This is needed for the final stage
+                m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
+                                                m_RunStats.GetZoneEnterTime(zoneNum));
+
+                // Ending velocity checks
+                float finalVel = endvel;
+                float finalVel2D = endvel2D;
+
+                if (endvel <= m_RunStats.GetZoneVelocityMax(0, false))
+                    finalVel = m_RunStats.GetZoneVelocityMax(0, false);
+
+                if (endvel2D <= m_RunStats.GetZoneVelocityMax(0, true))
+                    finalVel2D = m_RunStats.GetZoneVelocityMax(0, true);
+
+                m_RunStats.SetZoneVelocityMax(0, finalVel, finalVel2D);
+                m_RunStats.SetZoneExitSpeed(0, endvel, endvel2D);
+
+                // Stop the timer
+                g_pMomentumTimer->Stop(this, true);
+                m_Data.m_flTickRate = gpGlobals->interval_per_tick;
+                m_Data.m_iRunTimeTicks = g_pMomentumTimer->GetLastRunTimeTicks();
+                // The map is now finished, show the mapfinished panel
+                m_Data.m_bMapFinished = true;
+                m_Data.m_bTimerRunning = false;
+            }
+        }
+        break;
     case ZONE_TYPE_CHECKPOINT:
         break;
     case ZONE_TYPE_STAGE:
+        {
+            const auto pStageTrigger = static_cast<CTriggerStage *>(pTrigger);
+            g_pMomentumTimer->SetCurrentZone(pStageTrigger);
 
+            if (g_pMomentumTimer->IsRunning())
+            {
+                const int zoneNum = pTrigger->GetZoneNumber();
+                m_RunStats.SetZoneExitSpeed(zoneNum - 1, GetLocalVelocity().Length(),
+                                            GetLocalVelocity().Length2D());
+                g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP);
+                const float fCurrentZoneEnterTime = g_pMomentumTimer->CalculateStageTime(zoneNum);
+                m_RunStats.SetZoneEnterTime(zoneNum, fCurrentZoneEnterTime);
+                m_RunStats.SetZoneTime(zoneNum - 1, fCurrentZoneEnterTime -
+                                       g_pMomentumTimer->CalculateStageTime(zoneNum - 1));
+            }
+        }
     default:
         break;
     }
-
-    // MOM_TODO move this in here
-    g_pMomentumTimer->OnPlayerEnterZone(this, pTrigger, pTrigger->GetZoneNumber());
 
     CMomRunEntity::OnZoneEnter(pTrigger, pEnt);
 }
@@ -719,30 +786,37 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
 void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
 {
     // We only care to go through with this if we're not spectating now
-    if (m_Data.m_iCurrentZone == pTrigger->GetZoneNumber() && m_iObserverMode == OBS_MODE_NONE)
+    if (m_iObserverMode == OBS_MODE_NONE)
     {
         // Zone-specific things first
         switch (pTrigger->GetZoneType())
         {
-        case ZONE_TYPE_START:
-            m_bShouldLimitPlayerSpeed = false;
-            break;
         case ZONE_TYPE_STOP:
             SetLaggedMovementValue(1.0f); // Reset slow motion
-
             break;
-
         case ZONE_TYPE_CHECKPOINT:
             break;
+        case ZONE_TYPE_START:
+            g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START);
+            g_pMomentumTimer->TryStart(this, true);
+            m_bShouldLimitPlayerSpeed = false;
+            // No break here, we want to fall through; this handles both the start and stage triggers
         case ZONE_TYPE_STAGE:
-
+            {
+                const auto zoneNum = pTrigger->GetZoneNumber();
+                // Timer won't be running if it's the start trigger
+                if ((zoneNum == 1 || g_pMomentumTimer->IsRunning()) && !m_bHasPracticeMode)
+                {
+                    const auto enterVel3D = GetLocalVelocity().Length(),
+                        enterVel2D = GetLocalVelocity().Length2D();
+                    m_RunStats.SetZoneEnterSpeed(zoneNum, enterVel3D, enterVel2D);
+                    if (zoneNum == 1)
+                        m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
+                }
+            }
         default:
             break;
         }
-
-
-        // MOM_TODO: move this in here
-        g_pMomentumTimer->OnPlayerExitZone(this, pTrigger, pTrigger->GetZoneNumber());
 
         CMomRunEntity::OnZoneExit(pTrigger, pEnt);
     }
