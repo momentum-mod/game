@@ -126,8 +126,9 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
             m_iEndTick = gpGlobals->tickcount;
             g_ReplaySystem.SetTimerStopTick(m_iEndTick);
             time(&m_iLastRunDate); // Set the last run date for the replay
-            DispatchTimerEventMessage(pPlayer, TIMER_EVENT_FINISHED);
         }
+
+        DispatchTimerEventMessage(pPlayer, bFinished ? TIMER_EVENT_FINISHED : TIMER_EVENT_STOPPED);
     }
 
     // Stop replay recording, if there was any
