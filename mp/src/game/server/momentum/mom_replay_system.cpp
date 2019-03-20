@@ -288,7 +288,7 @@ void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
 
 void CMomentumReplaySystem::SetTeleportedThisFrame()
 {
-    if ( m_bRecording )
+    if (m_bRecording)
     {
         m_bTeleportedThisFrame = true;
     }
