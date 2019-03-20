@@ -77,6 +77,9 @@ public:
     DECLARE_CLASS(CFilterTrackNumber, CBaseFilter);
     DECLARE_DATADESC();
 
+    CFilterTrackNumber();
+    bool KeyValue(const char *szKeyName, const char *szValue) override;
+
     bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) OVERRIDE;
 
 private:

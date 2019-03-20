@@ -38,7 +38,21 @@
 //
 //-------------------------------------------------------------------------
 
-@BaseClass base(Trigger) = TeleTrigger
+@BaseClass = TrackNum
+[
+    track_number(integer) : "Track Number" : -1 : "Track number that this entity belongs to. -1 = all tracks, 0 = main map, > 0 = bonus zone (of that number)."
+]
+
+@BaseClass base(Trigger, TrackNum) = MomentumTrigger []
+
+@FilterClass base(Targetname, TrackNum) = filter_momentum_track_number : "Filter a player based on if their track number is the one defined here. -1 defaults to true." []
+
+@BaseClass base(MomentumTrigger) = ZoneTrigger
+[
+    zone_number(integer) : "Zone Number" : 0 : "The zone number of this trigger. NOTE: 0 is reserved for invalid/stop trigger, 1 is reserved for start! 2+ are free for your stage/checkpoint triggers, so start at 2!"
+]
+
+@BaseClass base(MomentumTrigger) = TeleTrigger
 [
     target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
     
@@ -59,7 +73,7 @@
 [
     hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this (in seconds), teleport them to the most recent checkpoint."
 	//being worked
-	//holdteleport(float) : "Time before reset teleport delay" : 1 : "If the player had activated previously the teleport, desactivate it by this amount of time (seconds)."
+	//holdteleport(float) : "Time before reset teleport delay" : 1 : "If the player had activated previously the teleport, deactivate it by this amount of time (seconds)."
 ]
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
@@ -82,41 +96,39 @@
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
+@SolidClass base(ZoneTrigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
 [
 	bhopleavespeed(float) : "Max leave speed" : 250 : "Max speed (Units Per Second) the player will be able to leave the trigger depending of the limit speed type inside the start zone."
 	lookangles(angle) : "Look angles" : "0 0 0" : "Where player will look when teleported to start."
 	StartOnJump(integer) : "Start timer on jump" : 1 : "Start the timer when the player jump in the start zone/trigger zone."
 	LimitSpeedType(integer) : "Limit speed type" : 0 : "0) Limit the speed of the player no matter what. 1) Limit the speed only in air. 2) Limit the speed only on ground. 3) Limit the speed only on landing."
-	ZoneNumber(integer) : "Number of zone" : 0 : "0 Is the main zone, and all others numbers are for bonus zones."
 	spawnflags(flags) =
-	[	
+	[
 		8192: "Limit leave speed" : 1
 		16384: "Use look angles" : 0
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." 
+@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." []
+
+@SolidClass base(ZoneTrigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!" []
+
+@SolidClass base(ZoneTrigger) = trigger_momentum_timer_checkpoint : "Trigger used to denote progress in a linear map. trigger_momentum_timer_start is automatically checkpoint (zone number) 1!" []
+
+@SolidClass base(MomentumTrigger) = trigger_momentum_progress : "Used for storing a discrete progress number in the player."
 [
-	ZoneNumber(integer) : "Number of zone" : 0 : "0 Is the main zone, and all others numbers are for bonus zones."
+    progress_number(integer) : "Progress Number" : -1 : "An optional number to assign to this progress trigger, used by filter_momentum_progress."
+    output OnResetOnehops(void) : "Fired when the player touches this trigger."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!"
+@FilterClass base(Targetname) = filter_momentum_progress : "Filter that checks to see if the player is at or above the given progress number."
 [
-    stage(integer) : "Stage Number" : 2 : "The stage number that correlates to the part of map. 1 is automatically set by trigger_momentum_timer_start!"
+	progress_check(integer) : "Minimum req. prog. num" : -1 : "The minimum progress number that the player needs to be at in order for the filter to accept them."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_timer_checkpoint : "Trigger that saves current position. Used by trigger_momentum_teleport_checkpoint." 
-[
-    checkpoint(integer) : "Checkpoint Number" : -1 : "An optional number to assign to this checkpoint, used by filter_activator_checkpoint."
-]
+@SolidClass base(TeleTrigger) = trigger_momentum_teleport_progress : "Trigger that teleports the player to their last touched trigger_momentum_progress." []
 
-@SolidClass base(TeleTrigger) = trigger_momentum_teleport_checkpoint : "Trigger that teleports to the last trigger_momentum_timer_checkpoint." 
-[
-	output OnResetOnehops(void) : "Fires when all hops are being reset."
-]
-
-@SolidClass base(Trigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." 
+@SolidClass base(MomentumTrigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." 
 [
 	output OnResetOnehops(void) : "Fires when all hops are being reset."
 ]
@@ -151,7 +163,7 @@
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_limitmovement : "Trigger that prevents the player from doing specific keypress movements."
+@SolidClass base(MomentumTrigger) = trigger_momentum_limitmovement : "Trigger that prevents the player from doing specific keypress movements."
 [
 	spawnflags(flags) = 
 	[
@@ -163,11 +175,6 @@
         262144: "Prevent the player from crouching" : 0
 		524288: "Prevent the player from bhopping" : 0
 	]
-]
-
-@FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at or above the given checkpoint number."
-[
-	checkpoint(integer) : "Minimum req. checkpoint" : -2 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator."
 ]
 
 @SolidClass = func_ladder : 
@@ -201,7 +208,7 @@
     health(float) : "Strength" : 1 : "Number of points of damage to take before breaking. IT HAS TO BE ABOVE 0."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_push : 
+@SolidClass base(MomentumTrigger) = trigger_momentum_push : 
 	"A trigger volume that modifies velocity of players that touch it."
 [
 	pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
@@ -223,7 +230,7 @@
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working properly brushes must be placed under the trigger." 
+@SolidClass base(MomentumTrigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working properly brushes must be placed under the trigger." 
 [
 	StuckOnGround(integer) : "Stuck to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddently down"
 	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding? (doesn't work with stuckonground option.)"
@@ -231,7 +238,7 @@
 	FixUpsideSlope(integer) : "Fix Upside Slopes" : 0 : "When sometimes mounting a slope, you lose velocity, enable this to not lose speed while going up on the slopes."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_reversespeed : "Trigger for reversing the speed of the momentum player." 
+@SolidClass base(MomentumTrigger) = trigger_momentum_reversespeed : "Trigger for reversing the speed of the momentum player." 
 [
 	ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
 	ReverseVertical(integer) : "Reverse vertical speed" : 1 : "Reverse the z velocity."
@@ -239,7 +246,7 @@
 	Interval(float) : "Interval" : 1 : "Set here in seconds how many time the trigger should update."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_setspeed : "Trigger for setting speed of the momentum player." 
+@SolidClass base(MomentumTrigger) = trigger_momentum_setspeed : "Trigger for setting speed of the momentum player." 
 [	
 	KeepHorizontalSpeed(integer) : "Keep horizontal speed" : 0 : "If you want to keep the horizontal (x/y axis velocity based) speed, set it to 1."
 	KeepVerticalSpeed(integer) : "Keep vertical speed" : 0 : "If you want to keep the vertical (z axis velocity based) speed, set it to 1."
@@ -265,7 +272,7 @@
 	FootSteps(integer) : "Foot steps sound" : 1 : "Enable/Disable foot steps sounds."
 	SwimSound(integer) : "Swim sound" : 1 : "Enable/Disable swimming sounds."
 ]
-@SolidClass base(Trigger) = trigger_momentum_speedthreshold : "Trigger that fires an output when speed is on the threshold." 
+@SolidClass base(MomentumTrigger) = trigger_momentum_speedthreshold : "Trigger that fires an output when speed is on the threshold." 
 [	
 	AboveOrBelow(integer) : "Above or below" : 0 : "Fires output when: 0) Above 1) Below."
 	Vertical(integer) : "Vertical" : 1 : "Activate the threshold for vertical speed."
@@ -305,7 +312,7 @@
     ]
 ]
 
-@FilterClass base(Targetname, Campaign) = filter_momentum_progress : "Filter that checks to see if the local player has beat the given stage of a given world."
+@FilterClass base(Targetname, Campaign) = filter_momentum_campaign_progress : "Filter that checks to see if the local player has beat the given stage of a given world."
 [
 ]
 
@@ -323,7 +330,7 @@
     ]
 ]
 
-@SolidClass base(Trigger, GameTypes, Campaign) = trigger_momentum_campaign_changelevel : "Trigger that changes the level to the specified world's stage of a given gametype. World number of -1 will teleport to the Hub." 
+@SolidClass base(MomentumTrigger, GameTypes, Campaign) = trigger_momentum_campaign_changelevel : "Trigger that changes the level to the specified world's stage of a given gametype. World number of -1 will teleport to the Hub." 
 [
 	map_name_override(string) : "Map Name Override" : "" : "If set, this trigger will load this specific map name."
 ]
