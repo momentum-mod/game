@@ -24,12 +24,12 @@ class CMomReplayBase : public ISerializable
     virtual const char *GetPlayerName() { return m_rhHeader.m_szPlayerName; }
     virtual uint64 GetPlayerSteamID() { return m_rhHeader.m_ulSteamID; }
     virtual float GetTickInterval() { return m_rhHeader.m_fTickInterval; }
-    virtual float GetRunTime() { return m_rhHeader.m_fRunTime; }
+    virtual float GetRunTime() { return m_rhHeader.m_fTickInterval * float(m_rhHeader.m_iStopTick - m_rhHeader.m_iStartTick); }
     virtual int GetStartTick() { return m_rhHeader.m_iStartTick; }
     virtual int GetStopTick() { return m_rhHeader.m_iStopTick; }
     virtual uint32 GetRunFlags() { return m_rhHeader.m_iRunFlags; }
     virtual time_t GetRunDate() { return m_rhHeader.m_iRunDate; }
-    virtual int32 GetBonusZone() { return m_rhHeader.m_iBonusZone; }
+    virtual uint8 GetTrackNumber() { return m_rhHeader.m_iTrackNumber; }
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
     virtual const char *GetRunHash() { return m_pszRunHash; }
 
@@ -39,12 +39,11 @@ class CMomReplayBase : public ISerializable
     virtual void SetPlayerName(const char *name) { Q_strncpy(m_rhHeader.m_szPlayerName, name, sizeof(m_rhHeader.m_szPlayerName)); }
     virtual void SetPlayerSteamID(uint64 steamID) { m_rhHeader.m_ulSteamID = steamID; }
     virtual void SetTickInterval(float interval) { m_rhHeader.m_fTickInterval = interval; }
-    virtual void SetRunTime(float runTime) { m_rhHeader.m_fRunTime = runTime; }
     virtual void SetStartTick(int iStart) { m_rhHeader.m_iStartTick = iStart; }
     virtual void SetStopTick(int iStop) { m_rhHeader.m_iStopTick = iStop; }
     virtual void SetRunFlags(uint32 runFlags) { m_rhHeader.m_iRunFlags = runFlags; }
     virtual void SetRunDate(time_t date) { m_rhHeader.m_iRunDate = date; }
-    virtual void SetBonusZone(int32 bonus) { m_rhHeader.m_iBonusZone = bonus; }
+    virtual void SetTrackNumber(uint8 track) { m_rhHeader.m_iTrackNumber = track; }
     virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
     virtual void SetRunHash(const char *pHash) { Q_strncpy(m_pszRunHash, pHash, sizeof(m_pszRunHash)); }
 

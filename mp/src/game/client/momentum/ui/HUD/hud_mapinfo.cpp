@@ -119,15 +119,15 @@ void C_HudMapInfo::OnThink()
         {
             if (m_iCurrentZone == 1) // Start zone
             {
-                m_pMainStatusLabel->SetText(m_pRunData->m_iBonusZone == 0 ? 
+                m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ? 
                                             m_wMainStart :
-                                            CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iBonusZone.Get()));
+                                            CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iCurrentTrack.Get()));
             }
             else if (m_iCurrentZone == 0) // End zone
             {
-                m_pMainStatusLabel->SetText(m_pRunData->m_iBonusZone == 0 ? 
+                m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ? 
                                             m_wMainEnd :
-                                            CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iBonusZone.Get()));
+                                            CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iCurrentTrack.Get()));
             }
             else if (m_pRunData->m_bMapFinished) // MOM_TODO does this even need to be here anymore? "Main End Zone" covers this
             {
@@ -142,9 +142,9 @@ void C_HudMapInfo::OnThink()
         }
         else
         {
-            if (m_pRunData->m_iBonusZone > 0)
+            if (m_pRunData->m_iCurrentTrack > 0)
             {
-                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iBonusZone.Get()));
+                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iCurrentTrack.Get()));
             }
             else if (g_MOMEventListener->m_iMapZoneCount > 0)
             {

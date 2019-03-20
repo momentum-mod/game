@@ -18,12 +18,12 @@ public:
     DECLARE_EMBEDDED_NETWORKVAR();
 
     // struct data;
-    CMomRunStats(uint8 size = MAX_STAGES);
+    CMomRunStats(uint8 size = MAX_ZONES);
     CMomRunStats(CUtlBuffer &reader);
     virtual ~CMomRunStats() {}
 
     // Note: This needs updating every time the struct is updated!
-    void Init(uint8 size = MAX_STAGES);
+    void Init(uint8 size = MAX_ZONES);
 
     // Note: This needs updating every time the struct is updated!
     void Deserialize(CUtlBuffer &reader);
@@ -61,18 +61,18 @@ public:
     void SetZoneExitSpeed(int zone, float vert, float hor);
 
     CNetworkVar(uint8, m_iTotalZones);
-    CNetworkArray(int, m_iZoneJumps, MAX_STAGES + 1);
-    CNetworkArray(int, m_iZoneStrafes, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneTime, MAX_STAGES + 1); // MOM_TODO change to ticks
-    CNetworkArray(float, m_flZoneEnterTime, MAX_STAGES + 1); // MOM_TODO change to ticks
-    CNetworkArray(float, m_flZoneStrafeSyncAvg, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneStrafeSync2Avg, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneEnterSpeed3D, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneEnterSpeed2D, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneVelocityMax3D, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneVelocityMax2D, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneVelocityAvg3D, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneVelocityAvg2D, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneExitSpeed3D, MAX_STAGES + 1);
-    CNetworkArray(float, m_flZoneExitSpeed2D, MAX_STAGES + 1);
+    CNetworkArray(int, m_iZoneJumps, MAX_ZONES + 1);
+    CNetworkArray(int, m_iZoneStrafes, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneTime, MAX_ZONES + 1); // MOM_TODO change to ticks
+    CNetworkArray(float, m_flZoneEnterTime, MAX_ZONES + 1); // MOM_TODO change to ticks
+    CNetworkArray(float, m_flZoneStrafeSyncAvg, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneStrafeSync2Avg, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneEnterSpeed3D, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneEnterSpeed2D, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneVelocityMax3D, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneVelocityMax2D, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneVelocityAvg3D, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneVelocityAvg2D, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneExitSpeed3D, MAX_ZONES + 1);
+    CNetworkArray(float, m_flZoneExitSpeed2D, MAX_ZONES + 1);
 };

@@ -59,12 +59,12 @@ void CWeaponBaseGun::ItemPostFrame()
     if ((m_flNextPrimaryAttack <= gpGlobals->curtime) && (pPlayer->m_bResumeZoom))
     {
 #ifndef CLIENT_DLL
-        pPlayer->SetFOV(pPlayer, pPlayer->m_iLastZoom, 0.05f);
+        pPlayer->SetFOV(pPlayer, pPlayer->m_iLastZoomFOV, 0.05f);
         
         // Make sure we think that we are zooming on the server so we don't get instant acc bonus
         m_zoomFullyActiveTime = gpGlobals->curtime + 0.05f; 
 
-        if (pPlayer->GetFOV() == pPlayer->m_iLastZoom)
+        if (pPlayer->GetFOV() == pPlayer->m_iLastZoomFOV)
         {
             // return the fade level in zoom.
             pPlayer->m_bResumeZoom = false;

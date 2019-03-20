@@ -293,7 +293,7 @@ void CMOMSpectatorGUI::Update()
                 // Run time label
                 char tempRunTime[BUFSIZETIME];
                 wchar_t wTime[BUFSIZETIME];
-                g_pMomentumUtil->FormatTime(pReplayEnt->m_Data.m_flRunTime, tempRunTime);
+                g_pMomentumUtil->FormatTime(float(pReplayEnt->m_Data.m_iRunTimeTicks) * pReplayEnt->m_Data.m_flTickRate, tempRunTime);
                 ANSI_TO_UNICODE(tempRunTime, wTime);
                 m_pTimeLabel->SetText(CConstructLocalizedString(m_pwRunTime, wTime));
 

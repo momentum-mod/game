@@ -83,13 +83,12 @@ class CReplayHeader : public ISerializable
         reader.GetStringManualCharCount(steamID, sizeof(steamID));
         m_ulSteamID = Q_atoui64(steamID);
         m_fTickInterval = reader.GetFloat();
-        m_fRunTime = reader.GetFloat();
         m_iRunFlags = reader.GetUnsignedInt();
         char date[20];
         reader.GetStringManualCharCount(date, sizeof(date));
         m_iRunDate = Q_atoui64(date);
         m_iStartTick = reader.GetInt();
-        m_iBonusZone = reader.GetInt();
+        m_iTrackNumber = reader.GetUnsignedChar();
         m_iStopTick = reader.GetInt();
     }
 
@@ -103,13 +102,12 @@ class CReplayHeader : public ISerializable
         Q_snprintf(temp, 20, "%llu", m_ulSteamID);
         writer.PutString(temp);
         writer.PutFloat(m_fTickInterval);
-        writer.PutFloat(m_fRunTime);
         writer.PutUnsignedInt(m_iRunFlags);
         char date[20];
         Q_snprintf(date, 20, "%ld", m_iRunDate);
         writer.PutString(date);
         writer.PutInt(m_iStartTick);
-        writer.PutInt(m_iBonusZone);
+        writer.PutUnsignedChar(m_iTrackNumber);
         writer.PutInt(m_iStopTick);
     }
 
@@ -120,12 +118,11 @@ class CReplayHeader : public ISerializable
         Q_strncpy(m_szPlayerName, other.m_szPlayerName, sizeof(m_szPlayerName));
         m_ulSteamID = other.m_ulSteamID;
         m_fTickInterval = other.m_fTickInterval;
-        m_fRunTime = other.m_fRunTime;
         m_iRunFlags = other.m_iRunFlags;
         m_iRunDate = other.m_iRunDate;
         m_iStartTick = other.m_iStartTick;
         m_iStopTick = other.m_iStopTick;
-        m_iBonusZone = other.m_iBonusZone;
+        m_iTrackNumber = other.m_iTrackNumber;
         return *this;
     }
 
@@ -135,10 +132,9 @@ class CReplayHeader : public ISerializable
     char m_szPlayerName[MAX_PLAYER_NAME_LENGTH]; // The name of the player that did this run.
     uint64 m_ulSteamID;                          // The steamID of the player that did this run.
     float m_fTickInterval;                       // The tickrate of the run.
-    float m_fRunTime;                            // The total runtime of the run in seconds.
     uint32 m_iRunFlags;                          // The flags the player ran with.
     time_t m_iRunDate;                           // The date this run was achieved.
     int m_iStartTick;                            // The tick where the timer was started (difference from record start -> timer start)
     int m_iStopTick;                             // The tick where the timer was stopped
-    int m_iBonusZone;                            // The bonus zone number
+    uint8 m_iTrackNumber;                        // The track number (0 = main map, 1+ = bonus)
 };

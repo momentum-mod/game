@@ -271,7 +271,7 @@ float CHudTimer::GetCurrentTime()
     if (m_bIsReplay && m_pSpecTarget)
     {
         if (m_pRunData->m_bTimerRunning && m_pCurrentGhostTicks)
-            m_iTotalTicks = m_pSpecTarget->m_iCurrentTick - m_pSpecTarget->m_iStartTickD;
+            m_iTotalTicks = m_pSpecTarget->m_iCurrentTick - m_pRunData->m_iStartTick;
         else
             m_iTotalTicks = m_pRunData->m_iRunTimeTicks;
     }

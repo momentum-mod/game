@@ -31,7 +31,7 @@ CMomentumTimer::CMomentumTimer(const char *pName)
     : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
       m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr),
-      m_pStartZoneMark(nullptr), m_iBonusZone(0), m_bShouldUseStartZoneOffset(false)
+      m_pStartZoneMark(nullptr), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 }
 
@@ -72,7 +72,7 @@ void CMomentumTimer::FrameUpdatePreEntityThink()
     }
 }
 
-bool CMomentumTimer::Start(int start, int iBonusZone)
+bool CMomentumTimer::Start(int start, int iTrackNum)
 {
     static ConVarRef mom_zone_edit("mom_zone_edit");
 
@@ -107,6 +107,7 @@ bool CMomentumTimer::Start(int start, int iBonusZone)
     m_iStartTick = start;
     m_iEndTick = 0;
     m_iLastRunDate = 0;
+    m_iTrackNumber = iTrackNum;
     SetRunning(true);
 
     // Dispatch a start timer message for the local player
@@ -147,7 +148,6 @@ void CMomentumTimer::Reset()
     pPlayer->ResetRunStats();                        // Reset run stats
     pPlayer->m_Data.m_bMapFinished = false;
     pPlayer->m_Data.m_bTimerRunning = false;
-    pPlayer->m_Data.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
 
     if (g_pMomentumTimer->IsRunning())
     {
@@ -258,7 +258,6 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomZoneTri
         SetEndTrigger(pStopTrigger);
 
         if (IsRunning() && !pPlayer->IsSpectatingGhost() &&
-            pPlayer->m_Data.m_iBonusZone == pStopTrigger->GetZoneNumber() &&
             !pPlayer->m_bHasPracticeMode)
         {
             int zoneNum = pPlayer->m_Data.m_iCurrentZone;
@@ -299,7 +298,7 @@ void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomZoneTri
 
             // Stop the timer
             Stop(true);
-            pPlayer->m_Data.m_flRunTime = GetLastRunTime();
+            pPlayer->m_Data.m_flTickRate = gpGlobals->interval_per_tick;
             pPlayer->m_Data.m_iRunTimeTicks = m_iEndTick - m_iStartTick;
             // The map is now finished, show the mapfinished panel
             pPlayer->m_Data.m_bMapFinished = true;
@@ -362,7 +361,7 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
         SetShouldUseStartZoneOffset(bUseStartZoneOffset);
 
         // The Start method could fail if CP menu or prac mode is activated here
-        if (Start(gpGlobals->tickcount, pPlayer->m_Data.m_iBonusZone))
+        if (Start(gpGlobals->tickcount, pPlayer->m_Data.m_iCurrentTrack))
         {
             // Used for trimming later on
             if (g_ReplaySystem.IsRecording())
@@ -657,7 +656,7 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     // Only when timer is running;
     if (m_bIsRunning)
     {
-        pPlayer->m_Data.m_iOldBonusZone = pPlayer->m_Data.m_iBonusZone;
+        pPlayer->m_Data.m_iOldTrack = pPlayer->m_Data.m_iCurrentTrack;
         pPlayer->m_Data.m_iOldZone = pPlayer->m_Data.m_iCurrentZone;
         pPlayer->m_vecLastPos = pPlayer->GetAbsOrigin();
         pPlayer->m_angLastAng = pPlayer->GetAbsAngles();
@@ -689,7 +688,7 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
     // Only when timer is running;
     if (m_bIsRunning)
     {
-        pPlayer->m_Data.m_iBonusZone = pPlayer->m_Data.m_iOldBonusZone;
+        pPlayer->m_Data.m_iCurrentTrack = pPlayer->m_Data.m_iOldTrack;
         pPlayer->m_Data.m_iCurrentZone = pPlayer->m_Data.m_iOldZone;
         pPlayer->Teleport(&pPlayer->m_vecLastPos, &pPlayer->m_angLastAng, &pPlayer->m_vecLastVelocity);
         pPlayer->SetViewOffset(Vector(0, 0, pPlayer->m_fLastViewOffset));
