@@ -343,10 +343,10 @@ void CMomentumGrenade::ThrowGrenade()
     m_bRedraw = true;
     m_fThrowTime = 0.0f;
 
-    // CMomentumPlayer *pCSPlayer = ToCMOMPlayer( pPlayer );
+    // CMomentumPlayer *pPlayer = ToCMOMPlayer( pPlayer );
 
-    // if( pCSPlayer )
-    //	pCSPlayer->Radio( "Radio.FireInTheHole",   "#Cstrike_TitlesTXT_Fire_in_the_hole" );
+    // if( pPlayer )
+    //	pPlayer->Radio( "Radio.FireInTheHole",   "#Cstrike_TitlesTXT_Fire_in_the_hole" );
 }
 
 void CMomentumGrenade::DropGrenade()

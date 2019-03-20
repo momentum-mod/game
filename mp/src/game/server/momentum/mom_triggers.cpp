@@ -523,7 +523,7 @@ void CTriggerOnehop::OnStartTouch(CBaseEntity *pOther)
 
 void CTriggerOnehop::Think()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer && m_fOnStartTouchedTime > 0 && IsTouching(pPlayer) &&
         gpGlobals->realtime - m_fOnStartTouchedTime >= m_fMaxHoldSeconds)
     {
@@ -541,7 +541,7 @@ void CTriggerOnehop::Think()
 void CTriggerOnehop::OnEndTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer != nullptr)
+    if (pPlayer)
     {
         m_hopNoLongerJumpable.FireOutput(pPlayer, this);
         m_bhopNoLongerJumpableFired = true;
@@ -597,7 +597,7 @@ void CTriggerMultihop::OnEndTouch(CBaseEntity *pOther)
 
 void CTriggerMultihop::Think()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer && m_fOnStartTouchedTime > 0 && IsTouching(pPlayer) &&
         gpGlobals->realtime - m_fOnStartTouchedTime >= m_fMaxHoldSeconds)
     {
@@ -961,7 +961,7 @@ void CTriggerReverseSpeed::Think()
 
     if (m_bOnThink)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
 
         if (pPlayer != nullptr && m_bShouldThink)
         {
@@ -1091,7 +1091,7 @@ void CTriggerSetSpeed::Think()
 {
     BaseClass::Think();
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
 
     if (pPlayer != nullptr && m_bShouldThink)
     {
@@ -1182,7 +1182,7 @@ void CTriggerSpeedThreshold::Think()
     BaseClass::Think();
 
     if (m_bShouldThink)
-        CheckSpeed(ToCMOMPlayer(UTIL_GetLocalPlayer()));
+        CheckSpeed(CMomentumPlayer::GetLocalPlayer());
 }
 
 void CTriggerSpeedThreshold::OnEndTouch(CBaseEntity *pOther)

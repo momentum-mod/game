@@ -22,11 +22,11 @@ static void SelectMenuItem(int menu_item)
         engine->ExecuteClientCmd("mom_ruler_close");
         break;
     default:
-        C_MomentumPlayer* cPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        if (cPlayer != nullptr)
+        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+        if (pPlayer != nullptr)
         {
             // How...
-            cPlayer->EmitSound("Momentum.UIMissingMenuSelection");
+            pPlayer->EmitSound("Momentum.UIMissingMenuSelection");
         }
         break;
     }

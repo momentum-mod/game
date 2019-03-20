@@ -186,7 +186,7 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
     }
     else if (FStrEq(pName, "spec_target_updated"))
     {
-        C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
         // Note: this has to be delayed until OnThink can get at it, because the client-side Ghost ent isn't created yet...
         m_iCurrentSpecTargetEntIndx = pLocal->GetSpecEntIndex();
         // Default it all to nullptr for now, just in case they're spectating an online ghost anyways
@@ -201,7 +201,7 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
     }
     else if (FStrEq(pName, "spec_stop") || FStrEq(pName, "player_spawn"))
     {
-        C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
         m_pRunData = pLocal->GetRunEntData();
         m_pRunStats = &pLocal->m_RunStats;
         if (!m_pRunData->m_bTimerRunning)
@@ -222,7 +222,7 @@ void CHudTimer::ApplySchemeSettings(IScheme* pScheme)
 // This void handles playing effects for run start and run stop
 void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (!pPlayer)
         return;
 
@@ -320,7 +320,7 @@ void CHudTimer::OnThink()
 {
     if (m_iCurrentSpecTargetEntIndx != -1 && !m_pSpecTarget)
     {
-        const auto pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
         C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
         if (pGhost)
         {

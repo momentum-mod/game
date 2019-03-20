@@ -403,7 +403,7 @@ void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
 void FovChanged(IConVar *pVar, const char *pOldValue, float flOldValue)
 {
     ConVarRef var(pVar);
-    CMomentumPlayer *pMomPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    const auto pMomPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pMomPlayer)
     {
         pMomPlayer->SetDefaultFOV(var.GetInt());

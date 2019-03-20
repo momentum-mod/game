@@ -17,6 +17,8 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     C_MomentumPlayer();
     ~C_MomentumPlayer();
 
+    static C_MomentumPlayer *GetLocalMomPlayer();
+
     void PostDataUpdate(DataUpdateType_t updateType) OVERRIDE;
     void OnDataChanged(DataUpdateType_t type) OVERRIDE;
     bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;

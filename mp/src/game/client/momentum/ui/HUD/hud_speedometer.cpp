@@ -154,15 +154,14 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
 void CHudSpeedMeter::OnThink()
 {
-    Vector velocity;
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
         //This will be null if the player is not watching a replay first person
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         CMomRunEntityData *pData = pGhost ? pGhost->GetRunEntData() : pPlayer->GetRunEntData();
         //Note: Velocity is also set to the player when watching first person
-        velocity = pPlayer->GetAbsVelocity();
+        Vector velocity = pPlayer->GetAbsVelocity();
 
         //The last jump velocity
         float lastJumpVel = pData->m_flLastJumpVel;

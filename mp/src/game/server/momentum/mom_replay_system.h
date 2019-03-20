@@ -44,8 +44,6 @@ public:
     void TogglePause();
 
     void SetTeleportedThisFrame(); // Call me when player teleports.
-    void SetPlayer(CMomentumPlayer *pPlayer) { m_pPlayer = pPlayer; }
-
     const CMomReplayBase *GetRecordingReplay() const { return m_pRecordingReplay; }
     CMomReplayBase *GetRecordingReplay() { return m_pRecordingReplay; }
     const CMomReplayBase *GetPlaybackReplay() const { return m_pPlaybackReplay; }
@@ -68,7 +66,6 @@ public:
     bool m_bPlayingBack;
     CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
-    CMomentumPlayer *m_pPlayer;
     int m_nSavedPerfectSyncTicks;
     int m_nSavedStrafeTicks;
     int m_nSavedAccelTicks;
