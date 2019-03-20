@@ -2,9 +2,9 @@
 
 #include <momentum/util/serialization.h>
 #include "mom_replay_data.h"
+#include "run/run_stats.h"
 
 class CMomentumReplayGhostEntity;
-class CMomRunStats;
 
 class CMomReplayBase : public ISerializable
 {

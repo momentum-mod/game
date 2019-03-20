@@ -23,7 +23,9 @@ public:
     // MomRunEntity Stuff
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_GHOST; }
     CNetworkVarEmbedded(CMomRunEntityData, m_Data);
-    virtual CMomRunEntityData *GetRunEntData() override { return &m_Data; }
+    virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
+    virtual CMomRunStats *GetRunStats() OVERRIDE {return &m_RunStats;}
 
     CInterpolatedVar<Vector> m_iv_vecViewOffset;
 

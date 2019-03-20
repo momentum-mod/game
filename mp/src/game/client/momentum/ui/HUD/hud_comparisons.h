@@ -107,7 +107,6 @@ private:
     RunCompare_t *m_rcCurrentComparison, *m_rcBogusComparison;
     //m_pRunStats points to the player's/bot's CMomRunStats::data member, but the bogus one needs its own data.
     CMomRunStats *m_pRunStats, *m_pBogusRunStats;
-    CMomRunStats::data m_bogusData;
     int m_nCurrentBogusPulse;
 
     C_MomentumPlayer *m_pLocalPlayer;

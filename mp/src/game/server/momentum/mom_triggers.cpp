@@ -7,6 +7,7 @@
 #include "mom_system_progress.h"
 #include "fmtstr.h"
 #include "mom_timer.h"
+#include "mom_modulecomms.h"
 
 #include "dt_utlvector_send.h"
 

@@ -3,7 +3,6 @@
 #include "mom_replay_entity.h"
 #include "movevars_shared.h"
 #include "mom_timer.h"
-#include "movevars_shared.h"
 #include "util/mom_util.h"
 #include "util/os_utils.h"
 #include "mom_player_shared.h"
@@ -33,12 +32,12 @@ END_DATADESC();
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_bHasJumped(false),
       m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0), m_nOldReplayButtons(0),
-      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_cvarReplaySelection("mom_replay_selection"), m_vecLastVel(vec3_origin)
+      m_vecLastVel(vec3_origin), m_cvarReplaySelection("mom_replay_selection")
 {
-    StdDataToReplay = (DataToReplayFn)(GetProcAddress(GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
-
-    // Set networked vars here
-    m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
+    m_bIsPaused = false;
+    m_iCurrentTick = 0;
+    m_iStartTickD = 0;
+    m_iTotalTicks = 0;
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pCurrentSpecPlayer = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
@@ -303,9 +302,6 @@ void CMomentumReplayGhostEntity::Think()
     {
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
-
-    if (StdDataToReplay)
-        StdDataToReplay(&m_SrvData);
 }
 
 //-----------------------------------------------------------------------------

@@ -181,7 +181,7 @@ void C_RunComparisons::UpdateCurrentEnt()
     if (m_pLocalPlayer)
     {
         C_MomentumReplayGhostEntity *pGhost = m_pLocalPlayer->GetReplayEnt();
-        m_pRunStats = pGhost ? &pGhost->m_RunStats : &m_pLocalPlayer->m_RunStats;
+        m_pRunStats = pGhost ? pGhost->GetRunStats() : m_pLocalPlayer->GetRunStats();
         m_iCurrentEntIndex = pGhost ? pGhost->entindex() : m_pLocalPlayer->entindex();
     }
 }
@@ -242,7 +242,7 @@ void C_RunComparisons::LoadBogusComparisons()
     UnloadBogusComparisons();
     // Let's make a bogus run, shall we?
     m_rcBogusComparison = new RunCompare_t(12);
-    m_pBogusRunStats = new CMomRunStats(&m_bogusData, 12);
+    m_pBogusRunStats = new CMomRunStats(12);
     GenerateBogusRunStats(m_pBogusRunStats); // Generate the bogus PB
     GenerateBogusRunStats(&m_rcBogusComparison->runStats); // Generate the bogus WR
 

@@ -2,7 +2,6 @@
 
 #include "mom_ghost_base.h"
 #include "GameEventListener.h"
-#include "mom_modulecomms.h"
 
 class CMomRunStats;
 class CMomReplayBase;
@@ -31,7 +30,6 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
     bool IsReplayGhost() const OVERRIDE { return true; }
 
-    void SetRunStats(CMomRunStats *stats) { m_SrvData.m_RunStatsData = *stats->m_pData; }
     inline void SetTickRate(float rate) { m_Data.m_flTickRate = rate; }
     inline void SetRunFlags(uint32 flags) { m_Data.m_iRunFlags = flags; }
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
@@ -41,7 +39,6 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CReplayFrame *GetPreviousStep();
 
     bool IsReplayEnt() { return true; }
-    void (*StdDataToReplay)(StdReplayDataFromServer *from);
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
@@ -54,9 +51,6 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CNetworkVar(int, m_iCurrentTick); // Current tick of the replay
     CNetworkVar(int, m_iStartTickD); // The tick difference between timer and record
     CNetworkVar(int, m_iTotalTicks); // Total ticks for the replay (run time + start + end)
-
-    StdReplayDataFromServer m_SrvData;
-    CMomRunStats m_RunStats;
 
     // override of color so that replayghosts are always somewhat transparent.
     void SetGhostColor(const uint32 newColor) OVERRIDE;

@@ -1,14 +1,9 @@
 #include "cbase.h"
 #include "engine/IEngineSound.h"
-#include "entitylist.h"
 #include "game.h"
 #include "gamerules.h"
 #include "mom_player.h"
-#include "momentum/mom_gamerules.h"
-#include "physics.h"
 #include "player_resource.h"
-#include "teamplay_gamerules.h"
-#include "util/os_utils.h"
 
 #include "tier0/vprof.h"
 
@@ -33,9 +28,6 @@ void ClientPutInServer(edict_t *pEdict, const char *playername)
     // Allocate a CBasePlayer for pev, and call spawn
     CMomentumPlayer *pPlayer = CMomentumPlayer::CreatePlayer("player", pEdict);
     pPlayer->SetPlayerName(playername);
-
-    // Acquire client module's data recieve function
-    pPlayer->StdDataToPlayer = (DataToPlayerFn)(GetProcAddress(GetModuleHandle(CLIENT_DLL_NAME), "StdDataToPlayer"));
 }
 
 void ClientActive(edict_t *pEdict, bool bLoadGame)

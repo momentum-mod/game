@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mom_entity_run_data.h"
+#include "run_stats.h"
 
 #ifdef CLIENT_DLL
 #define CMomRunEntity C_MomRunEntity
@@ -40,5 +41,6 @@ class CMomRunEntity
 #endif
 
     // Networked shared variables between all run entities
+    virtual CMomRunStats *GetRunStats() = 0;
     virtual CMomRunEntityData *GetRunEntData() = 0;
 };
