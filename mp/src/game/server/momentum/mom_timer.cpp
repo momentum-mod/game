@@ -52,7 +52,7 @@ void CMomentumTimer::LevelInitPostEntity()
 void CMomentumTimer::LevelShutdownPreEntity()
 {
     if (IsRunning())
-        Stop(false);
+        Stop(nullptr);
     m_bWereCheatsActivated = false;
     SetStartTrigger(nullptr);
     SetCurrentZone(nullptr);
@@ -67,16 +67,13 @@ void CMomentumTimer::FrameUpdatePreEntityThink()
         if (sv_cheats.GetBool())
         {
             SetCheating(true);
-            Stop();
+            Stop(CMomentumPlayer::GetLocalPlayer());
         }
     }
 }
 
-bool CMomentumTimer::Start(int start, int iTrackNum)
+bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
 {
-    static ConVarRef mom_zone_edit("mom_zone_edit");
-
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
         return false;
 
@@ -88,6 +85,7 @@ bool CMomentumTimer::Start(int start, int iTrackNum)
         Warning("Cannot start timer while using save loc menu!\n");
         return false;
     }
+    static ConVarRef mom_zone_edit("mom_zone_edit");
     if (mom_zone_edit.GetBool())
     {
         Warning("Cannot start timer while editing zones!\n");
@@ -104,11 +102,11 @@ bool CMomentumTimer::Start(int start, int iTrackNum)
         return false;
     }
 
-    m_iStartTick = start;
+    m_iStartTick = gpGlobals->tickcount;
     m_iEndTick = 0;
     m_iLastRunDate = 0;
-    m_iTrackNumber = iTrackNum;
-    SetRunning(true);
+    m_iTrackNumber = pPlayer->m_Data.m_iCurrentTrack;
+    SetRunning(pPlayer, true);
 
     // Dispatch a start timer message for the local player
     DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STARTED);
@@ -116,11 +114,9 @@ bool CMomentumTimer::Start(int start, int iTrackNum)
     return true;
 }
 
-void CMomentumTimer::Stop(bool bFinished /* = false */, bool bStopRecording /* = true*/)
+void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */, bool bStopRecording /* = true*/)
 {
-    SetRunning(false);
-
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    SetRunning(pPlayer, false);
 
     if (pPlayer)
     {
@@ -140,19 +136,17 @@ void CMomentumTimer::Stop(bool bFinished /* = false */, bool bStopRecording /* =
         g_ReplaySystem.StopRecording(!bFinished || m_bWereCheatsActivated, bFinished);
 }
 
-void CMomentumTimer::Reset()
+void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 {
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-
     g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
     pPlayer->ResetRunStats();                        // Reset run stats
     pPlayer->m_Data.m_bMapFinished = false;
     pPlayer->m_Data.m_bTimerRunning = false;
 
-    if (g_pMomentumTimer->IsRunning())
+    if (m_bIsRunning)
     {
-        g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
-        g_pMomentumTimer->DispatchResetMessage();
+        Stop(pPlayer, false, false); // Don't stop our replay just yet
+        DispatchResetMessage();
     }
     else
     {
@@ -244,112 +238,7 @@ void CMomentumTimer::OnPlayerLand(KeyValues *kv)
         */
 
         // If we start timer on jump then we should reset on land
-        Reset();
-    }
-}
-
-void CMomentumTimer::OnPlayerEnterZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum)
-{
-    const int zonetype = pTrigger->GetZoneType();
-    if (zonetype == ZONE_TYPE_STOP)
-    {
-        // We've reached end zone, stop here
-        auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
-        SetEndTrigger(pStopTrigger);
-
-        if (IsRunning() && !pPlayer->IsSpectatingGhost() &&
-            !pPlayer->m_bHasPracticeMode)
-        {
-            int zoneNum = pPlayer->m_Data.m_iCurrentZone;
-
-            // This is needed so we have an ending velocity.
-
-            const float endvel = pPlayer->GetLocalVelocity().Length();
-            const float endvel2D = pPlayer->GetLocalVelocity().Length2D();
-
-            pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
-
-            // Check to see if we should calculate the timer offset fix
-            if (pStopTrigger->ContainsPosition(pPlayer->GetPreviousOrigin()))
-                DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
-            else
-            {
-                DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                CalculateTickIntervalOffset(pPlayer, ZONE_TYPE_STOP);
-            }
-
-            // This is needed for the final stage
-            pPlayer->m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
-                                                         pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
-
-            // Ending velocity checks
-
-            float finalVel = endvel;
-            float finalVel2D = endvel2D;
-
-            if (endvel <= pPlayer->m_RunStats.GetZoneVelocityMax(0, false))
-                finalVel = pPlayer->m_RunStats.GetZoneVelocityMax(0, false);
-
-            if (endvel2D <= pPlayer->m_RunStats.GetZoneVelocityMax(0, true))
-                finalVel2D = pPlayer->m_RunStats.GetZoneVelocityMax(0, true);
-
-            pPlayer->m_RunStats.SetZoneVelocityMax(0, finalVel, finalVel2D);
-            pPlayer->m_RunStats.SetZoneExitSpeed(0, endvel, endvel2D);
-
-            // Stop the timer
-            Stop(true);
-            pPlayer->m_Data.m_flTickRate = gpGlobals->interval_per_tick;
-            pPlayer->m_Data.m_iRunTimeTicks = m_iEndTick - m_iStartTick;
-            // The map is now finished, show the mapfinished panel
-            pPlayer->m_Data.m_bMapFinished = true;
-            pPlayer->m_Data.m_bTimerRunning = false;
-        }
-    }
-    else if (zonetype == ZONE_TYPE_STAGE || zonetype == ZONE_TYPE_START)
-    {
-        auto pStageTrigger = static_cast<CTriggerStage *>(pTrigger);
-        SetCurrentZone(pStageTrigger);
-
-        // Reset timer when we enter start zone
-        if (zonetype == ZONE_TYPE_START)
-        {
-            SetStartTrigger(static_cast<CTriggerTimerStart *>(pTrigger));
-            Reset();
-        }
-        else if (m_bIsRunning)
-        {
-            pPlayer->m_RunStats.SetZoneExitSpeed(zonenum - 1, pPlayer->GetLocalVelocity().Length(),
-                                                 pPlayer->GetLocalVelocity().Length2D());
-            CalculateTickIntervalOffset(pPlayer, ZONE_TYPE_STOP);
-            const float fCurrentZoneEnterTime = CalculateStageTime(zonenum);
-            pPlayer->m_RunStats.SetZoneEnterTime(zonenum, fCurrentZoneEnterTime);
-            pPlayer->m_RunStats.SetZoneTime(zonenum - 1, fCurrentZoneEnterTime -
-                                                         CalculateStageTime(zonenum - 1));
-        }
-    }
-}
-
-void CMomentumTimer::OnPlayerExitZone(CMomentumPlayer *pPlayer, CBaseMomZoneTrigger *pTrigger, int zonenum)
-{
-    if (pTrigger->GetZoneType() == ZONE_TYPE_START)
-    {
-        // This handles both the start and stage triggers
-        CalculateTickIntervalOffset(pPlayer, ZONE_TYPE_START);
-
-        TryStart(pPlayer, true);
-    }
-
-    if (pTrigger->GetZoneType() == ZONE_TYPE_START || pTrigger->GetZoneType() == ZONE_TYPE_STAGE)
-    {
-        // Timer won't be running if it's the start trigger
-        if ((zonenum == 1 || IsRunning()) && !pPlayer->m_bHasPracticeMode)
-        {
-            float enterVel3D = pPlayer->GetLocalVelocity().Length(),
-                  enterVel2D = pPlayer->GetLocalVelocity().Length2D();
-            pPlayer->m_RunStats.SetZoneEnterSpeed(zonenum, enterVel3D, enterVel2D);
-            if (zonenum == 1)
-                pPlayer->m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
-        }
+        Reset(pPlayer);
     }
 }
 
@@ -361,7 +250,7 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
         SetShouldUseStartZoneOffset(bUseStartZoneOffset);
 
         // The Start method could fail if CP menu or prac mode is activated here
-        if (Start(gpGlobals->tickcount, pPlayer->m_Data.m_iCurrentTrack))
+        if (Start(pPlayer))
         {
             // Used for trimming later on
             if (g_ReplaySystem.IsRecording())
@@ -494,7 +383,7 @@ float CMomentumTimer::GetLastRunTime()
     if (m_iEndTick == 0)
         return 0.0f;
 
-    const float originalTime = static_cast<float>(m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick;
+    const float originalTime = static_cast<float>(GetLastRunTimeTicks()) * gpGlobals->interval_per_tick;
     // apply precision fix, adding offset from start as well as subtracting offset from end.
     // offset from end is 1 tick - fraction offset, since we started trace outside of the end zone.
     return originalTime;
@@ -508,14 +397,17 @@ float CMomentumTimer::GetLastRunTime()
     }*/
 }
 
-void CMomentumTimer::SetRunning(bool isRunning)
+int CMomentumTimer::GetLastRunTimeTicks()
+{
+    return m_iEndTick - m_iStartTick;
+}
+
+void CMomentumTimer::SetRunning(CMomentumPlayer *pPlayer, bool isRunning)
 {
     m_bIsRunning = isRunning;
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+
     if (pPlayer)
-    {
         pPlayer->m_Data.m_bTimerRunning = isRunning;
-    }
 }
 void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType)
 {
@@ -653,7 +545,7 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
     pPlayer->m_bHasPracticeMode = true;
 
-    // Only when timer is running;
+    // Only when timer is running
     if (m_bIsRunning)
     {
         pPlayer->m_Data.m_iOldTrack = pPlayer->m_Data.m_iCurrentTrack;
@@ -667,7 +559,7 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     }
     else
     {
-        Stop(false); // Keep running
+        Stop(pPlayer);
     }
 
     IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
@@ -706,8 +598,7 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 }
 
 //--------- Commands --------------------------------
-static MAKE_TOGGLE_CONVAR(
-    mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+static MAKE_TOGGLE_CONVAR(mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
     "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
 
 class CTimerCommands
@@ -841,7 +732,7 @@ class CTimerCommands
                 // pAng can be null here, it's okay
                 pPlayer->Teleport(pVec, pAng, &vec3_origin);
                 // Stop *after* the teleport
-                g_pMomentumTimer->Stop();
+                g_pMomentumTimer->Stop(pPlayer);
             }
             else
             {
