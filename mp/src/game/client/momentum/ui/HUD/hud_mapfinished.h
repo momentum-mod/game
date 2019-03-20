@@ -2,10 +2,9 @@
 
 #include "hudelement.h"
 #include <vgui_controls/EditablePanel.h>
-
 #include "mom_shareddefs.h"
+#include "run/run_stats.h"
 
-class CMomRunStats;
 class C_MomRunEntityData;
 class C_MomentumPlayer;
 

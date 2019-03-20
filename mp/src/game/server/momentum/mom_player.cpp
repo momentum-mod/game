@@ -1,11 +1,12 @@
 #include "cbase.h"
 
+#include "mom_player.h"
+
 #include "ghost_client.h"
 #include "in_buttons.h"
 #include "info_camera_link.h"
 #include "mom_blockfix.h"
 #include "mom_online_ghost.h"
-#include "mom_player.h"
 #include "mom_replay_entity.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
@@ -48,6 +49,7 @@ SendPropInt(SENDINFO(m_afButtonDisabled)),
 SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
+SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MomRunStats)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -123,7 +125,6 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f),
-      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()),
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
       m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
 {
@@ -145,6 +146,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_bPreventPlayerBhop = false;
     m_iLandTick = 0;
 
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
 
     g_ReplaySystem.SetPlayer(this);
 
@@ -775,8 +777,6 @@ void CMomentumPlayer::UpdateRunStats()
 
     // this might be used in a later update
     // m_flLastVelocity = velocity;
-
-    StdDataToPlayer(&m_SrvData);
 
     // think once per tick
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");

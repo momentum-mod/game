@@ -28,6 +28,5 @@ private:
 
 protected:
     CMomRunStats *m_pRunStats;
-    CMomRunStats::data m_RunStatsData;
     CUtlVector<CReplayFrame> m_rgFrames;
 };

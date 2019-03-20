@@ -71,7 +71,9 @@ public:
     virtual void ToggleButtons(int iButtonFlags, bool bEnable) OVERRIDE;
     virtual void ToggleBhop(bool bEnable) OVERRIDE;
     CNetworkVarEmbedded(CMomRunEntityData, m_Data);
-    virtual CMomRunEntityData *GetRunEntData() override { return &m_Data; }
+    virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
+    virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; }
 
 protected:
     virtual void Think(void);

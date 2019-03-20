@@ -170,7 +170,7 @@ void CHudSpeedMeter::OnThink()
         //The last jump time is also important if the player is watching a replay
         float lastJumpTime = pData->m_flLastJumpTime;
 
-        m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
+        m_pRunStats = pGhost ? pGhost->GetRunStats() : pPlayer->GetRunStats();
 
         m_bEntInZone = pData->m_bIsInZone;
 

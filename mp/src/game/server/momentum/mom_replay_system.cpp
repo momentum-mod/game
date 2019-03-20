@@ -283,7 +283,7 @@ void CMomentumReplaySystem::SetReplayInfo()
 void CMomentumReplaySystem::SetRunStats()
 {
     CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(m_pPlayer->m_RunStats.GetTotalZones());
-    m_pPlayer->m_RunStats.FullyCopyStats(stats);
+    stats->FullyCopyFrom(m_pPlayer->m_RunStats);
     // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
 }
 
@@ -340,9 +340,8 @@ void CMomentumReplaySystem::LoadReplayGhost()
     if (m_pPlaybackReplay->GetRunEntity())
         return;
 
-    CMomentumReplayGhostEntity *pGhost =
-        static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
-    pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
+    auto pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
+    pGhost->m_RunStats.FullyCopyFrom(*m_pPlaybackReplay->GetRunStats());
     pGhost->m_Data.m_flRunTime = m_pPlaybackReplay->GetRunTime();
     pGhost->m_Data.m_iRunTimeTicks = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
     pGhost->m_Data.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();

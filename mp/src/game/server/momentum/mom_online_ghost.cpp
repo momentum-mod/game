@@ -305,6 +305,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
         }
     }
 }
+
 void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
 {
     /*

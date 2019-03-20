@@ -13,6 +13,7 @@
 #include <vgui_controls/Panel.h>
 
 #include "mom_event_listener.h"
+#include "mom_modulecomms.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"

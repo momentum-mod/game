@@ -54,7 +54,7 @@ CMomRunStats *CMomReplayV1::CreateRunStats(uint8 stages)
     if (m_pRunStats != nullptr)
         delete m_pRunStats;
 
-    m_pRunStats = new CMomRunStats(&m_RunStatsData, stages);
+    m_pRunStats = new CMomRunStats(stages);
     return m_pRunStats;
 }
 
@@ -84,7 +84,7 @@ void CMomReplayV1::Deserialize(CUtlBuffer &reader, bool bFull)
     // Read the run stats (if there are any).
     if (reader.GetUnsignedChar())
     {
-        m_pRunStats = new CMomRunStats(&m_RunStatsData, reader);
+        m_pRunStats = new CMomRunStats(reader);
     }
 
     if (bFull)
