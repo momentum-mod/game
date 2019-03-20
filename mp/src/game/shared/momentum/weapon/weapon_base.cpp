@@ -626,7 +626,7 @@ void CWeaponBase::DrawCrosshair()
     // clear crosshair
     pCrosshair->SetCrosshair(nullptr, Color(255, 255, 255, 255));
 
-    CMomentumPlayer* pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
 
     if (!pPlayer)
         return;

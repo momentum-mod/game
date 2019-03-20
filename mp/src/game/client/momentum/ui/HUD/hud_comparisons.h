@@ -109,7 +109,6 @@ private:
     CMomRunStats *m_pRunStats, *m_pBogusRunStats;
     int m_nCurrentBogusPulse;
 
-    C_MomentumPlayer *m_pLocalPlayer;
     ConVarRef m_cvarVelType;
 };
 

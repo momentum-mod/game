@@ -14,7 +14,7 @@ ConVar mm_updaterate("mom_ghost_online_updaterate", "25",
 
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer && !pPlayer->IsObserver())
     {
         CBaseEntity *pTarget = nullptr;
@@ -45,7 +45,7 @@ CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being 
 
 CON_COMMAND(mom_spectate_stop, "Stop spectating.")
 {
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
         pPlayer->StopSpectating();
@@ -59,7 +59,6 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
         }
     }
 }
-CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
 
 CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName)
 {
@@ -77,13 +76,11 @@ void CMomentumGhostClient::LevelInitPostEntity()
     // MOM_TODO: AdvertiseGame needs to use k_steamIDNonSteamGS and pass the IP (as hex) and port if it is inside a server 
     // SteamUser()->AdvertiseGame(SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
     // SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
-    m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     g_pMomentumLobbySystem->LevelChange(gpGlobals->mapname.ToCStr());
 }
 
 void CMomentumGhostClient::LevelShutdownPostEntity()
 {
-    m_pPlayer = nullptr;
     if (!FStrEq(gpGlobals->mapname.ToCStr(), "")) // Don't send our shutdown message from the menu
         g_pMomentumLobbySystem->LevelChange(nullptr);
 }
@@ -94,8 +91,6 @@ void CMomentumGhostClient::LevelShutdownPreEntity()
 
 void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
-    if (!m_pPlayer)
-        m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     g_pMomentumLobbySystem->SendAndRecieveP2PPackets();
 }
 
@@ -169,10 +164,11 @@ CUtlMap<uint64, CMomentumOnlineGhostEntity*> *CMomentumGhostClient::GetOnlineGho
 
 bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
 {
-    if (m_pPlayer && !m_pPlayer->IsSpectatingGhost())
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer && !pPlayer->IsSpectatingGhost())
     {
-        const Vector &orig = m_pPlayer->GetAbsOrigin(), &vel = m_pPlayer->GetAbsVelocity();
-        const QAngle &eye = m_pPlayer->EyeAngles();
+        const Vector &orig = pPlayer->GetAbsOrigin(), &vel = pPlayer->GetAbsVelocity();
+        const QAngle &eye = pPlayer->EyeAngles();
 
         if (!(orig.IsValid() && vel.IsValid() && eye.IsValid()))
             return false;
@@ -181,8 +177,8 @@ bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
             eye,
             orig,
             vel,
-            m_pPlayer->GetViewOffset().z,
-            m_pPlayer->m_nButtons);
+            pPlayer->GetViewOffset().z,
+            pPlayer->m_nButtons);
 
         return true;
     }

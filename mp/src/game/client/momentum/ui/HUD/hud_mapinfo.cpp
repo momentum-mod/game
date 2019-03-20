@@ -39,7 +39,6 @@ class C_HudMapInfo : public CHudElement, public EditablePanel
 
   private:
     int m_iSpecEntIndex;
-    C_MomentumPlayer *m_pPlayer;
 
     CMomRunEntityData *m_pRunData;
 
@@ -64,7 +63,6 @@ C_HudMapInfo::C_HudMapInfo(const char *pElementName): CHudElement(pElementName),
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
 
-    m_pPlayer = nullptr;
     m_pRunData = nullptr;
     m_bNeedsUpdate = true;
     m_iCurrentZone = 0;
@@ -93,14 +91,12 @@ void C_HudMapInfo::OnThink()
     m_pMapAuthorLabel->SetVisible(mom_hud_mapinfo_show_author.GetBool());
     m_pMapDifficultyLabel->SetVisible(mom_hud_mapinfo_show_difficulty.GetBool());
 
-    if (!m_pPlayer)
-        m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-
-    if (!m_pRunData && m_pPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (!m_pRunData && pPlayer)
     {
         if (m_iSpecEntIndex)
         {
-            C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
+            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
             if (pGhost)
             {
                 // m_pSpecTarget = pGhost;
@@ -109,7 +105,7 @@ void C_HudMapInfo::OnThink()
         }
         else
         {
-            m_pRunData = m_pPlayer->GetRunEntData();
+            m_pRunData = pPlayer->GetRunEntData();
         }
     }
 
@@ -212,7 +208,6 @@ void C_HudMapInfo::LevelInitPostEntity()
 void C_HudMapInfo::LevelShutdown()
 {
     m_pRunData = nullptr;
-    m_pPlayer = nullptr;
     m_iSpecEntIndex = 0;
     m_iCurrentZone = 0;
     m_bInZone = false;
@@ -233,9 +228,10 @@ void C_HudMapInfo::FireGameEvent(IGameEvent* event)
     }
     else if (FStrEq(pName, "spec_target_updated"))
     {
-        if (m_pPlayer)
+        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+        if (pPlayer)
         {
-            m_iSpecEntIndex = m_pPlayer->GetSpecEntIndex();
+            m_iSpecEntIndex = pPlayer->GetSpecEntIndex();
             m_bNeedsUpdate = true;
         }
     }
@@ -246,9 +242,10 @@ void C_HudMapInfo::FireGameEvent(IGameEvent* event)
     }
     else // "player_spawn"
     {
-        if (m_pPlayer)
+        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+        if (pPlayer)
         {
-            m_pRunData = m_pPlayer->GetRunEntData();
+            m_pRunData = pPlayer->GetRunEntData();
             m_bInZone = m_pRunData->m_bIsInZone;
             m_iCurrentZone = m_pRunData->m_iCurrentZone;
         }

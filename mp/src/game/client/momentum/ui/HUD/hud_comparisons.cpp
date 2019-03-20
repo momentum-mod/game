@@ -96,7 +96,6 @@ C_RunComparisons::C_RunComparisons(const char *pElementName, Panel *pParent /* =
     m_pRunStats = nullptr;
     m_pBogusRunStats = nullptr;
     m_rcBogusComparison = nullptr;
-    m_pLocalPlayer = nullptr;
 }
 
 C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
@@ -127,11 +126,12 @@ void C_RunComparisons::Init()
 bool C_RunComparisons::ShouldDraw()
 {
     bool shouldDrawLocal = false;
-    if (m_pLocalPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
         // MOM_TODO: Should we have a convar against letting a ghost compare?
-        C_MomentumReplayGhostEntity *pGhost = m_pLocalPlayer->GetReplayEnt();
-        CMomRunEntityData *runData = pGhost ? pGhost->GetRunEntData() : m_pLocalPlayer->GetRunEntData();
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        CMomRunEntityData *runData = pGhost ? pGhost->GetRunEntData() : pPlayer->GetRunEntData();
 
         if (runData)
         {
@@ -178,11 +178,12 @@ void C_RunComparisons::FireGameEvent(IGameEvent *event)
 
 void C_RunComparisons::UpdateCurrentEnt()
 {
-    if (m_pLocalPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = m_pLocalPlayer->GetReplayEnt();
-        m_pRunStats = pGhost ? pGhost->GetRunStats() : m_pLocalPlayer->GetRunStats();
-        m_iCurrentEntIndex = pGhost ? pGhost->entindex() : m_pLocalPlayer->entindex();
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        m_pRunStats = pGhost ? pGhost->GetRunStats() : pPlayer->GetRunStats();
+        m_iCurrentEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
     }
 }
 
@@ -190,9 +191,10 @@ void C_RunComparisons::LoadComparisons()
 {
     UnloadComparisons();
     const char *szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
-    if (szMapName && m_pLocalPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (szMapName && pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = m_pLocalPlayer->GetReplayEnt();
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         float tickRate = 0;
         int runFlags = 0;
 
@@ -204,7 +206,7 @@ void C_RunComparisons::LoadComparisons()
         else
         {
             tickRate = gpGlobals->interval_per_tick;
-            runFlags = m_pLocalPlayer->m_Data.m_iRunFlags;
+            runFlags = pPlayer->m_Data.m_iRunFlags;
         }
 
         m_rcCurrentComparison = new RunCompare_t();
@@ -280,7 +282,6 @@ void C_RunComparisons::UnloadComparisons()
 
 void C_RunComparisons::LevelInitPostEntity()
 {
-    m_pLocalPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     // Load the initial comparisons
     LoadComparisons();
     UpdateCurrentEnt();
@@ -288,7 +289,6 @@ void C_RunComparisons::LevelInitPostEntity()
 
 void C_RunComparisons::LevelShutdown()
 {
-    m_pLocalPlayer = nullptr;
     UnloadComparisons();
 }
 

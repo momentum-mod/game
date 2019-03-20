@@ -43,7 +43,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     void OnThink() OVERRIDE;
     bool ShouldDraw() OVERRIDE
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
         bool shouldDrawLocal = false;
         if (pPlayer)
         {
@@ -109,7 +109,7 @@ CHudStrafeSyncDisplay::CHudStrafeSyncDisplay(const char *pElementName)
 }
 void CHudStrafeSyncDisplay::OnThink()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (!pPlayer)
         return;
 
@@ -215,7 +215,7 @@ class CHudStrafeSyncBar : public CHudElement, public CHudFillableBar
     void OnThink() OVERRIDE;
     bool ShouldDraw() OVERRIDE
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
         bool shouldDrawLocal = false;
         if (pPlayer)
         {
@@ -278,8 +278,8 @@ void CHudStrafeSyncBar::Paint()
 }
 void CHudStrafeSyncBar::OnThink()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (pPlayer == nullptr)
+    const auto *pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (!pPlayer)
         return;
 
     C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();

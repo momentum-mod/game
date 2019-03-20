@@ -10,9 +10,9 @@ RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
 RecvPropInt(RECVINFO(m_iLandTick)),
 RecvPropBool(RECVINFO(m_bResumeZoom)),
-RecvPropInt(RECVINFO(m_iShotsFired)),
-RecvPropInt(RECVINFO(m_iDirection)),
-RecvPropInt(RECVINFO(m_iLastZoomFOV)),
+RecvPropInt(RECVINFO(m_iShotsFired), SPROP_UNSIGNED),
+RecvPropInt(RECVINFO(m_iDirection), SPROP_UNSIGNED),
+RecvPropInt(RECVINFO(m_iLastZoomFOV), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
@@ -24,6 +24,8 @@ BEGIN_PREDICTION_DATA(C_MomentumPlayer)
 DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
+
+static C_MomentumPlayer *s_pLocalPlayer;
 
 C_MomentumPlayer::C_MomentumPlayer() : m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
 {
@@ -46,12 +48,20 @@ C_MomentumPlayer::C_MomentumPlayer() : m_pViewTarget(nullptr), m_pSpectateTarget
 
 C_MomentumPlayer::~C_MomentumPlayer()
 {
-
+    if (this == s_pLocalPlayer)
+        s_pLocalPlayer = nullptr;
 }
+
+C_MomentumPlayer *C_MomentumPlayer::GetLocalMomPlayer()
+{
+    return s_pLocalPlayer;
+}
+
 void C_MomentumPlayer::Spawn()
 {
     SetNextClientThink(CLIENT_THINK_ALWAYS);
 }
+
 //-----------------------------------------------------------------------------
 // Purpose: Input handling
 //-----------------------------------------------------------------------------
@@ -62,7 +72,6 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 
     return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }
-
 
 void C_MomentumPlayer::ClientThink()
 {
@@ -104,6 +113,15 @@ void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 
 void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 {
+    if (updateType == DATA_UPDATE_CREATED)
+    {
+        if (engine->GetLocalPlayer() == index)
+        {
+            Assert(s_pLocalPlayer == NULL);
+            s_pLocalPlayer = this;
+        }
+    }
+
     // C_BaseEntity assumes we're networking the entity's angles, so pretend that it
     // networked the same value we already have.
     SetNetworkAngles(GetLocalAngles());

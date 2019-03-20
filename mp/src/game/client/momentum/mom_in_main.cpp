@@ -70,8 +70,8 @@ void CMOMInput::LevelInit()
 
 void CMOMInput::ComputeForwardMove(CUserCmd *cmd)
 {
-    CMomentumPlayer *m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (m_pPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
         // thirdperson platformer movement
         if (CAM_IsThirdPerson() && thirdperson_platformer.GetInt())
@@ -102,9 +102,9 @@ void CMOMInput::ComputeForwardMove(CUserCmd *cmd)
 
         if (!(in_klook.state & 1))
         {
-            if (!(m_pPlayer->m_afButtonDisabled & IN_FORWARD))
+            if ((pPlayer->m_afButtonDisabled & IN_FORWARD) == 0)
                 cmd->forwardmove += cl_forwardspeed.GetFloat() * KeyState(&in_forward);
-            if (!(m_pPlayer->m_afButtonDisabled & IN_BACK))
+            if ((pPlayer->m_afButtonDisabled & IN_BACK) == 0)
                 cmd->forwardmove -= cl_backspeed.GetFloat() * KeyState(&in_back);
         }
     }
@@ -112,8 +112,8 @@ void CMOMInput::ComputeForwardMove(CUserCmd *cmd)
 
 void CMOMInput::ComputeSideMove(CUserCmd *cmd)
 {
-    CMomentumPlayer *m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (m_pPlayer)
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
         // thirdperson platformer movement
         if (CAM_IsThirdPerson() && thirdperson_platformer.GetInt())
@@ -145,9 +145,9 @@ void CMOMInput::ComputeSideMove(CUserCmd *cmd)
         }
 
         // Otherwise, check strafe keys
-        if (!(m_pPlayer->m_afButtonDisabled & IN_MOVERIGHT))
+        if ((pPlayer->m_afButtonDisabled & IN_MOVERIGHT) == 0)
             cmd->sidemove += cl_sidespeed.GetFloat() * KeyState(&in_moveright);
-        if (!(m_pPlayer->m_afButtonDisabled & IN_MOVELEFT))
+        if ((pPlayer->m_afButtonDisabled & IN_MOVELEFT) == 0)
             cmd->sidemove -= cl_sidespeed.GetFloat() * KeyState(&in_moveleft);
     }
 }

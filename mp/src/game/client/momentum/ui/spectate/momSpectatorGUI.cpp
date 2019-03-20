@@ -273,7 +273,7 @@ void CMOMSpectatorGUI::Update()
     UTIL_ReplaceKeyBindings(m_pwGainControl, sizeof m_pwGainControl, tempControl, sizeof tempControl);
     m_pGainControlLabel->SetText(tempControl);
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();

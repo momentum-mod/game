@@ -105,7 +105,7 @@ void C_MOMReplayUI::OnThink()
             m_pSpecGUI->SetMouseInputEnabled(true);
     }
 
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
@@ -241,7 +241,7 @@ void C_MOMReplayUI::FireGameEvent(IGameEvent *pEvent)
 // Command issued
 void C_MOMReplayUI::OnCommand(const char *command)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     C_MomentumReplayGhostEntity *pGhost = pPlayer ? pPlayer->GetReplayEnt() : nullptr;
     if (FStrEq(command, "play"))
     {
