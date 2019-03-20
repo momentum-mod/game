@@ -180,6 +180,9 @@ bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
 //---------- CTriggerCheckpoint -----------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 
+IMPLEMENT_SERVERCLASS_ST(CTriggerCheckpoint, DT_TriggerCheckpoint)
+END_SEND_TABLE()
+
 bool CTriggerCheckpoint::LoadFromKeyValues(KeyValues *kv)
 {
     if (!FStrEq(kv->GetName(), "checkpoint"))
@@ -204,6 +207,9 @@ int CTriggerCheckpoint::GetZoneType()
 
 //---------- CTriggerStage -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, CTriggerStage);
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerStage, DT_TriggerStage)
+END_SEND_TABLE()
 
 bool CTriggerStage::ToKeyValues(KeyValues *pKvInto) const
 {
