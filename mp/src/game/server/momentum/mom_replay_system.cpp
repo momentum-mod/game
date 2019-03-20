@@ -272,12 +272,11 @@ void CMomentumReplaySystem::SetReplayInfo()
     ISteamUser *pUser = SteamUser();
     m_pRecordingReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     m_pRecordingReplay->SetTickInterval(gpGlobals->interval_per_tick);
-    m_pRecordingReplay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
     m_pRecordingReplay->SetRunFlags(m_pPlayer->m_Data.m_iRunFlags);
     m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetStopTick(m_iStopTimerTick - m_iStartRecordingTick);
-    m_pRecordingReplay->SetBonusZone(g_pMomentumTimer->GetBonus());
+    m_pRecordingReplay->SetTrackNumber(g_pMomentumTimer->GetTrackNumber());
 }
 
 void CMomentumReplaySystem::SetRunStats()
@@ -342,12 +341,11 @@ void CMomentumReplaySystem::LoadReplayGhost()
 
     auto pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
     pGhost->m_RunStats.FullyCopyFrom(*m_pPlaybackReplay->GetRunStats());
-    pGhost->m_Data.m_flRunTime = m_pPlaybackReplay->GetRunTime();
     pGhost->m_Data.m_iRunTimeTicks = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
     pGhost->m_Data.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
     pGhost->m_Data.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
     pGhost->SetPlaybackReplay(m_pPlaybackReplay);
-    pGhost->m_iStartTickD = m_pPlaybackReplay->GetStartTick();
+    pGhost->m_Data.m_iStartTick = m_pPlaybackReplay->GetStartTick();
     m_pPlaybackReplay->SetRunEntity(pGhost);
 }
 
@@ -471,7 +469,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTicks - pGhost->m_iStartTickD;
+            pGhost->m_iCurrentTick = pGhost->m_iTotalTicks - pGhost->m_Data.m_iStartTick;
         }
     }
 }

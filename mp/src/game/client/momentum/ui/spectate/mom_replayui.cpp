@@ -145,7 +145,7 @@ void C_MOMReplayUI::OnThink()
             fProgress = clamp<float>(fProgress, 0.0f, 1.0f);
             m_pProgress->SetProgress(fProgress);
 
-            bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_iStartTickD;
+            bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_Data.m_iStartTick;
             // Print "Tick: %i / %i"
             m_pProgressLabelFrame->SetText(CConstructLocalizedString(m_pwReplayTimeTick, pGhost->m_iCurrentTick.Get(), m_iTotalDuration));
 
@@ -153,9 +153,9 @@ void C_MOMReplayUI::OnThink()
             char curtime[BUFSIZETIME], totaltime[BUFSIZETIME];
             wchar_t wCurtime[BUFSIZETIME], wTotaltime[BUFSIZETIME];
             // Get the times
-            g_pMomentumUtil->FormatTime(TICK_INTERVAL * (pGhost->m_iCurrentTick - pGhost->m_iStartTickD), curtime, 2,
+            g_pMomentumUtil->FormatTime(TICK_INTERVAL * (pGhost->m_iCurrentTick - pGhost->m_Data.m_iStartTick), curtime, 2,
                                  false, negativeTime);
-            g_pMomentumUtil->FormatTime(pGhost->m_Data.m_flRunTime, totaltime, 2);
+            g_pMomentumUtil->FormatTime(float(pGhost->m_Data.m_iRunTimeTicks) * pGhost->m_Data.m_flTickRate, totaltime, 2);
             // Convert to Unicode
             ANSI_TO_UNICODE(curtime, wCurtime);
             ANSI_TO_UNICODE(totaltime, wTotaltime);

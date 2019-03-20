@@ -42,9 +42,9 @@ SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
 SendPropInt(SENDINFO(m_iLandTick)),
 SendPropBool(SENDINFO(m_bResumeZoom)),
-SendPropInt(SENDINFO(m_iShotsFired)),
-SendPropInt(SENDINFO(m_iDirection)),
-SendPropInt(SENDINFO(m_iLastZoom)),
+SendPropInt(SENDINFO(m_iShotsFired), 16, SPROP_UNSIGNED),
+SendPropInt(SENDINFO(m_iDirection), 4, SPROP_UNSIGNED),
+SendPropInt(SENDINFO(m_iLastZoomFOV), 8, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_afButtonDisabled)),
 SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
@@ -140,7 +140,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_iShotsFired = 0;
     m_iDirection = 0;
     m_bResumeZoom = false;
-    m_iLastZoom = 0;
+    m_iLastZoomFOV = 0;
     m_bDidPlayerBhop = false;
     m_iSuccessiveBhops = 0;
     m_bPreventPlayerBhop = false;

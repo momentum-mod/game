@@ -230,7 +230,7 @@ enum SPECTATE_MSG_TYPE
         }                                                                                                              \
     }
 
-#define MAX_STAGES 64
+#define MAX_ZONES 64
 
 #define CHECK_STEAM_API(steam_interface) \
     if (!steam_interface) { \

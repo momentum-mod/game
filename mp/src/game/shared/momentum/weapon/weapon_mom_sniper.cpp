@@ -75,7 +75,7 @@ void CMomentumSniper::SniperFire()
     if (pPlayer->GetFOV() != pPlayer->GetDefaultFOV())
     {
         pPlayer->m_bResumeZoom = true;
-        pPlayer->m_iLastZoom = m_iRequestedFOV;
+        pPlayer->m_iLastZoomFOV = m_iRequestedFOV;
 
 #ifndef CLIENT_DLL
         pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV(), 0.05f);

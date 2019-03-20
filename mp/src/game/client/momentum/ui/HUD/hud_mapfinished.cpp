@@ -309,7 +309,7 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
     {
         m_pCurrentZoneLabel->SetText(m_pwCurrentPageOverall);
 
-        g_pMomentumUtil->FormatTime(m_pRunData ? m_pRunData->m_flRunTime : 0.0f, m_pszEndRunTime);
+        g_pMomentumUtil->FormatTime(m_pRunData ? float(m_pRunData->m_iRunTimeTicks) * m_pRunData->m_flTickRate : 0.0f, m_pszEndRunTime);
         ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
         m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwOverallTime, unicodeTime));//"Time" (overall run time)
 

@@ -42,7 +42,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     CNetworkVar(bool, m_bResumeZoom); // Used by various weapon code
     CNetworkVar(int, m_iShotsFired); // Used in various weapon code
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
-    CNetworkVar(int, m_iLastZoom); // Last FOV when zooming
+    CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
 
     int m_afButtonDisabled;
     CNetworkVar(bool, m_bAutoBhop);

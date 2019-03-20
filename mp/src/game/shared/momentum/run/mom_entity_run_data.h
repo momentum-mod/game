@@ -29,12 +29,10 @@ class CMomRunEntityData
     CNetworkVar(uint32, m_iRunFlags);     // The run flags (W only/HSW/Scroll etc) of the player
     CNetworkVar(int, m_iCurrentTrack);    // The current track that this entity is on
     CNetworkVar(int, m_iCurrentZone);     // Current stage/checkpoint the player is on
-    CNetworkVar(int, m_iBonusZone);       // Is timer running under bonus zone? MOM_TODO REMOVEME!!!!
-    CNetworkVar(int, m_iOldZone);         // What was the zone before we entered in end zone?
-    CNetworkVar(int, m_iOldBonusZone);    // What was the bonus zone before we entered in end zone? MOM_TODO REMOVEME!!!!
+    CNetworkVar(int, m_iOldZone);         // What the zone was before we entered the end zone
+    CNetworkVar(int, m_iOldTrack);        // What the track was before we entered the end zone
     CNetworkVar(int, m_iStartTick);       // Tick that the entity started its timer
     CNetworkVar(float, m_flTickRate);     // Interval per tick the run was done with
-    CNetworkVar(float, m_flRunTime);      // The time taken to do their most recent run MOM_TODO REMOVEME!!!!
     CNetworkVar(int, m_iRunTimeTicks);    // The time taken to do their most recent run, in ticks
     CNetworkVar(float, m_flLastJumpTime); // The last time that the player jumped
     CNetworkVar(float, m_flLastJumpVel);  // Last jump velocity of the player

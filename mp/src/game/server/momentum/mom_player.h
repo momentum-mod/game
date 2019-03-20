@@ -97,7 +97,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(bool, m_bResumeZoom); // Used by various weapon code
     CNetworkVar(int, m_iShotsFired); // Used in various weapon code
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
-    CNetworkVar(int, m_iLastZoom); // Last FOV when zooming
+    CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
 
     bool m_bDidPlayerBhop; // MOM_TODO needs networking?
     bool m_bShouldLimitPlayerSpeed;
@@ -147,8 +147,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void NewPreviousOrigin(Vector origin);
 
     // for calc avg
-    int m_nZoneAvgCount[MAX_STAGES];
-    float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
+    int m_nZoneAvgCount[MAX_ZONES];
+    float m_flZoneTotalSync[MAX_ZONES], m_flZoneTotalSync2[MAX_ZONES], m_flZoneTotalVelocity[MAX_ZONES][2];
     
     //Overrode for the spectating GUI and weapon dropping
     bool ClientCommand(const CCommand &args) OVERRIDE;
