@@ -22,7 +22,6 @@ LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 SendPropBool(SENDINFO(m_bIsPaused)),
 SendPropInt(SENDINFO(m_iCurrentTick)),
-SendPropInt(SENDINFO(m_iStartTickD), -1, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_iTotalTicks), -1, SPROP_UNSIGNED),
 END_SEND_TABLE();
 
@@ -36,7 +35,6 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
 {
     m_bIsPaused = false;
     m_iCurrentTick = 0;
-    m_iStartTickD = 0;
     m_iTotalTicks = 0;
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pCurrentSpecPlayer = nullptr;
@@ -165,12 +163,11 @@ void CMomentumReplayGhostEntity::Think()
         return;
     }
 
-    if (m_iCurrentTick == m_iStartTickD)
+    if (m_iCurrentTick == m_Data.m_iStartTick)
     {
         m_Data.m_bIsInZone = false;
         m_Data.m_bMapFinished = false;
         m_Data.m_bTimerRunning = true;
-        m_Data.m_iStartTick = gpGlobals->tickcount;
         StartTimer(gpGlobals->tickcount);
 
         // Needed for hud_comparisons
@@ -521,12 +518,6 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     m_nOldReplayButtons = currentStep->PlayerButtons();
 }
 
-void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
-{
-    m_Data.m_iStartTick = m_iStartTick;
-    BaseClass::StartTimer(m_iStartTick);
-}
-
 void CMomentumReplayGhostEntity::EndRun()
 {
     FinishTimer(); // Stop the timer for all spectating us
@@ -595,7 +586,7 @@ void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity
     switch (pTrigger->GetZoneType())
     {
     case ZONE_TYPE_START:
-        m_Data.m_iBonusZone = pTrigger->GetZoneNumber();
+        m_Data.m_iCurrentTrack = pTrigger->GetTrackNumber();
         m_Data.m_bMapFinished = false;
         m_Data.m_bTimerRunning = false;
         break;

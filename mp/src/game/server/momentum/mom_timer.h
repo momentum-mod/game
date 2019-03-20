@@ -33,7 +33,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // ------------- Timer state related messages --------------------------
     // Starts the timer for the given starting tick
     // Returns true if timer successfully started, otherwise false
-    bool Start(int startTick, int iBonusZone);
+    bool Start(int startTick, int iTrackNum);
     // Stops the timer
     // If bFinished is true the timer will dispatch a TIMER_EVENT_FINISHED event leading to the time being saved,
     // otherwise TIMER_EVENT_STOPPED is dispatched.
@@ -102,7 +102,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     SavedLocation_t *GetStartMark() const { return m_pStartZoneMark; }
     void ClearStartMark();
 
-    int GetBonus() const { return m_iBonusZone; }
+    int GetTrackNumber() const { return m_iTrackNumber; }
 
     bool ShouldUseStartZoneOffset() const { return m_bShouldUseStartZoneOffset; }
     void SetShouldUseStartZoneOffset(bool use) { m_bShouldUseStartZoneOffset = use; }
@@ -139,14 +139,14 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     SavedLocation_t *m_pStartZoneMark;
 
-    int m_iBonusZone;
+    int m_iTrackNumber;
 
     // PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the
     // start trigger
     // also, subtract the ending offset from the time, since we end after we actually enter the ending trigger
-    float m_flTickOffsetFix[MAX_STAGES]; // index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
-    float m_flZoneEnterTime[MAX_STAGES];
+    float m_flTickOffsetFix[MAX_ZONES]; // index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
+    float m_flZoneEnterTime[MAX_ZONES];
     bool m_bShouldUseStartZoneOffset;
     float m_flDistFixTraceCorners[8]; // array of floats representing the trace distance from each corner of the
                                       // player's collision hull

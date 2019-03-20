@@ -50,7 +50,7 @@ SendPropArray3(SENDINFO_ARRAY3(m_flZoneVelocityMax2D), SendPropFloat(SENDINFO_AR
 END_SEND_TABLE();
 #endif
 
-CMomRunStats::CMomRunStats(uint8 size /* = MAX_STAGES*/)
+CMomRunStats::CMomRunStats(uint8 size /* = MAX_ZONES*/)
 {
     Init(size);
 }
@@ -60,15 +60,15 @@ CMomRunStats::CMomRunStats(CUtlBuffer &reader)
     Deserialize(reader);
 }
 
-void CMomRunStats::Init(uint8 size /* = MAX_STAGES*/)
+void CMomRunStats::Init(uint8 size /* = MAX_ZONES*/)
 {
-    size = clamp<uint8>(size, 0, MAX_STAGES);
+    size = clamp<uint8>(size, 0, MAX_ZONES);
 
     SetTotalZones(size);
 
     // initialize everything to 0
     // Note: We do m_iTotalZones + 1 because 0 is overall!
-    for (int i = 0; i < MAX_STAGES + 1; ++i)
+    for (int i = 0; i < MAX_ZONES + 1; ++i)
     {
         SetZoneJumps(i, 0);
         SetZoneStrafes(i, 0);
@@ -88,7 +88,7 @@ void CMomRunStats::FullyCopyFrom(const CMomRunStats &other)
 {
     SetTotalZones(other.m_iTotalZones);
 
-    for (auto i = 0; i < MAX_STAGES + 1; ++i)
+    for (auto i = 0; i < MAX_ZONES + 1; ++i)
     {
         SetZoneJumps(i, other.m_iZoneJumps[i]);
         SetZoneStrafes(i, other.m_iZoneStrafes[i]);
@@ -111,8 +111,8 @@ void CMomRunStats::Deserialize(CUtlBuffer &reader)
     SetTotalZones(reader.GetUnsignedChar());
 
     // NOTE: This range checking might result in unread data.
-    if (m_iTotalZones > MAX_STAGES)
-        SetTotalZones(MAX_STAGES);
+    if (m_iTotalZones > MAX_ZONES)
+        SetTotalZones(MAX_ZONES);
 
     for (int i = 0; i < m_iTotalZones + 1; ++i)
     {
@@ -220,7 +220,7 @@ float CMomRunStats::GetZoneVelocityAvg(int zone, bool vel2D)
                : (vel2D ? m_flZoneVelocityAvg2D[zone] : m_flZoneVelocityAvg3D[zone]);
 }
 
-void CMomRunStats::SetTotalZones(uint8 zones) { m_iTotalZones = clamp<uint8>(zones, 0, MAX_STAGES); }
+void CMomRunStats::SetTotalZones(uint8 zones) { m_iTotalZones = clamp<uint8>(zones, 0, MAX_ZONES); }
 void CMomRunStats::SetZoneJumps(int zone, uint32 value)
 {
     if (zone > m_iTotalZones)

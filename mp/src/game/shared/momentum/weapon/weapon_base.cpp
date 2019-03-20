@@ -289,7 +289,7 @@ void CWeaponBase::ItemPostFrame()
             if (pPlayer->m_iShotsFired > 15)
                 pPlayer->m_iShotsFired = 15;
 
-            m_flDecreaseShotsFired = gpGlobals->curtime + 0.4;
+            m_flDecreaseShotsFired = gpGlobals->curtime + 0.4f;
         }
 
         m_bFireOnEmpty = FALSE;
@@ -303,7 +303,7 @@ void CWeaponBase::ItemPostFrame()
         {
             if ((pPlayer->m_iShotsFired > 0) && (m_flDecreaseShotsFired < gpGlobals->curtime))
             {
-                m_flDecreaseShotsFired = gpGlobals->curtime + 0.0225;
+                m_flDecreaseShotsFired = gpGlobals->curtime + 0.0225f;
                 --pPlayer->m_iShotsFired;
             }
         }
@@ -524,7 +524,7 @@ bool CWeaponBase::Deploy()
     {
         pPlayer->m_iShotsFired = 0;
         pPlayer->m_bResumeZoom = false;
-        pPlayer->m_iLastZoom = 0;
+        pPlayer->m_iLastZoomFOV = 0;
         pPlayer->SetFOV(pPlayer, 0);
     }
 #endif

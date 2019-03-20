@@ -23,8 +23,6 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void EndRun();
     void StartRun(bool firstPerson = false);
 
-    void StartTimer(int m_iStartTick) OVERRIDE;
-
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
@@ -49,7 +47,6 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     // Ghost-only
     CNetworkVar(bool, m_bIsPaused); // Is the replay paused?
     CNetworkVar(int, m_iCurrentTick); // Current tick of the replay
-    CNetworkVar(int, m_iStartTickD); // The tick difference between timer and record
     CNetworkVar(int, m_iTotalTicks); // Total ticks for the replay (run time + start + end)
 
     // override of color so that replayghosts are always somewhat transparent.
