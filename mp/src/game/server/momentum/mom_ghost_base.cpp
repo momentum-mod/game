@@ -14,6 +14,7 @@ SendPropInt(SENDINFO(m_iDisabledButtons)),
 SendPropBool(SENDINFO(m_bBhopDisabled)),
 SendPropString(SENDINFO(m_szGhostName)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
+SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MomRunStats)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
@@ -35,6 +36,7 @@ CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullp
     m_nGhostButtons = 0;
     m_iDisabledButtons = 0;
     m_szGhostName.GetForModify()[0] = '\0';
+    m_RunStats.Init();
 }
 
 void CMomentumGhostBaseEntity::Precache()

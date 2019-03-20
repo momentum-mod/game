@@ -196,7 +196,7 @@ bool CWeaponBaseGun::Reload()
 #endif
 
     m_flAccuracy = 0.2;
-    pPlayer->m_SrvData.m_iShotsFired = 0;
+    pPlayer->m_iShotsFired = 0;
     m_bDelayFire = false;
 
     return true;

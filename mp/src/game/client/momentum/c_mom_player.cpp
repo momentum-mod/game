@@ -17,6 +17,7 @@ RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
+RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunStats)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
@@ -24,7 +25,7 @@ DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
+C_MomentumPlayer::C_MomentumPlayer() : m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
@@ -40,6 +41,7 @@ C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_
 
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
+    m_RunStats.Init();
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
@@ -65,7 +67,6 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 void C_MomentumPlayer::ClientThink()
 {
     SetNextClientThink(CLIENT_THINK_ALWAYS);
-    FetchStdData(this);
 
     if (IsObserver())
     {

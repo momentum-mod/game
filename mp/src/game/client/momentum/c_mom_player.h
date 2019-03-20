@@ -1,7 +1,5 @@
 #pragma once
 
-#include <mom_modulecomms.h>
-#include <run/run_stats.h>
 #include "c_mom_triggers.h"
 #include "run/mom_run_entity.h"
 
@@ -52,10 +50,9 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     // CMomRunEnt stuff
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }
     CNetworkVarEmbedded(CMomRunEntityData, m_Data);
-    CMomRunEntityData *GetRunEntData() override { return &m_Data; }
-
-    StdDataFromServer m_SrvData;
-    CMomRunStats m_RunStats;
+    virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
+    virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; };
 
     CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
 

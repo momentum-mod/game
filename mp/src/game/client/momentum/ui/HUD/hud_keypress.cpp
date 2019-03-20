@@ -252,8 +252,8 @@ void CHudKeyPressDisplay::OnThink()
             m_bShouldDrawCounts = false; // Not worth it
             m_nDisabledButtons = pReplayEnt->m_iDisabledButtons;
             m_nButtons = pReplayEnt->m_nGhostButtons;
-            m_nStrafes = pReplayEnt->m_SrvData.m_RunStatsData.m_iZoneStrafes[0];
-            m_nJumps = pReplayEnt->m_SrvData.m_RunStatsData.m_iZoneJumps[0];
+            m_nStrafes = pReplayEnt->m_RunStats.m_iZoneStrafes[0];
+            m_nJumps = pReplayEnt->m_RunStats.m_iZoneJumps[0];
         }
         else if (pOnlineEnt)
         {

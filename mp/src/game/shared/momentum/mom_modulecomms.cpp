@@ -1,74 +1,22 @@
 #include "cbase.h"
-#include "run/run_stats.h"
+
 #include "mom_modulecomms.h"
 #include "util/os_utils.h"
 
+#include "tier0/memdbgon.h"
+
 #ifdef CLIENT_DLL
-
-#include "c_mom_player.h"
-#include "c_mom_replay_entity.h"
-StdDataBuffer g_MomServerDataBuf;
-StdReplayDataBuffer g_MomReplayDataBuf;
-
-DLL_EXPORT void StdDataToPlayer(StdDataFromServer *from)
-{
-    CAutoLock guard(g_MomServerDataBuf._mutex);
-
-    g_MomServerDataBuf.m_bWritten = true;
-    memcpy(&g_MomServerDataBuf, from, sizeof(StdDataFromServer));
-}
-
-DLL_EXPORT void StdDataToReplay(StdReplayDataFromServer *from)
-{
-    CAutoLock guard(g_MomServerDataBuf._mutex);
-
-    g_MomReplayDataBuf.m_bWritten = true;
-    memcpy(&g_MomReplayDataBuf, from, sizeof(StdReplayDataFromServer));
-}
-
-void FetchStdData(C_MomentumPlayer *pPlayer)
-{
-    if(pPlayer)
-    {
-        CAutoLock guard(g_MomServerDataBuf._mutex);
-
-        if (!g_MomServerDataBuf.m_bWritten)
-            return;
-        
-        g_MomServerDataBuf.m_bWritten = false;
-        memcpy(&pPlayer->m_SrvData, &g_MomServerDataBuf, sizeof(StdDataFromServer));
-    }
-}
-
-void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost)
-{
-    if (pGhost)
-    {
-        CAutoLock guard(g_MomServerDataBuf._mutex);
-
-        if (!g_MomReplayDataBuf.m_bWritten)
-            return;
-        
-        g_MomReplayDataBuf.m_bWritten = false;
-        memcpy(&pGhost->m_SrvData, &g_MomReplayDataBuf, sizeof(StdReplayDataFromServer));
-    }
-}
-
-
 // The server will hook into this function to fire the event on the client (server -> client)
 DLL_EXPORT void FireEventFromServer(KeyValues *pKv)
 {
     g_pModuleComms->OnEvent(pKv);
 }
-
-#else //Is not CLIENT_DLL
-
+#else
 // The client hooks into this function to pass an event to the server (client -> server)
 DLL_EXPORT void FireEventFromClient(KeyValues *pKv)
 {
     g_pModuleComms->OnEvent(pKv);
 }
-
 #endif //CLIENT_DLL
 
 ModuleCommunication::ModuleCommunication() : CAutoGameSystem("ModuleCommunication"), CallMeToFireEvent(nullptr)

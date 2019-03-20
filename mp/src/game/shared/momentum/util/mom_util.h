@@ -1,8 +1,8 @@
 #pragma once
 
-class CMomReplayBase;
-class CMomRunStats;
+#include "run/run_stats.h"
 
+class CMomReplayBase;
 struct RunCompare_t;
 
 class MomentumUtil

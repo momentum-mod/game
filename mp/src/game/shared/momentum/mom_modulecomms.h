@@ -1,72 +1,10 @@
 #pragma once
 
-#include "run/run_stats.h"
-#include "threadtools.h"
 #include "tier1/utllinkedlist.h"
 #include <utldelegate.h>
 
 /*
- * Members of this class will be calculated server-side but updated
- * on the client every tick.
- * 
- * Note: different instances of this are used for replay entities and players!
- * Note: different functions are used to invoke a transfer on replay entities and players!
- */
-struct StdDataFromServer
-{
-    // CMOMRunEntityData m_RunData;
-    CMomRunStats::data m_RunStatsData;
-};
-
-struct StdReplayDataFromServer
-{
-    // CMOMRunEntityData m_RunData;
-    CMomRunStats::data m_RunStatsData;
-};
-#ifdef CLIENT_DLL
-//Forward Decls
-
-class C_MomentumPlayer;
-class C_MomentumReplayGhostEntity;
-void FetchStdData(C_MomentumPlayer *pPlayer);
-void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost);
-
-#endif
-
-/*
- * Buffer-like objects that exist to make the goal of no-boilerplate thread safety possible.
- * An intermediate object like this allows the data to be moved to an area that isn't locked
- * by default like it would be if it was coppied straight from the server player to client player.
- * 
- * In other words, the server doesn't force the client to take in data when the server is ready;
- * the client can decide when it is ready and then the server can do that too.
- */
-struct StdDataBuffer : StdDataFromServer
-{
-    CThreadMutex _mutex;
-    bool m_bWritten;
-};
-
-struct StdReplayDataBuffer : StdReplayDataFromServer
-{
-    CThreadMutex _mutex;
-    bool m_bWritten;
-};
-
-/*
- * Function pointer type to exported 'StdDataToPlayer()'
- * Casts from pointers to function aren't technically legal,
- * but this circumvents that.
- */
-typedef void (*DataToPlayerFn)(StdDataFromServer*);
-
-/*
- * Function pointer to exported 'StdDataToReplay()'
- */
-typedef void (*DataToReplayFn)(StdReplayDataFromServer*);
-
-/*
- * 
+ * Event firing function, used in the event code below
  */
 typedef void (*EventFireFn)(KeyValues *pKv);
 

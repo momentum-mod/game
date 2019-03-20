@@ -1,11 +1,14 @@
 #include "cbase.h"
+
+#include "mom_lobby_system.h"
+
 #include "filesystem.h"
 #include <cryptopp/base64.h>
-#include "mom_lobby_system.h"
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
 #include "mom_system_saveloc.h"
 #include "mom_player_shared.h"
+#include "mom_modulecomms.h"
 
 #include "tier0/memdbgon.h"
 

@@ -1,7 +1,9 @@
 #include "cbase.h"
 
-#include "in_buttons.h"
 #include "mom_timer.h"
+
+#include "in_buttons.h"
+#include "mom_modulecomms.h"
 #include "movevars_shared.h"
 #include "mom_system_saveloc.h"
 #include "mom_triggers.h"

@@ -3,19 +3,17 @@
 #include "mom_ghostdefs.h"
 #include "mom_shareddefs.h"
 #include "GameEventListener.h"
-#include "mom_modulecomms.h"
 #include "run/mom_run_entity.h"
 
 class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
+class CMomentumGhostBaseEntity;
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 #define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 #define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
-
-class CMomentumGhostBaseEntity;
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
 {
@@ -89,8 +87,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     virtual void OnZoneEnter(CTriggerZone* pTrigger, CBaseEntity *pEnt) OVERRIDE;
     virtual void OnZoneExit(CTriggerZone* pTrigger, CBaseEntity *pEnt) OVERRIDE;
     CNetworkVarEmbedded(CMomRunEntityData, m_Data);
-    virtual CMomRunEntityData *GetRunEntData() override { return &m_Data;}
-
+    virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data;}
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
+    virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; }
 
     CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
     CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
@@ -111,12 +110,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
     Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
     float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
-
-    StdDataFromServer m_SrvData;
-    CMomRunStats m_RunStats;
-    //Function pointer to transfer regularly "networked" variables to client.
-    //Pointer is acquired in mom_client.cpp
-    void (*StdDataToPlayer)(StdDataFromServer* from);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance, bool &bPaint);
 
