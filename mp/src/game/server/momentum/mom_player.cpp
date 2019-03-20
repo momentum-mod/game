@@ -593,6 +593,7 @@ void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngle
 {
     // No need to remove the trail here, CreateTrail() already does it for us
     BaseClass::Teleport(newPosition, newAngles, newVelocity);
+    PhysicsCheckForEntityUntouch();
     CreateTrail();
 
     g_ReplaySystem.SetTeleportedThisFrame();
