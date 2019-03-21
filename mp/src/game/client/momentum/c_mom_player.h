@@ -19,6 +19,12 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 
     static C_MomentumPlayer *GetLocalMomPlayer();
 
+    // Handles determining if we should be showing the entity we're spectating or ourselves, given the situation.
+    // Guaranteed to not be null, as at worst case, it'll return this player.
+    CMomRunEntity *GetCurrentUIEntity();
+    CMomRunEntityData *GetCurrentUIEntData(); // Same as above, but conveniently gets the run ent data pointer
+    CMomRunStats *GetCurrentUIEntStats(); // Same as above but for run stats
+
     void PostDataUpdate(DataUpdateType_t updateType) OVERRIDE;
     void OnDataChanged(DataUpdateType_t type) OVERRIDE;
     bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
@@ -28,15 +34,13 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     bool HasAutoBhop() { return m_bAutoBhop; }
     // void ResetStrafeSync();
 
-    bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
-
     // Returns the replay entity that the player is watching (first person only)
     int GetSpecEntIndex() const;
-    C_MomentumReplayGhostEntity* GetReplayEnt() const;
-    C_MomentumOnlineGhostEntity* GetOnlineGhostEnt() const;
 
     // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
+
+    void OnObserverTargetUpdated() OVERRIDE;
 
     CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
     CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
@@ -55,6 +59,8 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; };
+    virtual int GetEntIndex() OVERRIDE { return index; }
+    virtual float GetCurrentRunTime() OVERRIDE;
 
     CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
 
@@ -81,8 +87,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     bool m_duckUntilOnGround;
     float m_flStamina;
 
-    C_MomentumOnlineGhostEntity *m_pViewTarget;
-    C_MomentumOnlineGhostEntity *m_pSpectateTarget;
+    CMomRunEntity *m_pSpecTarget;
 
     friend class CMomentumGameMovement;
 };

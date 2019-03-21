@@ -54,14 +54,15 @@ public:
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
 
-    void SetSpectator(CMomentumPlayer *player) { m_pCurrentSpecPlayer = player; }
+    void SetSpectator(CMomentumPlayer *player);
     void RemoveSpectator();
-    CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
+    CMomentumPlayer* GetCurrentSpectator() const { return m_pCurrentSpecPlayer; }
 
     CNetworkString(m_szGhostName, MAX_PLAYER_NAME_LENGTH);
     CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(int, m_iDisabledButtons);
     CNetworkVar(bool, m_bBhopDisabled);
+    CNetworkVar(bool, m_bSpectated); // Is the ghost being spectated by us?
 
     void HideGhost();
     void UnHideGhost();
@@ -74,11 +75,12 @@ public:
     virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; }
+    virtual int GetEntIndex() OVERRIDE { return entindex(); }
 
 protected:
-    virtual void Think(void);
-    virtual void Spawn(void);
-    virtual void Precache(void);
+    virtual void Think(void) OVERRIDE;
+    virtual void Spawn(void) OVERRIDE;
+    virtual void Precache(void) OVERRIDE;
     void DecalTrace(trace_t* pTrace, char const* decalName) OVERRIDE {} // Don't do any DecalTracing on this entity
     int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
     int ShouldTransmit(const CCheckTransmitInfo* pInfo) OVERRIDE { return FL_EDICT_ALWAYS; }

@@ -22,6 +22,7 @@ public:
     void SetVisible(bool) OVERRIDE;
     void FireGameEvent(IGameEvent*) OVERRIDE;
     void LevelShutdown() OVERRIDE;
+    void OnThink() OVERRIDE;
 
     void SetMouseInputEnabled(bool state) OVERRIDE;
 

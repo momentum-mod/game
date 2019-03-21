@@ -24,6 +24,7 @@
         "visible"       "1"
         "enabled"       "1"
         "image"         "left_arrow_button_grey"
+        "tooltiptext" "#MOM_MF_Left_Arrow"
     }
     
     "Current_Zone"//This is the label that shows what the current zone on the map finished panel
@@ -66,6 +67,7 @@
         "pin_to_sibling" "Current_Zone"
         "pin_corner_to_sibling" "0"
         "pin_to_sibling_corner" "1"
+        "tooltiptext" "#MOM_MF_Right_Arrow"
     }
     "Close_Panel"
     {
@@ -98,6 +100,7 @@
         "pin_to_sibling" "Close_Panel"
         "pin_to_sibling_corner" "2"
         "pin_corner_to_sibling" "0"
+        "tooltiptext" "#MOM_MF_Restart_Map"
     }
     "Replay_Icon"
     {
@@ -115,6 +118,7 @@
         "pin_to_sibling" "Repeat_Button"
         "pin_to_sibling_corner" "2"
         "pin_corner_to_sibling" "0"
+        "tooltiptext" "#MOM_MF_PlayReplay"
     }
     
     "Zone_Overall_Time"// or "ZoneTime"

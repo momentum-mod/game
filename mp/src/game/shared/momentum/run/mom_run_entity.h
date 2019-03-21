@@ -29,18 +29,18 @@ class CMomRunEntity
 
 #ifndef CLIENT_DLL
     // Used by all zone triggers, moves logic to per-entity-impl.
-    // If the entities override these, the pEnt == `this` for them.
-    virtual void OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt);
-    virtual void OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt);
+    virtual void OnZoneEnter(CTriggerZone *pTrigger);
+    virtual void OnZoneExit(CTriggerZone *pTrigger);
 
     // Used by limitmovement trigger
     virtual void ToggleButtons(int iButtonFlags, bool bEnable) = 0;
     virtual void ToggleBhop(bool bEnable) = 0;
 #else
-
+    virtual float GetCurrentRunTime() = 0;
 #endif
 
     // Networked shared variables between all run entities
+    virtual int GetEntIndex() = 0;
     virtual CMomRunStats *GetRunStats() = 0;
     virtual CMomRunEntityData *GetRunEntData() = 0;
 };

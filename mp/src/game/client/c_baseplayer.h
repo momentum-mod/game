@@ -149,6 +149,7 @@ public:
 	void				SetObserverMode ( int iNewMode );
 	virtual CBaseEntity	*GetObserverTarget() const;
 	void			SetObserverTarget( EHANDLE hObserverTarget );
+    virtual void OnObserverTargetUpdated();
 
 	bool			AudioStateIsUnderwater( const Vector &vecMainViewOrigin );
 

@@ -38,17 +38,11 @@ class CHudTimer : public CHudElement, public EditablePanel
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
     void MsgFunc_Timer_Event(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);
-    float GetCurrentTime();
-
-    void OnSavelocUpdateEvent(KeyValues *pKv);
 
   private:
     void SetToNoTimer();
 
     int m_iZoneCurrent;
-    int m_iTotalTicks, m_iOldTickCount;
-    bool m_bIsReplay;
-    int *m_pCurrentGhostTicks;
     int m_iCurrentSpecTargetEntIndx;
     C_MomentumReplayGhostEntity *m_pSpecTarget;
 
@@ -61,7 +55,6 @@ class CHudTimer : public CHudElement, public EditablePanel
     wchar_t m_wStageNum[BUFSIZELOCL];
     wchar_t m_wCheckpointNum[BUFSIZELOCL];
 
-    bool m_bWereCheatsActivated;
     bool m_bWasUsingSavelocMenu;
     bool m_bInPracticeMode;
     CMomRunStats *m_pRunStats;
@@ -79,10 +72,9 @@ CHudTimer::CHudTimer(const char *pElementName): CHudElement(pElementName), Edita
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
-    m_bIsReplay = false;
     m_bWasUsingSavelocMenu = false;
 
-    g_pModuleComms->ListenForEvent("saveloc_upd8", UtlMakeDelegate(this, &CHudTimer::OnSavelocUpdateEvent));
+    ListenForGameEvent("saveloc_upd8");
     ListenForGameEvent("zone_enter");
     ListenForGameEvent("spec_target_updated");
     ListenForGameEvent("spec_stop");
@@ -96,16 +88,14 @@ CHudTimer::CHudTimer(const char *pElementName): CHudElement(pElementName), Edita
     m_pComparisonLabel = new Label(this, "ComparisonLabel", "");
 
     LoadControlSettings("resource/ui/Timer.res");
+
+    HOOK_HUD_MESSAGE(CHudTimer, Timer_Event);
+    HOOK_HUD_MESSAGE(CHudTimer, Timer_Reset);
 }
 
 void CHudTimer::Init()
 {
-    m_iTotalTicks = 0;
-    m_iOldTickCount = 0;
-    m_pCurrentGhostTicks = nullptr;
     m_iCurrentSpecTargetEntIndx = -1;
-    HOOK_HUD_MESSAGE(CHudTimer, Timer_Event);
-    HOOK_HUD_MESSAGE(CHudTimer, Timer_Reset);
     m_pRunStats = nullptr;
     m_pRunData = nullptr;
     m_pSpecTarget = nullptr;
@@ -113,13 +103,9 @@ void CHudTimer::Init()
 
 void CHudTimer::Reset()
 {
-    m_iTotalTicks = 0;
-    m_iOldTickCount = 0;
-    m_pCurrentGhostTicks = nullptr;
     m_iCurrentSpecTargetEntIndx = -1;
     m_bInPracticeMode = false;
     m_iZoneCurrent = 1;
-    m_bWereCheatsActivated = false;
     m_pSpecTarget = nullptr;
 
     // cache localization strings -- in here because Reset is called when the player respawns, allowing for easy reload of tokens
@@ -149,7 +135,7 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
             const bool bChanged = m_iZoneCurrent != zoneNum;
             m_iZoneCurrent = zoneNum;
 
-            if (zoneNum == 1) // Start trigger
+            if (zoneNum == 1 && !m_bInPracticeMode) // Start trigger
                 SetToNoTimer();
 
             if (m_pRunData && m_pRunData->m_bTimerRunning && bChanged && m_iZoneCurrent > 1)
@@ -191,10 +177,8 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
         m_iCurrentSpecTargetEntIndx = pLocal->GetSpecEntIndex();
         // Default it all to nullptr for now, just in case they're spectating an online ghost anyways
         m_pSpecTarget = nullptr;
-        m_bIsReplay = false;
         m_pRunStats = nullptr;
         m_pRunData = nullptr;
-        m_pCurrentGhostTicks = nullptr;
         m_pInfoLabel->SetText("");
         m_pSplitLabel->SetText("");
         m_pComparisonLabel->SetText("");
@@ -211,6 +195,25 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
     {
         Reset();
     }
+    else if (FStrEq(pName, "saveloc_upd8"))
+    {
+        const bool bUsing = event->GetBool("using");
+        const int count = event->GetInt("count");
+        const int current = event->GetInt("current", -1) + 1;
+
+        if (bUsing != m_bWasUsingSavelocMenu)
+        {
+            m_bWasUsingSavelocMenu = bUsing;
+
+            m_pMainStatusLabel->SetText(m_wNoTimer);
+
+            if (!bUsing)
+                m_pInfoLabel->SetText("");
+        }
+
+        if (m_bWasUsingSavelocMenu)
+            m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, current, count));
+    }
 }
 
 void CHudTimer::ApplySchemeSettings(IScheme* pScheme)
@@ -226,33 +229,15 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
     if (!pPlayer)
         return;
 
-    const int type = msg.ReadLong();
+    const int type = msg.ReadByte();
 
     if (type == TIMER_EVENT_STARTED)
     {
-        // VGUI_ANIMATE("TimerStart");
-
         pPlayer->EmitSound("Momentum.StartTimer");
     }
     else if (type == TIMER_EVENT_FINISHED)
     {
-        // Compare times.
-        if (m_bWereCheatsActivated) // EY, CHEATER, STOP
-        {
-            DevWarning("sv_cheats was set to 1, thus making the run not valid \n");
-        }
-        else // He didn't cheat, we can carry on
-        {
-            // m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
-            // DevMsg("Ticks upon exit: %i and total seconds: %f\n", m_iTotalTicks, gpGlobals->interval_per_tick);
-            // Paint();
-            // DevMsg("%s \n", m_pszString);
-        }
-
-        // VGUI_ANIMATE("TimerStop");
         pPlayer->EmitSound("Momentum.FinishTimer");
-
-        // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
     }
     else if (type == TIMER_EVENT_STOPPED)
     {
@@ -266,48 +251,6 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
 
 void CHudTimer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
-float CHudTimer::GetCurrentTime()
-{
-    if (m_bIsReplay && m_pSpecTarget)
-    {
-        if (m_pRunData->m_bTimerRunning && m_pCurrentGhostTicks)
-            m_iTotalTicks = m_pSpecTarget->m_iCurrentTick - m_pRunData->m_iStartTick;
-        else
-            m_iTotalTicks = m_pRunData->m_iRunTimeTicks;
-    }
-    else
-    {
-        if (m_pRunData->m_bTimerRunning && gpGlobals->tickcount != m_iOldTickCount)
-            m_iTotalTicks = gpGlobals->tickcount - m_pRunData->m_iStartTick;
-        else if (m_pRunData->m_bMapFinished)
-            m_iTotalTicks = m_pRunData->m_iRunTimeTicks;
-    }
-
-    m_iOldTickCount = gpGlobals->tickcount;
-
-    return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
-}
-
-void CHudTimer::OnSavelocUpdateEvent(KeyValues* pKv)
-{
-    const bool bUsing = pKv->GetBool("using");
-    const int count = pKv->GetInt("count");
-    const int current = pKv->GetInt("current", -1) + 1;
-
-    if (bUsing != m_bWasUsingSavelocMenu)
-    {
-        m_bWasUsingSavelocMenu = bUsing;
-
-        m_pMainStatusLabel->SetText(m_wNoTimer);
-
-        if (!bUsing)
-            m_pInfoLabel->SetText("");
-    }
-
-    if (m_bWasUsingSavelocMenu)
-        m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, current, count));
-}
-
 void CHudTimer::SetToNoTimer()
 {
     m_pMainStatusLabel->SetText(m_wNoTimer);
@@ -318,27 +261,29 @@ void CHudTimer::SetToNoTimer()
 
 void CHudTimer::OnThink()
 {
-    if (m_iCurrentSpecTargetEntIndx != -1 && !m_pSpecTarget)
+    const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pLocal)
     {
-        const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
-        C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
-        if (pGhost)
+        const auto pEnt = pLocal->GetCurrentUIEntity();
+        if (m_iCurrentSpecTargetEntIndx != -1 && !m_pSpecTarget)
         {
-            m_pSpecTarget = pGhost;
-            m_bIsReplay = true;
-            m_pRunStats = &pGhost->m_RunStats;
-            m_pRunData = pGhost->GetRunEntData();
+            if (pEnt->GetEntType() == RUN_ENT_REPLAY)
+            {
+                m_pSpecTarget = static_cast<C_MomentumReplayGhostEntity*>(pEnt);
+                m_pRunStats = pEnt->GetRunStats();
+                m_pRunData = pEnt->GetRunEntData();
+            }
         }
-    }
 
-    // Format the run's time
-    if (m_pRunData && !m_bInPracticeMode)
-    {
-        if (m_pRunData->m_bTimerRunning || m_pRunData->m_bMapFinished)
+        // Format the run's time
+        if (m_pRunData && !m_bInPracticeMode)
         {
-            char curTime[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(GetCurrentTime(), curTime, 2);
-            m_pMainStatusLabel->SetText(curTime);
+            if (m_pRunData->m_bTimerRunning || m_pRunData->m_bMapFinished)
+            {
+                char curTime[BUFSIZETIME];
+                g_pMomentumUtil->FormatTime(pEnt->GetCurrentRunTime(), curTime, 2);
+                m_pMainStatusLabel->SetText(curTime);
+            }
         }
     }
 }

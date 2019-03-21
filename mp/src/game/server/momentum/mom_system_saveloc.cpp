@@ -449,7 +449,7 @@ void CMOMSaveLocSystem::CheckTimer()
     if (g_pMomentumTimer->IsRunning())
     {
 
-        g_pMomentumTimer->Stop(false);
+        g_pMomentumTimer->Stop(CMomentumPlayer::GetLocalPlayer());
 
         // MOM_TODO: consider
         // 1. having a local timer running, as people may want to time their routes they're using CP menu for
@@ -461,13 +461,14 @@ void CMOMSaveLocSystem::CheckTimer()
 
 void CMOMSaveLocSystem::FireUpdateEvent() const
 {
-    KeyValues *pSavelocInit = new KeyValues("saveloc_upd8");
-    pSavelocInit->SetInt("count", m_rcSavelocs.Count());
-    pSavelocInit->SetInt("current", m_iCurrentSavelocIndx);
-    pSavelocInit->SetBool("using", m_bUsingSavelocMenu);
-
-    // Fire only to the Client DLL
-    g_pModuleComms->FireEvent(pSavelocInit, FIRE_FOREIGN_ONLY);
+    const auto pEvent = gameeventmanager->CreateEvent("saveloc_upd8");
+    if (pEvent)
+    {
+        pEvent->SetInt("count", m_rcSavelocs.Count());
+        pEvent->SetInt("current", m_iCurrentSavelocIndx);
+        pEvent->SetBool("using", m_bUsingSavelocMenu);
+        gameeventmanager->FireEvent(pEvent);
+    }
 }
 
 void CMOMSaveLocSystem::UpdateRequesters()
