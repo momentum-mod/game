@@ -10,7 +10,7 @@
 #include <cdll_util.h>
 #include <globalvars_base.h>
 
-#include "momSpectatorGUI.h"
+#include "mom_spectator_gui.h"
 
 #include <game/client/iviewport.h>
 #include <vgui/ILocalize.h>

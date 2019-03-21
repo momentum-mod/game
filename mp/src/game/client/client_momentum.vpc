@@ -172,8 +172,8 @@ $Project "Client (Momentum)"
                 
                 $Folder "Spectator"
                 {
-                    $File "momentum\ui\spectate\momSpectatorGUI.cpp"
-                    $File "momentum\ui\spectate\momSpectatorGUI.h"
+                    $File "momentum\ui\spectate\mom_spectator_gui.cpp"
+                    $File "momentum\ui\spectate\mom_spectator_gui.h"
                     $File "momentum\ui\spectate\mom_replayui.cpp"
                     $File "momentum\ui\spectate\mom_replayui.h"
                 }
