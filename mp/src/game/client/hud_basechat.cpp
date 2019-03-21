@@ -609,6 +609,7 @@ void CBaseHudChat::Reset(void)
 {
     m_nVisibleHeight = 0;
     Clear();
+    m_flHistoryFadeTime = gpGlobals->curtime;
 }
 
 void CBaseHudChat::OnCommand(const char *command)
