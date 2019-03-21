@@ -105,6 +105,12 @@ int C_MomZoneMenu::HandleKeyInput(int down, ButtonCode_t keynum)
             engine->ExecuteClientCmd("mom_zone_create");
             return true;
         }
+        if (keynum == KEY_RALT)
+        {
+            static ConVarRef mom_zone_auto_make_stage("mom_zone_auto_make_stage");
+            mom_zone_auto_make_stage.SetValue(!mom_zone_auto_make_stage.GetBool());
+            return true;
+        }
     }
 
     return false;
