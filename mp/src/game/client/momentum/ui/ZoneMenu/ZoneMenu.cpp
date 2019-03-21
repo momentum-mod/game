@@ -53,8 +53,6 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Auto", new KeyValues("vals", "zone_type", "auto"));
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Start", new KeyValues("vals", "zone_type", "start"));
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_End", new KeyValues("vals", "zone_type", "end"));
-    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_BStart", new KeyValues("vals", "zone_type", "start", "bonus", "1"));
-    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_BEnd", new KeyValues("vals", "zone_type", "end", "bonus", "1"));
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Stage", new KeyValues("vals", "zone_type", "stage"));
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Checkpoint", new KeyValues("vals", "zone_type", "cp"));
     m_pZoneTypeCombo->GetMenu()->SetTypeAheadMode(Menu::NO_TYPE_AHEAD_MODE); // Disable the annoying type ahead
@@ -220,11 +218,10 @@ void C_MomZoneMenu::OnTextChanged(Panel *pPanel)
     else if (pPanel == m_pZoneTypeCombo)
     {
         static ConVarRef mom_zone_type("mom_zone_type");
-        static ConVarRef mom_zone_bonus("mom_zone_bonus");
+        static ConVarRef mom_zone_track("mom_zone_track");
 
         KeyValues *pData = m_pZoneTypeCombo->GetActiveItemUserData();
         mom_zone_type.SetValue(pData->GetString("zone_type"));
-        mom_zone_bonus.SetValue(pData->GetBool("bonus"));
     }
 }
 
