@@ -276,24 +276,22 @@ void CMOMSpectatorGUI::Update()
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
-        C_MomentumOnlineGhostEntity *pOnlineGhostEnt = pPlayer->GetOnlineGhostEnt();
-
-        bool isReplayGhost = (pReplayEnt && pReplayEnt->IsReplayGhost());
-        bool isOnlineGhost = (pOnlineGhostEnt && pOnlineGhostEnt->IsOnlineGhost());
-        if (isOnlineGhost || isReplayGhost )
+        const auto pEnt = pPlayer->GetCurrentUIEntity();
+        if (pEnt->GetEntType() >= RUN_ENT_GHOST)
         {
+            const auto pGhost = static_cast<C_MomentumGhostBaseEntity*>(pEnt);
             // Current player name
             wchar_t wPlayerName[BUFSIZELOCL];
-            ANSI_TO_UNICODE(isReplayGhost ? pReplayEnt->m_szGhostName : pOnlineGhostEnt->m_szGhostName, wPlayerName);
+            ANSI_TO_UNICODE(pGhost->m_szGhostName, wPlayerName);
             m_pPlayerLabel->SetText(CConstructLocalizedString(m_pwReplayPlayer, wPlayerName));
 
-            if (isReplayGhost)
+            if (pEnt->GetEntType() == RUN_ENT_REPLAY)
             {
+                const auto pRunData = pEnt->GetRunEntData();
                 // Run time label
                 char tempRunTime[BUFSIZETIME];
                 wchar_t wTime[BUFSIZETIME];
-                g_pMomentumUtil->FormatTime(float(pReplayEnt->m_Data.m_iRunTimeTicks) * pReplayEnt->m_Data.m_flTickRate, tempRunTime);
+                g_pMomentumUtil->FormatTime(float(pRunData->m_iRunTimeTicks) * pRunData->m_flTickRate, tempRunTime);
                 ANSI_TO_UNICODE(tempRunTime, wTime);
                 m_pTimeLabel->SetText(CConstructLocalizedString(m_pwRunTime, wTime));
 
@@ -314,7 +312,7 @@ void CMOMSpectatorGUI::Update()
                 m_pPrevPlayerButton->SetVisible(false);
                 m_pNextPlayerButton->SetVisible(false);
             }
-            if (isOnlineGhost)
+            else // == RUN_ENT_ONLINE
             {
                 // "REPLAY" label
                 m_pReplayLabel->SetText(m_pwWatchingGhost);

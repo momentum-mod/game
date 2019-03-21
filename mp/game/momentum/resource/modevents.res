@@ -47,7 +47,13 @@
     "timer_event" // Fired when timer starts/stops/fails to start
     {
         "ent" "short"
-        "type" "short"
+        "type" "byte"
+    }
+    "saveloc_upd8"
+    {
+        "using" "bool"
+        "count" "long"
+        "current" "long"
     }
     "practice_mode"
     {

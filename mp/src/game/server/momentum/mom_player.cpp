@@ -133,6 +133,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_flPunishTime = -1;
     m_iLastBlock = -1;
 
+    m_bWasSpectating = false;
+
     m_CurrentSlideTrigger = nullptr;
 
     m_Data.m_iRunFlags = 0;
@@ -312,10 +314,13 @@ void CMomentumPlayer::Spawn()
 
     m_bAllowUserTeleports = true;
 
-    bool bWasInReplay = g_ReplaySystem.GetWasInReplay();
-
-    // Reset only if we were not in a replay.
-    if (!bWasInReplay)
+    // Handle resetting only if we weren't spectating
+    if (m_bWasSpectating)
+    {
+        RestoreRunState();
+        m_bWasSpectating = false;
+    }
+    else
     {
         m_Data.m_bIsInZone = false;
         m_Data.m_bMapFinished = false;
@@ -364,21 +369,6 @@ void CMomentumPlayer::Spawn()
 
     // Reset current checkpoint trigger upon spawn
     m_CurrentProgress.Term();
-
-    if (bWasInReplay)
-    {
-        SetAbsOrigin(m_vecLastPos);
-        // SetAbsAngles or SetLocalAngles won't work, we need to make it for the fix_angle.
-        SnapEyeAngles(m_angLastAng);
-        SetLastEyeAngles(m_angLastAng);
-        SetAbsVelocity(m_vecLastVelocity);
-        SetViewOffset(Vector(0,0, m_fLastViewOffset));
-        g_ReplaySystem.SetWasInReplay(false);
-        // memcpy(m_RunStats.m_pData, g_ReplaySystem.SavedRunStats()->m_pData, sizeof(CMomRunStats::data));
-        m_nAccelTicks = g_ReplaySystem.GetSavedAccelTicks();
-        m_nPerfectSyncTicks = g_ReplaySystem.GetSavedPerfectSyncTicks();
-        m_nStrafeTicks = g_ReplaySystem.GetSavedStrafeTicks();
-    }
 
     g_pMomentumTimer->OnPlayerSpawn(this);
 }
@@ -679,7 +669,7 @@ void CMomentumPlayer::ToggleBhop(bool bEnable)
     SetDisableBhop(!bEnable);
 }
 
-void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
 {
     // Zone-specific things first
     const auto iZoneType = pTrigger->GetZoneType();
@@ -780,10 +770,10 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
         break;
     }
 
-    CMomRunEntity::OnZoneEnter(pTrigger, pEnt);
+    CMomRunEntity::OnZoneEnter(pTrigger);
 }
 
-void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
 {
     // We only care to go through with this if we're not spectating now
     if (m_iObserverMode == OBS_MODE_NONE)
@@ -818,7 +808,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
             break;
         }
 
-        CMomRunEntity::OnZoneExit(pTrigger, pEnt);
+        CMomRunEntity::OnZoneExit(pTrigger);
     }
 }
 
@@ -1341,11 +1331,23 @@ CMomentumGhostBaseEntity *CMomentumPlayer::GetGhostEnt() const
     return dynamic_cast<CMomentumGhostBaseEntity *>(m_hObserverTarget.Get());
 }
 
+bool CMomentumPlayer::StartObserverMode(int mode)
+{
+    if (m_iObserverMode == OBS_MODE_NONE)
+    {
+        SaveCurrentRunState();
+    }
+
+    return BaseClass::StartObserverMode(mode);
+}
+
 void CMomentumPlayer::StopSpectating()
 {
     CMomentumGhostBaseEntity *pGhost = GetGhostEnt();
     if (pGhost)
         pGhost->RemoveSpectator();
+
+    m_bWasSpectating = true;
 
     StopObserverMode();
     m_hObserverTarget.Set(nullptr);
@@ -1357,6 +1359,35 @@ void CMomentumPlayer::StopSpectating()
     // Update the lobby/server if there is one
     m_sSpecTargetSteamID.Clear(); // reset steamID when we stop spectating
     g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
+}
+
+void CMomentumPlayer::SaveCurrentRunState()
+{
+    m_nSavedButtons = m_nButtons;
+    m_Data.m_iOldTrack = m_Data.m_iCurrentTrack;
+    m_Data.m_iOldZone = m_Data.m_iCurrentZone;
+    m_vecLastPos = GetAbsOrigin();
+    m_angLastAng = GetAbsAngles();
+    m_vecLastVelocity = GetAbsVelocity();
+    m_fLastViewOffset = GetViewOffset().z;
+    m_nSavedAccelTicks = m_nAccelTicks;
+    m_nSavedPerfectSyncTicks = m_nPerfectSyncTicks;
+    m_nSavedStrafeTicks = m_nStrafeTicks;
+}
+
+void CMomentumPlayer::RestoreRunState()
+{
+    m_nButtons = m_nSavedButtons;
+    m_Data.m_iCurrentTrack = m_Data.m_iOldTrack;
+    m_Data.m_iCurrentZone = m_Data.m_iOldZone;
+    // Teleport calls SnapEyeAngles, don't worry
+    Teleport(&m_vecLastPos, &m_angLastAng, &m_vecLastVelocity);
+    SetViewOffset(Vector(0, 0, m_fLastViewOffset));
+    SetLastEyeAngles(m_angLastAng);
+
+    m_nAccelTicks = m_nSavedAccelTicks;
+    m_nPerfectSyncTicks = m_nSavedPerfectSyncTicks;
+    m_nStrafeTicks = m_nSavedStrafeTicks;
 }
 
 void CMomentumPlayer::PostThink()

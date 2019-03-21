@@ -1,5 +1,5 @@
 ﻿#include "cbase.h"
-#include "hud_macros.h"
+
 #include "hudelement.h"
 #include "iclientmode.h"
 #include "in_buttons.h"
@@ -11,8 +11,6 @@
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 
-#include "c_mom_replay_entity.h"
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "c_mom_online_ghost.h"
@@ -232,36 +230,32 @@ void CHudKeyPressDisplay::OnThink()
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
-        C_MomentumOnlineGhostEntity *pOnlineEnt = pPlayer->GetOnlineGhostEnt();
-        if (pReplayEnt)
+        const auto pUIEnt = pPlayer->GetCurrentUIEntity();
+
+        if (pUIEnt->GetEntType() >= RUN_ENT_GHOST)
         {
-            m_bShouldDrawCounts = false; // Not worth it
-            m_nDisabledButtons = pReplayEnt->m_iDisabledButtons;
-            m_nButtons = pReplayEnt->m_nGhostButtons;
-            m_nStrafes = pReplayEnt->m_RunStats.m_iZoneStrafes[0];
-            m_nJumps = pReplayEnt->m_RunStats.m_iZoneJumps[0];
-        }
-        else if (pOnlineEnt)
-        {
-            m_bShouldDrawCounts = false;
-            m_nButtons = pOnlineEnt->m_nGhostButtons;
-            m_nDisabledButtons = pReplayEnt->m_iDisabledButtons;
+            const auto pGhost = static_cast<C_MomentumGhostBaseEntity*>(pUIEnt);
+            if (pUIEnt->GetEntType() == RUN_ENT_REPLAY)
+            {
+                m_nStrafes = pGhost->m_RunStats.m_iZoneStrafes[0];
+                m_nJumps = pGhost->m_RunStats.m_iZoneJumps[0];
+            }
+
+            m_nButtons = pGhost->m_nGhostButtons;
+            m_nDisabledButtons = pGhost->m_iDisabledButtons;
+
+            m_bShouldDrawCounts = pUIEnt->GetEntType() == RUN_ENT_REPLAY;
         }
         else
         {
             m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
             m_nDisabledButtons = pPlayer->m_afButtonDisabled;
-            if (g_MOMEventListener)
+            // we should only draw the strafe/jump counters when the timer is running
+            m_bShouldDrawCounts = pPlayer->m_Data.m_bTimerRunning;
+            if (m_bShouldDrawCounts)
             {
-                // we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = pPlayer->m_Data.m_bTimerRunning;
-                if (m_bShouldDrawCounts)
-                {
-                    CMomRunStats *stats = &pPlayer->m_RunStats;
-                    m_nStrafes = stats->GetZoneStrafes(0);
-                    m_nJumps = stats->GetZoneJumps(0);
-                }
+                m_nStrafes = pPlayer->m_RunStats.m_iZoneStrafes[0];
+                m_nJumps = pPlayer->m_RunStats.m_iZoneJumps[0];
             }
         }
     }

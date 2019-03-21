@@ -78,8 +78,8 @@ void CMomentumReplaySystem::PostInit()
 void CMomentumReplaySystem::BeginRecording()
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    // don't record if we're watching a preexisting replay or in practice mode
-    if (pPlayer && !pPlayer->IsSpectatingGhost() && !pPlayer->m_bHasPracticeMode)
+    // don't record if we're watching a preexisting replay
+    if (pPlayer && pPlayer->GetObserverMode() == OBS_MODE_NONE)
     {
         m_bRecording = true;
         m_iTickCount = 1; // recording begins at 1 ;)
@@ -224,18 +224,19 @@ void CMomentumReplaySystem::TrimReplay()
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
     // We only record frames that the player isn't pausing on
-    if (m_bRecording && !engine->IsPaused() && !m_bPaused)
+    if (m_bRecording)
     {
         const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-        if (!pPlayer->m_bHasPracticeMode) // MOM_TODO: && !m_player->IsSpectating
+        if (!pPlayer->m_bHasPracticeMode && pPlayer->GetObserverMode() == OBS_MODE_NONE)
         {
-            m_pRecordingReplay->AddFrame(CReplayFrame(m_pPlayer->EyeAngles(), m_pPlayer->GetAbsOrigin(), m_pPlayer->GetViewOffset(),
+            m_pRecordingReplay->AddFrame(CReplayFrame(m_pPlayer->EyeAngles(), m_pPlayer->GetAbsOrigin(), m_pPlayer->GetViewOffset().z,
                                              m_pPlayer->m_nButtons, m_bTeleportedThisFrame));
             m_bTeleportedThisFrame = false;
         }
         else
         {
-            // MOM_TODO: The last frame should be repeated until the player returns to their run
+            // MOM_TODO just repeat the last frame created (part of the mega refactor)
+            m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->m_angLastAng, pPlayer->m_vecLastPos, pPlayer->m_fLastViewOffset, pPlayer->m_nSavedButtons));
         }
 
         ++m_iTickCount; // increment recording tick
@@ -290,8 +291,6 @@ void CMomentumReplaySystem::SetRunStats()
     // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
 }
 
-void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
-
 void CMomentumReplaySystem::SetTeleportedThisFrame()
 {
     if (m_bRecording)
@@ -305,16 +304,6 @@ void CMomentumReplaySystem::StartPlayback(bool firstperson)
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
-        SetWasInReplay();
-
-        pPlayer->m_vecLastPos = pPlayer->GetAbsOrigin();
-        pPlayer->m_angLastAng = pPlayer->GetAbsAngles();
-        pPlayer->m_vecLastVelocity = pPlayer->GetAbsVelocity();
-        pPlayer->m_fLastViewOffset = pPlayer->GetViewOffset().z;
-        // memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
-        m_nSavedAccelTicks = pPlayer->GetAccelTicks();
-        m_nSavedPerfectSyncTicks = pPlayer->GetPerfectSyncTicks();
-        m_nSavedStrafeTicks = pPlayer->GetStrafeTicks();
         CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
 
         if (pGhost)

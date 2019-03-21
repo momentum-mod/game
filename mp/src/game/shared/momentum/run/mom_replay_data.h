@@ -32,8 +32,8 @@ class CReplayFrame : public ISerializable
         m_iPlayerButtons = reader.GetInt();
     }
 
-    CReplayFrame(const QAngle &eye, const Vector &origin, const Vector &viewoffset, int buttons, bool teleported)
-        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_fPlayerViewOffset(viewoffset.z), m_iPlayerButtons(buttons)
+    CReplayFrame(const QAngle &eye, const Vector &origin, const float viewoffset, int buttons, bool teleported)
+        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_fPlayerViewOffset(viewoffset), m_iPlayerButtons(buttons)
     {
         if ( teleported )
             m_iPlayerButtons |= IN_REPLAY_TELEPORTED;

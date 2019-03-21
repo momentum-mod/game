@@ -81,12 +81,13 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     virtual RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }
     virtual void ToggleButtons(int iButtonFlags, bool bEnable) OVERRIDE;
     virtual void ToggleBhop(bool bEnable) OVERRIDE;
-    virtual void OnZoneEnter(CTriggerZone* pTrigger, CBaseEntity *pEnt) OVERRIDE;
-    virtual void OnZoneExit(CTriggerZone* pTrigger, CBaseEntity *pEnt) OVERRIDE;
+    virtual void OnZoneEnter(CTriggerZone* pTrigger) OVERRIDE;
+    virtual void OnZoneExit(CTriggerZone* pTrigger) OVERRIDE;
     CNetworkVarEmbedded(CMomRunEntityData, m_Data);
     virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data;}
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; }
+    virtual int GetEntIndex() OVERRIDE { return entindex(); }
 
     CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
     CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
@@ -103,10 +104,15 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int m_iSuccessiveBhops;   // How many successive bhops this player has
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
 
+    // Saved run state/stats
+    int m_nSavedButtons;
     Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
     QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
     Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
     float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
+    int m_nSavedPerfectSyncTicks;
+    int m_nSavedStrafeTicks;
+    int m_nSavedAccelTicks;
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance, bool &bPaint);
 
@@ -129,6 +135,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsSpectatingGhost() const { return m_hObserverTarget.Get() && GetGhostEnt(); }
     CMomentumGhostBaseEntity *GetGhostEnt() const;
 
+    bool StartObserverMode(int mode) OVERRIDE;
     bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
     bool SetObserverTarget(CBaseEntity *target) OVERRIDE;
     CBaseEntity *FindNextObserverTarget(bool bReverse) OVERRIDE;
@@ -138,6 +145,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void TravelSpectateTargets(bool bReverse); // spec_next and spec_prev pass into here
 
     void StopSpectating();
+
+    // Used when spectating/practicing during a run
+    void SaveCurrentRunState(); // Entering practice/spectate
+    void RestoreRunState(); // Exiting practice/spectate
 
     // Used by momentum triggers
     Vector GetPreviousOrigin(unsigned int previous_count = 0) const;
@@ -206,6 +217,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     bool m_bInAirDueToJump;
 
+    bool m_bWasSpectating; // Was the player spectating and then respawned?
+
     // Strafe sync.
     int m_nPerfectSyncTicks;
     int m_nStrafeTicks;
@@ -220,7 +233,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     // Ladder stuff
     float m_flGrabbableLadderTime;
-
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;

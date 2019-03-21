@@ -583,26 +583,27 @@ void C_BasePlayer::SetObserverTarget( EHANDLE hObserverTarget )
 		// has a chance to become non-NULL even if it currently resolves to NULL.
 		m_hObserverTarget.Init( hObserverTarget.GetEntryIndex(), hObserverTarget.GetSerialNumber() );
 
-		IGameEvent *event = gameeventmanager->CreateEvent( "spec_target_updated" );
-		if ( event )
-		{
-			gameeventmanager->FireEventClientSide( event );
-		}
-
-		if ( IsLocalPlayer() )
-		{
-			ResetToneMapping(1.0);
-		}
-		// NVNT notify haptics of changed player
-		if ( haptics )
-			haptics->OnPlayerChanged();
-
-		if ( IsLocalPlayer() )
-		{
-			// On a change of viewing mode or target, we may want to reset both head and torso to point at the new target.
-			g_ClientVirtualReality.AlignTorsoAndViewToWeapon();
-		}
+        OnObserverTargetUpdated();
 	}
+}
+
+void C_BasePlayer::OnObserverTargetUpdated()
+{
+    IGameEvent *event = gameeventmanager->CreateEvent("spec_target_updated");
+    if (event)
+    {
+        gameeventmanager->FireEventClientSide(event);
+    }
+
+    if (IsLocalPlayer())
+    {
+        ResetToneMapping(1.0f);
+        // On a change of viewing mode or target, we may want to reset both head and torso to point at the new target.
+        g_ClientVirtualReality.AlignTorsoAndViewToWeapon();
+    }
+    // NVNT notify haptics of changed player
+    if (haptics)
+        haptics->OnPlayerChanged();
 }
 
 

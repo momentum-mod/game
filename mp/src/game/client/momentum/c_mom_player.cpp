@@ -27,7 +27,7 @@ END_PREDICTION_DATA();
 
 static C_MomentumPlayer *s_pLocalPlayer;
 
-C_MomentumPlayer::C_MomentumPlayer() : m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
+C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
@@ -57,6 +57,21 @@ C_MomentumPlayer *C_MomentumPlayer::GetLocalMomPlayer()
     return s_pLocalPlayer;
 }
 
+CMomRunEntity *C_MomentumPlayer::GetCurrentUIEntity()
+{
+    return m_pSpecTarget ? m_pSpecTarget : this;
+}
+
+CMomRunEntityData *C_MomentumPlayer::GetCurrentUIEntData()
+{
+    return m_pSpecTarget ? m_pSpecTarget->GetRunEntData() : GetRunEntData();
+}
+
+CMomRunStats *C_MomentumPlayer::GetCurrentUIEntStats()
+{
+    return m_pSpecTarget ? m_pSpecTarget->GetRunStats() : GetRunStats();
+}
+
 void C_MomentumPlayer::Spawn()
 {
     SetNextClientThink(CLIENT_THINK_ALWAYS);
@@ -77,27 +92,9 @@ void C_MomentumPlayer::ClientThink()
 {
     SetNextClientThink(CLIENT_THINK_ALWAYS);
 
-    if (IsObserver())
+    if (m_hObserverTarget.IsValid() && !m_pSpecTarget)
     {
-        C_MomentumOnlineGhostEntity *pOnlineSpec = GetOnlineGhostEnt();
-        if (pOnlineSpec)
-        {
-            // Changed to spectate another ghost
-            if (m_pSpectateTarget && m_pSpectateTarget != pOnlineSpec)
-                m_pSpectateTarget->m_bSpectated = false;
-
-            m_pSpectateTarget = pOnlineSpec;
-            m_pSpectateTarget->m_bSpectated = true;
-        }
-
-    }
-    else
-    {
-        if (m_pSpectateTarget)
-        {
-            m_pSpectateTarget->m_bSpectated = false;
-            m_pSpectateTarget = nullptr;
-        }
+        m_pSpecTarget = dynamic_cast<CMomRunEntity*>(m_hObserverTarget.Get());
     }
 }
 
@@ -136,16 +133,6 @@ int C_MomentumPlayer::GetSpecEntIndex() const
     return m_hObserverTarget.GetEntryIndex();
 }
 
-C_MomentumReplayGhostEntity* C_MomentumPlayer::GetReplayEnt() const
-{
-    return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
-}
-
-C_MomentumOnlineGhostEntity* C_MomentumPlayer::GetOnlineGhostEnt() const
-{
-    return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
-}
-
 // Overridden for Ghost entity
 Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
 {
@@ -160,4 +147,22 @@ Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
 
     // Resort to base class for player code
     return BaseClass::GetChaseCamViewOffset(target);
+}
+
+void C_MomentumPlayer::OnObserverTargetUpdated()
+{
+    m_pSpecTarget = nullptr; // Hard-set to null upon observer change
+
+    BaseClass::OnObserverTargetUpdated();
+}
+
+float C_MomentumPlayer::GetCurrentRunTime()
+{
+    int iTotalTicks = 0;
+    if (m_Data.m_bTimerRunning)
+        iTotalTicks = gpGlobals->tickcount - m_Data.m_iStartTick;    
+    else if (m_Data.m_bMapFinished)
+        iTotalTicks = m_Data.m_iRunTimeTicks;
+
+    return float(iTotalTicks) * m_Data.m_flTickRate;
 }

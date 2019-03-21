@@ -38,8 +38,6 @@ class C_HudMapInfo : public CHudElement, public EditablePanel
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
   private:
-    int m_iSpecEntIndex;
-
     CMomRunEntityData *m_pRunData;
 
     Label *m_pMainStatusLabel, *m_pMapNameLabel, *m_pMapAuthorLabel, *m_pMapDifficultyLabel;
@@ -49,8 +47,7 @@ class C_HudMapInfo : public CHudElement, public EditablePanel
     wchar_t m_wNoZones[BUFSIZELOCL], m_wStage[BUFSIZELOCL], m_wCheckpoint[BUFSIZELOCL], m_wStageStart[BUFSIZELOCL], m_wMainStart[BUFSIZELOCL], m_wMainEnd[BUFSIZELOCL];
     wchar_t m_wMapFinished[BUFSIZELOCL], m_wLinearMap[BUFSIZELOCL];
 
-    int m_iCurrentZone;
-    bool m_bNeedsUpdate, m_bInZone;
+    bool m_bNeedsUpdate;
 };
 
 DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, HudMapInfo);
@@ -65,9 +62,6 @@ C_HudMapInfo::C_HudMapInfo(const char *pElementName): CHudElement(pElementName),
 
     m_pRunData = nullptr;
     m_bNeedsUpdate = true;
-    m_iCurrentZone = 0;
-    m_iSpecEntIndex = 0;
-    m_bInZone = false;
 
     ListenForGameEvent("zone_enter");
     ListenForGameEvent("zone_exit");
@@ -92,34 +86,19 @@ void C_HudMapInfo::OnThink()
     m_pMapDifficultyLabel->SetVisible(mom_hud_mapinfo_show_difficulty.GetBool());
 
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    if (!m_pRunData && pPlayer)
-    {
-        if (m_iSpecEntIndex)
-        {
-            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-            if (pGhost)
-            {
-                // m_pSpecTarget = pGhost;
-                m_pRunData = pGhost->GetRunEntData();
-            }
-        }
-        else
-        {
-            m_pRunData = pPlayer->GetRunEntData();
-        }
-    }
+    m_pRunData = pPlayer->GetCurrentUIEntData();
 
     if (m_bNeedsUpdate && m_pRunData)
     {
-        if (m_bInZone)
+        if (m_pRunData->m_bIsInZone)
         {
-            if (m_iCurrentZone == 1) // Start zone
+            if (m_pRunData->m_iCurrentZone == 1) // Start zone
             {
                 m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ? 
                                             m_wMainStart :
                                             CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iCurrentTrack.Get()));
             }
-            else if (m_iCurrentZone == 0) // End zone
+            else if (m_pRunData->m_iCurrentZone == 0) // End zone
             {
                 m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ? 
                                             m_wMainEnd :
@@ -133,7 +112,7 @@ void C_HudMapInfo::OnThink()
             else if (!g_MOMEventListener->m_bMapIsLinear) // Note: The player will never be inside a "checkpoint" zone
             {
                 // Some # stage start
-                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_iCurrentZone));
+                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
             }
         }
         else
@@ -145,7 +124,7 @@ void C_HudMapInfo::OnThink()
             else if (g_MOMEventListener->m_iMapZoneCount > 0)
             {
                 // Current stage(checkpoint)/total stages(checkpoints)
-                const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_iCurrentZone, g_MOMEventListener->m_iMapZoneCount);
+                const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), g_MOMEventListener->m_iMapZoneCount);
                 m_pMainStatusLabel->SetText(CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpoint : m_wStage, pCurrent));
             }
             else
@@ -208,46 +187,9 @@ void C_HudMapInfo::LevelInitPostEntity()
 void C_HudMapInfo::LevelShutdown()
 {
     m_pRunData = nullptr;
-    m_iSpecEntIndex = 0;
-    m_iCurrentZone = 0;
-    m_bInZone = false;
 }
 
 void C_HudMapInfo::FireGameEvent(IGameEvent* event)
 {
-    const char *pName = event->GetName();
-    if (FStrEq(pName, "zone_enter") || FStrEq(pName, "zone_exit"))
-    {
-        const int ent = event->GetInt("ent");
-        if ((ent == engine->GetLocalPlayer() || ent == m_iSpecEntIndex))
-        {
-            m_bInZone = FStrEq(pName, "zone_enter");
-            m_iCurrentZone = event->GetInt("num");
-            m_bNeedsUpdate = true;
-        }
-    }
-    else if (FStrEq(pName, "spec_target_updated"))
-    {
-        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-        if (pPlayer)
-        {
-            m_iSpecEntIndex = pPlayer->GetSpecEntIndex();
-            m_bNeedsUpdate = true;
-        }
-    }
-    else if (FStrEq(pName, "spec_stop"))
-    {
-        m_iSpecEntIndex = 0;
-        m_bNeedsUpdate = true;
-    }
-    else // "player_spawn"
-    {
-        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-        if (pPlayer)
-        {
-            m_pRunData = pPlayer->GetRunEntData();
-            m_bInZone = m_pRunData->m_bIsInZone;
-            m_iCurrentZone = m_pRunData->m_iCurrentZone;
-        }
-    }
+    m_bNeedsUpdate = true;
 }

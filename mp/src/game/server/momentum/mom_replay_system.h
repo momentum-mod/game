@@ -36,22 +36,11 @@ public:
     void StartPlayback(bool firstperson);
     void StopPlayback();
 
-    void SetWasInReplay(bool bEnable = true) { m_bWasInReplay = bEnable; };
-    bool GetWasInReplay() { return m_bWasInReplay; };
-    void SetPaused(bool bEnable = true) { m_bPaused = bEnable; };
-    bool GetPaused() { return m_bPaused; };
-
-    void TogglePause();
-
     void SetTeleportedThisFrame(); // Call me when player teleports.
     const CMomReplayBase *GetRecordingReplay() const { return m_pRecordingReplay; }
     CMomReplayBase *GetRecordingReplay() { return m_pRecordingReplay; }
     const CMomReplayBase *GetPlaybackReplay() const { return m_pPlaybackReplay; }
     CMomReplayBase *GetPlaybackReplay() { return m_pPlaybackReplay; }
-
-    int GetSavedPerfectSyncTicks() const { return m_nSavedPerfectSyncTicks; }
-    int GetSavedStrafeTicks() const { return m_nSavedStrafeTicks; }
-    int GetSavedAccelTicks() const { return m_nSavedAccelTicks; }
 
     //CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
 
@@ -66,9 +55,6 @@ public:
     bool m_bPlayingBack;
     CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
-    int m_nSavedPerfectSyncTicks;
-    int m_nSavedStrafeTicks;
-    int m_nSavedAccelTicks;
 
     bool m_bShouldStopRec;
     int m_iTickCount;          // MOM_TODO: Maybe remove me?
@@ -76,8 +62,6 @@ public:
     int m_iStartTimerTick;     // The tick that the player's timer starts, used for trimming.
     int m_iStopTimerTick;      // The tick that the player's timer stopped, used for the hud
     float m_fRecEndTime;       // The time to end the recording, if delay was passed as true to StopRecording()
-    bool m_bWasInReplay;
-    bool m_bPaused;
     //CMomRunStats m_SavedRunStats;
     // Map SHA1 hash for version purposes
     char m_szMapHash[41];

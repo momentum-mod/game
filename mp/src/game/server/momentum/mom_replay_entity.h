@@ -42,8 +42,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     bool m_bReplayFirstPerson;
 
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_REPLAY; }
-    virtual void OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt) OVERRIDE;
-    virtual void OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt) OVERRIDE;
+    virtual void OnZoneEnter(CTriggerZone *pTrigger) OVERRIDE;
+    virtual void OnZoneExit(CTriggerZone *pTrigger) OVERRIDE;
     // Ghost-only
     CNetworkVar(bool, m_bIsPaused); // Is the replay paused?
     CNetworkVar(int, m_iCurrentTick); // Current tick of the replay
