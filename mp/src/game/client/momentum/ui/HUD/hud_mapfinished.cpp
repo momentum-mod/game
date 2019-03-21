@@ -3,7 +3,7 @@
 #include "hud_mapfinished.h"
 #include <vgui_controls/Label.h>
 #include <game/client/iviewport.h>
-#include "spectate/momSpectatorGUI.h"
+#include "spectate/mom_spectator_gui.h"
 #include "clientmode.h"
 #include "mom_player_shared.h"
 
