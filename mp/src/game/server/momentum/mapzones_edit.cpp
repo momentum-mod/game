@@ -27,6 +27,10 @@ static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
                             "start zone unless one already exists, in which case an end zone is created.f\n");
 static ConVar mom_zone_track("mom_zone_track", "0", FCVAR_CHEAT,
                              "What track to create the zone for. 0 = main track, >0 = bonus", true, 0, false, 0);
+static ConVar mom_zone_auto_make_stage(
+    "mom_zone_auto_make_stage", "0", FCVAR_CHEAT,
+    "Whether the 'auto' setting for mom_zone_type should create a stage zone or end zone (after initial start zone)",
+    true, 0, true, 1);
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
                                             "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
                                             0, true, 1);
@@ -550,6 +554,12 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
         {
             auto pStop = static_cast<CTriggerTimerStop *>(pEnt);
             pStop->SetZoneNumber(0);
+
+            if (FStrEq(mom_zone_type.GetString(), "auto"))
+            {
+                // Zone type is stop, meaning player finished zoning this track, lets move on to next one
+                mom_zone_track.SetValue(mom_zone_track.GetInt() + 1);
+            }
         }
         break;
     case ZONE_TYPE_STAGE:
@@ -596,19 +606,19 @@ int CMomZoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
 
 int CMomZoneEdit::ShortNameToZoneType(const char *in)
 {
-    if (Q_stricmp(in, "start") == 0)
+    if (FStrEq(in, "start"))
     {
         return ZONE_TYPE_START;
     }
-    else if (Q_stricmp(in, "end") == 0 || Q_stricmp(in, "stop") == 0)
+    else if (FStrEq(in, "end") || FStrEq(in, "stop"))
     {
         return ZONE_TYPE_STOP;
     }
-    else if (Q_stricmp(in, "stage") == 0)
+    else if (FStrEq(in, "stage"))
     {
         return ZONE_TYPE_STAGE;
     }
-    else if (Q_stricmp(in, "cp") == 0 || Q_stricmp(in, "checkpoint") == 0)
+    else if (FStrEq(in, "cp") || FStrEq(in, "checkpoint"))
     {
         return ZONE_TYPE_CHECKPOINT;
     }
@@ -647,14 +657,9 @@ void OnZoneEditingToggled(IConVar* var, const char* pOldVal, float fOldVal)
 static int GetZoneTypeToCreate()
 {
     int zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_type.GetString());
-    bool bAutoCreate = false;
-    if (zonetype == -1 && Q_stricmp(mom_zone_type.GetString(), "auto") == 0)
-    {
-        zonetype = ZONE_TYPE_START;
-        bAutoCreate = true;
-    }
+    bool bAutoCreate = FStrEq(mom_zone_type.GetString(), "auto");
 
-    if (zonetype == ZONE_TYPE_START || zonetype == ZONE_TYPE_STOP)
+    if (zonetype == ZONE_TYPE_START || zonetype == ZONE_TYPE_STOP || bAutoCreate)
     {
         // Count zones to make sure we don't create multiple instances.
         int startnum = 0;
@@ -700,7 +705,18 @@ static int GetZoneTypeToCreate()
         if (bAutoCreate)
         {
             // Switch between start and end.
-            zonetype = (startnum <= endnum) ? ZONE_TYPE_START : ZONE_TYPE_STOP;
+            if (startnum <= endnum)
+            {
+                zonetype = ZONE_TYPE_START;
+            }
+            else if (mom_zone_auto_make_stage.GetBool())
+            {
+                zonetype = ZONE_TYPE_STAGE;
+            }
+            else
+            {
+                zonetype = ZONE_TYPE_STOP;
+            }
         }
         // else the zonetype can be STOP, allowing for multiple stop triggers to be created
     }
