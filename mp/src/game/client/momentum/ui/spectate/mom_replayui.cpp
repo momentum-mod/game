@@ -11,7 +11,7 @@
 #include <vgui/IInput.h>
 
 #include "hud_mapfinished.h"
-#include "momSpectatorGUI.h"
+#include "mom_spectator_gui.h"
 #include "mom_player_shared.h"
 #include "mom_replayui.h"
 #include "momentum/util/mom_util.h"

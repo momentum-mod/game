@@ -9,7 +9,7 @@
 #include "lobby/LobbyMembersPanel.h"
 #include "HUD/hud_menu_static.h"
 #include "HUD/hud_mapfinished.h"
-#include "spectate/momSpectatorGUI.h"
+#include "spectate/mom_spectator_gui.h"
 #include "spectate/mom_replayui.h"
 
 #include "IGameUIFuncs.h"
