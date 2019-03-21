@@ -62,6 +62,7 @@ public:
 
     // Returns this trigger's track number.
     int GetTrackNumber() const { return m_iTrackNumber; }
+    void SetTrackNumber(int track) { m_iTrackNumber = track; }
 
     // Track number signifies what part of the map this trigger is for. 
     // 0 = main map, > 0 is the bonus number (example: 2 = "Bonus 2"), and 

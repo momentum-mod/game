@@ -25,8 +25,8 @@ static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0
 static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
                             "The zone type that will be created when using mom_zone_mark/create. 'auto' creates a "
                             "start zone unless one already exists, in which case an end zone is created.f\n");
-static ConVar mom_zone_bonus("mom_zone_bonus", "0", FCVAR_CHEAT,
-                             "Whether the zone that is created will be a bonus zone or not", true, 0, false, 0);
+static ConVar mom_zone_track("mom_zone_track", "0", FCVAR_CHEAT,
+                             "What track to create the zone for. 0 = main track, >0 = bonus", true, 0, false, 0);
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
                                             "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
                                             0, true, 1);
@@ -525,6 +525,8 @@ CBaseMomZoneTrigger *CMomZoneEdit::CreateZoneEntity(int type)
 
 void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
 {
+    pEnt->SetTrackNumber(mom_zone_track.GetInt());
+
     switch (pEnt->GetZoneType())
     {
     case ZONE_TYPE_START:
@@ -542,14 +544,12 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
             }
 
             pStart->SetZoneNumber(1);
-            // MOM_TODO pStart->SetTrackNumber()
         }
         break;
     case ZONE_TYPE_STOP:
         {
             auto pStop = static_cast<CTriggerTimerStop *>(pEnt);
             pStop->SetZoneNumber(0);
-            // MOM_TODO pStop->SetTrackNumber
         }
         break;
     case ZONE_TYPE_STAGE:
@@ -579,7 +579,6 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
 
                 pStage->SetZoneNumber(higheststage + 1);
             }
-            // MOM_TODO ( pStage || pCheckpoint )->SetTrackNumber
         }
     default:
         break;
@@ -667,7 +666,7 @@ static int GetZoneTypeToCreate()
         while (pEnt)
         {
             auto pTrigger = static_cast<CTriggerTimerStart *>(pEnt);
-            if (pTrigger->GetZoneNumber() == mom_zone_bonus.GetInt())
+            if (pTrigger->GetTrackNumber() == mom_zone_track.GetInt())
             {
                 startnum++;
             }
@@ -679,7 +678,7 @@ static int GetZoneTypeToCreate()
         while (pEnt)
         {
             auto pTrigger = static_cast<CTriggerTimerStop *>(pEnt);
-            if (pTrigger->GetZoneNumber() == mom_zone_bonus.GetInt())
+            if (pTrigger->GetTrackNumber() == mom_zone_track.GetInt())
             {
                 endnum++;
             }
@@ -687,7 +686,7 @@ static int GetZoneTypeToCreate()
             pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
         }
 
-        DevMsg("Found %i starts and %i ends for bonus %i (previous)\n", startnum, endnum, mom_zone_bonus.GetInt());
+        DevMsg("Found %i starts and %i ends for track %i (previous)\n", startnum, endnum, mom_zone_track.GetInt());
 
         if (!mom_zone_ignorewarning.GetBool() && startnum && endnum)
         {
