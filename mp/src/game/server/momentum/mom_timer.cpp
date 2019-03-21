@@ -146,7 +146,7 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
     if (m_bIsRunning)
     {
         Stop(pPlayer, false, false); // Don't stop our replay just yet
-        DispatchResetMessage();
+        DispatchResetMessage(pPlayer);
     }
     else
     {
@@ -163,7 +163,7 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
-    DispatchNoZonesMsg();
+    DispatchNoZonesMsg(pPlayer);
 
     // MOM_TODO
     // If we do implement a gamemode interface this would be much better suited there
@@ -177,8 +177,6 @@ void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
         pPlayer->EnableAutoBhop();
         break;
     }
-
-    DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STOPPED);
 }
 
 void CMomentumTimer::OnPlayerJump(KeyValues *kv)
@@ -258,7 +256,6 @@ void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset
                 g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
             }
 
-            pPlayer->m_Data.m_bTimerRunning = true;
             // Used for spectating later on
             pPlayer->m_Data.m_iStartTick = gpGlobals->tickcount;
 
@@ -300,20 +297,20 @@ void CMomentumTimer::DispatchMapInfo()
     }
 }
 
-void CMomentumTimer::DispatchNoZonesMsg() const
+void CMomentumTimer::DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const
 {
     if (!GetZoneCount())
     {
-        CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+        CSingleUserRecipientFilter filter(pPlayer);
         filter.MakeReliable();
         UserMessageBegin(filter, "MB_NoStartOrEnd");
         MessageEnd();
     }
 }
 
-void CMomentumTimer::DispatchResetMessage() const
+void CMomentumTimer::DispatchResetMessage(CMomentumPlayer *pPlayer) const
 {
-    CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+    CSingleUserRecipientFilter user(pPlayer);
     user.MakeReliable();
     UserMessageBegin(user, "Timer_Reset");
     MessageEnd();
@@ -333,7 +330,7 @@ void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) c
     user.MakeReliable();
 
     UserMessageBegin(user, "Timer_Event");
-        WRITE_LONG(type);
+        WRITE_BYTE(type);
     MessageEnd();
 }
 
@@ -545,22 +542,11 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
     pPlayer->m_bHasPracticeMode = true;
 
-    // Only when timer is running
-    if (m_bIsRunning)
-    {
-        pPlayer->m_Data.m_iOldTrack = pPlayer->m_Data.m_iCurrentTrack;
-        pPlayer->m_Data.m_iOldZone = pPlayer->m_Data.m_iCurrentZone;
-        pPlayer->m_vecLastPos = pPlayer->GetAbsOrigin();
-        pPlayer->m_angLastAng = pPlayer->GetAbsAngles();
-        pPlayer->m_vecLastVelocity = pPlayer->GetAbsVelocity();
-        pPlayer->m_fLastViewOffset = pPlayer->GetViewOffset().z;
+    // This is outside the isRunning check because if you practice mode -> tele to start -> toggle -> start run,
+    // the replay file doesn't have your "last" position, so we just save it regardless of timer state, but only restore it if in a run.
+    pPlayer->SaveCurrentRunState();
 
-        // MOM_TODO: Mark this as a "entered practice mode" event in the replay
-    }
-    else
-    {
-        Stop(pPlayer);
-    }
+    // MOM_TODO: if (m_bIsRunning && g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkEnterPracticeMode()
 
     IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
     if (pEvent)
@@ -577,16 +563,11 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
     pPlayer->SetMoveType(MOVETYPE_WALK);
     pPlayer->m_bHasPracticeMode = false;
 
-    // Only when timer is running;
+    // Only when timer is running
     if (m_bIsRunning)
     {
-        pPlayer->m_Data.m_iCurrentTrack = pPlayer->m_Data.m_iOldTrack;
-        pPlayer->m_Data.m_iCurrentZone = pPlayer->m_Data.m_iOldZone;
-        pPlayer->Teleport(&pPlayer->m_vecLastPos, &pPlayer->m_angLastAng, &pPlayer->m_vecLastVelocity);
-        pPlayer->SetViewOffset(Vector(0, 0, pPlayer->m_fLastViewOffset));
-        pPlayer->SetLastEyeAngles(pPlayer->m_angLastAng);
-
-        // MOM_TODO : Mark this as a "exited practice mode" event in the replay
+        // MOM_TODO: if (g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkExitPracticeMode()
+        pPlayer->RestoreRunState();
     }
 
     IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
@@ -647,10 +628,10 @@ class CTimerCommands
         }
     }
 
-    static void PracticeMove()
+    static void PracticeModeToggle()
     {
         CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-        if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->IsSpectatingGhost())
+        if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->GetObserverMode() != OBS_MODE_NONE)
             return;
 
         if (!pPlayer->m_bHasPracticeMode)
@@ -742,9 +723,9 @@ class CTimerCommands
     }
 };
 
-static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove,
-                               "Toggle. Stops timer and allows player to fly around in noclip.\n"
-                               "Only activates when player is not pressing any movement inputs.\n",
+static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeModeToggle,
+                               "Toggle. Allows player to fly around in noclip during a run, teleports the player back upon untoggling.\n"
+                               "Only activates when player is not pressing any movement inputs if the timer is running and mom_practice_safeguard is 1.\n",
                                FCVAR_CLIENTCMD_CAN_EXECUTE);
 static ConCommand
     mom_mark_start("mom_mark_start", CTimerCommands::MarkStart,

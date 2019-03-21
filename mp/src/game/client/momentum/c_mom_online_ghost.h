@@ -24,7 +24,7 @@ public:
     uint64 m_SteamID;
     bool m_bSpectating; /// Is this ghost currently spectating?
 
-    bool m_bSpectated; // Is this ghost being spectated by us?
+    RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_ONLINE; }
 
 private:
 

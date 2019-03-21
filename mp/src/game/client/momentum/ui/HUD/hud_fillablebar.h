@@ -24,14 +24,14 @@ class CHudFillableBar : public vgui::Panel
     {
         if (!CloseEnough(m_flValue, 0.0f, FLT_EPSILON))
         {
-            DrawBox(m_flxPos, m_flyPos, m_flWide * (m_flValue / 100), m_flTall, BoxColor, 1.0f);
+            DrawBox(m_flxPos, m_flyPos, m_flWide * (m_flValue / 100.0f), m_flTall, BoxColor, 1.0f);
         }
         DrawHollowBox(m_flxPos, m_flyPos, m_flWide, m_flTall, m_BackgroundColor, 1, 2, 2);
     }
 
     void OnThink() OVERRIDE
     {
-        if (m_flInterpTime > 0 && m_flInterpFromTime > 0)
+        if (m_flInterpTime > 0.0f && m_flInterpFromTime > 0.0f)
         {
             if (m_flInterpTime + m_flInterpFromTime < gpGlobals->curtime)
             {
@@ -39,7 +39,7 @@ class CHudFillableBar : public vgui::Panel
             }
             else if (m_flInterpFromTime != gpGlobals->curtime)
             {
-                float newvalue = (gpGlobals->curtime - m_flInterpFromTime) / m_flInterpTime;
+                const float newvalue = (gpGlobals->curtime - m_flInterpFromTime) / m_flInterpTime;
                 SetValue(m_flDesiredValue * newvalue);
             }
         }
@@ -49,9 +49,9 @@ class CHudFillableBar : public vgui::Panel
     // @pPercent: max->100 , min->0
     void SetValue(float pPercent)
     {
-        m_flValue = clamp(pPercent, 0, 100);
+        m_flValue = clamp(pPercent, 0.0f, 100.0f);
     }
-    // Sets the new % value of the filled box. If pInterpTime > 0, a interpolation is made.
+    // Sets the new % value of the filled box. If pInterpTime > 0, an interpolation is made.
     // @pPercent: max->100 , min->0
     void SetValue(float pPercent, float pInterpTime)
     {

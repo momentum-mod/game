@@ -5,6 +5,7 @@
 #include "run/run_compare.h"
 
 class C_MomentumPlayer;
+class C_MomRunEntityData;
 
 class C_RunComparisons : public CHudElement, public vgui::Panel
 {
@@ -21,10 +22,6 @@ public:
     bool ShouldDraw() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdown() OVERRIDE;
-
-    void FireGameEvent(IGameEvent *event) OVERRIDE;
-
-    void UpdateCurrentEnt();
 
     void LoadComparisons();
     void LoadBogusComparisons();
@@ -54,10 +51,7 @@ public:
         PostActionSignal(new KeyValues("OnSizeChange", "wide", wide, "tall", tall));
     }
 
-    int GetCurrentZone() const
-    {
-        return m_bLoadedBogusComparison ? m_pBogusRunStats->GetTotalZones() - 1 : m_iCurrentZone;
-    }
+    int GetCurrentZone() const;
 
     void ClearBogusPulse()
     {
@@ -102,12 +96,15 @@ private:
 
     int m_iDefaultWidth, m_iDefaultTall, m_iDefaultXPos, m_iDefaultYPos;
     int m_iMaxWide, m_iWidestLabel, m_iWidestValue;
-    int m_iCurrentZone, m_iCurrentEntIndex;
     bool m_bLoadedComparison, m_bLoadedBogusComparison;
     RunCompare_t *m_rcCurrentComparison, *m_rcBogusComparison;
     //m_pRunStats points to the player's/bot's CMomRunStats::data member, but the bogus one needs its own data.
     CMomRunStats *m_pRunStats, *m_pBogusRunStats;
+    C_MomRunEntityData *m_pRunData;
     int m_nCurrentBogusPulse;
+
+    int m_iLoadedRunFlags; // Loaded comparison's run flags
+    float m_fLoadedTickRate; // Loaded comparison's tick rate
 
     ConVarRef m_cvarVelType;
 };

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "run/mom_run_entity.h"
 
 class C_MomentumGhostBaseEntity : public C_BaseAnimating, public CMomRunEntity
@@ -10,7 +11,7 @@ public:
 
     C_MomentumGhostBaseEntity();
 
-    bool IsValidIDTarget(void) OVERRIDE{ return true; }
+    bool IsValidIDTarget() OVERRIDE{ return true; }
 
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
@@ -19,6 +20,7 @@ public:
     CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(int, m_iDisabledButtons);
     CNetworkVar(bool, m_bBhopDisabled);
+    CNetworkVar(bool, m_bSpectated); // Is this ghost being spectated by the local player?
 
     // MomRunEntity Stuff
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_GHOST; }
@@ -26,10 +28,11 @@ public:
     virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE {return &m_RunStats;}
+    virtual int GetEntIndex() OVERRIDE { return index; }
+    virtual float GetCurrentRunTime() OVERRIDE;
 
     CInterpolatedVar<Vector> m_iv_vecViewOffset;
 
 protected:
     bool ShouldInterpolate() OVERRIDE { return true; }
-
 };

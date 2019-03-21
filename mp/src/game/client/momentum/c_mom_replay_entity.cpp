@@ -16,3 +16,14 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()
     m_iTotalTicks = 0;
     m_RunStats.Init();
 }
+
+float C_MomentumReplayGhostEntity::GetCurrentRunTime()
+{
+    int iTotalTicks;
+    if (m_Data.m_bTimerRunning)
+        iTotalTicks = m_iCurrentTick - m_Data.m_iStartTick;
+    else
+        iTotalTicks = m_Data.m_iRunTimeTicks;
+
+    return float(iTotalTicks) * m_Data.m_flTickRate;
+}

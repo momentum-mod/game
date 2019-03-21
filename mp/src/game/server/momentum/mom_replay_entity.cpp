@@ -520,7 +520,6 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 
 void CMomentumReplayGhostEntity::EndRun()
 {
-    FinishTimer(); // Stop the timer for all spectating us
     m_bIsActive = false;
 
     // Make everybody stop spectating me. Goes backwards since players remove themselves.
@@ -580,7 +579,7 @@ CReplayFrame *CMomentumReplayGhostEntity::GetPreviousStep()
     return m_pPlaybackReplay->GetFrame(nextStep);
 }
 
-void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger)
 {
      // Zone-specific things first
     switch (pTrigger->GetZoneType())
@@ -592,16 +591,6 @@ void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity
         break;
     case ZONE_TYPE_STOP:
         {
-            // Needed for hud_comparisons
-            IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
-            if (timerStateEvent)
-            {
-                timerStateEvent->SetInt("ent", entindex());
-                timerStateEvent->SetBool("is_running", false);
-
-                gameeventmanager->FireEvent(timerStateEvent);
-            }
-
             m_Data.m_bMapFinished = true;
             m_Data.m_bTimerRunning = false;
 
@@ -617,10 +606,10 @@ void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity
         break;
     }
 
-    CMomRunEntity::OnZoneEnter(pTrigger, pEnt);
+    CMomRunEntity::OnZoneEnter(pTrigger);
 }
 
-void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
 {
     // Zone-specific things first
     switch (pTrigger->GetZoneType())
@@ -638,7 +627,7 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity 
         break;
     }
 
-    CMomRunEntity::OnZoneExit(pTrigger, pEnt);
+    CMomRunEntity::OnZoneExit(pTrigger);
 }
 
 

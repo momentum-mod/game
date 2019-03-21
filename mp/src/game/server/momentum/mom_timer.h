@@ -26,7 +26,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
   public:
     // HUD messages
-    void DispatchResetMessage() const;
+    void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
     void DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) const;
     void DispatchMapInfo();
 
@@ -120,7 +120,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void OnPlayerJump(KeyValues *kv);
     void OnPlayerLand(KeyValues *kv);
 
-    void DispatchNoZonesMsg() const;
+    void DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const;
 
   private:
     int m_iZoneCount;

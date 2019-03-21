@@ -34,7 +34,8 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_bIsGhost = false;
     m_iCurrentPage = 0;
 
-    ListenForGameEvent("timer_event");
+    ListenForGameEvent("spec_start");
+    ListenForGameEvent("spec_stop");
     ListenForGameEvent("replay_save");
     ListenForGameEvent("run_upload");
 
@@ -86,44 +87,7 @@ CHudMapFinishedDialog::~CHudMapFinishedDialog()
 
 void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
 {
-    if (FStrEq(pEvent->GetName(), "timer_event"))
-    {
-        const int type = pEvent->GetInt("type");
-        //We only care when timer is stopped
-        if (type == TIMER_EVENT_FINISHED)
-        {
-            const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-            if (pPlayer)
-            {
-                ConVarRef hvel("mom_hud_speedometer_hvel");
-                m_iVelocityType = hvel.GetBool();
-
-                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-                if (pGhost)
-                {
-                    m_pRunStats = pGhost->GetRunStats();
-                    m_pRunData = pGhost->GetRunEntData();
-                    m_bIsGhost = true;
-                }
-                else
-                {
-                    m_pRunStats = pPlayer->GetRunStats();
-                    m_pRunData = pPlayer->GetRunEntData();
-                    m_bIsGhost = false;
-                }
-
-                m_pPlayReplayButton->SetVisible(!m_bIsGhost);
-                m_pRunUploadStatus->SetVisible(!m_bIsGhost);
-                m_pRunSaveStatus->SetVisible(!m_bIsGhost);
-                m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? "#MOM_MF_Restart_Replay" : "#MOM_MF_Restart_Map");
-
-                CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
-                if (pPanel && pPanel->IsVisible())
-                    SetMouseInputEnabled(pPanel->IsMouseInputEnabled());
-            }
-        }
-    }
-    else if (FStrEq(pEvent->GetName(), "replay_save"))
+    if (FStrEq(pEvent->GetName(), "replay_save"))
     {
         SetRunSaved(pEvent->GetBool("save"));
         SetCurrentPage(m_iCurrentPage);
@@ -133,11 +97,33 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     {
         SetRunUploaded(pEvent->GetBool("run_posted"));
     }
+    else // Spec start/stop
+    {
+        m_pRepeatButton->GetTooltip()->SetText(FStrEq(pEvent->GetName(), "spec_start") ? "#MOM_MF_Restart_Replay" : "#MOM_MF_Restart_Map");
+    }
 }
 
 void CHudMapFinishedDialog::LevelShutdown()
 {
     m_pRunStats = nullptr;
+    m_pRunData = nullptr;
+    m_bIsGhost = false;
+}
+
+void CHudMapFinishedDialog::OnThink()
+{
+    BaseClass::OnThink();
+
+    static ConVarRef hvel("mom_hud_speedometer_hvel");
+    m_iVelocityType = hvel.GetBool();
+
+    m_pPlayReplayButton->SetVisible(!m_bIsGhost);
+    m_pRunUploadStatus->SetVisible(!m_bIsGhost);
+    m_pRunSaveStatus->SetVisible(!m_bIsGhost);
+
+    CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
+    if (pPanel && pPanel->IsVisible())
+        SetMouseInputEnabled(pPanel->IsMouseInputEnabled());
 }
 
 void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
@@ -148,19 +134,18 @@ void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
 
 bool CHudMapFinishedDialog::ShouldDraw()
 {
-    bool shouldDrawLocal = false;
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    if (pPlayer)
-    {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        CMomRunEntityData *pData = (pGhost ? pGhost->GetRunEntData() : pPlayer->GetRunEntData());
-        shouldDrawLocal = pData && pData->m_bMapFinished;
-    }
+    if (!pPlayer)
+        return false;
 
+    m_pRunData = pPlayer->GetCurrentUIEntData();
+    m_pRunStats = pPlayer->GetCurrentUIEntStats();
+    m_bIsGhost = pPlayer->GetCurrentUIEntity()->GetEntType() >= RUN_ENT_GHOST;
+
+    const bool shouldDrawLocal = m_pRunData && m_pRunData->m_bMapFinished && m_pRunStats;
     if (!shouldDrawLocal)
         SetMouseInputEnabled(false);
-
-    return CHudElement::ShouldDraw() && shouldDrawLocal && m_pRunStats;
+    return CHudElement::ShouldDraw() && shouldDrawLocal;
 }
 
 void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
@@ -182,10 +167,6 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     m_pZoneSync2->SetFont(m_hTextFont);
     m_pRunSaveStatus->SetFont(m_hTextFont);
     m_pRunUploadStatus->SetFont(m_hTextFont);
-
-    m_pPlayReplayButton->GetTooltip()->SetText("#MOM_MF_PlayReplay");
-    m_pNextZoneButton->GetTooltip()->SetText("#MOM_MF_Right_Arrow");
-    m_pPrevZoneButton->GetTooltip()->SetText("#MOM_MF_Left_Arrow");
 }
 
 void CHudMapFinishedDialog::SetRunSaved(bool bState)
@@ -285,6 +266,8 @@ void CHudMapFinishedDialog::Reset()
 {
     //default values
     Q_strncpy(m_pszEndRunTime, "00:00:00.000", sizeof(m_pszEndRunTime));
+    SetRunSaved(false);
+    SetRunUploaded(false);
 }
 
 void CHudMapFinishedDialog::SetVisible(bool b)

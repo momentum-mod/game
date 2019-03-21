@@ -108,9 +108,11 @@ void C_MOMReplayUI::OnThink()
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        if (pGhost)
+        const auto pEnt = pPlayer->GetCurrentUIEntity();
+        if (pEnt->GetEntType() == RUN_ENT_REPLAY)
         {
+
+            const auto pGhost = static_cast<C_MomentumReplayGhostEntity*>(pEnt);
             int iPlayButtonSelected = RUI_NOTHING;
 
             if (m_pFastBackward->IsSelected() || m_pFastForward->IsSelected())
@@ -241,8 +243,6 @@ void C_MOMReplayUI::FireGameEvent(IGameEvent *pEvent)
 // Command issued
 void C_MOMReplayUI::OnCommand(const char *command)
 {
-    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    C_MomentumReplayGhostEntity *pGhost = pPlayer ? pPlayer->GetReplayEnt() : nullptr;
     if (FStrEq(command, "play"))
     {
         engine->ClientCmd("mom_replay_pause"); // Handles the toggle state
@@ -255,21 +255,30 @@ void C_MOMReplayUI::OnCommand(const char *command)
     {
         engine->ServerCmd("mom_replay_goto_end");
     }
-    else if (FStrEq(command, "prevframe") && pGhost)
+    else if (FStrEq(command, "prevframe") || FStrEq(command, "nextframe"))
     {
-        if (pGhost->m_iCurrentTick > 0)
+        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+        if (pPlayer && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
         {
-            engine->ServerCmd(CFmtStr("mom_replay_goto %i", pGhost->m_iCurrentTick - 1));
+            const bool bIsPrev = command[0] == 'p'; // Bleh, too lazy to do FStrEq again
+            const auto pGhost = static_cast<C_MomentumReplayGhostEntity*>(pPlayer->GetCurrentUIEntity());
+            if (bIsPrev)
+            {
+                if (pGhost->m_iCurrentTick > 0)
+                {
+                    engine->ServerCmd(CFmtStr("mom_replay_goto %i", pGhost->m_iCurrentTick - 1));
+                }
+            }
+            else
+            {
+                if (pGhost->m_iCurrentTick < pGhost->m_iTotalTicks)
+                {
+                    engine->ServerCmd(CFmtStr("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
+                }
+            }
         }
     }
-    else if (FStrEq(command, "nextframe") && pGhost)
-    {
-        if (pGhost->m_iCurrentTick < pGhost->m_iTotalTicks)
-        {
-            engine->ServerCmd(CFmtStr("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
-        }
-    }
-    else if (FStrEq(command, "gototick") && pGhost)
+    else if (FStrEq(command, "gototick"))
     {
         // Teleport at the position we want with timer included
         char tick[32];

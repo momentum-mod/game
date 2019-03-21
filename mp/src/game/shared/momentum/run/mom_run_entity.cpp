@@ -3,6 +3,8 @@
 #include "mom_run_entity.h"
 #include "mom_shareddefs.h"
 
+#include "mom_entity_run_data.h"
+
 #ifndef CLIENT_DLL
 #include "momentum/mom_triggers.h"
 #else
@@ -22,7 +24,7 @@ CMomRunEntity::~CMomRunEntity()
 
 #ifndef CLIENT_DLL
 
-void CMomRunEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+void CMomRunEntity::OnZoneEnter(CTriggerZone *pTrigger)
 {
     CMomRunEntityData *pData = GetRunEntData();
     // Zone-specific things first
@@ -52,14 +54,14 @@ void CMomRunEntity::OnZoneEnter(CTriggerZone *pTrigger, CBaseEntity *pEnt)
     IGameEvent *pEvent = gameeventmanager->CreateEvent("zone_enter");
     if (pEvent)
     {
-        pEvent->SetInt("ent", pEnt->entindex());
+        pEvent->SetInt("ent", GetEntIndex());
         pEvent->SetInt("zone_ent", pTrigger->entindex());
         pEvent->SetInt("num", pTrigger->GetZoneNumber());
         gameeventmanager->FireEvent(pEvent);
     }
 }
 
-void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
+void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger)
 {
     CMomRunEntityData *pData = GetRunEntData();
 
@@ -86,7 +88,7 @@ void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger, CBaseEntity *pEnt)
     IGameEvent *pEvent = gameeventmanager->CreateEvent("zone_exit");
     if (pEvent)
     {
-        pEvent->SetInt("ent", pEnt->entindex());
+        pEvent->SetInt("ent", GetEntIndex());
         pEvent->SetInt("zone_ent", pTrigger->entindex());
         pEvent->SetInt("num", pTrigger->GetZoneNumber());
         gameeventmanager->FireEvent(pEvent);

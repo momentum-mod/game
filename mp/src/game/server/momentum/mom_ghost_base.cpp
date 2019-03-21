@@ -13,6 +13,7 @@ SendPropInt(SENDINFO(m_nGhostButtons)),
 SendPropInt(SENDINFO(m_iDisabledButtons)),
 SendPropBool(SENDINFO(m_bBhopDisabled)),
 SendPropString(SENDINFO(m_szGhostName)),
+SendPropBool(SENDINFO(m_bSpectated)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
 SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MomRunStats)),
 END_SEND_TABLE();
@@ -164,8 +165,15 @@ void CMomentumGhostBaseEntity::FinishTimer()
     }
 }
 
+void CMomentumGhostBaseEntity::SetSpectator(CMomentumPlayer *player)
+{
+    m_pCurrentSpecPlayer = player;
+    m_bSpectated = true;
+}
+
 void CMomentumGhostBaseEntity::RemoveSpectator()
 {
+    m_bSpectated = false;
     m_pCurrentSpecPlayer = nullptr;
     UnHideGhost();
 }

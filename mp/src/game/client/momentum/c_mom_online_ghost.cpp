@@ -10,7 +10,7 @@ IMPLEMENT_CLIENTCLASS_DT(C_MomentumOnlineGhostEntity, DT_MOM_OnlineGhost, CMomen
     RecvPropBool(RECVINFO(m_bSpectating))
 END_RECV_TABLE();
 
-C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false), m_bSpectated(false), m_pEntityPanel(nullptr)
+C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false), m_pEntityPanel(nullptr)
 {
     m_SteamID = 0;
 }

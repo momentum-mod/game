@@ -86,12 +86,12 @@ C_RunComparisons::C_RunComparisons(const char *pElementName, Panel *pParent /* =
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
-    m_iCurrentZone = 0;
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
     m_nCurrentBogusPulse = 0;
-    m_iCurrentEntIndex = -1;
+    m_fLoadedTickRate = 0.0f;
+    m_iLoadedRunFlags = 0;
     m_bLoadedBogusComparison = false;
     m_pRunStats = nullptr;
     m_pBogusRunStats = nullptr;
@@ -102,11 +102,6 @@ C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
 
 void C_RunComparisons::Init()
 {
-    ListenForGameEvent("zone_enter");
-    ListenForGameEvent("spec_target_updated");
-    ListenForGameEvent("spec_start");
-    ListenForGameEvent("spec_stop");
-
     // LOCALIZE STUFF HERE
     FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
     FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
@@ -125,23 +120,22 @@ void C_RunComparisons::Init()
 
 bool C_RunComparisons::ShouldDraw()
 {
+    if (!m_bLoadedComparison)
+        return false;
+
+    if (!mom_comparisons.GetBool())
+        return false;
+
     bool shouldDrawLocal = false;
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
         // MOM_TODO: Should we have a convar against letting a ghost compare?
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        CMomRunEntityData *runData = pGhost ? pGhost->GetRunEntData() : pPlayer->GetRunEntData();
+        const auto pData = pPlayer->GetCurrentUIEntData();
 
-        if (runData)
-        {
-            shouldDrawLocal = runData->m_bTimerRunning && !runData->m_bMapFinished
-                              // we don't want the panel to draw on linear maps (since it doesn't appear until stage
-                              // transitions anyways)
-                              && g_MOMEventListener->m_iMapZoneCount > 1;
-        }
+        shouldDrawLocal = pData->m_bTimerRunning && !pData->m_bMapFinished && g_MOMEventListener->m_iMapZoneCount > 1;
     }
-    return mom_comparisons.GetBool() && m_bLoadedComparison && CHudElement::ShouldDraw() && shouldDrawLocal;
+    return CHudElement::ShouldDraw() && shouldDrawLocal;
 }
 
 void C_RunComparisons::Reset()
@@ -151,66 +145,23 @@ void C_RunComparisons::Reset()
     m_iWidestValue = 0;
 }
 
-void C_RunComparisons::FireGameEvent(IGameEvent *event)
-{
-    if (m_bLoadedBogusComparison)
-        return;
-    const char *name = event->GetName();
-    if (FStrEq(name, "zone_enter"))
-    {
-        UpdateCurrentEnt();
-        if (event->GetInt("ent") == m_iCurrentEntIndex)
-            m_iCurrentZone = event->GetInt("num");
-    }
-    else if (FStrEq(name, "spec_start"))
-    {
-        UpdateCurrentEnt();
-    }
-    else if (FStrEq(name, "spec_stop"))
-    {
-        UpdateCurrentEnt();
-    }
-    else if (FStrEq(name, "spec_target_updated"))
-    {
-        UpdateCurrentEnt();
-    }
-}
-
-void C_RunComparisons::UpdateCurrentEnt()
-{
-    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    if (pPlayer)
-    {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        m_pRunStats = pGhost ? pGhost->GetRunStats() : pPlayer->GetRunStats();
-        m_iCurrentEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
-    }
-}
-
 void C_RunComparisons::LoadComparisons()
 {
-    UnloadComparisons();
     const char *szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (szMapName && pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        float tickRate = 0;
-        int runFlags = 0;
+        const auto pRunData = pPlayer->GetCurrentUIEntData();
 
-        if (pGhost)
-        {
-            tickRate = pGhost->m_Data.m_flTickRate;
-            runFlags = pGhost->m_Data.m_iRunFlags;
-        }
-        else
-        {
-            tickRate = gpGlobals->interval_per_tick;
-            runFlags = pPlayer->m_Data.m_iRunFlags;
-        }
+        const float tickRate = pRunData->m_flTickRate;
+        const int runFlags = pRunData->m_iRunFlags;
 
-        m_rcCurrentComparison = new RunCompare_t();
-        m_bLoadedComparison = g_pMomentumUtil->GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+        if (!m_bLoadedComparison || !CloseEnough(tickRate, m_fLoadedTickRate) || runFlags != m_iLoadedRunFlags)
+        {
+            UnloadComparisons();
+            m_rcCurrentComparison = new RunCompare_t();
+            m_bLoadedComparison = g_pMomentumUtil->GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+        }
     }
 }
 
@@ -284,7 +235,6 @@ void C_RunComparisons::LevelInitPostEntity()
 {
     // Load the initial comparisons
     LoadComparisons();
-    UpdateCurrentEnt();
 }
 
 void C_RunComparisons::LevelShutdown()
@@ -294,6 +244,16 @@ void C_RunComparisons::LevelShutdown()
 
 void C_RunComparisons::OnThink()
 {
+    if (!m_bLoadedComparison)
+        return;
+
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
+    {
+        m_pRunStats = pPlayer->GetCurrentUIEntStats();
+        m_pRunData = pPlayer->GetCurrentUIEntData();
+    }
+
     if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perzone.GetBool())
     {
         // Uh oh, both overall and perstage were turned off, let's turn back on the one they want to compare
@@ -654,6 +614,11 @@ void C_RunComparisons::ApplySchemeSettings(vgui::IScheme* pScheme)
     GetSize(m_iDefaultWidth, m_iDefaultTall); //gets "wide" and "tall" from scheme .res file
     m_iMaxWide = m_iDefaultWidth;
     GetPos(m_iDefaultXPos, m_iDefaultYPos); //gets "xpos" and "ypos" from scheme .res file
+}
+
+int C_RunComparisons::GetCurrentZone() const
+{
+    return m_bLoadedBogusComparison ? m_pBogusRunStats->GetTotalZones() - 1 : (m_bLoadedComparison && m_pRunData) ? m_pRunData->m_iCurrentZone : 0;
 }
 
 void C_RunComparisons::Paint()

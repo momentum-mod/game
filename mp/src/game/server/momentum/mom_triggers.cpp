@@ -166,7 +166,7 @@ void CTriggerZone::OnStartTouch(CBaseEntity* pOther)
 {
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pOther);
     if (pEnt)
-        pEnt->OnZoneEnter(this, pOther);
+        pEnt->OnZoneEnter(this);
 
     BaseClass::OnStartTouch(pOther);
 }
@@ -175,7 +175,7 @@ void CTriggerZone::OnEndTouch(CBaseEntity* pOther)
 {
     CMomRunEntity *pEnt = dynamic_cast<CMomRunEntity*>(pOther);
     if (pEnt)
-        pEnt->OnZoneExit(this, pOther);
+        pEnt->OnZoneExit(this);
 
     BaseClass::OnEndTouch(pOther);
 }
