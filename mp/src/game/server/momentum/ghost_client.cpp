@@ -140,10 +140,10 @@ void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
     // MOM_TODO: else let the player know their decal packets aren't being sent?
 }
 
-void CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* packet)
+bool CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* packet)
 {
     // MOM_TODO: g_pMomentumServerSystem->SendSavelocReqPacket(target, packet);
-    g_pMomentumLobbySystem->SendSavelocReqPacket(target, packet);
+    return g_pMomentumLobbySystem->SendSavelocReqPacket(target, packet);
 }
 
 CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(const uint64& id)

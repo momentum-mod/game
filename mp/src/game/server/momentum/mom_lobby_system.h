@@ -24,7 +24,7 @@ public:
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message
     void ResetOtherAppearanceData(); // Sent when the player changes an override appearance cvar
-    void SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t *p);
+    bool SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t *p);
 
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyChatUpdate, LobbyChatUpdate_t); // Lobby chat room status has changed. This can be owner being changed, or somebody joining or leaving
@@ -50,7 +50,7 @@ public:
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
-    void SendDecalPacket(DecalPacket_t *packet);
+    bool SendDecalPacket(DecalPacket_t *packet);
 
     void SetGameInfoStatus();
     bool GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out);
@@ -70,7 +70,7 @@ private:
     bool m_bHostingLobby;
 
     // Sends a packet to a specific person, or everybody (if pTarget is null)
-    void SendPacket(MomentumPacket_t *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
+    bool SendPacket(MomentumPacket_t *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
 
     void WriteMessage(LOBBY_MSG_TYPE type, uint64 id);
     void WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID);

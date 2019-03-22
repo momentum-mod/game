@@ -103,10 +103,9 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
     }
 }
 
-void CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* p)
+bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* p)
 {
-    if (LobbyValid())
-        SendPacket(p, &target, k_EP2PSendReliable);
+    return LobbyValid() && SendPacket(p, &target, k_EP2PSendReliable);
 }
 
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
@@ -328,38 +327,44 @@ void CMomentumLobbySystem::ClearCurrentGhosts(bool bRemoveEnts)
     }
 }
 
-void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
+bool CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
 {
+    CHECK_STEAM_API_B(SteamNetworking());
+
+    if (!pTarget && m_mapLobbyGhosts.Count() == 0)
+        return false;
+
     // Write the packet out to binary
-    int size = sendType >= k_EP2PSendReliable ? 1000000 : 1200;
+    const int size = sendType >= k_EP2PSendReliable ? 1000000 : 1200;
     CUtlBuffer buf(0, size);
     buf.SetBigEndian(false);
     packet->Write(buf);
 
     if (pTarget)
     {
-        CHECK_STEAM_API(SteamNetworking());
         if (SteamNetworking()->SendP2PPacket(*pTarget, buf.Base(), buf.TellPut(), sendType))
         {
-            // DevLog("Sent the packet!\n");
+            return true;
         }
     }
     else if (m_mapLobbyGhosts.Count() > 0) // It's everybody
     {
-        CHECK_STEAM_API(SteamNetworking());
-        uint16 index = m_mapLobbyGhosts.FirstInorder();
+        auto index = m_mapLobbyGhosts.FirstInorder();
         while (index != m_mapLobbyGhosts.InvalidIndex())
         {
-            CSteamID ghost = m_mapLobbyGhosts[index]->GetGhostSteamID();
+            const auto ghostID = m_mapLobbyGhosts[index]->GetGhostSteamID();
 
-            if (SteamNetworking()->SendP2PPacket(ghost, buf.Base(), buf.TellPut(), sendType))
+            if (!SteamNetworking()->SendP2PPacket(ghostID, buf.Base(), buf.TellPut(), sendType))
             {
-                // DevLog("Sent the packet!\n");
+                DevWarning("Failed to send the packet to %s!\n", SteamFriends()->GetFriendPersonaName(ghostID));
             }
 
             index = m_mapLobbyGhosts.NextInorder(index);
         }
+        return true;
     }
+
+    return false;
 }
 
 void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
@@ -757,12 +762,13 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                                 // Send them a packet that we're all good
                                 SavelocReqPacket_t response;
                                 response.stage = -1;
-                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
-
-                                // Send ourselves an event saying we're all good
-                                KeyValues *pKv = new KeyValues("req_savelocs");
-                                pKv->SetInt("stage", -1);
-                                g_pModuleComms->FireEvent(pKv);
+                                if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
+                                {
+                                    // Send ourselves an event saying we're all good
+                                    KeyValues *pKv = new KeyValues("req_savelocs");
+                                    pKv->SetInt("stage", -1);
+                                    g_pModuleComms->FireEvent(pKv);
+                                }
                             }
                         }
                         break;
@@ -789,9 +795,8 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
         if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
             PositionPacket_t frame;
-            if (g_pMomentumGhostClient->CreateNewNetFrame(frame))
+            if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
             {
-                SendPacket(&frame);
                 m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
             }
         }
@@ -806,16 +811,14 @@ void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 //Return true if the lobby member is currently spectating.
 bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
 {
-    if (!SteamMatchmaking())
-        return false;
+    CHECK_STEAM_API_B(SteamMatchmaking());
     const char* specChar = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
     return specChar[0] ? true : false;
 }
 
-void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
+bool CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
 {
-    if (LobbyValid())
-        SendPacket(packet);
+    return LobbyValid() && SendPacket(packet);
 }
 
 void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating, bool bLeft)
@@ -854,11 +857,12 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
 void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type)
 {
     SpecUpdatePacket_t newUpdate(ghostTarget.ConvertToUint64(), type);
-    SendPacket(&newUpdate, nullptr, k_EP2PSendReliable);
-
-    uint64 playerID = SteamUser()->GetSteamID().ConvertToUint64();
-    uint64 ghostID = ghostTarget.ConvertToUint64();
-    WriteMessage(type, playerID, ghostID);
+    if (SendPacket(&newUpdate, nullptr, k_EP2PSendReliable))
+    {
+        uint64 playerID = SteamUser()->GetSteamID().ConvertToUint64();
+        uint64 ghostID = ghostTarget.ConvertToUint64();
+        WriteMessage(type, playerID, ghostID);
+    }
 }
 
 void CMomentumLobbySystem::SetGameInfoStatus()
