@@ -34,10 +34,12 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
     ListenForGameEvent("mapfinished_panel_closed");
     m_nGhostButtons = 0;
     m_bSpectating = false;
+    m_GhostSteamID.Clear();
 }
 
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
+    m_GhostSteamID.Clear();
     m_vecPositionPackets.Purge();
     m_vecDecalPackets.Purge();
 }

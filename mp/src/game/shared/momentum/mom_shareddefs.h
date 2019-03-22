@@ -232,10 +232,13 @@ enum SPECTATE_MSG_TYPE
 
 #define MAX_ZONES 64
 
-#define CHECK_STEAM_API(steam_interface) \
+#define ____CHECK_STEAM_API(steam_interface, ret)  \
     if (!steam_interface) { \
     Warning("%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
-    __FUNCTION__, __LINE__, #steam_interface); return; }
+    __FUNCTION__, __LINE__, #steam_interface); ret; }
+
+#define CHECK_STEAM_API_B(steam_interface) ____CHECK_STEAM_API(steam_interface, return false)
+#define CHECK_STEAM_API(steam_interface) ____CHECK_STEAM_API(steam_interface, return)
 
 #define MAP_FOLDER "maps"
 #define RECORDING_PATH "replays"
