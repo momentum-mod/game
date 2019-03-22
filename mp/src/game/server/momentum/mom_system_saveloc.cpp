@@ -218,10 +218,12 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
         // They clicked "request savelocs" from a player, UI just opened, get the count to send back
         SavelocReqPacket_t packet;
         packet.stage = 1;
-        g_pMomentumGhostClient->SendSavelocReqPacket(target, &packet);
+        if (g_pMomentumGhostClient->SendSavelocReqPacket(target, &packet))
+        {
+            // Also keep track of this in the saveloc system
+            SetRequestingSavelocsFrom(target.ConvertToUint64());
+        }
 
-        // Also keep track of this in the saveloc system
-        SetRequestingSavelocsFrom(target.ConvertToUint64());
     }
     else if (stage == 3)
     {

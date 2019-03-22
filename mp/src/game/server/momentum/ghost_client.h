@@ -28,7 +28,7 @@ public:
     void SendAppearanceData(ghostAppearance_t appearance);
     void SetSpectatorTarget(CSteamID target, bool bStartedSpectating, bool bLeft = false);
     void SendDecalPacket(DecalPacket_t *packet);
-    void SendSavelocReqPacket(CSteamID &target, SavelocReqPacket_t *packet);
+    bool SendSavelocReqPacket(CSteamID &target, SavelocReqPacket_t *packet);
 
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);
