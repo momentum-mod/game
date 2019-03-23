@@ -50,11 +50,6 @@ void CMapzone::SpawnZone()
 
     if (m_pTrigger)
     {
-        if (m_iType == ZONE_TYPE_START)
-        {
-            g_pMomentumTimer->SetStartTrigger(static_cast<CTriggerTimerStart *>(m_pTrigger));
-        }
-
         const bool success = m_pTrigger->LoadFromKeyValues(m_pZoneValues);
         if (!success)
         {
@@ -72,6 +67,12 @@ void CMapzone::SpawnZone()
         m_pTrigger->Activate();
 
         delete pBaseBuilder;
+
+        if (m_iType == ZONE_TYPE_START)
+        {
+            auto pStartTrigger = static_cast<CTriggerTimerStart *>(m_pTrigger);
+            g_pMomentumTimer->SetStartTrigger(pStartTrigger->GetTrackNumber(), pStartTrigger);
+        }
     }
 }
 

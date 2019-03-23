@@ -2,14 +2,14 @@
 
 #include "mom_timer.h"
 
+#include <ctime>
 #include "in_buttons.h"
 #include "mom_modulecomms.h"
-#include "movevars_shared.h"
-#include "mom_system_saveloc.h"
-#include "mom_triggers.h"
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
-#include <ctime>
+#include "mom_system_saveloc.h"
+#include "mom_triggers.h"
+#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -30,9 +30,12 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 CMomentumTimer::CMomentumTimer(const char *pName)
     : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
-      m_hStartTrigger(nullptr), m_hEndTrigger(nullptr), m_hCurrentZone(nullptr),
-      m_pStartZoneMark(nullptr), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+      m_hCurrentZone(nullptr), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
+    for (int i = 0; i < MAX_TRACKS; i++)
+    {
+        m_pStartZoneMarks[i] = nullptr;
+    }
 }
 
 void CMomentumTimer::PostInit()
@@ -45,7 +48,10 @@ void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
-    ClearStartMark();
+    for (int i = 0; i < MAX_TRACKS; i++)
+    {
+        ClearStartMark(i);
+    }
     DispatchMapInfo();
 }
 
@@ -54,9 +60,11 @@ void CMomentumTimer::LevelShutdownPreEntity()
     if (IsRunning())
         Stop(nullptr);
     m_bWereCheatsActivated = false;
-    SetStartTrigger(nullptr);
+    for (int i = 0; i < MAX_TRACKS; i++)
+    {
+        SetStartTrigger(i, nullptr);
+    }
     SetCurrentZone(nullptr);
-    ClearStartMark();
 }
 
 void CMomentumTimer::FrameUpdatePreEntityThink()
@@ -181,7 +189,7 @@ void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::OnPlayerJump(KeyValues *kv)
 {
-    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(kv->GetPtr("player"));
+    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(kv->GetPtr("player"));
     if (!pPlayer)
         return;
 
@@ -202,14 +210,15 @@ void CMomentumTimer::OnPlayerJump(KeyValues *kv)
     if (IsRunning())
     {
         const int currentZone = pPlayer->m_Data.m_iCurrentZone;
-        pPlayer->m_RunStats.SetZoneJumps(0, pPlayer->m_RunStats.GetZoneJumps(0) + 1);                     // Increment total jumps
-        pPlayer->m_RunStats.SetZoneJumps(currentZone, pPlayer->m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
+        pPlayer->m_RunStats.SetZoneJumps(0, pPlayer->m_RunStats.GetZoneJumps(0) + 1); // Increment total jumps
+        pPlayer->m_RunStats.SetZoneJumps(currentZone,
+                                         pPlayer->m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
     }
 }
 
 void CMomentumTimer::OnPlayerLand(KeyValues *kv)
 {
-    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(kv->GetPtr("player"));
+    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(kv->GetPtr("player"));
     if (!pPlayer)
         return;
 
@@ -240,7 +249,7 @@ void CMomentumTimer::OnPlayerLand(KeyValues *kv)
     }
 }
 
-void CMomentumTimer::TryStart(CMomentumPlayer* pPlayer, bool bUseStartZoneOffset)
+void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset)
 {
     // do not start timer if player is in practice mode or it's already running.
     if (!IsRunning())
@@ -330,16 +339,24 @@ void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) c
     user.MakeReliable();
 
     UserMessageBegin(user, "Timer_Event");
-        WRITE_BYTE(type);
+    WRITE_BYTE(type);
     MessageEnd();
 }
 
-int CMomentumTimer::GetCurrentZoneNumber() const
+void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
 {
-    return m_hCurrentZone.Get() && m_hCurrentZone->GetZoneNumber();
+    // Make sure trigger and associated track aren't mismatched
+    Assert(pTrigger ? (pTrigger->GetTrackNumber() == track)
+                    : true);
+    m_iLastZone = 0; // Allows us to overwrite previous runs
+    m_hStartTriggers[track] = pTrigger;
 }
 
-static int GetNumEntitiesByClassname(const char* classname)
+void CMomentumTimer::SetCurrentZone(CTriggerZone *pTrigger) { m_hCurrentZone = pTrigger; }
+
+int CMomentumTimer::GetCurrentZoneNumber() const { return m_hCurrentZone.Get() && m_hCurrentZone->GetZoneNumber(); }
+
+static int GetNumEntitiesByClassname(const char *classname)
 {
     int count = 0;
 
@@ -394,10 +411,7 @@ float CMomentumTimer::GetLastRunTime()
     }*/
 }
 
-int CMomentumTimer::GetLastRunTimeTicks()
-{
-    return m_iEndTick - m_iStartTick;
-}
+int CMomentumTimer::GetLastRunTimeTicks() { return m_iEndTick - m_iStartTick; }
 
 void CMomentumTimer::SetRunning(CMomentumPlayer *pPlayer, bool isRunning)
 {
@@ -508,29 +522,34 @@ void CMomentumTimer::CreateStartMark()
     if (!pPlayer)
         return;
 
-    if (m_hStartTrigger.Get() && m_hStartTrigger->IsTouching(pPlayer))
+    for (int i = 0; i < MAX_TRACKS; i++)
     {
-        // Rid the previous one
-        ClearStartMark();
+        if (m_hStartTriggers[i].Get() && m_hStartTriggers[i]->IsTouching(pPlayer))
+        {
+            // Rid the previous one
+            ClearStartMark(i);
 
-        m_pStartZoneMark = g_pMOMSavelocSystem->CreateSaveloc();
-        if (m_pStartZoneMark)
-        {
-            m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
-            DevLog("Successfully created a starting mark!\n");
-        }
-        else
-        {
-            Warning("Could not create the start mark for some reason!\n");
+            m_pStartZoneMarks[i] = g_pMOMSavelocSystem->CreateSaveloc();
+            if (m_pStartZoneMarks[i])
+            {
+                m_pStartZoneMarks[i]->vel = vec3_origin; // Rid the velocity
+                DevLog("Successfully created a starting mark!\n");
+            }
+            else
+            {
+                Warning("Could not create the start mark for some reason!\n");
+            }
+
+            break;
         }
     }
 }
 
-void CMomentumTimer::ClearStartMark()
+void CMomentumTimer::ClearStartMark(int track)
 {
-    if (m_pStartZoneMark)
-        delete m_pStartZoneMark;
-    m_pStartZoneMark = nullptr;
+    if (m_pStartZoneMarks[track])
+        delete m_pStartZoneMarks[track];
+    m_pStartZoneMarks[track] = nullptr;
 }
 
 // Practice mode that stops the timer and allows the player to noclip.
@@ -543,7 +562,8 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     pPlayer->m_bHasPracticeMode = true;
 
     // This is outside the isRunning check because if you practice mode -> tele to start -> toggle -> start run,
-    // the replay file doesn't have your "last" position, so we just save it regardless of timer state, but only restore it if in a run.
+    // the replay file doesn't have your "last" position, so we just save it regardless of timer state, but only restore
+    // it if in a run.
     pPlayer->SaveCurrentRunState();
 
     // MOM_TODO: if (m_bIsRunning && g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkEnterPracticeMode()
@@ -579,170 +599,188 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 }
 
 //--------- Commands --------------------------------
-static MAKE_TOGGLE_CONVAR(mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+static MAKE_TOGGLE_CONVAR(
+    mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
     "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
 
-class CTimerCommands
+CON_COMMAND_F(
+    mom_practice,
+    "Toggle. Allows player to fly around in noclip during a run, teleports the player back upon untoggling.\n"
+    "Only activates when player is not pressing any movement inputs if the timer is running and mom_practice_safeguard "
+    "is 1.\n",
+    FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-  public:
-    static void ResetToStart()
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->GetObserverMode() != OBS_MODE_NONE)
+        return;
+
+    if (!pPlayer->m_bHasPracticeMode)
     {
-        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-        if (!pPlayer || !pPlayer->AllowUserTeleports())
-            return;
-        CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
-        if (start)
+        if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
         {
-            SavedLocation_t *pStartMark = g_pMomentumTimer->GetStartMark();
-            if (pStartMark)
+            bool safeGuard = (pPlayer->m_nButtons &
+                              (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
+            if (safeGuard)
             {
-                pStartMark->Teleport(pPlayer);
+                Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with "
+                        "\"mom_practice_safeguard\"!\n");
+                return;
             }
-            else
-            {
-                // Don't set angles if still in start zone.
-                QAngle ang = start->GetLookAngles();
-                pPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
-            }
+        }
+
+        g_pMomentumTimer->EnablePractice(pPlayer);
+    }
+    else
+    {
+        g_pMomentumTimer->DisablePractice(pPlayer);
+    }
+}
+
+CON_COMMAND(mom_mark_start,
+            "Marks a starting point inside the start trigger for a more customized starting location.\n")
+{
+    g_pMomentumTimer->CreateStartMark();
+}
+
+CON_COMMAND(mom_mark_start_clear,
+            "Clears the saved start location, if there is one for the specified track (default is main track).\n")
+{
+    int track = TRACK_MAIN;
+    if (args.ArgC() > 1)
+    {
+        track = Q_atoi(args[1]);
+    }
+
+    g_pMomentumTimer->ClearStartMark(track);
+}
+
+CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is main track).\n",
+              FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
+{
+    int track = TRACK_MAIN;
+    if (args.ArgC() > 1)
+    {
+        track = Q_atoi(args[1]);
+    }
+
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || !pPlayer->AllowUserTeleports())
+        return;
+    pPlayer->m_Data.m_iCurrentTrack = track;
+
+    CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger(track);
+    if (start)
+    {
+        SavedLocation_t *pStartMark = g_pMomentumTimer->GetStartMark(track);
+        if (pStartMark)
+        {
+            pStartMark->Teleport(pPlayer);
+        }
+        else
+        {
+            // Don't set angles if still in start zone.
+            QAngle ang = start->GetLookAngles();
+            pPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+        }
+        pPlayer->ResetRunStats();
+    }
+    else
+    {
+        CBaseEntity *startPoint = pPlayer->EntSelectSpawnPoint();
+        if (startPoint)
+        {
+            pPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), &vec3_origin);
             pPlayer->ResetRunStats();
         }
-        else
-        {
-            CBaseEntity *startPoint = pPlayer->EntSelectSpawnPoint();
-            if (startPoint)
-            {
-                pPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), &vec3_origin);
-                pPlayer->ResetRunStats();
-            }
-        }
     }
+}
 
-    static void ResetToCheckpoint()
+CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current stage.\n",
+              FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
+{
+    CTriggerZone *pStage = g_pMomentumTimer->GetCurrentZone();
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pStage && pPlayer && pPlayer->AllowUserTeleports())
     {
-        CTriggerZone *pStage = g_pMomentumTimer->GetCurrentZone();
-        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-        if (pStage && pPlayer && pPlayer->AllowUserTeleports())
-        {
-            // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
-            pPlayer->Teleport(&pStage->WorldSpaceCenter(), nullptr, &vec3_origin);
-        }
+        // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player
+        // there
+        pPlayer->Teleport(&pStage->WorldSpaceCenter(), nullptr, &vec3_origin);
     }
+}
 
-    static void PracticeModeToggle()
+CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n"
+              "Usage: mom_stage_tele <stage> [track]\n",
+              FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
+{
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    const Vector *pVec = nullptr;
+    const QAngle *pAng = nullptr;
+    if (pPlayer && args.ArgC() >= 2)
     {
-        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-        if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->GetObserverMode() != OBS_MODE_NONE)
+        int track = TRACK_MAIN;
+        if (args.ArgC() > 2)
+        {
+            track = Q_atoi(args[2]);
+        }
+
+        if (!pPlayer->AllowUserTeleports())
             return;
 
-        if (!pPlayer->m_bHasPracticeMode)
+        pPlayer->m_Data.m_iCurrentTrack = track;
+
+        // We get the desried index from the command (Remember that for us, args are 1 indexed)
+        int desiredIndex = Q_atoi(args[1]);
+        if (desiredIndex == 1)
         {
-            if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
+            // Index 1 is the start. If the timer has a mark, we use it
+            SavedLocation_t *startMark = g_pMomentumTimer->GetStartMark(track);
+            if (startMark)
             {
-                bool safeGuard = (pPlayer->m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
-                if (safeGuard)
+                pVec = &startMark->pos;
+                pAng = &startMark->ang;
+            }
+            else
+            {
+                // If no mark was found, we teleport to the center of the start trigger
+                CBaseEntity *pEnt = g_pMomentumTimer->GetStartTrigger(track);
+                if (pEnt)
                 {
-                    Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
-                    return;
+                    pVec = &pEnt->GetAbsOrigin();
                 }
             }
-
-            g_pMomentumTimer->EnablePractice(pPlayer);
         }
         else
         {
-            g_pMomentumTimer->DisablePractice(pPlayer);
+            // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
+            // stuff so...)
+            CTriggerStage *pStage = nullptr;
+
+            while ((pStage = static_cast<CTriggerStage *>(
+                        gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
+            {
+                if (pStage && pStage->GetZoneNumber() == desiredIndex && pStage->GetTrackNumber() == track)
+                {
+                    pVec = &pStage->GetAbsOrigin();
+                    pAng = &pStage->GetAbsAngles();
+                    break;
+                }
+            }
         }
-    }
 
-    static void MarkStart() { g_pMomentumTimer->CreateStartMark(); }
-
-    static void ClearStart() { g_pMomentumTimer->ClearStartMark(); }
-
-    static void TeleToStage(const CCommand &args)
-    {
-        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-        const Vector *pVec = nullptr;
-        const QAngle *pAng = nullptr;
-        if (pPlayer && args.ArgC() >= 2)
+        // Teleport if we have a destination
+        if (pVec)
         {
-            if (!pPlayer->AllowUserTeleports())
-                return;
-
-            // We get the desried index from the command (Remember that for us, args are 1 indexed)
-            int desiredIndex = Q_atoi(args[1]);
-            if (desiredIndex == 1)
-            {
-                // Index 1 is the start. If the timer has a mark, we use it
-                SavedLocation_t *startMark = g_pMomentumTimer->GetStartMark();
-                if (startMark)
-                {
-                    pVec = &startMark->pos;
-                    pAng = &startMark->ang;
-                }
-                else
-                {
-                    // If no mark was found, we teleport to the center of the first trigger_momentum_timer_start we find
-                    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
-                    if (pEnt)
-                    {
-                        pVec = &pEnt->GetAbsOrigin();
-                    }
-                }
-            }
-            else
-            {
-                // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
-                // stuff so...)
-                CTriggerStage *pStage = nullptr;
-
-                while ((pStage = static_cast<CTriggerStage *>(
-                            gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
-                {
-                    if (pStage && pStage->GetZoneNumber() == desiredIndex)
-                    {
-                        pVec = &pStage->GetAbsOrigin();
-                        pAng = &pStage->GetAbsAngles();
-                        break;
-                    }
-                }
-            }
-
-            // Teleport if we have a destination
-            if (pVec)
-            {
-                // pAng can be null here, it's okay
-                pPlayer->Teleport(pVec, pAng, &vec3_origin);
-                // Stop *after* the teleport
-                g_pMomentumTimer->Stop(pPlayer);
-            }
-            else
-            {
-                Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);
-            }
+            // pAng can be null here, it's okay
+            pPlayer->Teleport(pVec, pAng, &vec3_origin);
+            // Stop *after* the teleport
+            g_pMomentumTimer->Stop(pPlayer);
+        }
+        else
+        {
+            Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);
         }
     }
-};
-
-static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeModeToggle,
-                               "Toggle. Allows player to fly around in noclip during a run, teleports the player back upon untoggling.\n"
-                               "Only activates when player is not pressing any movement inputs if the timer is running and mom_practice_safeguard is 1.\n",
-                               FCVAR_CLIENTCMD_CAN_EXECUTE);
-static ConCommand
-    mom_mark_start("mom_mark_start", CTimerCommands::MarkStart,
-                   "Marks a starting point inside the start trigger for a more customized starting location.\n",
-                   FCVAR_NONE);
-static ConCommand mom_mark_start_clear("mom_mark_start_clear", CTimerCommands::ClearStart,
-                                       "Clears the saved start location, if there is one.\n", FCVAR_NONE);
-static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart,
-                                     "Restarts the player to the start trigger.\n",
-                                     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
-static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint,
-                                          "Teleports the player back to the start of the current stage.\n",
-                                          FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
-
-static ConCommand mom_stage_tele("mom_stage_tele", CTimerCommands::TeleToStage,
-                                 "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n",
-                                 FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+}
 
 static CMomentumTimer s_Timer("CMomentumTimer");
 CMomentumTimer *g_pMomentumTimer = &s_Timer;

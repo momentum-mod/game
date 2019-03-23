@@ -10,6 +10,8 @@
 // If you have any doubts, please refer to http://semver.org/
 #define MOM_CURRENT_VERSION "0.7.2"
 
+#define MAX_TRACKS 64
+
 // Zone types enum
 // NOTE: If adding a new zone type make sure to add a case for it
 // in CMapzoneData::LoadFromFile & override ToKeyValues/LoadFromKeyValues
