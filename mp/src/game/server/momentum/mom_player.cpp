@@ -689,7 +689,6 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             m_bShouldLimitPlayerSpeed = pStartTrigger->IsLimitingSpeed();
 
             // Reset timer when we enter start zone
-            g_pMomentumTimer->SetStartTrigger(pStartTrigger);
             g_pMomentumTimer->SetCurrentZone(pStartTrigger);
             g_pMomentumTimer->Reset(this);
         }
@@ -698,7 +697,6 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
             // We've reached end zone, stop here
             auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
-            g_pMomentumTimer->SetEndTrigger(pStopTrigger);
 
             if (g_pMomentumTimer->IsRunning() && !IsSpectatingGhost() && !m_bHasPracticeMode)
             {

@@ -1395,7 +1395,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
             m_pPlayer->m_bDidPlayerBhop = true;
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
-        CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
+        CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger(m_pPlayer->m_Data.m_iCurrentTrack);
         // This does not look pretty but saves us a branching. The checks are:
         // no nullptr, correct gamemode, is limiting leave speed and
         //    enough ticks on air have passed
