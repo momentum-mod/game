@@ -49,19 +49,12 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
-    CTriggerTimerStart *GetStartTrigger() const { return m_hStartTrigger.Get(); }
-    CTriggerTimerStop *GetEndTrigger() const { return m_hEndTrigger.Get(); }
+    CTriggerTimerStart *GetStartTrigger(int track) const { return m_hStartTriggers[track]; }
     CTriggerZone *GetCurrentZone() const { return m_hCurrentZone.Get(); }
 
-    // Sets the given trigger as the start trigger
-    void SetStartTrigger(CTriggerTimerStart *pTrigger)
-    {
-        m_iLastZone = 0; // Allows us to overwrite previous runs
-        m_hStartTrigger = pTrigger;
-    }
-
-    void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_hEndTrigger = pTrigger; }
-    void SetCurrentZone(CTriggerZone *pTrigger) { m_hCurrentZone = pTrigger; }
+    // Sets the given trigger as the start trigger for it's associated track
+    void SetStartTrigger(int track, CTriggerTimerStart *pTrigger);
+    void SetCurrentZone(CTriggerZone *pTrigger);
     int GetCurrentZoneNumber() const;
 
     // Calculates the stage count
@@ -100,8 +93,8 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void SetGameModeConVars();
 
     void CreateStartMark();
-    SavedLocation_t *GetStartMark() const { return m_pStartZoneMark; }
-    void ClearStartMark();
+    SavedLocation_t *GetStartMark(int track) const { return m_pStartZoneMarks[track]; }
+    void ClearStartMark(int track);
 
     int GetTrackNumber() const { return m_iTrackNumber; }
 
@@ -131,11 +124,10 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     bool m_bWereCheatsActivated;
     bool m_bMapIsLinear;
 
-    CHandle<CTriggerTimerStart> m_hStartTrigger;
-    CHandle<CTriggerTimerStop> m_hEndTrigger;
+    CHandle<CTriggerTimerStart> m_hStartTriggers[MAX_TRACKS];
     CHandle<CTriggerZone> m_hCurrentZone;
 
-    SavedLocation_t *m_pStartZoneMark;
+    SavedLocation_t *m_pStartZoneMarks[MAX_TRACKS];
 
     int m_iTrackNumber;
 

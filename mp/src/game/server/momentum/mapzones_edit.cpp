@@ -329,11 +329,11 @@ void CMomZoneEdit::OnCreate(int zonetype)
         return;
     }
 
-    int type = zonetype != -1 ? zonetype : GetZoneTypeToCreate();
-    if (type == -1)
+    int type = zonetype != ZONE_TYPE_INVALID ? zonetype : GetZoneTypeToCreate();
+    if (type == ZONE_TYPE_INVALID)
     {
         pBuild->Reset();
-        // It's still -1, something's wrong
+        // It's still invalid, something's wrong
         Warning("Failed to create zone\n");
         return;
     }
@@ -547,6 +547,7 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
         }
 
         pStart->SetZoneNumber(1);
+        g_pMomentumTimer->SetStartTrigger(pStart->GetTrackNumber(), pStart);
     }
     break;
     case ZONE_TYPE_STOP:
