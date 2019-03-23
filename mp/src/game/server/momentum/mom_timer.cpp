@@ -30,7 +30,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 CMomentumTimer::CMomentumTimer(const char *pName)
     : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
-      m_pStartTrigger(nullptr), m_pEndTrigger(nullptr), m_pCurrentZone(nullptr),
+      m_hStartTrigger(nullptr), m_hEndTrigger(nullptr), m_hCurrentZone(nullptr),
       m_pStartZoneMark(nullptr), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 }
@@ -336,7 +336,7 @@ void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) c
 
 int CMomentumTimer::GetCurrentZoneNumber() const
 {
-    return m_pCurrentZone && m_pCurrentZone->GetZoneNumber();
+    return m_hCurrentZone.Get() && m_hCurrentZone->GetZoneNumber();
 }
 
 static int GetNumEntitiesByClassname(const char* classname)
@@ -508,7 +508,7 @@ void CMomentumTimer::CreateStartMark()
     if (!pPlayer)
         return;
 
-    if (m_pStartTrigger && m_pStartTrigger->IsTouching(pPlayer))
+    if (m_hStartTrigger.Get() && m_hStartTrigger->IsTouching(pPlayer))
     {
         // Rid the previous one
         ClearStartMark();

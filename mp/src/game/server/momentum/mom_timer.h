@@ -49,19 +49,19 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
-    CTriggerTimerStart *GetStartTrigger() const { return m_pStartTrigger; }
-    CTriggerTimerStop *GetEndTrigger() const { return m_pEndTrigger; }
-    CTriggerZone *GetCurrentZone() const { return m_pCurrentZone; }
+    CTriggerTimerStart *GetStartTrigger() const { return m_hStartTrigger.Get(); }
+    CTriggerTimerStop *GetEndTrigger() const { return m_hEndTrigger.Get(); }
+    CTriggerZone *GetCurrentZone() const { return m_hCurrentZone.Get(); }
 
     // Sets the given trigger as the start trigger
     void SetStartTrigger(CTriggerTimerStart *pTrigger)
     {
         m_iLastZone = 0; // Allows us to overwrite previous runs
-        m_pStartTrigger = pTrigger;
+        m_hStartTrigger = pTrigger;
     }
 
-    void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger = pTrigger; }
-    void SetCurrentZone(CTriggerZone *pTrigger) { m_pCurrentZone = pTrigger; }
+    void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_hEndTrigger = pTrigger; }
+    void SetCurrentZone(CTriggerZone *pTrigger) { m_hCurrentZone = pTrigger; }
     int GetCurrentZoneNumber() const;
 
     // Calculates the stage count
@@ -131,9 +131,9 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     bool m_bWereCheatsActivated;
     bool m_bMapIsLinear;
 
-    CTriggerTimerStart *m_pStartTrigger;
-    CTriggerTimerStop *m_pEndTrigger;
-    CTriggerZone *m_pCurrentZone;
+    CHandle<CTriggerTimerStart> m_hStartTrigger;
+    CHandle<CTriggerTimerStop> m_hEndTrigger;
+    CHandle<CTriggerZone> m_hCurrentZone;
 
     SavedLocation_t *m_pStartZoneMark;
 
