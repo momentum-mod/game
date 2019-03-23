@@ -4,9 +4,9 @@
 #include "mapzones.h"
 #include "mapzones_build.h"
 #include "mom_player.h"
-#include "mom_triggers.h"
 #include "mom_player_shared.h"
 #include "mom_timer.h"
+#include "mom_triggers.h"
 
 #include "tier0/memdbgon.h"
 
@@ -20,7 +20,8 @@ static float SnapToGrid(float fl, float gridsize);
 static void DrawReticle(const Vector &pos, float retsize);
 
 static MAKE_TOGGLE_CONVAR_C(mom_zone_edit, "0", FCVAR_CHEAT, "Toggle zone editing.\n", OnZoneEditingToggled);
-static MAKE_TOGGLE_CONVAR(mom_zone_ignorewarning, "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n");
+static MAKE_TOGGLE_CONVAR(mom_zone_ignorewarning, "0", FCVAR_CHEAT,
+                          "Lets you create zones despite map already having start and end.\n");
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
 static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
                             "The zone type that will be created when using mom_zone_mark/create. 'auto' creates a "
@@ -71,7 +72,7 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
         {
             CBaseEntity *pEnt = CBaseEntity::Instance(INDEXENT(entindex));
 
-            if (pEnt && g_MomZoneEdit.GetEntityZoneType(pEnt) != -1)
+            if (pEnt && g_MomZoneEdit.GetEntityZoneType(pEnt) != ZONE_TYPE_INVALID)
             {
                 UTIL_Remove(pEnt);
 
@@ -131,9 +132,10 @@ CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity in
     }
 }
 
-CON_COMMAND_F(mom_zone_start_setlook,
-              "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n",
-              FCVAR_CHEAT)
+CON_COMMAND_F(
+    mom_zone_start_setlook,
+    "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n",
+    FCVAR_CHEAT)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -211,10 +213,7 @@ CON_COMMAND_F(mom_zone_info,
     class CZoneTriggerTraceEnum : public IEntityEnumerator
     {
       public:
-        CZoneTriggerTraceEnum()
-        {
-            m_pZone = nullptr;
-        }
+        CZoneTriggerTraceEnum() { m_pZone = nullptr; }
 
         // Return true to continue enumerating or false to stop
         virtual bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE
@@ -233,7 +232,7 @@ CON_COMMAND_F(mom_zone_info,
                 // Found our target, stop here
                 return false;
             }
-            
+
             // No dice, let's keep searching
             return true;
         }
@@ -257,7 +256,7 @@ CON_COMMAND_F(mom_zone_info,
 
     // Only EnumerateEntities can hit triggers, normal TraceRay can't
     CZoneTriggerTraceEnum zoneTriggerTraceEnum;
-    enginetrace->EnumerateEntities(ray, true, &zoneTriggerTraceEnum); 
+    enginetrace->EnumerateEntities(ray, true, &zoneTriggerTraceEnum);
     CBaseMomentumTrigger *pZone = zoneTriggerTraceEnum.GetZone();
     int zoneidx = pZone ? pZone->entindex() : -1;
     int zonetype = pZone ? g_MomZoneEdit.GetEntityZoneType(pZone) : -1;
@@ -266,8 +265,8 @@ CON_COMMAND_F(mom_zone_info,
     user.MakeReliable();
 
     UserMessageBegin(user, "ZoneInfo");
-        WRITE_LONG(zoneidx);
-        WRITE_LONG(zonetype);
+    WRITE_LONG(zoneidx);
+    WRITE_LONG(zonetype);
     MessageEnd();
 }
 
@@ -534,34 +533,34 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
     switch (pEnt->GetZoneType())
     {
     case ZONE_TYPE_START:
+    {
+        auto pStart = static_cast<CTriggerTimerStart *>(pEnt);
+        // bhop speed limit
+        if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
         {
-            auto pStart = static_cast<CTriggerTimerStart *>(pEnt);
-            // bhop speed limit
-            if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
-            {
-                pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
-                pStart->SetIsLimitingSpeed(true);
-            }
-            else
-            {
-                pStart->SetIsLimitingSpeed(false);
-            }
-
-            pStart->SetZoneNumber(1);
+            pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
+            pStart->SetIsLimitingSpeed(true);
         }
-        break;
+        else
+        {
+            pStart->SetIsLimitingSpeed(false);
+        }
+
+        pStart->SetZoneNumber(1);
+    }
+    break;
     case ZONE_TYPE_STOP:
-        {
-            auto pStop = static_cast<CTriggerTimerStop *>(pEnt);
-            pStop->SetZoneNumber(0);
+    {
+        auto pStop = static_cast<CTriggerTimerStop *>(pEnt);
+        pStop->SetZoneNumber(0);
 
-            if (FStrEq(mom_zone_type.GetString(), "auto"))
-            {
-                // Zone type is stop, meaning player finished zoning this track, lets move on to next one
-                mom_zone_track.SetValue(mom_zone_track.GetInt() + 1);
-            }
+        if (FStrEq(mom_zone_type.GetString(), "auto"))
+        {
+            // Zone type is stop, meaning player finished zoning this track, lets move on to next one
+            mom_zone_track.SetValue(mom_zone_track.GetInt() + 1);
         }
-        break;
+    }
+    break;
     case ZONE_TYPE_STAGE:
         // MOM_TODO: case ZONE_TYPE_CHECKPOINT:
         {
@@ -597,11 +596,11 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
 
 int CMomZoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
 {
-    CBaseMomZoneTrigger *pTrigger = dynamic_cast<CBaseMomZoneTrigger*>(pEnt);
+    CBaseMomZoneTrigger *pTrigger = dynamic_cast<CBaseMomZoneTrigger *>(pEnt);
     if (pTrigger)
         return pTrigger->GetZoneType();
 
-    return -1;
+    return ZONE_TYPE_INVALID;
 }
 
 int CMomZoneEdit::ShortNameToZoneType(const char *in)
@@ -645,7 +644,7 @@ static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flO
     g_MomZoneEdit.ResetBuilder();
 }
 
-void OnZoneEditingToggled(IConVar* var, const char* pOldVal, float fOldVal)
+void OnZoneEditingToggled(IConVar *var, const char *pOldVal, float fOldVal)
 {
     ConVarRef varRef(var);
     if (!varRef.GetBool())
@@ -723,7 +722,6 @@ static int GetZoneTypeToCreate()
 
     return zonetype;
 }
-
 
 // Expose to DLL
 CMomZoneEdit g_MomZoneEdit;

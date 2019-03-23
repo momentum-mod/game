@@ -210,7 +210,7 @@ class CTriggerTimerStart : public CTriggerZone
     float GetMaxLeaveSpeed() const { return m_fBhopLeaveSpeed; }
     void SetMaxLeaveSpeed(const float maxLeaveSpeed);
     void SetLookAngles(const QAngle &newang);
-    QAngle GetLookAngles() const { return m_angLook; }
+    const QAngle &GetLookAngles() const { return m_angLook; }
 
     // spawnflags
     bool IsLimitingSpeed() const { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
