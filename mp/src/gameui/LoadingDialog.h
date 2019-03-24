@@ -41,6 +41,7 @@ protected:
 	virtual void OnThink();
 	virtual void OnClose();
 	virtual void OnKeyCodePressed(vgui::KeyCode code);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 	
 private:
 	void SetupControlSettings( bool bForceShowProgressText );

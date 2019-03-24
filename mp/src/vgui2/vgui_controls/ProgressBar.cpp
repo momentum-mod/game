@@ -389,7 +389,8 @@ void ProgressBar::ApplySettings(KeyValues *inResourceData)
 		m_pszDialogVar = dialogVar;
 	}
 
-    SetShouldDrawPercentString(inResourceData->GetBool("draw_percent"));
+    if (inResourceData->FindKey("draw_percent"))
+        SetShouldDrawPercentString(inResourceData->GetBool("draw_percent"));
 
 	BaseClass::ApplySettings(inResourceData);
 }

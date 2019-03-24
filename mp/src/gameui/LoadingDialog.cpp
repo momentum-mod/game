@@ -37,6 +37,7 @@ using namespace vgui;
 CLoadingDialog::CLoadingDialog( vgui::Panel *parent ) : Frame(parent, "LoadingDialog")
 {
 	SetDeleteSelfOnClose(true);
+    SetProportional(true);
 
 	SetSize( 416, 100 );
 	SetTitle( "#GameUI_Loading", true );
@@ -49,7 +50,8 @@ CLoadingDialog::CLoadingDialog( vgui::Panel *parent ) : Frame(parent, "LoadingDi
 	m_flLastSecondaryProgressUpdateTime = 0.0f;
 	m_flSecondaryProgressStartTime = 0.0f;
 
-	m_pProgress = new ProgressBar( this, "Progress" );
+	m_pProgress = new ContinuousProgressBar( this, "Progress" );
+    m_pProgress->SetShouldDrawPercentString(true);
 	m_pProgress2 = new ProgressBar( this, "Progress2" );
 	m_pInfoLabel = new Label( this, "InfoLabel", "" );
 	m_pCancelButton = new Button( this, "CancelButton", "#GameUI_Cancel" );
@@ -359,10 +361,8 @@ bool CLoadingDialog::SetProgressPoint( float fraction )
 		SetupControlSettings( false );
 	}
 
-	int nOldDrawnSegments = m_pProgress->GetDrawnSegmentCount();
 	m_pProgress->SetProgress( fraction );
-	int nNewDrawSegments = m_pProgress->GetDrawnSegmentCount();
-	return (nOldDrawnSegments != nNewDrawSegments) || IsX360();
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -452,6 +452,13 @@ void CLoadingDialog::OnKeyCodePressed(KeyCode code)
 	{
 		BaseClass::OnKeyCodePressed(code);
 	}
+}
+
+void CLoadingDialog::ApplySchemeSettings(IScheme *pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    m_pProgress->SetFgColor(pScheme->GetColor("MomentumBlue", Color(255, 255, 255, 255)));
 }
 
 //-----------------------------------------------------------------------------
