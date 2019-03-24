@@ -396,6 +396,7 @@
         "MOM_ZoneMenu_ZoneType_Stage" "Stage"
         "MOM_ZoneMenu_ZoneType_Checkpoint" "Checkpoint"
         "MOM_ZoneMenu_GridSize" "Grid Snap Size"
+        "MOM_ZoneMenu_TrackNumber" "Track Number:"
 
 
         //MessageBoxPanel

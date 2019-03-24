@@ -48,6 +48,9 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pCancelZoneButton = new Button(this, "CancelZoneButton", "#MOM_ZoneMenu_CancelZone", this, "CancelZone");
     m_pSaveZonesButton = new Button(this, "SaveZonesButton", "#MOM_ZoneMenu_SaveZones", this, "SaveZones");
 
+    m_pTrackNumberLabel = new Label(this, "TrackNumberLabel", "#MOM_ZoneMenu_TrackNumber");
+    m_pTrackNumberEntry = new CvarTextEntry(this, "TrackNumberEntry", "mom_zone_track");
+
     m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "#MOM_ZoneMenu_ZoneType");
     m_pZoneTypeCombo = new ComboBox(this, "ZoneTypeCombo", 7, false);
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Auto", new KeyValues("vals", "zone_type", "auto"));
@@ -221,10 +224,13 @@ void C_MomZoneMenu::OnTextChanged(Panel *pPanel)
         m_bUpdateGridSizeSlider = false;
         m_pGridSizeTextEntry->ApplyChanges();
     }
+    else if (pPanel == m_pTrackNumberEntry)
+    {
+        m_pTrackNumberEntry->ApplyChanges();
+    }
     else if (pPanel == m_pZoneTypeCombo)
     {
         static ConVarRef mom_zone_type("mom_zone_type");
-        static ConVarRef mom_zone_track("mom_zone_track");
 
         KeyValues *pData = m_pZoneTypeCombo->GetActiveItemUserData();
         mom_zone_type.SetValue(pData->GetString("zone_type"));
@@ -241,6 +247,17 @@ void C_MomZoneMenu::OnButtonChecked(Panel *pPanel, int state)
         m_pCancelZoneButton->SetEnabled(state);
         m_pDeleteZoneButton->SetEnabled(state);
         m_pSaveZonesButton->SetEnabled(state);
+
+        m_pTrackNumberEntry->SetEnabled(state);
+        m_pTrackNumberLabel->SetEnabled(state);
+
+        m_pZoneTypeLabel->SetEnabled(state);
+        m_pZoneTypeCombo->SetEnabled(state);
+
+        m_pGridSizeLabel->SetEnabled(state);
+        m_pGridSizeSlider->SetEnabled(state);
+        m_pGridSizeTextEntry->SetEnabled(state);
+
         m_bBindKeys = state;
     }
     else if (pPanel == m_pToggleUsePointMethod)

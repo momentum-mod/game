@@ -213,7 +213,7 @@ Scheme
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"TransparentBlack"
 		TextEntry.CursorColor		"Light Gray"
-		TextEntry.DisabledTextColor	"White"
+		TextEntry.DisabledTextColor	"Light Gray"
 		TextEntry.DisabledBgColor	"Blank"
 		TextEntry.SelectedTextColor	"Light Gray"
 		TextEntry.SelectedBgColor	"Dark Blue"

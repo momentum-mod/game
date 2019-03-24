@@ -22,16 +22,15 @@ static void DrawReticle(const Vector &pos, float retsize);
 static MAKE_TOGGLE_CONVAR_C(mom_zone_edit, "0", FCVAR_CHEAT, "Toggle zone editing.\n", OnZoneEditingToggled);
 static MAKE_TOGGLE_CONVAR(mom_zone_ignorewarning, "0", FCVAR_CHEAT,
                           "Lets you create zones despite map already having start and end.\n");
-static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
+static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 1.0f, true, 64.0f);
 static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
                             "The zone type that will be created when using mom_zone_mark/create. 'auto' creates a "
                             "start zone unless one already exists, in which case an end zone is created.f\n");
 static ConVar mom_zone_track("mom_zone_track", "0", FCVAR_CHEAT,
-                             "What track to create the zone for. 0 = main track, >0 = bonus", true, 0, false, 0);
-static ConVar mom_zone_auto_make_stage(
-    "mom_zone_auto_make_stage", "0", FCVAR_CHEAT,
-    "Whether the 'auto' setting for mom_zone_type should create a stage zone or end zone (after initial start zone)",
-    true, 0, true, 1);
+                             "What track to create the zone for. 0 = main track, >0 = bonus", true, 0, true, MAX_TRACKS);
+static MAKE_TOGGLE_CONVAR(mom_zone_auto_make_stage, "0", FCVAR_CHEAT,
+                          "Whether the 'auto' setting for mom_zone_type should create a stage zone or end zone (after initial start zone)");
+
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
                                             "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
                                             0, true, 1);
@@ -40,8 +39,7 @@ static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT,
                                  false, 0);
 static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT,
                                                "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
-// static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one."
-// );
+
 static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
 static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT,
                                     "If 1, use a new point-based zoning method (by Mehis).\n", OnZoningMethodChanged);
