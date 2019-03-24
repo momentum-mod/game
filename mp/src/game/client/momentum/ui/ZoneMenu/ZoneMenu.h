@@ -33,6 +33,10 @@ protected:
     vgui::Button *m_pCancelZoneButton;
     vgui::Button *m_pSaveZonesButton;
 
+    // Track number
+    vgui::Label *m_pTrackNumberLabel;
+    vgui::CvarTextEntry *m_pTrackNumberEntry;
+
     // Zone type
     vgui::Label    *m_pZoneTypeLabel;
     vgui::ComboBox *m_pZoneTypeCombo;
