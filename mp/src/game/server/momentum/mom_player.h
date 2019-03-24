@@ -5,6 +5,7 @@
 #include "GameEventListener.h"
 #include "run/mom_run_entity.h"
 
+class CBaseMomentumTrigger;
 class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
@@ -193,8 +194,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Removes all onehops
     void RemoveAllOnehops();
 
-    void SetCurrentProgressTrigger(CTriggerProgress *pCheckpoint) { m_CurrentProgress.Set(pCheckpoint); }
-    CTriggerProgress *GetCurrentProgressTrigger() const { return m_CurrentProgress.Get(); }
+    void SetCurrentProgressTrigger(CBaseMomentumTrigger *pTrigger);
+    CBaseMomentumTrigger* GetCurrentProgressTrigger() const;
+    int m_iProgressNumber; // Used by actual progress triggers for filtering
+
+    void SetCurrentZoneTrigger(CTriggerZone *pZone) { return m_CurrentZoneTrigger.Set(pZone); }
+    CTriggerZone *GetCurrentZoneTrigger() const { return m_CurrentZoneTrigger.Get(); }
 
     void DoMuzzleFlash() OVERRIDE;
     void PostThink() OVERRIDE;
@@ -236,7 +241,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;
-    CHandle<CTriggerProgress> m_CurrentProgress;
+    CHandle<CBaseMomentumTrigger> m_CurrentProgress;
+    CHandle<CTriggerZone> m_CurrentZoneTrigger;
 
     // for detecting bhop
     friend class CMomentumGameMovement;

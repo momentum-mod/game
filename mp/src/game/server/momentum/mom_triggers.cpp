@@ -494,8 +494,7 @@ END_DATADESC()
 bool CFilterProgress::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pEntity);
-    return (pPlayer && pPlayer->GetCurrentProgressTrigger() &&
-            pPlayer->GetCurrentProgressTrigger()->GetProgressNumber() >= m_iProgressNum);
+    return (pPlayer && pPlayer->m_iProgressNumber >= m_iProgressNum);
 }
 //----------------------------------------------------------------------------------------------
 

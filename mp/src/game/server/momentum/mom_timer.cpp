@@ -30,7 +30,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 CMomentumTimer::CMomentumTimer(const char *pName)
     : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
-      m_hCurrentZone(nullptr), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
     for (int i = 0; i < MAX_TRACKS; i++)
     {
@@ -64,7 +64,6 @@ void CMomentumTimer::LevelShutdownPreEntity()
     {
         SetStartTrigger(i, nullptr);
     }
-    SetCurrentZone(nullptr);
 }
 
 void CMomentumTimer::FrameUpdatePreEntityThink()
@@ -352,10 +351,6 @@ void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
     m_hStartTriggers[track] = pTrigger;
 }
 
-void CMomentumTimer::SetCurrentZone(CTriggerZone *pTrigger) { m_hCurrentZone = pTrigger; }
-
-int CMomentumTimer::GetCurrentZoneNumber() const { return m_hCurrentZone.Get() && m_hCurrentZone->GetZoneNumber(); }
-
 static int GetNumEntitiesByClassname(const char *classname)
 {
     int count = 0;
@@ -420,7 +415,7 @@ void CMomentumTimer::SetRunning(CMomentumPlayer *pPlayer, bool isRunning)
     if (pPlayer)
         pPlayer->m_Data.m_bTimerRunning = isRunning;
 }
-void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType)
+void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType, const int zoneNumber)
 {
     if (!pPlayer)
         return;
@@ -447,7 +442,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
 
     DevLog("Time offset was %f seconds (%s)\n", endTriggerTraceEnum.GetOffset(),
            zoneType == ZONE_TYPE_START ? "EndTouch" : "StartTouch");
-    SetIntervalOffset(GetCurrentZoneNumber(), endTriggerTraceEnum.GetOffset());
+    SetIntervalOffset(zoneNumber, endTriggerTraceEnum.GetOffset());
 }
 
 // override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
@@ -698,13 +693,15 @@ CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally
 CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current stage.\n",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
-    CTriggerZone *pStage = g_pMomentumTimer->GetCurrentZone();
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pStage && pPlayer && pPlayer->AllowUserTeleports())
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer && pPlayer->AllowUserTeleports())
     {
-        // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player
-        // there
-        pPlayer->Teleport(&pStage->WorldSpaceCenter(), nullptr, &vec3_origin);
+        const auto pCurrentZone = pPlayer->GetCurrentZoneTrigger();
+        // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
+        if (pCurrentZone)
+            pPlayer->Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
+        else
+            Warning("Cannot reset, you have no current zone!\n");
     }
 }
 

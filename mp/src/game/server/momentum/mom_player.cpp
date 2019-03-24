@@ -128,7 +128,7 @@ static CMomentumPlayer *s_pPlayer = nullptr;
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f),
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
-      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
+      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -550,6 +550,22 @@ void CMomentumPlayer::RemoveAllOnehops()
     m_vecOnehops.RemoveAll();
 }
 
+void CMomentumPlayer::SetCurrentProgressTrigger(CBaseMomentumTrigger *pTrigger)
+{
+    const auto pProgressCheck = dynamic_cast<CTriggerProgress*>(pTrigger);
+    if (pProgressCheck)
+        m_iProgressNumber = pProgressCheck->GetProgressNumber();
+    else
+        m_iProgressNumber = -1;
+
+    m_CurrentProgress.Set(pTrigger);
+}
+
+CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const
+{
+    return m_CurrentProgress.Get();
+}
+
 void CMomentumPlayer::DoMuzzleFlash()
 {
     // Don't do the muzzle flash for the paint gun
@@ -677,7 +693,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
     {
     case ZONE_TYPE_START:
         {
-            CTriggerTimerStart *pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
+            const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
             // First of all, hard-cap speed, regardless of re-entry
             if (GetAbsVelocity().IsLengthGreaterThan(300.0f))
@@ -689,7 +705,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             m_bShouldLimitPlayerSpeed = pStartTrigger->IsLimitingSpeed();
 
             // Reset timer when we enter start zone
-            g_pMomentumTimer->SetCurrentZone(pStartTrigger);
+            SetCurrentZoneTrigger(pStartTrigger);
+            SetCurrentProgressTrigger(pStartTrigger);
             g_pMomentumTimer->Reset(this);
         }
         break;
@@ -715,7 +732,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 else
                 {
                     DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                    g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP);
+                    g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
                 }
 
                 // This is needed for the final stage
@@ -750,14 +767,15 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
     case ZONE_TYPE_STAGE:
         {
             const auto pStageTrigger = static_cast<CTriggerStage *>(pTrigger);
-            g_pMomentumTimer->SetCurrentZone(pStageTrigger);
+            SetCurrentProgressTrigger(pStageTrigger);
+            SetCurrentZoneTrigger(pStageTrigger);
 
             if (g_pMomentumTimer->IsRunning())
             {
                 const int zoneNum = pTrigger->GetZoneNumber();
                 m_RunStats.SetZoneExitSpeed(zoneNum - 1, GetLocalVelocity().Length(),
                                             GetLocalVelocity().Length2D());
-                g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP);
+                g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
                 const float fCurrentZoneEnterTime = g_pMomentumTimer->CalculateStageTime(zoneNum);
                 m_RunStats.SetZoneEnterTime(zoneNum, fCurrentZoneEnterTime);
                 m_RunStats.SetZoneTime(zoneNum - 1, fCurrentZoneEnterTime -
@@ -785,7 +803,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_CHECKPOINT:
             break;
         case ZONE_TYPE_START:
-            g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START);
+            g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
             g_pMomentumTimer->TryStart(this, true);
             m_bShouldLimitPlayerSpeed = false;
             // No break here, we want to fall through; this handles both the start and stage triggers
