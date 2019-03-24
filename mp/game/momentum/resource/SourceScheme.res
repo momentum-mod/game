@@ -126,6 +126,8 @@ Scheme
 
 		ProgressBar.FgColor				"White"
 		ProgressBar.BgColor				"MOM.Panel.Bg"
+        ProgressBar.ProgressTextColor   "White"
+        ProgressBar.ProgressTextFont    "DefaultSmall"
 
         PropertyDialog.ButtonFont   "Default"
 
