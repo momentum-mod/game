@@ -618,15 +618,15 @@ CON_COMMAND(mom_start_mark_clear,
 CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is main track).\n",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
-    int track = TRACK_MAIN;
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer || !pPlayer->AllowUserTeleports())
+        return;
+
+    int track = pPlayer->m_Data.m_iCurrentTrack;
     if (args.ArgC() > 1)
     {
         track = Q_atoi(args[1]);
     }
-
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer || !pPlayer->AllowUserTeleports())
-        return;
 
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
@@ -673,22 +673,19 @@ CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current 
 }
 
 CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n"
-              "Usage: mom_stage_tele <stage> [track]\n",
+              "Usage: mom_stage_tele <stage> [track]\nThe default track is the current track the player is on.",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
     CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     const Vector *pVec = nullptr;
     const QAngle *pAng = nullptr;
-    if (pPlayer && args.ArgC() >= 2)
+    if (pPlayer && pPlayer->AllowUserTeleports() && args.ArgC() >= 2)
     {
-        int track = TRACK_MAIN;
+        int track = pPlayer->m_Data.m_iCurrentTrack;
         if (args.ArgC() > 2)
         {
             track = Q_atoi(args[2]);
         }
-
-        if (!pPlayer->AllowUserTeleports())
-            return;
 
         // We get the desired index from the command (Remember that for us, args are 1 indexed)
         const auto desiredIndex = Q_atoi(args[1]);
