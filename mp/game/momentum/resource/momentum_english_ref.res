@@ -404,12 +404,9 @@
         "MessageBox_Cancel" "Cancel"
         "MOM_IUnderstand" "I understand!"
 
-        // Prealpha
-        "MOM_StartupMsg_Prealpha_Title" "Momentum Mod Pre-Alpha"
-        "MOM_StartupMsg_Prealpha" "PLEASE NOTE: You are playing the Momentum Mod PRE-Alpha!\nThis version is primarily for testing features for maps and giving feedback on how things look and feel.\nThere are missing features which are soon to be implemented. Everything is subject to change!"
         // Alpha
         "MOM_StartupMsg_Alpha_Title" "Momentum Mod Alpha"
-        "MOM_StartupMsg_Alpha" "PLEASE NOTE: You are playing the Momentum Mod ALPHA!\nThis version is for public feedback, so tell your friends to try it out! We want as much feedback as we can get, so please feel free to break things,\n and tell us how you broke them with the "Send Feedback" panel!"
+        "MOM_StartupMsg_Alpha" "PLEASE NOTE: You are playing the Momentum Mod ALPHA!\nEverything you are about to play is subject to change! Please give us feedback in the discord channel!"
         // Beta
         "MOM_StartupMsg_Beta_Title" "Momentum Mod Beta"
         "MOM_StartupMsg_Beta" "PLEASE NOTE: You are playing the Momentum Mod BETA!\nThis version is for fine-tuning everything before we officially release.\nSimilar to the Alpha release, we want as much information as possible regarding bugs and other broken things. \nTry to break things, and let us know how you did it!"
