@@ -2,14 +2,8 @@
 
 #include "mom_shareddefs.h"
 
-class CBaseMomZoneTrigger;
 struct SavedLocation_t;
-class CBaseMomentumTrigger;
 class CTriggerTimerStart;
-class CTriggerCheckpoint;
-class CTriggerStage;
-class CTriggerZone;
-class CTriggerTimerStop;
 class CMomentumPlayer;
 
 class CMomentumTimer : public CAutoGameSystemPerFrame
@@ -50,12 +44,9 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
     CTriggerTimerStart *GetStartTrigger(int track) const { return m_hStartTriggers[track]; }
-    CTriggerZone *GetCurrentZone() const { return m_hCurrentZone.Get(); }
 
     // Sets the given trigger as the start trigger for it's associated track
     void SetStartTrigger(int track, CTriggerTimerStart *pTrigger);
-    void SetCurrentZone(CTriggerZone *pTrigger);
-    int GetCurrentZoneNumber() const;
 
     // Calculates the stage count
     // Stores the result on m_iStageCount
@@ -102,7 +93,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void SetShouldUseStartZoneOffset(bool use) { m_bShouldUseStartZoneOffset = use; }
 
     // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
-    void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
+    void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, int zoneType, int iZoneNumber);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
 
     void OnPlayerSpawn(CMomentumPlayer *pPlayer);
@@ -125,7 +116,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     bool m_bMapIsLinear;
 
     CHandle<CTriggerTimerStart> m_hStartTriggers[MAX_TRACKS];
-    CHandle<CTriggerZone> m_hCurrentZone;
 
     SavedLocation_t *m_pStartZoneMarks[MAX_TRACKS];
 
