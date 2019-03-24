@@ -37,7 +37,7 @@ CHudVersionInfo::CHudVersionInfo(const char *pElementName) : CHudElement(pElemen
 void CHudVersionInfo::VidInit()
 {
     KeyValuesAD loc("Version");
-    loc->SetWString("verLabel", g_pVGuiLocalize->Find("#MOM_StartupMsg_Prealpha_Title"));
+    loc->SetWString("verLabel", g_pVGuiLocalize->Find("#MOM_StartupMsg_Alpha_Title"));
     loc->SetString("verNum", MOM_CURRENT_VERSION);
     SetText(CConstructLocalizedString(L"%verLabel% %verNum%", (KeyValues*)loc));
     InvalidateLayout();

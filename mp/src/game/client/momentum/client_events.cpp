@@ -43,9 +43,9 @@ void CMOMClientEvents::PostInit()
     con_enable.SetValue(true);
 
     // Version warning
-    // MOM_TODO: Change this once we hit Alpha/Beta
+    // MOM_TODO: Change this once we hit Beta
     // MOM_CURRENT_VERSION
-    messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Prealpha_Title", "#MOM_StartupMsg_Prealpha", "mom_toggle_versionwarn", "#MOM_IUnderstand");
+    messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "#MOM_StartupMsg_Alpha", "mom_toggle_versionwarn", "#MOM_IUnderstand");
     
     if (!SteamHTTP() || !SteamUtils())
     {
