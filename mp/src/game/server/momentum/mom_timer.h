@@ -43,7 +43,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
-    CTriggerTimerStart *GetStartTrigger(int track) const { return m_hStartTriggers[track]; }
+    CTriggerTimerStart *GetStartTrigger(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_hStartTriggers[track] : nullptr; }
 
     // Sets the given trigger as the start trigger for it's associated track
     void SetStartTrigger(int track, CTriggerTimerStart *pTrigger);
@@ -83,10 +83,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     void SetGameModeConVars();
 
-    void CreateStartMark();
-    SavedLocation_t *GetStartMark(int track) const { return m_pStartZoneMarks[track]; }
-    void ClearStartMark(int track);
-
     int GetTrackNumber() const { return m_iTrackNumber; }
 
     bool ShouldUseStartZoneOffset() const { return m_bShouldUseStartZoneOffset; }
@@ -116,8 +112,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     bool m_bMapIsLinear;
 
     CHandle<CTriggerTimerStart> m_hStartTriggers[MAX_TRACKS];
-
-    SavedLocation_t *m_pStartZoneMarks[MAX_TRACKS];
 
     int m_iTrackNumber;
 
