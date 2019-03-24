@@ -5,6 +5,7 @@
 #include "GameEventListener.h"
 #include "run/mom_run_entity.h"
 
+struct SavedLocation_t;
 class CBaseMomentumTrigger;
 class CTriggerOnehop;
 class CTriggerProgress;
@@ -201,6 +202,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetCurrentZoneTrigger(CTriggerZone *pZone) { return m_CurrentZoneTrigger.Set(pZone); }
     CTriggerZone *GetCurrentZoneTrigger() const { return m_CurrentZoneTrigger.Get(); }
 
+    void CreateStartMark();
+    SavedLocation_t *GetStartMark(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_pStartZoneMarks[track] : nullptr; }
+    void ClearStartMark(int track);
+
     void DoMuzzleFlash() OVERRIDE;
     void PostThink() OVERRIDE;
 
@@ -243,6 +248,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CUtlVector<CTriggerOnehop*> m_vecOnehops;
     CHandle<CBaseMomentumTrigger> m_CurrentProgress;
     CHandle<CTriggerZone> m_CurrentZoneTrigger;
+
+    SavedLocation_t *m_pStartZoneMarks[MAX_TRACKS];
 
     // for detecting bhop
     friend class CMomentumGameMovement;

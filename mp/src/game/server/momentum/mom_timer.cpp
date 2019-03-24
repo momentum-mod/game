@@ -32,10 +32,7 @@ CMomentumTimer::CMomentumTimer(const char *pName)
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
       m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
-    for (int i = 0; i < MAX_TRACKS; i++)
-    {
-        m_pStartZoneMarks[i] = nullptr;
-    }
+
 }
 
 void CMomentumTimer::PostInit()
@@ -48,10 +45,6 @@ void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
-    for (int i = 0; i < MAX_TRACKS; i++)
-    {
-        ClearStartMark(i);
-    }
     DispatchMapInfo();
 }
 
@@ -511,42 +504,6 @@ void CMomentumTimer::SetGameModeConVars()
            sv_airaccelerate.GetInt(), sv_maxspeed.GetInt());
 }
 
-void CMomentumTimer::CreateStartMark()
-{
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer)
-        return;
-
-    for (int i = 0; i < MAX_TRACKS; i++)
-    {
-        if (m_hStartTriggers[i].Get() && m_hStartTriggers[i]->IsTouching(pPlayer))
-        {
-            // Rid the previous one
-            ClearStartMark(i);
-
-            m_pStartZoneMarks[i] = g_pMOMSavelocSystem->CreateSaveloc();
-            if (m_pStartZoneMarks[i])
-            {
-                m_pStartZoneMarks[i]->vel = vec3_origin; // Rid the velocity
-                DevLog("Successfully created a starting mark!\n");
-            }
-            else
-            {
-                Warning("Could not create the start mark for some reason!\n");
-            }
-
-            break;
-        }
-    }
-}
-
-void CMomentumTimer::ClearStartMark(int track)
-{
-    if (m_pStartZoneMarks[track])
-        delete m_pStartZoneMarks[track];
-    m_pStartZoneMarks[track] = nullptr;
-}
-
 // Practice mode that stops the timer and allows the player to noclip.
 void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {
@@ -631,22 +588,31 @@ CON_COMMAND_F(
     }
 }
 
-CON_COMMAND(mom_mark_start,
+CON_COMMAND(mom_start_mark_create,
             "Marks a starting point inside the start trigger for a more customized starting location.\n")
 {
-    g_pMomentumTimer->CreateStartMark();
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer)
+    {
+        pPlayer->CreateStartMark();
+    }
 }
 
-CON_COMMAND(mom_mark_start_clear,
-            "Clears the saved start location, if there is one for the specified track (default is main track).\n")
+CON_COMMAND(mom_start_mark_clear,
+            "Clears the saved start location for your current track, if there is one.\n"
+            "You may also specify the track number to clear as the parameter; \"mom_start_mark_clear 2\" clears track 2's start mark.")
 {
-    int track = TRACK_MAIN;
-    if (args.ArgC() > 1)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer)
     {
-        track = Q_atoi(args[1]);
-    }
+        int track = pPlayer->m_Data.m_iCurrentTrack;
+        if (args.ArgC() > 1)
+        {
+            track = Q_atoi(args[1]);
+        }
 
-    g_pMomentumTimer->ClearStartMark(track);
+        pPlayer->ClearStartMark(track);
+    }
 }
 
 CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is main track).\n",
@@ -658,15 +624,14 @@ CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally
         track = Q_atoi(args[1]);
     }
 
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer || !pPlayer->AllowUserTeleports())
         return;
-    pPlayer->m_Data.m_iCurrentTrack = track;
 
-    CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger(track);
-    if (start)
+    const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
+    if (pStart)
     {
-        SavedLocation_t *pStartMark = g_pMomentumTimer->GetStartMark(track);
+        const auto pStartMark = pPlayer->GetStartMark(track);
         if (pStartMark)
         {
             pStartMark->Teleport(pPlayer);
@@ -674,17 +639,19 @@ CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally
         else
         {
             // Don't set angles if still in start zone.
-            QAngle ang = start->GetLookAngles();
-            pPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+            QAngle ang = pStart->GetLookAngles();
+            pPlayer->Teleport(&pStart->WorldSpaceCenter(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
         }
+
+        pPlayer->m_Data.m_iCurrentTrack = track;
         pPlayer->ResetRunStats();
     }
     else
     {
-        CBaseEntity *startPoint = pPlayer->EntSelectSpawnPoint();
-        if (startPoint)
+        const auto pStartPoint = pPlayer->EntSelectSpawnPoint();
+        if (pStartPoint)
         {
-            pPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), &vec3_origin);
+            pPlayer->Teleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
             pPlayer->ResetRunStats();
         }
     }
@@ -723,18 +690,16 @@ CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops 
         if (!pPlayer->AllowUserTeleports())
             return;
 
-        pPlayer->m_Data.m_iCurrentTrack = track;
-
-        // We get the desried index from the command (Remember that for us, args are 1 indexed)
-        int desiredIndex = Q_atoi(args[1]);
+        // We get the desired index from the command (Remember that for us, args are 1 indexed)
+        const auto desiredIndex = Q_atoi(args[1]);
         if (desiredIndex == 1)
         {
             // Index 1 is the start. If the timer has a mark, we use it
-            SavedLocation_t *startMark = g_pMomentumTimer->GetStartMark(track);
-            if (startMark)
+            const auto pStartMark = pPlayer->GetStartMark(track);
+            if (pStartMark)
             {
-                pVec = &startMark->pos;
-                pAng = &startMark->ang;
+                pVec = &pStartMark->pos;
+                pAng = &pStartMark->ang;
             }
             else
             {
@@ -743,6 +708,12 @@ CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops 
                 if (pEnt)
                 {
                     pVec = &pEnt->GetAbsOrigin();
+
+                    if (track != pPlayer->m_Data.m_iCurrentTrack)
+                    {
+                        pPlayer->ResetRunStats();
+                        pPlayer->m_Data.m_iCurrentTrack = track;
+                    }
                 }
             }
         }
