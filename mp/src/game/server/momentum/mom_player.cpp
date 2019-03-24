@@ -155,6 +155,11 @@ CMomentumPlayer::CMomentumPlayer()
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
     ListenForGameEvent("mapfinished_panel_closed");
+
+    for (int i = 0; i < MAX_TRACKS; i++)
+    {
+        m_pStartZoneMarks[i] = nullptr;
+    }
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -329,6 +334,11 @@ void CMomentumPlayer::Spawn()
         m_bPreventPlayerBhop = false;
         m_iLandTick = 0;
         ResetRunStats();
+
+        for (int i = 0; i < MAX_TRACKS; i++)
+        {
+            ClearStartMark(i);
+        }
     }
 
     RegisterThinkContext("THINK_EVERY_TICK");
@@ -564,6 +574,36 @@ void CMomentumPlayer::SetCurrentProgressTrigger(CBaseMomentumTrigger *pTrigger)
 CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const
 {
     return m_CurrentProgress.Get();
+}
+
+void CMomentumPlayer::CreateStartMark()
+{
+    const auto pStartTrigger = g_pMomentumTimer->GetStartTrigger(m_Data.m_iCurrentTrack);
+    if (pStartTrigger && pStartTrigger->IsTouching(this))
+    {
+        ClearStartMark(m_Data.m_iCurrentTrack);
+
+        m_pStartZoneMarks[m_Data.m_iCurrentTrack] = g_pMOMSavelocSystem->CreateSaveloc();
+        if (m_pStartZoneMarks[m_Data.m_iCurrentTrack])
+        {
+            m_pStartZoneMarks[m_Data.m_iCurrentTrack]->vel = vec3_origin; // Rid the velocity
+            DevLog("Successfully created a starting mark!\n");
+        }
+        else
+        {
+            Warning("Could not create the start mark for some reason!\n");
+        }
+    }
+}
+
+void CMomentumPlayer::ClearStartMark(int track)
+{
+    if (track >= 0 && track < MAX_TRACKS)
+    {
+        if (m_pStartZoneMarks[track])
+            delete m_pStartZoneMarks[track];
+        m_pStartZoneMarks[track] = nullptr;
+    }
 }
 
 void CMomentumPlayer::DoMuzzleFlash()
