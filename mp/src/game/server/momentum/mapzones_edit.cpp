@@ -650,6 +650,11 @@ void OnZoneEditingToggled(IConVar *var, const char *pOldVal, float fOldVal)
     {
         g_MomZoneEdit.OnCancel();
     }
+    else
+    {
+        // Player has entered zone editing mode, let's stop their timer
+        g_pMomentumTimer->Stop(CMomentumPlayer::GetLocalPlayer());
+    }
 }
 
 static int GetZoneTypeToCreate()
