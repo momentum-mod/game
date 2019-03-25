@@ -86,17 +86,22 @@ void CMomentumGhostBaseEntity::UnHideGhost()
     }
 }
 
-void CMomentumGhostBaseEntity::ToggleButtons(int iButtonFlags, bool bEnable)
+void CMomentumGhostBaseEntity::SetButtonsEnabled(int iButtonFlags, bool bEnable)
 {
     if (bEnable)
         m_iDisabledButtons |= iButtonFlags;
-    else
+    else 
         m_iDisabledButtons &= ~iButtonFlags;
 }
 
-void CMomentumGhostBaseEntity::ToggleBhop(bool bEnable)
+void CMomentumGhostBaseEntity::SetBhopEnabled(bool bEnable)
 {
     m_bBhopDisabled = !bEnable;
+}
+
+bool CMomentumGhostBaseEntity::GetBhopEnabled() const
+{
+    return !m_bBhopDisabled;
 }
 
 void CMomentumGhostBaseEntity::Think()
