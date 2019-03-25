@@ -1249,11 +1249,7 @@ void CMomentumGameMovement::FullWalkMove()
         // Was jump button pressed?
         if (mv->m_nButtons & IN_JUMP)
         {
-            // If we jump, then we avoid to get stuck to ground with sliding stuffs otherwhise we can't really jump.
-            // We will just wait for the next starttouch of the slide trigger.
-            // Causes issues with the touchcount, so we leave it like this way.
-            //if (CheckJumpButton())
-               //m_pPlayer->m_SrvData.m_SlideData.Reset();
+            CheckJumpButton();
         }
         else
         {
@@ -1285,7 +1281,7 @@ void CMomentumGameMovement::FullWalkMove()
             mv->m_nOldButtons &= ~IN_JUMP;
         }
 
-        // Fricion is handled before we add in any base velocity. That way, if we are on a conveyor,
+        // Friction is handled before we add in any base velocity. That way, if we are on a conveyor,
         //  we don't slow when standing still, relative to the conveyor.
         if (player->GetGroundEntity() != nullptr)
         {
@@ -1319,7 +1315,7 @@ void CMomentumGameMovement::FullWalkMove()
 
         if (bIsSliding)
         {
-            // Fixes some inaccuraces while going up slopes.
+            // Fixes some inaccuracies while going up slopes.
             // This should fix also the issue by being stuck on them.
 
             Vector vecVelocity = mv->m_vecVelocity;
