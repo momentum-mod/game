@@ -69,13 +69,6 @@
     ]
 ]
 
-@BaseClass base(TeleTrigger) = HopTrigger
-[
-    hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this (in seconds), teleport them to the most recent checkpoint."
-	//being worked
-	//holdteleport(float) : "Time before reset teleport delay" : 1 : "If the player had activated previously the teleport, deactivate it by this amount of time (seconds)."
-]
-
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
     "The entity can have its Angles and Velocity reset by boolean settings." 
 [
@@ -128,23 +121,30 @@
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport_progress : "Trigger that teleports the player to their last touched trigger_momentum_progress." []
 
-@SolidClass base(MomentumTrigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." 
+@SolidClass base(MomentumTrigger) = trigger_momentum_resetonehop : "Trigger that resets all of the onehop triggers the player has touched." 
 [
 	output OnResetOnehops(void) : "Fires when all hops are being reset."
 ]
 
-@SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that only allows for one hop."
+@BaseClass base(TeleTrigger) = HopTrigger
+[
+    hold(float) : "Hold time (seconds)" : 0.5 : "If the player is in this trigger for longer than this (in seconds), teleport them to the most recent progress trigger."
+	//being worked
+	//holdteleport(float) : "Time before reset teleport delay" : 1 : "If the player had activated previously the teleport, deactivate it by this amount of time (seconds)."
+]
+
+@SolidClass base(HopTrigger) = trigger_momentum_multihop : "Trigger that allows for multiple hops inside of it, and teleports the player if they stay inside for longer than the hold time." []
+
+@SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that teleports the player after only one entry, or if they stay inside for longer than the hold time."
 [
 	spawnflags(flags) =
 	[	
 		32768: "Reset hop state if player hops onto another different onehop" : 1
 	]
 	// Features being worked
-	output OnHopNoLongerJumpable(void) : "Fires when the hop is no longer jumpable"
+	output OnHopNoLongerJumpable(void) : "Fires when this trigger is no longer jumpable by the activator."
 	//output OnResetOnehop(void) : "Fires when the hop is being reset."
 ]
-
-@SolidClass base(HopTrigger) = trigger_momentum_multihop : "Trigger that allows for multiple hops, as long as the player hops." []
 
 @SolidClass base(Trigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
 [

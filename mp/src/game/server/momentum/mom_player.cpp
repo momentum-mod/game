@@ -554,7 +554,9 @@ void CMomentumPlayer::RemoveAllOnehops()
 {
     FOR_EACH_VEC(m_vecOnehops, i)
     {
-        m_vecOnehops[i]->SethopNoLongerJumpableFired(false);
+        const auto pTrigger = m_vecOnehops[i];
+        if (pTrigger)
+            pTrigger->SetNoLongerJumpableFired(false);
     }
 
     m_vecOnehops.RemoveAll();
@@ -569,6 +571,8 @@ void CMomentumPlayer::SetCurrentProgressTrigger(CBaseMomentumTrigger *pTrigger)
         m_iProgressNumber = -1;
 
     m_CurrentProgress.Set(pTrigger);
+
+    RemoveAllOnehops();
 }
 
 CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const

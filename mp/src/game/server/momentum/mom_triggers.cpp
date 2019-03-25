@@ -437,10 +437,10 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
 {
     if (pOther)
     {
-        if (!m_pDestinationEnt)
+        if (m_hDestinationEnt.Get())
         {
             if (m_target != NULL_STRING)
-                m_pDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+                m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
             else
             {
                 DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
@@ -448,20 +448,20 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
             }
         }
 
-        if (!PassesTriggerFilters(pOther))
-            return;
-
-        if (m_pDestinationEnt) // ensuring not null
-        {
-            Vector tmp = m_pDestinationEnt->GetAbsOrigin();
-            // make origin adjustments. (origin in center, not at feet)
-            tmp.z -= pOther->WorldAlignMins().z;
-
-            pOther->Teleport(&tmp, m_bResetAngles ? &m_pDestinationEnt->GetAbsAngles() : nullptr,
-                             m_bResetVelocity ? &vec3_origin : nullptr);
-            AfterTeleport();
-        }
+        DoTeleport(m_hDestinationEnt.Get(), pOther);
     }
+}
+
+bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport)
+{
+    if (!(pTeleportTo && pEntToTeleport))
+        return false;
+
+    pEntToTeleport->Teleport(&pTeleportTo->GetAbsOrigin(),
+                             m_bResetAngles ? &pTeleportTo->GetAbsAngles() : nullptr,
+                     m_bResetVelocity ? &vec3_origin : nullptr);
+    AfterTeleport(pEntToTeleport);
+    return true;
 }
 
 //---------- CTriggerProgress ----------------------------------------------------------------
@@ -480,7 +480,6 @@ void CTriggerProgress::OnStartTouch(CBaseEntity *pOther)
     {
         m_ResetOnehops.FireOutput(pPlayer, this);
         pPlayer->SetCurrentProgressTrigger(this);
-        pPlayer->RemoveAllOnehops();
     }
 }
 
@@ -513,61 +512,98 @@ void CTriggerTeleportProgress::OnStartTouch(CBaseEntity *pOther)
 
 //-----------------------------------------------------------------------------------------------
 
+//---------- CTriggerMultihop -------------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(trigger_momentum_multihop, CTriggerMultihop);
+
+BEGIN_DATADESC(CTriggerMultihop)
+    DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
+END_DATADESC()
+
+CTriggerMultihop::CTriggerMultihop() : m_fMaxHoldSeconds(0.5f)
+{
+    SetDefLessFunc(m_mapOnStartTouchedTimes);
+}
+
+void CTriggerMultihop::OnStartTouch(CBaseEntity *pOther)
+{
+    CBaseMomentumTrigger::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        m_mapOnStartTouchedTimes.InsertOrReplace(pOther->entindex(), gpGlobals->curtime);
+        SetNextThink(gpGlobals->curtime);
+    }
+}
+
+void CTriggerMultihop::OnEndTouch(CBaseEntity *pOther)
+{
+    CBaseMomentumTrigger::OnEndTouch(pOther);
+
+    m_mapOnStartTouchedTimes.Remove(pOther->entindex());
+}
+
+void CTriggerMultihop::Think()
+{
+    if (m_hTouchingEntities.Count())
+    {
+        FOR_EACH_VEC_BACK(m_hTouchingEntities, i)
+        {
+            if (m_hTouchingEntities[i]->IsPlayer())
+            {
+                const auto pPlayer = static_cast<CMomentumPlayer*>(m_hTouchingEntities[i].Get());
+                if (pPlayer && m_mapOnStartTouchedTimes.IsValidIndex(m_mapOnStartTouchedTimes.Find(pPlayer->entindex())))
+                {
+                    const auto fEnterTime = m_mapOnStartTouchedTimes[m_mapOnStartTouchedTimes.Find(pPlayer->entindex())];
+                    if (gpGlobals->curtime - fEnterTime >= m_fMaxHoldSeconds)
+                    {
+                        DoTeleport(pPlayer->GetCurrentProgressTrigger(), pPlayer);
+                    }
+                }
+            }
+        }
+
+        SetNextThink(gpGlobals->curtime);
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+}
+
+//-----------------------------------------------------------------------------------------------
+
 //------------ CTriggerOnehop -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_onehop, CTriggerOnehop);
 
 BEGIN_DATADESC(CTriggerOnehop)
-    DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
     DEFINE_OUTPUT(m_hopNoLongerJumpable, "OnHopNoLongerJumpable")
 END_DATADESC()
 
-CTriggerOnehop::CTriggerOnehop() : m_fOnStartTouchedTime(-1.0), m_fMaxHoldSeconds(1){};
+CTriggerOnehop::CTriggerOnehop() : m_bhopNoLongerJumpableFired(false)
+{
+}
 
 void CTriggerOnehop::OnStartTouch(CBaseEntity *pOther)
 {
-    // Needed for the Think() function of this class
-    CBaseMomentumTrigger::OnStartTouch(pOther);
-
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        m_fOnStartTouchedTime = gpGlobals->realtime;
         if (pPlayer->FindOnehopOnList(this))
         {
-            SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
-            HandleTeleport(pPlayer); // Does the teleporting
+            DoTeleport(pPlayer->GetCurrentProgressTrigger(), pPlayer);
         }
         else
         {
             pPlayer->AddOnehop(this);
+
+            if (!m_bhopNoLongerJumpableFired)
+            {
+                m_hopNoLongerJumpable.FireOutput(pPlayer, this);
+                m_bhopNoLongerJumpableFired = true;
+            }
+
+            BaseClass::OnStartTouch(pOther);
         }
-    }
-}
-
-void CTriggerOnehop::Think()
-{
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && m_fOnStartTouchedTime > 0 && IsTouching(pPlayer) &&
-        gpGlobals->realtime - m_fOnStartTouchedTime >= m_fMaxHoldSeconds)
-    {
-        SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
-        HandleTeleport(pPlayer);
-
-        if (!m_bhopNoLongerJumpableFired)
-        {
-            m_hopNoLongerJumpable.FireOutput(pPlayer, this);
-            m_bhopNoLongerJumpableFired = true;
-        }
-    }
-}
-
-void CTriggerOnehop::OnEndTouch(CBaseEntity *pOther)
-{
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer)
-    {
-        m_hopNoLongerJumpable.FireOutput(pPlayer, this);
-        m_bhopNoLongerJumpableFired = true;
     }
 }
 
@@ -589,50 +625,6 @@ void CTriggerResetOnehop::OnStartTouch(CBaseEntity *pOther)
         m_ResetOnehops.FireOutput(pPlayer, this);
         pPlayer->RemoveAllOnehops();
     }
-}
-
-//-----------------------------------------------------------------------------------------------
-
-//---------- CTriggerMultihop -------------------------------------------------------------------
-LINK_ENTITY_TO_CLASS(trigger_momentum_multihop, CTriggerMultihop);
-
-BEGIN_DATADESC(CTriggerMultihop)
-    DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
-END_DATADESC()
-
-CTriggerMultihop::CTriggerMultihop() : m_fOnStartTouchedTime(0.0), m_fMaxHoldSeconds(1) {}
-
-void CTriggerMultihop::OnStartTouch(CBaseEntity *pOther)
-{
-    CBaseMomentumTrigger::OnStartTouch(pOther);
-    if (pOther->IsPlayer())
-    {
-        m_fOnStartTouchedTime = gpGlobals->realtime;
-    }
-}
-
-void CTriggerMultihop::OnEndTouch(CBaseEntity *pOther)
-{
-    // We don't want to keep checking for tp
-    m_fOnStartTouchedTime = -1.0f;
-    CBaseMomentumTrigger::OnEndTouch(pOther);
-}
-
-void CTriggerMultihop::Think()
-{
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && m_fOnStartTouchedTime > 0 && IsTouching(pPlayer) &&
-        gpGlobals->realtime - m_fOnStartTouchedTime >= m_fMaxHoldSeconds)
-    {
-        SetDestinationEnt(pPlayer->GetCurrentProgressTrigger());
-        HandleTeleport(pPlayer);
-    }
-}
-
-void CTriggerMultihop::AfterTeleport()
-{
-    m_fOnStartTouchedTime = -1.0f;
-    SetDestinationEnt(nullptr);
 }
 
 //-----------------------------------------------------------------------------------------------

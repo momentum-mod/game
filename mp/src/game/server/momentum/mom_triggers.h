@@ -267,21 +267,24 @@ public:
     void OnStartTouch(CBaseEntity *) OVERRIDE;
     void OnEndTouch(CBaseEntity *) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
-    void SetDestinationEnt(CBaseEntity *ent) { m_pDestinationEnt = ent; }
+    void SetDestinationEnt(CBaseEntity *ent) { m_hDestinationEnt.Set(ent); }
     bool ShouldStopPlayer() const { return m_bResetVelocity; }
     bool ShouldResetAngles() const { return m_bResetAngles; }
     void SetShouldStopPlayer(const bool newB) { m_bResetVelocity = newB; }
     void SetShouldResetAngles(const bool newB) { m_bResetAngles = newB; }
 
-    virtual void AfterTeleport() {}; // base class does nothing
-
-protected:
-    void HandleTeleport(CBaseEntity *);
+    // Default teleport method, uses the set destination target, if there is one.
+    void HandleTeleport(CBaseEntity *pOther);
+    // Actual teleport method where the pEntToTeleport is teleported to pTeleportTo
+    // True if the entity was teleported, else false
+    virtual bool DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport);
+    // After teleporting, do this code. Base class does nothing.
+    virtual void AfterTeleport(CBaseEntity *pEntTeleported) {};
 
 private:
     bool m_bResetVelocity;
     bool m_bResetAngles;
-    CBaseEntity *m_pDestinationEnt;
+    EHANDLE m_hDestinationEnt;
 };
 
 // CTriggerProgress, used by mappers for teleporting
@@ -327,33 +330,48 @@ class CTriggerTeleportProgress : public CTriggerMomentumTeleport
     void OnStartTouch(CBaseEntity *) OVERRIDE;
 };
 
-// CTriggerOnehop
-class CTriggerOnehop : public CTriggerMomentumTeleport
+// A trigger volume that allows multiple repeated entries (hops), but teleports the player
+// if they stay inside the trigger for a given period ("hold" time).
+class CTriggerMultihop : public CTriggerMomentumTeleport
+{
+public:
+    DECLARE_CLASS(CTriggerMultihop, CTriggerMomentumTeleport);
+    DECLARE_DATADESC();
+
+    CTriggerMultihop();
+
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
+    void Think() OVERRIDE;
+
+    virtual 
+
+    float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
+    void SetHoldTeleportTime(const float fHoldTime) { m_fMaxHoldSeconds = fHoldTime; }
+
+protected:
+    // The time that the player initially touched the trigger
+    CUtlMap<short, float> m_mapOnStartTouchedTimes;
+    // Seconds to hold before activating the teleport
+    float m_fMaxHoldSeconds;
+};
+
+// Onehop triggers are based on multihop but limit the player to only entering it
+// once, until the player reaches a stage/start/progress/resetonehop trigger.
+// Upon re-entry or staying inside the trigger past the hold time, the player is teleported 
+// to a valid progress trigger.
+class CTriggerOnehop : public CTriggerMultihop
 {
   public:
-    DECLARE_CLASS(CTriggerOnehop, CTriggerMomentumTeleport);
+    DECLARE_CLASS(CTriggerOnehop, CTriggerMultihop);
     DECLARE_DATADESC();
 
     CTriggerOnehop();
 
-  public:
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
-    float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
-    void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
-    void Think() OVERRIDE;
-    void OnEndTouch(CBaseEntity *) OVERRIDE;
-    void AfterTeleport() OVERRIDE
-    {
-        m_fOnStartTouchedTime = -1.0f;
-        SetDestinationEnt(nullptr);
-    }
+    void OnStartTouch(CBaseEntity *pEntity) OVERRIDE;
+    void SetNoLongerJumpableFired(bool bState) { m_bhopNoLongerJumpableFired = bState; }
 
-    void SethopNoLongerJumpableFired(bool bState) { m_bhopNoLongerJumpableFired = bState; }
   private:
-    // The time that the player initally touched the trigger
-    float m_fOnStartTouchedTime;
-    // Seconds to hold before activating the teleport
-    float m_fMaxHoldSeconds;
     // Fires the output when the player cannot go back to the trigger
     COutputEvent m_hopNoLongerJumpable;
     // Is m_hopNoLongerJumpable was already fired?
@@ -372,30 +390,6 @@ class CTriggerResetOnehop : public CBaseMomentumTrigger
   private:
     // Fires when it resets all one hops.
     COutputEvent m_ResetOnehops;
-};
-
-// CTriggerMultihop
-class CTriggerMultihop : public CTriggerMomentumTeleport
-{
-  public:
-    DECLARE_CLASS(CTriggerMultihop, CTriggerMomentumTeleport);
-    DECLARE_DATADESC();
-
-    CTriggerMultihop();
-
-  public:
-    void OnStartTouch(CBaseEntity *) OVERRIDE;
-    void OnEndTouch(CBaseEntity *) OVERRIDE;
-    float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
-    void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
-    void Think() OVERRIDE;
-    void AfterTeleport() OVERRIDE;
-
-  private:
-    // The time that the player initally touched the trigger. -1 if not checking for teleport
-    float m_fOnStartTouchedTime;
-    // Seconds to hold before activating the teleport
-    float m_fMaxHoldSeconds;
 };
 
 // CTriggerUserInput
