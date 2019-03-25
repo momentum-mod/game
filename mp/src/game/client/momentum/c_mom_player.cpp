@@ -59,22 +59,22 @@ C_MomentumPlayer *C_MomentumPlayer::GetLocalMomPlayer()
 
 CMomRunEntity *C_MomentumPlayer::GetCurrentUIEntity()
 {
-    return m_pSpecTarget.Get() ? m_pSpecTarget.Get() : this;
+    if (!m_hObserverTarget.Get())
+        m_pSpecTarget = nullptr;
+    else if (!m_pSpecTarget)
+        m_pSpecTarget = dynamic_cast<CMomRunEntity*>(m_hObserverTarget.Get());
+
+    return m_pSpecTarget ? m_pSpecTarget : this;
 }
 
 CMomRunEntityData *C_MomentumPlayer::GetCurrentUIEntData()
 {
-    return m_pSpecTarget.Get() ? m_pSpecTarget->GetRunEntData() : GetRunEntData();
+    return GetCurrentUIEntity()->GetRunEntData();
 }
 
 CMomRunStats *C_MomentumPlayer::GetCurrentUIEntStats()
 {
-    return m_pSpecTarget.Get() ? m_pSpecTarget->GetRunStats() : GetRunStats();
-}
-
-void C_MomentumPlayer::Spawn()
-{
-    SetNextClientThink(CLIENT_THINK_ALWAYS);
+    return GetCurrentUIEntity()->GetRunStats();
 }
 
 //-----------------------------------------------------------------------------
@@ -88,20 +88,8 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
     return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }
 
-void C_MomentumPlayer::ClientThink()
-{
-    SetNextClientThink(CLIENT_THINK_ALWAYS);
-
-    if (m_hObserverTarget.IsValid() && !m_pSpecTarget)
-    {
-        m_pSpecTarget = dynamic_cast<CMomRunEntity*>(m_hObserverTarget.Get());
-    }
-}
-
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
-    //SetNextClientThink(CLIENT_THINK_ALWAYS);
-
     BaseClass::OnDataChanged(type);
 
     UpdateVisibility();
@@ -122,8 +110,6 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
     // C_BaseEntity assumes we're networking the entity's angles, so pretend that it
     // networked the same value we already have.
     SetNetworkAngles(GetLocalAngles());
-
-    //SetNextClientThink(CLIENT_THINK_ALWAYS);
 
     BaseClass::PostDataUpdate(updateType);
 }
