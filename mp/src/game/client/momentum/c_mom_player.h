@@ -87,7 +87,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     bool m_duckUntilOnGround;
     float m_flStamina;
 
-    CMomRunEntity *m_pSpecTarget;
+    CHandle<CMomRunEntity> m_pSpecTarget;
 
     friend class CMomentumGameMovement;
 };
