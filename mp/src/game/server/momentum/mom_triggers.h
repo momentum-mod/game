@@ -344,8 +344,6 @@ public:
     void OnEndTouch(CBaseEntity *) OVERRIDE;
     void Think() OVERRIDE;
 
-    virtual 
-
     float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(const float fHoldTime) { m_fMaxHoldSeconds = fHoldTime; }
 
@@ -395,10 +393,18 @@ class CTriggerResetOnehop : public CBaseMomentumTrigger
 // CTriggerUserInput
 class CTriggerUserInput : public CBaseMomentumTrigger
 {
+public:
     DECLARE_CLASS(CTriggerUserInput, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
-  public:
+    CTriggerUserInput();
+    void Spawn() OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
+    void Think() OVERRIDE;
+
+  private:
+    void CheckEnt(CBaseEntity *pOther);
+
     enum Key
     {
         KEY_FORWARD = 0,
@@ -411,10 +417,6 @@ class CTriggerUserInput : public CBaseMomentumTrigger
         KEY_ATTACK2,
         KEY_RELOAD
     };
-    void Think() OVERRIDE;
-    void Spawn() OVERRIDE;
-
-  private:
     int m_ButtonRep;
     Key m_eKey;
     COutputEvent m_OnKeyPressed;
@@ -450,10 +452,12 @@ private:
 // CFuncShootBoost
 class CFuncShootBoost : public CBreakable
 {
+  public:
     DECLARE_CLASS(CFuncShootBoost, CBreakable);
     DECLARE_DATADESC();
 
-  public:
+    CFuncShootBoost();
+
     void Spawn() OVERRIDE;
     int OnTakeDamage(const CTakeDamageInfo &info) OVERRIDE;
     // Force in units per seconds applied to the player
@@ -467,7 +471,7 @@ class CFuncShootBoost : public CBreakable
     // Dictates the direction of push
     Vector m_vPushDir;
     // If not null, dictates which entity the attacker must be touching for the func to work
-    CBaseEntity *m_Destination;
+    EHANDLE m_hEntityCheck;
 };
 
 // CTriggerMomentumPush
@@ -496,8 +500,6 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
     int m_iIncrease;
     // Dictates the direction of push
     Vector m_vPushDir;
-    // Pointer to the destination entity if a teleport is needed
-    CBaseEntity *m_Destination;
 };
 
 class CTriggerSlide : public CBaseMomentumTrigger
@@ -523,65 +525,73 @@ class CTriggerSlide : public CBaseMomentumTrigger
 
 class CTriggerReverseSpeed : public CBaseMomentumTrigger
 {
+public:
     DECLARE_CLASS(CTriggerReverseSpeed, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
-  public:
+    CTriggerReverseSpeed();
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void Think(void) OVERRIDE;
-    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
+    void Think() OVERRIDE;
 
-  public:
+    void ReverseSpeed(CBaseEntity *pEntity, bool bIsHorizontal);
+
+private:
     bool m_bReverseHorizontalSpeed, m_bReverseVerticalSpeed;
     float m_flInterval;
-    bool m_bOnThink, m_bShouldThink;
+    bool m_bOnThink;
     Vector vecCalculatedVel;
 };
 
 class CTriggerSetSpeed : public CBaseMomentumTrigger
 {
+public:
     DECLARE_CLASS(CTriggerSetSpeed, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
-  public:
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void Think(void) OVERRIDE;
-    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
+    CTriggerSetSpeed();
 
-  public:
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
+    void Think(void) OVERRIDE;
+
+private:
+    void CalculateSpeed(CBaseEntity *pOther);
+
+    CUtlMap<short, Vector> m_mapCalculatedVelocities;
     float m_flHorizontalSpeedAmount, m_flVerticalSpeedAmount;
     QAngle m_angWishDirection;
     bool m_bKeepHorizontalSpeed, m_bKeepVerticalSpeed;
     float m_flInterval;
-    bool m_bOnThink, m_bShouldThink;
-    Vector vecCalculatedVel;
+    bool m_bOnThink;
 };
 
 class CTriggerSpeedThreshold : public CBaseMomentumTrigger
 {
     enum
     {
-        TRIGGERSPEEDTHRESHOLD_ABOVE,
-        TRIGGERSPEEDTHRESHOLD_BELOW
+        THRESHOLD_ABOVE = 0,
+        THRESHOLD_BELOW
     };
 
+  public:
     DECLARE_CLASS(CTriggerSpeedThreshold, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
-  public:
+    CTriggerSpeedThreshold();
+
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void CheckSpeed(CMomentumPlayer *pPlayer);
+    void CheckSpeed(CBaseEntity *pOther);
     void Think() OVERRIDE;
-    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
   private:
+    bool CheckSpeedInternal(const float flToCheck, bool bIsHorizontal);
+
     int m_iAboveOrBelow;
     bool m_bHorizontal, m_bVertical;
     float m_flHorizontalSpeed;
     float m_flVerticalSpeed;
     bool m_bOnThink;
     float m_flInterval;
-    bool m_bShouldThink;
     COutputEvent m_OnThresholdEvent;
 };
 

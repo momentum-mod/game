@@ -184,8 +184,7 @@
 [
 ]
 
-@SolidClass base(func_breakable) = func_shootboost : 
-	"Entity that pushes the player when hit by the momentum_gun."
+@SolidClass base(func_breakable) = func_shootboost : "Entity that pushes the player when hit by the momentum_gun."
 [
 	target(target_destination) : "Inside trigger" : : "If specified, the player must be inside this trigger for the func to work."
 	pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed."
@@ -208,11 +207,10 @@
     health(float) : "Strength" : 1 : "Number of points of damage to take before breaking. IT HAS TO BE ABOVE 0."
 ]
 
-@SolidClass base(MomentumTrigger) = trigger_momentum_push : 
-	"A trigger volume that modifies velocity of players that touch it."
+@SolidClass base(MomentumTrigger) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
 [
 	pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
-	force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
+	force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in units per second) " +
 	"Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
 	increase(choices) : "Handling of player's velocity" : 3 =
     [
@@ -232,8 +230,8 @@
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working properly brushes must be placed under the trigger." 
 [
-	StuckOnGround(integer) : "Stuck to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddently down"
-	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding? (doesn't work with stuckonground option.)"
+	StuckOnGround(integer) : "Stick player to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddenly down)"
+	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding on this trigger? (NOTE: Does not work while Stick player to ground is 1!!!)"
 	DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to lose speed while going up or increase speed while going down)"
 	FixUpsideSlope(integer) : "Fix Upside Slopes" : 0 : "When sometimes mounting a slope, you lose velocity, enable this to not lose speed while going up on the slopes."
 ]
@@ -243,7 +241,7 @@
 	ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
 	ReverseVertical(integer) : "Reverse vertical speed" : 1 : "Reverse the z velocity."
 	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
-	Interval(float) : "Interval" : 1 : "Set here in seconds how many time the trigger should update."
+	Interval(float) : "Interval" : 1.0 : "Set here in seconds how many time the trigger should update."
 ]
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_setspeed : "Trigger for setting speed of the momentum player." 
@@ -254,10 +252,9 @@
 	VerticalSpeedAmount(float) : "Vertical speed amount" : 100 : "Set here the speed based on z axis for the velocity direction."
 	Direction(angle) : "Direction (Pitch Yaw Roll)" : "0 0 0" : "Direction of the speed applied. Keep in mind that only Y angle is taken into account because vertical speed can be set already."
 	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
-	Interval(float) : "Interval" : 1 : "Set here in seconds how many time the trigger should update."
+	Interval(float) : "Interval" : 1.0 : "Set here in seconds how many time the trigger should update."
 ]
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_momentum_serversettings : 
-	"An entity that sets the default specialized settings to the map."
+@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_momentum_serversettings : "An entity that sets the default specialized settings to the map."
 [
 	Gravity(float) : "Gravity value" : 800 : "Set here the default gravity value."
 	MaxVelocity(float) : "Maximum velocity" : 3500 : "Set here the default max velocity value."
@@ -272,16 +269,24 @@
 	FootSteps(integer) : "Foot steps sound" : 1 : "Enable/Disable foot steps sounds."
 	SwimSound(integer) : "Swim sound" : 1 : "Enable/Disable swimming sounds."
 ]
-@SolidClass base(MomentumTrigger) = trigger_momentum_speedthreshold : "Trigger that fires an output when speed is on the threshold." 
+@SolidClass base(MomentumTrigger) = trigger_momentum_speedthreshold : "Trigger that fires an output when player speed is above/below a given threshold." 
 [	
-	AboveOrBelow(integer) : "Above or below" : 0 : "Fires output when: 0) Above 1) Below."
-	Vertical(integer) : "Vertical" : 1 : "Activate the threshold for vertical speed."
+	AboveOrBelow(choices) : "Above/Below" : 0 : "Sets whether to fire if the player goes above or below the threshold." =
+    [
+        0 : "Above"
+        1 : "Below"
+    ]
+	Vertical(integer) : "Vertical" : 0 : "Activate the threshold for vertical speed."
 	Horizontal(integer) : "Horizontal" : 0 : "Activate the threshold for horizontal speed."
-	VerticalSpeed(float) : "Vertical speed threshold" : 400 : "Set here the default air accelerate speed value."
-	HorizontalSpeed(float) : "Horizontal speed threshold" : 60 : "Set here the default air accelerate speed value."
-	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
-	Interval(float) : "Interval" : 1 : "Set here in seconds how many time the trigger should update."
-	output OnThreshold(void) : "Fires when the speed is on the threshold."
+	VerticalSpeed(float) : "Vertical speed threshold" : 500 : "The amount of units per second for vertical (Z axis) speed."
+	HorizontalSpeed(float) : "Horizontal speed threshold" : 1000 : "The amount of units per second for horizontal (XY axis) speed."
+	OnThink(choices) : "Check on set interval" : 0 : "If yes, this trigger will check at a given set interval while the player is in the trigger." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+	Interval(float) : "Interval" : 1.0 : "How many seconds between each check while the player is in the trigger."
+	output OnThreshold(void) : "Fires when the speed is above/below the given threshold."
 ]
 
 @BaseClass = Campaign
