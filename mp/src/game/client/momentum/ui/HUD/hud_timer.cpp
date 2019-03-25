@@ -241,6 +241,7 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
     }
     else if (type == TIMER_EVENT_STOPPED)
     {
+        SetToNoTimer();
         pPlayer->EmitSound("Momentum.StopTimer");
     }
     else if (type == TIMER_EVENT_FAILED)
