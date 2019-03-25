@@ -59,17 +59,17 @@ C_MomentumPlayer *C_MomentumPlayer::GetLocalMomPlayer()
 
 CMomRunEntity *C_MomentumPlayer::GetCurrentUIEntity()
 {
-    return m_pSpecTarget ? m_pSpecTarget : this;
+    return m_pSpecTarget.Get() ? m_pSpecTarget.Get() : this;
 }
 
 CMomRunEntityData *C_MomentumPlayer::GetCurrentUIEntData()
 {
-    return m_pSpecTarget ? m_pSpecTarget->GetRunEntData() : GetRunEntData();
+    return m_pSpecTarget.Get() ? m_pSpecTarget->GetRunEntData() : GetRunEntData();
 }
 
 CMomRunStats *C_MomentumPlayer::GetCurrentUIEntStats()
 {
-    return m_pSpecTarget ? m_pSpecTarget->GetRunStats() : GetRunStats();
+    return m_pSpecTarget.Get() ? m_pSpecTarget->GetRunStats() : GetRunStats();
 }
 
 void C_MomentumPlayer::Spawn()
