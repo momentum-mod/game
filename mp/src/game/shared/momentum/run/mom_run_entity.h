@@ -33,8 +33,9 @@ class CMomRunEntity
     virtual void OnZoneExit(CTriggerZone *pTrigger);
 
     // Used by limitmovement trigger
-    virtual void ToggleButtons(int iButtonFlags, bool bEnable) = 0;
-    virtual void ToggleBhop(bool bEnable) = 0;
+    virtual void SetButtonsEnabled(int iButtonFlags, bool bEnable) = 0;
+    virtual void SetBhopEnabled(bool bEnable) = 0;
+    virtual bool GetBhopEnabled() const = 0;
 #else
     virtual float GetCurrentRunTime() = 0;
 #endif

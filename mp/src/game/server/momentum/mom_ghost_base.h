@@ -69,8 +69,9 @@ public:
 
     // Run entity stuff
     virtual RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_GHOST; }
-    virtual void ToggleButtons(int iButtonFlags, bool bEnable) OVERRIDE;
-    virtual void ToggleBhop(bool bEnable) OVERRIDE;
+    virtual void SetButtonsEnabled(int iButtonFlags, bool bEnable) OVERRIDE;
+    virtual void SetBhopEnabled(bool bEnable) OVERRIDE;
+    virtual bool GetBhopEnabled() const OVERRIDE;
     CNetworkVarEmbedded(CMomRunEntityData, m_Data);
     virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);

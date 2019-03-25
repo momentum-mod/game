@@ -59,7 +59,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // SPAWNING
     CBaseEntity *EntSelectSpawnPoint() OVERRIDE;
 
-    void SetDisableBhop(bool bState);
     void EnableAutoBhop();
     void DisableAutoBhop();
     bool HasAutoBhop() const { return m_bAutoBhop; }
@@ -81,8 +80,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     // Run entity stuff
     virtual RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }
-    virtual void ToggleButtons(int iButtonFlags, bool bEnable) OVERRIDE;
-    virtual void ToggleBhop(bool bEnable) OVERRIDE;
+    virtual void SetButtonsEnabled(int iButtonFlags, bool bEnable) OVERRIDE;
+    virtual void SetBhopEnabled(bool bEnable) OVERRIDE;
+    virtual bool GetBhopEnabled() const OVERRIDE;
     virtual void OnZoneEnter(CTriggerZone* pTrigger) OVERRIDE;
     virtual void OnZoneExit(CTriggerZone* pTrigger) OVERRIDE;
     CNetworkVarEmbedded(CMomRunEntityData, m_Data);

@@ -750,19 +750,19 @@ void CTriggerLimitMovement::OnEndTouch(CBaseEntity *pOther)
 void CTriggerLimitMovement::ToggleButtons(CMomRunEntity* pEnt, bool bEnable)
 {
     if (m_spawnflags & SF_LIMIT_FORWARD)
-        pEnt->ToggleButtons(IN_FORWARD, bEnable);
+        pEnt->SetButtonsEnabled(IN_FORWARD, bEnable);
     if (m_spawnflags & SF_LIMIT_LEFT)
-        pEnt->ToggleButtons(IN_MOVELEFT, bEnable);
+        pEnt->SetButtonsEnabled(IN_MOVELEFT, bEnable);
     if (m_spawnflags & SF_LIMIT_RIGHT)
-        pEnt->ToggleButtons(IN_MOVERIGHT, bEnable);
+        pEnt->SetButtonsEnabled(IN_MOVERIGHT, bEnable);
     if (m_spawnflags & SF_LIMIT_BACK)
-        pEnt->ToggleButtons(IN_BACK, bEnable);
+        pEnt->SetButtonsEnabled(IN_BACK, bEnable);
     if (m_spawnflags & SF_LIMIT_JUMP)
-        pEnt->ToggleButtons(IN_JUMP, bEnable);
+        pEnt->SetButtonsEnabled(IN_JUMP, bEnable);
     if (m_spawnflags & SF_LIMIT_CROUCH)
-        pEnt->ToggleButtons(IN_DUCK, bEnable);
+        pEnt->SetButtonsEnabled(IN_DUCK, bEnable);
     if (m_spawnflags & SF_LIMIT_BHOP)
-        pEnt->ToggleBhop(bEnable);
+        pEnt->SetBhopEnabled(bEnable);
 }
 
 //-----------------------------------------------------------------------------------------------
