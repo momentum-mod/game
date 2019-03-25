@@ -635,16 +635,12 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_userinput, CTriggerUserInput);
 BEGIN_DATADESC(CTriggerUserInput)
     DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"),
     DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"),
-END_DATADESC()
+END_DATADESC();
 
-void CTriggerUserInput::Think()
+CTriggerUserInput::CTriggerUserInput()
 {
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer && IsTouching(pPlayer) && pPlayer->m_nButtons & m_ButtonRep)
-    {
-        m_OnKeyPressed.FireOutput(pPlayer, this);
-    }
-    BaseClass::Think();
+    m_eKey = KEY_FORWARD;
+    m_ButtonRep = IN_FORWARD;
 }
 
 void CTriggerUserInput::Spawn()
@@ -686,6 +682,48 @@ void CTriggerUserInput::Spawn()
 
     BaseClass::Spawn();
 }
+
+void CTriggerUserInput::OnStartTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        CheckEnt(pOther);
+        SetNextThink(gpGlobals->curtime);
+    }
+}
+
+void CTriggerUserInput::Think()
+{
+    if (m_hTouchingEntities.Count())
+    {
+        FOR_EACH_VEC(m_hTouchingEntities, i)
+        {
+            const auto pEnt = m_hTouchingEntities[i].Get();
+            CheckEnt(pEnt);
+        }
+
+        SetNextThink(gpGlobals->curtime);
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+}
+
+void CTriggerUserInput::CheckEnt(CBaseEntity *pOther)
+{
+    if (!(pOther && pOther->IsPlayer()))
+        return;
+
+    const auto pPlayer = static_cast<CBasePlayer*>(pOther);
+    if (pPlayer && pPlayer->m_nButtons & m_ButtonRep)
+    {
+        m_OnKeyPressed.FireOutput(pPlayer, this);
+    }
+}
+
 //-----------------------------------------------------------------------------------------------
 
 //--------- CTriggerLimitMovement -------------------------------------------------------------------
@@ -738,18 +776,23 @@ BEGIN_DATADESC(CFuncShootBoost)
     DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
 END_DATADESC()
 
+CFuncShootBoost::CFuncShootBoost(): m_fPushForce(300.0f), m_iIncrease(4)
+{
+    m_vPushDir.Init();
+}
+
 void CFuncShootBoost::Spawn()
 {
     BaseClass::Spawn();
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
     if (m_target != NULL_STRING)
-        m_Destination = gEntList.FindEntityByName(nullptr, m_target);
+        m_hEntityCheck = gEntList.FindEntityByName(nullptr, m_target);
 }
 
 int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
 {
-    CBaseEntity *pInflictor = info.GetAttacker();
+    const auto pInflictor = info.GetAttacker();
     if (pInflictor)
     {
         Vector finalVel = m_vPushDir.Normalized() * m_fPushForce;
@@ -764,7 +807,8 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel = pInflictor->GetAbsVelocity();
             break;
-        case 3: // The description of this method says the player velocity is increaed by final velocity,
+        case 3:
+            // The description of this method says the player velocity is increased by final velocity,
             // but we're just adding one vec to the other, which is not quite the same
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel += pInflictor->GetAbsVelocity();
@@ -773,12 +817,13 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
             pInflictor->SetBaseVelocity(finalVel);
             break;
         default:
-            DevWarning("CFuncShootBoost:: %i not recognised as valid for m_iIncrease", m_iIncrease);
+            DevWarning("CFuncShootBoost:: %i not recognized as valid for m_iIncrease", m_iIncrease);
             break;
         }
-        if (m_Destination)
+        if (m_hEntityCheck.Get())
         {
-            if (static_cast<CBaseTrigger *>(m_Destination)->IsTouching(pInflictor))
+            const auto pTrigger = dynamic_cast<CBaseTrigger*>(m_hEntityCheck.Get());
+            if (pTrigger && pTrigger->IsTouching(pInflictor))
             {
                 pInflictor->SetAbsVelocity(finalVel);
             }
@@ -803,7 +848,10 @@ BEGIN_DATADESC(CTriggerMomentumPush)
     DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase")
 END_DATADESC()
 
-CTriggerMomentumPush::CTriggerMomentumPush(){};
+CTriggerMomentumPush::CTriggerMomentumPush(): m_fPushForce(300.0f), m_iIncrease(3)
+{
+    m_vPushDir.Init();
+}
 
 void CTriggerMomentumPush::OnStartTouch(CBaseEntity *pOther)
 {
@@ -843,7 +891,7 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
             pOther->SetBaseVelocity(finalVel);
             break;
         default:
-            DevWarning("CTriggerMomentumPush:: %i not recognised as valid for m_iIncrease", m_iIncrease);
+            DevWarning("CTriggerMomentumPush:: %i not recognized as valid for m_iIncrease", m_iIncrease);
             break;
         }
 
@@ -860,24 +908,28 @@ BEGIN_DATADESC(CTriggerSlide)
     DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
     DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
     DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity"),
-    DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope"),
-    //DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
+    DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope")
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
-SendPropBool(SENDINFO(m_bStuckOnGround)), SendPropBool(SENDINFO(m_bAllowingJump)),
-    SendPropBool(SENDINFO(m_bDisableGravity)), SendPropBool(SENDINFO(m_bFixUpsideSlope)), END_SEND_TABLE();
+SendPropBool(SENDINFO(m_bStuckOnGround)),
+SendPropBool(SENDINFO(m_bAllowingJump)),
+SendPropBool(SENDINFO(m_bDisableGravity)),
+SendPropBool(SENDINFO(m_bFixUpsideSlope)),
+END_SEND_TABLE();
 
 void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
 
-    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
-
-    if (pPlayer != nullptr)
+    if (pOther->IsPlayer())
     {
-        pPlayer->m_vecSlideTriggers.AddToHead(this);
-        pPlayer->m_CurrentSlideTrigger = this;
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
+        {
+            pPlayer->m_vecSlideTriggers.AddToHead(this);
+            pPlayer->m_CurrentSlideTrigger = this;
+        }
     }
 }
 
@@ -885,18 +937,20 @@ void CTriggerSlide::OnEndTouch(CBaseEntity *pOther)
 {
     BaseClass::OnEndTouch(pOther);
 
-    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
-
-    if (pPlayer != nullptr)
+    if (pOther->IsPlayer())
     {
-        pPlayer->m_vecSlideTriggers.FindAndRemove(this);
-
-        if (pPlayer->m_CurrentSlideTrigger.Get() == this)
+        const auto pPlayer = ToCMOMPlayer(pOther);
+        if (pPlayer)
         {
-            if (!pPlayer->m_vecSlideTriggers.IsEmpty())
-                pPlayer->m_CurrentSlideTrigger = pPlayer->m_vecSlideTriggers[0];
-            else
-                pPlayer->m_CurrentSlideTrigger = nullptr;
+            pPlayer->m_vecSlideTriggers.FindAndRemove(this);
+
+            if (pPlayer->m_CurrentSlideTrigger.Get() == this)
+            {
+                if (!pPlayer->m_vecSlideTriggers.IsEmpty())
+                    pPlayer->m_CurrentSlideTrigger = pPlayer->m_vecSlideTriggers[0];
+                else
+                    pPlayer->m_CurrentSlideTrigger = nullptr;
+            }
         }
     }
 }
@@ -912,115 +966,67 @@ BEGIN_DATADESC(CTriggerReverseSpeed)
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink")
 END_DATADESC()
 
+CTriggerReverseSpeed::CTriggerReverseSpeed()
+{
+    m_bReverseHorizontalSpeed = true;
+    m_bReverseVerticalSpeed = true;
+    m_flInterval = 1.0f;
+    m_bOnThink = false;
+}
+
 void CTriggerReverseSpeed::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
 
-    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
-
-    if (pPlayer != nullptr)
+    if (pOther->IsPlayer())
     {
         // Reverse x/y velocity.
         if (m_bReverseHorizontalSpeed)
         {
-            Vector vecVelocity = pPlayer->GetAbsVelocity();
-            float zVelBackup = vecVelocity.z;
-            vecVelocity.z = 0.0f;
-
-            float flSpeedAmount = vecVelocity.Length2D();
-
-            // We need to compute its direction now to reverse the speed properly.
-            QAngle qDirVelocity;
-            VectorNormalizeFast(vecVelocity);
-            VectorAngles(vecVelocity, qDirVelocity);
-
-            // Revert the direction
-            qDirVelocity.y = AngleNormalize(qDirVelocity.y - 180.0f);
-
-            // Apply the speed.
-            Vector vecNewVelocity;
-            AngleVectors(qDirVelocity, &vecNewVelocity);
-            vecNewVelocity.x *= flSpeedAmount;
-            vecNewVelocity.y *= flSpeedAmount;
-            vecNewVelocity.z = zVelBackup;
-
-            pPlayer->SetAbsVelocity(vecNewVelocity);
+            ReverseSpeed(pOther ,true);
         }
 
         // Reverse z velocity.
         if (m_bReverseVerticalSpeed)
         {
-            Vector vecVelocity = pPlayer->GetAbsVelocity();
-            vecVelocity.z = -vecVelocity.z;
-            pPlayer->SetAbsVelocity(vecVelocity);
+            ReverseSpeed(pOther, false);
         }
 
-        vecCalculatedVel = pPlayer->GetAbsVelocity();
-    }
+        vecCalculatedVel = pOther->GetAbsVelocity();
 
-    if (m_bOnThink)
-    {
-        SetNextThink(gpGlobals->curtime + m_flInterval);
+        if (m_bOnThink)
+            SetNextThink(gpGlobals->curtime + m_flInterval);
     }
-    else
-    {
-        SetNextThink(TICK_NEVER_THINK);
-    }
-
-    m_bShouldThink = true;
 }
 
 void CTriggerReverseSpeed::Think()
 {
-    BaseClass::Think();
-
     if (m_bOnThink)
     {
-        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-
-        if (pPlayer != nullptr && m_bShouldThink)
+        FOR_EACH_VEC(m_hTouchingEntities, i)
         {
-            // Shall we will use the already calculated vel here, if we recalculate we could be stuck into a trigger
-            // since it will take the new velocity already Reversed? If the interval is high enough it shouldn't matter.
-            // pPlayer->SetAbsVelocity(vecCalculatedVel);
-
-            // Reverse x/y velocity.
-            if (m_bReverseHorizontalSpeed)
+            const auto pEnt = m_hTouchingEntities[i].Get();
+            if (pEnt && pEnt->IsPlayer())
             {
-                Vector vecVelocity = pPlayer->GetAbsVelocity();
-                float zVelBackup = vecVelocity.z;
-                vecVelocity.z = 0.0f;
+                // Shall we will use the already calculated vel here, if we recalculate we could be stuck into a trigger
+                // since it will take the new velocity already Reversed? If the interval is high enough it shouldn't matter.
+                // pPlayer->SetAbsVelocity(vecCalculatedVel);
 
-                float flSpeedAmount = vecVelocity.Length2D();
+                // Reverse x/y velocity.
+                if (m_bReverseHorizontalSpeed)
+                {
+                    ReverseSpeed(pEnt, true);
+                }
 
-                // We need to compute its direction now to reverse the speed properly.
-                QAngle qDirVelocity;
-                VectorNormalizeFast(vecVelocity);
-                VectorAngles(vecVelocity, qDirVelocity);
+                // Reverse z velocity.
+                if (m_bReverseVerticalSpeed)
+                {
+                    ReverseSpeed(pEnt, false);
+                }
 
-                // Revert the direction
-                qDirVelocity.y = AngleNormalize(qDirVelocity.y - 180.0f);
-
-                // Apply the speed.
-                Vector vecNewVelocity;
-                AngleVectors(qDirVelocity, &vecNewVelocity);
-                vecNewVelocity.x *= flSpeedAmount;
-                vecNewVelocity.y *= flSpeedAmount;
-                vecNewVelocity.z = zVelBackup;
-
-                pPlayer->SetAbsVelocity(vecNewVelocity);
-            }
-
-            // Reverse z velocity.
-            if (m_bReverseVerticalSpeed)
-            {
-                Vector vecVelocity = pPlayer->GetAbsVelocity();
-                vecVelocity.z = -vecVelocity.z;
-                pPlayer->SetAbsVelocity(vecVelocity);
+                SetNextThink(gpGlobals->curtime + m_flInterval);
             }
         }
-
-        SetNextThink(gpGlobals->curtime + m_flInterval);
     }
     else
     {
@@ -1028,11 +1034,42 @@ void CTriggerReverseSpeed::Think()
     }
 }
 
-void CTriggerReverseSpeed::OnEndTouch(CBaseEntity *pOther)
+void CTriggerReverseSpeed::ReverseSpeed(CBaseEntity *pEntity, bool bIsHorizontal)
 {
-    BaseClass::OnEndTouch(pOther);
+    if (!pEntity)
+        return;
 
-    m_bShouldThink = false;
+    if (bIsHorizontal)
+    {
+        Vector vecVelocity = pEntity->GetAbsVelocity();
+        const auto zVelBackup = vecVelocity.z;
+        vecVelocity.z = 0.0f;
+
+        const auto flSpeedAmount = vecVelocity.Length2D();
+
+        // We need to compute its direction now to reverse the speed properly.
+        QAngle qDirVelocity;
+        VectorNormalizeFast(vecVelocity);
+        VectorAngles(vecVelocity, qDirVelocity);
+
+        // Revert the direction
+        qDirVelocity.y = AngleNormalize(qDirVelocity.y - 180.0f);
+
+        // Apply the speed.
+        Vector vecNewVelocity;
+        AngleVectors(qDirVelocity, &vecNewVelocity);
+        vecNewVelocity.x *= flSpeedAmount;
+        vecNewVelocity.y *= flSpeedAmount;
+        vecNewVelocity.z = zVelBackup;
+
+        pEntity->SetAbsVelocity(vecNewVelocity);
+    }
+    else
+    {
+        Vector vecVelocity = pEntity->GetAbsVelocity();
+        vecVelocity.z = -vecVelocity.z;
+        pEntity->SetAbsVelocity(vecVelocity);
+    }
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -1049,163 +1086,100 @@ BEGIN_DATADESC(CTriggerSetSpeed)
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink")
 END_DATADESC()
 
+CTriggerSetSpeed::CTriggerSetSpeed()
+{
+    SetDefLessFunc(m_mapCalculatedVelocities);
+    m_bKeepHorizontalSpeed = false;
+    m_bKeepVerticalSpeed = false;
+    m_flHorizontalSpeedAmount = 500.0f;
+    m_flVerticalSpeedAmount = 100.0f;
+    m_bOnThink = false;
+    m_flInterval = 1.0f;
+}
+
 void CTriggerSetSpeed::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
 
-    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
-
-    if (pPlayer != nullptr)
+    if (pOther->IsPlayer())
     {
-        // As far I know, you can get the same direction by just playing with x/y ,
-        // for getting the same direction as the z angle, except if there is a gimbal lock on the given angle.
-        // I didn't look much about it, but it's pretty interesting. Gotta investigate.
+        CalculateSpeed(pOther);
 
-        // Compute velocity direction only from y angle. We ignore these because if the mapper set -90 and 180
-        // , the results on x/y axis velocity direction will be close to 0
-        // and result that the horizontal speed amount won't be set correctly.
-        // Since vertical speed can be set manually anyway, we can ignore and zero the x and z axis on the angle.
-        m_angWishDirection.x = m_angWishDirection.z = 0.0f;
-
-        Vector vecNewVelocity;
-        AngleVectors(m_angWishDirection, &vecNewVelocity);
-
-        Vector vecNewFinalVelocity = pPlayer->GetAbsVelocity();
-
-        // Apply the speed.
-        vecNewVelocity.x *= m_flHorizontalSpeedAmount;
-        vecNewVelocity.y *= m_flHorizontalSpeedAmount;
-        vecNewVelocity.z = m_flVerticalSpeedAmount;
-
-        if (!m_bKeepVerticalSpeed)
-            vecNewFinalVelocity.z = vecNewVelocity.z;
-
-        if (!m_bKeepHorizontalSpeed)
-        {
-            vecNewFinalVelocity.x = vecNewVelocity.x;
-            vecNewFinalVelocity.y = vecNewVelocity.y;
-        }
-
-        pPlayer->SetAbsVelocity(vecNewFinalVelocity);
-        vecCalculatedVel = vecNewFinalVelocity;
-    }
-
-    if (m_bOnThink)
-    {
-        SetNextThink(gpGlobals->curtime + m_flInterval);
-    }
-    else
-    {
-        SetNextThink(TICK_NEVER_THINK);
-    }
-
-    m_bShouldThink = true;
-}
-
-void CTriggerSetSpeed::Think()
-{
-    BaseClass::Think();
-
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-
-    if (pPlayer != nullptr && m_bShouldThink)
-    {
-        pPlayer->SetAbsVelocity(vecCalculatedVel);
-    }
-
-    if (m_bOnThink)
-    {
-        SetNextThink(gpGlobals->curtime + m_flInterval);
-    }
-    else
-    {
-        SetNextThink(TICK_NEVER_THINK);
+        if (m_bOnThink)
+            SetNextThink(gpGlobals->curtime + m_flInterval);
     }
 }
 
 void CTriggerSetSpeed::OnEndTouch(CBaseEntity *pOther)
 {
     BaseClass::OnEndTouch(pOther);
-    m_bShouldThink = false;
+
+    if (pOther->IsPlayer())
+    {
+        m_mapCalculatedVelocities.Remove(pOther->entindex());
+    }
 }
 
-//-----------------------------------------------------------------------------------------------
-
-void CTriggerSpeedThreshold::OnStartTouch(CBaseEntity *pOther) { CheckSpeed(ToCMOMPlayer(pOther)); }
-
-void CTriggerSpeedThreshold::CheckSpeed(CMomentumPlayer *pPlayer)
+void CTriggerSetSpeed::Think()
 {
-    if (pPlayer != nullptr)
-    {
-        Vector Velocity = pPlayer->GetAbsVelocity();
-
-        if (m_bHorizontal)
-        {
-            float zAbs = abs(Velocity.z);
-
-            if (m_iAboveOrBelow == TRIGGERSPEEDTHRESHOLD_ABOVE)
-            {
-                if (zAbs > m_flHorizontalSpeed)
-                {
-                    m_OnThresholdEvent.FireOutput(pPlayer, this);
-                }
-            }
-            else
-            {
-                if (zAbs < m_flHorizontalSpeed)
-                {
-                    m_OnThresholdEvent.FireOutput(pPlayer, this);
-                }
-            }
-        }
-
-        if (m_bVertical)
-        {
-            float Vel2D = Velocity.Length2D();
-
-            if (m_iAboveOrBelow == TRIGGERSPEEDTHRESHOLD_ABOVE)
-            {
-                if (Vel2D > m_flVerticalSpeed)
-                {
-                    m_OnThresholdEvent.FireOutput(pPlayer, this);
-                }
-            }
-            else
-            {
-                if (Vel2D < m_flVerticalSpeed)
-                {
-                    m_OnThresholdEvent.FireOutput(pPlayer, this);
-                }
-            }
-        }
-    }
-
     if (m_bOnThink)
     {
-        SetNextThink(gpGlobals->curtime + m_flInterval);
+        FOR_EACH_VEC(m_hTouchingEntities, i)
+        {
+            const auto pEnt = m_hTouchingEntities[i].Get();
+            if (pEnt && pEnt->IsPlayer())
+            {
+                const auto calcIndx = m_mapCalculatedVelocities.Find(pEnt->entindex());
+                if (m_mapCalculatedVelocities.IsValidIndex(calcIndx))
+                {
+                    pEnt->SetAbsVelocity(m_mapCalculatedVelocities[calcIndx]);
+                    SetNextThink(gpGlobals->curtime + m_flInterval);
+                }
+            }
+        }
     }
     else
     {
         SetNextThink(TICK_NEVER_THINK);
     }
-
-    m_bShouldThink = true;
 }
 
-void CTriggerSpeedThreshold::Think()
+void CTriggerSetSpeed::CalculateSpeed(CBaseEntity *pOther)
 {
-    BaseClass::Think();
+    // As far I know, you can get the same direction by just playing with x/y ,
+    // for getting the same direction as the z angle, except if there is a gimbal lock on the given angle.
+    // I didn't look much about it, but it's pretty interesting. Gotta investigate.
 
-    if (m_bShouldThink)
-        CheckSpeed(CMomentumPlayer::GetLocalPlayer());
+    // Compute velocity direction only from y angle. We ignore these because if the mapper set -90 and 180,
+    // the results on x/y axis velocity direction will be close to 0 and result that the horizontal speed 
+    // amount won't be set correctly.
+    // Since vertical speed can be set manually anyway, we can ignore and zero the x and z axis on the angle.
+    m_angWishDirection.x = m_angWishDirection.z = 0.0f;
+
+    Vector vecNewVelocity;
+    AngleVectors(m_angWishDirection, &vecNewVelocity);
+
+    Vector vecNewFinalVelocity = pOther->GetAbsVelocity();
+
+    // Apply the speed.
+    vecNewVelocity.x *= m_flHorizontalSpeedAmount;
+    vecNewVelocity.y *= m_flHorizontalSpeedAmount;
+    vecNewVelocity.z = m_flVerticalSpeedAmount;
+
+    if (!m_bKeepVerticalSpeed)
+        vecNewFinalVelocity.z = vecNewVelocity.z;
+
+    if (!m_bKeepHorizontalSpeed)
+    {
+        vecNewFinalVelocity.x = vecNewVelocity.x;
+        vecNewFinalVelocity.y = vecNewVelocity.y;
+    }
+
+    pOther->SetAbsVelocity(vecNewFinalVelocity);
+    m_mapCalculatedVelocities.InsertOrReplace(pOther->entindex(), vecNewFinalVelocity);
 }
 
-void CTriggerSpeedThreshold::OnEndTouch(CBaseEntity *pOther)
-{
-    BaseClass::OnEndTouch(pOther);
-    m_bShouldThink = false;
-}
-
+//-----------------------------------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_speedthreshold, CTriggerSpeedThreshold);
 
 BEGIN_DATADESC(CTriggerSpeedThreshold)
@@ -1214,11 +1188,79 @@ BEGIN_DATADESC(CTriggerSpeedThreshold)
     DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
     DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
     DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
-    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), 
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
-    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") 
-END_DATADESC()
+    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold")
+END_DATADESC();
+
+CTriggerSpeedThreshold::CTriggerSpeedThreshold()
+{
+    m_iAboveOrBelow = THRESHOLD_ABOVE;
+    m_bVertical = false;
+    m_bHorizontal = false;
+    m_flVerticalSpeed = 500.0f;
+    m_flHorizontalSpeed = 1000.0f;
+    m_flInterval = 1.0f;
+    m_bOnThink = false;
+}
+
+void CTriggerSpeedThreshold::OnStartTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        CheckSpeed(pOther);
+
+        if (m_bOnThink)
+            SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+}
+
+void CTriggerSpeedThreshold::CheckSpeed(CBaseEntity *pOther)
+{
+    const auto vel = pOther->GetAbsVelocity();
+
+    if (m_bHorizontal)
+    {
+        if (CheckSpeedInternal(vel.Length2D(), true))
+            m_OnThresholdEvent.FireOutput(pOther, this);
+    }
+
+    if (m_bVertical)
+    {
+        if (CheckSpeedInternal(fabs(vel.z), false))
+            m_OnThresholdEvent.FireOutput(pOther, this);
+    }
+}
+
+void CTriggerSpeedThreshold::Think()
+{
+    if (m_bOnThink)
+    {
+        FOR_EACH_VEC(m_hTouchingEntities, i)
+        {
+            const auto pEnt = m_hTouchingEntities[i].Get();
+            if (pEnt && pEnt->IsPlayer())
+            {
+                CheckSpeed(pEnt);
+                SetNextThink(gpGlobals->curtime + m_flInterval);
+            }
+        }
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+}
+
+bool CTriggerSpeedThreshold::CheckSpeedInternal(const float flToCheck, bool bIsHorizontal)
+{
+    const auto speed = bIsHorizontal ? m_flHorizontalSpeed : m_flVerticalSpeed;
+    return m_iAboveOrBelow == THRESHOLD_ABOVE ? flToCheck > speed : flToCheck < speed;
+}
+
+// --------------------------------------------------------------------------------------
 
 LINK_ENTITY_TO_CLASS(func_momentum_brush, CFuncMomentumBrush);
 
@@ -1228,7 +1270,7 @@ BEGIN_DATADESC(CFuncMomentumBrush)
     DEFINE_KEYFIELD(m_iDisabledAlpha, FIELD_CHARACTER, "DisabledAlpha"),
     DEFINE_KEYFIELD(m_bInverted, FIELD_BOOLEAN, "Invert"),
     DEFINE_KEYFIELD(m_bDisableUI, FIELD_BOOLEAN, "DisableUI"),
-END_DATADESC()
+END_DATADESC();
 
 CFuncMomentumBrush::CFuncMomentumBrush()
 {
