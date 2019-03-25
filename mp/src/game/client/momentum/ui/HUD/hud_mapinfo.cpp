@@ -86,54 +86,57 @@ void C_HudMapInfo::OnThink()
     m_pMapDifficultyLabel->SetVisible(mom_hud_mapinfo_show_difficulty.GetBool());
 
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    m_pRunData = pPlayer->GetCurrentUIEntData();
-
-    if (m_bNeedsUpdate && m_pRunData)
+    if (pPlayer)
     {
-        if (m_pRunData->m_bIsInZone)
+        m_pRunData = pPlayer->GetCurrentUIEntData();
+
+        if (m_bNeedsUpdate && m_pRunData)
         {
-            if (m_pRunData->m_iCurrentZone == 1) // Start zone
+            if (m_pRunData->m_bIsInZone)
             {
-                m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ? 
-                                            m_wMainStart :
-                                            CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iCurrentTrack.Get()));
-            }
-            else if (m_pRunData->m_iCurrentZone == 0) // End zone
-            {
-                m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ? 
-                                            m_wMainEnd :
-                                            CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iCurrentTrack.Get()));
-            }
-            else if (m_pRunData->m_bMapFinished) // MOM_TODO does this even need to be here anymore? "Main End Zone" covers this
-            {
-                // End zone
-                m_pMainStatusLabel->SetText(m_wMapFinished);
-            }
-            else if (!g_MOMEventListener->m_bMapIsLinear) // Note: The player will never be inside a "checkpoint" zone
-            {
-                // Some # stage start
-                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
-            }
-        }
-        else
-        {
-            if (m_pRunData->m_iCurrentTrack > 0)
-            {
-                m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iCurrentTrack.Get()));
-            }
-            else if (g_MOMEventListener->m_iMapZoneCount > 0)
-            {
-                // Current stage(checkpoint)/total stages(checkpoints)
-                const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), g_MOMEventListener->m_iMapZoneCount);
-                m_pMainStatusLabel->SetText(CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpoint : m_wStage, pCurrent));
+                if (m_pRunData->m_iCurrentZone == 1) // Start zone
+                {
+                    m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
+                                                m_wMainStart :
+                                                CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iCurrentTrack.Get()));
+                }
+                else if (m_pRunData->m_iCurrentZone == 0) // End zone
+                {
+                    m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
+                                                m_wMainEnd :
+                                                CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iCurrentTrack.Get()));
+                }
+                else if (m_pRunData->m_bMapFinished) // MOM_TODO does this even need to be here anymore? "Main End Zone" covers this
+                {
+                    // End zone
+                    m_pMainStatusLabel->SetText(m_wMapFinished);
+                }
+                else if (!g_MOMEventListener->m_bMapIsLinear) // Note: The player will never be inside a "checkpoint" zone
+                {
+                    // Some # stage start
+                    m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
+                }
             }
             else
             {
-                m_pMainStatusLabel->SetText(m_wNoZones);
+                if (m_pRunData->m_iCurrentTrack > 0)
+                {
+                    m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iCurrentTrack.Get()));
+                }
+                else if (g_MOMEventListener->m_iMapZoneCount > 0)
+                {
+                    // Current stage(checkpoint)/total stages(checkpoints)
+                    const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), g_MOMEventListener->m_iMapZoneCount);
+                    m_pMainStatusLabel->SetText(CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpoint : m_wStage, pCurrent));
+                }
+                else
+                {
+                    m_pMainStatusLabel->SetText(m_wNoZones);
+                }
             }
-        }
 
-        m_bNeedsUpdate = false;
+            m_bNeedsUpdate = false;
+        }
     }
 }
 
