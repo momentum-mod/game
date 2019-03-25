@@ -338,8 +338,7 @@ void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) c
 void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
 {
     // Make sure trigger and associated track aren't mismatched
-    Assert(pTrigger ? (pTrigger->GetTrackNumber() == track)
-                    : true);
+    Assert(pTrigger ? (pTrigger->GetTrackNumber() == track) : true);
     m_iLastZone = 0; // Allows us to overwrite previous runs
     m_hStartTriggers[track] = pTrigger;
 }
