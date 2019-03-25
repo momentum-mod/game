@@ -327,6 +327,8 @@ void CTriggerTimerStart::Spawn()
     m_fBhopLeaveSpeed = fabs(m_fBhopLeaveSpeed);
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
+
+    g_pMomentumTimer->SetStartTrigger(m_iTrackNumber, this);
 }
 void CTriggerTimerStart::SetMaxLeaveSpeed(const float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
 void CTriggerTimerStart::SetLookAngles(const QAngle &newang) { m_angLook = newang; }
