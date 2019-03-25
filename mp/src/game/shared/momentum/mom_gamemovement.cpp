@@ -953,12 +953,8 @@ bool CMomentumGameMovement::CheckJumpButton()
                                     gpGlobals->tickcount - m_pPlayer->m_iLandTick < BHOP_DELAY_TIME;
     if (bPlayerBhopBlocked)
     {
-        m_pPlayer->m_afButtonDisabled |= IN_BULLRUSH; // For the HUD
         return false;
     }
-
-    if (m_pPlayer->m_afButtonDisabled & IN_BULLRUSH)
-        m_pPlayer->m_afButtonDisabled &= ~IN_BULLRUSH; // For the HUD
 
     // AUTOBHOP---
     // only run this code if autobhop is disabled
@@ -1376,6 +1372,16 @@ void CMomentumGameMovement::FullWalkMove()
         player->Splash();
 #endif
     }
+
+    // Check if player bhop is blocked and update buttons
+    const bool bPlayerBhopBlocked = m_pPlayer->m_bPreventPlayerBhop &&
+                                    gpGlobals->tickcount - m_pPlayer->m_iLandTick < BHOP_DELAY_TIME;
+
+    // For the HUD (see hud_timer.cpp)
+    if (bPlayerBhopBlocked)
+        m_pPlayer->m_afButtonDisabled |= IN_BULLRUSH;
+    else
+        m_pPlayer->m_afButtonDisabled &= ~IN_BULLRUSH;
 }
 
 // This limits the player's speed in the start zone, depending on which gamemode the player is currently playing.

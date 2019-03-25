@@ -716,7 +716,7 @@ void CMomentumPlayer::CreateTrail()
     DispatchSpawn(m_eTrail);
 }
 
-void CMomentumPlayer::ToggleButtons(int iButtonFlags, bool bEnable)
+void CMomentumPlayer::SetButtonsEnabled(int iButtonFlags, bool bEnable)
 {
     if (bEnable)
         EnableButtons(iButtonFlags);
@@ -724,9 +724,14 @@ void CMomentumPlayer::ToggleButtons(int iButtonFlags, bool bEnable)
         DisableButtons(iButtonFlags);
 }
 
-void CMomentumPlayer::ToggleBhop(bool bEnable)
+void CMomentumPlayer::SetBhopEnabled(bool bEnable)
 {
-    SetDisableBhop(!bEnable);
+    m_bPreventPlayerBhop = !bEnable;
+}
+
+bool CMomentumPlayer::GetBhopEnabled() const
+{
+    return !m_bPreventPlayerBhop;
 }
 
 void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
@@ -878,11 +883,6 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 
     if (g_MOMBlockFixer->IsBhopBlock(pOther->entindex()))
         g_MOMBlockFixer->PlayerTouch(this, pOther);
-}
-
-void CMomentumPlayer::SetDisableBhop(bool bState)
-{
-    m_bPreventPlayerBhop = bState;
 }
 
 void CMomentumPlayer::EnableAutoBhop()
