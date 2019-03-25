@@ -1,0 +1,10 @@
+UnlitGeneric
+{
+	"$basetexture" "triggertest_atlas"
+	"$surfaceprop" "Default_Silent"
+
+	"$alphatest" "1"
+	"$decal" "1"
+
+	"$allowalphatocoverage" "1"
+}
