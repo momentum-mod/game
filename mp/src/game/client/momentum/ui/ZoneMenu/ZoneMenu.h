@@ -37,6 +37,10 @@ protected:
     vgui::Label *m_pTrackNumberLabel;
     vgui::CvarTextEntry *m_pTrackNumberEntry;
 
+    // Zone number
+    vgui::Label *m_pZoneNumberLabel;
+    vgui::CvarTextEntry *m_pZoneNumberEntry;
+
     // Zone type
     vgui::Label    *m_pZoneTypeLabel;
     vgui::ComboBox *m_pZoneTypeCombo;
