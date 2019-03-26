@@ -126,26 +126,17 @@ CVoiceStatus::~CVoiceStatus()
 
 	g_pInternalVoiceStatus = NULL;			
 
-	const char *pGameDir = engine->GetGameDirectory();
-	if( pGameDir )
-	{
-		if(m_bBanMgrInitialized)
-		{
-			m_BanMgr.SaveState( pGameDir );
-		}
-	}
+    if (m_bBanMgrInitialized)
+    {
+        m_BanMgr.Save();
+    }
 }
 
 int CVoiceStatus::Init(
 	IVoiceStatusHelper *pHelper,
 	VPANEL pParentPanel)
 {
-	const char *pGameDir = engine->GetGameDirectory();
-	if( pGameDir )
-	{
-		m_BanMgr.Init( pGameDir );
-		m_bBanMgrInitialized = true;
-	}
+    m_bBanMgrInitialized = m_BanMgr.Init();
 
 	Assert(!g_pInternalVoiceStatus);
 	g_pInternalVoiceStatus = this;
@@ -381,7 +372,7 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 			if ( !engine->GetPlayerInfo( i+1, &pi ) )
 				continue;
 
-			if ( m_BanMgr.GetPlayerBan( pi.guid ) )
+			if ( m_BanMgr.GetPlayerBan( pi.friendsID ) )
 			{
 				banMask |= 1 << i;
 			}
@@ -502,8 +493,8 @@ bool CVoiceStatus::IsPlayerBlocked(int iPlayer)
 
 	if ( !engine->GetPlayerInfo( iPlayer, &pi ) )
 		return false;
-
-	return m_BanMgr.GetPlayerBan( pi.guid );
+    
+	return m_BanMgr.GetPlayerBan( pi.friendsID );
 }
 
 //-----------------------------------------------------------------------------
@@ -568,10 +559,10 @@ void CVoiceStatus::SetPlayerBlockedState(int iPlayer, bool blocked)
 	// Squelch or (try to) unsquelch this player.
 	if (voice_clientdebug.GetInt())
 	{
-		Msg("CVoiceStatus::SetPlayerBlockedState: setting player %d ban to %d\n", iPlayer, !m_BanMgr.GetPlayerBan(pi.guid));
+		Msg("CVoiceStatus::SetPlayerBlockedState: setting player %d ban to %d\n", iPlayer, blocked);
 	}
 
-	m_BanMgr.SetPlayerBan(pi.guid, !m_BanMgr.GetPlayerBan(pi.guid));
+	m_BanMgr.SetPlayerBan(pi.friendsID, blocked);
 	UpdateServerState(false);
 }
 
