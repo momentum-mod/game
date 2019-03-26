@@ -11,14 +11,11 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
   public:
     CMomentumTimer(const char *pName);
 
-  public: // CAutoGameSystemPerFrame
-    void PostInit() OVERRIDE;
+    // CAutoGameSystemPerFrame
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
-
     virtual void FrameUpdatePreEntityThink() OVERRIDE;
 
-  public:
     // HUD messages
     void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
     void DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) const;
@@ -63,11 +60,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // Gets the current time for this timer
     float GetCurrentTime() const { return float(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; }
 
-    //----- Trigger_Onehop stuff -----------------------------------------
-
-    //-------- Online-related timer commands -----------------------------
-    // MOM_TODO: void LoadOnlineTimes();
-
     // Practice mode- noclip mode that stops timer
     void EnablePractice(CMomentumPlayer *pPlayer);
     void DisablePractice(CMomentumPlayer *pPlayer);
@@ -97,9 +89,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
   private:
-    void OnPlayerJump(KeyValues *kv);
-    void OnPlayerLand(KeyValues *kv);
-
     void DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const;
 
   private:

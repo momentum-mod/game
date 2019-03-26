@@ -1,9 +1,7 @@
 #include "cbase.h"
 
-#include <stdarg.h>
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
-#include "mom_modulecomms.h"
 #include "mom_player_shared.h"
 #include "movevars_shared.h"
 #include "rumble_shared.h"
@@ -1038,9 +1036,7 @@ bool CMomentumGameMovement::CheckJumpButton()
 #ifndef CLIENT_DLL
     m_pPlayer->SetIsInAirDueToJump(true);
     // Fire that we jumped
-    KeyValues *pEvent = new KeyValues("player_jump");
-    pEvent->SetPtr("player", m_pPlayer);
-    g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+    m_pPlayer->OnJump();
 #endif
 
     return true;
@@ -2066,10 +2062,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         m_pPlayer->SetIsInAirDueToJump(false);
 
         // Set the tick that we landed on something solid (can jump off of this)
-        m_pPlayer->m_iLandTick = gpGlobals->tickcount;
-        KeyValues *pEvent = new KeyValues("player_land");
-        pEvent->SetPtr("player", m_pPlayer);
-        g_pModuleComms->FireEvent(pEvent, FIRE_LOCAL_ONLY);
+        m_pPlayer->OnLand();
 #endif
     }
 
