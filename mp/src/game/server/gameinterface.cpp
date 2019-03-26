@@ -35,7 +35,6 @@
 #include "env_wind_shared.h"
 #include "engine/IEngineSound.h"
 #include "ispatialpartition.h"
-#include "textstatsmgr.h"
 #include "bitbuf.h"
 #include "saverestoretypes.h"
 #include "physics_saverestore.h"
@@ -767,13 +766,6 @@ void CServerGameDLL::DLLShutdown( void )
 	g_pGameSaveRestoreBlockSet->RemoveBlockHandler( GetAISaveRestoreBlockHandler() );
 	g_pGameSaveRestoreBlockSet->RemoveBlockHandler( GetPhysSaveRestoreBlockHandler() );
 	g_pGameSaveRestoreBlockSet->RemoveBlockHandler( GetEntitySaveRestoreBlockHandler() );
-
-	char *pFilename = g_TextStatsMgr.GetStatsFilename();
-	if ( !pFilename || !pFilename[0] )
-	{
-		g_TextStatsMgr.SetStatsFilename( "stats.txt" );
-	}
-	g_TextStatsMgr.WriteFile( filesystem );
 
 	IGameSystem::ShutdownAllSystems();
 
