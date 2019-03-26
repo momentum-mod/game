@@ -207,6 +207,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void ClearStartMark(int track);
 
     void DoMuzzleFlash() OVERRIDE;
+    void PreThink() OVERRIDE;
     void PostThink() OVERRIDE;
 
     // Ladder stuff
