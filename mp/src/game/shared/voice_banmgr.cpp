@@ -11,8 +11,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define BANMGR_FILEVERSION 1
-#define BANMGR_FILENAME "voice_ban.dt"
+#define BANMGR_FILEVERSION 2
+#define BANMGR_FILENAME "voice_bans.dt"
 
 bool CVoiceBanMgr::Init()
 {
