@@ -162,13 +162,8 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     if (BaseClass::IsVisible() == bShow)
         return;
 
-    C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-
     if (bShow)
     {
-        if (pPlayer)
-            pPlayer->m_Local.m_iHideHUD |= HIDEHUD_LEADERBOARDS;
-
         Reset(true);
         SetVisible(true);
         MoveToFront();
@@ -176,9 +171,6 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     }
     else
     {
-        if (pPlayer)
-            pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_LEADERBOARDS;
-
         SetVisible(false);
         SetMouseInputEnabled(false); // Turn mouse off
     }
