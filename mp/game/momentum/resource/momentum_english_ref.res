@@ -396,7 +396,11 @@
         "MOM_ZoneMenu_ZoneType_Stage" "Stage"
         "MOM_ZoneMenu_ZoneType_Checkpoint" "Checkpoint"
         "MOM_ZoneMenu_GridSize" "Grid Snap Size"
+        "MOM_ZoneMenu_GridSizeTT" "The amount of units of grid that the reticle will snap to."
         "MOM_ZoneMenu_TrackNumber" "Track Number:"
+        "MOM_ZoneMenu_TrackNumberTT" "Set the track number. -1 is for all tracks, 0 is the main map, and > 0 is the bonus stage number."
+        "MOM_ZoneMenu_ZoneNumber" "Zone Number:"
+        "MOM_ZoneMenu_ZoneNumberTT" "Set the zone number. Use 0 to automatically determine the zone number for the given track, otherwise manually specify. Note that start triggers start at zone number 1, so you should start at 2!"
 
 
         //MessageBoxPanel

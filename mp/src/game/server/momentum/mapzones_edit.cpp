@@ -28,15 +28,15 @@ static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
                             "start zone unless one already exists, in which case an end zone is created.f\n");
 static ConVar mom_zone_track("mom_zone_track", "0", FCVAR_CHEAT,
                              "What track to create the zone for. 0 = main track, >0 = bonus", true, 0, true, MAX_TRACKS);
+static ConVar mom_zone_zonenum("mom_zone_zonenum", "0", FCVAR_CHEAT,
+                                "Sets the zone number. Use 0 to automatically determine one, otherwise start from 2!\n", true, 0,
+                                false, MAX_ZONES);
 static MAKE_TOGGLE_CONVAR(mom_zone_auto_make_stage, "0", FCVAR_CHEAT,
                           "Whether the 'auto' setting for mom_zone_type should create a stage zone or end zone (after initial start zone)");
 
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
                                             "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
                                             0, true, 1);
-static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT,
-                                 "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0,
-                                 false, 0);
 static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT,
                                                "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
 
@@ -561,31 +561,35 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
     }
     break;
     case ZONE_TYPE_STAGE:
-        // MOM_TODO: case ZONE_TYPE_CHECKPOINT:
+    case ZONE_TYPE_CHECKPOINT:
         {
-            auto *pStage = static_cast<CTriggerStage *>(pEnt);
-            if (mom_zone_stage_num.GetInt() > 0)
+            const bool bIsStage = pEnt->GetZoneType() == ZONE_TYPE_STAGE;
+            auto pZone = static_cast<CTriggerZone*>(pEnt);
+            if (mom_zone_zonenum.GetInt() > 0)
             {
-                pStage->SetZoneNumber(mom_zone_stage_num.GetInt());
+                pZone->SetZoneNumber(mom_zone_zonenum.GetInt());
             }
             else
             {
-                int higheststage = 1;
+                int highestZone = 1;
 
-                CBaseEntity *pTemp = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage");
-                while (pTemp)
+                auto pTempEnt = gEntList.FindEntityByClassname(nullptr, bIsStage ? "trigger_momentum_timer_stage" :
+                                                               "trigger_momentum_timer_checkpoint");
+                while (pTempEnt)
                 {
-                    CTriggerStage *pTempStage = static_cast<CTriggerStage *>(pTemp);
-
-                    if (pTempStage && pTempStage->GetZoneNumber() > higheststage)
+                    const auto pTempZone = static_cast<CTriggerZone*>(pTempEnt);
+                    if (pTempZone)
                     {
-                        higheststage = pTempStage->GetZoneNumber();
+                        const auto iTempTrackNum = pTempZone->GetTrackNumber();
+                        if ((iTempTrackNum == -1 || iTempTrackNum == mom_zone_track.GetInt()) && pTempZone->GetZoneNumber() > highestZone)
+                            highestZone = pTempZone->GetZoneNumber();
                     }
 
-                    pTemp = gEntList.FindEntityByClassname(pTemp, "trigger_momentum_timer_stage");
+                    pTempEnt = gEntList.FindEntityByClassname(pTempEnt, bIsStage ? "trigger_momentum_timer_stage" :
+                                                              "trigger_momentum_timer_checkpoint");
                 }
 
-                pStage->SetZoneNumber(higheststage + 1);
+                pZone->SetZoneNumber(highestZone + 1);
             }
         }
     default:
@@ -652,8 +656,9 @@ void OnZoneEditingToggled(IConVar *var, const char *pOldVal, float fOldVal)
     }
     else
     {
-        // Player has entered zone editing mode, let's stop their timer
-        g_pMomentumTimer->Stop(CMomentumPlayer::GetLocalPlayer());
+        // Player has entered zone editing mode, let's stop their timer if it's running
+        if (g_pMomentumTimer->IsRunning())
+            g_pMomentumTimer->Stop(CMomentumPlayer::GetLocalPlayer());
     }
 }
 
