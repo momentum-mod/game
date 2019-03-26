@@ -114,15 +114,11 @@ void CEnvHudHint::InputHideHudHint( inputdata_t &inputdata )
 	}
 	else
 	{
-		CBaseEntity *pPlayer = NULL;
+		CBaseEntity *pPlayer = nullptr;
 
 		if ( inputdata.pActivator && inputdata.pActivator->IsPlayer() )
 		{
 			pPlayer = inputdata.pActivator;
-		}
-		else
-		{
-			pPlayer = UTIL_GetLocalPlayer();
 		}
 
 		if ( !pPlayer || !pPlayer->IsNetClient() )
