@@ -101,7 +101,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     bool m_bDidPlayerBhop; // MOM_TODO needs networking?
     bool m_bShouldLimitPlayerSpeed;
-    bool m_bTimerStartOnJump; // The timer should start or not while jumping?
     int m_iLimitSpeedType;    // Limit speed only when touching ground?
     int m_iSuccessiveBhops;   // How many successive bhops this player has
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
@@ -216,6 +215,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void SetLastEyeAngles(const QAngle &ang) { m_qangLastAngle = ang; }
     const QAngle &LastEyeAngles() const { return m_qangLastAngle; }
+
+    void OnJump();
+    void OnLand();
 
     void SetIsInAirDueToJump(bool val) { m_bInAirDueToJump = val; }
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }

@@ -412,6 +412,62 @@ CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
     return Instance(INDEXENT(0));
 }
 
+void CMomentumPlayer::OnJump()
+{
+    // OnCheckBhop code
+    m_bDidPlayerBhop = gpGlobals->tickcount - m_iLandTick < NUM_TICKS_TO_BHOP;
+    if (!m_bDidPlayerBhop)
+        m_iSuccessiveBhops = 0;
+
+    m_Data.m_flLastJumpVel = GetLocalVelocity().Length2D();
+    m_iSuccessiveBhops++;
+
+    if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
+    {
+        g_pMomentumTimer->TryStart(this, false);
+    }
+
+    // Set our runstats jump count
+    if (g_pMomentumTimer->IsRunning())
+    {
+        const int currentZone = m_Data.m_iCurrentZone;
+        m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1); // Increment total jumps
+        m_RunStats.SetZoneJumps(currentZone,
+                                         m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
+    }
+}
+
+void CMomentumPlayer::OnLand()
+{
+    m_iLandTick = gpGlobals->tickcount;
+
+    if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
+    {
+        // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
+        // MOM_TODO: Check what's wrong.
+
+        /*
+        Vector vecNewVelocity = GetAbsVelocity();
+
+        float flMaxSpeed = GetPlayerMaxSpeed();
+
+        if (m_SrvData.m_bShouldLimitPlayerSpeed && vecNewVelocity.Length2D() > flMaxSpeed)
+        {
+            float zSaved = vecNewVelocity.z;
+
+            VectorNormalizeFast(vecNewVelocity);
+
+            vecNewVelocity *= flMaxSpeed;
+            vecNewVelocity.z = zSaved;
+            SetAbsVelocity(vecNewVelocity);
+        }
+        */
+
+        // If we start timer on jump then we should reset on land
+        g_pMomentumTimer->Reset(this);
+    }
+}
+
 bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pStart)
 {
     pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
@@ -759,7 +815,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 SetAbsVelocity(vec3_origin);
 
             m_Data.m_iCurrentTrack = pStartTrigger->GetTrackNumber();
-            m_bTimerStartOnJump = pStartTrigger->StartOnJump();
+            // m_bTimerStartOnJump = pStartTrigger->StartOnJump();
             m_iLimitSpeedType = pStartTrigger->GetLimitSpeedType();
             m_bShouldLimitPlayerSpeed = pStartTrigger->IsLimitingSpeed();
 

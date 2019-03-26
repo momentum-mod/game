@@ -35,12 +35,6 @@ CMomentumTimer::CMomentumTimer(const char *pName)
 
 }
 
-void CMomentumTimer::PostInit()
-{
-    g_pModuleComms->ListenForEvent("player_jump", UtlMakeDelegate(this, &CMomentumTimer::OnPlayerJump));
-    g_pModuleComms->ListenForEvent("player_land", UtlMakeDelegate(this, &CMomentumTimer::OnPlayerLand));
-}
-
 void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
@@ -179,72 +173,10 @@ void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
     }
 }
 
-void CMomentumTimer::OnPlayerJump(KeyValues *kv)
-{
-    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(kv->GetPtr("player"));
-    if (!pPlayer)
-        return;
-
-    // OnCheckBhop code
-    pPlayer->m_bDidPlayerBhop = gpGlobals->tickcount - pPlayer->m_iLandTick < NUM_TICKS_TO_BHOP;
-    if (!pPlayer->m_bDidPlayerBhop)
-        pPlayer->m_iSuccessiveBhops = 0;
-
-    pPlayer->m_Data.m_flLastJumpVel = pPlayer->GetLocalVelocity().Length2D();
-    pPlayer->m_iSuccessiveBhops++;
-
-    if (pPlayer->m_Data.m_bIsInZone && pPlayer->m_Data.m_iCurrentZone == 1 && pPlayer->m_bTimerStartOnJump)
-    {
-        TryStart(pPlayer, false);
-    }
-
-    // Set our runstats jump count
-    if (IsRunning())
-    {
-        const int currentZone = pPlayer->m_Data.m_iCurrentZone;
-        pPlayer->m_RunStats.SetZoneJumps(0, pPlayer->m_RunStats.GetZoneJumps(0) + 1); // Increment total jumps
-        pPlayer->m_RunStats.SetZoneJumps(currentZone,
-                                         pPlayer->m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
-    }
-}
-
-void CMomentumTimer::OnPlayerLand(KeyValues *kv)
-{
-    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(kv->GetPtr("player"));
-    if (!pPlayer)
-        return;
-
-    if (pPlayer->m_Data.m_bIsInZone && pPlayer->m_Data.m_iCurrentZone == 1 && pPlayer->m_bTimerStartOnJump)
-    {
-        // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
-        // MOM_TODO: Check what's wrong.
-
-        /*
-        Vector vecNewVelocity = GetAbsVelocity();
-
-        float flMaxSpeed = GetPlayerMaxSpeed();
-
-        if (m_SrvData.m_bShouldLimitPlayerSpeed && vecNewVelocity.Length2D() > flMaxSpeed)
-        {
-            float zSaved = vecNewVelocity.z;
-
-            VectorNormalizeFast(vecNewVelocity);
-
-            vecNewVelocity *= flMaxSpeed;
-            vecNewVelocity.z = zSaved;
-            SetAbsVelocity(vecNewVelocity);
-        }
-        */
-
-        // If we start timer on jump then we should reset on land
-        Reset(pPlayer);
-    }
-}
-
 void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset)
 {
     // do not start timer if player is in practice mode or it's already running.
-    if (!IsRunning())
+    if (!m_bIsRunning)
     {
         SetShouldUseStartZoneOffset(bUseStartZoneOffset);
 
