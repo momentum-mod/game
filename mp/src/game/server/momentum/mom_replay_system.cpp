@@ -229,14 +229,14 @@ void CMomentumReplaySystem::UpdateRecordingParams()
         const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
         if (!pPlayer->m_bHasPracticeMode && pPlayer->GetObserverMode() == OBS_MODE_NONE)
         {
-            m_pRecordingReplay->AddFrame(CReplayFrame(m_pPlayer->EyeAngles(), m_pPlayer->GetAbsOrigin(), m_pPlayer->GetViewOffset().z,
-                                             m_pPlayer->m_nButtons, m_bTeleportedThisFrame));
+            m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->EyeAngles(), pPlayer->GetAbsOrigin(), pPlayer->GetViewOffset().z,
+                                             pPlayer->m_nButtons, m_bTeleportedThisFrame));
             m_bTeleportedThisFrame = false;
         }
         else
         {
             // MOM_TODO just repeat the last frame created (part of the mega refactor)
-            m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->m_angLastAng, pPlayer->m_vecLastPos, pPlayer->m_fLastViewOffset, pPlayer->m_nSavedButtons));
+            m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->m_angLastAng, pPlayer->m_vecLastPos, pPlayer->m_fLastViewOffset, pPlayer->m_nSavedButtons, false));
         }
 
         ++m_iTickCount; // increment recording tick
