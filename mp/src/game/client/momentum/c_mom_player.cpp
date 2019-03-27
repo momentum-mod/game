@@ -148,7 +148,7 @@ float C_MomentumPlayer::GetCurrentRunTime()
     if (m_Data.m_bTimerRunning)
         iTotalTicks = gpGlobals->tickcount - m_Data.m_iStartTick;    
     else if (m_Data.m_bMapFinished)
-        iTotalTicks = m_Data.m_iRunTimeTicks;
+        iTotalTicks = m_Data.m_iRunTime;
 
     return float(iTotalTicks) * m_Data.m_flTickRate;
 }

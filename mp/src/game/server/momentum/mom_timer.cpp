@@ -27,7 +27,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 };
 
 CMomentumTimer::CMomentumTimer(const char *pName)
-    : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0),
+    : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
       m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
@@ -48,7 +48,7 @@ void CMomentumTimer::LevelShutdownPreEntity()
     m_bWereCheatsActivated = false;
     for (int i = 0; i < MAX_TRACKS; i++)
     {
-        SetStartTrigger(i, nullptr);
+        m_hStartTriggers[i] = nullptr;
     }
 }
 
@@ -268,10 +268,18 @@ void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) c
 
 void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
 {
-    // Make sure trigger and associated track aren't mismatched
-    Assert(pTrigger ? (pTrigger->GetTrackNumber() == track) : true);
-    m_iLastZone = 0; // Allows us to overwrite previous runs
-    m_hStartTriggers[track] = pTrigger;
+    if (track >= 0 && track < MAX_TRACKS)
+    {
+        // Make sure trigger and associated track aren't mismatched
+        if (pTrigger && pTrigger->GetTrackNumber() == track)
+            m_hStartTriggers[track] = pTrigger;
+        else
+            Warning("Cannot set the start trigger for the given track; the trigger is null or its track doesn't match!\n");
+    }
+    else
+    {
+        Warning("Cannot set the start trigger; the track is outside the valid track numbers!\n");
+    }
 }
 
 static int GetNumEntitiesByClassname(const char *classname)
@@ -295,41 +303,7 @@ void CMomentumTimer::RequestZoneCount()
                    GetNumEntitiesByClassname("trigger_momentum_timer_checkpoint");
 }
 
-// This function is called every time CTriggerStage::StartTouch is called
-float CMomentumTimer::CalculateStageTime(int stage)
-{
-    if (stage > m_iLastZone)
-    {
-        float originalTime = GetCurrentTime();
-        // If the stage is a new one, we store the time we entered this stage in
-        m_flZoneEnterTime[stage] = stage == 1 ? 0.0f : // Always returns 0 for first stage.
-                                       originalTime + m_flTickOffsetFix[stage - 1];
-        DevLog("Original Time: %f\n New Time: %f\n", originalTime, m_flZoneEnterTime[stage]);
-    }
-    m_iLastZone = stage;
-    return m_flZoneEnterTime[stage];
-}
-
-float CMomentumTimer::GetLastRunTime()
-{
-    if (m_iEndTick == 0)
-        return 0.0f;
-
-    const float originalTime = static_cast<float>(GetLastRunTimeTicks()) * gpGlobals->interval_per_tick;
-    // apply precision fix, adding offset from start as well as subtracting offset from end.
-    // offset from end is 1 tick - fraction offset, since we started trace outside of the end zone.
-    return originalTime;
-    /*if (m_bShouldUseStartZoneOffset)
-    {
-        return originalTime + m_flTickOffsetFix[1] - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
-    }
-    else
-    {
-        return originalTime - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
-    }*/
-}
-
-int CMomentumTimer::GetLastRunTimeTicks() { return m_iEndTick - m_iStartTick; }
+int CMomentumTimer::GetLastRunTime() const { return m_iEndTick - m_iStartTick; }
 
 void CMomentumTimer::SetRunning(CMomentumPlayer *pPlayer, bool isRunning)
 {
