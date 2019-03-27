@@ -22,6 +22,7 @@ public:
     bool ShouldDraw() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdown() OVERRIDE;
+    void FireGameEvent(IGameEvent *event) OVERRIDE;
 
     void LoadComparisons();
     void LoadBogusComparisons();
