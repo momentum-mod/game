@@ -19,7 +19,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // HUD messages
     void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
     void DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) const;
-    void DispatchMapInfo();
+    void DispatchMapInfo(CMomentumPlayer *pPlayer);
 
     // ------------- Timer state related messages --------------------------
     // Starts the timer for the given starting tick
@@ -46,10 +46,9 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void SetStartTrigger(int track, CTriggerTimerStart *pTrigger);
 
     // Calculates the stage count
-    // Stores the result on m_iStageCount
-    void RequestZoneCount();
+    void CalculateZoneCounts();
     // Gets the total stage count
-    int GetZoneCount() const { return m_iZoneCount; };
+    int GetZoneCount(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_iZoneCount[track] : -1; };
 
     // Gets the current time for this timer
     int GetCurrentTime() const { return gpGlobals->tickcount - m_iStartTick; }
@@ -87,15 +86,16 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
   private:
-    void DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const;
+    void DispatchNoZonesMsg(CMomentumPlayer *pPlayer);
 
-  private:
-    int m_iZoneCount;
+    // The number of zones for a given track
+    int m_iZoneCount[MAX_TRACKS];
+    uint64 m_iLinearTracks; // Bit-encoded, if (m_iLinearTracks & (1 << trackNum) > 0), it's linear
+    int m_iHighestTrackNum; // Highest track number on this map
     int m_iStartTick, m_iEndTick;
     time_t m_iLastRunDate;
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
-    bool m_bMapIsLinear;
 
     CHandle<CTriggerTimerStart> m_hStartTriggers[MAX_TRACKS];
 

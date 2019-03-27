@@ -75,7 +75,8 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
                 UTIL_Remove(pEnt);
 
                 // Update zone count
-                g_pMomentumTimer->DispatchMapInfo();
+                g_pMomentumTimer->CalculateZoneCounts();
+                g_pMomentumTimer->DispatchMapInfo(CMomentumPlayer::GetLocalPlayer());
             }
         }
         else
@@ -91,7 +92,8 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
                 }
 
                 // Update zone count
-                g_pMomentumTimer->DispatchMapInfo();
+                g_pMomentumTimer->CalculateZoneCounts();
+                g_pMomentumTimer->DispatchMapInfo(CMomentumPlayer::GetLocalPlayer());
             }
         }
     }
@@ -358,7 +360,8 @@ void CMomZoneEdit::OnCreate(int zonetype)
     DevMsg("Created zone entity %i.\n", pEnt->entindex());
 
     // Update zone count
-    g_pMomentumTimer->DispatchMapInfo();
+    g_pMomentumTimer->CalculateZoneCounts();
+    g_pMomentumTimer->DispatchMapInfo(pPlayer);
 }
 
 void CMomZoneEdit::OnRemove()
