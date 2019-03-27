@@ -4,7 +4,6 @@
 
 #include <ctime>
 #include "in_buttons.h"
-#include "mom_modulecomms.h"
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
