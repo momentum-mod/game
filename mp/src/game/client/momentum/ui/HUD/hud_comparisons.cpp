@@ -174,8 +174,8 @@ inline void GenerateBogusRunStats(CMomRunStats *pStatsOut)
     for (int i = 0; i < pStatsOut->GetTotalZones(); i++)
     {
         // Time
-        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
-        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
+        pStatsOut->SetZoneTicks(i, RandomInt(250, 2500));
+        pStatsOut->SetZoneEnterTick(i, i == 1 ? 0 : RandomInt(250, 2500));
 
         // Velocity
         pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
@@ -377,17 +377,17 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
     case TIME_OVERALL:
     case ZONE_TIME:
         // Get the time difference in seconds.
-        act = type == TIME_OVERALL ? stats->GetZoneEnterTime(zone + 1) : stats->GetZoneTime(zone);
+        act = type == TIME_OVERALL ? stats->GetZoneEnterTick(zone + 1) : stats->GetZoneTicks(zone);
 
         if (LoadedComparison())
         {
             if (type == TIME_OVERALL)
             {
-                diff = act - GetRunComparisons()->runStats.GetZoneEnterTime(zone + 1);
+                diff = act - GetRunComparisons()->runStats.GetZoneEnterTick(zone + 1);
             }
             else
             {
-                diff = act - GetRunComparisons()->runStats.GetZoneTime(zone);
+                diff = act - GetRunComparisons()->runStats.GetZoneTicks(zone);
             }
         }
 
@@ -395,9 +395,9 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
         // If diff > 0, that means you're falling behind (losing time to) your PB!
 
         // Format the time for displaying
-        g_pMomentumUtil->FormatTime(act, tempANSITimeActual);
+        g_pMomentumUtil->FormatTime(act * gpGlobals->interval_per_tick, tempANSITimeActual);
         if (LoadedComparison())
-            g_pMomentumUtil->FormatTime(diff, tempANSITimeOutput);
+            g_pMomentumUtil->FormatTime(diff * gpGlobals->interval_per_tick, tempANSITimeOutput);
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference

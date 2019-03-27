@@ -14,8 +14,8 @@ RecvPropArray3(RECVINFO_ARRAY(m_iZoneStrafes), RecvPropInt(RECVINFO(m_iZoneStraf
 RecvPropArray3(RECVINFO_ARRAY(m_flZoneStrafeSyncAvg), RecvPropFloat(RECVINFO(m_flZoneStrafeSyncAvg[0]), SPROP_CHANGES_OFTEN)),
 RecvPropArray3(RECVINFO_ARRAY(m_flZoneStrafeSync2Avg), RecvPropFloat(RECVINFO(m_flZoneStrafeSync2Avg[0]), SPROP_CHANGES_OFTEN)),
 //Time
-RecvPropArray3(RECVINFO_ARRAY(m_flZoneEnterTime), RecvPropFloat(RECVINFO(m_flZoneEnterTime[0]))),
-RecvPropArray3(RECVINFO_ARRAY(m_flZoneTime), RecvPropFloat(RECVINFO(m_flZoneTime[0]))),
+RecvPropArray3(RECVINFO_ARRAY(m_iZoneEnterTick), RecvPropFloat(RECVINFO(m_iZoneEnterTick[0]))),
+RecvPropArray3(RECVINFO_ARRAY(m_iZoneTicks), RecvPropFloat(RECVINFO(m_iZoneTicks[0]))),
 //Velocity
 RecvPropArray3(RECVINFO_ARRAY(m_flZoneEnterSpeed3D), RecvPropFloat(RECVINFO(m_flZoneEnterSpeed3D[0]))),
 RecvPropArray3(RECVINFO_ARRAY(m_flZoneEnterSpeed2D), RecvPropFloat(RECVINFO(m_flZoneEnterSpeed2D[0]))),
@@ -36,8 +36,8 @@ SendPropArray3(SENDINFO_ARRAY3(m_iZoneStrafes), SendPropInt(SENDINFO_ARRAY(m_iZo
 SendPropArray3(SENDINFO_ARRAY3(m_flZoneStrafeSyncAvg), SendPropFloat(SENDINFO_ARRAY(m_flZoneStrafeSyncAvg), -1, SPROP_CHANGES_OFTEN)),
 SendPropArray3(SENDINFO_ARRAY3(m_flZoneStrafeSync2Avg), SendPropFloat(SENDINFO_ARRAY(m_flZoneStrafeSync2Avg), -1, SPROP_CHANGES_OFTEN)),
 //Time
-SendPropArray3(SENDINFO_ARRAY3(m_flZoneEnterTime), SendPropFloat(SENDINFO_ARRAY(m_flZoneEnterTime), -1, SPROP_CHANGES_OFTEN)),
-SendPropArray3(SENDINFO_ARRAY3(m_flZoneTime), SendPropFloat(SENDINFO_ARRAY(m_flZoneTime), -1, SPROP_CHANGES_OFTEN)),
+SendPropArray3(SENDINFO_ARRAY3(m_iZoneEnterTick), SendPropFloat(SENDINFO_ARRAY(m_iZoneEnterTick), -1, SPROP_CHANGES_OFTEN)),
+SendPropArray3(SENDINFO_ARRAY3(m_iZoneTicks), SendPropFloat(SENDINFO_ARRAY(m_iZoneTicks), -1, SPROP_CHANGES_OFTEN)),
 //Velocity
 SendPropArray3(SENDINFO_ARRAY3(m_flZoneEnterSpeed3D), SendPropFloat(SENDINFO_ARRAY(m_flZoneEnterSpeed3D))),
 SendPropArray3(SENDINFO_ARRAY3(m_flZoneEnterSpeed2D), SendPropFloat(SENDINFO_ARRAY(m_flZoneEnterSpeed2D))),
@@ -74,8 +74,8 @@ void CMomRunStats::Init(uint8 size /* = MAX_ZONES*/)
         SetZoneStrafes(i, 0);
         SetZoneStrafeSyncAvg(i, 0);
         SetZoneStrafeSync2Avg(i, 0);
-        SetZoneEnterTime(i, 0.0f);
-        SetZoneTime(i, 0.0f);
+        SetZoneEnterTick(i, 0);
+        SetZoneTicks(i, 0);
 
         SetZoneEnterSpeed(i, 0.0f, 0.0f);
         SetZoneVelocityMax(i, 0.0f, 0.0f);
@@ -96,8 +96,8 @@ void CMomRunStats::FullyCopyFrom(const CMomRunStats &other)
         SetZoneStrafeSyncAvg(i, other.m_flZoneStrafeSyncAvg[i]);
         SetZoneStrafeSync2Avg(i, other.m_flZoneStrafeSync2Avg[i]);
 
-        SetZoneEnterTime(i, other.m_flZoneEnterTime[i]);
-        SetZoneTime(i, other.m_flZoneTime[i]);
+        SetZoneEnterTick(i, other.m_iZoneEnterTick[i]);
+        SetZoneTicks(i, other.m_iZoneTicks[i]);
 
         SetZoneVelocityMax(i, other.m_flZoneVelocityMax3D[i], other.m_flZoneVelocityMax2D[i]);
         SetZoneVelocityAvg(i, other.m_flZoneVelocityAvg3D[i], other.m_flZoneVelocityAvg2D[i]);
@@ -121,8 +121,8 @@ void CMomRunStats::Deserialize(CUtlBuffer &reader)
 
         SetZoneStrafeSyncAvg(i, reader.GetFloat());
         SetZoneStrafeSync2Avg(i, reader.GetFloat());
-        SetZoneEnterTime(i, reader.GetFloat());
-        SetZoneTime(i, reader.GetFloat());
+        SetZoneEnterTick(i, reader.GetInt());
+        SetZoneTicks(i, reader.GetInt());
 
         float vel3D = 0.0f, vel2D = 0.0f;
         vel3D = reader.GetFloat();
@@ -153,8 +153,8 @@ void CMomRunStats::Serialize(CUtlBuffer &writer)
         writer.PutFloat(m_flZoneStrafeSyncAvg[i]);
         writer.PutFloat(m_flZoneStrafeSync2Avg[i]);
         //Time
-        writer.PutFloat(m_flZoneEnterTime[i]);
-        writer.PutFloat(m_flZoneTime[i]);
+        writer.PutInt(m_iZoneEnterTick[i]);
+        writer.PutInt(m_iZoneTicks[i]);
         //Velocity
         writer.PutFloat(m_flZoneVelocityMax3D[i]);
         writer.PutFloat(m_flZoneVelocityMax2D[i]);
@@ -179,13 +179,13 @@ uint32 CMomRunStats::GetZoneStrafes(int zone)
 {
     return zone > m_iTotalZones ? 0 : m_iZoneStrafes[zone];
 }
-float CMomRunStats::GetZoneTime(int zone)
+int CMomRunStats::GetZoneTicks(int zone)
 {
-    return zone > m_iTotalZones ? 0.0f : m_flZoneTime[zone];
+    return zone > m_iTotalZones ? 0 : m_iZoneTicks[zone];
 }
-float CMomRunStats::GetZoneEnterTime(int zone)
+int CMomRunStats::GetZoneEnterTick(int zone)
 {
-    return zone > m_iTotalZones ? 0.0f : m_flZoneEnterTime[zone];
+    return zone > m_iTotalZones ? 0 : m_iZoneEnterTick[zone];
 }
 float CMomRunStats::GetZoneStrafeSyncAvg(int zone)
 {
@@ -235,19 +235,19 @@ void CMomRunStats::SetZoneStrafes(int zone, uint32 value)
 
     m_iZoneStrafes.Set(zone, value);
 }
-void CMomRunStats::SetZoneTime(int zone, float value)
+void CMomRunStats::SetZoneTicks(int zone, int value)
 {
     if (zone > m_iTotalZones)
         return;
 
-    m_flZoneTime.Set(zone, value);
+    m_iZoneTicks.Set(zone, value);
 }
-void CMomRunStats::SetZoneEnterTime(int zone, float value)
+void CMomRunStats::SetZoneEnterTick(int zone, int value)
 {
     if (zone > m_iTotalZones)
         return;
 
-    m_flZoneEnterTime.Set(zone, value);
+    m_iZoneEnterTick.Set(zone, value);
 }
 void CMomRunStats::SetZoneStrafeSyncAvg(int zone, float value)
 {

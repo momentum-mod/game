@@ -50,15 +50,13 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void RequestZoneCount();
     // Gets the total stage count
     int GetZoneCount() const { return m_iZoneCount; };
-    float CalculateStageTime(int stageNum);
-    // Gets the time for the last run, if there was one
-    float GetLastRunTime();
-    int GetLastRunTimeTicks();
-    // Gets the date achieved for the last run.
-    time_t GetLastRunDate() const { return m_iLastRunDate; }
 
     // Gets the current time for this timer
-    float GetCurrentTime() const { return float(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; }
+    int GetCurrentTime() const { return gpGlobals->tickcount - m_iStartTick; }
+    // Gets the time for the last run, if there was one
+    int GetLastRunTime() const;
+    // Gets the date achieved for the last run.
+    time_t GetLastRunDate() const { return m_iLastRunDate; }
 
     // Practice mode- noclip mode that stops timer
     void EnablePractice(CMomentumPlayer *pPlayer);
@@ -94,7 +92,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
   private:
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick;
-    int m_iLastZone;
     time_t m_iLastRunDate;
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
@@ -109,7 +106,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // start trigger
     // also, subtract the ending offset from the time, since we end after we actually enter the ending trigger
     float m_flTickOffsetFix[MAX_ZONES]; // index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
-    float m_flZoneEnterTime[MAX_ZONES];
     bool m_bShouldUseStartZoneOffset;
     float m_flDistFixTraceCorners[8]; // array of floats representing the trace distance from each corner of the
                                       // player's collision hull

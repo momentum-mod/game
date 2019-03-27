@@ -335,7 +335,7 @@ void CMomentumReplaySystem::LoadReplayGhost()
 
     auto pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
     pGhost->m_RunStats.FullyCopyFrom(*m_pPlaybackReplay->GetRunStats());
-    pGhost->m_Data.m_iRunTimeTicks = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
+    pGhost->m_Data.m_iRunTime = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
     pGhost->m_Data.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
     pGhost->m_Data.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
     pGhost->SetPlaybackReplay(m_pPlaybackReplay);
