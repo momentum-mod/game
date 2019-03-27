@@ -121,7 +121,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 
         m_iTotalTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
-		m_Data.m_iCurrentTrack = m_pPlaybackReplay->GetTrackNumber();
+        m_Data.m_iCurrentTrack = m_pPlaybackReplay->GetTrackNumber();
 
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }

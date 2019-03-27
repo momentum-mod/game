@@ -41,7 +41,6 @@
 #include "MainMenu.h"
 
 #include "BasePanel.h"
-#include "mom_steam_helper.h"
 #include "engine/IEngineSound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -125,16 +124,11 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     enginesound = static_cast<IEngineSound *>(factory(IENGINESOUND_CLIENT_INTERFACE_VERSION, nullptr));
     engine = static_cast<IVEngineClient *>(factory(VENGINE_CLIENT_INTERFACE_VERSION, nullptr));
     gameeventmanager = static_cast<IGameEventManager2 *>(factory(INTERFACEVERSION_GAMEEVENTSMANAGER2, nullptr));
-    m_pRenderView = static_cast<IVRenderView*>(factory(VENGINE_RENDERVIEW_INTERFACE_VERSION, nullptr));
-    m_pMaterialSystem = static_cast<IMaterialSystem*>(factory(MATERIAL_SYSTEM_INTERFACE_VERSION, nullptr));
 
     if (!engine || !enginesound || !enginesurfacefuncs || !gameuifuncs || !enginevguifuncs)
     {
         Error("CGameUI::Initialize() failed to get necessary interfaces\n");
     }
-
-    if (gameeventmanager)
-        g_pMomentumSteamHelper->ListenForGameEvent("lobby_leave");
 
     // setup base panel
     staticPanel = new CBasePanel();

@@ -1,16 +1,12 @@
 #include "cbase.h"
 
-#include <vgui/ILocalize.h>
 #include "hud_basechat.h"
 #include "hud_chat.h"
 #include "hud_macros.h"
 #include "momentum/mom_shareddefs.h"
 
-#include "clientmode.h"
 #include "hud_spectatorinfo.h"
-#include "mom_steam_helper.h"
 #include "vgui/IScheme.h"
-#include <vgui/ISurface.h>
 
 #include "tier0/memdbgon.h"
 
@@ -35,6 +31,8 @@ CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName), m_pSpect
     m_pTypingMembers = new Label(this, "TypingMembers", "");
 
     LoadControlSettings("resource/ui/BaseChat.res");
+
+    ListenForGameEvent("lobby_leave");
 }
 
 void CHudChat::Init(void)
@@ -59,6 +57,12 @@ void CHudChat::Init(void)
     m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197982874432))); // juxtapo
 }
 
+void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
+{
+    if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
+        m_LobbyID = pParam->m_ulSteamIDLobby;
+}
+
 void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
 {
     const CSteamID msgSender = CSteamID(pParam->m_ulSteamIDUser);
@@ -73,10 +77,10 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
-    const char *spectatingText = g_pMomentumSteamHelper->GetLobbyMemberData(msgSender, LOBBY_DATA_IS_SPEC);
+    const char *spectatingText = SteamMatchmaking()->GetLobbyMemberData(m_LobbyID, msgSender, LOBBY_DATA_IS_SPEC);
     const bool isSpectating = spectatingText != nullptr && Q_strlen(spectatingText) > 0;
     char message[4096];
-    // MOM_TODO: This won't be just text in the future, if we captialize on being able to send binary data. Wrap this is
+    // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is
     // something and parse it
     SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID,
                                                            nullptr, message, 4096, nullptr);
@@ -170,29 +174,40 @@ void CHudChat::StopMessageMode()
 {
     BaseClass::StopMessageMode();
 
-    g_pMomentumSteamHelper->SetLobbyMemberData(LOBBY_DATA_TYPING, nullptr);
+    if (m_LobbyID.IsValid())
+        SteamMatchmaking()->SetLobbyData(m_LobbyID, LOBBY_DATA_TYPING, nullptr);
 
     // Can't be typing if we close the chat
     m_bIsVisible = m_bTyping = false;
     m_pTypingMembers->SetVisible(false);
 }
 
+void CHudChat::FireGameEvent(IGameEvent *event)
+{
+    if (FStrEq(event->GetName(), "lobby_leave"))
+    {
+        m_LobbyID.Clear();
+    }
+
+    BaseClass::FireGameEvent(event);
+}
+
 void CHudChat::OnThink()
 {
     BaseClass::OnThink();
 
-    if (g_pMomentumSteamHelper->IsLobbyValid() && GetMessageMode() != 0 && GetInputPanel())
+    if (m_LobbyID.IsValid() && GetMessageMode() != 0 && GetInputPanel())
     {
         const int isSomethingTyped = GetInputPanel()->GetTextLength() > 0;
         if (isSomethingTyped && !m_bTyping)
         {
-            g_pMomentumSteamHelper->SetLobbyMemberData(LOBBY_DATA_TYPING, "y");
-            m_bTyping = true;
+            if (SteamMatchmaking()->SetLobbyData(m_LobbyID, LOBBY_DATA_TYPING, "y"))
+               m_bTyping = true;
         }
         else if (!isSomethingTyped && m_bTyping)
         {
-            g_pMomentumSteamHelper->SetLobbyMemberData(LOBBY_DATA_TYPING, nullptr);
-            m_bTyping = false;
+            if (SteamMatchmaking()->SetLobbyData(m_LobbyID, LOBBY_DATA_TYPING, nullptr))
+                m_bTyping = false;
         }
     }
 
@@ -224,8 +239,7 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
     if (pParam->m_bSuccess && pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember)
     {
         // Typing Status
-        const char *typingText =
-            g_pMomentumSteamHelper->GetLobbyMemberData(pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
+        const char *typingText = SteamMatchmaking()->GetLobbyMemberData(m_LobbyID, pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
         const bool isTyping = typingText != nullptr && Q_strlen(typingText) > 0;
         const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
         const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
