@@ -5,14 +5,9 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef GAMEUI_INTERFACE_H
-#define GAMEUI_INTERFACE_H
 #pragma once
 
 #include "GameUI/IGameUI.h"
-
-#include "view_shared.h"
-#include "ivrenderview.h"
 
 class IGameClientExports;
 class CCommand;
@@ -106,15 +101,7 @@ class CGameUI : public IGameUI
     void HideLoadingBackgroundDialog();
     bool HasLoadingBackgroundDialog();
 
-    virtual CViewSetup GetView() const { return m_pView; }
-    virtual VPlane *GetFrustum() const { return m_pFrustum; }
-    virtual ITexture *GetMaskTexture() const { return m_pMaskTexture; }
-    virtual IVRenderView* GetRenderView() const { return m_pRenderView; }
-    virtual IMaterialSystem* GetMaterialSystem() const { return m_pMaterialSystem; }
     virtual Vector2D GetViewport() const;
-    void SetView(const CViewSetup &view) { m_pView = view; }
-    void SetFrustum(VPlane *frustum) { m_pFrustum = frustum; }
-    void SetMaskTexture(ITexture *maskTexture) { m_pMaskTexture = maskTexture; }
 
     void GetLocalizedString(const char *pToken, wchar_t **pOut);
 
@@ -135,12 +122,6 @@ class CGameUI : public IGameUI
 
     char m_szPreviousStatusText[128];
     char m_szPlatformDir[MAX_PATH];
-
-    CViewSetup m_pView;
-    VPlane *m_pFrustum;
-    ITexture *m_pMaskTexture;
-    IVRenderView *m_pRenderView;
-    IMaterialSystem *m_pMaterialSystem;
 };
 
 // Purpose: singleton accessor
@@ -148,5 +129,3 @@ extern CGameUI &GameUI();
 
 // expose client interface
 extern IGameClientExports *GameClientExports();
-
-#endif // GAMEUI_INTERFACE_H

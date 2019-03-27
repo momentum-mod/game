@@ -19,7 +19,6 @@ class MainMenu : public vgui::EditablePanel, public IGameEventListener2
     MainMenu(Panel *parent);
     ~MainMenu();
 
-    void OnTick() OVERRIDE;
     void OnThink() OVERRIDE;
     bool IsVisible() OVERRIDE;
     void OnCommand(char const *cmd) OVERRIDE;

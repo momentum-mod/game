@@ -11,6 +11,7 @@
 #define MOM_CURRENT_VERSION "0.7.2"
 
 #define MAX_TRACKS 64
+#define MAX_ZONES 64
 
 // Zone types enum
 // NOTE: If adding a new zone type make sure to add a case for it
@@ -231,8 +232,6 @@ enum SPECTATE_MSG_TYPE
                     #command_name);                                                                                    \
         }                                                                                                              \
     }
-
-#define MAX_ZONES 64
 
 #define ____CHECK_STEAM_API(steam_interface, ret)  \
     if (!steam_interface) { \
