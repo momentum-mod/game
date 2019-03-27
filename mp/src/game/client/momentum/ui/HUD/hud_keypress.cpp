@@ -88,9 +88,14 @@ CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
 
 bool CHudKeyPressDisplay::ShouldDraw()
 {
+    if (!showkeys.GetBool())
+        return false;
     // don't show during map finished dialog
+    bool shouldDrawLocal = false;
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-    return showkeys.GetBool() && pPlayer && !pPlayer->m_Data.m_bMapFinished && CHudElement::ShouldDraw();
+    if (pPlayer)
+        shouldDrawLocal = !pPlayer->GetCurrentUIEntData()->m_bMapFinished;
+    return shouldDrawLocal && CHudElement::ShouldDraw();
 }
 
 void CHudKeyPressDisplay::Init()
