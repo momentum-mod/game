@@ -11,9 +11,9 @@
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Panel.h>
+#include "vgui_controls/AnimationController.h"
 
 #include "mom_event_listener.h"
-#include "mom_modulecomms.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
@@ -38,6 +38,8 @@ class CHudTimer : public CHudElement, public EditablePanel
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
     void MsgFunc_Timer_Event(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);
+
+    CPanelAnimationVar(Color, m_StatusColor, "StatusColor", "Mom.Panel.Fg");
 
   private:
     void SetToNoTimer();
@@ -247,6 +249,7 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
     else if (type == TIMER_EVENT_FAILED)
     {
         pPlayer->EmitSound("Momentum.FailedStartTimer");
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("TimerFailStart");
     }
 }
 
@@ -262,6 +265,8 @@ void CHudTimer::SetToNoTimer()
 
 void CHudTimer::OnThink()
 {
+    m_pMainStatusLabel->SetFgColor(m_StatusColor);
+
     const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
     if (pLocal)
     {

@@ -2,6 +2,12 @@ event LevelInit
 {
 }
 
+event TimerFailStart
+{
+    Animate HudTimer StatusColor "255 0 0 255" Spline 0.0 0.3
+    Animate HudTimer StatusColor "Mom.Panel.Fg" Spline 0.3 0.3
+}
+
 event VersionPulse
 {
     Animate VersionLabel alpha "0" Spline 0.0 1.0
