@@ -61,7 +61,6 @@ $Project "GameUI"
         $File   "MainMenu.h"
         $File   "MainMenuButton.h"
         $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
-        $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
     }
 
     $Folder "Public Header Files"
@@ -115,17 +114,6 @@ $Project "GameUI"
         $File   "OptionsSubMouse.h"
         $File   "OptionsSubVideo.cpp"
         $File   "OptionsSubVideo.h"
-    }
-    
-    $File "$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
-    {
-        $Configuration
-        {
-            $Compiler
-            {
-                $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-            }
-        }
     }
 
     $Folder "Link Libraries"

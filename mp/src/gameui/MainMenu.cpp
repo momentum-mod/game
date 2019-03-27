@@ -9,8 +9,8 @@
 
 #include "filesystem.h"
 #include "KeyValues.h"
+#include "igameevents.h"
 
-#include "mom_steam_helper.h"
 #include "mom_shareddefs.h"
 #include "fmtstr.h"
 
@@ -21,6 +21,8 @@
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
+
+extern IGameEventManager2 *gameeventmanager;
 
 MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 {
@@ -35,10 +37,6 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 
     // Set our initial size
     SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
-
-    //ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
-    // First check here
-    //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 
     // Listen for game events
     if (gameeventmanager)
@@ -108,13 +106,6 @@ MainMenu::~MainMenu()
     {
         gameeventmanager->RemoveListener(this);
     }
-}
-
-
-void MainMenu::OnTick()
-{
-    // We're the only one who should call this! (As we tick once every 2 mins)
-    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 }
 
 void MainMenu::OnThink()
