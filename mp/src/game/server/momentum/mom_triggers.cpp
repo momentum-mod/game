@@ -266,7 +266,7 @@ IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
 END_SEND_TABLE()
 
 CTriggerTimerStart::CTriggerTimerStart()
-    : m_angLook(vec3_angle), m_fBhopLeaveSpeed(250), m_bTimerStartOnJump(false),
+    : m_angLook(vec3_angle), m_fBhopLeaveSpeed(350.0f), m_bTimerStartOnJump(false),
       m_iLimitSpeedType(SPEED_NORMAL_LIMIT)
 {
     m_iZoneNumber = 1;

@@ -443,26 +443,6 @@ void CMomentumPlayer::OnLand()
 
     if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
     {
-        // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
-        // MOM_TODO: Check what's wrong.
-
-        /*
-        Vector vecNewVelocity = GetAbsVelocity();
-
-        float flMaxSpeed = GetPlayerMaxSpeed();
-
-        if (m_SrvData.m_bShouldLimitPlayerSpeed && vecNewVelocity.Length2D() > flMaxSpeed)
-        {
-            float zSaved = vecNewVelocity.z;
-
-            VectorNormalizeFast(vecNewVelocity);
-
-            vecNewVelocity *= flMaxSpeed;
-            vecNewVelocity.z = zSaved;
-            SetAbsVelocity(vecNewVelocity);
-        }
-        */
-
         // If we start timer on jump then we should reset on land
         g_pMomentumTimer->Reset(this);
     }
@@ -810,10 +790,6 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
             const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
-            // First of all, hard-cap speed, regardless of re-entry
-            if (GetAbsVelocity().IsLengthGreaterThan(300.0f))
-                SetAbsVelocity(vec3_origin);
-
             m_Data.m_iCurrentTrack = pStartTrigger->GetTrackNumber();
             // m_bTimerStartOnJump = pStartTrigger->StartOnJump();
             m_iLimitSpeedType = pStartTrigger->GetLimitSpeedType();
@@ -920,6 +896,20 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_START:
             g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
             g_pMomentumTimer->TryStart(this, true);
+            if (m_bShouldLimitPlayerSpeed)
+            {
+                Vector vecNewVelocity = GetAbsVelocity();
+
+                const float flMaxSpeed = 350.0f;
+
+                if (vecNewVelocity.Length2D() > flMaxSpeed)
+                {
+                    VectorNormalizeFast(vecNewVelocity);
+
+                    vecNewVelocity *= flMaxSpeed;
+                    SetAbsVelocity(vecNewVelocity);
+                }
+            }
             m_bShouldLimitPlayerSpeed = false;
             // No break here, we want to fall through; this handles both the start and stage triggers
         case ZONE_TYPE_STAGE:

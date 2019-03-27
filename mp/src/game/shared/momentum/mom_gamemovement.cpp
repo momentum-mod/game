@@ -52,7 +52,6 @@ void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *dat
     Assert(m_pPlayer);
 
     BaseClass::ProcessMovement(pPlayer, data);
-    LimitStartZoneSpeed();
 }
 
 void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
