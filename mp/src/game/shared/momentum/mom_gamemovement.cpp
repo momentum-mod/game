@@ -1427,13 +1427,13 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
             if (bShouldLimitSpeed)
             {
                 Vector& velocity = mv->m_vecVelocity;
-                float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
+                float PunishVelSquared = startTrigger->GetSpeedLimit() * startTrigger->GetSpeedLimit();
 
                 if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
                 {
                     float flOldz = velocity.z;
                     VectorNormalizeFast(velocity);
-                    velocity *= startTrigger->GetMaxLeaveSpeed();
+                    velocity *= startTrigger->GetSpeedLimit();
                     velocity.z = flOldz;
                     // New velocity is the unitary form of the current vel vector times the max speed amount
                     m_pPlayer->m_bShouldLimitSpeed = true;

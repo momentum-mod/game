@@ -423,7 +423,7 @@ void CMomentumPlayer::OnJump()
     m_Data.m_flLastJumpVel = GetLocalVelocity().Length2D();
     m_iSuccessiveBhops++;
 
-    if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
+    if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1 && m_bStartTimerOnJump)
     {
         g_pMomentumTimer->TryStart(this, false);
     }
@@ -792,7 +792,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
             m_Data.m_iCurrentTrack = pStartTrigger->GetTrackNumber();
-            // m_bTimerStartOnJump = pStartTrigger->StartOnJump();
+            m_bStartTimerOnJump = pStartTrigger->StartOnJump();
             m_iLimitSpeedType = pStartTrigger->GetLimitSpeedType();
             m_bShouldLimitPlayerSpeed = pStartTrigger->IsLimitingSpeed();
 
@@ -899,9 +899,10 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
             g_pMomentumTimer->TryStart(this, true);
             if (m_bShouldLimitPlayerSpeed)
             {
+                const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
                 Vector vecNewVelocity = GetAbsVelocity();
 
-                const float flMaxSpeed = 350.0f;
+                const float flMaxSpeed = pStart->GetSpeedLimit();
 
                 if (vecNewVelocity.Length2D() > flMaxSpeed)
                 {

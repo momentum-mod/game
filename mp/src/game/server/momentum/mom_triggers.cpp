@@ -254,9 +254,7 @@ int CTriggerStage::GetZoneType()
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-    // Since the  m_fBhopLeaveSpeed key is mostly used in a lot of cases, we will use this as reference instead.
-    // Don't know if we should use m_flMaxSpeed instead, but yeah.
-    DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
+    DEFINE_KEYFIELD(m_fSpeedLimit, FIELD_FLOAT, "speed_limit"),
     DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles"),
     DEFINE_KEYFIELD(m_bTimerStartOnJump, FIELD_BOOLEAN, "StartOnJump"),
     DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "LimitSpeedType")
@@ -266,7 +264,7 @@ IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
 END_SEND_TABLE()
 
 CTriggerTimerStart::CTriggerTimerStart()
-    : m_angLook(vec3_angle), m_fBhopLeaveSpeed(350.0f), m_bTimerStartOnJump(false),
+    : m_angLook(vec3_angle), m_fSpeedLimit(350.0f), m_bTimerStartOnJump(true),
       m_iLimitSpeedType(SPEED_NORMAL_LIMIT)
 {
     m_iZoneNumber = 1;
@@ -274,7 +272,7 @@ CTriggerTimerStart::CTriggerTimerStart()
 bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto) const
 {
     pKvInto->SetName("start");
-    pKvInto->SetFloat("bhopleavespeed", GetMaxLeaveSpeed());
+    pKvInto->SetFloat("speed_limit", GetSpeedLimit());
     pKvInto->SetBool("limitingspeed", IsLimitingSpeed());
     pKvInto->SetBool("StartOnJump", StartOnJump());
     pKvInto->SetInt("LimitSpeedType", GetLimitSpeedType());
@@ -295,7 +293,7 @@ bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *kv)
 
     SetName(MAKE_STRING("Start Trigger"));
 
-    SetMaxLeaveSpeed(kv->GetFloat("bhopleavespeed"));
+    SetSpeedLimit(kv->GetFloat("speed_limit", 350.0f));
     SetIsLimitingSpeed(kv->GetBool("limitingspeed"));
     SetStartOnJump(kv->GetBool("StartOnJump"));
     SetLimitSpeedType(kv->GetInt("LimitSpeedType"));
@@ -324,13 +322,13 @@ void CTriggerTimerStart::Spawn()
 {
     m_iZoneNumber = 1;
     // We don't want negative velocities (We're checking against an absolute value)
-    m_fBhopLeaveSpeed = fabs(m_fBhopLeaveSpeed);
+    m_fSpeedLimit = fabs(m_fSpeedLimit);
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
 
     g_pMomentumTimer->SetStartTrigger(m_iTrackNumber, this);
 }
-void CTriggerTimerStart::SetMaxLeaveSpeed(const float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
+void CTriggerTimerStart::SetSpeedLimit(const float fSpeed) { m_fSpeedLimit = fSpeed; }
 void CTriggerTimerStart::SetLookAngles(const QAngle &newang) { m_angLook = newang; }
 void CTriggerTimerStart::SetIsLimitingSpeed(const bool bIsLimitSpeed)
 {
