@@ -116,6 +116,9 @@ void C_RunComparisons::Init()
     LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
     LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
     LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
+
+    if (!m_bLoadedBogusComparison)
+        ListenForGameEvent("replay_save");
 }
 
 bool C_RunComparisons::ShouldDraw()
@@ -234,12 +237,23 @@ void C_RunComparisons::UnloadComparisons()
 void C_RunComparisons::LevelInitPostEntity()
 {
     // Load the initial comparisons
-    LoadComparisons();
+    if (!m_bLoadedBogusComparison)
+        LoadComparisons();
 }
 
 void C_RunComparisons::LevelShutdown()
 {
-    UnloadComparisons();
+    if (!m_bLoadedBogusComparison)
+        UnloadComparisons();
+}
+
+void C_RunComparisons::FireGameEvent(IGameEvent *event)
+{
+    if (event->GetBool("save"))
+    {
+        // Reload upon setting a new run (ideally this would be if it's a PB but meh)
+        LoadComparisons();
+    }
 }
 
 void C_RunComparisons::OnThink()
@@ -669,12 +683,12 @@ void C_RunComparisons::Paint()
     int yToIncrementBy = surface()->GetFontTall(m_hTextFont) + 2; //+2 for padding
     int Y = text_ypos + yToIncrementBy;
 
-    int STAGE_BUFFER = mom_comparisons_max_zones.GetInt();
+    const int ZONE_BUFFER = mom_comparisons_max_zones.GetInt();
     for (int i = 1; i < currentStage; i++)
     {
         // We need a buffer. We only want the last STAGE_BUFFER amount of
         // stages. (So if there's 20 stages, we only show the last X stages, not all.)
-        if (i >= (currentStage - STAGE_BUFFER))
+        if (i >= (currentStage - ZONE_BUFFER))
         {
             const wchar_t *pwZoneStr = CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpoint : m_wStage, i);
             const size_t zoneStrLen = Q_wcslen(pwZoneStr);
