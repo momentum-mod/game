@@ -207,8 +207,8 @@ class CTriggerTimerStart : public CTriggerZone
 
     void Spawn() OVERRIDE;
 
-    float GetMaxLeaveSpeed() const { return m_fBhopLeaveSpeed; }
-    void SetMaxLeaveSpeed(const float maxLeaveSpeed);
+    float GetSpeedLimit() const { return m_fSpeedLimit; }
+    void SetSpeedLimit(const float maxLeaveSpeed);
     void SetLookAngles(const QAngle &newang);
     const QAngle &GetLookAngles() const { return m_angLook; }
 
@@ -229,8 +229,8 @@ class CTriggerTimerStart : public CTriggerZone
   private:
     QAngle m_angLook;
 
-    // How fast can player leave start trigger if they bhopped?
-    float m_fBhopLeaveSpeed;
+    // How fast can player leave start trigger?
+    float m_fSpeedLimit;
     // This might be needed in case for some maps where the start zone is above a descent, when there is a wall in
     // front: ref bhop_w1s1
     bool m_bTimerStartOnJump;
