@@ -38,8 +38,8 @@ public:
     uint8 GetTotalZones();
     uint32 GetZoneJumps(int zone);
     uint32 GetZoneStrafes(int zone);
-    float GetZoneTime(int zone);
-    float GetZoneEnterTime(int zone);
+    int GetZoneTicks(int zone);
+    int GetZoneEnterTick(int zone);
     float GetZoneStrafeSyncAvg(int zone);
     float GetZoneStrafeSync2Avg(int zone);
     float GetZoneEnterSpeed(int zone, bool vel2D);
@@ -51,8 +51,8 @@ public:
     void SetTotalZones(uint8 zones);
     void SetZoneJumps(int zone, uint32 value);
     void SetZoneStrafes(int zone, uint32 value);
-    void SetZoneTime(int zone, float value);
-    void SetZoneEnterTime(int zone, float value);
+    void SetZoneTicks(int zone, int value);
+    void SetZoneEnterTick(int zone, int value);
     void SetZoneStrafeSyncAvg(int zone, float value);
     void SetZoneStrafeSync2Avg(int zone, float value);
     void SetZoneEnterSpeed(int zone, float vert, float hor);
@@ -63,8 +63,8 @@ public:
     CNetworkVar(uint8, m_iTotalZones);
     CNetworkArray(int, m_iZoneJumps, MAX_ZONES + 1);
     CNetworkArray(int, m_iZoneStrafes, MAX_ZONES + 1);
-    CNetworkArray(float, m_flZoneTime, MAX_ZONES + 1); // MOM_TODO change to ticks
-    CNetworkArray(float, m_flZoneEnterTime, MAX_ZONES + 1); // MOM_TODO change to ticks
+    CNetworkArray(int, m_iZoneTicks, MAX_ZONES + 1);
+    CNetworkArray(int, m_iZoneEnterTick, MAX_ZONES + 1);
     CNetworkArray(float, m_flZoneStrafeSyncAvg, MAX_ZONES + 1);
     CNetworkArray(float, m_flZoneStrafeSync2Avg, MAX_ZONES + 1);
     CNetworkArray(float, m_flZoneEnterSpeed3D, MAX_ZONES + 1);

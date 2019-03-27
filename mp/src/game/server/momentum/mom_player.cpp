@@ -804,31 +804,29 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
     case ZONE_TYPE_STOP:
         {
             // We've reached end zone, stop here
-            auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
+            //auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
 
             if (g_pMomentumTimer->IsRunning() && !IsSpectatingGhost() && !m_bHasPracticeMode)
             {
                 const int zoneNum = m_Data.m_iCurrentZone;
 
                 // This is needed so we have an ending velocity.
-
                 const float endvel = GetLocalVelocity().Length();
                 const float endvel2D = GetLocalVelocity().Length2D();
 
                 m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
 
                 // Check to see if we should calculate the timer offset fix
-                if (pStopTrigger->ContainsPosition(GetPreviousOrigin()))
+                /*if (pStopTrigger->ContainsPosition(GetPreviousOrigin()))
                     DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
                 else
                 {
                     DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                    g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
-                }
+                    // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
+                }*/
 
                 // This is needed for the final stage
-                m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
-                                                m_RunStats.GetZoneEnterTime(zoneNum));
+                m_RunStats.SetZoneTicks(zoneNum, g_pMomentumTimer->GetCurrentTime() - m_RunStats.GetZoneEnterTick(zoneNum));
 
                 // Ending velocity checks
                 float finalVel = endvel;
@@ -846,10 +844,9 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 // Stop the timer
                 g_pMomentumTimer->Stop(this, true);
                 m_Data.m_flTickRate = gpGlobals->interval_per_tick;
-                m_Data.m_iRunTimeTicks = g_pMomentumTimer->GetLastRunTimeTicks();
+                m_Data.m_iRunTime = g_pMomentumTimer->GetLastRunTime();
                 // The map is now finished, show the mapfinished panel
                 m_Data.m_bMapFinished = true;
-                m_Data.m_bTimerRunning = false;
             }
         }
         break;
@@ -864,13 +861,16 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             if (g_pMomentumTimer->IsRunning())
             {
                 const int zoneNum = pTrigger->GetZoneNumber();
-                m_RunStats.SetZoneExitSpeed(zoneNum - 1, GetLocalVelocity().Length(),
-                                            GetLocalVelocity().Length2D());
-                g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
-                const float fCurrentZoneEnterTime = g_pMomentumTimer->CalculateStageTime(zoneNum);
-                m_RunStats.SetZoneEnterTime(zoneNum, fCurrentZoneEnterTime);
-                m_RunStats.SetZoneTime(zoneNum - 1, fCurrentZoneEnterTime -
-                                       g_pMomentumTimer->CalculateStageTime(zoneNum - 1));
+                const auto locVel = GetLocalVelocity();
+                m_RunStats.SetZoneExitSpeed(zoneNum - 1, locVel.Length(), locVel.Length2D());
+                // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
+                
+                if (zoneNum > m_Data.m_iCurrentZone)
+                {
+                    const auto iTime = g_pMomentumTimer->GetCurrentTime();
+                    m_RunStats.SetZoneEnterTick(zoneNum, iTime);
+                    m_RunStats.SetZoneTicks(zoneNum - 1, iTime - m_RunStats.GetZoneEnterTick(zoneNum - 1));
+                }
             }
         }
     default:
@@ -894,7 +894,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_CHECKPOINT:
             break;
         case ZONE_TYPE_START:
-            g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
+            // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
             g_pMomentumTimer->TryStart(this, true);
             if (m_bShouldLimitPlayerSpeed)
             {
