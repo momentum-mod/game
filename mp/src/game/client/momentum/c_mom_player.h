@@ -48,6 +48,9 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
 
+    CNetworkArray(int, m_iZoneCount, MAX_TRACKS); // The number of zones for a given track
+    CNetworkArray(bool, m_iLinearTracks, MAX_TRACKS); // If a given track is linear or not
+
     int m_afButtonDisabled;
     CNetworkVar(bool, m_bAutoBhop);
 

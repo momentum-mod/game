@@ -6,7 +6,6 @@
 
 #include <time.h>
 #include "fmtstr.h"
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "steam/steam_api.h"
@@ -245,8 +244,8 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
         const int entIndx = event->GetInt("ent");
         if (entIndx == engine->GetLocalPlayer())
         {
+            const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
             const int currentZone = event->GetInt("num", -1);
-            const int zoneCount = g_MOMEventListener->m_iMapZoneCount;
             if (bZoneEnter && currentZone == 1)
             {
                 Q_strncpy(m_szDiscordState, "Start Zone", DISCORD_MAX_BUFFER_SIZE);
@@ -255,13 +254,13 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
             {
                 Q_strncpy(m_szDiscordState, "End Zone", DISCORD_MAX_BUFFER_SIZE);
             }
-            else if (zoneCount > 0)
+            else if (pPlayer && pPlayer->m_iZoneCount[pPlayer->m_Data.m_iCurrentTrack] > 0)
             {
-                const bool linearMap = g_MOMEventListener->m_bMapIsLinear;
+                const bool linearTrack = pPlayer->m_iLinearTracks[pPlayer->m_Data.m_iCurrentTrack];
 
-                Q_snprintf(m_szDiscordState, DISCORD_MAX_BUFFER_SIZE, "%s %i/%i", linearMap ? "Checkpoint" : "Stage",
+                Q_snprintf(m_szDiscordState, DISCORD_MAX_BUFFER_SIZE, "%s %i/%i", linearTrack ? "Checkpoint" : "Stage",
                            currentZone, // Current stage/checkpoint
-                           zoneCount    // Total number of stages/checkpoints
+                           pPlayer->m_iZoneCount[pPlayer->m_Data.m_iCurrentTrack]
                 );
             }
             else

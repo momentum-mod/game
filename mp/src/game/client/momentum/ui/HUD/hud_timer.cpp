@@ -13,7 +13,6 @@
 #include <vgui_controls/Panel.h>
 #include "vgui_controls/AnimationController.h"
 
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
@@ -140,10 +139,11 @@ void CHudTimer::FireGameEvent(IGameEvent* event)
             if (zoneNum == 1 && !m_bInPracticeMode) // Start trigger
                 SetToNoTimer();
 
-            if (m_pRunData && m_pRunData->m_bTimerRunning && bChanged && m_iZoneCurrent > 1)
+            const auto pPlayer = CMomentumPlayer::GetLocalMomPlayer();
+            if (m_pRunData && m_pRunData->m_bTimerRunning && bChanged && m_iZoneCurrent > 1 && pPlayer)
             {
                 // Set the info label
-                m_pInfoLabel->SetText(CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpointNum : m_wStageNum, m_iZoneCurrent - 1));
+                m_pInfoLabel->SetText(CConstructLocalizedString(pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack) ? m_wCheckpointNum : m_wStageNum, m_iZoneCurrent - 1));
 
                 ConVarRef timeType("mom_comparisons_time_type");
                 // This void works even if there is no comparison loaded

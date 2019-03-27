@@ -13,7 +13,6 @@
 #include "vgui/ISurface.h"
 #include "vgui/ILocalize.h"
 
-#include "mom_event_listener.h"
 #include "util/mom_util.h"
 #include "c_mom_replay_entity.h"
 
@@ -210,13 +209,17 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         else if (over == m_pNextZoneButton->GetVPanel())
         {
             //MOM_TODO (beta+): Play animations?
-            SetCurrentPage((m_iCurrentPage + 1) % (g_MOMEventListener->m_iMapZoneCount + 1));
+            const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+            if (pPlayer)
+                SetCurrentPage((m_iCurrentPage + 1) % (pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] + 1));
         }
         else if (over == m_pPrevZoneButton->GetVPanel())
         {
             //MOM_TODO: (beta+) play animations?
-            int newPage = m_iCurrentPage - 1;
-            SetCurrentPage(newPage < 0 ? g_MOMEventListener->m_iMapZoneCount : newPage);
+            const int newPage = m_iCurrentPage - 1;
+            const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+            if (pPlayer)
+                SetCurrentPage(newPage < 0 ? pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] : newPage);
         }
         else if (over == m_pRepeatButton->GetVPanel())
         {

@@ -313,8 +313,6 @@ $Project "Client (Momentum)"
             $File   "momentum\c_corpse.cpp"
             $File   "momentum\clientmode_mom_normal.h"
             $File   "momentum\clientmode_mom_normal.cpp"
-            $File   "momentum\mom_event_listener.h"
-            $File   "momentum\mom_event_listener.cpp"
             $File   "momentum\c_mom_ghost_base.h"
             $File   "momentum\c_mom_ghost_base.cpp"
 
