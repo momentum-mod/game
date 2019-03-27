@@ -104,6 +104,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     bool m_bDidPlayerBhop; // MOM_TODO needs networking?
     bool m_bShouldLimitPlayerSpeed;
+    bool m_bStartTimerOnJump; // Should the timer start when jumping in the start trigger?
     int m_iLimitSpeedType;    // Limit speed only when touching ground?
     int m_iSuccessiveBhops;   // How many successive bhops this player has
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?

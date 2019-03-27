@@ -37,8 +37,8 @@ static MAKE_TOGGLE_CONVAR(mom_zone_auto_make_stage, "0", FCVAR_CHEAT,
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
                                             "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
                                             0, true, 1);
-static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT,
-                                               "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
+static ConVar mom_zone_start_maxleavespeed("mom_zone_start_maxleavespeed", "350", FCVAR_CHEAT,
+                                               "Max leave speed for the start trigger. 0 to disable.\n", true, 0, false, 0);
 
 static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
 static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT,
@@ -537,9 +537,9 @@ void CMomZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
     {
         auto pStart = static_cast<CTriggerTimerStart *>(pEnt);
         // bhop speed limit
-        if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
+        if (mom_zone_start_maxleavespeed.GetFloat() > 0.0)
         {
-            pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
+            pStart->SetSpeedLimit(mom_zone_start_maxleavespeed.GetFloat());
             pStart->SetIsLimitingSpeed(true);
         }
         else
