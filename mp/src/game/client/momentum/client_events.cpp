@@ -3,7 +3,6 @@
 #include "client_events.h"
 
 #include "filesystem.h"
-#include "mom_event_listener.h"
 #include "momentum/ui/IMessageboxPanel.h"
 #include "fmtstr.h"
 #include "steam/steam_api.h"
@@ -36,8 +35,6 @@ bool CMOMClientEvents::Init()
 
 void CMOMClientEvents::PostInit()
 {
-    g_MOMEventListener->Init(); // Hook into game events
-
     // enable console by default
     ConVarRef con_enable("con_enable");
     con_enable.SetValue(true);

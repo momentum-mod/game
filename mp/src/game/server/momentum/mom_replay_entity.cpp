@@ -33,10 +33,10 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
       m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0), m_nOldReplayButtons(0),
       m_vecLastVel(vec3_origin), m_cvarReplaySelection("mom_replay_selection")
 {
+    m_RunStats.Init();
     m_bIsPaused = false;
     m_iCurrentTick = 0;
     m_iTotalTicks = 0;
-    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pCurrentSpecPlayer = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
 }

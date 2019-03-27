@@ -9,7 +9,6 @@
 #include <vgui_controls/Panel.h>
 
 #include "baseviewport.h"
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "c_mom_replay_entity.h"
 #include "mom_shareddefs.h"
@@ -111,7 +110,7 @@ void C_HudMapInfo::OnThink()
                     // End zone
                     m_pMainStatusLabel->SetText(m_wMapFinished);
                 }
-                else if (!g_MOMEventListener->m_bMapIsLinear) // Note: The player will never be inside a "checkpoint" zone
+                else if (!pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack)) // Note: The player will never be inside a "checkpoint" zone
                 {
                     // Some # stage start
                     m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
@@ -123,11 +122,11 @@ void C_HudMapInfo::OnThink()
                 {
                     m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iCurrentTrack.Get()));
                 }
-                else if (g_MOMEventListener->m_iMapZoneCount > 0)
+                else if (pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] > 0)
                 {
                     // Current stage(checkpoint)/total stages(checkpoints)
-                    const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), g_MOMEventListener->m_iMapZoneCount);
-                    m_pMainStatusLabel->SetText(CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpoint : m_wStage, pCurrent));
+                    const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), pPlayer->m_iZoneCount.Get(m_pRunData->m_iCurrentTrack));
+                    m_pMainStatusLabel->SetText(CConstructLocalizedString(pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack) ? m_wCheckpoint : m_wStage, pCurrent));
                 }
                 else
                 {

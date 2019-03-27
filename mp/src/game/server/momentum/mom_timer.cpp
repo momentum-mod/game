@@ -26,9 +26,9 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-CMomentumTimer::CMomentumTimer(const char *pName)
-    : CAutoGameSystemPerFrame(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0),
-      m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false),
+CMomentumTimer::CMomentumTimer(const char *pName): CAutoGameSystemPerFrame(pName), 
+      m_iLinearTracks(0), m_iStartTick(0), m_iEndTick(0),
+      m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false),
       m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 
@@ -38,7 +38,7 @@ void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
-    DispatchMapInfo();
+    CalculateZoneCounts();
 }
 
 void CMomentumTimer::LevelShutdownPreEntity()
@@ -49,7 +49,9 @@ void CMomentumTimer::LevelShutdownPreEntity()
     for (int i = 0; i < MAX_TRACKS; i++)
     {
         m_hStartTriggers[i] = nullptr;
+        m_iZoneCount[i] = 0;
     }
+    m_iLinearTracks = 0;
 }
 
 void CMomentumTimer::FrameUpdatePreEntityThink()
@@ -211,32 +213,28 @@ void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset
     pPlayer->m_Data.m_bMapFinished = false;
 }
 
-void CMomentumTimer::DispatchMapInfo()
+void CMomentumTimer::DispatchMapInfo(CMomentumPlayer *pPlayer)
 {
-    // Make sure zone count is up to date
-    RequestZoneCount();
-
-    IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init");
-    if (mapInitEvent)
+    // Copy over to the player
+    for (uint64 i = 0; i <= m_iHighestTrackNum; i++)
     {
-        // MOM_TODO: for now it's assuming stages are on staged maps, load this from
-        // either the RequestStageCount() method, or something else (map info file?)
-        mapInitEvent->SetBool("is_linear", m_iZoneCount == 0);
-        mapInitEvent->SetInt("num_zones", m_iZoneCount);
-        IGameEvent *pCopy = gameeventmanager->DuplicateEvent(mapInitEvent);
-        gameeventmanager->FireEvent(mapInitEvent);
-        gameeventmanager->FireEventClientSide(pCopy);
+        pPlayer->m_iZoneCount.Set(i, m_iZoneCount[i]);
+        pPlayer->m_iLinearTracks.Set(i, (m_iLinearTracks & (1ULL << i)) > 0);
     }
 }
 
-void CMomentumTimer::DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const
+void CMomentumTimer::DispatchNoZonesMsg(CMomentumPlayer *pPlayer)
 {
-    if (!GetZoneCount())
+    if (!GetZoneCount(TRACK_MAIN))
     {
         CSingleUserRecipientFilter filter(pPlayer);
         filter.MakeReliable();
         UserMessageBegin(filter, "MB_NoStartOrEnd");
         MessageEnd();
+    }
+    else
+    {
+        DispatchMapInfo(pPlayer);
     }
 }
 
@@ -282,25 +280,46 @@ void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
     }
 }
 
-static int GetNumEntitiesByClassname(const char *classname)
+void CMomentumTimer::CalculateZoneCounts()
 {
-    int count = 0;
-
-    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, classname);
+    int globalZones = 0;
+    m_iHighestTrackNum = -1;
+    auto pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
     while (pEnt)
     {
-        count++;
-        pEnt = gEntList.FindEntityByClassname(pEnt, classname);
+        const auto pTrigger = dynamic_cast<CBaseMomZoneTrigger*>(pEnt);
+        if (pTrigger)
+        {
+            const auto iZoneType = pTrigger->GetZoneType();
+            if (iZoneType == ZONE_TYPE_START || iZoneType == ZONE_TYPE_STAGE || iZoneType == ZONE_TYPE_CHECKPOINT)
+            {
+                const int iTrack = pTrigger->GetTrackNumber();
+
+                if (iTrack > -1 && iTrack < MAX_TRACKS)
+                {
+                    if (iTrack > m_iHighestTrackNum)
+                        m_iHighestTrackNum = iTrack;
+
+                    m_iZoneCount[iTrack]++;
+                    if (iZoneType == ZONE_TYPE_CHECKPOINT)
+                        m_iLinearTracks |= (1ULL << iTrack);
+                }
+                else if (iTrack == -1)
+                    globalZones++;
+            }
+        }
+
+        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_*");
     }
 
-    return count;
-}
-
-void CMomentumTimer::RequestZoneCount()
-{
-    m_iZoneCount = GetNumEntitiesByClassname("trigger_momentum_timer_start") +
-                   GetNumEntitiesByClassname("trigger_momentum_timer_stage") +
-                   GetNumEntitiesByClassname("trigger_momentum_timer_checkpoint");
+    // Add in all the global zones, if we have any
+    if (globalZones)
+    {
+        for (int i = 0; i <= m_iHighestTrackNum; i++)
+        {
+            m_iZoneCount[i] += globalZones;
+        }
+    }
 }
 
 int CMomentumTimer::GetLastRunTime() const { return m_iEndTick - m_iStartTick; }

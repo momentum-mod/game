@@ -9,7 +9,6 @@
 #include <vgui/IVGui.h>
 #include <vgui_controls/Panel.h>
 
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
@@ -136,7 +135,7 @@ bool C_RunComparisons::ShouldDraw()
         // MOM_TODO: Should we have a convar against letting a ghost compare?
         const auto pData = pPlayer->GetCurrentUIEntData();
 
-        shouldDrawLocal = pData->m_bTimerRunning && !pData->m_bMapFinished && g_MOMEventListener->m_iMapZoneCount > 1;
+        shouldDrawLocal = pData->m_bTimerRunning && !pData->m_bMapFinished && pPlayer->m_iZoneCount[pData->m_iCurrentTrack] > 1;
     }
     return CHudElement::ShouldDraw() && shouldDrawLocal;
 }
@@ -690,7 +689,8 @@ void C_RunComparisons::Paint()
         // stages. (So if there's 20 stages, we only show the last X stages, not all.)
         if (i >= (currentStage - ZONE_BUFFER))
         {
-            const wchar_t *pwZoneStr = CConstructLocalizedString(g_MOMEventListener->m_bMapIsLinear ? m_wCheckpoint : m_wStage, i);
+            const bool bIsLinear = C_MomentumPlayer::GetLocalMomPlayer() && C_MomentumPlayer::GetLocalMomPlayer()->m_iLinearTracks[m_pRunData->m_iCurrentTrack];
+            const wchar_t *pwZoneStr = CConstructLocalizedString(bIsLinear ? m_wCheckpoint : m_wStage, i);
             const size_t zoneStrLen = Q_wcslen(pwZoneStr);
 
             Color fgColorOverride = GetFgColor();

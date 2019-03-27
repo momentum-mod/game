@@ -48,6 +48,8 @@ SendPropInt(SENDINFO(m_iLastZoomFOV), 8, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_afButtonDisabled)),
 SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
+SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
+SendPropArray3(SENDINFO_ARRAY3(m_iLinearTracks), SendPropInt(SENDINFO_ARRAY(m_iLinearTracks), 1, SPROP_UNSIGNED)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
 SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MomRunStats)),
 END_SEND_TABLE();
@@ -138,7 +140,6 @@ CMomentumPlayer::CMomentumPlayer()
     m_CurrentSlideTrigger = nullptr;
 
     m_Data.m_iRunFlags = 0;
-    m_Data.m_iRunFlags = 0;
 
     m_bHasPracticeMode = false;
     m_iShotsFired = 0;
@@ -150,7 +151,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_bPreventPlayerBhop = false;
     m_iLandTick = 0;
 
-    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
+    m_RunStats.Init();
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
@@ -1093,7 +1094,7 @@ void CMomentumPlayer::ResetRunStats()
     m_nAccelTicks = 0;
     m_Data.m_flStrafeSync = 0;
     m_Data.m_flStrafeSync2 = 0;
-    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount(m_Data.m_iCurrentTrack));
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
