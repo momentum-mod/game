@@ -79,7 +79,7 @@ public:
     DECLARE_DATADESC();
 
     CFilterTrackNumber();
-    bool KeyValue(const char *szKeyName, const char *szValue) override;
+    bool KeyValue(const char *szKeyName, const char *szValue) OVERRIDE;
 
     bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity) OVERRIDE;
 
