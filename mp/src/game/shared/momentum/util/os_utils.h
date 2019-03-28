@@ -32,8 +32,7 @@ extern int GetModuleInformation(const char *name, void **base, size_t *length);
 
 #else //POSIX
 #ifdef _WIN32
-#pragma warning( disable: 4005 )
-#include "Windows.h"
+#include "winlite.h"
 #endif
 
 #define CLIENT_DLL_NAME "./momentum/bin/client.dll" //WIN32

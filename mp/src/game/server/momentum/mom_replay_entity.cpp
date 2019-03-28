@@ -3,16 +3,13 @@
 #include "mom_replay_entity.h"
 #include "movevars_shared.h"
 #include "mom_timer.h"
+#include "mom_triggers.h"
 #include "util/mom_util.h"
-#include "util/os_utils.h"
 #include "mom_player_shared.h"
 #include "run/mom_replay_base.h"
 #include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
-#include "mom_triggers.h"
-
-#undef CreateEvent
 
 static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                       "Paint a faint beam trail on the replay. 0 = OFF, 1 = ON\n", true, 0, true, 1);
