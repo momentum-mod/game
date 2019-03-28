@@ -63,12 +63,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() const { return m_bWereCheatsActivated; };
-    void SetCheating(bool cheating)
-    {
-        UTIL_ShowMessage("CHEATER", UTIL_GetLocalPlayer());
-        Stop(false);
-        m_bWereCheatsActivated = cheating;
-    }
+    void SetCheating(bool cheating);
 
     void SetGameModeConVars();
 
