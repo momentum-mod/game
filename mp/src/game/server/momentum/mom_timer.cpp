@@ -393,6 +393,17 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     return false;
 }
 
+void CMomentumTimer::SetCheating(bool cheating)
+{
+    if (cheating)
+    {
+        const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+        UTIL_ShowMessage("CHEATER", pPlayer);
+        Stop(pPlayer);
+    }
+    m_bWereCheatsActivated = cheating;
+}
+
 // set ConVars according to Gamemode. Tickrate is by in tickset.h
 void CMomentumTimer::SetGameModeConVars()
 {
