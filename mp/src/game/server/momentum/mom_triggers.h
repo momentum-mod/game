@@ -45,10 +45,10 @@ enum TRACK_TYPE
 };
 
 // CBaseMomentumTrigger
-class CBaseMomentumTrigger : public CTriggerMultiple
+class CBaseMomentumTrigger : public CBaseTrigger
 {
 public:
-    DECLARE_CLASS(CBaseMomentumTrigger, CTriggerMultiple);
+    DECLARE_CLASS(CBaseMomentumTrigger, CBaseTrigger);
     DECLARE_DATADESC();
 
     CBaseMomentumTrigger();

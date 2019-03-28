@@ -27,6 +27,7 @@ void CBaseMomentumTrigger::Spawn()
 {
     AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     BaseClass::Spawn();
+    InitTrigger();
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
@@ -559,13 +560,10 @@ void CTriggerMultihop::Think()
                 }
             }
         }
-
         SetNextThink(gpGlobals->curtime);
     }
     else
-    {
         SetNextThink(TICK_NEVER_THINK);
-    }
 }
 
 //-----------------------------------------------------------------------------------------------
