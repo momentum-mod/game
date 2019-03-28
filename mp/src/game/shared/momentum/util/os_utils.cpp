@@ -1,5 +1,5 @@
 #include "os_utils.h"
-#include "platform.h"
+#include "cbase.h"
 
 #ifdef POSIX
 void *GetModuleHandle(const char *name)
