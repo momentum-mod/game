@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 //
 #ifdef POSIX
+#include "cbase.h"
 #include <dlfcn.h>
 #include <libgen.h>
 //#include <unistd.h>

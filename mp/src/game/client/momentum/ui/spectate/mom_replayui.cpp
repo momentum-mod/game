@@ -3,7 +3,7 @@
 #include "vgui_controls/ToggleButton.h"
 #include "controls/PFrameButton.h"
 #include "vgui_controls/CvarTextEntry.h"
-#include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/CvarSlider.h"
 #include "vgui_controls/ScrubbableProgressBar.h"
 
 #include <vgui/ISurface.h>
