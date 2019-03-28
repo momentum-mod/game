@@ -1,4 +1,5 @@
 #include "os_utils.h"
+#include "strtools.h"
 
 #ifdef POSIX
 void *GetModuleHandle(const char *name)
@@ -14,7 +15,7 @@ void *GetModuleHandle(const char *name)
 
     if( (handle=dlopen(name, RTLD_LAZY))==NULL)
     {
-            printf("DLOPEN Error:%s\n",dlerror());
+            Warning("DLOPEN Error:%s\n",dlerror());
             // couldn't open this file
             return NULL;
     }
