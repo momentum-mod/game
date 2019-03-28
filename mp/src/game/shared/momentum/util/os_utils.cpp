@@ -1,5 +1,5 @@
 #include "os_utils.h"
-#include "strtools.h"
+#include "platform.h"
 
 #ifdef POSIX
 void *GetModuleHandle(const char *name)
@@ -15,9 +15,9 @@ void *GetModuleHandle(const char *name)
 
     if( (handle=dlopen(name, RTLD_LAZY))==NULL)
     {
-            Warning("DLOPEN Error:%s\n",dlerror());
-            // couldn't open this file
-            return NULL;
+        Warning("DLOPEN Error:%s\n",dlerror());
+        // couldn't open this file
+        return NULL;
     }
 
 	// read "man dlopen" for details
@@ -103,7 +103,7 @@ int GetModuleInformation(const char *name, void **base, size_t *length)
 		
 		for(int i = image_count-1; i >= 0; i--) //iterate through all dylibs backwards (since engine.dylib is likely to have been loaded near the end)
 		{
-			if (V_strstr(image_array[i].imageFilePath, name)) //found it!
+			if (strstr(image_array[i].imageFilePath, name)) //found it!
 			{
 				*base = (void*)image_array[i].imageLoadAddress;
 				*length = size_of_image(image_array[i].imageLoadAddress);
