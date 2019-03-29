@@ -10,8 +10,8 @@
         "MainMenu.Logo.Image.Height"                    "90"
         
         //Note: These are used for position if the logo is not attached to the menu
-		"MainMenu.Logo.OffsetX"							"2"
-		"MainMenu.Logo.OffsetY"							"2"
+		"MainMenu.Logo.OffsetX"							"10"
+		"MainMenu.Logo.OffsetY"							"10"
 
         //Makes the Logo (text OR image) stick to the menu
 		"MainMenu.Logo.AttachToMenu"					"0"
