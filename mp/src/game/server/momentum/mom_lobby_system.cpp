@@ -111,6 +111,12 @@ bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPack
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
 void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
 {
+    if (m_sLobbyID == pJoin->m_steamIDLobby)
+    {
+        Log("Already in lobby!");
+        return;
+    }
+
     if (LobbyValid())
     {
         LeaveLobby();
