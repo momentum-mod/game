@@ -311,7 +311,7 @@ const char *CMomentumDiscord::GetMapOfPlayerFromSteamID(CSteamID *steamID)
 bool CMomentumDiscord::JoinSteamLobbyFromID(const char *lobbyID)
 {
     if (m_sSteamLobbyID.IsValid() &&
-        !V_strcmp(lobbyID, CFmtStr("%lld", m_sSteamLobbyID.ConvertToUint64())))
+        FStrEq(lobbyID, CFmtStr("%lld", m_sSteamLobbyID.ConvertToUint64())))
     {
         // If we are already in the lobby, don't join
         return false;
