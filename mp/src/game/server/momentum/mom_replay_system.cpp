@@ -281,6 +281,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetStopTick(m_iStopTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetTrackNumber(g_pMomentumTimer->GetTrackNumber());
+    m_pRecordingReplay->SetZoneNumber(0); // MOM_TODO (0.9.0) allow individual zone runs
 }
 
 void CMomentumReplaySystem::SetRunStats()
