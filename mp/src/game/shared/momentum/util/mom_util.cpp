@@ -41,6 +41,22 @@ void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
         }
     }
 }
+
+void MomentumUtil::DispatchConCommand(const char *pszCommand)
+{
+    CCommand args;
+    args.Tokenize(pszCommand);
+
+    ConCommand *pCommand = g_pCVar->FindCommand(args[0]);
+    if (pCommand) // can we directly call this command?
+    {
+        pCommand->Dispatch(args);
+    }
+    else // fallback to old code
+    {
+        engine->ClientCmd_Unrestricted(pszCommand);
+    }
+}
 #endif
 
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime) const

@@ -5,11 +5,16 @@
 class CMomReplayBase;
 struct RunCompare_t;
 
+// MOM_TODO: Can these be static functions?
 class MomentumUtil
 {
 public:
 #ifdef CLIENT_DLL
     void UpdatePaintDecalScale(float fNewScale);
+
+    // If calling commands through the engine is not possible (e.g. calling server command before it's been spawned), this does the trick
+    // Searches for the command and invokes it's associated function directly
+    void DispatchConCommand(const char *pszCommand);
 #endif
 
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
