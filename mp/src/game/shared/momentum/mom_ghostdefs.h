@@ -35,58 +35,58 @@ struct MomentumPacket_t
 };
 
 //Describes all data for visual apperence of players ingame
-struct ghostAppearance_t
+struct GhostAppearance_t
 {
-    int GhostModelBodygroup;
-    uint32 GhostModelRGBAColorAsHex;
-    uint32 GhostTrailRGBAColorAsHex;
-    uint8 GhostTrailLength;
-    bool GhostTrailEnable;
-    bool FlashlightOn;
+    int m_iGhostModelBodygroup;
+    uint32 m_iGhostModelRGBAColorAsHex;
+    uint32 m_iGhostTrailRGBAColorAsHex;
+    uint8 m_iGhostTrailLength;
+    bool m_bGhostTrailEnable;
+    bool m_bFlashlightOn;
 
-    ghostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
+    GhostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
     {
-        GhostModelBodygroup = bodyGroup;
-        GhostModelRGBAColorAsHex = bodyRGBA;
-        GhostTrailRGBAColorAsHex = trailRGBA;
-        GhostTrailLength = trailLen;
-        GhostTrailEnable = hasTrail;
-        FlashlightOn = flashlight;
+        m_iGhostModelBodygroup = bodyGroup;
+        m_iGhostModelRGBAColorAsHex = bodyRGBA;
+        m_iGhostTrailRGBAColorAsHex = trailRGBA;
+        m_iGhostTrailLength = trailLen;
+        m_bGhostTrailEnable = hasTrail;
+        m_bFlashlightOn = flashlight;
     }
-    ghostAppearance_t(): GhostModelBodygroup(0), GhostModelRGBAColorAsHex(0), GhostTrailRGBAColorAsHex(0), GhostTrailLength(0), GhostTrailEnable(false), FlashlightOn(false)
+    GhostAppearance_t(): m_iGhostModelBodygroup(0), m_iGhostModelRGBAColorAsHex(0), m_iGhostTrailRGBAColorAsHex(0), m_iGhostTrailLength(0), m_bGhostTrailEnable(false), m_bFlashlightOn(false)
     {
     }
 
-    ghostAppearance_t &operator=(const ghostAppearance_t &other) 
+    GhostAppearance_t &operator=(const GhostAppearance_t &other) 
     {
-        GhostModelBodygroup = other.GhostModelBodygroup;
-        GhostModelRGBAColorAsHex = other.GhostModelRGBAColorAsHex;
-        GhostTrailRGBAColorAsHex = other.GhostTrailRGBAColorAsHex;
-        GhostTrailLength = other.GhostTrailLength;
-        GhostTrailEnable = other.GhostTrailEnable;
-        FlashlightOn = other.FlashlightOn;
+        m_iGhostModelBodygroup = other.m_iGhostModelBodygroup;
+        m_iGhostModelRGBAColorAsHex = other.m_iGhostModelRGBAColorAsHex;
+        m_iGhostTrailRGBAColorAsHex = other.m_iGhostTrailRGBAColorAsHex;
+        m_iGhostTrailLength = other.m_iGhostTrailLength;
+        m_bGhostTrailEnable = other.m_bGhostTrailEnable;
+        m_bFlashlightOn = other.m_bFlashlightOn;
         return *this;
     }
-    bool operator==(const ghostAppearance_t &other) const
+    bool operator==(const GhostAppearance_t &other) const
     {
-        return GhostModelBodygroup == other.GhostModelBodygroup &&
-            GhostModelRGBAColorAsHex == other.GhostModelRGBAColorAsHex &&
-            GhostTrailRGBAColorAsHex == other.GhostTrailRGBAColorAsHex &&
-            GhostTrailLength == other.GhostTrailLength &&
-            GhostTrailEnable == other.GhostTrailEnable &&
-            FlashlightOn == other.FlashlightOn;
+        return m_iGhostModelBodygroup == other.m_iGhostModelBodygroup &&
+            m_iGhostModelRGBAColorAsHex == other.m_iGhostModelRGBAColorAsHex &&
+            m_iGhostTrailRGBAColorAsHex == other.m_iGhostTrailRGBAColorAsHex &&
+            m_iGhostTrailLength == other.m_iGhostTrailLength &&
+            m_bGhostTrailEnable == other.m_bGhostTrailEnable &&
+            m_bFlashlightOn == other.m_bFlashlightOn;
     }
 };
 
 struct LobbyGhostAppearance_t
 {
-    ghostAppearance_t appearance;
+    GhostAppearance_t appearance;
     char base64[1024]; // Used as a quick verify
 
     LobbyGhostAppearance_t()
     {
         base64[0] = '\0';
-        appearance = ghostAppearance_t();
+        appearance = GhostAppearance_t();
     }
 
     LobbyGhostAppearance_t &operator=(const LobbyGhostAppearance_t &other) 

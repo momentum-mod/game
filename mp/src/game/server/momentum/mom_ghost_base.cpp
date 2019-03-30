@@ -116,14 +116,14 @@ void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
     }
     else
     {
-        m_ghostAppearance.GhostModelBodygroup = bodyGroup;
+        m_ghostAppearance.m_iGhostModelBodygroup = bodyGroup;
         SetBodygroup(1, bodyGroup);
     }
 }
 
 void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
 {
-    m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
+    m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
     Color newColor;
     if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
     {
@@ -133,9 +133,9 @@ void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
 }
 void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable)
 {
-    m_ghostAppearance.GhostTrailEnable = enable;
-    m_ghostAppearance.GhostTrailRGBAColorAsHex = newHexColor;
-    m_ghostAppearance.GhostTrailLength = clamp<int>(newLen, 1, 10);
+    m_ghostAppearance.m_bGhostTrailEnable = enable;
+    m_ghostAppearance.m_iGhostTrailRGBAColorAsHex = newHexColor;
+    m_ghostAppearance.m_iGhostTrailLength = clamp<int>(newLen, 1, 10);
     CreateTrail();
 }
 
@@ -217,32 +217,32 @@ bool CMomentumGhostBaseEntity::CanUnduck(CMomentumGhostBaseEntity *pGhost)
     }
     return false;
 }
-void CMomentumGhostBaseEntity::SetGhostAppearance(ghostAppearance_t newApp, bool bForceUpdate /* = false*/)
+void CMomentumGhostBaseEntity::SetGhostAppearance(GhostAppearance_t newApp, bool bForceUpdate /* = false*/)
 {
     // only set things that NEED TO BE CHANGED!!
-    if (m_ghostAppearance.GhostModelBodygroup != newApp.GhostModelBodygroup || bForceUpdate)
+    if (m_ghostAppearance.m_iGhostModelBodygroup != newApp.m_iGhostModelBodygroup || bForceUpdate)
     {
-        SetGhostBodyGroup(newApp.GhostModelBodygroup);
+        SetGhostBodyGroup(newApp.m_iGhostModelBodygroup);
     }
-    if (m_ghostAppearance.GhostModelRGBAColorAsHex != newApp.GhostModelRGBAColorAsHex || bForceUpdate)
+    if (m_ghostAppearance.m_iGhostModelRGBAColorAsHex != newApp.m_iGhostModelRGBAColorAsHex || bForceUpdate)
     {
-        SetGhostColor(newApp.GhostModelRGBAColorAsHex);
+        SetGhostColor(newApp.m_iGhostModelRGBAColorAsHex);
     }
-    if (m_ghostAppearance.GhostTrailRGBAColorAsHex != newApp.GhostTrailRGBAColorAsHex || 
-        m_ghostAppearance.GhostTrailLength != newApp.GhostTrailLength || 
-        m_ghostAppearance.GhostTrailEnable != newApp.GhostTrailEnable || bForceUpdate)
+    if (m_ghostAppearance.m_iGhostTrailRGBAColorAsHex != newApp.m_iGhostTrailRGBAColorAsHex || 
+        m_ghostAppearance.m_iGhostTrailLength != newApp.m_iGhostTrailLength || 
+        m_ghostAppearance.m_bGhostTrailEnable != newApp.m_bGhostTrailEnable || bForceUpdate)
     {
-        SetGhostTrailProperties(newApp.GhostTrailRGBAColorAsHex,
-                                newApp.GhostTrailLength, newApp.GhostTrailEnable);
+        SetGhostTrailProperties(newApp.m_iGhostTrailRGBAColorAsHex,
+                                newApp.m_iGhostTrailLength, newApp.m_bGhostTrailEnable);
     }
     
-    SetGhostFlashlight(newApp.FlashlightOn);
+    SetGhostFlashlight(newApp.m_bFlashlightOn);
 }
 void CMomentumGhostBaseEntity::CreateTrail()
 {
     RemoveTrail();
 
-    if (!(m_ghostAppearance.GhostTrailEnable && mom_ghost_online_trail_enable.GetBool())) return;
+    if (!(m_ghostAppearance.m_bGhostTrailEnable && mom_ghost_online_trail_enable.GetBool())) return;
 
     // Ty GhostingMod
     m_eTrail = CreateEntityByName("env_spritetrail");
@@ -252,9 +252,9 @@ void CMomentumGhostBaseEntity::CreateTrail()
     m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
     m_eTrail->KeyValue("startwidth", "9.5");
     m_eTrail->KeyValue("endwidth", "1.05");
-    m_eTrail->KeyValue("lifetime", m_ghostAppearance.GhostTrailLength);
+    m_eTrail->KeyValue("lifetime", m_ghostAppearance.m_iGhostTrailLength);
     Color newColor;
-    if (g_pMomentumUtil->GetColorFromHex(m_ghostAppearance.GhostTrailRGBAColorAsHex, newColor))
+    if (g_pMomentumUtil->GetColorFromHex(m_ghostAppearance.m_iGhostTrailRGBAColorAsHex, newColor))
     {
         m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
         m_eTrail->KeyValue("renderamt", newColor.a());

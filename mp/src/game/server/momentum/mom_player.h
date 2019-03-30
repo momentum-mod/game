@@ -185,7 +185,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void RemoveTrail();
      
     // Player's apperence properties
-    ghostAppearance_t m_playerAppearanceProps;
+    GhostAppearance_t m_playerAppearanceProps;
     // Catches any messages the player sends through "say"
     void CheckChatText(char *p, int bufsize) OVERRIDE;
 

@@ -6,7 +6,7 @@ struct MomentumPacket_t;
 struct DecalPacket_t;
 struct LobbyGhostAppearance_t;
 struct SavelocReqPacket_t;
-struct ghostAppearance_t;
+struct GhostAppearance_t;
 class CMomentumOnlineGhostEntity;
 
 class CMomentumLobbySystem
@@ -45,7 +45,7 @@ public:
     void CheckToAdd(CSteamID *pID);
 
     void SendAndRecieveP2PPackets();
-    void SetAppearanceInMemberData(ghostAppearance_t app);
+    void SetAppearanceInMemberData(GhostAppearance_t app);
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type);
