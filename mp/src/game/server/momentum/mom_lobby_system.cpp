@@ -257,7 +257,7 @@ void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
     Msg("SERVER: Chat message: %s\n", message);
     delete[] message;
 }
-void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
+void CMomentumLobbySystem::SetAppearanceInMemberData(GhostAppearance_t app)
 {
     if (LobbyValid())
     {
@@ -265,7 +265,7 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
         std::string base64Appearance;
 
         CryptoPP::StringSource ss(static_cast<unsigned char *>(static_cast<void*>(&app)), 
-                                  sizeof(ghostAppearance_t), 
+                                  sizeof(GhostAppearance_t), 
                                   true,
                                   new CryptoPP::Base64Encoder(
                                       new CryptoPP::StringSink(base64Appearance)
@@ -289,12 +289,12 @@ bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, L
         decoder.Put((byte*)encoded.data(), encoded.size());
         decoder.MessageEnd();
 
-        ghostAppearance_t newAppearance;
+        GhostAppearance_t newAppearance;
 
         CryptoPP::lword size = decoder.MaxRetrievable();
-        if (size && size == sizeof(ghostAppearance_t))
+        if (size && size == sizeof(GhostAppearance_t))
         {
-            decoder.Get((byte*)&newAppearance, sizeof(ghostAppearance_t));
+            decoder.Get((byte*)&newAppearance, sizeof(GhostAppearance_t));
             out.appearance = newAppearance;
             toReturn = true;
         }

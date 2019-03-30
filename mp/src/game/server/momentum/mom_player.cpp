@@ -102,15 +102,15 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
             FStrEq(pName, mom_trail_enable.GetName()))   // the trail enable bool changed
         {
             uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
-            pPlayer->m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
-            pPlayer->m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
-            pPlayer->m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
+            pPlayer->m_playerAppearanceProps.m_iGhostTrailRGBAColorAsHex = newHexColor;
+            pPlayer->m_playerAppearanceProps.m_iGhostTrailLength = mom_trail_length.GetInt();
+            pPlayer->m_playerAppearanceProps.m_bGhostTrailEnable = mom_trail_enable.GetBool();
             pPlayer->CreateTrail(); // Refresh the trail
         }
         else if (FStrEq(pName, mom_ghost_color.GetName())) // the ghost body color changed
         {
             uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
-            pPlayer->m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
+            pPlayer->m_playerAppearanceProps.m_iGhostModelRGBAColorAsHex = newHexColor;
             Color newColor;
             if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
                 pPlayer->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
@@ -118,7 +118,7 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
         else if (FStrEq(pName, mom_ghost_bodygroup.GetName())) // the ghost bodygroup changed
         {
             int bGroup = mom_ghost_bodygroup.GetInt();
-            pPlayer->m_playerAppearanceProps.GhostModelBodygroup = bGroup;
+            pPlayer->m_playerAppearanceProps.m_iGhostModelBodygroup = bGroup;
             pPlayer->SetBodygroup(1, bGroup);
         }
 
@@ -292,7 +292,7 @@ void CMomentumPlayer::FlashlightTurnOn()
 {
     AddEffects(EF_DIMLIGHT);
     EmitSound(SND_FLASHLIGHT_ON);
-    m_playerAppearanceProps.FlashlightOn = true;
+    m_playerAppearanceProps.m_bFlashlightOn = true;
     SendAppearance();
 }
 
@@ -300,7 +300,7 @@ void CMomentumPlayer::FlashlightTurnOff()
 {
     RemoveEffects(EF_DIMLIGHT);
     EmitSound(SND_FLASHLIGHT_OFF);
-    m_playerAppearanceProps.FlashlightOn = false;
+    m_playerAppearanceProps.m_bFlashlightOn = false;
     SendAppearance();
 }
 
@@ -358,18 +358,18 @@ void CMomentumPlayer::Spawn()
 
     // initilize appearance properties based on Convars
     uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
-    m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
-    m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
-    m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
+    m_playerAppearanceProps.m_iGhostTrailRGBAColorAsHex = newHexColor;
+    m_playerAppearanceProps.m_iGhostTrailLength = mom_trail_length.GetInt();
+    m_playerAppearanceProps.m_bGhostTrailEnable = mom_trail_enable.GetBool();
 
     newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
-    m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
+    m_playerAppearanceProps.m_iGhostModelRGBAColorAsHex = newHexColor;
     Color newColor;
     if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
         SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
 
     int bodyGroup = mom_ghost_bodygroup.GetInt();
-    m_playerAppearanceProps.GhostModelBodygroup = bodyGroup;
+    m_playerAppearanceProps.m_iGhostModelBodygroup = bodyGroup;
     SetBodygroup(1, bodyGroup);
 
     // Send our appearance to the server/lobby if we're in one
