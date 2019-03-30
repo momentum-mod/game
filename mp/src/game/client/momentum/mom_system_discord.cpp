@@ -8,6 +8,7 @@
 #include "fmtstr.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
+#include "util/mom_util.h"
 #include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
@@ -95,8 +96,8 @@ void CMomentumDiscord::PostInit()
         DiscordInit();
 
         // Default discord information
-        V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordState, MAIN_MENU_STR, sizeof(m_szDiscordState));
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordLargeImageKey));
 
         m_sSteamUserID = SteamUser()->GetSteamID();
         m_bValid = true;
@@ -112,8 +113,8 @@ void CMomentumDiscord::LevelInitPostEntity()
     // Ignore background map(s) and credits
     if (!Q_strncmp(MapName(), "bg_", 3) || FStrEq(MapName(), "credits"))
     {
-        V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordState, MAIN_MENU_STR, sizeof(m_szDiscordState));
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordLargeImageKey));
         return;
     }
 
@@ -122,18 +123,18 @@ void CMomentumDiscord::LevelInitPostEntity()
     const int gameMode = clamp<int>(ConVarRef("mom_gamemode").GetInt(), GAMEMODE_UNKNOWN, GAMEMODE_COUNT - 1);
     if (gameMode == GAMEMODE_UNKNOWN)
     {
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordLargeImageKey));
         m_szDiscordSmallImageKey[0] = '\0';
     }
     else
     {
-        V_strncpy(m_szDiscordLargeImageKey, szGamemodeIcons[gameMode], DISCORD_MAX_BUFFER_SIZE);
-        V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordLargeImageKey, szGamemodeIcons[gameMode], sizeof(m_szDiscordLargeImageKey));
+        V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordSmallImageKey));
     }
 
-    V_strncpy(m_szDiscordState, "Playing", DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordDetails, MapName(), DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordLargeImageText, MapName(), DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordState, "Playing", sizeof(m_szDiscordState));
+    V_strncpy(m_szDiscordDetails, MapName(), sizeof(m_szDiscordDetails));
+    V_strncpy(m_szDiscordLargeImageText, MapName(), sizeof(m_szDiscordLargeImageText));
     m_iDiscordStartTimestamp = time(nullptr);
 
     // Check to see if we are joining this map to spectate a player
@@ -152,8 +153,8 @@ void CMomentumDiscord::LevelShutdownPreEntity()
 
     m_bInMap = false;
     ClearDiscordFields(false); // Pass false to retain party/lobby related fields
-    V_strncpy(m_szDiscordState, MAIN_MENU_STR, DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordState, MAIN_MENU_STR, sizeof(m_szDiscordState));
+    V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordLargeImageKey));
 }
 
 // Called every frame
@@ -248,24 +249,24 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
             const int currentZone = event->GetInt("num", -1);
             if (bZoneEnter && currentZone == 1)
             {
-                Q_strncpy(m_szDiscordState, "Start Zone", DISCORD_MAX_BUFFER_SIZE);
+                Q_strncpy(m_szDiscordState, "Start Zone", sizeof(m_szDiscordState));
             }
             else if (bZoneEnter && currentZone == 0)
             {
-                Q_strncpy(m_szDiscordState, "End Zone", DISCORD_MAX_BUFFER_SIZE);
+                Q_strncpy(m_szDiscordState, "End Zone", sizeof(m_szDiscordState));
             }
             else if (pPlayer && pPlayer->m_iZoneCount[pPlayer->m_Data.m_iCurrentTrack] > 0)
             {
                 const bool linearTrack = pPlayer->m_iLinearTracks[pPlayer->m_Data.m_iCurrentTrack];
 
-                Q_snprintf(m_szDiscordState, DISCORD_MAX_BUFFER_SIZE, "%s %i/%i", linearTrack ? "Checkpoint" : "Stage",
+                Q_snprintf(m_szDiscordState, sizeof(m_szDiscordState), "%s %i/%i", linearTrack ? "Checkpoint" : "Stage",
                            currentZone, // Current stage/checkpoint
                            pPlayer->m_iZoneCount[pPlayer->m_Data.m_iCurrentTrack]
                 );
             }
             else
             {
-                Q_strncpy(m_szDiscordState, "Playing", DISCORD_MAX_BUFFER_SIZE);
+                Q_strncpy(m_szDiscordState, "Playing", sizeof(m_szDiscordState));
             }
         }
     }
@@ -275,16 +276,16 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
         CMomRunEntity *pSpecTarget = pPlayer->GetCurrentUIEntity();
         if (pSpecTarget->GetEntType() == RUN_ENT_REPLAY)
         {
-            Q_strncpy(m_szDiscordState, "Watching replay", DISCORD_MAX_BUFFER_SIZE);
+            Q_strncpy(m_szDiscordState, "Watching replay", sizeof(m_szDiscordState));
         }
         else
         {
-            Q_strncpy(m_szDiscordState, "Spectating", DISCORD_MAX_BUFFER_SIZE);
+            Q_strncpy(m_szDiscordState, "Spectating", sizeof(m_szDiscordState));
         }
     }
     else if (FStrEq(pName, "spec_stop"))
     {
-        Q_strncpy(m_szDiscordState, "Playing", DISCORD_MAX_BUFFER_SIZE);
+        Q_strncpy(m_szDiscordState, "Playing", sizeof(m_szDiscordState));
     }
 
     DiscordUpdate();
@@ -318,11 +319,11 @@ bool CMomentumDiscord::JoinSteamLobbyFromID(const char *lobbyID)
     else if (m_sSteamLobbyID.IsValid())
     {
         // If we are in a different lobby we need to leave
-        DISPATCH_CON_COMMAND("mom_lobby_leave", "mom_lobby_leave");
+        g_pMomentumUtil->DispatchConCommand("mom_lobby_leave");
     }
 
     // Finally join the new lobby
-    DISPATCH_CON_COMMAND("connect_lobby", CFmtStr("connect_lobby %s", lobbyID));
+    g_pMomentumUtil->DispatchConCommand(CFmtStr("connect_lobby %s", lobbyID));
 
     return true;
 }
@@ -346,7 +347,7 @@ bool CMomentumDiscord::JoinMapFromUserSteamID(uint64 steamID)
     }
     else
     {
-        DISPATCH_CON_COMMAND("map", CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("map %s", targetMapName))
+        g_pMomentumUtil->DispatchConCommand(CFmtStr("map %s", targetMapName));
     }
 
     return true;
@@ -419,7 +420,7 @@ void CMomentumDiscord::SpecPlayerFromSteamId(const char *steamID)
 
     // MOM_TODO: We probably should check if the target player is already spectating someone, then set the spectate
     // target them instead Or we could adjust the `mom_spectate` command to handle this automatically
-    DISPATCH_CON_COMMAND("mom_spectate", CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("mom_spectate %s", steamID));
+    g_pMomentumUtil->DispatchConCommand(CFmtStr("mom_spectate %s", steamID));
 }
 
 // Updates the current and max party size based upon the current lobby
@@ -438,24 +439,24 @@ void CMomentumDiscord::UpdateDiscordPartyIdFromSteam()
     if (m_sSteamLobbyID.IsValid())
     {
         // The party ID is just the Steam Lobby ID
-        V_strncpy(m_szDiscordPartyId, CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("%lld", m_sSteamLobbyID.ConvertToUint64()),
-                  DISCORD_MAX_BUFFER_SIZE);
+        V_strncpy(m_szDiscordPartyId, CFmtStr("%lld", m_sSteamLobbyID.ConvertToUint64()),
+                  sizeof(m_szDiscordPartyId));
 
         // We could do something to further "encrypt" the secrets but it's probably fine
         if (m_sSteamUserID.IsValid())
         {
             // If we found a vaid steam user ID add it into the secret
             V_strncpy(m_szDiscordJoinSecret,
-                      CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("J%lld;%lld", m_sSteamLobbyID.ConvertToUint64(),
-                                                        m_sSteamUserID.ConvertToUint64()),
-                      DISCORD_MAX_BUFFER_SIZE);
+                      CFmtStr("J%lld;%lld", m_sSteamLobbyID.ConvertToUint64(),
+                              m_sSteamUserID.ConvertToUint64()),
+                      sizeof(m_szDiscordJoinSecret));
         }
         else
         {
             // Otherwise just fall back to the steam lobby ID
             V_strncpy(m_szDiscordJoinSecret,
-                      CFmtStrN<DISCORD_MAX_BUFFER_SIZE>("J%lld", m_sSteamLobbyID.ConvertToUint64()),
-                      DISCORD_MAX_BUFFER_SIZE);
+                      CFmtStr("J%lld", m_sSteamLobbyID.ConvertToUint64()),
+                      sizeof(m_szDiscordJoinSecret));
         }
 
         if (m_bInMap)
@@ -463,7 +464,7 @@ void CMomentumDiscord::UpdateDiscordPartyIdFromSteam()
             // If the user is in a map then add a valid spectate secret (the same as the join secret only with an 'S')
             // MOM_TODO: Check the `mom_lobby_type` cvar first
             m_szDiscordSpectateSecret[0] = 'S';
-            V_strncpy(&m_szDiscordSpectateSecret[1], &m_szDiscordJoinSecret[1], DISCORD_MAX_BUFFER_SIZE - 1);
+            V_strncpy(&m_szDiscordSpectateSecret[1], &m_szDiscordJoinSecret[1], sizeof(m_szDiscordSpectateSecret) - 1);
         }
         else
         {
