@@ -40,8 +40,8 @@ public:
     virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
     virtual void SetGhostFlashlight(bool isOn);
 
-    virtual void SetGhostAppearance(ghostAppearance_t app, bool bForceUpdate = false);
-    virtual ghostAppearance_t GetAppearance() { return m_ghostAppearance; }
+    virtual void SetGhostAppearance(GhostAppearance_t app, bool bForceUpdate = false);
+    virtual GhostAppearance_t GetAppearance() { return m_ghostAppearance; }
 
     virtual void StartTimer(int m_iStartTick);
     virtual void FinishTimer();
@@ -91,7 +91,7 @@ protected:
 
     static bool CanUnduck(CMomentumGhostBaseEntity *pGhost);
     CMomentumPlayer *m_pCurrentSpecPlayer;
-    ghostAppearance_t m_ghostAppearance;
+    GhostAppearance_t m_ghostAppearance;
 
 private:
     CBaseEntity *m_eTrail;

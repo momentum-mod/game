@@ -71,7 +71,7 @@ void CMomentumReplayGhostEntity::Spawn()
         SetGhostAppearance(pPlayer->m_playerAppearanceProps);
         // now that we've set our appearance, the ghost should be visible again.
         SetRenderMode(kRenderTransColor);
-        if (m_ghostAppearance.GhostTrailEnable)
+        if (m_ghostAppearance.m_bGhostTrailEnable)
         {
             CreateTrail();
         }
@@ -638,7 +638,7 @@ void CMomentumReplayGhostEntity::CreateTrail()
 }
 void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)
 {
-    m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
+    m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
     Color newColor;
     if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
         SetRenderColor(newColor.r(), newColor.g(), newColor.b(), 75);

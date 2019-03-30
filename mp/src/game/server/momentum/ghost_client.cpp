@@ -117,7 +117,7 @@ void CMomentumGhostClient::ResetOtherAppearanceData()
     g_pMomentumLobbySystem->ResetOtherAppearanceData();
 }
 
-void CMomentumGhostClient::SendAppearanceData(ghostAppearance_t appearance)
+void CMomentumGhostClient::SendAppearanceData(GhostAppearance_t appearance)
 {
     // MOM_TODO: g_pMomentumServerSystem->SetAppearance(appearance);
     g_pMomentumLobbySystem->SetAppearanceInMemberData(appearance);
