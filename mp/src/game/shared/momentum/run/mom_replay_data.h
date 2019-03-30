@@ -88,8 +88,9 @@ class CReplayHeader : public ISerializable
         reader.GetStringManualCharCount(date, sizeof(date));
         m_iRunDate = Q_atoui64(date);
         m_iStartTick = reader.GetInt();
-        m_iTrackNumber = reader.GetUnsignedChar();
         m_iStopTick = reader.GetInt();
+        m_iTrackNumber = reader.GetUnsignedChar();
+        m_iZoneNumber = reader.GetUnsignedChar();
     }
 
   public:
@@ -107,8 +108,9 @@ class CReplayHeader : public ISerializable
         Q_snprintf(date, 20, "%ld", m_iRunDate);
         writer.PutString(date);
         writer.PutInt(m_iStartTick);
-        writer.PutUnsignedChar(m_iTrackNumber);
         writer.PutInt(m_iStopTick);
+        writer.PutUnsignedChar(m_iTrackNumber);
+        writer.PutUnsignedChar(m_iZoneNumber);
     }
 
     virtual CReplayHeader &operator=(const CReplayHeader &other)
@@ -137,4 +139,5 @@ class CReplayHeader : public ISerializable
     int m_iStartTick;                            // The tick where the timer was started (difference from record start -> timer start)
     int m_iStopTick;                             // The tick where the timer was stopped
     uint8 m_iTrackNumber;                        // The track number (0 = main map, 1+ = bonus)
+    uint8 m_iZoneNumber;                         // The zone number (0 = entire track, 1+ = specific zone)
 };
