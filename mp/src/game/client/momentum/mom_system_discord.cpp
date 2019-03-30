@@ -271,7 +271,16 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
     }
     else if (FStrEq(pName, "spec_start") || FStrEq(pName, "spec_target_updated"))
     {
-        Q_strncpy(m_szDiscordState, "Spectating", DISCORD_MAX_BUFFER_SIZE);
+        const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+        CMomRunEntity *pSpecTarget = pPlayer->GetCurrentUIEntity();
+        if (pSpecTarget->GetEntType() == RUN_ENT_REPLAY)
+        {
+            Q_strncpy(m_szDiscordState, "Watching replay", DISCORD_MAX_BUFFER_SIZE);
+        }
+        else
+        {
+            Q_strncpy(m_szDiscordState, "Spectating", DISCORD_MAX_BUFFER_SIZE);
+        }
     }
     else if (FStrEq(pName, "spec_stop"))
     {
