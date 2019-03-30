@@ -25,8 +25,8 @@ class CMomReplayBase : public ISerializable
     virtual uint64 GetPlayerSteamID() { return m_rhHeader.m_ulSteamID; }
     virtual float GetTickInterval() { return m_rhHeader.m_fTickInterval; }
     virtual float GetRunTime() { return m_rhHeader.m_fTickInterval * float(m_rhHeader.m_iStopTick - m_rhHeader.m_iStartTick); }
-    virtual int GetStartTick() { return m_rhHeader.m_iStartTick; }
-    virtual int GetStopTick() { return m_rhHeader.m_iStopTick; }
+    virtual uint32 GetStartTick() { return m_rhHeader.m_iStartTick; }
+    virtual uint32 GetStopTick() { return m_rhHeader.m_iStopTick; }
     virtual uint32 GetRunFlags() { return m_rhHeader.m_iRunFlags; }
     virtual time_t GetRunDate() { return m_rhHeader.m_iRunDate; }
     virtual uint8 GetTrackNumber() { return m_rhHeader.m_iTrackNumber; }
@@ -40,8 +40,8 @@ class CMomReplayBase : public ISerializable
     virtual void SetPlayerName(const char *name) { Q_strncpy(m_rhHeader.m_szPlayerName, name, sizeof(m_rhHeader.m_szPlayerName)); }
     virtual void SetPlayerSteamID(uint64 steamID) { m_rhHeader.m_ulSteamID = steamID; }
     virtual void SetTickInterval(float interval) { m_rhHeader.m_fTickInterval = interval; }
-    virtual void SetStartTick(int iStart) { m_rhHeader.m_iStartTick = iStart; }
-    virtual void SetStopTick(int iStop) { m_rhHeader.m_iStopTick = iStop; }
+    virtual void SetStartTick(uint32 iStart) { m_rhHeader.m_iStartTick = iStart; }
+    virtual void SetStopTick(uint32 iStop) { m_rhHeader.m_iStopTick = iStop; }
     virtual void SetRunFlags(uint32 runFlags) { m_rhHeader.m_iRunFlags = runFlags; }
     virtual void SetRunDate(time_t date) { m_rhHeader.m_iRunDate = date; }
     virtual void SetTrackNumber(uint8 track) { m_rhHeader.m_iTrackNumber = track; }
