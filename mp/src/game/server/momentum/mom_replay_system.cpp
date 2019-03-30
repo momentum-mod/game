@@ -22,9 +22,9 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     CAutoGameSystemPerFrame(pName), m_bRecording(false), m_bPlayingBack(false), m_pPlaybackReplay(nullptr),
     m_bShouldStopRec(false),
     m_iTickCount(0),
-    m_iStartRecordingTick(-1),
-    m_iStartTimerTick(-1),
-    m_iStopTimerTick(-1),
+    m_iStartRecordingTick(0),
+    m_iStartTimerTick(0),
+    m_iStopTimerTick(0),
     m_bTeleportedThisFrame(false),
     m_fRecEndTime(-1.0f)
 {
@@ -162,9 +162,9 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
         pPlayer->SetAllowUserTeleports(true);
 
     // Reset the m_i*Tick s
-    m_iStartRecordingTick = -1;
-    m_iStartTimerTick = -1;
-    m_iStopTimerTick = -1;
+    m_iStartRecordingTick = 0;
+    m_iStartTimerTick = 0;
+    m_iStopTimerTick = 0;
     m_pRecordingReplay = nullptr;
 }
 
@@ -201,9 +201,9 @@ bool CMomentumReplaySystem::StoreReplay(char *pOut, size_t outSize)
 void CMomentumReplaySystem::TrimReplay()
 {
     // Our actual start
-    if (m_iStartRecordingTick > -1 && m_iStartTimerTick > -1)
+    if (m_iStartRecordingTick > 0 && m_iStartTimerTick > 0)
     {
-        int newStart = m_iStartTimerTick - static_cast<int>(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
+        const auto newStart = m_iStartTimerTick - static_cast<int>(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
         // We only need to trim if the player was in the start trigger for longer than what we want
         if (newStart > m_iStartRecordingTick)
         {
