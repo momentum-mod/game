@@ -15,6 +15,8 @@
 
 #include "mom_modulecomms.h"
 
+#include "fmtstr.h"
+
 #include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
@@ -256,10 +258,8 @@ void LobbyMembersPanel::OnCommand(const char* command)
 void LobbyMembersPanel::OnContextGoToMap(const char* map)
 {
     // MOM_TODO: We're going to need to feed this into a map downloader first, if they don't have the map!
-    char command[128];
-    Q_snprintf(command, 128, "map %s\n", map);
     ShowPanel(false);
-    engine->ClientCmd_Unrestricted(command);
+    engine->ClientCmd_Unrestricted(CFmtStr("map %s\n", map));
 }
 
 void LobbyMembersPanel::OnContextReqSavelocs(uint64 target)
