@@ -30,6 +30,7 @@ class CMomReplayBase : public ISerializable
     virtual uint32 GetRunFlags() { return m_rhHeader.m_iRunFlags; }
     virtual time_t GetRunDate() { return m_rhHeader.m_iRunDate; }
     virtual uint8 GetTrackNumber() { return m_rhHeader.m_iTrackNumber; }
+    virtual uint8 GetZoneNumber() { return m_rhHeader.m_iZoneNumber; }
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
     virtual const char *GetRunHash() { return m_pszRunHash; }
 
@@ -44,6 +45,7 @@ class CMomReplayBase : public ISerializable
     virtual void SetRunFlags(uint32 runFlags) { m_rhHeader.m_iRunFlags = runFlags; }
     virtual void SetRunDate(time_t date) { m_rhHeader.m_iRunDate = date; }
     virtual void SetTrackNumber(uint8 track) { m_rhHeader.m_iTrackNumber = track; }
+    virtual void SetZoneNumber(uint8 zone) { m_rhHeader.m_iZoneNumber = zone; }
     virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
     virtual void SetRunHash(const char *pHash) { Q_strncpy(m_pszRunHash, pHash, sizeof(m_pszRunHash)); }
 
@@ -54,7 +56,7 @@ class CMomReplayBase : public ISerializable
     virtual CReplayFrame *GetFrame(int32 index) = 0;
     virtual void AddFrame(const CReplayFrame &frame) = 0;
     virtual bool SetFrame(int32 index, const CReplayFrame &frame) = 0;
-    virtual CMomRunStats *CreateRunStats(uint8 stages) = 0;
+    virtual CMomRunStats *CreateRunStats(uint8 zones) = 0;
     virtual void RemoveFrames(int num) = 0;
 
   protected:

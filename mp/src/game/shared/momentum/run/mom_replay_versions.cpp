@@ -49,12 +49,12 @@ bool CMomReplayV1::SetFrame(int32 index, const CReplayFrame &frame)
     return true;
 }
 
-CMomRunStats *CMomReplayV1::CreateRunStats(uint8 stages)
+CMomRunStats *CMomReplayV1::CreateRunStats(uint8 zones)
 {
     if (m_pRunStats != nullptr)
         delete m_pRunStats;
 
-    m_pRunStats = new CMomRunStats(stages);
+    m_pRunStats = new CMomRunStats(zones);
     return m_pRunStats;
 }
 
