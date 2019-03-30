@@ -133,12 +133,13 @@ void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
     }
     else if (pEngineCommand)
     {
-        ConCommand* pCommand = g_pCVar->FindCommand(pEngineCommand);
+        CCommand args;
+        args.Tokenize(pEngineCommand);
+
+        ConCommand *pCommand = g_pCVar->FindCommand(args[0]);
         if (pCommand) // can we directly call this command?
         {
-            CCommand blah;
-            blah.Tokenize(pEngineCommand);
-            pCommand->Dispatch(blah);
+            pCommand->Dispatch(args);
         }
         else // fallback to old code
         {

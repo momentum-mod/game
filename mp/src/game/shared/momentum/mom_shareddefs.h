@@ -217,25 +217,6 @@ enum SPECTATE_MSG_TYPE
 //Flags for a HUD cvar (usually)
 #define FLAG_HUD_CVAR (FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED)
 
-// For some reason if calling console commands through the engine does not work, this seems to do the trick
-// Notes: It is wrapped in its own scope so pCommand is redefined if this is used more than once
-//        You cannot have an '\n' at the end of the `command_name` argument using this method
-#define DISPATCH_CON_COMMAND(command_name, full_command)                                                               \
-    {                                                                                                                  \
-        ConCommand *pCommand = g_pCVar->FindCommand(command_name);                                                     \
-        if (pCommand)                                                                                                  \
-        {                                                                                                              \
-            CCommand cc;                                                                                               \
-            cc.Tokenize(full_command);                                                                                 \
-            pCommand->Dispatch(cc);                                                                                    \
-        }                                                                                                              \
-        else                                                                                                           \
-        {                                                                                                              \
-            Warning("%s->%s():%d -- Could not find console command: %s\n", __FILE__, __FUNCTION__, __LINE__,           \
-                    #command_name);                                                                                    \
-        }                                                                                                              \
-    }
-
 #define ____CHECK_STEAM_API(steam_interface, ret)  \
     if (!steam_interface) { \
     Warning("%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
