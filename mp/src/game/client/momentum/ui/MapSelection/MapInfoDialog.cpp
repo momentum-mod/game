@@ -218,7 +218,7 @@ void CDialogMapInfo::FillMapInfo()
     CUtlString authors;
     m_pMapData->GetCreditString(&authors, CREDIT_AUTHOR);
     pLoc->SetString("authors", authors.Get());
-    SetControlString("AuthorLabel", CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_Map_Author"), pLoc));
+    SetControlString("AuthorLabel", CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_Map_Authors"), pLoc));
 
     // Info stuff
     m_pMapData->m_Info.ToKV(pLoc);
