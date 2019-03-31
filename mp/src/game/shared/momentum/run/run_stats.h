@@ -38,8 +38,8 @@ public:
     uint8 GetTotalZones();
     uint32 GetZoneJumps(int zone);
     uint32 GetZoneStrafes(int zone);
-    int GetZoneTicks(int zone);
-    int GetZoneEnterTick(int zone);
+    uint32 GetZoneTicks(int zone);
+    uint32 GetZoneEnterTick(int zone);
     float GetZoneStrafeSyncAvg(int zone);
     float GetZoneStrafeSync2Avg(int zone);
     float GetZoneEnterSpeed(int zone, bool vel2D);
@@ -61,10 +61,10 @@ public:
     void SetZoneExitSpeed(int zone, float vert, float hor);
 
     CNetworkVar(uint8, m_iTotalZones);
-    CNetworkArray(int, m_iZoneJumps, MAX_ZONES + 1);
-    CNetworkArray(int, m_iZoneStrafes, MAX_ZONES + 1);
-    CNetworkArray(int, m_iZoneTicks, MAX_ZONES + 1);
-    CNetworkArray(int, m_iZoneEnterTick, MAX_ZONES + 1);
+    CNetworkArray(uint32, m_iZoneJumps, MAX_ZONES + 1);
+    CNetworkArray(uint32, m_iZoneStrafes, MAX_ZONES + 1);
+    CNetworkArray(uint32, m_iZoneTicks, MAX_ZONES + 1);
+    CNetworkArray(uint32, m_iZoneEnterTick, MAX_ZONES + 1);
     CNetworkArray(float, m_flZoneStrafeSyncAvg, MAX_ZONES + 1);
     CNetworkArray(float, m_flZoneStrafeSync2Avg, MAX_ZONES + 1);
     CNetworkArray(float, m_flZoneEnterSpeed3D, MAX_ZONES + 1);
