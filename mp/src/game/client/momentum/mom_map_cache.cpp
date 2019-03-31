@@ -181,7 +181,7 @@ void Run::FromKV(KeyValues* pKv)
     m_uID = pKv->GetUint64("id");
     m_bIsPersonalBest = pKv->GetBool("isPersonalBest");
     m_fTickRate = pKv->GetFloat("tickRate");
-    Q_strncpy(m_szDateAchieved, pKv->GetString("dateAchieved"), sizeof(m_szDateAchieved));
+    Q_strncpy(m_szDateAchieved, pKv->GetString("createdAt"), sizeof(m_szDateAchieved));
     m_fTime = pKv->GetFloat("time");
     m_uFlags = pKv->GetInt("flags");
     Q_strncpy(m_szDownloadURL, pKv->GetString("file"), sizeof(m_szDownloadURL));
@@ -194,7 +194,7 @@ void Run::ToKV(KeyValues* pKv) const
     pKv->SetUint64("id", m_uID);
     pKv->SetBool("isPersonalBest", m_bIsPersonalBest);
     pKv->SetFloat("tickRate", m_fTickRate);
-    pKv->SetString("dateAchieved", m_szDateAchieved);
+    pKv->SetString("createdAt", m_szDateAchieved);
     pKv->SetFloat("time", m_fTime);
     pKv->SetInt("flags", m_uFlags);
     pKv->SetString("file", m_szDownloadURL);

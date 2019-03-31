@@ -348,10 +348,10 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
 
                 // Date
                 char timeAgoStr[64];
-                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("dateAchieved"), timeAgoStr, sizeof(timeAgoStr)))
+                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("createdAt"), timeAgoStr, sizeof(timeAgoStr)))
                     kvEntry->SetString("date", timeAgoStr);
                 else
-                    kvEntry->SetString("date", pRun->GetString("dateAchieved"));
+                    kvEntry->SetString("date", pRun->GetString("createdAt"));
 
                 KeyValues *kvUserObj = pRun->FindKey("user");
                 if (kvUserObj)

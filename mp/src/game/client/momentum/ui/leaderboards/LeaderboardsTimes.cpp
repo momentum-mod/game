@@ -735,10 +735,10 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
 
                 // Date
                 char timeAgoStr[64];
-                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("dateAchieved"), timeAgoStr, sizeof(timeAgoStr)))
+                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("createdAt"), timeAgoStr, sizeof(timeAgoStr)))
                     kvEntry->SetString("date", timeAgoStr);
                 else
-                    kvEntry->SetString("date", pRun->GetString("dateAchieved"));
+                    kvEntry->SetString("date", pRun->GetString("createdAt"));
 
                 // ID
                 kvEntry->SetUint64("id", pRun->GetUint64("id"));
