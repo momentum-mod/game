@@ -61,7 +61,7 @@
         "visible"		"1"
         "enabled"		"1"
         "tabPosition"		"0"
-        "labelText"		"#MOM_Map_Difficulty"
+        "labelText"		"#MOM_MapSelector_InfoDialog_Difficulty"
         "textAlignment"		"west"
         "dulltext"		"1"
         "brighttext"		"0"
