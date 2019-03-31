@@ -176,12 +176,13 @@
         "MOM_GameType_Trikz" "Trikz"
 
         // Map Info Dialog
-        "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode: "
-        "MOM_MapSelector_InfoDialog_Layout" "Layout: "
-        "MOM_MapSelector_InfoDialog_Zones"  "# of Zones: "
-        "MOM_MapSelector_InfoDialog_NumBonus" "# of Bonuses: "
-        "MOM_MapSelector_InfoDialog_CreationDate" "Date Created: "
-        "MOM_MapSelector_InfoDialog_ReleaseDate" "Date Released: "
+        "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode:"
+        "MOM_MapSelector_InfoDialog_Layout" "Layout:"
+        "MOM_MapSelector_InfoDialog_Difficulty" "Tier:"
+        "MOM_MapSelector_InfoDialog_Zones"  "# of Zones:"
+        "MOM_MapSelector_InfoDialog_NumBonus" "# of Bonuses:"
+        "MOM_MapSelector_InfoDialog_CreationDate" "Date Created:"
+        "MOM_MapSelector_InfoDialog_ReleaseDate" "Date Released:"
 
         // Misc
         "MOM_BuildVersion" "Build Version"
