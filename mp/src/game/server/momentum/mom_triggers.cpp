@@ -136,18 +136,6 @@ bool CBaseMomZoneTrigger::TestCollision(const Ray_t& ray, unsigned mask, trace_t
     return true;
 }
 
-bool CBaseMomZoneTrigger::ToKeyValues(KeyValues* pKvInto) const
-{
-    pKvInto->SetInt("track_number", m_iTrackNumber);
-    return true;
-}
-
-bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues* pKvFrom)
-{
-    m_iTrackNumber = pKvFrom->GetInt("track_number");
-    return true;
-}
-
 int CBaseMomZoneTrigger::GetZoneType()
 {
     return ZONE_TYPE_INVALID;

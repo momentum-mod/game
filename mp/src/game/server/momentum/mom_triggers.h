@@ -103,10 +103,10 @@ public:
     // Override this function to have the game save this zone type to the .zon file
     // If you override this make sure to also override LoadFromKeyValues to load values from .zon file
     // Returns false by default to signify it was not saved (kvInto can be deleted)
-    virtual bool ToKeyValues(KeyValues* pKvInto) const;
+    virtual bool ToKeyValues(KeyValues* pKvInto) const { return true; }
     // Override this function to load zone specific values from .zon file
     // Return true to signify success
-    virtual bool LoadFromKeyValues(KeyValues *pKvFrom);
+    virtual bool LoadFromKeyValues(KeyValues *pKvFrom) { return true; }
 
     virtual int GetZoneType();
 
