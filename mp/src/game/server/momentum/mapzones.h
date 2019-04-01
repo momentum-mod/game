@@ -1,6 +1,6 @@
 #pragma once
 
-class CMapzone;
+class CMapZone;
 
 class CMapzoneData
 {
@@ -12,7 +12,7 @@ public:
     bool LoadFromFile(const char *szMapName);
 
   private:
-    CUtlVector<CMapzone*> m_zones;
+    CUtlVector<CMapZone*> m_zones;
 };
 
 bool ZoneTypeToClass(int type, char *dest, int maxlen);

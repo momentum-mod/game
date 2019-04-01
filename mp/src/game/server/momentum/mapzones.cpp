@@ -4,6 +4,7 @@
 #include "mom_timer.h"
 #include "mom_triggers.h"
 #include "mapzones_build.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -11,11 +12,11 @@ static void SaveZonFile(const char *pMapName);
 static void CC_Mom_GenerateZoneFile() { SaveZonFile(gpGlobals->mapname.ToCStr()); }
 static ConCommand mom_generate_zone_file("mom_zone_generate", CC_Mom_GenerateZoneFile, "Generates a zone file.");
 
-class CMapzone
+class CMapZone
 {
   public:
-    CMapzone(const int type, const KeyValues *values);
-    ~CMapzone();
+    CMapZone(int type, int track, const KeyValues *values);
+    ~CMapZone();
 
     void SpawnZone();
 
@@ -23,25 +24,27 @@ class CMapzone
 
   private:
     int m_iType;
+    int m_iTrack; // Track number
     // KeyValues containing all the values describing the zone
     KeyValues *m_pZoneValues;
 
     CBaseMomZoneTrigger *m_pTrigger;
 };
 
-CMapzone::CMapzone(const int type, const KeyValues *values)
+CMapZone::CMapZone(const int type, const int track, const KeyValues *values)
 {
     m_iType = type;
+    m_iTrack = track;
     m_pZoneValues = values->MakeCopy();
     m_pTrigger = nullptr;
 }
 
-CMapzone::~CMapzone()
+CMapZone::~CMapZone()
 {
     m_pZoneValues->deleteThis();
 }
 
-void CMapzone::SpawnZone()
+void CMapZone::SpawnZone()
 {
     char classname[64];
     ZoneTypeToClass(m_iType, classname, sizeof(classname));
@@ -50,13 +53,14 @@ void CMapzone::SpawnZone()
 
     if (m_pTrigger)
     {
-        const bool success = m_pTrigger->LoadFromKeyValues(m_pZoneValues);
-        if (!success)
+        if (!m_pTrigger->LoadFromKeyValues(m_pZoneValues))
         {
             Warning("Failed to load zone of type '%s' (Invalid zone data)", classname);
             Assert(false);
             return;
         }
+
+        m_pTrigger->SetTrackNumber(m_iTrack);
 
         CMomBaseZoneBuilder* pBaseBuilder = CreateZoneBuilderFromKeyValues(m_pZoneValues);
 
@@ -70,40 +74,97 @@ void CMapzone::SpawnZone()
     }
 }
 
+static void SaveTrigger(CTriggerZone *pTrigger, KeyValues *pKvInto)
+{
+    bool bSuccess = false;
+    const auto pKvZone = pKvInto->CreateNewKey();
+    if (pTrigger->ToKeyValues(pKvZone))
+    {
+        auto pBuilder = CreateZoneBuilderFromExisting(pTrigger);
+
+        bSuccess = pBuilder->Save(pKvZone);
+
+        delete pBuilder;
+    }
+
+    if (!bSuccess)
+    {
+        Warning("Failed to save zone to file!\n");
+        pKvInto->RemoveSubKey(pKvZone);
+        pKvZone->deleteThis();
+    }
+}
+
 static void SaveZonFile(const char *szMapName)
 {
     KeyValuesAD zoneKV(szMapName);
-    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_*");
+    CTriggerZone *trackTriggers[MAX_TRACKS][MAX_ZONES];
+    memset(trackTriggers, NULL, sizeof(trackTriggers[0][0]) * MAX_TRACKS * MAX_ZONES);
+    CUtlVector<CTriggerZone*> versatileTriggers;
+
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
     while (pEnt)
     {
-        CBaseMomZoneTrigger *pTrigger = dynamic_cast<CBaseMomZoneTrigger*>(pEnt);
+        CTriggerZone *pTrigger = dynamic_cast<CTriggerZone*>(pEnt);
         if (!pTrigger)
         {
-            AssertMsg(false, "Entity with classname trigger_momentum_* was not a momentum trigger");
+            AssertMsg(false, "Entity with classname trigger_momentum_timer_* was not a momentum zone trigger");
             continue;
         }
 
-        KeyValues *pSubKey = zoneKV->CreateNewKey();
-        if (pTrigger->ToKeyValues(pSubKey))
+        const auto trackNum = pTrigger->GetTrackNumber();
+        const auto zoneNum = pTrigger->GetZoneNumber();
+
+        AssertMsg(trackNum >= -1 && trackNum < MAX_TRACKS, "Track number %i out of range!", trackNum);
+        AssertMsg(zoneNum >= 0 && zoneNum < MAX_ZONES, "Zone number %i out of range!", zoneNum);
+
+        if (trackNum > -1)
+            trackTriggers[trackNum][zoneNum] = pTrigger;
+        else if (trackNum == -1)
+            versatileTriggers.AddToTail(pTrigger);
+
+        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_*");
+    }
+
+    for (int track = -1; track < MAX_TRACKS; track++)
+    {
+        KeyValues *pKvTrack = new KeyValues(CFmtStr("%i", track));
+        if (track == -1)
         {
-            CMomBaseZoneBuilder *pBuilder = CreateZoneBuilderFromExisting(pTrigger);
-
-            if (!pBuilder->Save(pSubKey))
+            // Add our versatile triggers (track num -1)
+            if (!versatileTriggers.IsEmpty())
             {
-                Warning("Failed to save zone to file!\n");
+                FOR_EACH_VEC(versatileTriggers, i)
+                {
+                    const auto pZoneTrigger = versatileTriggers[i];
+                    if (pZoneTrigger)
+                        SaveTrigger(pZoneTrigger, pKvTrack);
+                }
             }
-
-            delete pBuilder;
         }
         else
         {
-            zoneKV->RemoveSubKey(pSubKey);
-            pSubKey->deleteThis();
+            // Go through each zone and find our triggers
+            for (int zone = 0; zone < MAX_ZONES; zone++)
+            {
+                const auto pZoneTrigger = trackTriggers[track][zone];
+                if (pZoneTrigger)
+                    SaveTrigger(pZoneTrigger, pKvTrack);
+            }
         }
-
-        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_*");
+        
+        // Save only if we're not empty
+        if (!pKvTrack->IsEmpty())
+        {
+            zoneKV->AddSubKey(pKvTrack);
+        }
+        else
+        {
+            pKvTrack->deleteThis();
+        }
     }
-    if (zoneKV->GetFirstSubKey()) // not empty
+
+    if (!zoneKV->IsEmpty())
     {
         char zoneFilePath[MAX_PATH];
         V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
@@ -144,40 +205,43 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
     V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
     DevLog("Looking for zone file: %s \n", zoneFilePath);
 
-    KeyValuesAD zoneKV(szMapName);
-    if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
+    KeyValuesAD fileKV(szMapName);
+    if (fileKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
     {
-        // Go through checkpoints
-        for (KeyValues *cp = zoneKV->GetFirstSubKey(); cp; cp = cp->GetNextKey())
+        FOR_EACH_SUBKEY(fileKV, trackKV)
         {
-            // Load position information (will default to 0 if the keys don't exist)
-            int zoneType = ZONE_TYPE_INVALID;
+            const auto trackNum = Q_atoi(trackKV->GetName());
+            FOR_EACH_SUBKEY(trackKV, zoneKV)
+            {
+                // Load position information (will default to 0 if the keys don't exist)
+                int zoneType = ZONE_TYPE_INVALID;
 
-            const char *name = cp->GetName();
-            if (FStrEq(name, "start"))
-            {
-                zoneType = ZONE_TYPE_START;
-            }
-            else if (FStrEq(name, "checkpoint"))
-            {
-                zoneType = ZONE_TYPE_CHECKPOINT;
-            }
-            else if (FStrEq(name, "end"))
-            {
-                zoneType = ZONE_TYPE_STOP;
-            }
-            else if (FStrEq(name, "stage"))
-            {
-                zoneType = ZONE_TYPE_STAGE;
-            }
-            else
-            {
-                Warning("Error while reading zone file: Unknown mapzone type %s!\n", cp->GetName());
-                continue;
-            }
+                const char *name = zoneKV->GetName();
+                if (FStrEq(name, "start"))
+                {
+                    zoneType = ZONE_TYPE_START;
+                }
+                else if (FStrEq(name, "checkpoint"))
+                {
+                    zoneType = ZONE_TYPE_CHECKPOINT;
+                }
+                else if (FStrEq(name, "end"))
+                {
+                    zoneType = ZONE_TYPE_STOP;
+                }
+                else if (FStrEq(name, "stage"))
+                {
+                    zoneType = ZONE_TYPE_STAGE;
+                }
+                else
+                {
+                    Warning("Error while reading zone file: Unknown mapzone type %s!\n", zoneKV->GetName());
+                    continue;
+                }
 
-            // Add element
-            m_zones.AddToTail(new CMapzone(zoneType, cp));
+                // Add element
+                m_zones.AddToTail(new CMapZone(zoneType, trackNum, zoneKV));
+            }
         }
 
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
