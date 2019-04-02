@@ -103,12 +103,23 @@ void CvarTextEntry::Reset()
     }
 }
 
+void CvarTextEntry::OnThink()
+{
+    if (HasBeenModifiedExternally())
+        Reset();
+}
+
 bool CvarTextEntry::HasBeenModified()
 {
     char szText[MAX_CVAR_TEXT];
     GetText(szText, MAX_CVAR_TEXT);
 
-    return stricmp(szText, m_pszStartValue) != 0 ? true : false;
+    return stricmp(szText, m_pszStartValue) != 0;
+}
+
+bool CvarTextEntry::HasBeenModifiedExternally() const
+{
+    return m_cvarRef.IsValid() && stricmp(m_cvarRef.GetString(), m_pszStartValue) != 0;
 }
 
 void CvarTextEntry::OnTextChanged()
