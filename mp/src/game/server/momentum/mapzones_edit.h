@@ -14,6 +14,7 @@ class CMomZoneEdit : public CAutoGameSystemPerFrame
     void StopEditing();
 
     virtual void LevelInitPostEntity() OVERRIDE;
+    virtual void LevelShutdownPostEntity() OVERRIDE;
     virtual void FrameUpdatePostEntityThink() OVERRIDE;
 
     void OnCreate(int zonetype = -1);
