@@ -4,7 +4,6 @@
 #include "mapzones.h"
 #include "mapzones_build.h"
 #include "mom_player.h"
-#include "mom_player_shared.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
 
@@ -428,6 +427,14 @@ CMomentumPlayer *CMomZoneEdit::GetPlayerBuilder() const
 }
 
 void CMomZoneEdit::LevelInitPostEntity() { StopEditing(); }
+
+void CMomZoneEdit::LevelShutdownPostEntity()
+{
+    mom_zone_track.Revert();
+    mom_zone_zonenum.Revert();
+    mom_zone_type.Revert();
+    mom_zone_auto_make_stage.Revert();
+}
 
 void CMomZoneEdit::FrameUpdatePostEntityThink()
 {
