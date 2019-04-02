@@ -128,10 +128,24 @@ void CBaseMomZoneTrigger::InitCustomCollision(CPhysCollide* pPhysCollide, const 
 
 bool CBaseMomZoneTrigger::TestCollision(const Ray_t& ray, unsigned mask, trace_t& tr)
 {
-    auto pPhys = VPhysicsGetObject();
+    const auto pPhys = VPhysicsGetObject();
     Assert(pPhys);
 
     physcollision->TraceBox(ray, pPhys->GetCollide(), GetAbsOrigin(), GetAbsAngles(), &tr);
+
+    return true;
+}
+
+bool CBaseMomZoneTrigger::ToKeyValues(KeyValues *pKvInto)
+{
+    pKvInto->SetInt("zone_type", GetZoneType());
+    return true;
+}
+
+bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues *pKvFrom)
+{
+    if (pKvFrom->GetInt("zone_type", ZONE_TYPE_INVALID) != GetZoneType())
+        return false;
 
     return true;
 }
@@ -169,16 +183,19 @@ void CTriggerZone::OnEndTouch(CBaseEntity* pOther)
     BaseClass::OnEndTouch(pOther);
 }
 
-bool CTriggerZone::ToKeyValues(KeyValues* pKvInto) const
+bool CTriggerZone::ToKeyValues(KeyValues* pKvInto)
 {
-    pKvInto->SetInt("zone_number", m_iZoneNumber);
+    pKvInto->SetName(CFmtStr("%d", m_iZoneNumber));
     return BaseClass::ToKeyValues(pKvInto);
 }
 
 bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
 {
-    m_iZoneNumber = kv->GetInt("zone_number");
-    return BaseClass::LoadFromKeyValues(kv);
+    m_iZoneNumber = Q_atoi(kv->GetName());
+    if (m_iZoneNumber >= 0 && m_iZoneNumber < MAX_ZONES)
+        return BaseClass::LoadFromKeyValues(kv);
+
+    return false;
 }
 
 
@@ -187,23 +204,6 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerCheckpoint, DT_TriggerCheckpoint)
 END_SEND_TABLE()
-
-bool CTriggerCheckpoint::LoadFromKeyValues(KeyValues *kv)
-{
-    if (!FStrEq(kv->GetName(), "checkpoint"))
-        return false;
-
-    SetName(MAKE_STRING("Checkpoint Trigger"));
-
-    return BaseClass::LoadFromKeyValues(kv);
-}
-
-bool CTriggerCheckpoint::ToKeyValues(KeyValues* pKvInto) const
-{
-    pKvInto->SetName("checkpoint");
-
-    return BaseClass::ToKeyValues(pKvInto);
-}
 
 int CTriggerCheckpoint::GetZoneType()
 {
@@ -215,22 +215,6 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, CTriggerStage);
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerStage, DT_TriggerStage)
 END_SEND_TABLE()
-
-bool CTriggerStage::ToKeyValues(KeyValues *pKvInto) const
-{
-    pKvInto->SetName("stage");
-    return BaseClass::ToKeyValues(pKvInto);
-}
-
-bool CTriggerStage::LoadFromKeyValues(KeyValues *kv)
-{
-    if (!FStrEq(kv->GetName(), "stage"))
-        return false;
-
-    SetName(MAKE_STRING("Stage Trigger"));
-
-    return BaseClass::LoadFromKeyValues(kv);
-}
 
 int CTriggerStage::GetZoneType()
 {
@@ -258,16 +242,15 @@ CTriggerTimerStart::CTriggerTimerStart()
 {
     m_iZoneNumber = 1;
 }
-bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto) const
+bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto)
 {
-    pKvInto->SetName("start");
     pKvInto->SetFloat("speed_limit", GetSpeedLimit());
     pKvInto->SetBool("limitingspeed", IsLimitingSpeed());
     pKvInto->SetBool("StartOnJump", StartOnJump());
     pKvInto->SetInt("LimitSpeedType", GetLimitSpeedType());
     if (HasLookAngles())
     {
-        pKvInto->SetFloat("yaw", GetLookAngles()[YAW]);
+        pKvInto->SetFloat("yaw", m_angLook[YAW]);
     }
 
     return BaseClass::ToKeyValues(pKvInto);
@@ -275,31 +258,28 @@ bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto) const
 
 bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *kv)
 {
-    if (!FStrEq(kv->GetName(), "start"))
+    if (BaseClass::LoadFromKeyValues(kv))
     {
-        return false;
+        SetSpeedLimit(kv->GetFloat("speed_limit", 350.0f));
+        SetIsLimitingSpeed(kv->GetBool("limitingspeed"));
+        SetStartOnJump(kv->GetBool("StartOnJump"));
+        SetLimitSpeedType(kv->GetInt("LimitSpeedType"));
+
+        const float nolook = -190.0f;
+        float yaw = kv->GetFloat("yaw", nolook);
+        if (!CloseEnough(yaw, nolook))
+        {
+            SetHasLookAngles(true);
+            SetLookAngles(QAngle(0.0f, yaw, 0.0f));
+        }
+        else
+        {
+            SetHasLookAngles(false);
+        }
+        return true;
     }
 
-    SetName(MAKE_STRING("Start Trigger"));
-
-    SetSpeedLimit(kv->GetFloat("speed_limit", 350.0f));
-    SetIsLimitingSpeed(kv->GetBool("limitingspeed"));
-    SetStartOnJump(kv->GetBool("StartOnJump"));
-    SetLimitSpeedType(kv->GetInt("LimitSpeedType"));
-
-    const float nolook = -190.0f;
-    float yaw = kv->GetFloat("yaw", nolook);
-    if (!CloseEnough(yaw, nolook))
-    {
-        SetHasLookAngles(true);
-        SetLookAngles(QAngle(0.0f, yaw, 0.0f));
-    }
-    else
-    {
-        SetHasLookAngles(false);
-    }
-
-    return BaseClass::LoadFromKeyValues(kv);
+    return false;
 }
 
 int CTriggerTimerStart::GetZoneType()
@@ -366,22 +346,6 @@ void CTriggerTimerStop::Spawn()
     m_iZoneNumber = 0; // Hard code our zone number to 0.
 
     BaseClass::Spawn();
-}
-
-bool CTriggerTimerStop::ToKeyValues(KeyValues *pKvInto) const
-{
-    pKvInto->SetName("end");
-    return BaseClass::ToKeyValues(pKvInto);
-}
-
-bool CTriggerTimerStop::LoadFromKeyValues(KeyValues *kv)
-{
-    if (!FStrEq(kv->GetName(), "end"))
-        return false;
-
-    SetName(MAKE_STRING("End Trigger"));
-
-    return BaseClass::LoadFromKeyValues(kv);
 }
 
 int CTriggerTimerStop::GetZoneType()

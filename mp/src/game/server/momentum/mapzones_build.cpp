@@ -2,6 +2,7 @@
 
 #include "mom_triggers.h"
 #include "mapzones_build.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -420,7 +421,6 @@ bool CMomPointZoneBuilder::LoadFromZone(const CBaseMomZoneTrigger *pEnt)
     if (!pEnt->m_vecZonePoints.Count())
         return false;
 
-
     m_vPoints.CopyArray(pEnt->m_vecZonePoints.Base(), pEnt->m_vecZonePoints.Count());
     SetHeight( pEnt->m_flZoneHeight );
 
@@ -431,6 +431,11 @@ bool CMomPointZoneBuilder::Load(KeyValues *kv)
 {
     SetHeight(kv->GetFloat("point_height"));
 
+    const auto kvZPos = kv->FindKey("point_points_zpos");
+    if (!kvZPos)
+        return false;
+
+    const auto fZPos = kvZPos->GetFloat();
 
     auto sub = kv->FindKey("point_points");
     if (!sub)
@@ -440,15 +445,14 @@ bool CMomPointZoneBuilder::Load(KeyValues *kv)
     if (!s)
         return false;
 
-
     do
     {
         const char* val = s->GetString();
         if (val && *val)
         {
             Vector pos;
-            pos.Init();
-            sscanf(val, "%f %f %f", &pos.x, &pos.y, &pos.z);
+            pos.Init(.0f, .0f, fZPos);
+            sscanf(val, "%f %f", &pos.x, &pos.y);
 
             m_vPoints.AddToTail(pos);
         }
@@ -462,17 +466,19 @@ bool CMomPointZoneBuilder::Save(KeyValues *kv)
 {
     auto sub = new KeyValues("point_points");
 
-    char szName[64];
-    char szValue[128];
+    float *pZPos = nullptr;
     for (int i = 0; i < m_vPoints.Count(); i++)
     {
         auto& pos = m_vPoints[i];
 
-        Q_snprintf(szName, sizeof(szName), "p%i", i);
-        Q_snprintf(szValue, sizeof(szValue), "%.1f %.1f %.1f", pos.x, pos.y, pos.z);
-        sub->SetString(szName, szValue);
+        if (!pZPos)
+            pZPos = &pos.z;
+
+        sub->SetString(CFmtStrN<64>("p%i", i), CFmtStrN<64>("%.3f %.3f", pos.x, pos.y));
     }
 
+    if (pZPos)
+        kv->SetFloat("point_points_zpos", *pZPos);
 
     kv->SetFloat("point_height", m_flHeight);
     kv->AddSubKey(sub);
