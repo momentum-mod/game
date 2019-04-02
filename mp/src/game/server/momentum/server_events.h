@@ -6,7 +6,7 @@
 
 #include "utlbuffer.h"
 
-class CMapzoneData;
+class CMapZoneData;
 
 namespace Momentum {
 void GameInit();
@@ -29,7 +29,7 @@ public:
     void MountAdditionalContent();
 
 private:
-    CMapzoneData* zones;
+    CMapZoneData* zones;
 };
 
 

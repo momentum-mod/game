@@ -39,7 +39,7 @@ void CMOMServerEvents::LevelInitPreEntity()
         delete zones;
         zones = nullptr;
     }
-    zones = new CMapzoneData(pMapName);
+    zones = new CMapZoneData(pMapName);
     zones->SpawnMapZones();
 }
 

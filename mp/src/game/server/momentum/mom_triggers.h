@@ -103,10 +103,10 @@ public:
     // Override this function to have the game save this zone type to the .zon file
     // If you override this make sure to also override LoadFromKeyValues to load values from .zon file
     // Returns false by default to signify it was not saved (kvInto can be deleted)
-    virtual bool ToKeyValues(KeyValues* pKvInto) const { return true; }
+    virtual bool ToKeyValues(KeyValues *pKvInto);
     // Override this function to load zone specific values from .zon file
     // Return true to signify success
-    virtual bool LoadFromKeyValues(KeyValues *pKvFrom) { return true; }
+    virtual bool LoadFromKeyValues(KeyValues *pKvFrom);
 
     virtual int GetZoneType();
 
@@ -138,7 +138,7 @@ public:
     virtual void OnStartTouch(CBaseEntity* pOther) OVERRIDE;
     virtual void OnEndTouch(CBaseEntity* pOther) OVERRIDE;
 
-    virtual bool ToKeyValues(KeyValues* pKvInto) const OVERRIDE;
+    virtual bool ToKeyValues(KeyValues* pKvInto) OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues* kv) OVERRIDE;
 
 protected:
@@ -161,9 +161,6 @@ public:
     // always send to all clients
     int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    virtual bool LoadFromKeyValues(KeyValues* pKvFrom) OVERRIDE;
-    virtual bool ToKeyValues(KeyValues* pKvInto) const OVERRIDE;
-
     virtual int GetZoneType() OVERRIDE;
 };
 
@@ -182,9 +179,6 @@ public:
 
     // always send to all clients
     int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
-
-    virtual bool ToKeyValues(KeyValues *pKvInto) const OVERRIDE;
-    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
     virtual int GetZoneType() OVERRIDE;
 };
@@ -222,7 +216,7 @@ class CTriggerTimerStart : public CTriggerZone
     int GetLimitSpeedType() const { return m_iLimitSpeedType; }
     void SetLimitSpeedType(const int type) { m_iLimitSpeedType = type; }
 
-    virtual bool ToKeyValues(KeyValues *pKvInto) const OVERRIDE;
+    virtual bool ToKeyValues(KeyValues *pKvInto) OVERRIDE;
     virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
 
     int GetZoneType() OVERRIDE;
@@ -251,8 +245,6 @@ public:
     // always send to all clients
     virtual int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
 
-    virtual bool ToKeyValues(KeyValues *pKvInto) const OVERRIDE;
-    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
     int GetZoneType() OVERRIDE;
 };
 

@@ -2,11 +2,11 @@
 
 class CMapZone;
 
-class CMapzoneData
+class CMapZoneData
 {
 public:
-    CMapzoneData(const char *szMapName);
-    ~CMapzoneData();
+    CMapZoneData(const char *szMapName);
+    ~CMapZoneData();
 
     void SpawnMapZones();
     bool LoadFromFile(const char *szMapName);
