@@ -282,6 +282,11 @@ void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
 
 void CMomentumTimer::CalculateZoneCounts()
 {
+    // Reset our counts
+    for (auto i = 0; i < MAX_TRACKS; i++)
+        m_iZoneCount[i] = 0;
+    m_iLinearTracks = 0;
+
     int globalZones = 0;
     m_iHighestTrackNum = -1;
     auto pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
