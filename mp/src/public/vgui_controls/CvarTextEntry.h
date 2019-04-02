@@ -25,7 +25,9 @@ namespace vgui
         void GetSettings(KeyValues* outResourceData) OVERRIDE;
         void InitSettings() OVERRIDE;
         void Reset();
+        void OnThink() OVERRIDE;
         bool HasBeenModified();
+        bool HasBeenModifiedExternally() const;
 
     private:
         ConVarRef m_cvarRef;
