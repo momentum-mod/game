@@ -15,7 +15,7 @@ static ConCommand mom_generate_zone_file("mom_zone_generate", CC_Mom_GenerateZon
 class CMapZone
 {
   public:
-    CMapZone(int type, int track, const KeyValues *values);
+    CMapZone(int track, int type, const KeyValues *values);
     ~CMapZone();
 
     void SpawnZone();
@@ -31,7 +31,7 @@ class CMapZone
     CBaseMomZoneTrigger *m_pTrigger;
 };
 
-CMapZone::CMapZone(const int type, const int track, const KeyValues *values)
+CMapZone::CMapZone(const int track, const int type, const KeyValues *values)
 {
     m_iType = type;
     m_iTrack = track;
@@ -97,7 +97,7 @@ static void SaveTrigger(CTriggerZone *pTrigger, KeyValues *pKvInto)
 
 static void SaveZonFile(const char *szMapName)
 {
-    KeyValuesAD zoneKV(szMapName);
+    KeyValuesAD zoneKV("tracks");
     CTriggerZone *trackTriggers[MAX_TRACKS][MAX_ZONES];
     memset(trackTriggers, NULL, sizeof(trackTriggers[0][0]) * MAX_TRACKS * MAX_ZONES);
     CUtlVector<CTriggerZone*> versatileTriggers;
@@ -164,7 +164,7 @@ static void SaveZonFile(const char *szMapName)
         }
     }
 
-    if (!zoneKV->IsEmpty())
+    if (!zoneKV->IsEmpty() && szMapName)
     {
         char zoneFilePath[MAX_PATH];
         V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
@@ -173,7 +173,7 @@ static void SaveZonFile(const char *szMapName)
     }
 }
 
-CMapzoneData::CMapzoneData(const char *szMapName)
+CMapZoneData::CMapZoneData(const char *szMapName)
 {
     if (!LoadFromFile(szMapName))
     {
@@ -181,7 +181,7 @@ CMapzoneData::CMapzoneData(const char *szMapName)
     }
 }
 
-CMapzoneData::~CMapzoneData()
+CMapZoneData::~CMapZoneData()
 {
     if (!m_zones.IsEmpty())
     {
@@ -189,7 +189,7 @@ CMapzoneData::~CMapzoneData()
     }
 }
 
-void CMapzoneData::SpawnMapZones()
+void CMapZoneData::SpawnMapZones()
 {
     int count = m_zones.Count();
     for (int i = 0; i < count; i++)
@@ -198,49 +198,38 @@ void CMapzoneData::SpawnMapZones()
     }
 }
 
-bool CMapzoneData::LoadFromFile(const char *szMapName)
+bool CMapZoneData::LoadFromFile(const char *szMapName)
 {
     char zoneFilePath[MAX_PATH];
     V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
     V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
     DevLog("Looking for zone file: %s \n", zoneFilePath);
 
-    KeyValuesAD fileKV(szMapName);
+    KeyValuesAD fileKV("tracks");
     if (fileKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
     {
         FOR_EACH_SUBKEY(fileKV, trackKV)
         {
             const auto trackNum = Q_atoi(trackKV->GetName());
-            FOR_EACH_SUBKEY(trackKV, zoneKV)
+            if (trackNum >= -1 && trackNum < MAX_TRACKS)
             {
-                // Load position information (will default to 0 if the keys don't exist)
-                int zoneType = ZONE_TYPE_INVALID;
+                FOR_EACH_SUBKEY(trackKV, zoneKV)
+                {
+                    const auto zoneNum = Q_atoi(zoneKV->GetName());
+                    if (zoneNum >= 0 && zoneNum < MAX_ZONES)
+                    {
+                        const auto zoneType = zoneKV->GetInt("zone_type", ZONE_TYPE_INVALID);
 
-                const char *name = zoneKV->GetName();
-                if (FStrEq(name, "start"))
-                {
-                    zoneType = ZONE_TYPE_START;
-                }
-                else if (FStrEq(name, "checkpoint"))
-                {
-                    zoneType = ZONE_TYPE_CHECKPOINT;
-                }
-                else if (FStrEq(name, "end"))
-                {
-                    zoneType = ZONE_TYPE_STOP;
-                }
-                else if (FStrEq(name, "stage"))
-                {
-                    zoneType = ZONE_TYPE_STAGE;
-                }
-                else
-                {
-                    Warning("Error while reading zone file: Unknown mapzone type %s!\n", zoneKV->GetName());
-                    continue;
-                }
+                        if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
+                        {
+                            Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
+                            continue;
+                        }
 
-                // Add element
-                m_zones.AddToTail(new CMapZone(zoneType, trackNum, zoneKV));
+                        // Add element
+                        m_zones.AddToTail(new CMapZone(trackNum, zoneType, zoneKV));
+                    }
+                }
             }
         }
 

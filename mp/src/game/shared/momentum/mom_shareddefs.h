@@ -14,16 +14,17 @@
 #define MAX_ZONES 64
 
 // Zone types enum
-// NOTE: If adding a new zone type make sure to add a case for it
-// in CMapzoneData::LoadFromFile & override ToKeyValues/LoadFromKeyValues
-// for the associated trigger class.
+// NOTE: If adding a new zone type make sure to override GetZoneType
+// for the associated trigger
 enum MomZoneType_t
 {
     ZONE_TYPE_INVALID = -1,
-    ZONE_TYPE_START = 0,
-    ZONE_TYPE_STOP,
+    ZONE_TYPE_STOP = 0,
+    ZONE_TYPE_START,
     ZONE_TYPE_STAGE,
     ZONE_TYPE_CHECKPOINT,
+    // Should be last
+    ZONE_TYPE_COUNT,
 };
 
 enum MomTimerEvent_t

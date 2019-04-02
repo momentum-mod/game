@@ -1,6 +1,5 @@
 #include "cbase.h"
 #include "c_mom_player.h"
-#include "c_mom_replay_entity.h"
 #include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
@@ -33,8 +32,6 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
-    m_Data.m_bMapFinished = false;
-    m_Data.m_flLastJumpTime = 0.0f;
     m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
     m_flStartSpeed = 0.0f;
