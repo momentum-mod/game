@@ -30,7 +30,7 @@ void PaintGunScreenPanel::Paint()
     BaseClass::Paint();
 
     Color decalColor;
-    if (g_pMomentumUtil->GetColorFromHex(m_cvarPaintColor.GetString(), decalColor))
+    if (MomUtil::GetColorFromHex(m_cvarPaintColor.GetString(), decalColor))
     {
         surface()->DrawSetTexture(m_iDecalTextureID);
         surface()->DrawSetColor(decalColor);

@@ -579,7 +579,7 @@ void ColorPicker::OnTextChanged(Panel *pPanel)
     if (pTEntry == m_pText_HEX)
     {
         Color picked;
-        if (g_pMomentumUtil->GetColorFromHex(tmpText, picked))
+        if (MomUtil::GetColorFromHex(tmpText, picked))
         {
             for (int i = 0; i < 4; i++)
             {
@@ -608,7 +608,7 @@ void ColorPicker::UpdateAllVars(Panel *pIgnore)
         char hexString[9];
         Color currentColor;
         Vec4DToColor(m_vecColor, currentColor);
-        g_pMomentumUtil->GetHexStringFromColor(currentColor, hexString, 9);
+        MomUtil::GetHexStringFromColor(currentColor, hexString, 9);
         m_pText_HEX->SetText(hexString);
     }
 

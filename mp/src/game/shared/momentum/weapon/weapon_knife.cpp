@@ -154,7 +154,7 @@ void CKnife::Smack(void)
 
     m_trHit.m_pEnt = m_pTraceHitEnt;
 
-    g_pMomentumUtil->KnifeSmack(m_trHit, this, GetPlayerOwner()->GetAbsAngles(), m_bStab);
+    MomUtil::KnifeSmack(m_trHit, this, GetPlayerOwner()->GetAbsAngles(), m_bStab);
 }
 
 void CKnife::WeaponIdle()
@@ -180,7 +180,7 @@ bool CKnife::SwingOrStab(bool bStab)
 
     trace_t tr;
     Vector vForward;
-    g_pMomentumUtil->KnifeTrace(pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab, pPlayer, this, &tr,
+    MomUtil::KnifeTrace(pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab, pPlayer, this, &tr,
                                 &vForward);
 
     bool bDidHit = tr.fraction < 1.0f;

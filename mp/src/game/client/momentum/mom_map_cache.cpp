@@ -710,7 +710,7 @@ bool CMapCache::MapFileExists(MapData* pData)
         return false;
 
     const char *pFilePath = CFmtStr("maps/%s.bsp", pData->m_szMapName).Get();
-    return g_pMomentumUtil->FileExists(pFilePath, pData->m_szHash);
+    return MomUtil::FileExists(pFilePath, pData->m_szHash);
 }
 
 bool CMapCache::DownloadMap(uint32 uID)

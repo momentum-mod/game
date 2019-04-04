@@ -101,7 +101,7 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
             FStrEq(pName, mom_trail_length.GetName()) || // the trail length changed
             FStrEq(pName, mom_trail_enable.GetName()))   // the trail enable bool changed
         {
-            uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
+            uint32 newHexColor = MomUtil::GetHexFromColor(mom_trail_color.GetString());
             pPlayer->m_playerAppearanceProps.m_iGhostTrailRGBAColorAsHex = newHexColor;
             pPlayer->m_playerAppearanceProps.m_iGhostTrailLength = mom_trail_length.GetInt();
             pPlayer->m_playerAppearanceProps.m_bGhostTrailEnable = mom_trail_enable.GetBool();
@@ -109,10 +109,10 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
         }
         else if (FStrEq(pName, mom_ghost_color.GetName())) // the ghost body color changed
         {
-            uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
+            uint32 newHexColor = MomUtil::GetHexFromColor(mom_ghost_color.GetString());
             pPlayer->m_playerAppearanceProps.m_iGhostModelRGBAColorAsHex = newHexColor;
             Color newColor;
-            if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+            if (MomUtil::GetColorFromHex(newHexColor, newColor))
                 pPlayer->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
         }
         else if (FStrEq(pName, mom_ghost_bodygroup.GetName())) // the ghost bodygroup changed
@@ -371,15 +371,15 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
     // initilize appearance properties based on Convars
-    uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
+    uint32 newHexColor = MomUtil::GetHexFromColor(mom_trail_color.GetString());
     m_playerAppearanceProps.m_iGhostTrailRGBAColorAsHex = newHexColor;
     m_playerAppearanceProps.m_iGhostTrailLength = mom_trail_length.GetInt();
     m_playerAppearanceProps.m_bGhostTrailEnable = mom_trail_enable.GetBool();
 
-    newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
+    newHexColor = MomUtil::GetHexFromColor(mom_ghost_color.GetString());
     m_playerAppearanceProps.m_iGhostModelRGBAColorAsHex = newHexColor;
     Color newColor;
-    if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+    if (MomUtil::GetColorFromHex(newHexColor, newColor))
         SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
 
     int bodyGroup = mom_ghost_bodygroup.GetInt();
@@ -772,7 +772,7 @@ void CMomentumPlayer::CreateTrail()
     m_eTrail->KeyValue("endwidth", "1.05");
     m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());
     Color newColor;
-    if (g_pMomentumUtil->GetColorFromHex(mom_trail_color.GetString(), newColor))
+    if (MomUtil::GetColorFromHex(mom_trail_color.GetString(), newColor))
     {
         m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
         m_eTrail->KeyValue("renderamt", newColor.a());

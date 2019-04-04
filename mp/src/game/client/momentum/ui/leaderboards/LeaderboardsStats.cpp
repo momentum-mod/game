@@ -143,7 +143,7 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
                 if (seconds > 0.0f)
                 {
                     char sPersonalBestTime[BUFSIZETIME];
-                    g_pMomentumUtil->FormatTime(seconds, sPersonalBestTime);
+                    MomUtil::FormatTime(seconds, sPersonalBestTime);
                     pMapRank->SetString("time", sPersonalBestTime);
                 }
             }

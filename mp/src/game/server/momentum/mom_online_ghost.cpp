@@ -178,9 +178,9 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
     trace_t tr;
     Vector vForward;
     // Trace data here, play miss sound and do damage if hit
-    g_pMomentumUtil->KnifeTrace(packet.vOrigin, packet.vAngle, packet.iWeaponID == 1, this, this, &tr, &vForward);
+    MomUtil::KnifeTrace(packet.vOrigin, packet.vAngle, packet.iWeaponID == 1, this, this, &tr, &vForward);
     // Play the smacking sounds and do the decal if it actually hit
-    g_pMomentumUtil->KnifeSmack(tr, this, packet.vAngle, packet.iWeaponID == 1);
+    MomUtil::KnifeSmack(tr, this, packet.vAngle, packet.iWeaponID == 1);
 }
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)

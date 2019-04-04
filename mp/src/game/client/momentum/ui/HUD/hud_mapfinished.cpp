@@ -325,7 +325,7 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
     {
         m_pCurrentZoneLabel->SetText(m_pwCurrentPageOverall);
 
-        g_pMomentumUtil->FormatTime(m_pRunData ? float(m_pRunData->m_iRunTime) * m_pRunData->m_flTickRate : 0.0f, m_pszEndRunTime);
+        MomUtil::FormatTime(m_pRunData ? float(m_pRunData->m_iRunTime) * m_pRunData->m_flTickRate : 0.0f, m_pszEndRunTime);
         ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
         m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwOverallTime, unicodeTime));//"Time" (overall run time)
 
@@ -338,7 +338,7 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
 
         //"Zone Time:" shows up when m_iCurrentPage > 0
         char ansiTime[BUFSIZETIME];
-        g_pMomentumUtil->FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneTicks(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
+        MomUtil::FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneTicks(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
         ANSI_TO_UNICODE(ansiTime, unicodeTime);
         m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwZoneTime, unicodeTime));//"Zone time" (time for that zone)
 
@@ -347,7 +347,7 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
         {
             m_pZoneEnterTime->SetEnabled(true);
             m_pZoneEnterTime->SetVisible(true);
-            g_pMomentumUtil->FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneEnterTick(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
+            MomUtil::FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneEnterTick(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
             ANSI_TO_UNICODE(ansiTime, unicodeTime);
             m_pZoneEnterTime->SetText(CConstructLocalizedString(m_pwZoneEnterTime, unicodeTime));//"Zone enter time:" (time entered that zone)
         }

@@ -148,13 +148,13 @@ void PaintingCallback(const CEffectData &data)
     if (data.m_bCustomColors)
     {
         color.SetRawColor(iDamageType);
-        g_pMomentumUtil->UpdatePaintDecalScale(data.m_flScale);
+        MomUtil::UpdatePaintDecalScale(data.m_flScale);
     }
     else
     {
         ConVarRef mom_paintgun_color("mom_paintgun_color"), paintgun_scale("mom_paintgun_scale");
-        g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), color);
-        g_pMomentumUtil->UpdatePaintDecalScale(paintgun_scale.GetFloat());
+        MomUtil::GetColorFromHex(mom_paintgun_color.GetString(), color);
+        MomUtil::UpdatePaintDecalScale(paintgun_scale.GetFloat());
     }
 
     // If we hit, perform our custom effects and play the sound

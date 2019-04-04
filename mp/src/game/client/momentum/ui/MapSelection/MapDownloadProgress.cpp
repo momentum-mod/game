@@ -45,7 +45,7 @@ void MapDownloadProgress::SetDownloadProgress(uint32 offset)
     m_pProgress->SetProgress(fProgress);
 
     // Interpolate the color
-    const Color lerpedColor = g_pMomentumUtil->ColorLerp(fProgress, m_cDownloadStart, m_cDownloadEnd);
+    const Color lerpedColor = MomUtil::ColorLerp(fProgress, m_cDownloadStart, m_cDownloadEnd);
     m_pMapLabel->SetFgColor(lerpedColor);
     m_pProgress->SetFgColor(lerpedColor);
 }

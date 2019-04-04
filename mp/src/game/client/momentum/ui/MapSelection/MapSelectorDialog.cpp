@@ -277,7 +277,7 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         if (pMapData->m_tLastPlayed > 0)
         {
             char timeAgo[16];
-            bool bRes = g_pMomentumUtil->GetTimeAgoString(&pMapData->m_tLastPlayed, timeAgo, 16);
+            bool bRes = MomUtil::GetTimeAgoString(&pMapData->m_tLastPlayed, timeAgo, 16);
             pDataKv->SetString(KEYNAME_MAP_LAST_PLAYED, bRes ? timeAgo : "#MOM_NotApplicable");
         }
         else
@@ -313,7 +313,7 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         pDataKv->SetString(KEYNAME_MAP_CREATION_DATE_SORT, pMapData->m_Info.m_szCreationDate);
 
         time_t creationDateTime;
-        if (g_pMomentumUtil->ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime))
+        if (MomUtil::ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime))
         {
             char date[32];
             strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
@@ -326,7 +326,7 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         if (pMapData->m_PersonalBest.m_bValid)
         {
             char szBestTime[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(pMapData->m_PersonalBest.m_Run.m_fTime, szBestTime);
+            MomUtil::FormatTime(pMapData->m_PersonalBest.m_Run.m_fTime, szBestTime);
 
             pDataKv->SetString(KEYNAME_MAP_TIME, szBestTime);
         }
@@ -341,7 +341,7 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         if (pMapData->m_WorldRecord.m_bValid)
         {
             char szBestTime[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(pMapData->m_WorldRecord.m_Run.m_fTime, szBestTime);
+            MomUtil::FormatTime(pMapData->m_WorldRecord.m_Run.m_fTime, szBestTime);
 
             pDataKv->SetString(KEYNAME_MAP_WORLD_RECORD, szBestTime);
         }

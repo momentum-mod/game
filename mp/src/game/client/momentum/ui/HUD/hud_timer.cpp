@@ -288,7 +288,7 @@ void CHudTimer::OnThink()
             if (m_pRunData->m_bTimerRunning || m_pRunData->m_bMapFinished)
             {
                 char curTime[BUFSIZETIME];
-                g_pMomentumUtil->FormatTime(pEnt->GetCurrentRunTime(), curTime, 2);
+                MomUtil::FormatTime(pEnt->GetCurrentRunTime(), curTime, 2);
                 m_pMainStatusLabel->SetText(curTime);
             }
         }

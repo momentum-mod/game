@@ -459,12 +459,12 @@ void CLeaderboardsTimes::ConvertLocalTimes(KeyValues* kvInto)
         kvLocalTimeFormatted->SetInt("date_t", t->GetRunDate());   // Used for finding
 
         char timeString[BUFSIZETIME];
-        g_pMomentumUtil->FormatTime(t->GetRunTime(), timeString);
+        MomUtil::FormatTime(t->GetRunTime(), timeString);
         kvLocalTimeFormatted->SetString("time", timeString); // Used for display
 
         char dateString[64];
         time_t date = t->GetRunDate();
-        if (g_pMomentumUtil->GetTimeAgoString(&date, dateString, sizeof(dateString)))
+        if (MomUtil::GetTimeAgoString(&date, dateString, sizeof(dateString)))
         {
             kvLocalTimeFormatted->SetString("date", dateString);
         }
@@ -481,7 +481,7 @@ void CLeaderboardsTimes::ConvertOnlineTimes(KeyValues* kv, float seconds)
 {
     char timeString[BUFSIZETIME];
 
-    g_pMomentumUtil->FormatTime(seconds, timeString);
+    MomUtil::FormatTime(seconds, timeString);
     kv->SetString("time_f", timeString);
 }
 
@@ -730,7 +730,7 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
 
                 // Date
                 char timeAgoStr[64];
-                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("createdAt"), timeAgoStr, sizeof(timeAgoStr)))
+                if (MomUtil::GetTimeAgoString(pRun->GetString("createdAt"), timeAgoStr, sizeof(timeAgoStr)))
                     kvEntry->SetString("date", timeAgoStr);
                 else
                     kvEntry->SetString("date", pRun->GetString("createdAt"));
@@ -1060,7 +1060,7 @@ void CLeaderboardsTimes::OnContextWatchOnlineReplay(KeyValues* data)
         CFmtStr comm("mom_replay_play %s\n", fileNameLocal.Get());
         engine->ClientCmd(comm.Get());
     }
-    else if (g_pMomentumUtil->FileExists(filePathOnline.Get(), pReplayHash, "MOD"))
+    else if (MomUtil::FileExists(filePathOnline.Get(), pReplayHash, "MOD"))
     {
         DevLog("Already downloaded the replay, no need to download again!\n");
         CFmtStr command("mom_replay_play %s/%s\n", RECORDING_ONLINE_PATH, fileNameOnline.Get());
