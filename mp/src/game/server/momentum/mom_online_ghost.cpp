@@ -9,6 +9,7 @@
 #include "mom_grenade_projectile.h"
 #include "te_effect_dispatch.h"
 #include "weapon/weapon_base.h"
+#include "ghost_client.h"
 
 #include "tier0/memdbgon.h"
 
@@ -22,6 +23,11 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
 END_DATADESC();
 
+static void RefreshGhostData(IConVar *var, const char *pValue, float oldValue)
+{
+    g_pMomentumGhostClient->ResetOtherAppearanceData();
+}
+
 static MAKE_CONVAR(mom_ghost_online_lerp, "0.5", FCVAR_REPLICATED | FCVAR_ARCHIVE, "The amount of time to render in the past (in seconds).\n", 0.1f, 2.0f);
 
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
@@ -29,7 +35,14 @@ static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_
 
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                           "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
-
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                            "Toggle overriding other player's ghost alpha values to the one defined in "
+                            "\"mom_ghost_online_color_alpha_override\".\n",
+                            RefreshGhostData);
+static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                     "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                            "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 extern ConVar mom_paintgun_shoot_sound;
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
@@ -209,6 +222,13 @@ void CMomentumOnlineGhostEntity::Spawn()
     SetNextThink(gpGlobals->curtime + mom_ghost_online_lerp.GetFloat());
 }
 
+void CMomentumOnlineGhostEntity::CreateTrail()
+{
+    if (!m_ghostAppearance.m_bGhostTrailEnable || !mom_ghost_online_trail_enable.GetBool())
+        return;
+    BaseClass::CreateTrail();
+}
+
 void CMomentumOnlineGhostEntity::Think()
 {
     BaseClass::Think();
@@ -360,6 +380,15 @@ void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
     {
         m_pCurrentSpecPlayer->TravelSpectateTargets(true);
+    }
+}
+
+void CMomentumOnlineGhostEntity::SetGhostColor(const uint32 newHexColor)
+{
+    BaseClass::SetGhostColor(newHexColor);
+    if (mom_ghost_online_alpha_override_enable.GetBool())
+    {
+        SetRenderColorA(mom_ghost_online_alpha_override.GetInt());
     }
 }
 
