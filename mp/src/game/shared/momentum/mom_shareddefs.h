@@ -6,8 +6,8 @@
 #include "shareddefs.h"
 #endif
 #endif
-// Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
-// If you have any doubts, please refer to http://semver.org/
+
+// Main Version (0 is private alpha, 1 is public beta, 2 is full release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 #define MOM_CURRENT_VERSION "0.7.2"
 
 #define MAX_TRACKS 64

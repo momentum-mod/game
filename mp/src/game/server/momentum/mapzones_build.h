@@ -99,8 +99,8 @@ public:
 
 
     virtual bool LoadFromZone(const CBaseMomZoneTrigger *pEnt) OVERRIDE;
-    virtual bool Load(KeyValues *kv) OVERRIDE;
-    virtual bool Save(KeyValues *kv) OVERRIDE;
+    virtual bool Load(KeyValues *zoneKV) OVERRIDE;
+    virtual bool Save(KeyValues *zoneKV) OVERRIDE;
 
 
     virtual void Reset() OVERRIDE;

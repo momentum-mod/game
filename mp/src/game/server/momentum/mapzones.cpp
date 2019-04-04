@@ -183,18 +183,18 @@ CMapZoneData::CMapZoneData(const char *szMapName)
 
 CMapZoneData::~CMapZoneData()
 {
-    if (!m_zones.IsEmpty())
+    if (!m_Zones.IsEmpty())
     {
-        m_zones.PurgeAndDeleteElements();
+        m_Zones.PurgeAndDeleteElements();
     }
 }
 
 void CMapZoneData::SpawnMapZones()
 {
-    int count = m_zones.Count();
+    int count = m_Zones.Count();
     for (int i = 0; i < count; i++)
     {
-        m_zones[i]->SpawnZone();
+        m_Zones[i]->SpawnZone();
     }
 }
 
@@ -208,35 +208,44 @@ bool CMapZoneData::LoadFromFile(const char *szMapName)
     KeyValuesAD fileKV("tracks");
     if (fileKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
     {
-        FOR_EACH_SUBKEY(fileKV, trackKV)
+        const auto bSuccess = LoadFromKeyValues(fileKV);
+        DevLog("%s map zone file %s!\n", bSuccess ? "Successfully loaded" : "Failed to load", zoneFilePath);
+        return bSuccess;
+    }
+    return false;
+}
+
+bool CMapZoneData::LoadFromKeyValues(KeyValues *pKvTracks)
+{
+    if (!pKvTracks || pKvTracks->IsEmpty())
+        return false;
+
+    FOR_EACH_SUBKEY(pKvTracks, trackKV)
+    {
+        const auto trackNum = Q_atoi(trackKV->GetName());
+        if (trackNum >= -1 && trackNum < MAX_TRACKS)
         {
-            const auto trackNum = Q_atoi(trackKV->GetName());
-            if (trackNum >= -1 && trackNum < MAX_TRACKS)
+            FOR_EACH_SUBKEY(trackKV, zoneKV)
             {
-                FOR_EACH_SUBKEY(trackKV, zoneKV)
+                const auto zoneNum = Q_atoi(zoneKV->GetName());
+                if (zoneNum >= 0 && zoneNum < MAX_ZONES)
                 {
-                    const auto zoneNum = Q_atoi(zoneKV->GetName());
-                    if (zoneNum >= 0 && zoneNum < MAX_ZONES)
+                    const auto zoneType = zoneKV->GetInt("zoneType", ZONE_TYPE_INVALID);
+
+                    if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
                     {
-                        const auto zoneType = zoneKV->GetInt("zone_type", ZONE_TYPE_INVALID);
-
-                        if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
-                        {
-                            Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
-                            continue;
-                        }
-
-                        // Add element
-                        m_zones.AddToTail(new CMapZone(trackNum, zoneType, zoneKV));
+                        Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
+                        continue;
                     }
+
+                    // Add element
+                    m_Zones.AddToTail(new CMapZone(trackNum, zoneType, zoneKV));
                 }
             }
         }
-
-        DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
-        return true;
     }
-    return false;
+
+    return !m_Zones.IsEmpty();
 }
 
 bool ZoneTypeToClass(int type, char *dest, int maxlen)

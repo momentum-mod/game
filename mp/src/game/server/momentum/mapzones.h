@@ -10,9 +10,10 @@ public:
 
     void SpawnMapZones();
     bool LoadFromFile(const char *szMapName);
+    bool LoadFromKeyValues(KeyValues *pKvTracks);
 
   private:
-    CUtlVector<CMapZone*> m_zones;
+    CUtlVector<CMapZone*> m_Zones;
 };
 
 bool ZoneTypeToClass(int type, char *dest, int maxlen);
