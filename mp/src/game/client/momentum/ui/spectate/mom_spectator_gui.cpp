@@ -28,6 +28,7 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/TextEntry.h>
+#include <vgui_controls/Tooltip.h>
 
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
@@ -298,6 +299,9 @@ void CMOMSpectatorGUI::Update()
                 // "REPLAY" label
                 m_pReplayLabel->SetText(m_pwWatchingReplay);
 
+                // Close button tooltip
+                m_pCloseButton->GetTooltip()->SetText("#MOM_SpecGUI_StopPlayback");
+
                 // Show the current map
                 wchar_t wMapName[BUFSIZELOCL];
                 ANSI_TO_UNICODE(g_pGameRules->MapName(), wMapName);
@@ -318,6 +322,9 @@ void CMOMSpectatorGUI::Update()
                 m_pReplayLabel->SetText(m_pwWatchingGhost);
                 m_pMapLabel->SetText("");
                 m_pTimeLabel->SetText("");
+
+                // Close button tooltip
+                m_pCloseButton->GetTooltip()->SetText("#MOM_SpecGUI_StopSpectating");
 
                 // We don't need replay controls in online spectating!
                 m_pShowControls->SetVisible(false);
