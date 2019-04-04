@@ -640,6 +640,6 @@ void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)
 {
     m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
     Color newColor;
-    if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+    if (MomUtil::GetColorFromHex(newHexColor, newColor))
         SetRenderColor(newColor.r(), newColor.g(), newColor.b(), 75);
 }

@@ -50,7 +50,7 @@ void CMomentumReplaySystem::FrameUpdatePostEntityThink()
 void CMomentumReplaySystem::LevelInitPostEntity()
 {
     // Get the map file's hash
-    if (!g_pMomentumUtil->GetFileHash(m_szMapHash, sizeof(m_szMapHash), CFmtStr("maps/%s.bsp", gpGlobals->mapname.ToCStr())))
+    if (!MomUtil::GetFileHash(m_szMapHash, sizeof(m_szMapHash), CFmtStr("maps/%s.bsp", gpGlobals->mapname.ToCStr())))
         Warning("Could not generate a hash for the current map!!!\n");
 }
 
@@ -181,7 +181,7 @@ bool CMomentumReplaySystem::StoreReplay(char *pOut, size_t outSize)
 
     // Generate the SHA1 hash for this replay
     char hash[41];
-    if (g_pMomentumUtil->GetSHA1Hash(buf, hash, 41))
+    if (MomUtil::GetSHA1Hash(buf, hash, 41))
     {
         DevLog("Replay Hash: %s\n", hash);
 

@@ -242,7 +242,7 @@ void CDialogMapInfo::FillMapInfo()
 
     // Creation Date
     time_t creationDateTime;
-    if (g_pMomentumUtil->ISODateToTimeT(m_pMapData->m_Info.m_szCreationDate, &creationDateTime))
+    if (MomUtil::ISODateToTimeT(m_pMapData->m_Info.m_szCreationDate, &creationDateTime))
     {
         char date[32];
         strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
@@ -251,7 +251,7 @@ void CDialogMapInfo::FillMapInfo()
 
     // Release date
     time_t releaseDateTime;
-    if (g_pMomentumUtil->ISODateToTimeT(m_pMapData->m_szCreatedAt, &releaseDateTime))
+    if (MomUtil::ISODateToTimeT(m_pMapData->m_szCreatedAt, &releaseDateTime))
     {
         char date[32];
         strftime(date, 32, "%b %d, %Y", localtime(&releaseDateTime));
@@ -343,12 +343,12 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
                 const float fTime = pRun->GetFloat("time");
                 kvEntry->SetFloat("time_f", fTime);
                 char buf[BUFSIZETIME];
-                g_pMomentumUtil->FormatTime(fTime, buf);
+                MomUtil::FormatTime(fTime, buf);
                 kvEntry->SetString("time", buf);
 
                 // Date
                 char timeAgoStr[64];
-                if (g_pMomentumUtil->GetTimeAgoString(pRun->GetString("dateAchieved"), timeAgoStr, sizeof(timeAgoStr)))
+                if (MomUtil::GetTimeAgoString(pRun->GetString("dateAchieved"), timeAgoStr, sizeof(timeAgoStr)))
                     kvEntry->SetString("date", timeAgoStr);
                 else
                     kvEntry->SetString("date", pRun->GetString("dateAchieved"));

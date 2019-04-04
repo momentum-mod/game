@@ -113,7 +113,7 @@ void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
 {
     m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
     Color newColor;
-    if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+    if (MomUtil::GetColorFromHex(newHexColor, newColor))
     {
         SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
     }
@@ -221,7 +221,7 @@ void CMomentumGhostBaseEntity::CreateTrail()
     m_eTrail->KeyValue("endwidth", "1.05");
     m_eTrail->KeyValue("lifetime", m_ghostAppearance.m_iGhostTrailLength);
     Color newColor;
-    if (g_pMomentumUtil->GetColorFromHex(m_ghostAppearance.m_iGhostTrailRGBAColorAsHex, newColor))
+    if (MomUtil::GetColorFromHex(m_ghostAppearance.m_iGhostTrailRGBAColorAsHex, newColor))
     {
         m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
         m_eTrail->KeyValue("renderamt", newColor.a());

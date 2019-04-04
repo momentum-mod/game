@@ -24,7 +24,7 @@
 extern IFileSystem *filesystem;
 
 #ifdef CLIENT_DLL
-void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
+void MomUtil::UpdatePaintDecalScale(float fNewScale)
 {
     IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);
     if (material != nullptr)
@@ -42,7 +42,7 @@ void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
     }
 }
 
-void MomentumUtil::DispatchConCommand(const char *pszCommand)
+void MomUtil::DispatchConCommand(const char *pszCommand)
 {
     CCommand args;
     args.Tokenize(pszCommand);
@@ -59,7 +59,7 @@ void MomentumUtil::DispatchConCommand(const char *pszCommand)
 }
 #endif
 
-void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime) const
+void MomUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime)
 {
     // We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = fabs(m_flSecondsTime);
@@ -122,7 +122,7 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int preci
     }
 }
 
-bool MomentumUtil::GetTimeAgoString(time_t *input, char* pOut, size_t outLen)
+bool MomUtil::GetTimeAgoString(time_t *input, char* pOut, size_t outLen)
 {
     if (!input)
         return false;
@@ -177,7 +177,7 @@ bool MomentumUtil::GetTimeAgoString(time_t *input, char* pOut, size_t outLen)
     return true;
 }
 
-bool MomentumUtil::GetTimeAgoString(const char* pISODate, char* pOut, size_t outLen)
+bool MomUtil::GetTimeAgoString(const char* pISODate, char* pOut, size_t outLen)
 {
     time_t temp;
     if (ISODateToTimeT(pISODate, &temp))
@@ -187,7 +187,7 @@ bool MomentumUtil::GetTimeAgoString(const char* pISODate, char* pOut, size_t out
     return false;
 }
 
-bool MomentumUtil::ISODateToTimeT(const char* pISODate, time_t* out)
+bool MomUtil::ISODateToTimeT(const char* pISODate, time_t* out)
 {
     if (!pISODate || pISODate[0] == '\0')
         return false;
@@ -211,8 +211,8 @@ bool MomentumUtil::ISODateToTimeT(const char* pISODate, time_t* out)
     return true;
 }
 
-Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
-                                          const Color &decreasecolor) const
+Color MomUtil::GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
+                                          const Color &decreasecolor)
 {
     // variation is current velocity minus previous velocity.
     Color pFinalColor = normalcolor;
@@ -226,7 +226,7 @@ Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone,
     return pFinalColor;
 }
 
-Color MomentumUtil::ColorLerp(float prog, const Color& A, const Color& B)
+Color MomUtil::ColorLerp(float prog, const Color& A, const Color& B)
 {
     // To linear color
     float A0 = (float) A[0] / 255.0;
@@ -248,7 +248,7 @@ Color MomentumUtil::ColorLerp(float prog, const Color& A, const Color& B)
     return ret;
 }
 
-bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
+bool MomUtil::GetColorFromHex(const char *hexColor, Color &into)
 {
     uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
@@ -268,7 +268,7 @@ bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
     return false;
 }
 
-bool MomentumUtil::GetColorFromHex(uint32 hex, Color &into)
+bool MomUtil::GetColorFromHex(uint32 hex, Color &into)
 {
     uint8 r = (hex & 0xFF000000) >> 24;
     uint8 g = (hex & 0x00FF0000) >> 16;
@@ -277,11 +277,11 @@ bool MomentumUtil::GetColorFromHex(uint32 hex, Color &into)
     into.SetColor(r, g, b, a);
     return true;
 }
-uint32 MomentumUtil::GetHexFromColor(const char *hexColor)
+uint32 MomUtil::GetHexFromColor(const char *hexColor)
 {
     return strtoul(hexColor, nullptr, 16);
 }
-uint32 MomentumUtil::GetHexFromColor(const Color &color)
+uint32 MomUtil::GetHexFromColor(const Color &color)
 {
     uint32 redByte = ((color.r() & 0xff) << 24);
     uint32 greenByte = ((color.g() & 0xff) << 16);
@@ -290,7 +290,7 @@ uint32 MomentumUtil::GetHexFromColor(const Color &color)
     return redByte + greenByte + blueByte + aByte;
 }
 
-void MomentumUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
+void MomUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
 {
     const uint32 colorHex = GetHexFromColor(color);
     Q_snprintf(pBuffer, maxLen, "%08x", colorHex);
@@ -315,7 +315,7 @@ inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float
 }
 
 //!!! NOTE: The value returned here MUST BE DELETED, otherwise you get a memory leak!
-CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate, uint32 flags) const
+CMomReplayBase *MomUtil::GetBestTime(const char *szMapName, float tickrate, uint32 flags)
 {
     if (szMapName)
     {
@@ -354,7 +354,7 @@ CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate,
     return nullptr;
 }
 
-bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into) const
+bool MomUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into)
 {
     if (into && szMapName)
     {
@@ -372,10 +372,20 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate,
     return false;
 }
 
-void MomentumUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun, RunCompare_t *into) const
+void MomUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun, RunCompare_t *into)
 {
     Q_strcpy(into->runName, compareName);
     into->runStats.FullyCopyFrom(*pRun);
+}
+
+bool MomUtil::IsInBounds(const Vector2D &source, const Vector2D &bottomLeft, const Vector2D &topRight)
+{
+    return (source.x > bottomLeft.x && source.x < topRight.x) && (source.y > bottomLeft.y && source.y < topRight.y);
+}
+
+bool MomUtil::IsInBounds(const int x, const int y, const int rectX, const int rectY, const int rectW, const int rectH)
+{
+    return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY), Vector2D(rectX + rectW, rectY + rectH));
 }
 
 #define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
@@ -390,22 +400,22 @@ void MomentumUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun
         return;                                                                                                        \
     sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
 
-void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave)
+void MomUtil::KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
 
-void MomentumUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto)
+void MomUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto)
 {
     LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
 }
 
-void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave)
+void MomUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
 
-void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto)
+void MomUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto)
 {
     LOAD_3D_FROM_KV(kvFrom, pName, angInto);
 }
@@ -454,7 +464,7 @@ inline void FindHullIntersection(const Vector &vecSrc, trace_t &tr, const Vector
     }
 }
 
-void MomentumUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool bStab, CBaseEntity *pAttacker,
+void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool bStab, CBaseEntity *pAttacker,
     CBaseEntity *pSoundSource, trace_t* trOutput, Vector* vForwardOut)
 {
     float fRange = bStab ? 32.0f : 48.0f; // knife range
@@ -552,7 +562,7 @@ void MomentumUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, 
 #endif
 }
 
-void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, const QAngle& lookAng, const bool bStab)
+void MomUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, const QAngle& lookAng, const bool bStab)
 {
     if (!trIn.m_pEnt || (trIn.surface.flags & SURF_SKY))
         return;
@@ -594,7 +604,7 @@ void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, co
     te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
 }
 
-bool MomentumUtil::GetSHA1Hash(const CUtlBuffer& buf, char* pOut, size_t outLen)
+bool MomUtil::GetSHA1Hash(const CUtlBuffer& buf, char* pOut, size_t outLen)
 {
     CryptoPP::SHA1 hash;
     byte digest[CryptoPP::SHA1::DIGESTSIZE];
@@ -607,7 +617,7 @@ bool MomentumUtil::GetSHA1Hash(const CUtlBuffer& buf, char* pOut, size_t outLen)
     return true;
 }
 
-bool MomentumUtil::GetFileHash(char* pOut, size_t outLen, const char *pFileName, const char *pPathID /* = "GAME"*/)
+bool MomUtil::GetFileHash(char* pOut, size_t outLen, const char *pFileName, const char *pPathID /* = "GAME"*/)
 {
     CUtlBuffer fileBuffer;
     if (g_pFullFileSystem->ReadFile(pFileName, pPathID, fileBuffer))
@@ -616,7 +626,7 @@ bool MomentumUtil::GetFileHash(char* pOut, size_t outLen, const char *pFileName,
     return false;
 }
 
-bool MomentumUtil::FileExists(const char* pFileName, const char* pFileHash, const char* pPathID /* = "GAME"*/)
+bool MomUtil::FileExists(const char* pFileName, const char* pFileHash, const char* pPathID /* = "GAME"*/)
 {
     if (!(pFileName && pFileHash))
         return false;
@@ -631,13 +641,10 @@ bool MomentumUtil::FileExists(const char* pFileName, const char* pFileHash, cons
 }
 
 // Gross hack needed because scheme()->GetImage still returns an image even if it's null (returns the null texture)
-bool MomentumUtil::MapThumbnailExists(const char* pMapName)
+bool MomUtil::MapThumbnailExists(const char* pMapName)
 {
     if (!pMapName) return false;
     char szPath[MAX_PATH];
     Q_snprintf(szPath, MAX_PATH, "materials/vgui/maps/%s.vmt", pMapName);
     return g_pFullFileSystem->FileExists(szPath, "GAME");
 }
-
-static MomentumUtil s_momentum_util;
-MomentumUtil *g_pMomentumUtil = &s_momentum_util;

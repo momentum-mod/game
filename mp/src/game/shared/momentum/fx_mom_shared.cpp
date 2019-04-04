@@ -126,7 +126,7 @@ void FX_FireBullets(int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngl
         if (iWeaponID == WEAPON_PAINTGUN)
         {
             Color decalColor;
-            if (!g_pMomentumUtil->GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
+            if (!MomUtil::GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
                 decalColor = COLOR_WHITE;
 
             decalPacket = DecalPacket_t(DECAL_PAINT, vOrigin, vAngles, decalColor.GetRawColor(), 0, 0,

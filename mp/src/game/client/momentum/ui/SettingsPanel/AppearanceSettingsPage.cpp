@@ -91,7 +91,7 @@ void AppearanceSettingsPage::LoadSettings()
     if (m_pPickTrailColorButton)
     {
         Color trailColor;
-        if (g_pMomentumUtil->GetColorFromHex(ghost_trail_color.GetString(), trailColor))
+        if (MomUtil::GetColorFromHex(ghost_trail_color.GetString(), trailColor))
         {
             SET_BUTTON_COLOR(m_pPickTrailColorButton, trailColor);
         }
@@ -100,7 +100,7 @@ void AppearanceSettingsPage::LoadSettings()
     if (m_pPickBodyColorButton)
     {
         Color bodyColor;
-        if (g_pMomentumUtil->GetColorFromHex(ghost_color.GetString(), bodyColor))
+        if (MomUtil::GetColorFromHex(ghost_color.GetString(), bodyColor))
         {
             SET_BUTTON_COLOR(m_pPickBodyColorButton, bodyColor);
         }
@@ -164,7 +164,7 @@ void AppearanceSettingsPage::OnColorSelected(KeyValues *pKv)
         SET_BUTTON_COLOR(m_pPickTrailColorButton, selected);
 
         char buf[32];
-        g_pMomentumUtil->GetHexStringFromColor(selected, buf, 32);
+        MomUtil::GetHexStringFromColor(selected, buf, 32);
         ghost_trail_color.SetValue(buf);
     }
     else if (pTarget == m_pPickBodyColorButton)
@@ -172,7 +172,7 @@ void AppearanceSettingsPage::OnColorSelected(KeyValues *pKv)
         SET_BUTTON_COLOR(m_pPickBodyColorButton, selected);
 
         char buf[32];
-        g_pMomentumUtil->GetHexStringFromColor(selected, buf, 32);
+        MomUtil::GetHexStringFromColor(selected, buf, 32);
         ghost_color.SetValue(buf);
     }
 
@@ -184,7 +184,7 @@ void AppearanceSettingsPage::OnCommand(const char* command)
     if (FStrEq(command, "picker_trail"))
     {
         Color trailColor;
-        if (g_pMomentumUtil->GetColorFromHex(ghost_trail_color.GetString(), trailColor))
+        if (MomUtil::GetColorFromHex(ghost_trail_color.GetString(), trailColor))
         {
             m_pColorPicker->SetPickerColor(trailColor);
             m_pColorPicker->SetTargetCallback(m_pPickTrailColorButton);
@@ -194,7 +194,7 @@ void AppearanceSettingsPage::OnCommand(const char* command)
     else if (FStrEq(command, "picker_body"))
     {
         Color bodyColor;
-        if (g_pMomentumUtil->GetColorFromHex(ghost_color.GetString(), bodyColor))
+        if (MomUtil::GetColorFromHex(ghost_color.GetString(), bodyColor))
         {
             m_pColorPicker->SetPickerColor(bodyColor);
             m_pColorPicker->SetTargetCallback(m_pPickBodyColorButton);
@@ -221,7 +221,7 @@ void AppearanceSettingsPage::UpdateModelSettings()
 
     // Player color
     Color ghostRenderColor;
-    if (g_pMomentumUtil->GetColorFromHex(ghost_color.GetString(), ghostRenderColor))
+    if (MomUtil::GetColorFromHex(ghost_color.GetString(), ghostRenderColor))
     {
         pModel->SetRenderColor(ghostRenderColor.r(), ghostRenderColor.g(), ghostRenderColor.b(), ghostRenderColor.a());
     }
