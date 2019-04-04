@@ -40,9 +40,9 @@ void SavedLocation_t::Save(KeyValues* kvCP) const
 {
     kvCP->SetString("targetName", targetName);
     kvCP->SetString("targetClassName", targetClassName);
-    g_pMomentumUtil->KVSaveVector(kvCP, "vel", vel);
-    g_pMomentumUtil->KVSaveVector(kvCP, "pos", pos);
-    g_pMomentumUtil->KVSaveQAngles(kvCP, "ang", ang);
+    MomUtil::KVSaveVector(kvCP, "vel", vel);
+    MomUtil::KVSaveVector(kvCP, "pos", pos);
+    MomUtil::KVSaveQAngles(kvCP, "ang", ang);
     kvCP->SetBool("crouched", crouched);
     kvCP->SetFloat("gravityScale", gravityScale);
     kvCP->SetFloat("movementLagScale", movementLagScale);
@@ -53,9 +53,9 @@ void SavedLocation_t::Load(KeyValues* pKv)
 {
     Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
     Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));
-    g_pMomentumUtil->KVLoadVector(pKv, "pos", pos);
-    g_pMomentumUtil->KVLoadVector(pKv, "vel", vel);
-    g_pMomentumUtil->KVLoadQAngles(pKv, "ang", ang);
+    MomUtil::KVLoadVector(pKv, "pos", pos);
+    MomUtil::KVLoadVector(pKv, "vel", vel);
+    MomUtil::KVLoadQAngles(pKv, "ang", ang);
     crouched = pKv->GetBool("crouched");
     gravityScale = pKv->GetFloat("gravityScale", 1.0f);
     movementLagScale = pKv->GetFloat("movementLagScale", 1.0f);

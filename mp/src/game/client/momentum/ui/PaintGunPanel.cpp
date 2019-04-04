@@ -27,7 +27,7 @@ static MAKE_CONVAR_C(mom_paintgun_scale, "1.0", FCVAR_CLIENTCMD_CAN_EXECUTE | FC
 
 void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
-    g_pMomentumUtil->UpdatePaintDecalScale(mom_paintgun_scale.GetFloat());
+    MomUtil::UpdatePaintDecalScale(mom_paintgun_scale.GetFloat());
 }
 
 PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintGunPanel")
@@ -58,7 +58,7 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
     LoadControlSettings("resource/ui/PaintGunPanel.res");
 
     Color TextureColor;
-    if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
+    if (MomUtil::GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
     {
         m_pPickColorButton->SetDefaultColor(TextureColor, TextureColor);
         m_pPickColorButton->SetArmedColor(TextureColor, TextureColor);
@@ -125,7 +125,7 @@ void PaintGunPanel::OnColorSelected(KeyValues *pKv)
     m_pColorPicker->SetPickerColor(selected);
 
     char buf[64];
-    g_pMomentumUtil->GetHexStringFromColor(selected, buf, sizeof(buf));
+    MomUtil::GetHexStringFromColor(selected, buf, sizeof(buf));
     mom_paintgun_color.SetValue(buf);
 }
 
@@ -144,7 +144,7 @@ void PaintGunPanel::OnThink()
     }
 
     Color TextureColor;
-    if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
+    if (MomUtil::GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
     {
         m_pPickColorButton->SetDefaultColor(TextureColor, TextureColor);
         m_pPickColorButton->SetArmedColor(TextureColor, TextureColor);
@@ -159,7 +159,7 @@ void PaintGunPanel::OnCommand(const char *pCommand)
     if (FStrEq(pCommand, "picker"))
     {
         Color TextureColor;
-        if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
+        if (MomUtil::GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
         {
             m_pColorPicker->SetPickerColor(TextureColor);
             m_pColorPicker->Show();

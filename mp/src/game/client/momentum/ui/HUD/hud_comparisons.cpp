@@ -162,7 +162,7 @@ void C_RunComparisons::LoadComparisons()
         {
             UnloadComparisons();
             m_rcCurrentComparison = new RunCompare_t();
-            m_bLoadedComparison = g_pMomentumUtil->GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
         }
     }
 }
@@ -394,9 +394,9 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
         // If diff > 0, that means you're falling behind (losing time to) your PB!
 
         // Format the time for displaying
-        g_pMomentumUtil->FormatTime(act * gpGlobals->interval_per_tick, tempANSITimeActual);
+        MomUtil::FormatTime(act * gpGlobals->interval_per_tick, tempANSITimeActual);
         if (LoadedComparison())
-            g_pMomentumUtil->FormatTime(diff * gpGlobals->interval_per_tick, tempANSITimeOutput);
+            MomUtil::FormatTime(diff * gpGlobals->interval_per_tick, tempANSITimeOutput);
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference

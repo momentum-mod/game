@@ -319,11 +319,11 @@ bool CMomentumDiscord::JoinSteamLobbyFromID(const char *lobbyID)
     else if (m_sSteamLobbyID.IsValid())
     {
         // If we are in a different lobby we need to leave
-        g_pMomentumUtil->DispatchConCommand("mom_lobby_leave");
+        MomUtil::DispatchConCommand("mom_lobby_leave");
     }
 
     // Finally join the new lobby
-    g_pMomentumUtil->DispatchConCommand(CFmtStr("connect_lobby %s", lobbyID));
+    MomUtil::DispatchConCommand(CFmtStr("connect_lobby %s", lobbyID));
 
     return true;
 }
@@ -347,7 +347,7 @@ bool CMomentumDiscord::JoinMapFromUserSteamID(uint64 steamID)
     }
     else
     {
-        g_pMomentumUtil->DispatchConCommand(CFmtStr("map %s", targetMapName));
+        MomUtil::DispatchConCommand(CFmtStr("map %s", targetMapName));
     }
 
     return true;
@@ -420,7 +420,7 @@ void CMomentumDiscord::SpecPlayerFromSteamId(const char *steamID)
 
     // MOM_TODO: We probably should check if the target player is already spectating someone, then set the spectate
     // target them instead Or we could adjust the `mom_spectate` command to handle this automatically
-    g_pMomentumUtil->DispatchConCommand(CFmtStr("mom_spectate %s", steamID));
+    MomUtil::DispatchConCommand(CFmtStr("mom_spectate %s", steamID));
 }
 
 // Updates the current and max party size based upon the current lobby

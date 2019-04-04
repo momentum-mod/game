@@ -89,7 +89,7 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
     // MOM_TODO: Verify that replay parsing was successful.
     CMomReplayBase *toReturn = CreateReplay(version, reader, bFullLoad);
     char hash[41];
-    if (g_pMomentumUtil->GetSHA1Hash(reader, hash, sizeof(hash)))
+    if (MomUtil::GetSHA1Hash(reader, hash, sizeof(hash)))
         toReturn->SetRunHash(hash);
 
     if (bLogReplay)

@@ -213,7 +213,7 @@ void URLImage::Paint()
         surface()->DrawSetColor(Color(0, 0, 0, 255));
         surface()->DrawOutlinedRect(m_iX, m_iY, m_iDesiredWide, m_iDesiredTall);
         // Interp colors
-        const Color interp = g_pMomentumUtil->ColorLerp(m_fProgress, COLOR_RED, COLOR_GREEN);
+        const Color interp = MomUtil::ColorLerp(m_fProgress, COLOR_RED, COLOR_GREEN);
         surface()->DrawSetColor(interp);
         // Determine width
         const int wide = max(int(float(m_iDesiredWide) * m_fProgress), 0);

@@ -203,7 +203,7 @@ void CHudSpeedMeter::OnThink()
                 {
                     if (m_flLastVelocity != 0)
                     {
-                        m_currentColor = g_pMomentumUtil->GetColorFromVariation(fabs(vel) - fabs(m_flLastVelocity), 2.0f,
+                        m_currentColor = MomUtil::GetColorFromVariation(fabs(vel) - fabs(m_flLastVelocity), 2.0f,
                             normalColor, increaseColor, decreaseColor);
                     }
                     else
@@ -250,7 +250,7 @@ void CHudSpeedMeter::OnThink()
             else if (m_flLastJumpVelocity != lastJumpVel)
             {
                 m_SecondaryValueColor =
-                    g_pMomentumUtil->GetColorFromVariation(fabs(lastJumpVel) - fabs(m_flLastJumpVelocity), 0.0f,
+                    MomUtil::GetColorFromVariation(fabs(lastJumpVel) - fabs(m_flLastJumpVelocity), 0.0f,
                                                     normalColor, increaseColor, decreaseColor);
                 m_flLastJumpVelocity = lastJumpVel;
             }

@@ -179,7 +179,7 @@ bool C_TriggerTimerStart::ShouldDrawOutline()
 
 bool C_TriggerTimerStart::GetOutlineColor()
 {
-    return g_pMomentumUtil->GetColorFromHex(mom_zone_start_outline_color.GetString(), m_OutlineRenderer.outlineColor);
+    return MomUtil::GetColorFromHex(mom_zone_start_outline_color.GetString(), m_OutlineRenderer.outlineColor);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, C_TriggerTimerStop);
@@ -194,7 +194,7 @@ bool C_TriggerTimerStop::ShouldDrawOutline()
 
 bool C_TriggerTimerStop::GetOutlineColor()
 {
-    return g_pMomentumUtil->GetColorFromHex(mom_zone_end_outline_color.GetString(), m_OutlineRenderer.outlineColor);
+    return MomUtil::GetColorFromHex(mom_zone_end_outline_color.GetString(), m_OutlineRenderer.outlineColor);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, C_TriggerStage);
@@ -209,7 +209,7 @@ bool C_TriggerStage::ShouldDrawOutline()
 
 bool C_TriggerStage::GetOutlineColor()
 {
-    return g_pMomentumUtil->GetColorFromHex(mom_zone_stage_outline_color.GetString(), m_OutlineRenderer.outlineColor);
+    return MomUtil::GetColorFromHex(mom_zone_stage_outline_color.GetString(), m_OutlineRenderer.outlineColor);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, C_TriggerCheckpoint);
@@ -224,7 +224,7 @@ bool C_TriggerCheckpoint::ShouldDrawOutline()
 
 bool C_TriggerCheckpoint::GetOutlineColor()
 {
-    return g_pMomentumUtil->GetColorFromHex(mom_zone_checkpoint_outline_color.GetString(), m_OutlineRenderer.outlineColor);
+    return MomUtil::GetColorFromHex(mom_zone_checkpoint_outline_color.GetString(), m_OutlineRenderer.outlineColor);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
