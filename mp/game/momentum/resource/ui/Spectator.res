@@ -112,7 +112,6 @@
         "enabled"       "1"
         "scaleImage"    "1"
         "image"         "close_button"
-        "tooltiptext"   "#MOM_SpecGUI_StopPlayback"
         "mouseinputenabled" "1"
     }
     
