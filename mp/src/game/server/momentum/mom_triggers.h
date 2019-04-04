@@ -217,7 +217,7 @@ class CTriggerTimerStart : public CTriggerZone
     void SetLimitSpeedType(const int type) { m_iLimitSpeedType = type; }
 
     virtual bool ToKeyValues(KeyValues *pKvInto) OVERRIDE;
-    virtual bool LoadFromKeyValues(KeyValues *kv) OVERRIDE;
+    virtual bool LoadFromKeyValues(KeyValues *zoneKV) OVERRIDE;
 
     int GetZoneType() OVERRIDE;
   private:
