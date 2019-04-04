@@ -27,6 +27,9 @@ static MAKE_CONVAR(mom_ghost_online_lerp, "0.5", FCVAR_REPLICATED | FCVAR_ARCHIV
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
 static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Interpolation ticks to add to rendering online ghosts.\n", 0.0f, 100.0f);
 
+static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                          "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
+
 extern ConVar mom_paintgun_shoot_sound;
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
@@ -84,6 +87,12 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
     default:
         break;
     }
+}
+
+void CMomentumOnlineGhostEntity::SetGhostSteamID(const CSteamID &steamID)
+{
+    m_GhostSteamID = steamID;
+    m_uiAccountID = m_GhostSteamID.ConvertToUint64();
 }
 
 void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
@@ -190,6 +199,7 @@ void CMomentumOnlineGhostEntity::SetLobbyGhostAppearance(LobbyGhostAppearance_t 
     {
         m_CurrentAppearance = app;
         BaseClass::SetGhostAppearance(app.appearance, bForceUpdate);
+        SetGhostFlashlight(app.appearance.m_bFlashlightOn);
     }
 }
 
@@ -350,5 +360,21 @@ void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
     {
         m_pCurrentSpecPlayer->TravelSpectateTargets(true);
+    }
+}
+
+void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
+{
+    if (bEnable)
+    {
+        AddEffects(EF_DIMLIGHT);
+        if (mom_ghost_online_sounds.GetBool())
+            EmitSound(SND_FLASHLIGHT_ON);
+    }
+    else
+    {
+        RemoveEffects(EF_DIMLIGHT);
+        if (mom_ghost_online_sounds.GetBool())
+            EmitSound(SND_FLASHLIGHT_OFF);
     }
 }
