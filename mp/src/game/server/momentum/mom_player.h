@@ -33,7 +33,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     int FlashlightIsOn() OVERRIDE { return IsEffectActive(EF_DIMLIGHT); }
     void FlashlightTurnOn() OVERRIDE;
+    void FlashlightTurnOn(bool bEmitSound);
     void FlashlightTurnOff() OVERRIDE;
+    void FlashlightTurnOff(bool bEmitSound);
 
     void SendAppearance();
 

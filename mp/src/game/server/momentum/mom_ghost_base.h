@@ -7,7 +7,7 @@
 
 class CMomentumPlayer;
 
-enum ghostModelBodyGroup
+enum GhostModelBodyGroup
 {
     BODY_THREE_SIDED_PYRAMID = 0,
     BODY_FOUR_SIDED_PYRAMID,
@@ -38,7 +38,6 @@ public:
     virtual void SetGhostBodyGroup(int bodyGroup);
     virtual void SetGhostColor(const uint32 newHexColor);
     virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
-    virtual void SetGhostFlashlight(bool isOn);
 
     virtual void SetGhostAppearance(GhostAppearance_t app, bool bForceUpdate = false);
     virtual GhostAppearance_t GetAppearance() { return m_ghostAppearance; }

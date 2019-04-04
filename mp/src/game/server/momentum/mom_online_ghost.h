@@ -22,11 +22,7 @@ public:
     // Places a decal in the world, according to the packet and decal type
     void FireDecal(const DecalPacket_t &decal);
 
-    void SetGhostSteamID(const CSteamID &steamID)
-    {
-        m_GhostSteamID = steamID;
-        m_uiAccountID = m_GhostSteamID.ConvertToUint64();
-    }
+    void SetGhostSteamID(const CSteamID &steamID);
     CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
     void SetGhostName(const char *pGhostName);
 
@@ -39,6 +35,7 @@ public:
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
+    void SetGhostFlashlight(bool bEnable);
 
     void UpdatePlayerSpectate();
 
