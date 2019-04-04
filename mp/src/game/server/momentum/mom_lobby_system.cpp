@@ -264,7 +264,7 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(GhostAppearance_t app)
         CHECK_STEAM_API(SteamMatchmaking());
         std::string base64Appearance;
 
-        CryptoPP::StringSource ss(static_cast<unsigned char *>(static_cast<void*>(&app)), 
+        CryptoPP::StringSource ss(reinterpret_cast<unsigned char *>(&app), 
                                   sizeof(GhostAppearance_t), 
                                   true,
                                   new CryptoPP::Base64Encoder(

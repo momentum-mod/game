@@ -21,12 +21,11 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
-void RefreshGhostData(IConVar *var, const char *pValue, float oldValue)
+static void RefreshGhostData(IConVar *var, const char *pValue, float oldValue)
 {
     g_pMomentumGhostClient->ResetOtherAppearanceData();
 }
 
-static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, 
     "Toggle overriding other player's ghost alpha values to the one defined in \"mom_ghost_online_color_alpha_override\".\n", RefreshGhostData);
 static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
@@ -139,22 +138,6 @@ void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor,
     CreateTrail();
 }
 
-void CMomentumGhostBaseEntity::SetGhostFlashlight(bool isOn)
-{
-    if (isOn)
-    {
-        AddEffects(EF_DIMLIGHT);
-        if (mom_ghost_online_sounds.GetBool())
-            EmitSound(SND_FLASHLIGHT_ON);
-    }
-    else
-    {
-        RemoveEffects(EF_DIMLIGHT);
-        if (mom_ghost_online_sounds.GetBool())
-            EmitSound(SND_FLASHLIGHT_OFF);
-    }
-}
-
 void CMomentumGhostBaseEntity::StartTimer(int m_iStartTick)
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
@@ -235,8 +218,6 @@ void CMomentumGhostBaseEntity::SetGhostAppearance(GhostAppearance_t newApp, bool
         SetGhostTrailProperties(newApp.m_iGhostTrailRGBAColorAsHex,
                                 newApp.m_iGhostTrailLength, newApp.m_bGhostTrailEnable);
     }
-    
-    SetGhostFlashlight(newApp.m_bFlashlightOn);
 }
 void CMomentumGhostBaseEntity::CreateTrail()
 {

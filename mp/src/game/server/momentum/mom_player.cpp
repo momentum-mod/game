@@ -289,16 +289,30 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
 
 void CMomentumPlayer::FlashlightTurnOn()
 {
+    // Emit sound by default
+    FlashlightTurnOn(true);
+}
+
+void CMomentumPlayer::FlashlightTurnOn(bool bEmitSound)
+{
     AddEffects(EF_DIMLIGHT);
-    EmitSound(SND_FLASHLIGHT_ON);
+    if (bEmitSound)
+        EmitSound(SND_FLASHLIGHT_ON);
     m_playerAppearanceProps.m_bFlashlightOn = true;
     SendAppearance();
 }
 
 void CMomentumPlayer::FlashlightTurnOff()
 {
+    // Emit sound by default
+    FlashlightTurnOff(true);
+}
+
+void CMomentumPlayer::FlashlightTurnOff(bool bEmitSound)
+{
     RemoveEffects(EF_DIMLIGHT);
-    EmitSound(SND_FLASHLIGHT_OFF);
+    if (bEmitSound)
+        EmitSound(SND_FLASHLIGHT_OFF);
     m_playerAppearanceProps.m_bFlashlightOn = false;
     SendAppearance();
 }
@@ -1183,6 +1197,10 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         m_bAllowUserTeleports = false;
 
         RemoveTrail();
+
+        // Disable flashlight
+        if (FlashlightIsOn())
+            FlashlightTurnOff(false); // Don't emit flashlight sound when turned off automatically
 
         pGhostToSpectate->SetSpectator(this);
 
