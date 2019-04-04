@@ -31,11 +31,13 @@ public:
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
+    void SetGhostColor(const uint32 newHexColor) OVERRIDE;
+    void SetGhostFlashlight(bool bEnable);
+
     void Spawn() OVERRIDE;
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
-    void SetGhostFlashlight(bool bEnable);
 
     void UpdatePlayerSpectate();
 
@@ -45,8 +47,10 @@ public:
     QAngle m_vecLookAngles; // Used for storage reasons
 
 protected:
-    void Think(void) OVERRIDE;
-    void Precache(void) OVERRIDE;
+    void CreateTrail() OVERRIDE;
+
+    void Think() OVERRIDE;
+    void Precache() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
