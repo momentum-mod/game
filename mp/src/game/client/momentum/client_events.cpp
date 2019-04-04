@@ -42,11 +42,15 @@ void CMOMClientEvents::PostInit()
     // Version warning
     // MOM_TODO: Change this once we hit Beta
     // MOM_CURRENT_VERSION
-    messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "#MOM_StartupMsg_Alpha", "mom_toggle_versionwarn", "#MOM_IUnderstand");
+    messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "#MOM_StartupMsg_Alpha",
+                                            "mom_toggle_versionwarn", "#MOM_IUnderstand");
     
     if (!SteamHTTP() || !SteamUtils())
     {
-        messageboxpanel->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title", "#MOM_StartupMsg_NoSteamApiContext", "#MOM_IUnderstand");
+        vgui::Panel *pPanel = messageboxpanel->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title",
+                                                        "#MOM_StartupMsg_NoSteamApiContext", "#MOM_IUnderstand");
+        pPanel->MoveToFront();
+        pPanel->RequestFocus();
     }
 }
 
