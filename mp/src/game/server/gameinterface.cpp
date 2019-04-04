@@ -164,7 +164,6 @@ IFileSystem		*filesystem = NULL;
 #else
 extern IFileSystem *filesystem;
 #endif
-CShared *shared = NULL;
 INetworkStringTableContainer *networkstringtable = NULL;
 IStaticPropMgrServer *staticpropmgr = NULL;
 IUniformRandomStream *random = NULL;

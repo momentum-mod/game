@@ -138,13 +138,13 @@ bool CBaseMomZoneTrigger::TestCollision(const Ray_t& ray, unsigned mask, trace_t
 
 bool CBaseMomZoneTrigger::ToKeyValues(KeyValues *pKvInto)
 {
-    pKvInto->SetInt("zone_type", GetZoneType());
+    pKvInto->SetInt("zoneType", GetZoneType());
     return true;
 }
 
 bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues *pKvFrom)
 {
-    if (pKvFrom->GetInt("zone_type", ZONE_TYPE_INVALID) != GetZoneType())
+    if (pKvFrom->GetInt("zoneType", ZONE_TYPE_INVALID) != GetZoneType())
         return false;
 
     return true;
@@ -244,29 +244,37 @@ CTriggerTimerStart::CTriggerTimerStart()
 }
 bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto)
 {
-    pKvInto->SetFloat("speed_limit", GetSpeedLimit());
-    pKvInto->SetBool("limitingspeed", IsLimitingSpeed());
-    pKvInto->SetBool("StartOnJump", StartOnJump());
-    pKvInto->SetInt("LimitSpeedType", GetLimitSpeedType());
+    const auto pZoneProps = new KeyValues("zoneProps");
+
+    pZoneProps->SetFloat("speed_limit", GetSpeedLimit());
+    pZoneProps->SetBool("limitingspeed", IsLimitingSpeed());
+    pZoneProps->SetBool("StartOnJump", StartOnJump());
+    pZoneProps->SetInt("LimitSpeedType", GetLimitSpeedType());
     if (HasLookAngles())
     {
-        pKvInto->SetFloat("yaw", m_angLook[YAW]);
+        pZoneProps->SetFloat("yaw", m_angLook[YAW]);
     }
+
+    pKvInto->AddSubKey(pZoneProps);
 
     return BaseClass::ToKeyValues(pKvInto);
 };
 
-bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *kv)
+bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *zoneKV)
 {
-    if (BaseClass::LoadFromKeyValues(kv))
+    if (BaseClass::LoadFromKeyValues(zoneKV))
     {
-        SetSpeedLimit(kv->GetFloat("speed_limit", 350.0f));
-        SetIsLimitingSpeed(kv->GetBool("limitingspeed"));
-        SetStartOnJump(kv->GetBool("StartOnJump"));
-        SetLimitSpeedType(kv->GetInt("LimitSpeedType"));
+        const auto pZoneProps = zoneKV->FindKey("zoneProps");
+        if (!pZoneProps)
+            return false;
+
+        SetSpeedLimit(pZoneProps->GetFloat("speed_limit", 350.0f));
+        SetIsLimitingSpeed(pZoneProps->GetBool("limitingspeed"));
+        SetStartOnJump(pZoneProps->GetBool("StartOnJump"));
+        SetLimitSpeedType(pZoneProps->GetInt("LimitSpeedType"));
 
         const float nolook = -190.0f;
-        float yaw = kv->GetFloat("yaw", nolook);
+        float yaw = pZoneProps->GetFloat("yaw", nolook);
         if (!CloseEnough(yaw, nolook))
         {
             SetHasLookAngles(true);

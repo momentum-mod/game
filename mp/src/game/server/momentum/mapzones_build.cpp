@@ -48,7 +48,7 @@ pvertarray_t* pvertarray_t::Create(int num)
 // Base
 CMomBaseZoneBuilder* CMomBaseZoneBuilder::GetZoneBuilder(KeyValues *kv)
 {
-    if (kv->FindKey("point_points"))
+    if (kv->FindKey("geometry"))
     {
         return new CMomPointZoneBuilder;
     }
@@ -427,17 +427,21 @@ bool CMomPointZoneBuilder::LoadFromZone(const CBaseMomZoneTrigger *pEnt)
     return true;
 }
 
-bool CMomPointZoneBuilder::Load(KeyValues *kv)
+bool CMomPointZoneBuilder::Load(KeyValues *zoneKV)
 {
-    SetHeight(kv->GetFloat("point_height"));
+    const auto pGeometry = zoneKV->FindKey("geometry");
+    if (!pGeometry)
+        return false;
 
-    const auto kvZPos = kv->FindKey("point_points_zpos");
+    SetHeight(pGeometry->GetFloat("pointsHeight"));
+
+    const auto kvZPos = pGeometry->FindKey("pointsZPos");
     if (!kvZPos)
         return false;
 
     const auto fZPos = kvZPos->GetFloat();
 
-    auto sub = kv->FindKey("point_points");
+    auto sub = pGeometry->FindKey("points");
     if (!sub)
         return false;
 
@@ -462,10 +466,11 @@ bool CMomPointZoneBuilder::Load(KeyValues *kv)
     return true;
 }
 
-bool CMomPointZoneBuilder::Save(KeyValues *kv)
+bool CMomPointZoneBuilder::Save(KeyValues *zoneKV)
 {
-    auto sub = new KeyValues("point_points");
+    const auto pGeometry = new KeyValues("geometry");
 
+    const auto pPoints = new KeyValues("points");
     float *pZPos = nullptr;
     for (int i = 0; i < m_vPoints.Count(); i++)
     {
@@ -474,14 +479,15 @@ bool CMomPointZoneBuilder::Save(KeyValues *kv)
         if (!pZPos)
             pZPos = &pos.z;
 
-        sub->SetString(CFmtStrN<64>("p%i", i), CFmtStrN<64>("%.3f %.3f", pos.x, pos.y));
+        pPoints->SetString(CFmtStrN<64>("p%i", i), CFmtStrN<64>("%.3f %.3f", pos.x, pos.y));
     }
 
     if (pZPos)
-        kv->SetFloat("point_points_zpos", *pZPos);
+        pGeometry->SetFloat("pointsZPos", *pZPos);
 
-    kv->SetFloat("point_height", m_flHeight);
-    kv->AddSubKey(sub);
+    pGeometry->SetFloat("pointsHeight", m_flHeight);
+    pGeometry->AddSubKey(pPoints);
+    zoneKV->AddSubKey(pGeometry);
 
     return true;
 }
@@ -1033,7 +1039,7 @@ CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomZoneTrigger *pEnt)
 CMomBaseZoneBuilder *CreateZoneBuilderFromKeyValues(KeyValues *kv)
 {
     CMomBaseZoneBuilder *pBuilder = nullptr;
-    if (kv->FindKey("point_points"))
+    if (kv->FindKey("geometry"))
     {
         pBuilder = new CMomPointZoneBuilder();
     }
