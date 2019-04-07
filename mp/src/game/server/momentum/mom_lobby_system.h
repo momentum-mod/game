@@ -20,7 +20,8 @@ public:
 
     void StartLobby();
     void LeaveLobby();
-    void JoinLobbyFromString(const char *pString);
+    bool TryJoinLobby(const CSteamID &lobbyID);
+    bool TryJoinLobbyFromString(const char *pString);
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message
     void ResetOtherAppearanceData(); // Sent when the player changes an override appearance cvar
