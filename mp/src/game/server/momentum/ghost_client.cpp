@@ -67,8 +67,7 @@ void CMomentumGhostClient::PostInit()
 {
     //Log("================= COMMAND LINE: %s\n", CommandLine()->GetCmdLine());
     const char *pLobbyID = CommandLine()->ParmValue("+connect_lobby", nullptr);
-    if (pLobbyID)
-        g_pMomentumLobbySystem->JoinLobbyFromString(pLobbyID);
+    g_pMomentumLobbySystem->TryJoinLobbyFromString(pLobbyID);
 }
 
 void CMomentumGhostClient::LevelInitPostEntity()

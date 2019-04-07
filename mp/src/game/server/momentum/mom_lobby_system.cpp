@@ -28,7 +28,12 @@ CON_COMMAND(mom_lobby_leave, "Leave your current lobby\n")
 // Used when joining when the game isn't loaded
 CON_COMMAND(connect_lobby, "Connect to a given SteamID's lobby\n")
 {
-    g_pMomentumLobbySystem->JoinLobbyFromString(args.Arg(1));
+    if (args.ArgC() < 2)
+    {
+        Log("Usage: connect_lobby <lobby_id>");
+        return;
+    }
+    g_pMomentumLobbySystem->TryJoinLobbyFromString(args.Arg(1));
 }
 
 CON_COMMAND(mom_lobby_invite, "Invite friends to your lobby\n")
@@ -111,27 +116,7 @@ bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPack
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
 void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
 {
-    if (m_sLobbyID == pJoin->m_steamIDLobby)
-    {
-        Log("Already in lobby!");
-        return;
-    }
-
-    if (LobbyValid())
-    {
-        LeaveLobby();
-        Log("Leaving your current lobby to join the new one...\n");
-    }
-    
-    if (m_cLobbyJoined.IsActive())
-    {
-        Warning("Not joining the lobby due to you already joining one!\n");
-    }
-    else
-    {
-        SteamAPICall_t call = SteamMatchmaking()->JoinLobby(pJoin->m_steamIDLobby);
-        m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
-    }
+    TryJoinLobby(pJoin->m_steamIDLobby);
 }
 
 CMomentumLobbySystem::CMomentumLobbySystem() : m_bHostingLobby(false)
@@ -608,38 +593,50 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
     }
 }
 
-void CMomentumLobbySystem::JoinLobbyFromString(const char* pString)
+bool CMomentumLobbySystem::TryJoinLobby(const CSteamID &lobbyID)
 {
-    CHECK_STEAM_API(SteamMatchmaking());
-    if (pString)
-    {
-        if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
-        {
-            Warning("You are already in a lobby! Do \"mom_lobby_leave\" to exit it!\n");
-        }
-        else if (m_cLobbyJoined.IsActive())
-        {
-            Warning("You are already trying to join a lobby!\n");
-        }
-        else
-        {
-            DevLog("Trying to join the lobby from the string %s!\n", pString);
-            uint64 steamID = Q_atoui64(pString);
-            if (steamID > 0)
-            {
-                CSteamID toJoin;
-                toJoin.FullSet(steamID, k_EUniversePublic, k_EAccountTypeChat);
-                DevLog("Got the ID! %lld\n", toJoin.ConvertToUint64());
+    CHECK_STEAM_API_B(SteamMatchmaking());
 
-                SteamAPICall_t call = SteamMatchmaking()->JoinLobby(toJoin);
-                m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
-            }
-            else
-            {
-                Warning("Could not join lobby due to malformed ID!\n");
-            }
-        }
+    if (m_sLobbyID == lobbyID)
+    {
+        Log("Already in this lobby!");
+        return false;
     }
+    if (m_cLobbyJoined.IsActive())
+    {
+        Warning("You are already trying to join a lobby!\n");
+        return false;
+    }
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    {
+        Warning("You are already in a lobby! Do \"mom_lobby_leave\" to exit it!\n");
+        return false;
+    }
+
+    SteamAPICall_t call = SteamMatchmaking()->JoinLobby(lobbyID);
+    m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
+
+    return true;
+}
+
+bool CMomentumLobbySystem::TryJoinLobbyFromString(const char* pString)
+{
+    if (!pString)
+        return false;
+
+    DevLog("Trying to join the lobby from the string %s!\n", pString);
+    uint64 steamID = Q_atoui64(pString);
+    if (steamID > 0)
+    {
+        CSteamID toJoin;
+        toJoin.FullSet(steamID, k_EUniversePublic, k_EAccountTypeChat);
+        DevLog("Got the ID! %lld\n", toJoin.ConvertToUint64());
+
+        return TryJoinLobby(toJoin);
+    }
+
+    Warning("Could not join lobby due to malformed ID '%s'!\n", pString);
+    return false;
 }
 
 void CMomentumLobbySystem::SendAndRecieveP2PPackets()
