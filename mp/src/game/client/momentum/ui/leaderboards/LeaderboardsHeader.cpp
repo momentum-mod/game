@@ -75,11 +75,11 @@ void CLeaderboardsHeader::UpdateMapInfoLabel(MapData* pData)
         m_pMapAuthor->SetText(authorsString.Get());
     }
 
-    CFmtStr layout("%s (%i zone%s)", pData->m_Info.m_bIsLinear ? "LINEAR" : "STAGED", pData->m_Info.m_iNumZones, pData->m_Info.m_iNumZones > 1 ? "s" : "");
-    CFmtStr bonuses(" - %i BONUS%s", pData->m_Info.m_iNumBonuses, pData->m_Info.m_iNumBonuses > 1 ? "ES" : "");
+    CFmtStr layout("%s (%i zone%s)", pData->m_MainTrack.m_bIsLinear ? "LINEAR" : "STAGED", pData->m_MainTrack.m_iNumZones, pData->m_MainTrack.m_iNumZones > 2 ? "s" : "");
+    CFmtStr bonuses(" - %i BONUS%s", pData->m_Info.m_iNumTracks - 1, pData->m_Info.m_iNumTracks - 1 ? "ES" : "");
 
     char mapDetails[BUFSIZ];
-    Q_snprintf(mapDetails, BUFSIZ, "TIER %i - %s%s", pData->m_Info.m_iDifficulty, layout.Get(), pData->m_Info.m_iNumBonuses ? bonuses.Get() : "");
+    Q_snprintf(mapDetails, BUFSIZ, "TIER %i - %s%s", pData->m_MainTrack.m_iDifficulty, layout.Get(), pData->m_Info.m_iNumTracks > 1 ? bonuses.Get() : "");
 
     if (m_pMapDetails)
     {

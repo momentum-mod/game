@@ -42,12 +42,9 @@ struct User : APIModel
 struct MapInfo : APIModel
 {
     char m_szDescription[1001];
-    int m_iNumBonuses;
-    int m_iNumZones;
-    bool m_bIsLinear;
-    int m_iDifficulty;
+    int m_iNumTracks;
     char m_szCreationDate[32];
-    MapInfo() : m_iNumBonuses(0), m_iNumZones(0), m_bIsLinear(false), m_iDifficulty(0)
+    MapInfo() : m_iNumTracks(0)
     {
         m_szDescription[0] = '\0';
         m_szCreationDate[0] = '\0';
@@ -137,6 +134,21 @@ struct MapRank : APIModel
     MapRank& operator=(const MapRank& other);
 };
 
+struct MapTrack : APIModel
+{
+    uint8 m_iTrackNum;
+    uint8 m_iNumZones;
+    bool m_bIsLinear;
+    uint8 m_iDifficulty;
+
+
+    MapTrack();
+    void FromKV(KeyValues *pKv) OVERRIDE;
+    void ToKV(KeyValues *pKv) const OVERRIDE;
+    bool operator==(const MapTrack &other) const;
+    MapTrack &operator=(const MapTrack &other);
+};
+
 struct MapData : APIModel
 {
     char m_szLastUpdated[32]; // ISO date, from the site
@@ -153,6 +165,7 @@ struct MapData : APIModel
 
     User m_Submitter;
     MapInfo m_Info;
+    MapTrack m_MainTrack;
     MapRank m_PersonalBest; // User's rank on a map, if they have one
     MapRank m_WorldRecord; // The world record for the map
     CUtlVector<MapCredit> m_vecCredits;

@@ -173,7 +173,7 @@ void C_HudMapInfo::LevelInitPostEntity()
             mapInfo->SetString("authors", authors.Get());
             m_pMapAuthorLabel->SetText(CConstructLocalizedString(m_wMapAuthors, (KeyValues*)mapInfo));
         }
-        mapInfo->SetInt("difficulty", pData->m_Info.m_iDifficulty);
+        mapInfo->SetInt("difficulty", pData->m_MainTrack.m_iDifficulty);
         m_pMapDifficultyLabel->SetText(CConstructLocalizedString(m_wMapDifficulty, (KeyValues*)mapInfo));
     }
     else
