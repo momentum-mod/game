@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "filesystem.h"
 #include "mapzones.h"
-#include "mom_timer.h"
+#include "mom_player.h"
 #include "mom_triggers.h"
 #include "mapzones_build.h"
 #include "fmtstr.h"
@@ -9,8 +9,10 @@
 #include "tier0/memdbgon.h"
 
 static void SaveZonFile(const char *pMapName);
-static void CC_Mom_GenerateZoneFile() { SaveZonFile(gpGlobals->mapname.ToCStr()); }
-static ConCommand mom_generate_zone_file("mom_zone_generate", CC_Mom_GenerateZoneFile, "Generates a zone file.");
+CON_COMMAND(mom_zone_generate, "Generates the .zon file for map zones.")
+{
+    SaveZonFile(gpGlobals->mapname.ToCStr());
+}
 
 class CMapZone
 {
@@ -42,12 +44,13 @@ CMapZone::CMapZone(const int track, const int type, const KeyValues *values)
 CMapZone::~CMapZone()
 {
     m_pZoneValues->deleteThis();
+    m_pTrigger = nullptr;
 }
 
 void CMapZone::SpawnZone()
 {
     char classname[64];
-    ZoneTypeToClass(m_iType, classname, sizeof(classname));
+    g_MapZoneSystem.ZoneTypeToClass(m_iType, classname, sizeof(classname));
     m_pTrigger = dynamic_cast<CBaseMomZoneTrigger *>(CreateEntityByName(classname));
     AssertMsg(m_pTrigger, "Unhandled zone type");
 
@@ -173,82 +176,44 @@ static void SaveZonFile(const char *szMapName)
     }
 }
 
-CMapZoneData::CMapZoneData(const char *szMapName)
+CMapZoneSystem::CMapZoneSystem() : CAutoGameSystemPerFrame("CMapZoneSystem"), m_iLinearTracks(0), m_iHighestTrackNum(0)
 {
-    if (!LoadFromFile(szMapName))
-    {
-        DevLog("No existing .zon file found!\n");
-    }
+    m_bLoadedFromSite = false;
 }
 
-CMapZoneData::~CMapZoneData()
+void CMapZoneSystem::LevelInitPreEntity()
 {
-    if (!m_Zones.IsEmpty())
-    {
-        m_Zones.PurgeAndDeleteElements();
-    }
+    ClearMapZones();
 }
 
-void CMapZoneData::SpawnMapZones()
+void CMapZoneSystem::LevelInitPostEntity()
 {
-    int count = m_Zones.Count();
-    for (int i = 0; i < count; i++)
-    {
-        m_Zones[i]->SpawnZone();
-    }
+    m_Editor.LevelInit();
 }
 
-bool CMapZoneData::LoadFromFile(const char *szMapName)
+void CMapZoneSystem::LevelShutdownPreEntity()
 {
-    char zoneFilePath[MAX_PATH];
-    V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
-    V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
-    DevLog("Looking for zone file: %s \n", zoneFilePath);
+    ClearMapZones();
+    m_bLoadedFromSite = false;
 
-    KeyValuesAD fileKV("tracks");
-    if (fileKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
+    for (int i = 0; i < MAX_TRACKS; i++)
     {
-        const auto bSuccess = LoadFromKeyValues(fileKV);
-        DevLog("%s map zone file %s!\n", bSuccess ? "Successfully loaded" : "Failed to load", zoneFilePath);
-        return bSuccess;
+        m_iZoneCount[i] = 0;
     }
-    return false;
+    m_iLinearTracks = 0;
 }
 
-bool CMapZoneData::LoadFromKeyValues(KeyValues *pKvTracks)
+void CMapZoneSystem::LevelShutdownPostEntity()
 {
-    if (!pKvTracks || pKvTracks->IsEmpty())
-        return false;
-
-    FOR_EACH_SUBKEY(pKvTracks, trackKV)
-    {
-        const auto trackNum = Q_atoi(trackKV->GetName());
-        if (trackNum >= -1 && trackNum < MAX_TRACKS)
-        {
-            FOR_EACH_SUBKEY(trackKV, zoneKV)
-            {
-                const auto zoneNum = Q_atoi(zoneKV->GetName());
-                if (zoneNum >= 0 && zoneNum < MAX_ZONES)
-                {
-                    const auto zoneType = zoneKV->GetInt("zoneType", ZONE_TYPE_INVALID);
-
-                    if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
-                    {
-                        Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
-                        continue;
-                    }
-
-                    // Add element
-                    m_Zones.AddToTail(new CMapZone(trackNum, zoneType, zoneKV));
-                }
-            }
-        }
-    }
-
-    return !m_Zones.IsEmpty();
+    m_Editor.LevelShutdown();
 }
 
-bool ZoneTypeToClass(int type, char *dest, int maxlen)
+void CMapZoneSystem::FrameUpdatePostEntityThink()
+{
+    m_Editor.FrameUpdate();
+}
+
+bool CMapZoneSystem::ZoneTypeToClass(int type, char *dest, int maxlen)
 {
     switch (type)
     {
@@ -268,3 +233,183 @@ bool ZoneTypeToClass(int type, char *dest, int maxlen)
         return false;
     }
 }
+
+void CMapZoneSystem::ClearMapZones()
+{
+    if (!m_Zones.IsEmpty())
+        m_Zones.PurgeAndDeleteElements();
+}
+
+void CMapZoneSystem::LoadZonesFromSite(KeyValues *pKvTracks, CBaseEntity *pEnt)
+{
+    if (LoadZonesFromKeyValues(pKvTracks, true))
+    {
+        m_bLoadedFromSite = true;
+        const auto pPlayer = dynamic_cast<CMomentumPlayer*>(pEnt);
+        if (pPlayer)
+        {
+            DispatchMapInfo(pPlayer);
+        }
+    }
+}
+
+void CMapZoneSystem::LoadZonesFromFile()
+{
+    m_bLoadedFromSite = false;
+    char zoneFilePath[MAX_PATH];
+    V_ComposeFileName(MAP_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
+    V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
+    DevLog("Looking for zone file: %s \n", zoneFilePath);
+
+    KeyValuesAD fileKV("tracks");
+    if (fileKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
+    {
+        const auto bSuccess = LoadZonesFromKeyValues(fileKV, false);
+        DevLog("%s map zone file %s!\n", bSuccess ? "Successfully loaded" : "Failed to load", zoneFilePath);
+    }
+}
+
+bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite)
+{
+    if (!pKvTracks || pKvTracks->IsEmpty())
+        return false;
+
+    ResetCounts();
+    int globalZones = 0;
+
+    FOR_EACH_SUBKEY(pKvTracks, trackKV)
+    {
+        const auto trackNum = bFromSite ? trackKV->GetInt("trackNum") : Q_atoi(trackKV->GetName());
+        if (trackNum >= -1 && trackNum < MAX_TRACKS)
+        {
+            KeyValues *toItr = bFromSite ? trackKV->FindKey("zones") : trackKV;
+            FOR_EACH_SUBKEY(toItr, zoneKV)
+            {
+                const auto zoneNum = bFromSite ? zoneKV->GetInt("zoneNum") : Q_atoi(zoneKV->GetName());
+                if (zoneNum >= 0 && zoneNum < MAX_ZONES)
+                {
+                    const auto zoneType = zoneKV->GetInt("zoneType", ZONE_TYPE_INVALID);
+
+                    if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
+                    {
+                        Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
+                        continue;
+                    }
+
+                    if (zoneType != ZONE_TYPE_STOP)
+                    {
+                        if (trackNum > -1 && trackNum < MAX_TRACKS)
+                        {
+                            if (trackNum > m_iHighestTrackNum)
+                                m_iHighestTrackNum = trackNum;
+
+                            m_iZoneCount[trackNum]++;
+                            if (zoneType == ZONE_TYPE_CHECKPOINT)
+                                m_iLinearTracks |= (1ULL << trackNum);
+                        }
+                        else if (trackNum == -1)
+                            globalZones++;
+                    }
+
+                    // Add element
+                    auto pMapZone = new CMapZone(trackNum, zoneType, zoneKV);
+                    pMapZone->SpawnZone();
+                    m_Zones.AddToTail(pMapZone);
+                }
+            }
+        }
+    }
+
+    // Add in all the global zones, if we have any
+    if (globalZones)
+    {
+        for (int i = 0; i <= m_iHighestTrackNum; i++)
+        {
+            m_iZoneCount[i] += globalZones;
+        }
+    }
+
+    return !m_Zones.IsEmpty();
+}
+
+void CMapZoneSystem::CalculateZoneCounts(CMomentumPlayer *pDispatch)
+{
+    // Reset our counts
+    ResetCounts();
+
+    int globalZones = 0;
+    auto pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
+    while (pEnt)
+    {
+        const auto pTrigger = dynamic_cast<CBaseMomZoneTrigger*>(pEnt);
+        if (pTrigger)
+        {
+            const auto iZoneType = pTrigger->GetZoneType();
+            if (iZoneType == ZONE_TYPE_START || iZoneType == ZONE_TYPE_STAGE || iZoneType == ZONE_TYPE_CHECKPOINT)
+            {
+                const int iTrack = pTrigger->GetTrackNumber();
+
+                if (iTrack > -1 && iTrack < MAX_TRACKS)
+                {
+                    if (iTrack > m_iHighestTrackNum)
+                        m_iHighestTrackNum = iTrack;
+
+                    m_iZoneCount[iTrack]++;
+                    if (iZoneType == ZONE_TYPE_CHECKPOINT)
+                        m_iLinearTracks |= (1ULL << iTrack);
+                }
+                else if (iTrack == -1)
+                    globalZones++;
+            }
+        }
+
+        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_*");
+    }
+
+    // Add in all the global zones, if we have any
+    if (globalZones)
+    {
+        for (int i = 0; i <= m_iHighestTrackNum; i++)
+        {
+            m_iZoneCount[i] += globalZones;
+        }
+    }
+
+    if (pDispatch)
+        DispatchMapInfo(pDispatch);
+}
+
+void CMapZoneSystem::DispatchMapInfo(CMomentumPlayer *pPlayer) const
+{
+    // Copy over to the player
+    for (uint64 i = 0; i <= m_iHighestTrackNum; i++)
+    {
+        pPlayer->m_iZoneCount.Set(i, m_iZoneCount[i]);
+        pPlayer->m_iLinearTracks.Set(i, (m_iLinearTracks & (1ULL << i)) > 0);
+    }
+}
+
+void CMapZoneSystem::DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const
+{
+    if (m_iZoneCount[TRACK_MAIN] == 0)
+    {
+        CSingleUserRecipientFilter filter(pPlayer);
+        filter.MakeReliable();
+        UserMessageBegin(filter, "MB_NoStartOrEnd");
+        MessageEnd();
+    }
+    else
+    {
+        DispatchMapInfo(pPlayer);
+    }
+}
+
+void CMapZoneSystem::ResetCounts()
+{
+    for (auto i = 0; i < MAX_TRACKS; i++)
+        m_iZoneCount[i] = 0;
+    m_iLinearTracks = 0;
+    m_iHighestTrackNum = -1;
+}
+
+CMapZoneSystem g_MapZoneSystem;

@@ -4,18 +4,17 @@ class CBaseMomZoneTrigger;
 class CMomentumPlayer;
 class CMomBaseZoneBuilder;
 
-class CMomZoneEdit : public CAutoGameSystemPerFrame
+class CMapZoneEdit
 {
   public:
-    CMomZoneEdit();
-    ~CMomZoneEdit();
+    CMapZoneEdit();
 
     bool IsEditing() const { return m_bEditing; }
     void StopEditing();
 
-    virtual void LevelInitPostEntity() OVERRIDE;
-    virtual void LevelShutdownPostEntity() OVERRIDE;
-    virtual void FrameUpdatePostEntityThink() OVERRIDE;
+    void LevelInit();
+    void LevelShutdown();
+    void FrameUpdate();
 
     void OnCreate(int zonetype = -1);
     void OnMark();
@@ -44,5 +43,3 @@ class CMomZoneEdit : public CAutoGameSystemPerFrame
 
     CMomBaseZoneBuilder *m_pBuilder;
 };
-
-extern CMomZoneEdit g_MomZoneEdit;

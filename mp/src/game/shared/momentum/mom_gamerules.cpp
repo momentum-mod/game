@@ -7,6 +7,12 @@
 #include "weapon/weapon_base_gun.h"
 #include "mom_player_shared.h"
 
+#ifndef CLIENT_DLL
+#include "momentum/tickset.h"
+#include "momentum/mapzones.h"
+#include "momentum/mom_timer.h"
+#endif
+
 #include "tier0/memdbgon.h"
 
 REGISTER_GAMERULES_CLASS(CMomentumGameRules);
@@ -216,6 +222,22 @@ bool CMomentumGameRules::IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPla
 
     // First test the starting origin.
     return UTIL_IsSpaceEmpty(pPlayer, vTestMins, vTestMaxs);
+}
+
+void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKeyValues)
+{
+    BaseClass::ClientCommandKeyValues(pEntity, pKeyValues);
+
+    if (FStrEq(pKeyValues->GetName(), "NoZones"))
+    {
+        // Load if they're available in a file
+        g_MapZoneSystem.LoadZonesFromFile();
+    }
+    else if (FStrEq(pKeyValues->GetName(), "ZonesFromSite"))
+    {
+        // Zones loaded, pass them through
+        g_MapZoneSystem.LoadZonesFromSite(pKeyValues, CBaseEntity::Instance(pEntity));
+    }
 }
 
 bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args)

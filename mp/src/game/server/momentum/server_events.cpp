@@ -2,66 +2,27 @@
 #include "filesystem.h"
 #include "server_events.h"
 #include "tickset.h"
-#include "mapzones.h"
-#include "mom_timer.h"
-#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
-CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystem(pName), zones(nullptr)
+CMomServerEvents::CMomServerEvents(): CAutoGameSystem("CMomServerEvents")
 {
 }
 
-void CMOMServerEvents::PostInit()
+void CMomServerEvents::PostInit()
 {
     TickSet::TickInit();
     MountAdditionalContent();
-
-    // MOM_TODO: connect to site
-    /*if (SteamAPI_IsSteamRunning())
-    {
-
-    }*/
 }
 
-void CMOMServerEvents::Shutdown()
-{
-
-
-}
-
-void CMOMServerEvents::LevelInitPreEntity()
-{
-    const char *pMapName = gpGlobals->mapname.ToCStr();
-    // (Re-)Load zones
-    if (zones)
-    {
-        delete zones;
-        zones = nullptr;
-    }
-    zones = new CMapZoneData(pMapName);
-    zones->SpawnMapZones();
-}
-
-
-void CMOMServerEvents::LevelInitPostEntity()
+void CMomServerEvents::LevelInitPostEntity()
 {
     //disable point_servercommand
     ConVarRef pointcommand("sv_allow_point_command");
     pointcommand.SetValue("disallow");
 }
 
-void CMOMServerEvents::LevelShutdownPreEntity()
-{
-    // Unload zones
-    if (zones)
-    {
-        delete zones;
-        zones = nullptr;
-    }
-}
-
-void CMOMServerEvents::LevelShutdownPostEntity()
+void CMomServerEvents::LevelShutdownPostEntity()
 {
     ConVarRef fullbright("mat_fullbright");
     // Shut off fullbright if the map enabled it
@@ -69,17 +30,17 @@ void CMOMServerEvents::LevelShutdownPostEntity()
         fullbright.SetValue(0);
 }
 
-void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
+void CMomServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
 {
     engine->ServerCommand("unpause\n");
 }
 
-void CMOMServerEvents::MountAdditionalContent()
+void CMomServerEvents::MountAdditionalContent()
 {
     // From the Valve SDK wiki
     KeyValues *pMainFile = new KeyValues("gameinfo.txt");
     bool bLoad = false;
-#ifndef _WINDOWS
+#ifndef _WIN32
     // case sensitivity
     bLoad = pMainFile->LoadFromFile(filesystem, "GameInfo.txt", "MOD");
 #endif
@@ -106,4 +67,4 @@ void CMOMServerEvents::MountAdditionalContent()
     pMainFile->deleteThis();
 }
 
-CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");
+CMomServerEvents g_MOMServerEvents;

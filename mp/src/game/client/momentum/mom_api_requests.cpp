@@ -138,6 +138,17 @@ bool CAPIRequests::GetMapByName(const char *pMapName, CallbackFunc func)
     return false;
 }
 
+bool CAPIRequests::GetMapZones(uint32 uMapID, CallbackFunc func)
+{
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/zones", uMapID).Get()), k_EHTTPMethodGET))
+    {
+        return SendAPIRequest(req, func, __FUNCTION__);
+    }
+    delete req;
+    return false;
+}
+
 bool CAPIRequests::GetUserMapLibrary(CallbackFunc func)
 {
     APIRequest *req = new APIRequest;

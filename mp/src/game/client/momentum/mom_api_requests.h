@@ -117,6 +117,7 @@ public:
     bool GetMaps(KeyValues *pKvFilters, CallbackFunc func);
     bool GetMapInfo(uint32 mapID, CallbackFunc func);
     bool GetMapByName(const char *pMapName, CallbackFunc func);
+    bool GetMapZones(uint32 uMapID, CallbackFunc func);
     bool GetUserMapLibrary(CallbackFunc func);
     bool AddMapToLibrary(uint32 mapID, CallbackFunc func);
     bool RemoveMapFromLibrary(uint32 mapID, CallbackFunc func);
