@@ -231,6 +231,7 @@ public:
 protected:
     void PostInit() OVERRIDE;
     void PreLevelInit(KeyValues *pKv); // Called from server before Server's LevelInitPre/Post entity
+    void LevelInitPreEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
     void Shutdown() OVERRIDE;
 
@@ -243,6 +244,7 @@ protected:
     void OnFetchPlayerMapLibrary(KeyValues *pKv);
     void OnFetchPlayerMapFavorites(KeyValues *pKv);
     void OnFetchMapInfo(KeyValues *pKv);
+    void OnFetchMapZones(KeyValues *pKv);
 
     void OnMapAddedToLibrary(KeyValues *pKv);
     void OnMapRemovedFromLibrary(KeyValues *pKv);

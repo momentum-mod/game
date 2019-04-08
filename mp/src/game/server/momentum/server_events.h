@@ -1,36 +1,15 @@
-#ifndef SERVER_EVENTS_H
-#define SERVER_EVENTS_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "utlbuffer.h"
-
-class CMapZoneData;
-
-namespace Momentum {
-void GameInit();
-} // namespace Momentum
-
-class CMOMServerEvents : CAutoGameSystem
+class CMomServerEvents : CAutoGameSystem
 {
 public:
-    CMOMServerEvents(const char* pName);
+    CMomServerEvents();
 
     void PostInit() OVERRIDE;
-    void Shutdown() OVERRIDE;
-    void LevelInitPreEntity() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
-    void LevelShutdownPreEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
 
-    STEAM_CALLBACK(CMOMServerEvents, OnGameOverlay, GameOverlayActivated_t);
+    STEAM_CALLBACK(CMomServerEvents, OnGameOverlay, GameOverlayActivated_t);
 
     void MountAdditionalContent();
-
-private:
-    CMapZoneData* zones;
 };
-
-
-#endif // SERVER_EVENTS_H

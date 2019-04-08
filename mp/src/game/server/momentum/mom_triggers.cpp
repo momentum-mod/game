@@ -191,7 +191,7 @@ bool CTriggerZone::ToKeyValues(KeyValues* pKvInto)
 
 bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
 {
-    m_iZoneNumber = Q_atoi(kv->GetName());
+    m_iZoneNumber = kv->GetInt("zoneNum", Q_atoi(kv->GetName()));
     if (m_iZoneNumber >= 0 && m_iZoneNumber < MAX_ZONES)
         return BaseClass::LoadFromKeyValues(kv);
 
@@ -270,8 +270,8 @@ bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *zoneKV)
 
         SetSpeedLimit(pZoneProps->GetFloat("speed_limit", 350.0f));
         SetIsLimitingSpeed(pZoneProps->GetBool("limitingspeed"));
-        SetStartOnJump(pZoneProps->GetBool("StartOnJump"));
-        SetLimitSpeedType(pZoneProps->GetInt("LimitSpeedType"));
+        SetStartOnJump(pZoneProps->GetBool("StartOnJump", true));
+        SetLimitSpeedType(pZoneProps->GetInt("LimitSpeedType", SPEED_NORMAL_LIMIT));
 
         const float nolook = -190.0f;
         float yaw = pZoneProps->GetFloat("yaw", nolook);

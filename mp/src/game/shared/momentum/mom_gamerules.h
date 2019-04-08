@@ -4,8 +4,6 @@
 
 #ifdef CLIENT_DLL
 #define CMomentumGameRules C_MomentumGameRules
-#else
-#include "momentum/tickset.h"
 #endif
 
 class CMomentumGameRules : public CSingleplayRules
@@ -29,6 +27,7 @@ class CMomentumGameRules : public CSingleplayRules
 
     // virtual void			Think(void);
 
+    void ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKeyValues) OVERRIDE;
     bool ClientCommand(CBaseEntity *pEdict, const CCommand &args) OVERRIDE;
     void PlayerSpawn(CBasePlayer *pPlayer) OVERRIDE;
     bool IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer) OVERRIDE;

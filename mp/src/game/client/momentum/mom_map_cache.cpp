@@ -1079,6 +1079,31 @@ void CMapCache::OnFetchMapInfo(KeyValues* pKv)
     }
 }
 
+void CMapCache::OnFetchMapZones(KeyValues *pKv)
+{
+    const auto pData = pKv->FindKey("data");
+    const auto pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        const auto pTracks = pData->FindKey("tracks");
+        if (pTracks)
+        {
+            KeyValues *pToSend = pTracks->MakeCopy();
+            pToSend->SetName("ZonesFromSite");
+            engine->ServerCmdKeyValues(pToSend);
+        }
+        else
+        {
+            engine->ServerCmdKeyValues(new KeyValues("NoZones"));
+        }
+    }
+    else if (pErr)
+    {
+        engine->ServerCmdKeyValues(new KeyValues("NoZones"));
+        //MOM_TODO error handle here
+    }
+}
+
 void CMapCache::ToggleMapLibraryOrFavorite(KeyValues* pKv, bool bIsLibrary, bool bAdded)
 {
     KeyValues *pData = pKv->FindKey("data");
@@ -1315,6 +1340,18 @@ void CMapCache::PreLevelInit(KeyValues* pKv)
     }
 
     SetMapGamemode(pMapName);
+}
+
+void CMapCache::LevelInitPreEntity()
+{
+    if (m_pCurrentMapData)
+    {
+        g_pAPIRequests->GetMapZones(m_pCurrentMapData->m_uID, UtlMakeDelegate(this, &CMapCache::OnFetchMapZones));
+    }
+    else
+    {
+        engine->ServerCmdKeyValues(new KeyValues("NoZones"));
+    }
 }
 
 void CMapCache::LevelShutdownPostEntity()

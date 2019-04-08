@@ -17,6 +17,7 @@
 #include "util/mom_util.h"
 #include "mom_replay_system.h"
 #include "run/mom_replay_base.h"
+#include "mapzones.h"
 
 #include "tier0/memdbgon.h"
 
@@ -340,6 +341,8 @@ void CMomentumPlayer::Spawn()
         {
             ClearStartMark(i);
         }
+
+        g_MapZoneSystem.DispatchNoZonesMsg(this);
     }
 
     RegisterThinkContext("THINK_EVERY_TICK");
@@ -1095,7 +1098,7 @@ void CMomentumPlayer::ResetRunStats()
     m_nAccelTicks = 0;
     m_Data.m_flStrafeSync = 0;
     m_Data.m_flStrafeSync2 = 0;
-    m_RunStats.Init(g_pMomentumTimer->GetZoneCount(m_Data.m_iCurrentTrack));
+    m_RunStats.Init(g_MapZoneSystem.GetZoneCount(m_Data.m_iCurrentTrack));
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
