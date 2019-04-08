@@ -59,21 +59,15 @@ User& User::operator=(const User& src)
 void MapInfo::FromKV(KeyValues* pKv)
 {
     Q_strncpy(m_szDescription, pKv->GetString("description"), sizeof(m_szDescription));
-    m_iNumBonuses = pKv->GetInt("numBonuses");
-    m_iNumZones = pKv->GetInt("numZones");
-    m_bIsLinear = pKv->GetBool("isLinear");
-    m_iDifficulty = pKv->GetInt("difficulty");
+    m_iNumTracks = pKv->GetInt("numTracks");
     Q_strncpy(m_szCreationDate, pKv->GetString("creationDate"), sizeof(m_szCreationDate));
-    m_bValid = m_iNumZones && Q_strlen(m_szDescription);
+    m_bValid = m_iNumTracks && Q_strlen(m_szDescription);
 }
 
 void MapInfo::ToKV(KeyValues* pKv) const
 {
     pKv->SetString("description", m_szDescription);
-    pKv->SetInt("numBonuses", m_iNumBonuses);
-    pKv->SetInt("numZones", m_iNumZones);
-    pKv->SetInt("difficulty", m_iDifficulty);
-    pKv->SetBool("isLinear", m_bIsLinear);
+    pKv->SetInt("numTracks", m_iNumTracks);
     pKv->SetString("creationDate", m_szCreationDate);
 }
 
@@ -83,10 +77,7 @@ MapInfo& MapInfo::operator=(const MapInfo& other)
     {
         m_bUpdated = !(*this == other);
         Q_strncpy(m_szDescription, other.m_szDescription, sizeof(m_szDescription));
-        m_iNumBonuses = other.m_iNumBonuses;
-        m_iNumZones = other.m_iNumZones;
-        m_bIsLinear = other.m_bIsLinear;
-        m_iDifficulty = other.m_iDifficulty;
+        m_iNumTracks = other.m_iNumTracks;
         Q_strncpy(m_szCreationDate, other.m_szCreationDate, sizeof(m_szCreationDate));
         m_bValid = other.m_bValid;
     }
@@ -96,8 +87,7 @@ MapInfo& MapInfo::operator=(const MapInfo& other)
 
 bool MapInfo::operator==(const MapInfo &other) const
 {
-    return FStrEq(m_szDescription, other.m_szDescription) && m_iNumZones == other.m_iNumZones &&
-        m_iNumBonuses == other.m_iNumBonuses && m_iDifficulty == other.m_iDifficulty && 
+    return FStrEq(m_szDescription, other.m_szDescription) && m_iNumTracks == other.m_iNumTracks && 
         FStrEq(m_szCreationDate, other.m_szCreationDate);
 }
 
@@ -284,6 +274,52 @@ MapRank& MapRank::operator=(const MapRank& other)
     return *this;
 }
 
+MapTrack::MapTrack()
+{
+    m_iTrackNum = 0;
+    m_iDifficulty = 1;
+    m_iNumZones = 0;
+    m_bIsLinear = false;
+}
+
+void MapTrack::FromKV(KeyValues *pKv)
+{
+    m_iTrackNum = pKv->GetInt("trackNum");
+    m_iDifficulty = pKv->GetInt("difficulty");
+    m_iNumZones = pKv->GetInt("numZones");
+    m_bIsLinear = pKv->GetBool("isLinear");
+    m_bValid = m_iNumZones && m_iDifficulty;
+}
+
+void MapTrack::ToKV(KeyValues *pKv) const
+{
+    pKv->SetInt("trackNum", m_iTrackNum);
+    pKv->SetInt("difficulty", m_iDifficulty);
+    pKv->SetInt("numZones", m_iNumZones);
+    pKv->SetBool("isLinear", m_bIsLinear);
+}
+
+bool MapTrack::operator==(const MapTrack &other) const
+{
+    return m_iTrackNum == other.m_iTrackNum && m_iDifficulty == other.m_iDifficulty &&
+        m_bIsLinear == other.m_bIsLinear && m_iNumZones == other.m_iNumZones;
+}
+
+MapTrack & MapTrack::operator=(const MapTrack &other)
+{
+    if (other.m_bValid)
+    {
+        m_bUpdated = !(*this == other);
+        m_iTrackNum = other.m_iTrackNum;
+        m_iDifficulty = other.m_iDifficulty;
+        m_iNumZones = other.m_iNumZones;
+        m_bIsLinear = other.m_bIsLinear;
+        m_bValid = other.m_bValid;
+    }
+
+    return *this;
+}
+
 MapData::MapData()
 {
     m_szLastUpdated[0] = '\0';
@@ -318,6 +354,7 @@ MapData::MapData(const MapData& src)
     Q_strncpy(m_szCreatedAt, src.m_szCreatedAt, sizeof(m_szCreatedAt));
 
     m_Info = src.m_Info;
+    m_MainTrack = src.m_MainTrack;
     m_Submitter = src.m_Submitter;
     m_vecCredits.RemoveAll();
     m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
@@ -332,7 +369,7 @@ MapData::MapData(const MapData& src)
 
 bool MapData::WasUpdated() const
 {
-    return m_bUpdated || m_Info.m_bUpdated || m_PersonalBest.NeedsUpdate() || 
+    return m_bUpdated || m_Info.m_bUpdated || m_PersonalBest.NeedsUpdate() || m_MainTrack.m_bUpdated ||
         m_WorldRecord.NeedsUpdate() || m_Thumbnail.m_bUpdated;
 }
 
@@ -342,7 +379,7 @@ void MapData::SendDataUpdate()
 
     pEvent->SetInt("id", m_uID);
     pEvent->SetBool("main", m_bUpdated);
-    pEvent->SetBool("info", m_Info.m_bUpdated);
+    pEvent->SetBool("info", m_Info.m_bUpdated || m_MainTrack.m_bUpdated);
     pEvent->SetBool("pb", m_PersonalBest.NeedsUpdate());
     pEvent->SetBool("wr", m_WorldRecord.NeedsUpdate());
     pEvent->SetBool("thumbnail", m_Thumbnail.m_bUpdated);
@@ -355,7 +392,7 @@ void MapData::ResetUpdate()
 {
     m_PersonalBest.ResetUpdate();
     m_WorldRecord.ResetUpdate();
-    m_bUpdated = m_Info.m_bUpdated = m_Thumbnail.m_bUpdated = false;
+    m_bUpdated = m_Info.m_bUpdated = m_Thumbnail.m_bUpdated = m_MainTrack.m_bUpdated = false;
 }
 
 bool MapData::GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType)
@@ -425,6 +462,9 @@ void MapData::FromKV(KeyValues* pMap)
     KeyValues* pInfo = pMap->FindKey("info");
     if (pInfo)
         m_Info.FromKV(pInfo);
+    KeyValues *pMainTrack = pMap->FindKey("mainTrack");
+    if (pMainTrack)
+        m_MainTrack.FromKV(pMainTrack);
     KeyValues* pSubmitter = pMap->FindKey("submitter");
     if (pSubmitter)
         m_Submitter.FromKV(pSubmitter);
@@ -508,6 +548,13 @@ void MapData::ToKV(KeyValues* pKv) const
         pKv->AddSubKey(pInfo);
     }
 
+    if (m_MainTrack.m_bValid)
+    {
+        KeyValues *pMainTrack = new KeyValues("mainTrack");
+        m_MainTrack.ToKV(pMainTrack);
+        pKv->AddSubKey(pMainTrack);
+    }
+
     if (m_Submitter.m_bValid)
     {
         KeyValues* pSubmitter = new KeyValues("submitter");
@@ -586,6 +633,7 @@ MapData& MapData::operator=(const MapData& src)
     }
 
     m_Info = src.m_Info;
+    m_MainTrack = src.m_MainTrack;
     m_Submitter = src.m_Submitter;
     m_PersonalBest = src.m_PersonalBest;
     m_WorldRecord = src.m_WorldRecord;

@@ -222,6 +222,7 @@ void CDialogMapInfo::FillMapInfo()
 
     // Info stuff
     m_pMapData->m_Info.ToKV(pLoc);
+    m_pMapData->m_MainTrack.ToKV(pLoc);
 
     // Game mode
     m_pMapInfoPanel->SetControlString("GamemodeText", g_szGameModes[m_pMapData->m_eType]);
@@ -230,7 +231,7 @@ void CDialogMapInfo::FillMapInfo()
     m_pMapInfoPanel->SetControlString("DifficultyText", pLoc->GetWString("difficulty"));
     
     // Layout
-    m_pMapInfoPanel->SetControlString("LayoutText", m_pMapData->m_Info.m_bIsLinear ?
+    m_pMapInfoPanel->SetControlString("LayoutText", m_pMapData->m_MainTrack.m_bIsLinear ?
                      g_pVGuiLocalize->Find("#MOM_Linear") :
                      g_pVGuiLocalize->Find("#MOM_Staged"));
 
@@ -238,7 +239,7 @@ void CDialogMapInfo::FillMapInfo()
     m_pMapInfoPanel->SetControlString("NumZones", pLoc->GetWString("numZones"));
 
     // Bonuses
-    m_pMapInfoPanel->SetControlString("NumBonusText", pLoc->GetWString("numBonuses"));
+    m_pMapInfoPanel->SetControlString("NumBonusText", pLoc->GetWString("numTracks"));
 
     // Creation Date
     time_t creationDateTime;

@@ -303,8 +303,8 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
 
     if (bInfo)
     {
-        pDataKv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapData->m_Info.m_iDifficulty);
-        pDataKv->SetInt(KEYNAME_MAP_LAYOUT, pMapData->m_Info.m_bIsLinear ? INDX_MAP_IS_LINEAR : INDX_MAP_IS_STAGED);
+        pDataKv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapData->m_MainTrack.m_iDifficulty);
+        pDataKv->SetInt(KEYNAME_MAP_LAYOUT, pMapData->m_MainTrack.m_bIsLinear ? INDX_MAP_IS_LINEAR : INDX_MAP_IS_STAGED);
 
         pDataKv->SetString(KEYNAME_MAP_CREATION_DATE_SORT, pMapData->m_Info.m_szCreationDate);
 
