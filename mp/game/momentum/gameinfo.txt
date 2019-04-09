@@ -6,6 +6,7 @@
 	supportsvr	0
 	developer	"Team Momentum"
 	developer_url   "http://momentum-mod.org"
+    nodegraph 0
     
 	// This needs to be gone if we're implemeting MP AND SP . If only MP, then "multiplayer_only"
 	type		singleplayer_only
