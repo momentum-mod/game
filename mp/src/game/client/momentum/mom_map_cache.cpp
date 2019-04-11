@@ -1390,7 +1390,7 @@ void CMapCache::LoadMapCacheFromDisk()
     }
     else
     {
-        DevLog(2, "Map cache file doesn't exist, creating it...");
+        DevLog(2, "Map cache file doesn't exist, creating it...\n");
     }
 }
 
