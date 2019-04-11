@@ -22,6 +22,7 @@ private:
     CAvatarImagePanel *m_pPlayerAvatar;
     vgui::Label *m_pPlayerName;
     vgui::Label *m_pPlayerMapRank;
+    vgui::Label *m_pPlayerLevel;
     vgui::Label *m_pPlayerPersonalBest;
     vgui::Label *m_pPlayerGlobalRank;
     vgui::Label *m_pPlayerRankXP;
