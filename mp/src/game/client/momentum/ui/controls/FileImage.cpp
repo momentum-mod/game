@@ -126,7 +126,12 @@ void FileImage::Paint()
     }
     else if (m_pDefaultImage)
     {
-        m_pDefaultImage->SetSize(m_iDesiredWide, m_iDesiredTall);
+        int defWide, defTall;
+        m_pDefaultImage->GetSize(defWide, defTall);
+        const auto wide = m_iDesiredWide ? m_iDesiredWide : defWide;
+        const auto tall = m_iDesiredTall ? m_iDesiredTall : defTall;
+        
+        m_pDefaultImage->SetSize(wide, tall);
         m_pDefaultImage->SetPos(m_iX, m_iY);
         m_pDefaultImage->SetColor(m_DrawColor);
         m_pDefaultImage->Paint();
