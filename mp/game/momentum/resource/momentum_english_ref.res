@@ -50,6 +50,7 @@
         "MOM_Leaderboards_SteamProfile" "Steam Profile"
         "MOM_Calculating" "Calculating..."
         "MOM_MapRank" "Map Rank: %mRank%"
+        "MOM_Level" "Level %level%"
         "MOM_GlobalRank" "Global Rank: %gRank% / %gTotal%"
         "MOM_PersonalBestTime" "Personal Best Time: %time%"
         "MOM_RankXP" "Rank XP: %rankXP%"
