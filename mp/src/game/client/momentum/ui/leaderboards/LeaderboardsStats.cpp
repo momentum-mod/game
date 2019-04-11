@@ -30,6 +30,7 @@ CLeaderboardsStats::CLeaderboardsStats(Panel* pParent) : BaseClass(pParent, "CLe
 
     m_pPlayerName = new Label(this, "PlayerName", "");
     m_pPlayerMapRank = new Label(this, "PlayerMapRank", "");
+    m_pPlayerLevel = new Label(this, "PlayerLevel", "");
     m_pPlayerPersonalBest = new Label(this, "PlayerPersonalBest", "");
     m_pPlayerGlobalRank = new Label(this, "PlayerGlobalRank", "");
     m_pPlayerRankXP = new Label(this, "RankXP", "");
@@ -77,6 +78,7 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
         KeyValuesAD dummyObj("dummy");
         dummyObj->SetWString("mRank", bSuccess ? waiting : unavail);
         dummyObj->SetWString("time", bSuccess ? waiting : unavail);
+        dummyObj->SetWString("level", bSuccess ? waiting : unavail);
         dummyObj->SetWString("gRank", bSuccess ? waiting : unavail);
         dummyObj->SetWString("gRank", bSuccess ? waiting : unavail);
         dummyObj->SetWString("rankXP", bSuccess ? waiting : unavail);
@@ -87,6 +89,7 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
         dummyObj->SetWString("totalStrafes", bSuccess ? waiting : unavail);
         KeyValues *pDumDum = dummyObj;
 
+        m_pPlayerLevel->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_Level"), pDumDum));
         m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), pDumDum));
         m_pPlayerGlobalRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_GlobalRank"), pDumDum));
         m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), pDumDum));
@@ -149,6 +152,7 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
             // grank = static_cast<int>(pExperience->GetFloat("rank"));
             // gtotal = static_cast<int>(pExperience->GetFloat("total"));
 
+            m_pPlayerLevel->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_Level"), pUserStats));
             m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pUserStats));
             m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), pUserStats));
             m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), pUserStats));

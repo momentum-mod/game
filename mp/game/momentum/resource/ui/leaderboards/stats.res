@@ -43,6 +43,34 @@
         "pin_to_sibling_corner" "1"
         "pin_sibling_to_corner" "0"
     }
+    
+    "PlayerLevel"
+    {
+        "ControlName"	"Label"
+        "fieldName"		"PlayerLevel"
+        "xpos"			"0"
+        "ypos"			"2"
+        "wide"			"0"
+        "tall"			"13"
+        "autoResize"	"0"
+        "pinCorner"		"0"
+        "visible"		"1"
+        "enabled"		"1"
+        "labelText"		"#MOM_Level"
+        "textAlignment"	"west"
+        "dulltext"		"0"
+        "brighttext"	"1"
+        "wrap"			"0"
+        "centerwrap"	"0"
+        "textinsetx"	"0"
+        "textinsety"	"0"
+        "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
+        "Font"			"BigNoodleSmall"
+        "pin_to_sibling" "PlayerName"
+        "pin_to_sibling_corner" "2"
+        "pin_sibling_to_corner" "0"
+    }
     "RankXP"
     {
         "ControlName"	"Label"
@@ -66,7 +94,7 @@
         "textinsety"	"0"
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
-        "pin_to_sibling" "PlayerName"
+        "pin_to_sibling" "PlayerLevel"
         "pin_to_sibling_corner" "2"
         "pin_sibling_to_corner" "0"
     }
