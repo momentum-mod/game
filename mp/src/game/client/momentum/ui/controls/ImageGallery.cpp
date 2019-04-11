@@ -346,9 +346,12 @@ void ImageGallery::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_LEFT)
     {
-        // Pop open a modal frame with just the full res photo
-        GalleryModalViewPanel *pPanel = new GalleryModalViewPanel(this);
-        pPanel->DoModal();
+        if (m_pImages->GetImageCount())
+        {
+            // Pop open a modal frame with just the full res photo
+            GalleryModalViewPanel *pPanel = new GalleryModalViewPanel(this);
+            pPanel->DoModal();
+        }
     }
 }
 
