@@ -321,25 +321,20 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
     KeyValues *pErr = pKvResponse->FindKey("error");
     if (pData)
     {
-        KeyValues *pRuns = pData->FindKey("runs");
+        KeyValues *pRanks = pData->FindKey("ranks");
 
         ClearPlayerList();
 
-        if (pRuns && pData->GetInt("count") > 0)
+        if (pRanks && pData->GetInt("count") > 0)
         {
             // Iterate through each loaded run
-            FOR_EACH_SUBKEY(pRuns, pRun)
+            FOR_EACH_SUBKEY(pRanks, pRank)
             {
                 KeyValuesAD kvEntry("Entry");
 
-                // Around does UserMapRank -> Run instead of the other way around, so we do some funny business here
-                KeyValues *pOuter = nullptr;
-                if (type == TIMES_AROUND)
-                {
-                    pOuter = pRun;
-                    pRun = pOuter->FindKey("run");
-                    AssertMsg(pRun, "Around times didn't work!");
-                }
+                KeyValues *pRun = pRank->FindKey("run");
+                if (!pRun) // Should never happen but you never know...
+                    continue;
 
                 const float fTime = pRun->GetFloat("time");
                 kvEntry->SetFloat("time_f", fTime);
@@ -367,19 +362,7 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
                 }
 
                 // Rank
-                if (type != TIMES_AROUND)
-                {
-                    KeyValues *kvRankObj = pRun->FindKey("rank");
-                    if (kvRankObj)
-                    {
-                        kvEntry->SetInt("rank", kvRankObj->GetInt("rank"));
-                    }
-                }
-                else
-                {
-                    kvEntry->SetInt("rank", pOuter->GetInt("rank"));
-                    pRun = pOuter; // Make sure to reset to outer so we can continue the loop
-                }
+                kvEntry->SetInt("rank", pRank->GetInt("rank"));
 
                 m_pTimesList->AddItem(kvEntry, 0, false, true);
             }

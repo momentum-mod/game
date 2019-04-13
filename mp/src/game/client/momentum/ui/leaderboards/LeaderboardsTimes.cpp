@@ -705,27 +705,22 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
     KeyValues *pErr = pKv->FindKey("error");
     if (pData)
     {
-        KeyValues *pRuns = pData->FindKey("runs");
+        KeyValues *pRanks = pData->FindKey("ranks");
 
-        if (pRuns && pData->GetInt("count") > 0)
+        if (pRanks && pData->GetInt("count") > 0)
         {
             CUtlVector<TimeOnline*> *vecs[] = { nullptr, &m_vOnlineTimes, &m_vFriendsTimes, &m_vAroundTimes };
             // By now we're pretty sure everything will be ok, so we can do this
             vecs[type]->PurgeAndDeleteElements();
 
             // Iterate through each loaded run
-            FOR_EACH_SUBKEY(pRuns, pRun)
+            FOR_EACH_SUBKEY(pRanks, pRank)
             {
                 KeyValues *kvEntry = new KeyValues("Entry");
 
-                // Around does UserMapRank -> Run instead of the other way around, so we do some funny business here
-                KeyValues *pOuter = nullptr;
-                if (type == TIMES_AROUND)
-                {
-                    pOuter = pRun;
-                    pRun = pOuter->FindKey("run");
-                    AssertMsg(pRun, "Around times didn't work!");
-                }
+                KeyValues *pRun = pRank->FindKey("run");
+                if (!pRun) // Should never happen but you never know...
+                    continue;
 
                 // Time is handled by the converter
                 kvEntry->SetFloat("time", pRun->GetFloat("time"));
@@ -785,19 +780,7 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
                 }
 
                 // Rank
-                if (type != TIMES_AROUND)
-                {
-                    KeyValues *kvRankObj = pRun->FindKey("rank");
-                    if (kvRankObj)
-                    {
-                        kvEntry->SetInt("rank", kvRankObj->GetInt("rank"));
-                    }
-                }
-                else
-                {
-                    kvEntry->SetInt("rank", pOuter->GetInt("rank"));
-                    pRun = pOuter; // Make sure to reset to outer so we can continue the loop
-                }
+                kvEntry->SetInt("rank", pRank->GetInt("rank"));
 
                 // Add this baby to the online times vector
                 TimeOnline *ot = new TimeOnline(kvEntry);
