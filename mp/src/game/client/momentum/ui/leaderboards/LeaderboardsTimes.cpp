@@ -744,7 +744,7 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
                 // Hash
                 kvEntry->SetString("hash", pRun->GetString("hash"));
 
-                KeyValues *kvUserObj = pRun->FindKey("user");
+                KeyValues *kvUserObj = pRank->FindKey("user");
                 if (kvUserObj)
                 {
                     uint64 steamID = Q_atoui64(kvUserObj->GetString("id"));
