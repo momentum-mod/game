@@ -62,10 +62,7 @@ bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
         if (pKvFilters && !pKvFilters->IsEmpty())
         {
             FOR_EACH_VALUE(pKvFilters, pKvFilter)
-            {
-                SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, pKvFilter->GetName(),
-                                                              pKvFilter->GetString());
-            }
+                SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, pKvFilter->GetName(), pKvFilter->GetString());
         }
 
         SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", 
@@ -78,35 +75,48 @@ bool CAPIRequests::GetMaps(KeyValues *pKvFilters, CallbackFunc func)
     return false;
 }
 
-bool CAPIRequests::GetTop10MapTimes(uint32 mapID, CallbackFunc func)
+bool CAPIRequests::GetTop10MapTimes(uint32 mapID, CallbackFunc func, KeyValues *pKvFilters/* = nullptr*/)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodGET))
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/ranks", mapID).Get()), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "isPersonalBest", "true");
+        if (pKvFilters)
+        {
+            FOR_EACH_VALUE(pKvFilters, pKvFilter)
+                SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, pKvFilter->GetName(), pKvFilter->GetString());
+        }
         return SendAPIRequest(req, func, __FUNCTION__);
     }
     delete req;
     return false;
 }
 
-bool CAPIRequests::GetFriendsTimes(uint32 mapID, CallbackFunc func)
+bool CAPIRequests::GetFriendsTimes(uint32 mapID, CallbackFunc func, KeyValues *pKvFilters/* = nullptr*/)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs/friends", mapID).Get()), k_EHTTPMethodGET))
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/ranks/friends", mapID).Get()), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "isPersonalBest", "true");
+        if (pKvFilters)
+        {
+            FOR_EACH_VALUE(pKvFilters, pKvFilter)
+                SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, pKvFilter->GetName(), pKvFilter->GetString());
+        }
         return SendAPIRequest(req, func, __FUNCTION__);
     }
     delete req;
     return false;
 }
 
-bool CAPIRequests::GetAroundTimes(uint32 mapID, CallbackFunc func)
+bool CAPIRequests::GetAroundTimes(uint32 mapID, CallbackFunc func, KeyValues *pKvFilters/* = nullptr*/)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs/around", mapID).Get()), k_EHTTPMethodGET))
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/ranks/around", mapID).Get()), k_EHTTPMethodGET))
     {
+        if (pKvFilters)
+        {
+            FOR_EACH_VALUE(pKvFilters, pKvFilter)
+                SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, pKvFilter->GetName(), pKvFilter->GetString());
+        }
         return SendAPIRequest(req, func, __FUNCTION__);
     }
     delete req;
