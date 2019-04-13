@@ -349,7 +349,7 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
                 else
                     kvEntry->SetString("date", pRun->GetString("createdAt"));
 
-                KeyValues *kvUserObj = pRun->FindKey("user");
+                KeyValues *kvUserObj = pRank->FindKey("user");
                 if (kvUserObj)
                 {
                     /*uint64 steamID = Q_atoui64(kvUserObj->GetString("id"));
