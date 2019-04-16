@@ -352,7 +352,7 @@ void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
                 KeyValues *kvUserObj = pRank->FindKey("user");
                 if (kvUserObj)
                 {
-                    /*uint64 steamID = Q_atoui64(kvUserObj->GetString("id"));
+                    /*uint64 steamID = kvUserObj->GetUint64("steamID");
                     kvEntry->SetUint64("steamid", steamID);
 
                     int permissions = kvUserObj->GetInt("permissions");*/

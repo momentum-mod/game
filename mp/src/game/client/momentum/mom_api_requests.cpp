@@ -253,9 +253,13 @@ bool CAPIRequests::GetUserStats(uint64 profileID, CallbackFunc func)
 bool CAPIRequests::GetUserStatsAndMapRank(uint64 profileID, uint32 mapID, CallbackFunc func)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("users/%lld", profileID).Get()), k_EHTTPMethodGET))
+    const auto pReqStr = profileID == 0 ? "user" : "users";
+    if (CreateAPIRequest(req, API_REQ(pReqStr), k_EHTTPMethodGET))
     {
         SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "userStats");
+
+        if (profileID != 0)
+            SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "playerID", CFmtStr("%llu", profileID).Get());
 
         if (mapID != 0)
             SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "mapRank", CFmtStr("%u", mapID).Get());

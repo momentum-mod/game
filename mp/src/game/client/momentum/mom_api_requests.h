@@ -136,7 +136,7 @@ public:
     bool GetUserStats(uint64 profileID, CallbackFunc func); // Just user stats
     /**
      * Gets a user's profile stats as well as their map rank for a particular map.
-     * @param profileID The profile to get the stats for
+     * @param profileID The profile to get the stats for. 0 will get the local user's stuff.
      * @param mapID     The map to get the rank stats for. 0 will just get the user's stats.
      * @param func      The callback function
      */
