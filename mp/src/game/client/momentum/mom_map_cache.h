@@ -26,9 +26,10 @@ public:
 
 struct User : APIModel
 {
-    uint64 m_uID;
+    uint32 m_uMainID;
+    uint64 m_uSteamID;
     char m_szAlias[MAX_PLAYER_NAME_LENGTH];
-    User() : m_uID(0)
+    User() : m_uMainID(0), m_uSteamID(0)
     {
         m_szAlias[0] = '\0';
     }
@@ -36,7 +37,8 @@ struct User : APIModel
     void FromKV(KeyValues* pKv) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;
     User& operator=(const User& src);
-    bool operator==(const User &other) const { return m_uID == other.m_uID && FStrEq(m_szAlias, other.m_szAlias); }
+    bool operator==(const User &other) const { return m_uMainID == other.m_uMainID && 
+        m_uSteamID == other.m_uSteamID && FStrEq(m_szAlias, other.m_szAlias); }
 };
 
 struct MapInfo : APIModel

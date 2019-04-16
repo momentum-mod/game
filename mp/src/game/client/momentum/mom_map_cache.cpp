@@ -32,14 +32,16 @@ static MAKE_TOGGLE_CONVAR(mom_map_download_cancel_confirm, "1", FCVAR_ARCHIVE | 
 
 void User::FromKV(KeyValues* pKv)
 {
-    m_uID = pKv->GetUint64("id");
+    m_uMainID = pKv->GetUint64("id");
+    m_uSteamID = pKv->GetUint64("steamID");
     Q_strncpy(m_szAlias, pKv->GetString("alias"), sizeof(m_szAlias));
-    m_bValid = m_uID > 0 && Q_strlen(m_szAlias) > 0;
+    m_bValid = m_uMainID > 0 && Q_strlen(m_szAlias) > 0;
 }
 
 void User::ToKV(KeyValues* pKv) const
 {
-    pKv->SetUint64("id", m_uID);
+    pKv->SetUint64("id", m_uMainID);
+    pKv->SetUint64("steamID", m_uSteamID);
     pKv->SetString("alias", m_szAlias);
 }
 
@@ -48,7 +50,8 @@ User& User::operator=(const User& src)
     if (src.m_bValid)
     {
         m_bUpdated = !(*this == src);
-        m_uID = src.m_uID;
+        m_uMainID = src.m_uMainID;
+        m_uSteamID = src.m_uSteamID;
         Q_strncpy(m_szAlias, src.m_szAlias, sizeof(m_szAlias));
         m_bValid = src.m_bValid;
     }
@@ -408,12 +411,14 @@ bool MapData::GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType)
             people.CopyAndAddToTail(m_vecCredits[i].m_User.m_szAlias);
         }
     }
-    int count = people.Count();
+    const auto count = people.Count();
     for (int i = 0; i < count; i++)
     {
         pOut->Append(people[i]);
         if (i < count - 2)
             pOut->Append(", ", 2);
+        else if (i < count - 1)
+            pOut->Append(" and ");
     }
     return true;
 }
