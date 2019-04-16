@@ -70,8 +70,7 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
         wchar_t *waiting = g_pVGuiLocalize->Find("MOM_API_WaitingForResponse");
         wchar_t *unavail = g_pVGuiLocalize->Find("MOM_API_Unavailable");
 
-        const uint64 uID = SteamUser()->GetSteamID().ConvertToUint64();
-        const bool bSuccess = g_pAPIRequests->GetUserStatsAndMapRank(uID,
+        const bool bSuccess = g_pAPIRequests->GetUserStatsAndMapRank(0,
                                                                g_pMapCache->GetCurrentMapID(),
                                                                UtlMakeDelegate(this, &CLeaderboardsStats::OnPlayerStats));
 
