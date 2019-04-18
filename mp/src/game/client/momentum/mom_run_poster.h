@@ -2,6 +2,7 @@
 
 #include "GameEventListener.h"
 #include "igamesystem.h"
+#include "mom_shareddefs.h"
 
 #define ENABLE_STEAM_LEADERBOARDS 0
 
@@ -21,8 +22,18 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
-    void RunSubmitCallback(KeyValues *pKv);
+    // Callbacks
+    void InvalidateSessionCallback(KeyValues *pKv);
+    void CreateSessionCallback(KeyValues *pKv);
+    void UpdateSessionCallback(KeyValues *pKv);
+    void EndSessionCallback(KeyValues *pKv);
+
+private:
+    bool ShouldSubmitRun();
     bool CheckCurrentMap();
+    void ResetSession();
+    uint64 m_uRunSessionID;
+    int m_iZoneEnterTicks[MAX_ZONES];
 
 #if ENABLE_STEAM_LEADERBOARDS
 public:
