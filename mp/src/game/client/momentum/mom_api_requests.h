@@ -130,7 +130,12 @@ public:
     bool GetTop10MapTimes(uint32 mapID, CallbackFunc func, KeyValues *pKvFilters = nullptr);
     bool GetFriendsTimes(uint32 mapID, CallbackFunc func, KeyValues *pKvFilters = nullptr);
     bool GetAroundTimes(uint32 mapID, CallbackFunc func, KeyValues *pKvFilters = nullptr);
-    bool SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func);
+
+    // Run Sessions
+    bool InvalidateRunSession(uint32 mapID, CallbackFunc func);
+    bool CreateRunSession(uint32 mapID, uint8 trackNum, uint8 zoneNum, CallbackFunc func);
+    bool AddRunSessionTimestamp(uint32 mapID, uint64 sessionID, uint8 zoneNum, uint32 tick, CallbackFunc func);
+    bool EndRunSession(uint32 mapID, uint64 sessionID, const CUtlBuffer &replayBuf, CallbackFunc func);
 
     // ==== Stats ====
     bool GetUserStats(uint64 profileID, CallbackFunc func); // Just user stats

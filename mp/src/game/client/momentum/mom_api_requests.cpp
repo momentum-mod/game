@@ -231,13 +231,52 @@ bool CAPIRequests::RemoveMapFromFavorites(uint32 mapID, CallbackFunc func)
     return false;
 }
 
-bool CAPIRequests::SubmitRun(uint32 mapID, const CUtlBuffer &replayBuf, CallbackFunc func)
+bool CAPIRequests::InvalidateRunSession(uint32 mapID, CallbackFunc func)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/runs", mapID).Get()), k_EHTTPMethodPOST))
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/session", mapID).Get()), k_EHTTPMethodDELETE))
+    {
+        return SendAPIRequest(req, func, __FUNCTION__);
+    }
+
+    delete req;
+    return false;
+}
+
+bool CAPIRequests::CreateRunSession(uint32 mapID, uint8 trackNum, uint8 zoneNum, CallbackFunc func)
+{
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/session", mapID).Get()), k_EHTTPMethodPOST))
+    {
+        CFmtStr body("{\"trackNum\": %u, \"zoneNum\": %u}", trackNum, zoneNum);
+        SteamHTTP()->SetHTTPRequestRawPostBody(req->handle, "application/json", (uint8*)body.Access(), body.Length());
+        return SendAPIRequest(req, func, __FUNCTION__);
+    }
+
+    delete req;
+    return false;
+}
+
+bool CAPIRequests::AddRunSessionTimestamp(uint32 mapID, uint64 sessionID, uint8 zoneNum, uint32 tick, CallbackFunc func)
+{
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/session/%lld", mapID, sessionID).Get()), k_EHTTPMethodPOST))
+    {
+        CFmtStr body("{\"zoneNum\": %u, \"tick\": %u}", zoneNum, tick);
+        SteamHTTP()->SetHTTPRequestRawPostBody(req->handle, "application/json", (uint8*) body.Access(), body.Length());
+        return SendAPIRequest(req, func, __FUNCTION__);
+    }
+
+    delete req;
+    return false;
+}
+
+bool CAPIRequests::EndRunSession(uint32 mapID, uint64 sessionID, const CUtlBuffer &replayBuf, CallbackFunc func)
+{
+    APIRequest *req = new APIRequest;
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/session/%lld/end", mapID, sessionID).Get()), k_EHTTPMethodPOST))
     {
         SteamHTTP()->SetHTTPRequestRawPostBody(req->handle, "application/octet-stream", (uint8*) replayBuf.Base(), replayBuf.TellPut());
-
         return SendAPIRequest(req, func, __FUNCTION__);
     }
 
