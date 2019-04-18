@@ -2,7 +2,6 @@
 
 #include "filesystem.h"
 #include "mom_run_poster.h"
-#include "mom_shareddefs.h"
 #include "mom_api_requests.h"
 #include "mom_map_cache.h"
 
@@ -13,14 +12,16 @@ CRunPoster::CRunPoster()
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
 #endif
+    ResetSession();
 }
 
 CRunPoster::~CRunPoster() {}
 
 void CRunPoster::PostInit()
 {
-    // We need to listen for "replay_save"
     ListenForGameEvent("replay_save");
+    ListenForGameEvent("timer_event");
+    ListenForGameEvent("zone_enter");
 }
 
 void CRunPoster::LevelInitPostEntity()
@@ -35,6 +36,12 @@ void CRunPoster::LevelInitPostEntity()
 
     }
 #endif
+    const auto pMapData = g_pMapCache->GetCurrentMapData();
+    if (pMapData)
+    {
+        g_pAPIRequests->InvalidateRunSession(pMapData->m_uID, UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
+    }
+    ResetSession();
 }
 
 void CRunPoster::LevelShutdownPostEntity()
@@ -46,54 +53,98 @@ void CRunPoster::LevelShutdownPostEntity()
 
 void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 {
-    if (pEvent->GetBool("save"))
+    if (FStrEq(pEvent->GetName(), "replay_save"))
     {
+        if (pEvent->GetBool("save"))
+        {
 #if ENABLE_STEAM_LEADERBOARDS
-        CHECK_STEAM_API(SteamUserStats());
+            CHECK_STEAM_API(SteamUserStats());
 
-        if (!m_hCurrentLeaderboard)
-        {
-            Warning("Could not upload run: leaderboard doesn't exist!\n");
-            // MOM_TODO: Make the run_posted event here with the above message?
-            return;
-        }
+            if (!m_hCurrentLeaderboard)
+            {
+                Warning("Could not upload run: leaderboard doesn't exist!\n");
+                // MOM_TODO: Make the run_posted event here with the above message?
+                return;
+            }
 
-        // Upload the score
-        int runTime = pEvent->GetInt("time"); // Time in milliseconds
-        if (!runTime)
-        {
-           Warning("Could not upload run: time is 0 milliseconds!\n");
-           // MOM_TODO: Make the run_posted event here with the above message?
-           return;
-        }
+            // Upload the score
+            int runTime = pEvent->GetInt("time"); // Time in milliseconds
+            if (!runTime)
+            {
+                Warning("Could not upload run: time is 0 milliseconds!\n");
+                // MOM_TODO: Make the run_posted event here with the above message?
+                return;
+            }
 
-        // Save the name and path for uploading in the callback of the score
-        Q_strncpy(m_szFileName, pEvent->GetString("filename"), MAX_PATH);
-        Q_strncpy(m_szFilePath, pEvent->GetString("filepath"), MAX_PATH);
+            // Save the name and path for uploading in the callback of the score
+            Q_strncpy(m_szFileName, pEvent->GetString("filename"), MAX_PATH);
+            Q_strncpy(m_szFilePath, pEvent->GetString("filepath"), MAX_PATH);
 
-        // Set our score
-        SteamAPICall_t uploadScore = SteamUserStats()->UploadLeaderboardScore(m_hCurrentLeaderboard, 
-            k_ELeaderboardUploadScoreMethodKeepBest, runTime, nullptr, 0);
-        m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
+            // Set our score
+            SteamAPICall_t uploadScore = SteamUserStats()->UploadLeaderboardScore(m_hCurrentLeaderboard,
+                                                                                  k_ELeaderboardUploadScoreMethodKeepBest, runTime, nullptr, 0);
+            m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
 #endif
 
-        if (CheckCurrentMap())
-        {
-            CUtlBuffer buf;
-            if (g_pFullFileSystem->ReadFile(pEvent->GetString("filepath"), "MOD", buf))
+            if (ShouldSubmitRun())
             {
-                if (g_pAPIRequests->SubmitRun(g_pMapCache->GetCurrentMapID(), buf, UtlMakeDelegate(this, &CRunPoster::RunSubmitCallback)))
+                CUtlBuffer buf;
+                if (g_pFullFileSystem->ReadFile(pEvent->GetString("filepath"), "MOD", buf))
                 {
-                    DevLog(2, "Run submitted!\n");
+                    if (g_pAPIRequests->EndRunSession(g_pMapCache->GetCurrentMapID(), m_uRunSessionID, buf, UtlMakeDelegate(this, &CRunPoster::EndSessionCallback)))
+                    {
+                        DevLog(2, "Run submitted!\n");
+                    }
+                    else
+                    {
+                        Warning("Failed to submit run; API call returned false!\n");
+                    }
+                    ResetSession();
                 }
                 else
                 {
-                    Warning("Failed to submit run; API call returned false!\n");
+                    Warning("Failed to submit run: could not read file %s from %s !\n", pEvent->GetString("filename"), pEvent->GetString("filepath"));
                 }
             }
-            else
+        }
+    }
+    else if (FStrEq(pEvent->GetName(), "timer_event"))
+    {
+        const auto iMapID = g_pMapCache->GetCurrentMapID();
+        if (iMapID == 0)
+            return;
+
+        if (pEvent->GetInt("ent") == engine->GetLocalPlayer())
+        {
+            const auto iType = pEvent->GetInt("type", -1);
+            if (iType == TIMER_EVENT_STARTED)
             {
-                Warning("Failed to submit run: could not read file %s from %s !\n", pEvent->GetString("filename"), pEvent->GetString("filepath"));
+                // MOM_TODO allow different track/zones (0.9.0)
+                // C_MomentumPlayer::GetLocalMomPlayer()->GetRunEntData()->m_iCurrentTrack and m_iCurrentZone
+                g_pAPIRequests->CreateRunSession(iMapID, 0, 0, UtlMakeDelegate(this, &CRunPoster::CreateSessionCallback));
+            }
+            else if (iType == TIMER_EVENT_STOPPED && m_uRunSessionID)
+            {
+                g_pAPIRequests->InvalidateRunSession(iMapID, UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
+                ResetSession();
+            }
+        }
+    }
+    else if (FStrEq(pEvent->GetName(), "zone_enter"))
+    {
+        const auto iMapID = g_pMapCache->GetCurrentMapID();
+        if (iMapID == 0 || m_uRunSessionID == 0)
+            return;
+        
+        if (pEvent->GetInt("ent") == engine->GetLocalPlayer())
+        {
+            const auto iZone = pEvent->GetInt("num");
+            if (iZone > 1 && m_iZoneEnterTicks[iZone] == 0)
+            {
+                m_iZoneEnterTicks[iZone] = gpGlobals->tickcount;
+                g_pAPIRequests->AddRunSessionTimestamp(iMapID, m_uRunSessionID, 
+                                                       iZone, gpGlobals->tickcount, 
+                                                       UtlMakeDelegate(this, &CRunPoster::UpdateSessionCallback));
             }
         }
     }
@@ -201,7 +252,46 @@ void CRunPoster::OnFileShared(RemoteStorageFileShareResult_t* pResult, bool bIOF
 }
 #endif
 
-void CRunPoster::RunSubmitCallback(KeyValues* pKv)
+void CRunPoster::InvalidateSessionCallback(KeyValues *pKv)
+{
+    // Note: Never has any body data due to being a 204
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pErr)
+    {
+        Warning("Error when invalidating run session!\n");
+    }
+}
+
+void CRunPoster::CreateSessionCallback(KeyValues *pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        m_uRunSessionID = pData->GetUint64("id");
+        ConColorMsg(2, COLOR_GREEN, "Got the run session ID! %u\n", m_uRunSessionID);
+    }
+    else if (pErr)
+    {
+        Warning("Error when creating the run session!\n");
+    }
+}
+
+void CRunPoster::UpdateSessionCallback(KeyValues *pKv)
+{
+    KeyValues *pData = pKv->FindKey("data");
+    KeyValues *pErr = pKv->FindKey("error");
+    if (pData)
+    {
+        // MOM_TODO We may get incremental XP in the future here (0.9.0+)
+    }
+    else if (pErr)
+    {
+        Warning("Error when updating the run session!\n");
+    }
+}
+
+void CRunPoster::EndSessionCallback(KeyValues* pKv)
 {
     IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
     KeyValues *pData = pKv->FindKey("data");
@@ -229,19 +319,30 @@ void CRunPoster::RunSubmitCallback(KeyValues* pKv)
     }
 }
 
+bool CRunPoster::ShouldSubmitRun()
+{
+    return CheckCurrentMap() && m_uRunSessionID != 0;
+}
+
 bool CRunPoster::CheckCurrentMap()
 {
-    MapData *pData = g_pMapCache->GetCurrentMapData();
+    const auto pData = g_pMapCache->GetCurrentMapData();
     if (pData && pData->m_uID)
     {
         // Now check if the status is alright
-        MAP_UPLOAD_STATUS status = pData->m_eMapStatus;
+        const auto status = pData->m_eMapStatus;
         if (status == MAP_APPROVED || status == MAP_PRIVATE_TESTING || status == MAP_PUBLIC_TESTING)
         {
             return true;
         }
     }
     return false;
+}
+
+void CRunPoster::ResetSession()
+{
+    m_uRunSessionID = 0;
+    memset(m_iZoneEnterTicks, 0, MAX_ZONES * sizeof(m_iZoneEnterTicks[0]));
 }
 
 static CRunPoster s_momRunposter;
