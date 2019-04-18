@@ -750,11 +750,11 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
                     uint64 steamID = kvUserObj->GetUint64("steamID");
                     kvEntry->SetUint64("steamid", steamID);
 
-                    int permissions = kvUserObj->GetInt("permissions");
+                    int roles = kvUserObj->GetInt("roles");
 
                     // Is part of the momentum team?
                     // MOM_TODO: Make this the actual permission
-                    kvEntry->SetBool("tm", permissions & (USER_ADMIN | USER_MODERATOR));
+                    kvEntry->SetBool("tm", roles & (USER_ADMIN | USER_MODERATOR));
 
                     // Is vip?
                     // MOM_TODO: Make this the actual permission
