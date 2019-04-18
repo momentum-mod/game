@@ -689,7 +689,9 @@ void C_RunComparisons::Paint()
         // stages. (So if there's 20 stages, we only show the last X stages, not all.)
         if (i >= (currentStage - ZONE_BUFFER))
         {
-            const bool bIsLinear = C_MomentumPlayer::GetLocalMomPlayer() && C_MomentumPlayer::GetLocalMomPlayer()->m_iLinearTracks[m_pRunData->m_iCurrentTrack];
+            bool bIsLinear = false;
+            if (m_pRunData)
+                bIsLinear = C_MomentumPlayer::GetLocalMomPlayer() && C_MomentumPlayer::GetLocalMomPlayer()->m_iLinearTracks[m_pRunData->m_iCurrentTrack];
             const wchar_t *pwZoneStr = CConstructLocalizedString(bIsLinear ? m_wCheckpoint : m_wStage, i);
             const size_t zoneStrLen = Q_wcslen(pwZoneStr);
 
