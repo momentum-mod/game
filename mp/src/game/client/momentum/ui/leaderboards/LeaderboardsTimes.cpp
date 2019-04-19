@@ -1094,7 +1094,8 @@ void CLeaderboardsTimes::OnContextWatchOnlineReplay(KeyValues* data)
                 UtlMakeDelegate(this, &CLeaderboardsTimes::OnReplayDownloadProgress),
                 UtlMakeDelegate(this, &CLeaderboardsTimes::OnReplayDownloadEnd),
                 filePathOnline.Get(),
-                "MOD");
+                "MOD",
+                true);
             if (handle != INVALID_HTTPREQUEST_HANDLE)
             {
                 m_mapReplayDownloads.Insert(handle, replayID);
