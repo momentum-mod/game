@@ -101,7 +101,7 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     SetRunning(pPlayer, true);
 
     // Dispatch a start timer message for the local player
-    DispatchTimerEventMessage(pPlayer, TIMER_EVENT_STARTED);
+    DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), TIMER_EVENT_STARTED);
 
     return true;
 }
@@ -120,7 +120,7 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
             time(&m_iLastRunDate); // Set the last run date for the replay
         }
 
-        DispatchTimerEventMessage(pPlayer, bFinished ? TIMER_EVENT_FINISHED : TIMER_EVENT_STOPPED);
+        DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), bFinished ? TIMER_EVENT_FINISHED : TIMER_EVENT_STOPPED);
     }
 
     // Stop replay recording, if there was any
@@ -197,7 +197,7 @@ void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset
         }
         else
         {
-            DispatchTimerEventMessage(pPlayer, TIMER_EVENT_FAILED);
+            DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), TIMER_EVENT_FAILED);
         }
     }
     else
@@ -216,12 +216,12 @@ void CMomentumTimer::DispatchResetMessage(CMomentumPlayer *pPlayer) const
     MessageEnd();
 }
 
-void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) const
+void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int iEntIndx, int type) const
 {
     IGameEvent *pEvent = gameeventmanager->CreateEvent("timer_event");
     if (pEvent)
     {
-        pEvent->SetInt("ent", pPlayer->entindex());
+        pEvent->SetInt("ent", iEntIndx);
         pEvent->SetInt("type", type);
         gameeventmanager->FireEvent(pEvent);
     }
