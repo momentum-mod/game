@@ -18,7 +18,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // HUD messages
     void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
-    void DispatchTimerEventMessage(CBasePlayer *pPlayer, int type) const;
+    void DispatchTimerEventMessage(CBasePlayer *pPlayer, int iEntIdx, int type) const;
 
     // ------------- Timer state related messages --------------------------
     // Starts the timer for the given starting tick
