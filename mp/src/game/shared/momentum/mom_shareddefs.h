@@ -12,6 +12,7 @@
 
 #define MAX_TRACKS 64
 #define MAX_ZONES 64
+#define MAX_ZONE_TRIGGERS 64
 
 // Zone types enum
 // NOTE: If adding a new zone type make sure to override GetZoneType

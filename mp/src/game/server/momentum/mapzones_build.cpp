@@ -48,7 +48,7 @@ pvertarray_t* pvertarray_t::Create(int num)
 // Base
 CMomBaseZoneBuilder* CMomBaseZoneBuilder::GetZoneBuilder(KeyValues *kv)
 {
-    if (kv->FindKey("geometry"))
+    if (kv->FindKey("points"))
     {
         return new CMomPointZoneBuilder;
     }
@@ -427,21 +427,17 @@ bool CMomPointZoneBuilder::LoadFromZone(const CBaseMomZoneTrigger *pEnt)
     return true;
 }
 
-bool CMomPointZoneBuilder::Load(KeyValues *zoneKV)
+bool CMomPointZoneBuilder::Load(KeyValues *pTriggerKV)
 {
-    const auto pGeometry = zoneKV->FindKey("geometry");
-    if (!pGeometry)
-        return false;
+    SetHeight(pTriggerKV->GetFloat("pointsHeight"));
 
-    SetHeight(pGeometry->GetFloat("pointsHeight"));
-
-    const auto kvZPos = pGeometry->FindKey("pointsZPos");
+    const auto kvZPos = pTriggerKV->FindKey("pointsZPos");
     if (!kvZPos)
         return false;
 
     const auto fZPos = kvZPos->GetFloat();
 
-    auto sub = pGeometry->FindKey("points");
+    auto sub = pTriggerKV->FindKey("points");
     if (!sub)
         return false;
 
@@ -466,10 +462,8 @@ bool CMomPointZoneBuilder::Load(KeyValues *zoneKV)
     return true;
 }
 
-bool CMomPointZoneBuilder::Save(KeyValues *zoneKV)
+bool CMomPointZoneBuilder::Save(KeyValues *pTriggerKV)
 {
-    const auto pGeometry = new KeyValues("geometry");
-
     const auto pPoints = new KeyValues("points");
     float *pZPos = nullptr;
     for (int i = 0; i < m_vPoints.Count(); i++)
@@ -483,11 +477,10 @@ bool CMomPointZoneBuilder::Save(KeyValues *zoneKV)
     }
 
     if (pZPos)
-        pGeometry->SetFloat("pointsZPos", *pZPos);
+        pTriggerKV->SetFloat("pointsZPos", *pZPos);
 
-    pGeometry->SetFloat("pointsHeight", m_flHeight);
-    pGeometry->AddSubKey(pPoints);
-    zoneKV->AddSubKey(pGeometry);
+    pTriggerKV->SetFloat("pointsHeight", m_flHeight);
+    pTriggerKV->AddSubKey(pPoints);
 
     return true;
 }
@@ -500,10 +493,9 @@ int CMomPointZoneBuilder::GetSelectedPoint(const Vector &pos, const Vector &fwd)
     int closest_index = -1;
     float closest_dot = flMinSelectionDot;
 
-    Vector myfwd;
     FOR_EACH_VEC(m_vPoints,i)
     {
-        myfwd = m_vPoints[i] - pos;
+        auto myfwd = m_vPoints[i] - pos;
         myfwd.NormalizeInPlace();
         
         float dot = fwd.Dot(myfwd);
@@ -1039,7 +1031,7 @@ CMomBaseZoneBuilder *CreateZoneBuilderFromExisting(CBaseMomZoneTrigger *pEnt)
 CMomBaseZoneBuilder *CreateZoneBuilderFromKeyValues(KeyValues *kv)
 {
     CMomBaseZoneBuilder *pBuilder = nullptr;
-    if (kv->FindKey("geometry"))
+    if (kv->FindKey("points"))
     {
         pBuilder = new CMomPointZoneBuilder();
     }

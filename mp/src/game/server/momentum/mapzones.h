@@ -4,8 +4,9 @@
 #include "mom_shareddefs.h"
 
 class CMapZone;
+class CTriggerZone;
 
-class CMapZoneSystem : CAutoGameSystemPerFrame
+class CMapZoneSystem : public CAutoGameSystemPerFrame
 {
 public:
     CMapZoneSystem();
@@ -22,13 +23,16 @@ public:
     void LoadZonesFromSite(KeyValues *pKvTracks, CBaseEntity *pEnt);
     void LoadZonesFromFile();
     bool LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite);
+    void SaveZoneTrigger(CTriggerZone *pZoneTrigger, KeyValues *pKvInto);
+    void SaveZonesToFile();
 
     CMapZoneEdit *GetZoneEditor() { return &m_Editor; }
 
     // Calculates the stage count
     void CalculateZoneCounts(CMomentumPlayer *pDispatch);
     // Gets the total stage count
-    int GetZoneCount(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_iZoneCount[track] : -1; };
+    int GetZoneCount(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_iZoneCount[track] : -1; }
+
     // Dispatch to player
     void DispatchMapInfo(CMomentumPlayer *pPlayer) const;
     void DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const;
