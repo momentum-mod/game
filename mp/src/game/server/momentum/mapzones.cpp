@@ -8,16 +8,15 @@
 
 #include "tier0/memdbgon.h"
 
-static void SaveZonFile(const char *pMapName);
 CON_COMMAND(mom_zone_generate, "Generates the .zon file for map zones.")
 {
-    SaveZonFile(gpGlobals->mapname.ToCStr());
+    g_MapZoneSystem.SaveZonesToFile();
 }
 
 class CMapZone
 {
   public:
-    CMapZone(int track, int type, const KeyValues *values);
+    CMapZone(int track, int zone, int type, const KeyValues *values);
     ~CMapZone();
 
     void SpawnZone();
@@ -27,16 +26,18 @@ class CMapZone
   private:
     int m_iType;
     int m_iTrack; // Track number
+    int m_iZone; // Zone number
     // KeyValues containing all the values describing the zone
     KeyValues *m_pZoneValues;
 
     CBaseMomZoneTrigger *m_pTrigger;
 };
 
-CMapZone::CMapZone(const int track, const int type, const KeyValues *values)
+CMapZone::CMapZone(const int track, const int zone, const int type, const KeyValues *values)
 {
     m_iType = type;
     m_iTrack = track;
+    m_iZone = zone;
     m_pZoneValues = values->MakeCopy();
     m_pTrigger = nullptr;
 }
@@ -56,6 +57,7 @@ void CMapZone::SpawnZone()
 
     if (m_pTrigger)
     {
+        m_pZoneValues->SetInt("zoneNum", m_iZone);
         if (!m_pTrigger->LoadFromKeyValues(m_pZoneValues))
         {
             Warning("Failed to load zone of type '%s' (Invalid zone data)", classname);
@@ -74,105 +76,6 @@ void CMapZone::SpawnZone()
         m_pTrigger->Activate();
 
         delete pBaseBuilder;
-    }
-}
-
-static void SaveTrigger(CTriggerZone *pTrigger, KeyValues *pKvInto)
-{
-    bool bSuccess = false;
-    const auto pKvZone = pKvInto->CreateNewKey();
-    if (pTrigger->ToKeyValues(pKvZone))
-    {
-        auto pBuilder = CreateZoneBuilderFromExisting(pTrigger);
-
-        bSuccess = pBuilder->Save(pKvZone);
-
-        delete pBuilder;
-    }
-
-    if (!bSuccess)
-    {
-        Warning("Failed to save zone to file!\n");
-        pKvInto->RemoveSubKey(pKvZone);
-        pKvZone->deleteThis();
-    }
-}
-
-static void SaveZonFile(const char *szMapName)
-{
-    KeyValuesAD zoneKV("tracks");
-    CTriggerZone *trackTriggers[MAX_TRACKS][MAX_ZONES];
-    memset(trackTriggers, NULL, sizeof(trackTriggers[0][0]) * MAX_TRACKS * MAX_ZONES);
-    CUtlVector<CTriggerZone*> versatileTriggers;
-
-    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
-    while (pEnt)
-    {
-        CTriggerZone *pTrigger = dynamic_cast<CTriggerZone*>(pEnt);
-        if (!pTrigger)
-        {
-            AssertMsg(false, "Entity with classname trigger_momentum_timer_* was not a momentum zone trigger");
-            continue;
-        }
-
-        const auto trackNum = pTrigger->GetTrackNumber();
-        const auto zoneNum = pTrigger->GetZoneNumber();
-
-        AssertMsg(trackNum >= -1 && trackNum < MAX_TRACKS, "Track number %i out of range!", trackNum);
-        AssertMsg(zoneNum >= 0 && zoneNum < MAX_ZONES, "Zone number %i out of range!", zoneNum);
-
-        if (trackNum > -1)
-            trackTriggers[trackNum][zoneNum] = pTrigger;
-        else if (trackNum == -1)
-            versatileTriggers.AddToTail(pTrigger);
-
-        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_*");
-    }
-
-    for (int track = -1; track < MAX_TRACKS; track++)
-    {
-        KeyValues *pKvTrack = new KeyValues(CFmtStr("%i", track));
-        if (track == -1)
-        {
-            // Add our versatile triggers (track num -1)
-            if (!versatileTriggers.IsEmpty())
-            {
-                FOR_EACH_VEC(versatileTriggers, i)
-                {
-                    const auto pZoneTrigger = versatileTriggers[i];
-                    if (pZoneTrigger)
-                        SaveTrigger(pZoneTrigger, pKvTrack);
-                }
-            }
-        }
-        else
-        {
-            // Go through each zone and find our triggers
-            for (int zone = 0; zone < MAX_ZONES; zone++)
-            {
-                const auto pZoneTrigger = trackTriggers[track][zone];
-                if (pZoneTrigger)
-                    SaveTrigger(pZoneTrigger, pKvTrack);
-            }
-        }
-        
-        // Save only if we're not empty
-        if (!pKvTrack->IsEmpty())
-        {
-            zoneKV->AddSubKey(pKvTrack);
-        }
-        else
-        {
-            pKvTrack->deleteThis();
-        }
-    }
-
-    if (!zoneKV->IsEmpty() && szMapName)
-    {
-        char zoneFilePath[MAX_PATH];
-        V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
-        V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
-        zoneKV->SaveToFile(filesystem, zoneFilePath, "MOD");
     }
 }
 
@@ -283,38 +186,46 @@ bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite
         if (trackNum >= -1 && trackNum < MAX_TRACKS)
         {
             KeyValues *toItr = bFromSite ? trackKV->FindKey("zones") : trackKV;
+            if (!toItr)
+                return false;
             FOR_EACH_SUBKEY(toItr, zoneKV)
             {
-                const auto zoneNum = bFromSite ? zoneKV->GetInt("zoneNum") : Q_atoi(zoneKV->GetName());
+                const auto zoneNum = zoneKV->GetInt("zoneNum");
                 if (zoneNum >= 0 && zoneNum < MAX_ZONES)
                 {
-                    const auto zoneType = zoneKV->GetInt("zoneType", ZONE_TYPE_INVALID);
-
-                    if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
+                    const auto pKvTriggers = zoneKV->FindKey("triggers");
+                    if (!pKvTriggers)
+                        return false;
+                    FOR_EACH_SUBKEY(pKvTriggers, triggerKV)
                     {
-                        Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
-                        continue;
-                    }
+                        const auto zoneType = triggerKV->GetInt("type", ZONE_TYPE_INVALID);
 
-                    if (zoneType != ZONE_TYPE_STOP)
-                    {
-                        if (trackNum > -1 && trackNum < MAX_TRACKS)
+                        if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
                         {
-                            if (trackNum > m_iHighestTrackNum)
-                                m_iHighestTrackNum = trackNum;
-
-                            m_iZoneCount[trackNum]++;
-                            if (zoneType == ZONE_TYPE_CHECKPOINT)
-                                m_iLinearTracks |= (1ULL << trackNum);
+                            Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
+                            continue;
                         }
-                        else if (trackNum == -1)
-                            globalZones++;
-                    }
 
-                    // Add element
-                    auto pMapZone = new CMapZone(trackNum, zoneType, zoneKV);
-                    pMapZone->SpawnZone();
-                    m_Zones.AddToTail(pMapZone);
+                        if (zoneType != ZONE_TYPE_STOP)
+                        {
+                            if (trackNum > -1 && trackNum < MAX_TRACKS)
+                            {
+                                if (trackNum > m_iHighestTrackNum)
+                                    m_iHighestTrackNum = trackNum;
+
+                                m_iZoneCount[trackNum]++;
+                                if (zoneType == ZONE_TYPE_CHECKPOINT)
+                                    m_iLinearTracks |= (1ULL << trackNum);
+                            }
+                            else if (trackNum == -1)
+                                globalZones++;
+                        }
+
+                        // Add element
+                        auto pMapZone = new CMapZone(trackNum, zoneNum, zoneType, triggerKV);
+                        pMapZone->SpawnZone();
+                        m_Zones.AddToTail(pMapZone);
+                    }
                 }
             }
         }
@@ -330,6 +241,186 @@ bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite
     }
 
     return !m_Zones.IsEmpty();
+}
+
+void CMapZoneSystem::SaveZoneTrigger(CTriggerZone *pZoneTrigger, KeyValues *pKvInto)
+{
+    bool bSuccess = false;
+    const auto pKvTrigger = pKvInto->CreateNewKey();
+    if (pZoneTrigger->ToKeyValues(pKvTrigger))
+    {
+        auto pBuilder = CreateZoneBuilderFromExisting(pZoneTrigger);
+
+        bSuccess = pBuilder->Save(pKvTrigger);
+
+        delete pBuilder;
+    }
+
+    if (!bSuccess)
+    {
+        Warning("Failed to save zone to file!\n");
+        pKvInto->RemoveSubKey(pKvTrigger);
+        pKvTrigger->deleteThis();
+    }
+}
+
+struct MapZone
+{
+    CUtlVector<CTriggerZone*> m_Triggers;
+};
+
+struct MapTrack
+{
+    CUtlVector<MapZone*> m_Zones;
+    ~MapTrack()
+    {
+        m_Zones.PurgeAndDeleteElements();
+    }
+};
+
+template <class T>
+inline void EnsureCount(T *vec, int count)
+{
+    if (vec->Count() < count)
+    {
+        auto diff = count - vec->Count();
+        while (diff--)
+        {
+            vec->AddToTail(nullptr);
+        }
+    }
+}
+
+// May God have mercy on my soul
+void CMapZoneSystem::SaveZonesToFile()
+{
+    CUtlVector<MapTrack*> vecTracks;
+    CUtlVector<CTriggerZone*> versatileTriggers;
+    int highestTrack = -1;
+    int highestZoneForTrack[MAX_TRACKS];
+    memset(highestZoneForTrack, 0, sizeof(highestZoneForTrack[0]) * MAX_TRACKS);
+    
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
+    while (pEnt)
+    {
+        CTriggerZone *pTrigger = dynamic_cast<CTriggerZone*>(pEnt);
+        if (!pTrigger)
+        {
+            AssertMsg(false, "Entity with classname trigger_momentum_timer_* was not a momentum zone trigger");
+            continue;
+        }
+
+        const auto trackNum = pTrigger->GetTrackNumber();
+        const auto zoneNum = pTrigger->GetZoneNumber();
+
+        AssertMsg(trackNum >= -1 && trackNum < MAX_TRACKS, "Track number %i out of range!", trackNum);
+        AssertMsg(zoneNum >= 0 && zoneNum < MAX_ZONES, "Zone number %i out of range!", zoneNum);
+
+        if (trackNum > -1)
+        {
+            if (trackNum > highestTrack)
+                highestTrack = trackNum;
+            if (zoneNum > highestZoneForTrack[trackNum])
+                highestZoneForTrack[trackNum] = zoneNum;
+
+            if (trackNum < vecTracks.Count() && vecTracks[trackNum])
+            {
+                if (zoneNum < vecTracks[trackNum]->m_Zones.Count() && vecTracks[trackNum]->m_Zones[zoneNum])
+                {
+                    if (vecTracks[trackNum]->m_Zones[zoneNum]->m_Triggers.Count() < MAX_ZONE_TRIGGERS)
+                        vecTracks[trackNum]->m_Zones[zoneNum]->m_Triggers.AddToTail(pTrigger);
+                }
+                else
+                {
+                    EnsureCount(&vecTracks[trackNum]->m_Zones, zoneNum + 1);
+                    MapZone *pZone = new MapZone;
+                    pZone->m_Triggers.AddToTail(pTrigger);
+                    vecTracks[trackNum]->m_Zones[zoneNum] = pZone;
+                }
+            }
+            else
+            {
+                EnsureCount(&vecTracks, trackNum+1);
+                MapTrack *pTrack = new MapTrack;
+                EnsureCount(&pTrack->m_Zones, zoneNum + 1);
+                MapZone *pZone = new MapZone;
+                pZone->m_Triggers.AddToTail(pTrigger);
+                pTrack->m_Zones[zoneNum] = pZone;
+                vecTracks[trackNum] = pTrack;
+            }
+        }
+        else if (trackNum == -1)
+            versatileTriggers.AddToTail(pTrigger);
+
+        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_*");
+    }
+
+    // Add our versatile triggers (track num -1)
+    if (!versatileTriggers.IsEmpty())
+    {
+        FOR_EACH_VEC(versatileTriggers, versiIndx)
+        {
+            const auto pZoneTrigger = versatileTriggers[versiIndx];
+            const auto pVersZoneNum = pZoneTrigger->GetZoneNumber();
+            for (int t = 0; t <= highestTrack; t++)
+            {
+                // Only add this versatile trigger if its zone number fits within the zones for this track
+                if (pVersZoneNum > -1 && pVersZoneNum <= highestZoneForTrack[t])
+                {
+                    if (vecTracks[t] && vecTracks[t]->m_Zones[pVersZoneNum] && 
+                        vecTracks[t]->m_Zones[pVersZoneNum]->m_Triggers.Count() < MAX_ZONE_TRIGGERS)
+                    {
+                        vecTracks[t]->m_Zones[pVersZoneNum]->m_Triggers.AddToTail(pZoneTrigger);
+                    }
+                }
+            }
+        }
+    }
+
+    if (highestTrack > -1)
+    {
+        KeyValuesAD zoneKV("tracks");
+        for (int track = 0; track <= highestTrack; track++)
+        {
+            const auto pKvTrack = new KeyValues(CFmtStr("%i", track));
+            // Go through each zone and find our triggers
+            for (int zone = 0; zone <= highestZoneForTrack[track]; zone++)
+            {
+                if (vecTracks[track] && vecTracks[track]->m_Zones[zone] && !vecTracks[track]->m_Zones[zone]->m_Triggers.IsEmpty())
+                {
+                    const auto pZoneKV = new KeyValues(CFmtStr("%i", zone));
+                    pZoneKV->SetInt("zoneNum", zone);
+                    const auto pTriggersKv = new KeyValues("triggers");
+                    FOR_EACH_VEC(vecTracks[track]->m_Zones[zone]->m_Triggers, i)
+                    {
+                        SaveZoneTrigger(vecTracks[track]->m_Zones[zone]->m_Triggers[i], pTriggersKv);
+                    }
+                    pZoneKV->AddSubKey(pTriggersKv);
+                    pKvTrack->AddSubKey(pZoneKV);
+                }
+            }
+
+            // Save only if we're not empty
+            if (!pKvTrack->IsEmpty())
+            {
+                zoneKV->AddSubKey(pKvTrack);
+            }
+            else
+            {
+                pKvTrack->deleteThis();
+            }
+        }
+
+        if (!zoneKV->IsEmpty() && gpGlobals->mapname.ToCStr())
+        {
+            char zoneFilePath[MAX_PATH];
+            V_ComposeFileName(MAP_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
+            V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
+            zoneKV->SaveToFile(filesystem, zoneFilePath, "MOD");
+        }
+
+        vecTracks.PurgeAndDeleteElements();
+    }
 }
 
 void CMapZoneSystem::CalculateZoneCounts(CMomentumPlayer *pDispatch)
@@ -381,8 +472,10 @@ void CMapZoneSystem::CalculateZoneCounts(CMomentumPlayer *pDispatch)
 
 void CMapZoneSystem::DispatchMapInfo(CMomentumPlayer *pPlayer) const
 {
+    const auto upper = m_iHighestTrackNum == -1 ? MAX_ZONES : m_iHighestTrackNum+1;
+
     // Copy over to the player
-    for (uint64 i = 0; i <= m_iHighestTrackNum; i++)
+    for (uint64 i = 0; i < upper; i++)
     {
         pPlayer->m_iZoneCount.Set(i, m_iZoneCount[i]);
         pPlayer->m_iLinearTracks.Set(i, (m_iLinearTracks & (1ULL << i)) > 0);

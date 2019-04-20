@@ -138,13 +138,13 @@ bool CBaseMomZoneTrigger::TestCollision(const Ray_t& ray, unsigned mask, trace_t
 
 bool CBaseMomZoneTrigger::ToKeyValues(KeyValues *pKvInto)
 {
-    pKvInto->SetInt("zoneType", GetZoneType());
+    pKvInto->SetInt("type", GetZoneType());
     return true;
 }
 
 bool CBaseMomZoneTrigger::LoadFromKeyValues(KeyValues *pKvFrom)
 {
-    if (pKvFrom->GetInt("zoneType", ZONE_TYPE_INVALID) != GetZoneType())
+    if (pKvFrom->GetInt("type", ZONE_TYPE_INVALID) != GetZoneType())
         return false;
 
     return true;
@@ -185,13 +185,13 @@ void CTriggerZone::OnEndTouch(CBaseEntity* pOther)
 
 bool CTriggerZone::ToKeyValues(KeyValues* pKvInto)
 {
-    pKvInto->SetName(CFmtStr("%d", m_iZoneNumber));
+    pKvInto->SetInt("zoneNum", m_iZoneNumber);
     return BaseClass::ToKeyValues(pKvInto);
 }
 
 bool CTriggerZone::LoadFromKeyValues(KeyValues* kv)
 {
-    m_iZoneNumber = kv->GetInt("zoneNum", Q_atoi(kv->GetName()));
+    m_iZoneNumber = kv->GetInt("zoneNum", -1);
     if (m_iZoneNumber >= 0 && m_iZoneNumber < MAX_ZONES)
         return BaseClass::LoadFromKeyValues(kv);
 
@@ -228,9 +228,9 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
     DEFINE_KEYFIELD(m_fSpeedLimit, FIELD_FLOAT, "speed_limit"),
-    DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles"),
-    DEFINE_KEYFIELD(m_bTimerStartOnJump, FIELD_BOOLEAN, "StartOnJump"),
-    DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "LimitSpeedType")
+    DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "look_angles"),
+    DEFINE_KEYFIELD(m_bTimerStartOnJump, FIELD_BOOLEAN, "start_on_jump"),
+    DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "speed_limit_type")
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
@@ -244,17 +244,21 @@ CTriggerTimerStart::CTriggerTimerStart()
 }
 bool CTriggerTimerStart::ToKeyValues(KeyValues *pKvInto)
 {
+    // Structured like this because properties are another DB table for the site
+    // (not every trigger has properties)
     const auto pZoneProps = new KeyValues("zoneProps");
+    const auto pActualProps = new KeyValues("properties");
 
-    pZoneProps->SetFloat("speed_limit", GetSpeedLimit());
-    pZoneProps->SetBool("limitingspeed", IsLimitingSpeed());
-    pZoneProps->SetBool("StartOnJump", StartOnJump());
-    pZoneProps->SetInt("LimitSpeedType", GetLimitSpeedType());
+    pActualProps->SetFloat("speed_limit", GetSpeedLimit());
+    pActualProps->SetBool("limiting_speed", IsLimitingSpeed());
+    pActualProps->SetBool("start_on_jump", StartOnJump());
+    pActualProps->SetInt("speed_limit_type", GetLimitSpeedType());
     if (HasLookAngles())
     {
-        pZoneProps->SetFloat("yaw", m_angLook[YAW]);
+        pActualProps->SetFloat("yaw", m_angLook[YAW]);
     }
 
+    pZoneProps->AddSubKey(pActualProps);
     pKvInto->AddSubKey(pZoneProps);
 
     return BaseClass::ToKeyValues(pKvInto);
@@ -268,13 +272,17 @@ bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *zoneKV)
         if (!pZoneProps)
             return false;
 
-        SetSpeedLimit(pZoneProps->GetFloat("speed_limit", 350.0f));
-        SetIsLimitingSpeed(pZoneProps->GetBool("limitingspeed"));
-        SetStartOnJump(pZoneProps->GetBool("StartOnJump", true));
-        SetLimitSpeedType(pZoneProps->GetInt("LimitSpeedType", SPEED_NORMAL_LIMIT));
+        const auto pActualProps = pZoneProps->FindKey("properties");
+        if (!pActualProps)
+            return false;
+
+        SetSpeedLimit(pActualProps->GetFloat("speed_limit", 350.0f));
+        SetIsLimitingSpeed(pActualProps->GetBool("limiting_speed", true));
+        SetStartOnJump(pActualProps->GetBool("start_on_jump", true));
+        SetLimitSpeedType(pActualProps->GetInt("speed_limit_type", SPEED_NORMAL_LIMIT));
 
         const float nolook = -190.0f;
-        float yaw = pZoneProps->GetFloat("yaw", nolook);
+        float yaw = pActualProps->GetFloat("yaw", nolook);
         if (!CloseEnough(yaw, nolook))
         {
             SetHasLookAngles(true);
