@@ -326,8 +326,7 @@ bool CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
         return false;
 
     // Write the packet out to binary
-    const int size = sendType >= k_EP2PSendReliable ? 1000000 : 1200;
-    CUtlBuffer buf(0, size);
+    CUtlBuffer buf;
     buf.SetBigEndian(false);
     packet->Write(buf);
 
