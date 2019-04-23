@@ -129,6 +129,11 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
             else
                 pMapRank->SetInt("mRank", iMapRank);
 
+            const auto iRankXP = pMapRank->GetInt("rankXP", -1);
+            if (iRankXP == -1)
+                pMapRank->SetWString("rankXP", g_pVGuiLocalize->Find("MOM_NotApplicable"));
+            else
+                pMapRank->SetInt("rankXP", iRankXP);
 
             pMapRank->SetWString("time", g_pVGuiLocalize->Find("MOM_NotApplicable"));
             KeyValues *pRun = pMapRank->FindKey("run");
@@ -152,7 +157,6 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
             // gtotal = static_cast<int>(pExperience->GetFloat("total"));
 
             m_pPlayerLevel->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_Level"), pUserStats));
-            m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pUserStats));
             m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), pUserStats));
             m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), pUserStats));
             m_pRunsSubmitted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RunsSubmitted"), pUserStats));
@@ -161,6 +165,7 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
         }
 
         m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), pMapRank));
+        m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pMapRank));
         m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), pMapRank));
 
         /*if (grank > -1 && gtotal > -1)
