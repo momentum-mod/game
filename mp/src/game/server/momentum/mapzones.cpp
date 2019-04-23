@@ -213,7 +213,9 @@ bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite
                                 if (trackNum > m_iHighestTrackNum)
                                     m_iHighestTrackNum = trackNum;
 
-                                m_iZoneCount[trackNum]++;
+                                if (zoneNum > m_iZoneCount[trackNum])
+                                    m_iZoneCount[trackNum] = zoneNum;
+
                                 if (zoneType == ZONE_TYPE_CHECKPOINT)
                                     m_iLinearTracks |= (1ULL << trackNum);
                             }
@@ -439,13 +441,16 @@ void CMapZoneSystem::CalculateZoneCounts(CMomentumPlayer *pDispatch)
             if (iZoneType == ZONE_TYPE_START || iZoneType == ZONE_TYPE_STAGE || iZoneType == ZONE_TYPE_CHECKPOINT)
             {
                 const int iTrack = pTrigger->GetTrackNumber();
+                const auto pZoneTrigger = static_cast<CTriggerZone*>(pTrigger);
 
                 if (iTrack > -1 && iTrack < MAX_TRACKS)
                 {
                     if (iTrack > m_iHighestTrackNum)
                         m_iHighestTrackNum = iTrack;
 
-                    m_iZoneCount[iTrack]++;
+                    if (pZoneTrigger->GetZoneNumber() > m_iZoneCount[iTrack])
+                        m_iZoneCount[iTrack] = pZoneTrigger->GetZoneNumber();
+
                     if (iZoneType == ZONE_TYPE_CHECKPOINT)
                         m_iLinearTracks |= (1ULL << iTrack);
                 }
