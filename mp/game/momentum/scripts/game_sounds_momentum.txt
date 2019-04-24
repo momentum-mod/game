@@ -76,7 +76,7 @@
     "soundlevel"  "SNDLVL_NONE"
     "pitch"    "PITCH_NORM"
 
-    "wave"    "timer/timer_start-001.wav"
+    "wave"    "timer/timer_start.wav"
 }
 
 "Momentum.FinishTimer"
@@ -86,7 +86,7 @@
     "soundlevel"  "SNDLVL_NONE"
     "pitch"    "PITCH_NORM"
 
-    "wave"    "timer/timer_end-001.wav"
+    "wave"    "timer/timer_end.wav"
 }
 
 "Momentum.StopTimer"
@@ -106,5 +106,5 @@
     "soundlevel"  "SNDLVL_NONE"
     "pitch"    "PITCH_NORM"
 
-    "wave"    "timer/timer_failed-002.wav"
+    "wave"    "timer/timer_fail.wav"
 }
