@@ -222,6 +222,8 @@ void CDialogMapInfo::FillMapInfo()
 
     // Info stuff
     m_pMapData->m_Info.ToKV(pLoc);
+    const auto iTracks = pLoc->GetInt("numTracks");
+    pLoc->SetInt("numBonus", iTracks > 1 ? iTracks - 1 : 0);
     m_pMapData->m_MainTrack.ToKV(pLoc);
 
     // Game mode
@@ -239,7 +241,7 @@ void CDialogMapInfo::FillMapInfo()
     m_pMapInfoPanel->SetControlString("NumZones", pLoc->GetWString("numZones"));
 
     // Bonuses
-    m_pMapInfoPanel->SetControlString("NumBonusText", pLoc->GetWString("numTracks"));
+    m_pMapInfoPanel->SetControlString("NumBonusText", pLoc->GetWString("numBonus"));
 
     // Creation Date
     time_t creationDateTime;
