@@ -139,11 +139,9 @@ void CMomPointZoneBuilder::CopyPoints(const CUtlVector<Vector>& vec)
 void CMomPointZoneBuilder::FixPointOrder(CUtlVector<Vector> &points)
 {
     // Correct the points to be in clockwise order
-
     int len = points.Count();
     if (len < 3)
         return;
-
 
     // Add all the dot products together.
     // This magically figures out which way we're going
@@ -174,11 +172,7 @@ void CMomPointZoneBuilder::FixPointOrder(CUtlVector<Vector> &points)
     if (total_dot >= 0.0f)
         return;
 
-
     // Switch em up.
-
-    DevMsg("Fixing points to clockwise order...\n");
-        
     Vector temp;
     for (int i = 0; i < (len/2); i++)
     {

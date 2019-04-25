@@ -9,6 +9,8 @@
 
 #include "filesystem.h"
 #include "fmtstr.h"
+#include <cryptopp/osrng.h>
+#include <cryptopp/hex.h>
 
 #include "tier0/memdbgon.h"
 
@@ -287,9 +289,9 @@ MapTrack::MapTrack()
 
 void MapTrack::FromKV(KeyValues *pKv)
 {
-    m_iTrackNum = pKv->GetInt("trackNum");
-    m_iDifficulty = pKv->GetInt("difficulty");
-    m_iNumZones = pKv->GetInt("numZones");
+    m_iTrackNum = (uint8)pKv->GetInt("trackNum");
+    m_iDifficulty = (uint8)pKv->GetInt("difficulty");
+    m_iNumZones = (uint8)pKv->GetInt("numZones");
     m_bIsLinear = pKv->GetBool("isLinear");
     m_bValid = m_iNumZones && m_iDifficulty;
 }
@@ -482,7 +484,7 @@ void MapData::FromKV(KeyValues* pMap)
             mc.FromKV(pCredit);
             if (m_eSource > MODEL_FROM_DISK)
             {
-                uint16 indx = m_vecCredits.Find(mc);
+                const auto indx = m_vecCredits.Find(mc);
                 if (m_vecCredits.IsValidIndex(indx))
                 {
                     m_vecCredits[indx] = mc;
@@ -1093,9 +1095,21 @@ void CMapCache::OnFetchMapZones(KeyValues *pKv)
         const auto pTracks = pData->FindKey("tracks");
         if (pTracks)
         {
-            KeyValues *pToSend = pTracks->MakeCopy();
-            pToSend->SetName("ZonesFromSite");
-            engine->ServerCmdKeyValues(pToSend);
+            CryptoPP::SecByteBlock scratch(16);
+            CryptoPP::AutoSeededRandomPool rng;
+            rng.GenerateBlock(scratch, scratch.size());
+            std::string s;
+            CryptoPP::HexEncoder hex(new CryptoPP::StringSink(s));
+            hex.Put(scratch.BytePtr(), scratch.size());
+            hex.MessageEnd();
+
+            CFmtStr path("%s%s", s.c_str(), EXT_ZONE_FILE);
+            if (pTracks->SaveToFile(g_pFullFileSystem, path.Get(), "GAME"))
+            {
+                KeyValues *pToSend = new KeyValues("ZonesFromSite");
+                pToSend->SetString("path", path.Get());
+                engine->ServerCmdKeyValues(pToSend); // pSend is deleted in here
+            }
         }
         else
         {
