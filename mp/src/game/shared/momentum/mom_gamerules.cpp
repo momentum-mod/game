@@ -6,6 +6,7 @@
 #include "weapon/cs_ammodef.h"
 #include "weapon/weapon_base_gun.h"
 #include "mom_player_shared.h"
+#include "filesystem.h"
 
 #ifndef CLIENT_DLL
 #include "momentum/tickset.h"
@@ -235,8 +236,14 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
     }
     else if (FStrEq(pKeyValues->GetName(), "ZonesFromSite"))
     {
-        // Zones loaded, pass them through
-        g_MapZoneSystem.LoadZonesFromSite(pKeyValues, CBaseEntity::Instance(pEntity));
+        KeyValuesAD pTracks("tracks");
+        const auto pPath = pKeyValues->GetString("path");
+        if (pTracks->LoadFromFile(g_pFullFileSystem, pPath, "GAME"))
+        {
+            g_pFullFileSystem->RemoveFile(pPath, "GAME");
+            // Zones loaded, pass them through
+            g_MapZoneSystem.LoadZonesFromSite(pTracks, CBaseEntity::Instance(pEntity));
+        }
     }
 }
 
