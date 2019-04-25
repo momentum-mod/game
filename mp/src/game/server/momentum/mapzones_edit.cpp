@@ -40,6 +40,7 @@ static ConVar mom_zone_start_maxleavespeed("mom_zone_start_maxleavespeed", "350"
 static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
 static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT,
                                     "If 1, use a new point-based zoning method (by Mehis).\n", OnZoningMethodChanged);
+static MAKE_TOGGLE_CONVAR(mom_zone_crosshair, "1", FCVAR_CHEAT, "Toggles the drawing of the zoning crosshair/reticle.");
 
 CON_COMMAND_F(mom_zone_zoomin, "Decrease reticle maximum distance.\n", FCVAR_CHEAT)
 {
@@ -554,7 +555,8 @@ void CMapZoneEdit::FrameUpdate()
 
     GetBuilder()->OnFrame(pPlayer, vecAim);
 
-    DrawReticle(vecAim, 8.0f);
+    if (mom_zone_crosshair.GetBool())
+        DrawReticle(vecAim, 8.0f);
 }
 
 void VectorSnapToGrid(Vector &dest, float gridsize)
