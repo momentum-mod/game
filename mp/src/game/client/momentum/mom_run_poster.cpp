@@ -298,13 +298,33 @@ void CRunPoster::EndSessionCallback(KeyValues* pKv)
     KeyValues *pErr = pKv->FindKey("error");
     if (pData)
     {
-        // MOM_TODO: parse the data object here
-
         // Necessary so that the leaderboards and hud_mapfinished update appropriately
         if (runUploadedEvent)
         {
             runUploadedEvent->SetBool("run_posted", true);
-            // MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
+            KeyValues *pXP = pData->FindKey("xp");
+            if (pXP)
+            {
+                // MOM_TODO: Each of these have more info, add them to the event if/when needed (0.9.0+)
+                const auto pCosXP = pXP->FindKey("cosXP");
+                if (pCosXP)
+                {
+                    runUploadedEvent->SetInt("lvl_gain", pCosXP->GetInt("gainLvl"));
+                    runUploadedEvent->SetInt("cos_xp", pCosXP->GetInt("gainXP"));
+                    // oldXP: <int>
+                }
+                const auto pRankXP = pXP->FindKey("rankXP");
+                if (pRankXP)
+                {
+                    runUploadedEvent->SetInt("rank_xp", pRankXP->GetInt("rankXP"));
+                    // top10: <int>
+                    // formula: <int>
+                    // group: {
+                    //   groupXP: <int>
+                    //   groupNum: <int>
+                    // }
+                }
+            }
             gameeventmanager->FireEvent(runUploadedEvent);
         }
     }

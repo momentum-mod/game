@@ -42,7 +42,9 @@
     "run_upload"
     {
         "run_posted" "bool"
-        "web_msg" "string" // MOM_TODO: fill this with more stuff?
+        "cos_xp" "long"
+        "rank_xp" "long"
+        "lvl_gain" "byte"
     }
     "timer_event" // Fired when timer starts/stops/fails to start
     {
