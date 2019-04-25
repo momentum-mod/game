@@ -2,61 +2,67 @@
 
 #include "BaseMapsPage.h"
 #include "CMapListPanel.h"
-#include "MapSelectorDialog.h"
-#include "MapFilterPanel.h"
 #include "MapContextMenu.h"
+#include "MapFilterPanel.h"
+#include "MapSelectorDialog.h"
 #include "mom_map_cache.h"
 #include "mom_modulecomms.h"
 
-#include "fmtstr.h"
 #include <ctime>
+#include "fmtstr.h"
 
 #include "vgui/ILocalize.h"
-#include "vgui_controls/ListPanel.h"
 #include "vgui_controls/Button.h"
 #include "vgui_controls/ImageList.h"
+#include "vgui_controls/ListPanel.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-//Sort functions
-static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+// Sort functions
+static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+                                   const vgui::ListPanelItem &item2)
 {
     const char *string1 = item1.kv->GetString(KEYNAME_MAP_NAME);
     const char *string2 = item2.kv->GetString(KEYNAME_MAP_NAME);
     return Q_stricmp(string1, string2);
 }
 
-static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+                                        const vgui::ListPanelItem &item2)
 {
     const char *string1 = item1.kv->GetString(KEYNAME_MAP_TIME);
     const char *string2 = item2.kv->GetString(KEYNAME_MAP_TIME);
     return Q_stricmp(string1, string2);
 }
 
-static int __cdecl MapWorldRecordSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+static int __cdecl MapWorldRecordSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+                                          const vgui::ListPanelItem &item2)
 {
     const char *string1 = item1.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
     const char *string2 = item2.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
     return Q_stricmp(string1, string2);
 }
 
-static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+                                     const vgui::ListPanelItem &item2)
 {
     const char *i1 = item1.kv->GetString(KEYNAME_MAP_LAYOUT);
     const char *i2 = item2.kv->GetString(KEYNAME_MAP_LAYOUT);
     return Q_stricmp(i1, i2);
 }
 
-static int __cdecl MapCreationDateSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+static int __cdecl MapCreationDateSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+                                           const vgui::ListPanelItem &item2)
 {
     const char *i1 = item1.kv->GetString(KEYNAME_MAP_CREATION_DATE_SORT);
     const char *i2 = item2.kv->GetString(KEYNAME_MAP_CREATION_DATE_SORT);
     return Q_stricmp(i1, i2);
 }
 
-static int __cdecl MapLastPlayedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+static int __cdecl MapLastPlayedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+                                         const vgui::ListPanelItem &item2)
 {
     uint64 left = item1.kv->GetUint64(KEYNAME_MAP_LAST_PLAYED_SORT);
     uint64 right = item2.kv->GetUint64(KEYNAME_MAP_LAST_PLAYED_SORT);
@@ -90,18 +96,35 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     // Images
     m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
-    
+
     // Add the column headers
-    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90), GetScaledVal(120), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
-    m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), ListPanel::COLUMN_IMAGE);
-    m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE), ListPanel::COLUMN_IMAGE);
-    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150), GetScaledVal(150), GetScaledVal(190), ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
-    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(50), GetScaledVal(50), GetScaledVal(50), ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
-    m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
-    m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
-    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90), GetScaledVal(90), GetScaledVal(105), 0);
-    m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate", GetScaledVal(90), GetScaledVal(90), GetScaledVal(90), ListPanel::COLUMN_FIXEDSIZE);
-    m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed", GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_FIXEDSIZE);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90),
+                                GetScaledVal(120),
+                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
+                                    ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE),
+                                GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
+                                ListPanel::COLUMN_IMAGE);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE),
+                                GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
+                                ListPanel::COLUMN_IMAGE);
+    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150),
+                                GetScaledVal(150), GetScaledVal(190),
+                                ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
+    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(50),
+                                GetScaledVal(50), GetScaledVal(50),
+                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
+                                    ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty",
+                                GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
+    m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90),
+                                GetScaledVal(90), GetScaledVal(105), 0);
+    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90),
+                                GetScaledVal(90), GetScaledVal(105), 0);
+    m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate",
+                                GetScaledVal(90), GetScaledVal(90), GetScaledVal(90), ListPanel::COLUMN_FIXEDSIZE);
+    m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed",
+                                GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_FIXEDSIZE);
 
     // Images happen in ApplySchemeSettings
 
@@ -147,17 +170,12 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
 //-----------------------------------------------------------------------------
-CBaseMapsPage::~CBaseMapsPage()
-{
-}
+CBaseMapsPage::~CBaseMapsPage() {}
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
-int CBaseMapsPage::GetInvalidMapListID()
-{
-    return m_pMapList->InvalidItemID();
-}
+int CBaseMapsPage::GetInvalidMapListID() { return m_pMapList->InvalidItemID(); }
 
 MapDisplay_t *CBaseMapsPage::GetMapDisplayByID(uint32 id)
 {
@@ -171,9 +189,8 @@ MapDisplay_t *CBaseMapsPage::GetMapDisplayByID(uint32 id)
     return nullptr;
 }
 
-
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 {
@@ -186,41 +203,34 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
         m_pMapList->SetColumnHeaderImage(HEADER_MAP_IN_FAVORITES, INDX_MAP_IN_FAVORITES);
     }
 
-    //Font
+    // Font
     m_hFont = pScheme->GetFont("MapListFont", IsProportional());
     if (m_hFont == INVALID_FONT)
         m_hFont = pScheme->GetFont("DefaultSmall", IsProportional());
     m_pMapList->SetFont(m_hFont);
 }
 
-void CBaseMapsPage::SetListCellColors(MapData* pData, KeyValues* pKvInto)
+void CBaseMapsPage::SetListCellColors(MapData *pData, KeyValues *pKvInto)
 {
     KeyValues *pCellColor = new KeyValues("cellcolor");
-   // KeyValues *pCellBGColor = new KeyValues("cellbgcolor");
+    // KeyValues *pCellBGColor = new KeyValues("cellbgcolor");
     KeyValues *pSub = pCellColor->CreateNewKey();
     pSub->SetName(CFmtStr("%i", HEADER_MAP_NAME));
     pSub->SetColor("color", pData->m_bInLibrary ? COLOR_BLUE : COLOR_WHITE);
-    //pCellBGColor->AddSubKey(pSub->MakeCopy());
+    // pCellBGColor->AddSubKey(pSub->MakeCopy());
     pKvInto->AddSubKey(pCellColor);
-    //pKvInto->AddSubKey(pCellBGColor);
+    // pKvInto->AddSubKey(pCellBGColor);
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: loads filter settings (from disk) from the keyvalues
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::LoadFilters()
-{
-    MapSelectorDialog().LoadTabFilterData(GetName());
-}
+void CBaseMapsPage::LoadFilters() { MapSelectorDialog().LoadTabFilterData(GetName()); }
 
 //-----------------------------------------------------------------------------
 // Purpose: applies only the game filter to the current list
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::ApplyFilters(MapFilters_t filters)
-{
-    OnApplyFilters(filters);
-}
+void CBaseMapsPage::ApplyFilters(MapFilters_t filters) { OnApplyFilters(filters); }
 
 void CBaseMapsPage::OnApplyFilters(MapFilters_t filters)
 {
@@ -277,7 +287,7 @@ bool CBaseMapsPage::MapPassesFilters(MapData *pMap, MapFilters_t filters)
     if (!(bPassesLower && bPassesHigher))
         return false;
 
-    //Game mode (if it's a surf/bhop/etc map or not)
+    // Game mode (if it's a surf/bhop/etc map or not)
     int iGameModeFilter = filters.m_iGameMode;
     if (iGameModeFilter && iGameModeFilter != pMap->m_eType)
         return false;
@@ -301,7 +311,9 @@ void CBaseMapsPage::UpdateStatus()
 {
     if (m_pMapList->GetItemCount() > 0)
     {
-        m_pMapList->SetColumnHeaderText(HEADER_MAP_NAME, CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_MapSelector_MapCount"), m_pMapList->GetItemCount()));
+        m_pMapList->SetColumnHeaderText(
+            HEADER_MAP_NAME,
+            CConstructLocalizedString(g_pVGuiLocalize->Find("#MOM_MapSelector_MapCount"), m_pMapList->GetItemCount()));
     }
     else
     {
@@ -310,7 +322,7 @@ void CBaseMapsPage::UpdateStatus()
     }
 }
 
-void CBaseMapsPage::AddMapToList(MapData* pData)
+void CBaseMapsPage::AddMapToList(MapData *pData)
 {
     // Only add it if it doesn't exist already
     // Updates are handled by an event
@@ -352,7 +364,7 @@ void CBaseMapsPage::OnMapListDataUpdate(int mapID)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::OnCommand(const char *command)
 {
@@ -373,12 +385,9 @@ void CBaseMapsPage::OnCommand(const char *command)
 //-----------------------------------------------------------------------------
 // Purpose: called when a row gets selected in the list
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::OnItemSelected()
-{
+void CBaseMapsPage::OnItemSelected() {}
 
-}
-
-void CBaseMapsPage::OnMapDownloadEnd(KeyValues* pKv)
+void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
 {
     uint32 id = pKv->GetInt("id");
     MapDisplay_t *map = GetMapDisplayByID(id);
@@ -390,24 +399,42 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues* pKv)
     }
 }
 
-
 //-----------------------------------------------------------------------------
 // Purpose: Handle enter pressed in the games list page. Return true
 // to intercept the message instead of passing it on through vgui.
 //-----------------------------------------------------------------------------
 bool CBaseMapsPage::OnGameListEnterPressed()
 {
+    if (GetSelectedItemsCount() > 0)
+    {
+        const auto iListID = m_pMapList->GetSelectedItem(0);
+        const auto iMapID = m_pMapList->GetItemUserData(iListID);
+        if (iMapID == 0)
+            return false;
+
+        const auto pMapData = g_pMapCache->GetMapDataByID(iMapID);
+        if (pMapData)
+        {
+            if (pMapData->m_bInLibrary)
+            {
+                if (pMapData->m_bMapFileNeedsUpdate)
+                    MapSelectorDialog().OnStartMapDownload(iMapID);
+                else
+                    MapSelectorDialog().OnMapStart(iMapID);
+            }
+            else
+                MapSelectorDialog().OnAddMapToLibrary(iMapID);
+            
+            return true;
+        }
+    }
     return false;
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Get the # items selected in the game list.
 //-----------------------------------------------------------------------------
-int CBaseMapsPage::GetSelectedItemsCount()
-{
-    return m_pMapList->GetSelectedItemsCount();
-}
+int CBaseMapsPage::GetSelectedItemsCount() { return m_pMapList->GetSelectedItemsCount(); }
 
 MapFilters_t CBaseMapsPage::GetFilters()
 {
@@ -441,14 +468,11 @@ void CBaseMapsPage::ClearMapList()
     m_pMapList->RemoveAll();
 }
 
-void CBaseMapsPage::OnTabSelected()
-{
-    GetNewMapList();
-}
+void CBaseMapsPage::OnTabSelected() { GetNewMapList(); }
 
 void CBaseMapsPage::GetNewMapList()
 {
-    CUtlVector<MapData*> vecMaps;
+    CUtlVector<MapData *> vecMaps;
     g_pMapCache->GetMapList(vecMaps, GetMapListType());
 
     FOR_EACH_VEC(vecMaps, i)
@@ -457,10 +481,7 @@ void CBaseMapsPage::GetNewMapList()
     OnGetNewMapList();
 }
 
-void CBaseMapsPage::OnGetNewMapList()
-{
-    ApplyFilters(GetFilters());
-}
+void CBaseMapsPage::OnGetNewMapList() { ApplyFilters(GetFilters()); }
 
 void CBaseMapsPage::OnOpenContextMenu(int itemID)
 {
