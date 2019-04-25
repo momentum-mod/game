@@ -32,6 +32,7 @@ class CHudTimer : public CHudElement, public EditablePanel
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
     bool ShouldDraw() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
@@ -297,4 +298,12 @@ void CHudTimer::OnThink()
 bool CHudTimer::ShouldDraw()
 {
     return mom_hud_timer.GetBool() && CHudElement::ShouldDraw();
+}
+
+void CHudTimer::LevelShutdown()
+{
+    m_iCurrentSpecTargetEntIndx = -1;
+    m_pRunStats = nullptr;
+    m_pRunData = nullptr;
+    m_pSpecTarget = nullptr;
 }
