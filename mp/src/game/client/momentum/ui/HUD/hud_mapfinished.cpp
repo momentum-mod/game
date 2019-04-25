@@ -59,6 +59,9 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pZoneSync2 = new Label(this, "Zone_Sync2", "#MOM_MF_Sync2");
     m_pRunSaveStatus = new Label(this, "Run_Save_Status", "#MOM_MF_RunNotSaved");
     m_pRunUploadStatus = new Label(this, "Run_Upload_Status", "#MOM_MF_RunNotUploaded");
+    m_pXPGainCosmetic = new Label(this, "XP_Gain_Cos", "#MOM_MF_XPGainCos");
+    m_pXPGainRank = new Label(this, "XP_Gain_Rank", "#MOM_MF_XPGainRank");
+    m_pLevelGain = new Label(this, "Cos_Level_Gain", "#MOM_MF_CosLvlGain");
     
     LoadControlSettings("resource/ui/MapFinishedDialog.res");
 
@@ -94,7 +97,31 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     }
     else if (FStrEq(pEvent->GetName(), "run_upload"))
     {
-        SetRunUploaded(pEvent->GetBool("run_posted"));
+        const auto bPosted = pEvent->GetBool("run_posted");
+        SetRunUploaded(bPosted);
+        if (bPosted)
+        {
+            const auto cXP = pEvent->GetInt("cos_xp");
+            m_pXPGainCosmetic->SetVisible(cXP > 0);
+            if (cXP)
+            {
+                m_pXPGainCosmetic->SetText(CConstructLocalizedString(m_wXPGainCos, cXP));
+            }
+
+            const auto lvlGain = pEvent->GetInt("lvl_gain");
+            m_pLevelGain->SetVisible(lvlGain > 0);
+            if (lvlGain)
+            {
+                m_pLevelGain->SetText(CConstructLocalizedString(m_wLevelGain, lvlGain));
+            }
+
+            const auto rXP = pEvent->GetInt("rank_xp");
+            m_pXPGainRank->SetVisible(rXP > 0);
+            if (rXP)
+            {
+                m_pXPGainRank->SetText(CConstructLocalizedString(m_wXPGainRank, rXP));
+            }
+        }
     }
     else // Spec start/stop
     {
@@ -166,6 +193,10 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     m_pZoneSync2->SetFont(m_hTextFont);
     m_pRunSaveStatus->SetFont(m_hTextFont);
     m_pRunUploadStatus->SetFont(m_hTextFont);
+    m_pXPGainCosmetic->SetFont(m_hTextFont);
+    m_pXPGainRank->SetFont(m_hTextFont);
+    m_pLevelGain->SetFont(m_hTextFont);
+    m_pLevelGain->SetFgColor(COLOR_GREEN);
 }
 
 void CHudMapFinishedDialog::SetRunSaved(bool bState)
@@ -181,6 +212,11 @@ void CHudMapFinishedDialog::SetRunUploaded(bool bState)
     //MOM_TODO: Should we have custom error messages here? One for server not responding, one for failed accept, etc
     m_pRunUploadStatus->SetText(m_bRunUploaded ? "#MOM_MF_RunUploaded" : "#MOM_MF_RunNotUploaded");
     m_pRunUploadStatus->SetFgColor(m_bRunUploaded ? COLOR_GREEN : COLOR_RED);
+
+    // Visibility for these will be determined by the run_upload event
+    m_pXPGainCosmetic->SetVisible(false);
+    m_pXPGainRank->SetVisible(false);
+    m_pLevelGain->SetVisible(false);
 }
 
 inline void FireMapFinishedClosedEvent(bool restart)
@@ -241,11 +277,14 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
     }
 }
 
-void CHudMapFinishedDialog::Init()
+void CHudMapFinishedDialog::Reset()
 {
-    Reset();
+    //default values
+    Q_strncpy(m_pszEndRunTime, "00:00:00.000", sizeof(m_pszEndRunTime));
+    SetRunSaved(false);
+    SetRunUploaded(false);
+
     // --- cache localization tokens ---
-    // Stats
     FIND_LOCALIZATION(m_pwCurrentPageOverall, "#MOM_MF_OverallStats");
     FIND_LOCALIZATION(m_pwCurrentPageZoneNum, "#MOM_MF_ZoneNum");
     FIND_LOCALIZATION(m_pwOverallTime, "#MOM_MF_RunTime");
@@ -263,14 +302,9 @@ void CHudMapFinishedDialog::Init()
     FIND_LOCALIZATION(m_pwSync1Zone, "#MOM_MF_Sync1");
     FIND_LOCALIZATION(m_pwSync2Overall, "#MOM_MF_AvgSync2");
     FIND_LOCALIZATION(m_pwSync2Zone, "#MOM_MF_Sync2");
-}
-
-void CHudMapFinishedDialog::Reset()
-{
-    //default values
-    Q_strncpy(m_pszEndRunTime, "00:00:00.000", sizeof(m_pszEndRunTime));
-    SetRunSaved(false);
-    SetRunUploaded(false);
+    FIND_LOCALIZATION(m_wXPGainCos, "#MOM_MF_XPGainCos");
+    FIND_LOCALIZATION(m_wXPGainRank, "#MOM_MF_XPGainRank");
+    FIND_LOCALIZATION(m_wLevelGain, "#MOM_MF_CosLvlGain");
 }
 
 void CHudMapFinishedDialog::SetVisible(bool b)

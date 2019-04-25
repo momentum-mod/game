@@ -17,7 +17,6 @@ public:
     ~CHudMapFinishedDialog();
 
     bool ShouldDraw() OVERRIDE;
-    void Init() OVERRIDE;
     void Reset() OVERRIDE;
     void SetVisible(bool) OVERRIDE;
     void FireGameEvent(IGameEvent*) OVERRIDE;
@@ -58,6 +57,7 @@ private:
     wchar_t m_pwJumpsZone[BUFSIZELOCL];
     wchar_t m_pwStrafesOverall[BUFSIZELOCL];
     wchar_t m_pwStrafesZone[BUFSIZELOCL];
+    wchar_t m_wXPGainCos[BUFSIZELOCL], m_wXPGainRank[BUFSIZELOCL], m_wLevelGain[BUFSIZELOCL];
 
     char m_pszEndRunTime[BUFSIZETIME];
 
@@ -80,6 +80,7 @@ private:
     vgui::Label *m_pZoneSync2;
     vgui::Label *m_pRunSaveStatus;
     vgui::Label *m_pRunUploadStatus;
+    vgui::Label *m_pXPGainCosmetic, *m_pXPGainRank, *m_pLevelGain;
 
     CMomRunStats* m_pRunStats;
     C_MomRunEntityData *m_pRunData;

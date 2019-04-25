@@ -7,7 +7,7 @@
         "xpos"          "c-110"
         "ypos"          "c-150"
         "wide"          "220"
-        "tall"          "180"
+        "tall"          "205"
         "TextFont"      "Default"
     }
     
@@ -393,6 +393,75 @@
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
     }
+
+    "XP_Gain_Cos"
+    {
+        "ControlName" "Label"
+        "fieldName"  "XP_Gain_Cos"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "5"
+        "wide"          "120"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "0"
+        "visible"       "0"
+        "enabled"       "1"
+        "labelText"     "#MOM_MF_XPGainCos"
+        "textAlignment" "west"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "pin_to_sibling"		"Run_Upload_Status"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
+    }
+
+    "Cos_Level_Gain"
+    {
+        "ControlName" "Label"
+        "fieldName"  "Cos_Level_Gain"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "3"
+        "ypos"          "0"
+        "wide"          "120"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "0"
+        "visible"       "0"
+        "enabled"       "1"
+        "labelText"     "#MOM_MF_CosLvlGain"
+        "textAlignment" "west"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "pin_to_sibling"		"XP_Gain_Cos"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"1"
+        "auto_wide_tocontents" "1"
+    }
+
+    "XP_Gain_Rank"
+    {
+        "ControlName" "Label"
+        "fieldName"  "XP_Gain_Rank"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
+        "wide"          "120"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "0"
+        "visible"       "0"
+        "enabled"       "1"
+        "labelText"     "#MOM_MF_XPGainRank"
+        "textAlignment" "west"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "pin_to_sibling"		"XP_Gain_Cos"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
+        "auto_wide_tocontents" "1"
+    }
     
     "Detach_Mouse"
     {
@@ -412,7 +481,7 @@
         "dulltext"      "0"
         "brighttext"    "0"
         "proportionalToParent" "1"
-        "pin_to_sibling" "Run_Upload_Status"
+        "pin_to_sibling" "XP_Gain_Rank"
         "pin_to_sibling_corner" "2"
         "pin_corner_to_sibling" "0"
         "auto_wide_tocontents" "0"
