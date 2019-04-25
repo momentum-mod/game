@@ -7,7 +7,7 @@
         "xpos"          "c-110"
         "ypos"          "c-150"
         "wide"          "220"
-        "tall"          "205"
+        "tall"          "215"
         "TextFont"      "Default"
     }
     
@@ -126,7 +126,7 @@
         "ControlName" "Label"
         "fieldName"  "Zone_Overall_Time"
         "font"          "Default"//Set by "TextFont" 
-        "xpos"          "12"
+        "xpos"          "6"
         "ypos"          "12"
         "wide"          "100"
         "tall"          "10"//Set by font size
@@ -468,7 +468,7 @@
         "ControlName" "Label"
         "fieldName" "Detach_Mouse"
         "font"          "Default"//Set by "TextFont" 
-        "xpos"          "12"
+        "xpos"          "6"
         "ypos"          "5"
         "wide"          "f0"
         "tall"          "10"//Set by font size
