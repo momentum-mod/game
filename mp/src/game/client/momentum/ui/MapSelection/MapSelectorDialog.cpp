@@ -47,11 +47,6 @@ MapListData::~MapListData()
 //-----------------------------------------------------------------------------
 CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
-    SetDefLessFunc(m_mapMapDownloads);
-    SetDefLessFunc(m_mapMapListData);
-    SetDefLessFunc(m_mapMapInfoDialogs);
-    SetDefLessFunc(m_mapCancelConfirmDlgs);
-
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
@@ -125,6 +120,10 @@ CMapSelectorDialog::~CMapSelectorDialog()
     m_mapMapListData.PurgeAndDeleteElements();
 }
 
+static bool Less(const unsigned &lhs, const unsigned &rhs)
+{
+    return lhs < rhs;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Called once to set up
@@ -142,6 +141,11 @@ void CMapSelectorDialog::Initialize()
     g_pModuleComms->ListenForEvent("map_download_size", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadSize));
     g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadProgress));
     g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadEnd));
+
+    m_mapMapDownloads.SetLessFunc(Less);
+    m_mapMapListData.SetLessFunc(Less);
+    m_mapMapInfoDialogs.SetLessFunc(Less);
+    m_mapCancelConfirmDlgs.SetLessFunc(Less);
 }
 
 
