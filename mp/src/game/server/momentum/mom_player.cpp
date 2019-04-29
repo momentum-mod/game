@@ -869,12 +869,14 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         }
         break;
     case ZONE_TYPE_CHECKPOINT:
-        break;
     case ZONE_TYPE_STAGE:
         {
-            const auto pStageTrigger = static_cast<CTriggerStage *>(pTrigger);
-            SetCurrentProgressTrigger(pStageTrigger);
-            SetCurrentZoneTrigger(pStageTrigger);
+            const auto bIsStage = iZoneType == ZONE_TYPE_STAGE;
+            if (bIsStage)
+            {
+                SetCurrentProgressTrigger(pTrigger);
+                SetCurrentZoneTrigger(pTrigger);
+            }
 
             if (g_pMomentumTimer->IsRunning())
             {
