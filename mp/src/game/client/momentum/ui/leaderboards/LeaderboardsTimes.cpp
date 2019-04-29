@@ -122,6 +122,11 @@ void CLeaderboardsTimes::LevelInit()
     m_mapAvatarsToImageList.RemoveAll();
 
     SetupIcons();
+    Reset(false);
+    m_vLocalTimes.PurgeAndDeleteElements();
+    m_vOnlineTimes.PurgeAndDeleteElements();
+    m_vAroundTimes.PurgeAndDeleteElements();
+    m_vFriendsTimes.PurgeAndDeleteElements();
 }
 
 void CLeaderboardsTimes::Reset(bool bFullReset)
