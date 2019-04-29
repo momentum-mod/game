@@ -800,11 +800,16 @@ bool CMomentumPlayer::GetBhopEnabled() const
 
 void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
 {
-    // Zone-specific things first
-    const auto iZoneType = pTrigger->GetZoneType();
-    switch (iZoneType)
+    if (g_pMomentumTimer->IsRunning() && m_bHasPracticeMode)
+        return;
+
+    if (m_iObserverMode == OBS_MODE_NONE)
     {
-    case ZONE_TYPE_START:
+        // Zone-specific things first
+        const auto iZoneType = pTrigger->GetZoneType();
+        switch (iZoneType)
+        {
+        case ZONE_TYPE_START:
         {
             const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
@@ -819,12 +824,12 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             g_pMomentumTimer->Reset(this);
         }
         break;
-    case ZONE_TYPE_STOP:
+        case ZONE_TYPE_STOP:
         {
             // We've reached end zone, stop here
             //auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
 
-            if (g_pMomentumTimer->IsRunning() && !IsSpectatingGhost() && !m_bHasPracticeMode)
+            if (g_pMomentumTimer->IsRunning())
             {
                 const int zoneNum = m_Data.m_iCurrentZone;
 
@@ -868,8 +873,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             }
         }
         break;
-    case ZONE_TYPE_CHECKPOINT:
-    case ZONE_TYPE_STAGE:
+        case ZONE_TYPE_CHECKPOINT:
+        case ZONE_TYPE_STAGE:
         {
             const auto bIsStage = iZoneType == ZONE_TYPE_STAGE;
             const int zoneNum = pTrigger->GetZoneNumber();
@@ -890,7 +895,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 const auto locVel = GetLocalVelocity();
                 m_RunStats.SetZoneExitSpeed(zoneNum - 1, locVel.Length(), locVel.Length2D());
                 // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
-                
+
                 if (zoneNum > m_Data.m_iCurrentZone)
                 {
                     const auto iTime = g_pMomentumTimer->GetCurrentTime();
@@ -899,15 +904,19 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 }
             }
         }
-    default:
-        break;
-    }
+        default:
+            break;
+        }
 
-    CMomRunEntity::OnZoneEnter(pTrigger);
+        CMomRunEntity::OnZoneEnter(pTrigger);
+    }
 }
 
 void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
 {
+    if (g_pMomentumTimer->IsRunning() && m_bHasPracticeMode)
+        return;
+
     // We only care to go through with this if we're not spectating now
     if (m_iObserverMode == OBS_MODE_NONE)
     {
