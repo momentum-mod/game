@@ -872,15 +872,21 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
     case ZONE_TYPE_STAGE:
         {
             const auto bIsStage = iZoneType == ZONE_TYPE_STAGE;
+            const int zoneNum = pTrigger->GetZoneNumber();
             if (bIsStage)
             {
                 SetCurrentProgressTrigger(pTrigger);
                 SetCurrentZoneTrigger(pTrigger);
             }
+            else
+            {
+                const auto enterVel3D = GetLocalVelocity().Length(),
+                    enterVel2D = GetLocalVelocity().Length2D();
+                m_RunStats.SetZoneEnterSpeed(zoneNum, enterVel3D, enterVel2D);
+            }
 
             if (g_pMomentumTimer->IsRunning())
             {
-                const int zoneNum = pTrigger->GetZoneNumber();
                 const auto locVel = GetLocalVelocity();
                 m_RunStats.SetZoneExitSpeed(zoneNum - 1, locVel.Length(), locVel.Length2D());
                 // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
