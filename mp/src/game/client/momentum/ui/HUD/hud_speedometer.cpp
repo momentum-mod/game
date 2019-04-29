@@ -71,20 +71,20 @@ public:
     float m_flLastJumpVelocity;
 
     int m_iRoundedVel, m_iRoundedLastJump;
-    Color m_lastColor;
-    Color m_currentColor;
-    Color normalColor, increaseColor, decreaseColor;
-    Color secondaryColor;
+    Color m_LastColor;
+    Color m_CurrentColor;
+    Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
+    Color m_SecondaryColor;
 
     bool m_bRanFadeOutJumpSpeed;
     CMomRunStats *m_pRunStats;
     CMomRunEntityData *m_pRunEntData;
 
   protected:
-    CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
+    CPanelAnimationVar(Color, m_bgColor, "BgColor", "Blank");
     // NOTE: These need to be floats because of animations (thanks volvo)
-    CPanelAnimationVar(float, stageStartAlpha, "StageAlpha", "0.0"); // Used for fading
-    CPanelAnimationVar(float, lastJumpAlpha, "JumpAlpha", "0.0");
+    CPanelAnimationVar(float, m_fStageStartAlpha, "StageAlpha", "0.0"); // Used for fading
+    CPanelAnimationVar(float, m_fLastJumpAlpha, "JumpAlpha", "0.0");
 };
 
 DECLARE_NAMED_HUDELEMENT(CHudSpeedMeter, HudSpeedMeter);
@@ -93,6 +93,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
     ListenForGameEvent("zone_exit");
+    ListenForGameEvent("zone_enter");
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
@@ -108,16 +109,28 @@ void CHudSpeedMeter::Reset()
     SetDisplayValue(0);
     SetSecondaryValue(0);
     m_flNextColorizeCheck = 0;
-    stageStartAlpha = 0.0f;
+    m_fStageStartAlpha = 0.0f;
 }
 
 void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
 {
-    if (FStrEq(pEvent->GetName(), "zone_exit"))
+    C_MomentumPlayer *pLocal = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pLocal)
     {
-        // Fade the enter speed after 5 seconds (in event)
-        stageStartAlpha = 255.0f;
-        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutEnterSpeed");
+        const auto ent = pEvent->GetInt("ent");
+        if (ent == pLocal->GetCurrentUIEntity()->GetEntIndex())
+        {
+            const auto bExit = FStrEq(pEvent->GetName(), "zone_exit");
+            const auto bLinear = pLocal->m_iLinearTracks.Get(pLocal->m_Data.m_iCurrentTrack);
+
+            // Logical XOR; equivalent to (bLinear && !bExit) || (!bLinear && bExit)
+            if (bLinear != bExit)
+            {
+                // Fade the enter speed after 5 seconds (in event)
+                m_fStageStartAlpha = 255.0f;
+                g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutEnterSpeed");
+            }
+        }
     }
 }
 
@@ -125,12 +138,12 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    secondaryColor = GetSchemeColor("SecondaryValueColor", pScheme);
-    normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
-    increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
-    decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
-    SetBgColor(_bgColor);
-    m_LabelColor = normalColor;
+    m_SecondaryColor = GetSchemeColor("SecondaryValueColor", pScheme);
+    m_NormalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
+    m_IncreaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
+    m_DecreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
+    SetBgColor(m_bgColor);
+    m_LabelColor = m_NormalColor;
 }
 
 bool CHudSpeedMeter::ShouldDraw()
@@ -163,7 +176,7 @@ void CHudSpeedMeter::OnThink()
         {
             //Keep the alpha at full opaque so we can see it
             //MOM_TODO: If we want it to fade back in, we should use an event here
-            lastJumpAlpha = 255.0f;
+            m_fLastJumpAlpha = 255.0f;
             m_bRanFadeOutJumpSpeed = false;
         }
 
@@ -203,12 +216,12 @@ void CHudSpeedMeter::OnThink()
                 {
                     if (m_flLastVelocity != 0)
                     {
-                        m_currentColor = MomUtil::GetColorFromVariation(fabs(vel) - fabs(m_flLastVelocity), 2.0f,
-                            normalColor, increaseColor, decreaseColor);
+                        m_CurrentColor = MomUtil::GetColorFromVariation(fabs(vel) - fabs(m_flLastVelocity), 2.0f,
+                                                                        m_NormalColor, m_IncreaseColor, m_DecreaseColor);
                     }
                     else
                     {
-                        m_currentColor = normalColor;
+                        m_CurrentColor = m_NormalColor;
                     }
                 }
                 else
@@ -218,23 +231,23 @@ void CHudSpeedMeter::OnThink()
                     {
                         case 0:
                         default:
-                            m_currentColor = Color(255, 255, 255, 255);  // White
+                            m_CurrentColor = Color(255, 255, 255, 255);  // White
                             break;
                         case 1:
-                            m_currentColor = Color(255, 255, 0, 255);  // Yellow
+                            m_CurrentColor = Color(255, 255, 0, 255);  // Yellow
                             break;
                         case 2:
-                            m_currentColor = Color(255, 165, 0, 255);  // Orange
+                            m_CurrentColor = Color(255, 165, 0, 255);  // Orange
                             break;
                         case 3:
-                            m_currentColor = Color(255, 0, 0, 255);  // Red
+                            m_CurrentColor = Color(255, 0, 0, 255);  // Red
                             break;
                         case 4:
-                            m_currentColor = Color(128, 0, 128, 255);  // Purple
+                            m_CurrentColor = Color(128, 0, 128, 255);  // Purple
                             break;             
                     }
                 }
-                m_lastColor = m_PrimaryValueColor = m_currentColor;
+                m_LastColor = m_PrimaryValueColor = m_CurrentColor;
                 m_flLastVelocity = vel;
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
@@ -245,19 +258,19 @@ void CHudSpeedMeter::OnThink()
 
             if (CloseEnough(lastJumpVel, 0.0f))
             {
-                m_SecondaryValueColor = normalColor;
+                m_SecondaryValueColor = m_NormalColor;
             }
             else if (m_flLastJumpVelocity != lastJumpVel)
             {
                 m_SecondaryValueColor =
                     MomUtil::GetColorFromVariation(fabs(lastJumpVel) - fabs(m_flLastJumpVelocity), 0.0f,
-                                                    normalColor, increaseColor, decreaseColor);
+                                                   m_NormalColor, m_IncreaseColor, m_DecreaseColor);
                 m_flLastJumpVelocity = lastJumpVel;
             }
         }
         else
         {
-            m_SecondaryValueColor = m_PrimaryValueColor = normalColor;
+            m_SecondaryValueColor = m_PrimaryValueColor = m_NormalColor;
         }
         // center text
 
@@ -281,12 +294,12 @@ void CHudSpeedMeter::Paint()
 
     // Fade out the secondary value (last jump speed) based on the lastJumpAlpha value
     m_SecondaryValueColor =
-        Color(m_SecondaryValueColor.r(), m_SecondaryValueColor.g(), m_SecondaryValueColor.b(), lastJumpAlpha);
+        Color(m_SecondaryValueColor.r(), m_SecondaryValueColor.g(), m_SecondaryValueColor.b(), m_fLastJumpAlpha);
 
     BaseClass::Paint();
 
     // Draw the enter speed split, if toggled on
-    if (mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning)
+    if (mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning && m_fStageStartAlpha > 0.0f)
     {
         int split_xpos; // Dynamically set
         int split_ypos = mom_hud_speedometer_showlastjumpvel.GetBool()
@@ -301,7 +314,7 @@ void CHudSpeedMeter::Paint()
         Color compareColor = Color(0, 0, 0, 0);
 
         Color fg = GetFgColor();
-        Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), stageStartAlpha);
+        Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), m_fStageStartAlpha);
 
 
         g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_pRunEntData->m_iCurrentZone, enterVelANSITemp,
@@ -329,7 +342,7 @@ void CHudSpeedMeter::Paint()
             ANSI_TO_UNICODE(enterVelCompareANSI, enterVelCompareUnicode);
 
             // Update the compare color to have the alpha defined by animations (fade out if 5+ sec)
-            compareColorFade.SetColor(compareColor.r(), compareColor.g(), compareColor.b(), stageStartAlpha);
+            compareColorFade.SetColor(compareColor.r(), compareColor.g(), compareColor.b(), m_fStageStartAlpha);
 
             increaseX = UTIL_ComputeStringWidth(m_hSmallNumberFont, enterVelCompareANSI);
         }
