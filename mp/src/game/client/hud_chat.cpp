@@ -49,18 +49,19 @@ void CHudChat::Init(void)
     // So i'm just hard coding this here for now
     // https://partner.steamgames.com/doc/api/ISteamFriends#RequestClanOfficerList
 
-    // MOM_TODO: query wep API for officers / members/ other groups instead of this crap
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198018587940))); // tuxxi
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197979963054))); // gocnak
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198011358548))); // ruben
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198047369620))); // rusty
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197982874432))); // juxtapo
+    // MOM_TODO: query web API for officers / members/ other groups instead of this crap
+    m_vMomentumOfficers.AddToTail(76561198018587940ull); // tuxxi
+    m_vMomentumOfficers.AddToTail(76561197979963054ull); // gocnak
+    m_vMomentumOfficers.AddToTail(76561198047369620ull); // rusty
+    m_vMomentumOfficers.AddToTail(76561197982874432ull); // juxtapo
 }
 
 void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
 {
     if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
         m_LobbyID = pParam->m_ulSteamIDLobby;
+    else
+        DevWarning("Failed to enter the chat! %d\n", pParam->m_EChatRoomEnterResponse);
 }
 
 void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
@@ -73,7 +74,7 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
         return;
     }
     */
-    const bool isMomentumTeam = m_vMomentumOfficers.Find(msgSender);
+    const bool isMomentumTeam = m_vMomentumOfficers.Find(pParam->m_ulSteamIDUser);
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
@@ -219,7 +220,7 @@ void CHudChat::OnThink()
         {
             FOR_EACH_VEC(m_vTypingMembers, i)
             {
-                typingText.Append(SteamFriends()->GetFriendPersonaName(m_vTypingMembers[i]));
+                typingText.Append(SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])));
                 typingText.Append(i < count - 1 ? ", " : " ");
             }
             typingText.Append("typing...");

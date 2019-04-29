@@ -48,7 +48,7 @@ void CVoiceBanMgr::Save()
     }
 }
 
-bool CVoiceBanMgr::GetPlayerBan(uint32 playerID) const { return m_BannedPlayers.Find(playerID); }
+bool CVoiceBanMgr::GetPlayerBan(uint32 playerID) const { return m_BannedPlayers.IsValidIndex(m_BannedPlayers.Find(playerID)); }
 
 void CVoiceBanMgr::SetPlayerBan(uint32 playerID, bool bSquelch)
 {
