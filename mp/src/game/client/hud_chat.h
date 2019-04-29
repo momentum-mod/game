@@ -34,8 +34,8 @@ class CHudChat : public CBaseHudChat
   private:
     void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
 
-    CUtlVector<CSteamID> m_vTypingMembers;
-    CUtlVector<CSteamID> m_vMomentumOfficers;
+    CUtlVector<uint64> m_vTypingMembers;
+    CUtlVector<uint64> m_vMomentumOfficers;
     CSteamID m_LobbyID;
 
     Color m_cDefaultTextColor;
