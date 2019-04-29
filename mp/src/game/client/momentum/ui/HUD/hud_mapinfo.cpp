@@ -37,6 +37,7 @@ class C_HudMapInfo : public CHudElement, public EditablePanel
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
   private:
+    void SetCurrentZoneLabel(C_MomentumPlayer *pPlayer);
     CMomRunEntityData *m_pRunData;
 
     Label *m_pMainStatusLabel, *m_pMapNameLabel, *m_pMapAuthorLabel, *m_pMapDifficultyLabel;
@@ -115,6 +116,11 @@ void C_HudMapInfo::OnThink()
                     // Some # stage start
                     m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
                 }
+                else
+                {
+                    // It's linear, just draw the current checkpoint
+                    SetCurrentZoneLabel(pPlayer);
+                }
             }
             else
             {
@@ -124,9 +130,7 @@ void C_HudMapInfo::OnThink()
                 }
                 else if (pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] > 0)
                 {
-                    // Current stage(checkpoint)/total stages(checkpoints)
-                    const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), pPlayer->m_iZoneCount.Get(m_pRunData->m_iCurrentTrack));
-                    m_pMainStatusLabel->SetText(CConstructLocalizedString(pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack) ? m_wCheckpoint : m_wStage, pCurrent));
+                    SetCurrentZoneLabel(pPlayer);
                 }
                 else
                 {
@@ -194,4 +198,11 @@ void C_HudMapInfo::LevelShutdown()
 void C_HudMapInfo::FireGameEvent(IGameEvent* event)
 {
     m_bNeedsUpdate = true;
+}
+
+void C_HudMapInfo::SetCurrentZoneLabel(C_MomentumPlayer *pPlayer)
+{
+    // Current stage(checkpoint)/total stages(checkpoints)
+    const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), pPlayer->m_iZoneCount.Get(m_pRunData->m_iCurrentTrack));
+    m_pMainStatusLabel->SetText(CConstructLocalizedString(pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack) ? m_wCheckpoint : m_wStage, pCurrent));
 }
