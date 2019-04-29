@@ -74,7 +74,7 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
         return;
     }
     */
-    const bool isMomentumTeam = m_vMomentumOfficers.Find(pParam->m_ulSteamIDUser);
+    const bool isMomentumTeam = m_vMomentumOfficers.IsValidIndex(m_vMomentumOfficers.Find(pParam->m_ulSteamIDUser));
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
