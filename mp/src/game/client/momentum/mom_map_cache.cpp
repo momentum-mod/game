@@ -1333,16 +1333,23 @@ void CMapCache::PostInit()
 
 void CMapCache::PreLevelInit(KeyValues* pKv)
 {
+    m_pCurrentMapData = nullptr;
+
     const char *pMapName = pKv->GetString("map");
 
-    int dictIndx = m_dictMapNames.Find(pMapName);
+    const auto dictIndx = m_dictMapNames.Find(pMapName);
     if (m_dictMapNames.IsValidIndex(dictIndx))
     {
-        uint32 mapID = m_dictMapNames[dictIndx];
-        uint16 mapIndx = m_mapMapCache.Find(mapID);
+        const auto mapID = m_dictMapNames[dictIndx];
+        const auto mapIndx = m_mapMapCache.Find(mapID);
         if (m_mapMapCache.IsValidIndex(mapIndx))
         {
-            m_pCurrentMapData = m_mapMapCache[mapIndx];
+            char hash[41];
+            if (MomUtil::GetFileHash(hash, sizeof(hash), pKv->GetString("file")))
+            {
+                if (FStrEq(hash, m_mapMapCache[mapIndx]->m_szHash))
+                    m_pCurrentMapData = m_mapMapCache[mapIndx];
+            }
 
             // Check the update need & severity
             /*if (time(nullptr) - m_pCurrentMapData->m_tLastUpdateCheck > GetUpdateIntervalForMap(m_pCurrentMapData))
@@ -1353,17 +1360,13 @@ void CMapCache::PreLevelInit(KeyValues* pKv)
             }*/
         }
     }
-    else
-    {
-        m_pCurrentMapData = nullptr;
-    }
 
     SetMapGamemode(pMapName);
 }
 
 void CMapCache::LevelInitPreEntity()
 {
-    if (m_pCurrentMapData)
+    if (m_pCurrentMapData && m_pCurrentMapData->m_bInLibrary)
     {
         g_pAPIRequests->GetMapZones(m_pCurrentMapData->m_uID, UtlMakeDelegate(this, &CMapCache::OnFetchMapZones));
     }
