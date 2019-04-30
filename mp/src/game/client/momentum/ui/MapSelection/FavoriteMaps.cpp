@@ -4,7 +4,6 @@
 
 #include "CMapListPanel.h"
 #include "mom_map_cache.h"
-#include "mom_modulecomms.h"
 
 #include "tier0/memdbgon.h"
 
@@ -14,8 +13,6 @@ CFavoriteMaps::CFavoriteMaps(Panel* pParent): CBaseMapsPage(pParent, "FavoriteMa
 {
     m_bLoadedMaps = false;
     m_pMapList->SetColumnVisible(HEADER_MAP_IN_FAVORITES, false);
-
-    g_pModuleComms->ListenForEvent("map_cache_updated", UtlMakeDelegate(this, &CFavoriteMaps::OnMapCacheUpdated));
 }
 
 void CFavoriteMaps::OnTabSelected()

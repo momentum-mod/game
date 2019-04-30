@@ -37,7 +37,8 @@ public:
     // type can control which way the event is fired, see EVENT_FIRE_TYPE
     void FireEvent(KeyValues *pKv, EVENT_FIRE_TYPE type = FIRE_BOTH);
     void OnEvent(KeyValues *pKv); // The event has been caught by the recieving end
-    void ListenForEvent(const char *pName, CUtlDelegate<void (KeyValues *)> listener);
+    int ListenForEvent(const char *pName, CUtlDelegate<void (KeyValues *)> listener);
+    void RemoveListener(const char *pName, int index);
 
 private:
     void (*CallMeToFireEvent)(KeyValues *pKv);

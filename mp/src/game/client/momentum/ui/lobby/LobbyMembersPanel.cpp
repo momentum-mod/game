@@ -70,6 +70,8 @@ LobbyMembersPanel::~LobbyMembersPanel()
     {
         m_pContextMenu->DeletePanel();
     }
+    if (m_pSavelocReqFrame)
+        m_pSavelocReqFrame->DeletePanel();
 }
 
 void LobbyMembersPanel::FireGameEvent(IGameEvent* event)

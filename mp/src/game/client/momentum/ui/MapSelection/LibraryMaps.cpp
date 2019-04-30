@@ -5,7 +5,6 @@
 #include "MapSelectorDialog.h"
 
 #include "mom_map_cache.h"
-#include "mom_modulecomms.h"
 
 #include "vgui_controls/Panel.h"
 
@@ -22,8 +21,6 @@ CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps")
 {
     m_bLoadedMaps = false;
     m_pMapList->SetColumnVisible(HEADER_MAP_IN_LIBRARY, false);
-
-    g_pModuleComms->ListenForEvent("map_cache_updated", UtlMakeDelegate(this, &CLibraryMaps::OnMapCacheUpdated));
 }
 
 //-----------------------------------------------------------------------------

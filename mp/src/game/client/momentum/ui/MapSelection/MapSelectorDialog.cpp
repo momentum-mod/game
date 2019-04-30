@@ -47,6 +47,11 @@ MapListData::~MapListData()
 //-----------------------------------------------------------------------------
 CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
+    SetDefLessFunc(m_mapMapListData);
+    SetDefLessFunc(m_mapMapDownloads);
+    SetDefLessFunc(m_mapCancelConfirmDlgs);
+    SetDefLessFunc(m_mapMapInfoDialogs);
+
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
@@ -102,6 +107,19 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     }
 
     m_pTabPanel->SetActivePage(pCurrentTab);
+
+    SetTitle("#MOM_MapSelector_Maps", true);
+    SetVisible(false);
+
+    // Listen for map cache events
+    m_iMapDataIndx = g_pModuleComms->ListenForEvent("map_data_update", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDataUpdated));
+    m_iMapCacheUpdateIndx = g_pModuleComms->ListenForEvent("map_cache_updated", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapCacheUpdated));
+    // Listen for download events
+    m_iDownloadQueueIndx = g_pModuleComms->ListenForEvent("map_download_queued", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadQueued));
+    m_iDownloadStartIndx = g_pModuleComms->ListenForEvent("map_download_start", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadStart));
+    m_iDownloadSizeIndx = g_pModuleComms->ListenForEvent("map_download_size", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadSize));
+    m_iDownloadProgressIndx = g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadProgress));
+    m_iDownloadEndIndx = g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadEnd));
 }
 
 //-----------------------------------------------------------------------------
@@ -117,37 +135,22 @@ CMapSelectorDialog::~CMapSelectorDialog()
     if (m_pSavedData)
         m_pSavedData->deleteThis();
 
+    m_mapMapDownloads.PurgeAndDeleteElements();
+    m_mapCancelConfirmDlgs.PurgeAndDeleteElements();
     m_mapMapListData.PurgeAndDeleteElements();
+
+    CloseAllMapInfoDialogs();
+
+    // Map cache events
+    g_pModuleComms->RemoveListener("map_data_update", m_iMapDataIndx);
+    g_pModuleComms->RemoveListener("map_cache_updated", m_iMapCacheUpdateIndx);
+    // Download events
+    g_pModuleComms->RemoveListener("map_download_queued", m_iDownloadQueueIndx);
+    g_pModuleComms->RemoveListener("map_download_start", m_iDownloadStartIndx);
+    g_pModuleComms->RemoveListener("map_download_size", m_iDownloadSizeIndx);
+    g_pModuleComms->RemoveListener("map_download_progress", m_iDownloadProgressIndx);
+    g_pModuleComms->RemoveListener("map_download_end", m_iDownloadEndIndx);
 }
-
-static bool Less(const unsigned &lhs, const unsigned &rhs)
-{
-    return lhs < rhs;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called once to set up
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::Initialize()
-{
-    SetTitle("#MOM_MapSelector_Maps", true);
-    SetVisible(false);
-
-    // Listen for map cache events
-    g_pModuleComms->ListenForEvent("map_data_update", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDataUpdated));
-    // Listen for download events
-    g_pModuleComms->ListenForEvent("map_download_queued", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadQueued));
-    g_pModuleComms->ListenForEvent("map_download_start", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadStart));
-    g_pModuleComms->ListenForEvent("map_download_size", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadSize));
-    g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadProgress));
-    g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadEnd));
-
-    m_mapMapDownloads.SetLessFunc(Less);
-    m_mapMapListData.SetLessFunc(Less);
-    m_mapMapInfoDialogs.SetLessFunc(Less);
-    m_mapCancelConfirmDlgs.SetLessFunc(Less);
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Activates and gives the tab focus
@@ -223,6 +226,14 @@ void CMapSelectorDialog::LoadDefaultImageList()
     m_pImageList->SetImageAtIndex(INDX_MAP_NOT_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/NotInLibrary.png", wide, tall, pNullImage));
     m_pImageList->SetImageAtIndex(INDX_MAP_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/InLibrary.png", wide, tall, pNullImage));
     m_pImageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, scheme()->GetImage("maps/invalid_map", false));
+}
+
+void CMapSelectorDialog::OnMapCacheUpdated(KeyValues *pKv)
+{
+    // Pass through to the base maps pages
+    const auto pMsg = pKv->MakeCopy();
+    pMsg->SetName("MapCacheUpdated");
+    PostActionSignal(pMsg);
 }
 
 void CMapSelectorDialog::OnMapDataUpdated(KeyValues *pKv)
@@ -463,6 +474,10 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
     {
         m_mapCancelConfirmDlgs[indxCancel]->OnCommand("Close");
     }
+
+    const auto pMsg = pKv->MakeCopy();
+    pMsg->SetName("MapDownloadEnd");
+    PostActionSignal(pMsg);
 }
 
 bool CMapSelectorDialog::IsMapDownloading(uint32 uMapID) const

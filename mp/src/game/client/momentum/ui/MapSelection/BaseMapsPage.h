@@ -77,8 +77,6 @@ public:
     virtual void OnApplyFilters(MapFilters_t filters);
     virtual bool MapPassesFilters(MapData *pData, MapFilters_t filters);
 
-    void OnMapDownloadEnd(KeyValues *pKv);
-
     // Called when the map selector has a map updated in its list
     MESSAGE_FUNC_INT(OnMapListDataUpdate, "MapListDataUpdate", id);
     // Called when the map selector opens
@@ -86,6 +84,10 @@ public:
     // Right clicking a map
     MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
     MESSAGE_FUNC(OnItemSelected, "ItemSelected");
+
+    // Modulecomm events passed in through the MapSelectorDialog
+    MESSAGE_FUNC_PARAMS(OnMapDownloadEnd, "MapDownloadEnd", pKv);
+    MESSAGE_FUNC_PARAMS(OnMapCacheUpdated, "MapCacheUpdated", pKv) {}
 protected:
     virtual void OnCommand(const char *command);
 

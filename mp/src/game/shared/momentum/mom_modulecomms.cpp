@@ -56,20 +56,34 @@ void ModuleCommunication::FireEvent(KeyValues* pKv, EVENT_FIRE_TYPE type /* = FI
         OnEvent(type == FIRE_BOTH ? pCopy : pKv); //pCopy->deleteThis is called in here
 }
 
-void ModuleCommunication::ListenForEvent(const char* pName, CUtlDelegate<void (KeyValues*)> listener)
+int ModuleCommunication::ListenForEvent(const char* pName, CUtlDelegate<void (KeyValues*)> listener)
 {
-    int found = m_dictListeners.Find(pName);
+    const auto found = m_dictListeners.Find(pName);
     if (m_dictListeners.IsValidIndex(found))
     {
-        int indx = m_dictListeners[found];
-        m_vecListeners[indx]->m_listeners.AddToTail(listener);
+        const auto indx = m_dictListeners[found];
+        return m_vecListeners[indx]->m_listeners.AddToTail(listener);
     }
-    else
+
+    EventListenerContainer *pContainer = new EventListenerContainer;
+    const auto toRet = pContainer->m_listeners.AddToTail(listener);
+    const auto indx = m_vecListeners.AddToTail(pContainer);
+    m_dictListeners.Insert(pName, indx);
+    return toRet;
+}
+
+void ModuleCommunication::RemoveListener(const char *pName, int index)
+{
+    // Find the event listeners for this particular event
+    const auto found = m_dictListeners.Find(pName);
+    if (m_dictListeners.IsValidIndex(found))
     {
-        EventListenerContainer *pContainer = new EventListenerContainer;
-        pContainer->m_listeners.AddToTail(listener);
-        int indx = m_vecListeners.AddToTail(pContainer);
-        m_dictListeners.Insert(pName, indx);
+        const auto indx = m_dictListeners[found];
+        const auto pContainer = m_vecListeners[indx];
+        if (index < pContainer->m_listeners.MaxElementIndex())
+        {
+            pContainer->m_listeners.Remove(index);
+        }
     }
 }
 
@@ -77,11 +91,11 @@ void ModuleCommunication::ListenForEvent(const char* pName, CUtlDelegate<void (K
 void ModuleCommunication::OnEvent(KeyValues* pKv)
 {
     // Find the event listeners for this particular event
-    int found = m_dictListeners.Find(pKv->GetName());
+    const auto found = m_dictListeners.Find(pKv->GetName());
     if (m_dictListeners.IsValidIndex(found))
     {
-        int indx = m_dictListeners[found];
-        EventListenerContainer *pContainer = m_vecListeners[indx];
+        const auto indx = m_dictListeners[found];
+        const auto pContainer = m_vecListeners[indx];
         FOR_EACH_LL(pContainer->m_listeners, i)
         {
             pContainer->m_listeners[i](pKv);

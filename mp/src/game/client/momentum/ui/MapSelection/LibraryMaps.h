@@ -22,7 +22,7 @@ public:
     // Empty (for now?)
     void SetListCellColors(MapData* pData, KeyValues* pKvInto) OVERRIDE {}
 
-    void OnMapCacheUpdated(KeyValues *pKv);
+    void OnMapCacheUpdated(KeyValues *pKv) OVERRIDE;
     void OnMapListDataUpdate(int id) OVERRIDE;
 
     void OnTabSelected() OVERRIDE;

@@ -13,7 +13,7 @@ class CFavoriteMaps : public CBaseMapsPage
     void OnTabSelected() OVERRIDE;
     void OnGetNewMapList() OVERRIDE;
 
-    void OnMapCacheUpdated(KeyValues *pKv);
+    void OnMapCacheUpdated(KeyValues *pKv) OVERRIDE;
     void OnMapListDataUpdate(int id) OVERRIDE;
 
 private:
