@@ -161,11 +161,9 @@ void CHudSpeedMeter::OnThink()
         m_pRunEntData = pPlayer->GetCurrentUIEntData();
         //Note: Velocity is also set to the player when watching first person
         Vector velocity = pPlayer->GetAbsVelocity();
-        Vector velocity2 = velocity; //raw velocity; this variable will not be modified based on user settings
 
         //The last jump velocity & z-coordinate
         float lastJumpVel = m_pRunEntData->m_flLastJumpVel;
-		float lastJumpZPos = m_pRunEntData->m_flLastJumpZPos;
 
         m_pRunStats = pPlayer->GetCurrentUIEntStats();
 
@@ -204,10 +202,14 @@ void CHudSpeedMeter::OnThink()
             lastJumpVel *= 0.04262f;
             SetLabelText(L"MPH");
             break;
-		case 4:
+        case 4:
+        {
             // Normalized units of energy
-            vel = ( (pow(velocity2.x, 2) + pow(velocity2.y, 2) + pow(velocity2.z, 2))/2 + (800.0f * (pPlayer->GetLocalOrigin().z - lastJumpZPos)) ) / 800.0f;
+            float lastJumpZPos = m_pRunEntData->m_flLastJumpZPos;
+            Vector absVel = pPlayer->GetAbsVelocity();
+            vel = ( absVel.Vector::LengthSqr()/2 + (800.0f * (pPlayer->GetLocalOrigin().z - lastJumpZPos))) / 800.0f;
             SetLabelText(L"Energy");
+        }
             break;
         case 1:
         default:
