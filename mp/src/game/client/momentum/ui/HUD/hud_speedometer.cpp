@@ -12,6 +12,7 @@
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/Panel.h>
 
+#include "c_baseplayer.h"
 #include "mom_player_shared.h"
 #include "c_mom_replay_entity.h"
 #include "momentum/util/mom_util.h"
@@ -30,8 +31,8 @@ static MAKE_TOGGLE_CONVAR(
 
 static MAKE_CONVAR(mom_hud_speedometer_units, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                    "Changes the units of measurement of the speedometer.\n 1 = Units per second\n 2 = "
-                   "Kilometers per hour\n 3 = Miles per hour.",
-                   1, 3);
+                   "Kilometers per hour\n 3 = Miles per hour\n 4 = Energy",
+                   1, 4);
 
 static MAKE_CONVAR(mom_hud_speedometer_colorize, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                           "Toggles speedometer colorization. 0 = OFF, 1 = ON (Based on acceleration)," 
@@ -69,6 +70,7 @@ public:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
     float m_flLastJumpVelocity;
+    float m_flLastJumpZPos;
 
     int m_iRoundedVel, m_iRoundedLastJump;
     Color m_LastColor;
@@ -159,9 +161,11 @@ void CHudSpeedMeter::OnThink()
         m_pRunEntData = pPlayer->GetCurrentUIEntData();
         //Note: Velocity is also set to the player when watching first person
         Vector velocity = pPlayer->GetAbsVelocity();
+        Vector velocity2 = velocity; //raw velocity; this variable will not be modified based on user settings
 
-        //The last jump velocity
+        //The last jump velocity & z-coordinate
         float lastJumpVel = m_pRunEntData->m_flLastJumpVel;
+		float lastJumpZPos = m_pRunEntData->m_flLastJumpZPos;
 
         m_pRunStats = pPlayer->GetCurrentUIEntStats();
 
@@ -199,6 +203,11 @@ void CHudSpeedMeter::OnThink()
             vel *= 0.04262f;
             lastJumpVel *= 0.04262f;
             SetLabelText(L"MPH");
+            break;
+		case 4:
+            // Normalized units of energy
+            vel = ( (pow(velocity2.x, 2) + pow(velocity2.y, 2) + pow(velocity2.z, 2))/2 + (800.0f * (pPlayer->GetLocalOrigin().z - lastJumpZPos)) ) / 800.0f;
+            SetLabelText(L"Energy");
             break;
         case 1:
         default:

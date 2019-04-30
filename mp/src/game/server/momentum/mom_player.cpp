@@ -456,6 +456,7 @@ void CMomentumPlayer::OnJump()
         m_iSuccessiveBhops = 0;
 
     m_Data.m_flLastJumpVel = GetLocalVelocity().Length2D();
+	m_Data.m_flLastJumpZPos = GetLocalOrigin().z;
     m_iSuccessiveBhops++;
 
     if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1 && m_bStartTimerOnJump)
