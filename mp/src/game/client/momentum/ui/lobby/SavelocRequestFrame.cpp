@@ -34,13 +34,14 @@ SavelocReqFrame::SavelocReqFrame() : BaseClass(nullptr, "SavelocReqFrame"), m_iS
 
     m_pRequestButton->SetEnabled(false);
 
-    g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &SavelocReqFrame::FireEvent));
+    m_iReqSavelocsIndx = g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &SavelocReqFrame::FireEvent));
 
     SetVisible(false);
 }
 
 SavelocReqFrame::~SavelocReqFrame()
 {
+    g_pModuleComms->RemoveListener("req_savelocs", m_iReqSavelocsIndx);
 }
 
 void SavelocReqFrame::Activate(uint64 steamID)

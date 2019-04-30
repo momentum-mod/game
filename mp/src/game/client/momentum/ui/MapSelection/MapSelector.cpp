@@ -35,7 +35,6 @@ void CMapSelector::Create(vgui::VPANEL parent)
     if (!m_hMapsDlg.Get())
     {
         m_hMapsDlg = new CMapSelectorDialog(parent); // SetParent() call below fills this in
-        m_hMapsDlg->Initialize();
     }
 }
 

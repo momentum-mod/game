@@ -124,7 +124,7 @@ public:
 static CHudTextureHandleProperty textureHandleConverter;
 
 // Momentum-related VGUI Panels
-void VGui_CreateMomentumPanels()
+inline void VGui_CreateMomentumPanels()
 {
     VPANEL gameMenu = enginevgui->GetPanel(PANEL_GAMEUIDLL);
     mapselector->Create(gameMenu);
@@ -133,7 +133,7 @@ void VGui_CreateMomentumPanels()
     messageboxpanel->Create(gameMenu);
 }
 
-void VGui_DestroyMomentumPanels()
+inline void VGui_DestroyMomentumPanels()
 {
     mapselector->Destroy();
     changelogpanel->Destroy();

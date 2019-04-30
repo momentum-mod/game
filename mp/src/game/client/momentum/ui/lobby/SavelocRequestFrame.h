@@ -31,4 +31,5 @@ private:
     vgui::Label *m_pStatusLabel;
 
     uint64 m_iSteamID;
+    uint16 m_iReqSavelocsIndx;
 };

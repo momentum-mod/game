@@ -55,8 +55,6 @@ class CMapSelectorDialog : public vgui::Frame
     CMapSelectorDialog(vgui::VPANEL parent);
     ~CMapSelectorDialog(void);
 
-    void Initialize(void);
-
     // displays the dialog, moves it into focus, updates if it has to
     void Open(void);
 
@@ -88,6 +86,7 @@ class CMapSelectorDialog : public vgui::Frame
     vgui::ImageList *GetImageList() { return m_pImageList; }
 
     // Map data handling
+    void OnMapCacheUpdated(KeyValues *pKv);
     void OnMapDataUpdated(KeyValues *pKv);
     void CreateMapListData(MapData *pData);
     void UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail);
@@ -165,6 +164,10 @@ protected:
 
     // context menu
     CMapContextMenu *m_pContextMenu;
+
+    // Modulecomms event listening
+    uint16 m_iMapDataIndx, m_iMapCacheUpdateIndx, m_iDownloadQueueIndx, m_iDownloadSizeIndx, m_iDownloadStartIndx,
+        m_iDownloadProgressIndx, m_iDownloadEndIndx;
 };
 
 // singleton accessor

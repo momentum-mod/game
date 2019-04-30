@@ -105,8 +105,6 @@ CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName)
     m_iRequesting = 0;
     m_iCurrentSavelocIndx = -1;
     m_bUsingSavelocMenu = false;
-
-    //g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &CMOMSaveLocSystem::OnSavelocRequestEvent));
 }
 
 CMOMSaveLocSystem::~CMOMSaveLocSystem()

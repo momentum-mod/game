@@ -6,7 +6,6 @@
 #include "MapFilterPanel.h"
 #include "MapSelectorDialog.h"
 #include "mom_map_cache.h"
-#include "mom_modulecomms.h"
 
 #include <ctime>
 #include "fmtstr.h"
@@ -163,8 +162,6 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetSortColumn(HEADER_MAP_NAME);
 
     m_pMapList->MakeReadyForUse();
-
-    g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CBaseMapsPage::OnMapDownloadEnd));
 }
 
 //-----------------------------------------------------------------------------
