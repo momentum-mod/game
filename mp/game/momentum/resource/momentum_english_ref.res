@@ -264,6 +264,7 @@
         "MOM_Settings_Speedometer_Units_UPS" "Units per second"
         "MOM_Settings_Speedometer_Units_KPH" "Kilometers per hour"
         "MOM_Settings_Speedometer_Units_MPH" "Miles per hour"
+        "MOM_Settings_Speedometer_Units_Energy" "Energy"
 
         "MOM_Settings_Sync_Label" "Strafe Sync"
         "MOM_Settings_Sync_Show" "Display strafe sync data."
