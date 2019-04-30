@@ -1406,6 +1406,7 @@ void CMapCache::Shutdown()
 void CMapCache::LoadMapCacheFromDisk()
 {
     KeyValuesAD pMapData("MapCacheData");
+    pMapData->UsesEscapeSequences(true);
     if (pMapData->LoadFromFile(g_pFullFileSystem, MAP_CACHE_FILE_NAME, "MOD"))
     {
         AddMapsToCache(pMapData, MODEL_FROM_DISK);
@@ -1419,6 +1420,7 @@ void CMapCache::LoadMapCacheFromDisk()
 void CMapCache::SaveMapCacheToDisk()
 {
     KeyValuesAD pMapData("MapCacheData");
+    pMapData->UsesEscapeSequences(true);
 
     FOR_EACH_MAP(m_mapMapCache, i)
     {
