@@ -209,8 +209,8 @@ void CHudSpeedMeter::OnThink()
             Vector absVel = pPlayer->GetAbsVelocity();
             vel = ( absVel.Vector::LengthSqr()/2 + (800.0f * (pPlayer->GetLocalOrigin().z - lastJumpZPos))) / 800.0f;
             SetLabelText(L"Energy");
-        }
             break;
+        }
         case 1:
         default:
             // We do nothing but break out of the switch, as default vel is already in UPS
