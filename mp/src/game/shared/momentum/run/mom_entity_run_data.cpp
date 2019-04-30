@@ -20,6 +20,7 @@ RecvPropInt(RECVINFO(m_iStartTick), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_iRunTime), SPROP_UNSIGNED),
 RecvPropFloat(RECVINFO(m_flLastJumpTime)),
 RecvPropFloat(RECVINFO(m_flLastJumpVel)),
+RecvPropFloat(RECVINFO(m_flLastJumpZPos)),
 RecvPropFloat(RECVINFO(m_flTickRate)),
 END_RECV_TABLE();
 #else
@@ -38,6 +39,7 @@ SendPropInt(SENDINFO(m_iStartTick), -1, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_iRunTime), 24, SPROP_UNSIGNED), // 24 bits fits the ~3.1 million max ticks we allow
 SendPropFloat(SENDINFO(m_flLastJumpTime)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
+SendPropFloat(SENDINFO(m_flLastJumpZPos)),
 SendPropFloat(SENDINFO(m_flTickRate)),
 END_SEND_TABLE();
 #endif
