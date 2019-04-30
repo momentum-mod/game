@@ -36,6 +36,7 @@ class CMomRunEntityData
     CNetworkVar(int, m_iRunTime);         // The time taken to do their most recent run, in ticks
     CNetworkVar(float, m_flLastJumpTime); // The last time that the player jumped
     CNetworkVar(float, m_flLastJumpVel);  // Last jump velocity of the player
+	CNetworkVar(float, m_flLastJumpZPos); // Z coordinate of player on jump
 
     // If you are adding anything to this class, make sure to add it to the DataTables in the CPP file!
 };

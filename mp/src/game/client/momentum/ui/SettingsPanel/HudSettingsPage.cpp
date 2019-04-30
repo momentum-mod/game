@@ -10,10 +10,11 @@ using namespace vgui;
 
 HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettings")
 {
-    m_pSpeedometerUnits = new ComboBox(this, "SpeedoUnits", 3, false);
+    m_pSpeedometerUnits = new ComboBox(this, "SpeedoUnits", 4, false);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_UPS", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_KPH", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_MPH", nullptr);
+    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_Energy", nullptr);
     m_pSpeedometerUnits->AddActionSignalTarget(this);
 
     m_pSyncType = new ComboBox(this, "SyncType", 2, false);
