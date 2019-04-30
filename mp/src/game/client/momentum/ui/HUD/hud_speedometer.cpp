@@ -208,7 +208,7 @@ void CHudSpeedMeter::OnThink()
             // Normalized units of energy
             float lastJumpZPos = m_pRunEntData->m_flLastJumpZPos;
             Vector absVel = pPlayer->GetAbsVelocity();
-            vel = ( absVel.Vector::LengthSqr()/2.0f + (sv_gravity.GetFloat() * (pPlayer->GetLocalOrigin().z - lastJumpZPos))) / sv_gravity.GetFloat();
+            vel = ( absVel.LengthSqr()/2.0f + (sv_gravity.GetFloat() * (pPlayer->GetLocalOrigin().z - lastJumpZPos))) / sv_gravity.GetFloat();
             SetLabelText(L"Energy");
             break;
         }
