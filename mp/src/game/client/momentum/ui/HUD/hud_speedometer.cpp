@@ -13,6 +13,7 @@
 #include <vgui_controls/Panel.h>
 
 #include "c_baseplayer.h"
+#include "movevars_shared.h"
 #include "mom_player_shared.h"
 #include "c_mom_replay_entity.h"
 #include "momentum/util/mom_util.h"
@@ -207,7 +208,7 @@ void CHudSpeedMeter::OnThink()
             // Normalized units of energy
             float lastJumpZPos = m_pRunEntData->m_flLastJumpZPos;
             Vector absVel = pPlayer->GetAbsVelocity();
-            vel = ( absVel.Vector::LengthSqr()/2 + (800.0f * (pPlayer->GetLocalOrigin().z - lastJumpZPos))) / 800.0f;
+            vel = ( absVel.Vector::LengthSqr()/2.0f + (sv_gravity.GetFloat() * (pPlayer->GetLocalOrigin().z - lastJumpZPos))) / sv_gravity.GetFloat();
             SetLabelText(L"Energy");
             break;
         }
