@@ -1286,92 +1286,89 @@ int CMomentumPlayer::GetNextObserverSearchStartPoint(bool bReverse)
     return startIndex;*/
 }
 
+inline bool TestGhost(CMomentumOnlineGhostEntity *pEnt)
+{
+    return pEnt && !pEnt->m_bSpectating;
+}
+
+inline CBaseEntity *IterateAndFindViableNextGhost(uint16 startIndx, bool bReverse, CBaseEntity *pReplay, bool bTestStart)
+{
+    const auto pOnlineGhostMap = g_pMomentumGhostClient->GetOnlineGhostMap();
+    // Test our starter if we need to
+    if (bTestStart && pOnlineGhostMap->IsValidIndex(startIndx) && TestGhost(pOnlineGhostMap->Element(startIndx)))
+    {
+        return pOnlineGhostMap->Element(startIndx);
+    }
+
+    auto index = bReverse ? pOnlineGhostMap->PrevInorder(startIndx) : pOnlineGhostMap->NextInorder(startIndx);
+
+    while (index != startIndx)
+    {
+        if (pOnlineGhostMap->IsValidIndex(index))
+        {
+            const auto pTest = pOnlineGhostMap->Element(index);
+            if (TestGhost(pTest))
+                return pTest;
+
+            index = bReverse ? pOnlineGhostMap->PrevInorder(index) : pOnlineGhostMap->NextInorder(index);
+        }
+        else if (pReplay)
+        {
+            return pReplay;
+        }
+        else
+        {
+            index = bReverse ? pOnlineGhostMap->LastInorder() : pOnlineGhostMap->FirstInorder();
+        }
+    }
+    return nullptr;
+}
+
 CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 {
-    CUtlMap<uint64, CMomentumOnlineGhostEntity*> *onlineGhosts = g_pMomentumGhostClient->GetOnlineGhostMap();
-    if (m_hObserverTarget)
+    const auto pOnlineGhostMap = g_pMomentumGhostClient->GetOnlineGhostMap();
+    CMomentumGhostBaseEntity *pCurrentReplayEnt = g_ReplaySystem.IsPlayingBack() ?
+        g_ReplaySystem.GetPlaybackReplay()->GetRunEntity() : nullptr;
+
+    // Start with the current observer target...
+    if (m_hObserverTarget.Get())
     {
-        // start using last followed player
-        CMomentumGhostBaseEntity *entity = GetGhostEnt();
-        if (entity)
+        // ... but only if it's a ghost
+        const auto pGhostEnt = GetGhostEnt();
+        if (pGhostEnt)
         {
-            if (entity->IsReplayGhost())
+            if (pGhostEnt->IsReplayGhost())
             {
                 // If we're spectating the replay ghost, check our online map
-                if (onlineGhosts->Count() > 0)
+                if (pOnlineGhostMap->Count() > 0)
                 {
-                    return bReverse ? onlineGhosts->Element(onlineGhosts->LastInorder()) : onlineGhosts->Element(onlineGhosts->FirstInorder());
+                    return IterateAndFindViableNextGhost(bReverse ? pOnlineGhostMap->LastInorder() : pOnlineGhostMap->FirstInorder(),
+                                                         bReverse, nullptr, true);
                 }
             }
-            else if (entity->IsOnlineGhost())
+            else if (pGhostEnt->IsOnlineGhost())
             {
-                // Was an online ghost, find its index
-                CMomentumOnlineGhostEntity *onlineEnt = dynamic_cast<CMomentumOnlineGhostEntity*>(entity);
-
-                CMomentumGhostBaseEntity *pCurrentReplayEnt = nullptr;
-                if (g_ReplaySystem.GetPlaybackReplay())
+                const auto pOnlineEnt = static_cast<CMomentumOnlineGhostEntity*>(pGhostEnt);
+                if (pOnlineEnt)
                 {
-                    pCurrentReplayEnt = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
-                }
-
-                if (onlineEnt)
-                {
-                    unsigned short indx = onlineGhosts->Find(onlineEnt->GetGhostSteamID().ConvertToUint64());
-                    if (onlineGhosts->Count() > 1)
-                    {
-                        if (indx == onlineGhosts->LastInorder())
-                        {
-                            if (bReverse)
-                            {
-                                return onlineGhosts->Element(onlineGhosts->PrevInorder(indx));
-                            }
-                            // Check the replay ghost, if not there, go to head of map
-                            if (pCurrentReplayEnt)
-                            {
-                                return pCurrentReplayEnt;
-                            }
-
-                            return onlineGhosts->Element(onlineGhosts->FirstInorder());
-                        }
-                        if (indx == onlineGhosts->FirstInorder())
-                        {
-                            if (bReverse)
-                            {
-                                // Check the replay ghost, if not there, go to head of map
-                                if (pCurrentReplayEnt)
-                                {
-                                    return pCurrentReplayEnt;
-                                }
-                                return onlineGhosts->Element(onlineGhosts->LastInorder());
-                            }
-                            return onlineGhosts->Element(onlineGhosts->NextInorder(indx));
-                        }
-                        // in the middle of the list, iterate it like normal
-                        return bReverse ? onlineGhosts->Element(onlineGhosts->PrevInorder(indx)) : onlineGhosts->Element(onlineGhosts->NextInorder(indx));
-                    }
-
-                    // Check the replay ghost, if not there, don't do anything, we're already spectating
-                    if (pCurrentReplayEnt)
-                    {
-                        return pCurrentReplayEnt;
-                    }
+                    const auto indx = pOnlineGhostMap->Find(pOnlineEnt->GetGhostSteamID().ConvertToUint64());
+                    return IterateAndFindViableNextGhost(indx, bReverse, pCurrentReplayEnt, false);
                 }
             }
         }
     }
-    else
+
+    // Default to current replay entity if not spectating a target
+    if (pCurrentReplayEnt)
     {
-        if (g_ReplaySystem.GetPlaybackReplay())
-        {
-            return g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
-        }
-        else
-        {
-            if (onlineGhosts->Count() > 0)
-            {
-                return onlineGhosts->Element(onlineGhosts->FirstInorder());
-            }
-        }
+        return pCurrentReplayEnt;
+    }
+
+    // Parse the list for an online ghost if we have any
+    if (pOnlineGhostMap->Count() > 0)
+    {
+        return IterateAndFindViableNextGhost(bReverse ? pOnlineGhostMap->LastInorder() : pOnlineGhostMap->FirstInorder(),
+                                             bReverse, nullptr, true);
     }
 
     return nullptr;
