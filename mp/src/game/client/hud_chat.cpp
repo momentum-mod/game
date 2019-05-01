@@ -202,13 +202,13 @@ void CHudChat::OnThink()
         const int isSomethingTyped = GetInputPanel()->GetTextLength() > 0;
         if (isSomethingTyped && !m_bTyping)
         {
-            if (SteamMatchmaking()->SetLobbyData(m_LobbyID, LOBBY_DATA_TYPING, "y"))
-               m_bTyping = true;
+            SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, "y");
+            m_bTyping = true;
         }
         else if (!isSomethingTyped && m_bTyping)
         {
-            if (SteamMatchmaking()->SetLobbyData(m_LobbyID, LOBBY_DATA_TYPING, nullptr))
-                m_bTyping = false;
+            SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, nullptr);
+            m_bTyping = false;
         }
     }
 
