@@ -208,24 +208,31 @@ void CHudChat::OnThink()
     }
 
     const int count = m_vTypingMembers.Count();
-    if (count > 0 && m_bIsVisible)
+    if (m_bIsVisible)
     {
-        CUtlString typingText;
-        if (count <= 3)
+        if (count > 0)
         {
-            FOR_EACH_VEC(m_vTypingMembers, i)
+            CUtlString typingText;
+            if (count <= 3)
             {
-                typingText.Append(SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])));
-                typingText.Append(i < count - 1 ? ", " : " ");
+                FOR_EACH_VEC(m_vTypingMembers, i)
+                {
+                    typingText.Append(SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])));
+                    typingText.Append(i < count - 1 ? ", " : " ");
+                }
+                typingText.Append("typing...");
             }
-            typingText.Append("typing...");
+            else
+            {
+                typingText.Format("%d people are typing...", count);
+            }
+
+            m_pTypingMembers->SetText(typingText.Get());
         }
         else
         {
-            typingText.Format("%d people are typing...", count);
+            m_pTypingMembers->SetText("");
         }
-
-        m_pTypingMembers->SetText(typingText.Get());
     }
 }
 
@@ -236,7 +243,7 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
     {
         // Typing Status
         const char *typingText = SteamMatchmaking()->GetLobbyMemberData(m_LobbyID, pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
-        const bool isTyping = typingText != nullptr && Q_strlen(typingText) > 0;
+        const bool isTyping = typingText != nullptr && Q_strlen(typingText) == 1;
         const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
         const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
         if (isTyping)
