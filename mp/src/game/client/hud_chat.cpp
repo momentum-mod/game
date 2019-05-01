@@ -176,7 +176,7 @@ void CHudChat::StopMessageMode()
     BaseClass::StopMessageMode();
 
     if (m_LobbyID.IsValid())
-        SteamMatchmaking()->SetLobbyData(m_LobbyID, LOBBY_DATA_TYPING, nullptr);
+        SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, nullptr);
 
     // Can't be typing if we close the chat
     m_bIsVisible = m_bTyping = false;
@@ -199,16 +199,11 @@ void CHudChat::OnThink()
 
     if (m_LobbyID.IsValid() && GetMessageMode() != 0 && GetInputPanel())
     {
-        const int isSomethingTyped = GetInputPanel()->GetTextLength() > 0;
-        if (isSomethingTyped && !m_bTyping)
+        const bool isSomethingTyped = GetInputPanel()->GetTextLength() > 0;
+        if (isSomethingTyped != m_bTyping)
         {
-            SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, "y");
-            m_bTyping = true;
-        }
-        else if (!isSomethingTyped && m_bTyping)
-        {
-            SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, nullptr);
-            m_bTyping = false;
+            m_bTyping = isSomethingTyped;
+            SteamMatchmaking()->SetLobbyMemberData(m_LobbyID, LOBBY_DATA_TYPING, m_bTyping ? "y" : nullptr);
         }
     }
 
