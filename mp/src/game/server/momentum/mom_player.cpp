@@ -1192,7 +1192,7 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
     return BaseClass::IsValidObserverTarget(target);
 }
 
-// Override of CBasePlayer::SetObserverTarget that lets us add/remove ourselves as spectors to the ghost
+// Override of CBasePlayer::SetObserverTarget that lets us add/remove ourselves as spectators to the ghost
 bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 {
     CMomentumGhostBaseEntity *pGhostToSpectate = dynamic_cast<CMomentumGhostBaseEntity *>(target);
@@ -1208,7 +1208,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         pCurrentGhost->RemoveSpectator();
     }
 
-    bool base = BaseClass::SetObserverTarget(target);
+    const auto base = BaseClass::SetObserverTarget(target);
 
     if (pGhostToSpectate && base)
     {
@@ -1224,9 +1224,9 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
         pGhostToSpectate->SetSpectator(this);
 
-        CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
-        if (pOnlineEnt)
+        if (pGhostToSpectate->IsOnlineGhost())
         {
+            const auto pOnlineEnt = static_cast<CMomentumOnlineGhostEntity*>(target);
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
         }
         else if (pGhostToSpectate->IsReplayGhost())
