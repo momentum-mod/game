@@ -261,7 +261,7 @@ void LobbyMembersPanel::OnContextGoToMap(const char* map)
 {
     // MOM_TODO: We're going to need to feed this into a map downloader first, if they don't have the map!
     ShowPanel(false);
-    engine->ClientCmd_Unrestricted(CFmtStr("map %s\n", map));
+    engine->ClientCmd_Unrestricted(CFmtStr("gameui_activate;map %s", map));
 }
 
 void LobbyMembersPanel::OnContextReqSavelocs(uint64 target)
