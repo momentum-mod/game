@@ -6,6 +6,8 @@
 #include "mom_shareddefs.h"
 #include "filesystem.h"
 
+#include "IMessageboxPanel.h"
+
 #include "tier0/memdbgon.h"
 
 static MAKE_TOGGLE_CONVAR(mom_api_log_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, API requests will be logged to console.\n");
@@ -425,7 +427,15 @@ void CAPIRequests::OnAuthHTTP(KeyValues *pResponse)
     else if (pErr)
     {
         Warning("Error when trying to get an API key!\n");
-        // MOM_TODO display the error here in the console
+        const auto iCode = pResponse->GetInt("code");
+        if (iCode == 403)
+        {
+            const auto pErrorObj = pErr->FindKey("error");
+            if (pErrorObj)
+            {
+                messageboxpanel->CreateMessagebox("Error Authenticating", pErrorObj->GetString("message"));
+            }
+        }
     }
 
     if (pEvent)
