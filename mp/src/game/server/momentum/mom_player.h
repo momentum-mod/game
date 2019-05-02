@@ -143,6 +143,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CMomentumGhostBaseEntity *GetGhostEnt() const;
 
     bool StartObserverMode(int mode) OVERRIDE;
+    void StopObserverMode() OVERRIDE;
     bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
     bool SetObserverTarget(CBaseEntity *target) OVERRIDE;
     CBaseEntity *FindNextObserverTarget(bool bReverse) OVERRIDE;
