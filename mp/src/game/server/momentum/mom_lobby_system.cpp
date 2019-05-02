@@ -530,8 +530,8 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 
         if (pMapName && pMapName[0] && pOtherMap && FStrEq(pMapName, pOtherMap)) //We're on the same map
         {
-            // Don't add them again if they reloaded this map for some reason
-            if (!validIndx)
+            // Don't add them again if they reloaded this map for some reason, or if we're in background/credits
+            if (!validIndx && gpGlobals->eLoadType != MapLoad_Background && !FStrEq(pMapName, "credits"))
             {
                 CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                 newPlayer->SetGhostSteamID(*pID);
