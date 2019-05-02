@@ -14,6 +14,7 @@
 #include "IMessageboxPanel.h"
 #include "LeaderboardsContextMenu.h"
 
+#include "hud_comparisons.h"
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
 #include "run/mom_replay_base.h"
@@ -1015,7 +1016,10 @@ void CLeaderboardsTimes::OnConfirmDeleteReplay(int itemID, const char* file)
         g_pFullFileSystem->RemoveFile(file, "MOD");
         m_bTimesNeedUpdate[TIMES_LOCAL] = true;
         if (m_pLocalLeaderboards->RemoveItem(itemID))
+        {
+            g_pMOMRunCompare->LoadComparisons();
             FillLeaderboards(false);
+        }
     }
 }
 
