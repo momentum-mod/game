@@ -1235,11 +1235,6 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         }
 
         g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
-
-        if (pCurrentGhost == nullptr)
-        {
-            FIRE_GAME_WIDE_EVENT("spec_start");
-        }
     }
 
     return base;
@@ -1489,9 +1484,20 @@ bool CMomentumPlayer::StartObserverMode(int mode)
     if (m_iObserverMode == OBS_MODE_NONE)
     {
         SaveCurrentRunState();
+        FIRE_GAME_WIDE_EVENT("spec_start");
     }
 
     return BaseClass::StartObserverMode(mode);
+}
+
+void CMomentumPlayer::StopObserverMode()
+{
+    if (m_iObserverMode > OBS_MODE_NONE)
+    {
+        FIRE_GAME_WIDE_EVENT("spec_stop");
+    }
+
+    BaseClass::StopObserverMode();
 }
 
 void CMomentumPlayer::StopSpectating()
@@ -1506,8 +1512,6 @@ void CMomentumPlayer::StopSpectating()
     m_hObserverTarget.Set(nullptr);
     ForceRespawn();
     SetMoveType(MOVETYPE_WALK);
-
-    FIRE_GAME_WIDE_EVENT("spec_stop");
 
     // Update the lobby/server if there is one
     m_sSpecTargetSteamID.Clear(); // reset steamID when we stop spectating
