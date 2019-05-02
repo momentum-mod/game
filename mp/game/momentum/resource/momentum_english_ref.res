@@ -243,6 +243,10 @@
         "MOM_Settings_Worldlight_Shadows_TT" "When enabled, world lights will determine entity shadow direction. NOTE: Can cause significant performance decreases in some maps!"
         "MOM_Settings_LowerWeapon" "Lower the weapon after a certain amount of speed"
         "MOM_Settings_SpeedToLower" "The amount of speed to lower the weapon at"
+        "MOM_Settings_Overlapping_Keys" "Allow overlapping keys"
+        "MOM_Settings_Overlapping_Keys_TT" "When unchecked keys will not overlap and null each other out, much like null binds."
+        "MOM_Settings_Release_Forward_On_Jump" "Release forward key on jump"
+        "MOM_Settings_Release_Forward_On_Jump_TT" "When checked the game will determine the forward key based on movement while on ground and release the determined key when you jump."
         
         
         //"HUD Settings"
@@ -354,6 +358,7 @@
         "MOM_ReplayPlayer"      "Player: %s1"
         "MOM_SpecGUI_GainControl" "Press your %duck% key to toggle mouse capture!"
         "MOM_SpecGUI_StopPlayback" "Stop Playback"
+        "MOM_SpecGUI_StopSpectating" "Stop Spectating"
         "MOM_SpecGUI_ToggleControls" "Toggle Replay Controls"
         "MOM_SpecGUI_NextPlayer" "Spectate next player"
         "MOM_SpecGUI_PrevPlayer" "Spectate previous player"
@@ -453,7 +458,7 @@
         "GameUI2_ResumeGameDescription" "Back into the action"
 
         "GameUI2_Spectate" "SPECTATE"
-        "GameUI2_SpectateDescription" "Spectate an online ghost"
+        "GameUI2_SpectateDescription" "Start spectating"
 
         "GameUI2_SelectMap" "SELECT MAP"
         "GameUI2_SelectMapDescription" "Choose a map to play"
@@ -480,6 +485,7 @@
         "GameUI2_LeaveLobby" "Leave lobby"
         "GameUI2_InviteLobby" "Invite friends"
         "GameUI2_Respawn" "Respawn"
+        "GameUI2_RespawnDescription" "Spawn back in game"
 
         "GameUI2_TitleOptions" "Options"
     }
