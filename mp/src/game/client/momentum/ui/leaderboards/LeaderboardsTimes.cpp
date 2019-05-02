@@ -1014,7 +1014,8 @@ void CLeaderboardsTimes::OnConfirmDeleteReplay(int itemID, const char* file)
     {
         g_pFullFileSystem->RemoveFile(file, "MOD");
         m_bTimesNeedUpdate[TIMES_LOCAL] = true;
-        m_pLocalLeaderboards->RemoveItem(itemID);
+        if (m_pLocalLeaderboards->RemoveItem(itemID))
+            FillLeaderboards(false);
     }
 }
 
