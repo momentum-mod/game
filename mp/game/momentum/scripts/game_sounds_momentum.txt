@@ -108,3 +108,23 @@
 
     "wave"    "timer/timer_fail.wav"
 }
+
+"Momentum.AchievedWR"
+{
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
+
+    "wave"    "timer/timer_wr.wav"
+}
+
+"Momentum.AchievedPB"
+{
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
+
+    "wave"    "timer/timer_pb.wav"
+}
