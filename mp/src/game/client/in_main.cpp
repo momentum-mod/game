@@ -1442,32 +1442,32 @@ Returns appropriate button info for keyboard and mouse state
 Set bResetState to 1 to clear old state info
 ============
 */
-int CInput::GetButtonBits( int bResetState )
+int CInput::GetButtonBits( int iResetState )
 {
 	int bits = 0;
 
-	CalcButtonBits( bits, IN_SPEED, s_ClearInputState, &in_speed, bResetState );
-	CalcButtonBits( bits, IN_WALK, s_ClearInputState, &in_walk, bResetState );
-	CalcButtonBits( bits, IN_ATTACK, s_ClearInputState, &in_attack, bResetState );
-	CalcButtonBits( bits, IN_DUCK, s_ClearInputState, &in_duck, bResetState );
-	CalcButtonBits( bits, IN_JUMP, s_ClearInputState, &in_jump, bResetState );
-	CalcButtonBits( bits, IN_FORWARD, s_ClearInputState, &in_forward, bResetState );
-	CalcButtonBits( bits, IN_BACK, s_ClearInputState, &in_back, bResetState );
-	CalcButtonBits( bits, IN_USE, s_ClearInputState, &in_use, bResetState );
-	CalcButtonBits( bits, IN_LEFT, s_ClearInputState, &in_left, bResetState );
-	CalcButtonBits( bits, IN_RIGHT, s_ClearInputState, &in_right, bResetState );
-	CalcButtonBits( bits, IN_MOVELEFT, s_ClearInputState, &in_moveleft, bResetState );
-	CalcButtonBits( bits, IN_MOVERIGHT, s_ClearInputState, &in_moveright, bResetState );
-	CalcButtonBits( bits, IN_ATTACK2, s_ClearInputState, &in_attack2, bResetState );
-	CalcButtonBits( bits, IN_RELOAD, s_ClearInputState, &in_reload, bResetState );
-	CalcButtonBits( bits, IN_ALT1, s_ClearInputState, &in_alt1, bResetState );
-	CalcButtonBits( bits, IN_ALT2, s_ClearInputState, &in_alt2, bResetState );
-	CalcButtonBits( bits, IN_SCORE, s_ClearInputState, &in_score, bResetState );
-	CalcButtonBits( bits, IN_ZOOM, s_ClearInputState, &in_zoom, bResetState );
-	CalcButtonBits( bits, IN_GRENADE1, s_ClearInputState, &in_grenade1, bResetState );
-	CalcButtonBits( bits, IN_GRENADE2, s_ClearInputState, &in_grenade2, bResetState );
-	CalcButtonBits( bits, IN_ATTACK3, s_ClearInputState, &in_attack3, bResetState );
-    CalcButtonBits( bits, IN_STRAFE, s_ClearInputState, &in_strafe, bResetState);
+	CalcButtonBits( bits, IN_SPEED, s_ClearInputState, &in_speed, iResetState );
+	CalcButtonBits( bits, IN_WALK, s_ClearInputState, &in_walk, iResetState );
+	CalcButtonBits( bits, IN_ATTACK, s_ClearInputState, &in_attack, iResetState );
+	CalcButtonBits( bits, IN_DUCK, s_ClearInputState, &in_duck, iResetState );
+	CalcButtonBits( bits, IN_JUMP, s_ClearInputState, &in_jump, iResetState );
+	CalcButtonBits( bits, IN_FORWARD, s_ClearInputState, &in_forward, iResetState );
+	CalcButtonBits( bits, IN_BACK, s_ClearInputState, &in_back, iResetState );
+	CalcButtonBits( bits, IN_USE, s_ClearInputState, &in_use, iResetState );
+	CalcButtonBits( bits, IN_LEFT, s_ClearInputState, &in_left, iResetState );
+	CalcButtonBits( bits, IN_RIGHT, s_ClearInputState, &in_right, iResetState );
+	CalcButtonBits( bits, IN_MOVELEFT, s_ClearInputState, &in_moveleft, iResetState );
+	CalcButtonBits( bits, IN_MOVERIGHT, s_ClearInputState, &in_moveright, iResetState );
+	CalcButtonBits( bits, IN_ATTACK2, s_ClearInputState, &in_attack2, iResetState );
+	CalcButtonBits( bits, IN_RELOAD, s_ClearInputState, &in_reload, iResetState );
+	CalcButtonBits( bits, IN_ALT1, s_ClearInputState, &in_alt1, iResetState );
+	CalcButtonBits( bits, IN_ALT2, s_ClearInputState, &in_alt2, iResetState );
+	CalcButtonBits( bits, IN_SCORE, s_ClearInputState, &in_score, iResetState );
+	CalcButtonBits( bits, IN_ZOOM, s_ClearInputState, &in_zoom, iResetState );
+	CalcButtonBits( bits, IN_GRENADE1, s_ClearInputState, &in_grenade1, iResetState );
+	CalcButtonBits( bits, IN_GRENADE2, s_ClearInputState, &in_grenade2, iResetState );
+	CalcButtonBits( bits, IN_ATTACK3, s_ClearInputState, &in_attack3, iResetState );
+    CalcButtonBits( bits, IN_STRAFE, s_ClearInputState, &in_strafe, iResetState);
 
 	if ( KeyState(&in_ducktoggle) )
 	{
@@ -1493,7 +1493,7 @@ int CInput::GetButtonBits( int bResetState )
 	// Clear out any residual
 	bits &= ~s_ClearInputState;
 
-	if ( bResetState )
+	if ( iResetState )
 	{
 		s_ClearInputState = 0;
 	}
