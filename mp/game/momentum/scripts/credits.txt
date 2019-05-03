@@ -143,7 +143,7 @@
         "func_mathias - Pre-production level design and artwork" "CreditsOutroText"
         "SethJH - Pre-production Art and 3D assets" "CreditsOutroText"
         "3DFIX - Pre-production Art and 3D assets" "CreditsOutroText"
-        "Blockbuilder42 - 3D Assets and Textures" "CreditsOutroText"
+        "BlockBuilder57 - 3D Assets and Textures" "CreditsOutroText"
         "Karasu - Initial graphics & concepts" "CreditsOutroText"
         "Mixero - Initial art" "CreditsOutroText"
         "Gus N. - Initial Webmaster" "CreditsOutroText"
