@@ -1,11 +1,11 @@
-"MOMsong.TiagreAtDawn"
+"Momentum.Song.OutroCredits"
 {
-// Thanks to The Rhino Burger http://therhinoburger.bandcamp.com/
+    // Monolith - Clarity
 	"channel"		"CHAN_STATIC"
-	"volume"		"0.5" // Really loud, take care!
+	"volume"		"1.0" // Really loud, take care!
 	"pitch"			"100"
 	"soundlevel"	"0"
-	"wave"			"*#music/triageatdawn.mp3"
+	"wave"			"*#music/clarity.mp3"
 }
 
 "Momentum.Tutorial"
