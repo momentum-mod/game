@@ -385,9 +385,9 @@
         "MOM_API_Unavailable" "API is currently unavailable"
         "MOM_API_ServerError" "Server Error"
         "MOM_API_NoTimesReturned" "No runs found"
-        "MOM_API_NoPBSet" "Unable to get times around you; do a run first!"
-        "MOM_API_NoFriends" "Unable to get friends runs because you do not have any friends :("
-        "MOM_API_UnauthFriendsList" "Unable to get friends runs due to a private friends list"
+        "MOM_API_NoPBSet" "Unable to get ranks around yours; do a run first!"
+        "MOM_API_NoFriends" "You don't have any... :("
+        "MOM_API_UnauthFriendsList" "Your friends list is private!"
 
         // Zone Menu (Zoning)
         "MOM_ZoneMenu_Title" "Zoning Menu"
