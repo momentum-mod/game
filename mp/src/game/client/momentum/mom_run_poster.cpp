@@ -325,6 +325,20 @@ void CRunPoster::EndSessionCallback(KeyValues* pKv)
         if (runUploadedEvent)
         {
             runUploadedEvent->SetBool("run_posted", true);
+
+            const auto pPlayer = C_BasePlayer::GetLocalPlayer();
+            if (pPlayer)
+            {
+                if (pData->GetBool("isNewWorldRecord"))
+                {
+                    pPlayer->EmitSound("Momentum.AchievedWR");
+                }
+                else if (pData->GetBool("isNewPersonalBest"))
+                {
+                    pPlayer->EmitSound("Momentum.AchievedPB");
+                }
+            }
+
             KeyValues *pXP = pData->FindKey("xp");
             if (pXP)
             {
