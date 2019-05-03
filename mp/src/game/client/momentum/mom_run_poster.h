@@ -38,8 +38,6 @@ private:
     uint64 m_uRunSessionID;
     int m_iZoneEnterTicks[MAX_ZONES];
 
-    ConVarRef m_cvarHostTimescale, m_cvarCheats;
-
 #if ENABLE_STEAM_LEADERBOARDS
 public:
     SteamLeaderboard_t m_hCurrentLeaderboard;

@@ -8,7 +8,7 @@
 
 #include <tier0/memdbgon.h>
 
-CRunPoster::CRunPoster(): m_cvarHostTimescale("host_timescale"), m_cvarCheats("sv_cheats")
+CRunPoster::CRunPoster()
 {
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
@@ -60,8 +60,8 @@ void CRunPoster::PreRender()
 {
     if (m_uRunSessionID)
     {
-        if (!CloseEnough(m_cvarHostTimescale.GetFloat(), 1.0f) ||
-            m_cvarCheats.GetBool())
+        static ConVarRef cheats("sv_cheats");
+        if (cheats.GetBool())
         {
             g_pAPIRequests->InvalidateRunSession(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
             ResetSession();
@@ -124,12 +124,17 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
                     Warning("Failed to submit run: could not read file %s from %s !\n", pEvent->GetString("filename"), pEvent->GetString("filepath"));
                 }
             }
+            else
+            {
+                Warning("Not submitting the run!\n");
+            }
         }
     }
     else if (FStrEq(pEvent->GetName(), "timer_event"))
     {
         const auto iMapID = g_pMapCache->GetCurrentMapID();
-        if (iMapID == 0 || m_bIsMappingMode || !CloseEnough(m_cvarHostTimescale.GetFloat(), 1.0f) || m_cvarCheats.GetBool())
+        static ConVarRef cheats("sv_cheats");
+        if (iMapID == 0 || m_bIsMappingMode || cheats.GetBool())
             return;
 
         if (pEvent->GetInt("ent") == engine->GetLocalPlayer())

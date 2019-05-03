@@ -82,8 +82,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     CHandle<CTriggerTimerStart> m_hStartTriggers[MAX_TRACKS];
 
-    ConVarRef m_cvarCheats;
-
     int m_iTrackNumber;
 
     // PRECISION FIX:

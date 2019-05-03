@@ -29,7 +29,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 CMomentumTimer::CMomentumTimer(): CAutoGameSystemPerFrame("CMomentumTimer"), 
       m_iStartTick(0), m_iEndTick(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWasCheatsMsgShown(false),
-      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false), m_cvarCheats("sv_cheats")
+      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 
 }
@@ -55,7 +55,8 @@ void CMomentumTimer::FrameUpdatePreEntityThink()
 {
     if (!m_bWasCheatsMsgShown)
     {
-        if (m_cvarCheats.GetBool())
+        static ConVarRef cheats("sv_cheats");
+        if (cheats.GetBool())
         {
             DispatchCheatsMessage(CMomentumPlayer::GetLocalPlayer());
         }
@@ -98,7 +99,8 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
         Warning("Cannot start timer while in noclip!\n");
         return false;
     }
-    if (m_cvarCheats.GetBool())
+    static ConVarRef cheats("sv_cheats");
+    if (cheats.GetBool())
     {
         // We allow cheats to be enabled but we should warn the player that times won't submit
         DispatchCheatsMessage(pPlayer);
