@@ -26,7 +26,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-CMomentumTimer::CMomentumTimer(const char *pName): CAutoGameSystemPerFrame(pName), 
+CMomentumTimer::CMomentumTimer(): CAutoGameSystemPerFrame("CMomentumTimer"), 
       m_iStartTick(0), m_iEndTick(0),
       m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false),
       m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
@@ -369,86 +369,15 @@ void CMomentumTimer::SetGameModeConVars()
 // Practice mode that stops the timer and allows the player to noclip.
 void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {
-    pPlayer->SetParent(nullptr);
-    pPlayer->SetMoveType(MOVETYPE_NOCLIP);
-    ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
-    pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    pPlayer->m_bHasPracticeMode = true;
-
-    // This is outside the isRunning check because if you practice mode -> tele to start -> toggle -> start run,
-    // the replay file doesn't have your "last" position, so we just save it regardless of timer state, but only restore
-    // it if in a run.
-    pPlayer->SaveCurrentRunState();
-
     // MOM_TODO: if (m_bIsRunning && g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkEnterPracticeMode()
-
-    IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
-    if (pEvent)
-    {
-        pEvent->SetBool("enabled", true);
-        gameeventmanager->FireEvent(pEvent);
-    }
 }
 
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 {
-    pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
-    ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
-    pPlayer->SetMoveType(MOVETYPE_WALK);
-    pPlayer->m_bHasPracticeMode = false;
-
-    // Only when timer is running
-    if (m_bIsRunning)
-    {
-        // MOM_TODO: if (g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkExitPracticeMode()
-        pPlayer->RestoreRunState();
-    }
-
-    IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
-    if (pEvent)
-    {
-        pEvent->SetBool("enabled", false);
-        gameeventmanager->FireEvent(pEvent);
-    }
+    // MOM_TODO: if (m_bIsRunning && g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkExitPracticeMode()
 }
 
 //--------- Commands --------------------------------
-static MAKE_TOGGLE_CONVAR(
-    mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-    "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
-
-CON_COMMAND_F(
-    mom_practice,
-    "Toggle. Allows player to fly around in noclip during a run, teleports the player back upon untoggling.\n"
-    "Only activates when player is not pressing any movement inputs if the timer is running and mom_practice_safeguard "
-    "is 1.\n",
-    FCVAR_CLIENTCMD_CAN_EXECUTE)
-{
-    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer || !pPlayer->AllowUserTeleports() || pPlayer->GetObserverMode() != OBS_MODE_NONE)
-        return;
-
-    if (!pPlayer->m_bHasPracticeMode)
-    {
-        if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
-        {
-            bool safeGuard = (pPlayer->m_nButtons &
-                              (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
-            if (safeGuard)
-            {
-                Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with "
-                        "\"mom_practice_safeguard\"!\n");
-                return;
-            }
-        }
-
-        g_pMomentumTimer->EnablePractice(pPlayer);
-    }
-    else
-    {
-        g_pMomentumTimer->DisablePractice(pPlayer);
-    }
-}
 
 CON_COMMAND(mom_start_mark_create,
             "Marks a starting point inside the start trigger for a more customized starting location.\n")
@@ -609,5 +538,5 @@ CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops 
     }
 }
 
-static CMomentumTimer s_Timer("CMomentumTimer");
+static CMomentumTimer s_Timer;
 CMomentumTimer *g_pMomentumTimer = &s_Timer;

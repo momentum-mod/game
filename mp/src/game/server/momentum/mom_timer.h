@@ -9,7 +9,7 @@ class CMomentumPlayer;
 class CMomentumTimer : public CAutoGameSystemPerFrame
 {
   public:
-    CMomentumTimer(const char *pName);
+    CMomentumTimer();
 
     // CAutoGameSystemPerFrame
     void LevelInitPostEntity() OVERRIDE;
