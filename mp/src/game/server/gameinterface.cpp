@@ -88,10 +88,7 @@
 #include "tier3/tier3.h"
 #include "serverbenchmark_base.h"
 #include "querycache.h"
-
-//Momentum
-#include "momentum/tickset.h"
-
+#include "engine/IEngineTrace.h"
 
 #ifdef TF_DLL
 #include "gc_clientsystem.h"
@@ -203,7 +200,7 @@ extern ConVar sv_noclipduringpause;
 ConVar sv_massreport( "sv_massreport", "0" );
 ConVar sv_force_transmit_ents( "sv_force_transmit_ents", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Will transmit all entities to client, regardless of PVS conditions (will still skip based on transmit flags, however)." );
 
-ConVar sv_autosave( "sv_autosave", "1", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers." );
+ConVar sv_autosave( "sv_autosave", "0", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers." );
 ConVar *sv_maxreplay = NULL;
 static ConVar  *g_pcv_commentary = NULL;
 static ConVar *g_pcv_ThreadMode = NULL;
@@ -297,7 +294,7 @@ CBasePlayer *UTIL_GetCommandClient( void )
 	}
 
 	// HLDS console issued command
-	return NULL;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -414,7 +411,7 @@ void DrawAllDebugOverlays( void )
 	// If in debug select mode print the selection entities name or classname
 	if (CBaseEntity::m_bInDebugSelect)
 	{
-		CBasePlayer* pPlayer =  UTIL_PlayerByIndex( CBaseEntity::m_nDebugPlayer );
+		const auto pPlayer =  UTIL_PlayerByIndex( CBaseEntity::m_nDebugPlayer );
 
 		if (pPlayer)
 		{
