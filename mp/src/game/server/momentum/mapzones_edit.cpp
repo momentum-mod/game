@@ -6,6 +6,7 @@
 #include "mom_player.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
+#include "icommandline.h"
 
 #include "tier0/memdbgon.h"
 
@@ -287,6 +288,13 @@ static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flO
 
 void OnZoneEditingToggled(IConVar *var, const char *pOldVal, float fOldVal)
 {
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use the zone tools!\n");
+        ConVarRef(var).SetValue(0);
+        return;
+    }
+
     ConVarRef varRef(var);
     if (!varRef.GetBool())
     {

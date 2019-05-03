@@ -12,6 +12,7 @@
 #include "vgui_controls/CvarToggleCheckButton.h"
 
 #include "fmtstr.h"
+#include "icommandline.h"
 
 #include "tier0/memdbgon.h"
 
@@ -21,6 +22,12 @@ C_MomZoneMenu *g_pZoneMenu = nullptr;
 
 CON_COMMAND(mom_zone_showmenu, "Shows zoning menu")
 {
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use the zone tools!\n");
+        return;
+    }
+
     if (!g_pZoneMenu)
     {
         g_pZoneMenu = new C_MomZoneMenu();

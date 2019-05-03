@@ -31,7 +31,9 @@
 #include "datacache/imdlcache.h"
 #include "basemultiplayerplayer.h"
 #include "voice_gamemgr.h"
+#include "icommandline.h"
 #include "mom_gamerules.h"
+#include "mom_player_shared.h"
 
 #ifdef HL2_DLL
 #include "weapon_physcannon.h"
@@ -1121,11 +1123,9 @@ static int FindPassableSpace( CBasePlayer *pPlayer, const Vector& direction, flo
 //------------------------------------------------------------------------------
 void EnableNoClip( CBasePlayer *pPlayer )
 {
-	// Disengage from hierarchy
-	pPlayer->SetParent( NULL );
-	pPlayer->SetMoveType( MOVETYPE_NOCLIP );
-	ClientPrint( pPlayer, HUD_PRINTCONSOLE, "noclip ON\n");
-	pPlayer->AddEFlags( EFL_NOCLIP_ACTIVE );
+    const auto pMom = ToCMOMPlayer(pPlayer);
+    if (pMom)
+        pMom->EnablePracticeMode();
 }
 
 void CC_Player_NoClip( void )
@@ -1133,53 +1133,13 @@ void CC_Player_NoClip( void )
 	if ( !sv_cheats->GetBool() )
 		return;
 
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
+    Warning("You should really be using \"mom_practice\" ... (it's the same thing but doesn't require cheats)\n");
+
+	CMomentumPlayer *pPlayer = ToCMOMPlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
 
-	CPlayerState *pl = pPlayer->PlayerData();
-	Assert( pl );
-
-	if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
-	{
-		EnableNoClip( pPlayer );
-		return;
-	}
-
-	pPlayer->RemoveEFlags( EFL_NOCLIP_ACTIVE );
-	pPlayer->SetMoveType( MOVETYPE_WALK );
-
-	Vector oldorigin = pPlayer->GetAbsOrigin();
-	ClientPrint( pPlayer, HUD_PRINTCONSOLE, "noclip OFF\n");
-	if ( !TestEntityPosition( pPlayer ) )
-	{
-		Vector forward, right, up;
-
-		AngleVectors ( pl->v_angle.Get(), &forward, &right, &up);
-		
-		// Try to move into the world
-		if ( !FindPassableSpace( pPlayer, forward, 1, oldorigin ) )
-		{
-			if ( !FindPassableSpace( pPlayer, right, 1, oldorigin ) )
-			{
-				if ( !FindPassableSpace( pPlayer, right, -1, oldorigin ) )		// left
-				{
-					if ( !FindPassableSpace( pPlayer, up, 1, oldorigin ) )	// up
-					{
-						if ( !FindPassableSpace( pPlayer, up, -1, oldorigin ) )	// down
-						{
-							if ( !FindPassableSpace( pPlayer, forward, -1, oldorigin ) )	// back
-							{
-								Msg( "Can't find the world\n" );
-							}
-						}
-					}
-				}
-			}
-		}
-
-		pPlayer->SetAbsOrigin( oldorigin );
-	}
+    pPlayer->TogglePracticeMode();
 }
 
 static ConCommand noclip("noclip", CC_Player_NoClip, "Toggle. Player becomes non-solid and flies.", FCVAR_CHEAT);
@@ -1221,7 +1181,7 @@ static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", F
 //------------------------------------------------------------------------------
 // Sets client to godmode
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats and -mapping).", FCVAR_CHEAT )
 {
 	if ( !sv_cheats->GetBool() )
 		return;
@@ -1229,6 +1189,12 @@ CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).",
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
+
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use setpos!\n");
+        return;
+    }
 
 	if ( args.ArgC() < 3 )
 	{
@@ -1264,6 +1230,12 @@ void CC_setang_f (const CCommand &args)
 	if ( !pPlayer )
 		return;
 
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use setang!\n");
+        return;
+    }
+
 	if ( args.ArgC() < 3 )
 	{
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "Usage:  setang pitch yaw <roll optional>\n");
@@ -1280,7 +1252,7 @@ void CC_setang_f (const CCommand &args)
 	pPlayer->SnapEyeAngles( newang );
 }
 
-static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_CHEAT );
+static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats and -mapping).", FCVAR_CHEAT );
 
 static float GetHexFloat( const char *pStr )
 {
@@ -1296,14 +1268,20 @@ static float GetHexFloat( const char *pStr )
 //------------------------------------------------------------------------------
 // Move position
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats and -mapping).", FCVAR_CHEAT )
 {
 	if ( !sv_cheats->GetBool() )
 		return;
 
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
+	CMomentumPlayer *pPlayer = ToCMOMPlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
+
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use setpos_exact!\n");
+        return;
+    }
 
 	if ( args.ArgC() < 3 )
 	{
@@ -1325,7 +1303,6 @@ CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must hav
 		if ( pPlayer->GetMoveType() != MOVETYPE_NOCLIP )
 		{
 			EnableNoClip( pPlayer );
-			return;
 		}
 	}
 }

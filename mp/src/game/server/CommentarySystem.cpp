@@ -7,15 +7,11 @@
 
 #include "cbase.h"
 
-#ifndef _XBOX
-#include "tier0/icommandline.h"
 #include "igamesystem.h"
 #include "filesystem.h"
 #include <KeyValues.h>
 #include "in_buttons.h"
 #include "engine/IEngineSound.h"
-#include "soundenvelope.h"
-#include "utldict.h"
 #include "isaverestore.h"
 #include "eventqueue.h"
 #include "saverestore_utlvector.h"
@@ -1643,12 +1639,3 @@ void CCommentaryAuto::InputMultiplayerSpawned( inputdata_t &inputdata )
 {
 	m_OnCommentaryMultiplayerSpawn.FireOutput( NULL, this );
 }
-
-#else
-
-bool IsInCommentaryMode( void )
-{
-	return false;
-}
-
-#endif
