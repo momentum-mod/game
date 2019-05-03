@@ -1054,7 +1054,7 @@ entity
 	"lfomodvol" "0"
 	"lforate" "0"
 	"lfotype" "0"
-	"message" "MOMsong.TiagreAtDawn"
+	"message" "Momentum.Song.OutroCredits"
 	"pitch" "100"
 	"pitchstart" "100"
 	"preset" "0"

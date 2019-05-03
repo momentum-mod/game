@@ -957,6 +957,27 @@ Scheme
 				"antialias" "1"
 			}
 		}
+        CreditsOutroTextItalic
+		{
+			"1"
+			{
+				"name"		"Verdana"
+				"tall"		"11"
+				"weight"	"700"
+                "italic" "1"
+				"antialias" "1"
+			}
+		}
+        CreditsOutroTextBold
+		{
+			"1"
+			{
+				"name"		"Verdana"
+				"tall"		"13"
+				"weight"	"700"
+				"antialias" "1"
+			}
+		}
 		CreditsOutroTextLarge
 		{
 			"1"
