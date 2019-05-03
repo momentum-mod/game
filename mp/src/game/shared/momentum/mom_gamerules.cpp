@@ -247,7 +247,7 @@ bool CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
 {
     for (auto pWl : g_szWhitelistedCommands)
     {
-        if (!V_strncmp(pCmd, pWl, sizeof(pWl)))
+        if (!V_strnicmp(pCmd, pWl, V_strlen(pWl)))
             return true;
     }
 
