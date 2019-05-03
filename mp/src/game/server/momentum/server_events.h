@@ -6,7 +6,6 @@ public:
     CMomServerEvents();
 
     void PostInit() OVERRIDE;
-    void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
 
     STEAM_CALLBACK(CMomServerEvents, OnGameOverlay, GameOverlayActivated_t);

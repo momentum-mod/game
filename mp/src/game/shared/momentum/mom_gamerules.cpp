@@ -108,27 +108,6 @@ CMomentumGameRules::CMomentumGameRules()
 
 CMomentumGameRules::~CMomentumGameRules() {}
 
-/* Values dumped from CS:S client.dll
-.data:104A11A0 ; Vector3 m_vView
-.data:104A11A0 m_vView         Vector3 <0.0, 0.0, 64.0>
-.data:104A11AC ; Vector3 m_vHullMin
-.data:104A11AC m_vHullMin      Vector3 <-16.0, -16.0, 0.0>
-.data:104A11B8 ; Vector3 m_vHullMax
-.data:104A11B8 m_vHullMax      Vector3 <16.0, 16.0, 62.0>
-.data:104A11C4 ; Vector3 m_vDuckHullMin
-.data:104A11C4 m_vDuckHullMin  Vector3 <-16.0, -16.0, 0.0>
-.data:104A11D0 ; Vector3 m_vDuckHullMax
-.data:104A11D0 m_vDuckHullMax  Vector3 <16.0, 16.0, 45.0>
-.data:104A11DC ; Vector3 m_vDuckView
-.data:104A11DC m_vDuckView     Vector3 <0.0, 0.0, 47.0>
-.data:104A11E8 ; Vector3 m_vObsHullMin
-.data:104A11E8 m_vObsHullMin   Vector3 <-10.0, -10.0, -10.0>
-.data:104A11F4 ; Vector3 m_vObsHullMax
-.data:104A11F4 m_vObsHullMax   Vector3 <10.0, 10.0, 10.0>
-.data:104A1200 ; Vector3 m_vDeadViewHeight
-.data:104A1200 m_vDeadViewHeight Vector3 <0.0, 0.0, 14.0>
-*/
-
 static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(-16, -16, 0), // hull min
                                      Vector(16, 16, 62),  // hull max
@@ -255,6 +234,24 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
     CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(pEdict);
 
     return pPlayer->ClientCommand(args);
+}
+
+static const char * const g_szWhitelistedCommands[] = {
+    "sv_gravity",
+    "sv_maxvelocity",
+    "sv_airaccelerate",
+    "disconnect"
+};
+
+bool CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
+{
+    for (auto pWl : g_szWhitelistedCommands)
+    {
+        if (!V_strncmp(pCmd, pWl, sizeof(pWl)))
+            return true;
+    }
+
+    return false;
 }
 
 static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldValue)
