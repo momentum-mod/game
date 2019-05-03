@@ -28,8 +28,8 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 
 CMomentumTimer::CMomentumTimer(): CAutoGameSystemPerFrame("CMomentumTimer"), 
       m_iStartTick(0), m_iEndTick(0),
-      m_iLastRunDate(0), m_bIsRunning(false), m_bWereCheatsActivated(false),
-      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+      m_iLastRunDate(0), m_bIsRunning(false), m_bWasCheatsMsgShown(false),
+      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false), m_cvarCheats("sv_cheats")
 {
 
 }
@@ -37,14 +37,14 @@ CMomentumTimer::CMomentumTimer(): CAutoGameSystemPerFrame("CMomentumTimer"),
 void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
-    m_bWereCheatsActivated = false;
+    m_bWasCheatsMsgShown = false;
 }
 
 void CMomentumTimer::LevelShutdownPreEntity()
 {
     if (IsRunning())
         Stop(nullptr);
-    m_bWereCheatsActivated = false;
+    m_bWasCheatsMsgShown = false;
     for (int i = 0; i < MAX_TRACKS; i++)
     {
         m_hStartTriggers[i] = nullptr;
@@ -53,15 +53,20 @@ void CMomentumTimer::LevelShutdownPreEntity()
 
 void CMomentumTimer::FrameUpdatePreEntityThink()
 {
-    if (!GotCaughtCheating())
+    if (!m_bWasCheatsMsgShown)
     {
-        static ConVarRef sv_cheats("sv_cheats");
-        if (sv_cheats.GetBool())
+        if (m_cvarCheats.GetBool())
         {
-            SetCheating(true);
-            Stop(CMomentumPlayer::GetLocalPlayer());
+            DispatchCheatsMessage(CMomentumPlayer::GetLocalPlayer());
         }
     }
+}
+
+void CMomentumTimer::DispatchCheatsMessage(CMomentumPlayer *pPlayer)
+{
+    UTIL_ShowMessage("CHEATER", pPlayer);
+    // MOM_TODO play a special sound here?
+    m_bWasCheatsMsgShown = true;
 }
 
 bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
@@ -93,6 +98,11 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
         Warning("Cannot start timer while in noclip!\n");
         return false;
     }
+    if (m_cvarCheats.GetBool())
+    {
+        // We allow cheats to be enabled but we should warn the player that times won't submit
+        DispatchCheatsMessage(pPlayer);
+    }
 
     m_iStartTick = gpGlobals->tickcount;
     m_iEndTick = 0;
@@ -113,7 +123,7 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
     if (pPlayer)
     {
         // Set our end time and date
-        if (bFinished && !m_bWereCheatsActivated)
+        if (bFinished)
         {
             m_iEndTick = gpGlobals->tickcount;
             g_ReplaySystem.SetTimerStopTick(m_iEndTick);
@@ -125,7 +135,7 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
 
     // Stop replay recording, if there was any
     if (g_ReplaySystem.IsRecording() && bStopRecording)
-        g_ReplaySystem.StopRecording(!bFinished || m_bWereCheatsActivated, bFinished);
+        g_ReplaySystem.StopRecording(!bFinished, bFinished);
 }
 
 void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
@@ -319,17 +329,6 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     }
 
     return false;
-}
-
-void CMomentumTimer::SetCheating(bool cheating)
-{
-    if (cheating)
-    {
-        const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-        UTIL_ShowMessage("CHEATER", pPlayer);
-        Stop(pPlayer);
-    }
-    m_bWereCheatsActivated = cheating;
 }
 
 // set ConVars according to Gamemode. Tickrate is by in tickset.h

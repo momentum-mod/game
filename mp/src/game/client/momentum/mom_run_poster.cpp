@@ -4,10 +4,11 @@
 #include "mom_run_poster.h"
 #include "mom_api_requests.h"
 #include "mom_map_cache.h"
+#include "icommandline.h"
 
 #include <tier0/memdbgon.h>
 
-CRunPoster::CRunPoster()
+CRunPoster::CRunPoster(): m_cvarHostTimescale("host_timescale"), m_cvarCheats("sv_cheats")
 {
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
@@ -22,6 +23,7 @@ void CRunPoster::PostInit()
     ListenForGameEvent("replay_save");
     ListenForGameEvent("timer_event");
     ListenForGameEvent("zone_enter");
+    m_bIsMappingMode = CommandLine()->FindParm("-mapping") != 0;
 }
 
 void CRunPoster::LevelInitPostEntity()
@@ -36,12 +38,15 @@ void CRunPoster::LevelInitPostEntity()
 
     }
 #endif
-    const auto pMapData = g_pMapCache->GetCurrentMapData();
-    if (pMapData)
+    if (!m_bIsMappingMode)
     {
-        g_pAPIRequests->InvalidateRunSession(pMapData->m_uID, UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
+        const auto pMapData = g_pMapCache->GetCurrentMapData();
+        if (pMapData)
+        {
+            g_pAPIRequests->InvalidateRunSession(pMapData->m_uID, UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
+        }
+        ResetSession();
     }
-    ResetSession();
 }
 
 void CRunPoster::LevelShutdownPostEntity()
@@ -49,6 +54,19 @@ void CRunPoster::LevelShutdownPostEntity()
 #if ENABLE_STEAM_LEADERBOARDS
     m_hCurrentLeaderboard = 0;
 #endif
+}
+
+void CRunPoster::PreRender()
+{
+    if (m_uRunSessionID)
+    {
+        if (!CloseEnough(m_cvarHostTimescale.GetFloat(), 1.0f) ||
+            m_cvarCheats.GetBool())
+        {
+            g_pAPIRequests->InvalidateRunSession(g_pMapCache->GetCurrentMapID(), UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
+            ResetSession();
+        }
+    }
 }
 
 void CRunPoster::FireGameEvent(IGameEvent *pEvent)
@@ -111,7 +129,7 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
     else if (FStrEq(pEvent->GetName(), "timer_event"))
     {
         const auto iMapID = g_pMapCache->GetCurrentMapID();
-        if (iMapID == 0)
+        if (iMapID == 0 || m_bIsMappingMode || !CloseEnough(m_cvarHostTimescale.GetFloat(), 1.0f) || m_cvarCheats.GetBool())
             return;
 
         if (pEvent->GetInt("ent") == engine->GetLocalPlayer())
@@ -133,7 +151,7 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
     else if (FStrEq(pEvent->GetName(), "zone_enter"))
     {
         const auto iMapID = g_pMapCache->GetCurrentMapID();
-        if (iMapID == 0 || m_uRunSessionID == 0)
+        if (iMapID == 0 || m_uRunSessionID == 0 || m_bIsMappingMode)
             return;
         
         if (pEvent->GetInt("ent") == engine->GetLocalPlayer())
@@ -341,7 +359,7 @@ void CRunPoster::EndSessionCallback(KeyValues* pKv)
 
 bool CRunPoster::ShouldSubmitRun()
 {
-    return CheckCurrentMap() && m_uRunSessionID != 0;
+    return !m_bIsMappingMode && CheckCurrentMap() && m_uRunSessionID != 0;
 }
 
 bool CRunPoster::CheckCurrentMap()

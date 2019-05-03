@@ -10,7 +10,7 @@
 #include "steam/steam_api.h"
 #endif
 
-class CRunPoster : public CGameEventListener, public CAutoGameSystem
+class CRunPoster : public CGameEventListener, public CAutoGameSystemPerFrame
 {
   public:
     CRunPoster();
@@ -19,6 +19,8 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
     void PostInit() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
+
+    void PreRender() OVERRIDE;
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
@@ -32,8 +34,11 @@ private:
     bool ShouldSubmitRun();
     bool CheckCurrentMap();
     void ResetSession();
+    bool m_bIsMappingMode;
     uint64 m_uRunSessionID;
     int m_iZoneEnterTicks[MAX_ZONES];
+
+    ConVarRef m_cvarHostTimescale, m_cvarCheats;
 
 #if ENABLE_STEAM_LEADERBOARDS
 public:

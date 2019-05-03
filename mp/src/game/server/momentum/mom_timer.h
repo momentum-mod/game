@@ -17,6 +17,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     virtual void FrameUpdatePreEntityThink() OVERRIDE;
 
     // HUD messages
+    void DispatchCheatsMessage(CMomentumPlayer *pPlayer);
     void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
     void DispatchTimerEventMessage(CBasePlayer *pPlayer, int iEntIdx, int type) const;
 
@@ -56,10 +57,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void EnablePractice(CMomentumPlayer *pPlayer);
     void DisablePractice(CMomentumPlayer *pPlayer);
 
-    // Have the cheats been turned on in this session?
-    bool GotCaughtCheating() const { return m_bWereCheatsActivated; };
-    void SetCheating(bool cheating);
-
     void SetGameModeConVars();
 
     int GetTrackNumber() const { return m_iTrackNumber; }
@@ -81,9 +78,11 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     int m_iStartTick, m_iEndTick;
     time_t m_iLastRunDate;
     bool m_bIsRunning;
-    bool m_bWereCheatsActivated;
+    bool m_bWasCheatsMsgShown;
 
     CHandle<CTriggerTimerStart> m_hStartTriggers[MAX_TRACKS];
+
+    ConVarRef m_cvarCheats;
 
     int m_iTrackNumber;
 

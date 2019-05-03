@@ -85,7 +85,7 @@
 
     //Timer
         "MOM_SavedLocation" "Saveloc %s1/%s2"
-        "MOM_Cheater_Message" "If you wish to submit your times,\nyou must turn sv_cheats off\nand restart the map!"
+        "MOM_Cheater_Message" "For your times to be able to submit,\nyou must turn sv_cheats off!"
         "MOM_NoTimer" "No Timer"
         "MOM_PracticeMode" "Practice Mode"
 
