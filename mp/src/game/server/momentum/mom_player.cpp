@@ -23,6 +23,24 @@
 
 #define AVERAGE_STATS_INTERVAL 0.1
 
+static MAKE_TOGGLE_CONVAR(
+    mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+    "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
+
+CON_COMMAND_F(
+    mom_practice,
+    "Toggle. Allows player to fly around in noclip during a run, teleports the player back upon untoggling.\n"
+    "Only activates when player is not pressing any movement inputs if the timer is running and mom_practice_safeguard "
+    "is 1.\n",
+    FCVAR_CLIENTCMD_CAN_EXECUTE)
+{
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    pPlayer->TogglePracticeMode();
+}
+
 CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
 {
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());
@@ -1516,6 +1534,74 @@ void CMomentumPlayer::StopSpectating()
     // Update the lobby/server if there is one
     m_sSpecTargetSteamID.Clear(); // reset steamID when we stop spectating
     g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
+}
+
+void CMomentumPlayer::TogglePracticeMode()
+{
+    if (!m_bAllowUserTeleports || m_iObserverMode != OBS_MODE_NONE)
+        return;
+
+    if (m_bHasPracticeMode)
+        DisablePracticeMode();
+    else
+        EnablePracticeMode();
+}
+
+void CMomentumPlayer::EnablePracticeMode()
+{
+    if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
+    {
+        const auto safeGuard = (m_nButtons & (IN_FORWARD|IN_MOVELEFT|IN_MOVERIGHT|IN_BACK|IN_JUMP|IN_DUCK|IN_WALK)) != 0;
+        if (safeGuard)
+        {
+            Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with "
+                    "\"mom_practice_safeguard\"!\n");
+            return;
+        }
+    }
+
+    SetParent(nullptr);
+    SetMoveType(MOVETYPE_NOCLIP);
+    ClientPrint(this, HUD_PRINTCONSOLE, "Practice mode ON!\n");
+    AddEFlags(EFL_NOCLIP_ACTIVE);
+    m_bHasPracticeMode = true;
+
+    // This is outside the isRunning check because if you practice mode -> tele to start -> toggle -> start run,
+    // the replay file doesn't have your "last" position, so we just save it regardless of timer state, but only restore
+    // it if in a run.
+    SaveCurrentRunState();
+
+    g_pMomentumTimer->EnablePractice(this);
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
+    if (pEvent)
+    {
+        pEvent->SetBool("enabled", true);
+        gameeventmanager->FireEvent(pEvent);
+    }
+}
+
+void CMomentumPlayer::DisablePracticeMode()
+{
+    RemoveEFlags(EFL_NOCLIP_ACTIVE);
+    ClientPrint(this, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
+    SetMoveType(MOVETYPE_WALK);
+    m_bHasPracticeMode = false;
+
+    // Only when timer is running
+    if (g_pMomentumTimer->IsRunning())
+    {
+        RestoreRunState();
+    }
+
+    g_pMomentumTimer->DisablePractice(this);
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("practice_mode");
+    if (pEvent)
+    {
+        pEvent->SetBool("enabled", false);
+        gameeventmanager->FireEvent(pEvent);
+    }
 }
 
 void CMomentumPlayer::SaveCurrentRunState()

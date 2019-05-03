@@ -154,6 +154,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void StopSpectating();
 
+    // Practice mode
+    void TogglePracticeMode();
+    void EnablePracticeMode();
+    void DisablePracticeMode();
+
     // Used when spectating/practicing during a run
     void SaveCurrentRunState(); // Entering practice/spectate
     void RestoreRunState(); // Exiting practice/spectate
