@@ -165,7 +165,7 @@
         "FliteDNB - Pre-production music ideas" "CreditsOutroText"
         " " "CreditsOutroText"
         "Those who believe in us" "CreditsOutroText"
-        "Those we may have lost, forgotton, or ignored" "CreditsOutroText"
+        "Those we may have lost, forgotten, or ignored" "CreditsOutroText"
         " " "CreditsOutroText"
         "and" "CreditsOutroText"
         " " "CreditsOutroText"
