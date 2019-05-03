@@ -15,6 +15,7 @@
 "blank"			"=========================="
 "mom_restart"	"#MOM_Controls_Restart"
 "mom_reset"		"#MOM_Controls_Reset"
+"mom_timer_stop" "#MOM_Controls_StopTimer"
 "mom_saveloc_show"	"#MOM_Controls_ToggleSavelocMenu"
 "+showtimes"    "#MOM_Controls_ToggleTimes"
 "+show_lobby_members" "#MOM_Controls_ToggleLobbyMembers"

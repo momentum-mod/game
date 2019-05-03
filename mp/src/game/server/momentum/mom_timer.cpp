@@ -405,6 +405,15 @@ CON_COMMAND(mom_start_mark_clear,
     }
 }
 
+CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.", FCVAR_CLIENTCMD_CAN_EXECUTE)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer && g_pMomentumTimer->IsRunning())
+    {
+        g_pMomentumTimer->Stop(pPlayer);
+    }
+}
+
 CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is main track).\n",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
