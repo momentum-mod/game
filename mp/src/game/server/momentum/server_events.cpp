@@ -15,13 +15,6 @@ void CMomServerEvents::PostInit()
     MountAdditionalContent();
 }
 
-void CMomServerEvents::LevelInitPostEntity()
-{
-    //disable point_servercommand
-    ConVarRef pointcommand("sv_allow_point_command");
-    pointcommand.SetValue("disallow");
-}
-
 void CMomServerEvents::LevelShutdownPostEntity()
 {
     ConVarRef fullbright("mat_fullbright");

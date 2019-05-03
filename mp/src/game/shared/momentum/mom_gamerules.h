@@ -45,6 +45,9 @@ class CMomentumGameRules : public CSingleplayRules
 
     bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE { return !pVictim->IsPlayer(); }
 
+    // Whitelist checking
+    bool PointCommandWhitelisted(const char *pCmd);
+
     void ClientSettingsChanged(CBasePlayer *) OVERRIDE;
 
     bool FAllowNPCs() OVERRIDE { return false; }
@@ -58,4 +61,4 @@ class CMomentumGameRules : public CSingleplayRules
 #endif
 };
 
-inline CMomentumGameRules *GetMomentumGamerules() { return static_cast<CMomentumGameRules *>(g_pGameRules); }
+inline CMomentumGameRules *GameRulesMomentum() { return static_cast<CMomentumGameRules *>(g_pGameRules); }

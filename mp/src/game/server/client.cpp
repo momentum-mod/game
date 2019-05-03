@@ -16,30 +16,22 @@
 #include "cbase.h"
 #include "player.h"
 #include "client.h"
-#include "soundent.h"
 #include "gamerules.h"
 #include "game.h"
 #include "physics.h"
 #include "entitylist.h"
 #include "shake.h"
-#include "globalstate.h"
 #include "event_tempentity_tester.h"
 #include "ndebugoverlay.h"
 #include "engine/IEngineSound.h"
-#include <ctype.h>
 #include "tier1/strtools.h"
 #include "te_effect_dispatch.h"
-#include "globals.h"
 #include "nav_mesh.h"
 #include "team.h"
 #include "datacache/imdlcache.h"
 #include "basemultiplayerplayer.h"
 #include "voice_gamemgr.h"
-
-#ifdef TF_DLL
-#include "tf_player.h"
-#include "tf_gamerules.h"
-#endif
+#include "mom_gamerules.h"
 
 #ifdef HL2_DLL
 #include "weapon_physcannon.h"
@@ -60,15 +52,12 @@ ConVar  *sv_cheats = NULL;
 enum eAllowPointServerCommand {
 	eAllowNever,
 	eAllowOfficial,
+    eAllowWhitelist,
 	eAllowAlways
 };
 
-#ifdef TF_DLL
 // The default value here should match the default of the convar
-eAllowPointServerCommand sAllowPointCommand = eAllowOfficial;
-#else
-eAllowPointServerCommand sAllowPointCommand = eAllowAlways;
-#endif // TF_DLL
+eAllowPointServerCommand sAllowPointCommand = eAllowWhitelist;
 
 void sv_allow_point_command_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
@@ -83,12 +72,10 @@ void sv_allow_point_command_changed( IConVar *pConVar, const char *pOldString, f
 	{
 		sAllowPointCommand = eAllowAlways;
 	}
-#ifdef TF_DLL
-	else if ( V_strcasecmp ( pNewValue, "official" ) == 0 )
-	{
-		sAllowPointCommand = eAllowOfficial;
-	}
-#endif // TF_DLL
+    else if (!V_strcasecmp(pNewValue, "whitelist"))
+    {
+        sAllowPointCommand = eAllowWhitelist;
+    }
 	else
 	{
 		sAllowPointCommand = eAllowNever;
@@ -96,20 +83,12 @@ void sv_allow_point_command_changed( IConVar *pConVar, const char *pOldString, f
 }
 
 ConVar sv_allow_point_command ( "sv_allow_point_command",
-#ifdef TF_DLL
-                                      // The default value here should match the default of the convar
-                                      "official",
-#else
-                                      // Other games may use this in their official maps, and only TF exposes IsValveMap() currently
-                                      "always",
-#endif // TF_DLL
+                                      "whitelist",
                                       FCVAR_NONE,
-                                      "Allow use of point_servercommand & point_clientcommand entities in map. Potentially dangerous for untrusted maps.\n"
-                                      "  disallow : Always disallow\n"
-#ifdef TF_DLL
-                                      "  official : Allowed for valve maps only\n"
-#endif // TF_DLL
-                                      "  always   : Allow for all maps", sv_allow_point_command_changed );
+                                      "Allow use of point_servercommand & point_clientcommand entities in map. Potentially dangerous for untrusted maps!\n"
+                                      "  disallow : Always disallow for every map\n"
+                                      "  whitelist: Allow whitelisted commands for every map\n"
+                                      "  always   : Allow all commands for all maps", sv_allow_point_command_changed );
 
 void ClientKill( edict_t *pEdict, const Vector &vecForce, bool bExplode = false )
 {
@@ -571,16 +550,15 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 		return;
 
 	bool bAllowed = (sAllowPointCommand == eAllowAlways);
-#ifdef TF_DLL
-    if (sAllowPointServerCommand == eAllowOfficial)
+
+    if (sAllowPointCommand == eAllowWhitelist)
     {
-        bAllowed = TFGameRules() && TFGameRules()->IsValveMap();
+        bAllowed = GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
     }
-#endif // TF_DLL
 
     if (!bAllowed)
     {
-        Warning("point_clientcommand usage blocked by sv_allow_point_command setting\n");
+        Warning("point_clientcommand \"%s\" usage blocked by sv_allow_point_command setting\n", inputdata.value.String());
         return;
     }
 
@@ -638,12 +616,10 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 		return;
 
 	bool bAllowed = ( sAllowPointCommand == eAllowAlways );
-#ifdef TF_DLL
-	if ( sAllowPointCommand == eAllowOfficial )
-	{
-		bAllowed = TFGameRules() && TFGameRules()->IsValveMap();
-	}
-#endif // TF_DLL
+    if (sAllowPointCommand == eAllowWhitelist)
+    {
+        bAllowed = GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+    }
 
 	if ( bAllowed )
 	{
@@ -651,7 +627,7 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	}
 	else
 	{
-		Warning( "point_servercommand usage blocked by sv_allow_point_command setting\n" );
+		Warning( "point_servercommand \"%s\" usage blocked by sv_allow_point_command setting\n", inputdata.value.String());
 	}
 }
 
