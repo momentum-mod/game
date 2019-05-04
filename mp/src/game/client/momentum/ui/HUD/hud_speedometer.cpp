@@ -204,14 +204,14 @@ void CHudSpeedMeter::OnThink()
             SetLabelText(L"MPH");
             break;
         case 4:
-        {
-            // Normalized units of energy
-            float lastJumpZPos = m_pRunEntData->m_flLastJumpZPos;
-            Vector absVel = pPlayer->GetAbsVelocity();
-            vel = ( absVel.LengthSqr()/2.0f + (sv_gravity.GetFloat() * (pPlayer->GetLocalOrigin().z - lastJumpZPos))) / sv_gravity.GetFloat();
-            SetLabelText(L"Energy");
-            break;
-        }
+            {
+                // Normalized units of energy
+                const auto gravity = sv_gravity.GetFloat();
+                vel = (pPlayer->GetAbsVelocity().LengthSqr()/2.0f + 
+                    gravity * (pPlayer->GetLocalOrigin().z - m_pRunEntData->m_flLastJumpZPos)) / gravity;
+                SetLabelText(L"Energy");
+                break;
+            }
         case 1:
         default:
             // We do nothing but break out of the switch, as default vel is already in UPS
