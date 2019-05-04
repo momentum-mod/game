@@ -13,7 +13,7 @@
 static MAKE_TOGGLE_CONVAR(mom_api_log_requests, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, API requests will be logged to console.\n");
 static MAKE_TOGGLE_CONVAR(mom_api_log_requests_sensitive, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, API requests that are sensitive will also be logged to console.\n"
 "!!!!!!! DANGER! Only set this if you know what you are doing! This could potentially expose an API key! !!!!!!!");
-static ConVar mom_api_base_url("mom_api_base_url", "http://localhost:3002", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The base URL for the API requests.\n");
+static ConVar mom_api_base_url("mom_api_base_url", "https://momentum-mod.org", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The base URL for the API requests.\n");
 
 #define API_REQ(url) CFmtStr1024("%s/api/%s", mom_api_base_url.GetString(), (url)).Get()
 #define AUTH_REQ(url) CFmtStr1024("%s%s", mom_api_base_url.GetString(), (url)).Get()
