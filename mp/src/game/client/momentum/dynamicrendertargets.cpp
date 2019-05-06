@@ -55,25 +55,6 @@ void CDynamicRenderTargets::UpdateDynamicRenderTargets()
     }
 }
 
-void CDynamicRenderTargets::PostInit()
-{
-    KeyValues *pVMTKeyValues = new KeyValues("unlitgeneric");
-    pVMTKeyValues->SetString("$vertexcolor", "1");
-    pVMTKeyValues->SetString("$vertexalpha", "1");
-    pVMTKeyValues->SetString("$ignorez", "0"); // Change this to 1 to see it through walls
-    pVMTKeyValues->SetString("$selfillum", "1");
-    pVMTKeyValues->SetString("$nofog", "1");
-    pVMTKeyValues->SetString("$nocull", "1");
-    m_pTriggerOutlineMat = m_pMaterialSystem->CreateMaterial("__utilOutlineColor", pVMTKeyValues);
-    m_pTriggerOutlineMat->Refresh();
-}
-
-void CDynamicRenderTargets::Shutdown()
-{
-    m_pTriggerOutlineMat->DecrementReferenceCount();
-    m_pTriggerOutlineMat = nullptr;
-}
-
 Vector2D CDynamicRenderTargets::GetViewport()
 {
     if (!m_pMaterialSystem)

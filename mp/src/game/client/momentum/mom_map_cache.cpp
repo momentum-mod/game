@@ -836,22 +836,22 @@ bool CMapCache::RemoveMapFromDeleteQueue(MapData* pData)
 
 bool CMapCache::AddMapToLibrary(uint32 uID)
 {
-    return g_pAPIRequests->AddMapToLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToLibrary));
+    return g_pAPIRequests->SetMapInLibrary(uID, true, UtlMakeDelegate(this, &CMapCache::OnMapAddedToLibrary));
 }
 
 bool CMapCache::RemoveMapFromLibrary(uint32 uID)
 {
-    return g_pAPIRequests->RemoveMapFromLibrary(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromLibrary));
+    return g_pAPIRequests->SetMapInLibrary(uID, false, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromLibrary));
 }
 
 bool CMapCache::AddMapToFavorites(uint32 uID)
 {
-    return g_pAPIRequests->AddMapToFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapAddedToFavorites));
+    return g_pAPIRequests->SetMapInFavorites(uID, true, UtlMakeDelegate(this, &CMapCache::OnMapAddedToFavorites));
 }
 
 bool CMapCache::RemoveMapFromFavorites(uint32 uID)
 {
-    return g_pAPIRequests->RemoveMapFromFavorites(uID, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromFavorites));
+    return g_pAPIRequests->SetMapInFavorites(uID, false, UtlMakeDelegate(this, &CMapCache::OnMapRemovedFromFavorites));
 }
 
 void CMapCache::FireGameEvent(IGameEvent* event)

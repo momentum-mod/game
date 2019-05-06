@@ -1,6 +1,6 @@
 "Unlitgeneric"
 {
-	"$basetexture" "shadereditor/colorpicker_hue"
+	"$basetexture" "vgui/colorpicker_hue"
 
 	"$linearwrite" 1
 	"$translucent" 1

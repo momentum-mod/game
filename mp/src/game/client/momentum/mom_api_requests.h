@@ -119,11 +119,11 @@ public:
     bool GetMapByName(const char *pMapName, CallbackFunc func);
     bool GetMapZones(uint32 uMapID, CallbackFunc func);
     bool GetUserMapLibrary(CallbackFunc func);
-    bool AddMapToLibrary(uint32 mapID, CallbackFunc func);
-    bool RemoveMapFromLibrary(uint32 mapID, CallbackFunc func);
+    // bAddToLibrary being false means "remove from library"
+    bool SetMapInLibrary(uint32 mapID, bool bAddToLibrary, CallbackFunc func);
     bool GetUserMapFavorites(CallbackFunc func);
-    bool AddMapToFavorites(uint32 mapID, CallbackFunc func);
-    bool RemoveMapFromFavorites(uint32 mapID, CallbackFunc func);
+    // bAddToFavs being false means "remove from favorites"
+    bool SetMapInFavorites(uint32 mapID, bool bAddToFavs, CallbackFunc func);
 
     // ==== Leaderboards ====
     // pKvFilters are run category filters (track, zone, flags, etc). Null is entire main track, no flags.

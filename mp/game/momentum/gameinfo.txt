@@ -1,6 +1,6 @@
 "GameInfo"
 {
-    game 		"Momentum"
+    game 		"Momentum Mod"
     title 		""
     title2		""
     supportsvr	0

@@ -118,7 +118,7 @@ HSV_Select_Base::HSV_Select_Base(Panel *parent, const char *pElementName) : Base
         AddActionSignalTarget(parent->GetVPanel());
 
     m_bIsReading = false;
-    SetupVguiTex(m_iMat, "shadereditor/colorpicker");
+    SetupVguiTex(m_iMat, "vgui/colorpicker");
 }
 
 void HSV_Select_Base::OnMousePressed(MouseCode code)
@@ -174,7 +174,7 @@ void HSV_Select_SV::Paint()
     points[2].m_TexCoord.Init(1, 1);
     points[3].m_TexCoord.Init(0, 1);
 
-    IMaterial *pMatColorpicker = materials->FindMaterial("shadereditor/colorpicker", TEXTURE_GROUP_OTHER);
+    IMaterial *pMatColorpicker = materials->FindMaterial("vgui/colorpicker", TEXTURE_GROUP_OTHER);
     if (IsErrorMaterial(pMatColorpicker))
         return;
     bool bFound = false;
@@ -236,7 +236,7 @@ void HSV_Select_Hue::Paint()
     points[2].m_TexCoord.Init(1, 1);
     points[3].m_TexCoord.Init(0, 1);
 
-    IMaterial *pMatColorpicker = materials->FindMaterial("shadereditor/colorpicker", TEXTURE_GROUP_OTHER);
+    IMaterial *pMatColorpicker = materials->FindMaterial("vgui/colorpicker", TEXTURE_GROUP_OTHER);
     if (IsErrorMaterial(pMatColorpicker))
         return;
     bool bFound = false;
@@ -387,8 +387,8 @@ void ColorPicker::Init()
     SetSize(440, 300);
     SetTitle("Color Picker", false);
 
-    SetupVguiTex(m_iVgui_Pick_Hue, "shadereditor/colorpicker_hue");
-    SetupVguiTex(m_iVgui_Pick_SV, "shadereditor/colorpicker_sv");
+    SetupVguiTex(m_iVgui_Pick_Hue, "vgui/colorpicker_hue");
+    SetupVguiTex(m_iVgui_Pick_SV, "vgui/colorpicker_sv");
 
     pDrawPicker_Hue = new PickerHelper(m_iVgui_Pick_Hue, this);
     pDrawPicker_Hue->SetSize(48, 16);

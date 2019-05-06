@@ -4,9 +4,7 @@
 #include "MapSelectorDialog.h"
 #include "CMapListPanel.h"
 
-#include "util/mom_util.h"
 #include "mom_api_requests.h"
-
 #include "mom_map_cache.h"
 
 #include "fmtstr.h"
@@ -23,7 +21,7 @@ using namespace vgui;
 CBrowseMaps::CBrowseMaps(Panel *parent) : CBaseMapsPage(parent, "BrowseMaps")
 {
     m_fPrevSearchTime = 0.0f;
-    m_pMapList->SetSortColumnEx(HEADER_DATE_CREATED, HEADER_DIFFICULTY, true);
+    m_pMapList->SetSortColumnEx(HEADER_MAP_NAME, HEADER_DIFFICULTY, true);
 }
 
 

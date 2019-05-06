@@ -175,21 +175,10 @@ bool CAPIRequests::GetUserMapLibrary(CallbackFunc func)
     return false;
 }
 
-bool CAPIRequests::AddMapToLibrary(uint32 mapID, CallbackFunc func)
+bool CAPIRequests::SetMapInLibrary(uint32 mapID, bool bAddToLibrary, CallbackFunc func)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("user/maps/library/%u", mapID).Get()), k_EHTTPMethodPUT))
-    {
-        return SendAPIRequest(req, func, __FUNCTION__);
-    }
-    delete req;
-    return false;
-}
-
-bool CAPIRequests::RemoveMapFromLibrary(uint32 mapID, CallbackFunc func)
-{
-    APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("user/maps/library/%u", mapID).Get()), k_EHTTPMethodDELETE))
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("user/maps/library/%u", mapID).Get()), bAddToLibrary ? k_EHTTPMethodPUT : k_EHTTPMethodDELETE))
     {
         return SendAPIRequest(req, func, __FUNCTION__);
     }
@@ -211,21 +200,10 @@ bool CAPIRequests::GetUserMapFavorites(CallbackFunc func)
     return false;
 }
 
-bool CAPIRequests::AddMapToFavorites(uint32 mapID, CallbackFunc func)
+bool CAPIRequests::SetMapInFavorites(uint32 mapID, bool bAddToFavs, CallbackFunc func)
 {
     APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("user/maps/favorites/%u", mapID).Get()), k_EHTTPMethodPUT))
-    {
-        return SendAPIRequest(req, func, __FUNCTION__);
-    }
-    delete req;
-    return false;
-}
-
-bool CAPIRequests::RemoveMapFromFavorites(uint32 mapID, CallbackFunc func)
-{
-    APIRequest *req = new APIRequest;
-    if (CreateAPIRequest(req, API_REQ(CFmtStr("user/maps/favorites/%u", mapID).Get()), k_EHTTPMethodDELETE))
+    if (CreateAPIRequest(req, API_REQ(CFmtStr("user/maps/favorites/%u", mapID).Get()), bAddToFavs ? k_EHTTPMethodPUT : k_EHTTPMethodDELETE))
     {
         return SendAPIRequest(req, func, __FUNCTION__);
     }

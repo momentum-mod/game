@@ -20,11 +20,6 @@ class CDynamicRenderTargets : public CBaseClientRenderTargets, public CAutoGameS
     virtual void PreRender();
     virtual void UpdateDynamicRenderTargets();
 
-    void PostInit() OVERRIDE;
-    void Shutdown() OVERRIDE;
-
-    IMaterial* GetTriggerOutlineMat() const { return m_pTriggerOutlineMat; }
-
   protected:
     virtual Vector2D GetViewport();
 
@@ -34,7 +29,6 @@ class CDynamicRenderTargets : public CBaseClientRenderTargets, public CAutoGameS
     Vector2D m_pOldViewport;
 
     CTextureReference m_DepthBufferTexture;
-    IMaterial *m_pTriggerOutlineMat;
 
     IMaterialSystem *m_pMaterialSystem;
 };

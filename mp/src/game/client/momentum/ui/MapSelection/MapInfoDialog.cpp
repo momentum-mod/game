@@ -247,8 +247,8 @@ void CDialogMapInfo::FillMapInfo()
     time_t creationDateTime;
     if (MomUtil::ISODateToTimeT(m_pMapData->m_Info.m_szCreationDate, &creationDateTime))
     {
-        char date[32];
-        strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
+        wchar_t date[32];
+        wcsftime(date, 32, L"%b %d, %Y", localtime(&creationDateTime));
         m_pMapInfoPanel->SetControlString("CreationDateText", date);
     }
 
@@ -256,8 +256,8 @@ void CDialogMapInfo::FillMapInfo()
     time_t releaseDateTime;
     if (MomUtil::ISODateToTimeT(m_pMapData->m_szCreatedAt, &releaseDateTime))
     {
-        char date[32];
-        strftime(date, 32, "%b %d, %Y", localtime(&releaseDateTime));
+        wchar_t date[32];
+        wcsftime(date, 32, L"%b %d, %Y", localtime(&releaseDateTime));
         m_pMapInfoPanel->SetControlString("ReleaseDateText", date);
     }
 

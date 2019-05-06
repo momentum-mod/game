@@ -77,9 +77,9 @@ void CMomentumGhostBaseEntity::UnHideGhost()
 void CMomentumGhostBaseEntity::SetButtonsEnabled(int iButtonFlags, bool bEnable)
 {
     if (bEnable)
-        m_iDisabledButtons |= iButtonFlags;
-    else 
         m_iDisabledButtons &= ~iButtonFlags;
+    else 
+        m_iDisabledButtons |= iButtonFlags;
 }
 
 void CMomentumGhostBaseEntity::SetBhopEnabled(bool bEnable)

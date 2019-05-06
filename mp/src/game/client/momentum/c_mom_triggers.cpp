@@ -6,6 +6,7 @@
 
 #include "mom_shareddefs.h"
 #include "dt_utlvector_recv.h"
+#include "debugoverlay_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -47,8 +48,9 @@ bool CTriggerOutlineRenderer::RenderBrushModelSurface(IClientEntity* pBaseEntity
     CMatRenderContextPtr pRenderContext(materials);
 
     CMeshBuilder builder;
-    builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
-                  MATERIAL_LINE_LOOP, vertices);
+    builder.Begin(pRenderContext->GetDynamicMesh(true, nullptr, nullptr, 
+                                                 materials->FindMaterial("momentum/zone_outline", TEXTURE_GROUP_OTHER)),
+                    MATERIAL_LINE_LOOP, vertices);
 
     for (int i = 0; i < vertices; i++)
     {
@@ -80,57 +82,34 @@ void C_BaseMomZoneTrigger::DrawOutlineModel(const Color& outlineColor)
 {
     const int iNum = m_vecZonePoints.Count();
 
-    if (iNum <= 0)
+    if (iNum <= 2)
         return;
 
-    CMatRenderContextPtr pRenderContext(materials);
-    CMeshBuilder builder;
-
     // Bottom
-    builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
-                  MATERIAL_LINE_LOOP, iNum);
     for (int i = 0; i < iNum; i++)
     {
-        const Vector &cur = m_vecZonePoints[i];
-
-        builder.Position3fv(cur.Base());
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
-        builder.AdvanceVertex();
+        const auto cur = m_vecZonePoints[i];
+        const auto next = i == (iNum - 1) ? m_vecZonePoints[0] : m_vecZonePoints[i+1];
+        debugoverlay->AddLineOverlayAlpha(cur, next, outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a(), false, 0.0f);
     }
-    builder.End(false, true);
 
     // Connecting lines
     for (int i = 0; i < iNum; i++)
     {
         const Vector &cur = m_vecZonePoints[i];
-
-        // Connecting lines
-        builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
-                          MATERIAL_LINES, 2);
-
-        builder.Position3fv(cur.Base());
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
-        builder.AdvanceVertex();
-
         const Vector next(cur.x, cur.y, cur.z + m_flZoneHeight);
-        builder.Position3fv(next.Base());
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
-        builder.AdvanceVertex();
-
-        builder.End(false, true);
+        debugoverlay->AddLineOverlayAlpha(cur, next, outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a(), false, 0.0f);
     }
 
     // Top
-    builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, g_pDynamicRenderTargets->GetTriggerOutlineMat()),
-                  MATERIAL_LINE_LOOP, iNum);
     for (int i = 0; i < iNum; i++)
     {
-        const Vector next(m_vecZonePoints[i].x, m_vecZonePoints[i].y, m_vecZonePoints[i].z + m_flZoneHeight);
-        builder.Position3fv(next.Base());
-        builder.Color4ub(outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a());
-        builder.AdvanceVertex();
+        auto cur = m_vecZonePoints[i];
+        auto next = i == (iNum - 1) ? m_vecZonePoints[0] : m_vecZonePoints[i + 1];
+        Vector curUp(cur.x, cur.y, cur.z + m_flZoneHeight);
+        Vector nextUp(next.x, next.y, next.z + m_flZoneHeight);
+        debugoverlay->AddLineOverlayAlpha(curUp, nextUp, outlineColor.r(), outlineColor.g(), outlineColor.b(), outlineColor.a(), false, 0.0f);
     }
-    builder.End(false, true);
 }
 
 bool C_BaseMomZoneTrigger::ShouldDraw()

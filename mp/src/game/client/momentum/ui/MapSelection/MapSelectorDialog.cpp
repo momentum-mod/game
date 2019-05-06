@@ -326,9 +326,9 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
         time_t creationDateTime;
         if (MomUtil::ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime))
         {
-            char date[32];
-            strftime(date, 32, "%b %d, %Y", localtime(&creationDateTime));
-            pDataKv->SetString(KEYNAME_MAP_CREATION_DATE, date);
+            wchar_t date[32];
+            wcsftime(date, 32, L"%b %d, %Y", localtime(&creationDateTime));
+            pDataKv->SetWString(KEYNAME_MAP_CREATION_DATE, date);
         }
     }
 
