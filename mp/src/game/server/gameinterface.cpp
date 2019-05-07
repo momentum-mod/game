@@ -35,7 +35,6 @@
 #include "env_wind_shared.h"
 #include "engine/IEngineSound.h"
 #include "ispatialpartition.h"
-#include "textstatsmgr.h"
 #include "bitbuf.h"
 #include "saverestoretypes.h"
 #include "physics_saverestore.h"
@@ -89,11 +88,7 @@
 #include "tier3/tier3.h"
 #include "serverbenchmark_base.h"
 #include "querycache.h"
-
-//Momentum
-#include "momentum/server_events.h"
-#include "momentum/tickset.h"
-
+#include "engine/IEngineTrace.h"
 
 #ifdef TF_DLL
 #include "gc_clientsystem.h"
@@ -140,11 +135,6 @@ extern IParticleSystemQuery *g_pParticleSystemQuery;
 extern ConVar commentary;
 
 #ifndef NO_STEAM
-// this context is not available on dedicated servers
-// WARNING! always check if interfaces are available before using
-static CSteamAPIContext s_SteamAPIContext;	
-CSteamAPIContext *steamapicontext = &s_SteamAPIContext;
-
 // this context is not available on a pure client connected to a remote server.
 // WARNING! always check if interfaces are available before using
 static CSteamGameServerAPIContext s_SteamGameServerAPIContext;
@@ -171,7 +161,6 @@ IFileSystem		*filesystem = NULL;
 #else
 extern IFileSystem *filesystem;
 #endif
-CShared *shared = NULL;
 INetworkStringTableContainer *networkstringtable = NULL;
 IStaticPropMgrServer *staticpropmgr = NULL;
 IUniformRandomStream *random = NULL;
@@ -211,7 +200,7 @@ extern ConVar sv_noclipduringpause;
 ConVar sv_massreport( "sv_massreport", "0" );
 ConVar sv_force_transmit_ents( "sv_force_transmit_ents", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Will transmit all entities to client, regardless of PVS conditions (will still skip based on transmit flags, however)." );
 
-ConVar sv_autosave( "sv_autosave", "1", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers." );
+ConVar sv_autosave( "sv_autosave", "0", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers." );
 ConVar *sv_maxreplay = NULL;
 static ConVar  *g_pcv_commentary = NULL;
 static ConVar *g_pcv_ThreadMode = NULL;
@@ -305,7 +294,7 @@ CBasePlayer *UTIL_GetCommandClient( void )
 	}
 
 	// HLDS console issued command
-	return NULL;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -422,7 +411,7 @@ void DrawAllDebugOverlays( void )
 	// If in debug select mode print the selection entities name or classname
 	if (CBaseEntity::m_bInDebugSelect)
 	{
-		CBasePlayer* pPlayer =  UTIL_PlayerByIndex( CBaseEntity::m_nDebugPlayer );
+		const auto pPlayer =  UTIL_PlayerByIndex( CBaseEntity::m_nDebugPlayer );
 
 		if (pPlayer)
 		{
@@ -584,7 +573,7 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 		return false;
 
 #ifndef _X360
-	s_SteamAPIContext.Init();
+	SteamAPI_Init();
 	s_SteamGameServerAPIContext.Init();
 #endif
 
@@ -774,13 +763,6 @@ void CServerGameDLL::DLLShutdown( void )
 	g_pGameSaveRestoreBlockSet->RemoveBlockHandler( GetPhysSaveRestoreBlockHandler() );
 	g_pGameSaveRestoreBlockSet->RemoveBlockHandler( GetEntitySaveRestoreBlockHandler() );
 
-	char *pFilename = g_TextStatsMgr.GetStatsFilename();
-	if ( !pFilename || !pFilename[0] )
-	{
-		g_TextStatsMgr.SetStatsFilename( "stats.txt" );
-	}
-	g_TextStatsMgr.WriteFile( filesystem );
-
 	IGameSystem::ShutdownAllSystems();
 
 #ifdef CSTRIKE_DLL // BOTPORT: TODO: move these ifdefs out
@@ -801,10 +783,11 @@ void CServerGameDLL::DLLShutdown( void )
 #endif
 
 #ifndef _X360
-	s_SteamAPIContext.Clear(); // Steam API context shutdown
+	
 	s_SteamGameServerAPIContext.Clear();
 #endif	
 
+    //SteamAPI_Shutdown();
 	gameeventmanager = NULL;
 	
 	DisconnectTier3Libraries();
@@ -861,7 +844,6 @@ float CServerGameDLL::GetTickInterval( void ) const
 bool CServerGameDLL::GameInit( void )
 {
 	ResetGlobalState();
-    Momentum::GameInit();
 	engine->ServerCommand( "exec game.cfg\n" );
 	engine->ServerExecute( );
 	CBaseEntity::sm_bAccurateTriggerBboxChecks = true;
@@ -1480,7 +1462,16 @@ void CServerGameDLL::CreateNetworkStringTables( void )
 
 CSaveRestoreData *CServerGameDLL::SaveInit( int size )
 {
-	return ::SaveInit(size);
+    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+    filter.MakeReliable();
+    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
+    MessageEnd();
+    Warning("************************************\n");
+    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
+    Warning("Try using the saveloc menu instead!\n");
+    Warning("************************************\n");
+    return nullptr;
+	//return ::SaveInit(size);
 }
 
 //-----------------------------------------------------------------------------
@@ -1529,31 +1520,15 @@ void CServerGameDLL::RestoreGlobalState(CSaveRestoreData *s)
 
 void CServerGameDLL::Save( CSaveRestoreData *s )
 {
-    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
-    filter.MakeReliable();
-    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
-    MessageEnd();
-    Warning("************************************\n");
-    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
-    Warning("Try using the checkpoint menu instead!\n");
-    Warning("************************************\n");
-	/*CSave saveHelper( s );
-	g_pGameSaveRestoreBlockSet->Save( &saveHelper );*/
+    CSave saveHelper( s );
+	g_pGameSaveRestoreBlockSet->Save( &saveHelper );
 }
 
 void CServerGameDLL::Restore( CSaveRestoreData *s, bool b)
 {
-    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
-    filter.MakeReliable();
-    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
-    MessageEnd();
-    Warning("************************************\n");
-    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
-    Warning("Try using the checkpoint menu instead!\n");
-    Warning("************************************\n");
-	/*CRestore restore(s);
+    CRestore restore(s);
 	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	g_pGameSaveRestoreBlockSet->PostRestore();*/
+	g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 //-----------------------------------------------------------------------------
@@ -1962,15 +1937,6 @@ void CServerGameDLL::Status( void (*print) (const char *fmt, ...) )
 	{
 		g_pGameRules->Status( print );
 	}
-}
-
-//-----------------------------------------------------------------------------
-void CServerGameDLL::PrepareLevelResources( /* in/out */ char *pszMapName, size_t nMapNameSize,
-                                            /* in/out */ char *pszMapFile, size_t nMapFileSize )
-{
-#ifdef TF_DLL
-	TFMapsWorkshop()->PrepareLevelResources( pszMapName, nMapNameSize, pszMapFile, nMapFileSize );
-#endif // TF_DLL
 }
 
 //-----------------------------------------------------------------------------

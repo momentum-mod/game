@@ -22,8 +22,9 @@ $Group "game"
 	"server"
 	"tier1"
 	"vgui_controls"
-    "game_shader_dx9"
-    "GameUI"
+	"game_shader_dx9"
+	"GameUI"
+	"libcryptopp"
 }
 
 $Group "shaders"
@@ -57,7 +58,8 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
-    "GameUI"
+	"GameUI"
+	"libcryptopp"
 }
 
 $Group "dedicated"

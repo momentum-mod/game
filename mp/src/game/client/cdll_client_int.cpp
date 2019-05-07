@@ -180,7 +180,6 @@ extern vgui::IInputInternal *g_InputInternal;
 extern IClientMode *GetClientModeNormal();
 
 // IF YOU ADD AN INTERFACE, EXTERN IT IN THE HEADER FILE.
-CShared     *shared = NULL;
 IVEngineClient	*engine = NULL;
 IVModelRender *modelrender = NULL;
 IVEfx *effects = NULL;
@@ -222,10 +221,6 @@ IReplaySystem *g_pReplay = NULL;
 #endif
 
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
-
-
-CSysModule *g_pGameUIModule = nullptr;
-CGameUI *gameui = nullptr;
 
 //=============================================================================
 // HPE_BEGIN
@@ -1153,10 +1148,10 @@ void CHLClient::PostInit()
 	g_ClientVirtualReality.StartupComplete();
 
 #ifdef HL1MP_CLIENT_DLL
-	if ( s_cl_load_hl1_content.GetBool() && steamapicontext && steamapicontext->SteamApps() )
+	if ( s_cl_load_hl1_content.GetBool() && steamapicontext && SteamApps() )
 	{
 		char szPath[ MAX_PATH*2 ];
-		int ccFolder= steamapicontext->SteamApps()->GetAppInstallDir( 280, szPath, sizeof(szPath) );
+		int ccFolder= SteamApps()->GetAppInstallDir( 280, szPath, sizeof(szPath) );
 		if ( ccFolder > 0 )
 		{
 			V_AppendSlash( szPath, sizeof(szPath) );
@@ -1167,28 +1162,6 @@ void CHLClient::PostInit()
 		}
 	}
 #endif
-
-    g_pGameUIModule = filesystem->LoadModule("GameUI", "EXECUTABLE_PATH");
-    if (g_pGameUIModule)
-    {
-        ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui!\n");
-
-        CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUIModule);
-
-        gameui = appSystemFactory ? static_cast<CGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr)) : NULL;
-        if (gameui)
-        {
-            ConColorMsg(Color(0, 148, 255, 255), "Initialized IGameUI interface!\n");
-        }
-        else
-        {
-            ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI interface.\n");
-        }
-    }
-    else
-    {
-        ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui.dll!\n");
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1233,15 +1206,12 @@ void CHLClient::Shutdown( void )
     gHUD.Shutdown(); 
 	VGui_Shutdown();
 
-    if (g_pGameUIModule)
-        Sys_UnloadModule(g_pGameUIModule);
-
 	ParticleMgr()->Term();
 	
 	ClearKeyValuesCache();
 
 #ifndef NO_STEAM
-	ClientSteamContext().Shutdown();
+	//ClientSteamContext().Shutdown();
 #endif
 
 #ifdef WORKSHOP_IMPORT_ENABLED
@@ -1582,6 +1552,11 @@ void CHLClient::StartStatsReporting( HANDLE handle, bool bArbitrated )
 //-----------------------------------------------------------------------------
 void CHLClient::InvalidateMdlCache()
 {
+    // See ModelPanel.cpp for why this is here
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("invalid_mdl_cache");
+    if (pEvent)
+        gameeventmanager->FireEventClientSide(pEvent);
+
 	C_BaseAnimating *pAnimating;
 	for ( C_BaseEntity *pEntity = ClientEntityList().FirstBaseEntity(); pEntity; pEntity = ClientEntityList().NextBaseEntity(pEntity) )
 	{
@@ -1684,6 +1659,7 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 void CHLClient::LevelInitPostEntity( )
 {
 	IGameSystem::LevelInitPostEntityAllSystems();
+    gHUD.LevelInitPostEntity();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
 }
@@ -2365,7 +2341,8 @@ CSaveRestoreData *SaveInit( int size );
 // Save/restore system hooks
 CSaveRestoreData  *CHLClient::SaveInit( int size )
 {
-	return ::SaveInit(size);
+    return nullptr;
+	//return ::SaveInit(size);
 }
 
 void CHLClient::SaveWriteFields( CSaveRestoreData *pSaveData, const char *pname, void *pBaseData, datamap_t *pMap, typedescription_t *pFields, int fieldCount )
@@ -2400,16 +2377,16 @@ void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
 
 void CHLClient::ReadRestoreHeaders( CSaveRestoreData *s )
 {
-	//CRestore restoreHelper( s );
-	//g_pGameSaveRestoreBlockSet->PreRestore();
-	//g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
+	CRestore restoreHelper( s );
+	g_pGameSaveRestoreBlockSet->PreRestore();
+	g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
 }
 
 void CHLClient::Restore( CSaveRestoreData *s, bool b )
 {
-	//CRestore restore(s);
-	//g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	//g_pGameSaveRestoreBlockSet->PostRestore();
+	CRestore restore(s);
+	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
+	g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 static CUtlVector<EHANDLE> g_RestoredEntities;
@@ -2661,13 +2638,13 @@ bool CHLClient::IsConnectedUserInfoChangeAllowed( IConVar *pCvar )
 CSteamID GetSteamIDForPlayerIndex( int iPlayerIndex )
 {
 	player_info_t pi;
-	if ( steamapicontext && steamapicontext->SteamUtils() )
+	if ( SteamUtils() )
 	{
 		if ( engine->GetPlayerInfo( iPlayerIndex, &pi ) )
 		{
 			if ( pi.friendsID )
 			{
-				return CSteamID( pi.friendsID, 1, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
+				return CSteamID( pi.friendsID, 1, SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
 			}
 		}
 	}

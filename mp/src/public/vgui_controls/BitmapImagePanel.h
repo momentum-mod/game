@@ -33,7 +33,7 @@ public:
 protected:
 	virtual void GetSettings(KeyValues *outResourceData);
 	virtual void ApplySettings(KeyValues *inResourceData);
-	virtual const char *GetDescription();
+    void InitSettings() OVERRIDE;
 	virtual void ApplySchemeSettings( IScheme *pScheme );
 	virtual void PaintBorder();
 
@@ -48,8 +48,8 @@ private:
 
 	IImage		*m_pImage;
 	Color	 m_bgColor;
-	char *m_pszImageName;
-	char *m_pszColorName;
+    CUtlString m_ImageName;
+    CUtlString m_ColorName;
 };
 
 };

@@ -52,15 +52,12 @@ class ISceneFileCache;
 class IXboxSystem;	// Xbox 360 only
 class IMatchmaking;
 class IVideoServices;
-class CSteamAPIContext;
 class IClientReplayContext;
 class IReplayManager;
 class IEngineReplay;
 class IEngineClientReplay;
 class IReplayScreenshotManager;
 class CSteamID;
-class CShared;
-class CGameUI;
 
 //=============================================================================
 // HPE_BEGIN
@@ -73,7 +70,6 @@ class AchievementsAndStatsInterface;
 // HPE_END
 //=============================================================================
 
-extern CShared* shared;
 extern IVModelRender *modelrender;
 extern IVEngineClient	*engine;
 extern IVModelRender *modelrender;
@@ -106,14 +102,12 @@ extern IXboxSystem *xboxsystem;	// Xbox 360 only
 extern IMatchmaking *matchmaking;
 extern IVideoServices *g_pVideo;
 extern IUploadGameStats *gamestatsuploader;
-extern CSteamAPIContext *steamapicontext;
 extern IReplaySystem *g_pReplay;
 extern IClientReplayContext *g_pClientReplayContext;
 extern IReplayManager *g_pReplayManager;
 extern IReplayScreenshotManager *g_pReplayScreenshotManager;
 extern IEngineReplay *g_pEngineReplay;
 extern IEngineClientReplay *g_pEngineClientReplay;
-extern CGameUI *gameui;
 
 //=============================================================================
 // HPE_BEGIN

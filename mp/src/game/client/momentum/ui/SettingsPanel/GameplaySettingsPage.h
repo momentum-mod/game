@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "SettingsPage.h"
 
 class GameplaySettingsPage : public SettingsPage
@@ -23,11 +21,15 @@ class GameplaySettingsPage : public SettingsPage
 private:
     void UpdateSliderEntries() const;
 
+    vgui::CvarToggleCheckButton *m_pOverlappingKeys;
+    vgui::CvarToggleCheckButton *m_pReleaseForwardOnJump;
+
     vgui::CvarToggleCheckButton *m_pPlayBlockSound;
     vgui::CvarToggleCheckButton *m_pSaveCheckpoints;
-    vgui::CCvarSlider *m_pYawSpeedSlider;
+    vgui::CvarSlider *m_pYawSpeedSlider;
     vgui::TextEntry *m_pYawSpeedEntry;
 
     vgui::CvarTextEntry *m_pLowerSpeedCVarEntry;
     vgui::CvarToggleCheckButton *m_pLowerSpeed;
+    vgui::Label *m_pLowerSpeedLabel;
 };

@@ -1,108 +1,91 @@
+#include "cbase.h"
+
 #include "jsontokv.h"
+#include "rapidjson/document.h"
+#include "fmtstr.h"
 
-KeyValues *CJsonToKeyValues::ConvertJsonToKeyValues(JsonNode *node)
+#include "tier0/memdbgon.h"
+
+using namespace rapidjson;
+
+inline void IterObject(const char *pName, Value::ConstObject obj, KeyValues *kv);
+
+inline void MapNode(Value::ConstMemberIterator itr, KeyValues *kv)
 {
-    //This iterates through the base JsonObject node
-    KeyValues *pKvToReturn = new KeyValues("Response");
-    pKvToReturn->UsesEscapeSequences(true);
-    while (node)
+    switch (itr->value.GetType())
     {
-        MapNode(node, pKvToReturn);
-        node = node->next;
-    }
-    return pKvToReturn;
-}
-
-KeyValues* CJsonToKeyValues::ConvertJsonToKeyValues(const char* pJSONInput)
-{
-    KeyValues *pToReturn = nullptr;
-
-    JsonAllocator alloc; // Allocator
-    JsonValue val; // Outer object
-    
-    // Setup our input buffer (const char* -> char *)
-    size_t input = Q_strlen(pJSONInput) + 1;
-    char *pInputBuffer = new char[input];
-    Q_strncpy(pInputBuffer, pJSONInput, input);
-
-    char *endPtr; // Just for show, I guess
-
-    int status = jsonParse(pInputBuffer, &endPtr, &val, alloc);
-    if (status == JSON_OK)
-    {
-        pToReturn = ConvertJsonToKeyValues(val.toNode());
-    }
-
-    // Cleanup after ourselves
-    delete[] pInputBuffer;
-
-    return pToReturn;
-}
-
-void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)
-{
-    if (!node || !kv)
-        return;
-    JsonValue value = node->value;
-    // What are we?
-    switch (value.getTag())
-    {
-    case JSON_NUMBER:
-        kv->SetFloat(node->key, value.toNumber());
-        break;
-    case JSON_STRING:
-        kv->SetString(node->key, value.toString());
-        break;
-    case JSON_ARRAY:
-    case JSON_OBJECT:
-        kv->AddSubKey(MapNode(node));
-        break;
-    case JSON_TRUE:
-    case JSON_FALSE:
-        kv->SetBool(node->key, value.getTag() == JSON_TRUE);
-        break;
-    case JSON_NULL:
-        kv->SetString(node->key, nullptr);
-        break;
-    }
-}
-
-KeyValues *CJsonToKeyValues::MapNode(JsonNode *node)
-{
-    // The parent KV holds the name of the first parent (Which, in case there is only 1 node/value, it will be the same
-    // as the only value it has)
-    if (!node)
-        return nullptr;
-
-    // @Ruben: When node->key is null on the json, key is not nullptr, but 0xffeeffee.
-    // MOM_TODO: Is it always that address? If not, when / how does it change?
-    bool isKeyNull = node->key == nullptr || POINTER_TO_INT(node->key) == 0xffeeffee;
-
-    // @Gocnak: Note: The key should never be null in here. The only time it would be null is either
-    // you pass the first node into this method (handled by the Convert method), or if the response from the API is bad!
-    // But you never know, so *shrug*
-
-    // Parent keyvalue.
-    KeyValues *pNodeValues = new KeyValues(isKeyNull ? "(null)" : node->key);
-
-    for (auto i : node->value)
-    {
-        // If what we're going to parse is an object, then we need to add it as a subkey.
-        if (i->value.getTag() == JSON_OBJECT || i->value.getTag() == JSON_ARRAY)
+    case kNumberType:
         {
-            //Array or just normal object, make this into a subkey
-            KeyValues *pSub = MapNode(i);
-            //Add it to our parent
-            pNodeValues->AddSubKey(pSub);
-            //Iterate through it
-            MapNode(i->value.toNode(), pSub);
+            if (itr->value.IsInt())
+                kv->SetInt(itr->name.GetString(), itr->value.GetInt());
+            else if (itr->value.IsUint64())
+                kv->SetUint64(itr->name.GetString(), itr->value.GetUint64());
+            else if (itr->value.IsLosslessFloat())
+                kv->SetFloat(itr->name.GetString(), itr->value.GetFloat());
+            else // Default to float
+                kv->SetFloat(itr->name.GetString(), itr->value.GetDouble());
         }
-        else 
+        break;
+    case kStringType:
+        kv->SetString(itr->name.GetString(), itr->value.GetString());
+        break;
+    case kArrayType:
         {
-            // Otherwise (strings, numbers, booleans) we just add them as an entry of the current key
-            MapNode(i, pNodeValues);
+            KeyValues *pKv = kv->CreateNewKey();
+            pKv->SetName(itr->name.GetString());
+            for (Value::ConstValueIterator arrItr = itr->value.Begin(); arrItr != itr->value.End(); ++arrItr)
+            {
+                // We can only support arrays of objects... for now
+                if (arrItr->GetType() == kObjectType)
+                    IterObject(nullptr, arrItr->GetObject(), pKv);
+                // MOM_TODO: theoretically any array can work, it's just the keys would be disregarded, like the array of objects are
+                // Consider creating garbage keys for used values, and iterating over only values of the array.
+                // The thing to keep in mind is that whoever is reading the array would know what data type it should be...
+            }
         }
+        break;
+    case kObjectType:
+        IterObject(itr->name.GetString(), itr->value.GetObject(), kv);
+        break;
+    case kTrueType:
+    case kFalseType:
+        kv->SetBool(itr->name.GetString(), itr->value.GetType() == kTrueType);
+        break;
+    case kNullType:
+        kv->SetString(itr->name.GetString(), nullptr);
+        break;
+    }
+}
+
+inline void IterObject(const char *pName, Value::ConstObject obj, KeyValues *kv)
+{
+    KeyValues *pKv = kv->CreateNewKey();
+    if (pName)
+        pKv->SetName(pName);
+
+    for (Value::ConstMemberIterator itr = obj.MemberBegin(); itr != obj.MemberEnd(); ++itr)
+    {
+        MapNode(itr, pKv);
+    }
+}
+
+bool CJsonToKeyValues::ConvertJsonToKeyValues(char *pInput, KeyValues *pOut)
+{
+    Document doc;
+    doc.Parse(pInput);
+    if (doc.HasParseError())
+    {
+        pOut->SetString("err_parse", CFmtStr("Error parsing JSON object! Code: %d", doc.GetParseError()).Get());
+    }
+    else
+    {
+        pOut->UsesEscapeSequences(true);
+        for (Value::ConstMemberIterator itr = doc.MemberBegin(); itr != doc.MemberEnd(); ++itr)
+        {
+            MapNode(itr, pOut);
+        }
+        return true;
     }
 
-    return pNodeValues;
+    return false;
 }

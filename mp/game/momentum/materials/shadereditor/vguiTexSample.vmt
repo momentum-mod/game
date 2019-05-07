@@ -1,8 +1,0 @@
-"unlitgeneric"
-{
-	"$basetexture" "shadereditor/blank"
-	//"$translucent" 1
-
-
-	$ignorez	1
-}

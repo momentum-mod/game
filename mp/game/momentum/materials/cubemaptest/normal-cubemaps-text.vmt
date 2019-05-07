@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$basetexture" "cubemaptest/normal-cubemaps-text"
+	"$translucent" 1
+}

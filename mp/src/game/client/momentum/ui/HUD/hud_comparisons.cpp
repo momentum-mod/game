@@ -9,10 +9,10 @@
 #include <vgui/IVGui.h>
 #include <vgui_controls/Panel.h>
 
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
+#include "c_mom_replay_entity.h"
 
 #include "tier0/memdbgon.h"
 
@@ -66,28 +66,35 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_jumps_show, "1", FLAG_HUD_CVAR,
 static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1", FLAG_HUD_CVAR,
                           "Toggle showing total stage strafes comparison. 0 = OFF, 1 = ON");
 
-DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
-
-C_RunComparisons::C_RunComparisons(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
+//DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
+static CHudElement *Create_CHudCompare(void)
 {
-    ListenForGameEvent("timer_state");
-    ListenForGameEvent("mapfinished_panel_closed");
+    auto pPanel = new C_RunComparisons("CHudCompare");
+    g_pMOMRunCompare = pPanel;
+    return pPanel;
+};
+static CHudElementHelper g_CHudCompare_Helper( Create_CHudCompare, 50 );
+
+C_RunComparisons *g_pMOMRunCompare = nullptr;
+
+C_RunComparisons::C_RunComparisons(const char *pElementName, Panel *pParent /* = nullptr*/)
+    : CHudElement(pElementName), Panel(pParent ? pParent : g_pClientMode->GetViewport(), pElementName),
+    m_cvarVelType("mom_hud_speedometer_hvel")
+{
     SetProportional(true);
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    m_iCurrentZone = 0;
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
     m_nCurrentBogusPulse = 0;
-    m_iCurrentEntIndex = -1;
+    m_fLoadedTickRate = 0.0f;
+    m_iLoadedRunFlags = 0;
     m_bLoadedBogusComparison = false;
     m_pRunStats = nullptr;
     m_pBogusRunStats = nullptr;
     m_rcBogusComparison = nullptr;
-    ivgui()->AddTickSignal(GetVPanel(), 250);
 }
 
 C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
@@ -95,7 +102,8 @@ C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
 void C_RunComparisons::Init()
 {
     // LOCALIZE STUFF HERE
-    LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
+    FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
+    FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
     LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Zone", stageTimeLocalized);
     LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
     LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
@@ -107,75 +115,55 @@ void C_RunComparisons::Init()
     LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
     LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
     LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
+
+    if (!m_bLoadedBogusComparison)
+        ListenForGameEvent("replay_save");
 }
 
 bool C_RunComparisons::ShouldDraw()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (!m_bLoadedComparison)
+        return false;
+
+    if (!mom_comparisons.GetBool())
+        return false;
+
     bool shouldDrawLocal = false;
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
         // MOM_TODO: Should we have a convar against letting a ghost compare?
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        C_MOMRunEntityData *runData = pGhost ? &pGhost->m_SrvData.m_RunData : &pPlayer->m_SrvData.m_RunData;
+        const auto pData = pPlayer->GetCurrentUIEntData();
 
-        if (runData)
-        {
-            shouldDrawLocal = runData->m_bTimerRunning && !runData->m_bMapFinished
-                              // we don't want the panel to draw on linear maps (since it doesn't appear until stage
-                              // transitions anyways)
-                              && g_MOMEventListener->m_iMapZoneCount > 1;
-        }
+        shouldDrawLocal = pData->m_bTimerRunning && !pData->m_bMapFinished && pPlayer->m_iZoneCount[pData->m_iCurrentTrack] > 1;
     }
-    return mom_comparisons.GetBool() && m_bLoadedComparison && CHudElement::ShouldDraw() && shouldDrawLocal;
+    return CHudElement::ShouldDraw() && shouldDrawLocal;
 }
 
 void C_RunComparisons::Reset()
 {
-    UnloadComparisons();
     m_iMaxWide = m_iDefaultWidth;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
 }
 
-void C_RunComparisons::FireGameEvent(IGameEvent *event)
-{
-    const char *name = event->GetName();
-    if (!Q_strcmp(name, "timer_state"))
-    {
-        if (event->GetInt("ent") == m_iCurrentEntIndex && event->GetBool("is_running"))
-            LoadComparisons();
-    }
-    else if (!Q_strcmp(name, "mapfinished_panel_closed"))
-    {
-        UnloadComparisons();
-    }
-}
-
 void C_RunComparisons::LoadComparisons()
 {
-    UnloadComparisons();
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     const char *szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (szMapName && pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        float tickRate = 0;
-        int runFlags = 0;
+        const auto pRunData = pPlayer->GetCurrentUIEntData();
 
-        if (pGhost)
-        {
-            tickRate = pGhost->m_SrvData.m_flTickRate;
-            runFlags = pGhost->m_SrvData.m_RunData.m_iRunFlags;
-        }
-        else
-        {
-            tickRate = gpGlobals->interval_per_tick;
-            runFlags = pPlayer->m_SrvData.m_RunData.m_iRunFlags;
-        }
+        const float tickRate = pRunData->m_flTickRate;
+        const int runFlags = pRunData->m_iRunFlags;
 
-        m_rcCurrentComparison = new RunCompare_t();
-        m_bLoadedComparison = g_pMomentumUtil->GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+        if (!m_bLoadedComparison || !CloseEnough(tickRate, m_fLoadedTickRate) || runFlags != m_iLoadedRunFlags)
+        {
+            UnloadComparisons();
+            m_rcCurrentComparison = new RunCompare_t();
+            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+        }
     }
 }
 
@@ -185,8 +173,8 @@ inline void GenerateBogusRunStats(CMomRunStats *pStatsOut)
     for (int i = 0; i < pStatsOut->GetTotalZones(); i++)
     {
         // Time
-        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
-        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
+        pStatsOut->SetZoneTicks(i, RandomInt(250, 2500));
+        pStatsOut->SetZoneEnterTick(i, i == 1 ? 0 : RandomInt(250, 2500));
 
         // Velocity
         pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
@@ -209,7 +197,7 @@ void C_RunComparisons::LoadBogusComparisons()
     UnloadBogusComparisons();
     // Let's make a bogus run, shall we?
     m_rcBogusComparison = new RunCompare_t(12);
-    m_pBogusRunStats = new CMomRunStats(&m_bogusData, 12);
+    m_pBogusRunStats = new CMomRunStats(12);
     GenerateBogusRunStats(m_pBogusRunStats); // Generate the bogus PB
     GenerateBogusRunStats(&m_rcBogusComparison->runStats); // Generate the bogus WR
 
@@ -245,30 +233,38 @@ void C_RunComparisons::UnloadComparisons()
     m_bLoadedComparison = false;
 }
 
-void C_RunComparisons::OnTick()
+void C_RunComparisons::LevelInitPostEntity()
+{
+    // Load the initial comparisons
+    if (!m_bLoadedBogusComparison)
+        LoadComparisons();
+}
+
+void C_RunComparisons::LevelShutdown()
 {
     if (!m_bLoadedBogusComparison)
+        UnloadComparisons();
+}
+
+void C_RunComparisons::FireGameEvent(IGameEvent *event)
+{
+    if (event->GetBool("save"))
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        if (pPlayer)
-        {
-            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-            m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
-            m_iCurrentEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
-        }
+        // Reload upon setting a new run (ideally this would be if it's a PB but meh)
+        LoadComparisons();
     }
 }
 
 void C_RunComparisons::OnThink()
 {
-    if (!m_bLoadedBogusComparison)
+    if (!m_bLoadedComparison)
+        return;
+
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        if (pPlayer)
-        {
-            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-            m_iCurrentZone = pGhost ? pGhost->m_SrvData.m_RunData.m_iCurrentZone : pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
-        }
+        m_pRunStats = pPlayer->GetCurrentUIEntStats();
+        m_pRunData = pPlayer->GetCurrentUIEntData();
     }
 
     if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perzone.GetBool())
@@ -345,10 +341,10 @@ int C_RunComparisons::GetMaximumTall()
     return toReturn + 5; // extra padding
 }
 
-void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain = true)
+void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain /*= true*/)
 {
-    int gainColor = positiveIsGain ? m_cGain.GetRawColor() : m_cLoss.GetRawColor();
-    int lossColor = positiveIsGain ? m_cLoss.GetRawColor() : m_cGain.GetRawColor();
+    const int gainColor = positiveIsGain ? m_cGain.GetRawColor() : m_cLoss.GetRawColor();
+    const int lossColor = positiveIsGain ? m_cLoss.GetRawColor() : m_cGain.GetRawColor();
     int rawColor;
     if (CloseEnough(diff, 0.0f, FLT_EPSILON))
         rawColor = m_cTie.GetRawColor();
@@ -366,11 +362,9 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
                                            char *ansiActualBufferOut, char *ansiCompareBufferOut,
                                            Color *compareColorOut)
 {
-    Assert(stats);
     if (!stats)
         return;
-    ConVarRef velTypeVar("mom_speedometer_hvel");
-    int velType = velTypeVar.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
+    int velType = m_cvarVelType.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
     float diff = 0.0f;                 // Difference between the current and the compared-to.
     float act;                         // Actual value that the player has for this zone.
     char tempANSITimeOutput[BUFSIZETIME],
@@ -382,17 +376,17 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
     case TIME_OVERALL:
     case ZONE_TIME:
         // Get the time difference in seconds.
-        act = type == TIME_OVERALL ? stats->GetZoneEnterTime(zone + 1) : stats->GetZoneTime(zone);
+        act = type == TIME_OVERALL ? stats->GetZoneEnterTick(zone + 1) : stats->GetZoneTicks(zone);
 
         if (LoadedComparison())
         {
             if (type == TIME_OVERALL)
             {
-                diff = act - GetRunComparisons()->runStats.GetZoneEnterTime(zone + 1);
+                diff = act - GetRunComparisons()->runStats.GetZoneEnterTick(zone + 1);
             }
             else
             {
-                diff = act - GetRunComparisons()->runStats.GetZoneTime(zone);
+                diff = act - GetRunComparisons()->runStats.GetZoneTicks(zone);
             }
         }
 
@@ -400,9 +394,9 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
         // If diff > 0, that means you're falling behind (losing time to) your PB!
 
         // Format the time for displaying
-        g_pMomentumUtil->FormatTime(act, tempANSITimeActual);
+        MomUtil::FormatTime(act * gpGlobals->interval_per_tick, tempANSITimeActual);
         if (LoadedComparison())
-            g_pMomentumUtil->FormatTime(diff, tempANSITimeOutput);
+            MomUtil::FormatTime(diff * gpGlobals->interval_per_tick, tempANSITimeOutput);
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference
@@ -496,7 +490,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     // We override the color here from HUD animations, if this is a bogus comparisons panel
     if (m_bLoadedBogusComparison)
     {
-        int alpha = m_bLoadedBogusComparison && (m_nCurrentBogusPulse & string) ? bogus_alpha : fgColor.a();
+        int alpha = (m_nCurrentBogusPulse & string) ? bogus_alpha : fgColor.a();
         fgColor = Color(fgColor.r(), fgColor.g(), fgColor.b(), alpha);
     }
     Color compareColor = fgColor;
@@ -622,6 +616,24 @@ void C_RunComparisons::SetMaxWide(int newWide)
         m_iMaxWide = newWide;
 }
 
+void C_RunComparisons::ApplySchemeSettings(vgui::IScheme* pScheme)
+{
+    Panel::ApplySchemeSettings(pScheme);
+    m_hTextFont = pScheme->GetFont("HudHintTextSmall", true);
+    SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
+    m_cGain = GetSchemeColor("MOM.Compare.Gain", pScheme);
+    m_cLoss = GetSchemeColor("MOM.Compare.Loss", pScheme);
+    m_cTie = GetSchemeColor("MOM.Compare.Tie", pScheme);
+    GetSize(m_iDefaultWidth, m_iDefaultTall); //gets "wide" and "tall" from scheme .res file
+    m_iMaxWide = m_iDefaultWidth;
+    GetPos(m_iDefaultXPos, m_iDefaultYPos); //gets "xpos" and "ypos" from scheme .res file
+}
+
+int C_RunComparisons::GetCurrentZone() const
+{
+    return m_bLoadedBogusComparison ? m_pBogusRunStats->GetTotalZones() - 1 : (m_bLoadedComparison && m_pRunData) ? m_pRunData->m_iCurrentZone : 0;
+}
+
 void C_RunComparisons::Paint()
 {
     if (!GetRunComparisons())
@@ -670,21 +682,18 @@ void C_RunComparisons::Paint()
     int yToIncrementBy = surface()->GetFontTall(m_hTextFont) + 2; //+2 for padding
     int Y = text_ypos + yToIncrementBy;
 
-    int STAGE_BUFFER = mom_comparisons_max_zones.GetInt();
+    const int ZONE_BUFFER = mom_comparisons_max_zones.GetInt();
     for (int i = 1; i < currentStage; i++)
     {
         // We need a buffer. We only want the last STAGE_BUFFER amount of
         // stages. (So if there's 20 stages, we only show the last X stages, not all.)
-        if (i >= (currentStage - STAGE_BUFFER))
+        if (i >= (currentStage - ZONE_BUFFER))
         {
-            char stageString[BUFSIZELOCL];
-            wchar_t stageStringUnicode[BUFSIZELOCL];
-            // MOM_TODO: LINEAR MAPS WILL NEED "Checkpoint: " here!
-            Q_snprintf(stageString, BUFSIZELOCL, "%s %i ",
-                       stLocalized, // "Stage" localization
-                       i);          // Stage number
-
-            ANSI_TO_UNICODE(stageString, stageStringUnicode);
+            bool bIsLinear = false;
+            if (m_pRunData)
+                bIsLinear = C_MomentumPlayer::GetLocalMomPlayer() && C_MomentumPlayer::GetLocalMomPlayer()->m_iLinearTracks[m_pRunData->m_iCurrentTrack];
+            const wchar_t *pwZoneStr = CConstructLocalizedString(bIsLinear ? m_wCheckpoint : m_wStage, i);
+            const size_t zoneStrLen = Q_wcslen(pwZoneStr);
 
             Color fgColorOverride = GetFgColor();
 
@@ -696,7 +705,7 @@ void C_RunComparisons::Paint()
             // print "Stage ## "
             surface()->DrawSetTextColor(fgColorOverride);
             surface()->DrawSetTextPos(text_xpos, Y);
-            surface()->DrawPrintText(stageStringUnicode, wcslen(stageStringUnicode));
+            surface()->DrawPrintText(pwZoneStr, zoneStrLen);
 
             if (i == (currentStage - 1))
             {
@@ -783,7 +792,7 @@ void C_RunComparisons::Paint()
                 wchar_t timeComparisonStringUnicode[BUFSIZELOCL];
 
                 int newXPos = text_xpos                                           // Base starting X pos
-                              + UTIL_ComputeStringWidth(m_hTextFont, stageString) //"Stage ## "
+                              + UTIL_ComputeStringWidth(m_hTextFont, pwZoneStr) //"Stage ## "
                               + 2;                                                // Padding
 
                 Color comparisonColor = Color(GetFgColor());

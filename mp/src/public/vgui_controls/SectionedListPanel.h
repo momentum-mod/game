@@ -54,6 +54,7 @@ public:
 	// forces a section to always be visible
 	virtual void SetSectionAlwaysVisible(int sectionID, bool visible = true);
 	virtual void SetSectionMinimumHeight(int sectionID, int iMinimumHeight);
+    virtual void SetSectionHeaderVisible(int sectionID, bool bVisible);
 
 	// adds a new column to a section
 	enum ColumnFlags_e
@@ -308,8 +309,11 @@ public:
 
 	void SetColor(Color col);
 	void SetDividerColor(Color col );
+    void SetShouldDraw(bool bDraw) { m_bShouldDraw = bDraw; }
+    bool ShouldDraw() const { return m_bShouldDraw; }
 
 protected:
+    bool m_bShouldDraw;
 	int m_iSectionID;
 	Color m_SectionDividerColor;
 	SectionedListPanel *m_pListPanel;

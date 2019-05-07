@@ -8,32 +8,27 @@
 #include "cbase.h"
 #include "hud_menu_static.h"
 #include "clientmode.h"
-#include "vgui_controls/AnimationController.h"
 #include "vgui/ILocalize.h"
 #include "vgui/ISurface.h"
+#include "vgui_controls/AnimationController.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-CHudMenuStatic::CHudMenuStatic(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMenuStatic")
+CHudMenuStatic::CHudMenuStatic(const char *pElementName)
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMenuStatic")
 {
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetPaintBackgroundEnabled(false);
 };
 
-//Deeper because otherwise the animations mess with hud_mapinfo (weird)
+// Deeper because otherwise the animations mess with hud_mapinfo (weird)
 DECLARE_HUDELEMENT_DEPTH(CHudMenuStatic, 60);
 
-bool CHudMenuStatic::ShouldDraw()
-{
-    return CHudElement::ShouldDraw() && m_bMenuDisplayed;
-}
+bool CHudMenuStatic::ShouldDraw() { return CHudElement::ShouldDraw() && m_bMenuDisplayed; }
 
-bool CHudMenuStatic::IsMenuDisplayed()
-{
-    return m_bMenuDisplayed && m_bMenuTakesInput;
-}
+bool CHudMenuStatic::IsMenuDisplayed() { return m_bMenuDisplayed && m_bMenuTakesInput; }
 
 void CHudMenuStatic::Init(void)
 {
@@ -48,7 +43,7 @@ void CHudMenuStatic::Init(void)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CHudMenuStatic::Reset(void)
 {
@@ -57,9 +52,7 @@ void CHudMenuStatic::Reset(void)
     m_flShutoffTime = -1.0f;
 }
 
-void CHudMenuStatic::VidInit(void)
-{
-}
+void CHudMenuStatic::VidInit(void) { HideMenu(true); }
 
 void CHudMenuStatic::OnThink()
 {
@@ -68,7 +61,7 @@ void CHudMenuStatic::OnThink()
         if (m_nSelectedItem > 0)
         {
             if (gpGlobals->realtime - m_flSelectionTime >= 1.0f)
-                m_nSelectedItem = -1;//reset the selection so colors are fine
+                m_nSelectedItem = -1; // reset the selection so colors are fine
         }
 
         if (m_flShutoffTime > 0 && m_flShutoffTime <= gpGlobals->realtime)
@@ -79,10 +72,7 @@ void CHudMenuStatic::OnThink()
     }
 }
 
-void CHudMenuStatic::LevelShutdown()
-{
-    HideMenu(true);
-}
+void CHudMenuStatic::LevelShutdown() { HideMenu(true); }
 
 void CHudMenuStatic::HideMenu(bool bImmediate)
 {
@@ -99,12 +89,12 @@ void CHudMenuStatic::HideMenu(bool bImmediate)
     }
     else
     {
-         m_flShutoffTime = gpGlobals->realtime + m_flOpenCloseTime;
-         g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuClose");
+        m_flShutoffTime = gpGlobals->realtime + m_flOpenCloseTime;
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuClose");
     }
 }
 
-//Overridden because we want the menu to stay up after selection
+// Overridden because we want the menu to stay up after selection
 void CHudMenuStatic::SelectMenuItem(int menu_item)
 {
     if (SelectFunc)
@@ -132,7 +122,7 @@ void CHudMenuStatic::Paint()
     // center it
     int x = 20;
 
-    Color	menuColor = m_MenuColor;
+    Color menuColor = m_MenuColor;
     Color itemColor = m_ItemColor;
 
     int c = m_Processed.Count();
@@ -152,14 +142,14 @@ void CHudMenuStatic::Paint()
     for (int i = 0; i < c; i++)
     {
         ProcessedLine *line = &m_Processed[i];
-        if (!line) continue;
+        if (!line)
+            continue;
 
         Color clr = line->menuitem != 0 ? itemColor : menuColor;
 
         bool canblur = false;
-        if (line->menuitem != 0 &&
-            m_nSelectedItem >= 0 &&
-            m_nSelectedItem != m_Processed.Count() &&//Saves the zero from flashing
+        if (line->menuitem != 0 && m_nSelectedItem >= 0 &&
+            m_nSelectedItem != m_Processed.Count() && // Saves the zero from flashing
             (line->menuitem == m_nSelectedItem))
         {
             canblur = true;
@@ -173,10 +163,9 @@ void CHudMenuStatic::Paint()
             drawLen *= m_flTextScan;
         }
 
-        surface()->DrawSetTextFont(textFont);
+        surface()->DrawSetTextFont(m_hTextFont);
 
-        PaintString(&g_szMenuString[line->startchar], drawLen,
-            line->menuitem != 0 ? m_hItemFont : textFont, x, y);
+        PaintString(&g_szMenuString[line->startchar], drawLen, line->menuitem != 0 ? m_hItemFont : m_hTextFont, x, y);
 
         if (canblur)
         {
@@ -202,7 +191,7 @@ void CHudMenuStatic::Paint()
     }
 }
 
-void CHudMenuStatic::PaintString(const wchar_t *text, int textlen, HFont& font, int x, int y)
+void CHudMenuStatic::PaintString(const wchar_t *text, int textlen, HFont &font, int x, int y)
 {
     surface()->DrawSetTextFont(font);
     surface()->DrawSetTextPos(x, y);
@@ -220,7 +209,7 @@ void CHudMenuStatic::ProcessText(void)
 
     int i = 0;
     int startpos = i;
-    //int menuitem = 0;
+    // int menuitem = 0;
     int menuitem = 1;
     while (i < 512)
     {
@@ -247,7 +236,7 @@ void CHudMenuStatic::ProcessText(void)
             m_Processed.AddToTail(line);
         }
 
-        //menuitem = 0;
+        // menuitem = 0;
         menuitem++;
         // Skip delimiter
         if (g_szMenuString[i] == '\n')
@@ -278,7 +267,7 @@ void CHudMenuStatic::ProcessText(void)
         Assert(l);
 
         int pixels = 0;
-        HFont font = textFont;//l->menuitem != 0 ? m_hItemFont : m_hTextFont;
+        HFont font = m_hTextFont; // l->menuitem != 0 ? m_hItemFont : m_hTextFont;
         for (int ch = 0; ch < l->length; ch++)
         {
             pixels += surface()->GetCharacterWidth(font, g_szMenuString[ch + l->startchar]);
@@ -298,7 +287,9 @@ void CHudMenuStatic::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    textFont = pScheme->GetFont("Default", true);
+    m_hTextFont = pScheme->GetFont(m_szTextFont, true);
+    m_hItemFont = pScheme->GetFont(m_szItemFont, true);
+    m_hItemFontPulsing = pScheme->GetFont(m_szItemFontPulsing, true);
     // set our size
     int screenWide, screenTall;
     int x, y;
@@ -320,8 +311,8 @@ void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
 
     g_szMenuString[0] = '\0';
     wchar_t *pWritePosition = g_szMenuString;
-    int		nRemaining = sizeof(g_szMenuString) / sizeof(wchar_t);
-    int		nCount;
+    int nRemaining = sizeof(g_szMenuString) / sizeof(wchar_t);
+    int nCount;
 
     int i = 0;
     for (KeyValues *item = pKV->GetFirstSubKey(); item != nullptr; item = item->GetNextKey())
@@ -338,8 +329,9 @@ void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
             g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, 512);
             DevWarning("Missing localization for %s\n", pszItem);
         }
-        else Q_wcsncpy(wLocalizedItem, wLocalizedItemPtr, 512);
-        
+        else
+            Q_wcsncpy(wLocalizedItem, wLocalizedItemPtr, 512);
+
         nCount = _snwprintf(pWritePosition, nRemaining, L"%d. %ls\n", i + 1, wLocalizedItem);
         nRemaining -= nCount;
         pWritePosition += nCount;

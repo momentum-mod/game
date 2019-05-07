@@ -1,66 +1,52 @@
 #include "cbase.h"
-#include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "menu.h"
-#include "time.h"
 #include <vgui/ILocalize.h>
-#include <vgui/ISurface.h>
-#include <vgui_controls/Panel.h>
 #include "mom_shareddefs.h"
+#include <vgui_controls/Label.h>
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-class CHudVersionInfo : public CHudElement, public Panel
+class CHudVersionInfo : public CHudElement, public Label
 {
-    DECLARE_CLASS_SIMPLE(CHudVersionInfo, Panel);
+    DECLARE_CLASS_SIMPLE(CHudVersionInfo, Label);
 
-  public:
     CHudVersionInfo(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE { return CHudElement::ShouldDraw(); }
-
-    void Paint() OVERRIDE;
-
-    void Init() OVERRIDE;
-
-  protected:
-    CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
-
-  private:
-    wchar_t uVersionText[BUFSIZELOCL];
+protected:
+    void VidInit() OVERRIDE;
+    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
+    CPanelAnimationStringVar(32, m_szTextFont, "TextFont", "MomHudDropText");
 };
 
 DECLARE_HUDELEMENT(CHudVersionInfo);
 
-CHudVersionInfo::CHudVersionInfo(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudVersionInfo")
+CHudVersionInfo::CHudVersionInfo(const char *pElementName) : CHudElement(pElementName),
+    Label(g_pClientMode->GetViewport(), "CHudVersionInfo", "")
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetAutoWide(true);
+    SetAutoTall(true);
 }
 
-void CHudVersionInfo::Init()
+void CHudVersionInfo::VidInit()
 {
-    char m_pszStringVersion[BUFSIZELOCL];
-    char strVersion[BUFSIZELOCL];
-    LOCALIZE_TOKEN(BuildVersion, "#MOM_BuildVersion", strVersion);
-
-    Q_snprintf(m_pszStringVersion, sizeof(m_pszStringVersion), "%s %s",
-               strVersion, // BuildVerison localization
-               MOM_CURRENT_VERSION);
-    g_pVGuiLocalize->ConvertANSIToUnicode(m_pszStringVersion, uVersionText, sizeof(m_pszStringVersion));
+    KeyValuesAD loc("Version");
+    loc->SetWString("verLabel", g_pVGuiLocalize->Find("#MOM_StartupMsg_Alpha_Title"));
+    loc->SetString("verNum", MOM_CURRENT_VERSION);
+    SetText(CConstructLocalizedString(L"%verLabel% %verNum%", (KeyValues*)loc));
+    InvalidateLayout();
 }
 
-void CHudVersionInfo::Paint()
+void CHudVersionInfo::ApplySchemeSettings(IScheme* pScheme)
 {
-    surface()->DrawSetTextPos(0, 0);
-    surface()->DrawSetTextFont(m_hTextFont);
-    surface()->DrawSetTextColor(225, 225, 225, 225);
-    surface()->DrawPrintText(uVersionText, wcslen(uVersionText));
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    SetFont(pScheme->GetFont(m_szTextFont, true));
+    InvalidateLayout(true);
 }

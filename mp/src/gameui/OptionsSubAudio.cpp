@@ -9,7 +9,8 @@
 #include "ModInfo.h"
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/QueryBox.h"
-#include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/CvarSlider.h"
+#include <vgui_controls/CvarToggleCheckButton.h>
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
 #include "vgui/IInput.h"
@@ -41,8 +42,8 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 {
     SetSize(20, 20);
 
-	m_pSFXSlider = new CCvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume" );
-	m_pMusicSlider = new CCvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "Snd_MusicVolume" );
+	m_pSFXSlider = new CvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume" );
+	m_pMusicSlider = new CvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "snd_musicvolume" );
 	
 	m_pCloseCaptionCombo = new ComboBox( this, "CloseCaptionCheck", 6, false );
 	m_pCloseCaptionCombo->AddItem( "#GameUI_NoClosedCaptions", NULL );
@@ -63,6 +64,8 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 
    m_pSpokenLanguageCombo = new ComboBox (this, "AudioSpokenLanguage", 6, false );
 
+   m_pMuteLoseFocus = new CvarToggleCheckButton(this, "snd_mute_losefocus", "#GameUI_SndMuteLoseFocus", "snd_mute_losefocus");
+
 	LoadControlSettings("resource/optionssubaudio.res");
 }
 
@@ -81,7 +84,7 @@ void COptionsSubAudio::OnResetData()
 	m_bRequireRestart = false;
 	m_pSFXSlider->Reset();
 	m_pMusicSlider->Reset();
-
+    m_pMuteLoseFocus->Reset();
 
 	// reset the combo boxes
 
@@ -151,10 +154,10 @@ void COptionsSubAudio::OnResetData()
    // In a Steam environment we get the current language 
 #if !defined( NO_STEAM )
    // When Steam isn't running we can't get the language info... 
-   if ( GameUI().GetSteamContext()->SteamApps() )
+   if ( SteamApps() )
    {
-       Q_strncpy(szCurrentLanguage, GameUI().GetSteamContext()->SteamApps()->GetCurrentGameLanguage(), sizeof(szCurrentLanguage));
-       Q_strncpy(szAvailableLanguages, GameUI().GetSteamContext()->SteamApps()->GetAvailableGameLanguages(), sizeof(szAvailableLanguages));
+       Q_strncpy(szCurrentLanguage, SteamApps()->GetCurrentGameLanguage(), sizeof(szCurrentLanguage));
+       Q_strncpy(szAvailableLanguages, SteamApps()->GetAvailableGameLanguages(), sizeof(szAvailableLanguages));
    }
 #endif
 
@@ -198,6 +201,7 @@ void COptionsSubAudio::OnApplyChanges()
 {
 	m_pSFXSlider->ApplyChanges();
 	m_pMusicSlider->ApplyChanges();
+    m_pMuteLoseFocus->ApplyChanges();
 
 	// set the cvars appropriately
 	// Tracker 28933:  Note we can't do this because closecaption is marked

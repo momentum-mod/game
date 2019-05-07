@@ -7,6 +7,7 @@
 
 #include "vgui_controls/pch_vgui_controls.h"
 #include "vgui/ILocalize.h"
+#include <utlbuffer.h>
 
 // memdbgon must be the last include file in a .cpp file
 #include "tier0/memdbgon.h"
@@ -142,12 +143,14 @@ DECLARE_BUILD_FACTORY( RichText );
 //-----------------------------------------------------------------------------
 RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
+    InitSettings();
+    SetTriplePressAllowed(true);
 	m_bAllTextAlphaIsZero = false;
 	_font = INVALID_FONT;
 	m_hFontUnderline = INVALID_FONT;
 
 	m_bRecalcLineBreaks = true;
-	m_pszInitialText = NULL;
+	m_pszInitialText = nullptr;
 	_cursorPos = 0;
 	_mouseSelection = false;
 	_mouseDragSelection = false;
@@ -156,12 +159,12 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 	_recalcSavedRenderState = true;
 	_maxCharCount = (64 * 1024);
 	AddActionSignalTarget(this);
-	m_pInterior = new RichTextInterior( this, NULL );
+	m_pInterior = new RichTextInterior( this, nullptr );
 
 	//a -1 for _select[0] means that the selection is empty
 	_select[0] = -1;
 	_select[1] = -1;
-	m_pEditMenu = NULL;
+	m_pEditMenu = nullptr;
 	
 	SetCursor(dc_ibeam);
 	
@@ -210,7 +213,7 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 //-----------------------------------------------------------------------------
 RichText::~RichText()
 {
-	delete [] m_pszInitialText;
+	m_pszInitialText.Purge();
 	delete m_pEditMenu;
 }
 
@@ -751,7 +754,7 @@ int RichText::DrawString(int iFirst, int iLast, TRenderState &renderState, HFont
                 {
                     m_bAllTextAlphaIsZero = false;
                     surface()->DrawSetTextPos(renderState.x, renderState.y);
-                    surface()->DrawPrintText(&m_TextStream[iFirst], normalText1Length + 1);
+                    surface()->DrawPrintText(&m_TextStream[iFirst], normalText1Length);
                 }
 
                 //Print the highlighted text sandwich
@@ -924,7 +927,7 @@ void RichText::Paint()
 					surface()->DrawSetTextFont( hFontCurrent );
 					
 					// set up the panel
-					ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : NULL;
+					ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : nullptr;
 					
 					if (clickPanel)
 					{
@@ -970,7 +973,7 @@ void RichText::Paint()
 			{
 				// move to the next URL
 				_clickableTextIndex++;
-				ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : NULL;
+				ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : nullptr;
 				if (clickPanel)
 				{
 					clickPanel->SetPos(renderState.x, renderState.y);
@@ -1587,16 +1590,20 @@ void RichText::LayoutVerticalScrollBarSlider()
 	//if (!_vertScrollBar->IsVisible())
 	//	return;
 
-
 	// see where the scrollbar currently is
 	int previousValue = _vertScrollBar->GetValue();
-	bool bCurrentlyAtEnd = false;
-	int rmin, rmax;
-	_vertScrollBar->GetRange(rmin, rmax);
-	if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
-	{
-		bCurrentlyAtEnd = true;
-	}
+	bool bCurrentlyAtEnd = true;
+    if (_vertScrollBar->GetSlider()->IsSliderVisible())
+    {
+        bCurrentlyAtEnd = false;
+        int rmin, rmax;
+        _vertScrollBar->GetRange(rmin, rmax);
+        if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
+        {
+            bCurrentlyAtEnd = true;
+        }
+    }
+	
 	
 	// work out position to put scrollbar, factoring in insets
 	int wide, tall;
@@ -1823,13 +1830,14 @@ void RichText::OnMouseDoublePressed(MouseCode code)
 		GotoWordRight();
 		selectSpot[1] = _cursorPos;
 		
-		if ( _cursorPos > 0 && (_cursorPos-1) < m_TextStream.Count() )
+		while ( _cursorPos > 0 && (_cursorPos-1) < m_TextStream.Count() )
 		{
 			if (iswspace(m_TextStream[_cursorPos-1]))
 			{
 				selectSpot[1]--;
 				_cursorPos--;
 			}
+            else break;
 		}
 		
 		_select[0] = selectSpot[0];
@@ -1837,6 +1845,42 @@ void RichText::OnMouseDoublePressed(MouseCode code)
 		_mouseSelection = true;
 	}
 	
+}
+
+void RichText::OnMouseTriplePressed(MouseCode code)
+{
+    if (!m_bInteractive)
+        return;
+
+    // left triple clicking on a word selects the line
+    if (code == MOUSE_LEFT)
+    {
+        // move the cursor to where the mouse was pressed
+        int x, y;
+        input()->GetCursorPos(x, y);
+        ScreenToLocal(x, y);
+
+        _cursorPos = PixelToCursorSpace(x, y);
+        // then find the start and end of the line we are in to highlight it.
+        int curLine = GetCursorLine();
+        int selectSpot[2];
+        if (curLine)
+        {
+            // Our selection should be (curLine - 1) <-> curLine
+            selectSpot[0] = m_LineBreaks[curLine - 1];
+            selectSpot[1] = m_LineBreaks[curLine] - 1;
+        }
+        else
+        {
+            // It's 0, we're on the first (maybe even only) line
+            selectSpot[0] = 0;
+            selectSpot[1] = m_LineBreaks[curLine] - 1;
+        }
+
+        _select[0] = selectSpot[0];
+        _select[1] = selectSpot[1];
+        _mouseSelection = true;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1882,6 +1926,11 @@ void RichText::OnKeyCodeTyped(KeyCode code)
 				GotoTextEnd();
 				break;
 			}
+        case KEY_A:
+		    {
+		        SelectAllText();
+                break;
+		    }
 		default:
 			{
 				fallThrough = true;
@@ -1959,9 +2008,6 @@ void RichText::OnKeyCodeTyped(KeyCode code)
 		}
 	}
 	
-	// select[1] is the location in the line where the blinking cursor started
-	_select[1] = _cursorPos;
-	
 	// chain back on some keys
 	if (fallThrough)
 	{
@@ -2014,10 +2060,15 @@ void RichText::SetMaximumCharCount(int maxChars)
 //-----------------------------------------------------------------------------
 int RichText::GetCursorLine()
 {
-	// always returns the last place
-	int pos = m_LineBreaks[m_LineBreaks.Count() - 1];
-	Assert(pos == MAX_BUFFER_SIZE);
-	return pos;
+    // find which line the cursor is on
+    int cursorLine;
+    for (cursorLine = 0; cursorLine < m_LineBreaks.Count(); cursorLine++)
+    {
+        if (_cursorPos < m_LineBreaks[cursorLine])
+            break;
+    }
+
+    return cursorLine;
 }
 
 //-----------------------------------------------------------------------------
@@ -2503,21 +2554,19 @@ void RichText::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 	SetMaximumCharCount(inResourceData->GetInt("maxchars", -1));
-	SetVerticalScrollbar(inResourceData->GetInt("scrollbar", 1));
+	SetVerticalScrollbar(inResourceData->GetBool("scrollbar", true));
 
 	// get the starting text, if any
 	const char *text = inResourceData->GetString("text", "");
 	if (*text)
 	{
-		delete [] m_pszInitialText;
-		int len = Q_strlen(text) + 1;
-		m_pszInitialText = new char[ len ];
-		Q_strncpy( m_pszInitialText, text, len );
+        m_pszInitialText.Purge();
+        m_pszInitialText = text;
 		SetText(text);
 	}
 	else
 	{
-		const char *textfilename = inResourceData->GetString("textfile", NULL);
+		const char *textfilename = inResourceData->GetString("textfile", nullptr);
 		if ( textfilename )
 		{
 			FileHandle_t f = g_pFullFileSystem->Open( textfilename, "rt" );
@@ -2527,13 +2576,20 @@ void RichText::ApplySettings(KeyValues *inResourceData)
 				return;
 			}
 
-			int len = g_pFullFileSystem->Size( f );
-			delete [] m_pszInitialText;
-			m_pszInitialText = new char[ len + 1 ];
-			g_pFullFileSystem->Read( m_pszInitialText, len, f );
-			m_pszInitialText[len - 1] = 0;
-			SetText( m_pszInitialText );
-
+            CUtlBuffer textBuf(0, 0, CUtlBuffer::TEXT_BUFFER);
+            if (g_pFullFileSystem->ReadToBuffer(f, textBuf))
+            {
+                m_pszInitialTextFile.Purge();
+                m_pszInitialTextFile = textfilename;
+                m_pszInitialText.Purge();
+                m_pszInitialText = textBuf.String();
+                SetText(m_pszInitialText);
+            }
+            else
+            {
+                Warning("RichText: textfile %s could not be read!\n", textfilename);
+            }
+           
 			g_pFullFileSystem->Close( f );
 		}
 	}
@@ -2547,20 +2603,18 @@ void RichText::GetSettings(KeyValues *outResourceData)
 	BaseClass::GetSettings(outResourceData);
 	outResourceData->SetInt("maxchars", _maxCharCount);
 	outResourceData->SetInt("scrollbar", _vertScrollBar->IsVisible() );
-	if (m_pszInitialText)
-	{
-		outResourceData->SetString("text", m_pszInitialText);
-	}
+	outResourceData->SetString("text", m_pszInitialText);
+    outResourceData->SetString("textfile", m_pszInitialTextFile);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-const char *RichText::GetDescription()
+void RichText::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, string text, bool scrollbar", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"text", TYPE_STRING},
+    {"textfile", TYPE_STRING},
+    {"maxchars", TYPE_INTEGER},
+    {"scrollbar", TYPE_BOOL}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -2698,7 +2752,7 @@ int RichText::ParseTextStringForUrls( const char *text, int startPos, char *pchU
 		{
 			// scan ahead for another '.'
 			bool bPeriodFound = false;
-			for (const char *ch = text + i + 5; ch != 0; ch++)
+			for (const char *ch = text + i + 5; ch != nullptr; ch++)
 			{
 				if (*ch == '.')
 				{

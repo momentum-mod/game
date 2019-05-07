@@ -65,7 +65,8 @@ public:
 	enum
 	{
 		REPORT_HEX = 0,
-		REPORT_DIGIT = 1
+		REPORT_DIGIT = 1,
+        REPORT_HEX_LOWERCASE_BUNDLED
 	};
 
 	// Constructor and Destructor
@@ -93,7 +94,7 @@ public:
 	// Finalize hash and report
 	void Final();
 #if !defined(_MINIMUM_BUILD_) 
-	void ReportHash(char *szReport, unsigned char uReportType = REPORT_HEX);
+	void ReportHash(char *szReport, unsigned int maxLength, unsigned char uReportType = REPORT_HEX);
 #endif
 	void GetHash(unsigned char *uDest);
 

@@ -1,261 +1,208 @@
 #include "cbase.h"
 #include "hud_comparisons.h"
-#include "hud_macros.h"
-#include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "menu.h"
 #include "utlvector.h"
-#include "vgui_helpers.h"
-#include "view.h"
 
 #include <vgui/ILocalize.h>
-#include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vgui_controls/AnimationController.h>
-#include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 
-#include "mom_event_listener.h"
-#include "mom_player_shared.h"
-#include "mom_shareddefs.h"
-#include "momentum/util/mom_util.h"
 #include "baseviewport.h"
+#include "mom_player_shared.h"
+#include "c_mom_replay_entity.h"
+#include "mom_shareddefs.h"
+#include "mom_map_cache.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_mapname, "1", FLAG_HUD_CVAR,
-                          "Toggles showing the map name. 0 = OFF, 1 = ON");
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_mapname, "1", FLAG_HUD_CVAR, "Toggles showing the map name. 0 = OFF, 1 = ON");
 
-static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_author, "0", FLAG_HUD_CVAR,
-                          "Toggles showing the map author. 0 = OFF, 1 = ON");
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_author, "0", FLAG_HUD_CVAR, "Toggles showing the map author. 0 = OFF, 1 = ON");
 
-static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR,
-                          "Toggles showing the map difficulty. 0 = OFF, 1 = ON");
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR, "Toggles showing the map difficulty. 0 = OFF, 1 = ON");
 
-class C_HudMapInfo : public CHudElement, public Panel
+class C_HudMapInfo : public CHudElement, public EditablePanel
 {
-
-    DECLARE_CLASS_SIMPLE(C_HudMapInfo, Panel);
+    DECLARE_CLASS_SIMPLE(C_HudMapInfo, EditablePanel);
 
     C_HudMapInfo(const char *pElementName);
     void OnThink() OVERRIDE;
-    void Init() OVERRIDE;
     void Reset() OVERRIDE;
-    void Paint() OVERRIDE;
-    bool ShouldDraw() OVERRIDE
-    { 
-        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-        return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
-    }
 
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
-    {
-
-        Panel::ApplySchemeSettings(pScheme);
-        int wide, tall;
-        surface()->GetScreenSize(wide, tall);
-        SetPos(0, 0);        // Top left corner
-        SetSize(wide, tall); // Scale the screen
-    }
-
-  protected:
-    CPanelAnimationVar(HFont, m_hStatusFont, "StatusFont", "Default");
-    CPanelAnimationVar(HFont, m_hMapInfoFont, "MapInfoFont", "Default");
-    CPanelAnimationVar(Color, m_cTextColor, "TextColor", "MOM.Panel.Fg");
-    CPanelAnimationVar(bool, center_status, "centerStatus", "1");
-
-    CPanelAnimationVarAliasType(int, status_xpos, "status_xpos", "0", "proportional_xpos");
-    CPanelAnimationVarAliasType(int, status_ypos, "status_ypos", "c+135", "proportional_ypos");
-    CPanelAnimationVarAliasType(int, mapinfo_xpos, "mapinfo_xpos", "0", "proportional_xpos");
-    CPanelAnimationVarAliasType(int, mapinfo_ypos, "mapinfo_ypos", "0", "proportional_ypos");
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
+    void FireGameEvent(IGameEvent* event) OVERRIDE;
 
   private:
-    wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL], m_pwCurrentStages[BUFSIZELOCL],
-        m_pwCurrentStatus[BUFSIZELOCL];
+    void SetCurrentZoneLabel(C_MomentumPlayer *pPlayer);
+    CMomRunEntityData *m_pRunData;
 
-    char stageLocalized[BUFSIZELOCL], checkpointLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
-        startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], m_pszStringStatus[BUFSIZELOCL],
-        m_pszStringStages[BUFSIZELOCL], noZonesLocalized[BUFSIZELOCL],
-        mapNameLabelLocalized[BUFSIZELOCL], mapAuthorLabelLocalized[BUFSIZELOCL], mapDiffLabelLocalized[BUFSIZELOCL];
+    Label *m_pMainStatusLabel, *m_pMapNameLabel, *m_pMapAuthorLabel, *m_pMapDifficultyLabel;
 
-    int m_iZoneCount, m_iZoneCurrent;
-    bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
+    wchar_t m_wMapName[BUFSIZELOCL], m_wMapAuthors[BUFSIZELOCL], m_wMapDifficulty[BUFSIZELOCL];
+    wchar_t m_wBonus[BUFSIZELOCL], m_wBonusStart[BUFSIZELOCL], m_wBonusEnd[BUFSIZELOCL];
+    wchar_t m_wNoZones[BUFSIZELOCL], m_wStage[BUFSIZELOCL], m_wCheckpoint[BUFSIZELOCL], m_wStageStart[BUFSIZELOCL], m_wMainStart[BUFSIZELOCL], m_wMainEnd[BUFSIZELOCL];
+    wchar_t m_wMapFinished[BUFSIZELOCL], m_wLinearMap[BUFSIZELOCL];
+
+    bool m_bNeedsUpdate;
 };
 
-DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
+DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, HudMapInfo);
 
-C_HudMapInfo::C_HudMapInfo(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
+C_HudMapInfo::C_HudMapInfo(const char *pElementName): CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudMapInfo")
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    m_iZoneCurrent = 0;
-    m_iZoneCount = 0;
-    m_bPlayerInZone = false;
-    m_bMapFinished = false;
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
+
+    m_pRunData = nullptr;
+    m_bNeedsUpdate = true;
+
+    ListenForGameEvent("zone_enter");
+    ListenForGameEvent("zone_exit");
+    ListenForGameEvent("spec_target_updated");
+    ListenForGameEvent("spec_stop");
+    ListenForGameEvent("player_spawn");
+
+    m_pMainStatusLabel = new Label(this, "MainStatusLabel", "");
+    m_pMapNameLabel = new Label(this, "MapNameLabel", "");
+    m_pMapAuthorLabel = new Label(this, "MapAuthorLabel", "");
+    m_pMapDifficultyLabel = new Label(this, "MapDifficultyLabel", "");
+
+    LoadControlSettings("resource/ui/HudMapInfo.res");
 }
 
 void C_HudMapInfo::OnThink()
 {
-    C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (pLocal && g_MOMEventListener)
+    BaseClass::OnThink();
+
+    m_pMapNameLabel->SetVisible(mom_hud_mapinfo_show_mapname.GetBool());
+    m_pMapAuthorLabel->SetVisible(mom_hud_mapinfo_show_author.GetBool());
+    m_pMapDifficultyLabel->SetVisible(mom_hud_mapinfo_show_difficulty.GetBool());
+
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
-        if (pGhost)
-        {
-            m_iZoneCurrent = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
-            m_bPlayerInZone = pGhost->m_SrvData.m_RunData.m_bIsInZone;
-            m_bMapFinished = pGhost->m_SrvData.m_RunData.m_bMapFinished;
-        }
-        else
-        {
-            m_iZoneCurrent = pLocal->m_SrvData.m_RunData.m_iCurrentZone;
-            m_bPlayerInZone = pLocal->m_SrvData.m_RunData.m_bIsInZone;
-            m_bMapFinished = pLocal->m_SrvData.m_RunData.m_bMapFinished;
-        }
+        m_pRunData = pPlayer->GetCurrentUIEntData();
 
-        m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
-        m_bMapLinear = g_MOMEventListener->m_bMapIsLinear;
+        if (m_bNeedsUpdate && m_pRunData)
+        {
+            if (m_pRunData->m_bIsInZone)
+            {
+                if (m_pRunData->m_iCurrentZone == 1) // Start zone
+                {
+                    m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
+                                                m_wMainStart :
+                                                CConstructLocalizedString(m_wBonusStart, m_pRunData->m_iCurrentTrack.Get()));
+                }
+                else if (m_pRunData->m_iCurrentZone == 0) // End zone
+                {
+                    m_pMainStatusLabel->SetText(m_pRunData->m_iCurrentTrack == 0 ?
+                                                m_wMainEnd :
+                                                CConstructLocalizedString(m_wBonusEnd, m_pRunData->m_iCurrentTrack.Get()));
+                }
+                else if (m_pRunData->m_bMapFinished) // MOM_TODO does this even need to be here anymore? "Main End Zone" covers this
+                {
+                    // End zone
+                    m_pMainStatusLabel->SetText(m_wMapFinished);
+                }
+                else if (!pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack)) // Note: The player will never be inside a "checkpoint" zone
+                {
+                    // Some # stage start
+                    m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wStageStart, m_pRunData->m_iCurrentZone.Get()));
+                }
+                else
+                {
+                    // It's linear, just draw the current checkpoint
+                    SetCurrentZoneLabel(pPlayer);
+                }
+            }
+            else
+            {
+                if (m_pRunData->m_iCurrentTrack > 0)
+                {
+                    m_pMainStatusLabel->SetText(CConstructLocalizedString(m_wBonus, m_pRunData->m_iCurrentTrack.Get()));
+                }
+                else if (pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] > 0)
+                {
+                    SetCurrentZoneLabel(pPlayer);
+                }
+                else
+                {
+                    m_pMainStatusLabel->SetText(m_wNoZones);
+                }
+            }
+
+            m_bNeedsUpdate = false;
+        }
     }
-}
-
-void C_HudMapInfo::Init()
-{
-    // LOCALIZE STUFF HERE:
-    FIND_LOCALIZATION(m_pwStageStartString, "#MOM_Stage_Start");
-    LOCALIZE_TOKEN(Stage, "#MOM_Stage", stageLocalized);
-    LOCALIZE_TOKEN(Checkpoint, "#MOM_Checkpoint", checkpointLocalized);
-    LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
-    LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
-    LOCALIZE_TOKEN(MapFinished, "#MOM_MapFinished", mapFinishedLocalized);
-    LOCALIZE_TOKEN(NoCheckpoint, "#MOM_Status_NoZones", noZonesLocalized);
-    LOCALIZE_TOKEN(MapName, "#MOM_Map_Name", mapNameLabelLocalized);
-    LOCALIZE_TOKEN(MapAuthor, "#MOM_Map_Author", mapAuthorLabelLocalized);
-    LOCALIZE_TOKEN(MapDifficulty, "#MOM_Map_Difficulty", mapDiffLabelLocalized);
 }
 
 void C_HudMapInfo::Reset()
 {
-    m_iZoneCount = 0;
-    m_iZoneCurrent = 0;
-    m_bMapLinear = false;
-    m_bPlayerInZone = false;
-    m_bMapFinished = false;
+    FIND_LOCALIZATION(m_wMapName, "#MOM_Map_Name");
+    FIND_LOCALIZATION(m_wMapAuthors, "#MOM_Map_Authors");
+    FIND_LOCALIZATION(m_wMapDifficulty, "#MOM_Map_Difficulty");
+    FIND_LOCALIZATION(m_wStageStart, "#MOM_Stage_Start");
+    FIND_LOCALIZATION(m_wNoZones, "#MOM_Status_NoZones");
+    FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
+    FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
+    FIND_LOCALIZATION(m_wMainStart, "#MOM_InsideStartZone");
+    FIND_LOCALIZATION(m_wMainEnd, "#MOM_InsideEndZone");
+    FIND_LOCALIZATION(m_wBonus, "#MOM_Bonus");
+    FIND_LOCALIZATION(m_wBonusStart, "#MOM_Bonus_Start");
+    FIND_LOCALIZATION(m_wBonusEnd, "#MOM_Bonus_End");
+    FIND_LOCALIZATION(m_wLinearMap, "#MOM_Linear");
+    FIND_LOCALIZATION(m_wMapFinished, "#MOM_MapFinished");
+
+    m_bNeedsUpdate = true;
 }
 
-void C_HudMapInfo::Paint()
+void C_HudMapInfo::LevelInitPostEntity()
 {
-    if (m_iZoneCount > 0)
+    KeyValuesAD mapInfo("MapInfo");
+
+    MapData *pData = g_pMapCache->GetCurrentMapData();
+    if (pData)
     {
-        // Current stage(checkpoint)/total stages(checkpoints)
-        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
-                   m_bMapLinear ? checkpointLocalized : stageLocalized, // "Stage" / "Checkpoint"
-                   m_iZoneCurrent,                                     // Current stage/checkpoint
-                   m_iZoneCount                                        // Total number of stages/checkpoints
-                   );
-    }
-    else
-    { // No stages/checkpoints found
-        Q_strncpy(m_pszStringStages, noZonesLocalized, sizeof(m_pszStringStages));
-    }
-
-    ANSI_TO_UNICODE(m_pszStringStages, m_pwCurrentStages);
-
-    // No matter what, we always want the player's status printed out, if they're in a zone
-    if (m_bPlayerInZone)
-    {
-        if (m_iZoneCurrent == 1)
+        mapInfo->SetString("mapName", pData->m_szMapName);
+        CUtlString authors;
+        if (pData->GetCreditString(&authors, CREDIT_AUTHOR))
         {
-            // Start zone
-            Q_strncpy(m_pszStringStatus, startZoneLocalized, sizeof(m_pszStringStatus));
-            ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
+            mapInfo->SetString("authors", authors.Get());
+            m_pMapAuthorLabel->SetText(CConstructLocalizedString(m_wMapAuthors, (KeyValues*)mapInfo));
         }
-        else if (m_bPlayerInZone && m_bMapFinished) // don't check for zone # in case the player skipped one somehow
-        {
-            // End zone
-            Q_strncpy(m_pszStringStatus, mapFinishedLocalized, sizeof(m_pszStringStatus));
-            ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
-        }
-        else
-        {
-            //Note: The player will never be inside a "checkpoint" zone
-            // Stage # Start
-            wchar_t stageCurrent[128]; // 00'\0' and max stages is 64
-
-            V_snwprintf(stageCurrent, ARRAYSIZE(stageCurrent), L"%d", m_iZoneCurrent);
-            // Fills the "Stage %s1 Start" string
-            g_pVGuiLocalize->ConstructString(m_pwStageStartLabel, sizeof(m_pwStageStartLabel), m_pwStageStartString, 1,
-                                             stageCurrent);
-        }
-    }
-
-    // We need our text color, otherwise the following text can be hijacked
-    surface()->DrawSetTextColor(m_cTextColor);
-
-    if (center_status)
-    {
-        // Center the status string above the timer.
-        // MOM_TODO: perhaps check the timer's position using gHUD? A user could change the status_ypos...
-        int dummy, totalWide;
-        // Draw current time.
-        surface()->GetScreenSize(totalWide, dummy);
-        // GetSize(totalWide, dummy);
-        int stageWide;
-
-        surface()->GetTextSize(m_hStatusFont, m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages, stageWide,
-                               dummy);
-        int offsetToCenter = ((totalWide - stageWide) / 2);
-        surface()->DrawSetTextPos(offsetToCenter, status_ypos);
+        mapInfo->SetInt("difficulty", pData->m_MainTrack.m_iDifficulty);
+        m_pMapDifficultyLabel->SetText(CConstructLocalizedString(m_wMapDifficulty, (KeyValues*)mapInfo));
     }
     else
     {
-        // User-defined place
-        surface()->DrawSetTextPos(status_xpos, status_ypos);
+        mapInfo->SetString("mapName", g_pGameRules->MapName());
+        m_pMapAuthorLabel->SetText("");
+        m_pMapDifficultyLabel->SetText("");
     }
 
-    surface()->DrawSetTextFont(m_hStatusFont);
-    // If we're inside a stage trigger, print that stage's start label, otherwise the
-    // current number of stages/MOM_TODO: checkpoints
-    surface()->DrawPrintText(m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages,
-                             wcslen(m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages));
+    m_pMapNameLabel->SetText(CConstructLocalizedString(m_wMapName, (KeyValues*)mapInfo));
+}
 
-    int yPos = mapinfo_ypos;
-    int toIncrement = surface()->GetFontTall(m_hMapInfoFont) + 2;
-    surface()->DrawSetTextFont(m_hMapInfoFont);
-    IViewPortPanel *pSpecGUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
-    if (mom_mapinfo_show_mapname.GetBool() && pSpecGUI && !pSpecGUI->IsVisible())
-    {
-        const char *pMapName = g_pGameRules->MapName();
-        if (pMapName)
-        {
-            char mapStringANSI[BUFSIZELOCL];
-            wchar_t mapStringUnicode[BUFSIZELOCL];
-            Q_snprintf(mapStringANSI, sizeof(mapStringANSI), "%s%s", mapNameLabelLocalized, pMapName);
-            ANSI_TO_UNICODE(mapStringANSI, mapStringUnicode);
-            surface()->DrawSetTextPos(mapinfo_xpos, yPos);
-            surface()->DrawPrintText(mapStringUnicode, wcslen(mapStringUnicode));
-            yPos += toIncrement;
-        }
-    }
+void C_HudMapInfo::LevelShutdown()
+{
+    m_pRunData = nullptr;
+}
 
-    if (mom_mapinfo_show_author.GetBool())
-    {
-        // MOM_TODO: Map author(s)
+void C_HudMapInfo::FireGameEvent(IGameEvent* event)
+{
+    m_bNeedsUpdate = true;
+}
 
-        // char mapAuthorANSI[BUFSIZELOCL];
-        // wchar_t mapAuthorUnicode[BUFSIZELOCL];
-        // surface()->DrawSetTextPos(mapinfo_xpos, yPos);
-        // surface()->DrawPrintText(mapAuthorUnicode, wcslen(mapAuthorUnicode));
-    }
-
-    if (mom_mapinfo_show_difficulty.GetBool())
-    {
-        // MOM_TODO: We need to determine difficulty of a map.
-    }
+void C_HudMapInfo::SetCurrentZoneLabel(C_MomentumPlayer *pPlayer)
+{
+    // Current stage(checkpoint)/total stages(checkpoints)
+    const wchar_t *pCurrent = CConstructLocalizedString(L"%s1/%s2", m_pRunData->m_iCurrentZone.Get(), pPlayer->m_iZoneCount.Get(m_pRunData->m_iCurrentTrack));
+    m_pMainStatusLabel->SetText(CConstructLocalizedString(pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack) ? m_wCheckpoint : m_wStage, pCurrent));
 }

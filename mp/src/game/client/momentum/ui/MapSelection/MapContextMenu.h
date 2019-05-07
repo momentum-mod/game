@@ -1,8 +1,9 @@
-#ifndef MAPCONTEXTMENU_H
-#define MAPCONTEXTMENU_H
-#ifdef _WIN32
 #pragma once
-#endif
+
+#include "vgui_controls/Menu.h"
+
+struct MapData;
+class CMapSelectorDialog;
 
 //-----------------------------------------------------------------------------
 // Purpose: Basic right-click context menu for servers
@@ -10,15 +11,12 @@
 class CMapContextMenu : public vgui::Menu
 {
 public:
-    CMapContextMenu(vgui::Panel *parent);
+    CMapContextMenu(CMapSelectorDialog *parent);
     ~CMapContextMenu();
 
     // call this to Activate the menu
-    void ShowMenu(
-        vgui::Panel *target,
-        bool showMapStart,
-        bool showViewGameInfo);
+    void ShowMenu(MapData *pMapData);
+
+private:
+    CMapSelectorDialog *m_pParent;
 };
-
-
-#endif // MAPCONTEXTMENU_H

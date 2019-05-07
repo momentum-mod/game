@@ -1,77 +1,174 @@
-//Adrian: This file contains the credits info for both the Intro and outro.
 "credits.txt"
 {
+    "CreditsParams"
+    {
+        "logo" "HALF-LIFE'"
+        
+        "fadeintime"	"2.5"
+        "fadeouttime"	"1"
+        "fadeholdtime"	"1.0"
+        "nextfadetime"	"1.0"
+        "pausebetweenwaves" "1.0"
+        "logotime" "1.0"
+        "posx"	"96"
+        "posy"	"360"
 
-//========================================================
-//These are the names used in the intro (trainride)
-//========================================================
-"IntroCreditsNames"
-{
-	"V"	"WeaponIcons"
-	" "	"CreditsText"
-	" "	"CreditsText"
-}
+        "color" "255 255 255 128"
 
-"CreditsParams"
-{
-	"logo" "HALF-LIFE'"
-	
-	"fadeintime"	"2.5"
-	"fadeouttime"	"1"
-	"fadeholdtime"	"1.0"
-	"nextfadetime"	"1.0"
-	"pausebetweenwaves" "1.0"
-	"logotime" "1.0"
-	"posx"	"96"
-	"posy"	"360"
+        //Outro Parameters
+        "scrolltime" "111" // When setting scrolltime value, don't make it too slow/too fast!
+        "separation"  "10"
+    }
 
-	"color" "255 255 255 128"
+    //========================================================
+    //These are the names used in the intro (trainride)
+    //========================================================
+    "IntroCreditsNames"
+    {
+        "V"	"WeaponIcons"
+        " "	"CreditsText"
+        " "	"CreditsText"
+    }
 
-//Outro Parameters
-// When setting scrolltime value, don't make it too slow/too fast!
-	"scrolltime" "40"
-	"separation"  "10"
-}
 
-//================================================================================
-//	These are the names used in the credits.
-//	If you contribute to the project, feel free to add yourself
-//	in the contributors section. 
-//	(Add a new "YOUR NAME/USERNAME HERE" "CreditsOutroText" after the last one.)
-//================================================================================
-"OutroCreditsNames"
-{
-	"MOMENTUM MOD"	"CreditsOutroTextExtraLarge"
-	" "	"CreditsOutroText"
-	" "	"CreditsOutroText"
-	"Momentum Team" "CreditsOutroTextLarge"
-	"Nick K. (Gocnak)" "CreditsOutroText"
-	"Rubén Rincón (RabsRincon)"   "CreditsOutroText"
-	"Gus Naughton" "CreditsOutroText"
-	"Fatalis"	"CreditsOutroText"
-	"Flipybitz"	"CreditsOutroText"
-	"Tuxxi"	"CreditsOutroText"
-	"Juxtapo" "CreditsOutroText"
-	"Pcpie"	"CreditsOutroText"
-	"Mehis" "CreditsOutroText"
-	" "	"CreditsOutroText"
-	"Contributors" "CreditsOutroTextLarge"
-	// Add yourself here
-
-	//-----------------
-	" "	"CreditsOutroText"
-	" "	"CreditsOutroText"
-	" "	"CreditsOutroText"
-	" "	"CreditsOutroText"
-	"Special thanks to:"   "CreditsOutroTextLarge"
-	"Ivan Vashchaev for his JSON parser GASON"   "CreditsOutroText"
-	"Slack Technologies Inc." "CreditsOutroText"
-	"The Rhino Burger for their cover of Tiagre at Dawn" "CreditsOutroText"
-	"everyone who has ever contributed"   "CreditsOutroText"
-	"and"	"CreditsOutroText"
-	" "	"CreditsOutroText"
-	" "	"CreditsOutroText"
-	"V"	"CreditsOutroLogos"
-}
-
+    //================================================================================
+    //	These are the names used in the credits.
+    //	If you contribute to the project, feel free to add yourself
+    //	in the contributors section. 
+    //	(Add a new "YOUR NAME/USERNAME HERE" "CreditsOutroText" after the last one.)
+    //================================================================================
+    "OutroCreditsNames"
+    {
+        "Momentum Mod"	"CreditsOutroTextExtraLarge"
+        " "	"CreditsOutroText"
+        " "	"CreditsOutroText"
+        "Project Leads" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "Producer" "CreditsOutroTextBold"
+        "Nick (Gocnak) K." "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Production Designer" "CreditsOutroTextBold"
+        "Tyler (Zopha) S." "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Sound Director" "CreditsOutroTextBold"
+        "Nikolai (Monolith) L." "CreditsOutroText"
+        " " "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Game Programming" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "Nick (Gocnak) K." "CreditsOutroText"
+        "Mev" "CreditsOutroText"
+        "SlidyBat" "CreditsOutroText"
+        "Kamay" "CreditsOutroText"
+        "Aiden (tuxxi) S." "CreditsOutroText"
+        "Nolan (Rusty) O." "CreditsOutroText"
+        " " "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Website Programming" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "Nick (Gocnak) K." "CreditsOutroText"
+        "Corey (Corey28) P." "CreditsOutroText"
+        " " "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Design" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "Level Design" "CreditsOutroTextBold"
+        " " "CreditsOutroText"
+        "Bhop" "CreditsOutroTextItalic"
+        " " "CreditsOutroText"
+        "Martin (Aux) L." "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Surf" "CreditsOutroTextItalic"
+        " " "CreditsOutroText"
+        "Jordan (Hardex) B." "CreditsOutroText"
+        "Illusion JM" "CreditsOutroText"
+        "Xtra_Festive" "CreditsOutroText"
+        "Miles (Bocuma) O." "CreditsOutroText"
+        "Tim (RNC1839) M." "CreditsOutroText"
+        "OOSII" "CreditsOutroText"
+        "Eric (pretzL) P." "CreditsOutroText"
+        "TruMatrix" "CreditsOutroText"
+        "Kyle (Flaudgin) K." "CreditsOutroText"
+        "Masog" "CreditsOutroText"
+        "not_a_zombie" "CreditsOutroText"
+        "Sean (hesuka) H." "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Music & Sound Effects" "CreditsOutroTextBold"
+        " " "CreditsOutroText"
+        "Nikolai (Monolith) L." "CreditsOutroText"
+        "Palms" "CreditsOutroText"
+        "Scavenger Six" "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Concept Artists" "CreditsOutroTextBold"
+        " " "CreditsOutroText"
+        "Daniel (Naevyr) M." "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Character Artists" "CreditsOutroTextBold"
+        " " "CreditsOutroText"
+        "Daniel (Naevyr) M." "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Graphic Artists" "CreditsOutroTextBold"
+        " " "CreditsOutroText"
+        "Alexandre (TraZox) D." "CreditsOutroText"
+        "Juxtapo" "CreditsOutroText"
+        "Joeyy" "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Environment Art & Design" "CreditsOutroTextBold"
+        "Aiden (Cabbage McGravel) C." "CreditsOutroText"
+        "Daniel (Naevyr) M." "CreditsOutroText"
+        "Tyler (Zopha) S." "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Animation" "CreditsOutroTextBold"
+        "We need help with this one!" "CreditsOutroText"
+        "<Your Name Here!>" "CreditsOutroText"
+        " " "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Internal QA & Community" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "Xen" "CreditsOutroText"
+        "NumanMyBro" "CreditsOutroText"
+        "Kurtis (truktruk) R." "CreditsOutroText"
+        "Sam (Beetle179) D." "CreditsOutroText"
+        " " "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Localization" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "Coming with v0.9.0 ;)" "CreditsOutroText"
+        " " "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Contributors" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "RabsRincon - Pre-production website & client programming" "CreditsOutroText"
+        "Horsefeathers - Pre-production level design" "CreditsOutroText"
+        "func_mathias - Pre-production level design and artwork" "CreditsOutroText"
+        "SethJH - Pre-production Art and 3D assets" "CreditsOutroText"
+        "3DFIX - Pre-production Art and 3D assets" "CreditsOutroText"
+        "BlockBuilder57 - 3D Assets and Textures" "CreditsOutroText"
+        "Karasu - Initial graphics & concepts" "CreditsOutroText"
+        "Mixero - Initial art" "CreditsOutroText"
+        "Gus N. - Initial Webmaster" "CreditsOutroText"
+        "Nicolas De - GameUI2" "CreditsOutroText"
+        "Fatalis - Initial rampbug fixes, tickset code" "CreditsOutroText"
+        "TotallyMehis - Slopeboost and other fixes, point-based zoning" "CreditsOutroText"
+        "Asunaya - Booster entity timing fixes" "CreditsOutroText"
+        "Nofate - Initial recording & replay system programming" "CreditsOutroText"
+        "Brian Charles - Parallax-Corrected Cubemaps" "CreditsOutroText"
+        "Crashfort - Fixes to RichText and Network Packets" "CreditsOutroText"
+        "Merky - VFX" "CreditsOutroText"
+        
+        " " "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Special Thanks" "CreditsOutroTextLarge"
+        " " "CreditsOutroText"
+        "nyro - surf_lt_omnific, unicorn, and general inspiration" "CreditsOutroText"
+        "Donutvikingchamp - Initial SMG design" "CreditsOutroText"
+        "FliteDNB - Pre-production music ideas" "CreditsOutroText"
+        " " "CreditsOutroText"
+        "Those who believe in us" "CreditsOutroText"
+        "Those we may have lost, forgotten, or ignored" "CreditsOutroText"
+        " " "CreditsOutroText"
+        "and" "CreditsOutroText"
+        " " "CreditsOutroText"
+        "V"	"CreditsOutroLogos"
+    }
 }

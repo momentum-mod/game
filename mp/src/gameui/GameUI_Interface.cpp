@@ -41,7 +41,6 @@
 #include "MainMenu.h"
 
 #include "BasePanel.h"
-#include "mom_steam_helper.h"
 #include "engine/IEngineSound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -103,9 +102,8 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     ConnectTier2Libraries(&factory, 1);
     ConVar_Register(FCVAR_CLIENTDLL);
     ConnectTier3Libraries(&factory, 1);
-
+    
     SteamAPI_InitSafe();
-    m_SteamAPIContext.Init();
 
     vgui::VGui_InitInterfacesList("GameUI", &factory, 1);
     vgui::VGui_InitMatSysInterfacesList("GameUI", &factory, 1);
@@ -126,16 +124,11 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     enginesound = static_cast<IEngineSound *>(factory(IENGINESOUND_CLIENT_INTERFACE_VERSION, nullptr));
     engine = static_cast<IVEngineClient *>(factory(VENGINE_CLIENT_INTERFACE_VERSION, nullptr));
     gameeventmanager = static_cast<IGameEventManager2 *>(factory(INTERFACEVERSION_GAMEEVENTSMANAGER2, nullptr));
-    m_pRenderView = static_cast<IVRenderView*>(factory(VENGINE_RENDERVIEW_INTERFACE_VERSION, nullptr));
-    m_pMaterialSystem = static_cast<IMaterialSystem*>(factory(MATERIAL_SYSTEM_INTERFACE_VERSION, nullptr));
 
     if (!engine || !enginesound || !enginesurfacefuncs || !gameuifuncs || !enginevguifuncs)
     {
         Error("CGameUI::Initialize() failed to get necessary interfaces\n");
     }
-
-    if (gameeventmanager)
-        g_pMomentumSteamHelper->ListenForGameEvent("lobby_leave");
 
     // setup base panel
     staticPanel = new CBasePanel();
@@ -278,8 +271,6 @@ void CGameUI::Start()
 void CGameUI::Shutdown()
 {
     ModInfo().FreeModInfo();
-
-    m_SteamAPIContext.Clear();
 
     ConVar_Unregister();
     DisconnectTier3Libraries();

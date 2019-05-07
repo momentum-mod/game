@@ -5,6 +5,13 @@
 #ifdef GAME_DLL
 #include "momentum/mom_replay_entity.h"
 #endif
+#include "util/mom_util.h"
+
+#include "tier0/memdbgon.h"
+
+#ifdef CLIENT_DLL
+static MAKE_TOGGLE_CONVAR(mom_replay_debug, "0", FCVAR_ARCHIVE, "If 1, prints out debug info when loading replays.");
+#endif
 
 CMomReplayFactory::CMomReplayFactory() :
     m_ucCurrentVersion(0)
@@ -27,7 +34,7 @@ CMomReplayBase *CMomReplayFactory::CreateEmptyReplay(uint8 version)
     }
 }
 
-CMomReplayBase *CMomReplayFactory::CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad)
+CMomReplayBase *CMomReplayFactory::CreateReplay(uint8 version, CUtlBuffer &reader, bool bFullLoad)
 {
     switch(version)
     {
@@ -43,38 +50,50 @@ CMomReplayBase *CMomReplayFactory::CreateReplay(uint8 version, CBinaryReader* re
 
 CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bFullLoad, const char* pPathID)
 {
-    Log("Loading a replay from '%s'...\n", pFileName);
+    bool bLogReplay = false;
+#ifdef CLIENT_DLL
+    bLogReplay = mom_replay_debug.GetBool();
+#else
+    static ConVarRef replayDebug("mom_replay_debug");
+    bLogReplay = replayDebug.GetBool();
+#endif
 
-    auto file = filesystem->Open(pFileName, "r+b", pPathID);
+    if (bLogReplay)
+        Log("Loading a replay from '%s'...\n", pFileName);
 
-    if (!file)
+    CUtlBuffer reader;
+    bool bFile = filesystem->ReadFile(pFileName, pPathID, reader);
+
+    if (!bFile)
     {
         Log("Replay file not found: %s\n", pFileName);
         return nullptr;
     }
 
-    CBinaryReader reader(file);
-
-    uint32 magic = reader.ReadUInt32();
+    uint32 magic = reader.GetUnsignedInt();
 
     if (magic != REPLAY_MAGIC_LE && magic != REPLAY_MAGIC_BE)
     {
-        filesystem->Close(file);
+        Warning("Not a replay file!\n");
         return nullptr;
     }
 
     if (magic == REPLAY_MAGIC_BE)
-        reader.ShouldFlipEndianness(true);
+        reader.ActivateByteSwapping(true);
 
-    uint8 version = reader.ReadUInt8();
+    uint8 version = reader.GetUnsignedChar();
 
-    Log("Loading replay '%s' of version '%d'...\n", pFileName, version);
+    if (bLogReplay)
+        Log("Loading replay '%s' of version '%d'...\n", pFileName, version);
 
-    // MOM_TODO (OrfeasZ): Verify that replay parsing was successful.
-    CMomReplayBase * toReturn = CreateReplay(version, &reader, bFullLoad);
+    // MOM_TODO: Verify that replay parsing was successful.
+    CMomReplayBase *toReturn = CreateReplay(version, reader, bFullLoad);
+    char hash[41];
+    if (MomUtil::GetSHA1Hash(reader, hash, sizeof(hash)))
+        toReturn->SetRunHash(hash);
 
-    filesystem->Close(file);
-    Log("Successfully loaded replay.\n");
+    if (bLogReplay)
+        Log("Successfully loaded replay.\n");
 
     return toReturn;
 }

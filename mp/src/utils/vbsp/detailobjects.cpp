@@ -24,9 +24,6 @@
 #include "disp_vbsp.h"
 #include "UtlBuffer.h"
 #include "CollisionUtils.h"
-#include <float.h>
-#include "UtlLinkedList.h"
-#include "byteswap.h"
 #include "writebsp.h"
 
 //-----------------------------------------------------------------------------

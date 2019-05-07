@@ -197,6 +197,7 @@ public:
 		COMPAT_MODE = 0,
 		HOT_KEY_MODE,
 		TYPE_AHEAD_MODE,
+		NO_TYPE_AHEAD_MODE, // Doesn't do any type ahead, keyboard clicks don't affect selected item at all
 	};
 	virtual void SetTypeAheadMode(MenuTypeAheadMode mode);
 	virtual int GetTypeAheadMode();
@@ -323,7 +324,7 @@ private:
 	CUtlLinkedList<MenuItem*, int> 	m_MenuItems;
 
 	CUtlVector<int>					m_VisibleSortedItems;
-	CUtlVector<int>					m_SortedItems;		// used for visual 
+	CUtlVector<int>					m_SortedItems;      // used for visual 
 	CUtlVector<int>					m_Separators;       // menu item ids after  which separators should be shown
 	CUtlVector<MenuSeparator *>		m_SeparatorPanels;
 

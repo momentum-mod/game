@@ -3,419 +3,307 @@
 #include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
-#include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "menu.h"
 #include "utlvector.h"
-#include "vgui_helpers.h"
-#include "view.h"
 
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vgui_controls/AnimationController.h>
-#include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
+#include "vgui_controls/AnimationController.h"
 
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
+#include "c_mom_replay_entity.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-static ConVar mom_timer("mom_timer", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-                        "Toggle displaying the timer. 0 = OFF, 1 = ON\n", true, 0, true, 1);
+static MAKE_TOGGLE_CONVAR(mom_hud_timer, "1", FCVAR_ARCHIVE, "Toggle displaying the timer. 0 = OFF, 1 = ON\n");
 
-static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                         "Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Checkpoint\n");
-
-class C_HudTimer : public CHudElement, public Panel
+class CHudTimer : public CHudElement, public EditablePanel
 {
-    DECLARE_CLASS_SIMPLE(C_HudTimer, Panel);
-    C_HudTimer(const char *pElementName);
+    DECLARE_CLASS_SIMPLE(CHudTimer, EditablePanel);
+    CHudTimer(const char *pElementName);
     void OnThink() OVERRIDE;
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
-    void Paint() OVERRIDE;
-    bool ShouldDraw() OVERRIDE
-    {
-        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-        return mom_timer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible();
-    }
+    bool ShouldDraw() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
+    void FireGameEvent(IGameEvent* event) OVERRIDE;
 
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
-    {
-        Panel::ApplySchemeSettings(pScheme);
-        SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
-        m_TimeGain = GetSchemeColor("MOM.Timer.Gain", pScheme);
-        m_TimeLoss = GetSchemeColor("MOM.Timer.Loss", pScheme);
-    }
-    void MsgFunc_Timer_State(bf_read &msg);
+    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
+    void MsgFunc_Timer_Event(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);
-    float GetCurrentTime();
-    bool m_bIsRunning;
-    bool m_bTimerRan; // MOM_TODO: What is this used for?
 
-  protected:
-    CPanelAnimationVar(float, m_flBlur, "Blur", "0");
-    CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
-    CPanelAnimationVar(Color, m_Ammo2Color, "Ammo2Color", "FgColor");
-    CPanelAnimationVar(Color, m_TimeGain, "TimeGainColor", "FgColor");
-    CPanelAnimationVar(Color, m_TimeLoss, "TimeLossColor", "FgColor");
-
-    CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "HudHintTextLarge");
-    CPanelAnimationVar(HFont, m_hTimerFont, "TimerFont", "HudNumbersSmallBold");
-    CPanelAnimationVar(HFont, m_hSmallTextFont, "SmallTextFont", "HudNumbersSmall");
-
-    CPanelAnimationVarAliasType(bool, center_time, "centerTime", "0", "BOOL");
-    CPanelAnimationVarAliasType(int, time_xpos, "time_xpos", "0", "proportional_xpos");
-    CPanelAnimationVarAliasType(int, time_ypos, "time_ypos", "2", "proportional_ypos");
-    CPanelAnimationVarAliasType(bool, center_cps, "centerCps", "1", "BOOL");
-    CPanelAnimationVarAliasType(int, cps_xpos, "cps_xpos", "50", "proportional_xpos");
-    CPanelAnimationVarAliasType(int, cps_ypos, "cps_ypos", "19", "proportional_ypos");
-    CPanelAnimationVarAliasType(bool, center_split, "centerSplit", "1", "BOOL");
-    CPanelAnimationVarAliasType(int, split_xpos, "split_xpos", "50", "proportional_xpos");
-    CPanelAnimationVarAliasType(int, split_ypos, "split_ypos", "19", "proportional_ypos");
+    CPanelAnimationVar(Color, m_StatusColor, "StatusColor", "Mom.Panel.Fg");
 
   private:
-    int m_iZoneCurrent, m_iZoneCount;
-    int m_iTotalTicks, m_iStartTick, m_G_iStartTickD, m_G_iCurrentTick, m_iOldTickCount;
-    int initialTall;
-    bool m_bIsReplay;
-    // float m_fCurrentTime;
+    void SetToNoTimer();
 
-    wchar_t m_pwCurrentTime[BUFSIZETIME];
-    char m_pszString[BUFSIZETIME];
-    wchar_t m_pwCurrentCheckpoints[BUFSIZELOCL];
-    char m_pszStringCps[BUFSIZELOCL];
-    wchar_t m_pwCurrentStages[BUFSIZELOCL];
-    char m_pszStringStages[BUFSIZELOCL];
-    wchar_t m_pwCurrentStatus[BUFSIZELOCL];
-    char m_pszStringStatus[BUFSIZELOCL];
-    wchar_t m_pwStageTime[BUFSIZETIME];
-    char m_pszStageTimeString[BUFSIZETIME];
-    wchar_t m_pwStageTimeLabel[BUFSIZELOCL];
-    char m_pszStageTimeLabelString[BUFSIZELOCL];
+    int m_iZoneCurrent;
+    int m_iCurrentSpecTargetEntIndx;
+    C_MomentumReplayGhostEntity *m_pSpecTarget;
 
-    wchar_t m_pwStageTimeComparison[BUFSIZETIME];
-    char m_pszStageTimeComparisonANSI[BUFSIZETIME], m_pszStageTimeComparisonLabel[BUFSIZELOCL];
+    Label *m_pMainStatusLabel, *m_pInfoLabel, *m_pSplitLabel, *m_pComparisonLabel;
 
-    wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL];
+    wchar_t m_wStageStart[BUFSIZELOCL];
+    wchar_t m_wSavelocStatus[BUFSIZELOCL];
+    wchar_t m_wNoTimer[BUFSIZELOCL];
+    wchar_t m_wPracticeMode[BUFSIZELOCL];
+    wchar_t m_wStageNum[BUFSIZELOCL];
+    wchar_t m_wCheckpointNum[BUFSIZELOCL];
 
-    bool m_bPlayerInZone;
-    bool m_bWereCheatsActivated;
-    bool m_bPlayerHasPracticeMode;
-    bool m_bShowCheckpoints;
-    bool m_bMapFinished;
-    bool m_bMapIsLinear;
-    int m_iCheckpointCount, m_iCheckpointCurrent;
+    bool m_bWasUsingSavelocMenu;
+    bool m_bInPracticeMode;
     CMomRunStats *m_pRunStats;
-    char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
-        startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL],
-        noTimerLocalized[BUFSIZELOCL];
+    CMomRunEntityData *m_pRunData;
 };
 
-DECLARE_HUDELEMENT(C_HudTimer);
-DECLARE_HUD_MESSAGE(C_HudTimer, Timer_State);
-DECLARE_HUD_MESSAGE(C_HudTimer, Timer_Reset);
+DECLARE_HUDELEMENT(CHudTimer);
+DECLARE_HUD_MESSAGE(CHudTimer, Timer_Event);
+DECLARE_HUD_MESSAGE(CHudTimer, Timer_Reset);
 
-C_HudTimer::C_HudTimer(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
+CHudTimer::CHudTimer(const char *pElementName): CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudTimer")
 {
     // This is already set for HUD elements, but still...
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    m_bIsReplay = false;
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
+    m_bWasUsingSavelocMenu = false;
+
+    ListenForGameEvent("saveloc_upd8");
+    ListenForGameEvent("zone_enter");
+    ListenForGameEvent("spec_target_updated");
+    ListenForGameEvent("spec_stop");
+    ListenForGameEvent("practice_mode");
+    ListenForGameEvent("player_spawn");
+    ListenForGameEvent("mapfinished_panel_closed");
+
+    m_pMainStatusLabel = new Label(this, "MainStatusLabel", "");
+    m_pInfoLabel = new Label(this, "InfoLabel", "");
+    m_pSplitLabel = new Label(this, "SplitLabel", "");
+    m_pComparisonLabel = new Label(this, "ComparisonLabel", "");
+
+    LoadControlSettings("resource/ui/Timer.res");
+
+    HOOK_HUD_MESSAGE(CHudTimer, Timer_Event);
+    HOOK_HUD_MESSAGE(CHudTimer, Timer_Reset);
 }
 
-void C_HudTimer::Init()
+void CHudTimer::Init()
 {
-    // We reset only if it was a run not a replay -> lets check if shared was valid first
-    m_iTotalTicks = 0;
-    m_iOldTickCount = 0;
-    m_iStartTick = 0;
-    m_G_iCurrentTick = 0;
-    m_G_iStartTickD = 0;
-    HOOK_HUD_MESSAGE(C_HudTimer, Timer_State);
-    HOOK_HUD_MESSAGE(C_HudTimer, Timer_Reset);
-    initialTall = 48;
-    m_iZoneCount = 0;
+    m_iCurrentSpecTargetEntIndx = -1;
     m_pRunStats = nullptr;
-    // Reset();
-
-    // cache localization strings
-    FIND_LOCALIZATION(m_pwStageStartString, "#MOM_Stage_Start");
-    LOCALIZE_TOKEN(Checkpoint, "#MOM_Checkpoint", cpLocalized);
-    LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
-    LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
-    LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
-    LOCALIZE_TOKEN(MapFinished, "#MOM_MapFinished", mapFinishedLocalized);
-    LOCALIZE_TOKEN(PracticeMode, "#MOM_PracticeMode", practiceModeLocalized);
-    LOCALIZE_TOKEN(NoTimer, "#MOM_NoTimer", noTimerLocalized);
+    m_pRunData = nullptr;
+    m_pSpecTarget = nullptr;
 }
 
-void C_HudTimer::Reset()
+void CHudTimer::Reset()
 {
-    // We reset only if it was a run not a replay -> lets check if shared was valid first
-    m_iTotalTicks = 0;
-    m_iStartTick = 0;
-    m_G_iCurrentTick = 0;
-    m_G_iStartTickD = 0;
-    m_iOldTickCount = 0;
-    m_bIsRunning = false;
-    m_bTimerRan = false;
+    m_iCurrentSpecTargetEntIndx = -1;
+    m_bInPracticeMode = false;
     m_iZoneCurrent = 1;
-    m_bShowCheckpoints = false;
-    m_bWereCheatsActivated = false;
-    m_bPlayerHasPracticeMode = false;
-    m_bPlayerInZone = false;
-    m_bMapFinished = false;
-    m_bMapIsLinear = false;
-    m_iCheckpointCount = 0;
-    m_iCheckpointCurrent = 0;
-    m_pRunStats = nullptr;
+    m_pSpecTarget = nullptr;
+
+    // cache localization strings -- in here because Reset is called when the player respawns, allowing for easy reload of tokens
+    FIND_LOCALIZATION(m_wStageStart, "#MOM_Stage_Start");
+    FIND_LOCALIZATION(m_wSavelocStatus, "#MOM_SavedLocation");
+    FIND_LOCALIZATION(m_wPracticeMode, "#MOM_PracticeMode");
+    FIND_LOCALIZATION(m_wNoTimer, "#MOM_NoTimer");
+    FIND_LOCALIZATION(m_wStageNum, "#MOM_Stage");
+    FIND_LOCALIZATION(m_wCheckpointNum, "#MOM_Checkpoint");
+
+    if (!(m_pRunData && m_pRunData->m_bTimerRunning))
+    {
+        SetToNoTimer();
+    }
+}
+
+void CHudTimer::FireGameEvent(IGameEvent* event)
+{
+    const char *pName = event->GetName();
+    if (FStrEq(pName, "zone_enter"))
+    {
+        const int entIndx = event->GetInt("ent");
+
+        if (entIndx == engine->GetLocalPlayer() || entIndx == m_iCurrentSpecTargetEntIndx)
+        {
+            const int zoneNum = event->GetInt("num");
+            const bool bChanged = m_iZoneCurrent != zoneNum;
+            m_iZoneCurrent = zoneNum;
+
+            if (zoneNum == 1 && !m_bInPracticeMode) // Start trigger
+                SetToNoTimer();
+
+            const auto pPlayer = CMomentumPlayer::GetLocalMomPlayer();
+            if (m_pRunData && m_pRunData->m_bTimerRunning && bChanged && m_iZoneCurrent > 1 && pPlayer)
+            {
+                // Set the info label
+                m_pInfoLabel->SetText(CConstructLocalizedString(pPlayer->m_iLinearTracks.Get(m_pRunData->m_iCurrentTrack) ? m_wCheckpointNum : m_wStageNum, m_iZoneCurrent - 1));
+
+                ConVarRef timeType("mom_comparisons_time_type");
+                // This void works even if there is no comparison loaded
+                Color compareColor = GetFgColor();
+                char actualANSI[BUFSIZELOCL], comparisonANSI[BUFSIZELOCL];
+                g_pMOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_pRunStats,
+                                                     m_iZoneCurrent - 1, actualANSI, comparisonANSI, &compareColor);
+
+                // Set our actual time
+                m_pSplitLabel->SetText(actualANSI);
+
+                // Set the comparison label
+                if (g_pMOMRunCompare->LoadedComparison())
+                {
+                    m_pComparisonLabel->SetFgColor(compareColor);
+                    m_pComparisonLabel->SetText(comparisonANSI);
+                }
+            }
+        }
+    }
+    else if (FStrEq(pName, "practice_mode"))
+    {
+        m_bInPracticeMode = event->GetBool("enabled");
+        if (m_bInPracticeMode)
+            m_pMainStatusLabel->SetText(m_wPracticeMode);
+        else if (!m_pRunData->m_bTimerRunning)
+            SetToNoTimer();
+    }
+    else if (FStrEq(pName, "spec_target_updated"))
+    {
+        const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
+        // Note: this has to be delayed until OnThink can get at it, because the client-side Ghost ent isn't created yet...
+        m_iCurrentSpecTargetEntIndx = pLocal->GetSpecEntIndex();
+        // Default it all to nullptr for now, just in case they're spectating an online ghost anyways
+        m_pSpecTarget = nullptr;
+        m_pRunStats = nullptr;
+        m_pRunData = nullptr;
+        m_pInfoLabel->SetText("");
+        m_pSplitLabel->SetText("");
+        m_pComparisonLabel->SetText("");
+    }
+    else if (FStrEq(pName, "spec_stop") || FStrEq(pName, "player_spawn"))
+    {
+        const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
+        m_pRunData = pLocal->GetRunEntData();
+        m_pRunStats = &pLocal->m_RunStats;
+        if (!m_pRunData->m_bTimerRunning)
+            SetToNoTimer();
+    }
+    else if (FStrEq(pName, "mapfinished_panel_closed"))
+    {
+        Reset();
+    }
+    else if (FStrEq(pName, "saveloc_upd8"))
+    {
+        const bool bUsing = event->GetBool("using");
+        const int count = event->GetInt("count");
+        const int current = event->GetInt("current", -1) + 1;
+
+        if (bUsing != m_bWasUsingSavelocMenu)
+        {
+            m_bWasUsingSavelocMenu = bUsing;
+
+            m_pMainStatusLabel->SetText(m_wNoTimer);
+
+            if (!bUsing)
+                m_pInfoLabel->SetText("");
+        }
+
+        if (m_bWasUsingSavelocMenu)
+            m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, current, count));
+    }
+}
+
+void CHudTimer::ApplySchemeSettings(IScheme* pScheme)
+{
+    Panel::ApplySchemeSettings(pScheme);
+    SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
 }
 
 // This void handles playing effects for run start and run stop
-void C_HudTimer::MsgFunc_Timer_State(bf_read &msg)
+void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (!pPlayer)
         return;
 
-    bool started = msg.ReadOneBit();
+    const int type = msg.ReadByte();
 
-    if (started)
+    if (type == TIMER_EVENT_STARTED)
     {
-        // VGUI_ANIMATE("TimerStart");
-        // Checking again, even if we just checked 8 lines before
-
         pPlayer->EmitSound("Momentum.StartTimer");
-        m_bTimerRan = true;
     }
-    else // stopped
+    else if (type == TIMER_EVENT_FINISHED)
     {
-        // Compare times.
-        if (m_bWereCheatsActivated) // EY, CHEATER, STOP
-        {
-            DevWarning("sv_cheats was set to 1, thus making the run not valid \n");
-        }
-        else // He didn't cheat, we can carry on
-        {
-            // m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
-            // DevMsg("Ticks upon exit: %i and total seconds: %f\n", m_iTotalTicks, gpGlobals->interval_per_tick);
-            // Paint();
-            // DevMsg("%s \n", m_pszString);
-        }
-
-        // VGUI_ANIMATE("TimerStop");
-        m_bTimerRan = true;
+        pPlayer->EmitSound("Momentum.FinishTimer");
+    }
+    else if (type == TIMER_EVENT_STOPPED)
+    {
+        SetToNoTimer();
         pPlayer->EmitSound("Momentum.StopTimer");
-
-        // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
+    }
+    else if (type == TIMER_EVENT_FAILED)
+    {
+        pPlayer->EmitSound("Momentum.FailedStartTimer");
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("TimerFailStart");
     }
 }
 
-void C_HudTimer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
+void CHudTimer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
-float C_HudTimer::GetCurrentTime()
+void CHudTimer::SetToNoTimer()
 {
-    // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
-    // so we add an extra tick here to make them line up again
-
-    // Done, I've shouldn't have checked if tickcount wasn't the same for only one frame, but for all the frames that
-    // paint is getting called.
-
-    if (gpGlobals->tickcount != m_iOldTickCount && !m_bIsReplay)
-    {
-        m_iTotalTicks = m_bIsRunning ? (gpGlobals->tickcount - m_iStartTick) : 0;
-    }
-
-    if (m_bIsReplay)
-    {
-        m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
-    }
-
-    m_iOldTickCount = gpGlobals->tickcount;
-
-    return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
+    m_pMainStatusLabel->SetText(m_wNoTimer);
+    m_pInfoLabel->SetText("");
+    m_pSplitLabel->SetText("");
+    m_pComparisonLabel->SetText("");
 }
 
-void C_HudTimer::OnThink()
+void CHudTimer::OnThink()
 {
-    C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (pLocal && g_MOMEventListener)
+    m_pMainStatusLabel->SetFgColor(m_StatusColor);
+
+    const auto pLocal = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pLocal)
     {
-        C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
-        C_MOMRunEntityData *runData;
-        if (pGhost)
+        const auto pEnt = pLocal->GetCurrentUIEntity();
+        if (m_iCurrentSpecTargetEntIndx != -1 && !m_pSpecTarget)
         {
-            m_bShowCheckpoints = false;
-            m_iCheckpointCurrent = 0;
-            m_iCheckpointCount = 0;
-            m_pRunStats = &pGhost->m_RunStats;
-            m_bIsReplay = true;
-            m_bPlayerHasPracticeMode = false;
-            m_G_iCurrentTick = pGhost->m_SrvData.m_iCurrentTick;
-            m_G_iStartTickD = pGhost->m_SrvData.m_RunData.m_iStartTickD;
-            runData = &pGhost->m_SrvData.m_RunData;
-        }
-        else
-        {
-            m_bIsReplay = false;
-            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingCPMenu;
-            m_iCheckpointCurrent = pLocal->m_SrvData.m_iCurrentStepCP + 1;
-            m_iCheckpointCount = pLocal->m_SrvData.m_iCheckpointCount;
-            m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
-            m_pRunStats = &pLocal->m_RunStats;
-            runData = &pLocal->m_SrvData.m_RunData;
+            if (pEnt->GetEntType() == RUN_ENT_REPLAY)
+            {
+                m_pSpecTarget = static_cast<C_MomentumReplayGhostEntity*>(pEnt);
+                m_pRunStats = pEnt->GetRunStats();
+                m_pRunData = pEnt->GetRunEntData();
+            }
         }
 
-        m_bIsRunning = runData->m_bTimerRunning;
-        m_iStartTick = runData->m_iStartTick;
-        m_iZoneCurrent = runData->m_iCurrentZone;
-        m_bPlayerInZone = runData->m_bIsInZone;
-        m_bMapFinished = runData->m_bMapFinished;
-        m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
-        m_bMapIsLinear = g_MOMEventListener->m_bMapIsLinear;
+        // Format the run's time
+        if (m_pRunData && !m_bInPracticeMode)
+        {
+            if (m_pRunData->m_bTimerRunning || m_pRunData->m_bMapFinished)
+            {
+                char curTime[BUFSIZETIME];
+                MomUtil::FormatTime(pEnt->GetCurrentRunTime(), curTime, 2);
+                m_pMainStatusLabel->SetText(curTime);
+            }
+        }
     }
 }
 
-void C_HudTimer::Paint(void)
+bool CHudTimer::ShouldDraw()
 {
-    // Format the run's time
-    g_pMomentumUtil->FormatTime(GetCurrentTime(), m_pszString, 2);
-    ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
+    return mom_hud_timer.GetBool() && CHudElement::ShouldDraw();
+}
 
-    if (m_bShowCheckpoints)
-    {
-        Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "%s %i/%i",
-                   cpLocalized,          // Checkpoint localization
-                   m_iCheckpointCurrent, // CurrentCP
-                   m_iCheckpointCount    // CPCount
-                   );
-
-        ANSI_TO_UNICODE(m_pszStringCps, m_pwCurrentCheckpoints);
-    }
-
-    char prevStageString[BUFSIZELOCL], comparisonANSI[BUFSIZELOCL];
-    wchar_t prevStageStringUnicode[BUFSIZELOCL];
-    Color compareColor = GetFgColor();
-
-    if (m_iZoneCurrent > 1)
-    {
-        Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i",
-                   m_bMapIsLinear ? cpLocalized : stLocalized, // Stage localization ("Checkpoint:" if linear)
-                   m_iZoneCurrent - 1);                        // Last stage number
-
-        ANSI_TO_UNICODE(prevStageString, prevStageStringUnicode);
-
-        ConVarRef timeType("mom_comparisons_time_type");
-        // This void works even if there is no comparison loaded
-        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_pRunStats,
-                                             m_iZoneCurrent - 1, m_pszStageTimeString, comparisonANSI, &compareColor);
-
-        // Convert the split to Unicode
-        ANSI_TO_UNICODE(m_pszStageTimeString, m_pwStageTimeLabel);
-    }
-
-    // find out status of timer (no timer/practice mode)
-    if (!m_bIsRunning)
-    {
-        Q_strncpy(m_pszStringStatus, m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized,
-                  sizeof(m_pszStringStatus));
-        ANSI_TO_UNICODE(m_pszStringStatus, m_pwCurrentStatus);
-    }
-
-    // Draw the text label.
-    surface()->DrawSetTextFont(m_bIsRunning ? m_hTimerFont : m_hTextFont);
-    surface()->DrawSetTextColor(GetFgColor());
-
-    int dummy, totalWide;
-    // Draw current time.
-    GetSize(totalWide, dummy);
-
-    if (center_time)
-    {
-        int timeWide;
-        surface()->GetTextSize(m_bIsRunning ? m_hTimerFont : m_hTextFont,
-                               m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, timeWide, dummy);
-        int offsetToCenter = ((totalWide - timeWide) / 2);
-        surface()->DrawSetTextPos(offsetToCenter, time_ypos);
-    }
-    else
-    {
-        surface()->DrawSetTextPos(time_xpos, time_ypos);
-    }
-
-    // draw either timer display or the timer status
-    // If the timer isn't running, it'll print "No timer" or "Practice mode"
-    surface()->DrawPrintText(m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus,
-                             m_bIsRunning ? wcslen(m_pwCurrentTime) : wcslen(m_pwCurrentStatus));
-
-    surface()->DrawSetTextFont(m_hSmallTextFont);
-
-    if (m_bShowCheckpoints)
-    {
-        if (center_cps)
-        {
-            int cpsWide;
-            surface()->GetTextSize(m_hSmallTextFont, m_pwCurrentCheckpoints, cpsWide, dummy);
-            int offsetToCenter = ((totalWide - cpsWide) / 2);
-            surface()->DrawSetTextPos(offsetToCenter, cps_ypos);
-        }
-        else
-            surface()->DrawSetTextPos(cps_xpos, cps_ypos);
-
-        surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
-    }
-    // don't draw stages when drawing checkpoints, and vise versa.
-    else if (m_iZoneCurrent > 1 && m_bIsRunning)
-    {
-        // only draw split timer if we are on stage/checkpoint 2 (not start, which is 1) or above.
-        bool hasComparison = g_MOMRunCompare->LoadedComparison();
-        int prevStageXPos = split_xpos, stageSplitXPos = split_xpos, splitY = split_ypos;
-        int yToIncrement = surface()->GetFontTall(m_hSmallTextFont);
-        if (center_split)
-        {
-            prevStageXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, prevStageString) / 2;
-
-            // Inline the comparison (affects split xpos)
-            stageSplitXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) / 2;
-        }
-
-        // Print the previous stage
-        surface()->DrawSetTextPos(prevStageXPos, splitY);
-        surface()->DrawPrintText(prevStageStringUnicode, wcslen(prevStageStringUnicode));
-
-        // Go down a line
-        splitY += yToIncrement;
-
-        // Print the split
-        surface()->DrawSetTextPos(stageSplitXPos, splitY);
-        surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
-
-        // Draw the comparison to the split, if existent
-        if (hasComparison)
-        {
-            // Convert to unicode.
-            wchar_t comparisonUnicode[BUFSIZELOCL];
-            ANSI_TO_UNICODE(comparisonANSI, comparisonUnicode);
-
-            // This will be right below where the time begins to print
-            int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
-            splitY += yToIncrement;
-
-            // Print the comparison
-            surface()->DrawSetTextPos(compare_xpos, splitY);
-            surface()->DrawSetTextColor(compareColor);
-            surface()->DrawPrintText(comparisonUnicode, wcslen(comparisonUnicode));
-        }
-    }
+void CHudTimer::LevelShutdown()
+{
+    m_iCurrentSpecTargetEntIndx = -1;
+    m_pRunStats = nullptr;
+    m_pRunData = nullptr;
+    m_pSpecTarget = nullptr;
 }

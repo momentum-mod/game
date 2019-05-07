@@ -10,12 +10,14 @@
 #include <stdio.h>
 
 #include <vgui_controls/ProgressBar.h>
+#include "vgui_controls/Label.h"
 #include <vgui_controls/Controls.h>
 
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <KeyValues.h>
+#include "fmtstr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -29,8 +31,15 @@ DECLARE_BUILD_FACTORY( ProgressBar );
 //-----------------------------------------------------------------------------
 ProgressBar::ProgressBar(Panel *parent, const char *panelName) : Panel(parent, panelName)
 {
+    InitSettings();
 	_progress = 0.0f;
-	m_pszDialogVar = NULL;
+    m_pProgressPercent = new Label(this, "ProgressPercent", "");
+    m_pProgressPercent->SetContentAlignment(Label::a_center);
+    m_pProgressPercent->SetMouseInputEnabled(false);
+    m_pProgressPercent->SetKeyBoardInputEnabled(false);
+    SetProgressText();
+    m_pProgressPercent->SetVisible(false);
+	m_pszDialogVar = nullptr;
 	SetSegmentInfo( 4, 8 );
 	SetBarInset( 4 );
 	SetMargin( 0 );
@@ -42,7 +51,7 @@ ProgressBar::ProgressBar(Panel *parent, const char *panelName) : Panel(parent, p
 //-----------------------------------------------------------------------------
 ProgressBar::~ProgressBar()
 {
-	delete [] m_pszDialogVar;
+	m_pszDialogVar.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -52,6 +61,14 @@ void ProgressBar::SetSegmentInfo( int gap, int width )
 {
 	_segmentGap = gap;
 	_segmentWide = width;
+}
+
+void ProgressBar::SetProgressText()
+{
+    if (m_pProgressPercent->IsVisible())
+    {
+        m_pProgressPercent->SetText(CFmtStr("%.1f%%", _progress * 100.0f));
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -82,6 +99,7 @@ void ProgressBar::PaintSegment( int &x, int &y, int tall, int wide )
 	switch( m_iProgressDirection )
 	{
 	case PROGRESS_EAST:
+    default:
 		x += _segmentGap;
 		surface()->DrawFilledRect(x, y, x + _segmentWide, y + tall - (y * 2));
 		x += _segmentWide;
@@ -128,6 +146,7 @@ void ProgressBar::Paint()
 		break;
 
 	case PROGRESS_EAST:
+    default:
 		wide -= 2 * m_iBarMargin;
 		x = m_iBarMargin;
 		y = m_iBarInset;
@@ -159,6 +178,15 @@ void ProgressBar::Paint()
 	}
 }
 
+void ProgressBar::PerformLayout()
+{
+    BaseClass::PerformLayout();
+
+    int wide, tall;
+    GetSize(wide, tall);
+    m_pProgressPercent->SetSize(wide, tall);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -177,6 +205,9 @@ void ProgressBar::SetProgress(float progress)
 		}
 
 		_progress = progress;
+
+        SetProgressText();
+
 		Repaint();
 	}
 }
@@ -199,6 +230,13 @@ void ProgressBar::ApplySchemeSettings(IScheme *pScheme)
 	SetFgColor(GetSchemeColor("ProgressBar.FgColor", pScheme));
 	SetBgColor(GetSchemeColor("ProgressBar.BgColor", pScheme));
 	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+    HFont hProgressFont = pScheme->GetFont(pScheme->GetResourceString("ProgressBar.ProgressTextFont"), IsProportional());
+    if (hProgressFont == INVALID_FONT)
+        hProgressFont = pScheme->GetFont("DefaultSmall", IsProportional());
+
+    Color progressColor = pScheme->GetColor("ProgressBar.ProgressTextColor", Color(0, 0, 0, 255));
+    m_pProgressPercent->SetFgColor(progressColor);
+    m_pProgressPercent->SetFont(hProgressFont);
 }
 
 //-----------------------------------------------------------------------------
@@ -329,6 +367,11 @@ int ProgressBar::GetMargin()
 	return m_iBarMargin;
 }
 
+void ProgressBar::SetShouldDrawPercentString(bool bDraw)
+{
+    m_pProgressPercent->SetVisible(bDraw);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -342,9 +385,12 @@ void ProgressBar::ApplySettings(KeyValues *inResourceData)
 	const char *dialogVar = inResourceData->GetString("variable", "");
 	if (dialogVar && *dialogVar)
 	{
-		m_pszDialogVar = new char[strlen(dialogVar) + 1];
-		strcpy(m_pszDialogVar, dialogVar);
+        m_pszDialogVar.Purge();
+		m_pszDialogVar = dialogVar;
 	}
+
+    if (inResourceData->FindKey("draw_percent"))
+        SetShouldDrawPercentString(inResourceData->GetBool("draw_percent"));
 
 	BaseClass::ApplySettings(inResourceData);
 }
@@ -358,21 +404,19 @@ void ProgressBar::GetSettings(KeyValues *outResourceData)
 	outResourceData->SetFloat("progress", _progress );
     outResourceData->SetInt("segment_gap", _segmentGap);
     outResourceData->SetInt("segment_width", _segmentWide);
-
-	if (m_pszDialogVar)
-	{
-		outResourceData->SetString("variable", m_pszDialogVar);
-	}
+	outResourceData->SetString("variable", m_pszDialogVar);
+    outResourceData->SetBool("draw_percent", m_pProgressPercent->IsVisible());
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Returns a string description of the panel fields for use in the UI
-//-----------------------------------------------------------------------------
-const char *ProgressBar::GetDescription( void )
+void ProgressBar::InitSettings()
 {
-	static char buf[1024];
-	_snprintf(buf, sizeof(buf), "%s, string progress, string variable", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"progress", TYPE_STRING},
+    {"segment_gap", TYPE_INTEGER},
+    {"segment_width", TYPE_INTEGER},
+    {"variable", TYPE_STRING},
+    {"draw_percent", TYPE_BOOL},
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -380,7 +424,7 @@ const char *ProgressBar::GetDescription( void )
 //-----------------------------------------------------------------------------
 void ProgressBar::OnDialogVariablesChanged(KeyValues *dialogVariables)
 {
-	if (m_pszDialogVar)
+	if (!m_pszDialogVar.IsEmpty())
 	{
 		int val = dialogVariables->GetInt(m_pszDialogVar, -1);
 		if (val >= 0.0f)
@@ -414,6 +458,7 @@ void ContinuousProgressBar::Paint()
 	switch( m_iProgressDirection )
 	{
 	case PROGRESS_EAST:
+    default:
 		surface()->DrawFilledRect( x, y, x + (int)( wide * _progress ), y + tall );
 		break;
 

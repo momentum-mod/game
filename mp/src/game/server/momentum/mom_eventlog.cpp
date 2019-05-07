@@ -11,7 +11,7 @@ public:
     virtual ~CMOMEventLog() {};
 
 public:
-    bool PrintEvent(IGameEvent * event)	// override virtual function
+    bool PrintEvent(IGameEvent * event) OVERRIDE // override virtual function
     {
         if (BaseClass::PrintEvent(event))
         {
@@ -28,7 +28,7 @@ public:
 
 protected:
 
-    bool PrintMOMEvent(IGameEvent * event)	// print Mod specific logs
+    bool PrintMOMEvent(IGameEvent * event) // print mod specific logs
     {
         //const char * name = event->GetName() + Q_strlen("sdk_"); // remove prefix
         return false;

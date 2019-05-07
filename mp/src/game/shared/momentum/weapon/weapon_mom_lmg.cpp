@@ -1,5 +1,7 @@
 #include "cbase.h"
+
 #include "weapon_mom_lmg.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -15,6 +17,11 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS(weapon_momentum_lmg, CMomentumLMG);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_lmg);
 
+CMomentumLMG::CMomentumLMG()
+{
+    m_flTimeToIdleAfterFire = 1.6f;
+    m_flIdleInterval = 20.0f;
+};
 
 void CMomentumLMG::PrimaryAttack(void)
 {
@@ -23,7 +30,7 @@ void CMomentumLMG::PrimaryAttack(void)
 
 void CMomentumLMG::LMGFire()
 {
-    if (!CSBaseGunFire(0.0f, 0.08f, true))
+    if (!BaseGunFire(0.0f, 0.08f, true))
         return;
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();

@@ -1,18 +1,18 @@
 #pragma once
 
-#include "cbase.h"
 #include <vgui_controls/Panel.h>
 #include <hudelement.h>
 #include "run/run_compare.h"
 
-using namespace vgui;
+class C_MomentumPlayer;
+class C_MomRunEntityData;
 
-class C_RunComparisons : public CHudElement, public Panel
+class C_RunComparisons : public CHudElement, public vgui::Panel
 {
     DECLARE_CLASS_SIMPLE(C_RunComparisons, Panel);
 
 public:
-    C_RunComparisons(const char* pElementName);
+    C_RunComparisons(const char* pElementName, Panel *pParent = nullptr);
     ~C_RunComparisons();
 
     void OnThink() OVERRIDE;
@@ -20,8 +20,8 @@ public:
     void Reset() OVERRIDE;
     void Paint() OVERRIDE;
     bool ShouldDraw() OVERRIDE;
-    void OnTick() OVERRIDE;
-
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
     void FireGameEvent(IGameEvent *event) OVERRIDE;
 
     void LoadComparisons();
@@ -34,22 +34,11 @@ public:
     void UnloadBogusComparisons();
     void DrawComparisonString(ComparisonString_t, int stage, int Ypos);
     void GetComparisonString(ComparisonString_t type, CMomRunStats *pStats, int zone, char *ansiActualBufferOut, char *ansiCompareBufferOut, Color *compareColorOut);
-    void GetDiffColor(float diff, Color *into, bool positiveIsGain);
+    void GetDiffColor(float diff, Color *into, bool positiveIsGain = true);
     int GetMaximumTall();
     void SetMaxWide(int);
 
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
-    {
-        Panel::ApplySchemeSettings(pScheme);
-        m_hTextFont = pScheme->GetFont("HudHintTextSmall", true);
-        SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
-        m_cGain = GetSchemeColor("MOM.Compare.Gain", pScheme);
-        m_cLoss = GetSchemeColor("MOM.Compare.Loss", pScheme);
-        m_cTie = GetSchemeColor("MOM.Compare.Tie", pScheme);
-        GetSize(m_iDefaultWidth, m_iDefaultTall);//gets "wide" and "tall" from scheme .res file
-        m_iMaxWide = m_iDefaultWidth;
-        GetPos(m_iDefaultXPos, m_iDefaultYPos);//gets "xpos" and "ypos" from scheme .res file
-    }
+    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
     //Bogus Pulse is a flag-based variable, using the run_compare enum. Allows for multiple parsing.
     void SetBogusPulse(int i)
@@ -63,10 +52,7 @@ public:
         PostActionSignal(new KeyValues("OnSizeChange", "wide", wide, "tall", tall));
     }
 
-    int GetCurrentZone() const
-    {
-        return m_bLoadedBogusComparison ? m_pBogusRunStats->GetTotalZones() - 1 : m_iCurrentZone;
-    }
+    int GetCurrentZone() const;
 
     void ClearBogusPulse()
     {
@@ -90,22 +76,19 @@ public:
 
 protected:
     Color m_cGain, m_cLoss, m_cTie;
-    HFont m_hTextFont;
+    vgui::HFont m_hTextFont;
 
     //Number of pixels between each component of the comparison panel,
     //given mom_comparisons_format_output is 1
     CPanelAnimationVar(int, format_spacing, "format_spacing", "2");
-
     CPanelAnimationVar(float, bogus_alpha, "BogusAlpha", "255");
-
-    CPanelAnimationVarAliasType(float, text_xpos, "text_xpos", "1",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, text_ypos, "text_ypos", "2",
-        "proportional_float");
+    CPanelAnimationVarAliasType(float, text_xpos, "text_xpos", "1", "proportional_float");
+    CPanelAnimationVarAliasType(float, text_ypos, "text_ypos", "2", "proportional_float");
 
 
 private:
-    char stLocalized[BUFSIZELOCL], compareLocalized[BUFSIZELOCL],
+    wchar_t m_wStage[BUFSIZELOCL], m_wCheckpoint[BUFSIZELOCL];
+    char compareLocalized[BUFSIZELOCL],
         stageTimeLocalized[BUFSIZELOCL], overallTimeLocalized[BUFSIZELOCL],
         velocityAvgLocalized[BUFSIZELOCL], velocityMaxLocalized[BUFSIZELOCL],
         velocityStartLocalized[BUFSIZELOCL], velocityExitLocalized[BUFSIZELOCL],
@@ -114,23 +97,17 @@ private:
 
     int m_iDefaultWidth, m_iDefaultTall, m_iDefaultXPos, m_iDefaultYPos;
     int m_iMaxWide, m_iWidestLabel, m_iWidestValue;
-    int m_iCurrentZone, m_iCurrentEntIndex;
     bool m_bLoadedComparison, m_bLoadedBogusComparison;
     RunCompare_t *m_rcCurrentComparison, *m_rcBogusComparison;
     //m_pRunStats points to the player's/bot's CMomRunStats::data member, but the bogus one needs its own data.
     CMomRunStats *m_pRunStats, *m_pBogusRunStats;
-    CMomRunStats::data m_bogusData;
+    C_MomRunEntityData *m_pRunData;
     int m_nCurrentBogusPulse;
 
+    int m_iLoadedRunFlags; // Loaded comparison's run flags
+    float m_fLoadedTickRate; // Loaded comparison's tick rate
+
+    ConVarRef m_cvarVelType;
 };
 
-//Really hacky way to interface this hud element, as opposed to calling the gHUD.FindElement everywhere
-static C_RunComparisons *GetComparisons()
-{
-    static C_RunComparisons *s_runcompare;
-    if (!s_runcompare)
-        s_runcompare = dynamic_cast<C_RunComparisons *>(gHUD.FindElement("CHudCompare"));
-    return s_runcompare;
-}
-
-#define g_MOMRunCompare GetComparisons()
+extern C_RunComparisons *g_pMOMRunCompare;

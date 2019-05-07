@@ -1,16 +1,11 @@
 #pragma once
 
-#include "cbase.h"
-
-#include <vgui_controls/Button.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
-#include <vgui_controls/Frame.h>
 #include <vgui_controls/ScrollableEditablePanel.h>
-#include <vgui_controls/pch_vgui_controls.h>
+#include "vgui_controls/PropertyPage.h"
 
 class SettingsPage : public vgui::PropertyPage
 {
-    DECLARE_CLASS_SIMPLE(SettingsPage, PropertyPage);
+    DECLARE_CLASS_SIMPLE(SettingsPage, vgui::PropertyPage);
 
     SettingsPage(Panel *pParent, const char *pName);
 
@@ -69,6 +64,8 @@ class SettingsPageScrollPanel : public vgui::ScrollableEditablePanel
 
     SettingsPageScrollPanel(Panel *pParent, EditablePanel *pChild, const char *pName) : BaseClass(pParent, pChild, pName)
     {
+        SetSize(10, 10);
+        SetProportional(true);
         m_pChild = dynamic_cast<SettingsPage*>(pChild);
     }
 

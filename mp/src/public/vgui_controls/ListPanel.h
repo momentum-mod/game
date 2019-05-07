@@ -44,7 +44,8 @@ public:
 		m_bImage( false ),
 		m_nImageIndex( -1 ),
 		m_nImageIndexSelected( -1 ),
-		m_pIcon( 0 )
+		m_pIcon( 0 ),
+        m_bDataCopied(true)
 	{
 	}
 
@@ -55,6 +56,7 @@ public:
 	int				m_nImageIndex;
 	int				m_nImageIndexSelected;
 	IImage			*m_pIcon;
+    bool            m_bDataCopied;
 };
 
 typedef int __cdecl SortFunc( 
@@ -78,11 +80,13 @@ public:
 	// columns are resizable by default
 	enum ColumnFlags_e
 	{
-		COLUMN_FIXEDSIZE		= 0x01, // set to have the column be a fixed size
-		COLUMN_RESIZEWITHWINDOW	= 0x02, // set to have the column grow with the parent dialog growing
-		COLUMN_IMAGE			= 0x04,	// set if the column data is not text, but instead the index of the image to display
-		COLUMN_HIDDEN			= 0x08,	// column is hidden by default
-		COLUMN_UNHIDABLE		= 0x10,	// column is unhidable
+		COLUMN_FIXEDSIZE		= 1 << 0, // set to have the column be a fixed size
+		COLUMN_RESIZEWITHWINDOW	= 1 << 1, // set to have the column grow with the parent dialog growing
+		COLUMN_IMAGE			= 1 << 2,	// set if the column data is not text, but instead the index of the image to display
+		COLUMN_HIDDEN			= 1 << 3,	// column is hidden by default
+		COLUMN_UNHIDABLE		= 1 << 4,	// column is unhidable
+        COLUMN_IMAGE_SIZETOFIT  = 1 << 5, // If the column is an image, force its size to be at most as big as the cell
+        COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO = 1 << 6,
 	};
 
 	// adds a column header
@@ -93,20 +97,23 @@ public:
 	virtual int  FindColumn(const char *columnName);
 	virtual void SetColumnHeaderHeight( int height );
 	virtual void SetColumnHeaderText(int column, const char *text);
-	virtual void SetColumnHeaderText(int column, wchar_t *text);
+	virtual void SetColumnHeaderText(int column, const wchar_t *text);
+    virtual void SetColumnHeaderTextAlignment(int column, int align);
 	virtual void SetColumnHeaderImage(int column, int imageListIndex);
-	virtual void SetColumnHeaderTooltip(int column, const char *tooltipText);
+	virtual void SetColumnHeaderTooltip(int column, const char *tooltipText, bool bSingleLine = false, int delay = 0);
 	virtual void SetColumnTextAlignment( int column, int align );
 
 	// Get information about the column headers.
 	virtual int GetNumColumnHeaders() const;
 	virtual bool GetColumnHeaderText( int index, char *pOut, int maxLen );
+    virtual bool GetColumnHeaderName(int col, char *pOut, size_t maxLen);
 
 	virtual void SetSortFunc(int column, SortFunc *func);
 	virtual void SetSortColumn(int column);
 	virtual void SortList( void );
 	virtual void SetColumnSortable(int column, bool sortable);
 	virtual void SetColumnVisible(int column, bool visible);
+    virtual bool IsColumnVisible(int column) { return !m_ColumnsData[m_CurrentColumns[column]].m_bHidden; }
 	int GetSortColumn() const;
 
 	// sets whether the user can add/remove columns (defaults to off)
@@ -115,7 +122,7 @@ public:
 	// DATA HANDLING
 	// data->GetName() is used to uniquely identify an item
 	// data sub items are matched against column header name to be used in the table
-	virtual int AddItem(const KeyValues *data, unsigned int userData, bool bScrollToItem, bool bSortOnAdd); // Takes a copy of the data for use in the table. Returns the index the item is at.
+	virtual int AddItem(KeyValues *data, unsigned int userData, bool bScrollToItem, bool bSortOnAdd, bool bCopyData = true); // Takes a copy of the data for use in the table. Returns the index the item is at.
 	void SetItemDragData( int itemID, const KeyValues *data ); // Makes a copy of the keyvalues to store in the table. Used when dragging from the table. Only used if the caller enables drag support
 	virtual int	GetItemCount( void );			// returns the number of VISIBLE items
 	virtual int GetItem(const char *itemName);	// gets the row index of an item by name (data->GetName())
@@ -194,6 +201,7 @@ public:
 	// sets the text which is displayed when the list is empty
 	virtual void SetEmptyListText(const char *text);
 	virtual void SetEmptyListText(const wchar_t *text);
+    virtual void SetShouldCenterEmptyListText(bool bCenter) { m_bCenterEmptyListText = bCenter; }
 
 	// relayout the scroll bar in response to changing the items in the list panel
 	// do this if you RemoveAll()
@@ -225,7 +233,7 @@ public:
 
 protected:
 	// PAINTING
-	virtual Panel *GetCellRenderer(int row, int column);
+	virtual Panel *GetCellRenderer(int itemID, int column);
 
 	// overrides
 	virtual void OnMouseWheeled(int delta);
@@ -303,6 +311,8 @@ private:
 		bool m_bUnhidable;
 		IndexRBTree_t m_SortedTree;		
 		int m_nContentAlignment;
+        bool m_bImageSizeBoundToCell;
+        bool m_bImageSizeShouldMaintainAspectRatio;
 	};
 
 	// list of the column headers
@@ -344,6 +354,7 @@ private:
 	bool			m_bAllowUserAddDeleteColumns : 1;
 	bool 			m_bDeleteImageListWhenDone : 1;
 	bool			m_bIgnoreDoubleClick : 1;
+    bool            m_bCenterEmptyListText : 1;
 
 	int				m_iHeaderHeight;
 	int 			m_iRowHeight;
@@ -355,13 +366,15 @@ private:
 	int 		m_iTableStartX;
 	int	 		m_iTableStartY;
 
+protected:
+    Color       m_BgColor;
 	Color 		m_LabelFgColor;
 	Color		m_DisabledColor;
-	Color 		m_SelectionFgColor;
+	Color 		m_SelectionFgColor, m_SelectionBgColor, m_SelectionOutOfFocusBgColor;
 	Color		m_DisabledSelectionFgColor;
-
+private:
 	ImageList 	*m_pImageList;
-	TextImage 	*m_pEmptyListText;
+	Label 	*m_pEmptyListText;
 
 	PHandle		m_hEditModePanel;
 	int			m_iEditModeItemID;

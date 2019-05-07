@@ -1,13 +1,13 @@
 #pragma once
 
-#include "cbase.h"
 #include "mom_replay_base.h"
+#include "run_stats.h"
 
 class CMomReplayV1 : public CMomReplayBase
 {
 public:
     CMomReplayV1();
-    CMomReplayV1(CBinaryReader* reader, bool bFull);
+    CMomReplayV1(CUtlBuffer &reader, bool bFull);
     virtual ~CMomReplayV1() OVERRIDE;
 
 public:
@@ -21,13 +21,12 @@ public:
     virtual void RemoveFrames(int num) OVERRIDE;
 
 public:
-    virtual void Serialize(CBinaryWriter* writer) OVERRIDE;
+    virtual void Serialize(CUtlBuffer &writer) OVERRIDE;
 
 private:
-    void Deserialize(CBinaryReader* reader, bool bFull = true);
+    void Deserialize(CUtlBuffer &reader, bool bFull = true);
 
 protected:
     CMomRunStats *m_pRunStats;
-    CMomRunStats::data m_RunStatsData;
     CUtlVector<CReplayFrame> m_rgFrames;
 };

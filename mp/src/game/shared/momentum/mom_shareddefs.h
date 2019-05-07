@@ -1,8 +1,4 @@
-﻿#ifndef MOM_SHAREDDEFS_H
-#define MOM_SHAREDDEFS_H
-#ifdef _WIN32
-#pragma once
-#endif
+﻿#pragma once
 
 #ifndef GHOST_SERVER
 #include "const.h"
@@ -10,24 +6,64 @@
 #include "shareddefs.h"
 #endif
 #endif
-// Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
-// If you have any doubts, please refer to http://semver.org/
-#define MOM_CURRENT_VERSION "0.7.2"
 
+// Main Version (0 is private alpha, 1 is public beta, 2 is full release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
+#define MOM_CURRENT_VERSION "0.8.0"
+
+#define MAX_TRACKS 64
+#define MAX_ZONES 64
+#define MAX_ZONE_TRIGGERS 64
+
+// Zone types enum
+// NOTE: If adding a new zone type make sure to override GetZoneType
+// for the associated trigger
+enum MomZoneType_t
+{
+    ZONE_TYPE_INVALID = -1,
+    ZONE_TYPE_STOP = 0,
+    ZONE_TYPE_START,
+    ZONE_TYPE_STAGE,
+    ZONE_TYPE_CHECKPOINT,
+    // Should be last
+    ZONE_TYPE_COUNT,
+};
+
+enum MomTimerEvent_t
+{
+    TIMER_EVENT_STARTED = 0,
+    TIMER_EVENT_FINISHED, // timer successfully finished after player reached end zone
+    TIMER_EVENT_STOPPED, // timer stopped prematurely
+    TIMER_EVENT_FAILED // fired when the timer attempted to start but failed
+};
 
 // Gamemode for momentum
-typedef enum
+enum GAME_MODE
 {
-    MOMGM_SURF = 0, // Surfing (66t, 3500 maxvel)
-    MOMGM_BHOP,     // Bhopping (100t, 10k maxvel)
-    MOMGM_SCROLL,   // Scrolling/Stamina (currently activates with kz_)
-    MOMGM_UNKNOWN,  // Non-recognized map (no prefix/info ents in it)
-    MOMGM_ALLOWED,  // not "official gamemode" but must be allowed for other reasons
+    GAMEMODE_UNKNOWN = 0, // Non-recognized map (no info ents in it)
+    GAMEMODE_SURF = 1,
+    GAMEMODE_BHOP = 2,
+    GAMEMODE_KZ = 3,
+    GAMEMODE_RJ = 4,
+    GAMEMODE_TRICKSURF = 5,
+    GAMEMODE_TRIKZ = 6,
+    // MOM_TODO: etc
 
-} GAMEMODES;
+    // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
+    GAMEMODE_COUNT // Should be last
+};
+
+const char * const g_szGameModes[] = {
+    "#MOM_NotApplicable",
+    "#MOM_GameType_Surf",
+    "#MOM_GameType_Bhop",
+    "#MOM_GameType_KZ",
+    "#MOM_GameType_RJ",
+    "#MOM_GameType_Tricksurf",
+    "#MOM_GameType_Trikz"
+};
 
 // Run Flags
-typedef enum
+enum RUN_FLAG
 {
     RUNFLAG_NONE = 0,
     RUNFLAG_SCROLL = 1 << 0,
@@ -37,28 +73,99 @@ typedef enum
     RUNFLAG_BW = 1 << 4,
     RUNFLAG_BONUS = 1 << 5
     //MOM_TODO: Figure out the rest
-} RUN_FLAG;
+};
 
-typedef enum
+enum TIME_TYPE
+{
+    TIMES_LOCAL = 0,
+    TIMES_TOP10,
+    TIMES_FRIENDS,
+    TIMES_AROUND,
+
+    // Should always be the last one
+    TIMES_COUNT,
+};
+
+enum ONLINE_TIMES_STATUS
+{
+    STATUS_TIMES_LOADED = 0,
+    STATUS_TIMES_LOADING,
+    STATUS_NO_TIMES_RETURNED,
+    STATUS_SERVER_ERROR,
+    STATUS_NO_PB_SET,
+    STATUS_NO_FRIENDS,
+    STATUS_UNAUTHORIZED_FRIENDS_LIST,
+
+    // Should be last
+    STATUS_COUNT,
+};
+
+const char* const g_szTimesStatusStrings[] = {
+    "", // STATUS_TIMES_LOADED
+    "#MOM_API_WaitingForResponse", // STATUS_TIMES_LOADING
+    "#MOM_API_NoTimesReturned", // STATUS_NO_TIMES_RETURNED
+    "#MOM_API_ServerError", // STATUS_SERVER_ERROR
+    "#MOM_API_NoPBSet", // STATUS_NO_PB_SET
+    "#MOM_API_NoFriends", // STATUS_NO_FRIENDS
+    "#MOM_API_UnauthFriendsList", // STATUS_UNAUTHORIZED_FRIENDS_LIST
+};
+
+enum MAP_UPLOAD_STATUS
+{
+    STATUS_UNKNOWN = -1,
+    MAP_APPROVED,
+    MAP_PENDING,
+    MAP_NEEDS_REVISION,
+    MAP_PRIVATE_TESTING,
+    MAP_PUBLIC_TESTING,
+    MAP_READY_FOR_RELEASE,
+    MAP_REJECTED,
+    MAP_REMOVED,
+};
+
+enum MAP_CREDIT_TYPE
+{
+    CREDIT_UNKNOWN = -1,
+    CREDIT_AUTHOR,
+    CREDIT_COAUTHOR,
+    CREDIT_TESTER,
+    CREDIT_SPECIAL_THANKS,
+};
+
+enum USER_ROLES
+{
+    USER_VERIFIED = 1 << 0,
+    USER_MAPPER = 1 << 1,
+    USER_MODERATOR = 1 << 2,
+    USER_ADMIN = 1 << 3,
+};
+
+enum USER_BANS
+{
+    USER_BANNED_ALIAS = 1 << 0,
+    USER_BANNED_AVATAR = 1 << 1,
+    USER_BANNED_LEADERBOARDS = 1 << 2,
+};
+
+enum LOBBY_MSG_TYPE
 {
     LOBBY_UPDATE_MEMBER_JOIN = 0,        // Joined the lobby
     LOBBY_UPDATE_MEMBER_JOIN_MAP,        // Joined your map
     LOBBY_UPDATE_MEMBER_LEAVE,           // Left your lobby
     LOBBY_UPDATE_MEMBER_LEAVE_MAP,       // Left your map
-} LOBBY_MSG_TYPE;
+};
 
-typedef enum
+enum SPECTATE_MSG_TYPE
 {
     SPEC_UPDATE_JOIN = 0,           // Started spectating
     SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
     SPEC_UPDATE_STOP,           // Stopped spectating; respawned
     SPEC_UPDATE_LEAVE       // This player left the map/lobby
-} SPECTATE_MSG_TYPE;
+};
 
 #define PANEL_TIMES "times"
-#define IN_TIMES (1<<26)
-
 #define PANEL_REPLAY "replaycontrols"
+#define PANEL_LOBBY_MEMBERS "LobbyMembers"
 
 #define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
 
@@ -110,27 +217,19 @@ typedef enum
 //Flags for a HUD cvar (usually)
 #define FLAG_HUD_CVAR (FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED)
 
-#define MAX_STAGES 64
+#define ____CHECK_STEAM_API(steam_interface, ret)  \
+    if (!steam_interface) { \
+    Warning("%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
+    __FUNCTION__, __LINE__, #steam_interface); ret; }
 
-// I'm a deadbeat, so I did this to stop having to worry about what MOM_APIDOMAIN is
-// Set this macro to 0 to use momentum-mod.org as the webdomain, otherwise it uses the local domain (Or whatever you set)
-// Make sure this is 0 when you push!
-#define MOM_USINGLOCALWEB 0
-
-#if MOM_USINGLOCALWEB
-// What is the URL of the web?
-#define MOM_WEBDOMAIN "http://127.0.0.1:5000"
-#else
-#define MOM_WEBDOMAIN "https://momentum-mod.org"
-#endif
-
-// Where to query the api. In case it does not match the current WEBDOMAIN (How did you end up like this?), you can change it!
-#define MOM_APIDOMAIN MOM_WEBDOMAIN
+#define CHECK_STEAM_API_B(steam_interface) ____CHECK_STEAM_API(steam_interface, return false)
+#define CHECK_STEAM_API(steam_interface) ____CHECK_STEAM_API(steam_interface, return)
 
 #define MAP_FOLDER "maps"
-#define RECORDING_PATH "recordings"
+#define RECORDING_PATH "replays"
+#define RECORDING_ONLINE_PATH "online"
 #define EXT_ZONE_FILE ".zon"
-#define EXT_RECORDING_FILE ".momrec"
+#define EXT_RECORDING_FILE ".mrf"
 
 // MOM_TODO: Replace this with the custom player model
 #define ENTITY_MODEL "models/player/player_shape_base.mdl"
@@ -146,5 +245,3 @@ typedef enum
 #define LOBBY_DATA_IS_SPEC "isSpectating"
 
 static const unsigned long long MOM_STEAM_GROUP_ID64 = 103582791441609755;
-
-#endif // MOM_SHAREDDEFS_H

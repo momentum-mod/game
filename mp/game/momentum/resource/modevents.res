@@ -22,31 +22,44 @@
 //   local      : if set to 1, event is not networked to clients
 //   unreliable : networked, but unreliable
 //   suppress   : never fire this event
-//   time	: firing server time
-//   eventid	: holds the event ID
+//   time       : firing server time
+//   eventid    : holds the event ID
 
 "modevents"
 {
-	"zone_enter"//When the player/ghost enters a checkpoint/stage trigger
-	{
-	}
-    "zone_exit"//When the player exits the start trigger for the stage
+    "zone_enter" // When the player/ghost enters a zone trigger
     {
+        "ent" "short"
+        "zone_ent" "short"
+        "num" "short"
+    }
+    "zone_exit" // When the player exits the start trigger for the stage
+    {
+        "ent" "short"
+        "zone_ent" "short"
+        "num" "short"
     }
     "run_upload"
     {
         "run_posted" "bool"
-        "web_msg" "string"//MOM_TODO: fill this with more stuff?
+        "cos_xp" "long"
+        "rank_xp" "long"
+        "lvl_gain" "byte"
     }
-	"timer_state"
-	{
-        "ent" "short"
-		"is_running"	"bool"
-	}
-    "map_init"
+    "timer_event" // Fired when timer starts/stops/fails to start
     {
-        "is_linear" "bool"
-        "num_zones" "byte"
+        "ent" "short"
+        "type" "byte"
+    }
+    "saveloc_upd8"
+    {
+        "using" "bool"
+        "count" "long"
+        "current" "long"
+    }
+    "practice_mode"
+    {
+        "enabled" "bool"
     }
     "spec_target_updated" // Used by the spectator GUI
     {
@@ -55,11 +68,13 @@
     {
         "restart" "bool"
     }
-	"replay_save"
-	{
-		"filename" "string"
-        "save" "bool"
-	}
+    "replay_save"
+    {
+        "filename" "string" // the file name itself with extension
+        "filepath" "string" // the full path + file name, used for file writing
+        "save"     "bool"
+        "time"     "long"   // time in milliseconds
+    }
     "gravity_change"
     {
         "newgravity" "float"
@@ -77,12 +92,19 @@
     {
     }
     "achievement_earned"
-	{
-		"player"	"byte"		// entindex of the player
-		"achievement"	"short"		// achievement ID
-	}
+    {
+        "player"      "byte"    // entindex of the player
+        "achievement" "short"   // achievement ID
+    }
     "paintgun_panel"
     {
         "show" "bool"
+    }
+    "invalid_mdl_cache"
+    {
+    }
+    "site_auth"
+    {
+        "success" "bool"
     }
 }

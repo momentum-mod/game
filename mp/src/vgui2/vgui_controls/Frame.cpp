@@ -11,14 +11,15 @@
 
 #include "tier1/utlstring.h"
 #include "vgui/Cursor.h"
-#include "vgui/MouseCode.h"
 #include "vgui/IBorder.h"
 #include "vgui/IInput.h"
 #include "vgui/ILocalize.h"
 #include "vgui/IPanel.h"
-#include "vgui/ISurface.h"
 #include "vgui/IScheme.h"
+#include "vgui/ISurface.h"
+#include "vgui/IVGui.h"
 #include "vgui/KeyCode.h"
+#include "vgui/MouseCode.h"
 
 #include "vgui_controls/AnimationController.h"
 #include "vgui_controls/Controls.h"
@@ -233,7 +234,7 @@ namespace
 			Panel::ApplySchemeSettings(pScheme);
 			bool isSmall = ((Frame *)GetParent())->IsSmallCaption();
 
-			_marlettFont = pScheme->GetFont( isSmall ? "MarlettSmall" : "Marlett", IsProportional());
+			_marlettFont = pScheme->GetFont( isSmall ? "MarlettSmall" : "Marlett");
 			SetFgColor(GetSchemeColor("FrameGrip.Color1", pScheme));
 			SetBgColor(GetSchemeColor("FrameGrip.Color2", pScheme));
 
@@ -752,12 +753,16 @@ public:
 //-----------------------------------------------------------------------------
 Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*/, bool bPopup /*=true*/ ) : EditablePanel(parent, panelName)
 {
+    InitSettings();
 	// frames start invisible, to avoid having window flicker in on taskbar
 	SetVisible(false);
 	if ( bPopup )
 	{
 		MakePopup(showTaskbarIcon);
 	}
+
+    m_iTitleTextInsetXOverride = 0;
+    m_iTitleTextInsetYOverride = 0;
 
 	m_hPreviousModal = 0;
 
@@ -1443,7 +1448,7 @@ void Frame::GetClientArea(int &x, int &y, int &wide, int &tall)
 
 		yinset += m_iTitleTextInsetYOverride;
 
-		y = yinset + captionTall + border + 1;
+		y = yinset + captionTall + border + GetScaledVal(3);
 		tall = (tall - yinset) - y;
 	}
 	
@@ -1743,13 +1748,13 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 	inResourceData->SetInt("visible", -1);
 	BaseClass::ApplySettings(inResourceData);
 
-	SetCloseButtonVisible( inResourceData->GetBool( "setclosebuttonvisible", true ) );
+	// if "title" is "0" then don't draw the title bar
+    if (!inResourceData->GetBool("settitlebarvisible", true))
+        SetTitleBarVisible(false);
+    SetCloseButtonVisible(inResourceData->GetBool("setclosebuttonvisible", true));
 
-	if( !inResourceData->GetInt("settitlebarvisible", 1 ) ) // if "title" is "0" then don't draw the title bar
-	{
-		SetTitleBarVisible( false );
-	}
-	
+    SetClipToParent(inResourceData->GetBool("cliptoparent"));
+
 	// set the title
 	const char *title = inResourceData->GetString("title", "");
 	if (title && *title)
@@ -1763,7 +1768,7 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 		IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
 		if ( pScheme )
 		{
-			m_hCustomTitleFont = pScheme->GetFont( titlefont );
+			m_hCustomTitleFont = pScheme->GetFont( titlefont, IsProportional() );
 		}
 	}
 
@@ -1781,7 +1786,10 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 void Frame::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
-	outResourceData->SetInt("settitlebarvisible", _drawTitleBar );
+
+    outResourceData->SetBool("setclosebuttonvisible", _closeButton->IsVisible());
+	outResourceData->SetBool("settitlebarvisible", _drawTitleBar );
+    outResourceData->SetBool("cliptoparent", m_bClipToParent);
 
 	if (_title)
 	{
@@ -1793,20 +1801,31 @@ void Frame::GetSettings(KeyValues *outResourceData)
 		}
 	}
 
+    if (m_hCustomTitleFont != INVALID_FONT)
+    {
+        IScheme *pScheme = scheme()->GetIScheme(GetScheme());
+        if (pScheme)
+        {
+            outResourceData->SetString("title_font", pScheme->GetFontName(m_hCustomTitleFont));
+        }
+    }
+
 	if ( m_iClientInsetXOverridden )
 	{
 		outResourceData->SetInt( "clientinsetx_override", m_iClientInsetX );
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns a description of the settings possible for a frame
-//-----------------------------------------------------------------------------
-const char *Frame::GetDescription()
+void Frame::InitSettings()
 {
-	static char buf[512];
-	Q_snprintf(buf, sizeof(buf), "%s, string title", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"title", TYPE_STRING},
+    {"setclosebuttonvisible", TYPE_BOOL},
+    {"settitlebarvisible", TYPE_BOOL},
+    {"title_font", TYPE_STRING},
+    {"clientinsetx_override", TYPE_INTEGER},
+    {"cliptoparent", TYPE_BOOL}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -2175,6 +2194,10 @@ void Frame::OnKeyCodeTyped(KeyCode code)
 		// enable build mode
 		ActivateBuildMode();
 	}
+    else if (ctrl && shift && alt && code == KEY_C)
+    {
+        OnReloadControls();
+    }
 	else if (ctrl && shift && alt && code == KEY_R)
 	{
 		// reload the scheme
@@ -2184,12 +2207,11 @@ void Frame::OnKeyCodeTyped(KeyCode code)
 			// reload the data file
 			scheme()->ReloadSchemes();
 
-			Panel *panel = ipanel()->GetPanel(top, GetModuleName());
-			if (panel)
-			{
-				// make the top-level panel reload it's scheme, it will chain down to all the child panels
-				panel->InvalidateLayout(false, true);
-			}
+            // We need to do this because apparently reloadscheme doesn't work
+            int wi, ta;
+            surface()->GetScreenSize(wi, ta);
+            ivgui()->PostMessage(top, new KeyValues("OnScreenSizeChanged", "oldwide", wi, "oldtall", ta), NULL);
+            ivgui()->RunFrame();
 		}
 	}
 	else if (alt && code == KEY_F4)

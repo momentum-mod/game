@@ -1,18 +1,11 @@
-#ifndef MOM_REPLAY_GHOST_H
-#define MOM_REPLAY_GHOST_H
-
 #pragma once
 
-#include "cbase.h"
-#include "in_buttons.h"
-#include "run/mom_entity_run_data.h"
-#include "mom_player.h"
-#include "run/mom_replay_data.h"
-#include "mom_replay_system.h"
-#include <GameEventListener.h>
 #include "mom_ghost_base.h"
+#include "GameEventListener.h"
 
-class CMomentumPlayer;
+class CMomRunStats;
+class CMomReplayBase;
+class CReplayFrame;
 
 class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGameEventListener
 {
@@ -30,32 +23,34 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void EndRun();
     void StartRun(bool firstPerson = false);
 
-    void StartTimer(int m_iStartTick) OVERRIDE;
-
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
     bool IsReplayGhost() const OVERRIDE { return true; }
 
-    void SetRunStats(CMomRunStats *stats) { m_SrvData.m_RunStatsData = *stats->m_pData; }
-    inline void SetTickRate(float rate) { m_SrvData.m_flTickRate = rate; }
-    inline void SetRunFlags(uint32 flags) { m_SrvData.m_RunData.m_iRunFlags = flags; }
+    inline void SetTickRate(float rate) { m_Data.m_flTickRate = rate; }
+    inline void SetRunFlags(uint32 flags) { m_Data.m_iRunFlags = flags; }
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick); }
+    CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
-    
+    CReplayFrame *GetPreviousStep();
+
     bool IsReplayEnt() { return true; }
-    void (*StdDataToReplay)(StdReplayDataFromServer* from);
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
 
-    StdReplayDataFromServer m_SrvData;
-    CMomRunStats m_RunStats;
+    RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_REPLAY; }
+    virtual void OnZoneEnter(CTriggerZone *pTrigger) OVERRIDE;
+    virtual void OnZoneExit(CTriggerZone *pTrigger) OVERRIDE;
+    // Ghost-only
+    CNetworkVar(bool, m_bIsPaused); // Is the replay paused?
+    CNetworkVar(int, m_iCurrentTick); // Current tick of the replay
+    CNetworkVar(int, m_iTotalTicks); // Total ticks for the replay (run time + start + end)
 
-    //override of color so that replayghosts are always somewhat transparent.
-    void SetGhostColor(const uint32 newColor) OVERRIDE; 
+    // override of color so that replayghosts are always somewhat transparent.
+    void SetGhostColor(const uint32 newColor) OVERRIDE;
 
   protected:
     void Think(void) OVERRIDE;
@@ -64,15 +59,17 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     void CreateTrail() OVERRIDE;
+
   private:
     CMomReplayBase *m_pPlaybackReplay;
 
     bool m_bHasJumped;
 
+    ConVarRef m_cvarReplaySelection;
+
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;
+    Vector m_vecLastVel;
 };
-
-#endif // MOM_REPLAY_GHOST_H

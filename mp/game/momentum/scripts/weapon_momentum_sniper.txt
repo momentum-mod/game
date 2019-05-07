@@ -2,9 +2,8 @@ WeaponData
 {
     "CrosshairMinDistance"      "5"
     "CrosshairDeltaDistance"    "3"
-    "BuiltRightHanded"          "0"
+    "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "scout"
-    "MuzzleFlashScale"          "1.1"
     
     // Weapon characteristics:
     "Penetration"       "3"
@@ -16,9 +15,9 @@ WeaponData
     "CycleTime"         "1.25"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#Cstrike_WPNHUD_Scout"
-    "viewmodel"         "models/weapons/v_snip_scout.mdl"
-    "playermodel"       "models/weapons/w_snip_scout.mdl"
+    "printname"         "#MOM_Weapon_Sniper"
+    "viewmodel"         "models/weapons/mom_sniper.mdl"
+    "playermodel"       "models/weapons/mom_sniper.mdl"
     
     "anim_prefix"       "anim"
     "bucket"            "0"
@@ -46,18 +45,18 @@ WeaponData
     {
         "weapon"
         {
-                "font"      "CSweaponsSmall"
-                "character" "N"
+                "font"      "WeaponIcons"
+                "character" "n"
         }
         "weapon_s"
         {   
-                "font"      "CSweapons"
-                "character" "N"
+                "font"      "WeaponIconsSelected"
+                "character" "n"
         }
         "ammo"
         {
-                "font"      "CSTypeDeath"
-                "character"     "V"
+                "font"      "WeaponIconsSmall"
+                "character"     "n"
         }
         "autoaim"
         {

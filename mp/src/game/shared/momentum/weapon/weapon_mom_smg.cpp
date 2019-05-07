@@ -1,5 +1,7 @@
 #include "cbase.h"
+
 #include "weapon_mom_smg.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -27,7 +29,7 @@ void CMomentumSMG::SMGFire()
     if (!pPlayer)
         return;
 
-    if (!CSBaseGunFire(0.0f, 0.07f, true))
+    if (!BaseGunFire(0.0f, 0.07f, true))
         return;
 
     //MOM_TODO: Do we want this kickback? Should it be convar'd?

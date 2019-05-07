@@ -624,7 +624,6 @@ $Project
 		$File	"test_stressentities.cpp"
 		$File	"testfunctions.cpp"
 		$File	"testtraceline.cpp"
-		$File	"textstatsmgr.cpp"
 		$File	"timedeventmgr.cpp"
 		$File	"trains.cpp"
 		$File	"trains.h"
@@ -952,7 +951,6 @@ $Project
 		$File	"te_effect_dispatch.h"
 		$File	"tesla.h"
 		$File	"test_stressentities.h"
-		$File	"textstatsmgr.h"
 		$File	"$SRCDIR\public\texture_group_names.h"
 		$File	"timedeventmgr.h"
 		$File	"$SRCDIR\game\shared\usercmd.h"
@@ -1011,8 +1009,9 @@ $Project
 		$Lib	dmxloader
 		$Lib	mathlib
 		$Lib	particles
+        $Lib    tier1
 		$Lib	tier2
 		$Lib	tier3
-		$ImpLibexternal steam_api
+		$ImpLib    steam_api
 	}
 }

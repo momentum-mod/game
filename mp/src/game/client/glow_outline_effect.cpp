@@ -310,11 +310,21 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 	}
 }
 
+bool CGlowObjectManager::GlowObjectDefinition_t::ShouldDraw(int nSlot) const
+{
+    return m_hEntity.Get() &&
+        (m_nSplitScreenSlot == GLOW_FOR_ALL_SPLIT_SCREEN_SLOTS || m_nSplitScreenSlot == nSlot) &&
+        (m_bRenderWhenOccluded || m_bRenderWhenUnoccluded) &&
+        m_hEntity->ShouldDraw() &&
+        !m_hEntity->IsDormant();
+}
+
 void CGlowObjectManager::GlowObjectDefinition_t::DrawModel()
 {
 	if ( m_hEntity.Get() )
 	{
-		m_hEntity->DrawModel( STUDIO_RENDER );
+		m_hEntity->DrawModel(STUDIO_RENDER);
+
 		C_BaseEntity *pAttachment = m_hEntity->FirstMoveChild();
 
 		while ( pAttachment != NULL )

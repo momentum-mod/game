@@ -19,7 +19,7 @@
 #include "utlvector.h"
 #include "utlstring.h"
 #include "utllinkedlist.h"
-#include "byteswap.h"
+#include "byteswap_valve.h"
 #ifdef ENGINE_DLL
 #include "zone.h"
 #endif
@@ -402,6 +402,8 @@ inline const char* TexInfo_TexName( int iTexInfo )
 {
 	return TexDataStringTable_GetString( dtexdata[texinfo[iTexInfo].texdata].nameStringTableID );
 }
+
+extern dheader_t *g_pBSPHeader;
 
 
 #endif // BSPLIB_H

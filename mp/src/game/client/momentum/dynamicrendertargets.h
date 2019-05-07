@@ -1,7 +1,5 @@
 #pragma once
 
-#include "game/client/iclientrendertargets.h"
-#include "materialsystem/imaterialsystem.h"
 #include "baseclientrendertargets.h"
 
 class IMaterialSystem;
@@ -9,32 +7,30 @@ class IMaterialSystemHardwareConfig;
 
 class CDynamicRenderTargets : public CBaseClientRenderTargets, public CAutoGameSystemPerFrame
 {
-	DECLARE_CLASS_GAMEROOT(CDynamicRenderTargets, CBaseClientRenderTargets);
-public:
-	virtual void		InitClientRenderTargets(IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig);
-	virtual void		InitDynamicRenderTargets();
+    DECLARE_CLASS_GAMEROOT(CDynamicRenderTargets, CBaseClientRenderTargets);
 
-	virtual void		ShutdownClientRenderTargets();
-	virtual void		ShutdownDynamicRenderTargets();
+  public:
+    virtual void InitClientRenderTargets(IMaterialSystem *pMaterialSystem,
+                                         IMaterialSystemHardwareConfig *pHardwareConfig);
+    virtual void InitDynamicRenderTargets();
 
-	virtual void		PreRender();
-	virtual void		UpdateDynamicRenderTargets();
+    virtual void ShutdownClientRenderTargets();
+    virtual void ShutdownDynamicRenderTargets();
 
-protected:
-	virtual Vector2D	GetViewport();
+    virtual void PreRender();
+    virtual void UpdateDynamicRenderTargets();
 
-	virtual ITexture*	CreateMaskGameUITexture();
-    virtual ITexture*   CreateDepthBufferTexture();
-    virtual ITexture*   CreateBlurTexture(bool blurX);
-    virtual ITexture*   CreateFullscreenPPTexture();
-private:
-	Vector2D			m_pOldViewport;
+  protected:
+    virtual Vector2D GetViewport();
 
-	CTextureReference	m_MaskGameUITexture;
-    CTextureReference   m_DepthBufferTexture;
-    CTextureReference   m_BlurX, m_BlurY, m_FullscreenPP;
+    virtual ITexture *CreateDepthBufferTexture();
 
-	IMaterialSystem*	m_pMaterialSystem;
+  private:
+    Vector2D m_pOldViewport;
+
+    CTextureReference m_DepthBufferTexture;
+
+    IMaterialSystem *m_pMaterialSystem;
 };
 
-extern CDynamicRenderTargets* g_pDynamicRenderTargets;
+extern CDynamicRenderTargets *g_pDynamicRenderTargets;

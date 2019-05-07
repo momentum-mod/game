@@ -34,6 +34,7 @@ public:
 	MESSAGE_FUNC_FLOAT( SetProgress, "SetProgress", progress );
 	float GetProgress();
 	virtual void SetSegmentInfo( int gap, int width );
+    virtual void SetProgressText();
 
 	// utility function for calculating a time remaining string
 	static bool ConstructTimeRemainingString(OUT_Z_BYTECAP(outputBufferSizeInBytes) wchar_t *output, int outputBufferSizeInBytes, float startTime, float currentTime, float currentProgress, float lastProgressUpdateTime, bool addRemainingSuffix);
@@ -42,10 +43,12 @@ public:
 	int GetBarInset( void );
 	void SetMargin( int pixels );
 	int GetMargin();
+
+    void SetShouldDrawPercentString(bool bDraw);
 	
 	virtual void ApplySettings(KeyValues *inResourceData);
 	virtual void GetSettings(KeyValues *outResourceData);
-	virtual const char *GetDescription();
+    void InitSettings() OVERRIDE;
 
 	// returns the number of segment blocks drawn
 	int GetDrawnSegmentCount();
@@ -63,6 +66,7 @@ public:
 
 protected:
 	virtual void Paint();
+    void PerformLayout() OVERRIDE;
 	void PaintSegment( int &x, int &y, int tall, int wide );
 	virtual void PaintBackground();
 	virtual void ApplySchemeSettings(IScheme *pScheme);
@@ -82,7 +86,8 @@ private:
 	int _segmentWide;
 	int m_iBarInset;
 	int m_iBarMargin;
-	char *m_pszDialogVar;
+	CUtlString m_pszDialogVar;
+    Label *m_pProgressPercent;
 };
 
 //-----------------------------------------------------------------------------

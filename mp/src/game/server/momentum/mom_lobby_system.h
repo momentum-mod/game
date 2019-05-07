@@ -1,7 +1,12 @@
 #pragma once
-#include "cbase.h"
-#include "mom_ghostdefs.h"
 
+#include "mom_shareddefs.h"
+
+struct MomentumPacket_t;
+struct DecalPacket_t;
+struct LobbyGhostAppearance_t;
+struct SavelocReqPacket_t;
+struct GhostAppearance_t;
 class CMomentumOnlineGhostEntity;
 
 class CMomentumLobbySystem
@@ -15,10 +20,12 @@ public:
 
     void StartLobby();
     void LeaveLobby();
-    void JoinLobbyFromString(const char *pString);
+    bool TryJoinLobby(const CSteamID &lobbyID);
+    bool TryJoinLobbyFromString(const char *pString);
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message
     void ResetOtherAppearanceData(); // Sent when the player changes an override appearance cvar
+    bool SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t *p);
 
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyChatUpdate, LobbyChatUpdate_t); // Lobby chat room status has changed. This can be owner being changed, or somebody joining or leaving
@@ -39,20 +46,22 @@ public:
     void CheckToAdd(CSteamID *pID);
 
     void SendAndRecieveP2PPackets();
-    void SetAppearanceInMemberData(ghostAppearance_t app);
+    void SetAppearanceInMemberData(GhostAppearance_t app);
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
-    void SendDecalPacket(DecalPacket_t *packet);
+    bool SendDecalPacket(DecalPacket_t *packet);
 
     void SetGameInfoStatus();
-    LobbyGhostAppearance_t GetAppearanceFromMemberData(const CSteamID &member);
+    bool GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);
 
     void ClearCurrentGhosts(bool bRemoveEnts); // Clears the current ghosts stored in the map
+
+    CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineEntMap() { return &m_mapLobbyGhosts;}
 
 private:
     CUtlVector<CSteamID> m_vecBlocked; // Vector of blocked users (ignore updates/packets from these people)
@@ -62,7 +71,7 @@ private:
     bool m_bHostingLobby;
 
     // Sends a packet to a specific person, or everybody (if pTarget is null)
-    void SendPacket(MomentumPacket_t *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
+    bool SendPacket(MomentumPacket_t *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
 
     void WriteMessage(LOBBY_MSG_TYPE type, uint64 id);
     void WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID);

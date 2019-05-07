@@ -1,17 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-//=============================================================================//
-
-#ifndef FX_MOM_SHARED_H
-#define FX_MOM_SHARED_H
-#ifdef _WIN32
 #pragma once
-#endif
-
-#include "mom_player_shared.h"
-
 
 // This runs on both the client and the server.
 // On the server, it only does the damage calculations.
@@ -25,6 +12,3 @@ void FX_FireBullets(
 	int iSeed,
 	float flSpread
 	);
-
-
-#endif // FX_MOM_SHARED_H

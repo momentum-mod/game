@@ -16,30 +16,24 @@
 #include "cbase.h"
 #include "player.h"
 #include "client.h"
-#include "soundent.h"
 #include "gamerules.h"
 #include "game.h"
 #include "physics.h"
 #include "entitylist.h"
 #include "shake.h"
-#include "globalstate.h"
 #include "event_tempentity_tester.h"
 #include "ndebugoverlay.h"
 #include "engine/IEngineSound.h"
-#include <ctype.h>
 #include "tier1/strtools.h"
 #include "te_effect_dispatch.h"
-#include "globals.h"
 #include "nav_mesh.h"
 #include "team.h"
 #include "datacache/imdlcache.h"
 #include "basemultiplayerplayer.h"
 #include "voice_gamemgr.h"
-
-#ifdef TF_DLL
-#include "tf_player.h"
-#include "tf_gamerules.h"
-#endif
+#include "icommandline.h"
+#include "mom_gamerules.h"
+#include "mom_player_shared.h"
 
 #ifdef HL2_DLL
 #include "weapon_physcannon.h"
@@ -60,17 +54,14 @@ ConVar  *sv_cheats = NULL;
 enum eAllowPointServerCommand {
 	eAllowNever,
 	eAllowOfficial,
+    eAllowWhitelist,
 	eAllowAlways
 };
 
-#ifdef TF_DLL
 // The default value here should match the default of the convar
-eAllowPointServerCommand sAllowPointServerCommand = eAllowOfficial;
-#else
-eAllowPointServerCommand sAllowPointServerCommand = eAllowAlways;
-#endif // TF_DLL
+eAllowPointServerCommand sAllowPointCommand = eAllowWhitelist;
 
-void sv_allow_point_servercommand_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
+void sv_allow_point_command_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
 	ConVarRef var( pConVar );
 	if ( !var.IsValid() )
@@ -81,35 +72,25 @@ void sv_allow_point_servercommand_changed( IConVar *pConVar, const char *pOldStr
 	const char *pNewValue = var.GetString();
 	if ( V_strcasecmp ( pNewValue, "always" ) == 0 )
 	{
-		sAllowPointServerCommand = eAllowAlways;
+		sAllowPointCommand = eAllowAlways;
 	}
-#ifdef TF_DLL
-	else if ( V_strcasecmp ( pNewValue, "official" ) == 0 )
-	{
-		sAllowPointServerCommand = eAllowOfficial;
-	}
-#endif // TF_DLL
+    else if (!V_strcasecmp(pNewValue, "whitelist"))
+    {
+        sAllowPointCommand = eAllowWhitelist;
+    }
 	else
 	{
-		sAllowPointServerCommand = eAllowNever;
+		sAllowPointCommand = eAllowNever;
 	}
 }
 
-ConVar sv_allow_point_servercommand ( "sv_allow_point_servercommand",
-#ifdef TF_DLL
-                                      // The default value here should match the default of the convar
-                                      "official",
-#else
-                                      // Other games may use this in their official maps, and only TF exposes IsValveMap() currently
-                                      "always",
-#endif // TF_DLL
+ConVar sv_allow_point_command ( "sv_allow_point_command",
+                                      "whitelist",
                                       FCVAR_NONE,
-                                      "Allow use of point_servercommand entities in map. Potentially dangerous for untrusted maps.\n"
-                                      "  disallow : Always disallow\n"
-#ifdef TF_DLL
-                                      "  official : Allowed for valve maps only\n"
-#endif // TF_DLL
-                                      "  always   : Allow for all maps", sv_allow_point_servercommand_changed );
+                                      "Allow use of point_servercommand & point_clientcommand entities in map. Potentially dangerous for untrusted maps!\n"
+                                      "  disallow : Always disallow for every map\n"
+                                      "  whitelist: Allow whitelisted commands for every map\n"
+                                      "  always   : Allow all commands for all maps", sv_allow_point_command_changed );
 
 void ClientKill( edict_t *pEdict, const Vector &vecForce, bool bExplode = false )
 {
@@ -570,6 +551,19 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
+	bool bAllowed = (sAllowPointCommand == eAllowAlways);
+
+    if (sAllowPointCommand == eAllowWhitelist)
+    {
+        bAllowed = GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+    }
+
+    if (!bAllowed)
+    {
+        Warning("point_clientcommand \"%s\" usage blocked by sv_allow_point_command setting\n", inputdata.value.String());
+        return;
+    }
+
 	edict_t *pClient = NULL;
 	if ( gpGlobals->maxClients == 1 )
 	{
@@ -623,13 +617,11 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
-	bool bAllowed = ( sAllowPointServerCommand == eAllowAlways );
-#ifdef TF_DLL
-	if ( sAllowPointServerCommand == eAllowOfficial )
-	{
-		bAllowed = TFGameRules() && TFGameRules()->IsValveMap();
-	}
-#endif // TF_DLL
+	bool bAllowed = ( sAllowPointCommand == eAllowAlways );
+    if (sAllowPointCommand == eAllowWhitelist)
+    {
+        bAllowed = GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+    }
 
 	if ( bAllowed )
 	{
@@ -637,7 +629,7 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	}
 	else
 	{
-		Warning( "point_servercommand usage blocked by sv_allow_point_servercommand setting\n" );
+		Warning( "point_servercommand \"%s\" usage blocked by sv_allow_point_command setting\n", inputdata.value.String());
 	}
 }
 
@@ -1131,11 +1123,9 @@ static int FindPassableSpace( CBasePlayer *pPlayer, const Vector& direction, flo
 //------------------------------------------------------------------------------
 void EnableNoClip( CBasePlayer *pPlayer )
 {
-	// Disengage from hierarchy
-	pPlayer->SetParent( NULL );
-	pPlayer->SetMoveType( MOVETYPE_NOCLIP );
-	ClientPrint( pPlayer, HUD_PRINTCONSOLE, "noclip ON\n");
-	pPlayer->AddEFlags( EFL_NOCLIP_ACTIVE );
+    const auto pMom = ToCMOMPlayer(pPlayer);
+    if (pMom)
+        pMom->EnablePracticeMode();
 }
 
 void CC_Player_NoClip( void )
@@ -1143,53 +1133,13 @@ void CC_Player_NoClip( void )
 	if ( !sv_cheats->GetBool() )
 		return;
 
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
+    Warning("You should really be using \"mom_practice\" ... (it's the same thing but doesn't require cheats)\n");
+
+	CMomentumPlayer *pPlayer = ToCMOMPlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
 
-	CPlayerState *pl = pPlayer->PlayerData();
-	Assert( pl );
-
-	if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
-	{
-		EnableNoClip( pPlayer );
-		return;
-	}
-
-	pPlayer->RemoveEFlags( EFL_NOCLIP_ACTIVE );
-	pPlayer->SetMoveType( MOVETYPE_WALK );
-
-	Vector oldorigin = pPlayer->GetAbsOrigin();
-	ClientPrint( pPlayer, HUD_PRINTCONSOLE, "noclip OFF\n");
-	if ( !TestEntityPosition( pPlayer ) )
-	{
-		Vector forward, right, up;
-
-		AngleVectors ( pl->v_angle.Get(), &forward, &right, &up);
-		
-		// Try to move into the world
-		if ( !FindPassableSpace( pPlayer, forward, 1, oldorigin ) )
-		{
-			if ( !FindPassableSpace( pPlayer, right, 1, oldorigin ) )
-			{
-				if ( !FindPassableSpace( pPlayer, right, -1, oldorigin ) )		// left
-				{
-					if ( !FindPassableSpace( pPlayer, up, 1, oldorigin ) )	// up
-					{
-						if ( !FindPassableSpace( pPlayer, up, -1, oldorigin ) )	// down
-						{
-							if ( !FindPassableSpace( pPlayer, forward, -1, oldorigin ) )	// back
-							{
-								Msg( "Can't find the world\n" );
-							}
-						}
-					}
-				}
-			}
-		}
-
-		pPlayer->SetAbsOrigin( oldorigin );
-	}
+    pPlayer->TogglePracticeMode();
 }
 
 static ConCommand noclip("noclip", CC_Player_NoClip, "Toggle. Player becomes non-solid and flies.", FCVAR_CHEAT);
@@ -1231,7 +1181,7 @@ static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", F
 //------------------------------------------------------------------------------
 // Sets client to godmode
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats and -mapping).", FCVAR_CHEAT )
 {
 	if ( !sv_cheats->GetBool() )
 		return;
@@ -1239,6 +1189,12 @@ CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).",
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
+
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use setpos!\n");
+        return;
+    }
 
 	if ( args.ArgC() < 3 )
 	{
@@ -1274,6 +1230,12 @@ void CC_setang_f (const CCommand &args)
 	if ( !pPlayer )
 		return;
 
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use setang!\n");
+        return;
+    }
+
 	if ( args.ArgC() < 3 )
 	{
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "Usage:  setang pitch yaw <roll optional>\n");
@@ -1290,7 +1252,7 @@ void CC_setang_f (const CCommand &args)
 	pPlayer->SnapEyeAngles( newang );
 }
 
-static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_CHEAT );
+static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats and -mapping).", FCVAR_CHEAT );
 
 static float GetHexFloat( const char *pStr )
 {
@@ -1306,14 +1268,20 @@ static float GetHexFloat( const char *pStr )
 //------------------------------------------------------------------------------
 // Move position
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats and -mapping).", FCVAR_CHEAT )
 {
 	if ( !sv_cheats->GetBool() )
 		return;
 
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
+	CMomentumPlayer *pPlayer = ToCMOMPlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
+
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use setpos_exact!\n");
+        return;
+    }
 
 	if ( args.ArgC() < 3 )
 	{
@@ -1335,7 +1303,6 @@ CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must hav
 		if ( pPlayer->GetMoveType() != MOVETYPE_NOCLIP )
 		{
 			EnableNoClip( pPlayer );
-			return;
 		}
 	}
 }

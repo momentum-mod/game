@@ -26,7 +26,7 @@ namespace vgui
 class ImageList
 {
 public:
-	ImageList(bool deleteImagesWhenDone);
+	ImageList(bool deleteImagesWhenDone, bool bAddBlank = true);
 	~ImageList();
 
 	// adds a new image to the list, returning the index it was placed at

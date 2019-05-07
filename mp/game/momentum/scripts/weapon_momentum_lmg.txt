@@ -4,10 +4,7 @@ WeaponData
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "m249"
-    "MuzzleFlashScale"          "1.5"
-    "MuzzleFlashStyle"          "CS_MUZZLEFLASH_X"
 
-    
     // Weapon characteristics:
     "Penetration"       "2"
     "Damage"            "35"
@@ -17,9 +14,9 @@ WeaponData
     "CycleTime"         "0.08"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#Cstrike_WPNHUD_M249"
-    "viewmodel"         "models/weapons/v_mach_m249para.mdl"
-    "playermodel"       "models/weapons/w_mach_m249para.mdl"
+    "printname"         "#MOM_Weapon_LMG"
+    "viewmodel"         "models/weapons/v_mom_lmg.mdl"
+    "playermodel"       "models/weapons/v_mom_lmg.mdl"
     
     "anim_prefix"       "anim"
     "bucket"            "0"
@@ -47,18 +44,18 @@ WeaponData
     {
         "weapon"
         {
-                "font"      "CSweaponsSmall"
-                "character" "Z"
+                "font"      "WeaponIcons"
+                "character" "l"
         }
         "weapon_s"
         {   
-                "font"      "CSweapons"
-                "character" "Z"
+                "font"      "WeaponIconsSelected"
+                "character" "l"
         }
         "ammo"
         {
-                "font"      "CSTypeDeath"
-                "character"     "N"
+                "font"      "WeaponIconsSmall"
+                "character"     "l"
         }
         "crosshair"
         {

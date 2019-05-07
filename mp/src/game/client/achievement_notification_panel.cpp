@@ -38,11 +38,8 @@ DECLARE_HUDELEMENT_DEPTH( CAchievementNotificationPanel, 100 );
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CAchievementNotificationPanel::CAchievementNotificationPanel( const char *pElementName ) : CHudElement( pElementName ), BaseClass( NULL, "AchievementNotificationPanel" )
+CAchievementNotificationPanel::CAchievementNotificationPanel( const char *pElementName ) : CHudElement( pElementName ), BaseClass(g_pClientMode->GetViewport(), "AchievementNotificationPanel" )
 {
-	Panel *pParent = g_pClientMode->GetViewport();
-	SetParent( pParent );
-
 	m_flHideTime = 0;
 	m_pPanelBackground = new EditablePanel( this, "Notification_Background" );
 	m_pIcon = new ImagePanel( this, "Notification_Icon" );
@@ -52,6 +49,9 @@ CAchievementNotificationPanel::CAchievementNotificationPanel( const char *pEleme
 	m_pIcon->SetShouldScaleImage( true );
 
 	vgui::ivgui()->AddTickSignal( GetVPanel() );
+
+    // load control settings...
+    LoadControlSettings("resource/UI/AchievementNotification.res");
 }
 
 //-----------------------------------------------------------------------------
@@ -60,17 +60,6 @@ CAchievementNotificationPanel::CAchievementNotificationPanel( const char *pEleme
 void CAchievementNotificationPanel::Init()
 {
 	ListenForGameEvent( "achievement_event" );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CAchievementNotificationPanel::ApplySchemeSettings( IScheme *pScheme )
-{
-	// load control settings...
-	LoadControlSettings( "resource/UI/AchievementNotification.res" );
-	
-	BaseClass::ApplySchemeSettings( pScheme );
 }
 
 //-----------------------------------------------------------------------------
@@ -104,14 +93,14 @@ void CAchievementNotificationPanel::FireGameEvent( IGameEvent * event )
 		if ( IsPC() )
 		{
 			// shouldn't ever get achievement progress if steam not running and user logged in, but check just in case
-			if ( !steamapicontext->SteamUserStats() )
+			if ( !SteamUserStats() )
 			{				
 				Msg( "Steam not running, achievement progress notification not displayed\n" );
 			}
 			else 
 			{
 				// use Steam to show achievement progress UI
-				steamapicontext->SteamUserStats()->IndicateAchievementProgress( pchName, iCur, iMax );
+				SteamUserStats()->IndicateAchievementProgress( pchName, iCur, iMax );
 			}
 		}
 		else 

@@ -42,13 +42,14 @@ PanelListPanel::PanelListPanel( vgui::Panel *parent, char const *panelName ) : E
 	m_pPanelEmbedded->SetPaintBackgroundEnabled( false );
 	m_pPanelEmbedded->SetPaintBorderEnabled(false);
 
-	m_iFirstColumnWidth = 100; // default width
+    m_iFirstColumnWidth = GetScaledVal(100); // default width
 	m_iNumColumns = 1; // 1 column by default
 
 	if ( IsProportional() )
 	{
 		m_iDefaultHeight = scheme()->GetProportionalScaledValueEx( GetScheme(), DEFAULT_HEIGHT );
 		m_iPanelBuffer = scheme()->GetProportionalScaledValueEx( GetScheme(), PANELBUFFER );
+        
 	}
 	else
 	{

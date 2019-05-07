@@ -16,31 +16,15 @@
 
 using namespace vgui;
 
-class CMomentumSettingsPanel : public PropertyDialog
+class CMomentumSettingsDialog : public PropertyDialog
 {
-    DECLARE_CLASS_SIMPLE(CMomentumSettingsPanel, PropertyDialog);
-    // CMomentumSettingsPanel : This Class / vgui::Frame : BaseClass
+    DECLARE_CLASS_SIMPLE(CMomentumSettingsDialog, PropertyDialog);
 
-    CMomentumSettingsPanel(VPANEL parent); // Constructor
-    ~CMomentumSettingsPanel();           // Destructor
+    CMomentumSettingsDialog(VPANEL parent);
+    ~CMomentumSettingsDialog();
 
-    void OnClose() OVERRIDE
-    {
-        BaseClass::OnClose();
-
-        //Let the comparisons settings page/Replay model panel know so they can fade too
-        if (GetActivePage())
-            PostMessage(GetActivePage(), new KeyValues("OnMainDialogClosed"));
-    }
-
-    void Activate() OVERRIDE
-    {
-        BaseClass::Activate();
-
-        //Let the comparisons settings page/replay model panel know so they can show back up
-        if (GetActivePage())
-            PostMessage(GetActivePage(), new KeyValues("OnMainDialogShow"));
-    }
+    void OnClose() OVERRIDE;
+    void Activate() OVERRIDE;
 
   protected:
     // VGUI overrides:
@@ -51,18 +35,17 @@ class CMomentumSettingsPanel : public PropertyDialog
      *m_pOnlineSettings;
 };
 
-// Constuctor: Initializes the Panel
-CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullptr, "CMomentumSettingsPanel")
+CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(nullptr, "CMomentumSettingsPanel")
 {
     SetParent(parent);
+    SetProportional(true);
+    SetScheme("SourceScheme");
     LoadControlSettings("resource/ui/SettingsPanel_Base.res");
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
 
-    SetMinimumSize(600, 500);
-    int wide, tall;
-    surface()->GetScreenSize(wide, tall);
-    SetPos(wide / 3, tall / 4);
+    SetMinimumSize(GetScaledVal(400), GetScaledVal(260));
+    SetSize(GetScaledVal(400), GetScaledVal(260));
     SetApplyButtonVisible(true);
     SetTitleBarVisible(true);
     SetMenuButtonResponsive(false);
@@ -73,6 +56,7 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetMoveable(true);
     SetVisible(false);
     SetSizeable(true);
+    GetPropertySheet()->SetSmallTabs(true);
 
     //Create the pages here
     m_pControlsSettings = new GameplaySettingsPage(this);
@@ -87,25 +71,40 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     AddPage(m_pCompareSettings->GetScrollPanel(), "#MOM_Settings_Tab_Comparisons");
     AddPage(m_pAppearanceSettings->GetScrollPanel(), "#MOM_Settings_Tab_Appearance");
     AddPage(m_pOnlineSettings->GetScrollPanel(), "#MOM_Settings_Tab_Online");
-    //MOM_TODO: Add the other settings panels here.
-
-    SetScheme("SourceScheme");
 }
 
-CMomentumSettingsPanel::~CMomentumSettingsPanel()
+CMomentumSettingsDialog::~CMomentumSettingsDialog()
 {
 }
 
-// Class: CMyPanelInterface Class. Used for construction.
+void CMomentumSettingsDialog::OnClose()
+{
+    BaseClass::OnClose();
+
+    //Let the comparisons settings page/Replay model panel know so they can fade too
+    if (GetActivePage())
+        PostMessage(GetActivePage(), new KeyValues("OnMainDialogClosed"));
+}
+
+void CMomentumSettingsDialog::Activate()
+{
+    BaseClass::Activate();
+
+    MoveToCenterOfScreen();
+    //Let the comparisons settings page/replay model panel know so they can show back up
+    if (GetActivePage())
+        PostMessage(GetActivePage(), new KeyValues("OnMainDialogShow"));
+}
+
 class CMomentumSettingsPanelInterface : public IMomentumSettingsPanel
 {
   private:
-    CMomentumSettingsPanel *settings_panel;
+    CMomentumSettingsDialog *settings_panel;
 
   public:
     CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
     ~CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
-    void Create(VPANEL parent) OVERRIDE { settings_panel = new CMomentumSettingsPanel(parent); }
+    void Create(VPANEL parent) OVERRIDE { settings_panel = new CMomentumSettingsDialog(parent); }
     void Destroy() OVERRIDE
     {
         if (settings_panel)
@@ -141,7 +140,7 @@ CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n",
     momentum_settings->Activate();
 }
 
-void CMomentumSettingsPanel::OnThink()
+void CMomentumSettingsDialog::OnThink()
 {
     BaseClass::OnThink();
 

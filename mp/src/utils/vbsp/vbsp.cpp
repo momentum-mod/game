@@ -17,7 +17,7 @@
 #include "tools_minidump.h"
 #include "materialsub.h"
 #include "loadcmdline.h"
-#include "byteswap.h"
+#include "byteswap_valve.h"
 #include "worldvertextransitionfixup.h"
 
 extern float		g_maxLightmapDimension;
@@ -562,7 +562,7 @@ static CUtlVector< OccluderInfo_t > g_OccluderInfo;
 //-----------------------------------------------------------------------------
 // Emits occluder brushes
 //-----------------------------------------------------------------------------
-static void EmitOccluderBrushes()
+void EmitOccluderBrushes()
 {
 	char str[64];
 
@@ -1433,11 +1433,12 @@ int RunVBSP( int argc, char **argv )
 main
 ============
 */
+
+#ifndef ZONETOOL
 int main (int argc, char **argv)
 {
 	// Install an exception handler.
 	SetupDefaultToolsMinidumpHandler();
 	return RunVBSP( argc, argv );
 }
-
-
+#endif

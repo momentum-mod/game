@@ -204,9 +204,9 @@ void CMumbleSystem::PostRender()
 		m_bHasSetPlayerUniqueId = false;
 	}
 
-	if ( !m_bHasSetPlayerUniqueId && steamapicontext && steamapicontext->SteamUser() )
+	if ( !m_bHasSetPlayerUniqueId && SteamUser() )
 	{
-		CSteamID steamid = steamapicontext->SteamUser()->GetSteamID();
+		CSteamID steamid = SteamUser()->GetSteamID();
 		if ( steamid.IsValid() )
 		{
 			int unTeam = pPlayer ? pPlayer->GetTeamNumber() : 0;

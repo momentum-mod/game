@@ -64,12 +64,11 @@ void CGhostEntityPanel::OnThink()
     // Set the position
     SetPos(static_cast<int>(m_iPosX + m_OffsetX + 0.5f), static_cast<int>(m_iPosY + m_OffsetY + 0.5f));
 
-
     if (m_pEntity)
     {
-        if (!m_pAvatarImage->IsValid() && m_pEntity->m_SteamID.IsValid())
+        if (!m_pAvatarImage->IsValid() && m_pEntity->m_SteamID)
         {
-            m_pAvatarImage->SetAvatarSteamID(m_pEntity->m_SteamID, k_EAvatarSize64x64);
+            m_pAvatarImage->SetAvatarSteamID(CSteamID(m_pEntity->m_SteamID), k_EAvatarSize64x64);
         }
 
         // MOM_TODO: Blink the panel if they're typing? Maybe an icon or something? Idk
@@ -78,8 +77,8 @@ void CGhostEntityPanel::OnThink()
         {
             char check[MAX_PLAYER_NAME_LENGTH];
             m_pNameLabel->GetText(check, MAX_PLAYER_NAME_LENGTH);
-            if (!FStrEq(check, m_pEntity->m_pszGhostName))
-                m_pNameLabel->SetText(m_pEntity->m_pszGhostName);
+            if (!FStrEq(check, m_pEntity->m_szGhostName.Get()))
+                m_pNameLabel->SetText(m_pEntity->m_szGhostName.Get());
         }
         m_pNameLabel->SetVisible(m_bPaintName);
     }
@@ -169,7 +168,7 @@ void CGhostEntityPanel::ComputeAndSetSize()
     {
         HFont font = m_pNameLabel->GetFont();
         wchar_t playerName[MAX_PLAYER_NAME_LENGTH];
-        ANSI_TO_UNICODE(m_pEntity->m_pszGhostName, playerName);
+        ANSI_TO_UNICODE(m_pEntity->m_szGhostName.Get(), playerName);
         int nameWide = UTIL_ComputeStringWidth(font, playerName) + 6;
         int fontHeight = surface()->GetFontTall(font);
 

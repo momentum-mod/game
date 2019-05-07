@@ -3,6 +3,8 @@
 #include "mom_online_ghost.h"
 #include "icommandline.h"
 #include "mom_lobby_system.h"
+#include "mom_player_shared.h"
+#include "mom_timer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -12,7 +14,10 @@ ConVar mm_updaterate("mom_ghost_online_updaterate", "25",
 
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (gpGlobals->eLoadType == MapLoad_Background || FStrEq(gpGlobals->mapname.ToCStr(), "credits"))
+        return;
+
+    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer && !pPlayer->IsObserver())
     {
         CBaseEntity *pTarget = nullptr;
@@ -33,16 +38,20 @@ CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being 
             pPlayer->SetObserverTarget(pTarget);
             pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
         }
+        else
+        {
+            // Not valid but they still want to spectate? Let's go in roaming mode
+            pPlayer->StartObserverMode(OBS_MODE_ROAMING);
+        }
     }
 }
 
 CON_COMMAND(mom_spectate_stop, "Stop spectating.")
 {
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
         pPlayer->StopSpectating();
-        g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
         // We're piggybacking on this event because it's basically the same as the X on the mapfinished panel
         IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
         if (pClosePanel)
@@ -52,34 +61,28 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
         }
     }
 }
-CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
-CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;
 
-CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName), m_cvarHostTimescale("host_timescale")
+CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName)
 {
-    m_pInstance = this;
 }
 
 void CMomentumGhostClient::PostInit()
 {
     //Log("================= COMMAND LINE: %s\n", CommandLine()->GetCmdLine());
     const char *pLobbyID = CommandLine()->ParmValue("+connect_lobby", nullptr);
-    g_pMomentumLobbySystem->JoinLobbyFromString(pLobbyID);
+    g_pMomentumLobbySystem->TryJoinLobbyFromString(pLobbyID);
 }
 
 void CMomentumGhostClient::LevelInitPostEntity()
 {
     // MOM_TODO: AdvertiseGame needs to use k_steamIDNonSteamGS and pass the IP (as hex) and port if it is inside a server 
-    // steamapicontext->SteamUser()->AdvertiseGame(steamapicontext->SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
-    // steamapicontext->SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
-
-    m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    // SteamUser()->AdvertiseGame(SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
+    // SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
     g_pMomentumLobbySystem->LevelChange(gpGlobals->mapname.ToCStr());
 }
 
 void CMomentumGhostClient::LevelShutdownPostEntity()
 {
-    m_pPlayer = nullptr;
     if (!FStrEq(gpGlobals->mapname.ToCStr(), "")) // Don't send our shutdown message from the menu
         g_pMomentumLobbySystem->LevelChange(nullptr);
 }
@@ -90,7 +93,6 @@ void CMomentumGhostClient::LevelShutdownPreEntity()
 
 void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
-    m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     g_pMomentumLobbySystem->SendAndRecieveP2PPackets();
 }
 
@@ -117,7 +119,7 @@ void CMomentumGhostClient::ResetOtherAppearanceData()
     g_pMomentumLobbySystem->ResetOtherAppearanceData();
 }
 
-void CMomentumGhostClient::SendAppearanceData(ghostAppearance_t appearance)
+void CMomentumGhostClient::SendAppearanceData(GhostAppearance_t appearance)
 {
     // MOM_TODO: g_pMomentumServerSystem->SetAppearance(appearance);
     g_pMomentumLobbySystem->SetAppearanceInMemberData(appearance);
@@ -131,12 +133,20 @@ void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpec
 
 void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
 {
-    if (CloseEnough(m_cvarHostTimescale.GetFloat(), 1.0f, FLT_EPSILON))
+    static ConVarRef host_timescale("host_timescale");
+
+    if (CloseEnough(host_timescale.GetFloat(), 1.0f, FLT_EPSILON))
     {
         // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(packet);
         g_pMomentumLobbySystem->SendDecalPacket(packet);
     }
     // MOM_TODO: else let the player know their decal packets aren't being sent?
+}
+
+bool CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* packet)
+{
+    // MOM_TODO: g_pMomentumServerSystem->SendSavelocReqPacket(target, packet);
+    return g_pMomentumLobbySystem->SendSavelocReqPacket(target, packet);
 }
 
 CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(const uint64& id)
@@ -146,16 +156,31 @@ CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(con
     return g_pMomentumLobbySystem->GetLobbyMemberEntity(id);
 }
 
+CUtlMap<uint64, CMomentumOnlineGhostEntity*> *CMomentumGhostClient::GetOnlineGhostMap()
+{
+    // MOM_TODO: if (g_pMomentumServerSystem->IsConnected()) // or something
+    //            g_pMomentumServerSystem->GetOnlineEntMap();
+    // else
+    return g_pMomentumLobbySystem->GetOnlineEntMap();
+}
+
 bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
 {
-    if (m_pPlayer && !m_pPlayer->IsSpectatingGhost())
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer && !pPlayer->IsSpectatingGhost())
     {
+        const Vector &orig = pPlayer->GetAbsOrigin(), &vel = pPlayer->GetAbsVelocity();
+        const QAngle &eye = pPlayer->EyeAngles();
+
+        if (!(orig.IsValid() && vel.IsValid() && eye.IsValid()))
+            return false;
+
         into = PositionPacket_t(
-            m_pPlayer->EyeAngles(),
-            m_pPlayer->GetAbsOrigin(),
-            m_pPlayer->GetAbsVelocity(),
-            m_pPlayer->GetViewOffset().z,
-            m_pPlayer->m_nButtons);
+            eye,
+            orig,
+            vel,
+            pPlayer->GetViewOffset().z,
+            pPlayer->m_nButtons);
 
         return true;
     }

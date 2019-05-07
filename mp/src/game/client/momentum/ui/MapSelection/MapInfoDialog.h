@@ -1,71 +1,66 @@
-#ifndef DIALOGGAMEINFO_H
-#define DIALOGGAMEINFO_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-using namespace vgui;
+#include "vgui_controls/Frame.h"
+#include "mom_shareddefs.h"
+
+struct MapData;
+class ImageGallery;
+
+namespace vgui 
+{
+    class ListPanelItem;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Dialog for displaying information about a game server
 //-----------------------------------------------------------------------------
-class CDialogMapInfo : public Frame
+class CDialogMapInfo : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CDialogMapInfo, vgui::Frame);
 
-public:
-    CDialogMapInfo(Panel *parent, const char*);
+    CDialogMapInfo(Panel *parent, MapData *pMapData);
     ~CDialogMapInfo();
 
-    void Run(const char *titleName);
+    void Run();
 
     // forces the dialog to attempt to connect to the server
     void Connect();
 
-    // on individual player added
-    virtual void AddPlayerToList(KeyValues *pPlayerInfo);
-
-    // called when the current refresh list is complete
-    virtual void RefreshComplete(EMatchMakingServerResponse response);
+    void OnMapDataUpdate(KeyValues *pKv);
 
     // player list received
     virtual void ClearPlayerList();
 
+    void UpdateMapDownloadState();
+
 protected:
-    // message handlers
-    MESSAGE_FUNC(OnConnect, "Connect");
     // vgui overrides
-    void OnTick() OVERRIDE;
     void PerformLayout() OVERRIDE;
+    void OnCommand(const char* command) OVERRIDE;
 
     // API
-    void GetMapInfo(const char* mapname);
-    void GetMapInfoCallback(HTTPRequestCompleted_t*, bool);
-    CCallResult<CDialogMapInfo, HTTPRequestCompleted_t> cbGetMapInfoCallback;
+    void GetMapInfo();
+    void FillMapInfo();
 
-    void Get10MapTimes(const char* mapname);
-    void Get10MapTimesCallback(HTTPRequestCompleted_t*, bool);
-    CCallResult<CDialogMapInfo, HTTPRequestCompleted_t> cbGet10MapTimesCallback;
-
+    void GetMapTimes(TIME_TYPE type);
+    void OnTop10TimesCallback(KeyValues *pKvResponse);
+    void OnAroundTimesCallback(KeyValues *pKvResponse);
+    void OnFriendsTimesCallback(KeyValues *pKvResponse);
+    void ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type);
 
 private:
-
-    static int PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2);
-
     // methods
-    void RequestInfo(const char* mapName);
-    void ConnectToServer();
-    void ApplyConnectCommand(const char *mapName);
+    void RequestInfo();
 
-    Button *m_pConnectButton;
-    Button *m_pCloseButton;
-    ListPanel *m_pPlayerList;
+    float m_fRequestDelays[TIMES_COUNT];
 
-    enum { PING_TIMES_MAX = 4 };
+    vgui::Button *m_pMapActionButton, *m_pTop10Button, *m_pAroundButton, *m_pFriendsButton;
+    vgui::ListPanel *m_pTimesList;
+    ImageGallery *m_pImageGallery;
+    EditablePanel *m_pMapInfoPanel;
+    vgui::RichText *m_pMapDescription;
 
-    // true if we should try connect to the server when it refreshes
-    bool m_bConnecting;
-    bool m_bPlayerListUpdatePending;
+    bool m_bUnauthorizedFriendsList;
+
+    MapData *m_pMapData;
 };
-
-#endif // DIALOGGAMEINFO_H

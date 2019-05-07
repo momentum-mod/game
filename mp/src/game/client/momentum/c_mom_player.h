@@ -1,18 +1,12 @@
-#ifndef C_MOMPLAYER_H
-#define C_MOMPLAYER_H
-#ifdef WIN32
 #pragma once
-#endif
 
-#include "cbase.h"
-#include "c_mom_replay_entity.h"
-#include <momentum/mom_shareddefs.h>
-#include <run/mom_entity_run_data.h>
-#include <run/run_stats.h>
-#include <mom_modulecomms.h>
-#include "c_mom_online_ghost.h"
+#include "c_mom_triggers.h"
+#include "run/mom_run_entity.h"
 
-class C_MomentumPlayer : public C_BasePlayer
+class C_MomentumOnlineGhostEntity;
+class C_MomentumReplayGhostEntity;
+
+class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 {
   public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
@@ -23,42 +17,56 @@ class C_MomentumPlayer : public C_BasePlayer
     C_MomentumPlayer();
     ~C_MomentumPlayer();
 
+    static C_MomentumPlayer *GetLocalMomPlayer();
+
+    // Handles determining if we should be showing the entity we're spectating or ourselves, given the situation.
+    // Guaranteed to not be null, as at worst case, it'll return this player.
+    CMomRunEntity *GetCurrentUIEntity();
+    CMomRunEntityData *GetCurrentUIEntData(); // Same as above, but conveniently gets the run ent data pointer
+    CMomRunStats *GetCurrentUIEntStats(); // Same as above but for run stats
+
     void PostDataUpdate(DataUpdateType_t updateType) OVERRIDE;
     void OnDataChanged(DataUpdateType_t type) OVERRIDE;
     bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
-    void Spawn() OVERRIDE;
-    virtual void ClientThink(void);
 
-    Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
-
-    void SurpressLadderChecks(const Vector &pos, const Vector &normal);
-    bool CanGrabLadder(const Vector &pos, const Vector &normal);
-    bool DidPlayerBhop() { return m_SrvData.m_bDidPlayerBhop; }
-    bool HasAutoBhop() { return m_SrvData.m_RunData.m_bAutoBhop; }
+    bool HasAutoBhop() { return m_bAutoBhop; }
     // void ResetStrafeSync();
 
-    bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
-
     // Returns the replay entity that the player is watching (first person only)
-    C_MomentumReplayGhostEntity *GetReplayEnt() const
-    {
-        return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
-    }
-
-    C_MomentumOnlineGhostEntity *GetOnlineGhostEnt() const
-    {
-        return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
-    }
+    int GetSpecEntIndex() const;
 
     // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
- 
+
+    void OnObserverTargetUpdated() OVERRIDE;
+
+    CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
+    CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
+    CNetworkVar(int, m_iLandTick); // Tick at which the player landed on the ground
+    CNetworkVar(bool, m_bResumeZoom); // Used by various weapon code
+    CNetworkVar(int, m_iShotsFired); // Used in various weapon code
+    CNetworkVar(int, m_iDirection); // Used in kickback effects for player
+    CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
+
+    CNetworkArray(int, m_iZoneCount, MAX_TRACKS); // The number of zones for a given track
+    CNetworkArray(bool, m_iLinearTracks, MAX_TRACKS); // If a given track is linear or not
+
     int m_afButtonDisabled;
+    CNetworkVar(bool, m_bAutoBhop);
 
-    StdDataFromServer m_SrvData;
-    CMomRunStats m_RunStats;
+    // CMomRunEnt stuff
+    RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }
+    CNetworkVarEmbedded(CMomRunEntityData, m_Data);
+    virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
+    virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; };
+    virtual int GetEntIndex() OVERRIDE { return index; }
+    virtual float GetCurrentRunTime() OVERRIDE;
 
-    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,bool &bIsPaintAmmo);
+    CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
+
+    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,
+                                 bool &bIsPaintAmmo);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
                     int iBulletType, int iDamage, float flRangeModifier, CBaseEntity *pevAttacker, bool bDoEffects,
@@ -70,19 +78,17 @@ class C_MomentumPlayer : public C_BasePlayer
     float m_flStartSpeed;
     float m_flEndSpeed;
 
+    // Ladder stuff
+    float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
+    void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
   private:
-    CountdownTimer m_ladderSurpressionTimer;
-    Vector m_lastLadderNormal;
-    Vector m_lastLadderPos;
+    // Ladder stuff
+    float m_flGrabbableLadderTime;
 
     bool m_duckUntilOnGround;
     float m_flStamina;
 
-    int m_iIDEntIndex;
-    C_MomentumOnlineGhostEntity *m_pViewTarget;
-    C_MomentumOnlineGhostEntity *m_pSpectateTarget;
+    CMomRunEntity *m_pSpecTarget;
 
     friend class CMomentumGameMovement;
 };
-
-#endif

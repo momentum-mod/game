@@ -1,0 +1,9 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/weapons/w_models/w_mom_l12g/l12g_d"
+	"$bumpmap" "models/weapons/w_models/w_mom_l12g/l12g_n_a"
+	"$surfaceprop" "Weapon"
+
+	"$envmap" "env_cubemap"
+	"$envmapfresnel" "1"
+}

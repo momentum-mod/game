@@ -77,9 +77,6 @@
 // Projective textures
 #include "C_Env_Projected_Texture.h"
 
-//Shader editor
-#include "ShaderEditor/ShaderEditorSystem.h"
-
 // GameUI
 #include "GameUI_Interface.h"
 
@@ -779,13 +776,6 @@ CLIENTEFFECT_REGISTER_END()
 #endif
 
 CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffects)
-
-    // Precache menu blur
-    CLIENTEFFECT_MATERIAL("dev/blurx")
-    CLIENTEFFECT_MATERIAL("dev/blury")
-    CLIENTEFFECT_MATERIAL("dev/fringe")
-    CLIENTEFFECT_MATERIAL("dev/gui_blend")
-
 	CLIENTEFFECT_MATERIAL( "dev/blurfiltery_and_add_nohdr" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx_nohdr" )
@@ -1370,16 +1360,6 @@ void CViewRender::ViewDrawScene( bool bDrew3dSkybox, SkyboxVisibility_t nSkyboxV
 	ParticleMgr()->IncrementFrameCode();
 
 	DrawWorldAndEntities( drawSkybox, view, nClearFlags, pCustomVisibility );
-
-    
-#ifdef _WIN32
-    //Shader editor
-    VisibleFogVolumeInfo_t fogVolumeInfo;
-    render->GetVisibleFogVolume(view.origin, &fogVolumeInfo);
-    WaterRenderInfo_t info;
-    DetermineWaterRenderInfo(fogVolumeInfo, info);
-    g_ShaderEditorSystem->CustomViewRender(&g_CurrentViewID, fogVolumeInfo, info);
-#endif
     
 	// Disable fog for the rest of the stuff
 	DisableFog();
@@ -2007,10 +1987,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		if ( ( bDrew3dSkybox = pSkyView->Setup( view, &nClearFlags, &nSkyboxVisible ) ) != false )
 		{
 			AddViewToScene( pSkyView );
-#ifdef _WIN32
-            //Shader editor
-            g_ShaderEditorSystem->UpdateSkymask();
-#endif
 		}
 		SafeRelease( pSkyView );
 
@@ -2067,11 +2043,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 		// Now actually draw the viewmodel
 		DrawViewModels( view, whatToDraw & RENDERVIEW_DRAWVIEWMODEL );
-
-#ifdef _WIN32
-        //Shader editor
-        g_ShaderEditorSystem->UpdateSkymask(bDrew3dSkybox);
-#endif
         
 		DrawUnderwaterOverlay();
 
@@ -2109,10 +2080,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 			}
 			pRenderContext.SafeRelease();
 		}
-#ifdef _WIN32
-        //Shader editor
-        g_ShaderEditorSystem->CustomPostRender();
-#endif
 
 		// And here are the screen-space effects
 
@@ -2177,25 +2144,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		}
 
 	}
-
-    if (gameui)
-    {
-        if (ConVarRef("mom_menu_blur").GetBool())
-            DoMenuBlurring();
-
-        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
-        if (maskTexture)
-        {
-            CMatRenderContextPtr renderContext(materials);
-            renderContext->PushRenderTargetAndViewport(maskTexture);
-            renderContext->ClearColor4ub(0, 0, 0, 255);
-            renderContext->ClearBuffers(true, true, true);
-            renderContext->PopRenderTargetAndViewport();
-            gameui->SetFrustum(GetFrustum());
-            gameui->SetView(view);
-            gameui->SetMaskTexture(maskTexture);
-        }
-    }
 
 	if ( mat_viewportupscale.GetBool() && mat_viewportscale.GetFloat() < 1.0f ) 
 	{

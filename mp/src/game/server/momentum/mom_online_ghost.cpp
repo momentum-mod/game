@@ -1,32 +1,48 @@
 #include "cbase.h"
 #include "mom_online_ghost.h"
+#include "mom_player_shared.h"
+
 #include "in_buttons.h"
 #include "fx_mom_shared.h"
 #include "util/mom_util.h"
-#include "weapon/cs_weapon_parse.h"
+#include "weapon/mom_weapon_parse.h"
 #include "mom_grenade_projectile.h"
 #include "te_effect_dispatch.h"
-#include "weapon/weapon_csbase.h"
+#include "weapon/weapon_base.h"
+#include "ghost_client.h"
 
 #include "tier0/memdbgon.h"
 
 LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
-    SendPropString(SENDINFO(m_pszGhostName)),
-    SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
-    SendPropInt(SENDINFO(m_nGhostButtons)),
-    SendPropBool(SENDINFO(m_bSpectating)),
+SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
+SendPropBool(SENDINFO(m_bSpectating)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
 END_DATADESC();
 
-#define MOM_GHOST_LERP 0.1f // MOM_TODO: Change this to a convar
+static void RefreshGhostData(IConVar *var, const char *pValue, float oldValue)
+{
+    g_pMomentumGhostClient->ResetOtherAppearanceData();
+}
+
+static MAKE_CONVAR(mom_ghost_online_lerp, "0.5", FCVAR_REPLICATED | FCVAR_ARCHIVE, "The amount of time to render in the past (in seconds).\n", 0.1f, 2.0f);
 
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
 static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Interpolation ticks to add to rendering online ghosts.\n", 0.0f, 100.0f);
 
+static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                          "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                            "Toggle overriding other player's ghost alpha values to the one defined in "
+                            "\"mom_ghost_online_color_alpha_override\".\n",
+                            RefreshGhostData);
+static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                     "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+                            "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 extern ConVar mom_paintgun_shoot_sound;
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
@@ -34,10 +50,12 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
     ListenForGameEvent("mapfinished_panel_closed");
     m_nGhostButtons = 0;
     m_bSpectating = false;
+    m_GhostSteamID.Clear();
 }
 
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
+    m_GhostSteamID.Clear();
     m_vecPositionPackets.Purge();
     m_vecDecalPackets.Purge();
 }
@@ -84,14 +102,16 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
     }
 }
 
+void CMomentumOnlineGhostEntity::SetGhostSteamID(const CSteamID &steamID)
+{
+    m_GhostSteamID = steamID;
+    m_uiAccountID = m_GhostSteamID.ConvertToUint64();
+}
+
 void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
     if (FStrEq(pEvent->GetName(), "mapfinished_panel_closed"))
     {
-        if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
-        {
-            m_pCurrentSpecPlayer->StopSpectating();
-        }
         m_pCurrentSpecPlayer = nullptr;
     }
 }
@@ -136,7 +156,7 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     // Play the paintgun sound
     if (mom_paintgun_shoot_sound.GetBool())
     {
-        CCSWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
+        CWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
         if (pWeaponInfo)
         {
             // If we have some sounds from the weapon classname.txt file, play a random one of them
@@ -158,14 +178,14 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
     trace_t tr;
     Vector vForward;
     // Trace data here, play miss sound and do damage if hit
-    g_pMomentumUtil->KnifeTrace(packet.vOrigin, packet.vAngle, packet.iWeaponID == 1, this, this, &tr, &vForward);
+    MomUtil::KnifeTrace(packet.vOrigin, packet.vAngle, packet.iWeaponID == 1, this, this, &tr, &vForward);
     // Play the smacking sounds and do the decal if it actually hit
-    g_pMomentumUtil->KnifeSmack(tr, this, packet.vAngle, packet.iWeaponID == 1);
+    MomUtil::KnifeSmack(tr, this, packet.vAngle, packet.iWeaponID == 1);
 }
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)
 {
-    CCSWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
+    CWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
     if (pGrenadeInfo)
     {
         // Vector values stored in a QAngle, shhh~
@@ -181,19 +201,32 @@ void CMomentumOnlineGhostEntity::Precache(void)
     BaseClass::Precache();
 }
 
-void CMomentumOnlineGhostEntity::SetGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate /*= false*/)
+void CMomentumOnlineGhostEntity::SetGhostName(const char *pGhostName)
+{
+    Q_strncpy(m_szGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
+}
+
+void CMomentumOnlineGhostEntity::SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate /*= false*/)
 {
     if ((!FStrEq(app.base64, "") && !FStrEq(m_CurrentAppearance.base64, app.base64)) || bForceUpdate)
     {
         m_CurrentAppearance = app;
         BaseClass::SetGhostAppearance(app.appearance, bForceUpdate);
+        SetGhostFlashlight(app.appearance.m_bFlashlightOn);
     }
 }
 
 void CMomentumOnlineGhostEntity::Spawn()
 {
     BaseClass::Spawn();
-    SetNextThink(gpGlobals->curtime);
+    SetNextThink(gpGlobals->curtime + mom_ghost_online_lerp.GetFloat());
+}
+
+void CMomentumOnlineGhostEntity::CreateTrail()
+{
+    if (!m_ghostAppearance.m_bGhostTrailEnable || !mom_ghost_online_trail_enable.GetBool())
+        return;
+    BaseClass::CreateTrail();
 }
 
 void CMomentumOnlineGhostEntity::Think()
@@ -208,13 +241,13 @@ void CMomentumOnlineGhostEntity::Think()
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
-    float flCurtime = gpGlobals->curtime - MOM_GHOST_LERP; // Render in a 100 ms past buffer (allow some dropped packets)
+    float flCurtime = gpGlobals->curtime - mom_ghost_online_lerp.GetFloat(); // Render in a predetermined past buffer (allow some dropped packets)
 
     if (!m_vecDecalPackets.IsEmpty())
     {
         // Similar fast-forward code to the positions except we aren't jumping here,
         // we want to place these decals ASAP (sound spam incoming) and get them out of the queue.
-        int upperBound = 3 + static_cast<int>(ceil(MOM_GHOST_LERP * mm_updaterate.GetFloat()));
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
         while (m_vecDecalPackets.Count() > upperBound)
         {
             ReceivedFrame_t<DecalPacket_t> *fireMeImmedately = m_vecDecalPackets.RemoveAtHead();
@@ -235,8 +268,8 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         // The fast-forward logic:
         // Realistically, we're going to have a buffer of about MOM_GHOST_LERP * update rate. So for 25 updates
         // in a second, a lerp of 0.1 seconds would make there be about 2.5 packets in the queue at all times.
-        // If they pause, this increases to some arbitrary number of frames that we need to get rid of, immediately.
-        int upperBound = 3 + static_cast<int>(ceil(MOM_GHOST_LERP * mm_updaterate.GetFloat()));
+        // If there's ever any excess, we need to get rid of it, immediately.
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
         while (m_vecPositionPackets.Count() > upperBound)
         {
             ReceivedFrame_t<PositionPacket_t> *pTemp = m_vecPositionPackets.RemoveAtHead();
@@ -304,6 +337,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
         }
     }
 }
+
 void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
 {
     /*
@@ -339,4 +373,37 @@ void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
     */
+}
+
+void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
+{
+    if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
+    {
+        m_pCurrentSpecPlayer->TravelSpectateTargets(true);
+    }
+}
+
+void CMomentumOnlineGhostEntity::SetGhostColor(const uint32 newHexColor)
+{
+    BaseClass::SetGhostColor(newHexColor);
+    if (mom_ghost_online_alpha_override_enable.GetBool())
+    {
+        SetRenderColorA(mom_ghost_online_alpha_override.GetInt());
+    }
+}
+
+void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
+{
+    if (bEnable)
+    {
+        AddEffects(EF_DIMLIGHT);
+        if (mom_ghost_online_sounds.GetBool())
+            EmitSound(SND_FLASHLIGHT_ON);
+    }
+    else
+    {
+        RemoveEffects(EF_DIMLIGHT);
+        if (mom_ghost_online_sounds.GetBool())
+            EmitSound(SND_FLASHLIGHT_OFF);
+    }
 }

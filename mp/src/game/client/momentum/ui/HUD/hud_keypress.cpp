@@ -1,5 +1,5 @@
 ﻿#include "cbase.h"
-#include "hud_macros.h"
+
 #include "hudelement.h"
 #include "iclientmode.h"
 #include "in_buttons.h"
@@ -11,10 +11,9 @@
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 
-#include "c_mom_replay_entity.h"
-#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
+#include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
 
@@ -22,7 +21,7 @@
 
 using namespace vgui;
 
-static ConVar showkeys("mom_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
+static ConVar showkeys("mom_hud_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "Toggles showing keypresses and strafe/jump counter\n");
 
 class CHudKeyPressDisplay : public CHudElement, public Panel
@@ -31,13 +30,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
 
     CHudKeyPressDisplay(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE
-    {
-        C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        // don't show during map finished dialog
-        return showkeys.GetBool() && pMom && !pMom->m_SrvData.m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
-    }
-
+    bool ShouldDraw() OVERRIDE;
     void OnThink() OVERRIDE;
     void Paint() OVERRIDE;
     void Init() OVERRIDE;
@@ -77,6 +70,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     wchar_t m_pwRight[BUFSIZESHORT];
     wchar_t m_pwJump[BUFSIZELOCL];
     wchar_t m_pwDuck[BUFSIZELOCL];
+    wchar_t m_pwStrafe[BUFSIZELOCL];
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
 };
@@ -89,8 +83,21 @@ CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
 }
+
+bool CHudKeyPressDisplay::ShouldDraw()
+{
+    if (!showkeys.GetBool())
+        return false;
+    // don't show during map finished dialog
+    bool shouldDrawLocal = false;
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
+        shouldDrawLocal = !pPlayer->GetCurrentUIEntData()->m_bMapFinished;
+    return shouldDrawLocal && CHudElement::ShouldDraw();
+}
+
 void CHudKeyPressDisplay::Init()
 {
     // init wchar with display values
@@ -98,6 +105,7 @@ void CHudKeyPressDisplay::Init()
     wcscpy(m_pwLeft, L"A");
     wcscpy(m_pwBack, L"S");
     wcscpy(m_pwRight, L"D");
+    wcscpy(m_pwStrafe, L"O");
 
     // localize jump and duck strings
     FIND_LOCALIZATION(m_pwJump, "#MOM_Jump");
@@ -136,6 +144,14 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawSetTextPos(text_left, mid_row_ypos);
         surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
     }
+    // Turning left with turnbind
+    if (m_nButtons & IN_LEFT)
+    {
+        CHECK_INPUT_P(IN_RIGHT);
+        int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - (UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft) * 2);
+        surface()->DrawSetTextPos(text_left, mid_row_ypos);
+        surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
+    }
     if (m_nButtons & IN_BACK)
     {
         CHECK_INPUT_P(IN_BACK);
@@ -149,6 +165,22 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawSetTextPos(text_right, mid_row_ypos);
         surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     }
+    // Turning right with turnbind
+    if (m_nButtons & IN_RIGHT)
+    {
+        CHECK_INPUT_P(IN_RIGHT);
+        int text_right = GetTextCenter(m_hTextFont, m_pwRight) + (UTIL_ComputeStringWidth(m_hTextFont, m_pwRight) * 2);
+        surface()->DrawSetTextPos(text_right, mid_row_ypos);
+        surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
+    }
+
+    if (m_nButtons & IN_STRAFE)
+    {
+        CHECK_INPUT_P(IN_STRAFE);
+        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), ( lower_row_ypos + top_row_ypos) / 2.0f );
+        surface()->DrawPrintText(m_pwStrafe, wcslen(m_pwStrafe));
+    }
+
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
@@ -160,7 +192,8 @@ void CHudKeyPressDisplay::Paint()
         }
 
         // Bullrush is Bhop being disabled
-        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled : m_Normal);
+        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled
+                                                                                                       : m_Normal);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
@@ -199,37 +232,35 @@ void CHudKeyPressDisplay::Paint()
 }
 void CHudKeyPressDisplay::OnThink()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
     {
-        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
-        C_MomentumOnlineGhostEntity *pOnlineEnt = pPlayer->GetOnlineGhostEnt();
-        if (pReplayEnt)
+        const auto pUIEnt = pPlayer->GetCurrentUIEntity();
+
+        if (pUIEnt->GetEntType() >= RUN_ENT_GHOST)
         {
-            m_bShouldDrawCounts = false; // Not worth it
-            m_nButtons = pReplayEnt->m_SrvData.m_nReplayButtons;
-            m_nStrafes = pReplayEnt->m_SrvData.m_iTotalStrafes;
-            m_nJumps = pReplayEnt->m_SrvData.m_iTotalJumps;
-        }
-        else if (pOnlineEnt)
-        {
-            m_bShouldDrawCounts = false;
-            m_nButtons = pOnlineEnt->m_nGhostButtons;
+            const auto pGhost = static_cast<C_MomentumGhostBaseEntity*>(pUIEnt);
+            if (pUIEnt->GetEntType() == RUN_ENT_REPLAY)
+            {
+                m_nStrafes = pGhost->m_RunStats.m_iZoneStrafes[0];
+                m_nJumps = pGhost->m_RunStats.m_iZoneJumps[0];
+            }
+
+            m_nButtons = pGhost->m_nGhostButtons;
+            m_nDisabledButtons = pGhost->m_iDisabledButtons;
+
+            m_bShouldDrawCounts = pUIEnt->GetEntType() == RUN_ENT_REPLAY;
         }
         else
         {
             m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
             m_nDisabledButtons = pPlayer->m_afButtonDisabled;
-            if (g_MOMEventListener)
+            // we should only draw the strafe/jump counters when the timer is running
+            m_bShouldDrawCounts = pPlayer->m_Data.m_bTimerRunning;
+            if (m_bShouldDrawCounts)
             {
-                // we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = pPlayer->m_SrvData.m_RunData.m_bTimerRunning;
-                if (m_bShouldDrawCounts)
-                {
-                    CMomRunStats *stats = &pPlayer->m_RunStats;
-                    m_nStrafes = stats->GetZoneStrafes(0);
-                    m_nJumps = stats->GetZoneJumps(0);
-                }
+                m_nStrafes = pPlayer->m_RunStats.m_iZoneStrafes[0];
+                m_nJumps = pPlayer->m_RunStats.m_iZoneJumps[0];
             }
         }
     }
@@ -242,6 +273,7 @@ void CHudKeyPressDisplay::Reset()
     m_fDuckColorUntil = 0;
     m_fJumpColorUntil = 0;
 }
+
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 {
     return GetWide() / 2 - UTIL_ComputeStringWidth(font, wstring) / 2;
@@ -270,11 +302,13 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     int text_right = GetTextCenter(m_hTextFont, m_pwRight) + UTIL_ComputeStringWidth(m_hTextFont, m_pwRight);
     surface()->DrawSetTextPos(text_right, mid_row_ypos);
     surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
+
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
     // jump
     // Bullrush is Bhop being disabled
-    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled : m_darkGray);
+    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled
+                                                                                                   : m_darkGray);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
     surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     // duck

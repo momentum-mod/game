@@ -1,9 +1,14 @@
 #include "cbase.h"
+
 #include "mom_lobby_system.h"
-#include "base64.h"
-#include "mom_steam_helper.h"
+
+#include "filesystem.h"
+#include <cryptopp/base64.h>
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
+#include "mom_system_saveloc.h"
+#include "mom_player_shared.h"
+#include "mom_modulecomms.h"
 
 #include "tier0/memdbgon.h"
 
@@ -23,13 +28,18 @@ CON_COMMAND(mom_lobby_leave, "Leave your current lobby\n")
 // Used when joining when the game isn't loaded
 CON_COMMAND(connect_lobby, "Connect to a given SteamID's lobby\n")
 {
-    g_pMomentumLobbySystem->JoinLobbyFromString(args.Arg(1));
+    if (args.ArgC() < 2)
+    {
+        Log("Usage: connect_lobby <lobby_id>");
+        return;
+    }
+    g_pMomentumLobbySystem->TryJoinLobbyFromString(args.Arg(1));
 }
 
 CON_COMMAND(mom_lobby_invite, "Invite friends to your lobby\n")
 {
     if (g_pMomentumLobbySystem->LobbyValid())
-        steamapicontext->SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
+        SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
 }
 
 static MAKE_CONVAR(mom_lobby_max_players, "10", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the maximum number of players allowed in lobbies you create.\n", 2, 250);
@@ -38,7 +48,7 @@ static MAKE_CONVAR(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets 
 // So basically, if a user wants to connect to us, we're considered the host. 
 void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
 {
-    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
+    const char *pName = SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
 
     // MOM_TODO: Make a (temp) block list that only refreshes on game restart?
     if (m_vecBlocked.Find(info->m_steamIDRemote) != -1)
@@ -50,26 +60,27 @@ void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
     // MOM_TODO: Take into account that this user could potentially not be in our lobby (security)
 
     // Needs to be done to open the connection with them
-    steamapicontext->SteamNetworking()->AcceptP2PSessionWithUser(info->m_steamIDRemote);
+    SteamNetworking()->AcceptP2PSessionWithUser(info->m_steamIDRemote);
 }
 
 void CMomentumLobbySystem::HandleP2PConnectionFail(P2PSessionConnectFail_t* info)
 {
-    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
+    const char *pName = SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
     if (info->m_eP2PSessionError == k_EP2PSessionErrorTimeout)
         DevLog("Dropping connection with %s due to timing out! (They probably left/disconnected)\n", pName);
     else
         Warning("Steam P2P failed with user %s because of the error: %i\n", pName, info->m_eP2PSessionError);
     
-    steamapicontext->SteamNetworking()->CloseP2PSessionWithUser(info->m_steamIDRemote);
+    SteamNetworking()->CloseP2PSessionWithUser(info->m_steamIDRemote);
 }
 
 void CMomentumLobbySystem::SendChatMessage(char* pMessage)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         int len = Q_strlen(pMessage) + 1;
-        bool result = steamapicontext->SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
+        bool result = SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
         if (result)
             DevLog("Sent chat message! Message: %s\n", pMessage);
         else
@@ -90,31 +101,22 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
         {
             CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[index];
             if (pEntity)
-                pEntity->SetGhostAppearance(pEntity->GetGhostAppearance(), true);
+                pEntity->SetLobbyGhostAppearance(pEntity->GetLobbyGhostAppearance(), true);
 
             index = m_mapLobbyGhosts.NextInorder(index);
         }
     }
 }
 
+bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* p)
+{
+    return LobbyValid() && SendPacket(p, &target, k_EP2PSendReliable);
+}
+
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
 void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
 {
-    if (LobbyValid())
-    {
-        LeaveLobby();
-        Log("Leaving your current lobby to join the new one...\n");
-    }
-    
-    if (m_cLobbyJoined.IsActive())
-    {
-        Warning("Not joining the lobby due to you already joining one!\n");
-    }
-    else
-    {
-        SteamAPICall_t call = steamapicontext->SteamMatchmaking()->JoinLobby(pJoin->m_steamIDLobby);
-        m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
-    }
+    TryJoinLobby(pJoin->m_steamIDLobby);
 }
 
 CMomentumLobbySystem::CMomentumLobbySystem() : m_bHostingLobby(false)
@@ -165,7 +167,8 @@ void CMomentumLobbySystem::StartLobby()
 {
     if (!(m_cLobbyCreated.IsActive() || LobbyValid()))
     {
-        SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>(mom_lobby_type.GetInt()), mom_lobby_max_players.GetInt());
+        CHECK_STEAM_API(SteamMatchmaking());
+        SteamAPICall_t call = SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>(mom_lobby_type.GetInt()), mom_lobby_max_players.GetInt());
         m_cLobbyCreated.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyCreated);
         DevLog("The lobby call successfully happened!\n");
     }
@@ -177,14 +180,12 @@ void CMomentumLobbySystem::LeaveLobby()
 {
     if (LobbyValid())
     {
-        SetSpectatorTarget(k_steamIDNil, false, true);
-
         // Actually leave the lobby
-        steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
+        SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         // Clear the ghosts stored in our lobby system
         g_pMomentumGhostClient->ClearCurrentGhosts(true);
         // Clear out any rich presence 
-        steamapicontext->SteamFriends()->ClearRichPresence();
+        SteamFriends()->ClearRichPresence();
 
         // Notify literally everything that can listen that we left
         FIRE_GAME_WIDE_EVENT("lobby_leave");
@@ -217,9 +218,9 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
     FIRE_GAME_WIDE_EVENT("lobby_join");
 
     // Set our own data
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
+    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
     // Note: Our appearance is also set on spawn, so no worries if we're null here.
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
         DevLog("Sending our appearance.\n");
@@ -236,30 +237,52 @@ void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
     // MOM_TODO: Keep this for if we ever end up using binary messages 
 
     char *message = new char[4096];
-    int written = steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
+    int written = SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
     DevLog("SERVER: Got a chat message! Wrote %i byte(s) into buffer.\n", written);
     Msg("SERVER: Chat message: %s\n", message);
     delete[] message;
 }
-void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
+void CMomentumLobbySystem::SetAppearanceInMemberData(GhostAppearance_t app)
 {
     if (LobbyValid())
     {
-        char base64Appearance[1024];
-        base64_encode(&app, sizeof app, base64Appearance, 1024);
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
+        CHECK_STEAM_API(SteamMatchmaking());
+        std::string base64Appearance;
+
+        CryptoPP::StringSource ss(reinterpret_cast<unsigned char *>(&app), 
+                                  sizeof(GhostAppearance_t), 
+                                  true,
+                                  new CryptoPP::Base64Encoder(
+                                      new CryptoPP::StringSink(base64Appearance)
+                                  )
+        );
+
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance.c_str());
     }
 }
-LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member)
+bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out)
 {
-    LobbyGhostAppearance_t toReturn;
-    const char *pAppearance = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, LOBBY_DATA_APPEARANCE);
-    Q_strncpy(toReturn.base64, pAppearance, sizeof(toReturn.base64));
+    bool toReturn = false;
+    const char *pAppearance = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, LOBBY_DATA_APPEARANCE);
     if (!FStrEq(pAppearance, ""))
     {
-        ghostAppearance_t newAppearance;
-        base64_decode(pAppearance, &newAppearance, sizeof(ghostAppearance_t));
-        toReturn.appearance = newAppearance;
+        Q_strncpy(out.base64, pAppearance, sizeof(out.base64));
+
+        std::string encoded(pAppearance);
+
+        CryptoPP::Base64Decoder decoder;
+        decoder.Put((byte*)encoded.data(), encoded.size());
+        decoder.MessageEnd();
+
+        GhostAppearance_t newAppearance;
+
+        CryptoPP::lword size = decoder.MaxRetrievable();
+        if (size && size == sizeof(GhostAppearance_t))
+        {
+            decoder.Get((byte*)&newAppearance, sizeof(GhostAppearance_t));
+            out.appearance = newAppearance;
+            toReturn = true;
+        }
     }
     return toReturn;
 }
@@ -295,42 +318,51 @@ void CMomentumLobbySystem::ClearCurrentGhosts(bool bRemoveEnts)
     }
 }
 
-void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
+bool CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
 {
+    CHECK_STEAM_API_B(SteamNetworking());
+
+    if (!pTarget && m_mapLobbyGhosts.Count() == 0)
+        return false;
+
     // Write the packet out to binary
-    CUtlBuffer buf(0, 1200);
+    CUtlBuffer buf;
     buf.SetBigEndian(false);
     packet->Write(buf);
 
     if (pTarget)
     {
-        if (steamapicontext->SteamNetworking()->SendP2PPacket(*pTarget, buf.Base(), buf.TellPut(), sendType))
+        if (SteamNetworking()->SendP2PPacket(*pTarget, buf.Base(), buf.TellPut(), sendType))
         {
-            // DevLog("Sent the packet!\n");
+            return true;
         }
     }
     else if (m_mapLobbyGhosts.Count() > 0) // It's everybody
     {
-        uint16 index = m_mapLobbyGhosts.FirstInorder();
+        auto index = m_mapLobbyGhosts.FirstInorder();
         while (index != m_mapLobbyGhosts.InvalidIndex())
         {
-            CSteamID ghost = m_mapLobbyGhosts[index]->GetGhostSteamID();
+            const auto ghostID = m_mapLobbyGhosts[index]->GetGhostSteamID();
 
-            if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, buf.Base(), buf.TellPut(), sendType))
+            if (!SteamNetworking()->SendP2PPacket(ghostID, buf.Base(), buf.TellPut(), sendType))
             {
-                // DevLog("Sent the packet!\n");
+                DevWarning("Failed to send the packet to %s!\n", SteamFriends()->GetFriendPersonaName(ghostID));
             }
 
             index = m_mapLobbyGhosts.NextInorder(index);
         }
+        return true;
     }
+
+    return false;
 }
 
 void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
 {
-    if (CMomentumGhostClient::m_pPlayer)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer)
     {
-        CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+        CSingleUserRecipientFilter user(pPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "LobbyUpdateMsg");
         WRITE_BYTE(type);
@@ -341,9 +373,10 @@ void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
 
 void CMomentumLobbySystem::WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID)
 {
-    if (CMomentumGhostClient::m_pPlayer)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer)
     {
-        CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+        CSingleUserRecipientFilter user(pPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "SpecUpdateMsg");
         WRITE_BYTE(type);
@@ -369,14 +402,16 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
         else
         {
             // Don't care if it's us that changed
-            if (memberChanged == steamapicontext->SteamUser()->GetSteamID())
+            if (memberChanged == SteamUser()->GetSteamID())
                 return;
             
             // Check their appearance for any changes
             CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(memberChanged);
             if (pEntity)
             {
-                pEntity->SetGhostAppearance(GetAppearanceFromMemberData(memberChanged));
+                LobbyGhostAppearance_t appear;
+                if (GetAppearanceFromMemberData(memberChanged, appear))
+                    pEntity->SetLobbyGhostAppearance(appear);
             }
 
             CheckToAdd(&memberChanged);
@@ -400,6 +435,9 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
     {
         DevLog("User left/disconnected!\n");
 
+        // Check if they're a saveloc requester
+        g_pMOMSavelocSystem->RequesterLeft(changedPerson.ConvertToUint64());
+
         uint16 findMember = m_mapLobbyGhosts.Find(changedPerson.ConvertToUint64());
         if (findMember != m_mapLobbyGhosts.InvalidIndex())
         {
@@ -422,7 +460,7 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
     if (pParam->m_nChangeFlags & k_EPersonaChangeName && LobbyValid())
     {
         // Quick and ugly check to see if they're in our lobby
-        const char *pCheck = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, person, LOBBY_DATA_MAP);
+        const char *pCheck = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, person, LOBBY_DATA_MAP);
         if (pCheck)
         {
             // It's not null so they're here, but are they in our map?
@@ -430,7 +468,7 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
             if (pGhost)
             {
                 // Yes they are
-                const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(person);
+                const char *pName = SteamFriends()->GetFriendPersonaName(person);
                 DevLog("Got the name of %lld: %s\n", pParam->m_ulSteamID, pName);
                 pGhost->SetGhostName(pName);
             }
@@ -447,8 +485,9 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         DevLog("Setting the map to %s!\n", pMapName ? pMapName : "INVALID (main menu/loading)");
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
         SetGameInfoStatus();
         m_flNextUpdateTime = -1.0f;
 
@@ -462,14 +501,18 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
 
 void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 {
-    CSteamID localID = steamapicontext->SteamUser()->GetSteamID();
+    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API(SteamMatchmaking());
+
+    CSteamID localID = SteamUser()->GetSteamID();
 
     if (pID)
     {
-        const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(*pID);
+        CHECK_STEAM_API(SteamFriends());
+        const char *pName = SteamFriends()->GetFriendPersonaName(*pID);
 
         // Check if this person was block communication'd
-        EFriendRelationship relationship = steamapicontext->SteamFriends()->GetFriendRelationship(*pID);
+        EFriendRelationship relationship = SteamFriends()->GetFriendRelationship(*pID);
         if (relationship == k_EFriendRelationshipIgnored || relationship == k_EFriendRelationshipIgnoredFriend)
         {
             DevLog("Not allowing %s to talk with us, we have them ignored!\n", pName);
@@ -483,18 +526,20 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
         bool validIndx = findIndx != m_mapLobbyGhosts.InvalidIndex();
         
         const char *pMapName = gpGlobals->mapname.ToCStr();
-        const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, LOBBY_DATA_MAP);
+        const char *pOtherMap = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, LOBBY_DATA_MAP);
 
         if (pMapName && pMapName[0] && pOtherMap && FStrEq(pMapName, pOtherMap)) //We're on the same map
         {
-            // Don't add them again if they reloaded this map for some reason
-            if (!validIndx)
+            // Don't add them again if they reloaded this map for some reason, or if we're in background/credits
+            if (!validIndx && gpGlobals->eLoadType != MapLoad_Background && !FStrEq(pMapName, "credits"))
             {
                 CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                 newPlayer->SetGhostSteamID(*pID);
                 newPlayer->SetGhostName(pName);
                 newPlayer->Spawn();
-                newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID), true); // Appearance after spawn!
+                LobbyGhostAppearance_t appear;
+                if (GetAppearanceFromMemberData(*pID, appear))
+                    newPlayer->SetLobbyGhostAppearance(appear, true); // Appearance after spawn!
 
                 bool isSpectating = GetIsSpectatingFromMemberData(*pID);
 
@@ -519,9 +564,15 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             // They changed map remove their entity from the CUtlMap
             CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[findIndx];
             if (pEntity)
+            {
+                pEntity->UpdatePlayerSpectate();
                 pEntity->Remove();
+            }
             
             m_mapLobbyGhosts.RemoveAt(findIndx);
+
+            // Remove them if they're a requester
+            g_pMOMSavelocSystem->RequesterLeft(pID_int);
 
             // "_____ just left your map."
             WriteMessage(LOBBY_UPDATE_MEMBER_LEAVE_MAP, pID_int);
@@ -529,10 +580,10 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
     }
     else
     {
-        int numMembers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
+        int numMembers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
         for (int i = 0; i < numMembers; i++)
         {
-            CSteamID member = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
+            CSteamID member = SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
             if (member == localID) // If it's us, don't care
                 continue;
 
@@ -541,37 +592,50 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
     }
 }
 
-void CMomentumLobbySystem::JoinLobbyFromString(const char* pString)
+bool CMomentumLobbySystem::TryJoinLobby(const CSteamID &lobbyID)
 {
-    if (pString)
-    {
-        if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
-        {
-            Warning("You are already in a lobby! Do \"mom_lobby_leave\" to exit it!\n");
-        }
-        else if (m_cLobbyJoined.IsActive())
-        {
-            Warning("You are already trying to join a lobby!\n");
-        }
-        else
-        {
-            DevLog("Trying to join the lobby from the string %s!\n", pString);
-            uint64 steamID = Q_atoui64(pString);
-            if (steamID > 0)
-            {
-                CSteamID toJoin;
-                toJoin.FullSet(steamID, k_EUniversePublic, k_EAccountTypeChat);
-                DevLog("Got the ID! %lld\n", toJoin.ConvertToUint64());
+    CHECK_STEAM_API_B(SteamMatchmaking());
 
-                SteamAPICall_t call = steamapicontext->SteamMatchmaking()->JoinLobby(toJoin);
-                m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
-            }
-            else
-            {
-                Warning("Could not join lobby due to malformed ID!\n");
-            }
-        }
+    if (m_sLobbyID == lobbyID)
+    {
+        Log("Already in this lobby!");
+        return false;
     }
+    if (m_cLobbyJoined.IsActive())
+    {
+        Warning("You are already trying to join a lobby!\n");
+        return false;
+    }
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    {
+        Warning("You are already in a lobby! Do \"mom_lobby_leave\" to exit it!\n");
+        return false;
+    }
+
+    SteamAPICall_t call = SteamMatchmaking()->JoinLobby(lobbyID);
+    m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
+
+    return true;
+}
+
+bool CMomentumLobbySystem::TryJoinLobbyFromString(const char* pString)
+{
+    if (!pString)
+        return false;
+
+    DevLog("Trying to join the lobby from the string %s!\n", pString);
+    uint64 steamID = Q_atoui64(pString);
+    if (steamID > 0)
+    {
+        CSteamID toJoin;
+        toJoin.FullSet(steamID, k_EUniversePublic, k_EAccountTypeChat);
+        DevLog("Got the ID! %lld\n", toJoin.ConvertToUint64());
+
+        return TryJoinLobby(toJoin);
+    }
+
+    Warning("Could not join lobby due to malformed ID '%s'!\n", pString);
+    return false;
 }
 
 void CMomentumLobbySystem::SendAndRecieveP2PPackets()
@@ -580,13 +644,13 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
     {
         // Read data
         uint32 size;
-        while (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
+        while (SteamNetworking()->IsP2PPacketAvailable(&size))
         {
             // Read the packet's data
             uint8 *bytes = new uint8[size];
             uint32 bytesRead;
             CSteamID fromWho;
-            steamapicontext->SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
+            SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
             
             // Throw the data into a manageable reader
             CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
@@ -630,6 +694,96 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                     WriteMessage(update.spec_type, fromWhoID, specTargetID);
                 }
                 break;
+
+            case PT_SAVELOC_REQ:
+                {
+                    SavelocReqPacket_t saveloc(buf);
+
+                    // Done/fail states:
+                    // 1. They hit "cancel" (most common)
+                    // 2. They leave the map (same as 1, just accidental maybe)
+                    // 3. They leave the lobby/server (manually, due to power outage, etc)
+                    // 4. We leave the map
+                    // 5. We leave the lobby/server
+                    // 6. They get the savelocs they need
+
+                    // Of the above, 1 and 6 are the ones that are manually sent.
+                    // 2<->5 can be automatically detected with lobby/server hooks
+
+                    // Fail requirements:
+                    // Requester: set "requesting" to false, close the request UI
+                    // Requestee: remove requester from requesters vector
+
+                    switch (saveloc.stage)
+                    {
+                    case 0:
+                    default:
+                        DevWarning("Invalid stage for the saveloc request packet!\n");
+                        break;
+                    case 1:
+                        {
+                            DevLog(2, "Received a stage 1 saveloc request packet!\n");
+                            // Somebody wants our savelocs, let the saveloc system handle this
+                            g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
+
+                            // Send them our saveloc count
+                            SavelocReqPacket_t response;
+                            response.stage = 2;
+                            response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
+
+                            SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                        }
+                        break;
+                    case 2:
+                        {
+                            DevLog(2, "Received a stage 2 saveloc request packet!\n");
+                            // We got the number of savelocs, pass this to the client
+                            KeyValues *pKV = new KeyValues("req_savelocs");
+                            pKV->SetInt("stage", 2);
+                            pKV->SetInt("count", saveloc.saveloc_count);
+                            g_pModuleComms->FireEvent(pKV);
+                        }
+                        break;
+                    case 3:
+                        {
+                            DevLog(2, "Received a stage 3 saveloc request packet!\n");
+                            // Somebody sent us the number of the savelocs they want, saveloc system pls help
+                            SavelocReqPacket_t response;
+                            response.stage = 4;
+
+                            if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
+                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                        }
+                        break;
+                    case 4:
+                        {
+                            DevLog(2, "Received a stage 4 saveloc request packet!\n");
+                            // We got their savelocs, add it to the player's list of savelocs
+                            if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
+                            {
+                                // Send them a packet that we're all good
+                                SavelocReqPacket_t response;
+                                response.stage = -1;
+                                if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
+                                {
+                                    // Send ourselves an event saying we're all good
+                                    KeyValues *pKv = new KeyValues("req_savelocs");
+                                    pKv->SetInt("stage", -1);
+                                    g_pModuleComms->FireEvent(pKv);
+                                }
+                            }
+                        }
+                        break;
+                    case -1: // The other player is all done/cancelled
+                        {
+                            // Remove the requester
+                            DevLog(2, "Received a stage -1 saveloc request packet!\n");
+                            g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+                        }
+                        break;
+                    }
+                }
+                break;
             default:
                 break;
             }
@@ -643,9 +797,8 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
         if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
             PositionPacket_t frame;
-            if (g_pMomentumGhostClient->CreateNewNetFrame(frame))
+            if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
             {
-                SendPacket(&frame);
                 m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
             }
         }
@@ -653,31 +806,34 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 }
 void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 {
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_IS_SPEC, bSpec ? "1" : nullptr);
+    if (SteamMatchmaking())
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_IS_SPEC, bSpec ? "1" : nullptr);
 }
 
 //Return true if the lobby member is currently spectating.
 bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
 {
-    const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
+    CHECK_STEAM_API_B(SteamMatchmaking());
+    const char* specChar = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
     return specChar[0] ? true : false;
 }
 
-void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
+bool CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
 {
-    if (LobbyValid())
-        SendPacket(packet);
+    return LobbyValid() && SendPacket(packet);
 }
 
 void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating, bool bLeft)
 {
+    CHECK_STEAM_API(SteamMatchmaking());
+
     SPECTATE_MSG_TYPE type;
     if (bStartedSpectating)
     {
         type = SPEC_UPDATE_JOIN;
         SetIsSpectating(true);
     }
-    else if (!ghostTarget.IsValid())
+    else if (!ghostTarget.IsValid() && ghostTarget.ConvertToUint64() != 1)
     {
         type = bLeft ? SPEC_UPDATE_LEAVE : SPEC_UPDATE_STOP;
         SetIsSpectating(false);
@@ -688,13 +844,13 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     // MOM_TODO: Keep me for updating the client
     if (type == SPEC_UPDATE_STOP || type == SPEC_UPDATE_LEAVE)
     {
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, nullptr);
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, nullptr);
     }
     else
     {
         char steamID[64];
         Q_snprintf(steamID, 64, "%llu", ghostTarget.ConvertToUint64());
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, steamID);
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, steamID);
     }
     
     SendSpectatorUpdatePacket(ghostTarget, type);
@@ -703,40 +859,43 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
 void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type)
 {
     SpecUpdatePacket_t newUpdate(ghostTarget.ConvertToUint64(), type);
-    SendPacket(&newUpdate, nullptr, k_EP2PSendReliable);
-
-    uint64 playerID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
-    uint64 ghostID = ghostTarget.ConvertToUint64();
-    WriteMessage(type, playerID, ghostID);
+    if (SendPacket(&newUpdate, nullptr, k_EP2PSendReliable))
+    {
+        uint64 playerID = SteamUser()->GetSteamID().ConvertToUint64();
+        uint64 ghostID = ghostTarget.ConvertToUint64();
+        WriteMessage(type, playerID, ghostID);
+    }
 }
 
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
+    CHECK_STEAM_API(SteamFriends());
     ConVarRef gm("mom_gamemode");
     const char *gameMode;
     switch (gm.GetInt())
     {
-    case MOMGM_SURF:
+    case GAMEMODE_SURF:
         gameMode = "Surfing";
         break;
-    case MOMGM_BHOP:
+    case GAMEMODE_BHOP:
         gameMode = "Bhopping";
         break;
-    case MOMGM_SCROLL:
-        gameMode = "Scrolling";
+    case GAMEMODE_KZ:
+        gameMode = "Climbing";
         break;
-    case MOMGM_UNKNOWN:
+    case GAMEMODE_UNKNOWN:
     default:
         gameMode = "Playing";
         break;
     }
     char gameInfoStr[64];// , connectStr[64];
-    int numPlayers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
-    V_snprintf(gameInfoStr, 64, numPlayers < 1 ? "%s on %s" : "%s on %s with %i other player%s", gameMode, gpGlobals->mapname, numPlayers - 1, numPlayers > 2 ? "s" : "");
+    int numPlayers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
+    V_snprintf(gameInfoStr, sizeof(gameInfoStr), numPlayers <= 1 ? "%s on %s" : "%s on %s with %i other player%s",
+               gameMode, STRING(gpGlobals->mapname), numPlayers - 1, numPlayers > 2 ? "s" : "");
     //V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
 
-    //steamapicontext->SteamFriends()->SetRichPresence("connect", connectStr);
-    steamapicontext->SteamFriends()->SetRichPresence("status", gameInfoStr);
+    //SteamFriends()->SetRichPresence("connect", connectStr);
+    SteamFriends()->SetRichPresence("status", gameInfoStr);
 }
 static CMomentumLobbySystem s_MOMLobbySystem;
 CMomentumLobbySystem *g_pMomentumLobbySystem = &s_MOMLobbySystem;

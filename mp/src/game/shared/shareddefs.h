@@ -203,8 +203,9 @@ enum CastVote
 #define	HIDEHUD_VEHICLE_CROSSHAIR	( 1<<9 )	// Hide vehicle crosshair
 #define HIDEHUD_INVEHICLE			( 1<<10 )
 #define HIDEHUD_BONUS_PROGRESS		( 1<<11 )	// Hide bonus progress display (for bonus map challenges)
+#define HIDEHUD_LEADERBOARDS        ( 1<<12 )   // Hide HUD elements when the leaderboards are open
 
-#define HIDEHUD_BITCOUNT			12
+#define HIDEHUD_BITCOUNT			13
 
 //===================================================================================================================
 // suit usage bits
@@ -525,7 +526,8 @@ typedef enum
 // basic team colors
 #define COLOR_RED		Color(255, 64, 64, 255)
 #define COLOR_BLUE		Color(153, 204, 255, 255)
-#define COLOR_YELLOW	Color(255, 178, 0, 255)
+#define COLOR_ORANGE	Color(255, 178, 0, 255)
+#define COLOR_YELLOW    Color(255, 216, 0, 255)
 #define COLOR_GREEN		Color(153, 255, 153, 255)
 #define COLOR_GREY		Color(204, 204, 204, 255)
 #define COLOR_WHITE		Color(255, 255, 255, 255)

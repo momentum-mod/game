@@ -17,7 +17,7 @@
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/Frame.h"
 #include "vgui_controls/QueryBox.h"
-#include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/CvarSlider.h"
 #include "tier1/KeyValues.h"
 #include "vgui/IInput.h"
 #include "vgui/ILocalize.h"
@@ -135,7 +135,7 @@ public:
 		SetSize( 400, 260 );
 		SetDeleteSelfOnClose( true );
 
-		m_pGammaSlider = new CCvarSlider( this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma" );
+		m_pGammaSlider = new CvarSlider( this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma" );
 		m_pGammaLabel = new Label( this, "Gamma label", "#GameUI_Gamma" );
 		m_pGammaEntry = new TextEntry( this, "GammaEntry" );
 
@@ -228,7 +228,7 @@ public:
 
 
 private:
-	CCvarSlider			*m_pGammaSlider;
+	CvarSlider			*m_pGammaSlider;
 	vgui::Label			*m_pGammaLabel;
 	vgui::TextEntry		*m_pGammaEntry;
 	float				m_flOriginalGamma;
@@ -421,7 +421,7 @@ public:
         m_pMulticore->AddItem("#gameui_disabled", NULL);
         m_pMulticore->AddItem("#gameui_enabled", NULL);
 
-        m_pFOVSlider = new CCvarSlider(this, "FovSlider", "", 90.0f, 179.0f, "fov_desired", false);
+        m_pFOVSlider = new CvarSlider(this, "FovSlider", "", 90.0f, 179.0f, "fov_desired", false);
 
 		LoadControlSettings( "resource/OptionsSubVideoAdvancedDlg.res" );
 		MoveToCenterOfScreen();
@@ -654,10 +654,8 @@ public:
 
 	void ApplyChangesToConVar( const char *pConVarName, int value )
 	{
-		Assert( cvar->FindVar( pConVarName ) );
-		char szCmd[256];
-		Q_snprintf( szCmd, sizeof(szCmd), "%s %d\n", pConVarName, value );
-		engine->ClientCmd_Unrestricted( szCmd );
+        ConVarRef var(pConVarName);
+        var.SetValue(value);
 	}
 
 	virtual void ApplyChanges()
@@ -953,7 +951,7 @@ private:
 
     vgui::ComboBox *m_pMulticore;
 
-    CCvarSlider *m_pFOVSlider;
+    CvarSlider *m_pFOVSlider;
 
 	int m_nNumAAModes;
 	AAMode_t m_nAAModes[16];
@@ -1307,6 +1305,7 @@ void COptionsSubVideo::OpenAdvanced()
 	}
 
 	m_hOptionsSubVideoAdvancedDlg->Activate();
+    OnDataChanged();
 }
 
 vgui::DHANDLE<class CGammaDialog> COptionsSubVideo::m_hGammaDialog;

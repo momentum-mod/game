@@ -136,8 +136,9 @@ void CUtlString::Clear()
 
 void CUtlString::Purge()
 {
-    free( m_pString );
-    m_pString = NULL;
+    if (m_pString)
+        free( m_pString );
+    m_pString = nullptr;
 }
 
 bool CUtlString::IsEqual_CaseSensitive( const char *src ) const
@@ -483,7 +484,7 @@ void CUtlString::TrimRight( char cTarget )
 	if ( nIndex < nLastCharIndex )
 	{
 		m_pString[nIndex + 1] = 0;
-		SetLength( nIndex + 2 );
+		SetLength( nIndex + 1 ); // NOTE: AllocMemory already does a +1, so do only +1 here
 	}
 }
 
@@ -516,7 +517,7 @@ void CUtlString::TrimRight( const char *szTargets )
 	if ( i < nLastCharIndex )
 	{
 		m_pString[i + 1] = 0;
-		SetLength( i + 2 );
+		SetLength( i + 1 ); // NOTE: AllocMemory already does a +1, so do only +1 here
 	}
 }
 

@@ -1,130 +1,121 @@
 #include "cbase.h"
 #include "c_mom_player.h"
-#include "view.h"
+#include "c_mom_online_ghost.h"
+
 #include "tier0/memdbgon.h"
 
-
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
+RecvPropBool(RECVINFO(m_bHasPracticeMode)),
+RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
+RecvPropInt(RECVINFO(m_iLandTick)),
+RecvPropBool(RECVINFO(m_bResumeZoom)),
+RecvPropInt(RECVINFO(m_iShotsFired), SPROP_UNSIGNED),
+RecvPropInt(RECVINFO(m_iDirection), SPROP_UNSIGNED),
+RecvPropInt(RECVINFO(m_iLastZoomFOV), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
+RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
+RecvPropBool(RECVINFO(m_bAutoBhop)),
+RecvPropArray3(RECVINFO_ARRAY(m_iZoneCount), RecvPropInt(RECVINFO(m_iZoneCount[0]), SPROP_UNSIGNED)),
+RecvPropArray3(RECVINFO_ARRAY(m_iLinearTracks), RecvPropInt(RECVINFO(m_iLinearTracks[0]), SPROP_UNSIGNED)),
+RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
+RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunStats)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
-DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
-DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_iIDEntIndex(0), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
+static C_MomentumPlayer *s_pLocalPlayer;
+
+C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
-    m_SrvData.m_RunData.m_bMapFinished = false;
-    m_SrvData.m_RunData.m_flLastJumpTime = 0.0f;
-    m_SrvData.m_bHasPracticeMode = false;
+    m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
     m_flStartSpeed = 0.0f;
     m_flEndSpeed = 0.0f;
     m_duckUntilOnGround = false;
     m_flStamina = 0.0f;
+    m_flGrabbableLadderTime = 0.0f;
+
+    m_bAutoBhop = true;
+    m_CurrentSlideTrigger = nullptr;
+    m_RunStats.Init();
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
 {
+    if (this == s_pLocalPlayer)
+        s_pLocalPlayer = nullptr;
+}
 
-}
-void C_MomentumPlayer::Spawn()
+C_MomentumPlayer *C_MomentumPlayer::GetLocalMomPlayer()
 {
-    SetNextClientThink(CLIENT_THINK_ALWAYS);
+    return s_pLocalPlayer;
 }
+
+CMomRunEntity *C_MomentumPlayer::GetCurrentUIEntity()
+{
+    if (!m_hObserverTarget.Get())
+        m_pSpecTarget = nullptr;
+    else if (!m_pSpecTarget)
+        m_pSpecTarget = dynamic_cast<CMomRunEntity*>(m_hObserverTarget.Get());
+
+    return m_pSpecTarget ? m_pSpecTarget : this;
+}
+
+CMomRunEntityData *C_MomentumPlayer::GetCurrentUIEntData()
+{
+    return GetCurrentUIEntity()->GetRunEntData();
+}
+
+CMomRunStats *C_MomentumPlayer::GetCurrentUIEntStats()
+{
+    return GetCurrentUIEntity()->GetRunStats();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Input handling
 //-----------------------------------------------------------------------------
 bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 {
-	// Bleh... we will wind up needing to access bones for attachments in here.
-	C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
+    // Bleh... we will wind up needing to access bones for attachments in here.
+    C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
 
-	return BaseClass::CreateMove(flInputSampleTime, pCmd);
-}
-
-
-void C_MomentumPlayer::ClientThink()
-{
-	SetNextClientThink(CLIENT_THINK_ALWAYS);
-    FetchStdData(this);
-
-    if (IsObserver())
-    {
-        C_MomentumOnlineGhostEntity *pOnlineSpec = GetOnlineGhostEnt();
-        if (pOnlineSpec)
-        {
-            // Changed to spectate another ghost
-            if (m_pSpectateTarget && m_pSpectateTarget != pOnlineSpec)
-                m_pSpectateTarget->m_bSpectated = false;
-
-            m_pSpectateTarget = pOnlineSpec;
-            m_pSpectateTarget->m_bSpectated = true;
-        }
-
-    }
-    else
-    {
-        if (m_pSpectateTarget)
-        {
-            m_pSpectateTarget->m_bSpectated = false;
-            m_pSpectateTarget = nullptr;
-        }
-    }
-
+    return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
-	//SetNextClientThink(CLIENT_THINK_ALWAYS);
+    BaseClass::OnDataChanged(type);
 
-	BaseClass::OnDataChanged(type);
-
-	UpdateVisibility();
+    UpdateVisibility();
 }
 
 
 void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 {
-	// C_BaseEntity assumes we're networking the entity's angles, so pretend that it
-	// networked the same value we already have.
-	SetNetworkAngles(GetLocalAngles());
+    if (updateType == DATA_UPDATE_CREATED)
+    {
+        if (engine->GetLocalPlayer() == index)
+        {
+            Assert(s_pLocalPlayer == NULL);
+            s_pLocalPlayer = this;
+        }
+    }
 
-	//SetNextClientThink(CLIENT_THINK_ALWAYS);
+    // C_BaseEntity assumes we're networking the entity's angles, so pretend that it
+    // networked the same value we already have.
+    SetNetworkAngles(GetLocalAngles());
 
-	BaseClass::PostDataUpdate(updateType);
+    BaseClass::PostDataUpdate(updateType);
 }
 
-
-void C_MomentumPlayer::SurpressLadderChecks(const Vector& pos, const Vector& normal)
+int C_MomentumPlayer::GetSpecEntIndex() const
 {
-    m_ladderSurpressionTimer.Start(1.0f);
-    m_lastLadderPos = pos;
-    m_lastLadderNormal = normal;
-}
-
-bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
-{
-    if (m_ladderSurpressionTimer.GetRemainingTime() <= 0.0f)
-    {
-        return true;
-    }
-
-    const float MaxDist = 64.0f;
-    if (pos.AsVector2D().DistToSqr(m_lastLadderPos.AsVector2D()) < MaxDist * MaxDist)
-    {
-        return false;
-    }
-
-    if (normal != m_lastLadderNormal)
-    {
-        return true;
-    }
-
-    return false;
+    return m_hObserverTarget.GetEntryIndex();
 }
 
 // Overridden for Ghost entity
@@ -141,4 +132,22 @@ Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
 
     // Resort to base class for player code
     return BaseClass::GetChaseCamViewOffset(target);
+}
+
+void C_MomentumPlayer::OnObserverTargetUpdated()
+{
+    m_pSpecTarget = nullptr; // Hard-set to null upon observer change
+
+    BaseClass::OnObserverTargetUpdated();
+}
+
+float C_MomentumPlayer::GetCurrentRunTime()
+{
+    int iTotalTicks = 0;
+    if (m_Data.m_bTimerRunning)
+        iTotalTicks = gpGlobals->tickcount - m_Data.m_iStartTick;    
+    else if (m_Data.m_bMapFinished)
+        iTotalTicks = m_Data.m_iRunTime;
+
+    return float(iTotalTicks) * m_Data.m_flTickRate;
 }

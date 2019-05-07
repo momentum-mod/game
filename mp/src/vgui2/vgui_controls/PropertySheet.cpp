@@ -120,7 +120,7 @@ private:
 	PropertySheet	*m_pParent;
 	Panel			*m_pPage;
 	ImagePanel		*m_pImage;
-	char			*m_pszImageName;
+	CUtlString m_pszImageName;
 	bool			m_bShowContextLabel;
 	bool			m_bAttemptingDrop;
 	ContextLabel	*m_pContextLabel;
@@ -132,8 +132,8 @@ public:
 		Button( (Panel *)parent, panelName, text),
 		m_pParent( parent ),
 		m_pPage( page ),
-		m_pImage( 0 ),
-		m_pszImageName( 0 ),
+		m_pImage( nullptr ),
+		m_pszImageName( nullptr ),
 		m_bShowContextLabel( showContextButton ),
 		m_bAttemptingDrop( false ),
 		m_hoverActivatePageTime( hoverActivatePageTime ),
@@ -147,10 +147,7 @@ public:
 		if ( imageName )
 		{
 			m_pImage = new ImagePanel( this, text );
-			int buflen = Q_strlen( imageName ) + 1;
-			m_pszImageName = new char[ buflen ];
-			Q_strncpy( m_pszImageName, imageName, buflen );
-
+            m_pszImageName = imageName;
 		}
 		SetMouseClickEnabled( MOUSE_RIGHT, true );
 		m_pContextLabel = m_bShowContextLabel ? new ContextLabel( this, "Context", "9" ) : NULL;
@@ -161,7 +158,7 @@ public:
 
 	~PageTab()
 	{
-		delete[] m_pszImageName;
+        m_pszImageName.Purge();
 	}
 
 	virtual void Paint()
@@ -560,14 +557,7 @@ void PropertySheet::SetDraggableTabs( bool state )
 void PropertySheet::SetSmallTabs( bool state )
 {
 	m_bSmallTabs = state;
-	m_tabFont = scheme()->GetIScheme( GetScheme() )->GetFont( m_bSmallTabs ? "DefaultVerySmall" : "Default" );
-	int c = m_PageTabs.Count();
-	for ( int i = 0; i < c ; ++i )
-	{
-		PageTab *tab = m_PageTabs[ i ];
-		Assert( tab );
-		tab->SetFont( m_tabFont );
-	}
+    InvalidateLayout(false, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -896,15 +886,20 @@ void PropertySheet::ApplySchemeSettings(IScheme *pScheme)
 	SetBorder(pBorder);
 	m_flPageTransitionEffectTime = atof(pScheme->GetResourceString("PropertySheet.TransitionEffectTime"));
 
-	m_tabFont = pScheme->GetFont( m_bSmallTabs ? "DefaultVerySmall" : "Default" );
+    const char *pTabFontName = pScheme->GetResourceString(m_bSmallTabs ? "PropertySheet.TabFontSmall" : "PropertySheet.TabFont");
 
-	if ( m_pTabKV )
-	{
-		for (int i = 0; i < m_PageTabs.Count(); i++)
-		{
-			m_PageTabs[i]->ApplySettings( m_pTabKV );
-		}
-	}
+    if (!pTabFontName || !pTabFontName[0])
+	    pTabFontName = m_bSmallTabs ? "DefaultVerySmall" : "Default";
+    
+    m_tabFont = pScheme->GetFont(pTabFontName, IsProportional());
+
+    for (int i = 0; i < m_PageTabs.Count(); i++)
+    {
+        if (m_pTabKV)
+            m_PageTabs[i]->ApplySettings(m_pTabKV);
+
+        m_PageTabs[i]->SetFont(m_tabFont);
+    }
 
 
 	//=============================================================================

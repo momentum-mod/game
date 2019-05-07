@@ -2,93 +2,74 @@
 {
     //Speedometer
     HudSpeedMeter
-        {
-                "fieldName"     "HudSpeedMeter"
-                "xpos"          "c-60"
-                "ypos"          "310"
-                "wide"          "120"
-                "tall"          "80"
-                "visible"       "1"
-                "enabled"       "1"
-                "NumberFont"    "HudNumbersSmallBold"
-                "SmallNumberFont" "HudNumbersExtremelySmall"
-                "text_ypos"     "5"
-                "digit_ypos"    "15"
-                "digit2_ypos"   "30"
-                "PrimaryValueColor" "MOM.Panel.Fg"
-                "SecondaryValueColor" "Light Gray"
-                "LabelColor"    "MOM.Panel.Fg"
-                "BgColor"   "Blank"
-                "StageAlpha" "0.0"//Used for fading
-                "JumpAlpha" "0.0"//Used for fading
-        }
+    {
+        "fieldName"     "HudSpeedMeter"
+        "xpos"          "c-60"
+        "ypos"          "310"
+        "wide"          "120"
+        "tall"          "80"
+        "visible"       "1"
+        "enabled"       "1"
+        "NumberFont"    "HudNumbersSmallBold"
+        "SmallNumberFont" "HudNumbersExtremelySmall"
+        "text_ypos"     "5"
+        "digit_ypos"    "15"
+        "digit2_ypos"   "30"
+        "PrimaryValueColor" "MOM.Panel.Fg"
+        "SecondaryValueColor" "Light Gray"
+        "LabelColor"    "MOM.Panel.Fg"
+        "BgColor"   "Blank"
+        "StageAlpha" "0.0"//Used for fading
+        "JumpAlpha" "0.0"//Used for fading
+    }
     //Timer
     HudTimer
-        {
-                "fieldName"     "HudTimer"
-                "xpos"          "c-50"
-                "ypos"          "c+140"
-                "wide"          "100"
-                "tall"          "55"
-                "visible"       "1"
-                "enabled"       "1"
-                "PaintBackgroundType" "2"
-                "TimerFont" "HudNumbersSmallBold"
-                "TextFont"      "HudHintTextLarge"
-                "SmallTextFont" "HudHintTextSmall"
-                "TextColor" "MOM.Panel.Fg"
-                "centerTime"    "1" //If true, won't use time_xpos, centering the text instead
-                "time_xpos"     "50"
-                "time_ypos"     "3"
-                "centerCps"     "1" //If true, won't use cps_xpos, centering the text instead
-                "cps_xpos"      "50"//Note: checkpoints only show when there's no run (and therefore splits) 
-                "cps_ypos"      "19"
-                "centerSplit"   "1" //If true, won't use stage_xpos, centering the stage split
-                "split_xpos"    "50"
-                "split_ypos"    "19"
-        }
+    {
+        "fieldName"     "HudTimer"
+        // See resource/ui/Timer.res for changing settings
+    }
     //Strafe Sync Meter
     CHudSyncMeter
-        {
-                "fieldName"     "CHudSyncMeter"
-                "xpos"          "c-25"
-                "ypos"          "c+198"
-                "wide"          "50"
-                "tall"          "30"
-                "visible"       "1"
-                "enabled"       "1"
-                "TextFont"      "HudNumbersVerySmall"
-                "NumberFont"    "HudNumbersSmall"
-                "SmallNumberFont" "HudNumbersVerySmall"
-                "PaintBackgroundType" "2"
-                "text_xpos"     "15"
-                "text_ypos"     "2"
-                "digit_xpos"    "12"
-                "digit_ypos"    "12"
-                "digit2_xpos"   "30"
-                "digit2_ypos"   "16"
-                "PrimaryValueColor" "MOM.Panel.Fg"
-                "SecondaryValueColor" "MOM.Panel.Fg"
-                "LabelColor"    "White"
-                "BgColor"   "Blank"
-        }
+    {
+        "fieldName"     "CHudSyncMeter"
+        "xpos"          "c-25"
+        "ypos"          "c+198"
+        "wide"          "50"
+        "tall"          "30"
+        "visible"       "1"
+        "enabled"       "1"
+        "TextFont"      "HudNumbersVerySmall"
+        "NumberFont"    "HudNumbersSmall"
+        "SmallNumberFont" "HudNumbersVerySmall"
+        "PaintBackgroundType" "2"
+        "text_xpos"     "15"
+        "text_ypos"     "2"
+        "digit_xpos"    "12"
+        "digit_ypos"    "12"
+        "digit2_xpos"   "30"
+        "digit2_ypos"   "16"
+        "PrimaryValueColor" "MOM.Panel.Fg"
+        "SecondaryValueColor" "MOM.Panel.Fg"
+        "LabelColor"    "White"
+        "BgColor"   "Blank"
+    }
     //The design for in-game menus            
     CHudMenuStatic
     {
          "fieldName" "CHudMenuStatic"
          // To override the menu colors, look inside of the ClientScheme.res file (for "MenuColor/MenuBoxColor/MenuItemColor)"!
     }
-    // Version warning
+    // Version label
     CHudVersionInfo
     {
         "fieldName"     "CHudVersionInfo"
-        "xpos"          "640"
-        "ypos"          "460"
+        "xpos"          "5"
+        "ypos"          "465" // Used to shove it in the bottom left corner
         "visible"       "1"
         "enabled"       "1"
-        "wide"          "200"
-        "tall"          "20"
-        "TextFont"      "HudHintTextSmall"
+        "TextFont"      "MomHudDropText"
+        "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     CHudSyncBar
     {
@@ -107,8 +88,8 @@
     CHudKeyPressDisplay
     {
         "fieldName"     "CHudKeyPressDisplay"
-        "xpos"          "c+265"
-        "ypos"          "c+150"
+        "xpos"          "r175"
+        "ypos"          "r100"
         "wide"          "150"
         "tall"          "100"
         "visible"       "1"
@@ -118,8 +99,8 @@
         "lower_row_ypos"    "35"
         "jump_row_ypos" "45"
         "duck_row_ypos" "55"
-        "strafe_count_xpos" "100"
-        "jump_count_xpos"   "100"
+        "strafe_count_xpos" "110"
+        "jump_count_xpos"   "110"
         "TextFont"      "MomentumIcons"
         "CounterTextFont"       "HudNumbersVerySmall"
         "WordTextFont"  "HudNumbersVerySmall"
@@ -146,31 +127,17 @@
         "text_ypos" "2"
     }
     
-    CHudMapInfo
+    HudMapInfo
     {
-        "fieldName" "CHudMapInfo"
-        "visible" "1"
-        "enabled" "1"
-        "centerStatus" "1"//If this is 1, the status will be centered above the timer, otherwise the status_xpos will be used
-        "status_xpos" "0"
-        "status_ypos" "c+125"//y-pos for the map status 
-        "mapinfo_xpos" "10"//xpos for the map info (author/difficulty/etc)
-        "mapinfo_ypos" "10"//ypos for the map info
-        "StatusFont" "HudHintTextSmall"//Font for the current map area/status
-        "MapInfoFont" "HudHintTextSmall"//Font for the map information
-        "TextColor" "MOM.Panel.Fg"
+        "fieldName" "HudMapInfo"
+        // See resource/ui/HudMapInfo.res
     }
     
     "CHudMapFinishedDialog"
     {
         "fieldName"     "CHudMapFinishedDialog"
-        "xpos"          "c-110"
-        "ypos"          "c-150"
-        "wide"          "220"
-        "tall"          "175"
-        "visible"       "1"
-        "enabled"       "1"
         "TextFont"      "Default"
+        // See resource/ui/MapFinishedDialog.res to change
     }
     
     CHudSpectatorInfo
@@ -263,10 +230,6 @@
         "fieldName" "HudChat"
         "visible" "0"
         "enabled" "1"
-        "xpos"  "0"
-        "ypos"  "0"
-        "wide"   "4"
-        "tall"   "4"
     }
 
     HudHistoryResource  [$WIN32]

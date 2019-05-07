@@ -1,6 +1,8 @@
 #include "cbase.h"
 
 #include "weapon_mom_paintgun.h"
+#include "mom_shareddefs.h"
+
 #ifdef CLIENT_DLL
 #include "PaintGunPanel.h"
 #endif
@@ -42,7 +44,7 @@ CMomentumPaintGun::~CMomentumPaintGun()
 void CMomentumPaintGun::RifleFire()
 {
     // Hardcoded here so people don't change the text files for easy spam
-    if (!CSBaseGunFire(0.0f, 0.1f, true))
+    if (!BaseGunFire(0.0f, 0.1f, true))
         return;
 }
 

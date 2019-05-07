@@ -56,7 +56,6 @@
 #include "movetype_push.h"
 #include "tier0/icommandline.h"
 #include "vphysics/friction.h"
-#include <ctype.h>
 #include "datacache/imdlcache.h"
 #include "ModelSoundsCache.h"
 #include "env_debughistory.h"
@@ -307,6 +306,10 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CBaseEntity, DT_BaseEntity )
 	SendPropArray3( SENDINFO_ARRAY3(m_nModelIndexOverrides), SendPropInt( SENDINFO_ARRAY(m_nModelIndexOverrides), SP_MODEL_INDEX_BITS, 0 ) ),
 #endif
 
+#ifdef GLOWS_ENABLE
+    SendPropBool(SENDINFO(m_bGlowEnabled)),
+#endif // GLOWS_ENABLE
+
 END_SEND_TABLE()
 
 
@@ -418,6 +421,10 @@ CBaseEntity::CBaseEntity( bool bServerOnly )
 #ifndef _XBOX
 	AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
 #endif
+
+#ifdef GLOWS_ENABLE
+    m_bGlowEnabled.Set(false);
+#endif // GLOWS_ENABLE
 }
 
 //-----------------------------------------------------------------------------
@@ -448,7 +455,7 @@ CBaseEntity::~CBaseEntity( )
 	PhysCleanupFrictionSounds( this );
 
 	Assert( !IsDynamicModelIndex( m_nModelIndex ) );
-	Verify( !sg_DynamicLoadHandlers.Remove( this ) );
+	Assert( !sg_DynamicLoadHandlers.Remove( this ) );
 
 	// In debug make sure that we don't call delete on an entity without setting
 	//  the disable flag first!
@@ -1614,6 +1621,10 @@ int CBaseEntity::VPhysicsTakeDamage( const CTakeDamageInfo &info )
 	// Character killed (only fired once)
 void CBaseEntity::Event_Killed( const CTakeDamageInfo &info )
 {
+#ifdef GLOWS_ENABLE
+    RemoveGlowEffect();
+#endif // GLOWS_ENABLE
+
 	if( info.GetAttacker() )
 	{
 		info.GetAttacker()->Event_KilledOther(this, info);
@@ -1991,6 +2002,10 @@ extern bool g_bReceivedChainedUpdateOnRemove;
 //-----------------------------------------------------------------------------
 void CBaseEntity::UpdateOnRemove( void )
 {
+#ifdef GLOWS_ENABLE
+    RemoveGlowEffect();
+#endif // GLOWS_ENABLE
+
 	g_bReceivedChainedUpdateOnRemove = true;
 
 	// Virtual call to shut down any looping sounds.
@@ -3479,6 +3494,7 @@ void CBaseEntity::SetMoveType( MoveType_t val, MoveCollide_t moveCollide )
 
 void CBaseEntity::Spawn( void ) 
 {
+     // AddGlowEffect();
 }
 
 
@@ -4327,6 +4343,10 @@ void CBaseEntity::InputSetTeam( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CBaseEntity::ChangeTeam( int iTeamNum )
 {
+#ifdef GLOWS_ENABLE
+    RemoveGlowEffect();
+#endif // GLOWS_ENABLE
+
 	m_iTeamNum = iTeamNum;
 }
 
@@ -5335,6 +5355,12 @@ public:
 		{
 			return;
 		}
+
+        if (!CommandLine()->FindParm("-mapping"))
+        {
+            Warning("Launch the game with -mapping to be able to use ent_fire!\n");
+            return;
+        }
 
 		// fires a command from the console
 		if ( command.ArgC() < 2 )
@@ -7052,7 +7078,6 @@ void CBaseEntity::SetRefEHandle( const CBaseHandle &handle )
 	}
 }
 
-
 bool CPointEntity::KeyValue( const char *szKeyName, const char *szValue ) 
 {
 	if ( FStrEq( szKeyName, "mins" ) || FStrEq( szKeyName, "maxs" ) )
@@ -7062,7 +7087,7 @@ bool CPointEntity::KeyValue( const char *szKeyName, const char *szValue )
 	}
 
 	return BaseClass::KeyValue( szKeyName, szValue );
-}						 
+}
 
 bool CServerOnlyPointEntity::KeyValue( const char *szKeyName, const char *szValue ) 
 {
@@ -7303,6 +7328,34 @@ void CBaseEntity::SetCollisionBoundsFromModel()
 }
 
 
+#ifdef GLOWS_ENABLE
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseEntity::AddGlowEffect(void)
+{
+    SetTransmitState(FL_EDICT_ALWAYS);
+    m_bGlowEnabled.Set(true);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseEntity::RemoveGlowEffect(void)
+{
+    m_bGlowEnabled.Set(false);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CBaseEntity::IsGlowEffectActive(void)
+{
+    return m_bGlowEnabled;
+}
+#endif // GLOWS_ENABLE
+
+
 //------------------------------------------------------------------------------
 // Purpose: Create an NPC of the given type
 //------------------------------------------------------------------------------
@@ -7315,6 +7368,12 @@ void CC_Ent_Create( const CCommand& args )
 	{
 		return;
 	}
+
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to be able to use ent_create!\n");
+        return;
+    }
 
 	// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
 	if ( !Q_stricmp( args[1], "point_servercommand" ) )
@@ -7440,6 +7499,12 @@ void CC_Ent_Teleport( const CCommand& args )
 		return;
 	}
 
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use ent_teleport!\n");
+        return;
+    }
+
 	CBaseEntity *pEnt;
 	Vector vecTargetPoint;
 	if ( CC_GetCommandEnt( args, &pEnt, &vecTargetPoint, NULL ) )
@@ -7460,6 +7525,12 @@ void CC_Ent_Orient( const CCommand& args )
 		Msg( "Format: ent_orient <entity name> <optional: allangles>\n" );
 		return;
 	}
+
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        Warning("Launch the game with -mapping to use ent_orient!\n");
+        return;
+    }
 
 	CBaseEntity *pEnt;
 	QAngle vecPlayerAngles;

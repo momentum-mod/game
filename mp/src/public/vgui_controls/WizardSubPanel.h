@@ -78,7 +78,7 @@ protected:
 	virtual void ApplySettings(KeyValues *inResourceData);
 	virtual void GetSettings( KeyValues *outResourceData );
 	virtual void ApplySchemeSettings(IScheme *pScheme);
-	virtual const char *GetDescription();
+	void InitSettings() OVERRIDE;
 
 private:
 	WizardPanel *_wizardPanel;

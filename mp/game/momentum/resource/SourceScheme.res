@@ -126,12 +126,17 @@ Scheme
 
 		ProgressBar.FgColor				"White"
 		ProgressBar.BgColor				"MOM.Panel.Bg"
+        ProgressBar.ProgressTextColor   "White"
+        ProgressBar.ProgressTextFont    "DefaultSmall"
+
+        PropertyDialog.ButtonFont   "Default"
 
 		PropertySheet.TextColor			"10 10 10 200"
 		PropertySheet.SelectedTextColor	"10 10 10 255"
 		PropertySheet.SelectedBgColor	"10 10 10 255"
 		PropertySheet.TransitionEffectTime	"0.25"	// time to change from one tab to another
 		PropertySheet.BgColor "0 0 0 255"
+        PropertySheet.TabFontSmall "DefaultSmall"
 
 		RadioButton.TextColor			"White"
 		RadioButton.SelectedTextColor	"MomentumBlue"
@@ -487,8 +492,9 @@ Scheme
 				"name"		 "Lucida Console" [$OSX]
 				"name"		 "Verdana" [$LINUX]
 				"tall"		"14" [$LINUX]
-				"tall"		"10"
+				"tall"		"8"
 				"weight"	"500"
+                "antialias" "1"
 			}
 		}
 

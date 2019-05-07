@@ -1,124 +1,174 @@
-#ifndef SERVERBROWSERDIALOG_H
-#define SERVERBROWSERDIALOG_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-//extern class IRunGameEngine *g_pRunGameEngine;
-//extern class IAppInformation *g_pAppInformation; // can be NULL
+#include "vgui_controls/Frame.h"
 
-using namespace vgui;
+struct MapDisplay_t;
+struct MapFilters_t;
+struct MapData;
+class CMapContextMenu;
+class CDialogMapInfo;
+class CLibraryMaps;
+class CBrowseMaps;
+class CFavoriteMaps;
+class IMapList;
+class MapFilterPanel;
+class MapDownloadProgress;
+
+struct MapListData
+{
+    MapData *m_pMapData;
+    KeyValues *m_pKv;
+    int m_iThumbnailImageIndx;
+    vgui::IImage *m_pImage;
+
+    MapListData();
+    ~MapListData();
+};
+
+enum RESERVED_IMAGE_INDICES
+{
+    // Start index is 1 because the 0th element is a BlankImage inside ImageLists
+    INDX_MAP_THUMBNAIL_UNKNOWN = 1,
+    INDX_MAP_IN_LIBRARY,
+    INDX_MAP_NOT_IN_LIBRARY,
+    INDX_MAP_IN_FAVORITES,
+    INDX_MAP_NOT_IN_FAVORITES,
+    INDX_MAP_IS_LINEAR,
+    INDX_MAP_IS_STAGED,
+
+
+    // MAKE SURE THIS IS LAST!
+    INDX_RESERVED_COUNT,
+};
+
+#define HEADER_ICON_SIZE 14
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
-class CMapSelectorDialog : public Frame
+class CMapSelectorDialog : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CMapSelectorDialog, vgui::Frame);
 
-public:
+  public:
     // Construction/destruction
-    CMapSelectorDialog(VPANEL parent);
+    CMapSelectorDialog(vgui::VPANEL parent);
     ~CMapSelectorDialog(void);
 
-    void		Initialize(void);
-
     // displays the dialog, moves it into focus, updates if it has to
-    void		Open(void);
+    void Open(void);
 
-    // gets server info
-    mapstruct_t *GetMap(unsigned int serverID);
-    // called every frame
-    virtual void OnTick();
-
-    // updates status text at bottom of window
-    void UpdateStatusText(const char *format, ...);
-
-    // updates status text at bottom of window
-    void UpdateStatusText(wchar_t *unicode);
+    void OnClose() OVERRIDE;
 
     // context menu access
-    CMapContextMenu *GetContextMenu(Panel *pParent);
-
-    // returns a pointer to a static instance of this dialog
-    // valid for use only in sort functions
-    static CMapSelectorDialog *GetInstance();
-
-    // begins the process of joining a server from a game list
-    // the game info dialog it opens will also update the game list
-    CDialogMapInfo *JoinGame(IMapList *gameList, unsigned int serverIndex);
-
-    // joins a game by a specified IP, not attached to any game list
-    CDialogMapInfo *JoinGame(int serverIP, int serverPort);
+    CMapContextMenu *GetContextMenu();
 
     // opens a game info dialog from a game list
-    CDialogMapInfo *OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap);
+    void OpenMapInfoDialog(MapData *pMapData);
+    void UpdateMapInfoDialog(uint32 uMapID);
 
-    // opens a game info dialog by a specified IP, not attached to any game list
-    CDialogMapInfo *OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort);
-
-    // closes all the game info dialogs
+    // closes all the map info dialogs
     void CloseAllMapInfoDialogs();
-    CDialogMapInfo *GetDialogGameInfoForFriend(uint64 ulSteamIDFriend);
+    void CloseMapInfoDialog(uint32 uMapID);
+    void RemoveMapInfoDialog(uint32 uMapID);
 
     // accessor to the filter save data
-    KeyValues *GetFilterSaveData(const char *filterSet);
+    KeyValues *GetCurrentTabFilterData();
+    KeyValues *GetTabFilterData(const char *pTabName);
+    void LoadTabFilterData(const char *pTabName);
+    void ApplyFiltersToCurrentTab(MapFilters_t filters);
 
     // load/saves filter & favorites settings from disk
-    void		LoadUserData();
-    void		SaveUserData();
+    void LoadUserData();
+    void SaveUserData();
 
-    // forces the currently active page to refresh
-    void		RefreshCurrentPage();
+    void LoadDefaultImageList();
+    vgui::ImageList *GetImageList() { return m_pImageList; }
 
-    virtual gameserveritem_t *GetCurrentConnectedServer()
-    {
-        return &m_CurrentConnection;
-    }
+    // Map data handling
+    void OnMapCacheUpdated(KeyValues *pKv);
+    void OnMapDataUpdated(KeyValues *pKv);
+    void CreateMapListData(MapData *pData);
+    void UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail);
+    MapListData *GetMapListDataByID(uint32 uMapID);
 
-private:
+    // Callbacks for download
+    void OnMapDownloadQueued(KeyValues *pKv);
+    void OnMapDownloadStart(KeyValues *pKv);
+    void OnMapDownloadSize(KeyValues *pKv);
+    void OnMapDownloadProgress(KeyValues *pKv);
+    void OnMapDownloadEnd(KeyValues *pKv);
 
+    bool IsMapDownloading(uint32 uMapID) const;
+    MapDownloadProgress *GetDownloadProgressPanel(uint32 uMapID);
+
+    // Called when map should be added to/removed from library
+    MESSAGE_FUNC_INT(OnAddMapToLibrary, "AddToLibrary", id);
+    MESSAGE_FUNC_INT(OnRemoveMapFromLibrary, "RemoveFromLibrary", id);
+    // Called when map should be added to/removed from favorites
+    MESSAGE_FUNC_INT(OnAddMapToFavorites, "AddToFavorites", id);
+    MESSAGE_FUNC_INT(OnRemoveMapFromFavorites, "RemoveFromFavorites", id);
+    // Called when user wants to download/cancel download
+    MESSAGE_FUNC_INT(OnStartMapDownload, "DownloadMap", id);
+    MESSAGE_FUNC_INT(OnRemoveFromQueue, "RemoveFromQueue", id);
+    MESSAGE_FUNC_INT(OnCancelMapDownload, "CancelDownload", id);
+    MESSAGE_FUNC_INT(OnConfirmCancelMapDownload, "ConfirmCancelDownload", id);
+    MESSAGE_FUNC_INT(OnRejectCancelMapDownload, "RejectCancelDownload", id);
+    // Called when map should be started
+    MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
+    // called to look at map info
+    MESSAGE_FUNC_INT(OnViewMapInfo, "ViewMapInfo", id);
+
+protected:
+    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
+    void OnReloadControls() OVERRIDE;
+
+  private:
     // current game list change
-    MESSAGE_FUNC(OnGameListChanged, "PageChanged");
-    void ReloadFilterSettings();
+    MESSAGE_FUNC(OnTabChanged, "PageChanged");
 
-    // notification that we connected / disconnected
-    MESSAGE_FUNC_PARAMS(OnConnectToGame, "ConnectedToGame", kv);
-    MESSAGE_FUNC(OnDisconnectFromGame, "DisconnectedFromGame");
-
-    virtual bool GetDefaultScreenPosition(int &x, int &y, int &wide, int &tall);
     virtual void ActivateBuildMode();
 
-private:
     // list of all open game info dialogs
-    CUtlVector<DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
+    CUtlMap<uint32, vgui::DHANDLE<CDialogMapInfo>> m_mapMapInfoDialogs;
+
+    // Map of all cancel map dialogs
+    CUtlMap<uint32, Panel*> m_mapCancelConfirmDlgs;
+
+    // Map of all map list data
+    CUtlMap<uint32, MapListData*> m_mapMapListData;
+
+    // Map of all downloads
+    CUtlMap<uint32, MapDownloadProgress *> m_mapMapDownloads;
 
     // pointer to current game list
-    IMapList *m_pGameList;
+    IMapList *m_pCurrentMapList;
 
-    // Status text
-    Label	*m_pStatusLabel;
+    // Map image list
+    vgui::ImageList *m_pImageList;
 
     // property sheet
-    PropertySheet *m_pTabPanel;
+    vgui::PropertySheet *m_pTabPanel;
 
-    //Map tabs
-    CLocalMaps *m_pLocal;
-    COnlineMaps *m_pOnline;
+    // Map tabs
+    CLibraryMaps *m_pLibraryMaps;
+    CBrowseMaps *m_pBrowseMaps;
+    CFavoriteMaps *m_pFavoriteMaps;
 
-    //Filter data
-    KeyValues *m_pSavedData;//Saved on disk filter data
-    KeyValues *m_pFilterData;//Current filter data in the Dialog
+    // Filters
+    MapFilterPanel *m_pFilterPanel;
+
+    // Filter data
+    KeyValues *m_pSavedData;  // Saved on disk filter data
+    KeyValues *m_pFilterData; // Current filter data in the Dialog
 
     // context menu
     CMapContextMenu *m_pContextMenu;
 
-    // currently connected game
-    bool m_bCurrentlyConnected;
-    gameserveritem_t m_CurrentConnection;
+    // Modulecomms event listening
+    uint16 m_iMapDataIndx, m_iMapCacheUpdateIndx, m_iDownloadQueueIndx, m_iDownloadSizeIndx, m_iDownloadStartIndx,
+        m_iDownloadProgressIndx, m_iDownloadEndIndx;
 };
 
 // singleton accessor
 extern CMapSelectorDialog &MapSelectorDialog();
-
-#endif // SERVERBROWSERDIALOG_H

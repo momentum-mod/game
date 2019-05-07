@@ -133,6 +133,8 @@ public:
 	// Temporarily enables or disables the fade effect rather than zeroing the fade times as done in DisableFadeEffect
 	void SetFadeEffectDisableOverride( bool disabled );
 
+    // Get the size of the panel inside the frame edges.
+    virtual void GetClientArea(int &x, int &y, int &wide, int &tall);
 protected:
 	// Respond to mouse presses
 	virtual void OnMousePressed(MouseCode code);
@@ -162,7 +164,7 @@ protected:
 	virtual void ApplySettings(KeyValues *inResourceData);
 	// records the settings into the resource data
 	virtual void GetSettings(KeyValues *outResourceData);
-	virtual const char *GetDescription( void );
+    void InitSettings() OVERRIDE;
 
 	// gets the default position and size on the screen to appear the first time (defaults to centered)
 	virtual bool GetDefaultScreenPosition(int &x, int &y, int &wide, int &tall);
@@ -175,9 +177,6 @@ protected:
 
 	// screen size
 	virtual void OnScreenSizeChanged(int iOldWide, int iOldTall);
-
-	// Get the size of the panel inside the frame edges.
-	virtual void GetClientArea(int &x, int &y, int &wide, int &tall);
 
 	// user configuration settings
 	// this is used for any control details the user wants saved between sessions

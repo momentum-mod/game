@@ -1,8 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-#include <run/run_stats.h>
-#include "mom_modulecomms.h"
 #include "c_mom_ghost_base.h"
 
 class C_MomentumReplayGhostEntity : public C_MomentumGhostBaseEntity
@@ -14,12 +11,13 @@ class C_MomentumReplayGhostEntity : public C_MomentumGhostBaseEntity
   public:
     C_MomentumReplayGhostEntity();
 
-    void ClientThink(void) OVERRIDE;
-
-    void Spawn() OVERRIDE;
     bool IsReplayGhost() const OVERRIDE { return true; }
 
-    StdReplayDataFromServer m_SrvData;
-    CMomRunStats m_RunStats;
+    CNetworkVar(bool, m_bIsPaused);  // Is the replay paused?
+    CNetworkVar(int, m_iCurrentTick);// The current tick of the replay playback
+    CNetworkVar(int, m_iTotalTicks); // Total ticks in the replay (run time + start zone + end zone)
 
+    // Run entity stuff
+    float GetCurrentRunTime() OVERRIDE;
+    RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_REPLAY; }
 };

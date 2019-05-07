@@ -233,12 +233,12 @@ void CBaseAchievement::IncrementCount( int iOptIncrement )
 
 #ifndef NO_STEAM
 		// if this achievement's progress should be stored in Steam, set the steam stat for it
-		if ( StoreProgressInSteam() && steamapicontext->SteamUserStats() )
+		if ( StoreProgressInSteam() && SteamUserStats() )
 		{
 			// Set the Steam stat with the same name as the achievement.  Only cached locally until we upload it.
 			char pszProgressName[1024];
 			Q_snprintf( pszProgressName, 1024, "%s_STAT", GetStat() );
-			bool bRet = steamapicontext->SteamUserStats()->SetStat( pszProgressName, m_iCount );
+			bool bRet = SteamUserStats()->SetStat( pszProgressName, m_iCount );
 			if ( !bRet )
 			{
 				DevMsg( "ISteamUserStats::GetStat failed to set progress value in Steam for achievement %s\n", pszProgressName );

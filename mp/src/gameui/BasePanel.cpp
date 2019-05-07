@@ -80,7 +80,6 @@ bool CBasePanel::IsInLoading() const
 
 void CBasePanel::RunFrame()
 {
-    InvalidateLayout();
     GetAnimationController()->UpdateAnimations(engine->Time());
 
     UpdateBackgroundState();
@@ -107,7 +106,6 @@ void CBasePanel::OnGameUIActivated()
     {
         // Layout the first time to avoid focus issues (setting menus visible will grab focus)
         //UpdateGameMenus();
-        // MOM_TODO do something with the HTML menu here?
 
         m_bEverActivated = true;
     }
@@ -324,17 +322,6 @@ void CBasePanel::OnThink()
         SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
 }
 
-void CBasePanel::PaintBlurMask()
-{
-    BaseClass::PaintBlurMask();
-
-    if (GameUI().IsInLevel())
-    {
-        surface()->DrawSetColor(Color(255, 255, 255, 255));
-        surface()->DrawFilledRect(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
-    }
-}
-
 void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
@@ -406,7 +393,7 @@ void CBasePanel::RunMenuCommand(const char* command)
     }
     else if (!Q_stricmp(command, "OpenAchievementsDialog"))
     {
-        if (!GameUI().GetSteamContext()->SteamUser() || !GameUI().GetSteamContext()->SteamUser()->BLoggedOn())
+        if (!SteamUser() || !SteamUser()->BLoggedOn())
         {
             MessageBox *pMessageBox = new MessageBox("#GameUI_Achievements_SteamRequired_Title", "#GameUI_Achievements_SteamRequired_Message");
             pMessageBox->DoModal();

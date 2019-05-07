@@ -1,18 +1,9 @@
-#ifndef MOM_GAMERULES_H
-#define MOM_GAMERULES_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "cbase.h"
-#include "gamerules.h"
-#include "mom_player_shared.h"
 #include "singleplay_gamerules.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumGameRules C_MomentumGameRules
-#else
-#include "momentum/tickset.h"
 #endif
 
 class CMomentumGameRules : public CSingleplayRules
@@ -36,6 +27,7 @@ class CMomentumGameRules : public CSingleplayRules
 
     // virtual void			Think(void);
 
+    void ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKeyValues) OVERRIDE;
     bool ClientCommand(CBaseEntity *pEdict, const CCommand &args) OVERRIDE;
     void PlayerSpawn(CBasePlayer *pPlayer) OVERRIDE;
     bool IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer) OVERRIDE;
@@ -53,6 +45,9 @@ class CMomentumGameRules : public CSingleplayRules
 
     bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE { return !pVictim->IsPlayer(); }
 
+    // Whitelist checking
+    bool PointCommandWhitelisted(const char *pCmd);
+
     void ClientSettingsChanged(CBasePlayer *) OVERRIDE;
 
     bool FAllowNPCs() OVERRIDE { return false; }
@@ -62,10 +57,8 @@ class CMomentumGameRules : public CSingleplayRules
     // float AdjustPlayerDamageInflicted(float damage);
     Vector DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins, const Vector &vMaxs);
 
-    int DefaultFOV(void) OVERRIDE;// { return 90; }
+    int DefaultFOV(void) OVERRIDE;
 #endif
 };
 
-inline CMomentumGameRules *GetMomentumGamerules() { return static_cast<CMomentumGameRules *>(g_pGameRules); }
-
-#endif // MOM_GAMERULES_H
+inline CMomentumGameRules *GameRulesMomentum() { return static_cast<CMomentumGameRules *>(g_pGameRules); }

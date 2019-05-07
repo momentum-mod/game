@@ -1,5 +1,10 @@
 #pragma once
 
+#include "vgui_controls/ListPanel.h"
+
+struct MapDisplay_t;
+class CBaseMapsPage;
+class MapDownloadProgress;
 
 //-----------------------------------------------------------------------------
 // Purpose: Acts like a regular ListPanel but forwards enter key presses
@@ -12,15 +17,14 @@ public:
 
     CMapListPanel(CBaseMapsPage *pOuter, const char *pName);
 
-    virtual void OnKeyCodeTyped(vgui::KeyCode code);
+    void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
+    void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
 
-    virtual void ApplySchemeSettings(IScheme *pScheme);
-    virtual void SetFont(HFont font)
-    {
-        int oldHeight = GetRowHeight();
-        BaseClass::SetFont(font);
-        SetRowHeight(oldHeight);
-    }
+    Panel* GetCellRenderer(int itemID, int column) OVERRIDE;
+
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
+
+    void SetFont(vgui::HFont font) OVERRIDE;
 
 private:
     CBaseMapsPage *m_pOuter;

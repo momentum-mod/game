@@ -1,16 +1,15 @@
 #pragma once
 
-#include "cbase.h"
-#include "weapon_csbasegun.h"
+#include "weapon_base_gun.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumSniper C_MomentumSniper
 #endif
 
-class CMomentumSniper : public CWeaponCSBaseGun
+class CMomentumSniper : public CWeaponBaseGun
 {
   public:
-    DECLARE_CLASS(CMomentumSniper, CWeaponCSBaseGun);
+    DECLARE_CLASS(CMomentumSniper, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
@@ -21,7 +20,7 @@ class CMomentumSniper : public CWeaponCSBaseGun
 
     float GetMaxSpeed() const OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
 
   private:
     void SniperFire();

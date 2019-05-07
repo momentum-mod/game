@@ -132,6 +132,7 @@ protected:
 	virtual void OnChildAdded(VPANEL child);
 	virtual void OnSizeChanged(int wide, int tall);
 	virtual void OnClose();
+    virtual void OnReloadControls() OVERRIDE;
 
 	// user configuration settings
 	// this is used for any control details the user wants saved between sessions
@@ -153,7 +154,7 @@ private:
 	KeyValues *m_pDialogVariables;
 
 	// the wide and tall to which all controls are locked - used for autolayout deltas
-	char *m_pszConfigName;
+	CUtlString m_pszConfigName;
 	int m_iConfigID;
 	bool m_bShouldSkipAutoResize;
 };

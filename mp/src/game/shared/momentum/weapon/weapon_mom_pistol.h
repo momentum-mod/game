@@ -1,18 +1,15 @@
 #pragma once
 
-#include "cbase.h"
-#include "weapon/weapon_csbasegun.h"
-
+#include "weapon_base_gun.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumPistol C_MomentumPistol
 #endif
 
-
-class CMomentumPistol : public CWeaponCSBaseGun
+class CMomentumPistol : public CWeaponBaseGun
 {
-public:
-    DECLARE_CLASS(CMomentumPistol, CWeaponCSBaseGun);
+  public:
+    DECLARE_CLASS(CMomentumPistol, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
@@ -34,16 +31,14 @@ public:
 #endif
     void WeaponIdle() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
 
-private:
-
+  private:
     CMomentumPistol(const CMomentumPistol &);
 
     CNetworkVar(bool, m_bBurstMode);
 
-    int		m_iPistolShotsFired;	// used to keep track of the shots fired during the burst fire mode.
-    float	m_flPistolShoot;		// time to shoot the remaining bullets of the burst fire
-    float	m_flLastFire;
-
+    int m_iPistolShotsFired; // used to keep track of the shots fired during the burst fire mode.
+    float m_flPistolShoot;   // time to shoot the remaining bullets of the burst fire
+    float m_flLastFire;
 };

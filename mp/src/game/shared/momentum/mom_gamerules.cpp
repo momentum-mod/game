@@ -4,7 +4,15 @@
 #include "mom_shareddefs.h"
 #include "voice_gamemgr.h"
 #include "weapon/cs_ammodef.h"
-#include "weapon/weapon_csbase.h"
+#include "weapon/weapon_base_gun.h"
+#include "mom_player_shared.h"
+#include "filesystem.h"
+
+#ifndef CLIENT_DLL
+#include "momentum/tickset.h"
+#include "momentum/mapzones.h"
+#include "momentum/mom_timer.h"
+#endif
 
 #include "tier0/memdbgon.h"
 
@@ -100,20 +108,13 @@ CMomentumGameRules::CMomentumGameRules()
 
 CMomentumGameRules::~CMomentumGameRules() {}
 
-static CViewVectors g_MOMViewVectors(Vector(0, 0, 62), // eye position
-                                                       //@tuxxi: this eye position does not affect the ingame camera, it
-                                                       //only affects the 'virtual' eye position used by the renderer.
-                                                       //the Z val is 64 by default, changing
-                                                       // it to 62 to match the hull max fixes  the bug where the
-                                                       // out-of-bounds area appears when hitting a ceiling while
-                                                       // traveling upwards.
-
+static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(-16, -16, 0), // hull min
                                      Vector(16, 16, 62),  // hull max
 
                                      Vector(-16, -16, 0), // duck hull min
                                      Vector(16, 16, 45),  // duck hull max
-                                     Vector(0, 0, 45),    // duck view
+                                     Vector(0, 0, 47),    // duck view
 
                                      Vector(-10, -10, -10), // observer hull min
                                      Vector(10, 10, 10),    // observer hull max
@@ -203,6 +204,28 @@ bool CMomentumGameRules::IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPla
     return UTIL_IsSpaceEmpty(pPlayer, vTestMins, vTestMaxs);
 }
 
+void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKeyValues)
+{
+    BaseClass::ClientCommandKeyValues(pEntity, pKeyValues);
+
+    if (FStrEq(pKeyValues->GetName(), "NoZones"))
+    {
+        // Load if they're available in a file
+        g_MapZoneSystem.LoadZonesFromFile();
+    }
+    else if (FStrEq(pKeyValues->GetName(), "ZonesFromSite"))
+    {
+        KeyValuesAD pTracks("tracks");
+        const auto pPath = pKeyValues->GetString("path");
+        if (pTracks->LoadFromFile(g_pFullFileSystem, pPath, "GAME"))
+        {
+            g_pFullFileSystem->RemoveFile(pPath, "GAME");
+            // Zones loaded, pass them through
+            g_MapZoneSystem.LoadZonesFromSite(pTracks, CBaseEntity::Instance(pEntity));
+        }
+    }
+}
+
 bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args)
 {
     if (BaseClass::ClientCommand(pEdict, args))
@@ -211,6 +234,24 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
     CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(pEdict);
 
     return pPlayer->ClientCommand(args);
+}
+
+static const char * const g_szWhitelistedCommands[] = {
+    "sv_gravity",
+    "sv_maxvelocity",
+    "sv_airaccelerate",
+    "disconnect"
+};
+
+bool CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
+{
+    for (auto pWl : g_szWhitelistedCommands)
+    {
+        if (!V_strnicmp(pCmd, pWl, V_strlen(pWl)))
+            return true;
+    }
+
+    return false;
 }
 
 static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldValue)
@@ -227,13 +268,13 @@ static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldVal
     
     TickSet::SetTickrate(gamemode);
 
-    // set the value of sv_tickrate so it updates when gamemode changes the tickrate.
-    ConVarRef tr("sv_tickrate");
+    // set the value of sv_interval_per_tick so it updates when gamemode changes the tickrate.
+    ConVarRef tr("sv_interval_per_tick");
     tr.SetValue(TickSet::GetTickrate());
 }
 
-static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", true, 0, false,
-                       0, OnGamemodeChanged);
+static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, 
+                       "", true, 0, false, 0, OnGamemodeChanged);
 
 static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
 
@@ -241,19 +282,25 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 {
     if (pPlayer)
     {
-
         ConVarRef map("host_map");
         const char *pMapName = map.GetString();
 
         if (gpGlobals->eLoadType == MapLoad_Background || !Q_strcmp(pMapName, "credits"))
         {
-            // Hide timer/speedometer on background maps
-            pPlayer->m_Local.m_iHideHUD |= HIDEHUD_WEAPONSELECTION;
+            // Hide HUD on background maps
+            pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;
         }
         else
         {
             // Turn them back on
-            pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
+            pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_ALL;
+        }
+
+       // Handle game_player_equip ents
+        CBaseEntity *pWeaponEntity = nullptr;
+        while ((pWeaponEntity = gEntList.FindEntityByClassname(pWeaponEntity, "game_player_equip")) != nullptr)
+        {
+            pWeaponEntity->Touch(pPlayer);
         }
 
         // MOM_TODO: could this change to gamemode != ALLOWED ?
@@ -382,7 +429,7 @@ void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
 void FovChanged(IConVar *pVar, const char *pOldValue, float flOldValue)
 {
     ConVarRef var(pVar);
-    CMomentumPlayer *pMomPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    const auto pMomPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pMomPlayer)
     {
         pMomPlayer->SetDefaultFOV(var.GetInt());

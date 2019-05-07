@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cbase.h"
 #include "mom_ghost_base.h"
 #include "utlqueue.h"
+#include "GameEventListener.h"
 
 class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity, public CGameEventListener
 {
@@ -22,37 +22,35 @@ public:
     // Places a decal in the world, according to the packet and decal type
     void FireDecal(const DecalPacket_t &decal);
 
-    void SetGhostSteamID(const CSteamID &steamID)
-    {
-        m_GhostSteamID = steamID;
-        m_uiAccountID = m_GhostSteamID.ConvertToUint64();
-    }
+    void SetGhostSteamID(const CSteamID &steamID);
     CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
-    void SetGhostName(const char* pGhostName)
-    {
-        Q_strncpy(m_pszGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
-    }
+    void SetGhostName(const char *pGhostName);
 
-    void SetGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate = false);
-    LobbyGhostAppearance_t GetGhostAppearance() const { return m_CurrentAppearance; }
+    void SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate = false);
+    LobbyGhostAppearance_t GetLobbyGhostAppearance() const { return m_CurrentAppearance; }
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
+
+    void SetGhostColor(const uint32 newHexColor) OVERRIDE;
+    void SetGhostFlashlight(bool bEnable);
 
     void Spawn() OVERRIDE;
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
-    
-    CNetworkVar(int, m_nGhostButtons);
+
+    void UpdatePlayerSpectate();
+
     CNetworkVar(uint32, m_uiAccountID);
-    CNetworkString(m_pszGhostName, MAX_PLAYER_NAME_LENGTH);
     CNetworkVar(bool, m_bSpectating);
 
     QAngle m_vecLookAngles; // Used for storage reasons
 
 protected:
-    void Think(void) OVERRIDE;
-    void Precache(void) OVERRIDE;
+    void CreateTrail() OVERRIDE;
+
+    void Think() OVERRIDE;
+    void Precache() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:

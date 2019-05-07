@@ -1,16 +1,15 @@
 #pragma once
 
-#include "cbase.h"
-#include "weapon_csbasegun.h"
+#include "weapon_base_gun.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumSMG C_MomentumSMG
 #endif
 
-class CMomentumSMG : public CWeaponCSBaseGun
+class CMomentumSMG : public CWeaponBaseGun
 {
   public:
-    DECLARE_CLASS(CMomentumSMG, CWeaponCSBaseGun);
+    DECLARE_CLASS(CMomentumSMG, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
@@ -22,7 +21,7 @@ class CMomentumSMG : public CWeaponCSBaseGun
 
     void PrimaryAttack() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SMG; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SMG; }
 
   private:
     void SMGFire();

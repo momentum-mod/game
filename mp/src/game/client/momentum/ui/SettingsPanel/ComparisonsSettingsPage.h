@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "SettingsPage.h"
 
 class C_RunComparisons;

@@ -1,12 +1,16 @@
-// The following include files are necessary to allow The Panel .cpp to compile.
 #include "cbase.h"
 
 #include "MessageboxPanel.h"
 #include "mom_shareddefs.h"
 #include <vgui_controls/CvarToggleCheckButton.h>
+#include "hud_macros.h"
+
+#include "tier0/memdbgon.h"
 
 static MAKE_TOGGLE_CONVAR(mom_toggle_nostartorend, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if No Start or End should be shown.\n");
 static MAKE_TOGGLE_CONVAR(mom_toggle_versionwarn, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if the initial version warning should be shown.\n");
+
+using namespace vgui;
 
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
@@ -17,16 +21,11 @@ void __MsgFunc_MB_NoStartOrEnd(bf_read &msg)
     messageboxpanel->CreateMessageboxVarRef("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd", "mom_toggle_nostartorend");
 }
 
-void __MsgFunc_MB_EditingZone(bf_read &msg)
-{
-    messageboxpanel->CreateMessagebox("#MOM_MB_EditingZone_Title", "#MOM_MB_EditingZone");
-}
-
 MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvar) : MessageBox(title, msg)
 {
     // When toggled, will not allow the panel to be created (We don't check it here because we've done it on our 2 interfaces (Messaging and IMEssageBox)
     // this also allows us to show this even if the toggle says no! (Like, for important stuff)
-    m_pToggleCheckButton = new CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
+    m_pToggleCheckButton = new vgui::CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
     AddActionSignalTarget(m_pToggleCheckButton); // Catch that OK button press
 }
 
@@ -99,7 +98,6 @@ CMessageboxPanel::CMessageboxPanel(VPANEL parent) : BaseClass(nullptr, "Messageb
 
     HOOK_MESSAGE(MB_PlayerTriedSaveOrLoad);
     HOOK_MESSAGE(MB_NoStartOrEnd);
-    HOOK_MESSAGE(MB_EditingZone);
 }
 
 CMessageboxPanel::~CMessageboxPanel() { }

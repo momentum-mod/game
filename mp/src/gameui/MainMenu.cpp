@@ -1,6 +1,7 @@
 #include "BasePanel.h"
 #include "GameUI_Interface.h"
 #include "MainMenu.h"
+#include "MainMenuButton.h"
 
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
@@ -8,10 +9,9 @@
 
 #include "filesystem.h"
 #include "KeyValues.h"
+#include "igameevents.h"
 
-#include "mom_steam_helper.h"
 #include "mom_shareddefs.h"
-#include "util/jsontokv.h"
 #include "fmtstr.h"
 
 #include "vgui_controls/ImagePanel.h"
@@ -21,6 +21,8 @@
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
+
+extern IGameEventManager2 *gameeventmanager;
 
 MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 {
@@ -36,10 +38,6 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     // Set our initial size
     SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
 
-    //ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
-    // First check here
-    //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
-
     // Listen for game events
     if (gameeventmanager)
     {
@@ -52,8 +50,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     if (!GetAnimationController()->SetScriptFile(GetVPanel(), "scripts/HudAnimations.txt"))
         AssertMsg(0, "Couldn't load the animations!");
 
-    HScheme hScheme = scheme()->LoadSchemeFromFile("resource/schememainmenu.res", "SchemeMainMenu");
-    SetScheme(hScheme);
+    SetScheme(scheme()->LoadSchemeFromFile("resource/schememainmenu.res", "SchemeMainMenu"));
 
     m_bFocused = true;
     m_bNeedSort = false;
@@ -65,7 +62,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 
     CreateMenu();
 
-    m_pButtonLobby = new Button_MainMenu(this, this);
+    m_pButtonLobby = new MainMenuButton(this);
     m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
     m_pButtonLobby->SetButtonDescription("");
     m_pButtonLobby->SetEngineCommand("mom_lobby_create");
@@ -73,14 +70,14 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonLobby->SetTextAlignment(RIGHT);
     m_pButtonLobby->SetButtonType(SHARED);
 
-    m_pButtonInviteFriends = new Button_MainMenu(this, this);
+    m_pButtonInviteFriends = new MainMenuButton(this);
     m_pButtonInviteFriends->SetButtonText("#GameUI2_InviteLobby");
     m_pButtonInviteFriends->SetButtonDescription("");
     m_pButtonInviteFriends->SetEngineCommand("mom_lobby_invite");
     m_pButtonInviteFriends->SetTextAlignment(RIGHT);
     m_pButtonInviteFriends->SetButtonType(SHARED);
 
-    m_pButtonSpectate = new Button_MainMenu(this, this);
+    m_pButtonSpectate = new MainMenuButton(this);
     m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
     m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
     m_pButtonSpectate->SetEngineCommand("mom_spectate");
@@ -111,13 +108,6 @@ MainMenu::~MainMenu()
     }
 }
 
-
-void MainMenu::OnTick()
-{
-    // We're the only one who should call this! (As we tick once every 2 mins)
-    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
-}
-
 void MainMenu::OnThink()
 {
     BaseClass::OnThink();
@@ -143,12 +133,13 @@ void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
     }
     else if (pEngineCommand)
     {
-        ConCommand* pCommand = g_pCVar->FindCommand(pEngineCommand);
+        CCommand args;
+        args.Tokenize(pEngineCommand);
+
+        ConCommand *pCommand = g_pCVar->FindCommand(args[0]);
         if (pCommand) // can we directly call this command?
         {
-            CCommand blah;
-            blah.Tokenize(pEngineCommand);
-            pCommand->Dispatch(blah);
+            pCommand->Dispatch(args);
         }
         else // fallback to old code
         {
@@ -188,6 +179,7 @@ void MainMenu::FireGameEvent(IGameEvent* event)
     else if (!Q_strcmp(event->GetName(), "spec_start"))
     {
         m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
+        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
         m_pButtonSpectate->SetEngineCommand("mom_spectate_stop");
     }
     else if (!Q_strcmp(event->GetName(), "spec_stop"))
@@ -208,23 +200,14 @@ void MainMenu::CreateMenu()
     {
         FOR_EACH_SUBKEY(datafile, dat)
         {
-            Button_MainMenu *button = new Button_MainMenu(this, this, "");
+            MainMenuButton *button = new MainMenuButton(this);
             button->SetPriority(dat->GetInt("priority", 1));
             button->SetButtonText(dat->GetString("text", "no text"));
             button->SetButtonDescription(dat->GetString("description", "no description"));
             button->SetBlank(dat->GetBool("blank"));
 
-            const char *pCommand = dat->GetString("command", nullptr);
-            if (pCommand)
-            {
-                button->SetCommand(pCommand);
-            }
-            else
-            {
-                pCommand = dat->GetString("EngineCommand", nullptr);
-                if (pCommand)
-                    button->SetEngineCommand(pCommand);
-            }
+            button->SetCommand(dat->GetString("command", nullptr));
+            button->SetEngineCommand(dat->GetString("EngineCommand", nullptr));
 
             const char *specifics = dat->GetString("specifics", "shared");
             if (!Q_strcasecmp(specifics, "ingame"))
@@ -239,12 +222,12 @@ void MainMenu::CreateMenu()
     datafile->deleteThis();
 }
 
-int32 __cdecl ButtonsPositionBottom(Button_MainMenu *const *s1, Button_MainMenu *const *s2)
+int32 __cdecl ButtonsPositionBottom(MainMenuButton *const *s1, MainMenuButton *const *s2)
 {
     return ((*s1)->GetPriority() > (*s2)->GetPriority());
 }
 
-int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *const *s2)
+int32 __cdecl ButtonsPositionTop(MainMenuButton *const *s1, MainMenuButton *const *s2)
 {
     return ((*s1)->GetPriority() < (*s2)->GetPriority());
 }
@@ -294,11 +277,11 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
     Q_strncpy(m_pszMenuCloseSound, pScheme->GetResourceString("MainMenu.Sound.Close"), sizeof(m_pszMenuCloseSound));
 }
 
-inline Button_MainMenu *GetNextVisible(CUtlVector<Button_MainMenu *> *vec, int start)
+inline MainMenuButton *GetNextVisible(CUtlVector<MainMenuButton *> *vec, int start)
 {
     for (int i = start + 1; i < vec->Count(); i++)
     {
-        Button_MainMenu *pButton = vec->Element(i);
+        MainMenuButton *pButton = vec->Element(i);
         if (pButton->IsVisible())
             return pButton;
     }
@@ -309,7 +292,7 @@ void MainMenu::DrawMainMenu()
 {
     for (int8 i = 0; i < m_pButtons.Count(); i++)
     {
-        Button_MainMenu *pButton = m_pButtons[i];
+        MainMenuButton *pButton = m_pButtons[i];
         switch (pButton->GetButtonType())
         {
         default:
@@ -348,7 +331,7 @@ void MainMenu::DrawMainMenu()
 
     for (int8 i = 0; i < m_pButtons.Count(); i++)
     {
-        Button_MainMenu *pNextVisible = GetNextVisible(&m_pButtons, i);
+        MainMenuButton *pNextVisible = GetNextVisible(&m_pButtons, i);
         if (pNextVisible)
         {
             int32 x0, y0;
@@ -443,8 +426,7 @@ void MainMenu::DrawLogo()
 
 void MainMenu::CheckVersion()
 {
-    KeyValues* pVersionKV = new KeyValues("Version");
-    KeyValuesAD autoDelete(pVersionKV);
+    KeyValuesAD pVersionKV("Version");
     // Not if-checked here since it doesn't really matter if we don't load it
     pVersionKV->LoadFromFile(g_pFullFileSystem, "version.txt", "MOD");
     if (V_strcmp(pVersionKV->GetString("num", MOM_CURRENT_VERSION), MOM_CURRENT_VERSION) < 0)
@@ -466,4 +448,11 @@ void MainMenu::Paint()
 
     DrawMainMenu();
     DrawLogo();
+}
+
+void MainMenu::Activate()
+{
+    MoveToFront();
+    SetVisible(true);
+    SetEnabled(true);
 }

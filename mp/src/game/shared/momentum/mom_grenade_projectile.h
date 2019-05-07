@@ -18,7 +18,7 @@ class CMomGrenadeProjectile : public CBaseGrenade
     void Precache() OVERRIDE;
     void BounceSound(void) OVERRIDE;
 #else
-    virtual void Spawn();
+    virtual void Spawn() OVERRIDE;
 #endif
 
   public:
@@ -29,8 +29,8 @@ class CMomGrenadeProjectile : public CBaseGrenade
 #ifdef CLIENT_DLL
     CMomGrenadeProjectile() {}
     CMomGrenadeProjectile(const CMomGrenadeProjectile &) {}
-    virtual int DrawModel(int flags);
-    virtual void PostDataUpdate(DataUpdateType_t type);
+    virtual int DrawModel(int flags) OVERRIDE;
+    virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
 
     float m_flSpawnTime;
 #else
@@ -44,8 +44,8 @@ class CMomGrenadeProjectile : public CBaseGrenade
     // Think function to emit danger sounds for the AI
     void DangerSoundThink(void);
 
-    virtual float GetShakeAmplitude(void) { return 0.0f; }
-    virtual void Splash();
+    virtual float GetShakeAmplitude(void) OVERRIDE { return 0.0f; }
+    virtual void Splash() OVERRIDE;
 
     // Specify what velocity we want the grenade to have on the client immediately.
     // Without this, the entity wouldn't have an interpolation history initially, so it would
@@ -58,7 +58,7 @@ class CMomGrenadeProjectile : public CBaseGrenade
 
   private:
     // Custom collision to allow for constant elasticity on hit surfaces
-    virtual void ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity);
+    virtual void ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity) OVERRIDE;
 
     float m_flDetonateTime;
 

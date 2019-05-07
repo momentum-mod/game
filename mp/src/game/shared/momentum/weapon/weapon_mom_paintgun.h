@@ -1,7 +1,6 @@
 #pragma once
 
-#include "cbase.h"
-#include "weapon_csbasegun.h"
+#include "weapon_base_gun.h"
 
 #ifdef CLIENT_DLL
 #include "PaintGunPanel.h"
@@ -10,10 +9,10 @@
 extern ConVar mom_paintgun_shoot_sound;
 #endif
 
-class CMomentumPaintGun : public CWeaponCSBaseGun
+class CMomentumPaintGun : public CWeaponBaseGun
 {
   public:
-    DECLARE_CLASS(CMomentumPaintGun, CWeaponCSBaseGun);
+    DECLARE_CLASS(CMomentumPaintGun, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
@@ -22,7 +21,7 @@ class CMomentumPaintGun : public CWeaponCSBaseGun
 
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PAINTGUN; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PAINTGUN; }
 
     void RifleFire();
     

@@ -1,462 +1,513 @@
 #include "cbase.h"
-#include "mapzones.h"
-#include "mom_timer.h"
 #include "filesystem.h"
-#include "KeyValues.h"
+#include "mapzones.h"
+#include "mom_player.h"
 #include "mom_triggers.h"
+#include "mapzones_build.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
-
-#define NO_LOOK -190.0f
-
-CMapzone::~CMapzone()
+CON_COMMAND(mom_zone_generate, "Generates the .zon file for map zones.")
 {
-    if (m_pos)
+    g_MapZoneSystem.SaveZonesToFile();
+}
+
+class CMapZone
+{
+  public:
+    CMapZone(int track, int zone, int type, const KeyValues *values);
+    ~CMapZone();
+
+    void SpawnZone();
+
+    int GetType() const { return m_iType; }
+
+  private:
+    int m_iType;
+    int m_iTrack; // Track number
+    int m_iZone; // Zone number
+    // KeyValues containing all the values describing the zone
+    KeyValues *m_pZoneValues;
+
+    CBaseMomZoneTrigger *m_pTrigger;
+};
+
+CMapZone::CMapZone(const int track, const int zone, const int type, const KeyValues *values)
+{
+    m_iType = type;
+    m_iTrack = track;
+    m_iZone = zone;
+    m_pZoneValues = values->MakeCopy();
+    m_pTrigger = nullptr;
+}
+
+CMapZone::~CMapZone()
+{
+    m_pZoneValues->deleteThis();
+    m_pTrigger = nullptr;
+}
+
+void CMapZone::SpawnZone()
+{
+    char classname[64];
+    g_MapZoneSystem.ZoneTypeToClass(m_iType, classname, sizeof(classname));
+    m_pTrigger = dynamic_cast<CBaseMomZoneTrigger *>(CreateEntityByName(classname));
+    AssertMsg(m_pTrigger, "Unhandled zone type");
+
+    if (m_pTrigger)
     {
-        delete m_pos;
-        m_pos = nullptr;
-    }
-    if (m_rot)
-    {
-        delete m_rot;
-        m_rot = nullptr;
-    }
-    if (m_scaleMins)
-    {
-        delete m_scaleMins;
-        m_scaleMins = nullptr;
-    }
-    if (m_scaleMaxs)
-    {
-        delete m_scaleMaxs;
-        m_scaleMaxs = nullptr;
+        m_pZoneValues->SetInt("zoneNum", m_iZone);
+        if (!m_pTrigger->LoadFromKeyValues(m_pZoneValues))
+        {
+            Warning("Failed to load zone of type '%s' (Invalid zone data)", classname);
+            Assert(false);
+            return;
+        }
+
+        m_pTrigger->SetTrackNumber(m_iTrack);
+
+        CMomBaseZoneBuilder* pBaseBuilder = CreateZoneBuilderFromKeyValues(m_pZoneValues);
+
+        pBaseBuilder->BuildZone();
+        m_pTrigger->Spawn();
+        pBaseBuilder->FinishZone(m_pTrigger);
+
+        m_pTrigger->Activate();
+
+        delete pBaseBuilder;
     }
 }
 
-CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins,
-    Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, const bool pShouldTilt,
-    const float pHoldTime, const bool pLimitSpeed, const float pBhopLeaveSpeed, const float flYaw,
-    const string_t pLinkedEnt, const bool pCheckOnlyXY)
+CMapZoneSystem::CMapZoneSystem() : CAutoGameSystemPerFrame("CMapZoneSystem"), m_iLinearTracks(0), m_iHighestTrackNum(0)
 {
-    m_type = pType;
-    m_pos = pPos;
-    m_rot = pRot;
-    m_scaleMins = pScaleMins;
-    m_scaleMaxs = pScaleMaxs;
-    m_index = pIndex;
-    m_shouldStopOnTeleport = pShouldStop;
-    m_shouldResetAngles = pShouldTilt;
-    m_holdTimeBeforeTeleport = pHoldTime;
-    m_limitingspeed = pLimitSpeed;
-    m_bhopleavespeed = pBhopLeaveSpeed;
-    m_yaw = flYaw;
-    m_linkedent = pLinkedEnt;
-    m_onlyxycheck = pCheckOnlyXY;
-    m_limitbhop = false;
-    m_maxleavespeed = 0.0f;
-    m_trigger = nullptr;
+    m_bLoadedFromSite = false;
 }
 
-void CMapzone::SpawnZone()
+void CMapZoneSystem::LevelInitPreEntity()
 {
-    switch (m_type)
-    {
-    case MOMZONETYPE_START:
-        m_trigger = (CTriggerTimerStart *) CreateEntityByName("trigger_momentum_timer_start");
-        ((CTriggerTimerStart *) m_trigger)->SetIsLimitingSpeed(m_limitingspeed);
-        ((CTriggerTimerStart *) m_trigger)->SetMaxLeaveSpeed(m_bhopleavespeed);
-        if ( m_yaw != NO_LOOK )
-        {
-            ((CTriggerTimerStart *) m_trigger)->SetHasLookAngles(true);
-            ((CTriggerTimerStart *) m_trigger)->SetLookAngles(QAngle( 0, m_yaw, 0 ));
-        }
-        else
-        {
-            ((CTriggerTimerStart *) m_trigger)->SetHasLookAngles(false);
-        }
-        
-        m_trigger->SetName(MAKE_STRING("Start Trigger"));
-        g_pMomentumTimer->SetStartTrigger((CTriggerTimerStart *) m_trigger);
-        break;
-    case MOMZONETYPE_CP:
-        m_trigger = (CTriggerCheckpoint *) CreateEntityByName("trigger_momentum_timer_checkpoint");
-        m_trigger->SetName(MAKE_STRING("Checkpoint Trigger"));
-        ((CTriggerCheckpoint *) m_trigger)->SetCheckpointNumber(m_index);
-        break;
-    case MOMZONETYPE_STOP:
-        m_trigger = (CTriggerTimerStop *) CreateEntityByName("trigger_momentum_timer_stop");
-        m_trigger->SetName(MAKE_STRING("End Trigger"));
-        break;
-    case MOMZONETYPE_ONEHOP:
-        m_trigger = (CTriggerOnehop *) CreateEntityByName("trigger_momentum_onehop");
-        m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
-        m_trigger->m_target = m_linkedent;
-        //((CTriggerOnehop *) m_trigger)->SetDestinationIndex(m_destinationIndex);
-        //((CTriggerOnehop *) m_trigger)->SetDestinationName(m_linkedtrigger);
-        ((CTriggerOnehop *) m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
-        ((CTriggerOnehop *) m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        ((CTriggerOnehop *) m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
-        break;
-    case MOMZONETYPE_RESETONEHOP:
-        m_trigger = (CTriggerResetOnehop *) CreateEntityByName("trigger_momentum_resetonehop");
-        m_trigger->SetName(MAKE_STRING("ResetOnehop Trigger"));
-        break;
-    case MOMZONETYPE_CPTELE:
-        m_trigger = (CTriggerTeleportCheckpoint *) CreateEntityByName("trigger_momentum_teleport_checkpoint");
-        m_trigger->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
-        m_trigger->m_target = m_linkedent;
-        //((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointNumber(m_destinationIndex);
-        //((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointName(m_linkedtrigger);
-        ((CTriggerTeleportCheckpoint *) m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        ((CTriggerTeleportCheckpoint *) m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
-        break;
-    case MOMZONETYPE_MULTIHOP:
-        m_trigger = (CTriggerOnehop *) CreateEntityByName("trigger_momentum_onehop");
-        m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
-        m_trigger->m_target = m_linkedent;
-        //((CTriggerMultihop *) m_trigger)->SetDestinationIndex(m_destinationIndex);
-        //((CTriggerMultihop *) m_trigger)->SetDestinationName(m_linkedent);
-        ((CTriggerMultihop *) m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
-        ((CTriggerMultihop *) m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
-        ((CTriggerMultihop *) m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
-        break;
-    case MOMZONETYPE_STAGE:
-        m_trigger = (CTriggerStage *) CreateEntityByName("trigger_momentum_timer_stage");
-        m_trigger->SetName(MAKE_STRING("Stage Trigger"));
-        ((CTriggerStage *) m_trigger)->SetStageNumber(m_index);
-        break;
-        //MOM_TODO: add trigger_momentum_teleport, and momentum_trigger_userinput
-    default:
-        break;
-    }
-
-    if (m_trigger)
-    {
-        m_trigger->Spawn();
-        m_trigger->Activate();
-        m_trigger->SetAbsOrigin(*m_pos);
-        m_trigger->SetSize(*m_scaleMins, *m_scaleMaxs);
-        m_trigger->SetAbsAngles(*m_rot);
-        m_trigger->SetSolid(SOLID_BBOX);
-    }
+    ClearMapZones();
 }
 
-static void saveZonFile(const char* szMapName)
+void CMapZoneSystem::LevelInitPostEntity()
 {
-    KeyValues* zoneKV = new KeyValues(szMapName);
-    CBaseEntity* pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_*");
-    while (pEnt)
-    {
-        KeyValues* subKey = nullptr;
-        if (pEnt->ClassMatches("trigger_momentum_timer_start"))
-        {
-            CTriggerTimerStart* pTrigger = dynamic_cast<CTriggerTimerStart*>(pEnt);
-            subKey = new KeyValues("start");
-            if (pTrigger)
-            {
-                subKey->SetFloat("bhopleavespeed", pTrigger->GetMaxLeaveSpeed());
-                subKey->SetBool("limitingspeed", pTrigger->IsLimitingSpeed());
-                if (pTrigger->HasLookAngles())
-                    subKey->SetFloat("yaw", pTrigger->GetLookAngles()[YAW] );
-            }
-        }
-        else if (pEnt->ClassMatches("trigger_momentum_timer_stop"))
-        {
-            subKey = new KeyValues("end");
-        }
-        else if (pEnt->ClassMatches("trigger_momentum_timer_checkpoint"))
-        {
-            CTriggerCheckpoint* pTrigger = dynamic_cast<CTriggerCheckpoint*>(pEnt);
-            if (pTrigger)
-            {
-                subKey = new KeyValues("checkpoint");
-                subKey->SetInt("number", pTrigger->GetCheckpointNumber());
-            }
-        }
-        else if (pEnt->ClassMatches("trigger_momentum_onehop"))
-        {
-            CTriggerOnehop* pTrigger = dynamic_cast<CTriggerOnehop*>(pEnt);
-            if (pTrigger)
-            {
-                subKey = new KeyValues("onehop");
-                //subKey->SetInt("destination", pTrigger->GetDestinationIndex());
-                subKey->SetBool("stop", pTrigger->ShouldStopPlayer());
-                subKey->SetBool("resetang", pTrigger->ShouldResetAngles());
-                subKey->SetFloat("hold", pTrigger->GetHoldTeleportTime());
-                subKey->SetString("destinationname", pTrigger->m_target.ToCStr());
-            }
-        }
-        else if (pEnt->ClassMatches("trigger_momentum_resetonehop"))
-        {
-            subKey = new KeyValues("resetonehop");
-        }
-        else if (pEnt->ClassMatches("trigger_momentum_teleport_checkpoint"))
-        {
-
-            CTriggerTeleportCheckpoint* pTrigger = dynamic_cast<CTriggerTeleportCheckpoint*>(pEnt);
-            if (pTrigger)
-            {
-                subKey = new KeyValues("checkpoint_teleport");
-                //subKey->SetInt("destination", pTrigger->GetDestinationCheckpointNumber());
-                subKey->SetBool("stop", pTrigger->ShouldStopPlayer());
-                subKey->SetBool("resetang", pTrigger->ShouldResetAngles());
-                subKey->SetString("destinationname", pTrigger->m_target.ToCStr());
-            }
-        }
-        else if (pEnt->ClassMatches("trigger_momentum_multihop"))
-        {
-            CTriggerMultihop* pTrigger = dynamic_cast<CTriggerMultihop*>(pEnt);
-            if (pTrigger)
-            {
-                subKey = new KeyValues("multihop");
-                //subKey->SetInt("destination", pTrigger->GetDestinationIndex());
-                subKey->SetBool("stop", pTrigger->ShouldStopPlayer());
-                subKey->SetFloat("hold", pTrigger->GetHoldTeleportTime());
-                subKey->SetBool("resetang", pTrigger->ShouldResetAngles());
-                subKey->SetString("destinationname", pTrigger->m_target.ToCStr());
-            }
-        }
-        else if (pEnt->ClassMatches("trigger_momentum_timer_stage"))
-        {
-            CTriggerStage *pTrigger = dynamic_cast<CTriggerStage*>(pEnt);
-            if (pTrigger)
-            {
-                subKey = new KeyValues("stage");
-                subKey->SetInt("number", pTrigger->GetStageNumber());
-            }
-        }
-        if (subKey)
-        {
-            subKey->SetFloat("xPos", pEnt->GetAbsOrigin().x);
-            subKey->SetFloat("yPos", pEnt->GetAbsOrigin().y);
-            subKey->SetFloat("zPos", pEnt->GetAbsOrigin().z);
-            subKey->SetFloat("xRot", pEnt->GetAbsAngles().x);
-            subKey->SetFloat("yRot", pEnt->GetAbsAngles().y);
-            subKey->SetFloat("zRot", pEnt->GetAbsAngles().z);
-            subKey->SetFloat("xScaleMins", pEnt->WorldAlignMins().x);
-            subKey->SetFloat("yScaleMins", pEnt->WorldAlignMins().y);
-            subKey->SetFloat("zScaleMins", pEnt->WorldAlignMins().z);
-            subKey->SetFloat("xScaleMaxs", pEnt->WorldAlignMaxs().x);
-            subKey->SetFloat("yScaleMaxs", pEnt->WorldAlignMaxs().y);
-            subKey->SetFloat("zScaleMaxs", pEnt->WorldAlignMaxs().z);
-            zoneKV->AddSubKey(subKey);
-        }
-        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_*");
-    }
-    if (zoneKV->GetFirstSubKey())//not empty 
-    {
-        char zoneFilePath[MAX_PATH];
-        Q_strcpy(zoneFilePath, "maps/");
-        Q_strcat(zoneFilePath, szMapName, MAX_PATH);
-        Q_strncat(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
-        zoneKV->SaveToFile(filesystem, zoneFilePath, "MOD");
-        zoneKV->deleteThis();
-    }
+    m_Editor.LevelInit();
 }
 
-CMapzoneData::CMapzoneData(const char *szMapName)
+void CMapZoneSystem::LevelShutdownPreEntity()
 {
-    if (!LoadFromFile(szMapName))
+    ClearMapZones();
+    m_bLoadedFromSite = false;
+
+    for (int i = 0; i < MAX_TRACKS; i++)
     {
-        Log("Unable to find map zones! Trying to create them...\n");
-        saveZonFile(szMapName);//try making the zon file if the map has the entities
-        LoadFromFile(szMapName);
+        m_iZoneCount[i] = 0;
     }
+    m_iLinearTracks = 0;
 }
 
-static void saveZonFile_f()
+void CMapZoneSystem::LevelShutdownPostEntity()
 {
-    saveZonFile(gpGlobals->mapname.ToCStr());
+    m_Editor.LevelShutdown();
 }
 
-static ConCommand mom_generate_zone_file("mom_zone_generate", saveZonFile_f, "Generates a zone file.");
-
-CMapzoneData::~CMapzoneData()
+void CMapZoneSystem::FrameUpdatePostEntityThink()
 {
-    if (!m_zones.IsEmpty())
-    {
-        m_zones.PurgeAndDeleteElements();
-    }
+    m_Editor.FrameUpdate();
 }
 
-bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
-{
-    bool toReturn = false;
-    if (!mZone) return false;
-
-    char name[128];
-    if ( !ZoneTypeToClass( mZone->GetType(), name ) ) return false;
-
-
-    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, name);
-    while (pEnt)
-    {
-        if (pEnt->GetAbsOrigin() == *mZone->GetPosition()
-            && pEnt->GetAbsAngles() == *mZone->GetRotation())
-        {
-			// Only check WorldAlignMaxs/Mins if collision prop bounds are not in entity space, to avoid assertions
-			if (pEnt->CollisionProp()->IsBoundsDefinedInEntitySpace()
-				|| (pEnt->WorldAlignMaxs() == *mZone->GetScaleMaxs()
-				&& pEnt->WorldAlignMins() == *mZone->GetScaleMins()))
-			{
-				DevLog("Already found a %s spawned on the map! Not spawning it from zone file...\n", name);
-				toReturn = true;
-				break;
-			}
-        }
-
-        pEnt = gEntList.FindEntityByClassname(pEnt, name);
-    }
-
-    return toReturn;
-}
-
-void CMapzoneData::SpawnMapZones()
-{
-    int count = m_zones.Count();
-    for (int i = 0; i < count; i++)
-    {
-        if (m_zones[i])
-        {
-            //if the zone already exists (placed in map by Hammer), don't spawn it
-            if (!MapZoneSpawned(m_zones[i]))
-                m_zones[i]->SpawnZone();
-        }
-    }
-}
-
-bool CMapzoneData::LoadFromFile(const char *szMapName)
-{
-    bool toReturn = false;
-    char zoneFilePath[MAX_PATH];
-    V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
-    V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
-    DevLog("Looking for zone file: %s \n", zoneFilePath);
-    KeyValues* zoneKV = new KeyValues(szMapName);
-    if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))
-    {
-        // Go through checkpoints
-        for (KeyValues *cp = zoneKV->GetFirstSubKey(); cp; cp = cp->GetNextKey())
-        {
-            // Load position information (will default to 0 if the keys don't exist)
-            Vector* pos = new Vector(cp->GetFloat("xPos"), cp->GetFloat("yPos"), cp->GetFloat("zPos"));
-            QAngle* rot = new QAngle(cp->GetFloat("xRot"), cp->GetFloat("yRot"), cp->GetFloat("zRot"));
-            Vector* scaleMins = new Vector(cp->GetFloat("xScaleMins"), cp->GetFloat("yScaleMins"), cp->GetFloat("zScaleMins"));
-            Vector* scaleMaxs = new Vector(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
-
-            // Do specific things for different types of checkpoints
-            // 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport, 6 = Multihop, 7 = stage
-            int zoneType = -1;
-            int index = -1;
-            bool shouldStop = false;
-            bool shouldTilt = true;
-            float holdTime = 1.0f;
-            //int destinationIndex = -1;
-            bool limitingspeed = true;
-            bool checkonlyxy = true;
-            float bhopleavespeed = 250.0f;
-            const char * linkedtrigger = nullptr;
-
-            float start_yaw = NO_LOOK;
-
-            if (Q_strcmp(cp->GetName(), "start") == 0)
-            {
-                zoneType = MOMZONETYPE_START;
-                limitingspeed = cp->GetBool("limitingspeed");
-                bhopleavespeed = cp->GetFloat("bhopleavespeed");
-                start_yaw = cp->GetFloat("yaw", NO_LOOK);
-            }
-            else if (Q_strcmp(cp->GetName(), "checkpoint") == 0)
-            {
-                zoneType = MOMZONETYPE_CP;
-                index = cp->GetInt("number", -1);
-            }
-            else if (Q_strcmp(cp->GetName(), "end") == 0)
-            {
-                zoneType = MOMZONETYPE_STOP;
-            }
-            else if (Q_strcmp(cp->GetName(), "onehop") == 0)
-            {
-                zoneType = MOMZONETYPE_ONEHOP;
-                shouldStop = cp->GetBool("stop", false);
-                shouldTilt = cp->GetBool("resetang", true);
-                holdTime = cp->GetFloat("hold", 1);
-                //destinationIndex = cp->GetInt("destination", 1);
-                linkedtrigger = cp->GetString("destinationname", nullptr);
-            }
-            else if (Q_strcmp(cp->GetName(), "resetonehop") == 0)
-            {
-                zoneType = MOMZONETYPE_RESETONEHOP;
-            }
-            else if (Q_strcmp(cp->GetName(), "checkpoint_teleport") == 0)
-            {
-                zoneType = MOMZONETYPE_CPTELE;
-                //destinationIndex = cp->GetInt("destination", -1);
-                shouldStop = cp->GetBool("stop", false);
-                shouldTilt = cp->GetBool("resetang", true);
-                linkedtrigger = cp->GetString("destinationname", nullptr);
-            }
-            else if (Q_strcmp(cp->GetName(), "multihop") == 0)
-            {
-                zoneType = MOMZONETYPE_MULTIHOP;
-                shouldStop = cp->GetBool("stop", false);
-                shouldTilt = cp->GetBool("resetang", true);
-                holdTime = cp->GetFloat("hold", 1);
-                //destinationIndex = cp->GetInt("destination", 1);
-                linkedtrigger = cp->GetString("destinationname", nullptr);
-            }
-            else if (!Q_strcmp(cp->GetName(), "stage") || !Q_strcmp(cp->GetName(), "zone"))
-            {
-                zoneType = MOMZONETYPE_STAGE;
-                index = cp->GetInt("number", 0);
-            }
-            else
-            {
-                Warning("Error while reading zone file: Unknown mapzone type %s!\n", cp->GetName());
-                continue;
-            }
-
-            // Add element
-            m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, shouldTilt,
-                holdTime, limitingspeed, bhopleavespeed, start_yaw, MAKE_STRING(linkedtrigger), checkonlyxy));
-        }
-        DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
-        toReturn = true;
-    }
-    zoneKV->deleteThis();
-    return toReturn;
-}
-
-bool ZoneTypeToClass( int type, char *dest )
+bool CMapZoneSystem::ZoneTypeToClass(int type, char *dest, int maxlen)
 {
     switch (type)
     {
-    case MOMZONETYPE_START:
-        Q_strcpy(dest, "trigger_momentum_timer_start");
+    case ZONE_TYPE_START:
+        Q_strncpy(dest, "trigger_momentum_timer_start", maxlen);
         return true;
-    case MOMZONETYPE_CP:
-        Q_strcpy(dest, "trigger_momentum_timer_checkpoint");
+    case ZONE_TYPE_CHECKPOINT:
+        Q_strncpy(dest, "trigger_momentum_timer_checkpoint", maxlen);
         return true;
-    case MOMZONETYPE_STOP:
-        Q_strcpy(dest, "trigger_momentum_timer_stop");
+    case ZONE_TYPE_STOP:
+        Q_strncpy(dest, "trigger_momentum_timer_stop", maxlen);
         return true;
-    case MOMZONETYPE_ONEHOP:
-        Q_strcpy(dest, "trigger_momentum_onehop");
+    case ZONE_TYPE_STAGE:
+        Q_strncpy(dest, "trigger_momentum_timer_stage", maxlen);
         return true;
-    case MOMZONETYPE_RESETONEHOP:
-        Q_strcpy(dest, "trigger_momentum_timer_resetonehop");
-        return true;
-    case MOMZONETYPE_CPTELE:
-        Q_strcpy(dest, "trigger_momentum_teleport_checkpoint");
-        return true;
-    case MOMZONETYPE_MULTIHOP:
-        Q_strcpy(dest, "trigger_momentum_multihop");
-        return true;
-    case MOMZONETYPE_STAGE:
-        Q_strcpy(dest, "trigger_momentum_timer_stage");
-        return true;
+    default:
+        return false;
+    }
+}
+
+void CMapZoneSystem::ClearMapZones()
+{
+    if (!m_Zones.IsEmpty())
+        m_Zones.PurgeAndDeleteElements();
+}
+
+void CMapZoneSystem::LoadZonesFromSite(KeyValues *pKvTracks, CBaseEntity *pEnt)
+{
+    if (LoadZonesFromKeyValues(pKvTracks, true))
+    {
+        m_bLoadedFromSite = true;
+        const auto pPlayer = dynamic_cast<CMomentumPlayer*>(pEnt);
+        if (pPlayer)
+        {
+            DispatchMapInfo(pPlayer);
+        }
+    }
+}
+
+void CMapZoneSystem::LoadZonesFromFile()
+{
+    m_bLoadedFromSite = false;
+    char zoneFilePath[MAX_PATH];
+    V_ComposeFileName(MAP_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
+    V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
+    DevLog("Looking for zone file: %s \n", zoneFilePath);
+
+    KeyValuesAD fileKV("tracks");
+    if (fileKV->LoadFromFile(filesystem, zoneFilePath, "GAME"))
+    {
+        const auto bSuccess = LoadZonesFromKeyValues(fileKV, false);
+        DevLog("%s map zone file %s!\n", bSuccess ? "Successfully loaded" : "Failed to load", zoneFilePath);
+    }
+}
+
+bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite)
+{
+    if (!pKvTracks || pKvTracks->IsEmpty())
+        return false;
+
+    ResetCounts();
+    int globalZones = 0;
+
+    FOR_EACH_SUBKEY(pKvTracks, trackKV)
+    {
+        const auto trackNum = bFromSite ? trackKV->GetInt("trackNum") : Q_atoi(trackKV->GetName());
+        if (trackNum >= -1 && trackNum < MAX_TRACKS)
+        {
+            KeyValues *toItr = bFromSite ? trackKV->FindKey("zones") : trackKV;
+            if (!toItr)
+                return false;
+            FOR_EACH_SUBKEY(toItr, zoneKV)
+            {
+                const auto zoneNum = zoneKV->GetInt("zoneNum");
+                if (zoneNum >= 0 && zoneNum < MAX_ZONES)
+                {
+                    const auto pKvTriggers = zoneKV->FindKey("triggers");
+                    if (!pKvTriggers)
+                        return false;
+                    FOR_EACH_SUBKEY(pKvTriggers, triggerKV)
+                    {
+                        const auto zoneType = triggerKV->GetInt("type", ZONE_TYPE_INVALID);
+
+                        if (zoneType <= ZONE_TYPE_INVALID || zoneType >= ZONE_TYPE_COUNT)
+                        {
+                            Warning("Error while reading zone file: Unknown map zone type %d!\n", zoneType);
+                            continue;
+                        }
+
+                        if (zoneType != ZONE_TYPE_STOP)
+                        {
+                            if (trackNum > -1 && trackNum < MAX_TRACKS)
+                            {
+                                if (trackNum > m_iHighestTrackNum)
+                                    m_iHighestTrackNum = trackNum;
+
+                                if (zoneNum > m_iZoneCount[trackNum])
+                                    m_iZoneCount[trackNum] = zoneNum;
+
+                                if (zoneType == ZONE_TYPE_CHECKPOINT)
+                                    m_iLinearTracks |= (1ULL << trackNum);
+                            }
+                            else if (trackNum == -1)
+                                globalZones++;
+                        }
+
+                        // Add element
+                        auto pMapZone = new CMapZone(trackNum, zoneNum, zoneType, triggerKV);
+                        pMapZone->SpawnZone();
+                        m_Zones.AddToTail(pMapZone);
+                    }
+                }
+            }
+        }
     }
 
-    return false;
+    // Add in all the global zones, if we have any
+    if (globalZones)
+    {
+        for (int i = 0; i <= m_iHighestTrackNum; i++)
+        {
+            m_iZoneCount[i] += globalZones;
+        }
+    }
+
+    return !m_Zones.IsEmpty();
 }
+
+void CMapZoneSystem::SaveZoneTrigger(CTriggerZone *pZoneTrigger, KeyValues *pKvInto)
+{
+    bool bSuccess = false;
+    const auto pKvTrigger = pKvInto->CreateNewKey();
+    if (pZoneTrigger->ToKeyValues(pKvTrigger))
+    {
+        auto pBuilder = CreateZoneBuilderFromExisting(pZoneTrigger);
+
+        bSuccess = pBuilder->Save(pKvTrigger);
+
+        delete pBuilder;
+    }
+
+    if (!bSuccess)
+    {
+        Warning("Failed to save zone to file!\n");
+        pKvInto->RemoveSubKey(pKvTrigger);
+        pKvTrigger->deleteThis();
+    }
+}
+
+struct MapZone
+{
+    CUtlVector<CTriggerZone*> m_Triggers;
+};
+
+struct MapTrack
+{
+    CUtlVector<MapZone*> m_Zones;
+    ~MapTrack()
+    {
+        m_Zones.PurgeAndDeleteElements();
+    }
+};
+
+template <class T>
+inline void EnsureCount(T *vec, int count)
+{
+    if (vec->Count() < count)
+    {
+        auto diff = count - vec->Count();
+        while (diff--)
+        {
+            vec->AddToTail(nullptr);
+        }
+    }
+}
+
+// May God have mercy on my soul
+void CMapZoneSystem::SaveZonesToFile()
+{
+    CUtlVector<MapTrack*> vecTracks;
+    CUtlVector<CTriggerZone*> versatileTriggers;
+    int highestTrack = -1;
+    int highestZoneForTrack[MAX_TRACKS];
+    memset(highestZoneForTrack, 0, sizeof(highestZoneForTrack[0]) * MAX_TRACKS);
+    
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
+    while (pEnt)
+    {
+        CTriggerZone *pTrigger = dynamic_cast<CTriggerZone*>(pEnt);
+        if (!pTrigger)
+        {
+            AssertMsg(false, "Entity with classname trigger_momentum_timer_* was not a momentum zone trigger");
+            continue;
+        }
+
+        const auto trackNum = pTrigger->GetTrackNumber();
+        const auto zoneNum = pTrigger->GetZoneNumber();
+
+        AssertMsg(trackNum >= -1 && trackNum < MAX_TRACKS, "Track number %i out of range!", trackNum);
+        AssertMsg(zoneNum >= 0 && zoneNum < MAX_ZONES, "Zone number %i out of range!", zoneNum);
+
+        if (trackNum > -1)
+        {
+            if (trackNum > highestTrack)
+                highestTrack = trackNum;
+            if (zoneNum > highestZoneForTrack[trackNum])
+                highestZoneForTrack[trackNum] = zoneNum;
+
+            if (trackNum < vecTracks.Count() && vecTracks[trackNum])
+            {
+                if (zoneNum < vecTracks[trackNum]->m_Zones.Count() && vecTracks[trackNum]->m_Zones[zoneNum])
+                {
+                    if (vecTracks[trackNum]->m_Zones[zoneNum]->m_Triggers.Count() < MAX_ZONE_TRIGGERS)
+                        vecTracks[trackNum]->m_Zones[zoneNum]->m_Triggers.AddToTail(pTrigger);
+                }
+                else
+                {
+                    EnsureCount(&vecTracks[trackNum]->m_Zones, zoneNum + 1);
+                    MapZone *pZone = new MapZone;
+                    pZone->m_Triggers.AddToTail(pTrigger);
+                    vecTracks[trackNum]->m_Zones[zoneNum] = pZone;
+                }
+            }
+            else
+            {
+                EnsureCount(&vecTracks, trackNum+1);
+                MapTrack *pTrack = new MapTrack;
+                EnsureCount(&pTrack->m_Zones, zoneNum + 1);
+                MapZone *pZone = new MapZone;
+                pZone->m_Triggers.AddToTail(pTrigger);
+                pTrack->m_Zones[zoneNum] = pZone;
+                vecTracks[trackNum] = pTrack;
+            }
+        }
+        else if (trackNum == -1)
+            versatileTriggers.AddToTail(pTrigger);
+
+        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_*");
+    }
+
+    // Add our versatile triggers (track num -1)
+    if (!versatileTriggers.IsEmpty())
+    {
+        FOR_EACH_VEC(versatileTriggers, versiIndx)
+        {
+            const auto pZoneTrigger = versatileTriggers[versiIndx];
+            const auto pVersZoneNum = pZoneTrigger->GetZoneNumber();
+            for (int t = 0; t <= highestTrack; t++)
+            {
+                // Only add this versatile trigger if its zone number fits within the zones for this track
+                if (pVersZoneNum > -1 && pVersZoneNum <= highestZoneForTrack[t])
+                {
+                    if (vecTracks[t] && vecTracks[t]->m_Zones[pVersZoneNum] && 
+                        vecTracks[t]->m_Zones[pVersZoneNum]->m_Triggers.Count() < MAX_ZONE_TRIGGERS)
+                    {
+                        vecTracks[t]->m_Zones[pVersZoneNum]->m_Triggers.AddToTail(pZoneTrigger);
+                    }
+                }
+            }
+        }
+    }
+
+    if (highestTrack > -1)
+    {
+        KeyValuesAD zoneKV("tracks");
+        for (int track = 0; track <= highestTrack; track++)
+        {
+            const auto pKvTrack = new KeyValues(CFmtStr("%i", track));
+            // Go through each zone and find our triggers
+            for (int zone = 0; zone <= highestZoneForTrack[track]; zone++)
+            {
+                if (vecTracks[track] && vecTracks[track]->m_Zones[zone] && !vecTracks[track]->m_Zones[zone]->m_Triggers.IsEmpty())
+                {
+                    const auto pZoneKV = new KeyValues(CFmtStr("%i", zone));
+                    pZoneKV->SetInt("zoneNum", zone);
+                    const auto pTriggersKv = new KeyValues("triggers");
+                    FOR_EACH_VEC(vecTracks[track]->m_Zones[zone]->m_Triggers, i)
+                    {
+                        SaveZoneTrigger(vecTracks[track]->m_Zones[zone]->m_Triggers[i], pTriggersKv);
+                    }
+                    pZoneKV->AddSubKey(pTriggersKv);
+                    pKvTrack->AddSubKey(pZoneKV);
+                }
+            }
+
+            // Save only if we're not empty
+            if (!pKvTrack->IsEmpty())
+            {
+                zoneKV->AddSubKey(pKvTrack);
+            }
+            else
+            {
+                pKvTrack->deleteThis();
+            }
+        }
+
+        if (!zoneKV->IsEmpty() && gpGlobals->mapname.ToCStr())
+        {
+            char zoneFilePath[MAX_PATH];
+            V_ComposeFileName(MAP_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
+            V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
+            zoneKV->SaveToFile(filesystem, zoneFilePath, "MOD");
+        }
+
+        vecTracks.PurgeAndDeleteElements();
+    }
+}
+
+void CMapZoneSystem::CalculateZoneCounts(CMomentumPlayer *pDispatch)
+{
+    // Reset our counts
+    ResetCounts();
+
+    int globalZones = 0;
+    auto pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_*");
+    while (pEnt)
+    {
+        const auto pTrigger = dynamic_cast<CBaseMomZoneTrigger*>(pEnt);
+        if (pTrigger)
+        {
+            const auto iZoneType = pTrigger->GetZoneType();
+            if (iZoneType == ZONE_TYPE_START || iZoneType == ZONE_TYPE_STAGE || iZoneType == ZONE_TYPE_CHECKPOINT)
+            {
+                const int iTrack = pTrigger->GetTrackNumber();
+                const auto pZoneTrigger = static_cast<CTriggerZone*>(pTrigger);
+
+                if (iTrack > -1 && iTrack < MAX_TRACKS)
+                {
+                    if (iTrack > m_iHighestTrackNum)
+                        m_iHighestTrackNum = iTrack;
+
+                    if (pZoneTrigger->GetZoneNumber() > m_iZoneCount[iTrack])
+                        m_iZoneCount[iTrack] = pZoneTrigger->GetZoneNumber();
+
+                    if (iZoneType == ZONE_TYPE_CHECKPOINT)
+                        m_iLinearTracks |= (1ULL << iTrack);
+                }
+                else if (iTrack == -1)
+                    globalZones++;
+            }
+        }
+
+        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_*");
+    }
+
+    // Add in all the global zones, if we have any
+    if (globalZones)
+    {
+        for (int i = 0; i <= m_iHighestTrackNum; i++)
+        {
+            m_iZoneCount[i] += globalZones;
+        }
+    }
+
+    if (pDispatch)
+        DispatchMapInfo(pDispatch);
+}
+
+void CMapZoneSystem::DispatchMapInfo(CMomentumPlayer *pPlayer) const
+{
+    const auto upper = m_iHighestTrackNum == -1 ? MAX_ZONES : m_iHighestTrackNum+1;
+
+    // Copy over to the player
+    for (uint64 i = 0; i < upper; i++)
+    {
+        pPlayer->m_iZoneCount.Set(i, m_iZoneCount[i]);
+        pPlayer->m_iLinearTracks.Set(i, (m_iLinearTracks & (1ULL << i)) > 0);
+    }
+}
+
+void CMapZoneSystem::DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const
+{
+    if (m_iZoneCount[TRACK_MAIN] == 0)
+    {
+        CSingleUserRecipientFilter filter(pPlayer);
+        filter.MakeReliable();
+        UserMessageBegin(filter, "MB_NoStartOrEnd");
+        MessageEnd();
+    }
+    else
+    {
+        DispatchMapInfo(pPlayer);
+    }
+}
+
+void CMapZoneSystem::ResetCounts()
+{
+    for (auto i = 0; i < MAX_TRACKS; i++)
+        m_iZoneCount[i] = 0;
+    m_iLinearTracks = 0;
+    m_iHighestTrackNum = -1;
+}
+
+CMapZoneSystem g_MapZoneSystem;

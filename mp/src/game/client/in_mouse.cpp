@@ -56,6 +56,10 @@ extern ConVar thirdperson_platformer;
 static ConVar m_filter( "m_filter","0", FCVAR_ARCHIVE, "Mouse filtering (set this to 1 to average the mouse over 2 frames)." );
 ConVar sensitivity( "sensitivity","3", FCVAR_ARCHIVE, "Mouse sensitivity.", true, 0.0001f, true, 10000000 );
 
+static ConVar m_strafe_option("m_strafe_option", "0", FCVAR_ARCHIVE,
+                              "0) Is the old system for +strafe 1) New system for +strafe.");
+static ConVar m_strafe_option_factor("m_strafe_option_factor", "2.0", FCVAR_ARCHIVE,
+                              "Mouse factor for +strafe option.");
 static ConVar m_side( "m_side","0.8", FCVAR_ARCHIVE, "Mouse side factor." );
 static ConVar m_yaw( "m_yaw","0.022", FCVAR_ARCHIVE, "Mouse yaw factor." );
 static ConVar m_pitch("m_pitch", "0.022", FCVAR_ARCHIVE, "Mouse pitch factor.");
@@ -75,7 +79,7 @@ static ConVar m_mousespeed( "m_mousespeed", "1", FCVAR_ARCHIVE, "Windows mouse a
 static ConVar m_mouseaccel1( "m_mouseaccel1", "0", FCVAR_ARCHIVE, "Windows mouse acceleration initial threshold (2x movement).", true, 0, false, 0.0f );
 static ConVar m_mouseaccel2( "m_mouseaccel2", "0", FCVAR_ARCHIVE, "Windows mouse acceleration secondary threshold (4x movement).", true, 0, false, 0.0f );
 
-static ConVar m_rawinput( "m_rawinput", "0", FCVAR_ARCHIVE, "Use Raw Input for mouse input.");
+static ConVar m_rawinput( "m_rawinput", "1", FCVAR_ARCHIVE, "Use Raw Input for mouse input.");
 
 #if DEBUG
 ConVar cl_mouselook( "cl_mouselook", "1", FCVAR_ARCHIVE, "Set to 1 to use mouse for look, 0 for keyboard look." );
@@ -460,9 +464,12 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 	}
 	else
 	{
-		// If holding strafe key or mlooking and have lookstrafe set to true, then apply
-		//  horizontal mouse movement to sidemove.
-		cmd->sidemove += m_side.GetFloat() * mouse_x;
+        if (!m_strafe_option.GetBool())
+        {
+            // If holding strafe key or mlooking and have lookstrafe set to true, then apply
+            //  horizontal mouse movement to sidemove.
+            cmd->sidemove += m_side.GetFloat() * mouse_x;
+        }
 	}
 
 	// If mouselooking and not holding strafe key, then use vertical mouse
@@ -517,11 +524,26 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 			cmd->upmove -= m_forward.GetFloat() * mouse_y;
 		} 
 		else */
+        if (!m_strafe_option.GetBool())
 		{
 			// Default is to apply vertical mouse movement as a forward key press.
 			cmd->forwardmove -= m_forward.GetFloat() * mouse_y;
 		}
 	}
+
+    if (m_strafe_option.GetBool() && (in_strafe.state & 1))
+    {
+        static ConVarRef sv_maxspeed("sv_maxspeed");
+        float flMaxSpeed = sv_maxspeed.GetFloat();
+
+        mouse_x *= m_strafe_option_factor.GetFloat();
+        mouse_y *= m_strafe_option_factor.GetFloat();
+
+        Vector vMouseDirection(mouse_x, -mouse_y, 0.0f);
+
+        cmd->forwardmove = vMouseDirection.y * flMaxSpeed;
+        cmd->sidemove = vMouseDirection.x * flMaxSpeed;
+    }
 
 	// Finally, add mouse state to usercmd.
 	// NOTE:  Does rounding to int cause any issues?  ywb 1/17/04

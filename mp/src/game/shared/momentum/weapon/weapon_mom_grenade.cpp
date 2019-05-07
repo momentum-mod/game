@@ -5,7 +5,7 @@
 #include "engine/IEngineSound.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
-#include "weapon_csbase.h"
+#include "weapon_base.h"
 
 #ifdef GAME_DLL
 #include "items.h"
@@ -343,10 +343,10 @@ void CMomentumGrenade::ThrowGrenade()
     m_bRedraw = true;
     m_fThrowTime = 0.0f;
 
-    // CMomentumPlayer *pCSPlayer = ToCMOMPlayer( pPlayer );
+    // CMomentumPlayer *pPlayer = ToCMOMPlayer( pPlayer );
 
-    // if( pCSPlayer )
-    //	pCSPlayer->Radio( "Radio.FireInTheHole",   "#Cstrike_TitlesTXT_Fire_in_the_hole" );
+    // if( pPlayer )
+    //	pPlayer->Radio( "Radio.FireInTheHole",   "#Cstrike_TitlesTXT_Fire_in_the_hole" );
 }
 
 void CMomentumGrenade::DropGrenade()

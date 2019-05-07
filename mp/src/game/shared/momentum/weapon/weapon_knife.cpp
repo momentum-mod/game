@@ -1,9 +1,3 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose:
-//
-//=============================================================================//
-
 #include "cbase.h"
 #include "effect_dispatch_data.h"
 #include "mom_player_shared.h"
@@ -129,7 +123,7 @@ void CKnife::Holster(int skiplocal)
 {
     if (GetPlayerOwner())
     {
-        GetPlayerOwner()->m_flNextAttack = gpGlobals->curtime + 0.5;
+        GetPlayerOwner()->m_flNextAttack = gpGlobals->curtime + 0.5f;
     }
 }
 
@@ -160,7 +154,7 @@ void CKnife::Smack(void)
 
     m_trHit.m_pEnt = m_pTraceHitEnt;
 
-    g_pMomentumUtil->KnifeSmack(m_trHit, this, GetPlayerOwner()->GetAbsAngles(), m_bStab);
+    MomUtil::KnifeSmack(m_trHit, this, GetPlayerOwner()->GetAbsAngles(), m_bStab);
 }
 
 void CKnife::WeaponIdle()
@@ -186,7 +180,7 @@ bool CKnife::SwingOrStab(bool bStab)
 
     trace_t tr;
     Vector vForward;
-    g_pMomentumUtil->KnifeTrace(pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab, pPlayer, this, &tr,
+    MomUtil::KnifeTrace(pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab, pPlayer, this, &tr,
                                 &vForward);
 
     bool bDidHit = tr.fraction < 1.0f;
@@ -249,5 +243,3 @@ void CKnife::ItemPostFrame(void)
 
     BaseClass::ItemPostFrame();
 }
-
-bool CKnife::CanDrop() { return true; }

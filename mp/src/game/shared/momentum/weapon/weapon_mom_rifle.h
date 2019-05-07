@@ -1,28 +1,23 @@
 #pragma once
 
-#include "cbase.h"
-#include "weapon_csbasegun.h"
+#include "weapon_base_gun.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumRifle C_MomentumRifle
 #endif
 
-class CMomentumRifle : public CWeaponCSBaseGun
+class CMomentumRifle : public CWeaponBaseGun
 {
 public:
-    DECLARE_CLASS(CMomentumRifle, CWeaponCSBaseGun);
+    DECLARE_CLASS(CMomentumRifle, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumRifle()
-    {
-        m_flTimeToIdleAfterFire = 1.9f;
-        m_flIdleInterval = 20.0f;
-    };
+    CMomentumRifle();
 
     void PrimaryAttack() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_RIFLE; }
+    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_RIFLE; }
 
 private:
     void RifleFire();

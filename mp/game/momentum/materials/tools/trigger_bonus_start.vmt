@@ -1,0 +1,10 @@
+UnlitGeneric
+{
+	"$basetexture" "tools/tools_bonus_start"
+
+	"$translucent" "1"
+
+	"%keywords" "momentum, tools, trigger, timer, stage, bonus"
+
+	"%compiletrigger" "1"
+}

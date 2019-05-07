@@ -470,6 +470,7 @@ void CBaseTrigger::StartTouch(CBaseEntity *pOther)
 		}
 
 		m_OnStartTouch.FireOutput(pOther, this);
+        OnStartTouch(pOther);
 
 		if ( bAdded && ( m_hTouchingEntities.Count() == 1 ) )
 		{
@@ -497,6 +498,7 @@ void CBaseTrigger::EndTouch(CBaseEntity *pOther)
 		//if ( !m_bDisabled )
 		//{
 			m_OnEndTouch.FireOutput(pOther, this);
+            OnEndTouch(pOther);
 		//}
 
 		// If there are no more entities touching this trigger, fire the lost all touches
@@ -2834,6 +2836,7 @@ void CAI_ChangeHintGroup::InputActivate( inputdata_t &inputdata )
 #define SF_CAMERA_PLAYER_SNAP_TO		16
 #define SF_CAMERA_PLAYER_NOT_SOLID		32
 #define SF_CAMERA_PLAYER_INTERRUPT		64
+#define SF_CAMERA_PLAYER_SETFOV         128
 
 
 //-----------------------------------------------------------------------------
@@ -2844,6 +2847,7 @@ class CTriggerCamera : public CBaseEntity
 public:
 	DECLARE_CLASS( CTriggerCamera, CBaseEntity );
 
+    CTriggerCamera();
 	void Spawn( void );
 	bool KeyValue( const char *szKeyName, const char *szValue );
 	void Enable( void );
@@ -2879,6 +2883,8 @@ private:
 	int	  m_state;
 	Vector m_vecMoveDir;
 
+    int m_fov;
+    float m_fovSpeed;
 
 	string_t m_iszTargetAttachment;
 	int	  m_iAttachmentIndex;
@@ -2935,6 +2941,9 @@ BEGIN_DATADESC( CTriggerCamera )
 	DEFINE_FIELD( m_nPlayerButtons, FIELD_INTEGER ),
 	DEFINE_FIELD( m_nOldTakeDamage, FIELD_INTEGER ),
 
+    DEFINE_KEYFIELD(m_fov, FIELD_INTEGER, "fov"),
+    DEFINE_KEYFIELD(m_fovSpeed, FIELD_FLOAT, "fov_rate"),
+
 	// Inputs
 	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
@@ -2944,6 +2953,14 @@ BEGIN_DATADESC( CTriggerCamera )
 	DEFINE_OUTPUT( m_OnEndFollow, "OnEndFollow" ),
 
 END_DATADESC()
+
+
+CTriggerCamera::CTriggerCamera()
+{
+    m_fov = 90;
+    m_fovSpeed = 1.0f;
+} 
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -3105,6 +3122,18 @@ void CTriggerCamera::Enable( void )
 		m_bSnapToGoal = true;
 	}
 
+    if (HasSpawnFlags(SF_CAMERA_PLAYER_SETFOV))
+    {
+        if (pPlayer)
+        {
+            if (pPlayer->GetFOVOwner() && (FClassnameIs(pPlayer->GetFOVOwner(), "point_viewcontrol_multiplayer") || FClassnameIs(pPlayer->GetFOVOwner(), "point_viewcontrol")))
+            {
+                pPlayer->ClearZoomOwner();
+            }
+            pPlayer->SetFOV(this, m_fov, m_fovSpeed);
+        }
+    }
+
 	if ( HasSpawnFlags(SF_CAMERA_PLAYER_TARGET ) )
 	{
 		m_hTarget = m_hPlayer;
@@ -3214,24 +3243,30 @@ void CTriggerCamera::Enable( void )
 //-----------------------------------------------------------------------------
 void CTriggerCamera::Disable( void )
 {
-	if ( m_hPlayer && m_hPlayer->IsAlive() )
-	{
-		if ( HasSpawnFlags( SF_CAMERA_PLAYER_NOT_SOLID ) )
-		{
-			m_hPlayer->RemoveSolidFlags( FSOLID_NOT_SOLID );
-		}
+    if (m_hPlayer)
+    {
+        CBasePlayer *pBasePlayer = (CBasePlayer*) m_hPlayer.Get();
 
-		((CBasePlayer*)m_hPlayer.Get())->SetViewEntity( m_hPlayer );
-		((CBasePlayer*)m_hPlayer.Get())->EnableControl(TRUE);
+        if (pBasePlayer->IsAlive())
+        {
+            if (HasSpawnFlags(SF_CAMERA_PLAYER_NOT_SOLID))
+            {
+                pBasePlayer->RemoveSolidFlags(FSOLID_NOT_SOLID);
+            }
 
-		// Restore the player's viewmodel
-		if ( ((CBasePlayer*)m_hPlayer.Get())->GetActiveWeapon() )
-		{
-			((CBasePlayer*)m_hPlayer.Get())->GetActiveWeapon()->RemoveEffects( EF_NODRAW );
-		}
-		//return the player to previous takedamage state
-		m_hPlayer->m_takedamage = m_nOldTakeDamage;
-	}
+            pBasePlayer->SetViewEntity(nullptr);
+            pBasePlayer->EnableControl(TRUE);
+            pBasePlayer->m_Local.m_bDrawViewmodel = true;
+        }
+
+        if (HasSpawnFlags(SF_CAMERA_PLAYER_SETFOV))
+        {
+            pBasePlayer->SetFOV(this, 0, m_fovSpeed);
+        }
+
+        //return the player to previous takedamage state
+        m_hPlayer->m_takedamage = m_nOldTakeDamage;
+    }
 
 	m_state = USE_OFF;
 	m_flReturnTime = gpGlobals->curtime;

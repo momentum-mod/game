@@ -1,6 +1,7 @@
 # Files to ignore when considering what GIT should commit.
 
 # Visual Studio 
+.vscode/
 *.suo
 *.user
 *.sln.docstates
@@ -73,6 +74,8 @@ config.cfg
 server_blacklist.txt
 gamestate.txt
 checkpoints.txt
+progress.dat
+savedlocs.txt
 *.ain
 stats.txt
 voice_ban.dt
@@ -84,6 +87,7 @@ voice_ban.dt
 # Momentum
 *.zon
 *.momrec
+*.mrf
 game_shader_dx9.dll
 game_shader_dx9.so
 game_shader_dx9.so.dbg
@@ -91,14 +95,8 @@ game_shader_dx9_srv.so
 game_shader_dx9_srv.so.dbg
 game_shader_dx9.dylib
 game_shader_dx9.dylib.dYSM/
-gameui2.dll
-gameui2.so
-gameui2.so.dbg
-gameui2_srv.so
-gameui2_srv.so.dbg
-gameui2.dylib
-gameui2.dylib.dYSM/
 mp/game/bin/
+mp/game/momentum/materials/vgui/maps/*
 
 # Others
 *.cache
@@ -115,3 +113,6 @@ CMakeLists.txt
 mp/game/momentum/cfg/pet.txt
 *.exe
 mp/game/momentum/version.txt
+mp/game/momentum/downloadlists/
+mp/game/momentum/map_cache.dat
+mp/game/momentum/maps/*.bsp

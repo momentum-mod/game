@@ -37,10 +37,11 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-ImageList::ImageList(bool deleteImagesWhenDone)
+ImageList::ImageList(bool deleteImagesWhenDone, bool bAddBlank /* = true*/)
 {
 	m_bDeleteImagesWhenDone = deleteImagesWhenDone;
-	AddImage(new BlankImage());
+    if (bAddBlank)
+	    AddImage(new BlankImage());
 }
 
 //-----------------------------------------------------------------------------
@@ -72,10 +73,7 @@ int ImageList::AddImage(vgui::IImage *image)
 void ImageList::SetImageAtIndex(int index, vgui::IImage *image)
 {
 	// allocate more images if necessary
-	while (m_Images.Count() <= index)
-	{
-		m_Images.AddToTail(NULL);
-	}
+    m_Images.EnsureCount(index + 1);
 
 	m_Images[index] = image;
 }

@@ -3,6 +3,8 @@
 #include "materialsystem/imaterialsystemhardwareconfig.h"
 #include "materialsystem/itexture.h"
 
+#include "tier0/memdbgon.h"
+
 void CDynamicRenderTargets::InitClientRenderTargets(IMaterialSystem *pMaterialSystem,
                                                     IMaterialSystemHardwareConfig *pHardwareConfig)
 {
@@ -18,11 +20,7 @@ void CDynamicRenderTargets::InitDynamicRenderTargets()
 {
     m_pMaterialSystem->BeginRenderTargetAllocation();
 
-    m_MaskGameUITexture.Init(CreateMaskGameUITexture());
     m_DepthBufferTexture.Init(CreateDepthBufferTexture());
-    m_BlurX.Init(CreateBlurTexture(true));
-    m_BlurY.Init(CreateBlurTexture(false));
-    m_FullscreenPP.Init(CreateFullscreenPPTexture());
 
     m_pMaterialSystem->EndRenderTargetAllocation();
 }
@@ -38,7 +36,6 @@ void CDynamicRenderTargets::ShutdownClientRenderTargets()
 
 void CDynamicRenderTargets::ShutdownDynamicRenderTargets()
 {
-    m_MaskGameUITexture.Shutdown();
     m_DepthBufferTexture.Shutdown();
 }
 
@@ -68,15 +65,6 @@ Vector2D CDynamicRenderTargets::GetViewport()
     return Vector2D(viewportX, viewportY);
 }
 
-ITexture *CDynamicRenderTargets::CreateMaskGameUITexture()
-{
-    Vector2D viewport = GetViewport();
-
-    return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2(
-        "_rt_MaskGameUI", viewport.x, viewport.y, RT_SIZE_FULL_FRAME_BUFFER,
-        m_pMaterialSystem->GetBackBufferFormat(), MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_HDR);
-}
-
 ITexture *CDynamicRenderTargets::CreateDepthBufferTexture()
 {
     uint32 flags = NULL;
@@ -90,20 +78,6 @@ ITexture *CDynamicRenderTargets::CreateDepthBufferTexture()
     return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2("_rt_DepthBuffer", viewport.x, viewport.y,
                                                                 RT_SIZE_FULL_FRAME_BUFFER, IMAGE_FORMAT_RGBA32323232F,
                                                                 MATERIAL_RT_DEPTH_NONE, flags, NULL);
-}
-
-ITexture* CDynamicRenderTargets::CreateBlurTexture(bool blurX)
-{
-    Vector2D viewport = GetViewport();
-    return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2(blurX ? "_rt_BlurX" : "_rt_BlurY", viewport.x, viewport.y,
-        RT_SIZE_HDR, IMAGE_FORMAT_RGB888, MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_RENDERTARGET, 0);
-}
-
-ITexture* CDynamicRenderTargets::CreateFullscreenPPTexture()
-{
-    Vector2D viewport = GetViewport();
-    return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2("_rt_FullscreenPP", viewport.x, viewport.y,
-        RT_SIZE_FULL_FRAME_BUFFER, IMAGE_FORMAT_RGB888, MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT | TEXTUREFLAGS_RENDERTARGET, 0);
 }
 
 

@@ -2,10 +2,11 @@
 #include "cbase.h"
 
 #include "IContactPanel.h"
+#include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/pch_vgui_controls.h>
-#include "mom_shareddefs.h"
+#include "momentum/util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
@@ -26,11 +27,13 @@ protected:
     MESSAGE_FUNC_CHARPTR(OnURLChange, "OnFinishRequest", URL)
     {
         DevLog("URL FINISHED LOADING %s\n", URL);
+        m_bContentLoaded = true;
         //MOM_TODO: Do we want to have anything custom when they submit a contact form?
     }
 
 private:
     HTML *m_pWebPage;
+    bool m_bContentLoaded;
 };
 
 // Constuctor: Initializes the Panel
@@ -56,6 +59,8 @@ CContactPanel::CContactPanel(VPANEL parent)
     
     m_pWebPage = new HTML(this, "HTMLForm", true);
     m_pWebPage->AddActionSignalTarget(this);
+
+    m_bContentLoaded = false;
 
     InitPanel();
 }
@@ -132,5 +137,8 @@ void CContactPanel::OnThink()
 void CContactPanel::Activate()
 {
     BaseClass::Activate();
-    InitPanel();
+    if (!m_bContentLoaded)
+    {
+        InitPanel();
+    }
 }

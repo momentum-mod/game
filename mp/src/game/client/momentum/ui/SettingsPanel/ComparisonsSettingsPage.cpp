@@ -5,48 +5,73 @@
 #include "clientmode.h"
 #include "hud_comparisons.h"
 
+#include <vgui_controls/Label.h>
+#include <vgui_controls/ComboBox.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/Tooltip.h>
+#include <vgui_controls/Frame.h>
+#include <vgui_controls/AnimationController.h>
+
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
 
 ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pParent, "ComparisonsSettings")
 {
-    m_pCompareShow = FindControl<CvarToggleCheckButton>("CompareShow");
+    m_pCompareShow = new CvarToggleCheckButton(this, "CompareShow", "#MOM_Settings_Compare_Show", "mom_comparisons");
+    m_pCompareShow->AddActionSignalTarget(this);
+    m_pMaxZones = new TextEntry(this, "Zones");
+    m_pMaxZones->AddActionSignalTarget(this);
+    m_pMaxZonesLabel = new Label(this, "ZonesLabel", "#MOM_Settings_Zones_Label");
 
-    m_pMaxZones = FindControl<TextEntry>("Zones");
-    m_pMaxZonesLabel = FindControl<Label>("ZonesLabel");
+    m_pCompareFormat = new CvarToggleCheckButton(this, "CompareFormat", "#MOM_Settings_Compare_Format", "mom_comparisons_format_output");
+    m_pCompareFormat->AddActionSignalTarget(this);
 
-    m_pCompareFormat = FindControl<CvarToggleCheckButton>("CompareFormat");
-
-    m_pTimeTypeLabel = FindControl<Label>("TimeTypeLabel");
+    m_pTimeTypeLabel = new Label(this, "TimeTypeLabel", "#MOM_Settings_Compare_Time_Type_Label");
     m_pTimeTypeLabel->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pTimeType = FindControl<ComboBox>("TimeType");
-    m_pTimeType->SetNumberOfEditLines(2);
+    m_pTimeType = new ComboBox(this, "TimeType", 2, false);
     m_pTimeType->AddItem("#MOM_Settings_Compare_Time_Type_Overall", nullptr);
     m_pTimeType->AddItem("#MOM_Settings_Compare_Time_Type_PerZone", nullptr);
-    m_pTimeShowOverall = FindControl<CvarToggleCheckButton>("TimeShowOverall");
+    m_pTimeType->AddActionSignalTarget(this);
+
+    m_pTimeShowOverall = new CvarToggleCheckButton(this, "TimeShowOverall", "#MOM_Settings_Compare_Show_Overall", "mom_comparisons_time_show_overall");
     m_pTimeShowOverall->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pTimeShowZone = FindControl<CvarToggleCheckButton>("TimeShowZone");
+    m_pTimeShowOverall->AddActionSignalTarget(this);
+    m_pTimeShowZone = new CvarToggleCheckButton(this, "TimeShowZone", "#MOM_Settings_Compare_Show_Zone", "mom_comparisons_time_show_perzone");
     m_pTimeShowZone->GetTooltip()->SetTooltipFormatToSingleLine();
+    m_pTimeShowZone->AddActionSignalTarget(this);
 
-    m_pVelocityShow = FindControl<CvarToggleCheckButton>("VelShow");
-    m_pVelocityShowAvg = FindControl<CvarToggleCheckButton>("VelShowAvg");
-    m_pVelocityShowMax = FindControl<CvarToggleCheckButton>("VelShowMax");
-    m_pVelocityShowEnter = FindControl<CvarToggleCheckButton>("VelShowEnter");
+    m_pVelocityShow = new CvarToggleCheckButton(this, "VelShow", "#MOM_Settings_Compare_Show_Velocity", "mom_comparisons_vel_show");
+    m_pVelocityShow->AddActionSignalTarget(this);
+    m_pVelocityShowAvg = new CvarToggleCheckButton(this, "VelShowAvg", "#MOM_Settings_Compare_Show_Velocity_Avg", "mom_comparisons_vel_show_avg");
+    m_pVelocityShowAvg->AddActionSignalTarget(this);
+    m_pVelocityShowMax = new CvarToggleCheckButton(this, "VelShowMax", "#MOM_Settings_Compare_Show_Velocity_Max", "mom_comparisons_vel_show_max");
+    m_pVelocityShowMax->AddActionSignalTarget(this);
+    m_pVelocityShowEnter = new CvarToggleCheckButton(this, "VelShowEnter", "#MOM_Settings_Compare_Show_Velocity_Enter", "mom_comparisons_vel_show_enter");
     m_pVelocityShowEnter->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pVelocityShowExit = FindControl<CvarToggleCheckButton>("VelShowExit");
+    m_pVelocityShowEnter->AddActionSignalTarget(this);
+    m_pVelocityShowExit = new CvarToggleCheckButton(this, "VelShowExit", "#MOM_Settings_Compare_Show_Velocity_Exit", "mom_comparisons_vel_show_exit");
     m_pVelocityShowExit->GetTooltip()->SetTooltipFormatToSingleLine();
+    m_pVelocityShowExit->AddActionSignalTarget(this);
 
-    m_pSyncShow = FindControl<CvarToggleCheckButton>("SyncShow");
-    m_pSyncShowS1 = FindControl<CvarToggleCheckButton>("SyncShowS1");
+    m_pSyncShow = new CvarToggleCheckButton(this, "SyncShow", "#MOM_Settings_Compare_Show_Sync", "mom_comparisons_sync_show");
+    m_pSyncShow->AddActionSignalTarget(this);
+    m_pSyncShowS1 = new CvarToggleCheckButton(this, "SyncShowS1", "#MOM_Settings_Compare_Show_Sync1", "mom_comparisons_sync_show_sync1");
     m_pSyncShowS1->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pSyncShowS2 = FindControl<CvarToggleCheckButton>("SyncShowS2");
+    m_pSyncShowS1->AddActionSignalTarget(this);
+    m_pSyncShowS2 = new CvarToggleCheckButton(this, "SyncShowS2", "#MOM_Settings_Compare_Show_Sync2", "mom_comparisons_sync_show_sync2");
     m_pSyncShowS2->GetTooltip()->SetTooltipFormatToSingleLine();
+    m_pSyncShowS2->AddActionSignalTarget(this);
 
-    m_pJumpShow = FindControl<CvarToggleCheckButton>("ShowJumps");
-    m_pStrafeShow = FindControl<CvarToggleCheckButton>("ShowStrafes");
+    m_pJumpShow = new CvarToggleCheckButton(this, "ShowJumps", "#MOM_Settings_Compare_Show_Jumps", "mom_comparisons_jumps_show");
+    m_pJumpShow->AddActionSignalTarget(this);
+    m_pStrafeShow = new CvarToggleCheckButton(this, "ShowStrafes", "#MOM_Settings_Compare_Show_Strafes", "mom_comparisons_strafe_show");
+    m_pStrafeShow->AddActionSignalTarget(this);
 
     m_pComparisonsFrame = nullptr;
+    m_pBogusComparisonsPanel = nullptr;
+
+    LoadControlSettings("resource/ui/SettingsPanel_ComparisonsSettings.res");
 }
 
 ComparisonsSettingsPage::~ComparisonsSettingsPage()
@@ -55,9 +80,6 @@ ComparisonsSettingsPage::~ComparisonsSettingsPage()
 
 void ComparisonsSettingsPage::DestroyBogusComparePanel()
 {
-    if (m_pBogusComparisonsPanel)
-        m_pBogusComparisonsPanel->DeletePanel();
-
     if (m_pComparisonsFrame)
         m_pComparisonsFrame->DeletePanel();
 
@@ -77,29 +99,23 @@ void ComparisonsSettingsPage::InitBogusComparePanel()
     m_pComparisonsFrame->SetTitle("#MOM_Settings_Compare_Bogus_Run", false);
     m_pComparisonsFrame->SetTitleBarVisible(true);
     m_pComparisonsFrame->SetMenuButtonResponsive(false);
-    m_pComparisonsFrame->SetCloseButtonVisible(true);
+    m_pComparisonsFrame->SetCloseButtonVisible(false);
     m_pComparisonsFrame->SetMinimizeButtonVisible(false);
     m_pComparisonsFrame->SetMaximizeButtonVisible(false);
     m_pComparisonsFrame->PinToSibling("CMomentumSettingsPanel", PIN_TOPRIGHT, PIN_TOPLEFT);
+    m_pComparisonsFrame->InvalidateLayout(true);
 
     //Initialize a bogus version of the HUD element
-    m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel");
-    m_pBogusComparisonsPanel->SetParent(m_pComparisonsFrame);
+    m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel", m_pComparisonsFrame);
     m_pBogusComparisonsPanel->AddActionSignalTarget(this);
     m_pBogusComparisonsPanel->SetPaintBackgroundEnabled(true);
     m_pBogusComparisonsPanel->SetPaintBackgroundType(2);
     m_pBogusComparisonsPanel->Init();
-    m_pBogusComparisonsPanel->SetSize(200, 150);
-    m_pBogusComparisonsPanel->SetPos(14, 30);
+    int x, y, wid, tal;
+    m_pComparisonsFrame->GetClientArea(x, y, wid, tal);
+    m_pBogusComparisonsPanel->SetBounds(x, y, wid, tal);
     m_pBogusComparisonsPanel->LoadBogusComparisons();
-    IScheme *pClientScheme = scheme()->GetIScheme(scheme()->GetScheme("ClientScheme"));
-    if (!pClientScheme)
-    {
-        //Only load this if we haven't already
-        scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
-        pClientScheme = scheme()->GetIScheme(scheme()->GetScheme("ClientScheme"));
-    }
-    m_pBogusComparisonsPanel->ApplySchemeSettings(pClientScheme);
+    m_pBogusComparisonsPanel->SetScheme(scheme()->GetScheme("ClientScheme"));
     m_pBogusComparisonsPanel->SetVisible(true);
     m_pBogusComparisonsPanel->MakeReadyForUse();
 

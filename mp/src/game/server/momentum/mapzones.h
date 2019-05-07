@@ -1,77 +1,53 @@
-#ifndef MAPZONES_H
-#define MAPZONES_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "filesystem.h"
-#include "mom_triggers.h"
+#include "mapzones_edit.h"
+#include "mom_shareddefs.h"
 
-#define MOMZONETYPE_START       0
-#define MOMZONETYPE_CP          1
-#define MOMZONETYPE_STOP        2
-#define MOMZONETYPE_ONEHOP      3
-#define MOMZONETYPE_RESETONEHOP 4
-#define MOMZONETYPE_CPTELE      5
-#define MOMZONETYPE_MULTIHOP    6
-#define MOMZONETYPE_STAGE       7
+class CMapZone;
+class CTriggerZone;
 
-class CMapzone
+class CMapZoneSystem : public CAutoGameSystemPerFrame
 {
 public:
-    CMapzone();
-    CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
-        const int, const bool, const bool, const float, 
-        const bool, const float, const float, 
-        const string_t, const bool);
-    ~CMapzone();
+    CMapZoneSystem();
 
-    void SpawnZone();
-    void RemoveZone();
+    void LevelInitPreEntity() OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPreEntity() OVERRIDE;
+    void LevelShutdownPostEntity() OVERRIDE;
+    void FrameUpdatePostEntityThink() OVERRIDE;
 
-    int GetType() { return m_type; }
-    Vector* GetPosition() { return m_pos; }
-    QAngle* GetRotation() { return m_rot; }
-    Vector* GetScaleMins() { return m_scaleMins; }
-    Vector* GetScaleMaxs() { return m_scaleMaxs; }
+    bool ZoneTypeToClass(int type, char *dest, int maxlen);
 
-private:
-    int m_type; // Zone type, look above
-    int m_index; // Ignored when not a checkpoint
-    bool m_shouldStopOnTeleport; // Stop player on teleport?
-    bool m_shouldResetAngles; // Reset the player's angles?
-    float m_holdTimeBeforeTeleport; // How much to wait for before teleporting
-    // startTrigger
-    bool m_limitingspeed; // Limit leave speed?
-    bool m_onlyxycheck; // Only checking speed in XY?
-    bool m_limitbhop;
-    float m_maxleavespeed; // Max speed allowed
-    float m_bhopleavespeed; // Max speed if player bhopped
-    float m_yaw; // Teleport yaw for start zone.
-    string_t m_linkedent; // Entity name for teleporting to this entity (YESYES, It can be null!)
-    Vector* m_pos;
-    QAngle* m_rot;
-    Vector* m_scaleMins;
-    Vector* m_scaleMaxs;
-    CBaseEntity* m_trigger;
-};
+    void ClearMapZones();
+    void LoadZonesFromSite(KeyValues *pKvTracks, CBaseEntity *pEnt);
+    void LoadZonesFromFile();
+    bool LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite);
+    void SaveZoneTrigger(CTriggerZone *pZoneTrigger, KeyValues *pKvInto);
+    void SaveZonesToFile();
 
-class CMapzoneData
-{
-public:
-    CMapzoneData(const char *szMapName);
-    ~CMapzoneData();
+    CMapZoneEdit *GetZoneEditor() { return &m_Editor; }
 
-    
-    void SpawnMapZones();
-    void RemoveMapZones();
-    bool MapZoneSpawned(CMapzone*);
-    bool LoadFromFile(const char*);
+    // Calculates the stage count
+    void CalculateZoneCounts(CMomentumPlayer *pDispatch);
+    // Gets the total stage count
+    int GetZoneCount(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_iZoneCount[track] : -1; }
+
+    // Dispatch to player
+    void DispatchMapInfo(CMomentumPlayer *pPlayer) const;
+    void DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const;
 
 private:
-    CUtlVector<CMapzone*> m_zones;
+    void ResetCounts();
+
+    bool m_bLoadedFromSite;
+    CMapZoneEdit m_Editor;
+    CUtlVector<CMapZone*> m_Zones;
+
+    // The number of zones for a given track
+    int m_iZoneCount[MAX_TRACKS];
+    uint64 m_iLinearTracks; // Bit-encoded, if (m_iLinearTracks & (1 << trackNum) > 0), it's linear
+    int m_iHighestTrackNum; // Highest track number on this map
 };
 
-bool ZoneTypeToClass(int type, char *dest);
-
-#endif
+extern CMapZoneSystem g_MapZoneSystem;

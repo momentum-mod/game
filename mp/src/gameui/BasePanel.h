@@ -1,7 +1,6 @@
 #pragma once
 
-#include "vgui/ISurface.h"
-#include "vgui2d/panel2d.h"
+#include "vgui_controls/EditablePanel.h"
 
 class MainMenu;
 
@@ -14,9 +13,9 @@ enum EBackgroundState
     BACKGROUND_DISCONNECTED
 };
 
-class CBasePanel : public Panel2D
+class CBasePanel : public vgui::EditablePanel
 {
-    DECLARE_CLASS_SIMPLE(CBasePanel, Panel2D);
+    DECLARE_CLASS_SIMPLE(CBasePanel, vgui::EditablePanel);
 
     CBasePanel();
     virtual ~CBasePanel();
@@ -56,13 +55,11 @@ class CBasePanel : public Panel2D
 
 protected:
     void OnThink() OVERRIDE;
-    void PaintBlurMask() OVERRIDE;
     void PaintBackground() OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnCommand(const char *command) OVERRIDE{ RunMenuCommand(command); }
 
 private:
-
     void SetBackgroundRenderState(EBackgroundState state);
 
     vgui::DHANDLE<vgui::PropertyDialog> m_hOptionsDialog;

@@ -37,11 +37,6 @@
 
 using namespace vgui;
 
-enum 
-{
-	WINDOW_BORDER_WIDTH=2 // the width of the window's border
-};
-
 
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
@@ -81,7 +76,6 @@ void ColumnButton::ApplySchemeSettings(IScheme *pScheme)
 {
 	Button::ApplySchemeSettings(pScheme);
 
-	SetContentAlignment(Label::a_west);
 	SetFont(pScheme->GetFont("DefaultSmall", IsProportional()));
 }
 
@@ -480,9 +474,12 @@ ListPanel::ListPanel(Panel *parent, const char *panelName) : BaseClass(parent, p
 
 	m_pImageList = NULL;
 	m_bDeleteImageListWhenDone = false;
-	m_pEmptyListText = new TextImage("");
+	m_pEmptyListText = new Label(this, "EmptyListText", "");
+    m_pEmptyListText->SetVisible(false);
+    m_pEmptyListText->SetAutoTall(true);
 
 	m_nUserConfigFileVersion = 1;
+    m_bCenterEmptyListText = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -510,8 +507,6 @@ ListPanel::~ListPanel()
 	{
 		delete m_pImageList;
 	}
-
-	delete m_pEmptyListText;
 }
 
 //-----------------------------------------------------------------------------
@@ -550,7 +545,7 @@ void ListPanel::SetColumnHeaderHeight( int height )
 // If the initial window size is larger than the sum of the original widths of the columns,
 // you can wind up with the columns "snapping" to size after the first window focus
 // This is because the dxPerBar being calculated in PerformLayout()
-// is making resizable bounded headers exceed thier maxWidths at the Start. 
+// is making resizable bounded headers exceed their maxWidths at the Start. 
 // Solution is to either put in support for redistributing the extra dx being truncated and
 // therefore added to the last column on window opening, which is what causes the snapping.
 // OR to
@@ -611,6 +606,8 @@ void ListPanel::AddColumnHeader(int index, const char *columnName, const char *c
 	column.m_bHidden = false;
 	column.m_bUnhidable = (columnFlags & COLUMN_UNHIDABLE);
 	column.m_nContentAlignment = Label::a_west;
+    column.m_bImageSizeBoundToCell = (columnFlags & COLUMN_IMAGE_SIZETOFIT);
+    column.m_bImageSizeShouldMaintainAspectRatio = (columnFlags & COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
 
 	Dragger *dragger = new Dragger(index);
 	dragger->SetParent(this);
@@ -714,9 +711,14 @@ void ListPanel::SetColumnHeaderText(int col, const char *text)
 {
 	m_ColumnsData[m_CurrentColumns[col]].m_pHeader->SetText(text);
 }
-void ListPanel::SetColumnHeaderText(int col, wchar_t *text)
+void ListPanel::SetColumnHeaderText(int col, const wchar_t *text)
 {
 	m_ColumnsData[m_CurrentColumns[col]].m_pHeader->SetText(text);
+}
+
+void ListPanel::SetColumnHeaderTextAlignment(int col, int align)
+{
+    m_ColumnsData[m_CurrentColumns[col]].m_pHeader->SetContentAlignment((Label::Alignment)align);
 }
 
 void ListPanel::SetColumnTextAlignment( int col, int align )
@@ -737,11 +739,12 @@ void ListPanel::SetColumnHeaderImage(int column, int imageListIndex)
 //-----------------------------------------------------------------------------
 // Purpose: associates a tooltip with the column header
 //-----------------------------------------------------------------------------
-void ListPanel::SetColumnHeaderTooltip(int column, const char *tooltipText)
+void ListPanel::SetColumnHeaderTooltip(int column, const char *tooltipText, bool bSingleLine /* = false*/, int delay /* = 0*/)
 {
 	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetText(tooltipText);
-	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipFormatToSingleLine();
-	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipDelay(0);
+    if (bSingleLine)
+	    m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipFormatToSingleLine();
+	m_ColumnsData[m_CurrentColumns[column]].m_pHeader->GetTooltip()->SetTooltipDelay(delay);
 }
 
 int ListPanel::GetNumColumnHeaders() const
@@ -756,10 +759,18 @@ bool ListPanel::GetColumnHeaderText( int index, char *pOut, int maxLen )
 		m_ColumnsData[m_CurrentColumns[index]].m_pHeader->GetText( pOut, maxLen );
 		return true;
 	}
-	else
-	{
-		return false;
-	}
+	
+    return false;
+}
+
+bool ListPanel::GetColumnHeaderName(int col, char* pOut, size_t maxLen)
+{
+    if (col < m_CurrentColumns.Count())
+    {
+        Q_strncpy(pOut, m_ColumnsData[m_CurrentColumns[col]].m_pHeader->GetName(), maxLen);
+        return true;
+    }
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -862,10 +873,11 @@ int ListPanel::FindColumn(const char *columnName)
 //			data->GetName() is used to uniquely identify an item
 //			data sub items are matched against column header name to be used in the table
 //-----------------------------------------------------------------------------
-int ListPanel::AddItem( const KeyValues *item, unsigned int userData, bool bScrollToItem, bool bSortOnAdd)
+int ListPanel::AddItem( KeyValues *item, unsigned int userData, bool bScrollToItem, bool bSortOnAdd, bool bCopyData /* = true*/)
 {
 	FastSortListPanelItem *newitem = new FastSortListPanelItem;
-	newitem->kv = item->MakeCopy();
+	newitem->kv = bCopyData ? item->MakeCopy() : item;
+    newitem->m_bDataCopied = bCopyData;
 	newitem->userData = userData;
 	newitem->m_pDragData = NULL;
 	newitem->m_bImage = newitem->kv->GetInt( "image" ) != 0 ? true : false;
@@ -951,7 +963,7 @@ int ListPanel::GetItem(const char *itemName)
 KeyValues *ListPanel::GetItem(int itemID)
 {
 	if ( !m_DataItems.IsValidIndex(itemID) )
-		return NULL;
+		return nullptr;
 
 	return m_DataItems[itemID]->kv;
 }
@@ -1159,7 +1171,7 @@ void ListPanel::CleanupItem( FastSortListPanelItem *data )
 {
 	if ( data )
 	{
-		if (data->kv)
+		if (data->kv && data->m_bDataCopied)
 		{
 			data->kv->deleteThis();
 		}
@@ -1486,9 +1498,55 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 	
 	column_t &column = m_ColumnsData[ m_CurrentColumns[col] ];
 
-	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
+    KeyValues *item = GetItem(itemID);
 
 	m_pLabel->SetContentAlignment( (Label::Alignment)column.m_nContentAlignment );
+    // Reset to normal bg color
+    m_pLabel->SetBgColor(m_BgColor);
+
+    // Determine selection state or other bg color, if set
+    bool bSelected = false, bHasBg = false;
+    if (m_SelectedItems.HasElement(itemID) && (!m_bCanSelectIndividualCells || col == m_iSelectedColumn))
+    {
+        bSelected = true;
+        VPANEL focus = input()->GetFocus();
+        // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
+        if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
+        {
+            m_pLabel->SetBgColor(m_SelectionBgColor);
+        }
+        else
+        {
+            m_pLabel->SetBgColor(m_SelectionOutOfFocusBgColor);
+        }
+    }
+    else
+    {
+        KeyValues *pCellBg = item->FindKey("cellbgcolor");
+        if (pCellBg && !pCellBg->IsEmpty())
+        {
+            // Check the type
+            if (pCellBg->GetDataType() == KeyValues::TYPE_NONE)
+            {
+                // It's an array of cells, try to find this cell in particular
+                char num[4];
+                V_snprintf(num, 4, "%i", col);
+                KeyValues *pThisCell = pCellBg->FindKey(num);
+                if (pThisCell)
+                    m_pLabel->SetBgColor(pThisCell->GetColor("color"));
+            }
+            else
+            {
+                // It's just a color, apply to all cells in the row
+                m_pLabel->SetBgColor(item->GetColor("cellbgcolor"));
+            }
+
+            bHasBg = true;
+        }
+
+    }
+
+    m_pLabel->SetPaintBackgroundEnabled(bSelected || bHasBg);
 
 	if ( column.m_bTypeIsText ) 
 	{
@@ -1496,7 +1554,6 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 
 		// Grab cell text
 		GetCellText( itemID, col, tempText, 256 );
-		KeyValues *item = GetItem( itemID );
 		m_pTextImage->SetText(tempText);
         int cw, tall;
         m_pTextImage->GetContentSize(cw, tall);
@@ -1508,54 +1565,35 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 
 		m_pLabel->SetTextImageIndex( 0 );
 		m_pLabel->SetImageAtIndex(0, m_pTextImage, 3);
-			
-		bool selected = false;
-		if ( m_SelectedItems.HasElement(itemID) && ( !m_bCanSelectIndividualCells || col == m_iSelectedColumn ) )
-		{
-			selected = true;
-            VPANEL focus = input()->GetFocus();
-            // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
-            if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedBgColor", pScheme));
-    			// selection
-            }
-            else
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme));
-            }
 
-			if ( item->IsEmpty("cellcolor") == false )
-			{
-	            m_pTextImage->SetColor( item->GetColor( "cellcolor" ) );
-			}
-			else if ( item->GetInt("disabled", 0) == 0 )
-			{
-	            m_pTextImage->SetColor(m_SelectionFgColor);
-			}
-			else 
-			{
-	            m_pTextImage->SetColor(m_DisabledSelectionFgColor);
-			}
+        if (item->GetInt("disabled"))
+        {
+            m_pTextImage->SetColor(bSelected ? m_DisabledSelectionFgColor : m_DisabledColor);
+        }
+        else
+        {
+            m_pTextImage->SetColor(bSelected ? m_SelectionFgColor : m_LabelFgColor);
 
-            m_pLabel->SetPaintBackgroundEnabled(true);
-		}
-		else
-		{
-			if ( item->IsEmpty("cellcolor") == false )
-			{
-	            m_pTextImage->SetColor( item->GetColor( "cellcolor" ) );
-			}
-			else if ( item->GetInt("disabled", 0) == 0 )
-			{
-				m_pTextImage->SetColor(m_LabelFgColor);
-			}
-			else
-			{
-				m_pTextImage->SetColor(m_DisabledColor);
-			}
-			m_pLabel->SetPaintBackgroundEnabled(false);
-		}
+            KeyValues *pCellColorKey = item->FindKey("cellcolor");
+            if (pCellColorKey && !pCellColorKey->IsEmpty())
+            {
+                // Check the type
+                if (pCellColorKey->GetDataType() == KeyValues::TYPE_NONE)
+                {
+                    // It's an array of cells, try to find this cell in particular
+                    char num[4];
+                    V_snprintf(num, 4, "%i", col);
+                    KeyValues *pThisCell = pCellColorKey->FindKey(num);
+                    if (pThisCell)
+                        m_pTextImage->SetColor(pThisCell->GetColor("color"));
+                }
+                else
+                {
+                    // It's just a color, apply to all cells in the row
+                    m_pTextImage->SetColor(item->GetColor("cellcolor"));
+                }
+            }
+        }
 
 		FastSortListPanelItem *listItem = m_DataItems[ itemID ];
 		if ( col == 0 &&
@@ -1568,7 +1606,7 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 			}
 			else
 			{
-				int imageIndex = selected ? listItem->m_nImageIndexSelected : listItem->m_nImageIndex;
+				int imageIndex = bSelected ? listItem->m_nImageIndexSelected : listItem->m_nImageIndex;
 				if ( m_pImageList->IsValidIndex(imageIndex) )
 				{
 					pImage = m_pImageList->GetImage(imageIndex);
@@ -1585,34 +1623,33 @@ Panel *ListPanel::GetCellRenderer(int itemID, int col)
 		
 		return m_pLabel;
 	}
-	else 	// if its an Image Panel
-	{
-		if ( m_SelectedItems.HasElement(itemID) && ( !m_bCanSelectIndividualCells || col == m_iSelectedColumn ) )
-		{
-            VPANEL focus = input()->GetFocus();
-            // if one of the children of the SectionedListPanel has focus, then 'we have focus' if we're selected
-            if (HasFocus() || (focus && ipanel()->HasParent(focus, GetVParent())))
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedBgColor", pScheme));
-    			// selection
-            }
-            else
-            {
-                m_pLabel->SetBgColor(GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme));
-            }
-			// selection
-			m_pLabel->SetPaintBackgroundEnabled(true);
-		}
-		else
-		{
-			m_pLabel->SetPaintBackgroundEnabled(false);
-		}
 
-		IImage *pIImage = GetCellImage(itemID, col);
-		m_pLabel->SetImageAtIndex(0, pIImage, 0);
+	// Else it's an Image Panel
+	IImage *pIImage = GetCellImage(itemID, col);
+    if (pIImage && column.m_bImageSizeBoundToCell)
+    {
+        // Bound the size to the cell if need be
+        int imgWide, imgTall;
+        pIImage->GetContentSize(imgWide, imgTall);
 
-		return m_pLabel;
-	}
+        int colWide = column.m_pHeader->GetWide() - 5;
+        int colHeight = m_iRowHeight - 2;
+
+        if (column.m_bImageSizeShouldMaintainAspectRatio && (imgWide > colWide || imgTall > colHeight))
+        {
+            double ar = (double)imgWide / (double)imgTall;
+
+            // Max height for the image will be colHeight, so scale the image based on that
+            imgWide = (int)(ar * (double)colHeight);
+        }
+
+        pIImage->SetSize(min(colWide, imgWide), 
+                         min(colHeight, imgTall));
+    }
+
+	m_pLabel->SetImageAtIndex(0, pIImage, 0);
+
+	return m_pLabel;
 }
 
 //-----------------------------------------------------------------------------
@@ -1642,11 +1679,11 @@ void ListPanel::PerformLayout()
 
 	int wide, tall;
 	GetSize( wide, tall );
-	m_vbar->SetPos(wide - (m_vbar->GetWide()+WINDOW_BORDER_WIDTH), 0);
-	m_vbar->SetSize(m_vbar->GetWide(), tall - 2);
+	m_vbar->SetPos(wide - m_vbar->GetWide(), 0);
+	m_vbar->SetSize(m_vbar->GetWide(), tall);
 	m_vbar->InvalidateLayout();
 
-	int buttonMaxXPos = wide - (m_vbar->GetWide()+WINDOW_BORDER_WIDTH);
+	int buttonMaxXPos = wide - m_vbar->GetWide();
 	
 	int nColumns = m_CurrentColumns.Count();
 	// number of bars that can be resized
@@ -1742,136 +1779,77 @@ void ListPanel::PerformLayout()
 			header->SetWide( column.m_iMinWidth );
 	}
 
-	// This was a while(1) loop and we hit an infinite loop case, so now we max out the # of times it can loop.
-	for ( int iLoopSanityCheck=0; iLoopSanityCheck < 1000; iLoopSanityCheck++ )
+	// Place headers as is
+	int x = -1;
+	int i;
+	for ( i = 0; i < nColumns; i++)
 	{
-		// try and place headers as is - before we have to force items to be minimum width
-		int x = -1;
-		int i;
-		for ( i = 0; i < nColumns; i++)
+		column_t &column = m_ColumnsData[m_CurrentColumns[i]];
+		Panel *header = column.m_pHeader;
+		if (column.m_bHidden)
 		{
-			column_t &column = m_ColumnsData[m_CurrentColumns[i]];
-			Panel *header = column.m_pHeader;
-			if (column.m_bHidden)
-			{
-				header->SetVisible(false);
-				continue;
-			}
+			header->SetVisible(false);
+			continue;
+		}
 
-			header->SetPos(x, 0);
-			header->SetVisible(true);
+		header->SetPos(x, 0);
+		header->SetVisible(true);
 
-			// if we couldn't fit this column - then we need to force items to be minimum width
-			if ( x+column.m_iMinWidth >= buttonMaxXPos && !bForceShrink )
-			{
-				break;
-			}
-	
-			int hWide = header->GetWide();
+		int hWide = header->GetWide();
 
-			// calculate the column's width
-			// make it so the last column always attaches to the scroll bar
-			if ( i == lastColumnIndex )
+		// calculate the column's width
+		// make it so the last column always attaches to the scroll bar
+		if ( i == lastColumnIndex )
+		{
+			hWide = buttonMaxXPos-x; 
+		}
+		else if (i == m_iColumnDraggerMoved ) // column resizing using dragger
+		{
+			hWide += dxPerBar; // adjust width of column
+		}
+		else if ( m_iColumnDraggerMoved == -1 )		// window is resizing
+		{
+			// either this column is allowed to resize OR we are forcing it because we're shrinking all columns
+			if ( column.m_bResizesWithWindow || bForceShrink )
 			{
-				hWide = buttonMaxXPos-x; 
-			}
-			else if (i == m_iColumnDraggerMoved ) // column resizing using dragger
-			{
+				Assert ( column.m_iMinWidth <= column.m_iMaxWidth );
 				hWide += dxPerBar; // adjust width of column
 			}
-			else if ( m_iColumnDraggerMoved == -1 )		// window is resizing
-			{
-				// either this column is allowed to resize OR we are forcing it because we're shrinking all columns
-				if ( column.m_bResizesWithWindow || bForceShrink )
-				{
-					Assert ( column.m_iMinWidth <= column.m_iMaxWidth );
-					hWide += dxPerBar; // adjust width of column
-				}
-			}
-
-			// enforce column mins and max's - unless we're FORCING it to shrink
-			if ( hWide < column.m_iMinWidth && !bForceShrink ) 
-			{
-				hWide = column.m_iMinWidth; // adjust width of column
-			}
-			else if ( hWide > column.m_iMaxWidth )
-			{
-				hWide = column.m_iMaxWidth;
-			}
-	
-			header->SetSize(hWide, m_vbar->GetWide());
-			x += hWide;
-	
-			// set the resizers
-			Panel *sizer = column.m_pResizer;
-			if ( i == lastColumnIndex )
-			{
-				sizer->SetVisible(false);
-			}
-			else
-			{
-				sizer->SetVisible(true);
-			}
-			sizer->MoveToFront();
-			sizer->SetPos(x - 4, 0);
-			sizer->SetSize(8, m_vbar->GetWide());
 		}
 
-		// we made it all the way through
-		if ( i == nColumns )
-			break;
-	
-		// we do this AFTER trying first, to let as many columns as possible try and get to their
-		// desired width before we forcing the minimum width on them
-
-		// get the total desired width of all the columns
-		int totalDesiredWidth = 0;
-		for ( i = 0 ; i < nColumns ; i++ )
+		// enforce column mins and max's - unless we're FORCING it to shrink
+		if ( hWide < column.m_iMinWidth && !bForceShrink ) 
 		{
-			if (!m_ColumnsData[m_CurrentColumns[i]].m_bHidden)
-			{
-				Panel *pHeader = m_ColumnsData[m_CurrentColumns[i]].m_pHeader;
-				totalDesiredWidth += pHeader->GetWide();
-			}
+			hWide = column.m_iMinWidth; // adjust width of column
 		}
-
-		// shrink from the most right column to minimum width until we can fit them all
-		Assert(totalDesiredWidth > buttonMaxXPos);
-		for ( i = nColumns-1; i >= 0 ; i--)
+		else if ( hWide > column.m_iMaxWidth )
 		{
-			column_t &column = m_ColumnsData[m_CurrentColumns[i]];
-			if (!column.m_bHidden)
-			{
-				Panel *pHeader = column.m_pHeader;
-
-				totalDesiredWidth -= pHeader->GetWide();
-				if ( totalDesiredWidth + column.m_iMinWidth <= buttonMaxXPos )
-				{
-					int newWidth = buttonMaxXPos - totalDesiredWidth;
-					pHeader->SetSize( newWidth, m_vbar->GetWide() );
-					break;
-				}
-
-				totalDesiredWidth += column.m_iMinWidth;
-				pHeader->SetSize(column.m_iMinWidth, m_vbar->GetWide());
-			}
+			hWide = column.m_iMaxWidth;
 		}
-		// If we don't allow this to shrink, then as we resize, it can get stuck in an infinite loop.
-		dxPerBar -= 5;
-		if ( dxPerBar < 0 )
-			dxPerBar = 0;
 
-		if ( i == -1 )
+		header->SetSize(hWide, m_vbar->GetWide());
+		x += hWide;
+
+		// set the resizers
+		Panel *sizer = column.m_pResizer;
+		if ( i == lastColumnIndex )
 		{
-			break;
+			sizer->SetVisible(false);
 		}
+		else
+		{
+			sizer->SetVisible(true);
+		}
+		sizer->MoveToFront();
+		sizer->SetPos(x - 4, 0);
+		sizer->SetSize(8, m_vbar->GetWide());
 	}
 
 	// setup edit mode
 	if ( m_hEditModePanel.Get() )
 	{
 		m_iTableStartX = 0; 
-		m_iTableStartY = m_iHeaderHeight + 1;
+		m_iTableStartY = m_vbar->GetWide();
 
 		int nTotalRows = m_VisibleItems.Count();
 		int nRowsPerPage = GetRowsPerPage();
@@ -1908,7 +1886,7 @@ void ListPanel::PerformLayout()
 				{
 
 					m_hEditModePanel->SetPos( x + m_iTableStartX + 2, (drawcount * m_iRowHeight) + m_iTableStartY);
-					m_hEditModePanel->SetSize( wide, m_iRowHeight - 1 );
+					m_hEditModePanel->SetSize( wide, m_iRowHeight);
 
 					bDone = true;
 				}
@@ -1945,11 +1923,11 @@ void ListPanel::Paint()
 	}
 
 	// draw selection areas if any
-	int wide, tall;
-  	GetSize( wide, tall );
+	int panelWide, tall;
+  	GetSize( panelWide, tall );
 
 	m_iTableStartX = 0; 
-	m_iTableStartY = m_iHeaderHeight + 1;
+	m_iTableStartY = m_vbar->GetWide();
 
 	int nTotalRows = m_VisibleItems.Count();
 	int nRowsPerPage = GetRowsPerPage();
@@ -1962,7 +1940,7 @@ void ListPanel::Paint()
 	}
 
 	int vbarInset = m_vbar->IsVisible() ? m_vbar->GetWide() : 0;
-	int maxw = wide - vbarInset - 8;
+	int maxw = panelWide - vbarInset;
 
 //	debug timing functions
 //	double startTime, endTime;
@@ -1988,7 +1966,7 @@ void ListPanel::Paint()
 			if (!header->IsVisible())
 				continue;
 
-			int wide = header->GetWide();
+			int colWide = header->GetWide();
 
 			if (render)
 			{
@@ -2001,20 +1979,19 @@ void ListPanel::Paint()
 				{
 					render->SetVisible(true);
 				}
-				int xpos = x + m_iTableStartX + 2;
+				int xpos = x + m_iTableStartX;
 
 				render->SetPos( xpos, (drawcount * m_iRowHeight) + m_iTableStartY);
 
-				int right = min( xpos + wide, maxw );
+				int right = min( xpos + colWide, maxw );
 				int usew = right - xpos;
-				render->SetSize( usew, m_iRowHeight - 1 );
+				render->SetSize( usew, m_iRowHeight);
 
 				// mark the panel to draw immediately (since it will probably be recycled to draw other cells)
 				render->Repaint();
 				surface()->SolveTraverse(render->GetVPanel());
 				int x0, y0, x1, y1;
 				render->GetClipRect(x0, y0, x1, y1);
-				//if ((y1 - y0) < (m_iRowHeight - 3))
                 if ((y1 - y0) == 0)
 				{
 					bDone = true;
@@ -2022,24 +1999,8 @@ void ListPanel::Paint()
 				}
 				surface()->PaintTraverse(render->GetVPanel());
 			}
-			/*
-			// work in progress, optimized paint for text
-			else
-			{
-				// just paint it ourselves
-				char tempText[256];
-				// Grab cell text
-				GetCellText(i, j, tempText, sizeof(tempText));
-				surface()->DrawSetTextPos(x + m_iTableStartX + 2, (drawcount * m_iRowHeight) + m_iTableStartY);
 
-				for (const char *pText = tempText; *pText != 0; pText++)
-				{
-					surface()->DrawUnicodeChar((wchar_t)*pText);
-				}
-			}
-			*/
-
-			x += wide;
+			x += colWide;
 		}
 
 		drawcount++;
@@ -2048,12 +2009,25 @@ void ListPanel::Paint()
 	m_pLabel->SetVisible(false);
 
 	// if the list is empty, draw some help text
-	if (m_VisibleItems.Count() < 1 && m_pEmptyListText)
+	if (m_VisibleItems.IsEmpty())
 	{
-		m_pEmptyListText->SetPos(m_iTableStartX + 8, m_iTableStartY + 4);
-		m_pEmptyListText->SetSize(wide - 8, m_iRowHeight);
-		m_pEmptyListText->Paint();
+        if (m_bCenterEmptyListText)
+        {
+            m_pEmptyListText->SetContentAlignment(Label::a_center);
+            m_pEmptyListText->SetPos(0, (tall + m_iTableStartY) / 2 - (m_pEmptyListText->GetTall() / 2));
+        }
+        else
+        {
+		    m_pEmptyListText->SetPos(m_iTableStartX + 8, m_iTableStartY + 4);
+        }
+
+        m_pEmptyListText->SetWide(panelWide - 8);
+
+        m_pEmptyListText->SetVisible(true);
+
 	}
+    else
+        m_pEmptyListText->SetVisible(false);
 
 //	endTime = system()->GetCurrentTime();
 //	ivgui()->DPrintf2("ListPanel::Paint() (%.3f sec)\n", (float)(endTime - startTime));
@@ -2612,6 +2586,9 @@ bool ListPanel::GetCellAtPos(int x, int y, int &row, int &col)
 		int startx = 0;
 		for ( col = 0 ; col < m_CurrentColumns.Count() ; col++ )
 		{
+            if (m_ColumnsData[m_CurrentColumns[col]].m_bHidden)
+                continue;
+
 			startx += m_ColumnsData[m_CurrentColumns[col]].m_pHeader->GetWide();
 
 			if ( x < startx )
@@ -2640,17 +2617,20 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
 
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	SetBgColor(GetSchemeColor("ListPanel.BgColor", pScheme));
+    m_BgColor = GetSchemeColor("ListPanel.BgColor", pScheme);
+	SetBgColor(m_BgColor);
 	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
 
-	m_pLabel->SetBgColor(GetSchemeColor("ListPanel.BgColor", pScheme));
+	m_pLabel->SetBgColor(m_BgColor);
 
 	m_LabelFgColor = GetSchemeColor("ListPanel.TextColor", pScheme);
 	m_DisabledColor = GetSchemeColor("ListPanel.DisabledTextColor", m_LabelFgColor, pScheme);
 	m_SelectionFgColor = GetSchemeColor("ListPanel.SelectedTextColor", m_LabelFgColor, pScheme);
 	m_DisabledSelectionFgColor = GetSchemeColor("ListPanel.DisabledSelectedTextColor", m_LabelFgColor, pScheme);
+    m_SelectionBgColor = GetSchemeColor("ListPanel.SelectedBgColor", pScheme);
+    m_SelectionOutOfFocusBgColor = GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme);
 
-	m_pEmptyListText->SetColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
+	m_pEmptyListText->SetFgColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
 		
 	SetFont( pScheme->GetFont("Default", IsProportional() ) );
 	m_pEmptyListText->SetFont( pScheme->GetFont( "Default", IsProportional() ) );
@@ -2882,7 +2862,7 @@ void ListPanel::OnColumnResized(int col, int delta)
 		column_t& nextCol = m_ColumnsData[m_CurrentColumns[i]];
 		restColumnsMinWidth += nextCol.m_iMinWidth;
 	}
-	panelWide -= ( x + restColumnsMinWidth + m_vbar->GetWide() + WINDOW_BORDER_WIDTH );
+	panelWide -= x + restColumnsMinWidth + m_vbar->GetWide();
 	if ( wide > panelWide )
 	{
 		wide = panelWide;
@@ -2984,7 +2964,7 @@ void ListPanel::SetItemDisabled(int itemID, bool state)
 //-----------------------------------------------------------------------------
 float ListPanel::GetRowsPerPage()
 {
-	float rowsperpage = (float)( GetTall() - m_iHeaderHeight ) / (float)m_iRowHeight;
+	float rowsperpage = (float)( GetTall() - m_vbar->GetWide() ) / (float)m_iRowHeight;
 	return rowsperpage;
 }
 
@@ -3060,9 +3040,14 @@ void ListPanel::OpenColumnChoiceMenu()
 	{
 		column_t &column = m_ColumnsData[m_CurrentColumns[i]];
 
+        const char *pName;
 		char name[128];
 		column.m_pHeader->GetText(name, sizeof(name));
-		int itemID = menu->AddCheckableMenuItem(name, new KeyValues("ToggleColumnVisible", "col", m_CurrentColumns[i]), this);
+        if (name[0] == '\0')
+            pName = column.m_pHeader->GetName();
+        else
+            pName = name;
+		int itemID = menu->AddCheckableMenuItem(pName, new KeyValues("ToggleColumnVisible", "col", m_CurrentColumns[i]), this);
 		menu->SetMenuItemChecked(itemID, !column.m_bHidden);
 
 		if (column.m_bUnhidable)

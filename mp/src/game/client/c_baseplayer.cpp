@@ -583,26 +583,27 @@ void C_BasePlayer::SetObserverTarget( EHANDLE hObserverTarget )
 		// has a chance to become non-NULL even if it currently resolves to NULL.
 		m_hObserverTarget.Init( hObserverTarget.GetEntryIndex(), hObserverTarget.GetSerialNumber() );
 
-		IGameEvent *event = gameeventmanager->CreateEvent( "spec_target_updated" );
-		if ( event )
-		{
-			gameeventmanager->FireEventClientSide( event );
-		}
-
-		if ( IsLocalPlayer() )
-		{
-			ResetToneMapping(1.0);
-		}
-		// NVNT notify haptics of changed player
-		if ( haptics )
-			haptics->OnPlayerChanged();
-
-		if ( IsLocalPlayer() )
-		{
-			// On a change of viewing mode or target, we may want to reset both head and torso to point at the new target.
-			g_ClientVirtualReality.AlignTorsoAndViewToWeapon();
-		}
+        OnObserverTargetUpdated();
 	}
+}
+
+void C_BasePlayer::OnObserverTargetUpdated()
+{
+    IGameEvent *event = gameeventmanager->CreateEvent("spec_target_updated");
+    if (event)
+    {
+        gameeventmanager->FireEventClientSide(event);
+    }
+
+    if (IsLocalPlayer())
+    {
+        ResetToneMapping(1.0f);
+        // On a change of viewing mode or target, we may want to reset both head and torso to point at the new target.
+        g_ClientVirtualReality.AlignTorsoAndViewToWeapon();
+    }
+    // NVNT notify haptics of changed player
+    if (haptics)
+        haptics->OnPlayerChanged();
 }
 
 
@@ -2835,17 +2836,17 @@ bool C_BasePlayer::GetSteamID( CSteamID *pID )
 	player_info_t pi;
 	if ( engine->GetPlayerInfo( entindex(), &pi ) )
 	{
-		if ( pi.friendsID && steamapicontext && steamapicontext->SteamUtils() )
+		if ( pi.friendsID && SteamUtils() )
 		{
 #if 1	// new
 			static EUniverse universe = k_EUniverseInvalid;
 
 			if ( universe == k_EUniverseInvalid )
-				universe = steamapicontext->SteamUtils()->GetConnectedUniverse();
+				universe = SteamUtils()->GetConnectedUniverse();
 
 			pID->InstancedSet( pi.friendsID, 1, universe, k_EAccountTypeIndividual );
 #else	// old
-			pID->InstancedSet( pi.friendsID, 1, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
+			pID->InstancedSet( pi.friendsID, 1, SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
 #endif
 
 			return true;

@@ -2,15 +2,13 @@
 
 #include "SettingsPage.h"
 
+#include "tier0/memdbgon.h"
+
 SettingsPage::SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
 {
     // Set proportionality of the panels inside the dialog
+    SetSize(10, 10);
     SetProportional(true);
-
-    // Set up the res file
-    char m_pszResFilePath[MAX_PATH];
-    Q_snprintf(m_pszResFilePath, MAX_PATH, "resource/ui/SettingsPanel_%s.res", pName);
-    LoadControlSettingsAndUserConfig(m_pszResFilePath);
 
     //Lastly, the scroll panel so we can scroll through our settings page.
     m_pScrollPanel = new SettingsPageScrollPanel(pParent, this, "ScrollablePanel");

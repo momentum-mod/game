@@ -71,23 +71,60 @@
 
 "Momentum.StartTimer"
 {
-	"channel"	"CHAN_ITEM"
-	"volume"	"0.32"
-	"soundlevel"  "SNDLVL_NONE"
-	"pitch"	"PITCH_NORM"
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
 
-	"wave"	"player/suit_sprint.wav"
+    "wave"    "timer/timer_start.wav"
+}
+
+"Momentum.FinishTimer"
+{
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
+
+    "wave"    "timer/timer_end.wav"
 }
 
 "Momentum.StopTimer"
 {
-	"channel"	"CHAN_ITEM"
-	"volume"	"0.32"
-	"soundlevel"  "SNDLVL_NONE"
-	"pitch"	"PITCH_NORM"
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
 
-	"wave"	"player/suit_denydevice.wav"
+    "wave"    "timer/timer_reset.wav"
 }
 
+"Momentum.FailedStartTimer"
+{
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
 
+    "wave"    "timer/timer_fail.wav"
+}
 
+"Momentum.AchievedWR"
+{
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
+
+    "wave"    "timer/timer_wr.wav"
+}
+
+"Momentum.AchievedPB"
+{
+    "channel"    "CHAN_ITEM"
+    "volume"    "0.32"
+    "soundlevel"  "SNDLVL_NONE"
+    "pitch"    "PITCH_NORM"
+
+    "wave"    "timer/timer_pb.wav"
+}

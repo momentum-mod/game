@@ -944,7 +944,7 @@ void ComboBox::OnKeyTyped(wchar_t unichar)
 	int itemToSelect = m_pDropDown->GetCurrentlyHighlightedItem();
 
 	if ( itemToSelect != itemSelected )
-    {
+	{
 		SelectMenuItem(itemToSelect);
 	}
 	else

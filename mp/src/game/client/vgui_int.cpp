@@ -26,8 +26,6 @@
 
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
-//#include "momentum/ui/IChangelogPanel.h"
-#include "momentum/ui/IContactPanel.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
 #include "momentum/ui/IMessageboxPanel.h"
 #include "clientmode_mom_normal.h"
@@ -126,22 +124,20 @@ public:
 static CHudTextureHandleProperty textureHandleConverter;
 
 // Momentum-related VGUI Panels
-void VGui_CreateMomentumPanels()
+inline void VGui_CreateMomentumPanels()
 {
     VPANEL gameMenu = enginevgui->GetPanel(PANEL_GAMEUIDLL);
     mapselector->Create(gameMenu);
     changelogpanel->Create(gameMenu);
     momentum_settings->Create(gameMenu);
-    contact_panel->Create(gameMenu);
     messageboxpanel->Create(gameMenu);
 }
 
-void VGui_DestroyMomentumPanels()
+inline void VGui_DestroyMomentumPanels()
 {
     mapselector->Destroy();
     changelogpanel->Destroy();
     momentum_settings->Destroy();
-    contact_panel->Destroy();
     messageboxpanel->Destroy();
 }
 

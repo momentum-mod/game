@@ -1,33 +1,42 @@
 #pragma once
 
-#include "cbase.h"
+// This class handles networking all of the overlap between players and
+// replay files. From an OOP standpoint, this is more efficient than having
+// two classes network the same variables.
 
-//This class handles networking all of the overlap between players and 
-//replay files. From an OOP standpoint, this is more efficient than having
-//two classes network the same variables.
-
-#ifdef CLIENT_DLL 
-#define CMOMRunEntityData C_MOMRunEntityData
+#ifdef CLIENT_DLL
+#define CMomRunEntityData C_MomRunEntityData
+EXTERN_RECV_TABLE(DT_MomRunEntityData);
+#else
+EXTERN_SEND_TABLE(DT_MomRunEntityData);
 #endif
 
-class CMOMRunEntityData
+class CMomRunEntityData
 {
-public:
+  public:
+    DECLARE_CLASS_NOBASE(CMomRunEntityData);
+    DECLARE_EMBEDDED_NETWORKVAR();
 
-    CMOMRunEntityData();
+    CMomRunEntityData();    
 
-    bool m_bAutoBhop;// Is the player using auto bhop?
-    bool m_bIsInZone;//This is true if the player is in a CTriggerTimerStage zone
-    bool m_bMapFinished;//Did the player finish the map?
-    bool m_bTimerRunning;//Is the timer currently running for this ent?
-    int m_iSuccessiveBhops; //How many successive bhops this player has
-    float m_flStrafeSync; //eyeangle based, perfect strafes / total strafes
-    float m_flStrafeSync2; //acceleration based, strafes speed gained / total strafes
-    float m_flLastJumpTime; //The last time that the player jumped
-    float m_flLastJumpVel; //Last jump velocity of the player
-    uint32 m_iRunFlags;//The run flags (W only/HSW/Scroll etc) of the player
-    int m_iCurrentZone;//Current stage/checkpoint the player is on
-    int m_iStartTick; //Tick that the entity started its timer
-	int m_iStartTickD; //The tick difference between timer and record
-    float m_flRunTime; //The time taken to do their most recent run
+    // If you are adding anything to this class, make sure to add it to the DataTables in the CPP file!
+
+    CNetworkVar(bool, m_bIsInZone);       // This is true if the player is in a CTriggerTimerStage zone
+    CNetworkVar(bool, m_bMapFinished);    // Did the player finish the map?
+    CNetworkVar(bool, m_bTimerRunning);   // Is the timer currently running for this ent?
+    CNetworkVar(float, m_flStrafeSync);   // eyeangle based, perfect strafes / total strafes
+    CNetworkVar(float, m_flStrafeSync2);  // acceleration based, strafes speed gained / total strafes
+    CNetworkVar(uint32, m_iRunFlags);     // The run flags (W only/HSW/Scroll etc) of the player
+    CNetworkVar(int, m_iCurrentTrack);    // The current track that this entity is on
+    CNetworkVar(int, m_iCurrentZone);     // Current stage/checkpoint the player is on
+    CNetworkVar(int, m_iOldZone);         // What the zone was before we entered the end zone
+    CNetworkVar(int, m_iOldTrack);        // What the track was before we entered the end zone
+    CNetworkVar(int, m_iStartTick);       // Tick that the entity started its timer
+    CNetworkVar(float, m_flTickRate);     // Interval per tick the run was done with
+    CNetworkVar(int, m_iRunTime);         // The time taken to do their most recent run, in ticks
+    CNetworkVar(float, m_flLastJumpTime); // The last time that the player jumped
+    CNetworkVar(float, m_flLastJumpVel);  // Last jump velocity of the player
+    CNetworkVar(float, m_flLastJumpZPos); // Z coordinate of player on jump
+
+    // If you are adding anything to this class, make sure to add it to the DataTables in the CPP file!
 };

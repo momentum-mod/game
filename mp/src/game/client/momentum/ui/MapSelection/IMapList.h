@@ -1,88 +1,123 @@
-#ifndef IMAPLIST_H
-#define IMAPLIST_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-//Used by mapdisplay_t, holds map information for filtering and displaying
-struct mapstruct_t
+struct MapData;
+
+namespace vgui
 {
-    char m_szMapName[MAX_PATH];//map name to use for "map m_cMapName"
-    int m_iGameMode;//GAMEMODE (Surf/Bhop/KZ/etc)
-    bool m_bHasStages;//True if the map has stages
-    bool m_bCompleted;//If the player has completed this map or not (read .tim files to set this)
-    int m_iDifficulty;//Difficulty of map (Tier 1, 2 etc)
-    char m_szBestTime[64];//Best time for the map (MOM_TODO: determine best size for this)
+    class IImage;
+}
 
-    mapstruct_t()
+// Used by the MapSelectorDialog, encapsulates a map object for the list
+struct MapDisplay_t
+{
+    MapDisplay_t()
     {
-        m_iGameMode = MOMGM_UNKNOWN;
-        m_bHasStages = false;
-        m_bCompleted = false;
-        m_iDifficulty = 1;
-        m_szBestTime[0] = '\0';
+        m_iListID = -1;
+        m_bNeedsShown = true;
+        m_bNeedsUpdate = true;
+        m_pMap = nullptr;
+    }
+    MapData *m_pMap;      // the map struct, containing the information for the map
+    int m_iListID;        // the VGUI2 list panel index for displaying this server
+    bool m_bNeedsShown, m_bNeedsUpdate;
+};
+
+// Used by map filter panel
+struct MapFilters_t
+{
+    MapFilters_t()
+    {
+        m_iDifficultyLow = m_iDifficultyHigh = m_iMapLayout = m_iGameMode = -1;
         m_szMapName[0] = '\0';
+        m_bHideCompleted = false;
+    }
+
+    char m_szMapName[MAX_MAP_NAME];
+    int m_iDifficultyLow; // Lower bound for the difficulty, maps have to be >= this
+    int m_iDifficultyHigh; // High bound, maps have to be <= this
+    int m_iMapLayout; // Map layout (linear/staged)
+    int m_iGameMode; // Game mode of the map
+    bool m_bHideCompleted; //Hide completed maps
+
+    void ToKV(KeyValues *pInto)
+    {
+        pInto->SetInt("type", m_iGameMode);
+        pInto->SetString("name", m_szMapName);
+        pInto->SetInt("difficulty_low", m_iDifficultyLow);
+        pInto->SetInt("difficulty_high", m_iDifficultyHigh);
+        pInto->SetBool("HideCompleted", m_bHideCompleted);
+        pInto->SetInt("layout", m_iMapLayout);
+    }
+    void FromKV(KeyValues *pFrom)
+    {
+        //Game-mode selection
+        m_iGameMode = pFrom->GetInt("type");
+
+        //"Map"
+        Q_strncpy(m_szMapName, pFrom->GetString("name"), sizeof(m_szMapName));
+
+        //Map layout
+        m_iMapLayout = pFrom->GetInt("layout");
+
+        //HideCompleted maps
+        m_bHideCompleted = pFrom->GetBool("HideCompleted");
+
+        //Difficulty
+        m_iDifficultyLow = pFrom->GetInt("difficulty_low");
+        m_iDifficultyHigh = pFrom->GetInt("difficulty_high");
+    }
+    void Reset()
+    {
+        m_szMapName[0] = '\0';
+        m_iDifficultyLow = m_iDifficultyHigh = m_iMapLayout = m_iGameMode = 0;
+        m_bHideCompleted = false;
+    }
+    void operator=(const MapFilters_t &other)
+    {
+        Q_strncpy(m_szMapName, other.m_szMapName, sizeof(m_szMapName));
+        m_iDifficultyLow = other.m_iDifficultyLow;
+        m_iDifficultyHigh = other.m_iDifficultyHigh;
+        m_iMapLayout = other.m_iMapLayout;
+        m_iGameMode = other.m_iGameMode;
+        m_bHideCompleted = other.m_bHideCompleted;
+    }
+    bool operator==(const MapFilters_t &other) const 
+    {
+        return FStrEq(m_szMapName, other.m_szMapName) && m_iDifficultyLow == other.m_iDifficultyLow &&
+        m_iDifficultyHigh == other.m_iDifficultyHigh && m_iMapLayout == other.m_iMapLayout && m_iGameMode == other.m_iGameMode
+        && m_bHideCompleted == other.m_bHideCompleted;
     }
 };
 
-//Used by the MapSelectorDialog, encapsulates a map object for the list
-struct mapdisplay_t
+enum MapListType_e
 {
-    mapdisplay_t()
-    {
-        m_iMapImageIndex = 1; //Defaults to 1 as it's the invalid map index
-        m_iListID = -1;
-        m_iServerID = -1;
-        m_bDoNotRefresh = true;
-        m_mMap = mapstruct_t();
-    }
-    mapstruct_t m_mMap;         // the map struct, containing the information for the map
-    int			m_iListID;		// the VGUI2 list panel index for displaying this server
-    int			m_iServerID;	// the matchmaking interface index for this server MOM_TODO: remove this
-    int         m_iMapImageIndex; // the map's image index in the map list's image list
-    bool		m_bDoNotRefresh;
-    bool operator==(const mapdisplay_t &rhs) const { return rhs.m_iServerID == m_iServerID; }
+    MAP_LIST_BROWSE = 0,
+    MAP_LIST_LIBRARY,
+    MAP_LIST_FAVORITES,
+    MAP_LIST_TESTING,
 };
 
 //-----------------------------------------------------------------------------
 // Purpose: Interface to accessing a game list
 //-----------------------------------------------------------------------------
-class IMapList
+abstract_class IMapList
 {
-public:
-
-    enum InterfaceItem_e
-    {
-        FILTERS,
-        GETNEWLIST,//MOM_TODO: Change this to be "MAPSEARCH" ? Local uses its own update methods
-        ADDSERVER,//MOM_TODO: remove?
-        ADDCURRENTSERVER,//MOM_TODO: remove?
-    };
-
-    // returns true if the game list supports the specified ui elements
-    virtual bool SupportsItem(InterfaceItem_e item) = 0;
-
-    // starts the servers refreshing
-    virtual void StartRefresh() = 0;
+  public:
+    // Gets the map list type
+    virtual MapListType_e GetMapListType() = 0;
 
     // gets a new map list
     virtual void GetNewMapList() = 0;
 
-    // stops current refresh/GetNewServerList()
-    virtual void StopRefresh() = 0;
+    // When the map selection dialog selects this tab
+    virtual void OnTabSelected() = 0;
 
-    // returns true if the list is currently refreshing servers
-    virtual bool IsRefreshing() = 0;
+    // Loads the filters from disk
+    virtual void LoadFilters() = 0;
 
-    // gets information about specified server
-    virtual mapstruct_t *GetMap(unsigned int serverID) = 0;
-
-    // called when Connect button is pressed
-    virtual void OnMapStart() = 0;
+    // Applies filters to the list
+    virtual void ApplyFilters(MapFilters_t filters) = 0;
 
     // invalid server index
     virtual int GetInvalidMapListID() = 0;
 };
-
-
-#endif // IMAPLIST_H

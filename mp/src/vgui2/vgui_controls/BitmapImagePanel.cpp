@@ -22,17 +22,6 @@
 
 using namespace vgui;
 
-//-----------------------------------------------------------------------------
-/**
- * Simple utility function to allocate memory and duplicate a string
- */
-static inline char *CloneString( const char *str )
-{
-	char *cloneStr = new char [ strlen(str)+1 ];
-	strcpy( cloneStr, str );
-	return cloneStr;
-}
-
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CBitmapImagePanel, BitmapImagePanel );
 
 //-----------------------------------------------------------------------------
@@ -41,12 +30,13 @@ DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CBitmapImagePanel, BitmapImagePanel );
 CBitmapImagePanel::CBitmapImagePanel( Panel *parent, char const *panelName, 
 	char const *filename /*= NULL*/ ) : Panel( parent, panelName )
 {
-	m_pImage = NULL;
+    InitSettings();
+	m_pImage = nullptr;
 
 	SetBounds( 0, 0, 100, 100 );
 
-	m_pszImageName = NULL;
-	m_pszColorName = NULL;
+	m_ImageName = nullptr;
+	m_ColorName = nullptr;
 
 	m_hardwareFiltered = false;
 	m_preserveAspectRatio = false;
@@ -54,16 +44,17 @@ CBitmapImagePanel::CBitmapImagePanel( Panel *parent, char const *panelName,
 
 	if ( filename && filename[ 0 ] )
 	{
+        setTexture(filename);
 		m_pImage = scheme()->GetImage( filename, NULL );
-		m_pszImageName = CloneString( filename );
+        m_ImageName = filename;
 	}
 
 	m_bgColor = Color(255, 255, 255, 255);
 }
 CBitmapImagePanel::~CBitmapImagePanel()
 {
-	delete [] m_pszImageName;
-	delete [] m_pszColorName;
+    m_ImageName.Purge();
+    m_ColorName.Purge();
 }
 
 
@@ -189,19 +180,17 @@ void CBitmapImagePanel::setTexture( char const *filename, bool hardwareFiltered 
 {
 	m_hardwareFiltered = hardwareFiltered;
 
-	if ( m_pszImageName )
-	{
-		delete[] m_pszImageName;
-		m_pszImageName = NULL;
-	}
+    if (!m_ImageName.IsEmpty())
+        m_ImageName.Purge();
+
 	if ( filename && filename[ 0 ] )
 	{
 		m_pImage = scheme()->GetImage( filename, m_hardwareFiltered );
-		m_pszImageName = CloneString( filename );
+        m_ImageName = filename;
 	}
 	else
 	{
-		m_pImage = NULL;
+		m_pImage = nullptr;
 	}
 }
 
@@ -220,14 +209,10 @@ void CBitmapImagePanel::SetContentAlignment(Label::Alignment alignment)
 void CBitmapImagePanel::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
-	if (m_pszImageName)
-	{
-		outResourceData->SetString("image", m_pszImageName);
-	}
-	if (m_pszColorName)
-	{
-		outResourceData->SetString("imagecolor", m_pszColorName);
-	}
+	
+    outResourceData->SetString("image", m_ImageName);
+	outResourceData->SetString("imagecolor", m_ColorName);
+
 	const char *alignmentString = "";
 	switch ( m_contentAlignment )
 	{
@@ -243,8 +228,8 @@ void CBitmapImagePanel::GetSettings(KeyValues *outResourceData)
 	default:			alignmentString = "center";	break;
 	}
 	outResourceData->SetString( "imageAlignment", alignmentString );
-	outResourceData->SetInt("preserveAspectRatio", m_preserveAspectRatio);
-	outResourceData->SetInt("filtered", m_hardwareFiltered);
+	outResourceData->SetBool("preserveAspectRatio", m_preserveAspectRatio);
+	outResourceData->SetBool("filtered", m_hardwareFiltered);
 }
 
 //-----------------------------------------------------------------------------
@@ -252,17 +237,11 @@ void CBitmapImagePanel::GetSettings(KeyValues *outResourceData)
 //-----------------------------------------------------------------------------
 void CBitmapImagePanel::ApplySettings(KeyValues *inResourceData)
 {
-	if ( m_pszImageName )
-	{
-		delete[] m_pszImageName;
-		m_pszImageName = NULL;
-	}
+	if ( !m_ImageName.IsEmpty() )
+        m_ImageName.Purge();
 
-	if ( m_pszColorName )
-	{
-		delete[] m_pszColorName;
-		m_pszColorName = NULL;
-	}
+	if (!m_ColorName.IsEmpty())
+        m_ColorName.Purge();
 
 	const char *imageName = inResourceData->GetString("image", "");
 	if (*imageName)
@@ -273,7 +252,7 @@ void CBitmapImagePanel::ApplySettings(KeyValues *inResourceData)
 	const char *colorName = inResourceData->GetString("imagecolor", "");
 	if (*colorName)
 	{
-		m_pszColorName = CloneString( colorName );
+        m_ColorName = colorName;
 		InvalidateLayout(false,true); // force ApplySchemeSettings to run
 	}
 
@@ -281,7 +260,7 @@ void CBitmapImagePanel::ApplySettings(KeyValues *inResourceData)
 	if (keyString && *keyString)
 	{
 		int align = -1;
-
+        
 		if ( !stricmp(keyString, "north-west") )
 		{
 			align = Label::a_northwest;
@@ -325,17 +304,8 @@ void CBitmapImagePanel::ApplySettings(KeyValues *inResourceData)
 		}
 	}
 
-	keyString = inResourceData->GetString("preserveAspectRatio", "");
-	if (keyString && *keyString)
-	{
-		m_preserveAspectRatio = atoi( keyString ) != 0;
-	}
-
-	keyString = inResourceData->GetString("filtered", "");
-	if (keyString && *keyString)
-	{
-		m_hardwareFiltered = atoi( keyString ) != 0;
-	}
+    m_preserveAspectRatio = inResourceData->GetBool("preserveAspectRatio", false);
+    m_hardwareFiltered = inResourceData->GetBool("filtered", false);
 
 	BaseClass::ApplySettings(inResourceData);
 }
@@ -347,18 +317,19 @@ void CBitmapImagePanel::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	if ( m_pszColorName )
+	if ( !m_ColorName.IsEmpty() )
 	{
-		setImageColor( pScheme->GetColor( m_pszColorName, m_bgColor ) );
+		setImageColor( pScheme->GetColor( m_ColorName, m_bgColor ) );
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Describes editing details
-//-----------------------------------------------------------------------------
-const char *CBitmapImagePanel::GetDescription()
+void CBitmapImagePanel::InitSettings()
 {
-	static char buf[1024];
-	_snprintf(buf, sizeof(buf), "%s, string image, string imagecolor, alignment imageAlignment, int preserveAspectRatio, int filtered", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"image", TYPE_STRING},
+    {"imagecolor", TYPE_STRING},
+    {"imageAlignment", TYPE_ALIGNMENT},
+    {"preserveAspectRatio", TYPE_BOOL},
+    {"filtered", TYPE_BOOL}
+    END_PANEL_SETTINGS();
 }

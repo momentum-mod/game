@@ -14,6 +14,8 @@
 #endif
 #include "steam/steam_api.h"
 
+#include "tier0/memdbgon.h"
+
 DECLARE_BUILD_FACTORY( CAvatarImagePanel );
 
 
@@ -121,36 +123,36 @@ void CAvatarImage::LoadAvatarImage()
 	return;
 #endif
 	// attempt to retrieve the avatar image from Steam
-	if ( m_bLoadPending && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() && gpGlobals->curtime >= m_fNextLoadTime )
+	if ( m_bLoadPending && SteamFriends() && SteamUtils() && gpGlobals->curtime >= m_fNextLoadTime )
 	{
-		if ( !steamapicontext->SteamFriends()->RequestUserInformation( m_SteamID, false ) )
+		if ( !SteamFriends()->RequestUserInformation( m_SteamID, false ) )
 		{
 			int iAvatar = 0;
 			switch( m_AvatarSize )
 			{
 				case k_EAvatarSize32x32: 
-					iAvatar = steamapicontext->SteamFriends()->GetSmallFriendAvatar( m_SteamID );
+					iAvatar = SteamFriends()->GetSmallFriendAvatar( m_SteamID );
 					break;
 				case k_EAvatarSize64x64: 
-					iAvatar = steamapicontext->SteamFriends()->GetMediumFriendAvatar( m_SteamID );
+					iAvatar = SteamFriends()->GetMediumFriendAvatar( m_SteamID );
 					break;
 				case k_EAvatarSize184x184: 
-					iAvatar = steamapicontext->SteamFriends()->GetLargeFriendAvatar( m_SteamID );
+					iAvatar = SteamFriends()->GetLargeFriendAvatar( m_SteamID );
 					break;
 			}
 
-			//Msg( "Got avatar %d for SteamID %llud (%s)\n", iAvatar, m_SteamID.ConvertToUint64(), steamapicontext->SteamFriends()->GetFriendPersonaName( m_SteamID ) );
+			//Msg( "Got avatar %d for SteamID %llud (%s)\n", iAvatar, m_SteamID.ConvertToUint64(), SteamFriends()->GetFriendPersonaName( m_SteamID ) );
 
 			if ( iAvatar > 0 ) // if its zero, user doesn't have an avatar.  If -1, Steam is telling us that it's fetching it
 			{
 				uint32 wide = 0, tall = 0;
-				if ( steamapicontext->SteamUtils()->GetImageSize( iAvatar, &wide, &tall ) && wide > 0 && tall > 0 )
+				if ( SteamUtils()->GetImageSize( iAvatar, &wide, &tall ) && wide > 0 && tall > 0 )
 				{
 					int destBufferSize = wide * tall * 4;
-					byte *rgbDest = (byte*)stackalloc( destBufferSize );
-					if ( steamapicontext->SteamUtils()->GetImageRGBA( iAvatar, rgbDest, destBufferSize ) )
+					uint8 *rgbDest = (uint8*)stackalloc( destBufferSize );
+					if ( SteamUtils()->GetImageRGBA( iAvatar, rgbDest, destBufferSize ) )
 						InitFromRGBA( iAvatar, rgbDest, wide, tall );
-					
+
 					stackfree( rgbDest );
 				}
 			}
@@ -178,8 +180,8 @@ void CAvatarImage::UpdateFriendStatus( void )
 	if ( !m_SteamID.IsValid() )
 		return;
 
-	if ( steamapicontext->SteamFriends() && steamapicontext->SteamUtils() )
-		m_bFriend = steamapicontext->SteamFriends()->HasFriend( m_SteamID, k_EFriendFlagImmediate );
+	if ( SteamFriends() && SteamUtils() )
+		m_bFriend = SteamFriends()->HasFriend( m_SteamID, k_EFriendFlagImmediate );
 }
 
 //-----------------------------------------------------------------------------
@@ -191,7 +193,7 @@ void CAvatarImage::InitFromRGBA( int iAvatar, const byte *rgba, int width, int h
 	if ( iTexIndex == s_AvatarImageCache.InvalidIndex() )
 	{
 		m_iTextureID = vgui::surface()->CreateNewTextureID( true );
-		vgui::surface()->DrawSetTextureRGBA( m_iTextureID, rgba, width, height, false, false );
+		vgui::surface()->DrawSetTextureRGBAEx( m_iTextureID, rgba, width, height, IMAGE_FORMAT_RGBA8888 );
 		iTexIndex = s_AvatarImageCache.Insert( AvatarImagePair_t( m_SteamID, iAvatar ) );
 		s_AvatarImageCache[ iTexIndex ] = m_iTextureID;
 	}
@@ -342,9 +344,9 @@ void CAvatarImagePanel::SetPlayer( int entindex, EAvatarSize avatarSize )
 	player_info_t pi;
 	if ( engine->GetPlayerInfo(entindex, &pi) )
 	{
-		if ( pi.friendsID != 0 	&& steamapicontext->SteamUtils() )
+		if ( pi.friendsID != 0 	&& SteamUtils() )
 		{		
-			CSteamID steamIDForPlayer( pi.friendsID, 1, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
+			CSteamID steamIDForPlayer( pi.friendsID, 1, SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
 			SetPlayer(steamIDForPlayer, avatarSize);
 		}
 		else
@@ -450,7 +452,10 @@ void CAvatarImagePanel::UpdateSize()
 
 void CAvatarImagePanel::ApplySettings( KeyValues *inResourceData )
 {
-	m_bScaleImage = inResourceData->GetInt("scaleImage", 0);
+	m_bScaleImage = inResourceData->GetBool("scaleImage");
+    const char *pDefaultImage = inResourceData->GetString("defaultImage", nullptr);
+    if (pDefaultImage)
+        m_pImage->SetDefaultImage(vgui::scheme()->GetImage(pDefaultImage, false));
 
 	BaseClass::ApplySettings(inResourceData);
 }

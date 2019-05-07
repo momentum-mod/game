@@ -1,31 +1,73 @@
-#include "pch_mapselection.h"
+#include "cbase.h"
+#include "filesystem.h"
+#include <ctime>
 
-static CMapSelectorDialog *s_InternetDlg = nullptr;
+#include "MapSelectorDialog.h"
+#include "LibraryMaps.h"
+#include "BrowseMaps.h"
+#include "FavoriteMaps.h"
+#include "MapContextMenu.h"
+#include "MapInfoDialog.h"
+#include "MapFilterPanel.h"
+#include "MapDownloadProgress.h"
+
+#include "mom_map_cache.h"
+#include "mom_modulecomms.h"
+#include "util/mom_util.h"
+#include "controls/FileImage.h"
+
+#include "IMessageboxPanel.h"
+#include "vgui_controls/PropertySheet.h"
+#include "vgui_controls/ImageList.h"
+#include "vgui/IVGui.h"
+
+#include "tier0/memdbgon.h"
+
+using namespace vgui;
+
+static CMapSelectorDialog *s_MapDlg = nullptr;
 
 CMapSelectorDialog &MapSelectorDialog()
 {
-    return *CMapSelectorDialog::GetInstance();
+    return *s_MapDlg;
+}
+
+MapListData::MapListData(): m_pMapData(nullptr), m_pKv(nullptr), m_iThumbnailImageIndx(INDX_MAP_THUMBNAIL_UNKNOWN), m_pImage(nullptr)
+{
+}
+
+MapListData::~MapListData()
+{
+    if (m_pKv)
+        m_pKv->deleteThis();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
+CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
+    SetDefLessFunc(m_mapMapListData);
+    SetDefLessFunc(m_mapMapDownloads);
+    SetDefLessFunc(m_mapCancelConfirmDlgs);
+    SetDefLessFunc(m_mapMapInfoDialogs);
+
     SetParent(parent);
-    s_InternetDlg = this;
+    SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
+    SetProportional(true);
+    SetSize(GetScaledVal(680), GetScaledVal(400));
+    s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
 
     LoadUserData();
 
-    m_pLocal = new CLocalMaps(this);
-    //MOM_TODO: uncomment this: m_pOnline = new COnlineMaps(this);
+    m_pImageList = new ImageList(false);
+    LoadDefaultImageList();
 
-    SetMinimumSize(680, 400);
-    SetSize(680, 400);
-
-    m_pGameList = static_cast<IMapList*>(m_pLocal);
+    m_pLibraryMaps = new CLibraryMaps(this);
+    m_pBrowseMaps = new CBrowseMaps(this);
+    m_pFavoriteMaps = new CFavoriteMaps(this);
 
     m_pContextMenu = new CMapContextMenu(this);
 
@@ -33,29 +75,51 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
     m_pTabPanel = new PropertySheet(this, "MapTabs");
     m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
-    m_pTabPanel->AddPage(m_pLocal, "#MOM_MapSelector_LocalMaps");
-    //MOM_TODO: uncomment: m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_OnlineMaps");
+    m_pTabPanel->SetSmallTabs(true);
+    // Defaults to first added page
+    m_pTabPanel->AddPage(m_pBrowseMaps, "#MOM_MapSelector_BrowseMaps");
+    m_pTabPanel->AddPage(m_pFavoriteMaps, "#MOM_MapSelector_FavoriteMaps");
+    m_pTabPanel->AddPage(m_pLibraryMaps, "#MOM_MapSelector_LibraryMaps");
 
     m_pTabPanel->AddActionSignalTarget(this);
 
-    m_pStatusLabel = new Label(this, "StatusLabel", "");
+    m_pFilterPanel = new MapFilterPanel(this);
 
-    LoadControlSettingsAndUserConfig("resource/ui/DialogMapSelector.res");
+    LoadControlSettings("resource/ui/MapSelector/DialogMapSelector.res");
 
-    m_pStatusLabel->SetText("");
+    SetMinimumSize(GetScaledVal(340), GetScaledVal(250));
 
     // load current tab
-    const char *mapList = m_pSavedData->GetString("MapList", "local");
-    if (!Q_stricmp(mapList, "local"))
+    MapListType_e current = (MapListType_e) m_pSavedData->GetInt("current", MAP_LIST_BROWSE);
+    CBaseMapsPage *pCurrentTab;
+    switch (current)
     {
-        m_pTabPanel->SetActivePage(m_pLocal);
-    }
-    else if (!Q_stricmp(mapList, "online"))
-    {
-        m_pTabPanel->SetActivePage(m_pOnline);
+    case MAP_LIST_LIBRARY:
+        pCurrentTab = m_pLibraryMaps;
+        break;
+    case MAP_LIST_FAVORITES:
+        pCurrentTab = m_pFavoriteMaps;
+        break;
+    case MAP_LIST_BROWSE:
+    default:
+        pCurrentTab = m_pBrowseMaps;
+        break;
     }
 
-    ivgui()->AddTickSignal(GetVPanel());
+    m_pTabPanel->SetActivePage(pCurrentTab);
+
+    SetTitle("#MOM_MapSelector_Maps", true);
+    SetVisible(false);
+
+    // Listen for map cache events
+    m_iMapDataIndx = g_pModuleComms->ListenForEvent("map_data_update", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDataUpdated));
+    m_iMapCacheUpdateIndx = g_pModuleComms->ListenForEvent("map_cache_updated", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapCacheUpdated));
+    // Listen for download events
+    m_iDownloadQueueIndx = g_pModuleComms->ListenForEvent("map_download_queued", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadQueued));
+    m_iDownloadStartIndx = g_pModuleComms->ListenForEvent("map_download_start", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadStart));
+    m_iDownloadSizeIndx = g_pModuleComms->ListenForEvent("map_download_size", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadSize));
+    m_iDownloadProgressIndx = g_pModuleComms->ListenForEvent("map_download_progress", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadProgress));
+    m_iDownloadEndIndx = g_pModuleComms->ListenForEvent("map_download_end", UtlMakeDelegate(this, &CMapSelectorDialog::OnMapDownloadEnd));
 }
 
 //-----------------------------------------------------------------------------
@@ -65,53 +129,46 @@ CMapSelectorDialog::~CMapSelectorDialog()
 {
     if (m_pContextMenu)
         m_pContextMenu->DeletePanel();
-
+    
     // Attempt to save user data, if not that's okay
     SaveUserData();
-
     if (m_pSavedData)
-    {
         m_pSavedData->deleteThis();
-    }
+
+    m_mapMapDownloads.PurgeAndDeleteElements();
+    m_mapCancelConfirmDlgs.PurgeAndDeleteElements();
+    m_mapMapListData.PurgeAndDeleteElements();
+
+    CloseAllMapInfoDialogs();
+
+    // Map cache events
+    g_pModuleComms->RemoveListener("map_data_update", m_iMapDataIndx);
+    g_pModuleComms->RemoveListener("map_cache_updated", m_iMapCacheUpdateIndx);
+    // Download events
+    g_pModuleComms->RemoveListener("map_download_queued", m_iDownloadQueueIndx);
+    g_pModuleComms->RemoveListener("map_download_start", m_iDownloadStartIndx);
+    g_pModuleComms->RemoveListener("map_download_size", m_iDownloadSizeIndx);
+    g_pModuleComms->RemoveListener("map_download_progress", m_iDownloadProgressIndx);
+    g_pModuleComms->RemoveListener("map_download_end", m_iDownloadEndIndx);
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Called once to set up
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::Initialize()
-{
-    SetTitle("#MOM_MapSelector_Maps", true);
-    SetVisible(false);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: returns a map in the list
-//-----------------------------------------------------------------------------
-mapstruct_t *CMapSelectorDialog::GetMap(unsigned int serverID)
-{
-    return m_pGameList->GetMap(serverID);
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Activates and gives the tab focus
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::Open()
 {
+    MoveToCenterOfScreen();
     BaseClass::Activate();
+    PostActionSignal(new KeyValues("MapSelectorOpened"));
     m_pTabPanel->RequestFocus();
+    m_pCurrentMapList->LoadFilters();
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: Called every frame, updates animations for this module
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::OnTick()
+void CMapSelectorDialog::OnClose()
 {
-    BaseClass::OnTick();
-    //vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
+    SaveUserData();
+    BaseClass::OnClose();
+    PostActionSignal(new KeyValues("MapSelectorClosed"));
 }
 
 
@@ -122,34 +179,12 @@ void CMapSelectorDialog::LoadUserData()
 {
     // free any old filters
     if (m_pSavedData)
-    {
         m_pSavedData->deleteThis();
-    }
 
     m_pSavedData = new KeyValues("Filters");
-    if (!m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD"))
-    {
-        // doesn't matter if the file is not found, defaults will work successfully and file will be created on exit
-    }
+    m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 
-    KeyValues *filters = m_pSavedData->FindKey("Filters", false);
-    if (filters)
-    {
-        m_pFilterData = filters->MakeCopy();
-        m_pSavedData->RemoveSubKey(filters);
-    }
-    else
-    {
-        m_pFilterData = new KeyValues("Filters");
-    }
-
-    int wide, tall;
-    surface()->GetScreenSize(wide, tall);
-
-    SetPos(wide / 2, tall / 3);
-
-    InvalidateLayout();
-    Repaint();
+    m_pFilterData = m_pSavedData->FindKey("Filters", true);
 }
 
 //-----------------------------------------------------------------------------
@@ -159,194 +194,472 @@ void CMapSelectorDialog::SaveUserData()
 {
     if (!g_pFullFileSystem) return;
 
-    m_pSavedData->Clear();
-    m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
-
     // set the current tab
-    if (m_pGameList == m_pLocal)
-    {
-        m_pSavedData->SetString("MapList", "local");
-    }
-    else if (m_pGameList == m_pOnline)
-    {
-        m_pSavedData->SetString("MapList", "online");//MOM_TODO
-    }
+    m_pSavedData->SetInt("current", m_pCurrentMapList->GetMapListType());
 
-    m_pSavedData->RemoveSubKey(m_pSavedData->FindKey("Filters")); // remove the saved subkey and add our subkey
-    m_pSavedData->AddSubKey(m_pFilterData->MakeCopy());
     m_pSavedData->SaveToFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 
     // save per-page config
     SaveUserConfig();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: refreshes the page currently visible
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::RefreshCurrentPage()
+inline IImage* LoadFileImage(const char *pPath, int wide, int tall, IImage *pDefault)
 {
-    if (m_pGameList)
+    FileImage *pFileImage = new FileImage(pDefault);
+    if (pFileImage->LoadFromFile(pPath))
+        pFileImage->SetSize(wide, tall);
+    return pFileImage;
+}
+
+void CMapSelectorDialog::LoadDefaultImageList()
+{
+    // Work backwards, since the first call will do the growth and fill with nulls,
+    // and subsequent calls only replace nulls with actual images
+    IImage *pNullImage = scheme()->GetImage("", false);
+    const int wide = GetScaledVal(HEADER_ICON_SIZE);
+    const int tall = GetScaledVal(HEADER_ICON_SIZE);
+    const int layoutDim = GetScaledVal(20);
+    m_pImageList->SetImageAtIndex(INDX_MAP_IS_STAGED, LoadFileImage("materials/vgui/icon/map_selector/Staged.png", layoutDim, layoutDim, pNullImage));
+    m_pImageList->SetImageAtIndex(INDX_MAP_IS_LINEAR, LoadFileImage("materials/vgui/icon/map_selector/Linear.png", layoutDim, layoutDim, pNullImage));
+    m_pImageList->SetImageAtIndex(INDX_MAP_NOT_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/NotInFavorites.png", wide, tall, pNullImage));
+    m_pImageList->SetImageAtIndex(INDX_MAP_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/InFavorites.png", wide, tall, pNullImage));
+    m_pImageList->SetImageAtIndex(INDX_MAP_NOT_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/NotInLibrary.png", wide, tall, pNullImage));
+    m_pImageList->SetImageAtIndex(INDX_MAP_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/InLibrary.png", wide, tall, pNullImage));
+    m_pImageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, scheme()->GetImage("maps/invalid_map", false));
+}
+
+void CMapSelectorDialog::OnMapCacheUpdated(KeyValues *pKv)
+{
+    // Pass through to the base maps pages
+    const auto pMsg = pKv->MakeCopy();
+    pMsg->SetName("MapCacheUpdated");
+    PostActionSignal(pMsg);
+}
+
+void CMapSelectorDialog::OnMapDataUpdated(KeyValues *pKv)
+{
+    // Map updated from cache, do it here
+    uint32 mapID = pKv->GetInt("id");
+    UpdateMapListData(mapID, pKv->GetBool("main"), pKv->GetBool("info"),
+                      pKv->GetBool("pb"), pKv->GetBool("wr"),
+                      pKv->GetBool("thumbnail"));
+
+    // Update the map info dialog as well, if it exists
+    const auto indx = m_mapMapInfoDialogs.Find(mapID);
+    if (m_mapMapInfoDialogs.IsValidIndex(indx))
+        m_mapMapInfoDialogs[indx]->OnMapDataUpdate(pKv);
+}
+
+void CMapSelectorDialog::CreateMapListData(MapData* pData)
+{
+    if (pData)
     {
-        m_pGameList->StartRefresh();
+        MapListData *mapListData = new MapListData;
+        mapListData->m_pMapData = pData;
+        mapListData->m_pKv = new KeyValues("Map");
+        m_mapMapListData.Insert(pData->m_uID, mapListData);
+        UpdateMapListData(pData->m_uID, true, true, true, true, true);
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Updates status test at bottom of window
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::UpdateStatusText(const char *fmt, ...)
+void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail)
 {
-    if (!m_pStatusLabel)
-        return;
-
-    if (fmt && strlen(fmt) > 0)
+    const auto indx = m_mapMapListData.Find(uMapID);
+    if (!m_mapMapListData.IsValidIndex(indx))
     {
-        char str[1024];
-        va_list argptr;
-        va_start(argptr, fmt);
-        _vsnprintf(str, sizeof(str), fmt, argptr);
-        va_end(argptr);
+        CreateMapListData(g_pMapCache->GetMapDataByID(uMapID));
+        return;
+    }
 
-        m_pStatusLabel->SetText(str);
+    MapListData *pMap = m_mapMapListData[indx];
+    MapData *pMapData = pMap->m_pMapData;
+    KeyValues *pDataKv = pMap->m_pKv;
+
+    if (bMain)
+    {
+        pDataKv->SetString(KEYNAME_MAP_NAME, pMapData->m_szMapName);
+        pDataKv->SetInt(KEYNAME_MAP_ID, pMapData->m_uID);
+        pDataKv->SetInt(KEYNAME_MAP_TYPE, pMapData->m_eType);
+        pDataKv->SetInt(KEYNAME_MAP_STATUS, pMapData->m_eMapStatus);
+        pDataKv->SetInt(KEYNAME_MAP_IN_LIBRARY, pMapData->m_bInLibrary ? INDX_MAP_IN_LIBRARY : INDX_MAP_NOT_IN_LIBRARY);
+        pDataKv->SetInt(KEYNAME_MAP_IN_FAVORITES, pMapData->m_bInFavorites ? INDX_MAP_IN_FAVORITES : INDX_MAP_NOT_IN_FAVORITES);
+
+        pDataKv->SetUint64(KEYNAME_MAP_LAST_PLAYED_SORT, pMapData->m_tLastPlayed);
+        if (pMapData->m_tLastPlayed > 0)
+        {
+            char timeAgo[16];
+            bool bRes = MomUtil::GetTimeAgoString(&pMapData->m_tLastPlayed, timeAgo, 16);
+            pDataKv->SetString(KEYNAME_MAP_LAST_PLAYED, bRes ? timeAgo : "#MOM_NotApplicable");
+        }
+        else
+            pDataKv->SetString(KEYNAME_MAP_LAST_PLAYED, "#MOM_NotApplicable");
+
+        // Set colors based on download state
+        if (pMapData->m_bMapFileNeedsUpdate)
+        {
+            if (!IsMapDownloading(uMapID))
+            {
+                if (g_pMapCache->IsMapQueuedToDownload(uMapID))
+                    pDataKv->SetColor("cellcolor", COLOR_BLUE); // MOM_TODO make this a scheme color
+                else
+                    pDataKv->SetColor("cellcolor", COLOR_RED); // MOM_TODO make this a scheme color
+            }
+        }
+        else
+        {
+            KeyValues *pCell = pDataKv->FindKey("cellcolor");
+            if (pCell)
+            {
+                pDataKv->RemoveSubKey(pCell);
+                pCell->deleteThis();
+            }
+        }
+    }
+
+    if (bInfo)
+    {
+        pDataKv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapData->m_MainTrack.m_iDifficulty);
+        pDataKv->SetInt(KEYNAME_MAP_LAYOUT, pMapData->m_MainTrack.m_bIsLinear ? INDX_MAP_IS_LINEAR : INDX_MAP_IS_STAGED);
+
+        pDataKv->SetString(KEYNAME_MAP_CREATION_DATE_SORT, pMapData->m_Info.m_szCreationDate);
+
+        time_t creationDateTime;
+        if (MomUtil::ISODateToTimeT(pMapData->m_Info.m_szCreationDate, &creationDateTime))
+        {
+            wchar_t date[32];
+            wcsftime(date, 32, L"%b %d, %Y", localtime(&creationDateTime));
+            pDataKv->SetWString(KEYNAME_MAP_CREATION_DATE, date);
+        }
+    }
+
+    if (bPB)
+    {
+        if (pMapData->m_PersonalBest.m_bValid)
+        {
+            char szBestTime[BUFSIZETIME];
+            MomUtil::FormatTime(pMapData->m_PersonalBest.m_Run.m_fTime, szBestTime);
+
+            pDataKv->SetString(KEYNAME_MAP_TIME, szBestTime);
+        }
+        else
+        {
+            pDataKv->SetString(KEYNAME_MAP_TIME, "#MOM_NotApplicable");
+        }
+    }
+
+    if (bWR)
+    {
+        if (pMapData->m_WorldRecord.m_bValid)
+        {
+            char szBestTime[BUFSIZETIME];
+            MomUtil::FormatTime(pMapData->m_WorldRecord.m_Run.m_fTime, szBestTime);
+
+            pDataKv->SetString(KEYNAME_MAP_WORLD_RECORD, szBestTime);
+        }
+        else
+        {
+            pDataKv->SetString(KEYNAME_MAP_WORLD_RECORD, "#MOM_NotApplicable");
+        }
+    }
+
+    if (bThumbnail)
+    {
+        // Remove the old image if there
+        if (pMap->m_pImage)
+        {
+            delete pMap->m_pImage;
+            pMap->m_pImage = nullptr;
+        }
+
+        URLImage *pImage = new URLImage(m_pImageList->GetImage(INDX_MAP_THUMBNAIL_UNKNOWN));
+        if (pImage->LoadFromURL(pMapData->m_Thumbnail.m_szURLSmall))
+        {
+            pMap->m_pImage = pImage;
+
+            if (pMap->m_iThumbnailImageIndx >= INDX_RESERVED_COUNT)
+            {
+                m_pImageList->SetImageAtIndex(pMap->m_iThumbnailImageIndx, pImage);
+            }
+            else
+            {
+                // Otherwise just add it
+                pMap->m_iThumbnailImageIndx = m_pImageList->AddImage(pImage);
+            }
+        }
+        else
+        {
+            pMap->m_iThumbnailImageIndx = INDX_MAP_THUMBNAIL_UNKNOWN;
+            delete pImage;
+        }
+    }
+
+    pDataKv->SetInt(KEYNAME_MAP_IMAGE, pMap->m_iThumbnailImageIndx);
+
+    PostActionSignal(new KeyValues("MapListDataUpdate", "id", pMapData->m_uID));
+}
+
+MapListData* CMapSelectorDialog::GetMapListDataByID(uint32 uMapID)
+{
+    const auto indx = m_mapMapListData.Find(uMapID);
+    if (m_mapMapListData.IsValidIndex(indx))
+        return m_mapMapListData[indx];
+    return nullptr;
+}
+
+void CMapSelectorDialog::OnMapDownloadQueued(KeyValues* pKv)
+{
+    const uint32 uID = pKv->GetInt("id");
+    UpdateMapListData(uID, true, false, false, false, false);
+    UpdateMapInfoDialog(uID);
+}
+
+void CMapSelectorDialog::OnMapDownloadStart(KeyValues* pKv)
+{
+    const uint32 uID = pKv->GetInt("id");
+
+    // First check if we're downloading already
+    const auto indx = m_mapMapDownloads.Find(uID);
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        DevLog("Already downloading!\n");
+        return;
+    }
+
+    m_mapMapDownloads.Insert(uID, new MapDownloadProgress(pKv->GetString("name")));
+
+    UpdateMapInfoDialog(uID);
+}
+
+void CMapSelectorDialog::OnMapDownloadSize(KeyValues* pKv)
+{
+    const auto indx = m_mapMapDownloads.Find(pKv->GetInt("id"));
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        m_mapMapDownloads[indx]->SetDownloadSize(pKv->GetUint64("size"));
+    }
+}
+
+void CMapSelectorDialog::OnMapDownloadProgress(KeyValues* pKv)
+{
+    const auto indx = m_mapMapDownloads.Find(pKv->GetInt("id"));
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        m_mapMapDownloads[indx]->SetDownloadProgress(pKv->GetInt("offset") + pKv->GetInt("size"));
     }
     else
     {
-        // clear
-        m_pStatusLabel->SetText("");
+        Warning("Map download end with invalid index!\n");
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Updates status test at bottom of window
-// Input  : wchar_t* (unicode string) - 
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::UpdateStatusText(wchar_t *unicode)
+void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
 {
-    if (!m_pStatusLabel)
-        return;
-
-    if (unicode && wcslen(unicode) > 0)
+    uint32 uID = pKv->GetInt("id");
+    const auto indx = m_mapMapDownloads.Find(uID);
+    if (m_mapMapDownloads.IsValidIndex(indx))
     {
-        m_pStatusLabel->SetText(unicode);
+        m_mapMapDownloads[indx]->DeletePanel();
+
+        m_mapMapDownloads.RemoveAt(indx);
+
+        UpdateMapInfoDialog(uID);
     }
     else
     {
-        // clear
-        m_pStatusLabel->SetText("");
+        Warning("Map download end with invalid index!\n");
+    }
+
+    const auto indxCancel = m_mapCancelConfirmDlgs.Find(uID);
+    if (m_mapCancelConfirmDlgs.IsValidIndex(indxCancel))
+    {
+        m_mapCancelConfirmDlgs[indxCancel]->OnCommand("Close");
+    }
+
+    const auto pMsg = pKv->MakeCopy();
+    pMsg->SetName("MapDownloadEnd");
+    PostActionSignal(pMsg);
+}
+
+bool CMapSelectorDialog::IsMapDownloading(uint32 uMapID) const
+{
+    return m_mapMapDownloads.IsValidIndex(m_mapMapDownloads.Find(uMapID));
+}
+
+MapDownloadProgress* CMapSelectorDialog::GetDownloadProgressPanel(uint32 uMapID)
+{
+    const auto indx = m_mapMapDownloads.Find(uMapID);
+    if (m_mapMapDownloads.IsValidIndex(indx))
+    {
+        return m_mapMapDownloads[indx];
+    }
+    return nullptr;
+}
+
+void CMapSelectorDialog::OnStartMapDownload(int id)
+{
+    g_pMapCache->DownloadMap(id);
+}
+
+void CMapSelectorDialog::OnRemoveFromQueue(int id)
+{
+    g_pMapCache->RemoveMapFromDownloadQueue(id);
+}
+
+void CMapSelectorDialog::OnCancelMapDownload(int id)
+{
+    if (ConVarRef("mom_map_download_cancel_confirm").GetBool())
+    {
+        const auto indx = m_mapCancelConfirmDlgs.Find(id);
+        if (!m_mapCancelConfirmDlgs.IsValidIndex(indx))
+        {
+            Panel *pConfirm = messageboxpanel->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmCancel", "#MOM_MapSelector_ConfirmCancelMsg",
+                                                                     new KeyValues("ConfirmCancelDownload", "id", id),
+                                                                     new KeyValues("RejectCancelDownload", "id", id),
+                                                                     "#GameUI_Yes", "#GameUI_No");
+            m_mapCancelConfirmDlgs.Insert(id, pConfirm);
+        }
+    }
+    else
+        g_pMapCache->CancelDownload(id);
+}
+
+void CMapSelectorDialog::OnConfirmCancelMapDownload(int id)
+{
+    m_mapCancelConfirmDlgs.RemoveAt(m_mapCancelConfirmDlgs.Find(id));
+    g_pMapCache->CancelDownload(id);
+}
+
+void CMapSelectorDialog::OnRejectCancelMapDownload(int id)
+{
+    m_mapCancelConfirmDlgs.RemoveAt(m_mapCancelConfirmDlgs.Find(id));
+}
+
+void CMapSelectorDialog::OnAddMapToFavorites(int id)
+{
+    g_pMapCache->AddMapToFavorites(id);
+}
+
+void CMapSelectorDialog::OnAddMapToLibrary(int id)
+{
+    g_pMapCache->AddMapToLibrary(id);
+}
+
+void CMapSelectorDialog::OnMapStart(int id)
+{
+    if (g_pMapCache->PlayMap(id))
+    {
+        CloseMapInfoDialog(id);
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Updates when the tabs are changed (online->Local and vice versa)
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::OnGameListChanged()
+void CMapSelectorDialog::OnRemoveMapFromFavorites(int id)
 {
-    m_pGameList = dynamic_cast<IMapList *>(m_pTabPanel->GetActivePage());
+    g_pMapCache->RemoveMapFromFavorites(id);
+}
 
-    UpdateStatusText("");
+void CMapSelectorDialog::OnRemoveMapFromLibrary(int id)
+{
+    g_pMapCache->RemoveMapFromLibrary(id);
+}
+
+void CMapSelectorDialog::OnViewMapInfo(int id)
+{
+    // get the map
+    MapData *pMapData = g_pMapCache->GetMapDataByID(id);
+    if (!pMapData)
+        return;
+
+    // View the map info
+    OpenMapInfoDialog(pMapData);
+}
+
+void CMapSelectorDialog::ApplySchemeSettings(vgui::IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    // Reload them
+    for (int i = 0; i < m_pImageList->GetImageCount(); i++)
+    {
+        IImage *pImage = m_pImageList->GetImage(i);
+        if (pImage)
+            pImage->Evict();
+    }
+}
+
+void CMapSelectorDialog::OnReloadControls()
+{
+    BaseClass::OnReloadControls();
+
+    MoveToCenterOfScreen();
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Updates when the tabs are changed
+//-----------------------------------------------------------------------------
+void CMapSelectorDialog::OnTabChanged()
+{
+    m_pCurrentMapList = dynamic_cast<IMapList *>(m_pTabPanel->GetActivePage());
+
+    if (IsVisible())
+    {
+        m_pCurrentMapList->LoadFilters();
+        m_pCurrentMapList->OnTabSelected();
+    }
 
     InvalidateLayout();
     Repaint();
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: returns a pointer to a static instance of this dialog
-//-----------------------------------------------------------------------------
-CMapSelectorDialog *CMapSelectorDialog::GetInstance()
-{
-    return s_InternetDlg;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CMapContextMenu *CMapSelectorDialog::GetContextMenu(vgui::Panel *pPanel)
+CMapContextMenu *CMapSelectorDialog::GetContextMenu()
 {
     // create a drop down for this object's states
     if (m_pContextMenu)
         delete m_pContextMenu;
     m_pContextMenu = new CMapContextMenu(this);
     m_pContextMenu->SetAutoDelete(false);
-
-    if (!pPanel)
-    {
-        m_pContextMenu->SetParent(this);
-    }
-    else
-    {
-        m_pContextMenu->SetParent(pPanel);
-    }
-
     m_pContextMenu->SetVisible(false);
     return m_pContextMenu;
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: begins the process of joining a server from a game list
-//			the game info dialog it opens will also update the game list
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::JoinGame(IMapList *gameList, unsigned int serverIndex)
-{
-    // open the game info dialog, then mark it to attempt to connect right away
-    //CDialogMapInfo *gameDialog = OpenMapInfoDialog(gameList, serverIndex);
-
-    // set the dialog name to be the server name
-    //gameDialog->Connect();
-
-    // return gameDialog;
-    return nullptr;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: joins a game by a specified IP, not attached to any game list
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::JoinGame(int serverIP, int serverPort)
-{
-    // open the game info dialog, then mark it to attempt to connect right away
-    CDialogMapInfo *gameDialog = OpenMapInfoDialog(serverIP, serverPort, serverPort);
-
-    // set the dialog name to be the server name
-    gameDialog->Connect();
-
-    return gameDialog;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: opens a game info dialog from a game list
 //-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap)
+void CMapSelectorDialog::OpenMapInfoDialog(MapData *pMapData)
 {
-    //mapstruct_t *pServer = gameList->GetMap(serverIndex);
-    //if (!pServer)
-    
-
-    //MOM_TODO: complete the following so people can see information on the map 
-
-    //We're going to send just the map name to the CDialogMapInfo() constructor,
-    //then to the server and populate it with leaderboard times, replays, personal bests, etc
-    const char *pMapName = pMap->GetString("name", "");
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, pMapName);
-    gameDialog->SetParent(GetVParent());
-    gameDialog->AddActionSignalTarget(this);
-    gameDialog->Run(pMapName);
-    int i = m_vecMapInfoDialogs.AddToTail();
-    m_vecMapInfoDialogs[i] = gameDialog;
-    return gameDialog;
-    //return NULL;
+    const auto indx = m_mapMapInfoDialogs.Find(pMapData->m_uID);
+    if (m_mapMapInfoDialogs.IsValidIndex(indx))
+    {
+        // Just bring the opened one to front
+        m_mapMapInfoDialogs[indx]->MoveToFront();
+    }
+    else
+    {
+        // Add a new one
+        CDialogMapInfo *gameDialog = new CDialogMapInfo(this, pMapData);
+        gameDialog->AddActionSignalTarget(this);
+        gameDialog->Run();
+        const auto newIndx = m_mapMapInfoDialogs.Insert(pMapData->m_uID);
+        m_mapMapInfoDialogs[newIndx] = gameDialog;
+    }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: opens a game info dialog by a specified IP, not attached to any game list
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort)
+void CMapSelectorDialog::UpdateMapInfoDialog(uint32 uMapID)
 {
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, "");
-    gameDialog->AddActionSignalTarget(this);
-    gameDialog->SetParent(GetVParent());
-    gameDialog->Run("");
-    int i = m_vecMapInfoDialogs.AddToTail();
-    m_vecMapInfoDialogs[i] = gameDialog;
-    return gameDialog;
+    const auto indx = m_mapMapInfoDialogs.Find(uMapID);
+    if (m_mapMapInfoDialogs.IsValidIndex(indx))
+    {
+        m_mapMapInfoDialogs[indx]->UpdateMapDownloadState();
+    }
+}
+
+inline void CloseInfoDialog(Panel *pDlg)
+{
+    if (pDlg)
+        ivgui()->PostMessage(pDlg->GetVPanel(), new KeyValues("Close"), NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -354,102 +667,50 @@ CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(int serverIP, uint16 connP
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::CloseAllMapInfoDialogs()
 {
-    for (int i = 0; i < m_vecMapInfoDialogs.Count(); i++)
+    FOR_EACH_MAP_FAST(m_mapMapInfoDialogs, i)
     {
-        vgui::Panel *dlg = m_vecMapInfoDialogs[i];
-        if (dlg)
-        {
-            vgui::ivgui()->PostMessage(dlg->GetVPanel(), new KeyValues("Close"), NULL);
-        }
+        Panel *pDlg = m_mapMapInfoDialogs[i];
+        CloseInfoDialog(pDlg);
     }
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: finds a dialog
-//-----------------------------------------------------------------------------
-CDialogMapInfo *CMapSelectorDialog::GetDialogGameInfoForFriend(uint64 ulSteamIDFriend)
+void CMapSelectorDialog::CloseMapInfoDialog(uint32 uMapID)
 {
-    //FOR_EACH_VEC(m_vecMapInfoDialogs, i)
-    //{
-    //    CDialogMapInfo *pDlg = m_vecMapInfoDialogs[i];
-    //    if (pDlg && pDlg->GetAssociatedFriend() == ulSteamIDFriend)
-    //    {
-    //        return pDlg;
-    //    }
-    //}
-    // We don't have friends
-    return nullptr;
+    const auto indx = m_mapMapInfoDialogs.Find(uMapID);
+    if (m_mapMapInfoDialogs.IsValidIndex(indx))
+    {
+        Panel *pDlg = m_mapMapInfoDialogs[indx];
+        CloseInfoDialog(pDlg);
+    }
+}
+
+void CMapSelectorDialog::RemoveMapInfoDialog(uint32 uMapID)
+{
+    m_mapMapInfoDialogs.RemoveAt(m_mapMapInfoDialogs.Find(uMapID));
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: accessor to the filter save data
 //-----------------------------------------------------------------------------
-KeyValues *CMapSelectorDialog::GetFilterSaveData(const char *filterSet)
+KeyValues* CMapSelectorDialog::GetCurrentTabFilterData()
 {
-    return m_pFilterData->FindKey(filterSet, true);
+    return GetTabFilterData(m_pTabPanel->GetActivePage()->GetName());
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: resets all pages filter settings
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::ReloadFilterSettings()
+KeyValues* CMapSelectorDialog::GetTabFilterData(const char* pTabName)
 {
-    m_pLocal->LoadFilterSettings();
-    m_pOnline->LoadFilterSettings();
+    return m_pFilterData->FindKey(pTabName, true);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Adds server to the history, saves as currently connected server
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::OnConnectToGame(KeyValues *pMessageValues)
+void CMapSelectorDialog::LoadTabFilterData(const char *pTabName)
 {
-    //MOM_TODO: Make this OnStartMap/OnDownloadMap or similar
-
-    int ip = pMessageValues->GetInt("ip");
-    int connectionPort = pMessageValues->GetInt("connectionport");
-    int queryPort = pMessageValues->GetInt("queryport");
-
-    if (!ip || !queryPort)
-        return;
-
-    memset(&m_CurrentConnection, 0, sizeof(gameserveritem_t));
-    m_CurrentConnection.m_NetAdr.SetIP(ip);
-    m_CurrentConnection.m_NetAdr.SetQueryPort(queryPort);
-    m_CurrentConnection.m_NetAdr.SetConnectionPort((unsigned short) connectionPort);
-#ifndef NO_STEAM
-    //if (m_pHistory && SteamMatchmaking())
-    //{
-    //    SteamMatchmaking()->AddFavoriteGame2(0, ::htonl(ip), connectionPort, queryPort, k_unFavoriteFlagHistory, time(NULL));
-    //    m_pHistory->SetRefreshOnReload();
-    //}
-#endif
-    // tell the game info dialogs, so they can cancel if we have connected
-    // to a server they were auto-retrying
-    for (int i = 0; i < m_vecMapInfoDialogs.Count(); i++)
-    {
-        vgui::Panel *dlg = m_vecMapInfoDialogs[i];
-        if (dlg)
-        {
-            KeyValues *kv = new KeyValues("ConnectedToGame", "ip", ip, "connectionport", connectionPort);
-            kv->SetInt("queryport", queryPort);
-            vgui::ivgui()->PostMessage(dlg->GetVPanel(), kv, NULL);
-        }
-    }
-
-    // forward to favorites
-    //m_pFavorites->OnConnectToGame();
-
-    m_bCurrentlyConnected = true;
+    m_pFilterPanel->LoadFilterSettings(m_pFilterData->FindKey(pTabName, true));
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Clears currently connected server
-//-----------------------------------------------------------------------------
-void CMapSelectorDialog::OnDisconnectFromGame(void)
+void CMapSelectorDialog::ApplyFiltersToCurrentTab(MapFilters_t filters)
 {
-    m_bCurrentlyConnected = false;
-    memset(&m_CurrentConnection, 0, sizeof(gameserveritem_t));
+    if (m_pCurrentMapList)
+        m_pCurrentMapList->ApplyFilters(filters);
 }
 
 //-----------------------------------------------------------------------------
@@ -462,19 +723,8 @@ void CMapSelectorDialog::ActivateBuildMode()
     if (!panel)
         return;
 
-    panel->ActivateBuildMode();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: gets the default position and size on the screen to appear the first time
-//-----------------------------------------------------------------------------
-bool CMapSelectorDialog::GetDefaultScreenPosition(int &x, int &y, int &wide, int &tall)
-{
-    int wx, wy, ww, wt;
-    surface()->GetWorkspaceBounds(wx, wy, ww, wt);
-    x = wx + (int) (ww * 0.05);
-    y = wy + (int) (wt * 0.4);
-    wide = (int) (ww * 0.5);
-    tall = (int) (wt * 0.55);
-    return true;
+    if (panel->GetBuildGroup()->IsEnabled())
+        BaseClass::ActivateBuildMode();
+    else
+        panel->ActivateBuildMode();
 }

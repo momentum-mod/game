@@ -45,7 +45,7 @@ public:
 
 	virtual		void		Init_All( void );
 	virtual		void		Shutdown_All( void );
-	virtual		int			GetButtonBits( int );
+	virtual		int			GetButtonBits( int iResetState);
 	virtual		void		CreateMove ( int sequence_number, float input_sample_frametime, bool active );
 	virtual		void		ExtraMouseSample( float frametime, bool active );
 	virtual		bool		WriteUsercmdDeltaToBuffer( bf_write *buf, int from, int to, bool isnewcommand );
@@ -124,9 +124,9 @@ protected:
 	void		AddKeyButton( const char *name, kbutton_t *pkb );
 	// Mouse/keyboard movement input helpers
 	void		ScaleMovements( CUserCmd *cmd );
-	void		ComputeForwardMove( CUserCmd *cmd );
-	void		ComputeUpwardMove( CUserCmd *cmd );
-	void		ComputeSideMove( CUserCmd *cmd );
+    virtual void		ComputeForwardMove(CUserCmd *cmd);
+    virtual void		ComputeUpwardMove(CUserCmd *cmd);
+    virtual void		ComputeSideMove(CUserCmd *cmd);
 	void		AdjustAngles ( float frametime );
 	void		ClampAngles( QAngle& viewangles );
 	void		AdjustPitch( float speed, QAngle& viewangles );

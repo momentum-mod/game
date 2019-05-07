@@ -92,7 +92,7 @@ class CheckButton;
 class CheckButtonList;
 class CircularProgressBar;
 class CvarToggleCheckButton;
-class CCvarSlider;
+class CvarSlider;
 class CvarTextEntry;
 class ComboBox;
 class DirectorySelectDialog;

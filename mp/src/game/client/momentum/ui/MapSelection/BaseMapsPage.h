@@ -4,20 +4,48 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
-#ifndef BASEGAMESPAGE_H
-#define BASEGAMESPAGE_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#define KEYNAME_MAP_NAME "Name"
+#include "IMapList.h"
+#include "vgui_controls/PropertyPage.h"
+
+class MapFilterPanel;
+class CMapListPanel;
+struct MapData;
+
+// Map keynames
+#define KEYNAME_MAP_ID "id"
+#define KEYNAME_MAP_NAME "name"
+#define KEYNAME_MAP_HASH "hash"
+#define KEYNAME_MAP_TIME "time"
+#define KEYNAME_MAP_TYPE "MapType"
+#define KEYNAME_MAP_STATUS "MapStatus"
+#define KEYNAME_MAP_ZONE_COUNT "numZones"
 #define KEYNAME_MAP_LAYOUT "MapLayout"
 #define KEYNAME_MAP_DIFFICULTY "difficulty"
-#define KEYNAME_MAP_BEST_TIME "time"
+#define KEYNAME_MAP_WORLD_RECORD "WorldRecord"
 #define KEYNAME_MAP_IMAGE "MapImage"
+#define KEYNAME_MAP_PATH "MapPath"
+#define KEYNAME_MAP_CREATION_DATE "creationDate"
+#define KEYNAME_MAP_CREATION_DATE_SORT "creationDate_s"
+#define KEYNAME_MAP_IN_LIBRARY "inLibrary"
+#define KEYNAME_MAP_IN_FAVORITES "inFavorites"
+#define KEYNAME_MAP_LAST_PLAYED "lastPlayed"
+#define KEYNAME_MAP_LAST_PLAYED_SORT "lastPlayed_s"
 
-class CMapListPanel;
+enum HEADERS
+{
+    HEADER_MAP_IMAGE = 0,
+    HEADER_MAP_IN_LIBRARY,
+    HEADER_MAP_IN_FAVORITES,
+    HEADER_MAP_NAME,
+    HEADER_MAP_LAYOUT,
+    HEADER_DIFFICULTY,
+    HEADER_WORLD_RECORD,
+    HEADER_BEST_TIME,
+    HEADER_DATE_CREATED,
+    HEADER_LAST_PLAYED,
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: Base property page for all the games lists (internet/favorites/lan/etc.)
@@ -27,27 +55,12 @@ class CBaseMapsPage : public vgui::PropertyPage, public IMapList
     DECLARE_CLASS_SIMPLE(CBaseMapsPage, vgui::PropertyPage);
 
 public:
-    CBaseMapsPage(vgui::Panel *parent, const char *name, const char *pCustomResFilename = nullptr);
+    CBaseMapsPage(Panel *parent, const char *name);
     ~CBaseMapsPage();
 
-    virtual void PerformLayout();
     virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 
-    // gets information about specified map
-    //MOM_TODO: consider how we're going to ID maps for handling 
-    //(creating CMapInfoDialog and actually starting/downloading map)
-    //PropertyPages have some sort of unsigned int IDs assigned to
-    //things added into the list (see , and ServerBrowser used the Matchmaking ID of the
-    //server as the handle, but since we don't have that, all we have is map name?
-    virtual mapstruct_t *GetMap(unsigned int serverID);
-
-    //uint32 GetServerFilters(MatchMakingKeyValuePair_t **pFilters); Used by server browser, this will translate
-    //into API call filters
-
-    
-
-    // loads filter settings from disk
-    virtual void LoadFilterSettings();
+    virtual void SetListCellColors(MapData *pData, KeyValues *pKvInto);
 
     // Called by CGameList when the enter key is pressed.
     // This is overridden in the add server dialog - since there is no Connect button, the message
@@ -56,131 +69,50 @@ public:
 
     int GetSelectedItemsCount();
 
-    
+    // Filters
+    // loads filter settings from disk
+    virtual void LoadFilters();
+    virtual MapFilters_t GetFilters();
+    void ApplyFilters(MapFilters_t filters) OVERRIDE;
+    virtual void OnApplyFilters(MapFilters_t filters);
+    virtual bool MapPassesFilters(MapData *pData, MapFilters_t filters);
 
-    virtual void UpdateDerivedLayouts(void);
-    //STEAM_CALLBACK(CBaseMapsPage, OnFavoritesMsg, FavoritesListChanged_t, m_CallbackFavoritesMsg);
-    //MOM_TODO: STEAM_CALLBACK for the HTTP requests for maps
-protected:
-    virtual void OnCommand(const char *command);
-    virtual void OnKeyCodePressed(vgui::KeyCode code);
-    virtual int GetRegionCodeToFilter() { return -1; }
-    
+    // Called when the map selector has a map updated in its list
+    MESSAGE_FUNC_INT(OnMapListDataUpdate, "MapListDataUpdate", id);
+    // Called when the map selector opens
+    MESSAGE_FUNC(OnMapSelectorOpened, "MapSelectorOpened") { OnTabSelected(); }
+    // Right clicking a map
+    MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
     MESSAGE_FUNC(OnItemSelected, "ItemSelected");
 
-    // applies games filters to current list
-    void ApplyGameFilters();
-    // updates server count UI
+    // Modulecomm events passed in through the MapSelectorDialog
+    MESSAGE_FUNC_PARAMS(OnMapDownloadEnd, "MapDownloadEnd", pKv);
+    MESSAGE_FUNC_PARAMS(OnMapCacheUpdated, "MapCacheUpdated", pKv) {}
+protected:
+    virtual void OnCommand(const char *command);
+
+    // updates map count
     void UpdateStatus();
 
-    //MOM_TODO: Look into custom HTTP callbacks for the below
-
-    // ISteamMatchmakingServerListResponse callbacks
-    /*virtual void ServerResponded(HServerListRequest hReq, int iServer);
-    virtual void ServerFailedToRespond(HServerListRequest hRequest, int iServer);
-    virtual void RefreshComplete(HServerListRequest hRequest, EMatchMakingServerResponse response) = 0;
-
-    virtual void ServerResponded(int iServer, gameserveritem_t *pServerItem);
-
-    // ISteamMatchmakingPingResponse callbacks
-    virtual void ServerResponded(gameserveritem_t &server);
-    virtual void ServerFailedToRespond() {}*/
+    virtual void AddMapToList(MapData *pData);
 
     // Removes map from list
-    void RemoveMap(mapdisplay_t&);
-
-    //MOM_TODO: Correlate this to online maps
-    virtual bool BShowMap(mapdisplay_t &server) { return server.m_bDoNotRefresh; }
+    void RemoveMap(MapDisplay_t&);
 
     //Clears the list of maps
     void ClearMapList();
 
-    // filtering methods
-    // returns true if filters passed; false if failed
-    virtual bool CheckPrimaryFilters(mapstruct_t &);
-    virtual bool CheckSecondaryFilters(mapstruct_t &);
-    virtual bool CheckTagFilter(mapstruct_t &) { return true; }
     virtual int GetInvalidMapListID();
+    MapDisplay_t *GetMapDisplayByID(uint32 id);
 
-    virtual void OnSaveFilter(KeyValues *filter);
-    virtual void OnLoadFilter(KeyValues *filter);
-    virtual void UpdateFilterSettings();
-
+    virtual void OnTabSelected();
     virtual void GetNewMapList();
-    //MOM_TODO: Make these methods "search" for maps based on filter data
-    virtual void StartRefresh();
-    virtual void StopRefresh();
-    virtual bool IsRefreshing();
-    virtual void SetRefreshing(bool state);
-    virtual void OnPageShow();
-    virtual void OnPageHide();
-
-    // called when Connect button is pressed
-    MESSAGE_FUNC(OnMapStart, "StartMap");
-    // called to look at game info
-    MESSAGE_FUNC(OnViewMapInfo, "ViewMapInfo");
-    // refreshes a single server
-    MESSAGE_FUNC_INT(OnRefreshServer, "RefreshServer", serverID);
-
-    // If true, then we automatically select the first item that comes into the games list.
-    bool m_bAutoSelectFirstItemInGameList;
+    virtual void OnGetNewMapList();
 
     CMapListPanel *m_pMapList;
 
-    // command buttons
-    vgui::Button *m_pStartMap;
-    vgui::Button *m_pRefreshAll;//MOM_TODO: change to "m_pSearchMaps"
-    vgui::Button *m_pRefreshQuick;
-    vgui::ToggleButton *m_pFilter;
-
-    CUtlVector<mapdisplay_t> m_vecMaps;
-
-    int m_iServerRefreshCount;//MOM_TODO: change this to "maps found online" ?
-
-
-protected:
-    virtual void CreateFilters();
-
-    MESSAGE_FUNC_PTR_CHARPTR(OnTextChanged, "TextChanged", panel, text);
-    MESSAGE_FUNC_PTR_INT(OnButtonToggled, "ButtonToggled", panel, state);
+    CUtlMap<uint32, MapDisplay_t> m_mapMaps;
 
 private:
-    void RequestServersResponse(int iServer, EMatchMakingServerResponse response, bool bLastServer); // callback for matchmaking interface
-
-    void RecalculateFilterString();
-
-    // If set, it uses the specified resfile name instead of its default one.
-    const char *m_pCustomResFilename;
-
-    // filter controls
-    vgui::ComboBox *m_pGameModeFilter;
-    vgui::TextEntry *m_pMapFilter;
-    vgui::ComboBox *m_pDifficultyFilter;
-    vgui::CheckButton *m_pHideCompletedFilterCheck;//Used for local maps only
-    vgui::ComboBox *m_pMapLayoutFilter;//0 = ALL, 1 = LINEAR ONLY, 2 = STAGED ONLY
-    vgui::Label *m_pFilterString;//MOM_TODO: determine what this is and if we need it
-    char m_szComboAllText[64];
-
-    KeyValues *m_pFilters; // base filter data
-    bool m_bFiltersVisible;	// true if filter section is currently visible
     vgui::HFont m_hFont;
-
-    // filter data
-    int m_iGameModeFilter;
-    char m_szMapFilter[32];
-    int	m_iDifficultyFilter;//What tier the map should be under
-    bool m_bFilterHideCompleted;//Hide completed maps
-    int m_iMapLayoutFilter;//Map is non-linear (has stages)
-
-    typedef enum
-    {
-        HEADER_MAP_IMAGE = 0,
-        HEADER_MAP_NAME,
-        HEADER_MAP_LAYOUT,
-        HEADER_DIFFICULTY,
-        HEADER_BESTTIME
-    } HEADERS;
-
 };
-
-#endif // BASEGAMESPAGE_H

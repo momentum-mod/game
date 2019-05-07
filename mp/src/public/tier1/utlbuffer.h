@@ -15,7 +15,7 @@
 #endif
 
 #include "tier1/utlmemory.h"
-#include "tier1/byteswap.h"
+#include "tier1/byteswap_valve.h"
 #include <stdarg.h>
 
 
@@ -1078,7 +1078,7 @@ inline void CUtlBuffer::Purge()
 
 inline void CUtlBuffer::CopyBuffer( const CUtlBuffer &buffer )
 {
-	CopyBuffer( buffer.Base(), buffer.TellPut() );
+	CopyBuffer( buffer.Base(), buffer.IsReadOnly() ? buffer.TellMaxPut() : buffer.TellPut() );
 }
 
 inline void	CUtlBuffer::CopyBuffer( const void *pubData, int cubData )

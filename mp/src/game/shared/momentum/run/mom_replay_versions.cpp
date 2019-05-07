@@ -6,7 +6,9 @@
 #include "momentum/mom_timer.h"
 #endif
 
-CMomReplayV1::CMomReplayV1(CBinaryReader *reader, bool bFull)
+#include "tier0/memdbgon.h"
+
+CMomReplayV1::CMomReplayV1(CUtlBuffer &reader, bool bFull)
     : CMomReplayBase(CReplayHeader(reader), bFull), m_pRunStats(nullptr)
 {
     Deserialize(reader, bFull);
@@ -47,49 +49,49 @@ bool CMomReplayV1::SetFrame(int32 index, const CReplayFrame &frame)
     return true;
 }
 
-CMomRunStats *CMomReplayV1::CreateRunStats(uint8 stages)
+CMomRunStats *CMomReplayV1::CreateRunStats(uint8 zones)
 {
     if (m_pRunStats != nullptr)
         delete m_pRunStats;
 
-    m_pRunStats = new CMomRunStats(&m_RunStatsData, stages);
+    m_pRunStats = new CMomRunStats(zones);
     return m_pRunStats;
 }
 
 void CMomReplayV1::RemoveFrames(int num) { m_rgFrames.RemoveMultipleFromHead(num); }
 
-void CMomReplayV1::Serialize(CBinaryWriter *writer)
+void CMomReplayV1::Serialize(CUtlBuffer &writer)
 {
     // Write the header.
     m_rhHeader.Serialize(writer);
 
     // Write the run stats (if there are any).
-    writer->WriteBool(m_pRunStats != nullptr);
+    writer.PutUnsignedChar(m_pRunStats != nullptr);
 
     if (m_pRunStats != nullptr)
         m_pRunStats->Serialize(writer);
 
     // Write the frames.
-    writer->WriteInt32(m_rgFrames.Count());
+    writer.PutInt(m_rgFrames.Count());
 
     for (int32 i = 0; i < m_rgFrames.Count(); ++i)
         m_rgFrames[i].Serialize(writer);
 }
 
 // bFull is defined by a replay being played back vs. a replay being loaded for comparisons
-void CMomReplayV1::Deserialize(CBinaryReader *reader, bool bFull)
+void CMomReplayV1::Deserialize(CUtlBuffer &reader, bool bFull)
 {
     // Read the run stats (if there are any).
-    if (reader->ReadBool())
+    if (reader.GetUnsignedChar())
     {
-        m_pRunStats = new CMomRunStats(&m_RunStatsData, reader);
+        m_pRunStats = new CMomRunStats(reader);
     }
 
     if (bFull)
     {
         // Read the count of frames in the replay
         // and ensure we have the capacity to store them.
-        int32 frameCount = reader->ReadInt32();
+        int32 frameCount = reader.GetInt();
 
         if (frameCount <= 0)
             return;

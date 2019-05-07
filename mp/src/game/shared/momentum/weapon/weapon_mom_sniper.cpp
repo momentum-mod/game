@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "weapon_mom_sniper.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -73,15 +74,15 @@ void CMomentumSniper::SniperFire()
 
     if (pPlayer->GetFOV() != pPlayer->GetDefaultFOV())
     {
-        pPlayer->m_SrvData.m_bResumeZoom = true;
-        pPlayer->m_SrvData.m_iLastZoom = m_iRequestedFOV;
+        pPlayer->m_bResumeZoom = true;
+        pPlayer->m_iLastZoomFOV = m_iRequestedFOV;
 
 #ifndef CLIENT_DLL
         pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV(), 0.05f);
 #endif
     }
 
-    if (!CSBaseGunFire(0.0f, 1.25f, true))
+    if (!BaseGunFire(0.0f, 1.25f, true))
         return;
 
     QAngle angle = pPlayer->GetPunchAngle();

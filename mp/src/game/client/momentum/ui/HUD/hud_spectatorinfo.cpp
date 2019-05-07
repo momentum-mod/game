@@ -3,8 +3,13 @@
 #include "clientmode.h"
 #include "mom_shareddefs.h"
 #include "vgui/ILocalize.h"
+#include "vgui/ISurface.h"
+#include "steam/steam_api.h"
+#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 DECLARE_HUDELEMENT(CHudSpectatorInfo);
 
@@ -13,33 +18,31 @@ static MAKE_TOGGLE_CONVAR(mom_hud_spectator_info_show_names, "1", FLAG_HUD_CVAR,
 static MAKE_CONVAR(mom_hud_spectator_info_name_count, "5", FLAG_HUD_CVAR, "Controls the max number of names to print of who is spectating you."
     "\n0 = unlimited (as many as the panel can handle)\n", 0, 100);
 
-CHudSpectatorInfo::CHudSpectatorInfo(const char *pName) : CHudElement(pName), BaseClass(g_pClientMode->GetViewport(), pName),
-m_pLeaderboards(nullptr)
+CHudSpectatorInfo::CHudSpectatorInfo(const char *pName) : CHudElement(pName), BaseClass(g_pClientMode->GetViewport(), pName)
 {
     SetProportional(true);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetDefLessFunc(m_mapNameMap);
 
-    m_idLocal = steamapicontext->SteamUser()->GetSteamID();
+    if (SteamUser())
+        m_idLocal = SteamUser()->GetSteamID().ConvertToUint64();
+    else
+        m_idLocal = 0;
 }
 
 CHudSpectatorInfo::~CHudSpectatorInfo()
 {
-    m_pLeaderboards = nullptr;
 }
 
 bool CHudSpectatorInfo::ShouldDraw()
 {
-    if (!m_pLeaderboards)
-        m_pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-
     m_iSpecCount = m_mapNameMap.Count();
-    int showVal = mom_hud_spectator_info_show.GetInt();
-    bool showFromCount = showVal == 2 || (showVal == 1 && m_iSpecCount > 0);
+    const int showVal = mom_hud_spectator_info_show.GetInt();
+    const bool showFromCount = showVal == 2 || (showVal == 1 && m_iSpecCount > 0);
 
-    return showFromCount && CHudElement::ShouldDraw() && !m_pLeaderboards->IsVisible();
+    return showFromCount && CHudElement::ShouldDraw();
 }
 
 void CHudSpectatorInfo::Paint()
@@ -88,9 +91,10 @@ void CHudSpectatorInfo::SpectatorUpdate(const CSteamID& person, const CSteamID& 
     unsigned short indx = m_mapNameMap.Find(person.ConvertToUint64());
     const bool found = indx != m_mapNameMap.InvalidIndex();
 
-    if (target == m_idLocal && !found)
+    if (target.ConvertToUint64() == m_idLocal && !found)
     {
-        const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(person);
+        CHECK_STEAM_API(SteamFriends());
+        const char *pName = SteamFriends()->GetFriendPersonaName(person);
         wchar_t pNameUnicode[MAX_PLAYER_NAME_LENGTH];
         wchar_t *pNameCopy = new wchar_t[MAX_PLAYER_NAME_LENGTH];
         ANSI_TO_UNICODE(pName, pNameUnicode);

@@ -46,6 +46,11 @@ public:
 	bool IsItemChecked(int itemID);
 	void SetItemCheckable(int itemID, bool state);
 
+    // Toggles the state of all of the items to bEnabled, and does so silently (no posted action signals) 
+    // if bSilent == true
+    void ToggleSelectAll(bool bEnabled, bool bSilent = false);
+    bool AllItemsChecked(); // Checks to see if all items are checked
+
 	/* MESSAGES SENT
 		"CheckButtonChecked" - sent when one of the check buttons state has changed
 

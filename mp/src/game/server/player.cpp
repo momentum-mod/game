@@ -1930,6 +1930,7 @@ void CBasePlayer::WaterMove()
 {
 	if ( ( GetMoveType() == MOVETYPE_NOCLIP ) && !GetMoveParent() )
 	{
+        UpdateUnderwaterState();
 		m_AirFinished = gpGlobals->curtime + AIRTIME;
 		return;
 	}

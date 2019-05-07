@@ -1,18 +1,25 @@
 #include "cbase.h"
 
 #include "OnlineSettingsPage.h"
-#include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/CvarSlider.h"
+#include "vgui_controls/TextEntry.h"
+#include <vgui_controls/CvarToggleCheckButton.h>
+
+#include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 OnlineSettingsPage::OnlineSettingsPage(Panel* pParent) : BaseClass(pParent, "OnlineSettings")
 {
-    
+    m_pEnableColorAlphaOverride = new CvarToggleCheckButton(this, "EnableAlphaOverride", "#MOM_Settings_Override_Alpha_Enable", "mom_ghost_online_alpha_override_enable");
+    m_pEnableColorAlphaOverride->AddActionSignalTarget(this);
+    m_pAlphaOverrideSlider = new CvarSlider(this, "AlphaOverrideSlider", nullptr, 0.0f, 255.0f, "mom_ghost_online_alpha_override");
+    m_pAlphaOverrideSlider->AddActionSignalTarget(this);
+    m_pAlphaOverrideInput = new TextEntry(this, "AlphaOverrideEntry");
+    m_pAlphaOverrideInput->SetAllowNumericInputOnly(true);
+    m_pAlphaOverrideInput->AddActionSignalTarget(this);
 
-
-    m_pEnableColorAlphaOverride = FindControl<CvarToggleCheckButton>("EnableAlphaOverride");
-    m_pAlphaOverrideSlider = FindControl<CCvarSlider>("AlphaOverrideSlider");
-    m_pAlphaOverrideInput = FindControl<TextEntry>("AlphaOverrideEntry");
+    LoadControlSettings("resource/ui/SettingsPanel_OnlineSettings.res");
 }
 
 void OnlineSettingsPage::OnApplyChanges()

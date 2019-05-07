@@ -1,0 +1,10 @@
+UnlitGeneric
+{
+	"$basetexture" "tools/tools_teleport_fail"
+
+	"$translucent" "1"
+
+	"%keywords" "momentum,tools,trigger,teleport,fail"
+
+	"%compiletrigger" "1"
+}
