@@ -7,7 +7,6 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_TOGGLE_CONVAR(mom_toggle_nostartorend, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if No Start or End should be shown.\n");
 static MAKE_TOGGLE_CONVAR(mom_toggle_versionwarn, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if the initial version warning should be shown.\n");
 
 using namespace vgui;
@@ -15,10 +14,6 @@ using namespace vgui;
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
     messageboxpanel->CreateMessagebox("#MOM_MB_TrySaveLoad_Title", "#MOM_MB_TrySaveLoad");
-}
-void __MsgFunc_MB_NoStartOrEnd(bf_read &msg)
-{
-    messageboxpanel->CreateMessageboxVarRef("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd", "mom_toggle_nostartorend");
 }
 
 MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvar) : MessageBox(title, msg)
@@ -97,7 +92,6 @@ CMessageboxPanel::CMessageboxPanel(VPANEL parent) : BaseClass(nullptr, "Messageb
     SetProportional(true);
 
     HOOK_MESSAGE(MB_PlayerTriedSaveOrLoad);
-    HOOK_MESSAGE(MB_NoStartOrEnd);
 }
 
 CMessageboxPanel::~CMessageboxPanel() { }

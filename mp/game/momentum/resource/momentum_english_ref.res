@@ -437,9 +437,6 @@
 
         "MOM_MB_DontShowAgain" "Do not show this again"
 
-        "MOM_MB_NoStartOrEnd_Title" "Invalid Map Zone Data"
-        "MOM_MB_NoStartOrEnd" "You're playing on a map that has invalid zone data.\nYou won't be able to use the timer properly!"
-
         "MOM_MB_EditingZone_Title" "Momentum Zone Editing"
         "MOM_MB_EditingZone" "PLEASE NOTE: The current implementation of zone editing is in a very prealpha state.\nExpect bugs, errors, glitches and features straight up broken, but note that we're working hard to implement a better, much easier version."
 
