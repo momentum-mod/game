@@ -35,7 +35,6 @@ public:
 
     // Dispatch to player
     void DispatchMapInfo(CMomentumPlayer *pPlayer) const;
-    void DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const;
 
 private:
     void ResetCounts();

@@ -487,21 +487,6 @@ void CMapZoneSystem::DispatchMapInfo(CMomentumPlayer *pPlayer) const
     }
 }
 
-void CMapZoneSystem::DispatchNoZonesMsg(CMomentumPlayer *pPlayer) const
-{
-    if (m_iZoneCount[TRACK_MAIN] == 0)
-    {
-        CSingleUserRecipientFilter filter(pPlayer);
-        filter.MakeReliable();
-        UserMessageBegin(filter, "MB_NoStartOrEnd");
-        MessageEnd();
-    }
-    else
-    {
-        DispatchMapInfo(pPlayer);
-    }
-}
-
 void CMapZoneSystem::ResetCounts()
 {
     for (auto i = 0; i < MAX_TRACKS; i++)
