@@ -374,7 +374,7 @@ void CMomentumPlayer::Spawn()
             ClearStartMark(i);
         }
 
-        g_MapZoneSystem.DispatchNoZonesMsg(this);
+        g_MapZoneSystem.DispatchMapInfo(this);
     }
 
     RegisterThinkContext("THINK_EVERY_TICK");
