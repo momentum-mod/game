@@ -12,7 +12,7 @@ $path = "E:\Steamworks\dev\Momentum"
 
 # Boot arguments
 $hl2exe = Join-Path $path hl2.exe 
-$hl2args = "-game momentum -window -w 1600 -h 900 -novid +developer 2 -console"
+$hl2args = "-game momentum -window -w 1600 -h 900 -novid +developer 2 -console -mapping"
 
 $momentum_sym = Join-Path $path momentum # Writing as (steamworks path)/momentum
 $momentum = [System.IO.Path]::GetFullPath("..\game\momentum") # This is your local dev folder
