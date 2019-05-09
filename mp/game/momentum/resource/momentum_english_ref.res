@@ -21,9 +21,9 @@
         "MOM_Controls_StopTimer" "Stop the timer"
         "MOM_Controls_ToggleSavelocMenu" "Toggle showing Saved Locations Menu"
         "MOM_Controls_Practice" "Toggle Practice Mode"
-        "MOM_Controls_ToggleTimes" "Toggle showing leaderboards"
+        "MOM_Controls_ToggleTimes" "Show leaderboards"
         "MOM_Controls_Drop" "Drop current weapon"
-        "MOM_Controls_ToggleLobbyMembers" "Toggle showing lobby members"
+        "MOM_Controls_ToggleLobbyMembers" "Show lobby members"
 
     //Saveloc Menu
         "MOM_Menu_SaveCurLoc" "Save Current Location"
