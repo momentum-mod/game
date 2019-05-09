@@ -89,7 +89,7 @@ void CChangelogPanel::GetRemoteChangelog()
         }
         else
         {
-            Warning("Failed to send HTTP Request to post scores online!\n");
+            Warning("Failed to send HTTP Request to get changelog!\n");
             SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
