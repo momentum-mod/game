@@ -238,8 +238,10 @@ void CHudChat::OnThink()
 
 void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
 {
-    // If something other than the lobby...
-    if (pParam->m_bSuccess && pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember)
+    // If something other than the lobby and local player...
+    if (pParam->m_bSuccess &&
+		pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember &&
+		pParam->m_ulSteamIDMember != SteamUser()->GetSteamID().ConvertToUint64())
     {
         // Typing Status
         const char *typingText = SteamMatchmaking()->GetLobbyMemberData(m_LobbyID, pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
