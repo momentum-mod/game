@@ -840,8 +840,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
 
-			// When we start on jump, we reset on land (see OnLand)
-			// If we don't start on jump or we're already on ground we can safely reset now
+            // When we start on jump, we reset on land (see OnLand)
+            // If we don't start on jump or we're already on ground we can safely reset now
             if (!m_bStartTimerOnJump || GetFlags() & FL_ONGROUND)
             {
                 g_pMomentumTimer->Reset(this);

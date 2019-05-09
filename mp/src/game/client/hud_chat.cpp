@@ -97,8 +97,8 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
 //-----------------------------------------------------------------------------
 // Purpose:
 // Input  : *pszName -
-//			iSize -
-//			*pbuf -
+//          iSize -
+//          *pbuf -
 //-----------------------------------------------------------------------------
 void CHudChat::MsgFunc_SayText(bf_read &msg)
 {
@@ -240,8 +240,8 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
 {
     // If something other than the lobby and local player...
     if (pParam->m_bSuccess &&
-		pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember &&
-		pParam->m_ulSteamIDMember != SteamUser()->GetSteamID().ConvertToUint64())
+        pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember &&
+        pParam->m_ulSteamIDMember != SteamUser()->GetSteamID().ConvertToUint64())
     {
         // Typing Status
         const char *typingText = SteamMatchmaking()->GetLobbyMemberData(m_LobbyID, pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
@@ -270,15 +270,6 @@ void CHudChat::ApplySchemeSettings(vgui::IScheme* pScheme)
     BaseClass::ApplySchemeSettings(pScheme);
 
     m_cDefaultTextColor = pScheme->GetColor("OffWhite", COLOR_WHITE);
-}
-
-void CHudChat::SpectatorUpdate(const CSteamID &personID, const CSteamID &target)
-{
-    if (!m_pSpectatorInfo)
-        m_pSpectatorInfo = GET_HUDELEMENT(CHudSpectatorInfo);
-
-    if (m_pSpectatorInfo)
-        m_pSpectatorInfo->SpectatorUpdate(personID, target);
 }
 
 void CHudChat::SpectatorUpdate(const CSteamID &personID, const CSteamID &target)
