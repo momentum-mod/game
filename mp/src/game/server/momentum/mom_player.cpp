@@ -837,10 +837,15 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             m_iLimitSpeedType = pStartTrigger->GetLimitSpeedType();
             m_bShouldLimitPlayerSpeed = pStartTrigger->IsLimitingSpeed();
 
-            // Reset timer when we enter start zone
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
-            g_pMomentumTimer->Reset(this);
+
+			// When we start on jump, we reset on land (see OnLand)
+			// If we don't start on jump or we're already on ground we can safely reset now
+            if (!m_bStartTimerOnJump || GetFlags() & FL_ONGROUND)
+            {
+                g_pMomentumTimer->Reset(this);
+            }
         }
         break;
         case ZONE_TYPE_STOP:

@@ -13,14 +13,9 @@
 
 #include "tier0/memdbgon.h"
 
-CMomRunEntity::CMomRunEntity()
-{
-}
+CMomRunEntity::CMomRunEntity() {}
 
-CMomRunEntity::~CMomRunEntity()
-{
-}
-
+CMomRunEntity::~CMomRunEntity() {}
 
 #ifndef CLIENT_DLL
 
@@ -31,8 +26,6 @@ void CMomRunEntity::OnZoneEnter(CTriggerZone *pTrigger)
     switch (pTrigger->GetZoneType())
     {
     case ZONE_TYPE_START:
-        pData->m_bMapFinished = false;
-        pData->m_bTimerRunning = false;
         break;
     case ZONE_TYPE_STOP:
         pData->m_iOldTrack = pData->m_iCurrentTrack;
