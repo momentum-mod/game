@@ -263,8 +263,8 @@ $Project "Client (Momentum)"
                     $File   "momentum\c_mom_online_ghost.cpp"
                 }
 
-                $File "$SRCDIR\game\client\momentum\mom_system_discord.h"   [$WIN32]
-                $File "$SRCDIR\game\client\momentum\mom_system_discord.cpp" [$WIN32]
+                $File "$SRCDIR\game\client\momentum\mom_system_discord.h"   [$WIN32 || $LINUXALL]
+                $File "$SRCDIR\game\client\momentum\mom_system_discord.cpp" [$WIN32 || $LINUXALL]
 
             }
 
@@ -340,6 +340,6 @@ $Project "Client (Momentum)"
     $Folder "Link Libraries"
     {
         $Lib "libcryptopp"
-        $ImpLib "discord-rpc" [$WIN32]
+        $ImpLib "discord-rpc" [$WIN32 || $LINUXALL]
     }
 }
