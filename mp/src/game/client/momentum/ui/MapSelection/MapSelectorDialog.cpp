@@ -85,7 +85,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
 
     m_pFilterPanel = new MapFilterPanel(this);
 
-    LoadControlSettings("resource/ui/MapSelector/DialogMapSelector.res");
+    LoadControlSettings("resource/ui/mapselector/DialogMapSelector.res");
 
     SetMinimumSize(GetScaledVal(340), GetScaledVal(250));
 

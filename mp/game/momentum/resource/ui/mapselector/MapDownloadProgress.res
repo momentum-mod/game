@@ -1,4 +1,4 @@
-"resource/ui/MapSelector/MapDownloadProgress.res"
+"resource/ui/mapselector/MapDownloadProgress.res"
 {
     "MapName"
     {
