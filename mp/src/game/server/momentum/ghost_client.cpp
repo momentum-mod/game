@@ -93,7 +93,7 @@ void CMomentumGhostClient::LevelShutdownPreEntity()
 
 void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
-    g_pMomentumLobbySystem->SendAndRecieveP2PPackets();
+    g_pMomentumLobbySystem->SendAndReceiveP2PPackets();
 }
 
 void CMomentumGhostClient::Shutdown()

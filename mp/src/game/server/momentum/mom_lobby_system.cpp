@@ -42,8 +42,18 @@ CON_COMMAND(mom_lobby_invite, "Invite friends to your lobby\n")
         SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
 }
 
-static MAKE_CONVAR(mom_lobby_max_players, "10", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the maximum number of players allowed in lobbies you create.\n", 2, 250);
-static MAKE_CONVAR(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the type of the lobby. 0 = Invite only, 1 = Friends Only, 2 = Public\n", 0, 2);
+static void LobbyMaxPlayersChanged(IConVar *pVar, const char *pVal, float oldVal)
+{
+    g_pMomentumLobbySystem->OnLobbyMaxPlayersChanged(ConVarRef(pVar).GetInt());
+}
+
+static void LobbyTypeChanged(IConVar *pVar, const char *pVal, float oldVal)
+{
+    g_pMomentumLobbySystem->OnLobbyTypeChanged(ConVarRef(pVar).GetInt());
+}
+
+static MAKE_CONVAR_C(mom_lobby_max_players, "16", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the maximum number of players allowed in lobbies you create.\n", 2, 250, LobbyMaxPlayersChanged);
+static MAKE_CONVAR_C(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the type of the lobby. 0 = Invite only, 1 = Friends Only, 2 = Public\n", 0, 2, LobbyTypeChanged);
 
 // So basically, if a user wants to connect to us, we're considered the host. 
 void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
@@ -173,7 +183,7 @@ void CMomentumLobbySystem::StartLobby()
         DevLog("The lobby call successfully happened!\n");
     }
     else
-        DevLog("The lobby could not be created because you already made one or are in one!\n");
+        Warning("The lobby could not be created because you already made one or are in one!\n");
 }
 
 void CMomentumLobbySystem::LeaveLobby()
@@ -598,7 +608,7 @@ bool CMomentumLobbySystem::TryJoinLobby(const CSteamID &lobbyID)
 
     if (m_sLobbyID == lobbyID)
     {
-        Log("Already in this lobby!");
+        Warning("Already in this lobby!");
         return false;
     }
     if (m_cLobbyJoined.IsActive())
@@ -638,7 +648,7 @@ bool CMomentumLobbySystem::TryJoinLobbyFromString(const char* pString)
     return false;
 }
 
-void CMomentumLobbySystem::SendAndRecieveP2PPackets()
+void CMomentumLobbySystem::SendAndReceiveP2PPackets()
 {
     if (m_mapLobbyGhosts.Count() > 0)
     {
@@ -866,6 +876,47 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget
         WriteMessage(type, playerID, ghostID);
     }
 }
+
+void CMomentumLobbySystem::OnLobbyMaxPlayersChanged(int newMax)
+{
+    // We can only change while in a lobby if we're the lobby owner
+    if (LobbyValid())
+    {
+        CHECK_STEAM_API(SteamUser());
+        const auto pLocID = SteamUser()->GetSteamID().ConvertToUint64();
+        if (SteamMatchmaking()->GetLobbyOwner(m_sLobbyID).ConvertToUint64() == pLocID)
+        {
+            // Change the lobby type to this type
+            newMax = clamp<int>(newMax, 2, 250);
+            if (SteamMatchmaking()->SetLobbyMemberLimit(m_sLobbyID, newMax))
+                Log("Successfully changed the maximum player count to %i!\n", newMax);
+        }
+        else
+            Warning("Cannot change the lobby max players; you are not the lobby owner!\n");
+    }
+    // else the lobby isn't valid, but it'll apply to our next one!
+}
+
+void CMomentumLobbySystem::OnLobbyTypeChanged(int newType)
+{
+    // We can only change while in a lobby if we're the lobby owner
+    if (LobbyValid())
+    {
+        CHECK_STEAM_API(SteamUser());
+        const auto pLocID = SteamUser()->GetSteamID().ConvertToUint64();
+        if (SteamMatchmaking()->GetLobbyOwner(m_sLobbyID).ConvertToUint64() == pLocID)
+        {
+            // Change the lobby type to this type
+            newType = clamp<int>(newType, k_ELobbyTypePrivate, k_ELobbyTypePublic);
+            if (SteamMatchmaking()->SetLobbyType(m_sLobbyID, (ELobbyType)newType))
+                Log("Successfully changed the lobby type to %i!\n", newType);
+        }
+        else
+            Warning("Cannot change the lobby type; you are not the lobby owner!\n");
+    }
+    // else the lobby isn't valid, but it'll apply to our next one!
+}
+
 
 void CMomentumLobbySystem::SetGameInfoStatus()
 {

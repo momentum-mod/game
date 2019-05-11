@@ -45,13 +45,16 @@ public:
     void LevelChange(const char *pMapName); // This client has changed levels to (potentially) a different map
     void CheckToAdd(CSteamID *pID);
 
-    void SendAndRecieveP2PPackets();
+    void SendAndReceiveP2PPackets();
     void SetAppearanceInMemberData(GhostAppearance_t app);
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
     bool SendDecalPacket(DecalPacket_t *packet);
+
+    void OnLobbyMaxPlayersChanged(int newMax);
+    void OnLobbyTypeChanged(int newType);
 
     void SetGameInfoStatus();
     bool GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out);
