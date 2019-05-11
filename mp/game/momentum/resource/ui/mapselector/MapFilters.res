@@ -1,4 +1,4 @@
-"resource/ui/MapSelector/MapFilters.res"
+"resource/ui/mapselector/MapFilters.res"
 {
 	"MapFilterPanel"
 	{
