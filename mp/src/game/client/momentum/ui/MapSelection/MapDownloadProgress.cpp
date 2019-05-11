@@ -23,7 +23,7 @@ MapDownloadProgress::MapDownloadProgress(const char *pMapName) : BaseClass(nullp
     m_pMapLabel = new Label(this, "MapName", pMapName);
     m_pProgress = new ContinuousProgressBar(this, "ProgressBar");
 
-    LoadControlSettings("resource/ui/MapSelector/MapDownloadProgress.res");
+    LoadControlSettings("resource/ui/mapselector/MapDownloadProgress.res");
 
     m_pMapLabel->SetText(pMapName);
     m_pMapLabel->DisableMouseInputForThisPanel(true);

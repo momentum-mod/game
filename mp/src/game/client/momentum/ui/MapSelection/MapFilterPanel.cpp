@@ -36,7 +36,7 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     m_pResetFiltersButton = new Button(this, "ResetFilters", "#MOM_MapSelector_FilterReset", this, "ResetFilters");
     m_pApplyFiltersButton = new Button(this, "ApplyFilters", "#MOM_MapSelector_FilterApply", this, "ApplyFilters");
 
-    LoadControlSettings("resource/ui/MapSelector/MapFilters.res");
+    LoadControlSettings("resource/ui/mapselector/MapFilters.res");
 
     m_pGameModeFilter->AddItem("#MOM_All", nullptr);//All
     m_pGameModeFilter->AddItem("#MOM_GameType_Surf", nullptr);

@@ -1,4 +1,4 @@
-"resource/ui/MapSelector/DialogMapSelector.res"
+"resource/ui/mapselector/DialogMapSelector.res"
 {
 	"CMapSelectorDialog"
 	{
