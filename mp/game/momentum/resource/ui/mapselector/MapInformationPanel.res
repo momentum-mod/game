@@ -1,4 +1,4 @@
-"resource/ui/MapSelector/MapInformationPanel.res"
+"resource/ui/mapselector/MapInformationPanel.res"
 {
     "GamemodeLabel"
     {
