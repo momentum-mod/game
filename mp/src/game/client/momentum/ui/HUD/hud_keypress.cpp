@@ -21,6 +21,7 @@
 
 using namespace vgui;
 
+extern ConVar cl_yawspeed;
 static ConVar showkeys("mom_hud_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "Toggles showing keypresses and strafe/jump counter\n");
 
@@ -126,6 +127,25 @@ void CHudKeyPressDisplay::Init()
 
 void CHudKeyPressDisplay::Paint()
 {
+	//create local variable so we can mutate it without worry
+	int m_nButtons = this->m_nButtons;
+	//do we need to invert the +left/+right due to negative yawspeed?
+	if (cl_yawspeed.GetInt() < 0 && !(m_nButtons & IN_STRAFE)){
+		if (this->m_nButtons > 0){
+			m_nButtons = m_nButtons;
+		}
+		//in_right = in_left
+		m_nButtons = (this->m_nButtons & IN_LEFT) ? (m_nButtons | IN_RIGHT) : (m_nButtons & (~IN_RIGHT));
+		//in_left = in_right
+		m_nButtons = (this->m_nButtons & IN_RIGHT) ? (m_nButtons | IN_LEFT) : (m_nButtons & (~IN_LEFT));
+		if (this->m_nButtons > 0){
+			m_nButtons = m_nButtons;
+		}
+	}
+	else if (cl_yawspeed.GetInt() == 0)
+	{
+		m_nButtons = m_nButtons & (~(IN_LEFT | IN_RIGHT));
+	}
     // first, semi-transparent key templates
     DrawKeyTemplates();
     // then, color the key in if it's pressed
