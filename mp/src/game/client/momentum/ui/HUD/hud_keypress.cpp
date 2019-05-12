@@ -127,37 +127,31 @@ void CHudKeyPressDisplay::Init()
 
 void CHudKeyPressDisplay::Paint()
 {
-	//create local variable so we can mutate it without worry
-	int m_nButtons = this->m_nButtons;
-	//do we need to invert the +left/+right due to negative yawspeed?
-	if (cl_yawspeed.GetInt() < 0 && !(m_nButtons & IN_STRAFE)){
-		if (this->m_nButtons > 0){
-			m_nButtons = m_nButtons;
-		}
-		//in_right = in_left
-		m_nButtons = (this->m_nButtons & IN_LEFT) ? (m_nButtons | IN_RIGHT) : (m_nButtons & (~IN_RIGHT));
-		//in_left = in_right
-		m_nButtons = (this->m_nButtons & IN_RIGHT) ? (m_nButtons | IN_LEFT) : (m_nButtons & (~IN_LEFT));
-		if (this->m_nButtons > 0){
-			m_nButtons = m_nButtons;
-		}
-	}
-	else if (cl_yawspeed.GetInt() == 0)
-	{
-		m_nButtons = m_nButtons & (~(IN_LEFT | IN_RIGHT));
-	}
+    //create local variable so we can mutate it without worry
+    int nButtons = m_nButtons;
+    //do we need to invert the +left/+right due to negative yawspeed?
+    if (cl_yawspeed.GetInt() < 0 && !(nButtons & IN_STRAFE)){
+        //in_right = in_left
+        nButtons = (m_nButtons & IN_LEFT) ? (nButtons | IN_RIGHT) : (nButtons & (~IN_RIGHT));
+        //in_left = in_right
+        nButtons = (m_nButtons & IN_RIGHT) ? (nButtons | IN_LEFT) : (nButtons & (~IN_LEFT));
+    }
+    else if (cl_yawspeed.GetInt() == 0)
+    {
+        nButtons = nButtons & (~(IN_LEFT | IN_RIGHT));
+    }
     // first, semi-transparent key templates
     DrawKeyTemplates();
     // then, color the key in if it's pressed
     surface()->DrawSetTextColor(m_Normal);
     surface()->DrawSetTextFont(m_hTextFont);
-    if (m_nButtons & IN_FORWARD)
+    if (nButtons & IN_FORWARD)
     {
         CHECK_INPUT_P(IN_FORWARD);
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwFwd), top_row_ypos);
         surface()->DrawPrintText(m_pwFwd, wcslen(m_pwFwd));
     }
-    if (m_nButtons & IN_MOVELEFT)
+    if (nButtons & IN_MOVELEFT)
     {
         CHECK_INPUT_P(IN_MOVELEFT);
         int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft);
@@ -165,20 +159,20 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
     }
     // Turning left with turnbind
-    if (m_nButtons & IN_LEFT)
+    if (nButtons & IN_LEFT)
     {
         CHECK_INPUT_P(IN_RIGHT);
         int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - (UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft) * 2);
         surface()->DrawSetTextPos(text_left, mid_row_ypos);
         surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
     }
-    if (m_nButtons & IN_BACK)
+    if (nButtons & IN_BACK)
     {
         CHECK_INPUT_P(IN_BACK);
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwBack), lower_row_ypos);
         surface()->DrawPrintText(m_pwBack, wcslen(m_pwBack));
     }
-    if (m_nButtons & IN_MOVERIGHT)
+    if (nButtons & IN_MOVERIGHT)
     {
         CHECK_INPUT_P(IN_MOVERIGHT);
         int text_right = GetTextCenter(m_hTextFont, m_pwRight) + UTIL_ComputeStringWidth(m_hTextFont, m_pwRight);
@@ -186,7 +180,7 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     }
     // Turning right with turnbind
-    if (m_nButtons & IN_RIGHT)
+    if (nButtons & IN_RIGHT)
     {
         CHECK_INPUT_P(IN_RIGHT);
         int text_right = GetTextCenter(m_hTextFont, m_pwRight) + (UTIL_ComputeStringWidth(m_hTextFont, m_pwRight) * 2);
@@ -194,7 +188,7 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     }
 
-    if (m_nButtons & IN_STRAFE)
+    if (nButtons & IN_STRAFE)
     {
         CHECK_INPUT_P(IN_STRAFE);
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), ( lower_row_ypos + top_row_ypos) / 2.0f );
@@ -204,9 +198,9 @@ void CHudKeyPressDisplay::Paint()
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
-    if (m_nButtons & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
+    if (nButtons & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
     {
-        if (m_nButtons & IN_JUMP)
+        if (nButtons & IN_JUMP)
         {
             m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
@@ -217,9 +211,9 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
-    if (m_nButtons & IN_DUCK || gpGlobals->curtime < m_fDuckColorUntil)
+    if (nButtons & IN_DUCK || gpGlobals->curtime < m_fDuckColorUntil)
     {
-        if (m_nButtons & IN_DUCK)
+        if (nButtons & IN_DUCK)
         {
             m_fDuckColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
