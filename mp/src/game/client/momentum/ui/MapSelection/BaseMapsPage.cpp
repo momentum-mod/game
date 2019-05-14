@@ -295,7 +295,7 @@ bool CBaseMapsPage::MapPassesFilters(MapData *pMap, MapFilters_t filters)
 
     // Map layout (0 = all, 1 = show staged maps only, 2 = show linear maps only)
     int iMapLayoutFilter = filters.m_iMapLayout;
-    if (iMapLayoutFilter && pMap->m_MainTrack.m_bIsLinear + 1 == iMapLayoutFilter)
+    if (iMapLayoutFilter && pMap->m_MainTrack.m_bIsLinear + 1 != iMapLayoutFilter)
         return false;
 
     return true;
