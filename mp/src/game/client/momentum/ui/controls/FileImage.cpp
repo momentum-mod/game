@@ -26,6 +26,11 @@ FileImage::FileImage(IImage *pDefaultImage /* = nullptr*/): m_iX(0), m_iY(0), m_
     m_szPathID[0] = '\0';
 }
 
+FileImage::FileImage(const char *pFileName, const char *pPathID, IImage *pDefaultImage) : FileImage(pDefaultImage)
+{
+    LoadFromFile(pFileName, pPathID);
+}
+
 FileImage::~FileImage()
 {
     DestroyTexture();
@@ -173,8 +178,7 @@ URLImage::URLImage(IImage *pDefaultImage/* = nullptr*/, bool bDrawProgress /* = 
     m_uTotalSize = 0;
 }
 
-URLImage::URLImage(const char* pURL, IImage* pDefault, bool bDrawProgress) : FileImage(pDefault), m_hRequest(INVALID_HTTPREQUEST_HANDLE),
-        m_bDrawProgressBar(bDrawProgress)
+URLImage::URLImage(const char* pURL, IImage* pDefault, bool bDrawProgress) : URLImage(pDefault, bDrawProgress)
 {
     LoadFromURL(pURL);
 }
