@@ -13,6 +13,7 @@ namespace vgui
     public:
         /// Creates a new FileImage, using the pDefaultImage to render if the image does not/fails to load
         FileImage(IImage *pDefaultImage = nullptr);
+        FileImage(const char *pFileName, const char *pPathID = "GAME", IImage *pDefaultImage = nullptr);
         ~FileImage();
 
         /// Loads an image from file given the file name and pathID. Returns true if loaded, else false
