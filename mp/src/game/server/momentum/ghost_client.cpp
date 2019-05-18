@@ -125,6 +125,12 @@ void CMomentumGhostClient::SendAppearanceData(GhostAppearance_t appearance)
     g_pMomentumLobbySystem->SetAppearanceInMemberData(appearance);
 }
 
+void CMomentumGhostClient::SetIsSpectating(bool state)
+{
+    // MOM_TODO g_pMomentumServerSystem->SetIsSpectating(state);
+    g_pMomentumLobbySystem->SetIsSpectating(state);
+}
+
 void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpectating, bool bLeft)
 {
     // MOM_TODO: g_pMomentumServerSystem->SetSpectatorTarget(target, bStartedSpectating)
