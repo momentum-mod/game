@@ -879,12 +879,10 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     if (bStartedSpectating)
     {
         type = SPEC_UPDATE_JOIN;
-        SetIsSpectating(true);
     }
     else if (!ghostTarget.IsValid() && ghostTarget.ConvertToUint64() != 1)
     {
         type = bLeft ? SPEC_UPDATE_LEAVE : SPEC_UPDATE_STOP;
-        SetIsSpectating(false);
     }
     else
         type = SPEC_UPDATE_CHANGETARGET;

@@ -1509,6 +1509,8 @@ bool CMomentumPlayer::StartObserverMode(int mode)
     {
         SaveCurrentRunState();
         FIRE_GAME_WIDE_EVENT("spec_start");
+
+        g_pMomentumGhostClient->SetIsSpectating(true);
     }
 
     return BaseClass::StartObserverMode(mode);
@@ -1519,6 +1521,8 @@ void CMomentumPlayer::StopObserverMode()
     if (m_iObserverMode > OBS_MODE_NONE)
     {
         FIRE_GAME_WIDE_EVENT("spec_stop");
+
+        g_pMomentumGhostClient->SetIsSpectating(false);
     }
 
     BaseClass::StopObserverMode();
