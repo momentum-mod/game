@@ -151,7 +151,7 @@ Scheme
 
 		ListPanel.TextColor					"White"
 		ListPanel.BgColor					"TransparentBlack"
-		ListPanel.SelectedTextColor			"Black"
+		ListPanel.SelectedTextColor			"White"
 		ListPanel.SelectedBgColor			"Light Blue"
 		ListPanel.SelectedOutOfFocusBgColor	"Dark Blue"
 		ListPanel.EmptyListInfoTextColor	"White"
@@ -1251,6 +1251,28 @@ Scheme
 				}
 			}
 		}
+
+        ListPanelColumnButtonBorder
+        {
+            "inset" "0 0 0 0"
+			Top
+			{
+				"1"
+				{
+					"color" "Border.Bright"
+					"offset" "1 1"
+				}
+			}
+
+			Bottom
+			{
+				"1"
+				{
+					"color" "Border.Dark"
+					"offset" "0 0"
+				}
+			}
+        }
 		
 		ButtonBorder
 		{

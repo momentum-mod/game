@@ -33,6 +33,7 @@ void CLeaderboardsContextMenu::ShowMenu()
     SetPos(x - gx - 5, y - gy - 5);
     SetVisible(true);
     SetMouseInputEnabled(true);
+    MoveToFront();
 }
 
 void CLeaderboardsContextMenu::OnCursorExitedMenuItem(int vpanel)
