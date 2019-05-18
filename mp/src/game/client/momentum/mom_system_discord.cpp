@@ -189,15 +189,12 @@ void CMomentumDiscord::Shutdown()
 // When a user joins a lobby
 void CMomentumDiscord::HandleLobbyEnter(LobbyEnter_t *pParam)
 {
-    if (pParam->m_EChatRoomEnterResponse != k_EChatRoomEnterResponseSuccess || pParam->m_ulSteamIDLobby == 0)
+    if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
     {
-        DevWarning("Failed to enter room! Error code: %i\n", pParam->m_EChatRoomEnterResponse);
-        return;
+        m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
+        UpdateDiscordPartyIdFromSteam();
+        UpdateLobbyNumbers();
     }
-
-    m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
-    UpdateDiscordPartyIdFromSteam();
-    UpdateLobbyNumbers();
 }
 
 void CMomentumDiscord::HandleLobbyDataUpdate(LobbyDataUpdate_t *pParam)

@@ -243,5 +243,6 @@ enum SPECTATE_MSG_TYPE
 #define LOBBY_DATA_TYPING "isTyping"
 #define LOBBY_DATA_SPEC_TARGET "specTargetID"
 #define LOBBY_DATA_IS_SPEC "isSpectating"
+#define LOBBY_DATA_TYPE "type" // Use this with GetLobbyData and NOT GetLobbyMemberData!!!
 
 static const unsigned long long MOM_STEAM_GROUP_ID64 = 103582791441609755;

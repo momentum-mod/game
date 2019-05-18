@@ -68,8 +68,6 @@
         "MOM_Leaderboards_Filter" "Filter..."
         "MOM_Leaderboards_RunType" "Run Type"
         "MOM_Leaderboards_DeleteReplay" "Delete Run"
-        "MOM_Leaderboards_Spectate" "Spectate"
-        "MOM_Leaderboards_GoToMap" "Join Player"
 
     //Run Tags
         "MOM_RunFlag_ScrollOnly" "Scroll Only"
@@ -239,7 +237,7 @@
         "MOM_Settings_Play_BlockSound" "Play bhop block sound"
         "MOM_Settings_Practice_Safeguard" "Enable the practice mode safeguard"
         "MOM_Settings_Practice_Safeguard_TT" "The safeguard prevents you from accidentally turning on practice mode while doing a run.\nIf enabled, practice mode will not enable if you are pressing any movement keys."
-        "MOM_Settings_Save_Checkpoints" "Save user checkpoints to file on map end"
+        "MOM_Settings_Save_Checkpoints" "Save user savelocs to file on map end"
         "MOM_Settings_Worldlight_Shadows" "World lights determine shadow direction"
         "MOM_Settings_Worldlight_Shadows_TT" "When enabled, world lights will determine entity shadow direction. NOTE: Can cause significant performance decreases in some maps!"
         "MOM_Settings_LowerWeapon" "Lower the weapon after a certain amount of speed"
@@ -449,6 +447,31 @@
         "MOM_PaintGunPanel_Color" "Decal color:"
         "MOM_PaintGunPanel_Color_TT" "Change the color of the paint"
         
+        // Lobby members panel / related strings
+        "MOM_Lobby_Spectate" "Spectate"
+        "MOM_Lobby_GoToMap" "Join Player"
+        "MOM_Lobby_MakeOwner" "Make Lobby Owner"
+        "MOM_Lobby_TeleportTo" "Teleport to Player"
+
+        "MOM_Lobby_Type_Private" "Invite only"
+        "MOM_Lobby_Type_FriendsOnly" "Friends only"
+        "MOM_Lobby_Type_Public" "Public"
+
+        "MOM_Lobby_Member_State" "State"
+        "MOM_Lobby_Member_Spectating" "Spectating"
+
+        // Join fails
+        "MOM_Lobby_JoinFail" "Failed to join the lobby"
+        "MOM_Lobby_JoinFail_DoesntExist" "The lobby does not exist!"
+        "MOM_Lobby_JoinFail_NotAllowed" "You do not have the permissions needed to join the lobby."
+        "MOM_Lobby_JoinFail_Full" "The lobby is full!"
+        "MOM_Lobby_JoinFail_Error" "Unknown error."
+        "MOM_Lobby_JoinFail_Limited" "Your account is limited. Please spend $5 or more on Steam!"
+
+        "GameUI2_HostLobby" "Host lobby"
+        "GameUI2_LeaveLobby" "Leave lobby"
+        "GameUI2_InviteLobby" "Invite friends"
+
         // Main menu
         "GameUI2_LogoLeft" "Momentum"
         "GameUI2_LogoRight" "Mod"
@@ -480,9 +503,6 @@
         "GameUI2_SendFeedback" "SEND FEEDBACK"
         "GameUI2_SendFeedbackDescription" "Send feedback to the team"
 
-        "GameUI2_HostLobby" "Host lobby"
-        "GameUI2_LeaveLobby" "Leave lobby"
-        "GameUI2_InviteLobby" "Invite friends"
         "GameUI2_Respawn" "Respawn"
         "GameUI2_RespawnDescription" "Spawn back in game"
 
