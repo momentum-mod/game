@@ -39,6 +39,9 @@ public:
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
 
+    // Fills the current data, returns false if it couldn't
+    bool GetCurrentPositionPacketData(PositionPacket_t *out) const;
+
     void UpdatePlayerSpectate();
 
     CNetworkVar(uint32, m_uiAccountID);
