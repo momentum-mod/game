@@ -84,8 +84,6 @@ ConVar sv_noclipduringpause( "sv_noclipduringpause", "0", FCVAR_REPLICATED | FCV
 
 extern ConVar cl_mouselook;
 
-#define UsingMouselook() cl_mouselook.GetBool()
-
 /*
 ===============================================================================
 
@@ -152,7 +150,7 @@ void IN_CenterView_f (void)
 {
 	QAngle viewangles;
 
-	if ( UsingMouselook() == false )
+	if ( !cl_mouselook.GetBool() )
 	{
 		if ( !::input->CAM_InterceptingMouse() )
 		{
@@ -627,7 +625,7 @@ DetermineKeySpeed
 
 ==============================
 */
-static ConVar in_usekeyboardsampletime( "in_usekeyboardsampletime", "0", 0, "Use keyboard sample time smoothing." );
+static ConVar in_usekeyboardsampletime( "in_usekeyboardsampletime", "1", 0, "Use keyboard sample time smoothing." );
 
 float CInput::DetermineKeySpeed( float frametime )
 {
@@ -694,7 +692,7 @@ AdjustPitch
 void CInput::AdjustPitch( float speed, QAngle& viewangles )
 {
 	// only allow keyboard looking if mouse look is disabled
-	if ( UsingMouselook() == false )
+	if ( !cl_mouselook.GetBool() )
 	{
 		float	up, down;
 
