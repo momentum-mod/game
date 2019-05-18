@@ -60,8 +60,6 @@ void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
 {
     if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
         m_LobbyID = pParam->m_ulSteamIDLobby;
-    else
-        DevWarning("Failed to enter the chat! %d\n", pParam->m_EChatRoomEnterResponse);
 }
 
 void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
