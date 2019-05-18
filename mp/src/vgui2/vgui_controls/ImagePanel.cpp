@@ -252,7 +252,8 @@ void ImagePanel::GetSettings(KeyValues *outResourceData)
 	// HPE_END
 	//=============================================================================
 
-	outResourceData->GetInt("positionImage", m_bPositionImage );
+	outResourceData->SetBool("positionImage", m_bPositionImage );
+    outResourceData->SetBool("centerImage", m_bCenterImage);
 	outResourceData->SetInt("scaleImage", m_bScaleImage);
 	outResourceData->SetFloat("scaleAmount", m_fScaleAmount);
 	outResourceData->SetInt("tileImage", m_bTileImage);
@@ -267,6 +268,7 @@ void ImagePanel::InitSettings()
     {"fillcolor", TYPE_STRING},
     {"drawcolor", TYPE_STRING},
     {"positionImage", TYPE_BOOL},
+    {"centerImage", TYPE_BOOL},
     {"scaleImage", TYPE_BOOL},
     {"scaleAmount", TYPE_FLOAT},
     {"tileImage", TYPE_BOOL},
@@ -285,6 +287,7 @@ void ImagePanel::ApplySettings(KeyValues *inResourceData)
     m_pszDrawColorName.Purge();
 
 	m_bPositionImage = inResourceData->GetBool("positionImage", true);
+    m_bCenterImage = inResourceData->GetBool("centerImage", false);
 	m_bScaleImage = inResourceData->GetBool("scaleImage", false);
 	m_fScaleAmount = inResourceData->GetFloat("scaleAmount", 0.0f);
 	m_bTileImage = inResourceData->GetBool("tileImage", false);
