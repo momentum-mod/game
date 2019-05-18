@@ -77,6 +77,9 @@ void ColumnButton::ApplySchemeSettings(IScheme *pScheme)
 	Button::ApplySchemeSettings(pScheme);
 
 	SetFont(pScheme->GetFont("DefaultSmall", IsProportional()));
+    const auto pBorder = pScheme->GetBorder("ListPanelColumnButtonBorder");
+    if (pBorder)
+        SetDefaultBorder(pBorder);
 }
 
 // Don't request focus.
@@ -442,6 +445,7 @@ ListPanel::ListPanel(Panel *parent, const char *panelName) : BaseClass(parent, p
 
 	m_iHeaderHeight = 20;
 	m_iRowHeight = 20;
+    m_bSetRowHeightOnFontChange = true;
 	m_bCanSelectIndividualCells = false;
 	m_iSelectedColumn = -1;
 	m_bAllowUserAddDeleteColumns = false;
@@ -597,6 +601,8 @@ void ListPanel::AddColumnHeader(int index, const char *columnName, const char *c
 	pButton->AddActionSignalTarget(this);
 	pButton->SetContentAlignment(Label::a_west);
 	pButton->SetTextInset(5, 0);
+    if (columnFlags & COLUMN_DISABLED)
+        pButton->SetEnabled(false);
 
 	column.m_pHeader = pButton;
 	column.m_iMinWidth = minWidth;
@@ -2810,7 +2816,8 @@ void ListPanel::SetFont(HFont font)
 		return;
 
 	m_pTextImage->SetFont(font);
-	m_iRowHeight = surface()->GetFontTall(font) + 2;
+    if (m_bSetRowHeightOnFontChange)
+	    m_iRowHeight = surface()->GetFontTall(font) + 2;
 }
 
 //-----------------------------------------------------------------------------
