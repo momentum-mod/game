@@ -4,21 +4,10 @@
 //
 // $NoKeywords: $
 //=============================================================================//
-
-#ifndef LISTPANEL_H
-#define LISTPANEL_H
-
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include <utllinkedlist.h>
-#include <utlvector.h>
-#include <utlrbtree.h>
-#include <vgui/VGUI.h>
+#include "utllinkedlist.h"
 #include <vgui_controls/Panel.h>
-
-class KeyValues;
 
 namespace vgui
 {
@@ -87,6 +76,7 @@ public:
 		COLUMN_UNHIDABLE		= 1 << 4,	// column is unhidable
         COLUMN_IMAGE_SIZETOFIT  = 1 << 5, // If the column is an image, force its size to be at most as big as the cell
         COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO = 1 << 6,
+        COLUMN_DISABLED = 1 << 7, // Sets the column to disabled (unable to click it)
 	};
 
 	// adds a column header
@@ -271,6 +261,8 @@ public:
 	virtual void SetSortColumnEx( int iPrimarySortColumn, int iSecondarySortColumn, bool bSortAscending );
 	void GetSortColumnEx( int &iPrimarySortColumn, int &iSecondarySortColumn, bool &bSortAscending ) const;
 
+    // True by default, if set to false will not set the row height to the font height
+    virtual void SetRowHeightOnFontChange(bool bSet) { m_bSetRowHeightOnFontChange = bSet; }
     virtual void SetRowHeight(int newHeight) { m_iRowHeight = newHeight; }
     virtual int GetRowHeight() { return m_iRowHeight; }
 
@@ -358,6 +350,7 @@ private:
 
 	int				m_iHeaderHeight;
 	int 			m_iRowHeight;
+    bool m_bSetRowHeightOnFontChange; // If true (default), sets the row height of the list panel on font change
 	
 	// selection data
 	CUtlVector<int> 	m_SelectedItems;		// array of selected rows
@@ -384,5 +377,3 @@ private:
 };
 
 }
-
-#endif // LISTPANEL_H
