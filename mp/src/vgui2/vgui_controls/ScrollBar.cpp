@@ -4,9 +4,6 @@
 //
 // $NoKeywords: $
 //=============================================================================//
-
-#include <assert.h>
-
 #include <vgui/IScheme.h>
 #include <vgui/ISystem.h>
 #include <vgui/IInput.h>
@@ -118,12 +115,12 @@ public:
 
 vgui::Panel *ScrollBar_Vertical_Factory()
 {
-	return new ScrollBar(NULL, NULL, true );
+	return new ScrollBar(nullptr, nullptr, true );
 }
 
 vgui::Panel *ScrollBar_Horizontal_Factory()
 {
-	return new ScrollBar(NULL, NULL, false );
+	return new ScrollBar(nullptr, nullptr, false );
 }
 
 DECLARE_BUILD_FACTORY_CUSTOM_ALIAS( ScrollBar, ScrollBar_Vertical, ScrollBar_Vertical_Factory );
@@ -136,39 +133,35 @@ DECLARE_BUILD_FACTORY_CUSTOM( ScrollBar, ScrollBar_Horizontal_Factory );
 //-----------------------------------------------------------------------------
 ScrollBar::ScrollBar(Panel *parent, const char *panelName, bool vertical) : Panel(parent, panelName)
 {
-	_slider=null;
-	_button[0]=null;
-	_button[1]=null;
+	_slider = nullptr;
+	_button[0] = nullptr;
+	_button[1] = nullptr;
 	_scrollDelay = SCROLL_BAR_DELAY;
 	_respond = true;
-	m_pUpArrow = NULL;
-	m_pLine = NULL;
-	m_pDownArrow = NULL;
-	m_pBox = NULL;
+	m_pUpArrow = nullptr;
+	m_pLine = nullptr;
+	m_pDownArrow = nullptr;
+	m_pBox = nullptr;
 	m_bNoButtons = false;
-	m_pOverriddenButtons[0] = NULL;
-	m_pOverriddenButtons[1] = NULL;
+	m_pOverriddenButtons[0] = nullptr;
+	m_pOverriddenButtons[1] = nullptr;
+    m_iSchemeScrollWide = 0;
 
 	if (vertical)
 	{
-		// FIXME: proportional changes needed???
-		SetSlider(new ScrollBarSlider(NULL, "Slider", true));
-		SetButton(new ScrollBarButton(NULL, "UpButton", "t"), 0);
-		SetButton(new ScrollBarButton(NULL, "DownButton", "u"), 1);
+		SetSlider(new ScrollBarSlider(nullptr, "Slider", true));
+		SetButton(new ScrollBarButton(nullptr, "UpButton", "t"), 0);
+		SetButton(new ScrollBarButton(nullptr, "DownButton", "u"), 1);
 		_button[0]->SetTextInset(0, 1);
 		_button[1]->SetTextInset(0, -1);
-
-		SetSize(SCROLLBAR_DEFAULT_WIDTH, 64);
 	}
 	else
 	{
-		SetSlider(new ScrollBarSlider(NULL, NULL, false));
-		SetButton(new ScrollBarButton(NULL, NULL, "w"), 0);
-		SetButton(new ScrollBarButton(NULL, NULL, "4"), 1);
+		SetSlider(new ScrollBarSlider(nullptr, nullptr, false));
+		SetButton(new ScrollBarButton(nullptr, nullptr, "w"), 0);
+		SetButton(new ScrollBarButton(nullptr, nullptr, "4"), 1);
 		_button[0]->SetTextInset(0, 0);
 		_button[1]->SetTextInset(0, 0);
-
-		SetSize(64, SCROLLBAR_DEFAULT_WIDTH);
 	}
 
 	Panel::SetPaintBorderEnabled(true);
@@ -191,22 +184,7 @@ void ScrollBar::ApplySchemeSettings(IScheme *pScheme)
 
 	if (resourceString)
 	{
-		int value = atoi(resourceString);
-		if (IsProportional())
-		{
-			value = scheme()->GetProportionalScaledValueEx(GetScheme(), value);
-		}
-
-		if (_slider && _slider->IsVertical())
-		{
-			// we're vertical, so reset the width
-			SetSize( value, GetTall() );
-		}
-		else
-		{
-			// we're horizontal, so the width means the height
-			SetSize( GetWide(), value );
-		}
+        m_iSchemeScrollWide = V_atoi(resourceString);
 	}
 
 	UpdateButtonsForImages();
@@ -250,6 +228,20 @@ void ScrollBar::SetPaintEnabled(bool state)
 //-----------------------------------------------------------------------------
 void ScrollBar::PerformLayout()
 {
+    int scrollWide = m_iSchemeScrollWide > 0 ? m_iSchemeScrollWide : SCROLLBAR_DEFAULT_WIDTH;
+    scrollWide = GetScaledVal(scrollWide);
+
+    if (_slider && _slider->IsVertical())
+    {
+        // we're vertical, so reset the width
+        SetSize(scrollWide, GetTall());
+    }
+    else
+    {
+        // we're horizontal, so the width means the height
+        SetSize(GetWide(), scrollWide);
+    }
+
 	if (_slider)
 	{
 		int wide, tall;
@@ -397,7 +389,7 @@ bool ScrollBar::HasFullRange()
 //LEAK: new and old slider will leak
 void ScrollBar::SetButton(Button *button, int index)
 {
-	if(_button[index]!=null)
+	if(_button[index])
 	{
 		_button[index]->DeletePanel();
 	}
@@ -425,7 +417,7 @@ Button* ScrollBar::GetButton(int index)
 //LEAK: new and old slider will leak
 void ScrollBar::SetSlider(ScrollBarSlider *slider)
 {
-	if(_slider!=null)
+	if(_slider)
 	{
 		_slider->DeletePanel();
 	}
@@ -446,9 +438,8 @@ ScrollBarSlider *ScrollBar::GetSlider()
 
 Button *ScrollBar::GetDepressedButton( int iIndex )
 {
-	if ( iIndex == 0 )
-		return ( m_pOverriddenButtons[0] ? m_pOverriddenButtons[0] : _button[0] );
-	return ( m_pOverriddenButtons[1] ? m_pOverriddenButtons[1] : _button[1] );
+    iIndex = clamp<int>(iIndex, 0, 1);
+    return m_pOverriddenButtons[iIndex] ? m_pOverriddenButtons[iIndex] : _button[iIndex];
 }
 
 //-----------------------------------------------------------------------------
@@ -527,7 +518,7 @@ void ScrollBar::OnSizeChanged(int wide, int tall)
 //-----------------------------------------------------------------------------
 void ScrollBar::SetButtonPressedScrollValue(int value)
 {
-	_buttonPressedScrollValue=value;
+	_buttonPressedScrollValue = value;
 }
 
 //-----------------------------------------------------------------------------
@@ -559,27 +550,18 @@ int ScrollBar::GetRangeWindow()
 //-----------------------------------------------------------------------------
 void ScrollBar::Validate()
 {
-	if ( _slider != null )
+	if ( _slider )
 	{
 		int buttonOffset = 0;
+        const auto bVertical = _slider->IsVertical();
 
-		for( int i=0; i<2; i++ )
-		{
-			if( _button[i] != null )
-			{
-				if( _button[i]->IsVisible() )
-				{
-					if( _slider->IsVertical() )
-					{					
-						buttonOffset += _button[i]->GetTall();
-					}
-					else
-					{
-						buttonOffset += _button[i]->GetWide();
-					}
-				}
-			}
-		}
+        for (const auto pButton : _button)
+        {
+            if (pButton && pButton->IsVisible())
+            {
+                buttonOffset += bVertical ? pButton->GetTall() : pButton->GetWide();
+            }
+        }
 
 		_slider->SetButtonOffset(buttonOffset);
 	}
@@ -590,14 +572,14 @@ void ScrollBar::Validate()
 //-----------------------------------------------------------------------------
 void ScrollBar::SetScrollbarButtonsVisible(bool visible)
 {
-	for( int i=0; i<2; i++ )
-	{
-		if( _button[i] != null )
-		{
-			_button[i]->SetShouldPaint( visible );
-			_button[i]->SetEnabled( visible );
-		}
-	}
+    for (const auto pButton : _button)
+    {
+        if (pButton)
+        {
+            pButton->SetShouldPaint(visible);
+            pButton->SetEnabled(visible);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -626,7 +608,7 @@ void ScrollBar::UseImages( const char *pszUpArrow, const char *pszDownArrow, con
 	else if ( m_pUpArrow )
 	{
 		m_pUpArrow->MarkForDeletion();
-		m_pUpArrow = NULL;
+		m_pUpArrow = nullptr;
 	}
 
 	if ( pszDownArrow )
@@ -649,7 +631,7 @@ void ScrollBar::UseImages( const char *pszUpArrow, const char *pszDownArrow, con
 	else if ( m_pDownArrow )
 	{
 		m_pDownArrow->MarkForDeletion();
-		m_pDownArrow = NULL;
+		m_pDownArrow = nullptr;
 	}
 
 	if ( pszLine )
@@ -670,7 +652,7 @@ void ScrollBar::UseImages( const char *pszUpArrow, const char *pszDownArrow, con
 	else if ( m_pLine )
 	{
 		m_pLine->MarkForDeletion();
-		m_pLine = NULL;
+		m_pLine = nullptr;
 	}
 
 	if ( pszBox )
@@ -691,7 +673,7 @@ void ScrollBar::UseImages( const char *pszUpArrow, const char *pszDownArrow, con
 	else if ( m_pBox )
 	{
 		m_pBox->MarkForDeletion();
-		m_pBox = NULL;
+		m_pBox = nullptr;
 	}
 
 	UpdateButtonsForImages();
