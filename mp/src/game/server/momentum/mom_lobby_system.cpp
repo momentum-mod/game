@@ -42,6 +42,12 @@ CON_COMMAND(mom_lobby_invite, "Invite friends to your lobby\n")
         SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
 }
 
+CON_COMMAND(mom_lobby_teleport, "Teleport to a given lobby member's SteamID on your map.")
+{
+    if (args.ArgC() >= 2)
+        g_pMomentumLobbySystem->TeleportToLobbyMember(args.Arg(1));
+}
+
 static void LobbyMaxPlayersChanged(IConVar *pVar, const char *pVal, float oldVal)
 {
     g_pMomentumLobbySystem->OnLobbyMaxPlayersChanged(ConVarRef(pVar).GetInt());
@@ -123,6 +129,38 @@ bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPack
     return LobbyValid() && SendPacket(p, &target, k_EP2PSendReliable);
 }
 
+void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
+{
+    // Check a few things first
+    CHECK_STEAM_API(SteamMatchmaking());
+
+    const auto lobbyMemID = CSteamID(Q_atoui64(pIDStr));
+
+    // Are they valid, and even in the lobby?
+    if (lobbyMemID.IsValid() && LobbyValid())
+    {
+        const auto pEnt = GetLobbyMemberEntity(lobbyMemID);
+        if (pEnt)
+        {
+            // Ok cool, but...
+            // Are we spectating or in a run?
+            const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+            if (pPlayer && pPlayer->GetObserverMode() == OBS_MODE_NONE && !g_pMomentumTimer->IsRunning())
+            {
+                // Teleport em
+                PositionPacket_t p;
+                if (pEnt->GetCurrentPositionPacketData(&p))
+                {
+                    pPlayer->Teleport(&p.Position, &p.EyeAngle, nullptr);
+                }
+            }
+            else
+            {
+                Warning("Cannot teleport to player while spectating or in a run!\n");
+            }
+        }
+    }
+}
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
 void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
 {
