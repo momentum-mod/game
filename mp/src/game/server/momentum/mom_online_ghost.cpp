@@ -375,6 +375,20 @@ void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
     */
 }
 
+bool CMomentumOnlineGhostEntity::GetCurrentPositionPacketData(PositionPacket_t *out) const
+{
+    if (out && !m_bSpectating.Get())
+    {
+        out->Position = GetAbsOrigin();
+        out->Velocity = GetAbsVelocity();
+        out->EyeAngle = m_vecLookAngles;
+        out->Buttons = m_nGhostButtons;
+        out->ViewOffset = GetViewOffset().z;
+        return true;
+    }
+    return false;
+}
+
 void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
