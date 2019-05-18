@@ -25,7 +25,9 @@ CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being 
         if (args.ArgC() > 1)
         {
             uint64 target = Q_atoui64(args.Arg(1));
-            pTarget = g_pMomentumGhostClient->GetOnlineGhostEntityFromID(target);
+            const auto pGhost = g_pMomentumGhostClient->GetOnlineGhostEntityFromID(target);
+            if (pGhost && !pGhost->m_bSpectating.Get())
+                pTarget = pGhost;
         }
 
         if (!pTarget)
