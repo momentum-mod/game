@@ -236,7 +236,8 @@ void CMomentumReplaySystem::UpdateRecordingParams()
         else
         {
             // MOM_TODO just repeat the last frame created (part of the mega refactor)
-            m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->m_angLastAng, pPlayer->m_vecLastPos, pPlayer->m_fLastViewOffset, pPlayer->m_nSavedButtons, false));
+            SavedState_t *pSaved = pPlayer->GetSavedRunState();
+            m_pRecordingReplay->AddFrame(CReplayFrame(pSaved->m_angLastAng, pSaved->m_vecLastPos, pSaved->m_fLastViewOffset, pSaved->m_nButtons, false));
         }
 
         ++m_iTickCount; // increment recording tick
