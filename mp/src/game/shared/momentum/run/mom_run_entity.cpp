@@ -28,8 +28,6 @@ void CMomRunEntity::OnZoneEnter(CTriggerZone *pTrigger)
     case ZONE_TYPE_START:
         break;
     case ZONE_TYPE_STOP:
-        pData->m_iOldTrack = pData->m_iCurrentTrack;
-        pData->m_iOldZone = pData->m_iCurrentZone;
         break;
     case ZONE_TYPE_CHECKPOINT:
         break;
@@ -61,8 +59,6 @@ void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger)
     case ZONE_TYPE_START:
         break;
     case ZONE_TYPE_STOP:
-        pData->m_iCurrentTrack = pData->m_iOldTrack;
-        pData->m_iCurrentZone = pData->m_iOldZone;
         break;
     case ZONE_TYPE_CHECKPOINT:
         break;

@@ -237,7 +237,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Spawn stuff
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
 
-  private:
     CSteamID m_sSpecTargetSteamID;
 
     bool m_bInAirDueToJump;
@@ -287,4 +286,5 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CBaseEntity* m_eTrail;
     bool m_bWasInAir;
     bool m_bShouldLimitSpeed;
+    int m_iOldTrack, m_iOldZone; // Previous zones before spectating/practice mode/entering endzone
 };
