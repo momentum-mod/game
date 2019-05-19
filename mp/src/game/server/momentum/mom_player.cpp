@@ -148,7 +148,7 @@ static CMomentumPlayer *s_pPlayer = nullptr;
 
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f),
-      m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
+      m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
       m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1)
 {
     m_flPunishTime = -1;
@@ -462,18 +462,17 @@ void CMomentumPlayer::OnJump()
     m_Data.m_flLastJumpZPos = GetLocalOrigin().z;
     m_iSuccessiveBhops++;
 
-    if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1 && m_bStartTimerOnJump)
-    {
-        g_pMomentumTimer->TryStart(this, false);
-    }
-
     // Set our runstats jump count
     if (g_pMomentumTimer->IsRunning())
     {
         const int currentZone = m_Data.m_iCurrentZone;
         m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1); // Increment total jumps
-        m_RunStats.SetZoneJumps(currentZone,
-                                         m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
+        m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
+    }
+    else if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1 && m_bStartTimerOnJump)
+    {
+        // Jumps are incremented in this method
+        g_pMomentumTimer->TryStart(this, false);
     }
 }
 
@@ -1025,7 +1024,7 @@ void CMomentumPlayer::UpdateRunStats()
     if (!m_bHasPracticeMode)
     {
         // ---- Jumps and Strafes ----
-        UpdateJumpStrafes();
+        UpdateStrafes();
 
         //  ---- MAX VELOCITY ----
         UpdateMaxVelocity();
@@ -1045,7 +1044,8 @@ void CMomentumPlayer::UpdateRunStats()
 
 void CMomentumPlayer::UpdateRunSync()
 {
-    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_hud_strafesync_draw").GetInt() == 2))
+    static ConVarRef sync("mom_hud_strafesync_draw");
+    if (g_pMomentumTimer->IsRunning() || (sync.GetInt() == 2))
     {
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
@@ -1084,27 +1084,12 @@ void CMomentumPlayer::UpdateRunSync()
     }
 }
 
-void CMomentumPlayer::UpdateJumpStrafes()
+void CMomentumPlayer::UpdateStrafes()
 {
     if (!g_pMomentumTimer->IsRunning())
         return;
 
-    int currentZone = m_Data.m_iCurrentZone;
-    if (!m_bPrevTimerRunning) // timer started on this tick
-    {
-        // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
-        // (for surf)
-        if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
-        {
-            m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
-            m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
-        }
-        if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
-        {
-            m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
-            m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
-        }
-    }
+    const auto currentZone = m_Data.m_iCurrentZone;
     if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
     {
         m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
@@ -1116,7 +1101,6 @@ void CMomentumPlayer::UpdateJumpStrafes()
         m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
     }
 
-    m_bPrevTimerRunning = g_pMomentumTimer->IsRunning();
     m_nPrevButtons = m_nButtons;
 }
 

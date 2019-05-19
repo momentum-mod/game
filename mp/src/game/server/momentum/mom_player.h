@@ -81,7 +81,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // think function for detecting if player bhopped
     void UpdateRunStats();
     void UpdateRunSync();
-    void UpdateJumpStrafes();
+    void UpdateStrafes();
     void UpdateMaxVelocity();
     // slows down the player in a tween-y fashion
     void TweenSlowdownPlayer();
@@ -280,7 +280,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // for strafe sync
     float m_flLastVelocity;
 
-    bool m_bPrevTimerRunning;
     int m_nPrevButtons;
 
     char m_pszDefaultEntName[128];
