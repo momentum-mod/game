@@ -661,10 +661,6 @@ void CMomentumDiscord::HandleDiscordSpectate(const char *secret)
 void CMomentumDiscord::HandleDiscordJoinRequest(const DiscordUser *request)
 {
     DevLog("\nDiscord-RPC: join request from %s#%s - %s\n", request->username, request->discriminator, request->userId);
-
-    // Auto-accept party requests for now
-    // MOM_TODO: Prompt the player some how to deal with this, but we don't want to interrupt a run
-    Discord_Respond(request->userId, DISCORD_REPLY_YES);
 }
 
 // -------------------------------------------------------------------------- //
