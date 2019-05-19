@@ -114,6 +114,8 @@ class CMapSelectorDialog : public vgui::Frame
     MESSAGE_FUNC_INT(OnCancelMapDownload, "CancelDownload", id);
     MESSAGE_FUNC_INT(OnConfirmCancelMapDownload, "ConfirmCancelDownload", id);
     MESSAGE_FUNC_INT(OnRejectCancelMapDownload, "RejectCancelDownload", id);
+    MESSAGE_FUNC_INT(OnConfirmOverwrite, "ConfirmOverwrite", id);
+    MESSAGE_FUNC_INT(OnRejectOverwrite, "RejectOverwrite", id);
     // Called when map should be started
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
     // called to look at map info
@@ -134,6 +136,9 @@ protected:
 
     // Map of all cancel map dialogs
     CUtlMap<uint32, Panel*> m_mapCancelConfirmDlgs;
+
+    // Map of all overwrite dialogs
+    CUtlMap<uint32, Panel*> m_mapOverwriteConfirmDlgs;
 
     // Map of all map list data
     CUtlMap<uint32, MapListData*> m_mapMapListData;

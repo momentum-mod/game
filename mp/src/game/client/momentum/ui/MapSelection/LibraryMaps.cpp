@@ -56,7 +56,7 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
                 // Check to see if we should download
                 if (pMapData->m_bMapFileNeedsUpdate && m_cvarAutoDownload.GetBool() && !MapSelectorDialog().IsMapDownloading(id))
                 {
-                    g_pMapCache->DownloadMap(id);
+                    MapSelectorDialog().OnStartMapDownload(id);
                 }
             }
             else

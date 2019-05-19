@@ -4,6 +4,15 @@
 #include "steam/isteamhttp.h"
 #include "IMapList.h"
 
+enum MapDownloadResponse
+{
+    MAP_DL_OK = 0,
+    MAP_DL_FAIL,
+    MAP_DL_ALREADY_EXISTS,
+    MAP_DL_ALREADY_DOWNLOADING,
+    MAP_DL_WILL_OVERWRITE_EXISTING,
+};
+
 enum APIModelSource
 {
     MODEL_FROM_DISK = 0,
@@ -200,7 +209,7 @@ public:
 
     bool PlayMap(uint32 uID);
     bool MapFileExists(MapData *pData);
-    bool DownloadMap(uint32 uID);
+    MapDownloadResponse DownloadMap(uint32 uID, bool bOverwrite = false);
     bool CancelDownload(uint32 uID);
 
     bool AddMapToDeleteQueue(MapData *pData);

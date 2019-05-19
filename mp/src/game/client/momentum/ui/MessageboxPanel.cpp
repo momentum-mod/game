@@ -145,6 +145,7 @@ Panel *CMessageboxPanel::CreateConfirmationBox(Panel *pTarget, const char *pTitl
 
     m_mbItems.AddToTail(pMessageBox);
     pMessageBox->DoModal();
+    pMessageBox->MoveToFront();
     return pMessageBox;
 }
 
