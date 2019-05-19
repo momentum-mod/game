@@ -2004,6 +2004,7 @@ void ListPanel::Paint()
 					break;
 				}
 				surface()->PaintTraverse(render->GetVPanel());
+                render->SetVisible(false);
 			}
 
 			x += colWide;
