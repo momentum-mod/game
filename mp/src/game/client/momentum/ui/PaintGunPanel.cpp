@@ -33,7 +33,7 @@ void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue
 PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintGunPanel")
 {
     SetSize(2, 2);
-    SetProportional(false);
+    SetProportional(true);
     SetScheme("ClientScheme");
     SetMouseInputEnabled(true);
 
