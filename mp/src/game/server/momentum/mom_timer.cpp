@@ -26,10 +26,10 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-CMomentumTimer::CMomentumTimer(): CAutoGameSystemPerFrame("CMomentumTimer"), 
+CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"), 
       m_iStartTick(0), m_iEndTick(0),
-      m_iLastRunDate(0), m_bIsRunning(false), m_bWasCheatsMsgShown(false),
-      m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+      m_iLastRunDate(0), m_bIsRunning(false), m_bCanStart(false),
+      m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 
 }
@@ -75,8 +75,13 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     if (!pPlayer)
         return false;
 
+    if (!m_bCanStart)
+    {
+        Warning("Cannot start timer, make sure to properly reset your timer by landing in the start zone!\n");
+        return false;
+    }
+
     // Perform all the checks to ensure player can start
-    // MOM_TODO: Display this info properly to client?
     if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
     {
         // MOM_TODO: Allow it based on gametype
@@ -142,8 +147,9 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
 
 void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 {
-    g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
-    pPlayer->ResetRunStats();                        // Reset run stats
+    // It'll get set to true if they teleport to a CP out of here
+    g_pMOMSavelocSystem->SetUsingSavelocMenu(false);
+    pPlayer->ResetRunStats();
     pPlayer->m_Data.m_bMapFinished = false;
     pPlayer->m_Data.m_bTimerRunning = false;
 
@@ -163,6 +169,9 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 
         g_ReplaySystem.BeginRecording();
     }
+
+    // Reset our CanStart bool
+    m_bCanStart = true;
 }
 
 void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
@@ -183,7 +192,6 @@ void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset)
 {
-    // do not start timer if player is in practice mode or it's already running.
     if (!m_bIsRunning)
     {
         SetShouldUseStartZoneOffset(bUseStartZoneOffset);
@@ -211,6 +219,9 @@ void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset
         {
             DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), TIMER_EVENT_FAILED);
         }
+
+        // Force canStart to false regardless of starting or not
+        m_bCanStart = false;
     }
     else
     {
