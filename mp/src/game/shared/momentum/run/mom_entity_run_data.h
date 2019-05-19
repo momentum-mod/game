@@ -29,8 +29,6 @@ class CMomRunEntityData
     CNetworkVar(uint32, m_iRunFlags);     // The run flags (W only/HSW/Scroll etc) of the player
     CNetworkVar(int, m_iCurrentTrack);    // The current track that this entity is on
     CNetworkVar(int, m_iCurrentZone);     // Current stage/checkpoint the player is on
-    CNetworkVar(int, m_iOldZone);         // What the zone was before we entered the end zone
-    CNetworkVar(int, m_iOldTrack);        // What the track was before we entered the end zone
     CNetworkVar(int, m_iStartTick);       // Tick that the entity started its timer
     CNetworkVar(float, m_flTickRate);     // Interval per tick the run was done with
     CNetworkVar(int, m_iRunTime);         // The time taken to do their most recent run, in ticks
