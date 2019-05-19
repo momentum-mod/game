@@ -12,6 +12,19 @@ class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
 
+struct SavedState_t
+{
+    int m_nButtons;           // Saved player buttons being pressed
+    Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
+    QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
+    Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
+    float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.    
+    // Stats-related
+    int m_nSavedPerfectSyncTicks;
+    int m_nSavedStrafeTicks;
+    int m_nSavedAccelTicks;
+};
+
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 #define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
@@ -111,15 +124,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int m_iSuccessiveBhops;   // How many successive bhops this player has
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
 
-    // Saved run state/stats
-    int m_nSavedButtons;
-    Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
-    QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
-    Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
-    float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
-    int m_nSavedPerfectSyncTicks;
-    int m_nSavedStrafeTicks;
-    int m_nSavedAccelTicks;
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance, bool &bPaint);
 
@@ -160,8 +164,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void DisablePracticeMode();
 
     // Used when spectating/practicing during a run
-    void SaveCurrentRunState(); // Entering practice/spectate
-    void RestoreRunState(); // Exiting practice/spectate
+    void SaveCurrentRunState(bool bFromPracticeMode); // Entering practice/spectate
+    void RestoreRunState(bool bFromPracticeMode); // Exiting practice/spectate
 
     // Used by momentum triggers
     Vector GetPreviousOrigin(unsigned int previous_count = 0) const;
@@ -233,9 +237,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void SetIsInAirDueToJump(bool val) { m_bInAirDueToJump = val; }
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
+
+    SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
   private:
     // Spawn stuff
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
+    void SetPracticeModeState();
 
     CSteamID m_sSpecTargetSteamID;
 
@@ -286,5 +293,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CBaseEntity* m_eTrail;
     bool m_bWasInAir;
     bool m_bShouldLimitSpeed;
+
+    // Saved states
     int m_iOldTrack, m_iOldZone; // Previous zones before spectating/practice mode/entering endzone
+
+    SavedState_t m_SavedRunState; // Used when either entering practice mode or spectating while in a run
+    SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
 };
