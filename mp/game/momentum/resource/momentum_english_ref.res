@@ -152,6 +152,8 @@
         "MOM_MapSelector_CancelDownload" "Cancel Download"
         "MOM_MapSelector_ConfirmCancel" "Cancel Download?"
         "MOM_MapSelector_ConfirmCancelMsg" "Are you sure you want to cancel this map download?"
+        "MOM_MapSelector_ConfirmOverwrite" "Overwrite existing map?"
+        "MOM_MapSelector_ConfirmOverwriteMsg" "Downloading this map will overwrite an existing file with the same name in your maps folder!\nAre you sure you want to continue?"
 
         "MOM_MapSelector_MapLayout" "Layout"
         "MOM_MapSelector_MapLayout_Tooltip" "This column shows if the map is linear or has stages."

@@ -51,6 +51,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     SetDefLessFunc(m_mapMapDownloads);
     SetDefLessFunc(m_mapCancelConfirmDlgs);
     SetDefLessFunc(m_mapMapInfoDialogs);
+    SetDefLessFunc(m_mapOverwriteConfirmDlgs);
 
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
@@ -497,7 +498,32 @@ MapDownloadProgress* CMapSelectorDialog::GetDownloadProgressPanel(uint32 uMapID)
 
 void CMapSelectorDialog::OnStartMapDownload(int id)
 {
-    g_pMapCache->DownloadMap(id);
+    const auto response = g_pMapCache->DownloadMap(id);
+    if (response != MAP_DL_OK)
+    {
+        if (response == MAP_DL_WILL_OVERWRITE_EXISTING)
+        {
+            const auto index = m_mapOverwriteConfirmDlgs.Find(id);
+            if (m_mapOverwriteConfirmDlgs.IsValidIndex(index))
+            {
+                m_mapOverwriteConfirmDlgs[index]->MoveToFront();
+                m_mapOverwriteConfirmDlgs[index]->RequestFocus();
+            }
+            else
+            {
+                const auto pPanel = messageboxpanel->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmOverwrite", 
+                                                                           "#MOM_MapSelector_ConfirmOverwriteMsg",
+                                                       new KeyValues("ConfirmOverwrite", "id", id),
+                                                       new KeyValues("RejectOverwrite", "id", id),
+                                                       "#GameUI_Yes", "#GameUI_No");
+                m_mapOverwriteConfirmDlgs.Insert(id, pPanel);
+            }
+        }
+        else if (response == MAP_DL_FAIL)
+        {
+            Warning("Failed to download map with ID %i!\n", id);
+        }
+    }
 }
 
 void CMapSelectorDialog::OnRemoveFromQueue(int id)
@@ -532,6 +558,22 @@ void CMapSelectorDialog::OnConfirmCancelMapDownload(int id)
 void CMapSelectorDialog::OnRejectCancelMapDownload(int id)
 {
     m_mapCancelConfirmDlgs.RemoveAt(m_mapCancelConfirmDlgs.Find(id));
+}
+
+void CMapSelectorDialog::OnConfirmOverwrite(int id)
+{
+    m_mapOverwriteConfirmDlgs.RemoveAt(m_mapOverwriteConfirmDlgs.Find(id));
+    const auto resp = g_pMapCache->DownloadMap(id, true);
+    if (resp == MAP_DL_FAIL)
+    {
+        Warning("Failed to download map with ID %i!\n", id);
+    }
+}
+
+void CMapSelectorDialog::OnRejectOverwrite(int id)
+{
+    m_mapOverwriteConfirmDlgs.RemoveAt(m_mapOverwriteConfirmDlgs.Find(id));
+    Msg("Rejected overwrite for map ID %i\n", id);
 }
 
 void CMapSelectorDialog::OnAddMapToFavorites(int id)
