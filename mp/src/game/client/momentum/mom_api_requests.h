@@ -18,6 +18,7 @@ struct APIRequest
         m_szMethod[0] = '\0';
         m_szCallingFunc[0] = '\0';
         m_bSensitive = false;
+        m_dSentTime = -1;
     }
     ~APIRequest()
     {
@@ -28,6 +29,7 @@ struct APIRequest
     char m_szURL[256];
     char m_szMethod[12];
     bool m_bSensitive;
+    double m_dSentTime;
     HTTPRequestHandle handle;
     CallbackFunc callbackFunc;
     CCallResult<CAPIRequests, HTTPRequestCompleted_t> *callResult;
@@ -71,6 +73,7 @@ struct DownloadRequest
     //  "request"   (uint64)    The request handle that the download operates under
     //  "error"     (bool)      If the request fails in any way, will be true, otherwise false
     //  "code"      (int)       The HTTP status code of the request if it failed, otherwise 0
+    //  "duration"  (float)     The amount of time in seconds it took to download the file
     //  "buf"       (pointer)   If the request was created with a nullptr filename, a pointer to the buffer is passed here
     CallbackFunc completeFunc;
 
@@ -78,6 +81,7 @@ struct DownloadRequest
     char m_szFileName[MAX_PATH];
     char m_szFilePathID[16];
     bool m_bSaveToFile;
+    double m_dSentTime;
     CUtlBuffer m_bufFileData;
 
     bool operator==(const DownloadRequest &other) const
@@ -99,6 +103,7 @@ public:
     // API requests will pass a KeyValues object (that will auto delete itself, no worries!) with:
     //      "code"              The integer HTTP status code returned. 0 if it's an IO error
     //      "URL"               The URL of the request
+    //      "ping"              The RTT time it took to send the request and get the response, in milliseconds
     //      "method"            The method used for the request (GET, POST, etc)
     //      "data"              The response data, parsed JSON represented as KeyValues
     //      "error"             An error object, parsed JSON represented as KeyValues
