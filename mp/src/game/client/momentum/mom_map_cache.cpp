@@ -689,17 +689,20 @@ CMapCache::~CMapCache()
 
 bool CMapCache::PlayMap(uint32 uID)
 {
-    MapData *pData = GetMapDataByID(uID);
-    if (MapFileExists(pData))
+    const auto pData = GetMapDataByID(uID);
+    if (pData)
     {
-        engine->ClientCmd_Unrestricted(CFmtStr("map %s\n", pData->m_szMapName));
-        return true;
-    }
+        if (MapFileExists(pData))
+        {
+            engine->ClientCmd_Unrestricted(CFmtStr("map %s\n", pData->m_szMapName));
+            return true;
+        }
 
-    pData->m_bMapFileExists = false;
-    pData->m_bMapFileNeedsUpdate = pData->m_bInLibrary;
-    pData->m_bUpdated = true;
-    pData->SendDataUpdate();
+        pData->m_bMapFileExists = false;
+        pData->m_bMapFileNeedsUpdate = pData->m_bInLibrary;
+        pData->m_bUpdated = true;
+        pData->SendDataUpdate();
+    }
 
     return false;
 }
@@ -713,9 +716,9 @@ bool CMapCache::MapFileExists(MapData* pData)
     return MomUtil::FileExists(pFilePath, pData->m_szHash);
 }
 
-bool CMapCache::DownloadMap(uint32 uID)
+MapDownloadResponse CMapCache::DownloadMap(uint32 uID, bool bOverwrite /* = false*/)
 {
-    MapData *pData = GetMapDataByID(uID);
+    const auto pData = GetMapDataByID(uID);
     if (pData)
     {
         // Firstly, check if we have this version of the map, and exit early
@@ -726,37 +729,47 @@ bool CMapCache::DownloadMap(uint32 uID)
             pData->m_bUpdated = true;
             pData->SendDataUpdate();
             Log("Map already exists!\n");
-            return false;
+            return MAP_DL_ALREADY_EXISTS;
+        }
+
+        // Do we have a file of the same name? If so, warn the user if they haven't told us to overwrite already
+        if (!bOverwrite && g_pFullFileSystem->FileExists(CFmtStr("maps/%s.bsp", pData->m_szMapName), "GAME"))
+        {
+            return MAP_DL_WILL_OVERWRITE_EXISTING;
         }
 
         // Check if we're already downloading it
         if (IsMapDownloading(uID))
         {
-            // Already downloading!
             Log("Already downloading map %s!\n", pData->m_szMapName);
+            return MAP_DL_ALREADY_DOWNLOADING;
         }
-        else if (IsMapQueuedToDownload(uID))
+        
+        if (IsMapQueuedToDownload(uID))
         {
             // Move it to download if our queue can fit it
             if ((unsigned)mom_map_download_queue_parallel.GetInt() > m_mapFileDownloads.Count())
             {
-                return StartDownloadingMap(pData);
+                if (StartDownloadingMap(pData))
+                    return MAP_DL_OK;
             }
         }
         else if (uID)
         {
             if (mom_map_download_queue.GetBool())
             {
-                return AddMapToDownloadQueue(pData);
+                if (AddMapToDownloadQueue(pData))
+                    return MAP_DL_OK;
             }
             else
             {
-                return StartDownloadingMap(pData);
+                if (StartDownloadingMap(pData))
+                    return MAP_DL_OK;
             }
         }
     }
 
-    return false;
+    return MAP_DL_FAIL;
 }
 
 bool CMapCache::StartDownloadingMap(MapData* pData)
@@ -1130,11 +1143,13 @@ void CMapCache::ToggleMapLibraryOrFavorite(KeyValues* pKv, bool bIsLibrary, bool
     if (pData)
     {
         // Actually update the map in question, fire off an update
-        int id = pData->GetInt("mapID");
-        MapData *pMapData = GetMapDataByID(id);
+        const auto id = pData->GetInt("mapID");
+        const auto pMapData = GetMapDataByID(id);
         if (pMapData)
         {
             (bIsLibrary ? pMapData->m_bInLibrary : pMapData->m_bInFavorites) = bAdded;
+            if (bIsLibrary)
+                pMapData->m_bMapFileNeedsUpdate = bAdded && !pMapData->m_bMapFileExists;
             pMapData->m_bUpdated = true;
             pMapData->SendDataUpdate();
         }
