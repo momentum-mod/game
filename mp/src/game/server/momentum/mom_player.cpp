@@ -153,6 +153,8 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
+    m_iOldTrack = 0;
+    m_iOldZone = 0;
 
     m_bWasSpectating = false;
 
@@ -852,6 +854,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
             // We've reached end zone, stop here
             //auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
+            m_iOldTrack = m_Data.m_iCurrentTrack;
+            m_iOldZone = m_Data.m_iCurrentZone;
 
             if (g_pMomentumTimer->IsRunning())
             {
@@ -948,6 +952,8 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         switch (pTrigger->GetZoneType())
         {
         case ZONE_TYPE_STOP:
+            m_Data.m_iCurrentTrack = m_iOldTrack;
+            m_Data.m_iCurrentZone = m_iOldZone;
             SetLaggedMovementValue(1.0f); // Reset slow motion
             break;
         case ZONE_TYPE_CHECKPOINT:
