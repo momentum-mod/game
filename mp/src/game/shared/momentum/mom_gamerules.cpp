@@ -7,6 +7,7 @@
 #include "weapon/weapon_base_gun.h"
 #include "mom_player_shared.h"
 #include "filesystem.h"
+#include "movevars_shared.h"
 
 #ifndef CLIENT_DLL
 #include "momentum/tickset.h"
@@ -236,22 +237,39 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
     return pPlayer->ClientCommand(args);
 }
 
-static const char * const g_szWhitelistedCommands[] = {
-    "sv_gravity",
-    "sv_maxvelocity",
-    "sv_airaccelerate",
-    "disconnect"
+struct WhiteListedCmd
+{
+    const char *pName;
+    ConVar *pVar;
 };
 
-bool CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
+static WhiteListedCmd const g_szWhitelistedCmds[] = {
+    { "sv_gravity", &sv_gravity },
+    { "sv_maxvelocity", &sv_maxvelocity },
+    { "sv_airaccelerate", &sv_airaccelerate },
+    { "disconnect", nullptr }
+};
+
+void CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
 {
-    for (auto pWl : g_szWhitelistedCommands)
+    CUtlVector<char *> vec;
+    V_SplitString(pCmd, ";", vec);
+    FOR_EACH_VEC(vec, i)
     {
-        if (!V_strnicmp(pCmd, pWl, V_strlen(pWl)))
-            return true;
+        for (const auto pWl : g_szWhitelistedCmds)
+        {
+            const auto strLen = V_strlen(pWl.pName);
+            if (!V_strnicmp(vec[i], pWl.pName, strLen))
+            {
+                if (pWl.pVar)
+                    pWl.pVar->SetValue(vec[i] + strLen + 1);
+                else
+                    engine->ServerCommand(vec[i]);
+            }
+        }
     }
 
-    return false;
+    vec.PurgeAndDeleteElements();
 }
 
 static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldValue)
