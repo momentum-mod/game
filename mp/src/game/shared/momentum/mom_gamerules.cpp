@@ -240,6 +240,7 @@ static const char * const g_szWhitelistedCommands[] = {
     "sv_gravity",
     "sv_maxvelocity",
     "sv_airaccelerate",
+	"sv_accelerate",
     "disconnect"
 };
 

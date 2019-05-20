@@ -1017,6 +1017,10 @@ void CMapCache::SetMapGamemode(const char *pMapName /* = nullptr*/)
         {
             gm.SetValue(GAMEMODE_KZ);
         }
+		else if (!Q_strnicmp(pMapName, "tricksurf_", 10))
+		{
+			gm.SetValue(GAMEMODE_TRICKSURF);
+		}
         else
         {
             gm.SetValue(GAMEMODE_UNKNOWN);

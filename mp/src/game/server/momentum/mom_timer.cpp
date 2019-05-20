@@ -342,29 +342,39 @@ void CMomentumTimer::SetGameModeConVars()
     case GAMEMODE_SURF:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(150);
+		sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(260);
         break;
     case GAMEMODE_BHOP:
         sv_maxvelocity.SetValue(100000);
         sv_airaccelerate.SetValue(1000);
+		sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(260);
         break;
     case GAMEMODE_KZ:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(100);
+		sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(250);
         break;
+	case GAMEMODE_TRICKSURF:
+		sv_maxvelocity.SetValue(100000);
+		sv_airaccelerate.SetValue(1000);
+		sv_accelerate.SetValue(10);
+		sv_maxspeed.SetValue(260);
+		break;
     case GAMEMODE_UNKNOWN:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(150);
+		sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(260);
         break;
     default:
         DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;
     }
-    DevMsg("CTimer set values:\nsv_maxvelocity: %i\nsv_airaccelerate: %i \nsv_maxspeed: %i\n", sv_maxvelocity.GetInt(),
-           sv_airaccelerate.GetInt(), sv_maxspeed.GetInt());
+    DevMsg("CTimer set values:\nsv_maxvelocity: %i\nsv_airaccelerate: %i\nsv_accelerate: %i\nsv_maxspeed: %i\n", sv_maxvelocity.GetInt(),
+           sv_airaccelerate.GetInt(), sv_accelerate.GetInt(), sv_maxspeed.GetInt());
 }
 
 // Practice mode that stops the timer and allows the player to noclip.
