@@ -555,7 +555,8 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 
     if (sAllowPointCommand == eAllowWhitelist)
     {
-        bAllowed = GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+        GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+        return;
     }
 
     if (!bAllowed)
@@ -620,7 +621,8 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	bool bAllowed = ( sAllowPointCommand == eAllowAlways );
     if (sAllowPointCommand == eAllowWhitelist)
     {
-        bAllowed = GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+        GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+        return;
     }
 
 	if ( bAllowed )
