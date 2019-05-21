@@ -38,6 +38,7 @@ public:
     virtual void SetGhostBodyGroup(int bodyGroup);
     virtual void SetGhostColor(const uint32 newHexColor);
     virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
+    bool ShouldCollide(int collisionGroup, int contentsMask) const OVERRIDE;
 
     virtual void SetGhostAppearance(GhostAppearance_t app, bool bForceUpdate = false);
     virtual GhostAppearance_t GetAppearance() { return m_ghostAppearance; }
