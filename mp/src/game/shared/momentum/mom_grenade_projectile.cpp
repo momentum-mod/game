@@ -89,6 +89,7 @@ void CMomGrenadeProjectile::Spawn()
 {
     BaseClass::Spawn();
 
+    SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
     SetSolidFlags(FSOLID_NOT_STANDABLE);
     SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_CUSTOM);
     SetSolid(SOLID_BBOX); // So it will collide with physics props!
@@ -165,13 +166,7 @@ void CMomGrenadeProjectile::SetDetonateTimerLength(float timer) { m_flDetonateTi
 void CMomGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity)
 {
     // Assume all surfaces have the same elasticity
-    float flSurfaceElasticity = 1.0;
-
-    // Don't bounce off of players with perfect elasticity
-    if (trace.m_pEnt && trace.m_pEnt->IsPlayer())
-    {
-        flSurfaceElasticity = 0.3;
-    }
+    float flSurfaceElasticity = 1.0f;
 
     // if its breakable glass and we kill it, don't bounce.
     // give some damage to the glass, and if it breaks, pass
