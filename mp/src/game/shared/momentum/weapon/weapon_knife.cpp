@@ -112,9 +112,9 @@ void CKnife::Spawn()
 
 bool CKnife::Deploy()
 {
-    CPASAttenuationFilter filter(this);
+    CPASAttenuationFilter filter(GetOwner()->EarPosition());
     filter.UsePredictionRules();
-    EmitSound(filter, entindex(), "Weapon_Knife.Deploy");
+    EmitSound(filter, GetOwner()->entindex(), "Weapon_Knife.Deploy");
 
     return BaseClass::Deploy();
 }
