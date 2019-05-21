@@ -342,31 +342,31 @@ void CMomentumTimer::SetGameModeConVars()
     case GAMEMODE_SURF:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(150);
-		sv_accelerate.SetValue(5);
+        sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(260);
         break;
     case GAMEMODE_BHOP:
         sv_maxvelocity.SetValue(100000);
         sv_airaccelerate.SetValue(1000);
-		sv_accelerate.SetValue(5);
+        sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(260);
         break;
     case GAMEMODE_KZ:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(100);
-		sv_accelerate.SetValue(5);
+        sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(250);
         break;
-	case GAMEMODE_TRICKSURF:
-		sv_maxvelocity.SetValue(100000);
-		sv_airaccelerate.SetValue(1000);
-		sv_accelerate.SetValue(10);
-		sv_maxspeed.SetValue(260);
-		break;
+    case GAMEMODE_TRICKSURF:
+        sv_maxvelocity.SetValue(100000);
+        sv_airaccelerate.SetValue(1000);
+        sv_accelerate.SetValue(10);
+        sv_maxspeed.SetValue(260);
+        break;
     case GAMEMODE_UNKNOWN:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(150);
-		sv_accelerate.SetValue(5);
+        sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(260);
         break;
     default:
