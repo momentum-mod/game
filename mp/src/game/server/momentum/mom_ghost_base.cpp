@@ -126,6 +126,14 @@ void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor,
     CreateTrail();
 }
 
+bool CMomentumGhostBaseEntity::ShouldCollide(int collisionGroup, int contentsMask) const
+{
+    if (collisionGroup == COLLISION_GROUP_PROJECTILE)
+        return false; // MOM_TODO allow if it's trikz gamemode
+
+    return BaseClass::ShouldCollide(collisionGroup, contentsMask);
+}
+
 void CMomentumGhostBaseEntity::StartTimer(int m_iStartTick)
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
