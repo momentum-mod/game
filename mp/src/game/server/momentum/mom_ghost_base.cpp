@@ -28,6 +28,16 @@ CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullp
     m_RunStats.Init();
 }
 
+void CMomentumGhostBaseEntity::TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr,
+    CDmgAccumulator *pAccumulator)
+{
+    if (m_takedamage)
+    {
+        SpawnBlood(ptr->endpos, vecDir, BloodColor(), info.GetDamage());// a little surface blood.
+        TraceBleed(info.GetDamage(), vecDir, ptr, info.GetDamageType());
+    }
+}
+
 void CMomentumGhostBaseEntity::Precache()
 {
     BaseClass::Precache();
@@ -42,7 +52,7 @@ void CMomentumGhostBaseEntity::Spawn()
     RemoveEffects(EF_NODRAW);
     //~~~The magic combo~~~ (collides with triggers, not with players)
     ClearSolidFlags();
-    AddFlag(FL_CLIENT);
+    AddFlag(FL_CLIENT | FL_GODMODE);
     SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
     SetMoveType(MOVETYPE_STEP);
     SetSolid(SOLID_BBOX);
@@ -53,6 +63,7 @@ void CMomentumGhostBaseEntity::Spawn()
     UpdateModelScale();
     SetViewOffset(VEC_VIEW_SCALED(this));
     UnHideGhost();
+    m_takedamage = DAMAGE_EVENTS_ONLY;
 }
 
 void CMomentumGhostBaseEntity::HideGhost()
