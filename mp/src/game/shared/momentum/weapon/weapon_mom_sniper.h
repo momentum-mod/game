@@ -17,6 +17,7 @@ class CMomentumSniper : public CWeaponBaseGun
 
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
+    void Drop(const Vector &vecVelocity) OVERRIDE;
 
     float GetMaxSpeed() const OVERRIDE;
 
