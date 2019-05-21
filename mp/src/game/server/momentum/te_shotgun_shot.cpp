@@ -18,7 +18,7 @@ public:
     virtual			~CTEFireBullets(void);
 
 public:
-    CNetworkVar(int, m_iPlayer);
+    CNetworkVar(int, m_iEntity);
     CNetworkVector(m_vecOrigin);
     CNetworkQAngle(m_vecAngles);
     CNetworkVar(int, m_iWeaponID);
@@ -51,7 +51,7 @@ SendPropAngle(SENDINFO_VECTORELEM(m_vecAngles, 1), 13, 0),
 SendPropInt(SENDINFO(m_iWeaponID), 5, SPROP_UNSIGNED), // max 31 weapons
 SendPropInt(SENDINFO(m_iMode), 1, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_iSeed), NUM_BULLET_SEED_BITS, SPROP_UNSIGNED),
-SendPropInt(SENDINFO(m_iPlayer), 6, SPROP_UNSIGNED), 	// max 64 players, see MAX_PLAYERS
+SendPropInt(SENDINFO(m_iEntity), MAX_EDICT_BITS, SPROP_UNSIGNED), // max 2048 ents, see MAX_EDICTS
 SendPropFloat(SENDINFO(m_flSpread), 10, 0, 0, 1),
 END_SEND_TABLE()
 
@@ -61,7 +61,7 @@ static CTEFireBullets g_TEFireBullets("Shotgun Shot");
 
 
 void TE_FireBullets(
-    int	iPlayerIndex,
+    int	iEntIndex,
     const Vector &vOrigin,
     const QAngle &vAngles,
     int	iWeaponID,
@@ -72,7 +72,7 @@ void TE_FireBullets(
     CPASFilter filter(vOrigin);
     filter.UsePredictionRules();
 
-    g_TEFireBullets.m_iPlayer = iPlayerIndex - 1;
+    g_TEFireBullets.m_iEntity = iEntIndex;
     g_TEFireBullets.m_vecOrigin = vOrigin;
     g_TEFireBullets.m_vecAngles = vAngles;
     g_TEFireBullets.m_iSeed = iSeed;

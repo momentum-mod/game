@@ -128,8 +128,8 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
                                  bool bDoEffects,           // Is this the client DLL?
                                  float x, float y)
 {
-    float fCurrentDamage = iDamage; // damage of the bullet at it's current trajectory
-    float flCurrentDistance = 0.0;  // distance that the bullet has traveled so far
+    float fCurrentDamage = iDamage; // damage of the bullet at its current trajectory
+    float flCurrentDistance = 0.0f;  // distance that the bullet has traveled so far
 
     Vector vecDirShooting, vecRight, vecUp;
     AngleVectors(shootAngles, &vecDirShooting, &vecRight, &vecUp);

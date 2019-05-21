@@ -164,7 +164,7 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
             if (!shootsound || !shootsound[0])
                 return;
 
-            CBroadcastRecipientFilter filter;
+            CPASAttenuationFilter filter(packet.vOrigin, shootsound);
             if (!te->CanPredict())
                 return;
 
