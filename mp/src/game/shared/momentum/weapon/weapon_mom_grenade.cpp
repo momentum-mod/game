@@ -303,6 +303,9 @@ void CMomentumGrenade::ThrowGrenade()
 
     Vector vForward, vRight, vUp;
 
+    if (angThrow.x < 0)
+        angThrow.x += 360;
+
     if (angThrow.x < 90)
         angThrow.x = -10 + angThrow.x * ((90 + 10) / 90.0);
     else
