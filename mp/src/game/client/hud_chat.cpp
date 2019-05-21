@@ -186,6 +186,7 @@ void CHudChat::FireGameEvent(IGameEvent *event)
     if (FStrEq(event->GetName(), "lobby_leave"))
     {
         m_LobbyID.Clear();
+        m_vTypingMembers.RemoveAll();
     }
 
     BaseClass::FireGameEvent(event);
