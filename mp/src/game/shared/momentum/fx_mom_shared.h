@@ -4,7 +4,7 @@
 // On the server, it only does the damage calculations.
 // On the client, it does all the effects.
 void FX_FireBullets( 
-	int	iPlayer,
+	int	iEntIndex,
 	const Vector &vOrigin,
 	const QAngle &vAngles,
 	int	iWeaponID,
