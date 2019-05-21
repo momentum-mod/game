@@ -77,18 +77,14 @@ public:
     char m_szDiscordJoinSecret[DISCORD_MAX_BUFFER_SIZE];      // unique hashed string for chat invitations and Ask to Join
     int8 m_iDiscordInstance;                            // [deprecated Notify Me feature, may be re-used in future]
 
-
-    // Static vars
-    static const char* s_pDiscordAppID;
-    static const char* s_pSteamAppID;
+    void DiscordInit();
+    void DiscordUpdate();
 
 private:
     int m_iUpdateFrame;
     bool m_bValid;
 
     // Custom methods
-    void DiscordInit();
-    void DiscordUpdate();
     void UpdateDiscordPartyIdFromSteam();
     void UpdateLobbyNumbers();
 
