@@ -35,6 +35,9 @@ class CMomentumGhostBaseEntity : public CBaseAnimating, public CMomRunEntity
 public:
     CMomentumGhostBaseEntity();
 
+    void TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator) OVERRIDE;
+    int BloodColor() OVERRIDE { return BLOOD_COLOR_RED; }
+
     virtual void SetGhostBodyGroup(int bodyGroup);
     virtual void SetGhostColor(const uint32 newHexColor);
     virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
