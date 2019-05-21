@@ -22,6 +22,14 @@ CMomentumSniper::CMomentumSniper()
     m_iRequestedFOV = 0;
 }
 
+void CMomentumSniper::Drop(const Vector &vecVelocity)
+{
+    const auto pPlayer = GetPlayerOwner();
+    if (pPlayer)
+        pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV());
+    BaseClass::Drop(vecVelocity);
+}
+
 void CMomentumSniper::SecondaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
