@@ -14,27 +14,14 @@
 #include "mom_ghostdefs.h"
 #include "momentum/ghost_client.h"
 #include "util/mom_util.h"
+#include "momentum/te_shotgun_shot.h"
+#else
+#include "fx_impact.h"
 #endif
 
+#include "tier0/memdbgon.h"
+
 #ifdef CLIENT_DLL
-
-#include "fx_impact.h"
-
-// this is a cheap ripoff from CBaseCombatWeapon::WeaponSound():
-void FX_WeaponSound(int iPlayerIndex, WeaponSound_t sound_type, const Vector &vOrigin, CWeaponInfo *pWeaponInfo)
-{
-
-    // If we have some sounds from the weapon classname.txt file, play a random one of them
-    const char *shootsound = pWeaponInfo->aShootSounds[sound_type];
-    if (!shootsound || !shootsound[0])
-        return;
-
-    CBroadcastRecipientFilter filter; // this is client side only
-    if (!te->CanPredict())
-        return;
-
-    CBaseEntity::EmitSound(filter, iPlayerIndex, shootsound, &vOrigin);
-}
 
 class CGroupedSound
 {
@@ -84,27 +71,37 @@ void EndGroupingSounds()
 
 #else
 
-#include "momentum/te_shotgun_shot.h"
 
-// Server doesn't play sounds anyway.
 void StartGroupingSounds() {}
 void EndGroupingSounds() {}
-void FX_WeaponSound(int iPlayerIndex, WeaponSound_t sound_type, const Vector &vOrigin, CWeaponInfo *pWeaponInfo){};
+void FX_WeaponSound(int iEntIndex, WeaponSound_t sound_type, const Vector &vOrigin, CWeaponInfo *pWeaponInfo)
+{
+    // If we have some sounds from the weapon classname.txt file, play a random one of them
+    const char *shootsound = pWeaponInfo->aShootSounds[sound_type];
+    if (!shootsound || !shootsound[0])
+        return;
+
+    CPASAttenuationFilter filter(vOrigin, shootsound);
+    filter.UsePredictionRules();
+    filter.MakeReliable();
+
+    CBaseEntity::EmitSound(filter, iEntIndex, shootsound, &vOrigin);
+};
 
 #endif
 
 // This runs on both the client and the server.
 // On the server, it only does the damage calculations.
 // On the client, it does all the effects.
-void FX_FireBullets(int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngles, int iWeaponID, int iMode, int iSeed,
+void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles, int iWeaponID, int iMode, int iSeed,
                     float flSpread)
 {
     bool bDoEffects = true;
 
 #ifdef CLIENT_DLL
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(ClientEntityList().GetBaseEntity(iPlayerIndex));
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(ClientEntityList().GetBaseEntity(iEntIndex));
 #else
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(iPlayerIndex));
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(iEntIndex));
 #endif
 
     CWeaponInfo *pWeaponInfo = GetWeaponInfo((CWeaponID)iWeaponID);
@@ -118,7 +115,7 @@ void FX_FireBullets(int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngl
 #ifndef CLIENT_DLL
     // if this is server code, send the effect over to client as temp entity
     // Dispatch one message for all the bullet impacts and sounds.
-    TE_FireBullets(iPlayerIndex, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+    TE_FireBullets(iEntIndex, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
 
     if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
     {
@@ -151,15 +148,17 @@ void FX_FireBullets(int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngl
     float flRangeModifier = pWeaponInfo->m_flRangeModifier;
     int iAmmoType = pWeaponInfo->iAmmoType;
 
-    if (bDoEffects)
-    {
-        // Do an extra paintgun check here
-        const bool bPreventShootSound =
-            (iWeaponID == WEAPON_PAINTGUN && !ConVarRef("mom_paintgun_shoot_sound").GetBool());
+#ifdef GAME_DLL
+    // Weapon sounds are server-only for PAS ability
 
-        if (!bPreventShootSound)
-            FX_WeaponSound(iPlayerIndex, SINGLE, vOrigin, pWeaponInfo);
-    }
+    static ConVarRef paintgun("mom_paintgun_shoot_sound");
+
+    // Do an extra paintgun check here
+    const bool bPreventShootSound = iWeaponID == WEAPON_PAINTGUN && !paintgun.GetBool();
+
+    if (!bPreventShootSound)
+        FX_WeaponSound(iEntIndex, SINGLE, vOrigin, pWeaponInfo);
+#endif
 
     // Fire bullets, calculate impacts & effects
     bool bLocalPlayerFired = true;
@@ -198,7 +197,7 @@ void FX_FireBullets(int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngl
                             pPlayer, bDoEffects, x, y);
     }
 
-#if !defined(CLIENT_DLL)
+#ifndef CLIENT_DLL
     if (bLocalPlayerFired)
         lagcompensation->FinishLagCompensation(pPlayer);
 #endif
