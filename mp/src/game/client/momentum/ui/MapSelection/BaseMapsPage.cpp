@@ -89,6 +89,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     // Init UI
     m_pMapList = new CMapListPanel(this, "MapList");
     m_pMapList->SetAllowUserModificationOfColumns(true);
+    m_pMapList->SetMultiselectEnabled(false);
     m_pMapList->SetShouldCenterEmptyListText(true);
     m_pMapList->SetAutoResize(PIN_TOPLEFT, AUTORESIZE_DOWNANDRIGHT, 0, 0, 0, 0);
     m_pMapList->CalculateAutoResize(pWide, pTall);
