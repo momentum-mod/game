@@ -99,6 +99,7 @@ bool TickSet::SetTickrate(int gameMode)
 {
     switch (gameMode)
     {
+    case GAMEMODE_TRICKSURF:
     case GAMEMODE_BHOP:
     case GAMEMODE_KZ:
         //MOM_TODO: add more gamemodes
