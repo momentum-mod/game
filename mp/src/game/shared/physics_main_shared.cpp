@@ -1260,7 +1260,8 @@ void CBaseEntity::PhysicsCheckVelocity( void )
 		if ( vecAbsVelocity[i] > sv_maxvelocity.GetFloat() ) 
 		{
 #ifdef _DEBUG
-			DevWarning( 2, "Got a velocity too high on %s\n", GetClassname() );
+            if (developer.GetInt() == 2)
+                engine->Con_NPrintf(11, "Got a velocity too high on %s", GetClassname());
 #endif
 			vecAbsVelocity[i] = sv_maxvelocity.GetFloat();
 			bReset = true;
@@ -1268,7 +1269,8 @@ void CBaseEntity::PhysicsCheckVelocity( void )
 		else if ( vecAbsVelocity[i] < -sv_maxvelocity.GetFloat() )
 		{
 #ifdef _DEBUG
-			DevWarning( 2, "Got a velocity too low on %s\n", GetClassname() );
+            if (developer.GetInt() == 2)
+                engine->Con_NPrintf(11, "Got a velocity too low on %s", GetClassname());
 #endif
 			vecAbsVelocity[i] = -sv_maxvelocity.GetFloat();
 			bReset = true;

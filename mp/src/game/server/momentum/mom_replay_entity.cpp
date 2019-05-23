@@ -368,7 +368,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         bool bTeleportedNextFrame = nextStep->Teleported();
 
         Vector interpolatedVel;
-        const float maxvel = sv_maxvelocity.GetFloat();
 
         if (!bTeleportedNextFrame)
         {
@@ -393,11 +392,10 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             // Fix teleporting being interpolated.
             IncrementInterpolationFrame();
         }
-
-
-        // Fixes an issue with teleporting
-        if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
+        else
+        {
             SetAbsVelocity(interpolatedVel);
+        }
 
         // networked var that allows the replay to control keypress display on the client
         m_nGhostButtons = currentStep->PlayerButtons();
