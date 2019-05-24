@@ -23,8 +23,8 @@ static ConVarRef mom_gamemode("mom_gamemode");
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
-ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.01", 0,
-                                      "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
+ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.2", 0,
+                                      "Amount of units used in offset for retraces", true, 0.2f, true, 5.f);
 ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps",
                         true, 0.0f, true, 5.f);
 ConVar sv_considered_on_ground("sv_considered_on_ground", "1.0", 0,
