@@ -11,7 +11,6 @@
 
 using namespace vgui;
 
-// Constuctor: Initializes the Panel
 CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogPanel")
 {
     V_memset(m_cOnlineVersion, 0, sizeof(m_cOnlineVersion));
@@ -44,7 +43,7 @@ CChangelogPanel::~CChangelogPanel()
     free(m_pwOnlineChangelog);
 }
 
-void CChangelogPanel::SetChangelog(const char* pChangelog)
+void CChangelogPanel::SetChangelogText(const char* pChangelogText)
 {
     if (m_pChangeLog)
     {
@@ -54,7 +53,7 @@ void CChangelogPanel::SetChangelog(const char* pChangelog)
             m_pwOnlineChangelog = nullptr;
         }
 
-        g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelog, &m_pwOnlineChangelog);
+        g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelogText, &m_pwOnlineChangelog);
 
         m_pChangeLog->SetText(m_pwOnlineChangelog);
     }
@@ -66,7 +65,6 @@ void CChangelogPanel::ApplySchemeSettings(IScheme* pScheme)
     m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall", IsProportional()));
 } 
 
-// Called when the versions don't match (there's an update)
 void CChangelogPanel::Activate()
 {
     // Reset the version warning to keep reminding them
@@ -78,25 +76,19 @@ void CChangelogPanel::Activate()
 
 void CChangelogPanel::GetRemoteChangelog()
 {
-    if (SteamHTTP())
-    {
-        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, "http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt");
-        SteamAPICall_t apiHandle;
+    CHECK_STEAM_API(SteamHTTP());
 
-        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            m_callResult.Set(apiHandle, this, &CChangelogPanel::ChangelogCallback);
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to get changelog!\n");
-            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
+    HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, "http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt");
+    SteamAPICall_t apiHandle;
+
+    if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+    {
+        m_callResult.Set(apiHandle, this, &CChangelogPanel::ChangelogCallback);
     }
     else
     {
-        Warning("Steampicontext failure.\n");
-        Warning("Could not find Steam Api Context active\n");
+        Warning("Failed to send HTTP Request to get changelog!\n");
+        SteamHTTP()->ReleaseHTTPRequest(handle); // GC
     }
 }
 
@@ -131,7 +123,7 @@ void CChangelogPanel::ChangelogCallback(HTTPRequestCompleted_t* pParam, bool bIO
         }
     }
 
-    changelogpanel->SetChangelog(pChangelogText);
+    SetChangelogText(pChangelogText);
 
     if (pData)
         delete[] pData;
@@ -152,7 +144,7 @@ void CChangelogInterface::Create(vgui::VPANEL parent)
 
 CON_COMMAND(mom_version, "Prints mod current installed version\n")
 {
-    Log("Mod currently installed version: %s\n", MOM_CURRENT_VERSION);
+    Log("Momentum Mod v%s\n", MOM_CURRENT_VERSION);
 }
 
 CON_COMMAND(mom_show_changelog, "Shows the changelog for the mod.\n")
