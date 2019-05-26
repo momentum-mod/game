@@ -122,9 +122,7 @@ public:
 	bool HasText() const;
 
 	void SetDrawTextOnly();
-
 protected:
-	virtual void OnThink();
 	virtual void PerformLayout();  // layout the text in the window
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	virtual void Paint();
@@ -170,7 +168,6 @@ private:
 	HFont GetDefaultFont();
 
 	const wchar_t *ResolveLocalizedTextAndVariables( char const *pchLookup, OUT_Z_BYTECAP(outbufsizeinbytes) wchar_t *outbuf, size_t outbufsizeinbytes );
-	void CheckRecalcLineBreaks();
 
 	void GotoWordRight();	// move cursor to start of next word
 	void GotoWordLeft();	// move cursor to start of prev word
@@ -231,10 +228,7 @@ private:
 	CUtlVector<int>	   m_LineBreaks;		// an array that holds the index in the buffer to wrap lines at
 	CUtlVector<TFormatStream> m_FormatStream;	// list of format changes
 
-	bool m_bRecalcLineBreaks;
-
 	int	_recalculateBreaksIndex;			// tells next linebreakindex index to Start recalculating line breaks	
-	bool			   _invalidateVerticalScrollbarSlider;
 	int                _cursorPos;			// the position in the text buffer of the blinking cursor
 	bool			   _mouseSelection;		// whether we are highlighting text or not (selecting text)
 	bool			   _mouseDragSelection;	// tells weather mouse is outside window and button is down so we select text

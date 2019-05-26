@@ -149,7 +149,6 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 	_font = INVALID_FONT;
 	m_hFontUnderline = INVALID_FONT;
 
-	m_bRecalcLineBreaks = true;
 	m_pszInitialText = nullptr;
 	_cursorPos = 0;
 	_mouseSelection = false;
@@ -331,9 +330,7 @@ void RichText::OnSizeChanged( int wide, int tall )
 	BaseClass::OnSizeChanged( wide, tall );
 
    	// blow away the line breaks list 
-	_invalidateVerticalScrollbarSlider = true;
 	InvalidateLineBreakStream();
-	InvalidateLayout();
 
 	if ( _vertScrollBar->IsVisible() )
 	{
@@ -452,12 +449,14 @@ void RichText::SetText(const wchar_t *text)
 		int textLen = wcslen(text) + 1;
         m_TextStream.CopyArray(text, textLen);
 	}
-	GotoTextStart();
-	SelectNone();
 	
 	// blow away the line breaks list 
 	InvalidateLineBreakStream();
-	InvalidateLayout();
+
+	GotoTextStart();
+	SelectNone();
+
+    InvalidateLayout(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -1141,24 +1140,6 @@ void RichText::GenerateRenderStateForTextStreamIndex(int textStreamIndex, TRende
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Called pre render
-//-----------------------------------------------------------------------------
-void RichText::OnThink()
-{
-	if (m_bRecalcLineBreaks)
-	{
-		_recalcSavedRenderState = true;
-		RecalculateLineBreaks();
-		
-		// recalculate scrollbar position
-		if (_invalidateVerticalScrollbarSlider)
-		{
-			LayoutVerticalScrollBarSlider();
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Called when data changes or panel size changes
 //-----------------------------------------------------------------------------
 void RichText::PerformLayout()
@@ -1356,16 +1337,12 @@ void RichText::AddAnotherLine(int &cx, int &cy)
 //-----------------------------------------------------------------------------
 void RichText::RecalculateLineBreaks()
 {
-	if ( !m_bRecalcLineBreaks )
-		return;
-
 	int wide = GetWide();
 	if (!wide)
 		return;
 
 	wide -= _drawOffsetX;
 
-	m_bRecalcLineBreaks = false;
 	_recalcSavedRenderState = true;
 	if (!HasText())
 		return;
@@ -1575,7 +1552,7 @@ void RichText::RecalculateLineBreaks()
 	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 	
 	// set up the scrollbar
-	_invalidateVerticalScrollbarSlider = true;
+    LayoutVerticalScrollBarSlider();
 }
 
 //-----------------------------------------------------------------------------
@@ -1584,26 +1561,15 @@ void RichText::RecalculateLineBreaks()
 //-----------------------------------------------------------------------------
 void RichText::LayoutVerticalScrollBarSlider()
 {
-	_invalidateVerticalScrollbarSlider = false;
-
-	// set up the scrollbar
-	//if (!_vertScrollBar->IsVisible())
-	//	return;
-
 	// see where the scrollbar currently is
 	int previousValue = _vertScrollBar->GetValue();
-	bool bCurrentlyAtEnd = true;
-    if (_vertScrollBar->GetSlider()->IsSliderVisible())
+	bool bCurrentlyAtEnd = false;
+    int rmin, rmax;
+    _vertScrollBar->GetRange(rmin, rmax);
+    if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
     {
-        bCurrentlyAtEnd = false;
-        int rmin, rmax;
-        _vertScrollBar->GetRange(rmin, rmax);
-        if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
-        {
-            bCurrentlyAtEnd = true;
-        }
+        bCurrentlyAtEnd = true;
     }
-	
 	
 	// work out position to put scrollbar, factoring in insets
 	int wide, tall;
@@ -1651,6 +1617,8 @@ void RichText::LayoutVerticalScrollBarSlider()
 		_vertScrollBar->InvalidateLayout();
 		_vertScrollBar->Repaint();
 	}
+
+    Repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -1662,7 +1630,8 @@ void RichText::SetVerticalScrollbar(bool state)
 	{
 		_vertScrollBar->SetVisible(state);
 		InvalidateLineBreakStream();
-		InvalidateLayout();
+        LayoutVerticalScrollBarSlider();
+        InvalidateLayout();
 	}
 }
 
@@ -2136,10 +2105,8 @@ void RichText::GotoWordLeft()
 void RichText::GotoTextStart()
 {
 	_cursorPos = 0;	// set cursor to start
-	_invalidateVerticalScrollbarSlider = true;
-	// force scrollbar to the top
-	_vertScrollBar->SetValue(0);
-	Repaint();
+	_vertScrollBar->SetValue(0); // force scrollbar to the top
+    LayoutVerticalScrollBarSlider();
 }
 
 //-----------------------------------------------------------------------------
@@ -2148,14 +2115,12 @@ void RichText::GotoTextStart()
 void RichText::GotoTextEnd()
 {
 	_cursorPos = m_TextStream.Count();	// set cursor to end of buffer
-	_invalidateVerticalScrollbarSlider = true;
 
 	// force the scrollbar to the bottom
 	int min, max;
 	_vertScrollBar->GetRange(min, max);
 	_vertScrollBar->SetValue(max);
-
-	Repaint();
+    LayoutVerticalScrollBarSlider();
 }
 
 //-----------------------------------------------------------------------------
@@ -2192,8 +2157,8 @@ void RichText::TruncateTextStream()
 
 	// mark everything to be recalculated
 	InvalidateLineBreakStream();
+    LayoutVerticalScrollBarSlider();
 	InvalidateLayout();
-	_invalidateVerticalScrollbarSlider = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -2249,9 +2214,8 @@ void RichText::InsertString(const wchar_t *wszText)
 	{
 		InsertChar(*ch);
 	}
-	InvalidateLayout();
-	m_bRecalcLineBreaks = true;
-	Repaint();
+    RecalculateLineBreaks();
+	InvalidateLayout(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -2474,9 +2438,8 @@ void RichText::GetText(int offset, char *pch, int bufLenInBytes)
 void RichText::SetFont(HFont font)
 {
 	_font = font;
-	InvalidateLayout();
-	m_bRecalcLineBreaks = true;
-	Repaint();
+    RecalculateLineBreaks();
+	InvalidateLayout(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -2675,7 +2638,7 @@ void RichText::InvalidateLineBreakStream()
 	m_LineBreaks.RemoveAll();
 	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 	_recalculateBreaksIndex = 0;
-	m_bRecalcLineBreaks = true;
+    RecalculateLineBreaks();
 }
 
 //-----------------------------------------------------------------------------
