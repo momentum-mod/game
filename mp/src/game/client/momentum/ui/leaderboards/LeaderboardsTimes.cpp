@@ -546,7 +546,7 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TIME_TYPE type)
     }
     if (m_pOnlineTimesStatus)
     {
-        if (m_eTimesStatus[type] == STATUS_TIMES_LOADED)
+        if (m_eTimesStatus[type] == STATUS_TIMES_LOADED || pVector->Count())
             m_pOnlineTimesStatus->SetVisible(false);
         else
         {
