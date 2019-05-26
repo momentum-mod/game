@@ -13,7 +13,7 @@ class CChangelogPanel : public vgui::Frame
     CChangelogPanel(vgui::VPANEL parent); // Constructor
     ~CChangelogPanel();
 
-    void SetChangelog(const char* pChangelog);
+    void SetChangelogText(const char* pChangelogText);
 
     void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
@@ -53,21 +53,6 @@ class CChangelogInterface : public IChangelogPanel
         if (pPanel)
         {
             pPanel->Activate();
-        }
-    }
-    void Close() OVERRIDE
-    {
-        if (pPanel)
-        {
-            pPanel->Close();
-        }
-    }
-
-    void SetChangelog(const char *pChangelog) const OVERRIDE
-    {
-        if (pPanel)
-        {
-            pPanel->SetChangelog(pChangelog);
         }
     }
 };

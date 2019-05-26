@@ -11,7 +11,6 @@
 #include "run/mom_run_entity.h"
 #include "effect_dispatch_data.h"
 #ifdef CLIENT_DLL
-#include "ChangelogPanel.h"
 #include "materialsystem/imaterialvar.h"
 #endif
 
