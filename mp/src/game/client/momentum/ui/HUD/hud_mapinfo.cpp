@@ -68,6 +68,7 @@ C_HudMapInfo::C_HudMapInfo(const char *pElementName): CHudElement(pElementName),
     ListenForGameEvent("spec_target_updated");
     ListenForGameEvent("spec_stop");
     ListenForGameEvent("player_spawn");
+    ListenForGameEvent("mapfinished_panel_closed");
 
     m_pMainStatusLabel = new Label(this, "MainStatusLabel", "");
     m_pMapNameLabel = new Label(this, "MapNameLabel", "");

@@ -327,20 +327,18 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         }
         else*/
         {
-            // Otherwhise process normally.
+            // Otherwise process normally.
             nextStep = GetNextStep();
             currentStep = GetCurrentStep();
             prevStep = GetPreviousStep();
 
         }
-
         SetAbsOrigin(currentStep->PlayerOrigin());
 
         QAngle angles = currentStep->EyeAngles();
 
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
-            SetAbsAngles(angles);
             // don't render the model when we're in first person mode
             if (GetRenderMode() != kRenderNone)
             {
@@ -351,7 +349,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         else
         {
             // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-            SetAbsAngles(QAngle(angles.x / 10, angles.y, angles.z));
+            angles.x /= 10.0f;
 
             // remove the nodraw effects
             if (GetRenderMode() != kRenderTransColor)
@@ -361,6 +359,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             }
         }
 
+        SetAbsAngles(angles);
 
         bool bTeleportedThisFrame = (m_cvarReplaySelection.GetInt() == 1) // Going backwards?
             ? prevStep->Teleported() : currentStep->Teleported();
@@ -513,6 +512,26 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     m_flLastSyncVelocity = SyncVelocity;
     m_angLastEyeAngle = EyeAngles();
     m_nOldReplayButtons = currentStep->PlayerButtons();
+}
+
+void CMomentumReplayGhostEntity::GoToTick(int tick)
+{
+    if (tick >= 0 && tick <= m_iTotalTicks)
+    {
+        m_iCurrentTick = tick;
+        m_Data.m_bMapFinished = false;
+
+        // Teleport to the new tick
+        CReplayFrame *pNewStep = m_pPlaybackReplay->GetFrame(tick);
+        if (pNewStep)
+        {
+            Vector origin = pNewStep->PlayerOrigin();
+            QAngle eyes = pNewStep->EyeAngles();
+            Teleport(&origin, &eyes, nullptr);
+            PhysicsCheckForEntityUntouch();
+            // Entity will get full update next Think
+        }
+    }
 }
 
 void CMomentumReplayGhostEntity::EndRun()
