@@ -62,6 +62,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
   private:
     int GetTextCenter(HFont font, wchar_t *wstring);
 
+    bool m_bIsDucked;
     int m_nButtons, m_nDisabledButtons, m_nJumps;
     uint32 m_nStrafes;
     bool m_bShouldDrawCounts;
@@ -211,7 +212,7 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
-    if (nButtons & IN_DUCK || gpGlobals->curtime < m_fDuckColorUntil)
+    if (nButtons & IN_DUCK || m_bIsDucked || gpGlobals->curtime < m_fDuckColorUntil)
     {
         if (nButtons & IN_DUCK)
         {
@@ -262,6 +263,7 @@ void CHudKeyPressDisplay::OnThink()
 
             m_nButtons = pGhost->m_nGhostButtons;
             m_nDisabledButtons = pGhost->m_iDisabledButtons;
+            m_bIsDucked = pGhost->GetFlags() & FL_DUCKING;
 
             m_bShouldDrawCounts = pUIEnt->GetEntType() == RUN_ENT_REPLAY;
         }
@@ -269,6 +271,7 @@ void CHudKeyPressDisplay::OnThink()
         {
             m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
             m_nDisabledButtons = pPlayer->m_afButtonDisabled;
+            m_bIsDucked = pPlayer->GetFlags() & FL_DUCKING;
             // we should only draw the strafe/jump counters when the timer is running
             m_bShouldDrawCounts = pPlayer->m_Data.m_bTimerRunning;
             if (m_bShouldDrawCounts)

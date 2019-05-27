@@ -312,23 +312,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
             HideGhost();
-            bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-            if (m_nGhostButtons & IN_DUCK)
-            {
-                if (!isDucking)
-                {
-                    SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-                    AddFlag(FL_DUCKING);
-                }
-            }
-            else
-            {
-                if (CanUnduck(this) && isDucking)
-                {
-                    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
-                    RemoveFlag(FL_DUCKING);
-                }
-            }
+            HandleDucking();
         }
         else
         {
