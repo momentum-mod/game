@@ -416,7 +416,7 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
         auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = 0;
+            pGhost->GoToTick(0);
         }
     }
 }
@@ -448,12 +448,7 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
         auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost && args.ArgC() > 1)
         {
-            int tick = Q_atoi(args[1]);
-            if (tick >= 0 && tick <= pGhost->m_iTotalTicks)
-            {
-                pGhost->m_iCurrentTick = tick;
-                pGhost->m_Data.m_bMapFinished = false;
-            }
+            pGhost->GoToTick(Q_atoi(args[1]));
         }
     }
 }
@@ -465,7 +460,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTicks - pGhost->m_Data.m_iStartTick;
+            pGhost->GoToTick(pGhost->m_iTotalTicks - pGhost->m_Data.m_iStartTick);
         }
     }
 }
