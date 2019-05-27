@@ -61,6 +61,7 @@ public:
     void RemoveSpectator();
     CMomentumPlayer* GetCurrentSpectator() const { return m_pCurrentSpecPlayer; }
 
+    IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_fFlags);
     CNetworkString(m_szGhostName, MAX_PLAYER_NAME_LENGTH);
     CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(int, m_iDisabledButtons);
@@ -92,7 +93,8 @@ protected:
     virtual void CreateTrail();
     virtual void RemoveTrail();
 
-    static bool CanUnduck(CMomentumGhostBaseEntity *pGhost);
+    bool CanUnduck();
+    void HandleDucking();
     CMomentumPlayer *m_pCurrentSpecPlayer;
     GhostAppearance_t m_ghostAppearance;
 
