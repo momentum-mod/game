@@ -4,8 +4,11 @@
 #include "util/mom_util.h"
 #include "mom_player_shared.h"
 #include "mom_timer.h"
+#include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
+
+extern void SendProxy_CropFlagsToPlayerFlagBitsLength(const SendProp *pProp, const void *pStruct, const void *pVarData, DVariant *pOut, int iElement, int objectID);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumGhostBaseEntity, DT_MOM_GHOST_BASE)
 SendPropInt(SENDINFO(m_nGhostButtons)),
@@ -13,6 +16,7 @@ SendPropInt(SENDINFO(m_iDisabledButtons)),
 SendPropBool(SENDINFO(m_bBhopDisabled)),
 SendPropString(SENDINFO(m_szGhostName)),
 SendPropBool(SENDINFO(m_bSpectated)),
+SendPropInt(SENDINFO(m_fFlags), PLAYER_FLAG_BITS, SPROP_UNSIGNED|SPROP_CHANGES_OFTEN, SendProxy_CropFlagsToPlayerFlagBitsLength),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
 SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MomRunStats)),
 END_SEND_TABLE();
@@ -174,39 +178,57 @@ void CMomentumGhostBaseEntity::RemoveSpectator()
 }
 
 // Ripped from gamemovement for slightly better collision
-bool CMomentumGhostBaseEntity::CanUnduck(CMomentumGhostBaseEntity *pGhost)
+bool CMomentumGhostBaseEntity::CanUnduck()
 {
     trace_t trace;
     Vector newOrigin;
 
-    if (pGhost)
+    VectorCopy(GetAbsOrigin(), newOrigin);
+
+    if (GetGroundEntity() != nullptr)
     {
-        VectorCopy(pGhost->GetAbsOrigin(), newOrigin);
-
-        if (pGhost->GetGroundEntity() != nullptr)
-        {
-            newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
-        }
-        else
-        {
-            // If in air an letting go of croush, make sure we can offset origin to make
-            //  up for uncrouching
-            Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
-            Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-
-            newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
-        }
-
-        UTIL_TraceHull(pGhost->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, pGhost,
-                       COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
-
-        if (trace.startsolid || (trace.fraction != 1.0f))
-            return false;
-
-        return true;
+        newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
-    return false;
+    else
+    {
+        // If in air an letting go of crouch, make sure we can offset origin to make
+        //  up for uncrouching
+        Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
+        Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
+
+        newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
+    }
+
+    UTIL_TraceHull(GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, this,
+                   COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+
+    if (trace.startsolid || (trace.fraction != 1.0f))
+        return false;
+
+    return true;
 }
+
+void CMomentumGhostBaseEntity::HandleDucking()
+{
+    const auto isDucking = (GetFlags() & FL_DUCKING) != 0;
+    if (m_nGhostButtons & IN_DUCK)
+    {
+        if (!isDucking)
+        {
+            SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+            AddFlag(FL_DUCKING);
+        }
+    }
+    else if (isDucking)
+    {
+        if (CanUnduck())
+        {
+            SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
+            RemoveFlag(FL_DUCKING);
+        }
+    }
+}
+
 void CMomentumGhostBaseEntity::SetGhostAppearance(GhostAppearance_t newApp, bool bForceUpdate /* = false*/)
 {
     // only set things that NEED TO BE CHANGED!!

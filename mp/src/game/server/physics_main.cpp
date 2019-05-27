@@ -1829,7 +1829,7 @@ void CBaseEntity::PhysicsStepRecheckGround()
 				UTIL_TraceLine( point, point, mask, this, COLLISION_GROUP_NONE, &trace );
 			}
 
-			if ( trace.startsolid )
+			if ( trace.startsolid && trace.plane.normal[2] > 0.7 )
 			{
 				SetGroundEntity( trace.m_pEnt );
 				return;

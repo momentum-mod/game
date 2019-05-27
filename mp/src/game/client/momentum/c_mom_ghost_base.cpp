@@ -9,6 +9,7 @@ RecvPropInt(RECVINFO(m_iDisabledButtons)),
 RecvPropBool(RECVINFO(m_bBhopDisabled)),
 RecvPropString(RECVINFO(m_szGhostName)),
 RecvPropBool(RECVINFO(m_bSpectated)),
+RecvPropInt(RECVINFO(m_fFlags)),
 RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
 RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunStats)),
 END_RECV_TABLE();
