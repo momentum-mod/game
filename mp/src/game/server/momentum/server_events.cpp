@@ -2,11 +2,33 @@
 #include "filesystem.h"
 #include "server_events.h"
 #include "tickset.h"
+#include "icommandline.h"
 
 #include "tier0/memdbgon.h"
 
 CMomServerEvents::CMomServerEvents(): CAutoGameSystem("CMomServerEvents")
 {
+}
+
+bool CMomServerEvents::Init()
+{
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        FileFindHandle_t handle;
+        const auto pFound = g_pFullFileSystem->FindFirstEx("addons/*.vdf", "GAME", &handle);
+        if (pFound)
+            Error("Boot the game with -mapping to be able to use plugins!");
+
+        g_pFullFileSystem->FindClose(handle);
+
+        const auto pLoad = g_pCVar->FindCommandBase("plugin_load");
+        if (pLoad)
+        {
+            g_pCVar->UnregisterConCommand(pLoad);
+        }
+    }
+
+    return true;
 }
 
 void CMomServerEvents::PostInit()
