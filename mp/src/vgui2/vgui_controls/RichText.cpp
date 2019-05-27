@@ -166,15 +166,9 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 	m_pEditMenu = nullptr;
 	
 	SetCursor(dc_ibeam);
-	
-	//position the cursor so it is at the end of the text
-	GotoTextEnd();
-	
+
 	// set default foreground color to black
 	_defaultTextColor =  Color(0, 0, 0, 0);
-	
-	// initialize the line break array
-	InvalidateLineBreakStream();
 
 	if ( IsProportional() )
 	{
@@ -191,6 +185,10 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 		_drawOffsetX = DRAW_OFFSET_X;
 		_drawOffsetY = DRAW_OFFSET_Y;
 	}
+
+    // initialize the line break array
+    InvalidateLineBreakStream(false);
+    GotoTextEnd();
 
 	// add a basic format string
 	TFormatStream stream;
@@ -331,6 +329,7 @@ void RichText::OnSizeChanged( int wide, int tall )
 
    	// blow away the line breaks list 
 	InvalidateLineBreakStream();
+    InvalidateLayout();
 
 	if ( _vertScrollBar->IsVisible() )
 	{
@@ -456,7 +455,7 @@ void RichText::SetText(const wchar_t *text)
 	GotoTextStart();
 	SelectNone();
 
-    InvalidateLayout(true);
+    InvalidateLayout();
 }
 
 //-----------------------------------------------------------------------------
@@ -1580,7 +1579,9 @@ void RichText::LayoutVerticalScrollBarSlider()
 	_vertScrollBar->SetSize( _vertScrollBar->GetWide(), tall );
 	
 	// calculate how many lines we can fully display
-	int displayLines = tall / (GetLineHeight() + _drawOffsetY);
+    const auto offY = GetLineHeight() + _drawOffsetY;
+
+	int displayLines = offY ? tall / offY : 0;
 	int numLines = m_LineBreaks.Count();
 	
 	if (numLines <= displayLines)
@@ -2215,7 +2216,7 @@ void RichText::InsertString(const wchar_t *wszText)
 		InsertChar(*ch);
 	}
     RecalculateLineBreaks();
-	InvalidateLayout(true);
+	InvalidateLayout();
 }
 
 //-----------------------------------------------------------------------------
@@ -2439,7 +2440,7 @@ void RichText::SetFont(HFont font)
 {
 	_font = font;
     RecalculateLineBreaks();
-	InvalidateLayout(true);
+	InvalidateLayout();
 }
 
 //-----------------------------------------------------------------------------
@@ -2632,13 +2633,14 @@ void RichText::OnSetFocus()
 //-----------------------------------------------------------------------------
 // Purpose: Invalidates the current linebreak stream
 //-----------------------------------------------------------------------------
-void RichText::InvalidateLineBreakStream()
+void RichText::InvalidateLineBreakStream(bool bRecalculate /*= true*/)
 {
 	// clear the buffer
 	m_LineBreaks.RemoveAll();
 	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 	_recalculateBreaksIndex = 0;
-    RecalculateLineBreaks();
+    if (bRecalculate)
+        RecalculateLineBreaks();
 }
 
 //-----------------------------------------------------------------------------
@@ -2870,7 +2872,7 @@ bool RichText::HasText() const
 //-----------------------------------------------------------------------------
 int RichText::GetLineHeight()
 {
-	return surface()->GetFontTall( _font );
+	return _font == INVALID_FONT ? 0 : surface()->GetFontTall( _font );
 }
 
 

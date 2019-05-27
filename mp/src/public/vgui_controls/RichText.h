@@ -192,7 +192,7 @@ private:
 	MESSAGE_FUNC_INT( MoveScrollBarDirect, "MoveScrollBarDirect", delta );
 
 	// linebreak stream functions
-	void InvalidateLineBreakStream();
+	void InvalidateLineBreakStream(bool recalculate = true);
 	void RecalculateLineBreaks();
 
 	struct TFade
