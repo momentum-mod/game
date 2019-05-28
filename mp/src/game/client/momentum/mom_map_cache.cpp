@@ -431,8 +431,8 @@ void MapData::DeleteMapFile()
     {
         // MOM_TODO when we allow different map library folders, construct full path here
         const char *pFilePath = CFmtStr("maps/%s.bsp", m_szMapName).Get();
-        if (g_pFullFileSystem->FileExists(pFilePath, "GAME"))
-            g_pFullFileSystem->RemoveFile(pFilePath, "GAME");
+        if (g_pFullFileSystem->FileExists(pFilePath, "MOD"))
+            g_pFullFileSystem->RemoveFile(pFilePath, "MOD");
         m_bMapFileExists = false;
     }
 }
@@ -733,7 +733,7 @@ MapDownloadResponse CMapCache::DownloadMap(uint32 uID, bool bOverwrite /* = fals
         }
 
         // Do we have a file of the same name? If so, warn the user if they haven't told us to overwrite already
-        if (!bOverwrite && g_pFullFileSystem->FileExists(CFmtStr("maps/%s.bsp", pData->m_szMapName), "GAME"))
+        if (!bOverwrite && g_pFullFileSystem->FileExists(CFmtStr("maps/%s.bsp", pData->m_szMapName), "MOD"))
         {
             return MAP_DL_WILL_OVERWRITE_EXISTING;
         }
