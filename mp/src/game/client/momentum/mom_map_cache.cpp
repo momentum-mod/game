@@ -965,6 +965,10 @@ void CMapCache::AddMapToCache(KeyValues* pMap, APIModelSource source)
         {
             pData->SendDataUpdate();
         }
+        else
+        {
+            pData->ResetUpdate();
+        }
     }
 }
 
