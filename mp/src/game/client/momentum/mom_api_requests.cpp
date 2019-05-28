@@ -257,7 +257,7 @@ bool CAPIRequests::EndRunSession(uint32 mapID, uint64 sessionID, const CUtlBuffe
     if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u/session/%lld/end", mapID, sessionID).Get()), k_EHTTPMethodPOST))
     {
         SteamHTTP()->SetHTTPRequestRawPostBody(req->handle, "application/octet-stream", (uint8*) replayBuf.Base(), replayBuf.TellPut());
-        return SendAPIRequest(req, func, __FUNCTION__);
+        return SendAPIRequest(req, func, __FUNCTION__, true);
     }
 
     delete req;
@@ -661,11 +661,14 @@ bool CAPIRequests::CreateAPIRequest(APIRequest *request, const char* pszURL, EHT
     return request->handle != INVALID_HTTPREQUEST_HANDLE;
 }
 
-bool CAPIRequests::SendAPIRequest(APIRequest *req, CallbackFunc func, const char* pCallingFunc)
+bool CAPIRequests::SendAPIRequest(APIRequest *req, CallbackFunc func, const char* pCallingFunc, bool bPrioritize /*= false*/)
 {
     SteamAPICall_t apiHandle;
     if (SteamHTTP()->SendHTTPRequest(req->handle, &apiHandle))
     {
+        if (bPrioritize)
+            SteamHTTP()->PrioritizeHTTPRequest(req->handle);
+
         req->m_dSentTime = Plat_FloatTime();
         Q_strncpy(req->m_szCallingFunc, pCallingFunc, sizeof(req->m_szCallingFunc));
         req->callbackFunc = func;
