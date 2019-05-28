@@ -87,17 +87,10 @@ void HudSettingsPage::OnCheckboxChecked(Panel *p)
 
     if (p == m_pSpeedometerShow)
     {
-        bool bEnabled = m_pSpeedometerShow->IsSelected();
+        const auto bEnabled = m_pSpeedometerShow->IsSelected();
         m_pSpeedometerShowLastJump->SetEnabled(bEnabled);
         m_pSpeedometerShowVerticalVel->SetEnabled(bEnabled);
         m_pSpeedometerUnits->SetEnabled(bEnabled);
         m_pSpeedometerColorize->SetEnabled(bEnabled);
-    }
-    else if (p == m_pSyncShow)
-    {
-        bool bEnabled = m_pSyncShow->IsSelected();
-        m_pSyncType->SetEnabled(bEnabled);
-        m_pSyncShowBar->SetEnabled(bEnabled);
-        m_pSyncColorize->SetEnabled(bEnabled);
     }
 }
