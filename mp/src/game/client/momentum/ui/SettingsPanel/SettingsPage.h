@@ -51,9 +51,9 @@ class SettingsPage : public vgui::PropertyPage
     vgui::ScrollableEditablePanel *GetScrollPanel() const { return m_pScrollPanel; }
 
     // Load the panel's settings
-    virtual void OnPageShow() OVERRIDE { LoadSettings(); }
-    virtual void OnResetData() OVERRIDE { LoadSettings(); }
-    
+    virtual void OnPageShow() OVERRIDE;
+    virtual void OnResetData() OVERRIDE;
+
   private:
     vgui::ScrollableEditablePanel *m_pScrollPanel;
 };

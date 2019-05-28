@@ -1,55 +1,33 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================
-
-#ifndef SCROLLABLEEDITABLEPANEL_H
-#define SCROLLABLEEDITABLEPANEL_H
-
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "vgui_controls/EditablePanel.h"
 
-//-----------------------------------------------------------------------------
-// Forward declarations
-//-----------------------------------------------------------------------------
 namespace vgui
 {
-	class ScrollBar;
-}
-
-namespace vgui
-{
-
+class ScrollBar;
 //-----------------------------------------------------------------------------
 // An editable panel that has a scrollbar
 //-----------------------------------------------------------------------------
-class ScrollableEditablePanel : public vgui::EditablePanel
+class ScrollableEditablePanel : public EditablePanel
 {
-	DECLARE_CLASS_SIMPLE( ScrollableEditablePanel, vgui::EditablePanel );
+    DECLARE_CLASS_SIMPLE(ScrollableEditablePanel, vgui::EditablePanel);
 
-public:
-	ScrollableEditablePanel( vgui::Panel *pParent, vgui::EditablePanel *pChild, const char *pName );
-	virtual ~ScrollableEditablePanel() {}
+  public:
+    ScrollableEditablePanel(Panel *pParent, EditablePanel *pChild, const char *pName);
+    virtual ~ScrollableEditablePanel() {}
 
-	virtual void ApplySettings( KeyValues *pInResourceData );
-	virtual void PerformLayout();
+    virtual void ApplySettings(KeyValues *pInResourceData) OVERRIDE;
+    virtual void PerformLayout() OVERRIDE;
 
-	vgui::ScrollBar	*GetScrollbar( void ) { return m_pScrollBar; }
+    void ScrollToTop();
 
-	MESSAGE_FUNC( OnScrollBarSliderMoved, "ScrollBarSliderMoved" );
-	virtual void OnMouseWheeled(int delta);	// respond to mouse wheel events
+    ScrollBar *GetScrollbar(void) { return m_pScrollBar; }
 
-private:
-	vgui::ScrollBar *m_pScrollBar;
-	vgui::EditablePanel *m_pChild;
+    MESSAGE_FUNC(OnScrollBarSliderMoved, "ScrollBarSliderMoved");
+    virtual void OnMouseWheeled(int delta); // respond to mouse wheel events
+
+  private:
+    ScrollBar *m_pScrollBar;
+    EditablePanel *m_pChild;
 };
-
-
-} // end namespace vgui
-
-#endif // SCROLLABLEEDITABLEPANEL_H
+}
