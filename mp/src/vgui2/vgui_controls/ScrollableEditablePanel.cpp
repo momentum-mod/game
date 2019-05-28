@@ -14,16 +14,15 @@
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
 
-ScrollableEditablePanel::ScrollableEditablePanel( vgui::Panel *pParent, vgui::EditablePanel *pChild, const char *pName ) :
+ScrollableEditablePanel::ScrollableEditablePanel( Panel *pParent, EditablePanel *pChild, const char *pName ) :
 	BaseClass( pParent, pName )
 {
 	m_pChild = pChild;
 	m_pChild->SetParent( this );
 
-	m_pScrollBar = new vgui::ScrollBar( this, "VerticalScrollBar", true ); 
+	m_pScrollBar = new ScrollBar( this, "VerticalScrollBar", true ); 
 	m_pScrollBar->SetWide( 16 );
 	m_pScrollBar->SetAutoResize( PIN_TOPRIGHT, AUTORESIZE_DOWN, 0, 0, -16, 0 );
 	m_pScrollBar->AddActionSignalTarget( this );
@@ -62,6 +61,11 @@ void ScrollableEditablePanel::PerformLayout()
 	}
 }
 
+void ScrollableEditablePanel::ScrollToTop()
+{
+    m_pScrollBar->SetValue(0);
+    Repaint();
+}
 
 //-----------------------------------------------------------------------------
 // Called when the scroll bar moves
@@ -83,4 +87,3 @@ void ScrollableEditablePanel::OnMouseWheeled(int delta)
 	val -= (delta * 50);
 	m_pScrollBar->SetValue( val );
 }
-
