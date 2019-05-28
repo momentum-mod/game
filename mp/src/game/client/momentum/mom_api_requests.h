@@ -195,7 +195,7 @@ private:
     // If bAuth = true, it will add the API key to the request, and will also return false if the key isn't set
     bool CreateAPIRequest(APIRequest *request, const char *pszURL, EHTTPMethod kMethod, bool bAuth = true, bool bSensitive = false);
     // Should be called after the HTTP request is prepared by the API calls (above)
-    bool SendAPIRequest(APIRequest *request, CallbackFunc func, const char *pCallingFunction);
+    bool SendAPIRequest(APIRequest *request, CallbackFunc func, const char *pCallingFunction, bool bPrioritize = false);
     // Check the response for errors
     bool CheckAPIResponse(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
 
