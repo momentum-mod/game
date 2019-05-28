@@ -35,3 +35,14 @@ void SettingsPage::OnApplyChanges()
         }
     }
 }
+
+void SettingsPage::OnPageShow()
+{
+    LoadSettings();
+    m_pScrollPanel->ScrollToTop();
+}
+
+void SettingsPage::OnResetData()
+{
+    LoadSettings();
+}
