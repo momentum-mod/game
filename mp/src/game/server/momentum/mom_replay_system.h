@@ -69,3 +69,5 @@ public:
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;
+extern ConVar mom_replay_selection;
+extern ConVar mom_replay_timescale;
