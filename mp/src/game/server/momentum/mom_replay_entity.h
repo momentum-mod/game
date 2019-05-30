@@ -67,8 +67,6 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     bool m_bHasJumped;
 
-    ConVarRef m_cvarReplaySelection;
-
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;

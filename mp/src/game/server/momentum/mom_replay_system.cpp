@@ -14,9 +14,8 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE,
-                   "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
-static MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or backward in the replayui \n", 0, 2);
+MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
+MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or backward in the replayui \n", 0, 2);
 
 CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     CAutoGameSystemPerFrame(pName), m_bRecording(false), m_bPlayingBack(false), m_pPlaybackReplay(nullptr),
