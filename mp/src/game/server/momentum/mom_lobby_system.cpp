@@ -3,7 +3,6 @@
 #include "mom_lobby_system.h"
 
 #include "filesystem.h"
-#include <cryptopp/base64.h>
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
 #include "mom_system_saveloc.h"
@@ -11,6 +10,12 @@
 #include "mom_modulecomms.h"
 #include "mom_timer.h"
 #include "fmtstr.h"
+
+#include "tier0/valve_minmax_off.h"
+// This is wrapped by minmax_off due to Valve making a macro for min and max...
+#include <cryptopp/base64.h>
+// Now we can unwrap
+#include "tier0/valve_minmax_on.h"
 
 #include "tier0/memdbgon.h"
 
