@@ -3,7 +3,7 @@ jobs:
 
   build_linux:
     docker:
-      - image: gocnak/steam-runtime-i386
+      - image: gocnak/steam-runtime-i386:momentum
       
     working_directory: ~/mom_build
     resource_class: large
