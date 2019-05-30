@@ -292,7 +292,7 @@ void CRunPoster::CreateSessionCallback(KeyValues *pKv)
     if (pData)
     {
         m_uRunSessionID = pData->GetUint64("id");
-        ConColorMsg(2, COLOR_GREEN, "Got the run session ID! %u\n", m_uRunSessionID);
+        ConColorMsg(2, COLOR_GREEN, "Got the run session ID! %lld\n", m_uRunSessionID);
     }
     else if (pErr)
     {

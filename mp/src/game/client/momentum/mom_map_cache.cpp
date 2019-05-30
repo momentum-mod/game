@@ -9,8 +9,13 @@
 
 #include "filesystem.h"
 #include "fmtstr.h"
+
+#include "tier0/valve_minmax_off.h"
+// These two are wrapped by minmax_off due to Valve making a macro for min and max...
 #include <cryptopp/osrng.h>
 #include <cryptopp/hex.h>
+// Now we can unwrap
+#include "tier0/valve_minmax_on.h"
 
 #include "tier0/memdbgon.h"
 
@@ -460,9 +465,9 @@ void MapData::FromKV(KeyValues* pMap)
     {
         Q_strncpy(m_szMapName, pMap->GetString("name"), sizeof(m_szMapName));
         KeyValues *pFavorites = pMap->FindKey("favorites");
-        m_bInFavorites = m_eSource == MODEL_FROM_FAVORITES_API_CALL || pFavorites && !pFavorites->IsEmpty();
+        m_bInFavorites = (m_eSource == MODEL_FROM_FAVORITES_API_CALL) || (pFavorites && !pFavorites->IsEmpty());
         KeyValues *pLibrary = pMap->FindKey("libraryEntries");
-        m_bInLibrary = m_eSource == MODEL_FROM_LIBRARY_API_CALL || pLibrary && !pLibrary->IsEmpty();
+        m_bInLibrary = (m_eSource == MODEL_FROM_LIBRARY_API_CALL) || (pLibrary && !pLibrary->IsEmpty());
         m_bMapFileNeedsUpdate = m_eSource == MODEL_FROM_LIBRARY_API_CALL;
     }
 
