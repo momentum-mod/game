@@ -1,8 +1,13 @@
 #include "cbase.h"
 
 #include "jsontokv.h"
-#include "rapidjson/document.h"
 #include "fmtstr.h"
+
+#include "tier0/valve_minmax_off.h"
+// This is wrapped by minmax_off due to Valve making a macro for min and max...
+#include "rapidjson/document.h"
+// Now we can unwrap
+#include "tier0/valve_minmax_on.h"
 
 #include "tier0/memdbgon.h"
 

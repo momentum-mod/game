@@ -14,9 +14,13 @@
 #include "materialsystem/imaterialvar.h"
 #endif
 
+#include "tier0/valve_minmax_off.h"
+// These are wrapped by minmax_off/on due to Valve making a macro for min and max...
 #include "cryptopp/sha.h"
 #include <cryptopp/files.h>
 #include <cryptopp/hex.h>
+// Now we can unwrap
+#include "tier0/valve_minmax_on.h"
 
 #include "tier0/memdbgon.h"
 
