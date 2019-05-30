@@ -865,7 +865,7 @@ void CLeaderboardsTimes::OnReplayDownloadEnd(KeyValues* pKvEnd)
         else
         {
             // MOM_TODO: show success on the progress bar here
-            DevLog("Successfully downloaded the replay with ID: %i\n", m_mapReplayDownloads[fileIndx]);
+            DevLog("Successfully downloaded the replay with ID: %lld\n", m_mapReplayDownloads[fileIndx]);
 
             // Play it
             CFmtStr command("mom_replay_play %s/%s-%lld%s\n", RECORDING_ONLINE_PATH, m_pParentPanel->MapName(), m_mapReplayDownloads[fileIndx], EXT_RECORDING_FILE);
