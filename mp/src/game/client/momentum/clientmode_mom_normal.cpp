@@ -81,17 +81,17 @@ class CHudViewport : public CBaseViewport
 
     IViewPortPanel *CreatePanelByName(const char *pzName) OVERRIDE
     {
-        if (!Q_strcmp(PANEL_TIMES, pzName))
+        if (FStrEq(PANEL_TIMES, pzName))
         {
             return new CClientTimesDisplay(this);
         }
-        if (!Q_strcmp(PANEL_SPECGUI, pzName))
-        {
-            return new CMOMSpectatorGUI(this);
-        }
-        if (!Q_strcmp(PANEL_REPLAY, pzName))
+        if (FStrEq(PANEL_REPLAY, pzName))
         {
             return new C_MOMReplayUI(this);
+        }
+        if (FStrEq(PANEL_SPECGUI, pzName))
+        {
+            return new CMOMSpectatorGUI(this);
         }
         if (FStrEq(PANEL_LOBBY_MEMBERS, pzName))
         {
