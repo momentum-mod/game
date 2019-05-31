@@ -26,7 +26,7 @@ DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-static C_MomentumPlayer *s_pLocalPlayer;
+static C_MomentumPlayer *s_pLocalPlayer = nullptr;
 
 C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
 {
@@ -101,7 +101,7 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
     {
         if (engine->GetLocalPlayer() == index)
         {
-            Assert(s_pLocalPlayer == NULL);
+            Assert(s_pLocalPlayer == nullptr);
             s_pLocalPlayer = this;
         }
     }

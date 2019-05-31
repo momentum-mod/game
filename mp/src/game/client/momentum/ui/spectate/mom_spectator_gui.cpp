@@ -6,9 +6,6 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include <cdll_client_int.h>
-#include <cdll_util.h>
-#include <globalvars_base.h>
 
 #include "mom_spectator_gui.h"
 
@@ -18,12 +15,9 @@
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/ImageList.h>
-#include <vgui_controls/MenuItem.h>
 #include <vgui_controls/TextImage.h>
 
 #include "mom_replayui.h"
-#include <imapoverview.h>
-#include <shareddefs.h>
 #include <vgui/IInput.h>
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Panel.h>
@@ -32,7 +26,6 @@
 
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
-#include "c_mom_replay_entity.h"
 #include "c_mom_online_ghost.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -56,6 +49,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
     m_flNextUpdateTime = -1.0f;
+    m_pReplayControls = nullptr;
 
     // initialize dialog
     SetVisible(false);
@@ -77,8 +71,6 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     m_pShowControls = new ImagePanel(this, "ShowControls");
     m_pPrevPlayerButton = new ImagePanel(this, "PrevPlayerButton");
     m_pNextPlayerButton = new ImagePanel(this, "NextPlayerButton");
-
-    m_pReplayControls = dynamic_cast<C_MOMReplayUI *>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
 
     LoadControlSettings("resource/ui/Spectator.res");
 
@@ -181,6 +173,9 @@ void CMOMSpectatorGUI::PerformLayout()
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::OnThink()
 {
+    if (!m_pReplayControls)
+        m_pReplayControls = static_cast<C_MOMReplayUI *>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
+
     if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)
     {
         Update();
@@ -309,7 +304,7 @@ void CMOMSpectatorGUI::Update()
 
                 m_pShowControls->SetVisible(true);
 
-                if (!m_pReplayControls->IsVisible())
+                if (m_pReplayControls && !m_pReplayControls->IsVisible())
                     m_pReplayControls->ShowPanel(true);
                 
                 //MOM_TODO: check if an online ghost has spawned, and don't hide spec buttons?
@@ -328,7 +323,8 @@ void CMOMSpectatorGUI::Update()
 
                 // We don't need replay controls in online spectating!
                 m_pShowControls->SetVisible(false);
-                m_pReplayControls->ShowPanel(false);
+                if (m_pReplayControls)
+                    m_pReplayControls->ShowPanel(false);
                 m_pPrevPlayerButton->SetVisible(true);
                 m_pNextPlayerButton->SetVisible(true);
             }
