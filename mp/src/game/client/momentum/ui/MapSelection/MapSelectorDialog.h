@@ -118,6 +118,8 @@ class CMapSelectorDialog : public vgui::Frame
     MESSAGE_FUNC_INT(OnRejectOverwrite, "RejectOverwrite", id);
     // Called when map should be started
     MESSAGE_FUNC_INT(OnMapStart, "StartMap", id);
+    // Refresh this map's info
+    MESSAGE_FUNC_INT(OnRefreshMapInfo, "RefreshMapInfo", id);
     // called to look at map info
     MESSAGE_FUNC_INT(OnViewMapInfo, "ViewMapInfo", id);
 
