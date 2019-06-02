@@ -316,26 +316,49 @@ void CRunPoster::UpdateSessionCallback(KeyValues *pKv)
 
 void CRunPoster::EndSessionCallback(KeyValues* pKv)
 {
-    IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
-    KeyValues *pData = pKv->FindKey("data");
-    KeyValues *pErr = pKv->FindKey("error");
+    const auto pRunUploadedEvent = gameeventmanager->CreateEvent("run_upload");
+    const auto pData = pKv->FindKey("data");
+    const auto pErr = pKv->FindKey("error");
     if (pData)
     {
         // Necessary so that the leaderboards and hud_mapfinished update appropriately
-        if (runUploadedEvent)
+        if (pRunUploadedEvent)
         {
-            runUploadedEvent->SetBool("run_posted", true);
+            pRunUploadedEvent->SetBool("run_posted", true);
 
             const auto pPlayer = C_BasePlayer::GetLocalPlayer();
             if (pPlayer)
             {
-                if (pData->GetBool("isNewWorldRecord"))
+                const auto bIsWR = pData->GetBool("isNewWorldRecord");
+                const auto bIsPB = pData->GetBool("isNewPersonalBest");
+
+                if (bIsPB)
                 {
-                    pPlayer->EmitSound("Momentum.AchievedWR");
-                }
-                else if (pData->GetBool("isNewPersonalBest"))
-                {
-                    pPlayer->EmitSound("Momentum.AchievedPB");
+                    // Emit a sound
+                    pPlayer->EmitSound(bIsWR ? "Momentum.AchievedWR" : "Momentum.AchievedPB");
+
+                    // Update the map cache
+                    // MOM_TODO check if this run was for the default track & category when we support others (0.9.0+)
+                    const auto pMapData = g_pMapCache->GetCurrentMapData();
+                    if (pMapData)
+                    {
+                        const auto pRun = pData->FindKey("run");
+                        const auto pRank = pData->FindKey("rank");
+                        if (pRun && pRank)
+                        {
+                            MapRank rank;
+                            rank.FromKV(pRank);
+
+                            Run run;
+                            run.FromKV(pRun);
+                            rank.m_Run = run;
+                            pMapData->m_PersonalBest = rank;
+                            if (bIsWR)
+                                pMapData->m_WorldRecord = rank;
+
+                            pMapData->SendDataUpdate();
+                        }
+                    }
                 }
             }
 
@@ -346,14 +369,14 @@ void CRunPoster::EndSessionCallback(KeyValues* pKv)
                 const auto pCosXP = pXP->FindKey("cosXP");
                 if (pCosXP)
                 {
-                    runUploadedEvent->SetInt("lvl_gain", pCosXP->GetInt("gainLvl"));
-                    runUploadedEvent->SetInt("cos_xp", pCosXP->GetInt("gainXP"));
+                    pRunUploadedEvent->SetInt("lvl_gain", pCosXP->GetInt("gainLvl"));
+                    pRunUploadedEvent->SetInt("cos_xp", pCosXP->GetInt("gainXP"));
                     // oldXP: <int>
                 }
                 const auto pRankXP = pXP->FindKey("rankXP");
                 if (pRankXP)
                 {
-                    runUploadedEvent->SetInt("rank_xp", pRankXP->GetInt("rankXP"));
+                    pRunUploadedEvent->SetInt("rank_xp", pRankXP->GetInt("rankXP"));
                     // top10: <int>
                     // formula: <int>
                     // group: {
@@ -362,16 +385,16 @@ void CRunPoster::EndSessionCallback(KeyValues* pKv)
                     // }
                 }
             }
-            gameeventmanager->FireEvent(runUploadedEvent);
+            gameeventmanager->FireEvent(pRunUploadedEvent);
         }
     }
     else if (pErr)
     {
-        if (runUploadedEvent)
+        if (pRunUploadedEvent)
         {
-            runUploadedEvent->SetBool("run_posted", false);
+            pRunUploadedEvent->SetBool("run_posted", false);
             // MOM_TODO: send an error here
-            gameeventmanager->FireEvent(runUploadedEvent);
+            gameeventmanager->FireEvent(pRunUploadedEvent);
         }
     }
 }
