@@ -77,13 +77,13 @@ class CLeaderboardsTimes : public vgui::EditablePanel
 
     // methods
     void FillLeaderboards(bool bFullUpdate);
-    void SetPlaceColors(vgui::SectionedListPanel* panel, TIME_TYPE type) const;
+    void SetPlaceColors(vgui::SectionedListPanel* panel, TimeType_t type) const;
     void LoadLocalTimes(KeyValues *kv);
-    void LoadOnlineTimes(TIME_TYPE type);
+    void LoadOnlineTimes(TimeType_t type);
     void ConvertLocalTimes(KeyValues *pKv);
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     // Place vector times into leaderboards panel (sectionlist)
-    void OnlineTimesVectorToLeaderboards(TIME_TYPE type);
+    void OnlineTimesVectorToLeaderboards(TimeType_t type);
 
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
     
@@ -96,12 +96,12 @@ class CLeaderboardsTimes : public vgui::EditablePanel
     // finds a local time in the scoreboard
     int FindItemIDForLocalTime(KeyValues *kvRef);
     // finds an online time in the scoreboard
-    int FindItemIDForOnlineTime(uint64 runID, TIME_TYPE type);
+    int FindItemIDForOnlineTime(uint64 runID, TimeType_t type);
 
     void GetTop10TimesCallback(KeyValues *pKv);
     void GetFriendsTimesCallback(KeyValues *pKv);
     void GetAroundTimesCallback(KeyValues *pKv);
-    void ParseTimesCallback(KeyValues *pKv, TIME_TYPE type);
+    void ParseTimesCallback(KeyValues *pKv, TimeType_t type);
 
     // Replay downloading
     void OnReplayDownloadStart(KeyValues *pKv);
@@ -136,7 +136,7 @@ private:
     bool m_bTimesLoading[TIMES_COUNT];
     float m_flTimesLastUpdate[TIMES_COUNT];
 
-    ONLINE_TIMES_STATUS m_eTimesStatus[TIMES_COUNT];
+    OnlineTimesStatus_t m_eTimesStatus[TIMES_COUNT];
 
     enum LEADERBOARD_ICONS
     {

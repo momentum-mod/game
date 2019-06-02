@@ -50,7 +50,7 @@ public:
     void SetAppearanceInMemberData(GhostAppearance_t app);
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
-    void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type);
+    void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
     bool SendDecalPacket(DecalPacket_t *packet);
 
@@ -77,8 +77,8 @@ private:
     // Sends a packet to a specific person, or everybody (if pTarget is null)
     bool SendPacket(MomentumPacket_t *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
 
-    void WriteMessage(LOBBY_MSG_TYPE type, uint64 id);
-    void WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID);
+    void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
+    void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 ghostID);
 
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;

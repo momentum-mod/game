@@ -341,7 +341,7 @@ void CLeaderboardsTimes::FillLeaderboards(bool bFullUpdate)
     }
 }
 
-void CLeaderboardsTimes::SetPlaceColors(vgui::SectionedListPanel* panel, TIME_TYPE type) const
+void CLeaderboardsTimes::SetPlaceColors(vgui::SectionedListPanel* panel, TimeType_t type) const
 {
     int itemCount = panel->GetItemCount();
     if (type == TIMES_LOCAL || type == TIMES_TOP10)
@@ -413,7 +413,7 @@ void CLeaderboardsTimes::LoadLocalTimes(KeyValues* kv)
         ConvertLocalTimes(kv);
 }
 
-void CLeaderboardsTimes::LoadOnlineTimes(TIME_TYPE type)
+void CLeaderboardsTimes::LoadOnlineTimes(TimeType_t type)
 {
     if (type == TIMES_FRIENDS && !m_bUnauthorizedFriendlist)
         return;
@@ -491,7 +491,7 @@ void CLeaderboardsTimes::ConvertOnlineTimes(KeyValues* kv, float seconds)
     kv->SetString("time_f", timeString);
 }
 
-void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TIME_TYPE type)
+void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
 {
     CUtlVector<TimeOnline *> *pVector;
     SectionedListPanel *pList;
@@ -657,7 +657,7 @@ int CLeaderboardsTimes::FindItemIDForLocalTime(KeyValues* kvRef)
     return -1;
 }
 
-int CLeaderboardsTimes::FindItemIDForOnlineTime(uint64 runID, TIME_TYPE type)
+int CLeaderboardsTimes::FindItemIDForOnlineTime(uint64 runID, TimeType_t type)
 {
     SectionedListPanel *pLeaderboard;
     switch (type)
@@ -703,7 +703,7 @@ void CLeaderboardsTimes::GetAroundTimesCallback(KeyValues* pKv)
     ParseTimesCallback(pKv, TIMES_AROUND);
 }
 
-void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TIME_TYPE type)
+void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TimeType_t type)
 {
     m_bTimesLoading[type] = false;
 

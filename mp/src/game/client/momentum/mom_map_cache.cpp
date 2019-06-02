@@ -139,7 +139,7 @@ MapImage& MapImage::operator=(const MapImage& other)
 void MapCredit::FromKV(KeyValues* pKv)
 {
     m_uID = pKv->GetInt("id");
-    m_eType = (MAP_CREDIT_TYPE)pKv->GetInt("type", CREDIT_UNKNOWN);
+    m_eType = (MapCreditType_t)pKv->GetInt("type", CREDIT_UNKNOWN);
     KeyValues* pUser = pKv->FindKey("user");
     if (pUser)
         m_User.FromKV(pUser);
@@ -405,7 +405,7 @@ void MapData::ResetUpdate()
     m_bUpdated = m_Info.m_bUpdated = m_Thumbnail.m_bUpdated = m_MainTrack.m_bUpdated = false;
 }
 
-bool MapData::GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType)
+bool MapData::GetCreditString(CUtlString *pOut, MapCreditType_t creditType)
 {
     if (m_vecCredits.IsEmpty() || !pOut)
         return false;
@@ -445,8 +445,8 @@ void MapData::DeleteMapFile()
 void MapData::FromKV(KeyValues* pMap)
 {
     m_uID = pMap->GetInt("id");
-    m_eType = (GAME_MODE)pMap->GetInt("type");
-    m_eMapStatus = (MAP_UPLOAD_STATUS)pMap->GetInt("statusFlag", -1);
+    m_eType = (GameMode_t)pMap->GetInt("type");
+    m_eMapStatus = (MapUploadStatus_t)pMap->GetInt("statusFlag", -1);
     Q_strncpy(m_szHash, pMap->GetString("hash"), sizeof(m_szHash));
     Q_strncpy(m_szDownloadURL, pMap->GetString("downloadURL"), sizeof(m_szDownloadURL));
     Q_strncpy(m_szLastUpdated, pMap->GetString("updatedAt"), sizeof(m_szLastUpdated));
