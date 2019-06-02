@@ -70,6 +70,9 @@ void CMapContextMenu::ShowMenu(MapData *pMapData)
                     new KeyValues("AddToFavorites", "id", pMapData->m_uID), m_pParent);
     }
 
+    AddMenuItem("RefreshMapInfo", "#MOM_MapSelector_RefreshMapInfo",
+                new KeyValues("RefreshMapInfo", "id", pMapData->m_uID), m_pParent);
+
     AddMenuItem("ViewMapInfo", "#MOM_MapSelector_ShowMapInfo", 
                 new KeyValues("ViewMapInfo", "id", pMapData->m_uID), m_pParent);
 

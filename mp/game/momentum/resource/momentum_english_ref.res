@@ -136,6 +136,7 @@
         "MOM_MapSelector_Maps" "Maps"
         "MOM_MapSelector_Difficulty" "Difficulty"
         "MOM_MapSelector_StartMap" "Start Map"
+        "MOM_MapSelector_RefreshMapInfo" "Refresh Map Info"
         "MOM_MapSelector_ShowMapInfo" "Show Map Info"
         "MOM_MapSelector_Map" "Map Name"
         "MOM_MapSelector_AddToFavorites" "Add Map to Favorites"

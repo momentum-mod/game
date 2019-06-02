@@ -604,6 +604,11 @@ void CMapSelectorDialog::OnRemoveMapFromLibrary(int id)
     g_pMapCache->RemoveMapFromLibrary(id);
 }
 
+void CMapSelectorDialog::OnRefreshMapInfo(int id)
+{
+    g_pMapCache->UpdateMapInfo(id);
+}
+
 void CMapSelectorDialog::OnViewMapInfo(int id)
 {
     // get the map
