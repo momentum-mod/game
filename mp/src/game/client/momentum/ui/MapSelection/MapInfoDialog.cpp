@@ -277,7 +277,7 @@ void CDialogMapInfo::FillMapInfo()
     }
 }
 
-void CDialogMapInfo::GetMapTimes(TIME_TYPE type)
+void CDialogMapInfo::GetMapTimes(TimeType_t type)
 {
     if (gpGlobals->curtime - UPDATE_INTERVAL < m_fRequestDelays[type])
         return;
@@ -317,7 +317,7 @@ void CDialogMapInfo::OnFriendsTimesCallback(KeyValues* pKvResponse)
     ParseAPITimes(pKvResponse, TIMES_FRIENDS);
 }
 
-void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type)
+void CDialogMapInfo::ParseAPITimes(KeyValues *pKvResponse, TimeType_t type)
 {
     KeyValues *pData = pKvResponse->FindKey("data");
     KeyValues *pErr = pKvResponse->FindKey("error");

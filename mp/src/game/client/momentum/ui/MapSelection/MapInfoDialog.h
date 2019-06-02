@@ -42,11 +42,11 @@ protected:
     void GetMapInfo();
     void FillMapInfo();
 
-    void GetMapTimes(TIME_TYPE type);
+    void GetMapTimes(TimeType_t type);
     void OnTop10TimesCallback(KeyValues *pKvResponse);
     void OnAroundTimesCallback(KeyValues *pKvResponse);
     void OnFriendsTimesCallback(KeyValues *pKvResponse);
-    void ParseAPITimes(KeyValues *pKvResponse, TIME_TYPE type);
+    void ParseAPITimes(KeyValues *pKvResponse, TimeType_t type);
 
 private:
     // methods

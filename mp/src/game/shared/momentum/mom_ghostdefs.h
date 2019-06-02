@@ -183,9 +183,9 @@ struct ReceivedFrame_t
 struct SpecUpdatePacket_t : MomentumPacket_t
 {
     uint64 specTarget;
-    SPECTATE_MSG_TYPE spec_type;
+    SpectateMessageType_t spec_type;
 
-    SpecUpdatePacket_t(uint64 uID, SPECTATE_MSG_TYPE specType)
+    SpecUpdatePacket_t(uint64 uID, SpectateMessageType_t specType)
     {
         type = PT_SPEC_UPDATE;
         specTarget = uID;
@@ -196,7 +196,7 @@ struct SpecUpdatePacket_t : MomentumPacket_t
     {
         type = PT_SPEC_UPDATE;
         specTarget = static_cast<uint64>(buf.GetInt64());
-        spec_type = static_cast<SPECTATE_MSG_TYPE>(buf.GetInt());
+        spec_type = static_cast<SpectateMessageType_t>(buf.GetInt());
     }
 
     void Write(CUtlBuffer& buf) OVERRIDE
