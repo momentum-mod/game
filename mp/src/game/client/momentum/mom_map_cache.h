@@ -94,7 +94,7 @@ struct MapImage : APIModel
 struct MapCredit : APIModel
 {
     uint32 m_uID;
-    MAP_CREDIT_TYPE m_eType;
+    MapCreditType_t m_eType;
     User m_User;
     MapCredit() : m_uID(0), m_eType(CREDIT_UNKNOWN) {}
 
@@ -170,8 +170,8 @@ struct MapData : APIModel
     uint32 m_uID;
     char m_szMapName[MAX_MAP_NAME];
     char m_szHash[41];
-    GAME_MODE m_eType;
-    MAP_UPLOAD_STATUS m_eMapStatus;
+    GameMode_t m_eType;
+    MapUploadStatus_t m_eMapStatus;
     char m_szDownloadURL[256];
 
     User m_Submitter;
@@ -193,7 +193,7 @@ struct MapData : APIModel
     bool WasUpdated() const;
     void SendDataUpdate();
     void ResetUpdate();
-    bool GetCreditString(CUtlString *pOut, MAP_CREDIT_TYPE creditType);
+    bool GetCreditString(CUtlString *pOut, MapCreditType_t creditType);
     void DeleteMapFile();
     void FromKV(KeyValues* pMap) OVERRIDE;
     void ToKV(KeyValues* pKv) const OVERRIDE;

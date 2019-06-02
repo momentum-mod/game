@@ -412,7 +412,7 @@ bool CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
     return false;
 }
 
-void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
+void CMomentumLobbySystem::WriteLobbyMessage(LobbyMessageType_t type, uint64 pID_int)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
@@ -426,7 +426,7 @@ void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
     }
 }
 
-void CMomentumLobbySystem::WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID)
+void CMomentumLobbySystem::WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 ghostID)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
@@ -484,7 +484,7 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         DevLog("A user just joined us!\n");
         // Note: The lobby data update method handles adding
 
-        WriteMessage(LOBBY_UPDATE_MEMBER_JOIN, pParam->m_ulSteamIDUserChanged);
+        WriteLobbyMessage(LOBBY_UPDATE_MEMBER_JOIN, pParam->m_ulSteamIDUserChanged);
     }
     if (state & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
@@ -504,7 +504,7 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
             m_mapLobbyGhosts.RemoveAt(findMember);
         }
 
-        WriteMessage(LOBBY_UPDATE_MEMBER_LEAVE, pParam->m_ulSteamIDUserChanged);
+        WriteLobbyMessage(LOBBY_UPDATE_MEMBER_LEAVE, pParam->m_ulSteamIDUserChanged);
     }
 }
 
@@ -611,7 +611,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                     m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
 
                 // "_____ just joined your map."
-                WriteMessage(LOBBY_UPDATE_MEMBER_JOIN_MAP, pID_int);
+                WriteLobbyMessage(LOBBY_UPDATE_MEMBER_JOIN_MAP, pID_int);
             }
         }
         else if (validIndx)
@@ -630,7 +630,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             g_pMOMSavelocSystem->RequesterLeft(pID_int);
 
             // "_____ just left your map."
-            WriteMessage(LOBBY_UPDATE_MEMBER_LEAVE_MAP, pID_int);
+            WriteLobbyMessage(LOBBY_UPDATE_MEMBER_LEAVE_MAP, pID_int);
         }
     }
     else
@@ -746,7 +746,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                     }
 
                     // Write it out to the Hud Chat
-                    WriteMessage(update.spec_type, fromWhoID, specTargetID);
+                    WriteSpecMessage(update.spec_type, fromWhoID, specTargetID);
                 }
                 break;
 
@@ -883,7 +883,7 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
 {
     CHECK_STEAM_API(SteamMatchmaking());
 
-    SPECTATE_MSG_TYPE type;
+    SpectateMessageType_t type;
     if (bStartedSpectating)
     {
         type = SPEC_UPDATE_JOIN;
@@ -910,14 +910,14 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     SendSpectatorUpdatePacket(ghostTarget, type);
 }
 //Sends the spectator info update packet to all current ghosts
-void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type)
+void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type)
 {
     SpecUpdatePacket_t newUpdate(ghostTarget.ConvertToUint64(), type);
     if (SendPacket(&newUpdate, nullptr, k_EP2PSendReliable))
     {
         uint64 playerID = SteamUser()->GetSteamID().ConvertToUint64();
         uint64 ghostID = ghostTarget.ConvertToUint64();
-        WriteMessage(type, playerID, ghostID);
+        WriteSpecMessage(type, playerID, ghostID);
     }
 }
 

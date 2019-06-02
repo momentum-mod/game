@@ -37,7 +37,7 @@ enum MomTimerEvent_t
 };
 
 // Gamemode for momentum
-enum GAME_MODE
+enum GameMode_t
 {
     GAMEMODE_UNKNOWN = 0, // Non-recognized map (no info ents in it)
     GAMEMODE_SURF = 1,
@@ -63,7 +63,7 @@ const char * const g_szGameModes[] = {
 };
 
 // Run Flags
-enum RUN_FLAG
+enum RunFlag_t
 {
     RUNFLAG_NONE = 0,
     RUNFLAG_SCROLL = 1 << 0,
@@ -75,7 +75,7 @@ enum RUN_FLAG
     //MOM_TODO: Figure out the rest
 };
 
-enum TIME_TYPE
+enum TimeType_t
 {
     TIMES_LOCAL = 0,
     TIMES_TOP10,
@@ -86,7 +86,7 @@ enum TIME_TYPE
     TIMES_COUNT,
 };
 
-enum ONLINE_TIMES_STATUS
+enum OnlineTimesStatus_t
 {
     STATUS_TIMES_LOADED = 0,
     STATUS_TIMES_LOADING,
@@ -110,7 +110,7 @@ const char* const g_szTimesStatusStrings[] = {
     "#MOM_API_UnauthFriendsList", // STATUS_UNAUTHORIZED_FRIENDS_LIST
 };
 
-enum MAP_UPLOAD_STATUS
+enum MapUploadStatus_t
 {
     STATUS_UNKNOWN = -1,
     MAP_APPROVED,
@@ -123,7 +123,7 @@ enum MAP_UPLOAD_STATUS
     MAP_REMOVED,
 };
 
-enum MAP_CREDIT_TYPE
+enum MapCreditType_t
 {
     CREDIT_UNKNOWN = -1,
     CREDIT_AUTHOR,
@@ -132,7 +132,7 @@ enum MAP_CREDIT_TYPE
     CREDIT_SPECIAL_THANKS,
 };
 
-enum USER_ROLES
+enum UserRoles_t
 {
     USER_VERIFIED = 1 << 0,
     USER_MAPPER = 1 << 1,
@@ -140,14 +140,15 @@ enum USER_ROLES
     USER_ADMIN = 1 << 3,
 };
 
-enum USER_BANS
+enum UserBans_t
 {
-    USER_BANNED_ALIAS = 1 << 0,
-    USER_BANNED_AVATAR = 1 << 1,
-    USER_BANNED_LEADERBOARDS = 1 << 2,
+    USER_BANNED_LEADERBOARDS = 1 << 0,
+    USER_BANNED_ALIAS = 1 << 1,
+    USER_BANNED_AVATAR = 1 << 2,
+    USER_BANNED_BIO = 1 << 3,
 };
 
-enum LOBBY_MSG_TYPE
+enum LobbyMessageType_t
 {
     LOBBY_UPDATE_MEMBER_JOIN = 0,        // Joined the lobby
     LOBBY_UPDATE_MEMBER_JOIN_MAP,        // Joined your map
@@ -155,7 +156,7 @@ enum LOBBY_MSG_TYPE
     LOBBY_UPDATE_MEMBER_LEAVE_MAP,       // Left your map
 };
 
-enum SPECTATE_MSG_TYPE
+enum SpectateMessageType_t
 {
     SPEC_UPDATE_JOIN = 0,           // Started spectating
     SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
