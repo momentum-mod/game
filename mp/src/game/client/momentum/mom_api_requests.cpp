@@ -130,7 +130,7 @@ bool CAPIRequests::GetMapInfo(uint32 mapID, CallbackFunc func)
     APIRequest *req = new APIRequest;
     if (CreateAPIRequest(req, API_REQ(CFmtStr("maps/%u", mapID).Get()), k_EHTTPMethodGET))
     {
-        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "info,credits,inLibrary,inFavorites,submitter,images");
+        SteamHTTP()->SetHTTPRequestGetOrPostParameter(req->handle, "expand", "info,credits,inLibrary,inFavorites,submitter,images,personalBest,worldRecord");
         return SendAPIRequest(req, func, __FUNCTION__);
     }
     delete req;
