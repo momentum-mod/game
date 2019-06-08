@@ -111,7 +111,7 @@ void CLeaderboardsTimes::LevelInit()
     if (m_pImageList)
         delete m_pImageList;
 
-    // MOM_TODO: HACKHACK: this is changed to false because deleting a scheme image is a no-no.
+    // HACKHACK: delete is set to false because deleting a scheme image is a no-no.
     // While we do know that the image list will only hold scheme and avatar images, we cannot delete
     // either one. We do not have to delete the scheme images, as they are cached, and the avatar images
     // are also cached, but indefinitely. There's a memory leak with avatar images, since every image just
@@ -119,10 +119,10 @@ void CLeaderboardsTimes::LevelInit()
     // (play a lot of maps and look at the leaderboards for them), you could start to see the perf impact of it.
     // I'll leave it as a HACKHACK for now because this is ugly and that memory needs freed after a while, but may
     // be unnoticeable for most people... we'll see how big the memory leak impact really is.
-    m_pImageList = new ImageList(false);
+    m_pImageList = new ImageList(false, false);
     m_mapAvatarsToImageList.RemoveAll();
 
-    SetupIcons();
+    SetupDefaultIcons();
     Reset(false);
     m_vLocalTimes.PurgeAndDeleteElements();
     m_vOnlineTimes.PurgeAndDeleteElements();
@@ -222,32 +222,19 @@ void CLeaderboardsTimes::OnPanelShow(bool bShow)
     }
 }
 
-void CLeaderboardsTimes::SetupIcons()
+inline IImage *GetDefaultImage(const char *pName, int sizeSq = 16)
 {
-    for (int index = 0; index < ICON_TOTAL; index++)
-    {
-        m_IconsIndex[index] = -1;
-        IImage *image = nullptr;
-        switch (index)
-        {
-        case ICON_VIP:
-            image = scheme()->GetImage("leaderboards_icon_vip", false);
-            break;
-        case ICON_TEAMMEMBER:
-            image = scheme()->GetImage("leaderboards_icon_mom", false);
-            break;
-        case ICON_FRIEND:
-            image = scheme()->GetImage("leaderboards_icon_friends", false);
-            break;
-        default:
-            break;
-        }
-        if (image)
-        {
-            image->SetSize(16, 16);
-            m_IconsIndex[index] = m_pImageList->AddImage(image);
-        }
-    }
+    const auto pImg = scheme()->GetImage(pName, false);
+    pImg->SetSize(sizeSq, sizeSq);
+    return pImg;
+}
+
+void CLeaderboardsTimes::SetupDefaultIcons()
+{
+    m_pImageList->SetImageAtIndex(ICON_VIP, GetDefaultImage("leaderboards_icon_vip"));
+    m_pImageList->SetImageAtIndex(ICON_TEAMMEMBER, GetDefaultImage("leaderboards_icon_mom"));
+    m_pImageList->SetImageAtIndex(ICON_FRIEND, GetDefaultImage("leaderboards_icon_friends"));
+    m_pImageList->SetImageAtIndex(ICON_DEFAULT_AVATAR, GetDefaultImage("default_steam", 32));
 }
 
 int CLeaderboardsTimes::TryAddAvatar(const uint64 &steamid, CUtlMap<uint64, int> *pIDtoIndxMap, ImageList *pImageList)
@@ -277,16 +264,6 @@ int CLeaderboardsTimes::TryAddAvatar(const uint64 &steamid, CUtlMap<uint64, int>
         return iImageIndex;
     }
     return -1;
-}
-
-void CLeaderboardsTimes::UpdateLeaderboardPlayerAvatar(uint64 steamID, KeyValues* kv)
-{
-    // Update their avatar
-    if (SteamFriends())
-    {
-        kv->SetBool("is_friend", SteamFriends()->HasFriend(CSteamID(steamID), k_EFriendFlagImmediate));
-        kv->SetInt("avatar", TryAddAvatar(steamID, &m_mapAvatarsToImageList, m_pImageList));
-    }
 }
 
 void CLeaderboardsTimes::FillLeaderboards(bool bFullUpdate)
@@ -483,14 +460,6 @@ void CLeaderboardsTimes::ConvertLocalTimes(KeyValues* kvInto)
     }
 }
 
-void CLeaderboardsTimes::ConvertOnlineTimes(KeyValues* kv, float seconds)
-{
-    char timeString[BUFSIZETIME];
-
-    MomUtil::FormatTime(seconds, timeString);
-    kv->SetString("time_f", timeString);
-}
-
 void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
 {
     CUtlVector<TimeOnline *> *pVector;
@@ -516,7 +485,7 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
     {
         // To clear up any count discrepancies, just remove all items
         if (pList->GetItemCount() != pVector->Count())
-            pList->DeleteAllItems();
+            pList->RemoveAll();
 
         FOR_EACH_VEC(*pVector, entry)
         {
@@ -524,9 +493,9 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
 
             int itemID = FindItemIDForOnlineTime(runEntry->id, type);
 
-            runEntry->m_kv->SetInt("icon_tm", runEntry->momember ? m_IconsIndex[ICON_TEAMMEMBER] : -1);
-            runEntry->m_kv->SetInt("icon_vip", runEntry->vip ? m_IconsIndex[ICON_VIP] : -1);
-            runEntry->m_kv->SetInt("icon_friend", runEntry->is_friend ? m_IconsIndex[ICON_FRIEND] : -1);
+            runEntry->m_kv->SetInt("icon_tm", runEntry->momember ? ICON_TEAMMEMBER : -1);
+            runEntry->m_kv->SetInt("icon_vip", runEntry->vip ? ICON_VIP : -1);
+            runEntry->m_kv->SetInt("icon_friend", runEntry->is_friend ? ICON_FRIEND : -1);
 
             if (itemID == -1)
             {
@@ -706,6 +675,7 @@ void CLeaderboardsTimes::GetAroundTimesCallback(KeyValues* pKv)
 void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TimeType_t type)
 {
     m_bTimesLoading[type] = false;
+    CHECK_STEAM_API(SteamFriends());
 
     KeyValues *pData = pKv->FindKey("data");
     KeyValues *pErr = pKv->FindKey("error");
@@ -728,8 +698,12 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TimeType_t type)
                 if (!pRun) // Should never happen but you never know...
                     continue;
 
-                // Time is handled by the converter
+                // Time
                 kvEntry->SetFloat("time", pRun->GetFloat("time"));
+                // Format the time as well
+                char timeString[BUFSIZETIME];
+                MomUtil::FormatTime(pRun->GetFloat("time"), timeString);
+                kvEntry->SetString("time_f", timeString);
 
                 // Tickrate
                 kvEntry->SetFloat("rate", pRun->GetFloat("tickRate"));
@@ -756,7 +730,8 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TimeType_t type)
                     uint64 steamID = kvUserObj->GetUint64("steamID");
                     kvEntry->SetUint64("steamid", steamID);
 
-                    int roles = kvUserObj->GetInt("roles");
+                    const auto roles = kvUserObj->GetInt("roles");
+                    const auto bans = kvUserObj->GetInt("bans");
 
                     // Is part of the momentum team?
                     // MOM_TODO: Make this the actual permission
@@ -766,33 +741,21 @@ void CLeaderboardsTimes::ParseTimesCallback(KeyValues* pKv, TimeType_t type)
                     // MOM_TODO: Make this the actual permission
                     kvEntry->SetBool("vip", pRun->GetBool("vip"));
 
-                    // MOM_TODO: check if alias banned
+                    // MOM_TODO Set an icon for the map creator?
+
                     kvEntry->SetString("personaname", kvUserObj->GetString("alias"));
 
-                    if (SteamFriends() && SteamUser())
-                    {
-                        uint64 localSteamID = SteamUser()->GetSteamID().ConvertToUint64();
-                        // These handle setting "avatar" for kvEntry
-                        if (localSteamID == steamID)
-                        {
-                            kvEntry->SetInt("avatar", TryAddAvatar(localSteamID, &m_mapAvatarsToImageList, m_pImageList));
-                        }
-                        else
-                        {
-                            // MOM_TODO: check if avatar banned
-                            UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
-                        }
-                    }
+                    const auto bAvatarBanned = bans & USER_BANNED_AVATAR;
+                    kvEntry->SetInt("avatar", bAvatarBanned ? ICON_DEFAULT_AVATAR : TryAddAvatar(steamID, &m_mapAvatarsToImageList, m_pImageList));
+
+                    kvEntry->SetBool("is_friend", SteamFriends()->HasFriend(CSteamID(steamID), k_EFriendFlagImmediate));
                 }
 
                 // Rank
                 kvEntry->SetInt("rank", pRank->GetInt("rank"));
 
                 // Add this baby to the online times vector
-                TimeOnline *ot = new TimeOnline(kvEntry);
-                // Convert the time
-                ConvertOnlineTimes(ot->m_kv, ot->time_sec);
-                vecs[type]->AddToTail(ot);
+                vecs[type]->AddToTail(new TimeOnline(kvEntry));
             }
 
             m_eTimesStatus[type] = STATUS_TIMES_LOADED;
