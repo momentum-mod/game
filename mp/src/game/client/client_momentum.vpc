@@ -189,6 +189,8 @@ $Project "Client (Momentum)"
 
             $Folder "API"
             {
+                $File "momentum\mom_api_models.h"
+                $File "momentum\mom_api_models.cpp"
                 $File "momentum\mom_api_requests.h"
                 $File "momentum\mom_api_requests.cpp"
                 $File "momentum\mom_run_poster.h"
