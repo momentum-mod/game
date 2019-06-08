@@ -1,10 +1,7 @@
 ﻿#pragma once
 
-#ifndef GHOST_SERVER
-#include "const.h"
 #if defined(GAME_DLL) || defined(CLIENT_DLL)
 #include "shareddefs.h"
-#endif
 #endif
 
 // Main Version (0 is private alpha, 1 is public beta, 2 is full release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
