@@ -192,7 +192,7 @@ void C_MOMReplayUI::OnTextChanged(Panel *p)
         char buf[64];
         m_pTimescaleEntry->GetText(buf, 64);
 
-        float fValue = float(atof(buf));
+        float fValue = V_atof(buf);
         if (fValue >= 0.01f && fValue <= 10.0f)
         {
             m_pTimescaleSlider->SetSliderValue(fValue);
@@ -220,6 +220,8 @@ void C_MOMReplayUI::SetLabelText() const
         Q_snprintf(buf, sizeof(buf), "%.1f", m_pTimescaleSlider->GetSliderValue());
         m_pTimescaleEntry->SetText(buf);
 
+        float newVal = V_atof(buf);
+        m_pTimescaleSlider->SetSliderValue(newVal);
         m_pTimescaleSlider->ApplyChanges();
     }
 }
