@@ -87,13 +87,12 @@ void CBrowseMaps::GetSearchFilters(KeyValues* pInto)
 
 void CBrowseMaps::SearchMaps()
 {
-    if (SteamHTTP())
-    {
-        KeyValuesAD kvSearchFilters("SearchFilters");
-        GetSearchFilters(kvSearchFilters);
-        if (g_pAPIRequests->GetMaps(kvSearchFilters, UtlMakeDelegate(this, &CBrowseMaps::MapsQueryCallback)))
-            m_fPrevSearchTime = gpGlobals->curtime;
-    }
+    CHECK_STEAM_API(SteamHTTP());
+
+    KeyValuesAD kvSearchFilters("SearchFilters");
+    GetSearchFilters(kvSearchFilters);
+    if (g_pAPIRequests->GetMaps(kvSearchFilters, UtlMakeDelegate(this, &CBrowseMaps::MapsQueryCallback)))
+        m_fPrevSearchTime = gpGlobals->curtime;
 }
 
 void CBrowseMaps::ApplyFilters(MapFilters_t filters)
