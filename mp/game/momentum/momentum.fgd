@@ -7,7 +7,7 @@
 //-------------------------------------------------------------------------
 
 // Overrides the base cubemap to allow tying to a parallax_obb brush for parallax cubemaps.
-@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map."
+@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map. Sizes above 256x256 may require higher resolutions than your display has."
 [
 	cubemapsize(choices) : "Cubemap Size" : 0 =
 	[
@@ -21,12 +21,14 @@
 		7 : "64x64"
 		8 : "128x128"
 		9 : "256x256"
+		10 : "512x512"
+		11 : "1024x1024"
 	]
 	sides(sidelist) : "Brush faces": : "(Optional) Brushes faces to directly attach to the env_cubemap. Press Pick then click on faces in the 3D View to select them. Use CTRL while clicking to add or remove from the selection."
 	parallaxobb(target_destination) : "Cubemap Bounds" : : "(Optional) assigns this cubemap a bounding box for parallax correction (brush entity tied to parallax_obb)."
 ]
 
-@SolidClass = parallax_obb
+@SolidClass iconsprite("editor/parallax.vmt") = parallax_obb
 [
 	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
 ]
@@ -254,7 +256,7 @@
 	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
 	Interval(float) : "Interval" : "1.0" : "Set here in seconds how many time the trigger should update."
 ]
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = point_momentum_serversettings : "An entity that sets the default specialized settings to the map."
+@PointClass base(Targetname) iconsprite("editor/momentum_serversettings.vmt") = point_momentum_serversettings : "An entity that sets the default specialized settings to the map."
 [
 	Gravity(float) : "Gravity value" : 800 : "Set here the default gravity value."
 	MaxVelocity(float) : "Maximum velocity" : 3500 : "Set here the default max velocity value."
@@ -366,12 +368,54 @@
 												 " This scale factor gives you some control over the fade. Using 0 here turns off the forcible fades." +
 ]
 
-@PointClass base(Weapon) studio("models/weapons/w_knife_t.mdl") = weapon_knife : "Knife" []
-@PointClass base(Weapon) studio("models/weapons/w_pistol.mdl") = weapon_momentum_pistol : "Pistol" []
-@PointClass base(Weapon) studio("models/weapons/w_smg1.mdl") = weapon_momentum_smg : "SMG" []
+@PointClass base(Weapon) studio("models/weapons/v_knife_t.mdl") = weapon_knife : "Knife" []
+@PointClass base(Weapon) studio("models/weapons/w_mom_pistol.mdl") = weapon_momentum_pistol : "Pistol" []
+@PointClass base(Weapon) studio("models/weapons/v_smg_old.mdl") = weapon_momentum_smg : "SMG" []
 @PointClass base(Weapon) studio("models/weapons/w_irifle.mdl") = weapon_momentum_rifle : "Rifle" []
-@PointClass base(Weapon) studio("models/weapons/w_shotgun.mdl") = weapon_momentum_shotgun : "Shotgun" []
-@PointClass base(Weapon) studio("models/weapons/w_mach_m249para.mdl") = weapon_momentum_lmg : "LMG" []
-@PointClass base(Weapon) studio("models/weapons/w_snip_scout.mdl") = weapon_momentum_sniper : "Sniper" []
-@PointClass base(Weapon) studio("models/weapons/w_eq_fraggrenade.mdl") = weapon_momentum_grenade : "Grenade" []
+@PointClass base(Weapon) studio("models/weapons/w_mom_shotgun.mdl") = weapon_momentum_shotgun : "Shotgun" []
+@PointClass base(Weapon) studio("models/weapons/v_mom_lmg.mdl") = weapon_momentum_lmg : "LMG" []
+@PointClass base(Weapon) studio("models/weapons/mom_sniper.mdl") = weapon_momentum_sniper : "Sniper" []
+@PointClass base(Weapon) studio("models/weapons/w_mom_grenade.mdl") = weapon_momentum_grenade : "Grenade" []
+@PointClass base(Weapon) studio("models/weapons/w_mom_paintgun.mdl") = weapon_momentum_paintgun : "Paintgun" []
+
+
+//-------------------------------------------------------------------------
+//
+// Here are the CSS Playerstart entities for some convenience 
+//
+//-------------------------------------------------------------------------
+@PointClass base(Angles) color(0 0 200) studio("models/editor/ctstart.mdl") = info_player_counterterrorist :
+	"This entity marks the start point for counter-terrorists. One of these needs to be placed for each team member. " +
+	"20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls"
+[
+]
+
+@PointClass base(Angles) color(200 0 0) studio("models/editor/tstart.mdl") = info_player_terrorist :
+	"This entity marks the start point for terrorists. One of these needs to be placed for each team member. " +
+	"20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls."
+[
+]
+
+// -------------------------------------------------------------------------
+//
+// Add the speedmod entity as it apparently might be used by some, and it is only included in the HL2 FGD
+//
+//-------------------------------------------------------------------------
+@PointClass base(Targetname) size(-16 -16 -16, 16 16 16) = player_speedmod: "Speeds up or slows down player velocity over time (slow mo/fast forward)"
+[
+	spawnflags(Flags) =
+	[
+		1: "Suppress weapons" : 0
+		2: "Suppress HUD" : 0
+		4: "Suppress jump" : 0
+		8: "Suppress duck" : 0
+		16: "Suppress use" : 0
+		32: "Suppress sprint" : 0
+		64: "Suppress attack" : 0
+		128: "Suppress zoom" : 0
+	]
+
+	// Inputs
+	input ModifySpeed(float) : "Modifies player speed by X ammount."
+]
 

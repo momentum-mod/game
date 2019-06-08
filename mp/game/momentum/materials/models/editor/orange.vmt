@@ -1,0 +1,13 @@
+"UnlitGeneric"
+{
+// File Created by Wall Worm ( http://dev.wallworm.com )
+	// Get Wall Worm Pro to remove this comment ( https://wallworm.com/store/index.php?route=product/product&product_id=54 )
+
+// BEGIN Textures
+	$basetexture "Editor/orange"
+// END Textures
+
+
+	"$model" 1
+
+}
