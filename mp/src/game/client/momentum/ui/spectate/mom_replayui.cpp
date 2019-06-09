@@ -40,6 +40,7 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     m_iTotalDuration = 0;
     m_iPlayButtonSelected = RUI_NOTHING;
     m_bWasVisible = false;
+    m_bWasClosed = false;
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
@@ -95,12 +96,23 @@ void C_MOMReplayUI::OnThink()
     int x, y;
     input()->GetCursorPosition(x, y);
     const bool bWithin = IsWithin(x, y);
-    SetKeyBoardInputEnabled(bWithin);
+    if (bWithin)
+    {
+        const auto mouseOver = input()->GetMouseOver();
+        SetKeyBoardInputEnabled(mouseOver == GetVPanel() ||
+                                mouseOver == m_pGotoTick->GetVPanel() ||
+                                mouseOver == m_pTimescaleEntry->GetVPanel());
+    }
+    else
+    {
+        SetKeyBoardInputEnabled(false);
+    }
+
     if (!IsMouseInputEnabled() && bWithin)
     {
         SetMouseInputEnabled(true); 
         if (!m_pSpecGUI)
-            m_pSpecGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+            m_pSpecGUI = static_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
         if (m_pSpecGUI && !m_pSpecGUI->IsMouseInputEnabled())
             m_pSpecGUI->SetMouseInputEnabled(true);
     }
@@ -226,12 +238,23 @@ void C_MOMReplayUI::SetLabelText() const
     }
 }
 
+void C_MOMReplayUI::SetWasClosed(bool bWasClosed)
+{
+    m_bWasClosed = bWasClosed;
+}
+
+bool C_MOMReplayUI::WasClosed() const
+{
+    return m_bWasClosed;
+}
+
 void C_MOMReplayUI::ShowPanel(bool state)
 {
     SetVisible(state);
     SetMouseInputEnabled(state);
     if (state)
         MoveToFront();
+    m_bWasClosed = false;
 }
 
 void C_MOMReplayUI::FireGameEvent(IGameEvent *pEvent)
@@ -290,6 +313,7 @@ void C_MOMReplayUI::OnCommand(const char *command)
     }
     else if (FStrEq("close", command))
     {
+        m_bWasClosed = true;
         m_bWasVisible = false;
         Close();
     }
