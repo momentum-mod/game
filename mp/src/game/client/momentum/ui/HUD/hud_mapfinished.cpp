@@ -1,13 +1,13 @@
 #include "cbase.h"
 
 #include "hud_mapfinished.h"
-#include <vgui_controls/Label.h>
 #include <game/client/iviewport.h>
 #include "spectate/mom_spectator_gui.h"
 #include "clientmode.h"
 #include "mom_player_shared.h"
 
 #include <vgui_controls/ImagePanel.h>
+#include <vgui_controls/Label.h>
 #include "vgui_controls/Tooltip.h"
 #include <vgui/IInput.h>
 #include "vgui/ISurface.h"
@@ -36,6 +36,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     ListenForGameEvent("spec_start");
     ListenForGameEvent("spec_stop");
     ListenForGameEvent("replay_save");
+    ListenForGameEvent("run_submit");
     ListenForGameEvent("run_upload");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
@@ -94,6 +95,10 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
         SetRunSaved(pEvent->GetBool("save"));
         SetCurrentPage(m_iCurrentPage);
         // MOM_TODO: There's a file name parameter as well, do we want to use it here?
+    }
+    else if (FStrEq(pEvent->GetName(), "run_submit"))
+    {
+        SetRunSubmitted((RunSubmitState_t) pEvent->GetInt("state"));
     }
     else if (FStrEq(pEvent->GetName(), "run_upload"))
     {
@@ -201,17 +206,38 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 
 void CHudMapFinishedDialog::SetRunSaved(bool bState)
 {
-    m_bRunSaved = bState;
-    m_pRunSaveStatus->SetText(m_bRunSaved ? "#MOM_MF_RunSaved" : "#MOM_MF_RunNotSaved");
-    m_pRunSaveStatus->SetFgColor(m_bRunSaved ? COLOR_GREEN : COLOR_RED);
+    m_pRunSaveStatus->SetText(bState ? "#MOM_MF_RunSaved" : "#MOM_MF_RunNotSaved");
+    m_pRunSaveStatus->SetFgColor(bState ? COLOR_GREEN : COLOR_RED);
 }
 
 void CHudMapFinishedDialog::SetRunUploaded(bool bState)
 {
-    m_bRunUploaded = bState;
-    //MOM_TODO: Should we have custom error messages here? One for server not responding, one for failed accept, etc
-    m_pRunUploadStatus->SetText(m_bRunUploaded ? "#MOM_MF_RunUploaded" : "#MOM_MF_RunNotUploaded");
-    m_pRunUploadStatus->SetFgColor(m_bRunUploaded ? COLOR_GREEN : COLOR_RED);
+    m_pRunUploadStatus->SetText(bState ? "#MOM_MF_RunUploaded" : "#MOM_MF_RunNotUploaded");
+    m_pRunUploadStatus->SetFgColor(bState ? COLOR_GREEN : COLOR_RED);
+
+    // Visibility for these will be determined by the run_upload event
+    m_pXPGainCosmetic->SetVisible(false);
+    m_pXPGainRank->SetVisible(false);
+    m_pLevelGain->SetVisible(false);
+}
+
+static const char * const szSubmitStates[] = {
+    "#MOM_MF_RunSubmitFail_Unknown", // RUN_SUBMIT_UNKNOWN
+    "#MOM_MF_RunSubmitted", // RUN_SUBMIT_SUCCESS
+    "#MOM_MF_RunSubmitFail_InMapping", // RUN_SUBMIT_FAIL_IN_MAPPING_MODE
+    "#MOM_MF_RunSubmitFail_InvalidMapStatus", // RUN_SUBMIT_FAIL_MAP_STATUS_INVALID
+    "#MOM_MF_RunSubmitFail_InvalidSession", // RUN_SUBMIT_FAIL_SESSION_ID_INVALID
+    "#MOM_MF_RunSubmitFail_APIFail", // RUN_SUBMIT_FAIL_API_FAIL
+    "#MOM_MF_RunSubmitFail_IOFail", // RUN_SUBMIT_FAIL_IO_FAIL
+};
+
+void CHudMapFinishedDialog::SetRunSubmitted(RunSubmitState_t state)
+{
+    if (state <= RUN_SUBMIT_UNKNOWN || state >= RUN_SUBMIT_COUNT)
+        return;
+
+    m_pRunUploadStatus->SetText(szSubmitStates[state]);
+    m_pRunUploadStatus->SetFgColor(state == RUN_SUBMIT_SUCCESS ? COLOR_ORANGE : COLOR_RED);
 
     // Visibility for these will be determined by the run_upload event
     m_pXPGainCosmetic->SetVisible(false);
