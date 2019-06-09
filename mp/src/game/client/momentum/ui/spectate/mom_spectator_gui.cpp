@@ -213,8 +213,11 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
     if (!bShow)
     {
 
-        if (m_pReplayControls && m_pReplayControls->IsVisible())
+        if (m_pReplayControls)
+        {
+            m_pReplayControls->SetWasClosed(false);
             m_pReplayControls->ShowPanel(false);
+        }
 
         if (m_bSpecScoreboard)
         {
@@ -304,7 +307,7 @@ void CMOMSpectatorGUI::Update()
 
                 m_pShowControls->SetVisible(true);
 
-                if (m_pReplayControls && !m_pReplayControls->IsVisible())
+                if (m_pReplayControls && !m_pReplayControls->IsVisible() && !m_pReplayControls->WasClosed())
                     m_pReplayControls->ShowPanel(true);
                 
                 //MOM_TODO: check if an online ghost has spawned, and don't hide spec buttons?

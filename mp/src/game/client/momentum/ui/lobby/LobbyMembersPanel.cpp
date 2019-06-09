@@ -31,6 +31,7 @@ using namespace vgui;
 
 LobbyMembersPanel::LobbyMembersPanel(IViewPort *pParent) : BaseClass(nullptr, PANEL_LOBBY_MEMBERS)
 {
+    m_pViewport = pParent;
     // initialize dialog
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
@@ -281,6 +282,10 @@ void LobbyMembersPanel::ShowPanel(bool bShow)
         SetVisible(true);
         // SetEnabled(true);
         MoveToFront();
+
+        const auto pSpecUI = m_pViewport->FindPanelByName(PANEL_SPECGUI);
+        if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
+            SetMouseInputEnabled(true);
     }
     else
     {

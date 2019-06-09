@@ -168,6 +168,10 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
         SetVisible(true);
         MoveToFront();
         RequestFocus();
+
+        const auto pSpecUI = m_pViewPort->FindPanelByName(PANEL_SPECGUI);
+        if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
+            SetMouseInputEnabled(true);
     }
     else
     {

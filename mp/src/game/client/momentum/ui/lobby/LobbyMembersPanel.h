@@ -85,4 +85,6 @@ private:
     SavelocReqFrame *m_pSavelocReqFrame;
 
     vgui::ImageList *m_pImageListLobby;
+
+    IViewPort *m_pViewport;
 };
