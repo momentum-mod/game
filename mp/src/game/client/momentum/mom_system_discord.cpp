@@ -290,7 +290,7 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
         {
             Q_strncpy(m_szDiscordState, "Watching replay", sizeof(m_szDiscordState));
         }
-        else
+        else if (pPlayer->IsObserver())
         {
             Q_strncpy(m_szDiscordState, "Spectating", sizeof(m_szDiscordState));
         }
