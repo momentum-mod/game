@@ -35,6 +35,7 @@ public:
 
     void SetRunSaved(bool bState);
     void SetRunUploaded(bool bState);
+    void SetRunSubmitted(RunSubmitState_t state);
 
 protected:
     CPanelAnimationVar(vgui::HFont, m_hTextFont, "TextFont", "Default");
@@ -85,7 +86,7 @@ private:
     CMomRunStats* m_pRunStats;
     C_MomRunEntityData *m_pRunData;
 
-    bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
+    bool m_bIsGhost;
 
     int m_iCurrentPage, m_iVelocityType;
 };

@@ -39,6 +39,10 @@
         "zone_ent" "short"
         "num" "short"
     }
+    "run_submit"
+    {
+        "state" "byte"
+    }
     "run_upload"
     {
         "run_posted" "bool"

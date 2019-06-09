@@ -104,29 +104,41 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
             m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
 #endif
 
-            if (ShouldSubmitRun())
+            RunSubmitState_t eSubmitState = ShouldSubmitRun();
+
+            if (eSubmitState == RUN_SUBMIT_SUCCESS)
             {
                 CUtlBuffer buf;
                 if (g_pFullFileSystem->ReadFile(pEvent->GetString("filepath"), "MOD", buf))
                 {
                     if (g_pAPIRequests->EndRunSession(g_pMapCache->GetCurrentMapID(), m_uRunSessionID, buf, UtlMakeDelegate(this, &CRunPoster::EndSessionCallback)))
                     {
-                        DevLog(2, "Run submitted!\n");
+                        Log("Run submitted!\n");
                     }
                     else
                     {
                         Warning("Failed to submit run; API call returned false!\n");
+                        eSubmitState = RUN_SUBMIT_FAIL_API_FAIL;
                     }
-                    ResetSession();
                 }
                 else
                 {
                     Warning("Failed to submit run: could not read file %s from %s !\n", pEvent->GetString("filename"), pEvent->GetString("filepath"));
+                    eSubmitState = RUN_SUBMIT_FAIL_IO_FAIL;
                 }
+
+                ResetSession();
             }
             else
             {
-                Warning("Not submitting the run!\n");
+                Warning("Not submitting the run due to submit state %i!\n", eSubmitState);
+            }
+
+            const auto pSubmitEvent = gameeventmanager->CreateEvent("run_submit");
+            if (pSubmitEvent)
+            {
+                pSubmitEvent->SetInt("state", eSubmitState);
+                gameeventmanager->FireEvent(pSubmitEvent);
             }
         }
     }
@@ -399,9 +411,16 @@ void CRunPoster::EndSessionCallback(KeyValues* pKv)
     }
 }
 
-bool CRunPoster::ShouldSubmitRun()
+RunSubmitState_t CRunPoster::ShouldSubmitRun()
 {
-    return !m_bIsMappingMode && CheckCurrentMap() && m_uRunSessionID != 0;
+    if (m_bIsMappingMode)
+        return RUN_SUBMIT_FAIL_IN_MAPPING_MODE;
+    if (!CheckCurrentMap())
+        return RUN_SUBMIT_FAIL_MAP_STATUS_INVALID;
+    if (m_uRunSessionID == 0)
+        return RUN_SUBMIT_FAIL_SESSION_ID_INVALID;
+
+    return RUN_SUBMIT_SUCCESS;
 }
 
 bool CRunPoster::CheckCurrentMap()

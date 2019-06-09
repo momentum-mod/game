@@ -31,7 +31,7 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystemPerFrame
     void EndSessionCallback(KeyValues *pKv);
 
 private:
-    bool ShouldSubmitRun();
+    RunSubmitState_t ShouldSubmitRun();
     bool CheckCurrentMap();
     void ResetSession();
     bool m_bIsMappingMode;
