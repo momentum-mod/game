@@ -545,6 +545,7 @@ public:
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
     void Think(void) OVERRIDE;
+    void Touch(CBaseEntity *pOther) OVERRIDE;
 
 private:
     void CalculateSpeed(CBaseEntity *pOther);
@@ -554,7 +555,7 @@ private:
     QAngle m_angWishDirection;
     bool m_bKeepHorizontalSpeed, m_bKeepVerticalSpeed;
     float m_flInterval;
-    bool m_bOnThink;
+    bool m_bOnThink, m_bEveryTick;
 };
 
 class CTriggerSpeedThreshold : public CBaseMomentumTrigger
