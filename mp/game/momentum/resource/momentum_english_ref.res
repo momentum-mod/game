@@ -204,10 +204,6 @@
         "MOM_MF_StrafeCount" "Total Strafes: %s1"
         "MOM_MF_AvgSync" "Average Sync: %s1"
         "MOM_MF_AvgSync2" "Average Sync2: %s1"
-        "MOM_MF_RunSaved" "Time Saved!"
-        "MOM_MF_RunNotSaved" "Time Did Not Save!"
-        "MOM_MF_RunUploaded" "Time Uploaded!"
-        "MOM_MF_RunNotUploaded" "Time Did Not Upload!"
         "MOM_MF_XPGainCos" "Cosmetic XP Gained: %s1"
         "MOM_MF_CosLvlGain" "(%s1 level(s) gained!)"
         "MOM_MF_XPGainRank" "Rank XP Gained: %s1"
@@ -218,7 +214,21 @@
         "MOM_MF_Right_Arrow" "Next Zone"
         "MOM_MF_Left_Arrow" "Previous Zone"
 
-        //Zone stats
+        "MOM_MF_RunSaved" "Run saved!"
+        "MOM_MF_RunNotSaved" "Run did not save!"
+
+        "MOM_MF_RunSubmitFail_Unknown" "Failed to submit the run; unknown error!"
+        "MOM_MF_RunSubmitted" "Run successfully submitted..."
+        "MOM_MF_RunSubmitFail_InMapping" "Did not submit the run; in mapping mode!"
+        "MOM_MF_RunSubmitFail_InvalidMapStatus" "Did not submit the run; invalid map status!"
+        "MOM_MF_RunSubmitFail_InvalidSession" "Did not submit the run; invalid run session!"
+        "MOM_MF_RunSubmitFail_APIFail" "Failed to submit the run; the API call failed!"
+        "MOM_MF_RunSubmitFail_IOFail" "Failed to submit the run; the run could no be read!"
+
+        "MOM_MF_RunUploaded" "Run uploaded!"
+        "MOM_MF_RunNotUploaded" "Run did not upload!"
+
+        // Zone stats
         "MOM_MF_ZoneNum" "Zone %s1"
         "MOM_MF_Zone_Enter" "Zone Enter Time: %s1"
         "MOM_MF_Time_Zone" "Zone Time: %s1"//Time spent on that zone
@@ -231,10 +241,10 @@
         "MOM_MF_Jumps" "Jumps: %s1"
         "MOM_MF_Strafes" "Strafes: %s1"
 
-        //Settings Panel
+        // Settings Panel
         "MOM_Settings_Title" "Momentum Settings"
 
-        //"Gameplay"
+        // "Gameplay"
         "MOM_Settings_Tab_Gameplay" "Gameplay"
         "MOM_Settings_Yaw_Speed" "Yaw Speed:"
         "MOM_Settings_Play_BlockSound" "Play bhop block sound"
@@ -251,7 +261,7 @@
         "MOM_Settings_Release_Forward_On_Jump_TT" "When checked the game will determine the forward key based on movement while on ground and release the determined key when you jump."
         
         
-        //"HUD Settings"
+        // "HUD Settings"
         "MOM_Settings_Tab_HUD" "HUD Settings"
         "MOM_Settings_Speedometer_Label" "Speedometer"
         "MOM_Settings_Speedometer_Show" "Display player speed."
@@ -284,7 +294,7 @@
         "MOM_Timer_Label" "Timer"
         "MOM_Settings_Timer_Show" "Display Timer"
 
-        //"Run Comparisons"
+        // "Run Comparisons"
         "MOM_Settings_Tab_Comparisons" "Run Comparisons"
         "MOM_Settings_Compare_Show" "Show Run Comparisons"
         "MOM_Settings_Compare_Format" "Format Run Comparisons panel"
@@ -318,7 +328,7 @@
         "MOM_Settings_Compare_Show_Jumps" "Show zone jump comparisons"
         "MOM_Settings_Compare_Show_Strafes" "Show zone strafe comparisons"
 
-        //Player Appearance
+        // Player Appearance
         "MOM_Settings_Tab_Appearance" "Appearance"
         "MOM_Settings_Ghost_Body" "Ghost Body"
         "MOM_Settings_Bodygroup_0" "Triangular Pyramid"
@@ -342,7 +352,7 @@
         "MOM_Settings_Pick_Trail_Color_TT" "Change ghost trail color"
         "MOM_Settings_Trail_Length" "Trail length (seconds)"
         
-        //Online settings
+        // Online settings
         "MOM_Settings_Tab_Online" "Online"
         "MOM_Settings_Override_Alpha_Enable" "Override Online Ghost Alphas"
         "MOM_Settings_Override_Alpha_Enable_TT" "When enabled, this setting overrides the alpha component of all online ghosts."

@@ -33,6 +33,20 @@ enum MomTimerEvent_t
     TIMER_EVENT_FAILED // fired when the timer attempted to start but failed
 };
 
+enum RunSubmitState_t
+{
+    RUN_SUBMIT_UNKNOWN = 0,
+    RUN_SUBMIT_SUCCESS,
+    RUN_SUBMIT_FAIL_IN_MAPPING_MODE,
+    RUN_SUBMIT_FAIL_MAP_STATUS_INVALID,
+    RUN_SUBMIT_FAIL_SESSION_ID_INVALID,
+    RUN_SUBMIT_FAIL_API_FAIL,
+    RUN_SUBMIT_FAIL_IO_FAIL,
+
+    // Must be last
+    RUN_SUBMIT_COUNT
+};
+
 // Gamemode for momentum
 enum GameMode_t
 {
