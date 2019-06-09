@@ -1047,7 +1047,8 @@ BEGIN_DATADESC(CTriggerSetSpeed)
     DEFINE_KEYFIELD(m_flVerticalSpeedAmount, FIELD_FLOAT, "VerticalSpeedAmount"),
     DEFINE_KEYFIELD(m_angWishDirection, FIELD_VECTOR, "Direction"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
-    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink")
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
+    DEFINE_KEYFIELD(m_bEveryTick, FIELD_BOOLEAN, "EveryTick"),
 END_DATADESC()
 
 CTriggerSetSpeed::CTriggerSetSpeed()
@@ -1059,6 +1060,7 @@ CTriggerSetSpeed::CTriggerSetSpeed()
     m_flVerticalSpeedAmount = 100.0f;
     m_bOnThink = false;
     m_flInterval = 1.0f;
+    m_bEveryTick = false;
 }
 
 void CTriggerSetSpeed::OnStartTouch(CBaseEntity *pOther)
@@ -1105,6 +1107,27 @@ void CTriggerSetSpeed::Think()
     else
     {
         SetNextThink(TICK_NEVER_THINK);
+    }
+}
+
+void CTriggerSetSpeed::Touch(CBaseEntity *pOther)
+{
+    BaseClass::Touch(pOther);
+
+    if (m_bEveryTick)
+    {
+        if (!PassesTriggerFilters(pOther))
+            return;
+
+        if (pOther->IsPlayer())
+        {
+            CalculateSpeed(pOther);
+            const auto calcIndx = m_mapCalculatedVelocities.Find(pOther->entindex());
+            if (m_mapCalculatedVelocities.IsValidIndex(calcIndx))
+            {
+                pOther->SetAbsVelocity(m_mapCalculatedVelocities[calcIndx]);
+            }
+        }
     }
 }
 
