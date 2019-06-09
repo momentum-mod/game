@@ -10,6 +10,7 @@
         "tall" "150"
         "title" "#MOM_ReplayControls"
         "title_font" "DefaultLarge"
+        "cliptoparent" "1"
     }
     "ReplayProgressLabelTime"
     {

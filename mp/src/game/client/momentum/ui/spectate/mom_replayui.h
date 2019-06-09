@@ -29,6 +29,8 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
     virtual void OnCommand(const char *command) OVERRIDE;
 
     void SetLabelText() const;
+    void SetWasClosed(bool bWasClosed);
+    bool WasClosed() const;
 
     virtual const char *GetName(void) OVERRIDE { return PANEL_REPLAY; }
     virtual void SetData(KeyValues *data) OVERRIDE {}
@@ -85,7 +87,7 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
 
     int m_iTotalDuration, m_iPlayButtonSelected;
 
-    bool m_bWasVisible;
+    bool m_bWasVisible, m_bWasClosed;
 
     wchar_t m_pwReplayTime[BUFSIZELOCL], m_pwReplayTimeTick[BUFSIZELOCL];
 };
