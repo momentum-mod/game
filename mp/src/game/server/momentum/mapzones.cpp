@@ -92,6 +92,7 @@ void CMapZoneSystem::LevelInitPreEntity()
 void CMapZoneSystem::LevelInitPostEntity()
 {
     m_Editor.LevelInit();
+    CalculateZoneCounts(CMomentumPlayer::GetLocalPlayer());
 }
 
 void CMapZoneSystem::LevelShutdownPreEntity()
