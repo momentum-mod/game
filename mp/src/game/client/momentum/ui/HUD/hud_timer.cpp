@@ -207,7 +207,7 @@ void CHudTimer::OnThink()
                 }
 
                 if (m_bWasUsingSavelocMenu)
-                    m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCurrent));
+                    m_pInfoLabel->SetText(CConstructLocalizedString(m_wSavelocStatus, m_iSavelocCurrent, m_iSavelocCount));
                 else
                     m_pInfoLabel->SetText("");
 
