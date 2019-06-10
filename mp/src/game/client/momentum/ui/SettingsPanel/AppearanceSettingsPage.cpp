@@ -86,7 +86,7 @@ AppearanceSettingsPage::~AppearanceSettingsPage()
 {
 }
 
-void AppearanceSettingsPage::LoadSettings()
+void AppearanceSettingsPage::SetButtonColors()
 {
     if (m_pPickTrailColorButton)
     {
@@ -105,6 +105,11 @@ void AppearanceSettingsPage::LoadSettings()
             SET_BUTTON_COLOR(m_pPickBodyColorButton, bodyColor);
         }
     }
+}
+
+void AppearanceSettingsPage::LoadSettings()
+{
+    SetButtonColors();
 
     m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
     m_pTrailLengthEntry->SetText(ghost_trail_length.GetString());
@@ -209,7 +214,7 @@ void AppearanceSettingsPage::OnCommand(const char* command)
 void AppearanceSettingsPage::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-    LoadSettings(); // Called here so the color buttons are properly colored
+    SetButtonColors();
 }
 
 void AppearanceSettingsPage::UpdateModelSettings()

@@ -30,7 +30,6 @@ class CvarToggleCheckButton : public CheckButton
     void ApplyChanges();
     bool HasBeenModified();
 
-    void SetSelected(bool state) OVERRIDE;
     void Paint() OVERRIDE;
     void ApplySettings(KeyValues *inResourceData) OVERRIDE;
     void GetSettings(KeyValues *outResources) OVERRIDE;
