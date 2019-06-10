@@ -108,16 +108,6 @@ bool CvarToggleCheckButton::HasBeenModified()
 
 //-----------------------------------------------------------------------------
 // Purpose: 
-// Input  : *panel - 
-//-----------------------------------------------------------------------------
-void CvarToggleCheckButton::SetSelected(bool state)
-{
-    BaseClass::SetSelected(state);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: 
 //-----------------------------------------------------------------------------
 void CvarToggleCheckButton::OnButtonChecked()
 {
@@ -134,11 +124,11 @@ void CvarToggleCheckButton::ApplySettings(KeyValues *inResourceData)
 {
     BaseClass::ApplySettings(inResourceData);
 
-    const char *cvarName = inResourceData->GetString("cvar_name", "");
+    const char *cvarName = inResourceData->GetString("cvar_name", nullptr);
     const char *cvarValue = inResourceData->GetString("cvar_value", "");
 
-    if (Q_stricmp(cvarName, "") == 0)
-        return;// Doesn't have cvar set up in res file, must have been constructed with it.
+    if (!cvarName || !Q_stricmp(cvarName, "") || m_cvar.IsValid())
+        return;// Doesn't have cvar set up in res file, or we were constructed with one
 
     if (Q_stricmp(cvarValue, "1") == 0)
         m_bStartValue = true;

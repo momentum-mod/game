@@ -15,6 +15,8 @@ class AppearanceSettingsPage : public SettingsPage
     AppearanceSettingsPage(Panel *pParent);
     ~AppearanceSettingsPage();
 
+    void SetButtonColors();
+
     void LoadSettings() OVERRIDE;
     void OnPageShow() OVERRIDE;
     void OnPageHide() OVERRIDE;
