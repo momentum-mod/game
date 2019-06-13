@@ -842,6 +842,10 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
 
+            // Limit to 260 if timer is not running and we're not in practice mode
+            if (!(g_pMomentumTimer->IsRunning() || m_bHasPracticeMode))
+                LimitSpeed(260.0f, false);
+
             // When we start on jump, we reset on land (see OnLand)
             // If we're already on ground we can safely reset now
             if (GetFlags() & FL_ONGROUND && GetMoveType() == MOVETYPE_WALK && !m_bHasPracticeMode)
@@ -961,20 +965,11 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_START:
             // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
             g_pMomentumTimer->TryStart(this, true);
-            if (m_bShouldLimitPlayerSpeed)
+            if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode)
             {
                 const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
-                Vector vecNewVelocity = GetAbsVelocity();
 
-                const float flMaxSpeed = pStart->GetSpeedLimit();
-
-                if (vecNewVelocity.Length2D() > flMaxSpeed)
-                {
-                    VectorNormalizeFast(vecNewVelocity);
-
-                    vecNewVelocity *= flMaxSpeed;
-                    SetAbsVelocity(vecNewVelocity);
-                }
+                LimitSpeed(pStart->GetSpeedLimit(), true);
             }
             m_bShouldLimitPlayerSpeed = false;
             // No break here, we want to fall through; this handles both the start and stage triggers
@@ -1182,6 +1177,24 @@ void CMomentumPlayer::CalculateAverageStats()
 
     // think once per 0.1 second interval so we avoid making the totals extremely large
     SetNextThink(gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
+}
+
+void CMomentumPlayer::LimitSpeed(float flSpeedLimit, bool bSaveZ)
+{
+    auto vecNewVelocity = GetAbsVelocity();
+
+    if (vecNewVelocity.Length2D() > flSpeedLimit)
+    {
+        const auto fSavedZ = vecNewVelocity.z;
+        VectorNormalizeFast(vecNewVelocity);
+
+        vecNewVelocity *= flSpeedLimit;
+
+        if (bSaveZ)
+            vecNewVelocity.z = fSavedZ;
+
+        SetAbsVelocity(vecNewVelocity);
+    }
 }
 
 // override of CBasePlayer::IsValidObserverTarget that allows us to spectate ghosts
@@ -1606,6 +1619,10 @@ void CMomentumPlayer::DisablePracticeMode()
     if (g_pMomentumTimer->IsRunning())
     {
         RestoreRunState(true);
+    }
+    else if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
+    {
+        LimitSpeed(0.0f, false);
     }
 
     g_pMomentumTimer->DisablePractice(this);

@@ -88,6 +88,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void ResetRunStats();
     void CalculateAverageStats();
 
+    void LimitSpeed(float flSpeedLimit, bool bSaveZ);
+
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
     CNetworkHandle(CTriggerSlide, m_CurrentSlideTrigger);
 
