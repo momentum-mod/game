@@ -480,7 +480,7 @@ void CMomentumPlayer::OnLand()
 {
     m_iLandTick = gpGlobals->tickcount;
 
-    if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
+    if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1 && GetMoveType() == MOVETYPE_WALK && !m_bHasPracticeMode)
     {
         // If we start timer on jump then we should reset on land
         g_pMomentumTimer->Reset(this);
@@ -844,7 +844,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
 
             // When we start on jump, we reset on land (see OnLand)
             // If we're already on ground we can safely reset now
-            if (GetFlags() & FL_ONGROUND)
+            if (GetFlags() & FL_ONGROUND && GetMoveType() == MOVETYPE_WALK && !m_bHasPracticeMode)
             {
                 g_pMomentumTimer->Reset(this);
             }
