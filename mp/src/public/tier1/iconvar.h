@@ -76,7 +76,8 @@ class CCommand;
 #define FCVAR_CLIENTCMD_CAN_EXECUTE	(1<<30)	// IVEngineClient::ClientCmd is allowed to execute this command. 
 											// Note: IVEngineClient::ClientCmd_Unrestricted can run any client command.
 
-// #define FCVAR_AVAILABLE			(1<<15)
+#define FCVAR_MAPPING			(1<<15) // Convar/command only available with -mapping launch parameter
+
 // #define FCVAR_AVAILABLE			(1<<18)
 // #define FCVAR_AVAILABLE			(1<<19)
 // #define FCVAR_AVAILABLE			(1<<20)
