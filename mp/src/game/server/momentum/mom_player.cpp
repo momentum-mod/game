@@ -1186,6 +1186,7 @@ void CMomentumPlayer::LimitSpeed(float flSpeedLimit, bool bSaveZ)
     if (vecNewVelocity.Length2D() > flSpeedLimit)
     {
         const auto fSavedZ = vecNewVelocity.z;
+        vecNewVelocity.z = 0;
         VectorNormalizeFast(vecNewVelocity);
 
         vecNewVelocity *= flSpeedLimit;
