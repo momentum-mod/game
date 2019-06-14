@@ -58,6 +58,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void DisablePractice(CMomentumPlayer *pPlayer);
 
     void SetGameModeConVars();
+    void PrintGameModeConVars();
 
     int GetTrackNumber() const { return m_iTrackNumber; }
 

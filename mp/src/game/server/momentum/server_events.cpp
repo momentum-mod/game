@@ -10,10 +10,18 @@ CMomServerEvents::CMomServerEvents(): CAutoGameSystem("CMomServerEvents")
 {
 }
 
+inline void UnloadConVarOrCommand(const char *pName)
+{
+    const auto pCmd = g_pCVar->FindCommandBase(pName);
+    if (pCmd)
+        g_pCVar->UnregisterConCommand(pCmd);
+}
+
 bool CMomServerEvents::Init()
 {
     if (!CommandLine()->FindParm("-mapping"))
     {
+        // Check plugins
         FileFindHandle_t handle;
         const auto pFound = g_pFullFileSystem->FindFirstEx("addons/*.vdf", "GAME", &handle);
         if (pFound)
@@ -21,10 +29,18 @@ bool CMomServerEvents::Init()
 
         g_pFullFileSystem->FindClose(handle);
 
-        const auto pLoad = g_pCVar->FindCommandBase("plugin_load");
-        if (pLoad)
+        UnloadConVarOrCommand("plugin_load");
+
+        // Unregister FCVAR_MAPPING convars
+        auto pCvar = g_pCVar->GetCommands();
+        while (pCvar)
         {
-            g_pCVar->UnregisterConCommand(pLoad);
+            const auto pNext = pCvar->GetNext();
+
+            if (pCvar->IsFlagSet(FCVAR_MAPPING))
+                g_pCVar->UnregisterConCommand(pCvar);
+
+            pCvar = pNext;
         }
     }
 
