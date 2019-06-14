@@ -3,13 +3,22 @@
 #include "client_events.h"
 
 #include "filesystem.h"
-#include "momentum/ui/IMessageboxPanel.h"
+#include "IMessageboxPanel.h"
 #include "fmtstr.h"
 #include "steam/steam_api.h"
+
+#include "icommandline.h"
 
 #include "tier0/memdbgon.h"
 
 extern IFileSystem *filesystem;
+
+inline void UnloadConVarOrCommand(const char *pName)
+{
+    const auto pCmd = g_pCVar->FindCommandBase(pName);
+    if (pCmd)
+        g_pCVar->UnregisterConCommand(pCmd);
+}
 
 bool CMOMClientEvents::Init()
 {
@@ -27,6 +36,21 @@ bool CMOMClientEvents::Init()
 
             if (developer.GetInt())
                 filesystem->PrintSearchPaths();
+        }
+    }
+
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        // Unregister FCVAR_MAPPING convars
+        auto pCvar = g_pCVar->GetCommands();
+        while (pCvar)
+        {
+            const auto pNext = pCvar->GetNext();
+
+            if (pCvar->IsFlagSet(FCVAR_MAPPING))
+                g_pCVar->UnregisterConCommand(pCvar);
+
+            pCvar = pNext;
         }
     }
 

@@ -384,8 +384,19 @@ void CMomentumTimer::SetGameModeConVars()
         DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;
     }
-    DevMsg("CTimer set values:\nsv_maxvelocity: %i\nsv_airaccelerate: %i\nsv_accelerate: %i\nsv_maxspeed: %i\n", sv_maxvelocity.GetInt(),
-           sv_airaccelerate.GetInt(), sv_accelerate.GetInt(), sv_maxspeed.GetInt());
+
+    PrintGameModeConVars();
+}
+
+void CMomentumTimer::PrintGameModeConVars()
+{
+    const auto pStrToPrint = "Set game mode ConVars:\n\n"
+            "sv_maxvelocity: %i\n"
+            "sv_airaccelerate: %i\n"
+            "sv_maxspeed: %i\n"
+            "sv_gravity: %i\n"
+            "sv_friction: %i\n";
+    Msg(pStrToPrint, sv_maxvelocity.GetInt(), sv_airaccelerate.GetInt(), sv_accelerate.GetInt(), sv_maxspeed.GetInt(), sv_gravity.GetInt(), sv_friction.GetInt());
 }
 
 // Practice mode that stops the timer and allows the player to noclip.
@@ -567,6 +578,11 @@ CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops 
             Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);
         }
     }
+}
+
+CON_COMMAND(mom_print_gamemode_vars, "Prints out the currently set values for commands like sv_maxvelocity, airaccel, etc")
+{
+    g_pMomentumTimer->PrintGameModeConVars();
 }
 
 static CMomentumTimer s_Timer;
