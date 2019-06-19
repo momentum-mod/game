@@ -1246,8 +1246,8 @@ void CEventQueue::RestoreAll( const CEventQueueState &state )
 
 	FOR_EACH_VEC( state.m_vecEvents, i )
 	{
-        EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
-        state.m_vecEvents[i].ToPrioritizedEvent(newEvent);
+		EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
+		state.m_vecEvents[i].ToPrioritizedEvent(newEvent);
 		AddEvent( newEvent );
 	}
 }
@@ -1275,7 +1275,7 @@ void CEventQueue::RestoreForTarget( CBaseEntity *pTarget, const CEventQueueState
 {
 	// Remove all the current events which have correct target ent in preparation for restoring previous state
 	// delete all the events in the queue
-    CancelEventOn( pTarget, nullptr );
+	CancelEventOn( pTarget, nullptr );
 	
 	FOR_EACH_VEC( state.m_vecEvents, i )
 	{
@@ -1296,15 +1296,15 @@ static CBaseEntity *GetEntityFromName( string_t name )
 
 void CEventQueueEvent::FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe )
 {
-    // Convert from absolute tick count to an offset so its correct regardless of current tickcount
-    m_iFireDelayTicks = pe->m_iFireTick - gpGlobals->tickcount;
-    m_iOutputID = pe->m_iOutputID;
-    m_iTarget = pe->m_iTarget;
-    m_iTargetInput = pe->m_iTargetInput;
-    m_szActivator = pe->m_pActivator ? pe->m_pActivator->GetEntityName() : NULL_STRING;
-    m_iCaller = pe->m_pCaller ? pe->m_pCaller->entindex() : 0;
-    m_szEntTarget = pe->m_pEntTarget ? pe->m_pEntTarget->GetEntityName() : NULL_STRING;
-    m_VariantValue = pe->m_VariantValue;
+	// Convert from absolute tick count to an offset so its correct regardless of current tickcount
+	m_iFireDelayTicks = pe->m_iFireTick - gpGlobals->tickcount;
+	m_iOutputID = pe->m_iOutputID;
+	m_iTarget = pe->m_iTarget;
+	m_iTargetInput = pe->m_iTargetInput;
+	m_szActivator = pe->m_pActivator ? pe->m_pActivator->GetEntityName() : NULL_STRING;
+	m_iCaller = pe->m_pCaller ? pe->m_pCaller->entindex() : 0;
+	m_szEntTarget = pe->m_pEntTarget ? pe->m_pEntTarget->GetEntityName() : NULL_STRING;
+	m_VariantValue = pe->m_VariantValue;
 }
 
 void CEventQueueEvent::ToPrioritizedEvent(EventQueuePrioritizedEvent_t* pe) const
@@ -1323,11 +1323,11 @@ void CEventQueueEvent::ToPrioritizedEvent(EventQueuePrioritizedEvent_t* pe) cons
 void CEventQueueEvent::LoadFromKeyValues( KeyValues *kv )
 {
 	m_iFireDelayTicks = kv->GetInt("fire_delay_ticks");
-    m_iTarget = MAKE_STRING( kv->GetString("target") );
-    m_iTargetInput = MAKE_STRING( kv->GetString( "target_input" ) );
-    m_szActivator = MAKE_STRING( kv->GetString( "activator" ) );
-    m_iCaller = kv->GetInt( "caller" );
-    m_iOutputID = kv->GetInt( "output_id" );
+	m_iTarget = MAKE_STRING( kv->GetString("target") );
+	m_iTargetInput = MAKE_STRING( kv->GetString( "target_input" ) );
+	m_szActivator = MAKE_STRING( kv->GetString( "activator" ) );
+	m_iCaller = kv->GetInt( "caller" );
+	m_iOutputID = kv->GetInt( "output_id" );
 	m_szEntTarget = MAKE_STRING( kv->GetString( "ent_target" ) );
 
 	fieldtype_t fieldtype = (fieldtype_t)kv->GetInt( "variant_field_type" );
@@ -1356,28 +1356,28 @@ void CEventQueueEvent::SaveToKeyValues( KeyValues *kv ) const
 
 void CEventQueueState::LoadFromKeyValues( KeyValues *kv )
 {
-    m_vecEvents.RemoveAll();
+	m_vecEvents.RemoveAll();
 
-    KeyValues *sub = kv->FindKey("events");
-    if (!sub)
-        return;
+	KeyValues *sub = kv->FindKey("events");
+	if (!sub)
+		return;
 
-    KeyValues *s = sub->GetFirstSubKey();
-    if (!s)
-        return;
+	KeyValues *s = sub->GetFirstSubKey();
+	if (!s)
+		return;
 
-    do
-    {
-        m_vecEvents.AddToTail();
-        m_vecEvents.Tail().LoadFromKeyValues( s );
-    } while ((s = s->GetNextKey()) != nullptr);
+	do
+	{
+		m_vecEvents.AddToTail();
+		m_vecEvents.Tail().LoadFromKeyValues( s );
+	} while ((s = s->GetNextKey()) != nullptr);
 }
 
 void CEventQueueState::SaveToKeyValues( KeyValues *kv ) const
 {
-    if ( m_vecEvents.IsEmpty() )
+	if ( m_vecEvents.IsEmpty() )
 	{
-        return;
+		return;
 	}
 
 	KeyValues *events = new KeyValues( "events" );
@@ -1387,8 +1387,8 @@ void CEventQueueState::SaveToKeyValues( KeyValues *kv ) const
 		Q_snprintf( name, sizeof( name ), "%i", i );
 
 		KeyValues* eventkv = new KeyValues( name );
-        m_vecEvents[i].SaveToKeyValues( eventkv );
-        events->AddSubKey( eventkv );
+		m_vecEvents[i].SaveToKeyValues( eventkv );
+		events->AddSubKey( eventkv );
 	}
 
 	kv->AddSubKey( events );

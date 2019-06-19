@@ -39,9 +39,9 @@ struct EventQueuePrioritizedEvent_t
 class CEventQueueEvent
 {
 public:
-    void FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe );
+	void FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe );
 	void ToPrioritizedEvent( EventQueuePrioritizedEvent_t *pe ) const;
-    void LoadFromKeyValues( KeyValues* kv );
+	void LoadFromKeyValues( KeyValues* kv );
 	void SaveToKeyValues( KeyValues* kv ) const;
 public:
 	int m_iFireDelayTicks;
