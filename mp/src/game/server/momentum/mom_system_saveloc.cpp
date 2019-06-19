@@ -34,6 +34,7 @@ SavedLocation_t::SavedLocation_t(CMomentumPlayer* pPlayer)
     gravityScale = pPlayer->GetGravity();
     movementLagScale = pPlayer->GetLaggedMovementValue();
     disabledButtons = pPlayer->m_afButtonDisabled.Get();
+    g_EventQueue.SaveForTarget( pPlayer, entEventsState );
 }
 
 void SavedLocation_t::Save(KeyValues* kvCP) const
@@ -47,6 +48,7 @@ void SavedLocation_t::Save(KeyValues* kvCP) const
     kvCP->SetFloat("gravityScale", gravityScale);
     kvCP->SetFloat("movementLagScale", movementLagScale);
     kvCP->SetInt("disabledButtons", disabledButtons);
+    entEventsState.SaveToKeyValues( kvCP );
 }
 
 void SavedLocation_t::Load(KeyValues* pKv)
@@ -60,6 +62,7 @@ void SavedLocation_t::Load(KeyValues* pKv)
     gravityScale = pKv->GetFloat("gravityScale", 1.0f);
     movementLagScale = pKv->GetFloat("movementLagScale", 1.0f);
     disabledButtons = pKv->GetInt("disabledButtons");
+    entEventsState.LoadFromKeyValues( pKv );
 }
 
 void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
@@ -81,6 +84,9 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
     pPlayer->SetGravity(gravityScale);
     pPlayer->DisableButtons(disabledButtons);
     pPlayer->SetLaggedMovementValue(movementLagScale);
+
+    // Restore entity event queue state
+    g_EventQueue.RestoreForTarget( pPlayer, entEventsState );
 }
 
 void SavedLocation_t::Read(CUtlBuffer& mem)
