@@ -50,7 +50,7 @@ public:
 	inline color32 Color32(void) const					{ return rgbaVal; }
 	inline void Vector3D(Vector &vec) const;
 
-	fieldtype_t FieldType( void ) { return fieldType; }
+	fieldtype_t FieldType( void ) const { return fieldType; }
 
 	void SetBool( bool b ) { bVal = b; fieldType = FIELD_BOOLEAN; }
 	void SetString( string_t str ) { iszVal = str, fieldType = FIELD_STRING; }

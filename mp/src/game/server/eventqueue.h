@@ -36,6 +36,34 @@ struct EventQueuePrioritizedEvent_t
 	DECLARE_FIXEDSIZE_ALLOCATOR( PrioritizedEvent_t );
 };
 
+class CEventQueueEvent
+{
+public:
+    void FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe );
+	void ToPrioritizedEvent( EventQueuePrioritizedEvent_t *pe ) const;
+    void LoadFromKeyValues( KeyValues* kv );
+	void SaveToKeyValues( KeyValues* kv ) const;
+public:
+	int m_iFireDelayTicks;
+	string_t m_iTarget;
+	string_t m_iTargetInput;
+	string_t m_szActivator;
+	int m_iCaller; // ent idx of caller
+	int m_iOutputID;
+	string_t m_szEntTarget; // name of entity to target; overrides m_iTarget
+
+	variant_t m_VariantValue; // variable-type parameter
+};
+
+class CEventQueueState
+{
+public:
+	void LoadFromKeyValues( KeyValues* kv );
+	void SaveToKeyValues( KeyValues* kv ) const;
+public:
+	CUtlVector<CEventQueueEvent> m_vecEvents;
+};
+
 class CEventQueue
 {
 public:
@@ -57,6 +85,11 @@ public:
 	// serialization
 	int Save( ISave &save );
 	int Restore( IRestore &restore );
+
+	void SaveAll( CEventQueueState &state );
+	void RestoreAll( const CEventQueueState& state );
+	void SaveForTarget( CBaseEntity *pTarget, CEventQueueState &state );
+	void RestoreForTarget( CBaseEntity *pTarget, const CEventQueueState& state );
 
 	CEventQueue();
 	~CEventQueue();
