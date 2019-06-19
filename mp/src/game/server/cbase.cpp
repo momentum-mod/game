@@ -141,7 +141,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the input name.
 	//
-    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
+	psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iTargetInput = AllocPooledString(szToken);
@@ -154,7 +154,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the parameter override.
 	//
-    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
+	psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iParameter = AllocPooledString(szToken);
@@ -163,7 +163,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the delay.
 	//
-    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
+	psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_flDelay = atof(szToken);
@@ -172,7 +172,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the number of times to fire.
 	//
-    nexttoken(szToken, psz, ',', sizeof(szToken));
+	nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_nTimesToFire = atoi(szToken);
@@ -855,7 +855,6 @@ void CEventQueue::AddEvent( CBaseEntity *target, const char *action, float fireD
 	AddEvent( target, action, Value, fireDelay, pActivator, pCaller, outputID );
 }
 
-
 //-----------------------------------------------------------------------------
 // Purpose: private function, adds an event into the list
 // Input  : *newEvent - the (already built) event to add
@@ -1051,6 +1050,8 @@ void CEventQueue::CancelEvents( CBaseEntity *pCaller )
 
 //-----------------------------------------------------------------------------
 // Purpose: Removes all pending events of the specified type from the I/O queue of the specified target
+// Input  : *pTarget - 
+//			*sInputName - NULL for any input, or a specified one
 //
 //			TODO: This is only as reliable as callers are in passing the correct
 //				  caller pointer when they fire the outputs. Make more foolproof.
@@ -1061,13 +1062,15 @@ void CEventQueue::CancelEventOn( CBaseEntity *pTarget, const char *sInputName )
 		return;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-    const size_t inputNameSize = strlen(sInputName);
+	const size_t inputNameSize = sInputName ? strlen(sInputName) : 0;
 	while (pCur != nullptr)
 	{
 		bool bDelete = false;
-		if (pCur->m_pEntTarget == pTarget)
+		CBaseEntity *pSearchingEntity = pCur->m_pCaller;
+		if (pCur->m_pEntTarget == pTarget ||
+			pTarget == gEntList.FindEntityByName(nullptr, pCur->m_iTarget, pSearchingEntity, pCur->m_pActivator, pCur->m_pCaller))
 		{
-            if (!Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
+			if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 			{
 				// Found a matching event; delete it from the queue.
 				bDelete = true;
@@ -1096,12 +1099,14 @@ bool CEventQueue::HasEventPending( CBaseEntity *pTarget, const char *sInputName 
 		return false;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-    const size_t inputNameSize = strlen(sInputName);
+	const size_t inputNameSize = sInputName ? strlen(sInputName) : 0;
 	while (pCur != nullptr)
 	{
-		if (pCur->m_pEntTarget == pTarget)
+		CBaseEntity *pSearchingEntity = pCur->m_pCaller;
+		if (pCur->m_pEntTarget == pTarget ||
+			pTarget == gEntList.FindEntityByName(nullptr, pCur->m_iTarget, pSearchingEntity, pCur->m_pActivator, pCur->m_pCaller))
 		{
-            if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
+			if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 				return true;
 		}
 
@@ -1220,6 +1225,173 @@ int CEventQueue::Restore( IRestore &restore )
 	}
 
 	return 1;
+}
+
+void CEventQueue::SaveAll( CEventQueueState& state )
+{
+	state.m_vecEvents.RemoveAll();
+	for ( EventQueuePrioritizedEvent_t* pe = m_Events.m_pNext; pe != nullptr; pe = pe->m_pNext )
+	{
+		state.m_vecEvents.AddToTail();
+
+		CEventQueueEvent &e = state.m_vecEvents.Tail();
+		e.FromPrioritizedEvent( pe );
+	}
+}
+
+void CEventQueue::RestoreAll( const CEventQueueState &state )
+{
+	// Remove all the current events in preparation for restoring previous state
+	Clear();
+
+	FOR_EACH_VEC( state.m_vecEvents, i )
+	{
+        EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
+        state.m_vecEvents[i].ToPrioritizedEvent(newEvent);
+		AddEvent( newEvent );
+	}
+}
+
+void CEventQueue::SaveForTarget( CBaseEntity *pTarget, CEventQueueState &state )
+{
+	state.m_vecEvents.RemoveAll();
+	for ( EventQueuePrioritizedEvent_t *pe = m_Events.m_pNext; pe != nullptr; pe = pe->m_pNext )
+	{
+		// Only add the event if it has the correct target ent
+		CBaseEntity *pSearchingEntity = pe->m_pCaller;
+
+		if ( pTarget == pe->m_pEntTarget ||
+			pTarget == gEntList.FindEntityByName( nullptr, pe->m_iTarget, pSearchingEntity, pe->m_pActivator, pe->m_pCaller ) )
+		{
+			state.m_vecEvents.AddToTail();
+
+			CEventQueueEvent &e = state.m_vecEvents.Tail();
+			e.FromPrioritizedEvent( pe );
+		}
+	}
+}
+
+void CEventQueue::RestoreForTarget( CBaseEntity *pTarget, const CEventQueueState &state )
+{
+	// Remove all the current events which have correct target ent in preparation for restoring previous state
+	// delete all the events in the queue
+    CancelEventOn( pTarget, nullptr );
+	
+	FOR_EACH_VEC( state.m_vecEvents, i )
+	{
+		EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
+		state.m_vecEvents[i].ToPrioritizedEvent( newEvent );
+		AddEvent( newEvent );
+	}
+}
+
+static CBaseEntity *GetEntityFromName( string_t name )
+{
+	if ( name == NULL_STRING )
+	{
+		return nullptr;
+	}
+	return gEntList.FindEntityByName( nullptr, name );
+}
+
+void CEventQueueEvent::FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe )
+{
+    // Convert from absolute tick count to an offset so its correct regardless of current tickcount
+    m_iFireDelayTicks = pe->m_iFireTick - gpGlobals->tickcount;
+    m_iOutputID = pe->m_iOutputID;
+    m_iTarget = pe->m_iTarget;
+    m_iTargetInput = pe->m_iTargetInput;
+    m_szActivator = pe->m_pActivator ? pe->m_pActivator->GetEntityName() : NULL_STRING;
+    m_iCaller = pe->m_pCaller ? pe->m_pCaller->entindex() : 0;
+    m_szEntTarget = pe->m_pEntTarget ? pe->m_pEntTarget->GetEntityName() : NULL_STRING;
+    m_VariantValue = pe->m_VariantValue;
+}
+
+void CEventQueueEvent::ToPrioritizedEvent(EventQueuePrioritizedEvent_t* pe) const
+{
+	// Convert from tick offset to absolute tick count
+	pe->m_iFireTick = m_iFireDelayTicks + gpGlobals->tickcount;
+	pe->m_iOutputID = m_iOutputID;
+	pe->m_iTarget = m_iTarget;
+	pe->m_iTargetInput = m_iTargetInput;
+	pe->m_pActivator = GetEntityFromName( m_szActivator );
+	pe->m_pCaller = UTIL_EntityByIndex( m_iCaller );
+	pe->m_pEntTarget = GetEntityFromName( m_szEntTarget );;
+	pe->m_VariantValue = m_VariantValue;
+}
+
+void CEventQueueEvent::LoadFromKeyValues( KeyValues *kv )
+{
+	m_iFireDelayTicks = kv->GetInt("fire_delay_ticks");
+    m_iTarget = MAKE_STRING( kv->GetString("target") );
+    m_iTargetInput = MAKE_STRING( kv->GetString( "target_input" ) );
+    m_szActivator = MAKE_STRING( kv->GetString( "activator" ) );
+    m_iCaller = kv->GetInt( "caller" );
+    m_iOutputID = kv->GetInt( "output_id" );
+	m_szEntTarget = MAKE_STRING( kv->GetString( "ent_target" ) );
+
+	fieldtype_t fieldtype = (fieldtype_t)kv->GetInt( "variant_field_type" );
+	m_VariantValue.SetString( MAKE_STRING( kv->GetString( "variant_value" ) ) );
+	m_VariantValue.Convert( fieldtype );
+}
+
+void CEventQueueEvent::SaveToKeyValues( KeyValues *kv ) const
+{
+	if ( m_VariantValue.FieldType() == FIELD_CLASSPTR )
+	{
+		DevWarning( "Tried to save invalid variant type\n" );
+		return;
+	}
+
+	kv->SetInt( "fire_delay_ticks", m_iFireDelayTicks );
+	kv->SetString( "target", STRING( m_iTarget ) );
+	kv->SetString( "target_input", STRING( m_iTargetInput ) );
+	kv->SetString( "activator", STRING( m_szActivator ) );
+	kv->SetInt( "caller", m_iCaller );
+	kv->SetInt( "output_id", m_iOutputID );
+	kv->SetString( "ent_target", STRING( m_szEntTarget ) );
+	kv->SetInt( "variant_field_type", m_VariantValue.FieldType() );
+	kv->SetString( "variant_value", m_VariantValue.String() );
+}
+
+void CEventQueueState::LoadFromKeyValues( KeyValues *kv )
+{
+    m_vecEvents.RemoveAll();
+
+    KeyValues *sub = kv->FindKey("events");
+    if (!sub)
+        return;
+
+    KeyValues *s = sub->GetFirstSubKey();
+    if (!s)
+        return;
+
+    do
+    {
+        m_vecEvents.AddToTail();
+        m_vecEvents.Tail().LoadFromKeyValues( s );
+    } while ((s = s->GetNextKey()) != nullptr);
+}
+
+void CEventQueueState::SaveToKeyValues( KeyValues *kv ) const
+{
+    if ( m_vecEvents.IsEmpty() )
+	{
+        return;
+	}
+
+	KeyValues *events = new KeyValues( "events" );
+	FOR_EACH_VEC( m_vecEvents, i )
+	{
+		char name[8];
+		Q_snprintf( name, sizeof( name ), "%i", i );
+
+		KeyValues* eventkv = new KeyValues( name );
+        m_vecEvents[i].SaveToKeyValues( eventkv );
+        events->AddSubKey( eventkv );
+	}
+
+	kv->AddSubKey( events );
 }
 
 ////////////////////////// variant_t implementation //////////////////////////

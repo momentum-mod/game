@@ -1,5 +1,7 @@
 #pragma once
 
+#include "eventqueue.h"
+
 class CMomentumPlayer;
 struct SavelocReqPacket_t;
 
@@ -15,6 +17,7 @@ struct SavedLocation_t
     float gravityScale;
     float movementLagScale;
     int disabledButtons;
+    CEventQueueState entEventsState;
 
     SavedLocation_t();
 
