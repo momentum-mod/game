@@ -1,3 +1,66 @@
+0.8.1
+= Added
+  Discord rich presence for Linux and Mac (thanks @kitlith !)
+    And a brand new toggle var mom_discord_enable [0/1] to toggle Discord RPC on/off altogether
+  Overhauled Lobby Members panel that now shows lobby type, leader, and limit
+  Added popup to show when joining a lobby fails
+  Added map download overwrite confirmation dialog that warns you if the map you're going to download will overwrite an existing map of the same name in your maps folder
+  Allow online ghosts to bleed when shooting/knifing them
+  Added convar settings for initial tricksurf_ map support (thanks @bonjorno7 !)
+  Added ability to refresh map info by right clicking a map in the map selector
+  Added run submission states to display on the map finished HUD panel
+
+= Improved
+  Timer reset logic: You must now land on the ground inside of the start zone to properly reset your timer
+  Don't add local player to typing members list in chat
+  Improved wording for showing leaderboards / lobby panels in options
+  Keypress display now takes into account the sign of cl_yawspeed when showing turnbinds
+  Improved how game handles saving run state when entering practice mode or spectating, or both
+  Improved layout of the paintgun panel to be proportional (scale to resolution) and simpler
+  Set in_keyboardsampletime back to 1 by default, 0 causes problems with turnbinds
+  Replay ghost is teleported when going to specific ticks so triggers can properly fire untouch events
+  Keypress display now shows if the player's hull is ducked rather than if they are only holding the duck key
+  Momentum settings tabs now scroll to the top of their pages upon tab show
+  Automatically update map selector with achieved PB/WRs
+  Updated FGD to have more Cabbage goodness (including CS:S spawn points and models/textures for more entities)
+  Added ping/RTT time to API requests logged with mom_api_log_requests 1
+  Added an "EveryTick" option to setspeed triggers
+  Enable mouse input for leaderboards/lobby members panel if spectator GUI has mouse input enabled
+  Added dropshadow to speedometer, syncbar, and keypress displays
+  Updated speed limiting logic
+
+= Fixed
+  Fixed Map Selector on Linux not properly showing up
+  Fixed raw mouse input being disabled for OSX
+  Fixed Map Selector filter logic for map layout
+  Fixed spectate state of players being improperly set both in-game and for Discord RPC
+  Fixed edge case where players could spectate a player that just started spectating
+  Fixed map download progress bars being stuck while scrolling
+  Fixed auto-accepting discord "ask to join" requests and now urge players to use the client/overlay for it
+  Fixed runs starting with two jumps when jumping to start the run
+  Fixed runs starting with two strafes if having only strafed once at the start
+  Fixed maps not properly setting their movement vars, e.g. sv_maxvelocity
+  Fixed typing members list not properly clearing after leaving the lobby
+  Fixed weapons in lobbies being able to be heard from across the map regardless of distance
+  Fixed player FOV not resetting upon zooming in with and then prompty dropping the sniper
+  Fixed grenades not being thrown at the correct angle when throwing upwards
+  Fixed speedometer showing incorrect velocity for replay ghosts at max velocity
+  Fixed some ramps deadstopping or giving an extra boost to players in certain conditions
+  Fixed the WAITING FOR API RESPONSE label from showing up if the leaderboards already has online times on it when refreshing times
+  Fixed plugins from being able to be loaded without -mapping specified
+  Fixed strafe sync setting disabling other strafe sync settings in Momentum Settings
+  Fixed stuttering when changing replay timescale
+  (Potentially) fixed crash on start-up for OSX (needs testing and validation)
+  Fixed map images flickering upon downloading a cached map
+  Fixed settings in Momentum Settings not properly loading stored value
+  Fixed timer being able to reset while in practice mode
+
+= Removed
+  Removed multiselect from Map Selector (click the icons to quickly add/remove multiple maps to/from library)
+  Removed collision with grenades for online ghosts (will be added back when we add trikz!)
+  Gameplay related convars (sv_maxvelocity, airaccel, etc) are now hidden and require -mapping to be able to change them. 
+    To see what the map's settings are, you can use mom_print_gamemode_vars if you are unsure.
+
 0.8.0
 = Website
   A brand new website, check it out at https://momentum-mod.org !
