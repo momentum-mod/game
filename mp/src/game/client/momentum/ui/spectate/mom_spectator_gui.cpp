@@ -64,7 +64,6 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     m_pTopBar = new Panel(this, "TopBar");
     m_pPlayerLabel = new Label(this, "PlayerLabel", "#MOM_ReplayPlayer");
     m_pReplayLabel = new Label(this, "ReplayLabel", "#MOM_WatchingReplay");
-    m_pMapLabel = new Label(this, "MapLabel", "#Spec_Map");
     m_pTimeLabel = new Label(this, "TimeLabel", "#MOM_MF_RunTime");
     m_pGainControlLabel = new Label(this, "DetachInfo", "#MOM_SpecGUI_GainControl");
     m_pCloseButton = new ImagePanel(this, "ClosePanel");
@@ -300,11 +299,6 @@ void CMOMSpectatorGUI::Update()
                 // Close button tooltip
                 m_pCloseButton->GetTooltip()->SetText("#MOM_SpecGUI_StopPlayback");
 
-                // Show the current map
-                wchar_t wMapName[BUFSIZELOCL];
-                ANSI_TO_UNICODE(g_pGameRules->MapName(), wMapName);
-                m_pMapLabel->SetText(CConstructLocalizedString(m_pwSpecMap, wMapName));
-
                 m_pShowControls->SetVisible(true);
 
                 if (m_pReplayControls && !m_pReplayControls->IsVisible() && !m_pReplayControls->WasClosed())
@@ -318,7 +312,6 @@ void CMOMSpectatorGUI::Update()
             {
                 // "REPLAY" label
                 m_pReplayLabel->SetText(m_pwWatchingGhost);
-                m_pMapLabel->SetText("");
                 m_pTimeLabel->SetText("");
 
                 // Close button tooltip
@@ -335,7 +328,6 @@ void CMOMSpectatorGUI::Update()
         else
         {
             m_pReplayLabel->SetText("");
-            m_pMapLabel->SetText("");
             m_pTimeLabel->SetText("");
             m_pPlayerLabel->SetText("");
         }

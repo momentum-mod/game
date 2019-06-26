@@ -49,7 +49,6 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     vgui::Label *m_pPlayerLabel;
     vgui::Label *m_pReplayLabel;
     vgui::Label *m_pGainControlLabel;
-    vgui::Label *m_pMapLabel;
     vgui::Label *m_pTimeLabel;
 
     Color m_cBarColor;
