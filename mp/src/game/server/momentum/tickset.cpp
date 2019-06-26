@@ -172,4 +172,4 @@ static void OnTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
 
 static ConVar intervalPerTick("sv_interval_per_tick", "0.015", 0,
                               "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01",
-                              OnTickRateChange);
+                              true, 0.001f, true, 0.1f, OnTickRateChange);
