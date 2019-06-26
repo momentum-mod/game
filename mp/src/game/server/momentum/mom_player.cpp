@@ -249,6 +249,7 @@ CMomentumPlayer::~CMomentumPlayer()
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
+    StopObserverMode();
     g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
 }
 
