@@ -398,7 +398,7 @@ MapData::MapData(const MapData& src)
     m_MainTrack = src.m_MainTrack;
     m_Submitter = src.m_Submitter;
     m_vecCredits.RemoveAll();
-    m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
+    m_vecCredits.AddVectorToTail(src.m_vecCredits);
     m_vecImages.RemoveAll();
     m_vecImages.AddVectorToTail(src.m_vecImages);
     m_Thumbnail = src.m_Thumbnail;
@@ -683,7 +683,7 @@ MapData& MapData::operator=(const MapData& src)
     if (src.m_vecCredits.Count())
     {
         m_vecCredits.RemoveAll();
-        m_vecCredits.AddMultipleToTail(src.m_vecCredits.Count(), src.m_vecCredits.Base());
+        m_vecCredits.AddVectorToTail(src.m_vecCredits);
     }
     if (src.m_vecImages.Count())
     {
