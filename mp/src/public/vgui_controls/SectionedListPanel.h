@@ -213,6 +213,9 @@ public:
 
 	ScrollBar *GetScrollBar( void ) { return m_pScrollBar; }
 
+    virtual void SetItemBorder(int itemID, vgui::IBorder *pBorder);
+    virtual vgui::IBorder *GetItemBorder(int itemID);
+
 protected:
 	virtual void PerformLayout();
 	virtual void ApplySchemeSettings(IScheme *pScheme);

@@ -90,6 +90,7 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     SetDefLessFunc(m_mapAvatarsToImageList);
     SetDefLessFunc(m_mapReplayDownloads);
 
+    pPlayerBorder = nullptr;
     m_pImageList = nullptr;
     LevelInit();
 }
@@ -506,9 +507,8 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
                 pList->ModifyItem(itemID, m_iSectionId, runEntry->m_kv);
             }
 
-            // MOM_TODO: highlight the local player's thing (some outline?), if it's in the list!
-            //if (runEntry->steamid == SteamUser()->GetSteamID().ConvertToUint64())
-            //    pList->SetBorderForItem(itemID, someBorder);
+            if (runEntry->steamid == SteamUser()->GetSteamID().ConvertToUint64() && pPlayerBorder)
+                pList->SetItemBorder(itemID, pPlayerBorder);
         }
 
         SetPlaceColors(pList, type);
@@ -955,6 +955,8 @@ void CLeaderboardsTimes::ApplySchemeSettings(vgui::IScheme* pScheme)
     m_cFirstPlace = pScheme->GetColor("FirstPlace", Color(240, 210, 147, 50));
     m_cSecondPlace = pScheme->GetColor("SecondPlace", Color(175, 175, 175, 50));
     m_cThirdPlace = pScheme->GetColor("ThirdPlace", Color(205, 127, 50, 50));
+
+    pPlayerBorder = pScheme->GetBorder("LeaderboardsPlayerBorder");
 
     const char *columnNames[] = { DATESTRING, RANKSTRING, TIMESTRING };
 
