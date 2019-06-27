@@ -172,7 +172,7 @@ bool MomUtil::GetTimeAgoString(time_t *input, char* pOut, size_t outLen)
         count = diff;
     }
 
-    if (!pUnitString || count == 0)
+    if (!pUnitString || count <= 0)
         Q_strncpy(pOut, "just now", outLen);
     else
         Q_snprintf(pOut, outLen, "%i %s%s ago", count, pUnitString, (count > 1 ? "s" : ""));
