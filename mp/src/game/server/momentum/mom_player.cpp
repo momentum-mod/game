@@ -1022,7 +1022,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_START:
             // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
             g_pMomentumTimer->TryStart(this, true);
-            if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode)
+            if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
             {
                 const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
 
