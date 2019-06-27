@@ -1654,6 +1654,25 @@ void SectionedListPanel::MoveSelectionUp( void )
 	ScrollToItem(newItemID);
 }
 
+void SectionedListPanel::SetItemBorder(int itemID, IBorder *pBorder)
+{
+    Assert(m_Items.IsValidIndex(itemID));
+    if (!m_Items.IsValidIndex(itemID))
+        return;
+
+    m_Items[itemID]->SetBorder(pBorder);
+    m_Items[itemID]->InvalidateLayout();
+}
+
+IBorder *SectionedListPanel::GetItemBorder(int itemID)
+{
+    Assert(m_Items.IsValidIndex(itemID));
+    if (!m_Items.IsValidIndex(itemID))
+        return nullptr;
+
+    return m_Items[itemID]->GetBorder();
+}
+
 void SectionedListPanel::NavigateTo( void )
 {
 	BaseClass::NavigateTo();
