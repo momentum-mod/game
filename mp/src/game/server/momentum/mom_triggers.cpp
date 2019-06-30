@@ -404,7 +404,7 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
 {
     if (pOther)
     {
-        if (m_hDestinationEnt.Get())
+        if (!m_hDestinationEnt.Get())
         {
             if (m_target != NULL_STRING)
                 m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
