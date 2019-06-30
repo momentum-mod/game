@@ -786,11 +786,19 @@ void CMapCache::LoadMapCacheFromDisk()
     pMapData->UsesEscapeSequences(true);
     if (pMapData->LoadFromFile(g_pFullFileSystem, MAP_CACHE_FILE_NAME, "MOD"))
     {
-        AddMapsToCache(pMapData, MODEL_FROM_DISK);
+        KeyValues *pVersion = pMapData->FindKey(MOM_CURRENT_VERSION);
+        if (pVersion)
+        {
+            AddMapsToCache(pVersion, MODEL_FROM_DISK);
+        }
+        else
+        {
+            Log("Map cache file exists but is an older version, ignoring it...\n");
+        }
     }
     else
     {
-        DevLog(2, "Map cache file doesn't exist, creating it...\n");
+        Log("Map cache file doesn't exist, creating it...\n");
     }
 }
 
@@ -799,9 +807,12 @@ void CMapCache::SaveMapCacheToDisk()
     KeyValuesAD pMapData("MapCacheData");
     pMapData->UsesEscapeSequences(true);
 
+    KeyValues *pVersion = new KeyValues(MOM_CURRENT_VERSION);
+    pMapData->AddSubKey(pVersion);
+
     FOR_EACH_MAP(m_mapMapCache, i)
     {
-        KeyValues *pMap = pMapData->CreateNewKey();
+        KeyValues *pMap = pVersion->CreateNewKey();
         m_mapMapCache[i]->ToKV(pMap);
     }
 
