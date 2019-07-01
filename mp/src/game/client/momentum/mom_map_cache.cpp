@@ -481,21 +481,10 @@ void CMapCache::OnFetchMapZones(KeyValues *pKv)
         const auto pTracks = pData->FindKey("tracks");
         if (pTracks)
         {
-            CryptoPP::SecByteBlock scratch(16);
-            CryptoPP::AutoSeededRandomPool rng;
-            rng.GenerateBlock(scratch, scratch.size());
-            std::string s;
-            CryptoPP::HexEncoder hex(new CryptoPP::StringSink(s));
-            hex.Put(scratch.BytePtr(), scratch.size());
-            hex.MessageEnd();
-
-            CFmtStr path("%s%s", s.c_str(), EXT_ZONE_FILE);
-            if (pTracks->SaveToFile(g_pFullFileSystem, path.Get(), "GAME"))
-            {
-                KeyValues *pToSend = new KeyValues("ZonesFromSite");
-                pToSend->SetString("path", path.Get());
-                engine->ServerCmdKeyValues(pToSend); // pSend is deleted in here
-            }
+			KeyValues *pToSend = new KeyValues("ZonesFromSite");
+			// A copy is required, otherwise auto delete from pToSend will delete the content
+			pToSend->SetPtr("tracks", pTracks->MakeCopy(true));
+			engine->ServerCmdKeyValues(pToSend);
         }
         else
         {

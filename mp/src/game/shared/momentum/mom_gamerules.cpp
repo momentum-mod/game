@@ -216,12 +216,10 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
     }
     else if (FStrEq(pKeyValues->GetName(), "ZonesFromSite"))
     {
-        KeyValuesAD pTracks("tracks");
-        const auto pPath = pKeyValues->GetString("path");
-        if (pTracks->LoadFromFile(g_pFullFileSystem, pPath, "GAME"))
+        if (pKeyValues->FindKey("tracks"))
         {
-            g_pFullFileSystem->RemoveFile(pPath, "GAME");
-            // Zones loaded, pass them through
+			KeyValuesAD pTracks(static_cast<KeyValues *>(pKeyValues->GetPtr("tracks")));
+			// Zones loaded, pass them through
             g_MapZoneSystem.LoadZonesFromSite(pTracks, CBaseEntity::Instance(pEntity));
         }
     }
