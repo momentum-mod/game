@@ -481,10 +481,10 @@ void CMapCache::OnFetchMapZones(KeyValues *pKv)
         const auto pTracks = pData->FindKey("tracks");
         if (pTracks)
         {
-			KeyValues *pToSend = new KeyValues("ZonesFromSite");
-			// A copy is required, otherwise auto delete from pToSend will delete the content
-			pToSend->SetPtr("tracks", pTracks->MakeCopy(true));
-			engine->ServerCmdKeyValues(pToSend);
+            KeyValues *pToSend = new KeyValues("ZonesFromSite");
+            // A copy is required, otherwise auto delete from pToSend will delete the content
+            pToSend->SetPtr("tracks", pTracks->MakeCopy(true));
+            engine->ServerCmdKeyValues(pToSend);
         }
         else
         {

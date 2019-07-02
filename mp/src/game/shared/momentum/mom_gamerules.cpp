@@ -218,8 +218,8 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
     {
         if (pKeyValues->FindKey("tracks"))
         {
-			KeyValuesAD pTracks(static_cast<KeyValues *>(pKeyValues->GetPtr("tracks")));
-			// Zones loaded, pass them through
+            KeyValuesAD pTracks(static_cast<KeyValues *>(pKeyValues->GetPtr("tracks")));
+            // Zones loaded, pass them through
             g_MapZoneSystem.LoadZonesFromSite(pTracks, CBaseEntity::Instance(pEntity));
         }
     }
