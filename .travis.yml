@@ -10,7 +10,7 @@ matrix:
             - g++-multilib
             - gcc-multilib
     - os: osx
-      osx_image: xcode8.3 # already includes Command Line Tools
+      osx_image: xcode9 # already includes Command Line Tools
 
 # Only build on master and develop
 branches:

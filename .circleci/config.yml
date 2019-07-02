@@ -45,7 +45,7 @@ jobs:
   
   build_mac:
     macos:
-      xcode: "8.3.3"
+      xcode: "9.4.1"
 
     working_directory: ~/mom_build
 
