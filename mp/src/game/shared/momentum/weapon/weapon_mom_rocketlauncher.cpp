@@ -14,13 +14,13 @@
 //=============================================================================
 
 #ifndef CLIENT_DLL
-#define	ROCKET_SPEED 1100
+#define ROCKET_SPEED 1100
 
 BEGIN_DATADESC(CMomentumRocket)
     // Fields
-    DEFINE_FIELD(m_hOwner,          FIELD_EHANDLE),
-    DEFINE_FIELD(m_hRocketTrail,    FIELD_EHANDLE),
-    DEFINE_FIELD(m_flDamage,        FIELD_FLOAT),
+    DEFINE_FIELD(m_hOwner, FIELD_EHANDLE),
+    DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
+    DEFINE_FIELD(m_flDamage, FIELD_FLOAT),
 
     // Functions
     DEFINE_FUNCTION(Touch),
@@ -33,17 +33,12 @@ class CMomentumRocketLauncher;
 //-----------------------------------------------------------------------------
 // Constructor
 //-----------------------------------------------------------------------------
-CMomentumRocket::CMomentumRocket()
-{
-	m_hRocketTrail = NULL;
-}
+CMomentumRocket::CMomentumRocket() { m_hRocketTrail = NULL; }
 
-CMomentumRocket::~CMomentumRocket()
-{
-}
+CMomentumRocket::~CMomentumRocket() {}
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //
 //
 //-----------------------------------------------------------------------------
@@ -51,12 +46,12 @@ void CMomentumRocket::Precache()
 {
     // MOM_TODO:
     // Replace HL2 missile model
-	PrecacheModel("models/weapons/w_missile.mdl");
+    PrecacheModel("models/weapons/w_missile.mdl");
     PrecacheScriptSound("Missile.Ignite");
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //
 //
 //-----------------------------------------------------------------------------
@@ -73,6 +68,8 @@ void CMomentumRocket::Spawn()
     AngleVectors(GetLocalAngles(), &vecForward);
     SetAbsVelocity(vecForward * ROCKET_SPEED);
 
+    SetDamage(90.0f);
+
     SetTouch(&CMomentumRocket::Touch);
     SetThink(NULL);
 
@@ -80,107 +77,123 @@ void CMomentumRocket::Spawn()
 }
 
 //-----------------------------------------------------------------------------
-// The actual explosion 
+// Purpose:
 //-----------------------------------------------------------------------------
-void CMomentumRocket::DoExplosion()
+void CMomentumRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
-	// Explode
-	ExplosionCreate(GetAbsOrigin(), GetAbsAngles(), GetOwnerEntity(), GetDamage(), GetDamage() * 2, 
-		SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);
+    // Make invisible
+    SetModelName(NULL_STRING);
+    SetSolid(SOLID_NONE);
+    m_takedamage = DAMAGE_NO;
+
+    // Pull out a bit
+    if (pTrace->fraction != 1.0)
+    {
+        SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
+    }
+
+    // Create explosion
+    Vector vecOrigin = GetAbsOrigin();
+    CBaseEntity *pOwner = GetOwnerEntity();
+    float flDamage = GetDamage();
+    /*ExplosionCreate(vecOrigin, GetAbsAngles(), pOwner, flDamage, flDamage * 2,
+        SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);*/
+
+    // Damage
+    CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType());
+    RadiusDamage(info, vecOrigin, 146.0f, CLASS_NONE, NULL);
+
+    if (m_hRocketTrail)
+    {
+        m_hRocketTrail->SetLifetime(0.1f);
+        m_hRocketTrail = NULL;
+    }
+
+    m_hOwner = NULL;
+
+    StopSound("Missile.Ignite");
+
+    // Remove the rocket
+    UTIL_Remove(this);
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CMomentumRocket::Explode()
-{
-	// Don't explode against the skybox. Just pretend that 
-	// the missile flies off into the distance.
-	Vector forward;
-
-	GetVectors(&forward, NULL, NULL);
-
-	trace_t tr;
-	UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + forward * 16, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
-
-	m_takedamage = DAMAGE_NO;
-	SetSolid(SOLID_NONE);
-	if(tr.fraction == 1.0 || !(tr.surface.flags & SURF_SKY))
-	{
-		DoExplosion();
-	}
-
-	if(m_hRocketTrail)
-	{
-		m_hRocketTrail->SetLifetime(0.1f);
-		m_hRocketTrail = NULL;
-	}
-
-	m_hOwner = NULL;
-
-	StopSound("Missile.Ignite");
-	UTIL_Remove(this);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pOther - 
+// Purpose:
+// Input  : *pOther -
 //-----------------------------------------------------------------------------
 void CMomentumRocket::Touch(CBaseEntity *pOther)
 {
-	Assert(pOther);
-	
-	// Don't touch triggers (but DO hit weapons)
-	if (pOther->IsSolidFlagSet(FSOLID_TRIGGER|FSOLID_VOLUME_CONTENTS) && pOther->GetCollisionGroup() != COLLISION_GROUP_WEAPON)
-		return;
+    Assert(pOther);
 
-	Explode();
+    // Don't touch triggers
+    if (pOther->IsSolidFlagSet(FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS))
+        return;
+
+    // Handle hitting skybox (disappear).
+    const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
+    if (pTrace->surface.flags & SURF_SKY)
+    {
+        if (m_hRocketTrail)
+        {
+            m_hRocketTrail->SetLifetime(0.1f);
+            m_hRocketTrail = NULL;
+        }
+
+        m_hOwner = NULL;
+        StopSound("Missile.Ignite");
+        UTIL_Remove(this);
+        return;
+    }
+
+    // Explode
+    trace_t trace;
+    memcpy(&trace, pTrace, sizeof(trace_t));
+    Explode(&trace, pOther);
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void CMomentumRocket::CreateSmokeTrail()
 {
-	if (m_hRocketTrail)
-		return;
+    if (m_hRocketTrail)
+        return;
 
-	// Smoke trail.
-	if ((m_hRocketTrail = RocketTrail::CreateRocketTrail()) != NULL)
-	{
-		m_hRocketTrail->m_Opacity = 0.2f;
-		m_hRocketTrail->m_SpawnRate = 100;
-		m_hRocketTrail->m_ParticleLifetime = 0.5f;
-		m_hRocketTrail->m_StartColor.Init(0.65f, 0.65f , 0.65f);
-		m_hRocketTrail->m_EndColor.Init(0.0, 0.0, 0.0);
-		m_hRocketTrail->m_StartSize = 8;
-		m_hRocketTrail->m_EndSize = 32;
-		m_hRocketTrail->m_SpawnRadius = 4;
-		m_hRocketTrail->m_MinSpeed = 2;
-		m_hRocketTrail->m_MaxSpeed = 16;
-		
-		m_hRocketTrail->SetLifetime(999);
-		m_hRocketTrail->FollowEntity(this, "0");
-	}
+    // Smoke trail.
+    if ((m_hRocketTrail = RocketTrail::CreateRocketTrail()) != NULL)
+    {
+        m_hRocketTrail->m_Opacity = 0.2f;
+        m_hRocketTrail->m_SpawnRate = 100;
+        m_hRocketTrail->m_ParticleLifetime = 0.5f;
+        m_hRocketTrail->m_StartColor.Init(0.65f, 0.65f, 0.65f);
+        m_hRocketTrail->m_EndColor.Init(0.0, 0.0, 0.0);
+        m_hRocketTrail->m_StartSize = 8;
+        m_hRocketTrail->m_EndSize = 32;
+        m_hRocketTrail->m_SpawnRadius = 4;
+        m_hRocketTrail->m_MinSpeed = 2;
+        m_hRocketTrail->m_MaxSpeed = 16;
+
+        m_hRocketTrail->SetLifetime(999);
+        m_hRocketTrail->FollowEntity(this, "0");
+    }
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //
-// Input  : &vecOrigin - 
-//			&vecAngles - 
-//			NULL - 
+// Input  : &vecOrigin -
+//			&vecAngles -
+//			NULL -
 //
 // Output : CMomentumRocket
 //-----------------------------------------------------------------------------
 CMomentumRocket *CMomentumRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner = NULL)
 {
-	CMomentumRocket *pRocket = (CMomentumRocket *) CBaseEntity::Create("momentum_rocket", vecOrigin, vecAngles, pentOwner);
-	pRocket->Spawn();
-	return pRocket;
+    CMomentumRocket *pRocket = (CMomentumRocket *)CBaseEntity::Create("momentum_rocket", vecOrigin, vecAngles, pentOwner);
+    pRocket->Spawn();
+    return pRocket;
 }
 #endif
-
 
 //=============================================================================
 // Rocket Launcher
@@ -202,8 +215,8 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 //-----------------------------------------------------------------------------
 CMomentumRocketLauncher::CMomentumRocketLauncher()
 {
-    //m_flTimeToIdleAfterFire = 1.9f;
-    //m_flIdleInterval = 20.0f;
+    // m_flTimeToIdleAfterFire = 1.9f;
+    // m_flIdleInterval = 20.0f;
 }
 
 void CMomentumRocketLauncher::Precache()
@@ -229,14 +242,16 @@ void CMomentumRocketLauncher::RocketLauncherFire()
 
     pPlayer->EyeVectors(&vForward, &vRight, &vUp);
 
-    // Offset values from https://github.com/NicknineTheEagle/TF2-Base/blob/master/src/game/shared/tf/tf_weaponbase_gun.cpp#L334
+    // Offset values from
+    // https://github.com/NicknineTheEagle/TF2-Base/blob/master/src/game/shared/tf/tf_weaponbase_gun.cpp#L334
     Vector vecOffset(23.5f, 12.0f, -3.0f);
-	if (pPlayer->GetFlags() & FL_DUCKING)
-	{
-		vecOffset.z = 8.0f;
-	}
+    if (pPlayer->GetFlags() & FL_DUCKING)
+    {
+        vecOffset.z = 8.0f;
+    }
 
-    Vector muzzlePoint = pPlayer->Weapon_ShootPosition() + (vForward * vecOffset.x) + (vRight * vecOffset.y) + (vUp * vecOffset.z);
+    Vector muzzlePoint =
+        pPlayer->Weapon_ShootPosition() + (vForward * vecOffset.x) + (vRight * vecOffset.y) + (vUp * vecOffset.z);
 
     QAngle vecAngles;
     VectorAngles(vForward, vecAngles);
@@ -248,13 +263,10 @@ void CMomentumRocketLauncher::RocketLauncherFire()
 
     // MOM_FIXME:
     // This will cause an assertion error.
-    //SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+    // SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 }
 
-void CMomentumRocketLauncher::PrimaryAttack()
-{
-    RocketLauncherFire();
-}
+void CMomentumRocketLauncher::PrimaryAttack() { RocketLauncherFire(); }
