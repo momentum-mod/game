@@ -308,6 +308,25 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Player reacts to bumping a weapon.
+// Input  : pWeapon - the weapon that the player bumped into.
+// Output : Returns true if player picked up the weapon
+//-----------------------------------------------------------------------------
+bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
+{
+    // Get the weapon that we currently have at that slot
+    CBaseCombatWeapon *pCurrWeapon = Weapon_GetSlot(pWeapon->GetSlot());
+    if (pCurrWeapon != nullptr)
+    {
+        // Switch to that weapon for convenience
+        Weapon_Switch(pCurrWeapon);
+        return false;
+    }
+    // Otherwise we can try to pick up that weapon
+    return BaseClass::BumpWeapon(pWeapon);
+}
+
 void CMomentumPlayer::FlashlightTurnOn()
 {
     // Emit sound by default

@@ -61,6 +61,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
+    // Make sure we don't pick up weapons we shouldn't (default behaviour is weird)
+    bool BumpWeapon(CBaseCombatWeapon *pWeapon) OVERRIDE;
+
     // MOM_TODO: This is called when the player spawns so that HUD elements can be updated
     // void InitHUD() OVERRIDE;
 
