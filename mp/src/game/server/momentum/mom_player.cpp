@@ -52,19 +52,19 @@ CON_COMMAND(
     if (pPlayer->m_bHasPracticeMode || !g_pMomentumTimer->IsRunning())
     {
         trace_t tr;
-        Vector pos = pPlayer->EyePosition();;
+        Vector pos = pPlayer->EyePosition();
         Vector ang;
         pPlayer->EyeVectors(&ang);
 
         int mask = CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_OPAQUE | CONTENTS_WINDOW;
         UTIL_TraceLine(pos, pos + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
 
-        if (tr.fraction != 1.0 && tr.DidHit())
+        if (!CloseEnough(tr.fraction, 1.0f) && tr.DidHit())
         {
             Vector hit = tr.endpos;
             if (enginetrace->PointOutsideWorld(hit))
             {
-                hit += (hit - pos).Normalized() * 64;
+                hit += (hit - pos).Normalized() * 64.0f;
 
                 UTIL_TraceLine(hit, hit + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
 
@@ -73,19 +73,21 @@ CON_COMMAND(
             }
             Vector nrm = tr.plane.normal;
 
-            if (nrm.z == 1.0)
+            if (CloseEnough(nrm.z, 1.0f))
             {
-                if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) hit.z += 32.0;
+                if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) 
+                    hit.z += 32.0f;
             }
             else
             {
-                hit += (hit - pos).Normalized() * -32;
+                hit += (hit - pos).Normalized() * -32.0f;
             }
 
             QAngle new_ang = pPlayer->GetAbsAngles();
-            if (new_ang.x > 45.0 && enginetrace->PointOutsideWorld(pos))
-                new_ang.x = 0.0;
+            if (new_ang.x > 45.0f && enginetrace->PointOutsideWorld(pos))
+                new_ang.x = 0.0f;
 
+            g_pMomentumTimer->SetCanStart(false);
             pPlayer->Teleport(&hit, &new_ang, nullptr);
         }
     }
