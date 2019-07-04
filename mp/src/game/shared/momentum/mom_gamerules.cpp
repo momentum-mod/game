@@ -66,6 +66,7 @@ CAmmoDef *GetAmmoDef()
         ammoDef.AddAmmoType(AMMO_TYPE_SMOKEGRENADE, 0, TRACER_LINE, 0, 0, 1 /*max carry*/, 1, 0);
         ammoDef.AddAmmoType(AMMO_TYPE_PAINT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_paint_max",
                             3000 * BULLET_IMPULSE_EXAGGERATION, 0);
+        ammoDef.AddAmmoType(AMMO_TYPE_ROCKET, DMG_BLAST, TRACER_LINE, 0, 0, "ammo_rocket_max", 1, 0, 146, 146);
     }
 
     return &ammoDef;
@@ -101,6 +102,7 @@ ConVar ammo_hegrenade_max("ammo_hegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_flashbang_max("ammo_flashbang_max", "2", FCVAR_REPLICATED);
 ConVar ammo_smokegrenade_max("ammo_smokegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_paint_max("ammo_paint_max", "-2", FCVAR_REPLICATED);
+ConVar ammo_rocket_max("ammo_rocket_max", "-2", FCVAR_REPLICATED);
 
 CMomentumGameRules::CMomentumGameRules()
 {
