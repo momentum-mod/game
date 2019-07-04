@@ -66,12 +66,12 @@ void CMomentumPistol::SecondaryAttack()
     // MOM_TODO: Create an effect (animation maybe, lights on the gun?) that shows switch, don't wanna use ugly text
     if (m_bBurstMode)
     {
-        ClientPrint(pPlayer, HUD_PRINTCENTER, "#Switch_To_SemiAuto");
+        ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToSemiAuto");
         m_bBurstMode = false;
     }
     else
     {
-        ClientPrint(pPlayer, HUD_PRINTCENTER, "#Switch_To_BurstFire");
+        ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToBurstFire");
         m_bBurstMode = true;
     }
     SendWeaponAnim(ACT_VM_SECONDARYATTACK_SPECIAL);
