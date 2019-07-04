@@ -15,6 +15,7 @@ enum CWeaponID
     WEAPON_GRENADE,
     WEAPON_KNIFE,
     WEAPON_PAINTGUN,
+    WEAPON_ROCKETLAUNCHER,
 
     WEAPON_MAX, // number of weapons weapon index
 };
