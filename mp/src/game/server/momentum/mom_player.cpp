@@ -89,6 +89,10 @@ CON_COMMAND(
             pPlayer->Teleport(&hit, &new_ang, nullptr);
         }
     }
+    else
+    {
+        Warning("Eyetele can only be used when the timer is not running or in practice mode!\n");
+    }
 }
 
 CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
