@@ -423,6 +423,7 @@ void CMomentumPlayer::Spawn()
     SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
+    // MOM_TODO: Disable godmode in rocketjump
     AddFlag(FL_GODMODE);
 
     // this removes the flag that was added while switching to spectator mode which prevented the player from activating

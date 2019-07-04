@@ -326,6 +326,146 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
     }
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: TF2-like radius damage
+// Input  : &info -
+//			&vecSrcIn -
+//			flRadius -
+//			iClassIgnore -
+//			*pEntityIgnore -
+//-----------------------------------------------------------------------------
+void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
+{
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    CBaseEntity *pEntity = NULL;
+    trace_t tr;
+    float falloff;
+    Vector vecSpot;
+
+    Vector vecSrc = vecSrcIn;
+
+    if (flRadius)
+        falloff = info.GetDamage() / flRadius;
+    else
+        falloff = 1.0;
+
+    CBaseEntity *pInflictor = info.GetInflictor();
+
+    // iterate on all entities in the vicinity.
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL;
+         sphere.NextEntity())
+    {
+        // This value is used to scale damage when the explosion is blocked by some other object.
+        float flBlockedDamagePercent = 0.0f;
+
+        if (pEntity == pEntityIgnore)
+            continue;
+
+        if (pEntity->m_takedamage == DAMAGE_NO)
+            continue;
+
+        // UNDONE: this should check a damage mask, not an ignore
+        if (iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore)
+        { // houndeyes don't hurt other houndeyes with their attack
+            continue;
+        }
+
+        // Check that the explosion can 'see' this entity.
+        vecSpot = pEntity->BodyTarget(vecSrc, false);
+        UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
+
+        if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
+            continue;
+
+        // Adjust the damage - apply falloff.
+        float flAdjustedDamage = 0.0f;
+
+        float flDistanceToEntity;
+
+        // Rockets store the ent they hit as the enemy and have already
+        // dealt full damage to them by this time
+        if (pInflictor && (pEntity == pInflictor->GetEnemy()))
+        {
+            // Full damage, we hit this entity directly
+            flDistanceToEntity = 0;
+        }
+        else if (pEntity->IsPlayer())
+        {
+            // Use whichever is closer, absorigin or worldspacecenter
+            float flToWorldSpaceCenter = (vecSrc - pEntity->WorldSpaceCenter()).Length();
+            float flToOrigin = (vecSrc - pEntity->GetAbsOrigin()).Length();
+
+            flDistanceToEntity = min(flToWorldSpaceCenter, flToOrigin);
+        }
+        else
+        {
+            flDistanceToEntity = (vecSrc - tr.endpos).Length();
+        }
+
+        flAdjustedDamage = flDistanceToEntity * falloff;
+        flAdjustedDamage = info.GetDamage() - flAdjustedDamage;
+
+        // Take a little less damage from yourself
+        if (tr.m_pEnt == info.GetAttacker())
+        {
+            flAdjustedDamage = flAdjustedDamage * 0.75;
+        }
+
+        if (flAdjustedDamage <= 0)
+            continue;
+
+        // the explosion can 'see' this entity, so hurt them!
+        if (tr.startsolid)
+        {
+            // if we're stuck inside them, fixup the position and distance
+            tr.endpos = vecSrc;
+            tr.fraction = 0.0;
+        }
+
+        CTakeDamageInfo adjustedInfo = info;
+        // Msg("%s: Blocked damage: %f percent (in:%f  out:%f)\n", pEntity->GetClassname(), flBlockedDamagePercent *
+        // 100, flAdjustedDamage, flAdjustedDamage - (flAdjustedDamage * flBlockedDamagePercent) );
+        adjustedInfo.SetDamage(flAdjustedDamage - (flAdjustedDamage * flBlockedDamagePercent));
+
+        // Now make a consideration for skill level!
+        if (info.GetAttacker() && info.GetAttacker()->IsPlayer() && pEntity->IsNPC())
+        {
+            // An explosion set off by the player is harming an NPC. Adjust damage accordingly.
+            adjustedInfo.AdjustPlayerDamageInflictedForSkillLevel();
+        }
+
+        Vector dir = vecSpot - vecSrc;
+        VectorNormalize(dir);
+
+        // If we don't have a damage force, manufacture one
+        if (adjustedInfo.GetDamagePosition() == vec3_origin || adjustedInfo.GetDamageForce() == vec3_origin)
+        {
+            CalculateExplosiveDamageForce(&adjustedInfo, dir, vecSrc);
+        }
+        else
+        {
+            // Assume the force passed in is the maximum force. Decay it based on falloff.
+            float flForce = adjustedInfo.GetDamageForce().Length() * falloff;
+            adjustedInfo.SetDamageForce(dir * flForce);
+            adjustedInfo.SetDamagePosition(vecSrc);
+        }
+
+        if (tr.fraction != 1.0 && pEntity == tr.m_pEnt)
+        {
+            ClearMultiDamage();
+            pEntity->DispatchTraceAttack(adjustedInfo, dir, &tr);
+            ApplyMultiDamage();
+        }
+        else
+        {
+            pEntity->TakeDamage(adjustedInfo);
+        }
+
+        // Now hit all triggers along the way that respond to damage...
+        pEntity->TraceAttackToTriggers(adjustedInfo, vecSrc, tr.endpos, dir);
+    }
+}
+
 class CVoiceGameMgrHelper : public IVoiceGameMgrHelper
 {
   public:

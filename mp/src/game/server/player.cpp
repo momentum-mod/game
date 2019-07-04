@@ -1090,12 +1090,12 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	if ( GetFlags() & FL_GODMODE )
 		return 0;
 
+    // Allow taking damage with buddha, but don't die
 	if ( m_debugOverlays & OVERLAY_BUDDHA_MODE ) 
 	{
 		if ((m_iHealth - info.GetDamage()) <= 0)
 		{
-			m_iHealth = 1;
-			return 0;
+			m_iHealth = ceil(info.GetDamage()) + 1;
 		}
 	}
 

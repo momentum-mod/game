@@ -13,18 +13,18 @@
 #ifndef CLIENT_DLL
 class CMomentumRocketLauncher;
 
-class CMomentumRocket : public CBaseCombatCharacter
+class CMomentumRocket : public CBaseAnimating
 {
-    DECLARE_CLASS(CMomentumRocket, CBaseCombatCharacter);
+    DECLARE_CLASS(CMomentumRocket, CBaseAnimating);
 
-public:
+  public:
     CMomentumRocket();
     ~CMomentumRocket();
 
     void Spawn();
     void Precache();
     void Touch(CBaseEntity *pOther);
-    void Explode();
+    void Explode(trace_t *pTrace, CBaseEntity *pOther);
 
     virtual float GetDamage() { return m_flDamage; }
     virtual void SetDamage(float flDamage) { m_flDamage = flDamage; }
@@ -33,15 +33,13 @@ public:
 
     static CMomentumRocket *EmitRocket(const Vector &vecSrc, const QAngle &vecAngles, CBaseEntity *pentOwner);
 
-protected:
-    virtual void DoExplosion();
-
+  protected:
     void CreateSmokeTrail();
 
     CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
 
-private:
+  private:
     DECLARE_DATADESC();
 };
 #endif
@@ -56,7 +54,7 @@ private:
 
 class CMomentumRocketLauncher : public CWeaponBase
 {
-public:
+  public:
     DECLARE_CLASS(CMomentumRocketLauncher, CWeaponBase);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
@@ -68,6 +66,6 @@ public:
 
     CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_ROCKETLAUNCHER; }
 
-private:
+  private:
     void RocketLauncherFire();
 };
