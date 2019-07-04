@@ -41,6 +41,56 @@ CON_COMMAND_F(
     pPlayer->TogglePracticeMode();
 }
 
+CON_COMMAND(
+    mom_eyetele,
+    "Teleports the player to the solid that they are looking at.\n")
+{
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    if (pPlayer->m_bHasPracticeMode || !g_pMomentumTimer->IsRunning())
+    {
+        trace_t tr;
+        Vector pos = pPlayer->EyePosition();;
+        Vector ang;
+        pPlayer->EyeVectors(&ang);
+
+        int mask = CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_OPAQUE | CONTENTS_WINDOW;
+        UTIL_TraceLine(pos, pos + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+        if (tr.fraction != 1.0 && tr.DidHit())
+        {
+            Vector hit = tr.endpos;
+            if (enginetrace->PointOutsideWorld(hit))
+            {
+                hit += (hit - pos).Normalized() * 64;
+
+                UTIL_TraceLine(hit, hit + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+                if (tr.DidHit())
+                    hit = tr.endpos;
+            }
+            Vector nrm = tr.plane.normal;
+
+            if (nrm.z == 1.0)
+            {
+                if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) hit.z += 32.0;
+            }
+            else
+            {
+                hit += (hit - pos).Normalized() * -32;
+            }
+
+            if (ang.x > 45.0 && enginetrace->PointOutsideWorld(pos))
+                ang.x = 0.0;
+
+            pPlayer->Teleport(&hit, &pPlayer->GetAbsAngles(), nullptr);
+
+        }
+    }
+}
+
 CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
 {
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());
