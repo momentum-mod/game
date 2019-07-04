@@ -82,11 +82,11 @@ CON_COMMAND(
                 hit += (hit - pos).Normalized() * -32;
             }
 
-            if (ang.x > 45.0 && enginetrace->PointOutsideWorld(pos))
-                ang.x = 0.0;
+            QAngle new_ang = pPlayer->GetAbsAngles();
+            if (new_ang.x > 45.0 && enginetrace->PointOutsideWorld(pos))
+                new_ang.x = 0.0;
 
-            pPlayer->Teleport(&hit, &pPlayer->GetAbsAngles(), nullptr);
-
+            pPlayer->Teleport(&hit, &new_ang, nullptr);
         }
     }
 }
