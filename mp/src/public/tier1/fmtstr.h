@@ -88,7 +88,7 @@ public:
 	}
 	
 	// Standard C formatting
-	CFmtStrN(PRINTF_FORMAT_STRING const char *pszFormat, ...) FMTFUNCTION( 2, 3 )
+    FMTFUNCTION_WIN(2, 3) CFmtStrN(PRINTF_FORMAT_STRING const char *pszFormat, ...) FMTFUNCTION( 2, 3 )
 	{
 		InitQuietTruncation();
 		FmtStrVSNPrintf( m_szBuf, SIZE_BUF, m_bQuietTruncation, &pszFormat, 0, pszFormat );
@@ -102,7 +102,7 @@ public:
 	}
 
 	// Explicit reformat
-	const char *sprintf(PRINTF_FORMAT_STRING const char *pszFormat, ...) FMTFUNCTION( 2, 3 )
+    FMTFUNCTION_WIN(2, 3) const char *sprintf(PRINTF_FORMAT_STRING const char *pszFormat, ...) FMTFUNCTION( 2, 3 )
 	{
 		InitQuietTruncation();
 		FmtStrVSNPrintf(m_szBuf, SIZE_BUF, m_bQuietTruncation, &pszFormat, 0, pszFormat ); 
@@ -173,7 +173,7 @@ public:
 		m_nLength = 0; 
 	}
 
-	void AppendFormat( PRINTF_FORMAT_STRING const char *pchFormat, ... ) FMTFUNCTION( 2, 3 )
+    FMTFUNCTION_WIN(2, 3) void AppendFormat( PRINTF_FORMAT_STRING const char *pchFormat, ... ) FMTFUNCTION( 2, 3 )
 	{ 
 		char *pchEnd = m_szBuf + m_nLength; 
 		FmtStrVSNPrintf( pchEnd, SIZE_BUF - m_nLength, m_bQuietTruncation, &pchFormat, m_nLength, pchFormat ); 

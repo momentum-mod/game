@@ -211,7 +211,7 @@ class CBaseHudChat : public CHudElement, public vgui::EditablePanel
     void MsgFunc_TextMsg(const char *pszName, int iSize, void *pbuf);
 
     virtual void Printf(int iFilter, PRINTF_FORMAT_STRING const char *fmt, ...);
-    virtual void ChatPrintf(int iPlayerIndex, int iFilter, PRINTF_FORMAT_STRING const char *fmt, ...) FMTFUNCTION(4, 5);
+    virtual void FMTFUNCTION_WIN(4, 5) ChatPrintf(int iPlayerIndex, int iFilter, PRINTF_FORMAT_STRING const char *fmt, ...) FMTFUNCTION(4, 5);
 
     virtual void StartMessageMode(int iMessageModeType);
     virtual void StopMessageMode(void);
