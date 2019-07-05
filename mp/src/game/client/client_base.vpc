@@ -1245,6 +1245,7 @@ $Project
 		$Lib		mathlib
 		$Lib		matsys_controls
 		$Lib		particles
+		$Lib		raytrace
 		$Lib		tier1
 		$Lib		tier2
 		$Lib		tier3

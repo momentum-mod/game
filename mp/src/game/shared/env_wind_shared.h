@@ -150,6 +150,8 @@ public:
 	// The function returns the time at which it must be called again
 	float WindThink( float flTime );
 
+    void SetLocation(const Vector &location);
+
 	// FIXME: These really should be private
 	CNetworkVar( float, m_flStartTime );
 
@@ -157,7 +159,8 @@ public:
 
 	CNetworkVar( int, m_iMinWind );			// the slowest the wind can normally blow
 	CNetworkVar( int, m_iMaxWind );			// the fastest the wind can normally blow
-	CNetworkVar( int, m_iMinGust );			// the slowest that a gust can be
+    CNetworkVar(int, m_windRadius); // the radius this entity affects with its windiness, so a map can have multiple
+    CNetworkVar(int, m_iMinGust);   // the slowest that a gust can be
 	CNetworkVar( int, m_iMaxGust );			// the fastest that a gust can be
 
 	CNetworkVar( float, m_flMinGustDelay );	// min time between gusts
@@ -166,9 +169,16 @@ public:
 	CNetworkVar( float, m_flGustDuration );	// max time between gusts
 
 	CNetworkVar( int, m_iGustDirChange );	// max number of degrees wind dir changes on gusts.
+    CNetworkVector(m_location);         // The location of this wind controller
+
 	int m_iszGustSound;		// name of the wind sound to play for gusts.
 	int m_iWindDir;			// wind direction (yaw)
 	float m_flWindSpeed;	// the wind speed
+
+    Vector m_currentWindVector; // For all the talk of proper prediction, we ended up just storing and returning through
+                                // a static vector.  Now we can have multiple env_wind, so we need this in here.
+    Vector m_CurrentSwayVector;
+    Vector m_PrevSwayVector;
 
 	CNetworkVar( int, m_iInitialWindDir );
 	CNetworkVar( float, m_flInitialWindSpeed );
@@ -177,6 +187,26 @@ public:
 	COutputEvent m_OnGustStart;
 	COutputEvent m_OnGustEnd;
 #endif
+
+    CEnvWindShared &operator=(const CEnvWindShared &other)
+    {
+        m_flStartTime = other.m_flStartTime;
+        m_iWindSeed = other.m_iWindSeed;
+        m_iMinWind = other.m_iMinWind;
+        m_iMaxWind = other.m_iMaxWind;
+        m_windRadius = other.m_windRadius;
+        m_iMinGust = other.m_iMinGust;
+        m_iMaxGust = other.m_iMaxGust;
+        m_flMinGustDelay = other.m_flMinGustDelay;
+        m_flMaxGustDelay = other.m_flMaxGustDelay;
+        m_flGustDuration = other.m_flGustDuration;
+        m_iGustDirChange = other.m_iGustDirChange;
+        m_location = other.m_location;
+        m_iInitialWindDir = other.m_iInitialWindDir;
+        m_flInitialWindSpeed = other.m_flInitialWindSpeed;
+
+        return *this;
+    }
 
 private:
 	struct WindAveEvent_t
@@ -194,9 +224,11 @@ private:
 	void ComputeWindVariation( float flTime );
 
 	// Updates the wind sound
-	void UpdateWindSound( float flTotalWindSpeed );
+    void UpdateWindSound(float flTotalWindSpeed);
+    void UpdateTreeSway(float flTime);
 
-	float	m_flVariationTime;
+	float m_flVariationTime;
+    float m_flSwayTime;
 	float	m_flSimTime;		// What's the time I last simulated up to?
 	float	m_flSwitchTime;		// when do I actually switch from gust to not gust
 	float	m_flAveWindSpeed;	// the average wind speed
@@ -223,10 +255,20 @@ private:
 	CTimedEventQueue< WindAveEvent_t, unsigned short >	m_WindAveQueue;
 	CTimedEventQueue< WindVariationEvent_t, unsigned short > m_WindVariationQueue;
 
-private:
+  public:
+    bool IsGusting() const { return m_bGusting; }
+
+  private:
 	CEnvWindShared( const CEnvWindShared & ); // not defined, not accessible
 };
 
+//-----------------------------------------------------------------------------
+inline void CEnvWindShared::SetLocation(const Vector &location) { m_location = location; }
+
+//-----------------------------------------------------------------------------
+// Method to sample the wind speed at a particular location
+//-----------------------------------------------------------------------------
+Vector GetWindspeedAtLocation(const Vector &location);
 
 //-----------------------------------------------------------------------------
 // Method to sample the windspeed at a particular time
