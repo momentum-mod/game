@@ -14,7 +14,7 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories		"$BASE,..\common,$SRCDIR\game\shared,.\"
-		$PreprocessorDefinitions			"$BASE;captioncompiler"
+		$PreprocessorDefinitions			"$BASE;PROTECTED_THINGS_DISABLE;captioncompiler"
 	}
 }
 
