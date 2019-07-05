@@ -44,14 +44,14 @@ struct GhostAppearance_t
     bool m_bGhostTrailEnable;
     bool m_bFlashlightOn;
 
-    GhostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
+    GhostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlightOn)
     {
         m_iGhostModelBodygroup = bodyGroup;
         m_iGhostModelRGBAColorAsHex = bodyRGBA;
         m_iGhostTrailRGBAColorAsHex = trailRGBA;
         m_iGhostTrailLength = trailLen;
         m_bGhostTrailEnable = hasTrail;
-        m_bFlashlightOn = flashlight;
+        m_bFlashlightOn = flashlightOn;
     }
     GhostAppearance_t(): m_iGhostModelBodygroup(0), m_iGhostModelRGBAColorAsHex(0), m_iGhostTrailRGBAColorAsHex(0), m_iGhostTrailLength(0), m_bGhostTrailEnable(false), m_bFlashlightOn(false)
     {

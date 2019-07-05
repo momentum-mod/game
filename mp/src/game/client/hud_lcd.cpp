@@ -394,19 +394,19 @@ void CLCD::ShowItems_R( CLCDPage *page, unsigned int dwCurTime, CUtlVector< CLCD
 	int itemCount = list.Count();
 	for ( int j = 0; j < itemCount; ++j )
 	{
-		CLCDItem *item = list[ j ];
-		if ( !item->m_bActive )
+		CLCDItem *pItem = list[ j ];
+		if ( !pItem->m_bActive )
 			continue;
 
 		if ( bShowItems )
 		{
-			switch ( item->m_Type )
+			switch ( pItem->m_Type )
 			{
 			default:
 				break;
 			case LCDITEM_TEXT:
 				{
-					CLCDItemText *txt = static_cast< CLCDItemText * >( item );
+					CLCDItemText *txt = static_cast< CLCDItemText * >( pItem );
 					if ( txt )
 					{
 						// Need to build updated text
@@ -416,13 +416,13 @@ void CLCD::ShowItems_R( CLCDPage *page, unsigned int dwCurTime, CUtlVector< CLCD
 						DoGlobalReplacements( updated );
 						ReduceParentheses( updated );
 
-						m_lcd->SetText( item->m_Handle, updated.String() );
+						m_lcd->SetText( pItem->m_Handle, updated.String() );
 					}
 				}
 				break;
 			case LCDITEM_ICON:
 				{
-					CLCDItemIcon *icon = static_cast< CLCDItemIcon * >( item );
+					CLCDItemIcon *icon = static_cast< CLCDItemIcon * >( pItem );
 					if ( icon )
 					{
 						// Need to build updated text
@@ -450,7 +450,7 @@ void CLCD::ShowItems_R( CLCDPage *page, unsigned int dwCurTime, CUtlVector< CLCD
 				break;
 			case LCDITEM_AGGREGATE:
 				{
-					CLCDItemAggregate *ag = static_cast< CLCDItemAggregate * >( item );
+					CLCDItemAggregate *ag = static_cast< CLCDItemAggregate * >( pItem );
 					if ( ag->m_dwNextUpdateTime > dwCurTime )
 						break;
 
@@ -608,9 +608,9 @@ void CLCD::ShowItems_R( CLCDPage *page, unsigned int dwCurTime, CUtlVector< CLCD
 			}
 		}
 
-		m_lcd->SetVisible( item->m_Handle, bShowItems && ( ( item->m_nSubPage == -1 ) || item->m_nSubPage == m_nSubPage ) );
+		m_lcd->SetVisible( pItem->m_Handle, bShowItems && ( ( pItem->m_nSubPage == -1 ) || pItem->m_nSubPage == m_nSubPage ) );
 		
-		ShowItems_R( page, dwCurTime, item->m_Children, bShowItems );
+		ShowItems_R( page, dwCurTime, pItem->m_Children, bShowItems );
 	}
 }
 
@@ -1178,8 +1178,8 @@ void CLCD::DumpPlayer()
 
 	Msg( "(localplayer)\n\n" );
 
-	CDescribeData helper( player );
-	helper.DumpDescription( player->GetPredDescMap() );
+	CDescribeData helperPlayer( player );
+	helperPlayer.DumpDescription( player->GetPredDescMap() );
 
 	Msg( "(localteam)\n\n" );
 

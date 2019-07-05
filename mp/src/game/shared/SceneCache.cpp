@@ -96,12 +96,12 @@ void CSceneCache::PrecacheSceneEvent( CChoreoEvent *event, CUtlVector< unsigned 
 		char tok[ CChoreoEvent::MAX_CCTOKEN_STRING ];
 		if ( event->GetPlaybackCloseCaptionToken( tok, sizeof( tok ) ) )
 		{
-			int idx = soundemitterbase->GetSoundIndex( tok );
-			if ( idx != -1 && soundlist.Find( idx ) == soundlist.InvalidIndex() )
+			int idex = soundemitterbase->GetSoundIndex( tok );
+			if ( idex != -1 && soundlist.Find( idex ) == soundlist.InvalidIndex() )
 			{
 				MEM_ALLOC_CREDIT();
-				Assert( idx <= 65535 );
-				soundlist.AddToTail( (unsigned short)idx );
+				Assert( idex <= 65535 );
+				soundlist.AddToTail( (unsigned short)idex );
 			}
 		}
 	}

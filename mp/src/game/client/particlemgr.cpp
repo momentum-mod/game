@@ -235,8 +235,8 @@ inline void CParticleEffectBinding::StartDrawMaterialParticles(
 	// Setup the ParticleDraw and bind the material.
 	if( bWireframe )
 	{
-		IMaterial *pMaterial = m_pParticleMgr->m_pMaterialSystem->FindMaterial( "debug/debugparticlewireframe", TEXTURE_GROUP_OTHER );
-		pRenderContext->Bind( pMaterial, NULL );
+		IMaterial *pWireMaterial = m_pParticleMgr->m_pMaterialSystem->FindMaterial( "debug/debugparticlewireframe", TEXTURE_GROUP_OTHER );
+		pRenderContext->Bind( pWireMaterial, NULL );
 	}
 	else
 	{
@@ -1583,7 +1583,7 @@ static void ProcessPSystem( ParticleSimListEntry_t& pSimListEntry )
 
 
 int CParticleMgr::ComputeParticleDefScreenArea( int nInfoCount, RetireInfo_t *pInfo, float *pTotalArea, CParticleSystemDefinition* pDef, 
-	const CViewSetup& view, const VMatrix &worldToPixels, float flFocalDist )
+	const CViewSetup& viewSetup, const VMatrix &worldToPixels, float flFocalDist )
 {
 	int nCollection = 0;
 	float flCullCost = pDef->GetCullFillCost();
@@ -1592,7 +1592,7 @@ int CParticleMgr::ComputeParticleDefScreenArea( int nInfoCount, RetireInfo_t *pI
 	*pTotalArea = 0.0f;
 
 #ifdef DBGFLAG_ASSERT
-	float flMaxPixels = view.width * view.height;
+	float flMaxPixels = viewSetup.width * viewSetup.height;
 #endif
 
 	CParticleCollection *pCollection = pDef->FirstCollection();
@@ -1614,16 +1614,16 @@ int CParticleMgr::ComputeParticleDefScreenArea( int nInfoCount, RetireInfo_t *pI
 		vecCenter = pCollection->GetControlPointAtCurrentTime( pDef->GetCullControlPoint() );
 
 		Vector3DMultiplyPositionProjective( worldToPixels, vecCenter, vecScreenCenter );
-		float lSqr = vecCenter.DistToSqr( view.origin );
+		float lSqr = vecCenter.DistToSqr(viewSetup.origin );
 
 		float flProjRadius = ( lSqr > flCullRadiusSqr ) ? 0.5f * flFocalDist * flCullRadius / sqrt( lSqr - flCullRadiusSqr ) : 1.0f;
-		flProjRadius *= view.width;
+		flProjRadius *= viewSetup.width;
 
-		float flMinX = MAX( view.x, vecScreenCenter.x - flProjRadius );
-		float flMaxX = MIN( view.x + view.width, vecScreenCenter.x + flProjRadius );
+		float flMinX = MAX(viewSetup.x, vecScreenCenter.x - flProjRadius );
+		float flMaxX = MIN(viewSetup.x + viewSetup.width, vecScreenCenter.x + flProjRadius );
 
-		float flMinY = MAX( view.y, vecScreenCenter.y - flProjRadius );
-		float flMaxY = MIN( view.y + view.height, vecScreenCenter.y + flProjRadius );
+		float flMinY = MAX(viewSetup.y, vecScreenCenter.y - flProjRadius );
+		float flMaxY = MIN(viewSetup.y + viewSetup.height, vecScreenCenter.y + flProjRadius );
 
 		float flArea = ( flMaxX - flMinX ) * ( flMaxY - flMinY );
 		Assert( flArea <= flMaxPixels );

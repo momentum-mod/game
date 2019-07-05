@@ -462,8 +462,7 @@ void C_SmokeStack::SimulateParticles( CParticleSimulateIterator *pIterator )
 		}
 		else
 		{
-			// Transform.						   
-			Vector tPos;
+			// Transform.
 			if( m_bTwist )
 			{
 				Vector vTwist(
@@ -489,9 +488,9 @@ void C_SmokeStack::SimulateParticles( CParticleSimulateIterator *pIterator )
 
 			if ( bSortNow == true )
 			{
-				Vector tPos;
-				TransformParticle( m_pParticleMgr->GetModelView(), pParticle->m_Pos, tPos );
-				pParticle->m_flSortPos = tPos.z;
+				Vector tempPos;
+				TransformParticle( m_pParticleMgr->GetModelView(), pParticle->m_Pos, tempPos );
+				pParticle->m_flSortPos = tempPos.z;
 			}
 		}
 

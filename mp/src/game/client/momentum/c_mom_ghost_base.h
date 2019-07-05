@@ -28,7 +28,7 @@ public:
     virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE {return &m_RunStats;}
-    virtual int GetEntIndex() OVERRIDE { return index; }
+    virtual int GetEntIndex() OVERRIDE { return m_index; }
     virtual float GetCurrentRunTime() OVERRIDE;
 
     CInterpolatedVar<Vector> m_iv_vecViewOffset;

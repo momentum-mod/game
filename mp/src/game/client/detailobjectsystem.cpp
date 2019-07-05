@@ -1259,7 +1259,6 @@ void CDetailModel::DrawTypeShapeTri( CMeshBuilder &meshBuilder )
 	flHeight = (lr.y - ul.y);
 	flWidth = (lr.x - ul.x);
 
-	Vector vecSway;
 	Vector vecOrigin;
 	Vector vecHeight, vecWidth;
 

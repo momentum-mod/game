@@ -248,8 +248,8 @@ public:
 
 	virtual void OnDragFailed( CUtlVector< KeyValues * >& msglist )
 	{
-		PropertySheet *sheet = IsDroppingSheet( msglist );
-		if ( !sheet )
+		PropertySheet *sheetCheck = IsDroppingSheet( msglist );
+		if ( !sheetCheck )
 			return;
 
 		// Create a new property sheet
@@ -1018,8 +1018,8 @@ void PropertySheet::PerformLayout()
 		{
 			int tabHeight = IsSmallTabs() ? (m_iTabHeightSmall-1) : (m_iTabHeight-1);
 
-            int width, tall;
-            m_PageTabs[i]->GetSize(width, tall);
+            int width, tabTall;
+            m_PageTabs[i]->GetSize(width, tabTall);
 
 			if ( m_bTabFitText )
 			{

@@ -48,22 +48,22 @@ END_DATADESC()
  */
 void SendProxy_FishOriginX( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID )
 {
-	CFish *fish = (CFish *)pStruct;
-	Assert( fish );
+	CFish *pFish = (CFish *)pStruct;
+	Assert( pFish );
 
-	const Vector &v = fish->GetAbsOrigin();
-	Vector origin = fish->m_poolOrigin;
+	const Vector &v = pFish->GetAbsOrigin();
+	Vector origin = pFish->m_poolOrigin;
 
 	pOut->m_Float = v.x - origin.x;
 }
 
 void SendProxy_FishOriginY( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID )
 {
-	CFish *fish = (CFish *)pStruct;
-	Assert( fish );
+	CFish *pFish = (CFish *)pStruct;
+	Assert( pFish );
 
-	const Vector &v = fish->GetAbsOrigin();
-	Vector origin = fish->m_poolOrigin;
+	const Vector &v = pFish->GetAbsOrigin();
+	Vector origin = pFish->m_poolOrigin;
 
 	pOut->m_Float = v.y - origin.y;
 }
@@ -517,9 +517,9 @@ void CFish::ResetVisible( void )
 /**
  * Add this fish to our visible vector
  */
-void CFish::AddVisible( CFish *fish )
+void CFish::AddVisible( CFish *pFish )
 {
-	m_visible.AddToTail( fish );
+	m_visible.AddToTail( pFish );
 }
 
 
@@ -582,12 +582,12 @@ void CFishPool::Spawn()
 	{
 		QAngle heading( 0.0f, RandomFloat( 0, 360.0f ), 0.0f );
 
-		CFish *fish = (CFish *)Create( "fish", GetAbsOrigin(), heading, this );
-		if (fish)
+		CFish *pFish = (CFish *)Create( "fish", GetAbsOrigin(), heading, this );
+		if (pFish)
 		{
-            fish->Initialize(this, i);
+            pFish->Initialize(this, i);
 			CHandle<CFish> hFish;
-			hFish.Set( fish );
+			hFish.Set( pFish );
 			m_fishes.AddToTail( hFish );
 		}
 	}

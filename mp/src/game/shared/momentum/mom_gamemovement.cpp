@@ -1153,8 +1153,8 @@ void CMomentumGameMovement::CategorizePosition()
 #ifndef CLIENT_DLL
 
         // If our gamematerial has changed, tell any player surface triggers that are watching
-        IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
-        surfacedata_t *pSurfaceProp = physprops->GetSurfaceData(pm.surface.surfaceProps);
+        IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
+        surfacedata_t *pSurfaceProp = pPhysprops->GetSurfaceData(pm.surface.surfaceProps);
         char cCurrGameMaterial = pSurfaceProp->game.material;
         if (!player->GetGroundEntity())
         {

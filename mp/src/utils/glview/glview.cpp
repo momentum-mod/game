@@ -98,7 +98,7 @@ void Error (char *error, ...)
 float	origin[3] = {32, 32, 48};
 float	angles[3];
 float	forward[3], right[3], vup[3], vpn[3], vright[3];
-float	width = 1024;
+float	screenWidth = 1024;
 float	height = 768;
 
 float g_flMovementSpeed	= 320.f;		// Units / second (run speed of HL)
@@ -300,8 +300,8 @@ void Draw (void)
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity ();
 
-    screenaspect = (float)width/height;
-	yfov = 2*atan((float)height/width)*180/M_PI;
+    screenaspect = (float)screenWidth/height;
+	yfov = 2*atan((float)height/screenWidth)*180/M_PI;
     gluPerspective (yfov,  screenaspect,  6,  20000);
 
     glRotatef (-90,  1, 0, 0);	    // put Z going up
@@ -714,10 +714,10 @@ void GL_DrawLine( const Vector &start, const Vector &dir, float length, int r, i
 	glEnd();
 }
 
-void GL_DrawBox( Vector origin, float size, int r, int g, int b )
+void GL_DrawBox( Vector vecOrigin, float size, int r, int g, int b )
 {
-	Vector mins = origin - Vector(size,size,size);
-	Vector maxs = origin + Vector(size,size,size);
+	Vector mins = vecOrigin - Vector(size,size,size);
+	Vector maxs = vecOrigin + Vector(size,size,size);
 	const float *v[2] = {mins.Base(), maxs.Base()};
 
 	Vector start, end;
@@ -1256,8 +1256,8 @@ void WCam_Create (HINSTANCE hInstance)
 
 	WCam_Register (hInstance);
 
-	w = ::width;
-	h = ::height;
+	w = screenWidth;
+	h = height;
 
 	nScx = GetSystemMetrics(SM_CXSCREEN);
 	nScy = GetSystemMetrics(SM_CYSCREEN);

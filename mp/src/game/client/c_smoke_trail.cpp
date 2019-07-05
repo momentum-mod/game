@@ -370,12 +370,12 @@ void C_SmokeTrail::SimulateParticles( CParticleSimulateIterator *pIterator )
 // This is called after sending this entity's recording state
 //-----------------------------------------------------------------------------
 
-void C_SmokeTrail::CleanupToolRecordingState( KeyValues *msg )
+void C_SmokeTrail::CleanupToolRecordingState( KeyValues *pMsg )
 {
 	if ( !ToolsEnabled() )
 		return;
 
-	BaseClass::CleanupToolRecordingState( msg );
+	BaseClass::CleanupToolRecordingState( pMsg );
 
 	// Generally, this is used to allow the entity to clean up
 	// allocated state it put into the message, but here we're going
@@ -771,8 +771,6 @@ void C_RocketTrail::Update( float fTimeDelta )
 	
 	if ( m_bDamaged )
 	{
-		SimpleParticle	*pParticle;
-		Vector			offset;
 		Vector			offsetColor;
 
 		CSmartPtr<CEmberEffect>	pEmitter = CEmberEffect::Create("C_RocketTrail::damaged");
@@ -1488,8 +1486,6 @@ void C_FireTrail::Update( float fTimeDelta )
 
 	CSmartPtr<CSimpleEmitter> pSimple = CSimpleEmitter::Create( "FireTrail" );
 	pSimple->SetSortOrigin( GetAbsOrigin() );
-	
-	Vector			offset;
 
 #define	STARTSIZE			8
 #define	ENDSIZE				16
@@ -1892,12 +1888,12 @@ void C_DustTrail::SimulateParticles( CParticleSimulateIterator *pIterator )
 // This is called after sending this entity's recording state
 //-----------------------------------------------------------------------------
 
-void C_DustTrail::CleanupToolRecordingState( KeyValues *msg )
+void C_DustTrail::CleanupToolRecordingState( KeyValues *pMsg )
 {
 	if ( !ToolsEnabled() )
 		return;
 
-	BaseClass::CleanupToolRecordingState( msg );
+	BaseClass::CleanupToolRecordingState( pMsg );
 
 	// Generally, this is used to allow the entity to clean up
 	// allocated state it put into the message, but here we're going

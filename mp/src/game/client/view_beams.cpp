@@ -296,7 +296,7 @@ void Beam_t::Reset()
 	m_Mins.Init(0,0,0);
 	m_Maxs.Init(0,0,0);
 	type = 0;
-	flags = 0;
+	m_flags = 0;
 	trail = 0;
 	m_hRenderHandle = INVALID_CLIENT_RENDER_HANDLE;
 	m_bCalculatedNoise = false;
@@ -658,7 +658,7 @@ void CViewRenderBeams::KillDeadBeams( C_BaseEntity *pDeadEntity )
 			continue;
 		}
 
-		pbeam->flags &= ~(FBEAM_STARTENTITY | FBEAM_ENDENTITY);
+		pbeam->m_flags &= ~(FBEAM_STARTENTITY | FBEAM_ENDENTITY);
 		if ( pbeam->type != TE_BEAMFOLLOW )
 		{
 			// Die Die Die!
@@ -715,7 +715,7 @@ void CViewRenderBeams::SetupBeam( Beam_t *pBeam, const BeamInfo_t &beamInfo )
 	pBeam->brightness		= beamInfo.m_flBrightness;
 	pBeam->speed			= beamInfo.m_flSpeed;
 	pBeam->life				= beamInfo.m_flLife;
-	pBeam->flags			= 0;
+	pBeam->m_flags			= 0;
 
 	VectorCopy( beamInfo.m_vecStart, pBeam->attachment[0] );
 	VectorCopy( beamInfo.m_vecEnd, pBeam->attachment[1] );
@@ -748,7 +748,7 @@ void CViewRenderBeams::SetBeamAttributes( Beam_t *pBeam, const BeamInfo_t &beamI
 {
 	pBeam->frame	 = ( float )beamInfo.m_nStartFrame;
 	pBeam->frameRate = beamInfo.m_flFrameRate;
-	pBeam->flags |= beamInfo.m_nFlags;
+	pBeam->m_flags |= beamInfo.m_nFlags;
 
 	pBeam->r = beamInfo.m_flRed;
 	pBeam->g = beamInfo.m_flGreen;
@@ -906,7 +906,7 @@ Beam_t *CViewRenderBeams::CreateBeamEnts( BeamInfo_t &beamInfo )
 		return NULL;
 
 	pBeam->type = ( beamInfo.m_nType < 0 ) ? TE_BEAMPOINTS : beamInfo.m_nType;
-	pBeam->flags = FBEAM_STARTENTITY | FBEAM_ENDENTITY;
+	pBeam->m_flags = FBEAM_STARTENTITY | FBEAM_ENDENTITY;
 
 	pBeam->entity[0] = beamInfo.m_pStartEnt;
 	pBeam->attachmentIndex[0] = beamInfo.m_nStartAttachment;
@@ -917,7 +917,7 @@ Beam_t *CViewRenderBeams::CreateBeamEnts( BeamInfo_t &beamInfo )
 	SetBeamAttributes( pBeam, beamInfo );
 	if ( beamInfo.m_flLife == 0 )
 	{
-		pBeam->flags |= FBEAM_FOREVER;
+		pBeam->m_flags |= FBEAM_FOREVER;
 	}
 
 	UpdateBeam( pBeam, 0 );
@@ -1028,18 +1028,18 @@ Beam_t *CViewRenderBeams::CreateBeamEntPoint( BeamInfo_t &beamInfo )
 		return NULL;
 
 	pBeam->type = TE_BEAMPOINTS;
-	pBeam->flags = 0;
+	pBeam->m_flags = 0;
 
 	if ( beamInfo.m_pStartEnt )
 	{
-		pBeam->flags |= FBEAM_STARTENTITY;
+		pBeam->m_flags |= FBEAM_STARTENTITY;
 		pBeam->entity[0] = beamInfo.m_pStartEnt;
 		pBeam->attachmentIndex[0] = beamInfo.m_nStartAttachment;
 		beamInfo.m_vecStart = vec3_origin;
 	}
 	if ( beamInfo.m_pEndEnt )
 	{
-		pBeam->flags |= FBEAM_ENDENTITY;
+		pBeam->m_flags |= FBEAM_ENDENTITY;
 		pBeam->entity[1] = beamInfo.m_pEndEnt;
 		pBeam->attachmentIndex[1] = beamInfo.m_nEndAttachment;
 		beamInfo.m_vecEnd = vec3_origin;
@@ -1048,7 +1048,7 @@ Beam_t *CViewRenderBeams::CreateBeamEntPoint( BeamInfo_t &beamInfo )
 	SetBeamAttributes( pBeam, beamInfo );
 	if ( beamInfo.m_flLife == 0 )
 	{
-		pBeam->flags |= FBEAM_FOREVER;
+		pBeam->m_flags |= FBEAM_FOREVER;
 	}
 
 	UpdateBeam( pBeam, 0 );
@@ -1128,7 +1128,7 @@ Beam_t *CViewRenderBeams::CreateBeamPoints( BeamInfo_t &beamInfo )
 	SetBeamAttributes( pBeam, beamInfo );
 	if ( beamInfo.m_flLife == 0 )
 	{
-		pBeam->flags |= FBEAM_FOREVER;
+		pBeam->m_flags |= FBEAM_FOREVER;
 	}
 
 	return pBeam;
@@ -1194,7 +1194,7 @@ Beam_t *CViewRenderBeams::CreateBeamCirclePoints( BeamInfo_t &beamInfo )
 	SetBeamAttributes( pBeam, beamInfo );
 	if ( beamInfo.m_flLife == 0 )
 	{
-		pBeam->flags |= FBEAM_FOREVER;
+		pBeam->m_flags |= FBEAM_FOREVER;
 	}
 
 	return pBeam;
@@ -1248,7 +1248,7 @@ Beam_t *CViewRenderBeams::CreateBeamFollow( BeamInfo_t &beamInfo )
 		return NULL;
 
 	pBeam->type = TE_BEAMFOLLOW;
-	pBeam->flags = FBEAM_STARTENTITY;
+	pBeam->m_flags = FBEAM_STARTENTITY;
 	pBeam->entity[0] = beamInfo.m_pStartEnt;
 	pBeam->attachmentIndex[0] = beamInfo.m_nStartAttachment;
 
@@ -1331,7 +1331,7 @@ Beam_t *CViewRenderBeams::CreateBeamRingPoint( BeamInfo_t &beamInfo )
 	SetBeamAttributes( pBeam, beamInfo );
 	if ( beamInfo.m_flLife == 0 )
 	{
-		pBeam->flags |= FBEAM_FOREVER;
+		pBeam->m_flags |= FBEAM_FOREVER;
 	}
 
 	return pBeam;
@@ -1403,7 +1403,7 @@ Beam_t *CViewRenderBeams::CreateBeamRing( BeamInfo_t &beamInfo )
 		return NULL;
 
 	pBeam->type = TE_BEAMRING;
-	pBeam->flags = FBEAM_STARTENTITY | FBEAM_ENDENTITY;
+	pBeam->m_flags = FBEAM_STARTENTITY | FBEAM_ENDENTITY;
 	pBeam->entity[0] = beamInfo.m_pStartEnt;
 	pBeam->attachmentIndex[0] = beamInfo.m_nStartAttachment;
 	pBeam->entity[1] = beamInfo.m_pEndEnt;
@@ -1412,7 +1412,7 @@ Beam_t *CViewRenderBeams::CreateBeamRing( BeamInfo_t &beamInfo )
 	SetBeamAttributes( pBeam, beamInfo );
 	if ( beamInfo.m_flLife == 0 )
 	{
-		pBeam->flags |= FBEAM_FOREVER;
+		pBeam->m_flags |= FBEAM_FOREVER;
 	}
 
 	UpdateBeam( pBeam, 0 );
@@ -1481,7 +1481,7 @@ void CViewRenderBeams::UpdateBeam( Beam_t *pbeam, float frametime )
 	}
 
 	// If FBEAM_ONLYNOISEONCE is set, we don't want to move once we've first calculated noise
-	if ( !(pbeam->flags & FBEAM_ONLYNOISEONCE ) )
+	if ( !(pbeam->m_flags & FBEAM_ONLYNOISEONCE ) )
 	{
 		pbeam->freq += frametime;
 	}
@@ -1497,9 +1497,9 @@ void CViewRenderBeams::UpdateBeam( Beam_t *pbeam, float frametime )
 	pbeam->rgNoise[NOISE_DIVISIONS] = 0;
 	if ( pbeam->amplitude != 0 )
 	{
-		if ( !(pbeam->flags & FBEAM_ONLYNOISEONCE ) || !pbeam->m_bCalculatedNoise )
+		if ( !(pbeam->m_flags & FBEAM_ONLYNOISEONCE ) || !pbeam->m_bCalculatedNoise )
 		{
-			if ( pbeam->flags & FBEAM_SINENOISE )
+			if ( pbeam->m_flags & FBEAM_SINENOISE )
 			{
 				SineNoise( pbeam->rgNoise, NOISE_DIVISIONS );
 			}
@@ -1513,7 +1513,7 @@ void CViewRenderBeams::UpdateBeam( Beam_t *pbeam, float frametime )
 	}
 
 	// update end points
-	if ( pbeam->flags & (FBEAM_STARTENTITY|FBEAM_ENDENTITY) )
+	if ( pbeam->m_flags & (FBEAM_STARTENTITY|FBEAM_ENDENTITY) )
 	{
 		// Makes sure attachment[0] + attachment[1] are valid
 		if (!RecomputeBeamEndpoints( pbeam ))
@@ -1535,7 +1535,7 @@ void CViewRenderBeams::UpdateBeam( Beam_t *pbeam, float frametime )
 			// Why isn't attachment[0] being computed?
 			for (int i=1; i < pbeam->numAttachments; i++)
 			{
-				if (!ComputeBeamEntPosition( pbeam->entity[i], pbeam->attachmentIndex[i], (pbeam->flags & FBEAM_USE_HITBOXES) != 0, pbeam->attachment[i] ))
+				if (!ComputeBeamEntPosition( pbeam->entity[i], pbeam->attachmentIndex[i], (pbeam->m_flags & FBEAM_USE_HITBOXES) != 0, pbeam->attachment[i] ))
 				{
 					// This should never happen, but if for some reason the attachment doesn't exist, 
 					// as a safety measure copy in the location of the previous attachment point (rather than bailing)
@@ -1635,7 +1635,7 @@ void CViewRenderBeams::UpdateTempEntBeams( void )
 		pNext = pBeam->next;
 
 		// Retire old beams
-		if ( !(pBeam->flags & FBEAM_FOREVER) && 
+		if ( !(pBeam->m_flags & FBEAM_FOREVER) && 
 			pBeam->die <= gpGlobals->curtime )
 		{
 			// Reset links
@@ -1695,7 +1695,7 @@ void CViewRenderBeams::DrawBeamFollow( const model_t* pSprite, Beam_t *pbeam,
 	pnew = NULL;
 
 	div = 0;
-	if ( pbeam->flags & FBEAM_STARTENTITY )
+	if ( pbeam->m_flags & FBEAM_STARTENTITY )
 	{
 		if (particles)
 		{
@@ -1751,7 +1751,7 @@ void CViewRenderBeams::DrawBeamFollow( const model_t* pSprite, Beam_t *pbeam,
 
 	// Draw it
 	::DrawBeamFollow( pSprite, pbeam->trail, frame, rendermode, delta, screen, screenLast, 
-		pbeam->die, pbeam->attachment[0], pbeam->flags, pbeam->width, 
+		pbeam->die, pbeam->attachment[0], pbeam->m_flags, pbeam->width, 
 		pbeam->amplitude, pbeam->freq, (float*)color );
 	
 	// Drift popcorn trail if there is a velocity
@@ -1820,18 +1820,18 @@ void CViewRenderBeams::DrawBeamWithHalo(	Beam_t*			pbeam,
 	scaleColor[2] = color[2] * dotScale;
 	scaleColor[3] = color[3] * dotScale;
 
-	if( pbeam->flags & FBEAM_HALOBEAM )
+	if( pbeam->m_flags & FBEAM_HALOBEAM )
 	{
 		DrawSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, frame, rendermode, pbeam->attachment[0],
 			pbeam->delta, pbeam->width, pbeam->endWidth, pbeam->amplitude, pbeam->freq, pbeam->speed,
-			pbeam->segments, pbeam->flags, scaleColor, pbeam->fadeLength, flHDRColorScale );
+			pbeam->segments, pbeam->m_flags, scaleColor, pbeam->fadeLength, flHDRColorScale );
 	}
 	else
 	{
 		// Draw primary beam just shy of its end so it doesn't clip
 		DrawSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, frame, rendermode, pbeam->attachment[0], 
 			pbeam->delta, pbeam->width, pbeam->width, pbeam->amplitude, pbeam->freq, pbeam->speed, 
-			2, pbeam->flags, scaleColor, pbeam->fadeLength, flHDRColorScale );
+			2, pbeam->m_flags, scaleColor, pbeam->fadeLength, flHDRColorScale );
 	}
 
 	Vector vSource = pbeam->attachment[0];
@@ -1912,7 +1912,7 @@ void CViewRenderBeams::DrawLaser( Beam_t *pbeam, int frame, int rendermode, floa
 		//engine->Con_NPrintf( 7, "Dist: %f", flDistance );
 	}
 
-	DrawSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, frame, rendermode, pbeam->attachment[0], pbeam->delta, pbeam->width, pbeam->endWidth, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments, pbeam->flags, color2, pbeam->fadeLength);
+	DrawSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, frame, rendermode, pbeam->attachment[0], pbeam->delta, pbeam->width, pbeam->endWidth, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments, pbeam->m_flags, color2, pbeam->fadeLength);
 }
 
 //------------------------------------------------------------------------------
@@ -1920,7 +1920,7 @@ void CViewRenderBeams::DrawLaser( Beam_t *pbeam, int frame, int rendermode, floa
 //------------------------------------------------------------------------------
 void CViewRenderBeams::DrawTesla( Beam_t *pbeam, int frame, int rendermode, float *color, const model_t *sprite, float flHDRColorScale )
 {
-	DrawTeslaSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, frame, rendermode, pbeam->attachment[0], pbeam->delta, pbeam->width, pbeam->endWidth, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments, pbeam->flags, color, pbeam->fadeLength, flHDRColorScale );
+	DrawTeslaSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, frame, rendermode, pbeam->attachment[0], pbeam->delta, pbeam->width, pbeam->endWidth, pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments, pbeam->m_flags, color, pbeam->fadeLength, flHDRColorScale );
 }
 
 //-----------------------------------------------------------------------------
@@ -1959,7 +1959,7 @@ void CViewRenderBeams::DrawBeam( Beam_t *pbeam )
 	halosprite = modelinfo->GetModel( pbeam->haloIndex );
 
 	int frame = ( ( int )( pbeam->frame + gpGlobals->curtime * pbeam->frameRate) % pbeam->frameCount );
-	int rendermode = ( pbeam->flags & FBEAM_SOLID ) ? kRenderNormal : kRenderTransAdd;
+	int rendermode = ( pbeam->m_flags & FBEAM_SOLID ) ? kRenderNormal : kRenderTransAdd;
 
 	// set color
 	float srcColor[3];
@@ -1968,11 +1968,11 @@ void CViewRenderBeams::DrawBeam( Beam_t *pbeam )
 	srcColor[0] = pbeam->r;
 	srcColor[1] = pbeam->g;
 	srcColor[2] = pbeam->b;
-	if ( pbeam->flags & FBEAM_FADEIN )
+	if ( pbeam->m_flags & FBEAM_FADEIN )
 	{
 		VectorScale( srcColor, pbeam->t, color );
 	}
-	else if ( pbeam->flags & FBEAM_FADEOUT )
+	else if ( pbeam->m_flags & FBEAM_FADEOUT )
 	{
 		VectorScale( srcColor, ( 1.0f - pbeam->t ), color );
 	}
@@ -2009,7 +2009,7 @@ void CViewRenderBeams::DrawBeam( Beam_t *pbeam )
 			DrawSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, frame, rendermode, 
 				pbeam->attachment[0], pbeam->delta, pbeam->width, pbeam->endWidth, 
 				pbeam->amplitude, pbeam->freq, pbeam->speed, pbeam->segments, 
-				pbeam->flags, color, pbeam->fadeLength, pbeam->m_flHDRColorScale );
+				pbeam->m_flags, color, pbeam->fadeLength, pbeam->m_flHDRColorScale );
 		}
 		break;
 
@@ -2028,7 +2028,7 @@ void CViewRenderBeams::DrawBeam( Beam_t *pbeam )
 		DrawSplineSegs( NOISE_DIVISIONS, pbeam->rgNoise, sprite, halosprite,
 			pbeam->haloScale, frame, rendermode, pbeam->numAttachments,
 			pbeam->attachment, pbeam->width, pbeam->endWidth, pbeam->amplitude,
-			pbeam->freq, pbeam->speed, pbeam->segments, pbeam->flags, color, pbeam->fadeLength, pbeam->m_flHDRColorScale );
+			pbeam->freq, pbeam->speed, pbeam->segments, pbeam->m_flags, color, pbeam->fadeLength, pbeam->m_flHDRColorScale );
 		break;
 
 	case TE_BEAMLASER:
@@ -2065,15 +2065,15 @@ void CViewRenderBeams::UpdateBeamInfo( Beam_t *pBeam, BeamInfo_t &beamInfo )
 //-----------------------------------------------------------------------------
 bool CViewRenderBeams::RecomputeBeamEndpoints( Beam_t *pbeam )
 {
-	if ( pbeam->flags & FBEAM_STARTENTITY )
+	if ( pbeam->m_flags & FBEAM_STARTENTITY )
 	{
-		if (ComputeBeamEntPosition( pbeam->entity[0], pbeam->attachmentIndex[0], (pbeam->flags & FBEAM_USE_HITBOXES) != 0, pbeam->attachment[0] ))
+		if (ComputeBeamEntPosition( pbeam->entity[0], pbeam->attachmentIndex[0], (pbeam->m_flags & FBEAM_USE_HITBOXES) != 0, pbeam->attachment[0] ))
 		{
-			pbeam->flags |= FBEAM_STARTVISIBLE;
+			pbeam->m_flags |= FBEAM_STARTVISIBLE;
 		}
-		else if (! (pbeam->flags & FBEAM_FOREVER))
+		else if (! (pbeam->m_flags & FBEAM_FOREVER))
 		{
-			pbeam->flags &= ~(FBEAM_STARTENTITY);
+			pbeam->m_flags &= ~(FBEAM_STARTENTITY);
 		}
 		else
 		{
@@ -2082,19 +2082,19 @@ bool CViewRenderBeams::RecomputeBeamEndpoints( Beam_t *pbeam )
 		}
 
 		// If we've never seen the start entity, don't display
-		if ( !(pbeam->flags & FBEAM_STARTVISIBLE) )
+		if ( !(pbeam->m_flags & FBEAM_STARTVISIBLE) )
 			return false;
 	}
 
-	if ( pbeam->flags & FBEAM_ENDENTITY )
+	if ( pbeam->m_flags & FBEAM_ENDENTITY )
 	{
-		if (ComputeBeamEntPosition( pbeam->entity[1], pbeam->attachmentIndex[1], (pbeam->flags & FBEAM_USE_HITBOXES) != 0, pbeam->attachment[1] ))
+		if (ComputeBeamEntPosition( pbeam->entity[1], pbeam->attachmentIndex[1], (pbeam->m_flags & FBEAM_USE_HITBOXES) != 0, pbeam->attachment[1] ))
 		{
-			pbeam->flags |= FBEAM_ENDVISIBLE;
+			pbeam->m_flags |= FBEAM_ENDVISIBLE;
 		}
-		else if (! (pbeam->flags & FBEAM_FOREVER))
+		else if (! (pbeam->m_flags & FBEAM_FOREVER))
 		{
-			pbeam->flags &= ~(FBEAM_ENDENTITY);
+			pbeam->m_flags &= ~(FBEAM_ENDENTITY);
 			pbeam->die = gpGlobals->curtime;
 			return false;
 		}
@@ -2104,7 +2104,7 @@ bool CViewRenderBeams::RecomputeBeamEndpoints( Beam_t *pbeam )
 		}
 
 		// If we've never seen the end entity, don't display
-		if ( !(pbeam->flags & FBEAM_ENDVISIBLE) )
+		if ( !(pbeam->m_flags & FBEAM_ENDVISIBLE) )
 			return false;
 	}
 
@@ -2277,7 +2277,7 @@ void CViewRenderBeams::DrawBeam( C_Beam* pbeam, ITraceFilter *pEntityBeamTraceFi
 		case BEAM_ENTS:
 		{
 			beam.type			= TE_BEAMPOINTS;
-			beam.flags			= FBEAM_STARTENTITY | FBEAM_ENDENTITY;
+			beam.m_flags			= FBEAM_STARTENTITY | FBEAM_ENDENTITY;
 			beam.entity[0]		= pbeam->m_hAttachEntity[0];
 			beam.attachmentIndex[0]	= pbeam->m_nAttachIndex[0];
 			beam.entity[1]		= pbeam->m_hAttachEntity[1];
@@ -2288,7 +2288,7 @@ void CViewRenderBeams::DrawBeam( C_Beam* pbeam, ITraceFilter *pEntityBeamTraceFi
 		case BEAM_LASER:
 		{
 			beam.type			= TE_BEAMLASER;
-			beam.flags			= FBEAM_STARTENTITY | FBEAM_ENDENTITY;
+			beam.m_flags			= FBEAM_STARTENTITY | FBEAM_ENDENTITY;
 			beam.entity[0]		= pbeam->m_hAttachEntity[0];
 			beam.attachmentIndex[0]	= pbeam->m_nAttachIndex[0];
 			beam.entity[1]		= pbeam->m_hAttachEntity[1];
@@ -2299,7 +2299,7 @@ void CViewRenderBeams::DrawBeam( C_Beam* pbeam, ITraceFilter *pEntityBeamTraceFi
 		case BEAM_SPLINE:
 		{
 			beam.type			= TE_BEAMSPLINE;
-			beam.flags			= FBEAM_STARTENTITY | FBEAM_ENDENTITY;
+			beam.m_flags			= FBEAM_STARTENTITY | FBEAM_ENDENTITY;
 			beam.numAttachments	= pbeam->m_nNumBeamEnts;
 			for (int i=0;i<beam.numAttachments;i++)
 			{
@@ -2311,18 +2311,18 @@ void CViewRenderBeams::DrawBeam( C_Beam* pbeam, ITraceFilter *pEntityBeamTraceFi
 		case BEAM_ENTPOINT:
 		{
 			beam.type			= TE_BEAMPOINTS;
-			beam.flags = 0;
+			beam.m_flags = 0;
 			beam.entity[0]		= pbeam->m_hAttachEntity[0];
 			beam.attachmentIndex[0]	= pbeam->m_nAttachIndex[0];
 			beam.entity[1]		= pbeam->m_hAttachEntity[1];
 			beam.attachmentIndex[1]	= pbeam->m_nAttachIndex[1];
 			if ( beam.entity[0].Get() )
 			{
-				beam.flags |= FBEAM_STARTENTITY;
+				beam.m_flags |= FBEAM_STARTENTITY;
 			}
 			if ( beam.entity[1].Get() )
 			{
-				beam.flags |= FBEAM_ENDENTITY;
+				beam.m_flags |= FBEAM_ENDENTITY;
 			}
 			beam.numAttachments	= pbeam->m_nNumBeamEnts;
 			break;
@@ -2332,7 +2332,7 @@ void CViewRenderBeams::DrawBeam( C_Beam* pbeam, ITraceFilter *pEntityBeamTraceFi
 			break;
 	}
 
-	beam.flags |= pbeam->GetBeamFlags() & (FBEAM_SINENOISE|FBEAM_SOLID|FBEAM_SHADEIN|FBEAM_SHADEOUT|FBEAM_NOTILE);
+	beam.m_flags |= pbeam->GetBeamFlags() & (FBEAM_SINENOISE|FBEAM_SOLID|FBEAM_SHADEIN|FBEAM_SHADEOUT|FBEAM_NOTILE);
 
 	if ( beam.entity[0] )
 	{

@@ -1025,11 +1025,11 @@ void PropBreakableCreateAll( int modelindex, IPhysicsObject *pPhysics, const bre
 			matrix3x4_t matrix;
 			AngleMatrix( params.angles, params.origin, matrix );
 
-			CStudioHdr studioHdr;
-			const model_t *model = modelinfo->GetModel( modelIndex );
-			if ( model )
+			CStudioHdr studioBreakHdr;
+			const model_t *pBreakModel = modelinfo->GetModel( modelIndex );
+			if (pBreakModel)
 			{
-				studioHdr.Init( modelinfo->GetStudiomodel( model ) );
+                studioBreakHdr.Init( modelinfo->GetStudiomodel(pBreakModel) );
 			}
 
 			// Increment the number of breakable props this frame.
@@ -1418,11 +1418,11 @@ CBaseEntity *CreateGibsFromList( CUtlVector<breakmodel_t> &list, int modelindex,
 			matrix3x4_t matrix;
 			AngleMatrix( params.angles, params.origin, matrix );
 
-			CStudioHdr studioHdr;
-			const model_t *model = modelinfo->GetModel( modelIndex );
-			if ( model )
+			CStudioHdr studioHdrGib;
+			const model_t *pGibModel = modelinfo->GetModel( modelIndex );
+			if (pGibModel)
 			{
-				studioHdr.Init( modelinfo->GetStudiomodel( model ) );
+				studioHdrGib.Init( modelinfo->GetStudiomodel(pGibModel) );
 			}
 
 			// Increment the number of breakable props this frame.

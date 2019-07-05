@@ -472,8 +472,8 @@ void C_BasePlayer::Spawn( void )
 	ClearFlags();
 	AddFlag( FL_CLIENT );
 
-	int effects = GetEffects() & EF_NOSHADOW;
-	SetEffects( effects );
+	int effect = GetEffects() & EF_NOSHADOW;
+	SetEffects( effect );
 
 	m_iFOV	= 0;	// init field of view.
 
@@ -807,7 +807,7 @@ void C_BasePlayer::PostDataUpdate( DataUpdateType_t updateType )
 		if ( g_nKillCamMode )
 			iLocalPlayerIndex = g_nKillCamTarget1;
 
-		if ( iLocalPlayerIndex == index )
+		if ( iLocalPlayerIndex == m_index )
 		{
 			Assert( s_pLocalPlayer == NULL );
 			s_pLocalPlayer = this;
@@ -1232,7 +1232,7 @@ void C_BasePlayer::UpdateFlashlight()
 		if (!m_pFlashlight)
 		{
 			// Turned on the headlight; create it.
-			m_pFlashlight = new CFlashlightEffect(index);
+			m_pFlashlight = new CFlashlightEffect(m_index);
 
 			if (!m_pFlashlight)
 				return;
@@ -1594,11 +1594,11 @@ void C_BasePlayer::CalcRoamingView(Vector& eyeOrigin, QAngle& eyeAngles, float& 
 	
 	if ( spec_track.GetInt() > 0 )
 	{
-		C_BaseEntity *target =  ClientEntityList().GetBaseEntity( spec_track.GetInt() );
+		C_BaseEntity *pTarget =  ClientEntityList().GetBaseEntity( spec_track.GetInt() );
 
-		if ( target )
+		if ( pTarget )
 		{
-			Vector v = target->GetAbsOrigin(); v.z += 54;
+			Vector v = pTarget->GetAbsOrigin(); v.z += 54;
 			QAngle a; VectorAngles( v - eyeOrigin, a );
 
 			NormalizeAngles( a );

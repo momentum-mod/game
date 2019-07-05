@@ -699,8 +699,8 @@ void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, flo
 	}
 	else
 	{
-		IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
-		const char *pSoundName = physprops->GetString( stepSoundName );
+		IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
+		const char *pSoundName = pPhysprops->GetString( stepSoundName );
 
 		// Give child classes an opportunity to override.
 		pSoundName = GetOverrideStepSound( pSoundName );

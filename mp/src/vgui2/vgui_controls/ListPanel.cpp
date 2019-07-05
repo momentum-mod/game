@@ -1869,13 +1869,13 @@ void ListPanel::PerformLayout()
 
 		bool bDone = false;
 		int drawcount = 0;
-		for (int i = nStartItem; i < nTotalRows && !bDone; i++)
+		for (int item = nStartItem; item < nTotalRows && !bDone; item++)
 		{
-			int x = 0;
-			if (!m_VisibleItems.IsValidIndex(i))
+			int tempX = 0;
+			if (!m_VisibleItems.IsValidIndex(item))
 				continue;
 
-			int itemID = m_VisibleItems[i];
+			int itemID = m_VisibleItems[item];
 			
 			// iterate the columns
 			for (int j = 0; j < m_CurrentColumns.Count(); j++)
@@ -1885,19 +1885,19 @@ void ListPanel::PerformLayout()
 				if (!header->IsVisible())
 					continue;
 
-				int wide = header->GetWide();
+				int headerWide = header->GetWide();
 
 				if ( itemID == m_iEditModeItemID &&
 					 j == m_iEditModeColumn )
 				{
 
-					m_hEditModePanel->SetPos( x + m_iTableStartX + 2, (drawcount * m_iRowHeight) + m_iTableStartY);
-					m_hEditModePanel->SetSize( wide, m_iRowHeight);
+					m_hEditModePanel->SetPos( tempX + m_iTableStartX + 2, (drawcount * m_iRowHeight) + m_iTableStartY);
+					m_hEditModePanel->SetSize( headerWide, m_iRowHeight);
 
 					bDone = true;
 				}
 
-				x += wide;
+				tempX += headerWide;
 			}
 
 			drawcount++;
@@ -2512,13 +2512,13 @@ void ListPanel::OnKeyCodePressed(KeyCode code)
 	// move the newly selected item to within the visible range
 	if ( nRowsPerPage < nTotalRows )
 	{
-		int nStartItem = m_vbar->GetValue();
-		if ( nSelectedRow < nStartItem )
+		int nStartItemFromVbar = m_vbar->GetValue();
+		if ( nSelectedRow < nStartItemFromVbar)
 		{
 			// move the list back to match
 			m_vbar->SetValue( nSelectedRow );
 		}
-		else if ( nSelectedRow >= nStartItem + nRowsPerPage )
+		else if ( nSelectedRow >= nStartItemFromVbar + nRowsPerPage )
 		{
 			// move list forward to match
 			m_vbar->SetValue( nSelectedRow - nRowsPerPage + 1);

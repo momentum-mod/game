@@ -181,7 +181,7 @@ class CGameSaveRestoreInfo
 {
 public:
 	CGameSaveRestoreInfo()
-		: tableCount( 0 ), pTable( 0 ), m_pCurrentEntity( 0 ), m_EntityToIndex( 1024 )
+		: m_tableCount( 0 ), m_pTable( nullptr ), m_pCurrentEntity( 0 ), m_EntityToIndex( 1024 )
 	{
 		memset( &levelInfo, 0, sizeof( levelInfo ) );
 		modelSpaceOffset.Init( 0, 0, 0 );
@@ -189,8 +189,8 @@ public:
 
 	void InitEntityTable( entitytable_t *pNewTable = NULL, int size = 0 )
 	{
-		pTable = pNewTable;
-		tableCount = size;
+		m_pTable = pNewTable;
+		m_tableCount = size;
 
 		for ( int i = 0; i < NumEntities(); i++ )
 		{
@@ -200,17 +200,17 @@ public:
 
 	entitytable_t *DetachEntityTable()
 	{
-		entitytable_t *pReturn = pTable;
-		pTable = NULL;
-		tableCount = 0;
+		entitytable_t *pReturn = m_pTable;
+		m_pTable = NULL;
+		m_tableCount = 0;
 		return pReturn;
 	}
 
 	CBaseEntity *GetCurrentEntityContext()	{ return m_pCurrentEntity; }
 	void		SetCurrentEntityContext(CBaseEntity *pEntity) { m_pCurrentEntity = pEntity; }
 
-	int NumEntities()						{ return tableCount; }
-	entitytable_t *GetEntityInfo( int i )	{ return (pTable + i); }
+	int NumEntities()						{ return m_tableCount; }
+	entitytable_t *GetEntityInfo( int i )	{ return (m_pTable + i); }
 	float GetBaseTime() const				{ return levelInfo.time; }
 	Vector GetLandmark() const				{ return ( levelInfo.fUseLandmark ) ? levelInfo.vecLandmarkOffset : vec3_origin; }
 
@@ -269,8 +269,8 @@ public:
 	Vector		modelSpaceOffset;			// used only for globaly entity brushes modelled in different coordinate systems.
 	
 private:
-	int			tableCount;		// Number of elements in the entity table
-	entitytable_t	*pTable;		// Array of entitytable_t elements (1 for each entity)
+	int			m_tableCount;		// Number of elements in the entity table
+	entitytable_t	*m_pTable;		// Array of entitytable_t elements (1 for each entity)
 	CBaseEntity		*m_pCurrentEntity; // only valid during the save functions of this entity, NULL otherwise
 
 

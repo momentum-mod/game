@@ -349,14 +349,14 @@ void CreateDefaultCubemaps( bool bHDR )
 				if ( ( pSrcVTFTextures[iFace]->Width() == 4 ) && ( pSrcVTFTextures[iFace]->Height() == 4 ) ) // If texture is 4x4 square
 				{
 					// Force mip level 2 to get the 1x1 face
-					unsigned char *pSrcBits = pSrcVTFTextures[iFace]->ImageData( iFrame, 0, 2 );
-					int iSrcMipSize = pSrcVTFTextures[iFace]->ComputeMipSize( 2 );
+					unsigned char *pSrcBitsLv2 = pSrcVTFTextures[iFace]->ImageData( iFrame, 0, 2 );
+					int iSrcMipSizeLv2 = pSrcVTFTextures[iFace]->ComputeMipSize( 2 );
 
 					// Replicate 1x1 mip level across entire face
 					//memset( pDstBits, 0, iSize ); 
-					for ( int i = 0; i < ( iSize / iSrcMipSize ); i++ )
+					for ( int i = 0; i < ( iSize / iSrcMipSizeLv2); i++ )
 					{
-						memcpy( pDstBits + ( i * iSrcMipSize ), pSrcBits, iSrcMipSize ); 
+						memcpy( pDstBits + ( i * iSrcMipSizeLv2), pSrcBitsLv2, iSrcMipSizeLv2);
 					}
 				}
 				else if ( pSrcVTFTextures[iFace]->Width() == pSrcVTFTextures[iFace]->Height() ) // If texture is square

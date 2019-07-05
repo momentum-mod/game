@@ -1607,8 +1607,6 @@ void EmitPhysCollision()
 	{
 		if ( pTextBuffer[i] )
 		{
-			int j;
-
 			dphysmodel_t model;
 
 			model.modelIndex = i;

@@ -378,11 +378,9 @@ void CBasePlayerAnimState::UpdateAimSequenceLayers(
 
 void CBasePlayerAnimState::OptimizeLayerWeights( int iFirstLayer, int nLayers )
 {
-	int i;
-
 	// Find the total weight of the blended layers, not including the idle layer (iFirstLayer)
 	float totalWeight = 0.0f;
-	for ( i=1; i < nLayers; i++ )
+	for ( int i=1; i < nLayers; i++ )
 	{
 		CAnimationLayer *pLayer = m_pOuter->GetAnimOverlay( iFirstLayer+i );
 		if ( pLayer->IsActive() && pLayer->m_flWeight > 0.0f )
@@ -392,11 +390,11 @@ void CBasePlayerAnimState::OptimizeLayerWeights( int iFirstLayer, int nLayers )
 	}
 
 	// Set the idle layer's weight to be 1 minus the sum of other layer weights
-	CAnimationLayer *pLayer = m_pOuter->GetAnimOverlay( iFirstLayer );
-	if ( pLayer->IsActive() && pLayer->m_flWeight > 0.0f )
+	CAnimationLayer *pFirstLayer = m_pOuter->GetAnimOverlay( iFirstLayer );
+	if (pFirstLayer->IsActive() && pFirstLayer->m_flWeight > 0.0f )
 	{
-		pLayer->m_flWeight = 1.0f - totalWeight;
-		pLayer->m_flWeight = MAX( (float)pLayer->m_flWeight, 0.0f);
+        pFirstLayer->m_flWeight = 1.0f - totalWeight;
+        pFirstLayer->m_flWeight = MAX( (float) pFirstLayer->m_flWeight, 0.0f);
 	}
 
 	// This part is just an optimization. Since we have the walk/run animations weighted on top of 
@@ -405,7 +403,7 @@ void CBasePlayerAnimState::OptimizeLayerWeights( int iFirstLayer, int nLayers )
 	//
 	// So it saves us blending a couple animation layers whenever a guy is walking or running full speed.
 	int iLastOne = -1;
-	for ( i=0; i < nLayers; i++ )
+	for ( int i=0; i < nLayers; i++ )
 	{
 		CAnimationLayer *pLayer = m_pOuter->GetAnimOverlay( iFirstLayer+i );
 		if ( pLayer->IsActive() && pLayer->m_flWeight > 0.99 )

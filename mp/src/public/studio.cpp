@@ -565,25 +565,24 @@ int	studiohdr_t::GetActivityListVersion( void )
 	virtualmodel_t *pVModel = (virtualmodel_t *)GetVirtualModel();
 	Assert( pVModel );
 
-	int version = activitylistversion;
+	int ver = activitylistversion;
 
-	int i;
-	for (i = 1; i < pVModel->m_group.Count(); i++)
+	for (int i = 1; i < pVModel->m_group.Count(); i++)
 	{
 		virtualgroup_t *pGroup = &pVModel->m_group[ i ];
 		const studiohdr_t *pStudioHdr = pGroup->GetStudioHdr();
 
 		Assert( pStudioHdr );
 
-		version = min( version, pStudioHdr->activitylistversion );
+		ver = min( ver, pStudioHdr->activitylistversion );
 	}
 
-	return version;
+	return ver;
 }
 
-void studiohdr_t::SetActivityListVersion( int version ) const
+void studiohdr_t::SetActivityListVersion( int ver ) const
 {
-	activitylistversion = version;
+	activitylistversion = ver;
 
 	if (numincludemodels == 0)
 	{
@@ -593,15 +592,14 @@ void studiohdr_t::SetActivityListVersion( int version ) const
 	virtualmodel_t *pVModel = (virtualmodel_t *)GetVirtualModel();
 	Assert( pVModel );
 
-	int i;
-	for (i = 1; i < pVModel->m_group.Count(); i++)
+	for (int i = 1; i < pVModel->m_group.Count(); i++)
 	{
 		virtualgroup_t *pGroup = &pVModel->m_group[ i ];
 		const studiohdr_t *pStudioHdr = pGroup->GetStudioHdr();
 
 		Assert( pStudioHdr );
 
-		pStudioHdr->SetActivityListVersion( version );
+		pStudioHdr->SetActivityListVersion( ver );
 	}
 }
 
@@ -1445,9 +1443,9 @@ void CStudioHdr::RunFlexRules( const float *src, float *dest )
 				{
 					int m = pops->d.index;
 					int km = k - m;
-					for ( int i = km + 1; i < k; ++i )
+					for ( int t = km + 1; t < k; ++t )
 					{
-						stack[ km ] *= stack[ i ];
+						stack[ km ] *= stack[ t ];
 					}
 					k = k - m + 1;
 				}
@@ -1457,9 +1455,9 @@ void CStudioHdr::RunFlexRules( const float *src, float *dest )
 					int m = pops->d.index;
 					int km = k - m;
 					float dv = stack[ km ];
-					for ( int i = km + 1; i < k; ++i )
+					for ( int t = km + 1; t < k; ++t )
 					{
-						dv *= stack[ i ];
+						dv *= stack[ t ];
 					}
 					stack[ km - 1 ] *= 1.0f - dv;
 					k -= m;
@@ -1717,7 +1715,7 @@ void CStudioHdr::CActivityToSequenceMapping::Initialize( CStudioHdr * __restrict
 	// This stack may potentially grow very large; so if you have problems with it, 
 	// go to a utlmap or similar structure.
 	unsigned int allocsize = (topActivity + 1) * sizeof(int);
-#define ALIGN_VALUE( val, alignment ) ( ( val + alignment - 1 ) & ~( alignment - 1 ) ) //  need macro for constant expression
+#define ALIGN_VALUE( val, alignment ) ( ( (val) + (alignment) - 1 ) & ~( (alignment) - 1 ) ) //  need macro for constant expression
 	allocsize = ALIGN_VALUE(allocsize,16);
 	int * __restrict seqsPerAct = static_cast<int *>(stackalloc(allocsize));
 	memset(seqsPerAct, 0, allocsize);

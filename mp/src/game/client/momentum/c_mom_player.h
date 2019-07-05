@@ -60,7 +60,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     virtual CMomRunEntityData *GetRunEntData() OVERRIDE { return &m_Data; }
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; };
-    virtual int GetEntIndex() OVERRIDE { return index; }
+    virtual int GetEntIndex() OVERRIDE { return m_index; }
     virtual float GetCurrentRunTime() OVERRIDE;
 
     CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 

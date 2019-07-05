@@ -471,7 +471,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 				hasNormalMapAlphaEnvmapMask = false;
 			}
 
-			bool bHasEnvmap = (!bHasFlashlight || IsX360() ) && ( info.m_nEnvmap != -1 ) && params[info.m_nEnvmap]->IsTexture();
 			bool bHasLegacyEnvSphereMap = bHasEnvmap && IS_FLAG_SET(MATERIAL_VAR_ENVMAPSPHERE);
 			bool bHasNormal = bVertexLitGeneric || bHasEnvmap || bHasFlashlight || bSeamlessBase || bSeamlessDetail;
 			if ( IsPC() )

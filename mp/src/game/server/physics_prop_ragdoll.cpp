@@ -503,7 +503,6 @@ void CRagdollProp::VPhysicsCollision( int index, gamevcollisionevent_t *pEvent )
 				damage *= 10;
 			}
 
-			CBaseEntity *pHitEntity = pEvent->pEntities[!index];
 			if ( !pHitEntity )
 			{
 				// hit world
@@ -562,8 +561,7 @@ bool CRagdollProp::HasPhysgunInteraction( const char *pszKeyName, const char *ps
 //-----------------------------------------------------------------------------
 void CRagdollProp::HandleFirstCollisionInteractions( int index, gamevcollisionevent_t *pEvent )
 {
-	IPhysicsObject *pObj = VPhysicsGetObject();
-	if ( !pObj)
+	if ( !VPhysicsGetObject() )
 		return;
 
 	if( HasPhysgunInteraction( "onfirstimpact", "break" ) )

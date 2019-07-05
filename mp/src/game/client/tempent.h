@@ -94,7 +94,7 @@ protected:
 	pfnDrawHelper					m_pfnDrawHelper;
 
 public:
-	int								flags;
+	int								m_flags;
 	float							die;
 	float							m_flFrameMax;
 	float							x;

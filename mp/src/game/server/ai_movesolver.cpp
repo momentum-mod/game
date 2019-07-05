@@ -43,12 +43,12 @@ void CAI_MoveSolver::VisualizeRegulations( const Vector& origin )
 		for (int i = regulations.Count(); --i >= 0; )
 		{
 			// Compute the positions of the angles...
-			float flMinAngle = regulations[i].arc.center - regulations[i].arc.span * 0.5f;
-			float flMaxAngle = regulations[i].arc.center + regulations[i].arc.span * 0.5f;
+			float flMinAngle = regulations[i].m_arc.center - regulations[i].m_arc.span * 0.5f;
+			float flMaxAngle = regulations[i].m_arc.center + regulations[i].m_arc.span * 0.5f;
 
 			side1 = UTIL_YawToVector( flMinAngle );
 			side2 = UTIL_YawToVector( flMaxAngle );
-			mid = UTIL_YawToVector( regulations[i].arc.center );
+			mid = UTIL_YawToVector( regulations[i].m_arc.center );
 
 			// Stronger weighted ones are bigger
 			if ( regulations[i].weight < 0 )
@@ -85,7 +85,7 @@ bool CAI_MoveSolver::Solve( const AI_MoveSuggestion_t *pSuggestions, int nSugges
 
 	if ( nSuggestions == 1 && m_Regulations.Count() == 0 && pSuggestions->type == AIMST_MOVE )
 	{
-		pResult->dir = pSuggestions->arc.center;
+		pResult->dir = pSuggestions->m_arc.center;
 		return true;
 	}
 
@@ -132,11 +132,11 @@ bool CAI_MoveSolver::Solve( const AI_MoveSuggestion_t *pSuggestions, int nSugges
 		AI_MoveSuggestion_t &current = suggestions[iSuggestion];
 
 		// Convert arc values to solution indices relative to right post. Right is angle down, left is angle up.
-		float halfSpan	= current.arc.span * 0.5;
+		float halfSpan	= current.m_arc.span * 0.5;
 		int   center 	= V_round( ( halfSpan * NUM_SOLUTIONS ) / 360 );
-		int   left		= ( current.arc.span * NUM_SOLUTIONS ) / 360;
+		int   left		= ( current.m_arc.span * NUM_SOLUTIONS ) / 360;
 
-		float angRight   = current.arc.center - halfSpan;
+		float angRight   = current.m_arc.center - halfSpan;
 
 		if (angRight < 0.0)
 			angRight += 360;
@@ -204,7 +204,7 @@ bool CAI_MoveSolver::Solve( const AI_MoveSuggestion_t *pSuggestions, int nSugges
 
 	// If the matching suggestion is within the solution, use that as the result,
 	// as it is valid and more precise.
-	const float suggestionCenter = solutions[best].pHighSuggestion->arc.center;
+	const float suggestionCenter = solutions[best].pHighSuggestion->m_arc.center;
 
 	if ( suggestionCenter > result && suggestionCenter <= result + SOLUTION_ANG )
 		result = suggestionCenter;
@@ -251,11 +251,11 @@ void CAI_MoveSolver::NormalizeSuggestions( AI_MoveSuggestion_t *pBegin, AI_MoveS
 		else
 			pBegin->weight = ( ( max - min ) * pBegin->weight ) + min;
 
-		while (pBegin->arc.center < 0)
-			pBegin->arc.center += 360;
+		while (pBegin->m_arc.center < 0)
+			pBegin->m_arc.center += 360;
 
-		while (pBegin->arc.center >= 360)
-			pBegin->arc.center -= 360;
+		while (pBegin->m_arc.center >= 360)
+			pBegin->m_arc.center -= 360;
 
 		++pBegin;
 	}
@@ -322,7 +322,7 @@ CON_COMMAND(ai_test_move_solver, "Tests the AI move solver system")
 	suggestions[1].Set( AIMST_MOVE, 0.5, 0, 100 );
 
 	Assert( solver.Solve( suggestions, 2, &solution ) );
-	Assert( solution.dir == (float)suggestions[0].arc.center );
+	Assert( solution.dir == (float)suggestions[0].m_arc.center );
 
 
 	DevMsg( "pass.\n" );
@@ -343,7 +343,7 @@ CON_COMMAND(ai_test_move_solver, "Tests the AI move solver system")
 	suggestions[1].Set( AIMST_MOVE, 1.0, 0, 45 );
 
 	Assert( solver.Solve( suggestions, 2, &solution ) );
-	Assert( solution.dir == (float)suggestions[1].arc.center );
+	Assert( solution.dir == (float)suggestions[1].m_arc.center );
 
 
 	DevMsg( "pass.\n" );
@@ -379,7 +379,7 @@ CON_COMMAND(ai_test_move_solver, "Tests the AI move solver system")
 	suggestions[1].Set( AIMST_AVOID_OBJECT, 1.0, 260, 24 );
 
 	Assert( solver.Solve( suggestions, 2, &solution ) );
-	Assert( solution.dir == (float)suggestions[0].arc.center );
+	Assert( solution.dir == (float)suggestions[0].m_arc.center );
 
 	DevMsg( "pass.\n" );
 	solver.ClearRegulations();

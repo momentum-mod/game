@@ -1296,7 +1296,7 @@ void CMomentaryRotButton::SetPositionMoveDone(void)
 //			useType - 
 //			value - 
 //-----------------------------------------------------------------------------
-void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float fValue )
 {
 	if ( m_bDisabled == true )
 		return;

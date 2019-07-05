@@ -99,7 +99,7 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 {
     if (updateType == DATA_UPDATE_CREATED)
     {
-        if (engine->GetLocalPlayer() == index)
+        if (engine->GetLocalPlayer() == m_index)
         {
             Assert(s_pLocalPlayer == nullptr);
             s_pLocalPlayer = this;
