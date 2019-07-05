@@ -171,7 +171,7 @@ class IForceVirtualInheritancePanel
 //			This is designed as an easy-access to the vgui-functionality; for more
 //			low-level access to vgui functions use the IPanel/IClientPanel interfaces directly
 //-----------------------------------------------------------------------------
-class Panel : public IClientPanel, virtual IForceVirtualInheritancePanel
+class Panel : public IClientPanel, public virtual IForceVirtualInheritancePanel
 {
     DECLARE_CLASS_SIMPLE_NOBASE(Panel);
 
