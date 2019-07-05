@@ -2134,12 +2134,12 @@ void CMapFile::CheckForInstances( const char *pszFileName )
 			char *pInstanceFile = ValueForKey( &entities[ i ], "file" );
 			if ( pInstanceFile[ 0 ] )
 			{
-				char	InstancePath[ MAX_PATH ];
+				char	pPath[ MAX_PATH ];
 				bool	bLoaded = false;
 
-				if ( DeterminePath( pszFileName, pInstanceFile, InstancePath ) )
+				if ( DeterminePath( pszFileName, pInstanceFile, pPath ) )
 				{
-					if ( LoadMapFile( InstancePath ) )
+					if ( LoadMapFile( pPath ) )
 					{
 						MergeInstance( &entities[ i ], g_LoadingMap );
 						delete g_LoadingMap;
@@ -2371,7 +2371,7 @@ void CMapFile::MergeBrushSides( entity_t *pInstanceEntity, CMapFile *Instance, V
 
 			for( int point = 0; point < disp->face.w->numpoints; point++ )
 			{
-				Vector	inPoint = disp->face.w->p[ point ];
+				inPoint = disp->face.w->p[ point ];
 				VectorTransform( inPoint, InstanceMatrix, disp->face.w->p[ point ] );
 			}
 
@@ -2516,21 +2516,21 @@ void CMapFile::MergeEntities( entity_t *pInstanceEntity, CMapFile *Instance, Vec
 			GDclass *EntClass = GD.BeginInstanceRemap( pEntity, NameFixup, InstanceOrigin, InstanceAngle );
 			if ( EntClass )
 			{
-				for( int i = 0; i < EntClass->GetVariableCount(); i++ )
+				for( int v = 0; v < EntClass->GetVariableCount(); v++ )
 				{
-					GDinputvariable *EntVar = EntClass->GetVariableAt( i );
+					GDinputvariable *EntVar = EntClass->GetVariableAt( v );
 					char *pValue = ValueForKey( entity, ( char * )EntVar->GetName() );
 					if ( GD.RemapKeyValue( EntVar->GetName(), pValue, temp, FixupStyle ) )
 					{
 #ifdef MERGE_INSTANCE_DEBUG_INFO
-						Msg( "   %d. Remapped %s: from %s to %s\n", i, EntVar->GetName(), pValue, temp );
+						Msg( "   %d. Remapped %s: from %s to %s\n", v, EntVar->GetName(), pValue, temp );
 #endif // #ifdef MERGE_INSTANCE_DEBUG_INFO
 						SetKeyValue( entity, EntVar->GetName(), temp );
 					}
 					else
 					{
 #ifdef MERGE_INSTANCE_DEBUG_INFO
-						Msg( "   %d. Ignored %s: %s\n", i, EntVar->GetName(), pValue );
+						Msg( "   %d. Ignored %s: %s\n", v, EntVar->GetName(), pValue );
 #endif // #ifdef MERGE_INSTANCE_DEBUG_INFO
 					}
 				}

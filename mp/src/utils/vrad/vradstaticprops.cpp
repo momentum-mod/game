@@ -295,6 +295,17 @@ private:
 		CUtlVector<Vector>	m_VertexColors;
 		CUtlMemory<byte>	m_TexelsEncoded;
 		int					m_nLod;
+
+        MeshData_t &operator=(const MeshData_t &other)
+        {
+            if (this == &other)
+                return *this;
+            m_VertexColors = other.m_VertexColors;
+            m_TexelsEncoded.EnsureCapacity(other.m_TexelsEncoded.Count());
+            V_memcpy(m_TexelsEncoded.Base(), other.m_TexelsEncoded.Base(), other.m_TexelsEncoded.Count() * sizeof(byte));
+            m_nLod = other.m_nLod;
+            return *this;
+        }
 	};
 
 	// A static prop instance
@@ -589,7 +600,7 @@ void DumpCollideToGlView( vcollide_t *pCollide, const char *pFilename )
 		float fg = g / 255.0f;
 		float fb = b / 255.0f;
 
-		for ( int i = 0; i < triCount; i++ )
+		for ( int j = 0; j < triCount; j++ )
 		{
 			fprintf( fp, "3\n" );
 			fprintf( fp, "%6.3f %6.3f %6.3f %.2f %.3f %.3f\n", 
@@ -714,16 +725,16 @@ public:
 							unsigned char *pImageBits = LoadVTFRGB8888( pBaseTextureName, &w, &h, &bClampU, &bClampV );
 							if ( pImageBits )
 							{
-								int index = m_Textures.Insert( pMaterialName );
-								m_Textures[index].InitFromRGB8888( w, h, pImageBits );
-								*pIndex = index;
+								int texIndex = m_Textures.Insert( pMaterialName );
+								m_Textures[texIndex].InitFromRGB8888( w, h, pImageBits );
+								*pIndex = texIndex;
 								if ( pVMT->FindKey("$nocull") )
 								{
 									// UNDONE: Support this? Do we need to emit two triangles?
-									m_Textures[index].allowBackface = true;
+									m_Textures[texIndex].allowBackface = true;
 								}
-								m_Textures[index].clampU = bClampU;
-								m_Textures[index].clampV = bClampV;
+								m_Textures[texIndex].clampU = bClampU;
+								m_Textures[texIndex].clampV = bClampV;
 								delete[] pImageBits;
 							}
 						}

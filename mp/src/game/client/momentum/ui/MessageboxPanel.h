@@ -101,11 +101,11 @@ class CMessageboxInterface : public IMessageboxPanel
         return nullptr;
     }
 
-    vgui::Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char *cvar, const char *pAccept = nullptr) OVERRIDE
+    vgui::Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char *cvarName, const char *pAccept = nullptr) OVERRIDE
     {
         if (pPanel)
         {
-            return pPanel->CreateMessageboxVarRef(pTitle, pMessage, cvar, pAccept);
+            return pPanel->CreateMessageboxVarRef(pTitle, pMessage, cvarName, pAccept);
         }
         return nullptr;
     }

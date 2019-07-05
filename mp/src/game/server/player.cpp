@@ -6120,7 +6120,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	}
 
 	CBaseEntity *pEntity;
-	trace_t tr;
 
 	switch ( iImpulse )
 	{
@@ -6293,6 +6292,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case	202:// Random blood splatter
 		{
+            trace_t tr;
 			Vector forward;
 			EyeVectors( &forward );
 			UTIL_TraceLine ( EyePosition(), 
@@ -6381,14 +6381,10 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		if ( GetTeamNumber() == TEAM_SPECTATOR )
 			return true;
 
-		ConVarRef mp_allowspectators( "mp_allowspectators" );
-		if ( mp_allowspectators.IsValid() )
+		if ( ( mp_allowspectators.GetBool() == false ) && !IsHLTV() && !IsReplay() )
 		{
-			if ( ( mp_allowspectators.GetBool() == false ) && !IsHLTV() && !IsReplay() )
-			{
-				ClientPrint( this, HUD_PRINTCENTER, "#Cannot_Be_Spectator" );
-				return true;
-			}
+			ClientPrint( this, HUD_PRINTCENTER, "#Cannot_Be_Spectator" );
+			return true;
 		}
 
 		if ( !IsDead() )
@@ -6570,10 +6566,10 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 			nRecords = MAX( Q_atoi( args.Arg( 2 ) ), 1 );
 		}
 
-		CBasePlayer *pl = UTIL_PlayerByIndex( nRecip );
-		if ( pl )
+		CBasePlayer *pPlayer = UTIL_PlayerByIndex( nRecip );
+		if ( pPlayer )
 		{
-			pl->DumpPerfToRecipient( this, nRecords );
+			pPlayer->DumpPerfToRecipient( this, nRecords );
 		}
 		return true;
 	}

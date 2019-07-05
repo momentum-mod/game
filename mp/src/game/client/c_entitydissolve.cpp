@@ -228,11 +228,11 @@ void C_EntityDissolve::BuildTeslaEffect( mstudiobbox_t *pHitBox, const matrix3x4
 		{
 			// Move it towards the camera
 			Vector vecFlash = tr.endpos;
-			Vector vecForward;
-			AngleVectors( MainViewAngles(), &vecForward );
-			vecFlash -= (vecForward * 8);
+			Vector vecForwardAct;
+			AngleVectors( MainViewAngles(), &vecForwardAct );
+			vecFlash -= (vecForwardAct * 8);
 
-			g_pEffects->EnergySplash( vecFlash, -vecForward, false );
+			g_pEffects->EnergySplash( vecFlash, -vecForwardAct, false );
 
 			// End glow
 			CSmartPtr<CSimpleEmitter> pSimple = CSimpleEmitter::Create( "dust" );

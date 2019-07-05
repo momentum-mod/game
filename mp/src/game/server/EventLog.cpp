@@ -157,8 +157,6 @@ bool CEventLog::PrintPlayerEvent( IGameEvent *event )
 		}
 		else if ( pAttacker )
 		{
-			CTeam *attackerTeam = pAttacker->GetTeam();
-
 #ifdef HL2MP
 			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",  
 							pAttacker->GetPlayerName(),

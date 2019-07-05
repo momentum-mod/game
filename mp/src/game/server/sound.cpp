@@ -304,8 +304,7 @@ void CAmbientGeneric::ComputeMaxAudibleDistance( )
 
 	// Sadly, there's no direct way of getting at this. 
 	// We have to do an interative computation.
-	float flGain = enginesound->GetDistGainFromSoundLevel( m_iSoundLevel, m_radius );
-	if ( flGain <= MIN_AUDIBLE_VOLUME )
+	if (enginesound->GetDistGainFromSoundLevel(m_iSoundLevel, m_radius) <= MIN_AUDIBLE_VOLUME )
 	{
 		m_flMaxRadius = m_radius;
 		return;

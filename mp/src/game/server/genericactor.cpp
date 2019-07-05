@@ -334,30 +334,30 @@ void CFlextalkActor::ProcessSceneEvents( void )
 			char szTemp[32];
 
 			Q_strncpy( szExpression, pszExpression ,sizeof(szExpression));
-			char *pszExpression = szExpression;
+			char *pExpression = szExpression;
 
-			while (*pszExpression != '\0')
+			while (*pExpression != '\0')
 			{
-				if (*pszExpression == '+')
-					*pszExpression = ' ';
+				if (*pExpression == '+')
+					*pExpression = ' ';
 				
-				pszExpression++;
+                pExpression++;
 			}
 
-			pszExpression = szExpression;
+            pExpression = szExpression;
 
-			while (*pszExpression)
+			while (*pExpression)
 			{
-				if (*pszExpression != ' ')
+				if (*pExpression != ' ')
 				{
-					if (*pszExpression == '-')
+					if (*pExpression == '-')
 					{
 						for (LocalFlexController_t i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
 						{
 							m_flextarget[i] = 0;
 						}
 					}
-					else if (*pszExpression == '?')
+					else if (*pExpression == '?')
 					{
 						for (LocalFlexController_t i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
 						{
@@ -368,7 +368,7 @@ void CFlextalkActor::ProcessSceneEvents( void )
 					}
 					else
 					{
-						if (sscanf( pszExpression, "%31s", szTemp ) == 1)
+						if (sscanf(pExpression, "%31s", szTemp ) == 1)
 						{
 							m_flexnum = LookupFlex( szTemp );
 
@@ -377,11 +377,11 @@ void CFlextalkActor::ProcessSceneEvents( void )
 								m_flextarget[m_flexnum] = 1.0;
 								// SetFlexTarget( m_flexnum );
 							}
-							pszExpression += strlen( szTemp ) - 1;
+                            pExpression += strlen( szTemp ) - 1;
 						}
 					}
 				}
-				pszExpression++;
+                pExpression++;
 			}
 		} 
 		else if (m_flextime < gpGlobals->curtime)

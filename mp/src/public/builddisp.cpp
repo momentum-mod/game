@@ -7,13 +7,9 @@
 // $NoKeywords: $
 //=============================================================================//
 
-//#include <stdafx.h>
-#include <stdlib.h>
-#include <malloc.h>
 #include "builddisp.h"
 #include "collisionutils.h"
 #include "tier1/strtools.h"
-#include "tier0/dbg.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -210,8 +206,8 @@ void CCoreDispSurface::Init( void )
 
 	m_PointStartIndex = -1;
 	VectorClear( m_PointStart );
-	VectorClear( sAxis );
-	VectorClear( tAxis );
+	VectorClear( m_sAxis );
+	VectorClear( m_tAxis );
 
 	for( i = 0; i < 4; i++ )
 	{

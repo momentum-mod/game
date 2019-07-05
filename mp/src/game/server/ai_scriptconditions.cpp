@@ -537,14 +537,14 @@ void CAI_ScriptConditions::EvaluationThink()
 			m_hTarget.Get()
 		};
 
-		for ( int i = 0; i < nEvaluators; ++i )
+		for ( int eval = 0; eval < nEvaluators; ++eval )
 		{
-			if ( !(this->*gm_Evaluators[i].pfnEvaluator)( args ) )
+			if ( !(this->*gm_Evaluators[eval].pfnEvaluator)( args ) )
 			{
 				pConditionElement->GetTimer()->Reset();
 				result = false;
 
-				ScrCondDbgMsg( ( "%s failed on: %s\n", GetDebugName(), gm_Evaluators[ i ].pszName ) );
+				ScrCondDbgMsg( ( "%s failed on: %s\n", GetDebugName(), gm_Evaluators[ eval ].pszName ) );
 
 				break;
 			}

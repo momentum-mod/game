@@ -477,14 +477,14 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 
 			if ( showlist )
 			{
-				char sz[ 32 ];
+				char sz1[ 32 ];
 				if ( ent->entindex() == -1 )
 				{
-					Q_snprintf( sz, sizeof( sz ), "handle %u", (unsigned int)ent->GetClientHandle().ToInt() );
+					Q_snprintf( sz1, sizeof( sz1 ), "handle %u", (unsigned int)ent->GetClientHandle().ToInt() );
 				}
 				else
 				{
-					Q_snprintf( sz, sizeof( sz ), "%i", ent->entindex() );
+					Q_snprintf( sz1, sizeof( sz1 ), "%i", ent->entindex() );
 				}
 
 				np.index = i;
@@ -495,7 +495,7 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 					int intermediate_size = ent->GetIntermediateDataSize() * ( MULTIPLAYER_BACKUP + 1 );
 
 					engine->Con_NXPrintf( &np, "%15s %30s (%5i / %5i bytes): %15s", 
-						sz, 
+						sz1, 
 						ent->GetClassname(),
 						size,
 						intermediate_size,
@@ -507,7 +507,7 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 				else
 				{
 					engine->Con_NXPrintf( &np, "%15s %30s: %15s", 
-						sz, 
+						sz1, 
 						ent->GetClassname(),
 						ent->GetPredictable() ? "predicted" : "client created" );
 				}

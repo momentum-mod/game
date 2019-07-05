@@ -192,7 +192,7 @@ private:
 	CBSPDispRayEnumerator		m_EnumDispRay;
 	CBSPDispFaceListEnumerator	m_EnumDispFaceList;
 
-	int							sampleCount;
+	int							m_sampleCount;
 	Vector						*m_pSamplePos;
 
 	CFastTimer					m_Timer;

@@ -198,7 +198,7 @@ void ClusterMerge (int clusternum)
 	leaf_t		*leaf;
 //	byte		portalvector[MAX_PORTALS/8];
 	byte		portalvector[MAX_PORTALS/4];      // 4 because portal bytes is * 2
-	byte		uncompressed[MAX_MAP_LEAFS/8];
+	byte		uncompressedLeafs[MAX_MAP_LEAFS/8];
 	int			i, j;
 	int			numvis;
 	portal_t	*p;
@@ -220,20 +220,20 @@ void ClusterMerge (int clusternum)
 	}
 
 	// convert portal bits to leaf bits
-	numvis = LeafVectorFromPortalVector (portalvector, uncompressed);
+	numvis = LeafVectorFromPortalVector (portalvector, uncompressedLeafs);
 
 #if 0
 	// func_viscluster makes this happen all the time because it allows a non-convex set of portals
 	// My analysis says this is ok, but it does make this check for errors in vis kind of useless
-	if ( CheckBit( uncompressed, clusternum ) )
+	if ( CheckBit(uncompressedLeafs, clusternum ) )
 		Warning("WARNING: Cluster portals saw into cluster\n");
 #endif
 		
-	SetBit( uncompressed, clusternum );
+	SetBit(uncompressedLeafs, clusternum );
 	numvis++;		// count the leaf itself
 
 	// save uncompressed for PHS calculation
-	memcpy (uncompressedvis + clusternum*leafbytes, uncompressed, leafbytes);
+	memcpy (uncompressedvis + clusternum*leafbytes, uncompressedLeafs, leafbytes);
 
 	qprintf ("cluster %4i : %4i visible\n", clusternum, numvis);
 	totalvis += numvis;

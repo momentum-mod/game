@@ -65,7 +65,7 @@ public:
 
 	// Type of beam
 	int				type;
-	int				flags;
+	int				m_flags;
 
 	// Control points for the beam
 	int				numAttachments;

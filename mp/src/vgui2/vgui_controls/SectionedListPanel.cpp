@@ -526,10 +526,10 @@ public:
 			return;
 
 		// Debugging code to show column widths
-		int wide, tall;
-		GetSize(wide, tall);
+		int panelWide, panelTall;
+		GetSize(panelWide, panelTall);
 		surface()->DrawSetColor( 255,255,255,255 );
-		surface()->DrawOutlinedRect(0, 0, wide, tall);
+		surface()->DrawOutlinedRect(0, 0, panelWide, panelTall);
 
 		int colCount = m_pListPanel->GetColumnCountBySection(m_iSectionID);
 		if (m_pData && colCount >= 0)
@@ -562,11 +562,11 @@ public:
 					image = GetImageAtIndex(i);
 				}
 
-				int imageWide = 0, tall = 0;
+				int imageWide = 0, dumm = 0;
 				int wide;
 				if (image)
 				{
-					image->GetContentSize(imageWide, tall);
+					image->GetContentSize(imageWide, dumm);
 				}
 				if (maxWidth >= 0)
 				{

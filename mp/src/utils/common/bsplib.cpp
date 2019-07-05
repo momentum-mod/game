@@ -1236,15 +1236,15 @@ void CGameLump::ParseGameLump( dheader_t* pHeader )
 				g_Swap.SwapFieldsToTargetEndian( &pGameLump[i] );
 			}
 
-			int length = pGameLump[i].filelen;
-			GameLumpHandle_t lump = g_GameLumps.CreateGameLump( pGameLump[i].id, length, pGameLump[i].flags, pGameLump[i].version );
+			int gameLumpLen = pGameLump[i].filelen;
+			GameLumpHandle_t lump = g_GameLumps.CreateGameLump( pGameLump[i].id, gameLumpLen, pGameLump[i].flags, pGameLump[i].version );
 			if ( g_bSwapOnLoad )
 			{
-				SwapGameLump( pGameLump[i].id, pGameLump[i].version, (byte*)g_GameLumps.GetGameLump(lump), (byte *)pHeader + pGameLump[i].fileofs, length );
+				SwapGameLump( pGameLump[i].id, pGameLump[i].version, (byte*)g_GameLumps.GetGameLump(lump), (byte *)pHeader + pGameLump[i].fileofs, gameLumpLen);
 			}
 			else
 			{
-				memcpy( g_GameLumps.GetGameLump(lump), (byte *)pHeader + pGameLump[i].fileofs, length );
+				memcpy( g_GameLumps.GetGameLump(lump), (byte *)pHeader + pGameLump[i].fileofs, gameLumpLen);
 			}
 		}
 	}
@@ -3309,7 +3309,7 @@ Fills in s->texmins[] and s->texsize[]
 void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightmapTextureSizeInLuxels[2])
 {
 	vec_t	    mins[2], maxs[2], val=0;
-	int		    i,j, e=0;
+	int e=0;
 	dvertex_t	*v=NULL;
 	texinfo_t	*tex=NULL;
 	
@@ -3318,7 +3318,7 @@ void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightma
 
 	tex = &texinfo[s->texinfo];
 	
-	for (i=0 ; i<s->numedges ; i++)
+	for (int i=0 ; i<s->numedges ; i++)
 	{
 		e = dsurfedges[s->firstedge+i];
 		if (e >= 0)
@@ -3326,7 +3326,7 @@ void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightma
 		else
 			v = dvertexes + dedges[-e].v[1];
 		
-		for (j=0 ; j<2 ; j++)
+		for (int j=0 ; j<2 ; j++)
 		{
 			val = v->point[0] * tex->lightmapVecsLuxelsPerWorldUnits[j][0] + 
 				  v->point[1] * tex->lightmapVecsLuxelsPerWorldUnits[j][1] + 
@@ -3340,7 +3340,7 @@ void CalcFaceExtents(dface_t *s, int lightmapTextureMinsInLuxels[2], int lightma
 	}
 
 	int nMaxLightmapDim = (s->dispinfo == -1) ? MAX_LIGHTMAP_DIM_WITHOUT_BORDER : MAX_DISP_LIGHTMAP_DIM_WITHOUT_BORDER;
-	for (i=0 ; i<2 ; i++)
+	for (int i=0 ; i<2 ; i++)
 	{	
 		mins[i] = ( float )floor( mins[i] );
 		maxs[i] = ( float )ceil( maxs[i] );
@@ -4580,9 +4580,9 @@ bool RepackBSPCallback_LZMA( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer )
 }
 
 
-bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_t pCompressFunc, IZip::eCompressionType packfileCompression )
+bool RepackBSP( CUtlBuffer &inputBufferBSP, CUtlBuffer &outputBuffer, CompressFunc_t pCompressFunc, IZip::eCompressionType packfileCompression )
 {
-	dheader_t *pInBSPHeader = (dheader_t *)inputBuffer.Base();
+	dheader_t *pInBSPHeader = (dheader_t *)inputBufferBSP.Base();
 	// The 360 swaps this header to disk. For some reason.
 	if ( pInBSPHeader->ident != ( IsX360() ? BigLong( IDBSPHEADER ) : IDBSPHEADER ) )
 	{

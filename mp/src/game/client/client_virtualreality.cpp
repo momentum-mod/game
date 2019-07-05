@@ -414,8 +414,8 @@ void CClientVirtualReality::DrawMainMenu()
 	// render both eyes
 	for( int nView = STEREO_EYE_LEFT; nView <= STEREO_EYE_RIGHT; nView++ )
 	{
-		CMatRenderContextPtr pRenderContext( materials );
-		PIXEvent pixEvent( pRenderContext, nView == STEREO_EYE_LEFT ? "left eye" : "right eye" );
+		CMatRenderContextPtr pRenderContext2( materials );
+		PIXEvent pixEvent( pRenderContext2, nView == STEREO_EYE_LEFT ? "left eye" : "right eye" );
 
 		ITexture *pColor = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(nView-1), ISourceVirtualReality::RT_Color );
 		ITexture *pDepth = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(nView-1), ISourceVirtualReality::RT_Depth );

@@ -47,7 +47,7 @@ public:
 	// Hash
 	unsigned int operator()( const DispCollPlaneIndex_t &item ) const
 	{
-		return HashItem( item.vecPlane ) ^ HashItem( -item.vecPlane );
+		return HashItemAsBytes( item.vecPlane ) ^ HashItemAsBytes( -item.vecPlane );
 	}
 };
 

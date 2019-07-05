@@ -1,5 +1,6 @@
 #include "cbase.h"
 
+#include <ctime>
 #include "filesystem.h"
 #include "utlbuffer.h"
 #include "mom_util.h"
@@ -205,7 +206,12 @@ bool MomUtil::ISODateToTimeT(const char* pISODate, time_t* out)
     tim.tm_sec = sec;
     tim.tm_isdst = 0;
 
-    *out = mktime(&tim) - timezone;
+    *out = mktime(&tim) -
+#ifdef WIN32 
+        _timezone;
+#else
+        timezone;
+#endif
     return true;
 }
 

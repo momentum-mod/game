@@ -2165,7 +2165,7 @@ stbi_inline static stbi_uc stbi__clamp(int x)
 
 // derived from jidctint -- DCT_ISLOW
 #define STBI__IDCT_1D(s0,s1,s2,s3,s4,s5,s6,s7) \
-   int t0,t1,t2,t3,p1,p2,p3,p4,p5,x0,x1,x2,x3; \
+   int t0,t1,t2,t3,p1,p2,p3,p44,p5,x0,x1,x2,x3; \
    p2 = s2;                                    \
    p3 = s6;                                    \
    p1 = (p2+p3) * stbi__f2f(0.5411961f);       \
@@ -2184,10 +2184,10 @@ stbi_inline static stbi_uc stbi__clamp(int x)
    t2 = s3;                                    \
    t3 = s1;                                    \
    p3 = t0+t2;                                 \
-   p4 = t1+t3;                                 \
+   p44 = t1+t3;                                 \
    p1 = t0+t3;                                 \
    p2 = t1+t2;                                 \
-   p5 = (p3+p4)*stbi__f2f( 1.175875602f);      \
+   p5 = (p3+p44)*stbi__f2f( 1.175875602f);      \
    t0 = t0*stbi__f2f( 0.298631336f);           \
    t1 = t1*stbi__f2f( 2.053119869f);           \
    t2 = t2*stbi__f2f( 3.072711026f);           \
@@ -2195,10 +2195,10 @@ stbi_inline static stbi_uc stbi__clamp(int x)
    p1 = p5 + p1*stbi__f2f(-0.899976223f);      \
    p2 = p5 + p2*stbi__f2f(-2.562915447f);      \
    p3 = p3*stbi__f2f(-1.961570560f);           \
-   p4 = p4*stbi__f2f(-0.390180644f);           \
-   t3 += p1+p4;                                \
+   p44 = p44*stbi__f2f(-0.390180644f);           \
+   t3 += p1+p44;                                \
    t2 += p2+p3;                                \
-   t1 += p2+p4;                                \
+   t1 += p2+p44;                                \
    t0 += p1+p3;
 
 static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])

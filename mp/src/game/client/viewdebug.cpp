@@ -514,7 +514,7 @@ static void OverlayColorRamp( bool bHalfSpace )
 //-----------------------------------------------------------------------------
 // Draws all the debugging info
 //-----------------------------------------------------------------------------
-void CDebugViewRender::Draw3DDebuggingInfo( const CViewSetup &view )
+void CDebugViewRender::Draw3DDebuggingInfo( const CViewSetup &viewSetup )
 {
 	VPROF("CViewRender::Draw3DDebuggingInfo");
 
@@ -529,7 +529,7 @@ void CDebugViewRender::Draw3DDebuggingInfo( const CViewSetup &view )
 //-----------------------------------------------------------------------------
 // Draws all the debugging info
 //-----------------------------------------------------------------------------
-void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &view )
+void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &viewSetup )
 {
 	if ( IsX360() && IsRetail() )
 		return;
@@ -542,7 +542,7 @@ void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &view )
 		if( !IsErrorMaterial( pMaterial ) )
 		{
 			pMaterial->IncrementReferenceCount();
-			DrawScreenEffectMaterial( pMaterial, view.x, view.y, view.width, view.height );
+			DrawScreenEffectMaterial( pMaterial, viewSetup.x, viewSetup.y, viewSetup.width, viewSetup.height );
 			pMaterial->DecrementReferenceCount();
 		}
 	}
@@ -554,7 +554,7 @@ void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &view )
 		if( !IsErrorMaterial( pMaterial ) )
 		{
 			pMaterial->IncrementReferenceCount();
-			DrawScreenEffectMaterial( pMaterial, view.x, view.y, view.width, view.height );
+			DrawScreenEffectMaterial( pMaterial, viewSetup.x, viewSetup.y, viewSetup.width, viewSetup.height );
 			pMaterial->DecrementReferenceCount();
 		}
 	}
@@ -563,7 +563,7 @@ void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &view )
 	if ( mat_showlightmappage.GetInt() != -1 )
 	{
 		CLightmapDebugView clientView( assert_cast<CViewRender *>( ::view ) );
-		clientView.Setup( view );
+		clientView.Setup( viewSetup );
 		clientView.Draw();
 	}
 

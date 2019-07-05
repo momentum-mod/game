@@ -803,7 +803,6 @@ void FinalLightFace( int iThread, int facenum )
 				baseSampleOk = false;
 			}
 
-			int bumpSample;
 			for( bumpSample = 0; bumpSample < bumpSampleCount; bumpSample++ )
 			{
 				// clip from the bottom first
