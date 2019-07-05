@@ -12,6 +12,7 @@
 #include "tier1/utlmemory.h"
 #include "tier1/utlfixedmemory.h"
 #include "tier1/utlblockmemory.h"
+#include "tier1/utliterator.h"
 #include "tier1/strtools.h"
 
 //-----------------------------------------------------------------------------
@@ -108,6 +109,23 @@ void SetDefLessFunc( RBTREE_T &RBTree )
 {
 	RBTree.SetLessFunc( DefLessFunc( typename RBTREE_T::KeyType_t ) );
 }
+
+#if defined(_MSC_VER) && _MSC_VER < 1600
+#define MAP_INDEX_TYPE(mapName) int
+#else
+#define MAP_INDEX_TYPE(mapName) decltype((mapName).MaxElement())
+#endif
+
+#define FOR_EACH_RBTREE(treeName, iteratorName)                                                                        \
+    for (MAP_INDEX_TYPE(treeName) iteratorName = (treeName).FirstInorder(); iteratorName != (treeName).InvalidIndex(); \
+         iteratorName = (treeName).NextInorder(iteratorName))
+
+// faster iteration, but in an unspecified order
+#define FOR_EACH_RBTREE_FAST(treeName, iteratorName)                                                                   \
+    for (MAP_INDEX_TYPE(treeName) iteratorName = 0; iteratorName < (treeName).MaxElement(); ++iteratorName)            \
+        if (!(treeName).IsValidIndex(iteratorName))                                                                    \
+            continue;                                                                                                  \
+        else
 
 //-----------------------------------------------------------------------------
 // A red-black binary search tree
@@ -242,6 +260,36 @@ public:
 
 	// swap in place
 	void Swap( CUtlRBTree< T, I, L > &that );
+
+    struct ProxyTypeIterateUnordered // "this" pointer is reinterpret_cast from CUtlRBTree!
+    {
+        typedef T ElemType_t;
+        typedef I IndexType_t;
+        T &Element(I i) { return reinterpret_cast<CUtlRBTree *>(this)->Element(i); }
+        const T &Element(I i) const { return reinterpret_cast<const CUtlRBTree *>(this)->Element(i); }
+        I IteratorNext(I i) const
+        {
+            const CUtlRBTree *pTree = reinterpret_cast<const CUtlRBTree *>(this);
+            while (++i < pTree->MaxElement())
+            {
+                if (pTree->IsValidIndex(i))
+                    return i;
+            }
+            return InvalidIndex();
+        }
+
+        typedef CUtlForwardIteratorImplT<ProxyTypeIterateUnordered, false> iterator;
+        typedef CUtlForwardIteratorImplT<ProxyTypeIterateUnordered, true> const_iterator;
+        iterator begin() { return iterator(this, IteratorNext((I)0 - 1)); }
+        iterator end() { return iterator(this, InvalidIndex()); }
+        const_iterator begin() const { return const_iterator(this, IteratorNext((I)0 - 1)); }
+        const_iterator end() const { return const_iterator(this, InvalidIndex()); }
+    };
+    ProxyTypeIterateUnordered &IterateUnordered() { return *reinterpret_cast<ProxyTypeIterateUnordered *>(this); }
+    const ProxyTypeIterateUnordered &IterateUnordered() const
+    {
+        return *reinterpret_cast<const ProxyTypeIterateUnordered *>(this);
+    }
 
 private:
 	// Can't copy the tree this way!

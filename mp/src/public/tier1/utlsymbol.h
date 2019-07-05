@@ -266,4 +266,39 @@ private:
 };
 
 
+// This creates a simple class that includes the underlying CUtlSymbol
+//  as a private member and then instances a private symbol table to
+//  manage those symbols.  Avoids the possibility of the code polluting the
+//  'global'/default symbol table, while letting the code look like
+//  it's just using = and .String() to look at CUtlSymbol type objects
+//
+// NOTE:  You can't pass these objects between .dlls in an interface (also true of CUtlSymbol of course)
+//
+#define DECLARE_PRIVATE_SYMBOLTYPE(typename)                                                                           \
+    class typename                                                                                                     \
+    {                                                                                                                  \
+      public:                                                                                                          \
+        typename();                                                                                                    \
+        typename(const char *pStr);                                                                                    \
+        typename &operator=(typename const &src);                                                                      \
+        bool operator==(typename const &src) const;                                                                    \
+        const char *String() const;                                                                                    \
+                                                                                                                       \
+      private:                                                                                                         \
+        CUtlSymbol m_SymbolId;                                                                                         \
+    };
+
+// Put this in the .cpp file that uses the above typename
+#define IMPLEMENT_PRIVATE_SYMBOLTYPE(typename)                                                                         \
+    static CUtlSymbolTable g_##typename##SymbolTable;                                                                  \
+    typename ::typename() { m_SymbolId = UTL_INVAL_SYMBOL; }                                                           \
+    typename ::typename(const char *pStr) { m_SymbolId = g_##typename##SymbolTable.AddString(pStr); }                  \
+    typename &typename ::operator=(typename const &src)                                                                \
+    {                                                                                                                  \
+        m_SymbolId = src.m_SymbolId;                                                                                   \
+        return *this;                                                                                                  \
+    }                                                                                                                  \
+    bool typename ::operator==(typename const &src) const { return (m_SymbolId == src.m_SymbolId); }                   \
+    const char *typename ::String() const { return g_##typename##SymbolTable.String(m_SymbolId); }
+
 #endif // UTLSYMBOL_H

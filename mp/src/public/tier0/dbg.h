@@ -15,7 +15,6 @@
 #include "basetypes.h"
 #include "dbgflag.h"
 #include "platform.h"
-#include <math.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -292,7 +291,7 @@ DBG_INTERFACE struct SDL_Window * GetAssertDialogParent();
 #define  AssertFatalMsgOnce( _exp, _msg )						_AssertMsgOnce( _exp, _msg, true )
 #define  AssertFatalFunc( _exp, _f )							_AssertMsg( _exp, _T("Assertion Failed: " _T(#_exp), _f, true )
 #define  AssertFatalEquals( _exp, _expectedValue )				AssertFatalMsg2( (_exp) == (_expectedValue), _T("Expected %d but got %d!"), (_expectedValue), (_exp) ) 
-#define  AssertFatalFloatEquals( _exp, _expectedValue, _tol )   AssertFatalMsg2( fabs((_exp) - (_expectedValue)) <= (_tol), _T("Expected %f but got %f!"), (_expectedValue), (_exp) )
+#define  AssertFatalFloatEquals( _exp, _expectedValue, _tol )   AssertFatalMsg2( fabsf((_exp) - (_expectedValue)) <= (_tol), _T("Expected %f but got %f!"), (_expectedValue), (_exp) )
 #define  VerifyFatal( _exp )									AssertFatal( _exp )
 #define  VerifyEqualsFatal( _exp, _expectedValue )				AssertFatalEquals( _exp, _expectedValue )
 
@@ -342,7 +341,7 @@ DBG_INTERFACE struct SDL_Window * GetAssertDialogParent();
 #define  AssertMsgOnce( _exp, _msg )  						_AssertMsgOnce( _exp, _msg, false )
 #define  AssertFunc( _exp, _f )   							_AssertMsg( _exp, _T("Assertion Failed: ") _T(#_exp), _f, false )
 #define  AssertEquals( _exp, _expectedValue )              	AssertMsg2( (_exp) == (_expectedValue), _T("Expected %d but got %d!"), (_expectedValue), (_exp) ) 
-#define  AssertFloatEquals( _exp, _expectedValue, _tol )  	AssertMsg2( fabs((_exp) - (_expectedValue)) <= (_tol), _T("Expected %f but got %f!"), (_expectedValue), (_exp) )
+#define  AssertFloatEquals( _exp, _expectedValue, _tol )  	AssertMsg2( fabsf((_exp) - (_expectedValue)) <= (_tol), _T("Expected %f but got %f!"), (_expectedValue), (_exp) )
 //#define  Verify( _exp )           							Assert( _exp )
 #define  VerifyMsg1( _exp, _msg, a1 )						AssertMsg1( _exp, _msg, a1 )
 #define	 VerifyMsg2( _exp, _msg, a1, a2 )					AssertMsg2( _exp, _msg, a1, a2 )
@@ -567,7 +566,11 @@ public:
 // of our complicated templates properly.  Use some preprocessor trickery
 // to workaround this
 #ifdef __GNUC__
-	#define COMPILE_TIME_ASSERT( pred ) typedef int UNIQUE_ID[ (pred) ? 1 : -1 ]
+    #if __GNUC__ < 4
+        #define COMPILE_TIME_ASSERT( pred ) typedef int UNIQUE_ID[ (pred) ? 1 : -1 ]
+    #else
+        #define COMPILE_TIME_ASSERT( pred ) static_assert( pred, "Compile time assert constraint is not true: " #pred )
+    #endif
 #else
 	#if _MSC_VER >= 1600
 	// If available use static_assert instead of weird language tricks. This
@@ -614,9 +617,9 @@ FORCEINLINE void AssertValidReadWritePtr( const void* ptr, int count = 1 )	{ _As
 
 #else
 
-FORCEINLINE void AssertValidReadPtr( const void* ptr, int count = 1 )			 { }
-FORCEINLINE void AssertValidWritePtr( const void* ptr, int count = 1 )		     { }
-FORCEINLINE void AssertValidReadWritePtr( const void* ptr, int count = 1 )	     { }
+FORCEINLINE void AssertValidReadPtr( const void* ptr, int count = 1 )			 { NOTE_UNUSED(ptr); NOTE_UNUSED(count); }
+FORCEINLINE void AssertValidWritePtr( const void* ptr, int count = 1 )		     { NOTE_UNUSED(ptr); NOTE_UNUSED(count); }
+FORCEINLINE void AssertValidReadWritePtr( const void* ptr, int count = 1 )	     { NOTE_UNUSED(ptr); NOTE_UNUSED(count); }
 #define AssertValidStringPtr AssertValidReadPtr
 
 #endif
