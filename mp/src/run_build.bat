@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe" everything.sln /m /p:Configuration=Release /t:Clean;Build /v:m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"

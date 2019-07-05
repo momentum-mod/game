@@ -18,8 +18,8 @@ skip_tags: true
 # At most one job during this build
 max_jobs: 1
 
-# Build image (2015 works apparently)
-image: Visual Studio 2015
+# Build image
+image: Visual Studio 2019
 
 # Clone the project into this folder
 # You can change me, but make sure to change it for every other part of the build!
@@ -33,6 +33,9 @@ clone_depth: 5
 
 # Install script is called after cloning the repository
 install:
+
+# Gotta do some fun Registry stuff here for the VPC to work with only 2017 installed.
+  - REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\10.0\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" /v DefaultProjectExtension /t REG_SZ /d vcproj /f
 
 # Let's get into this source directory, where our "creategameprojects" script normally is
 # NOTE: This will change depending on if you've changed the clone directory!
@@ -58,18 +61,8 @@ install:
 # You'll want Release binaries for your game, but feel free to change this if you really want to!
 configuration: Release
 
-# Showtime. Main build.
-build:
-# We want parallel builds so this thing is done in like 6 minutes.
-  parallel: true
-
-# Path to the Visual Studio sln or project file, relative to the clone folder
-# CHANGEME to match the solution file generated above in the install script!
-  project: mp\src\everything.sln
-
-# Verbosity of the build depends on how much spam you'll want. We'll use minimal here, but refer to
-# Google if you want to change this.
-  verbosity: minimal
+build_script:
+  - run_build.bat
 
 # Disable automatic testing
 test: off  
