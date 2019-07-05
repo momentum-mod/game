@@ -106,6 +106,7 @@ void CMomentumRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     if (m_hRocketTrail)
     {
         m_hRocketTrail->SetLifetime(0.1f);
+        m_hRocketTrail->SetParent(NULL);
         m_hRocketTrail = NULL;
     }
 
@@ -136,6 +137,7 @@ void CMomentumRocket::Touch(CBaseEntity *pOther)
         if (m_hRocketTrail)
         {
             m_hRocketTrail->SetLifetime(0.1f);
+            m_hRocketTrail->SetParent(NULL);
             m_hRocketTrail = NULL;
         }
 
