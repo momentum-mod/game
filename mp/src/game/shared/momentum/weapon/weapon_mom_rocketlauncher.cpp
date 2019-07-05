@@ -14,7 +14,6 @@
 //=============================================================================
 
 #ifndef CLIENT_DLL
-#define ROCKET_SPEED 1100
 
 BEGIN_DATADESC(CMomentumRocket)
     // Fields
@@ -66,7 +65,7 @@ void CMomentumRocket::Spawn()
 
     Vector vecForward;
     AngleVectors(GetLocalAngles(), &vecForward);
-    SetAbsVelocity(vecForward * ROCKET_SPEED);
+    SetAbsVelocity(vecForward * MOM_ROCKET_SPEED);
 
     SetDamage(90.0f);
 
@@ -96,7 +95,7 @@ void CMomentumRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     CBaseEntity *pOwner = GetOwnerEntity();
 
     float flDamage = GetDamage();
-    float flRadius = 146.0f;
+    float flRadius = GetRadius();
 
     // Create explosion effect with no damage
     ExplosionCreate(vecOrigin, GetAbsAngles(), pOwner, flDamage, flRadius, false);
