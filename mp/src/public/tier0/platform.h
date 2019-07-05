@@ -539,7 +539,12 @@ typedef void * HINSTANCE;
 	#define SELECTANY __declspec(selectany)
 	#define RESTRICT __restrict
 	#define RESTRICT_FUNC __declspec(restrict)
-	#define FMTFUNCTION( a, b )
+    #ifdef __RESHARPER__
+        #define FMTFUNCTION_WIN( fmtargnumber, firstvarargnumber ) [[rscpp::format(printf, fmtargnumber, firstvarargnumber)]]
+    #else
+        #define FMTFUNCTION_WIN( a, b )
+    #endif
+    #define FMTFUNCTION( a, b )
 #elif defined(GNUC)
 	#define SELECTANY __attribute__((weak))
 	#if defined(LINUX) && !defined(DEDICATED)
@@ -551,11 +556,13 @@ typedef void * HINSTANCE;
 	// squirrel.h does a #define printf DevMsg which leads to warnings when we try
 	// to use printf as the prototype format function. Using __printf__ instead.
 	#define FMTFUNCTION( fmtargnumber, firstvarargnumber ) __attribute__ (( format( __printf__, fmtargnumber, firstvarargnumber )))
+    #define FMTFUNCTION_WIN( a, b )
 #else
 	#define SELECTANY static
 	#define RESTRICT
 	#define RESTRICT_FUNC
 	#define FMTFUNCTION( a, b )
+    #define FMTFUNCTION_WIN( a, b )
 #endif
 
 #if defined( _WIN32 )
