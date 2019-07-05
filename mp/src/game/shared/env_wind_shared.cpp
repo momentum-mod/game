@@ -70,6 +70,7 @@
 #include "IEffects.h"
 #include "engine/IEngineSound.h"
 #include "sharedInterface.h"
+#include "renderparm.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -77,12 +78,30 @@
 //-----------------------------------------------------------------------------
 // globals
 //-----------------------------------------------------------------------------
-static Vector s_vecWindVelocity( 0, 0, 0 );
 
+static CUtlLinkedList<CEnvWindShared *> s_windControllers;
+
+#ifdef CLIENT_DLL
+// Test concommand for wind/tree sway. Couldn't think of a better way to put it.
+// Will move it out of this file when we figure out how the weather control will be implemented.
+CON_COMMAND_F(cl_tree_sway_dir, "sets tree sway wind direction and strength", FCVAR_CHEAT)
+{
+    CMatRenderContextPtr pRenderContext(g_pMaterialSystem);
+    if (args.ArgC() == 3)
+    {
+        Vector windDir;
+        windDir.x = V_atof(args.Arg(1));
+        windDir.y = V_atof(args.Arg(2));
+        windDir.z = 0;
+        pRenderContext->SetVectorRenderingParameter(VECTOR_RENDERPARM_WIND_DIRECTION, windDir);
+    }
+}
+#endif
 
 CEnvWindShared::CEnvWindShared() : m_WindAveQueue(10), m_WindVariationQueue(10)
 {
 	m_pWindSound = NULL;
+    s_windControllers.AddToTail(this);
 }
 
 CEnvWindShared::~CEnvWindShared()
@@ -91,6 +110,8 @@ CEnvWindShared::~CEnvWindShared()
 	{
 		CSoundEnvelopeController::GetController().Shutdown( m_pWindSound );
 	}
+
+    s_windControllers.FindAndRemove(this);
 }
 
 void CEnvWindShared::Init( int nEntIndex, int iRandomSeed, float flTime, 
@@ -103,6 +124,8 @@ void CEnvWindShared::Init( int nEntIndex, int iRandomSeed, float flTime,
 	m_Stream.SetSeed( iRandomSeed );
 	m_WindVariationStream.SetSeed( iRandomSeed );
 	m_iWindDir = m_iInitialWindDir = iInitialWindYaw;
+
+    m_iInitialWindDir = (int)(anglemod(m_iInitialWindDir));
 
 	m_flAveWindSpeed = m_flWindSpeed = m_flInitialWindSpeed = flInitialWindSpeed;
 
@@ -148,20 +171,44 @@ void CEnvWindShared::UpdateWindSound( float flTotalWindSpeed )
 {
 	if (!g_pEffects->IsServer())
 	{
-		float flDuration = random->RandomFloat( 1.0f, 2.0f );
+		const float flDuration = random->RandomFloat( 1.0f, 2.0f );
 		CSoundEnvelopeController &controller = CSoundEnvelopeController::GetController();
 
 		// FIXME: Tweak with these numbers
 		float flNormalizedWindSpeed = flTotalWindSpeed / 150.0f;
 		if (flNormalizedWindSpeed > 1.0f)
 			flNormalizedWindSpeed = 1.0f;
-		float flPitch = 120 * Bias( flNormalizedWindSpeed, 0.3f ) + 100;
-		float flVolume = 0.3f * Bias( flNormalizedWindSpeed, 0.3f ) + 0.7f;
+		const float flPitch = 120 * Bias( flNormalizedWindSpeed, 0.3f ) + 100;
+		const float flVolume = 0.3f * Bias( flNormalizedWindSpeed, 0.3f ) + 0.7f;
 		controller.SoundChangePitch( m_pWindSound, flPitch, flDuration );
 		controller.SoundChangeVolume( m_pWindSound, flVolume, flDuration );
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Updates the wind speed
+//-----------------------------------------------------------------------------
+#define TREE_SWAY_UPDATE_TIME 2.0f
+
+void CEnvWindShared::UpdateTreeSway(float flTime)
+{
+#ifdef CLIENT_DLL
+    while (flTime >= m_flSwayTime)
+    {
+        // Since the wind is constantly changing, but we need smooth values, we cache them off here.
+        m_PrevSwayVector = m_CurrentSwayVector;
+        m_CurrentSwayVector = m_currentWindVector;
+        m_flSwayTime += TREE_SWAY_UPDATE_TIME;
+    }
+
+    // Update vertex shader
+    const float flPercentage = (1 - ((m_flSwayTime - flTime) / TREE_SWAY_UPDATE_TIME));
+    CMatRenderContextPtr pRenderContext(g_pMaterialSystem);
+    // Dividing by 2 helps the numbers the shader is expecting stay in line with other expected game values.
+    const Vector vecWind = Lerp(flPercentage, m_PrevSwayVector, m_CurrentSwayVector) / 25.f;
+    pRenderContext->SetVectorRenderingParameter(VECTOR_RENDERPARM_WIND_DIRECTION, vecWind);
+#endif
+}
 
 //-----------------------------------------------------------------------------
 // Updates the wind speed
@@ -179,34 +226,32 @@ float CEnvWindShared::WindThink( float flTime )
 
 	ComputeWindVariation( flTime );
 
+    // Update Tree Sway
+    UpdateTreeSway(flTime);
+
 	while (true)
 	{
 		// First, simulate up to the next switch time...
 		float flTimeToSwitch = m_flSwitchTime - m_flSimTime;
 		float flMaxDeltaTime = flTime - m_flSimTime;
 
-		bool bGotToSwitchTime = (flMaxDeltaTime > flTimeToSwitch);
+		const bool bGotToSwitchTime = (flMaxDeltaTime > flTimeToSwitch);
 
-		float flSimDeltaTime = bGotToSwitchTime ? flTimeToSwitch : flMaxDeltaTime;
+		const float flSimDeltaTime = bGotToSwitchTime ? flTimeToSwitch : flMaxDeltaTime;
 
 		// Now that we've chosen 
 		// either ramp up, or sleep till change
-		bool bReachedSteadyState = true;
 		if ( m_flAveWindSpeed > m_flWindSpeed )
 		{
 			m_flWindSpeed += WIND_ACCELERATION * flSimDeltaTime;
 			if (m_flWindSpeed > m_flAveWindSpeed)
 				m_flWindSpeed = m_flAveWindSpeed;
-			else
-				bReachedSteadyState = false;
 		}
 		else if ( m_flAveWindSpeed < m_flWindSpeed )
 		{
 			m_flWindSpeed -= WIND_DECELERATION * flSimDeltaTime;
 			if (m_flWindSpeed < m_flAveWindSpeed)
 				m_flWindSpeed = m_flAveWindSpeed;
-			else
-				bReachedSteadyState = false;
 		}
 
 		// Update the sim time
@@ -217,10 +262,10 @@ float CEnvWindShared::WindThink( float flTime )
 			m_flSimTime = flTime;
 
 			// We're about to exit, let's set the wind velocity...
-			QAngle vecWindAngle( 0, m_iWindDir + m_flWindAngleVariation, 0 );
-			AngleVectors( vecWindAngle, &s_vecWindVelocity );
-			float flTotalWindSpeed = m_flWindSpeed * m_flWindSpeedVariation;
-			s_vecWindVelocity *= flTotalWindSpeed;
+            const QAngle vecWindAngle(0, m_iWindDir + m_flWindAngleVariation, 0);
+            AngleVectors(vecWindAngle, &m_currentWindVector);
+            const float flTotalWindSpeed = m_flWindSpeed * m_flWindSpeedVariation;
+            m_currentWindVector *= flTotalWindSpeed;
 
 			// If we reached a steady state, we don't need to be called until the switch time
 			// Otherwise, we should be called immediately
@@ -278,9 +323,44 @@ float CEnvWindShared::WindThink( float flTime )
 //-----------------------------------------------------------------------------
 void ResetWindspeed()
 {
-	s_vecWindVelocity.Init( 0, 0, 0 );
+    FOR_EACH_LL(s_windControllers, it)
+    {
+        s_windControllers[it]->m_currentWindVector.Init(0, 0, 0);
+    }
 }
 
+//-----------------------------------------------------------------------------
+// GetWindspeedAtTime was never finished to actually take time in to consideration.  We don't need
+// features that aren't written, but we do need to have multiple wind controllers on a map, so
+// we need to find the one that is affecting the given location and return its speed.
+//-----------------------------------------------------------------------------
+Vector GetWindspeedAtLocation(const Vector &location)
+{
+    FOR_EACH_LL(s_windControllers, it)
+    {
+        CEnvWindShared *thisWindController = s_windControllers[it];
+        const float distance = (thisWindController->m_location - location).Length();
+
+        if (distance < thisWindController->m_windRadius)
+        {
+            // This location is within our area of influence, so return our computer wind vector
+            return thisWindController->m_currentWindVector;
+        }
+    }
+
+    FOR_EACH_LL(s_windControllers, it)
+    {
+        CEnvWindShared *thisWindController = s_windControllers[it];
+
+        if (thisWindController->m_windRadius == -1.0f)
+        {
+            // We do a second search for a global controller so you don't have to worry about order in the list.
+            return thisWindController->m_currentWindVector;
+        }
+    }
+
+    return Vector(0, 0, 0); // No wind
+}
 
 //-----------------------------------------------------------------------------
 // Method to sample the windspeed at a particular time
@@ -289,5 +369,12 @@ void GetWindspeedAtTime( float flTime, Vector &vecVelocity )
 {
 	// For now, ignore history and time.. fix later when we use wind to affect
 	// client-side prediction
-	VectorCopy( s_vecWindVelocity, vecVelocity );
+    if (s_windControllers.Count() == 0)
+    {
+        vecVelocity.Init(0, 0, 0);
+    }
+    else
+    {
+        VectorCopy(s_windControllers[s_windControllers.Head()]->m_currentWindVector, vecVelocity);
+    }
 }
