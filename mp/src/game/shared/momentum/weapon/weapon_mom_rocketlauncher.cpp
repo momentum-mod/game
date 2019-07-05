@@ -92,16 +92,18 @@ void CMomentumRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
         SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
     }
 
-    // Create explosion
     Vector vecOrigin = GetAbsOrigin();
     CBaseEntity *pOwner = GetOwnerEntity();
+
     float flDamage = GetDamage();
-    /*ExplosionCreate(vecOrigin, GetAbsAngles(), pOwner, flDamage, flDamage * 2,
-        SF_ENVEXPLOSION_NOSPARKS | SF_ENVEXPLOSION_NODLIGHTS | SF_ENVEXPLOSION_NOSMOKE, 0.0f, this);*/
+    float flRadius = 146.0f;
+
+    // Create explosion effect with no damage
+    ExplosionCreate(vecOrigin, GetAbsAngles(), pOwner, flDamage, flRadius, false);
 
     // Damage
     CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType());
-    RadiusDamage(info, vecOrigin, 146.0f, CLASS_NONE, NULL);
+    RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, NULL);
 
     if (m_hRocketTrail)
     {
