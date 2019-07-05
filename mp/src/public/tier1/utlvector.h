@@ -292,9 +292,11 @@ public:
 // Especialy useful if you have a lot of vectors that are sparse, or if you're
 // carefully packing holders of vectors
 //-----------------------------------------------------------------------------
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4200) // warning C4200: nonstandard extension used : zero-sized array in struct/union
 #pragma warning(disable : 4815 ) // warning C4815: 'staticData' : zero-sized array in stack object will have no elements
+#endif
 
 class CUtlVectorUltraConservativeAllocator
 {
@@ -532,7 +534,9 @@ private:
 	}
 };
 
+#if defined(_MSC_VER)
 #pragma warning(pop)
+#endif
 
 
 //-----------------------------------------------------------------------------

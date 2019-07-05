@@ -903,6 +903,7 @@ void CUtlBuffer::SeekGet( SeekType_t type, int offset )
 // Parse...
 //-----------------------------------------------------------------------------
 
+#pragma warning(push)
 #pragma warning ( disable : 4706 )
 
 int CUtlBuffer::VaScanf( const char* pFmt, va_list list )
@@ -1074,7 +1075,7 @@ int CUtlBuffer::VaScanf( const char* pFmt, va_list list )
 	return numScanned;
 }
 
-#pragma warning ( default : 4706 )
+#pragma warning ( pop )
 
 int CUtlBuffer::Scanf( const char* pFmt, ... )
 {

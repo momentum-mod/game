@@ -4,8 +4,11 @@
 //
 //=============================================================================//
 
-#include <windows.h>
+#include <Windows.h>
+#pragma warning(push)
+#pragma warning(disable:4091)
 #include <dbghelp.h>
+#pragma warning(pop)
 #include "vmpi.h"
 #include "cmdlib.h"
 #include "vmpi_tools_shared.h"
