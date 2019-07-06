@@ -17,18 +17,18 @@ class CMomentumRocket : public CBaseAnimating
   public:
     CMomentumRocket();
 
-    void Spawn();
-    void Precache();
-    void Touch(CBaseEntity *pOther);
+    void Spawn() OVERRIDE;
+    void Precache() OVERRIDE;
+    void Touch(CBaseEntity *pOther) OVERRIDE;
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
 
-    virtual float GetRadius() { return MOM_ROCKET_RADIUS; }
-    virtual float GetDamage() { return m_flDamage; }
-    virtual void SetDamage(float flDamage) { m_flDamage = flDamage; }
+    static float GetRadius() { return MOM_ROCKET_RADIUS; }
+    float GetDamage() OVERRIDE { return m_flDamage; }
+    void SetDamage(float flDamage) OVERRIDE { m_flDamage = flDamage; }
 
     CHandle<CMomentumRocketLauncher> m_hOwner;
 
-    static CMomentumRocket *EmitRocket(const Vector &vecSrc, const QAngle &vecAngles, CBaseEntity *pentOwner);
+    static CMomentumRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner);
 
   protected:
     void CreateSmokeTrail();

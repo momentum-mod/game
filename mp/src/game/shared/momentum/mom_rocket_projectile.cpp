@@ -29,6 +29,7 @@ CMomentumRocket::CMomentumRocket()
 
 void CMomentumRocket::Precache()
 {
+    BaseClass::Precache();
     // MOM_TODO:
     // Replace HL2 missile model
     PrecacheModel("models/weapons/w_missile.mdl");
