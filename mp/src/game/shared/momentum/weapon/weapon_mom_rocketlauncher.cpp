@@ -39,6 +39,19 @@ void CMomentumRocketLauncher::RocketLauncherFire()
         return;
 
     m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.8f;
+    SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
+    pPlayer->m_iShotsFired++;
+
+    DoFireEffects();
+    WeaponSound(SINGLE);
+
+    // MOM_FIXME:
+    // This will cause an assertion error.
+    // Prevents us from using BaseGunFire() as well.
+    //SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+
+    // player "shoot" animation
+    pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 #ifdef GAME_DLL
     Vector vForward, vRight, vUp;
@@ -58,17 +71,8 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     QAngle vecAngles;
     VectorAngles(vForward, vecAngles);
 
-    CMomentumRocket::EmitRocket(muzzlePoint, vecAngles, pPlayer);
+    CMomRocket::EmitRocket(muzzlePoint, vecAngles, pPlayer);
 #endif
-
-    WeaponSound(SINGLE);
-
-    // MOM_FIXME:
-    // This will cause an assertion error.
-    // SendWeaponAnim(ACT_VM_PRIMARYATTACK);
-
-    // player "shoot" animation
-    pPlayer->SetAnimation(PLAYER_ATTACK1);
 }
 
 void CMomentumRocketLauncher::PrimaryAttack()

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "weapon_base_gun.h"
-#include "mom_rocket_projectile.h"
+#include "mom_rocket.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumRocketLauncher C_MomentumRocketLauncher
