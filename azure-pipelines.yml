@@ -1,0 +1,93 @@
+trigger:
+- master
+- develop
+- enhance/azure_pipelines
+
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container:
+    image: gocnak/steam-runtime-i386:momentum
+    env: { USING_DOCKER: 'h*ckyeahIam' }
+  steps:
+  - checkout: self
+    fetchDepth: 5  # the depth of commits to ask Git to fetch
+  - bash: |
+      cd mp/src
+      ./creategameprojects
+  - bash: |
+      cd ~/mom_build/mp/src
+      make -f games.mak
+  - task: CopyFiles@2
+    inputs:
+      contents: '**/mp/game/**/*.so'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: LinuxBinaries
+
+- job: macOS
+  workspace:
+    clean: all
+  pool:
+    vmImage: 'macOS-10.14'
+  steps:
+  - checkout: self
+    fetchDepth: 5  # the depth of commits to ask Git to fetch
+  # Create game projects
+  - script: |
+      cd  $(Agent.BuildDirectory)/s/mp/src
+      ./creategameprojects
+  # Xcode
+  # Build, test, or archive an Xcode workspace on macOS.
+  - task: Xcode@5
+    inputs:
+      actions: 'build'
+      sdk: 'macosx10.13'
+      configuration: 'Release'
+      xcWorkspacePath: 'mp/src/games.xcodeproj'
+      xcodeVersion: '9'
+      args: '-quiet -arch i386 -xcconfig devtools/release.xcconfig'
+      workingDirectory: 'mp/src/'
+  - task: CopyFiles@2
+    inputs:
+      contents: '**/mp/game/**/*.dylib'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: MacBinaries
+
+- job: Windows
+  workspace:
+    clean: all
+  pool:
+    vmImage: 'windows-2019'
+  steps:
+  - checkout: self
+    fetchDepth: 5  # the depth of commits to ask Git to fetch
+  # Gotta do some fun Registry stuff here for the VPC to work with only 2017+ installed.
+  - script: REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\10.0\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" /v DefaultProjectExtension /t REG_SZ /d vcproj /f
+  - script: |
+      cd $(Agent.BuildDirectory)\s\mp\src
+      devtools\bin\vpc.exe /momentum +everything /mksln everything.sln
+      copy everything.sln+sln_fix.txt everything.sln
+    # Visual Studio build
+    # Build with MSBuild and set the Visual Studio version property
+  - task: VSBuild@1
+    inputs:
+      solution: 'mp\src\everything.sln'
+      configuration: 'Release'
+      clean: true
+      maximumCpuCount: true
+      msbuildArgs: '/v:m' # Minimal verbosity
+  - task: CopyFiles@2
+    inputs:
+      contents: '**\mp\game\**\?(*.exe|*.dll)'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: WindowsBinaries
