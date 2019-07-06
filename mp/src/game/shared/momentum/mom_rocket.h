@@ -37,9 +37,10 @@ class CMomRocket : public CBaseAnimating
     void Touch(CBaseEntity *pOther) OVERRIDE;
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
 
-    static float GetRadius() { return MOM_ROCKET_RADIUS; }
+    float GetRadius() { return m_flRadius; }
     float GetDamage() OVERRIDE { return m_flDamage; }
 
+    void SetRadius(float flRadius) { m_flRadius = flRadius; }
     void SetDamage(float flDamage) OVERRIDE { m_flDamage = flDamage; }
 
     // Specify what velocity we want the grenade to have on the client immediately.
@@ -56,6 +57,7 @@ class CMomRocket : public CBaseAnimating
 
     CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
+    float m_flRadius;
 
   private:
     DECLARE_DATADESC();

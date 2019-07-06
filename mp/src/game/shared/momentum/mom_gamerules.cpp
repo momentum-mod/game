@@ -352,8 +352,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     CBaseEntity *pInflictor = info.GetInflictor();
 
     // iterate on all entities in the vicinity.
-    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL;
-         sphere.NextEntity())
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL; sphere.NextEntity())
     {
         // This value is used to scale damage when the explosion is blocked by some other object.
         float flBlockedDamagePercent = 0.0f;
@@ -406,9 +405,9 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         flAdjustedDamage = info.GetDamage() - flAdjustedDamage;
 
         // Take a little less damage from yourself
-        if (tr.m_pEnt == info.GetAttacker())
+        if (pEntity == info.GetAttacker())
         {
-            flAdjustedDamage = flAdjustedDamage * 0.75;
+            flAdjustedDamage = flAdjustedDamage * 0.75f;
         }
 
         if (flAdjustedDamage <= 0)
