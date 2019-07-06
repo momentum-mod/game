@@ -103,9 +103,11 @@ void CMomRocket::Spawn()
     SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
     SetSolidFlags(FSOLID_NOT_STANDABLE);
     SetMoveType(MOVETYPE_FLY);
-    SetSolid(SOLID_BBOX); // So it will collide with physics props!
-    // smaller, cube bounding box so we rest on the ground
-    SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
+    SetSolid(SOLID_BBOX);
+    AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
+    AddEffects(EF_NOSHADOW);
+    SetSize(-Vector(0, 0, 0), Vector(0, 0, 0));
+    m_takedamage = DAMAGE_NO;
 }
 
 void CMomRocket::Precache()
