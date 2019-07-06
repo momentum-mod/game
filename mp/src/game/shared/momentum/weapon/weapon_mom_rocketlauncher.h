@@ -7,14 +7,14 @@
 #define CMomentumRocketLauncher C_MomentumRocketLauncher
 #endif
 
-class CMomentumRocketLauncher : public CWeaponBase
+class CMomentumRocketLauncher : public CWeaponBaseGun
 {
   public:
-    DECLARE_CLASS(CMomentumRocketLauncher, CWeaponBase);
+    DECLARE_CLASS(CMomentumRocketLauncher, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumRocketLauncher() {}
+    CMomentumRocketLauncher();
 
     void Precache() OVERRIDE;
     void PrimaryAttack() OVERRIDE;

@@ -16,6 +16,12 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 
+CMomentumRocketLauncher::CMomentumRocketLauncher()
+{
+    m_flTimeToIdleAfterFire = 1.9f;
+    m_flIdleInterval = 20.0f;
+}
+
 void CMomentumRocketLauncher::Precache()
 {
     BaseClass::Precache();
