@@ -864,7 +864,8 @@ void CMomentumGameMovement::PlayerMove()
         ray.Init(start, end, vHullMin, vHullMax);
         UTIL_TraceRay(ray, PlayerSolidMask(), mv->m_nPlayerHandle.Get(), COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
 
-        if (trace.fraction < 1.0f)
+        // Clip player view height to ceiling (unless we're in noclip)
+        if (trace.fraction < 1.0f && player->GetMoveType() != MOVETYPE_NOCLIP)
         {
             float est = vHullMax.z + trace.endpos.z - mv->GetAbsOrigin().z - eyeClearance;
 
