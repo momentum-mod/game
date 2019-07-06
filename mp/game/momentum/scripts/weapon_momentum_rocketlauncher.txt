@@ -10,7 +10,7 @@ WeaponData
     "Damage"            "90"
     "Range"             "8192"
     "RangeModifier"     "0.98"
-    "Bullets"           "1"
+    "Bullets"           "0"
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_RocketLauncher"

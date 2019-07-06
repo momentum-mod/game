@@ -143,10 +143,13 @@ bool CWeaponBaseGun::BaseGunFire(float flSpread, float flCycleTime, bool bPrimar
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-    FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
-                   pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(),
-                   bPrimaryMode ? Primary_Mode : Secondary_Mode, CBaseEntity::GetPredictionRandomSeed() & 255,
-                   flSpread);
+    if (GetWeaponInfo(GetWeaponID())->m_iBullets != 0)
+    {
+        FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
+                       pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(),
+                       bPrimaryMode ? Primary_Mode : Secondary_Mode, CBaseEntity::GetPredictionRandomSeed() & 255,
+                       flSpread);
+    }
 
     DoFireEffects();
 
