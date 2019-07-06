@@ -241,7 +241,8 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     pRocket->SetupInitialTransmittedGrenadeVelocity(vecForward * MOM_ROCKET_SPEED);
     pRocket->SetThrower(pentOwner);
 
-    pRocket->SetDamage(90.0f);    
+    pRocket->SetDamage(90.0f);
+    pRocket->SetRadius(146.0f);
 
     pRocket->CreateSmokeTrail();
     pRocket->EmitSound("Missile.Ignite");

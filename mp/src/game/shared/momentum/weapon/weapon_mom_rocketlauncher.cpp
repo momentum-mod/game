@@ -31,6 +31,41 @@ void CMomentumRocketLauncher::Precache()
 #endif
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Return the origin & angles for a projectile fired from the player's gun
+//-----------------------------------------------------------------------------
+void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward)
+{
+    Vector vecForward, vecRight, vecUp;
+    AngleVectors(pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp);
+
+    Vector vecShootPos = pPlayer->Weapon_ShootPosition();
+
+    // Estimate end point
+    Vector endPos = vecShootPos + vecForward * 2000;
+
+    // Trace forward and find what's in front of us, and aim at that
+    trace_t tr;
+
+    CTraceFilterSimple filter(pPlayer, COLLISION_GROUP_NONE);
+    UTIL_TraceLine(vecShootPos, endPos, MASK_SOLID, &filter, &tr);
+
+    // Offset actual start point
+    *vecSrc = vecShootPos + (vecForward * vecOffset.x) + (vecRight * vecOffset.y) + (vecUp * vecOffset.z);
+
+    // Find angles that will get us to our desired end point
+    // Only use the trace end if it wasn't too close, which results
+    // in visually bizarre forward angles
+    if (tr.fraction > 0.1)
+    {
+        VectorAngles(tr.endpos - *vecSrc, *angForward);
+    }
+    else
+    {
+        VectorAngles(endPos - *vecSrc, *angForward);
+    }
+}
+
 void CMomentumRocketLauncher::RocketLauncherFire()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
@@ -65,13 +100,11 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     {
         vecOffset.z = 8.0f;
     }
+    Vector vecSrc;
+	QAngle angForward;
+    GetProjectileFireSetup(pPlayer, vecOffset, &vecSrc, &angForward);
 
-    Vector muzzlePoint = pPlayer->Weapon_ShootPosition() + (vForward * vecOffset.x) + (vRight * vecOffset.y) + (vUp * vecOffset.z);
-
-    QAngle vecAngles;
-    VectorAngles(vForward, vecAngles);
-
-    CMomRocket::EmitRocket(muzzlePoint, vecAngles, pPlayer);
+    CMomRocket::EmitRocket(vecSrc, angForward, pPlayer);
 #endif
 }
 

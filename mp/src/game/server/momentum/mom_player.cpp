@@ -159,6 +159,10 @@ static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXEC
                                "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1,
                                AppearanceCallback);
 
+// Rocket self damage ConVars
+static ConVar mom_damageforcescale_self_rocket( "mom_damageforcescale_self_rocket", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+static ConVar mom_damagescale_self_rocket( "mom_damagescale_self_rocket", "0.60", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+
 // Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps,
 // as well as changing the appearance locally.
 void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
@@ -1762,4 +1766,51 @@ void CMomentumPlayer::PostThink()
     // Update previous origins
     NewPreviousOrigin(GetLocalOrigin());
     BaseClass::PostThink();
+}
+
+static float DamageForce(const Vector &size, float damage, float scale)
+{ 
+	float force = damage * ((48 * 48 * 82.0) / (size.x * size.y * size.z)) * scale;
+
+    if (force > 1000.0)
+    {
+        force = 1000.0;
+    }
+
+    return force;
+}
+
+int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
+{
+    // Apply TF2-like knockback when damaging self with rockets
+    // https://github.com/NicknineTheEagle/TF2-Base/blob/master/src/game/server/tf/tf_player.cpp#L2816
+    if (info.GetAttacker() == GetLocalPlayer() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
+    {
+        CTakeDamageInfo adjustedInfo = info;
+
+        // Self damage scaling
+        adjustedInfo.SetDamage(adjustedInfo.GetDamage() * mom_damagescale_self_rocket.GetFloat());
+
+        // Grab the vector of the incoming attack.
+        // (Pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
+        Vector vecDir = vec3_origin;
+        if (adjustedInfo.GetInflictor())
+        {
+            // MOM_FIXME: This feels wrong, I'm guessing WorldSpaceCenter of momentum player is different from TF2
+            //vecDir = adjustedInfo.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - WorldSpaceCenter();
+
+            // Estimate TF2-like WorldSpaceCenter using TF2 collision box sizes
+            float zOffset = IsDucking() ? 62.0f/2 : 82.0f/2;
+            vecDir = adjustedInfo.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - (GetAbsOrigin() + Vector(0, 0, zOffset));
+            VectorNormalize(vecDir);
+        }
+
+        Vector vecForce = vecDir * -DamageForce(WorldAlignSize(), adjustedInfo.GetDamage(), mom_damageforcescale_self_rocket.GetFloat());
+        ApplyAbsVelocityImpulse(vecForce);
+
+        // Done
+        return 1;
+    }
+
+    return BaseClass::OnTakeDamage_Alive(info);
 }
