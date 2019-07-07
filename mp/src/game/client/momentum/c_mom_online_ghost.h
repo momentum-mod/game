@@ -26,7 +26,10 @@ public:
 
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_ONLINE; }
 
-private:
+    void Simulate() OVERRIDE;
+    void CreateLightEffects() OVERRIDE;
 
+private:
+    CFlashlightEffect *m_pFlashlight;
     CGhostEntityPanel *m_pEntityPanel;
 };

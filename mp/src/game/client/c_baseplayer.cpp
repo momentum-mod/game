@@ -1250,7 +1250,7 @@ void C_BasePlayer::UpdateFlashlight()
 	{
 		// Turned off the flashlight; delete it.
 		delete m_pFlashlight;
-		m_pFlashlight = NULL;
+		m_pFlashlight = nullptr;
 	}
 }
 
@@ -1263,11 +1263,11 @@ void C_BasePlayer::Flashlight( void )
 	UpdateFlashlight();
 
 	// Check for muzzle flash and apply to view model
-	C_BaseAnimating *ve = this;
+	/*C_BaseAnimating *ve = this;
 	if ( GetObserverMode() == OBS_MODE_IN_EYE )
 	{
 		ve = dynamic_cast< C_BaseAnimating* >( GetObserverTarget() );
-	}
+	}*/
 }
 
 
