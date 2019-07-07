@@ -116,6 +116,7 @@ void LobbyMembersPanel::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         // Add this user to the panel
         AddLobbyMember(CSteamID(pParam->m_ulSteamIDUserChanged));
         UpdateLobbyMemberCount();
+        m_pMemberList->InvalidateLayout(true);
     }
     else if (pParam->m_rgfChatMemberStateChange & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
@@ -125,6 +126,7 @@ void LobbyMembersPanel::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         {
             m_pMemberList->RemoveItem(itemID);
             UpdateLobbyMemberCount();
+            m_pMemberList->SortList();
         }
     }
 }
@@ -235,12 +237,16 @@ int LobbyMembersPanel::StaticLobbyMemberSortFunc(ListPanel* list, const ListPane
 
 int LobbyMembersPanel::FindItemIDForLobbyMember(const uint64 steamID)
 {
-    for (int i = 0; i <= m_pMemberList->GetItemCount(); i++)
+    for (int row = 0; row <= m_pMemberList->GetItemCount(); row++)
     {
-        const auto pKv = m_pMemberList->GetItem(i);
-        if (pKv && pKv->GetUint64("steamid") == steamID)
+        const auto itemID = m_pMemberList->GetItemIDFromRow(row);
+        if (itemID > -1)
         {
-            return i;
+            const auto pKv = m_pMemberList->GetItem(itemID);
+            if (pKv && pKv->GetUint64("steamid") == steamID)
+            {
+                return itemID;
+            }
         }
     }
     return -1;
