@@ -2,6 +2,7 @@
 #include "c_mom_online_ghost.h"
 #include "steam/steam_api.h"
 #include "GhostEntityPanel.h"
+#include "flashlighteffect.h"
 
 #include "tier0/memdbgon.h"
 
@@ -13,7 +14,8 @@ IMPLEMENT_CLIENTCLASS_DT(C_MomentumOnlineGhostEntity, DT_MOM_OnlineGhost, CMomen
     RecvPropFloat(RECVINFO(m_vecViewOffset[2])),
 END_RECV_TABLE();
 
-C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false), m_pEntityPanel(nullptr)
+C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false),
+                                                            m_pFlashlight(nullptr), m_pEntityPanel(nullptr)
 {
     m_SteamID = 0;
 }
@@ -24,6 +26,8 @@ C_MomentumOnlineGhostEntity::~C_MomentumOnlineGhostEntity()
         m_pEntityPanel->DeletePanel();
 
     m_pEntityPanel = nullptr;
+
+    delete m_pFlashlight;
 }
 
 void C_MomentumOnlineGhostEntity::Spawn()
@@ -44,4 +48,41 @@ void C_MomentumOnlineGhostEntity::ClientThink()
     }
 
     m_pEntityPanel->SetVisible(!(m_bSpectating || m_bSpectated));
+}
+
+void C_MomentumOnlineGhostEntity::Simulate()
+{
+    BaseClass::Simulate();
+
+    // The dim light is the flashlight.
+    if (IsEffectActive(EF_DIMLIGHT))
+    {
+        if (!m_pFlashlight)
+        {
+            // Turned on the headlight; create it.
+            m_pFlashlight = new CFlashlightEffect(m_index);
+
+            if (!m_pFlashlight)
+                return;
+
+            m_pFlashlight->TurnOn();
+        }
+
+        Vector vecForward, vecRight, vecUp;
+        AngleVectors(EyeAngles(), &vecForward, &vecRight, &vecUp);
+
+        // Update the light with the new position and direction.		
+        m_pFlashlight->UpdateLight(EyePosition(), vecForward, vecRight, vecUp, 1000);
+    }
+    else if (m_pFlashlight)
+    {
+        // Turned off the flashlight; delete it.
+        delete m_pFlashlight;
+        m_pFlashlight = nullptr;
+    }
+}
+
+void C_MomentumOnlineGhostEntity::CreateLightEffects()
+{
+    // Stubbed so we don't get a light at our feet
 }
