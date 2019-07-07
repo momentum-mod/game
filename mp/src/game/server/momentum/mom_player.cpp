@@ -159,9 +159,11 @@ static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXEC
                                "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1,
                                AppearanceCallback);
 
-// Rocket self damage ConVars
-static ConVar mom_damageforcescale_self_rocket( "mom_damageforcescale_self_rocket", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-static ConVar mom_damagescale_self_rocket( "mom_damagescale_self_rocket", "0.60", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+// Rocket jump self damage ConVars
+// https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L90-L92
+static ConVar mom_damageforcescale_self_rocket_air("mom_damageforcescale_self_rocket_air", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
+static ConVar mom_damageforcescale_self_rocket("mom_damageforcescale_self_rocket", "5.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
+static ConVar mom_damagescale_self_rocket("mom_damagescale_self_rocket", "0.60", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
 
 // Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps,
 // as well as changing the appearance locally.
@@ -1780,37 +1782,99 @@ static float DamageForce(const Vector &size, float damage, float scale)
     return force;
 }
 
+int CMomentumPlayer::OnTakeDamage(const CTakeDamageInfo &info)
+{
+    CTakeDamageInfo adjustedInfo = info;
+
+    if (GetFlags() & FL_GODMODE)
+        return 0;
+
+    // Early out if there's no damage
+    if (!adjustedInfo.GetDamage())
+        return 0;
+
+    if (!IsAlive())
+        return 0;
+
+    CBaseEntity *pAttacker = adjustedInfo.GetAttacker();
+    CBaseEntity *pInflictor = adjustedInfo.GetInflictor();
+
+    // Take reduced damage midair from own rockets
+    if(pAttacker == this && FClassnameIs(pInflictor, "momentum_rocket") && GetGroundEntity() == NULL)
+    {
+        adjustedInfo.SetDamage(adjustedInfo.GetDamage() * mom_damagescale_self_rocket.GetFloat());
+    }
+
+    if (m_debugOverlays & OVERLAY_BUDDHA_MODE)
+    {
+        if (ceil(adjustedInfo.GetDamage()) >= m_iHealth)
+        {
+            m_iHealth = ceil(adjustedInfo.GetDamage()) + 1;
+        }
+    }
+
+    return CBaseCombatCharacter::OnTakeDamage(adjustedInfo);
+}
+
 int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
 {
-    // Apply TF2-like knockback when damaging self with rockets
-    // https://github.com/NicknineTheEagle/TF2-Base/blob/master/src/game/server/tf/tf_player.cpp#L2816
-    if (info.GetAttacker() == GetLocalPlayer() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
+    CBaseEntity *pAttacker = info.GetAttacker();
+    CBaseEntity *pInflictor = info.GetInflictor();
+
+    // Handle taking self damage from rockets
+    // https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L3963
+    if (pAttacker == GetLocalPlayer() && FClassnameIs(pInflictor, "momentum_rocket"))
     {
-        CTakeDamageInfo adjustedInfo = info;
-
-        // Self damage scaling
-        adjustedInfo.SetDamage(adjustedInfo.GetDamage() * mom_damagescale_self_rocket.GetFloat());
-
         // Grab the vector of the incoming attack.
         // (Pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
         Vector vecDir = vec3_origin;
-        if (adjustedInfo.GetInflictor())
+        if (pInflictor)
         {
-            // MOM_FIXME: This feels wrong, I'm guessing WorldSpaceCenter of momentum player is different from TF2
-            //vecDir = adjustedInfo.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - WorldSpaceCenter();
-
-            // Estimate TF2-like WorldSpaceCenter using TF2 collision box sizes
-            float zOffset = IsDucking() ? 62.0f/2 : 82.0f/2;
-            vecDir = adjustedInfo.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - (GetAbsOrigin() + Vector(0, 0, zOffset));
+            vecDir = info.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - WorldSpaceCenter();
             VectorNormalize(vecDir);
         }
 
-        Vector vecForce = vecDir * -DamageForce(WorldAlignSize(), adjustedInfo.GetDamage(), mom_damageforcescale_self_rocket.GetFloat());
-        ApplyAbsVelocityImpulse(vecForce);
+        // Take damage - round to the nearest integer.
+        if (m_takedamage != DAMAGE_EVENTS_ONLY)
+        {
+            m_iHealth -= (info.GetDamage() + 0.5f);
+        }
+
+        // Apply knockback
+        ApplyPushFromDamage(info, vecDir);
 
         // Done
         return 1;
     }
 
     return BaseClass::OnTakeDamage_Alive(info);
+}
+
+void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir)
+{
+    // Apply TF2-like knockback when damaging self with rockets
+    // https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L4108  
+
+    if (info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE)
+        return;
+
+    CBaseEntity *pAttacker = info.GetAttacker();
+
+    if(!info.GetInflictor() || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
+        return;
+
+    // Apply different force scale when on ground
+    float flScale = 1.0f;
+
+    if(GetFlags() & FL_ONGROUND)
+    {
+        flScale = mom_damageforcescale_self_rocket.GetFloat();
+    }
+    else
+    {
+        flScale = mom_damageforcescale_self_rocket_air.GetFloat();
+    }
+
+    Vector vecForce = vecDir * -DamageForce(WorldAlignSize(), info.GetDamage(), flScale);
+    ApplyAbsVelocityImpulse(vecForce);
 }

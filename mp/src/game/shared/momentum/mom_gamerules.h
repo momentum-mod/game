@@ -49,12 +49,6 @@ class CMomentumGameRules : public CSingleplayRules
         if(pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
             return true;
 
-        // MOM_TODO:
-        // Self damage from rockets is reduced in TF2 https://github.com/NicknineTheEagle/TF2-Base/blob/master/src/game/server/tf/tf_player.cpp#L2454
-        // Velocity from self damaging rockets is also boosted
-        // Check out 'tf_damageforcescale_self_soldier' in https://github.com/NicknineTheEagle/TF2-Base/blob/master/src/game/server/tf/tf_player.cpp#L2864
-        // and the ConVars: https://github.com/NicknineTheEagle/TF2-Base/blob/4977917e6123a1ba0f6ef6ceae400b3eed6840bd/src/game/server/tf/tf_player.cpp#L80-L81
-
         return !pVictim->IsPlayer(); 
     }
 
