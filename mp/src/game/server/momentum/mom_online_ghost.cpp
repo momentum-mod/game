@@ -48,6 +48,8 @@ static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED
                             "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 extern ConVar mom_paintgun_shoot_sound;
 
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_flashlights_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles drawing other ghosts' flashlights. 0 = OFF, 1 = ON\n", RefreshGhostData);
+
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
     ListenForGameEvent("mapfinished_panel_closed");
@@ -395,6 +397,14 @@ void CMomentumOnlineGhostEntity::SetGhostColor(const uint32 newHexColor)
 
 void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
 {
+    if (!mom_ghost_online_flashlights_enable.GetBool())
+    {
+        // In case they have it on still
+        if (GetEffects() & EF_DIMLIGHT)
+            RemoveEffects(EF_DIMLIGHT);
+        return;
+    }
+
     if (bEnable)
     {
         AddEffects(EF_DIMLIGHT);
