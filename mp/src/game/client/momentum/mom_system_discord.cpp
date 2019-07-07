@@ -347,7 +347,7 @@ bool CMomentumDiscord::JoinMapFromUserSteamID(uint64 steamID)
     CSteamID targetPlayerSteamID = CSteamID(steamID);
     const char *targetMapName = GetMapOfPlayerFromSteamID(&targetPlayerSteamID);
 
-    if (!targetMapName[0])
+    if (!(targetMapName && targetMapName[0]))
     {
         return false;
     }

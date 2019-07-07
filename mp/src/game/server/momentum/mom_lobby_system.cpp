@@ -871,7 +871,7 @@ bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
 {
     CHECK_STEAM_API_B(SteamMatchmaking());
     const char* specChar = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
-    return specChar[0] ? true : false;
+    return (specChar && specChar[0]) ? true : false;
 }
 
 bool CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
