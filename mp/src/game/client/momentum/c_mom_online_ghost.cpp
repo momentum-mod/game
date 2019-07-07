@@ -7,7 +7,10 @@
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumOnlineGhostEntity, DT_MOM_OnlineGhost, CMomentumOnlineGhostEntity)
     RecvPropInt(RECVINFO(m_uiAccountID), SPROP_UNSIGNED),
-    RecvPropBool(RECVINFO(m_bSpectating))
+    RecvPropBool(RECVINFO(m_bSpectating)),
+    RecvPropFloat(RECVINFO(m_vecViewOffset[0])),
+    RecvPropFloat(RECVINFO(m_vecViewOffset[1])),
+    RecvPropFloat(RECVINFO(m_vecViewOffset[2])),
 END_RECV_TABLE();
 
 C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false), m_pEntityPanel(nullptr)

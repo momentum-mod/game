@@ -47,6 +47,8 @@ public:
     CNetworkVar(uint32, m_uiAccountID);
     CNetworkVar(bool, m_bSpectating);
 
+    IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_vecViewOffset);
+
     QAngle m_vecLookAngles; // Used for storage reasons
 
 protected:
