@@ -6,7 +6,7 @@ trigger:
 jobs:
 - job: Linux
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   container:
     image: gocnak/steam-runtime-i386:momentum
     env: { USING_DOCKER: 'h*ckyeahIam' }
