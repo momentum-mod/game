@@ -229,7 +229,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void DoMuzzleFlash() OVERRIDE;
     void PreThink() OVERRIDE;
     void PostThink() OVERRIDE;
+
+    int OnTakeDamage(const CTakeDamageInfo& info) OVERRIDE;
     int OnTakeDamage_Alive(const CTakeDamageInfo &info) OVERRIDE;
+
+    void ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir);
 
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }

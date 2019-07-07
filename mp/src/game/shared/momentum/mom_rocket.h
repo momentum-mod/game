@@ -4,9 +4,6 @@
 #include "smoke_trail.h"
 #endif
 
-#define MOM_ROCKET_RADIUS (110.0f * 1.1f) // https://github.com/NicknineTheEagle/TF2-Base/blob/master/src/game/shared/tf/tf_weaponbase_rocket.h#L27
-#define MOM_ROCKET_SPEED 1100
-
 #ifdef CLIENT_DLL
 #define CMomRocket C_MomRocket
 #else

@@ -328,6 +328,7 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 
 //-----------------------------------------------------------------------------
 // Purpose: TF2-like radius damage
+//          https://github.com/danielmm8888/TF2Classic/blob/d070129a436a8a070659f0267f6e63564a519a47/src/game/shared/tf/tf_gamerules.cpp#L1989
 // Input  : &info -
 //			&vecSrcIn -
 //			flRadius -
@@ -354,9 +355,6 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     // iterate on all entities in the vicinity.
     for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL; sphere.NextEntity())
     {
-        // This value is used to scale damage when the explosion is blocked by some other object.
-        float flBlockedDamagePercent = 0.0f;
-
         if (pEntity == pEntityIgnore)
             continue;
 
@@ -369,7 +367,10 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             continue;
         }
 
-        // Check that the explosion can 'see' this entity.
+        // This value is used to scale damage when the explosion is blocked by some other object.
+        float flBlockedDamagePercent = 0.0f;
+
+        // Check that the explosion can 'see' this entity, trace through players.
         vecSpot = pEntity->BodyTarget(vecSrc, false);
         UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
 
@@ -401,13 +402,12 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             flDistanceToEntity = (vecSrc - tr.endpos).Length();
         }
 
-        flAdjustedDamage = flDistanceToEntity * falloff;
-        flAdjustedDamage = info.GetDamage() - flAdjustedDamage;
+        flAdjustedDamage = RemapValClamped(flDistanceToEntity, 0, flRadius, info.GetDamage(), info.GetDamage() * falloff);
 
         // Take a little less damage from yourself
-        if (pEntity == info.GetAttacker())
+        if (tr.m_pEnt == info.GetAttacker())
         {
-            flAdjustedDamage = flAdjustedDamage * 0.75f;
+            flAdjustedDamage = flAdjustedDamage * 0.75;
         }
 
         if (flAdjustedDamage <= 0)

@@ -18,7 +18,7 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 
 CMomentumRocketLauncher::CMomentumRocketLauncher()
 {
-    m_flTimeToIdleAfterFire = 1.9f;
+    m_flTimeToIdleAfterFire = 0.8f;
     m_flIdleInterval = 20.0f;
 }
 

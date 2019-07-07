@@ -7,6 +7,10 @@
 
 #include "tier0/memdbgon.h"
 
+// https://github.com/danielmm8888/TF2Classic/blob/master/src/game/shared/tf/tf_weaponbase_rocket.cpp#L20
+#define MOM_ROCKET_RADIUS 146.0f
+#define MOM_ROCKET_SPEED 1100
+
 #ifndef CLIENT_DLL
 
 BEGIN_DATADESC(CMomRocket)
@@ -242,7 +246,9 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     pRocket->SetThrower(pentOwner);
 
     pRocket->SetDamage(90.0f);
-    pRocket->SetRadius(146.0f);
+    // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage
+    // https://github.com/danielmm8888/TF2Classic/blob/master/src/game/shared/tf/tf_weaponbase_rocket.cpp#L430
+    pRocket->SetRadius(121.0f);
 
     pRocket->CreateSmokeTrail();
     pRocket->EmitSound("Missile.Ignite");
