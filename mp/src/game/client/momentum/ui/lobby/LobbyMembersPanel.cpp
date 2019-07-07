@@ -120,8 +120,12 @@ void LobbyMembersPanel::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
     else if (pParam->m_rgfChatMemberStateChange & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
         // Get em outta here
-        m_pMemberList->RemoveItem(FindItemIDForLobbyMember(pParam->m_ulSteamIDUserChanged));
-        UpdateLobbyMemberCount();
+        const auto itemID = FindItemIDForLobbyMember(pParam->m_ulSteamIDUserChanged);
+        if (itemID > -1)
+        {
+            m_pMemberList->RemoveItem(itemID);
+            UpdateLobbyMemberCount();
+        }
     }
 }
 
