@@ -154,6 +154,8 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
             pData->SetBool("isOwner", memberID == owner);
 
             const char *pMap = SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_MAP);
+            if (!pMap)
+                pMap = "";
             const auto bMainMenu = Q_strlen(pMap) == 0;
             auto bCredits = false;
             auto bBackground = false;
@@ -167,7 +169,7 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
             pData->SetString("map", bMainMenu ? "Main Menu" : pMap);
 
             const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_IS_SPEC);
-            if (pSpec[0])
+            if (pSpec && pSpec[0])
                 pData->SetString("state", "#MOM_Lobby_Member_Spectating");
             else if (!(bMainMenu || bCredits || bBackground))
                 pData->SetString("state", "#MOM_ReplayStatusPlaying");
