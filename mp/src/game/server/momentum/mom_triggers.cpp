@@ -748,6 +748,15 @@ CFuncShootBoost::CFuncShootBoost(): m_fPushForce(300.0f), m_iIncrease(4)
 void CFuncShootBoost::Spawn()
 {
     BaseClass::Spawn();
+
+    // Convert pushdir from angles to a vector (copied straight from CTriggerPush::Spawn)
+    Vector vecAbsDir;
+    QAngle angPushDir = QAngle(m_vPushDir.x, m_vPushDir.y, m_vPushDir.z);
+    AngleVectors(angPushDir, &vecAbsDir);
+
+    // Transform the vector into entity space
+    VectorIRotate(vecAbsDir, EntityToWorldTransform(), m_vPushDir);
+
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
     if (m_target != NULL_STRING)
