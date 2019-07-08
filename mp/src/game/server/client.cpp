@@ -34,6 +34,7 @@
 #include "icommandline.h"
 #include "mom_gamerules.h"
 #include "mom_player_shared.h"
+#include "momentum/mom_chat_commands.h"
 
 #ifdef HL2_DLL
 #include "weapon_physcannon.h"
@@ -185,6 +186,13 @@ void Host_Say( edict_t *pEdict, const CCommand &args, bool teamonly )
 
 	if ( !p )
 		return;
+
+    //Check for a chat command
+    if (p[0] == '!' || p[0] == '/')
+    {
+        ChatCommands::ExecuteChatCommand(&p[1]);
+        return;
+    }
 
 	if ( pEdict )
 	{
