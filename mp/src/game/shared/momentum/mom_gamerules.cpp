@@ -125,7 +125,28 @@ static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(0, 0, 14) // dead view height
 );
 
-const CViewVectors *CMomentumGameRules::GetViewVectors() const { return &g_MOMViewVectors; }
+static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
+                                     Vector(-24, -24, 0), // hull min
+                                     Vector(24, 24, 82),  // hull max
+
+                                     Vector(-24, -24, 0), // duck hull min
+                                     Vector(24, 24, 62),  // duck hull max
+                                     Vector(0, 0, 45),    // duck view
+
+                                     Vector(-10, -10, -10), // observer hull min
+                                     Vector(10, 10, 10),    // observer hull max
+
+                                     Vector(0, 0, 14) // dead view height
+);
+
+const CViewVectors *CMomentumGameRules::GetViewVectors() const
+{
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == GAMEMODE_RJ)
+        return &g_MOMViewVectorsRJ;
+
+    return &g_MOMViewVectors;
+}
 
 bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
 {
