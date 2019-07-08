@@ -981,6 +981,9 @@ void CMomentumLobbySystem::SetGameInfoStatus()
     case GAMEMODE_KZ:
         gameMode = "Climbing";
         break;
+    case GAMEMODE_RJ:
+        gameMode = "Jumping";
+        break;
     case GAMEMODE_UNKNOWN:
     default:
         gameMode = "Playing";

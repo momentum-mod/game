@@ -1427,6 +1427,9 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
                 case GAMEMODE_KZ:
                     pMapPrefix = "kz_";
                     break;
+                case GAMEMODE_RJ:
+                    pMapPrefix = "jump_";
+                    break;
                     // MOM_TODO: Add the rest of the gametypes here
                 default:
                     pMapPrefix = "";

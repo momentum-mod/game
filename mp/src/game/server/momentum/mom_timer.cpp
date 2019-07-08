@@ -368,6 +368,11 @@ void CMomentumTimer::SetGameModeConVars()
         sv_accelerate.SetValue(5);
         sv_maxspeed.SetValue(250);
         break;
+    case GAMEMODE_RJ:
+        sv_maxvelocity.SetValue(3500);
+        sv_airaccelerate.SetValue(10);
+        sv_accelerate.SetValue(10);
+        sv_maxspeed.SetValue(320);
     case GAMEMODE_TRICKSURF:
         sv_maxvelocity.SetValue(100000);
         sv_airaccelerate.SetValue(1000);

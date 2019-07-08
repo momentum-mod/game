@@ -112,3 +112,12 @@ void CMomentumRocketLauncher::PrimaryAttack()
 {
     RocketLauncherFire();
 }
+
+bool CMomentumRocketLauncher::CanDeploy()
+{
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() != GAMEMODE_RJ)
+        return false;
+
+    return BaseClass::CanDeploy();
+}

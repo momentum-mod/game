@@ -105,6 +105,7 @@ bool TickSet::SetTickrate(int gameMode)
         //MOM_TODO: add more gamemodes
         return SetTickrate(s_DefinedRates[TICKRATE_100]);
     case GAMEMODE_SURF:
+    case GAMEMODE_RJ:
     default:
         return SetTickrate(s_DefinedRates[TICKRATE_66]);
     }
