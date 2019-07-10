@@ -1095,7 +1095,8 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	{
 		if ((m_iHealth - info.GetDamage()) <= 0)
 		{
-			m_iHealth = ceil(info.GetDamage()) + 1;
+			m_iHealth = 1;
+			return 0;
 		}
 	}
 

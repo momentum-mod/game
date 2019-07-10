@@ -989,11 +989,27 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Acclerate upward
     // If we are ducking...
     float startz = mv->m_vecVelocity[2];
-
-    mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == GAMEMODE_RJ)
+    {
+        // TF2 uses two different ways of setting vertical velocity when jumping,
+        // this might be what allows techniques such as ctaps in rocket jump.
+        if (player->m_Local.m_bDucking || player->GetFlags() & FL_DUCKING)
+        {
+            mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * GetCurrentGravity() * 45.0f); // 2 * gravity * height
+        }
+        else
+        {
+            mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 45.0f); // 2 * gravity * height
+        }        
+    }
+    else
+    {
+        mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
+    }
 
     // stamina stuff (scroll/kz gamemode only)
-    if (mom_gamemode.GetInt() == GAMEMODE_KZ)
+    if (gm.GetInt() == GAMEMODE_KZ)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -1010,6 +1026,9 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.1f;
+
+    if (gm.GetInt() == GAMEMODE_RJ)
+        mv->m_outStepHeight += 0.05f; // 0.15f total
 
     // First do a trace all the way down to the ground
     TracePlayerBBox(mv->GetAbsOrigin(),
