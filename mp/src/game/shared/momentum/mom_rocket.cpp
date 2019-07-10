@@ -7,7 +7,6 @@
 
 #include "tier0/memdbgon.h"
 
-// https://github.com/danielmm8888/TF2Classic/blob/master/src/game/shared/tf/tf_weaponbase_rocket.cpp#L20
 #define MOM_ROCKET_RADIUS 146.0f
 #define MOM_ROCKET_SPEED 1100
 
@@ -80,13 +79,10 @@ void CMomRocket::PostDataUpdate(DataUpdateType_t type)
 
 int CMomRocket::DrawModel(int flags)
 {
-    // Don't draw rocket during the first 0.2 seconds if our own.
-    if (GetOwnerEntity() == C_BasePlayer::GetLocalPlayer())
+    // Don't draw rocket during the first 0.2 seconds.
+    if (gpGlobals->curtime - m_flSpawnTime < 0.2f)
     {
-        if (gpGlobals->curtime - m_flSpawnTime < 0.2)
-        {
-            return 0;
-        }
+        return 0;
     }
 
     return BaseClass::DrawModel(flags);
@@ -247,7 +243,6 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
 
     pRocket->SetDamage(90.0f);
     // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage
-    // https://github.com/danielmm8888/TF2Classic/blob/master/src/game/shared/tf/tf_weaponbase_rocket.cpp#L430
     pRocket->SetRadius(121.0f);
 
     pRocket->CreateSmokeTrail();

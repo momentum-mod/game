@@ -160,7 +160,7 @@ static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXEC
                                AppearanceCallback);
 
 // Rocket jump self damage ConVars
-// https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L90-L92
+// Equivalent to "tf_damageforcescale_self_soldier_rj", "tf_damageforcescale_self_soldier_badrj", and "tf_damagescale_self_soldier" in TF2
 static ConVar mom_damageforcescale_self_rocket_air("mom_damageforcescale_self_rocket_air", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
 static ConVar mom_damageforcescale_self_rocket("mom_damageforcescale_self_rocket", "5.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
 static ConVar mom_damagescale_self_rocket("mom_damagescale_self_rocket", "0.60", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
@@ -410,8 +410,12 @@ void CMomentumPlayer::Spawn()
     SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
-    // MOM_TODO: Disable godmode in rocketjump
-    AddFlag(FL_GODMODE);
+    
+    ConVarRef gm("mom_gamemode");
+    if(gm.GetInt() == GAMEMODE_RJ)
+        AddFlag(OVERLAY_BUDDHA_MODE);
+    else
+        AddFlag(FL_GODMODE);
 
     // this removes the flag that was added while switching to spectator mode which prevented the player from activating
     // triggers
@@ -1822,7 +1826,6 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
     CBaseEntity *pInflictor = info.GetInflictor();
 
     // Handle taking self damage from rockets
-    // https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L3963
     if (pAttacker == GetLocalPlayer() && FClassnameIs(pInflictor, "momentum_rocket"))
     {
         // Grab the vector of the incoming attack.
@@ -1850,11 +1853,10 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
     return BaseClass::OnTakeDamage_Alive(info);
 }
 
+// Apply TF2-like knockback when damaging self with rockets
+// https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L4108
 void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir)
 {
-    // Apply TF2-like knockback when damaging self with rockets
-    // https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L4108  
-
     if (info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE)
         return;
 

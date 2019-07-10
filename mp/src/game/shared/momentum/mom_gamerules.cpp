@@ -130,7 +130,7 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
                                      Vector(24, 24, 82),  // hull max
 
                                      Vector(-24, -24, 0), // duck hull min
-                                     Vector(24, 24, 62),  // duck hull max
+                                     Vector(24, 24, 55),  // duck hull max
                                      Vector(0, 0, 45),    // duck view
 
                                      Vector(-10, -10, -10), // observer hull min

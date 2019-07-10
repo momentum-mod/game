@@ -399,7 +399,7 @@ void CMapCache::SetMapGamemode(const char *pMapName /* = nullptr*/)
         {
             gm.SetValue(GAMEMODE_KZ);
         }
-        else if (!Q_strnicmp(pMapName, "jump_", 3))
+        else if (!Q_strnicmp(pMapName, "jump_", 5))
         {
             gm.SetValue(GAMEMODE_RJ);
         }

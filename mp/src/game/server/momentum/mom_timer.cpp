@@ -182,6 +182,7 @@ void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
     switch (mom_gamemode.GetInt())
     {
     case GAMEMODE_KZ:
+    case GAMEMODE_RJ:
         pPlayer->DisableAutoBhop();
         break;
     default:
@@ -372,7 +373,7 @@ void CMomentumTimer::SetGameModeConVars()
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(10);
         sv_accelerate.SetValue(10);
-        sv_maxspeed.SetValue(320);
+        sv_maxspeed.SetValue(240);
     case GAMEMODE_TRICKSURF:
         sv_maxvelocity.SetValue(100000);
         sv_airaccelerate.SetValue(1000);
