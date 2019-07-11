@@ -1795,7 +1795,7 @@ void CMomentumPlayer::PostThink()
 
 static float DamageForce(const Vector &size, float damage, float scale)
 { 
-	float force = damage * ((48 * 48 * 82.0) / (size.x * size.y * size.z)) * scale;
+    float force = damage * ((48 * 48 * 82.0) / (size.x * size.y * size.z)) * scale;
 
     if (force > 1000.0)
     {

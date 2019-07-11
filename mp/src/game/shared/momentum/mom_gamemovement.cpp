@@ -484,15 +484,24 @@ bool CMomentumGameMovement::LadderMove(void)
 }
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
-
 {
     if (!m_iSpeedCropped & SPEED_CROPPED_DUCK)
     {
         if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
         {
-            mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
-            mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
-            mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
+            ConVarRef gm("mom_gamemode");
+            if (gm.GetInt() == GAMEMODE_RJ)
+            {
+                mv->m_flForwardMove *= RJ_DUCK_SPEED_MULTIPLIER;
+                mv->m_flSideMove *= RJ_DUCK_SPEED_MULTIPLIER;
+                mv->m_flUpMove *= RJ_DUCK_SPEED_MULTIPLIER;
+            }
+            else
+            {
+                mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
+                mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
+                mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
+            }            
             m_iSpeedCropped |= SPEED_CROPPED_DUCK;
         }
     }
@@ -939,6 +948,18 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == GAMEMODE_RJ)
+    {
+        // Cannot jump while ducked
+        if (player->GetFlags() & FL_DUCKING)
+            return false;
+
+        // Cannot jump while in the unduck transition
+        if (player->m_Local.m_flDuckJumpTime > 0.0f)
+            return false;
+    }
+
     // No more effect
     if (player->GetGroundEntity() == nullptr)
     {
@@ -987,21 +1008,20 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // Acclerate upward
-    // If we are ducking...
     float startz = mv->m_vecVelocity[2];
-    ConVarRef gm("mom_gamemode");
+
     if (gm.GetInt() == GAMEMODE_RJ)
     {
         // TF2 uses two different ways of setting vertical velocity when jumping,
         // this might be what allows techniques such as ctaps in rocket jump.
-        if (player->m_Local.m_bDucking || player->GetFlags() & FL_DUCKING)
+        if (player->m_Local.m_bDucking)
         {
             mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * GetCurrentGravity() * 45.0f); // 2 * gravity * height
         }
         else
         {
             mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 45.0f); // 2 * gravity * height
-        }        
+        }
     }
     else
     {
@@ -2109,6 +2129,17 @@ void CMomentumGameMovement::CheckParameters(void)
     if (mv->m_nButtons & IN_SPEED)
     {
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
+    }
+
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == GAMEMODE_RJ)
+    {
+        // Walk slower backwards if not crouched
+        if (mv->m_nButtons & IN_BACK && !(mv->m_nButtons & IN_DUCK) && !(mv->m_nButtons & IN_FORWARD) &&
+            !(mv->m_nButtons & IN_MOVERIGHT) && !(mv->m_nButtons & IN_MOVELEFT))
+        {
+            mv->m_flClientMaxSpeed = sv_maxspeed.GetFloat() * 0.9f;
+        }
     }
 
     BaseClass::CheckParameters();

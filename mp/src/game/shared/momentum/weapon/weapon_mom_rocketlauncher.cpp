@@ -101,7 +101,7 @@ void CMomentumRocketLauncher::RocketLauncherFire()
         vecOffset.z = 8.0f;
     }
     Vector vecSrc;
-	QAngle angForward;
+    QAngle angForward;
     GetProjectileFireSetup(pPlayer, vecOffset, &vecSrc, &angForward);
 
     CMomRocket::EmitRocket(vecSrc, angForward, pPlayer);
