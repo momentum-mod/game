@@ -62,7 +62,7 @@ class CMomRocket : public CBaseAnimating
 
 public:
     CBaseEntity *GetThrower() { return m_hThrower; }
-	void SetThrower(CBaseEntity *pThrower) { m_hThrower = pThrower; }
+    void SetThrower(CBaseEntity *pThrower) { m_hThrower = pThrower; }
 
 protected:
     CBaseEntity* m_hThrower;

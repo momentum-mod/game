@@ -384,9 +384,17 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
 
         // UNDONE: this should check a damage mask, not an ignore
         if (iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore)
-        { // houndeyes don't hurt other houndeyes with their attack
+        {
             continue;
         }
+
+        // Checking distance from source because Valve were apparently too lazy to fix the engine function.
+        Vector vecHitPoint;
+        pEntity->CollisionProp()->CalcNearestPoint(vecSrc, &vecHitPoint);
+        Vector vecDir = vecHitPoint - vecSrc;
+
+        if (vecDir.LengthSqr() > (flRadius * flRadius))
+            continue;
 
         // This value is used to scale damage when the explosion is blocked by some other object.
         float flBlockedDamagePercent = 0.0f;
