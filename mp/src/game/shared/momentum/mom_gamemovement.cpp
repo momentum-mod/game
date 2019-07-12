@@ -492,9 +492,13 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
             ConVarRef gm("mom_gamemode");
             if (gm.GetInt() == GAMEMODE_RJ)
             {
-                mv->m_flForwardMove *= RJ_DUCK_SPEED_MULTIPLIER;
-                mv->m_flSideMove *= RJ_DUCK_SPEED_MULTIPLIER;
-                mv->m_flUpMove *= RJ_DUCK_SPEED_MULTIPLIER;
+                // TF2 doesn't slow down airmovement when crouching
+                if (player->GetGroundEntity() != NULL)
+                {
+                    mv->m_flForwardMove *= RJ_DUCK_SPEED_MULTIPLIER;
+                    mv->m_flSideMove *= RJ_DUCK_SPEED_MULTIPLIER;
+                    mv->m_flUpMove *= RJ_DUCK_SPEED_MULTIPLIER;
+                } 
             }
             else
             {
