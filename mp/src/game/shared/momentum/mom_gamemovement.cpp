@@ -485,27 +485,20 @@ bool CMomentumGameMovement::LadderMove(void)
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
 {
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == GAMEMODE_RJ)
+    {
+        // TF2 uses default speed cropping
+        return BaseClass::HandleDuckingSpeedCrop();
+    }
+
     if (!m_iSpeedCropped & SPEED_CROPPED_DUCK)
     {
         if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
         {
-            ConVarRef gm("mom_gamemode");
-            if (gm.GetInt() == GAMEMODE_RJ)
-            {
-                // TF2 doesn't slow down airmovement when crouching
-                if (player->GetGroundEntity() != NULL)
-                {
-                    mv->m_flForwardMove *= RJ_DUCK_SPEED_MULTIPLIER;
-                    mv->m_flSideMove *= RJ_DUCK_SPEED_MULTIPLIER;
-                    mv->m_flUpMove *= RJ_DUCK_SPEED_MULTIPLIER;
-                } 
-            }
-            else
-            {
-                mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
-                mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
-                mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
-            }            
+            mv->m_flForwardMove *= DUCK_SPEED_MULTIPLIER;
+            mv->m_flSideMove *= DUCK_SPEED_MULTIPLIER;
+            mv->m_flUpMove *= DUCK_SPEED_MULTIPLIER;
             m_iSpeedCropped |= SPEED_CROPPED_DUCK;
         }
     }
