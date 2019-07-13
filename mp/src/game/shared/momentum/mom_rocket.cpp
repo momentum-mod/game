@@ -8,7 +8,7 @@
 #include "tier0/memdbgon.h"
 
 #define MOM_ROCKET_RADIUS 146.0f
-#define MOM_ROCKET_SPEED 1100
+#define MOM_ROCKET_SPEED 1100.0f
 
 #ifndef CLIENT_DLL
 
@@ -48,8 +48,8 @@ CMomRocket::CMomRocket()
     m_flSpawnTime = 0.0f;
 #else
     m_flDamage = 0.0f;
-    m_hOwner = NULL;
-    m_hRocketTrail = NULL;
+    m_hOwner = nullptr;
+    m_hRocketTrail = nullptr;
 #endif
 }
 
@@ -69,7 +69,7 @@ void CMomRocket::PostDataUpdate(DataUpdateType_t type)
 
         // Add a sample 1 second back.
         Vector vCurOrigin = GetLocalOrigin() - m_vInitialVelocity;
-        interpolator.AddToHead(changeTime - 1.0, &vCurOrigin, false);
+        interpolator.AddToHead(changeTime - 1.0f, &vCurOrigin, false);
 
         // Add the current sample.
         vCurOrigin = GetLocalOrigin();
@@ -106,7 +106,7 @@ void CMomRocket::Spawn()
     SetSolid(SOLID_BBOX);
     AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
     AddEffects(EF_NOSHADOW);
-    SetSize(-Vector(0, 0, 0), Vector(0, 0, 0));
+    SetSize(Vector(0, 0, 0), Vector(0, 0, 0));
     m_takedamage = DAMAGE_NO;
 }
 
@@ -132,7 +132,7 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     m_takedamage = DAMAGE_NO;
 
     // Pull out a bit
-    if (pTrace->fraction != 1.0)
+    if (!CloseEnough(pTrace->fraction, 1.0f))
     {
         SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
     }
@@ -148,16 +148,16 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     // Damage
     CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType());
-    RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, NULL);
+    RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, nullptr);
 
     if (m_hRocketTrail)
     {
         m_hRocketTrail->SetLifetime(0.1f);
-        m_hRocketTrail->SetParent(NULL);
-        m_hRocketTrail = NULL;
+        m_hRocketTrail->SetParent(nullptr);
+        m_hRocketTrail = nullptr;
     }
 
-    m_hOwner = NULL;
+    m_hOwner = nullptr;
 
     StopSound("Missile.Ignite");
 
@@ -180,11 +180,11 @@ void CMomRocket::Touch(CBaseEntity *pOther)
         if (m_hRocketTrail)
         {
             m_hRocketTrail->SetLifetime(0.1f);
-            m_hRocketTrail->SetParent(NULL);
-            m_hRocketTrail = NULL;
+            m_hRocketTrail->SetParent(nullptr);
+            m_hRocketTrail = nullptr;
         }
 
-        m_hOwner = NULL;
+        m_hOwner = nullptr;
         StopSound("Missile.Ignite");
         UTIL_Remove(this);
         return;
@@ -229,7 +229,7 @@ void CMomRocket::CreateSmokeTrail()
 //
 // Output : CMomRocket
 //-----------------------------------------------------------------------------
-CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner = NULL)
+CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner /*= nullptr*/)
 {
     CMomRocket *pRocket = (CMomRocket *)CBaseEntity::CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pentOwner);
     pRocket->SetModel("models/weapons/w_missile.mdl");
@@ -249,7 +249,7 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     pRocket->EmitSound("Missile.Ignite");
 
     pRocket->SetTouch(&CMomRocket::Touch);
-    pRocket->SetThink(NULL);
+    pRocket->SetThink(nullptr);
 
     return pRocket;
 }

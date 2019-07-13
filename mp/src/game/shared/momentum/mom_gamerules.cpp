@@ -141,7 +141,7 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
-    ConVarRef gm("mom_gamemode");
+    static ConVarRef gm("mom_gamemode");
     if (gm.GetInt() == GAMEMODE_RJ)
         return &g_MOMViewVectorsRJ;
 
@@ -347,6 +347,15 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
     }
 }
 
+bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) 
+{
+    // Allow self damage from rockets
+    if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
+        return true;
+
+    return !pVictim->IsPlayer(); 
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: TF2-like radius damage
 //          https://github.com/danielmm8888/TF2Classic/blob/d070129a436a8a070659f0267f6e63564a519a47/src/game/shared/tf/tf_gamerules.cpp#L1989
@@ -359,7 +368,7 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
 {
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
-    CBaseEntity *pEntity = NULL;
+    CBaseEntity *pEntity = nullptr;
     trace_t tr;
     float falloff;
     Vector vecSpot;
@@ -369,12 +378,12 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     if (flRadius)
         falloff = info.GetDamage() / flRadius;
     else
-        falloff = 1.0;
+        falloff = 1.0f;
 
     CBaseEntity *pInflictor = info.GetInflictor();
 
     // iterate on all entities in the vicinity.
-    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != NULL; sphere.NextEntity())
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
     {
         if (pEntity == pEntityIgnore)
             continue;
@@ -436,7 +445,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         // Take a little less damage from yourself
         if (tr.m_pEnt == info.GetAttacker())
         {
-            flAdjustedDamage = flAdjustedDamage * 0.75;
+            flAdjustedDamage = flAdjustedDamage * 0.75f;
         }
 
         if (flAdjustedDamage <= 0)
@@ -447,7 +456,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         {
             // if we're stuck inside them, fixup the position and distance
             tr.endpos = vecSrc;
-            tr.fraction = 0.0;
+            tr.fraction = 0.0f;
         }
 
         CTakeDamageInfo adjustedInfo = info;
@@ -478,7 +487,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             adjustedInfo.SetDamagePosition(vecSrc);
         }
 
-        if (tr.fraction != 1.0 && pEntity == tr.m_pEnt)
+        if (!CloseEnough(tr.fraction, 1.0f) && pEntity == tr.m_pEnt)
         {
             ClearMultiDamage();
             pEntity->DispatchTraceAttack(adjustedInfo, dir, &tr);

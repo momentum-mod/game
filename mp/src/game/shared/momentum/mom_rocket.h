@@ -1,12 +1,9 @@
 #pragma once
 
-#ifndef CLIENT_DLL
-#include "smoke_trail.h"
-#endif
-
 #ifdef CLIENT_DLL
 #define CMomRocket C_MomRocket
 #else
+#include "smoke_trail.h"
 class CMomentumRocketLauncher;
 #endif
 
@@ -47,7 +44,7 @@ class CMomRocket : public CBaseAnimating
 
     CHandle<CMomentumRocketLauncher> m_hOwner;
 
-    static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner);
+    static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner = nullptr);
 
   protected:
     void CreateSmokeTrail();

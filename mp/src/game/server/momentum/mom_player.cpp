@@ -430,10 +430,8 @@ void CMomentumPlayer::Spawn()
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     
-    ConVarRef gm("mom_gamemode");
-    if(gm.GetInt() == GAMEMODE_RJ)
-        AddFlag(OVERLAY_BUDDHA_MODE);
-    else
+    static ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() != GAMEMODE_RJ)
         AddFlag(FL_GODMODE);
 
     // this removes the flag that was added while switching to spectator mode which prevented the player from activating
@@ -1795,11 +1793,11 @@ void CMomentumPlayer::PostThink()
 
 static float DamageForce(const Vector &size, float damage, float scale)
 { 
-    float force = damage * ((48 * 48 * 82.0) / (size.x * size.y * size.z)) * scale;
+    float force = damage * ((48.0f * 48.0f * 82.0f) / (size.x * size.y * size.z)) * scale;
 
-    if (force > 1000.0)
+    if (force > 1000.0f)
     {
-        force = 1000.0;
+        force = 1000.0f;
     }
 
     return force;
@@ -1823,17 +1821,9 @@ int CMomentumPlayer::OnTakeDamage(const CTakeDamageInfo &info)
     CBaseEntity *pInflictor = adjustedInfo.GetInflictor();
 
     // Take reduced damage midair from own rockets
-    if(pAttacker == this && FClassnameIs(pInflictor, "momentum_rocket") && GetGroundEntity() == NULL)
+    if (pAttacker == this && FClassnameIs(pInflictor, "momentum_rocket") && GetGroundEntity() == nullptr)
     {
         adjustedInfo.SetDamage(adjustedInfo.GetDamage() * mom_damagescale_self_rocket.GetFloat());
-    }
-
-    if (m_debugOverlays & OVERLAY_BUDDHA_MODE)
-    {
-        if (ceil(adjustedInfo.GetDamage()) >= m_iHealth)
-        {
-            m_iHealth = ceil(adjustedInfo.GetDamage()) + 1;
-        }
     }
 
     return CBaseCombatCharacter::OnTakeDamage(adjustedInfo);
@@ -1856,12 +1846,6 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
             VectorNormalize(vecDir);
         }
 
-        // Take damage - round to the nearest integer.
-        if (m_takedamage != DAMAGE_EVENTS_ONLY)
-        {
-            m_iHealth -= (info.GetDamage() + 0.5f);
-        }
-
         // Apply knockback
         ApplyPushFromDamage(info, vecDir);
 
@@ -1881,13 +1865,13 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
 
     CBaseEntity *pAttacker = info.GetAttacker();
 
-    if(!info.GetInflictor() || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
+    if (!info.GetInflictor() || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
         return;
 
     // Apply different force scale when on ground
     float flScale = 1.0f;
 
-    if(GetFlags() & FL_ONGROUND)
+    if (GetFlags() & FL_ONGROUND)
     {
         flScale = mom_damageforcescale_self_rocket.GetFloat();
     }
