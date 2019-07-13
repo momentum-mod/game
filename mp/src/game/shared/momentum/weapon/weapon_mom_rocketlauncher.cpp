@@ -42,7 +42,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
     Vector vecShootPos = pPlayer->Weapon_ShootPosition();
 
     // Estimate end point
-    Vector endPos = vecShootPos + vecForward * 2000;
+    Vector endPos = vecShootPos + vecForward * 2000.0f;
 
     // Trace forward and find what's in front of us, and aim at that
     trace_t tr;
@@ -56,7 +56,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
     // Find angles that will get us to our desired end point
     // Only use the trace end if it wasn't too close, which results
     // in visually bizarre forward angles
-    if (tr.fraction > 0.1)
+    if (tr.fraction > 0.1f)
     {
         VectorAngles(tr.endpos - *vecSrc, *angForward);
     }
@@ -115,7 +115,7 @@ void CMomentumRocketLauncher::PrimaryAttack()
 
 bool CMomentumRocketLauncher::CanDeploy()
 {
-    ConVarRef gm("mom_gamemode");
+    static ConVarRef gm("mom_gamemode");
     if (gm.GetInt() != GAMEMODE_RJ)
         return false;
 

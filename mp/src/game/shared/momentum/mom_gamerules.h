@@ -43,14 +43,7 @@ class CMomentumGameRules : public CSingleplayRules
     // Players take no damage
     float FlPlayerFallDamage(CBasePlayer *pPlayer) OVERRIDE { return 0.0f; }
 
-    bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE 
-    {
-        // Allow self damage from rockets
-        if(pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
-            return true;
-
-        return !pVictim->IsPlayer(); 
-    }
+    bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE;
 
     void RadiusDamage(const CTakeDamageInfo& info, const Vector& vecSrc, float flRadius, int iClassIgnore, CBaseEntity* pEntityIgnore) OVERRIDE;
 

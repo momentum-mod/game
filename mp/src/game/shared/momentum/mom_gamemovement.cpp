@@ -485,7 +485,7 @@ bool CMomentumGameMovement::LadderMove(void)
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
 {
-    ConVarRef gm("mom_gamemode");
+    static ConVarRef gm("mom_gamemode");
     if (gm.GetInt() == GAMEMODE_RJ)
     {
         // TF2 uses default speed cropping
@@ -944,7 +944,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    ConVarRef gm("mom_gamemode");
+    static ConVarRef gm("mom_gamemode");
     if (gm.GetInt() == GAMEMODE_RJ)
     {
         // Cannot jump while ducked
@@ -2127,7 +2127,7 @@ void CMomentumGameMovement::CheckParameters(void)
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
     }
 
-    ConVarRef gm("mom_gamemode");
+    static ConVarRef gm("mom_gamemode");
     if (gm.GetInt() == GAMEMODE_RJ)
     {
         // Walk slower backwards if not crouched
