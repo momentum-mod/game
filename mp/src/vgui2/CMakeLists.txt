@@ -65,6 +65,7 @@ set(VGUI_SOURCES
         "vgui_controls/ScrollableEditablePanel.cpp"
         "vgui_controls/ScrollBar.cpp"
         "vgui_controls/ScrollBarSlider.cpp"
+        "vgui_controls/ScrubbableProgressBar.cpp"
         "vgui_controls/SectionedListPanel.cpp"
         "vgui_controls/Slider.cpp"
         "vgui_controls/Splitter.cpp"
