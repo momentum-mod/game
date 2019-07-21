@@ -287,9 +287,10 @@ LINK_ENTITY_TO_CLASS( func_conveyor, CFuncConveyor );
 BEGIN_DATADESC( CFuncConveyor )
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "ToggleDirection", InputToggleDirection ),
-	DEFINE_INPUTFUNC( FIELD_VOID, "SetSpeed", InputSetSpeed ),
+	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetSpeed", InputSetSpeed ),
 
 	DEFINE_KEYFIELD( m_vecMoveDir, FIELD_VECTOR, "movedir" ),
+    DEFINE_KEYFIELD( m_flSpeed, FIELD_FLOAT, "speed" ),
 	DEFINE_FIELD( m_flConveyorSpeed, FIELD_FLOAT ),
 
 END_DATADESC()
@@ -321,9 +322,6 @@ void CFuncConveyor::Spawn( void )
 	{
 		AddSolidFlags( FSOLID_NOT_SOLID );
 	}
-
-	if ( m_flSpeed == 0 )
-		m_flSpeed = 100;
 
 	UpdateSpeed( m_flSpeed );
 }
