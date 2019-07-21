@@ -430,9 +430,7 @@ void CMomentumPlayer::Spawn()
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() != GAMEMODE_RJ)
-        AddFlag(FL_GODMODE);
+    m_takedamage = DAMAGE_EVENTS_ONLY;
 
     // this removes the flag that was added while switching to spectator mode which prevented the player from activating
     // triggers
