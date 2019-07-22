@@ -44,7 +44,7 @@ README text
 CONTRIBUTING text
 LICENSE text
 
-momentum_*.txt binary
+resource/momentum_*.txt binary
 gameui_*.txt binary
 
 *.exe binary
