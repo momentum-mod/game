@@ -4,6 +4,10 @@
 //
 //==================================================================================================
 
+// bugs
+// cubemap and ambient cube can change on models based on flashlight state and direction you're looking
+// dynamic lighting on brushes only works when it feels like it, which isn't very often
+
 // includes for all shaders
 #include "BaseVSShader.h"
 #include "cpp_shader_constant_register_map.h"
