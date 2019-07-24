@@ -16,6 +16,9 @@ namespace MomUtil
     void DispatchConCommand(const char *pszCommand);
 #endif
 
+    // Mounts CS:S, TF2, etc content
+    void MountGameFiles();
+
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
     bool GetColorFromHex(uint32 HEX, Color &into); // in hex color format RRGGBBAA
 
