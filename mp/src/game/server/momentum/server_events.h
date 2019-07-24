@@ -10,6 +10,4 @@ public:
     void LevelShutdownPostEntity() OVERRIDE;
 
     STEAM_CALLBACK(CMomServerEvents, OnGameOverlay, GameOverlayActivated_t);
-
-    void MountAdditionalContent();
 };

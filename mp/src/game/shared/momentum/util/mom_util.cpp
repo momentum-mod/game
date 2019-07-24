@@ -15,6 +15,9 @@
 #include "materialsystem/imaterialvar.h"
 #endif
 
+#include "steam/steam_api.h"
+#include "fmtstr.h"
+
 #include "tier0/valve_minmax_off.h"
 // These are wrapped by minmax_off/on due to Valve making a macro for min and max...
 #include "cryptopp/sha.h"
@@ -62,6 +65,28 @@ void MomUtil::DispatchConCommand(const char *pszCommand)
     }
 }
 #endif
+
+void MomUtil::MountGameFiles()
+{
+    if (SteamApps())
+    {
+        char installPath[MAX_PATH];
+        uint32 folderLen;
+
+        // CS:S
+        folderLen = SteamApps()->GetAppInstallDir(240, installPath, MAX_PATH);
+        if (folderLen)
+        {
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike/cstrike_pak.vpk", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "download");
+        }
+
+        if (developer.GetInt())
+            filesystem->PrintSearchPaths();
+    }
+}
 
 void MomUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime)
 {
