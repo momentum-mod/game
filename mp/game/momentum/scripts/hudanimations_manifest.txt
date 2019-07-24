@@ -1,0 +1,4 @@
+hudanimations_manifest
+{
+	"file"		"scripts/hudanimations.txt"
+}

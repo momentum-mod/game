@@ -27,4 +27,8 @@ game_sounds_manifest
 
 	// CS:S Specific
 	"precache_file"		"scripts/game_sounds_weapons_css.txt"
+
+    // TF2 Specific
+    "precache_file"     "scripts/game_sounds_weapons_tf.txt"
+    // Potential MOM_TODO: Copy over more of the same (game_sounds_player and game_sounds_physics from tf2_misc_dir.vpk) and import them if needed
 }
