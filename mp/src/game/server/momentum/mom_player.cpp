@@ -523,14 +523,14 @@ void CMomentumPlayer::NewPreviousOrigin(Vector origin)
 CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 {
     CBaseEntity *pStart = nullptr;
-    const char *spawns[] = {"info_player_start", "info_player_counterterrorist", "info_player_terrorist"};
-    for (int i = 0; i < 3; i++)
+    const char *pSpawns[] = {"info_player_start", "info_player_counterterrorist", "info_player_terrorist", "info_player_teamspawn"};
+    for (auto pSpawn : pSpawns)
     {
-        if (SelectSpawnSpot(spawns[i], pStart))
+        if (SelectSpawnSpot(pSpawn, pStart))
             return pStart;
     }
 
-    DevMsg("No valid spawn point found.\n");
+    Warning("No valid spawn point found!\n");
     return Instance(INDEXENT(0));
 }
 
