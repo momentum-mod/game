@@ -181,6 +181,7 @@ bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
 LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_player_teamspawn, CPointEntity);
 
 Vector CMomentumGameRules::DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins,
                                         const Vector &vMaxs)
