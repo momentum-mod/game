@@ -512,14 +512,13 @@ SHADER_DRAW
         }
 
         // set up shader modulation color
-        /*float modulationColor[4] = {1.0, 1.0, 1.0, 1.0};
+        float modulationColor[4] = {1.0, 1.0, 1.0, 1.0};
         ComputeModulationColor(modulationColor);
         float flLScale = pShaderAPI->GetLightMapScaleFactor();
         modulationColor[0] *= flLScale;
         modulationColor[1] *= flLScale;
         modulationColor[2] *= flLScale;
-        pShaderAPI->SetPixelShaderConstant(PSREG_DIFFUSE_MODULATION, modulationColor);*/
-        // I think this is already done somewhere else
+        pShaderAPI->SetPixelShaderConstant(PSREG_DIFFUSE_MODULATION, modulationColor);
     }
 
     // actually draw the shader
