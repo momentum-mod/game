@@ -69,7 +69,7 @@ void CMOMClientEvents::PostInit()
     messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "#MOM_StartupMsg_Alpha",
                                             "mom_toggle_versionwarn", "#MOM_IUnderstand");
     
-    if (!SteamHTTP() || !SteamUtils())
+    if (!SteamAPI_IsSteamRunning() || !SteamHTTP())
     {
         vgui::Panel *pPanel = messageboxpanel->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title",
                                                         "#MOM_StartupMsg_NoSteamApiContext", "#MOM_IUnderstand");
