@@ -88,7 +88,7 @@ SHADER_INIT_PARAMS()
     }
 
     // without this, dynamic lighting breaks
-    if (params[BUMPMAP]->IsDefined())
+    if (!params[BUMPMAP]->IsDefined())
     {
         params[BUMPMAP]->SetStringValue("dev/flat_normal");
     }
