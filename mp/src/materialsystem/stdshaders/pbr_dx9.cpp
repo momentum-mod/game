@@ -6,7 +6,6 @@
 
 // Bugs:
 // Cubemap and ambient cube can change on models based on flashlight state and direction you're looking.
-// Dynamic lighting on brushes only works when it feels like it, which isn't very often.
 
 // Includes for all shaders.
 #include "BaseVSShader.h"
@@ -159,17 +158,17 @@ SHADER_INIT
     // Setting up emissive texture.
     if (info.Emissive != -1 && params[info.Emissive]->IsDefined())
     {
-        LoadTexture(info.Emissive, TEXTUREFLAGS_SRGB); // emissive is srgb
+        LoadTexture(info.Emissive, TEXTUREFLAGS_SRGB); // Emissive is sRGB
     }
 
     // Setting up environment map.
     if (info.Envmap != -1 && params[info.Envmap]->IsDefined())
     {
-        // Theoretically this should allow the game to access lower mips, but it doesn't seem to do anything.
+        // These two flags only work on custom cubemaps, not on env_cubemap.
         int flags = TEXTUREFLAGS_ALL_MIPS | TEXTUREFLAGS_NOLOD;
         if (g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE)
         {
-            flags |= TEXTUREFLAGS_SRGB; // Envmap is only sRGB with hdr disabled?
+            flags |= TEXTUREFLAGS_SRGB; // Envmap is only sRGB with HDR disabled?
         }
 
         // If the hardware doesn't support cubemaps, use spheremaps instead.
@@ -253,19 +252,19 @@ SHADER_DRAW
             pShaderShadow->EnableTexture(SAMPLER_ENVMAP, true);
             if (g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE)
             {
-                pShaderShadow->EnableSRGBRead(SAMPLER_ENVMAP, true); // Envmap is srgb but only if there's no hdr?
+                pShaderShadow->EnableSRGBRead(SAMPLER_ENVMAP, true); // Envmap is only sRGB with HDR disabled?
             }
         }
 
         // If the flashlight is on, set up its textures.
         if (bHasFlashlight)
         {
-            pShaderShadow->EnableTexture(SAMPLER_FLASHLIGHT, true);      // flashlight cookie
-            pShaderShadow->EnableSRGBRead(SAMPLER_FLASHLIGHT, true);     // flashlight cookie is srgb
-            pShaderShadow->EnableTexture(SAMPLER_SHADOWDEPTH, true);     // shadow depth map
-            pShaderShadow->SetShadowDepthFiltering(SAMPLER_SHADOWDEPTH); // set shadow depth filtering
-            pShaderShadow->EnableSRGBRead(SAMPLER_SHADOWDEPTH, false);   // shadow depth map is not srgb
-            pShaderShadow->EnableTexture(SAMPLER_RANDOMROTATION, true);  // random rotation map
+            pShaderShadow->EnableTexture(SAMPLER_FLASHLIGHT, true);      // Flashlight cookie.
+            pShaderShadow->EnableSRGBRead(SAMPLER_FLASHLIGHT, true);     // Flashlight cookie is sRGB.
+            pShaderShadow->EnableTexture(SAMPLER_SHADOWDEPTH, true);     // Shadow depth map.
+            pShaderShadow->SetShadowDepthFiltering(SAMPLER_SHADOWDEPTH); // Set shadow depth filtering.
+            pShaderShadow->EnableSRGBRead(SAMPLER_SHADOWDEPTH, false);   // Shadow depth map is not sRGB.
+            pShaderShadow->EnableTexture(SAMPLER_RANDOMROTATION, true);  // Random rotation map.
         }
 
         // If lightmaps are used, enable the sampler.
@@ -274,13 +273,13 @@ SHADER_DRAW
             pShaderShadow->EnableTexture(SAMPLER_LIGHTMAP, true);
         }
 
-        // Enabling srgb writing.
+        // Enabling sRGB writing.
         // See common_ps_fxc.h line 349.
-        // PS2b shaders and up write srgb.
+        // PS2b shaders and up write sRGB.
         pShaderShadow->EnableSRGBWrite(true);
 
         // Set up vertex format.
-        if (bLightmapped) // brush
+        if (bLightmapped) // Brush.
         {
             // We only need the position and surface normal.
             unsigned int flags = VERTEX_POSITION | VERTEX_NORMAL;

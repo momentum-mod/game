@@ -276,7 +276,7 @@ float4 main(PS_INPUT i) : COLOR
         float3 diffuseContributionFactor = lerp(1 - ambientLightingFresnelTerm, 0, metalness); // kd
         float3 diffuseAmbient = diffuseContributionFactor * albedo * diffuseIrradiance;
 
-        float4 specularUV = float4(specularReflectionVector, roughness * ENV_MAP_LOD);
+        float4 specularUV = float4(specularReflectionVector, sqrt(roughness) * ENV_MAP_LOD);
         float3 specularIrradiance = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, specularUV).xyz;
         float3 specularAmbient = specularIrradiance * EnvBRDFApprox(fresnelReflectance, roughness, lightDirectionAngle);
 
