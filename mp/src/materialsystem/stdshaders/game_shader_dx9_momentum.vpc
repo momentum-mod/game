@@ -63,12 +63,14 @@ $Project "Shaders (Momentum)"
 		$File	"vertexlitgeneric_dx9.cpp"
 		$File	"vertexlitgeneric_dx9_helper.cpp"
 		$File	"worldvertextransition.cpp"
-    
+
         $File   "gaussian_blur_3x3.cpp"
 
 		$File "color_picker.cpp"
+
+		$File "pbr_dx9.cpp"
     }
-    
+
     $Folder	"Header Files"
 	{
 		$File	"BaseVSShader.h"
