@@ -131,6 +131,6 @@ mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b.copy
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30.copy
-mp/src/materialsystem/stdshaders/buildmomentumshaders.bat
+mp/src/materialsystem/stdshaders/buildgameshaders.bat
 mp/game/momentum/materials/vgui/logos/spray.vmt
 mp/game/momentum/materials/vgui/logos/spray.vtf
