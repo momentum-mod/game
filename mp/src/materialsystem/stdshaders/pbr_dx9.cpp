@@ -102,14 +102,12 @@ SHADER_INIT_PARAMS()
         params[FLASHLIGHTTEXTURE]->SetStringValue("effects/flashlight001");
     }
 
-    // Set material var2 flags that are necessary for both models and brushes.
-    SET_FLAGS2(MATERIAL_VAR2_NEEDS_TANGENT_SPACES);                 // Required for dynamic lighting.
-
     // Set material var2 flags specific to models.
     if (IS_FLAG_SET(MATERIAL_VAR_MODEL))
     {
         SET_FLAGS2(MATERIAL_VAR2_SUPPORTS_HW_SKINNING);             // Required for skinning.
         SET_FLAGS2(MATERIAL_VAR2_LIGHTING_VERTEX_LIT);              // Required for dynamic lighting.
+        SET_FLAGS2(MATERIAL_VAR2_NEEDS_TANGENT_SPACES);             // Required for dynamic lighting.
         SET_FLAGS2(MATERIAL_VAR2_NEEDS_BAKED_LIGHTING_SNAPSHOTS);   // Required for ambient cube.
     }
 
