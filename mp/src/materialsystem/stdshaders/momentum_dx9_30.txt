@@ -1,3 +1,5 @@
+// any files not commented in here will show up in visual studio after creating the solution
+
 //gauss_blur_3x3_ps30.fxc
 //gauss_blur_3x3_vs30.fxc
 //
