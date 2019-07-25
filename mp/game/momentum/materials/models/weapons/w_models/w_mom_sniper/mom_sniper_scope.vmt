@@ -1,6 +1,6 @@
 VertexLitGeneric
 {
-	"$basetexture" "models/weapons/w_models/w_mom_sniper/mom_sniper_ao"
+	"$basetexture" "models/weapons/w_models/w_mom_sniper/mom_sniper_d"
 	"$bumpmap" "models/weapons/w_models/w_mom_sniper/mom_sniper_n"
 	"$surfaceprop" "Weapon"
 
