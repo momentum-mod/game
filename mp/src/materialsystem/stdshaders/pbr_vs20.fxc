@@ -4,17 +4,17 @@
 //
 //==================================================================================================
 
-// static combos
+// Static combos.
 // STATIC: "LIGHTMAPPED"                "0..1"
 
-// dynamic combos
+// Dynamic combos.
 // DYNAMIC: "SKINNING"                  "0..1"
 // DYNAMIC: "COMPRESSED_VERTS"          "0..1"
 // DYNAMIC: "DOWATERFOG"                "0..1"
 // DYNAMIC: "LIGHTING_PREVIEW"          "0..1"
 // DYNAMIC: "NUM_LIGHTS"                "0..4"
 
-// getting rid of the blue squiggles
+// Getting rid of the blue squiggles.
 #ifndef LIGHTMAPPED
 #define LIGHTMAPPED 0
 #endif//LIGHTMAPPED
@@ -34,16 +34,16 @@
 #define NUM_LIGHTS 0
 #endif//NUM_LIGHTS
 
-// includes
+// Includes.
 #include "common_vs_fxc.h"
 
-// shader specific constants
+// Shader specific constants.
 const float4 cBaseTexCoordTransform[2] : register(SHADER_SPECIFIC_CONST_0);
 
-// shader input
+// Shader input.
 struct VS_INPUT
 {
-    // this is all of the stuff that we ever use
+    // This is all of the stuff that we ever use.
     float4 vPos                     : POSITION;
     float4 vNormal                  : NORMAL;
     float4 vBoneWeights             : BLENDWEIGHT;
@@ -53,13 +53,13 @@ struct VS_INPUT
     float2 vLightmapTexCoordOffset  : TEXCOORD2;
 };
 
-// shader output
+// Shader output.
 struct VS_OUTPUT
 {
-    // stuff that isn't seen by the pixel shader
+    // Stuff that isn't seen by the pixel shader.
     float4 projPosSetup             : POSITION;
     float fog                       : FOG;
-    // stuff that is seen by the pixel shader
+    // Stuff that is seen by the pixel shader.
     float2 baseTexCoord             : TEXCOORD0;
     float4 lightAtten               : TEXCOORD1;
     float3 worldNormal              : TEXCOORD2;
@@ -70,7 +70,7 @@ struct VS_OUTPUT
     float4 lightmapTexCoord3        : TEXCOORD7;
 };
 
-// entry point
+// Entry point.
 VS_OUTPUT main(const VS_INPUT v)
 {
     VS_OUTPUT o = (VS_OUTPUT) 0;
@@ -83,7 +83,7 @@ VS_OUTPUT main(const VS_INPUT v)
     SkinPositionAndNormal(SKINNING, vPosition, vNormal, v.vBoneWeights, v.vBoneIndices, worldPos, worldNormal);
     worldNormal = normalize(worldNormal);
 
-    // transform into projection space
+    // Transform into projection space.
     float4 vProjPos = mul(float4(worldPos, 1), cViewProj);
     o.projPosSetup = vProjPos;
     vProjPos.z = dot(float4(worldPos, 1), cViewProjZ);
@@ -91,11 +91,11 @@ VS_OUTPUT main(const VS_INPUT v)
     o.projPos = vProjPos.xyz;
     o.fog = CalcFog(worldPos, vProjPos.xyz, DOWATERFOG);
 
-    // needed for water fog alpha and diffuse lighting 
+    // Needed for water fog alpha and diffuse lighting .
     o.worldPos = worldPos;
     o.worldNormal.xyz = worldNormal.xyz;
 
-    // scalar attenuations for four lights
+    // Scalar attenuations for four lights.
     o.lightAtten = float4(0, 0, 0, 0);
 
 #if (NUM_LIGHTS > 0)
@@ -114,7 +114,7 @@ VS_OUTPUT main(const VS_INPUT v)
     o.lightAtten.w = GetVertexAttenForLight(worldPos, 3, false);
 #endif
 
-    // base texture coordinate transform
+    // Base texture coordinate transform.
     o.baseTexCoord.x = dot(v.vTexCoord0, cBaseTexCoordTransform[0].xy);
     o.baseTexCoord.y = dot(v.vTexCoord0, cBaseTexCoordTransform[1].xy);
 
@@ -131,7 +131,7 @@ VS_OUTPUT main(const VS_INPUT v)
     o.lightmapTexCoord1And2.z = lightmapTexCoord2.y;
 
     o.lightmapTexCoord3.xy = lightmapTexCoord3;
-#endif // LIGHTMAPPED
+#endif
 
     return o;
 }

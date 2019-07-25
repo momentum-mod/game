@@ -4,26 +4,26 @@
 //
 //==================================================================================================
 
-// static combos
+// Static combos.
 // STATIC: "FLASHLIGHT"                 "0..1"
 // STATIC: "FLASHLIGHTDEPTHFILTERMODE"  "0..2"
 // STATIC: "LIGHTMAPPED"                "0..1"
 
-// dynamic combos
+// Dynamic combos.
 // DYNAMIC: "WRITEWATERFOGTODESTALPHA"  "0..1"
 // DYNAMIC: "PIXELFOGTYPE"              "0..1"
 // DYNAMIC: "NUM_LIGHTS"                "0..4"
 // DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"  "0..1"
 // DYNAMIC: "FLASHLIGHTSHADOWS"         "0..1"
 
-// can't write fog to alpha if there is no fog
+// Can't write fog to alpha if there is no fog.
 // SKIP: ($PIXELFOGTYPE == 0) && ($WRITEWATERFOGTODESTALPHA != 0)
-// we don't care about flashlight depth unless the flashlight is on
+// We don't care about flashlight depth unless the flashlight is on.
 // SKIP: ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTSHADOWS == 1 )
-// flashlight shadow filter mode is irrelevant if there is no flashlight
+// Flashlight shadow filter mode is irrelevant if there is no flashlight.
 // SKIP: ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTDEPTHFILTERMODE != 0 )
 
-// getting rid of the blue squiggles
+// Getting rid of the blue squiggles.
 #ifndef FLASHLIGHT
 #define FLASHLIGHT 0
 #endif//FLASHLIGHT
@@ -49,24 +49,24 @@
 #define FLASHLIGHTSHADOWS 0
 #endif//FLASHLIGHTSHADOWS
 
-// includes
+// Includes.
 #include "common_ps_fxc.h"
 #include "common_lightmappedgeneric_fxc.h"
 #include "common_flashlight_fxc.h"
 #include "shader_constant_register_map.h"
 
-// registers
-const float4 g_DiffuseModulation                : register(PSREG_DIFFUSE_MODULATION); // necessary for lightmaps
-const float4 g_ShadowTweaks                     : register(PSREG_ENVMAP_TINT__SHADOW_TWEAKS); // necessary for flashlight
-const float3 cAmbientCube[6]                    : register(PSREG_AMBIENT_CUBE); // necessary for ambient cube
-const float4 g_EyePos                           : register(PSREG_EYEPOS_SPEC_EXPONENT); // necessary for lighting
-const float4 g_FogParams                        : register(PSREG_FOG_PARAMS); // necessary for fog
-const float4 g_FlashlightAttenuationFactors     : register(PSREG_FLASHLIGHT_ATTENUATION); // necessary for flashlight
-const float4 g_FlashlightPos                    : register(PSREG_FLASHLIGHT_POSITION_RIM_BOOST); // necessary for flashlight
-const float4x4 g_FlashlightWorldToTexture       : register(PSREG_FLASHLIGHT_TO_WORLD_TEXTURE); // necessary for flashlight
-PixelShaderLightInfo cLightInfo[3]              : register(PSREG_LIGHT_INFO_ARRAY); // necessary for dynamic lighting - 2 registers each - 6 registers total (4th light spread across w's)
+// Registers.
+const float4 g_DiffuseModulation                : register(PSREG_DIFFUSE_MODULATION); // Necessary for lightmaps.
+const float4 g_ShadowTweaks                     : register(PSREG_ENVMAP_TINT__SHADOW_TWEAKS); // Necessary for flashlight.
+const float3 cAmbientCube[6]                    : register(PSREG_AMBIENT_CUBE); // Necessary for ambient cube.
+const float4 g_EyePos                           : register(PSREG_EYEPOS_SPEC_EXPONENT); // Necessary for lighting.
+const float4 g_FogParams                        : register(PSREG_FOG_PARAMS); // Necessary for fog.
+const float4 g_FlashlightAttenuationFactors     : register(PSREG_FLASHLIGHT_ATTENUATION); // Necessary for flashlight.
+const float4 g_FlashlightPos                    : register(PSREG_FLASHLIGHT_POSITION_RIM_BOOST); // Necessary for flashlight.
+const float4x4 g_FlashlightWorldToTexture       : register(PSREG_FLASHLIGHT_TO_WORLD_TEXTURE); // Necessary for flashlight.
+PixelShaderLightInfo cLightInfo[3]              : register(PSREG_LIGHT_INFO_ARRAY); // Necessary for dynamic lighting - 2 registers each - 6 registers total (4th light spread across w's).
 
-// samplers
+// Samplers.
 sampler AlbedoSampler : register(s0);
 sampler NormalSampler : register(s1);
 sampler MraoSampler : register(s2);
@@ -75,9 +75,9 @@ sampler EnvmapSampler : register(s4);
 sampler FlashlightSampler : register(s5);
 sampler ShadowDepthSampler : register(s6);
 sampler RandRotSampler : register(s7);
-sampler LightmapSampler : register(s8); // also uses sampler 9 and 10
+sampler LightmapSampler : register(s8); // Also uses sampler 9 and 10.
 
-// statics
+// Statics.
 static const float PI = 3.141592;
 static const float ONE_OVER_PI = 0.318309;
 static const float EPSILON = 0.00001;
@@ -164,8 +164,8 @@ float GetAttenForLight(float4 lightAtten, uint lightNum)
     return lightAtten.x;
 }
 
-// Calculate direct light for one source
-float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, float3 normal, float3 fresnelReflectance, float roughness, float metalness, float lightDirectionAngle, float3 albedo, bool specularOnly)
+// Calculate direct light for one source.
+float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, float3 normal, float3 fresnelReflectance, float roughness, float metalness, float lightDirectionAngle, float3 albedo)
 {
     // Lh
     float3 HalfAngle = normalize(lightIn + lightOut);
@@ -184,12 +184,6 @@ float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, fl
     // Cook-Torrance specular microfacet BRDF.
     float3 specularBRDF = (F * D * G) / max(EPSILON, 4.0 * cosLightIn * lightDirectionAngle);
 
-    // Direct lighting is baked into lightmaps
-    if (specularOnly)
-    {
-        return specularBRDF * lightIntensity * cosLightIn;
-    }
-
     // Diffuse scattering happens due to light being refracted multiple times by a dielectric medium.
     // Metals on the other hand either reflect or absorb energy so diffuse contribution is always, zero.
     // To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness.
@@ -200,7 +194,7 @@ float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, fl
     return (diffuseBRDF + specularBRDF) * lightIntensity * cosLightIn;
 }
 
-// Get lightmap color
+// Get lightmap color.
 float3 lightmapLookup(float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3)
 {
     float2 bumpCoord1;
@@ -243,7 +237,7 @@ struct PS_INPUT
     float4 lightmapTexCoord3        : TEXCOORD7;
 };
 
-// entry point
+// Entry point.
 float4 main(PS_INPUT i) : COLOR
 {
     float4 baseColor = tex2D(AlbedoSampler, i.baseTexCoord);
@@ -260,7 +254,7 @@ float4 main(PS_INPUT i) : COLOR
     float3x3 normalBasis = compute_tangent_frame(surfNormal, i.worldPos, i.baseTexCoord, flipSign);
     float3 textureNormal = normalize((tex2D(NormalSampler, i.baseTexCoord).xyz - 0.5) * 2);
     float3 normal = normalize(mul(textureNormal, normalBasis));
-    textureNormal.y *= flipSign; // fix texture normal for ambient lighting
+    textureNormal.y *= flipSign; // Fix texture normal for ambient lighting.
 
     float3 outgoingLightDirection = normalize(g_EyePos.xyz - i.worldPos); // Lo
     float lightDirectionAngle = max(0, dot(normal, outgoingLightDirection)); // cosLo
@@ -270,7 +264,7 @@ float4 main(PS_INPUT i) : COLOR
     float3 dielectricCoefficient = 0.04; // F0dielectric
     float3 fresnelReflectance = lerp(dielectricCoefficient, albedo, metalness); // F0
 
-    // start ambient
+    // Start ambient.
     float3 ambientLighting = 0.0;
 #if LIGHTMAPPED
     // I know it doesn'texture make sense to divide by PI, but if I don't, it's just way too bright.
@@ -290,26 +284,21 @@ float4 main(PS_INPUT i) : COLOR
     float3 specularAmbient = specularIrradiance * EnvBRDFApprox(fresnelReflectance, roughness, lightDirectionAngle);
 
     ambientLighting = (diffuseAmbient + specularAmbient) * ambientOcclusion;
-    // end ambient
+    // End ambient.
 
-    // start direct
+    // Start direct.
     float3 directLighting = 0.0;
     for (uint n = 0; n < NUM_LIGHTS; ++n)
     {
         float3 LightIn = normalize(PixelShaderGetLightVector(i.worldPos, cLightInfo, n));
         float3 LightColor = PixelShaderGetLightColor(cLightInfo, n) * GetAttenForLight(i.lightAtten, n); // Li
-        
-#if LIGHTMAPPED
-        directLighting += calculateLight(LightIn, LightColor, outgoingLightDirection, normal,
-                fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo, true);
-#else
-        directLighting += calculateLight(LightIn, LightColor, outgoingLightDirection, normal,
-                fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo, false);
-#endif
-    }
-    // end direct
 
-    // start flashlight
+        directLighting += calculateLight(LightIn, LightColor, outgoingLightDirection, normal,
+                fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo);
+    }
+    // End direct.
+
+    // Start flashlight.
 #if (FLASHLIGHT > 0)
     float4 flashlightSpacePosition = mul(float4(i.worldPos, 1.0), g_FlashlightWorldToTexture);
     float3 vProjCoords = flashlightSpacePosition.xyz / flashlightSpacePosition.w;
@@ -334,9 +323,9 @@ float4 main(PS_INPUT i) : COLOR
     float3 flashLightIn = normalize(g_FlashlightPos.xyz - i.worldPos);
 
     directLighting += max(0, calculateLight(flashLightIn, flashLightIntensity, outgoingLightDirection,
-            normal, fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo, false));
+            normal, fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo));
 #endif
-    // end flashlight
+    // End flashlight.
 
     float fogFactor = CalcPixelFogFactor(PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos.z, i.projPos.z);
 
