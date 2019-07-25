@@ -1,12 +1,11 @@
-VertexLitGeneric
+PBR
 {
 	"$basetexture" "models/weapons/w_models/w_mom_l12g/l12g_d"
-	"$bumpmap" "models/weapons/w_models/w_mom_l12g/l12g_n_a"
+	"$bumpmap" "models/weapons/w_models/w_mom_l12g/l12g_n"
 	"$surfaceprop" "Weapon"
-
-	"$phong" "1"
-	"$phongexponenttexture" "models/weapons/w_models/w_mom_l12g/l12g_e"
-	"$phongfresnelranges" "[0.75 0.88 1]"
-	"$phongalbedotint" "1"
-	"$phongboost" "2.7"
+	
+	"$envmap" "env_cubemap"
+	"$model" "1"
+	"$mraotexture" "models/weapons/w_models/w_mom_l12g/l12g_mrao"
+	"$emissive" "models/weapons/w_models/w_mom_l12g/l12g_emissive"
 }
