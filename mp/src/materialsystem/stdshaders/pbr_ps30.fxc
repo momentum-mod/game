@@ -128,7 +128,7 @@ float3 EnvBRDFApprox(float3 SpecularColor, float Roughness, float NoV)
 
 // Compute the matrix used to transform tangent space normals to world space.
 // We're doing this in the pixel shader because it's more accurate.
-float3x3 compute_tangent_frame(float3 N, float3 P, float2 uv, out float sign_det)
+float3x3 ComputeTangentFrame(float3 N, float3 P, float2 uv, out float sign_det)
 {
     float3 dp1 = ddx(P);
     float3 dp2 = ddy(P);
@@ -194,9 +194,10 @@ float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, fl
     return (diffuseBRDF + specularBRDF) * lightIntensity * cosLightIn;
 }
 
-// Get lightmap color.
-float3 lightmapLookup(float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3)
+// Get ambient cube or lightmap color.
+float3 ambientLookup(float3 normal, float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3)
 {
+#if LIGHTMAPPED
     float2 bumpCoord1;
     float2 bumpCoord2;
     float2 bumpCoord3;
@@ -222,6 +223,9 @@ float3 lightmapLookup(float3 textureNormal, float4 lightmapTexCoord1And2, float4
     float sum = dot(dp, float3(1, 1, 1));
     diffuseLighting *= g_DiffuseModulation / sum;
     return diffuseLighting;
+#else
+    return PixelShaderAmbientLight(normal, cAmbientCube);
+#endif
 }
 
 // shader input
@@ -251,7 +255,7 @@ float4 main(PS_INPUT i) : COLOR
 
     float3 surfNormal = normalize(i.worldNormal);
     float flipSign;
-    float3x3 normalBasis = compute_tangent_frame(surfNormal, i.worldPos, i.baseTexCoord, flipSign);
+    float3x3 normalBasis = ComputeTangentFrame(surfNormal, i.worldPos, i.baseTexCoord, flipSign);
     float3 textureNormal = normalize((tex2D(NormalSampler, i.baseTexCoord).xyz - 0.5) * 2);
     float3 normal = normalize(mul(textureNormal, normalBasis));
     textureNormal.y *= flipSign; // Fix texture normal for ambient lighting.
@@ -266,24 +270,18 @@ float4 main(PS_INPUT i) : COLOR
 
     // Start ambient.
     float3 ambientLighting = 0.0;
-#if LIGHTMAPPED
-    // I know it doesn'texture make sense to divide by PI, but if I don't, it's just way too bright.
-    float3 diffuseIrradiance = lightmapLookup(textureNormal, i.lightmapTexCoord1And2, i.lightmapTexCoord1And2) * ONE_OVER_PI;
-#else
-    float3 diffuseIrradiance = PixelShaderAmbientLight(normal, cAmbientCube);
-#endif
+    {
+        float3 diffuseIrradiance = ambientLookup(normal, textureNormal, i.lightmapTexCoord1And2, i.lightmapTexCoord1And2);
+        float3 ambientLightingFresnelTerm = fresnelSchlick(fresnelReflectance, lightDirectionAngle); // F
+        float3 diffuseContributionFactor = lerp(1 - ambientLightingFresnelTerm, 0, metalness); // kd
+        float3 diffuseAmbient = diffuseContributionFactor * albedo * diffuseIrradiance;
 
-    float3 ambientLightingFresnelTerm = fresnelSchlick(fresnelReflectance, lightDirectionAngle); // F
-    float3 diffuseContributionFactor = lerp(1 - ambientLightingFresnelTerm, 0, metalness); // kd
-    float3 diffuseAmbient = diffuseContributionFactor * albedo * diffuseIrradiance;
+        float4 specularUV = float4(specularReflectionVector, roughness * ENV_MAP_LOD);
+        float3 specularIrradiance = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, specularUV).xyz;
+        float3 specularAmbient = specularIrradiance * EnvBRDFApprox(fresnelReflectance, roughness, lightDirectionAngle);
 
-    float4 specularUV = float4(specularReflectionVector, roughness * ENV_MAP_LOD);
-    float3 lookupHigh = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, specularUV).xyz;
-    float3 lookupLow = PixelShaderAmbientLight(specularReflectionVector, cAmbientCube);
-    float3 specularIrradiance = lerp(lookupHigh, lookupLow, roughness);
-    float3 specularAmbient = specularIrradiance * EnvBRDFApprox(fresnelReflectance, roughness, lightDirectionAngle);
-
-    ambientLighting = (diffuseAmbient + specularAmbient) * ambientOcclusion;
+        ambientLighting = (diffuseAmbient + specularAmbient) * ambientOcclusion;
+    }
     // End ambient.
 
     // Start direct.
@@ -300,30 +298,32 @@ float4 main(PS_INPUT i) : COLOR
 
     // Start flashlight.
 #if (FLASHLIGHT > 0)
-    float4 flashlightSpacePosition = mul(float4(i.worldPos, 1.0), g_FlashlightWorldToTexture);
-    float3 vProjCoords = flashlightSpacePosition.xyz / flashlightSpacePosition.w;
+    {
+        float4 flashlightSpacePosition = mul(float4(i.worldPos, 1.0), g_FlashlightWorldToTexture);
+        float3 vProjCoords = flashlightSpacePosition.xyz / flashlightSpacePosition.w;
 
-    float3 delta = g_FlashlightPos.xyz - i.worldPos;
-    float distSquared = dot(delta, delta);
-    float dist = sqrt(distSquared);
+        float3 delta = g_FlashlightPos.xyz - i.worldPos;
+        float distSquared = dot(delta, delta);
+        float dist = sqrt(distSquared);
 
-    float flashlightShadow = DoFlashlightShadow(ShadowDepthSampler, RandRotSampler, vProjCoords, i.projPos.xy, FLASHLIGHTDEPTHFILTERMODE, g_ShadowTweaks, true);
-    // blend between fully attenuated and not attenuated
-    float flashlightAttenuated = lerp(flashlightShadow, 1.0, g_ShadowTweaks.y);
-    float fAtten = saturate(dot(g_FlashlightAttenuationFactors.xyz, float3(1.0, 1.0 / dist, 1.0 / distSquared)));
-    // blend between shadow and above, according to light attenuation
-    flashlightShadow = saturate(lerp(flashlightAttenuated, flashlightShadow, fAtten));
+        float flashlightShadow = DoFlashlightShadow(ShadowDepthSampler, RandRotSampler, vProjCoords, i.projPos.xy, FLASHLIGHTDEPTHFILTERMODE, g_ShadowTweaks, true);
+        // Blend between fully attenuated and not attenuated.
+        float flashlightAttenuated = lerp(flashlightShadow, 1.0, g_ShadowTweaks.y);
+        float fAtten = saturate(dot(g_FlashlightAttenuationFactors.xyz, float3(1.0, 1.0 / dist, 1.0 / distSquared)));
+        // Blend between shadow and above, according to light attenuation.
+        flashlightShadow = saturate(lerp(flashlightAttenuated, flashlightShadow, fAtten));
 
-    float3 flashlightColor = tex2D(FlashlightSampler, vProjCoords.xy);
-    float farZ = g_FlashlightAttenuationFactors.w;
-    float endFalloffFactor = RemapValClamped(dist, farZ, 0.6 * farZ, 0.0, 1.0);
+        float3 flashlightColor = tex2D(FlashlightSampler, vProjCoords.xy);
+        float farZ = g_FlashlightAttenuationFactors.w;
+        float endFalloffFactor = RemapValClamped(dist, farZ, 0.6 * farZ, 0.0, 1.0);
 
-    float3 flashLightIntensity = flashlightColor * flashlightShadow * endFalloffFactor;
+        float3 flashLightIntensity = flashlightColor * flashlightShadow * endFalloffFactor;
 
-    float3 flashLightIn = normalize(g_FlashlightPos.xyz - i.worldPos);
+        float3 flashLightIn = normalize(g_FlashlightPos.xyz - i.worldPos);
 
-    directLighting += max(0, calculateLight(flashLightIn, flashLightIntensity, outgoingLightDirection,
-            normal, fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo));
+        directLighting += max(0, calculateLight(flashLightIn, flashLightIntensity, outgoingLightDirection,
+                normal, fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo));
+    }
 #endif
     // End flashlight.
 
