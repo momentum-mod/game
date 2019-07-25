@@ -123,7 +123,7 @@ mp/src/materialsystem/stdshaders/filestocopy.txt
 mp/src/materialsystem/stdshaders/filelist.txt
 mp/src/materialsystem/stdshaders/filelistgen.txt
 fxctmp9_tmp/
-stdshaders/shaders/
+mp/src/materialsystem/stdshaders/shaders/
 mp/src/materialsystem/stdshaders/inclist.txt
 mp/src/materialsystem/stdshaders/vcslist.txt
 mp/src/materialsystem/stdshaders/uniquefilestocopy.txt
@@ -131,3 +131,5 @@ mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b.copy
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30.copy
+mp/game/momentum/materials/vgui/logos/spray.vmt
+mp/game/momentum/materials/vgui/logos/spray.vtf
