@@ -824,7 +824,12 @@ void CMomentumGameMovement::FinishDuck(void)
     Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-    Vector viewDelta = 0.5f * (hullSizeNormal - hullSizeCrouch);
+    float flViewScale = 0.5f;
+    static ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == GAMEMODE_RJ)
+        flViewScale = 1.0f;
+
+    Vector viewDelta = flViewScale * (hullSizeNormal - hullSizeCrouch);
 
     player->SetViewOffset(GetPlayerViewOffset(true));
     player->AddFlag(FL_DUCKING);
