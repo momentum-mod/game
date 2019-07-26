@@ -227,6 +227,19 @@ void CMomentumGameMovement::WalkMove()
     // Set pmove velocity
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
 
+    // Cap ground movement speed in RJ
+    static ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == GAMEMODE_RJ)
+    {
+        float flNewSpeed = VectorLength(mv->m_vecVelocity);
+        if (flNewSpeed > mv->m_flMaxSpeed)
+        {
+            float flScale = (mv->m_flMaxSpeed / flNewSpeed);
+            mv->m_vecVelocity.x *= flScale;
+            mv->m_vecVelocity.y *= flScale;
+        }
+    }
+
     // Add in any base velocity to the current velocity.
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
