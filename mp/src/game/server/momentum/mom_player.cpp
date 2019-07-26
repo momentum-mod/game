@@ -395,8 +395,8 @@ void CMomentumPlayer::ItemPostFrame()
 bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
 {
     // Get the weapon that we currently have at that slot
-    CBaseCombatWeapon *pCurrWeapon = Weapon_GetSlot(pWeapon->GetSlot());
-    if (pCurrWeapon != nullptr)
+    const auto pCurrWeapon = Weapon_GetSlotAndPosition(pWeapon->GetSlot(), pWeapon->GetPosition());
+    if (pCurrWeapon)
     {
         // Switch to that weapon for convenience
         Weapon_Switch(pCurrWeapon);
