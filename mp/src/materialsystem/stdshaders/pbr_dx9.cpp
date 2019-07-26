@@ -12,8 +12,8 @@
 #include "cpp_shader_constant_register_map.h"
 
 // Includes specific to this shader.
-#include "pbr_ps30.inc"
 #include "pbr_vs20.inc"
+#include "pbr_ps30.inc"
 
 // Defining samplers.
 #define SAMPLER_ALBEDO SHADER_SAMPLER0
