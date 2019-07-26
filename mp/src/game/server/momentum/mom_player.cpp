@@ -160,11 +160,15 @@ static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXEC
                                "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1,
                                AppearanceCallback);
 
-// Rocket jump self damage ConVars
-// Equivalent to "tf_damageforcescale_self_soldier_rj", "tf_damageforcescale_self_soldier_badrj", and "tf_damagescale_self_soldier" in TF2
-static ConVar mom_damageforcescale_self_rocket_air("mom_damageforcescale_self_rocket_air", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
+// Rocket jump force ConVars
+
+// Equivalent to "tf_damageforcescale_self_soldier_rj" (default 10.0) in TF2
+// NOTE: TF2 also uses "tf_damagescale_self_soldier" (default: 0.6) for reducing selfdamage taken midair ONLY.
+// Since we're not concerned with damage, just lower the force scale. (10.0 * 0.6 = 6.0)
+static ConVar mom_damageforcescale_self_rocket_air("mom_damageforcescale_self_rocket_air", "6.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
+
+// Equivalent to "tf_damageforcescale_self_soldier_badrj" (default: 5.0) in TF2
 static ConVar mom_damageforcescale_self_rocket("mom_damageforcescale_self_rocket", "5.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
-static ConVar mom_damagescale_self_rocket("mom_damagescale_self_rocket", "0.60", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
 
 // Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps,
 // as well as changing the appearance locally.
@@ -1795,32 +1799,6 @@ static float DamageForce(const Vector &size, float damage, float scale)
     }
 
     return force;
-}
-
-int CMomentumPlayer::OnTakeDamage(const CTakeDamageInfo &info)
-{
-    CTakeDamageInfo adjustedInfo = info;
-
-    if (GetFlags() & FL_GODMODE)
-        return 0;
-
-    // Early out if there's no damage
-    if (!adjustedInfo.GetDamage())
-        return 0;
-
-    if (!IsAlive())
-        return 0;
-
-    CBaseEntity *pAttacker = adjustedInfo.GetAttacker();
-    CBaseEntity *pInflictor = adjustedInfo.GetInflictor();
-
-    // Take reduced damage midair from own rockets
-    if (pAttacker == this && FClassnameIs(pInflictor, "momentum_rocket") && GetGroundEntity() == nullptr)
-    {
-        adjustedInfo.SetDamage(adjustedInfo.GetDamage() * mom_damagescale_self_rocket.GetFloat());
-    }
-
-    return CBaseCombatCharacter::OnTakeDamage(adjustedInfo);
 }
 
 int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
