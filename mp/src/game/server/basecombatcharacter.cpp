@@ -2221,20 +2221,26 @@ bool CBaseCombatCharacter::Weapon_SlotOccupied( CBaseCombatWeapon *pWeapon )
 //-----------------------------------------------------------------------------
 CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlot( int slot ) const
 {
-	int	targetSlot = slot;
+    return Weapon_GetSlotAndPosition(slot);
+}
 
-	// Check for that slot being occupied already
-	for ( int i=0; i < MAX_WEAPONS; i++ )
-	{
-		if ( m_hMyWeapons[i].Get() != NULL )
-		{
-			// If the slots match, it's already occupied
-			if ( m_hMyWeapons[i]->GetSlot() == targetSlot )
-				return m_hMyWeapons[i];
-		}
-	}
-	
-	return NULL;
+CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlotAndPosition( int slot, int pos /*= INT_MIN*/ ) const
+{
+    // Check for that slot being occupied already
+    for (auto i = 0; i < MAX_WEAPONS; i++)
+    {
+        const auto pWeapon = m_hMyWeapons[i].Get();
+        if (pWeapon && pWeapon->GetSlot() == slot)
+        {
+            // If the slots match, check the position as well, if we should
+            if (pos != INT_MIN && pWeapon->GetPosition() != pos)
+                continue;
+            
+            return m_hMyWeapons[i];
+        }
+    }
+
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
