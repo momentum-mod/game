@@ -213,6 +213,33 @@ SHADER_DRAW
     BlendType_t nBlendType = EvaluateBlendRequirements(info.Albedo, true);
     bool bFullyOpaque = (nBlendType != BT_BLENDADD) && (nBlendType != BT_BLEND) && !bIsAlphaTested;
 
+    // Determining the max level of detail for the envmap.
+    int iEnvmapLOD = 6;
+    auto envTexture = params[info.Envmap]->GetTextureValue();
+    if (envTexture)
+    {
+        // Get power of 2 of texture width.
+        int width = envTexture->GetMappingWidth();
+        int mips = 0;
+        while (width >>= 1)
+        {
+            ++mips;
+        }
+
+        // Cubemap has 4 sides so 2 mips less.
+        iEnvmapLOD = mips;
+    }
+
+    // Dealing with very high and low resolution cubemaps.
+    if (iEnvmapLOD > 12)
+    {  
+        iEnvmapLOD = 12;
+    }
+    else if (iEnvmapLOD < 4)
+    {
+        iEnvmapLOD = 4;
+    }
+
     SHADOW_STATE
     {
         // If alphatest is on, enable it.
@@ -394,6 +421,13 @@ SHADER_DRAW
         LightState_t lightState;
         pShaderAPI->GetDX9LightState(&lightState);
 
+        // Brushes don't need ambient cubes or dynamic lights.
+        if (bLightmapped)
+        {
+            lightState.m_bAmbientLight = false;
+            lightState.m_nNumLights = 0;
+        }
+
         // Getting fog info.
         MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
         int fogIndex = (fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z) ? 1 : 0;
@@ -417,23 +451,18 @@ SHADER_DRAW
         bool bLightingOnly = mat_fullbright.GetInt() == 2 && !IS_FLAG_SET(MATERIAL_VAR_NO_DEBUG_OVERRIDE);
         bool bLightingPreview = pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING) != 0;
 
-        // Dynamic lighting on brushes is glitchy because they don't set their own light state,
-        // and instead use the one from the last drawn model.
-        // Besides, the lightmap has diffuse lighting anyway so we're not losing too much.
-        // That's why NUM_LIGHTS is forced to 0 when bLightMapped is true.
-
         // Setting up dynamic vertex shader.
         DECLARE_DYNAMIC_VERTEX_SHADER(pbr_vs20);
         SET_DYNAMIC_VERTEX_SHADER_COMBO(SKINNING, numBones > 0);
         SET_DYNAMIC_VERTEX_SHADER_COMBO(DOWATERFOG, fogIndex);
         SET_DYNAMIC_VERTEX_SHADER_COMBO(LIGHTING_PREVIEW, bLightingPreview);
         SET_DYNAMIC_VERTEX_SHADER_COMBO(COMPRESSED_VERTS, (int)vertexCompression);
-        SET_DYNAMIC_VERTEX_SHADER_COMBO(NUM_LIGHTS, lightState.m_nNumLights * !bLightmapped);
+        SET_DYNAMIC_VERTEX_SHADER_COMBO(NUM_LIGHTS, lightState.m_nNumLights);
         SET_DYNAMIC_VERTEX_SHADER(pbr_vs20);
 
         // Setting up dynamic pixel shader.
         DECLARE_DYNAMIC_PIXEL_SHADER(pbr_ps30);
-        SET_DYNAMIC_PIXEL_SHADER_COMBO(NUM_LIGHTS, lightState.m_nNumLights * !bLightmapped);
+        SET_DYNAMIC_PIXEL_SHADER_COMBO(NUM_LIGHTS, lightState.m_nNumLights);
         SET_DYNAMIC_PIXEL_SHADER_COMBO(WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha);
         SET_DYNAMIC_PIXEL_SHADER_COMBO(WRITE_DEPTH_TO_DESTALPHA, bWriteDepthToAlpha);
         SET_DYNAMIC_PIXEL_SHADER_COMBO(PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo());
@@ -446,7 +475,7 @@ SHADER_DRAW
         // This is probably important.
         SetModulationPixelShaderDynamicState_LinearColorSpace(1);
 
-        // Sending ambient cube to the pixel shader.
+        // Sending ambient cube to the pixel shader, force to black if not available.
         pShaderAPI->SetPixelShaderStateAmbientLightCube(PSREG_AMBIENT_CUBE, !lightState.m_bAmbientLight);
 
         // Sending lighting info to the pixel shader.
@@ -467,10 +496,12 @@ SHADER_DRAW
             pShaderAPI->BindStandardTexture(SAMPLER_ALBEDO, TEXTURE_GREY);
         }
 
-        // Setting up eye position and sending to the pixel shader.
+        // Setting up eye position.
         float vEyePos_SpecExponent[4];
         pShaderAPI->GetWorldSpaceCameraPosition(vEyePos_SpecExponent);
-        vEyePos_SpecExponent[3] = 0.0f;
+        // Putting the envmap LOD in the 4th position because there's space here.
+        vEyePos_SpecExponent[3] = iEnvmapLOD;
+        // Sending them to the pixel shader.
         pShaderAPI->SetPixelShaderConstant(PSREG_EYEPOS_SPEC_EXPONENT, vEyePos_SpecExponent, 1);
 
         // More flashlight related stuff.
