@@ -56,32 +56,31 @@
 #include "shader_constant_register_map.h"
 
 // Registers.
-const float4 g_DiffuseModulation                : register(PSREG_DIFFUSE_MODULATION); // Necessary for lightmaps.
-const float4 g_ShadowTweaks                     : register(PSREG_ENVMAP_TINT__SHADOW_TWEAKS); // Necessary for flashlight.
-const float3 cAmbientCube[6]                    : register(PSREG_AMBIENT_CUBE); // Necessary for ambient cube.
-const float4 g_EyePos                           : register(PSREG_EYEPOS_SPEC_EXPONENT); // Necessary for lighting.
-const float4 g_FogParams                        : register(PSREG_FOG_PARAMS); // Necessary for fog.
-const float4 g_FlashlightAttenuationFactors     : register(PSREG_FLASHLIGHT_ATTENUATION); // Necessary for flashlight.
-const float4 g_FlashlightPos                    : register(PSREG_FLASHLIGHT_POSITION_RIM_BOOST); // Necessary for flashlight.
-const float4x4 g_FlashlightWorldToTexture       : register(PSREG_FLASHLIGHT_TO_WORLD_TEXTURE); // Necessary for flashlight.
-PixelShaderLightInfo cLightInfo[3]              : register(PSREG_LIGHT_INFO_ARRAY); // Necessary for dynamic lighting - 2 registers each - 6 registers total (4th light spread across w's).
+const float4 g_DiffuseModulation                : register(PSREG_DIFFUSE_MODULATION);               // Necessary for lightmaps.
+const float4 g_ShadowTweaks                     : register(PSREG_ENVMAP_TINT__SHADOW_TWEAKS);       // Necessary for flashlight.
+const float3 cAmbientCube[6]                    : register(PSREG_AMBIENT_CUBE);                     // Necessary for ambient cube.
+const float4 g_EyePos_EnvmapLOD                 : register(PSREG_EYEPOS_SPEC_EXPONENT);             // Necessary for lighting, max envmap LOD in w.
+const float4 g_FogParams                        : register(PSREG_FOG_PARAMS);                       // Necessary for fog.
+const float4 g_FlashlightAttenuationFactors     : register(PSREG_FLASHLIGHT_ATTENUATION);           // Necessary for flashlight.
+const float4 g_FlashlightPos                    : register(PSREG_FLASHLIGHT_POSITION_RIM_BOOST);    // Necessary for flashlight.
+const float4x4 g_FlashlightWorldToTexture       : register(PSREG_FLASHLIGHT_TO_WORLD_TEXTURE);      // Necessary for flashlight.
+PixelShaderLightInfo cLightInfo[3]              : register(PSREG_LIGHT_INFO_ARRAY);                 // Necessary for dynamic lighting, 2 registers each, 6 registers total (4th light spread across w's).
 
 // Samplers.
-sampler AlbedoSampler : register(s0);
-sampler NormalSampler : register(s1);
-sampler MraoSampler : register(s2);
-sampler EmissiveSampler : register(s3);
-sampler EnvmapSampler : register(s4);
-sampler FlashlightSampler : register(s5);
-sampler ShadowDepthSampler : register(s6);
-sampler RandRotSampler : register(s7);
-sampler LightmapSampler : register(s8); // Also uses sampler 9 and 10.
+sampler AlbedoSampler           : register(s0);
+sampler NormalSampler           : register(s1);
+sampler MraoSampler             : register(s2);
+sampler EmissiveSampler         : register(s3);
+sampler EnvmapSampler           : register(s4);
+sampler FlashlightSampler       : register(s5);
+sampler ShadowDepthSampler      : register(s6);
+sampler RandRotSampler          : register(s7);
+sampler LightmapSampler         : register(s8); // Also uses sampler 9 and 10.
 
 // Statics.
-static const float PI = 3.141592;
-static const float ONE_OVER_PI = 0.318309;
-static const float EPSILON = 0.00001;
-static const float ENV_MAP_LOD = 6.0;
+static const float PI               = 3.141592;
+static const float ONE_OVER_PI      = 0.318309;
+static const float EPSILON          = 0.000001;
 
 // Shlick's approximation of the Fresnel factor.
 float3 fresnelSchlick(float3 F0, float cosTheta)
@@ -275,7 +274,7 @@ float4 main(PS_INPUT i) : COLOR
     float3 normal = normalize(mul(textureNormal, normalBasis));
     textureNormal.y *= flipSign; // Fix texture normal for ambient lighting.
 
-    float3 outgoingLightDirection = normalize(g_EyePos.xyz - i.worldPos); // Lo
+    float3 outgoingLightDirection = normalize(g_EyePos_EnvmapLOD.xyz - i.worldPos); // Lo
     float lightDirectionAngle = max(0, dot(normal, outgoingLightDirection)); // cosLo
 
     float3 specularReflectionVector = 2.0 * lightDirectionAngle * normal - outgoingLightDirection; // Lr
@@ -291,7 +290,7 @@ float4 main(PS_INPUT i) : COLOR
         float3 diffuseContributionFactor = lerp(1 - ambientLightingFresnelTerm, 0, metalness); // kd
         float3 diffuseAmbient = diffuseContributionFactor * albedo * diffuseIrradiance;
 
-        float4 specularUV = float4(specularReflectionVector, roughness * ENV_MAP_LOD);
+        float4 specularUV = float4(specularReflectionVector, roughness * g_EyePos_EnvmapLOD.w);
         float3 lookupHigh = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, specularUV).xyz;
         float3 lookupLow = ENV_MAP_SCALE * BlurryLookup(specularReflectionVector);
         float3 specularIrradiance = lerp(lookupHigh, lookupLow, roughness);
@@ -344,7 +343,7 @@ float4 main(PS_INPUT i) : COLOR
 #endif
     // End flashlight.
 
-    float fogFactor = CalcPixelFogFactor(PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos.z, i.projPos.z);
+    float fogFactor = CalcPixelFogFactor(PIXELFOGTYPE, g_FogParams, g_EyePos_EnvmapLOD.z, i.worldPos.z, i.projPos.z);
 
 #if WRITEWATERFOGTODESTALPHA && (PIXELFOGTYPE == PIXEL_FOG_TYPE_HEIGHT)
     alpha = fogFactor;
