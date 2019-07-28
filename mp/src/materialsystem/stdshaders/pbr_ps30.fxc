@@ -81,7 +81,7 @@ sampler LightmapSampler         : register(s8); // Also uses sampler 9 and 10.
 static const float PI               = 3.141592;
 static const float ONE_OVER_PI      = 0.318309;
 static const float EPSILON          = 0.000001;
-static const float ENV_MAP_LOD      = 0.000001;
+static const float ENV_MAP_LOD      = 6.000000;
 
 // Shlick's approximation of the Fresnel factor.
 float3 fresnelSchlick(float3 F0, float cosTheta)
