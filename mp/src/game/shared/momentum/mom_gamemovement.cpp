@@ -231,12 +231,38 @@ void CMomentumGameMovement::WalkMove()
     static ConVarRef gm("mom_gamemode");
     if (gm.GetInt() == GAMEMODE_RJ)
     {
+        // Cap ground movement speed in RJ
         float flNewSpeed = VectorLength(mv->m_vecVelocity);
         if (flNewSpeed > mv->m_flMaxSpeed)
         {
             float flScale = (mv->m_flMaxSpeed / flNewSpeed);
             mv->m_vecVelocity.x *= flScale;
             mv->m_vecVelocity.y *= flScale;
+        }
+
+        // Scale backwards movement if going faster than 100u/s
+        if (VectorLength(mv->m_vecVelocity) > 100.0f)
+        {
+            float flDot = DotProduct(forward, mv->m_vecVelocity);
+
+            // are we moving backwards at all?
+            if (flDot < 0)
+            {
+                Vector vecBackMove = forward * flDot;
+                Vector vecRightMove = right * DotProduct(right, mv->m_vecVelocity);
+
+                // clamp the back move vector if it is faster than max
+                float flBackSpeed = VectorLength(vecBackMove);
+                float flMaxBackSpeed = (mv->m_flMaxSpeed * 0.9f);
+
+                if (flBackSpeed > flMaxBackSpeed)
+                {
+                    vecBackMove *= flMaxBackSpeed / flBackSpeed;
+                }
+
+                // reassemble velocity
+                mv->m_vecVelocity = vecBackMove + vecRightMove;
+            }
         }
     }
 
@@ -2141,16 +2167,6 @@ void CMomentumGameMovement::CheckParameters(void)
     if (mv->m_nButtons & IN_SPEED)
     {
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
-    }
-
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-    {
-        // Walk slower backwards if not crouched
-        if (mv->m_nButtons & IN_BACK && !(mv->m_nButtons & IN_DUCK) && !(mv->m_nButtons & IN_FORWARD) &&
-            !(mv->m_nButtons & IN_MOVERIGHT) && !(mv->m_nButtons & IN_MOVELEFT))
-        {
-            mv->m_flClientMaxSpeed = sv_maxspeed.GetFloat() * 0.9f;
-        }
     }
 
     BaseClass::CheckParameters();
