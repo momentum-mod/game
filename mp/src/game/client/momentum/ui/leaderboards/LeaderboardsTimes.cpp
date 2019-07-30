@@ -23,6 +23,7 @@
 #include "run/mom_replay_factory.h"
 #include "filesystem.h"
 #include "fmtstr.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -528,7 +529,6 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
 
 bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdate)
 {
-    ConVarRef gm("mom_gamemode");
     if (!outPlayerInfo)
         return false;
 
@@ -539,7 +539,7 @@ bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdat
     LoadLocalTimes(pLocal);
     pLeaderboards->AddSubKey(pLocal);
 
-    if (gm.GetInt() > GAMEMODE_UNKNOWN)
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_UNKNOWN))
     {
         for (int i = 1; i < TIMES_COUNT; i++) // Skip over local
         {

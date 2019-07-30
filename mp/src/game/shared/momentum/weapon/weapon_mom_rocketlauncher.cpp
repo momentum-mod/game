@@ -2,6 +2,7 @@
 
 #include "mom_player_shared.h"
 #include "weapon_mom_rocketlauncher.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -115,8 +116,7 @@ void CMomentumRocketLauncher::PrimaryAttack()
 
 bool CMomentumRocketLauncher::CanDeploy()
 {
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() != GAMEMODE_RJ)
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         return false;
 
     return BaseClass::CanDeploy();

@@ -5,6 +5,7 @@
 #include "mom_player_shared.h"
 #include "movevars_shared.h"
 #include "rumble_shared.h"
+#include "mom_system_gamemode.h"
 
 #ifdef CLIENT_DLL
 #include "c_mom_triggers.h"
@@ -16,8 +17,6 @@
 #endif
 
 #include "tier0/memdbgon.h"
-
-static ConVarRef mom_gamemode("mom_gamemode");
 
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
@@ -163,7 +162,7 @@ void CMomentumGameMovement::WalkMove()
     trace_t pm;
     Vector forward, right, up;
 
-    if (mom_gamemode.GetInt() == GAMEMODE_KZ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -485,8 +484,7 @@ bool CMomentumGameMovement::LadderMove(void)
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
 {
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
         // TF2 uses default speed cropping
         return BaseClass::HandleDuckingSpeedCrop();
@@ -945,8 +943,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
         // Cannot jump while ducked
         if (player->GetFlags() & FL_DUCKING)
@@ -1007,7 +1004,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Acclerate upward
     float startz = mv->m_vecVelocity[2];
 
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
         // TF2 uses two different ways of setting vertical velocity when jumping,
         // this might be what allows techniques such as ctaps in rocket jump.
@@ -1026,7 +1023,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // stamina stuff (scroll/kz gamemode only)
-    if (gm.GetInt() == GAMEMODE_KZ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_KZ))
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -1044,7 +1041,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.1f;
 
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         mv->m_outStepHeight += 0.05f; // 0.15f total
 
     // First do a trace all the way down to the ground
@@ -2128,8 +2125,7 @@ void CMomentumGameMovement::CheckParameters(void)
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
     }
 
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
         // Walk slower backwards if not crouched
         if (mv->m_nButtons & IN_BACK && !(mv->m_nButtons & IN_DUCK) && !(mv->m_nButtons & IN_FORWARD) &&
