@@ -77,8 +77,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // SPAWNING
     CBaseEntity *EntSelectSpawnPoint() OVERRIDE;
 
-    void EnableAutoBhop();
-    void DisableAutoBhop();
+    void SetAutoBhopEnabled(bool bEnable);
     bool HasAutoBhop() const { return m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
