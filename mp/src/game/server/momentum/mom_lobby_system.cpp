@@ -5,6 +5,7 @@
 #include "filesystem.h"
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
+#include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
 #include "mom_player_shared.h"
 #include "mom_modulecomms.h"
@@ -968,31 +969,11 @@ void CMomentumLobbySystem::OnLobbyTypeChanged(int newType)
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
     CHECK_STEAM_API(SteamFriends());
-    ConVarRef gm("mom_gamemode");
-    const char *gameMode;
-    switch (gm.GetInt())
-    {
-    case GAMEMODE_SURF:
-        gameMode = "Surfing";
-        break;
-    case GAMEMODE_BHOP:
-        gameMode = "Bhopping";
-        break;
-    case GAMEMODE_KZ:
-        gameMode = "Climbing";
-        break;
-    case GAMEMODE_RJ:
-        gameMode = "Jumping";
-        break;
-    case GAMEMODE_UNKNOWN:
-    default:
-        gameMode = "Playing";
-        break;
-    }
+    CHECK_STEAM_API(SteamMatchmaking());
     char gameInfoStr[64];// , connectStr[64];
     int numPlayers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
     V_snprintf(gameInfoStr, sizeof(gameInfoStr), numPlayers <= 1 ? "%s on %s" : "%s on %s with %i other player%s",
-               gameMode, STRING(gpGlobals->mapname), numPlayers - 1, numPlayers > 2 ? "s" : "");
+               g_pGameModeSystem->GetGameMode()->GetStatusString(), STRING(gpGlobals->mapname), numPlayers - 1, numPlayers > 2 ? "s" : "");
     //V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
 
     //SteamFriends()->SetRichPresence("connect", connectStr);
