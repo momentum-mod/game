@@ -492,7 +492,7 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
         return BaseClass::HandleDuckingSpeedCrop();
     }
 
-    if (!m_iSpeedCropped & SPEED_CROPPED_DUCK)
+    if (!(m_iSpeedCropped & SPEED_CROPPED_DUCK))
     {
         if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
         {
