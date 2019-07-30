@@ -5,14 +5,13 @@
 #include "voice_gamemgr.h"
 #include "weapon/cs_ammodef.h"
 #include "weapon/weapon_base_gun.h"
-#include "mom_player_shared.h"
 #include "filesystem.h"
 #include "movevars_shared.h"
+#include "mom_system_gamemode.h"
 
 #ifndef CLIENT_DLL
-#include "momentum/tickset.h"
 #include "momentum/mapzones.h"
-#include "momentum/mom_timer.h"
+#include "momentum/mom_player.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -141,8 +140,7 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         return &g_MOMViewVectorsRJ;
 
     return &g_MOMViewVectors;

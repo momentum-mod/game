@@ -450,8 +450,6 @@ void CMOMSaveLocSystem::SetUsingSavelocMenu(bool bIsUsingSLMenu)
 
 void CMOMSaveLocSystem::CheckTimer()
 {
-    // static ConVarRef gamemode("mom_gamemode");
-
     if (g_pMomentumTimer->IsRunning())
     {
 
