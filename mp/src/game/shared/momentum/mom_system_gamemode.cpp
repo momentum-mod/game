@@ -134,9 +134,6 @@ void CGameModeSystem::SetGameModeFromMapName(const char *pMapName)
     // Set to unknown for now
     m_pCurrentGameMode = m_vecGameModes[0];
 
-    if (!pMapName)
-        return;
-
     if (pMapName)
     {
         // Skip over unknown in the loop
