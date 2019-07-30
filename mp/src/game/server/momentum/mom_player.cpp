@@ -13,6 +13,7 @@
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_base_gun.h"
+#include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
 #include "util/mom_util.h"
 #include "mom_replay_system.h"
@@ -502,7 +503,7 @@ void CMomentumPlayer::Spawn()
     // Reset current checkpoint trigger upon spawn
     m_CurrentProgress.Term();
 
-    g_pMomentumTimer->OnPlayerSpawn(this);
+    g_pGameModeSystem->GetGameMode()->OnPlayerSpawn(this);
 }
 
 // Obtains a player's previous origin X ticks backwards (0 is still previous, depends when this is called ofc!)
@@ -532,6 +533,12 @@ CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 
     Warning("No valid spawn point found!\n");
     return Instance(INDEXENT(0));
+}
+
+void CMomentumPlayer::SetAutoBhopEnabled(bool bEnable)
+{
+    m_bAutoBhop = bEnable;
+    DevLog("%s autobhop\n", bEnable ? "Enabled" : "Disabled");
 }
 
 void CMomentumPlayer::OnJump()
@@ -1083,17 +1090,6 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 
     if (g_MOMBlockFixer->IsBhopBlock(pOther->entindex()))
         g_MOMBlockFixer->PlayerTouch(this, pOther);
-}
-
-void CMomentumPlayer::EnableAutoBhop()
-{
-    m_bAutoBhop = true;
-    DevLog("Enabled autobhop\n");
-}
-void CMomentumPlayer::DisableAutoBhop()
-{
-    m_bAutoBhop = false;
-    DevLog("Disabled autobhop\n");
 }
 
 void CMomentumPlayer::UpdateRunStats()

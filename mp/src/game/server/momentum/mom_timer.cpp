@@ -36,7 +36,6 @@ CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
 
 void CMomentumTimer::LevelInitPostEntity()
 {
-    SetGameModeConVars();
     m_bWasCheatsMsgShown = false;
 }
 
@@ -172,23 +171,6 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 
     // Reset our CanStart bool
     m_bCanStart = true;
-}
-
-void CMomentumTimer::OnPlayerSpawn(CMomentumPlayer *pPlayer)
-{
-    // MOM_TODO
-    // If we do implement a gamemode interface this would be much better suited there
-    static ConVarRef mom_gamemode("mom_gamemode");
-    switch (mom_gamemode.GetInt())
-    {
-    case GAMEMODE_KZ:
-    case GAMEMODE_RJ:
-        pPlayer->DisableAutoBhop();
-        break;
-    default:
-        pPlayer->EnableAutoBhop();
-        break;
-    }
 }
 
 void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset)
@@ -343,67 +325,6 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     }
 
     return false;
-}
-
-// set ConVars according to Gamemode. Tickrate is by in tickset.h
-void CMomentumTimer::SetGameModeConVars()
-{
-    ConVarRef gm("mom_gamemode");
-    switch (gm.GetInt())
-    {
-    case GAMEMODE_SURF:
-        sv_maxvelocity.SetValue(3500);
-        sv_airaccelerate.SetValue(150);
-        sv_accelerate.SetValue(5);
-        sv_maxspeed.SetValue(260);
-        break;
-    case GAMEMODE_BHOP:
-        sv_maxvelocity.SetValue(100000);
-        sv_airaccelerate.SetValue(1000);
-        sv_accelerate.SetValue(5);
-        sv_maxspeed.SetValue(260);
-        break;
-    case GAMEMODE_KZ:
-        sv_maxvelocity.SetValue(3500);
-        sv_airaccelerate.SetValue(100);
-        sv_accelerate.SetValue(5);
-        sv_maxspeed.SetValue(250);
-        break;
-    case GAMEMODE_RJ:
-        sv_maxvelocity.SetValue(3500);
-        sv_airaccelerate.SetValue(10);
-        sv_accelerate.SetValue(10);
-        sv_maxspeed.SetValue(240);
-        break;
-    case GAMEMODE_TRICKSURF:
-        sv_maxvelocity.SetValue(100000);
-        sv_airaccelerate.SetValue(1000);
-        sv_accelerate.SetValue(10);
-        sv_maxspeed.SetValue(260);
-        break;
-    case GAMEMODE_UNKNOWN:
-        sv_maxvelocity.SetValue(3500);
-        sv_airaccelerate.SetValue(150);
-        sv_accelerate.SetValue(5);
-        sv_maxspeed.SetValue(260);
-        break;
-    default:
-        DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
-        break;
-    }
-
-    PrintGameModeConVars();
-}
-
-void CMomentumTimer::PrintGameModeConVars()
-{
-    const auto pStrToPrint = "Set game mode ConVars:\n\n"
-            "sv_maxvelocity: %i\n"
-            "sv_airaccelerate: %i\n"
-            "sv_maxspeed: %i\n"
-            "sv_gravity: %i\n"
-            "sv_friction: %i\n";
-    Msg(pStrToPrint, sv_maxvelocity.GetInt(), sv_airaccelerate.GetInt(), sv_accelerate.GetInt(), sv_maxspeed.GetInt(), sv_gravity.GetInt(), sv_friction.GetInt());
 }
 
 // Practice mode that stops the timer and allows the player to noclip.
@@ -585,11 +506,6 @@ CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops 
             Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);
         }
     }
-}
-
-CON_COMMAND(mom_print_gamemode_vars, "Prints out the currently set values for commands like sv_maxvelocity, airaccel, etc")
-{
-    g_pMomentumTimer->PrintGameModeConVars();
 }
 
 static CMomentumTimer s_Timer;

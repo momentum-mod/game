@@ -295,28 +295,6 @@ void CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
     vec.PurgeAndDeleteElements();
 }
 
-static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldValue)
-{
-    ConVarRef gm(var);
-    int gamemode = gm.GetInt();
-    if (gamemode < 0)
-    {
-        // This will never happen. but better be safe than sorry, right?
-        DevWarning("Cannot set a game mode under 0!\n");
-        gm.SetValue(gm.GetDefault());
-        return;
-    }
-    
-    TickSet::SetTickrate(gamemode);
-
-    // set the value of sv_interval_per_tick so it updates when gamemode changes the tickrate.
-    ConVarRef tr("sv_interval_per_tick");
-    tr.SetValue(TickSet::GetTickrate());
-}
-
-static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, 
-                       "", true, 0, false, 0, OnGamemodeChanged);
-
 static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
 
 void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)

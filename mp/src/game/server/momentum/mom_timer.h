@@ -57,9 +57,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void EnablePractice(CMomentumPlayer *pPlayer);
     void DisablePractice(CMomentumPlayer *pPlayer);
 
-    void SetGameModeConVars();
-    void PrintGameModeConVars();
-
     int GetTrackNumber() const { return m_iTrackNumber; }
 
     bool ShouldUseStartZoneOffset() const { return m_bShouldUseStartZoneOffset; }
@@ -69,8 +66,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, int zoneType, int iZoneNumber);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
-
-    void OnPlayerSpawn(CMomentumPlayer *pPlayer);
 
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
