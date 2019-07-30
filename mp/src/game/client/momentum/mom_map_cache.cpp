@@ -9,6 +9,7 @@
 
 #include "filesystem.h"
 #include "fmtstr.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/valve_minmax_off.h"
 // These two are wrapped by minmax_off due to Valve making a macro for min and max...
@@ -370,47 +371,16 @@ uint32 CMapCache::GetUpdateIntervalForMap(MapData* pData)
 
 void CMapCache::SetMapGamemode(const char *pMapName /* = nullptr*/)
 {
-    ConVarRef gm("mom_gamemode");
-
     if (!pMapName)
         pMapName = MapName();
 
-    if (!pMapName)
-    {
-        gm.SetValue(GAMEMODE_UNKNOWN);
-        return;
-    }
-
     if (m_pCurrentMapData)
     {
-        gm.SetValue(m_pCurrentMapData->m_eType);
+        g_pGameModeSystem->SetGameMode(m_pCurrentMapData->m_eType);
     }
     else // Backup method, use map name for unofficial maps
     {
-        if (!Q_strnicmp(pMapName, "surf_", 5))
-        {
-            gm.SetValue(GAMEMODE_SURF);
-        }
-        else if (!Q_strnicmp(pMapName, "bhop_", 5))
-        {
-            gm.SetValue(GAMEMODE_BHOP);
-        }
-        else if (!Q_strnicmp(pMapName, "kz_", 3))
-        {
-            gm.SetValue(GAMEMODE_KZ);
-        }
-        else if (!Q_strnicmp(pMapName, "jump_", 5))
-        {
-            gm.SetValue(GAMEMODE_RJ);
-        }
-        else if (!Q_strnicmp(pMapName, "tricksurf_", 10))
-        {
-            gm.SetValue(GAMEMODE_TRICKSURF);
-        }
-        else
-        {
-            gm.SetValue(GAMEMODE_UNKNOWN);
-        }
+        g_pGameModeSystem->SetGameModeFromMapName(pMapName);
     }
 }
 
