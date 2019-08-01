@@ -228,8 +228,25 @@ void CHudSpeedMeter::OnThink()
                 {
                     if (m_flLastVelocity != 0)
                     {
-                        m_CurrentColor = MomUtil::GetColorFromVariation(fabs(vel) - fabs(m_flLastVelocity), 2.0f,
-                                                                        m_NormalColor, m_IncreaseColor, m_DecreaseColor);
+                        float variation = 0.0f;
+                        const float deadzone = 2.0f;
+
+                        if (mom_hud_speedometer_units.GetInt() == 4)
+                        {
+                            // For energy, if current value is larger than previous value then we've got an increase
+                            variation = vel - m_flLastVelocity;
+                        }
+                        else
+                        {
+                            // Otherwise, if magnitude of value (ie. with abs) is larger then we've got an increase
+                            // Example: vel = -500, lastvel = -300 counts as an increase in value since magnitude of vel > magnitude of lastvel
+                            variation = fabs(vel) - fabs(m_flLastVelocity);
+                        }
+
+                       // Get colour from the variation in value
+                       // If variation > deadzone then color shows as increase
+                       // Otherwise if variation < deadzone then color shows as decrease
+                        m_CurrentColor = MomUtil::GetColorFromVariation(variation, deadzone, m_NormalColor, m_IncreaseColor, m_DecreaseColor);
                     }
                     else
                     {

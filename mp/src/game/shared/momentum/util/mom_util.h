@@ -5,7 +5,6 @@
 class CMomReplayBase;
 struct RunCompare_t;
 
-// MOM_TODO: Can these be static functions?
 namespace MomUtil
 {
 #ifdef CLIENT_DLL
