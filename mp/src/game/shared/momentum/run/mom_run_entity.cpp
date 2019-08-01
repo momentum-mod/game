@@ -67,7 +67,6 @@ void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger)
         break;
     }
 
-    pData->m_bMapFinished = false;
     pData->m_bIsInZone = false;
 
     IGameEvent *pEvent = gameeventmanager->CreateEvent("zone_exit");

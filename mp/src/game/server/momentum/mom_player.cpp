@@ -950,6 +950,13 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
         case ZONE_TYPE_START:
         {
+            // Get rid of map finished panel
+            if (m_Data.m_bMapFinished)
+            {
+                m_Data.m_bMapFinished = false;
+                SetLaggedMovementValue(1.0f);
+            }
+
             const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
             m_Data.m_iCurrentTrack = pStartTrigger->GetTrackNumber();
