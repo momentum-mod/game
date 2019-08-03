@@ -220,7 +220,7 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
     if (stage == 1)
     {
         // They clicked "request savelocs" from a player, UI just opened, get the count to send back
-        SavelocReqPacket_t packet;
+        SavelocReqPacket packet;
         packet.stage = 1;
         if (g_pMomentumGhostClient->SendSavelocReqPacket(target, &packet))
         {
@@ -232,7 +232,7 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
     else if (stage == 3)
     {
         // They clicked on the # of savelocs to request, build a request packet and get these bad boys
-        SavelocReqPacket_t packet;
+        SavelocReqPacket packet;
         packet.stage = 3;
         packet.saveloc_count = pKv->GetInt("count");
         packet.dataBuf.CopyBuffer(pKv->GetPtr("nums"), sizeof(int) * packet.saveloc_count);
@@ -244,7 +244,7 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
         SetRequestingSavelocsFrom(0);
 
         // Let our requestee know
-        SavelocReqPacket_t packet;
+        SavelocReqPacket packet;
         packet.stage = -1;
         g_pMomentumGhostClient->SendSavelocReqPacket(target, &packet);
     }
@@ -284,7 +284,7 @@ void CMOMSaveLocSystem::SetRequestingSavelocsFrom(const uint64& from)
     m_iRequesting = from;
 }
 
-bool CMOMSaveLocSystem::FillSavelocReq(const bool sending, SavelocReqPacket_t *input, SavelocReqPacket_t *outputBuf)
+bool CMOMSaveLocSystem::FillSavelocReq(const bool sending, SavelocReqPacket *input, SavelocReqPacket *outputBuf)
 {
     if (sending)
     {
@@ -481,7 +481,7 @@ void CMOMSaveLocSystem::UpdateRequesters()
         return;
 
     // Send them our saveloc count
-    SavelocReqPacket_t response;
+    SavelocReqPacket response;
     response.stage = 2;
     response.saveloc_count = m_rcSavelocs.Count();
 

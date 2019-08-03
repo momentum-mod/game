@@ -2,11 +2,11 @@
 
 #include "mom_shareddefs.h"
 
-struct MomentumPacket_t;
-struct DecalPacket_t;
-struct LobbyGhostAppearance_t;
-struct SavelocReqPacket_t;
+class MomentumPacket;
+class DecalPacket;
+class SavelocReqPacket;
 struct GhostAppearance_t;
+struct LobbyGhostAppearance_t;
 class CMomentumOnlineGhostEntity;
 
 class CMomentumLobbySystem
@@ -25,7 +25,7 @@ public:
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message
     void ResetOtherAppearanceData(); // Sent when the player changes an override appearance cvar
-    bool SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t *p);
+    bool SendSavelocReqPacket(CSteamID& target, SavelocReqPacket *p);
     void TeleportToLobbyMember(const char *pIDStr);
 
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
@@ -52,7 +52,7 @@ public:
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
-    bool SendDecalPacket(DecalPacket_t *packet);
+    bool SendDecalPacket(DecalPacket *packet);
 
     void OnLobbyMaxPlayersChanged(int newMax);
     void OnLobbyTypeChanged(int newType);
@@ -75,7 +75,7 @@ private:
     bool m_bHostingLobby;
 
     // Sends a packet to a specific person, or everybody (if pTarget is null)
-    bool SendPacket(MomentumPacket_t *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
+    bool SendPacket(MomentumPacket *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
 
     void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
     void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 ghostID);

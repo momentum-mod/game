@@ -1,8 +1,8 @@
 #pragma once
 
-struct PositionPacket_t;
-struct DecalPacket_t;
-struct SavelocReqPacket_t;
+class PositionPacket;
+class DecalPacket;
+class SavelocReqPacket;
 struct GhostAppearance_t;
 class CMomentumOnlineGhostEntity;
 
@@ -28,15 +28,15 @@ public:
     void SendAppearanceData(GhostAppearance_t appearance);
     void SetIsSpectating(bool state);
     void SetSpectatorTarget(CSteamID target, bool bStartedSpectating, bool bLeft = false);
-    void SendDecalPacket(DecalPacket_t *packet);
-    bool SendSavelocReqPacket(CSteamID &target, SavelocReqPacket_t *packet);
+    void SendDecalPacket(DecalPacket *packet);
+    bool SendSavelocReqPacket(CSteamID &target, SavelocReqPacket *packet);
 
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);
 
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineGhostMap();
 
-    static bool CreateNewNetFrame(PositionPacket_t &frame);
+    static bool CreateNewNetFrame(PositionPacket &frame);
 };
 
 extern CMomentumGhostClient *g_pMomentumGhostClient;

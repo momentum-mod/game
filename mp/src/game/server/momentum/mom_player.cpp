@@ -13,12 +13,14 @@
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_base_gun.h"
+#include "weapon/weapon_mom_paintgun.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
 #include "util/mom_util.h"
 #include "mom_replay_system.h"
 #include "run/mom_replay_base.h"
 #include "mapzones.h"
+#include "fx_mom_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -98,6 +100,24 @@ CON_COMMAND(
     }
 }
 
+static void StartPaint(const CCommand& args)
+{
+    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+    pPlayer->SetIsPainting(true);
+}
+
+static void EndPaint(const CCommand& args)
+{
+    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+    pPlayer->SetIsPainting(false);
+}
+static ConCommand startpaint("+paint", StartPaint);
+static ConCommand endpaint("-paint", EndPaint);
+
 CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
 {
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());
@@ -131,7 +151,7 @@ SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MomRunStats)
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-    DEFINE_THINKFUNC(UpdateRunStats),
+    DEFINE_THINKFUNC(PlayerThink),
     DEFINE_THINKFUNC(CalculateAverageStats),
     /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
 END_DATADESC();
@@ -224,6 +244,9 @@ CMomentumPlayer::CMomentumPlayer()
     m_iOldZone = 0;
 
     m_bWasSpectating = false;
+
+    SetIsPainting(false);
+    m_flNextPaintTime = gpGlobals->curtime;
 
     m_CurrentSlideTrigger = nullptr;
 
@@ -472,7 +495,7 @@ void CMomentumPlayer::Spawn()
     RegisterThinkContext("THINK_AVERAGE_STATS");
     // RegisterThinkContext("CURTIME_FOR_START");
     RegisterThinkContext("TWEEN");
-    SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick,
+    SetContextThink(&CMomentumPlayer::PlayerThink, gpGlobals->curtime + gpGlobals->interval_per_tick,
                     "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL,
                     "THINK_AVERAGE_STATS");
@@ -1096,7 +1119,7 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
         g_MOMBlockFixer->PlayerTouch(this, pOther);
 }
 
-void CMomentumPlayer::UpdateRunStats()
+void CMomentumPlayer::PlayerThink()
 {
     // If we're in practicing mode, don't update.
     if (!m_bHasPracticeMode)
@@ -1112,6 +1135,9 @@ void CMomentumPlayer::UpdateRunStats()
         UpdateRunSync();
         // ----------
     }
+
+    if (m_bIsPainting && CanPaint())
+        DoPaint();
 
     // this might be used in a later update
     // m_flLastVelocity = velocity;
@@ -1854,4 +1880,18 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
 
     Vector vecForce = vecDir * -DamageForce(WorldAlignSize(), info.GetDamage(), flScale);
     ApplyAbsVelocityImpulse(vecForce);
+}
+
+void CMomentumPlayer::SetIsPainting(bool bIsPainting) { m_bIsPainting = bIsPainting; }
+
+bool CMomentumPlayer::CanPaint() { return m_flNextPaintTime <= gpGlobals->curtime; }
+
+void CMomentumPlayer::DoPaint()
+{
+    // Fire a paintgun bullet (doesn't actually equip/use the paintgun weapon)
+    FX_FireBullets(entindex(), EyePosition(), EyeAngles(), WEAPON_PAINTGUN, Primary_Mode,
+                   GetPredictionRandomSeed() & 255, 0.0f);
+
+    // Delay next time we paint
+    m_flNextPaintTime = gpGlobals->curtime + CMomentumPaintGun::GetPrimaryCycleTime();
 }

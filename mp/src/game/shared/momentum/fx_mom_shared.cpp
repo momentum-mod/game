@@ -119,19 +119,18 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 
     if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
     {
-        DecalPacket_t decalPacket;
+        DecalPacket decalPacket;
         if (iWeaponID == WEAPON_PAINTGUN)
         {
             Color decalColor;
             if (!MomUtil::GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
                 decalColor = COLOR_WHITE;
 
-            decalPacket = DecalPacket_t(DECAL_PAINT, vOrigin, vAngles, decalColor.GetRawColor(), 0, 0,
-                                        ConVarRef("mom_paintgun_scale").GetFloat());
+            decalPacket = DecalPacket::Paint(vOrigin, vAngles, decalColor, ConVarRef("mom_paintgun_scale").GetFloat());
         }
         else
         {
-            decalPacket = DecalPacket_t(DECAL_BULLET, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+            decalPacket = DecalPacket::Bullet( vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
         }
 
         g_pMomentumGhostClient->SendDecalPacket(&decalPacket);
