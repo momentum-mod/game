@@ -15,12 +15,12 @@ public:
     ~CMomentumOnlineGhostEntity();
 
     // Adds a position frame to the queue for processing
-    void AddPositionFrame(const PositionPacket_t &newFrame);
+    void AddPositionFrame(const PositionPacket &newFrame);
     // Adds a decal frame to the queue of processing
     // Note: We have to delay the decal packets to sort of sync up to position, to make spectating more accurate.
-    void AddDecalFrame(const DecalPacket_t &decal);
+    void AddDecalFrame(const DecalPacket &decal);
     // Places a decal in the world, according to the packet and decal type
-    void FireDecal(const DecalPacket_t &decal);
+    void FireDecal(const DecalPacket &decal);
 
     void SetGhostSteamID(const CSteamID &steamID);
     CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
@@ -40,7 +40,7 @@ public:
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
 
     // Fills the current data, returns false if it couldn't
-    bool GetCurrentPositionPacketData(PositionPacket_t *out) const;
+    bool GetCurrentPositionPacketData(PositionPacket *out) const;
 
     void UpdatePlayerSpectate();
 
@@ -59,14 +59,14 @@ protected:
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
-    void DoPaint(const DecalPacket_t &packet);
-    void DoKnifeSlash(const DecalPacket_t &packet);
-    void ThrowGrenade(const DecalPacket_t &packet);
+    void DoPaint(const DecalPacket &packet);
+    void DoKnifeSlash(const DecalPacket &packet);
+    void ThrowGrenade(const DecalPacket &packet);
 
-    CUtlQueue<ReceivedFrame_t<PositionPacket_t>*> m_vecPositionPackets;
-    ReceivedFrame_t<PositionPacket_t>* m_pCurrentFrame;
-    ReceivedFrame_t<PositionPacket_t>* m_pNextFrame;
-    CUtlQueue<ReceivedFrame_t<DecalPacket_t>*> m_vecDecalPackets;
+    CUtlQueue<ReceivedFrame_t<PositionPacket>*> m_vecPositionPackets;
+    ReceivedFrame_t<PositionPacket>* m_pCurrentFrame;
+    ReceivedFrame_t<PositionPacket>* m_pNextFrame;
+    CUtlQueue<ReceivedFrame_t<DecalPacket>*> m_vecDecalPackets;
 
     CSteamID m_GhostSteamID;
     LobbyGhostAppearance_t m_CurrentAppearance;

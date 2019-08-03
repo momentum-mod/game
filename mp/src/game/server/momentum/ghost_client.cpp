@@ -139,7 +139,7 @@ void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpec
     g_pMomentumLobbySystem->SetSpectatorTarget(target, bStartedSpectating, bLeft);
 }
 
-void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
+void CMomentumGhostClient::SendDecalPacket(DecalPacket *packet)
 {
     static ConVarRef host_timescale("host_timescale");
 
@@ -151,7 +151,7 @@ void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
     // MOM_TODO: else let the player know their decal packets aren't being sent?
 }
 
-bool CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* packet)
+bool CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket* packet)
 {
     // MOM_TODO: g_pMomentumServerSystem->SendSavelocReqPacket(target, packet);
     return g_pMomentumLobbySystem->SendSavelocReqPacket(target, packet);
@@ -172,7 +172,7 @@ CUtlMap<uint64, CMomentumOnlineGhostEntity*> *CMomentumGhostClient::GetOnlineGho
     return g_pMomentumLobbySystem->GetOnlineEntMap();
 }
 
-bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
+bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket &into)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer && !pPlayer->IsSpectatingGhost())
@@ -183,7 +183,7 @@ bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
         if (!(orig.IsValid() && vel.IsValid() && eye.IsValid()))
             return false;
 
-        into = PositionPacket_t(
+        into = PositionPacket(
             eye,
             orig,
             vel,

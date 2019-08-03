@@ -50,6 +50,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void FlashlightTurnOff() OVERRIDE;
     void FlashlightTurnOff(bool bEmitSound);
 
+    // Set whether player is currently painting
+    // If true, player will be constantly firing paintgun bullets (regardless of whether it's equipped)
+    void SetIsPainting(bool bIsPainting);
+
     void SendAppearance();
 
     void Spawn() OVERRIDE;
@@ -80,15 +84,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetAutoBhopEnabled(bool bEnable);
     bool HasAutoBhop() const { return m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
-    // think function for detecting if player bhopped
-    void UpdateRunStats();
-    void UpdateRunSync();
-    void UpdateStrafes();
-    void UpdateMaxVelocity();
-    // slows down the player in a tween-y fashion
-    void TweenSlowdownPlayer();
     void ResetRunStats();
-    void CalculateAverageStats();
 
     void LimitSpeed(float flSpeedLimit, bool bSaveZ);
 
@@ -248,16 +244,35 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
+
   private:
+    // Player think function called every tick
+    // Used to update run stats & handle painting command
+    void PlayerThink();
+    void UpdateRunSync();
+    void UpdateStrafes();
+    void UpdateMaxVelocity();
+    // slows down the player in a tween-y fashion
+    void TweenSlowdownPlayer();
+    void CalculateAverageStats();
+
+    // Whether enough time has passed since last paint to do another
+    bool CanPaint();
+    void DoPaint();
+
     // Spawn stuff
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
     void SetPracticeModeState();
 
+  private:
     CSteamID m_sSpecTargetSteamID;
 
     bool m_bInAirDueToJump;
 
     bool m_bWasSpectating; // Was the player spectating and then respawned?
+
+    bool m_bIsPainting;
+    float m_flNextPaintTime;
 
     // Strafe sync.
     int m_nPerfectSyncTicks;
