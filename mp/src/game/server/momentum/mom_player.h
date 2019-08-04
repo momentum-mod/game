@@ -50,10 +50,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void FlashlightTurnOff() OVERRIDE;
     void FlashlightTurnOff(bool bEmitSound);
 
-    // Set whether player is currently painting
-    // If true, player will be constantly firing paintgun bullets (regardless of whether it's equipped)
-    void SetIsPainting(bool bIsPainting);
-
     void SendAppearance();
 
     void Spawn() OVERRIDE;
@@ -64,6 +60,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize) OVERRIDE;
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
+
+    void ItemPostFrame() OVERRIDE;
 
     // Make sure we don't pick up weapons we shouldn't (default behaviour is weird)
     bool BumpWeapon(CBaseCombatWeapon *pWeapon) OVERRIDE;
@@ -247,7 +245,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
   private:
     // Player think function called every tick
-    // Used to update run stats & handle painting command
+    // Used to update run stats
     void PlayerThink();
     void UpdateRunSync();
     void UpdateStrafes();
@@ -271,7 +269,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     bool m_bWasSpectating; // Was the player spectating and then respawned?
 
-    bool m_bIsPainting;
     float m_flNextPaintTime;
 
     // Strafe sync.

@@ -307,7 +307,7 @@ CInput::CInput( void )
 	m_pCommands = NULL;
 	m_pCameraThirdData = NULL;
 	m_pVerifiedCommands = NULL;
-    s_ClearInputState = 0;
+	s_ClearInputState = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -605,12 +605,12 @@ float CInput::KeyState ( kbutton_t *key )
 
 	else if ( impulsedown && impulseup )
 	{
-        val = down ? 0.75 : 0.25;
+		val = down ? 0.75 : 0.25;
 	}
 
 
 	// clear impulses
-	key->state &= 1;		
+	key->state &= 1;
 	return val;
 }
 
@@ -1422,13 +1422,13 @@ void CInput::CalcButtonBits( int& bits, int in_button, int in_ignore, kbutton_t 
 	if ( reset )
 	{
 		button->state &= clearmask;
-        // @Gocnak: Needed for a CLEAR_STATE_NOW function for keys
-        // Added primarily for resetting stuck keys from demos/loading screens
-        if (reset >= 2)
-        {
-            button->down[0] = 0;
-            button->down[1] = 0;
-        }
+		// @Gocnak: Needed for a CLEAR_STATE_NOW function for keys
+		// Added primarily for resetting stuck keys from demos/loading screens
+		if (reset >= 2)
+		{
+			button->down[0] = 0;
+			button->down[1] = 0;
+		}
 	}
 }
 
@@ -1465,7 +1465,7 @@ int CInput::GetButtonBits( int iResetState )
 	CalcButtonBits( bits, IN_GRENADE1, s_ClearInputState, &in_grenade1, iResetState );
 	CalcButtonBits( bits, IN_GRENADE2, s_ClearInputState, &in_grenade2, iResetState );
 	CalcButtonBits( bits, IN_ATTACK3, s_ClearInputState, &in_attack3, iResetState );
-    CalcButtonBits( bits, IN_STRAFE, s_ClearInputState, &in_strafe, iResetState);
+	CalcButtonBits( bits, IN_STRAFE, s_ClearInputState, &in_strafe, iResetState );
 
 	if ( KeyState(&in_ducktoggle) )
 	{

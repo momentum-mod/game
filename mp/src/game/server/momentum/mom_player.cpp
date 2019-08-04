@@ -100,24 +100,6 @@ CON_COMMAND(
     }
 }
 
-static void StartPaint(const CCommand& args)
-{
-    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer)
-        return;
-    pPlayer->SetIsPainting(true);
-}
-
-static void EndPaint(const CCommand& args)
-{
-    auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer)
-        return;
-    pPlayer->SetIsPainting(false);
-}
-static ConCommand startpaint("+paint", StartPaint);
-static ConCommand endpaint("-paint", EndPaint);
-
 CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
 {
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());
@@ -241,7 +223,6 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_bWasSpectating = false;
 
-    SetIsPainting(false);
     m_flNextPaintTime = gpGlobals->curtime;
 
     m_CurrentSlideTrigger = nullptr;
@@ -393,6 +374,13 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
             g_ReplaySystem.UnloadPlayback();
         }
     }
+}
+
+void CMomentumPlayer::ItemPostFrame()
+{
+    BaseClass::ItemPostFrame();
+    if (m_nButtons & IN_PAINT)
+        DoPaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -1131,9 +1119,6 @@ void CMomentumPlayer::PlayerThink()
         UpdateRunSync();
         // ----------
     }
-
-    if (m_bIsPainting && CanPaint())
-        DoPaint();
 
     // this might be used in a later update
     // m_flLastVelocity = velocity;
@@ -1904,12 +1889,13 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
     ApplyAbsVelocityImpulse(vecForce);
 }
 
-void CMomentumPlayer::SetIsPainting(bool bIsPainting) { m_bIsPainting = bIsPainting; }
-
 bool CMomentumPlayer::CanPaint() { return m_flNextPaintTime <= gpGlobals->curtime; }
 
 void CMomentumPlayer::DoPaint()
 {
+    if (!CanPaint())
+        return;
+
     // Fire a paintgun bullet (doesn't actually equip/use the paintgun weapon)
     FX_FireBullets(entindex(), EyePosition(), EyeAngles(), WEAPON_PAINTGUN, Primary_Mode,
                    GetPredictionRandomSeed() & 255, 0.0f);
