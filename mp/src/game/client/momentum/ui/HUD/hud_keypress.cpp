@@ -206,8 +206,7 @@ void CHudKeyPressDisplay::Paint()
             m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
 
-        // Bullrush is Bhop being disabled
-        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled
+        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled
                                                                                                        : m_Normal);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
@@ -324,7 +323,7 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     surface()->DrawSetTextFont(m_hWordTextFont);
     // jump
     // Bullrush is Bhop being disabled
-    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled
+    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled
                                                                                                    : m_darkGray);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
     surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));

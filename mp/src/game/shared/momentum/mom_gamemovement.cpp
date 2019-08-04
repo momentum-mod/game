@@ -1445,9 +1445,9 @@ void CMomentumGameMovement::FullWalkMove()
 
     // For the HUD (see hud_timer.cpp)
     if (bPlayerBhopBlocked)
-        m_pPlayer->m_afButtonDisabled |= IN_BULLRUSH;
+        m_pPlayer->m_afButtonDisabled |= IN_BHOPDISABLED;
     else
-        m_pPlayer->m_afButtonDisabled &= ~IN_BULLRUSH;
+        m_pPlayer->m_afButtonDisabled &= ~IN_BHOPDISABLED;
 }
 
 // This limits the player's speed in the start zone, depending on which gamemode the player is currently playing.
