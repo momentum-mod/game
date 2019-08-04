@@ -22,6 +22,7 @@ extern kbutton_t in_klook;
 
 static kbutton_t in_times;
 static kbutton_t in_lobby_members;
+static kbutton_t in_paint;
 
 //-----------------------------------------------------------------------------
 // Purpose: HL Input interface
@@ -44,6 +45,7 @@ int CMOMInput::GetButtonBits(int bResetState)
     int bits = 0;
     // First calculate all Momentum-specific toggle bits
     CalcButtonBits(bits, IN_SCORE, s_ClearInputState, &in_times, bResetState);
+    CalcButtonBits(bits, IN_PAINT, s_ClearInputState, &in_paint, bResetState);
 
     // Add on the normal input bits
     bits |= BaseClass::GetButtonBits(bResetState);
@@ -170,6 +172,9 @@ void IN_TimesUp(const CCommand &args)
     }
 }
 
+static ConCommand startshowtimes("+showtimes", IN_TimesDown);
+static ConCommand endshowtimes("-showtimes", IN_TimesUp);
+
 void IN_LobbyMemsDown(const CCommand &args)
 {
     KeyDown(&in_lobby_members, args[1]);
@@ -188,11 +193,21 @@ void IN_LobbyMemsUp(const CCommand &args)
     }
 }
 
-static ConCommand startshowtimes("+showtimes", IN_TimesDown);
-static ConCommand endshowtimes("-showtimes", IN_TimesUp);
-
 static ConCommand startshowlobbymembers("+show_lobby_members", IN_LobbyMemsDown);
 static ConCommand end_show_lobby_mems("-show_lobby_members", IN_LobbyMemsUp);
+
+void IN_PaintDown(const CCommand &args)
+{
+    KeyDown(&in_paint, args[1]);
+}
+
+void IN_PaintUp(const CCommand &args)
+{
+    KeyUp(&in_paint, args[1]);
+}
+
+static ConCommand startpaint("+paint", IN_PaintDown);
+static ConCommand endpaint("-paint", IN_PaintUp);
 
 // Expose this interface
 static CMOMInput g_Input;
