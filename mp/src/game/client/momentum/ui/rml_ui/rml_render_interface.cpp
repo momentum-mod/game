@@ -114,6 +114,7 @@ void RmlRenderInterface::RenderCompiledGeometry(Rml::Core::CompiledGeometryHandl
     pRenderContext->MatrixMode(MATERIAL_PROJECTION);
     pRenderContext->PushMatrix();
     pRenderContext->LoadIdentity();
+    pRenderContext->Scale(1.0f, -1.0f, 1.0f);
     pRenderContext->Ortho(0.0f, 0.0f, vw, vh, -1000.0f, 0.0f);
 
     pRenderContext->Bind(m_pDrawMaterial);

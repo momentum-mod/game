@@ -19,8 +19,7 @@ float4 Translation : register(SHADER_SPECIFIC_CONST_0);
 VS_OUTPUT main(const VS_INPUT v)
 {
     VS_OUTPUT o = (VS_OUTPUT)0;
-    float4 proj = mul( float4( v.vPos.xy + Translation.xy, 0.0f, 1.0f ), cModelViewProj );
-    o.projPos = float4(proj.x, -proj.y, 0.0f, 1.0f);
+    o.projPos = mul(float4(v.vPos.xy + Translation.xy, 0.0f, 1.0f), cModelViewProj);
     o.texCoord = v.vBaseTexCoord;
     o.color.rgba = v.vColor.rgba;
 
