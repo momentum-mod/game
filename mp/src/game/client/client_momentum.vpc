@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\discord-rpc\include"
+       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\discord-rpc\include,$SRCDIR\thirdparty\RmlUi\Include"
        $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
     }
 }
@@ -169,7 +169,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\MessageboxPanel.cpp"
                     $File "momentum\ui\MessageboxPanel.h"
                 }
-                
+
                 $Folder "Spectator"
                 {
                     $File "momentum\ui\spectate\mom_spectator_gui.cpp"
@@ -348,6 +348,7 @@ $Project "Client (Momentum)"
     $Folder "Link Libraries"
     {
         $Lib "libcryptopp"
+        $Lib "RmlCore"
         $ImpLib "discord-rpc"
     }
 }
