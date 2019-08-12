@@ -71,6 +71,9 @@ void RmlUiSystem::LevelInitPostEntity()
     if (!m_pContext)
         return;
 
+	Rml::Core::Factory::ClearStyleSheetCache();
+    Rml::Core::Factory::ClearTemplateCache();
+
     auto doc = m_pContext->LoadDocument("test2.rml");
     if (!doc)
     {
