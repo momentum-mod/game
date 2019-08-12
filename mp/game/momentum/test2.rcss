@@ -1,0 +1,31 @@
+body
+{
+    font-family: BigNoodleTitling;
+    font-size: 50px;
+    color: green;
+    background-color: #ff0000;
+}
+
+.box
+{
+	background-color: blue;
+	border: 4px black;
+}
+
+@keyframes animate-background
+{
+	0%, 30% {
+		background-color: #d99;
+	}
+	50% {
+		background-color: #9d9;
+	}
+	to { 
+		background-color: #f9f;
+	}
+}
+
+.animated
+{
+	animation: 2s cubic-in-out infinite alternate animate-background;
+}

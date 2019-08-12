@@ -1,0 +1,18 @@
+<rml>
+    <head>
+        <title>RmlUi Test</title>
+        <link type="text/rcss" href="test2.rcss" />
+    </head>
+
+    <body>
+		Testing RmlUi
+		<br />
+		<img src="hello.tga" />
+		<br />
+		<div class="box">
+			Border & background test
+		</div>
+		<br />
+		<div class="animated">Animation test</div>
+	</body>
+</rml>

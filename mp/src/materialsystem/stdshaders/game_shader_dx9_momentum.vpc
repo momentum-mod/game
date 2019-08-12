@@ -67,6 +67,8 @@ $Project "Shaders (Momentum)"
         $File   "gaussian_blur_3x3.cpp"
 
 		$File "color_picker.cpp"
+		
+		$File "rml_draw.cpp"
     }
     
     $Folder	"Header Files"

@@ -1,0 +1,28 @@
+#include "common_vs_fxc.h"
+
+struct VS_INPUT
+{
+    float3 vPos                     : POSITION;
+    float4 vColor                   : COLOR0;
+    float2 vBaseTexCoord            : TEXCOORD0;
+};
+
+struct VS_OUTPUT
+{
+    float4 projPos                  : POSITION;
+    float2 texCoord                 : TEXCOORD0;
+    float4 color                    : TEXCOORD1;
+};
+
+float4 Translation : register(SHADER_SPECIFIC_CONST_0);
+
+VS_OUTPUT main(const VS_INPUT v)
+{
+    VS_OUTPUT o = (VS_OUTPUT)0;
+    float4 proj = mul( float4( v.vPos.xy + Translation.xy, 0.0f, 1.0f ), cModelViewProj );
+    o.projPos = float4(proj.x, -proj.y, 0.0f, 1.0f);
+    o.texCoord = v.vBaseTexCoord;
+    o.color.rgba = v.vColor.rgba;
+
+    return o;
+}

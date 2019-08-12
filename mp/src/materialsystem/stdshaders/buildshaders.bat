@@ -21,7 +21,7 @@ REM ****************
 
 setlocal
 set arg_filename=%1
-set shadercompilecommand=%SDKBINDIR%\shadercompile.exe
+set shadercompilecommand="%SDKBINDIR%\shadercompile.exe"
 set targetdir=shaders
 set SrcDirBase=..\..
 set shaderDir=shaders
@@ -71,7 +71,7 @@ REM ****************
 :set_mod_args
 
 if not exist "%SDKBINDIR%\shadercompile.exe" goto NoShaderCompile
-set ChangeToDir=%SDKBINDIR%
+set ChangeToDir="%SDKBINDIR%"
 
 if /i "%4" NEQ "-source" goto NoSourceDirSpecified
 set SrcDirBase=%~5
@@ -181,7 +181,7 @@ set shader_path_cd=%cd%
 if exist "filelist.txt" if exist "uniquefilestocopy.txt" if not "%dynamic_shaders%" == "1" (
 	echo Running distributed shader compilation...
 
-	cd /D "%ChangeToDir%"
+	cd /D %ChangeToDir%
 	echo %shadercompilecommand% %SDKArgs% -shaderpath "%shader_path_cd:/=\%" -allowdebug
 	%shadercompilecommand% %SDKArgs% -shaderpath "%shader_path_cd:/=\%" -allowdebug
 	cd /D "%shader_path_cd%"

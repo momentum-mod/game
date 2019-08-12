@@ -41,6 +41,7 @@ class ClientModeMOMNormal : public ClientModeShared
     int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
 
     bool DoPostScreenSpaceEffects(const CViewSetup* pSetup) OVERRIDE;
+    void PostRenderVGui();
 
     void SetupPointers();
     int MovementDirection(const QAngle viewangles, const Vector velocity);

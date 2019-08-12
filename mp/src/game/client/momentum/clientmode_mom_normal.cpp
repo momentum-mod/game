@@ -19,6 +19,7 @@
 #include "in_buttons.h"
 #include "momentum/mom_shareddefs.h"
 #include "ZoneMenu/ZoneMenu.h"
+#include "rml_ui/rml_ui_system.h"
 
 #include "clienteffectprecachesystem.h"
 
@@ -268,6 +269,8 @@ bool ClientModeMOMNormal::DoPostScreenSpaceEffects(const CViewSetup* pSetup)
 
     return BaseClass::DoPostScreenSpaceEffects(pSetup);
 }
+
+void ClientModeMOMNormal::PostRenderVGui() { RmlUiSystem::Get()->Draw(); }
 
 void ClientModeMOMNormal::SetupPointers()
 {

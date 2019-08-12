@@ -170,6 +170,18 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\MessageboxPanel.h"
                 }
 
+                $Folder "RmlUi"
+                {
+                    $File "momentum\ui\rml_ui\rml_filesystem_interface.cpp"
+                    $File "momentum\ui\rml_ui\rml_filesystem_interface.h"
+                    $File "momentum\ui\rml_ui\rml_system_interface.cpp"
+                    $File "momentum\ui\rml_ui\rml_system_interface.h"
+                    $File "momentum\ui\rml_ui\rml_render_interface.cpp"
+                    $File "momentum\ui\rml_ui\rml_render_interface.h"
+                    $File "momentum\ui\rml_ui\rml_ui_system.cpp"
+                    $File "momentum\ui\rml_ui\rml_ui_system.h"
+                }
+
                 $Folder "Spectator"
                 {
                     $File "momentum\ui\spectate\mom_spectator_gui.cpp"

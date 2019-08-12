@@ -1,0 +1,24 @@
+// DYNAMIC: "HAS_TEXTURE"	"0..1"
+
+#include "common_ps_fxc.h"
+
+#if HAS_TEXTURE
+sampler TextureSampler	: register( s0 );
+#endif
+
+struct PS_INPUT
+{
+    float2 texCoord                 : TEXCOORD0;
+    float4 color                    : TEXCOORD1;
+};
+
+float4 main(PS_INPUT i) : COLOR
+{
+    float4 finalColor = i.color;
+#if HAS_TEXTURE
+    float4 textureSample = tex2D( TextureSampler, i.texCoord );
+    finalColor *= textureSample;
+#endif
+
+    return FinalOutput( finalColor, 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_NONE );
+}
