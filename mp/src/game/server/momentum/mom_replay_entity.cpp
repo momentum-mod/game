@@ -2,7 +2,6 @@
 
 #include "mom_replay_entity.h"
 #include "movevars_shared.h"
-#include "mom_timer.h"
 #include "mom_triggers.h"
 #include "util/mom_util.h"
 #include "mom_player_shared.h"
@@ -175,7 +174,7 @@ void CMomentumReplayGhostEntity::Think()
         if (pEvent)
         {
             pEvent->SetInt("ent", entindex());
-            pEvent->SetInt("type", TIMER_EVENT_STARTED);
+            pEvent->SetInt("type", TIMER_EVENT_START);
 
             gameeventmanager->FireEvent(pEvent);
         }

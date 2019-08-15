@@ -36,7 +36,6 @@ class CHudTimer : public CHudElement, public EditablePanel
     void FireGameEvent(IGameEvent* event) OVERRIDE;
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
     void MsgFunc_Timer_Event(bf_read &msg);
-    void MsgFunc_Timer_Reset(bf_read &msg);
 
     CPanelAnimationVar(Color, m_StatusColor, "StatusColor", "Mom.Panel.Fg");
 
@@ -60,7 +59,6 @@ class CHudTimer : public CHudElement, public EditablePanel
 
 DECLARE_HUDELEMENT(CHudTimer);
 DECLARE_HUD_MESSAGE(CHudTimer, Timer_Event);
-DECLARE_HUD_MESSAGE(CHudTimer, Timer_Reset);
 
 CHudTimer::CHudTimer(const char *pElementName): CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudTimer")
 {
@@ -83,7 +81,6 @@ CHudTimer::CHudTimer(const char *pElementName): CHudElement(pElementName), Edita
     LoadControlSettings("resource/ui/Timer.res");
 
     HOOK_HUD_MESSAGE(CHudTimer, Timer_Event);
-    HOOK_HUD_MESSAGE(CHudTimer, Timer_Reset);
 }
 
 void CHudTimer::Init()
@@ -135,25 +132,27 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
 
     switch(type)
     {
-    case TIMER_EVENT_STARTED:
+    case TIMER_EVENT_START:
         pPlayer->EmitSound("Momentum.StartTimer");
         break;
-    case TIMER_EVENT_FINISHED:
+    case TIMER_EVENT_FINISH:
         pPlayer->EmitSound("Momentum.FinishTimer");
         break;
-    case TIMER_EVENT_STOPPED:
+    case TIMER_EVENT_STOP:
         SetToNoTimer();
         pPlayer->EmitSound("Momentum.StopTimer");
         break;
-    case TIMER_EVENT_FAILED:
+    case TIMER_EVENT_FAILED_TO_START:
         pPlayer->EmitSound("Momentum.FailedStartTimer");
         g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("TimerFailStart");
+        break;
+    case TIMER_EVENT_RESET:
+        Reset();
+        break;
     default:
         break;
     }
 }
-
-void CHudTimer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
 void CHudTimer::SetToNoTimer()
 {

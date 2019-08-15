@@ -425,8 +425,8 @@ bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity 
         return false;
 
     pEntToTeleport->Teleport(&pTeleportTo->GetAbsOrigin(),
-                             m_bResetAngles ? &pTeleportTo->GetAbsAngles() : nullptr,
-                     m_bResetVelocity ? &vec3_origin : nullptr);
+                             ShouldResetAngles() ? &pTeleportTo->GetAbsAngles() : nullptr,
+                             ShouldResetVelocity() ? &vec3_origin : nullptr);
     AfterTeleport(pEntToTeleport);
     return true;
 }

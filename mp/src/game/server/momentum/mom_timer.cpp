@@ -5,7 +5,6 @@
 #include <ctime>
 #include "in_buttons.h"
 #include "mom_player_shared.h"
-#include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
@@ -26,18 +25,13 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"), 
-      m_iStartTick(0), m_iEndTick(0),
-      m_iLastRunDate(0), m_bIsRunning(false), m_bCanStart(false),
-      m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+CMomentumTimer::CMomentumTimer()
+    : CAutoGameSystemPerFrame("CMomentumTimer"), m_iStartTick(0), m_iEndTick(0), m_iLastRunDate(0), m_bIsRunning(false),
+      m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
-
 }
 
-void CMomentumTimer::LevelInitPostEntity()
-{
-    m_bWasCheatsMsgShown = false;
-}
+void CMomentumTimer::LevelInitPostEntity() { m_bWasCheatsMsgShown = false; }
 
 void CMomentumTimer::LevelShutdownPreEntity()
 {
@@ -69,7 +63,7 @@ void CMomentumTimer::DispatchCheatsMessage(CMomentumPlayer *pPlayer)
     m_bWasCheatsMsgShown = true;
 }
 
-bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
+bool CMomentumTimer::TryStart(CMomentumPlayer *pPlayer)
 {
     if (!pPlayer)
         return false;
@@ -117,31 +111,41 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     SetRunning(pPlayer, true);
 
     // Dispatch a start timer message for the local player
-    DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), TIMER_EVENT_STARTED);
+    DispatchTimerEvent(pPlayer, pPlayer->entindex(), TIMER_EVENT_START);
 
     return true;
 }
 
-void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */, bool bStopRecording /* = true*/)
+bool CMomentumTimer::TryEnd(CMomentumPlayer *pPlayer)
 {
     SetRunning(pPlayer, false);
+    if (pPlayer)
+    {
+        m_iEndTick = gpGlobals->tickcount;
+        time(&m_iLastRunDate); // Set the last run date for the replay
+    }
+
+    return true;
+}
+
+void CMomentumTimer::Stop(CMomentumPlayer *pPlayer)
+{
+    TryEnd(pPlayer);
 
     if (pPlayer)
     {
-        // Set our end time and date
-        if (bFinished)
-        {
-            m_iEndTick = gpGlobals->tickcount;
-            g_ReplaySystem.SetTimerStopTick(m_iEndTick);
-            time(&m_iLastRunDate); // Set the last run date for the replay
-        }
-
-        DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), bFinished ? TIMER_EVENT_FINISHED : TIMER_EVENT_STOPPED);
+        DispatchTimerEvent(pPlayer, pPlayer->entindex(), TIMER_EVENT_STOP);
     }
+}
 
-    // Stop replay recording, if there was any
-    if (g_ReplaySystem.IsRecording() && bStopRecording)
-        g_ReplaySystem.StopRecording(!bFinished, bFinished);
+void CMomentumTimer::Finish(CMomentumPlayer *pPlayer)
+{
+    TryEnd(pPlayer);
+
+    if (pPlayer)
+    {
+        DispatchTimerEvent(pPlayer, pPlayer->entindex(), TIMER_EVENT_FINISH);
+    }
 }
 
 void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
@@ -154,40 +158,28 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 
     if (m_bIsRunning)
     {
-        Stop(pPlayer, false, false); // Don't stop our replay just yet
-        DispatchResetMessage(pPlayer);
+        Stop(pPlayer);
+        DispatchTimerEvent(pPlayer, pPlayer->entindex(), TIMER_EVENT_RESET);
     }
     else
     {
         // Reset last jump velocity when we enter the start zone without a timer
         pPlayer->m_Data.m_flLastJumpVel = 0;
-
-        // Handle the replay recordings
-        if (g_ReplaySystem.IsRecording())
-            g_ReplaySystem.StopRecording(true, false);
-
-        g_ReplaySystem.BeginRecording();
     }
 
     // Reset our CanStart bool
     m_bCanStart = true;
 }
 
-void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset)
+void CMomentumTimer::Start(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset)
 {
     if (!m_bIsRunning)
     {
         SetShouldUseStartZoneOffset(bUseStartZoneOffset);
 
         // The Start method could fail if CP menu or prac mode is activated here
-        if (Start(pPlayer))
+        if (TryStart(pPlayer))
         {
-            // Used for trimming later on
-            if (g_ReplaySystem.IsRecording())
-            {
-                g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
-            }
-
             // Used for spectating later on
             pPlayer->m_Data.m_iStartTick = gpGlobals->tickcount;
 
@@ -200,7 +192,7 @@ void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset
         }
         else
         {
-            DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), TIMER_EVENT_FAILED);
+            DispatchTimerEvent(pPlayer, pPlayer->entindex(), TIMER_EVENT_FAILED_TO_START);
         }
 
         // Force canStart to false regardless of starting or not
@@ -214,15 +206,7 @@ void CMomentumTimer::TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset
     pPlayer->m_Data.m_bMapFinished = false;
 }
 
-void CMomentumTimer::DispatchResetMessage(CMomentumPlayer *pPlayer) const
-{
-    CSingleUserRecipientFilter user(pPlayer);
-    user.MakeReliable();
-    UserMessageBegin(user, "Timer_Reset");
-    MessageEnd();
-}
-
-void CMomentumTimer::DispatchTimerEventMessage(CBasePlayer *pPlayer, int iEntIndx, int type) const
+void CMomentumTimer::DispatchTimerEvent(CBasePlayer *pPlayer, int iEntIndx, int type) const
 {
     IGameEvent *pEvent = gameeventmanager->CreateEvent("timer_event");
     if (pEvent)
@@ -248,7 +232,8 @@ void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
         if (pTrigger && pTrigger->GetTrackNumber() == track)
             m_hStartTriggers[track] = pTrigger;
         else
-            Warning("Cannot set the start trigger for the given track; the trigger is null or its track doesn't match!\n");
+            Warning(
+                "Cannot set the start trigger for the given track; the trigger is null or its track doesn't match!\n");
     }
     else
     {
@@ -330,12 +315,12 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 // Practice mode that stops the timer and allows the player to noclip.
 void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {
-    // MOM_TODO: if (m_bIsRunning && g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkEnterPracticeMode()
+    DispatchTimerEvent(pPlayer, pPlayer->entindex(), TIMER_EVENT_ENTER_PRACTICE);
 }
 
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 {
-    // MOM_TODO: if (m_bIsRunning && g_ReplaySystem.IsRecording()) g_ReplaySystem.MarkExitPracticeMode()
+    DispatchTimerEvent(pPlayer, pPlayer->entindex(), TIMER_EVENT_EXIT_PRACTICE);
 }
 
 //--------- Commands --------------------------------
@@ -350,9 +335,9 @@ CON_COMMAND(mom_start_mark_create,
     }
 }
 
-CON_COMMAND(mom_start_mark_clear,
-            "Clears the saved start location for your current track, if there is one.\n"
-            "You may also specify the track number to clear as the parameter; \"mom_start_mark_clear 2\" clears track 2's start mark.")
+CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your current track, if there is one.\n"
+                                  "You may also specify the track number to clear as the parameter; "
+                                  "\"mom_start_mark_clear 2\" clears track 2's start mark.")
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
@@ -376,7 +361,9 @@ CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.", FCV
     }
 }
 
-CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is main track).\n",
+CON_COMMAND_F(mom_restart,
+              "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is "
+              "main track).\n",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
@@ -425,7 +412,8 @@ CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current 
     if (pPlayer && pPlayer->AllowUserTeleports())
     {
         const auto pCurrentZone = pPlayer->GetCurrentZoneTrigger();
-        // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
+        // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player
+        // there
         if (pCurrentZone)
             pPlayer->Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
         else
@@ -433,7 +421,8 @@ CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current 
     }
 }
 
-CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n"
+CON_COMMAND_F(mom_stage_tele,
+              "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n"
               "Usage: mom_stage_tele <stage> [track]\nThe default track is the current track the player is on.",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
@@ -448,11 +437,9 @@ CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops 
             track = Q_atoi(args[2]);
         }
 
-        // We get the desired index from the command (Remember that for us, args are 1 indexed)
         const auto desiredIndex = Q_atoi(args[1]);
-        if (desiredIndex == 1)
+        if (desiredIndex == ZONE_NUMBER_START)
         {
-            // Index 1 is the start. If the timer has a mark, we use it
             const auto pStartMark = pPlayer->GetStartMark(track);
             if (pStartMark)
             {
@@ -475,10 +462,8 @@ CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops 
                 }
             }
         }
-        else
+        else if (desiredIndex > ZONE_NUMBER_START)
         {
-            // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
-            // stuff so...)
             CTriggerStage *pStage = nullptr;
 
             while ((pStage = static_cast<CTriggerStage *>(

@@ -25,12 +25,22 @@ enum MomZoneType_t
     ZONE_TYPE_COUNT,
 };
 
+// Zone number constants
+enum
+{
+    ZONE_NUMBER_END = 0,
+    ZONE_NUMBER_START = 1
+};
+
 enum MomTimerEvent_t
 {
-    TIMER_EVENT_STARTED = 0,
-    TIMER_EVENT_FINISHED, // timer successfully finished after player reached end zone
-    TIMER_EVENT_STOPPED, // timer stopped prematurely
-    TIMER_EVENT_FAILED // fired when the timer attempted to start but failed
+    TIMER_EVENT_START = 0,
+    TIMER_EVENT_FINISH, // timer successfully finished after player reached end zone
+    TIMER_EVENT_STOP, // timer stopped prematurely
+    TIMER_EVENT_FAILED_TO_START, // fired when the timer attempted to start but failed
+    TIMER_EVENT_RESET,
+    TIMER_EVENT_ENTER_PRACTICE, // player entered practice mode
+    TIMER_EVENT_EXIT_PRACTICE // player exited practice mode
 };
 
 enum RunSubmitState_t

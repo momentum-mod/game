@@ -1,31 +1,28 @@
 #include "cbase.h"
 
-#include "mom_timer.h"
+#include "filesystem.h"
+#include "fmtstr.h"
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
+#include "mom_timer.h"
+#include "mom_triggers.h"
 #include "run/mom_replay_base.h"
-#include "util/baseautocompletefilelist.h"
-#include "fmtstr.h"
-#include "steam/steam_api.h"
 #include "run/mom_replay_factory.h"
+#include "steam/steam_api.h"
+#include "util/baseautocompletefilelist.h"
 #include "util/mom_util.h"
-#include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
-MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
+MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n",
+            0.01f, 10.0f);
 MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or backward in the replayui \n", 0, 2);
 
-CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
-    CAutoGameSystemPerFrame(pName), m_bRecording(false), m_bPlayingBack(false), m_pPlaybackReplay(nullptr),
-    m_bShouldStopRec(false),
-    m_iTickCount(0),
-    m_iStartRecordingTick(0),
-    m_iStartTimerTick(0),
-    m_iStopTimerTick(0),
-    m_bTeleportedThisFrame(false),
-    m_fRecEndTime(-1.0f)
+CMomentumReplaySystem::CMomentumReplaySystem(const char *pName)
+    : CAutoGameSystemPerFrame(pName), m_bRecording(false), m_bPlayingBack(false), m_pPlaybackReplay(nullptr),
+      m_bShouldStopRec(false), m_iTickCount(0), m_iStartRecordingTick(0), m_iStartTimerTick(0), m_iEndTimerTick(0),
+      m_bTeleportedThisFrame(false), m_fRecEndTime(-1.0f)
 {
     m_szMapHash[0] = '\0';
     m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
@@ -55,9 +52,9 @@ void CMomentumReplaySystem::LevelInitPostEntity()
 
 void CMomentumReplaySystem::LevelShutdownPostEntity()
 {
-    //Stop a recording if there is one while the level shuts down
-    if (m_bRecording)
-        StopRecording(true, false);
+    // Stop a recording if there is one while the level shuts down
+    if (IsRecording())
+        ThrowAwayRecording();
 
     if (m_pPlaybackReplay)
         UnloadPlayback(true);
@@ -72,6 +69,9 @@ void CMomentumReplaySystem::PostInit()
     filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD");
     CFmtStr path("%s/%s/", RECORDING_PATH, RECORDING_ONLINE_PATH);
     filesystem->CreateDirHierarchy(path.Get(), "MOD");
+
+    ListenForGameEvent("timer_event");
+    ListenForGameEvent("zone_enter");
 }
 
 void CMomentumReplaySystem::BeginRecording()
@@ -87,12 +87,12 @@ void CMomentumReplaySystem::BeginRecording()
     }
 }
 
-void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
+void CMomentumReplaySystem::ThrowAwayRecording()
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
 
-    if (throwaway && replaySavedEvent)
+    if (replaySavedEvent)
     {
         replaySavedEvent->SetBool("save", false);
         gameeventmanager->FireEvent(replaySavedEvent);
@@ -102,20 +102,26 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
         // Re-allow the player to teleport
         if (pPlayer)
             pPlayer->SetAllowUserTeleports(true);
-
-        return;
     }
+}
 
-    if (delay)
-    {
-        // Prevent the user from teleporting, potentially breaking this delay
-        if (pPlayer)
-            pPlayer->SetAllowUserTeleports(false);
+void CMomentumReplaySystem::StopRecordingAfterDelay()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
 
-        m_bShouldStopRec = true;
-        m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
-        return;
-    }
+    // Prevent the user from teleporting, potentially breaking this delay
+    if (pPlayer)
+        pPlayer->SetAllowUserTeleports(false);
+
+    m_bShouldStopRec = true;
+    m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
+    return;
+}
+
+void CMomentumReplaySystem::StopRecording()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
 
     m_bShouldStopRec = false;
     m_bRecording = false;
@@ -163,7 +169,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // Reset the m_i*Tick s
     m_iStartRecordingTick = 0;
     m_iStartTimerTick = 0;
-    m_iStopTimerTick = 0;
+    m_iEndTimerTick = 0;
     m_pRecordingReplay = nullptr;
 }
 
@@ -202,7 +208,7 @@ void CMomentumReplaySystem::TrimReplay()
     // Our actual start
     if (m_iStartRecordingTick > 0 && m_iStartTimerTick > 0)
     {
-        const auto newStart = m_iStartTimerTick - static_cast<int>(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
+        const auto newStart = m_iStartTimerTick - (int)(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
         // We only need to trim if the player was in the start trigger for longer than what we want
         if (newStart > m_iStartRecordingTick)
         {
@@ -220,30 +226,99 @@ void CMomentumReplaySystem::TrimReplay()
     }
 }
 
+void CMomentumReplaySystem::FireGameEvent(IGameEvent *event)
+{
+    if (FStrEq(event->GetName(), "timer_event"))
+    {
+        const auto type = event->GetInt("type", -1);
+        switch (type)
+        {
+        case TIMER_EVENT_START:
+            OnTimerStart();
+            break;
+        case TIMER_EVENT_FINISH:
+            OnTimerFinish();
+            break;
+        case TIMER_EVENT_STOP:
+            OnTimerStop();
+            break;
+            // MOM_TODO: Handle ENTER/EXIT_PRACTICE events
+        }
+    }
+    else if (FStrEq(event->GetName(), "zone_enter"))
+    {
+        const auto zonenum = event->GetInt("num", -1);
+        OnZoneEnter(zonenum);
+    }
+}
+
+void CMomentumReplaySystem::OnTimerStart()
+{
+    if (IsRecording())
+    {
+        SetTimerStartTick(gpGlobals->tickcount);
+    }
+}
+
+void CMomentumReplaySystem::OnTimerFinish()
+{
+    SetTimerEndTick(g_pMomentumTimer->GetEndTick());
+    if (IsRecording())
+    {
+        StopRecordingAfterDelay();
+    }
+}
+
+void CMomentumReplaySystem::OnTimerStop()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (IsRecording())
+    {
+        // If we're still in start zone keep the recording alive so we can capture what player is doing
+        // for a couple seconds before startint timer
+        CTriggerZone *pZoneTrigger = pPlayer->GetCurrentZoneTrigger();
+        if (pZoneTrigger && pZoneTrigger->GetZoneType() != ZONE_TYPE_START)
+        {
+            return;
+        }
+
+        ThrowAwayRecording();
+    }
+}
+
+void CMomentumReplaySystem::OnZoneEnter(int zonenum)
+{
+    if (zonenum == ZONE_NUMBER_START)
+    {
+        if (!IsRecording())
+        {
+            BeginRecording();
+        }
+    }
+}
+
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
-    // We only record frames that the player isn't pausing on
-    if (m_bRecording)
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer->m_bHasPracticeMode && pPlayer->GetObserverMode() == OBS_MODE_NONE)
     {
-        const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-        if (!pPlayer->m_bHasPracticeMode && pPlayer->GetObserverMode() == OBS_MODE_NONE)
-        {
-            m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->EyeAngles(), pPlayer->GetAbsOrigin(), pPlayer->GetViewOffset().z,
-                                             pPlayer->m_nButtons, m_bTeleportedThisFrame));
-            m_bTeleportedThisFrame = false;
-        }
-        else
-        {
-            // MOM_TODO just repeat the last frame created (part of the mega refactor)
-            SavedState_t *pSaved = pPlayer->GetSavedRunState();
-            m_pRecordingReplay->AddFrame(CReplayFrame(pSaved->m_angLastAng, pSaved->m_vecLastPos, pSaved->m_fLastViewOffset, pSaved->m_nButtons, false));
-        }
-
-        ++m_iTickCount; // increment recording tick
+        m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->EyeAngles(), pPlayer->GetAbsOrigin(),
+                                                    pPlayer->GetViewOffset().z, pPlayer->m_nButtons,
+                                                    m_bTeleportedThisFrame));
+        m_bTeleportedThisFrame = false;
+    }
+    else
+    {
+        // MOM_TODO just repeat the last frame created (part of the mega refactor)
+        SavedState_t *pSaved = pPlayer->GetSavedRunState();
+        m_pRecordingReplay->AddFrame(CReplayFrame(pSaved->m_angLastAng, pSaved->m_vecLastPos,
+                                                    pSaved->m_fLastViewOffset, pSaved->m_nButtons, false));
     }
 
+    ++m_iTickCount; // increment recording tick
+
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
-        StopRecording(false, false);
+        StopRecording();
 }
 
 CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool bFullLoad, const char *pPathID)
@@ -279,15 +354,15 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetRunFlags(pPlayer->m_Data.m_iRunFlags);
     m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
-    m_pRecordingReplay->SetStopTick(m_iStopTimerTick - m_iStartRecordingTick);
+    m_pRecordingReplay->SetStopTick(m_iEndTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetTrackNumber(g_pMomentumTimer->GetTrackNumber());
-    m_pRecordingReplay->SetZoneNumber(0); // MOM_TODO (0.9.0) allow individual zone runs
+    m_pRecordingReplay->SetZoneNumber(ZONE_NUMBER_END); // MOM_TODO (0.9.0) allow individual zone runs
 }
 
 void CMomentumReplaySystem::SetRunStats()
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(pPlayer->m_RunStats.GetTotalZones());
+    CMomRunStats *stats = m_pRecordingReplay->CreateRunStats(pPlayer->m_RunStats.GetTotalZones());
     stats->FullyCopyFrom(pPlayer->m_RunStats);
     // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
 }
@@ -346,14 +421,14 @@ void CMomentumReplaySystem::LoadReplayGhost()
 
 void CMomentumReplaySystem::StopPlayback()
 {
-    if (!g_ReplaySystem.m_bPlayingBack)
+    if (m_bPlayingBack)
         return;
 
     Log("Stopping replay playback.\n");
-    g_ReplaySystem.UnloadPlayback();
+    UnloadPlayback();
 }
 
-class CMOMReplayCommands
+class CMomReplayCommands
 {
   public:
     static void StartReplay(const CCommand &args, bool firstperson)
@@ -394,9 +469,9 @@ class CMOMReplayCommands
     static void PlayReplayFirstPerson(const CCommand &args) { StartReplay(args, true); }
 };
 
-CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play_ghost, CMOMReplayCommands::PlayReplayGhost,
+CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play_ghost, CMomReplayCommands::PlayReplayGhost,
                              "Begins playback of a replay as a ghost.", RECORDING_PATH, EXT_RECORDING_FILE);
-CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play, CMOMReplayCommands::PlayReplayFirstPerson,
+CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play, CMomReplayCommands::PlayReplayFirstPerson,
                              "Begins a playback of a replay in first-person mode.", RECORDING_PATH, EXT_RECORDING_FILE);
 
 CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in first person), if there is one.")

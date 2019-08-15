@@ -2,7 +2,6 @@
 
 #include "mom_shareddefs.h"
 
-struct SavedLocation_t;
 class CTriggerTimerStart;
 class CMomentumPlayer;
 
@@ -18,25 +17,24 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // HUD messages
     void DispatchCheatsMessage(CMomentumPlayer *pPlayer);
-    void DispatchResetMessage(CMomentumPlayer *pPlayer) const;
-    void DispatchTimerEventMessage(CBasePlayer *pPlayer, int iEntIdx, int type) const;
+    void DispatchTimerEvent(CBasePlayer *pPlayer, int iEntIdx, int type) const;
 
     // ------------- Timer state related messages --------------------------
     // Starts the timer for the given starting tick
     // Returns true if timer successfully started, otherwise false
-    bool Start(CMomentumPlayer *pPlayer);
-    // Stops the timer
-    // If bFinished is true the timer will dispatch a TIMER_EVENT_FINISHED event leading to the time being saved,
+    void Start(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
+    // Ends timer & dispatches TIMER_EVENT_STOPPED event (used to signify timer ending prematurely)
+    // If bFinished is true the timer will dispatch a TIMER_EVENT_FINISH event leading to the time being saved,
     // otherwise TIMER_EVENT_STOPPED is dispatched.
     // If bStopRecording is true the timer will stop the replay recording. If bFinished is true an
     // attempt will be made to also save the replay
-    void Stop(CMomentumPlayer *pPlayer, bool bFinished = false, bool bStopRecording = true);
+    void Stop(CMomentumPlayer *pPlayer);
+    // Ends timer & dispatches TIMER_EVENT_FINISH event (used to signify timer ending after player has completed level)
+    void Finish(CMomentumPlayer *pPlayer);
     // Resets timer as well as all player stats
     void Reset(CMomentumPlayer *pPlayer);
     // Is the timer running?
     bool IsRunning() const { return m_bIsRunning; }
-    // Set the running status of the timer
-    void SetRunning(CMomentumPlayer *pPlayer, bool running);
 
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
@@ -52,6 +50,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     int GetLastRunTime() const;
     // Gets the date achieved for the last run.
     time_t GetLastRunDate() const { return m_iLastRunDate; }
+    int GetEndTick() const { return m_iEndTick; }
 
     // Practice mode- noclip mode that stops timer
     void EnablePractice(CMomentumPlayer *pPlayer);
@@ -65,13 +64,17 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, int zoneType, int iZoneNumber);
-    void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
 
-    // tries to start timer, if successful also sets all the player vars and starts replay
-    void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
   private:
+    // Set the running status of the timer
+    void SetRunning(CMomentumPlayer *pPlayer, bool running);
+    void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
+    // tries to start timer, if successful also sets all the player vars
+    bool TryStart(CMomentumPlayer *pPlayer);
+    // tries to end timer, storing relevant data
+    bool TryEnd(CMomentumPlayer *pPlayer);
 
-
+  private:
     int m_iStartTick, m_iEndTick;
     time_t m_iLastRunDate;
     bool m_bIsRunning;

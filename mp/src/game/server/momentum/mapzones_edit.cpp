@@ -660,14 +660,14 @@ void CMapZoneEdit::SetZoneProps(CBaseMomZoneTrigger *pEnt)
             pStart->SetIsLimitingSpeed(false);
         }
 
-        pStart->SetZoneNumber(1);
+        pStart->SetZoneNumber(ZONE_NUMBER_START);
         g_pMomentumTimer->SetStartTrigger(pStart->GetTrackNumber(), pStart);
     }
     break;
     case ZONE_TYPE_STOP:
     {
         auto pStop = static_cast<CTriggerTimerStop *>(pEnt);
-        pStop->SetZoneNumber(0);
+        pStop->SetZoneNumber(ZONE_NUMBER_END);
 
         if (FStrEq(mom_zone_type.GetString(), "auto"))
         {

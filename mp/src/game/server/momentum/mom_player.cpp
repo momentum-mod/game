@@ -23,6 +23,7 @@
 #include "tier0/memdbgon.h"
 
 #define AVERAGE_STATS_INTERVAL 0.1
+#define NUM_TICKS_TO_BHOP 10   // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 
 static MAKE_TOGGLE_CONVAR(
     mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
@@ -562,7 +563,7 @@ void CMomentumPlayer::OnJump()
     else if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1 && m_bStartTimerOnJump)
     {
         // Jumps are incremented in this method
-        g_pMomentumTimer->TryStart(this, false);
+        g_pMomentumTimer->Start(this, false);
     }
 }
 
@@ -816,12 +817,9 @@ void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClie
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
-    // No need to remove the trail here, CreateTrail() already does it for us
     BaseClass::Teleport(newPosition, newAngles, newVelocity);
     PhysicsCheckForEntityUntouch();
-    CreateTrail();
-
-    g_ReplaySystem.SetTeleportedThisFrame();
+    OnTeleport();
 }
 
 bool CMomentumPlayer::KeyValue(const char *szKeyName, const char *szValue)
@@ -841,17 +839,20 @@ bool CMomentumPlayer::KeyValue(const char *szKeyName, const char *szValue)
         Assert((GetMoveParent() == NULL) && !IsEFlagSet(EFL_DIRTY_ABSTRANSFORM));
         SetAbsOrigin(vecOrigin);
 
-
-
-        // TODO: Throw this into OnTeleport() or something?
-        CreateTrail();
-
-        g_ReplaySystem.SetTeleportedThisFrame();
+        OnTeleport();
 
         return true;
     }
 
     return BaseClass::KeyValue(szKeyName, szValue);
+}
+
+void CMomentumPlayer::OnTeleport()
+{
+    // No need to remove the trail here, CreateTrail() already does it for us
+    CreateTrail();
+
+    g_ReplaySystem.SetTeleportedThisFrame();
 }
 
 // These two are overridden because of a weird compiler error,
@@ -967,7 +968,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 else
                 {
                     DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                    // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
+                    // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_END, zoneNum);
                 }*/
 
                 // This is needed for the final stage
@@ -986,8 +987,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 m_RunStats.SetZoneVelocityMax(0, finalVel, finalVel2D);
                 m_RunStats.SetZoneExitSpeed(0, endvel, endvel2D);
 
-                // Stop the timer
-                g_pMomentumTimer->Stop(this, true);
+                // Finish timer
+                g_pMomentumTimer->Finish(this);
                 m_Data.m_flTickRate = gpGlobals->interval_per_tick;
                 m_Data.m_iRunTime = g_pMomentumTimer->GetLastRunTime();
                 // The map is now finished, show the mapfinished panel
@@ -1016,7 +1017,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             {
                 const auto locVel = GetLocalVelocity();
                 m_RunStats.SetZoneExitSpeed(zoneNum - 1, locVel.Length(), locVel.Length2D());
-                // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_STOP, zoneNum);
+                // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_END, zoneNum);
 
                 if (zoneNum > m_Data.m_iCurrentZone)
                 {
@@ -1054,7 +1055,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
             break;
         case ZONE_TYPE_START:
             // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
-            g_pMomentumTimer->TryStart(this, true);
+            g_pMomentumTimer->Start(this, true);
             if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
             {
                 const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);

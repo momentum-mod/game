@@ -153,14 +153,14 @@ void CMomentumGhostBaseEntity::StartTimer(int m_iStartTick)
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
     {
-        g_pMomentumTimer->DispatchTimerEventMessage(m_pCurrentSpecPlayer, entindex(), TIMER_EVENT_STARTED);
+        g_pMomentumTimer->DispatchTimerEvent(m_pCurrentSpecPlayer, entindex(), TIMER_EVENT_START);
     }
 }
 void CMomentumGhostBaseEntity::FinishTimer()
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
     {
-        g_pMomentumTimer->DispatchTimerEventMessage(m_pCurrentSpecPlayer, entindex(), TIMER_EVENT_FINISHED);
+        g_pMomentumTimer->DispatchTimerEvent(m_pCurrentSpecPlayer, entindex(), TIMER_EVENT_FINISH);
     }
 }
 

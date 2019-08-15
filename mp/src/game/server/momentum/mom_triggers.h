@@ -260,9 +260,9 @@ public:
     void OnEndTouch(CBaseEntity *) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
     void SetDestinationEnt(CBaseEntity *ent) { m_hDestinationEnt.Set(ent); }
-    bool ShouldStopPlayer() const { return m_bResetVelocity; }
+    bool ShouldResetVelocity() const { return m_bResetVelocity; }
     bool ShouldResetAngles() const { return m_bResetAngles; }
-    void SetShouldStopPlayer(const bool newB) { m_bResetVelocity = newB; }
+    void SetShouldResetVelocity(const bool newB) { m_bResetVelocity = newB; }
     void SetShouldResetAngles(const bool newB) { m_bResetAngles = newB; }
 
     // Default teleport method, uses the set destination target, if there is one.

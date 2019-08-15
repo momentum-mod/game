@@ -44,7 +44,6 @@ void RegisterUserMessages(void)
 
     usermessages->Register("Timer_Event", 1);
     usermessages->Register("Timer_PauseTime", -1);
-    usermessages->Register("Timer_Reset", 0);
     usermessages->Register("Timer_Checkpoint", 9);
     usermessages->Register("Timer_Stage", 4);
     usermessages->Register("Timer_StageCount", 4);

@@ -25,9 +25,6 @@ struct SavedState_t
     int m_nSavedAccelTicks;
 };
 
-// The player can spend this many ticks in the air inside the start zone before their speed is limited
-#define MAX_AIRTIME_TICKS 15
-#define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 #define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
@@ -252,6 +249,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Spawn stuff
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
     void SetPracticeModeState();
+
+    void OnTeleport();
 
     CSteamID m_sSpecTargetSteamID;
 

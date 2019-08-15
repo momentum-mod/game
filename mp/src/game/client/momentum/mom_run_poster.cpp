@@ -152,13 +152,13 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
         if (pEvent->GetInt("ent") == engine->GetLocalPlayer())
         {
             const auto iType = pEvent->GetInt("type", -1);
-            if (iType == TIMER_EVENT_STARTED)
+            if (iType == TIMER_EVENT_START)
             {
                 // MOM_TODO allow different track/zones (0.9.0)
                 // C_MomentumPlayer::GetLocalMomPlayer()->GetRunEntData()->m_iCurrentTrack and m_iCurrentZone
                 g_pAPIRequests->CreateRunSession(iMapID, 0, 0, UtlMakeDelegate(this, &CRunPoster::CreateSessionCallback));
             }
-            else if (iType == TIMER_EVENT_STOPPED && m_uRunSessionID)
+            else if (iType == TIMER_EVENT_STOP && m_uRunSessionID)
             {
                 g_pAPIRequests->InvalidateRunSession(iMapID, UtlMakeDelegate(this, &CRunPoster::InvalidateSessionCallback));
                 ResetSession();
