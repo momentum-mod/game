@@ -228,10 +228,8 @@ void CMomentumGameMovement::WalkMove()
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
 
     // Cap ground movement speed in RJ
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        // Cap ground movement speed in RJ
         float flNewSpeed = VectorLength(mv->m_vecVelocity);
         if (flNewSpeed > mv->m_flMaxSpeed)
         {
@@ -851,8 +849,7 @@ void CMomentumGameMovement::FinishDuck(void)
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
     float flViewScale = 0.5f;
-    static ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == GAMEMODE_RJ)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         flViewScale = 1.0f;
 
     Vector viewDelta = flViewScale * (hullSizeNormal - hullSizeCrouch);
