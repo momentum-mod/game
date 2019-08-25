@@ -587,7 +587,6 @@ void CMomentumReplayGhostEntity::OnZoneEnter(CTriggerZone *pTrigger)
     {
     case ZONE_TYPE_START:
         m_Data.m_iCurrentTrack = pTrigger->GetTrackNumber();
-        m_Data.m_bMapFinished = false;
         m_Data.m_bTimerRunning = false;
         break;
     case ZONE_TYPE_STOP:
