@@ -273,6 +273,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetPracticeModeState();
 
     void DestroyRockets();
+    
+    // Resets all player properties to their default state
+    void ResetProps();
 
     CSteamID m_sSpecTargetSteamID;
 

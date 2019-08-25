@@ -950,12 +950,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
         case ZONE_TYPE_START:
         {
-            // Get rid of map finished panel
-            if (m_Data.m_bMapFinished)
-            {
-                m_Data.m_bMapFinished = false;
-                SetLaggedMovementValue(1.0f);
-            }
+            ResetProps();
 
             const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
@@ -1095,7 +1090,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_STOP:
             m_Data.m_iCurrentTrack = m_iOldTrack;
             m_Data.m_iCurrentZone = m_iOldZone;
-            SetLaggedMovementValue(1.0f); // Reset slow motion
+            ResetProps();
             break;
         case ZONE_TYPE_CHECKPOINT:
             break;
@@ -1129,6 +1124,11 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
 
         CMomRunEntity::OnZoneExit(pTrigger);
     }
+}
+
+void CMomentumPlayer::ResetProps()
+{
+    SetLaggedMovementValue(1.0f);
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
