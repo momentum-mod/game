@@ -947,6 +947,16 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
 
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            {
+                // Don't limit speed in rocketjump mode,
+                // reset timer on zone enter and start on zone leave.
+                g_pMomentumTimer->Reset(this);
+                m_bStartTimerOnJump = false;
+                m_bShouldLimitPlayerSpeed = false;
+                break;
+            }
+
             // Limit to 260 if timer is not running and we're not in practice mode
             if (!(g_pMomentumTimer->IsRunning() || m_bHasPracticeMode))
                 LimitSpeed(260.0f, false);
