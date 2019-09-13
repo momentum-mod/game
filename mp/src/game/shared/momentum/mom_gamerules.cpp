@@ -129,7 +129,7 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
                                      Vector(24, 24, 82),  // hull max
 
                                      Vector(-24, -24, 0), // duck hull min
-                                     Vector(24, 24, 55),  // duck hull max
+                                     Vector(24, 24, 62),  // duck hull max
                                      Vector(0, 0, 45),    // duck view
 
                                      Vector(-10, -10, -10), // observer hull min
@@ -347,17 +347,15 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
     CBaseEntity *pEntity = nullptr;
     trace_t tr;
-    float falloff;
     Vector vecSpot;
-
     Vector vecSrc = vecSrcIn;
 
-    if (flRadius)
-        falloff = info.GetDamage() / flRadius;
-    else
-        falloff = 1.0f;
-
-    CBaseEntity *pInflictor = info.GetInflictor();
+    // NOTE: this is the falloff value used for rocket self-damage in TF2,
+    // for enemies the falloff is calculated using (damage / radius).
+    // Since Momentum has no enemies this should be fine,
+    // unless there's something like a map entity which requires
+    // a specific amount of damage.
+    float falloff = 0.5f;
 
     // iterate on all entities in the vicinity.
     for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
@@ -382,9 +380,6 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         if (vecDir.LengthSqr() > (flRadius * flRadius))
             continue;
 
-        // This value is used to scale damage when the explosion is blocked by some other object.
-        float flBlockedDamagePercent = 0.0f;
-
         // Check that the explosion can 'see' this entity, trace through players.
         vecSpot = pEntity->BodyTarget(vecSrc, false);
         UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
@@ -392,19 +387,20 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
             continue;
 
+        // the explosion can 'see' this entity, so hurt them!
+        if (tr.startsolid)
+        {
+            // if we're stuck inside them, fixup the position and distance
+            tr.endpos = vecSrc;
+            tr.fraction = 0.0f;
+        }
+
         // Adjust the damage - apply falloff.
         float flAdjustedDamage = 0.0f;
 
         float flDistanceToEntity;
 
-        // Rockets store the ent they hit as the enemy and have already
-        // dealt full damage to them by this time
-        if (pInflictor && (pEntity == pInflictor->GetEnemy()))
-        {
-            // Full damage, we hit this entity directly
-            flDistanceToEntity = 0;
-        }
-        else if (pEntity->IsPlayer())
+        if (pEntity->IsPlayer())
         {
             // Use whichever is closer, absorigin or worldspacecenter
             float flToWorldSpaceCenter = (vecSrc - pEntity->WorldSpaceCenter()).Length();
@@ -417,52 +413,13 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             flDistanceToEntity = (vecSrc - tr.endpos).Length();
         }
 
-        flAdjustedDamage = RemapValClamped(flDistanceToEntity, 0, flRadius, info.GetDamage(), info.GetDamage() * falloff);
-
-        // Take a little less damage from yourself
-        if (tr.m_pEnt == info.GetAttacker())
-        {
-            flAdjustedDamage = flAdjustedDamage * 0.75f;
-        }
-
-        if (flAdjustedDamage <= 0)
-            continue;
-
-        // the explosion can 'see' this entity, so hurt them!
-        if (tr.startsolid)
-        {
-            // if we're stuck inside them, fixup the position and distance
-            tr.endpos = vecSrc;
-            tr.fraction = 0.0f;
-        }
+        flAdjustedDamage = info.GetDamage() * ( 1 - ( 1 - falloff) * clamp(flDistanceToEntity / flRadius, 0, 1));
 
         CTakeDamageInfo adjustedInfo = info;
-        // Msg("%s: Blocked damage: %f percent (in:%f  out:%f)\n", pEntity->GetClassname(), flBlockedDamagePercent *
-        // 100, flAdjustedDamage, flAdjustedDamage - (flAdjustedDamage * flBlockedDamagePercent) );
-        adjustedInfo.SetDamage(flAdjustedDamage - (flAdjustedDamage * flBlockedDamagePercent));
-
-        // Now make a consideration for skill level!
-        if (info.GetAttacker() && info.GetAttacker()->IsPlayer() && pEntity->IsNPC())
-        {
-            // An explosion set off by the player is harming an NPC. Adjust damage accordingly.
-            adjustedInfo.AdjustPlayerDamageInflictedForSkillLevel();
-        }
+        adjustedInfo.SetDamage(flAdjustedDamage);
 
         Vector dir = vecSpot - vecSrc;
         VectorNormalize(dir);
-
-        // If we don't have a damage force, manufacture one
-        if (adjustedInfo.GetDamagePosition() == vec3_origin || adjustedInfo.GetDamageForce() == vec3_origin)
-        {
-            CalculateExplosiveDamageForce(&adjustedInfo, dir, vecSrc);
-        }
-        else
-        {
-            // Assume the force passed in is the maximum force. Decay it based on falloff.
-            float flForce = adjustedInfo.GetDamageForce().Length() * falloff;
-            adjustedInfo.SetDamageForce(dir * flForce);
-            adjustedInfo.SetDamagePosition(vecSrc);
-        }
 
         if (!CloseEnough(tr.fraction, 1.0f) && pEntity == tr.m_pEnt)
         {

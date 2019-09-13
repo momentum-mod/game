@@ -1800,9 +1800,9 @@ void CMomentumPlayer::PostThink()
     BaseClass::PostThink();
 }
 
-static float DamageForce(const Vector &size, float damage, float scale)
+static float DamageForce(float damage, float scale)
 { 
-    float force = damage * ((48.0f * 48.0f * 82.0f) / (size.x * size.y * size.z)) * scale;
+    float force = damage * scale;
 
     if (force > 1000.0f)
     {
@@ -1863,7 +1863,16 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
         flScale = mom_damageforcescale_self_rocket_air.GetFloat();
     }
 
-    Vector vecForce = vecDir * -DamageForce(WorldAlignSize(), info.GetDamage(), flScale);
+    // Scale force if we're ducked
+    if (GetFlags() & FL_DUCKING)
+    {
+        // TF2 crouching collision box height used to be 55 units,
+        // before it was changed to 62, the old height is still used
+        // for calculating force from explosions.
+        flScale *= 82.0f / 55.0f;
+    }
+
+    Vector vecForce = vecDir * -DamageForce(info.GetDamage(), flScale);
     ApplyAbsVelocityImpulse(vecForce);
 }
 
