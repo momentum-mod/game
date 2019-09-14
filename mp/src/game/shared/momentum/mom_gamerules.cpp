@@ -350,12 +350,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     Vector vecSpot;
     Vector vecSrc = vecSrcIn;
 
-    // NOTE: this is the falloff value used for rocket self-damage in TF2,
-    // for enemies the falloff is calculated using (damage / radius).
-    // Since Momentum has no enemies this should be fine,
-    // unless there's something like a map entity which requires
-    // a specific amount of damage.
-    float falloff = 0.5f;
+    float falloff = info.GetDamage() / flRadius;
 
     // iterate on all entities in the vicinity.
     for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
@@ -395,9 +390,6 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             tr.fraction = 0.0f;
         }
 
-        // Adjust the damage - apply falloff.
-        float flAdjustedDamage = 0.0f;
-
         float flDistanceToEntity;
 
         if (pEntity->IsPlayer())
@@ -413,7 +405,14 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             flDistanceToEntity = (vecSrc - tr.endpos).Length();
         }
 
-        flAdjustedDamage = info.GetDamage() * ( 1 - ( 1 - falloff) * clamp(flDistanceToEntity / flRadius, 0, 1));
+        // Use constant falloff for self-damage in rocket jump mode
+        if (pEntity == info.GetAttacker() && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        {
+            falloff = 0.5f;
+        }
+
+        // Adjust the damage - apply falloff.
+        float flAdjustedDamage = info.GetDamage() * ( 1.0f - ( 1.0f - falloff) * clamp(flDistanceToEntity / flRadius, 0.0f, 1.0f));
 
         CTakeDamageInfo adjustedInfo = info;
         adjustedInfo.SetDamage(flAdjustedDamage);
