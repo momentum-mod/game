@@ -1800,18 +1800,6 @@ void CMomentumPlayer::PostThink()
     BaseClass::PostThink();
 }
 
-static float DamageForce(float damage, float scale)
-{ 
-    float force = damage * scale;
-
-    if (force > 1000.0f)
-    {
-        force = 1000.0f;
-    }
-
-    return force;
-}
-
 int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
 {
     CBaseEntity *pAttacker = info.GetAttacker();
@@ -1872,7 +1860,9 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
         flScale *= 82.0f / 55.0f;
     }
 
-    Vector vecForce = vecDir * -DamageForce(info.GetDamage(), flScale);
+    // Clamp force to 1000.0f
+    float force = Min(info.GetDamage() * flScale, 1000.0f);
+    Vector vecForce = -vecDir * force;
     ApplyAbsVelocityImpulse(vecForce);
 }
 
