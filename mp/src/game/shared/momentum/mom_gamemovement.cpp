@@ -815,10 +815,10 @@ void CMomentumGameMovement::Duck(void)
                         // FL_DUCKING flag is the important bit here,
                         // as it will allow for ctaps.
                         SetDuckedEyeOffset(1.0f);
-						player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
-						player->m_Local.m_bDucked = true;
-						player->m_Local.m_bDucking = false;
-						player->AddFlag( FL_DUCKING );
+                        player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+                        player->m_Local.m_bDucked = true;
+                        player->m_Local.m_bDucking = false;
+                        player->AddFlag(FL_DUCKING);
                     }
                 }
             }
