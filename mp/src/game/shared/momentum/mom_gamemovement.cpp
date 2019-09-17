@@ -557,7 +557,9 @@ bool CMomentumGameMovement::CanUnduck()
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
+        float viewScale = g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f;
+
+        newOrigin += -viewScale * (hullSizeNormal - hullSizeCrouch);
     }
 
     UTIL_TraceHull(mv->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, PlayerSolidMask(), player,
@@ -647,6 +649,16 @@ void CMomentumGameMovement::Friction(void)
 
 void CMomentumGameMovement::Duck(void)
 {
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        // Don't allowing ducking if deep enough in water
+        if ((player->GetWaterLevel() >= WL_Feet && player->GetGroundEntity() == nullptr) ||
+            player->GetWaterLevel() >= WL_Eyes)
+        {
+            mv->m_nButtons &= ~IN_DUCK;
+        }
+    }
+
     int buttonsChanged = (mv->m_nOldButtons ^ mv->m_nButtons); // These buttons have changed this frame
     int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
     int buttonsReleased =
@@ -796,6 +808,18 @@ void CMomentumGameMovement::Duck(void)
                     // Still under something where we can't unduck, so make sure we reset this timer so
                     //  that we'll unduck once we exit the tunnel, etc.
                     player->m_Local.m_flDucktime = 1000;
+
+                    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+                    {
+                        // Values from BaseClass::Duck(),
+                        // FL_DUCKING flag is the important bit here,
+                        // as it will allow for ctaps.
+                        SetDuckedEyeOffset(1.0f);
+						player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+						player->m_Local.m_bDucked = true;
+						player->m_Local.m_bDucking = false;
+						player->AddFlag( FL_DUCKING );
+                    }
                 }
             }
         }
@@ -823,7 +847,9 @@ void CMomentumGameMovement::FinishUnDuck(void)
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        Vector viewDelta = -0.5f * (hullSizeNormal - hullSizeCrouch);
+        float viewScale = g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f;
+
+        Vector viewDelta = -viewScale * (hullSizeNormal - hullSizeCrouch);
 
         VectorAdd(newOrigin, viewDelta, newOrigin);
     }
@@ -848,11 +874,9 @@ void CMomentumGameMovement::FinishDuck(void)
     Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-    float flViewScale = 0.5f;
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-        flViewScale = 1.0f;
+    float viewScale = g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f;
 
-    Vector viewDelta = flViewScale * (hullSizeNormal - hullSizeCrouch);
+    Vector viewDelta = viewScale * (hullSizeNormal - hullSizeCrouch);
 
     player->SetViewOffset(GetPlayerViewOffset(true));
     player->AddFlag(FL_DUCKING);
@@ -1047,8 +1071,6 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        // TF2 uses two different ways of setting vertical velocity when jumping,
-        // this might be what allows techniques such as ctaps in rocket jump.
         if (player->m_Local.m_bDucking)
         {
             mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * GetCurrentGravity() * 45.0f); // 2 * gravity * height
