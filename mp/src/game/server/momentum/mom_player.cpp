@@ -166,15 +166,15 @@ static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXEC
 
 // Equivalent to "tf_damagescale_self_soldier" (default: 0.6) in TF2
 // Used for scaling damage when not on ground and not in water
-static ConVar mom_damagescale_self_rocket("mom_damagescale_self_rocket", "0.6", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
+#define MOM_DAMAGESCALE_SELF_ROCKET 0.6f
 
 // Equivalent to "tf_damageforcescale_self_soldier_rj" (default 10.0) in TF2
 // Used for scaling force when not on ground
-static ConVar mom_damageforcescale_self_rocket_air("mom_damageforcescale_self_rocket_air", "10.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
+#define MOM_DAMAGEFORCESCALE_SELF_ROCKET_AIR 10.0f
 
 // Equivalent to "tf_damageforcescale_self_soldier_badrj" (default: 5.0) in TF2
 // Used for scaling force when on ground
-static ConVar mom_damageforcescale_self_rocket("mom_damageforcescale_self_rocket", "5.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY);
+#define MOM_DAMAGEFORCESCALE_SELF_ROCKET 5.0f
 
 // Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps,
 // as well as changing the appearance locally.
@@ -1858,16 +1858,16 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
 
     if (GetFlags() & FL_ONGROUND)
     {
-        flScale = mom_damageforcescale_self_rocket.GetFloat();
+        flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET;
     }
     else
     {
-        flScale = mom_damageforcescale_self_rocket_air.GetFloat();
+        flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET_AIR;
 
         if (!(GetFlags() & FL_INWATER))
         {
             // Not in water
-            flScale *= mom_damagescale_self_rocket.GetFloat();
+            flScale *= MOM_DAMAGESCALE_SELF_ROCKET;
         }
     }
 
