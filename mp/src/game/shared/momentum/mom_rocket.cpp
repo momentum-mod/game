@@ -22,10 +22,11 @@ BEGIN_DATADESC(CMomRocket)
 
     // Functions
     DEFINE_ENTITYFUNC(Touch),
-END_DATADESC()
+END_DATADESC();
 #endif
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomRocket, DT_MomRocket)
+
 BEGIN_NETWORK_TABLE(CMomRocket, DT_MomRocket)
 #ifdef CLIENT_DLL
 RecvPropVector(RECVINFO(m_vInitialVelocity))
@@ -37,7 +38,7 @@ SendPropVector(SENDINFO(m_vInitialVelocity),
                3000   // high value
                )
 #endif
-END_NETWORK_TABLE()
+END_NETWORK_TABLE();
 
 LINK_ENTITY_TO_CLASS(momentum_rocket, CMomRocket);
 PRECACHE_WEAPON_REGISTER(momentum_rocket);
@@ -65,17 +66,25 @@ void CMomRocket::PostDataUpdate(DataUpdateType_t type)
     {
         // Now stick our initial velocity into the interpolation history
         CInterpolatedVar<Vector> &interpolator = GetOriginInterpolator();
-
         interpolator.ClearHistory();
+
+        CInterpolatedVar<QAngle> &rotInterpolator = GetRotationInterpolator();
+        rotInterpolator.ClearHistory();
+
         float changeTime = GetLastChangeTime(LATCH_SIMULATION_VAR);
 
         // Add a sample 1 second back.
         Vector vCurOrigin = GetLocalOrigin() - m_vInitialVelocity;
         interpolator.AddToHead(changeTime - 1.0f, &vCurOrigin, false);
 
+        QAngle vCurAngles = GetLocalAngles();
+        rotInterpolator.AddToHead(changeTime - 1.0f, &vCurAngles, false);
+
         // Add the current sample.
         vCurOrigin = GetLocalOrigin();
         interpolator.AddToHead(changeTime, &vCurOrigin, false);
+
+        rotInterpolator.AddToHead(changeTime - 1.0, &vCurAngles, false);
     }
 }
 
@@ -102,14 +111,20 @@ void CMomRocket::Spawn()
 {
     BaseClass::Spawn();
 
+    UseClientSideAnimation();
     SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
     SetSolidFlags(FSOLID_NOT_STANDABLE);
-    SetMoveType(MOVETYPE_FLY);
+    SetMoveType(MOVETYPE_FLY, MOVECOLLIDE_FLY_CUSTOM);
     SetSolid(SOLID_BBOX);
     AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
     AddEffects(EF_NOSHADOW);
     SetSize(Vector(0, 0, 0), Vector(0, 0, 0));
+    AddFlag(FL_GRENADE);
+
     m_takedamage = DAMAGE_NO;
+
+    SetTouch(&CMomRocket::RocketTouch);
+    SetNextThink(gpGlobals->curtime);
 }
 
 void CMomRocket::Precache()
@@ -196,7 +211,7 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     UTIL_Remove(this);
 }
 
-void CMomRocket::Touch(CBaseEntity *pOther)
+void CMomRocket::RocketTouch(CBaseEntity *pOther)
 {
     Assert(pOther);
 
@@ -205,7 +220,7 @@ void CMomRocket::Touch(CBaseEntity *pOther)
         return;
 
     // Handle hitting skybox (disappear).
-    const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
+    const trace_t *pTrace = &GetTouchTrace();
     if (pTrace->surface.flags & SURF_SKY)
     {
         DestroyTail();
@@ -257,15 +272,21 @@ void CMomRocket::CreateSmokeTrail()
 //-----------------------------------------------------------------------------
 CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner /*= nullptr*/)
 {
-    CMomRocket *pRocket = (CMomRocket *)CBaseEntity::CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pentOwner);
+    CMomRocket *pRocket = static_cast<CMomRocket *>(CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pentOwner));
     pRocket->SetModel("models/weapons/w_missile.mdl");
     DispatchSpawn(pRocket);
 
     Vector vecForward;
-    AngleVectors(pRocket->GetLocalAngles(), &vecForward);
-    pRocket->SetAbsVelocity(vecForward * MOM_ROCKET_SPEED);
-    pRocket->SetupInitialTransmittedGrenadeVelocity(vecForward * MOM_ROCKET_SPEED);
+    AngleVectors(vecAngles, &vecForward);
+
+    const Vector velocity = vecForward * MOM_ROCKET_SPEED;
+    pRocket->SetAbsVelocity(velocity);
+    pRocket->SetupInitialTransmittedGrenadeVelocity(velocity);
     pRocket->SetThrower(pentOwner);
+
+    QAngle angles;
+    VectorAngles(velocity, angles);
+    pRocket->SetAbsAngles(angles);
 
     pRocket->SetDamage(90.0f);
     // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage
@@ -273,9 +294,6 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
 
     pRocket->CreateSmokeTrail();
     pRocket->EmitSound("Missile.Ignite");
-
-    pRocket->SetTouch(&CMomRocket::Touch);
-    pRocket->SetThink(nullptr);
 
     return pRocket;
 }

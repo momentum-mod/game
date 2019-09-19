@@ -105,7 +105,11 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     QAngle angForward;
     GetProjectileFireSetup(pPlayer, vecOffset, &vecSrc, &angForward);
 
-    CMomRocket::EmitRocket(vecSrc, angForward, pPlayer);
+    trace_t trace;
+    CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
+    UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
+
+    CMomRocket::EmitRocket(trace.endpos, angForward, pPlayer);
 #endif
 }
 
