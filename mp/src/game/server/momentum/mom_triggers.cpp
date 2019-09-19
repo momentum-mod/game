@@ -1482,3 +1482,44 @@ void CMomentumMapInfo::Spawn()
     g_pModuleComms->FireEvent(pKv);
     // MOM_TODO: Handle this event in Client (UI) and Timer?
 }
+
+static CUtlVector<CNoGrenadesZone *> s_vecNoGrenadeZones;
+
+LINK_ENTITY_TO_CLASS(func_nogrenades, CNoGrenadesZone);
+
+CNoGrenadesZone::~CNoGrenadesZone()
+{
+    s_vecNoGrenadeZones.FindAndFastRemove(this);
+}
+
+void CNoGrenadesZone::Spawn()
+{
+    Precache();
+    BaseClass::Spawn();
+    InitTrigger();
+
+    AddSpawnFlags(SF_TRIGGER_ALLOW_ALL);
+    AddEffects(EF_NODRAW);
+
+    s_vecNoGrenadeZones.AddToTail(this);
+}
+
+void CNoGrenadesZone::Precache()
+{
+    PrecacheModel(NOGRENADE_SPRITE);
+}
+
+bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
+{
+    if ( pOther )
+    {
+        FOR_EACH_VEC(s_vecNoGrenadeZones, i)
+        {
+            const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
+            if (!pNoGrenadeZone->m_bDisabled && pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
+                return true;
+        }
+    }
+
+    return false;
+}

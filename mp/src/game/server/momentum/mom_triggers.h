@@ -658,3 +658,22 @@ class CMomentumMapInfo : public CPointEntity
     int m_iWorld, m_iStage, m_iGametype;
     string_t m_MapAuthor;
 };
+
+#define NOGRENADE_SPRITE "sprites/light_glow02_noz.vmt"
+
+class CNoGrenadesZone : public CBaseTrigger
+{
+public:
+    DECLARE_CLASS(CNoGrenadesZone, CBaseTrigger);
+
+    ~CNoGrenadesZone();
+
+    void Spawn() override;
+    void Precache() override;
+
+    void InputDisable(inputdata_t &inputdata) override { m_bDisabled = true; }
+    void InputEnable(inputdata_t &inputdata) override { m_bDisabled = false; }
+    void InputToggle(inputdata_t &inputdata) override { m_bDisabled = !m_bDisabled; }
+
+    static bool IsInsideNoGrenadesZone(CBaseEntity *pOther);
+};
