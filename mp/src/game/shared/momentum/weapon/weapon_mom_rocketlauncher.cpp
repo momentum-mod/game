@@ -1,8 +1,8 @@
 #include "cbase.h"
 
 #include "mom_player_shared.h"
-#include "weapon_mom_rocketlauncher.h"
 #include "mom_system_gamemode.h"
+#include "weapon_mom_rocketlauncher.h"
 
 #include "tier0/memdbgon.h"
 
@@ -42,6 +42,22 @@ void CMomentumRocketLauncher::Precache()
 //-----------------------------------------------------------------------------
 void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward)
 {
+#ifdef GAME_DLL
+    static ConVarRef cl_righthand("cl_righthand");
+#else
+    extern ConVar cl_righthand;
+    static ConVarRef mom_rj_center_fire("mom_rj_center_fire");
+#endif
+
+    if (mom_rj_center_fire.GetBool())
+    {
+        vecOffset.y = 0.0f;
+    }
+    else if (!cl_righthand.GetBool())
+    {
+        vecOffset.y *= -1.0f;
+    }
+
     Vector vecForward, vecRight, vecUp;
     AngleVectors(pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp);
 
@@ -89,7 +105,7 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     // MOM_FIXME:
     // This will cause an assertion error.
     // Prevents us from using BaseGunFire() as well.
-    //SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+    // SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -114,10 +130,7 @@ void CMomentumRocketLauncher::RocketLauncherFire()
 #endif
 }
 
-void CMomentumRocketLauncher::PrimaryAttack()
-{
-    RocketLauncherFire();
-}
+void CMomentumRocketLauncher::PrimaryAttack() { RocketLauncherFire(); }
 
 bool CMomentumRocketLauncher::CanDeploy()
 {
