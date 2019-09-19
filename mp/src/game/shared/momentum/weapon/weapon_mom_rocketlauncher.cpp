@@ -17,6 +17,11 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 
+#ifdef GAME_DLL
+static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
+                          "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
+#endif
+
 CMomentumRocketLauncher::CMomentumRocketLauncher()
 {
     m_flTimeToIdleAfterFire = 0.8f;
