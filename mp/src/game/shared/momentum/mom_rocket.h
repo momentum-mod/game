@@ -30,6 +30,8 @@ class CMomRocket : public CBaseAnimating
     void Precache() OVERRIDE;
     void Touch(CBaseEntity *pOther) OVERRIDE;
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
+    void Destroy(bool bNoGrenadeZone);
+    void DestroyTail();
 
     float GetRadius() { return m_flRadius; }
     float GetDamage() OVERRIDE { return m_flDamage; }
