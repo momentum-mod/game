@@ -2,7 +2,9 @@
 #include "mom_rocket.h"
 
 #ifndef CLIENT_DLL
+#include "Sprite.h"
 #include "explode.h"
+#include "momentum/mom_triggers.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -119,13 +121,47 @@ void CMomRocket::Precache()
     PrecacheScriptSound("Missile.Ignite");
 }
 
-void CMomRocket::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity)
+void CMomRocket::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
+
+void CMomRocket::Destroy(bool bNoGrenadeZone)
 {
-    m_vInitialVelocity = velocity;
+    SetThink(&BaseClass::SUB_Remove);
+    SetNextThink(gpGlobals->curtime);
+    SetTouch(NULL);
+    AddEffects(EF_NODRAW);
+    StopSound("Missile.Ignite");
+    DestroyTail();
+
+    if (bNoGrenadeZone)
+    {
+        CSprite *pGlowSprite = CSprite::SpriteCreate(NOGRENADE_SPRITE, GetAbsOrigin(), false);
+        if (pGlowSprite)
+        {
+            pGlowSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxFadeFast);
+            pGlowSprite->SetThink(&CSprite::SUB_Remove);
+            pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0);
+        }
+    }
+}
+
+void CMomRocket::DestroyTail()
+{
+    if (m_hRocketTrail)
+    {
+        m_hRocketTrail->SetLifetime(0.1f);
+        m_hRocketTrail->SetParent(nullptr);
+        m_hRocketTrail = nullptr;
+    }
 }
 
 void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
+    if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
+    {
+        Destroy(true);
+        return;
+    }
+
     // Make invisible
     SetModelName(NULL_STRING);
     SetSolid(SOLID_NONE);
@@ -150,12 +186,7 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType());
     RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, nullptr);
 
-    if (m_hRocketTrail)
-    {
-        m_hRocketTrail->SetLifetime(0.1f);
-        m_hRocketTrail->SetParent(nullptr);
-        m_hRocketTrail = nullptr;
-    }
+    DestroyTail();
 
     m_hOwner = nullptr;
 
@@ -177,12 +208,7 @@ void CMomRocket::Touch(CBaseEntity *pOther)
     const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
     if (pTrace->surface.flags & SURF_SKY)
     {
-        if (m_hRocketTrail)
-        {
-            m_hRocketTrail->SetLifetime(0.1f);
-            m_hRocketTrail->SetParent(nullptr);
-            m_hRocketTrail = nullptr;
-        }
+        DestroyTail();
 
         m_hOwner = nullptr;
         StopSound("Missile.Ignite");
