@@ -1,5 +1,7 @@
 #pragma once
 
+#include "baseprojectile.h"
+
 #ifdef CLIENT_DLL
 #define CMomRocket C_MomRocket
 #else
@@ -7,10 +9,10 @@
 class CMomentumRocketLauncher;
 #endif
 
-class CMomRocket : public CBaseAnimating
+class CMomRocket : public CBaseProjectile
 {
   public:
-    DECLARE_CLASS(CMomRocket, CBaseAnimating);
+    DECLARE_CLASS(CMomRocket, CBaseProjectile);
     DECLARE_NETWORKCLASS();
 
     // This gets sent to the client and placed in the client's interpolation history
@@ -28,7 +30,7 @@ class CMomRocket : public CBaseAnimating
 #else
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
-    void Touch(CBaseEntity *pOther) OVERRIDE;
+    void RocketTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Destroy(bool bNoGrenadeZone);
     void DestroyTail();
