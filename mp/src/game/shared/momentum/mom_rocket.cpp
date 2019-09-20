@@ -84,7 +84,7 @@ void CMomRocket::PostDataUpdate(DataUpdateType_t type)
         vCurOrigin = GetLocalOrigin();
         interpolator.AddToHead(changeTime, &vCurOrigin, false);
 
-        rotInterpolator.AddToHead(changeTime - 1.0, &vCurAngles, false);
+        rotInterpolator.AddToHead(changeTime, &vCurAngles, false);
     }
 }
 
