@@ -18,8 +18,8 @@ WeaponData
     "playermodel"       "models/weapons/mom_shotgun.mdl"
     
     "anim_prefix"       "anim"
-    "bucket"            "0"
-    "bucket_position"   "4"
+    "bucket"            "1"
+    "bucket_position"   "1"
 
     "clip_size"         "7"
     

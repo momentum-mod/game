@@ -21,7 +21,7 @@ WeaponData
     
     "anim_prefix"       "anim"
     "bucket"            "0"
-    "bucket_position"   "3"
+    "bucket_position"   "1"
 
     "clip_size"         "10"
     
