@@ -18,8 +18,8 @@ WeaponData
     "playermodel"       "models/weapons/w_rocket_launcher.mdl"
     
     "anim_prefix"      "anim"
-    "bucket"            "3"
-    "bucket_position"   "1"
+    "bucket"            "0"
+    "bucket_position"   "0"
 
     "clip_size"         "4"
     
