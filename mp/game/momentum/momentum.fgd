@@ -33,6 +33,12 @@
 	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
 ]
 
+// -----------------------------------------------------------------------
+//
+// TF2 COMPATIBILITY
+//
+// -----------------------------------------------------------------------
+@SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." []
 
 //-------------------------------------------------------------------------
 //
