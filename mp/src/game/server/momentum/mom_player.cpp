@@ -229,6 +229,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_iLastBlock = -1;
     m_iOldTrack = 0;
     m_iOldZone = 0;
+    m_fLerpTime = 0.0f;
 
     m_bWasSpectating = false;
 

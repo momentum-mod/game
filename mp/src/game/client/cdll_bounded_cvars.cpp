@@ -65,24 +65,15 @@ class CBoundedCvar_InterpRatio : public ConVar_ServerBounded
 public:
 	CBoundedCvar_InterpRatio() :
 	  ConVar_ServerBounded( "cl_interp_ratio", 
-		  "2.0", 
+		  "0", 
 		  FCVAR_USERINFO | FCVAR_NOT_CONNECTED, 
-		  "Sets the interpolation amount (final amount is cl_interp_ratio / cl_updaterate)." )
+		  "Sets the interpolation amount (final amount is cl_interp_ratio / cl_updaterate).", true, 0.0f, false, 0.0f )
 	  {
 	  }
 
 	  virtual float GetFloat() const
 	  {
-		  static const ConVar *pMin = g_pCVar->FindVar( "sv_client_min_interp_ratio" );
-		  static const ConVar *pMax = g_pCVar->FindVar( "sv_client_max_interp_ratio" );
-		  if ( pMin && pMax && pMin->GetFloat() != -1 )
-		  {
-			  return clamp( GetBaseFloatValue(), pMin->GetFloat(), pMax->GetFloat() );
-		  }
-		  else
-		  {
-			  return GetBaseFloatValue();
-		  }
+		  return GetBaseFloatValue();
 	  }
 };
 
@@ -99,7 +90,7 @@ class CBoundedCvar_Interp : public ConVar_ServerBounded
 public:
 	CBoundedCvar_Interp() :
 	  ConVar_ServerBounded( "cl_interp",
-		  "0.1", 
+		  "0", 
 		  FCVAR_USERINFO | FCVAR_NOT_CONNECTED, 
 		  "Sets the interpolation amount (bounded on low side by server interp ratio settings).", true, 0.0f, true, 0.5f )
 	  {
@@ -107,16 +98,7 @@ public:
 
 	  virtual float GetFloat() const
 	  {
-		  static const ConVar *pUpdateRate = g_pCVar->FindVar( "cl_updaterate" );
-		  static const ConVar *pMin = g_pCVar->FindVar( "sv_client_min_interp_ratio" );
-		  if ( pUpdateRate && pMin && pMin->GetFloat() != -1 )
-		  {
-			  return MAX( GetBaseFloatValue(), pMin->GetFloat() / pUpdateRate->GetFloat() );
-		  }
-		  else
-		  {
-			  return GetBaseFloatValue();
-		  }
+		  return GetBaseFloatValue();
 	  }
 };
 
