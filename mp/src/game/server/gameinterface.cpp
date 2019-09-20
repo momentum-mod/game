@@ -2838,21 +2838,10 @@ void CServerGameClients::ClientSettingsChanged( edict_t *pEdict )
 	if ( useInterpolation )
 	{
 		float flLerpRatio = Q_atof( QUICKGETCVARVALUE("cl_interp_ratio") );
-		if ( flLerpRatio == 0 )
-			flLerpRatio = 1.0f;
+		if ( flLerpRatio < 0.0f )
+			flLerpRatio = 0.0f;
 		float flLerpAmount = Q_atof( QUICKGETCVARVALUE("cl_interp") );
 
-		static const ConVar *pMin = g_pCVar->FindVar( "sv_client_min_interp_ratio" );
-		static const ConVar *pMax = g_pCVar->FindVar( "sv_client_max_interp_ratio" );
-		if ( pMin && pMax && pMin->GetFloat() != -1 )
-		{
-			flLerpRatio = clamp( flLerpRatio, pMin->GetFloat(), pMax->GetFloat() );
-		}
-		else
-		{
-			if ( flLerpRatio == 0 )
-				flLerpRatio = 1.0f;
-		}
 		// #define FIXME_INTERP_RATIO
 		player->m_fLerpTime = MAX( flLerpAmount, flLerpRatio / player->m_nUpdateRate );
 	}
