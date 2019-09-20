@@ -145,7 +145,7 @@ void CMomRocket::Destroy(bool bNoGrenadeZone)
     SetTouch(NULL);
     AddEffects(EF_NODRAW);
     StopSound("Missile.Ignite");
-    DestroyTail();
+    DestroyTrail();
 
     if (bNoGrenadeZone)
     {
@@ -159,7 +159,7 @@ void CMomRocket::Destroy(bool bNoGrenadeZone)
     }
 }
 
-void CMomRocket::DestroyTail()
+void CMomRocket::DestroyTrail()
 {
     if (m_hRocketTrail)
     {
@@ -201,7 +201,7 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType());
     RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, nullptr);
 
-    DestroyTail();
+    DestroyTrail();
 
     m_hOwner = nullptr;
 
@@ -223,7 +223,7 @@ void CMomRocket::RocketTouch(CBaseEntity *pOther)
     const trace_t *pTrace = &GetTouchTrace();
     if (pTrace->surface.flags & SURF_SKY)
     {
-        DestroyTail();
+        DestroyTrail();
 
         m_hOwner = nullptr;
         StopSound("Missile.Ignite");

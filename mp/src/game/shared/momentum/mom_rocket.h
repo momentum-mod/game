@@ -33,7 +33,7 @@ class CMomRocket : public CBaseProjectile
     void RocketTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Destroy(bool bNoGrenadeZone);
-    void DestroyTail();
+    void DestroyTrail();
 
     float GetRadius() { return m_flRadius; }
     float GetDamage() OVERRIDE { return m_flDamage; }
