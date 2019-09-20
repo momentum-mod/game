@@ -13,6 +13,7 @@
         "MOM_Weapon_Rifle" "Shoot Their Eyes Out"
         "MOM_Weapon_Shotgun" "For Zombie Invasions Only"
         "MOM_Weapon_Sniper" "360 Noscoper"
+        "MOM_Weapon_RocketLauncher" "Controlled Combustion"
 
         "MOM_Weapon_SwitchToSemiAuto" "Switched to Semi-Auto mode"
         "MOM_Weapon_SwitchToBurstFire" "Switched to Burst Fire mode"
