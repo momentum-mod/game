@@ -237,7 +237,7 @@ IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
 END_SEND_TABLE()
 
 CTriggerTimerStart::CTriggerTimerStart()
-    : m_angLook(vec3_angle), m_fSpeedLimit(350.0f), m_bTimerStartOnJump(true),
+    : m_angLook(vec3_angle), m_fSpeedLimit(350.0f), m_bTimerStartOnJump(false),
       m_iLimitSpeedType(SPEED_NORMAL_LIMIT)
 {
     m_iZoneNumber = 1;
@@ -278,7 +278,7 @@ bool CTriggerTimerStart::LoadFromKeyValues(KeyValues *zoneKV)
 
         SetSpeedLimit(pActualProps->GetFloat("speed_limit", 350.0f));
         SetIsLimitingSpeed(pActualProps->GetBool("limiting_speed", true));
-        SetStartOnJump(pActualProps->GetBool("start_on_jump", true));
+        SetStartOnJump(pActualProps->GetBool("start_on_jump", false));
         SetLimitSpeedType(pActualProps->GetInt("speed_limit_type", SPEED_NORMAL_LIMIT));
 
         const float nolook = -190.0f;
