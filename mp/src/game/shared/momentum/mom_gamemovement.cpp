@@ -1071,13 +1071,14 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
+        float height = 289.0f * 289.0f / (2.0f * 800.0f); // Ensure the sqrt(2 * gravity * height) gives 289
         if (player->m_Local.m_bDucking)
         {
-            mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * GetCurrentGravity() * 45.0f); // 2 * gravity * height
+            mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * GetCurrentGravity() * height); // 2 * gravity * height
         }
         else
         {
-            mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 45.0f); // 2 * gravity * height
+            mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * height); // 2 * gravity * height
         }
     }
     else
@@ -1107,22 +1108,25 @@ bool CMomentumGameMovement::CheckJumpButton()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         mv->m_outStepHeight += 0.05f; // 0.15f total
 
-    // First do a trace all the way down to the ground
-    TracePlayerBBox(mv->GetAbsOrigin(),
-                    mv->GetAbsOrigin() + Vector(0.0f, 0.0f, -(sv_considered_on_ground.GetFloat() + 0.1f)),
-                    PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
-
-    // Did we hit ground (ground is at max 2 units away so fraction cant be 1.0f)
-    if (pm.fraction != 1.0f && !pm.startsolid && !pm.allsolid)
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        // Now we find 1.5f above ground
-        TracePlayerBBox(pm.endpos, pm.endpos + Vector(0.0f, 0.0f, sv_jump_z_offset.GetFloat()), PlayerSolidMask(),
-                        COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+        // First do a trace all the way down to the ground
+        TracePlayerBBox(mv->GetAbsOrigin(),
+                        mv->GetAbsOrigin() + Vector(0.0f, 0.0f, -(sv_considered_on_ground.GetFloat() + 0.1f)),
+                        PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-        if (pm.fraction == 1.0f && !pm.startsolid && !pm.allsolid)
+        // Did we hit ground (ground is at max 2 units away so fraction cant be 1.0f)
+        if (pm.fraction != 1.0f && !pm.startsolid && !pm.allsolid)
         {
-            // Everything is p100
-            mv->SetAbsOrigin(pm.endpos);
+            // Now we find 1.5f above ground
+            TracePlayerBBox(pm.endpos, pm.endpos + Vector(0.0f, 0.0f, sv_jump_z_offset.GetFloat()), PlayerSolidMask(),
+                            COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+            if (pm.fraction == 1.0f && !pm.startsolid && !pm.allsolid)
+            {
+                // Everything is p100
+                mv->SetAbsOrigin(pm.endpos);
+            }
         }
     }
 
