@@ -213,33 +213,6 @@ SHADER_DRAW
     BlendType_t nBlendType = EvaluateBlendRequirements(info.Albedo, true);
     bool bFullyOpaque = (nBlendType != BT_BLENDADD) && (nBlendType != BT_BLEND) && !bIsAlphaTested;
 
-    // Determining the max level of detail for the envmap.
-    int iEnvmapLOD = 6;
-    auto envTexture = params[info.Envmap]->GetTextureValue();
-    if (envTexture)
-    {
-        // Get power of 2 of texture width.
-        int width = envTexture->GetMappingWidth();
-        int mips = 0;
-        while (width >>= 1)
-        {
-            ++mips;
-        }
-
-        // Cubemap has 4 sides so 2 mips less.
-        iEnvmapLOD = mips;
-    }
-
-    // Dealing with very high and low resolution cubemaps.
-    if (iEnvmapLOD > 12)
-    {  
-        iEnvmapLOD = 12;
-    }
-    else if (iEnvmapLOD < 4)
-    {
-        iEnvmapLOD = 4;
-    }
-
     SHADOW_STATE
     {
         // If alphatest is on, enable it.
@@ -499,6 +472,34 @@ SHADER_DRAW
         // Setting up eye position.
         float vEyePos_SpecExponent[4];
         pShaderAPI->GetWorldSpaceCameraPosition(vEyePos_SpecExponent);
+
+        // Determining the max level of detail for the envmap.
+        int iEnvmapLOD = 6;
+        auto envTexture = params[info.Envmap]->GetTextureValue();
+        if (envTexture)
+        {
+            // Get power of 2 of texture width.
+            int width = envTexture->GetMappingWidth();
+            int mips = 0;
+            while (width >>= 1)
+            {
+                ++mips;
+            }
+
+            // Cubemap has 4 sides so 2 mips less.
+            iEnvmapLOD = mips;
+        }
+
+        // Dealing with very high and low resolution cubemaps.
+        if (iEnvmapLOD > 12)
+        {
+            iEnvmapLOD = 12;
+        }
+        else if (iEnvmapLOD < 4)
+        {
+            iEnvmapLOD = 4;
+        }
+
         // Putting the envmap LOD in the 4th position because there's space here.
         vEyePos_SpecExponent[3] = iEnvmapLOD;
         // Sending them to the pixel shader.
