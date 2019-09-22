@@ -1,5 +1,9 @@
 @echo off
 cd /d %~dp0
+echo ====== Adding registry key...
+REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\10.0\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" /v DefaultProjectExtension /t REG_SZ /d vcproj /f
+echo ====== Creating game files...
 devtools\bin\vpc.exe /momentum +game /mksln momentum.sln /f
+echo ====== Setting up symlink and project settings...
 Powershell.exe -ExecutionPolicy Bypass -File creategameprojects.ps1
 PAUSE
