@@ -4,15 +4,14 @@
 
 ## Contributing
 
-You can read about how to contribute to the development of the mod
-at the [contributing](CONTRIBUTING.md) section.
+You can read about how to contribute to the development of the mod at the [contributing](CONTRIBUTING.md) section. Just branch off of develop, and keep your branches and commits small!
 
-A guide for building the game can be found [on our wiki](https://github.com/momentum-mod/game/wiki/Building-The-Game).
+A guide for building the game can be found [on our documentation website](https://docs.momentum-mod.org/guide/building-the-game/).
 
-You can find a general TO-DO for the project over [at our Trello board](https://trello.com/momentum_mod). Feel free to tackle something if it tickles your fancy! Just note that if members are assigned to a feature, it is most likely already being worked on!
+You can find a list of things to be done for the next version for the project over [at our organization's Projects boards page](https://github.com/orgs/momentum-mod/projects). Feel free to tackle something if it tickles your fancy! Just note that if members are assigned to an issue, it is most likely already being worked on!
 
 ## Contact
-Consider joining [our Discord server](https://discord.gg/wQWkRb6) for contacting the developers about anything.
+Consider joining [our Discord server](https://discord.gg/V4gS7Qg) for contacting the developers about anything.
 
 ## License
 The licenses and legal notices can be found at [SDK LICENSE](LICENSE) and [THIRD PARTY LEGAL NOTICES.](thirdpartylegalnotices.txt)
