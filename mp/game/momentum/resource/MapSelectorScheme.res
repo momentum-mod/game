@@ -218,7 +218,7 @@ Scheme
             "1"
             {
                 "name" "BigNoodleTitling"
-                "tall" "20"
+                "tall" "16"
                 "weight" "0"
                 "antialias" "1"
                 "custom" "1"
@@ -301,7 +301,7 @@ Scheme
             "1"
             {
                 "name"		"BigNoodleTitling"
-                "tall"		"12"
+                "tall"		"14"
                 "weight"	"400"
                 "antialias" "1"
                 "custom" "1"
