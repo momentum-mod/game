@@ -98,16 +98,16 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
 
     // Add the column headers
-    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(40), GetScaledVal(40),
-                                GetScaledVal(40),
+    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(50), GetScaledVal(50),
+                                GetScaledVal(50),
                                 ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
                                     ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE),
                                 GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE);
+                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE),
                                 GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE);
+                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(100),
                                 GetScaledVal(50), GetScaledVal(800),
                                 ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
