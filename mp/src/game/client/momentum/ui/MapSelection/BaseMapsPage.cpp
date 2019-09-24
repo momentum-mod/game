@@ -98,8 +98,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
 
     // Add the column headers
-    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90),
-                                GetScaledVal(120),
+    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(40), GetScaledVal(40),
+                                GetScaledVal(40),
                                 ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
                                     ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE),
@@ -108,21 +108,21 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE),
                                 GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
                                 ListPanel::COLUMN_IMAGE);
-    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150),
-                                GetScaledVal(150), GetScaledVal(190),
+    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(100),
+                                GetScaledVal(50), GetScaledVal(800),
                                 ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
-    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(50),
-                                GetScaledVal(50), GetScaledVal(50),
+    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(30),
+                                GetScaledVal(30), GetScaledVal(30),
                                 ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
                                     ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty",
-                                GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
-    m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90),
-                                GetScaledVal(90), GetScaledVal(105), 0);
-    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90),
-                                GetScaledVal(90), GetScaledVal(105), 0);
+                                GetScaledVal(40), GetScaledVal(20), GetScaledVal(40), 0);
+    m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(70),
+                                GetScaledVal(60), GetScaledVal(150), 0);
+    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(70),
+                                GetScaledVal(60), GetScaledVal(150), 0);
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate",
-                                GetScaledVal(90), GetScaledVal(90), GetScaledVal(90), ListPanel::COLUMN_FIXEDSIZE);
+                                GetScaledVal(65), GetScaledVal(30), GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed",
                                 GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_FIXEDSIZE);
 
@@ -392,7 +392,7 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
     if (map)
     {
         KeyValues *pKvInto = m_pMapList->GetItem(map->m_iListID);
-        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? COLOR_RED : COLOR_GREEN);
+        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? COLOR_BLUE : COLOR_GREEN);
         m_pMapList->ApplyItemChanges(map->m_iListID);
     }
 }
