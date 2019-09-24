@@ -19,7 +19,7 @@ using namespace vgui;
 CMapListPanel::CMapListPanel(CBaseMapsPage *pOuter, const char *pName) : BaseClass(pOuter, pName)
 {
     m_pOuter = pOuter;
-    SetRowHeight(80);
+    SetRowHeight(50);
 }
 
 //-----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ void CMapListPanel::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    SetRowHeight(80);
+    SetRowHeight(50);
 }
 
 void CMapListPanel::SetFont(vgui::HFont font)
