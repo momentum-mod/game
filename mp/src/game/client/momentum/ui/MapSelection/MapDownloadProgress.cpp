@@ -54,6 +54,6 @@ void MapDownloadProgress::ApplySchemeSettings(vgui::IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_cDownloadStart = pScheme->GetColor("MapDownloadProgress.DownloadStartColor", COLOR_RED);
+    m_cDownloadStart = pScheme->GetColor("MapDownloadProgress.DownloadStartColor", COLOR_BLUE);
     m_cDownloadEnd = pScheme->GetColor("MapDownloadProgress.DownloadEndColor", COLOR_GREEN);
 }
