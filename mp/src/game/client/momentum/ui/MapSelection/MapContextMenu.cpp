@@ -49,7 +49,7 @@ void CMapContextMenu::ShowMenu(MapData *pMapData)
             AddMenuItem("StartMap", "#MOM_MapSelector_StartMap", 
                         new KeyValues("StartMap", "id", pMapData->m_uID), m_pParent);
         }
-
+        AddSeparator();
         AddMenuItem("RemoveFromLibrary", "#MOM_MapSelector_RemoveFromLibrary", 
                     new KeyValues("RemoveFromLibrary", "id", pMapData->m_uID), m_pParent);
     }
@@ -72,6 +72,8 @@ void CMapContextMenu::ShowMenu(MapData *pMapData)
 
     AddMenuItem("RefreshMapInfo", "#MOM_MapSelector_RefreshMapInfo",
                 new KeyValues("RefreshMapInfo", "id", pMapData->m_uID), m_pParent);
+
+	AddSeparator();
 
     AddMenuItem("ViewMapInfo", "#MOM_MapSelector_ShowMapInfo", 
                 new KeyValues("ViewMapInfo", "id", pMapData->m_uID), m_pParent);
