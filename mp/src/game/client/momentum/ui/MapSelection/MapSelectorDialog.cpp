@@ -301,9 +301,9 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
             if (!IsMapDownloading(uMapID))
             {
                 if (g_pMapCache->IsMapQueuedToDownload(uMapID))
-                    pDataKv->SetColor("cellcolor", COLOR_BLUE); // MOM_TODO make this a scheme color
+                    pDataKv->SetColor("cellcolor", COLOR_Blue); // MOM_TODO make this a scheme color
                 else
-                    pDataKv->SetColor("cellcolor", COLOR_RED); // MOM_TODO make this a scheme color
+                    pDataKv->SetColor("cellcolor", COLOR_LightBlue); // MOM_TODO make this a scheme color
             }
         }
         else
