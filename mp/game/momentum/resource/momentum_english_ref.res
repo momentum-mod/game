@@ -138,7 +138,7 @@
         "MOM_MapSelector_FavoriteMaps" "Favorites"
         "MOM_MapSelector_MapCount" "Maps (%s1)"
         "MOM_MapSelector_Maps" "Maps"
-        "MOM_MapSelector_Difficulty" "Difficulty"
+        "MOM_MapSelector_Difficulty" "Tier"
         "MOM_MapSelector_StartMap" "Start Map"
         "MOM_MapSelector_RefreshMapInfo" "Refresh Map Info"
         "MOM_MapSelector_ShowMapInfo" "Show Map Info"
