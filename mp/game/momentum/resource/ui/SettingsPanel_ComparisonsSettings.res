@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "ComparisonsSettings"
-        "tall" "300"
+        "tall" "240"
         "wide" "1000"
     }
     
@@ -41,6 +41,7 @@
 		"cvar_name"		"mom_comparisons"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultSmall"
     }
     
     "CompareFormat"
@@ -72,6 +73,7 @@
 		"cvar_name"		"mom_comparisons_format_output"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultSmall"
     }
     
     "ZonesLabel"
@@ -92,7 +94,7 @@
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
-		//"Font"		"DefaultBoldLarge"
+		"Font"		"DefaultSmall"
 		"wrap"		"0"
 		"centerwrap"		"0"
 		"textinsetx"		"0"
@@ -108,9 +110,9 @@
 		"fieldName"		"Zones"
 		"xpos"		"4"
 		"ypos"		"0"
-		"wide"		"35"
-		"tall"		"15"
-        "font" "DefaultSmall"
+		"wide"		"18"
+		"tall"		"12"
+        "font" "DefaultVerySmall"
 		"autoResize"		"0"
 		"pinCorner"		"0"
         "pin_to_sibling" "ZonesLabel"
@@ -146,7 +148,7 @@
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
-		//"Font"		"DefaultBoldLarge"
+        "font" "DefaultSmall"
 		"wrap"		"0"
 		"centerwrap"		"0"
 		"textinsetx"		"0"
@@ -162,8 +164,8 @@
 		"fieldName"		"TimeType"
 		"xpos"		"4"
 		"ypos"		"0"
-		"wide"		"150"
-		"tall"		"16"
+		"wide"		"100"
+		"tall"		"12"
 		"autoResize"		"0"
 		"pinCorner"		"0"
         "pin_to_sibling" "TimeTypeLabel"
@@ -211,6 +213,7 @@
 		"cvar_name"		"mom_comparisons_time_show_overall"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "TimeShowZone"
@@ -243,6 +246,7 @@
 		"cvar_name"		"mom_comparisons_time_show_perzone"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "VelShow"
@@ -274,6 +278,7 @@
 		"cvar_name"		"mom_comparisons_vel_show"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "VelShowAvg"
@@ -305,6 +310,7 @@
 		"cvar_name"		"mom_comparisons_vel_show_avg"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "VelShowMax"
@@ -336,6 +342,7 @@
 		"cvar_name"		"mom_comparisons_vel_show_max"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "VelShowExit"
@@ -368,6 +375,7 @@
 		"cvar_name"		"mom_comparisons_vel_show_exit"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     "VelShowEnter"
     {
@@ -399,6 +407,7 @@
 		"cvar_name"		"mom_comparisons_vel_show_enter"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "SyncShow"
@@ -430,6 +439,7 @@
 		"cvar_name"		"mom_comparisons_sync_show"
 		"cvar_value"		"0"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "SyncShowS1"
@@ -462,6 +472,7 @@
 		"cvar_name"		"mom_comparisons_sync_show_sync1"
 		"cvar_value"		"0"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "SyncShowS2"
@@ -494,6 +505,7 @@
 		"cvar_name"		"mom_comparisons_sync_show_sync2"
 		"cvar_value"		"0"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "ShowJumps"
@@ -525,6 +537,7 @@
 		"cvar_name"		"mom_comparisons_jumps_show"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
     
     "ShowStrafes"
@@ -556,5 +569,6 @@
 		"cvar_name"		"mom_comparisons_strafe_show"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultVerySmall"
     }
 }

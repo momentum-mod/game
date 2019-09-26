@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "OnlineSettings"
-        "tall" "255"
+        "tall" "100"
         "wide" "1000"
     }
     
@@ -43,6 +43,7 @@
 		"cvar_name"		"mom_ghost_online_rotations"
 		"cvar_value"		"0"
         "actionsignallevel" "1"
+		"Font"		"DefaultVerySmall"
 	}
     
     "ToggleSounds"
@@ -75,6 +76,7 @@
 		"cvar_name"		"mom_ghost_online_sounds"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+		"Font"		"DefaultVerySmall"
 	}
     
     "ToggleTrails"
@@ -105,6 +107,7 @@
 		"cvar_name"		"mom_ghost_online_trail_enable"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+		"Font"		"DefaultVerySmall"
 	}
     
     "EnableAlphaOverride"
@@ -137,6 +140,7 @@
 		"cvar_name"		"mom_ghost_online_alpha_override_enable"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+		"Font"		"DefaultVerySmall"
 	}
 	"AlphaOverrideSlider"
 	{
@@ -184,7 +188,7 @@
 		"maxchars"		"3"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
-        "font" "DefaultSmall"
         "actionsignallevel" "1"
+		"Font"		"DefaultVerySmall"
 	}
 }
