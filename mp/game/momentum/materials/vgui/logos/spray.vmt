@@ -1,0 +1,8 @@
+LightmappedGeneric
+{
+	"$basetexture"	"vgui\logos\spray_bullseye"
+	"$translucent" "1"
+	"$decal" "1"
+	"$decalscale" "0.250"
+
+}

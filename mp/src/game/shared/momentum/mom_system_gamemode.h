@@ -96,6 +96,17 @@ public:
     const char* GetMapPrefix() override { return "trikz_"; }
 };
 
+class CGameMode_Freestyle : public CGameModeBase
+{
+  public:
+    GameMode_t GetType() override { return GAMEMODE_FREESTYLE; }
+    const char *GetStatusString() override { return "Freestyle"; }
+    const char *GetDiscordIcon() override { return "mom_icon_rj"; } // MOM_TODO: Create Freestyle icon
+    const char *GetMapPrefix() override { return "freestyle_"; }
+    void SetGameModeVars() override;
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+};
+
 class CGameModeSystem : public CAutoGameSystem
 {
 public:

@@ -94,6 +94,25 @@ void CGameMode_Tricksurf::SetGameModeVars()
     sv_accelerate.SetValue(10);
 }
 
+void CGameMode_Freestyle::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    // Freestyle-specific
+    sv_maxvelocity.SetValue(100000);
+    sv_airaccelerate.SetValue(1000);
+    sv_accelerate.SetValue(10);
+}
+
+void CGameMode_Freestyle::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+#ifdef GAME_DLL
+    pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
+    // MOM_TODO: Add sticky bomb launcher
+    pPlayer->GiveNamedItem("weapon_momentum_shotgun");
+#endif
+}
+
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
 {
     m_pCurrentGameMode = new CGameModeBase; // Unknown game mode
@@ -104,6 +123,7 @@ CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
     m_vecGameModes.AddToTail(new CGameMode_RJ);
     m_vecGameModes.AddToTail(new CGameMode_Tricksurf);
     m_vecGameModes.AddToTail(new CGameMode_Trikz);
+    m_vecGameModes.AddToTail(new CGameMode_Freestyle);
 }
 
 CGameModeSystem::~CGameModeSystem()
