@@ -108,7 +108,7 @@ void CGameMode_Freestyle::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
     pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
-    // MOM_TODO: Add sticky bomb launcher
+    // MOM_TODO FREESTYLE_TODO : Add sticky bomb launcher
     pPlayer->GiveNamedItem("weapon_momentum_shotgun");
 #endif
 }

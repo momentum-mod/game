@@ -40,7 +40,8 @@ void CMomentumRocketLauncher::Precache()
 //-----------------------------------------------------------------------------
 // Purpose: Return the origin & angles for a projectile fired from the player's gun
 //-----------------------------------------------------------------------------
-void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward)
+void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc,
+                                                     QAngle *angForward)
 {
 #ifdef GAME_DLL
     static ConVarRef cl_righthand("cl_righthand");

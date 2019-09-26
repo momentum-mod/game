@@ -101,9 +101,10 @@ class CGameMode_Freestyle : public CGameModeBase
   public:
     GameMode_t GetType() override { return GAMEMODE_FREESTYLE; }
     const char *GetStatusString() override { return "Freestyle"; }
-    const char *GetDiscordIcon() override { return "mom_icon_rj"; } // MOM_TODO: Create Freestyle icon
+    const char *GetDiscordIcon() override { return "mom_icon_rj"; } // MOM_TODO FREESTYLE_TODO : Create Freestyle icon
     const char *GetMapPrefix() override { return "freestyle_"; }
     void SetGameModeVars() override;
+    bool PlayerHasAutoBhop() override { return true; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
 };
 
