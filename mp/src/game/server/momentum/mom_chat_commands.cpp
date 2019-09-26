@@ -10,7 +10,24 @@ const command_alias_t ChatCommands::aliases[] = {
     {"reset", {"back"}}, 
     {"bonus", {"b"}}, 
     {"stage", {"s"}},
-    {"spectate", {"spec"}}
+    {"spectate", {"spec"}},
+    {"start_mark_create", {"startpos", "setstart"}},
+    {"zone_showmenu", {"zonemenu"}},
+    {"saveloc_create", {"saveloc"}},
+    {"saveloc_current", {"loadloc"}},
+    {"saveloc_remove_current", {"delloc"}},
+    {"settings_show", {"settings"}},
+
+    {"weapon_momentum_pistol", {"usp", "glock", "pistol"}},
+    {"weapon_momentum_rifle", {"rifle"}},
+    {"weapon_momentum_smg", {"smg", "mp5", "p90"}},
+    {"weapon_momentum_shotgun", {"shotgun", "m3"}},
+    {"weapon_momentum_sniper", {"sniper", "awp"}},
+    {"weapon_momentum_lmg", {"lmg", "negev", "m249"}},
+    {"weapon_momentum_grenade", {"grenade"}},
+    {"weapon_momentum_paintgun", {"paintgun"}},
+    {"weapon_knife", {"knife"}}
+
 };
 
 void ChatCommands::ExecuteChatCommand(char *command)
@@ -39,14 +56,27 @@ void ChatCommands::ExecuteChatCommand(char *command)
         else
             engine->ClientCommand(CMomentumPlayer::GetLocalPlayer()->edict(), "mom_stage_tele %s", args.Arg(1));
     }
+    //TODO: Implement pattern matching on map name to give the player a list of maps if multiple match
+    else if (Q_strcmp(com, "map") == 0)
+    {
+        if (args.ArgC() == 1)
+            ; //Warn player that command needs a parameter
+        else
+            engine->ClientCommand(CMomentumPlayer::GetLocalPlayer()->edict(), "map %s", args.Arg(1));
+    }
+    //Handle weapon commands
+    else if (Q_strnicmp(com, "weapon", 6) == 0)
+    {
+        engine->ClientCommand(CMomentumPlayer::GetLocalPlayer()->edict(), "give %s", com);
+    }
 
     //Just turns !command into mom_command, both reset and spectate are rolled into this
     else
     {
         if (args.ArgC() == 1)
-            engine->ClientCommand(CMomentumPlayer::GetLocalPlayer()->edict(), "mom_%s", args.Arg(0));
+            engine->ClientCommand(CMomentumPlayer::GetLocalPlayer()->edict(), "mom_%s", com);
         else
-            engine->ClientCommand(CMomentumPlayer::GetLocalPlayer()->edict(), "mom_%s %s", args.Arg(0), args.Arg(1));
+            engine->ClientCommand(CMomentumPlayer::GetLocalPlayer()->edict(), "mom_%s %s", com, args.Arg(1));
     }
 }
 
