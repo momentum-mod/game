@@ -80,6 +80,7 @@ void CGameMode_RJ::SetGameModeVars()
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
+    CGameModeBase::OnPlayerSpawn(pPlayer);
     pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
     pPlayer->GiveNamedItem("weapon_momentum_shotgun");
 #endif
@@ -107,6 +108,7 @@ void CGameMode_Freestyle::SetGameModeVars()
 void CGameMode_Freestyle::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
+    CGameModeBase::OnPlayerSpawn(pPlayer);
     pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
     // MOM_TODO FREESTYLE_TODO : Add sticky bomb launcher
     pPlayer->GiveNamedItem("weapon_momentum_shotgun");
