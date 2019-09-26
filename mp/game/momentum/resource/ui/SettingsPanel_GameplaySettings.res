@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "GameplaySettings"
-        "tall" "200"
+        "tall" "180"
         "wide" "1000"
     }
     
@@ -47,7 +47,7 @@
 		"ypos"		"16"
 		"wide"		"35"
 		"tall"		"15"
-        "font" "DefaultSmall"
+        "font" "DefaultVerySmall"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"RoundedCorners"		"15"
@@ -86,6 +86,7 @@
 		"centerwrap"		"0"
 		"textinsetx"		"0"
 		"textinsety"		"0"
+        "font" "DefaultSmall"
 		"auto_wide_tocontents" "1"
 		"use_proportional_insets"		"0"
     }
@@ -119,6 +120,7 @@
 		"cvar_name"		"mom_bhop_playblocksound"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultSmall"
     }
     "PracModeSafeGuard"
     {
@@ -153,6 +155,7 @@
 		"cvar_name"		"mom_practice_safeguard"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultSmall"
     }
     "SaveCheckpoints"
     {
@@ -184,6 +187,7 @@
 		"cvar_name"		"mom_saveloc_save_between_sessions"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultSmall"
     }
     "LowerWeaponButton"
     {
@@ -214,6 +218,7 @@
 		"cvar_name"		"mom_weapon_speed_lower_enable"
 		"cvar_value"		"1"
         "actionsignallevel" "1"
+        "font" "DefaultSmall"
     }
 	"LowerSpeedLabel"
 	{
@@ -240,16 +245,16 @@
 		"auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
 		"use_proportional_insets"		"0"
+        "font" "DefaultSmall"
 	}
 	"LowerSpeedEntry"
 	{
         "ControlName" "CvarTextEntry"
         "fieldName" "LowerSpeedEntry"
-		"xpos"		"-8"
-		"ypos"		"2"
-		"wide"		"35"
-		"tall"		"16"
-        "font" "DefaultSmall"
+		"xpos"		"-4"
+		"ypos"		"4"
+		"wide"		"25"
+		"tall"		"12"
 		"autoResize"		"0"
 		"pinCorner"		"0"
         "pin_to_sibling" "LowerWeaponButton"
@@ -266,12 +271,13 @@
         "actionsignallevel" "1"
 		"NumericInputOnly" "1"
 		"cvar_name" "mom_weapon_speed_lower"
+        "font" "DefaultVerySmall"
     }
     "WorldLights"
     {
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "WorldLights"
-        "xpos"		"8"
+        "xpos"		"4"
 		"ypos"		"4"
 		"autoResize"		"0"
 		"pinCorner"		"0"
@@ -293,6 +299,7 @@
         "pin_to_sibling" "LowerSpeedEntry"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "font" "DefaultSmall"
     }
     "OverlappingKeys"
     {
@@ -320,6 +327,7 @@
         "pin_to_sibling" "WorldLights"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "font" "DefaultSmall"
     }
     "ReleaseForwardOnJump"
     {
@@ -347,5 +355,6 @@
         "pin_to_sibling" "OverlappingKeys"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
+        "font" "DefaultSmall"
     }
 }

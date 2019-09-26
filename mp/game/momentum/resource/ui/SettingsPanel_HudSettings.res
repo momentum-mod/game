@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "HudSettings"
-        "tall" "300"
+        "tall" "230"
         "wide" "1000"
     }
     
@@ -17,8 +17,8 @@
     {
         "ControlName"		"Label"
         "fieldName"		"SpeedoLabel"
-        "xpos"		"2"
-        "ypos"		"2"
+        "xpos"		"6"
+        "ypos"		"4"
         "autoResize"		"0"
         "pinCorner"		"0"
         "visible"		"1"
@@ -28,7 +28,7 @@
         "textAlignment"		"west"
         "dulltext"		"0"
         "brighttext"		"0"
-        "Font"		"DefaultBoldLarge"
+        "Font"		"DefaultBoldSmall"
         "wrap"		"0"
         "centerwrap"		"0"
         "textinsetx"		"0"
@@ -63,6 +63,7 @@
         "Default"		"0"
         "cvar_name"		"mom_hud_speedometer"
         "cvar_value"		"1"
+        "Font"		"DefaultVerySmall"
     }
     "SpeedoShowJump"
     {
@@ -92,6 +93,7 @@
         "Default"		"0"
         "cvar_name"		"mom_hud_speedometer_showlastjumpvel"
         "cvar_value"		"1"
+        "Font"		"DefaultVerySmall"
     }
     "ShowSpeedoHvel"
     {
@@ -121,6 +123,7 @@
         "Default"		"0"
         "cvar_name"		"mom_hud_speedometer_hvel"
         "cvar_value"		"0"
+        "Font"		"DefaultVerySmall"
     }
     "SpeedoUnitsLabel"
     {
@@ -147,6 +150,7 @@
         "auto_wide_tocontents"		"1"
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
+        "Font"		"DefaultSmall"
     }
     "SpeedoUnits"
     {
@@ -155,7 +159,7 @@
         "xpos"		"3"
         "ypos"		"0"
         "wide"		"96"
-        "tall"		"17"
+        "tall"		"12"
         "autoResize"		"0"
         "pinCorner"		"0"
         "pin_to_sibling" "SpeedoUnitsLabel"
@@ -196,6 +200,7 @@
         "auto_wide_tocontents"		"1"
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
+        "font" "DefaultSmall"
     }
     "SpeedoShowColor"
     {
@@ -203,8 +208,8 @@
         "fieldName"		"SpeedoShowColor"
         "xpos"		"3"
         "ypos"		"0"
-        "wide"		"185"
-        "tall"		"16"
+        "wide"		"155"
+        "tall"		"12"
         "autoResize"		"0"
         "pinCorner"		"0"
         "pin_to_sibling" "SpeedoColorLabel"
@@ -244,7 +249,7 @@
         "textAlignment"		"west"
         "dulltext"		"0"
         "brighttext"		"0"
-        "Font"		"DefaultBoldLarge"
+        "Font"		"DefaultBoldSmall"
         "wrap"		"0"
         "centerwrap"		"0"
         "textinsetx"		"0"
@@ -258,7 +263,7 @@
         "ControlName"		"CvarToggleCheckButton"
         "fieldName"		"ButtonsShow"
         "xpos"		"-8"
-        "ypos"		"0"
+        "ypos"		"2"
         "autoResize"		"0"
         "pinCorner"		"0"
         "pin_to_sibling" "KeysLabel"
@@ -281,6 +286,7 @@
         "Default"		"0"
         "cvar_name"		"mom_hud_showkeypresses"
         "cvar_value"		"1"
+        "font" "DefaultVerySmall"
     }
     
     
@@ -303,7 +309,7 @@
         "textAlignment"		"west"
         "dulltext"		"0"
         "brighttext"		"0"
-        "Font"		"DefaultBoldLarge"
+        "Font"		"DefaultBoldSmall"
         "wrap"		"0"
         "centerwrap"		"0"
         "textinsetx"		"0"
@@ -340,6 +346,7 @@
         "Default"		"0"
         "cvar_name"		"mom_hud_strafesync_draw"
         "cvar_value"		"1"
+        "font" "DefaultVerySmall"
     }
     "SyncShowBar"
     {
@@ -369,6 +376,7 @@
         "Default"		"0"
         "cvar_name"		"mom_hud_strafesync_drawbar"
         "cvar_value"		"1"
+        "font" "DefaultVerySmall"
     }
     "SyncTypeLabel"
     {
@@ -395,6 +403,7 @@
         "auto_wide_tocontents"		"1"
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
+        "font" "DefaultSmall"
     }
     "SyncType"
     {
@@ -403,9 +412,8 @@
         "xpos"		"3"
         "ypos"		"0"
         "wide"		"185"
-        "tall"		"16"
+        "tall"		"12"
         "autoResize"		"0"
-        "font" "DefaultVerySmall"
         "pinCorner"		"0"
         "pin_to_sibling" "SyncTypeLabel"
         "pin_corner_to_sibling"		"2"
@@ -445,6 +453,7 @@
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
+        "font" "DefaultSmall"
     }
     "SyncColorize"
     {
@@ -453,7 +462,7 @@
         "xpos"		"3"
         "ypos"		"0"
         "wide"		"75"
-        "tall"		"16"
+        "tall"		"12"
         "autoResize"		"0"
         "pinCorner"		"0"
         "pin_to_sibling" "SyncColorTypeLabel"
@@ -489,7 +498,7 @@
         "textAlignment"		"west"
         "dulltext"		"0"
         "brighttext"		"0"
-        "Font"		"DefaultBoldLarge"
+        "Font"		"DefaultBoldSmall"
         "wrap"		"0"
         "centerwrap"		"0"
         "textinsetx"		"0"
@@ -526,5 +535,6 @@
         "Default"		"0"
         "cvar_name"		"mom_hud_timer"
         "cvar_value"		"1"
+        "Font"		"DefaultVerySmall"
     }
 }
