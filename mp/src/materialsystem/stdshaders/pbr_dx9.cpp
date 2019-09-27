@@ -93,6 +93,12 @@ SHADER_INIT_PARAMS()
         params[BUMPMAP]->SetStringValue("dev/flat_normal");
     }
 
+    // Fill in default envmap in case user doesn't specify one
+    if (!params[ENVMAP]->IsDefined())
+    {
+        params[ENVMAP]->SetStringValue("env_cubemap");
+    }
+
     // Check if the hardware supports flashlight border color
     if (g_pHardwareConfig->SupportsBorderColor())
     {
