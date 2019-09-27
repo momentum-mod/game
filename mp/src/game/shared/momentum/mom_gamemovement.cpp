@@ -1399,6 +1399,9 @@ void CMomentumGameMovement::FullWalkMove()
 
         if (player->GetGroundEntity() != nullptr)
         {
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+                mv->m_vecVelocity[2] = 0.f;
+
             WalkMove();
 
             CategorizePosition();
