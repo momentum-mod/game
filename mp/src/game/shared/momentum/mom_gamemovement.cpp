@@ -974,6 +974,22 @@ void CMomentumGameMovement::PlayerMove()
     }
 }
 
+#define RJ_BUNNYHOP_MAX_SPEED_FACTOR 1.2f
+void CMomentumGameMovement::PreventBunnyHopping()
+{
+    float maxscaledspeed = RJ_BUNNYHOP_MAX_SPEED_FACTOR * mv->m_flMaxSpeed;
+    if (maxscaledspeed <= 0.0f)
+        return;
+
+    float speed = mv->m_vecVelocity.Length();
+    if (speed <= maxscaledspeed)
+        return;
+
+    float fraction = maxscaledspeed / speed;
+
+    mv->m_vecVelocity *= fraction;
+}
+
 bool CMomentumGameMovement::CheckJumpButton()
 {
     trace_t pm;
@@ -1039,6 +1055,11 @@ bool CMomentumGameMovement::CheckJumpButton()
     if (bPlayerBhopBlocked)
     {
         return false;
+    }
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        PreventBunnyHopping();
     }
 
     // AUTOBHOP---
