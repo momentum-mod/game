@@ -40,6 +40,7 @@ void CGameModeBase::SetGameModeVars()
     sv_airaccelerate.SetValue(150);
     sv_accelerate.SetValue(5);
     sv_maxspeed.SetValue(260);
+    sv_stopspeed.SetValue(75);
 }
 
 void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
@@ -75,6 +76,7 @@ void CGameMode_RJ::SetGameModeVars()
     sv_airaccelerate.SetValue(10);
     sv_accelerate.SetValue(10);
     sv_maxspeed.SetValue(240);
+    sv_stopspeed.SetValue(100);
 }
 
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
