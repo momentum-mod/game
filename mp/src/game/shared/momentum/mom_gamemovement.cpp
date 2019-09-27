@@ -1008,15 +1008,10 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    // Cannot jump while ducked in TF2
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && (player->GetFlags() & FL_DUCKING))
     {
-        // Cannot jump while ducked
-        if (player->GetFlags() & FL_DUCKING)
-            return false;
-
-        // Cannot jump while in the unduck transition
-        if (player->m_Local.m_flDuckJumpTime > 0.0f)
-            return false;
+        return false;
     }
 
     // No more effect
@@ -1071,14 +1066,16 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        float height = 289.0f * 289.0f / (2.0f * 800.0f); // Ensure the sqrt(2 * gravity * height) gives 289
+        // Gravity dependance, but ensuring it exactly gives 289 at 800 gravity
+        float height = 289.0f * 289.0f / (2.0f * 800.0f);
+        float vel = GetCurrentGravity() == 800.0f ? 289.0f : sqrt(2.f * GetCurrentGravity() * height);
         if (player->m_Local.m_bDucking)
         {
-            mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * GetCurrentGravity() * height); // 2 * gravity * height
+            mv->m_vecVelocity[2] = flGroundFactor * vel; // 2 * gravity * height
         }
         else
         {
-            mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * height); // 2 * gravity * height
+            mv->m_vecVelocity[2] += flGroundFactor * vel; // 2 * gravity * height
         }
     }
     else
