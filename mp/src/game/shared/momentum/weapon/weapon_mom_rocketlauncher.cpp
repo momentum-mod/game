@@ -103,7 +103,7 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     WeaponSound(SINGLE);
 
     // MOM_FIXME:
-	// Should no longer Assert, unsure about BaseGunFire() though
+    // Should no longer Assert, unsure about BaseGunFire() though
     SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 
     // player "shoot" animation
