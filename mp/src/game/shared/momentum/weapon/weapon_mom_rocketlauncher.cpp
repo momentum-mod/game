@@ -103,9 +103,8 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     WeaponSound(SINGLE);
 
     // MOM_FIXME:
-    // This will cause an assertion error.
-    // Prevents us from using BaseGunFire() as well.
-    // SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+	// Should no longer Assert, unsure about BaseGunFire() though
+    SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
