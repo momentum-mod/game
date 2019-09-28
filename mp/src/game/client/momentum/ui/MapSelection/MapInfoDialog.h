@@ -42,6 +42,8 @@ protected:
     void GetMapInfo();
     void FillMapInfo();
 
+    void ApplySchemeSettings(vgui::IScheme *pScheme);
+
     void GetMapTimes(TimeType_t type);
     void OnTop10TimesCallback(KeyValues *pKvResponse);
     void OnAroundTimesCallback(KeyValues *pKvResponse);
