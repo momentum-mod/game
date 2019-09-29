@@ -14,6 +14,8 @@ class CMomentumGhostBaseEntity;
 
 struct SavedState_t
 {
+    char m_pszTargetName[128];// Saved player targetname
+    char m_pszClassName[128]; // Saved player classname
     int m_nButtons;           // Saved player buttons being pressed
     Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
     QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
