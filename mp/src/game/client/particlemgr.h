@@ -105,9 +105,7 @@ entities. Each one is useful under different conditions.
 #ifndef PARTICLEMGR_H
 #define PARTICLEMGR_H
 
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "materialsystem/imaterial.h"
 #include "materialsystem/imaterialsystem.h"
@@ -119,13 +117,9 @@ entities. Each one is useful under different conditions.
 #include "tier0/fasttimer.h"
 #include "utllinkedlist.h"
 #include "utldict.h"
-#ifdef WIN32
-#include <typeinfo.h>
-#else
-#include <typeinfo>
-#endif
 #include "tier1/utlintrusivelist.h"
 #include "tier1/utlstring.h"
+#include <typeinfo>
 
 
 //-----------------------------------------------------------------------------
