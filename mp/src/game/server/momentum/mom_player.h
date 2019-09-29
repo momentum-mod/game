@@ -304,8 +304,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     int m_nPrevButtons;
 
-    char m_pszDefaultEntName[128];
-
     // Used by momentum triggers
     Vector m_vecPreviousOrigins[MAX_PREVIOUS_ORIGINS];
 
