@@ -249,8 +249,6 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_RunStats.Init();
 
-    Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
-
     ListenForGameEvent("mapfinished_panel_closed");
 
     for (int i = 0; i < MAX_TRACKS; i++)
@@ -444,7 +442,6 @@ void CMomentumPlayer::SendAppearance() { g_pMomentumGhostClient->SendAppearanceD
 
 void CMomentumPlayer::Spawn()
 {
-    SetName(MAKE_STRING(m_pszDefaultEntName));
     SetModel(ENTITY_MODEL);
     SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
@@ -1239,7 +1236,6 @@ void CMomentumPlayer::UpdateMaxVelocity()
 
 void CMomentumPlayer::ResetRunStats()
 {
-    SetName(MAKE_STRING(m_pszDefaultEntName)); // Reset name
     // MOM_TODO: Consider any other resets needed (classname, any flags, etc)
 
     m_nPerfectSyncTicks = 0;
