@@ -389,6 +389,9 @@ CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally
         track = Q_atoi(args[1]);
     }
 
+    g_pMomentumTimer->Stop(pPlayer);
+    g_pMomentumTimer->SetCanStart(false);
+
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
     {
