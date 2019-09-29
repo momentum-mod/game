@@ -1686,6 +1686,9 @@ void CMomentumPlayer::SetPracticeModeState()
 
 void CMomentumPlayer::EnablePracticeMode()
 {
+    if (m_bHasPracticeMode)
+        return;
+
     if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
     {
         const auto safeGuard = (m_nButtons & (IN_FORWARD|IN_MOVELEFT|IN_MOVERIGHT|IN_BACK|IN_JUMP|IN_DUCK|IN_WALK)) != 0;
@@ -1717,6 +1720,9 @@ void CMomentumPlayer::EnablePracticeMode()
 
 void CMomentumPlayer::DisablePracticeMode()
 {
+    if (!m_bHasPracticeMode)
+        return;
+
     m_bHasPracticeMode = false;
     SetPracticeModeState();
 
