@@ -1767,6 +1767,8 @@ void CMomentumPlayer::SaveCurrentRunState(bool bFromPractice)
 
     if (bFromPractice || !m_bHasPracticeMode)
     {
+        Q_strncpy(pState->m_pszTargetName, GetEntityName().ToCStr(), sizeof(pState->m_pszTargetName));
+        Q_strncpy(pState->m_pszClassName, GetClassname(), sizeof(pState->m_pszClassName));
         m_iOldTrack = m_Data.m_iCurrentTrack;
         m_iOldZone = m_Data.m_iCurrentZone;
         pState->m_nSavedAccelTicks = m_nAccelTicks;
@@ -1799,6 +1801,8 @@ void CMomentumPlayer::RestoreRunState(bool bFromPractice)
 
     if (bFromPractice || !m_bHasPracticeMode)
     {
+        SetName(MAKE_STRING(pState->m_pszTargetName));
+        SetClassname(pState->m_pszClassName);
         m_Data.m_iCurrentTrack = m_iOldTrack;
         m_Data.m_iCurrentZone = m_iOldZone;
         m_nAccelTicks = pState->m_nSavedAccelTicks;
