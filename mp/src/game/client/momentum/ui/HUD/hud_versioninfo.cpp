@@ -5,6 +5,8 @@
 #include "mom_shareddefs.h"
 #include <vgui_controls/Label.h>
 
+#include "icommandline.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -37,9 +39,10 @@ CHudVersionInfo::CHudVersionInfo(const char *pElementName) : CHudElement(pElemen
 void CHudVersionInfo::VidInit()
 {
     KeyValuesAD loc("Version");
-    loc->SetWString("verLabel", g_pVGuiLocalize->Find("#MOM_StartupMsg_Alpha_Title"));
+    loc->SetWString("verLabel", g_pVGuiLocalize->FindSafe("#MOM_StartupMsg_Alpha_Title"));
     loc->SetString("verNum", MOM_CURRENT_VERSION);
-    SetText(CConstructLocalizedString(L"%verLabel% %verNum%", (KeyValues*)loc));
+    loc->SetString("mappingMode", CommandLine()->CheckParm("-mapping") ? "- Mapping Mode Active" : "");
+    SetText(CConstructLocalizedString(L"%verLabel% %verNum% %mappingMode%", (KeyValues*)loc));
     InvalidateLayout();
 }
 
