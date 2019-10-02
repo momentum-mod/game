@@ -80,6 +80,9 @@ class CMomentumGameMovement : public CGameMovement
 
     void Friction(void);
 
+	virtual void CheckWaterJump();
+	virtual bool CheckWater();
+
     // Duck
     virtual void Duck(void);
     virtual void FinishUnDuck(void);

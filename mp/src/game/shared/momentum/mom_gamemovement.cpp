@@ -1344,6 +1344,81 @@ void CMomentumGameMovement::StartGravity(void)
     CheckVelocity();
 }
 
+void CMomentumGameMovement::CheckWaterJump(void)
+{
+    Vector flatforward;
+    Vector forward;
+    Vector flatvelocity;
+    float curspeed;
+
+    AngleVectors(mv->m_vecViewAngles, &forward); // Determine movement angles
+
+    // Already water jumping.
+    if (player->m_flWaterJumpTime)
+        return;
+
+    // Don't hop out if we just jumped in
+    if (mv->m_vecVelocity[2] < -180)
+        return; // only hop out if we are moving up
+
+    // See if we are backing up
+    flatvelocity[0] = mv->m_vecVelocity[0];
+    flatvelocity[1] = mv->m_vecVelocity[1];
+    flatvelocity[2] = 0;
+
+    // Must be moving
+    curspeed = VectorNormalize(flatvelocity);
+
+    // see if near an edge
+    flatforward[0] = forward[0];
+    flatforward[1] = forward[1];
+    flatforward[2] = 0;
+    VectorNormalize(flatforward);
+
+    // Are we backing into water from steps or something?  If so, don't pop forward
+    if (curspeed != 0.0 && (DotProduct(flatvelocity, flatforward) < 0.0))
+        return;
+
+    Vector vecStart;
+    // Start line trace at waist height (using the center of the player for this here)
+    vecStart = mv->GetAbsOrigin() + (GetPlayerMins() + GetPlayerMaxs()) * 0.5;
+
+    Vector vecEnd;
+    VectorMA(vecStart, WATERJUMP_FORWARD, flatforward, vecEnd);
+
+    trace_t tr;
+    TracePlayerBBox(vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
+    if (tr.fraction < 1.0) // solid at waist
+    {
+        IPhysicsObject *pPhysObj = tr.m_pEnt->VPhysicsGetObject();
+        if (pPhysObj)
+        {
+            if (pPhysObj->GetGameFlags() & FVPHYSICS_PLAYER_HELD)
+                return;
+        }
+
+        vecStart.z = mv->GetAbsOrigin().z + player->GetViewOffset().z + WATERJUMP_HEIGHT;
+        VectorMA(vecStart, WATERJUMP_FORWARD, flatforward, vecEnd);
+        VectorMA(vec3_origin, -50.0f, tr.plane.normal, player->m_vecWaterJumpVel);
+
+        TracePlayerBBox(vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
+        if (tr.fraction == 1.0) // open at eye level
+        {
+            // Now trace down to see if we would actually land on a standable surface.
+            VectorCopy(vecEnd, vecStart);
+            vecEnd.z -= 1024.0f;
+            TracePlayerBBox(vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
+            if ((tr.fraction < 1.0f) && (tr.plane.normal.z >= 0.7))
+            {
+                mv->m_vecVelocity[2] = WATERJUMP_UP; // Push up
+                mv->m_nOldButtons |= IN_JUMP;  // Don't jump again until released
+                player->AddFlag(FL_WATERJUMP);
+                player->m_flWaterJumpTime = 2000.0f; // Do this for 2 seconds
+            }
+        }
+    }
+}
+
 void CMomentumGameMovement::FullWalkMove()
 {
     Vector vecOldOrigin;
@@ -2162,6 +2237,86 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     PlayerRoughLandingEffects(fSlamVol);
 
     return blocked;
+}
+
+bool CMomentumGameMovement::CheckWater(void)
+{
+    Vector point;
+    int cont;
+
+    Vector vPlayerMins = GetPlayerMins();
+    Vector vPlayerMaxs = GetPlayerMaxs();
+
+    // Pick a spot just above the players feet.
+    point[0] = mv->GetAbsOrigin()[0] + (vPlayerMins[0] + vPlayerMaxs[0]) * 0.5;
+    point[1] = mv->GetAbsOrigin()[1] + (vPlayerMins[1] + vPlayerMaxs[1]) * 0.5;
+    point[2] = mv->GetAbsOrigin()[2] + vPlayerMins[2] + 1;
+
+    // Assume that we are not in water at all.
+    player->SetWaterLevel(WL_NotInWater);
+    player->SetWaterType(CONTENTS_EMPTY);
+
+    // Grab point contents.
+    cont = GetPointContentsCached(point, 0);
+
+    // Are we under water? (not solid and not empty?)
+    if (cont & MASK_WATER)
+    {
+        // Set water type
+        player->SetWaterType(cont);
+
+        // We are at least at level one
+        player->SetWaterLevel(WL_Feet);
+
+        // Now check a point that is at the player hull midpoint.
+        point[2] = mv->GetAbsOrigin()[2] + (vPlayerMins[2] + vPlayerMaxs[2]) * 0.5 + WATERWAIST_OFFSET;
+        cont = GetPointContentsCached(point, 1);
+        // If that point is also under water...
+        if (cont & MASK_WATER)
+        {
+            // Set a higher water level.
+            player->SetWaterLevel(WL_Waist);
+
+            // Now check the eye position.  (view_ofs is relative to the origin)
+            point[2] = mv->GetAbsOrigin()[2] + player->GetViewOffset()[2];
+            cont = GetPointContentsCached(point, 2);
+            if (cont & MASK_WATER)
+                player->SetWaterLevel(WL_Eyes); // In over our eyes
+        }
+
+        // Adjust velocity based on water current, if any.
+        if (cont & MASK_CURRENT)
+        {
+            Vector v;
+            VectorClear(v);
+            if (cont & CONTENTS_CURRENT_0)
+                v[0] += 1;
+            if (cont & CONTENTS_CURRENT_90)
+                v[1] += 1;
+            if (cont & CONTENTS_CURRENT_180)
+                v[0] -= 1;
+            if (cont & CONTENTS_CURRENT_270)
+                v[1] -= 1;
+            if (cont & CONTENTS_CURRENT_UP)
+                v[2] += 1;
+            if (cont & CONTENTS_CURRENT_DOWN)
+                v[2] -= 1;
+
+            // BUGBUG -- this depends on the value of an unspecified enumerated type
+            // The deeper we are, the stronger the current.
+            Vector temp;
+            VectorMA(player->GetBaseVelocity(), 50.0 * player->GetWaterLevel(), v, temp);
+            player->SetBaseVelocity(temp);
+        }
+    }
+
+    // if we just transitioned from not in water to in water, record the time it happened
+    if ((WL_NotInWater == m_nOldWaterLevel) && (player->GetWaterLevel() > WL_NotInWater))
+    {
+        m_flWaterEntryTime = gpGlobals->curtime;
+    }
+
+    return (player->GetWaterLevel() > WL_Feet);
 }
 
 // This was the virtual void, overriding it for snow friction
