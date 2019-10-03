@@ -26,9 +26,6 @@ ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.2", 0
                                       "Amount of units used in offset for retraces", true, 0.2f, true, 5.f);
 ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps",
                         true, 0.0f, true, 5.f);
-ConVar sv_considered_on_ground("sv_considered_on_ground", "1.0", 0,
-                               "Amount of units you have to be above the ground to be considered on ground", true, 0.0f,
-                               true, 5.f);
 
 ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED,
                         "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
