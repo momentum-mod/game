@@ -1208,7 +1208,7 @@ void CMomentumGameMovement::CategorizePosition()
 // Shooting up really fast.  Definitely not on ground.
 // On ladder moving up, so not on ground either
 // NOTE: 145 is a jump.
-#define NON_JUMP_VELOCITY 140.0f
+#define NON_JUMP_VELOCITY ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 250.0f : 140.0f )
 
     float zvel = mv->m_vecVelocity[2];
     bool bMovingUp = zvel > 0.0f;
