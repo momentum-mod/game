@@ -52,4 +52,7 @@ extern ConVar r_AirboatViewDampenFreq;
 extern ConVar r_AirboatViewDampenDamp;
 extern ConVar r_AirboatViewZHeight;
 
+// Momentum convars
+extern ConVar sv_considered_on_ground;
+
 #endif // MOVEVARS_SHARED_H
