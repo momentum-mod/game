@@ -1230,25 +1230,35 @@ void CMomentumGameMovement::CategorizePosition()
         }
         else
         {
-            if (sv_slope_fix.GetBool())
+            // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
+            // velocity.z
+            if (sv_slope_fix.GetBool() && player->GetGroundEntity() == nullptr)
             {
-                // Make sure we apply clip velocity on slopes/surfs before setting the ground entity and nulling out
-                // velocity.z
-                if (player->GetGroundEntity() == nullptr)
+                Vector rampVelocity = mv->m_vecVelocity;
+
+                // Apply half of gravity as that would be done in the next tick before movement code
+                rampVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+
+                if (pm.plane.normal.z >= 0.7f && pm.plane.normal.z < 1.0f)
                 {
-                    if (pm.plane.normal.z >= 0.7f && pm.plane.normal.z < 1.0f)
-                    {
-                        ClipVelocity(mv->m_vecVelocity, pm.plane.normal, mv->m_vecVelocity, 1.0f);
-                    }
-                    else if (pm.plane.normal.z < 0.7f)
-                    {
-                        ClipVelocity(mv->m_vecVelocity, pm.plane.normal, mv->m_vecVelocity,
-                                     1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
-                    }
+                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity, 1.0f);
+                }
+                else if (pm.plane.normal.z < 0.7f)
+                {
+                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity,
+                                 1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                }
+
+                // Set ground entity if the player is not going to slide on the ramp next tick
+                if (rampVelocity[2] <= NON_JUMP_VELOCITY)
+                {
+                    SetGroundEntity(&pm);
                 }
             }
-
-            SetGroundEntity(&pm); // Otherwise, point to index of ent under us.
+            else
+            {
+                SetGroundEntity(&pm); // Otherwise, point to index of ent under us.
+            }
         }
 
 #ifndef CLIENT_DLL
