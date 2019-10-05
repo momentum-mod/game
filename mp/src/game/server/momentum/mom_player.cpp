@@ -21,6 +21,7 @@
 #include "run/mom_replay_base.h"
 #include "mapzones.h"
 #include "fx_mom_shared.h"
+#include "mom_rocket.h"
 
 #include "tier0/memdbgon.h"
 
@@ -270,6 +271,7 @@ CMomentumPlayer::~CMomentumPlayer()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
         gEntList.RemoveListenerEntity(this);
+        m_vecRockets.RemoveAll();
     }
 
     RemoveTrail();
@@ -960,6 +962,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
 
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
             {
+                DestroyRockets();
+
                 // Don't limit speed in rocketjump mode,
                 // reset timer on zone enter and start on zone leave.
                 g_pMomentumTimer->Reset(this);
@@ -1130,10 +1134,26 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 
 void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
 {
+    if (pEntity->GetFlags() & FL_GRENADE)
+    {
+        const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
+        if (pRocket)
+        {
+            m_vecRockets.AddToTail(pRocket);
+        }
+    }
 }
 
 void CMomentumPlayer::OnEntityDeleted(CBaseEntity *pEntity)
 {
+    if ((pEntity->GetFlags() & FL_GRENADE) && !m_vecRockets.IsEmpty())
+    {
+        const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
+        if (pRocket)
+        {
+            m_vecRockets.FindAndRemove(pRocket);
+        }
+    }
 }
 
 void CMomentumPlayer::PlayerThink()
@@ -1680,6 +1700,11 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     g_pMomentumTimer->Stop(this);
     g_pMomentumTimer->SetCanStart(false);
 
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        DestroyRockets();
+    }
+
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
     {
@@ -1716,6 +1741,11 @@ void CMomentumPlayer::TimerCommand_Reset()
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
         {
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            {
+                DestroyRockets();
+            }
+
             // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
             Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
@@ -1724,6 +1754,20 @@ void CMomentumPlayer::TimerCommand_Reset()
             Warning("Cannot reset, you have no current zone!\n");
         }
     }
+}
+
+void CMomentumPlayer::DestroyRockets()
+{
+    FOR_EACH_VEC(m_vecRockets, i)
+    {
+        const auto pRocket = m_vecRockets[i];
+        if (pRocket)
+        {
+            pRocket->Destroy(true);
+        }
+    }
+
+    m_vecRockets.RemoveAll();
 }
 
 void CMomentumPlayer::TogglePracticeMode()
@@ -1801,6 +1845,11 @@ void CMomentumPlayer::DisablePracticeMode()
     // Only when timer is running
     if (g_pMomentumTimer->IsRunning())
     {
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        {
+            DestroyRockets();
+        }
+
         RestoreRunState(true);
     }
     else if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
