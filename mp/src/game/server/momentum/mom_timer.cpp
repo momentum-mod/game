@@ -380,44 +380,15 @@ CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (!pPlayer || !pPlayer->AllowUserTeleports())
-        return;
-
-    int track = pPlayer->m_Data.m_iCurrentTrack;
-    if (args.ArgC() > 1)
+    if (pPlayer)
     {
-        track = Q_atoi(args[1]);
-    }
-
-    g_pMomentumTimer->Stop(pPlayer);
-    g_pMomentumTimer->SetCanStart(false);
-
-    const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
-    if (pStart)
-    {
-        const auto pStartMark = pPlayer->GetStartMark(track);
-        if (pStartMark)
+        int track = pPlayer->m_Data.m_iCurrentTrack;
+        if (args.ArgC() > 1)
         {
-            pStartMark->Teleport(pPlayer);
-        }
-        else
-        {
-            // Don't set angles if still in start zone.
-            QAngle ang = pStart->GetLookAngles();
-            pPlayer->Teleport(&pStart->WorldSpaceCenter(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+            track = Q_atoi(args[1]);
         }
 
-        pPlayer->m_Data.m_iCurrentTrack = track;
-        pPlayer->ResetRunStats();
-    }
-    else
-    {
-        const auto pStartPoint = pPlayer->EntSelectSpawnPoint();
-        if (pStartPoint)
-        {
-            pPlayer->Teleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
-            pPlayer->ResetRunStats();
-        }
+        pPlayer->TimerCommand_Restart(track);
     }
 }
 
@@ -425,14 +396,9 @@ CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current 
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer && pPlayer->AllowUserTeleports())
+    if (pPlayer)
     {
-        const auto pCurrentZone = pPlayer->GetCurrentZoneTrigger();
-        // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
-        if (pCurrentZone)
-            pPlayer->Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
-        else
-            Warning("Cannot reset, you have no current zone!\n");
+        pPlayer->TimerCommand_Reset();
     }
 }
 
