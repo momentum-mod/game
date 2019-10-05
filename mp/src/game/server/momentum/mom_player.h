@@ -32,7 +32,7 @@ struct SavedState_t
 #define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 #define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
 
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity, public IEntityListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -243,6 +243,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
+
+    // IEntityListener
+    void OnEntitySpawned(CBaseEntity *pEntity) override;
+    void OnEntityDeleted(CBaseEntity *pEntity) override;
 
   private:
     // Player think function called every tick

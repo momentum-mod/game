@@ -255,12 +255,22 @@ CMomentumPlayer::CMomentumPlayer()
     {
         m_pStartZoneMarks[i] = nullptr;
     }
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        gEntList.AddListenerEntity(this);
+    }
 }
 
 CMomentumPlayer::~CMomentumPlayer()
 {
     if (this == s_pPlayer)
         s_pPlayer = nullptr;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        gEntList.RemoveListenerEntity(this);
+    }
 
     RemoveTrail();
     RemoveAllOnehops();
@@ -1116,6 +1126,14 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 
     if (g_MOMBlockFixer->IsBhopBlock(pOther->entindex()))
         g_MOMBlockFixer->PlayerTouch(this, pOther);
+}
+
+void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
+{
+}
+
+void CMomentumPlayer::OnEntityDeleted(CBaseEntity *pEntity)
+{
 }
 
 void CMomentumPlayer::PlayerThink()
