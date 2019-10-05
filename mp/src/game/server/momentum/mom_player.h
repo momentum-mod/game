@@ -11,6 +11,7 @@ class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
+class CMomRocket;
 
 struct SavedState_t
 {
@@ -271,7 +272,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
     void SetPracticeModeState();
 
-  private:
+    void DestroyRockets();
+
     CSteamID m_sSpecTargetSteamID;
 
     bool m_bInAirDueToJump;
@@ -326,4 +328,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     SavedState_t m_SavedRunState; // Used when either entering practice mode or spectating while in a run
     SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
+
+    CUtlVector<CMomRocket*> m_vecRockets;
 };
