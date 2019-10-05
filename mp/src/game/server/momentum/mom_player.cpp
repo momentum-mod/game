@@ -1672,6 +1672,60 @@ void CMomentumPlayer::StopSpectating()
     g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
 }
 
+void CMomentumPlayer::TimerCommand_Restart(int track)
+{
+    if (!AllowUserTeleports())
+        return;
+
+    g_pMomentumTimer->Stop(this);
+    g_pMomentumTimer->SetCanStart(false);
+
+    const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
+    if (pStart)
+    {
+        const auto pStartMark = GetStartMark(track);
+        if (pStartMark)
+        {
+            pStartMark->Teleport(this);
+        }
+        else
+        {
+            // Don't set angles if still in start zone.
+            QAngle ang = pStart->GetLookAngles();
+            Teleport(&pStart->WorldSpaceCenter(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+        }
+
+        m_Data.m_iCurrentTrack = track;
+        ResetRunStats();
+    }
+    else
+    {
+        const auto pStartPoint = EntSelectSpawnPoint();
+        if (pStartPoint)
+        {
+            Teleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
+            ResetRunStats();
+        }
+    }
+}
+
+void CMomentumPlayer::TimerCommand_Reset()
+{
+    if (AllowUserTeleports())
+    {
+        const auto pCurrentZone = GetCurrentZoneTrigger();
+        if (pCurrentZone)
+        {
+            // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
+            Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
+        }
+        else
+        {
+            Warning("Cannot reset, you have no current zone!\n");
+        }
+    }
+}
+
 void CMomentumPlayer::TogglePracticeMode()
 {
     if (!m_bAllowUserTeleports || m_iObserverMode != OBS_MODE_NONE)
