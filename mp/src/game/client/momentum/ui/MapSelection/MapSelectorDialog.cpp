@@ -337,14 +337,16 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
     {
         if (pMapData->m_PersonalBest.m_bValid)
         {
+            const auto fRunTime = pMapData->m_PersonalBest.m_Run.m_fTime;
             char szBestTime[BUFSIZETIME];
-            MomUtil::FormatTime(pMapData->m_PersonalBest.m_Run.m_fTime, szBestTime);
+            MomUtil::FormatTime(fRunTime, szBestTime);
 
-            pDataKv->SetString(KEYNAME_MAP_TIME, szBestTime);
+            pDataKv->SetString(KEYNAME_MAP_PERSONAL_BEST, szBestTime);
+            pDataKv->SetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT, fRunTime);
         }
         else
         {
-            pDataKv->SetString(KEYNAME_MAP_TIME, "#MOM_NotApplicable");
+            pDataKv->SetString(KEYNAME_MAP_PERSONAL_BEST, "#MOM_NotApplicable");
         }
     }
 
@@ -352,10 +354,12 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
     {
         if (pMapData->m_WorldRecord.m_bValid)
         {
+            const auto fRunTime = pMapData->m_WorldRecord.m_Run.m_fTime;
             char szBestTime[BUFSIZETIME];
-            MomUtil::FormatTime(pMapData->m_WorldRecord.m_Run.m_fTime, szBestTime);
+            MomUtil::FormatTime(fRunTime, szBestTime);
 
             pDataKv->SetString(KEYNAME_MAP_WORLD_RECORD, szBestTime);
+            pDataKv->SetFloat(KEYNAME_MAP_WORLD_RECORD_SORT, fRunTime);
         }
         else
         {

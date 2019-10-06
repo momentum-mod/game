@@ -28,20 +28,28 @@ static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPane
     return Q_stricmp(string1, string2);
 }
 
-static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+static int __cdecl MapPersonalBestSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
                                         const vgui::ListPanelItem &item2)
 {
-    const char *string1 = item1.kv->GetString(KEYNAME_MAP_TIME);
-    const char *string2 = item2.kv->GetString(KEYNAME_MAP_TIME);
-    return Q_stricmp(string1, string2);
+    const auto left = item1.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
+    const auto right = item2.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
+    if (left < right)
+        return -1;
+    if (right < left)
+        return 1;
+    return 0;
 }
 
 static int __cdecl MapWorldRecordSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
                                           const vgui::ListPanelItem &item2)
 {
-    const char *string1 = item1.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
-    const char *string2 = item2.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
-    return Q_stricmp(string1, string2);
+    const auto left = item1.kv->GetFloat(KEYNAME_MAP_WORLD_RECORD_SORT);
+    const auto right = item2.kv->GetFloat(KEYNAME_MAP_WORLD_RECORD_SORT);
+    if (left < right)
+        return -1;
+    if (right < left)
+        return 1;
+    return 0;
 }
 
 static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
@@ -118,7 +126,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
                                 GetScaledVal(20), GetScaledVal(20), GetScaledVal(20), 0);
     m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord",
 								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
-    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest",
+    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_PERSONAL_BEST, "#MOM_PersonalBest",
 								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate",
                                 GetScaledVal(65), 0, GetScaledVal(100), 0);
@@ -150,7 +158,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     // Sort Functions
     m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
     m_pMapList->SetSortFunc(HEADER_WORLD_RECORD, MapWorldRecordSortFunc);
-    m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapCompletedSortFunc);
+    m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapPersonalBestSortFunc);
     m_pMapList->SetSortFunc(HEADER_MAP_LAYOUT, MapLayoutSortFunc);
     m_pMapList->SetSortFunc(HEADER_DATE_CREATED, MapCreationDateSortFunc);
     m_pMapList->SetSortFunc(HEADER_LAST_PLAYED, MapLastPlayedSortFunc);
