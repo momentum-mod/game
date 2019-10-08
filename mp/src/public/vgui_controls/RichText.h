@@ -257,6 +257,9 @@ private:
 	CUtlString m_pszInitialText;	// initial text
     CUtlString m_pszInitialTextFile; // textfile used for initial text
 
+    CUtlString m_FontName;
+    CUtlString m_FontUnderlineName;
+
 	// saved state
 	bool _recalcSavedRenderState;
 	
