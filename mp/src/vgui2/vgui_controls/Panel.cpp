@@ -5057,6 +5057,31 @@ Color Panel::GetSchemeColor(const char *keyName, Color defaultColor, IScheme *pS
 	return pScheme->GetColor(keyName, defaultColor);
 }
 
+HFont Panel::GetSchemeFont(IScheme *pScheme, const char *pResFontName, const char *pSchemeFontName, const char *pDefaultFontName /*="Default" */)
+{
+    HFont font = INVALID_FONT;
+
+    if (pResFontName)
+    {
+        font = pScheme->GetFont(pResFontName, IsProportional());
+    }
+
+    if (font == INVALID_FONT && pSchemeFontName)
+    {
+        font = pScheme->GetFont(pScheme->GetResourceString(pSchemeFontName), IsProportional());
+    }
+
+    if (font == INVALID_FONT)
+    {
+        if (pDefaultFontName == nullptr)
+            pDefaultFontName = "Default"; // Ensuring we have a string
+
+        font = pScheme->GetFont(pDefaultFontName, IsProportional());
+    }
+
+    return font;
+}
+
 void Panel::InitSettings()
 {
     m_vecPanelSettings.RemoveAll();
