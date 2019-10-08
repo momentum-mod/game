@@ -277,14 +277,6 @@ void CDialogMapInfo::FillMapInfo()
     }
 }
 
-void CDialogMapInfo::ApplySchemeSettings(vgui::IScheme *pScheme)
-{
-    BaseClass::ApplySchemeSettings(pScheme);
-
-    m_pMapDescription->SetFont(pScheme->GetFont("DefaultVeryLarge"));
-    m_pTimesList->SetFont(pScheme->GetFont("DefaultVeryLarge"));
-}
-
 void CDialogMapInfo::GetMapTimes(TimeType_t type)
 {
     if (gpGlobals->curtime - UPDATE_INTERVAL < m_fRequestDelays[type])
