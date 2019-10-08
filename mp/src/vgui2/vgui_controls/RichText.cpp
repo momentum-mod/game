@@ -146,7 +146,7 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
     InitSettings();
     SetTriplePressAllowed(true);
 	m_bAllTextAlphaIsZero = false;
-	_font = INVALID_FONT;
+	m_font = INVALID_FONT;
 	m_hFontUnderline = INVALID_FONT;
 
 	m_pszInitialText = nullptr;
@@ -242,9 +242,9 @@ void RichText::SetDrawTextOnly()
 void RichText::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
-	
-	_font = pScheme->GetFont("Default", IsProportional() );
 	m_hFontUnderline = pScheme->GetFont("DefaultUnderline", IsProportional() );
+
+    m_font = pScheme->GetFont("Default", IsProportional() );
 	
 	SetFgColor(GetSchemeColor("RichText.TextColor", pScheme));
 	SetBgColor(GetSchemeColor("RichText.BgColor", pScheme));
@@ -497,7 +497,7 @@ void RichText::CursorToPixelSpace(int cursorPos, int &cx, int &cy)
 		}
 		
 		// add to the current position
-		x += surface()->GetCharacterWidth(_font, ch);
+		x += surface()->GetCharacterWidth(m_font, ch);
 	}
 	
 	cx = x;
@@ -561,7 +561,7 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 			onRightLine = true;
 		}
 		
-		int wide = surface()->GetCharacterWidth(_font, ch);
+		int wide = surface()->GetCharacterWidth(m_font, ch);
 		
 		// if we've found the position, break
 		if (onRightLine)
@@ -850,7 +850,7 @@ void RichText::Paint()
 	// Assume the worst
 	m_bAllTextAlphaIsZero = true;
 
-	HFont hFontCurrent = _font;
+	HFont hFontCurrent = m_font;
 		
 	// hide all the clickable panels until we know where they are to reside
 	for (int j = 0; j < _clickableTextPanels.Count(); j++)
@@ -935,7 +935,7 @@ void RichText::Paint()
 				else
 				{
 					FinishingURL(nXBeforeStateChange, renderState.y);
-					hFontCurrent = _font;
+					hFontCurrent = m_font;
 					surface()->DrawSetTextFont( hFontCurrent );
 				}
 				_currentTextClickable = renderState.textClickable;
@@ -1398,7 +1398,7 @@ void RichText::RecalculateLineBreaks()
 	GenerateRenderStateForTextStreamIndex(startChar, renderState);
 	_currentTextClickable = false;
 
-	HFont font = _font;
+	HFont font = m_font;
 	
 	bool bForceBreak = false;
 	float flLineWidthSoFar = 0;
@@ -2438,7 +2438,7 @@ void RichText::GetText(int offset, char *pch, int bufLenInBytes)
 //-----------------------------------------------------------------------------
 void RichText::SetFont(HFont font)
 {
-	_font = font;
+	m_font = font;
     RecalculateLineBreaks();
 	InvalidateLayout();
 }
@@ -2872,7 +2872,7 @@ bool RichText::HasText() const
 //-----------------------------------------------------------------------------
 int RichText::GetLineHeight()
 {
-	return _font == INVALID_FONT ? 0 : surface()->GetFontTall( _font );
+	return m_font == INVALID_FONT ? 0 : surface()->GetFontTall( m_font );
 }
 
 
