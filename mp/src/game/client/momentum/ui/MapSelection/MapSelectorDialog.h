@@ -42,8 +42,6 @@ enum RESERVED_IMAGE_INDICES
 };
 
 #define HEADER_ICON_SIZE 14
-#define COLOR_LightBlue Color(153, 204, 255, 255)
-#define COLOR_Blue Color(46, 102, 165, 255)
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -177,6 +175,8 @@ protected:
     // Modulecomms event listening
     uint16 m_iMapDataIndx, m_iMapCacheUpdateIndx, m_iDownloadQueueIndx, m_iDownloadSizeIndx, m_iDownloadStartIndx,
         m_iDownloadProgressIndx, m_iDownloadEndIndx;
+
+    Color m_cMapDownloadQueued, m_cMapDownloadNeeded;
 };
 
 // singleton accessor

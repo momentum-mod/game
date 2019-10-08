@@ -33,6 +33,7 @@ Scheme
         "Green"             "153 255 153 255"
         "MomentumBlue"	    "30 150 210 255"
         "MomentumRed"	    "255 75 75 255"
+        "LightBlue"         "153 204 255 255"
     }
 
     ///////////////////// BASE SETTINGS ////////////////////////
@@ -42,6 +43,11 @@ Scheme
     BaseSettings
     {
         // Map selector specific settings
+        "MapDownloadProgress.DownloadStartColor"    "MomentumBlue"
+        "MapDownloadProgress.DownloadEndColor"      "Green"
+
+        "MapList.DownloadQueued"        "MomentumBlue"
+        "MapList.DownloadNeeded"        "LightBlue"
         "MapList.DownloadFailColor"     "MomentumRed"
         "MapList.DownloadSuccessColor"  "Green"
 

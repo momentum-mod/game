@@ -301,9 +301,9 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
             if (!IsMapDownloading(uMapID))
             {
                 if (g_pMapCache->IsMapQueuedToDownload(uMapID))
-                    pDataKv->SetColor("cellcolor", COLOR_Blue); // MOM_TODO make this a scheme color
+                    pDataKv->SetColor("cellcolor", m_cMapDownloadQueued);
                 else
-                    pDataKv->SetColor("cellcolor", COLOR_LightBlue); // MOM_TODO make this a scheme color
+                    pDataKv->SetColor("cellcolor", m_cMapDownloadNeeded);
             }
         }
         else
@@ -627,6 +627,9 @@ void CMapSelectorDialog::OnViewMapInfo(int id)
 void CMapSelectorDialog::ApplySchemeSettings(vgui::IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
+
+    m_cMapDownloadQueued = pScheme->GetColor("MapList.DownloadQueued", COLOR_BLUE);
+    m_cMapDownloadNeeded = pScheme->GetColor("MapList.DownloadNeeded", Color(153, 204, 255, 255));
 
     // Reload them
     for (int i = 0; i < m_pImageList->GetImageCount(); i++)
