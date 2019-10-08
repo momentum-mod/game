@@ -20,6 +20,7 @@ Scheme
         "Light Gray"		"211 211 211 20"
         "Gray" 				"128 128 128 150"
         "Dark Gray" 		"58 56 56 255"
+        "OffWhite"          "200 200 200 255"
         
         "Red"                "192 28 0 140"
         "Black"                "0 0 0 196"
