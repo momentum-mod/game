@@ -234,6 +234,8 @@ protected:
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	virtual void OnMousePressed( MouseCode code );
 	virtual void OnMouseDoublePressed( MouseCode code );
+    void ApplySettings(KeyValues *inResourceData) override;
+    void GetSettings(KeyValues *outResourceData) override;
 #ifdef _X360
 	virtual void OnKeyCodePressed(KeyCode code);
 #else
@@ -374,6 +376,8 @@ private:
 	int			m_iEditModeColumn;
 
 	void ResetColumnHeaderCommands();
+
+    CUtlString m_FontName;
 };
 
 }

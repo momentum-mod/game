@@ -2250,6 +2250,20 @@ void ListPanel::OnMouseDoublePressed(MouseCode code)
 	}
 }
 
+void ListPanel::ApplySettings(KeyValues *inResourceData)
+{
+    BaseClass::ApplySettings(inResourceData);
+
+    m_FontName = inResourceData->GetString("font");
+}
+
+void ListPanel::GetSettings(KeyValues *outResourceData)
+{
+    BaseClass::GetSettings(outResourceData);
+
+    outResourceData->SetString("font", m_FontName.Get());
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -2638,9 +2652,11 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
     m_SelectionOutOfFocusBgColor = GetSchemeColor("ListPanel.SelectedOutOfFocusBgColor", pScheme);
 
 	m_pEmptyListText->SetFgColor(GetSchemeColor("ListPanel.EmptyListInfoTextColor", pScheme));
-		
-	SetFont( pScheme->GetFont("Default", IsProportional() ) );
-	m_pEmptyListText->SetFont( pScheme->GetFont( "Default", IsProportional() ) );
+
+    HFont font = GetSchemeFont(pScheme, m_FontName.Get(), "ListPanel.Font");
+
+	SetFont( font );
+	m_pEmptyListText->SetFont( font );
 }
 
 //-----------------------------------------------------------------------------
