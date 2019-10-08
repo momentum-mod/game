@@ -30,8 +30,9 @@ Scheme
 
         "MOM.Panel.Fg"				"255 255 255 125"
         "MOM.Panel.Bg"				"211 211 211 50"
-        "MomentumBlue"	"30 150 210 255"
-        "MomentumRed"	"255 75 75 255"
+        "Green"             "153 255 153 255"
+        "MomentumBlue"	    "30 150 210 255"
+        "MomentumRed"	    "255 75 75 255"
     }
 
     ///////////////////// BASE SETTINGS ////////////////////////
@@ -40,6 +41,10 @@ Scheme
     // controls use these to determine their settings
     BaseSettings
     {
+        // Map selector specific settings
+        "MapList.DownloadFailColor"     "MomentumRed"
+        "MapList.DownloadSuccessColor"  "Green"
+
         // vgui_controls color specifications
         Border.Bright					"200 200 200 255"	// the lit side of a control
         Border.Dark						"40 40 40 100"		// the dark/unlit side of a control
