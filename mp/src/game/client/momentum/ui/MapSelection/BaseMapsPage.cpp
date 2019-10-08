@@ -213,6 +213,9 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
     if (m_hFont == INVALID_FONT)
         m_hFont = pScheme->GetFont("DefaultSmall", IsProportional());
     m_pMapList->SetFont(m_hFont);
+
+    m_cMapDLFailed = pScheme->GetColor("MapList.DownloadFailColor", COLOR_RED);
+    m_cMapDLSuccess = pScheme->GetColor("MapList.DownloadSuccessColor", COLOR_GREEN);
 }
 
 void CBaseMapsPage::SetListCellColors(MapData *pData, KeyValues *pKvInto)
@@ -399,7 +402,7 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
     if (map)
     {
         KeyValues *pKvInto = m_pMapList->GetItem(map->m_iListID);
-        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? COLOR_BLUE : COLOR_GREEN);
+        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? m_cMapDLFailed : m_cMapDLSuccess);
         m_pMapList->ApplyItemChanges(map->m_iListID);
     }
 }
