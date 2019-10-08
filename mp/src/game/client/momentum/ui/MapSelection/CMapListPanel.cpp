@@ -20,6 +20,7 @@ CMapListPanel::CMapListPanel(CBaseMapsPage *pOuter, const char *pName) : BaseCla
 {
     m_pOuter = pOuter;
     SetRowHeight(50);
+    SetRowHeightOnFontChange(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -105,11 +106,4 @@ void CMapListPanel::ApplySchemeSettings(IScheme* pScheme)
     BaseClass::ApplySchemeSettings(pScheme);
 
     SetRowHeight(50);
-}
-
-void CMapListPanel::SetFont(vgui::HFont font)
-{
-    int oldHeight = GetRowHeight();
-    BaseClass::SetFont(font);
-    SetRowHeight(oldHeight);
 }
