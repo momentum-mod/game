@@ -242,9 +242,9 @@ void RichText::SetDrawTextOnly()
 void RichText::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
-	m_hFontUnderline = pScheme->GetFont("DefaultUnderline", IsProportional() );
 
-    m_font = pScheme->GetFont("Default", IsProportional() );
+    m_font = GetSchemeFont(pScheme, m_FontName.Get(), "RichText.Font");
+    m_hFontUnderline = GetSchemeFont(pScheme, m_FontUnderlineName.Get(), "RichText.FontUnderline", "DefaultUnderline");
 	
 	SetFgColor(GetSchemeColor("RichText.TextColor", pScheme));
 	SetBgColor(GetSchemeColor("RichText.BgColor", pScheme));
@@ -2520,6 +2520,9 @@ void RichText::ApplySettings(KeyValues *inResourceData)
 	SetMaximumCharCount(inResourceData->GetInt("maxchars", -1));
 	SetVerticalScrollbar(inResourceData->GetBool("scrollbar", true));
 
+    m_FontName = inResourceData->GetString("font");
+    m_FontUnderlineName = inResourceData->GetString("font_underline");
+
 	// get the starting text, if any
 	const char *text = inResourceData->GetString("text", "");
 	if (*text)
@@ -2565,6 +2568,8 @@ void RichText::ApplySettings(KeyValues *inResourceData)
 void RichText::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
+    outResourceData->SetString("font", m_FontName.Get());
+    outResourceData->SetString("font_underline", m_FontUnderlineName.Get());
 	outResourceData->SetInt("maxchars", _maxCharCount);
 	outResourceData->SetInt("scrollbar", _vertScrollBar->IsVisible() );
 	outResourceData->SetString("text", m_pszInitialText);
