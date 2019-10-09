@@ -558,7 +558,7 @@ bool ClientModeShared::ShouldDrawCrosshair( void )
 //-----------------------------------------------------------------------------
 bool ClientModeShared::ShouldDrawLocalPlayer( C_BasePlayer *pPlayer )
 {
-	if ( ( pPlayer->index == render->GetViewEntity() ) && !C_BasePlayer::ShouldDrawLocalPlayer() )
+	if ( ( pPlayer->m_index == render->GetViewEntity() ) && !C_BasePlayer::ShouldDrawLocalPlayer() )
 		return false;
 
 	return true;
@@ -1129,7 +1129,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 		}
 
-		if ( team == 0 && GetLocalTeam() > 0 )
+		if ( team == 0 && GetLocalTeam() )
 		{
 			bValidTeam = false;
 		}

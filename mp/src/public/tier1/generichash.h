@@ -1,7 +1,15 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//======= Copyright ? 2005-2011, Valve Corporation, All rights reserved. =========
 //
-// Purpose: Variant Pearson Hash general purpose hashing algorithm described
-//			by Cargill in C++ Report 1994. Generates a 16-bit result.
+// Public domain MurmurHash3 by Austin Appleby is a very solid general-purpose
+// hash with a 32-bit output. References:
+// http://code.google.com/p/smhasher/ (home of MurmurHash3)
+// https://sites.google.com/site/murmurhash/avalanche
+// http://www.strchr.com/hash_functions
+//
+// Variant Pearson Hash general purpose hashing algorithm described
+// by Cargill in C++ Report 1994. Generates a 16-bit result.
+// Now relegated to PearsonHash namespace, not recommended for use;
+// still around in case someone needs value compatibility with old code.
 //
 //=============================================================================
 
@@ -12,105 +20,147 @@
 #pragma once
 #endif
 
+#if !defined(OSX) && !defined(_MINIMUM_BUILD_)
+//
+//	Note that CEG builds with _MINIMUM_BUILD_ defined because it must remain CRT agnostic -
+//	hence we eliminate this CRT reference.
+//
+#include <type_traits>
+#endif
+
+uint32 MurmurHash3_32(const void *key, size_t len, uint32 seed, bool bCaselessStringVariant = false);
+void MurmurHash3_128(const void *key, const int len, const uint32 seed, void *out);
+
+inline uint32 HashString(const char *pszKey, size_t len)
+{
+    return MurmurHash3_32(pszKey, len, 1047 /*anything will do for a seed*/, false);
+}
+
+inline uint32 HashStringCaseless(const char *pszKey, size_t len)
+{
+    return MurmurHash3_32(pszKey, len, 1047 /*anything will do for a seed*/, true);
+}
+
+#if !defined(_MINIMUM_BUILD_)
+inline uint32 HashString(const char *pszKey) { return HashString(pszKey, strlen(pszKey)); }
+
+inline uint32 HashStringCaseless(const char *pszKey) { return HashStringCaseless(pszKey, strlen(pszKey)); }
+#endif
+
+inline uint32 HashInt64(uint64 h)
+{
+    // roughly equivalent to MurmurHash3_32( &lower32, sizeof(uint32), upper32_as_seed )...
+    // theory being that most of the entropy is in the lower 32 bits and we still mix
+    // everything together at the end, so not fully shuffling upper32 is not a big deal
+
+    //
+    //	On the 32 bit compiler in various modes, this form of the expression generates
+    //	a CRT call to do a 64bit shift in 32 bit registers.
+    //	Well I need this code to compile without any CRT references - so use this expression instead.
+    //
+#if defined(_MSC_VER) && defined(_M_IX86) && defined(_MINIMUM_BUILD_)
+    uint32 h1 = reinterpret_cast<uint32 *>(&h)[1];
+#else
+    uint32 h1 = static_cast<uint32>(h >> 32);
+#endif
+
+    uint32 k1 = (uint32)h;
+
+    k1 *= 0xcc9e2d51;
+    k1 = (k1 << 15) | (k1 >> 17);
+    k1 *= 0x1b873593;
+
+    h1 ^= k1;
+    h1 = (h1 << 13) | (h1 >> 19);
+    h1 = h1 * 5 + 0xe6546b64;
+
+    h1 ^= h1 >> 16;
+    h1 *= 0x85ebca6b;
+    h1 ^= h1 >> 13;
+    h1 *= 0xc2b2ae35;
+    h1 ^= h1 >> 16;
+
+    return h1;
+}
+
+inline uint32 HashInt(uint32 h)
+{
+    h ^= h >> 16;
+    h *= 0x85ebca6b;
+    h ^= h >> 13;
+    h *= 0xc2b2ae35;
+    h ^= h >> 16;
+    return h;
+}
+
+template <typename T> inline uint32 HashItemAsBytes(const T &item)
+{
+    if (sizeof(item) == sizeof(uint32))
+        return HashInt(*(uint32 *)&item);
+
+    if (sizeof(item) == sizeof(uint64))
+        return HashInt64(*(uint64 *)&item);
+
+    return MurmurHash3_32(&item, sizeof(item), 1047);
+}
+
+template <typename T> inline uint32 HashItem(const T &item)
+{
+#if !defined(_WIN32) || !defined(_MINIMUM_BUILD_)
+    // If you hit this assert, you have likely used a class such as CUtlHashMap with a non-trivial "Key" type
+    // that we don't know how to hash by default.
+    //
+    // If it is a simple structure and you are SURE there is no inter-member padding, then you should use
+    // HashFunctorUnPaddedStructure< YourKeyType > in your decl of CUtlHashMap as the 4th template param.
+    //
+    // If there is padding, or if you need to include things pointed to or whatever, then you must define
+    // your own HashFunctor<> explicit instantiation that does all the stuff you want to hash the object.
+    COMPILE_TIME_ASSERT(std::is_integral<T>::value || std::is_enum<T>::value || std::is_pointer<T>::value);
+#endif
+    return HashItemAsBytes(item);
+}
+
+template <typename T> struct HashFunctor
+{
+    typedef uint32 TargetType;
+    TargetType operator()(const T &key) const { return HashItem(key); }
+};
+
+#if !defined(_MINIMUM_BUILD_)
+template <> struct HashFunctor<char *>
+{
+    typedef uint32 TargetType;
+    TargetType operator()(const char *key) const { return HashString(key); }
+};
+
+template <> struct HashFunctor<const char *>
+{
+    typedef uint32 TargetType;
+    TargetType operator()(const char *key) const { return HashString(key); }
+};
+
+struct HashFunctorStringCaseless
+{
+    typedef uint32 TargetType;
+    TargetType operator()(const char *key) const { return HashStringCaseless(key); }
+};
+
+template <class T> struct HashFunctorUnpaddedStructure
+{
+    typedef uint32 TargetType;
+    TargetType operator()(const T &key) const { return HashItemAsBytes(key); }
+};
+#endif // _MINIMUM_BUILD_
+
 //-----------------------------------------------------------------------------
 
-unsigned FASTCALL HashString( const char *pszKey );
-unsigned FASTCALL HashStringCaseless( const char *pszKey );
-unsigned FASTCALL HashStringCaselessConventional( const char *pszKey );
-unsigned FASTCALL Hash4( const void *pKey );
-unsigned FASTCALL Hash8( const void *pKey );
-unsigned FASTCALL Hash12( const void *pKey );
-unsigned FASTCALL Hash16( const void *pKey );
-unsigned FASTCALL HashBlock( const void *pKey, unsigned size );
-
-unsigned FASTCALL HashInt( const int key );
-
-// hash a uint32 into a uint32
-FORCEINLINE uint32 HashIntAlternate( uint32 n)
+#if !defined(_MINIMUM_BUILD_)
+namespace PearsonHash
 {
-	n = ( n + 0x7ed55d16 ) + ( n << 12 );
-	n = ( n ^ 0xc761c23c ) ^ ( n >> 19 );
-	n = ( n + 0x165667b1 ) + ( n << 5 );
-	n = ( n + 0xd3a2646c ) ^ ( n << 9 );
-	n = ( n + 0xfd7046c5 ) + ( n << 3 );
-	n = ( n ^ 0xb55a4f09 ) ^ ( n >> 16 );
-	return n;
-}
-
-inline unsigned HashIntConventional( const int n ) // faster but less effective
-{
-	// first byte
-	unsigned hash = 0xAAAAAAAA + (n & 0xFF);
-	// second byte
-	hash = ( hash << 5 ) + hash + ( (n >> 8) & 0xFF );
-	// third byte
-	hash = ( hash << 5 ) + hash + ( (n >> 16) & 0xFF );
-	// fourth byte
-	hash = ( hash << 5 ) + hash + ( (n >> 24) & 0xFF );
-
-	return hash;
-
-	/* this is the old version, which would cause a load-hit-store on every
-	   line on a PowerPC, and therefore took hundreds of clocks to execute!
-	  
-	byte *p = (byte *)&n;
-	unsigned hash = 0xAAAAAAAA + *p++;
-	hash = ( ( hash << 5 ) + hash ) + *p++;
-	hash = ( ( hash << 5 ) + hash ) + *p++;
-	return ( ( hash << 5 ) + hash ) + *p;
-	*/
-}
-
-//-----------------------------------------------------------------------------
-
-template <typename T>
-inline unsigned HashItem( const T &item )
-{
-	// TODO: Confirm comiler optimizes out unused paths
-	if ( sizeof(item) == 4 )
-		return Hash4( &item );
-	else if ( sizeof(item) == 8 )
-		return Hash8( &item );
-	else if ( sizeof(item) == 12 )
-		return Hash12( &item );
-	else if ( sizeof(item) == 16 )
-		return Hash16( &item );
-	else
-		return HashBlock( &item, sizeof(item) );
-}
-
-template <> inline unsigned HashItem<int>(const int &key )
-{
-	return HashInt( key );
-}
-
-template <> inline unsigned HashItem<unsigned>(const unsigned &key )
-{
-	return HashInt( (int)key );
-}
-
-template<> inline unsigned HashItem<const char *>(const char * const &pszKey )
-{
-	return HashString( pszKey );
-}
-
-template<> inline unsigned HashItem<char *>(char * const &pszKey )
-{
-	return HashString( pszKey );
-}
-
-//-----------------------------------------------------------------------------
-
-
-//-----------------------------------------------------------------------------
-// Murmur hash
-//-----------------------------------------------------------------------------
-uint32 MurmurHash2( const void * key, int len, uint32 seed );
-
-// return murmurhash2 of a downcased string
-uint32 MurmurHash2LowerCase( char const *pString, uint32 nSeed );
-
-uint64 MurmurHash64( const void * key, int len, uint32 seed );
-
+unsigned FASTCALL HashString(const char *pszKey);
+unsigned FASTCALL HashStringCaseless(const char *pszKey);
+unsigned FASTCALL Hash8(const void *pKey);
+} // namespace PearsonHash
+#endif
 
 #endif /* !GENERICHASH_H */

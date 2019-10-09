@@ -1247,12 +1247,12 @@ void Panel::PaintTraverse( bool repaint, bool allowForce )
 			for (int i=0; i < controlGroup->Size(); ++i)
 			{
 				// outline all selected panels 
-				CUtlVector<PHandle> *controlGroup = _buildGroup->GetControlGroup();
-				for (int i=0; i < controlGroup->Size(); ++i)
+				CUtlVector<PHandle> *controlGroup2 = _buildGroup->GetControlGroup();
+				for (int i2=0; i2 < controlGroup2->Size(); ++i2)
 				{
-					surface()->PushMakeCurrent( ((*controlGroup)[i].Get())->GetVPanel(), false );
-					((*controlGroup)[i].Get())->PaintBuildOverlay();
-					surface()->PopMakeCurrent( ((*controlGroup)[i].Get())->GetVPanel() );
+					surface()->PushMakeCurrent( ((*controlGroup2)[i2].Get())->GetVPanel(), false );
+					((*controlGroup2)[i2].Get())->PaintBuildOverlay();
+					surface()->PopMakeCurrent( ((*controlGroup2)[i2].Get())->GetVPanel() );
 				}	
 			
 				_buildGroup->DrawRulers();						
@@ -5057,6 +5057,31 @@ Color Panel::GetSchemeColor(const char *keyName, Color defaultColor, IScheme *pS
 	return pScheme->GetColor(keyName, defaultColor);
 }
 
+HFont Panel::GetSchemeFont(IScheme *pScheme, const char *pResFontName, const char *pSchemeFontName, const char *pDefaultFontName /*="Default" */)
+{
+    HFont font = INVALID_FONT;
+
+    if (pResFontName)
+    {
+        font = pScheme->GetFont(pResFontName, IsProportional());
+    }
+
+    if (font == INVALID_FONT && pSchemeFontName)
+    {
+        font = pScheme->GetFont(pScheme->GetResourceString(pSchemeFontName), IsProportional());
+    }
+
+    if (font == INVALID_FONT)
+    {
+        if (pDefaultFontName == nullptr)
+            pDefaultFontName = "Default"; // Ensuring we have a string
+
+        font = pScheme->GetFont(pDefaultFontName, IsProportional());
+    }
+
+    return font;
+}
+
 void Panel::InitSettings()
 {
     m_vecPanelSettings.RemoveAll();
@@ -7062,8 +7087,8 @@ void Panel::OnFinishDragging( bool mousereleased, MouseCode code, bool abort /*=
 				if ( pHover )
 				{
 					// Figure out if it's a menu item...
-					int c = menu->GetItemCount();
-					for ( int i = 0; i < c; ++i )
+					int menuItemCount = menu->GetItemCount();
+					for ( int i = 0; i < menuItemCount; ++i )
 					{
 						int id = menu->GetMenuID( i );
 						MenuItem *item = menu->GetMenuItem( id );
@@ -7465,12 +7490,12 @@ VPANEL CDragDropHelperPanel::IsWithinTraverse(int x, int y, bool traversePopups)
 
 void CDragDropHelperPanel::PostChildPaint()
 {
-	int c = m_PaintList.Count();
-	for ( int i = c - 1; i >= 0 ; --i )
+	int paintListCount = m_PaintList.Count();
+	for ( int i = paintListCount - 1; i >= 0 ; --i )
 	{
-		DragHelperPanel_t& data = m_PaintList[ i ];
+		DragHelperPanel_t& helperPanel = m_PaintList[ i ];
 
-		Panel *panel = data.m_hPanel.Get();
+		Panel *panel = helperPanel.m_hPanel.Get();
 		if ( !panel )
 		{
 			m_PaintList.Remove( i );
@@ -7489,11 +7514,10 @@ void CDragDropHelperPanel::PostChildPaint()
 				CUtlVector< Panel * > temp;
 				CUtlVector< PHandle >& data = panel->GetDragDropInfo()->m_DragPanels;
 				CUtlVector< KeyValues * >& msglist = panel->GetDragDropInfo()->m_DragData;
-				int i, c;
-				c = data.Count();
-				for ( i = 0; i < c ; ++i )
+				int c = data.Count();
+				for ( int j = 0; j < c ; ++j )
 				{
-					Panel *pPanel = data[ i ].Get();
+					Panel *pPanel = data[ j ].Get();
 					if ( pPanel )
 					{
 						temp.AddToTail( pPanel );
@@ -7505,7 +7529,7 @@ void CDragDropHelperPanel::PostChildPaint()
 		}
 	}
 
-	if ( c == 0 )
+	if (paintListCount == 0 )
 	{
 		MarkForDeletion();
 	}

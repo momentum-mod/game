@@ -23,6 +23,7 @@
 #include "run/mom_replay_factory.h"
 #include "filesystem.h"
 #include "fmtstr.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -90,6 +91,7 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
     SetDefLessFunc(m_mapAvatarsToImageList);
     SetDefLessFunc(m_mapReplayDownloads);
 
+    pPlayerBorder = nullptr;
     m_pImageList = nullptr;
     LevelInit();
 }
@@ -506,9 +508,8 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
                 pList->ModifyItem(itemID, m_iSectionId, runEntry->m_kv);
             }
 
-            // MOM_TODO: highlight the local player's thing (some outline?), if it's in the list!
-            //if (runEntry->steamid == SteamUser()->GetSteamID().ConvertToUint64())
-            //    pList->SetBorderForItem(itemID, someBorder);
+            if (runEntry->steamid == SteamUser()->GetSteamID().ConvertToUint64() && pPlayerBorder)
+                pList->SetItemBorder(itemID, pPlayerBorder);
         }
 
         SetPlaceColors(pList, type);
@@ -528,7 +529,6 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
 
 bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdate)
 {
-    ConVarRef gm("mom_gamemode");
     if (!outPlayerInfo)
         return false;
 
@@ -539,7 +539,7 @@ bool CLeaderboardsTimes::GetPlayerTimes(KeyValues* outPlayerInfo, bool fullUpdat
     LoadLocalTimes(pLocal);
     pLeaderboards->AddSubKey(pLocal);
 
-    if (gm.GetInt() > GAMEMODE_UNKNOWN)
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_UNKNOWN))
     {
         for (int i = 1; i < TIMES_COUNT; i++) // Skip over local
         {
@@ -955,6 +955,8 @@ void CLeaderboardsTimes::ApplySchemeSettings(vgui::IScheme* pScheme)
     m_cFirstPlace = pScheme->GetColor("FirstPlace", Color(240, 210, 147, 50));
     m_cSecondPlace = pScheme->GetColor("SecondPlace", Color(175, 175, 175, 50));
     m_cThirdPlace = pScheme->GetColor("ThirdPlace", Color(205, 127, 50, 50));
+
+    pPlayerBorder = pScheme->GetBorder("LeaderboardsPlayerBorder");
 
     const char *columnNames[] = { DATESTRING, RANKSTRING, TIMESTRING };
 

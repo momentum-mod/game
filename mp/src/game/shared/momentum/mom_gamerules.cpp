@@ -5,14 +5,13 @@
 #include "voice_gamemgr.h"
 #include "weapon/cs_ammodef.h"
 #include "weapon/weapon_base_gun.h"
-#include "mom_player_shared.h"
 #include "filesystem.h"
 #include "movevars_shared.h"
+#include "mom_system_gamemode.h"
 
 #ifndef CLIENT_DLL
-#include "momentum/tickset.h"
 #include "momentum/mapzones.h"
-#include "momentum/mom_timer.h"
+#include "momentum/mom_player.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -66,6 +65,7 @@ CAmmoDef *GetAmmoDef()
         ammoDef.AddAmmoType(AMMO_TYPE_SMOKEGRENADE, 0, TRACER_LINE, 0, 0, 1 /*max carry*/, 1, 0);
         ammoDef.AddAmmoType(AMMO_TYPE_PAINT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_paint_max",
                             3000 * BULLET_IMPULSE_EXAGGERATION, 0);
+        ammoDef.AddAmmoType(AMMO_TYPE_ROCKET, DMG_BLAST, TRACER_LINE, 0, 0, "ammo_rocket_max", 1, 0, 146, 146);
     }
 
     return &ammoDef;
@@ -101,6 +101,7 @@ ConVar ammo_hegrenade_max("ammo_hegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_flashbang_max("ammo_flashbang_max", "2", FCVAR_REPLICATED);
 ConVar ammo_smokegrenade_max("ammo_smokegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_paint_max("ammo_paint_max", "-2", FCVAR_REPLICATED);
+ConVar ammo_rocket_max("ammo_rocket_max", "-2", FCVAR_REPLICATED);
 
 CMomentumGameRules::CMomentumGameRules()
 {
@@ -123,7 +124,27 @@ static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(0, 0, 14) // dead view height
 );
 
-const CViewVectors *CMomentumGameRules::GetViewVectors() const { return &g_MOMViewVectors; }
+static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
+                                     Vector(-24, -24, 0), // hull min
+                                     Vector(24, 24, 82),  // hull max
+
+                                     Vector(-24, -24, 0), // duck hull min
+                                     Vector(24, 24, 62),  // duck hull max
+                                     Vector(0, 0, 45),    // duck view
+
+                                     Vector(-10, -10, -10), // observer hull min
+                                     Vector(10, 10, 10),    // observer hull max
+
+                                     Vector(0, 0, 14) // dead view height
+);
+
+const CViewVectors *CMomentumGameRules::GetViewVectors() const
+{
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        return &g_MOMViewVectorsRJ;
+
+    return &g_MOMViewVectors;
+}
 
 bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
 {
@@ -158,6 +179,7 @@ bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
 LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_player_teamspawn, CPointEntity);
 
 Vector CMomentumGameRules::DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins,
                                         const Vector &vMaxs)
@@ -216,11 +238,9 @@ void CMomentumGameRules::ClientCommandKeyValues(edict_t *pEntity, KeyValues *pKe
     }
     else if (FStrEq(pKeyValues->GetName(), "ZonesFromSite"))
     {
-        KeyValuesAD pTracks("tracks");
-        const auto pPath = pKeyValues->GetString("path");
-        if (pTracks->LoadFromFile(g_pFullFileSystem, pPath, "GAME"))
+        if (pKeyValues->FindKey("tracks"))
         {
-            g_pFullFileSystem->RemoveFile(pPath, "GAME");
+            KeyValuesAD pTracks(static_cast<KeyValues *>(pKeyValues->GetPtr("tracks")));
             // Zones loaded, pass them through
             g_MapZoneSystem.LoadZonesFromSite(pTracks, CBaseEntity::Instance(pEntity));
         }
@@ -273,28 +293,6 @@ void CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
     vec.PurgeAndDeleteElements();
 }
 
-static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldValue)
-{
-    ConVarRef gm(var);
-    int gamemode = gm.GetInt();
-    if (gamemode < 0)
-    {
-        // This will never happen. but better be safe than sorry, right?
-        DevWarning("Cannot set a game mode under 0!\n");
-        gm.SetValue(gm.GetDefault());
-        return;
-    }
-    
-    TickSet::SetTickrate(gamemode);
-
-    // set the value of sv_interval_per_tick so it updates when gamemode changes the tickrate.
-    ConVarRef tr("sv_interval_per_tick");
-    tr.SetValue(TickSet::GetTickrate());
-}
-
-static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, 
-                       "", true, 0, false, 0, OnGamemodeChanged);
-
 static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
 
 void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
@@ -323,6 +321,118 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
         }
 
         // MOM_TODO: could this change to gamemode != ALLOWED ?
+    }
+}
+
+bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) 
+{
+    // Allow self damage from rockets
+    if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
+        return true;
+
+    return !pVictim->IsPlayer(); 
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: TF2-like radius damage
+//          https://github.com/danielmm8888/TF2Classic/blob/d070129a436a8a070659f0267f6e63564a519a47/src/game/shared/tf/tf_gamerules.cpp#L1989
+// Input  : &info -
+//			&vecSrcIn -
+//			flRadius -
+//			iClassIgnore -
+//			*pEntityIgnore -
+//-----------------------------------------------------------------------------
+void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
+{
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    CBaseEntity *pEntity = nullptr;
+    trace_t tr;
+    Vector vecSpot;
+    Vector vecSrc = vecSrcIn;
+
+    float falloff = info.GetDamage() / flRadius;
+
+    // iterate on all entities in the vicinity.
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
+    {
+        if (pEntity == pEntityIgnore)
+            continue;
+
+        if (pEntity->m_takedamage == DAMAGE_NO)
+            continue;
+
+        // UNDONE: this should check a damage mask, not an ignore
+        if (iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore)
+        {
+            continue;
+        }
+
+        // Checking distance from source because Valve were apparently too lazy to fix the engine function.
+        Vector vecHitPoint;
+        pEntity->CollisionProp()->CalcNearestPoint(vecSrc, &vecHitPoint);
+        Vector vecDir = vecHitPoint - vecSrc;
+
+        if (vecDir.LengthSqr() > (flRadius * flRadius))
+            continue;
+
+        // Check that the explosion can 'see' this entity, trace through players.
+        vecSpot = pEntity->BodyTarget(vecSrc, false);
+        UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
+
+        if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
+            continue;
+
+        // the explosion can 'see' this entity, so hurt them!
+        if (tr.startsolid)
+        {
+            // if we're stuck inside them, fixup the position and distance
+            tr.endpos = vecSrc;
+            tr.fraction = 0.0f;
+        }
+
+        float flDistanceToEntity;
+
+        if (pEntity->IsPlayer())
+        {
+            // Use whichever is closer, absorigin or worldspacecenter
+            float flToWorldSpaceCenter = (vecSrc - pEntity->WorldSpaceCenter()).Length();
+            float flToOrigin = (vecSrc - pEntity->GetAbsOrigin()).Length();
+
+            flDistanceToEntity = min(flToWorldSpaceCenter, flToOrigin);
+        }
+        else
+        {
+            flDistanceToEntity = (vecSrc - tr.endpos).Length();
+        }
+
+        // Use constant falloff for self-damage in rocket jump mode
+        if (pEntity == info.GetAttacker() && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        {
+            falloff = 0.5f;
+        }
+
+        // Adjust the damage - apply falloff.
+        float flAdjustedDamage = info.GetDamage() * ( 1.0f - ( 1.0f - falloff) * clamp(flDistanceToEntity / flRadius, 0.0f, 1.0f));
+
+        CTakeDamageInfo adjustedInfo = info;
+        adjustedInfo.SetDamage(flAdjustedDamage);
+
+        Vector dir = vecSpot - vecSrc;
+        VectorNormalize(dir);
+
+        if (!CloseEnough(tr.fraction, 1.0f) && pEntity == tr.m_pEnt)
+        {
+            ClearMultiDamage();
+            pEntity->DispatchTraceAttack(adjustedInfo, dir, &tr);
+            ApplyMultiDamage();
+        }
+        else
+        {
+            pEntity->TakeDamage(adjustedInfo);
+        }
+
+        // Now hit all triggers along the way that respond to damage...
+        pEntity->TraceAttackToTriggers(adjustedInfo, vecSrc, tr.endpos, dir);
     }
 }
 

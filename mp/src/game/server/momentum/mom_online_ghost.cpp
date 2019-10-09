@@ -18,6 +18,9 @@ LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
 SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
 SendPropBool(SENDINFO(m_bSpectating)),
+SendPropFloat(SENDINFO_VECTORELEM(m_vecViewOffset, 0), 8, SPROP_ROUNDDOWN, -32.0, 32.0f),
+SendPropFloat(SENDINFO_VECTORELEM(m_vecViewOffset, 1), 8, SPROP_ROUNDDOWN, -32.0, 32.0f),
+SendPropFloat(SENDINFO_VECTORELEM(m_vecViewOffset, 2), 20, SPROP_CHANGES_OFTEN, 0.0f, 256.0f),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
@@ -45,6 +48,8 @@ static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED
                             "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 extern ConVar mom_paintgun_shoot_sound;
 
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_flashlights_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles drawing other ghosts' flashlights. 0 = OFF, 1 = ON\n", RefreshGhostData);
+
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
     ListenForGameEvent("mapfinished_panel_closed");
@@ -60,22 +65,22 @@ CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
     m_vecDecalPackets.Purge();
 }
 
-void CMomentumOnlineGhostEntity::AddPositionFrame(const PositionPacket_t &newFrame)
+void CMomentumOnlineGhostEntity::AddPositionFrame(const PositionPacket &newFrame)
 {
-    m_vecPositionPackets.Insert(new ReceivedFrame_t<PositionPacket_t>(gpGlobals->curtime, newFrame));
+    m_vecPositionPackets.Insert(new ReceivedFrame_t<PositionPacket>(gpGlobals->curtime, newFrame));
 }
 
-void CMomentumOnlineGhostEntity::AddDecalFrame(const DecalPacket_t &decal)
+void CMomentumOnlineGhostEntity::AddDecalFrame(const DecalPacket &decal)
 {
-    m_vecDecalPackets.Insert(new ReceivedFrame_t<DecalPacket_t>(gpGlobals->curtime, decal));
+    m_vecDecalPackets.Insert(new ReceivedFrame_t<DecalPacket>(gpGlobals->curtime, decal));
 }
 
-void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
+void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
 {
     switch (decal.decal_type)
     {
     case DECAL_BULLET:
-        if (decal.iWeaponID == WEAPON_GRENADE)
+        if (decal.data.bullet.iWeaponID == WEAPON_GRENADE)
         {
             // Grenades behave differently
             ThrowGrenade(decal);
@@ -86,10 +91,10 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
                 entindex(),
                 decal.vOrigin,
                 decal.vAngle,
-                decal.iWeaponID,
-                decal.iMode,
-                decal.iSeed,
-                decal.fSpread);
+                decal.data.bullet.iWeaponID,
+                decal.data.bullet.iMode,
+                decal.data.bullet.iSeed,
+                decal.data.bullet.fSpread);
         }
         break;
     case DECAL_PAINT:
@@ -116,12 +121,12 @@ void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
-void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
+void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
 {
     Vector vecDirShooting;
     AngleVectors(packet.vAngle, &vecDirShooting);
 
-    Vector vecEnd = packet.vOrigin + vecDirShooting * 8192.0f;
+    Vector vecEnd = packet.vOrigin + vecDirShooting * MAX_TRACE_LENGTH;
 
     trace_t tr; // main enter bullet trace
 
@@ -148,8 +153,8 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     data.m_nEntIndex = pEntity->entindex();
     // Build the custom online ghost data
     data.m_bCustomColors = true; // Used to determine if an online entity
-    data.m_nDamageType = packet.iWeaponID; // Color data
-    data.m_flScale = packet.fSpread; // Scale of decal
+    data.m_nDamageType = packet.data.paint.color.GetRawColor(); // Color data
+    data.m_flScale = packet.data.paint.fDecalRadius; // Scale of decal
 
     DispatchEffect("Painting", data);
 
@@ -173,24 +178,24 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     }
 }
 
-void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
+void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket&packet)
 {
     trace_t tr;
     Vector vForward;
     // Trace data here, play miss sound and do damage if hit
-    MomUtil::KnifeTrace(packet.vOrigin, packet.vAngle, packet.iWeaponID == 1, this, this, &tr, &vForward);
+    MomUtil::KnifeTrace(packet.vOrigin, packet.vAngle, packet.data.knife.bStab, this, this, &tr, &vForward);
     // Play the smacking sounds and do the decal if it actually hit
-    MomUtil::KnifeSmack(tr, this, packet.vAngle, packet.iWeaponID == 1);
+    MomUtil::KnifeSmack(tr, this, packet.vAngle, packet.data.knife.bStab);
 }
 
-void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)
+void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 {
     CWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
     if (pGrenadeInfo)
     {
         // Vector values stored in a QAngle, shhh~
         Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
-        auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.iMode, 0), this, pGrenadeInfo->szWorldModel);
+        auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
         grenade->SetDamage(0.0f); // These grenades should not do damage
 
     }
@@ -250,14 +255,14 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
         while (m_vecDecalPackets.Count() > upperBound)
         {
-            ReceivedFrame_t<DecalPacket_t> *fireMeImmedately = m_vecDecalPackets.RemoveAtHead();
+            ReceivedFrame_t<DecalPacket> *fireMeImmedately = m_vecDecalPackets.RemoveAtHead();
             FireDecal(fireMeImmedately->frame);
             delete fireMeImmedately;
         }
 
         if (m_vecDecalPackets.Head()->recvTime < flCurtime)
         {
-            ReceivedFrame_t<DecalPacket_t> *fireMe = m_vecDecalPackets.RemoveAtHead();
+            ReceivedFrame_t<DecalPacket> *fireMe = m_vecDecalPackets.RemoveAtHead();
             FireDecal(fireMe->frame);
             delete fireMe;
         }
@@ -272,13 +277,13 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
         while (m_vecPositionPackets.Count() > upperBound)
         {
-            ReceivedFrame_t<PositionPacket_t> *pTemp = m_vecPositionPackets.RemoveAtHead();
+            ReceivedFrame_t<PositionPacket> *pTemp = m_vecPositionPackets.RemoveAtHead();
             delete pTemp;
         }
 
         if (!m_pCurrentFrame)
         {
-            ReceivedFrame_t<PositionPacket_t> *pHead = m_vecPositionPackets.Head();
+            ReceivedFrame_t<PositionPacket> *pHead = m_vecPositionPackets.Head();
             if (flCurtime > pHead->recvTime)
                 m_pCurrentFrame = m_vecPositionPackets.RemoveAtHead();
         }
@@ -359,7 +364,7 @@ void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
     */
 }
 
-bool CMomentumOnlineGhostEntity::GetCurrentPositionPacketData(PositionPacket_t *out) const
+bool CMomentumOnlineGhostEntity::GetCurrentPositionPacketData(PositionPacket *out) const
 {
     if (out && !m_bSpectating.Get())
     {
@@ -392,6 +397,14 @@ void CMomentumOnlineGhostEntity::SetGhostColor(const uint32 newHexColor)
 
 void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
 {
+    if (!mom_ghost_online_flashlights_enable.GetBool())
+    {
+        // In case they have it on still
+        if (GetEffects() & EF_DIMLIGHT)
+            RemoveEffects(EF_DIMLIGHT);
+        return;
+    }
+
     if (bEnable)
     {
         AddEffects(EF_DIMLIGHT);

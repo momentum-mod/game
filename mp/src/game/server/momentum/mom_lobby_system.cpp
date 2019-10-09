@@ -5,6 +5,7 @@
 #include "filesystem.h"
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
+#include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
 #include "mom_player_shared.h"
 #include "mom_modulecomms.h"
@@ -131,7 +132,7 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
     }
 }
 
-bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* p)
+bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket* p)
 {
     return LobbyValid() && SendPacket(p, &target, k_EP2PSendReliable);
 }
@@ -155,7 +156,7 @@ void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
             if (pPlayer && pPlayer->GetObserverMode() == OBS_MODE_NONE && !g_pMomentumTimer->IsRunning())
             {
                 // Teleport em
-                PositionPacket_t p;
+                PositionPacket p;
                 if (pEnt->GetCurrentPositionPacketData(&p))
                 {
                     pPlayer->Teleport(&p.Position, &p.EyeAngle, nullptr);
@@ -373,7 +374,7 @@ void CMomentumLobbySystem::ClearCurrentGhosts(bool bRemoveEnts)
     }
 }
 
-bool CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
+bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
 {
     CHECK_STEAM_API_B(SteamNetworking());
 
@@ -717,7 +718,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
             {
             case PT_POS_DATA: // Position update frame
                 {
-                    PositionPacket_t frame(buf);
+                    PositionPacket frame(buf);
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
                     if (pEntity)
                         pEntity->AddPositionFrame(frame);
@@ -725,7 +726,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                 break;
             case PT_DECAL_DATA:
                 {
-                    DecalPacket_t decals(buf);
+                    DecalPacket decals(buf);
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
                     if (pEntity)
                     {
@@ -735,7 +736,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                 break;
             case PT_SPEC_UPDATE:
                 {
-                    SpecUpdatePacket_t update(buf);
+                    SpecUpdatePacket update(buf);
                     uint64 fromWhoID = fromWho.ConvertToUint64(), specTargetID = update.specTarget;
 
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
@@ -752,7 +753,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
 
             case PT_SAVELOC_REQ:
                 {
-                    SavelocReqPacket_t saveloc(buf);
+                    SavelocReqPacket saveloc(buf);
 
                     // Done/fail states:
                     // 1. They hit "cancel" (most common)
@@ -782,7 +783,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                             g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
 
                             // Send them our saveloc count
-                            SavelocReqPacket_t response;
+                            SavelocReqPacket response;
                             response.stage = 2;
                             response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
 
@@ -803,7 +804,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                         {
                             DevLog(2, "Received a stage 3 saveloc request packet!\n");
                             // Somebody sent us the number of the savelocs they want, saveloc system pls help
-                            SavelocReqPacket_t response;
+                            SavelocReqPacket response;
                             response.stage = 4;
 
                             if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
@@ -817,7 +818,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                             if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
                             {
                                 // Send them a packet that we're all good
-                                SavelocReqPacket_t response;
+                                SavelocReqPacket response;
                                 response.stage = -1;
                                 if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
                                 {
@@ -851,7 +852,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
         // Send position data
         if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
-            PositionPacket_t frame;
+            PositionPacket frame;
             if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
             {
                 m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
@@ -871,10 +872,10 @@ bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
 {
     CHECK_STEAM_API_B(SteamMatchmaking());
     const char* specChar = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
-    return specChar[0] ? true : false;
+    return (specChar && specChar[0]) ? true : false;
 }
 
-bool CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
+bool CMomentumLobbySystem::SendDecalPacket(DecalPacket *packet)
 {
     return LobbyValid() && SendPacket(packet);
 }
@@ -912,7 +913,7 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
 //Sends the spectator info update packet to all current ghosts
 void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type)
 {
-    SpecUpdatePacket_t newUpdate(ghostTarget.ConvertToUint64(), type);
+    SpecUpdatePacket newUpdate(ghostTarget.ConvertToUint64(), type);
     if (SendPacket(&newUpdate, nullptr, k_EP2PSendReliable))
     {
         uint64 playerID = SteamUser()->GetSteamID().ConvertToUint64();
@@ -968,28 +969,11 @@ void CMomentumLobbySystem::OnLobbyTypeChanged(int newType)
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
     CHECK_STEAM_API(SteamFriends());
-    ConVarRef gm("mom_gamemode");
-    const char *gameMode;
-    switch (gm.GetInt())
-    {
-    case GAMEMODE_SURF:
-        gameMode = "Surfing";
-        break;
-    case GAMEMODE_BHOP:
-        gameMode = "Bhopping";
-        break;
-    case GAMEMODE_KZ:
-        gameMode = "Climbing";
-        break;
-    case GAMEMODE_UNKNOWN:
-    default:
-        gameMode = "Playing";
-        break;
-    }
+    CHECK_STEAM_API(SteamMatchmaking());
     char gameInfoStr[64];// , connectStr[64];
     int numPlayers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
     V_snprintf(gameInfoStr, sizeof(gameInfoStr), numPlayers <= 1 ? "%s on %s" : "%s on %s with %i other player%s",
-               gameMode, STRING(gpGlobals->mapname), numPlayers - 1, numPlayers > 2 ? "s" : "");
+               g_pGameModeSystem->GetGameMode()->GetStatusString(), STRING(gpGlobals->mapname), numPlayers - 1, numPlayers > 2 ? "s" : "");
     //V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
 
     //SteamFriends()->SetRichPresence("connect", connectStr);

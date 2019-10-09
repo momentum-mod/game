@@ -175,6 +175,8 @@ protected:
     // Modulecomms event listening
     uint16 m_iMapDataIndx, m_iMapCacheUpdateIndx, m_iDownloadQueueIndx, m_iDownloadSizeIndx, m_iDownloadStartIndx,
         m_iDownloadProgressIndx, m_iDownloadEndIndx;
+
+    Color m_cMapDownloadQueued, m_cMapDownloadNeeded;
 };
 
 // singleton accessor

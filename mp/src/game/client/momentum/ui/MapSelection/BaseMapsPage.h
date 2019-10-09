@@ -14,24 +14,26 @@ class CMapListPanel;
 struct MapData;
 
 // Map keynames
-#define KEYNAME_MAP_ID "id"
-#define KEYNAME_MAP_NAME "name"
-#define KEYNAME_MAP_HASH "hash"
-#define KEYNAME_MAP_TIME "time"
-#define KEYNAME_MAP_TYPE "MapType"
-#define KEYNAME_MAP_STATUS "MapStatus"
-#define KEYNAME_MAP_ZONE_COUNT "numZones"
-#define KEYNAME_MAP_LAYOUT "MapLayout"
-#define KEYNAME_MAP_DIFFICULTY "difficulty"
-#define KEYNAME_MAP_WORLD_RECORD "WorldRecord"
-#define KEYNAME_MAP_IMAGE "MapImage"
-#define KEYNAME_MAP_PATH "MapPath"
-#define KEYNAME_MAP_CREATION_DATE "creationDate"
-#define KEYNAME_MAP_CREATION_DATE_SORT "creationDate_s"
-#define KEYNAME_MAP_IN_LIBRARY "inLibrary"
-#define KEYNAME_MAP_IN_FAVORITES "inFavorites"
-#define KEYNAME_MAP_LAST_PLAYED "lastPlayed"
-#define KEYNAME_MAP_LAST_PLAYED_SORT "lastPlayed_s"
+#define KEYNAME_MAP_ID                  "id"
+#define KEYNAME_MAP_NAME                "name"
+#define KEYNAME_MAP_HASH                "hash"
+#define KEYNAME_MAP_PERSONAL_BEST       "time"
+#define KEYNAME_MAP_PERSONAL_BEST_SORT  "time_s"
+#define KEYNAME_MAP_TYPE                "MapType"
+#define KEYNAME_MAP_STATUS              "MapStatus"
+#define KEYNAME_MAP_ZONE_COUNT          "numZones"
+#define KEYNAME_MAP_LAYOUT              "MapLayout"
+#define KEYNAME_MAP_DIFFICULTY          "difficulty"
+#define KEYNAME_MAP_WORLD_RECORD        "WorldRecord"
+#define KEYNAME_MAP_WORLD_RECORD_SORT   "WorldRecord_s"
+#define KEYNAME_MAP_IMAGE               "MapImage"
+#define KEYNAME_MAP_PATH                "MapPath"
+#define KEYNAME_MAP_CREATION_DATE       "creationDate"
+#define KEYNAME_MAP_CREATION_DATE_SORT  "creationDate_s"
+#define KEYNAME_MAP_IN_LIBRARY          "inLibrary"
+#define KEYNAME_MAP_IN_FAVORITES        "inFavorites"
+#define KEYNAME_MAP_LAST_PLAYED         "lastPlayed"
+#define KEYNAME_MAP_LAST_PLAYED_SORT    "lastPlayed_s"
 
 enum HEADERS
 {
@@ -115,4 +117,6 @@ protected:
 
 private:
     vgui::HFont m_hFont;
+
+    Color m_cMapDLFailed, m_cMapDLSuccess;
 };

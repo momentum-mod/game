@@ -361,6 +361,9 @@ __m128i RotateLeft64<8>(const __m128i& val)
 #endif
 }
 
+#pragma warning(push)
+#pragma warning(disable: 4505)
+
 // Faster than two Shifts and an Or. Thanks to Louis Wingers and Bryan Weeks.
 template <>
 __m128i RotateRight64<8>(const __m128i& val)
@@ -372,6 +375,8 @@ __m128i RotateRight64<8>(const __m128i& val)
     return _mm_shuffle_epi8(val, mask);
 #endif
 }
+
+#pragma warning(pop)
 
 CRYPTOPP_INLINE __m128i SIMON128_f(const __m128i& v)
 {

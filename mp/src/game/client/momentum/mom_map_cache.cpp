@@ -9,6 +9,7 @@
 
 #include "filesystem.h"
 #include "fmtstr.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/valve_minmax_off.h"
 // These two are wrapped by minmax_off due to Valve making a macro for min and max...
@@ -370,43 +371,16 @@ uint32 CMapCache::GetUpdateIntervalForMap(MapData* pData)
 
 void CMapCache::SetMapGamemode(const char *pMapName /* = nullptr*/)
 {
-    ConVarRef gm("mom_gamemode");
-
     if (!pMapName)
         pMapName = MapName();
 
-    if (!pMapName)
-    {
-        gm.SetValue(GAMEMODE_UNKNOWN);
-        return;
-    }
-
     if (m_pCurrentMapData)
     {
-        gm.SetValue(m_pCurrentMapData->m_eType);
+        g_pGameModeSystem->SetGameMode(m_pCurrentMapData->m_eType);
     }
     else // Backup method, use map name for unofficial maps
     {
-        if (!Q_strnicmp(pMapName, "surf_", 5))
-        {
-            gm.SetValue(GAMEMODE_SURF);
-        }
-        else if (!Q_strnicmp(pMapName, "bhop_", 5))
-        {
-            gm.SetValue(GAMEMODE_BHOP);
-        }
-        else if (!Q_strnicmp(pMapName, "kz_", 3))
-        {
-            gm.SetValue(GAMEMODE_KZ);
-        }
-        else if (!Q_strnicmp(pMapName, "tricksurf_", 10))
-        {
-            gm.SetValue(GAMEMODE_TRICKSURF);
-        }
-        else
-        {
-            gm.SetValue(GAMEMODE_UNKNOWN);
-        }
+        g_pGameModeSystem->SetGameModeFromMapName(pMapName);
     }
 }
 
@@ -481,21 +455,10 @@ void CMapCache::OnFetchMapZones(KeyValues *pKv)
         const auto pTracks = pData->FindKey("tracks");
         if (pTracks)
         {
-            CryptoPP::SecByteBlock scratch(16);
-            CryptoPP::AutoSeededRandomPool rng;
-            rng.GenerateBlock(scratch, scratch.size());
-            std::string s;
-            CryptoPP::HexEncoder hex(new CryptoPP::StringSink(s));
-            hex.Put(scratch.BytePtr(), scratch.size());
-            hex.MessageEnd();
-
-            CFmtStr path("%s%s", s.c_str(), EXT_ZONE_FILE);
-            if (pTracks->SaveToFile(g_pFullFileSystem, path.Get(), "GAME"))
-            {
-                KeyValues *pToSend = new KeyValues("ZonesFromSite");
-                pToSend->SetString("path", path.Get());
-                engine->ServerCmdKeyValues(pToSend); // pSend is deleted in here
-            }
+            KeyValues *pToSend = new KeyValues("ZonesFromSite");
+            // A copy is required, otherwise auto delete from pToSend will delete the content
+            pToSend->SetPtr("tracks", pTracks->MakeCopy(true));
+            engine->ServerCmdKeyValues(pToSend);
         }
         else
         {
@@ -797,11 +760,19 @@ void CMapCache::LoadMapCacheFromDisk()
     pMapData->UsesEscapeSequences(true);
     if (pMapData->LoadFromFile(g_pFullFileSystem, MAP_CACHE_FILE_NAME, "MOD"))
     {
-        AddMapsToCache(pMapData, MODEL_FROM_DISK);
+        KeyValues *pVersion = pMapData->FindKey(MOM_CURRENT_VERSION);
+        if (pVersion)
+        {
+            AddMapsToCache(pVersion, MODEL_FROM_DISK);
+        }
+        else
+        {
+            Log("Map cache file exists but is an older version, ignoring it...\n");
+        }
     }
     else
     {
-        DevLog(2, "Map cache file doesn't exist, creating it...\n");
+        Log("Map cache file doesn't exist, creating it...\n");
     }
 }
 
@@ -810,9 +781,12 @@ void CMapCache::SaveMapCacheToDisk()
     KeyValuesAD pMapData("MapCacheData");
     pMapData->UsesEscapeSequences(true);
 
+    KeyValues *pVersion = new KeyValues(MOM_CURRENT_VERSION);
+    pMapData->AddSubKey(pVersion);
+
     FOR_EACH_MAP(m_mapMapCache, i)
     {
-        KeyValues *pMap = pMapData->CreateNewKey();
+        KeyValues *pMap = pVersion->CreateNewKey();
         m_mapMapCache[i]->ToKV(pMap);
     }
 

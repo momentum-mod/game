@@ -236,7 +236,7 @@ private:
 											// select[0] is the offset to where the cursor was dragged to. or -1 if no drag.
 	int				   _pixelsIndent;
 	int				   _maxCharCount;		// max number of chars that can be in the text buffer
-	HFont              _font;				// font of chars in the text buffer
+	HFont              m_font;				// font of chars in the text buffer
 	HFont			   m_hFontUnderline;
 	Color			   _selectionColor;
 	Color			   _selectionTextColor;	// color of the highlighted text
@@ -256,6 +256,9 @@ private:
 
 	CUtlString m_pszInitialText;	// initial text
     CUtlString m_pszInitialTextFile; // textfile used for initial text
+
+    CUtlString m_FontName;
+    CUtlString m_FontUnderlineName;
 
 	// saved state
 	bool _recalcSavedRenderState;

@@ -1,5 +1,6 @@
 #include "cbase.h"
 
+#include <ctime>
 #include "filesystem.h"
 #include "utlbuffer.h"
 #include "mom_util.h"
@@ -13,6 +14,9 @@
 #ifdef CLIENT_DLL
 #include "materialsystem/imaterialvar.h"
 #endif
+
+#include "steam/steam_api.h"
+#include "fmtstr.h"
 
 #include "tier0/valve_minmax_off.h"
 // These are wrapped by minmax_off/on due to Valve making a macro for min and max...
@@ -61,6 +65,41 @@ void MomUtil::DispatchConCommand(const char *pszCommand)
     }
 }
 #endif
+
+void MomUtil::MountGameFiles()
+{
+    if (SteamApps())
+    {
+        char installPath[MAX_PATH];
+        uint32 folderLen;
+
+        // CS:S
+        folderLen = SteamApps()->GetAppInstallDir(240, installPath, MAX_PATH);
+        if (folderLen)
+        {
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike/cstrike_pak.vpk", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "download");
+        }
+
+        // TF2
+        folderLen = SteamApps()->GetAppInstallDir(440, installPath, MAX_PATH);
+        if (folderLen)
+        {
+            filesystem->AddSearchPath(CFmtStr("%s/tf", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_misc.vpk", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_misc.vpk", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_vo_english.vpk", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_textures.vpk", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "GAME");
+            filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "download");
+        }
+
+        if (developer.GetInt())
+            filesystem->PrintSearchPaths();
+    }
+}
 
 void MomUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime)
 {
@@ -172,7 +211,7 @@ bool MomUtil::GetTimeAgoString(time_t *input, char* pOut, size_t outLen)
         count = diff;
     }
 
-    if (!pUnitString || count == 0)
+    if (!pUnitString || count <= 0)
         Q_strncpy(pOut, "just now", outLen);
     else
         Q_snprintf(pOut, outLen, "%i %s%s ago", count, pUnitString, (count > 1 ? "s" : ""));
@@ -205,7 +244,12 @@ bool MomUtil::ISODateToTimeT(const char* pISODate, time_t* out)
     tim.tm_sec = sec;
     tim.tm_isdst = 0;
 
-    *out = mktime(&tim) - timezone;
+    *out = mktime(&tim) -
+#ifdef WIN32 
+        _timezone;
+#else
+        timezone;
+#endif
     return true;
 }
 

@@ -781,14 +781,13 @@ void StatsDB_InitStatsDatabase(
 	if ( !g_bMPI_Stats && !VMPI_IsParamUsed( mpi_Job_Watch ) )
 		return;
 
-	unsigned long jobPrimaryID;
-
 	// Now open the DB.
 	if ( g_bMPIMaster )
 	{
 		CDBInfo dbInfo;
 		GetDBInfo( pDBInfoFilename, &dbInfo );
 
+        unsigned long jobPrimaryID;
 		if ( !VMPI_Stats_Init_Master( dbInfo.m_HostName, dbInfo.m_DBName, dbInfo.m_UserName, argv[argc-1], &jobPrimaryID ) )
 		{
 			Warning( "VMPI_Stats_Init_Master( %s, %s, %s ) failed.\n", dbInfo.m_HostName, dbInfo.m_DBName, dbInfo.m_UserName );

@@ -189,7 +189,7 @@ bool CKnife::SwingOrStab(bool bStab)
     // MOM_TODO: Determine if we should pass this into KnifeTrace
     // bool bFirstSwing = (m_flNextPrimaryAttack + 0.4) < gpGlobals->curtime;
 
-    DecalPacket_t packet(DECAL_KNIFE, pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab, 0, 0, 0);
+    DecalPacket packet = DecalPacket::Knife(pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab);
     g_pMomentumGhostClient->SendDecalPacket(&packet);
 #endif
 

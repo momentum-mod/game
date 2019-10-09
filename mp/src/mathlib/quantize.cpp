@@ -197,8 +197,7 @@ static void UpdateStats(struct QuantizedValue *v)
 		N+=s->Count;
 		for(j=0;j<current_ndims;j++)
 		{
-			uint8 v=s->Value[j];
-			Means[j]+=v*s->Count;
+			Means[j]+= s->Value[j] * s->Count;
 		}
 	}
 	for(j=0;j<current_ndims;j++)
@@ -269,7 +268,6 @@ static int FindWorst(void)
 static void SubdivideNode(struct QuantizedValue *n, int whichdim)
 {
 	int NAdded=0;
-	int i;
 
 #if SPLIT_THEN_SORT
 	// we will try the "split then sort" method. This works by finding the
@@ -278,13 +276,13 @@ static void SubdivideNode(struct QuantizedValue *n, int whichdim)
 	// which of the n-dimensional means the sample is closest to.
 	double LocalMean[MAXDIMS][2];
 	int totsamps[2];
-	for(i=0;i<current_ndims;i++)
+	for(int i=0;i<current_ndims;i++)
 		LocalMean[i][0]=LocalMean[i][1]=0.;
 	totsamps[0]=totsamps[1]=0;
 	uint8 minv=255;
 	uint8 maxv=0;
 	struct Sample *minS=0,*maxS=0;
-	for(i=0;i<n->NSamples;i++)
+	for(int i=0;i<n->NSamples;i++)
 	{
 		uint8 v;
 		int whichside=1;
@@ -302,7 +300,7 @@ static void SubdivideNode(struct QuantizedValue *n, int whichdim)
 	}
 
 	if (totsamps[0] && totsamps[1])
-		for(i=0;i<current_ndims;i++)
+		for(int i=0;i<current_ndims;i++)
 		{
 			LocalMean[i][0]/=totsamps[0];
 			LocalMean[i][1]/=totsamps[1];
@@ -324,7 +322,7 @@ static void SubdivideNode(struct QuantizedValue *n, int whichdim)
 
 	// now, we have 2 n-dimensional means. We will label each sample
 	// for which one it is nearer to by using the QNum field.
-	for(i=0;i<n->NSamples;i++)
+	for(int i=0;i<n->NSamples;i++)
 	{
 		double dist[2];
 		dist[0]=dist[1]=0.;
@@ -340,7 +338,7 @@ static void SubdivideNode(struct QuantizedValue *n, int whichdim)
 	// sort the array by moving the 0-labelled ones to the head of the array.
 	n->sortdim=-1;
 	qsort(n->Samples,n->NSamples,current_ssize,QNumSort);
-	for(i=0;i<n->NSamples;i++,NAdded++)
+	for(int i=0;i<n->NSamples;i++,NAdded++)
 		if (SAMPLE(n->Samples,i)->QNum)
 			break;
   

@@ -16,11 +16,11 @@ void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
     messageboxpanel->CreateMessagebox("#MOM_MB_TrySaveLoad_Title", "#MOM_MB_TrySaveLoad");
 }
 
-MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvar) : MessageBox(title, msg)
+MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvarName) : MessageBox(title, msg)
 {
     // When toggled, will not allow the panel to be created (We don't check it here because we've done it on our 2 interfaces (Messaging and IMEssageBox)
     // this also allows us to show this even if the toggle says no! (Like, for important stuff)
-    m_pToggleCheckButton = new vgui::CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
+    m_pToggleCheckButton = new vgui::CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvarName);
     AddActionSignalTarget(m_pToggleCheckButton); // Catch that OK button press
 }
 
@@ -149,15 +149,15 @@ Panel *CMessageboxPanel::CreateConfirmationBox(Panel *pTarget, const char *pTitl
     return pMessageBox;
 }
 
-Panel* CMessageboxPanel::CreateMessageboxVarRef(const char* pTitle, const char* pMessage, const char* cvar, const char* pAccept)
+Panel* CMessageboxPanel::CreateMessageboxVarRef(const char* pTitle, const char* pMessage, const char* cvarName, const char* pAccept)
 {
-    ConVarRef varref(cvar);
+    ConVarRef varref(cvarName);
     if (!varref.IsValid())
         return nullptr;
     // Preliminary check, if the var is already 1 then bail
     if (varref.GetBool())
         return nullptr;
-    MessageBoxVarRef *pMessageBox = new MessageBoxVarRef(pTitle, pMessage, cvar);
+    MessageBoxVarRef *pMessageBox = new MessageBoxVarRef(pTitle, pMessage, cvarName);
     // If it is not a nullptr and it's not an empty string...
     if (pAccept && Q_strlen(pAccept) > 0)
     {

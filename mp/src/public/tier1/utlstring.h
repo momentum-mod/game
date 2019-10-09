@@ -59,14 +59,14 @@ public:
 	CUtlString( const char *pString, int length );
 	CUtlString( const CUtlString& string );
 
-#ifdef MOVE_CONSTRUCTOR_SUPPORT
+#ifdef VALVE_RVALUE_REFS
 	// Support moving of CUtlString objects. Long live C++11
 	// This move constructor will get called when appropriate, such as when
 	// returning objects from functions, or otherwise copying from temporaries
 	// which are about to be destroyed. It can also be explicitly invoked with
 	// std::move().
 	// Move constructor:
-	CUtlString( CUtlString&& rhs )
+	CUtlString( CUtlString&& rhs ) noexcept
 	{
 		// Move the string pointer from the source to this -- be sure to
 		// zero out the source to avoid double frees.
@@ -74,7 +74,7 @@ public:
 		rhs.m_pString = 0;
 	}
 	// Move assignment operator:
-	CUtlString& operator=( CUtlString&& rhs )
+	CUtlString& operator=( CUtlString&& rhs ) noexcept
 	{
 		// Move the string pointer from the source to this -- be sure to
 		// zero out the source to avoid double frees.
@@ -157,7 +157,7 @@ public:
 
 #if ! defined(SWIG)
 	// Don't let SWIG see the PRINTF_FORMAT_STRING attribute or it will complain.
-	int Format( PRINTF_FORMAT_STRING const char *pFormat, ... )  FMTFUNCTION( 2, 3 );
+	FMTFUNCTION_WIN(2, 3) int Format( PRINTF_FORMAT_STRING const char *pFormat, ... )  FMTFUNCTION( 2, 3 );
 	int FormatV( PRINTF_FORMAT_STRING const char *pFormat, va_list marker );
 #else
 	int Format( const char *pFormat, ... );

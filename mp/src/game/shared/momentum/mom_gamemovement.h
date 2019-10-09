@@ -44,6 +44,9 @@ class CMomentumGameMovement : public CGameMovement
     virtual void AirMove(void); // Overridden for rampboost fix
     virtual void WalkMove(void);
 
+    // Limited bunnyhopping in rocket jumping
+    void PreventBunnyHopping(void);
+
     // Override fall damage
     virtual void CheckFalling();
 
@@ -76,6 +79,9 @@ class CMomentumGameMovement : public CGameMovement
     void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE;
 
     void Friction(void);
+
+	virtual void CheckWaterJump();
+	virtual bool CheckWater();
 
     // Duck
     virtual void Duck(void);

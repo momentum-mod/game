@@ -84,6 +84,16 @@ public:
 	virtual void ConstructString(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const char *tokenName, KeyValues *localizationVariables) = 0;
 	virtual void ConstructString(OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, StringIndex_t unlocalizedTextSymbol, KeyValues *localizationVariables) = 0;
 
+    template <size_t len>
+    FORCEINLINE wchar_t *FindSafe(const char(&token)[len])
+    {
+        if (wchar_t *find = Find(token))
+            return find;
+        static wchar_t fallback[len];
+        ConvertANSIToUnicode(token, fallback, sizeof(fallback));
+        return fallback;
+    }
+
 	///////////////////////////////////////////////////////////////////
 	// static interface
 

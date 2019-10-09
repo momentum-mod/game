@@ -3,7 +3,7 @@
 #include "eventqueue.h"
 
 class CMomentumPlayer;
-struct SavelocReqPacket_t;
+class SavelocReqPacket;
 
 // Saved Location used in the "Saveloc menu"
 struct SavedLocation_t
@@ -57,7 +57,7 @@ public:
     // Called when a saveloc request is completed.
     // When sending (our savelocs to them), input = the nums, output = binary savelocs
     // When !sending (recv savelocs from them), input = the savelocs, output = not needed
-    bool FillSavelocReq(bool sending, SavelocReqPacket_t *input, SavelocReqPacket_t *outputBuf);
+    bool FillSavelocReq(bool sending, SavelocReqPacket *input, SavelocReqPacket *outputBuf);
 
     // Local
     // Gets the current menu Saveloc index

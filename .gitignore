@@ -74,9 +74,6 @@ cmake*/
 config.cfg
 server_blacklist.txt
 gamestate.txt
-checkpoints.txt
-progress.dat
-savedlocs.txt
 *.ain
 stats.txt
 voice_ban.dt
@@ -87,8 +84,9 @@ voice_ban.dt
 
 # Momentum
 *.zon
-*.momrec
 *.mrf
+progress.dat
+savedlocs.txt
 game_shader_dx9.dll
 game_shader_dx9.so
 game_shader_dx9.so.dbg
@@ -97,7 +95,10 @@ game_shader_dx9_srv.so.dbg
 game_shader_dx9.dylib
 game_shader_dx9.dylib.dYSM/
 mp/game/bin/
-mp/game/momentum/materials/vgui/maps/*
+mp/game/momentum/version.txt
+mp/game/momentum/downloadlists/
+mp/game/momentum/map_cache.dat
+mp/game/momentum/maps/*.bsp
 
 # Others
 *.cache
@@ -113,7 +114,17 @@ mp/game/momentum/materials/vgui/maps/*
 CMakeLists.txt
 mp/game/momentum/cfg/pet.txt
 *.exe
-mp/game/momentum/version.txt
-mp/game/momentum/downloadlists/
-mp/game/momentum/map_cache.dat
-mp/game/momentum/maps/*.bsp
+
+# Shader output
+mp/src/materialsystem/stdshaders/filestocopy.txt
+mp/src/materialsystem/stdshaders/filelist.txt
+mp/src/materialsystem/stdshaders/filelistgen.txt
+fxctmp9_tmp/
+stdshaders/shaders/
+mp/src/materialsystem/stdshaders/inclist.txt
+mp/src/materialsystem/stdshaders/vcslist.txt
+mp/src/materialsystem/stdshaders/uniquefilestocopy.txt
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b.copy
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30
+mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30.copy

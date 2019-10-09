@@ -1,6 +1,7 @@
 #include "cbase.h"
 
 #include "mom_system_discord.h"
+#include "mom_system_gamemode.h"
 
 #include "discord_rpc.h"
 
@@ -18,17 +19,6 @@
 
 #define MAIN_MENU_STR "Main Menu"
 #define MOM_ICON_LOGO "mom"
-
-const char * const szGamemodeIcons[]
-{
-    MOM_ICON_LOGO,
-    "mom_icon_surf",
-    "mom_icon_bhop",
-    "mom_icon_kz",
-    "mom_icon_rj",
-    "mom_icon_tricksurf",
-    "mom_icon_trikz"
-};
 
 // How many frames to wait before updating discord
 // (some things are still updated each frame such as checking callbacks)
@@ -135,15 +125,13 @@ void CMomentumDiscord::LevelInitPostEntity()
 
     m_bInMap = true;
 
-    const int gameMode = clamp<int>(ConVarRef("mom_gamemode").GetInt(), GAMEMODE_UNKNOWN, GAMEMODE_COUNT - 1);
-    if (gameMode == GAMEMODE_UNKNOWN)
+    V_strncpy(m_szDiscordLargeImageKey, g_pGameModeSystem->GetGameMode()->GetDiscordIcon(), sizeof(m_szDiscordLargeImageKey));
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_UNKNOWN))
     {
-        V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordLargeImageKey));
         m_szDiscordSmallImageKey[0] = '\0';
     }
     else
     {
-        V_strncpy(m_szDiscordLargeImageKey, szGamemodeIcons[gameMode], sizeof(m_szDiscordLargeImageKey));
         V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordSmallImageKey));
     }
 
@@ -347,7 +335,7 @@ bool CMomentumDiscord::JoinMapFromUserSteamID(uint64 steamID)
     CSteamID targetPlayerSteamID = CSteamID(steamID);
     const char *targetMapName = GetMapOfPlayerFromSteamID(&targetPlayerSteamID);
 
-    if (!targetMapName[0])
+    if (!(targetMapName && targetMapName[0]))
     {
         return false;
     }

@@ -116,12 +116,18 @@ void LobbyMembersPanel::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         // Add this user to the panel
         AddLobbyMember(CSteamID(pParam->m_ulSteamIDUserChanged));
         UpdateLobbyMemberCount();
+        m_pMemberList->InvalidateLayout(true);
     }
     else if (pParam->m_rgfChatMemberStateChange & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
         // Get em outta here
-        m_pMemberList->RemoveItem(FindItemIDForLobbyMember(pParam->m_ulSteamIDUserChanged));
-        UpdateLobbyMemberCount();
+        const auto itemID = FindItemIDForLobbyMember(pParam->m_ulSteamIDUserChanged);
+        if (itemID > -1)
+        {
+            m_pMemberList->RemoveItem(itemID);
+            UpdateLobbyMemberCount();
+            m_pMemberList->SortList();
+        }
     }
 }
 
@@ -154,6 +160,8 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
             pData->SetBool("isOwner", memberID == owner);
 
             const char *pMap = SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_MAP);
+            if (!pMap)
+                pMap = "";
             const auto bMainMenu = Q_strlen(pMap) == 0;
             auto bCredits = false;
             auto bBackground = false;
@@ -167,7 +175,7 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
             pData->SetString("map", bMainMenu ? "Main Menu" : pMap);
 
             const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_IS_SPEC);
-            if (pSpec[0])
+            if (pSpec && pSpec[0])
                 pData->SetString("state", "#MOM_Lobby_Member_Spectating");
             else if (!(bMainMenu || bCredits || bBackground))
                 pData->SetString("state", "#MOM_ReplayStatusPlaying");
@@ -229,12 +237,16 @@ int LobbyMembersPanel::StaticLobbyMemberSortFunc(ListPanel* list, const ListPane
 
 int LobbyMembersPanel::FindItemIDForLobbyMember(const uint64 steamID)
 {
-    for (int i = 0; i <= m_pMemberList->GetItemCount(); i++)
+    for (int row = 0; row <= m_pMemberList->GetItemCount(); row++)
     {
-        const auto pKv = m_pMemberList->GetItem(i);
-        if (pKv && pKv->GetUint64("steamid") == steamID)
+        const auto itemID = m_pMemberList->GetItemIDFromRow(row);
+        if (itemID > -1)
         {
-            return i;
+            const auto pKv = m_pMemberList->GetItem(itemID);
+            if (pKv && pKv->GetUint64("steamid") == steamID)
+            {
+                return itemID;
+            }
         }
     }
     return -1;

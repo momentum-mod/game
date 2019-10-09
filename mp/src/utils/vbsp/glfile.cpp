@@ -161,13 +161,13 @@ void WriteGLViewFaces_r( node_t *node, FileHandle_t glview )
 WriteGLView
 =============
 */
-void WriteGLView (tree_t *tree, char *source)
+void WriteGLView (tree_t *tree, char *sourceStr)
 {
 	char	name[1024];
 	FileHandle_t glview;
 
 	c_glfaces = 0;
-	sprintf (name, "%s%s.gl",outbase, source);
+	sprintf (name, "%s%s.gl",outbase, sourceStr);
 	Msg("Writing %s\n", name);
 
 	glview = g_pFileSystem->Open( name, "w" );

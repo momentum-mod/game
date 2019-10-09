@@ -13,11 +13,15 @@
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_base_gun.h"
+#include "weapon/weapon_mom_paintgun.h"
+#include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
 #include "util/mom_util.h"
 #include "mom_replay_system.h"
 #include "run/mom_replay_base.h"
 #include "mapzones.h"
+#include "fx_mom_shared.h"
+#include "mom_rocket.h"
 
 #include "tier0/memdbgon.h"
 
@@ -39,6 +43,62 @@ CON_COMMAND_F(
         return;
 
     pPlayer->TogglePracticeMode();
+}
+
+CON_COMMAND(
+    mom_eyetele,
+    "Teleports the player to the solid that they are looking at.\n")
+{
+    CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (!pPlayer)
+        return;
+
+    if (pPlayer->m_bHasPracticeMode || !g_pMomentumTimer->IsRunning())
+    {
+        trace_t tr;
+        Vector pos = pPlayer->EyePosition();
+        Vector ang;
+        pPlayer->EyeVectors(&ang);
+
+        int mask = CONTENTS_SOLID | CONTENTS_MOVEABLE | CONTENTS_OPAQUE | CONTENTS_WINDOW;
+        UTIL_TraceLine(pos, pos + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+        if (!CloseEnough(tr.fraction, 1.0f) && tr.DidHit())
+        {
+            Vector hit = tr.endpos;
+            if (enginetrace->PointOutsideWorld(hit))
+            {
+                hit += (hit - pos).Normalized() * 64.0f;
+
+                UTIL_TraceLine(hit, hit + ang * MAX_COORD_RANGE, mask, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+                if (tr.DidHit())
+                    hit = tr.endpos;
+            }
+            Vector nrm = tr.plane.normal;
+
+            if (CloseEnough(nrm.z, 1.0f))
+            {
+                if (pPlayer->GetMoveType() == MOVETYPE_NOCLIP) 
+                    hit.z += 32.0f;
+            }
+            else
+            {
+                hit += (hit - pos).Normalized() * -32.0f;
+            }
+
+            QAngle new_ang = pPlayer->GetAbsAngles();
+            if (new_ang.x > 45.0f && enginetrace->PointOutsideWorld(pos))
+                new_ang.x = 0.0f;
+
+            g_pMomentumTimer->SetCanStart(false);
+            pPlayer->Teleport(&hit, &new_ang, nullptr);
+        }
+    }
+    else
+    {
+        Warning("Eyetele can only be used when the timer is not running or in practice mode!\n");
+    }
 }
 
 CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
@@ -74,7 +134,7 @@ SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MomRunStats)
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-    DEFINE_THINKFUNC(UpdateRunStats),
+    DEFINE_THINKFUNC(PlayerThink),
     DEFINE_THINKFUNC(CalculateAverageStats),
     /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
 END_DATADESC();
@@ -102,6 +162,20 @@ static ConVar mom_trail_length("mom_trail_length", "4", FCVAR_CLIENTCMD_CAN_EXEC
 static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1,
                                AppearanceCallback);
+
+// Rocket jump force ConVars
+
+// Equivalent to "tf_damagescale_self_soldier" (default: 0.6) in TF2
+// Used for scaling damage when not on ground and not in water
+#define MOM_DAMAGESCALE_SELF_ROCKET 0.6f
+
+// Equivalent to "tf_damageforcescale_self_soldier_rj" (default 10.0) in TF2
+// Used for scaling force when not on ground
+#define MOM_DAMAGEFORCESCALE_SELF_ROCKET_AIR 10.0f
+
+// Equivalent to "tf_damageforcescale_self_soldier_badrj" (default: 5.0) in TF2
+// Used for scaling force when on ground
+#define MOM_DAMAGEFORCESCALE_SELF_ROCKET 5.0f
 
 // Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps,
 // as well as changing the appearance locally.
@@ -155,8 +229,11 @@ CMomentumPlayer::CMomentumPlayer()
     m_iLastBlock = -1;
     m_iOldTrack = 0;
     m_iOldZone = 0;
+    m_fLerpTime = 0.0f;
 
     m_bWasSpectating = false;
+
+    m_flNextPaintTime = gpGlobals->curtime;
 
     m_CurrentSlideTrigger = nullptr;
 
@@ -174,13 +251,16 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_RunStats.Init();
 
-    Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
-
     ListenForGameEvent("mapfinished_panel_closed");
 
     for (int i = 0; i < MAX_TRACKS; i++)
     {
         m_pStartZoneMarks[i] = nullptr;
+    }
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        gEntList.AddListenerEntity(this);
     }
 }
 
@@ -189,10 +269,17 @@ CMomentumPlayer::~CMomentumPlayer()
     if (this == s_pPlayer)
         s_pPlayer = nullptr;
 
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        gEntList.RemoveListenerEntity(this);
+        m_vecRockets.RemoveAll();
+    }
+
     RemoveTrail();
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
+    StopObserverMode();
     g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
 }
 
@@ -308,6 +395,32 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
+void CMomentumPlayer::ItemPostFrame()
+{
+    BaseClass::ItemPostFrame();
+    if (m_nButtons & IN_PAINT)
+        DoPaint();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Player reacts to bumping a weapon.
+// Input  : pWeapon - the weapon that the player bumped into.
+// Output : Returns true if player picked up the weapon
+//-----------------------------------------------------------------------------
+bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
+{
+    // Get the weapon that we currently have at that slot
+    const auto pCurrWeapon = Weapon_GetSlotAndPosition(pWeapon->GetSlot(), pWeapon->GetPosition());
+    if (pCurrWeapon)
+    {
+        // Switch to that weapon for convenience
+        Weapon_Switch(pCurrWeapon);
+        return false;
+    }
+    // Otherwise we can try to pick up that weapon
+    return BaseClass::BumpWeapon(pWeapon);
+}
+
 void CMomentumPlayer::FlashlightTurnOn()
 {
     // Emit sound by default
@@ -342,12 +455,12 @@ void CMomentumPlayer::SendAppearance() { g_pMomentumGhostClient->SendAppearanceD
 
 void CMomentumPlayer::Spawn()
 {
-    SetName(MAKE_STRING(m_pszDefaultEntName));
     SetModel(ENTITY_MODEL);
     SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
-    AddFlag(FL_GODMODE);
+    
+    m_takedamage = DAMAGE_EVENTS_ONLY;
 
     // this removes the flag that was added while switching to spectator mode which prevented the player from activating
     // triggers
@@ -384,7 +497,7 @@ void CMomentumPlayer::Spawn()
     RegisterThinkContext("THINK_AVERAGE_STATS");
     // RegisterThinkContext("CURTIME_FOR_START");
     RegisterThinkContext("TWEEN");
-    SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick,
+    SetContextThink(&CMomentumPlayer::PlayerThink, gpGlobals->curtime + gpGlobals->interval_per_tick,
                     "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL,
                     "THINK_AVERAGE_STATS");
@@ -419,7 +532,7 @@ void CMomentumPlayer::Spawn()
     // Reset current checkpoint trigger upon spawn
     m_CurrentProgress.Term();
 
-    g_pMomentumTimer->OnPlayerSpawn(this);
+    g_pGameModeSystem->GetGameMode()->OnPlayerSpawn(this);
 }
 
 // Obtains a player's previous origin X ticks backwards (0 is still previous, depends when this is called ofc!)
@@ -440,15 +553,21 @@ void CMomentumPlayer::NewPreviousOrigin(Vector origin)
 CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 {
     CBaseEntity *pStart = nullptr;
-    const char *spawns[] = {"info_player_start", "info_player_counterterrorist", "info_player_terrorist"};
-    for (int i = 0; i < 3; i++)
+    const char *pSpawns[] = {"info_player_start", "info_player_counterterrorist", "info_player_terrorist", "info_player_teamspawn"};
+    for (auto pSpawn : pSpawns)
     {
-        if (SelectSpawnSpot(spawns[i], pStart))
+        if (SelectSpawnSpot(pSpawn, pStart))
             return pStart;
     }
 
-    DevMsg("No valid spawn point found.\n");
+    Warning("No valid spawn point found!\n");
     return Instance(INDEXENT(0));
+}
+
+void CMomentumPlayer::SetAutoBhopEnabled(bool bEnable)
+{
+    m_bAutoBhop = bEnable;
+    DevLog("%s autobhop\n", bEnable ? "Enabled" : "Disabled");
 }
 
 void CMomentumPlayer::OnJump()
@@ -832,6 +951,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
         case ZONE_TYPE_START:
         {
+            ResetProps();
+
             const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
             m_Data.m_iCurrentTrack = pStartTrigger->GetTrackNumber();
@@ -841,6 +962,18 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
 
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
+
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            {
+                DestroyRockets();
+
+                // Don't limit speed in rocketjump mode,
+                // reset timer on zone enter and start on zone leave.
+                g_pMomentumTimer->Reset(this);
+                m_bStartTimerOnJump = false;
+                m_bShouldLimitPlayerSpeed = false;
+                break;
+            }
 
             // Limit to 260 if timer is not running and we're not in practice mode
             if (!(g_pMomentumTimer->IsRunning() || m_bHasPracticeMode))
@@ -958,14 +1091,14 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_STOP:
             m_Data.m_iCurrentTrack = m_iOldTrack;
             m_Data.m_iCurrentZone = m_iOldZone;
-            SetLaggedMovementValue(1.0f); // Reset slow motion
+            ResetProps();
             break;
         case ZONE_TYPE_CHECKPOINT:
             break;
         case ZONE_TYPE_START:
             // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
             g_pMomentumTimer->TryStart(this, true);
-            if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode)
+            if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
             {
                 const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
 
@@ -994,6 +1127,11 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
     }
 }
 
+void CMomentumPlayer::ResetProps()
+{
+    SetLaggedMovementValue(1.0f);
+}
+
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
 {
     BaseClass::Touch(pOther);
@@ -1002,18 +1140,31 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
         g_MOMBlockFixer->PlayerTouch(this, pOther);
 }
 
-void CMomentumPlayer::EnableAutoBhop()
+void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
 {
-    m_bAutoBhop = true;
-    DevLog("Enabled autobhop\n");
-}
-void CMomentumPlayer::DisableAutoBhop()
-{
-    m_bAutoBhop = false;
-    DevLog("Disabled autobhop\n");
+    if (pEntity->GetFlags() & FL_GRENADE)
+    {
+        const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
+        if (pRocket)
+        {
+            m_vecRockets.AddToTail(pRocket);
+        }
+    }
 }
 
-void CMomentumPlayer::UpdateRunStats()
+void CMomentumPlayer::OnEntityDeleted(CBaseEntity *pEntity)
+{
+    if ((pEntity->GetFlags() & FL_GRENADE) && !m_vecRockets.IsEmpty())
+    {
+        const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
+        if (pRocket)
+        {
+            m_vecRockets.FindAndRemove(pRocket);
+        }
+    }
+}
+
+void CMomentumPlayer::PlayerThink()
 {
     // If we're in practicing mode, don't update.
     if (!m_bHasPracticeMode)
@@ -1131,7 +1282,6 @@ void CMomentumPlayer::UpdateMaxVelocity()
 
 void CMomentumPlayer::ResetRunStats()
 {
-    SetName(MAKE_STRING(m_pszDefaultEntName)); // Reset name
     // MOM_TODO: Consider any other resets needed (classname, any flags, etc)
 
     m_nPerfectSyncTicks = 0;
@@ -1550,6 +1700,84 @@ void CMomentumPlayer::StopSpectating()
     g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
 }
 
+void CMomentumPlayer::TimerCommand_Restart(int track)
+{
+    if (!AllowUserTeleports())
+        return;
+
+    g_pMomentumTimer->Stop(this);
+    g_pMomentumTimer->SetCanStart(false);
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        DestroyRockets();
+    }
+
+    const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
+    if (pStart)
+    {
+        const auto pStartMark = GetStartMark(track);
+        if (pStartMark)
+        {
+            pStartMark->Teleport(this);
+        }
+        else
+        {
+            // Don't set angles if still in start zone.
+            QAngle ang = pStart->GetLookAngles();
+            Teleport(&pStart->WorldSpaceCenter(), (pStart->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+        }
+
+        m_Data.m_iCurrentTrack = track;
+        ResetRunStats();
+    }
+    else
+    {
+        const auto pStartPoint = EntSelectSpawnPoint();
+        if (pStartPoint)
+        {
+            Teleport(&pStartPoint->GetAbsOrigin(), &pStartPoint->GetAbsAngles(), &vec3_origin);
+            ResetRunStats();
+        }
+    }
+}
+
+void CMomentumPlayer::TimerCommand_Reset()
+{
+    if (AllowUserTeleports())
+    {
+        const auto pCurrentZone = GetCurrentZoneTrigger();
+        if (pCurrentZone)
+        {
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            {
+                DestroyRockets();
+            }
+
+            // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
+            Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
+        }
+        else
+        {
+            Warning("Cannot reset, you have no current zone!\n");
+        }
+    }
+}
+
+void CMomentumPlayer::DestroyRockets()
+{
+    FOR_EACH_VEC(m_vecRockets, i)
+    {
+        const auto pRocket = m_vecRockets[i];
+        if (pRocket)
+        {
+            pRocket->Destroy(true);
+        }
+    }
+
+    m_vecRockets.RemoveAll();
+}
+
 void CMomentumPlayer::TogglePracticeMode()
 {
     if (!m_bAllowUserTeleports || m_iObserverMode != OBS_MODE_NONE)
@@ -1582,6 +1810,9 @@ void CMomentumPlayer::SetPracticeModeState()
 
 void CMomentumPlayer::EnablePracticeMode()
 {
+    if (m_bHasPracticeMode)
+        return;
+
     if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
     {
         const auto safeGuard = (m_nButtons & (IN_FORWARD|IN_MOVELEFT|IN_MOVERIGHT|IN_BACK|IN_JUMP|IN_DUCK|IN_WALK)) != 0;
@@ -1613,12 +1844,20 @@ void CMomentumPlayer::EnablePracticeMode()
 
 void CMomentumPlayer::DisablePracticeMode()
 {
+    if (!m_bHasPracticeMode)
+        return;
+
     m_bHasPracticeMode = false;
     SetPracticeModeState();
 
     // Only when timer is running
     if (g_pMomentumTimer->IsRunning())
     {
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        {
+            DestroyRockets();
+        }
+
         RestoreRunState(true);
     }
     else if (m_Data.m_bIsInZone && m_Data.m_iCurrentZone == 1)
@@ -1659,6 +1898,8 @@ void CMomentumPlayer::SaveCurrentRunState(bool bFromPractice)
 
     if (bFromPractice || !m_bHasPracticeMode)
     {
+        Q_strncpy(pState->m_pszTargetName, GetEntityName().ToCStr(), sizeof(pState->m_pszTargetName));
+        Q_strncpy(pState->m_pszClassName, GetClassname(), sizeof(pState->m_pszClassName));
         m_iOldTrack = m_Data.m_iCurrentTrack;
         m_iOldZone = m_Data.m_iCurrentZone;
         pState->m_nSavedAccelTicks = m_nAccelTicks;
@@ -1691,6 +1932,8 @@ void CMomentumPlayer::RestoreRunState(bool bFromPractice)
 
     if (bFromPractice || !m_bHasPracticeMode)
     {
+        SetName(MAKE_STRING(pState->m_pszTargetName));
+        SetClassname(pState->m_pszClassName);
         m_Data.m_iCurrentTrack = m_iOldTrack;
         m_Data.m_iCurrentZone = m_iOldZone;
         m_nAccelTicks = pState->m_nSavedAccelTicks;
@@ -1704,4 +1947,91 @@ void CMomentumPlayer::PostThink()
     // Update previous origins
     NewPreviousOrigin(GetLocalOrigin());
     BaseClass::PostThink();
+}
+
+int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
+{
+    CBaseEntity *pAttacker = info.GetAttacker();
+    CBaseEntity *pInflictor = info.GetInflictor();
+
+    // Handle taking self damage from rockets
+    if (pAttacker == GetLocalPlayer() && FClassnameIs(pInflictor, "momentum_rocket"))
+    {
+        // Grab the vector of the incoming attack.
+        // (Pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
+        Vector vecDir = vec3_origin;
+        if (pInflictor)
+        {
+            vecDir = info.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - WorldSpaceCenter();
+            VectorNormalize(vecDir);
+        }
+
+        // Apply knockback
+        ApplyPushFromDamage(info, vecDir);
+
+        // Done
+        return 1;
+    }
+
+    return BaseClass::OnTakeDamage_Alive(info);
+}
+
+// Apply TF2-like knockback when damaging self with rockets
+// https://github.com/danielmm8888/TF2Classic/blob/master/src/game/server/tf/tf_player.cpp#L4108
+void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir)
+{
+    if (info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE)
+        return;
+
+    CBaseEntity *pAttacker = info.GetAttacker();
+
+    if (!info.GetInflictor() || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
+        return;
+
+    // Apply different force scale when on ground
+    float flScale = 1.0f;
+
+    if (GetFlags() & FL_ONGROUND)
+    {
+        flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET;
+    }
+    else
+    {
+        flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET_AIR;
+
+        if (!(GetFlags() & FL_INWATER))
+        {
+            // Not in water
+            flScale *= MOM_DAMAGESCALE_SELF_ROCKET;
+        }
+    }
+
+    // Scale force if we're ducked
+    if (GetFlags() & FL_DUCKING)
+    {
+        // TF2 crouching collision box height used to be 55 units,
+        // before it was changed to 62, the old height is still used
+        // for calculating force from explosions.
+        flScale *= 82.0f / 55.0f;
+    }
+
+    // Clamp force to 1000.0f
+    float force = Min(info.GetDamage() * flScale, 1000.0f);
+    Vector vecForce = -vecDir * force;
+    ApplyAbsVelocityImpulse(vecForce);
+}
+
+bool CMomentumPlayer::CanPaint() { return m_flNextPaintTime <= gpGlobals->curtime; }
+
+void CMomentumPlayer::DoPaint()
+{
+    if (!CanPaint())
+        return;
+
+    // Fire a paintgun bullet (doesn't actually equip/use the paintgun weapon)
+    FX_FireBullets(entindex(), EyePosition(), EyeAngles(), WEAPON_PAINTGUN, Primary_Mode,
+                   GetPredictionRandomSeed() & 255, 0.0f);
+
+    // Delay next time we paint
+    m_flNextPaintTime = gpGlobals->curtime + CMomentumPaintGun::GetPrimaryCycleTime();
 }

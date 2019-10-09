@@ -24,8 +24,6 @@ public:
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
-    void SetFont(vgui::HFont font) OVERRIDE;
-
 private:
     CBaseMapsPage *m_pOuter;
 };

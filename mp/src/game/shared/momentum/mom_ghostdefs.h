@@ -3,7 +3,7 @@
 #include "utlbuffer.h"
 #include "mom_shareddefs.h"
 
-enum PacketTypes
+enum PacketType
 {
     PT_CONN_REQ = 0,
     PT_CONN_ACK,
@@ -26,12 +26,13 @@ enum PacketTypes
 #define DEFAULT_STEAM_PORT 9001
 #define DEFAULT_MASTER_SERVER_PORT 9002
 
-struct MomentumPacket_t
+class MomentumPacket
 {
-    uint8 type;
-    virtual ~MomentumPacket_t() {};
+  public:
+    virtual PacketType GetType() const = 0;
+    virtual ~MomentumPacket() {};
 
-    virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(type); }
+    virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(GetType()); }
 };
 
 //Describes all data for visual apperence of players ingame
@@ -44,14 +45,14 @@ struct GhostAppearance_t
     bool m_bGhostTrailEnable;
     bool m_bFlashlightOn;
 
-    GhostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
+    GhostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlightOn)
     {
         m_iGhostModelBodygroup = bodyGroup;
         m_iGhostModelRGBAColorAsHex = bodyRGBA;
         m_iGhostTrailRGBAColorAsHex = trailRGBA;
         m_iGhostTrailLength = trailLen;
         m_bGhostTrailEnable = hasTrail;
-        m_bFlashlightOn = flashlight;
+        m_bFlashlightOn = flashlightOn;
     }
     GhostAppearance_t(): m_iGhostModelBodygroup(0), m_iGhostModelRGBAColorAsHex(0), m_iGhostTrailRGBAColorAsHex(0), m_iGhostTrailLength(0), m_bGhostTrailEnable(false), m_bFlashlightOn(false)
     {
@@ -99,17 +100,17 @@ struct LobbyGhostAppearance_t
 
 
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
-struct PositionPacket_t : MomentumPacket_t
+class PositionPacket : public MomentumPacket
 {
+  public:
     int Buttons;
     float ViewOffset;
     QAngle EyeAngle;
     Vector Position;
     Vector Velocity;
-    PositionPacket_t(const QAngle eyeAngle, const Vector position, const Vector velocity, 
+    PositionPacket(const QAngle eyeAngle, const Vector position, const Vector velocity, 
         const float viewOffsetZ, const int buttons)
     {
-        type = PT_POS_DATA;
         EyeAngle = eyeAngle;
         Position = position;
         Velocity = velocity;
@@ -118,13 +119,11 @@ struct PositionPacket_t : MomentumPacket_t
         ViewOffset = viewOffsetZ;
     }
 
-    PositionPacket_t(): Buttons(0), ViewOffset(0)
+    PositionPacket(): Buttons(0), ViewOffset(0)
     {
-        type = PT_POS_DATA;
     }
-    PositionPacket_t(CUtlBuffer &buf)
+    PositionPacket(CUtlBuffer &buf)
     {
-        type = PT_POS_DATA;
         buf.Get(&EyeAngle, sizeof(QAngle));
         buf.Get(&Position, sizeof(Vector));
         buf.Get(&Velocity, sizeof(Vector));
@@ -132,9 +131,11 @@ struct PositionPacket_t : MomentumPacket_t
         ViewOffset = buf.GetFloat();
     }
 
+    PacketType GetType() const OVERRIDE { return PT_POS_DATA; }
+
     void Write(CUtlBuffer& buf) OVERRIDE
     {
-        MomentumPacket_t::Write(buf);
+        MomentumPacket::Write(buf);
         buf.Put(&EyeAngle, sizeof(QAngle));
         buf.Put(&Position, sizeof(Vector));
         buf.Put(&Velocity, sizeof(Vector));
@@ -142,7 +143,7 @@ struct PositionPacket_t : MomentumPacket_t
         buf.PutFloat(ViewOffset);
     }
 
-    PositionPacket_t& operator=(const PositionPacket_t &other)
+    PositionPacket& operator=(const PositionPacket &other)
     {
         Buttons = other.Buttons;
         ViewOffset = other.ViewOffset;
@@ -152,7 +153,7 @@ struct PositionPacket_t : MomentumPacket_t
         return *this;
     }
 
-    bool operator==(const PositionPacket_t &other) const
+    bool operator==(const PositionPacket &other) const
     {
         return EyeAngle == other.EyeAngle &&
             Position == other.Position &&
@@ -180,112 +181,145 @@ struct ReceivedFrame_t
 
 
 
-struct SpecUpdatePacket_t : MomentumPacket_t
+class SpecUpdatePacket : public MomentumPacket
 {
+  public:
     uint64 specTarget;
     SpectateMessageType_t spec_type;
 
-    SpecUpdatePacket_t(uint64 uID, SpectateMessageType_t specType)
+    SpecUpdatePacket(uint64 uID, SpectateMessageType_t specType)
     {
-        type = PT_SPEC_UPDATE;
         specTarget = uID;
         spec_type = specType;
     }
 
-    SpecUpdatePacket_t(CUtlBuffer &buf)
+    SpecUpdatePacket(CUtlBuffer &buf)
     {
-        type = PT_SPEC_UPDATE;
         specTarget = static_cast<uint64>(buf.GetInt64());
         spec_type = static_cast<SpectateMessageType_t>(buf.GetInt());
     }
 
+    PacketType GetType() const OVERRIDE { return PT_SPEC_UPDATE; }
+
     void Write(CUtlBuffer& buf) OVERRIDE
     {
-        MomentumPacket_t::Write(buf);
+        MomentumPacket::Write(buf);
         buf.PutUint64(specTarget);
         buf.PutInt(spec_type);
     }
 };
 
-typedef enum
+enum DecalType
 {
     DECAL_BULLET = 0,
     DECAL_PAINT,
     DECAL_KNIFE
     // etc
+};
 
-} DECAL_TYPE;
-
-struct DecalPacket_t : MomentumPacket_t
+struct BulletDecalData
 {
-    // Type of decal.
-    DECAL_TYPE decal_type;
+    int iWeaponID;
+    int iMode;
+    int iSeed;
+    float fSpread;
+};
 
-    Vector vOrigin;
-    QAngle vAngle;
+struct PaintDecalData
+{
+    Color color;
+    float fDecalRadius;
+};
 
-    int iWeaponID; // or colorRed or bStab for knife
-    int iMode;     // or colorGreen
-    int iSeed;     // or colorBlue
-    float fSpread; // or Radius of decal
+struct KnifeDecalData
+{
+    bool bStab;
+};
 
-    DecalPacket_t() : decal_type(DECAL_BULLET), iWeaponID(0), iMode(0), iSeed(0), fSpread(0)
+class DecalPacket : public MomentumPacket
+{
+  private:
+    DecalPacket(DecalType decalType, Vector origin, QAngle angle)
     {
-        type = PT_DECAL_DATA;
-    }
-
-    DecalPacket_t(DECAL_TYPE decalType, Vector origin, QAngle angle, int weaponID, int mode, int seed, float spread)
-    {
-        type = PT_DECAL_DATA;
         decal_type = decalType;
         vOrigin = origin;
         vAngle = angle;
-        iWeaponID = weaponID;
-        iMode = mode;
-        iSeed = seed;
-        fSpread = spread;
+    }
+  public:
+    Vector vOrigin;
+    
+    DecalType decal_type;
+    
+    QAngle vAngle;
+
+    union DecalData
+    {
+        DecalData() {}
+        BulletDecalData bullet; // When decal type is DECAL_BULLET
+        PaintDecalData paint;   // When decal type is DECAL_PAINT
+        KnifeDecalData knife;   // When decal type is DECAL_KNIFE
+    };
+    DecalData data;
+
+    DecalPacket() {}
+
+    static DecalPacket Bullet(Vector origin, QAngle angle, int iWeaponID, int iMode, int iSeed, float fSpread)
+    {
+        DecalPacket packet(DECAL_BULLET, origin, angle);
+        packet.data.bullet.iWeaponID = iWeaponID;
+        packet.data.bullet.iMode = iMode;
+        packet.data.bullet.iSeed = iSeed;
+        packet.data.bullet.fSpread = fSpread;
+        return packet;
     }
 
-    DecalPacket_t(CUtlBuffer &buf)
+    static DecalPacket Paint(Vector origin, QAngle angle, Color color, float fDecalRadius)
     {
-        type = PT_DECAL_DATA;
-        decal_type = static_cast<DECAL_TYPE>(buf.GetUnsignedChar());
+        DecalPacket packet(DECAL_PAINT, origin, angle);
+        packet.data.paint.color = color;
+        packet.data.paint.fDecalRadius = fDecalRadius;
+        return packet;
+    }
+
+    static DecalPacket Knife( Vector origin, QAngle angle, bool bStab )
+    {
+        DecalPacket packet(DECAL_KNIFE, origin, angle);
+        packet.data.knife.bStab = bStab;
+        return packet;
+    }
+
+    DecalPacket(CUtlBuffer &buf)
+    {
+        decal_type = static_cast<DecalType>(buf.GetUnsignedChar());
         buf.Get(&vOrigin, sizeof(Vector));
         buf.Get(&vAngle, sizeof(QAngle));
-        iWeaponID = buf.GetInt();
-        iMode = buf.GetInt();
-        iSeed = buf.GetInt();
-        fSpread = buf.GetFloat();
+        buf.Get(&data, sizeof(data));
     }
 
-    DecalPacket_t& operator=(const DecalPacket_t &other)
+    DecalPacket& operator=(const DecalPacket &other)
     {
-        type = other.type;
         decal_type = other.decal_type;
         vOrigin = other.vOrigin;
         vAngle = other.vAngle;
-        iWeaponID = other.iWeaponID;
-        iMode = other.iMode;
-        iSeed = other.iSeed;
-        fSpread = other.fSpread;
+        memcpy(&data, &other.data, sizeof(data));
         return *this;
     }
 
+    PacketType GetType() const OVERRIDE { return PT_DECAL_DATA; }
+
     void Write(CUtlBuffer& buf) OVERRIDE
     {
-        MomentumPacket_t::Write(buf);
+        MomentumPacket::Write(buf);
         buf.PutUnsignedChar(decal_type);
         buf.Put(&vOrigin, sizeof(Vector));
         buf.Put(&vAngle, sizeof(QAngle));
-        buf.PutInt(iWeaponID); // MOM_TODO: We don't use all 32 bits here, write a lower precision?
-        buf.PutInt(iMode);
-        buf.PutInt(iSeed);
-        buf.PutFloat(fSpread);
+        buf.Put(&data, sizeof(data));
     }
 };
 
-struct SavelocReqPacket_t : MomentumPacket_t
+class SavelocReqPacket : public MomentumPacket
 {
+  public:
     // Stage type
     int stage;
 
@@ -297,35 +331,31 @@ struct SavelocReqPacket_t : MomentumPacket_t
     // Stage == 4 ? (The actual saveloc data, in binary)
     CUtlBuffer dataBuf;
 
-    SavelocReqPacket_t(): stage(0), saveloc_count(0)
+    SavelocReqPacket(): stage(0), saveloc_count(0)
     {
-        type = PT_SAVELOC_REQ;
         dataBuf.SetBigEndian(false);
     }
 
-    SavelocReqPacket_t(CUtlBuffer &buf)
+    SavelocReqPacket(CUtlBuffer &buf)
     {
-        type = PT_SAVELOC_REQ;
         stage = buf.GetInt();
-        if (stage == 2)
+        if (stage > 1)
         {
             saveloc_count = buf.GetInt();
-        }
-        else if (stage > 2)
-        {
-            dataBuf.CopyBuffer(buf);
-            // The CopyBuffer method clears the dataBuf and swallows everything inside of buf.
-            // We first need to skip over the 5 bytes used for type + stage
-            dataBuf.SeekGet(CUtlBuffer::SEEK_CURRENT, 5);
-            // And now pull out the saveloc count
-            saveloc_count = dataBuf.GetInt();
-            // And now our buffer's Get is currently in the location for reading the data
+
+            if (stage > 2)
+            {
+                dataBuf.Clear();
+                dataBuf.Put(buf.PeekGet(), buf.GetBytesRemaining());
+            }
         }
     }
 
+    PacketType GetType() const OVERRIDE { return PT_SAVELOC_REQ; }
+
     void Write(CUtlBuffer& buf) OVERRIDE
     {
-        MomentumPacket_t::Write(buf);
+        MomentumPacket::Write(buf);
         buf.PutInt(stage);
         if (stage > 1)
         {

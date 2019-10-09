@@ -404,7 +404,7 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
 {
     if (pOther)
     {
-        if (m_hDestinationEnt.Get())
+        if (!m_hDestinationEnt.Get())
         {
             if (m_target != NULL_STRING)
                 m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
@@ -748,6 +748,15 @@ CFuncShootBoost::CFuncShootBoost(): m_fPushForce(300.0f), m_iIncrease(4)
 void CFuncShootBoost::Spawn()
 {
     BaseClass::Spawn();
+
+    // Convert pushdir from angles to a vector (copied straight from CTriggerPush::Spawn)
+    Vector vecAbsDir;
+    QAngle angPushDir = QAngle(m_vPushDir.x, m_vPushDir.y, m_vPushDir.z);
+    AngleVectors(angPushDir, &vecAbsDir);
+
+    // Transform the vector into entity space
+    VectorIRotate(vecAbsDir, EntityToWorldTransform(), m_vPushDir);
+
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
     if (m_target != NULL_STRING)
@@ -1427,6 +1436,9 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
                 case GAMEMODE_KZ:
                     pMapPrefix = "kz_";
                     break;
+                case GAMEMODE_RJ:
+                    pMapPrefix = "jump_";
+                    break;
                     // MOM_TODO: Add the rest of the gametypes here
                 default:
                     pMapPrefix = "";
@@ -1469,4 +1481,45 @@ void CMomentumMapInfo::Spawn()
     pKv->SetString("author", m_MapAuthor.ToCStr());
     g_pModuleComms->FireEvent(pKv);
     // MOM_TODO: Handle this event in Client (UI) and Timer?
+}
+
+static CUtlVector<CNoGrenadesZone *> s_vecNoGrenadeZones;
+
+LINK_ENTITY_TO_CLASS(func_nogrenades, CNoGrenadesZone);
+
+CNoGrenadesZone::~CNoGrenadesZone()
+{
+    s_vecNoGrenadeZones.FindAndFastRemove(this);
+}
+
+void CNoGrenadesZone::Spawn()
+{
+    Precache();
+    BaseClass::Spawn();
+    InitTrigger();
+
+    AddSpawnFlags(SF_TRIGGER_ALLOW_ALL);
+    AddEffects(EF_NODRAW);
+
+    s_vecNoGrenadeZones.AddToTail(this);
+}
+
+void CNoGrenadesZone::Precache()
+{
+    PrecacheModel(NOGRENADE_SPRITE);
+}
+
+bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
+{
+    if ( pOther )
+    {
+        FOR_EACH_VEC(s_vecNoGrenadeZones, i)
+        {
+            const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
+            if (!pNoGrenadeZone->m_bDisabled && pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
+                return true;
+        }
+    }
+
+    return false;
 }

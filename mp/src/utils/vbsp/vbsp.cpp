@@ -434,9 +434,9 @@ void ProcessSubModel( )
 //-----------------------------------------------------------------------------
 // Returns true if the entity is a func_occluder
 //-----------------------------------------------------------------------------
-bool IsFuncOccluder( int entity_num )
+bool IsFuncOccluder( int entityNnum )
 {
-	entity_t *mapent = &entities[entity_num];
+	entity_t *mapent = &entities[entityNnum];
 	const char *pClassName = ValueForKey( mapent, "classname" );
 	return (strcmp("func_occluder", pClassName) == 0);
 }

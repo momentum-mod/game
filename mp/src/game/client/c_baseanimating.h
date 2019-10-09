@@ -79,7 +79,7 @@ public:
 	QAngle	m_angRotation;
 	Vector	m_vOriginVelocity;
 	int		m_nLastFramecount : 31;
-	int		m_bAnglesComputed : 1;
+	bool		m_bAnglesComputed : 1;
 };
 
 

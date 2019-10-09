@@ -1,3 +1,33 @@
+0.8.2
+= Added
+  Added initial Rocket Jump implementation
+  Added TF2 Content Mounting
+  Added online flashlight support (mom_online_ghost_flashlights_enable [0/1])
+  Added a command to teleport to where the player is looking (mom_eyetele)
+  Added an outline to the player’s time on the leaderboards
+
+= Improved
+  Improved the project to compile using Visual Studio 2019 from 2013
+  Added localization support for pistol fire mode text
+  Limited sv_interval_per_tick to the engine’s max and min
+  Removed player speed cap when leaving the start zone from a saveloc
+  Made the mapcache.dat refresh after each update
+  Removed redundant map name label in the spectator GUI
+  Improved the look and feel of the map selection UI
+
+= Fixed
+  Fixed SetSpeed for func_conveyor not reading the float values properly
+  Fixed func_conveyor to allow 0 speed on spawn
+  Fixed func_shootboost taking a direction instead of an angle
+  Fixed crashes due missing null checks in the lobby
+  Fixed duplicate users showing on the lobby UI
+  Fixed the player ducking while under a roof when using noclip
+  Fixed spectator state not being reset when leaving a map
+  Fixed time-ago strings showing “-1 seconds ago”
+  Fixed Momentum teleport triggers
+  Fixed picking up a weapon when switching to another weapon in the same slot
+  Fixed OSX crash caused by compatibility issues
+
 0.8.1
 = Added
   Discord rich presence for Linux and Mac (thanks @kitlith !)
@@ -60,211 +90,3 @@
   Removed collision with grenades for online ghosts (will be added back when we add trikz!)
   Gameplay related convars (sv_maxvelocity, airaccel, etc) are now hidden and require -mapping to be able to change them. 
     To see what the map's settings are, you can use mom_print_gamemode_vars if you are unsure.
-
-0.8.0
-= Website
-  A brand new website, check it out at https://momentum-mod.org !
-
-= Map Selector
-  Revamped Map Selector dialog UI
-  Revamped Map Info dialog UI
-  ImageGallery VGUI control, can show multiple images and even pop up a modal with a bigger view
-  Download commands:
-    mom_map_delete_queue [0,1] which queues deleting maps removed from library to when the game shuts down
-    mom_map_download_auto [0,1] when 1, automatically downloads maps when added to library
-    mom_map_download_queue [0,1] when 1, queues map to be downloaded, using a defined parallel count
-    mom_map_download_queue_parallel [1,20] specifies how many maps can download at once in the queue
-    mom_map_download_cancel_confirm [0,1] if 1, opens a confirmation box when trying to cancel a download
-  Map Cache to store map information, found in map_cache.dat
-  Ability to double click/press enter for a default Map List action
-
-= Zones
-  Point-based zoning method (by Mehis)
-  Dedicated Zone Menu UI that utilizes Mehis' point-based method (and the old box one too, don't worry)
-  Outline rendering for start and end zones
-  Zone trigger outlines for stage and checkpoint triggers
-  Commands: mom_zone_<type>_outline_[enable/color]
-  Zone triggers are clearer in purpose (FGD), including track numbers for bonuses
-  Track numbers for triggers: -1 = every track, 0 = main map, 1+ = bonus number
-  mom_restart and mom_stage_tele take a track number to change the current track number
-  Multiple triggers allowed per zone number
-  mom_zone_crosshair to toggle drawing the zoning crosshair
-
-= Leaderboards
-  Submitting runs to the website
-  View the Top10 runs, runs around your rank, and Friends runs for a map
-  See your overall statistics and stats for individual maps
-  Download replays from the leaderboards ingame to watch
-  Ability to see gained cosmetic XP/levels and rank XP after submitting a run
-
-= Weapons
-  Added new menu sounds from Monolith
-  Added new pulse rifle sound from Monolith
-  Added new Error model (working as intended)
-  Added new weapons models created & textured by Cabbage (Of varying quality and permanence):
-    Knife model (insert screenshot)
-    LMG model (insert screenshot)
-    Shotgun model (insert screenshot)
-    SMG model (insert screenshot)
-    Sniper model (insert screenshot)
-
-= Minor Additions
-  == Saveloc Menu
-    “Checkpoint” menu is now the “Saveloc” menu (as checkpoint is reserved for Linear maps)
-    Added Saveloc Sharing to the lobby member panel (right click someone -> request savelocs)
-    Added mom_saveloc_nav_first and mom_saveloc_nav_last to go to first/last saveloc in the list
-
-  == Discord Rich Presence
-    Discord Rich Presence (Windows only)
-
-  == Map-based Auto-Execs
-    Added map-based autoexecs (map configs):
-      Use mom_mapcfg_add (command) to add a convar/concommand to execute upon map load
-      Use mom_mapcfg_clear to remove the map's saved commands/convars
-      Use mom_mapcfg_print to see all the map's current saved commands
-
-  == Triggers/Entities
-    Custom trigger textures for various triggers
-    trigger_momentum_reversespeed
-    trigger_momentum_setspeed
-    Trigger_momentum_speedthreshold
-    Outputs for trigger_momentum_onehop/multihop
-    point_momentum_serversettings (needs work)
-    WASD blocking to trigger_momentum_limitmovement
-    func_momentum_brush for campaign
-    filter_momentum_progress
-    trigger_momentum_campaign_changelevel
-    Info_momentum_map
-    All Momentum triggers force the Clients spawnflag on now
-
-= Quality of Life Improvements
-  == Gameplay
-    m_rawinput now defaults to 1
-    Removed default vertical movement in noclip -- use +moveup and +movedown
-    sv_tickrate is now sv_interval_per_tick for further clarity (1 / desired tickrate)
-    Refactored all hud convars/concommands to be under the namespace “mom_hud_”
-    New timer start, stop, fail, finish, PB, and WR sounds
-    Replay files have a new name, home (folder), and a slightly updated format (old ones need not apply)
-    Added disabled buttons to ghosts as well, only exception is the BHOP blocking
-    Show in_strafe on the keypress display
-    Allow sv_cheats 1 to still save your replay, but not submit it
-    Put most commands of interest (Zone tools, ent_create, ent_teleport, set_[pos/ang], etc) behind requiring launching the game with -mapping, which does not submit runs by default
-    Add mom_timer_stop (default bound to the B key) which allows you to manually stop your run
-    Whitelisted some common commands for point_[server/client]command and defaulted the sv_allow_point_command to the whitelist
-
-  == UI/UX
-    Added turnbind direction into the keypress display
-    New icon to match the new logo of the game
-    Added CTRL+backspace and CTRL+delete to all text entries
-    Added proportionality to the game console (scales to resolution)
-    Added proportionality to the changelog panel
-    Added ConsoleScheme.res for players that want to customize just the Console's Look and Feel
-    Further tweaked the HUD layout and scheme, minor adjustments like position of text and dropshadows
-    RichText additions: triple click to select the current line, CTRL+A to select all text
-    Made the loading bar continuous and added percentage
-    Added timer fail color animation to the HUD timer
-    Lobby members panel moved to its own panel, bound to "L" (+show_lobby_members)
-    In-game VGUI Editable Panel hotloading with CTRL+ALT+SHIFT+C (and hud_reloadcontrols for HUD)
-    Allow negative numbers in numeric TextEntry
-    Re-added "mute audio when game loses focus" to audio settings
-    Main menu colors are more legible
-    Converted map info and timer to res files for extra customization
-    Optimized some HUD element rendering
-    Show a pop-up letting the player know if the game did not authenticate with the site for particular reasons
-    Spectating-related strings have replay-specific versions when spectating a replay
-    Added new experimental "energy" hud_speedometer type (mom_hud_speedometer_units 4) (thanks Beetle179!)
-    Updated in-game credits to include more of the current team, as well as new music by Monolith
-    New background map and texture, and new loading icon texture by Cabbage
-
-  == External
-    Backported Alien Swarm's "Set Player FOV" for point_viewcontrol
-    Removed the Source Shader Editor
-    Updated Steamworks API to latest
-    Improved cubemaptest map to properly show parallax corrected cubemaps
-    Prevent empty files "stats.txt" and "voice_ban.dt" file from being created
-    Updated VMT of grenade by Blockbuilder and SethJH
-    Added white/black color materials to materials/ for mappers to use instead of cs_italy/white
-    Images that can load from common image types/URL
-    Replay file structure to include specific track/zone numbers
-    Zone file structure to store tracks, zones for that track, (multiple) triggers for that zone
-    Automatically detect external cvar changes in CvarTextEntries
-    Default crosshair to be 1
-
-= Bug Fixes
-  == Gameplay
-    === Movement
-      Fixed crouch jumps and scrolling to be more like CS:S, with 64-jumps having a more consistent pattern
-      Fixed wallbugs and rampbugs at places with multiple planes intersecting the player, most notable at 250 tick
-      Fixed view going through ceilings, raising the height of the player camera back to the proper 64 units
-      Add null bind support (mom_enable_overlapping_keys)
-      Add "release forward key on jump" setting (mom_release_forward_on_jump)
-      Fixed and improved ladder grabbing and movement
-      Fixed teleports in and out of a solid not resetting velocity
-      Fixed some angle issues on teleport -- angles are now a bit more consistently set
-      Fixed rotating objects slowly pushing players away when standing on them
-      Default in_usekeyboardsampletime to 0
-
-    === General
-      Fix hud hints showing for the local player when triggered by ghosts
-      Fix game_player_equip entities not working
-      Fixed crashes when changing graphics settings
-      Fixed practice mode safeguard to only apply when the timer is running
-      Fixed underwater state not being updated in noclip
-      Fixed game crash when the last member of the lobby leaves while the player is spectating them
-      Fixed momentum triggers not properly checking filters on the player
-      Fixed game pausing when the steam overlay is opened
-      Fix CS:S soundscapes not properly playing
-      Start mark commands are now: mom_start_mark_[create/clear]
-      Fixed teleports being interpolated in replays (by Mehis)
-      Disallow point_clientcommand usage by default
-      Fixed incorrect triggers touch logic when teleporting (EndTouch the old -> StartTouch on the new)
-      The timer now properly stops when using the saveloc menu
-      Disable flashlight when spectating
-      Fixed linear tracks to properly set zone enter time
-      Fixed current zone status and logic when playing on linear maps
-      Fixed practice mode sending events if timer is running
-      Fixed being able to spectate in background/credit maps
-      Fixed ghosts spawning in background/credits maps
-      Fixed finding another ghost to spectate; the logic properly iterates through all online ghosts and filters ones that are spectating
-      Fixed chat spam when iterating between spectating an online ghost and a replay
-      Fixed place colors not updating after deleting a local run
-      Fixed comparisons not reloading upon deleting a local run
-
-  == UI/UX
-    Fixed spectator names still showing in the spectator names UI after the spectator has left
-    Fixed options->keyboard settings not having a bind option for chat
-    Fixed HudMenus not closing after changing screen resolution
-    Fixed layout of the Map Finished UI panel
-    Fixed potential input trapping with ReplayUI
-    Fixed various UI layout/scheme issues, including making Momentum Settings and ReplayUI proportional (scale to resolution)
-    Fixed bug where pressing the leaderboards key showed up as IN_STRAFE on hud_keypress
-    Fixed frame resize grip not rendering correctly
-    Removed menu background blurring
-    Properly hide certain hud elements when leaderboards are open
-    Fixed chat panel showing and fading every time the player spawns
-    Fix HUD elements not having proper layout/sizing after changing in-game resolution
-    RichText fixes:
-      Fixed double click to not select so much whitespace
-      Fixed selection color bug 
-      Fixed selection being reset/truncated when pressing CTRL+C to copy
-    Fixed buildgroup rulers (CTRL+R when in build mode) showing the wrong value
-    Fix run comparisons not reloading on new run save
-    Fixed improper order of popups when booting the game with no steam & for the first time
-    Fixed some linear comparison string calculations
-    Fixed chat not properly scrolling down after a given amount of messages
-    Fixed the loading dialog not showing after clicking "Join Player" in the lobby member list
-    Fixed menu not properly detecting if player was in spectating mode or not
-    Fixed some server localization tokens to be shorter
-
-  == Internal
-    Fixed crash on boot for OSX
-    Fixed Steam Avatar Images not loading 184x184 correctly
-    Fixed potential memory leak with deleting savelocs
-    Make map zone files load from the "GAME" path, which allows packing inside of maps
-    Momentum trigger flags are proper values
-    Fixed memory buffers not using more memory than necessary (by Crashfort)
-    Fix various triggers that required proper thinking logic, including multi/onehop triggers
-    Fixed run stats not resetting with manual restart
-    Fixed “game_write” in gameinfo.txt to point to the Momentum folder
-    Prevent needless reservation of memory for packets (thanks @crashfort!)
-    Fixed some memory leaks in the Map Selector

@@ -490,9 +490,8 @@ void CBaseTrigger::EndTouch(CBaseEntity *pOther)
 {
 	if ( IsTouching( pOther ) )
 	{
-		EHANDLE hOther;
-		hOther = pOther;
-		m_hTouchingEntities.FindAndRemove( hOther );
+		EHANDLE remove = pOther;
+		m_hTouchingEntities.FindAndRemove( remove );
 		
 		//FIXME: Without this, triggers fire their EndTouch outputs when they are disabled!
 		//if ( !m_bDisabled )
@@ -507,21 +506,21 @@ void CBaseTrigger::EndTouch(CBaseEntity *pOther)
 		int iSize = m_hTouchingEntities.Count();
 		for ( int i = iSize-1; i >= 0; i-- )
 		{
-			EHANDLE hOther;
-			hOther = m_hTouchingEntities[i];
+			EHANDLE hTouched;
+            hTouched = m_hTouchingEntities[i];
 
-			if ( !hOther )
+			if ( !hTouched)
 			{
 				m_hTouchingEntities.Remove( i );
 			}
-			else if ( hOther->IsPlayer() && !hOther->IsAlive() )
+			else if (hTouched->IsPlayer() && !hTouched->IsAlive() )
 			{
 #ifdef STAGING_ONLY
 				if ( !HushAsserts() )
 				{
-					AssertMsg( false, "Dead player [%s] is still touching this trigger at [%f %f %f]", hOther->GetEntityName().ToCStr(), XYZ( hOther->GetAbsOrigin() ) );
+					AssertMsg( false, "Dead player [%s] is still touching this trigger at [%f %f %f]", hTouched->GetEntityName().ToCStr(), XYZ(hTouched->GetAbsOrigin() ) );
 				}
-				Warning( "Dead player [%s] is still touching this trigger at [%f %f %f]", hOther->GetEntityName().ToCStr(), XYZ( hOther->GetAbsOrigin() ) );
+				Warning( "Dead player [%s] is still touching this trigger at [%f %f %f]", hTouched->GetEntityName().ToCStr(), XYZ(hTouched->GetAbsOrigin() ) );
 #endif
 				m_hTouchingEntities.Remove( i );
 			}

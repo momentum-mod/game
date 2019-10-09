@@ -27,11 +27,6 @@ public:
 
     void OnTabSelected() OVERRIDE;
 
-    /*void GetWorkshopItems();
-    void OnWorkshopDownloadComplete(DownloadItemResult_t *pCallback, bool bIOFailure);
-    CCallResult<CLocalMaps, DownloadItemResult_t> m_DownloadCompleteCallback;
-
-    void AddWorkshopItemToLocalMaps(PublishedFileId_t id);*/
 private:
     ConVarRef m_cvarAutoDownload, m_cvarDeleteQueue;
     bool m_bLoadedMaps;

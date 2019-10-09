@@ -360,7 +360,7 @@ public:
 
 	// Render functions
 	virtual	void	Render( vrect_t *rect );
-	virtual void	RenderView( const CViewSetup &view, int nClearFlags, int whatToDraw );
+	virtual void	RenderView( const CViewSetup &viewSetup, int nClearFlags, int whatToDraw );
 	virtual void	RenderPlayerSprites();
 	virtual void	Render2DEffectsPreHUD( const CViewSetup &view );
 	virtual void	Render2DEffectsPostHUD( const CViewSetup &view );
@@ -429,7 +429,7 @@ private:
 
 	// General draw methods
 	// baseDrawFlags is a combination of DF_ defines. DF_MONITOR is passed into here while drawing a monitor.
-	void			ViewDrawScene( bool bDrew3dSkybox, SkyboxVisibility_t nSkyboxVisible, const CViewSetup &view, int nClearFlags, view_id_t viewID, bool bDrawViewModel = false, int baseDrawFlags = 0, ViewCustomVisibility_t *pCustomVisibility = NULL );
+	void			ViewDrawScene( bool bDrew3dSkybox, SkyboxVisibility_t nSkyboxVisible, const CViewSetup &viewSetup, int nClearFlags, view_id_t viewID, bool bDrawViewModel = false, int baseDrawFlags = 0, ViewCustomVisibility_t *pCustomVisibility = NULL );
 
 	void			DrawMonitors( const CViewSetup &cameraView );
 
@@ -438,7 +438,7 @@ private:
 
 	// Drawing primitives
 	bool			ShouldDrawViewModel( bool drawViewmodel );
-	void			DrawViewModels( const CViewSetup &view, bool drawViewmodel );
+	void			DrawViewModels( const CViewSetup &viewSetup, bool drawViewmodel );
 
 	void			PerformScreenSpaceEffects( int x, int y, int w, int h );
 
@@ -452,7 +452,7 @@ private:
 	// Water-related methods
 	void			DrawWorldAndEntities( bool drawSkybox, const CViewSetup &view, int nClearFlags, ViewCustomVisibility_t *pCustomVisibility = NULL );
 
-	virtual void			ViewDrawScene_Intro( const CViewSetup &view, int nClearFlags, const IntroData_t &introData );
+	virtual void			ViewDrawScene_Intro( const CViewSetup &viewSetup, int nClearFlags, const IntroData_t &introData );
 
 #ifdef PORTAL 
 	// Intended for use in the middle of another ViewDrawScene call, this allows stencils to be drawn after opaques but before translucents are drawn in the main view.
@@ -467,7 +467,7 @@ private:
 	void			DrawRenderablesInList( CUtlVector< IClientRenderable * > &list, int flags = 0 );
 
 	// Sets up, cleans up the main 3D view
-	void			SetupMain3DView( const CViewSetup &view, int &nClearFlags );
+	void			SetupMain3DView( const CViewSetup &viewSetup, int &nClearFlags );
 	void			CleanupMain3DView( const CViewSetup &view );
 
 

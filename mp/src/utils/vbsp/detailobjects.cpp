@@ -125,7 +125,7 @@ static void ParseDetailGroup( int detailId, KeyValues* pGroupKeyValues )
 	{
 		if (pIter->GetFirstSubKey())
 		{
-			int i = group.m_Models.AddToTail();
+			i = group.m_Models.AddToTail();
 
 			DetailModel_t &model = group.m_Models[i];
 
@@ -637,8 +637,8 @@ static void EmitDetailObjectsOnFace( dface_t* pFace, DetailObject_t& detail )
 
 	// Turn the face into a bunch of polygons, and compute the area of each
 	int* pSurfEdges = &dsurfedges[pFace->firstedge];
-	int vertexIdx = (pSurfEdges[0] < 0);
-	int firstVertexIndex = dedges[abs(pSurfEdges[0])].v[vertexIdx];
+	int vertexKeyIdx = (pSurfEdges[0] < 0);
+	int firstVertexIndex = dedges[abs(pSurfEdges[0])].v[vertexKeyIdx];
 	dvertex_t* pFirstVertex = &dvertexes[firstVertexIndex];
 	for (int i = 1; i < pFace->numedges - 1; ++i )
 	{
@@ -660,7 +660,7 @@ static void EmitDetailObjectsOnFace( dface_t* pFace, DetailObject_t& detail )
 		int numSamples = area * detail.m_Density * 0.000001;
 
 		// Now take a sample, and randomly place an object there
-		for (int i = 0; i < numSamples; ++i )
+		for (int s = 0; s < numSamples; ++s )
 		{
 			// Create a random sample...
 			float u = rand() / (float)VALVE_RAND_MAX;
@@ -704,8 +704,8 @@ static float ComputeDisplacementFaceArea( dface_t* pFace )
 
 	// Compute the area of the base face
 	int* pSurfEdges = &dsurfedges[pFace->firstedge];
-	int vertexIdx = (pSurfEdges[0] < 0);
-	int firstVertexIndex = dedges[abs(pSurfEdges[0])].v[vertexIdx];
+	int vertexKeyIdx = (pSurfEdges[0] < 0);
+	int firstVertexIndex = dedges[abs(pSurfEdges[0])].v[vertexKeyIdx];
 	dvertex_t* pFirstVertex = &dvertexes[firstVertexIndex];
 	for (int i = 1; i <= 2; ++i )
 	{

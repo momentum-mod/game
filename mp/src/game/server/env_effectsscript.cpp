@@ -384,20 +384,20 @@ void CEnvEffectsScript::ParseScriptFile( void )
 	memset( name, 0, 256 );
 
 
-	unsigned char *buffer = (unsigned char *)UTIL_LoadFileForMe( pScriptName, &length );
-	if ( length <= 0 || !buffer )
+	unsigned char *pBuffer = (unsigned char *)UTIL_LoadFileForMe( pScriptName, &length );
+	if ( length <= 0 || !pBuffer)
 	{
 		DevMsg( 1, "CEnvEffectsScript:  failed to load %s\n", pScriptName );
 		return;
 	}
 
-	currenttoken = (const char *)buffer;
-	LoadFromBuffer( pScriptName, (const char *)buffer );
+	currenttoken = (const char *) pBuffer;
+	LoadFromBuffer( pScriptName, (const char *) pBuffer);
 
-	UTIL_FreeFile( buffer );
+	UTIL_FreeFile(pBuffer);
 }
 
-void CEnvEffectsScript::LoadFromBuffer( const char *scriptfile, const char *buffer )
+void CEnvEffectsScript::LoadFromBuffer( const char *scriptfile, const char *pBuffer )
 {
 	while ( 1 )
 	{

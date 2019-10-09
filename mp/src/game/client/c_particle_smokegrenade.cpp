@@ -920,13 +920,13 @@ void C_ParticleSmokeGrenade::FillVolume()
 //-----------------------------------------------------------------------------
 // This is called after sending this entity's recording state
 //-----------------------------------------------------------------------------
-void C_ParticleSmokeGrenade::CleanupToolRecordingState( KeyValues *msg )
+void C_ParticleSmokeGrenade::CleanupToolRecordingState( KeyValues *pMsg )
 {
 	if ( !ToolsEnabled() )
 		return;
 
-	BaseClass::CleanupToolRecordingState( msg );
-	m_SmokeTrail.CleanupToolRecordingState( msg );
+	BaseClass::CleanupToolRecordingState( pMsg );
+	m_SmokeTrail.CleanupToolRecordingState( pMsg );
 
 	// Generally, this is used to allow the entity to clean up
 	// allocated state it put into the message, but here we're going

@@ -2117,8 +2117,8 @@ void CAI_BaseNPC::StartTask( const Task_t *pTask )
 
 					if ( GetTacticalServices()->FindLateralCover( pEntity->EyePosition(), 0, &coverPos ) )
 					{
-						AI_NavGoal_t goal( coverPos, ACT_RUN );
-						GetNavigator()->SetGoal( goal, AIN_CLEAR_PREVIOUS_STATE );
+						AI_NavGoal_t newGoal( coverPos, ACT_RUN );
+						GetNavigator()->SetGoal( newGoal, AIN_CLEAR_PREVIOUS_STATE );
 						
  						//FIXME: What exactly is this doing internally?
 						m_flMoveWaitFinished = gpGlobals->curtime + pTask->flTaskData;

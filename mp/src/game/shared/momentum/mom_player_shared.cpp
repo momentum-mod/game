@@ -72,6 +72,11 @@ void CMomentumPlayer::GetBulletTypeParameters(int iBulletType, float &fPenetrati
         flPenetrationDistance = 0.0f;
         bPaint = true;
     }
+    else if (IsAmmoType(iBulletType, AMMO_TYPE_ROCKET))
+    {
+        fPenetrationPower = .0f;
+        flPenetrationDistance = 0.0f;
+    }
     else
     {
         // What kind of ammo is this?

@@ -400,7 +400,7 @@ typedef void * HINSTANCE;
 #define MAX_UNICODE_PATH MAX_PATH
 #endif
 
-#define MAX_UNICODE_PATH_IN_UTF8 MAX_UNICODE_PATH*4
+#define MAX_UNICODE_PATH_IN_UTF8 (MAX_UNICODE_PATH*4)
 
 #ifdef GNUC
 #undef offsetof
@@ -412,7 +412,7 @@ typedef void * HINSTANCE;
 #endif
 
 
-#define ALIGN_VALUE( val, alignment ) ( ( val + alignment - 1 ) & ~( alignment - 1 ) ) //  need macro for constant expression
+#define ALIGN_VALUE( val, alignment ) ( ( (val) + (alignment) - 1 ) & ~( (alignment) - 1 ) ) //  need macro for constant expression
 
 // Used to step into the debugger
 #if defined( _WIN32 ) && !defined( _X360 )
@@ -539,7 +539,12 @@ typedef void * HINSTANCE;
 	#define SELECTANY __declspec(selectany)
 	#define RESTRICT __restrict
 	#define RESTRICT_FUNC __declspec(restrict)
-	#define FMTFUNCTION( a, b )
+    #ifdef __RESHARPER__
+        #define FMTFUNCTION_WIN( fmtargnumber, firstvarargnumber ) [[rscpp::format(printf, fmtargnumber, firstvarargnumber)]]
+    #else
+        #define FMTFUNCTION_WIN( a, b )
+    #endif
+    #define FMTFUNCTION( a, b )
 #elif defined(GNUC)
 	#define SELECTANY __attribute__((weak))
 	#if defined(LINUX) && !defined(DEDICATED)
@@ -551,11 +556,13 @@ typedef void * HINSTANCE;
 	// squirrel.h does a #define printf DevMsg which leads to warnings when we try
 	// to use printf as the prototype format function. Using __printf__ instead.
 	#define FMTFUNCTION( fmtargnumber, firstvarargnumber ) __attribute__ (( format( __printf__, fmtargnumber, firstvarargnumber )))
+    #define FMTFUNCTION_WIN( a, b )
 #else
 	#define SELECTANY static
 	#define RESTRICT
 	#define RESTRICT_FUNC
 	#define FMTFUNCTION( a, b )
+    #define FMTFUNCTION_WIN( a, b )
 #endif
 
 #if defined( _WIN32 )
@@ -608,17 +615,26 @@ typedef void * HINSTANCE;
 #endif 
 	#define  FORCEINLINE			__forceinline
 	#define  FORCEINLINE_TEMPLATE		__forceinline
-	#else
-		#define  STDCALL
+#else
+	#define  STDCALL
 	#define  FASTCALL
 	#ifdef _LINUX_DEBUGGABLE
 		#define  FORCEINLINE
 	#else
-			#define  FORCEINLINE inline __attribute__ ((always_inline))
-		#endif
+		#define  FORCEINLINE inline __attribute__ ((always_inline))
+	#endif
 	// GCC 3.4.1 has a bug in supporting forced inline of templated functions
 	// this macro lets us not force inlining in that case
-	#define FORCEINLINE_TEMPLATE	inline
+    #if __GNUC__ < 4
+        #define FORCEINLINE_TEMPLATE inline
+    #else
+        #define FORCEINLINE_TEMPLATE inline __attribute__((always_inline))
+    #endif
+    #if __cpp_constexpr >= 201304
+        #define CONSTEXPR_FUNC constexpr
+    #else
+        #define CONSTEXPR_FUNC
+    #endif
 //	#define  __stdcall			__attribute__ ((__stdcall__))
 #endif
 
@@ -712,12 +728,46 @@ typedef void * HINSTANCE;
 
 
 // When we port to 64 bit, we'll have to resolve the int, ptr vs size_t 32/64 bit problems...
-#if !defined( _WIN64 )
+#if defined(_MSC_VER) && !defined( _WIN64 )
 #pragma warning( disable : 4267 )	// conversion from 'size_t' to 'int', possible loss of data
 #pragma warning( disable : 4311 )	// pointer truncation from 'char *' to 'int'
 #pragma warning( disable : 4312 )	// conversion from 'unsigned int' to 'memhandle_t' of greater size
 #endif
 
+// Detect C++11 support for "rvalue references" / "move semantics" / other C++11 (and up) stuff
+#if defined(_MSC_VER)
+    #if _MSC_VER >= 1600
+        #define VALVE_RVALUE_REFS 1
+    #endif
+    #if _MSC_VER >= 1800
+        #define VALVE_INITIALIZER_LIST_SUPPORT 1
+        #define VALVE_EXPLICIT_CONVERSION_OP 1
+    #endif
+#elif defined(__clang__)
+    #if __has_extension(cxx_rvalue_references)
+        #define VALVE_RVALUE_REFS 1
+    #endif
+    #if __has_feature(cxx_generalized_initializers)
+        #define VALVE_INITIALIZER_LIST_SUPPORT 1
+    #endif
+    #if __has_feature(cxx_explicit_conversions)
+        #define VALVE_EXPLICIT_CONVERSION_OP 1
+    #endif
+#elif defined(__GNUC__)
+    #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6 )
+        #if defined(__GXX_EXPERIMENTAL_CXX0X__)
+            #define VALVE_RVALUE_REFS 1
+            #define VALVE_INITIALIZER_LIST_SUPPORT 1
+            #define VALVE_EXPLICIT_CONVERSION_OP 1
+        #endif
+    #endif
+#endif
+
+#ifdef VALVE_RVALUE_REFS
+#include "tier0/valve_minmax_off.h"
+#include <utility>
+#include "tier0/valve_minmax_on.h"
+#endif
 
 #ifdef POSIX
 #define _stricmp stricmp
@@ -1376,62 +1426,81 @@ inline const char *GetPlatformExt( void )
 template <class T>
 inline T* Construct( T* pMemory )
 {
+    HINT( pMemory != 0 );
 	return ::new( pMemory ) T;
 }
 
 template <class T, typename ARG1>
 inline T* Construct( T* pMemory, ARG1 a1 )
 {
+    HINT(pMemory != 0);
 	return ::new( pMemory ) T( a1 );
 }
 
 template <class T, typename ARG1, typename ARG2>
 inline T* Construct( T* pMemory, ARG1 a1, ARG2 a2 )
 {
+    HINT(pMemory != 0);
 	return ::new( pMemory ) T( a1, a2 );
 }
 
 template <class T, typename ARG1, typename ARG2, typename ARG3>
 inline T* Construct( T* pMemory, ARG1 a1, ARG2 a2, ARG3 a3 )
 {
+    HINT(pMemory != 0);
 	return ::new( pMemory ) T( a1, a2, a3 );
 }
 
 template <class T, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
 inline T* Construct( T* pMemory, ARG1 a1, ARG2 a2, ARG3 a3, ARG4 a4 )
 {
+    HINT(pMemory != 0);
 	return ::new( pMemory ) T( a1, a2, a3, a4 );
 }
 
 template <class T, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
 inline T* Construct( T* pMemory, ARG1 a1, ARG2 a2, ARG3 a3, ARG4 a4, ARG5 a5 )
 {
+    HINT(pMemory != 0);
 	return ::new( pMemory ) T( a1, a2, a3, a4, a5 );
 }
 
 template <class T, class P>
 inline void ConstructOneArg( T* pMemory, P const& arg)
 {
+    HINT(pMemory != 0);
 	::new( pMemory ) T(arg);
 }
 
 template <class T, class P1, class P2 >
 inline void ConstructTwoArg( T* pMemory, P1 const& arg1, P2 const& arg2)
 {
+    HINT(pMemory != 0);
 	::new( pMemory ) T(arg1, arg2);
 }
 
 template <class T, class P1, class P2, class P3 >
 inline void ConstructThreeArg( T* pMemory, P1 const& arg1, P2 const& arg2, P3 const& arg3)
 {
+    HINT(pMemory != 0);
 	::new( pMemory ) T(arg1, arg2, arg3);
 }
 
 template <class T>
-inline T* CopyConstruct( T* pMemory, T const& src )
+inline T *CopyConstruct(T *pMemory, T const &src)
 {
-	return ::new( pMemory ) T(src);
+    HINT(pMemory != 0);
+    return ::new (pMemory) T(src);
 }
+
+#ifdef VALVE_RVALUE_REFS
+template <class T>
+inline void CopyConstruct(T* pMemory, T&& src)
+{
+    HINT(pMemory != 0);
+    ::new(pMemory)T(std::forward<T>(src));
+}
+#endif
 
 template <class T>
 inline void Destruct( T* pMemory )

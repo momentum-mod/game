@@ -445,34 +445,32 @@ void CGlowOverlay::Draw( bool bCacheFullSceneState )
 			pRenderContext->Bind( pWireframeMaterial );
 			
 			// Draw the sprite.
-			IMesh *pMesh = pRenderContext->GetDynamicMesh( false, 0, 0, pWireframeMaterial );
+			IMesh *pSpriteMesh = pRenderContext->GetDynamicMesh( false, 0, 0, pWireframeMaterial );
 			
-			CMeshBuilder builder;
-			builder.Begin( pMesh, MATERIAL_QUADS, 1 );
-			
-			Vector vPt;
+			CMeshBuilder builderSprite;
+			builderSprite.Begin( pSpriteMesh, MATERIAL_QUADS, 1 );
 			
 			vPt = vBasePt - vRight + vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color3f( 1.0f, 0.0f, 0.0f );
-			builder.AdvanceVertex();
+			builderSprite.Position3fv( vPt.Base() );
+			builderSprite.Color3f( 1.0f, 0.0f, 0.0f );
+			builderSprite.AdvanceVertex();
 			
 			vPt = vBasePt + vRight + vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color3f( 1.0f, 0.0f, 0.0f );
-			builder.AdvanceVertex();
+			builderSprite.Position3fv( vPt.Base() );
+			builderSprite.Color3f( 1.0f, 0.0f, 0.0f );
+			builderSprite.AdvanceVertex();
 			
 			vPt = vBasePt + vRight - vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color3f( 1.0f, 0.0f, 0.0f );
-			builder.AdvanceVertex();
+			builderSprite.Position3fv( vPt.Base() );
+			builderSprite.Color3f( 1.0f, 0.0f, 0.0f );
+			builderSprite.AdvanceVertex();
 			
 			vPt = vBasePt - vRight - vUp;
-			builder.Position3fv( vPt.Base() );
-			builder.Color3f( 1.0f, 0.0f, 0.0f );
-			builder.AdvanceVertex();
+			builderSprite.Position3fv( vPt.Base() );
+			builderSprite.Color3f( 1.0f, 0.0f, 0.0f );
+			builderSprite.AdvanceVertex();
 			
-			builder.End( false, true );
+			builderSprite.End( false, true );
 		}
 	}
 }

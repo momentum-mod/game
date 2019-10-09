@@ -28,20 +28,28 @@ static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPane
     return Q_stricmp(string1, string2);
 }
 
-static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
+static int __cdecl MapPersonalBestSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
                                         const vgui::ListPanelItem &item2)
 {
-    const char *string1 = item1.kv->GetString(KEYNAME_MAP_TIME);
-    const char *string2 = item2.kv->GetString(KEYNAME_MAP_TIME);
-    return Q_stricmp(string1, string2);
+    const auto left = item1.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
+    const auto right = item2.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
+    if (left < right)
+        return -1;
+    if (right < left)
+        return 1;
+    return 0;
 }
 
 static int __cdecl MapWorldRecordSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
                                           const vgui::ListPanelItem &item2)
 {
-    const char *string1 = item1.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
-    const char *string2 = item2.kv->GetString(KEYNAME_MAP_WORLD_RECORD);
-    return Q_stricmp(string1, string2);
+    const auto left = item1.kv->GetFloat(KEYNAME_MAP_WORLD_RECORD_SORT);
+    const auto right = item2.kv->GetFloat(KEYNAME_MAP_WORLD_RECORD_SORT);
+    if (left < right)
+        return -1;
+    if (right < left)
+        return 1;
+    return 0;
 }
 
 static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
@@ -98,33 +106,32 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
 
     // Add the column headers
-    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "", GetScaledVal(90), GetScaledVal(90),
-                                GetScaledVal(120),
-                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
-                                    ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "",
+								GetScaledVal(40), GetScaledVal(40), GetScaledVal(40),
+                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE),
                                 GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE);
+                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE),
                                 GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE);
-    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", GetScaledVal(150),
-                                GetScaledVal(150), GetScaledVal(190),
+                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps",
+								GetScaledVal(100), GetScaledVal(50), GetScaledVal(1000),
                                 ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
-    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", GetScaledVal(50),
-                                GetScaledVal(50), GetScaledVal(50),
-                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
-                                    ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+    m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout",
+								GetScaledVal(30), GetScaledVal(30), GetScaledVal(30),
+								ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
+								ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty",
-                                GetScaledVal(55), GetScaledVal(55), GetScaledVal(100), 0);
-    m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord", GetScaledVal(90),
-                                GetScaledVal(90), GetScaledVal(105), 0);
-    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_TIME, "#MOM_PersonalBest", GetScaledVal(90),
-                                GetScaledVal(90), GetScaledVal(105), 0);
+                                GetScaledVal(20), GetScaledVal(20), GetScaledVal(20), 0);
+    m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord",
+								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+    m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_PERSONAL_BEST, "#MOM_PersonalBest",
+								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate",
-                                GetScaledVal(90), GetScaledVal(90), GetScaledVal(90), ListPanel::COLUMN_FIXEDSIZE);
+                                GetScaledVal(65), 0, GetScaledVal(100), 0);
     m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed",
-                                GetScaledVal(90), GetScaledVal(90), 9001, ListPanel::COLUMN_FIXEDSIZE);
+                                GetScaledVal(1), GetScaledVal(1), 9001, 0);
 
     // Images happen in ApplySchemeSettings
 
@@ -151,7 +158,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     // Sort Functions
     m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
     m_pMapList->SetSortFunc(HEADER_WORLD_RECORD, MapWorldRecordSortFunc);
-    m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapCompletedSortFunc);
+    m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapPersonalBestSortFunc);
     m_pMapList->SetSortFunc(HEADER_MAP_LAYOUT, MapLayoutSortFunc);
     m_pMapList->SetSortFunc(HEADER_DATE_CREATED, MapCreationDateSortFunc);
     m_pMapList->SetSortFunc(HEADER_LAST_PLAYED, MapLastPlayedSortFunc);
@@ -206,6 +213,9 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
     if (m_hFont == INVALID_FONT)
         m_hFont = pScheme->GetFont("DefaultSmall", IsProportional());
     m_pMapList->SetFont(m_hFont);
+
+    m_cMapDLFailed = pScheme->GetColor("MapList.DownloadFailColor", COLOR_RED);
+    m_cMapDLSuccess = pScheme->GetColor("MapList.DownloadSuccessColor", COLOR_GREEN);
 }
 
 void CBaseMapsPage::SetListCellColors(MapData *pData, KeyValues *pKvInto)
@@ -392,7 +402,7 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
     if (map)
     {
         KeyValues *pKvInto = m_pMapList->GetItem(map->m_iListID);
-        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? COLOR_RED : COLOR_GREEN);
+        pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? m_cMapDLFailed : m_cMapDLSuccess);
         m_pMapList->ApplyItemChanges(map->m_iListID);
     }
 }

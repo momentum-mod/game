@@ -5,17 +5,14 @@
 //-----------------------------------------------------------------------------
 
 $macro SRCDIR		"..\.."
-$Macro GENERATED_PROTO_DIR	"generated_proto"
-$macro PROTOBUF_LITE 0
 
 $include "$SRCDIR\vpc_scripts\source_lib_base.vpc"
-$include "$SRCDIR\vpc_scripts\protobuf_builder.vpc"
 
 $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty;$SRCDIR\thirdparty\cef;$GENERATED_PROTO_DIR"
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty"
 	}
 }
 

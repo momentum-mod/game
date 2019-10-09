@@ -79,24 +79,6 @@
         "tabPosition"		"0"
         "textAlignment"		"center"
     }
-    //"Map" label
-    "MapLabel"
-    {
-        "ControlName"		"Label"
-        "fieldName"			"MapLabel"
-        "xpos"				"10"
-        "ypos"				"12"
-        "wide"				"81"
-        "tall"				"15"
-        "autoResize"		"0"
-        "pinCorner"			"0"
-        "visible"			"1"
-        "enabled"			"1"
-        "textAlignment"		"west"
-        "dulltext"			"0"
-        "brighttext"		"0"
-        "auto_wide_tocontents" "1"
-    }
     
     "ClosePanel"
     {

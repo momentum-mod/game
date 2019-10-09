@@ -41,7 +41,7 @@
         "xpos" "0"
         "ypos" "0"
         "wide" "20"
-        "tall" "15"
+        "tall" "6"
 		"autoResize"		"1"
 		"pinCorner"		"0"
         "PinnedCornerOffsetX" "-10"
@@ -51,6 +51,6 @@
         "pin_to_sibling" "MapName"
         "pin_to_sibling_corner" "2"
         "pin_corner_to_sibling" "0"
-        "draw_percent" "1"
+        "draw_percent" "0"
     }
 }

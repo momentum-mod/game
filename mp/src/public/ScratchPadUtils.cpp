@@ -111,20 +111,20 @@ void CScratchPadGraph::AddVerticalLine( float flTime, float flMinValue, float fl
 }
 
 
-void CScratchPadGraph::UpdateTicksAndStuff( float flTime, float flValue )
+void CScratchPadGraph::UpdateTicksAndStuff( float fTime, float flValue )
 {
-	if ( flTime > m_flHighestTime )
+	if ( fTime > m_flHighestTime )
 	{
 		// Update the left part of the time axis.
 		Vector vStart = GetSamplePosition( m_flHighestTime, m_flValueOrigin );
-		Vector vEnd = GetSamplePosition( flTime, m_flValueOrigin );
+		Vector vEnd = GetSamplePosition( fTime, m_flValueOrigin );
 
 		m_pPad->DrawLine(
 			CSPVert( vStart, m_vTimeLineColor ),
 			CSPVert( vEnd, m_vTimeLineColor )
 			);
 
-		m_flHighestTime = flTime;
+		m_flHighestTime = fTime;
 	}
 	
 	if ( flValue > m_flHighestValue )
@@ -153,7 +153,7 @@ void CScratchPadGraph::UpdateTicksAndStuff( float flTime, float flValue )
 	}
 
 	// More text labels?
-	int iHighestTextLabel = (int)ceil( (flTime - m_flTimeOrigin) / m_flTimeLabelEveryNSeconds + 0.5f );
+	int iHighestTextLabel = (int)ceil( (fTime - m_flTimeOrigin) / m_flTimeLabelEveryNSeconds + 0.5f );
 	while ( m_nTimeLabelsDrawn < iHighestTextLabel )
 	{
 		CTextParams params;

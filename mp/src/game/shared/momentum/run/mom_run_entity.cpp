@@ -26,6 +26,7 @@ void CMomRunEntity::OnZoneEnter(CTriggerZone *pTrigger)
     switch (pTrigger->GetZoneType())
     {
     case ZONE_TYPE_START:
+        pData->m_bMapFinished = false;
         break;
     case ZONE_TYPE_STOP:
         break;
@@ -67,7 +68,6 @@ void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger)
         break;
     }
 
-    pData->m_bMapFinished = false;
     pData->m_bIsInZone = false;
 
     IGameEvent *pEvent = gameeventmanager->CreateEvent("zone_exit");

@@ -1762,10 +1762,10 @@ void CHLClient::LevelShutdown( void )
 //-----------------------------------------------------------------------------
 void CHLClient::SetCrosshairAngle( const QAngle& angle )
 {
-	CHudCrosshair *crosshair = GET_HUDELEMENT( CHudCrosshair );
-	if ( crosshair )
+	CHudCrosshair *pCrosshair = GET_HUDELEMENT( CHudCrosshair );
+	if ( pCrosshair )
 	{
-		crosshair->SetCrosshairAngle( angle );
+		pCrosshair->SetCrosshairAngle( angle );
 	}
 }
 

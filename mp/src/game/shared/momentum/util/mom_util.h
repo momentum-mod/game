@@ -5,7 +5,6 @@
 class CMomReplayBase;
 struct RunCompare_t;
 
-// MOM_TODO: Can these be static functions?
 namespace MomUtil
 {
 #ifdef CLIENT_DLL
@@ -15,6 +14,9 @@ namespace MomUtil
     // Searches for the command and invokes it's associated function directly
     void DispatchConCommand(const char *pszCommand);
 #endif
+
+    // Mounts CS:S, TF2, etc content
+    void MountGameFiles();
 
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
     bool GetColorFromHex(uint32 HEX, Color &into); // in hex color format RRGGBBAA

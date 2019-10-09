@@ -231,9 +231,9 @@ void CVoiceGameMgr::UpdateMasks()
 			// Build a mask of who they can hear based on the game rules.
 			for(int iOtherClient=0; iOtherClient < m_nMaxPlayers; iOtherClient++)
 			{
-				CBaseEntity *pEnt = UTIL_PlayerByIndex(iOtherClient+1);
-				if(pEnt && pEnt->IsPlayer() && 
-					(bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pEnt, bProximity )) )
+				CBasePlayer *pOtherPlayer = UTIL_PlayerByIndex(iOtherClient+1);
+				if(pOtherPlayer &&
+					(bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, pOtherPlayer, bProximity )) )
 				{
 					gameRulesMask[iOtherClient] = true;
 					ProximityMask[iOtherClient] = bProximity;
@@ -249,8 +249,7 @@ void CVoiceGameMgr::UpdateMasks()
 			g_SentBanMasks[iClient] = g_BanMasks[iClient];
 
 			UserMessageBegin( user, "VoiceMask" );
-				int dw;
-				for(dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
+				for(int dw=0; dw < VOICE_MAX_PLAYERS_DW; dw++)
 				{
 					WRITE_LONG(gameRulesMask.GetDWord(dw));
 					WRITE_LONG(g_BanMasks[iClient].GetDWord(dw));

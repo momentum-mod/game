@@ -55,6 +55,7 @@
 #endif // _MSC_VER > 1000
 
 #include <memory.h> // to allow <,> comparisons
+#include "dbg.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //						Configuration options
@@ -118,7 +119,7 @@
 #define FASTDELEGATE_ALLOW_FUNCTION_TYPE_SYNTAX
 #endif
 
-#ifdef __GNUC__ // Workaround GCC bug #8271 
+#if defined(__GNUC__) && __GNUC__ < 4 // Workaround GCC bug #8271 
 	// At present, GCC doesn't recognize constness of MFPs in templates
 #define FASTDELEGATE_GCC_BUG_8271
 #endif
@@ -181,8 +182,8 @@ inline OutputClass horrible_cast(const InputClass input)
 	// Cause a compile-time error if in, out and u are not the same size.
 	// If the compile fails here, it means the compiler has peculiar
 	// unions which would prevent the cast from working.
-	typedef int ERROR_CantUseHorrible_cast[sizeof(InputClass)==sizeof(u) 
-		&& sizeof(InputClass)==sizeof(OutputClass) ? 1 : -1];
+	COMPILE_TIME_ASSERT(sizeof(InputClass)==sizeof(u) 
+		&& sizeof(InputClass)==sizeof(OutputClass) ? 1 : -1);
 	u.in = input;
 	return u.out;
 }
@@ -300,7 +301,7 @@ struct SimplifyMemFunc
 	{ 
 		// Unsupported member function type -- force a compile failure.
 	    // (it's illegal to have a array with negative size).
-		typedef char ERROR_Unsupported_member_function_pointer_on_this_compiler[N-100];
+		COMPILE_TIME_ASSERT(N-100 > 0);
 		return 0; 
 	}
 };
@@ -363,7 +364,7 @@ struct SimplifyMemFunc< SINGLE_MEMFUNCPTR_SIZE + sizeof(int) >
 			}s;
         } u;
 		// Check that the horrible_cast will work
-		typedef int ERROR_CantUsehorrible_cast[sizeof(function_to_bind)==sizeof(u.s)? 1 : -1];
+		COMPILE_TIME_ASSERT(sizeof(function_to_bind)==sizeof(u.s));
         u.func = function_to_bind;
 		bound_func = u.s.funcaddress;
 		return reinterpret_cast<GenericClass *>(reinterpret_cast<char *>(pthis) + u.s.delta); 
@@ -427,9 +428,9 @@ struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 2*sizeof(int) >
 			MicrosoftVirtualMFP s;
 		} u2;
 		// Check that the horrible_cast<>s will work
-		typedef int ERROR_CantUsehorrible_cast[sizeof(function_to_bind)==sizeof(u.s)
+		COMPILE_TIME_ASSERT(sizeof(function_to_bind)==sizeof(u.s)
 			&& sizeof(function_to_bind)==sizeof(u.ProbeFunc)
-			&& sizeof(u2.virtfunc)==sizeof(u2.s) ? 1 : -1];
+			&& sizeof(u2.virtfunc)==sizeof(u2.s));
    // Unfortunately, taking the address of a MF prevents it from being inlined, so 
    // this next line can't be completely optimised away by the compiler.
 		u2.virtfunc = &GenericVirtualClass::GetThis;
@@ -512,7 +513,7 @@ struct SimplifyMemFunc<SINGLE_MEMFUNCPTR_SIZE + 3*sizeof(int) >
 			} s;
 		} u;
 		// Check that the horrible_cast will work
-		typedef int ERROR_CantUsehorrible_cast[sizeof(XFuncType)==sizeof(u.s)? 1 : -1];
+		COMPILE_TIME_ASSERT(sizeof(XFuncType)==sizeof(u.s));
 		u.func = function_to_bind;
 		bound_func = u.s.funcaddress;
 		int virtual_delta = 0;
@@ -856,7 +857,7 @@ public:
 		// Ensure that there's a compilation failure if function pointers 
 		// and data pointers have different sizes.
 		// If you get this error, you need to #undef FASTDELEGATE_USESTATICFUNCTIONHACK.
-		typedef int ERROR_CantUseEvilMethod[sizeof(GenericClass *)==sizeof(function_to_bind) ? 1 : -1];
+		COMPILE_TIME_ASSERT(sizeof(GenericClass *)==sizeof(function_to_bind));
 		m_pthis = horrible_cast<GenericClass *>(function_to_bind);
 		// MSVC, SunC++ and DMC accept the following (non-standard) code:
 //		m_pthis = static_cast<GenericClass *>(static_cast<void *>(function_to_bind));
@@ -872,7 +873,7 @@ public:
 		// Ensure that there's a compilation failure if function pointers 
 		// and data pointers have different sizes.
 		// If you get this error, you need to #undef FASTDELEGATE_USESTATICFUNCTIONHACK.
-		typedef int ERROR_CantUseEvilMethod[sizeof(UnvoidStaticFuncPtr)==sizeof(this) ? 1 : -1];
+		COMPILE_TIME_ASSERT(sizeof(UnvoidStaticFuncPtr)==sizeof(this));
 		return horrible_cast<UnvoidStaticFuncPtr>(this);
 	}
 #endif // !defined(FASTDELEGATE_USESTATICFUNCTIONHACK)

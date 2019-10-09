@@ -933,7 +933,7 @@ static void CalcVirtualAnimation( virtualmodel_t *pVModel, const CStudioHdr *pSt
 	{
 		if (pStudioHdr->boneFlags(i) & boneMask)
 		{
-			int j = pSeqGroup->boneMap[i];
+			j = pSeqGroup->boneMap[i];
 			if (j >= 0 && pweight[j] > 0.0f)
 			{
 				if (animdesc.flags & STUDIO_DELTA)
@@ -997,7 +997,6 @@ static void CalcVirtualAnimation( virtualmodel_t *pVModel, const CStudioHdr *pSt
 		matrix3x4_t *boneToWorld = g_MatrixPool.Alloc();
 		CBoneBitList boneComputed;
 
-		int i;
 		for (i = 0; i < animdesc.numlocalhierarchy; i++)
 		{
 			mstudiolocalhierarchy_t *pHierarchy = animdesc.pHierarchy( i );
@@ -1141,7 +1140,6 @@ static void CalcAnimation( const CStudioHdr *pStudioHdr,	Vector *pos, Quaternion
 		matrix3x4_t *boneToWorld = g_MatrixPool.Alloc();
 		CBoneBitList boneComputed;
 
-		int i;
 		for (i = 0; i < animdesc.numlocalhierarchy; i++)
 		{
 			mstudiolocalhierarchy_t *pHierarchy = animdesc.pHierarchy( i );
@@ -5610,9 +5608,9 @@ bool Studio_AnimPosition( mstudioanimdesc_t *panim, float flCycle, Vector &vecPo
 			vecAngle.y = vecAngle.y * (1 - f) + pmove->angle * f;
 			if (iLoops != 0)
 			{
-				mstudiomovement_t *pmove = panim->pMovement( panim->nummovements - 1 );
-				vecPos = vecPos + iLoops * pmove->position; 
-				vecAngle.y = vecAngle.y + iLoops * pmove->angle; 
+				mstudiomovement_t *pmoveEnd = panim->pMovement( panim->nummovements - 1 );
+				vecPos = vecPos + iLoops * pmoveEnd->position; 
+				vecAngle.y = vecAngle.y + iLoops * pmoveEnd->angle; 
 			}
 			return true;
 		}

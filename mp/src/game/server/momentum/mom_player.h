@@ -11,9 +11,12 @@ class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
+class CMomRocket;
 
 struct SavedState_t
 {
+    char m_pszTargetName[128];// Saved player targetname
+    char m_pszClassName[128]; // Saved player classname
     int m_nButtons;           // Saved player buttons being pressed
     Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
     QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
@@ -30,7 +33,7 @@ struct SavedState_t
 #define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 #define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
 
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity, public IEntityListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -61,6 +64,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
+    void ItemPostFrame() OVERRIDE;
+
+    // Make sure we don't pick up weapons we shouldn't (default behaviour is weird)
+    bool BumpWeapon(CBaseCombatWeapon *pWeapon) OVERRIDE;
+
     // MOM_TODO: This is called when the player spawns so that HUD elements can be updated
     // void InitHUD() OVERRIDE;
 
@@ -74,19 +82,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // SPAWNING
     CBaseEntity *EntSelectSpawnPoint() OVERRIDE;
 
-    void EnableAutoBhop();
-    void DisableAutoBhop();
+    void SetAutoBhopEnabled(bool bEnable);
     bool HasAutoBhop() const { return m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
-    // think function for detecting if player bhopped
-    void UpdateRunStats();
-    void UpdateRunSync();
-    void UpdateStrafes();
-    void UpdateMaxVelocity();
-    // slows down the player in a tween-y fashion
-    void TweenSlowdownPlayer();
     void ResetRunStats();
-    void CalculateAverageStats();
 
     void LimitSpeed(float flSpeedLimit, bool bSaveZ);
 
@@ -160,6 +159,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void StopSpectating();
 
+    // Timer commands
+    void TimerCommand_Restart(int track);
+    void TimerCommand_Reset(); // To the current stage, if any
+
     // Practice mode
     void TogglePracticeMode();
     void EnablePracticeMode();
@@ -227,6 +230,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void PreThink() OVERRIDE;
     void PostThink() OVERRIDE;
 
+    int OnTakeDamage_Alive(const CTakeDamageInfo &info) OVERRIDE;
+
+    void ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir);
+
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
@@ -241,16 +248,42 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
+
+    // IEntityListener
+    void OnEntitySpawned(CBaseEntity *pEntity) override;
+    void OnEntityDeleted(CBaseEntity *pEntity) override;
+
   private:
+    // Player think function called every tick
+    // Used to update run stats
+    void PlayerThink();
+    void UpdateRunSync();
+    void UpdateStrafes();
+    void UpdateMaxVelocity();
+    // slows down the player in a tween-y fashion
+    void TweenSlowdownPlayer();
+    void CalculateAverageStats();
+
+    // Whether enough time has passed since last paint to do another
+    bool CanPaint();
+    void DoPaint();
+
     // Spawn stuff
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
     void SetPracticeModeState();
+
+    void DestroyRockets();
+    
+    // Resets all player properties to their default state
+    void ResetProps();
 
     CSteamID m_sSpecTargetSteamID;
 
     bool m_bInAirDueToJump;
 
     bool m_bWasSpectating; // Was the player spectating and then respawned?
+
+    float m_flNextPaintTime;
 
     // Strafe sync.
     int m_nPerfectSyncTicks;
@@ -284,8 +317,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     int m_nPrevButtons;
 
-    char m_pszDefaultEntName[128];
-
     // Used by momentum triggers
     Vector m_vecPreviousOrigins[MAX_PREVIOUS_ORIGINS];
 
@@ -300,4 +331,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     SavedState_t m_SavedRunState; // Used when either entering practice mode or spectating while in a run
     SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
+
+    CUtlVector<CMomRocket*> m_vecRockets;
 };

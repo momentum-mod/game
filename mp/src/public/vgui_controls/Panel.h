@@ -171,7 +171,7 @@ class IForceVirtualInheritancePanel
 //			This is designed as an easy-access to the vgui-functionality; for more
 //			low-level access to vgui functions use the IPanel/IClientPanel interfaces directly
 //-----------------------------------------------------------------------------
-class Panel : public IClientPanel, virtual IForceVirtualInheritancePanel
+class Panel : public IClientPanel, public virtual IForceVirtualInheritancePanel
 {
     DECLARE_CLASS_SIMPLE_NOBASE(Panel);
 
@@ -397,6 +397,10 @@ class Panel : public IClientPanel, virtual IForceVirtualInheritancePanel
     virtual void SetScheme(HScheme scheme);
     virtual Color GetSchemeColor(const char *keyName, IScheme *pScheme);
     virtual Color GetSchemeColor(const char *keyName, Color defaultColor, IScheme *pScheme);
+    // pResFontName = the value of "font" usually read from res files
+    // pSchemeFontName = a scheme-global font name, can be null
+    // pDefaultFontName = a font name known to exist, usually "Default"
+    virtual HFont GetSchemeFont(IScheme *pScheme, const char *pResFontName, const char *pSchemeFontName, const char *pDefaultFontName = "Default");
 
     // called when scheme settings need to be applied; called the first time before the panel is painted
     virtual void ApplySchemeSettings(IScheme *pScheme);

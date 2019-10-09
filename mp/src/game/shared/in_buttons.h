@@ -33,9 +33,9 @@
 #define IN_ZOOM			(1 << 19)	// Zoom key for HUD zoom
 #define IN_WEAPON1		(1 << 20)	// weapon defines these bits
 #define IN_WEAPON2		(1 << 21)	// weapon defines these bits
-#define IN_BULLRUSH		(1 << 22)   // used for displaying when bhop is disabled
+#define IN_BHOPDISABLED	(1 << 22)	// used for displaying when bhop is disabled
 #define IN_GRENADE1		(1 << 23)	// grenade 1
-#define IN_GRENADE2		(1 << 24)	// grenade 2
+#define IN_PAINT		(1 << 24)	// grenade 2
 #define	IN_ATTACK3		(1 << 25)
 #define IN_STRAFE       (1 << 26)
 

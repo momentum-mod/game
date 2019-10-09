@@ -564,8 +564,7 @@ bool CBaseFlex::HandleStartGestureSceneEvent( CSceneEventInfo *info, CChoreoScen
 		char szEndLoop[CEventAbsoluteTag::MAX_EVENTTAG_LENGTH] = { "end" };
 
 		// check in the tag indexes
-		KeyValues *pkvFaceposer;
-		for ( pkvFaceposer = pkvAllFaceposer->GetFirstSubKey(); pkvFaceposer; pkvFaceposer = pkvFaceposer->GetNextKey() )
+		for ( KeyValues *pkvFaceposer = pkvAllFaceposer->GetFirstSubKey(); pkvFaceposer; pkvFaceposer = pkvFaceposer->GetNextKey() )
 		{
 			if (!stricmp( pkvFaceposer->GetName(), "startloop" ))
 			{
@@ -607,8 +606,7 @@ bool CBaseFlex::HandleStartGestureSceneEvent( CSceneEventInfo *info, CChoreoScen
 			mstudioanimdesc_t &animdesc = pstudiohdr->pAnimdesc( pstudiohdr->iRelativeAnim( info->m_nSequence, seqdesc.anim(0,0) ) );
 
 			// check in the tag indexes
-			KeyValues *pkvFaceposer;
-			for ( pkvFaceposer = pkvAllFaceposer->GetFirstSubKey(); pkvFaceposer; pkvFaceposer = pkvFaceposer->GetNextKey() )
+			for ( KeyValues *pkvFaceposer = pkvAllFaceposer->GetFirstSubKey(); pkvFaceposer; pkvFaceposer = pkvFaceposer->GetNextKey() )
 			{
 				if (!stricmp( pkvFaceposer->GetName(), "tags" ))
 				{
@@ -621,14 +619,14 @@ bool CBaseFlex::HandleStartGestureSceneEvent( CSceneEventInfo *info, CChoreoScen
 						{
 							float percentage = (float)pkvTags->GetInt() / maxFrame;
 
-							CEventAbsoluteTag *ptag = event->FindAbsoluteTag( CChoreoEvent::ORIGINAL, pkvTags->GetName() );
-							if (ptag)
+							CEventAbsoluteTag *pKvtag = event->FindAbsoluteTag( CChoreoEvent::ORIGINAL, pkvTags->GetName() );
+							if (pKvtag)
 							{
-								if (fabs(ptag->GetPercentage() - percentage) > 0.05)
+								if (fabs(pKvtag->GetPercentage() - percentage) > 0.05)
 								{
-									DevWarning("%s repositioned tag: %s : %.3f -> %.3f (%s:%s:%s)\n", scene->GetFilename(), pkvTags->GetName(), ptag->GetPercentage(), percentage, scene->GetFilename(), actor->GetName(), event->GetParameters() );
+									DevWarning("%s repositioned tag: %s : %.3f -> %.3f (%s:%s:%s)\n", scene->GetFilename(), pkvTags->GetName(), pKvtag->GetPercentage(), percentage, scene->GetFilename(), actor->GetName(), event->GetParameters() );
 									// reposition tag
-									ptag->SetPercentage( percentage );
+                                    pKvtag->SetPercentage( percentage );
 								}
 							}
 						}
@@ -1025,41 +1023,6 @@ public:
 		pfile->buffer = buffer;
 		// Add to list
 		m_FileList.AddToTail( pfile );
-
-		// Swap the entire file
-		if ( IsX360() )
-		{
-			CByteswap swap;
-			swap.ActivateByteSwapping( true );
-			byte *pData = (byte*)buffer;
-			flexsettinghdr_t *pHdr = (flexsettinghdr_t*)pData;
-			swap.SwapFieldsToTargetEndian( pHdr );
-
-			// Flex Settings
-			flexsetting_t *pFlexSetting = (flexsetting_t*)((byte*)pHdr + pHdr->flexsettingindex);
-			for ( int i = 0; i < pHdr->numflexsettings; ++i, ++pFlexSetting )
-			{
-				swap.SwapFieldsToTargetEndian( pFlexSetting );
-				
-				flexweight_t *pWeight = (flexweight_t*)(((byte*)pFlexSetting) + pFlexSetting->settingindex );
-				for ( int j = 0; j < pFlexSetting->numsettings; ++j, ++pWeight )
-				{
-					swap.SwapFieldsToTargetEndian( pWeight );
-				}
-			}
-
-			// indexes
-			pData = (byte*)pHdr + pHdr->indexindex;
-			swap.SwapBufferToTargetEndian( (int*)pData, (int*)pData, pHdr->numindexes );
-
-			// keymappings
-			pData  = (byte*)pHdr + pHdr->keymappingindex;
-			swap.SwapBufferToTargetEndian( (int*)pData, (int*)pData, pHdr->numkeys );
-
-			// keyname indices
-			pData = (byte*)pHdr + pHdr->keynameindex;
-			swap.SwapBufferToTargetEndian( (int*)pData, (int*)pData, pHdr->numkeys );
-		}
 
 		// Fill in translation table
 		EnsureTranslations( instance, ( const flexsettinghdr_t * )pfile->buffer );
@@ -2517,30 +2480,30 @@ void CFlexCycler::Think( void )
 			char szTemp[32];
 
 			Q_strncpy( szExpression, pszExpression ,sizeof(szExpression));
-			char *pszExpression = szExpression;
+			char *pExpression = szExpression;
 
-			while (*pszExpression != '\0')
+			while (*pExpression != '\0')
 			{
-				if (*pszExpression == '+')
-					*pszExpression = ' ';
+				if (*pExpression == '+')
+					*pExpression = ' ';
 				
-				pszExpression++;
+                pExpression++;
 			}
 
-			pszExpression = szExpression;
+            pExpression = szExpression;
 
-			while (*pszExpression)
+			while (*pExpression)
 			{
-				if (*pszExpression != ' ')
+				if (*pExpression != ' ')
 				{
-					if (*pszExpression == '-')
+					if (*pExpression == '-')
 					{
 						for (LocalFlexController_t i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
 						{
 							m_flextarget[i] = 0;
 						}
 					}
-					else if (*pszExpression == '?')
+					else if (*pExpression == '?')
 					{
 						for (LocalFlexController_t i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
 						{
@@ -2551,7 +2514,7 @@ void CFlexCycler::Think( void )
 					}
 					else
 					{
-						if (sscanf( pszExpression, "%31s", szTemp ) == 1)
+						if (sscanf(pExpression, "%31s", szTemp ) == 1)
 						{
 							m_flexnum = LookupFlex( szTemp );
 
@@ -2560,11 +2523,11 @@ void CFlexCycler::Think( void )
 								m_flextarget[m_flexnum] = 1.0;
 								// SetFlexTarget( m_flexnum );
 							}
-							pszExpression += strlen( szTemp ) - 1;
+                            pExpression += strlen( szTemp ) - 1;
 						}
 					}
 				}
-				pszExpression++;
+                pExpression++;
 			}
 		}
 		else if (m_flextime < gpGlobals->curtime)

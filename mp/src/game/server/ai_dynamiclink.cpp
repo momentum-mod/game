@@ -86,19 +86,19 @@ void CAI_DynamicLinkController::GenerateLinksFromVolume()
 						{
 							Assert( IsBoxIntersectingRay( vAbsMins, vAbsMaxs, originOther, nodeOrigin - originOther ) );
 
-							CAI_DynamicLink *pLink = (CAI_DynamicLink *)CreateEntityByName( "info_node_link" );
-							pLink->m_nSrcID = i;
-							pLink->m_nDestID = iLinkDest;
-							pLink->m_nSrcEditID = g_pAINetworkManager->GetEditOps()->GetWCIdFromNodeId( pLink->m_nSrcID );
-							pLink->m_nDestEditID = g_pAINetworkManager->GetEditOps()->GetWCIdFromNodeId( pLink->m_nDestID );
-							pLink->m_nLinkState = m_nLinkState;
-							pLink->m_strAllowUse = m_strAllowUse;
-							pLink->m_bInvertAllow = m_bInvertAllow;
-							pLink->m_bFixedUpIds = true;
-							pLink->m_bNotSaved = true;
+							CAI_DynamicLink *pNewLink = (CAI_DynamicLink *)CreateEntityByName( "info_node_link" );
+                            pNewLink->m_nSrcID = i;
+                            pNewLink->m_nDestID = iLinkDest;
+                            pNewLink->m_nSrcEditID = g_pAINetworkManager->GetEditOps()->GetWCIdFromNodeId(pNewLink->m_nSrcID );
+							pNewLink->m_nDestEditID = g_pAINetworkManager->GetEditOps()->GetWCIdFromNodeId(pNewLink->m_nDestID );
+							pNewLink->m_nLinkState = m_nLinkState;
+							pNewLink->m_strAllowUse = m_strAllowUse;
+							pNewLink->m_bInvertAllow = m_bInvertAllow;
+							pNewLink->m_bFixedUpIds = true;
+							pNewLink->m_bNotSaved = true;
 
-							pLink->Spawn();
-							m_ControlledLinks.AddToTail( pLink );
+                            pNewLink->Spawn();
+							m_ControlledLinks.AddToTail(pNewLink);
 						}
 					}
 				}

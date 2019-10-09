@@ -377,18 +377,18 @@ void CRopeManager::AddToRenderCache( C_RopeKeyframe *pRope )
 	// If we didn't find one, then allocate the mofo.
 	if ( iRenderCache == nRenderCacheCount )
 	{
-		int iRenderCache = m_aRenderCache.AddToTail();
-		m_aRenderCache[iRenderCache].m_pSolidMaterial = pRope->GetSolidMaterial();
-		if ( m_aRenderCache[iRenderCache].m_pSolidMaterial )
+		int iRenderCacheIndx = m_aRenderCache.AddToTail();
+		m_aRenderCache[iRenderCacheIndx].m_pSolidMaterial = pRope->GetSolidMaterial();
+		if ( m_aRenderCache[iRenderCacheIndx].m_pSolidMaterial )
 		{
-			m_aRenderCache[iRenderCache].m_pSolidMaterial->IncrementReferenceCount();
+			m_aRenderCache[iRenderCacheIndx].m_pSolidMaterial->IncrementReferenceCount();
 		}
-		m_aRenderCache[iRenderCache].m_pBackMaterial = pRope->GetBackMaterial();
-		if ( m_aRenderCache[iRenderCache].m_pBackMaterial )
+		m_aRenderCache[iRenderCacheIndx].m_pBackMaterial = pRope->GetBackMaterial();
+		if ( m_aRenderCache[iRenderCacheIndx].m_pBackMaterial )
 		{
-			m_aRenderCache[iRenderCache].m_pBackMaterial->IncrementReferenceCount();
+			m_aRenderCache[iRenderCacheIndx].m_pBackMaterial->IncrementReferenceCount();
 		}
-		m_aRenderCache[iRenderCache].m_nCacheCount = 0;
+		m_aRenderCache[iRenderCacheIndx].m_nCacheCount = 0;
 	}
 
 	if ( m_aRenderCache[iRenderCache].m_nCacheCount >= MAX_ROPE_RENDERCACHE )
@@ -1927,10 +1927,10 @@ bool C_RopeKeyframe::CalculateEndPointAttachment( C_BaseEntity *pEnt, int iAttac
 			if ( !pModel )
 				return false;
 
-			int iAttachment = pModel->LookupAttachment( "buff_attach" );
+			int iBuffAttachment = pModel->LookupAttachment( "buff_attach" );
 			if ( pAngles )
-				return pModel->GetAttachment( iAttachment, vPos, *pAngles );
-			return pModel->GetAttachment( iAttachment, vPos );
+				return pModel->GetAttachment( iBuffAttachment, vPos, *pAngles );
+			return pModel->GetAttachment( iBuffAttachment, vPos );
 		}
 	}
 

@@ -1,8 +1,11 @@
 #include "cbase.h"
+
 #include "filesystem.h"
 #include "server_events.h"
 #include "tickset.h"
 #include "icommandline.h"
+
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
@@ -19,6 +22,8 @@ inline void UnloadConVarOrCommand(const char *pName)
 
 bool CMomServerEvents::Init()
 {
+    MomUtil::MountGameFiles();
+
     if (!CommandLine()->FindParm("-mapping"))
     {
         // Check plugins
@@ -50,7 +55,6 @@ bool CMomServerEvents::Init()
 void CMomServerEvents::PostInit()
 {
     TickSet::TickInit();
-    MountAdditionalContent();
 }
 
 void CMomServerEvents::LevelShutdownPostEntity()
@@ -64,38 +68,6 @@ void CMomServerEvents::LevelShutdownPostEntity()
 void CMomServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
 {
     engine->ServerCommand("unpause\n");
-}
-
-void CMomServerEvents::MountAdditionalContent()
-{
-    // From the Valve SDK wiki
-    KeyValues *pMainFile = new KeyValues("gameinfo.txt");
-    bool bLoad = false;
-#ifndef _WIN32
-    // case sensitivity
-    bLoad = pMainFile->LoadFromFile(filesystem, "GameInfo.txt", "MOD");
-#endif
-    if (!bLoad)
-        bLoad = pMainFile->LoadFromFile(filesystem, "gameinfo.txt", "MOD");
-
-    if (pMainFile && bLoad)
-    {
-        KeyValues *pFileSystemInfo = pMainFile->FindKey("FileSystem");
-        if (pFileSystemInfo)
-        {
-            for (KeyValues *pKey = pFileSystemInfo->GetFirstSubKey(); pKey; pKey = pKey->GetNextKey())
-            {
-                if (Q_strcmp(pKey->GetName(), "AdditionalContentId") == 0)
-                {
-                    int appid = abs(pKey->GetInt());
-                    if (appid)
-                        if (filesystem->MountSteamContent(-appid) != FILESYSTEM_MOUNT_OK)
-                            Warning("Unable to mount extra content with appId: %i\n", appid);
-                }
-            }
-        }
-    }
-    pMainFile->deleteThis();
 }
 
 CMomServerEvents g_MOMServerEvents;

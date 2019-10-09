@@ -31,6 +31,9 @@ MapDownloadProgress::MapDownloadProgress(const char *pMapName) : BaseClass(nullp
     DisableMouseInputForThisPanel(true);
 
     MakeReadyForUse();
+
+    // Initialize the map label and progress colors
+    SetDownloadProgress(0);
 }
 
 void MapDownloadProgress::SetDownloadSize(uint32 size)
@@ -40,6 +43,13 @@ void MapDownloadProgress::SetDownloadSize(uint32 size)
 
 void MapDownloadProgress::SetDownloadProgress(uint32 offset)
 {
+    if (m_uDownloadSize == 0)
+    {
+        m_pMapLabel->SetFgColor(m_cDownloadStart);
+        m_pProgress->SetFgColor(m_cDownloadStart);
+        return;
+    }
+
     const float fProgress = float(double(offset) / double(m_uDownloadSize));
 
     m_pProgress->SetProgress(fProgress);
@@ -54,6 +64,6 @@ void MapDownloadProgress::ApplySchemeSettings(vgui::IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_cDownloadStart = pScheme->GetColor("MapDownloadProgress.DownloadStartColor", COLOR_RED);
+    m_cDownloadStart = pScheme->GetColor("MapDownloadProgress.DownloadStartColor", COLOR_BLUE);
     m_cDownloadEnd = pScheme->GetColor("MapDownloadProgress.DownloadEndColor", COLOR_GREEN);
 }

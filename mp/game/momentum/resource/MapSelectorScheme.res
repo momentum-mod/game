@@ -20,6 +20,7 @@ Scheme
         "Light Gray"		"211 211 211 20"
         "Gray" 				"128 128 128 150"
         "Dark Gray" 		"58 56 56 255"
+        "OffWhite"          "200 200 200 255"
         
         "Red"                "192 28 0 140"
         "Black"                "0 0 0 196"
@@ -30,8 +31,10 @@ Scheme
 
         "MOM.Panel.Fg"				"255 255 255 125"
         "MOM.Panel.Bg"				"211 211 211 50"
-        "MomentumBlue"	"30 150 210 255"
-        "MomentumRed"	"255 75 75 255"
+        "Green"             "153 255 153 255"
+        "MomentumBlue"	    "30 150 210 255"
+        "MomentumRed"	    "255 75 75 255"
+        "LightBlue"         "153 204 255 255"
     }
 
     ///////////////////// BASE SETTINGS ////////////////////////
@@ -40,6 +43,15 @@ Scheme
     // controls use these to determine their settings
     BaseSettings
     {
+        // Map selector specific settings
+        "MapDownloadProgress.DownloadStartColor"    "MomentumBlue"
+        "MapDownloadProgress.DownloadEndColor"      "Green"
+
+        "MapList.DownloadQueued"        "MomentumBlue"
+        "MapList.DownloadNeeded"        "LightBlue"
+        "MapList.DownloadFailColor"     "MomentumRed"
+        "MapList.DownloadSuccessColor"  "Green"
+
         // vgui_controls color specifications
         Border.Bright					"200 200 200 255"	// the lit side of a control
         Border.Dark						"40 40 40 100"		// the dark/unlit side of a control
@@ -218,7 +230,7 @@ Scheme
             "1"
             {
                 "name" "BigNoodleTitling"
-                "tall" "20"
+                "tall" "16"
                 "weight" "0"
                 "antialias" "1"
                 "custom" "1"
@@ -301,7 +313,7 @@ Scheme
             "1"
             {
                 "name"		"BigNoodleTitling"
-                "tall"		"12"
+                "tall"		"14"
                 "weight"	"400"
                 "antialias" "1"
                 "custom" "1"

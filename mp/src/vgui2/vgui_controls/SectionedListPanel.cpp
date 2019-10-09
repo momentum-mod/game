@@ -526,10 +526,10 @@ public:
 			return;
 
 		// Debugging code to show column widths
-		int wide, tall;
-		GetSize(wide, tall);
+		int panelWide, panelTall;
+		GetSize(panelWide, panelTall);
 		surface()->DrawSetColor( 255,255,255,255 );
-		surface()->DrawOutlinedRect(0, 0, wide, tall);
+		surface()->DrawOutlinedRect(0, 0, panelWide, panelTall);
 
 		int colCount = m_pListPanel->GetColumnCountBySection(m_iSectionID);
 		if (m_pData && colCount >= 0)
@@ -562,11 +562,11 @@ public:
 					image = GetImageAtIndex(i);
 				}
 
-				int imageWide = 0, tall = 0;
+				int imageWide = 0, dumm = 0;
 				int wide;
 				if (image)
 				{
-					image->GetContentSize(imageWide, tall);
+					image->GetContentSize(imageWide, dumm);
 				}
 				if (maxWidth >= 0)
 				{
@@ -1652,6 +1652,25 @@ void SectionedListPanel::MoveSelectionUp( void )
 	int newItemID = m_SortedItems[i - 1]->GetID();
 	SetSelectedItem(m_Items[newItemID]);
 	ScrollToItem(newItemID);
+}
+
+void SectionedListPanel::SetItemBorder(int itemID, IBorder *pBorder)
+{
+    Assert(m_Items.IsValidIndex(itemID));
+    if (!m_Items.IsValidIndex(itemID))
+        return;
+
+    m_Items[itemID]->SetBorder(pBorder);
+    m_Items[itemID]->InvalidateLayout();
+}
+
+IBorder *SectionedListPanel::GetItemBorder(int itemID)
+{
+    Assert(m_Items.IsValidIndex(itemID));
+    if (!m_Items.IsValidIndex(itemID))
+        return nullptr;
+
+    return m_Items[itemID]->GetBorder();
 }
 
 void SectionedListPanel::NavigateTo( void )

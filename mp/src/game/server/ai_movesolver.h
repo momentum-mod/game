@@ -102,7 +102,7 @@ struct AI_MoveSuggestion_t
 	float 				weight;
 
 	// The desired direction to move/avoid
-	AI_Arc_t			arc;
+	AI_Arc_t			m_arc;
 
 	// The causing entity, if any
 	EHANDLE				hObstacleEntity;
@@ -227,7 +227,7 @@ inline void AI_MoveSuggestion_t::Set( AI_MoveSuggType_t newType, float newWeight
 	hObstacleEntity = pEntity;
 	flags           = 0;
 
-	arc.Set( newDir, newSpan );
+	m_arc.Set( newDir, newSpan );
 }
 
 //-------------------------------------

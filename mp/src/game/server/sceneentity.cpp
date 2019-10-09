@@ -1738,8 +1738,8 @@ void CSceneEntity::DispatchStartSpeak( CChoreoScene *scene, CBaseFlex *actor, CC
 		// FIXME:  This will  change
 		es.m_bEmitCloseCaption = false;
 
-		int c = filter.GetRecipientCount();
-		for ( int i = 0; i < c; ++i )
+		int recipientCount = filter.GetRecipientCount();
+		for ( int i = 0; i < recipientCount; ++i )
 		{
 			int playerindex = filter.GetRecipientIndex( i );
 			CBasePlayer *player = UTIL_PlayerByIndex( playerindex );
@@ -2357,9 +2357,9 @@ void CSceneEntity::PrefetchAnimBlocks( CChoreoScene *scene )
 	int checked = 0;
 
 	// Iterate events and precache necessary resources
-	for ( int i = 0; i < scene->GetNumEvents(); i++ )
+	for ( int eventNum = 0; eventNum < scene->GetNumEvents(); eventNum++ )
 	{
-		CChoreoEvent *event = scene->GetEvent( i );
+		CChoreoEvent *event = scene->GetEvent( eventNum );
 		if ( !event )
 			continue;
 

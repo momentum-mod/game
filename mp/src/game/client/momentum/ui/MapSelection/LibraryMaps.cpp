@@ -10,7 +10,6 @@
 
 #include "tier0/memdbgon.h"
 
-
 using namespace vgui;
 
 //-----------------------------------------------------------------------------
@@ -134,82 +133,5 @@ void CLibraryMaps::OnTabSelected()
     if (!m_bLoadedMaps)
     {
         GetNewMapList();
-        // GetWorkshopItems();
     }
 }
-
-/*void CLocalMaps::GetWorkshopItems()
-{
-    //get a vector of all the item handles
-    const uint32 numItems = SteamUGC()->GetNumSubscribedItems();
-    const auto vecItems = new PublishedFileId_t[numItems];
-    SteamUGC()->GetSubscribedItems(vecItems, numItems);
-
-    //check them all
-    for(uint32 i = 0; i < numItems; ++i)
-    {
-        const auto currentItem = vecItems[i];
-        const uint32 flags = SteamUGC()->GetItemState(currentItem);
-        if (!(flags & k_EItemStateSubscribed)) //we're not subscribed to this item - how did this even happen?
-            continue;
-            
-        if (!(flags & k_EItemStateInstalled) || flags & k_EItemStateNeedsUpdate) //we're subscribed, but item is not installed, OR item requires an update
-        {
-            const auto call = SteamUGC()->DownloadItem(currentItem, true); 
-            if (call)
-            {
-                m_DownloadCompleteCallback.Set(call, this, &CLocalMaps::OnWorkshopDownloadComplete);
-            }
-        }
-        else if (flags & k_EItemStateInstalled)
-        {
-            //item is already installed, lets add it to the list!
-            AddWorkshopItemToLocalMaps(currentItem);
-        }
-    }
-    delete[] vecItems;
-}
-
-//asynchronous call result for workshop item download
-void CLocalMaps::OnWorkshopDownloadComplete(DownloadItemResult_t* pCallback, bool bIOFailure)
-{
-    if (bIOFailure || !(pCallback->m_eResult & k_EResultOK ))
-    {
-        Warning("Steam workshop item failed to download! ID: %llu Error code: %d",
-            pCallback->m_nPublishedFileId,
-            pCallback->m_eResult);
-        return;
-    }
-    AddWorkshopItemToLocalMaps(pCallback->m_nPublishedFileId);
-}
-
-void CLocalMaps::AddWorkshopItemToLocalMaps(PublishedFileId_t id)
-{
-    //get info about the item from SteamUGC
-    uint64 sizeOnDisk;
-    char szFolder[MAX_PATH];
-    uint32 timeStamp;
-    if (!SteamUGC()->GetItemInstallInfo(id, &sizeOnDisk, szFolder, sizeof(szFolder), &timeStamp))
-    {
-        Warning("Could not get content for workshop item %llu. The item has no content or is not installed!\n", id);
-        return;
-    }
-
-    //find the first bsp file in the workshop folder
-    FileFindHandle_t found;
-    char pOutPath[MAX_PATH];
-    V_ComposeFileName(szFolder, "maps/*.bsp", pOutPath, MAX_PATH);
-    const char *pMapName = g_pFullFileSystem->FindFirst(pOutPath, &found);
-
-    while (pMapName) //add multiple maps if the workshop item contained more than one
-    {
-        g_pFullFileSystem->AddSearchPath(szFolder, "GAME");
-        AddNewMapToVector(pMapName);
-        //MOM_TODO: add thumbnail images? 
-
-        pMapName = g_pFullFileSystem->FindNext(found); 
-    }
-
-    //now our workshop items are added, refresh the map list again
-    StartRefresh();
-}*/

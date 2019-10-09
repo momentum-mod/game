@@ -145,6 +145,7 @@ private:
     };
 
     Color m_cFirstPlace, m_cSecondPlace, m_cThirdPlace;
+    vgui::IBorder *pPlayerBorder;
 
     Panel *m_pCurrentLeaderboards;
     CClientTimesDisplay *m_pParentPanel;

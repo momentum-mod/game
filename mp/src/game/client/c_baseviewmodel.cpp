@@ -35,7 +35,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar cl_righthand( "cl_righthand", "1", FCVAR_ARCHIVE, "Use right-handed view models." );
+ConVar cl_righthand( "cl_righthand", "1", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Use right-handed view models." );
 
 #ifdef TF_CLIENT_DLL
 	ConVar cl_flipviewmodels( "cl_flipviewmodels", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Flip view models." );

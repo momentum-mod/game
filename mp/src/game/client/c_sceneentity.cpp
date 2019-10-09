@@ -1162,11 +1162,11 @@ void C_SceneEntity::PrefetchAnimBlocks( CChoreoScene *pScene )
 							{
 								// Now look up the animblock
 								mstudioseqdesc_t &seqdesc = pStudioHdr->pSeqdesc( iSequence );
-								for ( int i = 0 ; i < seqdesc.groupsize[ 0 ] ; ++i )
+								for ( int k = 0 ; k < seqdesc.groupsize[ 0 ] ; ++k )
 								{
 									for ( int j = 0; j < seqdesc.groupsize[ 1 ]; ++j )
 									{
-										int iAnimation = seqdesc.anim( i, j );
+										int iAnimation = seqdesc.anim( k, j );
 										int iBaseAnimation = pStudioHdr->iRelativeAnim( iSequence, iAnimation );
 										mstudioanimdesc_t &animdesc = pStudioHdr->pAnimdesc( iBaseAnimation );
 
@@ -1185,14 +1185,14 @@ void C_SceneEntity::PrefetchAnimBlocks( CChoreoScene *pScene )
 											++nResident;
 											if ( nSpew > 1 )
 											{
-												Msg( "%s:%s[%i:%i] was resident\n", pStudioHdr->pszName(), animdesc.pszName(), i, j );
+												Msg( "%s:%s[%i:%i] was resident\n", pStudioHdr->pszName(), animdesc.pszName(), k, j );
 											}
 										}
 										else
 										{
 											if ( nSpew != 0 )
 											{
-												Msg( "%s:%s[%i:%i] async load\n", pStudioHdr->pszName(), animdesc.pszName(), i, j );
+												Msg( "%s:%s[%i:%i] async load\n", pStudioHdr->pszName(), animdesc.pszName(), k, j );
 											}
 										}
 									}

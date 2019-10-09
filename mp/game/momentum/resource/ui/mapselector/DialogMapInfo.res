@@ -128,6 +128,7 @@
         "pin_to_sibling_corner" "2"
         "pin_corner_to_sibling" "0"
         "bgcolor_override" "Dark Gray"
+        "font" "DefaultVerySmall"
     }
     "TimesList"
     {
@@ -150,6 +151,7 @@
         "visible"		"1"
         "enabled"		"1"
         "tabPosition"		"0"
+        "font" "DefaultVerySmall"
     }
     "Top10Toggle"
     {
