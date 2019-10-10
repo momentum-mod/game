@@ -107,8 +107,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "",
-								GetScaledVal(40), GetScaledVal(40), GetScaledVal(40),
-                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+								GetScaledVal(50), GetScaledVal(50), GetScaledVal(50),
+                                ListPanel::COLUMN_IMAGE| ListPanel::COLUMN_IMAGE_SIZETOFIT);
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE),
                                 GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
                                 ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
