@@ -333,22 +333,10 @@ bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo
     return !pVictim->IsPlayer(); 
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: TF2-like radius damage
-//          https://github.com/danielmm8888/TF2Classic/blob/d070129a436a8a070659f0267f6e63564a519a47/src/game/shared/tf/tf_gamerules.cpp#L1989
-// Input  : &info -
-//			&vecSrcIn -
-//			flRadius -
-//			iClassIgnore -
-//			*pEntityIgnore -
-//-----------------------------------------------------------------------------
-void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrcIn, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
+void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
 {
-    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
     CBaseEntity *pEntity = nullptr;
-    trace_t tr;
-    Vector vecSpot;
-    Vector vecSrc = vecSrcIn;
+    CBaseEntity *pAttacker = info.GetAttacker();
 
     float falloff = info.GetDamage() / flRadius;
 
@@ -356,10 +344,14 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
     {
         if (pEntity == pEntityIgnore)
+        {
             continue;
+        }
 
         if (pEntity->m_takedamage == DAMAGE_NO)
+        {
             continue;
+        }
 
         // UNDONE: this should check a damage mask, not an ignore
         if (iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore)
@@ -367,73 +359,87 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             continue;
         }
 
-        // Checking distance from source because Valve were apparently too lazy to fix the engine function.
-        Vector vecHitPoint;
-        pEntity->CollisionProp()->CalcNearestPoint(vecSrc, &vecHitPoint);
-        Vector vecDir = vecHitPoint - vecSrc;
-
-        if (vecDir.LengthSqr() > (flRadius * flRadius))
+        if (pEntity == pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        {
+            // Skip attacker, we will handle them separately
             continue;
-
-        // Check that the explosion can 'see' this entity, trace through players.
-        vecSpot = pEntity->BodyTarget(vecSrc, false);
-        UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
-
-        if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
-            continue;
-
-        // the explosion can 'see' this entity, so hurt them!
-        if (tr.startsolid)
-        {
-            // if we're stuck inside them, fixup the position and distance
-            tr.endpos = vecSrc;
-            tr.fraction = 0.0f;
         }
 
-        float flDistanceToEntity;
+        ApplyRadiusDamage(pEntity, info, vecSrc, flRadius, falloff);
+    }
 
-        if (pEntity->IsPlayer())
-        {
-            // Use whichever is closer, absorigin or worldspacecenter
-            float flToWorldSpaceCenter = (vecSrc - pEntity->WorldSpaceCenter()).Length();
-            float flToOrigin = (vecSrc - pEntity->GetAbsOrigin()).Length();
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    {
+        auto *nearestPoint = new Vector();
+        pAttacker->CollisionProp()->CalcNearestPoint(vecSrc, nearestPoint);
 
-            flDistanceToEntity = min(flToWorldSpaceCenter, flToOrigin);
-        }
-        else
-        {
-            flDistanceToEntity = (vecSrc - tr.endpos).Length();
-        }
-
-        // Use constant falloff for self-damage in rocket jump mode
-        if (pEntity == info.GetAttacker() && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        if ((vecSrc - *nearestPoint).Length() <= flRadius)
         {
             falloff = 0.5f;
+            ApplyRadiusDamage(pAttacker, info, vecSrc, flRadius, falloff);
         }
-
-        // Adjust the damage - apply falloff.
-        float flAdjustedDamage = info.GetDamage() * ( 1.0f - ( 1.0f - falloff) * clamp(flDistanceToEntity / flRadius, 0.0f, 1.0f));
-
-        CTakeDamageInfo adjustedInfo = info;
-        adjustedInfo.SetDamage(flAdjustedDamage);
-
-        Vector dir = vecSpot - vecSrc;
-        VectorNormalize(dir);
-
-        if (!CloseEnough(tr.fraction, 1.0f) && pEntity == tr.m_pEnt)
-        {
-            ClearMultiDamage();
-            pEntity->DispatchTraceAttack(adjustedInfo, dir, &tr);
-            ApplyMultiDamage();
-        }
-        else
-        {
-            pEntity->TakeDamage(adjustedInfo);
-        }
-
-        // Now hit all triggers along the way that respond to damage...
-        pEntity->TraceAttackToTriggers(adjustedInfo, vecSrc, tr.endpos, dir);
     }
+}
+
+void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, float falloff)
+{
+    const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
+    trace_t tr;
+
+    // Check that the explosion can 'see' this entity, trace through players.
+    Vector vecSpot = pEntity->BodyTarget(vecSrc, false);
+    UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
+
+    if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
+    {
+        return;
+    }
+
+    // the explosion can 'see' this entity, so hurt them!
+    if (tr.startsolid)
+    {
+        // if we're stuck inside them, fixup the position and distance
+        tr.endpos = vecSrc;
+        tr.fraction = 0.0f;
+    }
+
+    float flDistanceToEntity;
+
+    if (pEntity->IsPlayer())
+    {
+        // Use whichever is closer, absorigin or worldspacecenter
+        float flToWorldSpaceCenter = (vecSrc - pEntity->WorldSpaceCenter()).Length();
+        float flToOrigin = (vecSrc - pEntity->GetAbsOrigin()).Length();
+
+        flDistanceToEntity = min(flToWorldSpaceCenter, flToOrigin);
+    }
+    else
+    {
+        flDistanceToEntity = (vecSrc - tr.endpos).Length();
+    }
+
+    // Adjust the damage - apply falloff.
+    float flAdjustedDamage = info.GetDamage() * (1.0f - (1.0f - falloff) * clamp(flDistanceToEntity / flRadius, 0.0f, 1.0f));
+
+    CTakeDamageInfo adjustedInfo = info;    
+    adjustedInfo.SetDamage(flAdjustedDamage);
+
+    Vector dir = vecSpot - vecSrc;
+    VectorNormalize(dir);
+
+    if (!CloseEnough(tr.fraction, 1.0f) && pEntity == tr.m_pEnt)
+    {
+        ClearMultiDamage();
+        pEntity->DispatchTraceAttack(adjustedInfo, dir, &tr);
+        ApplyMultiDamage();
+    }
+    else
+    {
+        pEntity->TakeDamage(adjustedInfo);
+    }
+
+    // Now hit all triggers along the way that respond to damage...
+    pEntity->TraceAttackToTriggers(adjustedInfo, vecSrc, tr.endpos, dir);
 }
 
 class CVoiceGameMgrHelper : public IVoiceGameMgrHelper
