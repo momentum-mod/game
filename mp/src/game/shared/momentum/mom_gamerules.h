@@ -46,6 +46,7 @@ class CMomentumGameRules : public CSingleplayRules
     bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE;
 
     void RadiusDamage(const CTakeDamageInfo& info, const Vector& vecSrc, float flRadius, int iClassIgnore, CBaseEntity* pEntityIgnore) OVERRIDE;
+    void ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, float falloff);
 
     // Whitelist checking
     void PointCommandWhitelisted(const char *pCmd);
