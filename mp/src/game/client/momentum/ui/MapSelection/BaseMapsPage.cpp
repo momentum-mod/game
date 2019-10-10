@@ -149,7 +149,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetColumnHeaderTextAlignment(HEADER_BEST_TIME, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_LAYOUT, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_DIFFICULTY, Label::a_center);
-    m_pMapList->SetColumnTextAlignment(HEADER_MAP_IMAGE, Label::a_center);
+    m_pMapList->SetColumnTextAlignment(HEADER_MAP_IMAGE, Label::a_northwest);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IN_LIBRARY, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_MAP_IN_FAVORITES, Label::a_center);
     m_pMapList->SetColumnTextAlignment(HEADER_WORLD_RECORD, Label::a_center);
