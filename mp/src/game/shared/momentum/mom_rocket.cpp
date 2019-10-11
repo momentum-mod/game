@@ -289,8 +289,8 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     pRocket->SetAbsAngles(angles);
 
     pRocket->SetDamage(90.0f);
-    // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage
-    pRocket->SetRadius(121.0f);
+    // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in mom_gamerules)
+    pRocket->SetRadius(146.0f);
 
     pRocket->CreateSmokeTrail();
     pRocket->EmitSound("Missile.Ignite");

@@ -71,22 +71,6 @@ CAmmoDef *GetAmmoDef()
     return &ammoDef;
 }
 
-/*
-ConVar ammo_50AE_max( "ammo_50AE_max", "35", FCVAR_REPLICATED );
-ConVar ammo_762mm_max( "ammo_762mm_max", "90", FCVAR_REPLICATED );
-ConVar ammo_556mm_max( "ammo_556mm_max", "90", FCVAR_REPLICATED );
-ConVar ammo_556mm_box_max( "ammo_556mm_box_max", "200", FCVAR_REPLICATED );
-ConVar ammo_338mag_max( "ammo_338mag_max", "30", FCVAR_REPLICATED );
-ConVar ammo_9mm_max( "ammo_9mm_max", "120", FCVAR_REPLICATED );
-ConVar ammo_buckshot_max( "ammo_buckshot_max", "32", FCVAR_REPLICATED );
-ConVar ammo_45acp_max( "ammo_45acp_max", "100", FCVAR_REPLICATED );
-ConVar ammo_357sig_max( "ammo_357sig_max", "52", FCVAR_REPLICATED );
-ConVar ammo_57mm_max( "ammo_57mm_max", "100", FCVAR_REPLICATED );
-ConVar ammo_hegrenade_max( "ammo_hegrenade_max", "1", FCVAR_REPLICATED );
-ConVar ammo_flashbang_max( "ammo_flashbang_max", "2", FCVAR_REPLICATED );
-ConVar ammo_smokegrenade_max( "ammo_smokegrenade_max", "1", FCVAR_REPLICATED );
-*/
-
 ConVar ammo_50AE_max("ammo_50AE_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_762mm_max("ammo_762mm_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_556mm_max("ammo_556mm_max", "-2", FCVAR_REPLICATED);
@@ -105,7 +89,6 @@ ConVar ammo_rocket_max("ammo_rocket_max", "-2", FCVAR_REPLICATED);
 
 CMomentumGameRules::CMomentumGameRules()
 {
-    // m_iGameMode = 0;
 }
 
 CMomentumGameRules::~CMomentumGameRules() {}
@@ -338,17 +321,13 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     CBaseEntity *pEntity = nullptr;
     CBaseEntity *pAttacker = info.GetAttacker();
 
-    float falloff = info.GetDamage() / flRadius;
+    float flFalloff = 0.5f;
 
+    const auto initialRadiusSqr = flRadius * flRadius;
     // iterate on all entities in the vicinity.
     for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
     {
-        if (pEntity == pEntityIgnore)
-        {
-            continue;
-        }
-
-        if (pEntity->m_takedamage == DAMAGE_NO)
+        if (pEntity == pEntityIgnore || pEntity->m_takedamage == DAMAGE_NO)
         {
             continue;
         }
@@ -361,22 +340,28 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
 
         if (pEntity == pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         {
-            // Skip attacker, we will handle them separately
+            // Skip attacker, we will handle them separately (below)
             continue;
         }
 
-        ApplyRadiusDamage(pEntity, info, vecSrc, flRadius, falloff);
+        Vector nearestPoint;
+        pEntity->CollisionProp()->CalcNearestPoint(vecSrc, &nearestPoint);
+        if ((vecSrc - nearestPoint).LengthSqr() > initialRadiusSqr)
+            continue;
+
+        ApplyRadiusDamage(pEntity, info, vecSrc, flRadius, flFalloff);
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        auto *nearestPoint = new Vector();
-        pAttacker->CollisionProp()->CalcNearestPoint(vecSrc, nearestPoint);
+        flRadius = 121.0f; // Rocket self-damage radius is 121.0f
 
-        if ((vecSrc - *nearestPoint).Length() <= flRadius)
+        Vector nearestPoint;
+        pAttacker->CollisionProp()->CalcNearestPoint(vecSrc, &nearestPoint);
+
+        if ((vecSrc - nearestPoint).LengthSqr() <= (flRadius * flRadius))
         {
-            falloff = 0.5f;
-            ApplyRadiusDamage(pAttacker, info, vecSrc, flRadius, falloff);
+            ApplyRadiusDamage(pAttacker, info, vecSrc, flRadius, flFalloff);
         }
     }
 }
@@ -389,18 +374,10 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
     // Check that the explosion can 'see' this entity, trace through players.
     Vector vecSpot = pEntity->BodyTarget(vecSrc, false);
     UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
-
+    
     if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
     {
         return;
-    }
-
-    // the explosion can 'see' this entity, so hurt them!
-    if (tr.startsolid)
-    {
-        // if we're stuck inside them, fixup the position and distance
-        tr.endpos = vecSrc;
-        tr.fraction = 0.0f;
     }
 
     float flDistanceToEntity;
@@ -419,13 +396,36 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
     }
 
     // Adjust the damage - apply falloff.
-    float flAdjustedDamage = info.GetDamage() * (1.0f - (1.0f - falloff) * clamp(flDistanceToEntity / flRadius, 0.0f, 1.0f));
+    float flAdjustedDamage = RemapValClamped(flDistanceToEntity, 0.0f, flRadius, info.GetDamage(), info.GetDamage() * falloff);
+
+    if (flAdjustedDamage <= 0)
+        return;
+
+    // the explosion can 'see' this entity, so hurt them!
+    if (tr.startsolid)
+    {
+        // if we're stuck inside them, fixup the position and distance
+        tr.endpos = vecSrc;
+        tr.fraction = 0.0f;
+    }
 
     CTakeDamageInfo adjustedInfo = info;    
     adjustedInfo.SetDamage(flAdjustedDamage);
 
     Vector dir = vecSpot - vecSrc;
     VectorNormalize(dir);
+
+    if (adjustedInfo.GetDamagePosition() == vec3_origin || adjustedInfo.GetDamageForce() == vec3_origin)
+    {
+        CalculateExplosiveDamageForce(&adjustedInfo, dir, vecSrc);
+    }
+    else
+    {
+        // Assume the force passed in is the maximum force. Decay it based on falloff.
+        float flForce = adjustedInfo.GetDamageForce().Length() * falloff;
+        adjustedInfo.SetDamageForce(dir * flForce);
+        adjustedInfo.SetDamagePosition(vecSrc);
+    }
 
     if (!CloseEnough(tr.fraction, 1.0f) && pEntity == tr.m_pEnt)
     {
