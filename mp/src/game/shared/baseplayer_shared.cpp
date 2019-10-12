@@ -821,7 +821,7 @@ void CBasePlayer::SetStepSoundTime( stepsoundtimes_t iStepSoundTime, bool bWalki
 //Temp fix.
 Vector CBasePlayer::Weapon_ShootPosition( )
 {
-	return GetViewOffset() + m_vecOldOrigin;
+	return GetViewOffset() + GetAbsOrigin();
 }
 
 void CBasePlayer::SetAnimationExtension( const char *pExtension )
