@@ -81,6 +81,12 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
     }
 }
 
+float CMomentumGameMovement::LadderDistance() const
+{
+    if (player->GetMoveType() == MOVETYPE_LADDER)
+        return 10.0f;
+    return 2.0f;
+}
 
 bool CMomentumGameMovement::GameHasLadders() const
 {
@@ -2389,6 +2395,11 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 
         mv->m_vecVelocity.z = 0.0f;
     }
+}
+
+bool CMomentumGameMovement::CanAccelerate()
+{
+    return BaseClass::CanAccelerate() || (player && player->IsObserver());
 }
 
 void CMomentumGameMovement::CheckParameters(void)
