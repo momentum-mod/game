@@ -2,6 +2,7 @@
 #include "weapon_mom_shotgun.h"
 #include "fx_mom_shared.h"
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -32,8 +33,8 @@ void CMomentumShotgun::PrimaryAttack()
     if (!pPlayer)
         return;
 
-    // don't fire underwater
-    if (pPlayer->GetWaterLevel() == 3)
+    // don't fire underwater for non-RJ modes
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && pPlayer->GetWaterLevel() == 3)
     {
         PlayEmptySound();
         m_flNextPrimaryAttack = gpGlobals->curtime + 0.15;
