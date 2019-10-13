@@ -59,6 +59,7 @@ class CMomentumGameMovement : public CGameMovement
             return 10.0f;
         return 2.0f;
     }
+    bool GameHasLadders() const override;
 
     virtual unsigned int LadderMask(void) const { return MASK_PLAYERSOLID & (~CONTENTS_PLAYERCLIP); }
 
