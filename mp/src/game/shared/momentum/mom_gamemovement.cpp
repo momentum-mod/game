@@ -81,6 +81,12 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
     }
 }
 
+
+bool CMomentumGameMovement::GameHasLadders() const
+{
+    return !g_pGameModeSystem->GameModeIs(GAMEMODE_RJ);
+}
+
 void CMomentumGameMovement::DecayPunchAngle(void)
 {
     float len;
@@ -1510,13 +1516,17 @@ void CMomentumGameMovement::FullWalkMove()
             WalkMove();
 
             CategorizePosition();
-            m_bCheckForGrabbableLadder = m_pPlayer->GetGroundEntity() == nullptr;
-            if (m_bCheckForGrabbableLadder)
+
+            if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
             {
-                // Next 0.1 seconds you can grab the ladder
-                m_pPlayer->SetGrabbableLadderTime(0.1f);
-                LadderMove();
-                m_bCheckForGrabbableLadder = false;
+                m_bCheckForGrabbableLadder = m_pPlayer->GetGroundEntity() == nullptr;
+                if (m_bCheckForGrabbableLadder)
+                {
+                    // Next 0.1 seconds you can grab the ladder
+                    m_pPlayer->SetGrabbableLadderTime(0.1f);
+                    LadderMove();
+                    m_bCheckForGrabbableLadder = false;
+                }
             }
         }
         else
@@ -1778,16 +1788,18 @@ void CMomentumGameMovement::AirMove(void)
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
     TryPlayerMove();
-
     // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
     // (or maybe another monster?)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
-    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        m_bCheckForGrabbableLadder = true;
-        LadderMove();
-        m_bCheckForGrabbableLadder = false;
+        if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
+        {
+            m_bCheckForGrabbableLadder = true;
+            LadderMove();
+            m_bCheckForGrabbableLadder = false;
+        }
     }
 }
 
