@@ -122,6 +122,7 @@ void CMomRocket::Spawn()
     AddFlag(FL_GRENADE);
 
     m_takedamage = DAMAGE_NO;
+    SetGravity(0.0f);
 
     SetTouch(&CMomRocket::RocketTouch);
     SetNextThink(gpGlobals->curtime);
@@ -206,6 +207,11 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     m_hOwner = nullptr;
 
     StopSound("Missile.Ignite");
+
+    if (!pOther->IsPlayer())
+    {
+        UTIL_DecalTrace(pTrace, "Scorch");
+    }
 
     // Remove the rocket
     UTIL_Remove(this);
