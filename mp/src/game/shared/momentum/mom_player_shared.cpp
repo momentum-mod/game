@@ -167,18 +167,14 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         trace_t tr; // main enter bullet trace
 
         unsigned int mask = MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX;
-        if (bPaintGun)
-             mask &= ~CONTENTS_WATER;
 
-        UTIL_TraceLineIgnoreTwoEntities(vecSrc, vecEnd, mask, this,
-                                        lastPlayerHit, COLLISION_GROUP_NONE, &tr);
+        UTIL_TraceLineIgnoreTwoEntities(vecSrc, vecEnd, mask, this, lastPlayerHit, COLLISION_GROUP_NONE, &tr);
         {
             CTraceFilterSkipTwoEntities filter(this, lastPlayerHit, COLLISION_GROUP_NONE);
 
             // Check for player hitboxes extending outside their collision bounds
             const float rayExtension = 40.0f;
-            UTIL_ClipTraceToPlayers(vecSrc, vecEnd + vecDir * rayExtension,
-                                    MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, &filter, &tr);
+            UTIL_ClipTraceToPlayers(vecSrc, vecEnd + vecDir * rayExtension, mask, &filter, &tr);
         }
 
         lastPlayerHit = ToBasePlayer(tr.m_pEnt);
@@ -305,13 +301,12 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
 
         // find exact penetration exit
         trace_t exitTr;
-        UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, nullptr, &exitTr);
+        UTIL_TraceLine(penetrationEnd, tr.endpos, mask, nullptr, &exitTr);
 
         if (exitTr.m_pEnt != tr.m_pEnt && exitTr.m_pEnt != nullptr)
         {
             // something was blocking, trace again
-            UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, exitTr.m_pEnt,
-                           COLLISION_GROUP_NONE, &exitTr);
+            UTIL_TraceLine(penetrationEnd, tr.endpos, mask, exitTr.m_pEnt, COLLISION_GROUP_NONE, &exitTr);
         }
 
         // get material at exit point
