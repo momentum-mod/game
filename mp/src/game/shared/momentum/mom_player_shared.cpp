@@ -166,7 +166,11 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
 
         trace_t tr; // main enter bullet trace
 
-        UTIL_TraceLineIgnoreTwoEntities(vecSrc, vecEnd, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, this,
+        unsigned int mask = MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX;
+        if (bPaintGun)
+             mask &= ~CONTENTS_WATER;
+
+        UTIL_TraceLineIgnoreTwoEntities(vecSrc, vecEnd, mask, this,
                                         lastPlayerHit, COLLISION_GROUP_NONE, &tr);
         {
             CTraceFilterSkipTwoEntities filter(this, lastPlayerHit, COLLISION_GROUP_NONE);
@@ -244,7 +248,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         if (bDoEffects)
         {
             // See if the bullet ended up underwater + started out of the water
-            if (enginetrace->GetPointContents(tr.endpos) & (CONTENTS_WATER | CONTENTS_SLIME))
+            if (enginetrace->GetPointContents(tr.endpos) & (CONTENTS_WATER | CONTENTS_SLIME) && !bPaintGun)
             {
                 trace_t waterTrace;
                 UTIL_TraceLine(vecSrc, tr.endpos, (MASK_SHOT | CONTENTS_WATER | CONTENTS_SLIME), this,
