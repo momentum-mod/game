@@ -780,7 +780,7 @@ void CMomentumPlayer::CreateStartMark()
     const auto pCurrentZoneTrigger = s_pPlayer->GetCurrentZoneTrigger();
 
     if (pStartTrigger && (pStartTrigger->IsTouching(this) || pCurrentZoneTrigger->IsTouching(this)) &&
-        pCurrentZoneTrigger->GetZoneType() == 1)
+        pCurrentZoneTrigger->GetZoneType() == ZONE_TYPE_START)
     {
         ClearStartMark(m_Data.m_iCurrentTrack);
 
