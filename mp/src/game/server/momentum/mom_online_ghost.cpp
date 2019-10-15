@@ -201,19 +201,14 @@ void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
         Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
         auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
         grenade->SetDamage(0.0f); // These grenades should not do damage
-
     }
 }
 
 void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
 {
-    /*const auto pRocket =*/ CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
-    /*if (pRocket)
-    {
-        pRocket->SetDamage(0.0f)
-    }*/
+    const auto pRocket = CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
+    pRocket->SetDamage(0.0f); // Rockets do no damage unless... MOM_TODO: set this per map/gamemode flag?
 }
-
 
 void CMomentumOnlineGhostEntity::Precache(void)
 {
