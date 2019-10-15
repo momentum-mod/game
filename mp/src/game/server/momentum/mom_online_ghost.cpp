@@ -7,6 +7,7 @@
 #include "util/mom_util.h"
 #include "weapon/mom_weapon_parse.h"
 #include "mom_grenade_projectile.h"
+#include "mom_rocket.h"
 #include "te_effect_dispatch.h"
 #include "weapon/weapon_base.h"
 #include "ghost_client.h"
@@ -102,6 +103,9 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
         break;
     case DECAL_KNIFE:
         DoKnifeSlash(decal);
+        break;
+    case DECAL_ROCKET:
+        FireRocket(decal);
     default:
         break;
     }
@@ -200,6 +204,16 @@ void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 
     }
 }
+
+void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
+{
+    /*const auto pRocket =*/ CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
+    /*if (pRocket)
+    {
+        pRocket->SetDamage(0.0f)
+    }*/
+}
+
 
 void CMomentumOnlineGhostEntity::Precache(void)
 {
