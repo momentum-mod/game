@@ -157,6 +157,11 @@ bool CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPack
     return g_pMomentumLobbySystem->SendSavelocReqPacket(target, packet);
 }
 
+bool CMomentumGhostClient::IsInOnlineSession()
+{
+    return g_pMomentumLobbySystem->LobbyValid(); /*MOM_TODO: || g_pMomentumServerSystem->ServerValid();*/
+}
+
 CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(const uint64& id)
 {
     // MOM_TODO: Obviously determine if we're in a lobby or server here

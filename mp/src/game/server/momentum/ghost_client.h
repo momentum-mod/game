@@ -31,6 +31,8 @@ public:
     void SendDecalPacket(DecalPacket *packet);
     bool SendSavelocReqPacket(CSteamID &target, SavelocReqPacket *packet);
 
+    bool IsInOnlineSession();
+
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);
 
