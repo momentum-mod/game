@@ -124,6 +124,12 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */, bool bStopRecording /* = true*/)
 {
+    // Only stop timer if it's currently running
+    if (!IsRunning())
+    {
+        return;
+    }
+
     SetRunning(pPlayer, false);
 
     if (pPlayer)
