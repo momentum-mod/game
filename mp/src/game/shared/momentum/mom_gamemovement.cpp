@@ -2339,9 +2339,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
-    if (m_pPlayer->m_CurrentSlideTrigger &&
-        (!((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround) ||
-         m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround))
+    if (m_pPlayer->m_CurrentSlideTrigger && !((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump))
         pm = nullptr;
 
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
