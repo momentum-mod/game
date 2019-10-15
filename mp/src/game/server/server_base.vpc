@@ -613,7 +613,6 @@ $Project
 		$File	"TemplateEntities.h"
 		$File	"tempmonster.cpp"
 		$File	"tesla.cpp"
-		$File	"$SRCDIR\game\shared\test_ehandle.cpp"
 		$File	"test_proxytoggle.cpp"
 		$File	"test_stressentities.cpp"
 		$File	"testtraceline.cpp"
