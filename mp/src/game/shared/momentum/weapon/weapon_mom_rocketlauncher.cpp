@@ -4,6 +4,10 @@
 #include "mom_system_gamemode.h"
 #include "weapon_mom_rocketlauncher.h"
 
+#ifdef GAME_DLL
+#include "momentum/ghost_client.h"
+#endif
+
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumRocketLauncher, DT_MomentumRocketLauncher)
@@ -130,6 +134,9 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
 
     CMomRocket::EmitRocket(trace.endpos, angForward, pPlayer);
+
+    DecalPacket rocket = DecalPacket::Rocket(trace.endpos, angForward);
+    g_pMomentumGhostClient->SendDecalPacket(&rocket);
 #endif
 }
 
