@@ -776,11 +776,9 @@ CBaseMomentumTrigger* CMomentumPlayer::GetCurrentProgressTrigger() const
 
 void CMomentumPlayer::CreateStartMark()
 {
-    const auto pStartTrigger = g_pMomentumTimer->GetStartTrigger(m_Data.m_iCurrentTrack);
-    const auto pCurrentZoneTrigger = s_pPlayer->GetCurrentZoneTrigger();
+    const auto pCurrentZoneTrigger = GetCurrentZoneTrigger();
 
-    if (pStartTrigger && (pStartTrigger->IsTouching(this) || pCurrentZoneTrigger->IsTouching(this)) &&
-        pCurrentZoneTrigger->GetZoneType() == ZONE_TYPE_START)
+    if (pCurrentZoneTrigger && pCurrentZoneTrigger->IsTouching(this) && pCurrentZoneTrigger->GetZoneType() == ZONE_TYPE_START)
     {
         ClearStartMark(m_Data.m_iCurrentTrack);
 
