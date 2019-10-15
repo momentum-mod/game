@@ -213,7 +213,8 @@ enum DecalType
 {
     DECAL_BULLET = 0,
     DECAL_PAINT,
-    DECAL_KNIFE
+    DECAL_KNIFE,
+    DECAL_ROCKET,
     // etc
 };
 
@@ -286,6 +287,12 @@ class DecalPacket : public MomentumPacket
         DecalPacket packet(DECAL_KNIFE, origin, angle);
         packet.data.knife.bStab = bStab;
         return packet;
+    }
+
+    static DecalPacket Rocket(Vector origin, QAngle angle)
+    {
+        DecalPacket pack(DECAL_ROCKET, origin, angle);
+        return pack;
     }
 
     DecalPacket(CUtlBuffer &buf)
