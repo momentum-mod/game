@@ -509,7 +509,13 @@ void CLeaderboardsTimes::OnlineTimesVectorToLeaderboards(TimeType_t type)
             }
 
             if (runEntry->steamid == SteamUser()->GetSteamID().ConvertToUint64() && pPlayerBorder)
+            {
                 pList->SetItemBorder(itemID, pPlayerBorder);
+            }
+            else
+            {
+                pList->SetItemBorder(itemID, nullptr);
+            }
         }
 
         SetPlaceColors(pList, type);
