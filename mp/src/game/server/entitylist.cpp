@@ -1500,7 +1500,7 @@ void RespawnEntities()
     }
 }
 
-static ConCommand restart_entities( "respawn_entities", RespawnEntities, "Respawn all the entities in the map.", FCVAR_CHEAT | FCVAR_SPONLY );
+static ConCommand restart_entities( "respawn_entities", RespawnEntities, "Respawn all the entities in the map.", FCVAR_MAPPING );
 
 class CSortedEntityList
 {

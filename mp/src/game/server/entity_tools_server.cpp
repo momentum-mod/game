@@ -580,4 +580,4 @@ void CC_Ent_Keyvalue( const CCommand &args )
 	}
 } 
 
-static ConCommand ent_keyvalue("ent_keyvalue", CC_Ent_Keyvalue, "Applies the comma delimited key=value pairs to the entity with the given Hammer ID.\n\tFormat: ent_keyvalue <entity id> <key1> <value1> <key2> <value2> ... <keyN> <valueN>\n", FCVAR_CHEAT);
+static ConCommand ent_keyvalue("ent_keyvalue", CC_Ent_Keyvalue, "Applies the comma delimited key=value pairs to the entity with the given Hammer ID.\n\tFormat: ent_keyvalue <entity id> <key1> <value1> <key2> <value2> ... <keyN> <valueN>\n", FCVAR_MAPPING);
