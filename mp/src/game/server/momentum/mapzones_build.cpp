@@ -212,6 +212,16 @@ bool CMomPointZoneBuilder::BuildZone(CBasePlayer *pPlayer, const Vector *vecAim)
         m_flHeight = flDefHeight;
     }
 
+    if (m_flHeight < 0.0f)
+    {
+        m_flHeight = -m_flHeight;
+        for (int i = 0; i < m_vPoints.Size(); i++)
+        {
+            Vector p = m_vPoints[i];
+            p.z -= m_flHeight;
+            m_vPoints[i] = p;
+        }
+    }
 
     // Get the points relative to our center
     CUtlVector<Vector> relpoints(m_vPoints.Count(), m_vPoints.Count());
@@ -797,6 +807,12 @@ CMomBoxZoneBuilder::CMomBoxZoneBuilder()
 
 bool CMomBoxZoneBuilder::BuildZone(CBasePlayer *pPlayer, const Vector *vecAim)
 {
+    if (m_flHeight < 0.0f)
+    {
+        m_flHeight = -m_flHeight;
+        V_swap(m_vecStart, m_vecEnd);
+    }
+
     VectorMin(m_vecStart, m_vecEnd, m_vecMins);
     VectorMax(m_vecStart, m_vecEnd, m_vecMaxs);
     VectorLerp(m_vecMins, m_vecMaxs, 0.5f, m_vecCenter);
