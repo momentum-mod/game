@@ -17,6 +17,7 @@
 #include "ai_initutils.h"
 #include "globalstate.h"
 #include "datacache/imdlcache.h"
+#include "momentum/ghost_client.h"
 
 #ifdef HL2_DLL
 #include "npc_playercompanion.h"
@@ -1489,7 +1490,14 @@ static CEntityListSystem g_EntityListSystem( "CEntityListSystem" );
 //-----------------------------------------------------------------------------
 void RespawnEntities()
 {
-	g_EntityListSystem.m_bRespawnAllEntities = true;
+    if (g_pMomentumGhostClient->IsInOnlineSession())
+    {
+        Warning("Cannot respawn all entities while in a lobby! Exit it first!\n");
+    }
+    else
+    {
+        g_EntityListSystem.m_bRespawnAllEntities = true;
+    }
 }
 
 static ConCommand restart_entities( "respawn_entities", RespawnEntities, "Respawn all the entities in the map.", FCVAR_CHEAT | FCVAR_SPONLY );
