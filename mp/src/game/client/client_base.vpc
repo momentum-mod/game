@@ -443,7 +443,6 @@ $Project
 		$File	"$SRCDIR\game\shared\takedamageinfo.cpp"
 		$File	"$SRCDIR\game\shared\teamplay_gamerules.cpp"
 		$File	"$SRCDIR\game\shared\teamplayroundbased_gamerules.cpp"
-		$File	"$SRCDIR\game\shared\test_ehandle.cpp"
 		$File	"text_message.cpp"
 		$File	"texturescrollmaterialproxy.cpp"
 		$File	"timematerialproxy.cpp"
