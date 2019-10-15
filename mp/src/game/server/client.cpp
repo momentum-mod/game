@@ -855,7 +855,8 @@ CON_COMMAND( give, "Give item to player.\n\tArguments: <item_name>" )
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
 	if ( pPlayer 
 		&& (gpGlobals->maxClients == 1 || sv_cheats->GetBool()) 
-		&& args.ArgC() >= 2 )
+		&& args.ArgC() >= 2
+		&& pPlayer->GetObserverMode() == 0 )
 	{
 		char item_to_give[ 256 ];
 		Q_strncpy( item_to_give, args[1], sizeof( item_to_give ) );
