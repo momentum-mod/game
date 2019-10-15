@@ -5101,7 +5101,7 @@ void CC_Ent_Remove( const CCommand& args )
 		UTIL_Remove( pEntity );
 	}
 }
-static ConCommand ent_remove("ent_remove", CC_Ent_Remove, "Removes the given entity(s)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_remove("ent_remove", CC_Ent_Remove, "Removes the given entity(s)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 void CC_Ent_RemoveAll( const CCommand& args )
@@ -5137,7 +5137,7 @@ void CC_Ent_RemoveAll( const CCommand& args )
 		}
 	}
 }
-static ConCommand ent_remove_all("ent_remove_all", CC_Ent_RemoveAll, "Removes all entities of the specified type\n\tArguments:   	{entity_name} / {class_name} ", FCVAR_CHEAT);
+static ConCommand ent_remove_all("ent_remove_all", CC_Ent_RemoveAll, "Removes all entities of the specified type\n\tArguments:   	{entity_name} / {class_name} ", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 void CC_Ent_SetName( const CCommand& args )
@@ -5183,7 +5183,7 @@ void CC_Ent_SetName( const CCommand& args )
 		}
 	}
 }
-static ConCommand ent_setname("ent_setname", CC_Ent_SetName, "Sets the targetname of the given entity(s)\n\tArguments:   	{new entity name} {entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_setname("ent_setname", CC_Ent_SetName, "Sets the targetname of the given entity(s)\n\tArguments:   	{new entity name} {entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 void CC_Find_Ent( const CCommand& args )
@@ -5580,7 +5580,7 @@ private:
 };
 
 static CEntFireAutoCompletionFunctor g_EntFireAutoComplete;
-static ConCommand ent_fire("ent_fire", &g_EntFireAutoComplete, "Usage:\n   ent_fire <target> [action] [value] [delay]\n", FCVAR_CHEAT, &g_EntFireAutoComplete );
+static ConCommand ent_fire("ent_fire", &g_EntFireAutoComplete, "Usage:\n   ent_fire <target> [action] [value] [delay]\n", FCVAR_MAPPING, &g_EntFireAutoComplete );
 
 void CC_Ent_CancelPendingEntFires( const CCommand& args )
 {
@@ -5593,7 +5593,7 @@ void CC_Ent_CancelPendingEntFires( const CCommand& args )
 
 	g_EventQueue.CancelEvents( pPlayer );
 }
-static ConCommand ent_cancelpendingentfires("ent_cancelpendingentfires", CC_Ent_CancelPendingEntFires, "Cancels all ent_fire created outputs that are currently waiting for their delay to expire." );
+static ConCommand ent_cancelpendingentfires("ent_cancelpendingentfires", CC_Ent_CancelPendingEntFires, "Cancels all ent_fire created outputs that are currently waiting for their delay to expire.", FCVAR_MAPPING );
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -5685,7 +5685,7 @@ void CC_Ent_Pause( void )
 		CBaseEntity::Debug_Pause(true);
 	}
 }
-static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input/output message processing for entities.  When turned on processing of all message will stop.  Any messages displayed with 'ent_messages' will stop fading and be displayed indefinitely. To step through the messages one by one use 'ent_step'.", FCVAR_CHEAT);
+static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input/output message processing for entities.  When turned on processing of all message will stop.  Any messages displayed with 'ent_messages' will stop fading and be displayed indefinitely. To step through the messages one by one use 'ent_step'.", FCVAR_MAPPING);
 
 
 //------------------------------------------------------------------------------
@@ -5728,7 +5728,7 @@ void CC_Ent_Step( const CCommand& args )
 	}
 	CBaseEntity::Debug_SetSteps(nSteps);
 }
-static ConCommand ent_step("ent_step", CC_Ent_Step, "When 'ent_pause' is set this will step through one waiting input / output message at a time.", FCVAR_CHEAT);
+static ConCommand ent_step("ent_step", CC_Ent_Step, "When 'ent_pause' is set this will step through one waiting input / output message at a time.", FCVAR_MAPPING);
 
 void CBaseEntity::SetCheckUntouch( bool check )
 {
@@ -7431,7 +7431,7 @@ void CC_Ent_Create( const CCommand& args )
 	}
 	CBaseEntity::SetAllowPrecache( allowPrecache );
 }
-static ConCommand ent_create("ent_create", CC_Ent_Create, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL | FCVAR_CHEAT);
+static ConCommand ent_create("ent_create", CC_Ent_Create, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose: Teleport a specified entity to where the player is looking
@@ -7513,7 +7513,7 @@ void CC_Ent_Teleport( const CCommand& args )
 	}
 }
 
-static ConCommand ent_teleport("ent_teleport", CC_Ent_Teleport, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_CHEAT);
+static ConCommand ent_teleport("ent_teleport", CC_Ent_Teleport, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose: Orient a specified entity to match the player's angles
@@ -7550,4 +7550,4 @@ void CC_Ent_Orient( const CCommand& args )
 	}
 }
 
-static ConCommand ent_orient("ent_orient", CC_Ent_Orient, "Orient the specified entity to match the player's angles. By default, only orients target entity's YAW. Use the 'allangles' option to orient on all axis.\n\tFormat: ent_orient <entity name> <optional: allangles>", FCVAR_CHEAT);
+static ConCommand ent_orient("ent_orient", CC_Ent_Orient, "Orient the specified entity to match the player's angles. By default, only orients target entity's YAW. Use the 'allangles' option to orient on all axis.\n\tFormat: ent_orient <entity name> <optional: allangles>", FCVAR_MAPPING);

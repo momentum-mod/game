@@ -5864,7 +5864,7 @@ void CC_Prop_Dynamic_Create( const CCommand &args )
 	CBaseEntity::SetAllowPrecache( bAllowPrecache );
 }
 
-static ConCommand prop_dynamic_create("prop_dynamic_create", CC_Prop_Dynamic_Create, "Creates a dynamic prop with a specific .mdl aimed away from where the player is looking.\n\tArguments: {.mdl name}", FCVAR_CHEAT);
+static ConCommand prop_dynamic_create("prop_dynamic_create", CC_Prop_Dynamic_Create, "Creates a dynamic prop with a specific .mdl aimed away from where the player is looking.\n\tArguments: {.mdl name}", FCVAR_MAPPING);
 
 
 
@@ -5888,7 +5888,7 @@ void CC_Prop_Physics_Create( const CCommand &args )
 	CreatePhysicsProp( pModelName, pPlayer->EyePosition(), pPlayer->EyePosition() + forward * MAX_TRACE_LENGTH, pPlayer, true );
 }
 
-static ConCommand prop_physics_create("prop_physics_create", CC_Prop_Physics_Create, "Creates a physics prop with a specific .mdl aimed away from where the player is looking.\n\tArguments: {.mdl name}", FCVAR_CHEAT);
+static ConCommand prop_physics_create("prop_physics_create", CC_Prop_Physics_Create, "Creates a physics prop with a specific .mdl aimed away from where the player is looking.\n\tArguments: {.mdl name}", FCVAR_MAPPING);
 
 
 CPhysicsProp* CreatePhysicsProp( const char *pModelName, const Vector &vTraceStart, const Vector &vTraceEnd, const IHandleEntity *pTraceIgnore, bool bRequireVCollide, const char *pClassName )
@@ -6127,7 +6127,7 @@ void CC_Ent_Rotate( const CCommand &args )
 	pEntity->SetLocalAngles( angles );
 }
 
-static ConCommand ent_rotate("ent_rotate", CC_Ent_Rotate, "Rotates an entity by a specified # of degrees", FCVAR_CHEAT);
+static ConCommand ent_rotate("ent_rotate", CC_Ent_Rotate, "Rotates an entity by a specified # of degrees", FCVAR_MAPPING);
 
 // This is a dummy. The entity is entirely clientside.
 LINK_ENTITY_TO_CLASS( func_proprrespawnzone, CBaseEntity );
