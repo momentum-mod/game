@@ -159,6 +159,8 @@ void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
                 PositionPacket p;
                 if (pEnt->GetCurrentPositionPacketData(&p))
                 {
+                    g_pMomentumTimer->SetCanStart(false);
+
                     pPlayer->Teleport(&p.Position, &p.EyeAngle, nullptr);
                 }
             }
