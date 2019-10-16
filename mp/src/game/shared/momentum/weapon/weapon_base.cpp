@@ -465,9 +465,9 @@ bool CWeaponBase::DefaultDeploy(char *szViewModel, char *szWeaponModel, int iAct
     SetViewModel();
     SendWeaponAnim(GetDeployActivity());
 
-    pOwner->SetNextAttack(gpGlobals->curtime + SequenceDuration());
-    m_flNextPrimaryAttack = gpGlobals->curtime;
-    m_flNextSecondaryAttack = gpGlobals->curtime;
+    pOwner->SetNextAttack(gpGlobals->curtime + DeployTime());
+    m_flNextPrimaryAttack = gpGlobals->curtime + DeployTime();
+    m_flNextSecondaryAttack = gpGlobals->curtime + DeployTime();
 
     SetWeaponVisible(true);
     SetWeaponModelIndex(szWeaponModel);
