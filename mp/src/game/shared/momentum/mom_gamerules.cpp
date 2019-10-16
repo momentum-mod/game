@@ -137,16 +137,19 @@ bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
         V_swap(collisionGroup0, collisionGroup1);
     }
 
-    // Don't stand on COLLISION_GROUP_WEAPONs
-    if (collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT && collisionGroup1 == COLLISION_GROUP_WEAPON)
+    if ((collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT))
     {
-        return false;
-    }
+        // Don't stand on COLLISION_GROUP_WEAPONs
+        if (collisionGroup1 == COLLISION_GROUP_WEAPON)
+            return false;
 
-    if ((collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT) &&
-        collisionGroup1 == COLLISION_GROUP_PUSHAWAY)
-    {
-        return false;
+        // We get pushed away from pushaways
+        if (collisionGroup1 == COLLISION_GROUP_PUSHAWAY)
+            return false;
+
+        // Do not stand on projectiles
+        if (collisionGroup1 == COLLISION_GROUP_PROJECTILE)
+            return false;
     }
 
     if (collisionGroup0 == COLLISION_GROUP_DEBRIS && collisionGroup1 == COLLISION_GROUP_PUSHAWAY)
