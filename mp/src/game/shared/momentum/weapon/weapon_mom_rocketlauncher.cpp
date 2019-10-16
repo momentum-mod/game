@@ -74,7 +74,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
     trace_t tr;
 
     CTraceFilterSimple filter(pPlayer, COLLISION_GROUP_NONE);
-    UTIL_TraceLine(vecShootPos, endPos, MASK_SOLID, &filter, &tr);
+    UTIL_TraceLine(vecShootPos, endPos, MASK_SOLID_BRUSHONLY, &filter, &tr);
 
     // Offset actual start point
     *vecSrc = vecShootPos + (vecForward * vecOffset.x) + (vecRight * vecOffset.y) + (vecUp * vecOffset.z);
