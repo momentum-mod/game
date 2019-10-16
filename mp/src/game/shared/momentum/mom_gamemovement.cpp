@@ -1296,6 +1296,15 @@ void CMomentumGameMovement::CategorizePosition()
             }
             else
             {
+                // This is not necessary to do for other gamemodes as they do not reset the vertical velocity before WalkMove()
+                if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && player->GetGroundEntity() != nullptr &&
+                    player->GetMoveType() == MOVETYPE_WALK && player->GetWaterLevel() < WL_Eyes)
+                {
+                    Vector org = mv->GetAbsOrigin();
+                    org.z = pm.endpos.z;
+                    mv->SetAbsOrigin(org);
+                }
+                
                 SetGroundEntity(&pm); // Otherwise, point to index of ent under us.
             }
         }
