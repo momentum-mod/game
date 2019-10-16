@@ -6,7 +6,7 @@ jobs:
       - image: gocnak/steam-runtime-i386:momentum
       
     working_directory: ~/mom_build
-    resource_class: large
+    resource_class: medium
     environment:
       USING_DOCKER: h*ckyeahIam
     
