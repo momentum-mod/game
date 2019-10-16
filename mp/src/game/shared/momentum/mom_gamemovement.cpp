@@ -747,15 +747,24 @@ void CMomentumGameMovement::Duck(void)
     if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
     {
         if (mv->m_nButtons & IN_DUCK)
-        {
-
-            bool alreadyDucked = (player->GetFlags() & FL_DUCKING) ? true : false;
-
-            if ((buttonsPressed & IN_DUCK) && !(player->GetFlags() & FL_DUCKING))
+        {        
+            if (buttonsPressed & IN_DUCK)
             {
-                // Use 1 second so super long jump will work
-                player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
-                player->m_Local.m_bDucking = true;
+                if (!(player->GetFlags() & FL_DUCKING))
+                {
+                    // Use 1 second so super long jump will work
+                    player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+                    player->m_Local.m_bDucking = true;
+                }
+                else if (player->m_Local.m_bDucking)
+                {
+                    // Invert time if released before fully unducked
+                    float remainingDuckMilliseconds =
+                        (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_DUCK / TIME_TO_UNDUCK);
+
+                    player->m_Local.m_flDucktime =
+                        GAMEMOVEMENT_DUCK_TIME - TIME_TO_DUCK_MS + remainingDuckMilliseconds;
+                }
             }
 
             float duckmilliseconds = max(0.0f, GAMEMOVEMENT_DUCK_TIME - (float)player->m_Local.m_flDucktime);
@@ -766,8 +775,7 @@ void CMomentumGameMovement::Duck(void)
             if (player->m_Local.m_bDucking)
             {
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_DUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr) ||
-                    alreadyDucked)
+                if ((duckseconds > TIME_TO_DUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr))
                 {
                     FinishDuck();
                 }
@@ -797,10 +805,10 @@ void CMomentumGameMovement::Duck(void)
                     {
                         // Invert time if released before fully ducked
                         float remainingUnduckMilliseconds =
-                            (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_DUCK / TIME_TO_UNDUCK);
+                            (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / TIME_TO_DUCK);
 
                         player->m_Local.m_flDucktime =
-                            GAMEMOVEMENT_DUCK_TIME - TIME_TO_DUCK_MS + remainingUnduckMilliseconds;
+                            GAMEMOVEMENT_DUCK_TIME - TIME_TO_UNDUCK_MS + remainingUnduckMilliseconds;
                     }
                 }
 
@@ -836,9 +844,7 @@ void CMomentumGameMovement::Duck(void)
                         // FL_DUCKING flag is the important bit here,
                         // as it will allow for ctaps.
                         SetDuckedEyeOffset(1.0f);
-                        player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
                         player->m_Local.m_bDucked = true;
-                        player->m_Local.m_bDucking = false;
                         player->AddFlag(FL_DUCKING);
                     }
                 }
