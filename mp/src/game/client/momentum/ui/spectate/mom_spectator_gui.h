@@ -62,6 +62,6 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
     float m_flNextUpdateTime;
 
-    wchar_t m_pwReplayPlayer[128], m_pwGainControl[128], m_pwWatchingReplay[128], m_pwRunTime[128],
+    wchar_t m_pwGainControl[128], m_pwWatchingReplay[128], m_pwRunTime[128],
         m_pwSpecMap[128], m_pwWatchingGhost[128];
 };
