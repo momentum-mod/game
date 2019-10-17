@@ -6,6 +6,8 @@
 		"fieldName"		"CMapSelectorDialog"
 		"proportionalToParent"		"0"
 		"zpos"		"0"
+		"wide"		"600"
+		"tall"		"300"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"PinnedCornerOffsetX"		"0"
