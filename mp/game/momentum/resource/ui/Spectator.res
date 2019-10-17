@@ -51,7 +51,7 @@
         "ControlName"		"Label"
         "fieldName"			"TimeLabel"
         "xpos"				"c-75"
-        "ypos"				"32"
+        "ypos"				"34"
         "wide"				"150"
         "tall"				"15"
         "autoResize"		"0"
