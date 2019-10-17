@@ -56,7 +56,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
-    SetSize(GetScaledVal(680), GetScaledVal(400));
+    SetPos(vgui::scheme()->GetProportionalScaledValue(235), vgui::scheme()->GetProportionalScaledValue(115));
     s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
@@ -158,7 +158,6 @@ CMapSelectorDialog::~CMapSelectorDialog()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::Open()
 {
-    MoveToCenterOfScreen();
     BaseClass::Activate();
     PostActionSignal(new KeyValues("MapSelectorOpened"));
     m_pTabPanel->RequestFocus();
