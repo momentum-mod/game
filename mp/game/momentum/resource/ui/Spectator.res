@@ -130,7 +130,7 @@
         "enabled"       "1"
         "scaleImage"    "1"
         "tooltiptext"   "#MOM_SpecGUI_PrevPlayer" 
-        "image"         "left_arrow_button"
+        "image"         "left_arrow_button_grey"
         "mouseinputenabled" "1"
     }
 
@@ -148,7 +148,7 @@
         "enabled"       "1"
         "scaleImage"    "1"
         "tooltiptext"   "#MOM_SpecGUI_NextPlayer" 
-        "image"         "right_arrow_button"
+        "image"         "right_arrow_button_grey"
         "mouseinputenabled" "1"
     }
 
