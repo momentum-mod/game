@@ -42,7 +42,7 @@
         "enabled"			"1"
         "dulltext"			"0"
         "brighttext"		"0"
-		"font"				"BigNoodleSmall"
+        "font"				"BigNoodleSmall"
         "textAlignment"		"center"
     }
 
