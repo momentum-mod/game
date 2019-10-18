@@ -1214,11 +1214,6 @@ void CMomentumGameMovement::CategorizePosition()
     point[1] = bumpOrigin[1];
     point[2] = bumpOrigin[2] - flOffset;
 
-// Shooting up really fast.  Definitely not on ground.
-// On ladder moving up, so not on ground either
-// NOTE: 145 is a jump.
-#define NON_JUMP_VELOCITY ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 250.0f : 140.0f )
-
     float zvel = mv->m_vecVelocity[2];
     bool bMovingUp = zvel > 0.0f;
     bool bMovingUpRapidly = zvel > NON_JUMP_VELOCITY;
@@ -1269,9 +1264,7 @@ void CMomentumGameMovement::CategorizePosition()
         }
         else
         {
-            // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
-            // velocity.z
-            if (sv_slope_fix.GetBool() && player->GetGroundEntity() == nullptr)
+            if (player->GetGroundEntity() == nullptr)
             {
                 Vector rampVelocity = mv->m_vecVelocity;
 
@@ -1291,6 +1284,13 @@ void CMomentumGameMovement::CategorizePosition()
                 // Set ground entity if the player is not going to slide on the ramp next tick
                 if (rampVelocity[2] <= NON_JUMP_VELOCITY)
                 {
+                    // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
+                    // velocity.z
+                    if (sv_slope_fix.GetBool() && rampVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                    {
+                        VectorCopy(rampVelocity, mv->m_vecVelocity);
+                    }
+                    
                     SetGroundEntity(&pm);
                 }
             }
@@ -2506,7 +2506,7 @@ void CMomentumGameMovement::CheckFalling(void)
 //            overbounce -
 // Output : int
 //-----------------------------------------------------------------------------
-int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce)
+int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
 {
     float backoff;
     float change;
@@ -2556,6 +2556,16 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
         // 0.015 or 0.01
         mv->m_vecAbsOrigin.z += abs(dif.z);
         DevMsg(2, "ClipVelocity: Fixed speed.\n");
+    }
+    else if (sv_slope_fix.GetBool() && m_pPlayer->HasAutoBhop() && angle >= 0.7f && out.z <= NON_JUMP_VELOCITY)
+    {
+        // If the player do not gain horizontal speed while going up an incline, then act as if the surface is flat
+        if (out.Length2DSqr() <= in.Length2DSqr() && normal.x*in.x + normal.y*in.y < 0.0f)
+        {
+            out.x = in.x;
+            out.y = in.y;
+            out.z = 0.0f;
+        }
     }
 
     // Return blocking flags.

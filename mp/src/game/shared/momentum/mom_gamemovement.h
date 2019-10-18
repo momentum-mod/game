@@ -23,6 +23,8 @@ class CMomentumPlayer;
 
 #define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
 
+#define NON_JUMP_VELOCITY ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 250.0f : 140.0f )
+
 class CMomentumGameMovement : public CGameMovement
 {
     typedef CGameMovement BaseClass;
@@ -78,7 +80,7 @@ class CMomentumGameMovement : public CGameMovement
     void StartGravity() override;
     void FinishGravity() override;
 
-    int ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce) override;
+    int ClipVelocity(Vector in, Vector& normal, Vector& out, float overbounce);
 
     // Momentum-specific
     virtual void StuckGround();
