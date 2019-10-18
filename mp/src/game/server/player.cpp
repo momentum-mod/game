@@ -117,7 +117,6 @@ ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar	sv_noclipduringpause( "sv_noclipduringpause", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
 
 extern ConVar sv_maxunlag;
-extern ConVar sv_turbophysics;
 extern ConVar *sv_maxreplay;
 
 extern CServerGameDLL g_ServerGameDLL;
@@ -8118,9 +8117,6 @@ unsigned int CBasePlayer::PlayerSolidMask( bool brushOnly ) const
 //-----------------------------------------------------------------------------
 void CBasePlayer::VPhysicsShadowUpdate( IPhysicsObject *pPhysics )
 {
-	if ( sv_turbophysics.GetBool() )
-		return;
-
 	Vector newPosition;
 
 	bool physicsUpdated = m_pPhysicsController->GetShadowPosition( &newPosition, NULL ) > 0 ? true : false;
@@ -8342,10 +8338,6 @@ void CBasePlayer::InitVCollision( const Vector &vecAbsOrigin, const Vector &vecA
 {
 	// Cleanup any old vphysics stuff.
 	VPhysicsDestroyObject();
-
-	// in turbo physics players dont have a physics shadow
-	if ( sv_turbophysics.GetBool() )
-		return;
 	
 	CPhysCollide *pModel = PhysCreateBbox( VEC_HULL_MIN_SCALED( this ), VEC_HULL_MAX_SCALED( this ) );
 	CPhysCollide *pCrouchModel = PhysCreateBbox( VEC_DUCK_HULL_MIN_SCALED( this ), VEC_DUCK_HULL_MAX_SCALED( this ) );
