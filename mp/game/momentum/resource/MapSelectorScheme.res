@@ -44,11 +44,11 @@ Scheme
     BaseSettings
     {
         // Map selector specific settings
-        "MapDownloadProgress.DownloadStartColor"    "MomentumBlue"
+        "MapDownloadProgress.DownloadStartColor"    "LightBlue"
         "MapDownloadProgress.DownloadEndColor"      "Green"
 
-        "MapList.DownloadQueued"        "MomentumBlue"
-        "MapList.DownloadNeeded"        "LightBlue"
+        "MapList.DownloadQueued"        "LightBlue"
+        "MapList.DownloadNeeded"        "OffWhite"
         "MapList.DownloadFailColor"     "MomentumRed"
         "MapList.DownloadSuccessColor"  "Green"
 
