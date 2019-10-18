@@ -62,7 +62,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     SetScheme("ClientScheme");
 
     m_pTopBar = new Panel(this, "TopBar");
-    m_pPlayerLabel = new Label(this, "PlayerLabel", "");//set below on line 283
+    m_pPlayerLabel = new Label(this, "PlayerLabel", "");
     m_pReplayLabel = new Label(this, "ReplayLabel", "#MOM_WatchingReplay");
     m_pTimeLabel = new Label(this, "TimeLabel", "#MOM_MF_RunTime");
     m_pGainControlLabel = new Label(this, "DetachInfo", "#MOM_SpecGUI_GainControl");
