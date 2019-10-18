@@ -5,6 +5,8 @@
 		"ControlName"		"CMapSelectorDialog"
 		"fieldName"		"CMapSelectorDialog"
 		"proportionalToParent"		"0"
+		"xpos"		"237"
+		"ypos"		"115"
 		"zpos"		"0"
 		"wide"		"600"
 		"tall"		"300"
