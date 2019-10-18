@@ -59,7 +59,6 @@
 #if defined(GAME_DLL) && !defined(_XBOX)
 	extern ConVar sv_pushaway_max_force;
 	extern ConVar sv_pushaway_force;
-	extern ConVar sv_turbophysics;
 
 	class CUsePushFilter : public CTraceFilterEntitiesOnly
 	{
@@ -1306,45 +1305,6 @@ void CBasePlayer::PlayerUse ( void )
 		
 		return;
 	}
-
-#if !defined(_XBOX)
-	// push objects in turbo physics mode
-	if ( (m_nButtons & IN_USE) && sv_turbophysics.GetBool() )
-	{
-		Vector forward, up;
-		EyeVectors( &forward, NULL, &up );
-
-		trace_t tr;
-		// Search for objects in a sphere (tests for entities that are not solid, yet still useable)
-		Vector searchCenter = EyePosition();
-
-		CUsePushFilter filter;
-
-		UTIL_TraceLine( searchCenter, searchCenter + forward * 96.0f, MASK_SOLID, &filter, &tr );
-
-		// try the hit entity if there is one, or the ground entity if there isn't.
-		CBaseEntity *entity = tr.m_pEnt;
-
-		if ( entity )
-		{
-			IPhysicsObject *pObj = entity->VPhysicsGetObject();
-
-			if ( pObj )
-			{
-				Vector vPushAway = (entity->WorldSpaceCenter() - WorldSpaceCenter());
-				vPushAway.z = 0;
-
-				float flDist = VectorNormalize( vPushAway );
-				flDist = MAX( flDist, 1 );
-
-				float flForce = sv_pushaway_force.GetFloat() / flDist;
-				flForce = MIN( flForce, sv_pushaway_max_force.GetFloat() );
-
-				pObj->ApplyForceOffset( vPushAway * flForce, WorldSpaceCenter() );
-			}
-		}
-	}
-#endif
 
 	if ( m_afButtonPressed & IN_USE )
 	{

@@ -77,8 +77,6 @@ ConVar func_breakdmg_bullet( "func_breakdmg_bullet", "0.5" );
 ConVar func_breakdmg_club( "func_breakdmg_club", "1.5" );
 ConVar func_breakdmg_explosive( "func_breakdmg_explosive", "1.25" );
 
-ConVar sv_turbophysics( "sv_turbophysics", "0", FCVAR_REPLICATED, "Turns on turbo physics" );
-
 #ifdef HL2_EPISODIC
 	#define PROP_FLARE_LIFETIME 30.0f
 	#define PROP_FLARE_IGNITE_SUBSTRACT 5.0f
@@ -5543,31 +5541,6 @@ class CPhysicsPropMultiplayer : public CPhysicsProp, public IMultiplayerPhysics
 	bool	IsAsleep() { return !m_bAwake; }
 
 	bool	IsDebris( void )			{ return ( ( m_spawnflags & SF_PHYSPROP_DEBRIS ) != 0 ); }
-
-	virtual void VPhysicsUpdate( IPhysicsObject *pPhysics )
-	{
-		BaseClass::VPhysicsUpdate( pPhysics );
-
-		if ( sv_turbophysics.GetBool() )
-		{
-			// If the object is set to debris, don't let turbo physics change it.
-			if ( IsDebris() )
-				return;
-
-			if ( m_bAwake )
-			{
-				SetCollisionGroup( COLLISION_GROUP_PUSHAWAY );
-			}
-			else if ( m_iPhysicsMode == PHYSICS_MULTIPLAYER_NON_SOLID )
-			{
-				SetCollisionGroup( COLLISION_GROUP_DEBRIS );
-			}
-			else
-			{
-				SetCollisionGroup( COLLISION_GROUP_NONE );
-			}
-		}
-	}
 
 	virtual void Spawn( void )
 	{
