@@ -2841,23 +2841,6 @@ IPhysicsObject *FindPhysicsObjectByName( const char *pName, CBaseEntity *pErrorE
 	return pBestObject;
 }
 
-void CC_AirDensity( const CCommand &args )
-{
-	if ( !physenv )
-		return;
-
-	if ( args.ArgC() < 2 )
-	{
-		Msg( "air_density <value>\nCurrent air density is %.2f\n", physenv->GetAirDensity() );
-	}
-	else
-	{
-		float density = atof( args[1] );
-		physenv->SetAirDensity( density );
-	}
-}
-static ConCommand air_density("air_density", CC_AirDensity, "Changes the density of air for drag computations.", FCVAR_CHEAT);
-
 void DebugDrawContactPoints(IPhysicsObject *pPhysics)
 {
 	IPhysicsFrictionSnapshot *pSnapshot = pPhysics->CreateFrictionSnapshot();
