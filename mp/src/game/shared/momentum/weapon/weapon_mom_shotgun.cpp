@@ -49,7 +49,7 @@ void CMomentumShotgun::PrimaryAttack()
         if (m_iClip1 == 0)
         {
             PlayEmptySound();
-            m_flNextPrimaryAttack = gpGlobals->curtime + 0.25;
+            m_flNextPrimaryAttack = gpGlobals->curtime + PrimaryFireTime();
         }
 
         return;
@@ -83,13 +83,13 @@ void CMomentumShotgun::PrimaryAttack()
 #endif
         m_flPumpTime = gpGlobals->curtime + 0.5;
 
-    m_flNextPrimaryAttack = gpGlobals->curtime + 0.25;
-    m_flNextSecondaryAttack = gpGlobals->curtime + 0.25;
+    m_flNextPrimaryAttack = gpGlobals->curtime + PrimaryFireTime();
+    m_flNextSecondaryAttack = gpGlobals->curtime + PrimaryFireTime();
 #ifdef WEAPONS_USE_AMMO
     if (m_iClip1 != 0)
         SetWeaponIdleTime(gpGlobals->curtime + 2.5);
     else
-        SetWeaponIdleTime(gpGlobals->curtime + 0.25);
+        SetWeaponIdleTime(gpGlobals->curtime + PrimaryFireTime());
 #else
     SetWeaponIdleTime(gpGlobals->curtime + 2.5f);
 #endif

@@ -24,6 +24,7 @@ class CMomentumShotgun : public CWeaponBaseGun
     CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SHOTGUN; }
 
     float DeployTime() const OVERRIDE { return 0.5f; }
+    float PrimaryFireTime() const { return 0.625f; }
 
   private:
     CMomentumShotgun(const CMomentumShotgun &);
