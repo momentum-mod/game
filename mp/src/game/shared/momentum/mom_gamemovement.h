@@ -8,22 +8,8 @@
 
 class CMomentumPlayer;
 
-#define NO_REFL_NORMAL_CHANGE -2.0f
-#define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
 #define STOP_EPSILON 0.1
 #define MAX_CLIP_PLANES 5
-
-#define STAMINA_MAX 100.0f
-#define STAMINA_COST_JUMP 25.0f
-#define STAMINA_COST_FALL 20.0f
-#define STAMINA_RECOVER_RATE 19.0f
-#define CS_WALK_SPEED 135.0f
-
-#define DUCK_SPEED_MULTIPLIER 0.34f
-
-#define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
-
-#define NON_JUMP_VELOCITY ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 250.0f : 140.0f )
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -80,7 +66,7 @@ class CMomentumGameMovement : public CGameMovement
     void StartGravity() override;
     void FinishGravity() override;
 
-    int ClipVelocity(Vector in, Vector& normal, Vector& out, float overbounce);
+    int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;
 
     // Momentum-specific
     virtual void StuckGround();

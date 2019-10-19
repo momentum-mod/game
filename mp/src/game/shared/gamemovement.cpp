@@ -3149,7 +3149,7 @@ void CGameMovement::PushEntity( Vector& push, trace_t *pTrace )
 //			overbounce - 
 // Output : int
 //-----------------------------------------------------------------------------
-int CGameMovement::ClipVelocity( Vector& in, Vector& normal, Vector& out, float overbounce )
+int CGameMovement::ClipVelocity( Vector in, Vector& normal, Vector& out, float overbounce )
 {
 	float	backoff;
 	float	change;

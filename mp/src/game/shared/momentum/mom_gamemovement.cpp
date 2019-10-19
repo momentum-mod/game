@@ -18,6 +18,21 @@
 
 #include "tier0/memdbgon.h"
 
+#define NO_REFL_NORMAL_CHANGE -2.0f // not used
+#define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
+
+#define STAMINA_MAX 100.0f
+#define STAMINA_COST_JUMP 25.0f
+#define STAMINA_COST_FALL 20.0f // not used
+#define STAMINA_RECOVER_RATE 19.0f
+#define CS_WALK_SPEED 135.0f
+
+#define DUCK_SPEED_MULTIPLIER 0.34f
+
+#define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f // not used
+
+#define NON_JUMP_VELOCITY ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 250.0f : 140.0f )
+
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
@@ -2339,7 +2354,8 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
-    if (m_pPlayer->m_CurrentSlideTrigger && !((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump))
+    if (m_pPlayer->m_CurrentSlideTrigger &&
+        !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump))
         pm = nullptr;
 
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
@@ -2538,29 +2554,19 @@ int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, 
         out -= (normal * adjust);
         // DevMsg( "Adjustment = %lf\n", adjust );
     }
-
-    // Check if we loose speed while going on a slope in front of us.
-
-    // MOM_TODO: Make this only bhop gametype?
-    // Enable this when we know that we are sliding.
-    Vector dif = mv->m_vecVelocity - out;
-    if ((dif.Length2D() > 0.0f && (angle >= 0.7f) && (out[2] > 0.0f)) &&
-        (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bFixUpsideSlope))
+    
+    // Check if the jump button is held to predict if the player wants to jump up an incline. Not checking for jumping
+    // could allow players that hit the slope almost perpendicularly and still surf up the slope because they would
+    // retain their horizontal speed
+    if (sv_slope_fix.GetBool() && m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP))
     {
-        out.x = mv->m_vecVelocity.x;
-        out.y = mv->m_vecVelocity.y;
-        // Avoid being stuck into the slope.. Or velocity reset incoming!
-        // (Could be better by being more close to the slope, but for player it seems to be close enough)
-        // @Gocnak: Technically the "adjust" code above does this, but to each axis, with a much higher value.
-        // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be
-        // 0.015 or 0.01
-        mv->m_vecAbsOrigin.z += abs(dif.z);
-        DevMsg(2, "ClipVelocity: Fixed speed.\n");
-    }
-    else if (sv_slope_fix.GetBool() && m_pPlayer->HasAutoBhop() && angle >= 0.7f && out.z <= NON_JUMP_VELOCITY)
-    {
+        bool canJump = angle >= 0.7f && out.z <= NON_JUMP_VELOCITY;
+        
+        if (m_pPlayer->m_CurrentSlideTrigger)
+            canJump &= m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump;
+        
         // If the player do not gain horizontal speed while going up an incline, then act as if the surface is flat
-        if (out.Length2DSqr() <= in.Length2DSqr() && normal.x*in.x + normal.y*in.y < 0.0f)
+        if (canJump && normal.x*in.x + normal.y*in.y < 0.0f && out.Length2DSqr() <= in.Length2DSqr())
         {
             out.x = in.x;
             out.y = in.y;
