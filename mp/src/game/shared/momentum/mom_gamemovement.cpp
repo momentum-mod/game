@@ -1926,6 +1926,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 float offsets[] = {(bumpcount * 2) * -sv_ramp_initial_retrace_length.GetFloat(), 0.0f,
                                    (bumpcount * 2) * sv_ramp_initial_retrace_length.GetFloat()};
                 int valid_planes = 0;
+                valid_plane.Init(0.0f, 0.0f, 0.0f);
 
                 // we have 0 plane info, so lets increase our bbox and search in all 27 directions to get a valid plane!
                 for (i = 0; i < 3; i++)
@@ -1975,7 +1976,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 if (valid_planes && !CloseEnough(valid_plane, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON))
                 {
                     has_valid_plane = true;
-                    valid_plane /= (float)valid_planes;
+                    valid_plane.NormalizeInPlace();
                     continue;
                 }
             }
