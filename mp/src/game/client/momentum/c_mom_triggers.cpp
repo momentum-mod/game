@@ -212,5 +212,4 @@ IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
 RecvPropBool(RECVINFO(m_bStuckOnGround)),
 RecvPropBool(RECVINFO(m_bAllowingJump)),
 RecvPropBool(RECVINFO(m_bDisableGravity)),
-RecvPropBool(RECVINFO(m_bFixUpsideSlope)), 
 END_RECV_TABLE();

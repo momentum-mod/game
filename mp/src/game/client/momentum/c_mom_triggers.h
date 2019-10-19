@@ -83,5 +83,4 @@ class C_TriggerSlide : public C_BaseMomZoneTrigger
     CNetworkVar(bool, m_bStuckOnGround);
     CNetworkVar(bool, m_bAllowingJump);
     CNetworkVar(bool, m_bDisableGravity);
-    CNetworkVar(bool, m_bFixUpsideSlope);
 };

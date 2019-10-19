@@ -182,7 +182,7 @@ protected:
 	// returns the blocked flags:
 	// 0x01 == floor
 	// 0x02 == step / wall
-	virtual int		ClipVelocity( Vector& in, Vector& normal, Vector& out, float overbounce );
+	virtual int		ClipVelocity( Vector in, Vector& normal, Vector& out, float overbounce );
 
 	// If pmove.origin is in a solid position,
 	// try nudging slightly on all axis to
