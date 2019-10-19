@@ -290,7 +290,17 @@ Scheme
                 "antialias" "1"
 			}
 		}
-        
+		"DefaultBoldSmall"
+		{
+			"1"
+			{
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana Bold" [$LINUX]
+				"tall"		"14"
+				"weight"	"1000"
+				"antialias" "1"
+			}
+		}
 		"DefaultUnderline"
 		{
 			"1"
