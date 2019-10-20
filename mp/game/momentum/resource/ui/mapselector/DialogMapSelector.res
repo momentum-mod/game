@@ -8,8 +8,6 @@
 		"xpos"		"237"
 		"ypos"		"115"
 		"zpos"		"0"
-		"wide"		"600"
-		"tall"		"300"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"PinnedCornerOffsetX"		"0"
