@@ -56,6 +56,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
+    SetSize(GetScaledVal(600), GetScaledVal(300));
     s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
