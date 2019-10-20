@@ -51,6 +51,13 @@ void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 #endif
 }
 
+void CGameModeBase::ExecGameModeCfg()
+{
+#ifdef CLIENT_DLL
+    engine->ClientCmd_Unrestricted(GetGameModeCfg());
+#endif
+}
+
 void CGameMode_Bhop::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
@@ -120,6 +127,10 @@ void CGameModeSystem::LevelInitPostEntity()
 #ifdef GAME_DLL
     m_pCurrentGameMode->SetGameModeVars();
     PrintGameModeVars();
+#endif
+
+#ifdef CLIENT_DLL
+    m_pCurrentGameMode->ExecGameModeCfg();
 #endif
 }
 
