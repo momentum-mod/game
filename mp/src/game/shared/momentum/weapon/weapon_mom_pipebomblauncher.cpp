@@ -11,11 +11,11 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomentumPipebombLauncher, DT_MomentumPipebombLaun
 BEGIN_NETWORK_TABLE(CMomentumPipebombLauncher, DT_MomentumPipebombLauncher)
 END_NETWORK_TABLE()
 
-BEGIN_PREDICTION_DATA(CMomentumRocketLauncher)
+BEGIN_PREDICTION_DATA(CMomentumPipebombLauncher)
 END_PREDICTION_DATA()
 
-LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
-PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
+LINK_ENTITY_TO_CLASS(weapon_momentum_pipebomblauncher, CMomentumPipebombLauncher);
+PRECACHE_WEAPON_REGISTER(weapon_momentum_pipebomblauncher);
 
 #ifdef GAME_DLL
 static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
