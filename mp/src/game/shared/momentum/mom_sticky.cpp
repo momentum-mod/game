@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "mom_rocket.h"
+#include "mom_sticky.h"
 
 #ifndef CLIENT_DLL
 #include "Sprite.h"
@@ -9,12 +9,12 @@
 
 #include "tier0/memdbgon.h"
 
-#define MOM_ROCKET_RADIUS 146.0f
-#define MOM_ROCKET_SPEED 1100.0f
+#define MOM_STICKY_RADIUS 146.0f
+#define MOM_STICKY_SPEED 1100.0f
 
 #ifndef CLIENT_DLL
 
-BEGIN_DATADESC(CMomRocket)
+BEGIN_DATADESC(CMomSticky)
     // Fields
     DEFINE_FIELD(m_hOwner, FIELD_EHANDLE),
     DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
@@ -25,9 +25,9 @@ BEGIN_DATADESC(CMomRocket)
 END_DATADESC();
 #endif
 
-IMPLEMENT_NETWORKCLASS_ALIASED(MomRocket, DT_MomRocket)
+IMPLEMENT_NETWORKCLASS_ALIASED(MomSticky, DT_MomSticky)
 
-BEGIN_NETWORK_TABLE(CMomRocket, DT_MomRocket)
+BEGIN_NETWORK_TABLE(CMomSticky, DT_MomSticky)
 #ifdef CLIENT_DLL
 RecvPropVector(RECVINFO(m_vInitialVelocity))
 #else
@@ -40,10 +40,10 @@ SendPropVector(SENDINFO(m_vInitialVelocity),
 #endif
 END_NETWORK_TABLE();
 
-LINK_ENTITY_TO_CLASS(momentum_rocket, CMomRocket);
-PRECACHE_WEAPON_REGISTER(momentum_rocket);
+LINK_ENTITY_TO_CLASS(momentum_sticky, CMomSticky);
+PRECACHE_WEAPON_REGISTER(momentum_sticky);
 
-CMomRocket::CMomRocket()
+CMomSticky::CMomSticky()
 {
     m_vInitialVelocity.Init();
 
@@ -58,7 +58,7 @@ CMomRocket::CMomRocket()
 
 #ifdef CLIENT_DLL
 
-void CMomRocket::PostDataUpdate(DataUpdateType_t type)
+void CMomSticky::PostDataUpdate(DataUpdateType_t type)
 {
     BaseClass::PostDataUpdate(type);
 
@@ -88,9 +88,9 @@ void CMomRocket::PostDataUpdate(DataUpdateType_t type)
     }
 }
 
-int CMomRocket::DrawModel(int flags)
+int CMomSticky::DrawModel(int flags)
 {
-    // Don't draw rocket during the first 0.2 seconds.
+    // Don't draw sticky during the first 0.2 seconds.
     if (gpGlobals->curtime - m_flSpawnTime < 0.2f)
     {
         return 0;
@@ -99,7 +99,7 @@ int CMomRocket::DrawModel(int flags)
     return BaseClass::DrawModel(flags);
 }
 
-void CMomRocket::Spawn()
+void CMomSticky::Spawn()
 {
     m_flSpawnTime = gpGlobals->curtime;
     BaseClass::Spawn();
@@ -107,7 +107,7 @@ void CMomRocket::Spawn()
 
 #else
 
-void CMomRocket::Spawn()
+void CMomSticky::Spawn()
 {
     BaseClass::Spawn();
 
@@ -124,11 +124,11 @@ void CMomRocket::Spawn()
     m_takedamage = DAMAGE_NO;
     SetGravity(0.0f);
 
-    SetTouch(&CMomRocket::RocketTouch);
+    SetTouch(&CMomSticky::StickyTouch);
     SetNextThink(gpGlobals->curtime);
 }
 
-void CMomRocket::Precache()
+void CMomSticky::Precache()
 {
     BaseClass::Precache();
     // MOM_TODO:
@@ -137,9 +137,9 @@ void CMomRocket::Precache()
     PrecacheScriptSound("Missile.Ignite");
 }
 
-void CMomRocket::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
+void CMomSticky::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
 
-void CMomRocket::Destroy(bool bNoGrenadeZone)
+void CMomSticky::Destroy(bool bNoGrenadeZone)
 {
     SetThink(&BaseClass::SUB_Remove);
     SetNextThink(gpGlobals->curtime);
@@ -160,7 +160,7 @@ void CMomRocket::Destroy(bool bNoGrenadeZone)
     }
 }
 
-void CMomRocket::DestroyTrail()
+void CMomSticky::DestroyTrail()
 {
     if (m_hRocketTrail)
     {
@@ -170,7 +170,7 @@ void CMomRocket::DestroyTrail()
     }
 }
 
-void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
+void CMomSticky::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
     {
@@ -213,11 +213,11 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
         UTIL_DecalTrace(pTrace, "Scorch");
     }
 
-    // Remove the rocket
+    // Remove the sticky
     UTIL_Remove(this);
 }
 
-void CMomRocket::RocketTouch(CBaseEntity *pOther)
+void CMomSticky::StickyTouch(CBaseEntity *pOther)
 {
     Assert(pOther);
 
@@ -243,7 +243,7 @@ void CMomRocket::RocketTouch(CBaseEntity *pOther)
     Explode(&trace, pOther);
 }
 
-void CMomRocket::CreateSmokeTrail()
+void CMomSticky::CreateSmokeTrail()
 {
     if (m_hRocketTrail)
         return;
@@ -268,39 +268,39 @@ void CMomRocket::CreateSmokeTrail()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Spawn a new rocket
+// Purpose: Spawn a new sticky
 //
 // Input  : &vecOrigin -
 //          &vecAngles -
 //          *pentOwner -
 //
-// Output : CMomRocket
+// Output : CMomSticky
 //-----------------------------------------------------------------------------
-CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner /*= nullptr*/)
+CMomSticky *CMomSticky::EmitSticky(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner /*= nullptr*/)
 {
-    CMomRocket *pRocket = static_cast<CMomRocket *>(CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pentOwner));
-    pRocket->SetModel("models/weapons/w_missile.mdl");
-    DispatchSpawn(pRocket);
+    CMomSticky *pSticky = static_cast<CMomSticky *>(CreateNoSpawn("momentum_sticky", vecOrigin, vecAngles, pentOwner));
+    pSticky->SetModel("models/weapons/w_missile.mdl");
+    DispatchSpawn(pSticky);
 
     Vector vecForward;
     AngleVectors(vecAngles, &vecForward);
 
-    const Vector velocity = vecForward * MOM_ROCKET_SPEED;
-    pRocket->SetAbsVelocity(velocity);
-    pRocket->SetupInitialTransmittedGrenadeVelocity(velocity);
-    pRocket->SetThrower(pentOwner);
+    const Vector velocity = vecForward * MOM_STICKY_SPEED;
+    pSticky->SetAbsVelocity(velocity);
+    pSticky->SetupInitialTransmittedGrenadeVelocity(velocity);
+    pSticky->SetThrower(pentOwner);
 
     QAngle angles;
     VectorAngles(velocity, angles);
-    pRocket->SetAbsAngles(angles);
+    pSticky->SetAbsAngles(angles);
 
-    pRocket->SetDamage(90.0f);
-    // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in mom_gamerules)
-    pRocket->SetRadius(146.0f);
+    pSticky->SetDamage(90.0f);
+    // NOTE: Bruh explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in mom_gamerules)
+    pSticky->SetRadius(146.0f);
 
-    pRocket->CreateSmokeTrail();
-    pRocket->EmitSound("Missile.Ignite");
+    pSticky->CreateSmokeTrail();
+    pSticky->EmitSound("Missile.Ignite");
 
-    return pRocket;
+    return pSticky;
 }
 #endif

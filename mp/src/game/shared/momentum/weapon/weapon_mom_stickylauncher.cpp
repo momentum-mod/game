@@ -2,54 +2,54 @@
 
 #include "mom_player_shared.h"
 #include "mom_system_gamemode.h"
-#include "weapon_mom_rocketlauncher.h"
+#include "weapon_mom_stickylauncher.h"
 
 #include "tier0/memdbgon.h"
 
-IMPLEMENT_NETWORKCLASS_ALIASED(MomentumRocketLauncher, DT_MomentumRocketLauncher)
+IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickyLauncher, DT_MomentumStickyLauncher)
 
-BEGIN_NETWORK_TABLE(CMomentumRocketLauncher, DT_MomentumRocketLauncher)
+BEGIN_NETWORK_TABLE(CMomentumStickyLauncher, DT_MomentumStickyLauncher)
 END_NETWORK_TABLE()
 
-BEGIN_PREDICTION_DATA(CMomentumRocketLauncher)
+BEGIN_PREDICTION_DATA(CMomentumStickyLauncher)
 END_PREDICTION_DATA()
 
-LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
-PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
+LINK_ENTITY_TO_CLASS(weapon_momentum_stickylauncher, CMomentumStickyLauncher);
+PRECACHE_WEAPON_REGISTER(weapon_momentum_stickylauncher);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
-                          "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_sj_center_fire, "0", FCVAR_ARCHIVE,
+                          "If enabled, all stickies will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
 #endif
 
-CMomentumRocketLauncher::CMomentumRocketLauncher()
+CMomentumStickyLauncher::CMomentumStickyLauncher()
 {
     m_flTimeToIdleAfterFire = 0.8f;
     m_flIdleInterval = 20.0f;
 }
 
-void CMomentumRocketLauncher::Precache()
+void CMomentumStickyLauncher::Precache()
 {
     BaseClass::Precache();
 
 #ifndef CLIENT_DLL
-    UTIL_PrecacheOther("momentum_rocket");
+    UTIL_PrecacheOther("momentum_sticky");
 #endif
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Return the origin & angles for a projectile fired from the player's gun
 //-----------------------------------------------------------------------------
-void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward)
+void CMomentumStickyLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward)
 {
 #ifdef GAME_DLL
     static ConVarRef cl_righthand("cl_righthand");
 #else
     extern ConVar cl_righthand;
-    static ConVarRef mom_rj_center_fire("mom_rj_center_fire");
+    static ConVarRef mom_sj_center_fire("mom_sj_center_fire");
 #endif
 
-    if (mom_rj_center_fire.GetBool())
+    if (mom_sj_center_fire.GetBool())
     {
         vecOffset.y = 0.0f;
     }
@@ -88,7 +88,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
     }
 }
 
-void CMomentumRocketLauncher::RocketLauncherFire()
+void CMomentumStickyLauncher::StickyLauncherFire()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
@@ -129,15 +129,15 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
     UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
 
-    CMomRocket::EmitRocket(trace.endpos, angForward, pPlayer);
+    CMomSticky::EmitSticky(trace.endpos, angForward, pPlayer);
 #endif
 }
 
-void CMomentumRocketLauncher::PrimaryAttack() { RocketLauncherFire(); }
+void CMomentumStickyLauncher::PrimaryAttack() { StickyLauncherFire(); }
 
-bool CMomentumRocketLauncher::CanDeploy()
+bool CMomentumStickyLauncher::CanDeploy()
 {
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ)) // MOM_TODO: Change to GAMEMODE_SJ
         return false;
 
     return BaseClass::CanDeploy();

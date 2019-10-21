@@ -66,6 +66,7 @@ CAmmoDef *GetAmmoDef()
         ammoDef.AddAmmoType(AMMO_TYPE_PAINT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_paint_max",
                             3000 * BULLET_IMPULSE_EXAGGERATION, 0);
         ammoDef.AddAmmoType(AMMO_TYPE_ROCKET, DMG_BLAST, TRACER_LINE, 0, 0, "ammo_rocket_max", 1, 0, 146, 146);
+        ammoDef.AddAmmoType(AMMO_TYPE_STICKY, DMG_BLAST, TRACER_LINE, 0, 0, "ammo_sticky_max", 1, 0, 146, 146); // MOM_TODO: just do it
     }
 
     return &ammoDef;
@@ -86,6 +87,7 @@ ConVar ammo_flashbang_max("ammo_flashbang_max", "2", FCVAR_REPLICATED);
 ConVar ammo_smokegrenade_max("ammo_smokegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_paint_max("ammo_paint_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_rocket_max("ammo_rocket_max", "-2", FCVAR_REPLICATED);
+ConVar ammo_sticky_max("ammo_sticky_max", "-2", FCVAR_REPLICATED);
 
 CMomentumGameRules::CMomentumGameRules()
 {
@@ -312,6 +314,10 @@ bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo
     // Allow self damage from rockets
     if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
         return true;
+    
+    // Allow self damage from stickies
+    if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_sticky"))
+        return true;
 
     return !pVictim->IsPlayer(); 
 }
@@ -355,6 +361,19 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     if (pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
         flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+
+        Vector nearestPoint;
+        pAttacker->CollisionProp()->CalcNearestPoint(vecSrc, &nearestPoint);
+
+        if ((vecSrc - nearestPoint).LengthSqr() <= (flRadius * flRadius))
+        {
+            ApplyRadiusDamage(pAttacker, info, vecSrc, flRadius, flFalloff);
+        }
+    }
+
+    if (pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+    {
+        flRadius = 1210.0f; // Sticky self-damage radius is 1210.0f // No it isn't
 
         Vector nearestPoint;
         pAttacker->CollisionProp()->CalcNearestPoint(vecSrc, &nearestPoint);

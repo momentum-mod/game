@@ -1,20 +1,20 @@
 #pragma once
 
 #include "weapon_base_gun.h"
-#include "mom_rocket.h"
+#include "mom_sticky.h"
 
 #ifdef CLIENT_DLL
-#define CMomentumRocketLauncher C_MomentumRocketLauncher
+#define CMomentumStickyLauncher C_MomentumStickyLauncher
 #endif
 
-class CMomentumRocketLauncher : public CWeaponBaseGun
+class CMomentumStickyLauncher : public CWeaponBaseGun
 {
   public:
-    DECLARE_CLASS(CMomentumRocketLauncher, CWeaponBaseGun);
+    DECLARE_CLASS(CMomentumStickyLauncher, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumRocketLauncher();
+    CMomentumStickyLauncher();
 
     void Precache() OVERRIDE;
     void PrimaryAttack() OVERRIDE;
@@ -23,10 +23,10 @@ class CMomentumRocketLauncher : public CWeaponBaseGun
 
     bool CanDeploy() OVERRIDE;
 
-    CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_ROCKETLAUNCHER; }
+    CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_STICKYLAUNCHER; }
 
     float DeployTime() const OVERRIDE { return 0.5f; }
 
   private:
-    void RocketLauncherFire();
+    void StickyLauncherFire();
 };
