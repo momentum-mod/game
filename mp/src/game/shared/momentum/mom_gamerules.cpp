@@ -1,13 +1,13 @@
 #include "cbase.h"
 #include "mom_gamerules.h"
+#include "filesystem.h"
 #include "mathlib/mathlib.h"
 #include "mom_shareddefs.h"
+#include "mom_system_gamemode.h"
+#include "movevars_shared.h"
 #include "voice_gamemgr.h"
 #include "weapon/cs_ammodef.h"
 #include "weapon/weapon_base_gun.h"
-#include "filesystem.h"
-#include "movevars_shared.h"
-#include "mom_system_gamemode.h"
 
 #ifndef CLIENT_DLL
 #include "momentum/mapzones.h"
@@ -66,7 +66,7 @@ CAmmoDef *GetAmmoDef()
         ammoDef.AddAmmoType(AMMO_TYPE_PAINT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_paint_max",
                             3000 * BULLET_IMPULSE_EXAGGERATION, 0);
         ammoDef.AddAmmoType(AMMO_TYPE_ROCKET, DMG_BLAST, TRACER_LINE, 0, 0, "ammo_rocket_max", 1, 0, 146, 146);
-        ammoDef.AddAmmoType(AMMO_TYPE_STICKY, DMG_BLAST, TRACER_LINE, 0, 0, "ammo_sticky_max", 1, 0, 146, 146); // MOM_TODO: just do it
+        ammoDef.AddAmmoType(AMMO_TYPE_STICKY, DMG_BLAST, TRACER_LINE, 0, 0, "ammo_sticky_max", 1, 0, 146, 146);
     }
 
     return &ammoDef;
@@ -89,13 +89,13 @@ ConVar ammo_paint_max("ammo_paint_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_rocket_max("ammo_rocket_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_sticky_max("ammo_sticky_max", "-2", FCVAR_REPLICATED);
 
-CMomentumGameRules::CMomentumGameRules()
+    CMomentumGameRules::CMomentumGameRules()
 {
 }
 
 CMomentumGameRules::~CMomentumGameRules() {}
 
-static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
+static CViewVectors g_MOMViewVectors(Vector(0, 0, 64),    // eye position
                                      Vector(-16, -16, 0), // hull min
                                      Vector(16, 16, 62),  // hull max
 
@@ -109,18 +109,18 @@ static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(0, 0, 14) // dead view height
 );
 
-static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
-                                     Vector(-24, -24, 0), // hull min
-                                     Vector(24, 24, 82),  // hull max
+static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68),    // eye position
+                                       Vector(-24, -24, 0), // hull min
+                                       Vector(24, 24, 82),  // hull max
 
-                                     Vector(-24, -24, 0), // duck hull min
-                                     Vector(24, 24, 62),  // duck hull max
-                                     Vector(0, 0, 45),    // duck view
+                                       Vector(-24, -24, 0), // duck hull min
+                                       Vector(24, 24, 62),  // duck hull max
+                                       Vector(0, 0, 45),    // duck view
 
-                                     Vector(-10, -10, -10), // observer hull min
-                                     Vector(10, 10, 10),    // observer hull max
+                                       Vector(-10, -10, -10), // observer hull min
+                                       Vector(10, 10, 10),    // observer hull max
 
-                                     Vector(0, 0, 14) // dead view height
+                                       Vector(0, 0, 14) // dead view height
 );
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
@@ -248,13 +248,11 @@ struct WhiteListedCmd
     ConVar *pVar;
 };
 
-static WhiteListedCmd const g_szWhitelistedCmds[] = {
-    { "sv_gravity", &sv_gravity },
-    { "sv_maxvelocity", &sv_maxvelocity },
-    { "sv_airaccelerate", &sv_airaccelerate },
-    { "sv_accelerate", &sv_accelerate },
-    { "disconnect", nullptr }
-};
+static WhiteListedCmd const g_szWhitelistedCmds[] = {{"sv_gravity", &sv_gravity},
+                                                     {"sv_maxvelocity", &sv_maxvelocity},
+                                                     {"sv_airaccelerate", &sv_airaccelerate},
+                                                     {"sv_accelerate", &sv_accelerate},
+                                                     {"disconnect", nullptr}};
 
 void CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
 {
@@ -298,7 +296,7 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
             pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_ALL;
         }
 
-       // Handle game_player_equip ents
+        // Handle game_player_equip ents
         CBaseEntity *pWeaponEntity = nullptr;
         while ((pWeaponEntity = gEntList.FindEntityByClassname(pWeaponEntity, "game_player_equip")) != nullptr)
         {
@@ -309,7 +307,7 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
     }
 }
 
-bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) 
+bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info)
 {
     // Allow self damage from rockets
     if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
@@ -319,10 +317,14 @@ bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo
     if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_sticky"))
         return true;
 
-    return !pVictim->IsPlayer(); 
+    if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_pipebomb"))
+        return true;
+
+    return !pVictim->IsPlayer();
 }
 
-void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
+void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius,
+                                      int iClassIgnore, CBaseEntity *pEntityIgnore)
 {
     CBaseEntity *pEntity = nullptr;
     CBaseEntity *pAttacker = info.GetAttacker();
@@ -331,7 +333,8 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
 
     const auto initialRadiusSqr = flRadius * flRadius;
     // iterate on all entities in the vicinity.
-    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr;
+         sphere.NextEntity())
     {
         if (pEntity == pEntityIgnore || pEntity->m_takedamage == DAMAGE_NO)
         {
@@ -385,7 +388,8 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
     }
 }
 
-void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, float falloff)
+void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDamageInfo &info, const Vector &vecSrc,
+                                           float flRadius, float falloff)
 {
     const int MASK_RADIUS_DAMAGE = MASK_SHOT & (~CONTENTS_HITBOX);
     trace_t tr;
@@ -393,7 +397,7 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
     // Check that the explosion can 'see' this entity, trace through players.
     Vector vecSpot = pEntity->BodyTarget(vecSrc, false);
     UTIL_TraceLine(vecSrc, vecSpot, MASK_RADIUS_DAMAGE, info.GetInflictor(), COLLISION_GROUP_PROJECTILE, &tr);
-    
+
     if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
     {
         return;
@@ -415,7 +419,8 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
     }
 
     // Adjust the damage - apply falloff.
-    float flAdjustedDamage = RemapValClamped(flDistanceToEntity, 0.0f, flRadius, info.GetDamage(), info.GetDamage() * falloff);
+    float flAdjustedDamage =
+        RemapValClamped(flDistanceToEntity, 0.0f, flRadius, info.GetDamage(), info.GetDamage() * falloff);
 
     if (flAdjustedDamage <= 0)
         return;
@@ -428,7 +433,7 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
         tr.fraction = 0.0f;
     }
 
-    CTakeDamageInfo adjustedInfo = info;    
+    CTakeDamageInfo adjustedInfo = info;
     adjustedInfo.SetDamage(flAdjustedDamage);
 
     Vector dir = vecSpot - vecSrc;
@@ -592,7 +597,7 @@ void FovChanged(IConVar *pVar, const char *pOldValue, float flOldValue)
 }
 
 ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 1.0,
-    true, 179.0, FovChanged);
+                   true, 179.0, FovChanged);
 
 int CMomentumGameRules::DefaultFOV() { return fov_desired.GetInt(); }
 

@@ -1,0 +1,15 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\weapons\v_shotgun/v_shotgun"
+	"$bumpmap" "models/weapons\v_shotgun\v_shotgun_normal"
+
+	"$phong" "1"
+	"$phongexponent" "25"
+	"$phongboost" "12"	
+	"$lightwarptexture" "models\lightwarps\weapon_lightwarp"
+	"$phongfresnelranges"	"[.25 .5 1]"
+
+	"$rimlight" "1"
+	"$rimlightexponent" "10"	
+	"$rimlightboost" ".175"
+}

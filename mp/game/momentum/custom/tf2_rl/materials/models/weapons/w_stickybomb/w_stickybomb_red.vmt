@@ -1,0 +1,28 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\weapons\w_stickybomb/w_stickybomb_red"
+//	"$bumpmap" "models/weapons/w_stickybomb/w_stickybomb_normal"
+	"$selfillum" "1"
+	"$nodecal" "1"
+
+	"$phong" "1"
+	"$phongexponent" "30"
+	"$phongboost" ".75"	
+	"$lightwarptexture" "models\lightwarps\weapon_lightwarp"
+	"$phongfresnelranges" "[0.25 0.5 1]"
+
+	// Use separate self-illum mask on Pre DX9 hardware
+	">=DX90"
+	{
+		"$baseTexture" 		"models\weapons\w_stickybomb/w_stickybomb_red_noalpha"
+		"$selfillummask" 	"models\weapons\w_stickybomb/w_stickybomb_selfillum"
+	}
+
+	// Use redundant self-illum in base alpha on Pre DX9 hardware
+	"<DX90"
+	{
+		"$baseTexture" 	"models\weapons\w_stickybomb/w_stickybomb_red"
+	}
+
+
+}

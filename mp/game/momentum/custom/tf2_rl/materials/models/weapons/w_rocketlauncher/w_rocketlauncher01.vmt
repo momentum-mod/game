@@ -1,0 +1,29 @@
+"VertexLitGeneric"
+{
+	"$basetexture"	"models\weapons\w_rocketlauncher\w_rocketlauncher01"
+	
+	"$phong" "1"
+	"$phongexponent" "25"
+	"$phongboost" "2.5"	
+	"$lightwarptexture" "models\lightwarps\weapon_lightwarp"
+	"$phongfresnelranges"	"[.25 .5 20]"
+	"$halflambert" "1"
+
+	"$basemapalphaphongmask" "1"
+	
+	// Rim lighting parameters
+	"$rimlight" "1"					
+	"$rimlightexponent" "4"		
+	"$rimlightboost" "2"
+
+	"360?$color2" "[ 0.8 0.8 0.8 ]"
+
+	// Cloaking
+	"$cloakPassEnabled" "1"
+	"Proxies"
+	{
+		"weapon_invis"
+		{
+		}
+	}
+}

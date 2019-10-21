@@ -1,0 +1,17 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\player\soldier\soldier_hands"
+	"$basemapalphaphongmask" "1"
+
+	"$phong" "1"
+	//"$phongexponenttexture" "models\player\soldier\soldier_exponent"
+	"$phongexponent" "10"
+	"$phongboost" ".65"	
+	"$lightwarptexture" "models/lightwarps/hand_lightwarp"
+	"$phongfresnelranges"	"[.3 .6 3]"
+
+	// Rim lighting parameters
+	"$rimlight" "1"												// To enable rim lighting (requires phong)
+	"$rimlightexponent" "4"										// Exponent for phong component of rim lighting	
+	"$rimlightboost" "2"										// Boost for ambient cube component of rim lighting
+}

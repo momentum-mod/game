@@ -1,0 +1,19 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\player\soldier\soldier_sleeves_blue"
+
+	"$bumpmap" "models\player\soldier\soldier_sleeves_normal"
+
+	"$phong" "1"
+	//"$phongexponenttexture" "models\player\soldier\soldier_exponent"
+	"$phongexponent" "5"
+	"$phongboost" ".01"	
+	"$lightwarptexture" "models/player/engineer/engineer_hands_lightwarp"
+	"$phongfresnelranges"	"[.3 1 10]"
+	"$halflambert" "1"
+
+	// Rim lighting parameters
+	"$rimlight" "1"												// To enable rim lighting (requires phong)
+	"$rimlightexponent" "4"										// Exponent for phong component of rim lighting	
+	"$rimlightboost" "2"										// Boost for ambient cube component of rim lighting
+}

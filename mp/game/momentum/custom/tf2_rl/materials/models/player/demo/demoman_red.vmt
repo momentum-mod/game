@@ -1,0 +1,53 @@
+"VertexLitGeneric"
+{
+	"$basetexture"	"models/player/demo/demoman_red"
+	"$bumpmap" "models\player\demo\demoman_normal"
+	"$surfaceprop"	"default"
+	"$detail" "effects/tiledfire/fireLayeredSlowTiled512.vtf"	
+	"$detailscale" "5"
+	"$detailblendfactor" .01
+	"$detailblendmode" 6
+
+
+// "$bbqamount" "1"	
+// 	"$two" "2.35"
+// 	"$one" "1"
+// 	"$absburnminusone" "1"
+// 	"$burnminusone" "1"
+// 	"$finalburnlevel" "1"
+// 	"$burnlevel" "0"
+
+	"$phong" "1"
+	"$phongexponent" "20"
+	"$phongboost" ".3"	
+	"$lightwarptexture" "models/player/pyro/pyro_lightwarp"
+	"$phongfresnelranges"	"[.3 1 8]"
+	"$halflambert" "0"
+
+	// Rim lighting parameters
+	"$rimlight" "1"												// To enable rim lighting (requires phong)
+	"$rimlightexponent" "4"										// Exponent for phong component of rim lighting	
+	"$rimlightboost" "2"										// Boost for ambient cube component of rim lighting
+
+	// Cloaking
+	"$cloakPassEnabled" "1"
+
+	"360?$color2" "[ 0.7 0.7 0.7 ]"
+
+	"Proxies"
+	{
+		"spy_invis"
+		{
+		}
+		"AnimatedTexture"
+		{
+			"animatedtexturevar" "$detail"
+			"animatedtextureframenumvar" "$detailframe"
+			"animatedtextureframerate" 30
+		}
+		"BurnLevel"
+		{
+			"resultVar" "$detailblendfactor"
+		}
+	}
+}
