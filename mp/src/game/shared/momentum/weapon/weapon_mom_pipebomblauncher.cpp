@@ -18,8 +18,8 @@ LINK_ENTITY_TO_CLASS(weapon_momentum_pipebomblauncher, CMomentumPipebombLauncher
 PRECACHE_WEAPON_REGISTER(weapon_momentum_pipebomblauncher);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
-                          "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
+//static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
+//                          "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
 #endif
 
 CMomentumPipebombLauncher::CMomentumPipebombLauncher()
