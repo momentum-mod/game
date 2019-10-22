@@ -57,7 +57,7 @@
         "MOM_MapRank" "Map Rank: %mRank%"
         "MOM_Level" "Level %level%"
         "MOM_GlobalRank" "Global Rank: %gRank% / %gTotal%"
-        "MOM_PersonalBestTime" "Personal Best Time: %time%"
+        "MOM_PersonalBestTime" "Personal Best: %time%"
         "MOM_RankXP" "Rank XP: %rankXP%"
         "MOM_CosXP" "Cosmetic XP: %cosXP%"
         "MOM_MapsCompleted" "Maps Completed: %mapsCompleted%"
@@ -397,7 +397,7 @@
         "MOM_NotApplicable" "N/A"
 
         // WEB/API/SERVER RESPONSES
-        "MOM_API_WaitingForResponse" "Waiting for API response..."
+        "MOM_API_WaitingForResponse" "Fetching data..."
         "MOM_API_Unavailable" "API is currently unavailable"
         "MOM_API_ServerError" "Server Error"
         "MOM_API_NoTimesReturned" "No runs found"
