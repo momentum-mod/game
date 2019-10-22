@@ -33,7 +33,7 @@ Scheme
         "MOM.Panel.Bg"				"211 211 211 50"
         "Green"             "153 255 153 255"
         "MomentumBlue"	    "30 150 210 255"
-        "MomentumRed"	    "255 75 75 255"
+        "MomentumRed"	    "255 125 125 255"
         "LightBlue"         "153 204 255 255"
     }
 
