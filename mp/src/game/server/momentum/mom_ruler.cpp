@@ -150,8 +150,21 @@ void CMOMRulerTool::Measure()
         if (m_pBeamConnector)
         {
             char distString[BUFSIZ];
+
             Q_snprintf(distString, BUFSIZ, m_szDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
             m_pBeamConnector->EntityText(0, distString, mom_ruler_duration.GetFloat());
+            Msg("%s", distString);
+
+            Q_snprintf(distString, BUFSIZ, "X: %.4f\n", fabsf(m_vFirstPoint.x - m_vSecondPoint.x));
+            m_pBeamConnector->EntityText(1, distString, mom_ruler_duration.GetFloat());
+            Msg("%s", distString);
+
+            Q_snprintf(distString, BUFSIZ, "Y: %.4f\n", fabsf(m_vFirstPoint.y - m_vSecondPoint.y));
+            m_pBeamConnector->EntityText(2, distString, mom_ruler_duration.GetFloat());
+            Msg("%s", distString);
+
+            Q_snprintf(distString, BUFSIZ, "Z: %.4f\n", fabsf(m_vFirstPoint.z - m_vSecondPoint.z));
+            m_pBeamConnector->EntityText(3, distString, mom_ruler_duration.GetFloat());
             Msg("%s", distString);
         }
     }
