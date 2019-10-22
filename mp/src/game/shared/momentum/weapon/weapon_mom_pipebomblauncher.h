@@ -16,8 +16,33 @@ class CMomentumPipebombLauncher : public CWeaponBaseGun
 
     CMomentumPipebombLauncher();
 
+    float m_flChargeBeginTime;
+    float m_flLastDenySoundTime;
+
+	#ifdef CLIENT_DLL
+    int m_iPipebombCount;
+	#endif
+
+	#ifdef GAME_DLL
+    CNetworkVar(int, m_iPipebombCount);
+	#endif
+
     void Precache() OVERRIDE;
     void PrimaryAttack() OVERRIDE;
+    void SecondaryAttack() OVERRIDE;
+    bool Deploy() OVERRIDE;
+    bool Holster(CBaseCombatWeapon *pSwitchingTo) OVERRIDE;
+    void ItemBusyFrame() OVERRIDE;
+    void AddPipeBomb(CMomPipebomb *pBomb);
+    bool DetonateRemotePipebombs(bool bFizzle);
+    void DeathNotice(CBaseEntity *pVictim);
+    int GetPipebombCount(void) { return m_iPipebombCount; }
+    float GetProjectileSpeed(void);
+    CBaseEntity FireProjectile(CMomentumPlayer *pPlayer);
+
+    // List of active pipebombs
+    typedef CHandle<CMomPipebomb> PipebombHandle;
+    CUtlVector<PipebombHandle> m_Pipebombs;
 
     void GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward);
 
@@ -27,4 +52,6 @@ class CMomentumPipebombLauncher : public CWeaponBaseGun
 
   private:
     void PipebombLauncherFire();
+    void PipebombLauncherDetonate();
+    void PipebombLauncherHolster();
 };

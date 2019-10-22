@@ -6,7 +6,7 @@
 #define CMomPipebomb C_MomPipebomb
 #else
 #include "smoke_trail.h"
-class CMomentumRocketLauncher;
+class CMomentumPipebombLauncher;
 #endif
 
 class CMomPipebomb : public CBaseProjectile
@@ -37,6 +37,13 @@ class CMomPipebomb : public CBaseProjectile
 
     float GetRadius() { return m_flRadius; }
     float GetDamage() OVERRIDE { return m_flDamage; }
+    bool GetHasTouchedWorld() { return m_bTouched; }
+    void Fizzle();
+    void Detonate();
+    void RemovePipebomb(bool bBlinkOut);
+    bool ShouldNotDetonate(void);
+    void Pulse();
+    void DetonateThink(void);
 
     void SetRadius(float flRadius) { m_flRadius = flRadius; }
     void SetDamage(float flDamage) OVERRIDE { m_flDamage = flDamage; }
@@ -46,9 +53,15 @@ class CMomPipebomb : public CBaseProjectile
     // sit still until it had gotten a few updates from the server.
     void SetupInitialTransmittedGrenadeVelocity(const Vector &velocity);
 
-    CHandle<CMomentumRocketLauncher> m_hOwner;
+    CHandle<CMomentumPipebombLauncher> m_hOwner;
 
-    static CMomPipebomb *EmitPipebomb(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner = nullptr);
+    static CMomPipebomb *EmitPipebomb(const Vector &vecOrigin, const QAngle &vecAngles,
+                                      CBaseEntity *pentOwner = nullptr);
+
+    float m_flChargeTime;
+    float m_flCreationTime;
+    bool m_bPulsed;
+    
 
   protected:
     void CreateSmokeTrail();
@@ -56,11 +69,12 @@ class CMomPipebomb : public CBaseProjectile
     CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
     float m_flRadius;
+    bool m_bTouched;
+    bool m_bFizzle;
 
   private:
     DECLARE_DATADESC();
 #endif
-
   public:
     CBaseEntity *GetThrower() { return m_hThrower; }
     void SetThrower(CBaseEntity *pThrower) { m_hThrower = pThrower; }

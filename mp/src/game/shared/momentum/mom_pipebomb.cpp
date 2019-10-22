@@ -13,13 +13,15 @@
 #define MOM_PIPEBOMB_INITIAL_SPEED 900.0f
 #define MOM_PIPEBOMB_MAX_SPEED 2400.0f
 #define MOM_PIPEBOMB_GRAVITY 0.5f
+#define MOM_PIPEBOMB_FRICTION 0.8f
+#define MOM_PIPEBOMB_ELASTICITY 0.45f
 
 #ifndef CLIENT_DLL
 
 BEGIN_DATADESC(CMomPipebomb)
 // Fields
 DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
-    DEFINE_FIELD(m_flDamage, FIELD_FLOAT),
+    DEFINE_FIELD(m_flDamage, FIELD_FLOAT), DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
 
     // Functions
     DEFINE_ENTITYFUNC(Touch), END_DATADESC();
@@ -51,8 +53,12 @@ CMomPipebomb::CMomPipebomb()
     m_flSpawnTime = 0.0f;
 #else
     m_flDamage = 0.0f;
+    m_flCreationTime = 0.0f;
+    m_flChargeTime = 0.0f;
+    m_bTouched = false;
     m_hOwner = nullptr;
     m_hRocketTrail = nullptr;
+    m_bTouched = false;
 #endif
 }
 
@@ -90,8 +96,7 @@ void CMomPipebomb::PostDataUpdate(DataUpdateType_t type)
 
 int CMomPipebomb::DrawModel(int flags)
 {
-    // Don't draw rocket during the first 0.1 seconds.
-
+    // Don't draw the pipebomb during the first 0.1 seconds.
     if (gpGlobals->curtime - m_flSpawnTime < 0.1f)
     {
         return 0;
@@ -114,26 +119,33 @@ void CMomPipebomb::Spawn()
 
     UseClientSideAnimation();
     SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
-    SetSolidFlags(FSOLID_TRIGGER);
+    SetSolidFlags(FSOLID_NOT_STANDABLE);
     SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
     SetSolid(SOLID_BBOX);
-    //AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
-    //AddEffects(EF_NOSHADOW);
-    SetSize(Vector(0, 0, 0), Vector(0, 0, 0));
+    AddEffects(EF_NOSHADOW);
+    SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
+    //UTIL_SetSize(this, Vector(-2.0f, -2.0f, -2.0f), Vector(2.0f, 2.0f, 2.0f));
     AddFlag(FL_GRENADE);
 
+	//VPhysicsInitNormal(SOLID_BBOX, 0, false);
+
+    m_bTouched = false;
+    m_flCreationTime = gpGlobals->curtime;
     m_takedamage = DAMAGE_NO;
     SetGravity(MOM_PIPEBOMB_GRAVITY);
+    SetFriction(MOM_PIPEBOMB_FRICTION);
+    SetElasticity(MOM_PIPEBOMB_ELASTICITY);
 
     SetTouch(&CMomPipebomb::PipebombTouch);
-    SetNextThink(gpGlobals->curtime);
+    SetThink(&CMomPipebomb::DetonateThink);
+    SetNextThink(gpGlobals->curtime + 0.2);
 }
 
 void CMomPipebomb::Precache()
 {
     BaseClass::Precache();
     PrecacheModel("models/weapons/w_models/w_stickybomb.mdl");
-    //PrecacheScriptSound("Pipebomb.Bounce");
+    // PrecacheScriptSound("Pipebomb.Bounce");
 }
 
 void CMomPipebomb::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
@@ -155,6 +167,66 @@ void CMomPipebomb::Destroy(bool bNoGrenadeZone)
             pGlowSprite->SetThink(&CSprite::SUB_Remove);
             pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0);
         }
+    }
+}
+
+void CMomPipebomb::Pulse() 
+{
+    if (m_bPulsed == false)
+    {
+        if ((gpGlobals->curtime - m_flCreationTime) >= 0.8f)
+        {
+			//ParticleProp()->Create("stickybomb_pulse_red", PATTACH_ABSORIGIN);
+			m_bPulsed = true;
+        }
+    }
+}
+
+void CMomPipebomb::RemovePipebomb(bool bBlinkOut)
+{
+    // Kill it
+    SetThink(&BaseClass::SUB_Remove);
+    SetNextThink(gpGlobals->curtime);
+    SetTouch(NULL);
+    AddEffects(EF_NODRAW);
+
+    if (bBlinkOut)
+    {
+        // Sprite flash
+        CSprite *pGlowSprite = CSprite::SpriteCreate(NOGRENADE_SPRITE, GetAbsOrigin(), false);
+        if (pGlowSprite)
+        {
+            pGlowSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxFadeFast);
+            pGlowSprite->SetThink(&CSprite::SUB_Remove);
+            pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0);
+        }
+    }
+}
+
+bool CMomPipebomb::ShouldNotDetonate(void) { return CNoGrenadesZone::IsInsideNoGrenadesZone(this); }
+
+void CMomPipebomb::Detonate()
+{
+    trace_t tr;
+    Vector vecSpot;
+
+    SetThink(NULL);
+    vecSpot = GetAbsOrigin() + Vector(0, 0, 0);
+    UTIL_TraceLine(vecSpot, vecSpot + Vector(0, 0, -32), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
+
+    //Explode(&tr, pOther);
+
+    if (ShouldNotDetonate())
+    {
+        RemovePipebomb(true);
+        return;
+    }
+
+    if (m_bFizzle)
+    {
+        // g_pEffects->Sparks(GetAbsOrigin());
+        RemovePipebomb(true);
+        return;
     }
 }
 
@@ -213,6 +285,8 @@ void CMomPipebomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     UTIL_Remove(this);
 }
 
+void CMomPipebomb::Fizzle(void) { m_bFizzle = true; }
+
 void CMomPipebomb::PipebombTouch(CBaseEntity *pOther)
 {
     Assert(pOther);
@@ -232,12 +306,31 @@ void CMomPipebomb::PipebombTouch(CBaseEntity *pOther)
         return;
     }
 
+    // If we already touched a surface then we're not exploding on contact anymore.
+    if (m_bTouched == true)
+        return;
+
+    bool bIsDynamicProp = (NULL != dynamic_cast<CDynamicProp *>(pOther));
+
+    // Pipebombs stick to the world when they touch it
+    if (pOther && (pOther->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0) // m_flSleepTime
+    {
+        m_bTouched = true;
+        //VPhysicsGetObject()->EnableMotion(false);
+
+        // Save impact data for explosions.
+        // m_bUseImpactNormal = true;
+        // pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
+        // m_vecImpactNormal.Negate();
+    }
+
     // Explode
-    trace_t trace;
-    memcpy(&trace, pTrace, sizeof(trace_t));
-    Explode(&trace, pOther);
+    //trace_t trace;
+    //memcpy(&trace, pTrace, sizeof(trace_t));
+    //Explode(&trace, pOther);
 }
 
+// TODO: Replace with pipebomb trail
 void CMomPipebomb::CreateSmokeTrail()
 {
     if (m_hRocketTrail)
@@ -262,26 +355,52 @@ void CMomPipebomb::CreateSmokeTrail()
     }
 }
 
+void CMomPipebomb::DetonateThink(void)
+{
+    if (!IsInWorld())
+    {
+        Remove();
+        return;
+    }
+
+	/*
+    if (gpGlobals->curtime > m_flCollideWithTeammatesTime && m_bCollideWithTeammates == false)
+    {
+        m_bCollideWithTeammates = true;
+    }
+	*/
+
+	/*
+    if (gpGlobals->curtime > 3.0f) //m_flDetonateTime (grenade launcher timer?)
+    {
+        Detonate();
+        return;
+    }
+	*/
+    SetNextThink(gpGlobals->curtime + 0.2);
+}
+
 //-----------------------------------------------------------------------------
-// Purpose: Spawn a new rocket
+// Purpose: Spawn a new pipebomb
 //
 // Input  : &vecOrigin -
 //          &vecAngles -
 //          *pentOwner -
 //
-// Output : CMomRocket
+// Output : CMomPipebomb
 //-----------------------------------------------------------------------------
 CMomPipebomb *CMomPipebomb::EmitPipebomb(const Vector &vecOrigin, const QAngle &vecAngles,
-                                   CBaseEntity *pentOwner /*= nullptr*/)
+                                         CBaseEntity *pentOwner /*= nullptr*/)
 {
-    CMomPipebomb *pPipebomb = static_cast<CMomPipebomb *>(CreateNoSpawn("momentum_pipebomb", vecOrigin, vecAngles, pentOwner));
+    CMomPipebomb *pPipebomb =
+        static_cast<CMomPipebomb *>(CreateNoSpawn("momentum_pipebomb", vecOrigin, vecAngles, pentOwner));
     pPipebomb->SetModel("models/weapons/w_models/w_stickybomb.mdl");
     DispatchSpawn(pPipebomb);
 
     Vector vecForward;
     AngleVectors(vecAngles, &vecForward);
 
-    const Vector velocity = vecForward * MOM_PIPEBOMB_INITIAL_SPEED;
+    const Vector velocity = vecForward * 900.0f;
     pPipebomb->SetAbsVelocity(velocity);
     pPipebomb->SetupInitialTransmittedGrenadeVelocity(velocity);
     pPipebomb->SetThrower(pentOwner);
@@ -291,12 +410,12 @@ CMomPipebomb *CMomPipebomb::EmitPipebomb(const Vector &vecOrigin, const QAngle &
     pPipebomb->SetAbsAngles(angles);
 
     pPipebomb->SetDamage(112.0f);
-    // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in
+    // NOTE: Rocket/Pipebomb explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in
     // mom_gamerules)
     pPipebomb->SetRadius(146.0f);
 
-    //pPipebomb->CreateSmokeTrail();
-    //pPipebomb->EmitSound("Missile.Ignite");
+    // pPipebomb->CreateSmokeTrail();
+    // pPipebomb->EmitSound("Missile.Ignite");
 
     return pPipebomb;
 }

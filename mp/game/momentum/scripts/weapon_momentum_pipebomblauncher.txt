@@ -33,6 +33,9 @@ WeaponData
     SoundData
     {
         "single_shot"       "Weapon_PipebombLauncher.Single"
+		"special1"			"Weapon_PipebombLauncher.Detonate"
+		"special2"			"Weapon_PipebombLauncher.Deny"
+		"special3"			"Weapon_PipebombLauncher.Charge"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
