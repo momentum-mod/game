@@ -8,9 +8,6 @@
 
 class CMomentumPlayer;
 
-#define STOP_EPSILON 0.1
-#define MAX_CLIP_PLANES 5
-
 class CMomentumGameMovement : public CGameMovement
 {
     typedef CGameMovement BaseClass;
