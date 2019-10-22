@@ -20,6 +20,8 @@
 
 #define NO_REFL_NORMAL_CHANGE -2.0f // not used
 #define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
+#define STOP_EPSILON 0.1
+#define MAX_CLIP_PLANES 5
 
 #define STAMINA_MAX 100.0f
 #define STAMINA_COST_JUMP 25.0f
