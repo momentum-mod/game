@@ -38,7 +38,7 @@ class CMomentumPipebombLauncher : public CWeaponBaseGun
     void DeathNotice(CBaseEntity *pVictim);
     int GetPipebombCount(void) { return m_iPipebombCount; }
     float GetProjectileSpeed(void);
-    CBaseEntity FireProjectile(CMomentumPlayer *pPlayer);
+    // CMomPipebomb *FirePipebomb(CMomentumPlayer *pPlayer);
 
     // List of active pipebombs
     typedef CHandle<CMomPipebomb> PipebombHandle;

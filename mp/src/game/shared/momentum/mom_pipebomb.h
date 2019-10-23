@@ -28,6 +28,7 @@ class CMomPipebomb : public CBaseProjectile
 
     float m_flSpawnTime;
 #else
+
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
     void PipebombTouch(CBaseEntity *pOther);
@@ -44,6 +45,7 @@ class CMomPipebomb : public CBaseProjectile
     bool ShouldNotDetonate(void);
     void Pulse();
     void DetonateThink(void);
+    void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
 
     void SetRadius(float flRadius) { m_flRadius = flRadius; }
     void SetDamage(float flDamage) OVERRIDE { m_flDamage = flDamage; }
@@ -55,7 +57,8 @@ class CMomPipebomb : public CBaseProjectile
 
     CHandle<CMomentumPipebombLauncher> m_hOwner;
 
-    static CMomPipebomb *EmitPipebomb(const Vector &vecOrigin, const QAngle &vecAngles,
+    static CMomPipebomb *EmitPipebomb(const Vector &vecOrigin, const Vector &velocity,
+                                      const QAngle &vecAngles,
                                       CBaseEntity *pentOwner = nullptr);
 
     float m_flChargeTime;
@@ -69,6 +72,7 @@ class CMomPipebomb : public CBaseProjectile
     CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
     float m_flRadius;
+    //CNetworkVar(bool, m_bTouched);
     bool m_bTouched;
     bool m_bFizzle;
 

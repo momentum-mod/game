@@ -32,6 +32,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomPipebomb, DT_MomPipebomb)
 BEGIN_NETWORK_TABLE(CMomPipebomb, DT_MomPipebomb)
 #ifdef CLIENT_DLL
 RecvPropVector(RECVINFO(m_vInitialVelocity))
+//RecvPropInt(RECVINFO(m_bTouched))
 #else
 SendPropVector(SENDINFO(m_vInitialVelocity),
                20,    // nbits
@@ -39,6 +40,7 @@ SendPropVector(SENDINFO(m_vInitialVelocity),
                -3000, // low value
                3000   // high value
                )
+//SendPropBool(SENDINFO(m_bTouched))
 #endif
     END_NETWORK_TABLE();
 
@@ -127,12 +129,12 @@ void CMomPipebomb::Spawn()
     //UTIL_SetSize(this, Vector(-2.0f, -2.0f, -2.0f), Vector(2.0f, 2.0f, 2.0f));
     AddFlag(FL_GRENADE);
 
-	//VPhysicsInitNormal(SOLID_BBOX, 0, false);
+	VPhysicsInitNormal(SOLID_BBOX, 0, false);
 
     m_bTouched = false;
     m_flCreationTime = gpGlobals->curtime;
     m_takedamage = DAMAGE_NO;
-    SetGravity(MOM_PIPEBOMB_GRAVITY);
+    SetGravity(0.5f);
     SetFriction(MOM_PIPEBOMB_FRICTION);
     SetElasticity(MOM_PIPEBOMB_ELASTICITY);
 
@@ -287,6 +289,31 @@ void CMomPipebomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
 void CMomPipebomb::Fizzle(void) { m_bFizzle = true; }
 
+void CMomPipebomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
+{
+    BaseClass::VPhysicsCollision(index, pEvent);
+
+    int otherIndex = !index;
+    CBaseEntity *pHitEntity = pEvent->pEntities[otherIndex];
+
+    if (!pHitEntity)
+        return;
+
+    bool bIsDynamicProp = (NULL != dynamic_cast<CDynamicProp *>(pHitEntity));
+
+    // Pipebombs stick to the world when they touch it
+    if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
+    {
+        m_bTouched = true;
+        VPhysicsGetObject()->EnableMotion(false);
+
+        // Save impact data for explosions.
+        //m_bUseImpactNormal = true;
+        //pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
+        //m_vecImpactNormal.Negate();
+    }
+}
+
 void CMomPipebomb::PipebombTouch(CBaseEntity *pOther)
 {
     Assert(pOther);
@@ -306,17 +333,13 @@ void CMomPipebomb::PipebombTouch(CBaseEntity *pOther)
         return;
     }
 
-    // If we already touched a surface then we're not exploding on contact anymore.
-    if (m_bTouched == true)
-        return;
-
-    bool bIsDynamicProp = (NULL != dynamic_cast<CDynamicProp *>(pOther));
+	bool bIsDynamicProp = (NULL != dynamic_cast<CDynamicProp *>(pOther));
 
     // Pipebombs stick to the world when they touch it
-    if (pOther && (pOther->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0) // m_flSleepTime
+    if (pOther && (pOther->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
     {
         m_bTouched = true;
-        //VPhysicsGetObject()->EnableMotion(false);
+        VPhysicsGetObject()->EnableMotion(false);
 
         // Save impact data for explosions.
         // m_bUseImpactNormal = true;
@@ -389,20 +412,27 @@ void CMomPipebomb::DetonateThink(void)
 //
 // Output : CMomPipebomb
 //-----------------------------------------------------------------------------
-CMomPipebomb *CMomPipebomb::EmitPipebomb(const Vector &vecOrigin, const QAngle &vecAngles,
+CMomPipebomb *CMomPipebomb::EmitPipebomb(const Vector &vecOrigin, const Vector &velocity, const QAngle &vecAngles,
                                          CBaseEntity *pentOwner /*= nullptr*/)
 {
     CMomPipebomb *pPipebomb =
-        static_cast<CMomPipebomb *>(CreateNoSpawn("momentum_pipebomb", vecOrigin, vecAngles, pentOwner));
+       static_cast<CMomPipebomb *>(CreateNoSpawn("momentum_pipebomb", vecOrigin, vecAngles, pentOwner));
+    AngularImpulse angVelocity =
+        AngularImpulse(600, random->RandomInt(-1200, 1200), 0);
+    Vector vecForward;
+    AngleVectors(vecAngles, &vecForward);
+    //const Vector velocity = (vecForward * 900);
+
     pPipebomb->SetModel("models/weapons/w_models/w_stickybomb.mdl");
     DispatchSpawn(pPipebomb);
 
-    Vector vecForward;
-    AngleVectors(vecAngles, &vecForward);
+    
+	//IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
+    //pPhysicsObject->AddVelocity(&velocity, &angVelocity);
 
-    const Vector velocity = vecForward * 900.0f;
-    pPipebomb->SetAbsVelocity(velocity);
     pPipebomb->SetupInitialTransmittedGrenadeVelocity(velocity);
+    pPipebomb->SetAbsVelocity(velocity);
+    pPipebomb->ApplyLocalAngularVelocityImpulse(angVelocity);
     pPipebomb->SetThrower(pentOwner);
 
     QAngle angles;
@@ -415,8 +445,6 @@ CMomPipebomb *CMomPipebomb::EmitPipebomb(const Vector &vecOrigin, const QAngle &
     pPipebomb->SetRadius(146.0f);
 
     // pPipebomb->CreateSmokeTrail();
-    // pPipebomb->EmitSound("Missile.Ignite");
-
     return pPipebomb;
 }
 #endif

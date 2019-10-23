@@ -80,6 +80,9 @@ void CMomentumPipebombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer,
     // Offset actual start point
     *vecSrc = vecShootPos + (vecForward * vecOffset.x) + (vecRight * vecOffset.y) + (vecUp * vecOffset.z);
 
+    //Vector vecVelocity = (vecForward * GetProjectileSpeed()) + (vecUp * 200.0f) +
+    //                     (random->RandomFloat(-10.0f, 10.0f) * vecRight) + (random->RandomFloat(-10.0f, 10.0f) * vecUp);
+
     // Find angles that will get us to our desired end point
     // Only use the trace end if it wasn't too close, which results
     // in visually bizarre forward angles
@@ -138,6 +141,29 @@ void CMomentumPipebombLauncher::PipebombLauncherFire()
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 #ifdef GAME_DLL
+
+	// If we've gone over the max pipebomb count, detonate the oldest
+    /*
+    if (m_Pipebombs.Count() >= 8)
+    {
+        CMomPipebomb *pTemp = m_Pipebombs[0];
+        if (pTemp)
+        {
+            pTemp->Detonate(); // explode NOW
+        }
+
+        m_Pipebombs.Remove(0);
+    }
+
+    CMomPipebomb *pPipebomb = (CMomPipebomb *)pProjectile;
+
+    PipebombHandle hHandle;
+    hHandle = pPipebomb;
+    m_Pipebombs.AddToTail(hHandle);
+
+    m_iPipebombCount = m_Pipebombs.Count();
+	*/
+
     Vector vForward, vRight, vUp;
 
     pPlayer->EyeVectors(&vForward, &vRight, &vUp);
@@ -157,9 +183,14 @@ void CMomentumPipebombLauncher::PipebombLauncherFire()
     CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
     UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
 
-    CMomPipebomb::EmitPipebomb(trace.endpos, angForward, pPlayer);
+	Vector vecVelocity = (vForward * GetProjectileSpeed()) + (vUp * 200.0f) +
+                         (random->RandomFloat(-10.0f, 10.0f) * vRight) + (random->RandomFloat(-10.0f, 10.0f) * vUp);
+
+    CMomPipebomb::EmitPipebomb(trace.endpos, vecVelocity, angForward, pPlayer);
 #endif
 }
+
+
 
 float CMomentumPipebombLauncher::GetProjectileSpeed(void)
 {
@@ -171,35 +202,37 @@ float CMomentumPipebombLauncher::GetProjectileSpeed(void)
 }
 
 /*
-CBaseEntity *CMomentumPipebombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
+CMomPipebomb *CMomentumPipebombLauncher::FirePipebomb(CMomentumPlayer *pPlayer)
 {
-    CBaseEntity *pProjectile = BaseClass::FireProjectile(pPlayer);
-    if (pProjectile)
-    {
 #ifdef GAME_DLL
-        // If we've gone over the max pipebomb count, detonate the oldest
-        if (m_Pipebombs.Count() >= 8)
-        {
-            CMomPipebomb *pTemp = m_Pipebombs[0];
-            if (pTemp)
-            {
-                pTemp->Detonate(); // explode NOW
-            }
 
-            m_Pipebombs.Remove(0);
+	//GetProjectileFireSetup(pPlayer, )
+
+    // If we've gone over the max pipebomb count, detonate the oldest
+    if (m_Pipebombs.Count() >= 8)
+    {
+        CMomPipebomb *pTemp = m_Pipebombs[0];
+        if (pTemp)
+        {
+            pTemp->Detonate(); // explode NOW
         }
 
-        CMomPipebomb *pPipebomb = (CMomPipebomb *)pProjectile;
-
-        PipebombHandle hHandle;
-        hHandle = pPipebomb;
-        m_Pipebombs.AddToTail(hHandle);
-
-        m_iPipebombCount = m_Pipebombs.Count();
-#endif
+        m_Pipebombs.Remove(0);
     }
 
+    CMomPipebomb *pPipebomb = (CMomPipebomb *)pProjectile;
+
+    PipebombHandle hHandle;
+    hHandle = pPipebomb;
+    m_Pipebombs.AddToTail(hHandle);
+
+    m_iPipebombCount = m_Pipebombs.Count();
+
     return pProjectile;
+
+#endif
+
+    return NULL;
 }
 */
 
