@@ -19,13 +19,13 @@ class CMomentumPipebombLauncher : public CWeaponBaseGun
     float m_flChargeBeginTime;
     float m_flLastDenySoundTime;
 
-	#ifdef CLIENT_DLL
+#ifdef CLIENT_DLL
     int m_iPipebombCount;
-	#endif
+#endif
 
-	#ifdef GAME_DLL
+#ifdef GAME_DLL
     CNetworkVar(int, m_iPipebombCount);
-	#endif
+#endif
 
     void Precache() OVERRIDE;
     void PrimaryAttack() OVERRIDE;
@@ -38,15 +38,18 @@ class CMomentumPipebombLauncher : public CWeaponBaseGun
     void DeathNotice(CBaseEntity *pVictim);
     int GetPipebombCount(void) { return m_iPipebombCount; }
     float GetProjectileSpeed(void);
-    // CMomPipebomb *FirePipebomb(CMomentumPlayer *pPlayer);
+    void WeaponIdle() OVERRIDE;
+    CBaseEntity *FirePipebomb(CMomentumPlayer *pPlayer);
+    CBaseEntity *FireProjectile(CMomentumPlayer *pPlayer);
 
     // List of active pipebombs
     typedef CHandle<CMomPipebomb> PipebombHandle;
     CUtlVector<PipebombHandle> m_Pipebombs;
 
     void GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward);
+    float GetChargeMaxTime(void);
 
-    bool CanDeploy() OVERRIDE;
+        bool CanDeploy() OVERRIDE;
 
     CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_PIPEBOMBLAUNCHER; }
 

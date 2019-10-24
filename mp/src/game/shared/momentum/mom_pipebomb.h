@@ -20,6 +20,8 @@ class CMomPipebomb : public CBaseProjectile
     CNetworkVector(m_vInitialVelocity);
 
     CMomPipebomb();
+    float m_flCreationTime;
+    bool m_bPulsed;
 
 #ifdef CLIENT_DLL
     virtual int DrawModel(int flags) OVERRIDE;
@@ -31,6 +33,9 @@ class CMomPipebomb : public CBaseProjectile
 
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
+    static CMomPipebomb *Create(const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity,
+                CBaseCombatCharacter *pOwner);
+    void InitPipebomb(const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner);
     void PipebombTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Destroy(bool bNoGrenadeZone);
@@ -46,6 +51,7 @@ class CMomPipebomb : public CBaseProjectile
     void Pulse();
     void DetonateThink(void);
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
+	void SetChargeTime(float flChargeTime) { m_flChargeTime = flChargeTime; }
 
     void SetRadius(float flRadius) { m_flRadius = flRadius; }
     void SetDamage(float flDamage) OVERRIDE { m_flDamage = flDamage; }
@@ -57,13 +63,11 @@ class CMomPipebomb : public CBaseProjectile
 
     CHandle<CMomentumPipebombLauncher> m_hOwner;
 
-    static CMomPipebomb *EmitPipebomb(const Vector &vecOrigin, const Vector &velocity,
-                                      const QAngle &vecAngles,
-                                      CBaseEntity *pentOwner = nullptr);
+    //static CMomPipebomb *EmitPipebomb(const Vector &vecOrigin, const Vector &velocity,
+    //                                 const QAngle &vecAngles,
+    //                                 CBaseEntity *pentOwner = nullptr);
 
     float m_flChargeTime;
-    float m_flCreationTime;
-    bool m_bPulsed;
     
 
   protected:
