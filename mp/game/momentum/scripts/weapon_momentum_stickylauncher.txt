@@ -14,8 +14,8 @@ WeaponData
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Launcher"
-    "viewmodel"         "models/weapons/v_l12g.mdl"
-    "playermodel"       "models/weapons/w_rocket_launcher.mdl"
+    "viewmodel"         "models/weapons/v_models/v_stickybomb_launcher_demo.mdl"
+    "playermodel"       "models/weapons/w_models/w_stickybomb_launcher.mdl"
     
     "anim_prefix"      "anim"
     "bucket"            "0"
@@ -32,7 +32,10 @@ WeaponData
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
     {
-        "single_shot"       "Weapon_RPG.Single"
+        "single_shot"       "Weapon_StickybombLauncher.Single"
+		"special1"			"Weapon_StickybombLauncher.Detonate"
+		"special2"			"Weapon_StickybombLauncher.Deny"
+		"special3"			"Weapon_StickybombLauncher.Charge"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.

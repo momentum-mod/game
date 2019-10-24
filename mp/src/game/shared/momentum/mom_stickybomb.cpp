@@ -1,6 +1,6 @@
 #include "cbase.h"
-#include "mom_pipebomb.h"
-#include "weapon/weapon_mom_pipebomblauncher.h"
+#include "mom_stickybomb.h"
+#include "weapon/weapon_mom_stickybomblauncher.h"
 
 #ifndef CLIENT_DLL
 #include "Sprite.h"
@@ -10,16 +10,16 @@
 
 #include "tier0/memdbgon.h"
 
-#define MOM_PIPEBOMB_RADIUS 146.0f
-#define MOM_PIPEBOMB_INITIAL_SPEED 900.0f
-#define MOM_PIPEBOMB_MAX_SPEED 2400.0f
-#define MOM_PIPEBOMB_GRAVITY 0.5f
-#define MOM_PIPEBOMB_FRICTION 0.8f
-#define MOM_PIPEBOMB_ELASTICITY 0.45f
+#define MOM_STICKYBOMB_RADIUS 146.0f
+#define MOM_STICKYBOMB_INITIAL_SPEED 900.0f
+#define MOM_STICKYBOMB_MAX_SPEED 2400.0f
+#define MOM_STICKYBOMB_GRAVITY 1.0f // 0.5f in TF2 source code but that doesn't produce the same effect
+#define MOM_STICKYBOMB_FRICTION 0.8f
+#define MOM_STICKYBOMB_ELASTICITY 0.45f
 
 #ifndef CLIENT_DLL
 
-BEGIN_DATADESC(CMomPipebomb)
+BEGIN_DATADESC(CMomStickybomb)
 // Fields
 DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
     DEFINE_FIELD(m_flDamage, FIELD_FLOAT), DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
@@ -28,9 +28,9 @@ DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDL
     DEFINE_ENTITYFUNC(Touch), END_DATADESC();
 #endif
 
-IMPLEMENT_NETWORKCLASS_ALIASED(MomPipebomb, DT_MomPipebomb)
+IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 
-BEGIN_NETWORK_TABLE(CMomPipebomb, DT_MomPipebomb)
+BEGIN_NETWORK_TABLE(CMomStickybomb, DT_MomStickybomb)
 #ifdef CLIENT_DLL
 RecvPropVector(RECVINFO(m_vInitialVelocity))
 // RecvPropInt(RECVINFO(m_bTouched))
@@ -45,10 +45,10 @@ SendPropVector(SENDINFO(m_vInitialVelocity),
 #endif
     END_NETWORK_TABLE();
 
-LINK_ENTITY_TO_CLASS(momentum_pipebomb, CMomPipebomb);
-PRECACHE_WEAPON_REGISTER(momentum_pipebomb);
+LINK_ENTITY_TO_CLASS(momentum_stickybomb, CMomStickybomb);
+PRECACHE_WEAPON_REGISTER(momentum_stickybomb);
 
-CMomPipebomb::CMomPipebomb()
+CMomStickybomb::CMomStickybomb()
 {
     m_vInitialVelocity.Init();
 
@@ -67,7 +67,7 @@ CMomPipebomb::CMomPipebomb()
 
 #ifdef CLIENT_DLL
 
-void CMomPipebomb::PostDataUpdate(DataUpdateType_t type)
+void CMomStickybomb::PostDataUpdate(DataUpdateType_t type)
 {
     BaseClass::PostDataUpdate(type);
 
@@ -76,7 +76,7 @@ void CMomPipebomb::PostDataUpdate(DataUpdateType_t type)
         m_flCreationTime = gpGlobals->curtime;
         // ParticleProp()->Create("stickybombtrail_red", PATTACH_ABSORIGIN_FOLLOW);
         m_bPulsed = false;
-        // CMomentumPipebombLauncher *pLauncher = dynamic_cast<CMomentumPipebombLauncher *>(m_hLauncher);
+        // CMomentumStickybombLauncher *pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(m_hLauncher);
 
         // Now stick our initial velocity into the interpolation history
         CInterpolatedVar<Vector> &interpolator = GetOriginInterpolator();
@@ -102,9 +102,9 @@ void CMomPipebomb::PostDataUpdate(DataUpdateType_t type)
     }
 }
 
-int CMomPipebomb::DrawModel(int flags)
+int CMomStickybomb::DrawModel(int flags)
 {
-    // Don't draw the pipebomb during the first 0.1 seconds.
+    // Don't draw the stickybomb during the first 0.1 seconds.
     if (gpGlobals->curtime - m_flSpawnTime < 0.1f)
     {
         return 0;
@@ -113,7 +113,7 @@ int CMomPipebomb::DrawModel(int flags)
     return BaseClass::DrawModel(flags);
 }
 
-void CMomPipebomb::Spawn()
+void CMomStickybomb::Spawn()
 {
     m_flSpawnTime = gpGlobals->curtime;
     BaseClass::Spawn();
@@ -121,7 +121,7 @@ void CMomPipebomb::Spawn()
 
 #else
 
-void CMomPipebomb::Spawn()
+void CMomStickybomb::Spawn()
 {
     BaseClass::Spawn();
     
@@ -140,30 +140,30 @@ void CMomPipebomb::Spawn()
     m_bTouched = false;
     m_flCreationTime = gpGlobals->curtime;
     m_takedamage = DAMAGE_NO;
-    SetGravity(1.0f);
-    SetFriction(MOM_PIPEBOMB_FRICTION);
-    SetElasticity(MOM_PIPEBOMB_ELASTICITY);
+    SetGravity(MOM_STICKYBOMB_GRAVITY);
+    SetFriction(MOM_STICKYBOMB_FRICTION);
+    SetElasticity(MOM_STICKYBOMB_ELASTICITY);
     
-    SetTouch(&CMomPipebomb::PipebombTouch);
-    // SetThink(&CMomPipebomb::DetonateThink);
+    SetTouch(&CMomStickybomb::StickybombTouch);
+    SetThink(&CMomStickybomb::StickybombThink);
     SetNextThink(gpGlobals->curtime + 0.2);
 }
 
-void CMomPipebomb::Precache()
+void CMomStickybomb::Precache()
 {
     BaseClass::Precache();
     PrecacheModel("models/weapons/w_models/w_stickybomb.mdl");
     // PrecacheParticleSystem("stickybombtrail_red");
-    // PrecacheScriptSound("Pipebomb.Bounce");
+    // PrecacheScriptSound("Stickybomb.Bounce");
 }
 
-void CMomPipebomb::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
+void CMomStickybomb::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
 
-CMomPipebomb *CMomPipebomb::Create(const Vector &position, const QAngle &angles, const Vector &velocity,
+CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &angles, const Vector &velocity,
                                    const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner)
 {
-    CMomPipebomb *pPipebomb =
-        static_cast<CMomPipebomb *>(CBaseEntity::CreateNoSpawn("momentum_pipebomb", position, angles, pOwner));
+    CMomStickybomb *pStickybomb =
+        static_cast<CMomStickybomb *>(CBaseEntity::CreateNoSpawn("momentum_stickybomb", position, angles, pOwner));
 
 	//Vector vecForward;
     //AngleVectors(vecAngles, &vecForward);
@@ -171,28 +171,29 @@ CMomPipebomb *CMomPipebomb::Create(const Vector &position, const QAngle &angles,
     //QAngle angles;
     //VectorAngles(velocity, angles);
 
-    if (pPipebomb)
+    if (pStickybomb)
     {
-        DispatchSpawn(pPipebomb);
-        pPipebomb->SetModel("models/weapons/w_models/w_stickybomb.mdl");
-        pPipebomb->InitPipebomb(velocity, angVelocity, pOwner);
-        pPipebomb->ApplyLocalAngularVelocityImpulse(angVelocity);
-        pPipebomb->SetAbsVelocity(velocity);
-        pPipebomb->SetThrower(pOwner);
-        pPipebomb->SetAbsAngles(angles);
+        DispatchSpawn(pStickybomb);
+        pStickybomb->SetModel("models/weapons/w_models/w_stickybomb.mdl");
+        pStickybomb->InitStickybomb(velocity, angVelocity, pOwner);
+        pStickybomb->ApplyLocalAngularVelocityImpulse(angVelocity);
+        pStickybomb->SetAbsVelocity(velocity);
+        pStickybomb->SetThrower(pOwner);
+        pStickybomb->SetAbsAngles(angles);
 
-        pPipebomb->SetDamage(112.0f);
-        // NOTE: Rocket/Pipebomb explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage
+        pStickybomb->SetDamage(112.0f);
+        // NOTE: Rocket/Stickybomb explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage
         // in mom_gamerules)
-        pPipebomb->SetRadius(146.0f);
+        pStickybomb->SetRadius(146.0f);
 
-        // pPipebomb->CreateSmokeTrail();
+        // pStickybomb->CreateSmokeTrail();
     }
 
-    return pPipebomb;
+    return pStickybomb;
 }
 
-void CMomPipebomb::InitPipebomb(const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner)
+void CMomStickybomb::InitStickybomb(const Vector &velocity, const AngularImpulse &angVelocity,
+                                  CBaseCombatCharacter *pOwner)
 {
     // We can't use OwnerEntity for grenades, because then the owner can't shoot them with his hitscan weapons (due to
     // collide rules) Thrower is used to store the person who threw the grenade, for damage purposes.
@@ -213,7 +214,7 @@ void CMomPipebomb::InitPipebomb(const Vector &velocity, const AngularImpulse &an
     }
 }
 
-void CMomPipebomb::Destroy(bool bNoGrenadeZone)
+void CMomStickybomb::Destroy(bool bNoGrenadeZone)
 {
     SetThink(&BaseClass::SUB_Remove);
     SetNextThink(gpGlobals->curtime);
@@ -233,7 +234,7 @@ void CMomPipebomb::Destroy(bool bNoGrenadeZone)
     }
 }
 
-void CMomPipebomb::Pulse()
+void CMomStickybomb::Pulse()
 {
     if (m_bPulsed == false)
     {
@@ -245,7 +246,7 @@ void CMomPipebomb::Pulse()
     }
 }
 
-void CMomPipebomb::RemovePipebomb(bool bBlinkOut)
+void CMomStickybomb::RemoveStickybomb(bool bBlinkOut)
 {
     // Kill it
     SetThink(&BaseClass::SUB_Remove);
@@ -266,9 +267,9 @@ void CMomPipebomb::RemovePipebomb(bool bBlinkOut)
     }
 }
 
-bool CMomPipebomb::ShouldNotDetonate(void) { return CNoGrenadesZone::IsInsideNoGrenadesZone(this); }
+bool CMomStickybomb::ShouldNotDetonate(void) { return CNoGrenadesZone::IsInsideNoGrenadesZone(this); }
 
-void CMomPipebomb::Detonate()
+void CMomStickybomb::Detonate()
 {
     trace_t tr;
     Vector vecSpot;
@@ -282,19 +283,19 @@ void CMomPipebomb::Detonate()
 
     if (ShouldNotDetonate())
     {
-        RemovePipebomb(true);
+        RemoveStickybomb(true);
         return;
     }
 
     if (m_bFizzle)
     {
         // g_pEffects->Sparks(GetAbsOrigin());
-        RemovePipebomb(true);
+        RemoveStickybomb(true);
         return;
     }
 }
 
-void CMomPipebomb::DestroyTrail()
+void CMomStickybomb::DestroyTrail()
 {
     if (m_hRocketTrail)
     {
@@ -304,7 +305,7 @@ void CMomPipebomb::DestroyTrail()
     }
 }
 
-void CMomPipebomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
+void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
     {
@@ -348,9 +349,9 @@ void CMomPipebomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     UTIL_Remove(this);
 }
 
-void CMomPipebomb::Fizzle(void) { m_bFizzle = true; }
+void CMomStickybomb::Fizzle(void) { m_bFizzle = true; }
 
-void CMomPipebomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
+void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
 {
     BaseClass::VPhysicsCollision(index, pEvent);
 
@@ -362,7 +363,7 @@ void CMomPipebomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
 
     bool bIsDynamicProp = (NULL != dynamic_cast<CDynamicProp *>(pHitEntity));
 
-    // Pipebombs stick to the world when they touch it
+    // Stickybombs stick to the world when they touch it
     if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
     {
         m_bTouched = true;
@@ -375,7 +376,7 @@ void CMomPipebomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
     }
 }
 
-void CMomPipebomb::PipebombTouch(CBaseEntity *pOther)
+void CMomStickybomb::StickybombTouch(CBaseEntity *pOther)
 {
     Assert(pOther);
 
@@ -396,7 +397,7 @@ void CMomPipebomb::PipebombTouch(CBaseEntity *pOther)
 
     bool bIsDynamicProp = (NULL != dynamic_cast<CDynamicProp *>(pOther));
 
-    // Pipebombs stick to the world when they touch it
+    // Stickybombs stick to the world when they touch it
     if (pOther && (pOther->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
     {
         m_bTouched = true;
@@ -407,15 +408,10 @@ void CMomPipebomb::PipebombTouch(CBaseEntity *pOther)
         // pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
         // m_vecImpactNormal.Negate();
     }
-
-    // Explode
-    // trace_t trace;
-    // memcpy(&trace, pTrace, sizeof(trace_t));
-    // Explode(&trace, pOther);
 }
 
-// TODO: Replace with pipebomb trail
-void CMomPipebomb::CreateSmokeTrail()
+// TODO: Replace with stickybomb trail
+void CMomStickybomb::CreateSmokeTrail()
 {
     if (m_hRocketTrail)
         return;
@@ -439,7 +435,7 @@ void CMomPipebomb::CreateSmokeTrail()
     }
 }
 
-void CMomPipebomb::DetonateThink(void)
+void CMomStickybomb::StickybombThink(void)
 {
     if (!IsInWorld())
     {
@@ -448,21 +444,4 @@ void CMomPipebomb::DetonateThink(void)
     }
     SetNextThink(gpGlobals->curtime + 0.2);
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Spawn a new pipebomb
-//
-// Input  : &vecOrigin -
-//          &vecAngles -
-//          *pentOwner -
-//
-// Output : CMomPipebomb
-//-----------------------------------------------------------------------------
-//CMomPipebomb *CMomPipebomb::EmitPipebomb(const Vector &vecOrigin, const Vector &velocity, const QAngle &vecAngles,
-//                                         CBaseEntity *pentOwner /*= nullptr*/)
-//{
-//    
-//}
-//
 #endif

@@ -3,23 +3,23 @@
 #include "baseprojectile.h"
 
 #ifdef CLIENT_DLL
-#define CMomPipebomb C_MomPipebomb
+#define CMomStickybomb C_MomStickybomb
 #else
 #include "smoke_trail.h"
-class CMomentumPipebombLauncher;
+class CMomentumStickybombLauncher;
 #endif
 
-class CMomPipebomb : public CBaseProjectile
+class CMomStickybomb : public CBaseProjectile
 {
   public:
-    DECLARE_CLASS(CMomPipebomb, CBaseProjectile);
+    DECLARE_CLASS(CMomStickybomb, CBaseProjectile);
     DECLARE_NETWORKCLASS();
 
     // This gets sent to the client and placed in the client's interpolation history
     // so the projectile starts out moving right off the bat.
     CNetworkVector(m_vInitialVelocity);
 
-    CMomPipebomb();
+    CMomStickybomb();
     float m_flCreationTime;
     bool m_bPulsed;
 
@@ -33,10 +33,11 @@ class CMomPipebomb : public CBaseProjectile
 
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
-    static CMomPipebomb *Create(const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity,
+    static CMomStickybomb *Create(const Vector &position, const QAngle &angles, const Vector &velocity,
+                                  const AngularImpulse &angVelocity,
                 CBaseCombatCharacter *pOwner);
-    void InitPipebomb(const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner);
-    void PipebombTouch(CBaseEntity *pOther);
+    void InitStickybomb(const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner);
+    void StickybombTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Destroy(bool bNoGrenadeZone);
     void DestroyTrail();
@@ -46,10 +47,10 @@ class CMomPipebomb : public CBaseProjectile
     bool GetHasTouchedWorld() { return m_bTouched; }
     void Fizzle();
     void Detonate();
-    void RemovePipebomb(bool bBlinkOut);
+    void RemoveStickybomb(bool bBlinkOut);
     bool ShouldNotDetonate(void);
     void Pulse();
-    void DetonateThink(void);
+    void StickybombThink(void);
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
 	void SetChargeTime(float flChargeTime) { m_flChargeTime = flChargeTime; }
 
@@ -61,11 +62,7 @@ class CMomPipebomb : public CBaseProjectile
     // sit still until it had gotten a few updates from the server.
     void SetupInitialTransmittedGrenadeVelocity(const Vector &velocity);
 
-    CHandle<CMomentumPipebombLauncher> m_hOwner;
-
-    //static CMomPipebomb *EmitPipebomb(const Vector &vecOrigin, const Vector &velocity,
-    //                                 const QAngle &vecAngles,
-    //                                 CBaseEntity *pentOwner = nullptr);
+    CHandle<CMomentumStickybombLauncher> m_hOwner;
 
     float m_flChargeTime;
     

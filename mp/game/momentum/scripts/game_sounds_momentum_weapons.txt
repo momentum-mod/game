@@ -68,7 +68,7 @@
     "wave" "weapons/rifle/Energy_Rifle_Lower_Bass.wav"
 }
 
-"Weapon_PipebombLauncher.Single"
+"Weapon_StickybombLauncher.Single"
 {
 	"channel"	"CHAN_WEAPON"
 	"volume"	"1.0"
@@ -76,7 +76,7 @@
 	"wave"		"weapons/stickybomblauncher_shoot.wav"
 }
 
-"Weapon_PipebombLauncher.Detonate"
+"Weapon_StickybombLauncher.Detonate"
 {
 	"channel"	"CHAN_WEAPON"
 	"volume"	"1.0"
@@ -84,7 +84,7 @@
 	"wave"		"weapons/stickybomblauncher_det.wav"
 }
 
-"Weapon_PipebombLauncher.Deny"
+"Weapon_StickybombLauncher.Deny"
 {
 	"channel"	"CHAN_WEAPON"
 	"volume"	"1.0"
@@ -92,7 +92,7 @@
 	"wave"		"weapons/stickybomblauncher_deny.wav"
 }
 
-"Weapon_PipebombLauncher.Charge"
+"Weapon_StickybombLauncher.Charge"
 {
 	"channel"	"CHAN_WEAPON"
 	"volume"	"1.0"

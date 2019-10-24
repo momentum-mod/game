@@ -46,7 +46,7 @@ static const char * s_WeaponAliasInfo[] =
     "knife",	// WEAPON_KNIFE
     "momentum_paintgun", // WEAPON_PAINTGUN
     "momentum_rocketlauncher", // WEAPON_ROCKETLAUNCHER
-	"momentum_pipebomblauncher", // WEAPON_PIPEBOMBLAUNCHER
+	"momentum_stickylauncher", // WEAPON_STICKYLAUNCHER
     nullptr,		// WEAPON_NONE
 };
 

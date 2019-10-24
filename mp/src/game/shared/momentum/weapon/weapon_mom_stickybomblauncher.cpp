@@ -1,40 +1,41 @@
 #include "cbase.h"
 
-#include "mom_pipebomb.h"
+#include "mom_stickybomb.h"
 #include "mom_player_shared.h"
 #include "mom_system_gamemode.h"
-#include "weapon_mom_pipebomblauncher.h"
+#include "weapon_mom_stickybomblauncher.h"
 
 #include "tier0/memdbgon.h"
 
-IMPLEMENT_NETWORKCLASS_ALIASED(MomentumPipebombLauncher, DT_MomentumPipebombLauncher)
+IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
-BEGIN_NETWORK_TABLE(CMomentumPipebombLauncher, DT_MomentumPipebombLauncher)
+BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 #ifdef CLIENT_DLL
-RecvPropInt(RECVINFO(m_iPipebombCount)),
+    RecvPropInt(RECVINFO(m_iStickybombCount)),
 #else
-SendPropInt(SENDINFO(m_iPipebombCount), 5, SPROP_UNSIGNED),
+    SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
 #endif
     END_NETWORK_TABLE()
 #ifdef CLIENT_DLL
-        BEGIN_PREDICTION_DATA(CMomentumPipebombLauncher) DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
-            END_PREDICTION_DATA()
+    BEGIN_PREDICTION_DATA(CMomentumStickybombLauncher) 
+	DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
+    END_PREDICTION_DATA()
 #endif
 
-                LINK_ENTITY_TO_CLASS(weapon_momentum_pipebomblauncher, CMomentumPipebombLauncher);
-PRECACHE_WEAPON_REGISTER(weapon_momentum_pipebomblauncher);
+LINK_ENTITY_TO_CLASS(weapon_momentum_stickylauncher, CMomentumStickybombLauncher);
+PRECACHE_WEAPON_REGISTER(weapon_momentum_stickylauncher);
 
-#define MOM_PIPEBOMB_MIN_CHARGE_VEL 900;
-#define MOM_PIPEBOMB_MAX_CHARGE_VEL 2400;
-#define MOM_PIPEBOMB_MAX_CHARGE_TIME 4.0f;
-#define MOM_WEAPON_PIPEBOMB_COUNT 8;
+#define MOM_STICKYBOMB_MIN_CHARGE_VEL 900;
+#define MOM_STICKYBOMB_MAX_CHARGE_VEL 2400;
+#define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f;
+#define MOM_WEAPON_STICKYBOMB_COUNT 8;
 
 #ifdef GAME_DLL
 // static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
 //                          "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
 #endif
 
-CMomentumPipebombLauncher::CMomentumPipebombLauncher()
+CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 {
     m_flTimeToIdleAfterFire = 0.7f;
     m_flIdleInterval = 20.0f;
@@ -42,19 +43,19 @@ CMomentumPipebombLauncher::CMomentumPipebombLauncher()
     m_flChargeBeginTime = 0.0f;
 }
 
-void CMomentumPipebombLauncher::Precache()
+void CMomentumStickybombLauncher::Precache()
 {
     BaseClass::Precache();
 
 #ifndef CLIENT_DLL
-    UTIL_PrecacheOther("momentum_pipebomb");
+    UTIL_PrecacheOther("momentum_stickybomb");
 #endif
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Reset the charge when we holster
 //-----------------------------------------------------------------------------
-bool CMomentumPipebombLauncher::Holster(CBaseCombatWeapon *pSwitchingTo)
+bool CMomentumStickybombLauncher::Holster(CBaseCombatWeapon *pSwitchingTo)
 {
     m_flChargeBeginTime = 0;
 
@@ -64,14 +65,14 @@ bool CMomentumPipebombLauncher::Holster(CBaseCombatWeapon *pSwitchingTo)
 //-----------------------------------------------------------------------------
 // Purpose: Reset the charge when we deploy
 //-----------------------------------------------------------------------------
-bool CMomentumPipebombLauncher::Deploy(void)
+bool CMomentumStickybombLauncher::Deploy(void)
 {
     m_flChargeBeginTime = 0;
 
     return BaseClass::Deploy();
 }
 
-void CMomentumPipebombLauncher::WeaponIdle(void)
+void CMomentumStickybombLauncher::WeaponIdle(void)
 {
     if (m_flChargeBeginTime > 0)
     {
@@ -83,22 +84,22 @@ void CMomentumPipebombLauncher::WeaponIdle(void)
     }
 }
 
-void CMomentumPipebombLauncher::ItemBusyFrame(void)
+void CMomentumStickybombLauncher::ItemBusyFrame(void)
 {
 #ifdef GAME_DLL
     CBasePlayer *pOwner = ToBasePlayer(GetOwner());
     if (pOwner && pOwner->m_nButtons & (1 << 11)) // IN_ATTACK2
     {
         // We need to do this to catch the case of player trying to detonate
-        // pipebombs while in the middle of reloading.
-        PipebombLauncherDetonate();
+        // stickybombs while in the middle of reloading.
+        StickybombLauncherDetonate();
     }
 #endif
 
     BaseClass::ItemBusyFrame();
 }
 
-void CMomentumPipebombLauncher::PipebombLauncherFire()
+void CMomentumStickybombLauncher::StickybombLauncherFire()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
@@ -167,16 +168,16 @@ void CMomentumPipebombLauncher::PipebombLauncherFire()
 #endif
 }
 
-void CMomentumPipebombLauncher::PipebombLauncherDetonate()
+void CMomentumStickybombLauncher::StickybombLauncherDetonate()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
-    if (m_iPipebombCount)
+    if (m_iStickybombCount)
     {
         if (!pPlayer)
             return;
 
-        if (DetonateRemotePipebombs(false))
+        if (DetonateRemoteStickybombs(false))
         {
             if (m_flLastDenySoundTime <= gpGlobals->curtime)
             {
@@ -196,7 +197,7 @@ void CMomentumPipebombLauncher::PipebombLauncherDetonate()
 //-----------------------------------------------------------------------------
 // Purpose: Return the origin & angles for a projectile fired from the player's gun
 //-----------------------------------------------------------------------------
-void CMomentumPipebombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc,
+void CMomentumStickybombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc,
                                                        QAngle *angForward)
 {
 #ifdef GAME_DLL
@@ -243,44 +244,44 @@ void CMomentumPipebombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer,
     }
 }
 
-float CMomentumPipebombLauncher::GetProjectileSpeed(void)
+float CMomentumStickybombLauncher::GetProjectileSpeed(void)
 {
     float flForwardSpeed = RemapValClamped((gpGlobals->curtime - m_flChargeBeginTime), 0.0f, 4.0f, 900, 2400);
 
     return flForwardSpeed;
 }
 
-CBaseEntity *CMomentumPipebombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
+CBaseEntity *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
 {
-    CBaseEntity *pProjectile = FirePipebomb(pPlayer);
+    CBaseEntity *pProjectile = FireStickybomb(pPlayer);
     if (pProjectile)
     {
 #ifdef GAME_DLL
-        // If we've gone over the max pipebomb count, detonate the oldest
-        if (m_Pipebombs.Count() >= 8)
+        // If we've gone over the max stickybomb count, detonate the oldest
+        if (m_Stickybombs.Count() >= 8)
         {
-            CMomPipebomb *pTemp = m_Pipebombs[0];
+            CMomStickybomb *pTemp = m_Stickybombs[0];
             if (pTemp)
             {
                 pTemp->Detonate(); // explode NOW
             }
 
-            m_Pipebombs.Remove(0);
+            m_Stickybombs.Remove(0);
         }
 
-        CMomPipebomb *pPipebomb = (CMomPipebomb *)pProjectile;
+        CMomStickybomb *pStickybomb = (CMomStickybomb *)pProjectile;
 
-        PipebombHandle hHandle;
-        hHandle = pPipebomb;
-        m_Pipebombs.AddToTail(hHandle);
+        StickybombHandle hHandle;
+        hHandle = pStickybomb;
+        m_Stickybombs.AddToTail(hHandle);
 
-        m_iPipebombCount = m_Pipebombs.Count();
+        m_iStickybombCount = m_Stickybombs.Count();
 #endif
     }
     return pProjectile;
 }
 
-CBaseEntity *CMomentumPipebombLauncher::FirePipebomb(CMomentumPlayer *pPlayer)
+CBaseEntity *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
 
@@ -294,7 +295,7 @@ CBaseEntity *CMomentumPipebombLauncher::FirePipebomb(CMomentumPlayer *pPlayer)
     Vector vecVelocity = (vecForward * 900.0f) + (vecUp * 200.0f) +
                          (random->RandomFloat(-10.0f, 10.0f) * vecRight) + (random->RandomFloat(-10.0f, 10.0f) * vecUp);
 
-    CMomPipebomb *pProjectile = CMomPipebomb::Create(
+    CMomStickybomb *pProjectile = CMomStickybomb::Create(
         vecSrc, pPlayer->EyeAngles(), vecVelocity, AngularImpulse(600, random->RandomInt(-1200, 1200), 0), pPlayer);
 
     return pProjectile;
@@ -303,39 +304,39 @@ CBaseEntity *CMomentumPipebombLauncher::FirePipebomb(CMomentumPlayer *pPlayer)
     return NULL;
 }
 
-void CMomentumPipebombLauncher::AddPipeBomb(CMomPipebomb *pBomb)
+void CMomentumStickybombLauncher::AddStickybomb(CMomStickybomb *pBomb)
 {
-    PipebombHandle hHandle;
+    StickybombHandle hHandle;
     hHandle = pBomb;
-    m_Pipebombs.AddToTail(hHandle);
+    m_Stickybombs.AddToTail(hHandle);
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: If a pipebomb has been removed, remove it from our list
+// Purpose: If a stickybomb has been removed, remove it from our list
 //-----------------------------------------------------------------------------
-void CMomentumPipebombLauncher::DeathNotice(CBaseEntity *pVictim)
+void CMomentumStickybombLauncher::DeathNotice(CBaseEntity *pVictim)
 {
-    Assert(dynamic_cast<CMomPipebomb *>(pVictim));
+    Assert(dynamic_cast<CMomStickybomb *>(pVictim));
 
-    PipebombHandle hHandle;
-    hHandle = (CMomPipebomb *)pVictim;
-    m_Pipebombs.FindAndRemove(hHandle);
+    StickybombHandle hHandle;
+    hHandle = (CMomStickybomb *)pVictim;
+    m_Stickybombs.FindAndRemove(hHandle);
 
-    m_iPipebombCount = m_Pipebombs.Count();
+    m_iStickybombCount = m_Stickybombs.Count();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Remove *with* explosions
 //-----------------------------------------------------------------------------
-bool CMomentumPipebombLauncher::DetonateRemotePipebombs(bool bFizzle)
+bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
 {
     bool bFailedToDetonate = false;
 
-    int count = m_Pipebombs.Count();
+    int count = m_Stickybombs.Count();
 
     for (int i = 0; i < count; i++)
     {
-        CMomPipebomb *pTemp = m_Pipebombs[i];
+        CMomStickybomb *pTemp = m_Stickybombs[i];
         if (pTemp)
         {
             // This guy will die soon enough.
@@ -349,7 +350,7 @@ bool CMomentumPipebombLauncher::DetonateRemotePipebombs(bool bFizzle)
 #else
             if (bFizzle == false)
             {
-                if ((gpGlobals->curtime - pTemp->m_flCreationTime) < 0.8f) // Pipebomb arm time
+                if ((gpGlobals->curtime - pTemp->m_flCreationTime) < 0.8f) // Stickybomb arm time
                 {
                     bFailedToDetonate = true;
                     continue;
@@ -366,13 +367,13 @@ bool CMomentumPipebombLauncher::DetonateRemotePipebombs(bool bFizzle)
     return bFailedToDetonate;
 }
 
-float CMomentumPipebombLauncher::GetChargeMaxTime(void) { return MOM_PIPEBOMB_MAX_CHARGE_TIME; }
+float CMomentumStickybombLauncher::GetChargeMaxTime(void) { return MOM_STICKYBOMB_MAX_CHARGE_TIME; }
 
-void CMomentumPipebombLauncher::PrimaryAttack() { PipebombLauncherFire(); }
+void CMomentumStickybombLauncher::PrimaryAttack() { StickybombLauncherFire(); }
 
-void CMomentumPipebombLauncher::SecondaryAttack() { PipebombLauncherDetonate(); }
+void CMomentumStickybombLauncher::SecondaryAttack() { StickybombLauncherDetonate(); }
 
-bool CMomentumPipebombLauncher::CanDeploy()
+bool CMomentumStickybombLauncher::CanDeploy()
 {
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         return false;
