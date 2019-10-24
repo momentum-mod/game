@@ -124,7 +124,7 @@ void CMomPipebomb::Spawn()
 void CMomPipebomb::Spawn()
 {
     BaseClass::Spawn();
-
+    
     UseClientSideAnimation();
     SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
     SetSolidFlags(FSOLID_NOT_STANDABLE);
@@ -134,16 +134,16 @@ void CMomPipebomb::Spawn()
     SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
     // UTIL_SetSize(this, Vector(-2.0f, -2.0f, -2.0f), Vector(2.0f, 2.0f, 2.0f));
     AddFlag(FL_GRENADE);
-
+    
     // VPhysicsInitNormal(SOLID_BBOX, 0, false);
-
+    
     m_bTouched = false;
     m_flCreationTime = gpGlobals->curtime;
     m_takedamage = DAMAGE_NO;
     SetGravity(1.0f);
     SetFriction(MOM_PIPEBOMB_FRICTION);
     SetElasticity(MOM_PIPEBOMB_ELASTICITY);
-
+    
     SetTouch(&CMomPipebomb::PipebombTouch);
     // SetThink(&CMomPipebomb::DetonateThink);
     SetNextThink(gpGlobals->curtime + 0.2);
@@ -345,7 +345,6 @@ void CMomPipebomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     //    UTIL_DecalTrace(pTrace, "Scorch");
     //}
 
-    // Remove the pipebomb
     UTIL_Remove(this);
 }
 

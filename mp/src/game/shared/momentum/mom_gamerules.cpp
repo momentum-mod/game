@@ -309,15 +309,9 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 
 bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info)
 {
-    // Allow self damage from rockets
-    if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_rocket"))
-        return true;
-    
-    // Allow self damage from stickies
-    if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_sticky"))
-        return true;
-
-    if (pVictim == info.GetAttacker() && FClassnameIs(info.GetInflictor(), "momentum_pipebomb"))
+    // Allow self damage from rockets and stickies
+    if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
+		FClassnameIs(info.GetInflictor(), "momentum_stickybomb")))
         return true;
 
     return !pVictim->IsPlayer();

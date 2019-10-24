@@ -135,8 +135,6 @@ void CMomentumPipebombLauncher::PipebombLauncherFire()
     DoFireEffects();
     WeaponSound(SINGLE);
 
-    // MOM_FIXME:
-    // Should no longer Assert, unsure about BaseGunFire() though
     SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 
     // player "shoot" animation
@@ -178,7 +176,7 @@ void CMomentumPipebombLauncher::PipebombLauncherDetonate()
         if (!pPlayer)
             return;
 
-        if (DetonateRemotePipebombs(false) == true)
+        if (DetonateRemotePipebombs(false))
         {
             if (m_flLastDenySoundTime <= gpGlobals->curtime)
             {
@@ -258,7 +256,6 @@ CBaseEntity *CMomentumPipebombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
     if (pProjectile)
     {
 #ifdef GAME_DLL
-
         // If we've gone over the max pipebomb count, detonate the oldest
         if (m_Pipebombs.Count() >= 8)
         {
@@ -349,7 +346,7 @@ bool CMomentumPipebombLauncher::DetonateRemotePipebombs(bool bFizzle)
             {
                 pTemp->Fizzle();
             }
-#endif
+#else
             if (bFizzle == false)
             {
                 if ((gpGlobals->curtime - pTemp->m_flCreationTime) < 0.8f) // Pipebomb arm time
@@ -358,6 +355,7 @@ bool CMomentumPipebombLauncher::DetonateRemotePipebombs(bool bFizzle)
                     continue;
                 }
             }
+#endif
 #ifdef GAME_DLL
 
             pTemp->Detonate();

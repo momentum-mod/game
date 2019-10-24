@@ -7,23 +7,25 @@
 #define CMomentumPipebombLauncher C_MomentumPipebombLauncher
 #endif
 
+// List of active pipebombs
+typedef CHandle<CMomPipebomb> PipebombHandle;
+
 class CMomentumPipebombLauncher : public CWeaponBaseGun
 {
   public:
     DECLARE_CLASS(CMomentumPipebombLauncher, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
-
+    
     CMomentumPipebombLauncher();
-
+    
     float m_flChargeBeginTime;
     float m_flLastDenySoundTime;
-
+    
 #ifdef CLIENT_DLL
     int m_iPipebombCount;
-#endif
 
-#ifdef GAME_DLL
+#else
     CNetworkVar(int, m_iPipebombCount);
 #endif
 
@@ -42,8 +44,6 @@ class CMomentumPipebombLauncher : public CWeaponBaseGun
     CBaseEntity *FirePipebomb(CMomentumPlayer *pPlayer);
     CBaseEntity *FireProjectile(CMomentumPlayer *pPlayer);
 
-    // List of active pipebombs
-    typedef CHandle<CMomPipebomb> PipebombHandle;
     CUtlVector<PipebombHandle> m_Pipebombs;
 
     void GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward);
