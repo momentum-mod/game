@@ -21,13 +21,9 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     
     float m_flChargeBeginTime;
     float m_flLastDenySoundTime;
-    
-#ifdef CLIENT_DLL
-    int m_iStickybombCount;
+    //int m_iStickybombCount;
 
-#else
     CNetworkVar(int, m_iStickybombCount);
-#endif
 
     void Precache() OVERRIDE;
     void PrimaryAttack() OVERRIDE;
@@ -49,7 +45,7 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     void GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward);
     float GetChargeMaxTime(void);
 
-        bool CanDeploy() OVERRIDE;
+    bool CanDeploy() OVERRIDE;
 
     CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_STICKYLAUNCHER; }
 

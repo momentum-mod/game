@@ -233,6 +233,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int OnTakeDamage_Alive(const CTakeDamageInfo &info) OVERRIDE;
 
     void ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &vecDir);
+    void ApplyPushFromSticky(const CTakeDamageInfo &info, Vector &vecDir);
 
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }

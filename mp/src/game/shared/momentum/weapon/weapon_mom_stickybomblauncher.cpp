@@ -41,6 +41,7 @@ CMomentumStickybombLauncher::CMomentumStickybombLauncher()
     m_flIdleInterval = 20.0f;
     m_flLastDenySoundTime = 0.0f;
     m_flChargeBeginTime = 0.0f;
+    m_iStickybombCount = 0;
 }
 
 void CMomentumStickybombLauncher::Precache()
@@ -227,10 +228,6 @@ void CMomentumStickybombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlaye
     // Offset actual start point
     *vecSrc = vecShootPos + (vecForward * vecOffset.x) + (vecRight * vecOffset.y) + (vecUp * vecOffset.z);
 
-    // Vector vecVelocity = (vecForward * GetProjectileSpeed()) + (vecUp * 200.0f) +
-    //                     (random->RandomFloat(-10.0f, 10.0f) * vecRight) + (random->RandomFloat(-10.0f, 10.0f) *
-    //                     vecUp);
-
     // Find angles that will get us to our desired end point
     // Only use the trace end if it wasn't too close, which results
     // in visually bizarre forward angles
@@ -246,9 +243,7 @@ void CMomentumStickybombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlaye
 
 float CMomentumStickybombLauncher::GetProjectileSpeed(void)
 {
-    float flForwardSpeed = RemapValClamped((gpGlobals->curtime - m_flChargeBeginTime), 0.0f, 4.0f, 900, 2400);
-
-    return flForwardSpeed;
+    return RemapValClamped((gpGlobals->curtime - m_flChargeBeginTime), 0.0f, 4.0f, 900, 2400);
 }
 
 CBaseEntity *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
@@ -350,7 +345,7 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
 #else
             if (bFizzle == false)
             {
-                if ((gpGlobals->curtime - pTemp->m_flCreationTime) < 0.8f) // Stickybomb arm time
+                if ((gpGlobals->curtime - pTemp->GetCreationTime()) < 0.8f) // Stickybomb arm time
                 {
                     bFailedToDetonate = true;
                     continue;
@@ -375,7 +370,7 @@ void CMomentumStickybombLauncher::SecondaryAttack() { StickybombLauncherDetonate
 
 bool CMomentumStickybombLauncher::CanDeploy()
 {
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         return false;
 
     return BaseClass::CanDeploy();

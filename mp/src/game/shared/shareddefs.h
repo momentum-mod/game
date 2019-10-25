@@ -99,14 +99,17 @@ public:
 #define VEC_DEAD_VIEWHEIGHT_SCALED( player )	( g_pGameRules->GetViewVectors()->m_vDeadViewHeight * player->GetModelScale() )
 
 #define WATERJUMP_HEIGHT			8
-#define WATERJUMP_FORWARD			( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 30.0f : 24.0f )
-#define WATERJUMP_UP				( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 300.0f : 256.0f )
-#define WATERWAIST_OFFSET			( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 12.0f : 0.0f )
+#define WATERJUMP_FORWARD                                                                                              \
+    ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 30.0f : 24.0f)
+#define WATERJUMP_UP				( (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 300.0f : 256.0f )
+#define WATERWAIST_OFFSET                                                                                              \
+    ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 12.0f : 0.0f)
 
 #define MAX_CLIMB_SPEED		200
 
-#define TIME_TO_DUCK        ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 0.2 : 0.4 )
-#define TIME_TO_DUCK_MS     ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 200.0f : 400.0f )
+#define TIME_TO_DUCK        ( (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 0.2 : 0.4 )
+#define TIME_TO_DUCK_MS                                                                                                \
+    ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 200.0f : 400.0f)
 #define TIME_TO_UNDUCK		0.2
 #define TIME_TO_UNDUCK_MS	200.0f
 

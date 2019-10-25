@@ -13,16 +13,16 @@
 #define MOM_STICKYBOMB_RADIUS 146.0f
 #define MOM_STICKYBOMB_INITIAL_SPEED 900.0f
 #define MOM_STICKYBOMB_MAX_SPEED 2400.0f
-#define MOM_STICKYBOMB_GRAVITY 1.0f // 0.5f in TF2 source code but that doesn't produce the same effect
+#define MOM_STICKYBOMB_GRAVITY 1.0f
 #define MOM_STICKYBOMB_FRICTION 0.8f
 #define MOM_STICKYBOMB_ELASTICITY 0.45f
 
 #ifndef CLIENT_DLL
 
-BEGIN_DATADESC(CMomStickybomb)
-// Fields
-DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
-    DEFINE_FIELD(m_flDamage, FIELD_FLOAT), DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
+    BEGIN_DATADESC(CMomStickybomb)
+        // Fields
+        DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
+        DEFINE_FIELD(m_flDamage, FIELD_FLOAT), DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
 
     // Functions
     DEFINE_ENTITYFUNC(Touch), END_DATADESC();
@@ -124,7 +124,7 @@ void CMomStickybomb::Spawn()
 void CMomStickybomb::Spawn()
 {
     BaseClass::Spawn();
-    
+
     UseClientSideAnimation();
     SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
     SetSolidFlags(FSOLID_NOT_STANDABLE);
@@ -132,18 +132,17 @@ void CMomStickybomb::Spawn()
     SetSolid(SOLID_BBOX);
     AddEffects(EF_NOSHADOW);
     SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
-    // UTIL_SetSize(this, Vector(-2.0f, -2.0f, -2.0f), Vector(2.0f, 2.0f, 2.0f));
     AddFlag(FL_GRENADE);
-    
-    // VPhysicsInitNormal(SOLID_BBOX, 0, false);
-    
+
+    VPhysicsInitNormal(SOLID_BBOX, 0, false);
+
     m_bTouched = false;
     m_flCreationTime = gpGlobals->curtime;
     m_takedamage = DAMAGE_NO;
     SetGravity(MOM_STICKYBOMB_GRAVITY);
     SetFriction(MOM_STICKYBOMB_FRICTION);
     SetElasticity(MOM_STICKYBOMB_ELASTICITY);
-    
+
     SetTouch(&CMomStickybomb::StickybombTouch);
     SetThink(&CMomStickybomb::StickybombThink);
     SetNextThink(gpGlobals->curtime + 0.2);
@@ -160,16 +159,16 @@ void CMomStickybomb::Precache()
 void CMomStickybomb::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
 
 CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &angles, const Vector &velocity,
-                                   const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner)
+                                       const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner)
 {
     CMomStickybomb *pStickybomb =
         static_cast<CMomStickybomb *>(CBaseEntity::CreateNoSpawn("momentum_stickybomb", position, angles, pOwner));
 
-	//Vector vecForward;
-    //AngleVectors(vecAngles, &vecForward);
+    // Vector vecForward;
+    // AngleVectors(vecAngles, &vecForward);
 
-    //QAngle angles;
-    //VectorAngles(velocity, angles);
+    // QAngle angles;
+    // VectorAngles(velocity, angles);
 
     if (pStickybomb)
     {
@@ -181,9 +180,9 @@ CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &ang
         pStickybomb->SetThrower(pOwner);
         pStickybomb->SetAbsAngles(angles);
 
-        pStickybomb->SetDamage(112.0f);
-        // NOTE: Rocket/Stickybomb explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage
-        // in mom_gamerules)
+        pStickybomb->SetDamage(120.0f);
+        // NOTE: Rocket/Stickybomb explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see
+        // RadiusDamage in mom_gamerules)
         pStickybomb->SetRadius(146.0f);
 
         // pStickybomb->CreateSmokeTrail();
@@ -193,44 +192,21 @@ CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &ang
 }
 
 void CMomStickybomb::InitStickybomb(const Vector &velocity, const AngularImpulse &angVelocity,
-                                  CBaseCombatCharacter *pOwner)
+                                    CBaseCombatCharacter *pOwner)
 {
-    // We can't use OwnerEntity for grenades, because then the owner can't shoot them with his hitscan weapons (due to
-    // collide rules) Thrower is used to store the person who threw the grenade, for damage purposes.
-    //SetOwnerEntity(NULL);
-    //SetThrower(pOwner);
+    // SetOwnerEntity(NULL);
+    // SetThrower(pOwner);
 
     SetupInitialTransmittedGrenadeVelocity(velocity);
 
-    //SetGravity(0.4f /*BaseClass::GetGrenadeGravity()*/);
-    //SetFriction(0.2f /*BaseClass::GetGrenadeFriction()*/);
-    //SetElasticity(0.45f /*BaseClass::GetGrenadeElasticity()*/);
-
+    // SetGravity(0.4f /*BaseClass::GetGrenadeGravity()*/);
+    // SetFriction(0.2f /*BaseClass::GetGrenadeFriction()*/);
+    // SetElasticity(0.45f /*BaseClass::GetGrenadeElasticity()*/);
 
     IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
     if (pPhysicsObject)
     {
         pPhysicsObject->AddVelocity(&velocity, &angVelocity);
-    }
-}
-
-void CMomStickybomb::Destroy(bool bNoGrenadeZone)
-{
-    SetThink(&BaseClass::SUB_Remove);
-    SetNextThink(gpGlobals->curtime);
-    SetTouch(NULL);
-    AddEffects(EF_NODRAW);
-    DestroyTrail();
-
-    if (bNoGrenadeZone)
-    {
-        CSprite *pGlowSprite = CSprite::SpriteCreate(NOGRENADE_SPRITE, GetAbsOrigin(), false);
-        if (pGlowSprite)
-        {
-            pGlowSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxFadeFast);
-            pGlowSprite->SetThink(&CSprite::SUB_Remove);
-            pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0);
-        }
     }
 }
 
@@ -246,7 +222,7 @@ void CMomStickybomb::Pulse()
     }
 }
 
-void CMomStickybomb::RemoveStickybomb(bool bBlinkOut)
+void CMomStickybomb::RemoveStickybomb(bool bNoGrenadeZone)
 {
     // Kill it
     SetThink(&BaseClass::SUB_Remove);
@@ -254,7 +230,7 @@ void CMomStickybomb::RemoveStickybomb(bool bBlinkOut)
     SetTouch(NULL);
     AddEffects(EF_NODRAW);
 
-    if (bBlinkOut)
+    if (bNoGrenadeZone)
     {
         // Sprite flash
         CSprite *pGlowSprite = CSprite::SpriteCreate(NOGRENADE_SPRITE, GetAbsOrigin(), false);
@@ -266,8 +242,6 @@ void CMomStickybomb::RemoveStickybomb(bool bBlinkOut)
         }
     }
 }
-
-bool CMomStickybomb::ShouldNotDetonate(void) { return CNoGrenadesZone::IsInsideNoGrenadesZone(this); }
 
 void CMomStickybomb::Detonate()
 {
@@ -281,7 +255,7 @@ void CMomStickybomb::Detonate()
 
     Explode(&tr, tr.m_pEnt);
 
-    if (ShouldNotDetonate())
+    if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
     {
         RemoveStickybomb(true);
         return;
@@ -289,7 +263,7 @@ void CMomStickybomb::Detonate()
 
     if (m_bFizzle)
     {
-        // g_pEffects->Sparks(GetAbsOrigin());
+        //g_pEffects->Sparks(GetAbsOrigin());
         RemoveStickybomb(true);
         return;
     }
@@ -309,7 +283,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
     {
-        Destroy(true);
+        RemoveStickybomb(true);
         return;
     }
 
@@ -341,6 +315,11 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     m_hOwner = nullptr;
 
+	if (pOther == nullptr)
+    {
+        return;
+	}
+
     //if (!pOther->IsPlayer())
     //{
     //    UTIL_DecalTrace(pTrace, "Scorch");
@@ -367,7 +346,7 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
     if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
     {
         m_bTouched = true;
-        //VPhysicsGetObject()->EnableMotion(false);
+        VPhysicsGetObject()->EnableMotion(false);
 
         // Save impact data for explosions.
         // m_bUseImpactNormal = true;
@@ -385,6 +364,7 @@ void CMomStickybomb::StickybombTouch(CBaseEntity *pOther)
         return;
 
     // Handle hitting skybox (disappear).
+    /*
     const trace_t *pTrace = &GetTouchTrace();
     if (pTrace->surface.flags & SURF_SKY)
     {
@@ -393,21 +373,7 @@ void CMomStickybomb::StickybombTouch(CBaseEntity *pOther)
         m_hOwner = nullptr;
         UTIL_Remove(this);
         return;
-    }
-
-    bool bIsDynamicProp = (NULL != dynamic_cast<CDynamicProp *>(pOther));
-
-    // Stickybombs stick to the world when they touch it
-    if (pOther && (pOther->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
-    {
-        m_bTouched = true;
-        // VPhysicsGetObject()->EnableMotion(false);
-
-        // Save impact data for explosions.
-        // m_bUseImpactNormal = true;
-        // pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
-        // m_vecImpactNormal.Negate();
-    }
+    }*/
 }
 
 // TODO: Replace with stickybomb trail
@@ -435,7 +401,7 @@ void CMomStickybomb::CreateSmokeTrail()
     }
 }
 
-void CMomStickybomb::StickybombThink(void)
+void CMomStickybomb::StickybombThink()
 {
     if (!IsInWorld())
     {

@@ -1977,6 +1977,24 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
         return 1;
     }
 
+	if (pAttacker == GetLocalPlayer() && FClassnameIs(pInflictor, "momentum_stickybomb"))
+    {
+        // Grab the vector of the incoming attack.
+        // (Pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
+        Vector vecDir = vec3_origin;
+        if (pInflictor)
+        {
+            vecDir = info.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - WorldSpaceCenter();
+            VectorNormalize(vecDir);
+        }
+
+        // Apply knockback
+        ApplyPushFromSticky(info, vecDir);
+
+        // Done
+        return 1;
+    }
+
     return BaseClass::OnTakeDamage_Alive(info);
 }
 
@@ -2009,6 +2027,34 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
             flScale *= MOM_DAMAGESCALE_SELF_ROCKET;
         }
     }
+
+    // Scale force if we're ducked
+    if (GetFlags() & FL_DUCKING)
+    {
+        // TF2 crouching collision box height used to be 55 units,
+        // before it was changed to 62, the old height is still used
+        // for calculating force from explosions.
+        flScale *= 82.0f / 55.0f;
+    }
+
+    // Clamp force to 1000.0f
+    float force = Min(info.GetDamage() * flScale, 1000.0f);
+    Vector vecForce = -vecDir * force;
+    ApplyAbsVelocityImpulse(vecForce);
+}
+
+void CMomentumPlayer::ApplyPushFromSticky(const CTakeDamageInfo &info, Vector &vecDir)
+{
+    if (info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE)
+        return;
+
+    CBaseEntity *pAttacker = info.GetAttacker();
+
+    if (!info.GetInflictor() || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
+        return;
+
+    // Apply different force scale when on ground
+    float flScale = 0.75*9;
 
     // Scale force if we're ducked
     if (GetFlags() & FL_DUCKING)

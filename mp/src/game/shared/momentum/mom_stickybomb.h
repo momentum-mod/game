@@ -20,13 +20,17 @@ class CMomStickybomb : public CBaseProjectile
     CNetworkVector(m_vInitialVelocity);
 
     CMomStickybomb();
+
     float m_flCreationTime;
     bool m_bPulsed;
 
 #ifdef CLIENT_DLL
+  public:
     virtual int DrawModel(int flags) OVERRIDE;
     virtual void Spawn() OVERRIDE;
     virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
+    float GetCreationTime() { return m_flCreationTime; }
+    bool GetHasPulsed() { return m_bPulsed; }
 
     float m_flSpawnTime;
 #else
@@ -34,12 +38,10 @@ class CMomStickybomb : public CBaseProjectile
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
     static CMomStickybomb *Create(const Vector &position, const QAngle &angles, const Vector &velocity,
-                                  const AngularImpulse &angVelocity,
-                CBaseCombatCharacter *pOwner);
+                                  const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner);
     void InitStickybomb(const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner);
     void StickybombTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
-    void Destroy(bool bNoGrenadeZone);
     void DestroyTrail();
 
     float GetRadius() { return m_flRadius; }
@@ -47,12 +49,11 @@ class CMomStickybomb : public CBaseProjectile
     bool GetHasTouchedWorld() { return m_bTouched; }
     void Fizzle();
     void Detonate();
-    void RemoveStickybomb(bool bBlinkOut);
-    bool ShouldNotDetonate(void);
+    void RemoveStickybomb(bool bNoGrenadeZone);
     void Pulse();
-    void StickybombThink(void);
+    void StickybombThink();
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
-	void SetChargeTime(float flChargeTime) { m_flChargeTime = flChargeTime; }
+    void SetChargeTime(float flChargeTime) { m_flChargeTime = flChargeTime; }
 
     void SetRadius(float flRadius) { m_flRadius = flRadius; }
     void SetDamage(float flDamage) OVERRIDE { m_flDamage = flDamage; }
@@ -65,7 +66,6 @@ class CMomStickybomb : public CBaseProjectile
     CHandle<CMomentumStickybombLauncher> m_hOwner;
 
     float m_flChargeTime;
-    
 
   protected:
     void CreateSmokeTrail();
@@ -73,7 +73,7 @@ class CMomStickybomb : public CBaseProjectile
     CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
     float m_flRadius;
-    //CNetworkVar(bool, m_bTouched);
+    // CNetworkVar(bool, m_bTouched);
     bool m_bTouched;
     bool m_bFizzle;
 

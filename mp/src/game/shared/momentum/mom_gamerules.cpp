@@ -89,7 +89,7 @@ ConVar ammo_paint_max("ammo_paint_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_rocket_max("ammo_rocket_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_sticky_max("ammo_sticky_max", "-2", FCVAR_REPLICATED);
 
-    CMomentumGameRules::CMomentumGameRules()
+CMomentumGameRules::CMomentumGameRules()
 {
 }
 
@@ -125,7 +125,7 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68),    // eye position
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         return &g_MOMViewVectorsRJ;
 
     return &g_MOMViewVectors;
@@ -327,8 +327,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
 
     const auto initialRadiusSqr = flRadius * flRadius;
     // iterate on all entities in the vicinity.
-    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr;
-         sphere.NextEntity())
+    for (CEntitySphereQuery sphere(vecSrc, flRadius); (pEntity = sphere.GetCurrentEntity()) != nullptr; sphere.NextEntity())
     {
         if (pEntity == pEntityIgnore || pEntity->m_takedamage == DAMAGE_NO)
         {
@@ -370,7 +369,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
 
     if (pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
-        flRadius = 1210.0f; // Sticky self-damage radius is 1210.0f // No it isn't
+        flRadius = 146.0f; // Sticky self-damage radius is 146.0f
 
         Vector nearestPoint;
         pAttacker->CollisionProp()->CalcNearestPoint(vecSrc, &nearestPoint);
@@ -413,8 +412,7 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
     }
 
     // Adjust the damage - apply falloff.
-    float flAdjustedDamage =
-        RemapValClamped(flDistanceToEntity, 0.0f, flRadius, info.GetDamage(), info.GetDamage() * falloff);
+    float flAdjustedDamage = RemapValClamped(flDistanceToEntity, 0.0f, flRadius, info.GetDamage(), info.GetDamage() * falloff);
 
     if (flAdjustedDamage <= 0)
         return;

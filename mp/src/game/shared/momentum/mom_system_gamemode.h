@@ -77,6 +77,18 @@ public:
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
 };
 
+class CGameMode_SJ : public CGameModeBase
+{
+  public:
+    GameMode_t GetType() override { return GAMEMODE_SJ; }
+    const char *GetStatusString() override { return "Sticky Jumping"; }
+    const char *GetDiscordIcon() override { return "mom_icon_sj"; }
+    const char *GetMapPrefix() override { return "sj_"; }
+    void SetGameModeVars() override;
+    bool PlayerHasAutoBhop() override { return false; }
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+};
+
 class CGameMode_Tricksurf : public CGameModeBase
 {
 public:

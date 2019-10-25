@@ -81,11 +81,31 @@ void CGameMode_RJ::SetGameModeVars()
     sv_considered_on_ground.SetValue(2);
 }
 
+void CGameMode_SJ::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    // SJ-specific
+    sv_airaccelerate.SetValue(10);
+    sv_accelerate.SetValue(10);
+    sv_maxspeed.SetValue(280);
+    sv_stopspeed.SetValue(100);
+    sv_considered_on_ground.SetValue(2);
+}
+
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
     pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
     pPlayer->GiveNamedItem("weapon_momentum_shotgun");
+#endif
+}
+
+void CGameMode_SJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+#ifdef GAME_DLL
+    pPlayer->GiveNamedItem("weapon_momentum_stickylauncher");
+    //pPlayer->GiveNamedItem("weapon_momentum_grenadelauncher"); //TODO: Add Grenade Launcher
 #endif
 }
 
@@ -106,6 +126,7 @@ CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
     m_vecGameModes.AddToTail(new CGameMode_Bhop);
     m_vecGameModes.AddToTail(new CGameMode_KZ);
     m_vecGameModes.AddToTail(new CGameMode_RJ);
+    m_vecGameModes.AddToTail(new CGameMode_SJ);
     m_vecGameModes.AddToTail(new CGameMode_Tricksurf);
     m_vecGameModes.AddToTail(new CGameMode_Trikz);
 }
