@@ -1,6 +1,7 @@
 #pragma once
 
 #include "beam_shared.h"
+#include "mom_shareddefs.h"
 
 class CMOMRulerToolMarker : public CBaseAnimating
 {
@@ -60,7 +61,7 @@ public:
     }
 
 private:
-    char m_szDistanceFormat[BUFSIZ];
+    wchar_t m_wDistanceFormat[BUFSIZELOCL];
     Vector m_vFirstPoint;
     Vector m_vSecondPoint;
 
