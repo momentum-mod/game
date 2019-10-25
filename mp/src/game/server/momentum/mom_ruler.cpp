@@ -53,7 +53,7 @@ CMOMRulerTool::~CMOMRulerTool()
 
 void CMOMRulerTool::PostInit()
 {
-    LOCALIZE_TOKEN(distanceFormat, "#MOM_Ruler_Distance", m_szDistanceFormat);
+    FIND_LOCALIZATION(m_wDistanceFormat, "#MOM_Ruler_Distance");
 }
 
 // Create a laser that will signal that both points are connected
@@ -151,7 +151,8 @@ void CMOMRulerTool::Measure()
         {
             char distString[BUFSIZ];
 
-            Q_snprintf(distString, BUFSIZ, m_szDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
+            const wchar_t *pwDistanceStr = CConstructLocalizedString(m_wDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
+            g_pVGuiLocalize->ConvertUnicodeToANSI(pwDistanceStr, distString, BUFSIZ);
             m_pBeamConnector->EntityText(0, distString, mom_ruler_duration.GetFloat());
             Msg("%s", distString);
 

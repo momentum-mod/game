@@ -96,7 +96,7 @@
         "MOM_Ruler_FirstPoint" "First point"
         "MOM_Ruler_SecondPoint" "Second point"
         "MOM_Ruler_Measure" "Measure distance"
-        "MOM_Ruler_Distance" "Distance: %.4f units\n"
+        "MOM_Ruler_Distance" "Distance: %s1 units\n"
         "MOM_Ruler_ToggleMenu" "Toggle showing Ruler Menu"
 
     //Comparison Panel
