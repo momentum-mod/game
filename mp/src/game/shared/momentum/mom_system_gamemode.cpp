@@ -3,6 +3,7 @@
 #include "mom_system_gamemode.h"
 #include "movevars_shared.h"
 #include "mom_player_shared.h"
+#include "fmtstr.h"
 
 #ifdef GAME_DLL
 #include "momentum/tickset.h"
@@ -53,8 +54,11 @@ void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 
 void CGameModeBase::ExecGameModeCfg()
 {
-#ifdef CLIENT_DLL // Without this, the game fails to build
-    engine->ClientCmd_Unrestricted(GetGameModeCfg());
+#ifdef CLIENT_DLL // Without this ifdef, the game fails to build
+    if (GetGameModeCfg())
+    {
+        engine->ClientCmd_Unrestricted(CFmtStr("exec %s", GetGameModeCfg()));
+    }
 #endif
 }
 
