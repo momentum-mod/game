@@ -143,28 +143,6 @@ void CMomentumStickybombLauncher::StickybombLauncherFire()
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 #ifdef GAME_DLL
-
-	/*
-    Vector vForward, vRight, vUp;
-
-    pPlayer->EyeVectors(&vForward, &vRight, &vUp);
-
-    // Offset values from
-    // https://github.com/NicknineTheEagle/TF2-Base/blob/fcc7d838c289e0ec0e0dd1a189f51750cf21beb8/src/game/shared/tf/tf_weaponbase_gun.cpp#L396
-    Vector vecOffset(16.0f, 8.0f, -6.0f);
-    if (pPlayer->GetFlags() & FL_DUCKING)
-    {
-        vecOffset.z = 8.0f;
-    }
-    Vector vecSrc;
-    QAngle angForward;
-    GetProjectileFireSetup(pPlayer, vecOffset, &vecSrc, &angForward);
-
-    trace_t trace;
-    CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
-    UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
-	*/
-
     FireProjectile(pPlayer);
 #endif
 }
@@ -265,7 +243,6 @@ CBaseEntity *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlaye
         }
 
         CMomStickybomb *pStickybomb = (CMomStickybomb *)pProjectile;
-
         StickybombHandle hHandle;
         hHandle = pStickybomb;
         m_Stickybombs.AddToTail(hHandle);
@@ -279,8 +256,19 @@ CBaseEntity *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlaye
 CBaseEntity *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
-
+    static ConVarRef cl_righthand("cl_righthand");
+#else
+    extern ConVar cl_righthand;
+#endif
     Vector vecForward, vecRight, vecUp;
+
+    if (!cl_righthand.GetBool())
+    {
+        vecRight.y *= -1.0f;
+    }
+
+#ifdef GAME_DLL
+    
     AngleVectors(pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp);
 
     // Create grenades here!!
@@ -353,7 +341,6 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
             }
 #endif
 #ifdef GAME_DLL
-
             pTemp->Detonate();
 #endif
         }

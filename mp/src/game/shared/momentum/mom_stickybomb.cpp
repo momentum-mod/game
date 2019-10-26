@@ -180,7 +180,7 @@ CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &ang
         pStickybomb->SetThrower(pOwner);
         pStickybomb->SetAbsAngles(angles);
 
-        pStickybomb->SetDamage(120.0f);
+        pStickybomb->SetDamage(60.0f);
         // NOTE: Rocket/Stickybomb explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see
         // RadiusDamage in mom_gamerules)
         pStickybomb->SetRadius(146.0f);
@@ -315,11 +315,6 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     m_hOwner = nullptr;
 
-	if (pOther == nullptr)
-    {
-        return;
-	}
-
     //if (!pOther->IsPlayer())
     //{
     //    UTIL_DecalTrace(pTrace, "Scorch");
@@ -328,7 +323,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     UTIL_Remove(this);
 }
 
-void CMomStickybomb::Fizzle(void) { m_bFizzle = true; }
+void CMomStickybomb::Fizzle() { m_bFizzle = true; }
 
 void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
 {
@@ -362,18 +357,6 @@ void CMomStickybomb::StickybombTouch(CBaseEntity *pOther)
     // Don't touch triggers
     if (pOther->IsSolidFlagSet(FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS))
         return;
-
-    // Handle hitting skybox (disappear).
-    /*
-    const trace_t *pTrace = &GetTouchTrace();
-    if (pTrace->surface.flags & SURF_SKY)
-    {
-        // DestroyTrail();
-
-        m_hOwner = nullptr;
-        UTIL_Remove(this);
-        return;
-    }*/
 }
 
 // TODO: Replace with stickybomb trail

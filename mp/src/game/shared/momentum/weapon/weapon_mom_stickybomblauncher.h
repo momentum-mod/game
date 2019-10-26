@@ -21,9 +21,11 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     
     float m_flChargeBeginTime;
     float m_flLastDenySoundTime;
-    //int m_iStickybombCount;
-
+#ifdef CLIENT_DLL    
+    int m_iStickybombCount;
+#else
     CNetworkVar(int, m_iStickybombCount);
+#endif
 
     void Precache() OVERRIDE;
     void PrimaryAttack() OVERRIDE;
