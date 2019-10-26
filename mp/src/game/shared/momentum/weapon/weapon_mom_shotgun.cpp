@@ -87,11 +87,11 @@ void CMomentumShotgun::PrimaryAttack()
     m_flNextSecondaryAttack = gpGlobals->curtime + PrimaryFireTime();
 #ifdef WEAPONS_USE_AMMO
     if (m_iClip1 != 0)
-        SetWeaponIdleTime(gpGlobals->curtime + 2.5);
+        SetWeaponIdleTime(gpGlobals->curtime + IdleTime());
     else
         SetWeaponIdleTime(gpGlobals->curtime + PrimaryFireTime());
 #else
-    SetWeaponIdleTime(gpGlobals->curtime + 2.5f);
+    SetWeaponIdleTime(gpGlobals->curtime + IdleTime());
 #endif
 
     m_fInSpecialReload = 0;
