@@ -2426,6 +2426,15 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         }
 
         mv->m_vecVelocity.z = 0.0f;
+        
+        // Check if player is actually on the ground for bounce fix
+        if (sv_bounce_fix.GetInt() == 1 && !CloseEnough(fabs(pm->plane.normal.z), 0.0f, FLT_EPSILON)
+            && pm->fraction == 0.0f)
+        {
+            // Allow the player to perform a bounce if they hit a floor or ceiling, and disallow if they hit someting
+            // angled
+            m_pPlayer->AllowBounce(CloseEnough(fabs(pm->plane.normal.z), 1.0f, FLT_EPSILON));
+        }
     }
 }
 
@@ -2590,6 +2599,12 @@ int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, 
             out.y = in.y;
             out.z = 0.0f;
         }
+    }
+    
+    if (sv_bounce_fix.GetInt() == 1 && !CloseEnough(fabs(normal.z), 0.0f, FLT_EPSILON))
+    {
+        // Allow the player to perform a bounce if they hit a floor or ceiling, and disallow if they hit someting angled
+        m_pPlayer->AllowBounce(CloseEnough(fabs(normal.z), 1.0f, FLT_EPSILON));
     }
 
     // Return blocking flags.

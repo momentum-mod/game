@@ -127,6 +127,7 @@ SendPropInt(SENDINFO(m_iLastZoomFOV), 8, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_afButtonDisabled)),
 SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
+SendPropBool(SENDINFO(m_bCanBounce)),
 SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
 SendPropArray3(SENDINFO_ARRAY3(m_iLinearTracks), SendPropInt(SENDINFO_ARRAY(m_iLinearTracks), 1, SPROP_UNSIGNED)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
@@ -568,6 +569,14 @@ void CMomentumPlayer::SetAutoBhopEnabled(bool bEnable)
 {
     m_bAutoBhop = bEnable;
     DevLog("%s autobhop\n", bEnable ? "Enabled" : "Disabled");
+}
+
+void CMomentumPlayer::AllowBounce(bool bAllow)
+{
+    if (bAllow != m_bCanBounce)
+        DevMsg("bounce:%d\n", bAllow);
+    
+    m_bCanBounce = bAllow;
 }
 
 void CMomentumPlayer::OnJump()
@@ -2023,6 +2032,8 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
     float force = Min(info.GetDamage() * flScale, 1000.0f);
     Vector vecForce = -vecDir * force;
     ApplyAbsVelocityImpulse(vecForce);
+    
+    AllowBounce(false);
 }
 
 bool CMomentumPlayer::CanPaint() { return m_flNextPaintTime <= gpGlobals->curtime; }

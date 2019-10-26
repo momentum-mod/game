@@ -15,6 +15,7 @@ RecvPropInt(RECVINFO(m_iLastZoomFOV), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
+RecvPropBool(RECVINFO(m_bCanBounce)),
 RecvPropArray3(RECVINFO_ARRAY(m_iZoneCount), RecvPropInt(RECVINFO(m_iZoneCount[0]), SPROP_UNSIGNED)),
 RecvPropArray3(RECVINFO_ARRAY(m_iLinearTracks), RecvPropInt(RECVINFO(m_iLinearTracks[0]), SPROP_UNSIGNED)),
 RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
@@ -150,4 +151,9 @@ float C_MomentumPlayer::GetCurrentRunTime()
         iTotalTicks = m_Data.m_iRunTime;
 
     return float(iTotalTicks) * m_Data.m_flTickRate;
+}
+
+void C_MomentumPlayer::AllowBounce(bool bAllow)
+{
+    m_bCanBounce = bAllow;
 }

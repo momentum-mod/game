@@ -6,6 +6,7 @@
 
 #include "cbase.h"
 #include "player.h"
+#include "momentum/mom_player.h"
 #include "usercmd.h"
 #include "igamemovement.h"
 #include "mathlib/mathlib.h"
@@ -455,7 +456,8 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// If the player is grounded, there is the possibility that they are bit above the ground and therefore might be
 	// above a trigger. The player could avoid this trigger by doing a jump, so to prevent this we extend the player
 	// collision by how much they are above the ground when checking for triggers
-	if (sv_bounce_fix.GetInt() == 2 && player->GetGroundEntity() != nullptr)
+	if (((sv_bounce_fix.GetInt() == 1 && !static_cast<CMomentumPlayer*>(player)->CanBounce()) || sv_bounce_fix.GetInt() == 2) &&
+        player->GetGroundEntity() != nullptr)
     {
         Vector mins = player->CollisionProp()->OBBMins();
         Vector maxs = player->CollisionProp()->OBBMaxs();

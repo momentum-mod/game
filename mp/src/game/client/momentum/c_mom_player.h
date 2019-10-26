@@ -31,6 +31,9 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 
     bool HasAutoBhop() { return m_bAutoBhop; }
     // void ResetStrafeSync();
+    
+    void AllowBounce(bool bAllow);
+    bool CanBounce() const { return m_bCanBounce; }
 
     // Returns the replay entity that the player is watching (first person only)
     int GetSpecEntIndex() const;
@@ -53,6 +56,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 
     int m_afButtonDisabled;
     CNetworkVar(bool, m_bAutoBhop);
+    CNetworkVar(bool, m_bCanBounce); // Is the player allowed to perform a bounce?
 
     // CMomRunEnt stuff
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }

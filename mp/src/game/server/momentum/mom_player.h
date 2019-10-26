@@ -86,6 +86,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool HasAutoBhop() const { return m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
     void ResetRunStats();
+    
+    void AllowBounce(bool bAllow);
+    bool CanBounce() const { return m_bCanBounce; }
 
     void LimitSpeed(float flSpeedLimit, bool bSaveZ);
 
@@ -124,6 +127,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int m_iLimitSpeedType;    // Limit speed only when touching ground?
     int m_iSuccessiveBhops;   // How many successive bhops this player has
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
+    CNetworkVar(bool, m_bCanBounce); // Is the player allowed to perform a bounce?
 
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance, bool &bPaint);
