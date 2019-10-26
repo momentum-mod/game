@@ -81,7 +81,7 @@ void CMomentumShotgun::PrimaryAttack()
 
     if (m_iClip1 != 0)
 #endif
-        m_flPumpTime = gpGlobals->curtime + 0.5;
+        m_flPumpTime = gpGlobals->curtime + PumpTime();
 
     m_flNextPrimaryAttack = gpGlobals->curtime + PrimaryFireTime();
     m_flNextSecondaryAttack = gpGlobals->curtime + PrimaryFireTime();

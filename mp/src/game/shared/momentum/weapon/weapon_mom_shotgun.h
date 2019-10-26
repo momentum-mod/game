@@ -25,6 +25,7 @@ class CMomentumShotgun : public CWeaponBaseGun
 
     float DeployTime() const OVERRIDE { return 0.5f; }
     float PrimaryFireTime() const { return 0.625f; }
+    float PumpTime() const { return 0.5f; }
 
   private:
     CMomentumShotgun(const CMomentumShotgun &);
