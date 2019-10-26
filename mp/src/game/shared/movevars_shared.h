@@ -54,5 +54,6 @@ extern ConVar r_AirboatViewZHeight;
 
 // Momentum convars
 extern ConVar sv_considered_on_ground;
+extern ConVar sv_bounce_fix;
 
 #endif // MOVEVARS_SHARED_H

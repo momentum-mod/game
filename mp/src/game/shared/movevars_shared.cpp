@@ -132,3 +132,4 @@ ConVar r_AirboatViewZHeight( "r_AirboatViewZHeight", "0.0", FCVAR_CHEAT | FCVAR_
 
 // Momentum convars
 ConVar sv_considered_on_ground("sv_considered_on_ground", "1.0", 0, "Amount of units you have to be above the ground to be considered on ground", true, 0.0f, true, 5.f);
+ConVar sv_bounce_fix("sv_bounce_fix", "0", 0, "Modify behaviour of bounces, 0 for default behaviour, 1 for no random bounces and knockback setups, 2 for no bounces at all", true, 0, true, 2);

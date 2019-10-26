@@ -11,6 +11,7 @@
 #include "mathlib/mathlib.h"
 #include "client.h"
 #include "player_command.h"
+#include "movevars_shared.h"
 #include "movehelper_server.h"
 #include "iservervehicle.h"
 #include "tier0/vprof.h"
@@ -451,6 +452,29 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		player->pl.v_angle.GetForModify() = player->GetLockViewanglesData();
 	}
 
+	// If the player is grounded, there is the possibility that they are bit above the ground and therefore might be
+	// above a trigger. The player could avoid this trigger by doing a jump, so to prevent this we extend the player
+	// collision by how much they are above the ground when checking for triggers
+	if (sv_bounce_fix.GetInt() == 2 && player->GetGroundEntity() != nullptr)
+    {
+        Vector mins = player->CollisionProp()->OBBMins();
+        Vector maxs = player->CollisionProp()->OBBMaxs();
+        Vector offset(0.0f, 0.0f, sv_considered_on_ground.GetFloat());
+        
+        // CGameMovement::TryTouchGround
+        trace_t pm;
+        Ray_t ray;
+        ray.Init(player->GetAbsOrigin(), player->GetAbsOrigin() - offset, mins, maxs);
+        UTIL_TraceRay(ray, MASK_PLAYERSOLID, player, COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
+        
+        if (pm.DidHit())
+        {
+            // Extend collision to ground (this will be undone in RunPostThink)
+            offset.z = player->GetAbsOrigin().z - pm.endpos.z;
+            player->SetCollisionBounds(mins - offset, maxs);
+        }
+    }
+	
 	// Let server invoke any needed impact functions
 	VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
 	moveHelper->ProcessImpacts();
