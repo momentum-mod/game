@@ -572,10 +572,7 @@ void CMomentumPlayer::SetAutoBhopEnabled(bool bEnable)
 }
 
 void CMomentumPlayer::AllowBounce(bool bAllow)
-{
-    if (bAllow != m_bCanBounce)
-        DevMsg("bounce:%d\n", bAllow);
-    
+{ 
     m_bCanBounce = bAllow;
 }
 

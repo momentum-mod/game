@@ -80,7 +80,7 @@ void CGameMode_RJ::SetGameModeVars()
     sv_maxspeed.SetValue(240);
     sv_stopspeed.SetValue(100);
     sv_considered_on_ground.SetValue(2);
-    sv_bounce_fix.SetValue(0);
+    sv_bounce_fix.SetValue(1);
 }
 
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)

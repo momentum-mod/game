@@ -2428,8 +2428,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         mv->m_vecVelocity.z = 0.0f;
         
         // Check if player is actually on the ground for bounce fix
-        if (sv_bounce_fix.GetInt() == 1 && !CloseEnough(fabs(pm->plane.normal.z), 0.0f, FLT_EPSILON)
-            && pm->fraction == 0.0f)
+        if (sv_bounce_fix.GetInt() == 1 && pm->fraction == 0.0f)
         {
             // Allow the player to perform a bounce if they hit a floor or ceiling, and disallow if they hit someting
             // angled
