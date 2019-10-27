@@ -6,6 +6,7 @@
 		"fieldName"		"CMapSelectorDialog"
 		"proportionalToParent"		"0"
 		"wide" "f253"
+		"tall" "f175"
 		"xpos"		"237"
 		"ypos"		"115"
 		"zpos"		"0"
