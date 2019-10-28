@@ -14,7 +14,6 @@
 #include "c_mom_online_ghost.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
-#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
