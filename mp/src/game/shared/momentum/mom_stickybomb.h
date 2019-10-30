@@ -23,14 +23,15 @@ class CMomStickybomb : public CBaseProjectile
 
     float m_flCreationTime;
     bool m_bPulsed;
+    float GetCreationTime() { return m_flCreationTime; }
 
 #ifdef CLIENT_DLL
   public:
     virtual int DrawModel(int flags) OVERRIDE;
     virtual void Spawn() OVERRIDE;
     virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
-    float GetCreationTime() { return m_flCreationTime; }
     bool GetHasPulsed() { return m_bPulsed; }
+    void Pulse();
 
     float m_flSpawnTime;
 #else
@@ -50,7 +51,6 @@ class CMomStickybomb : public CBaseProjectile
     void Fizzle();
     void Detonate();
     void RemoveStickybomb(bool bNoGrenadeZone);
-    void Pulse();
     void StickybombThink();
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
     void SetChargeTime(float flChargeTime) { m_flChargeTime = flChargeTime; }

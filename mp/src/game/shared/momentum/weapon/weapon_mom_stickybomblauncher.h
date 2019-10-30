@@ -10,7 +10,15 @@
 // List of active stickybombs
 typedef CHandle<CMomStickybomb> StickybombHandle;
 
-class CMomentumStickybombLauncher : public CWeaponBaseGun
+class IChargeUpWeapon
+{
+  public:
+    virtual float GetChargeBeginTime() = 0;
+
+    virtual float GetChargeMaxTime() = 0;
+};
+
+class CMomentumStickybombLauncher : public CWeaponBaseGun, public IChargeUpWeapon
 {
   public:
     DECLARE_CLASS(CMomentumStickybombLauncher, CWeaponBaseGun);
@@ -39,13 +47,15 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     int GetStickybombCount(void) { return m_iStickybombCount; }
     float GetProjectileSpeed(void);
     void WeaponIdle() OVERRIDE;
+    void LaunchGrenade();
     CBaseEntity *FireStickybomb(CMomentumPlayer *pPlayer);
     CBaseEntity *FireProjectile(CMomentumPlayer *pPlayer);
 
     CUtlVector<StickybombHandle> m_Stickybombs;
 
     void GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward);
-    float GetChargeMaxTime(void);
+    virtual float GetChargeBeginTime() { return m_flChargeBeginTime; }
+    virtual float GetChargeMaxTime();
 
     bool CanDeploy() OVERRIDE;
 

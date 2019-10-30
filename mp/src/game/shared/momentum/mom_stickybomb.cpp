@@ -19,10 +19,10 @@
 
 #ifndef CLIENT_DLL
 
-    BEGIN_DATADESC(CMomStickybomb)
-        // Fields
-        DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
-        DEFINE_FIELD(m_flDamage, FIELD_FLOAT), DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
+BEGIN_DATADESC(CMomStickybomb)
+// Fields
+DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
+    DEFINE_FIELD(m_flDamage, FIELD_FLOAT), DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
 
     // Functions
     DEFINE_ENTITYFUNC(Touch), END_DATADESC();
@@ -119,6 +119,18 @@ void CMomStickybomb::Spawn()
     BaseClass::Spawn();
 }
 
+void CMomStickybomb::Pulse()
+{
+    if (m_bPulsed == false)
+    {
+        if ((gpGlobals->curtime - m_flCreationTime) >= 0.8f)
+        {
+            ParticleProp()->Create("stickybomb_pulse_red", PATTACH_ABSORIGIN);
+            m_bPulsed = true;
+        }
+    }
+}
+
 #else
 
 void CMomStickybomb::Spawn()
@@ -152,7 +164,8 @@ void CMomStickybomb::Precache()
 {
     BaseClass::Precache();
     PrecacheModel("models/weapons/w_models/w_stickybomb.mdl");
-    // PrecacheParticleSystem("stickybombtrail_red");
+    PrecacheParticleSystem("stickybombtrail_red");
+    PrecacheParticleSystem("stickybomb_pulse_red");
     // PrecacheScriptSound("Stickybomb.Bounce");
 }
 
@@ -210,18 +223,6 @@ void CMomStickybomb::InitStickybomb(const Vector &velocity, const AngularImpulse
     }
 }
 
-void CMomStickybomb::Pulse()
-{
-    if (m_bPulsed == false)
-    {
-        if ((gpGlobals->curtime - m_flCreationTime) >= 0.8f)
-        {
-            // ParticleProp()->Create("stickybomb_pulse_red", PATTACH_ABSORIGIN);
-            m_bPulsed = true;
-        }
-    }
-}
-
 void CMomStickybomb::RemoveStickybomb(bool bNoGrenadeZone)
 {
     // Kill it
@@ -263,7 +264,7 @@ void CMomStickybomb::Detonate()
 
     if (m_bFizzle)
     {
-        //g_pEffects->Sparks(GetAbsOrigin());
+        // g_pEffects->Sparks(GetAbsOrigin());
         RemoveStickybomb(true);
         return;
     }
@@ -315,7 +316,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     m_hOwner = nullptr;
 
-    //if (!pOther->IsPlayer())
+    // if (!pOther->IsPlayer())
     //{
     //    UTIL_DecalTrace(pTrace, "Scorch");
     //}

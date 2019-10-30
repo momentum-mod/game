@@ -1,7 +1,8 @@
 #include "cbase.h"
 
-#include "mom_stickybomb.h"
+#include "in_buttons.h"
 #include "mom_player_shared.h"
+#include "mom_stickybomb.h"
 #include "mom_system_gamemode.h"
 #include "weapon_mom_stickybomblauncher.h"
 
@@ -11,18 +12,17 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybomb
 
 BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 #ifdef CLIENT_DLL
-    RecvPropInt(RECVINFO(m_iStickybombCount)),
+RecvPropInt(RECVINFO(m_iStickybombCount)),
 #else
-    SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
+SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
 #endif
     END_NETWORK_TABLE()
 #ifdef CLIENT_DLL
-    BEGIN_PREDICTION_DATA(CMomentumStickybombLauncher) 
-	DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
-    END_PREDICTION_DATA()
+        BEGIN_PREDICTION_DATA(CMomentumStickybombLauncher) DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
+            END_PREDICTION_DATA()
 #endif
 
-LINK_ENTITY_TO_CLASS(weapon_momentum_stickylauncher, CMomentumStickybombLauncher);
+                LINK_ENTITY_TO_CLASS(weapon_momentum_stickylauncher, CMomentumStickybombLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_stickylauncher);
 
 #define MOM_STICKYBOMB_MIN_CHARGE_VEL 900;
@@ -66,18 +66,18 @@ bool CMomentumStickybombLauncher::Holster(CBaseCombatWeapon *pSwitchingTo)
 //-----------------------------------------------------------------------------
 // Purpose: Reset the charge when we deploy
 //-----------------------------------------------------------------------------
-bool CMomentumStickybombLauncher::Deploy(void)
+bool CMomentumStickybombLauncher::Deploy()
 {
     m_flChargeBeginTime = 0;
 
     return BaseClass::Deploy();
 }
 
-void CMomentumStickybombLauncher::WeaponIdle(void)
+void CMomentumStickybombLauncher::WeaponIdle()
 {
     if (m_flChargeBeginTime > 0)
     {
-        // LaunchGrenade();
+        LaunchGrenade();
     }
     else
     {
@@ -85,11 +85,44 @@ void CMomentumStickybombLauncher::WeaponIdle(void)
     }
 }
 
-void CMomentumStickybombLauncher::ItemBusyFrame(void)
+void CMomentumStickybombLauncher::LaunchGrenade() 
+{
+    // Get the player owning the weapon.
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+
+    if (!pPlayer)
+        return;
+
+    SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+
+    pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+#ifdef GAME_DLL
+    CMomStickybomb *pProjectile = static_cast<CMomStickybomb*>(FireProjectile(pPlayer));
+    if (pProjectile)
+    {
+        // Save the charge time to scale the detonation timer.
+        pProjectile->SetChargeTime(gpGlobals->curtime - m_flChargeBeginTime);
+    }
+#endif
+
+    // Set next attack times.
+    m_flNextPrimaryAttack = gpGlobals->curtime + 0.7f;
+    m_flLastDenySoundTime = gpGlobals->curtime;
+    SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
+    pPlayer->m_iShotsFired++;
+
+	DoFireEffects();
+    WeaponSound(SINGLE);
+
+    m_flChargeBeginTime = 0;
+}
+
+void CMomentumStickybombLauncher::ItemBusyFrame()
 {
 #ifdef GAME_DLL
     CBasePlayer *pOwner = ToBasePlayer(GetOwner());
-    if (pOwner && pOwner->m_nButtons & (1 << 11)) // IN_ATTACK2
+    if (pOwner && pOwner->m_nButtons & (IN_ATTACK2)) // IN_ATTACK2
     {
         // We need to do this to catch the case of player trying to detonate
         // stickybombs while in the middle of reloading.
@@ -117,34 +150,19 @@ void CMomentumStickybombLauncher::StickybombLauncherFire()
         m_flChargeBeginTime = gpGlobals->curtime;
 
         SendWeaponAnim(ACT_VM_PULLBACK);
+        WeaponSound(SPECIAL3);
     }
     else
     {
         float flTotalChargeTime = gpGlobals->curtime - m_flChargeBeginTime;
 
-        WeaponSound(SPECIAL3);
+        //WeaponSound(SPECIAL3);
 
         if (flTotalChargeTime >= 4.0f)
         {
-            //FireProjectile(pPlayer);
+            LaunchGrenade();
         }
     }
-
-    m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + 0.7f;
-    SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
-    pPlayer->m_iShotsFired++;
-
-    DoFireEffects();
-    WeaponSound(SINGLE);
-
-    SendWeaponAnim(ACT_VM_PRIMARYATTACK);
-
-    // player "shoot" animation
-    pPlayer->SetAnimation(PLAYER_ATTACK1);
-
-#ifdef GAME_DLL
-    FireProjectile(pPlayer);
-#endif
 }
 
 void CMomentumStickybombLauncher::StickybombLauncherDetonate()
@@ -177,7 +195,7 @@ void CMomentumStickybombLauncher::StickybombLauncherDetonate()
 // Purpose: Return the origin & angles for a projectile fired from the player's gun
 //-----------------------------------------------------------------------------
 void CMomentumStickybombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc,
-                                                       QAngle *angForward)
+                                                         QAngle *angForward)
 {
 #ifdef GAME_DLL
     static ConVarRef cl_righthand("cl_righthand");
@@ -219,7 +237,7 @@ void CMomentumStickybombLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlaye
     }
 }
 
-float CMomentumStickybombLauncher::GetProjectileSpeed(void)
+float CMomentumStickybombLauncher::GetProjectileSpeed()
 {
     return RemapValClamped((gpGlobals->curtime - m_flChargeBeginTime), 0.0f, 4.0f, 900, 2400);
 }
@@ -268,15 +286,15 @@ CBaseEntity *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlaye
     }
 
 #ifdef GAME_DLL
-    
+
     AngleVectors(pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp);
 
     // Create grenades here!!
     Vector vecSrc = pPlayer->Weapon_ShootPosition();
     vecSrc += vecForward * 16.0f + vecRight * 8.0f + vecUp * -6.0f;
 
-    Vector vecVelocity = (vecForward * 900.0f) + (vecUp * 200.0f) +
-                         (random->RandomFloat(-10.0f, 10.0f) * vecRight) + (random->RandomFloat(-10.0f, 10.0f) * vecUp);
+    Vector vecVelocity = (vecForward * GetProjectileSpeed()) + (vecUp * 200.0f) + (random->RandomFloat(-10.0f, 10.0f) * vecRight) +
+                         (random->RandomFloat(-10.0f, 10.0f) * vecUp);
 
     CMomStickybomb *pProjectile = CMomStickybomb::Create(
         vecSrc, pPlayer->EyeAngles(), vecVelocity, AngularImpulse(600, random->RandomInt(-1200, 1200), 0), pPlayer);
@@ -330,7 +348,7 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
             {
                 pTemp->Fizzle();
             }
-#else
+#endif
             if (bFizzle == false)
             {
                 if ((gpGlobals->curtime - pTemp->GetCreationTime()) < 0.8f) // Stickybomb arm time
@@ -339,7 +357,6 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
                     continue;
                 }
             }
-#endif
 #ifdef GAME_DLL
             pTemp->Detonate();
 #endif
@@ -349,7 +366,7 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
     return bFailedToDetonate;
 }
 
-float CMomentumStickybombLauncher::GetChargeMaxTime(void) { return MOM_STICKYBOMB_MAX_CHARGE_TIME; }
+float CMomentumStickybombLauncher::GetChargeMaxTime() { return MOM_STICKYBOMB_MAX_CHARGE_TIME; }
 
 void CMomentumStickybombLauncher::PrimaryAttack() { StickybombLauncherFire(); }
 
