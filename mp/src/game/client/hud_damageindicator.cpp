@@ -187,7 +187,8 @@ void CHudDamageIndicator::DrawDamageIndicator(int x0, int y0, int x1, int y1, fl
 
     int iAlpha = alpha * 255;
     Color IndicatorColor;
-    MomUtil::GetColorFromHex(mom_hud_damageindicator_color.GetString(), IndicatorColor);
+    if (!MomUtil::GetColorFromHex(mom_hud_damageindicator_color.GetString(), IndicatorColor))
+        IndicatorColor = Color(152, 0, 0); // #980000
     int iIndicatorRed = IndicatorColor.r();
     int iIndicatorGreen = IndicatorColor.g();
     int iIndicatorBlue = IndicatorColor.b();
