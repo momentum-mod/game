@@ -118,7 +118,7 @@ $Project "Client (Momentum)"
                     $File "hl2\hud_weaponselection.cpp"
                     $File "momentum\ui\HUD\hud_spectatorinfo.h"
                     $File "momentum\ui\HUD\hud_spectatorinfo.cpp"
-                    $File "hud_damageindicator.cpp"
+                    $File "momentum\ui\HUD\hud_damageindicator.cpp"
                 }
                 
                 $Folder "Controls"
