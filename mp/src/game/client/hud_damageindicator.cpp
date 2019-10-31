@@ -5,18 +5,10 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include <KeyValues.h>
-#include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
-#include "hud.h"
 #include "hud_macros.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "ieffects.h"
-#include "materialsystem/IMaterial.h"
-#include "materialsystem/IMesh.h"
-#include "materialsystem/imaterialvar.h"
-#include "vguimatsurface/IMatSystemSurface.h"
 #include "view.h"
 #include "util/mom_util.h"
 
