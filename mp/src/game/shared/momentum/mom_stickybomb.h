@@ -24,6 +24,7 @@ class CMomStickybomb : public CBaseProjectile
     float m_flCreationTime;
     bool m_bPulsed;
     float GetCreationTime() { return m_flCreationTime; }
+    CNetworkVar(bool, m_bTouched);
 
 #ifdef CLIENT_DLL
   public:
@@ -73,8 +74,6 @@ class CMomStickybomb : public CBaseProjectile
     CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
     float m_flRadius;
-    // CNetworkVar(bool, m_bTouched);
-    bool m_bTouched;
     bool m_bFizzle;
 
   private:

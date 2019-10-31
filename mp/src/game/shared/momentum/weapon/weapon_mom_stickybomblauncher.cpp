@@ -16,13 +16,15 @@ RecvPropInt(RECVINFO(m_iStickybombCount)),
 #else
 SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
 #endif
-    END_NETWORK_TABLE()
+END_NETWORK_TABLE()
+
 #ifdef CLIENT_DLL
-        BEGIN_PREDICTION_DATA(CMomentumStickybombLauncher) DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
-            END_PREDICTION_DATA()
+BEGIN_PREDICTION_DATA(CMomentumStickybombLauncher) 
+    DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
+END_PREDICTION_DATA()
 #endif
 
-                LINK_ENTITY_TO_CLASS(weapon_momentum_stickylauncher, CMomentumStickybombLauncher);
+LINK_ENTITY_TO_CLASS(weapon_momentum_stickylauncher, CMomentumStickybombLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_stickylauncher);
 
 #define MOM_STICKYBOMB_MIN_CHARGE_VEL 900;

@@ -18,11 +18,11 @@
 #define MOM_STICKYBOMB_ELASTICITY 0.45f
 
 #ifndef CLIENT_DLL
-
 BEGIN_DATADESC(CMomStickybomb)
-// Fields
-DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
+    // Fields
+    DEFINE_FIELD(m_hOwner, FIELD_EHANDLE), DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
     DEFINE_FIELD(m_flDamage, FIELD_FLOAT), DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
+    DEFINE_FIELD(m_bPulsed, FIELD_BOOLEAN),
 
     // Functions
     DEFINE_ENTITYFUNC(Touch), END_DATADESC();
@@ -32,16 +32,18 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 
 BEGIN_NETWORK_TABLE(CMomStickybomb, DT_MomStickybomb)
 #ifdef CLIENT_DLL
-RecvPropVector(RECVINFO(m_vInitialVelocity))
-// RecvPropInt(RECVINFO(m_bTouched))
+    RecvPropVector(RECVINFO(m_vInitialVelocity)), RecvPropInt(RECVINFO(m_bTouched)),
+    RecvPropVector(RECVINFO_NAME(m_vecNetworkOrigin, m_vecOrigin)),
 #else
 SendPropVector(SENDINFO(m_vInitialVelocity),
                20,    // nbits
                0,     // flags
                -3000, // low value
                3000   // high value
-               )
-// SendPropBool(SENDINFO(m_bTouched))
+               ),
+    SendPropExclude("DT_BaseEntity", "m_vecOrigin"), SendPropBool(SENDINFO(m_bTouched)),
+    SendPropVector(SENDINFO(m_vecOrigin), -1, SPROP_COORD_MP_INTEGRAL | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT,
+                   SendProxy_Origin),
 #endif
     END_NETWORK_TABLE();
 
@@ -74,9 +76,8 @@ void CMomStickybomb::PostDataUpdate(DataUpdateType_t type)
     if (type == DATA_UPDATE_CREATED)
     {
         m_flCreationTime = gpGlobals->curtime;
-        // ParticleProp()->Create("stickybombtrail_red", PATTACH_ABSORIGIN_FOLLOW);
+        ParticleProp()->Create("stickybombtrail_red", PATTACH_ABSORIGIN_FOLLOW);
         m_bPulsed = false;
-        // CMomentumStickybombLauncher *pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(m_hLauncher);
 
         // Now stick our initial velocity into the interpolation history
         CInterpolatedVar<Vector> &interpolator = GetOriginInterpolator();
@@ -177,12 +178,6 @@ CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &ang
     CMomStickybomb *pStickybomb =
         static_cast<CMomStickybomb *>(CBaseEntity::CreateNoSpawn("momentum_stickybomb", position, angles, pOwner));
 
-    // Vector vecForward;
-    // AngleVectors(vecAngles, &vecForward);
-
-    // QAngle angles;
-    // VectorAngles(velocity, angles);
-
     if (pStickybomb)
     {
         DispatchSpawn(pStickybomb);
@@ -207,14 +202,7 @@ CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &ang
 void CMomStickybomb::InitStickybomb(const Vector &velocity, const AngularImpulse &angVelocity,
                                     CBaseCombatCharacter *pOwner)
 {
-    // SetOwnerEntity(NULL);
-    // SetThrower(pOwner);
-
     SetupInitialTransmittedGrenadeVelocity(velocity);
-
-    // SetGravity(0.4f /*BaseClass::GetGrenadeGravity()*/);
-    // SetFriction(0.2f /*BaseClass::GetGrenadeFriction()*/);
-    // SetElasticity(0.45f /*BaseClass::GetGrenadeElasticity()*/);
 
     IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
     if (pPhysicsObject)
