@@ -56,7 +56,7 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
     void Init() override;
     void Reset() override;
     bool ShouldDraw() override;
-
+    void PerformLayout() override;
     // Handler for our message
     void MsgFunc_DamageIndicator(bf_read &msg);
 
@@ -293,6 +293,15 @@ void CHudDamageIndicator::MsgFunc_DamageIndicator(bf_read &msg)
     m_vecDamages.AddToTail(damage);
 }
 
+void CHudDamageIndicator::PerformLayout() 
+{
+    int screenWide, screenTall;
+    int x, y;
+    GetPos(x, y);
+    GetHudSize(screenWide, screenTall);
+    SetBounds(0, y, screenWide, screenTall - y);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: hud scheme settings
 //-----------------------------------------------------------------------------
@@ -300,11 +309,4 @@ void CHudDamageIndicator::ApplySchemeSettings(vgui::IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
     SetPaintBackgroundEnabled(false);
-
-    // set our size
-    int screenWide, screenTall;
-    int x, y;
-    GetPos(x, y);
-    GetHudSize(screenWide, screenTall);
-    SetBounds(0, y, screenWide, screenTall - y);
 }
