@@ -12,28 +12,39 @@
 #include "view.h"
 #include "util/mom_util.h"
 
-using namespace vgui;
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+using namespace vgui;
+
 // Convars for customizing damage indicator
-static ConVar enabled("mom_hud_damageindicator", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                      "Enable or disable damage indicator.\n");
-static ConVar minwidth("mom_hud_damageindicator_minwidth", "20", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                       "Minimum width of the damage indicator.\n");
-static ConVar maxwidth("mom_hud_damageindicator_maxwidth", "20", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                       "Maximum width of the damage indicator \n");
-static ConVar minheight("mom_hud_damageindicator_minheight", "60", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                        "Minimum height of the damage indicator.\n");
-static ConVar maxheight("mom_hud_damageindicator_maxheight", "120", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                        "Maximum height of the damage indicator \n");
-static ConVar radius("mom_hud_damageindicator_radius", "120", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                     "How far away the damage indicators are from the crosshair.\n");
-static ConVar lifetime("mom_hud_damageindicator_lifetime", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                       "How long the indicator stays on screen.\n");
-static ConVar dmgcolor("mom_hud_damageindicator_color", "980000", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                       "Color of the damage indicator.\n");
+static ConVar mom_hud_damageindicator_enable("mom_hud_damageindicator_enable", "1",
+                                             FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                             "Enable or disable damage indicator.\n");
+static ConVar mom_hud_damageindicator_minwidth("mom_hud_damageindicator_minwidth", "20",
+                                               FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                               "Width of the damage indicator at minimum damage.\n");
+static ConVar mom_hud_damageindicator_maxwidth("mom_hud_damageindicator_maxwidth", "20",
+                                               FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                               "Width of the damage indicator at maximum damage.\n");
+static ConVar mom_hud_damageindicator_minheight("mom_hud_damageindicator_minheight", "60",
+                                                FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                                "Height of the damage indicator at minimum damage.\n");
+static ConVar mom_hud_damageindicator_maxheight("mom_hud_damageindicator_maxheight", "120",
+                                                FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                                "Height of the damage indicator at maximum damage.\n");
+static ConVar mom_hud_damageindicator_radius("mom_hud_damageindicator_radius", "120",
+                                             FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                             "How far away the damage indicators are from the crosshair.\n");
+static ConVar mom_hud_damageindicator_minlifetime("mom_hud_damageindicator_minlifetime", "1",
+                                               FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                               "How long the indicator stays on screen at minimum damage.\n");
+static ConVar mom_hud_damageindicator_maxlifetime("mom_hud_damageindicator_maxlifetime", "1",
+                                               FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                               "How long the indicator stays on screen at maximum damage.\n");
+static ConVar mom_hud_damageindicator_color("mom_hud_damageindicator_color", "980000",
+                                            FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                                            "RGB color of the damage indicator.\n");
 
 
 //-----------------------------------------------------------------------------
@@ -132,7 +143,7 @@ void CHudDamageIndicator::OnThink() {}
 //-----------------------------------------------------------------------------
 bool CHudDamageIndicator::ShouldDraw(void)
 {
-    if (!CHudElement::ShouldDraw() || !enabled.GetBool())
+    if (!CHudElement::ShouldDraw() || !mom_hud_damageindicator_enable.GetBool())
         return false;
 
     // Don't draw if we don't have any damage to indicate
@@ -206,7 +217,7 @@ void CHudDamageIndicator::DrawDamageIndicator(int x0, int y0, int x1, int y1, fl
 
     int iAlpha = alpha * 255;
     Color IndicatorColor;
-    MomUtil::GetColorFromHex(dmgcolor.GetString(), IndicatorColor);
+    MomUtil::GetColorFromHex(mom_hud_damageindicator_color.GetString(), IndicatorColor);
     int iIndicatorRed = IndicatorColor.r();
     int iIndicatorGreen = IndicatorColor.g();
     int iIndicatorBlue = IndicatorColor.b();
@@ -285,13 +296,13 @@ void CHudDamageIndicator::Paint()
 void CHudDamageIndicator::MsgFunc_DamageIndicator(bf_read &msg)
 {
     // Update the convars
-    m_flMinimumWidth = maxwidth.GetFloat();
-    m_flMaximumWidth = maxwidth.GetFloat();
-    m_flMinimumHeight = minheight.GetFloat();
-    m_flMaximumHeight = maxheight.GetFloat();
-    m_flRadius = radius.GetFloat();
-    m_flMinimumTime = lifetime.GetFloat();
-    m_flMaximumTime = lifetime.GetFloat();
+    m_flMinimumWidth = mom_hud_damageindicator_minwidth.GetFloat();
+    m_flMaximumWidth = mom_hud_damageindicator_maxwidth.GetFloat();
+    m_flMinimumHeight = mom_hud_damageindicator_minheight.GetFloat();
+    m_flMaximumHeight = mom_hud_damageindicator_maxheight.GetFloat();
+    m_flRadius = mom_hud_damageindicator_radius.GetFloat();
+    m_flMinimumTime = mom_hud_damageindicator_minlifetime.GetFloat();
+    m_flMaximumTime = mom_hud_damageindicator_maxlifetime.GetFloat();
 
     damage_t damage;
     damage.iScale = msg.ReadByte();
@@ -302,8 +313,7 @@ void CHudDamageIndicator::MsgFunc_DamageIndicator(bf_read &msg)
     Vector vecOrigin;
     msg.ReadBitVec3Coord(vecOrigin);
     damage.flStartTime = gpGlobals->curtime;
-    damage.flLifeTime =
-        gpGlobals->curtime + RemapVal(damage.iScale, 0, m_iMaximumDamage, m_flMinimumTime, m_flMaximumTime);
+    damage.flLifeTime = gpGlobals->curtime + RemapVal(damage.iScale, 0, m_iMaximumDamage, m_flMinimumTime, m_flMaximumTime);
     if (vecOrigin == vec3_origin)
     {
         vecOrigin = MainViewOrigin();
