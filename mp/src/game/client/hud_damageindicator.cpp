@@ -8,7 +8,6 @@
 #include <KeyValues.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
-#include "ClientEffectPrecacheSystem.h"
 #include "hud.h"
 #include "hud_macros.h"
 #include "hudelement.h"
@@ -32,15 +31,15 @@ static ConVar enabled("mom_hud_damageindicator", "1", FCVAR_CLIENTDLL | FCVAR_AR
 static ConVar minwidth("mom_hud_damageindicator_minwidth", "20", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "Minimum width of the damage indicator.\n");
 static ConVar maxwidth("mom_hud_damageindicator_maxwidth", "20", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                       "Minimum width of the damage indicator \n");
+                       "Maximum width of the damage indicator \n");
 static ConVar minheight("mom_hud_damageindicator_minheight", "60", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                         "Minimum height of the damage indicator.\n");
 static ConVar maxheight("mom_hud_damageindicator_maxheight", "120", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                        "Minimum height of the damage indicator \n");
+                        "Maximum height of the damage indicator \n");
 static ConVar radius("mom_hud_damageindicator_radius", "120", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                      "How far away the damage indicators are from the crosshair.\n");
 static ConVar lifetime("mom_hud_damageindicator_lifetime", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                       "How far away the damage indicators are from the crosshair.\n");
+                       "How long the indicator stays on screen.\n");
 static ConVar dmgcolor("mom_hud_damageindicator_color", "980000", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "Color of the damage indicator.\n");
 
