@@ -439,6 +439,16 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
     else
     {
         pEntity->TakeDamage(adjustedInfo);
+        if (pEntity->IsPlayer())
+        {
+            CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+            CSingleUserRecipientFilter user(pPlayer);
+            user.MakeReliable();
+            UserMessageBegin(user, "DamageIndicator");
+            WRITE_BYTE((int)adjustedInfo.GetDamage());
+            WRITE_VEC3COORD(vecSrc);
+            MessageEnd();
+        }
     }
 
     // Now hit all triggers along the way that respond to damage...
