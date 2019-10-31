@@ -225,7 +225,7 @@ void CMapSelectorDialog::LoadDefaultImageList()
     m_pImageList->SetImageAtIndex(INDX_MAP_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/InFavorites.png", wide, tall, pNullImage));
     m_pImageList->SetImageAtIndex(INDX_MAP_NOT_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/NotInLibrary.png", wide, tall, pNullImage));
     m_pImageList->SetImageAtIndex(INDX_MAP_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/InLibrary.png", wide, tall, pNullImage));
-    m_pImageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, LoadFileImage("materials/vgui/maps/invalid_map.png", GetScaledVal(50), GetScaledVal(28), pNullImage));
+    m_pImageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, LoadFileImage("materials/vgui/icon/map_selector/invalid_map.png", GetScaledVal(50), GetScaledVal(28), pNullImage));
 }
 
 void CMapSelectorDialog::OnMapCacheUpdated(KeyValues *pKv)
