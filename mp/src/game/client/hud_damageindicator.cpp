@@ -41,7 +41,6 @@ static ConVar radius("mom_hud_damageindicator_radius", "120", FCVAR_CLIENTDLL | 
                      "How far away the damage indicators are from the crosshair.\n");
 static ConVar lifetime("mom_hud_damageindicator_lifetime", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "How far away the damage indicators are from the crosshair.\n");
-
 static ConVar dmgcolor("mom_hud_damageindicator_color", "980000", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "Color of the damage indicator.\n");
 
@@ -75,7 +74,6 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
   private:
     // Indication times
     CPanelAnimationVar(float, m_iMaximumDamage, "MaximumDamage", "100");
-    CPanelAnimationVar(float, m_flTravelTime, "TravelTime", ".1");
     CPanelAnimationVar(float, m_flFadeOutPercentage, "FadeOutPercentage", "0.7");
 
     float m_flMinimumWidth;
