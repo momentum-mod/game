@@ -441,7 +441,7 @@ void CMomentumGameRules::ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDama
         pEntity->TakeDamage(adjustedInfo);
         if (pEntity->IsPlayer())
         {
-            CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
+            CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(pEntity);
             CSingleUserRecipientFilter user(pPlayer);
             user.MakeReliable();
             UserMessageBegin(user, "DamageIndicator");
