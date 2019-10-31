@@ -17,7 +17,6 @@
 #include "materialsystem/IMaterial.h"
 #include "materialsystem/IMesh.h"
 #include "materialsystem/imaterialvar.h"
-#include "text_message.h"
 #include "vguimatsurface/IMatSystemSurface.h"
 #include "view.h"
 
@@ -41,15 +40,6 @@ static ConVar radius("mom_hud_damageindicator_radius", "120", FCVAR_CLIENTDLL | 
                      "How far away the damage indicators are from the crosshair.\n");
 static ConVar lifetime("mom_hud_damageindicator_lifetime", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "How far away the damage indicators are from the crosshair.\n");
-
-float m_flMinimumWidth = minwidth.GetFloat();
-float m_flMaximumWidth = maxwidth.GetFloat();
-float m_flMinimumHeight = minheight.GetFloat();
-float m_flMaximumHeight = maxheight.GetFloat();
-float m_flStartRadius = radius.GetFloat();
-float m_flEndRadius = radius.GetFloat();
-float m_flMinimumTime = lifetime.GetFloat();
-float m_flMaximumTime = lifetime.GetFloat();
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -83,6 +73,14 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
     CPanelAnimationVar(float, m_flTravelTime, "TravelTime", ".1");
     CPanelAnimationVar(float, m_flFadeOutPercentage, "FadeOutPercentage", "0.7");
 
+	float m_flMinimumWidth;
+    float m_flMaximumWidth;
+    float m_flMinimumHeight;
+    float m_flMaximumHeight;
+    float m_flRadius;
+    float m_flMinimumTime;
+    float m_flMaximumTime;
+
     // List of damages we've taken
     struct damage_t
     {
@@ -107,8 +105,6 @@ CHudDamageIndicator::CHudDamageIndicator(const char *pElementName)
 {
     vgui::Panel *pParent = g_pClientMode->GetViewport();
     SetParent(pParent);
-
-    SetHiddenBits(HIDEHUD_HEALTH);
 
     m_WhiteAdditiveMaterial.Init("VGUI/damageindicator", TEXTURE_GROUP_VGUI);
 }
@@ -258,9 +254,7 @@ void CHudDamageIndicator::Paint()
         float xpos, ypos;
         float flRotation;
         float flTimeSinceStart = (gpGlobals->curtime - m_vecDamages[i].flStartTime);
-        float flRadius =
-            RemapVal(min(flTimeSinceStart, m_flTravelTime), 0, m_flTravelTime, m_flStartRadius, m_flEndRadius);
-        GetDamagePosition(m_vecDamages[i].vecDelta, flRadius, &xpos, &ypos, &flRotation);
+        GetDamagePosition(m_vecDamages[i].vecDelta, m_flRadius, &xpos, &ypos, &flRotation);
 
         // Calculate life left
         float flLifeLeft = (m_vecDamages[i].flLifeTime - gpGlobals->curtime);
@@ -295,8 +289,7 @@ void CHudDamageIndicator::MsgFunc_DamageIndicator(bf_read &msg)
     m_flMaximumWidth = maxwidth.GetFloat();
     m_flMinimumHeight = minheight.GetFloat();
     m_flMaximumHeight = maxheight.GetFloat();
-    m_flStartRadius = radius.GetFloat();
-    m_flEndRadius = radius.GetFloat();
+    m_flRadius = radius.GetFloat();
     m_flMinimumTime = lifetime.GetFloat();
     m_flMaximumTime = lifetime.GetFloat();
 
