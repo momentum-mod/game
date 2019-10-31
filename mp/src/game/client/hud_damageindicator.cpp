@@ -78,7 +78,7 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
     CPanelAnimationVar(float, m_flTravelTime, "TravelTime", ".1");
     CPanelAnimationVar(float, m_flFadeOutPercentage, "FadeOutPercentage", "0.7");
 
-	float m_flMinimumWidth;
+    float m_flMinimumWidth;
     float m_flMaximumWidth;
     float m_flMinimumHeight;
     float m_flMaximumHeight;
@@ -222,8 +222,6 @@ void CHudDamageIndicator::DrawDamageIndicator(int x0, int y0, int x1, int y1, fl
     int iIndicatorGreen = IndicatorColor.g();
     int iIndicatorBlue = IndicatorColor.b();
 
-	DevLog("Custom color: %d %d %d\n", iIndicatorRed, iIndicatorGreen, iIndicatorBlue);
-
     meshBuilder.Color4ub(iIndicatorRed, iIndicatorGreen, iIndicatorBlue, iAlpha);
     meshBuilder.TexCoord2f(0, 0, 0);
     meshBuilder.Position3f(vecCorners[0].x, vecCorners[0].y, 0);
@@ -317,7 +315,6 @@ void CHudDamageIndicator::MsgFunc_DamageIndicator(bf_read &msg)
     damage.flStartTime = gpGlobals->curtime;
     damage.flLifeTime =
         gpGlobals->curtime + RemapVal(damage.iScale, 0, m_iMaximumDamage, m_flMinimumTime, m_flMaximumTime);
-
     if (vecOrigin == vec3_origin)
     {
         vecOrigin = MainViewOrigin();
