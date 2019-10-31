@@ -19,6 +19,7 @@
 #include "materialsystem/imaterialvar.h"
 #include "vguimatsurface/IMatSystemSurface.h"
 #include "view.h"
+#include "util/mom_util.h"
 
 using namespace vgui;
 
@@ -40,6 +41,10 @@ static ConVar radius("mom_hud_damageindicator_radius", "120", FCVAR_CLIENTDLL | 
                      "How far away the damage indicators are from the crosshair.\n");
 static ConVar lifetime("mom_hud_damageindicator_lifetime", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                        "How far away the damage indicators are from the crosshair.\n");
+
+static ConVar dmgcolor("mom_hud_damageindicator_color", "980000", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                       "Color of the damage indicator.\n");
+
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -106,7 +111,7 @@ CHudDamageIndicator::CHudDamageIndicator(const char *pElementName)
     vgui::Panel *pParent = g_pClientMode->GetViewport();
     SetParent(pParent);
 
-    m_WhiteAdditiveMaterial.Init("VGUI/damageindicator", TEXTURE_GROUP_VGUI);
+    m_WhiteAdditiveMaterial.Init("vgui/damage", TEXTURE_GROUP_VGUI);
 }
 
 //-----------------------------------------------------------------------------
@@ -211,22 +216,30 @@ void CHudDamageIndicator::DrawDamageIndicator(int x0, int y0, int x1, int y1, fl
     meshBuilder.Begin(pMesh, MATERIAL_QUADS, 1);
 
     int iAlpha = alpha * 255;
-    meshBuilder.Color4ub(255, 255, 255, iAlpha);
+    Color IndicatorColor;
+    MomUtil::GetColorFromHex(dmgcolor.GetString(), IndicatorColor);
+    int iIndicatorRed = IndicatorColor.r();
+    int iIndicatorGreen = IndicatorColor.g();
+    int iIndicatorBlue = IndicatorColor.b();
+
+	DevLog("Custom color: %d %d %d\n", iIndicatorRed, iIndicatorGreen, iIndicatorBlue);
+
+    meshBuilder.Color4ub(iIndicatorRed, iIndicatorGreen, iIndicatorBlue, iAlpha);
     meshBuilder.TexCoord2f(0, 0, 0);
     meshBuilder.Position3f(vecCorners[0].x, vecCorners[0].y, 0);
     meshBuilder.AdvanceVertex();
 
-    meshBuilder.Color4ub(255, 255, 255, iAlpha);
+    meshBuilder.Color4ub(iIndicatorRed, iIndicatorGreen, iIndicatorBlue, iAlpha);
     meshBuilder.TexCoord2f(0, 1, 0);
     meshBuilder.Position3f(vecCorners[1].x, vecCorners[1].y, 0);
     meshBuilder.AdvanceVertex();
 
-    meshBuilder.Color4ub(255, 255, 255, iAlpha);
+    meshBuilder.Color4ub(iIndicatorRed, iIndicatorGreen, iIndicatorBlue, iAlpha);
     meshBuilder.TexCoord2f(0, 1, 1);
     meshBuilder.Position3f(vecCorners[2].x, vecCorners[2].y, 0);
     meshBuilder.AdvanceVertex();
 
-    meshBuilder.Color4ub(255, 255, 255, iAlpha);
+    meshBuilder.Color4ub(iIndicatorRed, iIndicatorGreen, iIndicatorBlue, iAlpha);
     meshBuilder.TexCoord2f(0, 0, 1);
     meshBuilder.Position3f(vecCorners[3].x, vecCorners[3].y, 0);
     meshBuilder.AdvanceVertex();
