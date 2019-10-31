@@ -53,16 +53,16 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
 
   public:
     CHudDamageIndicator(const char *pElementName);
-    void Init(void);
-    void Reset(void);
-    virtual bool ShouldDraw(void);
+    void Init() override;
+    void Reset() override;
+    bool ShouldDraw() override;
 
     // Handler for our message
     void MsgFunc_DamageIndicator(bf_read &msg);
 
   private:
-    virtual void Paint();
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void Paint() override;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
     // Painting
     void GetDamagePosition(const Vector &vecDelta, float flRadius, float *xpos, float *ypos, float *flRotation);
@@ -103,15 +103,15 @@ CHudDamageIndicator::CHudDamageIndicator(const char *pElementName)
     m_WhiteAdditiveMaterial.Init("vgui/damage", TEXTURE_GROUP_VGUI);
 }
 
-void CHudDamageIndicator::Init(void)
+void CHudDamageIndicator::Init()
 {
     HOOK_HUD_MESSAGE(CHudDamageIndicator, DamageIndicator);
     Reset();
 }
 
-void CHudDamageIndicator::Reset(void) { m_vecDamages.Purge(); }
+void CHudDamageIndicator::Reset() { m_vecDamages.Purge(); }
 
-bool CHudDamageIndicator::ShouldDraw(void)
+bool CHudDamageIndicator::ShouldDraw()
 {
     if (!CHudElement::ShouldDraw() || !mom_hud_damageindicator_enable.GetBool())
         return false;
@@ -134,7 +134,7 @@ void CHudDamageIndicator::GetDamagePosition(const Vector &vecDelta, float flRadi
     QAngle playerAngles = MainViewAngles();
 
     Vector forward, right, up(0, 0, 1);
-    AngleVectors(playerAngles, &forward, NULL, NULL);
+    AngleVectors(playerAngles, &forward, nullptr, nullptr);
     forward.z = 0;
     VectorNormalize(forward);
     CrossProduct(up, forward, right);
@@ -162,7 +162,7 @@ void CHudDamageIndicator::GetDamagePosition(const Vector &vecDelta, float flRadi
 void CHudDamageIndicator::DrawDamageIndicator(int x0, int y0, int x1, int y1, float alpha, float flRotation)
 {
     CMatRenderContextPtr pRenderContext(materials);
-    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, NULL, NULL, m_WhiteAdditiveMaterial);
+    IMesh *pMesh = pRenderContext->GetDynamicMesh(true, nullptr, nullptr, m_WhiteAdditiveMaterial);
 
     // Get the corners, since they're being rotated
     int wide = x1 - x0;
