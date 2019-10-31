@@ -47,9 +47,6 @@ static ConVar mom_hud_damageindicator_color("mom_hud_damageindicator_color", "98
                                             "RGB color of the damage indicator.\n");
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 class CHudDamageIndicator : public CHudElement, public vgui::Panel
 {
     DECLARE_CLASS_SIMPLE(CHudDamageIndicator, vgui::Panel);
@@ -57,7 +54,6 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
   public:
     CHudDamageIndicator(const char *pElementName);
     void Init(void);
-    void VidInit(void);
     void Reset(void);
     virtual bool ShouldDraw(void);
 
@@ -65,7 +61,6 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
     void MsgFunc_DamageIndicator(bf_read &msg);
 
   private:
-    virtual void OnThink();
     virtual void Paint();
     virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 
@@ -102,45 +97,20 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
 DECLARE_HUDELEMENT(CHudDamageIndicator);
 DECLARE_HUD_MESSAGE(CHudDamageIndicator, DamageIndicator);
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 CHudDamageIndicator::CHudDamageIndicator(const char *pElementName)
-    : CHudElement(pElementName), BaseClass(NULL, "HudDamageIndicator")
+    : CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "HudDamageIndicator")
 {
-    vgui::Panel *pParent = g_pClientMode->GetViewport();
-    SetParent(pParent);
-
     m_WhiteAdditiveMaterial.Init("vgui/damage", TEXTURE_GROUP_VGUI);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void CHudDamageIndicator::Init(void)
 {
     HOOK_HUD_MESSAGE(CHudDamageIndicator, DamageIndicator);
     Reset();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void CHudDamageIndicator::Reset(void) { m_vecDamages.Purge(); }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CHudDamageIndicator::VidInit(void) {}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CHudDamageIndicator::OnThink() {}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 bool CHudDamageIndicator::ShouldDraw(void)
 {
     if (!CHudElement::ShouldDraw() || !mom_hud_damageindicator_enable.GetBool())
@@ -246,9 +216,6 @@ void CHudDamageIndicator::DrawDamageIndicator(int x0, int y0, int x1, int y1, fl
     pMesh->Draw();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void CHudDamageIndicator::Paint()
 {
     // Iterate backwards, because we might remove them as we go
