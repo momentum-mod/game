@@ -70,7 +70,8 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
 
   private:
     // Indication times
-    CPanelAnimationVar(float, m_iMaximumDamage, "MaximumDamage", "100");
+    CPanelAnimationVar(float, m_iMaximumDamage, "MaximumDamage", "90");
+    CPanelAnimationVar(float, m_iMinimumDamage, "MinimumDamage", "45");
     CPanelAnimationVar(float, m_flFadeOutPercentage, "FadeOutPercentage", "0.7");
 
     float m_flMinimumWidth;
@@ -224,10 +225,10 @@ void CHudDamageIndicator::Paint()
     for (int i = iSize - 1; i >= 0; i--)
     {
         // Scale size to the damage
-        int clampedDamage = clamp(m_vecDamages[i].iScale, 0, m_iMaximumDamage);
+        int clampedDamage = clamp(m_vecDamages[i].iScale, m_iMinimumDamage, m_iMaximumDamage);
 
-        int iWidth = RemapVal(clampedDamage, 0, m_iMaximumDamage, m_flMinimumWidth, m_flMaximumWidth) * 0.5;
-        int iHeight = RemapVal(clampedDamage, 0, m_iMaximumDamage, m_flMinimumHeight, m_flMaximumHeight) * 0.5;
+        int iWidth = RemapVal(clampedDamage, m_iMinimumDamage, m_iMaximumDamage, m_flMinimumWidth, m_flMaximumWidth) * 0.5;
+        int iHeight = RemapVal(clampedDamage, m_iMinimumDamage, m_iMaximumDamage, m_flMinimumHeight, m_flMaximumHeight) * 0.5;
 
         // Find the place to draw it
         float xpos, ypos;
@@ -281,7 +282,7 @@ void CHudDamageIndicator::MsgFunc_DamageIndicator(bf_read &msg)
     Vector vecOrigin;
     msg.ReadBitVec3Coord(vecOrigin);
     damage.flStartTime = gpGlobals->curtime;
-    damage.flLifeTime = gpGlobals->curtime + RemapVal(damage.iScale, 0, m_iMaximumDamage, m_flMinimumTime, m_flMaximumTime);
+    damage.flLifeTime = gpGlobals->curtime + RemapVal(damage.iScale, m_iMinimumDamage, m_iMaximumDamage, m_flMinimumTime, m_flMaximumTime);
     if (vecOrigin == vec3_origin)
     {
         vecOrigin = MainViewOrigin();
