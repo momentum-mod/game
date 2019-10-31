@@ -230,14 +230,14 @@ void CHudKeyPressDisplay::Paint()
     if (nButtons & IN_ATTACK)
     {
         CHECK_INPUT_P(IN_ATTACK);
-        int xposM1 = GetTextCenter(m_hTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hTextFont, m_pwM1)) * 3.5;
+        int xposM1 = GetTextCenter(m_hWordTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM1)) * 1.5;
         surface()->DrawSetTextPos(xposM1, top_row_ypos);
         surface()->DrawPrintText(m_pwM1, wcslen(m_pwM1));
     }
     if (nButtons & IN_ATTACK2)
     {
         CHECK_INPUT_P(IN_ATTACK2);
-        int xposM2 = GetTextCenter(m_hTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hTextFont, m_pwM2)) * 2.75;
+        int xposM2 = GetTextCenter(m_hWordTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM2)) * 1.5;
         surface()->DrawSetTextPos(xposM2, top_row_ypos);
         surface()->DrawPrintText(m_pwM2, wcslen(m_pwM2));
     }
@@ -352,11 +352,11 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
     surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
     CHECK_INPUT_N(IN_ATTACK);
-    int xposM1 = GetTextCenter(m_hTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hTextFont, m_pwM1)) * 3.5;
+    int xposM1 = GetTextCenter(m_hWordTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM1)) * 1.5;
     surface()->DrawSetTextPos(xposM1, top_row_ypos);
     surface()->DrawPrintText(m_pwM1, wcslen(m_pwM1));
     CHECK_INPUT_N(IN_ATTACK2);
-    int xposM2 = GetTextCenter(m_hTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hTextFont, m_pwM2)) * 2.75;
+    int xposM2 = GetTextCenter(m_hWordTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM2)) * 1.5;
     surface()->DrawSetTextPos(xposM2, top_row_ypos);
     surface()->DrawPrintText(m_pwM2, wcslen(m_pwM2));
 }
