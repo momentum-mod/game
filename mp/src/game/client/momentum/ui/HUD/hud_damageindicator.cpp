@@ -59,8 +59,6 @@ class CHudDamageIndicator : public CHudElement, public vgui::Panel
     void PerformLayout() override;
     // Handler for our message
     void MsgFunc_DamageIndicator(bf_read &msg);
-
-  private:
     void Paint() override;
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
@@ -296,6 +294,7 @@ void CHudDamageIndicator::MsgFunc_DamageIndicator(bf_read &msg)
 
 void CHudDamageIndicator::PerformLayout() 
 {
+    BaseClass::PerformLayout();
     int screenWide, screenTall;
     int x, y;
     GetPos(x, y);
