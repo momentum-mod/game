@@ -19,6 +19,7 @@
 #include "in_buttons.h"
 #include "momentum/mom_shareddefs.h"
 #include "ZoneMenu/ZoneMenu.h"
+#include "c_mom_player.h"
 
 #include "clienteffectprecachesystem.h"
 
@@ -349,7 +350,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         return BaseClass::CreateMove(flInputSampleTime, cmd);
     }
 
-    C_BasePlayer *local_player = C_BasePlayer::GetLocalPlayer();
+    auto local_player = C_MomentumPlayer::GetLocalMomPlayer();
     static int dominant_buttons = 0;
     static int prev_flags = 0;
 
@@ -446,6 +447,8 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         {
             dominant_buttons &= ~(IN_MOVELEFT | IN_MOVERIGHT);
         }
+
+        cmd->buttons &= ~local_player->m_afButtonDisabled;
     }
 
     prev_flags = local_player->GetFlags();
