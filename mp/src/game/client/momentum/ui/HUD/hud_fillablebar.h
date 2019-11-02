@@ -24,7 +24,17 @@ class CHudFillableBar : public vgui::Panel
     {
         if (!CloseEnough(m_flValue, 0.0f, FLT_EPSILON))
         {
-            DrawBox(m_flxPos, m_flyPos, m_flWide * (m_flValue / 100.0f), m_flTall, BoxColor, 1.0f);
+            int width = m_flWide * (m_flValue / 100.0f);
+
+            // Ensure that we have at least enough width to draw the 2 corners on each edge
+            int cornerWidth, cornerHeight;
+            GetCornerTextureSize(cornerWidth, cornerHeight);
+            if (width < cornerWidth * 2)
+            {
+                width = cornerWidth * 2;
+            }
+
+            DrawBox(m_flxPos, m_flyPos, width, m_flTall, BoxColor, 1.0f);
         }
         DrawHollowBox(m_flxPos, m_flyPos, m_flWide, m_flTall, m_BackgroundColor, 1, 2, 2);
     }
