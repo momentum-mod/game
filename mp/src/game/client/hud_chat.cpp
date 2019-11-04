@@ -1,5 +1,6 @@
 #include "cbase.h"
 
+#include <ctime>
 #include "hud_basechat.h"
 #include "hud_chat.h"
 #include "hud_macros.h"
@@ -19,6 +20,9 @@ DECLARE_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
 DECLARE_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
 
 using namespace vgui;
+
+MAKE_TOGGLE_CONVAR(mom_chat_timestamps_enable, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE,
+            "Toggles timestamps on chat messages. 0 = OFF, 1 = ON\n");
 
 //=====================
 // CHudChat
@@ -78,13 +82,19 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
 
     const char *spectatingText = SteamMatchmaking()->GetLobbyMemberData(m_LobbyID, msgSender, LOBBY_DATA_IS_SPEC);
     const bool isSpectating = spectatingText != nullptr && Q_strlen(spectatingText) > 0;
+
+    char timestamp[16] = "";
+    if (mom_chat_timestamps_enable.GetBool())
+        GetTimestamp(timestamp, 16);
+
     char message[4096];
     // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is
     // something and parse it
     SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID,
                                                            nullptr, message, 4096, nullptr);
     SetCustomColor(COLOR_RED);
-    ChatPrintf(1, CHAT_FILTER_NONE, "%c%s%s%c: %s", 
+    ChatPrintf(1, CHAT_FILTER_NONE, "%s%c%s%s%c: %s",
+               timestamp,
                isMomentumTeam ? COLOR_CUSTOM : COLOR_PLAYERNAME,
                isSpectating ? "*SPEC* " : "", 
                personName,
@@ -160,6 +170,29 @@ void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read &msg)
 
     if (!isJoin)
         SpectatorUpdate(personID, k_steamIDNil);
+}
+
+void CHudChat::GetTimestamp(char *pBuffer, int maxLen)
+{
+    time_t now = time(nullptr);
+    struct tm *tm = localtime(&now);
+    Q_snprintf(pBuffer, maxLen, "%c%s[%02d:%02d] ", COLOR_HEXCODE, "CCCCCC", tm->tm_hour, tm->tm_min);
+}
+
+void CHudChat::Printf(int iFilter, const char *fmt, ...)
+{
+    va_list marker;
+    char msg[4096];
+
+    va_start(marker, fmt);
+    Q_vsnprintf(msg, sizeof(msg), fmt, marker);
+    va_end(marker);
+
+    char timestamp[16] = "";
+    if (mom_chat_timestamps_enable.GetBool())
+        GetTimestamp(timestamp, 16);
+
+    ChatPrintf(0, iFilter, "%s%c%s", timestamp, COLOR_NORMAL, msg);
 }
 
 void CHudChat::StartMessageMode(int iMessageMode)
