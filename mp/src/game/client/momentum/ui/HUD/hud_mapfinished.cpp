@@ -183,7 +183,7 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
+    SetBgColor(GetSchemeColor("TransparentGray", pScheme));
     m_pDetachMouseLabel->SetFont(m_hTextFont);
     m_pCurrentZoneLabel->SetFont(m_hTextFont);
     m_pZoneOverallTime->SetFont(m_hTextFont);

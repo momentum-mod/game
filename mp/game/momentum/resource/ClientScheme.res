@@ -26,6 +26,7 @@ Scheme
 		"Red"                "192 28 0 140"
 		"Black"                "0 0 0 196"
 		"TransparentBlack"    "0 0 0 196"
+		"TransparentGray"    "0 0 0 130"
 		"TransparentLightBlack"    "0 0 0 90"
 	
 		"Blank"                "0 0 0 1"
