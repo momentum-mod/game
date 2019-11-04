@@ -185,7 +185,7 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 
     SetBgColor(GetSchemeColor("TransparentGray", pScheme));
     m_pDetachMouseLabel->SetFont(m_hTextFont);
-    m_pCurrentZoneLabel->SetFont(m_hTextFont);
+    /*m_pCurrentZoneLabel->SetFont(m_hTextFont);
     m_pZoneOverallTime->SetFont(m_hTextFont);
     m_pZoneEnterTime->SetFont(m_hTextFont);
     m_pZoneJumps->SetFont(m_hTextFont);
@@ -200,7 +200,7 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     m_pRunUploadStatus->SetFont(m_hTextFont);
     m_pXPGainCosmetic->SetFont(m_hTextFont);
     m_pXPGainRank->SetFont(m_hTextFont);
-    m_pLevelGain->SetFont(m_hTextFont);
+    m_pLevelGain->SetFont(m_hTextFont);*/
     m_pLevelGain->SetFgColor(COLOR_GREEN);
 }
 
