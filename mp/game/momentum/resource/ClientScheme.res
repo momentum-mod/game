@@ -1110,6 +1110,28 @@ Scheme
 				"antialias" "1"
 			}
 		}
+		"BigNoodleTiny"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "13"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
+		"HelveticaBold"
+		{
+			"1"
+			{
+				"name" "Helvetica"
+				"tall" "10"
+				"weight" "600"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
 	}
 
 		//////////////////// BORDERS //////////////////////////////
