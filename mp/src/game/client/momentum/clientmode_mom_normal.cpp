@@ -402,6 +402,8 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
 
     if (!mom_enable_overlapping_keys.GetBool())
     {
+        cmd->buttons &= ~local_player->m_afButtonDisabled;
+
         // Holding both forward and backwards, which one was the last pressed of these?
         if ((cmd->buttons & (IN_FORWARD | IN_BACK)) == (IN_FORWARD | IN_BACK))
         {
@@ -447,8 +449,6 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         {
             dominant_buttons &= ~(IN_MOVELEFT | IN_MOVERIGHT);
         }
-
-        cmd->buttons &= ~local_player->m_afButtonDisabled;
     }
 
     prev_flags = local_player->GetFlags();
