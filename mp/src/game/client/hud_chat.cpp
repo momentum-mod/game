@@ -83,9 +83,8 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     const char *spectatingText = SteamMatchmaking()->GetLobbyMemberData(m_LobbyID, msgSender, LOBBY_DATA_IS_SPEC);
     const bool isSpectating = spectatingText != nullptr && Q_strlen(spectatingText) > 0;
 
-    char timestamp[16] = "";
-    if (mom_chat_timestamps_enable.GetBool())
-        GetTimestamp(timestamp, 16);
+    char timestamp[16];
+    GetTimestamp(timestamp, 16);
 
     char message[4096];
     // MOM_TODO: This won't be just text in the future, if we capitalize on being able to send binary data. Wrap this is
@@ -174,6 +173,12 @@ void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read &msg)
 
 void CHudChat::GetTimestamp(char *pBuffer, int maxLen)
 {
+    if (!mom_chat_timestamps_enable.GetBool())
+    {
+        Q_snprintf(pBuffer, maxLen, "");
+        return;
+    }
+
     time_t now = time(nullptr);
     struct tm *tm = localtime(&now);
     Q_snprintf(pBuffer, maxLen, "%c%s[%02d:%02d] ", COLOR_HEXCODE, "CCCCCC", tm->tm_hour, tm->tm_min);
@@ -188,9 +193,8 @@ void CHudChat::Printf(int iFilter, const char *fmt, ...)
     Q_vsnprintf(msg, sizeof(msg), fmt, marker);
     va_end(marker);
 
-    char timestamp[16] = "";
-    if (mom_chat_timestamps_enable.GetBool())
-        GetTimestamp(timestamp, 16);
+    char timestamp[16];
+    GetTimestamp(timestamp, 16);
 
     ChatPrintf(0, iFilter, "%s%c%s", timestamp, COLOR_NORMAL, msg);
 }
