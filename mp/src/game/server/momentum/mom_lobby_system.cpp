@@ -301,7 +301,7 @@ void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
     time_t now = time(nullptr);
     struct tm *tm = localtime(&now);
     DevLog("SERVER: Got a chat message! Wrote %i byte(s) into buffer.\n", written);
-    Msg("SERVER: Chat message [%02d:%02d]: %s\n", tm->tm_min, tm->tm_sec, message);
+    Msg("SERVER: Chat message [%02d:%02d]: %s\n", tm->tm_hour, tm->tm_min, message);
     delete[] message;
 }
 void CMomentumLobbySystem::SetAppearanceInMemberData(GhostAppearance_t app)
