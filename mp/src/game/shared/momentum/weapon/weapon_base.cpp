@@ -149,7 +149,7 @@ END_DATADESC()
 #endif
 
 #ifdef CLIENT_DLL
-ConVar cl_crosshaircolor("cl_crosshaircolor", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshaircolor("cl_crosshaircolor", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE); //deprecate this
 ConVar cl_dynamiccrosshair("cl_dynamiccrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
@@ -159,6 +159,11 @@ ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR
 ConVar cl_crosshairusecustom("cl_crosshairusecustom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshaircustomfile("cl_crosshaircustomfile", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+
+ConVar cl_crosshair_r("cl_crosshair_r", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshair_g("cl_crosshair_g", "250", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshair_b("cl_crosshair_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+
 #endif
 
 
@@ -713,6 +718,7 @@ void CWeaponBase::DrawCrosshair()
 
     int	r, g, b;
 
+	//deprecate this
     switch (cl_crosshaircolor.GetInt())
     {
     case 0:	r = 50;		g = 250;	b = 50;		break;
@@ -730,6 +736,9 @@ void CWeaponBase::DrawCrosshair()
     //	g = 50;
     //	b = 50;
     //}
+    r = clamp(cl_crosshair_r.GetInt(), 0, 255);
+    g = clamp(cl_crosshair_g.GetInt(), 0, 255);
+    b = clamp(cl_crosshair_b.GetInt(), 0, 255);
 
     int alpha = clamp(cl_crosshairalpha.GetInt(), 0, 255);
     vgui::surface()->DrawSetColor(r, g, b, alpha);
