@@ -155,7 +155,9 @@ ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHI
 ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+
 ConVar cl_crosshairusecustom("cl_crosshairusecustom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshaircustomfile("cl_crosshaircustomfile", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 #endif
 
 
@@ -731,19 +733,9 @@ void CWeaponBase::DrawCrosshair()
     int alpha = clamp(cl_crosshairalpha.GetInt(), 0, 255);
     vgui::surface()->DrawSetColor(r, g, b, alpha);
 
-    if (!m_iCrosshairTextureID)
-    {
-        CHudTexture *pTexture = gHUD.GetIcon("whiteAdditive");
-        if (pTexture)
-        {
-            m_iCrosshairTextureID = pTexture->textureId;
-        }
-    }
-
     if (!cl_crosshairusealpha.GetBool())
     {
         vgui::surface()->DrawSetColor(r, g, b, 200);
-        vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
     }
 
     int iHalfScreenWidth = ScreenWidth() / 2;
@@ -752,6 +744,12 @@ void CWeaponBase::DrawCrosshair()
 
     if (!cl_crosshairusecustom.GetBool())
     {
+        CHudTexture *pTexture = gHUD.GetIcon("whiteAdditive");
+        if (pTexture)
+        {
+            m_iCrosshairTextureID = pTexture->textureId;
+        }
+        
         int iLeft = iHalfScreenWidth - (iCrosshairDistance + iBarSize);
         int iRight = iHalfScreenWidth + iCrosshairDistance + iBarThickness;
         int iFarLeft = iLeft + iBarSize;
@@ -759,6 +757,7 @@ void CWeaponBase::DrawCrosshair()
 
         if (!cl_crosshairusealpha.GetBool())
         {
+            vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
             // Additive crosshair
             vgui::surface()->DrawTexturedRect(iLeft, iHalfScreenHeight, iFarLeft, iHalfScreenHeight + iBarThickness);
             vgui::surface()->DrawTexturedRect(iRight, iHalfScreenHeight, iFarRight, iHalfScreenHeight + iBarThickness);
@@ -790,11 +789,20 @@ void CWeaponBase::DrawCrosshair()
     }
     else
     {
+        CHudTexture *pTexture = nullptr;
 
-        CHudTexture *pTexture = gHUD.GetIcon("crosshair_custom");
+        if (strcmp(cl_crosshaircustomfile.GetString(), "") == 0 || strcmp(cl_crosshaircustomfile.GetString(), "null") == 0)
+        {
+            pTexture = gHUD.GetIcon("whiteAdditive");
+        }
+        else
+        {
+            pTexture = gHUD.GetIcon(cl_crosshaircustomfile.GetString());
+        }
+
         if (pTexture)
         {
-                m_iCrosshairTextureID = pTexture->textureId;
+            m_iCrosshairTextureID = pTexture->textureId;
         }
         vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
 
