@@ -1,0 +1,10 @@
+"UnlitGeneric"
+{
+      "$basetexture" "sprites/crosshair_custom"
+      "$translucent"   "1"
+      "$translucency" "1"
+      "$ignorez" "1"
+      "$nomip" "1"
+      "$nocompress" "1"
+      "$nolod" "1"
+}

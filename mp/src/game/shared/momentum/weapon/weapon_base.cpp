@@ -155,6 +155,7 @@ ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHI
 ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshairusecustom("cl_crosshairusecustom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 #endif
 
 
@@ -748,40 +749,56 @@ void CWeaponBase::DrawCrosshair()
     int iHalfScreenWidth = ScreenWidth() / 2;
     int iHalfScreenHeight = ScreenHeight() / 2;
 
-    int iLeft = iHalfScreenWidth - (iCrosshairDistance + iBarSize);
-    int iRight = iHalfScreenWidth + iCrosshairDistance + iBarThickness;
-    int iFarLeft = iLeft + iBarSize;
-    int iFarRight = iRight + iBarSize;
 
-    if (!cl_crosshairusealpha.GetBool())
+    if (!cl_crosshairusecustom.GetBool())
     {
-        // Additive crosshair
-        vgui::surface()->DrawTexturedRect(iLeft, iHalfScreenHeight, iFarLeft, iHalfScreenHeight + iBarThickness);
-        vgui::surface()->DrawTexturedRect(iRight, iHalfScreenHeight, iFarRight, iHalfScreenHeight + iBarThickness);
+        int iLeft = iHalfScreenWidth - (iCrosshairDistance + iBarSize);
+        int iRight = iHalfScreenWidth + iCrosshairDistance + iBarThickness;
+        int iFarLeft = iLeft + iBarSize;
+        int iFarRight = iRight + iBarSize;
+
+        if (!cl_crosshairusealpha.GetBool())
+        {
+            // Additive crosshair
+            vgui::surface()->DrawTexturedRect(iLeft, iHalfScreenHeight, iFarLeft, iHalfScreenHeight + iBarThickness);
+            vgui::surface()->DrawTexturedRect(iRight, iHalfScreenHeight, iFarRight, iHalfScreenHeight + iBarThickness);
+        }
+        else
+        {
+            // Alpha-blended crosshair
+            vgui::surface()->DrawFilledRect(iLeft, iHalfScreenHeight, iFarLeft, iHalfScreenHeight + iBarThickness);
+            vgui::surface()->DrawFilledRect(iRight, iHalfScreenHeight, iFarRight, iHalfScreenHeight + iBarThickness);
+        }
+
+        int iTop = iHalfScreenHeight - (iCrosshairDistance + iBarSize);
+        int iBottom = iHalfScreenHeight + iCrosshairDistance + iBarThickness;
+        int iFarTop = iTop + iBarSize;
+        int iFarBottom = iBottom + iBarSize;
+
+        if (!cl_crosshairusealpha.GetBool())
+        {
+            // Additive crosshair
+            vgui::surface()->DrawTexturedRect(iHalfScreenWidth, iTop, iHalfScreenWidth + iBarThickness, iFarTop);
+            vgui::surface()->DrawTexturedRect(iHalfScreenWidth, iBottom, iHalfScreenWidth + iBarThickness, iFarBottom);
+        }
+        else
+        {
+            // Alpha-blended crosshair
+            vgui::surface()->DrawFilledRect(iHalfScreenWidth, iTop, iHalfScreenWidth + iBarThickness, iFarTop);
+            vgui::surface()->DrawFilledRect(iHalfScreenWidth, iBottom, iHalfScreenWidth + iBarThickness, iFarBottom);
+        }
     }
     else
     {
-        // Alpha-blended crosshair
-        vgui::surface()->DrawFilledRect(iLeft, iHalfScreenHeight, iFarLeft, iHalfScreenHeight + iBarThickness);
-        vgui::surface()->DrawFilledRect(iRight, iHalfScreenHeight, iFarRight, iHalfScreenHeight + iBarThickness);
-    }
 
-    int iTop = iHalfScreenHeight - (iCrosshairDistance + iBarSize);
-    int iBottom = iHalfScreenHeight + iCrosshairDistance + iBarThickness;
-    int iFarTop = iTop + iBarSize;
-    int iFarBottom = iBottom + iBarSize;
+        CHudTexture *pTexture = gHUD.GetIcon("crosshair_custom");
+        if (pTexture)
+        {
+                m_iCrosshairTextureID = pTexture->textureId;
+        }
+        vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
 
-    if (!cl_crosshairusealpha.GetBool())
-    {
-        // Additive crosshair
-        vgui::surface()->DrawTexturedRect(iHalfScreenWidth, iTop, iHalfScreenWidth + iBarThickness, iFarTop);
-        vgui::surface()->DrawTexturedRect(iHalfScreenWidth, iBottom, iHalfScreenWidth + iBarThickness, iFarBottom);
-    }
-    else
-    {
-        // Alpha-blended crosshair
-        vgui::surface()->DrawFilledRect(iHalfScreenWidth, iTop, iHalfScreenWidth + iBarThickness, iFarTop);
-        vgui::surface()->DrawFilledRect(iHalfScreenWidth, iBottom, iHalfScreenWidth + iBarThickness, iFarBottom);
+        vgui::surface()->DrawTexturedRect(iHalfScreenWidth - 20, iHalfScreenHeight - 20, iHalfScreenWidth + 20, iHalfScreenHeight + 20);
     }
 }
 
