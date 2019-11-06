@@ -158,6 +158,7 @@ ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR
 
 ConVar cl_crosshairusecustom("cl_crosshairusecustom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshaircustomfile("cl_crosshaircustomfile", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 #endif
 
 
@@ -660,7 +661,7 @@ void CWeaponBase::DrawCrosshair()
             iDistance *= 1.5f;
     }
 
-    if (pPlayer->m_iShotsFired > m_iAmmoLastCheck)
+    if (cl_dynamiccrosshairfire.GetBool() && pPlayer->m_iShotsFired > m_iAmmoLastCheck)
     {
         m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance);
     }
