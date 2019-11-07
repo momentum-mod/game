@@ -40,6 +40,21 @@
 // -----------------------------------------------------------------------
 @SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." []
 
+@PointClass base(Targetname,Studiomodel,Origin,Angles) studioprop() = momentum_generic_bomb : "Generic Bomb"
+[
+    // Params
+    damage(float) : "Explosion Damage" : 50 : "Amount of damage to do when exploding."
+    radius(float) : "Explosion Radius" : 100 : "Explosion radius."
+    health(integer) : "Health" : 1 : "Health of the bomb."
+    sound(sound) : "Explosion Sound" : "" : "Name of the sound effect to play when exploding."
+
+    // Inputs
+    input Detonate(void) : "Force detonation."
+
+    // Outputs
+    output OnDetonate(void) : "Fired when this bomb detonates."
+]
+
 //-------------------------------------------------------------------------
 //
 // CUSTOM MOMENTUM TRIGGERS
