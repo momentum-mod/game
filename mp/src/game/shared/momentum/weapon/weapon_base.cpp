@@ -720,17 +720,24 @@ void CWeaponBase::DrawCrosshair()
 
     int	r, g, b;
 
-	//deprecate this
-    switch (cl_crosshaircolor.GetInt())
+	if (cl_crosshaircolor.GetInt())
     {
-    case 0:	r = 50;		g = 250;	b = 50;		break;
-    case 1:	r = 250;	g = 50;		b = 50;		break;
-    case 2:	r = 50;		g = 50;		b = 250;	break;
-    case 3:	r = 250;	g = 250;	b = 50;		break;
-    case 4:	r = 50;		g = 250;	b = 250;	break;
-    default:	r = 50;		g = 250;	b = 50;		break;
+        switch (cl_crosshaircolor.GetInt())
+        {
+        case 1:	r = 50;		g = 250;	b = 50;		break;
+        case 2:	r = 250;	g = 50;		b = 50;		break;
+        case 3:	r = 50;		g = 50;		b = 250;	break;
+        case 4:	r = 250;	g = 250;	b = 50;		break;
+        case 5:	r = 50;		g = 250;	b = 250;	break;
+        default:	r = 50;		g = 250;	b = 50;		break;
+        }
+	}
+    else
+    {
+        r = clamp(cl_crosshair_r.GetInt(), 0, 255);
+        g = clamp(cl_crosshair_g.GetInt(), 0, 255);
+        b = clamp(cl_crosshair_b.GetInt(), 0, 255);
     }
-
     // if user is using nightvision, make the crosshair red.
     //if (pPlayer->m_bNightVisionOn)
     //{
@@ -738,9 +745,6 @@ void CWeaponBase::DrawCrosshair()
     //	g = 50;
     //	b = 50;
     //}
-    r = clamp(cl_crosshair_r.GetInt(), 0, 255);
-    g = clamp(cl_crosshair_g.GetInt(), 0, 255);
-    b = clamp(cl_crosshair_b.GetInt(), 0, 255);
 
     int alpha = clamp(cl_crosshairalpha.GetInt(), 0, 255);
     vgui::surface()->DrawSetColor(r, g, b, alpha);
