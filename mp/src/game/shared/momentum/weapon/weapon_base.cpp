@@ -669,18 +669,12 @@ void CWeaponBase::DrawCrosshair()
     //int iDistance, iDeltaDistance;
     int iDistance = GetMomWpnData().m_iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
     int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
-    /*if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
-    {
-        iDistance = GetMomWpnData().m_iCrosshairMinDistance; // The minimum distance the crosshair can achieve...
-		iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
-    }*/
+
     if (cl_crosshairstyle.GetInt() != 0 && !cl_crosshairgap_useweaponvalue.GetBool())
     {
-		iDeltaDistance *= cl_crosshairgap.GetInt() / iDistance;
+		iDeltaDistance *= cl_crosshairgap.GetInt() / iDistance; //scale growth rate to weapon's growth rate, could be a cvar
         iDistance = cl_crosshairgap.GetInt();
 	}
-    // could be a cvar to change how fast crosshair decreases
-    //int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
 
     if (cl_dynamiccrosshair.GetBool())
     {
@@ -697,8 +691,7 @@ void CWeaponBase::DrawCrosshair()
     {
         if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
         {
-            m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 or (current distance) + delta
-		    //min increase of 15...
+            m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 [?] or (current distance) + delta
 		}
         else
         {
@@ -706,9 +699,8 @@ void CWeaponBase::DrawCrosshair()
         }
     }
     else if (m_flCrosshairDistance > iDistance) // distance > min distance (defined at init or from if block above)
-    {                                           // above should probably also have cvar condition, just do a nested if
+    {
         m_flCrosshairDistance -= 0.1f + m_flCrosshairDistance * 0.013; // decrease by 0.1 + 1.3% of current (decreases exponentially slow over time)
-		// edit this to work for cl_crosshairgap, could be a cvar
     }
 
     m_iAmmoLastCheck = pPlayer->m_iShotsFired;
@@ -717,12 +709,12 @@ void CWeaponBase::DrawCrosshair()
         m_flCrosshairDistance = iDistance;
 
     // scale bar size to the resolution
-    int crosshairScale = cl_crosshairscale.GetInt();
     float scale;
     int iCrosshairDistance, iBarSize, iBarThickness;
 
     if (cl_crosshairstyle.GetInt() == 0) //only CS:S uses crosshair scaling
     {
+        int crosshairScale = cl_crosshairscale.GetInt();
         if (crosshairScale < 1)
         {
             if (ScreenHeight() <= 600)
@@ -755,12 +747,11 @@ void CWeaponBase::DrawCrosshair()
     }
     else //allow user cvars
     {
-        crosshairScale = ScreenHeight();
         scale = 1.0f;
 
 		iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
         iBarSize = cl_crosshairsize.GetInt();
-        iBarThickness = cl_crosshairthickness.GetInt();
+        iBarThickness = cl_crosshairthickness.GetInt(); //thickness of 1 (or odd) causes off-center crosshairs
     }
 
     int	r, g, b;
@@ -841,7 +832,7 @@ void CWeaponBase::DrawCrosshair()
         }
 
         int iTop = iHalfScreenHeight - (iCrosshairDistance + iBarSize);
-        int iBottom = iHalfScreenHeight + iCrosshairDistance + iBarThickness;
+        int iBottom = iHalfScreenHeight + iCrosshairDistance + iBarThickness; //check this and make sure it's centered
         int iFarTop = iTop + iBarSize;
         int iFarBottom = iBottom + iBarSize;
 
@@ -879,6 +870,7 @@ void CWeaponBase::DrawCrosshair()
         }
         vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
 
+		//make sure dynamic behaviour is ok
         int iLeft = iHalfScreenWidth - (iBarSize + iCrosshairDistance) / 2;
         int iTop = iHalfScreenHeight - (iBarSize + iCrosshairDistance) / 2;
         int iRight = iHalfScreenWidth + iBarSize / 2 + iCrosshairDistance / 2;
