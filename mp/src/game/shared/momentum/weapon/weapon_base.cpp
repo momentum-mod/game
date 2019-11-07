@@ -149,14 +149,14 @@ END_DATADESC()
 #endif
 
 #ifdef CLIENT_DLL
-ConVar cl_crosshaircolor("cl_crosshaircolor", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE); //deprecate this
+ConVar cl_crosshaircolor("cl_crosshaircolor", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_dynamiccrosshair("cl_dynamiccrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
-ConVar cl_crosshairusecustom("cl_crosshairusecustom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshairusecustom("cl_crosshairusecustom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE); //deprecate this
 ConVar cl_crosshaircustomfile("cl_crosshaircustomfile", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
@@ -166,6 +166,18 @@ ConVar cl_crosshair_b("cl_crosshair_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
 ConVar cl_crosshair_t("cl_crosshair_t", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshair_dot("cl_crosshair_dot", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+
+ConVar cl_crosshairstyle("cl_crosshairstyle", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "0 - CS:S, 1 - CS:GO, 2 - Custom VTF");
+
+//csgo/vtf
+ConVar cl_crosshairsize("cl_crosshairsize", "5", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshairgap("cl_crosshairgap", "3", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshairgap_useweaponvalue("cl_crosshairgap_useweaponvalue", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+
+//ConVar cl_crosshair_drawoutline("cl_crosshair_drawoutline", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+//ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+
 #endif
 
 
@@ -654,12 +666,22 @@ void CWeaponBase::DrawCrosshair()
     if (GetWeaponID() == WEAPON_SNIPER)
         return;
 
-    int iDistance = GetMomWpnData().m_iCrosshairMinDistance; // The minimum distance the crosshair can achieve...
-
+	
+    int iDistance;
+    if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
+    {
+        iDistance = GetMomWpnData().m_iCrosshairMinDistance; // The minimum distance the crosshair can achieve...
+    }
+    else
+    {
+        iDistance = cl_crosshairgap.GetInt();
+	}
+    // could be a cvar to change how fast crosshair decreases
     int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
 
     if (cl_dynamiccrosshair.GetBool())
     {
+        // min distance multiplied by constants
         if (!(pPlayer->GetFlags() & FL_ONGROUND))
             iDistance *= 2.0f;
         else if (pPlayer->GetFlags() & FL_DUCKING)
@@ -668,55 +690,68 @@ void CWeaponBase::DrawCrosshair()
             iDistance *= 1.5f;
     }
 
-    if (cl_dynamiccrosshairfire.GetBool() && pPlayer->m_iShotsFired > m_iAmmoLastCheck)
+    if (cl_dynamiccrosshairfire.GetBool() && pPlayer->m_iShotsFired > m_iAmmoLastCheck) // shots firing?
     {
-        m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance);
+        m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 or (current distance) + delta
+		//why 15? could be a cvar?/check iDeltaDistance definition
     }
-    else if (m_flCrosshairDistance > iDistance)
-    {
-        m_flCrosshairDistance -= 0.1f + m_flCrosshairDistance * 0.013;
+    else if (m_flCrosshairDistance > iDistance) // distance > min distance (defined at init or from if block above)
+    {                                           // above should probably also have cvar condition, just do a nested if
+        m_flCrosshairDistance -= 0.1f + m_flCrosshairDistance * 0.013; // decrease by 0.1 + 1.3% of current (decreases exponentially slow over time)
+		// edit this to work for cl_crosshairgap, could be a cvar
     }
 
     m_iAmmoLastCheck = pPlayer->m_iShotsFired;
 
-    if (m_flCrosshairDistance < iDistance)
+	if (m_flCrosshairDistance < iDistance) //less than minimum/when m_flCrosshairDistance is initialized
         m_flCrosshairDistance = iDistance;
 
-    //scale bar size to the resolution
+    // scale bar size to the resolution
     int crosshairScale = cl_crosshairscale.GetInt();
-    if (crosshairScale < 1)
+    float scale;
+    int iCrosshairDistance, iBarSize, iBarThickness;
+
+    if (cl_crosshairstyle.GetInt() == 0) //only CS:S uses crosshair scaling
     {
-        if (ScreenHeight() <= 600)
+        if (crosshairScale < 1)
         {
-            crosshairScale = 600;
+            if (ScreenHeight() <= 600)
+            {
+                crosshairScale = 600;
+            }
+            else if (ScreenHeight() <= 768)
+            {
+                crosshairScale = 768;
+            }
+            else
+            {
+                crosshairScale = 1200;
+            }
         }
-        else if (ScreenHeight() <= 768)
+
+		if (cl_scalecrosshair.GetBool() == false)
         {
-            crosshairScale = 768;
+            scale = 1.0f;
         }
         else
         {
-            crosshairScale = 1200;
+            scale = float(ScreenHeight()) / float(crosshairScale);
         }
-    }
 
-    float scale;
-    if (cl_scalecrosshair.GetBool() == false)
+		iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
+		iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
+        iBarSize = max(1, (int)((float)iBarSize * scale));
+        iBarThickness = max(1, (int)floor(scale + 0.5f)); //thickness of 1 (or odd) causes off-center crosshairs
+    }
+    else //allow user cvars
     {
+        crosshairScale = ScreenHeight();
         scale = 1.0f;
+
+		iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
+        iBarSize = cl_crosshairsize.GetInt();
+        iBarThickness = cl_crosshairthickness.GetInt();
     }
-    else
-    {
-        scale = float(ScreenHeight()) / float(crosshairScale);
-    }
-
-    int iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
-
-    int iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
-
-    iBarSize = max(1, (int) ((float) iBarSize * scale));
-
-    int iBarThickness = max(1, (int) floor(scale + 0.5f));
 
     int	r, g, b;
 
