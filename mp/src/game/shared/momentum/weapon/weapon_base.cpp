@@ -156,7 +156,6 @@ ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHI
 ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
-ConVar cl_crosshairusecustom("cl_crosshairusecustom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE); //deprecate this
 ConVar cl_crosshaircustomfile("cl_crosshaircustomfile", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
@@ -667,17 +666,21 @@ void CWeaponBase::DrawCrosshair()
         return;
 
 	
-    int iDistance;
-    if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
+    //int iDistance, iDeltaDistance;
+    int iDistance = GetMomWpnData().m_iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
+    int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
+    /*if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
     {
         iDistance = GetMomWpnData().m_iCrosshairMinDistance; // The minimum distance the crosshair can achieve...
-    }
-    else
+		iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
+    }*/
+    if (cl_crosshairstyle.GetInt() != 0 && !cl_crosshairgap_useweaponvalue.GetBool())
     {
+		iDeltaDistance *= cl_crosshairgap.GetInt() / iDistance;
         iDistance = cl_crosshairgap.GetInt();
 	}
     // could be a cvar to change how fast crosshair decreases
-    int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
+    //int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
 
     if (cl_dynamiccrosshair.GetBool())
     {
@@ -690,10 +693,17 @@ void CWeaponBase::DrawCrosshair()
             iDistance *= 1.5f;
     }
 
-    if (cl_dynamiccrosshairfire.GetBool() && pPlayer->m_iShotsFired > m_iAmmoLastCheck) // shots firing?
+    if (cl_dynamiccrosshairfire.GetBool() && pPlayer->m_iShotsFired > m_iAmmoLastCheck) // shots firing
     {
-        m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 or (current distance) + delta
-		//why 15? could be a cvar?/check iDeltaDistance definition
+        if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
+        {
+            m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 or (current distance) + delta
+		    //min increase of 15...
+		}
+        else
+        {
+            m_flCrosshairDistance = min(iDistance * 1.6, m_flCrosshairDistance + iDeltaDistance); //scale growth to crosshair gap, could be a cvar
+        }
     }
     else if (m_flCrosshairDistance > iDistance) // distance > min distance (defined at init or from if block above)
     {                                           // above should probably also have cvar condition, just do a nested if
@@ -793,7 +803,7 @@ void CWeaponBase::DrawCrosshair()
     int iHalfScreenHeight = ScreenHeight() / 2;
 
 
-    if (!cl_crosshairusecustom.GetBool())
+    if (cl_crosshairstyle.GetInt() != 2)
     {
         CHudTexture *pTexture = gHUD.GetIcon("whiteAdditive");
         if (pTexture)
@@ -802,7 +812,7 @@ void CWeaponBase::DrawCrosshair()
         }
         
         int iLeft = iHalfScreenWidth - (iCrosshairDistance + iBarSize);
-        int iRight = iHalfScreenWidth + iCrosshairDistance + iBarThickness;
+        int iRight = iHalfScreenWidth + iCrosshairDistance + iBarThickness; //check this and make sure it's centered
         int iFarLeft = iLeft + iBarSize;
         int iFarRight = iRight + iBarSize;
 
@@ -856,7 +866,7 @@ void CWeaponBase::DrawCrosshair()
 
         if (strcmp(cl_crosshaircustomfile.GetString(), "") == 0 || strcmp(cl_crosshaircustomfile.GetString(), "null") == 0)
         {
-            pTexture = gHUD.GetIcon("whiteAdditive");
+            pTexture = gHUD.GetIcon("whiteAdditive"); //should probably just leave it to missing texture
         }
         else
         {
@@ -869,7 +879,12 @@ void CWeaponBase::DrawCrosshair()
         }
         vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
 
-        vgui::surface()->DrawTexturedRect(iHalfScreenWidth - 20, iHalfScreenHeight - 20, iHalfScreenWidth + 20, iHalfScreenHeight + 20);
+        int iLeft = iHalfScreenWidth - (iBarSize + iCrosshairDistance) / 2;
+        int iTop = iHalfScreenHeight - (iBarSize + iCrosshairDistance) / 2;
+        int iRight = iHalfScreenWidth + iBarSize / 2 + iCrosshairDistance / 2;
+        int iBottom = iHalfScreenHeight + iBarSize / 2 + iCrosshairDistance / 2;
+
+        vgui::surface()->DrawTexturedRect(iLeft, iTop, iRight, iBottom);
     }
 }
 
