@@ -1958,8 +1958,9 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
     CBaseEntity *pAttacker = info.GetAttacker();
     CBaseEntity *pInflictor = info.GetInflictor();
 
-    // Handle taking self damage from rockets
-    if (pAttacker == GetLocalPlayer() && FClassnameIs(pInflictor, "momentum_rocket"))
+    // Handle taking self damage from rockets and pumpkin bombs
+    if (pAttacker == GetLocalPlayer() &&
+        (FClassnameIs(pInflictor, "momentum_rocket") || FClassnameIs(pInflictor, "momentum_generic_bomb")))
     {
         // Grab the vector of the incoming attack.
         // (Pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
@@ -1995,18 +1996,21 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
     // Apply different force scale when on ground
     float flScale = 1.0f;
 
-    if (GetFlags() & FL_ONGROUND)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET;
-    }
-    else
-    {
-        flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET_AIR;
-
-        if (!(GetFlags() & FL_INWATER))
+        if (GetFlags() & FL_ONGROUND)
         {
-            // Not in water
-            flScale *= MOM_DAMAGESCALE_SELF_ROCKET;
+            flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET;
+        }
+        else
+        {
+            flScale = MOM_DAMAGEFORCESCALE_SELF_ROCKET_AIR;
+
+            if (!(GetFlags() & FL_INWATER))
+            {
+                // Not in water
+                flScale *= MOM_DAMAGESCALE_SELF_ROCKET;
+            }
         }
     }
 
