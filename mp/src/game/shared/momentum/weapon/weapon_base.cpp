@@ -174,8 +174,8 @@ ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_CLIENTDLL | FCV
 ConVar cl_crosshairgap("cl_crosshairgap", "3", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 ConVar cl_crosshairgap_useweaponvalue("cl_crosshairgap_useweaponvalue", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
-//ConVar cl_crosshair_drawoutline("cl_crosshair_drawoutline", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-//ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshair_drawoutline("cl_crosshair_drawoutline", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
 
 #endif
 
@@ -782,6 +782,7 @@ void CWeaponBase::DrawCrosshair()
     //	b = 50;
     //}
 
+	//move this for vtf custom
     int alpha = clamp(cl_crosshairalpha.GetInt(), 0, 255);
     vgui::surface()->DrawSetColor(r, g, b, alpha);
 
@@ -792,7 +793,6 @@ void CWeaponBase::DrawCrosshair()
 
     int iHalfScreenWidth = ScreenWidth() / 2;
     int iHalfScreenHeight = ScreenHeight() / 2;
-
 
     if (cl_crosshairstyle.GetInt() != 2)
     {
@@ -807,26 +807,59 @@ void CWeaponBase::DrawCrosshair()
         int iFarLeft = iLeft + iBarSize;
         int iFarRight = iRight + iBarSize;
 
+		int iOutlineThickness = cl_crosshair_outlinethickness.GetInt();
+
         if (!cl_crosshairusealpha.GetBool())
         {
-            vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
             // Additive crosshair
+            vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
+			
+			if (cl_crosshair_drawoutline.GetBool())
+            {
+                vgui::surface()->DrawSetColor(0, 0, 0, 255);
+                vgui::surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfScreenHeight - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfScreenHeight + iBarThickness + iOutlineThickness);
+                vgui::surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfScreenHeight - iOutlineThickness, iFarRight + iOutlineThickness, iHalfScreenHeight + iBarThickness + iOutlineThickness);
+			} //DrawTexturedRect has an alpha despite using 255 alpha
+
+            vgui::surface()->DrawSetColor(r, g, b, 200);
             vgui::surface()->DrawTexturedRect(iLeft, iHalfScreenHeight, iFarLeft, iHalfScreenHeight + iBarThickness);
             vgui::surface()->DrawTexturedRect(iRight, iHalfScreenHeight, iFarRight, iHalfScreenHeight + iBarThickness);
 			
             if (cl_crosshair_dot.GetBool())
             {
+				if (cl_crosshair_drawoutline.GetBool())
+                {
+                    vgui::surface()->DrawSetColor(0, 0, 0, 255);
+                    vgui::surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
+			    } //DrawTexturedRect has an alpha despite using 255 alpha
+
+                vgui::surface()->DrawSetColor(r, g, b, 200);
                 vgui::surface()->DrawTexturedRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1);
             }
         }
         else
         {
             // Alpha-blended crosshair
+            if (cl_crosshair_drawoutline.GetBool())
+            {
+                vgui::surface()->DrawSetColor(0, 0, 0, 255);
+                vgui::surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfScreenHeight - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfScreenHeight + iBarThickness + iOutlineThickness);
+                vgui::surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfScreenHeight - iOutlineThickness, iFarRight + iOutlineThickness, iHalfScreenHeight + iBarThickness + iOutlineThickness);
+			} //DrawTexturedRect has an alpha despite using 255 alpha
+
+            vgui::surface()->DrawSetColor(r, g, b, alpha);
             vgui::surface()->DrawFilledRect(iLeft, iHalfScreenHeight, iFarLeft, iHalfScreenHeight + iBarThickness);
             vgui::surface()->DrawFilledRect(iRight, iHalfScreenHeight, iFarRight, iHalfScreenHeight + iBarThickness);
-
+			
             if (cl_crosshair_dot.GetBool())
             {
+				if (cl_crosshair_drawoutline.GetBool())
+                {
+                    vgui::surface()->DrawSetColor(0, 0, 0, 255);
+                    vgui::surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
+			    } //DrawTexturedRect has an alpha despite using 255 alpha
+
+                vgui::surface()->DrawSetColor(r, g, b, alpha);
                 vgui::surface()->DrawFilledRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1);
             }
         }
@@ -839,6 +872,16 @@ void CWeaponBase::DrawCrosshair()
         if (!cl_crosshairusealpha.GetBool())
         {
             // Additive crosshair
+            vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
+			
+			if (cl_crosshair_drawoutline.GetBool())
+            {
+                vgui::surface()->DrawSetColor(0, 0, 0, 255);
+                vgui::surface()->DrawFilledRect(iHalfScreenWidth - iOutlineThickness, iTop - iOutlineThickness, iHalfScreenWidth + iBarThickness + iOutlineThickness, iFarTop + iOutlineThickness);
+                vgui::surface()->DrawFilledRect(iHalfScreenWidth - iOutlineThickness, iBottom - iOutlineThickness, iHalfScreenWidth + iBarThickness + iOutlineThickness, iFarBottom + iOutlineThickness);
+			} //DrawTexturedRect has an alpha despite using 255 alpha
+
+            vgui::surface()->DrawSetColor(r, g, b, 200);
             if (!cl_crosshair_t.GetBool())
                 vgui::surface()->DrawTexturedRect(iHalfScreenWidth, iTop, iHalfScreenWidth + iBarThickness, iFarTop);
             vgui::surface()->DrawTexturedRect(iHalfScreenWidth, iBottom, iHalfScreenWidth + iBarThickness, iFarBottom);
@@ -846,6 +889,14 @@ void CWeaponBase::DrawCrosshair()
         else
         {
             // Alpha-blended crosshair
+			if (cl_crosshair_drawoutline.GetBool())
+            {
+                vgui::surface()->DrawSetColor(0, 0, 0, 255);
+                vgui::surface()->DrawFilledRect(iHalfScreenWidth - iOutlineThickness, iTop - iOutlineThickness, iHalfScreenWidth + iBarThickness + iOutlineThickness, iFarTop + iOutlineThickness);
+                vgui::surface()->DrawFilledRect(iHalfScreenWidth - iOutlineThickness, iBottom - iOutlineThickness, iHalfScreenWidth + iBarThickness + iOutlineThickness, iFarBottom + iOutlineThickness);
+			} //DrawTexturedRect has an alpha despite using 255 alpha
+
+            vgui::surface()->DrawSetColor(r, g, b, 200);
             if (!cl_crosshair_t.GetBool())
                 vgui::surface()->DrawFilledRect(iHalfScreenWidth, iTop, iHalfScreenWidth + iBarThickness, iFarTop);
             vgui::surface()->DrawFilledRect(iHalfScreenWidth, iBottom, iHalfScreenWidth + iBarThickness, iFarBottom);
