@@ -150,64 +150,64 @@ END_DATADESC()
 
 #ifdef CLIENT_DLL
 ConVar cl_crosshaircolor("cl_crosshaircolor", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the crosshair color to specific colors. 0 = Custom color using cl_crosshaircolor_(r/g/b)", true, 0, true, 5);
+    "Set the crosshair color to specific colors. 0 = Custom color using cl_crosshaircolor_(r/g/b)", true, 0, true, 5);
 
 ConVar cl_dynamiccrosshair("cl_dynamiccrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle dynamic crosshair behaviour with player movement. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle dynamic crosshair behaviour with player movement. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle dynamic crosshair behaviour with weapon firing. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle dynamic crosshair behaviour with weapon firing. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle scaling the crosshair to the resolution. Takes effect on cl_crosshairstyle 0. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle scaling the crosshair to the resolution. Takes effect on cl_crosshairstyle 0. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_crosshaircolor_r("cl_crosshaircolor_r", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the red component to color the crosshair with.", true, 0, true, 255);
+    "Set the red component to color the crosshair with.", true, 0, true, 255);
 
 ConVar cl_crosshaircolor_g("cl_crosshaircolor_g", "250", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the green component to color the crosshair with.", true, 0, true, 255);
+    "Set the green component to color the crosshair with.", true, 0, true, 255);
 
 ConVar cl_crosshaircolor_b("cl_crosshaircolor_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the blue component to color the crosshair with.", true, 0, true, 255);
+    "Set the blue component to color the crosshair with.", true, 0, true, 255);
 
 ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the resolution to scale the crosshair to. Takes effect on cl_crosshairstyle 0.", true, 0, false, 0);
+    "Set the resolution to scale the crosshair to. Takes effect on cl_crosshairstyle 0.", true, 0, false, 0);
 
 ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the transparency of the crosshair. Takes effect on cl_crosshairusealpha 1.", true, 0, true, 255);
+    "Set the transparency of the crosshair. Takes effect on cl_crosshairusealpha 1.", true, 0, true, 255);
 
 ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle crosshair transparency. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle crosshair transparency. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_crosshairstyle("cl_crosshairstyle", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set crosshair style. 0 = CS:S, 1 = User CVars, 2 = Custom VTF", true, 0, true, 2);
+    "Set crosshair style. 0 = CS:S, 1 = User CVars, 2 = Custom VTF", true, 0, true, 2);
 
 ConVar cl_crosshairsize("cl_crosshairsize", "15", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the length of a crosshair line. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0);
+    "Set the length of a crosshair line. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0);
 
 ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the thickness of a crosshair line. Takes effect on cl_crosshairstyle 1.", true, 0, false, 0);
+    "Set the thickness of a crosshair line. Takes effect on cl_crosshairstyle 1.", true, 0, false, 0);
 
 ConVar cl_crosshairgap("cl_crosshairgap", "4", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the minimum distance between two crosshair lines. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0); //could add cvar to split into horizontal and vertical
+    "Set the minimum distance between two crosshair lines. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0); //could add cvar to split into horizontal and vertical
 
 ConVar cl_crosshairgap_useweaponvalue("cl_crosshairgap_useweaponvalue", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle using defined crosshair distances per weapon. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle using defined crosshair distances per weapon. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_crosshair_drawoutline("cl_crosshair_drawoutline", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle using a black outline around the crosshair. Takes effect on cl_crosshairstyle 0/1. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle using a black outline around the crosshair. Takes effect on cl_crosshairstyle 0/1. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
     "Set the thickness of the crosshair's outline. Takes effect on cl_crosshair_drawoutline 1.", true, 0, false, 0);
 
 ConVar cl_crosshair_t("cl_crosshair_t", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle T style crosshair. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle T style crosshair. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_crosshair_dot("cl_crosshair_dot", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Toggle crosshair dot. 0 = OFF, 1 = ON", true, 0, true, 1);
+    "Toggle crosshair dot. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_crosshair_file("cl_crosshair_file", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshairstyle 1.");
+    "Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshairstyle 1.");
 
 #endif
 
@@ -697,16 +697,16 @@ void CWeaponBase::DrawCrosshair()
     if (GetWeaponID() == WEAPON_SNIPER)
         return;
 
-	
+
     //int iDistance, iDeltaDistance;
     int iDistance = GetMomWpnData().m_iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
     int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
 
     if (cl_crosshairstyle.GetInt() != 0 && !cl_crosshairgap_useweaponvalue.GetBool())
     {
-		iDeltaDistance *= cl_crosshairgap.GetInt() / iDistance; //scale delta to weapon's delta, could be a cvar
+        iDeltaDistance *= cl_crosshairgap.GetInt() / iDistance; //scale delta to weapon's delta, could be a cvar
         iDistance = cl_crosshairgap.GetInt();
-	}
+    }
 
     if (cl_dynamiccrosshair.GetBool())
     {
@@ -724,7 +724,7 @@ void CWeaponBase::DrawCrosshair()
         if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
         {
             m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 (default crosshair size at 1080p) [but this is gap. not size] or (current distance) + delta
-		}
+        }
         else
         {
             m_flCrosshairDistance = min(iDistance * 1.6, m_flCrosshairDistance + iDeltaDistance); //scale growth to crosshair gap, could be a cvar
@@ -737,7 +737,7 @@ void CWeaponBase::DrawCrosshair()
 
     m_iAmmoLastCheck = pPlayer->m_iShotsFired;
 
-	if (m_flCrosshairDistance < iDistance) //less than minimum/when m_flCrosshairDistance is initialized
+    if (m_flCrosshairDistance < iDistance) //less than minimum/when m_flCrosshairDistance is initialized
         m_flCrosshairDistance = iDistance;
 
     // scale bar size to the resolution
@@ -763,7 +763,7 @@ void CWeaponBase::DrawCrosshair()
             }
         }
 
-		if (cl_scalecrosshair.GetBool() == false)
+        if (cl_scalecrosshair.GetBool() == false)
         {
             scale = 1.0f;
         }
@@ -772,8 +772,8 @@ void CWeaponBase::DrawCrosshair()
             scale = float(ScreenHeight()) / float(crosshairScale);
         }
 
-		iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
-		iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
+        iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
+        iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
         iBarSize = max(1, (int)((float)iBarSize * scale));
         iBarThickness = max(1, (int)floor(scale + 0.5f)); //thickness of 1 (or odd) causes off-center crosshairs
     }
@@ -781,14 +781,14 @@ void CWeaponBase::DrawCrosshair()
     {
         scale = 1.0f;
 
-		iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
+        iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
         iBarSize = cl_crosshairsize.GetInt();
         iBarThickness = cl_crosshairthickness.GetInt(); //thickness of 1 (or odd) causes off-center crosshairs
     }
 
     int	r, g, b;
 
-	if (cl_crosshaircolor.GetInt())
+    if (cl_crosshaircolor.GetInt())
     {
         switch (cl_crosshaircolor.GetInt())
         {
@@ -799,7 +799,7 @@ void CWeaponBase::DrawCrosshair()
         case 5:	r = 50;		g = 250;	b = 250;	break;
         default:	r = 50;		g = 250;	b = 50;		break;
         }
-	}
+    }
     else
     {
         r = cl_crosshaircolor_r.GetInt();
@@ -814,9 +814,7 @@ void CWeaponBase::DrawCrosshair()
     //	b = 50;
     //}
 
-	//move this for vtf custom
     int alpha = cl_crosshairalpha.GetInt();
-    vgui::surface()->DrawSetColor(r, g, b, alpha);
 
     int iHalfScreenWidth = ScreenWidth() / 2;
     int iHalfScreenHeight = ScreenHeight() / 2;
@@ -834,7 +832,7 @@ void CWeaponBase::DrawCrosshair()
         int iFarLeft = iLeft + iBarSize;
         int iFarRight = iRight + iBarSize;
 
-		int iTop = iHalfScreenHeight - (iCrosshairDistance + iBarSize);
+        int iTop = iHalfScreenHeight - (iCrosshairDistance + iBarSize);
         int iBottom = iHalfScreenHeight + iCrosshairDistance;
         int iFarTop = iTop + iBarSize;
         int iFarBottom = iBottom + iBarSize;
@@ -844,39 +842,39 @@ void CWeaponBase::DrawCrosshair()
         int iHalfLefter = iHalfScreenWidth - iBarThickness / 2;
         int iHalfRighter = iHalfScreenWidth + iBarThickness / 2 + iBarThickness % 2;
 
-		int iOutlineThickness = cl_crosshair_outlinethickness.GetInt();
+        int iOutlineThickness = cl_crosshair_outlinethickness.GetInt();
 
         if (!cl_crosshairusealpha.GetBool())
         {
             // Additive crosshair
             vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
-			
-			if (cl_crosshair_drawoutline.GetBool())
+            
+            if (cl_crosshair_drawoutline.GetBool())
             {
                 vgui::surface()->DrawSetColor(0, 0, 0, 200); // could add cvar for outline color/alpha
                 vgui::surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfLower + iOutlineThickness);
                 vgui::surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarRight + iOutlineThickness, iHalfLower + iOutlineThickness);
 
-				if (!cl_crosshair_t.GetBool())
+                if (!cl_crosshair_t.GetBool())
                     vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iTop - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarTop + iOutlineThickness);
                 vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iBottom - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarBottom + iOutlineThickness);
-			} //DrawTexturedRect has an alpha despite using 255 alpha, use DrawFilledRect
+            } // DrawTexturedRect has an alpha despite using 255 alpha, use DrawFilledRect
 
             vgui::surface()->DrawSetColor(r, g, b, 200);
             vgui::surface()->DrawTexturedRect(iLeft, iHalfUpper, iFarLeft, iHalfLower);
             vgui::surface()->DrawTexturedRect(iRight, iHalfUpper, iFarRight, iHalfLower);
 
-			if (!cl_crosshair_t.GetBool())
+            if (!cl_crosshair_t.GetBool())
                 vgui::surface()->DrawTexturedRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
             vgui::surface()->DrawTexturedRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
-			
+            
             if (cl_crosshair_dot.GetBool())
             {
-				if (cl_crosshair_drawoutline.GetBool())
+                if (cl_crosshair_drawoutline.GetBool())
                 {
                     vgui::surface()->DrawSetColor(0, 0, 0, 200); // could add cvar for (dot) outline color/alpha
                     vgui::surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
-			    } //DrawTexturedRect has an alpha despite using 255 alpha, use DrawFilledRect
+                } // DrawTexturedRect has an alpha despite using 255 alpha, use DrawFilledRect
 
                 vgui::surface()->DrawSetColor(r, g, b, 200); // could add cvar for dot color/alpha
                 vgui::surface()->DrawTexturedRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1); // could add cvar for dot size
@@ -891,26 +889,26 @@ void CWeaponBase::DrawCrosshair()
                 vgui::surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfLower + iOutlineThickness);
                 vgui::surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarRight + iOutlineThickness, iHalfLower + iOutlineThickness);
 
-				if (!cl_crosshair_t.GetBool())
+                if (!cl_crosshair_t.GetBool())
                     vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iTop - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarTop + iOutlineThickness);
                 vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iBottom - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarBottom + iOutlineThickness);
-			}
+            }
 
             vgui::surface()->DrawSetColor(r, g, b, alpha);
             vgui::surface()->DrawFilledRect(iLeft, iHalfUpper, iFarLeft, iHalfLower);
             vgui::surface()->DrawFilledRect(iRight, iHalfUpper, iFarRight, iHalfLower);
-			
-			if (!cl_crosshair_t.GetBool())
+            
+            if (!cl_crosshair_t.GetBool())
                 vgui::surface()->DrawFilledRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
             vgui::surface()->DrawFilledRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
 
             if (cl_crosshair_dot.GetBool())
             {
-				if (cl_crosshair_drawoutline.GetBool())
+                if (cl_crosshair_drawoutline.GetBool())
                 {
                     vgui::surface()->DrawSetColor(0, 0, 0, alpha); // could add cvar for (dot) outline color/alpha
                     vgui::surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
-			    }
+                }
 
                 vgui::surface()->DrawSetColor(r, g, b, alpha); // could add cvar for dot color/alpha
                 vgui::surface()->DrawFilledRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1); // could add cvar for dot size
@@ -943,7 +941,7 @@ void CWeaponBase::DrawCrosshair()
         }
         vgui::surface()->DrawSetTexture(m_iCrosshairTextureID);
 
-		//make sure dynamic behaviour is ok
+        // make sure dynamic behaviour is ok
         int iLeft = iHalfScreenWidth - (iBarSize + iCrosshairDistance) / 2;
         int iTop = iHalfScreenHeight - (iBarSize + iCrosshairDistance) / 2;
         int iRight = iHalfScreenWidth + (iBarSize + iCrosshairDistance) / 2 + (iBarSize + iCrosshairDistance) % 2;
