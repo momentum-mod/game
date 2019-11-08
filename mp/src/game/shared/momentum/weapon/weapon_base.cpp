@@ -149,33 +149,65 @@ END_DATADESC()
 #endif
 
 #ifdef CLIENT_DLL
-ConVar cl_crosshaircolor("cl_crosshaircolor", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_dynamiccrosshair("cl_dynamiccrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshaircolor("cl_crosshaircolor", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the crosshair color to specific colors. 0 = Custom color using cl_crosshaircolor_(r/g/b)", true, 0, true, 5);
 
-ConVar cl_crosshaircustomfile("cl_crosshaircustomfile", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_dynamiccrosshair("cl_dynamiccrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle dynamic crosshair behaviour with player movement. 0 = OFF, 1 = ON", true, 0, true, 1);
 
-ConVar cl_crosshair_r("cl_crosshair_r", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshair_g("cl_crosshair_g", "250", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshair_b("cl_crosshair_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle dynamic crosshair behaviour with weapon firing. 0 = OFF, 1 = ON", true, 0, true, 1);
 
-ConVar cl_crosshair_t("cl_crosshair_t", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshair_dot("cl_crosshair_dot", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle scaling the crosshair to the resolution. Takes effect on cl_crosshairstyle 0. 0 = OFF, 1 = ON", true, 0, true, 1);
 
-ConVar cl_crosshairstyle("cl_crosshairstyle", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "0 - CS:S, 1 - CS:GO, 2 - Custom VTF");
+ConVar cl_crosshaircolor_r("cl_crosshaircolor_r", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the red component to color the crosshair with.", true, 0, true, 255);
 
-//csgo/vtf
-ConVar cl_crosshairsize("cl_crosshairsize", "5", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshairgap("cl_crosshairgap", "3", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshairgap_useweaponvalue("cl_crosshairgap_useweaponvalue", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshaircolor_g("cl_crosshaircolor_g", "250", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the green component to color the crosshair with.", true, 0, true, 255);
 
-ConVar cl_crosshair_drawoutline("cl_crosshair_drawoutline", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
-ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+ConVar cl_crosshaircolor_b("cl_crosshaircolor_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the blue component to color the crosshair with.", true, 0, true, 255);
+
+ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the resolution to scale the crosshair to. Takes effect on cl_crosshairstyle 0.", true, 0, false, 0);
+
+ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the transparency of the crosshair. Does not function with custom VTF crosshairs. Takes effect on cl_crosshairusealpha 1.", true, 0, true, 255);
+
+ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle crosshair transparency. 0 = OFF, 1 = ON", true, 0, true, 1);
+
+ConVar cl_crosshairstyle("cl_crosshairstyle", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set crosshair style. 0 = CS:S, 1 = CS:GO, 2 = Custom VTF", true, 0, true, 2);
+
+ConVar cl_crosshairsize("cl_crosshairsize", "15", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the length of a crosshair line. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0);
+
+ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the thickness of a crosshair line. Takes effect on cl_crosshairstyle 1.", true, 0, false, 0);
+
+ConVar cl_crosshairgap("cl_crosshairgap", "4", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the minimum distance between two crosshair lines. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0);
+
+ConVar cl_crosshairgap_useweaponvalue("cl_crosshairgap_useweaponvalue", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle using defined crosshair distances per weapon. 0 = OFF, 1 = ON", true, 0, true, 1);
+
+ConVar cl_crosshair_drawoutline("cl_crosshair_drawoutline", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle using a black outline around the crosshair. Takes effect on cl_crosshairstyle 0/1. 0 = OFF, 1 = ON", true, 0, true, 1);
+
+ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+    "Set the thickness of the crosshair's outline. Takes effect on cl_crosshair_drawoutline 1.", true, 0, false, 0);
+
+ConVar cl_crosshair_t("cl_crosshair_t", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle T style crosshair. 0 = OFF, 1 = ON", true, 0, true, 1);
+
+ConVar cl_crosshair_dot("cl_crosshair_dot", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Toggle crosshair dot. 0 = OFF, 1 = ON", true, 0, true, 1);
+
+ConVar cl_crosshair_file("cl_crosshair_file", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+	"Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshairstyle 1.");
 
 #endif
 
@@ -691,7 +723,7 @@ void CWeaponBase::DrawCrosshair()
     {
         if (cl_crosshairstyle.GetInt() == 0 || cl_crosshairgap_useweaponvalue.GetBool())
         {
-            m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 [?] or (current distance) + delta
+            m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance); // min of 15 (default crosshair size at 1080p) or (current distance) + delta
 		}
         else
         {
@@ -770,9 +802,9 @@ void CWeaponBase::DrawCrosshair()
 	}
     else
     {
-        r = clamp(cl_crosshair_r.GetInt(), 0, 255);
-        g = clamp(cl_crosshair_g.GetInt(), 0, 255);
-        b = clamp(cl_crosshair_b.GetInt(), 0, 255);
+        r = clamp(cl_crosshaircolor_r.GetInt(), 0, 255);
+        g = clamp(cl_crosshaircolor_g.GetInt(), 0, 255);
+        b = clamp(cl_crosshaircolor_b.GetInt(), 0, 255);
     }
     // if user is using nightvision, make the crosshair red.
     //if (pPlayer->m_bNightVisionOn)
@@ -889,13 +921,13 @@ void CWeaponBase::DrawCrosshair()
     {
         CHudTexture *pTexture = nullptr;
 
-        if (strcmp(cl_crosshaircustomfile.GetString(), "") == 0 || strcmp(cl_crosshaircustomfile.GetString(), "null") == 0)
+        if (strcmp(cl_crosshair_file.GetString(), "") == 0 || strcmp(cl_crosshair_file.GetString(), "null") == 0)
         {
             pTexture = gHUD.GetIcon("whiteAdditive"); //should probably just leave it to missing texture
         }
         else
         {
-            pTexture = gHUD.GetIcon(cl_crosshaircustomfile.GetString());
+            pTexture = gHUD.GetIcon(cl_crosshair_file.GetString());
         }
 
         if (pTexture)
@@ -907,8 +939,8 @@ void CWeaponBase::DrawCrosshair()
 		//make sure dynamic behaviour is ok
         int iLeft = iHalfScreenWidth - (iBarSize + iCrosshairDistance) / 2;
         int iTop = iHalfScreenHeight - (iBarSize + iCrosshairDistance) / 2;
-        int iRight = iHalfScreenWidth + (iBarSize + iCrosshairDistance / 2) + (iBarSize + iCrosshairDistance) % 2;
-        int iBottom = iHalfScreenHeight + (iBarSize + iCrosshairDistance / 2) + (iBarSize + iCrosshairDistance) % 2;
+        int iRight = iHalfScreenWidth + (iBarSize + iCrosshairDistance) / 2 + (iBarSize + iCrosshairDistance) % 2;
+        int iBottom = iHalfScreenHeight + (iBarSize + iCrosshairDistance) / 2 + (iBarSize + iCrosshairDistance) % 2;
 
         vgui::surface()->DrawTexturedRect(iLeft, iTop, iRight, iBottom);
     }
