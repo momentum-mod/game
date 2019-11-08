@@ -180,7 +180,7 @@ ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR
 	"Toggle crosshair transparency. 0 = OFF, 1 = ON", true, 0, true, 1);
 
 ConVar cl_crosshairstyle("cl_crosshairstyle", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set crosshair style. 0 = CS:S, 1 = CS:GO, 2 = Custom VTF", true, 0, true, 2);
+	"Set crosshair style. 0 = CS:S, 1 = User CVars, 2 = Custom VTF", true, 0, true, 2);
 
 ConVar cl_crosshairsize("cl_crosshairsize", "15", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
 	"Set the length of a crosshair line. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0);
@@ -189,7 +189,7 @@ ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_CLIENTDLL | FCV
 	"Set the thickness of a crosshair line. Takes effect on cl_crosshairstyle 1.", true, 0, false, 0);
 
 ConVar cl_crosshairgap("cl_crosshairgap", "4", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Set the minimum distance between two crosshair lines. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0);
+	"Set the minimum distance between two crosshair lines. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0); //could add cvar to split into horizontal and vertical
 
 ConVar cl_crosshairgap_useweaponvalue("cl_crosshairgap_useweaponvalue", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
 	"Toggle using defined crosshair distances per weapon. 0 = OFF, 1 = ON", true, 0, true, 1);
