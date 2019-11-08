@@ -102,9 +102,6 @@ void CMomGenericBomb::Event_Killed(const CTakeDamageInfo &info)
 // same as above but traces the activator as the damage owner
 void CMomGenericBomb::InputDetonate(inputdata_t &inputdata)
 {
-    if (inputdata.pActivator)
-    {
         CTakeDamageInfo info(this, inputdata.pActivator, m_flDamage, DMG_GENERIC);
         Event_Killed(info);
-    }
 }
