@@ -21,7 +21,7 @@
 
 #include "tier0/memdbgon.h"
 
-MAKE_TOGGLE_CONVAR(mom_use_fixed_spread, "1", FCVAR_REPLICATED,
+static MAKE_TOGGLE_CONVAR(mom_use_fixed_spread, "1", FCVAR_REPLICATED,
                    "Use fixed spread patterns for shotgun weapons. 1 = ON (default), 0 = OFF");
 
 #ifdef CLIENT_DLL
@@ -180,10 +180,10 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
         lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());
 #endif
 
-	int iTotalBullets = pWeaponInfo->m_iBullets;
+    int iTotalBullets = pWeaponInfo->m_iBullets;
     bool bNoSpread = false;
 
-	if (iTotalBullets > 1)
+    if (iTotalBullets > 1)
         bNoSpread = mom_use_fixed_spread.GetBool();
 
     for (int iBullet = 0; iBullet < iTotalBullets; iBullet++)
@@ -205,11 +205,11 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
         {
             RandomSeed(iSeed); // init random system with this seed
 
-			// Get circular gaussian spread.
+            // Get circular gaussian spread.
             x = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
             y = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
 
-			iSeed++; // use new seed for next bullet
+            iSeed++; // use new seed for next bullet
         }
 
         pPlayer->FireBullet(vOrigin, vAngles, flSpread, flRange, iPenetration, iAmmoType, iDamage, flRangeModifier,
