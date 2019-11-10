@@ -12,3 +12,9 @@ void FX_FireBullets(
 	int iSeed,
 	float flSpread
 	);
+
+// TF2 spread pattern
+const Vector g_vecFixedPattern[] = {
+    Vector(0, 0, 0),        Vector(1, 0, 0),       Vector(-1, 0, 0),        Vector(0, -1, 0),       Vector(0, 1, 0),
+    Vector(0.85, -0.85, 0), Vector(0.85, 0.85, 0), Vector(-0.85, -0.85, 0), Vector(-0.85, 0.85, 0), Vector(0, 0, 0),
+};

@@ -9,7 +9,7 @@ WeaponData
     "Damage"            "22"
     "Range"             "8192"
     "RangeModifier"     "0.70"
-    "Bullets"           "6"
+    "Bullets"           "9"
     "CycleTime"         "0.25"
     
     // Weapon data is loaded by both the Game and Client DLLs.
