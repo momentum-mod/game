@@ -944,13 +944,14 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
     if (g_pMomentumTimer->IsRunning() && m_bHasPracticeMode)
         return;
 
-    if (m_iObserverMode == OBS_MODE_NONE)
+    if (m_iObserverMode != OBS_MODE_NONE)
+        return;
+
+    // Zone-specific things first
+    const auto iZoneType = pTrigger->GetZoneType();
+    switch (iZoneType)
     {
-        // Zone-specific things first
-        const auto iZoneType = pTrigger->GetZoneType();
-        switch (iZoneType)
-        {
-        case ZONE_TYPE_START:
+    case ZONE_TYPE_START:
         {
             ResetMovementProperties();
 
@@ -988,7 +989,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             }
         }
         break;
-        case ZONE_TYPE_STOP:
+    case ZONE_TYPE_STOP:
         {
             // We've reached end zone, stop here
             //auto pStopTrigger = static_cast<CTriggerTimerStop *>(pTrigger);
@@ -1039,8 +1040,8 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             }
         }
         break;
-        case ZONE_TYPE_CHECKPOINT:
-        case ZONE_TYPE_STAGE:
+    case ZONE_TYPE_CHECKPOINT:
+    case ZONE_TYPE_STAGE:
         {
             const auto bIsStage = iZoneType == ZONE_TYPE_STAGE;
             const int zoneNum = pTrigger->GetZoneNumber();
@@ -1052,7 +1053,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             else
             {
                 const auto enterVel3D = GetLocalVelocity().Length(),
-                    enterVel2D = GetLocalVelocity().Length2D();
+                           enterVel2D = GetLocalVelocity().Length2D();
                 m_RunStats.SetZoneEnterSpeed(zoneNum, enterVel3D, enterVel2D);
             }
 
@@ -1070,12 +1071,11 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                 }
             }
         }
-        default:
-            break;
-        }
-
-        CMomRunEntity::OnZoneEnter(pTrigger);
+    default:
+        break;
     }
+
+    CMomRunEntity::OnZoneEnter(pTrigger);
 }
 
 void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
@@ -1083,49 +1083,48 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
     if (g_pMomentumTimer->IsRunning() && m_bHasPracticeMode)
         return;
 
-    // We only care to go through with this if we're not spectating now
-    if (m_iObserverMode == OBS_MODE_NONE)
+    if (m_iObserverMode != OBS_MODE_NONE)
+        return;
+
+    // Zone-specific things first
+    switch (pTrigger->GetZoneType())
     {
-        // Zone-specific things first
-        switch (pTrigger->GetZoneType())
+    case ZONE_TYPE_STOP:
+        m_Data.m_iCurrentTrack = m_iOldTrack;
+        m_Data.m_iCurrentZone = m_iOldZone;
+        ResetMovementProperties();
+        break;
+    case ZONE_TYPE_CHECKPOINT:
+        break;
+    case ZONE_TYPE_START:
+        // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
+        g_pMomentumTimer->TryStart(this, true);
+        if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
         {
-        case ZONE_TYPE_STOP:
-            m_Data.m_iCurrentTrack = m_iOldTrack;
-            m_Data.m_iCurrentZone = m_iOldZone;
-            ResetMovementProperties();
-            break;
-        case ZONE_TYPE_CHECKPOINT:
-            break;
-        case ZONE_TYPE_START:
-            // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
-            g_pMomentumTimer->TryStart(this, true);
-            if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
-            {
-                const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
+            const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
 
-                LimitSpeed(pStart->GetSpeedLimit(), true);
-            }
-            m_bShouldLimitPlayerSpeed = false;
-            // No break here, we want to fall through; this handles both the start and stage triggers
-        case ZONE_TYPE_STAGE:
-            {
-                const auto zoneNum = pTrigger->GetZoneNumber();
-                // Timer won't be running if it's the start trigger
-                if ((zoneNum == 1 || g_pMomentumTimer->IsRunning()) && !m_bHasPracticeMode)
-                {
-                    const auto enterVel3D = GetLocalVelocity().Length(),
-                        enterVel2D = GetLocalVelocity().Length2D();
-                    m_RunStats.SetZoneEnterSpeed(zoneNum, enterVel3D, enterVel2D);
-                    if (zoneNum == 1)
-                        m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
-                }
-            }
-        default:
-            break;
+            LimitSpeed(pStart->GetSpeedLimit(), true);
         }
-
-        CMomRunEntity::OnZoneExit(pTrigger);
+        m_bShouldLimitPlayerSpeed = false;
+        // No break here, we want to fall through; this handles both the start and stage triggers
+    case ZONE_TYPE_STAGE:
+        {
+            const auto zoneNum = pTrigger->GetZoneNumber();
+            // Timer won't be running if it's the start trigger
+            if ((zoneNum == 1 || g_pMomentumTimer->IsRunning()) && !m_bHasPracticeMode)
+            {
+                const auto enterVel3D = GetLocalVelocity().Length(),
+                           enterVel2D = GetLocalVelocity().Length2D();
+                m_RunStats.SetZoneEnterSpeed(zoneNum, enterVel3D, enterVel2D);
+                if (zoneNum == 1)
+                    m_RunStats.SetZoneEnterSpeed(0, enterVel3D, enterVel2D);
+            }
+        }
+    default:
+        break;
     }
+
+    CMomRunEntity::OnZoneExit(pTrigger);
 }
 
 void CMomentumPlayer::ResetMovementProperties()
