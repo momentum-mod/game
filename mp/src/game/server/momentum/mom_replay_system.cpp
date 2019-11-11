@@ -1,5 +1,6 @@
 #include "cbase.h"
 
+#include "time.h"
 #include "mom_timer.h"
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
@@ -277,7 +278,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     m_pRecordingReplay->SetTickInterval(gpGlobals->interval_per_tick);
     m_pRecordingReplay->SetRunFlags(pPlayer->m_Data.m_iRunFlags);
-    m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
+    m_pRecordingReplay->SetRunDate(time(nullptr));
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetStopTick(m_iStopTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetTrackNumber(g_pMomentumTimer->GetTrackNumber());
