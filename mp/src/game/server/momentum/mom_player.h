@@ -274,8 +274,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void DestroyRockets();
     
-    // Resets all player properties to their default state
-    void ResetProps();
+    // Resets all player movement properties to their default state
+    void ResetMovementProperties();
 
     CSteamID m_sSpecTargetSteamID;
 

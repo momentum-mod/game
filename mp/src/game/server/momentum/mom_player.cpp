@@ -952,7 +952,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
         {
         case ZONE_TYPE_START:
         {
-            ResetProps();
+            ResetMovementProperties();
 
             const auto pStartTrigger = static_cast<CTriggerTimerStart*>(pTrigger);
 
@@ -1092,7 +1092,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         case ZONE_TYPE_STOP:
             m_Data.m_iCurrentTrack = m_iOldTrack;
             m_Data.m_iCurrentZone = m_iOldZone;
-            ResetProps();
+            ResetMovementProperties();
             break;
         case ZONE_TYPE_CHECKPOINT:
             break;
@@ -1128,7 +1128,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
     }
 }
 
-void CMomentumPlayer::ResetProps()
+void CMomentumPlayer::ResetMovementProperties()
 {
     SetLaggedMovementValue(1.0f);
 }
