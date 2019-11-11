@@ -225,6 +225,7 @@ CMomentumPlayer::CMomentumPlayer()
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
       m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1)
 {
+    m_bAllowUserTeleports = true;
     m_flPunishTime = -1;
     m_iLastBlock = -1;
     m_iOldTrack = 0;
@@ -846,6 +847,9 @@ void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClie
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
+    if (!m_bAllowUserTeleports)
+        return;
+
     // No need to remove the trail here, CreateTrail() already does it for us
     BaseClass::Teleport(newPosition, newAngles, newVelocity);
     PhysicsCheckForEntityUntouch();
