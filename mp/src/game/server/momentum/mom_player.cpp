@@ -1131,6 +1131,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
 void CMomentumPlayer::ResetMovementProperties()
 {
     SetLaggedMovementValue(1.0f);
+    SetGravity(1.0f);
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
