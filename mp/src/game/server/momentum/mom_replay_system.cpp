@@ -18,15 +18,18 @@
 MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
 MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or backward in the replayui \n", 0, 2);
 
-CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
-    CAutoGameSystemPerFrame(pName), m_bRecording(false), m_bPlayingBack(false), m_pPlaybackReplay(nullptr),
+CMomentumReplaySystem::CMomentumReplaySystem(const char* pName) : CAutoGameSystemPerFrame(pName),
+    m_bRecording(false),
+    m_bPlayingBack(false),
+    m_pRecordingReplay(nullptr),
+    m_pPlaybackReplay(nullptr),
     m_bShouldStopRec(false),
     m_iTickCount(0),
     m_iStartRecordingTick(0),
     m_iStartTimerTick(0),
     m_iStopTimerTick(0),
-    m_bTeleportedThisFrame(false),
-    m_fRecEndTime(-1.0f)
+    m_fRecEndTime(-1.0f),
+    m_bTeleportedThisFrame(false)
 {
     m_szMapHash[0] = '\0';
 }
@@ -48,21 +51,18 @@ void CMomentumReplaySystem::FrameUpdatePostEntityThink()
 
 void CMomentumReplaySystem::LevelInitPostEntity()
 {
-    // Get the map file's hash
     if (!MomUtil::GetFileHash(m_szMapHash, sizeof(m_szMapHash), CFmtStr("maps/%s.bsp", gpGlobals->mapname.ToCStr())))
         Warning("Could not generate a hash for the current map!!!\n");
 }
 
 void CMomentumReplaySystem::LevelShutdownPostEntity()
 {
-    //Stop a recording if there is one while the level shuts down
     if (m_bRecording)
         CancelRecording();
 
     if (m_pPlaybackReplay)
         UnloadPlayback(true);
 
-    // Reset the map hash
     m_szMapHash[0] = '\0';
 }
 
@@ -151,7 +151,6 @@ void CMomentumReplaySystem::FinishRecording()
             gameeventmanager->FireEvent(pReplaySavedEvent);
         }
 
-        // Load the last run that we did in case we want to watch it
         UnloadPlayback();
         m_pPlaybackReplay = m_pRecordingReplay;
         LoadReplayGhost();
@@ -167,7 +166,6 @@ void CMomentumReplaySystem::FinishRecording()
     if (pPlayer)
         pPlayer->SetAllowUserTeleports(true);
 
-    // Reset the m_i*Tick s
     m_iStartRecordingTick = 0;
     m_iStartTimerTick = 0;
     m_iStopTimerTick = 0;
@@ -229,7 +227,6 @@ void CMomentumReplaySystem::TrimReplay()
 
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
-    // We only record frames that the player isn't pausing on
     if (m_bRecording)
     {
         const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
@@ -246,7 +243,7 @@ void CMomentumReplaySystem::UpdateRecordingParams()
             m_pRecordingReplay->AddFrame(CReplayFrame(pSaved->m_angLastAng, pSaved->m_vecLastPos, pSaved->m_fLastViewOffset, pSaved->m_nButtons, false));
         }
 
-        ++m_iTickCount; // increment recording tick
+        ++m_iTickCount;
     }
 
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
