@@ -29,7 +29,6 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     m_fRecEndTime(-1.0f)
 {
     m_szMapHash[0] = '\0';
-    m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
 }
 
 CMomentumReplaySystem::~CMomentumReplaySystem()
@@ -77,15 +76,17 @@ void CMomentumReplaySystem::PostInit()
 
 void CMomentumReplaySystem::BeginRecording()
 {
+    if (m_bRecording || m_pRecordingReplay)
+        return;
+
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    // don't record if we're watching a preexisting replay
-    if (pPlayer && pPlayer->GetObserverMode() == OBS_MODE_NONE)
-    {
-        m_bRecording = true;
-        m_iTickCount = 1; // recording begins at 1 ;)
-        m_iStartRecordingTick = gpGlobals->tickcount;
-        m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
-    }
+    if (!pPlayer || pPlayer->GetObserverMode() != OBS_MODE_NONE)
+        return;
+
+    m_bRecording = true;
+    m_iTickCount = 1; // recording begins at 1 ;)
+    m_iStartRecordingTick = gpGlobals->tickcount;
+    m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
 }
 
 void CMomentumReplaySystem::CancelRecording()
