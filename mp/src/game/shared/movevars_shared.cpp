@@ -132,3 +132,4 @@ ConVar r_AirboatViewZHeight( "r_AirboatViewZHeight", "0.0", FCVAR_CHEAT | FCVAR_
 
 // Momentum convars
 ConVar sv_considered_on_ground("sv_considered_on_ground", "1.0", 0, "Amount of units you have to be above the ground to be considered on ground", true, 0.0f, true, 5.f);
+ConVar sv_duck_collision_fix("sv_duck_collision_fix", "1", 0, "Fixes headbugs by updating the collision box after duck code instead of at the end of the tick", true, 0, true, 1);
