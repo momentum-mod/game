@@ -517,18 +517,21 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
 
     UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
 
-    //check for hitting glass
 #ifndef CLIENT_DLL
-    CTakeDamageInfo glassDamage(pAttacker, pAttacker, 42.0f, DMG_BULLET | DMG_NEVERGIB);
-    pSoundSource->TraceAttackToTriggers(glassDamage, trOutput->startpos, trOutput->endpos, *vForwardOut);
+    if (pAttacker->IsPlayer())
+    {
+        //check for hitting glass
+        CTakeDamageInfo glassDamage(pAttacker, pAttacker, 42.0f, DMG_BULLET | DMG_NEVERGIB);
+        pSoundSource->TraceAttackToTriggers(glassDamage, trOutput->startpos, trOutput->endpos, *vForwardOut);
+    }
 #endif
 
-    if (trOutput->fraction >= 1.0)
+    if (trOutput->fraction >= 1.0f)
     {
         Vector head_hull_mins(-16, -16, -18);
         Vector head_hull_maxs(16, 16, 18);
         UTIL_TraceHull(vecSrc, vecEnd, head_hull_mins, head_hull_maxs, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
-        if (trOutput->fraction < 1.0)
+        if (trOutput->fraction < 1.0f)
         {
             // Calculate the point of intersection of the line (or hull) and the object we hit
             // This is and approximation of the "best" intersection
@@ -541,7 +544,6 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
 
     bool bDidHit = trOutput->fraction < 1.0f;
 
-
     if (!bDidHit)
     {
         // play wiff or swish sound
@@ -550,11 +552,9 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
         CBaseEntity::EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.Slash");
     }
 #ifndef CLIENT_DLL
-    else
+    else if (pAttacker->IsPlayer())
     {
-        // play thwack, smack, or dong sound
-
-        CBaseEntity *pEntity = trOutput->m_pEnt;
+        CBaseEntity *pHitEntity = trOutput->m_pEnt;
 
         ClearMultiDamage();
 
@@ -564,16 +564,16 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
         {
             flDamage = 65.0f;
 
-            if ( pEntity && pEntity->IsPlayer() )
+            if (pHitEntity && pHitEntity->IsPlayer())
             {
-                Vector vTragetForward;
+                Vector vTargetForward;
 
-                AngleVectors( pEntity->GetAbsAngles(), &vTragetForward );
+                AngleVectors(pHitEntity->GetAbsAngles(), &vTargetForward);
 
-                Vector2D vecLOS = (pEntity->GetAbsOrigin() - pAttacker->GetAbsOrigin()).AsVector2D();
+                Vector2D vecLOS = (pHitEntity->GetAbsOrigin() - pAttacker->GetAbsOrigin()).AsVector2D();
                 Vector2DNormalize( vecLOS );
 
-                float flDot = vecLOS.Dot( vTragetForward.AsVector2D() );
+                float flDot = vecLOS.Dot( vTargetForward.AsVector2D() );
 
                 //Triple the damage if we are stabbing them in the back.
                 if ( flDot > 0.80f )
@@ -582,23 +582,13 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
         }
         else
         {
-            /*if ( bFirstSwing )
-            {
-                // first swing does full damage
-                flDamage = 20;
-            }
-            else
-            {
-                // subsequent swings do less
-                flDamage = 15;
-            }*/
             flDamage = 20.0f;
         }
 
         CTakeDamageInfo info( pAttacker, pAttacker, flDamage, DMG_BULLET | DMG_NEVERGIB );
 
         CalculateMeleeDamageForce( &info, *vForwardOut, trOutput->endpos, 1.0f/flDamage );
-        pEntity->DispatchTraceAttack( info, *vForwardOut, trOutput ); 
+        pHitEntity->DispatchTraceAttack(info, *vForwardOut, trOutput); 
         ApplyMultiDamage();
     }
 #endif
