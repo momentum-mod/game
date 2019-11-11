@@ -46,11 +46,9 @@ public:
 
   private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
-    void SetReplayInfo();
-    void SetRunStats();
+    void SetReplayHeaderAndStats();
     bool StoreReplay(char *pPathOut, size_t outSize);
 
-  private:
     bool m_bRecording;
     bool m_bPlayingBack;
     CMomReplayBase *m_pRecordingReplay;
