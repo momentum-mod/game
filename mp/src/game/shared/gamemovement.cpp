@@ -4616,6 +4616,18 @@ void CGameMovement::PlayerMove( void )
 
 	UpdateDuckJumpEyeOffset();
 	Duck();
+    
+    if (sv_duck_collision_fix.GetBool())
+    {
+        if ( player->GetFlags() & FL_DUCKING )
+        {
+            player->SetCollisionBounds( VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
+        }
+        else
+        {
+            player->SetCollisionBounds( VEC_HULL_MIN, VEC_HULL_MAX );
+        }
+    }
 
 	// Don't run ladder code if dead on on a train
 	if ( !player->pl.deadflag && !(player->GetFlags() & FL_ONTRAIN) )

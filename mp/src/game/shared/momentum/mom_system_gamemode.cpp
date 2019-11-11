@@ -43,6 +43,7 @@ void CGameModeBase::SetGameModeVars()
     sv_maxspeed.SetValue(260);
     sv_stopspeed.SetValue(75);
     sv_considered_on_ground.SetValue(1);
+    sv_duck_collision_fix.SetValue(true);
 }
 
 void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
@@ -90,6 +91,7 @@ void CGameMode_RJ::SetGameModeVars()
     sv_maxspeed.SetValue(240);
     sv_stopspeed.SetValue(100);
     sv_considered_on_ground.SetValue(2);
+    sv_duck_collision_fix.SetValue(false);
 }
 
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
