@@ -28,19 +28,17 @@ CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
     m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
     m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
-
 }
 
-void CMomentumTimer::LevelInitPostEntity()
-{
-    m_bWasCheatsMsgShown = false;
-}
+void CMomentumTimer::LevelInitPostEntity() { m_bWasCheatsMsgShown = false; }
 
 void CMomentumTimer::LevelShutdownPreEntity()
 {
-    if (IsRunning())
+    if (m_bIsRunning)
         Stop(nullptr);
+
     m_bWasCheatsMsgShown = false;
+
     for (int i = 0; i < MAX_TRACKS; i++)
     {
         m_hStartTriggers[i] = nullptr;
@@ -120,11 +118,8 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
 
 void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */, bool bStopRecording /* = true*/)
 {
-    // Only stop timer if it's currently running
-    if (!IsRunning())
-    {
+    if (!m_bIsRunning)
         return;
-    }
 
     SetRunning(pPlayer, false);
 
@@ -140,7 +135,6 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
         DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), bFinished ? TIMER_EVENT_FINISHED : TIMER_EVENT_STOPPED);
     }
 
-    // Stop replay recording, if there was any
     if (g_ReplaySystem.IsRecording() && bStopRecording)
         g_ReplaySystem.StopRecording(!bFinished, bFinished);
 }
@@ -341,8 +335,7 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 
 //--------- Commands --------------------------------
 
-CON_COMMAND(mom_start_mark_create,
-            "Marks a starting point inside the start trigger for a more customized starting location.\n")
+CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start trigger for a more customized starting location.\n")
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
@@ -351,9 +344,9 @@ CON_COMMAND(mom_start_mark_create,
     }
 }
 
-CON_COMMAND(mom_start_mark_clear,
-            "Clears the saved start location for your current track, if there is one.\n"
-            "You may also specify the track number to clear as the parameter; \"mom_start_mark_clear 2\" clears track 2's start mark.")
+CON_COMMAND(mom_start_mark_clear, "Clears the saved start location for your current track, if there is one.\n"
+                                  "You may also specify the track number to clear as the parameter; "
+                                  "\"mom_start_mark_clear 2\" clears track 2's start mark.")
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
@@ -377,7 +370,9 @@ CON_COMMAND_F(mom_timer_stop, "Stops the timer if it is currently running.", FCV
     }
 }
 
-CON_COMMAND_F(mom_restart, "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is main track).\n",
+CON_COMMAND_F(mom_restart,
+              "Restarts the player to the start trigger. Optionally takes a track number to restart to (default is "
+              "main track).\n",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
@@ -403,7 +398,8 @@ CON_COMMAND_F(mom_reset, "Teleports the player back to the start of the current 
     }
 }
 
-CON_COMMAND_F(mom_stage_tele, "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n"
+CON_COMMAND_F(mom_stage_tele,
+              "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n"
               "Usage: mom_stage_tele <stage> [track]\nThe default track is the current track the player is on.",
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
