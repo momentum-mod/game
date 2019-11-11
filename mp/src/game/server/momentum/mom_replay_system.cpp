@@ -124,10 +124,6 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     DevLog("Before trimming: %i\n", m_iTickCount);
     TrimReplay();
 
-    // Store the replay in a file and stop recording. Let's Trim before doing this, for our start recorded tick.
-    SetReplayInfo();
-    SetRunStats();
-
     int postTrimTickCount = m_pRecordingReplay->GetFrameCount();
     DevLog("After trimming: %i\n", postTrimTickCount);
     char newRecordingPath[MAX_PATH];
@@ -268,13 +264,15 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
     return m_pPlaybackReplay;
 }
 
-void CMomentumReplaySystem::SetReplayInfo()
+void CMomentumReplaySystem::SetReplayHeaderAndStats()
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    ISteamUser *pUser = SteamUser();
+
+    // Header
     m_pRecordingReplay->SetMapName(gpGlobals->mapname.ToCStr());
     m_pRecordingReplay->SetMapHash(m_szMapHash);
     m_pRecordingReplay->SetPlayerName(pPlayer->GetPlayerName());
-    ISteamUser *pUser = SteamUser();
     m_pRecordingReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     m_pRecordingReplay->SetTickInterval(gpGlobals->interval_per_tick);
     m_pRecordingReplay->SetRunFlags(pPlayer->m_Data.m_iRunFlags);
@@ -283,12 +281,9 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetStopTick(m_iStopTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetTrackNumber(g_pMomentumTimer->GetTrackNumber());
     m_pRecordingReplay->SetZoneNumber(0); // MOM_TODO (0.9.0) allow individual zone runs
-}
 
-void CMomentumReplaySystem::SetRunStats()
-{
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(pPlayer->m_RunStats.GetTotalZones());
+    // Stats
+    CMomRunStats *stats = m_pRecordingReplay->CreateRunStats(pPlayer->m_RunStats.GetTotalZones());
     stats->FullyCopyFrom(pPlayer->m_RunStats);
     // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
 }
