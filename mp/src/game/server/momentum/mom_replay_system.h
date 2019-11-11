@@ -25,7 +25,8 @@ public:
     void SetTimerStopTick(uint32 tick) { m_iStopTimerTick = tick; }
 
     void BeginRecording();
-    void StopRecording(bool throwaway, bool delay);
+    void CancelRecording();
+    void StopRecording();  // Called when the timer stops, calls FinishRecording after delay
     bool IsRecording() const { return m_bRecording; }
     bool IsPlayingBack() const { return m_bPlayingBack; }
     void TrimReplay(); // Trims a replay's start down to only include a defined amount of time in the start trigger
@@ -45,6 +46,7 @@ public:
     //CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
 
   private:
+    void FinishRecording();       // Called when the end recording delay is over, writes replay file
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayHeaderAndStats();
     bool StoreReplay(char *pPathOut, size_t outSize);

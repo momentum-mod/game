@@ -58,7 +58,7 @@ void CMomentumReplaySystem::LevelShutdownPostEntity()
 {
     //Stop a recording if there is one while the level shuts down
     if (m_bRecording)
-        StopRecording(true, false);
+        CancelRecording();
 
     if (m_pPlaybackReplay)
         UnloadPlayback(true);
@@ -88,57 +88,66 @@ void CMomentumReplaySystem::BeginRecording()
     }
 }
 
-void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
+void CMomentumReplaySystem::CancelRecording()
 {
+    m_bRecording = false;
+
+    if (m_pRecordingReplay)
+        delete m_pRecordingReplay;
+
+    m_pRecordingReplay = nullptr;
+
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
-
-    if (throwaway && replaySavedEvent)
+    if (pPlayer)
     {
-        replaySavedEvent->SetBool("save", false);
-        gameeventmanager->FireEvent(replaySavedEvent);
-
-        m_bRecording = false;
-
-        // Re-allow the player to teleport
-        if (pPlayer)
-            pPlayer->SetAllowUserTeleports(true);
-
-        return;
+        pPlayer->SetAllowUserTeleports(true);
     }
 
-    if (delay)
+    const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+    if (pReplaySavedEvent)
     {
-        // Prevent the user from teleporting, potentially breaking this delay
-        if (pPlayer)
-            pPlayer->SetAllowUserTeleports(false);
+        pReplaySavedEvent->SetBool("save", false);
+        gameeventmanager->FireEvent(pReplaySavedEvent);
+    }
+}
+
+void CMomentumReplaySystem::StopRecording()
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer)
+    {
+        pPlayer->SetAllowUserTeleports(false);
+
+        SetReplayHeaderAndStats();
 
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
-        return;
     }
+}
 
+void CMomentumReplaySystem::FinishRecording()
+{
     m_bShouldStopRec = false;
     m_bRecording = false;
 
     DevLog("Before trimming: %i\n", m_iTickCount);
     TrimReplay();
+    DevLog("After trimming: %i\n", m_pRecordingReplay->GetFrameCount());
 
-    int postTrimTickCount = m_pRecordingReplay->GetFrameCount();
-    DevLog("After trimming: %i\n", postTrimTickCount);
     char newRecordingPath[MAX_PATH];
     if (StoreReplay(newRecordingPath, MAX_PATH))
     {
         // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
         Log("Recording Stopped! Ticks: %i\n", m_iTickCount);
 
-        if (replaySavedEvent)
+        const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+        if (pReplaySavedEvent)
         {
-            replaySavedEvent->SetBool("save", true);
+            pReplaySavedEvent->SetBool("save", true);
             // replaySavedEvent->SetString("filename", newRecordingName);
-            replaySavedEvent->SetString("filepath", newRecordingPath);
-            replaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
-            gameeventmanager->FireEvent(replaySavedEvent);
+            pReplaySavedEvent->SetString("filepath", newRecordingPath);
+            pReplaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
+            gameeventmanager->FireEvent(pReplaySavedEvent);
         }
 
         // Load the last run that we did in case we want to watch it
@@ -153,7 +162,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
             delete m_pRecordingReplay;
     }
 
-    // Re-allow the player to teleport
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
         pPlayer->SetAllowUserTeleports(true);
 
@@ -240,7 +249,7 @@ void CMomentumReplaySystem::UpdateRecordingParams()
     }
 
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
-        StopRecording(false, false);
+        FinishRecording();
 }
 
 CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool bFullLoad, const char *pPathID)
