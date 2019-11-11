@@ -1899,6 +1899,7 @@ void CMomentumPlayer::SaveCurrentRunState(bool bFromPractice)
     pState->m_angLastAng = GetAbsAngles();
     pState->m_vecLastVelocity = GetAbsVelocity();
     pState->m_fLastViewOffset = GetViewOffset().z;
+    pState->m_fNextPrimaryAttack = GetActiveWeapon() ? GetActiveWeapon()->m_flNextPrimaryAttack - gpGlobals->curtime : 0.0f;
 
     if (bFromPractice || !m_bHasPracticeMode)
     {
@@ -1933,6 +1934,8 @@ void CMomentumPlayer::RestoreRunState(bool bFromPractice)
     Teleport(&pState->m_vecLastPos, &pState->m_angLastAng, &pState->m_vecLastVelocity);
     SetViewOffset(Vector(0, 0, pState->m_fLastViewOffset));
     SetLastEyeAngles(pState->m_angLastAng);
+    if (GetActiveWeapon())
+        GetActiveWeapon()->m_flNextPrimaryAttack = gpGlobals->curtime + pState->m_fNextPrimaryAttack;
 
     if (bFromPractice || !m_bHasPracticeMode)
     {

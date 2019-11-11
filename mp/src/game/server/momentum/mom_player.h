@@ -21,7 +21,8 @@ struct SavedState_t
     Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
     QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
     Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
-    float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.    
+    float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
+    float m_fNextPrimaryAttack; // Saved next weapon shoot time
     // Stats-related
     int m_nSavedPerfectSyncTicks;
     int m_nSavedStrafeTicks;
