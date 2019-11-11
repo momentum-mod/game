@@ -2,8 +2,6 @@
 
 #include "mom_timer.h"
 
-#include <ctime>
-#include "in_buttons.h"
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
@@ -26,10 +24,9 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"), 
-      m_iStartTick(0), m_iEndTick(0),
-      m_iLastRunDate(0), m_bIsRunning(false), m_bCanStart(false),
-      m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
+    m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
+    m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 
 }
@@ -112,7 +109,6 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
 
     m_iStartTick = gpGlobals->tickcount;
     m_iEndTick = 0;
-    m_iLastRunDate = 0;
     m_iTrackNumber = pPlayer->m_Data.m_iCurrentTrack;
     SetRunning(pPlayer, true);
 
@@ -139,7 +135,6 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
         {
             m_iEndTick = gpGlobals->tickcount;
             g_ReplaySystem.SetTimerStopTick(m_iEndTick);
-            time(&m_iLastRunDate); // Set the last run date for the replay
         }
 
         DispatchTimerEventMessage(pPlayer, pPlayer->entindex(), bFinished ? TIMER_EVENT_FINISHED : TIMER_EVENT_STOPPED);
