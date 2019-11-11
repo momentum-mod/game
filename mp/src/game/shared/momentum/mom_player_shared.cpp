@@ -274,15 +274,18 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         // add damage to entity that we hit
 
 #ifndef CLIENT_DLL
-        ClearMultiDamage();
+        if (pevAttacker->IsPlayer())
+        {
+            ClearMultiDamage();
 
-        CTakeDamageInfo info(pevAttacker, pevAttacker, fCurrentDamage, iDamageType);
-        CalculateBulletDamageForce(&info, iBulletType, vecDir, tr.endpos);
-        tr.m_pEnt->DispatchTraceAttack(info, vecDir, &tr);
+            CTakeDamageInfo info(pevAttacker, pevAttacker, fCurrentDamage, iDamageType);
+            CalculateBulletDamageForce(&info, iBulletType, vecDir, tr.endpos);
+            tr.m_pEnt->DispatchTraceAttack(info, vecDir, &tr);
 
-        TraceAttackToTriggers(info, tr.startpos, tr.endpos, vecDir);
+            TraceAttackToTriggers(info, tr.startpos, tr.endpos, vecDir);
 
-        ApplyMultiDamage();
+            ApplyMultiDamage();
+        }
 #endif
 
         // check if bullet can penetarte another entity
