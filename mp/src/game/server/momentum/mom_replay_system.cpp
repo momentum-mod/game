@@ -304,7 +304,12 @@ void CMomentumReplaySystem::StartPlayback(bool firstperson)
         CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
 
         if (pGhost)
+        {
+            mom_replay_timescale.SetValue(1.0f);
+            mom_replay_selection.SetValue(0);
+
             pGhost->StartRun(firstperson);
+        }
 
         m_bPlayingBack = true;
     }
@@ -336,11 +341,11 @@ void CMomentumReplaySystem::LoadReplayGhost()
 
 void CMomentumReplaySystem::StopPlayback()
 {
-    if (!g_ReplaySystem.m_bPlayingBack)
+    if (!m_bPlayingBack)
         return;
 
     Log("Stopping replay playback.\n");
-    g_ReplaySystem.UnloadPlayback();
+    UnloadPlayback();
 }
 
 class CMOMReplayCommands
@@ -370,8 +375,6 @@ class CMOMReplayCommands
                 if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
                 {
                     g_ReplaySystem.StartPlayback(firstperson);
-                    mom_replay_timescale.SetValue(1.0f);
-                    mom_replay_selection.SetValue(0);
                 }
                 else
                 {
@@ -394,7 +397,6 @@ CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in fir
     if (g_ReplaySystem.GetPlaybackReplay() && !g_ReplaySystem.IsPlayingBack())
     {
         g_ReplaySystem.StartPlayback(true);
-        mom_replay_timescale.SetValue(1.0f);
     }
 }
 
