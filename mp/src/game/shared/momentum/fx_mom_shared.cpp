@@ -98,11 +98,8 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 {
     bool bDoEffects = true;
 
-#ifdef CLIENT_DLL
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(ClientEntityList().GetBaseEntity(iEntIndex));
-#else
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(iEntIndex));
-#endif
+    CBaseEntity *pAttacker = CBaseEntity::Instance(iEntIndex);
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pAttacker);
 
     CWeaponInfo *pWeaponInfo = GetWeaponInfo((CWeaponID)iWeaponID);
 
@@ -193,7 +190,7 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
         iSeed++; // use new seed for next bullet
 
         pPlayer->FireBullet(vOrigin, vAngles, flSpread, flRange, iPenetration, iAmmoType, iDamage, flRangeModifier,
-                            pPlayer, bDoEffects, x, y);
+                            pAttacker, bDoEffects, x, y);
     }
 
 #ifndef CLIENT_DLL
