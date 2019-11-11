@@ -20,8 +20,10 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     // Increments the steps intelligently.
     void UpdateStep(int Skip);
 
-    void EndRun();
+    void LoadFromReplayBase(CMomReplayBase *pReplay);
+
     void StartRun(bool firstPerson = false);
+    void EndRun();
 
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
@@ -30,18 +32,12 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     void GoToTick(int tick);
 
-    inline void SetTickRate(float rate) { m_Data.m_flTickRate = rate; }
-    inline void SetRunFlags(uint32 flags) { m_Data.m_iRunFlags = flags; }
-    void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
-
     CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
     CReplayFrame *GetPreviousStep();
 
     bool IsReplayEnt() { return true; }
 
-    bool m_bIsActive;
-    bool m_bReplayFirstPerson;
 
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_REPLAY; }
     virtual void OnZoneEnter(CTriggerZone *pTrigger) OVERRIDE;
@@ -66,6 +62,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CMomReplayBase *m_pPlaybackReplay;
 
     bool m_bHasJumped;
+    bool m_bIsActive;
+    bool m_bReplayFirstPerson;
 
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;

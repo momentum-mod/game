@@ -151,6 +151,19 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
     m_iCurrentTick = clamp<int>(m_iCurrentTick, 0, m_iTotalTicks);
 }
 
+void CMomentumReplayGhostEntity::LoadFromReplayBase(CMomReplayBase *pReplay)
+{
+    m_pPlaybackReplay = pReplay;
+
+    m_RunStats.FullyCopyFrom(*m_pPlaybackReplay->GetRunStats());
+    m_Data.m_iRunTime = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
+    m_Data.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+    m_Data.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
+    m_Data.m_iStartTick = m_pPlaybackReplay->GetStartTick();
+
+    m_pPlaybackReplay->SetRunEntity(this);
+}
+
 void CMomentumReplayGhostEntity::Think()
 {
     BaseClass::Think();
