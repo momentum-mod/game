@@ -149,65 +149,56 @@ END_DATADESC()
 #endif
 
 #ifdef CLIENT_DLL
-ConVar cl_crosshaircolor("cl_crosshaircolor", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the crosshair color to specific colors. 0 = Custom color using cl_crosshaircolor_(r/g/b)", true, 0, true, 5);
+MAKE_TOGGLE_CONVAR(cl_crosshaircolor, "1", FCVAR_ARCHIVE, "Set the crosshair color to specific colors. 0 = Custom color using cl_crosshaircolor_(r/g/b)\n"); //deprecate this
 
-ConVar cl_dynamiccrosshair("cl_dynamiccrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle dynamic crosshair behaviour with player movement. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_dynamiccrosshair, "1", FCVAR_ARCHIVE, "Toggle dynamic crosshair behaviour with player movement. 0 = OFF, 1 = ON\n");
 
-ConVar cl_dynamiccrosshairfire("cl_dynamiccrosshairfire", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle dynamic crosshair behaviour with weapon firing. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_dynamiccrosshairfire, "1", FCVAR_ARCHIVE, "Toggle dynamic crosshair behaviour with weapon firing. 0 = OFF, 1 = ON\n");
 
-ConVar cl_scalecrosshair("cl_scalecrosshair", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle scaling the crosshair to the resolution. Takes effect on cl_crosshairstyle 0. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_scalecrosshair, "1", FCVAR_ARCHIVE, "Toggle scaling the crosshair to the resolution. Takes effect on cl_crosshairstyle 0. 0 = OFF, 1 = ON\n");
 
-ConVar cl_crosshaircolor_r("cl_crosshaircolor_r", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the red component to color the crosshair with.", true, 0, true, 255);
+ConVar cl_crosshaircolor_r("cl_crosshaircolor_r", "50", FCVAR_ARCHIVE,
+    "Set the red component to color the crosshair with.\n", true, 0, true, 255); //change these to RGBA
 
-ConVar cl_crosshaircolor_g("cl_crosshaircolor_g", "250", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the green component to color the crosshair with.", true, 0, true, 255);
+ConVar cl_crosshaircolor_g("cl_crosshaircolor_g", "250", FCVAR_ARCHIVE,
+    "Set the green component to color the crosshair with.\n", true, 0, true, 255);
 
-ConVar cl_crosshaircolor_b("cl_crosshaircolor_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the blue component to color the crosshair with.", true, 0, true, 255);
+ConVar cl_crosshaircolor_b("cl_crosshaircolor_b", "50", FCVAR_ARCHIVE,
+    "Set the blue component to color the crosshair with.\n", true, 0, true, 255);
 
-ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the resolution to scale the crosshair to. Takes effect on cl_crosshairstyle 0.", true, 0, false, 0);
+ConVar cl_crosshairscale("cl_crosshairscale", "0", FCVAR_ARCHIVE,
+    "Set the resolution to scale the crosshair to. Takes effect on cl_crosshairstyle 0.\n", true, 0, false, 0);
 
-ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the transparency of the crosshair. Takes effect on cl_crosshairusealpha 1.", true, 0, true, 255);
+ConVar cl_crosshairalpha("cl_crosshairalpha", "200", FCVAR_ARCHIVE,
+    "Set the transparency of the crosshair. Takes effect on cl_crosshairusealpha 1.\n", true, 0, true, 255);
 
-ConVar cl_crosshairusealpha("cl_crosshairusealpha", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle crosshair transparency. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_crosshairusealpha, "0", FCVAR_ARCHIVE, "Toggle crosshair transparency. 0 = OFF, 1 = ON\n");
 
-ConVar cl_crosshairstyle("cl_crosshairstyle", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set crosshair style. 0 = CS:S, 1 = User CVars, 2 = Custom VTF", true, 0, true, 2);
+ConVar cl_crosshairstyle("cl_crosshairstyle", "0", FCVAR_ARCHIVE,
+    "Set crosshair style. 0 = CS:S, 1 = User CVars, 2 = Custom VTF\n", true, 0, true, 2);
 
-ConVar cl_crosshairsize("cl_crosshairsize", "15", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the length of a crosshair line. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0);
+ConVar cl_crosshairsize("cl_crosshairsize", "15", FCVAR_ARCHIVE,
+    "Set the length of a crosshair line. Takes effect on cl_crosshairstyle 1/2.\n", true, 0, false, 0);
 
-ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the thickness of a crosshair line. Takes effect on cl_crosshairstyle 1.", true, 0, false, 0);
+ConVar cl_crosshairthickness("cl_crosshairthickness", "1", FCVAR_ARCHIVE,
+    "Set the thickness of a crosshair line. Takes effect on cl_crosshairstyle 1.\n", true, 0, false, 0);
 
-ConVar cl_crosshairgap("cl_crosshairgap", "4", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the minimum distance between two crosshair lines. Takes effect on cl_crosshairstyle 1/2.", true, 0, false, 0); //could add cvar to split into horizontal and vertical
+ConVar cl_crosshairgap("cl_crosshairgap", "4", FCVAR_ARCHIVE,
+    "Set the minimum distance between two crosshair lines. Takes effect on cl_crosshairstyle 1/2.\n", true, 0, false, 0); //could add cvar to split into horizontal and vertical
 
-ConVar cl_crosshairgap_useweaponvalue("cl_crosshairgap_useweaponvalue", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle using defined crosshair distances per weapon. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_crosshairgap_useweaponvalue, "1", FCVAR_ARCHIVE, "Toggle using defined crosshair distances per weapon. 0 = OFF, 1 = ON\n");
 
-ConVar cl_crosshair_drawoutline("cl_crosshair_drawoutline", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle using a black outline around the crosshair. Takes effect on cl_crosshairstyle 0/1. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_crosshair_drawoutline, "0", FCVAR_ARCHIVE, "Toggle using a black outline around the crosshair. Takes effect on cl_crosshairstyle 0/1. 0 = OFF, 1 = ON\n");
 
-ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the thickness of the crosshair's outline. Takes effect on cl_crosshair_drawoutline 1.", true, 0, false, 0);
+ConVar cl_crosshair_outlinethickness("cl_crosshair_outlinethickness", "1", FCVAR_ARCHIVE,
+    "Set the thickness of the crosshair's outline. Takes effect on cl_crosshair_drawoutline 1.\n", true, 0, false, 0);
 
-ConVar cl_crosshair_t("cl_crosshair_t", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle T style crosshair. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_crosshair_t, "0", FCVAR_ARCHIVE, "Toggle T style crosshair. 0 = OFF, 1 = ON\n");
 
-ConVar cl_crosshair_dot("cl_crosshair_dot", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Toggle crosshair dot. 0 = OFF, 1 = ON", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(cl_crosshair_dot, "0", FCVAR_ARCHIVE, "Toggle crosshair dot. 0 = OFF, 1 = ON\n");
 
-ConVar cl_crosshair_file("cl_crosshair_file", "", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshairstyle 1.");
+ConVar cl_crosshair_file("cl_crosshair_file", "", FCVAR_ARCHIVE,
+    "Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshairstyle 1.\n");
 
 #endif
 
