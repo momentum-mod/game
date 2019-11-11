@@ -136,7 +136,16 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
     }
 
     if (g_ReplaySystem.IsRecording() && bStopRecording)
-        g_ReplaySystem.StopRecording(!bFinished, bFinished);
+    {
+        if (bFinished)
+        {
+            g_ReplaySystem.StopRecording();
+        }
+        else
+        {
+            g_ReplaySystem.CancelRecording();
+        }
+    }
 }
 
 void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
@@ -159,7 +168,7 @@ void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 
         // Handle the replay recordings
         if (g_ReplaySystem.IsRecording())
-            g_ReplaySystem.StopRecording(true, false);
+            g_ReplaySystem.CancelRecording();
 
         g_ReplaySystem.BeginRecording();
     }
