@@ -72,11 +72,8 @@ bool ScreenTransform( const Vector& point, Vector& screen );
 DECLARE_HUDELEMENT( CHudCrosshair );
 
 CHudCrosshair::CHudCrosshair( const char *pElementName ) :
-        CHudElement( pElementName ), BaseClass( NULL, "HudCrosshair" )
+        CHudElement( pElementName ), BaseClass( g_pClientMode->GetViewport(), "HudCrosshair" )
 {
-    Panel *pParent = g_pClientMode->GetViewport();
-    SetParent( pParent );
-
     m_pCrosshair = 0;
 
     m_clrCrosshair = Color( 0, 0, 0, 0 );
