@@ -51,6 +51,7 @@ protected:
     bool HasInputElements(void) OVERRIDE {return true;}
     void ShowPanel(bool state) OVERRIDE;
 
+    void OnReloadControls() override;
     void OnCommand(const char* command) OVERRIDE;
 
     MESSAGE_FUNC_INT(OnItemContextMenu, "OpenContextMenu", itemID);
