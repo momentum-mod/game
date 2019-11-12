@@ -7,7 +7,6 @@
 
 #pragma once
 
-//#include "weapon/weapon_base.h"
 #include "hudelement.h"
 #include <vgui_controls/Panel.h>
 
