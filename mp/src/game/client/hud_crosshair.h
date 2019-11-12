@@ -5,11 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef HUD_CROSSHAIR_H
-#define HUD_CROSSHAIR_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "weapon/weapon_base.h"
 #include "hudelement.h"
@@ -55,6 +51,3 @@ protected:
 
 // Enable/disable crosshair rendering.
 extern ConVar crosshair;
-
-
-#endif // HUD_CROSSHAIR_H

@@ -20,15 +20,6 @@
 #include "weapon/weapon_base.h"
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
-
-#ifdef SIXENSE
-#include "sixense/in_sixense.h"
-#endif
-
-#ifdef PORTAL
-#include "c_portal_player.h"
-#endif // PORTAL
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -78,12 +69,7 @@ ConVar cl_crosshair_thickness("cl_crosshair_thickness", "1", FCVAR_ARCHIVE,
 using namespace vgui;
 
 bool ScreenTransform( const Vector& point, Vector& screen );
-
-#ifdef TF_CLIENT_DLL
-// If running TF, we use CHudTFCrosshair instead (which is derived from CHudCrosshair)
-#else
 DECLARE_HUDELEMENT( CHudCrosshair );
-#endif
 
 CHudCrosshair::CHudCrosshair( const char *pElementName ) :
         CHudElement( pElementName ), BaseClass( NULL, "HudCrosshair" )
