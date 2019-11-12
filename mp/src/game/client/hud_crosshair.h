@@ -33,7 +33,6 @@ public:
 	virtual void	SetCrosshairAngle( const QAngle& angle );
 	virtual void	SetCrosshair( CHudTexture *texture, const Color& clr );
 	virtual void	ResetCrosshair();
-	//virtual void	DrawCrosshair( void ) {}
     virtual void    DrawCrosshair( CWeaponBase *weaponBase );
   	virtual bool	HasCrosshair( void ) { return ( m_pCrosshair != NULL ); }
 	virtual bool	ShouldDraw();
