@@ -17,7 +17,7 @@
 #include "VGuiMatSurface/IMatSystemSurface.h"
 #include "client_virtualreality.h"
 #include "sourcevr/isourcevirtualreality.h"
-#include "momentum/weapon/weapon_base.h"
+#include "weapon/weapon_base.h"
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
 

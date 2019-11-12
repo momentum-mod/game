@@ -11,7 +11,7 @@
 #pragma once
 #endif
 
-#include "Momentum/weapon/weapon_base.h"
+#include "weapon/weapon_base.h"
 #include "hudelement.h"
 #include <vgui_controls/Panel.h>
 
