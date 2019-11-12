@@ -59,7 +59,7 @@ LobbyMembersPanel::LobbyMembersPanel(IViewPort *pParent) : BaseClass(nullptr, PA
     
     m_pMemberList = new ListPanel(this, "MemberList");
     m_pMemberList->SetRowHeightOnFontChange(false);
-    m_pMemberList->SetRowHeight(38);
+    m_pMemberList->SetRowHeight(GetScaledVal(20));
     m_pMemberList->SetMultiselectEnabled(false);
     m_pLobbyToggle = new Button(this, "LobbyToggle", "#GameUI2_HostLobby", this, "HostLobby");
     m_pInviteFriends = new Button(this, "InviteFriends", "#GameUI2_InviteLobby", this, "InviteFriends");
@@ -82,6 +82,7 @@ LobbyMembersPanel::LobbyMembersPanel(IViewPort *pParent) : BaseClass(nullptr, PA
     ListenForGameEvent("lobby_leave");
 }
 
+// NOTE: This gets called when the user changes resolution!
 LobbyMembersPanel::~LobbyMembersPanel()
 {
     if (m_pContextMenu)
@@ -308,6 +309,14 @@ void LobbyMembersPanel::ShowPanel(bool bShow)
         SetVisible(false);
         SetMouseInputEnabled(false);
     }
+}
+
+void LobbyMembersPanel::OnReloadControls()
+{
+    BaseClass::OnReloadControls();
+    
+    if (s_LobbyID.IsValid())
+        LobbyEnterSuccess();
 }
 
 void LobbyMembersPanel::OnCommand(const char* command)
