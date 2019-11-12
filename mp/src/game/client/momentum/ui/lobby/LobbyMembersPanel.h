@@ -62,7 +62,6 @@ protected:
     MESSAGE_FUNC_UINT64(OnContextTeleport, "ContextTeleport", target);
 
 private:
-    CSteamID m_idLobby;
     void PopulateLobbyPanel();
     void InitImageList();
     void InitLobbyPanelSections();
