@@ -62,6 +62,7 @@ protected:
     MESSAGE_FUNC_UINT64(OnContextTeleport, "ContextTeleport", target);
 
 private:
+    void LobbyEnterSuccess();
     void PopulateLobbyPanel();
     void InitImageList();
     void InitLobbyPanelSections();

@@ -371,6 +371,22 @@ void LobbyMembersPanel::OnContextTeleport(uint64 target)
     }
 }
 
+void LobbyMembersPanel::LobbyEnterSuccess()
+{
+    m_pLobbyToggle->SetText("#GameUI2_LeaveLobby");
+    m_pLobbyToggle->SetCommand("LeaveLobby");
+    m_pInviteFriends->SetVisible(true);
+    m_pLobbyMemberCount->SetVisible(true);
+
+    // Add everyone now
+    PopulateLobbyPanel();
+    UpdateLobbyMemberCount();
+    m_pMemberList->SortList();
+    SetLobbyTypeImage();
+
+    InvalidateLayout(true);
+}
+
 void LobbyMembersPanel::OnContextVisitProfile(uint64 profile)
 {
     if (profile != 0 && SteamFriends())
@@ -410,19 +426,9 @@ void LobbyMembersPanel::OnLobbyEnter(LobbyEnter_t* pParam)
 {
     if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
     {
-
-        m_pLobbyToggle->SetText("#GameUI2_LeaveLobby");
-        m_pLobbyToggle->SetCommand("LeaveLobby");
-        m_pInviteFriends->SetVisible(true);
-        m_pLobbyMemberCount->SetVisible(true);
-
-        // Add everyone now
-        PopulateLobbyPanel();
-        UpdateLobbyMemberCount();
-        m_pMemberList->SortList();
         s_LobbyID = CSteamID(pParam->m_ulSteamIDLobby);
 
-        InvalidateLayout(true);
+        LobbyEnterSuccess();
     }
     else
     {
