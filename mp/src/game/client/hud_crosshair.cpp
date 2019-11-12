@@ -122,12 +122,6 @@ bool CHudCrosshair::ShouldDraw( void )
     if ( pWeapon && !pWeapon->ShouldDrawCrosshair() )
         return false;
 
-#ifdef PORTAL
-    C_Portal_Player *portalPlayer = ToPortalPlayer(pPlayer);
-    if ( portalPlayer && portalPlayer->IsSuppressingCrosshair() )
-        return false;
-#endif // PORTAL
-
     /* disabled to avoid assuming it's an HL2 player.
     // suppress crosshair in zoom.
     if ( pPlayer->m_HL2Local.m_bZooming )
@@ -147,13 +141,6 @@ bool CHudCrosshair::ShouldDraw( void )
 
     return ( bNeedsDraw && CHudElement::ShouldDraw() );
 }
-
-#ifdef TF_CLIENT_DLL
-extern ConVar cl_crosshair_red;
-extern ConVar cl_crosshair_green;
-extern ConVar cl_crosshair_blue;
-extern ConVar cl_crosshair_scale;
-#endif
 
 
 void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera, QAngle angleCrosshairOffset )
@@ -488,12 +475,8 @@ void CHudCrosshair::Paint( void )
     }
 
     float flPlayerScale = 1.0f;
-#ifdef TF_CLIENT_DLL
-    Color clr( cl_crosshair_red.GetInt(), cl_crosshair_green.GetInt(), cl_crosshair_blue.GetInt(), 255 );
-    flPlayerScale = cl_crosshair_scale.GetFloat() / 32.0f;  // the player can change the scale in the options/multiplayer tab
-#else
     Color clr = m_clrCrosshair;
-#endif
+
     float flWidth = flWeaponScale * flPlayerScale * (float)iTextureW;
     float flHeight = flWeaponScale * flPlayerScale * (float)iTextureH;
     int iWidth = (int)( flWidth + 0.5f );
