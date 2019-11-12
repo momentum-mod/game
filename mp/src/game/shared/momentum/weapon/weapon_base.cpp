@@ -148,7 +148,7 @@ DEFINE_FUNCTION(FallThink)
 END_DATADESC()
 
 #endif
-
+/*
 #ifdef CLIENT_DLL
 MAKE_TOGGLE_CONVAR(cl_crosshair_alpha_enable, "1", FCVAR_ARCHIVE, "Toggle crosshair transparency. 0 = OFF, 1 = ON\n");
 
@@ -190,7 +190,7 @@ MAKE_TOGGLE_CONVAR(cl_crosshair_t, "0", FCVAR_ARCHIVE, "Toggle T style crosshair
 ConVar cl_crosshair_thickness("cl_crosshair_thickness", "1", FCVAR_ARCHIVE,
     "Set the thickness of a crosshair line. Takes effect on cl_crosshair_style 1.\n", true, 0, false, 0);
 #endif
-
+*/
 
 // ----------------------------------------------------------------------------- //
 // CWeaponBase implementation. 
@@ -657,10 +657,10 @@ void CWeaponBase::DrawCrosshair()
 
     if (!pCrosshair)
         return;
-
+	
     // clear crosshair
     pCrosshair->SetCrosshair(nullptr, Color(255, 255, 255, 255));
-
+    /*
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
 
     if (!pPlayer)
@@ -672,12 +672,14 @@ void CWeaponBase::DrawCrosshair()
     // Draw the targeting zone around the pCrosshair
     if (pPlayer->IsInVGuiInputMode())
         return;
-
+		*/
     // no crosshair for sniper rifles
     if (GetWeaponID() == WEAPON_SNIPER)
         return;
 
+	pCrosshair->DrawCrosshair(this);
 
+	/*
     //int iDistance, iDeltaDistance;
     int iDistance = GetMomWpnData().m_iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
     int iDeltaDistance = GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
@@ -882,6 +884,7 @@ void CWeaponBase::DrawCrosshair()
 
         vgui::surface()->DrawTexturedRect(iLeft, iTop, iRight, iBottom);
     }
+	*/
 }
 
 
