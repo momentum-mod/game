@@ -74,7 +74,7 @@ DECLARE_HUDELEMENT( CHudCrosshair );
 CHudCrosshair::CHudCrosshair( const char *pElementName ) :
         CHudElement( pElementName ), BaseClass( NULL, "HudCrosshair" )
 {
-    vgui::Panel *pParent = g_pClientMode->GetViewport();
+    Panel *pParent = g_pClientMode->GetViewport();
     SetParent( pParent );
 
     m_pCrosshair = 0;
@@ -149,7 +149,7 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
     Vector curViewOrigin = CurrentViewOrigin();
 
     int vx, vy, vw, vh;
-    vgui::surface()->GetFullscreenViewport( vx, vy, vw, vh );
+    surface()->GetFullscreenViewport( vx, vy, vw, vh );
 
     float screenWidth = vw;
     float screenHeight = vh;
@@ -283,7 +283,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     int iCrosshairDistance, iBarSize, iBarThickness;
 
     int vx, vy, vw, vh;
-    vgui::surface()->GetFullscreenViewport( vx, vy, vw, vh );
+    surface()->GetFullscreenViewport( vx, vy, vw, vh );
 
     if (cl_crosshair_style.GetInt() == 0) //only CS:S uses crosshair scaling
     {
@@ -354,37 +354,37 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
         if (!cl_crosshair_alpha_enable.GetBool())
         {
             // Additive crosshair
-            vgui::surface()->DrawSetTexture(weaponBase->m_iCrosshairTextureID);
+            surface()->DrawSetTexture(weaponBase->m_iCrosshairTextureID);
             
             if (cl_crosshair_outline_enable.GetBool())
             {
-                vgui::surface()->DrawSetColor(0, 0, 0, 200); // could add cvar for outline color/alpha
-                vgui::surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfLower + iOutlineThickness);
-                vgui::surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarRight + iOutlineThickness, iHalfLower + iOutlineThickness);
+                surface()->DrawSetColor(0, 0, 0, 200); // could add cvar for outline color/alpha
+                surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfLower + iOutlineThickness);
+                surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarRight + iOutlineThickness, iHalfLower + iOutlineThickness);
 
                 if (!cl_crosshair_t.GetBool())
-                    vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iTop - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarTop + iOutlineThickness);
-                vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iBottom - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarBottom + iOutlineThickness);
+                    surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iTop - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarTop + iOutlineThickness);
+                surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iBottom - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarBottom + iOutlineThickness);
             } // DrawTexturedRect has an alpha despite using 255 alpha, use DrawFilledRect
 
-            vgui::surface()->DrawSetColor(crossColor);
-            vgui::surface()->DrawTexturedRect(iLeft, iHalfUpper, iFarLeft, iHalfLower);
-            vgui::surface()->DrawTexturedRect(iRight, iHalfUpper, iFarRight, iHalfLower);
+            surface()->DrawSetColor(crossColor);
+            surface()->DrawTexturedRect(iLeft, iHalfUpper, iFarLeft, iHalfLower);
+            surface()->DrawTexturedRect(iRight, iHalfUpper, iFarRight, iHalfLower);
 
             if (!cl_crosshair_t.GetBool())
-                vgui::surface()->DrawTexturedRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
-            vgui::surface()->DrawTexturedRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
+                surface()->DrawTexturedRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
+            surface()->DrawTexturedRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
             
             if (cl_crosshair_dot.GetBool())
             {
                 if (cl_crosshair_outline_enable.GetBool())
                 {
-                    vgui::surface()->DrawSetColor(0, 0, 0, 200); // could add cvar for (dot) outline color/alpha
-                    vgui::surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
+                    surface()->DrawSetColor(0, 0, 0, 200); // could add cvar for (dot) outline color/alpha
+                    surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
                 } // DrawTexturedRect has an alpha despite using 255 alpha, use DrawFilledRect
 
-                vgui::surface()->DrawSetColor(crossColor);
-                vgui::surface()->DrawTexturedRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1); // could add cvar for dot size
+                surface()->DrawSetColor(crossColor);
+                surface()->DrawTexturedRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1); // could add cvar for dot size
             }
         }
         else
@@ -392,33 +392,33 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
             // Alpha-blended crosshair
             if (cl_crosshair_outline_enable.GetBool())
             {
-                vgui::surface()->DrawSetColor(0, 0, 0, crossColor.a()); // could add cvar for outline color/alpha
-                vgui::surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfLower + iOutlineThickness);
-                vgui::surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarRight + iOutlineThickness, iHalfLower + iOutlineThickness);
+                surface()->DrawSetColor(0, 0, 0, crossColor.a()); // could add cvar for outline color/alpha
+                surface()->DrawFilledRect(iLeft - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarLeft + iOutlineThickness, iHalfLower + iOutlineThickness);
+                surface()->DrawFilledRect(iRight - iOutlineThickness, iHalfUpper - iOutlineThickness, iFarRight + iOutlineThickness, iHalfLower + iOutlineThickness);
 
                 if (!cl_crosshair_t.GetBool())
-                    vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iTop - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarTop + iOutlineThickness);
-                vgui::surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iBottom - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarBottom + iOutlineThickness);
+                    surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iTop - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarTop + iOutlineThickness);
+                surface()->DrawFilledRect(iHalfLefter - iOutlineThickness, iBottom - iOutlineThickness, iHalfRighter + iOutlineThickness, iFarBottom + iOutlineThickness);
             }
 
-            vgui::surface()->DrawSetColor(crossColor);
-            vgui::surface()->DrawFilledRect(iLeft, iHalfUpper, iFarLeft, iHalfLower);
-            vgui::surface()->DrawFilledRect(iRight, iHalfUpper, iFarRight, iHalfLower);
+            surface()->DrawSetColor(crossColor);
+            surface()->DrawFilledRect(iLeft, iHalfUpper, iFarLeft, iHalfLower);
+            surface()->DrawFilledRect(iRight, iHalfUpper, iFarRight, iHalfLower);
             
             if (!cl_crosshair_t.GetBool())
-                vgui::surface()->DrawFilledRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
-            vgui::surface()->DrawFilledRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
+                surface()->DrawFilledRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
+            surface()->DrawFilledRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
 
             if (cl_crosshair_dot.GetBool())
             {
                 if (cl_crosshair_outline_enable.GetBool())
                 {
-                    vgui::surface()->DrawSetColor(0, 0, 0, crossColor.a()); // could add cvar for (dot) outline color/alpha
-                    vgui::surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
+                    surface()->DrawSetColor(0, 0, 0, crossColor.a()); // could add cvar for (dot) outline color/alpha
+                    surface()->DrawFilledRect(iHalfScreenWidth - (1 + iOutlineThickness), iHalfScreenHeight - (1 + iOutlineThickness), iHalfScreenWidth + 1 + iOutlineThickness, iHalfScreenHeight + 1 + iOutlineThickness);
                 }
 
-                vgui::surface()->DrawSetColor(crossColor); // could add cvar for dot color/alpha
-                vgui::surface()->DrawFilledRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1); // could add cvar for dot size
+                surface()->DrawSetColor(crossColor); // could add cvar for dot color/alpha
+                surface()->DrawFilledRect(iHalfScreenWidth - 1, iHalfScreenHeight - 1, iHalfScreenWidth + 1, iHalfScreenHeight + 1); // could add cvar for dot size
             }
         }
     }
@@ -434,7 +434,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
         if (m_pCrosshair)
             weaponBase->m_iCrosshairTextureID = m_pCrosshair->textureId;
 
-        vgui::surface()->DrawSetTexture(weaponBase->m_iCrosshairTextureID);
+        surface()->DrawSetTexture(weaponBase->m_iCrosshairTextureID);
 
         // make sure dynamic behaviour is ok
         int iLeft = iHalfScreenWidth - (iBarSize + iCrosshairDistance) / 2;
@@ -442,7 +442,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
         int iRight = iHalfScreenWidth + (iBarSize + iCrosshairDistance) / 2 + (iBarSize + iCrosshairDistance) % 2;
         int iBottom = iHalfScreenHeight + (iBarSize + iCrosshairDistance) / 2 + (iBarSize + iCrosshairDistance) % 2;
 
-        vgui::surface()->DrawTexturedRect(iLeft, iTop, iRight, iBottom);
+        surface()->DrawTexturedRect(iLeft, iTop, iRight, iBottom);
     }
 }
 
