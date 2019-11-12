@@ -6,6 +6,7 @@
 #include "leaderboards/LeaderboardsContextMenu.h"
 
 #include "vgui/ISurface.h"
+#include "vgui/IInput.h"
 #include <vgui_controls/ImageList.h>
 #include "vgui_controls/ListPanel.h"
 #include <vgui_controls/Button.h>
@@ -25,9 +26,10 @@
 #include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
-#include "vgui/IInput.h"
 
 using namespace vgui;
+
+static CSteamID s_LobbyID = k_steamIDNil;
 
 LobbyMembersPanel::LobbyMembersPanel(IViewPort *pParent) : BaseClass(nullptr, PANEL_LOBBY_MEMBERS)
 {
@@ -107,6 +109,8 @@ void LobbyMembersPanel::FireGameEvent(IGameEvent* event)
     m_pInviteFriends->SetVisible(false);
     m_pLobbyMemberCount->SetVisible(false);
     m_pLobbyType->SetVisible(false);
+
+    s_LobbyID.Clear();
 }
 
 void LobbyMembersPanel::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
@@ -147,7 +151,7 @@ void LobbyMembersPanel::AddLobbyMember(const CSteamID& steamID)
 
 void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
 {
-    if (!m_idLobby.IsValid())
+    if (!s_LobbyID.IsValid())
         return;
 
     const auto itemID = FindItemIDForLobbyMember(memberID);
@@ -156,10 +160,10 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
         KeyValues *pData = m_pMemberList->GetItem(itemID);
         if (pData)
         {
-            const auto owner = SteamMatchmaking()->GetLobbyOwner(m_idLobby);
+            const auto owner = SteamMatchmaking()->GetLobbyOwner(s_LobbyID);
             pData->SetBool("isOwner", memberID == owner);
 
-            const char *pMap = SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_MAP);
+            const char *pMap = SteamMatchmaking()->GetLobbyMemberData(s_LobbyID, memberID, LOBBY_DATA_MAP);
             if (!pMap)
                 pMap = "";
             const auto bMainMenu = Q_strlen(pMap) == 0;
@@ -174,7 +178,7 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
 
             pData->SetString("map", bMainMenu ? "Main Menu" : pMap);
 
-            const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_IS_SPEC);
+            const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(s_LobbyID, memberID, LOBBY_DATA_IS_SPEC);
             if (pSpec && pSpec[0])
                 pData->SetString("state", "#MOM_Lobby_Member_Spectating");
             else if (!(bMainMenu || bCredits || bBackground))
@@ -346,9 +350,9 @@ void LobbyMembersPanel::OnContextReqSavelocs(uint64 target)
 
 void LobbyMembersPanel::OnContextMakeOwner(uint64 target)
 {
-    if (target && m_idLobby.IsValid() && m_idLobby.IsLobby())
+    if (target && s_LobbyID.IsValid() && s_LobbyID.IsLobby())
     {
-        if (SteamMatchmaking()->SetLobbyOwner(m_idLobby, CSteamID(target)))
+        if (SteamMatchmaking()->SetLobbyOwner(s_LobbyID, CSteamID(target)))
         {
             Msg("Relinquished lobby ownership to %s!\n", SteamFriends()->GetFriendPersonaName(CSteamID(target)));
         }
@@ -361,7 +365,7 @@ void LobbyMembersPanel::OnContextMakeOwner(uint64 target)
 
 void LobbyMembersPanel::OnContextTeleport(uint64 target)
 {
-    if (target && m_idLobby.IsValid() && m_idLobby.IsLobby())
+    if (target && s_LobbyID.IsValid() && s_LobbyID.IsLobby())
     {
         engine->ExecuteClientCmd(CFmtStr("mom_lobby_teleport %lld\n", target));
     }
@@ -406,7 +410,6 @@ void LobbyMembersPanel::OnLobbyEnter(LobbyEnter_t* pParam)
 {
     if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
     {
-        m_idLobby = CSteamID(pParam->m_ulSteamIDLobby);
 
         m_pLobbyToggle->SetText("#GameUI2_LeaveLobby");
         m_pLobbyToggle->SetCommand("LeaveLobby");
@@ -417,6 +420,7 @@ void LobbyMembersPanel::OnLobbyEnter(LobbyEnter_t* pParam)
         PopulateLobbyPanel();
         UpdateLobbyMemberCount();
         m_pMemberList->SortList();
+        s_LobbyID = CSteamID(pParam->m_ulSteamIDLobby);
 
         InvalidateLayout(true);
     }
@@ -446,14 +450,14 @@ void LobbyMembersPanel::OnLobbyEnter(LobbyEnter_t* pParam)
 
 void LobbyMembersPanel::PopulateLobbyPanel()
 {
-    if (!m_idLobby.IsValid())
+    if (!s_LobbyID.IsValid())
         return;
 
-    const int numLobbyMembers = SteamMatchmaking()->GetNumLobbyMembers(m_idLobby);
+    const int numLobbyMembers = SteamMatchmaking()->GetNumLobbyMembers(s_LobbyID);
 
     for (int i = 0; i < numLobbyMembers; i++)
     {
-        const CSteamID inLobby = SteamMatchmaking()->GetLobbyMemberByIndex(m_idLobby, i);
+        const CSteamID inLobby = SteamMatchmaking()->GetLobbyMemberByIndex(s_LobbyID, i);
 
         // Get their initial data (name, avatar, steamID)
         AddLobbyMember(inLobby);
@@ -499,17 +503,17 @@ void LobbyMembersPanel::InitLobbyPanelSections()
 
 void LobbyMembersPanel::UpdateLobbyMemberCount() const
 {
-    if (m_idLobby.IsValid())
+    if (s_LobbyID.IsValid())
     {
-        const auto current = SteamMatchmaking()->GetNumLobbyMembers(m_idLobby);
-        const auto max = SteamMatchmaking()->GetLobbyMemberLimit(m_idLobby);
+        const auto current = SteamMatchmaking()->GetNumLobbyMembers(s_LobbyID);
+        const auto max = SteamMatchmaking()->GetLobbyMemberLimit(s_LobbyID);
         m_pLobbyMemberCount->SetText(CConstructLocalizedString(L" (%s1/%s2)", current, max));
     }
 }
 
 void LobbyMembersPanel::SetLobbyTypeImage() const
 {
-    const auto pTypeStr = SteamMatchmaking()->GetLobbyData(m_idLobby, LOBBY_DATA_TYPE);
+    const auto pTypeStr = SteamMatchmaking()->GetLobbyData(s_LobbyID, LOBBY_DATA_TYPE);
     if (pTypeStr && Q_strlen(pTypeStr) == 1)
     {
         const auto nType = clamp<int>(Q_atoi(pTypeStr), k_ELobbyTypePrivate, k_ELobbyTypePublic);
@@ -539,9 +543,9 @@ void LobbyMembersPanel::SetLobbyType() const
     CHECK_STEAM_API(SteamMatchmaking());
     // But only if they're the lobby owner
     const auto locID = SteamUser()->GetSteamID();
-    if (m_idLobby.IsValid() && locID == SteamMatchmaking()->GetLobbyOwner(m_idLobby))
+    if (s_LobbyID.IsValid() && locID == SteamMatchmaking()->GetLobbyOwner(s_LobbyID))
     {
-        const auto pTypeStr = SteamMatchmaking()->GetLobbyData(m_idLobby, LOBBY_DATA_TYPE);
+        const auto pTypeStr = SteamMatchmaking()->GetLobbyData(s_LobbyID, LOBBY_DATA_TYPE);
         if (pTypeStr && Q_strlen(pTypeStr) == 1)
         {
             const auto nType = clamp<int>(Q_atoi(pTypeStr), k_ELobbyTypePrivate, k_ELobbyTypePublic);
@@ -594,7 +598,7 @@ void LobbyMembersPanel::OnItemContextMenu(int itemID)
     if (steamID == locID.ConvertToUint64())
         return;
 
-    const auto ownerID = SteamMatchmaking()->GetLobbyOwner(m_idLobby);
+    const auto ownerID = SteamMatchmaking()->GetLobbyOwner(s_LobbyID);
 
     const char *pMap = pKVData->GetString("map");
     const char *pOurMap = g_pGameRules->MapName();
@@ -608,7 +612,7 @@ void LobbyMembersPanel::OnItemContextMenu(int itemID)
             bCredits = FStrEq(pMap, "credits");
     }
 
-    const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(m_idLobby, CSteamID(steamID), LOBBY_DATA_IS_SPEC);
+    const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(s_LobbyID, CSteamID(steamID), LOBBY_DATA_IS_SPEC);
     const auto bSpectating = pSpec && pSpec[0] != '\0';
 
     KeyValues *pKv;
