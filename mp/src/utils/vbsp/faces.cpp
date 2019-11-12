@@ -683,10 +683,6 @@ void FixFaceEdges (face_t **pList, face_t *f)
 		newPrim.vertCount = 0;
 		newPrim.type = PRIM_TRILIST;
 		g_numprimindices += newPrim.indexCount;
-		if ( g_numprimitives > MAX_MAP_PRIMITIVES || g_numprimindices > MAX_MAP_PRIMINDICES )
-		{
-			Error("Too many t-junctions to fix up! (%d prims, max %d :: %d indices, max %d)\n", g_numprimitives, MAX_MAP_PRIMITIVES, g_numprimindices, MAX_MAP_PRIMINDICES );
-		}
 		for ( i = 0; i < outIndices.Count(); i++ )
 		{
 			g_primindices[newPrim.firstIndex + i] = outIndices[i];

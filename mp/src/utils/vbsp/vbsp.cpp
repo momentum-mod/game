@@ -348,6 +348,12 @@ void ProcessWorldModel (void)
 	// It also welds the list of vertices out of each winding/portal and rounds nearly integer verts to integer
 	pLeafFaceList = FixTjuncs (tree->headnode, pLeafFaceList);
 
+	if (g_numprimitives > MAX_MAP_PRIMITIVES || g_numprimindices > MAX_MAP_PRIMINDICES)
+    {
+        Msg("Too many t-junctions to fix up! (%d prims, max %d :: %d indices, max %d)\n", g_numprimitives,
+              MAX_MAP_PRIMITIVES, g_numprimindices, MAX_MAP_PRIMINDICES);
+    }
+
 	// this merges all of the solid nodes that have separating planes
 	if (!noprune)
 	{
