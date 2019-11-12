@@ -373,9 +373,8 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
         iBarThickness = cl_crosshair_thickness.GetInt(); //thickness of 1 (or odd) causes off-center crosshairs
     }
     
-    uint32 newHexColor = MomUtil::GetHexFromColor(cl_crosshair_color.GetString());
     Color crossColor;
-    if (!MomUtil::GetColorFromHex(newHexColor, crossColor))
+    if (!MomUtil::GetColorFromHex(MomUtil::GetHexFromColor(cl_crosshair_color.GetString()), crossColor))
         crossColor.SetColor(255, 0, 0, 200);
     if (!cl_crosshair_alpha_enable.GetBool())
         crossColor.SetColor(crossColor.r(), crossColor.g(), crossColor.b(), 200);
