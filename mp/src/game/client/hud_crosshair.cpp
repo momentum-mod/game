@@ -481,7 +481,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     {
         m_pCrosshair = nullptr;
 
-        if (strcmp(cl_crosshair_file.GetString(), "") == 0 || strcmp(cl_crosshair_file.GetString(), "null") == 0)
+        if (FStrEq(cl_crosshair_file.GetString(), "") || FStrEq(cl_crosshair_file.GetString(), "null"))
             m_pCrosshair = gHUD.GetIcon("whiteAdditive");
         else
             m_pCrosshair = gHUD.GetIcon(cl_crosshair_file.GetString());
