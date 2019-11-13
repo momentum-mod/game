@@ -10,8 +10,7 @@
 #include "hudelement.h"
 #include <vgui_controls/Panel.h>
 
-#define CWeaponBase C_WeaponBase
-class CWeaponBase;
+class C_WeaponBase;
 
 namespace vgui
 {
@@ -31,7 +30,7 @@ public:
     virtual void	SetCrosshairAngle( const QAngle& angle );
     virtual void	SetCrosshair( CHudTexture *texture, const Color& clr );
     virtual void	ResetCrosshair();
-    virtual void    DrawCrosshair( CWeaponBase *weaponBase );
+    virtual void    DrawCrosshair( C_WeaponBase *weaponBase );
     virtual bool	HasCrosshair( void ) { return ( m_pCrosshair != NULL ); }
     virtual bool	ShouldDraw();
 
