@@ -33,7 +33,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     // void ResetStrafeSync();
     
     void AllowBounce(bool bAllow);
-    bool CanBounce() const { return m_bCanBounce; }
+    bool CanBounce() const;
 
     // Returns the replay entity that the player is watching (first person only)
     int GetSpecEntIndex() const;

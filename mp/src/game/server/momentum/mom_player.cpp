@@ -3,6 +3,7 @@
 #include "mom_player.h"
 
 #include "ghost_client.h"
+#include "movevars_shared.h"
 #include "in_buttons.h"
 #include "info_camera_link.h"
 #include "mom_blockfix.h"
@@ -575,6 +576,12 @@ void CMomentumPlayer::AllowBounce(bool bAllow)
 { 
     m_bCanBounce = bAllow;
 }
+
+bool CMomentumPlayer::CanBounce() const
+{
+    return ((sv_bounce_fix.GetInt() == 1 && !m_bCanBounce) || sv_bounce_fix.GetInt() == 2);
+}
+
 
 void CMomentumPlayer::OnJump()
 {

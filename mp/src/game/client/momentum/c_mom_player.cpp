@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "movevars_shared.h"
 #include "c_mom_player.h"
 #include "c_mom_online_ghost.h"
 
@@ -156,4 +157,9 @@ float C_MomentumPlayer::GetCurrentRunTime()
 void C_MomentumPlayer::AllowBounce(bool bAllow)
 {
     m_bCanBounce = bAllow;
+}
+
+bool C_MomentumPlayer::CanBounce() const
+{
+    return ((sv_bounce_fix.GetInt() == 1 && !m_bCanBounce) || sv_bounce_fix.GetInt() == 2);
 }

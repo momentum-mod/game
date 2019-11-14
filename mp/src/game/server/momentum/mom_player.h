@@ -88,7 +88,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void ResetRunStats();
     
     void AllowBounce(bool bAllow);
-    bool CanBounce() const { return m_bCanBounce; }
+    bool CanBounce() const;
 
     void LimitSpeed(float flSpeedLimit, bool bSaveZ);
 

@@ -1006,13 +1006,14 @@ void CMomentumGameMovement::PreventBunnyHopping()
     if (maxscaledspeed <= 0.0f)
         return;
 
-    float speed = mv->m_vecVelocity.Length();
+    float speed = mv->m_vecVelocity.Length2D();
     if (speed <= maxscaledspeed)
         return;
 
     float fraction = maxscaledspeed / speed;
 
-    mv->m_vecVelocity *= fraction;
+    mv->m_vecVelocity.x *= fraction;
+    mv->m_vecVelocity.y *= fraction;
 }
 
 bool CMomentumGameMovement::CheckJumpButton()
@@ -2423,7 +2424,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         // Check if player is actually on the ground for bounce fix
         if (sv_bounce_fix.GetInt() == 1 && pm->fraction == 0.0f)
         {
-            // Allow the player to perform a bounce if they hit a floor or ceiling, and disallow if they hit someting
+            // Allow the player to perform a bounce if they hit a floor, and disallow if they hit someting
             // angled
             m_pPlayer->AllowBounce(CloseEnough(fabs(pm->plane.normal.z), 1.0f, FLT_EPSILON));
         }

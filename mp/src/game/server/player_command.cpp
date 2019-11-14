@@ -436,7 +436,7 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
     // grounded and jump, but because triggers are first checked after all player movement is done, it is possible to
     // exit a trigger the player unducked into with the jump. This has do be done here because ProcessImpacts()
     // uses the player entity and not the move data that is used in the game movement.
-    if (((sv_bounce_fix.GetInt() == 1 && !ToCMOMPlayer(player)->CanBounce()) || sv_bounce_fix.GetInt() == 2) &&         // Can't bounce
+    if (!ToCMOMPlayer(player)->CanBounce() &&
         player->GetGroundEntity() == nullptr && !ToCMOMPlayer(player)->m_CurrentSlideTrigger &&                         // In air
         player->GetFlags() & FL_DUCKING && player->m_afButtonReleased & IN_DUCK &&                                      // Tries to unduck
         (player->m_afButtonPressed & IN_JUMP || (ToCMOMPlayer(player)->HasAutoBhop() && player->m_nButtons & IN_JUMP))) // Tries to jump
@@ -497,8 +497,7 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// If the player is grounded, there is the possibility that they are bit above the ground and therefore might be
 	// above a trigger. The player could avoid this trigger by doing a jump, so to prevent this we extend the player
 	// collision by how much they are above the ground when checking for triggers
-	if (((sv_bounce_fix.GetInt() == 1 && !ToCMOMPlayer(player)->CanBounce()) || sv_bounce_fix.GetInt() == 2) && // Can't bounce
-        player->GetGroundEntity() != nullptr)                                                                   // Is grounded
+	if (!ToCMOMPlayer(player)->CanBounce() && player->GetGroundEntity() != nullptr)
     {
         Vector mins = player->CollisionProp()->OBBMins();
         Vector maxs = player->CollisionProp()->OBBMaxs();
