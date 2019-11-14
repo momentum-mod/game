@@ -6,6 +6,9 @@
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
+#include "mom_system_gamemode.h"
+#define VIEW_SCALE ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f )
+
 class CMomentumPlayer;
 
 class CMomentumGameMovement : public CGameMovement

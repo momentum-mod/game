@@ -6,7 +6,6 @@
 
 #include "cbase.h"
 #include "player.h"
-#include "momentum/mom_player.h"
 #include "usercmd.h"
 #include "igamemovement.h"
 #include "mathlib/mathlib.h"
@@ -16,6 +15,10 @@
 #include "movehelper_server.h"
 #include "iservervehicle.h"
 #include "tier0/vprof.h"
+
+#include "in_buttons.h"
+#include "momentum/mom_player_shared.h"
+#include "momentum/mom_gamemovement.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -427,6 +430,44 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	RunThink( player, TICK_INTERVAL );
 
     player->m_vecOldOrigin = player->GetAbsOrigin();
+    
+    // If the player unducks while in the air, but their feet end up being within sv_considered_on_ground above
+    // standable ground, they can unduck and jump on the same tick to perform a jumpbug. This allows the player to get
+    // grounded and jump, but because triggers are first checked after all player movement is done, it is possible to
+    // exit a trigger the player unducked into with the jump. This has do be done here because ProcessImpacts()
+    // uses the player entity and not the move data that is used in the game movement.
+    if (((sv_bounce_fix.GetInt() == 1 && !ToCMOMPlayer(player)->CanBounce()) || sv_bounce_fix.GetInt() == 2) &&         // Can't bounce
+        player->GetGroundEntity() == nullptr && !ToCMOMPlayer(player)->m_CurrentSlideTrigger &&                         // In air
+        player->GetFlags() & FL_DUCKING && player->m_afButtonReleased & IN_DUCK &&                                      // Tries to unduck
+        (player->m_afButtonPressed & IN_JUMP || (ToCMOMPlayer(player)->HasAutoBhop() && player->m_nButtons & IN_JUMP))) // Tries to jump
+    {
+        Vector mins = player->CollisionProp()->OBBMins();
+        Vector maxs = player->CollisionProp()->OBBMaxs();
+        
+        Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
+        Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
+        float duckOffset = VIEW_SCALE * (hullSizeNormal - hullSizeCrouch).z;
+        
+        Vector offset(0.0f, 0.0f, sv_considered_on_ground.GetFloat() + duckOffset);
+        
+        // CGameMovement::TryTouchGround
+        trace_t pm;
+        Ray_t ray;
+        ray.Init(player->GetAbsOrigin(), player->GetAbsOrigin() - offset, mins, maxs);
+        UTIL_TraceRay(ray, MASK_PLAYERSOLID, player, COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
+        
+        if (pm.DidHit() && pm.plane.normal[2] >= 0.7f && (pm.startpos - pm.endpos).z >= duckOffset)
+        {
+            // Extend collision to ground
+            offset.z = player->GetAbsOrigin().z - pm.endpos.z;
+            player->SetCollisionBounds(mins - offset, maxs);
+            
+            moveHelper->ProcessImpacts();
+            
+            // Reset collision
+            player->SetCollisionBounds(mins, maxs);
+        }
+    }
 
 	// Setup input.
 	SetupMove( player, ucmd, moveHelper, g_pMoveData );
@@ -456,8 +497,8 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// If the player is grounded, there is the possibility that they are bit above the ground and therefore might be
 	// above a trigger. The player could avoid this trigger by doing a jump, so to prevent this we extend the player
 	// collision by how much they are above the ground when checking for triggers
-	if (((sv_bounce_fix.GetInt() == 1 && !static_cast<CMomentumPlayer*>(player)->CanBounce()) || sv_bounce_fix.GetInt() == 2) &&
-        player->GetGroundEntity() != nullptr)
+	if (((sv_bounce_fix.GetInt() == 1 && !ToCMOMPlayer(player)->CanBounce()) || sv_bounce_fix.GetInt() == 2) && // Can't bounce
+        player->GetGroundEntity() != nullptr)                                                                   // Is grounded
     {
         Vector mins = player->CollisionProp()->OBBMins();
         Vector maxs = player->CollisionProp()->OBBMaxs();

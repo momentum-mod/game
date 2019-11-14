@@ -5,7 +5,6 @@
 #include "mom_player_shared.h"
 #include "movevars_shared.h"
 #include "rumble_shared.h"
-#include "mom_system_gamemode.h"
 
 #ifdef CLIENT_DLL
 #include "c_mom_triggers.h"
@@ -583,9 +582,7 @@ bool CMomentumGameMovement::CanUnduck()
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        float viewScale = g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f;
-
-        newOrigin += -viewScale * (hullSizeNormal - hullSizeCrouch);
+        newOrigin += -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
     }
 
     UTIL_TraceHull(mv->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, PlayerSolidMask(), player,
@@ -891,9 +888,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        float viewScale = g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f;
-
-        Vector viewDelta = -viewScale * (hullSizeNormal - hullSizeCrouch);
+        Vector viewDelta = -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
 
         VectorAdd(newOrigin, viewDelta, newOrigin);
     }
@@ -918,9 +913,7 @@ void CMomentumGameMovement::FinishDuck(void)
     Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-    float viewScale = g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f;
-
-    Vector viewDelta = viewScale * (hullSizeNormal - hullSizeCrouch);
+    Vector viewDelta = VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
 
     player->SetViewOffset(GetPlayerViewOffset(true));
     player->AddFlag(FL_DUCKING);
