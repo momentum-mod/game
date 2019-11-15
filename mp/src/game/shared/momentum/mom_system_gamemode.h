@@ -6,6 +6,8 @@
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
+#define VIEW_SCALE ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f )
+
 class CMomentumPlayer;
 
 abstract_class IGameMode

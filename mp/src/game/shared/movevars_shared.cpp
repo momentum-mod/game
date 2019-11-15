@@ -134,3 +134,4 @@ ConVar r_AirboatViewZHeight( "r_AirboatViewZHeight", "0.0", FCVAR_CHEAT | FCVAR_
 // Momentum convars
 MAKE_CONVAR(sv_considered_on_ground, "1.0", FCVAR_MAPPING, "Amount of units you have to be above the ground to be considered on ground.\n", 0.0f, 5.f);
 MAKE_TOGGLE_CONVAR(sv_duck_collision_fix, "1", FCVAR_MAPPING, "Fixes headbugs by updating the collision box after duck code instead of at the end of the tick. 1 = ON, 0 = OFF.\n");
+ConVar sv_ground_trigger_fix("sv_ground_trigger_fix", "1", 0, "Fixes being able to jump off the ground if grounded with a trigger under the player (bounces and jumpbugs)", true, 0, true, 1);
