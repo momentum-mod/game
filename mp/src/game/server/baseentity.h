@@ -1700,6 +1700,8 @@ private:
 	COutputEvent m_OnUser3;
 	COutputEvent m_OnUser4;
 
+	COutputEvent m_OnKilled;
+
 	QAngle			m_angAbsRotation;
 
 	CNetworkVector( m_vecOrigin );
