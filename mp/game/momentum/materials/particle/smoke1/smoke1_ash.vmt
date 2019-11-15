@@ -1,0 +1,13 @@
+"SpriteCard"
+{
+	$basetexture "particle/smoke1/smoke1.vtf"
+	$translucent 1
+	$maxsize .008
+	//$minsize .00075
+	"$blendframes" "0"
+//    "SpriteCard_HDR_dx9" 
+//    { 
+//	$overbrightfactor .35
+//    } 
+
+}

@@ -1,0 +1,9 @@
+"spritecard"
+{
+	"$basetexture" "particle\Particle_Glow_05.vtf"
+	$translucent 1
+	$additive 1
+	$overbrightfactor 5
+	$depthblend 0
+	//$depthblendscale 10
+}

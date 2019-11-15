@@ -19,6 +19,9 @@ particles_manifest
 	"file"		"particles/water_impact.pcf"
 	"file"		"!particles/muzzleflashes.pcf"
 
+	// New precipitation particles
+	"file"		"particles/rain_fx.pcf"
+
     // TF2 Particles
     "file"		"!particles/rockettrail.pcf"
     //"file"		"particles/smoke_blackbillow.pcf"

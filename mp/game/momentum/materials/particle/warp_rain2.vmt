@@ -1,0 +1,24 @@
+"Refract"
+{
+	"<dx90"
+	{
+		"$fallbackmaterial" "particle\warp1_dx8"
+	}
+
+ 	//"$dudvmap" 	"particle/warp_rain_dudv"
+	"$basetexture"	"particle/warp_rain_base"
+	"$normalmap" "particle/warp_rain2_normal"
+	$translucent "1"
+	$additive 1
+	//"$overbrightfactor" "0.125"
+ 	"$refractamount" "-0.2"
+	"$vertexalpha" "1"
+	"$vertexcolor" "1"
+	//"$translucent" "1"
+	"$forcerefract" 1
+ 	//"$bluramount" ".5"
+	"$nofog" "1"
+	"$vertexcolormodulate" "1"
+	$NoCull 1	
+	$depthblend 0
+}
