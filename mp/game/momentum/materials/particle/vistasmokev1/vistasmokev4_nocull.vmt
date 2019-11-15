@@ -1,0 +1,15 @@
+"SpriteCard"
+{
+	$basetexture "particle/vistaSmokeV1/vistasmokev1_emods"
+	$DUALSEQUENCE 1
+	$SEQUENCE_BLEND_MODE 1 //2
+	$MAXLUMFRAMEBLEND1 0  //0
+	$MAXLUMFRAMEBLEND2 1  //1
+	$ZOOMANIMATESEQ2 24
+	$depthblend 0
+	//"!srgb?$overbrightfactor" "1.2"
+	$ignorez 1
+	//$VERTEXFOGAMOUNT 1  //Vertex Fog doesn't work and isn't necessary for screenspace effects
+	$nocull 1
+	"GPU<2?$BLENDFRAMES" "0"
+}

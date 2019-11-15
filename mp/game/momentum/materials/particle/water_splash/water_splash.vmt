@@ -1,0 +1,27 @@
+"SpriteCard"
+{
+	"$basetexture"	"particle/water_splash/water_splash.vtf"
+
+
+	$distancealpha 1
+	$softedges 0
+	$edgesoftnessstart .5
+	$edgesoftnessend .485
+
+	$outline 1
+	$outlinecolor "[1 1 1]"
+	$outlinealpha .25
+
+
+	$outlinestart0 0.415
+	$outlinestart1 0.44
+	$outlineend0 0.49
+	$outlineend1 0.5
+
+	$perparticleoutline 1
+	$blendframes 1
+
+	$maxsize .85
+	$startfadesize .675
+	$endfadesize .75
+}

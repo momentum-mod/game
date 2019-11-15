@@ -1,0 +1,24 @@
+"SpriteCard"
+{
+	$basetexture "particle/spray1/spray1.vtf"
+	//$vertexalpha 1
+	//$vertexcolor 1
+	//$translucent 1
+	//"$alphatest" 1
+	$overbrightfactor 1.5
+	$addself 2
+	$blendframes 0
+	$maxsize .85
+	$startfadesize .675
+	$endfadesize .75
+	$depthblendscale 4
+	//$depthblend 0
+
+	"GPU<2?$BLENDFRAMES" "0"
+	"GPU<2?$DEPTHBLEND" "0"
+
+//    "SpriteCard_HDR_dx9" 
+//    { 
+//	$basetexture "particle/spray1/spray1_hdr.vtf"
+//    } 
+}

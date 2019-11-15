@@ -1,0 +1,16 @@
+"SpriteCard"
+{
+	$basetexture "particle/spray1/spray1.vtf"
+	//$vertexalpha 1
+	//$vertexcolor 1
+	//$translucent 1
+	"$additive" 1
+	$blendframes 0
+	//$minsize .00125
+	$maxsize .025
+	$startfadesize .675
+	$endfadesize .75
+	$depthblendscale 4
+	"GPU<2?$BLENDFRAMES" "0"
+	"GPU<2?$DEPTHBLEND" "0"
+}

@@ -1,0 +1,6 @@
+"SpriteCard"
+{
+	"$basetexture" "particle\leaf\leafdead"
+	"$blendframes" "0"
+	$alphatest 1
+}
