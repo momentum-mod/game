@@ -1953,6 +1953,8 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 	DEFINE_OUTPUT( m_OnUser3, "OnUser3" ),
 	DEFINE_OUTPUT( m_OnUser4, "OnUser4" ),
 
+	DEFINE_OUTPUT( m_OnKilled, "OnKilled" ),
+
 	// Function Pointers
 	DEFINE_FUNCTION( SUB_Remove ),
 	DEFINE_FUNCTION( SUB_DoNothing ),
@@ -4134,6 +4136,8 @@ void CBaseEntity::GetInputDispatchEffectPosition( const char *sInputString, Vect
 //-----------------------------------------------------------------------------
 void CBaseEntity::InputKill( inputdata_t &inputdata )
 {
+    m_OnKilled.FireOutput(inputdata.pActivator, this);
+
 	// tell owner ( if any ) that we're dead.This is mostly for NPCMaker functionality.
 	CBaseEntity *pOwner = GetOwnerEntity();
 	if ( pOwner )
@@ -4142,11 +4146,21 @@ void CBaseEntity::InputKill( inputdata_t &inputdata )
 		SetOwnerEntity( NULL );
 	}
 
-	UTIL_Remove( this );
+	if (IsPlayer())
+    {
+        // never just delete players
+        engine->ServerCommand(UTIL_VarArgs("kickid %d CBaseEntity::InputKill()\n", engine->GetPlayerUserId(edict())));
+    }
+    else
+    {
+        UTIL_Remove(this);
+    }
 }
 
 void CBaseEntity::InputKillHierarchy( inputdata_t &inputdata )
 {
+    m_OnKilled.FireOutput(inputdata.pActivator, this);
+
 	CBaseEntity *pChild, *pNext;
 	for ( pChild = FirstMoveChild(); pChild; pChild = pNext )
 	{
@@ -4162,7 +4176,15 @@ void CBaseEntity::InputKillHierarchy( inputdata_t &inputdata )
 		SetOwnerEntity( NULL );
 	}
 
-	UTIL_Remove( this );
+	if (IsPlayer())
+    {
+        // never just delete players
+        engine->ServerCommand(UTIL_VarArgs("kickid %d CBaseEntity::InputKill()\n", engine->GetPlayerUserId(edict())));
+    }
+    else
+    {
+        UTIL_Remove(this);
+    }
 }
 
 //------------------------------------------------------------------------------
