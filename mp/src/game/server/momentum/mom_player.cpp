@@ -579,7 +579,7 @@ void CMomentumPlayer::AllowBounce(bool bAllow)
 
 bool CMomentumPlayer::CanBounce() const
 {
-    return ((sv_bounce_fix.GetInt() == 1 && !m_bCanBounce) || sv_bounce_fix.GetInt() == 2);
+    return sv_bounce_fix.GetInt() == 0 || (sv_bounce_fix.GetInt() == 1 && m_bCanBounce);
 }
 
 
