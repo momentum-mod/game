@@ -24,7 +24,6 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName) : CAutoGameSyste
     m_pRecordingReplay(nullptr),
     m_pPlaybackReplay(nullptr),
     m_bShouldStopRec(false),
-    m_iTickCount(0),
     m_iStartRecordingTick(0),
     m_iStartTimerTick(0),
     m_iStopTimerTick(0),
@@ -84,7 +83,6 @@ void CMomentumReplaySystem::BeginRecording()
         return;
 
     m_bRecording = true;
-    m_iTickCount = 1; // recording begins at 1 ;)
     m_iStartRecordingTick = gpGlobals->tickcount;
     m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
 }
@@ -131,15 +129,14 @@ void CMomentumReplaySystem::FinishRecording()
     m_bShouldStopRec = false;
     m_bRecording = false;
 
-    DevLog("Before trimming: %i\n", m_iTickCount);
+    DevLog("Before trimming: %i\n", m_pRecordingReplay->GetFrameCount());
     TrimReplay();
     DevLog("After trimming: %i\n", m_pRecordingReplay->GetFrameCount());
 
     char newRecordingPath[MAX_PATH];
     if (StoreReplay(newRecordingPath, MAX_PATH))
     {
-        // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
-        Log("Recording Stopped! Ticks: %i\n", m_iTickCount);
+        Log("Recording Stopped! Ticks: %i\n", m_pRecordingReplay->GetFrameCount());
 
         const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
         if (pReplaySavedEvent)
@@ -219,7 +216,6 @@ void CMomentumReplaySystem::TrimReplay()
                 m_pRecordingReplay->RemoveFrames(extraFrames);
                 // Add our extraFrames because we may have stayed in the start zone
                 m_iStartRecordingTick += extraFrames;
-                m_iTickCount -= extraFrames;
             }
         }
     }
@@ -242,8 +238,6 @@ void CMomentumReplaySystem::UpdateRecordingParams()
             SavedState_t *pSaved = pPlayer->GetSavedRunState();
             m_pRecordingReplay->AddFrame(CReplayFrame(pSaved->m_angLastAng, pSaved->m_vecLastPos, pSaved->m_fLastViewOffset, pSaved->m_nButtons, false));
         }
-
-        ++m_iTickCount;
     }
 
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
