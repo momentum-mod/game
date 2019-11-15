@@ -1934,6 +1934,7 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 
 	// Entity I/O methods to alter context
 	DEFINE_INPUTFUNC( FIELD_STRING, "AddContext", InputAddContext ),
+	DEFINE_INPUTFUNC( FIELD_STRING, "IncrementContext", InputIncrementContext ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "RemoveContext", InputRemoveContext ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "ClearContext", InputClearContext ),
 
@@ -6498,6 +6499,15 @@ void CBaseEntity::InputAddContext( inputdata_t& inputdata )
 	AddContext( contextName );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+// Input  : inputdata -
+//-----------------------------------------------------------------------------
+void CBaseEntity::InputIncrementContext(inputdata_t &inputdata)
+{
+    const char *contextName = inputdata.value.String();
+    AddContext(contextName, true);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: User inputs. These fire the corresponding user outputs, and are
@@ -6535,41 +6545,49 @@ void CBaseEntity::InputFireUser4( inputdata_t& inputdata )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *contextName - 
+// Purpose:
+// Input  : *contextName -
 //-----------------------------------------------------------------------------
-void CBaseEntity::AddContext( const char *contextName )
+void CBaseEntity::AddContext(const char *contextName, bool increment)
 {
-	char key[ 128 ];
-	char value[ 128 ];
-	float duration;
+    char key[128];
+    char value[128];
+    float duration;
 
-	const char *p = contextName;
-	while ( p )
-	{
-		duration = 0.0f;
-		p = SplitContext( p, key, sizeof( key ), value, sizeof( value ), &duration );
-		if ( duration )
-		{
-			duration += gpGlobals->curtime;
-		}
+    const char *p = contextName;
+    while (p)
+    {
+        duration = 0.0f;
+        p = SplitContext(p, key, sizeof(key), value, sizeof(value), &duration);
+        if (duration)
+        {
+            duration += gpGlobals->curtime;
+        }
 
-		int iIndex = FindContextByName( key );
-		if ( iIndex != -1 )
-		{
-			// Set the existing context to the new value
-			m_ResponseContexts[iIndex].m_iszValue = AllocPooledString( value );
-			m_ResponseContexts[iIndex].m_fExpirationTime = duration;
-			continue;
-		}
+        int iIndex = FindContextByName(key);
+        if (iIndex != -1)
+        {
+            // Set the existing context to the new value, or increment if requested
+            if (increment)
+            {
+                int iValue = atoi(value) + atoi(m_ResponseContexts[iIndex].m_iszValue.ToCStr());
+                itoa(iValue, value, 10);
+                m_ResponseContexts[iIndex].m_iszValue = AllocPooledString(value);
+            }
+            else
+                m_ResponseContexts[iIndex].m_iszValue = AllocPooledString(value);
 
-		ResponseContext_t newContext;
-		newContext.m_iszName = AllocPooledString( key );
-		newContext.m_iszValue = AllocPooledString( value );
-		newContext.m_fExpirationTime = duration;
+            m_ResponseContexts[iIndex].m_fExpirationTime = duration;
+            continue;
+        }
 
-		m_ResponseContexts.AddToTail( newContext );
-	}
+        ResponseContext_t newContext;
+        newContext.m_iszName = AllocPooledString(key);
+        newContext.m_iszValue = AllocPooledString(value);
+        newContext.m_fExpirationTime = duration;
+
+        m_ResponseContexts.AddToTail(newContext);
+    }
 }
 
 //-----------------------------------------------------------------------------
