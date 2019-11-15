@@ -383,3 +383,141 @@
     "20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls."
 [
 ]
+
+@PointClass base(Targetname, Angles) = point_teleport :
+	"An entity that teleports a target entity to this position and angles. "+
+	"If 'Teleport Home' spawn flag is set, teleports the target entity to its spawn position instead." +
+	"If object is physically simulated, simulation is turned off when teleported."
+[
+	target(target_destination) : "Entity To Teleport" : : "Name of the entity that will be teleported."
+	spawnflags(flags) =
+	[
+		1 : "Teleport Home" : 0
+		2 : "Into Duck (episodic)" : 0
+	]
+
+	// Inputs
+	input Teleport(void) : "Teleport the target entity."
+	input TeleportEntity(string) : "Teleport the output parameter box entity."
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/math_counter.vmt") = math_counter :
+	"Holds a numeric value and performs arithmetic operations upon it. If either the minimum or maximum " +
+	"legal value is nonzero, OutValue will be clamped to the legal range, and the OnHitMin/OnHitMax " +
+	"outputs will be fired at the appropriate times. If both min and max are set to zero, no clamping is " +
+	"performed and only the OutValue output will be fired."
+[
+	// Keys
+	startvalue(integer) : "Initial Value" : 0 : "Starting value for the counter."
+	min(integer) : "Minimum Legal Value" : 0 : "Minimum legal value for the counter. If min=0 and max=0, no clamping is performed."
+	max(integer) : "Maximum Legal Value" : 0 : "Maximum legal value for the counter. If min=0 and max=0, no clamping is performed."
+
+	// Inputs
+	input Add(integer) : "Add an amount to the counter and fire the OutValue output with the result."
+	input Divide(integer): "Divide the counter by an amount and fire the OutValue output with the result."
+	input Multiply(integer): "Multiply the counter by an amount and fire the OutValue output with the result."
+	input SetValue(integer): "Set the counter to a new value and fire the OutValue output with the result."
+	input SetValueNoFire(integer): "Set the counter to a new value without firing any outputs."
+	input Subtract(integer): "Subtract an amount from the counter and fire the OutValue output with the result."
+	input SetHitMax(integer): "Set the upper bound of the counter and fire the OutValue output with the current value."
+	input SetHitMin(integer): "Set the lower bound of the counter and fire the OutValue output with the current value."
+	input GetValue(void): "Causes the counter fire its OnGetValue output with the current value of the counter. Used for polling the counter when you don't want constant updates from the OutValue output."
+
+	// Outputs
+	output OutValue(integer) : "Fired when the counter value changes."
+	output OnHitMin(void) : "Fired when the counter value meets or goes below the min value. The counter must go back above the min value before the output will fire again."
+	output OnHitMax(void) : "Fired when the counter value meets or exceeds the max value. The counter must go below the max value before the output will fire again."
+	output OnGetValue(integer) : "Fired in response to the GetValue input. Used for polling the counter when you don't want constant updates from the OutValue output."
+	output OnChangedFromMin(integer) : "Fired when the counter value changes from the minimum value."
+	output OnChangedFromMax(integer) : "Fired when the counter value changes from the maximum value."
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/logic_random_outputs.vmt") = logic_random_outputs :
+	"A message forwarder. Fires up to 16 separate outputs, each with a different chance of firing."
+[
+	spawnflags(flags) =
+	[
+		1: "Only trigger once" : 0
+		2: "Allow fast retrigger" : 0
+	]
+	OnTriggerChance1(float) : "OnTrigger1 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger1 output firing when this entity is triggered."
+	OnTriggerChance2(float) : "OnTrigger2 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger2 output firing when this entity is triggered."
+	OnTriggerChance3(float) : "OnTrigger3 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger3 output firing when this entity is triggered."
+	OnTriggerChance4(float) : "OnTrigger4 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger4 output firing when this entity is triggered."
+	OnTriggerChance5(float) : "OnTrigger5 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger5 output firing when this entity is triggered."
+	OnTriggerChance6(float) : "OnTrigger6 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger6 output firing when this entity is triggered."
+	OnTriggerChance7(float) : "OnTrigger7 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger7 output firing when this entity is triggered."
+	OnTriggerChance8(float) : "OnTrigger8 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger8 output firing when this entity is triggered."
+	OnTriggerChance9(float) : "OnTrigger9 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger9 output firing when this entity is triggered."
+	OnTriggerChance10(float) : "OnTrigger10 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger10 output firing when this entity is triggered."
+	OnTriggerChance11(float) : "OnTrigger11 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger11 output firing when this entity is triggered."
+	OnTriggerChance12(float) : "OnTrigger12 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger12 output firing when this entity is triggered."
+	OnTriggerChance13(float) : "OnTrigger13 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger13 output firing when this entity is triggered."
+	OnTriggerChance14(float) : "OnTrigger14 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger14 output firing when this entity is triggered."
+	OnTriggerChance15(float) : "OnTrigger15 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger15 output firing when this entity is triggered."
+	OnTriggerChance16(float) : "OnTrigger16 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger16 output firing when this entity is triggered."
+
+	// Inputs
+	input Trigger(void) : "Trigger this entity, causing its OnTrigger outputs to fire if it is enabled."
+	input Toggle(void) : "Toggle this entity between enabled and disabled."
+	input CancelPending(void) : "Cancel any events fired by this entity that are currently pending in the I/O event queue."
+
+	// Outputs
+	output OnSpawn(void) : "Fired when this entity is spawned. If this entity is set to only trigger once, it will "+
+		"delete itself after firing this output."
+	output OnTrigger1(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger2(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger3(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger4(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger5(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger6(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger7(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger8(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger9(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger10(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger11(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger12(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger13(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger14(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger15(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger16(void) : "This output has a chance to fire when the entity is triggered."
+]
+
+@FilterClass base(BaseFilter) iconsprite("editor/filter_name.vmt") = filter_activator_context :
+	"A filter that filters by a context and value on the activator."
+[
+	CompareType(choices) : "Compare Type" : 0 : "The comparison criteria" =
+	[
+		0 : "Greater than"
+        1 : "Equal"
+        2 : "Less than"
+	]
+	FilterContext(string) : "Filter Context" : : "The context to filter by. If the filter mode is Allow, only entities that "+
+		"have a context matching the given string, of a value that passes the criteria, will pass the filter. If the filter mode is Disallow, "+
+		"all entities EXCEPT those whose context passes the criteria will pass the filter."
+	FilterValue(integer) : "Filter Value" : 0 : "The context value to compare with."
+]
+
+@PointClass base(Targetname) iconsprite("editor/env_fade") = env_fade :
+	"An entity that controls screen fades."
+[
+	spawnflags(flags) =
+	[
+		1: "Fade From" : 0
+		2: "Modulate" : 0
+		4: "Triggering player only" : 0
+		8: "Stay Out" : 0
+	]
+	duration(string) : "Duration (seconds)" : "2" : "The time that it will take to fade the screen in or out."
+	holdtime(string) : "Hold Fade (seconds)" : "0" : "The time to hold the faded in/out state."
+	renderamt(integer) : "Fade Alpha" : 255 : "Alpha of the fade, where 0 = fully transparent and 255 = fully opaque."
+	rendercolor(color255) : "Fade Color (R G B)" : "0 0 0"
+	ReverseFadeDuration(float) : "Reverse Fade Duration (seconds)" : "2" : "The duration of the reverse fade."
+
+	// Inputs
+	input Fade(void) : "Start the screen fade."
+	input FadeReverse(void) : "Begin doing the reverse of the current fade."
+
+	// Outputs
+	output OnBeginFade(void) : "Fired when the fade has begun."
+]
