@@ -44,6 +44,7 @@ void CGameModeBase::SetGameModeVars()
     sv_stopspeed.SetValue(75);
     sv_considered_on_ground.SetValue(1);
     sv_duck_collision_fix.SetValue(true);
+    sv_ground_trigger_fix.SetValue(true);
 }
 
 void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
@@ -92,6 +93,7 @@ void CGameMode_RJ::SetGameModeVars()
     sv_stopspeed.SetValue(100);
     sv_considered_on_ground.SetValue(2);
     sv_duck_collision_fix.SetValue(false);
+    sv_ground_trigger_fix.SetValue(false); // MOM_TODO Remove when bounce triggers have been implemented
 }
 
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
