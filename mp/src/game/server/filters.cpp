@@ -268,7 +268,97 @@ BEGIN_DATADESC( CFilterName )
 
 END_DATADESC()
 
+// ###################################################################
+//	> FilterModel
+// ###################################################################
+class CFilterModel : public CBaseFilter
+{
+    DECLARE_CLASS(CFilterModel, CBaseFilter);
+    DECLARE_DATADESC();
 
+public:
+    string_t m_iFilterModel;
+
+    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
+    {
+        return (FStrEq(STRING(m_iFilterModel), STRING(pEntity->GetModelName())));
+    }
+};
+
+LINK_ENTITY_TO_CLASS(filter_activator_model, CFilterModel);
+
+BEGIN_DATADESC(CFilterModel)
+
+	// Keyfields
+	DEFINE_KEYFIELD(m_iFilterModel, FIELD_STRING, "model"),
+
+END_DATADESC()
+
+// ###################################################################
+//	> FilterContext
+// ###################################################################
+enum filterCompare_t
+{
+	FILTER_LESS,
+	FILTER_EQUAL,
+	FILTER_GREATER,
+};
+
+class CFilterContext : public CBaseFilter
+{
+    DECLARE_CLASS(CFilterContext, CBaseFilter);
+    DECLARE_DATADESC();
+
+public:
+    filterCompare_t m_nFilterCompareType;
+    string_t m_sFilterContext;
+    int m_iFilterValue;
+
+    bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
+    {
+        int i = pEntity->FindContextByName(STRING(m_sFilterContext));
+
+        if (i == -1)
+            return false;
+
+        const char *sValue = pEntity->GetContextValue(i);
+        long int iValue = strtol(sValue, nullptr, 10);
+
+        if (errno == ERANGE)
+        {
+            Warning("filter_activator_context: The value of context \"%s\" is not a valid integer!\n",
+                    pEntity->GetContextName(i));
+            return false;
+        }
+
+        switch (m_nFilterCompareType)
+        {
+        case FILTER_GREATER:
+            return (iValue > m_iFilterValue);
+
+        case FILTER_LESS:
+            return (iValue < m_iFilterValue);
+
+        case FILTER_EQUAL:
+            return (iValue == m_iFilterValue);
+
+        default:
+            Warning("filter_activator_context: Invalid comparison type!\n");
+            return false;
+        }
+    }
+};
+
+LINK_ENTITY_TO_CLASS(filter_activator_context, CFilterContext);
+
+BEGIN_DATADESC(CFilterContext)
+
+	// Keyfields
+	DEFINE_KEYFIELD(m_nFilterCompareType, FIELD_INTEGER, "CompareType"),
+    DEFINE_KEYFIELD(m_sFilterContext, FIELD_STRING, "FilterContext"),
+    DEFINE_KEYFIELD(m_iFilterValue, FIELD_INTEGER, "FilterValue"),
+
+END_DATADESC()
 
 // ###################################################################
 //	> FilterClass
