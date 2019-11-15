@@ -876,7 +876,8 @@ void AddNeighbor( CCoreDispInfo *pMain,
 	// Make sure this slot isn't used on either displacement.
 	if ( pSub->IsValid() || pNeighborSub->IsValid() )
 	{
-		ExecuteOnce( Warning( "Found a displacement edge abutting multiple other edges.\n" ) );
+        Vector v0 = pMain->GetVert(0);
+		Warning( "Found a displacement edge abutting multiple other edges, near %.2f %.2f %.2f\n", v0.x, v0.y, v0.z );
 		return;
 	}
 
