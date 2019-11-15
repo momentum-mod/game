@@ -450,8 +450,16 @@ void CalcFaceVectors(lightinfo_t *l)
 	float det = -DotProduct( l->facenormal, luxelSpaceCross );
 	if ( fabs( det ) < 1.0e-20 )
 	{
-		Warning(" warning - face vectors parallel to face normal. bad lighting will be produced\n" );
-		l->luxelOrigin = vec3_origin;
+        int edge = l->face->firstedge;
+        short vertex = dedges[edge].v[0];
+        Vector v0 = dvertexes[vertex].point;
+
+        int texdata = texinfo[l->face->texinfo].texdata;
+        const char *texname = TexDataStringTable_GetString(dtexdata[texdata].nameStringTableID);
+
+        Warning( "Warning - face vectors parallel to face normal, bad lighting will be produced near %.2f %.2f %.2f\nTexture: %s\n", v0.x, v0.y, v0.z, texname );
+
+        l->luxelOrigin = vec3_origin;
 	}
 	else
 	{

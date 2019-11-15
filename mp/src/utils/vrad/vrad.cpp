@@ -897,7 +897,8 @@ void SubdividePatch( int ndxPatch )
 
 	if( area1 == 0 || area2 == 0 )
 	{
-		Msg( "zero area child patch\n" );
+        Vector v0 = patch->origin;
+		Msg( "zero area child patch near %.2f %.2f %.2f\n", v0.x, v0.y, v0.z );
 		return;
 	}
 

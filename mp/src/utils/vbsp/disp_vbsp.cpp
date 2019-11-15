@@ -627,7 +627,7 @@ void DispGetFaceInfo( mapbrush_t *pBrush )
 	if( pBrush->entitynum != 0 )
 	{
 		char* pszEntityName = ValueForKey( &g_LoadingMap->entities[pBrush->entitynum], "classname" );
-		Error( "Error: displacement found on a(n) %s entity - not supported (entity %d, brush %d)\n", pszEntityName, pBrush->entitynum, pBrush->brushnum );
+		Error( "Error: displacement found on a(n) %s entity - not supported (entity %d, brush %d)\n", pszEntityName, pBrush->entitynum, pBrush->id );
 	}
 
 	for( i = 0; i < pBrush->numsides; i++ )
@@ -637,7 +637,7 @@ void DispGetFaceInfo( mapbrush_t *pBrush )
 		{
 			// error checking!!
 			if( pSide->winding->numpoints != 4 )
-				Error( "Trying to create a non-quad displacement! (entity %d, brush %d)\n", pBrush->entitynum, pBrush->brushnum );
+				Error( "Trying to create a non-quad displacement! (entity %d, brush %d)\n", pBrush->entitynum, pBrush->id );
 			pSide->pMapDisp->face.originalface = pSide;
 			pSide->pMapDisp->face.texinfo = pSide->texinfo;
 			pSide->pMapDisp->face.dispinfo = -1;
