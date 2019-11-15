@@ -47,6 +47,16 @@ enum RunSubmitState_t
     RUN_SUBMIT_COUNT
 };
 
+static const char *const g_szSubmitStates[] = {
+    "#MOM_MF_RunSubmitFail_Unknown",          // RUN_SUBMIT_UNKNOWN
+    "#MOM_MF_RunSubmitted",                   // RUN_SUBMIT_SUCCESS
+    "#MOM_MF_RunSubmitFail_InMapping",        // RUN_SUBMIT_FAIL_IN_MAPPING_MODE
+    "#MOM_MF_RunSubmitFail_InvalidMapStatus", // RUN_SUBMIT_FAIL_MAP_STATUS_INVALID
+    "#MOM_MF_RunSubmitFail_InvalidSession",   // RUN_SUBMIT_FAIL_SESSION_ID_INVALID
+    "#MOM_MF_RunSubmitFail_APIFail",          // RUN_SUBMIT_FAIL_API_FAIL
+    "#MOM_MF_RunSubmitFail_IOFail",           // RUN_SUBMIT_FAIL_IO_FAIL
+};
+
 // Gamemode for momentum
 enum GameMode_t
 {

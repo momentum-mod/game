@@ -221,22 +221,12 @@ void CHudMapFinishedDialog::SetRunUploaded(bool bState)
     m_pLevelGain->SetVisible(false);
 }
 
-static const char * const szSubmitStates[] = {
-    "#MOM_MF_RunSubmitFail_Unknown", // RUN_SUBMIT_UNKNOWN
-    "#MOM_MF_RunSubmitted", // RUN_SUBMIT_SUCCESS
-    "#MOM_MF_RunSubmitFail_InMapping", // RUN_SUBMIT_FAIL_IN_MAPPING_MODE
-    "#MOM_MF_RunSubmitFail_InvalidMapStatus", // RUN_SUBMIT_FAIL_MAP_STATUS_INVALID
-    "#MOM_MF_RunSubmitFail_InvalidSession", // RUN_SUBMIT_FAIL_SESSION_ID_INVALID
-    "#MOM_MF_RunSubmitFail_APIFail", // RUN_SUBMIT_FAIL_API_FAIL
-    "#MOM_MF_RunSubmitFail_IOFail", // RUN_SUBMIT_FAIL_IO_FAIL
-};
-
 void CHudMapFinishedDialog::SetRunSubmitted(RunSubmitState_t state)
 {
     if (state <= RUN_SUBMIT_UNKNOWN || state >= RUN_SUBMIT_COUNT)
         return;
 
-    m_pRunUploadStatus->SetText(szSubmitStates[state]);
+    m_pRunUploadStatus->SetText(g_szSubmitStates[state]);
     m_pRunUploadStatus->SetFgColor(state == RUN_SUBMIT_SUCCESS ? COLOR_ORANGE : COLOR_RED);
 
     // Visibility for these will be determined by the run_upload event
