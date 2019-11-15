@@ -16,6 +16,7 @@ class CEnvFade : public CLogicalEntity
 private:
 
 	float m_Duration;
+	float m_ReverseDuration;
 	float m_HoldTime;
 
 	COutputEvent m_OnBeginFade;
@@ -28,6 +29,7 @@ public:
 	virtual void Spawn( void );
 
 	inline float Duration( void ) { return m_Duration; }
+	inline float ReverseDuration( void ) { return m_ReverseDuration; }
 	inline float HoldTime( void ) { return m_HoldTime; }
 
 	inline void SetDuration( float duration ) { m_Duration = duration; }
@@ -37,6 +39,7 @@ public:
 
 	// Inputs
 	void InputFade( inputdata_t &inputdata );
+	void InputFadeReverse( inputdata_t &inputdata );
 };
 
 LINK_ENTITY_TO_CLASS( env_fade, CEnvFade );
@@ -44,9 +47,11 @@ LINK_ENTITY_TO_CLASS( env_fade, CEnvFade );
 BEGIN_DATADESC( CEnvFade )
 
 	DEFINE_KEYFIELD( m_Duration, FIELD_FLOAT, "duration" ),
+	DEFINE_KEYFIELD( m_ReverseDuration, FIELD_FLOAT, "reversefadeduration" ),
 	DEFINE_KEYFIELD( m_HoldTime, FIELD_FLOAT, "holdtime" ),
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "Fade", InputFade ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "FadeReverse", InputFadeReverse ),
 
 	DEFINE_OUTPUT( m_OnBeginFade, "OnBeginFade"),
 
@@ -106,6 +111,47 @@ void CEnvFade::InputFade( inputdata_t &inputdata )
 	}
 
 	m_OnBeginFade.FireOutput( inputdata.pActivator, this );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Input handler that does the reverse screen fade.
+//-----------------------------------------------------------------------------
+void CEnvFade::InputFadeReverse(inputdata_t &inputdata)
+{
+    int fadeFlags = 0;
+
+    if (m_spawnflags & SF_FADE_IN)
+    {
+        fadeFlags |= FFADE_OUT;
+    }
+    else
+    {
+        fadeFlags |= FFADE_IN;
+    }
+
+    if (m_spawnflags & SF_FADE_MODULATE)
+    {
+        fadeFlags |= FFADE_MODULATE;
+    }
+
+    if (m_spawnflags & SF_FADE_STAYOUT)
+    {
+        fadeFlags |= FFADE_STAYOUT;
+    }
+
+    if (m_spawnflags & SF_FADE_ONLYONE)
+    {
+        if (inputdata.pActivator && inputdata.pActivator->IsNetClient())
+        {
+            UTIL_ScreenFade(inputdata.pActivator, m_clrRender, ReverseDuration(), HoldTime(), fadeFlags);
+        }
+    }
+    else
+    {
+        UTIL_ScreenFadeAll(m_clrRender, ReverseDuration(), HoldTime(), fadeFlags | FFADE_PURGE);
+    }
+
+    m_OnBeginFade.FireOutput(inputdata.pActivator, this);
 }
 
 
