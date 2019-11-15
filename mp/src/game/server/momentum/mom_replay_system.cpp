@@ -117,8 +117,6 @@ void CMomentumReplaySystem::StopRecording()
     {
         pPlayer->SetAllowUserTeleports(false);
 
-        SetReplayHeaderAndStats();
-
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
     }
@@ -132,6 +130,8 @@ void CMomentumReplaySystem::FinishRecording()
     DevLog("Before trimming: %i\n", m_pRecordingReplay->GetFrameCount());
     TrimReplay();
     DevLog("After trimming: %i\n", m_pRecordingReplay->GetFrameCount());
+
+    SetReplayHeaderAndStats();
 
     char newRecordingPath[MAX_PATH];
     if (StoreReplay(newRecordingPath, MAX_PATH))
@@ -201,22 +201,21 @@ bool CMomentumReplaySystem::StoreReplay(char *pOut, size_t outSize)
 
 void CMomentumReplaySystem::TrimReplay()
 {
-    // Our actual start
+    if (!m_pRecordingReplay)
+        return;
+
     if (m_iStartRecordingTick > 0 && m_iStartTimerTick > 0)
     {
         const auto newStart = m_iStartTimerTick - static_cast<int>(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
-        // We only need to trim if the player was in the start trigger for longer than what we want
+
         if (newStart > m_iStartRecordingTick)
         {
-            int extraFrames = newStart - m_iStartRecordingTick;
-            if (m_pRecordingReplay)
-            {
-                // Remove the amount of extra frames from the head
-                // MOM_TODO: If the map allows for prespeed in the trigger, we don't want to trim it!
-                m_pRecordingReplay->RemoveFrames(extraFrames);
-                // Add our extraFrames because we may have stayed in the start zone
-                m_iStartRecordingTick += extraFrames;
-            }
+            // MOM_TODO: If the map allows for prespeed in the trigger, we don't want to trim it!
+            const auto extraFrames = newStart - m_iStartRecordingTick;
+
+            m_pRecordingReplay->RemoveFrames(extraFrames);
+
+            m_iStartRecordingTick += extraFrames; // bump the start
         }
     }
 }
