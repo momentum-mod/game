@@ -21,8 +21,8 @@ public:
     void PostInit() OVERRIDE;
 
     // Sets the start timer tick, this is used for trimming later on
-    void SetTimerStartTick(uint32 tick) { m_iStartTimerTick = tick; }
-    void SetTimerStopTick(uint32 tick) { m_iStopTimerTick = tick; }
+    void SetTimerStartTick(int tick) { m_iStartTimerTick = tick; }
+    void SetTimerStopTick(int tick) { m_iStopTimerTick = tick; }
 
     void BeginRecording();
     void CancelRecording();
@@ -57,9 +57,9 @@ public:
     CMomReplayBase *m_pPlaybackReplay;
 
     bool m_bShouldStopRec;
-    uint32 m_iStartRecordingTick; // The tick that the replay started, used for trimming.
-    uint32 m_iStartTimerTick;     // The tick that the player's timer starts, used for trimming.
-    uint32 m_iStopTimerTick;      // The tick that the player's timer stopped, used for the hud
+    int m_iStartRecordingTick; // The tick that the replay started, used for trimming.
+    int m_iStartTimerTick;     // The tick that the player's timer starts, used for trimming.
+    int m_iStopTimerTick;      // The tick that the player's timer stopped, used for the hud
     float m_fRecEndTime;       // The time to end the recording, if delay was passed as true to StopRecording()
     //CMomRunStats m_SavedRunStats;
     // Map SHA1 hash for version purposes
