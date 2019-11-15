@@ -57,7 +57,6 @@ public:
     CMomReplayBase *m_pPlaybackReplay;
 
     bool m_bShouldStopRec;
-    int m_iTickCount;          // MOM_TODO: Maybe remove me?
     uint32 m_iStartRecordingTick; // The tick that the replay started, used for trimming.
     uint32 m_iStartTimerTick;     // The tick that the player's timer starts, used for trimming.
     uint32 m_iStopTimerTick;      // The tick that the player's timer stopped, used for the hud
