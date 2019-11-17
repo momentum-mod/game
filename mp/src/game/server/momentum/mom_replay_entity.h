@@ -25,6 +25,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void StartRun(bool firstPerson = false);
     void EndRun();
 
+    void SetGhostAngles(QAngle angles);
+
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..

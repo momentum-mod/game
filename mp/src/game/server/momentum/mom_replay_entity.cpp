@@ -12,6 +12,8 @@
 
 #include "tier0/memdbgon.h"
 
+#define GHOST_PITCH_REDUCTION_VALUE 10.0f
+
 static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                       "Paint a faint beam trail on the replay. 0 = OFF, 1 = ON\n", true, 0, true, 1);
 
@@ -78,12 +80,6 @@ void CMomentumReplayGhostEntity::Spawn()
     if (pPlayer)
     {
         SetGhostAppearance(pPlayer->m_playerAppearanceProps);
-        // now that we've set our appearance, the ghost should be visible again.
-        SetRenderMode(kRenderTransColor);
-        if (m_ghostAppearance.m_bGhostTrailEnable)
-        {
-            CreateTrail();
-        }
     }
 
     if (m_pPlaybackReplay)
@@ -205,11 +201,17 @@ void CMomentumReplayGhostEntity::Think()
     float fTimeScale = mom_replay_timescale.GetFloat();
 
     // move the ghost
-    if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_iTotalTicks)
+    if (m_iCurrentTick < 0 || m_iCurrentTick >= m_iTotalTicks)
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
-        SetAbsVelocity(vec3_origin);
+        if (m_pCurrentSpecPlayer)
+        {
+            CReplayFrame *currentStep = GetCurrentStep();
+            SetAbsOrigin(currentStep->PlayerOrigin());
+            SetGhostAngles(currentStep->EyeAngles());
+            SetAbsVelocity(vec3_origin);
+        }
     }
     else
     {
@@ -312,7 +314,7 @@ void CMomentumReplayGhostEntity::Think()
             HandleGhost();
     }
 
-    if (fTimeScale <= 1.0f)
+    if (fTimeScale < 1.0f)
     {
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * (1.0f / fTimeScale));
     }
@@ -357,31 +359,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         }
         SetAbsOrigin(currentStep->PlayerOrigin());
 
-        QAngle angles = currentStep->EyeAngles();
-
-        if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
-        {
-            // don't render the model when we're in first person mode
-            if (GetRenderMode() != kRenderNone)
-            {
-                SetRenderMode(kRenderNone);
-                AddEffects(EF_NOSHADOW);
-            }
-        }
-        else
-        {
-            // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-            angles.x /= 10.0f;
-
-            // remove the nodraw effects
-            if (GetRenderMode() != kRenderTransColor)
-            {
-                SetRenderMode(kRenderTransColor);
-                RemoveEffects(EF_NOSHADOW);
-            }
-        }
-
-        SetAbsAngles(angles);
+        SetGhostAngles(currentStep->EyeAngles());
 
         bool bTeleportedThisFrame = (mom_replay_selection.GetInt() == 1) // Going backwards?
             ? prevStep->Teleported() : currentStep->Teleported();
@@ -417,6 +395,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         {
             // Fix teleporting being interpolated.
             IncrementInterpolationFrame();
+            CreateTrail();
         }
         else
         {
@@ -433,6 +412,22 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         HandleDucking();
     }
+}
+
+void CMomentumReplayGhostEntity::SetGhostAngles(QAngle angles)
+{
+    if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
+    {
+        HideGhost();
+    }
+    else
+    {
+        // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+        angles.x /= GHOST_PITCH_REDUCTION_VALUE;
+        UnHideGhost();
+    }
+
+    SetAbsAngles(angles);
 }
 
 void CMomentumReplayGhostEntity::HandleGhost()
@@ -460,12 +455,11 @@ void CMomentumReplayGhostEntity::HandleGhost()
 
     SetAbsOrigin(currentStep->PlayerOrigin());
     SetAbsAngles(QAngle(currentStep->EyeAngles().x /
-                            10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                        GHOST_PITCH_REDUCTION_VALUE, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
                         currentStep->EyeAngles().y, currentStep->EyeAngles().z));
 
     // remove the nodraw effects
-    SetRenderMode(kRenderTransColor);
-    RemoveEffects(EF_NOSHADOW);
+    UnHideGhost();
 }
 
 void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
@@ -538,6 +532,8 @@ void CMomentumReplayGhostEntity::GoToTick(int tick)
         {
             Vector origin = pNewStep->PlayerOrigin();
             QAngle eyes = pNewStep->EyeAngles();
+            if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetObserverMode() != OBS_MODE_IN_EYE)
+                eyes.x /= GHOST_PITCH_REDUCTION_VALUE;
             Teleport(&origin, &eyes, nullptr);
             PhysicsCheckForEntityUntouch();
             // Entity will get full update next Think
