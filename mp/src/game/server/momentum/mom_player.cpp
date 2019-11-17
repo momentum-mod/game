@@ -490,6 +490,9 @@ void CMomentumPlayer::Spawn()
         }
 
         g_MapZoneSystem.DispatchMapInfo(this);
+
+        // Reset current checkpoint trigger upon spawn
+        m_CurrentProgress.Term();
     }
 
     SetPracticeModeState();
@@ -529,9 +532,6 @@ void CMomentumPlayer::Spawn()
         CreateTrail();
 
     SetNextThink(gpGlobals->curtime);
-
-    // Reset current checkpoint trigger upon spawn
-    m_CurrentProgress.Term();
 
     g_pGameModeSystem->GetGameMode()->OnPlayerSpawn(this);
 }
