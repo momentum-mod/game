@@ -392,14 +392,19 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         if (!bTeleportedNextFrame)
         {
+            float fTimeScale = mom_replay_timescale.GetFloat();
+
             // interpolate vel from difference in origin
             const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
             const Vector &pPlayerNextOrigin = nextStep->PlayerOrigin();
-            const float distX = fabs(pPlayerCurrentOrigin.x - pPlayerNextOrigin.x);
-            const float distY = fabs(pPlayerCurrentOrigin.y - pPlayerNextOrigin.y);
-            const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
-            interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
 
+            const float distX = pPlayerNextOrigin.x - pPlayerCurrentOrigin.x;
+            const float distY = pPlayerNextOrigin.y - pPlayerCurrentOrigin.y;
+            const float distZ = pPlayerNextOrigin.z - pPlayerCurrentOrigin.z;
+            const float fDeltaTime = fTimeScale < 1.0f
+                ? gpGlobals->interval_per_tick * (1.0f / fTimeScale) : gpGlobals->interval_per_tick;
+
+            interpolatedVel = Vector(distX, distY, distZ) / fDeltaTime;
             m_vecLastVel = interpolatedVel;
         }
         else
