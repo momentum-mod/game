@@ -40,7 +40,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     ListenForGameEvent("run_upload");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
-    
+
     m_pClosePanelButton = new ImagePanel(this, "Close_Panel");
     m_pNextZoneButton = new ImagePanel(this, "Next_Zone");
     m_pPrevZoneButton = new ImagePanel(this, "Prev_Zone");
@@ -63,7 +63,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pXPGainCosmetic = new Label(this, "XP_Gain_Cos", "#MOM_MF_XPGainCos");
     m_pXPGainRank = new Label(this, "XP_Gain_Rank", "#MOM_MF_XPGainRank");
     m_pLevelGain = new Label(this, "Cos_Level_Gain", "#MOM_MF_CosLvlGain");
-    
+
     LoadControlSettings("resource/ui/MapFinishedDialog.res");
 
     m_pNextZoneButton->SetMouseInputEnabled(true);
@@ -155,10 +155,6 @@ void CHudMapFinishedDialog::OnThink()
     m_pPlayReplayButton->SetVisible(!m_bIsGhost);
     m_pRunUploadStatus->SetVisible(!m_bIsGhost);
     m_pRunSaveStatus->SetVisible(!m_bIsGhost);
-
-    CMOMSpectatorGUI *pPanel = static_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
-    if (pPanel && pPanel->IsVisible())
-        SetMouseInputEnabled(pPanel->IsMouseInputEnabled());
 }
 
 void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
@@ -333,12 +329,18 @@ void CHudMapFinishedDialog::Reset()
     FIND_LOCALIZATION(m_wLevelGain, "#MOM_MF_CosLvlGain");
 }
 
-void CHudMapFinishedDialog::SetVisible(bool b)
+void CHudMapFinishedDialog::SetVisible(bool bVisible)
 {
-    BaseClass::SetVisible(b);
+    BaseClass::SetVisible(bVisible);
     //We reset the page to 0 when this this panel is shown because Reset() is not always called.
-    if (b)
+    if (bVisible)
+    {
         SetCurrentPage(0);
+
+        const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+        if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
+            SetMouseInputEnabled(true);
+    }
 }
 
 void CHudMapFinishedDialog::SetCurrentPage(int pageNum)

@@ -205,6 +205,8 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         if (keynum == MOUSE_RIGHT)
         {
             m_pHudMapFinished->SetMouseInputEnabled(true);
+            if (m_pSpectatorGUI)
+                m_pSpectatorGUI->SetMouseInputEnabled(true);
             return 0;
         }
     }
@@ -227,7 +229,10 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
         // we are in spectator mode, open spectator menu
         if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+duck"))
         {
-            m_pSpectatorGUI->SetMouseInputEnabled(!m_pSpectatorGUI->IsMouseInputEnabled());
+            bool bMouseState = m_pSpectatorGUI->IsMouseInputEnabled();
+            m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
+            if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
+                m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
             // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
