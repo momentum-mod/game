@@ -930,7 +930,7 @@ void CMomentumGameMovement::FinishDuck(void)
     {
         Vector org = mv->GetAbsOrigin();
 
-        if (player->GetGroundEntity() != nullptr)
+        if (player->GetGroundEntity() != nullptr || m_pPlayer->m_CurrentSlideTrigger)
         {
             org -= VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
         }
