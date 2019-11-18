@@ -4,6 +4,7 @@
 #include "util/mom_util.h"
 #include "mom_player_shared.h"
 #include "mom_timer.h"
+#include "mom_system_gamemode.h"
 #include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
@@ -196,7 +197,7 @@ bool CMomentumGhostBaseEntity::CanUnduck()
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
+        newOrigin += -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
     }
 
     UTIL_TraceHull(GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, this,
