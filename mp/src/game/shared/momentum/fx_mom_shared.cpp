@@ -24,6 +24,12 @@
 static MAKE_TOGGLE_CONVAR(mom_fixed_spread, "1", FCVAR_REPLICATED,
                    "Use fixed spread patterns for shotgun weapons. 1 = ON (default), 0 = OFF\n");
 
+// TF2 spread pattern
+static const Vector g_vecFixedPattern[] = {
+    Vector(0, 0, 0),        Vector(1, 0, 0),       Vector(-1, 0, 0),        Vector(0, -1, 0),       Vector(0, 1, 0),
+    Vector(0.85, -0.85, 0), Vector(0.85, 0.85, 0), Vector(-0.85, -0.85, 0), Vector(-0.85, 0.85, 0), Vector(0, 0, 0),
+};
+
 #ifdef CLIENT_DLL
 
 class CGroupedSound
@@ -180,22 +186,15 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
         lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());
 #endif
 
-    // TF2 spread pattern
-    Vector vecFixedPattern[] = {
-        Vector(0, 0, 0),        Vector(1, 0, 0),       Vector(-1, 0, 0),        Vector(0, -1, 0),       Vector(0, 1, 0),
-        Vector(0.85, -0.85, 0), Vector(0.85, 0.85, 0), Vector(-0.85, -0.85, 0), Vector(-0.85, 0.85, 0), Vector(0, 0, 0),
-    };
-
     int iTotalBullets = pWeaponInfo->m_iBullets;
-    bool bNoSpread = false;
 
-    bNoSpread = iTotalBullets > 1 && mom_fixed_spread.GetBool();
+    bool bFixedSpread = iTotalBullets > 1 && mom_fixed_spread.GetBool();
 
     for (int iBullet = 0; iBullet < iTotalBullets; iBullet++)
     {
         float x, y;
 
-        if (bNoSpread)
+        if (bFixedSpread)
         {
             int iIndex = iBullet;
             while (iIndex > 9)
@@ -203,8 +202,8 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
                 iIndex -= 10;
             }
 
-            x = 0.5f * vecFixedPattern[iIndex].x;
-            y = 0.5f * vecFixedPattern[iIndex].y;
+            x = 0.5f * g_vecFixedPattern[iIndex].x;
+            y = 0.5f * g_vecFixedPattern[iIndex].y;
         }
         else
         {
