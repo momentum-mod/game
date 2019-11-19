@@ -3808,12 +3808,12 @@
 
 //-------------------------------------------------------------------------
 //
-// Cube map sample
-//
+// PARALLAX CUBEMAP OVERRIDES
+// (Credit Brian Charles)
 //-------------------------------------------------------------------------
 
-@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : 
-	"An entity that creates a sample point for the Cubic Environment Map."
+// Overrides the base cubemap to allow tying to a parallax_obb brush for parallax cubemaps.
+@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map. Sizes above 256x256 may require higher resolutions than your display has."
 [
 	cubemapsize(choices) : "Cubemap Size" : 0 =
 	[
@@ -3827,8 +3827,16 @@
 		7 : "64x64"
 		8 : "128x128"
 		9 : "256x256"
+		10 : "512x512"
+		11 : "1024x1024"
 	]
 	sides(sidelist) : "Brush faces": : "(Optional) Brushes faces to directly attach to the env_cubemap. Press Pick then click on faces in the 3D View to select them. Use CTRL while clicking to add or remove from the selection."
+	parallaxobb(target_destination) : "Cubemap Bounds" : : "(Optional) assigns this cubemap a bounding box for parallax correction (brush entity tied to parallax_obb)."
+]
+
+@SolidClass iconsprite("editor/parallax.vmt") = parallax_obb
+[
+	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
 ]
 
 @BaseClass = BModelParticleSpawner
@@ -6579,4 +6587,28 @@
 	force(float) : "Impulse Force" : "300" : ""
 
 	input ApplyImpulse(void)  : "Apply impulse to touching entities"
+]
+
+// -------------------------------------------------------------------------
+//
+// Add the speedmod entity as it apparently might be used by some, and it is only included in the HL2 FGD
+//
+//-------------------------------------------------------------------------
+
+@PointClass base(Targetname) size(-16 -16 -16, 16 16 16) = player_speedmod: "Speeds up or slows down player velocity over time (slow mo/fast forward)"
+[
+	spawnflags(Flags) =
+	[
+		1: "Suppress weapons" : 0
+		2: "Suppress HUD" : 0
+		4: "Suppress jump" : 0
+		8: "Suppress duck" : 0
+		16: "Suppress use" : 0
+		32: "Suppress sprint" : 0
+		64: "Suppress attack" : 0
+		128: "Suppress zoom" : 0
+	]
+
+	// Inputs
+	input ModifySpeed(float) : "Modifies player speed by X ammount."
 ]
