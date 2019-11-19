@@ -385,7 +385,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     {
         // Hide the mapfinished panel and reset our speed to normal
         m_Data.m_bMapFinished = false;
-        SetLaggedMovementValue(1.0f);
+        ResetMovementProperties();
 
         // Fix for the replay system not being able to listen to events
         if (g_ReplaySystem.GetPlaybackReplay() && !pEvent->GetBool("restart"))
@@ -1689,6 +1689,9 @@ void CMomentumPlayer::StopObserverMode()
 
 void CMomentumPlayer::StopSpectating()
 {
+    if (m_iObserverMode == OBS_MODE_NONE)
+        return;
+
     CMomentumGhostBaseEntity *pGhost = GetGhostEnt();
     if (pGhost)
         pGhost->RemoveSpectator();
