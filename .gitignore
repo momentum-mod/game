@@ -94,7 +94,8 @@ game_shader_dx9_srv.so
 game_shader_dx9_srv.so.dbg
 game_shader_dx9.dylib
 game_shader_dx9.dylib.dYSM/
-mp/game/bin/*.dll
+mp/game/bin/
+!mp/game/bin/base.fgd
 mp/game/momentum/version.txt
 mp/game/momentum/downloadlists/
 mp/game/momentum/map_cache.dat
