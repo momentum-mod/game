@@ -37,10 +37,14 @@ public:
     void SetRunUploaded(bool bState);
     void SetRunSubmitted(RunSubmitState_t state);
 
+    bool ClosePanel();
+
 protected:
     CPanelAnimationVar(vgui::HFont, m_hTextFont, "TextFont", "Default");
 
 private:
+    void FirePanelClosedEvent(bool bRestartingMap);
+
     wchar_t m_pwCurrentPageOverall[BUFSIZELOCL];
     wchar_t m_pwCurrentPageZoneNum[BUFSIZELOCL];
     wchar_t m_pwOverallTime[BUFSIZELOCL];
@@ -87,6 +91,7 @@ private:
     C_MomRunEntityData *m_pRunData;
 
     bool m_bIsGhost;
+    bool m_bCanClose;
 
     int m_iCurrentPage, m_iVelocityType;
 };
