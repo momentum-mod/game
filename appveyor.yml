@@ -12,6 +12,12 @@ branches:
     - master
     - develop
 
+# We only want to build if actual source files changed, and not game resource / misc files.
+only_commits:
+  files:
+    - mp/src/
+    - appveyor.yml
+
 # Don't build when tags are made
 skip_tags: true
 
