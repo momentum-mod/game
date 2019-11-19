@@ -56,6 +56,14 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
+void CMomentumReplayGhostEntity::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
+{
+    if (m_Data.m_bMapFinished)
+        return;
+
+    BaseClass::Teleport(newPosition, newAngles, newVelocity);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Sets up the entity's initial state
 //-----------------------------------------------------------------------------
@@ -630,7 +638,7 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
     case ZONE_TYPE_START:
         break;
     case ZONE_TYPE_STOP:
-
+        m_Data.m_bMapFinished = false;
         break;
     case ZONE_TYPE_CHECKPOINT:
         break;

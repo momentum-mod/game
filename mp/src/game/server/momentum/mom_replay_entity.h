@@ -55,6 +55,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void Spawn(void) OVERRIDE;
     void Precache(void) OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
+    void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) override;
 
     void CreateTrail() OVERRIDE;
 
