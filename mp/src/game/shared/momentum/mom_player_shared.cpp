@@ -276,15 +276,19 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
 #ifndef CLIENT_DLL
         if (pevAttacker->IsPlayer())
         {
-            ClearMultiDamage();
+            CMomentumPlayer *pPlayerAttacker = static_cast<CMomentumPlayer*>(pevAttacker);
+            if (!pPlayerAttacker->m_bHasPracticeMode)
+            {
+                ClearMultiDamage();
 
-            CTakeDamageInfo info(pevAttacker, pevAttacker, fCurrentDamage, iDamageType);
-            CalculateBulletDamageForce(&info, iBulletType, vecDir, tr.endpos);
-            tr.m_pEnt->DispatchTraceAttack(info, vecDir, &tr);
+                CTakeDamageInfo info(pevAttacker, pevAttacker, fCurrentDamage, iDamageType);
+                CalculateBulletDamageForce(&info, iBulletType, vecDir, tr.endpos);
+                tr.m_pEnt->DispatchTraceAttack(info, vecDir, &tr);
 
-            TraceAttackToTriggers(info, tr.startpos, tr.endpos, vecDir);
+                TraceAttackToTriggers(info, tr.startpos, tr.endpos, vecDir);
 
-            ApplyMultiDamage();
+                ApplyMultiDamage();
+            }
         }
 #endif
 
