@@ -48,7 +48,7 @@ class CMomRocket : public CBaseProjectile
 
     CHandle<CMomentumRocketLauncher> m_hOwner;
 
-    static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner = nullptr);
+    static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
 
   protected:
     void CreateSmokeTrail();

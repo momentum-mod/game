@@ -5,6 +5,7 @@
 #include "Sprite.h"
 #include "explode.h"
 #include "momentum/mom_triggers.h"
+#include "mom_player_shared.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -276,9 +277,9 @@ void CMomRocket::CreateSmokeTrail()
 //
 // Output : CMomRocket
 //-----------------------------------------------------------------------------
-CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner /*= nullptr*/)
+CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner)
 {
-    CMomRocket *pRocket = static_cast<CMomRocket *>(CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pentOwner));
+    CMomRocket *pRocket = static_cast<CMomRocket *>(CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pOwner));
     pRocket->SetModel("models/weapons/w_missile.mdl");
     DispatchSpawn(pRocket);
 
@@ -288,13 +289,22 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     const Vector velocity = vecForward * MOM_ROCKET_SPEED;
     pRocket->SetAbsVelocity(velocity);
     pRocket->SetupInitialTransmittedGrenadeVelocity(velocity);
-    pRocket->SetThrower(pentOwner);
+    pRocket->SetThrower(pOwner);
 
     QAngle angles;
     VectorAngles(velocity, angles);
     pRocket->SetAbsAngles(angles);
 
-    pRocket->SetDamage(90.0f);
+    if (pOwner->IsPlayer())
+    {
+        const auto pPlayer = static_cast<CMomentumPlayer*>(pOwner);
+        pRocket->SetDamage(pPlayer->m_bHasPracticeMode ? 0.0f : 90.0f);
+    }
+    else
+    {
+        pRocket->SetDamage(0.0f);
+    }
+
     // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in mom_gamerules)
     pRocket->SetRadius(146.0f);
 
