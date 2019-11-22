@@ -39,9 +39,9 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_grenade);
 #ifndef CLIENT_DLL
 
 void CMomentumGrenade::EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel,
-                                   AngularImpulse angImpulse, CBasePlayer *pPlayer)
+                                   AngularImpulse angImpulse, CBaseEntity *pOwner)
 {
-    CMomGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pPlayer, GetWorldModel());
+    CMomGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pOwner, GetWorldModel());
 }
 
 #endif
@@ -292,7 +292,7 @@ void CMomentumGrenade::StartGrenadeThrow() { m_fThrowTime = gpGlobals->curtime +
 
 void CMomentumGrenade::ThrowGrenade()
 {
-    CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
     {
         Assert(false);
@@ -335,8 +335,8 @@ void CMomentumGrenade::ThrowGrenade()
     int impulseInt = random->RandomInt(-1200, 1200);
 
 #ifdef GAME_DLL
-    QAngle vecThrowOnline(vecThrow.x, vecThrow.y,
-                          vecThrow.z); // Online uses angles, but we're packing 3 floats so whatever
+    // Online uses angles, but we're packing 3 floats so whatever
+    QAngle vecThrowOnline(vecThrow.x, vecThrow.y, vecThrow.z);
     DecalPacket packet = DecalPacket::Bullet(vecSrc, vecThrowOnline, WEAPON_GRENADE, impulseInt, 0, 0.0f);
     g_pMomentumGhostClient->SendDecalPacket(&packet);
 #endif
@@ -346,15 +346,13 @@ void CMomentumGrenade::ThrowGrenade()
     m_bRedraw = true;
     m_fThrowTime = 0.0f;
 
-    // CMomentumPlayer *pPlayer = ToCMOMPlayer( pPlayer );
-
     // if( pPlayer )
     //	pPlayer->Radio( "Radio.FireInTheHole",   "#Cstrike_TitlesTXT_Fire_in_the_hole" );
 }
 
 void CMomentumGrenade::DropGrenade()
 {
-    CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
     {
         Assert(false);

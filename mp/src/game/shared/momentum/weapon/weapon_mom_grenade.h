@@ -44,7 +44,7 @@ class CMomentumGrenade : public CWeaponBase
 
     // Each derived grenade class implements this.
     virtual void EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel,
-                             AngularImpulse angImpulse, CBasePlayer *pPlayer);
+                             AngularImpulse angImpulse, CBaseEntity *pOwner);
 #endif
 
   protected:

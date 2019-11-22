@@ -1,8 +1,10 @@
 #include "cbase.h"
 #include "mom_grenade_projectile.h"
+
 #ifndef CLIENT_DLL
 #include "soundent.h"
 #include "te_effect_dispatch.h"
+#include "momentum/mom_player.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -125,8 +127,16 @@ CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, con
     pGrenade->SetFriction(GetGrenadeFriction());
     pGrenade->SetElasticity(GetGrenadeElasticity());
 
-    pGrenade->m_flDamage = 100;
-    pGrenade->m_DmgRadius = pGrenade->m_flDamage * 3.5f;
+    if (pOwner->IsPlayer())
+    {
+        const auto pMomPlayer = static_cast<CMomentumPlayer*>(pOwner);
+        pGrenade->SetDamage(pMomPlayer->m_bHasPracticeMode ? 0.0f : 100.0f);
+    }
+    else
+    {
+        pGrenade->SetDamage(0.0f);
+    }
+    pGrenade->SetDamageRadius(pGrenade->GetDamage() * 3.5f);
     pGrenade->ApplyLocalAngularVelocityImpulse(angVelocity);
 
     // make NPCs afaid of it while in the air
