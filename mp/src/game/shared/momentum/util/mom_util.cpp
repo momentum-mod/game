@@ -13,6 +13,8 @@
 #include "effect_dispatch_data.h"
 #ifdef CLIENT_DLL
 #include "materialsystem/imaterialvar.h"
+#else
+#include "momentum/mom_player.h"
 #endif
 
 #include "steam/steam_api.h"
@@ -554,36 +556,15 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
 #ifndef CLIENT_DLL
     else if (pAttacker->IsPlayer())
     {
+        CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(pAttacker);
+        if (pPlayer->m_bHasPracticeMode)
+            return;
+
         CBaseEntity *pHitEntity = trOutput->m_pEnt;
 
         ClearMultiDamage();
 
-        float flDamage = 42.0f;
-
-        if ( bStab )
-        {
-            flDamage = 65.0f;
-
-            if (pHitEntity && pHitEntity->IsPlayer())
-            {
-                Vector vTargetForward;
-
-                AngleVectors(pHitEntity->GetAbsAngles(), &vTargetForward);
-
-                Vector2D vecLOS = (pHitEntity->GetAbsOrigin() - pAttacker->GetAbsOrigin()).AsVector2D();
-                Vector2DNormalize( vecLOS );
-
-                float flDot = vecLOS.Dot( vTargetForward.AsVector2D() );
-
-                //Triple the damage if we are stabbing them in the back.
-                if ( flDot > 0.80f )
-                    flDamage *= 3.0f;
-            }
-        }
-        else
-        {
-            flDamage = 20.0f;
-        }
+        const float flDamage = bStab ? 65.0f : 20.0f;
 
         CTakeDamageInfo info( pAttacker, pAttacker, flDamage, DMG_BULLET | DMG_NEVERGIB );
 
