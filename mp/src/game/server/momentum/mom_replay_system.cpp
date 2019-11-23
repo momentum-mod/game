@@ -89,6 +89,9 @@ void CMomentumReplaySystem::BeginRecording()
 
 void CMomentumReplaySystem::CancelRecording()
 {
+    if (!m_bRecording || !m_pRecordingReplay)
+        return;
+
     m_bRecording = false;
 
     if (m_pRecordingReplay)
@@ -112,6 +115,12 @@ void CMomentumReplaySystem::CancelRecording()
 
 void CMomentumReplaySystem::StopRecording()
 {
+    if (!m_bRecording || !m_pRecordingReplay)
+        return;
+
+    if (m_bShouldStopRec)
+        return;
+
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
@@ -124,12 +133,13 @@ void CMomentumReplaySystem::StopRecording()
 
 void CMomentumReplaySystem::FinishRecording()
 {
+    if (!m_bShouldStopRec || !m_bRecording || !m_pRecordingReplay)
+        return;
+
     m_bShouldStopRec = false;
     m_bRecording = false;
 
-    DevLog("Before trimming: %i\n", m_pRecordingReplay->GetFrameCount());
     TrimReplay();
-    DevLog("After trimming: %i\n", m_pRecordingReplay->GetFrameCount());
 
     SetReplayHeaderAndStats();
 
@@ -206,16 +216,20 @@ void CMomentumReplaySystem::TrimReplay()
 
     if (m_iStartRecordingTick > 0 && m_iStartTimerTick > 0)
     {
+        // MOM_TODO: If the map allows for prespeed in the trigger, we don't want to trim it!
         const auto newStart = m_iStartTimerTick - static_cast<int>(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
 
         if (newStart > m_iStartRecordingTick)
         {
-            // MOM_TODO: If the map allows for prespeed in the trigger, we don't want to trim it!
+            DevLog("Before trimming: %i\n", m_pRecordingReplay->GetFrameCount());
+
             const auto extraFrames = newStart - m_iStartRecordingTick;
 
             m_pRecordingReplay->RemoveFrames(extraFrames);
 
             m_iStartRecordingTick += extraFrames; // bump the start
+
+            DevLog("After trimming: %i (removed %i frames)\n", m_pRecordingReplay->GetFrameCount(), extraFrames);
         }
     }
 }
@@ -267,13 +281,12 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
 void CMomentumReplaySystem::SetReplayHeaderAndStats()
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    ISteamUser *pUser = SteamUser();
 
     // Header
     m_pRecordingReplay->SetMapName(gpGlobals->mapname.ToCStr());
     m_pRecordingReplay->SetMapHash(m_szMapHash);
     m_pRecordingReplay->SetPlayerName(pPlayer->GetPlayerName());
-    m_pRecordingReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
+    m_pRecordingReplay->SetPlayerSteamID(SteamUser() ? SteamUser()->GetSteamID().ConvertToUint64() : 0);
     m_pRecordingReplay->SetTickInterval(gpGlobals->interval_per_tick);
     m_pRecordingReplay->SetRunFlags(pPlayer->m_Data.m_iRunFlags);
     m_pRecordingReplay->SetRunDate(time(nullptr));
@@ -332,7 +345,7 @@ void CMomentumReplaySystem::UnloadPlayback(bool shutdown)
 
 void CMomentumReplaySystem::LoadReplayGhost()
 {
-    if (m_pPlaybackReplay->GetRunEntity())
+    if (m_pPlaybackReplay && m_pPlaybackReplay->GetRunEntity())
         return;
 
     auto pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
