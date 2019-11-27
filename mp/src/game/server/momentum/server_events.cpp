@@ -42,6 +42,8 @@ bool CMomServerEvents::Init()
         UnloadConVarOrCommand("net_fakejitter");
         UnloadConVarOrCommand("singlestep");
         UnloadConVarOrCommand("host_sleep");
+        UnloadConVarOrCommand("map_edit");
+        UnloadConVarOrCommand("map_commentary");
 
         // Unregister FCVAR_MAPPING convars
         auto pCvar = g_pCVar->GetCommands();

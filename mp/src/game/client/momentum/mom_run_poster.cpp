@@ -23,7 +23,7 @@ void CRunPoster::PostInit()
     ListenForGameEvent("replay_save");
     ListenForGameEvent("timer_event");
     ListenForGameEvent("zone_enter");
-    m_bIsMappingMode = CommandLine()->FindParm("-mapping") != 0;
+    m_bIsMappingMode = CommandLine()->FindParm("-mapping") != 0 || engine->IsInEditMode();
 }
 
 void CRunPoster::LevelInitPostEntity()
