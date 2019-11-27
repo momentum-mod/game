@@ -58,10 +58,8 @@ static int in_impulse = 0;
 static int in_cancel = 0;
 
 ConVar cl_anglespeedkey( "cl_anglespeedkey", "0.67", 0 );
-ConVar cl_yawspeed( "cl_yawspeed", "210", FCVAR_ARCHIVE, "Client yaw speed.", true, -100000, true, 100000 );
-ConVar cl_pitchspeed( "cl_pitchspeed", "225", FCVAR_NONE, "Client pitch speed.", true, -100000, true, 100000 );
-ConVar cl_pitchdown( "cl_pitchdown", "89", FCVAR_CHEAT );
-ConVar cl_pitchup( "cl_pitchup", "89", FCVAR_CHEAT );
+ConVar cl_yawspeed( "cl_yawspeed", "210", FCVAR_ARCHIVE, "Client yaw speed.", true, -100000.0f, true, 100000.0f );
+ConVar cl_pitchspeed( "cl_pitchspeed", "225", FCVAR_NONE, "Client pitch speed.", true, -100000.0f, true, 100000.0f );
 #if defined( SDK_DLL )
 ConVar cl_sidespeed( "cl_sidespeed", "400", FCVAR_CHEAT );
 ConVar cl_upspeed( "cl_upspeed", "320", FCVAR_ARCHIVE|FCVAR_CHEAT );
@@ -713,22 +711,9 @@ void CInput::AdjustPitch( float speed, QAngle& viewangles )
 	}	
 }
 
-/*
-==============================
-ClampAngles
-
-==============================
-*/
 void CInput::ClampAngles( QAngle& viewangles )
 {
-	if ( viewangles[PITCH] > cl_pitchdown.GetFloat() )
-	{
-		viewangles[PITCH] = cl_pitchdown.GetFloat();
-	}
-	if ( viewangles[PITCH] < -cl_pitchup.GetFloat() )
-	{
-		viewangles[PITCH] = -cl_pitchup.GetFloat();
-	}
+    viewangles[PITCH] = clamp(viewangles[PITCH], MIN_PITCHUP, MAX_PITCHDOWN);
 
 #ifndef PORTAL	// Don't constrain Roll in Portal because the player can be upside down! -Jeep
 	if ( viewangles[ROLL] > 50 )
