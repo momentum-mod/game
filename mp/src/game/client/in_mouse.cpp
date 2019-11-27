@@ -36,18 +36,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-// up / down
-#define	PITCH	0
-// left / right
-#define	YAW		1
-
 #ifdef PORTAL
 	bool g_bUpsideDown = false; // Set when the player is upside down in Portal to invert the mouse.
 #endif //#ifdef PORTAL
 
 extern ConVar lookstrafe;
-extern ConVar cl_pitchdown;
-extern ConVar cl_pitchup;
 
 extern ConVar cam_idealyaw;
 extern ConVar cam_idealpitch;
@@ -506,14 +499,7 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 			}
 
 			// Check pitch bounds
-			if (viewangles[PITCH] > cl_pitchdown.GetFloat())
-			{
-				viewangles[PITCH] = cl_pitchdown.GetFloat();
-			}
-			if (viewangles[PITCH] < -cl_pitchup.GetFloat())
-			{
-				viewangles[PITCH] = -cl_pitchup.GetFloat();
-			}
+            viewangles[PITCH] = clamp(viewangles[PITCH], MIN_PITCHUP, MAX_PITCHDOWN);
 		}
 	}
 	else

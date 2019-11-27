@@ -11,9 +11,6 @@
 
 #include "tier0/memdbgon.h"
 
-extern ConVar cl_pitchdown;
-extern ConVar cl_pitchup;
-
 
 // ConCommands useful for creating view animations
 CViewAngleAnimation *g_pTestAnimation = NULL;
@@ -379,7 +376,7 @@ void CViewAngleAnimation::SetAngles( QAngle vecCalculatedAngles )
 		vecViewAngle[ROLL] = vecCalculatedAngles[ROLL];
 
 	// clamp pitch
-	vecViewAngle[PITCH] = clamp( vecViewAngle[PITCH], -cl_pitchup.GetFloat(), cl_pitchdown.GetFloat() );
+	vecViewAngle[PITCH] = clamp( vecViewAngle[PITCH], MIN_PITCHUP, MAX_PITCHDOWN );
 
 	engine->SetViewAngles( vecViewAngle );
 }
