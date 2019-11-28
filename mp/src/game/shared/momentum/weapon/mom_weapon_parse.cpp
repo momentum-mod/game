@@ -61,6 +61,31 @@ void CWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
     // Read the silencer model.
     Q_strncpy(m_szSilencerModel, pKeyValuesData->GetString("SilencerModel"), sizeof(m_szSilencerModel));
 
+    // Explosion effects
+    const char *pszSound = pKeyValuesData->GetString("ExplosionSound", nullptr);
+    if (pszSound)
+    {
+        Q_strncpy(m_szExplosionSound, pszSound, sizeof(m_szExplosionSound));
+    }
+
+    const char *pszEffect = pKeyValuesData->GetString("ExplosionEffect", nullptr);
+    if (pszEffect)
+    {
+        Q_strncpy(m_szExplosionEffect, pszEffect, sizeof(m_szExplosionEffect));
+    }
+
+    pszEffect = pKeyValuesData->GetString("ExplosionPlayerEffect", nullptr);
+    if (pszEffect)
+    {
+        Q_strncpy(m_szExplosionPlayerEffect, pszEffect, sizeof(m_szExplosionPlayerEffect));
+    }
+
+    pszEffect = pKeyValuesData->GetString("ExplosionWaterEffect", nullptr);
+    if (pszEffect)
+    {
+        Q_strncpy(m_szExplosionWaterEffect, pszEffect, sizeof(m_szExplosionWaterEffect));
+    }
+
 #ifndef CLIENT_DLL
     // Enforce consistency for the weapon here, since that way we don't need to save off the model bounds
     // for all time.

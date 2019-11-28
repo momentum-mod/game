@@ -46,4 +46,10 @@ class CWeaponInfo : public FileWeaponInfo_t
     float m_flRange;
     float m_flRangeModifier;
     int m_iBullets;
+
+    // Explosion effect
+    char m_szExplosionSound[128];
+    char m_szExplosionEffect[128];
+    char m_szExplosionPlayerEffect[128];
+    char m_szExplosionWaterEffect[128];
 };
