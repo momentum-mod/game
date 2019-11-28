@@ -163,6 +163,13 @@ void CHudSpeedMeter::OnThink()
         //Note: Velocity is also set to the player when watching first person
         Vector velocity = pPlayer->GetAbsVelocity();
 
+        if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
+        {
+            const float fReplayTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
+            if (fReplayTimeScale < 1.0f)
+                velocity /= fReplayTimeScale;
+        }
+
         //The last jump velocity & z-coordinate
         float lastJumpVel = m_pRunEntData->m_flLastJumpVel;
 
