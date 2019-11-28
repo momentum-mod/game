@@ -251,7 +251,9 @@ bool C_MOMReplayUI::WasClosed() const
 void C_MOMReplayUI::ShowPanel(bool state)
 {
     SetVisible(state);
-    SetMouseInputEnabled(state);
+    const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+    if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
+        SetMouseInputEnabled(true);
     if (state)
         MoveToFront();
     m_bWasClosed = false;
