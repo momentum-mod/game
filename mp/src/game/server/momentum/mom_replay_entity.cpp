@@ -210,6 +210,7 @@ void CMomentumReplayGhostEntity::Think()
             CReplayFrame *currentStep = GetCurrentStep();
             SetAbsOrigin(currentStep->PlayerOrigin());
             SetGhostAngles(currentStep->EyeAngles());
+            DetermineGhostVisibility();
             SetAbsVelocity(vec3_origin);
         }
     }
@@ -360,6 +361,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         SetAbsOrigin(currentStep->PlayerOrigin());
 
         SetGhostAngles(currentStep->EyeAngles());
+        DetermineGhostVisibility();
 
         bool bTeleportedThisFrame = (mom_replay_selection.GetInt() == 1) // Going backwards?
             ? prevStep->Teleported() : currentStep->Teleported();
@@ -416,18 +418,25 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
 void CMomentumReplayGhostEntity::SetGhostAngles(QAngle angles)
 {
+    if (m_pCurrentSpecPlayer->GetObserverMode() != OBS_MODE_IN_EYE)
+    {
+        // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+        angles.x /= GHOST_PITCH_REDUCTION_VALUE;
+    }
+
+    SetAbsAngles(angles);
+}
+
+void CMomentumReplayGhostEntity::DetermineGhostVisibility()
+{
     if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
     {
         HideGhost();
     }
     else
     {
-        // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-        angles.x /= GHOST_PITCH_REDUCTION_VALUE;
         UnHideGhost();
     }
-
-    SetAbsAngles(angles);
 }
 
 void CMomentumReplayGhostEntity::HandleGhost()
@@ -655,7 +664,7 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
 
 void CMomentumReplayGhostEntity::CreateTrail()
 {
-    if (!mom_replay_trail_enable.GetBool())
+    if (!m_ghostAppearance.m_bGhostTrailEnable || !mom_replay_trail_enable.GetBool())
         return;
     BaseClass::CreateTrail();
 }

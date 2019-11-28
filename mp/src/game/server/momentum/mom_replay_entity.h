@@ -26,6 +26,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void EndRun();
 
     void SetGhostAngles(QAngle angles);
+    void DetermineGhostVisibility();
 
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
