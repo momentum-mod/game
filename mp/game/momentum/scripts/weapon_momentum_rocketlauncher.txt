@@ -28,11 +28,19 @@ WeaponData
 
     "weight"            "25"
     "item_flags"        "0"
+	
+    // Particle effects and sound for explosions
+    "ExplosionEffect"          "ExplosionCore_wall"
+    "ExplosionPlayerEffect"    "ExplosionCore_MidAir"
+    "ExplosionWaterEffect"     "ExplosionCore_MidAir_underwater"
+
+    "ExplosionSound"    "BaseExplosionEffect.Sound"
 
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
     {
         "single_shot"       "Weapon_RPG.Single"
+        "special1"          "Weapon_RPG.SingleTF2"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
