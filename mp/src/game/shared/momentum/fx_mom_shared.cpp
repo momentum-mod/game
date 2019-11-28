@@ -227,3 +227,199 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 
     EndGroupingSounds();
 }
+
+// TF2 explosions
+#ifndef CLIENT_DLL
+class CTETFExplosion : public CBaseTempEntity
+{
+  public:
+    DECLARE_CLASS(CTETFExplosion, CBaseTempEntity);
+    DECLARE_SERVERCLASS();
+
+    CTETFExplosion(const char *name);
+
+  public:
+    Vector m_vecOrigin;
+    Vector m_vecNormal;
+    CWeaponID m_iWeaponID;
+    int m_nEntIndex;
+};
+
+static CTETFExplosion g_TETFExplosion("TFExplosion");
+
+CTETFExplosion::CTETFExplosion(const char *name) : CBaseTempEntity(name)
+{
+    m_vecOrigin.Init();
+    m_vecNormal.Init();
+    m_iWeaponID = WEAPON_NONE;
+    m_nEntIndex = 0;
+}
+
+IMPLEMENT_SERVERCLASS_ST(CTETFExplosion, DT_TETFExplosion)
+    SendPropVector(SENDINFO_NOCHECK(m_vecOrigin)),
+    SendPropVector(SENDINFO_NOCHECK(m_vecNormal), 6, 0, -1.0f, 1.0f),
+    SendPropInt(SENDINFO_NOCHECK(m_iWeaponID), Q_log2(WEAPON_MAX) + 1, SPROP_UNSIGNED),
+    SendPropInt(SENDINFO_NAME(m_nEntIndex, entindex), MAX_EDICT_BITS),
+END_SEND_TABLE()
+
+void TE_TFExplosion(IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal,
+                    CWeaponID iWeaponID, int nEntIndex)
+{
+    VectorCopy(vecOrigin, g_TETFExplosion.m_vecOrigin);
+    VectorCopy(vecNormal, g_TETFExplosion.m_vecNormal);
+    g_TETFExplosion.m_iWeaponID = iWeaponID;
+    g_TETFExplosion.m_nEntIndex = nEntIndex;
+
+    // Send it over the wire
+    g_TETFExplosion.Create(filter, flDelay);
+}
+
+// TF2 Particle effects
+class CTETFParticleEffect : public CBaseTempEntity
+{
+  public:
+    DECLARE_CLASS(CTETFParticleEffect, CBaseTempEntity);
+    DECLARE_SERVERCLASS();
+
+    CTETFParticleEffect(const char *name);
+
+    void Init();
+
+  public:
+    Vector m_vecOrigin;
+    Vector m_vecStart;
+    QAngle m_vecAngles;
+
+    int m_iParticleSystemIndex;
+
+    int m_nEntIndex;
+
+    int m_iAttachType;
+    int m_iAttachmentPointIndex;
+
+    bool m_bResetParticles;
+};
+
+static CTETFParticleEffect g_TETFParticleEffect("TFParticleEffect");
+
+CTETFParticleEffect::CTETFParticleEffect(const char *name) : CBaseTempEntity(name) { Init(); }
+
+void CTETFParticleEffect::Init()
+{
+    m_vecOrigin.Init();
+    m_vecStart.Init();
+    m_vecAngles.Init();
+
+    m_iParticleSystemIndex = 0;
+
+    m_nEntIndex = -1;
+
+    m_iAttachType = PATTACH_ABSORIGIN;
+    m_iAttachmentPointIndex = 0;
+
+    m_bResetParticles = false;
+}
+
+IMPLEMENT_SERVERCLASS_ST(CTETFParticleEffect, DT_TETFParticleEffect)
+    SendPropVector(SENDINFO_NOCHECK(m_vecOrigin)),
+    SendPropVector(SENDINFO_NOCHECK(m_vecStart)),
+    SendPropQAngles(SENDINFO_NOCHECK(m_vecAngles), 7),
+    SendPropInt(SENDINFO_NOCHECK(m_iParticleSystemIndex), 16, SPROP_UNSIGNED), // probably way too high
+    SendPropInt(SENDINFO_NAME(m_nEntIndex, entindex), MAX_EDICT_BITS),
+    SendPropInt(SENDINFO_NOCHECK(m_iAttachType), 5, SPROP_UNSIGNED),
+    SendPropInt(SENDINFO_NOCHECK(m_iAttachmentPointIndex), Q_log2(MAX_PATTACH_TYPES) + 1, SPROP_UNSIGNED),
+    SendPropBool(SENDINFO_NOCHECK(m_bResetParticles)),
+END_SEND_TABLE()
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName,
+                         ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName,
+                         bool bResetAllParticlesOnEntity)
+{
+    int iAttachment = -1;
+    if (pEntity && pEntity->GetBaseAnimating())
+    {
+        // Find the attachment point index
+        iAttachment = pEntity->GetBaseAnimating()->LookupAttachment(pszAttachmentName);
+        if (iAttachment == -1)
+        {
+            Warning("Model '%s' doesn't have attachment '%s' to attach particle system '%s' to.\n",
+                    STRING(pEntity->GetBaseAnimating()->GetModelName()), pszAttachmentName, pszParticleName);
+            return;
+        }
+    }
+    TE_TFParticleEffect(filter, flDelay, pszParticleName, iAttachType, pEntity, iAttachment,
+                        bResetAllParticlesOnEntity);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Yet another overload, lets us supply vecStart
+//-----------------------------------------------------------------------------
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName, Vector vecOrigin,
+                         Vector vecStart, QAngle vecAngles, CBaseEntity *pEntity)
+{
+    int iIndex = GetParticleSystemIndex(pszParticleName);
+    TE_TFParticleEffect(filter, flDelay, iIndex, vecOrigin, vecStart, vecAngles, pEntity);
+}
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName,
+                         ParticleAttachment_t iAttachType, CBaseEntity *pEntity, int iAttachmentPoint,
+                         bool bResetAllParticlesOnEntity)
+{
+    g_TETFParticleEffect.Init();
+
+    g_TETFParticleEffect.m_iParticleSystemIndex = GetParticleSystemIndex(pszParticleName);
+    if (pEntity)
+    {
+        g_TETFParticleEffect.m_nEntIndex = pEntity->entindex();
+    }
+
+    g_TETFParticleEffect.m_iAttachType = iAttachType;
+    g_TETFParticleEffect.m_iAttachmentPointIndex = iAttachmentPoint;
+
+    if (bResetAllParticlesOnEntity)
+    {
+        g_TETFParticleEffect.m_bResetParticles = true;
+    }
+
+    g_TETFParticleEffect.Create(filter, flDelay);
+}
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName, Vector vecOrigin,
+                         QAngle vecAngles, CBaseEntity *pEntity /*= NULL*/, int iAttachType /*= PATTACH_CUSTOMORIGIN*/)
+{
+    g_TETFParticleEffect.Init();
+
+    g_TETFParticleEffect.m_iParticleSystemIndex = GetParticleSystemIndex(pszParticleName);
+
+    VectorCopy(vecOrigin, g_TETFParticleEffect.m_vecOrigin);
+    VectorCopy(vecAngles, g_TETFParticleEffect.m_vecAngles);
+
+    if (pEntity)
+    {
+        g_TETFParticleEffect.m_nEntIndex = pEntity->entindex();
+        g_TETFParticleEffect.m_iAttachType = iAttachType;
+    }
+
+    g_TETFParticleEffect.Create(filter, flDelay);
+}
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, int iEffectIndex, Vector vecOrigin, Vector vecStart,
+                         QAngle vecAngles, CBaseEntity *pEntity)
+{
+    g_TETFParticleEffect.Init();
+
+    g_TETFParticleEffect.m_iParticleSystemIndex = iEffectIndex;
+
+    VectorCopy(vecOrigin, g_TETFParticleEffect.m_vecOrigin);
+    VectorCopy(vecStart, g_TETFParticleEffect.m_vecStart);
+    VectorCopy(vecAngles, g_TETFParticleEffect.m_vecAngles);
+
+    if (pEntity)
+    {
+        g_TETFParticleEffect.m_nEntIndex = pEntity->entindex();
+        g_TETFParticleEffect.m_iAttachType = PATTACH_CUSTOMORIGIN;
+    }
+
+    g_TETFParticleEffect.Create(filter, flDelay);
+}
+#endif
