@@ -38,16 +38,6 @@ C_BaseCombatCharacter::~C_BaseCombatCharacter()
 {
 }
 
-/*
-//-----------------------------------------------------------------------------
-// Purpose: Returns the amount of ammunition of the specified type the character's carrying
-//-----------------------------------------------------------------------------
-int	C_BaseCombatCharacter::GetAmmoCount( char *szName ) const
-{
-	return GetAmmoCount( g_pGameRules->GetAmmoDef()->Index(szName) );
-}
-*/
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

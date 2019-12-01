@@ -174,14 +174,6 @@ bool CGameRules::CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex )
 	return false;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Return true if the specified player can carry any more of the ammo type
-//-----------------------------------------------------------------------------
-bool CGameRules::CanHaveAmmo( CBaseCombatCharacter *pPlayer, const char *szName )
-{
-	return CanHaveAmmo( pPlayer, GetAmmoDef()->Index(szName) );
-}
-
 //=========================================================
 //=========================================================
 CBaseEntity *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
