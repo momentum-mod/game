@@ -146,8 +146,8 @@ bool CWeaponBaseGun::BaseGunFire(float flSpread, float flCycleTime, bool bPrimar
     if (g_pAmmoDef->NumBullets(m_iPrimaryAmmoType) != 0)
     {
         FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
-                       pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(),
-                       bPrimaryMode ? Primary_Mode : Secondary_Mode, CBaseEntity::GetPredictionRandomSeed() & 255,
+                       pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), m_iPrimaryAmmoType,
+                       !bPrimaryMode, CBaseEntity::GetPredictionRandomSeed() & 255,
                        flSpread);
     }
 

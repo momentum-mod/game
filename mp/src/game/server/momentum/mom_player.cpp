@@ -2047,7 +2047,7 @@ void CMomentumPlayer::DoPaint()
         return;
 
     // Fire a paintgun bullet (doesn't actually equip/use the paintgun weapon)
-    FX_FireBullets(entindex(), EyePosition(), EyeAngles(), WEAPON_PAINTGUN, Primary_Mode,
+    FX_FireBullets(entindex(), EyePosition(), EyeAngles(), AMMO_TYPE_PAINT, false,
                    GetPredictionRandomSeed() & 255, 0.0f);
 
     // Delay next time we paint

@@ -99,31 +99,30 @@ void FX_WeaponSound(int iEntIndex, WeaponSound_t sound_type, const Vector &vOrig
 // This runs on both the client and the server.
 // On the server, it only does the damage calculations.
 // On the client, it does all the effects.
-void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles, int iWeaponID, int iMode, int iSeed,
-                    float flSpread)
+void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles, int iAmmoType, bool bSecondaryMode, int iSeed, float flSpread)
 {
     bool bDoEffects = true;
 
     CBaseEntity *pAttacker = CBaseEntity::Instance(iEntIndex);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pAttacker);
 
-    CWeaponInfo *pWeaponInfo = GetWeaponInfo((CWeaponID)iWeaponID);
+    CWeaponInfo *pWeaponInfo = GetWeaponInfo(g_pAmmoDef->WeaponID(iAmmoType));
 
     if (!pWeaponInfo)
     {
-        DevMsg("FX_FireBullets: Cannot find weapon info for ID %i\n", iWeaponID);
+        DevMsg("FX_FireBullets: Cannot find weapon info for ID %i\n", g_pAmmoDef->WeaponID(iAmmoType));
         return;
     }
 
 #ifndef CLIENT_DLL
     // if this is server code, send the effect over to client as temp entity
     // Dispatch one message for all the bullet impacts and sounds.
-    TE_FireBullets(iEntIndex, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+    TE_FireBullets(iEntIndex, vOrigin, vAngles, iAmmoType, bSecondaryMode, iSeed, flSpread);
 
     if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
     {
         DecalPacket decalPacket;
-        if (iWeaponID == WEAPON_PAINTGUN)
+        if (iAmmoType == AMMO_TYPE_PAINT)
         {
             Color decalColor;
             if (!MomUtil::GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
@@ -144,19 +143,13 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 
     iSeed++;
 
-    int iDamage = pWeaponInfo->m_iDamage;
-    float flRange = pWeaponInfo->m_flRange;
-    int iPenetration = pWeaponInfo->m_iPenetration;
-    float flRangeModifier = pWeaponInfo->m_flRangeModifier;
-    int iAmmoType = pWeaponInfo->iAmmoType;
-
 #ifdef GAME_DLL
     // Weapon sounds are server-only for PAS ability
 
     static ConVarRef paintgun("mom_paintgun_shoot_sound");
 
     // Do an extra paintgun check here
-    const bool bPreventShootSound = iWeaponID == WEAPON_PAINTGUN && !paintgun.GetBool();
+    const bool bPreventShootSound = iAmmoType == AMMO_TYPE_PAINT && !paintgun.GetBool();
 
     if (!bPreventShootSound)
         FX_WeaponSound(iEntIndex, SINGLE, vOrigin, pWeaponInfo);
@@ -184,11 +177,10 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
     StartGroupingSounds();
 #endif
 
-    int iTotalBullets = pWeaponInfo->m_iBullets;
+    const auto iNumBullets = g_pAmmoDef->NumBullets(iAmmoType);
+    const bool bFixedSpread = iNumBullets > 1 && mom_fixed_spread.GetBool();
 
-    bool bFixedSpread = iTotalBullets > 1 && mom_fixed_spread.GetBool();
-
-    for (int iBullet = 0; iBullet < iTotalBullets; iBullet++)
+    for (int iBullet = 0; iBullet < iNumBullets; iBullet++)
     {
         float x, y;
 

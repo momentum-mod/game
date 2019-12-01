@@ -21,8 +21,8 @@ public:
     CNetworkVar(int, m_iEntity);
     CNetworkVector(m_vecOrigin);
     CNetworkQAngle(m_vecAngles);
-    CNetworkVar(int, m_iWeaponID);
-    CNetworkVar(int, m_iMode);
+    CNetworkVar(int, m_iAmmoType);
+    CNetworkVar(bool, m_bSecondaryMode);
     CNetworkVar(int, m_iSeed);
     CNetworkVar(float, m_flSpread);
 
@@ -48,8 +48,8 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE(CTEFireBullets, DT_TEFireBullets)
 SendPropVector(SENDINFO(m_vecOrigin), -1, SPROP_COORD),
 SendPropAngle(SENDINFO_VECTORELEM(m_vecAngles, 0), 13, 0),
 SendPropAngle(SENDINFO_VECTORELEM(m_vecAngles, 1), 13, 0),
-SendPropInt(SENDINFO(m_iWeaponID), 5, SPROP_UNSIGNED), // max 31 weapons
-SendPropInt(SENDINFO(m_iMode), 1, SPROP_UNSIGNED),
+SendPropInt(SENDINFO(m_iAmmoType), 4, SPROP_UNSIGNED), // max 16 weapons
+SendPropBool(SENDINFO(m_bSecondaryMode)),
 SendPropInt(SENDINFO(m_iSeed), NUM_BULLET_SEED_BITS, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_iEntity), MAX_EDICT_BITS, SPROP_UNSIGNED), // max 2048 ents, see MAX_EDICTS
 SendPropFloat(SENDINFO(m_flSpread), 10, 0, 0, 1),
@@ -64,8 +64,8 @@ void TE_FireBullets(
     int	iEntIndex,
     const Vector &vOrigin,
     const QAngle &vAngles,
-    int	iWeaponID,
-    int	iMode,
+    int	iAmmoType,
+    bool	bSecondaryMode,
     int iSeed,
     float flSpread)
 {
@@ -77,8 +77,8 @@ void TE_FireBullets(
     g_TEFireBullets.m_vecAngles = vAngles;
     g_TEFireBullets.m_iSeed = iSeed;
     g_TEFireBullets.m_flSpread = flSpread;
-    g_TEFireBullets.m_iMode = iMode;
-    g_TEFireBullets.m_iWeaponID = iWeaponID;
+    g_TEFireBullets.m_bSecondaryMode = bSecondaryMode;
+    g_TEFireBullets.m_iAmmoType = iAmmoType;
 
     Assert(iSeed < (1 << NUM_BULLET_SEED_BITS));
 
