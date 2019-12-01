@@ -80,8 +80,6 @@ void EndGroupingSounds()
 
 #else
 
-void StartGroupingSounds() {}
-void EndGroupingSounds() {}
 void FX_WeaponSound(int iEntIndex, WeaponSound_t sound_type, const Vector &vOrigin, CWeaponInfo *pWeaponInfo)
 {
     // If we have some sounds from the weapon classname.txt file, play a random one of them
@@ -178,12 +176,12 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
             return;
     }
 
-    StartGroupingSounds();
-
 #ifndef CLIENT_DLL
     // Move other players back to history positions based on local player's lag
     if (bLocalPlayerFired)
         lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());
+#else
+    StartGroupingSounds();
 #endif
 
     int iTotalBullets = pWeaponInfo->m_iBullets;
@@ -223,9 +221,9 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 #ifndef CLIENT_DLL
     if (bLocalPlayerFired)
         lagcompensation->FinishLagCompensation(pPlayer);
-#endif
-
+#else
     EndGroupingSounds();
+#endif
 }
 
 // TF2 explosions
