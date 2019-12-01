@@ -1,103 +1,114 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose:		Holds defintion for game ammo types
-//
-// $Workfile:     $
-// $Date:         $
-// $NoKeywords: $
-//=============================================================================//
-
-#ifndef AI_AMMODEF_H
-#define AI_AMMODEF_H
-
-#ifdef _WIN32
 #pragma once
-#endif
 
-class ConVar;
-
-struct Ammo_t 
-{
-	char 				*pName;
-	int					nDamageType;
-	int					eTracerType;
-	float				physicsForceImpulse;
-	int					nMinSplashSize;
-	int					nMaxSplashSize;
-
-	int					nFlags;
-
-	// Values for player/NPC damage and carrying capability
-	// If the integers are set, they override the CVars
-	int					pPlrDmg;		// CVar for player damage amount
-	int					pNPCDmg;		// CVar for NPC damage amount
-	int					pMaxCarry;		// CVar for maximum number can carry
-	const ConVar*		pPlrDmgCVar;	// CVar for player damage amount
-	const ConVar*		pNPCDmgCVar;	// CVar for NPC damage amount
-	const ConVar*		pMaxCarryCVar;	// CVar for maximum number can carry
-};
-
-// Used to tell AmmoDef to use the cvars, not the integers
-#define		USE_CVAR		-1
 // Ammo is infinite
-#define		INFINITE_AMMO	-2
+#define INFINITE_AMMO (-2)
+
+enum CWeaponID
+{
+    WEAPON_NONE = 0,
+
+    WEAPON_PISTOL,
+    WEAPON_RIFLE,
+    WEAPON_SHOTGUN,
+    WEAPON_SMG,
+    WEAPON_SNIPER,
+    WEAPON_LMG,
+    WEAPON_GRENADE,
+    WEAPON_KNIFE,
+    WEAPON_PAINTGUN,
+    WEAPON_ROCKETLAUNCHER,
+
+    WEAPON_MAX, // number of weapons weapon index
+};
 
 enum AmmoTracer_t
 {
-	TRACER_NONE,
-	TRACER_LINE,
-	TRACER_RAIL,
-	TRACER_BEAM,
-	TRACER_LINE_AND_WHIZ,
+    TRACER_NONE,
+    TRACER_LINE,
+    TRACER_RAIL,
+    TRACER_BEAM,
+    TRACER_LINE_AND_WHIZ,
 };
 
-enum AmmoFlags_t
+enum AmmoType_t
 {
-	AMMO_FORCE_DROP_IF_CARRIED = 0x1,
-	AMMO_INTERPRET_PLRDAMAGE_AS_DAMAGE_TO_PLAYER = 0x2,
+    AMMO_TYPE_NONE = -1,
+    AMMO_TYPE_PISTOL,
+    AMMO_TYPE_SMG,
+    AMMO_TYPE_RIFLE,
+    AMMO_TYPE_SNIPER,
+    AMMO_TYPE_LMG,
+    AMMO_TYPE_SHOTGUN,
+    AMMO_TYPE_GRENADE,
+    AMMO_TYPE_PAINT,
+
+    AMMO_TYPE_MAX
 };
 
+class CAmmoBase
+{
+public:
+    CAmmoBase();
 
-#include "shareddefs.h"
+    CWeaponID m_WeaponID;
 
-//=============================================================================
-//	>> CAmmoDef
-//=============================================================================
+    int     m_iDamageType;
+    int     m_iDamageAmount;
+    int     m_eTracerType;
+    float   m_fDamageForce;
+    int     m_iMinSplashSize;
+    int     m_iMaxSplashSize;
+    int     m_iMaxCarry;
+    int     m_iPenetrationAmount;
+    float   m_fPenetrationPower;
+    float   m_fPenetrationDistance;
+    float   m_fRange;
+    float   m_fRangeModifier;
+    int     m_iNumBullets; // Number of bullets fired per shot
+};
+
+#define MAKE_AMMO_CLASS( ammoClassName ) class ammoClassName : public CAmmoBase { public: ammoClassName(); };
+#define MAKE_AMMODEF_GETTER(type, funcName, memberVar) \
+type funcName(int iAmmoIndex) \
+{ \
+    if (iAmmoIndex < 0 || iAmmoIndex >= AMMO_TYPE_MAX) \
+        return (type)0; \
+    return m_AmmoTypes[iAmmoIndex]->memberVar; \
+}
+
+MAKE_AMMO_CLASS(CAmmoPistol);
+MAKE_AMMO_CLASS(CAmmoSMG);
+MAKE_AMMO_CLASS(CAmmoRifle);
+MAKE_AMMO_CLASS(CAmmoSniper);
+MAKE_AMMO_CLASS(CAmmoLMG);
+MAKE_AMMO_CLASS(CAmmoShotgun);
+MAKE_AMMO_CLASS(CAmmoGrenade);
+MAKE_AMMO_CLASS(CAmmoPaint);
+
 class CAmmoDef
 {
+  public:
+    CAmmoDef();
+    virtual ~CAmmoDef();
 
-public:
-	int					m_nAmmoIndex;
+    CAmmoBase *GetAmmoOfIndex(int nAmmoIndex);
+    MAKE_AMMODEF_GETTER(CWeaponID, WeaponID, m_WeaponID);
+    MAKE_AMMODEF_GETTER(int, DamageType, m_iDamageType);
+    MAKE_AMMODEF_GETTER(int, DamageAmount, m_iDamageAmount);
+    MAKE_AMMODEF_GETTER(int, TracerType, m_eTracerType);
+    MAKE_AMMODEF_GETTER(float, DamageForce, m_fDamageForce);
+    MAKE_AMMODEF_GETTER(int, MinSplashSize, m_iMinSplashSize);
+    MAKE_AMMODEF_GETTER(int, MaxSplashSize, m_iMaxSplashSize);
+    MAKE_AMMODEF_GETTER(int, MaxCarry, m_iMaxCarry);
+    MAKE_AMMODEF_GETTER(int, PenetrationAmount, m_iPenetrationAmount);
+    MAKE_AMMODEF_GETTER(float, PenetrationPower, m_fPenetrationPower);
+    MAKE_AMMODEF_GETTER(float, PenetrationDistance, m_fPenetrationDistance);
+    MAKE_AMMODEF_GETTER(float, Range, m_fRange);
+    MAKE_AMMODEF_GETTER(float, RangeModifier, m_fRangeModifier);
+    MAKE_AMMODEF_GETTER(int, NumBullets, m_iNumBullets);
 
-	Ammo_t				m_AmmoType[MAX_AMMO_TYPES];
-
-	Ammo_t				*GetAmmoOfIndex(int nAmmoIndex);
-	int					Index(const char *psz);
-	int					PlrDamage(int nAmmoIndex);
-	int					NPCDamage(int nAmmoIndex);
-	int					MaxCarry(int nAmmoIndex);
-	int					DamageType(int nAmmoIndex);
-	int					TracerType(int nAmmoIndex);
-	float				DamageForce(int nAmmoIndex);
-	int					MinSplashSize(int nAmmoIndex);
-	int					MaxSplashSize(int nAmmoIndex);
-	int					Flags(int nAmmoIndex);
-
-	void				AddAmmoType(char const* name, int damageType, int tracerType, int plr_dmg, int npc_dmg, int carry, float physicsForceImpulse, int nFlags, int minSplashSize = 4, int maxSplashSize = 8 );
-	void				AddAmmoType(char const* name, int damageType, int tracerType, char const* plr_cvar, char const* npc_var, char const* carry_cvar, float physicsForceImpulse, int nFlags, int minSplashSize = 4, int maxSplashSize = 8 );
-
-	CAmmoDef(void);
-	virtual ~CAmmoDef( void );
-
-private:
-	bool				AddAmmoType(char const* name, int damageType, int tracerType, int nFlags, int minSplashSize, int maxSplashSize );
+  private:
+    CUtlVector<CAmmoBase*> m_AmmoTypes;
 };
 
-
-// Get the global ammodef object. This is usually implemented in each mod's game rules file somewhere,
-// so the mod can setup custom ammo types.
-CAmmoDef* GetAmmoDef();
-
-
-#endif // AI_AMMODEF_H
- 
+extern CAmmoDef *g_pAmmoDef;
