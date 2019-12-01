@@ -35,6 +35,7 @@
 #include "c_te_effect_dispatch.h"
 #include "c_props.h"
 #include "c_basedoor.h"
+#include "ammodef.h"
 
 // NOTE: Always include this last!
 #include "tier0/memdbgon.h"
@@ -3337,29 +3338,25 @@ void CTempEnts::CSEjectBrass( const Vector &vecPosition, const QAngle &angVeloci
 	switch( shellType )
 	{
 	default:
-	case CS_SHELL_9MM:
+	case AMMO_TYPE_PISTOL:
 		hitsound = TE_PISTOL_SHELL;
 		pModel = m_pCS_9MMShell;
 		break;
-	case CS_SHELL_57:
+	case AMMO_TYPE_SMG:
 		hitsound = TE_PISTOL_SHELL;
 		pModel = m_pCS_57Shell;
 		break;
-	case CS_SHELL_12GAUGE:
+	case AMMO_TYPE_SHOTGUN:
 		hitsound = TE_SHOTGUN_SHELL;
 		pModel = m_pCS_12GaugeShell;
 		break;
-	case CS_SHELL_556:
+	case AMMO_TYPE_LMG:
 		hitsound = TE_RIFLE_SHELL;
 		pModel = m_pCS_556Shell;
 		break;
-	case CS_SHELL_762NATO:
+	case AMMO_TYPE_RIFLE:
 		hitsound = TE_RIFLE_SHELL;
 		pModel = m_pCS_762NATOShell;
-		break;
-	case CS_SHELL_338MAG:
-		hitsound = TE_RIFLE_SHELL;
-		pModel = m_pCS_338MAGShell;
 		break;
 	}
 #endif
