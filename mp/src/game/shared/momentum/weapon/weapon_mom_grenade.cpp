@@ -51,6 +51,7 @@ CMomentumGrenade::CMomentumGrenade()
     m_bRedraw = false;
     m_bPinPulled = false;
     m_fThrowTime = 0;
+    m_iPrimaryAmmoType = AMMO_TYPE_GRENADE;
 }
 
 //-----------------------------------------------------------------------------

@@ -25,6 +25,8 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_shotgun);
 CMomentumShotgun::CMomentumShotgun()
 {
     m_flPumpTime = 0;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_SHOTGUN;
 }
 
 void CMomentumShotgun::PrimaryAttack()

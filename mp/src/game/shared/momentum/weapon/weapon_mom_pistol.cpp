@@ -29,6 +29,8 @@ CMomentumPistol::CMomentumPistol()
     m_flPistolShoot = 0.0f;
     m_flAccuracy = 0.9;
     m_flLastFire = gpGlobals->curtime;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_PISTOL;
 }
 
 

@@ -21,6 +21,8 @@ CMomentumSMG::CMomentumSMG()
 {
     m_flIdleInterval = 20.0f;
     m_flTimeToIdleAfterFire = 2.0f;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_SMG;
 }
 
 
