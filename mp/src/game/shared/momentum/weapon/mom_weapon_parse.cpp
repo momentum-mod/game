@@ -27,8 +27,7 @@ CWeaponInfo *GetWeaponInfo(CWeaponID weaponID)
 }
 
 CWeaponInfo::CWeaponInfo()
-    : m_iCrosshairMinDistance(4), m_iCrosshairDeltaDistance(3), m_iPenetration(1), m_iDamage(42),
-      m_flRange(8192.0f), m_flRangeModifier(0.98f), m_iBullets(1)
+    : m_iCrosshairMinDistance(4), m_iCrosshairDeltaDistance(3)
 {
     m_szExplosionEffect[0] = '\0';
     m_szExplosionPlayerEffect[0] = '\0';
@@ -44,12 +43,6 @@ void CWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
 
     m_iCrosshairMinDistance = pKeyValuesData->GetInt("CrosshairMinDistance", 4);
     m_iCrosshairDeltaDistance = pKeyValuesData->GetInt("CrosshairDeltaDistance", 3);
-
-    m_iPenetration = pKeyValuesData->GetInt("Penetration", 1);
-    m_iDamage = pKeyValuesData->GetInt("Damage", 42); // Douglas Adams 1952 - 2001
-    m_flRange = pKeyValuesData->GetFloat("Range", 8192.0f);
-    m_flRangeModifier = pKeyValuesData->GetFloat("RangeModifier", 0.98f);
-    m_iBullets = pKeyValuesData->GetInt("Bullets", 1);
 
     // Explosion effects
     const char *pszSound = pKeyValuesData->GetString("ExplosionSound", nullptr);
