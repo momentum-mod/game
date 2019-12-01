@@ -254,33 +254,6 @@ void CBaseCombatWeapon::Precache( void )
 	// Get weapon data from script file
 	if ( ReadWeaponDataFromFileForSlot( filesystem, GetClassname(), &m_hWeaponFileInfo, GetEncryptionKey() ) )
 	{
-		// Get the ammo indexes for the ammo's specified in the data file
-		if ( GetWpnData().szAmmo1[0] )
-		{
-			m_iPrimaryAmmoType = GetAmmoDef()->Index( GetWpnData().szAmmo1 );
-			if (m_iPrimaryAmmoType == -1)
-			{
-				Msg("ERROR: Weapon (%s) using undefined primary ammo type (%s)\n",GetClassname(), GetWpnData().szAmmo1);
-			}
- #if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-			// Ammo override
-			int iModUseMetalOverride = 0;
-			CALL_ATTRIB_HOOK_INT( iModUseMetalOverride, mod_use_metal_ammo_type );
-			if ( iModUseMetalOverride )
-			{
-				m_iPrimaryAmmoType = (int)TF_AMMO_METAL;
-			}
-#endif
- 		}
-		if ( GetWpnData().szAmmo2[0] )
-		{
-			m_iSecondaryAmmoType = GetAmmoDef()->Index( GetWpnData().szAmmo2 );
-			if (m_iSecondaryAmmoType == -1)
-			{
-				Msg("ERROR: Weapon (%s) using undefined secondary ammo type (%s)\n",GetClassname(),GetWpnData().szAmmo2);
-			}
-
-		}
 #if defined( CLIENT_DLL )
 		gWR.LoadWeaponSprites( GetWeaponFileInfoHandle() );
 #endif
