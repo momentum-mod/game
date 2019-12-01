@@ -49,11 +49,6 @@ static const char * s_WeaponAliasInfo[] =
     nullptr,		// WEAPON_NONE
 };
 
-bool IsAmmoType(int iAmmoType, const char *pAmmoName)
-{
-    return GetAmmoDef()->Index(pAmmoName) == iAmmoType;
-}
-
 //--------------------------------------------------------------------------------------------------------
 //
 // Given an alias, return the associated weapon ID
@@ -81,32 +76,6 @@ const char *WeaponIDToAlias(int id)
 
     return s_WeaponAliasInfo[id];
 }
-
-#ifdef CLIENT_DLL
-int GetShellForAmmoType(const char *ammoname)
-{
-    if (!Q_strcmp(BULLET_PLAYER_762MM, ammoname))
-        return CS_SHELL_762NATO;
-
-    if (!Q_strcmp(BULLET_PLAYER_556MM, ammoname))
-        return CS_SHELL_556;
-
-    if (!Q_strcmp(BULLET_PLAYER_338MAG, ammoname))
-        return CS_SHELL_338MAG;
-
-    if (!Q_strcmp(BULLET_PLAYER_BUCKSHOT, ammoname))
-        return CS_SHELL_12GAUGE;
-
-    if (!Q_strcmp(BULLET_PLAYER_57MM, ammoname))
-        return CS_SHELL_57;
-
-    if (!Q_strcmp(AMMO_TYPE_PAINT, ammoname))
-        return CS_SHELL_PAINT;
-
-    // default 9 mm
-    return CS_SHELL_9MM;
-}
-#endif
 
 
 // ----------------------------------------------------------------------------- //

@@ -20,18 +20,6 @@ struct model_t;
 #include "utllinkedlist.h"
 
 
-enum
-{
-	CS_SHELL_9MM = 0,
-	CS_SHELL_57,
-	CS_SHELL_12GAUGE,
-	CS_SHELL_556,
-	CS_SHELL_762NATO,
-	CS_SHELL_338MAG,
-    CS_SHELL_PAINT,
-};
-
-
 //-----------------------------------------------------------------------------
 // Purpose: Interface for lecacy temp entities
 //-----------------------------------------------------------------------------

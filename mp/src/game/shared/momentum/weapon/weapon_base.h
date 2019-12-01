@@ -12,32 +12,8 @@ class CMomentumPlayer;
 
 extern int AliasToWeaponID(const char *alias);
 extern const char *WeaponIDToAlias(int id);
-extern int GetShellForAmmoType(const char *ammoname);
-
-// These are the names of the ammo types that go in the CAmmoDefs and that the
-// weapon script files reference.
-#define BULLET_PLAYER_50AE "BULLET_PLAYER_50AE"
-#define BULLET_PLAYER_762MM "BULLET_PLAYER_762MM"
-#define BULLET_PLAYER_556MM "BULLET_PLAYER_556MM"
-#define BULLET_PLAYER_556MM_BOX "BULLET_PLAYER_556MM_BOX"
-#define BULLET_PLAYER_338MAG "BULLET_PLAYER_338MAG"
-#define BULLET_PLAYER_9MM "BULLET_PLAYER_9MM"
-#define BULLET_PLAYER_BUCKSHOT "BULLET_PLAYER_BUCKSHOT"
-#define BULLET_PLAYER_45ACP "BULLET_PLAYER_45ACP"
-#define BULLET_PLAYER_357SIG "BULLET_PLAYER_357SIG"
-#define BULLET_PLAYER_57MM "BULLET_PLAYER_57MM"
-#define AMMO_TYPE_HEGRENADE "AMMO_TYPE_HEGRENADE"
-#define AMMO_TYPE_FLASHBANG "AMMO_TYPE_FLASHBANG"
-#define AMMO_TYPE_SMOKEGRENADE "AMMO_TYPE_SMOKEGRENADE"
-#define AMMO_TYPE_PAINT "AMMO_TYPE_PAINT"
-#define AMMO_TYPE_ROCKET "AMMO_TYPE_ROCKET"
 
 #define CROSSHAIR_CONTRACT_PIXELS_PER_SECOND 7.0f
-
-// Given an ammo type (like from a weapon's GetPrimaryAmmoType()), this compares it
-// against the ammo name you specify.
-// MOM_TODO: this should use indexing instead of searching and strcmp()'ing all the time.
-bool IsAmmoType(int iAmmoType, const char *pAmmoName);
 
 typedef enum {
     Primary_Mode = 0,
