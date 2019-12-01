@@ -136,37 +136,6 @@ void CTakeDamageInfo::AdjustPlayerDamageTakenForSkillLevel()
 #endif
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: get the name of the ammo that caused damage
-// Note: returns the ammo name, or the classname of the object, or the model name in the case of physgun ammo.
-//-----------------------------------------------------------------------------
-const char *CTakeDamageInfo::GetAmmoName() const
-{
-	const char *pszAmmoType;
-
-	if ( m_iAmmoType >= 0 )
-	{
-		pszAmmoType = GetAmmoDef()->GetAmmoOfIndex( m_iAmmoType )->pName;
-	}
-	// no ammoType, so get the ammo name from the inflictor
-	else if ( m_hInflictor != NULL )
-	{
-		pszAmmoType = m_hInflictor->GetClassname();
-
-		// check for physgun ammo.  unfortunate that this is in game_shared.
-		if ( Q_strcmp( pszAmmoType, "prop_physics" ) == 0 )
-		{
-			pszAmmoType = STRING( m_hInflictor->GetModelName() );
-		}
-	}
-	else
-	{
-		pszAmmoType = "Unknown";
-	}
-
-	return pszAmmoType;
-}
-
 // -------------------------------------------------------------------------------------------------- //
 // MultiDamage
 // Collects multiple small damages into a single damage

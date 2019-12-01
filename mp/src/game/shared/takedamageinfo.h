@@ -85,7 +85,6 @@ public:
 
 	int				GetAmmoType() const;
 	void			SetAmmoType( int iAmmoType );
-	const char *	GetAmmoName() const;
 
 	int				GetPlayerPenetrationCount() const { return m_iPlayerPenetrationCount; }
 	void			SetPlayerPenetrationCount( int iPlayerPenetrationCount ) { m_iPlayerPenetrationCount = iPlayerPenetrationCount; }
