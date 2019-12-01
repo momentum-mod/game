@@ -2986,20 +2986,6 @@ int CBaseCombatCharacter::GiveAmmo( int iCount, int iAmmoIndex, bool bSuppressSo
 	return iAdd;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Give the player some ammo.
-//-----------------------------------------------------------------------------
-int CBaseCombatCharacter::GiveAmmo( int iCount, const char *szName, bool bSuppressSound )
-{
-	int iAmmoType = GetAmmoDef()->Index(szName);
-	if (iAmmoType == -1)
-	{
-		Msg("ERROR: Attempting to give unknown ammo type (%s)\n",szName);
-		return 0;
-	}
-	return GiveAmmo( iCount, iAmmoType, bSuppressSound );
-}
-
 
 ConVar	phys_stressbodyweights( "phys_stressbodyweights", "5.0" );
 void CBaseCombatCharacter::VPhysicsUpdate( IPhysicsObject *pPhysics )
