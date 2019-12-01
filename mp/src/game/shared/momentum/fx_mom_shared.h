@@ -2,13 +2,13 @@
 
 #ifndef CLIENT_DLL
 #include "particle_parse.h"
-#include "weapon/mom_weapon_parse.h"
+#include "ammodef.h"
 #endif
 
 // This runs on both the client and the server.
 // On the server, it only does the damage calculations.
 // On the client, it does all the effects.
-void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles, int iWeaponID, int iMode, int iSeed,
+void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles, int iAmmoType, bool bSecondaryMode, int iSeed,
                     float flSpread);
 
 #ifndef CLIENT_DLL

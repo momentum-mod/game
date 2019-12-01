@@ -15,11 +15,6 @@ extern const char *WeaponIDToAlias(int id);
 
 #define CROSSHAIR_CONTRACT_PIXELS_PER_SECOND 7.0f
 
-typedef enum {
-    Primary_Mode = 0,
-    Secondary_Mode,
-} CSWeaponMode;
-
 #if defined(CLIENT_DLL)
 
 //--------------------------------------------------------------------------------------------------------------
