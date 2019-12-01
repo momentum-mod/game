@@ -14,77 +14,8 @@
 
 #include "tier0/memdbgon.h"
 
-ConVar
-    sv_showimpacts("sv_showimpacts", "0", FCVAR_REPLICATED,
+ConVar sv_showimpacts("sv_showimpacts", "0", FCVAR_REPLICATED,
                    "Shows client (red) and server (blue) bullet impact point (1=both, 2=client-only, 3=server-only)");
-
-void CMomentumPlayer::GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,
-                                              bool &bPaint)
-{
-    if (IsAmmoType(iBulletType, BULLET_PLAYER_50AE))
-    {
-        fPenetrationPower = 30.0f;
-        flPenetrationDistance = 1000.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_762MM))
-    {
-        fPenetrationPower = 39.0f;
-        flPenetrationDistance = 5000.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_556MM) || IsAmmoType(iBulletType, BULLET_PLAYER_556MM_BOX))
-    {
-        fPenetrationPower = 35.0f;
-        flPenetrationDistance = 4000.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_338MAG))
-    {
-        fPenetrationPower = 45.0f;
-        flPenetrationDistance = 8000.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_9MM))
-    {
-        fPenetrationPower = 21.0f;
-        flPenetrationDistance = 800.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_BUCKSHOT))
-    {
-        fPenetrationPower = 0.0f;
-        flPenetrationDistance = 0.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_45ACP))
-    {
-        fPenetrationPower = 15.0f;
-        flPenetrationDistance = 500.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_357SIG))
-    {
-        fPenetrationPower = 25.0f;
-        flPenetrationDistance = 800.0f;
-    }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_57MM))
-    {
-        fPenetrationPower = 30.0f;
-        flPenetrationDistance = 2000.0f;
-    }
-    else if (IsAmmoType(iBulletType, AMMO_TYPE_PAINT))
-    {
-        fPenetrationPower = .0f;
-        flPenetrationDistance = 0.0f;
-        bPaint = true;
-    }
-    else if (IsAmmoType(iBulletType, AMMO_TYPE_ROCKET))
-    {
-        fPenetrationPower = .0f;
-        flPenetrationDistance = 0.0f;
-    }
-    else
-    {
-        // What kind of ammo is this?
-        Assert(false);
-        fPenetrationPower = 0;
-        flPenetrationDistance = 0.0;
-    }
-}
 
 static bool TraceToExit(Vector &start, Vector &dir, Vector &end, float flStepSize, float flMaxDistance)
 {
