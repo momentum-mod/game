@@ -32,6 +32,8 @@ CMomentumPaintGun::CMomentumPaintGun()
 
     m_flTimeToIdleAfterFire = 0.0f;
     m_flIdleInterval = 0.0f;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_PAINT;
 }
 
 CMomentumPaintGun::~CMomentumPaintGun()

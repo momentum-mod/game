@@ -21,7 +21,8 @@ CMomentumLMG::CMomentumLMG()
 {
     m_flTimeToIdleAfterFire = 1.6f;
     m_flIdleInterval = 20.0f;
-};
+    m_iPrimaryAmmoType = AMMO_TYPE_LMG;
+}
 
 void CMomentumLMG::PrimaryAttack()
 {

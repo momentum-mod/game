@@ -20,6 +20,8 @@ CMomentumSniper::CMomentumSniper()
     m_flIdleInterval = 60.0f;
     m_flTimeToIdleAfterFire = 1.8f;
     m_iRequestedFOV = 0;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_SNIPER;
 }
 
 void CMomentumSniper::Drop(const Vector &vecVelocity)

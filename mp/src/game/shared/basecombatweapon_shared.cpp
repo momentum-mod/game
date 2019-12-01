@@ -82,11 +82,11 @@ CBaseCombatWeapon::CBaseCombatWeapon()
 
 #if defined( CLIENT_DLL )
 	m_iState = m_iOldState = WEAPON_NOT_CARRIED;
+#endif
 	m_iClip1 = -1;
 	m_iClip2 = -1;
 	m_iPrimaryAmmoType = -1;
 	m_iSecondaryAmmoType = -1;
-#endif
 
 #if !defined( CLIENT_DLL )
 	m_pConstraint = NULL;
@@ -248,7 +248,6 @@ void CBaseCombatWeapon::Precache( void )
 	Assert( Q_strlen( GetClassname() ) > 0 );
 	// Msg( "Client got %s\n", GetClassname() );
 #endif
-	m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
 
 	// Add this weapon to the weapon registry, and get our index into it
 	// Get weapon data from script file

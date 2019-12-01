@@ -20,6 +20,8 @@ CMomentumRifle::CMomentumRifle()
 {
     m_flTimeToIdleAfterFire = 1.9f;
     m_flIdleInterval = 20.0f;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_RIFLE;
 }
 
 void CMomentumRifle::PrimaryAttack()
