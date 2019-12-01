@@ -1506,7 +1506,7 @@ void CBaseEntity::HandleShotImpactingGlass( const FireBulletsInfo_t &info,
 	//		 would do exactly the same anyway...
 
 	// Impact the other side (will look like an exit effect)
-	DoImpactEffect( penetrationTrace, GetAmmoDef()->DamageType(info.m_iAmmoType) );
+	DoImpactEffect( penetrationTrace, g_pAmmoDef->DamageType(info.m_iAmmoType) );
 
 	data.m_vNormal = penetrationTrace.plane.normal;
 	data.m_vOrigin = penetrationTrace.endpos;

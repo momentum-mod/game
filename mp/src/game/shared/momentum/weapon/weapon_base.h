@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mom_weapon_parse.h"
+#include "ammodef.h"
 
 #if defined(CLIENT_DLL)
 #define CWeaponBase C_WeaponBase
