@@ -51,7 +51,6 @@ int GetWeaponSoundFromString( const char *pszString );
 
 #define MAX_WEAPON_STRING	80
 #define MAX_WEAPON_PREFIX	16
-#define MAX_WEAPON_AMMO_NAME		32
 
 #define WEAPON_PRINTNAME_MISSING "!!! Missing printname on weapon"
 
@@ -96,14 +95,10 @@ public:
 	bool					bAutoSwitchTo;							// whether this weapon should be considered for autoswitching to
 	bool					bAutoSwitchFrom;						// whether this weapon can be autoswitched away from when picking up another weapon or ammo
 	int						iFlags;									// miscellaneous weapon flags
-	char					szAmmo1[MAX_WEAPON_AMMO_NAME];			// "primary" ammo type
-	char					szAmmo2[MAX_WEAPON_AMMO_NAME];			// "secondary" ammo type
 
 	// Sound blocks
 	char					aShootSounds[NUM_SHOOT_SOUND_TYPES][MAX_WEAPON_STRING];	
 
-	int						iAmmoType;
-	int						iAmmo2Type;
 	bool					m_bMeleeWeapon;		// Melee weapons can always "fire" regardless of ammo.
 
 	// This tells if the weapon was built right-handed (defaults to true).

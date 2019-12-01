@@ -379,25 +379,6 @@ void CWeaponBase::Precache(void)
         // Get weapon data from script file
         if (ReadWeaponDataFromFileForSlot(filesystem, wpnName, &m_hWeaponFileInfo, GetEncryptionKey()))
         {
-            // Get the ammo indexes for the ammo's specified in the data file
-            if (GetMomWpnData().szAmmo1[0])
-            {
-                m_iPrimaryAmmoType = GetAmmoDef()->Index(GetMomWpnData().szAmmo1);
-                if (m_iPrimaryAmmoType == -1)
-                {
-                    Msg("ERROR: Weapon (%s) using undefined primary ammo type (%s)\n", GetClassname(),
-                        GetMomWpnData().szAmmo1);
-                }
-            }
-            if (GetMomWpnData().szAmmo2[0])
-            {
-                m_iSecondaryAmmoType = GetAmmoDef()->Index(GetMomWpnData().szAmmo2);
-                if (m_iSecondaryAmmoType == -1)
-                {
-                    Msg("ERROR: Weapon (%s) using undefined secondary ammo type (%s)\n", GetClassname(),
-                        GetMomWpnData().szAmmo2);
-                }
-            }
 #if defined(CLIENT_DLL)
             gWR.LoadWeaponSprites(GetWeaponFileInfoHandle());
 #endif

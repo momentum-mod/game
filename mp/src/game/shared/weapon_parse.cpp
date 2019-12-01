@@ -329,11 +329,7 @@ FileWeaponInfo_t::FileWeaponInfo_t()
 	bAutoSwitchTo = false;
 	bAutoSwitchFrom = false;
 	iFlags = 0;
-	szAmmo1[0] = 0;
-	szAmmo2[0] = 0;
 	memset( aShootSounds, 0, sizeof( aShootSounds ) );
-	iAmmoType = 0;
-	iAmmo2Type = 0;
 	m_bMeleeWeapon = false;
 	iSpriteCount = 0;
 	iconActive = nullptr;
@@ -431,22 +427,6 @@ void FileWeaponInfo_t::Parse( KeyValues *pKeyValuesData, const char *szWeaponNam
 		g_bUsedWeaponSlots[iSlot][iPosition] = true;
 	}
 #endif
-
-	// Primary ammo used
-	const char *pAmmo = pKeyValuesData->GetString( "primary_ammo", "None" );
-	if ( strcmp("None", pAmmo) == 0 )
-		Q_strncpy( szAmmo1, "", sizeof( szAmmo1 ) );
-	else
-		Q_strncpy( szAmmo1, pAmmo, sizeof( szAmmo1 )  );
-	iAmmoType = GetAmmoDef()->Index( szAmmo1 );
-	
-	// Secondary ammo used
-	pAmmo = pKeyValuesData->GetString( "secondary_ammo", "None" );
-	if ( strcmp("None", pAmmo) == 0)
-		Q_strncpy( szAmmo2, "", sizeof( szAmmo2 ) );
-	else
-		Q_strncpy( szAmmo2, pAmmo, sizeof( szAmmo2 )  );
-	iAmmo2Type = GetAmmoDef()->Index( szAmmo2 );
 
 	// Now read the weapon sounds
 	memset( aShootSounds, 0, sizeof( aShootSounds ) );
