@@ -38,7 +38,6 @@ class CMomentumGameRules : public CSingleplayRules
 
     // Ammo
     void PlayerThink(CBasePlayer *pPlayer) OVERRIDE {}
-    // virtual float			GetAmmoDamage(CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType);
 
     // Players take no damage
     float FlPlayerFallDamage(CBasePlayer *pPlayer) OVERRIDE { return 0.0f; }

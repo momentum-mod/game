@@ -3,7 +3,6 @@
 #include "mathlib/mathlib.h"
 #include "mom_shareddefs.h"
 #include "voice_gamemgr.h"
-#include "weapon/cs_ammodef.h"
 #include "weapon/weapon_base_gun.h"
 #include "filesystem.h"
 #include "movevars_shared.h"
