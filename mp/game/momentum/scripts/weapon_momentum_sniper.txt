@@ -4,16 +4,7 @@ WeaponData
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "scout"
-    
-    // Weapon characteristics:
-    "Penetration"       "3"
-    "Damage"            "75"
-    "Range"             "8192"
-    "RangeModifier"     "0.98"
-    "Bullets"           "1"
-    
-    "CycleTime"         "1.25"
-    
+        
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Sniper"
     "viewmodel"         "models/weapons/mom_sniper.mdl"
@@ -24,9 +15,6 @@ WeaponData
     "bucket_position"   "1"
 
     "clip_size"         "10"
-    
-    "primary_ammo"          "BULLET_PLAYER_762MM"
-    "secondary_ammo"        "None"
 
     "weight"            "30"
     "item_flags"        "0"
@@ -65,19 +53,6 @@ WeaponData
                 "y"         "48"
                 "width"     "24"
                 "height"    "24"
-        }
-    }
-    ModelBounds
-    {
-        Viewmodel
-        {
-            Mins    "-12 -4 -11"
-            Maxs    "27 12 -1"
-        }
-        World
-        {
-            Mins    "-10 -4 -13"
-            Maxs    "32 8 12"
         }
     }
 }

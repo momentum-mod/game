@@ -1,17 +1,9 @@
 WeaponData
 {
-    "WeaponType"                "Knife"
     "CrosshairMinDistance"      "7"
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "knife"
-    
-    // Weapon characteristics:
-    "Penetration"       "1"
-    "Damage"            "50"
-    "Range"             "4096"
-    "RangeModifier"     "0.99"
-    "Bullets"           "1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Knife"
@@ -24,8 +16,6 @@ WeaponData
 
     "clip_size"         "-1"
     "default_clip"      "1"
-    "primary_ammo"      "None"
-    "secondary_ammo"    "None"
 
     "weight"            "0"
     "item_flags"        "0"
@@ -74,19 +64,6 @@ WeaponData
                 "y"         "48"
                 "width"     "24"
                 "height"    "24"
-        }
-    }
-    ModelBounds
-    {
-        Viewmodel
-        {
-            Mins    "-2 -16 -15"
-            Maxs    "18 11 5"
-        }
-        World
-        {
-            Mins    "-2 -5 -5"
-            Maxs    "10 4 11"
         }
     }
 }
