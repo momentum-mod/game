@@ -18,23 +18,6 @@
 
 #include "tier0/memdbgon.h"
 
-CWeaponInfo *GetMomWeaponInfo(int iWeapon)
-{
-    const char *pszWeaponAlias = WeaponIDToAlias(iWeapon);
-    if (!pszWeaponAlias)
-    {
-        return nullptr;
-    }
-
-    WEAPON_FILE_INFO_HANDLE hWpnInfo = LookupWeaponInfoSlot(pszWeaponAlias);
-    if (hWpnInfo == GetInvalidWeaponInfoHandle())
-    {
-        return nullptr;
-    }
-
-    return static_cast<CWeaponInfo *>(GetFileWeaponInfoFromHandle(hWpnInfo));
-}
-
 void TFExplosionCallback(const Vector &vecOrigin, const Vector &vecNormal, CWeaponID iWeaponID,
                          ClientEntityHandle_t hEntity)
 {
