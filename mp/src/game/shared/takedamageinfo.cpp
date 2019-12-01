@@ -301,7 +301,7 @@ void CalculateBulletDamageForce( CTakeDamageInfo *info, int iBulletType, const V
 	info->SetDamagePosition( vecForceOrigin );
 	Vector vecForce = vecBulletDir;
 	VectorNormalize( vecForce );
-	vecForce *= GetAmmoDef()->DamageForce( iBulletType );
+	vecForce *= g_pAmmoDef->DamageForce( iBulletType );
 	vecForce *= phys_pushscale.GetFloat();
 	vecForce *= flScale;
 	info->SetDamageForce( vecForce );
@@ -334,7 +334,7 @@ void GuessDamageForce( CTakeDamageInfo *info, const Vector &vecForceDir, const V
 {
 	if ( info->GetDamageType() & DMG_BULLET )
 	{
-		CalculateBulletDamageForce( info, GetAmmoDef()->Index("SMG1"), vecForceDir, vecForceOrigin, flScale );
+		CalculateBulletDamageForce( info, AMMO_TYPE_SMG, vecForceDir, vecForceOrigin, flScale );
 	}
 	else if ( info->GetDamageType() & DMG_BLAST )
 	{

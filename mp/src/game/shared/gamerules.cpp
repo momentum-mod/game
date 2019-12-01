@@ -164,7 +164,7 @@ bool CGameRules::CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex )
 	if ( iAmmoIndex > -1 )
 	{
 		// Get the max carrying capacity for this ammo
-		int iMaxCarry = GetAmmoDef()->MaxCarry( iAmmoIndex );
+		int iMaxCarry = g_pAmmoDef->MaxCarry( iAmmoIndex );
 
 		// Does the player have room for more of this type of ammo?
 		if ( pPlayer->GetAmmoCount( iAmmoIndex ) < iMaxCarry )
@@ -779,19 +779,7 @@ const CViewVectors* CGameRules::GetViewVectors() const
 //-----------------------------------------------------------------------------
 float CGameRules::GetAmmoDamage( CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType )
 {
-	float flDamage = 0;
-	CAmmoDef *pAmmoDef = GetAmmoDef();
-
-	if ( pAttacker->IsPlayer() )
-	{
-		flDamage = pAmmoDef->PlrDamage( nAmmoType );
-	}
-	else
-	{
-		flDamage = pAmmoDef->NPCDamage( nAmmoType );
-	}
-
-	return flDamage;
+	return 0.0f;
 }
 
 
