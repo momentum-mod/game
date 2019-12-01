@@ -1,295 +1,130 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose:		Base combat character with no AI
-//
-// $Workfile:     $
-// $Date:         $
-// $NoKeywords: $
-//=============================================================================//
-
 #include "cbase.h"
 #include "ammodef.h"
 
-// memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//-----------------------------------------------------------------------------
-// Purpose: Return a pointer to the Ammo at the Index passed in
-//-----------------------------------------------------------------------------
-Ammo_t *CAmmoDef::GetAmmoOfIndex(int nAmmoIndex)
+CAmmoBase *CAmmoDef::GetAmmoOfIndex(int nAmmoIndex)
 {
-	if ( nAmmoIndex >= m_nAmmoIndex )
-		return NULL;
+    if (nAmmoIndex < 0 || nAmmoIndex >= AMMO_TYPE_MAX)
+        return nullptr;
 
-	return &m_AmmoType[ nAmmoIndex ];
+    return m_AmmoTypes[nAmmoIndex];
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int CAmmoDef::Index(const char *psz)
+CAmmoBase::CAmmoBase()
 {
-	int i;
-
-	if (!psz)
-		return -1;
-
-	for (i = 1; i < m_nAmmoIndex; i++)
-	{
-		if (stricmp( psz, m_AmmoType[i].pName ) == 0)
-			return i;
-	}
-
-	return -1;
+    m_WeaponID = WEAPON_NONE;
+    m_iDamageType = DMG_BULLET;
+    m_iDamageAmount = 42;
+    m_eTracerType = TRACER_LINE;
+    m_fDamageForce = 2400.0f;
+    m_iMinSplashSize = 10;
+    m_iMaxSplashSize = 14;
+    m_iMaxCarry = -2;
+    m_iPenetrationAmount = 1;
+    m_fPenetrationPower = 0.0f;
+    m_fPenetrationDistance = 0.0f;
+    m_fRange = 8192.0f;
+    m_fRangeModifier = 1.0f;
+    m_iNumBullets = 1;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int	CAmmoDef::PlrDamage(int nAmmoIndex)
+CAmmoPistol::CAmmoPistol()
 {
-	if ( nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex )
-		return 0;
-
-	if ( m_AmmoType[nAmmoIndex].pPlrDmg == USE_CVAR )
-	{
-		if ( m_AmmoType[nAmmoIndex].pPlrDmgCVar )
-		{
-			return m_AmmoType[nAmmoIndex].pPlrDmgCVar->GetFloat();
-		}
-
-		return 0;
-	}
-	else
-	{
-		return m_AmmoType[nAmmoIndex].pPlrDmg;
-	}
+    m_WeaponID = WEAPON_PISTOL;
+    m_iDamageAmount = 25;
+    m_fDamageForce = 2000.0f;
+    m_iMinSplashSize = 5;
+    m_iMaxSplashSize = 10;
+    m_fPenetrationPower = 21.0f;
+    m_fPenetrationDistance = 800.0f;
+    m_fRangeModifier = 0.75f;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int	CAmmoDef::NPCDamage(int nAmmoIndex)
+CAmmoSMG::CAmmoSMG()
 {
-	if ( nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex )
-		return 0;
-
-	if ( m_AmmoType[nAmmoIndex].pNPCDmg == USE_CVAR )
-	{
-		if ( m_AmmoType[nAmmoIndex].pNPCDmgCVar )
-		{
-			return m_AmmoType[nAmmoIndex].pNPCDmgCVar->GetFloat();
-		}
-
-		return 0;
-	}
-	else
-	{
-		return m_AmmoType[nAmmoIndex].pNPCDmg;
-	}
+    m_WeaponID = WEAPON_SMG;
+    m_iDamageAmount = 26;
+    m_iMinSplashSize = 4;
+    m_iMaxSplashSize = 8;
+    m_fPenetrationPower = 30.0f;
+    m_fPenetrationDistance = 2000.0f;
+    m_fRange = 4096.0f;
+    m_fRangeModifier = 0.84f;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int	CAmmoDef::MaxCarry(int nAmmoIndex)
+CAmmoRifle::CAmmoRifle()
 {
-	if ( nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex )
-		return 0;
-
-	if ( m_AmmoType[nAmmoIndex].pMaxCarry == USE_CVAR )
-	{
-		if ( m_AmmoType[nAmmoIndex].pMaxCarryCVar )
-			return m_AmmoType[nAmmoIndex].pMaxCarryCVar->GetFloat();
-
-		return 0;
-	}
-	else
-	{
-		return m_AmmoType[nAmmoIndex].pMaxCarry;
-	}
+    m_WeaponID = WEAPON_RIFLE;
+    m_iDamageAmount = 36;
+    m_iPenetrationAmount = 2;
+    m_fPenetrationPower = 39.0f;
+    m_fPenetrationDistance = 5000.0f;
+    m_fRangeModifier = 0.98f;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int	CAmmoDef::DamageType(int nAmmoIndex)
+CAmmoSniper::CAmmoSniper()
 {
-	if (nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex)
-		return 0;
+    m_WeaponID = WEAPON_SNIPER;
+    m_iDamageAmount = 75;
+    m_iPenetrationAmount = 3;
+    m_fPenetrationPower = 39.0f;
+    m_fPenetrationDistance = 5000.0f;
+    m_fRangeModifier = 0.98f;
+}
 
-	return m_AmmoType[nAmmoIndex].nDamageType;
+CAmmoShotgun::CAmmoShotgun()
+{
+    m_WeaponID = WEAPON_SHOTGUN;
+    m_iDamageAmount = 22;
+    m_fDamageForce = 600.0f;
+    m_iMinSplashSize = 3;
+    m_iMaxSplashSize = 6;
+    m_fRangeModifier = 0.70f;
+    m_iNumBullets = 9;
+}
+
+CAmmoLMG::CAmmoLMG()
+{
+    m_WeaponID = WEAPON_LMG;
+    m_iDamageAmount = 35;
+    m_iPenetrationAmount = 2;
+    m_fPenetrationPower = 35.0f;
+    m_fPenetrationDistance = 4000.0f;
+    m_fRangeModifier = 0.97f;
+}
+
+CAmmoGrenade::CAmmoGrenade()
+{
+    m_WeaponID = WEAPON_GRENADE;
+    m_iDamageType = DMG_BLAST;
+}
+
+CAmmoPaint::CAmmoPaint()
+{
+    m_WeaponID = WEAPON_PAINTGUN;
+    m_iDamageAmount = 1;
+    m_iPenetrationAmount = 0;
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-int CAmmoDef::Flags(int nAmmoIndex)
+CAmmoDef::CAmmoDef()
 {
-	if (nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex)
-		return 0;
-
-	return m_AmmoType[nAmmoIndex].nFlags;
+    m_AmmoTypes.EnsureCount(AMMO_TYPE_MAX);
+    m_AmmoTypes[AMMO_TYPE_PISTOL] = new CAmmoPistol;
+    m_AmmoTypes[AMMO_TYPE_SMG] = new CAmmoSMG;
+    m_AmmoTypes[AMMO_TYPE_RIFLE] = new CAmmoRifle;
+    m_AmmoTypes[AMMO_TYPE_SNIPER] = new CAmmoSniper;
+    m_AmmoTypes[AMMO_TYPE_LMG] = new CAmmoLMG;
+    m_AmmoTypes[AMMO_TYPE_SHOTGUN] = new CAmmoShotgun;
+    m_AmmoTypes[AMMO_TYPE_GRENADE] = new CAmmoGrenade;
+    m_AmmoTypes[AMMO_TYPE_PAINT] = new CAmmoPaint;
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int	CAmmoDef::MinSplashSize(int nAmmoIndex)
+CAmmoDef::~CAmmoDef()
 {
-	if (nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex)
-		return 4;
-
-	return m_AmmoType[nAmmoIndex].nMinSplashSize;
+    m_AmmoTypes.PurgeAndDeleteElements();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int	CAmmoDef::MaxSplashSize(int nAmmoIndex)
-{
-	if (nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex)
-		return 8;
-
-	return m_AmmoType[nAmmoIndex].nMaxSplashSize;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-int	CAmmoDef::TracerType(int nAmmoIndex)
-{
-	if (nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex)
-		return 0;
-
-	return m_AmmoType[nAmmoIndex].eTracerType;
-}
-
-float CAmmoDef::DamageForce(int nAmmoIndex)
-{
-	if ( nAmmoIndex < 1 || nAmmoIndex >= m_nAmmoIndex )
-		return 0;
-
-	return m_AmmoType[nAmmoIndex].physicsForceImpulse;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Create an Ammo type with the name, decal, and tracer.
-// Does not increment m_nAmmoIndex because the functions below do so and 
-//  are the only entry point.
-//-----------------------------------------------------------------------------
-bool CAmmoDef::AddAmmoType(char const* name, int damageType, int tracerType, int nFlags, int minSplashSize, int maxSplashSize )
-{
-	if (m_nAmmoIndex == MAX_AMMO_TYPES)
-		return false;
-
-	int len = strlen(name);
-	m_AmmoType[m_nAmmoIndex].pName = new char[len+1];
-	Q_strncpy(m_AmmoType[m_nAmmoIndex].pName, name,len+1);
-	m_AmmoType[m_nAmmoIndex].nDamageType	= damageType;
-	m_AmmoType[m_nAmmoIndex].eTracerType	= tracerType;
-	m_AmmoType[m_nAmmoIndex].nMinSplashSize	= minSplashSize;
-	m_AmmoType[m_nAmmoIndex].nMaxSplashSize	= maxSplashSize;
-	m_AmmoType[m_nAmmoIndex].nFlags	= nFlags;
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Add an ammo type with it's damage & carrying capability specified via cvars
-//-----------------------------------------------------------------------------
-void CAmmoDef::AddAmmoType(char const* name, int damageType, int tracerType, 
-	char const* plr_cvar, char const* npc_cvar, char const* carry_cvar, 
-	float physicsForceImpulse, int nFlags, int minSplashSize, int maxSplashSize)
-{
-	if ( AddAmmoType( name, damageType, tracerType, nFlags, minSplashSize, maxSplashSize ) == false )
-		return;
-
-	if (plr_cvar)
-	{
-		m_AmmoType[m_nAmmoIndex].pPlrDmgCVar	= cvar->FindVar(plr_cvar);
-		if (!m_AmmoType[m_nAmmoIndex].pPlrDmgCVar)
-		{
-			Msg("ERROR: Ammo (%s) found no CVar named (%s)\n",name,plr_cvar);
-		}
-		m_AmmoType[m_nAmmoIndex].pPlrDmg = USE_CVAR;
-	}
-	if (npc_cvar)
-	{
-		m_AmmoType[m_nAmmoIndex].pNPCDmgCVar	= cvar->FindVar(npc_cvar);
-		if (!m_AmmoType[m_nAmmoIndex].pNPCDmgCVar)
-		{
-			Msg("ERROR: Ammo (%s) found no CVar named (%s)\n",name,npc_cvar);
-		}
-		m_AmmoType[m_nAmmoIndex].pNPCDmg = USE_CVAR;
-	}
-	if (carry_cvar)
-	{
-		m_AmmoType[m_nAmmoIndex].pMaxCarryCVar= cvar->FindVar(carry_cvar);
-		if (!m_AmmoType[m_nAmmoIndex].pMaxCarryCVar)
-		{
-			Msg("ERROR: Ammo (%s) found no CVar named (%s)\n",name,carry_cvar);
-		}
-		m_AmmoType[m_nAmmoIndex].pMaxCarry = USE_CVAR;
-	}
-	m_AmmoType[m_nAmmoIndex].physicsForceImpulse = physicsForceImpulse;
-	m_nAmmoIndex++;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Add an ammo type with it's damage & carrying capability specified via integers
-//-----------------------------------------------------------------------------
-void CAmmoDef::AddAmmoType(char const* name, int damageType, int tracerType, 
-	int plr_dmg, int npc_dmg, int carry, float physicsForceImpulse, 
-	int nFlags, int minSplashSize, int maxSplashSize )
-{
-	if ( AddAmmoType( name, damageType, tracerType, nFlags, minSplashSize, maxSplashSize ) == false )
-		return;
-
-	m_AmmoType[m_nAmmoIndex].pPlrDmg = plr_dmg;
-	m_AmmoType[m_nAmmoIndex].pNPCDmg = npc_dmg;
-	m_AmmoType[m_nAmmoIndex].pMaxCarry = carry;
-	m_AmmoType[m_nAmmoIndex].physicsForceImpulse = physicsForceImpulse;
-
-	m_nAmmoIndex++;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-// Input  :
-// Output :
-//-----------------------------------------------------------------------------
-CAmmoDef::CAmmoDef(void)
-{
-	// Start with an index of 1.  Client assumes 0 is an invalid ammo type
-	m_nAmmoIndex = 1;
-	memset( m_AmmoType, 0, sizeof( m_AmmoType ) );
-}
-
-CAmmoDef::~CAmmoDef( void )
-{
-	for ( int i = 1; i < MAX_AMMO_TYPES; i++ )
-	{
-		delete[] m_AmmoType[ i ].pName;
-	}
-}
-
-
+static CAmmoDef s_AmmoDef;
+CAmmoDef *g_pAmmoDef = &s_AmmoDef;
