@@ -201,32 +201,17 @@ void CC_GiveCurrentAmmo( void )
 
 		if( pWeapon )
 		{
+            int ammoIndex = -1;
 			if( pWeapon->UsesPrimaryAmmo() )
 			{
-				int ammoIndex = pWeapon->GetPrimaryAmmoType();
-
-				if( ammoIndex != -1 )
-				{
-					int giveAmount;
-					giveAmount = GetAmmoDef()->MaxCarry(ammoIndex);
-					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex(ammoIndex)->pName );
-				}
+				ammoIndex = pWeapon->GetPrimaryAmmoType();
 			}
-			if( pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo() )
-			{
-				// Give secondary ammo out, as long as the player already has some
-				// from a presumeably natural source. This prevents players on XBox
-				// having Combine Balls and so forth in areas of the game that
-				// were not tested with these items.
-				int ammoIndex = pWeapon->GetSecondaryAmmoType();
+            else if (pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo())
+            {
+                ammoIndex = pWeapon->GetSecondaryAmmoType();
+            }
 
-				if( ammoIndex != -1 )
-				{
-					int giveAmount;
-					giveAmount = GetAmmoDef()->MaxCarry(ammoIndex);
-					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex(ammoIndex)->pName );
-				}
-			}
+            pPlayer->GiveAmmo(g_pAmmoDef->MaxCarry(ammoIndex), ammoIndex);
 		}
 	}
 }
@@ -6031,19 +6016,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		EquipSuit();
 
 		// Give the player everything!
-		GiveAmmo( 255,	"Pistol");
-		GiveAmmo( 255,	"AR2");
-		GiveAmmo( 5,	"AR2AltFire");
-		GiveAmmo( 255,	"SMG1");
-		GiveAmmo( 255,	"Buckshot");
-		GiveAmmo( 3,	"smg1_grenade");
-		GiveAmmo( 3,	"rpg_round");
-		GiveAmmo( 5,	"grenade");
-		GiveAmmo( 32,	"357" );
-		GiveAmmo( 16,	"XBowBolt" );
-#ifdef HL2_EPISODIC
-		GiveAmmo( 5,	"Hopwire" );
-#endif		
+        // MOM_TODO give the player all momentum guns
 		GiveNamedItem( "weapon_smg1" );
 		GiveNamedItem( "weapon_frag" );
 		GiveNamedItem( "weapon_crowbar" );
