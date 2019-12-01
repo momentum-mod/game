@@ -34,12 +34,6 @@ class CWeaponInfo : public FileWeaponInfo_t
     int m_iCrosshairMinDistance;
     int m_iCrosshairDeltaDistance;
 
-    char m_szAddonModel[MAX_WEAPON_STRING]; // If this is set, it is used as the addon model. Otherwise, szWorldModel is
-                                            // used.
-    char m_szDroppedModel[MAX_WEAPON_STRING];  // Alternate dropped model, if different from the szWorldModel the player
-                                               // holds
-    char m_szSilencerModel[MAX_WEAPON_STRING]; // Alternate model with silencer attached
-
     // Parameters for FX_FireBullets:
     int m_iPenetration;
     int m_iDamage;
