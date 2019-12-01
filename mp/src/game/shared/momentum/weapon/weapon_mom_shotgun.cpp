@@ -99,13 +99,20 @@ void CMomentumShotgun::PrimaryAttack()
     // Update punch angles.
     QAngle angle = pPlayer->GetPunchAngle();
 
-    if (pPlayer->GetFlags() & FL_ONGROUND)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        angle.x -= SharedRandomInt("XM1014PunchAngleGround", 3, 5);
+        angle.x -= SharedRandomInt("RJShotgunPunchAngle", 1, 3);
     }
     else
     {
-        angle.x -= SharedRandomInt("XM1014PunchAngleAir", 7, 10);
+        if (pPlayer->GetFlags() & FL_ONGROUND)
+        {
+            angle.x -= SharedRandomInt("XM1014PunchAngleGround", 3, 5);
+        }
+        else
+        {
+            angle.x -= SharedRandomInt("XM1014PunchAngleAir", 7, 10);
+        }
     }
 
     pPlayer->SetPunchAngle(angle);
