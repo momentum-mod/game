@@ -13,16 +13,9 @@ class CMomentumSMG : public CWeaponBaseGun
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumSMG()
-    {
-        m_flIdleInterval = 20.0f;
-        m_flTimeToIdleAfterFire = 2.0f;
-    }
+    CMomentumSMG();
 
     void PrimaryAttack() OVERRIDE;
 
     CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SMG; }
-
-  private:
-    void SMGFire();
 };

@@ -17,13 +17,14 @@ LINK_ENTITY_TO_CLASS(weapon_momentum_smg, CMomentumSMG);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_smg);
 
 
-void CMomentumSMG::PrimaryAttack()
+CMomentumSMG::CMomentumSMG()
 {
-    SMGFire();
+    m_flIdleInterval = 20.0f;
+    m_flTimeToIdleAfterFire = 2.0f;
 }
 
 
-void CMomentumSMG::SMGFire()
+void CMomentumSMG::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)

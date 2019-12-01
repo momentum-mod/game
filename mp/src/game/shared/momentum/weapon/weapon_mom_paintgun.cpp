@@ -26,11 +26,12 @@ CMomentumPaintGun::CMomentumPaintGun()
 : m_cvarDrawPaintgun("mom_paintgun_drawmodel")
 #endif
 {
-    m_flTimeToIdleAfterFire = 0.0f;
-    m_flIdleInterval = 0.0f;
 #ifdef CLIENT_DLL
     m_pSettingsPanel = new vgui::PaintGunPanel();
 #endif
+
+    m_flTimeToIdleAfterFire = 0.0f;
+    m_flIdleInterval = 0.0f;
 }
 
 CMomentumPaintGun::~CMomentumPaintGun()
@@ -39,13 +40,6 @@ CMomentumPaintGun::~CMomentumPaintGun()
     m_pSettingsPanel->DeletePanel();
     m_pSettingsPanel = nullptr;
 #endif
-}
-
-void CMomentumPaintGun::RifleFire()
-{
-    // Hardcoded here so people don't change the text files for easy spam
-    if (!BaseGunFire(0.0f, GetPrimaryCycleTime(), true))
-        return;
 }
 
 void CMomentumPaintGun::GetControlPanelInfo(int nPanelIndex, const char*& pPanelName)
@@ -92,7 +86,10 @@ int C_MomentumPaintGun::DrawOverriddenViewmodel(C_BaseViewModel* pViewmodel, int
 }
 #endif
 
-void CMomentumPaintGun::PrimaryAttack() { RifleFire(); }
+void CMomentumPaintGun::PrimaryAttack()
+{
+    BaseGunFire(0.0f, GetPrimaryCycleTime(), true);
+}
 
 void CMomentumPaintGun::SecondaryAttack()
 {
