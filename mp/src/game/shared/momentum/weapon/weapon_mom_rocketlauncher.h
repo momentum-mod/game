@@ -33,7 +33,6 @@ class CMomentumRocketLauncher : public CWeaponBaseGun
     float DeployTime() const OVERRIDE { return 0.5f; }
 
   private:
-    void RocketLauncherFire();
     CNetworkVar(int, m_iTFViewIndex);
     CNetworkVar(int, m_iTFWorldIndex);
     CNetworkVar(int, m_iMomViewIndex);

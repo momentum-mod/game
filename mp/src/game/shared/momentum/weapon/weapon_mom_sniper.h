@@ -24,7 +24,5 @@ class CMomentumSniper : public CWeaponBaseGun
     CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
 
   private:
-    void SniperFire();
-
     int m_iRequestedFOV;
 };

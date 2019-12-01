@@ -24,7 +24,6 @@ class CMomentumPistol : public CWeaponBaseGun
 
     void ItemPostFrame() OVERRIDE;
 
-    void PistolFire();
     void FireRemaining(int &shotsFired, float &shootTime) const;
 #ifdef WEAPONS_USE_AMMO
     bool Reload() OVERRIDE;

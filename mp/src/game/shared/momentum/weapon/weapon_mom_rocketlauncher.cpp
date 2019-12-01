@@ -143,7 +143,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
     }
 }
 
-void CMomentumRocketLauncher::RocketLauncherFire()
+void CMomentumRocketLauncher::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
@@ -202,8 +202,6 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     g_pMomentumGhostClient->SendDecalPacket(&rocket);
 #endif
 }
-
-void CMomentumRocketLauncher::PrimaryAttack() { RocketLauncherFire(); }
 
 bool CMomentumRocketLauncher::CanDeploy()
 {

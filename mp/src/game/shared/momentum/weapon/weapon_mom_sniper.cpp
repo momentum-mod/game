@@ -57,7 +57,6 @@ void CMomentumSniper::SecondaryAttack()
 
     pPlayer->SetFOV(pPlayer, m_iRequestedFOV, flRate);
 
-    // MOM_TODO: Consider LJ gametype
     // pPlayer->ResetMaxSpeed();
 #endif
 
@@ -72,9 +71,7 @@ void CMomentumSniper::SecondaryAttack()
 #endif
 }
 
-void CMomentumSniper::PrimaryAttack(void) { SniperFire(); }
-
-void CMomentumSniper::SniperFire()
+void CMomentumSniper::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -98,7 +95,6 @@ void CMomentumSniper::SniperFire()
     pPlayer->SetPunchAngle(angle);
 }
 
-// MOM_TODO: Consider LJ gametype
 float CMomentumSniper::GetMaxSpeed() const
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
