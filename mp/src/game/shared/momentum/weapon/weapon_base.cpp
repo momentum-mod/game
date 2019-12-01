@@ -22,7 +22,6 @@ extern IVModelInfoClient* modelinfo;
 
 #include "te_effect_dispatch.h"
 #include "KeyValues.h"
-#include "cs_ammodef.h"
 
 extern IVModelInfo* modelinfo;
 
