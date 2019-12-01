@@ -55,28 +55,24 @@ inline void UTIL_TraceLineIgnoreTwoEntities(const Vector &vecAbsStart, const Vec
 void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
                                  const QAngle &shootAngles, // shooting angle
                                  float vecSpread,           // spread vector
-                                 float flDistance,          // max distance
-                                 int iPenetration,          // how many obstacles can be penetrated
                                  int iBulletType,           // ammo type
-                                 int iDamage,               // base damage
-                                 float flRangeModifier,     // damage range modifier
                                  CBaseEntity *pevAttacker,  // shooter
                                  bool bDoEffects,           // Is this the client DLL?
                                  float x, float y)
 {
-    float fCurrentDamage = iDamage; // damage of the bullet at its current trajectory
+    float fCurrentDamage = g_pAmmoDef->DamageAmount(iBulletType); // damage of the bullet at its current trajectory
     float flCurrentDistance = 0.0f;  // distance that the bullet has traveled so far
 
     Vector vecDirShooting, vecRight, vecUp;
     AngleVectors(shootAngles, &vecDirShooting, &vecRight, &vecUp);
 
-    float flPenetrationPower = 0.0f;    // thickness of a wall that this bullet can penetrate
-    float flPenetrationDistance = 0.0f; // distance at which the bullet is capable of penetrating a wall
+    int iPenetration = g_pAmmoDef->PenetrationAmount(iBulletType);
+    float flPenetrationPower = g_pAmmoDef->PenetrationPower(iBulletType);    // thickness of a wall that this bullet can penetrate
+    float flPenetrationDistance = g_pAmmoDef->PenetrationDistance(iBulletType); // distance at which the bullet is capable of penetrating a wall
     float flDamageModifier = 0.5f;    // default modification of bullets power after they go through a wall.
     float flPenetrationModifier = 1.f;
-    bool bPaintGun = false;
-
-    GetBulletTypeParameters(iBulletType, flPenetrationPower, flPenetrationDistance, bPaintGun);
+    bool bPaintGun = iBulletType == AMMO_TYPE_PAINT;
+    float flDistance = g_pAmmoDef->Range(iBulletType);
 
     if (!pevAttacker)
         pevAttacker = this; // the default attacker is ourselves
@@ -161,7 +157,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
 
         // calculate the damage based on the distance the bullet travelled.
         flCurrentDistance += tr.fraction * flDistance;
-        fCurrentDamage *= pow(flRangeModifier, (flCurrentDistance / 500));
+        fCurrentDamage *= pow(g_pAmmoDef->RangeModifier(iBulletType), (flCurrentDistance / 500));
 
         // check if we reach penetration distance, no more penetrations after that
         if (flCurrentDistance > flPenetrationDistance && iPenetration > 0)

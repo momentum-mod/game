@@ -127,9 +127,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
 
 
-    void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
-                    int iBulletType, int iDamage, float flRangeModifier, CBaseEntity *pevAttacker, bool bDoEffects,
-                    float x, float y);
+    void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, 
+                    CBaseEntity *pevAttacker, bool bDoEffects, float x, float y);
 
     void KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max,
                   float lateral_max, int direction_change);
