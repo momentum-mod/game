@@ -208,10 +208,8 @@ public:
 	virtual int			GiveAmmo( int iCount, int iAmmoIndex, bool bSuppressSound = false );
 	int					GiveAmmo( int iCount, const char *szName, bool bSuppressSound = false );
 	virtual void		RemoveAmmo( int iCount, int iAmmoIndex );
-	virtual void		RemoveAmmo( int iCount, const char *szName );
 	void				RemoveAllAmmo( );
 	virtual int			GetAmmoCount( int iAmmoIndex ) const;
-	int					GetAmmoCount( char *szName ) const;
 
 	virtual Activity	NPC_TranslateActivity( Activity baseAct );
 

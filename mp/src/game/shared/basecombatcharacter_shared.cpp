@@ -139,11 +139,6 @@ void CBaseCombatCharacter::RemoveAmmo( int iCount, int iAmmoIndex )
 	m_iAmmo.Set( iAmmoIndex, MAX( m_iAmmo[iAmmoIndex] - iCount, 0 ) );
 }
 
-void CBaseCombatCharacter::RemoveAmmo( int iCount, const char *szName )
-{
-	RemoveAmmo( iCount, GetAmmoDef()->Index(szName) );
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -180,14 +175,6 @@ int CBaseCombatCharacter::GetAmmoCount( int iAmmoIndex ) const
 		return 999;
 
 	return m_iAmmo[ iAmmoIndex ];
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns the amount of ammunition of the specified type the character's carrying
-//-----------------------------------------------------------------------------
-int	CBaseCombatCharacter::GetAmmoCount( char *szName ) const
-{
-	return GetAmmoCount( GetAmmoDef()->Index(szName) );
 }
 
 //-----------------------------------------------------------------------------
