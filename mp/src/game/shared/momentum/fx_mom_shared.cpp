@@ -206,8 +206,7 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
             iSeed++; // use new seed for next bullet
         }
 
-        pPlayer->FireBullet(vOrigin, vAngles, flSpread, flRange, iPenetration, iAmmoType, iDamage, flRangeModifier,
-                            pAttacker, bDoEffects, x, y);
+        pPlayer->FireBullet(vOrigin, vAngles, flSpread, iAmmoType, pAttacker, bDoEffects, x, y);
     }
 
 #ifndef CLIENT_DLL
