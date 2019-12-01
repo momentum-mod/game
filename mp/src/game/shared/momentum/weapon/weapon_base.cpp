@@ -71,7 +71,7 @@ int AliasToWeaponID(const char *alias)
 //
 const char *WeaponIDToAlias(int id)
 {
-    if ((id >= WEAPON_MAX) || (id < 0))
+    if (id >= WEAPON_MAX || id < 0)
         return nullptr;
 
     return s_WeaponAliasInfo[id];
@@ -198,7 +198,7 @@ void CWeaponBase::ItemPostFrame()
     if (!pPlayer)
         return;
 
-    if ((m_bInReload) && (pPlayer->m_flNextAttack <= gpGlobals->curtime))
+    if (m_bInReload && pPlayer->m_flNextAttack <= gpGlobals->curtime)
     {
         // complete the reload. 
         int j = min(GetMaxClip1() - m_iClip1, pPlayer->GetAmmoCount(m_iPrimaryAmmoType));
@@ -210,7 +210,7 @@ void CWeaponBase::ItemPostFrame()
         m_bInReload = false;
     }
 
-    if ((pPlayer->m_nButtons & IN_ATTACK2) && (m_flNextSecondaryAttack <= gpGlobals->curtime))
+    if (pPlayer->m_nButtons & IN_ATTACK2 && m_flNextSecondaryAttack <= gpGlobals->curtime)
     {
         if (m_iClip2 != -1 && !pPlayer->GetAmmoCount(GetSecondaryAmmoType()))
         {
@@ -221,9 +221,9 @@ void CWeaponBase::ItemPostFrame()
 
         pPlayer->m_nButtons &= ~IN_ATTACK2;
     }
-    else if ((pPlayer->m_nButtons & IN_ATTACK) && (m_flNextPrimaryAttack <= gpGlobals->curtime))
+    else if (pPlayer->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack <= gpGlobals->curtime)
     {
-        if ((m_iClip1 == 0/* && pszAmmo1()*/) || (GetMaxClip1() == -1 && !pPlayer->GetAmmoCount(GetPrimaryAmmoType())))
+        if (m_iClip1 == 0/* && pszAmmo1()*/ || GetMaxClip1() == -1 && !pPlayer->GetAmmoCount(GetPrimaryAmmoType()))
         {
             m_bFireOnEmpty = true;
         }
@@ -261,16 +261,16 @@ void CWeaponBase::ItemPostFrame()
         }
         else
         {
-            if ((pPlayer->m_iShotsFired > 0) && (m_flDecreaseShotsFired < gpGlobals->curtime))
+            if (pPlayer->m_iShotsFired > 0 && m_flDecreaseShotsFired < gpGlobals->curtime)
             {
                 m_flDecreaseShotsFired = gpGlobals->curtime + 0.0225f;
                 --pPlayer->m_iShotsFired;
             }
         }
 
-        if ((!IsUseable() && m_flNextPrimaryAttack < gpGlobals->curtime)
+        if (!IsUseable() && m_flNextPrimaryAttack < gpGlobals->curtime
 #ifdef CLIENT_DLL
-            || (m_bInReloadAnimation)
+            || m_bInReloadAnimation
 #endif
             )
         {
@@ -325,14 +325,13 @@ const char *CWeaponBase::GetViewModel(int /*viewmodelindex = 0 -- this is ignore
         return BaseClass::GetViewModel();
     }
 
-    return GetMomWpnData().szViewModel;
+    return GetWpnData().szViewModel;
 }
 
 // Overridden for the CS gun overrides, since GetClassname returns the weapon_glock etc, instead
 // of the weapon_momentum_* class. So we do a little workaround with the weapon ID.
 void CWeaponBase::Precache(void)
 {
-    m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
     PrecacheScriptSound("Default.ClipEmpty_Pistol");
     PrecacheScriptSound("Default.ClipEmpty_Rifle");
     PrecacheScriptSound("Default.Zoom");
@@ -541,7 +540,7 @@ void CWeaponBase::Drop(const Vector &vecVelocity)
 // for a little while.  But if they throw it at someone else, the other player should get it immediately.
 void CWeaponBase::DefaultTouch(CBaseEntity *pOther)
 {
-    if (m_prevOwner && (pOther == m_prevOwner) && (gpGlobals->curtime < m_nextPrevOwnerTouchTime))
+    if (m_prevOwner && pOther == m_prevOwner && gpGlobals->curtime < m_nextPrevOwnerTouchTime)
     {
         return;
     }
@@ -838,11 +837,11 @@ float CWeaponBase::CalcViewmodelBob(void)
 
     //NOTENOTE: For now, let this cycle continue when in the air, because it snaps badly without it
 
-    if ((!gpGlobals->frametime) ||
-        (player == nullptr) ||
-        (cl_bobcycle.GetFloat() <= 0.0f) ||
-        (cl_bobup.GetFloat() <= 0.0f) ||
-        (cl_bobup.GetFloat() >= 1.0f))
+    if (!gpGlobals->frametime ||
+        player == nullptr ||
+        cl_bobcycle.GetFloat() <= 0.0f ||
+        cl_bobup.GetFloat() <= 0.0f ||
+        cl_bobup.GetFloat() >= 1.0f)
     {
         //NOTENOTE: We don't use this return value in our case (need to restructure the calculation function setup!)
         return 0.0f;// just use old value
