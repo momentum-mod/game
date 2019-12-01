@@ -132,7 +132,7 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
         }
         else
         {
-            decalPacket = DecalPacket::Bullet( vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+            decalPacket = DecalPacket::Bullet( vOrigin, vAngles, iAmmoType, bSecondaryMode, iSeed, flSpread);
         }
 
         g_pMomentumGhostClient->SendDecalPacket(&decalPacket);

@@ -338,7 +338,7 @@ void CMomentumGrenade::ThrowGrenade()
 #ifdef GAME_DLL
     // Online uses angles, but we're packing 3 floats so whatever
     QAngle vecThrowOnline(vecThrow.x, vecThrow.y, vecThrow.z);
-    DecalPacket packet = DecalPacket::Bullet(vecSrc, vecThrowOnline, WEAPON_GRENADE, impulseInt, 0, 0.0f);
+    DecalPacket packet = DecalPacket::Bullet(vecSrc, vecThrowOnline, AMMO_TYPE_GRENADE, impulseInt, 0, 0.0f);
     g_pMomentumGhostClient->SendDecalPacket(&packet);
 #endif
 
