@@ -81,7 +81,7 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
     switch (decal.decal_type)
     {
     case DECAL_BULLET:
-        if (decal.data.bullet.iWeaponID == WEAPON_GRENADE)
+        if (decal.data.bullet.iAmmoType == AMMO_TYPE_GRENADE)
         {
             // Grenades behave differently
             ThrowGrenade(decal);
@@ -92,7 +92,7 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
                 entindex(),
                 decal.vOrigin,
                 decal.vAngle,
-                decal.data.bullet.iWeaponID,
+                decal.data.bullet.iAmmoType,
                 decal.data.bullet.iMode,
                 decal.data.bullet.iSeed,
                 decal.data.bullet.fSpread);

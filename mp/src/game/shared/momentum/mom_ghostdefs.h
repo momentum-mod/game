@@ -220,7 +220,7 @@ enum DecalType
 
 struct BulletDecalData
 {
-    int iWeaponID;
+    int iAmmoType;
     int iMode;
     int iSeed;
     float fSpread;
@@ -264,10 +264,10 @@ class DecalPacket : public MomentumPacket
 
     DecalPacket() {}
 
-    static DecalPacket Bullet(Vector origin, QAngle angle, int iWeaponID, int iMode, int iSeed, float fSpread)
+    static DecalPacket Bullet(Vector origin, QAngle angle, int iAmmoType, int iMode, int iSeed, float fSpread)
     {
         DecalPacket packet(DECAL_BULLET, origin, angle);
-        packet.data.bullet.iWeaponID = iWeaponID;
+        packet.data.bullet.iAmmoType = iAmmoType;
         packet.data.bullet.iMode = iMode;
         packet.data.bullet.iSeed = iSeed;
         packet.data.bullet.fSpread = fSpread;
