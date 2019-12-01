@@ -5,13 +5,6 @@ WeaponData
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "ak"
     
-    // Weapon characteristics:
-    "Penetration"       "2"
-    "Damage"            "36"
-    "Range"             "8192"
-    "RangeModifier"     "0.98"
-    "Bullets"           "1"
-    
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Rifle"
     "viewmodel"         "models/weapons/v_irifle.mdl"
@@ -22,9 +15,6 @@ WeaponData
     "bucket_position"   "3"
 
     "clip_size"         "30"
-    
-    "primary_ammo"          "BULLET_PLAYER_762MM"
-    "secondary_ammo"        "None"
 
     "weight"            "25"
     "item_flags"        "0"
@@ -74,19 +64,6 @@ WeaponData
                 "y"         "48"
                 "width"     "24"
                 "height"    "24"
-        }
-    }
-    ModelBounds
-    {
-        Viewmodel
-        {
-            Mins    "-9 -3 -13"
-            Maxs    "30 11 0"
-        }
-        World
-        {
-            Mins    "-9 -9 -9"
-            Maxs    "30 9 7"
         }
     }
 }

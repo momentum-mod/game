@@ -5,13 +5,6 @@ WeaponData
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "ak"
     
-    // Weapon characteristics:
-    "Penetration"       "1"
-    "Damage"            "90"
-    "Range"             "8192"
-    "RangeModifier"     "0.98"
-    "Bullets"           "0"
-    
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_RocketLauncher"
     "viewmodel"         "models/weapons/v_rpg_edit.mdl"
@@ -22,9 +15,6 @@ WeaponData
     "bucket_position"   "0"
 
     "clip_size"         "4"
-    
-    "primary_ammo"          "AMMO_TYPE_ROCKET"
-    "secondary_ammo"        "None"
 
     "weight"            "25"
     "item_flags"        "0"
@@ -82,19 +72,6 @@ WeaponData
                 "y"         "48"
                 "width"     "24"
                 "height"    "24"
-        }
-    }
-    ModelBounds
-    {
-        Viewmodel
-        {
-            Mins    "-9 -3 -13"
-            Maxs    "30 11 0"
-        }
-        World
-        {
-            Mins    "-9 -9 -9"
-            Maxs    "30 9 7"
         }
     }
 }
