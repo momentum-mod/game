@@ -613,7 +613,6 @@ $Project
 		$File	"TemplateEntities.h"
 		$File	"tempmonster.cpp"
 		$File	"tesla.cpp"
-		$File	"test_proxytoggle.cpp"
 		$File	"test_stressentities.cpp"
 		$File	"testtraceline.cpp"
 		$File	"timedeventmgr.cpp"
