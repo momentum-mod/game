@@ -270,7 +270,6 @@ $Project
 		$File	"c_sun.cpp"
 		$File	"c_team.cpp"
 		$File	"c_tesla.cpp"
-		$File	"c_test_proxytoggle.cpp"
 		$File	"c_user_message_register.cpp"
 		$File	"c_vehicle_choreo_generic.cpp"
 		$File	"c_vehicle_jeep.cpp"
