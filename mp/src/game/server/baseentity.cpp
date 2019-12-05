@@ -5356,12 +5356,6 @@ public:
 			return;
 		}
 
-        if (!CommandLine()->FindParm("-mapping"))
-        {
-            Warning("Launch the game with -mapping to be able to use ent_fire!\n");
-            return;
-        }
-
 		// fires a command from the console
 		if ( command.ArgC() < 2 )
 		{
@@ -7369,12 +7363,6 @@ void CC_Ent_Create( const CCommand& args )
 		return;
 	}
 
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to be able to use ent_create!\n");
-        return;
-    }
-
 	// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
 	if ( !Q_stricmp( args[1], "point_servercommand" ) )
 	{
@@ -7499,12 +7487,6 @@ void CC_Ent_Teleport( const CCommand& args )
 		return;
 	}
 
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use ent_teleport!\n");
-        return;
-    }
-
 	CBaseEntity *pEnt;
 	Vector vecTargetPoint;
 	if ( CC_GetCommandEnt( args, &pEnt, &vecTargetPoint, NULL ) )
@@ -7525,12 +7507,6 @@ void CC_Ent_Orient( const CCommand& args )
 		Msg( "Format: ent_orient <entity name> <optional: allangles>\n" );
 		return;
 	}
-
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use ent_orient!\n");
-        return;
-    }
 
 	CBaseEntity *pEnt;
 	QAngle vecPlayerAngles;
