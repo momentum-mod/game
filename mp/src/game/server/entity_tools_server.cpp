@@ -521,12 +521,6 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CServerChoreoTools, IServerChoreoTools, VSERV
 //------------------------------------------------------------------------------
 void CC_Ent_Keyvalue( const CCommand &args )
 {
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use ent_keyvalue!\n");
-        return;
-    }
-
 	// Must have an odd number of arguments.
 	if ( ( args.ArgC() < 4 ) || ( args.ArgC() & 1 ) )
 	{

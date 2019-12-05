@@ -1184,7 +1184,7 @@ static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", F
 //------------------------------------------------------------------------------
 // Sets client to godmode
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats and -mapping).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats and -mapping).", FCVAR_MAPPING )
 {
 	if ( !sv_cheats->GetBool() )
 		return;
@@ -1192,12 +1192,6 @@ CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats and
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
-
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use setpos!\n");
-        return;
-    }
 
 	if ( args.ArgC() < 3 )
 	{
@@ -1233,12 +1227,6 @@ void CC_setang_f (const CCommand &args)
 	if ( !pPlayer )
 		return;
 
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use setang!\n");
-        return;
-    }
-
 	if ( args.ArgC() < 3 )
 	{
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "Usage:  setang pitch yaw <roll optional>\n");
@@ -1255,7 +1243,7 @@ void CC_setang_f (const CCommand &args)
 	pPlayer->SnapEyeAngles( newang );
 }
 
-static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats and -mapping).", FCVAR_CHEAT );
+static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats and -mapping).", FCVAR_MAPPING );
 
 static float GetHexFloat( const char *pStr )
 {
@@ -1271,7 +1259,7 @@ static float GetHexFloat( const char *pStr )
 //------------------------------------------------------------------------------
 // Move position
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats and -mapping).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats and -mapping).", FCVAR_MAPPING )
 {
 	if ( !sv_cheats->GetBool() )
 		return;
@@ -1279,12 +1267,6 @@ CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must hav
 	CMomentumPlayer *pPlayer = ToCMOMPlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
-
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use setpos_exact!\n");
-        return;
-    }
 
 	if ( args.ArgC() < 3 )
 	{

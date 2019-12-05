@@ -6,7 +6,6 @@
 #include "mom_player.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
-#include "icommandline.h"
 
 #include "tier0/memdbgon.h"
 
@@ -17,8 +16,8 @@ static void VectorSnapToGrid(Vector &dest, float gridsize);
 static float SnapToGrid(float fl, float gridsize);
 static void DrawReticle(const Vector &pos, float retsize);
 
-static MAKE_TOGGLE_CONVAR_C(mom_zone_edit, "0", FCVAR_CHEAT, "Toggle zone editing.\n", OnZoneEditingToggled);
 static MAKE_TOGGLE_CONVAR(mom_zone_ignorewarning, "0", FCVAR_CHEAT,
+static MAKE_TOGGLE_CONVAR_C(mom_zone_edit, "0", FCVAR_MAPPING, "Toggle zone editing.\n", OnZoneEditingToggled);
                           "Lets you create zones despite map already having start and end.\n");
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 1.0f, true, 64.0f);
 static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
@@ -288,13 +287,6 @@ static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flO
 
 void OnZoneEditingToggled(IConVar *var, const char *pOldVal, float fOldVal)
 {
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use the zone tools!\n");
-        ConVarRef(var).SetValue(0);
-        return;
-    }
-
     ConVarRef varRef(var);
     if (!varRef.GetBool())
     {
