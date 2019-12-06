@@ -82,8 +82,8 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
         Warning("Cannot start timer while using save loc menu!\n");
         return false;
     }
-    static ConVarRef mom_zone_edit("mom_zone_edit");
-    if (mom_zone_edit.GetBool())
+    static ConVarRef mom_zone_edit("mom_zone_edit", true);
+    if (mom_zone_edit.IsValid() && mom_zone_edit.GetBool())
     {
         Warning("Cannot start timer while editing zones!\n");
         return false;
