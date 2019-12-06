@@ -779,9 +779,9 @@ void CMomPointZoneBuilder::DrawDebugLines(CMomHulls_t &hulls) const
 {
     // Draw the hulls
     // Very useful for debugging
-    ConVarRef mom_zone_debug("mom_zone_debug");
+    ConVarRef mom_zone_debug("mom_zone_debug", true);
 
-    if (mom_zone_debug.GetInt() == 0)
+    if (!mom_zone_debug.IsValid() || mom_zone_debug.GetInt() == 0)
         return;
 
 

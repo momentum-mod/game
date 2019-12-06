@@ -35,17 +35,17 @@ static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_MAPPING);
 static MAKE_TOGGLE_CONVAR_C(mom_zone_usenewmethod, "0", FCVAR_MAPPING, "If 1, use a new point-based zoning method (by Mehis).\n", OnZoningMethodChanged);
 static MAKE_TOGGLE_CONVAR(mom_zone_crosshair, "1", FCVAR_MAPPING, "Toggles the drawing of the zoning crosshair/reticle.");
 
-CON_COMMAND_F(mom_zone_zoomin, "Decrease reticle maximum distance.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_zoomin, "Decrease reticle maximum distance.\n", FCVAR_MAPPING)
 {
     g_MapZoneSystem.GetZoneEditor()->DecreaseZoom(mom_zone_grid.GetFloat());
 }
 
-CON_COMMAND_F(mom_zone_zoomout, "Increase reticle maximum distance.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_zoomout, "Increase reticle maximum distance.\n", FCVAR_MAPPING)
 {
     g_MapZoneSystem.GetZoneEditor()->IncreaseZoom(mom_zone_grid.GetFloat());
 }
 
-CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_MAPPING)
 {
     // MOM_TODO: Deleting a zone while a player is inside it causes some weird issues, need to investigate
     if (!mom_zone_edit.GetBool())
@@ -88,7 +88,7 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
     }
 }
 
-CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity index.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity index.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -124,7 +124,7 @@ CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity in
 CON_COMMAND_F(
     mom_zone_start_setlook,
     "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n",
-    FCVAR_CHEAT)
+    FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -163,7 +163,7 @@ CON_COMMAND_F(
     }
 }
 
-CON_COMMAND_F(mom_zone_mark, "Starts building a zone.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_mark, "Starts building a zone.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -171,7 +171,7 @@ CON_COMMAND_F(mom_zone_mark, "Starts building a zone.\n", FCVAR_CHEAT)
     g_MapZoneSystem.GetZoneEditor()->OnMark();
 }
 
-CON_COMMAND_F(mom_zone_cancel, "Cancel the building of the current zone.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_cancel, "Cancel the building of the current zone.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -179,7 +179,7 @@ CON_COMMAND_F(mom_zone_cancel, "Cancel the building of the current zone.\n", FCV
     g_MapZoneSystem.GetZoneEditor()->OnCancel();
 }
 
-CON_COMMAND_F(mom_zone_back, "Go back a step when zone building.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_back, "Go back a step when zone building.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -187,7 +187,7 @@ CON_COMMAND_F(mom_zone_back, "Go back a step when zone building.\n", FCVAR_CHEAT
     g_MapZoneSystem.GetZoneEditor()->OnRemove();
 }
 
-CON_COMMAND_F(mom_zone_create, "Create the zone.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_create, "Create the zone.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -197,7 +197,7 @@ CON_COMMAND_F(mom_zone_create, "Create the zone.\n", FCVAR_CHEAT)
 
 CON_COMMAND_F(mom_zone_info,
               "Sends info about the trigger that is being looked at (if one exists). Internal usage only.\n",
-              FCVAR_HIDDEN)
+              FCVAR_HIDDEN | FCVAR_MAPPING)
 {
     class CZoneTriggerTraceEnum : public IEntityEnumerator
     {
