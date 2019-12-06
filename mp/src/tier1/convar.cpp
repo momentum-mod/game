@@ -783,20 +783,19 @@ void ConVar::InternalSetValue( const char *value )
 			return;
 		}
 	}
-
+	
 	float fNewValue;
 	char  tempVal[ 32 ];
-	char  *val;
+    char *val = (char *)value;
 
 	Assert(m_pParent == this); // Only valid for root convars.
 
 	float flOldValue = m_fValue;
 
-	val = (char *)value;
 	if ( !value )
 		fNewValue = 0.0f;
 	else
-		fNewValue = ( float )atof( value );
+		fNewValue = V_atof( value );
 
 	if ( ClampValue( fNewValue ) )
 	{
@@ -885,94 +884,23 @@ bool ConVar::ClampValue( float& value )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: MOM_TODO REMOVEME WHEN ENGINE LICENSE HAPPENS
 // Input  : *value - 
 //-----------------------------------------------------------------------------
-void ConVar::InternalSetFloatValue( float fNewValue )
-{
-	if ( fNewValue == m_fValue )
-		return;
-
-	if ( IsFlagSet( FCVAR_MATERIAL_THREAD_MASK ) )
-	{
-		if ( g_pCVar && !g_pCVar->IsMaterialThreadSetAllowed() )
-		{
-			g_pCVar->QueueMaterialThreadSetValue( this, fNewValue );
-			return;
-		}
-	}
-
-	Assert( m_pParent == this ); // Only valid for root convars.
-
-	// Check bounds
-	ClampValue( fNewValue );
-
-	// Redetermine value
-	float flOldValue = m_fValue;
-	m_fValue		= fNewValue;
-	m_nValue		= ( int )m_fValue;
-
-	if ( !( m_nFlags & FCVAR_NEVER_AS_STRING ) )
-	{
-		char tempVal[ 32 ];
-		Q_snprintf( tempVal, sizeof( tempVal), "%f", m_fValue );
-		ChangeStringValue( tempVal, flOldValue );
-	}
-	else
-	{
-		Assert( !m_fnChangeCallback );
-	}
-}
+void ConVar::InternalSetFloatValue( float fNewValue ) {}
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: MOM_TODO REMOVEME WHEN ENGINE LICENSE HAPPENS
 // Input  : *value - 
 //-----------------------------------------------------------------------------
-void ConVar::InternalSetIntValue( int nValue )
-{
-	if ( nValue == m_nValue )
-		return;
-
-	if ( IsFlagSet( FCVAR_MATERIAL_THREAD_MASK ) )
-	{
-		if ( g_pCVar && !g_pCVar->IsMaterialThreadSetAllowed() )
-		{
-			g_pCVar->QueueMaterialThreadSetValue( this, nValue );
-			return;
-		}
-	}
-
-	Assert( m_pParent == this ); // Only valid for root convars.
-
-	float fValue = (float)nValue;
-	if ( ClampValue( fValue ) )
-	{
-		nValue = ( int )( fValue );
-	}
-
-	// Redetermine value
-	float flOldValue = m_fValue;
-	m_fValue		= fValue;
-	m_nValue		= nValue;
-
-	if ( !( m_nFlags & FCVAR_NEVER_AS_STRING ) )
-	{
-		char tempVal[ 32 ];
-		Q_snprintf( tempVal, sizeof( tempVal ), "%d", m_nValue );
-		ChangeStringValue( tempVal, flOldValue );
-	}
-	else
-	{
-		Assert( !m_fnChangeCallback );
-	}
-}
+void ConVar::InternalSetIntValue( int nValue ) {}
 
 //-----------------------------------------------------------------------------
 // Purpose: Private creation
 //-----------------------------------------------------------------------------
 void ConVar::Create( const char *pName, const char *pDefaultValue, int flags /*= 0*/,
 	const char *pHelpString /*= NULL*/, bool bMin /*= false*/, float fMin /*= 0.0*/,
-	bool bMax /*= false*/, float fMax /*= false*/, FnChangeCallback_t callback /*= NULL*/ )
+	bool bMax /*= false*/, float fMax /*= false*/, FnChangeCallback_t callback /*= nullptr*/ )
 {
 	m_pParent = this;
 
@@ -1013,8 +941,10 @@ void ConVar::Create( const char *pName, const char *pDefaultValue, int flags /*=
 //-----------------------------------------------------------------------------
 void ConVar::SetValue(const char *value)
 {
-	ConVar *var = ( ConVar * )m_pParent;
-	var->InternalSetValue( value );
+	if (!Q_strcmp(value, m_pParent->GetString()))
+		return;
+
+	m_pParent->InternalSetValue( value );
 }
 
 //-----------------------------------------------------------------------------
@@ -1023,8 +953,12 @@ void ConVar::SetValue(const char *value)
 //-----------------------------------------------------------------------------
 void ConVar::SetValue( float value )
 {
-	ConVar *var = ( ConVar * )m_pParent;
-	var->InternalSetFloatValue( value );
+	if (CloseEnough(value, m_pParent->GetFloat(), FLT_EPSILON))
+		return;
+
+	char temp[32];
+	Q_snprintf(temp, sizeof(temp), "%f", value);
+	m_pParent->InternalSetValue( temp );
 }
 
 //-----------------------------------------------------------------------------
@@ -1033,8 +967,12 @@ void ConVar::SetValue( float value )
 //-----------------------------------------------------------------------------
 void ConVar::SetValue( int value )
 {
-	ConVar *var = ( ConVar * )m_pParent;
-	var->InternalSetIntValue( value );
+	if (value == m_pParent->GetInt())
+		return;
+
+    char temp[32];
+    Q_snprintf(temp, sizeof(temp), "%d", value);
+    m_pParent->InternalSetValue(temp);
 }
 
 //-----------------------------------------------------------------------------
@@ -1042,9 +980,7 @@ void ConVar::SetValue( int value )
 //-----------------------------------------------------------------------------
 void ConVar::Revert( void )
 {
-	// Force default value again
-	ConVar *var = ( ConVar * )m_pParent;
-	var->SetValue( var->m_pszDefaultValue );
+	m_pParent->SetValue( m_pParent->m_pszDefaultValue );
 }
 
 //-----------------------------------------------------------------------------
