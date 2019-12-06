@@ -8,19 +8,15 @@
 #include "cbase.h"
 #include "c_baseviewmodel.h"
 #include "model_types.h"
-#include "hud.h"
 #include "view_shared.h"
 #include "iviewrender.h"
 #include "view.h"
-#include "mathlib/vmatrix.h"
 #include "cl_animevent.h"
 #include "eventlist.h"
 #include "tools/bonelist.h"
-#include <KeyValues.h>
 #include "hltvcamera.h"
-#ifdef TF_CLIENT_DLL
-	#include "tf_weaponbase.h"
-#endif
+#include "mom_shareddefs.h"
+#include "c_mom_player.h"
 
 #if defined( REPLAY_ENABLED )
 #include "replay/replaycamera.h"
@@ -31,11 +27,23 @@
 // NVNT haptics system interface
 #include "haptics/ihaptics.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar cl_righthand( "cl_righthand", "1", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Use right-handed view models." );
+MAKE_TOGGLE_CONVAR_CV(cl_righthand, "1", FCVAR_ARCHIVE, "Use right-handed view models. 1 = ON, 0 = OFF.\n", nullptr, [](IConVar *pVar, const char *pVal)
+{
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (pPlayer)
+    {
+        if (pPlayer->m_Data.m_bTimerRunning)
+        {
+            Warning("Cannot change cl_righthand while in a run! Stop the timer to be able to change it.\n");
+            return false;
+        }
+    }
+
+    return true;
+});
 
 #ifdef TF_CLIENT_DLL
 	ConVar cl_flipviewmodels( "cl_flipviewmodels", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Flip view models." );

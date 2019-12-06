@@ -100,7 +100,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
 #ifdef GAME_DLL
     static ConVarRef cl_righthand("cl_righthand");
 #else
-    extern ConVar cl_righthand;
+    extern ConVar_Validated cl_righthand;
     static ConVarRef mom_rj_center_fire("mom_rj_center_fire");
 #endif
 
