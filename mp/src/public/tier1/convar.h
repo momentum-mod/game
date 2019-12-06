@@ -379,6 +379,8 @@ private:
 	// Called by CCvar when the value of a var is changing.
 	virtual void				InternalSetValue(const char *value);
 	// For CVARs marked FCVAR_NEVER_AS_STRING
+	// These are pointless but cannot be removed due to not having engine license... fun...
+	// MOM_TODO remove these if we get engine!
 	virtual void				InternalSetFloatValue( float fNewValue );
 	virtual void				InternalSetIntValue( int nValue );
 
