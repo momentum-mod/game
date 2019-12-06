@@ -6,6 +6,7 @@
 
 #ifdef GAME_DLL
 #include "momentum/ghost_client.h"
+#include "momentum/mom_timer.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -33,8 +34,18 @@ LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
-                          "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR_CV(mom_rj_center_fire, "0", FCVAR_ARCHIVE, "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n", nullptr,
+    [](IConVar *pVar, const char *pNewVal)
+    {
+        if (g_pMomentumTimer->IsRunning())
+        {
+            Warning("Cannot change rocket firing mode while in a run! Stop your timer to be able to change it.\n");
+            return false;
+        }
+
+        return true;
+    }
+);
 static MAKE_TOGGLE_CONVAR(mom_rj_use_tf_viewmodel, "0", FCVAR_ARCHIVE,
                           "Toggles between the TF2 Rocket Launcher model and the Momentum one. 0 = Momentum, 1 = TF2\n");
 static MAKE_CONVAR(mom_rj_sounds, "1", FCVAR_ARCHIVE,
