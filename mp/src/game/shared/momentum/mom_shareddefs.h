@@ -223,6 +223,11 @@ enum SpectateMessageType_t
     if (eventServer && eventClient) \
     { gameeventmanager->FireEvent(eventServer, true); gameeventmanager->FireEventClientSide(eventClient); }
 
+
+// Creates a convar with a callback and validator function
+#define MAKE_CONVAR_CV(name, defaultval, flags, desc, minVal, maxVal, callback, validator)                                    \
+    ConVar_Validated name(#name, defaultval, flags, desc, true, minVal, true, maxVal, callback, validator)
+
 // Creates a convar with a callback function
 #define MAKE_CONVAR_C(name, defaultval, flags, desc, minVal, maxVal, callback)                                                \
     ConVar name(#name, defaultval, flags, desc, true, minVal, true, maxVal, callback)
@@ -234,7 +239,12 @@ enum SpectateMessageType_t
 //Creates a CONVAR with 0 as the minimum value, and 1 as the max value. Useful for toggle variables.
 #define MAKE_TOGGLE_CONVAR(name, defaultval, flags, desc) MAKE_CONVAR(name, defaultval, flags, desc, 0, 1)
 
+// Creates a toggle convar with a callback function
 #define MAKE_TOGGLE_CONVAR_C(name, defaultval, flags, desc, callback) MAKE_CONVAR_C(name, defaultval, flags, desc, 0, 1, callback)
+
+// Creates a toggle convar with a callback and validator function
+#define MAKE_TOGGLE_CONVAR_CV(name, defaultval, flags, desc, callback, validator) \
+    MAKE_CONVAR_CV(name, defaultval, flags, desc, 0, 1, callback, validator)
 
 //Flags for a HUD cvar (usually)
 #define FLAG_HUD_CVAR (FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED)
