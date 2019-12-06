@@ -95,6 +95,8 @@ class CCommand;
 //-----------------------------------------------------------------------------
 typedef void ( *FnChangeCallback_t )( IConVar *var, const char *pOldValue, float flOldValue );
 
+// Called BEFORE a ConVar can change value. Return true for the new value to be accepted, else false to reject.
+typedef bool ( *FnValidatorFunc_t )( IConVar *var, const char *pNewValue );
 
 //-----------------------------------------------------------------------------
 // Abstract interface for ConVars

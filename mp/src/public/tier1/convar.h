@@ -592,6 +592,34 @@ FORCEINLINE_CVAR const char *ConVarRef::GetDefault() const
 	return m_pConVarState->m_pszDefaultValue;
 }
 
+// Validated convar, takes in an extra validator function pointer that returns true to accept the new value, else false to reject it.
+// Has to be its own class because adding the validator func to the base ConVar class causes fun VTable screw-ery for the convars
+// already compiled in engine / matsys.
+// MOM_TODO COMBINE INTO BASE CONVAR WHEN ENGINE LICENSE HAPPENS!
+class ConVar_Validated : public ConVar
+{
+public:
+    ConVar_Validated(const char *pName, const char *pDefaultValue, int flags, const char *pHelpString, bool bMin, 
+		             float fMin, bool bMax, float fMax, FnChangeCallback_t callback, FnValidatorFunc_t validator) :
+                ConVar(pName, pDefaultValue, flags, pHelpString, bMin, fMin, bMax, fMax, callback)
+    {
+        m_fnValidatorFunc = validator;
+    }
+
+	void SetValue(const char *value) override
+	{
+        if (m_fnValidatorFunc)
+        {
+            if (!m_fnValidatorFunc(this, value))
+                return;
+        }
+
+		ConVar::SetValue(value);
+	}
+
+private:
+    FnValidatorFunc_t m_fnValidatorFunc;
+};
 
 //-----------------------------------------------------------------------------
 // Called by the framework to register ConCommands with the ICVar
