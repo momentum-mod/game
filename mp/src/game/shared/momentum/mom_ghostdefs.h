@@ -27,6 +27,54 @@ enum PacketType
 #define APPEARANCE_TRAIL_LEN_MIN 1
 #define APPEARANCE_TRAIL_LEN_MAX 10
 
+struct AppearanceData_t
+{
+    int m_iBodyGroup;
+    uint32 m_iModelRGBAColorAsHex;
+    uint32 m_iTrailRGBAColorAsHex;
+    uint8 m_iTrailLength;
+    bool m_bTrailEnabled;
+    bool m_bFlashlightEnabled;
+
+    AppearanceData_t()
+    {
+        m_iBodyGroup = 11;
+        m_iModelRGBAColorAsHex = 0x0000FFFF;
+        m_iTrailRGBAColorAsHex = 0xFFFFFFFF;
+        m_iTrailLength = APPEARANCE_TRAIL_LEN_MIN;
+        m_bTrailEnabled = false;
+        m_bFlashlightEnabled = false;
+    }
+
+    void ValidateValues()
+    {
+        m_iBodyGroup = clamp<int>(m_iBodyGroup, APPEARANCE_BODYGROUP_MIN, APPEARANCE_BODYGROUP_MAX);
+        m_iTrailLength = clamp<uint8>(m_iTrailLength, APPEARANCE_TRAIL_LEN_MIN, APPEARANCE_TRAIL_LEN_MAX);
+    }
+
+    void FromKV(KeyValues *pKV)
+    {
+        m_iBodyGroup = pKV->GetInt("bodygroup");
+        m_iModelRGBAColorAsHex = (uint32)pKV->GetInt("model_color");
+        m_iTrailRGBAColorAsHex = (uint32)pKV->GetInt("trail_color");
+        m_iTrailLength = pKV->GetInt("trail_length");
+        m_bTrailEnabled = pKV->GetBool("trail_enabled");
+        m_bFlashlightEnabled = pKV->GetBool("flashlight_enabled");
+
+        ValidateValues();
+    }
+
+    void ToKV(KeyValues *pKV) const
+    {
+        pKV->SetInt("bodygroup", m_iBodyGroup);
+        pKV->SetInt("model_color", m_iModelRGBAColorAsHex);
+        pKV->SetInt("trail_color", m_iTrailRGBAColorAsHex);
+        pKV->SetInt("trail_length", m_iTrailLength);
+        pKV->SetBool("trail_enabled", m_bTrailEnabled);
+        pKV->SetBool("flashlight_enabled", m_bFlashlightEnabled);
+    }
+};
+
 class MomentumPacket
 {
   public:
@@ -99,7 +147,6 @@ struct LobbyGhostAppearance_t
     }
 };
 
-
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
 class PositionPacket : public MomentumPacket
 {
@@ -109,8 +156,7 @@ class PositionPacket : public MomentumPacket
     QAngle EyeAngle;
     Vector Position;
     Vector Velocity;
-    PositionPacket(const QAngle eyeAngle, const Vector position, const Vector velocity, 
-        const float viewOffsetZ, const int buttons)
+    PositionPacket(const QAngle eyeAngle, const Vector position, const Vector velocity, const float viewOffsetZ, const int buttons)
     {
         EyeAngle = eyeAngle;
         Position = position;
@@ -179,8 +225,6 @@ struct ReceivedFrame_t
         frame = recvFrame;
     }
 };
-
-
 
 class SpecUpdatePacket : public MomentumPacket
 {
