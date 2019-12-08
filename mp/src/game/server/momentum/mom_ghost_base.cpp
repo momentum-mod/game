@@ -48,12 +48,13 @@ void CMomentumGhostBaseEntity::Precache()
     BaseClass::Precache();
     PrecacheModel(GHOST_MODEL);
 }
+
 void CMomentumGhostBaseEntity::Spawn()
 {
     Precache();
     BaseClass::Spawn();
-    SetModel(GHOST_MODEL); //we need a model
-    SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
+    SetModel(GHOST_MODEL);
+    SetBodygroup(1, BODY_PROLATE_ELLIPSE);
     RemoveEffects(EF_NODRAW);
     //~~~The magic combo~~~ (collides with triggers, not with players)
     ClearSolidFlags();
@@ -108,40 +109,6 @@ bool CMomentumGhostBaseEntity::GetBhopEnabled() const
     return !m_bBhopDisabled;
 }
 
-void CMomentumGhostBaseEntity::Think()
-{
-    BaseClass::Think();
-}
-void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
-{
-    if (bodyGroup > LAST || bodyGroup < 0)
-    {
-        Warning("CMomentumGhostBaseEntity::SetGhostBodyGroup() Error: Could not set bodygroup!");
-    }
-    else
-    {
-        m_ghostAppearance.m_iGhostModelBodygroup = bodyGroup;
-        SetBodygroup(1, bodyGroup);
-    }
-}
-
-void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
-{
-    m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
-    Color newColor;
-    if (MomUtil::GetColorFromHex(newHexColor, newColor))
-    {
-        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
-    }
-}
-void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable)
-{
-    m_ghostAppearance.m_bGhostTrailEnable = enable;
-    m_ghostAppearance.m_iGhostTrailRGBAColorAsHex = newHexColor;
-    m_ghostAppearance.m_iGhostTrailLength = clamp<int>(newLen, 1, 10);
-    CreateTrail();
-}
-
 bool CMomentumGhostBaseEntity::ShouldCollide(int collisionGroup, int contentsMask) const
 {
     if (collisionGroup == COLLISION_GROUP_PROJECTILE)
@@ -157,6 +124,7 @@ void CMomentumGhostBaseEntity::StartTimer(int m_iStartTick)
         g_pMomentumTimer->DispatchTimerEventMessage(m_pCurrentSpecPlayer, entindex(), TIMER_EVENT_STARTED);
     }
 }
+
 void CMomentumGhostBaseEntity::FinishTimer()
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
@@ -227,26 +195,6 @@ void CMomentumGhostBaseEntity::HandleDucking()
             SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
             RemoveFlag(FL_DUCKING);
         }
-    }
-}
-
-void CMomentumGhostBaseEntity::SetGhostAppearance(GhostAppearance_t newApp, bool bForceUpdate /* = false*/)
-{
-    // only set things that NEED TO BE CHANGED!!
-    if (m_ghostAppearance.m_iGhostModelBodygroup != newApp.m_iGhostModelBodygroup || bForceUpdate)
-    {
-        SetGhostBodyGroup(newApp.m_iGhostModelBodygroup);
-    }
-    if (m_ghostAppearance.m_iGhostModelRGBAColorAsHex != newApp.m_iGhostModelRGBAColorAsHex || bForceUpdate)
-    {
-        SetGhostColor(newApp.m_iGhostModelRGBAColorAsHex);
-    }
-    if (m_ghostAppearance.m_iGhostTrailRGBAColorAsHex != newApp.m_iGhostTrailRGBAColorAsHex || 
-        m_ghostAppearance.m_iGhostTrailLength != newApp.m_iGhostTrailLength || 
-        m_ghostAppearance.m_bGhostTrailEnable != newApp.m_bGhostTrailEnable || bForceUpdate)
-    {
-        SetGhostTrailProperties(newApp.m_iGhostTrailRGBAColorAsHex,
-                                newApp.m_iGhostTrailLength, newApp.m_bGhostTrailEnable);
     }
 }
 void CMomentumGhostBaseEntity::CreateTrail()

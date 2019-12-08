@@ -141,7 +141,16 @@ END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
-void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue);
+
+void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+
+    if (pPlayer)
+    {
+        pPlayer->LoadAppearance(false);
+    }
+}
 
 static MAKE_CONVAR_C(mom_ghost_bodygroup, "11", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Appearance bodygroup (shape)\n",
                      APPEARANCE_BODYGROUP_MIN, APPEARANCE_BODYGROUP_MAX, AppearanceCallback);
@@ -171,46 +180,7 @@ static MAKE_TOGGLE_CONVAR_C(mom_trail_enable, "0", FCVAR_CLIENTCMD_CAN_EXECUTE |
 // Used for scaling force when on ground
 #define MOM_DAMAGEFORCESCALE_SELF_ROCKET 5.0f
 
-// Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps,
-// as well as changing the appearance locally.
-void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
-{
-    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer*>(UTIL_GetLocalPlayer());
 
-    ConVarRef cVar(var);
-
-    if (pPlayer)
-    {
-        const char *pName = cVar.GetName();
-
-        if (FStrEq(pName, mom_trail_color.GetName()) ||  // the trail color changed
-            FStrEq(pName, mom_trail_length.GetName()) || // the trail length changed
-            FStrEq(pName, mom_trail_enable.GetName()))   // the trail enable bool changed
-        {
-            uint32 newHexColor = MomUtil::GetHexFromColor(mom_trail_color.GetString());
-            pPlayer->m_playerAppearanceProps.m_iGhostTrailRGBAColorAsHex = newHexColor;
-            pPlayer->m_playerAppearanceProps.m_iGhostTrailLength = mom_trail_length.GetInt();
-            pPlayer->m_playerAppearanceProps.m_bGhostTrailEnable = mom_trail_enable.GetBool();
-            pPlayer->CreateTrail(); // Refresh the trail
-        }
-        else if (FStrEq(pName, mom_ghost_color.GetName())) // the ghost body color changed
-        {
-            uint32 newHexColor = MomUtil::GetHexFromColor(mom_ghost_color.GetString());
-            pPlayer->m_playerAppearanceProps.m_iGhostModelRGBAColorAsHex = newHexColor;
-            Color newColor;
-            if (MomUtil::GetColorFromHex(newHexColor, newColor))
-                pPlayer->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
-        }
-        else if (FStrEq(pName, mom_ghost_bodygroup.GetName())) // the ghost bodygroup changed
-        {
-            int bGroup = mom_ghost_bodygroup.GetInt();
-            pPlayer->m_playerAppearanceProps.m_iGhostModelBodygroup = bGroup;
-            pPlayer->SetBodygroup(1, bGroup);
-        }
-
-        pPlayer->SendAppearance();
-    }
-}
 
 static CMomentumPlayer *s_pPlayer = nullptr;
 
@@ -282,7 +252,7 @@ CMomentumPlayer::~CMomentumPlayer()
 CMomentumPlayer* CMomentumPlayer::CreatePlayer(const char *className, edict_t *ed)
 {
     s_PlayerEdict = ed;
-    auto toRet = static_cast<CMomentumPlayer *>(CreateEntityByName(className));
+    const auto toRet = static_cast<CMomentumPlayer *>(CreateEntityByName(className));
     if (ed->m_EdictIndex == 1)
         s_pPlayer = toRet;
     return toRet;
@@ -445,7 +415,29 @@ void CMomentumPlayer::FlashlightToggle(bool bOn, bool bEmitSound)
     SendAppearance();
 }
 
-void CMomentumPlayer::SendAppearance() { g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps); }
+void CMomentumPlayer::LoadAppearance(bool bForceUpdate)
+{
+    AppearanceData_t newData;
+    uint32 newHexColor = MomUtil::GetHexFromColor(mom_trail_color.GetString());
+    newData.m_iTrailRGBAColorAsHex = newHexColor;
+    newData.m_iTrailLength = mom_trail_length.GetInt();
+    newData.m_bTrailEnabled = mom_trail_enable.GetBool();
+
+    newHexColor = MomUtil::GetHexFromColor(mom_ghost_color.GetString());
+    newData.m_iModelRGBAColorAsHex = newHexColor;
+    
+    const auto bodyGroup = mom_ghost_bodygroup.GetInt();
+    newData.m_iBodyGroup = bodyGroup;
+
+    newData.m_bFlashlightEnabled = IsEffectActive(EF_DIMLIGHT);
+
+    if (SetAppearanceData(newData, bForceUpdate))
+    {
+        SendAppearance();
+    }
+}
+
+void CMomentumPlayer::SendAppearance() { g_pMomentumGhostClient->SendAppearanceData(m_AppearanceData); }
 
 void CMomentumPlayer::Spawn()
 {
@@ -501,28 +493,7 @@ void CMomentumPlayer::Spawn()
     // SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
-    // initilize appearance properties based on Convars
-    uint32 newHexColor = MomUtil::GetHexFromColor(mom_trail_color.GetString());
-    m_playerAppearanceProps.m_iGhostTrailRGBAColorAsHex = newHexColor;
-    m_playerAppearanceProps.m_iGhostTrailLength = mom_trail_length.GetInt();
-    m_playerAppearanceProps.m_bGhostTrailEnable = mom_trail_enable.GetBool();
-
-    newHexColor = MomUtil::GetHexFromColor(mom_ghost_color.GetString());
-    m_playerAppearanceProps.m_iGhostModelRGBAColorAsHex = newHexColor;
-    Color newColor;
-    if (MomUtil::GetColorFromHex(newHexColor, newColor))
-        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
-
-    int bodyGroup = mom_ghost_bodygroup.GetInt();
-    m_playerAppearanceProps.m_iGhostModelBodygroup = bodyGroup;
-    SetBodygroup(1, bodyGroup);
-
-    // Send our appearance to the server/lobby if we're in one
-    SendAppearance();
-
-    // If wanted, create trail
-    if (mom_trail_enable.GetBool())
-        CreateTrail();
+    LoadAppearance(false);
 
     SetNextThink(gpGlobals->curtime);
 

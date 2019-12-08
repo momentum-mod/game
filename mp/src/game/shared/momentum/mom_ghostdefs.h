@@ -84,69 +84,6 @@ class MomentumPacket
     virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(GetType()); }
 };
 
-//Describes all data for visual apperence of players ingame
-struct GhostAppearance_t
-{
-    int m_iGhostModelBodygroup;
-    uint32 m_iGhostModelRGBAColorAsHex;
-    uint32 m_iGhostTrailRGBAColorAsHex;
-    uint8 m_iGhostTrailLength;
-    bool m_bGhostTrailEnable;
-    bool m_bFlashlightOn;
-
-    GhostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlightOn)
-    {
-        m_iGhostModelBodygroup = bodyGroup;
-        m_iGhostModelRGBAColorAsHex = bodyRGBA;
-        m_iGhostTrailRGBAColorAsHex = trailRGBA;
-        m_iGhostTrailLength = trailLen;
-        m_bGhostTrailEnable = hasTrail;
-        m_bFlashlightOn = flashlightOn;
-    }
-    GhostAppearance_t(): m_iGhostModelBodygroup(0), m_iGhostModelRGBAColorAsHex(0), m_iGhostTrailRGBAColorAsHex(0), m_iGhostTrailLength(0), m_bGhostTrailEnable(false), m_bFlashlightOn(false)
-    {
-    }
-
-    GhostAppearance_t &operator=(const GhostAppearance_t &other) 
-    {
-        m_iGhostModelBodygroup = other.m_iGhostModelBodygroup;
-        m_iGhostModelRGBAColorAsHex = other.m_iGhostModelRGBAColorAsHex;
-        m_iGhostTrailRGBAColorAsHex = other.m_iGhostTrailRGBAColorAsHex;
-        m_iGhostTrailLength = other.m_iGhostTrailLength;
-        m_bGhostTrailEnable = other.m_bGhostTrailEnable;
-        m_bFlashlightOn = other.m_bFlashlightOn;
-        return *this;
-    }
-    bool operator==(const GhostAppearance_t &other) const
-    {
-        return m_iGhostModelBodygroup == other.m_iGhostModelBodygroup &&
-            m_iGhostModelRGBAColorAsHex == other.m_iGhostModelRGBAColorAsHex &&
-            m_iGhostTrailRGBAColorAsHex == other.m_iGhostTrailRGBAColorAsHex &&
-            m_iGhostTrailLength == other.m_iGhostTrailLength &&
-            m_bGhostTrailEnable == other.m_bGhostTrailEnable &&
-            m_bFlashlightOn == other.m_bFlashlightOn;
-    }
-};
-
-struct LobbyGhostAppearance_t
-{
-    GhostAppearance_t appearance;
-    char base64[1024]; // Used as a quick verify
-
-    LobbyGhostAppearance_t()
-    {
-        base64[0] = '\0';
-        appearance = GhostAppearance_t();
-    }
-
-    LobbyGhostAppearance_t &operator=(const LobbyGhostAppearance_t &other) 
-    {
-        appearance = other.appearance;
-        Q_strncpy(base64, other.base64, sizeof(base64));
-        return *this;
-    }
-};
-
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
 class PositionPacket : public MomentumPacket
 {
