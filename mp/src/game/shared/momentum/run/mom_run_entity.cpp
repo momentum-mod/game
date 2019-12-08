@@ -7,6 +7,7 @@
 
 #ifndef CLIENT_DLL
 #include "momentum/mom_triggers.h"
+#include "util/mom_util.h"
 #else
 
 #endif
@@ -80,4 +81,75 @@ void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger)
     }
 }
 
+bool CMomRunEntity::SetAppearanceData(const AppearanceData_t &newApp, bool bForceUpdate)
+{
+    bool bSomethingChanged = false;
+    if (m_AppearanceData.m_iBodyGroup != newApp.m_iBodyGroup || bForceUpdate)
+    {
+        AppearanceBodygroupChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    if (m_AppearanceData.m_iModelRGBAColorAsHex != newApp.m_iModelRGBAColorAsHex || bForceUpdate)
+    {
+        AppearanceModelColorChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    if (m_AppearanceData.m_iTrailRGBAColorAsHex != newApp.m_iTrailRGBAColorAsHex ||
+        m_AppearanceData.m_iTrailLength != newApp.m_iTrailLength ||
+        m_AppearanceData.m_bTrailEnabled != newApp.m_bTrailEnabled || bForceUpdate)
+    {
+        AppearanceTrailChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    if (m_AppearanceData.m_bFlashlightEnabled != newApp.m_bFlashlightEnabled || bForceUpdate)
+    {
+        AppearanceFlashlightChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    return bSomethingChanged;
+}
+
+void CMomRunEntity::AppearanceTrailChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_iTrailLength = newApp.m_iTrailLength;
+    m_AppearanceData.m_iTrailRGBAColorAsHex = newApp.m_iTrailRGBAColorAsHex;
+    m_AppearanceData.m_bTrailEnabled = newApp.m_bTrailEnabled;
+    m_AppearanceData.ValidateValues();
+
+    CreateTrail();
+}
+
+void CMomRunEntity::AppearanceBodygroupChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_iBodyGroup = newApp.m_iBodyGroup;
+    m_AppearanceData.ValidateValues();
+
+    const auto pBaseAnimating = static_cast<CBaseAnimating*>(CBaseEntity::Instance(GetEntIndex()));
+    if (pBaseAnimating)
+    {
+        pBaseAnimating->SetBodygroup(1, m_AppearanceData.m_iBodyGroup);
+    }
+}
+
+void CMomRunEntity::AppearanceModelColorChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_iModelRGBAColorAsHex = newApp.m_iModelRGBAColorAsHex;
+
+    const auto pBaseEnt = CBaseEntity::Instance(GetEntIndex());
+    if (pBaseEnt)
+    {
+        Color newColor;
+        if (MomUtil::GetColorFromHex(m_AppearanceData.m_iModelRGBAColorAsHex, newColor))
+            pBaseEnt->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+    }
+}
+
+void CMomRunEntity::AppearanceFlashlightChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_bFlashlightEnabled = newApp.m_bFlashlightEnabled;
+}
 #endif
