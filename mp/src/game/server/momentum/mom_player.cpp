@@ -143,27 +143,21 @@ LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue);
 
-// Ghost Apperence Convars
-static ConVar mom_ghost_bodygroup("mom_ghost_bodygroup", "11", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                  "Ghost's body group (model)", true, 0, true, 14, AppearanceCallback);
+static MAKE_CONVAR_C(mom_ghost_bodygroup, "11", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Appearance bodygroup (shape)\n",
+                     APPEARANCE_BODYGROUP_MIN, APPEARANCE_BODYGROUP_MAX, AppearanceCallback);
 
-static ConVar mom_ghost_color(
-    "mom_ghost_color", "FF00FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Set the ghost's color. Accepts HEX color value in format RRGGBBAA. if RRGGBB is supplied, Alpha is set to 0x4B",
-    AppearanceCallback);
+static ConVar mom_ghost_color("mom_ghost_color", "FF00FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                              "Set the ghost's color. Accepts HEX color value in format RRGGBBAA. if RRGGBB is supplied, Alpha is set to 0x4B",
+                              AppearanceCallback);
 
 static ConVar mom_trail_color("mom_trail_color", "FF00FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                               "Set the player's trail color. Accepts HEX color value in format RRGGBBAA",
                               AppearanceCallback);
 
-static ConVar mom_trail_length("mom_trail_length", "4", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                               "Length of the player's trail (in seconds).", true, 1, false, 10, AppearanceCallback);
+static MAKE_CONVAR_C(mom_trail_length, "4", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Length of the player's trail (in seconds)\n",
+                     APPEARANCE_TRAIL_LEN_MIN, APPEARANCE_TRAIL_LEN_MAX, AppearanceCallback);
 
-static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                               "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1,
-                               AppearanceCallback);
-
-// Rocket jump force ConVars
+static MAKE_TOGGLE_CONVAR_C(mom_trail_enable, "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", AppearanceCallback);
 
 // Equivalent to "tf_damagescale_self_soldier" (default: 0.6) in TF2
 // Used for scaling damage when not on ground and not in water
