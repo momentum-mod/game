@@ -430,30 +430,24 @@ bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
 void CMomentumPlayer::FlashlightTurnOn()
 {
     // Emit sound by default
-    FlashlightTurnOn(true);
-}
-
-void CMomentumPlayer::FlashlightTurnOn(bool bEmitSound)
-{
-    AddEffects(EF_DIMLIGHT);
-    if (bEmitSound)
-        EmitSound(SND_FLASHLIGHT_ON);
-    m_playerAppearanceProps.m_bFlashlightOn = true;
-    SendAppearance();
+    FlashlightToggle(true, true);
 }
 
 void CMomentumPlayer::FlashlightTurnOff()
 {
     // Emit sound by default
-    FlashlightTurnOff(true);
+    FlashlightToggle(false, true);
 }
 
-void CMomentumPlayer::FlashlightTurnOff(bool bEmitSound)
+void CMomentumPlayer::FlashlightToggle(bool bOn, bool bEmitSound)
 {
-    RemoveEffects(EF_DIMLIGHT);
     if (bEmitSound)
-        EmitSound(SND_FLASHLIGHT_OFF);
-    m_playerAppearanceProps.m_bFlashlightOn = false;
+        EmitSound(bOn ? SND_FLASHLIGHT_ON : SND_FLASHLIGHT_OFF);
+
+    bOn ? AddEffects(EF_DIMLIGHT) : RemoveEffects(EF_DIMLIGHT);
+
+    m_AppearanceData.m_bFlashlightEnabled = bOn;
+
     SendAppearance();
 }
 
@@ -1412,7 +1406,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
         // Disable flashlight
         if (FlashlightIsOn())
-            FlashlightTurnOff(false); // Don't emit flashlight sound when turned off automatically
+            FlashlightToggle(false, false); // Don't emit flashlight sound when turned off automatically
 
         pGhostToSpectate->SetSpectator(this);
 
