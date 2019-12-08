@@ -253,6 +253,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_RunStats.Init();
 
     ListenForGameEvent("mapfinished_panel_closed");
+    ListenForGameEvent("lobby_join");
 
     for (int i = 0; i < MAX_TRACKS; i++)
     {
@@ -382,7 +383,7 @@ void CMomentumPlayer::SetupVisibility(CBaseEntity *pViewEntity, unsigned char *p
 
 void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
 {
-    if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
+    if (FStrEq(pEvent->GetName(), "mapfinished_panel_closed"))
     {
         // Hide the mapfinished panel and reset our speed to normal
         m_Data.m_bMapFinished = false;
@@ -393,6 +394,10 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
         {
             g_ReplaySystem.UnloadPlayback();
         }
+    }
+    else if (FStrEq(pEvent->GetName(), "lobby_join"))
+    {
+        SendAppearance();
     }
 }
 
