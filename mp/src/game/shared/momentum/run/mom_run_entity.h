@@ -38,6 +38,8 @@ class CMomRunEntity
     virtual void SetBhopEnabled(bool bEnable) = 0;
     virtual bool GetBhopEnabled() const = 0;
 
+    virtual void CreateTrail();
+    virtual void RemoveTrail();
     // Sets the appearance data but only if something has changed.
     // Returns true if something has changed, else false
     virtual bool SetAppearanceData(const AppearanceData_t &newApp, bool bForceUpdate);
@@ -57,6 +59,7 @@ class CMomRunEntity
 
 #ifndef CLIENT_DLL
 protected:
+    EHANDLE m_hTrailEntity;
     AppearanceData_t m_AppearanceData;
 #endif
 

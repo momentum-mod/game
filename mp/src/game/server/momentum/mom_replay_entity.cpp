@@ -663,8 +663,11 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
 
 void CMomentumReplayGhostEntity::CreateTrail()
 {
-    if (!m_ghostAppearance.m_bGhostTrailEnable || !mom_replay_trail_enable.GetBool())
+    RemoveTrail();
+
+    if (!mom_replay_trail_enable.GetBool())
         return;
+
     BaseClass::CreateTrail();
 }
 

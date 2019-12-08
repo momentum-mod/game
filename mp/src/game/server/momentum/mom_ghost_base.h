@@ -84,13 +84,7 @@ protected:
     int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
     int ShouldTransmit(const CCheckTransmitInfo* pInfo) OVERRIDE { return FL_EDICT_ALWAYS; }
 
-    virtual void CreateTrail();
-    virtual void RemoveTrail();
-
     bool CanUnduck();
     void HandleDucking();
     CMomentumPlayer *m_pCurrentSpecPlayer;
-
-private:
-    CBaseEntity *m_eTrail;
 };

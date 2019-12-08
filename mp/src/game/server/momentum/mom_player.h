@@ -197,8 +197,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool KeyValue(const char *szKeyName, const char *szValue) OVERRIDE;
     bool KeyValue(const char *szKeyName, float flValue) OVERRIDE;
     bool KeyValue(const char *szKeyName, const Vector &vecValue) OVERRIDE;
-    void CreateTrail();
-    void RemoveTrail();
 
     // Catches any messages the player sends through "say"
     void CheckChatText(char *p, int bufsize) OVERRIDE;
@@ -318,8 +316,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     Vector m_vecPreviousOrigins[MAX_PREVIOUS_ORIGINS];
 
     float m_flTweenVelValue;
-    // Trail pointer
-    CBaseEntity* m_eTrail;
     bool m_bWasInAir;
     bool m_bShouldLimitSpeed;
 

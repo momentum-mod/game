@@ -152,4 +152,41 @@ void CMomRunEntity::AppearanceFlashlightChanged(const AppearanceData_t &newApp)
 {
     m_AppearanceData.m_bFlashlightEnabled = newApp.m_bFlashlightEnabled;
 }
+
+void CMomRunEntity::CreateTrail()
+{
+    RemoveTrail();
+
+    if (!m_AppearanceData.m_bTrailEnabled)
+        return;
+
+    const auto pMyEnt = CBaseEntity::Instance(GetEntIndex());
+
+    m_hTrailEntity = CreateEntityByName("env_spritetrail");
+    m_hTrailEntity->SetAbsOrigin(pMyEnt->GetAbsOrigin());
+    m_hTrailEntity->SetParent(pMyEnt);
+    m_hTrailEntity->SetRenderMode(kRenderTransAdd);
+    m_hTrailEntity->KeyValue("spritename", "materials/sprites/laser.vmt");
+    m_hTrailEntity->KeyValue("startwidth", "9.5");
+    m_hTrailEntity->KeyValue("endwidth", "1.05");
+    m_hTrailEntity->KeyValue("lifetime", m_AppearanceData.m_iTrailLength);
+
+    Color newColor;
+    if (MomUtil::GetColorFromHex(m_AppearanceData.m_iTrailRGBAColorAsHex, newColor))
+    {
+        m_hTrailEntity->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+    }
+
+    DispatchSpawn(m_hTrailEntity);
+}
+
+void CMomRunEntity::RemoveTrail()
+{
+    if (m_hTrailEntity.IsValid())
+    {
+        UTIL_RemoveImmediate(m_hTrailEntity);
+        m_hTrailEntity.Term();
+    }
+}
+
 #endif
