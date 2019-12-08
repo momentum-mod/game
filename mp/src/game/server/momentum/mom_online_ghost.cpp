@@ -240,8 +240,11 @@ void CMomentumOnlineGhostEntity::Spawn()
 
 void CMomentumOnlineGhostEntity::CreateTrail()
 {
-    if (!m_ghostAppearance.m_bGhostTrailEnable || !mom_ghost_online_trail_enable.GetBool())
+    RemoveTrail();
+
+    if (!mom_ghost_online_trail_enable.GetBool())
         return;
+
     BaseClass::CreateTrail();
 }
 

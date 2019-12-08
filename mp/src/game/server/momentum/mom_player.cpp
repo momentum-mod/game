@@ -241,7 +241,6 @@ CMomentumPlayer::~CMomentumPlayer()
         m_vecRockets.RemoveAll();
     }
 
-    RemoveTrail();
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
@@ -800,12 +799,6 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
     }
 }
 
-void CMomentumPlayer::RemoveTrail()
-{
-    UTIL_RemoveImmediate(m_eTrail);
-    m_eTrail = nullptr;
-}
-
 void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClient->SendChatMessage(p); }
 
 // Overrides Teleport() so we can take care of the trail
@@ -862,31 +855,6 @@ bool CMomentumPlayer::KeyValue(const char *szKeyName, float flValue)
 bool CMomentumPlayer::KeyValue(const char *szKeyName, const Vector &vecValue)
 {
     return BaseClass::KeyValue(szKeyName, vecValue);
-}
-
-void CMomentumPlayer::CreateTrail()
-{
-    RemoveTrail();
-
-    if (!mom_trail_enable.GetBool())
-        return;
-
-    // Ty GhostingMod
-    m_eTrail = CreateEntityByName("env_spritetrail");
-    m_eTrail->SetAbsOrigin(GetAbsOrigin());
-    m_eTrail->SetParent(this);
-    m_eTrail->KeyValue("rendermode", "5");
-    m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
-    m_eTrail->KeyValue("startwidth", "9.5");
-    m_eTrail->KeyValue("endwidth", "1.05");
-    m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());
-    Color newColor;
-    if (MomUtil::GetColorFromHex(mom_trail_color.GetString(), newColor))
-    {
-        m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
-        m_eTrail->KeyValue("renderamt", newColor.a());
-    }
-    DispatchSpawn(m_eTrail);
 }
 
 void CMomentumPlayer::SetButtonsEnabled(int iButtonFlags, bool bEnable)

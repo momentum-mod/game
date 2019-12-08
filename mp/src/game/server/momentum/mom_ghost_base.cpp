@@ -25,7 +25,7 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
-CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
+CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr)
 {
     m_nGhostButtons = 0;
     m_iDisabledButtons = 0;
@@ -33,8 +33,7 @@ CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullp
     m_RunStats.Init();
 }
 
-void CMomentumGhostBaseEntity::TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr,
-    CDmgAccumulator *pAccumulator)
+void CMomentumGhostBaseEntity::TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 {
     if (m_takedamage)
     {
@@ -196,31 +195,4 @@ void CMomentumGhostBaseEntity::HandleDucking()
             RemoveFlag(FL_DUCKING);
         }
     }
-}
-void CMomentumGhostBaseEntity::CreateTrail()
-{
-    RemoveTrail();
-
-    // Ty GhostingMod
-    m_eTrail = CreateEntityByName("env_spritetrail");
-    m_eTrail->SetAbsOrigin(GetAbsOrigin());
-    m_eTrail->SetParent(this);
-    m_eTrail->KeyValue("rendermode", "5");
-    m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
-    m_eTrail->KeyValue("startwidth", "9.5");
-    m_eTrail->KeyValue("endwidth", "1.05");
-    m_eTrail->KeyValue("lifetime", m_ghostAppearance.m_iGhostTrailLength);
-    Color newColor;
-    if (MomUtil::GetColorFromHex(m_ghostAppearance.m_iGhostTrailRGBAColorAsHex, newColor))
-    {
-        m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
-        m_eTrail->KeyValue("renderamt", newColor.a());
-    }
-
-    DispatchSpawn(m_eTrail);
-}
-void CMomentumGhostBaseEntity::RemoveTrail()
-{
-    UTIL_RemoveImmediate(m_eTrail);
-    m_eTrail = nullptr;
 }
