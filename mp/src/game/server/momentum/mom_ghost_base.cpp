@@ -9,6 +9,29 @@
 
 #include "tier0/memdbgon.h"
 
+#define GHOST_MODEL "models/player/player_shape_base.mdl"
+
+enum GhostModelBodyGroup
+{
+    BODY_THREE_SIDED_PYRAMID = 0,
+    BODY_FOUR_SIDED_PYRAMID,
+    BODY_SIX_SIDED_PYRAMID,
+    BODY_CUBE,
+    BODY_FOUR_SIDED_PRISM,
+    BODY_THREE_SIDED_PRISM,
+    BODY_KITE,
+    BODY_FIVE_SIDED_PRISM,
+    BODY_SIX_SIDED_PRISM,
+    BODY_PENTAGON_BALL,
+    BODY_BALL,
+    BODY_PROLATE_ELLIPSE,
+    BODY_TRIANGLE_BALL,
+    BODY_CONE,
+    BODY_CYLINDER,
+
+    BODYGROUP_COUNT
+};
+
 extern void SendProxy_CropFlagsToPlayerFlagBitsLength(const SendProp *pProp, const void *pStruct, const void *pVarData, DVariant *pOut, int iElement, int objectID);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumGhostBaseEntity, DT_MOM_GHOST_BASE)

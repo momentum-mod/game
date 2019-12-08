@@ -3,29 +3,8 @@
 #include "mom_ghostdefs.h"
 #include "run/mom_run_entity.h"
 
-#define GHOST_MODEL "models/player/player_shape_base.mdl"
-
 class CMomentumPlayer;
 
-enum GhostModelBodyGroup
-{
-    BODY_THREE_SIDED_PYRAMID = 0,
-    BODY_FOUR_SIDED_PYRAMID,
-    BODY_SIX_SIDED_PYRAMID,
-    BODY_CUBE,
-    BODY_FOUR_SIDED_PRISM,
-    BODY_THREE_SIDED_PRISM,
-    BODY_KITE,
-    BODY_FIVE_SIDED_PRISM,
-    BODY_SIX_SIDED_PRISM,
-    BODY_PENTAGON_BALL,
-    BODY_BALL,
-    BODY_PROLATE_ELLIPSE,
-    BODY_TRIANGLE_BALL,
-    BODY_CONE,
-    BODY_CYLINDER,
-    LAST
-};
 class CMomentumGhostBaseEntity : public CBaseAnimating, public CMomRunEntity
 {
     DECLARE_CLASS(CMomentumGhostBaseEntity, CBaseAnimating);
