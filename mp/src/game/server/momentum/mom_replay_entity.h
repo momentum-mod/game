@@ -51,12 +51,12 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CNetworkVar(int, m_iTotalTicks); // Total ticks for the replay (run time + start + end)
 
     // override of color so that replayghosts are always somewhat transparent.
-    void SetGhostColor(const uint32 newColor) OVERRIDE;
+    void AppearanceModelColorChanged(const AppearanceData_t &newApp) override;
 
   protected:
-    void Think(void) OVERRIDE;
-    void Spawn(void) OVERRIDE;
-    void Precache(void) OVERRIDE;
+    void Think() OVERRIDE;
+    void Spawn() OVERRIDE;
+    void Precache() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) override;
 

@@ -53,6 +53,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void FlashlightTurnOff() OVERRIDE;
     void FlashlightToggle(bool bOn, bool bEmitSound);
 
+    // Loads appearance from the convars
+    void LoadAppearance(bool bForceUpdate);
     void SendAppearance();
 
     void Spawn() OVERRIDE;
@@ -197,9 +199,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool KeyValue(const char *szKeyName, const Vector &vecValue) OVERRIDE;
     void CreateTrail();
     void RemoveTrail();
-     
-    // Player's apperence properties
-    GhostAppearance_t m_playerAppearanceProps;
+
     // Catches any messages the player sends through "say"
     void CheckChatText(char *p, int bufsize) OVERRIDE;
 

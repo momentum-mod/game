@@ -79,7 +79,7 @@ void CMomentumReplayGhostEntity::Spawn()
     CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
-        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
+        SetAppearanceData(*pPlayer->GetAppearanceData(), true);
     }
 
     if (m_pPlaybackReplay)
@@ -661,17 +661,16 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
     CMomRunEntity::OnZoneExit(pTrigger);
 }
 
-
 void CMomentumReplayGhostEntity::CreateTrail()
 {
     if (!m_ghostAppearance.m_bGhostTrailEnable || !mom_replay_trail_enable.GetBool())
         return;
     BaseClass::CreateTrail();
 }
-void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)
+
+void CMomentumReplayGhostEntity::AppearanceModelColorChanged(const AppearanceData_t &newApp)
 {
-    m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
-    Color newColor;
-    if (MomUtil::GetColorFromHex(newHexColor, newColor))
-        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), 75);
+    CMomRunEntity::AppearanceModelColorChanged(newApp);
+
+    SetRenderColorA(75); // Making them at least always translucent
 }

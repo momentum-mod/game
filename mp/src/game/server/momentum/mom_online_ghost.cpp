@@ -210,23 +210,25 @@ void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
     pRocket->SetDamage(0.0f); // Rockets do no damage unless... MOM_TODO: set this per map/gamemode flag?
 }
 
-void CMomentumOnlineGhostEntity::Precache(void)
-{
-    BaseClass::Precache();
-}
-
 void CMomentumOnlineGhostEntity::SetGhostName(const char *pGhostName)
 {
     Q_strncpy(m_szGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
 }
 
-void CMomentumOnlineGhostEntity::SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate /*= false*/)
+void CMomentumOnlineGhostEntity::AppearanceFlashlightChanged(const AppearanceData_t &newApp)
 {
-    if ((!FStrEq(app.base64, "") && !FStrEq(m_CurrentAppearance.base64, app.base64)) || bForceUpdate)
+    CMomRunEntity::AppearanceFlashlightChanged(newApp);
+
+    SetGhostFlashlight(newApp.m_bFlashlightEnabled);
+}
+
+void CMomentumOnlineGhostEntity::AppearanceModelColorChanged(const AppearanceData_t &newApp)
+{
+    CMomRunEntity::AppearanceModelColorChanged(newApp);
+
+    if (mom_ghost_online_alpha_override_enable.GetBool())
     {
-        m_CurrentAppearance = app;
-        BaseClass::SetGhostAppearance(app.appearance, bForceUpdate);
-        SetGhostFlashlight(app.appearance.m_bFlashlightOn);
+        SetRenderColorA(mom_ghost_online_alpha_override.GetInt());
     }
 }
 
@@ -392,15 +394,6 @@ void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
     {
         m_pCurrentSpecPlayer->TravelSpectateTargets(true);
-    }
-}
-
-void CMomentumOnlineGhostEntity::SetGhostColor(const uint32 newHexColor)
-{
-    BaseClass::SetGhostColor(newHexColor);
-    if (mom_ghost_online_alpha_override_enable.GetBool())
-    {
-        SetRenderColorA(mom_ghost_online_alpha_override.GetInt());
     }
 }
 

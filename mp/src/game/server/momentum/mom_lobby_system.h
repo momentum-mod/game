@@ -5,8 +5,7 @@
 class MomentumPacket;
 class DecalPacket;
 class SavelocReqPacket;
-struct GhostAppearance_t;
-struct LobbyGhostAppearance_t;
+struct AppearanceData_t;
 class CMomentumOnlineGhostEntity;
 
 class CMomentumLobbySystem
@@ -47,7 +46,7 @@ public:
     void CheckToAdd(CSteamID *pID);
 
     void SendAndReceiveP2PPackets();
-    void SetAppearanceInMemberData(GhostAppearance_t app);
+    void SetAppearanceInMemberData(const AppearanceData_t &appearance);
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type);
@@ -58,7 +57,7 @@ public:
     void OnLobbyTypeChanged(int newType);
 
     void SetGameInfoStatus();
-    bool GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out);
+    bool GetAppearanceFromMemberData(const CSteamID &member, AppearanceData_t &out);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);
