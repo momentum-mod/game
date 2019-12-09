@@ -31,10 +31,6 @@
 #include "clientmode_mom_normal.h"
 #include "ChangelogPanel.h"
 
-#ifdef SIXENSE
-#include "sixense/in_sixense.h"
-#endif
-
 #if defined( TF_CLIENT_DLL )
 #include "tf_gamerules.h"
 #endif
@@ -250,9 +246,6 @@ void VGui_CreateGlobalPanels( void )
 #ifndef _X360
 	// Create mp3 player off of tool parent panel
 	MP3Player_Create( toolParent );
-#endif
-#ifdef SIXENSE
-	g_pSixenseInput->CreateGUI( gameToolParent );
 #endif
 
     //Momentum
