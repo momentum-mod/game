@@ -1083,14 +1083,6 @@ public:
 	virtual const Vector &GetViewOffset() const;
 	virtual void		  SetViewOffset( const Vector& v );
 
-#ifdef SIXENSE
-	const Vector&		GetEyeOffset() const;
-	void				SetEyeOffset( const Vector& v );
-
-	const QAngle &		GetEyeAngleOffset() const;
-	void				SetEyeAngleOffset( const QAngle & qa );
-#endif
-
 	// Invalidates the abs state of all children
 	void InvalidatePhysicsRecursive( int nChangeFlags );
 
@@ -1435,10 +1427,6 @@ protected:
 	// Object eye position
 	Vector							m_vecViewOffset;
 
-#if defined(SIXENSE)
-	Vector							m_vecEyeOffset;
-	QAngle							m_EyeAngleOffset;    
-#endif
 	// Allow studio models to tell us what their m_nBody value is
 	virtual int						GetStudioBody( void ) { return 0; }
 
@@ -2112,30 +2100,6 @@ inline ClientRenderHandle_t& CBaseEntity::RenderHandle()
 {
 	return m_hRender;
 }
-
-#ifdef SIXENSE
-
-inline const Vector& CBaseEntity::GetEyeOffset() const 
-{ 
-	return m_vecEyeOffset; 
-}
-
-inline void CBaseEntity::SetEyeOffset( const Vector& v ) 
-{ 
-	m_vecEyeOffset = v; 
-}
-
-inline const QAngle & CBaseEntity::GetEyeAngleOffset() const 
-{ 
-	return m_EyeAngleOffset; 
-}
-
-inline void CBaseEntity::SetEyeAngleOffset( const QAngle & qa ) 
-{ 
-	m_EyeAngleOffset = qa; 
-}
-
-#endif
 
 //-----------------------------------------------------------------------------
 // Methods to cast away const

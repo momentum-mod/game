@@ -1043,11 +1043,6 @@ void C_BaseEntity::Clear( void )
 
 	m_nLastThinkTick = gpGlobals->tickcount;
 
-#if defined(SIXENSE)
-	m_vecEyeOffset.Init();
-	m_EyeAngleOffset.Init();
-#endif
-
 	// Remove prediction context if it exists
 #if !defined( NO_ENTITY_PREDICTION )
 	delete m_pPredictionContext;
