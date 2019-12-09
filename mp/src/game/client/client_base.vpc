@@ -502,8 +502,6 @@ $Project
 			$File	"sixense\in_sixense.h"
 			$File	"sixense\in_sixense_gesture_bindings.cpp"
 			$File	"sixense\in_sixense_gesture_bindings.h"
-			$File	"$SRCDIR\game\shared\sixense\sixense_convars.cpp"
-			$File	"$SRCDIR\game\shared\sixense\sixense_convars_extern.h"
 		}
 		
 		// Files not using precompiled header cbase.h
