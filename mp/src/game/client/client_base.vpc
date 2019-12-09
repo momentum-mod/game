@@ -498,8 +498,6 @@ $Project
 
 		$Folder	"Sixense"
 		{
-			$File	"sixense\in_sixense.cpp"
-			$File	"sixense\in_sixense.h"
 			$File	"sixense\in_sixense_gesture_bindings.cpp"
 			$File	"sixense\in_sixense_gesture_bindings.h"
 		}
