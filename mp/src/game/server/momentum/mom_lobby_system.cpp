@@ -759,72 +759,64 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                     // Requester: set "requesting" to false, close the request UI
                     // Requestee: remove requester from requesters vector
 
+                    DevLog(2, "Received a stage %i saveloc request packet!\n", saveloc.stage);
+
                     switch (saveloc.stage)
                     {
-                    case 0:
-                    default:
-                        DevWarning("Invalid stage for the saveloc request packet!\n");
-                        break;
-                    case 1:
+                    case SAVELOC_REQ_STAGE_COUNT_REQ:
                         {
-                            DevLog(2, "Received a stage 1 saveloc request packet!\n");
-                            // Somebody wants our savelocs, let the saveloc system handle this
                             g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
 
-                            // Send them our saveloc count
                             SavelocReqPacket response;
-                            response.stage = 2;
+                            response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
                             response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
 
                             SendPacket(&response, &fromWho, k_EP2PSendReliable);
                         }
                         break;
-                    case 2:
+                    case SAVELOC_REQ_STAGE_COUNT_ACK:
                         {
-                            DevLog(2, "Received a stage 2 saveloc request packet!\n");
-                            // We got the number of savelocs, pass this to the client
                             KeyValues *pKV = new KeyValues("req_savelocs");
-                            pKV->SetInt("stage", 2);
+                            pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
                             pKV->SetInt("count", saveloc.saveloc_count);
                             g_pModuleComms->FireEvent(pKV);
                         }
                         break;
-                    case 3:
+                    case SAVELOC_REQ_STAGE_SAVELOC_REQ:
                         {
-                            DevLog(2, "Received a stage 3 saveloc request packet!\n");
-                            // Somebody sent us the number of the savelocs they want, saveloc system pls help
                             SavelocReqPacket response;
-                            response.stage = 4;
+                            response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
 
                             if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
                                 SendPacket(&response, &fromWho, k_EP2PSendReliable);
                         }
                         break;
-                    case 4:
+                    case SAVELOC_REQ_STAGE_SAVELOC_ACK:
                         {
-                            DevLog(2, "Received a stage 4 saveloc request packet!\n");
                             // We got their savelocs, add it to the player's list of savelocs
                             if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
                             {
                                 // Send them a packet that we're all good
                                 SavelocReqPacket response;
-                                response.stage = -1;
+                                response.stage = SAVELOC_REQ_STAGE_DONE;
                                 if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
                                 {
                                     // Send ourselves an event saying we're all good
                                     KeyValues *pKv = new KeyValues("req_savelocs");
-                                    pKv->SetInt("stage", -1);
+                                    pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
                                     g_pModuleComms->FireEvent(pKv);
                                 }
                             }
                         }
                         break;
-                    case -1: // The other player is all done/cancelled
+                    case SAVELOC_REQ_STAGE_DONE:
                         {
-                            // Remove the requester
-                            DevLog(2, "Received a stage -1 saveloc request packet!\n");
                             g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
                         }
+                        break;
+                    case SAVELOC_REQ_STAGE_INVALID:
+                    default:
+                        DevWarning(2, "Invalid stage for the saveloc request packet!\n");
                         break;
                     }
                 }
@@ -969,5 +961,6 @@ void CMomentumLobbySystem::SetGameInfoStatus()
     //SteamFriends()->SetRichPresence("connect", connectStr);
     SteamFriends()->SetRichPresence("status", gameInfoStr);
 }
+
 static CMomentumLobbySystem s_MOMLobbySystem;
 CMomentumLobbySystem *g_pMomentumLobbySystem = &s_MOMLobbySystem;

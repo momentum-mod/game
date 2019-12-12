@@ -215,13 +215,13 @@ void CMOMSaveLocSystem::LevelShutdownPreEntity()
 
 void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
 {
-    int stage = pKv->GetInt("stage");
+    int stage = pKv->GetInt("stage", SAVELOC_REQ_STAGE_INVALID);
     CSteamID target(pKv->GetUint64("target"));
-    if (stage == 1)
+    if (stage == SAVELOC_REQ_STAGE_COUNT_REQ)
     {
         // They clicked "request savelocs" from a player, UI just opened, get the count to send back
         SavelocReqPacket packet;
-        packet.stage = 1;
+        packet.stage = SAVELOC_REQ_STAGE_COUNT_REQ;
         if (g_pMomentumGhostClient->SendSavelocReqPacket(target, &packet))
         {
             // Also keep track of this in the saveloc system
@@ -229,23 +229,21 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
         }
 
     }
-    else if (stage == 3)
+    else if (stage == SAVELOC_REQ_STAGE_SAVELOC_REQ)
     {
-        // They clicked on the # of savelocs to request, build a request packet and get these bad boys
         SavelocReqPacket packet;
-        packet.stage = 3;
+        packet.stage = SAVELOC_REQ_STAGE_SAVELOC_REQ;
         packet.saveloc_count = pKv->GetInt("count");
         packet.dataBuf.CopyBuffer(pKv->GetPtr("nums"), sizeof(int) * packet.saveloc_count);
         g_pMomentumGhostClient->SendSavelocReqPacket(target, &packet);
     }
-    else if (stage == -3)
+    else if (stage == SAVELOC_REQ_STAGE_CLICKED_CANCEL)
     {
-        // The player clicked cancel
         SetRequestingSavelocsFrom(0);
 
         // Let our requestee know
         SavelocReqPacket packet;
-        packet.stage = -1;
+        packet.stage = SAVELOC_REQ_STAGE_DONE;
         g_pMomentumGhostClient->SendSavelocReqPacket(target, &packet);
     }
 }
@@ -261,9 +259,9 @@ void CMOMSaveLocSystem::RequesterLeft(const uint64& requester)
     // The person we are requesting savelocs from just left
     if (requester == m_iRequesting)
     {
-        // Fire event for client, 
+        // Fire event for client
         KeyValues *pKv = new KeyValues("req_savelocs");
-        pKv->SetInt("stage", -2);
+        pKv->SetInt("stage", SAVELOC_REQ_STAGE_REQUESTER_LEFT);
         g_pModuleComms->FireEvent(pKv);
 
         m_iRequesting = 0;
@@ -482,7 +480,7 @@ void CMOMSaveLocSystem::UpdateRequesters()
 
     // Send them our saveloc count
     SavelocReqPacket response;
-    response.stage = 2;
+    response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
     response.saveloc_count = m_rcSavelocs.Count();
 
     FOR_EACH_VEC(m_vecRequesters, i)
