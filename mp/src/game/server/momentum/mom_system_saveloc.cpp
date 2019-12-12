@@ -89,20 +89,23 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
     g_EventQueue.RestoreForTarget(pPlayer, entEventsState);
 }
 
-void SavedLocation_t::Read(CUtlBuffer& mem)
+bool SavedLocation_t::Read(CUtlBuffer &mem)
 {
-    KeyValues *read = new KeyValues("From Someone");
-    read->ReadAsBinary(mem);
-    Load(read);
-    read->deleteThis();
+    KeyValuesAD read("From Someone");
+    if (read->ReadAsBinary(mem))
+    {
+        Load(read);
+        return true;
+    }
+
+    return false;
 }
 
-void SavedLocation_t::Write(CUtlBuffer& mem)
+bool SavedLocation_t::Write(CUtlBuffer &mem)
 {
-    KeyValues *test = new KeyValues("To Someone");
-    Save(test);
-    test->WriteAsBinary(mem);
-    test->deleteThis();
+    KeyValuesAD write("To Someone");
+    Save(write);
+    return write->WriteAsBinary(mem);
 }
 
 CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName)
@@ -248,10 +251,13 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
     }
 }
 
-void CMOMSaveLocSystem::AddSavelocRequester(const uint64& newReq)
+bool CMOMSaveLocSystem::AddSavelocRequester(const uint64& newReq)
 {
-    if (!m_vecRequesters.HasElement(newReq))
-        m_vecRequesters.AddToTail(newReq);
+    if (m_vecRequesters.HasElement(newReq))
+        return false;
+
+    m_vecRequesters.AddToTail(newReq);
+    return true;
 }
 
 void CMOMSaveLocSystem::RequesterLeft(const uint64& requester)

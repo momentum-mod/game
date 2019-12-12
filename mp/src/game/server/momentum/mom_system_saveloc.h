@@ -32,8 +32,8 @@ struct SavedLocation_t
     // Called when the player wants to teleport to this checkpoint 
     void Teleport(CMomentumPlayer* pPlayer);
 
-    void Read(CUtlBuffer &mem);
-    void Write(CUtlBuffer &mem);
+    bool Read(CUtlBuffer &mem);
+    bool Write(CUtlBuffer &mem);
 };
 
 class CMOMSaveLocSystem : public CAutoGameSystem
@@ -49,7 +49,7 @@ public:
     // Called when the UI wants to request savelocs
     void OnSavelocRequestEvent(KeyValues *pKv);
     // Called when somebody requests our savelocs, keep track of them
-    void AddSavelocRequester(const uint64 &newReq);
+    bool AddSavelocRequester(const uint64 &newReq);
     // Called when a potential requester leaves the lobby/map
     void RequesterLeft(const uint64 &requester);
     // Called when we are requesting savelocs from someone
