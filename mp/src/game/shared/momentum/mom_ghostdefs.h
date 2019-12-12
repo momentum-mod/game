@@ -193,7 +193,12 @@ class SpecUpdatePacket : public MomentumPacket
     SpecUpdatePacket(CUtlBuffer &buf)
     {
         specTarget = static_cast<uint64>(buf.GetInt64());
-        spec_type = static_cast<SpectateMessageType_t>(buf.GetInt());
+
+        auto iSpecType = buf.GetInt();
+        if (iSpecType < SPEC_UPDATE_FIRST || iSpecType > SPEC_UPDATE_LAST)
+            iSpecType = SPEC_UPDATE_INVALID;
+
+        spec_type = static_cast<SpectateMessageType_t>(iSpecType);
     }
 
     PacketType GetType() const OVERRIDE { return PACKET_TYPE_SPEC_UPDATE; }

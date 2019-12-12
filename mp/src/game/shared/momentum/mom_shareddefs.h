@@ -182,7 +182,11 @@ enum SpectateMessageType_t
     SPEC_UPDATE_JOIN = 0,           // Started spectating
     SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
     SPEC_UPDATE_STOP,           // Stopped spectating; respawned
-    SPEC_UPDATE_LEAVE       // This player left the map/lobby
+    SPEC_UPDATE_LEAVE,       // This player left the map/lobby
+
+    SPEC_UPDATE_FIRST = SPEC_UPDATE_JOIN,
+    SPEC_UPDATE_LAST = SPEC_UPDATE_LEAVE,
+    SPEC_UPDATE_INVALID = -1,
 };
 
 #define PANEL_TIMES "times"
