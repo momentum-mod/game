@@ -683,162 +683,153 @@ bool CMomentumLobbySystem::TryJoinLobbyFromString(const char* pString)
 
 void CMomentumLobbySystem::SendAndReceiveP2PPackets()
 {
-    if (m_mapLobbyGhosts.Count() > 0)
+    if (m_mapLobbyGhosts.Count() == 0)
+        return;
+
+    uint32 size;
+    while (SteamNetworking()->IsP2PPacketAvailable(&size))
     {
-        // Read data
-        uint32 size;
-        while (SteamNetworking()->IsP2PPacketAvailable(&size))
+        uint8 *bytes = new uint8[size];
+        uint32 bytesRead;
+        CSteamID fromWho;
+        SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
+
+        CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
+        buf.SetBigEndian(false);
+
+        const auto type = buf.GetUnsignedChar();
+        switch (type)
         {
-            // Read the packet's data
-            uint8 *bytes = new uint8[size];
-            uint32 bytesRead;
-            CSteamID fromWho;
-            SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
-
-            // Throw the data into a manageable reader
-            CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
-            buf.SetBigEndian(false);
-
-            // Determine what type it is
-            uint8 type = buf.GetUnsignedChar();
-            switch (type)
+        case PACKET_TYPE_POSITION:
             {
-            case PACKET_TYPE_POSITION:
-                {
-                    PositionPacket frame(buf);
-                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
-                    if (pEntity)
-                        pEntity->AddPositionFrame(frame);
-                }
-                break;
-            case PACKET_TYPE_DECAL:
-                {
-                    DecalPacket decals(buf);
-                    if (decals.decal_type == DECAL_INVALID)
-                        break;
+                PositionPacket frame(buf);
+                CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
+                    pEntity->AddPositionFrame(frame);
+            }
+            break;
+        case PACKET_TYPE_DECAL:
+            {
+                DecalPacket decals(buf);
+                if (decals.decal_type == DECAL_INVALID)
+                    break;
 
-                    const auto pEntity = GetLobbyMemberEntity(fromWho);
-                    if (pEntity)
+                const auto pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
+                {
+                    pEntity->AddDecalFrame(decals);
+                }
+            }
+            break;
+        case PACKET_TYPE_SPEC_UPDATE:
+            {
+                SpecUpdatePacket update(buf);
+                if (update.spec_type == SPEC_UPDATE_INVALID)
+                    break;
+
+                const auto pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
+                {
+                    pEntity->m_bSpectating = update.specTarget != 0;
+                    update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
+                }
+
+                WriteSpecMessage(update.spec_type, fromWho.ConvertToUint64(), update.specTarget);
+            }
+            break;
+        case PACKET_TYPE_SAVELOC_REQ:
+            {
+                SavelocReqPacket saveloc(buf);
+
+                // Done/fail states:
+                // 1. They hit "cancel" (most common)
+                // 2. They leave the map (same as 1, just accidental maybe)
+                // 3. They leave the lobby/server (manually, due to power outage, etc)
+                // 4. We leave the map
+                // 5. We leave the lobby/server
+                // 6. They get the savelocs they need
+
+                // Of the above, 1 and 6 are the ones that are manually sent.
+                // 2<->5 can be automatically detected with lobby/server hooks
+
+                // Fail requirements:
+                // Requester: set "requesting" to false, close the request UI
+                // Requestee: remove requester from requesters vector
+
+                DevLog(2, "Received a stage %i saveloc request packet!\n", saveloc.stage);
+
+                switch (saveloc.stage)
+                {
+                case SAVELOC_REQ_STAGE_COUNT_REQ:
                     {
-                        pEntity->AddDecalFrame(decals);
+                        if (!g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
+                            break;
+
+                        SavelocReqPacket response;
+                        response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
+                        response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
+
+                        SendPacket(&response, &fromWho, k_EP2PSendReliable);
                     }
-                }
-                break;
-            case PACKET_TYPE_SPEC_UPDATE:
-                {
-                    SpecUpdatePacket update(buf);
-                    if (update.spec_type == SPEC_UPDATE_INVALID)
-                        break;
-
-                    const auto pEntity = GetLobbyMemberEntity(fromWho);
-                    if (pEntity)
+                    break;
+                case SAVELOC_REQ_STAGE_COUNT_ACK:
                     {
-                        pEntity->m_bSpectating = update.specTarget != 0;
-                        update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
+                        KeyValues *pKV = new KeyValues("req_savelocs");
+                        pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
+                        pKV->SetInt("count", saveloc.saveloc_count);
+                        g_pModuleComms->FireEvent(pKV);
                     }
-
-                    WriteSpecMessage(update.spec_type, fromWho.ConvertToUint64(), update.specTarget);
-                }
-                break;
-            case PACKET_TYPE_SAVELOC_REQ:
-                {
-                    SavelocReqPacket saveloc(buf);
-
-                    // Done/fail states:
-                    // 1. They hit "cancel" (most common)
-                    // 2. They leave the map (same as 1, just accidental maybe)
-                    // 3. They leave the lobby/server (manually, due to power outage, etc)
-                    // 4. We leave the map
-                    // 5. We leave the lobby/server
-                    // 6. They get the savelocs they need
-
-                    // Of the above, 1 and 6 are the ones that are manually sent.
-                    // 2<->5 can be automatically detected with lobby/server hooks
-
-                    // Fail requirements:
-                    // Requester: set "requesting" to false, close the request UI
-                    // Requestee: remove requester from requesters vector
-
-                    DevLog(2, "Received a stage %i saveloc request packet!\n", saveloc.stage);
-
-                    switch (saveloc.stage)
+                    break;
+                case SAVELOC_REQ_STAGE_SAVELOC_REQ:
                     {
-                    case SAVELOC_REQ_STAGE_COUNT_REQ:
-                        {
-                            if (!g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
-                                break;
+                        SavelocReqPacket response;
+                        response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
 
-                            SavelocReqPacket response;
-                            response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
-                            response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
-
+                        if (g_pMOMSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
                             SendPacket(&response, &fromWho, k_EP2PSendReliable);
-                        }
-                        break;
-                    case SAVELOC_REQ_STAGE_COUNT_ACK:
-                        {
-                            KeyValues *pKV = new KeyValues("req_savelocs");
-                            pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
-                            pKV->SetInt("count", saveloc.saveloc_count);
-                            g_pModuleComms->FireEvent(pKV);
-                        }
-                        break;
-                    case SAVELOC_REQ_STAGE_SAVELOC_REQ:
+                    }
+                    break;
+                case SAVELOC_REQ_STAGE_SAVELOC_ACK:
+                    {
+                        if (g_pMOMSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
                         {
                             SavelocReqPacket response;
-                            response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
-
-                            if (g_pMOMSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
-                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
-                        }
-                        break;
-                    case SAVELOC_REQ_STAGE_SAVELOC_ACK:
-                        {
-                            // We got their savelocs, add it to the player's list of savelocs
-                            if (g_pMOMSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
+                            response.stage = SAVELOC_REQ_STAGE_DONE;
+                            if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
                             {
-                                // Send them a packet that we're all good
-                                SavelocReqPacket response;
-                                response.stage = SAVELOC_REQ_STAGE_DONE;
-                                if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
-                                {
-                                    // Send ourselves an event saying we're all good
-                                    KeyValues *pKv = new KeyValues("req_savelocs");
-                                    pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
-                                    g_pModuleComms->FireEvent(pKv);
-                                }
+                                KeyValues *pKv = new KeyValues("req_savelocs");
+                                pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
+                                g_pModuleComms->FireEvent(pKv);
                             }
                         }
-                        break;
-                    case SAVELOC_REQ_STAGE_DONE:
-                        {
-                            g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
-                        }
-                        break;
-                    case SAVELOC_REQ_STAGE_INVALID:
-                    default:
-                        DevWarning(2, "Invalid stage for the saveloc request packet!\n");
-                        break;
                     }
+                    break;
+                case SAVELOC_REQ_STAGE_DONE:
+                    {
+                        g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+                    }
+                    break;
+                case SAVELOC_REQ_STAGE_INVALID:
+                default:
+                    DevWarning(2, "Invalid stage for the saveloc request packet!\n");
+                    break;
                 }
-                break;
-            default:
-                break;
             }
-
-            // Clear the buffer and free the memory
-            buf.Purge();
-            delete[] bytes;
+            break;
+        default:
+            break;
         }
 
-        // Send position data
-        if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)
+        buf.Purge();
+        delete[] bytes;
+    }
+
+    if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)
+    {
+        PositionPacket frame;
+        if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
         {
-            PositionPacket frame;
-            if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
-            {
-                m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
-            }
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
         }
     }
 }
