@@ -93,10 +93,15 @@ public:
 
         Buttons = buttons;
         ViewOffset = viewOffsetZ;
+
+        Validate();
     }
 
     PositionPacket(): Buttons(0), ViewOffset(0)
     {
+        EyeAngle.Init();
+        Position.Init();
+        Velocity.Init();
     }
 
     PositionPacket(CUtlBuffer &buf)
@@ -106,6 +111,8 @@ public:
         buf.Get(&Velocity, sizeof(Vector));
         Buttons = buf.GetInt();
         ViewOffset = buf.GetFloat();
+
+        Validate();
     }
 
     PacketType GetType() const OVERRIDE { return PACKET_TYPE_POSITION; }
@@ -120,6 +127,20 @@ public:
         buf.PutFloat(ViewOffset);
     }
 
+    void Validate()
+    {
+        if (!EyeAngle.IsValid() || !IsEntityQAngleReasonable(EyeAngle))
+            EyeAngle = vec3_angle;
+
+        if (!Position.IsValid() || !IsEntityPositionReasonable(Position))
+            Position = vec3_origin;
+
+        if (!Velocity.IsValid() || !IsEntityVelocityReasonable(Velocity))
+            Velocity = vec3_origin;
+
+        ViewOffset = Clamp(ViewOffset, VEC_DUCK_VIEW.z, VEC_VIEW.z);
+    }
+
     PositionPacket& operator=(const PositionPacket &other)
     {
         Buttons = other.Buttons;
@@ -127,6 +148,7 @@ public:
         EyeAngle = other.EyeAngle;
         Position = other.Position;
         Velocity = other.Velocity;
+        Validate();
         return *this;
     }
 
