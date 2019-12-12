@@ -724,7 +724,8 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
             case PACKET_TYPE_SPEC_UPDATE:
                 {
                     SpecUpdatePacket update(buf);
-                    uint64 fromWhoID = fromWho.ConvertToUint64(), specTargetID = update.specTarget;
+                    if (update.spec_type == SPEC_UPDATE_INVALID)
+                        break;
 
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
                     if (pEntity)
@@ -733,8 +734,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                         update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
                     }
 
-                    // Write it out to the Hud Chat
-                    WriteSpecMessage(update.spec_type, fromWhoID, specTargetID);
+                    WriteSpecMessage(update.spec_type, fromWho.ConvertToUint64(), update.specTarget);
                 }
                 break;
             case PACKET_TYPE_SAVELOC_REQ:
