@@ -386,6 +386,10 @@ class SavelocReqPacket : public MomentumPacket
     SavelocReqPacket(CUtlBuffer &buf)
     {
         stage = buf.GetInt();
+
+        if (stage < SAVELOC_REQ_STAGE_FIRST || stage > SAVELOC_REQ_STAGE_LAST)
+            stage = SAVELOC_REQ_STAGE_INVALID;
+
         if (stage > SAVELOC_REQ_STAGE_COUNT_REQ)
         {
             saveloc_count = buf.GetInt();
@@ -393,6 +397,7 @@ class SavelocReqPacket : public MomentumPacket
             if (stage > SAVELOC_REQ_STAGE_COUNT_ACK && buf.IsValid())
             {
                 dataBuf.Clear();
+                dataBuf.SetBigEndian(false);
                 dataBuf.Put(buf.PeekGet(), buf.GetBytesRemaining());
             }
         }
