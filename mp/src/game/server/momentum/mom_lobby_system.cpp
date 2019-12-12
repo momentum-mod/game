@@ -787,14 +787,14 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                             SavelocReqPacket response;
                             response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
 
-                            if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
+                            if (g_pMOMSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
                                 SendPacket(&response, &fromWho, k_EP2PSendReliable);
                         }
                         break;
                     case SAVELOC_REQ_STAGE_SAVELOC_ACK:
                         {
                             // We got their savelocs, add it to the player's list of savelocs
-                            if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
+                            if (g_pMOMSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
                             {
                                 // Send them a packet that we're all good
                                 SavelocReqPacket response;
