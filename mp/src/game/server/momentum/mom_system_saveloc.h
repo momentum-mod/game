@@ -54,10 +54,10 @@ public:
     void RequesterLeft(const uint64 &requester);
     // Called when we are requesting savelocs from someone
     void SetRequestingSavelocsFrom(const uint64 &from);
-    // Called when a saveloc request is completed.
-    // When sending (our savelocs to them), input = the nums, output = binary savelocs
-    // When !sending (recv savelocs from them), input = the savelocs, output = not needed
-    bool FillSavelocReq(bool sending, SavelocReqPacket *input, SavelocReqPacket *outputBuf);
+    uint64 GetRequestingSavelocsFrom() const { return m_iRequesting; }
+
+    bool WriteRequestedSavelocs(SavelocReqPacket *input, SavelocReqPacket *output, const uint64 &requester);
+    bool ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender);
 
     // Local
     // Gets the current menu Saveloc index

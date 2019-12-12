@@ -288,50 +288,64 @@ void CMOMSaveLocSystem::SetRequestingSavelocsFrom(const uint64& from)
     m_iRequesting = from;
 }
 
-bool CMOMSaveLocSystem::FillSavelocReq(const bool sending, SavelocReqPacket *input, SavelocReqPacket *outputBuf)
+bool CMOMSaveLocSystem::WriteRequestedSavelocs(SavelocReqPacket *input, SavelocReqPacket *output, const uint64 &requester)
 {
-    if (sending)
+    if (!m_vecRequesters.HasElement(requester))
+        return false;
+
+    int count = 0;
+    for (int i = 0; i < input->saveloc_count && input->dataBuf.IsValid(); i++)
     {
-        int count = 0;
-        // Go through each requested saveloc and copy the binary into outputBuf
-        for (int i = 0; i < input->saveloc_count; i++)
+        const auto requestedIndex = input->dataBuf.GetInt();
+
+        const auto savedLoc = GetSaveloc(requestedIndex);
+        if (savedLoc)
         {
-            int requested = input->dataBuf.GetInt();
+            if (!savedLoc->Write(output->dataBuf))
+                return false;
 
-            SavedLocation_t *savedLoc = GetSaveloc(requested);
-            if (savedLoc)
-            {
-                savedLoc->Write(outputBuf->dataBuf);
-                count++;
-            }
-        }
-
-        if (!count) // If we didn't have any savelocs to give, get outta here
-            return false;
-
-        // We set the count here because we may have a different number of savelocs than requested
-        // (eg. when we delete some savelocs while the packet to request the original amount/indicies is still live)
-        outputBuf->saveloc_count = count;
-    }
-    else // receiving savelocs
-    {
-        // They gave us their savelocs, read them and add them to the player
-        if (input->saveloc_count)
-        {
-            for (int i = 0; i < input->saveloc_count; i++)
-            {
-                // Memory managed by the player, when they exit the level
-                SavedLocation_t *newSavedLoc = new SavedLocation_t;
-                newSavedLoc->Read(input->dataBuf);
-                m_rcSavelocs.AddToTail(newSavedLoc);
-            }
-
-            FireUpdateEvent();
-            UpdateRequesters();
+            count++;
         }
     }
+
+    if (count == 0)
+        return false;
+
+    // We set the count here because we may have a different number of savelocs than requested
+    // (eg. when we delete some savelocs while the packet to request the original amount/indicies is still live)
+    output->saveloc_count = count;
 
     return true;
+}
+
+bool CMOMSaveLocSystem::ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender)
+{
+    if (sender != m_iRequesting)
+        return false;
+
+    if (input->saveloc_count > 0)
+    {
+        for (int i = 0; i < input->saveloc_count && input->dataBuf.IsValid(); i++)
+        {
+            auto newSavedLoc = new SavedLocation_t;
+            if (newSavedLoc->Read(input->dataBuf))
+            {
+                m_rcSavelocs.AddToTail(newSavedLoc);
+            }
+            else
+            {
+                delete newSavedLoc;
+                return false;
+            }
+        }
+
+        FireUpdateEvent();
+        UpdateRequesters();
+
+        return true;
+    }
+
+    return false;
 }
 
 SavedLocation_t* CMOMSaveLocSystem::CreateSaveloc()
