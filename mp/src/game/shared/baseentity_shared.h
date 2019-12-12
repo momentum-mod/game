@@ -254,31 +254,19 @@ inline bool CBaseEntity::IsEffectActive( int nEffects ) const
 // Shared EntityMessage between game and client .dlls
 #define BASEENTITY_MSG_REMOVE_DECALS	1
 
-extern float k_flMaxEntityPosCoord;
 extern float k_flMaxEntityEulerAngle;
 extern float k_flMaxEntitySpeed;
 extern float k_flMaxEntitySpinRate;
 
-inline bool IsEntityCoordinateReasonable ( const vec_t c )
-{
-	float r = k_flMaxEntityPosCoord;
-	return c > -r && c < r;
-}
-
-inline bool IsEntityPositionReasonable( const Vector &v )
-{
-	float r = k_flMaxEntityPosCoord;
-	return
-		v.x > -r && v.x < r &&
-		v.y > -r && v.y < r &&
-		v.z > -r && v.z < r;
-}
+bool IsEntityCoordinateReasonable(const vec_t coord);
+bool IsEntityPositionReasonable(const Vector &pos);
+bool IsEntityVelocityReasonable(const Vector &vel);
 
 // Returns:
 //   -1 - velocity is really, REALLY bad and probably should be rejected.
 //   0  - velocity was suspicious and clamped.
 //   1  - velocity was OK and not modified
-extern int CheckEntityVelocity( Vector &v );
+int CheckEntityVelocity( Vector &v );
 
 inline bool IsEntityQAngleReasonable( const QAngle &q )
 {

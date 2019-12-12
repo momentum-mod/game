@@ -19,6 +19,7 @@
 #include "debugoverlay_shared.h"
 #include "coordsize.h"
 #include "vphysics/performance.h"
+#include "movevars_shared.h"
 
 #ifdef CLIENT_DLL
 	#include "c_te_effect_dispatch.h"
@@ -66,9 +67,8 @@ ConVar hl2_episodic( "hl2_episodic", "0", FCVAR_REPLICATED );
 
 bool CBaseEntity::m_bAllowPrecache = false;
 
-// Set default max values for entities based on the existing constants from elsewhere
-float k_flMaxEntityPosCoord = MAX_COORD_FLOAT;
 float k_flMaxEntityEulerAngle = 360.0 * 1000.0f; // really should be restricted to +/-180, but some code doesn't adhere to this.  let's just trap NANs, etc
+
 // Sometimes the resulting computed speeds are legitimately above the original
 // constants; use bumped up versions for the downstream validation logic to
 // account for this.
@@ -1107,6 +1107,25 @@ int	CBaseEntity::GetNextThinkTick( int nContextIndex ) const
 	return m_aThinkFunctions[nContextIndex].m_nNextThinkTick; 
 }
 
+bool IsEntityCoordinateReasonable(const vec_t coord)
+{
+    return coord > -MAX_COORD_FLOAT && coord < MAX_COORD_FLOAT;
+}
+
+bool IsEntityPositionReasonable(const Vector &pos)
+{
+    Vector posAbs;
+    VectorAbs(pos, posAbs);
+    return posAbs.x < MAX_COORD_FLOAT && posAbs.y < MAX_COORD_FLOAT && posAbs.z < MAX_COORD_FLOAT;
+}
+
+bool IsEntityVelocityReasonable(const Vector &vel)
+{
+    const float max = sv_maxvelocity.GetFloat();
+    Vector velAbs;
+    VectorAbs(vel, velAbs);
+    return velAbs.x < max && velAbs.y < max && velAbs.z < max;
+}
 
 int CheckEntityVelocity( Vector &v )
 {
