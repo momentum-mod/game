@@ -714,7 +714,10 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
             case PACKET_TYPE_DECAL:
                 {
                     DecalPacket decals(buf);
-                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                    if (decals.decal_type == DECAL_INVALID)
+                        break;
+
+                    const auto pEntity = GetLobbyMemberEntity(fromWho);
                     if (pEntity)
                     {
                         pEntity->AddDecalFrame(decals);
@@ -727,7 +730,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                     if (update.spec_type == SPEC_UPDATE_INVALID)
                         break;
 
-                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                    const auto pEntity = GetLobbyMemberEntity(fromWho);
                     if (pEntity)
                     {
                         pEntity->m_bSpectating = update.specTarget != 0;

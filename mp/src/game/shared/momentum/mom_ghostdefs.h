@@ -217,7 +217,10 @@ enum DecalType
     DECAL_PAINT,
     DECAL_KNIFE,
     DECAL_ROCKET,
-    // etc
+
+    DECAL_FIRST = DECAL_BULLET,
+    DECAL_LAST = DECAL_ROCKET,
+    DECAL_INVALID = -1
 };
 
 struct BulletDecalData
@@ -247,6 +250,7 @@ class DecalPacket : public MomentumPacket
         decal_type = decalType;
         vOrigin = origin;
         vAngle = angle;
+        Validate();
     }
   public:
     Vector vOrigin;
@@ -264,7 +268,7 @@ class DecalPacket : public MomentumPacket
     };
     DecalData data;
 
-    DecalPacket() {}
+    DecalPacket() : decal_type(DECAL_INVALID) {}
 
     static DecalPacket Bullet(Vector origin, QAngle angle, int iAmmoType, int iMode, int iSeed, float fSpread)
     {
@@ -299,10 +303,15 @@ class DecalPacket : public MomentumPacket
 
     DecalPacket(CUtlBuffer &buf)
     {
-        decal_type = static_cast<DecalType>(buf.GetUnsignedChar());
+        int iDecalType = buf.GetUnsignedChar();
+        if (iDecalType < DECAL_FIRST || iDecalType > DECAL_LAST)
+            iDecalType = DECAL_INVALID;
+
+        decal_type = static_cast<DecalType>(iDecalType);
         buf.Get(&vOrigin, sizeof(Vector));
         buf.Get(&vAngle, sizeof(QAngle));
         buf.Get(&data, sizeof(data));
+        Validate();
     }
 
     DecalPacket& operator=(const DecalPacket &other)
@@ -311,6 +320,7 @@ class DecalPacket : public MomentumPacket
         vOrigin = other.vOrigin;
         vAngle = other.vAngle;
         memcpy(&data, &other.data, sizeof(data));
+        Validate();
         return *this;
     }
 
@@ -323,6 +333,16 @@ class DecalPacket : public MomentumPacket
         buf.Put(&vOrigin, sizeof(Vector));
         buf.Put(&vAngle, sizeof(QAngle));
         buf.Put(&data, sizeof(data));
+    }
+
+    void Validate()
+    {
+        if (!vOrigin.IsValid() || !IsEntityPositionReasonable(vOrigin))
+            vOrigin = vec3_origin;
+
+        // vAngle is not always angle data (for grenade it's vecThrow)
+        if (!vAngle.IsValid())
+            vAngle = vec3_angle;
     }
 };
 
