@@ -5,21 +5,12 @@
 
 enum PacketType
 {
-    PT_CONN_REQ = 0,
-    PT_CONN_ACK,
-    PT_APPR_DATA,
-    PT_APPR_ACK,
-    PT_POS_DATA,
-    PT_POS_ACK,
-    PT_CHAT_DATA,
-    PT_MAP_CHANGE,
-    PT_DISC_REQ,
+    PACKET_TYPE_POSITION = 0,
+    PACKET_TYPE_DECAL,
+    PACKET_TYPE_SPEC_UPDATE,
+    PACKET_TYPE_SAVELOC_REQ,
 
-    PT_DECAL_DATA,
-    PT_SPEC_UPDATE,
-    PT_SAVELOC_REQ,
-
-    PT_COUNT
+    PACKET_TYPE_COUNT
 };
 
 #define APPEARANCE_BODYGROUP_MIN 0
@@ -87,12 +78,13 @@ class MomentumPacket
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
 class PositionPacket : public MomentumPacket
 {
-  public:
+public:
     int Buttons;
     float ViewOffset;
     QAngle EyeAngle;
     Vector Position;
     Vector Velocity;
+
     PositionPacket(const QAngle eyeAngle, const Vector position, const Vector velocity, const float viewOffsetZ, const int buttons)
     {
         EyeAngle = eyeAngle;
@@ -106,6 +98,7 @@ class PositionPacket : public MomentumPacket
     PositionPacket(): Buttons(0), ViewOffset(0)
     {
     }
+
     PositionPacket(CUtlBuffer &buf)
     {
         buf.Get(&EyeAngle, sizeof(QAngle));
@@ -115,7 +108,7 @@ class PositionPacket : public MomentumPacket
         ViewOffset = buf.GetFloat();
     }
 
-    PacketType GetType() const OVERRIDE { return PT_POS_DATA; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_POSITION; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
@@ -181,7 +174,7 @@ class SpecUpdatePacket : public MomentumPacket
         spec_type = static_cast<SpectateMessageType_t>(buf.GetInt());
     }
 
-    PacketType GetType() const OVERRIDE { return PT_SPEC_UPDATE; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_SPEC_UPDATE; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
@@ -294,7 +287,7 @@ class DecalPacket : public MomentumPacket
         return *this;
     }
 
-    PacketType GetType() const OVERRIDE { return PT_DECAL_DATA; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_DECAL; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
@@ -340,7 +333,7 @@ class SavelocReqPacket : public MomentumPacket
         }
     }
 
-    PacketType GetType() const OVERRIDE { return PT_SAVELOC_REQ; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_SAVELOC_REQ; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
