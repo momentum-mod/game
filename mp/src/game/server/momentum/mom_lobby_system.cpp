@@ -694,16 +694,16 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
             uint32 bytesRead;
             CSteamID fromWho;
             SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
-            
+
             // Throw the data into a manageable reader
             CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
             buf.SetBigEndian(false);
-            
+
             // Determine what type it is
             uint8 type = buf.GetUnsignedChar();
             switch (type)
             {
-            case PT_POS_DATA: // Position update frame
+            case PACKET_TYPE_POSITION:
                 {
                     PositionPacket frame(buf);
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
@@ -711,7 +711,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                         pEntity->AddPositionFrame(frame);
                 }
                 break;
-            case PT_DECAL_DATA:
+            case PACKET_TYPE_DECAL:
                 {
                     DecalPacket decals(buf);
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
@@ -721,7 +721,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                     }
                 }
                 break;
-            case PT_SPEC_UPDATE:
+            case PACKET_TYPE_SPEC_UPDATE:
                 {
                     SpecUpdatePacket update(buf);
                     uint64 fromWhoID = fromWho.ConvertToUint64(), specTargetID = update.specTarget;
@@ -737,8 +737,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                     WriteSpecMessage(update.spec_type, fromWhoID, specTargetID);
                 }
                 break;
-
-            case PT_SAVELOC_REQ:
+            case PACKET_TYPE_SAVELOC_REQ:
                 {
                     SavelocReqPacket saveloc(buf);
 
@@ -837,7 +836,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
         }
 
         // Send position data
-        if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
+        if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)
         {
             PositionPacket frame;
             if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
@@ -847,6 +846,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
         }
     }
 }
+
 void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 {
     CHECK_STEAM_API(SteamMatchmaking());
@@ -897,6 +897,7 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     
     SendSpectatorUpdatePacket(ghostTarget, type);
 }
+
 //Sends the spectator info update packet to all current ghosts
 void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type)
 {
@@ -951,7 +952,6 @@ void CMomentumLobbySystem::OnLobbyTypeChanged(int newType)
     }
     // else the lobby isn't valid, but it'll apply to our next one!
 }
-
 
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
