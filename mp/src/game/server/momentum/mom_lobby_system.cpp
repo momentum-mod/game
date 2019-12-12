@@ -765,7 +765,8 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                     {
                     case SAVELOC_REQ_STAGE_COUNT_REQ:
                         {
-                            g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
+                            if (!g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
+                                break;
 
                             SavelocReqPacket response;
                             response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
