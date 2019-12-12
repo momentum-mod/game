@@ -19,6 +19,7 @@
 #include "vgui_avatarimage.h"
 
 #include "mom_modulecomms.h"
+#include "mom_ghostdefs.h"
 
 #include "fmtstr.h"
 #include "ilocalize.h"
@@ -350,7 +351,7 @@ void LobbyMembersPanel::OnContextReqSavelocs(uint64 target)
     ShowPanel(false);
     KeyValues *pReq = new KeyValues("req_savelocs");
     // Stage 1 is request the count, make the other player make a copy of their savelocs for us
-    pReq->SetInt("stage", 1);
+    pReq->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_REQ);
     pReq->SetUint64("target", target);
     g_pModuleComms->FireEvent(pReq);
 

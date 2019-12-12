@@ -346,18 +346,36 @@ class DecalPacket : public MomentumPacket
     }
 };
 
+enum SavelocRequestStage
+{
+    SAVELOC_REQ_STAGE_INVALID = -1,
+    SAVELOC_REQ_STAGE_DONE,         // Done
+    SAVELOC_REQ_STAGE_COUNT_REQ,    // Asking how many savelocs there are
+    SAVELOC_REQ_STAGE_COUNT_ACK,    // Telling how many savelocs there are
+    SAVELOC_REQ_STAGE_SAVELOC_REQ,  // Requesting specific savelocs at specific indexes
+    SAVELOC_REQ_STAGE_SAVELOC_ACK,  // Giving the specific savelocs
+
+    // Internal
+    SAVELOC_REQ_STAGE_REQUESTER_LEFT,
+    SAVELOC_REQ_STAGE_CLICKED_CANCEL,
+
+    // Bounds for online
+    SAVELOC_REQ_STAGE_FIRST = SAVELOC_REQ_STAGE_DONE,
+    SAVELOC_REQ_STAGE_LAST = SAVELOC_REQ_STAGE_SAVELOC_ACK
+};
+
 class SavelocReqPacket : public MomentumPacket
 {
   public:
     // Stage type
     int stage;
 
-    // Stage == 2 ? (The number of savelocs we have to offer)
-    // Stage == (3 || 4) ? (The number of savelocs we have chosen to download)
+    // Stage == _COUNT_ACK ? (The number of savelocs we have to offer)
+    // Stage == (_SAVELOC_REQ || _SAVELOC_ACK) ? (The number of savelocs we have chosen to download)
     int saveloc_count;
 
-    // Stage == 3 ? (The selected nums of savelocs to download)
-    // Stage == 4 ? (The actual saveloc data, in binary)
+    // Stage == _SAVELOC_REQ ? (The selected nums of savelocs to download)
+    // Stage == _SAVELOC_ACK ? (The actual saveloc data, in binary)
     CUtlBuffer dataBuf;
 
     SavelocReqPacket(): stage(0), saveloc_count(0)
@@ -368,11 +386,11 @@ class SavelocReqPacket : public MomentumPacket
     SavelocReqPacket(CUtlBuffer &buf)
     {
         stage = buf.GetInt();
-        if (stage > 1)
+        if (stage > SAVELOC_REQ_STAGE_COUNT_REQ)
         {
             saveloc_count = buf.GetInt();
 
-            if (stage > 2)
+            if (stage > SAVELOC_REQ_STAGE_COUNT_ACK && buf.IsValid())
             {
                 dataBuf.Clear();
                 dataBuf.Put(buf.PeekGet(), buf.GetBytesRemaining());

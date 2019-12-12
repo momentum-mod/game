@@ -6,6 +6,7 @@
 #include "vgui_controls/Button.h"
 #include "tier1/fmtstr.h"
 #include "mom_modulecomms.h"
+#include "mom_ghostdefs.h"
 
 #include "tier0/memdbgon.h"
 
@@ -58,7 +59,7 @@ void SavelocReqFrame::Close()
     BaseClass::Close();
 }
 
-void SavelocReqFrame::ApplySchemeSettings(vgui::IScheme* pScheme)
+void SavelocReqFrame::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
@@ -67,32 +68,27 @@ void SavelocReqFrame::ApplySchemeSettings(vgui::IScheme* pScheme)
 
 void SavelocReqFrame::FireEvent(KeyValues* pKv)
 {
-    if (FStrEq(pKv->GetName(), "req_savelocs"))
+    int stage = pKv->GetInt("stage", SAVELOC_REQ_STAGE_INVALID);
+
+    if (stage == SAVELOC_REQ_STAGE_COUNT_ACK)
     {
-        int stage = pKv->GetInt("stage");
+        SetSavelocCount(pKv->GetInt("count"));
+    }
+    else if (stage == SAVELOC_REQ_STAGE_DONE)
+    {
+        m_pStatusLabel->SetText("Savelocs downloaded!");
 
-        if (stage == 2)
-        {
-            // We got the number of savelocs
-            SetSavelocCount(pKv->GetInt("count"));
-        }
-        else if (stage == -1) // We got the savelocs we needed
-        {
-            m_pStatusLabel->SetText("Savelocs downloaded!");
-
-            // MOM_TODO: Re-enable these, just in case they want more?
-            m_pSavelocSelect->SetEnabled(false);
-            m_pRequestButton->SetEnabled(false);
-            m_pToggleAllButton->SetEnabled(false);
-        }
-        else if (stage == -2)
-        {
-            // They left
-            m_pStatusLabel->SetText("The requestee has left.");
-            m_pRequestButton->SetEnabled(false);
-            m_pSavelocSelect->SetEnabled(false);
-            m_pToggleAllButton->SetEnabled(false);
-        }
+        // MOM_TODO: Re-enable these, just in case they want more?
+        m_pSavelocSelect->SetEnabled(false);
+        m_pRequestButton->SetEnabled(false);
+        m_pToggleAllButton->SetEnabled(false);
+    }
+    else if (stage == SAVELOC_REQ_STAGE_REQUESTER_LEFT)
+    {
+        m_pStatusLabel->SetText("The requester has left.");
+        m_pRequestButton->SetEnabled(false);
+        m_pSavelocSelect->SetEnabled(false);
+        m_pToggleAllButton->SetEnabled(false);
     }
 }
 
@@ -102,9 +98,8 @@ void SavelocReqFrame::OnCommand(const char* command)
     {
         if (m_iSteamID)
         {
-            // Build the stage 3 packet
             KeyValues* pKv = new KeyValues("req_savelocs");
-            pKv->SetInt("stage", 3);
+            pKv->SetInt("stage", SAVELOC_REQ_STAGE_SAVELOC_REQ);
             pKv->SetUint64("target", m_iSteamID);
             pKv->SetInt("count", m_vecSelected.Count());
             pKv->SetPtr("nums", m_vecSelected.Base());
@@ -130,7 +125,7 @@ void SavelocReqFrame::OnCommand(const char* command)
         if (m_iSteamID)
         {
             KeyValues* pKv = new KeyValues("req_savelocs");
-            pKv->SetInt("stage", -3);
+            pKv->SetInt("stage", SAVELOC_REQ_STAGE_CLICKED_CANCEL);
             pKv->SetUint64("target", m_iSteamID);
             g_pModuleComms->FireEvent(pKv);
         }
