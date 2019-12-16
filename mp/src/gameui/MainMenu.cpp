@@ -56,7 +56,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_bNeedSort = false;
     m_nSortFlags = FL_SORT_SHARED;
 
-    GameUI().GetLocalizedString("#GameUI2_LogoLeft", &m_logoLeft);
+    GameUI().GetLocalizedString("#MOM_Momentum", &m_logoLeft);
     GameUI().GetLocalizedString("#GameUI2_LogoRight", &m_logoRight);
     m_pLogoImage = nullptr;
 
