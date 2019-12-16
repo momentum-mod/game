@@ -199,6 +199,8 @@
         // UI stuff
         "MOM_Jump" "JUMP"
         "MOM_Duck" "DUCK"
+        "MOM_M1"   "M1"
+        "MOM_M2"   "M2"
 
         // Map Finished Panel
         //Overall
@@ -367,6 +369,17 @@
         "MOM_Settings_Online_Trails" "Enable online ghost trails"
         "MOM_Settings_Online_Trails_TT" "When enabled, other players can have a trail showing their paths"
         
+        // Rocket Jump settings
+        "MOM_Settings_Tab_RJ" "RJ"
+        "MOM_Settings_RJ_None" "None"
+        "MOM_Settings_RJ_TF2" "TF2"
+        "MOM_Settings_RJ_Enable_TF_RocketModel" "Use TF2 rocket model"
+        "MOM_Settings_RJ_Enable_TF_ViewModel" "Use TF2 view model"
+        "MOM_Settings_RJ_Enable_Center_Fire" "Fire projectiles from screen center"
+        "MOM_Settings_RJ_Particle_Label" "Explosion particles"
+        "MOM_Settings_RJ_Particle_Tooltip" "When the TF2 setting is selected, you can use custom particles by editing the value of the 'ExplosionEffect' field in the weapon script file."
+        "MOM_Settings_RJ_Sounds_Label" "Explosion and firing sounds"
+        "MOM_Settings_RJ_Trail_Label" "Trail effect"
 
         // Replay Info
         // Spec GUI
@@ -456,6 +469,8 @@
 
         "MOM_MB_DeleteRunConfirmation" "NOTE: If you delete a local run, keep in mind that there's currently no way to get it back!"
 
+        "MOM_Momentum" "Momentum"
+
         // Paint gun panel
         "MOM_PaintGunPanel_SliderText" "Decal scale:"
         "MOM_PaintGunPanel_Viewmodel" "Paintgun Viewmodel Visible"
@@ -489,7 +504,6 @@
         "GameUI2_InviteLobby" "Invite friends"
 
         // Main menu
-        "GameUI2_LogoLeft" "Momentum"
         "GameUI2_LogoRight" "Mod"
 
         "GameUI2_ResumeGame" "RESUME GAME"
