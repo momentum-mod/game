@@ -19,6 +19,8 @@ private:
 	float m_ReverseDuration;
 	float m_HoldTime;
 
+	void Fade(CBaseEntity* pTarget, bool bReverse);
+
 	COutputEvent m_OnBeginFade;
 
 	DECLARE_DATADESC();
@@ -71,46 +73,55 @@ void CEnvFade::Spawn( void )
 {
 }
 
-
 //-----------------------------------------------------------------------------
-// Purpose: Input handler that does the screen fade.
+// Purpose: Perform the fade on a target player if found
 //-----------------------------------------------------------------------------
-void CEnvFade::InputFade( inputdata_t &inputdata )
+void CEnvFade::Fade(CBaseEntity *pTarget, bool bReverse)
 {
 	int fadeFlags = 0;
+	float flFadeDuration = (bReverse ? ReverseDuration() : Duration());
 
-	if ( m_spawnflags & SF_FADE_IN )
+	if (m_spawnflags & SF_FADE_IN)
 	{
-		fadeFlags |= FFADE_IN;
+		fadeFlags |= (bReverse ? FFADE_OUT : FFADE_IN);
 	}
 	else
 	{
-		fadeFlags |= FFADE_OUT;
+		fadeFlags |= (bReverse ? FFADE_IN : FFADE_OUT);
 	}
 
-	if ( m_spawnflags & SF_FADE_MODULATE )
+	if (m_spawnflags & SF_FADE_MODULATE)
 	{
 		fadeFlags |= FFADE_MODULATE;
 	}
 
-	if ( m_spawnflags & SF_FADE_STAYOUT )
+	if (m_spawnflags & SF_FADE_STAYOUT)
 	{
 		fadeFlags |= FFADE_STAYOUT;
 	}
 
-	if ( m_spawnflags & SF_FADE_ONLYONE )
+	if (m_spawnflags & SF_FADE_ONLYONE)
 	{
-		if ( inputdata.pActivator && inputdata.pActivator->IsNetClient() )
+		if (pTarget && pTarget->IsNetClient())
 		{
-			UTIL_ScreenFade( inputdata.pActivator, m_clrRender, Duration(), HoldTime(), fadeFlags );
+			UTIL_ScreenFade(pTarget, m_clrRender, flFadeDuration, HoldTime(), fadeFlags);
 		}
 	}
 	else
 	{
-		UTIL_ScreenFadeAll( m_clrRender, Duration(), HoldTime(), fadeFlags|FFADE_PURGE );
+		UTIL_ScreenFadeAll(m_clrRender, flFadeDuration, HoldTime(), fadeFlags | FFADE_PURGE);
 	}
 
-	m_OnBeginFade.FireOutput( inputdata.pActivator, this );
+	m_OnBeginFade.FireOutput(pTarget, this);
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Input handler that does the screen fade.
+//-----------------------------------------------------------------------------
+void CEnvFade::InputFade(inputdata_t &inputdata)
+{
+	Fade(inputdata.pActivator, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -118,40 +129,7 @@ void CEnvFade::InputFade( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CEnvFade::InputFadeReverse(inputdata_t &inputdata)
 {
-    int fadeFlags = 0;
-
-    if (m_spawnflags & SF_FADE_IN)
-    {
-        fadeFlags |= FFADE_OUT;
-    }
-    else
-    {
-        fadeFlags |= FFADE_IN;
-    }
-
-    if (m_spawnflags & SF_FADE_MODULATE)
-    {
-        fadeFlags |= FFADE_MODULATE;
-    }
-
-    if (m_spawnflags & SF_FADE_STAYOUT)
-    {
-        fadeFlags |= FFADE_STAYOUT;
-    }
-
-    if (m_spawnflags & SF_FADE_ONLYONE)
-    {
-        if (inputdata.pActivator && inputdata.pActivator->IsNetClient())
-        {
-            UTIL_ScreenFade(inputdata.pActivator, m_clrRender, ReverseDuration(), HoldTime(), fadeFlags);
-        }
-    }
-    else
-    {
-        UTIL_ScreenFadeAll(m_clrRender, ReverseDuration(), HoldTime(), fadeFlags | FFADE_PURGE);
-    }
-
-    m_OnBeginFade.FireOutput(inputdata.pActivator, this);
+	Fade(inputdata.pActivator, true);
 }
 
 

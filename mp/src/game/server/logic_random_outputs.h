@@ -5,13 +5,7 @@
 // $NoKeywords: $
 //
 //=============================================================================//
-#ifndef LOGICRANDOMOUTPUTS_H
-#define LOGICRANDOMOUTPUTS_H
-
-#include "cbase.h"
-#include "entityinput.h"
-#include "entityoutput.h"
-#include "eventqueue.h"
+#pragma once
 
 #define NUM_RANDOM_OUTPUTS 16
 
@@ -47,5 +41,3 @@ private:
 	bool m_bDisabled;
 	bool m_bWaitForRefire;			// Set to disallow a refire while we are waiting for our outputs to finish firing.
 };
-
-#endif //LOGICRANDOMOUTPUTS_H
