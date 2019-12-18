@@ -23,6 +23,8 @@ class ComparisonsSettingsPage : public SettingsPage
     //Handle custom controls
     void OnApplyChanges() OVERRIDE;
 
+    void OnScreenSizeChanged(int oldwide, int oldtall) override;
+
     //Load the settings for this panel
     void LoadSettings() OVERRIDE;
     void OnPageShow() OVERRIDE;

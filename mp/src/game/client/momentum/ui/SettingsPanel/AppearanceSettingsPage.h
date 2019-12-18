@@ -28,10 +28,11 @@ class AppearanceSettingsPage : public SettingsPage
     MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
     void OnCommand(const char* command) OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
+    void OnScreenSizeChanged(int oldwide, int oldtall) override;
 
 private:
     void UpdateModelSettings();
-
+    void DestroyModelPanel();
 
     vgui::Frame *m_pModelPreviewFrame;
     CRenderPanel *m_pModelPreview;
