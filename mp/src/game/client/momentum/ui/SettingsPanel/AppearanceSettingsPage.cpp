@@ -217,6 +217,13 @@ void AppearanceSettingsPage::ApplySchemeSettings(IScheme* pScheme)
     SetButtonColors();
 }
 
+void AppearanceSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
+{
+    BaseClass::OnScreenSizeChanged(oldwide, oldtall);
+
+    DestroyModelPanel();
+}
+
 void AppearanceSettingsPage::UpdateModelSettings()
 {
     MDLCACHE_CRITICAL_SECTION();
@@ -233,4 +240,15 @@ void AppearanceSettingsPage::UpdateModelSettings()
     
     // Player shape
     pModel->SetBodygroup(1, ghost_bodygroup.GetInt());
+}
+
+void AppearanceSettingsPage::DestroyModelPanel()
+{
+    if (m_pModelPreviewFrame)
+    {
+        m_pModelPreviewFrame->DeletePanel();
+    }
+
+    m_pModelPreviewFrame = nullptr;
+    m_pModelPreview = nullptr;
 }

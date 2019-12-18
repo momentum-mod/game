@@ -165,6 +165,13 @@ void ComparisonsSettingsPage::OnApplyChanges()
     }
 }
 
+void ComparisonsSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
+{
+    BaseClass::OnScreenSizeChanged(oldwide, oldtall);
+
+    DestroyBogusComparePanel();
+}
+
 void ComparisonsSettingsPage::LoadSettings()
 {
     if (m_pMaxZones)
