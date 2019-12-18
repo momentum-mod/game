@@ -72,6 +72,7 @@
     output OnUser2(void) : "Fired in response to FireUser2 input."
     output OnUser3(void) : "Fired in response to FireUser3 input."
     output OnUser4(void) : "Fired in response to FireUser4 input."
+    output OnKilled(void) : "Fired in response to Kill or KillHierarchy input."
 ]
 
 @BaseClass = Parentname
@@ -254,7 +255,8 @@
 @BaseClass = ResponseContext
 [
     // Inputs
-    input AddContext(string) : "Adds a context to this entity's list of response contexts. The format should be 'key:value'."
+    input AddContext(string) : "Adds a context to this entity's list of response contexts. The format should be 'key:value'. If a context with the given key already exists, it is overwritten."
+    input IncrementContext(string) : "Adds to a numeric context value if it exists. The format should be 'key:value', where the value can be a negative number for subtraction. Functions identically to AddContext if the context does not exist."
     input RemoveContext(string) : "Remove a context from this entity's list of response contexts. The name should match the 'key' of a previously added context."
     input ClearContext(void) : "Removes all contexts in this entity's list of response contexts."
 
