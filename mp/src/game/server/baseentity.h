@@ -844,7 +844,7 @@ protected:
 	void RemoveExpiredConcepts( void );
 	bool ContextExpired( int index ) const;
 public:
-	void	AddContext( const char *nameandvalue, bool increment = false );
+	void AddContext( const char *nameandvalue, bool increment = false );
 	int FindContextByName(const char *name) const;
 	int GetContextCount() const;                  // Call RemoveExpiredConcepts to clean out expired concepts
 	const char *GetContextName(int index) const;  // note: context may be expired

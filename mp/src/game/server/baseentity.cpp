@@ -6593,7 +6593,7 @@ void CBaseEntity::AddContext(const char *contextName, bool increment)
             if (increment)
             {
                 int iValue = atoi(value) + atoi(m_ResponseContexts[iIndex].m_iszValue.ToCStr());
-                itoa(iValue, value, 10);
+                Q_snprintf(value, 128, "%d", iValue);
                 m_ResponseContexts[iIndex].m_iszValue = AllocPooledString(value);
             }
             else
