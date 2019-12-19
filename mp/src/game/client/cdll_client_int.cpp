@@ -981,6 +981,34 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	// Initialize the console variables.
 	ConVar_Register( FCVAR_CLIENTDLL );
 
+    //Remove cheat flag for this cvar
+    ConVar *mat_dynamic_tonemapping = g_pCVar->FindVar("mat_dynamic_tonemapping");
+    if (mat_dynamic_tonemapping)
+    {
+        mat_dynamic_tonemapping->SetFlags(FCVAR_NONE);
+    }
+
+    //Force HDR on
+    ConVar *mat_hdr_level = g_pCVar->FindVar("mat_hdr_level");
+    if (mat_hdr_level)
+    {
+        mat_hdr_level->SetValue(2);
+        mat_hdr_level->Unload();
+    }
+
+    // Don't allow DXLevel to be changed in game, only from -dxlevel launch parameter
+    // This essentially removes DirectX 8 from existence too
+    ConVar *mat_dxlevel = g_pCVar->FindVar("mat_dxlevel");
+    if (mat_dxlevel)
+    {
+        if (mat_dxlevel->GetInt() > 50 && mat_dxlevel->GetInt() < 90)
+            Error("Momentum Mod cannot be run in DirectX 8 or lower.\nPut -dxlevel 95 into the launch parameters of "
+                  "your game, start the game once and then remove this launch parameter afterwards, so it's "
+                  "permanently saved.");
+
+        mat_dxlevel->Unload();
+    }
+
 	g_pcv_ThreadMode = g_pCVar->FindVar( "host_thread_mode" );
 
 	if (!Initializer::InitializeAllObjects())
