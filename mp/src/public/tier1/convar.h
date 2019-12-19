@@ -355,6 +355,18 @@ public:
     FORCEINLINE_CVAR char const *GetString(void) const;
     FORCEINLINE_CVAR Color GetColor(void) const;
 
+    FORCEINLINE_CVAR void Unload()
+    {
+        m_pParent->Shutdown();
+        Shutdown();
+    }
+
+    FORCEINLINE_CVAR void SetFlags(int flags)
+    {
+        m_pParent->m_nFlags = flags;
+        m_nFlags = flags;
+    }
+
     void SetMin(float min);
     void SetMax(float max);
 
