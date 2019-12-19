@@ -15,45 +15,45 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-const int SF_REMOVE_ON_FIRE				= 0x001;	// Relay will remove itself after being triggered.
-const int SF_ALLOW_FAST_RETRIGGER		= 0x002;	// Unless set, entity will disable itself until the last output is sent.
+const int SF_REMOVE_ON_FIRE              = 0x001;    // Relay will remove itself after being triggered.
+const int SF_ALLOW_FAST_RETRIGGER        = 0x002;    // Unless set, entity will disable itself until the last output is sent.
 
 LINK_ENTITY_TO_CLASS(logic_random_outputs, CLogicRandomOutputs);
 
 
 BEGIN_DATADESC( CLogicRandomOutputs )
 
-	DEFINE_FIELD(m_bWaitForRefire, FIELD_BOOLEAN),
-	DEFINE_KEYFIELD(m_bDisabled, FIELD_BOOLEAN, "StartDisabled"),
+    DEFINE_FIELD(m_bWaitForRefire, FIELD_BOOLEAN),
+    DEFINE_KEYFIELD(m_bDisabled, FIELD_BOOLEAN, "StartDisabled"),
 
-	DEFINE_AUTO_ARRAY( m_flOnTriggerChance, FIELD_FLOAT ),
+    DEFINE_AUTO_ARRAY( m_flOnTriggerChance, FIELD_FLOAT ),
 
-	// Inputs
-	DEFINE_INPUTFUNC(FIELD_VOID, "Enable", InputEnable),
-	DEFINE_INPUTFUNC(FIELD_VOID, "EnableRefire", InputEnableRefire),
-	DEFINE_INPUTFUNC(FIELD_VOID, "Disable", InputDisable),
-	DEFINE_INPUTFUNC(FIELD_VOID, "Toggle", InputToggle),
-	DEFINE_INPUTFUNC(FIELD_VOID, "Trigger", InputTrigger),
-	DEFINE_INPUTFUNC(FIELD_VOID, "CancelPending", InputCancelPending),
+    // Inputs
+    DEFINE_INPUTFUNC(FIELD_VOID, "Enable", InputEnable),
+    DEFINE_INPUTFUNC(FIELD_VOID, "EnableRefire", InputEnableRefire),
+    DEFINE_INPUTFUNC(FIELD_VOID, "Disable", InputDisable),
+    DEFINE_INPUTFUNC(FIELD_VOID, "Toggle", InputToggle),
+    DEFINE_INPUTFUNC(FIELD_VOID, "Trigger", InputTrigger),
+    DEFINE_INPUTFUNC(FIELD_VOID, "CancelPending", InputCancelPending),
 
-	// Outputs
-	DEFINE_OUTPUT(m_OnSpawn, "OnSpawn"),
-	DEFINE_OUTPUT(m_Output[0], "OnTrigger1"),
-	DEFINE_OUTPUT(m_Output[1], "OnTrigger2"),
-	DEFINE_OUTPUT(m_Output[2], "OnTrigger3"),
-	DEFINE_OUTPUT(m_Output[3], "OnTrigger4"),
-	DEFINE_OUTPUT(m_Output[4], "OnTrigger5"),
-	DEFINE_OUTPUT(m_Output[5], "OnTrigger6"),
-	DEFINE_OUTPUT(m_Output[6], "OnTrigger7"),
-	DEFINE_OUTPUT(m_Output[7], "OnTrigger8"),
-	DEFINE_OUTPUT(m_Output[8], "OnTrigger9"),
-	DEFINE_OUTPUT(m_Output[9], "OnTrigger10"),
-	DEFINE_OUTPUT(m_Output[10], "OnTrigger11"),
-	DEFINE_OUTPUT(m_Output[11], "OnTrigger12"),
-	DEFINE_OUTPUT(m_Output[12], "OnTrigger13"),
-	DEFINE_OUTPUT(m_Output[13], "OnTrigger14"),
-	DEFINE_OUTPUT(m_Output[14], "OnTrigger15"),
-	DEFINE_OUTPUT(m_Output[15], "OnTrigger16"),
+    // Outputs
+    DEFINE_OUTPUT(m_OnSpawn, "OnSpawn"),
+    DEFINE_OUTPUT(m_Output[0], "OnTrigger1"),
+    DEFINE_OUTPUT(m_Output[1], "OnTrigger2"),
+    DEFINE_OUTPUT(m_Output[2], "OnTrigger3"),
+    DEFINE_OUTPUT(m_Output[3], "OnTrigger4"),
+    DEFINE_OUTPUT(m_Output[4], "OnTrigger5"),
+    DEFINE_OUTPUT(m_Output[5], "OnTrigger6"),
+    DEFINE_OUTPUT(m_Output[6], "OnTrigger7"),
+    DEFINE_OUTPUT(m_Output[7], "OnTrigger8"),
+    DEFINE_OUTPUT(m_Output[8], "OnTrigger9"),
+    DEFINE_OUTPUT(m_Output[9], "OnTrigger10"),
+    DEFINE_OUTPUT(m_Output[10], "OnTrigger11"),
+    DEFINE_OUTPUT(m_Output[11], "OnTrigger12"),
+    DEFINE_OUTPUT(m_Output[12], "OnTrigger13"),
+    DEFINE_OUTPUT(m_Output[13], "OnTrigger14"),
+    DEFINE_OUTPUT(m_Output[14], "OnTrigger15"),
+    DEFINE_OUTPUT(m_Output[15], "OnTrigger16"),
 
 END_DATADESC()
 
@@ -71,19 +71,19 @@ CLogicRandomOutputs::CLogicRandomOutputs(void)
 //-----------------------------------------------------------------------------
 bool CLogicRandomOutputs::KeyValue( const char *szKeyName, const char *szValue )
 {
-	if ( szValue && szValue[0] )
-	{
-		for ( int i=0; i < NUM_RANDOM_OUTPUTS; i++ )
-		{
-			if ( FStrEq( szKeyName, UTIL_VarArgs( "OnTriggerChance%d", i ) ) )
-			{
-				m_flOnTriggerChance[i] = atof( szValue );
-				return true;
-			}
-		}
-	}
+    if ( szValue && szValue[0] )
+    {
+        for ( int i=0; i < NUM_RANDOM_OUTPUTS; i++ )
+        {
+            if ( FStrEq( szKeyName, UTIL_VarArgs( "OnTriggerChance%d", i ) ) )
+            {
+                m_flOnTriggerChance[i] = atof( szValue );
+                return true;
+            }
+        }
+    }
 
-	return BaseClass::KeyValue( szKeyName, szValue );
+    return BaseClass::KeyValue( szKeyName, szValue );
 }
 
 //------------------------------------------------------------------------------
@@ -91,12 +91,12 @@ bool CLogicRandomOutputs::KeyValue( const char *szKeyName, const char *szValue )
 //------------------------------------------------------------------------------
 void CLogicRandomOutputs::Activate()
 {
-	BaseClass::Activate();
-	
-	if ( m_OnSpawn.NumberOfElements() > 0)
-	{
-		SetNextThink( gpGlobals->curtime + 0.01 );
-	}
+    BaseClass::Activate();
+    
+    if ( m_OnSpawn.NumberOfElements() > 0)
+    {
+        SetNextThink( gpGlobals->curtime + 0.01 );
+    }
 }
 
 
@@ -106,16 +106,16 @@ void CLogicRandomOutputs::Activate()
 //-----------------------------------------------------------------------------
 void CLogicRandomOutputs::Think()
 {
-	// Fire an output when we spawn. This is used for self-starting an entity
-	// template -- since the logic_random_outputs is inside the template, it gets all the
-	// name and I/O connection fixup, so can target other entities in the template.
-	m_OnSpawn.FireOutput( this, this );
+    // Fire an output when we spawn. This is used for self-starting an entity
+    // template -- since the logic_random_outputs is inside the template, it gets all the
+    // name and I/O connection fixup, so can target other entities in the template.
+    m_OnSpawn.FireOutput( this, this );
 
-	// We only get here if we had OnSpawn connections, so this is safe.
-	if ( m_spawnflags & SF_REMOVE_ON_FIRE )
-	{
-		UTIL_Remove(this);
-	}
+    // We only get here if we had OnSpawn connections, so this is safe.
+    if ( m_spawnflags & SF_REMOVE_ON_FIRE )
+    {
+        UTIL_Remove(this);
+    }
 }
 
 
@@ -124,17 +124,17 @@ void CLogicRandomOutputs::Think()
 //------------------------------------------------------------------------------
 void CLogicRandomOutputs::InputEnable( inputdata_t &inputdata )
 {
-	m_bDisabled = false;
+    m_bDisabled = false;
 }
 
 //------------------------------------------------------------------------------
 // Purpose: Enables us to fire again. This input is only posted from our Trigger
-//			function to prevent rapid refire.
+//            function to prevent rapid refire.
 //------------------------------------------------------------------------------
 void CLogicRandomOutputs::InputEnableRefire( inputdata_t &inputdata )
 { 
-	Msg(" now enabling refire\n" );
-	m_bWaitForRefire = false;
+    Msg(" now enabling refire\n" );
+    m_bWaitForRefire = false;
 }
 
 
@@ -143,10 +143,10 @@ void CLogicRandomOutputs::InputEnableRefire( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 void CLogicRandomOutputs::InputCancelPending( inputdata_t &inputdata )
 { 
-	g_EventQueue.CancelEvents( this );
+    g_EventQueue.CancelEvents( this );
 
-	// Stop waiting; allow another Trigger.
-	m_bWaitForRefire = false;
+    // Stop waiting; allow another Trigger.
+    m_bWaitForRefire = false;
 }
 
 
@@ -155,7 +155,7 @@ void CLogicRandomOutputs::InputCancelPending( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 void CLogicRandomOutputs::InputDisable( inputdata_t &inputdata )
 { 
-	m_bDisabled = true;
+    m_bDisabled = true;
 }
 
 
@@ -164,7 +164,7 @@ void CLogicRandomOutputs::InputDisable( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 void CLogicRandomOutputs::InputToggle( inputdata_t &inputdata )
 { 
-	m_bDisabled = !m_bDisabled;
+    m_bDisabled = !m_bDisabled;
 }
 
 
@@ -173,38 +173,38 @@ void CLogicRandomOutputs::InputToggle( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CLogicRandomOutputs::InputTrigger( inputdata_t &inputdata )
 {
-	if ((!m_bDisabled) && (!m_bWaitForRefire))
-	{
+    if ((!m_bDisabled) && (!m_bWaitForRefire))
+    {
         float flRandomOutput = RandomFloat();
 
-		for ( int i=0 ; i < NUM_RANDOM_OUTPUTS ; i++ )
-		{
+        for ( int i=0 ; i < NUM_RANDOM_OUTPUTS ; i++ )
+        {
             if (flRandomOutput <= m_flOnTriggerChance[i + 1])    // DEFINE_AUTO_ARRAY starts m_flOnTriggerChance[] from 1
-			{
-				m_Output[i].FireOutput( inputdata.pActivator, this );
-			}
-		}
-		
-		if (m_spawnflags & SF_REMOVE_ON_FIRE)
-		{
-			UTIL_Remove(this);
-		}
-		else if (!(m_spawnflags & SF_ALLOW_FAST_RETRIGGER))
-		{
-			// find the max delay from all our outputs
-			float fMaxDelay = 0;
-			for ( int i=0 ; i < NUM_RANDOM_OUTPUTS ; i++ )
-			{
-				fMaxDelay = MAX( fMaxDelay, m_Output[i].GetMaxDelay() );
-			}
-			if ( fMaxDelay > 0 )
-			{
-				// Disable the relay so that it cannot be refired until after the last output
-				// has been fired and post an input to re-enable ourselves.
-				m_bWaitForRefire = true;
-				g_EventQueue.AddEvent(this, "EnableRefire", fMaxDelay + 0.001, this, this);
-			}
-		}
-	}
+            {
+                m_Output[i].FireOutput( inputdata.pActivator, this );
+            }
+        }
+        
+        if (m_spawnflags & SF_REMOVE_ON_FIRE)
+        {
+            UTIL_Remove(this);
+        }
+        else if (!(m_spawnflags & SF_ALLOW_FAST_RETRIGGER))
+        {
+            // find the max delay from all our outputs
+            float fMaxDelay = 0;
+            for ( int i=0 ; i < NUM_RANDOM_OUTPUTS ; i++ )
+            {
+                fMaxDelay = MAX( fMaxDelay, m_Output[i].GetMaxDelay() );
+            }
+            if ( fMaxDelay > 0 )
+            {
+                // Disable the relay so that it cannot be refired until after the last output
+                // has been fired and post an input to re-enable ourselves.
+                m_bWaitForRefire = true;
+                g_EventQueue.AddEvent(this, "EnableRefire", fMaxDelay + 0.001, this, this);
+            }
+        }
+    }
 }
 
