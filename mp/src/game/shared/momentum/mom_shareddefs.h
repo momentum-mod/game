@@ -262,6 +262,7 @@ enum SpectateMessageType_t
 #define CHECK_STEAM_API(steam_interface) ____CHECK_STEAM_API(steam_interface, return)
 
 #define MAP_FOLDER "maps"
+#define ZONE_FOLDER "zones"
 #define RECORDING_PATH "replays"
 #define RECORDING_ONLINE_PATH "online"
 #define EXT_ZONE_FILE ".zon"

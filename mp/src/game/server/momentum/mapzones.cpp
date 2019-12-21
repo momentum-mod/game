@@ -161,7 +161,7 @@ void CMapZoneSystem::LoadZonesFromFile()
 {
     m_bLoadedFromSite = false;
     char zoneFilePath[MAX_PATH];
-    V_ComposeFileName(MAP_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
+    V_ComposeFileName(ZONE_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
     V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
     DevLog("Looking for zone file: %s \n", zoneFilePath);
 
@@ -417,7 +417,7 @@ void CMapZoneSystem::SaveZonesToFile()
         if (!zoneKV->IsEmpty() && gpGlobals->mapname.ToCStr())
         {
             char zoneFilePath[MAX_PATH];
-            V_ComposeFileName(MAP_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
+            V_ComposeFileName(ZONE_FOLDER, gpGlobals->mapname.ToCStr(), zoneFilePath, MAX_PATH);
             V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
             zoneKV->SaveToFile(filesystem, zoneFilePath, "MOD");
         }
