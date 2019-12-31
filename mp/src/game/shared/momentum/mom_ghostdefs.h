@@ -343,6 +343,11 @@ class DecalPacket : public MomentumPacket
         // vAngle is not always angle data (for grenade it's vecThrow)
         if (!vAngle.IsValid())
             vAngle = vec3_angle;
+
+        if (decal_type == DECAL_PAINT)
+        {
+            data.paint.fDecalRadius = clamp(data.paint.fDecalRadius, 0.001f, 1.0f);
+        }
     }
 };
 
@@ -409,11 +414,11 @@ class SavelocReqPacket : public MomentumPacket
     {
         MomentumPacket::Write(buf);
         buf.PutInt(stage);
-        if (stage > 1)
+        if (stage > SAVELOC_REQ_STAGE_COUNT_REQ)
         {
             buf.PutInt(saveloc_count);
 
-            if (stage > 2)
+            if (stage > SAVELOC_REQ_STAGE_COUNT_ACK)
                 buf.Put(dataBuf.Base(), dataBuf.TellPut());
         }
     }
