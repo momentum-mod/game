@@ -65,8 +65,9 @@ enum GameMode_t
     GAMEMODE_BHOP = 2,
     GAMEMODE_KZ = 3,
     GAMEMODE_RJ = 4,
-    GAMEMODE_TRICKSURF = 5,
-    GAMEMODE_TRIKZ = 6,
+    GAMEMODE_SJ = 5,
+    GAMEMODE_TRICKSURF = 6,
+    GAMEMODE_TRIKZ = 7,
     // MOM_TODO: etc
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
@@ -79,6 +80,7 @@ const char * const g_szGameModes[] = {
     "#MOM_GameType_Bhop",
     "#MOM_GameType_KZ",
     "#MOM_GameType_RJ",
+    "#MOM_GameType_SJ",
     "#MOM_GameType_Tricksurf",
     "#MOM_GameType_Trikz"
 };
