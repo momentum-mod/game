@@ -12,6 +12,7 @@ class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
 class CMomRocket;
+class CMomStickybomb;
 
 struct SavedState_t
 {
@@ -268,6 +269,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void SetPracticeModeState();
 
     void DestroyRockets();
+    void DestroyStickies();
     
     // Resets all player movement properties to their default state
     void ResetMovementProperties();
@@ -326,4 +328,5 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
 
     CUtlVector<CMomRocket*> m_vecRockets;
+    CUtlVector<CMomStickybomb*> m_vecStickies;
 };
