@@ -211,26 +211,35 @@ void CWeaponBase::ItemPostFrame()
         m_bInReload = false;
     }
 
-    if (pPlayer->m_nButtons & IN_ATTACK2 && m_flNextSecondaryAttack <= gpGlobals->curtime)
+    bool bSecondaryAttack = (pPlayer->m_nButtons & IN_ATTACK2) && (m_flNextSecondaryAttack <= gpGlobals->curtime);
+    bool bPrimaryAttack = (pPlayer->m_nButtons & IN_ATTACK) && (m_flNextPrimaryAttack <= gpGlobals->curtime) &&
+                          (DualFire() || !bSecondaryAttack);
+
+    if (bPrimaryAttack || bSecondaryAttack)
     {
-        if (m_iClip2 != -1 && !pPlayer->GetAmmoCount(GetSecondaryAmmoType()))
+        if (bSecondaryAttack)
         {
-            m_bFireOnEmpty = true;
+            if (m_iClip2 != -1 && !pPlayer->GetAmmoCount(GetSecondaryAmmoType()))
+            {
+                m_bFireOnEmpty = true;
+            }
+
+            SecondaryAttack();
+
+            pPlayer->m_nButtons &= ~IN_ATTACK2;
         }
 
-        SecondaryAttack();
-
-        pPlayer->m_nButtons &= ~IN_ATTACK2;
-    }
-    else if (pPlayer->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack <= gpGlobals->curtime)
-    {
-        if (m_iClip1 == 0/* && pszAmmo1()*/ || GetMaxClip1() == -1 && !pPlayer->GetAmmoCount(GetPrimaryAmmoType()))
+        if (bPrimaryAttack)
         {
-            m_bFireOnEmpty = true;
-        }
+            if ((m_iClip1 == 0 /* && pszAmmo1()*/) ||
+                (GetMaxClip1() == -1 && !pPlayer->GetAmmoCount(GetPrimaryAmmoType())))
+            {
+                m_bFireOnEmpty = true;
+            }
 
-        PrimaryAttack();
-        //---
+            PrimaryAttack();
+            //---
+        }
     }
     else if (pPlayer->m_nButtons & IN_RELOAD && GetMaxClip1() != WEAPON_NOCLIP && !m_bInReload && m_flNextPrimaryAttack < gpGlobals->curtime)
     {

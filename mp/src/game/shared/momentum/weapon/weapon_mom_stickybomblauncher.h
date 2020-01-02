@@ -48,6 +48,7 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     void DeathNotice(CBaseEntity *pVictim);
     int GetStickybombCount() { return m_iStickybombCount; }
     float GetProjectileSpeed();
+    bool DualFire() OVERRIDE { return true; }
 
   public:
     float GetChargeBeginTime() { return m_flChargeBeginTime; }
