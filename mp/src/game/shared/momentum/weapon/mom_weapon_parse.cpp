@@ -8,7 +8,8 @@
 static const char *WeaponNames[WEAPON_MAX] = {
     "weapon_none",         "weapon_momentum_pistol",  "weapon_momentum_rifle", "weapon_momentum_shotgun",
     "weapon_momentum_smg", "weapon_momentum_sniper",  "weapon_momentum_lmg",   "weapon_momentum_grenade",
-    "weapon_knife",        "weapon_momentum_paintgun","weapon_momentum_rocketlauncher"};
+    "weapon_knife",        "weapon_momentum_paintgun","weapon_momentum_rocketlauncher",
+    "weapon_momentum_stickylauncher"};
 
 //--------------------------------------------------------------------------------------------------------------
 CWeaponInfo *GetWeaponInfo(CWeaponID weaponID)

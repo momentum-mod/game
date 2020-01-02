@@ -1,0 +1,77 @@
+WeaponData
+{
+    "CrosshairMinDistance"      "4"
+    "CrosshairDeltaDistance"    "4"
+    "BuiltRightHanded"          "1"
+    "PlayerAnimationExtension"  "ak"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "#MOM_Weapon_StickybombLauncher"
+    "viewmodel"         "models/weapons/v_models/v_stickybomb_launcher_demo.mdl"
+    "playermodel"       "models/weapons/w_models/w_stickybomb_launcher.mdl"
+    
+    "anim_prefix"      "anim"
+    "bucket"            "0"
+    "bucket_position"   "0"
+
+    "clip_size"         "4"
+
+    "weight"            "25"
+    "item_flags"        "0"
+	
+	// Particle effects and sound for explosions
+    "ExplosionEffect"          "ExplosionCore_sapperdestroyed"
+    "ExplosionPlayerEffect"    "ExplosionCore_MidAir"
+    "ExplosionWaterEffect"     "ExplosionCore_MidAir_underwater"
+
+    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    SoundData
+    {
+        "single_shot"       "StickybombLauncher.Single"
+        "special1"          "StickybombLauncher.Detonate"
+        "special2"          "StickybombLauncher.Deny"
+        "special3"          "StickybombLauncher.Charge"
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        //Weapon Select Images
+        "weapon"
+		{
+				"font"		"WeaponIcons"
+				"character"	"i"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"i"
+		}
+		"weapon_small"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"i"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"x"
+		}
+        "crosshair"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+        "autoaim"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+    }
+}

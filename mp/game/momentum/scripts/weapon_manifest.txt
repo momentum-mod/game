@@ -10,6 +10,7 @@ weapon_manifest
     "file" "scripts/weapon_momentum_grenade.txt"
     "file" "scripts/weapon_momentum_paintgun.txt"
     "file" "scripts/weapon_momentum_rocketlauncher.txt"
+    "file" "scripts/weapon_momentum_stickylauncher.txt"
     
     //CS Guns (MOM_TODO: Needs migration!)
     "file" "scripts/weapon_knife.txt"

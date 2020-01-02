@@ -42,7 +42,7 @@ particles_manifest
     //"file"        "!particles/medicgun_beam.pcf"
     //"file"        "!particles/bigboom.pcf"
     //"file"        "!particles/water.pcf"
-    //"file"        "!particles/stickybomb.pcf"
+    "file"        "!particles/stickybomb.pcf"
     //"file"        "!particles/buildingdamage.pcf"
     //"file"        "!particles/nailtrails.pcf"
     //"file"        "!particles/speechbubbles.pcf"
