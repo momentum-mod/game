@@ -86,7 +86,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\OnlineSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\RocketJumpSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\StickyJumpSettingsPanel.h"
+                        $File "momentum\ui\SettingsPanel\StickyJumpSettingsPage.h"
                     }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
