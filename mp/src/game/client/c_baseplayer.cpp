@@ -1002,17 +1002,11 @@ void C_BasePlayer::OnDataChanged( DataUpdateType_t updateType )
 		{
 			if ( GetAmmoCount(i) > m_iOldAmmo[i] )
 			{
-				// Don't add to ammo pickup if the ammo doesn't do it
-				const FileWeaponInfo_t *pWeaponData = gWR.GetWeaponFromAmmo(i);
-
-				if ( !pWeaponData || !( pWeaponData->iFlags & ITEM_FLAG_NOAMMOPICKUPS ) )
+				// We got more ammo for this ammo index. Add it to the ammo history
+				CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
+				if( pHudHR )
 				{
-					// We got more ammo for this ammo index. Add it to the ammo history
-					CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
-					if( pHudHR )
-					{
-						pHudHR->AddToHistory( HISTSLOT_AMMO, i, abs(GetAmmoCount(i) - m_iOldAmmo[i]) );
-					}
+					pHudHR->AddToHistory( HISTSLOT_AMMO, i, abs(GetAmmoCount(i) - m_iOldAmmo[i]) );
 				}
 			}
 		}

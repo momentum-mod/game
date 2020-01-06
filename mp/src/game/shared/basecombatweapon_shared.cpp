@@ -589,8 +589,6 @@ bool CBaseCombatWeapon::HasAmmo( void )
 	// Weapons with no ammo types can always be selected
 	if ( m_iPrimaryAmmoType == -1 && m_iSecondaryAmmoType == -1  )
 		return true;
-	if ( GetWeaponFlags() & ITEM_FLAG_SELECTONEMPTY )
-		return true;
 
 	CBasePlayer *player = ToBasePlayer( GetOwner() );
 	if ( !player )
@@ -1337,7 +1335,7 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 	if ( !HasAnyAmmo() && m_flNextPrimaryAttack < gpGlobals->curtime && m_flNextSecondaryAttack < gpGlobals->curtime )
 	{
 		// weapon isn't useable, switch.
-		if ( ( (GetWeaponFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY) == false ) && ( g_pGameRules->SwitchToNextBestWeapon( pOwner, this ) ) )
+		if ( g_pGameRules->SwitchToNextBestWeapon( pOwner, this ) )
 		{
 			m_flNextPrimaryAttack = gpGlobals->curtime + 0.3;
 			return true;
@@ -1348,7 +1346,6 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 		// Weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
 		if ( UsesClipsForAmmo1() && !AutoFiresFullClip() && 
 			 (m_iClip1 == 0) && 
-			 (GetWeaponFlags() & ITEM_FLAG_NOAUTORELOAD) == false && 
 			 m_flNextPrimaryAttack < gpGlobals->curtime && 
 			 m_flNextSecondaryAttack < gpGlobals->curtime )
 		{
