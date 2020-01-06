@@ -334,7 +334,6 @@ void CWeaponBase::Precache(void)
 {
     PrecacheScriptSound("Default.ClipEmpty_Pistol");
     PrecacheScriptSound("Default.ClipEmpty_Rifle");
-    PrecacheScriptSound("Default.Zoom");
 
     const char *pWeaponAlias = WeaponIDToAlias(GetWeaponID());
 
