@@ -140,8 +140,8 @@ public:
 	CHudTexture					*GetIcon( const char *szIcon );
 
 	// loads a new icon into the list, without duplicates
-	CHudTexture					*AddUnsearchableHudIconToList( CHudTexture& texture );
-	CHudTexture					*AddSearchableHudIconToList( CHudTexture& texture );
+	CHudTexture					*AddUnsearchableHudIconToList( const CHudTexture& texture );
+	CHudTexture					*AddSearchableHudIconToList( const CHudTexture& texture );
 
 	void						RefreshHudTextures();
 

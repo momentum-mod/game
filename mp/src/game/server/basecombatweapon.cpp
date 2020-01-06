@@ -34,7 +34,6 @@ extern int	gEvilImpulse101;		// In Player.h
 //	Sprite Index info
 // -----------------------------------------
 short		g_sModelIndexLaser;			// holds the index for the laser beam
-const char	*g_pModelNameLaser = "sprites/laserbeam.vmt";
 short		g_sModelIndexLaserDot;		// holds the index for the laser beam dot
 short		g_sModelIndexFireball;		// holds the index for the fireball
 short		g_sModelIndexSmoke;			// holds the index for the smoke cloud
@@ -52,10 +51,6 @@ extern ConVar ai_debug_shoot_positions;
 //-----------------------------------------------------------------------------
 void W_Precache(void)
 {
-	PrecacheFileWeaponInfoDatabase( filesystem, g_pGameRules->GetEncryptionKey() );
-
-
-
 #ifdef HL1_DLL
 	g_sModelIndexWExplosion = CBaseEntity::PrecacheModel ("sprites/WXplo1.vmt");// underwater fireball
 	g_sModelIndexBloodSpray = CBaseEntity::PrecacheModel ("sprites/bloodspray.vmt"); // initial blood
@@ -68,7 +63,7 @@ void W_Precache(void)
 
 	g_sModelIndexSmoke = CBaseEntity::PrecacheModel ("sprites/steam1.vmt");// smoke
 	g_sModelIndexBubbles = CBaseEntity::PrecacheModel ("sprites/bubble.vmt");//bubbles
-	g_sModelIndexLaser = CBaseEntity::PrecacheModel( (char *)g_pModelNameLaser );
+	g_sModelIndexLaser = CBaseEntity::PrecacheModel( "sprites/laserbeam.vmt" );
 
 	PrecacheParticleSystem( "blood_impact_red_01" );
 	PrecacheParticleSystem( "blood_impact_green_01" );

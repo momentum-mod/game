@@ -85,8 +85,6 @@ CBaseCombatWeapon::CBaseCombatWeapon()
 	OnBaseCombatWeaponCreated( this );
 #endif
 
-	m_hWeaponFileInfo = GetInvalidWeaponInfoHandle();
-
 #if defined( TF_DLL )
 	UseClientSideAnimation();
 #endif
@@ -223,15 +221,6 @@ void CBaseCombatWeapon::Spawn( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: get this game's encryption key for decoding weapon kv files
-// Output : virtual const unsigned char
-//-----------------------------------------------------------------------------
-const unsigned char *CBaseCombatWeapon::GetEncryptionKey( void ) 
-{ 
-	return g_pGameRules->GetEncryptionKey(); 
-}
-
-//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 void CBaseCombatWeapon::Precache( void )
@@ -241,40 +230,21 @@ void CBaseCombatWeapon::Precache( void )
 	// Msg( "Client got %s\n", GetClassname() );
 #endif
 
-	// Add this weapon to the weapon registry, and get our index into it
-	// Get weapon data from script file
-	if ( ReadWeaponDataFromFileForSlot( filesystem, GetClassname(), &m_hWeaponFileInfo, GetEncryptionKey() ) )
-	{
-#if defined( CLIENT_DLL )
-		gWR.LoadWeaponSprites( GetWeaponFileInfoHandle() );
-#endif
-		// Precache models (preload to avoid hitch)
-		m_iViewModelIndex = 0;
-		m_iWorldModelIndex = 0;
-		if ( GetViewModel() && GetViewModel()[0] )
-		{
-			m_iViewModelIndex = CBaseEntity::PrecacheModel( GetViewModel() );
-		}
-		if ( GetWorldModel() && GetWorldModel()[0] )
-		{
-			m_iWorldModelIndex = CBaseEntity::PrecacheModel( GetWorldModel() );
-		}
+	GetWeaponScript()->Precache(); // Precache sounds and particles
 
-		// Precache sounds, too
-		for ( int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i )
-		{
-			const char *shootsound = GetShootSound( i );
-			if ( shootsound && shootsound[0] )
-			{
-				CBaseEntity::PrecacheScriptSound( shootsound );
-			}
-		}
-	}
-	else
+	// Precache models (preload to avoid hitch)
+	m_iViewModelIndex = 0;
+	const auto pViewModelStr = GetViewModel();
+	if (pViewModelStr && pViewModelStr[0])
 	{
-		// Couldn't read data file, remove myself
-		Warning( "Error reading weapon data file for: %s\n", GetClassname() );
-	//	Remove( );	//don't remove, this gets released soon!
+		m_iViewModelIndex = PrecacheModel(pViewModelStr);
+	}
+
+	m_iWorldModelIndex = 0;
+	const auto pWorldModelStr = GetWorldModel();
+	if (pWorldModelStr && pWorldModelStr[0])
+	{
+		m_iWorldModelIndex = PrecacheModel(pWorldModelStr);
 	}
 }
 
@@ -761,8 +731,7 @@ bool CBaseCombatWeapon::ShouldDisplayAltFireHUDHint()
 void CBaseCombatWeapon::DisplayAltFireHudHint()
 {
 #if !defined( CLIENT_DLL )
-	CFmtStr hint;
-	hint.sprintf( "#valve_hint_alt_%s", GetClassname() );
+	CFmtStr hint("#valve_hint_alt_%s", GetClassname());
 	UTIL_HudHintText( GetOwner(), hint.Access() );
 	m_iAltFireHudHintCount++;
 	m_bAltFireHudHintDisplayed = true;
@@ -1447,56 +1416,6 @@ bool CBaseCombatWeapon::CanReload( void )
 
 	return true;
 }
-
-#if defined ( TF_CLIENT_DLL ) || defined ( TF_DLL )
-//-----------------------------------------------------------------------------
-// Purpose: Anti-hack
-//-----------------------------------------------------------------------------
-void CBaseCombatWeapon::AddToCritBucket( float flAmount )
-{
-	float flCap = tf_weapon_criticals_bucket_cap.GetFloat();
-
-	// Regulate crit frequency to reduce client-side seed hacking
-	if ( m_flCritTokenBucket < flCap )
-	{
-		// Treat raw damage as the resource by which we add or subtract from the bucket
-		m_flCritTokenBucket += flAmount;
-		m_flCritTokenBucket = Min( m_flCritTokenBucket, flCap );
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Anti-hack
-//-----------------------------------------------------------------------------
-bool CBaseCombatWeapon::IsAllowedToWithdrawFromCritBucket( float flDamage )
-{
-	// Note: If we're in this block of code, the assumption is that the
-	// seed said we should grant a random crit.  If allowed, the cost
-	// will be deducted here.
-
-	// Track each seed request - in cases where a player is hacking, we'll 
-	// see a silly ratio.
-	m_nCritSeedRequests++;
-
-	// Adjust token cost based on the ratio of requests vs granted, except
-	// melee, which crits much more than ranged (as high as 60% chance)
-	float flMult = ( IsMeleeWeapon() ) ? 0.5f : RemapValClamped( ( (float)m_nCritSeedRequests / (float)m_nCritChecks ), 0.1f, 1.f, 1.f, 3.f );
-
-	// Would this take us below our limit?
-	float flCost = ( flDamage * TF_DAMAGE_CRIT_MULTIPLIER ) * flMult;
-	if ( flCost > m_flCritTokenBucket )
-		return false;
-
-	// Withdraw
-	RemoveFromCritBucket( flCost );
-
-	float flBottom = tf_weapon_criticals_bucket_bottom.GetFloat();
-	if ( m_flCritTokenBucket < flBottom )
-		m_flCritTokenBucket = flBottom;
-
-	return true;
-}
-#endif // TF_DLL
 
 //-----------------------------------------------------------------------------
 // Purpose: 
