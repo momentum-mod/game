@@ -780,7 +780,7 @@ bool CWeaponBase::DefaultPistolReload()
     if (pPlayer->GetAmmoCount(GetPrimaryAmmoType()) <= 0)
         return true;
 
-    if (!DefaultReload(GetMomWpnData().iDefaultClip1, 0, ACT_VM_RELOAD))
+    if (!DefaultReload(GetDefaultClip1(), 0, ACT_VM_RELOAD))
         return false;
 
     pPlayer->m_iShotsFired = 0;

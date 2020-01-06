@@ -13,7 +13,7 @@
 #include "mom_shareddefs.h"
 #include "tempent.h"
 #include "tier0/vprof.h"
-#include "weapon/mom_weapon_parse.h"
+#include "weapon/weapon_def.h"
 #include "weapon/weapon_mom_rocketlauncher.h"
 
 #include "tier0/memdbgon.h"
@@ -21,7 +21,7 @@
 void TFExplosionCallback(const Vector &vecOrigin, const Vector &vecNormal, CWeaponID iWeaponID,
                          ClientEntityHandle_t hEntity)
 {
-    const auto pWeaponInfo = GetWeaponInfo(iWeaponID);
+    const auto pWeaponInfo = g_pWeaponDef->GetWeaponScript(iWeaponID);
 
     bool bIsPlayer = false;
     if (hEntity.Get())
@@ -62,28 +62,22 @@ void TFExplosionCallback(const Vector &vecOrigin, const Vector &vecNormal, CWeap
         // Explosions.
         if (bIsWater)
         {
-            if (Q_strlen(pWeaponInfo->m_szExplosionWaterEffect) > 0)
-                pszEffect = pWeaponInfo->m_szExplosionWaterEffect;
+            pWeaponInfo->pKVWeaponParticles->GetString("ExplosionWaterEffect");
         }
         else
         {
             if (bIsPlayer || bInAir)
             {
-                if (Q_strlen(pWeaponInfo->m_szExplosionPlayerEffect) > 0)
-                    pszEffect = pWeaponInfo->m_szExplosionPlayerEffect;
+                pWeaponInfo->pKVWeaponParticles->GetString("ExplosionPlayerEffect");
             }
             else
             {
-                if (Q_strlen(pWeaponInfo->m_szExplosionEffect) > 0)
-                    pszEffect = pWeaponInfo->m_szExplosionEffect;
+                pWeaponInfo->pKVWeaponParticles->GetString("ExplosionEffect");
             }
         }
 
         // Sound.
-        if (Q_strlen(pWeaponInfo->m_szExplosionSound) > 0)
-        {
-            pszSound = pWeaponInfo->m_szExplosionSound;
-        }
+        pszSound = pWeaponInfo->pKVWeaponSounds->GetString("explosion");
     }
 
     if (mom_rj_sounds.GetInt() > 0)

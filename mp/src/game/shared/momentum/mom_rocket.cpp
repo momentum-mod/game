@@ -2,7 +2,6 @@
 #include "mom_rocket.h"
 #include "engine/IEngineSound.h"
 #include "mom_shareddefs.h"
-#include "weapon/mom_weapon_parse.h"
 
 #ifndef CLIENT_DLL
 #include "Sprite.h"

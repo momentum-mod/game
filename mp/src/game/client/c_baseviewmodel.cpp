@@ -17,6 +17,7 @@
 #include "hltvcamera.h"
 #include "mom_shareddefs.h"
 #include "c_mom_player.h"
+#include "weapon/weapon_def.h"
 
 #if defined( REPLAY_ENABLED )
 #include "replay/replaycamera.h"
@@ -207,8 +208,8 @@ bool C_BaseViewModel::ShouldFlipViewModel()
 	CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
 	if ( pWeapon )
 	{
-		const FileWeaponInfo_t *pInfo = &pWeapon->GetWpnData();
-		return pInfo->m_bAllowFlipping && pInfo->m_bBuiltRightHanded != cl_righthand.GetBool();
+		const auto pInfo = pWeapon->GetWeaponScript();
+		return pInfo->bAllowFlipping && pInfo->bBuiltRightHanded != cl_righthand.GetBool();
 	}
 
 #ifdef TF_CLIENT_DLL

@@ -18,6 +18,9 @@
 #include "weapon/weapon_base.h"
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
+#include "weapon/weapon_def.h"
+
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -236,8 +239,8 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     if( bBehindCamera )
         return;
     
-    int iDistance = weaponBase->GetMomWpnData().m_iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
-    int iDeltaDistance = weaponBase->GetMomWpnData().m_iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
+    int iDistance = weaponBase->GetWeaponScript()->iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
+    int iDeltaDistance = weaponBase->GetWeaponScript()->iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
 
     if (cl_crosshair_style.GetInt() != 0 && !cl_crosshair_gap_use_weapon_value.GetBool())
     {
