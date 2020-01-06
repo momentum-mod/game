@@ -5,11 +5,10 @@
 #include "in_buttons.h"
 #include "fx_mom_shared.h"
 #include "util/mom_util.h"
-#include "weapon/mom_weapon_parse.h"
 #include "mom_grenade_projectile.h"
 #include "mom_rocket.h"
 #include "te_effect_dispatch.h"
-#include "weapon/weapon_base.h"
+#include "weapon/weapon_def.h"
 #include "ghost_client.h"
 
 #include "tier0/memdbgon.h"
@@ -165,20 +164,17 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
     // Play the paintgun sound
     if (mom_paintgun_shoot_sound.GetBool())
     {
-        CWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
-        if (pWeaponInfo)
-        {
-            // If we have some sounds from the weapon classname.txt file, play a random one of them
-            const char *shootsound = pWeaponInfo->aShootSounds[SINGLE];
-            if (!shootsound || !shootsound[0])
-                return;
+        const auto pWeaponScript = g_pWeaponDef->GetWeaponScript(WEAPON_PAINTGUN);
 
-            CPASAttenuationFilter filter(packet.vOrigin, shootsound);
-            if (!te->CanPredict())
-                return;
+        const char *shootsound = pWeaponScript->pKVWeaponSounds->GetString("single_shot");
+        if (!shootsound || !shootsound[0])
+            return;
 
-            EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
-        }
+        CPASAttenuationFilter filter(packet.vOrigin, shootsound);
+        if (!te->CanPredict())
+            return;
+
+        EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
     }
 }
 
@@ -194,14 +190,11 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket&packet)
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 {
-    CWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
-    if (pGrenadeInfo)
-    {
-        // Vector values stored in a QAngle, shhh~
-        Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
-        auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
-        grenade->SetDamage(0.0f); // These grenades should not do damage
-    }
+    const auto pGrenadeInfo = g_pWeaponDef->GetWeaponScript(WEAPON_GRENADE);
+    // Vector values stored in a QAngle, shhh~
+    Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
+    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
+    grenade->SetDamage(0.0f); // These grenades should not do damage
 }
 
 void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)

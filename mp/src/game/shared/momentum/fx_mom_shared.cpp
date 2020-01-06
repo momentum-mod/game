@@ -80,18 +80,16 @@ void EndGroupingSounds()
 
 #else
 
-void FX_WeaponSound(int iEntIndex, WeaponSound_t sound_type, const Vector &vOrigin, CWeaponInfo *pWeaponInfo)
+void FX_WeaponSound(int iEntIndex, const char *pShootSound, const Vector &vOrigin)
 {
-    // If we have some sounds from the weapon classname.txt file, play a random one of them
-    const char *shootsound = pWeaponInfo->aShootSounds[sound_type];
-    if (!shootsound || !shootsound[0])
+    if (!pShootSound || !pShootSound[0])
         return;
 
-    CPASAttenuationFilter filter(vOrigin, shootsound);
+    CPASAttenuationFilter filter(vOrigin, pShootSound);
     filter.UsePredictionRules();
     filter.MakeReliable();
 
-    CBaseEntity::EmitSound(filter, iEntIndex, shootsound, &vOrigin);
+    CBaseEntity::EmitSound(filter, iEntIndex, pShootSound, &vOrigin);
 };
 
 #endif
@@ -106,11 +104,10 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
     CBaseEntity *pAttacker = CBaseEntity::Instance(iEntIndex);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pAttacker);
 
-    CWeaponInfo *pWeaponInfo = GetWeaponInfo(g_pAmmoDef->WeaponID(iAmmoType));
-
-    if (!pWeaponInfo)
+    const auto hWeaponID = g_pAmmoDef->WeaponID(iAmmoType);
+    if (hWeaponID == WEAPON_NONE)
     {
-        DevMsg("FX_FireBullets: Cannot find weapon info for ID %i\n", g_pAmmoDef->WeaponID(iAmmoType));
+        DevMsg("FX_FireBullets: Cannot find weapon info for given ammo type %i\n", iAmmoType);
         return;
     }
 
@@ -146,13 +143,16 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 #ifdef GAME_DLL
     // Weapon sounds are server-only for PAS ability
 
-    static ConVarRef paintgun("mom_paintgun_shoot_sound");
+    static ConVarRef paintgun_shoot_sound("mom_paintgun_shoot_sound");
 
     // Do an extra paintgun check here
-    const bool bPreventShootSound = iAmmoType == AMMO_TYPE_PAINT && !paintgun.GetBool();
+    const bool bPreventShootSound = iAmmoType == AMMO_TYPE_PAINT && !paintgun_shoot_sound.GetBool();
 
     if (!bPreventShootSound)
-        FX_WeaponSound(iEntIndex, SINGLE, vOrigin, pWeaponInfo);
+    {
+        const auto pWeaponScript = g_pWeaponDef->GetWeaponScript(hWeaponID);
+        FX_WeaponSound(iEntIndex, pWeaponScript->pKVWeaponSounds->GetString("single_shot"), vOrigin);
+    }
 #endif
 
     // Fire bullets, calculate impacts & effects
