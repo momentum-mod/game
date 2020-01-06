@@ -7,6 +7,9 @@
 #include "cbase.h"
 #include "IconPanel.h"
 #include "KeyValues.h"
+#include "hud.h"
+
+#include "tier0/memdbgon.h"
 
 DECLARE_BUILD_FACTORY( CIconPanel );
 

@@ -10,13 +10,7 @@
 #include "basecombatweapon.h"
 #include "player.h"			// For gEvilImpulse101 / CBasePlayer
 #include "gamerules.h"		// For g_pGameRules
-#include <KeyValues.h>
-#include "ammodef.h"
 #include "baseviewmodel.h"
-#include "in_buttons.h"
-#include "soundent.h"
-#include "weapon_parse.h"
-#include "game.h"
 #include "engine/IEngineSound.h"
 #include "sendproxy.h"
 #include "tier1/strtools.h"

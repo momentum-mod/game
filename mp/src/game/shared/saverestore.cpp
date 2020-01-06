@@ -33,6 +33,7 @@
 #else
 
 #include "gamestringpool.h"
+#include "hud.h"
 
 #endif
 

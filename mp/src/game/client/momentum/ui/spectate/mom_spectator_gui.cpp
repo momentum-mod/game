@@ -9,6 +9,7 @@
 
 #include "mom_spectator_gui.h"
 
+#include "hud.h"
 #include <game/client/iviewport.h>
 #include <vgui/ILocalize.h>
 #include <vgui/IPanel.h>
