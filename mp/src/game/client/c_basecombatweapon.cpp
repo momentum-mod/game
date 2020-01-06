@@ -454,9 +454,6 @@ bool C_BaseCombatWeapon::ShouldDraw( void )
 //-----------------------------------------------------------------------------
 bool C_BaseCombatWeapon::ShouldDrawPickup( void )
 {
-	if ( GetWeaponFlags() & ITEM_FLAG_NOITEMPICKUP )
-		return false;
-
 	if ( m_bJustRestored )
 		return false;
 

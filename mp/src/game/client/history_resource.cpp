@@ -87,9 +87,6 @@ void CHudHistoryResource::SetHistoryGap( int iNewHistoryGap )
 //-----------------------------------------------------------------------------
 void CHudHistoryResource::AddToHistory( C_BaseCombatWeapon *weapon )
 {
-	// don't draw exhaustable weapons (grenades) since they'll have an ammo pickup icon as well
- 	if ( weapon->GetWpnData().iFlags & ITEM_FLAG_EXHAUSTIBLE )
- 		return;
 
 	int iId = weapon->entindex();
 

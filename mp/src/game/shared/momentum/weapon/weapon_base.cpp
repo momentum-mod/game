@@ -279,7 +279,7 @@ void CWeaponBase::ItemPostFrame()
         else
         {
             // weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
-            if (m_iClip1 == 0 && !(GetWeaponFlags() & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < gpGlobals->curtime)
+            if (m_iClip1 == 0 && m_flNextPrimaryAttack < gpGlobals->curtime)
             {
                 Reload();
                 return;
