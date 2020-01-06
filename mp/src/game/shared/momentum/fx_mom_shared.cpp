@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "fx_mom_shared.h"
 #include "weapon/weapon_base.h"
+#include "weapon/weapon_def.h"
 #include "mom_player_shared.h"
 
 #ifndef CLIENT_DLL

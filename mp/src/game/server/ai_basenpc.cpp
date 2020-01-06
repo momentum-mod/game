@@ -8141,6 +8141,8 @@ Vector CAI_BaseNPC::EyePosition( void )
 //------------------------------------------------------------------------------
 void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 {
+	const auto pActiveWeapon = GetActiveWeapon();
+
 	// UNDONE: Share this code into CBaseAnimating as appropriate?
 	switch( pEvent->event )
 	{
@@ -8336,13 +8338,12 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 
 	case NPC_EVENT_WEAPON_SET_SEQUENCE_NUMBER:
 	{
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ((pWeapon) && (pEvent->options))
+		if (pActiveWeapon && (pEvent->options))
 		{
 			int nSequence = atoi(pEvent->options);
 			if (nSequence != -1)
 			{
-				pWeapon->ResetSequence(nSequence);
+				pActiveWeapon->ResetSequence(nSequence);
 			}
 		}
 		break;
@@ -8350,13 +8351,12 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 
 	case NPC_EVENT_WEAPON_SET_SEQUENCE_NAME:
 	{
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ((pWeapon) && (pEvent->options))
+		if (pActiveWeapon && (pEvent->options))
 		{
-			int nSequence = pWeapon->LookupSequence(pEvent->options);
+			int nSequence = pActiveWeapon->LookupSequence(pEvent->options);
 			if (nSequence != -1)
 			{
-				pWeapon->ResetSequence(nSequence);
+				pActiveWeapon->ResetSequence(nSequence);
 			}
 		}
 		break;
@@ -8364,10 +8364,9 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 
 	case NPC_EVENT_WEAPON_SET_ACTIVITY:
 	{
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ((pWeapon) && (pEvent->options))
+		if (pActiveWeapon && pEvent->options)
 		{
-			Activity act = (Activity)pWeapon->LookupActivity(pEvent->options);
+			Activity act = (Activity)pActiveWeapon->LookupActivity(pEvent->options);
 			if (act != ACT_INVALID)
 			{
 				// FIXME: where should the duration come from? normally it would come from the current sequence
@@ -8388,25 +8387,17 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 				pTarget = gEntList.FindEntityGeneric(NULL, pEvent->options, this);
 			}
 
-			if (pTarget)
-			{
-				Vector vecTargetPos = pTarget->WorldSpaceCenter();
-				Weapon_Drop(GetActiveWeapon(), &vecTargetPos);
-			}
-			else
-			{
-				Weapon_Drop(GetActiveWeapon());
-			}
+			Weapon_Drop(pActiveWeapon, pTarget ? &pTarget->WorldSpaceCenter() : nullptr);
 
 			break;
 		}
 
   	case EVENT_WEAPON_RELOAD:
 		{
-  			if ( GetActiveWeapon() )
+  			if ( pActiveWeapon )
   			{
-  				GetActiveWeapon()->WeaponSound( RELOAD_NPC );
-  				GetActiveWeapon()->m_iClip1 = GetActiveWeapon()->GetMaxClip1(); 
+  				pActiveWeapon->WeaponSound(pActiveWeapon->GetWeaponSound("reload_npc"));
+  				pActiveWeapon->m_iClip1 = pActiveWeapon->GetMaxClip1(); 
   				ClearCondition(COND_LOW_PRIMARY_AMMO);
   				ClearCondition(COND_NO_PRIMARY_AMMO);
   				ClearCondition(COND_NO_SECONDARY_AMMO);
@@ -8416,18 +8407,18 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 
   	case EVENT_WEAPON_RELOAD_SOUND:
 		{
-  			if ( GetActiveWeapon() )
+  			if ( pActiveWeapon )
   			{
-  				GetActiveWeapon()->WeaponSound( RELOAD_NPC );
+  				pActiveWeapon->WeaponSound( pActiveWeapon->GetWeaponSound("reload_npc"));
   			}
   			break;
 		}
 
 	case EVENT_WEAPON_RELOAD_FILL_CLIP:
 		{
-  			if ( GetActiveWeapon() )
+  			if ( pActiveWeapon )
   			{
-  				GetActiveWeapon()->m_iClip1 = GetActiveWeapon()->GetMaxClip1(); 
+  				pActiveWeapon->m_iClip1 = pActiveWeapon->GetMaxClip1(); 
   				ClearCondition(COND_LOW_PRIMARY_AMMO);
   				ClearCondition(COND_NO_PRIMARY_AMMO);
   				ClearCondition(COND_NO_SECONDARY_AMMO);
@@ -8442,8 +8433,8 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 
 	case NPC_EVENT_OPEN_DOOR:
 		{
-			CBasePropDoor *pDoor = (CBasePropDoor *)(CBaseEntity *)GetNavigator()->GetPath()->GetCurWaypoint()->GetEHandleData();
-			if (pDoor != NULL)
+			CBasePropDoor *pDoor = (CBasePropDoor *)GetNavigator()->GetPath()->GetCurWaypoint()->GetEHandleData().Get();
+			if (pDoor)
 			{
 				OpenPropDoorNow( pDoor );
 			}
@@ -8456,13 +8447,10 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 		{
 			if (pEvent->event == AE_NPC_HOLSTER)
 			{
-				// Cache off the weapon.
-				CBaseCombatWeapon *pWeapon = GetActiveWeapon(); 
+				Assert(pActiveWeapon != nullptr);
 
-				Assert( pWeapon != NULL	); 
-
- 				GetActiveWeapon()->Holster();
-				SetActiveWeapon( NULL );
+ 				pActiveWeapon->Holster();
+				SetActiveWeapon( nullptr );
 
 				//Force the NPC to recalculate it's arrival activity since it'll most likely be wrong now that we don't have a weapon out.
 				GetNavigator()->SetArrivalSequence( ACT_INVALID );
@@ -8470,7 +8458,7 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 				if ( m_iDesiredWeaponState == DESIREDWEAPONSTATE_CHANGING_DESTROY )
 				{
 					// Get rid of it!
-					UTIL_Remove( pWeapon );
+					UTIL_Remove( pActiveWeapon );
 				}
 
 				if ( m_iDesiredWeaponState != DESIREDWEAPONSTATE_IGNORE )
@@ -8483,9 +8471,9 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
 			}
 			else if (pEvent->event == AE_NPC_DRAW)
 			{
-				if (GetActiveWeapon())
+				if (pActiveWeapon)
 				{
-					GetActiveWeapon()->Deploy();
+					pActiveWeapon->Deploy();
 
 					//Force the NPC to recalculate it's arrival activity since it'll most likely be wrong now.
 					GetNavigator()->SetArrivalSequence( ACT_INVALID );
@@ -8545,29 +8533,20 @@ void CAI_BaseNPC::HandleAnimEvent( animevent_t *pEvent )
  			else if ( pEvent->event == AE_NPC_WEAPON_DROP )
 			{
 				// Drop our active weapon (or throw it at the specified target entity).
-				CBaseEntity *pTarget = NULL;
+				CBaseEntity *pTarget = nullptr;
 				if (pEvent->options)
 				{
-					pTarget = gEntList.FindEntityGeneric(NULL, pEvent->options, this);
+					pTarget = gEntList.FindEntityGeneric(nullptr, pEvent->options, this);
 				}
 
-				if (pTarget)
-				{
-					Vector vecTargetPos = pTarget->WorldSpaceCenter();
-					Weapon_Drop(GetActiveWeapon(), &vecTargetPos);
-				}
-				else
-				{
-					Weapon_Drop(GetActiveWeapon());
-				}
+				Weapon_Drop(pActiveWeapon, pTarget ? &pTarget->WorldSpaceCenter() : nullptr);
 				return;
 			}
 			else if ( pEvent->event == AE_NPC_WEAPON_SET_ACTIVITY )
 			{
-				CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-				if ((pWeapon) && (pEvent->options))
+				if (pActiveWeapon && (pEvent->options))
 				{
-					Activity act = (Activity)pWeapon->LookupActivity(pEvent->options);
+					Activity act = (Activity)pActiveWeapon->LookupActivity(pEvent->options);
 					if (act == ACT_INVALID)
 					{
 						// Try and translate it

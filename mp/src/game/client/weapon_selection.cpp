@@ -85,9 +85,6 @@ void CBaseHudWeaponSelection::Init(void)
 {
 	Reset();
 
-	// Initialise the weapons resource
-	gWR.Init();
-
 	m_flSelectionTime = gpGlobals->curtime;
 }
 
@@ -96,8 +93,6 @@ void CBaseHudWeaponSelection::Init(void)
 //-----------------------------------------------------------------------------
 void CBaseHudWeaponSelection::Reset(void)
 {
-	gWR.Reset();
-
 	// Start hidden
 	m_bSelectionVisible = false;
 	m_flSelectionTime = gpGlobals->curtime;
@@ -117,16 +112,6 @@ void CBaseHudWeaponSelection::UpdateSelectionTime( void )
 //-----------------------------------------------------------------------------
 void CBaseHudWeaponSelection::VidInit(void)
 {
-	// If we've already loaded weapons, let's get new sprites
-	gWR.LoadAllWeaponSprites();
-
-	// set spacing of pickup history
-	CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
-	if( pHudHR )
-	{
-		pHudHR->SetHistoryGap( 21 );
-	}
-
 	Reset();
 }
 

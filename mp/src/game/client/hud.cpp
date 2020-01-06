@@ -468,7 +468,7 @@ void CHud::Init( void )
 		AddSearchableHudIconToList( *tex );
 	}
 
-	FreeHudTextureList( textureList );
+	textureList.PurgeAndDeleteElements();
 }
 
 //-----------------------------------------------------------------------------
@@ -741,7 +741,7 @@ void CHud::SetupNewHudTexture( CHudTexture *t )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CHudTexture *CHud::AddUnsearchableHudIconToList( CHudTexture& texture )
+CHudTexture *CHud::AddUnsearchableHudIconToList( const CHudTexture& texture )
 {
 	// These names are composed based on the texture file name
 	char composedName[ 512 ];
@@ -775,7 +775,7 @@ CHudTexture *CHud::AddUnsearchableHudIconToList( CHudTexture& texture )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CHudTexture *CHud::AddSearchableHudIconToList( CHudTexture& texture )
+CHudTexture *CHud::AddSearchableHudIconToList( const CHudTexture& texture )
 {
 	CHudTexture *icon = GetIcon( texture.szShortName );
 	if ( icon )
@@ -855,7 +855,7 @@ void CHud::RefreshHudTextures()
 		}
 	}
 
-	FreeHudTextureList( textureList );
+	textureList.PurgeAndDeleteElements();
 
 	// fixup all the font icons
 	vgui::HScheme scheme = vgui::scheme()->GetScheme( "ClientScheme" );
@@ -1006,7 +1006,7 @@ void CHud::ProcessInput( bool bActive )
 		m_iKeyBits = input->GetButtonBits( 0 );
 
 		// Weaponbits need to be sent down as a UserMsg now.
-		gHUD.Think();
+		Think();
 	}
 }
 
@@ -1185,7 +1185,7 @@ bool CHud::DoesRenderGroupExist( int iGroupIndex )
 void CHud::UpdateHud( bool bActive )
 {
 	// clear the weapon bits.
-	gHUD.m_iKeyBits &= (~(IN_WEAPON1|IN_WEAPON2));
+	m_iKeyBits &= (~(IN_WEAPON1|IN_WEAPON2));
 
 	g_pClientMode->Update();
 

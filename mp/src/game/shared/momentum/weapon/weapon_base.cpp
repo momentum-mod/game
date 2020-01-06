@@ -27,60 +27,7 @@ extern IVModelInfo* modelinfo;
 
 #endif
 
-
-// ----------------------------------------------------------------------------- //
-// Global functions.
-// ----------------------------------------------------------------------------- //
-
-//--------------------------------------------------------------------------------------------------------
-static const char * s_WeaponAliasInfo[] =
-{
-    "none",		// WEAPON_NONE
-    "momentum_pistol",	// WEAPON_PISTOL
-    "momentum_rifle", //WEAPON_RIFLE
-    "momentum_shotgun", //WEAPON_SHOTGUN
-    "momentum_smg", //WEAPON_SMG
-    "momentum_sniper", //WEAPON_SNIPER
-    "momentum_lmg", //WEAPON_LMG
-    "momentum_grenade", //WEAPON_GRENADE
-    "knife",	// WEAPON_KNIFE
-    "momentum_paintgun", // WEAPON_PAINTGUN
-    "momentum_rocketlauncher", // WEAPON_ROCKETLAUNCHER
-    nullptr,		// WEAPON_NONE
-};
-
-//--------------------------------------------------------------------------------------------------------
-//
-// Given an alias, return the associated weapon ID
-//
-int AliasToWeaponID(const char *alias)
-{
-    if (alias)
-    {
-        for (int i = 0; s_WeaponAliasInfo[i] != nullptr; ++i)
-            if (!Q_stricmp(s_WeaponAliasInfo[i], alias))
-                return i;
-    }
-
-    return WEAPON_NONE;
-}
-
-//--------------------------------------------------------------------------------------------------------
-//
-// Given a weapon ID, return its alias
-//
-const char *WeaponIDToAlias(int id)
-{
-    if (id >= WEAPON_MAX || id < 0)
-        return nullptr;
-
-    return s_WeaponAliasInfo[id];
-}
-
-
-// ----------------------------------------------------------------------------- //
-// CWeaponBase tables.
-// ----------------------------------------------------------------------------- //
+#include "tier0/memdbgon.h"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(WeaponBase, DT_WeaponBase)
 
@@ -165,12 +112,6 @@ bool CWeaponBase::KeyValue(const char *szKeyName, const char *szValue)
 
 bool CWeaponBase::PlayEmptySound()
 {
-    //MIKETODO: certain weapons should override this to make it empty:
-    //	C4
-    //	Flashbang
-    //	HE Grenade
-    //	Smoke grenade				
-
     CPASAttenuationFilter filter(this);
     filter.UsePredictionRules();
 
@@ -296,92 +237,12 @@ float CWeaponBase::GetMaxSpeed() const
     return sv_maxspeed.GetFloat();
 }
 
-
-const CWeaponInfo &CWeaponBase::GetMomWpnData() const
+void CWeaponBase::Precache()
 {
-    const FileWeaponInfo_t *pWeaponInfo = &GetWpnData();
-    const CWeaponInfo *pInfo;
+    BaseClass::Precache();
 
-#ifdef _DEBUG
-    pInfo = dynamic_cast< const CWeaponInfo* >( pWeaponInfo );
-    Assert( pInfo );
-#else
-    pInfo = static_cast<const CWeaponInfo*>(pWeaponInfo);
-#endif
-
-    return *pInfo;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-const char *CWeaponBase::GetViewModel(int /*viewmodelindex = 0 -- this is ignored in the base class here*/) const
-{
-    CMomentumPlayer *pOwner = GetPlayerOwner();
-
-    if (pOwner == nullptr)
-    {
-        return BaseClass::GetViewModel();
-    }
-
-    return GetWpnData().szViewModel;
-}
-
-// Overridden for the CS gun overrides, since GetClassname returns the weapon_glock etc, instead
-// of the weapon_momentum_* class. So we do a little workaround with the weapon ID.
-void CWeaponBase::Precache(void)
-{
     PrecacheScriptSound("Default.ClipEmpty_Pistol");
     PrecacheScriptSound("Default.ClipEmpty_Rifle");
-
-    const char *pWeaponAlias = WeaponIDToAlias(GetWeaponID());
-
-    if (pWeaponAlias)
-    {
-        char wpnName[128];
-        Q_snprintf(wpnName, sizeof(wpnName), "weapon_%s", pWeaponAlias);
-        
-        // Add this weapon to the weapon registry, and get our index into it
-        // Get weapon data from script file
-        if (ReadWeaponDataFromFileForSlot(filesystem, wpnName, &m_hWeaponFileInfo, GetEncryptionKey()))
-        {
-#if defined(CLIENT_DLL)
-            gWR.LoadWeaponSprites(GetWeaponFileInfoHandle());
-#endif
-            // Precache models (preload to avoid hitch)
-            m_iViewModelIndex = 0;
-            m_iWorldModelIndex = 0;
-            if (GetViewModel() && GetViewModel()[0])
-            {
-                m_iViewModelIndex = PrecacheModel(GetViewModel());
-            }
-            if (GetWorldModel() && GetWorldModel()[0])
-            {
-                m_iWorldModelIndex = PrecacheModel(GetWorldModel());
-            }
-
-            // Precache sounds, too
-            for (int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i)
-            {
-                const char *shootsound = GetShootSound(i);
-                if (shootsound && shootsound[0])
-                {
-                    PrecacheScriptSound(shootsound);
-                }
-            }
-        }
-        else
-        {
-            // Couldn't read data file, remove myself
-            Warning("Error reading weapon data file for: %s\n", GetClassname());
-            //	Remove( );	//don't remove, this gets released soon!
-        }
-    }
-    else
-    {
-        Warning("Error reading weapon data file for weapon alias: %i \n", GetWeaponID());
-    }
 }
 
 Activity CWeaponBase::GetDeployActivity(void)
