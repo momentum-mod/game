@@ -129,6 +129,7 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_def.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_def.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_shareddefs.h"
             }
 
             $File   "momentum\server_events.h"
