@@ -24,6 +24,13 @@ CMomentumSniper::CMomentumSniper()
     m_iPrimaryAmmoType = AMMO_TYPE_SNIPER;
 }
 
+void CMomentumSniper::Precache()
+{
+    BaseClass::Precache();
+
+    PrecacheScriptSound("Default.Zoom");
+}
+
 void CMomentumSniper::Drop(const Vector &vecVelocity)
 {
     const auto pPlayer = GetPlayerOwner();
