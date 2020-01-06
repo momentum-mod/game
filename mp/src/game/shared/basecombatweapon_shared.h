@@ -39,6 +39,7 @@ class CBasePlayer;
 class CBaseCombatCharacter;
 class IPhysicsConstraint;
 class CUserCmd;
+struct WeaponScriptDefinition;
 
 // How many times to display altfire hud hints (per weapon)
 #define WEAPON_ALTFIRE_HUD_HINT_COUNT	1
@@ -357,9 +358,11 @@ public:
 	virtual int				GetSkinOverride() const { return -1; }
 
 public:
+	virtual CWeaponID GetWeaponID() const { return WEAPON_NONE; }
+	virtual WeaponScriptDefinition *GetWeaponScript() const;
+	virtual const char *GetWeaponSound(const char *pToken) const;
 
 	// Weapon info accessors for data in the weapon's data file
-	const FileWeaponInfo_t	&GetWpnData( void ) const;
 	virtual const char		*GetViewModel( int viewmodelindex = 0 ) const;
 	virtual const char		*GetWorldModel( void ) const;
 	virtual const char		*GetAnimPrefix( void ) const;

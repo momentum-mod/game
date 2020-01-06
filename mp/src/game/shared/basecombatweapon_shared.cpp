@@ -12,6 +12,7 @@
 #include "physics_saverestore.h"
 #include "datacache/imdlcache.h"
 #include "activitylist.h"
+#include "weapon/weapon_def.h"
 
 // NVNT start extra includes
 #include "haptics/haptic_utils.h"
@@ -52,15 +53,6 @@
 #define HIDEWEAPON_THINK_CONTEXT			"BaseCombatWeapon_HideThink"
 
 extern bool UTIL_ItemCanBeTouchedByPlayer( CBaseEntity *pItem, CBasePlayer *pPlayer );
-
-#if defined ( TF_CLIENT_DLL ) || defined ( TF_DLL )
-#ifdef _DEBUG
-ConVar tf_weapon_criticals_force_random( "tf_weapon_criticals_force_random", "0", FCVAR_REPLICATED | FCVAR_CHEAT );
-#endif // _DEBUG
-ConVar tf_weapon_criticals_bucket_cap( "tf_weapon_criticals_bucket_cap", "1000.0", FCVAR_REPLICATED | FCVAR_CHEAT );
-ConVar tf_weapon_criticals_bucket_bottom( "tf_weapon_criticals_bucket_bottom", "-250.0", FCVAR_REPLICATED | FCVAR_CHEAT );
-ConVar tf_weapon_criticals_bucket_default( "tf_weapon_criticals_bucket_default", "300.0", FCVAR_REPLICATED | FCVAR_CHEAT );
-#endif // TF
 
 CBaseCombatWeapon::CBaseCombatWeapon()
 {
@@ -286,12 +278,14 @@ void CBaseCombatWeapon::Precache( void )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Get my data in the file weapon info array
-//-----------------------------------------------------------------------------
-const FileWeaponInfo_t &CBaseCombatWeapon::GetWpnData( void ) const
+WeaponScriptDefinition *CBaseCombatWeapon::GetWeaponScript() const
 {
-	return *GetFileWeaponInfoFromHandle( m_hWeaponFileInfo );
+    return g_pWeaponDef->GetWeaponScript(GetWeaponID());
+}
+
+const char* CBaseCombatWeapon::GetWeaponSound(const char *pToken) const
+{
+    return GetWeaponScript()->pKVWeaponSounds->GetString(pToken, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -299,7 +293,7 @@ const FileWeaponInfo_t &CBaseCombatWeapon::GetWpnData( void ) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is ignored in the base class here*/ ) const
 {
-	return GetWpnData().szViewModel;
+	return GetWeaponScript()->szViewModel;
 }
 
 //-----------------------------------------------------------------------------
@@ -307,7 +301,7 @@ const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetWorldModel( void ) const
 {
-	return GetWpnData().szWorldModel;
+	return GetWeaponScript()->szWorldModel;
 }
 
 //-----------------------------------------------------------------------------
@@ -315,7 +309,7 @@ const char *CBaseCombatWeapon::GetWorldModel( void ) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetAnimPrefix( void ) const
 {
-	return GetWpnData().szAnimationPrefix;
+	return GetWeaponScript()->szAnimationPrefix;
 }
 
 //-----------------------------------------------------------------------------
@@ -324,7 +318,7 @@ const char *CBaseCombatWeapon::GetAnimPrefix( void ) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetPrintName( void ) const
 {
-	return GetWpnData().szPrintName;
+	return GetWeaponScript()->szPrintName;
 }
 
 //-----------------------------------------------------------------------------
@@ -339,7 +333,7 @@ int CBaseCombatWeapon::GetMaxClip1( void ) const
 		return iModMaxClipOverride;
 #endif
 
-	return GetWpnData().iMaxClip1;
+	return GetWeaponScript()->iMaxClip1;
 }
 
 //-----------------------------------------------------------------------------
@@ -347,7 +341,7 @@ int CBaseCombatWeapon::GetMaxClip1( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetMaxClip2( void ) const
 {
-	return GetWpnData().iMaxClip2;
+	return GetWeaponScript()->iMaxClip2;
 }
 
 //-----------------------------------------------------------------------------
@@ -355,7 +349,7 @@ int CBaseCombatWeapon::GetMaxClip2( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetDefaultClip1( void ) const
 {
-	return GetWpnData().iDefaultClip1;
+	return GetWeaponScript()->iDefaultClip1;
 }
 
 //-----------------------------------------------------------------------------
@@ -363,7 +357,7 @@ int CBaseCombatWeapon::GetDefaultClip1( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetDefaultClip2( void ) const
 {
-	return GetWpnData().iDefaultClip2;
+	return GetWeaponScript()->iDefaultClip2;
 }
 
 //-----------------------------------------------------------------------------
@@ -376,7 +370,7 @@ bool CBaseCombatWeapon::UsesClipsForAmmo1( void ) const
 
 bool CBaseCombatWeapon::IsMeleeWeapon() const
 {
-	return GetWpnData().m_bMeleeWeapon;
+	return GetWeaponScript()->bMeleeWeapon;
 }
 
 //-----------------------------------------------------------------------------
@@ -392,7 +386,7 @@ bool CBaseCombatWeapon::UsesClipsForAmmo2( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetWeight( void ) const
 {
-	return GetWpnData().iWeight;
+	return GetWeaponScript()->iWeight;
 }
 
 //-----------------------------------------------------------------------------
@@ -401,7 +395,7 @@ int CBaseCombatWeapon::GetWeight( void ) const
 //-----------------------------------------------------------------------------
 bool CBaseCombatWeapon::AllowsAutoSwitchTo( void ) const
 {
-	return GetWpnData().bAutoSwitchTo;
+	return GetWeaponScript()->bAutoSwitchTo;
 }
 
 //-----------------------------------------------------------------------------
@@ -410,15 +404,7 @@ bool CBaseCombatWeapon::AllowsAutoSwitchTo( void ) const
 //-----------------------------------------------------------------------------
 bool CBaseCombatWeapon::AllowsAutoSwitchFrom( void ) const
 {
-	return GetWpnData().bAutoSwitchFrom;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-int CBaseCombatWeapon::GetWeaponFlags( void ) const
-{
-	return GetWpnData().iFlags;
+	return GetWeaponScript()->bAutoSwitchFrom;
 }
 
 //-----------------------------------------------------------------------------
@@ -426,7 +412,7 @@ int CBaseCombatWeapon::GetWeaponFlags( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetSlot( void ) const
 {
-	return GetWpnData().iSlot;
+	return GetWeaponScript()->iSlot;
 }
 
 //-----------------------------------------------------------------------------
@@ -434,7 +420,7 @@ int CBaseCombatWeapon::GetSlot( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetPosition( void ) const
 {
-	return GetWpnData().iPosition;
+	return GetWeaponScript()->iPosition;
 }
 
 //-----------------------------------------------------------------------------
