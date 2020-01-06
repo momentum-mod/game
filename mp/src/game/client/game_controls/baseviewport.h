@@ -5,13 +5,11 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef TEAMFORTRESSVIEWPORT_H
-#define TEAMFORTRESSVIEWPORT_H
+#pragma once
 
 // viewport interface for the rest of the dll
 #include <game/client/iviewport.h>
 #include <vgui_controls/Frame.h>
-#include "commandmenu.h"
 #include <igameevents.h>
 
 class IBaseFileSystem;
@@ -75,43 +73,18 @@ protected:
 #ifndef _XBOX
 	class CBackGroundPanel : public vgui::Frame
 	{
-	private:
-		typedef vgui::Frame BaseClass;
 	public:
-		CBackGroundPanel( vgui::Panel *parent) : Frame( parent, "ViewPortBackGround" ) 
+		DECLARE_CLASS_SIMPLE(CBackGroundPanel, vgui::Frame);
+        CBackGroundPanel(vgui::Panel *parent);
+
+	protected:
+		void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+		void PerformLayout() override;
+	    virtual void OnMousePressed(vgui::MouseCode code) { }// don't respond to mouse clicks
+		virtual vgui::VPANEL IsWithinTraverse(int x, int y, bool traversePopups)
 		{
-			SetScheme("ClientScheme");
-
-			SetTitleBarVisible( false );
-			SetMoveable(false);
-			SetSizeable(false);
-			SetProportional(true);
+			return (vgui::VPANEL)0;
 		}
-	private:
-
-		virtual void ApplySchemeSettings(vgui::IScheme *pScheme)
-		{
-			BaseClass::ApplySchemeSettings(pScheme);
-			SetBgColor(pScheme->GetColor("ViewportBG", Color( 0,0,0,0 ) )); 
-		}
-
-		virtual void PerformLayout() 
-		{
-			int w,h;
-			GetHudSize(w, h);
-
-			// fill the screen
-			SetBounds(0,0,w,h);
-
-			BaseClass::PerformLayout();
-		}
-
-		virtual void OnMousePressed(vgui::MouseCode code) { }// don't respond to mouse clicks
-		virtual vgui::VPANEL IsWithinTraverse( int x, int y, bool traversePopups )
-		{
-			return ( vgui::VPANEL )0;
-		}
-
 	};
 #endif
 protected:
@@ -137,6 +110,3 @@ protected:
 	vgui::AnimationController *m_pAnimController;
 	int					m_OldSize[2];
 };
-
-
-#endif
