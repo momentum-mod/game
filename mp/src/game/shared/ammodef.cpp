@@ -20,7 +20,7 @@ CAmmoBase::CAmmoBase()
     m_fDamageForce = 2400.0f;
     m_iMinSplashSize = 10;
     m_iMaxSplashSize = 14;
-    m_iMaxCarry = -2;
+    m_iMaxCarry = INFINITE_AMMO;
     m_iPenetrationAmount = 1;
     m_fPenetrationPower = 0.0f;
     m_fPenetrationDistance = 0.0f;
@@ -98,6 +98,7 @@ CAmmoGrenade::CAmmoGrenade()
 {
     m_WeaponID = WEAPON_GRENADE;
     m_iDamageType = DMG_BLAST;
+    m_iMaxCarry = 1;
 }
 
 CAmmoPaint::CAmmoPaint()
