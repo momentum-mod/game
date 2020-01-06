@@ -11,6 +11,7 @@
 #include "history_resource.h"
 #include "input.h"
 #include "../hud_crosshair.h"
+#include "weapon/weapon_def.h"
 
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
@@ -768,6 +769,7 @@ void CHudWeaponSelection::Paint()
 void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool bSelected, int xpos, int ypos, int boxWide, int boxTall, Color selectedColor, float alpha, int number )
 {
 	Color col = bSelected ? m_SelectedFgColor : GetFgColor();
+	const auto pWeaponHUDResource = g_pWeaponDef->GetWeaponHUDResource(pWeapon->GetWeaponID());
 	
 	switch ( hud_fastswitch.GetInt() )
 	{
@@ -778,7 +780,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 
 			// draw icon
 			col[3] *= (alpha / 255.0f);
-            const CHudTexture* pWeaponSpriteActive = pWeapon->GetSpriteActive();
+            const CHudTexture* pWeaponSpriteActive = pWeaponHUDResource->m_vecResources[HUD_RESOURCE_ACTIVE];
             if (pWeaponSpriteActive)
 			{
 				// find the center of the box to draw in
@@ -813,7 +815,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 				}
 				
 				// draw the inactive version
-				pWeapon->GetSpriteInactive()->DrawSelf( xpos + x_offs, ypos + y_offs, col );
+				pWeaponHUDResource->m_vecResources[HUD_RESOURCE_INACTIVE]->DrawSelf( xpos + x_offs, ypos + y_offs, col );
 			}
 		}
 		break;
@@ -845,7 +847,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 
 			// draw icon
 			col[3] *= (alpha / 255.0f);
-            const CHudTexture *pWeaponSpriteInactive = pWeapon->GetSpriteInactive();
+            const CHudTexture *pWeaponSpriteInactive = pWeaponHUDResource->m_vecResources[HUD_RESOURCE_INACTIVE];
             if (pWeaponSpriteInactive)
 			{
                 iconWidth = pWeaponSpriteInactive->Width();
@@ -871,7 +873,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 				// draw the inactive version
                 pWeaponSpriteInactive->DrawSelf(xpos + x_offs, ypos + y_offs, iconWidth, iconHeight, col);
 			}
-            const CHudTexture* pWeaponSpriteActive = pWeapon->GetSpriteActive();
+            const CHudTexture* pWeaponSpriteActive = pWeaponHUDResource->m_vecResources[HUD_RESOURCE_ACTIVE];
             if (bSelected && pWeaponSpriteActive)
 			{
 				// find the center of the box to draw in

@@ -12,6 +12,8 @@
 #include <vgui/ISurface.h>
 #include "iclientmode.h"
 #include "vgui_controls/AnimationController.h"
+#include "weapon/weapon_def.h"
+#include "ammodef.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -76,17 +78,13 @@ void CHudHistoryResource::Reset( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: these kept only for hl1-port compatibility
-//-----------------------------------------------------------------------------
-void CHudHistoryResource::SetHistoryGap( int iNewHistoryGap )
-{
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: adds an element to the history
 //-----------------------------------------------------------------------------
 void CHudHistoryResource::AddToHistory( C_BaseCombatWeapon *weapon )
 {
+	// Don't draw grenades since they'll have an ammo pickup as well
+	if (weapon->GetWeaponID() == WEAPON_GRENADE)
+		return;
 
 	int iId = weapon->entindex();
 
@@ -329,24 +327,26 @@ void CHudHistoryResource::Paint( void )
 			int iAmount = 0;
 			bool bHalfHeight = true;
 
+
+			const auto hWpnID = g_pAmmoDef->WeaponID(m_PickupHistory[i].iId);
+			const auto pWpnResource = g_pWeaponDef->GetWeaponHUDResource(hWpnID);
+			const auto pWpnInfo = g_pWeaponDef->GetWeaponScript(hWpnID);
+
 			switch ( m_PickupHistory[i].type )
 			{
 			case HISTSLOT_AMMO:
 				{
 					// Get the weapon we belong to
-#ifndef HL2MP
-					const FileWeaponInfo_t *pWpnInfo = gWR.GetWeaponFromAmmo( m_PickupHistory[i].iId );
-					if ( pWpnInfo && ( pWpnInfo->iMaxClip1 >= 0 || pWpnInfo->iMaxClip2 >= 0 ) )
+					if ( pWpnInfo->iMaxClip1 >= 0 || pWpnInfo->iMaxClip2 >= 0 )
 					{
 						// The weapon will be the main icon, and the ammo the smaller
-						itemIcon = pWpnInfo->iconSmall;
-						itemAmmoIcon = gWR.GetAmmoIconFromWeapon( m_PickupHistory[i].iId );
+						itemIcon = pWpnResource->m_vecResources[HUD_RESOURCE_SMALL];
+						itemAmmoIcon = pWpnResource->m_vecResources[HUD_RESOURCE_AMMO];
 					}
 					else
-#endif // HL2MP
 					{
-						itemIcon = gWR.GetAmmoIconFromWeapon( m_PickupHistory[i].iId );
-						itemAmmoIcon = NULL;
+						itemIcon = pWpnResource->m_vecResources[HUD_RESOURCE_AMMO];
+						itemAmmoIcon = nullptr;
 					}
 
 #ifdef CSTRIKE_DLL
@@ -364,7 +364,7 @@ void CHudHistoryResource::Paint( void )
 				break;
 			case HISTSLOT_AMMODENIED:
 				{
-					itemIcon = gWR.GetAmmoIconFromWeapon( m_PickupHistory[i].iId );
+					itemIcon = pWpnResource->m_vecResources[HUD_RESOURCE_AMMO];
 					iAmount = 0;
 					bUseAmmoFullMsg = true;
 					// display as red
@@ -386,7 +386,8 @@ void CHudHistoryResource::Paint( void )
 						clr[3] = MIN( scale, 255 );
 					}
 
-					itemIcon = pWeapon->GetSpriteInactive();
+					const auto pHUDResource = g_pWeaponDef->GetWeaponHUDResource(pWeapon->GetWeaponID());
+					itemIcon = pHUDResource->m_vecResources[HUD_RESOURCE_INACTIVE];
 					bHalfHeight = false;
 				}
 				break;

@@ -75,7 +75,6 @@ public:
 	void	MsgFunc_AmmoDenied( bf_read &msg );
 	
 	void	CheckClearHistory( void );
-	void	SetHistoryGap( int iNewHistoryGap );
 	void	AddIconToHistory( int iType, int iId, C_BaseCombatWeapon *weapon, int iCount, CHudTexture *icon );
 
 private:
