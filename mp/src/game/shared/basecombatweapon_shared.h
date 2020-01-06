@@ -314,8 +314,8 @@ public:
 	virtual float			GetMinRestTime() { return 0.3; }
 	virtual float			GetMaxRestTime() { return 0.6; }
 	virtual int				GetRandomBurst() { return random->RandomInt( GetMinBurst(), GetMaxBurst() ); }
-	virtual void			WeaponSound( WeaponSound_t sound_type, float soundtime = 0.0f );
-	virtual void			StopWeaponSound( WeaponSound_t sound_type );
+	virtual void			WeaponSound( const char *pShootSound, float soundtime = 0.0f );
+	virtual void			StopWeaponSound( const char *pShootSound );
 	virtual const WeaponProficiencyInfo_t *GetProficiencyValues();
 
 	// Autoaim
@@ -379,8 +379,6 @@ public:
 	virtual int				GetPosition( void ) const;
 	virtual char const		*GetName( void ) const;
 	virtual char const		*GetPrintName( void ) const;
-	virtual char const		*GetShootSound( int iIndex ) const;
-	virtual int				GetRumbleEffect() const;
 	virtual bool			UsesClipsForAmmo1( void ) const;
 	virtual bool			UsesClipsForAmmo2( void ) const;
 	bool					IsMeleeWeapon() const;

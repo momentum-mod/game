@@ -162,11 +162,7 @@ void CBaseCombatWeapon::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseComb
 		}
 		else if ( pEvent->event == AE_WPN_PLAYWPNSOUND )
 		{
-			int iSnd = GetWeaponSoundFromString(pEvent->options);
-			if ( iSnd != -1 )
-			{
-				WeaponSound( (WeaponSound_t)iSnd );
-			}
+			WeaponSound(GetWeaponSound(pEvent->options));
 		}
 	}
 

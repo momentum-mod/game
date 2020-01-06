@@ -1305,7 +1305,7 @@ bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 	m_bReloadHudHintDisplayed = false;
 	m_flHudHintPollTime = gpGlobals->curtime + 5.0f;
 	
-	WeaponSound( DEPLOY );
+	WeaponSound( GetWeaponScript()->pKVWeaponSounds->GetString("deploy") );
 
 	SetWeaponVisible( true );
 
@@ -1575,14 +1575,14 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 		{
 			if (m_flNextEmptySoundTime < gpGlobals->curtime)
 			{
-				WeaponSound(EMPTY);
+				WeaponSound(GetWeaponSound("empty"));
 				m_flNextSecondaryAttack = m_flNextEmptySoundTime = gpGlobals->curtime + 0.5;
 			}
 		}
 		else if (pOwner->GetWaterLevel() == 3 && m_bAltFiresUnderwater == false)
 		{
 			// This weapon doesn't fire underwater
-			WeaponSound(EMPTY);
+			WeaponSound(GetWeaponSound("empty"));
 			m_flNextPrimaryAttack = gpGlobals->curtime + 0.2;
 			return;
 		}
@@ -1625,7 +1625,7 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 		else if (pOwner->GetWaterLevel() == 3 && m_bFiresUnderwater == false)
 		{
 			// This weapon doesn't fire underwater
-			WeaponSound(EMPTY);
+			WeaponSound(GetWeaponSound("empty"));
 			m_flNextPrimaryAttack = gpGlobals->curtime + 0.2;
 			return;
 		}
@@ -1691,7 +1691,7 @@ void CBaseCombatWeapon::HandleFireOnEmpty()
 	{
 		if (m_flNextEmptySoundTime < gpGlobals->curtime)
 		{
-			WeaponSound(EMPTY);
+			WeaponSound(GetWeaponSound("empty"));
 			m_flNextEmptySoundTime = gpGlobals->curtime + 0.5;
 		}
 		m_bFireOnEmpty = true;
@@ -1758,16 +1758,14 @@ float CBaseCombatWeapon::GetFireRate( void )
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
-void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /* = 0.0f */ )
+void CBaseCombatWeapon::WeaponSound( const char *pShootSound, float soundtime /* = 0.0f */ )
 {
-	// If we have some sounds from the weapon classname.txt file, play a random one of them
-	const char *shootsound = GetShootSound( sound_type );
-	if ( !shootsound || !shootsound[0] )
+	if ( !pShootSound || !pShootSound[0] )
 		return;
 
 	CSoundParameters params;
 	
-	if ( !GetParametersForSound( shootsound, params, NULL ) )
+	if ( !GetParametersForSound( pShootSound, params, nullptr ) )
 		return;
 
 	if ( params.play_to_owner_only )
@@ -1776,83 +1774,41 @@ void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /
 		if ( GetOwner() && GetOwner()->IsPlayer() )
 		{
 			CSingleUserRecipientFilter filter( ToBasePlayer( GetOwner() ) );
-			if ( IsPredicted() && CBaseEntity::GetPredictionPlayer() )
+			if ( IsPredicted() && GetPredictionPlayer() )
 			{
 				filter.UsePredictionRules();
 			}
-			EmitSound( filter, GetOwner()->entindex(), shootsound, NULL, soundtime );
+			EmitSound( filter, GetOwner()->entindex(), pShootSound, nullptr, soundtime );
 		}
 	}
 	else
 	{
-		// Play weapon sound from the owner
-		if ( GetOwner() )
-		{
-			CPASAttenuationFilter filter( GetOwner(), params.soundlevel );
-			if ( IsPredicted() && CBaseEntity::GetPredictionPlayer() )
-			{
-				filter.UsePredictionRules();
-			}
-			EmitSound( filter, GetOwner()->entindex(), shootsound, NULL, soundtime ); 
-
-#if !defined( CLIENT_DLL )
-			if( sound_type == EMPTY )
-			{
-				CSoundEnt::InsertSound( SOUND_COMBAT, GetOwner()->GetAbsOrigin(), SOUNDENT_VOLUME_EMPTY, 0.2, GetOwner() );
-			}
-#endif
-		}
-		// If no owner play from the weapon (this is used for thrown items)
+		const auto pOwner = GetOwner();
+		CBaseEntity* pEntity;
+		if (pOwner)
+			pEntity = pOwner;
 		else
-		{
-			CPASAttenuationFilter filter( this, params.soundlevel );
-			if ( IsPredicted() && CBaseEntity::GetPredictionPlayer() )
-			{
-				filter.UsePredictionRules();
-			}
-			EmitSound( filter, entindex(), shootsound, NULL, soundtime ); 
-		}
+			pEntity = this;
+
+		CPASAttenuationFilter filter(pEntity, params.soundlevel);
+		if (IsPredicted() && GetPredictionPlayer())
+			filter.UsePredictionRules();
+
+		EmitSound(filter, pEntity->entindex(), pShootSound, nullptr, soundtime);
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Stop a sound played by this weapon.
 //-----------------------------------------------------------------------------
-void CBaseCombatWeapon::StopWeaponSound( WeaponSound_t sound_type )
+void CBaseCombatWeapon::StopWeaponSound( const char *pShootSound )
 {
-	//if ( IsPredicted() )
-	//	return;
-
-	// If we have some sounds from the weapon classname.txt file, play a random one of them
-	const char *shootsound = GetShootSound( sound_type );
-	if ( !shootsound || !shootsound[0] )
-		return;
-	
-	CSoundParameters params;
-	if ( !GetParametersForSound( shootsound, params, NULL ) )
+	if ( !pShootSound || !pShootSound[0] )
 		return;
 
-	// Am I only to play to my owner?
-	if ( params.play_to_owner_only )
-	{
-		if ( GetOwner() )
-		{
-			StopSound( GetOwner()->entindex(), shootsound );
-		}
-	}
-	else
-	{
-		// Play weapon sound from the owner
-		if ( GetOwner() )
-		{
-			StopSound( GetOwner()->entindex(), shootsound );
-		}
-		// If no owner play from the weapon (this is used for thrown items)
-		else
-		{
-			StopSound( entindex(), shootsound );
-		}
-	}
+	// If no owner the sound is played from the weapon (this is used for thrown items)
+	const auto pOwner = GetOwner();
+	StopSound(pOwner ? pOwner->entindex() : entindex(), pShootSound);
 }
 
 //-----------------------------------------------------------------------------
@@ -1896,7 +1852,7 @@ bool CBaseCombatWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActi
 
 #ifdef CLIENT_DLL
 	// Play reload
-	WeaponSound( RELOAD );
+	WeaponSound( GetWeaponSound("reload") );
 #endif
 	SendWeaponAnim( iActivity );
 
@@ -2083,7 +2039,7 @@ void CBaseCombatWeapon::FinishReload( void )
 void CBaseCombatWeapon::AbortReload( void )
 {
 #ifdef CLIENT_DLL
-	StopWeaponSound( RELOAD ); 
+	StopWeaponSound( GetWeaponSound("reload") ); 
 #endif
 	m_bInReload = false;
 }
@@ -2176,7 +2132,7 @@ void CBaseCombatWeapon::PrimaryAttack( void )
 	while ( m_flNextPrimaryAttack <= gpGlobals->curtime )
 	{
 		// MUST call sound before removing a round from the clip of a CMachineGun
-		WeaponSound(SINGLE, m_flNextPrimaryAttack);
+		WeaponSound(GetWeaponSound("single_shot"), m_flNextPrimaryAttack);
 		m_flNextPrimaryAttack = m_flNextPrimaryAttack + fireRate;
 		info.m_iShots++;
 		if ( !fireRate )

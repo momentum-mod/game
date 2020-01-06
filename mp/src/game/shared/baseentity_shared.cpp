@@ -1636,7 +1636,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	{
 		CBasePlayer *pPlayer = dynamic_cast<CBasePlayer*>(this);
 
-		int rumbleEffect = pPlayer->GetActiveWeapon()->GetRumbleEffect();
+		int rumbleEffect = RUMBLE_INVALID; // Unfortunately not in this PR's scope, TODO REMOVEME
 
 		if( rumbleEffect != RUMBLE_INVALID )
 		{

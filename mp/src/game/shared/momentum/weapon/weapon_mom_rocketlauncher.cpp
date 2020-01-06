@@ -173,11 +173,11 @@ void CMomentumRocketLauncher::PrimaryAttack()
 
     if (mom_rj_sounds.GetInt() == 1)
     {
-        WeaponSound(SINGLE);
+        WeaponSound(GetWeaponSound("single_shot"));
     }
     else if (mom_rj_sounds.GetInt() == 2)
     {
-        WeaponSound(SPECIAL1);
+        WeaponSound(GetWeaponSound("special1"));
     }
 
     // MOM_FIXME:
