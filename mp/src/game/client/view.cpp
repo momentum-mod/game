@@ -6,10 +6,10 @@
 
 #include "cbase.h"
 #include "view.h"
+#include "hud.h"
 #include "iviewrender.h"
 #include "iviewrender_beams.h"
 #include "view_shared.h"
-#include "ivieweffects.h"
 #include "iinput.h"
 #include "iclientmode.h"
 #include "prediction.h"
@@ -17,13 +17,8 @@
 #include "c_te_legacytempents.h"
 #include "cl_mat_stub.h"
 #include "tier0/vprof.h"
-#include "iclientvehicle.h"
-#include "engine/IEngineTrace.h"
 #include "mathlib/vmatrix.h"
-#include "rendertexture.h"
 #include "c_world.h"
-#include <KeyValues.h>
-#include "igameevents.h"
 #include "smoke_fog_overlay.h"
 #include "bitmap/tgawriter.h"
 #include "hltvcamera.h"
@@ -38,7 +33,6 @@
 #include "materialsystem/materialsystem_config.h"
 #include "VGuiMatSurface/IMatSystemSurface.h"
 #include "toolframework_client.h"
-#include "tier0/icommandline.h"
 #include "ienginevgui.h"
 #include <vgui_controls/Controls.h>
 #include <vgui/ISurface.h>

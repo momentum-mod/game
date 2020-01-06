@@ -23,6 +23,8 @@
 #include <KeyValues.h>
 #include "filesystem.h"
 #include "matsys_controls/matsyscontrols.h"
+#include "hudtexturehandle.h"
+#include "hud.h"
 
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"

@@ -13,8 +13,6 @@
 #include "vgui_controls/Controls.h"
 #include "vgui/ISurface.h"
 #include "ivrenderview.h"
-#include "materialsystem/imaterialsystem.h"
-#include "VGuiMatSurface/IMatSystemSurface.h"
 #include "client_virtualreality.h"
 #include "sourcevr/isourcevirtualreality.h"
 #include "weapon/weapon_base.h"

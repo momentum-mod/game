@@ -7,6 +7,7 @@
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Panel.h>
+#include <vgui_controls/Label.h>
 
 #include "baseviewport.h"
 #include "mom_player_shared.h"
