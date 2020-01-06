@@ -236,6 +236,8 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_base_gun.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_def.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_def.h"
             }
 
             $Folder "Util"
