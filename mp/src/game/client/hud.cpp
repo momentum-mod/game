@@ -55,105 +55,82 @@ struct HudTextureFileRef
 	HKeySymbol m_fileKeySymbol;
 };
 
-void LoadHudTextures( CUtlDict< CHudTexture *, int >& list, const char *szFilenameWithoutExtension, const unsigned char *pICEKey )
+void LoadHudTextures(CUtlDict< CHudTexture*>& list, const char *szFilenameWithoutExtension)
 {
-	KeyValues *pTemp, *pTextureSection;
-
-	KeyValues *pKeyValuesData = ReadEncryptedKVFile( filesystem, szFilenameWithoutExtension, pICEKey );
-	if ( pKeyValuesData )
+	KeyValuesAD pKeyValuesData("InputFile");
+	
+	if (pKeyValuesData->LoadFromFile(g_pFullFileSystem, szFilenameWithoutExtension, "GAME"))
 	{
-		CUtlVector<HudTextureFileRef> hudTextureFileRefs;
-
-		// By default, add a default entry mapping "file" to no prefix. This will allow earlier-version files
-		// to work with no modification.
-		hudTextureFileRefs.AddToTail( HudTextureFileRef( "file", "" ) );
-
-		// Read "*file"-to-prefix mapping.
-		KeyValues *pTextureFileRefs = pKeyValuesData->FindKey( "TextureFileRefs" );
-		if ( pTextureFileRefs )
-		{
-			pTemp = pTextureFileRefs->GetFirstSubKey();
-			while ( pTemp )
-			{
-				hudTextureFileRefs.AddToTail( HudTextureFileRef( pTemp->GetName(), pTemp->GetString( "prefix", "" ) ) );
-				pTemp = pTemp->GetNextKey();
-			}
-		}
-
-		// Read our individual HUD texture data blocks.
-		pTextureSection = pKeyValuesData->FindKey( "TextureData" );
-		if ( pTextureSection  )
-		{
-			// Read the sprite data
-			pTemp = pTextureSection->GetFirstSubKey();
-			while ( pTemp )
-			{
-				if ( pTemp->GetString( "font", NULL ) )
-				{
-					CHudTexture *tex = new CHudTexture();
-
-					// Key Name is the sprite name
-					Q_strncpy( tex->szShortName, pTemp->GetName(), sizeof( tex->szShortName ) );
-
-					// it's a font-based icon
-					tex->bRenderUsingFont = true;
-					tex->cCharacterInFont = *(pTemp->GetString("character", ""));
-					Q_strncpy( tex->szTextureFile, pTemp->GetString( "font" ), sizeof( tex->szTextureFile ) );
-
-					list.Insert( tex->szShortName, tex );
-				}
-				else
-				{
-					int iTexLeft	= pTemp->GetInt( "x", 0 ),
-						iTexTop		= pTemp->GetInt( "y", 0 ),
-						iTexRight	= pTemp->GetInt( "width", 0 )	+ iTexLeft,
-						iTexBottom	= pTemp->GetInt( "height", 0 )	+ iTexTop;
-
-					for ( int i = 0; i < hudTextureFileRefs.Size(); i++ )
-					{
-						const char *cszFilename = pTemp->GetString( hudTextureFileRefs[i].m_fileKeySymbol, NULL );
-						if ( cszFilename )
-						{
-							CHudTexture *tex = new CHudTexture();
-
-							tex->bRenderUsingFont = false;
-							tex->rc.left	= iTexLeft;
-							tex->rc.top		= iTexTop;
-							tex->rc.right	= iTexRight;
-							tex->rc.bottom	= iTexBottom;
-
-							Q_strncpy( tex->szShortName, hudTextureFileRefs[i].m_cszHudTexturePrefix, sizeof( tex->szShortName ) );
-							Q_strncpy( tex->szShortName + hudTextureFileRefs[i].m_uiPrefixLength, pTemp->GetName(), sizeof( tex->szShortName ) - hudTextureFileRefs[i].m_uiPrefixLength );
-							Q_strncpy( tex->szTextureFile, cszFilename, sizeof( tex->szTextureFile ) );
-
-							list.Insert( tex->szShortName, tex );
-						}
-					}
-				}
-
-				pTemp = pTemp->GetNextKey();
-			}
-		}
+		LoadHudTextures(list, pKeyValuesData);
 	}
-
-	// Failed for some reason. Delete the Key data and abort.
-	pKeyValuesData->deleteThis();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : * - 
-//			list - 
-//-----------------------------------------------------------------------------
-void FreeHudTextureList( CUtlDict< CHudTexture *, int >& list )
+void LoadHudTextures(CUtlDict<CHudTexture*> &list, KeyValues *pKvInput)
 {
-	int c = list.Count();
-	for ( int i = 0; i < c; i++ )
+	CUtlVector<HudTextureFileRef> hudTextureFileRefs;
+
+	// By default, add a default entry mapping "file" to no prefix. This will allow earlier-version files
+	// to work with no modification.
+	hudTextureFileRefs.AddToTail(HudTextureFileRef("file", ""));
+
+	// Read "*file"-to-prefix mapping.
+	KeyValues *pTextureFileRefs = pKvInput->FindKey("TextureFileRefs");
+	if (pTextureFileRefs)
 	{
-		CHudTexture *tex = list[ i ];
-		delete tex;
+		FOR_EACH_SUBKEY(pTextureFileRefs, pTemp)
+			hudTextureFileRefs.AddToTail(HudTextureFileRef(pTemp->GetName(), pTemp->GetString("prefix", "")));
 	}
-	list.RemoveAll();
+
+	// Read our individual HUD texture data blocks.
+	KeyValues *pKvTextureData = pKvInput->FindKey("TextureData");
+	if (pKvTextureData)
+	{
+		FOR_EACH_SUBKEY(pKvTextureData, pTemp)
+		{
+			if (pTemp->GetString("font", nullptr))
+			{
+				CHudTexture *tex = new CHudTexture();
+
+				// Key Name is the sprite name
+				Q_strncpy(tex->szShortName, pTemp->GetName(), sizeof(tex->szShortName));
+
+				// it's a font-based icon
+				tex->bRenderUsingFont = true;
+				tex->cCharacterInFont = *(pTemp->GetString("character", ""));
+				Q_strncpy(tex->szTextureFile, pTemp->GetString("font"), sizeof(tex->szTextureFile));
+
+				list.Insert(tex->szShortName, tex);
+			}
+			else
+			{
+				int iTexLeft = pTemp->GetInt("x"),
+					iTexTop = pTemp->GetInt("y"),
+					iTexRight = pTemp->GetInt("width") + iTexLeft,
+					iTexBottom = pTemp->GetInt("height") + iTexTop;
+
+				for (int i = 0; i < hudTextureFileRefs.Size(); i++)
+				{
+					const char *cszFilename = pTemp->GetString(hudTextureFileRefs[i].m_fileKeySymbol, nullptr);
+					if (cszFilename)
+					{
+						CHudTexture *tex = new CHudTexture();
+
+						tex->bRenderUsingFont = false;
+						tex->rc.left = iTexLeft;
+						tex->rc.top = iTexTop;
+						tex->rc.right = iTexRight;
+						tex->rc.bottom = iTexBottom;
+
+						Q_strncpy(tex->szShortName, hudTextureFileRefs[i].m_cszHudTexturePrefix, sizeof(tex->szShortName));
+						Q_strncpy(tex->szShortName + hudTextureFileRefs[i].m_uiPrefixLength, pTemp->GetName(), sizeof(tex->szShortName) - hudTextureFileRefs[i].m_uiPrefixLength);
+						Q_strncpy(tex->szTextureFile, cszFilename, sizeof(tex->szTextureFile));
+
+						list.Insert(tex->szShortName, tex);
+					}
+				}
+			}
+		}
+	}
 }
 
 // Globally-used fonts
@@ -458,8 +435,8 @@ void CHud::Init( void )
 	CUtlDict< CHudTexture *, int >	textureList;
 
 	// check to see if we have sprites for this res; if not, step down
-	LoadHudTextures( textureList, "scripts/hud_textures", NULL );
-	LoadHudTextures( textureList, "scripts/mod_textures", NULL );
+	LoadHudTextures( textureList, "scripts/hud_textures" );
+	LoadHudTextures( textureList, "scripts/mod_textures" );
 
 	int c = textureList.Count();
 	for ( int index = 0; index < c; index++ )
@@ -818,8 +795,8 @@ void CHud::RefreshHudTextures()
 	CUtlDict< CHudTexture *, int >	textureList;
 
 	// check to see if we have sprites for this res; if not, step down
-	LoadHudTextures( textureList, "scripts/hud_textures", NULL );
-	LoadHudTextures( textureList, "scripts/mod_textures", NULL );
+	LoadHudTextures( textureList, "scripts/hud_textures" );
+	LoadHudTextures( textureList, "scripts/mod_textures" );
 
 	// fix up all the texture icons first
 	int c = textureList.Count();

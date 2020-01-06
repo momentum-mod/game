@@ -198,7 +198,8 @@ extern CHud gHUD;
 //-----------------------------------------------------------------------------
 extern vgui::HFont g_hFontTrebuchet24;
 
-void LoadHudTextures( CUtlDict< CHudTexture *, int >& list, const char *szFilenameWithoutExtension, const unsigned char *pICEKey );
+void LoadHudTextures(CUtlDict<CHudTexture*>& list, const char *szFilenameWithoutExtension);
+void LoadHudTextures(CUtlDict<CHudTexture*>& list, KeyValues *pKvInput);
 
 void GetHudSize( int& w, int &h );
 
