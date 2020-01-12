@@ -4,9 +4,12 @@
 
 #include "filesystem.h"
 #include "fmtstr.h"
+#include "mom_player_shared.h"
 
 #ifdef CLIENT_DLL
 #include "hud.h"
+#else
+#include "momentum/mom_timer.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -155,6 +158,10 @@ CWeaponDef::CWeaponDef() : CAutoGameSystem("CWeaponDef")
 void CWeaponDef::PostInit()
 {
     LoadWeaponDefinitions();
+
+#ifdef CLIENT_DLL
+    ListenForGameEvent("reload_weapon_script");
+#endif
 }
 
 void CWeaponDef::LoadWeaponDefinitions()
@@ -177,9 +184,26 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_ROCKETLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_ROCKETLAUNCHER]);
 }
 
-void CWeaponDef::RemoveWeaponDefinitions()
+void CWeaponDef::ReloadWeaponDefinitions()
 {
     m_vecWeaponDefs.PurgeAndDeleteElements();
+    LoadWeaponDefinitions();
+
+#ifdef GAME_DLL
+    FireWeaponDefinitionReloadedEvent(WEAPON_NONE);
+#endif
+}
+
+void CWeaponDef::ReloadWeaponDefinition(const CWeaponID &id)
+{
+    AssertMsg(id != WEAPON_NONE, "Cannot reload weapon definition of WEAPON_NONE");
+
+    delete m_vecWeaponDefs[id];
+    m_vecWeaponDefs[id] = ParseWeaponScript(g_szWeaponNames[id]);
+
+#ifdef GAME_DLL
+    FireWeaponDefinitionReloadedEvent(id);
+#endif
 }
 
 WeaponDefinition *CWeaponDef::GetWeaponDefinition(const CWeaponID &id)
@@ -197,6 +221,22 @@ WeaponHUDResourceDefinition *CWeaponDef::GetWeaponHUDResource(const CWeaponID &i
 {
     return &m_vecWeaponDefs[id]->m_WeaponHUD;
 }
+
+void CWeaponDef::FireGameEvent(IGameEvent *pEvent)
+{
+    const auto iWpnID = pEvent->GetInt("id", -1);
+    if (iWpnID > -1 && iWpnID < WEAPON_MAX)
+    {
+        if (iWpnID == WEAPON_NONE)
+        {
+            ReloadWeaponDefinitions();
+        }
+        else
+        {
+            ReloadWeaponDefinition(static_cast<CWeaponID>(iWpnID));
+        }
+    }
+}
 #endif
 
 WeaponDefinition *CWeaponDef::ParseWeaponScript(const char *pWeaponName)
@@ -213,6 +253,79 @@ WeaponDefinition *CWeaponDef::ParseWeaponScript(const char *pWeaponName)
     Error("Failed to read weapon script for %s, try validating your game cache.\n", pWeaponName);
     return nullptr;
 }
+
+#ifdef GAME_DLL
+void CWeaponDef::FireWeaponDefinitionReloadedEvent(const CWeaponID &id)
+{
+    const auto pGameEvent = gameeventmanager->CreateEvent("reload_weapon_script");
+    if (pGameEvent)
+    {
+        pGameEvent->SetInt("id", id);
+        gameeventmanager->FireEvent(pGameEvent);
+    }
+}
+
+CON_COMMAND(weapon_reload_scripts, "Reloads all weapon scripts.\n")
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer && !pPlayer->IsObserver() && !g_pMomentumTimer->IsRunning())
+    {
+        g_pWeaponDef->ReloadWeaponDefinitions();
+
+        CUtlVector<CWeaponID> vecCurrentWeps;
+        pPlayer->GetCurrentWeaponIDs(vecCurrentWeps);
+
+        if (!vecCurrentWeps.IsEmpty())
+        {
+            const auto iActiveWpn = pPlayer->GetActiveWeapon()->GetWeaponID();
+
+            pPlayer->RemoveAllWeapons();
+
+            FOR_EACH_VEC(vecCurrentWeps, i)
+            {
+                pPlayer->GiveNamedItem(g_szWeaponNames[vecCurrentWeps[i]]);
+            }
+
+            pPlayer->Weapon_Switch(pPlayer->GetWeapon(iActiveWpn));
+        }
+
+        Msg("Weapon scripts reloaded.\n");
+    }
+    else
+    {
+        Warning("Cannot reload weapon scripts if you are in a run or spectating!\n");
+    }
+}
+
+CON_COMMAND(weapon_reload_script_current, "Reloads weapon script for the current weapon.\n")
+{
+    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+    if (pPlayer && !pPlayer->IsObserver() && !g_pMomentumTimer->IsRunning())
+    {
+        const auto pWeapon = pPlayer->GetActiveWeapon();
+        if (!pWeapon)
+        {
+            Warning("Cannot reload script if you are not wielding a weapon!\n");
+            return;
+        }
+
+        pPlayer->MomentumWeaponDrop(pWeapon);
+
+        const auto iWpnID = pWeapon->GetWeaponID();
+        g_pWeaponDef->ReloadWeaponDefinition(iWpnID);
+
+        const auto pName = g_szWeaponNames[iWpnID];
+        pPlayer->GiveNamedItem(pName);
+        pPlayer->Weapon_Switch(pPlayer->GetWeapon(iWpnID));
+
+        Msg("Successfully reloaded weapon script for weapon %s.\n", pName);
+    }
+    else
+    {
+        Warning("Cannot reload weapon scripts if you are in a run or spectating!\n");
+    }
+}
+#endif
 
 static CWeaponDef s_WeaponDef;
 CWeaponDef *g_pWeaponDef = &s_WeaponDef;

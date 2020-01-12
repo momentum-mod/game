@@ -111,4 +111,8 @@
     {
         "success" "bool"
     }
+    "reload_weapon_script"
+    {
+        "id" "byte"
+    }
 }
