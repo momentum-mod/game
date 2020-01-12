@@ -61,6 +61,7 @@
 #include "env_debughistory.h"
 #include "tier1/utlstring.h"
 #include "utlhashtable.h"
+#include "damagemodifier.h"
 
 #if defined( TF_DLL )
 #include "tf_gamerules.h"
