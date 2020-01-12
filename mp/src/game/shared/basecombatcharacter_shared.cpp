@@ -195,6 +195,16 @@ CBaseCombatWeapon* CBaseCombatCharacter::Weapon_OwnsThisType( const char *pszWea
 	return nullptr;
 }
 
+void CBaseCombatCharacter::GetCurrentWeaponIDs(CUtlVector<CWeaponID> &vecWeaponIDs)
+{
+	for (int i = 0; i < WEAPON_MAX; i++)
+	{
+		const auto pWep = m_hMyWeapons[i];
+		if (pWep)
+			vecWeaponIDs.AddToTail(pWep->GetWeaponID());
+	}
+}
+
 
 int CBaseCombatCharacter::BloodColor()
 {
