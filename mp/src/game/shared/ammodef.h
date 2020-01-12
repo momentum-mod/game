@@ -7,7 +7,7 @@ class CAmmoBase
 public:
     CAmmoBase();
 
-    CWeaponID m_WeaponID;
+    WeaponID_t m_WeaponID;
 
     int     m_iDamageType;
     int     m_iDamageAmount;
@@ -49,7 +49,7 @@ class CAmmoDef
     virtual ~CAmmoDef();
 
     CAmmoBase *GetAmmoOfIndex(int nAmmoIndex);
-    MAKE_AMMODEF_GETTER(CWeaponID, WeaponID, m_WeaponID);
+    MAKE_AMMODEF_GETTER(WeaponID_t, WeaponID, m_WeaponID);
     MAKE_AMMODEF_GETTER(int, DamageType, m_iDamageType);
     MAKE_AMMODEF_GETTER(int, DamageAmount, m_iDamageAmount);
     MAKE_AMMODEF_GETTER(int, TracerType, m_eTracerType);

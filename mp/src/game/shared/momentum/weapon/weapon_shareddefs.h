@@ -5,7 +5,7 @@
 #define MAX_WEAPON_PREFIX 16
 #define WEAPON_PRINTNAME_MISSING "!!! Missing printname on weapon"
 
-enum CWeaponID
+enum WeaponID_t
 {
     WEAPON_NONE = 0,
 

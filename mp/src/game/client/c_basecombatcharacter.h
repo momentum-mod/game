@@ -56,7 +56,7 @@ public:
 	C_BaseCombatWeapon*	Weapon_OwnsThisType( const char *pszWeapon, int iSubType = 0 ) const;  // True if already owns a weapon of this class
 	virtual	bool		Weapon_Switch( C_BaseCombatWeapon *pWeapon, int viewmodelindex = 0 );
 	virtual bool		Weapon_CanSwitchTo(C_BaseCombatWeapon *pWeapon);
-	virtual void		GetCurrentWeaponIDs(CUtlVector<CWeaponID> &vecWeaponIDs);
+	virtual void		GetCurrentWeaponIDs(CUtlVector<WeaponID_t> &vecWeaponIDs);
 	
 	// I can't use my current weapon anymore. Switch me to the next best weapon.
 	bool SwitchToNextBestWeapon(C_BaseCombatWeapon *pCurrent);

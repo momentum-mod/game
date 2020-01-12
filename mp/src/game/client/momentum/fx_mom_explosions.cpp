@@ -18,7 +18,7 @@
 
 #include "tier0/memdbgon.h"
 
-void TFExplosionCallback(const Vector &vecOrigin, const Vector &vecNormal, CWeaponID iWeaponID,
+void TFExplosionCallback(const Vector &vecOrigin, const Vector &vecNormal, WeaponID_t iWeaponID,
                          ClientEntityHandle_t hEntity)
 {
     const auto pWeaponInfo = g_pWeaponDef->GetWeaponScript(iWeaponID);
@@ -109,7 +109,7 @@ class C_TETFExplosion : public C_BaseTempEntity
 
     Vector m_vecOrigin;
     Vector m_vecNormal;
-    CWeaponID m_iWeaponID;
+    WeaponID_t m_iWeaponID;
 };
 
 C_TETFExplosion::C_TETFExplosion()

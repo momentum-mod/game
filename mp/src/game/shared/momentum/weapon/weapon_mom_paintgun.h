@@ -21,7 +21,7 @@ class CMomentumPaintGun : public CWeaponBaseGun
 
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
-    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PAINTGUN; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_PAINTGUN; }
     static float GetPrimaryCycleTime() { return 0.1f; }
     
     void GetControlPanelInfo(int nPanelIndex, const char*& pPanelName) OVERRIDE;

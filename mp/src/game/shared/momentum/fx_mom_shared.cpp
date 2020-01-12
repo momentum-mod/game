@@ -231,7 +231,7 @@ class CTETFExplosion : public CBaseTempEntity
   public:
     Vector m_vecOrigin;
     Vector m_vecNormal;
-    CWeaponID m_iWeaponID;
+    WeaponID_t m_iWeaponID;
     int m_nEntIndex;
 };
 
@@ -253,7 +253,7 @@ IMPLEMENT_SERVERCLASS_ST(CTETFExplosion, DT_TETFExplosion)
 END_SEND_TABLE()
 
 void TE_TFExplosion(IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal,
-                    CWeaponID iWeaponID, int nEntIndex)
+                    WeaponID_t iWeaponID, int nEntIndex)
 {
     VectorCopy(vecOrigin, g_TETFExplosion.m_vecOrigin);
     VectorCopy(vecNormal, g_TETFExplosion.m_vecNormal);

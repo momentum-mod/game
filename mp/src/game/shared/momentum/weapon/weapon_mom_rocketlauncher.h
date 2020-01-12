@@ -28,7 +28,7 @@ class CMomentumRocketLauncher : public CWeaponBaseGun
     bool Deploy() OVERRIDE;
     bool CanDeploy() OVERRIDE;
 
-    CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_ROCKETLAUNCHER; }
+    WeaponID_t GetWeaponID() const OVERRIDE { return WEAPON_ROCKETLAUNCHER; }
 
     float DeployTime() const OVERRIDE { return 0.5f; }
 

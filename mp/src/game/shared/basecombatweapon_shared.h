@@ -359,7 +359,7 @@ public:
 	virtual int				GetSkinOverride() const { return -1; }
 
 public:
-	virtual CWeaponID GetWeaponID() const { return WEAPON_NONE; }
+	virtual WeaponID_t GetWeaponID() const { return WEAPON_NONE; }
 	virtual WeaponScriptDefinition *GetWeaponScript() const;
 	virtual const char *GetWeaponSound(const char *pToken) const;
 

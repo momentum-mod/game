@@ -43,7 +43,7 @@ class CKnife : public CWeaponBase
 
     void WeaponIdle() OVERRIDE;
 
-    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_KNIFE; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_KNIFE; }
 
   public:
     trace_t m_trHit;
