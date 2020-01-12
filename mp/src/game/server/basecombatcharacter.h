@@ -1,35 +1,15 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: Base combat character with no AI
-//
-// $NoKeywords: $
-//=============================================================================//
-
-#ifndef BASECOMBATCHARACTER_H
-#define BASECOMBATCHARACTER_H
-
-#include <limits.h>
-#include "weapon_proficiency.h"
-
-#ifdef _WIN32
 #pragma once
-#endif
 
-#ifdef INVASION_DLL
-#include "tf_shareddefs.h"
-
-#define POWERUP_THINK_CONTEXT	"PowerupThink"
-#endif
-
-#include "cbase.h"
-#include "baseentity.h"
 #include "baseflex.h"
-#include "damagemodifier.h"
-#include "utllinkedlist.h"
+
+#include "weapon_proficiency.h"
 #include "ai_hull.h"
 #include "ai_utils.h"
+#include "weapon/weapon_shareddefs.h"
 #include "physics_impact_damage.h"
 
+
+struct vphysics_objectstress_t;
 class CNavArea;
 class CScriptedTarget;
 typedef CHandle<CBaseCombatWeapon> CBaseCombatWeaponHandle;
@@ -499,7 +479,7 @@ protected:
 	CNetworkArrayForDerived( int, m_iAmmo, MAX_AMMO_SLOTS );
 
 	// Usable character items 
-	CNetworkArray( CBaseCombatWeaponHandle, m_hMyWeapons, MAX_WEAPONS );
+	CNetworkArray( CBaseCombatWeaponHandle, m_hMyWeapons, WEAPON_MAX );
 
 	CNetworkHandle( CBaseCombatWeapon, m_hActiveWeapon );
 
@@ -535,7 +515,7 @@ inline float CBaseCombatCharacter::GetAliveDuration( void ) const
 //-----------------------------------------------------------------------------
 inline int	CBaseCombatCharacter::WeaponCount() const
 {
-	return MAX_WEAPONS;
+	return WEAPON_MAX;
 }
 
 //-----------------------------------------------------------------------------
@@ -544,7 +524,7 @@ inline int	CBaseCombatCharacter::WeaponCount() const
 //-----------------------------------------------------------------------------
 inline CBaseCombatWeapon *CBaseCombatCharacter::GetWeapon( int i ) const
 {
-	Assert( (i >= 0) && (i < MAX_WEAPONS) );
+	Assert( (i >= 0) && (i < WEAPON_MAX) );
 	return m_hMyWeapons[i].Get();
 }
 
@@ -584,5 +564,3 @@ public:
 	float				m_flForceScale;
 	bool				m_bDamageAnyNPC;
 };
-
-#endif // BASECOMBATCHARACTER_H

@@ -183,7 +183,7 @@ int CBaseCombatCharacter::GetAmmoCount( int iAmmoIndex ) const
 CBaseCombatWeapon* CBaseCombatCharacter::Weapon_OwnsThisType( const char *pszWeapon, int iSubType ) const
 {
 	// Check for duplicates
-	for (int i=0;i<MAX_WEAPONS;i++) 
+	for (int i = 0; i < WEAPON_MAX; i++) 
 	{
 		if ( m_hMyWeapons[i].Get() && FClassnameIs( m_hMyWeapons[i], pszWeapon ) )
 		{
@@ -192,7 +192,7 @@ CBaseCombatWeapon* CBaseCombatCharacter::Weapon_OwnsThisType( const char *pszWea
 				return m_hMyWeapons[i];
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 

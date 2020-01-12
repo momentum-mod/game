@@ -713,7 +713,7 @@ CBaseCombatCharacter::CBaseCombatCharacter( void )
 	m_flDamageAccumulator = 0.0f;
 
 	// Init weapon and Ammo data
-	m_hActiveWeapon			= NULL;
+	m_hActiveWeapon			= nullptr;
 
 	// reset all ammo values to 0
 	RemoveAllAmmo();
@@ -731,9 +731,9 @@ CBaseCombatCharacter::CBaseCombatCharacter( void )
 	m_lastNavArea = NULL;
 	m_registeredNavTeam = TEAM_INVALID;
 
-	for (int i = 0; i < MAX_WEAPONS; i++)
+	for (int i = 0; i < WEAPON_MAX; i++)
 	{
-		m_hMyWeapons.Set( i, NULL );
+		m_hMyWeapons.Set( i, nullptr );
 	}
 
 	// Default so that spawned entities have this set
@@ -826,9 +826,8 @@ int CBaseCombatCharacter::Restore( IRestore &restore )
 //-----------------------------------------------------------------------------
 void CBaseCombatCharacter::UpdateOnRemove( void )
 {
-	int i;
 	// Make sure any weapons I didn't drop get removed.
-	for (i=0;i<MAX_WEAPONS;i++) 
+	for (int i=0; i<WEAPON_MAX; i++) 
 	{
 		if (m_hMyWeapons[i]) 
 		{
@@ -1683,22 +1682,25 @@ void CBaseCombatCharacter::Event_Dying()
 // ===========================================================================
 bool CBaseCombatCharacter::Weapon_Detach( CBaseCombatWeapon *pWeapon )
 {
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	const auto pMyWeapon = m_hMyWeapons[pWeapon->GetWeaponID()];
+	if (pMyWeapon == pWeapon)
 	{
-		if ( pWeapon == m_hMyWeapons[i] )
+		pWeapon->Detach();
+		if (pWeapon->HolsterOnDetach())
 		{
-			pWeapon->Detach();
-			if ( pWeapon->HolsterOnDetach() )
-			{
-				pWeapon->Holster();
-			}
-			m_hMyWeapons.Set( i, NULL );
-			pWeapon->SetOwner( NULL );
-
-			if ( pWeapon == m_hActiveWeapon )
-				ClearActiveWeapon();
-			return true;
+			pWeapon->Holster();
 		}
+
+		m_hMyWeapons.Set(pWeapon->GetWeaponID(), nullptr);
+
+		pWeapon->SetOwner(nullptr);
+
+		if (pWeapon == m_hActiveWeapon)
+		{
+		    ClearActiveWeapon();
+		}
+
+		return true;
 	}
 
 	return false;
@@ -1805,7 +1807,7 @@ void CBaseCombatCharacter::Weapon_DropAll( bool bDisallowWeaponPickup )
 {
 	if ( GetFlags() & FL_NPC )
 	{
-		for (int i=0; i<MAX_WEAPONS; ++i) 
+		for (int i=0; i<WEAPON_MAX; ++i) 
 		{
 			CBaseCombatWeapon *pWeapon = m_hMyWeapons[i];
 			if (!pWeapon)
@@ -1826,7 +1828,7 @@ void CBaseCombatCharacter::Weapon_DropAll( bool bDisallowWeaponPickup )
 		CollisionProp()->OBBSize().y * CollisionProp()->OBBSize().y );
 
 	CBaseCombatWeapon *pActiveWeapon = GetActiveWeapon();
-	for (int i=0; i<MAX_WEAPONS; ++i) 
+	for (int i=0; i<WEAPON_MAX; ++i) 
 	{
 		CBaseCombatWeapon *pWeapon = m_hMyWeapons[i];
 		if (!pWeapon)
@@ -1848,7 +1850,7 @@ void CBaseCombatCharacter::Weapon_DropAll( bool bDisallowWeaponPickup )
 			
 			IPhysicsObject *pObj = pWeapon->VPhysicsGetObject();
 			
-			if ( pObj != NULL )
+			if ( pObj )
 			{	
 				pObj->SetGameFlags( FVPHYSICS_NO_PLAYER_PICKUP );
 			}
@@ -2056,13 +2058,9 @@ void CBaseCombatCharacter::SetLightingOriginRelative( CBaseEntity *pLightingOrig
 void CBaseCombatCharacter::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 {
 	// Add the weapon to my weapon inventory
-	for (int i=0;i<MAX_WEAPONS;i++) 
+	if (!m_hMyWeapons[pWeapon->GetWeaponID()])
 	{
-		if (!m_hMyWeapons[i]) 
-		{
-			m_hMyWeapons.Set( i, pWeapon );
-			break;
-		}
+	    m_hMyWeapons.Set(pWeapon->GetWeaponID(), pWeapon);
 	}
 
 	// Weapon is now on my team
@@ -2157,42 +2155,38 @@ void CBaseCombatCharacter::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 //-----------------------------------------------------------------------------
 bool CBaseCombatCharacter::Weapon_EquipAmmoOnly( CBaseCombatWeapon *pWeapon )
 {
-	// Check for duplicates
-	for (int i=0;i<MAX_WEAPONS;i++) 
+	if (m_hMyWeapons[pWeapon->GetWeaponID()].Get())
 	{
-		if ( m_hMyWeapons[i].Get() && FClassnameIs(m_hMyWeapons[i], pWeapon->GetClassname()) )
+		// Just give the ammo from the clip
+		int	primaryGiven = (pWeapon->UsesClipsForAmmo1()) ? pWeapon->m_iClip1 : pWeapon->GetPrimaryAmmoCount();
+		int secondaryGiven = (pWeapon->UsesClipsForAmmo2()) ? pWeapon->m_iClip2 : pWeapon->GetSecondaryAmmoCount();
+
+		int takenPrimary = GiveAmmo(primaryGiven, pWeapon->m_iPrimaryAmmoType);
+		int takenSecondary = GiveAmmo(secondaryGiven, pWeapon->m_iSecondaryAmmoType);
+
+		if (pWeapon->UsesClipsForAmmo1())
 		{
-			// Just give the ammo from the clip
-			int	primaryGiven	= (pWeapon->UsesClipsForAmmo1()) ? pWeapon->m_iClip1 : pWeapon->GetPrimaryAmmoCount();
-			int secondaryGiven	= (pWeapon->UsesClipsForAmmo2()) ? pWeapon->m_iClip2 : pWeapon->GetSecondaryAmmoCount();
-
-			int takenPrimary   = GiveAmmo( primaryGiven, pWeapon->m_iPrimaryAmmoType); 
-			int takenSecondary = GiveAmmo( secondaryGiven, pWeapon->m_iSecondaryAmmoType); 
-			
-			if( pWeapon->UsesClipsForAmmo1() )
-			{
-				pWeapon->m_iClip1 -= takenPrimary;
-			}
-			else
-			{
-				pWeapon->SetPrimaryAmmoCount( pWeapon->GetPrimaryAmmoCount() - takenPrimary );
-			}
-
-			if( pWeapon->UsesClipsForAmmo2() )
-			{
-				pWeapon->m_iClip2 -= takenSecondary;
-			}
-			else
-			{
-				pWeapon->SetSecondaryAmmoCount( pWeapon->GetSecondaryAmmoCount() - takenSecondary );
-			}
-			
-			//Only succeed if we've taken ammo from the weapon
-			if ( takenPrimary > 0 || takenSecondary > 0 )
-				return true;
-			
-			return false;
+			pWeapon->m_iClip1 -= takenPrimary;
 		}
+		else
+		{
+			pWeapon->SetPrimaryAmmoCount(pWeapon->GetPrimaryAmmoCount() - takenPrimary);
+		}
+
+		if (pWeapon->UsesClipsForAmmo2())
+		{
+			pWeapon->m_iClip2 -= takenSecondary;
+		}
+		else
+		{
+			pWeapon->SetSecondaryAmmoCount(pWeapon->GetSecondaryAmmoCount() - takenSecondary);
+		}
+
+		//Only succeed if we've taken ammo from the weapon
+		if (takenPrimary > 0 || takenSecondary > 0)
+			return true;
+
+		return false;
 	}
 
 	return false;
@@ -2227,7 +2221,7 @@ CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlot( int slot ) const
 CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlotAndPosition( int slot, int pos /*= INT_MIN*/ ) const
 {
     // Check for that slot being occupied already
-    for (auto i = 0; i < MAX_WEAPONS; i++)
+    for (auto i = 0; i < WEAPON_MAX; i++)
     {
         const auto pWeapon = m_hMyWeapons[i].Get();
         if (pWeapon && pWeapon->GetSlot() == slot)
@@ -2248,19 +2242,8 @@ CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetSlotAndPosition( int slot, in
 //-----------------------------------------------------------------------------
 CBaseCombatWeapon *CBaseCombatCharacter::Weapon_GetWpnForAmmo( int iAmmoIndex )
 {
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
-	{
-		CBaseCombatWeapon *weapon = GetWeapon( i );
-		if ( !weapon )
-			continue;
-
-		if ( weapon->GetPrimaryAmmoType() == iAmmoIndex )
-			return weapon;
-		if ( weapon->GetSecondaryAmmoType() == iAmmoIndex )
-			return weapon;
-	}
-
-	return NULL;
+	const auto iWeaponID = g_pAmmoDef->WeaponID(iAmmoIndex);
+	return m_hMyWeapons[iWeaponID];
 }
 
 
@@ -2327,12 +2310,12 @@ void CBaseCombatCharacter::Weapon_HandleAnimEvent( animevent_t *pEvent )
 void CBaseCombatCharacter::RemoveAllWeapons()
 {
 	ClearActiveWeapon();
-	for (int i = 0; i < MAX_WEAPONS; i++)
+	for (int i = 0; i < WEAPON_MAX; i++)
 	{
 		if ( m_hMyWeapons[i] )
 		{
 			m_hMyWeapons[i]->Delete( );
-			m_hMyWeapons.Set( i, NULL );
+			m_hMyWeapons.Set( i, nullptr );
 		}
 	}
 }
@@ -2551,7 +2534,7 @@ void CBaseCombatCharacter::SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways 
 
 	if ( bLocalPlayer )
 	{
-		for ( int i=0; i < MAX_WEAPONS; i++ )
+		for ( int i=0; i < WEAPON_MAX; i++ )
 		{
 			CBaseCombatWeapon *pWeapon = m_hMyWeapons[i];
 			if ( !pWeapon )

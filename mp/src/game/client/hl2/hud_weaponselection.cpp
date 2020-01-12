@@ -1098,7 +1098,7 @@ C_BaseCombatWeapon *CHudWeaponSelection::FindNextWeaponInWeaponSelection(int iCu
 	// search all the weapons looking for the closest next
 	int iLowestNextSlot = MAX_WEAPON_SLOTS;
 	int iLowestNextPosition = MAX_WEAPON_POSITIONS;
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = pPlayer->GetWeapon(i);
 		if ( !pWeapon )
@@ -1139,7 +1139,7 @@ C_BaseCombatWeapon *CHudWeaponSelection::FindPrevWeaponInWeaponSelection(int iCu
 	// search all the weapons looking for the closest next
 	int iLowestPrevSlot = -1;
 	int iLowestPrevPosition = -1;
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = pPlayer->GetWeapon(i);
 		if ( !pWeapon )
@@ -1284,7 +1284,7 @@ int CHudWeaponSelection::GetLastPosInSlot( int iSlot ) const
 		return -1;
 
 	iMaxSlotPos = -1;
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = player->GetWeapon(i);
 		
@@ -1307,7 +1307,7 @@ C_BaseCombatWeapon *CHudWeaponSelection::GetWeaponInSlot( int iSlot, int iSlotPo
 	if ( !player )
 		return NULL;
 
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = player->GetWeapon(i);
 
