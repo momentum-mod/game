@@ -3,6 +3,10 @@
 #include "weapon/weapon_shareddefs.h"
 #include "igamesystem.h"
 
+#ifdef CLIENT_DLL
+#include "GameEventListener.h"
+#endif
+
 class CHudTexture;
 
 struct WeaponScriptDefinition
@@ -71,6 +75,9 @@ struct WeaponDefinition
 };
 
 class CWeaponDef : public CAutoGameSystem
+#ifdef CLIENT_DLL
+, public CGameEventListener
+#endif
 {
 public:
     CWeaponDef();
@@ -78,13 +85,19 @@ public:
     void PostInit() override;
 
     void LoadWeaponDefinitions();
-    void RemoveWeaponDefinitions();
+    void ReloadWeaponDefinitions();
+    void ReloadWeaponDefinition(const CWeaponID &id);
 
     WeaponDefinition *GetWeaponDefinition(const CWeaponID &id);
     WeaponScriptDefinition *GetWeaponScript(const CWeaponID &id);
 
 #ifdef CLIENT_DLL
     WeaponHUDResourceDefinition *GetWeaponHUDResource(const CWeaponID &id);
+protected:
+    void FireGameEvent(IGameEvent *event) override;
+#else
+private:
+    void FireWeaponDefinitionReloadedEvent(const CWeaponID &id);
 #endif
 
 private:
