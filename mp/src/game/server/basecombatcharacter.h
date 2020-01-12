@@ -333,7 +333,7 @@ public:
 	virtual	Vector		GetAttackSpread( CBaseCombatWeapon *pWeapon, CBaseEntity *pTarget = NULL );
 	virtual	float		GetSpreadBias(  CBaseCombatWeapon *pWeapon, CBaseEntity *pTarget );
 	virtual void		DoMuzzleFlash();
-	virtual void		GetCurrentWeaponIDs(CUtlVector<CWeaponID> &vecWeaponIDs);
+	virtual void		GetCurrentWeaponIDs(CUtlVector<WeaponID_t> &vecWeaponIDs);
 
 	// Interactions
 	static void			InitInteractionSystem();

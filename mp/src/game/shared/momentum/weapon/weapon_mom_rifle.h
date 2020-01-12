@@ -17,5 +17,5 @@ public:
 
     void PrimaryAttack() OVERRIDE;
 
-    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_RIFLE; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_RIFLE; }
 };

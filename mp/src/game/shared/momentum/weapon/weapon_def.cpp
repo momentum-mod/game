@@ -194,7 +194,7 @@ void CWeaponDef::ReloadWeaponDefinitions()
 #endif
 }
 
-void CWeaponDef::ReloadWeaponDefinition(const CWeaponID &id)
+void CWeaponDef::ReloadWeaponDefinition(const WeaponID_t id)
 {
     AssertMsg(id != WEAPON_NONE, "Cannot reload weapon definition of WEAPON_NONE");
 
@@ -206,18 +206,18 @@ void CWeaponDef::ReloadWeaponDefinition(const CWeaponID &id)
 #endif
 }
 
-WeaponDefinition *CWeaponDef::GetWeaponDefinition(const CWeaponID &id)
+WeaponDefinition *CWeaponDef::GetWeaponDefinition(const WeaponID_t id)
 {
     return m_vecWeaponDefs[id];
 }
 
-WeaponScriptDefinition *CWeaponDef::GetWeaponScript(const CWeaponID &id)
+WeaponScriptDefinition *CWeaponDef::GetWeaponScript(const WeaponID_t id)
 {
     return &m_vecWeaponDefs[id]->m_WeaponScript;
 }
 
 #ifdef CLIENT_DLL
-WeaponHUDResourceDefinition *CWeaponDef::GetWeaponHUDResource(const CWeaponID &id)
+WeaponHUDResourceDefinition *CWeaponDef::GetWeaponHUDResource(const WeaponID_t id)
 {
     return &m_vecWeaponDefs[id]->m_WeaponHUD;
 }
@@ -233,7 +233,7 @@ void CWeaponDef::FireGameEvent(IGameEvent *pEvent)
         }
         else
         {
-            ReloadWeaponDefinition(static_cast<CWeaponID>(iWpnID));
+            ReloadWeaponDefinition(static_cast<WeaponID_t>(iWpnID));
         }
     }
 }
@@ -255,7 +255,7 @@ WeaponDefinition *CWeaponDef::ParseWeaponScript(const char *pWeaponName)
 }
 
 #ifdef GAME_DLL
-void CWeaponDef::FireWeaponDefinitionReloadedEvent(const CWeaponID &id)
+void CWeaponDef::FireWeaponDefinitionReloadedEvent(const WeaponID_t id)
 {
     const auto pGameEvent = gameeventmanager->CreateEvent("reload_weapon_script");
     if (pGameEvent)
@@ -272,7 +272,7 @@ CON_COMMAND(weapon_reload_scripts, "Reloads all weapon scripts.\n")
     {
         g_pWeaponDef->ReloadWeaponDefinitions();
 
-        CUtlVector<CWeaponID> vecCurrentWeps;
+        CUtlVector<WeaponID_t> vecCurrentWeps;
         pPlayer->GetCurrentWeaponIDs(vecCurrentWeps);
 
         if (!vecCurrentWeps.IsEmpty())

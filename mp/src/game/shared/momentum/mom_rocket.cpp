@@ -225,7 +225,7 @@ void CMomRocket::CreateRocketExplosionEffect(trace_t *pTrace, CBaseEntity *pOthe
 {
     static ConVarRef mom_rj_sounds("mom_rj_sounds");
     int iEntIndex = pOther->entindex();
-    CWeaponID m_hWeaponID = WEAPON_ROCKETLAUNCHER;
+    WeaponID_t m_hWeaponID = WEAPON_ROCKETLAUNCHER;
     Vector vecOrigin = GetAbsOrigin();
     CBaseEntity *pOwner = GetOwnerEntity();
     float flDamage = GetDamage();

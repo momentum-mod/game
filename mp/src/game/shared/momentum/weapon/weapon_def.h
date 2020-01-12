@@ -86,18 +86,18 @@ public:
 
     void LoadWeaponDefinitions();
     void ReloadWeaponDefinitions();
-    void ReloadWeaponDefinition(const CWeaponID &id);
+    void ReloadWeaponDefinition(WeaponID_t id);
 
-    WeaponDefinition *GetWeaponDefinition(const CWeaponID &id);
-    WeaponScriptDefinition *GetWeaponScript(const CWeaponID &id);
+    WeaponDefinition *GetWeaponDefinition(WeaponID_t id);
+    WeaponScriptDefinition *GetWeaponScript(WeaponID_t id);
 
 #ifdef CLIENT_DLL
-    WeaponHUDResourceDefinition *GetWeaponHUDResource(const CWeaponID &id);
+    WeaponHUDResourceDefinition *GetWeaponHUDResource(WeaponID_t id);
 protected:
     void FireGameEvent(IGameEvent *event) override;
 #else
 private:
-    void FireWeaponDefinitionReloadedEvent(const CWeaponID &id);
+    void FireWeaponDefinitionReloadedEvent(WeaponID_t id);
 #endif
 
 private:

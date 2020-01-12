@@ -195,7 +195,7 @@ CBaseCombatWeapon* CBaseCombatCharacter::Weapon_OwnsThisType( const char *pszWea
 	return nullptr;
 }
 
-void CBaseCombatCharacter::GetCurrentWeaponIDs(CUtlVector<CWeaponID> &vecWeaponIDs)
+void CBaseCombatCharacter::GetCurrentWeaponIDs(CUtlVector<WeaponID_t> &vecWeaponIDs)
 {
 	for (int i = 0; i < WEAPON_MAX; i++)
 	{

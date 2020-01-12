@@ -23,7 +23,7 @@ class CMomentumSniper : public CWeaponBaseGun
 
     float GetMaxSpeed() const OVERRIDE;
 
-    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
 
   private:
     int m_iRequestedFOV;

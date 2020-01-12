@@ -56,5 +56,5 @@ class CMomentumGrenade : public CWeaponBase
   public:
     CMomentumGrenade(const CMomentumGrenade &) {}
 
-    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_GRENADE; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_GRENADE; }
 };
