@@ -379,9 +379,13 @@
         "MOM_Settings_RJ_Enable_TF_ViewModel" "Use TF2 view model"
         "MOM_Settings_RJ_Enable_Center_Fire" "Fire projectiles from screen center"
         "MOM_Settings_RJ_Particle_Label" "Explosion particles"
-        "MOM_Settings_RJ_Particle_Tooltip" "When the TF2 setting is selected, you can use custom particles by editing the value of the 'ExplosionEffect' field in the weapon script file."
+        "MOM_Settings_RJ_Particle_Tooltip" "You can use custom particles by editing the value of the 'ExplosionEffect' fields in the rocket weapon script file."
         "MOM_Settings_RJ_Sounds_Label" "Explosion and firing sounds"
         "MOM_Settings_RJ_Trail_Label" "Trail effect"
+        "MOM_Settings_RJ_Trail_Sound_Enable" "Use rocket trail sound"
+        "MOM_Settings_RJ_Trail_Sound_Enable_TT" "When enabled, rockets fired will have a sound following it."
+        "MOM_Settings_RJ_Rocket_Decals_Enable" "Enable rocket decals"
+        "MOM_Settings_RJ_Rocket_Decals_Enable_TT" "When enabled, rockets will create decals upon explosion."
 
         // Replay Info
         // Spec GUI
