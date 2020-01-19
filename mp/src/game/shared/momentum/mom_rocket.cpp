@@ -20,6 +20,8 @@
 #define MOM_ROCKET_MODEL "models/weapons/w_missile.mdl"
 #define TF_ROCKET_MODEL "models/weapons/w_models/w_rocket.mdl"
 
+#define MOM_TRAIL_PARTICLE_B "mom_rocket_trail_b" // MOM_TODO REMOVEME
+
 #ifndef CLIENT_DLL
 
 BEGIN_DATADESC(CMomRocket)
@@ -107,24 +109,6 @@ void CMomRocket::PostDataUpdate(DataUpdateType_t type)
 
     if (type == DATA_UPDATE_CREATED)
     {
-        if (UseTFTrail())
-        {
-            static ConVarRef mom_rj_use_tf_rocketmodel("mom_rj_use_tf_rocketmodel");
-            bool bIsMomModel = !mom_rj_use_tf_rocketmodel.GetBool();
-            // If the Momentum rocket model is used, the attachment point for particle systems is called "0" instead of "trail"
-            const char *pAttachmentName = bIsMomModel ? "0" : "trail";
-
-            if (enginetrace->GetPointContents(GetAbsOrigin()) & MASK_WATER)
-            {
-                ParticleProp()->Create("rockettrail_underwater", PATTACH_POINT_FOLLOW, pAttachmentName);
-            }
-            else
-            {
-                ParticleProp()->Create("rockettrail", PATTACH_POINT_FOLLOW, pAttachmentName);
-            }
-        }
-
-        // Now stick our initial velocity into the interpolation history
         CInterpolatedVar<Vector> &interpolator = GetOriginInterpolator();
         interpolator.ClearHistory();
 
@@ -145,6 +129,32 @@ void CMomRocket::PostDataUpdate(DataUpdateType_t type)
         interpolator.AddToHead(changeTime, &vCurOrigin, false);
 
         rotInterpolator.AddToHead(changeTime, &vCurAngles, false);
+    }
+}
+
+void C_MomRocket::OnDataChanged(DataUpdateType_t updateType)
+{
+    BaseClass::OnDataChanged(updateType);
+
+    if (updateType == DATA_UPDATE_CREATED)
+    {
+        if (mom_rj_trail.GetInt() == 0)
+            return;
+
+        static ConVarRef mom_rj_use_tf_rocketmodel("mom_rj_use_tf_rocketmodel");
+        const bool bIsMomModel = !mom_rj_use_tf_rocketmodel.GetBool();
+        const bool bIsTF2Trail = mom_rj_trail.GetInt() == 2;
+        const char *pAttachmentName = bIsMomModel ? "0" : "trail";
+
+        const auto pWepScript = g_pWeaponDef->GetWeaponScript(WEAPON_ROCKETLAUNCHER);
+
+        const char *pParticle = pWepScript->pKVWeaponParticles->GetString(bIsTF2Trail ? "RocketTrail_TF2" : "RocketTrail");
+
+        // MOM_TODO REMOVEME
+        if (mom_rj_trail.GetInt() == 3)
+            pParticle = MOM_TRAIL_PARTICLE_B;
+
+        ParticleProp()->Create(pParticle, PATTACH_POINT_FOLLOW, pAttachmentName);
     }
 }
 
