@@ -51,8 +51,6 @@ class CMomRocket : public CBaseProjectile
     static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
 
   protected:
-    void CreateRocketExplosionEffect(trace_t *pTrace, CBaseEntity *pOther);
-
     float m_flDamage;
     float m_flRadius;
 
