@@ -22,7 +22,6 @@
 
 BEGIN_DATADESC(CMomRocket)
     // Fields
-    DEFINE_FIELD(m_hOwner, FIELD_EHANDLE),
     DEFINE_FIELD(m_flDamage, FIELD_FLOAT),
 
     // Functions
@@ -60,7 +59,6 @@ CMomRocket::CMomRocket()
     m_flSpawnTime = 0.0f;
 #else
     m_flDamage = 0.0f;
-    m_hOwner = nullptr;
 #endif
 }
 
@@ -236,7 +234,6 @@ void CMomRocket::RocketTouch(CBaseEntity *pOther)
     if (pTrace->surface.flags & SURF_SKY)
     {
 
-        m_hOwner = nullptr;
         StopSound("Missile.Ignite");
         UTIL_Remove(this);
         return;

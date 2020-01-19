@@ -46,8 +46,6 @@ class CMomRocket : public CBaseProjectile
     // sit still until it had gotten a few updates from the server.
     void SetupInitialTransmittedGrenadeVelocity(const Vector &velocity);
 
-    CHandle<CMomentumRocketLauncher> m_hOwner;
-
     static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
 
   protected:
