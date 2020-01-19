@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "RocketJumpSettings"
-        "tall" "190"
+        "tall" "230"
         "wide" "1000"
     }
     
@@ -191,7 +191,6 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
         "cvar_name"		"mom_rj_use_tf_rocketmodel"
-        "cvar_value"		"0"
         "Font"		"DefaultVerySmall"
     }
     
@@ -219,7 +218,6 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
         "cvar_name"		"mom_rj_use_tf_viewmodel"
-        "cvar_value"		"0"
         "Font"		"DefaultVerySmall"
     }
     
@@ -247,7 +245,62 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
         "cvar_name"		"mom_rj_center_fire"
-        "cvar_value"		"0"
+        "Font"		"DefaultVerySmall"
+    }
+
+    "ToggleTrailSound"
+    {
+        "ControlName" "CvarToggleCheckButton"
+        "fieldName" "ToggleTrailSound"
+        "xpos" "4"
+        "ypos" "194"
+        "autoResize"		"0"
+        "pinCorner"		"0"
+        "visible"		"1"
+        "enabled"		"1"
+        "tabPosition"		"0"
+        "labelText"		"#MOM_Settings_RJ_Trail_Sound_Enable"
+        "tooltiptext" "#MOM_Settings_RJ_Trail_Sound_Enable_TT"
+        "textAlignment"		"west"
+        "dulltext"		"0"
+        "brighttext"		"0"
+        "wrap"		"0"
+        "centerwrap"		"0"
+        "textinsetx"		"6"
+        "textinsety"		"0"
+        "auto_wide_tocontents"	"1"
+        "auto_tall_tocontents" "1"
+        "use_proportional_insets"		"0"
+        "Default"		"0"
+        "cvar_name"		"mom_rj_trail_sound_enable"
+        "Font"		"DefaultVerySmall"
+    }
+
+    "ToggleRocketDecals"
+    {
+        "ControlName" "CvarToggleCheckButton"
+        "fieldName" "ToggleRocketDecals"
+        "xpos" "4"
+        "ypos" "214"
+        "autoResize"		"0"
+        "pinCorner"		"0"
+        "visible"		"1"
+        "enabled"		"1"
+        "tabPosition"		"0"
+        "labelText"		"#MOM_Settings_RJ_Rocket_Decals_Enable"
+        "tooltiptext" "#MOM_Settings_RJ_Rocket_Decals_Enable_TT"
+        "textAlignment"		"west"
+        "dulltext"		"0"
+        "brighttext"		"0"
+        "wrap"		"0"
+        "centerwrap"		"0"
+        "textinsetx"		"6"
+        "textinsety"		"0"
+        "auto_wide_tocontents"	"1"
+        "auto_tall_tocontents" "1"
+        "use_proportional_insets"		"0"
+        "Default"		"0"
+        "cvar_name"		"mom_rj_decals_enable"
         "Font"		"DefaultVerySmall"
     }
 }
