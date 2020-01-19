@@ -29,6 +29,7 @@ class CMomRocket : public CBaseProjectile
     virtual int DrawModel(int flags) OVERRIDE;
 
     virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
+    void OnDataChanged(DataUpdateType_t updateType) override;
 
 #else
     void RocketTouch(CBaseEntity *pOther);
