@@ -55,6 +55,8 @@ class CMomRocket : public CBaseProjectile
 
   private:
     DECLARE_DATADESC();
+
+    void StopTrailSound();
 #endif
 
 public:

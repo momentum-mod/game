@@ -54,16 +54,16 @@ CMomentumRocketLauncher::CMomentumRocketLauncher()
 {
     m_flTimeToIdleAfterFire = 0.8f;
     m_flIdleInterval = 20.0f;
+    m_iTFViewIndex = -1;
+    m_iTFWorldIndex = -1;
 }
 
 void CMomentumRocketLauncher::Precache()
 {
     BaseClass::Precache();
 
-    const auto hWeaponData = GetWpnData();
-
-    m_iMomViewIndex = PrecacheModel(hWeaponData.szViewModel);
-    m_iMomWorldIndex = PrecacheModel(hWeaponData.szWorldModel);
+    m_iMomViewIndex = m_iViewModelIndex;
+    m_iMomWorldIndex = m_iWorldModelIndex;
     m_iTFViewIndex = PrecacheModel(TF_ROCKETLAUNCHER_MODEL);
     m_iTFWorldIndex = PrecacheModel(TF_ROCKETLAUNCHER_WMODEL);
 
@@ -86,14 +86,14 @@ bool CMomentumRocketLauncher::Deploy()
     return BaseClass::Deploy();
 }
 
-const char *CMomentumRocketLauncher::GetViewModel(int) const
+const char *CMomentumRocketLauncher::GetViewModel(int indx) const
 {
-    return m_iViewModelIndex == m_iTFViewIndex ? TF_ROCKETLAUNCHER_MODEL : GetWpnData().szViewModel;
+    return m_iViewModelIndex == m_iTFViewIndex ? TF_ROCKETLAUNCHER_MODEL : BaseClass::GetViewModel(indx);
 }
 
 const char *CMomentumRocketLauncher::GetWorldModel() const
 {
-    return m_iWorldModelIndex == m_iTFWorldIndex ? TF_ROCKETLAUNCHER_WMODEL : GetWpnData().szWorldModel;
+    return m_iWorldModelIndex == m_iTFWorldIndex ? TF_ROCKETLAUNCHER_WMODEL : BaseClass::GetWorldModel();
 }
 
 void CMomentumRocketLauncher::SetModelType(bool bTF2Model)
@@ -177,7 +177,7 @@ void CMomentumRocketLauncher::PrimaryAttack()
     }
     else if (mom_rj_sounds.GetInt() == 2)
     {
-        WeaponSound(GetWeaponSound("special1"));
+        WeaponSound(GetWeaponSound("single_shot_TF2"));
     }
 
     // MOM_FIXME:
