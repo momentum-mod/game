@@ -15,5 +15,6 @@ class RocketJumpSettingsPage : public SettingsPage
   private:
     vgui::ComboBox *m_pParticlesBox, *m_pSoundsBox, *m_pTrailBox;
 
-    vgui::CvarToggleCheckButton *m_pEnableTFRocketModel, *m_pEnableTFViewModel, *m_pEnableCenterFire;
+    vgui::CvarToggleCheckButton *m_pEnableTFRocketModel, *m_pEnableTFViewModel, *m_pEnableCenterFire,
+                                *m_pToggleRocketTrailSound, *m_pToggleRocketDecals;
 };
