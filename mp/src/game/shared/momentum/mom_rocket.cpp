@@ -23,7 +23,6 @@
 BEGIN_DATADESC(CMomRocket)
     // Fields
     DEFINE_FIELD(m_hOwner, FIELD_EHANDLE),
-    DEFINE_FIELD(m_hRocketTrail, FIELD_EHANDLE),
     DEFINE_FIELD(m_flDamage, FIELD_FLOAT),
 
     // Functions
@@ -37,12 +36,7 @@ BEGIN_NETWORK_TABLE(CMomRocket, DT_MomRocket)
 #ifdef CLIENT_DLL
 RecvPropVector(RECVINFO(m_vInitialVelocity))
 #else
-SendPropVector(SENDINFO(m_vInitialVelocity),
-               20,    // nbits
-               0,     // flags
-               -3000, // low value
-               3000   // high value
-               )
+SendPropVector(SENDINFO(m_vInitialVelocity), 20, 0, -3000, 3000)
 #endif
 END_NETWORK_TABLE();
 
@@ -67,23 +61,11 @@ CMomRocket::CMomRocket()
 #else
     m_flDamage = 0.0f;
     m_hOwner = nullptr;
-    m_hRocketTrail = nullptr;
 #endif
 }
 
 CMomRocket::~CMomRocket()
 {
-#ifdef CLIENT_DLL
-    ParticleProp()->StopEmission();
-#endif
-}
-
-bool CMomRocket::UseTFTrail()
-{
-#ifdef CLIENT_DLL
-    static ConVarRef mom_rj_trail("mom_rj_trail");
-#endif
-    return mom_rj_trail.GetInt() == 2;
 }
 
 #ifdef CLIENT_DLL
@@ -194,7 +176,6 @@ void CMomRocket::Destroy(bool bNoGrenadeZone)
     SetTouch(NULL);
     AddEffects(EF_NODRAW);
     StopSound("Missile.Ignite");
-    DestroyTrail();
 
     if (bNoGrenadeZone)
     {
@@ -205,19 +186,6 @@ void CMomRocket::Destroy(bool bNoGrenadeZone)
             pGlowSprite->SetThink(&CSprite::SUB_Remove);
             pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0);
         }
-    }
-}
-
-void CMomRocket::DestroyTrail()
-{
-    if (UseTFTrail())
-        return;
-
-    if (m_hRocketTrail)
-    {
-        m_hRocketTrail->SetLifetime(0.1f);
-        m_hRocketTrail->SetParent(nullptr);
-        m_hRocketTrail = nullptr;
     }
 }
 
@@ -290,7 +258,6 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType());
     RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, nullptr);
 
-    DestroyTrail();
 
     m_hOwner = nullptr;
 
@@ -301,7 +268,6 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
         UTIL_DecalTrace(pTrace, "Scorch");
     }
 
-    // Remove the rocket
     UTIL_Remove(this);
 }
 
@@ -317,7 +283,6 @@ void CMomRocket::RocketTouch(CBaseEntity *pOther)
     const trace_t *pTrace = &GetTouchTrace();
     if (pTrace->surface.flags & SURF_SKY)
     {
-        DestroyTrail();
 
         m_hOwner = nullptr;
         StopSound("Missile.Ignite");
@@ -331,42 +296,11 @@ void CMomRocket::RocketTouch(CBaseEntity *pOther)
     Explode(&trace, pOther);
 }
 
-void CMomRocket::CreateSmokeTrail()
-{
-    if (m_hRocketTrail)
-        return;
-
-    // Smoke trail.
-    if ((m_hRocketTrail = RocketTrail::CreateRocketTrail()) != NULL)
-    {
-        m_hRocketTrail->m_Opacity = 0.2f;
-        m_hRocketTrail->m_SpawnRate = 100;
-        m_hRocketTrail->m_ParticleLifetime = 0.5f;
-        m_hRocketTrail->m_StartColor.Init(0.65f, 0.65f, 0.65f);
-        m_hRocketTrail->m_EndColor.Init(0.0, 0.0, 0.0);
-        m_hRocketTrail->m_StartSize = 8;
-        m_hRocketTrail->m_EndSize = 32;
-        m_hRocketTrail->m_SpawnRadius = 4;
-        m_hRocketTrail->m_MinSpeed = 2;
-        m_hRocketTrail->m_MaxSpeed = 16;
-
-        m_hRocketTrail->SetLifetime(999);
-        m_hRocketTrail->FollowEntity(this, "0");
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Spawn a new rocket
-//
-// Input  : &vecOrigin -
-//          &vecAngles -
-//          *pentOwner -
-//
-// Output : CMomRocket
-//-----------------------------------------------------------------------------
 CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner)
 {
-    CMomRocket *pRocket = static_cast<CMomRocket *>(CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pOwner));
+    const auto pRocket = dynamic_cast<CMomRocket *>(CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pOwner));
+    if (!pRocket)
+        return nullptr;
 
     if (!mom_rj_use_tf_rocketmodel.GetBool())
     {
@@ -403,12 +337,6 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
 
     // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in mom_gamerules)
     pRocket->SetRadius(146.0f);
-
-    // Momentum trail
-    if (mom_rj_trail.GetInt() == 1)
-    {
-        pRocket->CreateSmokeTrail();
-    }
 
     static ConVarRef mom_rj_sounds("mom_rj_sounds");
     const bool bMomSounds = !mom_rj_use_tf_rocketmodel.GetBool() && mom_rj_sounds.GetInt() == 1;
