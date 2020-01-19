@@ -189,43 +189,6 @@ void CMomRocket::Destroy(bool bNoGrenadeZone)
     }
 }
 
-void CMomRocket::CreateRocketExplosionEffect(trace_t *pTrace, CBaseEntity *pOther)
-{
-    static ConVarRef mom_rj_sounds("mom_rj_sounds");
-    int iEntIndex = pOther->entindex();
-    WeaponID_t m_hWeaponID = WEAPON_ROCKETLAUNCHER;
-    Vector vecOrigin = GetAbsOrigin();
-    CBaseEntity *pOwner = GetOwnerEntity();
-    float flDamage = GetDamage();
-    float flRadius = GetRadius();
-    CPVSFilter filter(vecOrigin);
-
-    switch (mom_rj_particles.GetInt())
-    {
-    case 1:
-        if (mom_rj_sounds.GetInt() == 0)
-        {
-            // Silent explosion
-            ExplosionCreate(vecOrigin, GetAbsAngles(), pOwner, flDamage, flRadius, false, 0.0f, false, true);
-        }
-        else if (mom_rj_sounds.GetInt() == 1)
-        {
-            ExplosionCreate(vecOrigin, GetAbsAngles(), pOwner, flDamage, flRadius, false);
-        }
-        else if (mom_rj_sounds.GetInt() == 2)
-        {
-            // Small hack: If TF2 sounds are selected but Momentum particles, then use silent standard explosion effect and play TF2 explosion sound
-            ExplosionCreate(vecOrigin, GetAbsAngles(), pOwner, flDamage, flRadius, false, 0.0f, false, true);
-            CBaseEntity::EmitSound(filter, SOUND_FROM_WORLD, "BaseExplosionEffect.SoundTF2", &vecOrigin);
-        }
-        break;
-    case 0:
-    case 2:
-        TE_TFExplosion(filter, 0.0f, vecOrigin, pTrace->plane.normal, m_hWeaponID, iEntIndex);
-        break;
-    }
-}
-
 void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
@@ -245,21 +208,15 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
         SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
     }
 
-    Vector vecOrigin = GetAbsOrigin();
-    CBaseEntity *pOwner = GetOwnerEntity();
+    const auto vecOrigin = GetAbsOrigin();
 
-    float flDamage = GetDamage();
-    float flRadius = GetRadius();
-
-    // Create explosion effect with no damage depending on the particle cvar setting, see method declaration
-    CreateRocketExplosionEffect(pTrace, pOther);
+    // Effect
+    CPVSFilter filter(vecOrigin);
+    TE_TFExplosion(filter, vecOrigin, pTrace->plane.normal, WEAPON_ROCKETLAUNCHER);
 
     // Damage
-    CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType());
-    RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, nullptr);
-
-
-    m_hOwner = nullptr;
+    const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, GetDamage(), GetDamageType());
+    RadiusDamage(info, vecOrigin, GetRadius(), CLASS_NONE, nullptr);
 
     StopSound("Missile.Ignite");
 
