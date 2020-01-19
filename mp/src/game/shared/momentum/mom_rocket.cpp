@@ -45,6 +45,7 @@ PRECACHE_WEAPON_REGISTER(momentum_rocket);
 #ifdef GAME_DLL
 static MAKE_TOGGLE_CONVAR(mom_rj_use_tf_rocketmodel, "0", FCVAR_ARCHIVE, "Toggles between the TF2 rocket model and the Momentum one. 0 = Momentum, 1 = TF2\n");
 static MAKE_TOGGLE_CONVAR(mom_rj_trail_sound_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail sound. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on rocket explosion. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_CONVAR(mom_rj_trail, "1", FCVAR_ARCHIVE, "Toggles between the TF2 rocket trail and the Momentum one. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 3);
 #endif
@@ -211,7 +212,7 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     StopSound("Missile.Ignite");
 
-    if (!pOther->IsPlayer())
+    if (mom_rj_decals_enable.GetBool() && pOther && !pOther->IsPlayer())
     {
         UTIL_DecalTrace(pTrace, "Scorch");
     }
