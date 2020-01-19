@@ -68,6 +68,38 @@ CMomRocket::~CMomRocket()
 {
 }
 
+void CMomRocket::Spawn()
+{
+    BaseClass::Spawn();
+#ifdef CLIENT_DLL
+    m_flSpawnTime = gpGlobals->curtime;
+#else
+    UseClientSideAnimation();
+    SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
+    SetSolidFlags(FSOLID_NOT_STANDABLE);
+    SetMoveType(MOVETYPE_FLY, MOVECOLLIDE_FLY_CUSTOM);
+    SetSolid(SOLID_BBOX);
+    AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
+    AddEffects(EF_NOSHADOW);
+    SetSize(Vector(0, 0, 0), Vector(0, 0, 0));
+    AddFlag(FL_GRENADE);
+
+    m_takedamage = DAMAGE_NO;
+    SetGravity(0.0f);
+
+    SetTouch(&CMomRocket::RocketTouch);
+    SetNextThink(gpGlobals->curtime);
+#endif
+}
+
+void CMomRocket::Precache()
+{
+    BaseClass::Precache();
+
+    PrecacheModel(MOM_ROCKET_MODEL);
+    PrecacheModel(TF_ROCKET_MODEL);
+}
+
 #ifdef CLIENT_DLL
 
 void CMomRocket::PostDataUpdate(DataUpdateType_t type)
@@ -128,44 +160,7 @@ int CMomRocket::DrawModel(int flags)
     return BaseClass::DrawModel(flags);
 }
 
-void CMomRocket::Spawn()
-{
-    m_flSpawnTime = gpGlobals->curtime;
-    BaseClass::Spawn();
-}
-
 #else
-
-void CMomRocket::Spawn()
-{
-    BaseClass::Spawn();
-
-    UseClientSideAnimation();
-    SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
-    SetSolidFlags(FSOLID_NOT_STANDABLE);
-    SetMoveType(MOVETYPE_FLY, MOVECOLLIDE_FLY_CUSTOM);
-    SetSolid(SOLID_BBOX);
-    AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
-    AddEffects(EF_NOSHADOW);
-    SetSize(Vector(0, 0, 0), Vector(0, 0, 0));
-    AddFlag(FL_GRENADE);
-
-    m_takedamage = DAMAGE_NO;
-    SetGravity(0.0f);
-
-    SetTouch(&CMomRocket::RocketTouch);
-    SetNextThink(gpGlobals->curtime);
-}
-
-void CMomRocket::Precache()
-{
-    BaseClass::Precache();
-    PrecacheModel(MOM_ROCKET_MODEL);
-    PrecacheModel(TF_ROCKET_MODEL);
-    PrecacheScriptSound("Missile.Ignite");
-    PrecacheScriptSound("BaseExplosionEffect.Sound");
-    PrecacheScriptSound("BaseExplosionEffect.SoundTF2");
-}
 
 void CMomRocket::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
 
