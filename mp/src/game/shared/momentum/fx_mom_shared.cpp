@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -22,10 +22,8 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_TOGGLE_CONVAR(mom_fixed_spread, "1", FCVAR_REPLICATED,
-                   "Use fixed spread patterns for shotgun weapons. 1 = ON (default), 0 = OFF\n");
+static MAKE_TOGGLE_CONVAR(mom_fixed_spread, "1", FCVAR_REPLICATED, "Use fixed spread patterns for scatter shot weapons. 1 = ON (default), 0 = OFF\n");
 
-// TF2 spread pattern
 static const Vector g_vecFixedPattern[] = {
     Vector(0, 0, 0),        Vector(1, 0, 0),       Vector(-1, 0, 0),        Vector(0, -1, 0),       Vector(0, 1, 0),
     Vector(0.85, -0.85, 0), Vector(0.85, 0.85, 0), Vector(-0.85, -0.85, 0), Vector(-0.85, 0.85, 0), Vector(0, 0, 0),
@@ -232,7 +230,6 @@ class CTETFExplosion : public CBaseTempEntity
     Vector m_vecOrigin;
     Vector m_vecNormal;
     WeaponID_t m_iWeaponID;
-    int m_nEntIndex;
 };
 
 static CTETFExplosion g_TETFExplosion("TFExplosion");
@@ -242,26 +239,22 @@ CTETFExplosion::CTETFExplosion(const char *name) : CBaseTempEntity(name)
     m_vecOrigin.Init();
     m_vecNormal.Init();
     m_iWeaponID = WEAPON_NONE;
-    m_nEntIndex = 0;
 }
 
 IMPLEMENT_SERVERCLASS_ST(CTETFExplosion, DT_TETFExplosion)
     SendPropVector(SENDINFO_NOCHECK(m_vecOrigin)),
     SendPropVector(SENDINFO_NOCHECK(m_vecNormal), 6, 0, -1.0f, 1.0f),
     SendPropInt(SENDINFO_NOCHECK(m_iWeaponID), Q_log2(WEAPON_MAX) + 1, SPROP_UNSIGNED),
-    SendPropInt(SENDINFO_NAME(m_nEntIndex, entindex), MAX_EDICT_BITS),
 END_SEND_TABLE()
 
-void TE_TFExplosion(IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal,
-                    WeaponID_t iWeaponID, int nEntIndex)
+void TE_TFExplosion(IRecipientFilter &filter, const Vector &vecOrigin, const Vector &vecNormal, WeaponID_t iWeaponID)
 {
     VectorCopy(vecOrigin, g_TETFExplosion.m_vecOrigin);
     VectorCopy(vecNormal, g_TETFExplosion.m_vecNormal);
     g_TETFExplosion.m_iWeaponID = iWeaponID;
-    g_TETFExplosion.m_nEntIndex = nEntIndex;
 
     // Send it over the wire
-    g_TETFExplosion.Create(filter, flDelay);
+    g_TETFExplosion.Create(filter);
 }
 
 // TF2 Particle effects
