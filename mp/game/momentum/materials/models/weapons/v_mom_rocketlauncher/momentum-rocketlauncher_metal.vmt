@@ -1,0 +1,27 @@
+VertexLitGeneric
+{
+	$basetexture	models\weapons\v_mom_rocketlauncher\mom-rocketlauncher-metals_d
+	$bumpmap		models\weapons\v_mom_rocketlauncher\mom-rocketlauncher-metals_n
+	$normalMapAlphaEnvmapMask	1
+	
+	$envmap					env_cubemap
+	// $envmapSaturation		.3
+	// $envmapContrast			.8
+	$envmapTint				"[.05 .05 .05]"
+	$envmapFresnel			.8
+	
+	$phong					1
+	$phongfresnelranges		"[.5 1 1.5]"
+	$phongTint				"[.9 .9 1]" 
+	$phongboost				2
+	$phongexponent			40
+	// $phongexponentTexture	models\weapons\v_mom_rocketlauncher\MOM-RocketLauncher-Metals_EXP
+	
+	$halfLambert			1						//Allows $lightWarpTexture to properly wrap around the model
+	$lightWarpTexture		luts\anisotropicwarp
+	
+	$rimlight				1
+	$rimlightboost			2
+	$rimlightexponent		110
+
+}
