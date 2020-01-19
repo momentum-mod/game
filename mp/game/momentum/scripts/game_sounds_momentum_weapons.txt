@@ -78,6 +78,40 @@
     "wave" ")weapons/rocket_shoot.wav"
 }
 
+"Weapon_RL.Single"
+{
+    "channel" "CHAN_WEAPON"
+    "volume" "1.0"
+    "soundlevel" "SNDLVL_GUNFIRE"
+    "pitch" "PITCH_NORM"
+    
+    "wave" ")weapons/rl/rocket_shoot.wav"
+}
+
+"Rocket.Trail"
+{
+    "channel"       "CHAN_WEAPON"
+    "volume"        "VOL_NORM"
+    "pitch"         "PITCH_NORM"
+    "soundlevel"    "SNDLVL_90dB"
+
+    "wave"          "weapons/rl/rocket_trail.wav"
+}
+
+"Weapon_RL.Explosion"
+{
+    "channel" "CHAN_WEAPON"
+    "volume" "1.0"
+    "soundlevel" "SNDLVL_95dB"
+    "pitch" "PITCH_NORM"
+
+    "rndwave"
+    {
+        "wave" ")weapons/rl/explode1.wav"
+        "wave" ")weapons/rl/explode2.wav"
+    }
+}
+
 "BaseExplosionEffect.SoundTF2"
 {
     "channel" "CHAN_WEAPON"
