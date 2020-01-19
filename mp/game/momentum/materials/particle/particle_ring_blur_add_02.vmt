@@ -1,0 +1,10 @@
+"UnlitGeneric"
+{
+	"$basetexture" "particle\particle_ring_blur"
+	$vertexcolor 1
+	$vertexalpha 1
+	$translucent 1
+	$Additive 1
+	$NoCull 1
+
+}
