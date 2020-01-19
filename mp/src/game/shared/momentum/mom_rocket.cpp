@@ -1,7 +1,9 @@
 #include "cbase.h"
+
 #include "mom_rocket.h"
 #include "engine/IEngineSound.h"
 #include "mom_shareddefs.h"
+#include "weapon/weapon_def.h"
 
 #ifndef CLIENT_DLL
 #include "Sprite.h"
@@ -161,13 +163,20 @@ int CMomRocket::DrawModel(int flags)
 
 void CMomRocket::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
 
+void CMomRocket::StopTrailSound()
+{
+    const auto pWepInfo = g_pWeaponDef->GetWeaponScript(WEAPON_ROCKETLAUNCHER);
+
+    StopSound(pWepInfo->pKVWeaponSounds->GetString("RocketTrail"));
+}
+
 void CMomRocket::Destroy(bool bNoGrenadeZone)
 {
     SetThink(&BaseClass::SUB_Remove);
     SetNextThink(gpGlobals->curtime);
     SetTouch(NULL);
     AddEffects(EF_NODRAW);
-    StopSound("Missile.Ignite");
+    StopTrailSound();
 
     if (bNoGrenadeZone)
     {
@@ -210,7 +219,7 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
     const CTakeDamageInfo info(this, GetOwnerEntity(), vec3_origin, vecOrigin, GetDamage(), GetDamageType());
     RadiusDamage(info, vecOrigin, GetRadius(), CLASS_NONE, nullptr);
 
-    StopSound("Missile.Ignite");
+    StopTrailSound();
 
     if (mom_rj_decals_enable.GetBool() && pOther && !pOther->IsPlayer())
     {
@@ -232,8 +241,8 @@ void CMomRocket::RocketTouch(CBaseEntity *pOther)
     const trace_t *pTrace = &GetTouchTrace();
     if (pTrace->surface.flags & SURF_SKY)
     {
+        StopTrailSound();
 
-        StopSound("Missile.Ignite");
         UTIL_Remove(this);
         return;
     }
@@ -288,7 +297,8 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
 
     if (mom_rj_trail_sound_enable.GetBool())
     {
-        pRocket->EmitSound("Missile.Ignite");
+        const auto pWepInfo = g_pWeaponDef->GetWeaponScript(WEAPON_ROCKETLAUNCHER);
+        pRocket->EmitSound(pWepInfo->pKVWeaponSounds->GetString("RocketTrail"));
     }
 
     return pRocket;
