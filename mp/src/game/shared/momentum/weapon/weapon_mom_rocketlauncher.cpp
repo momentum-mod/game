@@ -11,9 +11,7 @@
 
 #include "tier0/memdbgon.h"
 
-#define MOM_ROCKETLAUNCHER_MODEL "models/weapons/v_rpg_edit.mdl"
 #define TF_ROCKETLAUNCHER_MODEL "models/weapons/v_models/v_rocketlauncher_soldier.mdl"
-#define MOM_ROCKETLAUNCHER_WMODEL "models/weapons/w_rocket_launcher.mdl"
 #define TF_ROCKETLAUNCHER_WMODEL "models/weapons/w_models/w_rocketlauncher.mdl"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumRocketLauncher, DT_MomentumRocketLauncher)
@@ -62,8 +60,10 @@ void CMomentumRocketLauncher::Precache()
 {
     BaseClass::Precache();
 
-    m_iMomViewIndex = PrecacheModel(MOM_ROCKETLAUNCHER_MODEL);
-    m_iMomWorldIndex = PrecacheModel(MOM_ROCKETLAUNCHER_WMODEL);
+    const auto hWeaponData = GetWpnData();
+
+    m_iMomViewIndex = PrecacheModel(hWeaponData.szViewModel);
+    m_iMomWorldIndex = PrecacheModel(hWeaponData.szWorldModel);
     m_iTFViewIndex = PrecacheModel(TF_ROCKETLAUNCHER_MODEL);
     m_iTFWorldIndex = PrecacheModel(TF_ROCKETLAUNCHER_WMODEL);
 
@@ -88,12 +88,12 @@ bool CMomentumRocketLauncher::Deploy()
 
 const char *CMomentumRocketLauncher::GetViewModel(int) const
 {
-    return m_iViewModelIndex == m_iTFViewIndex ? TF_ROCKETLAUNCHER_MODEL : MOM_ROCKETLAUNCHER_MODEL;
+    return m_iViewModelIndex == m_iTFViewIndex ? TF_ROCKETLAUNCHER_MODEL : GetWpnData().szViewModel;
 }
 
 const char *CMomentumRocketLauncher::GetWorldModel() const
 {
-    return m_iWorldModelIndex == m_iTFWorldIndex ? TF_ROCKETLAUNCHER_WMODEL : MOM_ROCKETLAUNCHER_WMODEL;
+    return m_iWorldModelIndex == m_iTFWorldIndex ? TF_ROCKETLAUNCHER_WMODEL : GetWpnData().szWorldModel;
 }
 
 void CMomentumRocketLauncher::SetModelType(bool bTF2Model)
