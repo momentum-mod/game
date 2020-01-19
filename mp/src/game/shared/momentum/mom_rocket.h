@@ -34,7 +34,6 @@ class CMomRocket : public CBaseProjectile
     void RocketTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Destroy(bool bNoGrenadeZone);
-    void DestroyTrail();
 
     float GetRadius() { return m_flRadius; }
     float GetDamage() OVERRIDE { return m_flDamage; }
@@ -52,10 +51,8 @@ class CMomRocket : public CBaseProjectile
     static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
 
   protected:
-    void CreateSmokeTrail();
     void CreateRocketExplosionEffect(trace_t *pTrace, CBaseEntity *pOther);
 
-    CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
     float m_flRadius;
 
@@ -68,6 +65,5 @@ public:
     void SetThrower(CBaseEntity *pThrower) { m_hThrower = pThrower; }
 
 protected:
-    bool UseTFTrail();
     CBaseEntity* m_hThrower;
 };
