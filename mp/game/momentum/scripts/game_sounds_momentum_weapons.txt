@@ -68,7 +68,7 @@
     "wave" "weapons/rifle/Energy_Rifle_Lower_Bass.wav"
 }
 
-"Weapon_RPG.SingleTF2"
+"Weapon_RL.SingleTF2"
 {
     "channel" "CHAN_WEAPON"
     "volume" "1.0"

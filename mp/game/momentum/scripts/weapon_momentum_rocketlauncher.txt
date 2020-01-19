@@ -18,19 +18,34 @@ WeaponData
 
     "weight"            "25"
     "item_flags"        "0"
-	
-    // Particle effects and sound for explosions
-    "ExplosionEffect"          "ExplosionCore_wall"
-    "ExplosionPlayerEffect"    "ExplosionCore_MidAir"
-    "ExplosionWaterEffect"     "ExplosionCore_MidAir_underwater"
 
-    "ExplosionSound"    "BaseExplosionEffect.Sound"
-
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    // Sounds for the weapon
     SoundData
     {
-        "single_shot"       "Weapon_RPG.Single"
-        "special1"          "Weapon_RPG.SingleTF2"
+        "single_shot"       "Weapon_RL.Single"
+        "explosion"         "Weapon_RL.Explosion"
+        "RocketTrail"       "Rocket.Trail"
+
+        // TF2 sounds
+        "single_shot_TF2"   "Weapon_RL.SingleTF2"
+        "explosion_TF2"     "BaseExplosionEffect.SoundTF2"
+    }
+
+    // Weapon particles
+    ParticleData
+    {
+        "ExplosionEffect"          "mom_rocket_explosion_c"
+        "ExplosionMidAirEffect"    "mom_rocket_explosion_b"
+        "ExplosionWaterEffect"     "mom_rocket_explosion_b_"
+
+        // TF2 verisons
+        "ExplosionEffect_TF2"       "ExplosionCore_sapperdestroyed" // ExplosionCore_wall
+        "ExplosionMidAirEffect_TF2" "ExplosionCore_MidAir"
+        "ExplosionWaterEffect_TF2"  "ExplosionCore_MidAir_underwater"
+
+        // Trail
+        "RocketTrail"              "mom_rocket_trail_a" // mom_rocket_trail_b
+        "RocketTrail_TF2"          "rockettrail"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
