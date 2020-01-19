@@ -43,12 +43,10 @@ LINK_ENTITY_TO_CLASS(momentum_rocket, CMomRocket);
 PRECACHE_WEAPON_REGISTER(momentum_rocket);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR(mom_rj_use_tf_rocketmodel, "0", FCVAR_ARCHIVE,
-                          "Toggles between the TF2 rocket model and the Momentum one. 0 = Momentum, 1 = TF2\n");
-static MAKE_CONVAR(mom_rj_particles, "1", FCVAR_ARCHIVE,
-                   "Toggles between the TF2 particles for explosions and the Momentum ones. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 2);
-static MAKE_CONVAR(mom_rj_trail, "1", FCVAR_ARCHIVE,
-                   "Toggles between the TF2 rocket trail and the Momentum one. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 2);
+static MAKE_TOGGLE_CONVAR(mom_rj_use_tf_rocketmodel, "0", FCVAR_ARCHIVE, "Toggles between the TF2 rocket model and the Momentum one. 0 = Momentum, 1 = TF2\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_trail_sound_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail sound. 0 = OFF, 1 = ON\n");
+#else
+static MAKE_CONVAR(mom_rj_trail, "1", FCVAR_ARCHIVE, "Toggles between the TF2 rocket trail and the Momentum one. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 3);
 #endif
 
 CMomRocket::CMomRocket()
@@ -287,10 +285,7 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     // NOTE: Rocket explosion radius is 146.0f in TF2, but 121.0f is used for self damage (see RadiusDamage in mom_gamerules)
     pRocket->SetRadius(146.0f);
 
-    static ConVarRef mom_rj_sounds("mom_rj_sounds");
-    const bool bMomSounds = !mom_rj_use_tf_rocketmodel.GetBool() && mom_rj_sounds.GetInt() == 1;
-    const bool bTF2Sounds = !mom_rj_use_tf_rocketmodel.GetBool() && mom_rj_sounds.GetInt() == 2;
-    if (bMomSounds || bTF2Sounds)
+    if (mom_rj_trail_sound_enable.GetBool())
     {
         pRocket->EmitSound("Missile.Ignite");
     }
