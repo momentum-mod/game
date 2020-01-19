@@ -4,6 +4,7 @@ particles_manifest
 
     // Momentum Particles
     "file"      "!particles/weapons.pcf"
+    "file"      "!particles/mom_rocket.pcf"
 
     // HL2 Particles
     "file"        "particles/antlion_blood.pcf"

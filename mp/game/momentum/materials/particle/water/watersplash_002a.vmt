@@ -1,0 +1,9 @@
+"SpriteCard"
+{
+	"$basetexture"	"particle/water/watersplash_002a"
+	"$vertexcolor"	"1" 
+	"$vertexalpha"	"1" 
+	"$maxsize"	".85"
+	"$startfadesize"	".675"
+	"$endfadesize"	".75"
+}
