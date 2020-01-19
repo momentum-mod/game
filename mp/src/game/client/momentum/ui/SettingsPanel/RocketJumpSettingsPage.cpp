@@ -2,13 +2,8 @@
 
 #include "RocketJumpSettingsPage.h"
 
-#include "ienginevgui.h"
-#include "mom_shareddefs.h"
-#include "util/mom_util.h"
-
 #include <vgui_controls/ComboBox.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
-#include <vgui_controls/Frame.h>
 
 #include "tier0/memdbgon.h"
 
@@ -34,12 +29,9 @@ RocketJumpSettingsPage::RocketJumpSettingsPage(Panel *pParent) : BaseClass(pPare
     m_pTrailBox->AddItem("#MOM_Settings_RJ_TF2", nullptr);
     m_pTrailBox->AddActionSignalTarget(this);
 
-    m_pEnableTFRocketModel = new CvarToggleCheckButton(
-        this, "EnableTFRocketModel", "#MOM_Settings_RJ_Enable_TF_RocketModel", "mom_rj_use_tf_rocketmodel");
-    m_pEnableTFViewModel = new CvarToggleCheckButton(
-        this, "EnableTFViewModel", "#MOM_Settings_RJ_Enable_TF_ViewModel","mom_rj_use_tf_viewmodel");
-    m_pEnableCenterFire = new CvarToggleCheckButton(
-        this, "EnableCenterFire", "#MOM_Settings_RJ_Enable_Center_Fire", "mom_rj_center_fire");
+    m_pEnableTFRocketModel = new CvarToggleCheckButton(this, "EnableTFRocketModel", "#MOM_Settings_RJ_Enable_TF_RocketModel", "mom_rj_use_tf_rocketmodel");
+    m_pEnableTFViewModel = new CvarToggleCheckButton(this, "EnableTFViewModel", "#MOM_Settings_RJ_Enable_TF_ViewModel","mom_rj_use_tf_viewmodel");
+    m_pEnableCenterFire = new CvarToggleCheckButton(this, "EnableCenterFire", "#MOM_Settings_RJ_Enable_Center_Fire", "mom_rj_center_fire");
 
     LoadControlSettings("resource/ui/SettingsPanel_RocketJumpSettings.res");
 }
@@ -55,6 +47,10 @@ void RocketJumpSettingsPage::OnApplyChanges()
     mom_rj_particles.SetValue(m_pParticlesBox->GetActiveItem());
     mom_rj_sounds.SetValue(m_pSoundsBox->GetActiveItem());
     mom_rj_trail.SetValue(m_pTrailBox->GetActiveItem());
+
+    m_pEnableTFRocketModel->ApplyChanges();
+    m_pEnableTFViewModel->ApplyChanges();
+    m_pEnableCenterFire->ApplyChanges();
 }
 
 void RocketJumpSettingsPage::LoadSettings()
@@ -64,8 +60,4 @@ void RocketJumpSettingsPage::LoadSettings()
     m_pParticlesBox->ActivateItemByRow(mom_rj_particles.GetInt());
     m_pSoundsBox->ActivateItemByRow(mom_rj_sounds.GetInt());
     m_pTrailBox->ActivateItemByRow(mom_rj_trail.GetInt());
-
-    m_pEnableTFRocketModel->ApplyChanges();
-    m_pEnableTFViewModel->ApplyChanges();
-    m_pEnableCenterFire->ApplyChanges();
 }
