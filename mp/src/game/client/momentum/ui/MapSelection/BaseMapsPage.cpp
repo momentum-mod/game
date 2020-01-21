@@ -490,10 +490,13 @@ void CBaseMapsPage::StartRandomMap()
             else
             {
                 MapSelectorDialog().OnAddMapToLibrary(iMapID);
+                const auto pData = g_pMapCache->GetMapDataByID(iMapID);
+                if (pData && !g_pMapCache->MapFileExists(pData))
+                {
+                    MapSelectorDialog().OnStartMapDownload(iMapID);
+                }
                 m_iStartMapWhenReady = iMapID;
             }
-
-            return;
         }
     }
 }
