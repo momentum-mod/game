@@ -233,7 +233,7 @@ void CMomRocket::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     if (mom_rj_decals_enable.GetBool() && pOther && !pOther->IsPlayer())
     {
-        UTIL_DecalTrace(pTrace, "Scorch");
+        UTIL_DecalTrace(pTrace, "RocketScorch");
     }
 
     UTIL_Remove(this);
