@@ -169,6 +169,7 @@
 
         "MOM_MapSelector_FilterReset" "Reset Filters"
         "MOM_MapSelector_FilterApply" "Apply Filters"
+        "MOM_MapSelector_FeelingLucky" "Feeling Lucky"
         "MOM_MapSelector_FilterCompletedMaps" "Hide completed maps"
         "MOM_MapSelector_FilterDifficulty" "<= (difficulty) <="
         "MOM_MapSelector_LinearOnly" "Linear Maps only"

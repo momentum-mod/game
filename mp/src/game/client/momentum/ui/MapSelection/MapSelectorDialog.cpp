@@ -766,6 +766,19 @@ void CMapSelectorDialog::ApplyFiltersToCurrentTab(MapFilters_t filters)
         m_pCurrentMapList->ApplyFilters(filters);
 }
 
+int CMapSelectorDialog::GetFilteredItemsCount() 
+{ 
+     if (m_pCurrentMapList)
+        return m_pCurrentMapList->GetFilteredItemsCount();
+    return 0; 
+}
+
+void CMapSelectorDialog::StartRandomMapFromCurrentTab()
+{
+    if (m_pCurrentMapList)
+        m_pCurrentMapList->StartRandomMap();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Passes build mode activation down into the pages
 //-----------------------------------------------------------------------------
