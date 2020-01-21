@@ -1088,7 +1088,7 @@ void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
     if (pEntity->GetFlags() & FL_GRENADE)
     {
         const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
-        if (pRocket)
+        if (pRocket && pRocket->GetOwnerEntity() == this)
         {
             m_vecRockets.AddToTail(pRocket);
         }
@@ -1100,7 +1100,7 @@ void CMomentumPlayer::OnEntityDeleted(CBaseEntity *pEntity)
     if ((pEntity->GetFlags() & FL_GRENADE) && !m_vecRockets.IsEmpty())
     {
         const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
-        if (pRocket)
+        if (pRocket && pRocket->GetOwnerEntity() == this)
         {
             m_vecRockets.FindAndRemove(pRocket);
         }
