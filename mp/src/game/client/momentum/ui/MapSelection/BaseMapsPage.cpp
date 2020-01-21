@@ -29,7 +29,7 @@ static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPane
 }
 
 static int __cdecl MapPersonalBestSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
-                                        const vgui::ListPanelItem &item2)
+                                           const vgui::ListPanelItem &item2)
 {
     const auto left = item1.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
     const auto right = item2.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
@@ -92,6 +92,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     SetSize(pWide, pTall);
 
     m_hFont = INVALID_FONT;
+    m_iStartMapWhenReady = -1;
     parent->AddActionSignalTarget(this);
 
     // Init UI
@@ -369,6 +370,16 @@ void CBaseMapsPage::OnMapListDataUpdate(int mapID)
                 MapSelectorDialog().CreateMapListData(pMapDisplay->m_pMap);
         }
     }
+
+    if (m_iStartMapWhenReady == mapID)
+    {
+        const auto pData = g_pMapCache->GetMapDataByID(mapID);
+        if (pData && g_pMapCache->MapFileExists(pData))
+        {
+            m_iStartMapWhenReady = -1;
+            MapSelectorDialog().OnMapStart(mapID);
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -405,6 +416,12 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
         pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? m_cMapDLFailed : m_cMapDLSuccess);
         m_pMapList->ApplyItemChanges(map->m_iListID);
     }
+
+    if (m_iStartMapWhenReady != -1 && (uint32)m_iStartMapWhenReady == id)
+    {
+        m_iStartMapWhenReady = -1;
+        MapSelectorDialog().OnMapStart(id);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -432,7 +449,7 @@ bool CBaseMapsPage::OnGameListEnterPressed()
             }
             else
                 MapSelectorDialog().OnAddMapToLibrary(iMapID);
-            
+
             return true;
         }
     }
@@ -462,15 +479,18 @@ void CBaseMapsPage::StartRandomMap()
                 if (pMapData->m_bMapFileNeedsUpdate)
                 {
                     MapSelectorDialog().OnStartMapDownload(iMapID);
+                    m_iStartMapWhenReady = iMapID;
                 }
                 else
                 {
+                    m_iStartMapWhenReady = -1;
                     MapSelectorDialog().OnMapStart(iMapID);
                 }
             }
             else
             {
                 MapSelectorDialog().OnAddMapToLibrary(iMapID);
+                m_iStartMapWhenReady = iMapID;
             }
 
             return;
@@ -523,7 +543,7 @@ void CBaseMapsPage::GetNewMapList()
     g_pMapCache->GetMapList(vecMaps, GetMapListType());
 
     FOR_EACH_VEC(vecMaps, i)
-        AddMapToList(vecMaps[i]);
+    AddMapToList(vecMaps[i]);
 
     OnGetNewMapList();
 }
