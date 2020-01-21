@@ -1,0 +1,11 @@
+UnlitGeneric
+{
+	//$vertexcolor 			1
+	//$vertexalpha 			1
+
+	$translucent 			1
+	$basetexture 			decals/rocket_scorch1
+	$decal 				1
+	$decalScale			0.15
+	$decalSecondPass	1
+}
