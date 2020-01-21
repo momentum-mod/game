@@ -1274,7 +1274,7 @@ bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 	m_bReloadHudHintDisplayed = false;
 	m_flHudHintPollTime = gpGlobals->curtime + 5.0f;
 	
-	WeaponSound( GetWeaponScript()->pKVWeaponSounds->GetString("deploy") );
+	WeaponSound( GetWeaponSound("deploy") );
 
 	SetWeaponVisible( true );
 
