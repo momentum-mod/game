@@ -35,6 +35,7 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     // Buttons
     m_pResetFiltersButton = new Button(this, "ResetFilters", "#MOM_MapSelector_FilterReset", this, "ResetFilters");
     m_pApplyFiltersButton = new Button(this, "ApplyFilters", "#MOM_MapSelector_FilterApply", this, "ApplyFilters");
+    m_pFeelingLuckyButton = new Button(this, "FeelingLucky", "#MOM_MapSelector_FeelingLucky", this, "FeelingLucky");
 
     LoadControlSettings("resource/ui/mapselector/MapFilters.res");
 
@@ -125,6 +126,7 @@ void MapFilterPanel::UpdateFilterSettings(bool bApply /* = true*/)
 void MapFilterPanel::ApplyFilters()
 {
     MapSelectorDialog().ApplyFiltersToCurrentTab(m_Filters);
+    m_pFeelingLuckyButton->SetEnabled(MapSelectorDialog().GetFilteredItemsCount() > 0);
 }
 
 void MapFilterPanel::ResetFilters()
@@ -147,6 +149,11 @@ void MapFilterPanel::OnCommand(const char* command)
         UpdateFilterSettings();
         m_pResetFiltersButton->SetEnabled(false);
         m_pApplyFiltersButton->SetEnabled(false);
+    }
+    else if (FStrEq(command, "FeelingLucky"))
+    {
+        MapSelectorDialog().StartRandomMapFromCurrentTab();
+        m_pFeelingLuckyButton->SetEnabled(true);
     }
     else
         BaseClass::OnCommand(command);

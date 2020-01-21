@@ -439,6 +439,45 @@ bool CBaseMapsPage::OnGameListEnterPressed()
     return false;
 }
 
+int CBaseMapsPage::GetFilteredItemsCount() 
+{ 
+    return m_pMapList->GetItemCount(); 
+}
+
+void CBaseMapsPage::StartRandomMap()
+{
+    const auto iVisibleItemsCount = GetFilteredItemsCount();
+    if (iVisibleItemsCount > 0)
+    {
+        const auto iListID = m_pMapList->GetItemIDFromRow(RandomInt(0, iVisibleItemsCount - 1));
+        const auto iMapID = m_pMapList->GetItemUserData(iListID);
+        if (iMapID == 0)
+            return;
+
+        const auto pMapData = g_pMapCache->GetMapDataByID(iMapID);
+        if (pMapData)
+        {
+            if (pMapData->m_bInLibrary)
+            {
+                if (pMapData->m_bMapFileNeedsUpdate)
+                {
+                    MapSelectorDialog().OnStartMapDownload(iMapID);
+                }
+                else
+                {
+                    MapSelectorDialog().OnMapStart(iMapID);
+                }
+            }
+            else
+            {
+                MapSelectorDialog().OnAddMapToLibrary(iMapID);
+            }
+
+            return;
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Get the # items selected in the game list.
 //-----------------------------------------------------------------------------

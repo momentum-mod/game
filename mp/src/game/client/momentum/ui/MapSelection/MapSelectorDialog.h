@@ -78,6 +78,9 @@ class CMapSelectorDialog : public vgui::Frame
     void LoadTabFilterData(const char *pTabName);
     void ApplyFiltersToCurrentTab(MapFilters_t filters);
 
+    int GetFilteredItemsCount();
+    void StartRandomMapFromCurrentTab();
+
     // load/saves filter & favorites settings from disk
     void LoadUserData();
     void SaveUserData();
