@@ -28,6 +28,7 @@ protected:
     MESSAGE_FUNC(OnCursorEntered, "OnCursorEntered");
 
     void Paint() OVERRIDE;
+    void PerformLayout() OVERRIDE;
     void OnMousePressed(vgui::MouseCode code) OVERRIDE;
     void OnKeyCodeReleased(vgui::KeyCode code) OVERRIDE;
     void OnCommand(const char* command) OVERRIDE;
