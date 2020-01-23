@@ -344,6 +344,7 @@ void ImageGallery::Paint()
 
 void ImageGallery::PerformLayout() 
 { 
+    BaseClass::PerformLayout();
     UpdateButtonStates(); 
 }
 
