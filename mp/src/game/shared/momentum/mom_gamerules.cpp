@@ -299,13 +299,6 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
                 flRadius = 121.0f; // Rocket self-damage radius is 121.0f
             }
         }
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-        {
-            if (FClassnameIs(pInflictor, "momentum_stickybomb"))
-            {
-                flRadius = 146.0f;
-            }
-        }
 
         Vector nearestPoint;
         pAttacker->CollisionProp()->CalcNearestPoint(vecSrc, &nearestPoint);
