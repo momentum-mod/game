@@ -400,8 +400,8 @@
         "zpos"			"1"
         "wide"			"150"
         "tall"          "100"
-        "fgcolor_override"		"0 0 0 0"
-        "bgcolor_override"		"0 0 0 0"
+        "paintbackground" "0"
+        "bgcolor_override" "0 0 0 0"
     }
 
     CHudStickybombs
