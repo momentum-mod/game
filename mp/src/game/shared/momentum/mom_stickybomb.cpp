@@ -24,13 +24,14 @@
 #ifndef CLIENT_DLL
 BEGIN_DATADESC(CMomStickybomb)
     // Fields
-    DEFINE_FIELD(m_hOwner, FIELD_EHANDLE),
+    DEFINE_FIELD(m_hLauncher, FIELD_EHANDLE),
     DEFINE_FIELD(m_flDamage, FIELD_FLOAT),
     DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
     DEFINE_FIELD(m_bPulsed, FIELD_BOOLEAN),
 
     // Functions
-    DEFINE_ENTITYFUNC(Touch), END_DATADESC();
+    DEFINE_ENTITYFUNC(Touch),
+END_DATADESC();
 #endif
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
@@ -68,7 +69,6 @@ CMomStickybomb::CMomStickybomb()
     m_vInitialVelocity.Init();
     m_bTouched = false;
     m_flChargeTime = 0.0f;
-
 #ifdef CLIENT_DLL
     m_flSpawnTime = 0.0f;
 #else
@@ -251,7 +251,7 @@ void CMomStickybomb::RemoveStickybomb(bool bNoGrenadeZone)
     // Kill it
     SetThink(&BaseClass::SUB_Remove);
     SetNextThink(gpGlobals->curtime);
-    SetTouch(NULL);
+    SetTouch(nullptr);
     AddEffects(EF_NODRAW);
 
     if (bNoGrenadeZone)
@@ -322,14 +322,8 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     CPVSFilter filter(vecOrigin);
     CWeaponID iWeaponID = WEAPON_STICKYLAUNCHER;
 
-    if (UseImpactNormal())
-    {
-            TE_TFExplosion(filter, 0.0f, vecOrigin, GetImpactNormal(), iWeaponID, -1);
-    }
-    else
-    {
-            TE_TFExplosion(filter, 0.0f, vecOrigin, pTrace->plane.normal, iWeaponID, -1);
-    }
+    const Vector vecNormal = m_bUseImpactNormal ? m_vecImpactNormal : pTrace->plane.normal;
+    TE_TFExplosion(filter, 0.0f, vecOrigin, vecNormal, iWeaponID, -1);
 
     Vector vecReported = GetThrower() ? GetThrower()->GetAbsOrigin() : vec3_origin;
 
@@ -337,7 +331,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType(), 0, &vecReported);
     RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, nullptr);
 
-    m_hOwner = nullptr;
+    m_hLauncher = nullptr;
 
     if (pOther && !pOther->IsPlayer())
     {
@@ -387,10 +381,6 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
 void CMomStickybomb::StickybombTouch(CBaseEntity *pOther)
 {
     Assert(pOther);
-
-    // Don't touch triggers
-    if (pOther->IsSolidFlagSet(FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS))
-        return;
 }
 
 void CMomStickybomb::StickybombThink()
