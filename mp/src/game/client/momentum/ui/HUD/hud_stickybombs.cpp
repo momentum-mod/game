@@ -10,18 +10,14 @@
 #include "iclientmode.h"
 #include "ienginevgui.h"
 #include "mom_system_gamemode.h"
-#include "weapon/weapon_base.h"
 #include "weapon/weapon_mom_stickybomblauncher.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_sj_stickycount_enable, "1", FCVAR_ARCHIVE, "Toggles the stickybomb counter.\n");
+static MAKE_TOGGLE_CONVAR(mom_hud_sj_stickycount_enable, "1", FCVAR_ARCHIVE, "Toggles the stickybomb counter.\n");
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 class CHudStickybombs : public CHudElement, public EditablePanel
 {
     DECLARE_CLASS_SIMPLE(CHudStickybombs, EditablePanel);
@@ -29,91 +25,64 @@ class CHudStickybombs : public CHudElement, public EditablePanel
   public:
     CHudStickybombs(const char *pElementName);
 
-    void ApplySchemeSettings(IScheme *scheme) OVERRIDE;
     bool ShouldDraw() OVERRIDE;
-    void OnTick() OVERRIDE;
+    void OnThink() OVERRIDE;
+    void Reset() OVERRIDE;
 
   private:
-    vgui::EditablePanel *m_pStickybombsPresent;
-    vgui::EditablePanel *m_pNoStickybombsPresent;
-    vgui::Label *m_pStickyLabel;
-    vgui::Label *m_pNoStickyLabel;
+    CMomentumStickybombLauncher *pLauncher;
+    Label *m_pStickyLabel;
 };
 
 DECLARE_HUDELEMENT(CHudStickybombs);
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 CHudStickybombs::CHudStickybombs(const char *pElementName)
-    : CHudElement(pElementName), BaseClass(NULL, "CHudStickybombs")
+    : CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudStickybombs")
 {
-    Panel *pParent = g_pClientMode->GetViewport();
-    SetParent(pParent);
+    m_pStickyLabel = new Label(this, "StickybombsLabel", "");
 
-    m_pStickybombsPresent = new EditablePanel(this, "StickybombsPresentPanel");
-    m_pNoStickybombsPresent = new EditablePanel(this, "NoStickybombsPresentPanel");
-    m_pStickyLabel = new Label(m_pStickybombsPresent, "NumStickybombsLabel", "");
-    m_pNoStickyLabel = new Label(m_pNoStickybombsPresent, "NumNoStickybombsLabel", "");
+    pLauncher = nullptr;
 
-    SetHiddenBits(HIDEHUD_MISCSTATUS);
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
 
     LoadControlSettings("resource/ui/HudStickybombs.res");
-
-    vgui::ivgui()->AddTickSignal(GetVPanel());
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CHudStickybombs::ApplySchemeSettings(IScheme *pScheme) { BaseClass::ApplySchemeSettings(pScheme); }
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-bool CHudStickybombs::ShouldDraw(void)
+void CHudStickybombs::Reset()
 {
+    pLauncher = nullptr;
+}
+
+bool CHudStickybombs::ShouldDraw()
+{
+    if (!mom_hud_sj_stickycount_enable.GetBool())
+        return false;
+
     C_MomentumPlayer *pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
 
     if (!pPlayer || !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ) || !pPlayer->IsAlive())
         return false;
 
-    if (!mom_sj_stickycount_enable.GetBool())
-        return false;
-
     return CHudElement::ShouldDraw();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CHudStickybombs::OnTick(void)
+void CHudStickybombs::OnThink()
 {
     C_MomentumPlayer *pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
 
-    if (!pPlayer)
-        return;
+    pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(pPlayer->GetActiveWeapon());
 
-    CWeaponBase *pGun = dynamic_cast<CWeaponBase *>(pPlayer->GetActiveWeapon());
-
-    if (!pGun)
-        return;
-
-    int iWeaponID = pGun->GetWeaponID();
-
-    if (iWeaponID != WEAPON_STICKYLAUNCHER)
-        return;
-
-    CMomentumStickybombLauncher *pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(pGun);
-
-    if (!pLauncher)
+    if (!pPlayer || !pLauncher)
         return;
 
     int iStickybombs = pLauncher->GetStickybombCount();
+    if (iStickybombs < 1)
+        m_pStickyLabel->SetVisible(false);
+    else
+        m_pStickyLabel->SetVisible(true);
 
-    m_pStickybombsPresent->SetDialogVariable("activestickybombs", iStickybombs);
-    m_pNoStickybombsPresent->SetDialogVariable("activestickybombs", iStickybombs);
+    char buf[64];
+    Q_snprintf(buf, sizeof(buf), "%u", iStickybombs);
 
-    m_pStickybombsPresent->SetVisible(iStickybombs > 0);
-    m_pNoStickybombsPresent->SetVisible(iStickybombs <= 0);
+    m_pStickyLabel->SetText(buf);
 }
