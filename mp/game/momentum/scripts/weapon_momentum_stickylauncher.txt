@@ -18,11 +18,11 @@ WeaponData
 
     "weight"            "25"
     "item_flags"        "0"
-	
-	// Particle effects and sound for explosions
+    
+    // Particle effects and sound for explosions
     "ExplosionEffect"          "ExplosionCore_sapperdestroyed"
-    "ExplosionPlayerEffect"    "ExplosionCore_MidAir"
-    "ExplosionWaterEffect"     "ExplosionCore_MidAir_underwater"
+    "ExplosionPlayerEffect"    "ExplosionCore_sapperdestroyed"
+    "ExplosionWaterEffect"     "ExplosionCore_sapperdestroyed"
 
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
@@ -38,25 +38,25 @@ WeaponData
     {
         //Weapon Select Images
         "weapon"
-		{
-				"font"		"WeaponIcons"
-				"character"	"i"
-		}
-		"weapon_s"
-		{	
-				"font"		"WeaponIconsSelected"
-				"character"	"i"
-		}
-		"weapon_small"
-		{
-				"font"		"WeaponIconsSmall"
-				"character"	"i"
-		}
-		"ammo"
-		{
-				"font"		"WeaponIconsSmall"
-				"character"	"x"
-		}
+        {
+                "font"		"WeaponIcons"
+                "character"	"i"
+        }
+        "weapon_s"
+        {	
+                "font"		"WeaponIconsSelected"
+                "character"	"i"
+        }
+        "weapon_small"
+        {
+                "font"		"WeaponIconsSmall"
+                "character"	"i"
+        }
+        "ammo"
+        {
+                "font"		"WeaponIconsSmall"
+                "character"	"x"
+        }
         "crosshair"
         {
                 "file"      "sprites/crosshairs"
