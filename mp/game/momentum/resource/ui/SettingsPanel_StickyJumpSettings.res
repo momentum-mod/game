@@ -89,7 +89,7 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
         "Default"		"1"
-        "cvar_name"		"mom_sj_charge_enable"
+        "cvar_name"		"mom_sj_firing_mode"
         "Font"		"DefaultVerySmall"
     }
     
@@ -116,7 +116,7 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
         "Default"		"1"
-        "cvar_name"		"mom_sj_chargemeter_enable"
+        "cvar_name"		"mom_hud_sj_chargemeter_enable"
         "Font"		"DefaultVerySmall"
     }
     
@@ -143,7 +143,7 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
         "Default"		"1"
-        "cvar_name"		"mom_sj_stickycount_enable"
+        "cvar_name"		"mom_hud_sj_stickycount_enable"
         "Font"		"DefaultVerySmall"
     }
 }

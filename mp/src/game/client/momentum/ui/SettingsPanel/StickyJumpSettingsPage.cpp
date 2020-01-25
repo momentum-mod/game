@@ -21,11 +21,11 @@ StickyJumpSettingsPage::StickyJumpSettingsPage(Panel *pParent) : BaseClass(pPare
     m_pStickyDrawDelayEntry->AddActionSignalTarget(this);
 
     m_pEnableCharge =
-        new CvarToggleCheckButton(this, "EnableCharge", "#MOM_Settings_SJ_Enable_Charge", "mom_sj_charge_enable");
+        new CvarToggleCheckButton(this, "EnableCharge", "#MOM_Settings_SJ_Enable_Charge", "mom_sj_firing_mode");
     m_pEnableChargeMeter = new CvarToggleCheckButton(this, "EnableChargeMeter", "#MOM_Settings_SJ_Enable_Charge_Meter",
-                                                     "mom_sj_chargemeter_enable");
+                                                     "mom_hud_sj_chargemeter_enable");
     m_pEnableStickyCounter = new CvarToggleCheckButton(
-        this, "EnableStickyCounter", "#MOM_Settings_SJ_Enable_Sticky_Counter", "mom_sj_stickycount_enable");
+        this, "EnableStickyCounter", "#MOM_Settings_SJ_Enable_Sticky_Counter", "mom_hud_sj_stickycount_enable");
 
     LoadControlSettings("resource/ui/SettingsPanel_StickyJumpSettings.res");
 }
@@ -39,6 +39,10 @@ void StickyJumpSettingsPage::OnApplyChanges()
     ConVarRef mom_sj_stickybomb_drawdelay("mom_sj_stickybomb_drawdelay");
 
     mom_sj_stickybomb_drawdelay.SetValue(m_pStickyDrawDelayEntry->GetValueAsFloat());
+
+    m_pEnableCharge->ApplyChanges();
+    m_pEnableChargeMeter->ApplyChanges();
+    m_pEnableStickyCounter->ApplyChanges();
 }
 
 void StickyJumpSettingsPage::LoadSettings()
@@ -49,8 +53,4 @@ void StickyJumpSettingsPage::LoadSettings()
     Q_snprintf(buf, sizeof(buf), "%.1f", mom_sj_stickybomb_drawdelay.GetFloat());
 
     m_pStickyDrawDelayEntry->SetText(buf);
-
-    m_pEnableCharge->ApplyChanges();
-    m_pEnableChargeMeter->ApplyChanges();
-    m_pEnableStickyCounter->ApplyChanges();
 }

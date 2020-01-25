@@ -1,7 +1,10 @@
 #pragma once
-
-#include <vgui_controls/TextEntry.h>
 #include "SettingsPage.h"
+
+namespace vgui
+{
+    class TextEntry;
+}
 
 class StickyJumpSettingsPage : public SettingsPage
 {
