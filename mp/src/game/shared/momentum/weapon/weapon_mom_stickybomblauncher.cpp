@@ -25,9 +25,11 @@ BEGIN_NETWORK_TABLE_NOBASE(CMomentumStickybombLauncher, DT_MomentumStickybombLau
 #ifdef CLIENT_DLL
     RecvPropInt(RECVINFO(m_iStickybombCount)),
     RecvPropFloat(RECVINFO(m_flChargeBeginTime)),
+    RecvPropBool(RECVINFO(m_bIsChargeEnabled)),
 #else
     SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
     SendPropFloat(SENDINFO(m_flChargeBeginTime), 5, SPROP_NOSCALE | SPROP_CHANGES_OFTEN),
+    SendPropBool(SENDINFO(m_bIsChargeEnabled)),
 #endif
 END_NETWORK_TABLE()
 
@@ -49,8 +51,8 @@ LINK_ENTITY_TO_CLASS(weapon_momentum_stickylauncher, CMomentumStickybombLauncher
 PRECACHE_WEAPON_REGISTER(weapon_momentum_stickylauncher);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR_CV(mom_sj_charge_enable, "1", FCVAR_ARCHIVE,
-    "Toggle whether holding down primary fire charges stickies or fires them immediately.\n", nullptr,
+static MAKE_TOGGLE_CONVAR_CV(mom_sj_firing_mode, "1", FCVAR_ARCHIVE,
+    "Toggles sticky launcher firing mode. 0 = Stickies are fired instantly when holding primary fire,\n1 = Stickies are charged when holding primary fire.\n", nullptr,
     [](IConVar *pVar, const char *pNewVal)
     {
         const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
@@ -59,28 +61,16 @@ static MAKE_TOGGLE_CONVAR_CV(mom_sj_charge_enable, "1", FCVAR_ARCHIVE,
         {
             const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(pPlayer->GetActiveWeapon());
 
-            CTriggerZone *pZone = pPlayer->GetCurrentZoneTrigger();
-
             if (pLauncher && pLauncher->GetChargeBeginTime() > 0)
             {
                 Warning("Cannot disable charge while charging!\n");
                 return false;
             }
-            if (pZone && pZone->GetZoneType() == ZONE_TYPE_START)
-            {
-                Warning("Cannot use charge while in a start zone!\n");
-                return false;
-            }
         }
- 
+
         return true;
     }
 );
-#endif
-
-#ifndef CLIENT_DLL
-BEGIN_DATADESC(CMomentumStickybombLauncher)
-END_DATADESC()
 #endif
 
 CMomentumStickybombLauncher::CMomentumStickybombLauncher()
@@ -88,11 +78,8 @@ CMomentumStickybombLauncher::CMomentumStickybombLauncher()
     m_flTimeToIdleAfterFire = 0.6f;
     m_flLastDenySoundTime = 0.0f;
     m_flChargeBeginTime = 0.0f;
-    #ifdef CLIENT_DLL
-    m_iStickybombCount = 0;
-    #else
+    m_bIsChargeEnabled.Set(true);
     m_iStickybombCount.Set(0);
-    #endif
 }
 
 CMomentumStickybombLauncher::~CMomentumStickybombLauncher()
@@ -110,11 +97,6 @@ void CMomentumStickybombLauncher::Precache()
 #ifndef CLIENT_DLL
     UTIL_PrecacheOther("momentum_stickybomb");
 #endif
-}
-
-void CMomentumStickybombLauncher::Spawn()
-{
-    BaseClass::Spawn();
 }
 
 //-----------------------------------------------------------------------------
@@ -140,10 +122,10 @@ bool CMomentumStickybombLauncher::Deploy()
 void CMomentumStickybombLauncher::WeaponIdle()
 {
 #ifdef CLIENT_DLL
-    static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
+    static ConVarRef mom_sj_firing_mode("mom_sj_firing_mode");
 #endif
 
-    if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool())
+    if (m_flChargeBeginTime > 0 && mom_sj_firing_mode.GetBool())
     {
         LaunchGrenade();
     }
@@ -156,10 +138,9 @@ void CMomentumStickybombLauncher::WeaponIdle()
 void CMomentumStickybombLauncher::LaunchGrenade()
 {
 #ifdef CLIENT_DLL
-    static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
+    static ConVarRef mom_sj_firing_mode("mom_sj_firing_mode");
 #endif
 
-    // Get the player owning the weapon.
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
     if (!pPlayer)
@@ -169,8 +150,8 @@ void CMomentumStickybombLauncher::LaunchGrenade()
 
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-    CMomStickybomb *pProjectile = static_cast<CMomStickybomb*>(FireProjectile(pPlayer));
-    if (pProjectile && mom_sj_charge_enable.GetBool())
+    const auto pProjectile = FireProjectile(pPlayer);
+    if (pProjectile && mom_sj_firing_mode.GetBool())
     {
         // Save the charge time to scale the detonation timer.
         pProjectile->SetChargeTime(gpGlobals->curtime - m_flChargeBeginTime);
@@ -205,7 +186,7 @@ void CMomentumStickybombLauncher::ItemBusyFrame()
 void CMomentumStickybombLauncher::ItemPostFrame()
 {
 #ifdef CLIENT_DLL
-    static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
+    static ConVarRef mom_sj_firing_mode("mom_sj_firing_mode");
 #endif
 
     BaseClass::ItemPostFrame();
@@ -214,7 +195,7 @@ void CMomentumStickybombLauncher::ItemPostFrame()
     CMomentumPlayer *pOwner = GetPlayerOwner();
     if (pOwner && !(pOwner->m_nButtons & IN_ATTACK))
     {
-        if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool())
+        if (m_flChargeBeginTime > 0 && mom_sj_firing_mode.GetBool())
         {
             LaunchGrenade();
         }
@@ -224,7 +205,7 @@ void CMomentumStickybombLauncher::ItemPostFrame()
 void CMomentumStickybombLauncher::PrimaryAttack()
 {
 #ifdef CLIENT_DLL
-    static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
+    static ConVarRef mom_sj_firing_mode("mom_sj_firing_mode");
 #endif
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();
@@ -236,13 +217,16 @@ void CMomentumStickybombLauncher::PrimaryAttack()
     if (m_flNextPrimaryAttack > gpGlobals->curtime)
         return;
 
-    if (m_flChargeBeginTime <= 0 && mom_sj_charge_enable.GetBool())
+    if (m_flChargeBeginTime <= 0 && mom_sj_firing_mode.GetBool())
     {
         // save that we had the attack button down
         m_flChargeBeginTime = gpGlobals->curtime;
 
-        SendWeaponAnim(ACT_VM_PULLBACK);
-        WeaponSound(SPECIAL3);
+        if (m_bIsChargeEnabled.Get())
+        {
+            SendWeaponAnim(ACT_VM_PULLBACK);
+            WeaponSound(SPECIAL3);
+        }
     }
     else
     {
@@ -284,28 +268,28 @@ void CMomentumStickybombLauncher::SecondaryAttack()
 float CMomentumStickybombLauncher::GetProjectileSpeed()
 {
 #ifdef CLIENT_DLL
-    static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
+    static ConVarRef mom_sj_firing_mode("mom_sj_firing_mode");
 #endif
 
-    float flForwardSpeed = RemapValClamped((gpGlobals->curtime - m_flChargeBeginTime), 
+    float flForwardSpeed = mom_sj_firing_mode.GetBool() ? RemapValClamped((gpGlobals->curtime - m_flChargeBeginTime), 
                            0.0f, 
                            MOM_STICKYBOMB_MAX_CHARGE_TIME, 
                            MOM_STICKYBOMB_MIN_CHARGE_VEL, 
-                           MOM_STICKYBOMB_MAX_CHARGE_VEL);
+                           MOM_STICKYBOMB_MAX_CHARGE_VEL) : 900.0f;
 
-    return mom_sj_charge_enable.GetBool() ? flForwardSpeed : 900.0f;
+    return flForwardSpeed;
 }
 
 
 //-----------------------------------------------------------------------------
 // Purpose: Add stickybombs to our list as they're fired
 //-----------------------------------------------------------------------------
-CBaseEntity *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
+CMomStickybomb *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlayer)
 {
-    CBaseEntity *pProjectile = FireStickybomb(pPlayer);
+    const auto pProjectile = FireStickybomb(pPlayer);
+#ifdef GAME_DLL
     if (pProjectile)
     {
-#ifdef GAME_DLL
         // If we've gone over the max stickybomb count, fizzle the oldest
         if (m_Stickybombs.Count() >= MOM_WEAPON_STICKYBOMB_COUNT)
         {
@@ -327,12 +311,12 @@ CBaseEntity *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPlaye
         m_Stickybombs.AddToTail(hHandle);
 
         m_iStickybombCount = m_Stickybombs.Count();
-#endif
     }
+#endif
     return pProjectile;
 }
 
-CBaseEntity *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlayer)
+CMomStickybomb *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
     static ConVarRef cl_righthand("cl_righthand");
@@ -341,6 +325,22 @@ CBaseEntity *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlaye
 #endif
 
 #ifdef GAME_DLL
+    // Clamp forwards velocity to 900 if inside start zone or mom_sj_firing_mode is 0
+    float vel = GetProjectileSpeed();
+    CTriggerZone *pZone = pPlayer->GetCurrentZoneTrigger();
+
+    if (pZone && pZone->GetZoneType() == ZONE_TYPE_START)
+    {
+        if (pZone->IsTouching(pPlayer))
+        {
+            vel = 900.0f;
+        }
+        else
+        {
+            vel = GetProjectileSpeed();
+        }
+    }
+
     Vector vecForward, vecRight, vecUp;
     float yOffset = 8.0f;
 
@@ -354,14 +354,14 @@ CBaseEntity *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPlaye
     Vector vecSrc = pPlayer->Weapon_ShootPosition();
 
     vecSrc += vecForward * 16.0f + vecRight * yOffset + vecUp * -6.0f;
-    Vector vecVelocity = (vecForward * GetProjectileSpeed()) + (vecUp * 200.0f);
+    Vector vecVelocity = (vecForward * vel) + (vecUp * 200.0f);
     
 	CMomStickybomb *pProjectile = CMomStickybomb::Create(
         vecSrc, pPlayer->EyeAngles(), vecVelocity, AngularImpulse(600, 0, 0), pPlayer);
 
     return pProjectile;
 #endif
-    return NULL;
+    return nullptr;
 }
 
 void CMomentumStickybombLauncher::AddStickybomb(CMomStickybomb *pBomb)
@@ -376,10 +376,11 @@ void CMomentumStickybombLauncher::AddStickybomb(CMomStickybomb *pBomb)
 //-----------------------------------------------------------------------------
 void CMomentumStickybombLauncher::DeathNotice(CBaseEntity *pVictim)
 {
-    Assert(dynamic_cast<CMomStickybomb *>(pVictim));
+    const auto pSticky = dynamic_cast<CMomStickybomb *>(pVictim);
+    Assert(pSticky);
 
     StickybombHandle hHandle;
-    hHandle = (CMomStickybomb *)pVictim;
+    hHandle = pSticky;
     m_Stickybombs.FindAndRemove(hHandle);
 
     m_iStickybombCount = m_Stickybombs.Count();
@@ -408,7 +409,7 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
                 pTemp->Fizzle();
             }
 #endif
-            if (bFizzle == false)
+            if (!bFizzle)
             {
                 if ((gpGlobals->curtime - pTemp->GetCreationTime()) < 0.8f) // Stickybomb arm time
                 {
