@@ -14,6 +14,7 @@
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_base_gun.h"
 #include "weapon/weapon_mom_paintgun.h"
+#include "weapon/weapon_mom_stickybomblauncher.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
 #include "util/mom_util.h"
@@ -240,16 +241,10 @@ CMomentumPlayer::~CMomentumPlayer()
     if (this == s_pPlayer)
         s_pPlayer = nullptr;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         gEntList.RemoveListenerEntity(this);
-        m_vecRockets.RemoveAll();
-    }
-
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-    {
-        gEntList.RemoveListenerEntity(this);
-        m_vecStickies.RemoveAll();
+        m_vecExplosives.RemoveAll();
     }
 
     RemoveAllOnehops();
@@ -914,7 +909,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
 
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
             {
-                DestroyRockets();
+                DestroyExplosives();
 
                 // Don't limit speed in rocketjump mode,
                 // reset timer on zone enter and start on zone leave.
@@ -926,10 +921,13 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
             {
                 // Disable stickybomb launcher charge while inside start zone
-                static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
-                mom_sj_charge_enable.SetValue(0);
+                const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher*>(this->GetActiveWeapon());
+                if (pLauncher)
+                {
+                    pLauncher->SetChargeEnabled(false);
+                }
 
-                DestroyStickies();
+                DestroyExplosives();
 
                 // Don't limit speed in stickyjump mode,
                 // reset timer on zone enter and start on zone leave.
@@ -1062,8 +1060,11 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         {
             // Re-enable charge on start zone exit
-            static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
-            mom_sj_charge_enable.SetValue(1);
+            const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(this->GetActiveWeapon());
+            if (pLauncher)
+            {
+                pLauncher->SetChargeEnabled(true);
+            }
         }
         // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
         g_pMomentumTimer->TryStart(this, true);
@@ -1121,7 +1122,7 @@ void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
             const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
             if (pRocket)
             {
-                m_vecRockets.AddToTail(pRocket);
+                m_vecExplosives.AddToTail(pRocket);
             }
         }
         if (FClassnameIs(pEntity, "momentum_stickybomb"))
@@ -1129,7 +1130,7 @@ void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
             const auto pSticky = dynamic_cast<CMomStickybomb *>(pEntity);
             if (pSticky)
             {
-                m_vecStickies.AddToTail(pSticky);
+                m_vecExplosives.AddToTail(pSticky);
             }
         }
     }
@@ -1137,22 +1138,22 @@ void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
 
 void CMomentumPlayer::OnEntityDeleted(CBaseEntity *pEntity)
 {
-    if ((pEntity->GetFlags() & FL_GRENADE) )
+    if ((pEntity->GetFlags() & FL_GRENADE))
     {
-        if (FClassnameIs(pEntity, "momentum_rocket") && !m_vecRockets.IsEmpty())
+        if (FClassnameIs(pEntity, "momentum_rocket") && !m_vecExplosives.IsEmpty())
         {
             const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
             if (pRocket)
             {
-                m_vecRockets.FindAndRemove(pRocket);
+                m_vecExplosives.FindAndRemove(pRocket);
             }
         }
-        if (FClassnameIs(pEntity, "momentum_stickybomb") && !m_vecStickies.IsEmpty())
+        if (FClassnameIs(pEntity, "momentum_stickybomb") && !m_vecExplosives.IsEmpty())
         {
             const auto pSticky = dynamic_cast<CMomStickybomb *>(pEntity);
             if (pSticky)
             {
-                m_vecStickies.FindAndRemove(pSticky);
+                m_vecExplosives.FindAndRemove(pSticky);
             }
         }
     }
@@ -1659,6 +1660,8 @@ bool CMomentumPlayer::StartObserverMode(int mode)
         SaveCurrentRunState(false);
         FIRE_GAME_WIDE_EVENT("spec_start");
 
+        DestroyExplosives();
+
         g_pMomentumGhostClient->SetIsSpectating(true);
     }
 
@@ -1705,14 +1708,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     g_pMomentumTimer->Stop(this);
     g_pMomentumTimer->SetCanStart(false);
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-    {
-        DestroyRockets();
-    }
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-    {
-        DestroyStickies();
-    }
+    DestroyExplosives();
 
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
@@ -1750,14 +1746,7 @@ void CMomentumPlayer::TimerCommand_Reset()
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
         {
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-            {
-                DestroyRockets();
-            }
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-            {
-                DestroyStickies();
-            }
+            DestroyExplosives();
 
             // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
             Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
@@ -1769,32 +1758,31 @@ void CMomentumPlayer::TimerCommand_Reset()
     }
 }
 
-void CMomentumPlayer::DestroyRockets()
+void CMomentumPlayer::DestroyExplosives()
 {
-    FOR_EACH_VEC(m_vecRockets, i)
+    FOR_EACH_VEC(m_vecExplosives, i)
     {
-        const auto pRocket = m_vecRockets[i];
-        if (pRocket)
+        const auto pExplosive = m_vecExplosives[i];
+        if (pExplosive)
         {
-            pRocket->Destroy(true);
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            {
+                const auto pRocket = dynamic_cast<CMomRocket*>(pExplosive);
+
+                if (pRocket)
+                    pRocket->Destroy(true);
+            }
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+            {
+                const auto pSticky = dynamic_cast<CMomStickybomb*>(pExplosive);
+
+                if (pSticky)
+                    pSticky->RemoveStickybomb(true);
+            }
         }
     }
 
-    m_vecRockets.RemoveAll();
-}
-
-void CMomentumPlayer::DestroyStickies()
-{
-    FOR_EACH_VEC(m_vecStickies, i)
-    {
-        const auto pSticky = m_vecStickies[i];
-        if (pSticky)
-        {
-            pSticky->RemoveStickybomb(true);
-        }
-    }
-
-    m_vecStickies.RemoveAll();
+    m_vecExplosives.RemoveAll();
 }
 
 void CMomentumPlayer::TogglePracticeMode()
@@ -1872,14 +1860,7 @@ void CMomentumPlayer::DisablePracticeMode()
     // Only when timer is running
     if (g_pMomentumTimer->IsRunning())
     {
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-        {
-            DestroyRockets();
-        }
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-        {
-            DestroyStickies();
-        }
+        DestroyExplosives();
 
         RestoreRunState(true);
     }
