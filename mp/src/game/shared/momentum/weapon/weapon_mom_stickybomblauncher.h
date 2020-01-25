@@ -1,16 +1,16 @@
 #pragma once
 
-#include "mom_stickybomb.h"
 #include "weapon_base_gun.h"
+
+class CMomStickybomb;
 
 #ifdef CLIENT_DLL
 #define CMomentumStickybombLauncher C_MomentumStickybombLauncher
 #endif
 
-#ifdef GAME_DLL
-class CMomentumStickybombLauncher : public CWeaponBaseGun, public IEntityListener
-#else
 class CMomentumStickybombLauncher : public CWeaponBaseGun
+#ifdef GAME_DLL
+, public IEntityListener
 #endif
 {
   public:
@@ -18,23 +18,15 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-#ifdef GAME_DLL
-    DECLARE_DATADESC();
-#endif
-
     CMomentumStickybombLauncher();
     ~CMomentumStickybombLauncher();
 
     CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_STICKYLAUNCHER; }
 
-    void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
 
-    CBaseEntity *FireStickybomb(CMomentumPlayer *pPlayer);
-    CBaseEntity *FireProjectile(CMomentumPlayer *pPlayer);
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
-    void LaunchGrenade();
 
     bool CanDeploy() OVERRIDE;
     bool Deploy() OVERRIDE;
@@ -46,36 +38,33 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     void AddStickybomb(CMomStickybomb *pBomb);
     bool DetonateRemoteStickybombs(bool bFizzle);
     void DeathNotice(CBaseEntity *pVictim);
-    int GetStickybombCount() { return m_iStickybombCount; }
+    int GetStickybombCount() { return m_iStickybombCount.Get(); }
     float GetProjectileSpeed();
-    bool DualFire() OVERRIDE { return true; }
 
-  public:
+    bool IsChargeEnabled() { return m_bIsChargeEnabled.Get(); }
+    bool SetChargeEnabled(bool state) { return m_bIsChargeEnabled.Set(state); }
+
+    CMomStickybomb *GetStickyByCount(int count) { return m_Stickybombs[count]; }
     float GetChargeBeginTime() { return m_flChargeBeginTime; }
     float GetChargeMaxTime();
 
-#ifdef CLIENT_DLL
-    int m_iStickybombCount;
-#endif
-
-#ifdef GAME_DLL
   private:
+    void LaunchGrenade();
+    bool DualFire() OVERRIDE { return true; }
+    CMomStickybomb* FireStickybomb(CMomentumPlayer *pPlayer);
+    CMomStickybomb* FireProjectile(CMomentumPlayer *pPlayer);
+
     CNetworkVar(int, m_iStickybombCount);
-#endif
+    CNetworkVar(float, m_flChargeBeginTime);
+    float m_flLastDenySoundTime;
+
+    // This var mainly serves to disable the charge animation, sound and turn the charge meter red if set to false
+    // Networked so hud code can check the state
+    CNetworkVar(bool, m_bIsChargeEnabled);
 
     // List of active stickybombs
     typedef CHandle<CMomStickybomb> StickybombHandle;
     CUtlVector<StickybombHandle> m_Stickybombs;
-
-#ifdef CLIENT_DLL
-    float m_flChargeBeginTime;
-#endif
-
-#ifdef GAME_DLL
-    CNetworkVar(float, m_flChargeBeginTime);
-#endif
-
-    float m_flLastDenySoundTime;
 
     CMomentumStickybombLauncher(const CMomentumStickybombLauncher &) {}
 };
