@@ -77,9 +77,18 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
+
+    // Last collision
+    void SetLastCollision(const trace_t &tr);
+    int GetLastCollisionTick() const { return m_iLastCollisionTick; }
+    trace_t& GetLastCollisionTrace() { return m_trLastCollisionTrace; }
   private:
     // Ladder stuff
     float m_flGrabbableLadderTime;
+
+    // Last collision
+    int m_iLastCollisionTick; // Tick at which the player last collided with a non-vertical surface
+    trace_t m_trLastCollisionTrace; // (startpos and endpos raised up to player head for ceilings)
 
     float m_flStamina;
 

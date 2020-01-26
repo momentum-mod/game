@@ -1924,6 +1924,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  for contact
         // Add it if it's not already in the list!!!
         MoveHelper()->AddToTouched(pm, mv->m_vecVelocity);
+        if (!CloseEnough(pm.plane.normal[2], 0.0f)) // Filter out staight walls
+            m_pPlayer->SetLastCollision(pm);
 
         // If the plane we hit has a high z component in the normal, then
         //  it's probably a floor
@@ -2121,6 +2123,9 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 #endif
 
     BaseClass::SetGroundEntity(pm);
+
+    if (pm && pm->m_pEnt) // if (newGround)
+        m_pPlayer->SetLastCollision(*pm);
 
 #ifdef GAME_DLL
     // Doing this after the BaseClass call in case OnLand wants to use the new ground stuffs
