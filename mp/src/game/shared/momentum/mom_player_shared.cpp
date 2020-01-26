@@ -332,3 +332,17 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
 
     SetPunchAngle(angle);
 }
+
+void CMomentumPlayer::SetLastCollision(const trace_t &tr)
+{
+    m_iLastCollisionTick = gpGlobals->tickcount;
+    m_trLastCollisionTrace = tr;
+
+    // Raise origin position if it was a ceiling that was hit
+    if (tr.plane.normal.z < 0.0f)
+    {
+        float flOffset = (CollisionProp()->OBBMaxs() - CollisionProp()->OBBMins()).z;
+        m_trLastCollisionTrace.startpos.z += flOffset;
+        m_trLastCollisionTrace.endpos.z   += flOffset;
+    }
+}
