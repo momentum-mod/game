@@ -1452,8 +1452,22 @@ void CMomentumGameMovement::FullWalkMove()
                 mv->SetAbsOrigin(vecNewOrigin);
         }
 
+        bool bInAirBefore = player->GetGroundEntity() == nullptr;
+
         // Set final flags.
         CategorizePosition();
+
+        bool bInAirAfter = player->GetGroundEntity() == nullptr;
+
+        // Let player bhop after an edgebug
+        trace_t &tr = m_pPlayer->GetLastCollisionTrace();
+        if (sv_edge_fix.GetBool() && !m_pPlayer->m_CurrentSlideTrigger &&
+            bInAirBefore && bInAirAfter && m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount && // Player edgebugged
+            (m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)) && // Player wants to bhop
+            tr.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY) // Player can jump on what they edgebugged on
+        {
+            SetGroundEntity(&tr); // Allows the player to jump next tick
+        }
 
         // Make sure velocity is valid.
         CheckVelocity();
