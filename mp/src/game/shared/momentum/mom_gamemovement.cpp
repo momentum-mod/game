@@ -1241,30 +1241,77 @@ void CMomentumGameMovement::CategorizePosition()
         {
             if (player->GetGroundEntity() == nullptr)
             {
-                Vector rampVelocity = mv->m_vecVelocity;
+                Vector vecNextVelocity = mv->m_vecVelocity;
 
                 // Apply half of gravity as that would be done in the next tick before movement code
-                rampVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime);
+                vecNextVelocity -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
 
-                if (pm.plane.normal.z >= 0.7f && pm.plane.normal.z < 1.0f)
+                // Try to predict what would happen on the next tick if the player didn't get grounded
+                bool bGrounded = true; // Would the player be grounded next tick?
+                if (sv_edge_fix.GetBool() && !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)))
                 {
-                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity, 1.0f);
-                }
-                else if (pm.plane.normal.z < 0.7f)
-                {
-                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity, 1.0f + sv_bounce.GetFloat() * (1.0f - player->m_surfaceFriction));
+                    trace_t pmFall;
+
+                    // Don't simulate the fall to the ground if the player is already directly on it
+                    if (pm.fraction != 0.0f)
+                    {
+                        // Simulate the fall next tick
+                        Vector endFall;
+                        VectorMA(mv->GetAbsOrigin(), gpGlobals->frametime, vecNextVelocity, endFall);
+
+                        TracePlayerBBox(mv->GetAbsOrigin(), endFall, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pmFall);
+                    }
+                    else if (m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount)
+                    {
+                        // Pretend we are starting the edgebug from where we hit the surface and then simulate a max
+                        // distance edgebug to ensure consistency (see note on the sliding simulation)
+                        pmFall = m_pPlayer->GetLastCollisionTrace();
+                    }
+                    else
+                    {
+                        // Fallback if the fraction is zero, but the player hasn't collided this tick for some reason
+                        pmFall = pm;
+                    }
+
+                    if (!pmFall.DidHit())
+                    {
+                        bGrounded = false; // Would miss the ground the next tick
+                    }
+                    else
+                    {
+                        ClipVelocity(vecNextVelocity, pmFall.plane.normal, vecNextVelocity, 1.0f);
+
+                        // Simulate the sliding on the ground (notice that we are using the full frametime to allow
+                        // consistent max distance edgebugs)
+                        Vector endSlide;
+                        VectorMA(pmFall.endpos, gpGlobals->frametime, vecNextVelocity, endSlide);
+
+                        trace_t pmSlide;
+                        TracePlayerBBox(mv->GetAbsOrigin(), endSlide, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pmSlide);
+
+                        // Check if there is ground under the player (otherwise it would be an edgebug)
+                        trace_t pmGround;
+                        TryTouchGround(pmSlide.endpos, pmSlide.endpos - Vector(0.0f, 0.0f, flOffset), GetPlayerMins(),
+                                       GetPlayerMaxs(), MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, pmGround);
+
+                        if (!pmGround.DidHit())
+                            bGrounded = false; // Would edgebug next tick
+                    }
                 }
 
-                // Set ground entity if the player is not going to slide on the ramp next tick
-                if (rampVelocity[2] <= NON_JUMP_VELOCITY)
+                ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
+
+                // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
+                // grounded (exception if the player wants to bhop)
+                if (vecNextVelocity[2] <= NON_JUMP_VELOCITY && bGrounded)
                 {
                     // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
                     // velocity.z
-                    if (sv_slope_fix.GetBool() && rampVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                    if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
                     {
-                        VectorCopy(rampVelocity, mv->m_vecVelocity);
+                        VectorCopy(vecNextVelocity, mv->m_vecVelocity);
                     }
-                    
+
                     SetGroundEntity(&pm);
                 }
             }
