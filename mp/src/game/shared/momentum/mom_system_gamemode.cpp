@@ -46,6 +46,7 @@ void CGameModeBase::SetGameModeVars()
     sv_considered_on_ground.SetValue(1);
     sv_duck_collision_fix.SetValue(true);
     sv_ground_trigger_fix.SetValue(true);
+    sv_edge_fix.SetValue(false); // MOM_TODO Let people test the edge fix in 0.8.4 so we can get their opinions
 }
 
 void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
