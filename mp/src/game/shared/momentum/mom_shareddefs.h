@@ -5,7 +5,7 @@
 #endif
 
 // Main Version (0 is private alpha, 1 is public beta, 2 is full release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
-#define MOM_CURRENT_VERSION "0.8.2"
+#define MOM_CURRENT_VERSION "0.8.3"
 
 #define MAX_TRACKS 64
 #define MAX_ZONES 64

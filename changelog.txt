@@ -1,3 +1,68 @@
+0.8.3
+= Added
+  Added the ability to toggle between official momentum and TF2 sounds, models and particles
+  Added a new rocket model, launcher model, scorch decal, explosion particle and sound effect for rocket jumping
+  Added support for custom explosion effects and sound in the rocket launcher weapon script
+  Added sv_ground_trigger_fix to toggle bounces and jumpbugs
+  Added sv_duck_collision_fix to toggle on and off the headbug fix
+  Added further customization options for the game crosshair such as cl_crosshairstyle and cl_crosshaircolor with RGB values
+  Added timestamps to chat messages in the console as well as mom_chat_timestamps_enable to toggle timestamps in chat
+  Added support for tf_generic_bomb entities (renamed to momentum_generic_bomb)
+  Added damage indicators to the hud along with mom_hud_damageindicator customization settings
+  Added indicators for mouse1 and mouse2 on the keypress display
+  Added support for gamemode specific config files (surf/bhop/jump.cfg)
+  Added networking for rockets fired in online lobbies
+  Added a few entities by backporting them from Alien Swarm
+  Added a new RJ settings panel to the Momentum Settings dialog
+
+= Fixed
+  Removed the ability to toggle mom_rj_centerfire and cl_righthand while in a run
+  Refactored the ammo and weapon script system so that weapon scripts can only be used for cosmetic customization
+  Blocked players from doing damage to buttons while in practice mode
+  Fixed mom_spectate_stop teleporting players even when not spectating
+  Fixed lobby members panel being emptied upon changing resolution or using hud_reloadcontrols.
+  Fixed the player being able to fire directly after entering and leaving practice mode regardless of what the cooldown was in the actual run
+  Fixed error causing runs to display as unix epoch
+  Fixed ghosts doing damage to things like buttons in the local player’s game
+  Fixed start zones not resetting player gravity from savelocs
+  Fixed “Enable Overlapping Keys” breaking limitmovement triggers
+  Fixed visual errors when the sync bar went below 5%
+  Fixed the deploy time and fire rate of weapons varying depending on the animations
+  Fixed the slopeboost fix giving negative speed uphill
+  Fixed issues with smooth ducking transitions
+  Fixed bug that let the player stay in the air when considered walking
+  Fixed mom_start_mark commands not working for tracks with multiple start zones
+  Fixed paint not being applied to surfaces covered by water
+  Fixed resetting in a start zone attempting to stop the timer even when it isn’t running
+  Fixed zones breaking if they were made with a negative height value
+  Removed the ability to use “give” commands while spectating
+  Fixed the AllowingJump property of slide triggers to work properly
+  Prevented the timer from starting when teleporting to someone from a start zone in a lobby
+  Fixed the player outline for the leaderboard not resetting on map change
+  Removed some leftover test commands and placed many potential cheat commands behind -mapping
+  Set the default interp to 0.1 as 0 was causing model animations to lag
+  Fixed doors being locked on RJ maps
+  Removed ladder movement from RJ maps
+  Fixed shotgun not firing underwater for RJ maps
+  Fixed game crash on resolution change with the momentum settings dialog open
+  Added validation on paint decal radius
+  Fixed arrows on the map image gallery not changing position upon window resize
+
+= Improved
+  Simplified the process of reading appearance data in lobbies and removed duplicated code related to appearance
+  Cleaned up memory leaks and processes in the replay system
+  Made shotgun spread fixed and consistent to remove RNG
+  Improved the ruler tool (showRuler) to account for distance on multiple axis
+  Improved the layout, scaling and coloring in the Map Selector UI
+  Improved the font size and bounding areas of the Momentum Settings UI
+  Improved the player stats region of the leaderboards to better format the information
+  Changed map selector’s initial size and position to take up empty space instead of covering the menu buttons
+  Improved the Spectator UI layout
+  Changed the shotgun fire range from 3000 units to 8192 units
+  Online packets are now validated to ensure garbage/malicious packets do not affect the game negatively
+  Improved the shotgun’s animations
+  Refactored weapon script code to make more sense and limit script changes to visual modifications
+
 0.8.2
 = Added
   Added initial Rocket Jump implementation
@@ -27,66 +92,3 @@
   Fixed Momentum teleport triggers
   Fixed picking up a weapon when switching to another weapon in the same slot
   Fixed OSX crash caused by compatibility issues
-
-0.8.1
-= Added
-  Discord rich presence for Linux and Mac (thanks @kitlith !)
-    And a brand new toggle var mom_discord_enable [0/1] to toggle Discord RPC on/off altogether
-  Overhauled Lobby Members panel that now shows lobby type, leader, and limit
-  Added popup to show when joining a lobby fails
-  Added map download overwrite confirmation dialog that warns you if the map you're going to download will overwrite an existing map of the same name in your maps folder
-  Allow online ghosts to bleed when shooting/knifing them
-  Added convar settings for initial tricksurf_ map support (thanks @bonjorno7 !)
-  Added ability to refresh map info by right clicking a map in the map selector
-  Added run submission states to display on the map finished HUD panel
-
-= Improved
-  Timer reset logic: You must now land on the ground inside of the start zone to properly reset your timer
-  Don't add local player to typing members list in chat
-  Improved wording for showing leaderboards / lobby panels in options
-  Keypress display now takes into account the sign of cl_yawspeed when showing turnbinds
-  Improved how game handles saving run state when entering practice mode or spectating, or both
-  Improved layout of the paintgun panel to be proportional (scale to resolution) and simpler
-  Set in_keyboardsampletime back to 1 by default, 0 causes problems with turnbinds
-  Replay ghost is teleported when going to specific ticks so triggers can properly fire untouch events
-  Keypress display now shows if the player's hull is ducked rather than if they are only holding the duck key
-  Momentum settings tabs now scroll to the top of their pages upon tab show
-  Automatically update map selector with achieved PB/WRs
-  Updated FGD to have more Cabbage goodness (including CS:S spawn points and models/textures for more entities)
-  Added ping/RTT time to API requests logged with mom_api_log_requests 1
-  Added an "EveryTick" option to setspeed triggers
-  Enable mouse input for leaderboards/lobby members panel if spectator GUI has mouse input enabled
-  Added dropshadow to speedometer, syncbar, and keypress displays
-  Updated speed limiting logic
-
-= Fixed
-  Fixed Map Selector on Linux not properly showing up
-  Fixed raw mouse input being disabled for OSX
-  Fixed Map Selector filter logic for map layout
-  Fixed spectate state of players being improperly set both in-game and for Discord RPC
-  Fixed edge case where players could spectate a player that just started spectating
-  Fixed map download progress bars being stuck while scrolling
-  Fixed auto-accepting discord "ask to join" requests and now urge players to use the client/overlay for it
-  Fixed runs starting with two jumps when jumping to start the run
-  Fixed runs starting with two strafes if having only strafed once at the start
-  Fixed maps not properly setting their movement vars, e.g. sv_maxvelocity
-  Fixed typing members list not properly clearing after leaving the lobby
-  Fixed weapons in lobbies being able to be heard from across the map regardless of distance
-  Fixed player FOV not resetting upon zooming in with and then prompty dropping the sniper
-  Fixed grenades not being thrown at the correct angle when throwing upwards
-  Fixed speedometer showing incorrect velocity for replay ghosts at max velocity
-  Fixed some ramps deadstopping or giving an extra boost to players in certain conditions
-  Fixed the WAITING FOR API RESPONSE label from showing up if the leaderboards already has online times on it when refreshing times
-  Fixed plugins from being able to be loaded without -mapping specified
-  Fixed strafe sync setting disabling other strafe sync settings in Momentum Settings
-  Fixed stuttering when changing replay timescale
-  (Potentially) fixed crash on start-up for OSX (needs testing and validation)
-  Fixed map images flickering upon downloading a cached map
-  Fixed settings in Momentum Settings not properly loading stored value
-  Fixed timer being able to reset while in practice mode
-
-= Removed
-  Removed multiselect from Map Selector (click the icons to quickly add/remove multiple maps to/from library)
-  Removed collision with grenades for online ghosts (will be added back when we add trikz!)
-  Gameplay related convars (sv_maxvelocity, airaccel, etc) are now hidden and require -mapping to be able to change them. 
-    To see what the map's settings are, you can use mom_print_gamemode_vars if you are unsure.
