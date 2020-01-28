@@ -44,6 +44,7 @@ bool CMomServerEvents::Init()
         UnloadConVarOrCommand("host_sleep");
         UnloadConVarOrCommand("map_edit");
         UnloadConVarOrCommand("map_commentary");
+        UnloadConVarOrCommand("sv_pausable");
 
         // Unregister FCVAR_MAPPING convars
         auto pCvar = g_pCVar->GetCommands();
