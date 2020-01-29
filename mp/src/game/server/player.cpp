@@ -7693,10 +7693,6 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 	{
 		pPlayer = (CBasePlayer *)data.pActivator;
 	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = UTIL_GetLocalPlayer();
-	}
 
 	if ( pPlayer )
 	{
