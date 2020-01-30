@@ -20,8 +20,13 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     // Increments the steps intelligently.
     void UpdateStep(int Skip);
 
-    void EndRun();
+    void LoadFromReplayBase(CMomReplayBase *pReplay);
+
     void StartRun(bool firstPerson = false);
+    void EndRun();
+
+    void SetGhostAngles(QAngle angles);
+    void DetermineGhostVisibility();
 
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
@@ -30,18 +35,12 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     void GoToTick(int tick);
 
-    inline void SetTickRate(float rate) { m_Data.m_flTickRate = rate; }
-    inline void SetRunFlags(uint32 flags) { m_Data.m_iRunFlags = flags; }
-    void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
-
     CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
     CReplayFrame *GetPreviousStep();
 
     bool IsReplayEnt() { return true; }
 
-    bool m_bIsActive;
-    bool m_bReplayFirstPerson;
 
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_REPLAY; }
     virtual void OnZoneEnter(CTriggerZone *pTrigger) OVERRIDE;
@@ -52,13 +51,14 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CNetworkVar(int, m_iTotalTicks); // Total ticks for the replay (run time + start + end)
 
     // override of color so that replayghosts are always somewhat transparent.
-    void SetGhostColor(const uint32 newColor) OVERRIDE;
+    void AppearanceModelColorChanged(const AppearanceData_t &newApp) override;
 
   protected:
-    void Think(void) OVERRIDE;
-    void Spawn(void) OVERRIDE;
-    void Precache(void) OVERRIDE;
+    void Think() OVERRIDE;
+    void Spawn() OVERRIDE;
+    void Precache() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
+    void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) override;
 
     void CreateTrail() OVERRIDE;
 
@@ -66,6 +66,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CMomReplayBase *m_pPlaybackReplay;
 
     bool m_bHasJumped;
+    bool m_bIsActive;
+    bool m_bReplayFirstPerson;
 
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;

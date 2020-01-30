@@ -19,6 +19,7 @@
 #include "in_buttons.h"
 #include "momentum/mom_shareddefs.h"
 #include "ZoneMenu/ZoneMenu.h"
+#include "c_mom_player.h"
 
 #include "clienteffectprecachesystem.h"
 
@@ -204,6 +205,8 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         if (keynum == MOUSE_RIGHT)
         {
             m_pHudMapFinished->SetMouseInputEnabled(true);
+            if (m_pSpectatorGUI)
+                m_pSpectatorGUI->SetMouseInputEnabled(true);
             return 0;
         }
     }
@@ -226,7 +229,10 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
         // we are in spectator mode, open spectator menu
         if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+duck"))
         {
-            m_pSpectatorGUI->SetMouseInputEnabled(!m_pSpectatorGUI->IsMouseInputEnabled());
+            bool bMouseState = m_pSpectatorGUI->IsMouseInputEnabled();
+            m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
+            if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
+                m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
             // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
@@ -349,7 +355,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         return BaseClass::CreateMove(flInputSampleTime, cmd);
     }
 
-    C_BasePlayer *local_player = C_BasePlayer::GetLocalPlayer();
+    auto local_player = C_MomentumPlayer::GetLocalMomPlayer();
     static int dominant_buttons = 0;
     static int prev_flags = 0;
 
@@ -401,6 +407,8 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
 
     if (!mom_enable_overlapping_keys.GetBool())
     {
+        cmd->buttons &= ~local_player->m_afButtonDisabled;
+
         // Holding both forward and backwards, which one was the last pressed of these?
         if ((cmd->buttons & (IN_FORWARD | IN_BACK)) == (IN_FORWARD | IN_BACK))
         {

@@ -8,7 +8,7 @@
 
 #include "tier0/memdbgon.h"
 
-CON_COMMAND(mom_zone_generate, "Generates the .zon file for map zones.")
+CON_COMMAND_F(mom_zone_generate, "Generates the .zon file for map zones.", FCVAR_MAPPING)
 {
     g_MapZoneSystem.SaveZonesToFile();
 }

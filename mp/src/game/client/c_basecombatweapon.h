@@ -14,7 +14,6 @@
 #endif
 
 #include "basecombatweapon_shared.h"
-#include "weapons_resource.h"
 
 class CViewSetup;
 class C_BaseViewModel;

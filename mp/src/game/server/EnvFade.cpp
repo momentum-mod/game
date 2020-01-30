@@ -16,7 +16,10 @@ class CEnvFade : public CLogicalEntity
 private:
 
 	float m_Duration;
+	float m_ReverseDuration;
 	float m_HoldTime;
+
+	void Fade(CBaseEntity* pTarget, bool bReverse);
 
 	COutputEvent m_OnBeginFade;
 
@@ -28,6 +31,7 @@ public:
 	virtual void Spawn( void );
 
 	inline float Duration( void ) { return m_Duration; }
+	inline float ReverseDuration( void ) { return m_ReverseDuration; }
 	inline float HoldTime( void ) { return m_HoldTime; }
 
 	inline void SetDuration( float duration ) { m_Duration = duration; }
@@ -37,6 +41,7 @@ public:
 
 	// Inputs
 	void InputFade( inputdata_t &inputdata );
+	void InputFadeReverse( inputdata_t &inputdata );
 };
 
 LINK_ENTITY_TO_CLASS( env_fade, CEnvFade );
@@ -44,9 +49,11 @@ LINK_ENTITY_TO_CLASS( env_fade, CEnvFade );
 BEGIN_DATADESC( CEnvFade )
 
 	DEFINE_KEYFIELD( m_Duration, FIELD_FLOAT, "duration" ),
+	DEFINE_KEYFIELD( m_ReverseDuration, FIELD_FLOAT, "reversefadeduration" ),
 	DEFINE_KEYFIELD( m_HoldTime, FIELD_FLOAT, "holdtime" ),
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "Fade", InputFade ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "FadeReverse", InputFadeReverse ),
 
 	DEFINE_OUTPUT( m_OnBeginFade, "OnBeginFade"),
 
@@ -66,46 +73,63 @@ void CEnvFade::Spawn( void )
 {
 }
 
-
 //-----------------------------------------------------------------------------
-// Purpose: Input handler that does the screen fade.
+// Purpose: Perform the fade on a target player if found
 //-----------------------------------------------------------------------------
-void CEnvFade::InputFade( inputdata_t &inputdata )
+void CEnvFade::Fade(CBaseEntity *pTarget, bool bReverse)
 {
 	int fadeFlags = 0;
+	float flFadeDuration = (bReverse ? ReverseDuration() : Duration());
 
-	if ( m_spawnflags & SF_FADE_IN )
+	if (m_spawnflags & SF_FADE_IN)
 	{
-		fadeFlags |= FFADE_IN;
+		fadeFlags |= (bReverse ? FFADE_OUT : FFADE_IN);
 	}
 	else
 	{
-		fadeFlags |= FFADE_OUT;
+		fadeFlags |= (bReverse ? FFADE_IN : FFADE_OUT);
 	}
 
-	if ( m_spawnflags & SF_FADE_MODULATE )
+	if (m_spawnflags & SF_FADE_MODULATE)
 	{
 		fadeFlags |= FFADE_MODULATE;
 	}
 
-	if ( m_spawnflags & SF_FADE_STAYOUT )
+	if (m_spawnflags & SF_FADE_STAYOUT)
 	{
 		fadeFlags |= FFADE_STAYOUT;
 	}
 
-	if ( m_spawnflags & SF_FADE_ONLYONE )
+	if (m_spawnflags & SF_FADE_ONLYONE)
 	{
-		if ( inputdata.pActivator && inputdata.pActivator->IsNetClient() )
+		if (pTarget && pTarget->IsNetClient())
 		{
-			UTIL_ScreenFade( inputdata.pActivator, m_clrRender, Duration(), HoldTime(), fadeFlags );
+			UTIL_ScreenFade(pTarget, m_clrRender, flFadeDuration, HoldTime(), fadeFlags);
 		}
 	}
 	else
 	{
-		UTIL_ScreenFadeAll( m_clrRender, Duration(), HoldTime(), fadeFlags|FFADE_PURGE );
+		UTIL_ScreenFadeAll(m_clrRender, flFadeDuration, HoldTime(), fadeFlags | FFADE_PURGE);
 	}
 
-	m_OnBeginFade.FireOutput( inputdata.pActivator, this );
+	m_OnBeginFade.FireOutput(pTarget, this);
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Input handler that does the screen fade.
+//-----------------------------------------------------------------------------
+void CEnvFade::InputFade(inputdata_t &inputdata)
+{
+	Fade(inputdata.pActivator, false);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Input handler that does the reverse screen fade.
+//-----------------------------------------------------------------------------
+void CEnvFade::InputFadeReverse(inputdata_t &inputdata)
+{
+	Fade(inputdata.pActivator, true);
 }
 
 

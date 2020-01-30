@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "AppearanceSettings"
-        "tall" "255"
+        "tall" "190"
         "wide" "1000"
     }
     
@@ -33,7 +33,7 @@
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
-		"Font"		"DefaultBoldLarge"
+		"Font"		"DefaultBoldSmall"
 		"wrap"		"0"
 		"centerwrap"		"0"
 		"textinsetx"		"0"
@@ -49,7 +49,7 @@
         "ControlName" "Button"
         "fieldName" "PickBodyColorButton"
         "xpos" "-4"
-        "ypos" "0"
+        "ypos" "4"
         "tall" "17"
 		"pin_to_sibling" "GhostBodyLabel"
 		"pin_corner_to_sibling"		"0"
@@ -101,7 +101,7 @@
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
-		"Font"		"DefaultBoldLarge"
+		"Font"		"DefaultBoldSmall"
 		"wrap"		"0"
 		"centerwrap"		"0"
 		"textinsetx"		"0"
@@ -132,7 +132,7 @@
 	    "ControlName" "CvarToggleCheckButton"
         "fieldName" "EnableTrail"
         "xpos" "4"
-        "ypos" "0"
+        "ypos" "-2"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"pin_to_sibling" "PickTrailColorButton"
@@ -155,13 +155,14 @@
 		"Default"		"0"
 		"cvar_name"		"mom_trail_enable"
 		"cvar_value"		"1"
+		"Font"		"DefaultVerySmall"
 	}
     "TrailEntryLabel"
     {
         "ControlName"		"Label"
 		"fieldName"		"TrailEntryLabel"
 		"xpos"		"3"
-		"ypos"		"0"
+		"ypos"		"-2"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"pin_to_sibling" "TrailEntry"
@@ -174,7 +175,6 @@
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
-		"Font"		"Default"
 		"wrap"		"0"
 		"centerwrap"		"0"
 		"textinsetx"		"0"
@@ -182,6 +182,7 @@
 		"auto_wide_tocontents"		"1"
         "auto_tall_tocontents" "1"
 		"use_proportional_insets"		"0"
+		"Font"		"DefaultVerySmall"
     }
     "TrailEntry"
 	{
@@ -204,7 +205,7 @@
 		"maxchars"		"3"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
-        "font" "DefaultSmall"
         "actionsignallevel" "1"
+		"Font"		"DefaultVerySmall"
 	}
 }

@@ -8,21 +8,6 @@
 
 class CMomentumPlayer;
 
-#define NO_REFL_NORMAL_CHANGE -2.0f
-#define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
-#define STOP_EPSILON 0.1
-#define MAX_CLIP_PLANES 5
-
-#define STAMINA_MAX 100.0f
-#define STAMINA_COST_JUMP 25.0f
-#define STAMINA_COST_FALL 20.0f
-#define STAMINA_RECOVER_RATE 19.0f
-#define CS_WALK_SPEED 135.0f
-
-#define DUCK_SPEED_MULTIPLIER 0.34f
-
-#define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
-
 class CMomentumGameMovement : public CGameMovement
 {
     typedef CGameMovement BaseClass;
@@ -30,72 +15,65 @@ class CMomentumGameMovement : public CGameMovement
   public:
     CMomentumGameMovement();
 
-    // Overrides
-    virtual bool LadderMove(void); // REPLACED
-    virtual void SetGroundEntity(trace_t *pm);
+    void SetGroundEntity(trace_t *pm) override;
 
-    virtual bool CanAccelerate(void)
-    {
-        BaseClass::CanAccelerate();
-        return true;
-    } // C+P from HL2GM
-    virtual bool CheckJumpButton(void);
-    virtual void PlayerMove(void);
-    virtual void AirMove(void); // Overridden for rampboost fix
-    virtual void WalkMove(void);
-
-    // Limited bunnyhopping in rocket jumping
-    void PreventBunnyHopping(void);
+    bool CanAccelerate() override;
+    bool CheckJumpButton() override;
+    void PlayerMove() override;
+    void AirMove() override;
+    void WalkMove() override;
 
     // Override fall damage
-    virtual void CheckFalling();
+    void CheckFalling() override;
 
-    virtual void PlayerRoughLandingEffects(float) OVERRIDE;
+    void PlayerRoughLandingEffects(float) override;
 
-    // added ladder
-    virtual float LadderDistance(void) const
-    {
-        if (player->GetMoveType() == MOVETYPE_LADDER)
-            return 10.0f;
-        return 2.0f;
-    }
+    // Ladder
+    float LadderDistance() const override;
+    bool GameHasLadders() const override;
+    unsigned int LadderMask() const override { return MASK_PLAYERSOLID & (~CONTENTS_PLAYERCLIP); }
+    float LadderLateralMultiplier() const override;
+    float ClimbSpeed() const override;
+    bool LadderMove() override;
 
-    virtual unsigned int LadderMask(void) const { return MASK_PLAYERSOLID & (~CONTENTS_PLAYERCLIP); }
+    // Override for fixing punchangle
+    void DecayPunchAngle() override;
 
-    virtual float ClimbSpeed(void) const;
-    virtual float LadderLateralMultiplier(void) const;
+    int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr) override;
+    void FullWalkMove() override;
+    void CategorizePosition() override;
+
+    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) override;
+
+    void Friction() override;
+
+    void CheckWaterJump() override;
+    bool CheckWater() override;
+
+    // Duck
+    void Duck() override;
+    void FinishUnDuck() override;
+    void FinishDuck() override;
+    bool CanUnduck() override;
+    void HandleDuckingSpeedCrop() override;
+
+    void CheckParameters() override;
+    void ReduceTimers() override;
+
+    void StartGravity() override;
+    void FinishGravity() override;
+
+    int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;
+
+    // Momentum-specific
+    virtual void StuckGround();
+    virtual void LimitStartZoneSpeed();
 
     // Validate tracerays
     bool IsValidMovementTrace(trace_t &tr);
 
-    // Override for fixing punchangle
-    virtual void DecayPunchAngle(void) OVERRIDE;
-
-    // Overrides for fixing rampboost
-    virtual int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr);
-    virtual void FullWalkMove();
-    virtual void CategorizePosition();
-
-    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE;
-
-    void Friction(void);
-
-	virtual void CheckWaterJump();
-	virtual bool CheckWater();
-
-    // Duck
-    virtual void Duck(void);
-    virtual void FinishUnDuck(void);
-    virtual void FinishDuck(void);
-    virtual bool CanUnduck();
-    virtual void HandleDuckingSpeedCrop();
-    virtual void CheckParameters(void);
-    virtual void ReduceTimers(void);
-    virtual void StartGravity(void) OVERRIDE;
-    virtual void FinishGravity(void) OVERRIDE;
-    virtual void StuckGround(void);
-    virtual void LimitStartZoneSpeed(void);
-    virtual int ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce);
+    // Limited bunnyhopping in rocket jumping
+    void PreventBunnyHopping();
 
   private:
     CMomentumPlayer *m_pPlayer;

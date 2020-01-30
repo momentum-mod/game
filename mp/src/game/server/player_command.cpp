@@ -15,6 +15,11 @@
 #include "iservervehicle.h"
 #include "tier0/vprof.h"
 
+#include "in_buttons.h"
+#include "movevars_shared.h"
+#include "momentum/mom_player.h"
+#include "mom_system_gamemode.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -305,6 +310,40 @@ void CPlayerMove::RunPostThink( CBasePlayer *player )
 
 void CommentarySystem_PePlayerRunCommand( CBasePlayer *player, CUserCmd *ucmd );
 
+void CPlayerMove::PreventBounce(CBasePlayer *player, IMoveHelper *moveHelper, bool jumpbug)
+{
+	Vector mins = player->CollisionProp()->OBBMins();
+	Vector maxs = player->CollisionProp()->OBBMaxs();
+
+	Vector offset(0.0f, 0.0f, sv_considered_on_ground.GetFloat());
+
+	if (jumpbug)
+	{
+		Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
+		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
+		offset.z += VIEW_SCALE * (hullSizeNormal - hullSizeCrouch).z;
+	}
+
+	// CGameMovement::TryTouchGround
+	trace_t pm;
+	Ray_t ray;
+	ray.Init(player->GetAbsOrigin(), player->GetAbsOrigin() - offset, mins, maxs);
+	UTIL_TraceRay(ray, MASK_PLAYERSOLID, player, COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
+
+	if (pm.DidHit() && pm.plane.normal[2] >= 0.7f &&
+		(pm.startpos - pm.endpos).z >= offset.z - sv_considered_on_ground.GetFloat())
+	{
+		// Extend collision to ground
+		offset.z = player->GetAbsOrigin().z - pm.endpos.z;
+		player->SetCollisionBounds(mins - offset, maxs);
+
+		moveHelper->ProcessImpacts();
+
+		// Reset collision
+		player->SetCollisionBounds(mins, maxs);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Runs movement commands for the player
 // Input  : *player - 
@@ -424,7 +463,22 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// Call Think if one is set
 	RunThink( player, TICK_INTERVAL );
 
-    player->m_vecOldOrigin = player->GetAbsOrigin();
+	player->m_vecOldOrigin = player->GetAbsOrigin();
+
+	CMomentumPlayer* pMomPlayer = static_cast<CMomentumPlayer*>(player);
+
+	// If the player unducks while in the air, but their feet end up being within sv_considered_on_ground above
+	// standable ground, they can unduck and jump on the same tick to perform a jumpbug. This allows the player to get
+	// grounded and jump, but because triggers are first checked after all player movement is done, it is possible to
+	// exit a trigger the player unducked into with the jump. This has do be done here because ProcessImpacts()
+	// uses the player entity and not the move data that is used in the game movement.
+	if (sv_ground_trigger_fix.GetBool() &&
+		player->GetGroundEntity() == nullptr && !pMomPlayer->m_CurrentSlideTrigger &&                         // In air
+		player->GetFlags() & FL_DUCKING && player->m_afButtonReleased & IN_DUCK &&                            // Tries to unduck
+		(player->m_afButtonPressed & IN_JUMP || (pMomPlayer->HasAutoBhop() && player->m_nButtons & IN_JUMP))) // Tries to jump
+	{
+		PreventBounce(player, moveHelper, true);
+	}
 
 	// Setup input.
 	SetupMove( player, ucmd, moveHelper, g_pMoveData );
@@ -451,10 +505,20 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		player->pl.v_angle.GetForModify() = player->GetLockViewanglesData();
 	}
 
-	// Let server invoke any needed impact functions
-	VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
-	moveHelper->ProcessImpacts();
-	VPROF_SCOPE_END();
+	// If the player is grounded, there is the possibility that they are bit above the ground and therefore might be
+	// above a trigger. The player could avoid this trigger by doing a jump, so to prevent this we extend the player
+	// collision by how much they are above the ground when checking for triggers
+	if (sv_ground_trigger_fix.GetBool() && player->GetGroundEntity() != nullptr)
+	{
+		PreventBounce(player, moveHelper, false);
+	}
+	else
+	{
+		// Let server invoke any needed impact functions
+		VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
+		moveHelper->ProcessImpacts();
+		VPROF_SCOPE_END();
+	}
 
 	RunPostThink( player );
 

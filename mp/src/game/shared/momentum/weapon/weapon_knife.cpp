@@ -49,28 +49,28 @@ REGISTER_SEND_PROXY_NON_MODIFIED_POINTER(SendProxy_SendActiveLocalKnifeDataTable
 IMPLEMENT_NETWORKCLASS_ALIASED(Knife, DT_WeaponKnife)
 
 BEGIN_NETWORK_TABLE_NOBASE(CKnife, DT_LocalActiveWeaponKnifeData)
-#if !defined(CLIENT_DLL)
-SendPropTime(SENDINFO(m_flSmackTime)),
+#ifdef GAME_DLL
+    SendPropTime(SENDINFO(m_flSmackTime)),
 #else
-RecvPropTime(RECVINFO(m_flSmackTime)),
+    RecvPropTime(RECVINFO(m_flSmackTime)),
 #endif
-    END_NETWORK_TABLE()
+END_NETWORK_TABLE();
 
-        BEGIN_NETWORK_TABLE(CKnife, DT_WeaponKnife)
-#if !defined(CLIENT_DLL)
-            SendPropDataTable("LocalActiveWeaponKnifeData", 0, &REFERENCE_SEND_TABLE(DT_LocalActiveWeaponKnifeData),
-                              SendProxy_SendActiveLocalKnifeDataTable),
+BEGIN_NETWORK_TABLE(CKnife, DT_WeaponKnife)
+#ifdef GAME_DLL
+    SendPropDataTable("LocalActiveWeaponKnifeData", 0, &REFERENCE_SEND_TABLE(DT_LocalActiveWeaponKnifeData), SendProxy_SendActiveLocalKnifeDataTable),
 #else
-            RecvPropDataTable("LocalActiveWeaponKnifeData", 0, 0, &REFERENCE_RECV_TABLE(DT_LocalActiveWeaponKnifeData)),
+    RecvPropDataTable("LocalActiveWeaponKnifeData", 0, 0, &REFERENCE_RECV_TABLE(DT_LocalActiveWeaponKnifeData)),
 #endif
-    END_NETWORK_TABLE()
+END_NETWORK_TABLE();
 
-#if defined CLIENT_DLL
-        BEGIN_PREDICTION_DATA(CKnife) DEFINE_PRED_FIELD(m_flSmackTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
-    END_PREDICTION_DATA()
+#ifdef CLIENT_DLL
+BEGIN_PREDICTION_DATA(CKnife)
+    DEFINE_PRED_FIELD(m_flSmackTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
+END_PREDICTION_DATA();
 #endif
 
-        LINK_ENTITY_TO_CLASS(weapon_knife, CKnife);
+LINK_ENTITY_TO_CLASS(weapon_knife, CKnife);
 PRECACHE_WEAPON_REGISTER(weapon_knife);
 
 #ifndef CLIENT_DLL
@@ -85,7 +85,10 @@ END_DATADESC()
 // CKnife implementation.
 // ----------------------------------------------------------------------------- //
 
-CKnife::CKnife() {}
+CKnife::CKnife()
+{
+    m_bStab = false;
+}
 
 bool CKnife::HasPrimaryAmmo() { return true; }
 

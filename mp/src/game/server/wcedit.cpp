@@ -574,7 +574,7 @@ void CC_WC_Create( void )
 		}
 	}
 }
-static ConCommand wc_create("wc_create", CC_WC_Create, "When in WC edit mode, creates a node where the player is looking if a node is allowed at that location for the currently selected hull size (see ai_next_hull)", FCVAR_CHEAT);
+static ConCommand wc_create("wc_create", CC_WC_Create, "When in WC edit mode, creates a node where the player is looking if a node is allowed at that location for the currently selected hull size (see ai_next_hull)", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -602,7 +602,7 @@ void CC_WC_Destroy( void )
 		}
 	}
 }
-static ConCommand wc_destroy("wc_destroy", CC_WC_Destroy, "When in WC edit mode, destroys the node that the player is nearest to looking at.  (The node will be highlighted by a red box).", FCVAR_CHEAT);
+static ConCommand wc_destroy("wc_destroy", CC_WC_Destroy, "When in WC edit mode, destroys the node that the player is nearest to looking at.  (The node will be highlighted by a red box).", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -619,7 +619,7 @@ void CC_WC_DestroyUndo( void )
 		NWCEdit::UndoDestroyAINode();
 	}
 }
-static ConCommand wc_destroy_undo("wc_destroy_undo", CC_WC_DestroyUndo, "When in WC edit mode restores the last deleted node", FCVAR_CHEAT);
+static ConCommand wc_destroy_undo("wc_destroy_undo", CC_WC_DestroyUndo, "When in WC edit mode restores the last deleted node", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -642,7 +642,7 @@ void CC_WC_AirNodeEdit( void )
 		}
 	}
 }
-static ConCommand wc_air_node_edit("wc_air_node_edit", CC_WC_AirNodeEdit, "When in WC edit mode, toggles laying down or air nodes instead of ground nodes", FCVAR_CHEAT);
+static ConCommand wc_air_node_edit("wc_air_node_edit", CC_WC_AirNodeEdit, "When in WC edit mode, toggles laying down or air nodes instead of ground nodes", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -657,7 +657,7 @@ void CC_WC_AirNodeEditFurther( void )
 		g_pAINetworkManager->GetEditOps()->m_flAirEditDistance += 10.0;
 	}
 }
-static ConCommand wc_air_edit_further("wc_air_edit_further", CC_WC_AirNodeEditFurther, "When in WC edit mode and editing air nodes,  moves position of air node crosshair and placement location further away from player", FCVAR_CHEAT);
+static ConCommand wc_air_edit_further("wc_air_edit_further", CC_WC_AirNodeEditFurther, "When in WC edit mode and editing air nodes,  moves position of air node crosshair and placement location further away from player", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -672,7 +672,7 @@ void CC_WC_AirNodeEditNearer( void )
 		g_pAINetworkManager->GetEditOps()->m_flAirEditDistance -= 10.0;
 	}
 }
-static ConCommand wc_air_edit_nearer("wc_air_edit_nearer", CC_WC_AirNodeEditNearer, "When in WC edit mode and editing air nodes,  moves position of air node crosshair and placement location nearer to from player", FCVAR_CHEAT);
+static ConCommand wc_air_edit_nearer("wc_air_edit_nearer", CC_WC_AirNodeEditNearer, "When in WC edit mode and editing air nodes,  moves position of air node crosshair and placement location nearer to from player", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -696,7 +696,7 @@ void CC_WC_LinkEdit( void )
 		}
 	}
 }
-static ConCommand wc_link_edit("wc_link_edit", CC_WC_LinkEdit, 0, FCVAR_CHEAT);
+static ConCommand wc_link_edit("wc_link_edit", CC_WC_LinkEdit, 0, FCVAR_MAPPING);
 
 
 /// This is an entity used by the hammer_update_safe_entities command. It allows designers
@@ -749,7 +749,7 @@ END_DATADESC()
 
 
 
-CON_COMMAND( hammer_update_entity, "Updates the entity's position/angles when in edit mode" )
+CON_COMMAND_F( hammer_update_entity, "Updates the entity's position/angles when in edit mode", FCVAR_MAPPING )
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -778,7 +778,7 @@ CON_COMMAND( hammer_update_entity, "Updates the entity's position/angles when in
 	}
 }
 
-CON_COMMAND( hammer_update_safe_entities, "Updates entities in the map that can safely be updated (don't have parents or are affected by constraints). Also excludes entities mentioned in any hammer_updateignorelist objects in this map." )
+CON_COMMAND_F( hammer_update_safe_entities, "Updates entities in the map that can safely be updated (don't have parents or are affected by constraints). Also excludes entities mentioned in any hammer_updateignorelist objects in this map.", FCVAR_MAPPING )
 {
 	int iCount = 0;
 	CBaseEntity *pEnt = NULL;

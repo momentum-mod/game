@@ -6,18 +6,23 @@
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
+#define VIEW_SCALE ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 1.0f : 0.5f )
+
 class CMomentumPlayer;
 
 abstract_class IGameMode
 {
 public:
     virtual GameMode_t  GetType() = 0;
-    virtual const char *GetStatusString() = 0;
-    virtual const char *GetDiscordIcon() = 0;
-    virtual const char *GetMapPrefix() = 0;
+    virtual const char* GetStatusString() = 0;
+    virtual const char* GetDiscordIcon() = 0;
+    virtual const char* GetMapPrefix() = 0;
+    virtual const char* GetGameModeCfg() = 0;
+
     virtual void        SetGameModeVars() = 0;
     virtual bool        PlayerHasAutoBhop() = 0;
     virtual void        OnPlayerSpawn(CMomentumPlayer *pPlayer) = 0;
+    virtual void        ExecGameModeCfg() = 0;
 
     virtual ~IGameMode() {}
 };
@@ -30,9 +35,11 @@ public:
     const char* GetStatusString() override { return "Playing"; }
     const char* GetDiscordIcon() override { return "mom"; }
     const char* GetMapPrefix() override { return ""; }
+    const char* GetGameModeCfg() override { return nullptr; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    void ExecGameModeCfg() override;
 };
 
 class CGameMode_Surf : public CGameModeBase
@@ -42,6 +49,7 @@ public:
     const char* GetStatusString() override { return "Surfing"; }
     const char* GetDiscordIcon() override { return "mom_icon_surf"; }
     const char* GetMapPrefix() override { return "surf_"; }
+    const char* GetGameModeCfg() override { return "surf.cfg"; }
 };
 
 class CGameMode_Bhop : public CGameModeBase
@@ -51,6 +59,7 @@ public:
     const char* GetStatusString() override { return "Bhopping"; }
     const char* GetDiscordIcon() override { return "mom_icon_bhop"; }
     const char* GetMapPrefix() override { return "bhop_"; }
+    const char* GetGameModeCfg() override { return "bhop.cfg"; }
     void SetGameModeVars() override;
 };
 
@@ -61,6 +70,7 @@ public:
     const char* GetStatusString() override { return "Climbing"; }
     const char* GetDiscordIcon() override { return "mom_icon_kz"; }
     const char* GetMapPrefix() override { return "kz_"; }
+    const char* GetGameModeCfg() override { return "kz.cfg"; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
 };
@@ -72,6 +82,7 @@ public:
     const char* GetStatusString() override { return "Rocket Jumping"; }
     const char* GetDiscordIcon() override { return "mom_icon_rj"; }
     const char* GetMapPrefix() override { return "jump_"; }
+    const char* GetGameModeCfg() override { return "rj.cfg"; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
@@ -84,6 +95,7 @@ public:
     const char* GetStatusString() override { return "Surfing"; }
     const char* GetDiscordIcon() override { return "mom_icon_tricksurf"; }
     const char* GetMapPrefix() override { return "tricksurf_"; }
+    const char* GetGameModeCfg() override { return "tricksurf.cfg"; }
     void SetGameModeVars() override;
 };
 
@@ -94,6 +106,7 @@ public:
     GameMode_t GetType() override { return GAMEMODE_TRIKZ; }
     const char* GetDiscordIcon() override { return "mom_icon_trikz"; }
     const char* GetMapPrefix() override { return "trikz_"; }
+    const char* GetGameModeCfg() override { return "trikz.cfg"; }
 };
 
 class CGameModeSystem : public CAutoGameSystem

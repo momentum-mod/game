@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 #include "cbase.h"
+#include "hud.h"
 #include "hud_element_helper.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

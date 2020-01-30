@@ -4,9 +4,33 @@
 #include "util/mom_util.h"
 #include "mom_player_shared.h"
 #include "mom_timer.h"
+#include "mom_system_gamemode.h"
 #include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
+
+#define GHOST_MODEL "models/player/player_shape_base.mdl"
+
+enum GhostModelBodyGroup
+{
+    BODY_THREE_SIDED_PYRAMID = 0,
+    BODY_FOUR_SIDED_PYRAMID,
+    BODY_SIX_SIDED_PYRAMID,
+    BODY_CUBE,
+    BODY_FOUR_SIDED_PRISM,
+    BODY_THREE_SIDED_PRISM,
+    BODY_KITE,
+    BODY_FIVE_SIDED_PRISM,
+    BODY_SIX_SIDED_PRISM,
+    BODY_PENTAGON_BALL,
+    BODY_BALL,
+    BODY_PROLATE_ELLIPSE,
+    BODY_TRIANGLE_BALL,
+    BODY_CONE,
+    BODY_CYLINDER,
+
+    BODYGROUP_COUNT
+};
 
 extern void SendProxy_CropFlagsToPlayerFlagBitsLength(const SendProp *pProp, const void *pStruct, const void *pVarData, DVariant *pOut, int iElement, int objectID);
 
@@ -24,7 +48,7 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
-CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
+CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr)
 {
     m_nGhostButtons = 0;
     m_iDisabledButtons = 0;
@@ -32,8 +56,7 @@ CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullp
     m_RunStats.Init();
 }
 
-void CMomentumGhostBaseEntity::TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr,
-    CDmgAccumulator *pAccumulator)
+void CMomentumGhostBaseEntity::TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 {
     if (m_takedamage)
     {
@@ -47,12 +70,13 @@ void CMomentumGhostBaseEntity::Precache()
     BaseClass::Precache();
     PrecacheModel(GHOST_MODEL);
 }
+
 void CMomentumGhostBaseEntity::Spawn()
 {
     Precache();
     BaseClass::Spawn();
-    SetModel(GHOST_MODEL); //we need a model
-    SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
+    SetModel(GHOST_MODEL);
+    SetBodygroup(1, BODY_PROLATE_ELLIPSE);
     RemoveEffects(EF_NODRAW);
     //~~~The magic combo~~~ (collides with triggers, not with players)
     ClearSolidFlags();
@@ -107,40 +131,6 @@ bool CMomentumGhostBaseEntity::GetBhopEnabled() const
     return !m_bBhopDisabled;
 }
 
-void CMomentumGhostBaseEntity::Think()
-{
-    BaseClass::Think();
-}
-void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
-{
-    if (bodyGroup > LAST || bodyGroup < 0)
-    {
-        Warning("CMomentumGhostBaseEntity::SetGhostBodyGroup() Error: Could not set bodygroup!");
-    }
-    else
-    {
-        m_ghostAppearance.m_iGhostModelBodygroup = bodyGroup;
-        SetBodygroup(1, bodyGroup);
-    }
-}
-
-void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
-{
-    m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
-    Color newColor;
-    if (MomUtil::GetColorFromHex(newHexColor, newColor))
-    {
-        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
-    }
-}
-void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable)
-{
-    m_ghostAppearance.m_bGhostTrailEnable = enable;
-    m_ghostAppearance.m_iGhostTrailRGBAColorAsHex = newHexColor;
-    m_ghostAppearance.m_iGhostTrailLength = clamp<int>(newLen, 1, 10);
-    CreateTrail();
-}
-
 bool CMomentumGhostBaseEntity::ShouldCollide(int collisionGroup, int contentsMask) const
 {
     if (collisionGroup == COLLISION_GROUP_PROJECTILE)
@@ -156,6 +146,7 @@ void CMomentumGhostBaseEntity::StartTimer(int m_iStartTick)
         g_pMomentumTimer->DispatchTimerEventMessage(m_pCurrentSpecPlayer, entindex(), TIMER_EVENT_STARTED);
     }
 }
+
 void CMomentumGhostBaseEntity::FinishTimer()
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
@@ -196,7 +187,7 @@ bool CMomentumGhostBaseEntity::CanUnduck()
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
+        newOrigin += -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
     }
 
     UTIL_TraceHull(GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, this,
@@ -227,51 +218,4 @@ void CMomentumGhostBaseEntity::HandleDucking()
             RemoveFlag(FL_DUCKING);
         }
     }
-}
-
-void CMomentumGhostBaseEntity::SetGhostAppearance(GhostAppearance_t newApp, bool bForceUpdate /* = false*/)
-{
-    // only set things that NEED TO BE CHANGED!!
-    if (m_ghostAppearance.m_iGhostModelBodygroup != newApp.m_iGhostModelBodygroup || bForceUpdate)
-    {
-        SetGhostBodyGroup(newApp.m_iGhostModelBodygroup);
-    }
-    if (m_ghostAppearance.m_iGhostModelRGBAColorAsHex != newApp.m_iGhostModelRGBAColorAsHex || bForceUpdate)
-    {
-        SetGhostColor(newApp.m_iGhostModelRGBAColorAsHex);
-    }
-    if (m_ghostAppearance.m_iGhostTrailRGBAColorAsHex != newApp.m_iGhostTrailRGBAColorAsHex || 
-        m_ghostAppearance.m_iGhostTrailLength != newApp.m_iGhostTrailLength || 
-        m_ghostAppearance.m_bGhostTrailEnable != newApp.m_bGhostTrailEnable || bForceUpdate)
-    {
-        SetGhostTrailProperties(newApp.m_iGhostTrailRGBAColorAsHex,
-                                newApp.m_iGhostTrailLength, newApp.m_bGhostTrailEnable);
-    }
-}
-void CMomentumGhostBaseEntity::CreateTrail()
-{
-    RemoveTrail();
-
-    // Ty GhostingMod
-    m_eTrail = CreateEntityByName("env_spritetrail");
-    m_eTrail->SetAbsOrigin(GetAbsOrigin());
-    m_eTrail->SetParent(this);
-    m_eTrail->KeyValue("rendermode", "5");
-    m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
-    m_eTrail->KeyValue("startwidth", "9.5");
-    m_eTrail->KeyValue("endwidth", "1.05");
-    m_eTrail->KeyValue("lifetime", m_ghostAppearance.m_iGhostTrailLength);
-    Color newColor;
-    if (MomUtil::GetColorFromHex(m_ghostAppearance.m_iGhostTrailRGBAColorAsHex, newColor))
-    {
-        m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
-        m_eTrail->KeyValue("renderamt", newColor.a());
-    }
-
-    DispatchSpawn(m_eTrail);
-}
-void CMomentumGhostBaseEntity::RemoveTrail()
-{
-    UTIL_RemoveImmediate(m_eTrail);
-    m_eTrail = nullptr;
 }

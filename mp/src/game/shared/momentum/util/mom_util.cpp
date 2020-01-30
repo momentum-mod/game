@@ -13,6 +13,8 @@
 #include "effect_dispatch_data.h"
 #ifdef CLIENT_DLL
 #include "materialsystem/imaterialvar.h"
+#else
+#include "momentum/mom_player.h"
 #endif
 
 #include "steam/steam_api.h"
@@ -517,18 +519,21 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
 
     UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
 
-    //check for hitting glass
 #ifndef CLIENT_DLL
-    CTakeDamageInfo glassDamage(pAttacker, pAttacker, 42.0f, DMG_BULLET | DMG_NEVERGIB);
-    pSoundSource->TraceAttackToTriggers(glassDamage, trOutput->startpos, trOutput->endpos, *vForwardOut);
+    if (pAttacker->IsPlayer())
+    {
+        //check for hitting glass
+        CTakeDamageInfo glassDamage(pAttacker, pAttacker, 42.0f, DMG_BULLET | DMG_NEVERGIB);
+        pSoundSource->TraceAttackToTriggers(glassDamage, trOutput->startpos, trOutput->endpos, *vForwardOut);
+    }
 #endif
 
-    if (trOutput->fraction >= 1.0)
+    if (trOutput->fraction >= 1.0f)
     {
         Vector head_hull_mins(-16, -16, -18);
         Vector head_hull_maxs(16, 16, 18);
         UTIL_TraceHull(vecSrc, vecEnd, head_hull_mins, head_hull_maxs, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
-        if (trOutput->fraction < 1.0)
+        if (trOutput->fraction < 1.0f)
         {
             // Calculate the point of intersection of the line (or hull) and the object we hit
             // This is and approximation of the "best" intersection
@@ -541,7 +546,6 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
 
     bool bDidHit = trOutput->fraction < 1.0f;
 
-
     if (!bDidHit)
     {
         // play wiff or swish sound
@@ -550,55 +554,22 @@ void MomUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool 
         CBaseEntity::EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.Slash");
     }
 #ifndef CLIENT_DLL
-    else
+    else if (pAttacker->IsPlayer())
     {
-        // play thwack, smack, or dong sound
+        CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(pAttacker);
+        if (pPlayer->m_bHasPracticeMode)
+            return;
 
-        CBaseEntity *pEntity = trOutput->m_pEnt;
+        CBaseEntity *pHitEntity = trOutput->m_pEnt;
 
         ClearMultiDamage();
 
-        float flDamage = 42.0f;
-
-        if ( bStab )
-        {
-            flDamage = 65.0f;
-
-            if ( pEntity && pEntity->IsPlayer() )
-            {
-                Vector vTragetForward;
-
-                AngleVectors( pEntity->GetAbsAngles(), &vTragetForward );
-
-                Vector2D vecLOS = (pEntity->GetAbsOrigin() - pAttacker->GetAbsOrigin()).AsVector2D();
-                Vector2DNormalize( vecLOS );
-
-                float flDot = vecLOS.Dot( vTragetForward.AsVector2D() );
-
-                //Triple the damage if we are stabbing them in the back.
-                if ( flDot > 0.80f )
-                    flDamage *= 3.0f;
-            }
-        }
-        else
-        {
-            /*if ( bFirstSwing )
-            {
-                // first swing does full damage
-                flDamage = 20;
-            }
-            else
-            {
-                // subsequent swings do less
-                flDamage = 15;
-            }*/
-            flDamage = 20.0f;
-        }
+        const float flDamage = bStab ? 65.0f : 20.0f;
 
         CTakeDamageInfo info( pAttacker, pAttacker, flDamage, DMG_BULLET | DMG_NEVERGIB );
 
         CalculateMeleeDamageForce( &info, *vForwardOut, trOutput->endpos, 1.0f/flDamage );
-        pEntity->DispatchTraceAttack( info, *vForwardOut, trOutput ); 
+        pHitEntity->DispatchTraceAttack(info, *vForwardOut, trOutput); 
         ApplyMultiDamage();
     }
 #endif

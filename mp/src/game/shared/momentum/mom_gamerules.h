@@ -38,7 +38,6 @@ class CMomentumGameRules : public CSingleplayRules
 
     // Ammo
     void PlayerThink(CBasePlayer *pPlayer) OVERRIDE {}
-    // virtual float			GetAmmoDamage(CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType);
 
     // Players take no damage
     float FlPlayerFallDamage(CBasePlayer *pPlayer) OVERRIDE { return 0.0f; }
@@ -46,6 +45,7 @@ class CMomentumGameRules : public CSingleplayRules
     bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE;
 
     void RadiusDamage(const CTakeDamageInfo& info, const Vector& vecSrc, float flRadius, int iClassIgnore, CBaseEntity* pEntityIgnore) OVERRIDE;
+    void ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, float falloff);
 
     // Whitelist checking
     void PointCommandWhitelisted(const char *pCmd);

@@ -37,7 +37,6 @@ class CBaseCombatWeapon;
 class CBaseCombatCharacter;
 class CBasePlayer;
 class CItem;
-class CAmmoDef;
 class CTacticalMissionManager;
 
 extern ConVar sk_autoaim_mode;
@@ -136,9 +135,6 @@ public:
 	virtual int		Damage_GetShowOnHud( void ) = 0;					
 	virtual int		Damage_GetNoPhysicsForce( void )= 0;
 	virtual int		Damage_GetShouldNotBleed( void ) = 0;
-
-// Ammo Definitions
-	//CAmmoDef* GetAmmoDef();
 
 	virtual bool SwitchToNextBestWeapon( CBaseCombatCharacter *pPlayer, CBaseCombatWeapon *pCurrentWeapon ); // Switch to the next best weapon
 	virtual CBaseCombatWeapon *GetNextBestWeapon( CBaseCombatCharacter *pPlayer, CBaseCombatWeapon *pCurrentWeapon ); // I can't use this weapon anymore, get me the next best one.
@@ -330,8 +326,6 @@ public:
 
 // Ammo retrieval
 	virtual bool CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex ); // can this player take more of this ammo?
-	virtual bool CanHaveAmmo( CBaseCombatCharacter *pPlayer, const char *szName );
-	virtual void PlayerGotAmmo( CBaseCombatCharacter *pPlayer, char *szName, int iCount ) = 0;// called each time a player picks up some ammo in the world
 	virtual float GetAmmoQuantityScale( int iAmmoIndex ) { return 1.0f; }
 
 // AI Definitions

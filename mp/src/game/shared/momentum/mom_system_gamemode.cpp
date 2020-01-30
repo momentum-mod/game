@@ -3,6 +3,7 @@
 #include "mom_system_gamemode.h"
 #include "movevars_shared.h"
 #include "mom_player_shared.h"
+#include "fmtstr.h"
 
 #ifdef GAME_DLL
 #include "momentum/tickset.h"
@@ -42,12 +43,24 @@ void CGameModeBase::SetGameModeVars()
     sv_maxspeed.SetValue(260);
     sv_stopspeed.SetValue(75);
     sv_considered_on_ground.SetValue(1);
+    sv_duck_collision_fix.SetValue(true);
+    sv_ground_trigger_fix.SetValue(true);
 }
 
 void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
     pPlayer->SetAutoBhopEnabled(PlayerHasAutoBhop());
+#endif
+}
+
+void CGameModeBase::ExecGameModeCfg()
+{
+#ifdef CLIENT_DLL // Without this ifdef, the game fails to build
+    if (GetGameModeCfg())
+    {
+        engine->ClientCmd_Unrestricted(CFmtStr("exec %s", GetGameModeCfg()));
+    }
 #endif
 }
 
@@ -79,6 +92,8 @@ void CGameMode_RJ::SetGameModeVars()
     sv_maxspeed.SetValue(240);
     sv_stopspeed.SetValue(100);
     sv_considered_on_ground.SetValue(2);
+    sv_duck_collision_fix.SetValue(false);
+    sv_ground_trigger_fix.SetValue(false); // MOM_TODO Remove when bounce triggers have been implemented
 }
 
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
@@ -120,6 +135,8 @@ void CGameModeSystem::LevelInitPostEntity()
 #ifdef GAME_DLL
     m_pCurrentGameMode->SetGameModeVars();
     PrintGameModeVars();
+#else // CLIENT_DLL
+    m_pCurrentGameMode->ExecGameModeCfg();
 #endif
 }
 

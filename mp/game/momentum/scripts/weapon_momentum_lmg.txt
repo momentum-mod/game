@@ -4,14 +4,6 @@ WeaponData
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "m249"
-
-    // Weapon characteristics:
-    "Penetration"       "2"
-    "Damage"            "35"
-    "Range"             "8192"
-    "RangeModifier"     "0.97"
-    "Bullets"           "1"
-    "CycleTime"         "0.08"
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_LMG"
@@ -23,9 +15,6 @@ WeaponData
     "bucket_position"   "4"
 
     "clip_size"         "100"
-    
-    "primary_ammo"          "BULLET_PLAYER_556MM_BOX"
-    "secondary_ammo"        "None"
 
     "weight"            "25"
     "item_flags"        "0"
@@ -72,19 +61,6 @@ WeaponData
                 "y"         "48"
                 "width"     "24"
                 "height"    "24"
-        }
-    }
-    ModelBounds
-    {
-        Viewmodel
-        {
-            Mins    "-8 -8 -15"
-            Maxs    "30 5 0"
-        }
-        World
-        {
-            Mins    "-4 -8 -6"
-            Maxs    "31 8 10"
         }
     }
 }

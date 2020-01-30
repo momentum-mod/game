@@ -117,7 +117,6 @@ ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar	sv_noclipduringpause( "sv_noclipduringpause", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
 
 extern ConVar sv_maxunlag;
-extern ConVar sv_turbophysics;
 extern ConVar *sv_maxreplay;
 
 extern CServerGameDLL g_ServerGameDLL;
@@ -202,32 +201,17 @@ void CC_GiveCurrentAmmo( void )
 
 		if( pWeapon )
 		{
+            int ammoIndex = -1;
 			if( pWeapon->UsesPrimaryAmmo() )
 			{
-				int ammoIndex = pWeapon->GetPrimaryAmmoType();
-
-				if( ammoIndex != -1 )
-				{
-					int giveAmount;
-					giveAmount = GetAmmoDef()->MaxCarry(ammoIndex);
-					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex(ammoIndex)->pName );
-				}
+				ammoIndex = pWeapon->GetPrimaryAmmoType();
 			}
-			if( pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo() )
-			{
-				// Give secondary ammo out, as long as the player already has some
-				// from a presumeably natural source. This prevents players on XBox
-				// having Combine Balls and so forth in areas of the game that
-				// were not tested with these items.
-				int ammoIndex = pWeapon->GetSecondaryAmmoType();
+            else if (pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo())
+            {
+                ammoIndex = pWeapon->GetSecondaryAmmoType();
+            }
 
-				if( ammoIndex != -1 )
-				{
-					int giveAmount;
-					giveAmount = GetAmmoDef()->MaxCarry(ammoIndex);
-					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex(ammoIndex)->pName );
-				}
-			}
+            pPlayer->GiveAmmo(g_pAmmoDef->MaxCarry(ammoIndex), ammoIndex);
 		}
 	}
 }
@@ -5992,123 +5976,6 @@ void CBasePlayer::ImpulseCommands( )
 	m_nImpulse = 0;
 }
 
-#ifdef HL2_EPISODIC
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-static void CreateJalopy( CBasePlayer *pPlayer )
-{
-	// Cheat to create a jeep in front of the player
-	Vector vecForward;
-	AngleVectors( pPlayer->EyeAngles(), &vecForward );
-	CBaseEntity *pJeep = (CBaseEntity *)CreateEntityByName( "prop_vehicle_jeep" );
-	if ( pJeep )
-	{
-		Vector vecOrigin = pPlayer->GetAbsOrigin() + vecForward * 256 + Vector(0,0,64);
-		QAngle vecAngles( 0, pPlayer->GetAbsAngles().y - 90, 0 );
-		pJeep->SetAbsOrigin( vecOrigin );
-		pJeep->SetAbsAngles( vecAngles );
-		pJeep->KeyValue( "model", "models/vehicle.mdl" );
-		pJeep->KeyValue( "solid", "6" );
-		pJeep->KeyValue( "targetname", "jeep" );
-		pJeep->KeyValue( "vehiclescript", "scripts/vehicles/jalopy.txt" );
-		DispatchSpawn( pJeep );
-		pJeep->Activate();
-		pJeep->Teleport( &vecOrigin, &vecAngles, NULL );
-	}
-}
-
-void CC_CH_CreateJalopy( void )
-{
-	CBasePlayer *pPlayer = UTIL_GetCommandClient();
-	if ( !pPlayer )
-		return;
-	CreateJalopy( pPlayer );
-}
-
-static ConCommand ch_createjalopy("ch_createjalopy", CC_CH_CreateJalopy, "Spawn jalopy in front of the player.", FCVAR_CHEAT);
-
-#endif // HL2_EPISODIC
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-static void CreateJeep( CBasePlayer *pPlayer )
-{
-	// Cheat to create a jeep in front of the player
-	Vector vecForward;
-	AngleVectors( pPlayer->EyeAngles(), &vecForward );
-	CBaseEntity *pJeep = (CBaseEntity *)CreateEntityByName( "prop_vehicle_jeep" );
-	if ( pJeep )
-	{
-		Vector vecOrigin = pPlayer->GetAbsOrigin() + vecForward * 256 + Vector(0,0,64);
-		QAngle vecAngles( 0, pPlayer->GetAbsAngles().y - 90, 0 );
-		pJeep->SetAbsOrigin( vecOrigin );
-		pJeep->SetAbsAngles( vecAngles );
-		pJeep->KeyValue( "model", "models/buggy.mdl" );
-		pJeep->KeyValue( "solid", "6" );
-		pJeep->KeyValue( "targetname", "jeep" );
-		pJeep->KeyValue( "vehiclescript", "scripts/vehicles/jeep_test.txt" );
-		DispatchSpawn( pJeep );
-		pJeep->Activate();
-		pJeep->Teleport( &vecOrigin, &vecAngles, NULL );
-	}
-}
-
-
-void CC_CH_CreateJeep( void )
-{
-	CBasePlayer *pPlayer = UTIL_GetCommandClient();
-	if ( !pPlayer )
-		return;
-	CreateJeep( pPlayer );
-}
-
-static ConCommand ch_createjeep("ch_createjeep", CC_CH_CreateJeep, "Spawn jeep in front of the player.", FCVAR_CHEAT);
-
-
-//-----------------------------------------------------------------------------
-// Create an airboat in front of the specified player
-//-----------------------------------------------------------------------------
-static void CreateAirboat( CBasePlayer *pPlayer )
-{
-	// Cheat to create a jeep in front of the player
-	Vector vecForward;
-	AngleVectors( pPlayer->EyeAngles(), &vecForward );
-	CBaseEntity *pJeep = ( CBaseEntity* )CreateEntityByName( "prop_vehicle_airboat" );
-	if ( pJeep )
-	{
-		Vector vecOrigin = pPlayer->GetAbsOrigin() + vecForward * 256 + Vector( 0,0,64 );
-		QAngle vecAngles( 0, pPlayer->GetAbsAngles().y - 90, 0 );
-		pJeep->SetAbsOrigin( vecOrigin );
-		pJeep->SetAbsAngles( vecAngles );
-		pJeep->KeyValue( "model", "models/airboat.mdl" );
-		pJeep->KeyValue( "solid", "6" );
-		pJeep->KeyValue( "targetname", "airboat" );
-		pJeep->KeyValue( "vehiclescript", "scripts/vehicles/airboat.txt" );
-		DispatchSpawn( pJeep );
-		pJeep->Activate();
-	}
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CC_CH_CreateAirboat( void )
-{
-	CBasePlayer *pPlayer = UTIL_GetCommandClient();
-	if ( !pPlayer )
-		return;
-
-	CreateAirboat( pPlayer );
-
-}
-
-static ConCommand ch_createairboat( "ch_createairboat", CC_CH_CreateAirboat, "Spawn airboat in front of the player.", FCVAR_CHEAT );
-
-
 //=========================================================
 //=========================================================
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
@@ -6143,35 +6010,13 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_cubemap" );
 		break;
 
-	case 82:
-		// Cheat to create a jeep in front of the player
-		CreateJeep( this );
-		break;
-
-	case 83:
-		// Cheat to create a airboat in front of the player
-		CreateAirboat( this );
-		break;
-
 	case 101:
 		gEvilImpulse101 = true;
 
 		EquipSuit();
 
 		// Give the player everything!
-		GiveAmmo( 255,	"Pistol");
-		GiveAmmo( 255,	"AR2");
-		GiveAmmo( 5,	"AR2AltFire");
-		GiveAmmo( 255,	"SMG1");
-		GiveAmmo( 255,	"Buckshot");
-		GiveAmmo( 3,	"smg1_grenade");
-		GiveAmmo( 3,	"rpg_round");
-		GiveAmmo( 5,	"grenade");
-		GiveAmmo( 32,	"357" );
-		GiveAmmo( 16,	"XBowBolt" );
-#ifdef HL2_EPISODIC
-		GiveAmmo( 5,	"Hopwire" );
-#endif		
+        // MOM_TODO give the player all momentum guns
 		GiveNamedItem( "weapon_smg1" );
 		GiveNamedItem( "weapon_frag" );
 		GiveNamedItem( "weapon_crowbar" );
@@ -6306,15 +6151,8 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			}
 		}
 		break;
-	case	203:// remove creature.
-		pEntity = FindEntityForward( this, true );
-		if ( pEntity )
-		{
-			UTIL_Remove( pEntity );
-//			if ( pEntity->m_takedamage )
-//				pEntity->SetThink(SUB_Remove);
-		}
-		break;
+     default:
+        break;
 	}
 #endif	// HLDEMO_BUILD
 }
@@ -7332,19 +7170,17 @@ void CBasePlayer::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector *pvecTar
 //-----------------------------------------------------------------------------
 void CBasePlayer::Weapon_DropSlot( int weaponSlot )
 {
-	CBaseCombatWeapon *pWeapon;
-
-	// Check for that slot being occupied already
-	for ( int i=0; i < MAX_WEAPONS; i++ )
+    // Check for that slot being occupied already
+	for ( int i=0; i < WEAPON_MAX; i++ )
 	{
-		pWeapon = GetWeapon( i );
+		CBaseCombatWeapon *pWeapon = GetWeapon(i);
 		
-		if ( pWeapon != NULL )
+		if ( pWeapon )
 		{
 			// If the slots match, it's already occupied
 			if ( pWeapon->GetSlot() == weaponSlot )
 			{
-				Weapon_Drop( pWeapon, NULL, NULL );
+				Weapon_Drop( pWeapon, nullptr, nullptr );
 			}
 		}
 	}
@@ -8118,9 +7954,6 @@ unsigned int CBasePlayer::PlayerSolidMask( bool brushOnly ) const
 //-----------------------------------------------------------------------------
 void CBasePlayer::VPhysicsShadowUpdate( IPhysicsObject *pPhysics )
 {
-	if ( sv_turbophysics.GetBool() )
-		return;
-
 	Vector newPosition;
 
 	bool physicsUpdated = m_pPhysicsController->GetShadowPosition( &newPosition, NULL ) > 0 ? true : false;
@@ -8342,10 +8175,6 @@ void CBasePlayer::InitVCollision( const Vector &vecAbsOrigin, const Vector &vecA
 {
 	// Cleanup any old vphysics stuff.
 	VPhysicsDestroyObject();
-
-	// in turbo physics players dont have a physics shadow
-	if ( sv_turbophysics.GetBool() )
-		return;
 	
 	CPhysCollide *pModel = PhysCreateBbox( VEC_HULL_MIN_SCALED( this ), VEC_HULL_MAX_SCALED( this ) );
 	CPhysCollide *pCrouchModel = PhysCreateBbox( VEC_DUCK_HULL_MIN_SCALED( this ), VEC_DUCK_HULL_MAX_SCALED( this ) );
@@ -8763,31 +8592,24 @@ bool CBasePlayer::HasAnyAmmoOfType( int nAmmoIndex )
 	if ( GetAmmoCount( nAmmoIndex ) )
 		return true;
 
-	CBaseCombatWeapon *pWeapon;
-
-	// Check all held weapons
-	for ( int i=0; i < MAX_WEAPONS; i++ )
+	CBaseCombatWeapon *pWeapon = m_hMyWeapons[g_pAmmoDef->WeaponID(nAmmoIndex)];
+	if (pWeapon)
 	{
-		pWeapon = GetWeapon( i );
-
-		if ( !pWeapon )
-			continue;
-
 		// We must use clips and use this sort of ammo
-		if ( pWeapon->UsesClipsForAmmo1() && pWeapon->GetPrimaryAmmoType() == nAmmoIndex )
+		if (pWeapon->UsesClipsForAmmo1() && pWeapon->GetPrimaryAmmoType() == nAmmoIndex)
 		{
 			// If we have any ammo, we're done
-			if ( pWeapon->HasPrimaryAmmo() )
+			if (pWeapon->HasPrimaryAmmo())
 				return true;
 		}
-		
+
 		// We'll check both clips for the same ammo type, just in case
-		if ( pWeapon->UsesClipsForAmmo2() && pWeapon->GetSecondaryAmmoType() == nAmmoIndex )
+		if (pWeapon->UsesClipsForAmmo2() && pWeapon->GetSecondaryAmmoType() == nAmmoIndex)
 		{
-			if ( pWeapon->HasSecondaryAmmo() )
+			if (pWeapon->HasSecondaryAmmo())
 				return true;
 		}
-	}	
+	}
 
 	// We're completely without this type of ammo
 	return false;

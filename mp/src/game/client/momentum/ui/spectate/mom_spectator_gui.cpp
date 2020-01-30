@@ -9,6 +9,7 @@
 
 #include "mom_spectator_gui.h"
 
+#include "hud.h"
 #include <game/client/iviewport.h>
 #include <vgui/ILocalize.h>
 #include <vgui/IPanel.h>
@@ -62,7 +63,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     SetScheme("ClientScheme");
 
     m_pTopBar = new Panel(this, "TopBar");
-    m_pPlayerLabel = new Label(this, "PlayerLabel", "#MOM_ReplayPlayer");
+    m_pPlayerLabel = new Label(this, "PlayerLabel", "");
     m_pReplayLabel = new Label(this, "ReplayLabel", "#MOM_WatchingReplay");
     m_pTimeLabel = new Label(this, "TimeLabel", "#MOM_MF_RunTime");
     m_pGainControlLabel = new Label(this, "DetachInfo", "#MOM_SpecGUI_GainControl");
@@ -83,7 +84,6 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     SetMouseInputEnabled(false);
     InvalidateLayout();
 
-    FIND_LOCALIZATION(m_pwReplayPlayer, "#MOM_ReplayPlayer");
     FIND_LOCALIZATION(m_pwGainControl, "#MOM_SpecGUI_GainControl");
     FIND_LOCALIZATION(m_pwRunTime, "#MOM_MF_RunTime");
     FIND_LOCALIZATION(m_pwSpecMap, "#Spec_Map");
@@ -281,7 +281,7 @@ void CMOMSpectatorGUI::Update()
             // Current player name
             wchar_t wPlayerName[BUFSIZELOCL];
             ANSI_TO_UNICODE(pGhost->m_szGhostName, wPlayerName);
-            m_pPlayerLabel->SetText(CConstructLocalizedString(m_pwReplayPlayer, wPlayerName));
+            m_pPlayerLabel->SetText(wPlayerName);
 
             if (pEnt->GetEntType() == RUN_ENT_REPLAY)
             {

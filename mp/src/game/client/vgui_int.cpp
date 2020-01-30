@@ -23,6 +23,8 @@
 #include <KeyValues.h>
 #include "filesystem.h"
 #include "matsys_controls/matsyscontrols.h"
+#include "hudtexturehandle.h"
+#include "hud.h"
 
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
@@ -30,10 +32,6 @@
 #include "momentum/ui/IMessageboxPanel.h"
 #include "clientmode_mom_normal.h"
 #include "ChangelogPanel.h"
-
-#ifdef SIXENSE
-#include "sixense/in_sixense.h"
-#endif
 
 #if defined( TF_CLIENT_DLL )
 #include "tf_gamerules.h"
@@ -250,9 +248,6 @@ void VGui_CreateGlobalPanels( void )
 #ifndef _X360
 	// Create mp3 player off of tool parent panel
 	MP3Player_Create( toolParent );
-#endif
-#ifdef SIXENSE
-	g_pSixenseInput->CreateGUI( gameToolParent );
 #endif
 
     //Momentum

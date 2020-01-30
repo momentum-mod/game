@@ -14,7 +14,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     // CAutoGameSystemPerFrame
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
-    virtual void FrameUpdatePreEntityThink() OVERRIDE;
+    void FrameUpdatePreEntityThink() OVERRIDE;
 
     // HUD messages
     void DispatchCheatsMessage(CMomentumPlayer *pPlayer);
@@ -50,8 +50,6 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     int GetCurrentTime() const { return gpGlobals->tickcount - m_iStartTick; }
     // Gets the time for the last run, if there was one
     int GetLastRunTime() const;
-    // Gets the date achieved for the last run.
-    time_t GetLastRunDate() const { return m_iLastRunDate; }
 
     // Practice mode- noclip mode that stops timer
     void EnablePractice(CMomentumPlayer *pPlayer);
@@ -69,11 +67,9 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
 
     // tries to start timer, if successful also sets all the player vars and starts replay
     void TryStart(CMomentumPlayer *pPlayer, bool bUseStartZoneOffset);
+
   private:
-
-
     int m_iStartTick, m_iEndTick;
-    time_t m_iLastRunDate;
     bool m_bIsRunning;
     bool m_bCanStart;
     bool m_bWasCheatsMsgShown;

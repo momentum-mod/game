@@ -5,10 +5,10 @@
 #include "in_buttons.h"
 #include "fx_mom_shared.h"
 #include "util/mom_util.h"
-#include "weapon/mom_weapon_parse.h"
 #include "mom_grenade_projectile.h"
+#include "mom_rocket.h"
 #include "te_effect_dispatch.h"
-#include "weapon/weapon_base.h"
+#include "weapon/weapon_def.h"
 #include "ghost_client.h"
 
 #include "tier0/memdbgon.h"
@@ -80,7 +80,7 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
     switch (decal.decal_type)
     {
     case DECAL_BULLET:
-        if (decal.data.bullet.iWeaponID == WEAPON_GRENADE)
+        if (decal.data.bullet.iAmmoType == AMMO_TYPE_GRENADE)
         {
             // Grenades behave differently
             ThrowGrenade(decal);
@@ -91,7 +91,7 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
                 entindex(),
                 decal.vOrigin,
                 decal.vAngle,
-                decal.data.bullet.iWeaponID,
+                decal.data.bullet.iAmmoType,
                 decal.data.bullet.iMode,
                 decal.data.bullet.iSeed,
                 decal.data.bullet.fSpread);
@@ -102,6 +102,9 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
         break;
     case DECAL_KNIFE:
         DoKnifeSlash(decal);
+        break;
+    case DECAL_ROCKET:
+        FireRocket(decal);
     default:
         break;
     }
@@ -161,20 +164,17 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
     // Play the paintgun sound
     if (mom_paintgun_shoot_sound.GetBool())
     {
-        CWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
-        if (pWeaponInfo)
-        {
-            // If we have some sounds from the weapon classname.txt file, play a random one of them
-            const char *shootsound = pWeaponInfo->aShootSounds[SINGLE];
-            if (!shootsound || !shootsound[0])
-                return;
+        const auto pWeaponScript = g_pWeaponDef->GetWeaponScript(WEAPON_PAINTGUN);
 
-            CPASAttenuationFilter filter(packet.vOrigin, shootsound);
-            if (!te->CanPredict())
-                return;
+        const char *shootsound = pWeaponScript->pKVWeaponSounds->GetString("single_shot");
+        if (!shootsound || !shootsound[0])
+            return;
 
-            EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
-        }
+        CPASAttenuationFilter filter(packet.vOrigin, shootsound);
+        if (!te->CanPredict())
+            return;
+
+        EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
     }
 }
 
@@ -190,20 +190,17 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket&packet)
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 {
-    CWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
-    if (pGrenadeInfo)
-    {
-        // Vector values stored in a QAngle, shhh~
-        Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
-        auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
-        grenade->SetDamage(0.0f); // These grenades should not do damage
-
-    }
+    const auto pGrenadeInfo = g_pWeaponDef->GetWeaponScript(WEAPON_GRENADE);
+    // Vector values stored in a QAngle, shhh~
+    Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
+    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
+    grenade->SetDamage(0.0f); // These grenades should not do damage
 }
 
-void CMomentumOnlineGhostEntity::Precache(void)
+void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
 {
-    BaseClass::Precache();
+    const auto pRocket = CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
+    pRocket->SetDamage(0.0f); // Rockets do no damage unless... MOM_TODO: set this per map/gamemode flag?
 }
 
 void CMomentumOnlineGhostEntity::SetGhostName(const char *pGhostName)
@@ -211,13 +208,20 @@ void CMomentumOnlineGhostEntity::SetGhostName(const char *pGhostName)
     Q_strncpy(m_szGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
 }
 
-void CMomentumOnlineGhostEntity::SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate /*= false*/)
+void CMomentumOnlineGhostEntity::AppearanceFlashlightChanged(const AppearanceData_t &newApp)
 {
-    if ((!FStrEq(app.base64, "") && !FStrEq(m_CurrentAppearance.base64, app.base64)) || bForceUpdate)
+    CMomRunEntity::AppearanceFlashlightChanged(newApp);
+
+    SetGhostFlashlight(newApp.m_bFlashlightEnabled);
+}
+
+void CMomentumOnlineGhostEntity::AppearanceModelColorChanged(const AppearanceData_t &newApp)
+{
+    CMomRunEntity::AppearanceModelColorChanged(newApp);
+
+    if (mom_ghost_online_alpha_override_enable.GetBool())
     {
-        m_CurrentAppearance = app;
-        BaseClass::SetGhostAppearance(app.appearance, bForceUpdate);
-        SetGhostFlashlight(app.appearance.m_bFlashlightOn);
+        SetRenderColorA(mom_ghost_online_alpha_override.GetInt());
     }
 }
 
@@ -229,8 +233,11 @@ void CMomentumOnlineGhostEntity::Spawn()
 
 void CMomentumOnlineGhostEntity::CreateTrail()
 {
-    if (!m_ghostAppearance.m_bGhostTrailEnable || !mom_ghost_online_trail_enable.GetBool())
+    RemoveTrail();
+
+    if (!mom_ghost_online_trail_enable.GetBool())
         return;
+
     BaseClass::CreateTrail();
 }
 
@@ -383,15 +390,6 @@ void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
     {
         m_pCurrentSpecPlayer->TravelSpectateTargets(true);
-    }
-}
-
-void CMomentumOnlineGhostEntity::SetGhostColor(const uint32 newHexColor)
-{
-    BaseClass::SetGhostColor(newHexColor);
-    if (mom_ghost_online_alpha_override_enable.GetBool())
-    {
-        SetRenderColorA(mom_ghost_online_alpha_override.GetInt());
     }
 }
 

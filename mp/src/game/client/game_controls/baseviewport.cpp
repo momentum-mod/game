@@ -156,6 +156,33 @@ bool CBaseViewport::LoadHudAnimations( void )
 	return true;
 }
 
+CBaseViewport::CBackGroundPanel::CBackGroundPanel(vgui::Panel *parent): Frame(parent, "ViewPortBackGround")
+{
+    SetScheme("ClientScheme");
+
+    SetTitleBarVisible(false);
+    SetMoveable(false);
+    SetSizeable(false);
+    SetProportional(true);
+}
+
+void CBaseViewport::CBackGroundPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+    SetBgColor(pScheme->GetColor("ViewportBG", Color(0, 0, 0, 0)));
+}
+
+void CBaseViewport::CBackGroundPanel::PerformLayout()
+{
+    int w, h;
+    GetHudSize(w, h);
+
+    // fill the screen
+    SetBounds(0, 0, w, h);
+
+    BaseClass::PerformLayout();
+}
+
 //================================================================
 CBaseViewport::CBaseViewport() : vgui::EditablePanel( NULL, "CBaseViewport")
 {

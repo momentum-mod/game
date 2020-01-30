@@ -22,7 +22,6 @@ using namespace vgui;
 
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
-//NOTE: The "CHudMapFinishedDialog" (main panel) control settings are found in MapFinishedDialog.res
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName),
     BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
@@ -31,6 +30,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     SetSize(10, 10); // Fix "not sized yet" spew
     m_pRunStats = nullptr;
     m_bIsGhost = false;
+    m_bCanClose = false;
     m_iCurrentPage = 0;
 
     ListenForGameEvent("spec_start");
@@ -40,7 +40,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     ListenForGameEvent("run_upload");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
-    
+
     m_pClosePanelButton = new ImagePanel(this, "Close_Panel");
     m_pNextZoneButton = new ImagePanel(this, "Next_Zone");
     m_pPrevZoneButton = new ImagePanel(this, "Prev_Zone");
@@ -63,7 +63,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pXPGainCosmetic = new Label(this, "XP_Gain_Cos", "#MOM_MF_XPGainCos");
     m_pXPGainRank = new Label(this, "XP_Gain_Rank", "#MOM_MF_XPGainRank");
     m_pLevelGain = new Label(this, "Cos_Level_Gain", "#MOM_MF_CosLvlGain");
-    
+
     LoadControlSettings("resource/ui/MapFinishedDialog.res");
 
     m_pNextZoneButton->SetMouseInputEnabled(true);
@@ -92,6 +92,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
 {
     if (FStrEq(pEvent->GetName(), "replay_save"))
     {
+        m_bCanClose = true;
+
         SetRunSaved(pEvent->GetBool("save"));
         SetCurrentPage(m_iCurrentPage);
         // MOM_TODO: There's a file name parameter as well, do we want to use it here?
@@ -130,7 +132,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     }
     else // Spec start/stop
     {
-        m_pRepeatButton->GetTooltip()->SetText(FStrEq(pEvent->GetName(), "spec_start") ? "#MOM_MF_Restart_Replay" : "#MOM_MF_Restart_Map");
+        const bool bSpecStart = FStrEq(pEvent->GetName(), "spec_start");
+        m_pRepeatButton->GetTooltip()->SetText(bSpecStart ? "#MOM_MF_Restart_Replay" : "#MOM_MF_Restart_Map");
     }
 }
 
@@ -139,6 +142,7 @@ void CHudMapFinishedDialog::LevelShutdown()
     m_pRunStats = nullptr;
     m_pRunData = nullptr;
     m_bIsGhost = false;
+    m_bCanClose = false;
 }
 
 void CHudMapFinishedDialog::OnThink()
@@ -151,10 +155,6 @@ void CHudMapFinishedDialog::OnThink()
     m_pPlayReplayButton->SetVisible(!m_bIsGhost);
     m_pRunUploadStatus->SetVisible(!m_bIsGhost);
     m_pRunSaveStatus->SetVisible(!m_bIsGhost);
-
-    CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
-    if (pPanel && pPanel->IsVisible())
-        SetMouseInputEnabled(pPanel->IsMouseInputEnabled());
 }
 
 void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
@@ -221,22 +221,12 @@ void CHudMapFinishedDialog::SetRunUploaded(bool bState)
     m_pLevelGain->SetVisible(false);
 }
 
-static const char * const szSubmitStates[] = {
-    "#MOM_MF_RunSubmitFail_Unknown", // RUN_SUBMIT_UNKNOWN
-    "#MOM_MF_RunSubmitted", // RUN_SUBMIT_SUCCESS
-    "#MOM_MF_RunSubmitFail_InMapping", // RUN_SUBMIT_FAIL_IN_MAPPING_MODE
-    "#MOM_MF_RunSubmitFail_InvalidMapStatus", // RUN_SUBMIT_FAIL_MAP_STATUS_INVALID
-    "#MOM_MF_RunSubmitFail_InvalidSession", // RUN_SUBMIT_FAIL_SESSION_ID_INVALID
-    "#MOM_MF_RunSubmitFail_APIFail", // RUN_SUBMIT_FAIL_API_FAIL
-    "#MOM_MF_RunSubmitFail_IOFail", // RUN_SUBMIT_FAIL_IO_FAIL
-};
-
 void CHudMapFinishedDialog::SetRunSubmitted(RunSubmitState_t state)
 {
     if (state <= RUN_SUBMIT_UNKNOWN || state >= RUN_SUBMIT_COUNT)
         return;
 
-    m_pRunUploadStatus->SetText(szSubmitStates[state]);
+    m_pRunUploadStatus->SetText(g_szSubmitStates[state]);
     m_pRunUploadStatus->SetFgColor(state == RUN_SUBMIT_SUCCESS ? COLOR_ORANGE : COLOR_RED);
 
     // Visibility for these will be determined by the run_upload event
@@ -245,12 +235,25 @@ void CHudMapFinishedDialog::SetRunSubmitted(RunSubmitState_t state)
     m_pLevelGain->SetVisible(false);
 }
 
-inline void FireMapFinishedClosedEvent(bool restart)
+bool CHudMapFinishedDialog::ClosePanel()
+{
+    if (!m_bCanClose && !m_bIsGhost)
+        return false;
+
+    SetMouseInputEnabled(false);
+    SetRunSaved(false);
+    SetRunUploaded(false);
+    m_bCanClose = false;
+
+    return true;
+}
+
+void CHudMapFinishedDialog::FirePanelClosedEvent(bool bRestartingMap)
 {
     IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
     if (pClosePanel)
     {
-        pClosePanel->SetBool("restart", restart);
+        pClosePanel->SetBool("restart", bRestartingMap);
         // Fire this event so other classes can get at this
         gameeventmanager->FireEvent(pClosePanel);
     }
@@ -260,22 +263,20 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_LEFT)
     {
-        VPANEL over = input()->GetMouseOver();
-        if (over == m_pPlayReplayButton->GetVPanel())
+        const auto panelOver = input()->GetMouseOver();
+        if (panelOver == m_pPlayReplayButton->GetVPanel())
         {
-            SetMouseInputEnabled(false);
-            engine->ServerCmd("mom_replay_play_loaded");
-            SetRunSaved(false);
-            SetRunUploaded(false);
+            engine->ClientCmd_Unrestricted("mom_replay_play_loaded\n");
+            ClosePanel();
         }
-        else if (over == m_pNextZoneButton->GetVPanel())
+        else if (panelOver == m_pNextZoneButton->GetVPanel())
         {
             //MOM_TODO (beta+): Play animations?
             const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
             if (pPlayer)
                 SetCurrentPage((m_iCurrentPage + 1) % (pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] + 1));
         }
-        else if (over == m_pPrevZoneButton->GetVPanel())
+        else if (panelOver == m_pPrevZoneButton->GetVPanel())
         {
             //MOM_TODO: (beta+) play animations?
             const int newPage = m_iCurrentPage - 1;
@@ -283,22 +284,16 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
             if (pPlayer)
                 SetCurrentPage(newPage < 0 ? pPlayer->m_iZoneCount[m_pRunData->m_iCurrentTrack] : newPage);
         }
-        else if (over == m_pRepeatButton->GetVPanel())
+        else if (panelOver == m_pRepeatButton->GetVPanel())
         {
-            SetMouseInputEnabled(false);
-            //The player either wants to repeat the replay (if spectating), or restart the map (not spec)
             engine->ServerCmd(m_bIsGhost ? "mom_replay_restart" : "mom_restart");
-            FireMapFinishedClosedEvent(true);
-            SetRunSaved(false);
-            SetRunUploaded(false);
+            if (ClosePanel())
+                FirePanelClosedEvent(true);
         }
-        else if (over == m_pClosePanelButton->GetVPanel())
+        else if (panelOver == m_pClosePanelButton->GetVPanel())
         {
-            //This is where we unload comparisons, as well as the ghost if the player was speccing it
-            SetMouseInputEnabled(false);
-            FireMapFinishedClosedEvent(false);
-            SetRunSaved(false);
-            SetRunUploaded(false);
+            if (ClosePanel())
+                FirePanelClosedEvent(false);
         }
     }
 }
@@ -309,6 +304,7 @@ void CHudMapFinishedDialog::Reset()
     Q_strncpy(m_pszEndRunTime, "00:00:00.000", sizeof(m_pszEndRunTime));
     SetRunSaved(false);
     SetRunUploaded(false);
+    m_bCanClose = false;
 
     // --- cache localization tokens ---
     FIND_LOCALIZATION(m_pwCurrentPageOverall, "#MOM_MF_OverallStats");
@@ -333,12 +329,18 @@ void CHudMapFinishedDialog::Reset()
     FIND_LOCALIZATION(m_wLevelGain, "#MOM_MF_CosLvlGain");
 }
 
-void CHudMapFinishedDialog::SetVisible(bool b)
+void CHudMapFinishedDialog::SetVisible(bool bVisible)
 {
-    BaseClass::SetVisible(b);
+    BaseClass::SetVisible(bVisible);
     //We reset the page to 0 when this this panel is shown because Reset() is not always called.
-    if (b)
+    if (bVisible)
+    {
         SetCurrentPage(0);
+
+        const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+        if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
+            SetMouseInputEnabled(true);
+    }
 }
 
 void CHudMapFinishedDialog::SetCurrentPage(int pageNum)

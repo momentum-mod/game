@@ -13,6 +13,7 @@
 #include "xbox/xbox_win32stubs.h"
 #endif
 #include "steam/steam_api.h"
+#include "hud.h"
 
 #include "tier0/memdbgon.h"
 

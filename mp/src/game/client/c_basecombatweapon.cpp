@@ -7,15 +7,14 @@
 #include "cbase.h"
 #include "history_resource.h"
 #include "iclientmode.h"
-#include "iinput.h"
 #include "weapon_selection.h"
 #include "hud_crosshair.h"
 #include "engine/ivmodelinfo.h"
 #include "tier0/vprof.h"
-#include "hltvcamera.h"
 #include "tier1/KeyValues.h"
 #include "toolframework/itoolframework.h"
 #include "toolframework_client.h"
+#include "weapon/weapon_def.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -267,20 +266,22 @@ void C_BaseCombatWeapon::DrawCrosshair()
 
 	// Find out if this weapon's auto-aimed onto a target
 	bool bOnTarget = ( m_iState == WEAPON_IS_ONTARGET );
+
+	const auto pWeaponHud = g_pWeaponDef->GetWeaponHUDResource(GetWeaponID());
 	
 	if ( player->GetFOV() >= 90 )
 	{ 
 		// normal crosshairs
-		if ( bOnTarget && GetWpnData().iconAutoaim )
+		if ( bOnTarget && pWeaponHud->m_vecResources[HUD_RESOURCE_AUTOAIM] )
 		{
 			clr[3] = 255;
 
-			pCrosshair->SetCrosshair( GetWpnData().iconAutoaim, clr );
+			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_AUTOAIM], clr );
 		}
-		else if ( GetWpnData().iconCrosshair )
+		else if (pWeaponHud->m_vecResources[HUD_RESOURCE_CROSSHAIR])
 		{
 			clr[3] = 255;
-			pCrosshair->SetCrosshair( GetWpnData().iconCrosshair, clr );
+			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_CROSSHAIR], clr );
 		}
 		else
 		{
@@ -288,14 +289,12 @@ void C_BaseCombatWeapon::DrawCrosshair()
 		}
 	}
 	else
-	{ 
-		Color white( 255, 255, 255, 255 );
-
+	{
 		// zoomed crosshairs
-		if (bOnTarget && GetWpnData().iconZoomedAutoaim)
-			pCrosshair->SetCrosshair(GetWpnData().iconZoomedAutoaim, white);
-		else if ( GetWpnData().iconZoomedCrosshair )
-			pCrosshair->SetCrosshair( GetWpnData().iconZoomedCrosshair, white );
+		if (bOnTarget && pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_AUTOAIM])
+			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_AUTOAIM], COLOR_WHITE);
+		else if ( pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_CROSSHAIR])
+			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_CROSSHAIR], COLOR_WHITE );
 		else
 			pCrosshair->ResetCrosshair();
 	}
@@ -456,9 +455,6 @@ bool C_BaseCombatWeapon::ShouldDraw( void )
 //-----------------------------------------------------------------------------
 bool C_BaseCombatWeapon::ShouldDrawPickup( void )
 {
-	if ( GetWeaponFlags() & ITEM_FLAG_NOITEMPICKUP )
-		return false;
-
 	if ( m_bJustRestored )
 		return false;
 

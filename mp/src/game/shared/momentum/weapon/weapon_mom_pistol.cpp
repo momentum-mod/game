@@ -26,8 +26,11 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_pistol);
 CMomentumPistol::CMomentumPistol()
 {
     m_iPistolShotsFired = 0;
-    m_flPistolShoot = 0;
+    m_flPistolShoot = 0.0f;
+    m_flAccuracy = 0.9;
     m_flLastFire = gpGlobals->curtime;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_PISTOL;
 }
 
 
@@ -37,7 +40,6 @@ void CMomentumPistol::Spawn()
     m_bBurstMode = false;
     m_iPistolShotsFired = 0;
     m_flPistolShoot = 0.0f;
-    m_flAccuracy = 0.9;
     m_flNextPrimaryAttack = 0.0f;
     m_flNextSecondaryAttack = 0.0f;
 }
@@ -53,7 +55,6 @@ bool CMomentumPistol::Deploy()
 {
     m_iPistolShotsFired = 0;
     m_flPistolShoot = 0.0f;
-    m_flAccuracy = 0.9f;
     return BaseClass::Deploy();
 }
 
@@ -78,11 +79,6 @@ void CMomentumPistol::SecondaryAttack()
     m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
 }
 
-void CMomentumPistol::PrimaryAttack()
-{
-    PistolFire();
-}
-
 void CMomentumPistol::FireRemaining(int &shotsFired, float &shootTime) const
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
@@ -90,8 +86,6 @@ void CMomentumPistol::FireRemaining(int &shotsFired, float &shootTime) const
     {
         Error("%s !pPlayer\n", __FUNCTION__);
     }
-
-    float nexttime = 0.1;
 
 #ifdef WEAPONS_USE_AMMO
     m_iClip1--;
@@ -109,8 +103,8 @@ void CMomentumPistol::FireRemaining(int &shotsFired, float &shootTime) const
         pPlayer->entindex(),
         pPlayer->Weapon_ShootPosition(),
         pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(),
-        GetWeaponID(),
-        Secondary_Mode,
+        m_iPrimaryAmmoType,
+        true,
         GetPredictionRandomSeed() & 255, // wrap it for network traffic so it's the same between client and server
         0.0f);
 
@@ -119,7 +113,7 @@ void CMomentumPistol::FireRemaining(int &shotsFired, float &shootTime) const
     shotsFired++;
 
     if (shotsFired != 3)
-        shootTime = gpGlobals->curtime + nexttime;
+        shootTime = gpGlobals->curtime + 0.1f;
     else
         shootTime = 0.0;
 }
@@ -133,7 +127,7 @@ void CMomentumPistol::ItemPostFrame()
     BaseClass::ItemPostFrame();
 }
 
-void CMomentumPistol::PistolFire()
+void CMomentumPistol::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -187,8 +181,8 @@ void CMomentumPistol::PistolFire()
         pPlayer->entindex(),
         pPlayer->Weapon_ShootPosition(),
         pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(),
-        GetWeaponID(),
-        Primary_Mode,
+        m_iPrimaryAmmoType,
+        false,
         GetPredictionRandomSeed() & 255, // wrap it for network traffic so it's the same between client and server
         0.0f);
 
@@ -202,12 +196,12 @@ void CMomentumPistol::PistolFire()
     }
 #endif
 
-    SetWeaponIdleTime(gpGlobals->curtime + 2.5);
+    SetWeaponIdleTime(gpGlobals->curtime + 2.5f);
 
     if (m_bBurstMode)
     {
         // Fire off the next two rounds
-        m_flPistolShoot = gpGlobals->curtime + 0.1;
+        m_flPistolShoot = gpGlobals->curtime + 0.1f;
         m_iPistolShotsFired++;
 
         SendWeaponAnim(ACT_VM_SECONDARYATTACK);

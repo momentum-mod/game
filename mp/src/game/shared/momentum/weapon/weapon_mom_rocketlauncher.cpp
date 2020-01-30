@@ -4,7 +4,15 @@
 #include "mom_system_gamemode.h"
 #include "weapon_mom_rocketlauncher.h"
 
+#ifdef GAME_DLL
+#include "momentum/ghost_client.h"
+#include "momentum/mom_timer.h"
+#endif
+
 #include "tier0/memdbgon.h"
+
+#define TF_ROCKETLAUNCHER_MODEL "models/weapons/v_models/v_rocketlauncher_soldier.mdl"
+#define TF_ROCKETLAUNCHER_WMODEL "models/weapons/w_models/w_rocketlauncher.mdl"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumRocketLauncher, DT_MomentumRocketLauncher)
 
@@ -12,29 +20,87 @@ BEGIN_NETWORK_TABLE(CMomentumRocketLauncher, DT_MomentumRocketLauncher)
 END_NETWORK_TABLE()
 
 BEGIN_PREDICTION_DATA(CMomentumRocketLauncher)
+#ifdef CLIENT_DLL
+    DEFINE_PRED_FIELD(m_iTFViewIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
+    DEFINE_PRED_FIELD(m_iTFWorldIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
+    DEFINE_PRED_FIELD(m_iMomViewIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
+    DEFINE_PRED_FIELD(m_iMomWorldIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
+#endif
 END_PREDICTION_DATA()
 
 LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR(mom_rj_center_fire, "0", FCVAR_ARCHIVE,
-                          "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR_CV(mom_rj_center_fire, "0", FCVAR_ARCHIVE, "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n", nullptr,
+    [](IConVar *pVar, const char *pNewVal)
+    {
+        if (g_pMomentumTimer->IsRunning())
+        {
+            Warning("Cannot change rocket firing mode while in a run! Stop your timer to be able to change it.\n");
+            return false;
+        }
+
+        return true;
+    }
+);
+static MAKE_TOGGLE_CONVAR(mom_rj_use_tf_viewmodel, "0", FCVAR_ARCHIVE,
+                          "Toggles between the TF2 Rocket Launcher model and the Momentum one. 0 = Momentum, 1 = TF2\n");
+static MAKE_CONVAR(mom_rj_sounds, "1", FCVAR_ARCHIVE,
+                   "Toggles between the TF2 rocket and weapon sounds and the Momentum ones. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 2);
 #endif
 
 CMomentumRocketLauncher::CMomentumRocketLauncher()
 {
     m_flTimeToIdleAfterFire = 0.8f;
     m_flIdleInterval = 20.0f;
+    m_iTFViewIndex = -1;
+    m_iTFWorldIndex = -1;
 }
 
 void CMomentumRocketLauncher::Precache()
 {
     BaseClass::Precache();
 
+    m_iMomViewIndex = m_iViewModelIndex;
+    m_iMomWorldIndex = m_iWorldModelIndex;
+    m_iTFViewIndex = PrecacheModel(TF_ROCKETLAUNCHER_MODEL);
+    m_iTFWorldIndex = PrecacheModel(TF_ROCKETLAUNCHER_WMODEL);
+
 #ifndef CLIENT_DLL
     UTIL_PrecacheOther("momentum_rocket");
 #endif
+}
+
+bool CMomentumRocketLauncher::Deploy()
+{
+    CMomentumPlayer *pOwner = GetPlayerOwner();
+    if (pOwner)
+    {
+#ifdef CLIENT_DLL
+        static ConVarRef mom_rj_use_tf_viewmodel("mom_rj_use_tf_viewmodel");
+#endif
+        SetModelType(mom_rj_use_tf_viewmodel.GetBool());
+    }
+
+    return BaseClass::Deploy();
+}
+
+const char *CMomentumRocketLauncher::GetViewModel(int indx) const
+{
+    return m_iViewModelIndex == m_iTFViewIndex ? TF_ROCKETLAUNCHER_MODEL : BaseClass::GetViewModel(indx);
+}
+
+const char *CMomentumRocketLauncher::GetWorldModel() const
+{
+    return m_iWorldModelIndex == m_iTFWorldIndex ? TF_ROCKETLAUNCHER_WMODEL : BaseClass::GetWorldModel();
+}
+
+void CMomentumRocketLauncher::SetModelType(bool bTF2Model)
+{
+    m_iViewModelIndex = bTF2Model ? m_iTFViewIndex.Get() : m_iMomViewIndex.Get();
+    m_iWorldModelIndex = bTF2Model ? m_iTFWorldIndex.Get() : m_iMomWorldIndex.Get();
+    SetModel(GetViewModel());
 }
 
 //-----------------------------------------------------------------------------
@@ -45,7 +111,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
 #ifdef GAME_DLL
     static ConVarRef cl_righthand("cl_righthand");
 #else
-    extern ConVar cl_righthand;
+    extern ConVar_Validated cl_righthand;
     static ConVarRef mom_rj_center_fire("mom_rj_center_fire");
 #endif
 
@@ -70,7 +136,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
     trace_t tr;
 
     CTraceFilterSimple filter(pPlayer, COLLISION_GROUP_NONE);
-    UTIL_TraceLine(vecShootPos, endPos, MASK_SOLID, &filter, &tr);
+    UTIL_TraceLine(vecShootPos, endPos, MASK_SOLID_BRUSHONLY, &filter, &tr);
 
     // Offset actual start point
     *vecSrc = vecShootPos + (vecForward * vecOffset.x) + (vecRight * vecOffset.y) + (vecUp * vecOffset.z);
@@ -88,7 +154,7 @@ void CMomentumRocketLauncher::GetProjectileFireSetup(CMomentumPlayer *pPlayer, V
     }
 }
 
-void CMomentumRocketLauncher::RocketLauncherFire()
+void CMomentumRocketLauncher::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
@@ -100,7 +166,19 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     pPlayer->m_iShotsFired++;
 
     DoFireEffects();
-    WeaponSound(SINGLE);
+
+#ifdef CLIENT_DLL
+    static ConVarRef mom_rj_sounds("mom_rj_sounds");
+#endif
+
+    if (mom_rj_sounds.GetInt() == 1)
+    {
+        WeaponSound(GetWeaponSound("single_shot"));
+    }
+    else if (mom_rj_sounds.GetInt() == 2)
+    {
+        WeaponSound(GetWeaponSound("single_shot_TF2"));
+    }
 
     // MOM_FIXME:
     // Should no longer Assert, unsure about BaseGunFire() though
@@ -130,10 +208,11 @@ void CMomentumRocketLauncher::RocketLauncherFire()
     UTIL_TraceLine(pPlayer->EyePosition(), vecSrc, MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
 
     CMomRocket::EmitRocket(trace.endpos, angForward, pPlayer);
+
+    DecalPacket rocket = DecalPacket::Rocket(trace.endpos, angForward);
+    g_pMomentumGhostClient->SendDecalPacket(&rocket);
 #endif
 }
-
-void CMomentumRocketLauncher::PrimaryAttack() { RocketLauncherFire(); }
 
 bool CMomentumRocketLauncher::CanDeploy()
 {

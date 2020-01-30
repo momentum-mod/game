@@ -2,6 +2,7 @@
 #include "weapon_mom_shotgun.h"
 #include "fx_mom_shared.h"
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -24,6 +25,8 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_shotgun);
 CMomentumShotgun::CMomentumShotgun()
 {
     m_flPumpTime = 0;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_SHOTGUN;
 }
 
 void CMomentumShotgun::PrimaryAttack()
@@ -32,8 +35,8 @@ void CMomentumShotgun::PrimaryAttack()
     if (!pPlayer)
         return;
 
-    // don't fire underwater
-    if (pPlayer->GetWaterLevel() == 3)
+    // don't fire underwater for non-RJ modes
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && pPlayer->GetWaterLevel() == 3)
     {
         PlayEmptySound();
         m_flNextPrimaryAttack = gpGlobals->curtime + 0.15;
@@ -48,7 +51,7 @@ void CMomentumShotgun::PrimaryAttack()
         if (m_iClip1 == 0)
         {
             PlayEmptySound();
-            m_flNextPrimaryAttack = gpGlobals->curtime + 0.25;
+            m_flNextPrimaryAttack = gpGlobals->curtime + PrimaryFireTime();
         }
 
         return;
@@ -64,12 +67,13 @@ void CMomentumShotgun::PrimaryAttack()
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
     // Dispatch the FX right away with full accuracy.
-    FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
-                   pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(), Primary_Mode,
-                   GetPredictionRandomSeed() &
-                       255, // wrap it for network traffic so it's the same between client and server
-                   0.0725   // flSpread
-                   );
+    FX_FireBullets(pPlayer->entindex(), 
+        pPlayer->Weapon_ShootPosition(),
+        pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(),
+        m_iPrimaryAmmoType,
+        false,
+        GetPredictionRandomSeed() & 255, // wrap it for network traffic
+        0.066f /*TF2 Spread*/ );
 
 #ifdef WEAPONS_USE_AMMO
     if (!m_iClip1 && pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)
@@ -80,17 +84,17 @@ void CMomentumShotgun::PrimaryAttack()
 
     if (m_iClip1 != 0)
 #endif
-        m_flPumpTime = gpGlobals->curtime + 0.5;
+        m_flPumpTime = gpGlobals->curtime + PumpTime();
 
-    m_flNextPrimaryAttack = gpGlobals->curtime + 0.25;
-    m_flNextSecondaryAttack = gpGlobals->curtime + 0.25;
+    m_flNextPrimaryAttack = gpGlobals->curtime + PrimaryFireTime();
+    m_flNextSecondaryAttack = gpGlobals->curtime + PrimaryFireTime();
 #ifdef WEAPONS_USE_AMMO
     if (m_iClip1 != 0)
-        SetWeaponIdleTime(gpGlobals->curtime + 2.5);
+        SetWeaponIdleTime(gpGlobals->curtime + IdleTime());
     else
-        SetWeaponIdleTime(gpGlobals->curtime + 0.25);
+        SetWeaponIdleTime(gpGlobals->curtime + PrimaryFireTime());
 #else
-    SetWeaponIdleTime(gpGlobals->curtime + 2.5f);
+    SetWeaponIdleTime(gpGlobals->curtime + IdleTime());
 #endif
 
     m_fInSpecialReload = 0;
@@ -98,13 +102,20 @@ void CMomentumShotgun::PrimaryAttack()
     // Update punch angles.
     QAngle angle = pPlayer->GetPunchAngle();
 
-    if (pPlayer->GetFlags() & FL_ONGROUND)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
     {
-        angle.x -= SharedRandomInt("XM1014PunchAngleGround", 3, 5);
+        angle.x -= SharedRandomInt("RJShotgunPunchAngle", 1, 3);
     }
     else
     {
-        angle.x -= SharedRandomInt("XM1014PunchAngleAir", 7, 10);
+        if (pPlayer->GetFlags() & FL_ONGROUND)
+        {
+            angle.x -= SharedRandomInt("XM1014PunchAngleGround", 3, 5);
+        }
+        else
+        {
+            angle.x -= SharedRandomInt("XM1014PunchAngleAir", 7, 10);
+        }
     }
 
     pPlayer->SetPunchAngle(angle);

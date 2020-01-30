@@ -3,29 +3,8 @@
 #include "mom_ghostdefs.h"
 #include "run/mom_run_entity.h"
 
-#define GHOST_MODEL "models/player/player_shape_base.mdl"
-
 class CMomentumPlayer;
 
-enum GhostModelBodyGroup
-{
-    BODY_THREE_SIDED_PYRAMID = 0,
-    BODY_FOUR_SIDED_PYRAMID,
-    BODY_SIX_SIDED_PYRAMID,
-    BODY_CUBE,
-    BODY_FOUR_SIDED_PRISM,
-    BODY_THREE_SIDED_PRISM,
-    BODY_KITE,
-    BODY_FIVE_SIDED_PRISM,
-    BODY_SIX_SIDED_PRISM,
-    BODY_PENTAGON_BALL,
-    BODY_BALL,
-    BODY_PROLATE_ELLIPSE,
-    BODY_TRIANGLE_BALL,
-    BODY_CONE,
-    BODY_CYLINDER,
-    LAST
-};
 class CMomentumGhostBaseEntity : public CBaseAnimating, public CMomRunEntity
 {
     DECLARE_CLASS(CMomentumGhostBaseEntity, CBaseAnimating);
@@ -38,13 +17,7 @@ public:
     void TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator) OVERRIDE;
     int BloodColor() OVERRIDE { return BLOOD_COLOR_RED; }
 
-    virtual void SetGhostBodyGroup(int bodyGroup);
-    virtual void SetGhostColor(const uint32 newHexColor);
-    virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
     bool ShouldCollide(int collisionGroup, int contentsMask) const OVERRIDE;
-
-    virtual void SetGhostAppearance(GhostAppearance_t app, bool bForceUpdate = false);
-    virtual GhostAppearance_t GetAppearance() { return m_ghostAppearance; }
 
     virtual void StartTimer(int m_iStartTick);
     virtual void FinishTimer();
@@ -83,21 +56,14 @@ public:
     virtual int GetEntIndex() OVERRIDE { return entindex(); }
 
 protected:
-    virtual void Think(void) OVERRIDE;
-    virtual void Spawn(void) OVERRIDE;
-    virtual void Precache(void) OVERRIDE;
+    virtual void Spawn() OVERRIDE;
+    virtual void Precache() OVERRIDE;
+
     void DecalTrace(trace_t* pTrace, char const* decalName) OVERRIDE {} // Don't do any DecalTracing on this entity
     int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
     int ShouldTransmit(const CCheckTransmitInfo* pInfo) OVERRIDE { return FL_EDICT_ALWAYS; }
 
-    virtual void CreateTrail();
-    virtual void RemoveTrail();
-
     bool CanUnduck();
     void HandleDucking();
     CMomentumPlayer *m_pCurrentSpecPlayer;
-    GhostAppearance_t m_ghostAppearance;
-
-private:
-    CBaseEntity *m_eTrail;
 };

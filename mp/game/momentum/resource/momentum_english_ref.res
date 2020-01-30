@@ -57,7 +57,7 @@
         "MOM_MapRank" "Map Rank: %mRank%"
         "MOM_Level" "Level %level%"
         "MOM_GlobalRank" "Global Rank: %gRank% / %gTotal%"
-        "MOM_PersonalBestTime" "Personal Best Time: %time%"
+        "MOM_PersonalBestTime" "Personal Best: %time%"
         "MOM_RankXP" "Rank XP: %rankXP%"
         "MOM_CosXP" "Cosmetic XP: %cosXP%"
         "MOM_MapsCompleted" "Maps Completed: %mapsCompleted%"
@@ -96,7 +96,7 @@
         "MOM_Ruler_FirstPoint" "First point"
         "MOM_Ruler_SecondPoint" "Second point"
         "MOM_Ruler_Measure" "Measure distance"
-        "MOM_Ruler_Distance" "The distance between the points is %.4f units.\n"
+        "MOM_Ruler_Distance" "Distance: %s1 units\n"
         "MOM_Ruler_ToggleMenu" "Toggle showing Ruler Menu"
 
     //Comparison Panel
@@ -199,6 +199,10 @@
         // UI stuff
         "MOM_Jump" "JUMP"
         "MOM_Duck" "DUCK"
+        "MOM_M1"   "M1"
+        "MOM_M2"   "M2"
+        "GameUI_Tonemap" "Enable HDR tonemapping"
+        "GameUI_Bloom"   "Disable bloom"
 
         // Map Finished Panel
         //Overall
@@ -273,8 +277,8 @@
         "MOM_Settings_Speedometer_Show_Hvel" "Display only horizontal velocity (No Z component)."
         "MOM_Settings_Speedometer_Color_Type_Label" "Speedometer Color Mode:"
         "MOM_Settings_Speedometer_Color_Type_None" "No color"
-        "MOM_Settings_Speedometer_Color_Type_1" "Colorize based on acceleration"
-        "MOM_Settings_Speedometer_Color_Type_2" "Colorize based on velocity compared to max"
+        "MOM_Settings_Speedometer_Color_Type_1" "Based on acceleration"
+        "MOM_Settings_Speedometer_Color_Type_2" "Based on velocity compared to max"
         "MOM_Settings_Speedometer_Units_Label" "Speedometer Units:"
         "MOM_Settings_Speedometer_Units_UPS" "Units per second"
         "MOM_Settings_Speedometer_Units_KPH" "Kilometers per hour"
@@ -367,12 +371,26 @@
         "MOM_Settings_Online_Trails" "Enable online ghost trails"
         "MOM_Settings_Online_Trails_TT" "When enabled, other players can have a trail showing their paths"
         
+        // Rocket Jump settings
+        "MOM_Settings_Tab_RJ" "RJ"
+        "MOM_Settings_RJ_None" "None"
+        "MOM_Settings_RJ_TF2" "TF2"
+        "MOM_Settings_RJ_Enable_TF_RocketModel" "Use TF2 rocket model"
+        "MOM_Settings_RJ_Enable_TF_ViewModel" "Use TF2 view model"
+        "MOM_Settings_RJ_Enable_Center_Fire" "Fire projectiles from screen center"
+        "MOM_Settings_RJ_Particle_Label" "Explosion particles"
+        "MOM_Settings_RJ_Particle_Tooltip" "You can use custom particles by editing the value of the 'ExplosionEffect' fields in the rocket weapon script file."
+        "MOM_Settings_RJ_Sounds_Label" "Explosion and firing sounds"
+        "MOM_Settings_RJ_Trail_Label" "Trail effect"
+        "MOM_Settings_RJ_Trail_Sound_Enable" "Use rocket trail sound"
+        "MOM_Settings_RJ_Trail_Sound_Enable_TT" "When enabled, rockets fired will have a sound following it."
+        "MOM_Settings_RJ_Rocket_Decals_Enable" "Enable rocket decals"
+        "MOM_Settings_RJ_Rocket_Decals_Enable_TT" "When enabled, rockets will create decals upon explosion."
 
         // Replay Info
         // Spec GUI
         "MOM_WatchingReplay"    "REPLAY"
         "MOM_WatchingGhost"    "SPECTATING"
-        "MOM_ReplayPlayer"      "Player: %s1"
         "MOM_SpecGUI_GainControl" "Press your %duck% key to toggle mouse capture!"
         "MOM_SpecGUI_StopPlayback" "Stop Playback"
         "MOM_SpecGUI_StopSpectating" "Stop Spectating"
@@ -397,7 +415,7 @@
         "MOM_NotApplicable" "N/A"
 
         // WEB/API/SERVER RESPONSES
-        "MOM_API_WaitingForResponse" "Waiting for API response..."
+        "MOM_API_WaitingForResponse" "Fetching data..."
         "MOM_API_Unavailable" "API is currently unavailable"
         "MOM_API_ServerError" "Server Error"
         "MOM_API_NoTimesReturned" "No runs found"
@@ -457,6 +475,8 @@
 
         "MOM_MB_DeleteRunConfirmation" "NOTE: If you delete a local run, keep in mind that there's currently no way to get it back!"
 
+        "MOM_Momentum" "Momentum"
+
         // Paint gun panel
         "MOM_PaintGunPanel_SliderText" "Decal scale:"
         "MOM_PaintGunPanel_Viewmodel" "Paintgun Viewmodel Visible"
@@ -490,7 +510,6 @@
         "GameUI2_InviteLobby" "Invite friends"
 
         // Main menu
-        "GameUI2_LogoLeft" "Momentum"
         "GameUI2_LogoRight" "Mod"
 
         "GameUI2_ResumeGame" "RESUME GAME"

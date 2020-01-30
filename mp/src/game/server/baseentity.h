@@ -657,6 +657,7 @@ public:
 	void InputEnableDamageForces( inputdata_t &inputdata );
 	void InputDisableDamageForces( inputdata_t &inputdata );
 	void InputAddContext( inputdata_t &inputdata );
+	void InputIncrementContext( inputdata_t &inputdata );
 	void InputRemoveContext( inputdata_t &inputdata );
 	void InputClearContext( inputdata_t &inputdata );
 	void InputDispatchResponse( inputdata_t& inputdata );
@@ -841,13 +842,13 @@ protected:
 #endif
 
 	void RemoveExpiredConcepts( void );
-	int	GetContextCount() const;						// Call RemoveExpiredConcepts to clean out expired concepts
-	const char *GetContextName( int index ) const;		// note: context may be expired
-	const char *GetContextValue( int index ) const; 	// note: context may be expired
 	bool ContextExpired( int index ) const;
-	int FindContextByName( const char *name ) const;
 public:
-	void	AddContext( const char *nameandvalue );
+	void AddContext( const char *nameandvalue, bool increment = false );
+	int FindContextByName(const char *name) const;
+	int GetContextCount() const;                  // Call RemoveExpiredConcepts to clean out expired concepts
+	const char *GetContextName(int index) const;  // note: context may be expired
+	const char *GetContextValue(int index) const; // note: context may be expired
 
 protected:
 	CUtlVector< ResponseContext_t > m_ResponseContexts;
@@ -1698,6 +1699,8 @@ private:
 	COutputEvent m_OnUser2;
 	COutputEvent m_OnUser3;
 	COutputEvent m_OnUser4;
+
+	COutputEvent m_OnKilled;
 
 	QAngle			m_angAbsRotation;
 

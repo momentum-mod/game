@@ -355,6 +355,18 @@ public:
     FORCEINLINE_CVAR char const *GetString(void) const;
     FORCEINLINE_CVAR Color GetColor(void) const;
 
+    FORCEINLINE_CVAR void Unload()
+    {
+        m_pParent->Shutdown();
+        Shutdown();
+    }
+
+    FORCEINLINE_CVAR void SetFlags(int flags)
+    {
+        m_pParent->m_nFlags = flags;
+        m_nFlags = flags;
+    }
+
     void SetMin(float min);
     void SetMax(float max);
 
@@ -379,6 +391,8 @@ private:
 	// Called by CCvar when the value of a var is changing.
 	virtual void				InternalSetValue(const char *value);
 	// For CVARs marked FCVAR_NEVER_AS_STRING
+	// These are pointless but cannot be removed due to not having engine license... fun...
+	// MOM_TODO remove these if we get engine!
 	virtual void				InternalSetFloatValue( float fNewValue );
 	virtual void				InternalSetIntValue( int nValue );
 
@@ -590,6 +604,34 @@ FORCEINLINE_CVAR const char *ConVarRef::GetDefault() const
 	return m_pConVarState->m_pszDefaultValue;
 }
 
+// Validated convar, takes in an extra validator function pointer that returns true to accept the new value, else false to reject it.
+// Has to be its own class because adding the validator func to the base ConVar class causes fun VTable screw-ery for the convars
+// already compiled in engine / matsys.
+// MOM_TODO COMBINE INTO BASE CONVAR WHEN ENGINE LICENSE HAPPENS!
+class ConVar_Validated : public ConVar
+{
+public:
+    ConVar_Validated(const char *pName, const char *pDefaultValue, int flags, const char *pHelpString, bool bMin, 
+		             float fMin, bool bMax, float fMax, FnChangeCallback_t callback, FnValidatorFunc_t validator) :
+                ConVar(pName, pDefaultValue, flags, pHelpString, bMin, fMin, bMax, fMax, callback)
+    {
+        m_fnValidatorFunc = validator;
+    }
+
+	void SetValue(const char *value) override
+	{
+        if (m_fnValidatorFunc)
+        {
+            if (!m_fnValidatorFunc(this, value))
+                return;
+        }
+
+		ConVar::SetValue(value);
+	}
+
+private:
+    FnValidatorFunc_t m_fnValidatorFunc;
+};
 
 //-----------------------------------------------------------------------------
 // Called by the framework to register ConCommands with the ICVar

@@ -4,13 +4,6 @@ WeaponData
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"
     
-    // Weapon characteristics:
-    "Penetration"       "1"
-    "Damage"            "26"
-    "Range"             "4096"
-    "RangeModifier"     "0.84"
-    "Bullets"           "1"
-    
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_SMG"
     "viewmodel"         "models/weapons/v_smg_old.mdl"
@@ -21,9 +14,6 @@ WeaponData
     "bucket_position"   "2"
 
     "clip_size"         "50"
-    
-    "primary_ammo"      "BULLET_PLAYER_57MM"
-    "secondary_ammo"    "None"
 
     "weight"            "26"
     "item_flags"        "0"
@@ -72,19 +62,6 @@ WeaponData
                 "y"         "48"
                 "width"     "24"
                 "height"    "24"
-        }
-    }
-    ModelBounds
-    {
-        Viewmodel
-        {
-            Mins    "-8 -3 -13"
-            Maxs    "19 9 -1"
-        }
-        World
-        {
-            Mins    "-8 -1 -3"
-            Maxs    "14 3 9"
         }
     }
 }

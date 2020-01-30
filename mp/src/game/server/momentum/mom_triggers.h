@@ -512,7 +512,6 @@ class CTriggerSlide : public CBaseMomentumTrigger
     CNetworkVar(bool, m_bStuckOnGround);
     CNetworkVar(bool, m_bAllowingJump);
     CNetworkVar(bool, m_bDisableGravity);
-    CNetworkVar(bool, m_bFixUpsideSlope);
 };
 
 class CTriggerReverseSpeed : public CBaseMomentumTrigger

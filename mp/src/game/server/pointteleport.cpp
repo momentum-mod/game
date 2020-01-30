@@ -21,13 +21,15 @@ class CPointTeleport : public CBaseEntity
 {
 	DECLARE_CLASS( CPointTeleport, CBaseEntity );
 public:
-	void	Activate( void );
+	void Activate( void );
 
 	void InputTeleport( inputdata_t &inputdata );
+	void InputTeleportEntity( inputdata_t &inputdata );
 
 private:
-	
-	bool	EntityMayTeleport( CBaseEntity *pTarget );
+	bool EntityMayTeleport( CBaseEntity *pTarget );
+
+	void TeleportEntity( CBaseEntity *pTarget );
 
 	Vector m_vSaveOrigin;
 	QAngle m_vSaveAngles;
@@ -45,6 +47,7 @@ BEGIN_DATADESC( CPointTeleport )
 	DEFINE_FIELD( m_vSaveAngles, FIELD_VECTOR ),
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "Teleport", InputTeleport ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "TeleportEntity", InputTeleportEntity ),
 
 END_DATADESC()
 
@@ -110,13 +113,8 @@ void CPointTeleport::Activate( void )
 //------------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-void CPointTeleport::InputTeleport( inputdata_t &inputdata )
+void CPointTeleport::TeleportEntity( CBaseEntity* pTarget )
 {
-	// Attempt to find the entity in question
-	CBaseEntity *pTarget = gEntList.FindEntityByName( NULL, m_target, this, inputdata.pActivator, inputdata.pCaller );
-	if ( pTarget == NULL )
-		return;
-
 	// If teleport object is in a movement hierarchy, remove it first
 	if ( EntityMayTeleport( pTarget ) == false )
 	{
@@ -139,9 +137,34 @@ void CPointTeleport::InputTeleport( inputdata_t &inputdata )
 			pPlayer->SetViewOffset( VEC_DUCK_VIEW_SCALED( pPlayer ) );
 			pPlayer->SetCollisionBounds( VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
 		}
-	}		
+	}
 #endif
 
 	pTarget->Teleport( &m_vSaveOrigin, &m_vSaveAngles, NULL );
 }
 
+//------------------------------------------------------------------------------
+// Purpose: Teleport the entity given in the target keyvalue
+//------------------------------------------------------------------------------
+void CPointTeleport::InputTeleport( inputdata_t &inputdata )
+{
+	// Attempt to find the entity in question
+	CBaseEntity *pTarget = gEntList.FindEntityByName( NULL, m_target, this, inputdata.pActivator, inputdata.pCaller );
+	if ( pTarget == NULL )
+		return;
+
+	TeleportEntity(pTarget);
+}
+
+//------------------------------------------------------------------------------
+// Purpose: Teleport the entity given in the input parameter
+//------------------------------------------------------------------------------
+void CPointTeleport::InputTeleportEntity(inputdata_t &inputdata)
+{
+    // Attempt to find the entity in question
+    CBaseEntity *pTarget = gEntList.FindEntityByName(NULL, inputdata.value.String(), this, inputdata.pActivator, inputdata.pCaller);
+    if (pTarget == NULL)
+        return;
+
+	TeleportEntity(pTarget);
+}

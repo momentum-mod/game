@@ -136,37 +136,6 @@ void CTakeDamageInfo::AdjustPlayerDamageTakenForSkillLevel()
 #endif
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: get the name of the ammo that caused damage
-// Note: returns the ammo name, or the classname of the object, or the model name in the case of physgun ammo.
-//-----------------------------------------------------------------------------
-const char *CTakeDamageInfo::GetAmmoName() const
-{
-	const char *pszAmmoType;
-
-	if ( m_iAmmoType >= 0 )
-	{
-		pszAmmoType = GetAmmoDef()->GetAmmoOfIndex( m_iAmmoType )->pName;
-	}
-	// no ammoType, so get the ammo name from the inflictor
-	else if ( m_hInflictor != NULL )
-	{
-		pszAmmoType = m_hInflictor->GetClassname();
-
-		// check for physgun ammo.  unfortunate that this is in game_shared.
-		if ( Q_strcmp( pszAmmoType, "prop_physics" ) == 0 )
-		{
-			pszAmmoType = STRING( m_hInflictor->GetModelName() );
-		}
-	}
-	else
-	{
-		pszAmmoType = "Unknown";
-	}
-
-	return pszAmmoType;
-}
-
 // -------------------------------------------------------------------------------------------------- //
 // MultiDamage
 // Collects multiple small damages into a single damage
@@ -332,7 +301,7 @@ void CalculateBulletDamageForce( CTakeDamageInfo *info, int iBulletType, const V
 	info->SetDamagePosition( vecForceOrigin );
 	Vector vecForce = vecBulletDir;
 	VectorNormalize( vecForce );
-	vecForce *= GetAmmoDef()->DamageForce( iBulletType );
+	vecForce *= g_pAmmoDef->DamageForce( iBulletType );
 	vecForce *= phys_pushscale.GetFloat();
 	vecForce *= flScale;
 	info->SetDamageForce( vecForce );
@@ -365,7 +334,7 @@ void GuessDamageForce( CTakeDamageInfo *info, const Vector &vecForceDir, const V
 {
 	if ( info->GetDamageType() & DMG_BULLET )
 	{
-		CalculateBulletDamageForce( info, GetAmmoDef()->Index("SMG1"), vecForceDir, vecForceOrigin, flScale );
+		CalculateBulletDamageForce( info, AMMO_TYPE_SMG, vecForceDir, vecForceOrigin, flScale );
 	}
 	else if ( info->GetDamageType() & DMG_BLAST )
 	{

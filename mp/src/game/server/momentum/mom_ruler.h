@@ -60,7 +60,7 @@ public:
     }
 
 private:
-    char m_szDistanceFormat[BUFSIZ];
+    wchar_t m_wDistanceFormat[32];
     Vector m_vFirstPoint;
     Vector m_vSecondPoint;
 

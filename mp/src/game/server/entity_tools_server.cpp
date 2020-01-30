@@ -521,12 +521,6 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CServerChoreoTools, IServerChoreoTools, VSERV
 //------------------------------------------------------------------------------
 void CC_Ent_Keyvalue( const CCommand &args )
 {
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use ent_keyvalue!\n");
-        return;
-    }
-
 	// Must have an odd number of arguments.
 	if ( ( args.ArgC() < 4 ) || ( args.ArgC() & 1 ) )
 	{
@@ -580,4 +574,4 @@ void CC_Ent_Keyvalue( const CCommand &args )
 	}
 } 
 
-static ConCommand ent_keyvalue("ent_keyvalue", CC_Ent_Keyvalue, "Applies the comma delimited key=value pairs to the entity with the given Hammer ID.\n\tFormat: ent_keyvalue <entity id> <key1> <value1> <key2> <value2> ... <keyN> <valueN>\n", FCVAR_CHEAT);
+static ConCommand ent_keyvalue("ent_keyvalue", CC_Ent_Keyvalue, "Applies the comma delimited key=value pairs to the entity with the given Hammer ID.\n\tFormat: ent_keyvalue <entity id> <key1> <value1> <key2> <value2> ... <keyN> <valueN>\n", FCVAR_MAPPING);

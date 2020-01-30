@@ -5,26 +5,66 @@
 
 enum PacketType
 {
-    PT_CONN_REQ = 0,
-    PT_CONN_ACK,
-    PT_APPR_DATA,
-    PT_APPR_ACK,
-    PT_POS_DATA,
-    PT_POS_ACK,
-    PT_CHAT_DATA,
-    PT_MAP_CHANGE,
-    PT_DISC_REQ,
+    PACKET_TYPE_POSITION = 0,
+    PACKET_TYPE_DECAL,
+    PACKET_TYPE_SPEC_UPDATE,
+    PACKET_TYPE_SAVELOC_REQ,
 
-    PT_DECAL_DATA,
-    PT_SPEC_UPDATE,
-    PT_SAVELOC_REQ,
-
-    PT_COUNT
+    PACKET_TYPE_COUNT
 };
 
-#define DEFAULT_PORT 9000
-#define DEFAULT_STEAM_PORT 9001
-#define DEFAULT_MASTER_SERVER_PORT 9002
+#define APPEARANCE_BODYGROUP_MIN 0
+#define APPEARANCE_BODYGROUP_MAX 14
+#define APPEARANCE_TRAIL_LEN_MIN 1
+#define APPEARANCE_TRAIL_LEN_MAX 10
+
+struct AppearanceData_t
+{
+    int m_iBodyGroup;
+    uint32 m_iModelRGBAColorAsHex;
+    uint32 m_iTrailRGBAColorAsHex;
+    uint8 m_iTrailLength;
+    bool m_bTrailEnabled;
+    bool m_bFlashlightEnabled;
+
+    AppearanceData_t()
+    {
+        m_iBodyGroup = 11;
+        m_iModelRGBAColorAsHex = 0x0000FFFF;
+        m_iTrailRGBAColorAsHex = 0xFFFFFFFF;
+        m_iTrailLength = APPEARANCE_TRAIL_LEN_MIN;
+        m_bTrailEnabled = false;
+        m_bFlashlightEnabled = false;
+    }
+
+    void ValidateValues()
+    {
+        m_iBodyGroup = clamp<int>(m_iBodyGroup, APPEARANCE_BODYGROUP_MIN, APPEARANCE_BODYGROUP_MAX);
+        m_iTrailLength = clamp<uint8>(m_iTrailLength, APPEARANCE_TRAIL_LEN_MIN, APPEARANCE_TRAIL_LEN_MAX);
+    }
+
+    void FromKV(KeyValues *pKV)
+    {
+        m_iBodyGroup = pKV->GetInt("bodygroup");
+        m_iModelRGBAColorAsHex = (uint32)pKV->GetInt("model_color");
+        m_iTrailRGBAColorAsHex = (uint32)pKV->GetInt("trail_color");
+        m_iTrailLength = pKV->GetInt("trail_length");
+        m_bTrailEnabled = pKV->GetBool("trail_enabled");
+        m_bFlashlightEnabled = pKV->GetBool("flashlight_enabled");
+
+        ValidateValues();
+    }
+
+    void ToKV(KeyValues *pKV) const
+    {
+        pKV->SetInt("bodygroup", m_iBodyGroup);
+        pKV->SetInt("model_color", m_iModelRGBAColorAsHex);
+        pKV->SetInt("trail_color", m_iTrailRGBAColorAsHex);
+        pKV->SetInt("trail_length", m_iTrailLength);
+        pKV->SetBool("trail_enabled", m_bTrailEnabled);
+        pKV->SetBool("flashlight_enabled", m_bFlashlightEnabled);
+    }
+};
 
 class MomentumPacket
 {
@@ -35,81 +75,17 @@ class MomentumPacket
     virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(GetType()); }
 };
 
-//Describes all data for visual apperence of players ingame
-struct GhostAppearance_t
-{
-    int m_iGhostModelBodygroup;
-    uint32 m_iGhostModelRGBAColorAsHex;
-    uint32 m_iGhostTrailRGBAColorAsHex;
-    uint8 m_iGhostTrailLength;
-    bool m_bGhostTrailEnable;
-    bool m_bFlashlightOn;
-
-    GhostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlightOn)
-    {
-        m_iGhostModelBodygroup = bodyGroup;
-        m_iGhostModelRGBAColorAsHex = bodyRGBA;
-        m_iGhostTrailRGBAColorAsHex = trailRGBA;
-        m_iGhostTrailLength = trailLen;
-        m_bGhostTrailEnable = hasTrail;
-        m_bFlashlightOn = flashlightOn;
-    }
-    GhostAppearance_t(): m_iGhostModelBodygroup(0), m_iGhostModelRGBAColorAsHex(0), m_iGhostTrailRGBAColorAsHex(0), m_iGhostTrailLength(0), m_bGhostTrailEnable(false), m_bFlashlightOn(false)
-    {
-    }
-
-    GhostAppearance_t &operator=(const GhostAppearance_t &other) 
-    {
-        m_iGhostModelBodygroup = other.m_iGhostModelBodygroup;
-        m_iGhostModelRGBAColorAsHex = other.m_iGhostModelRGBAColorAsHex;
-        m_iGhostTrailRGBAColorAsHex = other.m_iGhostTrailRGBAColorAsHex;
-        m_iGhostTrailLength = other.m_iGhostTrailLength;
-        m_bGhostTrailEnable = other.m_bGhostTrailEnable;
-        m_bFlashlightOn = other.m_bFlashlightOn;
-        return *this;
-    }
-    bool operator==(const GhostAppearance_t &other) const
-    {
-        return m_iGhostModelBodygroup == other.m_iGhostModelBodygroup &&
-            m_iGhostModelRGBAColorAsHex == other.m_iGhostModelRGBAColorAsHex &&
-            m_iGhostTrailRGBAColorAsHex == other.m_iGhostTrailRGBAColorAsHex &&
-            m_iGhostTrailLength == other.m_iGhostTrailLength &&
-            m_bGhostTrailEnable == other.m_bGhostTrailEnable &&
-            m_bFlashlightOn == other.m_bFlashlightOn;
-    }
-};
-
-struct LobbyGhostAppearance_t
-{
-    GhostAppearance_t appearance;
-    char base64[1024]; // Used as a quick verify
-
-    LobbyGhostAppearance_t()
-    {
-        base64[0] = '\0';
-        appearance = GhostAppearance_t();
-    }
-
-    LobbyGhostAppearance_t &operator=(const LobbyGhostAppearance_t &other) 
-    {
-        appearance = other.appearance;
-        Q_strncpy(base64, other.base64, sizeof(base64));
-        return *this;
-    }
-};
-
-
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
 class PositionPacket : public MomentumPacket
 {
-  public:
+public:
     int Buttons;
     float ViewOffset;
     QAngle EyeAngle;
     Vector Position;
     Vector Velocity;
-    PositionPacket(const QAngle eyeAngle, const Vector position, const Vector velocity, 
-        const float viewOffsetZ, const int buttons)
+
+    PositionPacket(const QAngle eyeAngle, const Vector position, const Vector velocity, const float viewOffsetZ, const int buttons)
     {
         EyeAngle = eyeAngle;
         Position = position;
@@ -117,11 +93,17 @@ class PositionPacket : public MomentumPacket
 
         Buttons = buttons;
         ViewOffset = viewOffsetZ;
+
+        Validate();
     }
 
     PositionPacket(): Buttons(0), ViewOffset(0)
     {
+        EyeAngle.Init();
+        Position.Init();
+        Velocity.Init();
     }
+
     PositionPacket(CUtlBuffer &buf)
     {
         buf.Get(&EyeAngle, sizeof(QAngle));
@@ -129,9 +111,11 @@ class PositionPacket : public MomentumPacket
         buf.Get(&Velocity, sizeof(Vector));
         Buttons = buf.GetInt();
         ViewOffset = buf.GetFloat();
+
+        Validate();
     }
 
-    PacketType GetType() const OVERRIDE { return PT_POS_DATA; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_POSITION; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
@@ -143,6 +127,20 @@ class PositionPacket : public MomentumPacket
         buf.PutFloat(ViewOffset);
     }
 
+    void Validate()
+    {
+        if (!EyeAngle.IsValid() || !IsEntityQAngleReasonable(EyeAngle))
+            EyeAngle = vec3_angle;
+
+        if (!Position.IsValid() || !IsEntityPositionReasonable(Position))
+            Position = vec3_origin;
+
+        if (!Velocity.IsValid() || !IsEntityVelocityReasonable(Velocity))
+            Velocity = vec3_origin;
+
+        ViewOffset = Clamp(ViewOffset, VEC_DUCK_VIEW.z, VEC_VIEW.z);
+    }
+
     PositionPacket& operator=(const PositionPacket &other)
     {
         Buttons = other.Buttons;
@@ -150,6 +148,7 @@ class PositionPacket : public MomentumPacket
         EyeAngle = other.EyeAngle;
         Position = other.Position;
         Velocity = other.Velocity;
+        Validate();
         return *this;
     }
 
@@ -179,8 +178,6 @@ struct ReceivedFrame_t
     }
 };
 
-
-
 class SpecUpdatePacket : public MomentumPacket
 {
   public:
@@ -196,10 +193,15 @@ class SpecUpdatePacket : public MomentumPacket
     SpecUpdatePacket(CUtlBuffer &buf)
     {
         specTarget = static_cast<uint64>(buf.GetInt64());
-        spec_type = static_cast<SpectateMessageType_t>(buf.GetInt());
+
+        auto iSpecType = buf.GetInt();
+        if (iSpecType < SPEC_UPDATE_FIRST || iSpecType > SPEC_UPDATE_LAST)
+            iSpecType = SPEC_UPDATE_INVALID;
+
+        spec_type = static_cast<SpectateMessageType_t>(iSpecType);
     }
 
-    PacketType GetType() const OVERRIDE { return PT_SPEC_UPDATE; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_SPEC_UPDATE; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
@@ -213,13 +215,17 @@ enum DecalType
 {
     DECAL_BULLET = 0,
     DECAL_PAINT,
-    DECAL_KNIFE
-    // etc
+    DECAL_KNIFE,
+    DECAL_ROCKET,
+
+    DECAL_FIRST = DECAL_BULLET,
+    DECAL_LAST = DECAL_ROCKET,
+    DECAL_INVALID = -1
 };
 
 struct BulletDecalData
 {
-    int iWeaponID;
+    int iAmmoType;
     int iMode;
     int iSeed;
     float fSpread;
@@ -244,6 +250,7 @@ class DecalPacket : public MomentumPacket
         decal_type = decalType;
         vOrigin = origin;
         vAngle = angle;
+        Validate();
     }
   public:
     Vector vOrigin;
@@ -261,12 +268,12 @@ class DecalPacket : public MomentumPacket
     };
     DecalData data;
 
-    DecalPacket() {}
+    DecalPacket() : decal_type(DECAL_INVALID) {}
 
-    static DecalPacket Bullet(Vector origin, QAngle angle, int iWeaponID, int iMode, int iSeed, float fSpread)
+    static DecalPacket Bullet(Vector origin, QAngle angle, int iAmmoType, int iMode, int iSeed, float fSpread)
     {
         DecalPacket packet(DECAL_BULLET, origin, angle);
-        packet.data.bullet.iWeaponID = iWeaponID;
+        packet.data.bullet.iAmmoType = iAmmoType;
         packet.data.bullet.iMode = iMode;
         packet.data.bullet.iSeed = iSeed;
         packet.data.bullet.fSpread = fSpread;
@@ -288,12 +295,23 @@ class DecalPacket : public MomentumPacket
         return packet;
     }
 
+    static DecalPacket Rocket(Vector origin, QAngle angle)
+    {
+        DecalPacket pack(DECAL_ROCKET, origin, angle);
+        return pack;
+    }
+
     DecalPacket(CUtlBuffer &buf)
     {
-        decal_type = static_cast<DecalType>(buf.GetUnsignedChar());
+        int iDecalType = buf.GetUnsignedChar();
+        if (iDecalType < DECAL_FIRST || iDecalType > DECAL_LAST)
+            iDecalType = DECAL_INVALID;
+
+        decal_type = static_cast<DecalType>(iDecalType);
         buf.Get(&vOrigin, sizeof(Vector));
         buf.Get(&vAngle, sizeof(QAngle));
         buf.Get(&data, sizeof(data));
+        Validate();
     }
 
     DecalPacket& operator=(const DecalPacket &other)
@@ -302,10 +320,11 @@ class DecalPacket : public MomentumPacket
         vOrigin = other.vOrigin;
         vAngle = other.vAngle;
         memcpy(&data, &other.data, sizeof(data));
+        Validate();
         return *this;
     }
 
-    PacketType GetType() const OVERRIDE { return PT_DECAL_DATA; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_DECAL; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
@@ -315,6 +334,39 @@ class DecalPacket : public MomentumPacket
         buf.Put(&vAngle, sizeof(QAngle));
         buf.Put(&data, sizeof(data));
     }
+
+    void Validate()
+    {
+        if (!vOrigin.IsValid() || !IsEntityPositionReasonable(vOrigin))
+            vOrigin = vec3_origin;
+
+        // vAngle is not always angle data (for grenade it's vecThrow)
+        if (!vAngle.IsValid())
+            vAngle = vec3_angle;
+
+        if (decal_type == DECAL_PAINT)
+        {
+            data.paint.fDecalRadius = clamp(data.paint.fDecalRadius, 0.001f, 1.0f);
+        }
+    }
+};
+
+enum SavelocRequestStage
+{
+    SAVELOC_REQ_STAGE_INVALID = -1,
+    SAVELOC_REQ_STAGE_DONE,         // Done
+    SAVELOC_REQ_STAGE_COUNT_REQ,    // Asking how many savelocs there are
+    SAVELOC_REQ_STAGE_COUNT_ACK,    // Telling how many savelocs there are
+    SAVELOC_REQ_STAGE_SAVELOC_REQ,  // Requesting specific savelocs at specific indexes
+    SAVELOC_REQ_STAGE_SAVELOC_ACK,  // Giving the specific savelocs
+
+    // Internal
+    SAVELOC_REQ_STAGE_REQUESTER_LEFT,
+    SAVELOC_REQ_STAGE_CLICKED_CANCEL,
+
+    // Bounds for online
+    SAVELOC_REQ_STAGE_FIRST = SAVELOC_REQ_STAGE_DONE,
+    SAVELOC_REQ_STAGE_LAST = SAVELOC_REQ_STAGE_SAVELOC_ACK
 };
 
 class SavelocReqPacket : public MomentumPacket
@@ -323,12 +375,12 @@ class SavelocReqPacket : public MomentumPacket
     // Stage type
     int stage;
 
-    // Stage == 2 ? (The number of savelocs we have to offer)
-    // Stage == (3 || 4) ? (The number of savelocs we have chosen to download)
+    // Stage == _COUNT_ACK ? (The number of savelocs we have to offer)
+    // Stage == (_SAVELOC_REQ || _SAVELOC_ACK) ? (The number of savelocs we have chosen to download)
     int saveloc_count;
 
-    // Stage == 3 ? (The selected nums of savelocs to download)
-    // Stage == 4 ? (The actual saveloc data, in binary)
+    // Stage == _SAVELOC_REQ ? (The selected nums of savelocs to download)
+    // Stage == _SAVELOC_ACK ? (The actual saveloc data, in binary)
     CUtlBuffer dataBuf;
 
     SavelocReqPacket(): stage(0), saveloc_count(0)
@@ -339,29 +391,34 @@ class SavelocReqPacket : public MomentumPacket
     SavelocReqPacket(CUtlBuffer &buf)
     {
         stage = buf.GetInt();
-        if (stage > 1)
+
+        if (stage < SAVELOC_REQ_STAGE_FIRST || stage > SAVELOC_REQ_STAGE_LAST)
+            stage = SAVELOC_REQ_STAGE_INVALID;
+
+        if (stage > SAVELOC_REQ_STAGE_COUNT_REQ)
         {
             saveloc_count = buf.GetInt();
 
-            if (stage > 2)
+            if (stage > SAVELOC_REQ_STAGE_COUNT_ACK && buf.IsValid())
             {
                 dataBuf.Clear();
+                dataBuf.SetBigEndian(false);
                 dataBuf.Put(buf.PeekGet(), buf.GetBytesRemaining());
             }
         }
     }
 
-    PacketType GetType() const OVERRIDE { return PT_SAVELOC_REQ; }
+    PacketType GetType() const OVERRIDE { return PACKET_TYPE_SAVELOC_REQ; }
 
     void Write(CUtlBuffer& buf) OVERRIDE
     {
         MomentumPacket::Write(buf);
         buf.PutInt(stage);
-        if (stage > 1)
+        if (stage > SAVELOC_REQ_STAGE_COUNT_REQ)
         {
             buf.PutInt(saveloc_count);
 
-            if (stage > 2)
+            if (stage > SAVELOC_REQ_STAGE_COUNT_ACK)
                 buf.Put(dataBuf.Base(), dataBuf.TellPut());
         }
     }

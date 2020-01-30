@@ -96,7 +96,7 @@ protected:
 	void			WaterJump( void );
 
 	// Handles both ground friction and water friction
-	void			Friction( void );
+	virtual void			Friction( void );
 
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
@@ -182,7 +182,7 @@ protected:
 	// returns the blocked flags:
 	// 0x01 == floor
 	// 0x02 == step / wall
-	int				ClipVelocity( Vector& in, Vector& normal, Vector& out, float overbounce );
+	virtual int		ClipVelocity( Vector in, Vector& normal, Vector& out, float overbounce );
 
 	// If pmove.origin is in a solid position,
 	// try nudging slightly on all axis to

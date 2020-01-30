@@ -6,10 +6,10 @@
 
 #include "cbase.h"
 #include "view.h"
+#include "hud.h"
 #include "iviewrender.h"
 #include "iviewrender_beams.h"
 #include "view_shared.h"
-#include "ivieweffects.h"
 #include "iinput.h"
 #include "iclientmode.h"
 #include "prediction.h"
@@ -17,13 +17,8 @@
 #include "c_te_legacytempents.h"
 #include "cl_mat_stub.h"
 #include "tier0/vprof.h"
-#include "iclientvehicle.h"
-#include "engine/IEngineTrace.h"
 #include "mathlib/vmatrix.h"
-#include "rendertexture.h"
 #include "c_world.h"
-#include <KeyValues.h>
-#include "igameevents.h"
 #include "smoke_fog_overlay.h"
 #include "bitmap/tgawriter.h"
 #include "hltvcamera.h"
@@ -38,7 +33,6 @@
 #include "materialsystem/materialsystem_config.h"
 #include "VGuiMatSurface/IMatSystemSurface.h"
 #include "toolframework_client.h"
-#include "tier0/icommandline.h"
 #include "ienginevgui.h"
 #include <vgui_controls/Controls.h>
 #include <vgui/ISurface.h>
@@ -107,13 +101,9 @@ extern ConVar cl_forwardspeed;
 static ConVar v_centermove( "v_centermove", "0.15");
 static ConVar v_centerspeed( "v_centerspeed","500" );
 
-#ifdef TF_CLIENT_DLL
 // 54 degrees approximates a 35mm camera - we determined that this makes the viewmodels
 // and motions look the most natural.
-ConVar v_viewmodel_fov( "viewmodel_fov", "54", FCVAR_ARCHIVE, "Sets the field-of-view for the viewmodel.", true, 0.1, true, 179.9 );
-#else
-ConVar v_viewmodel_fov( "viewmodel_fov", "54", FCVAR_CHEAT, "Sets the field-of-view for the viewmodel.", true, 0.1, true, 179.9 );
-#endif
+ConVar v_viewmodel_fov( "fov_viewmodel", "54", FCVAR_ARCHIVE, "Sets the field-of-view for the viewmodel.", true, 0.1, true, 179.9 );
 ConVar mat_viewportscale( "mat_viewportscale", "1.0", FCVAR_ARCHIVE, "Scale down the main viewport (to reduce GPU impact on CPU profiling)", true, (1.0f / 640.0f), true, 1.0f );
 ConVar mat_viewportupscale( "mat_viewportupscale", "1", FCVAR_ARCHIVE, "Scale the viewport back up" );
 ConVar cl_leveloverview( "cl_leveloverview", "0", FCVAR_CHEAT );

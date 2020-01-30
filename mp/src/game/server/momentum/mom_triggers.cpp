@@ -881,14 +881,12 @@ BEGIN_DATADESC(CTriggerSlide)
     DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
     DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
     DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity"),
-    DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope")
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
 SendPropBool(SENDINFO(m_bStuckOnGround)),
 SendPropBool(SENDINFO(m_bAllowingJump)),
 SendPropBool(SENDINFO(m_bDisableGravity)),
-SendPropBool(SENDINFO(m_bFixUpsideSlope)),
 END_SEND_TABLE();
 
 void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)

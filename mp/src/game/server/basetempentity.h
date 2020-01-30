@@ -34,7 +34,7 @@ public:
 	// Force all derived classes to implement a test
 	virtual void		Test( const Vector& current_origin, const QAngle& current_angles );
 
-	virtual	void		Create( IRecipientFilter& filter, float delay = 0.0 );
+	virtual	void		Create( IRecipientFilter& filter, float delay = 0.0f );
 
 	virtual void		Precache( void );
 

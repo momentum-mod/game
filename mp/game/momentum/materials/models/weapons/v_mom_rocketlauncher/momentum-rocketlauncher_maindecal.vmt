@@ -1,0 +1,25 @@
+VertexLitGeneric
+{
+	$basetexture	models\weapons\v_mom_rocketlauncher\mom-rocketlauncher_d
+	$bumpmap		dev\bump_normal
+	//$normalmap		dev\bump_normal
+	$color2			"[0 0 0]"
+	
+	$envmap			env_cubemap
+	$envmaptint		"[1 1 1]"
+	$envmapfresnel	1
+	
+	//$bluramount		2
+	//$refractamount	.4
+	
+	$phong					1
+	$phongtint				"[1 1 1]"
+	$phongfresnelranges		"[.07 .4 2]"
+	$phongexponent			255
+	$phongboost				50
+	
+	$rimlight				1
+	$rimlightboost			18
+	$rimlightexponent		180
+
+}

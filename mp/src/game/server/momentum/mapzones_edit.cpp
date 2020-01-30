@@ -6,7 +6,7 @@
 #include "mom_player.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
-#include "icommandline.h"
+#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -17,43 +17,35 @@ static void VectorSnapToGrid(Vector &dest, float gridsize);
 static float SnapToGrid(float fl, float gridsize);
 static void DrawReticle(const Vector &pos, float retsize);
 
-static MAKE_TOGGLE_CONVAR_C(mom_zone_edit, "0", FCVAR_CHEAT, "Toggle zone editing.\n", OnZoneEditingToggled);
-static MAKE_TOGGLE_CONVAR(mom_zone_ignorewarning, "0", FCVAR_CHEAT,
+static MAKE_TOGGLE_CONVAR_C(mom_zone_edit, "0", FCVAR_MAPPING, "Toggle zone editing.\n", OnZoneEditingToggled);
+static MAKE_TOGGLE_CONVAR(mom_zone_ignorewarning, "0", FCVAR_MAPPING,
                           "Lets you create zones despite map already having start and end.\n");
-static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 1.0f, true, 64.0f);
-static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_CHEAT,
+static MAKE_CONVAR(mom_zone_grid, "8", FCVAR_MAPPING, "Set grid size. 0 to disable.", 1.0f, 64.0f);
+static ConVar mom_zone_type("mom_zone_type", "auto", FCVAR_MAPPING,
                             "The zone type that will be created when using mom_zone_mark/create. 'auto' creates a "
                             "start zone unless one already exists, in which case an end zone is created.f\n");
-static ConVar mom_zone_track("mom_zone_track", "0", FCVAR_CHEAT,
-                             "What track to create the zone for. 0 = main track, >0 = bonus", true, 0, true, MAX_TRACKS);
-static ConVar mom_zone_zonenum("mom_zone_zonenum", "0", FCVAR_CHEAT,
-                                "Sets the zone number. Use 0 to automatically determine one, otherwise start from 2!\n", true, 0,
-                                false, MAX_ZONES);
-static MAKE_TOGGLE_CONVAR(mom_zone_auto_make_stage, "0", FCVAR_CHEAT,
-                          "Whether the 'auto' setting for mom_zone_type should create a stage zone or end zone (after initial start zone)");
+static MAKE_CONVAR(mom_zone_track, "0", FCVAR_MAPPING, "What track to create the zone for. 0 = main track, >0 = bonus", 0, MAX_TRACKS);
+static MAKE_CONVAR(mom_zone_zonenum, "0", FCVAR_MAPPING, "Sets the zone number. Use 0 to automatically determine one, otherwise start from 2!\n", 0, MAX_ZONES);
+static MAKE_TOGGLE_CONVAR(mom_zone_auto_make_stage, "0", FCVAR_MAPPING, "Whether the 'auto' setting for mom_zone_type should create a stage zone or end zone (after initial start zone)");
 
-static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT,
-                                            "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true,
-                                            0, true, 1);
-static ConVar mom_zone_start_maxleavespeed("mom_zone_start_maxleavespeed", "350", FCVAR_CHEAT,
-                                               "Max leave speed for the start trigger. 0 to disable.\n", true, 0, false, 0);
+static MAKE_CONVAR(mom_zone_start_limitspdmethod, "1", FCVAR_MAPPING, "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", 0, 1);
+static MAKE_CONVAR(mom_zone_start_maxleavespeed, "350", FCVAR_MAPPING, "Max leave speed for the start trigger. 0 to disable.\n", 0, sv_maxvelocity.GetFloat());
 
-static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
-static ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT,
-                                    "If 1, use a new point-based zoning method (by Mehis).\n", OnZoningMethodChanged);
-static MAKE_TOGGLE_CONVAR(mom_zone_crosshair, "1", FCVAR_CHEAT, "Toggles the drawing of the zoning crosshair/reticle.");
+static ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_MAPPING);
+static MAKE_TOGGLE_CONVAR_C(mom_zone_usenewmethod, "0", FCVAR_MAPPING, "If 1, use a new point-based zoning method (by Mehis).\n", OnZoningMethodChanged);
+static MAKE_TOGGLE_CONVAR(mom_zone_crosshair, "1", FCVAR_MAPPING, "Toggles the drawing of the zoning crosshair/reticle.");
 
-CON_COMMAND_F(mom_zone_zoomin, "Decrease reticle maximum distance.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_zoomin, "Decrease reticle maximum distance.\n", FCVAR_MAPPING)
 {
     g_MapZoneSystem.GetZoneEditor()->DecreaseZoom(mom_zone_grid.GetFloat());
 }
 
-CON_COMMAND_F(mom_zone_zoomout, "Increase reticle maximum distance.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_zoomout, "Increase reticle maximum distance.\n", FCVAR_MAPPING)
 {
     g_MapZoneSystem.GetZoneEditor()->IncreaseZoom(mom_zone_grid.GetFloat());
 }
 
-CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_MAPPING)
 {
     // MOM_TODO: Deleting a zone while a player is inside it causes some weird issues, need to investigate
     if (!mom_zone_edit.GetBool())
@@ -96,7 +88,7 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
     }
 }
 
-CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity index.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity index.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -132,7 +124,7 @@ CON_COMMAND_F(mom_zone_edit_existing, "Edit an existing zone. Requires entity in
 CON_COMMAND_F(
     mom_zone_start_setlook,
     "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n",
-    FCVAR_CHEAT)
+    FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -171,7 +163,7 @@ CON_COMMAND_F(
     }
 }
 
-CON_COMMAND_F(mom_zone_mark, "Starts building a zone.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_mark, "Starts building a zone.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -179,7 +171,7 @@ CON_COMMAND_F(mom_zone_mark, "Starts building a zone.\n", FCVAR_CHEAT)
     g_MapZoneSystem.GetZoneEditor()->OnMark();
 }
 
-CON_COMMAND_F(mom_zone_cancel, "Cancel the building of the current zone.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_cancel, "Cancel the building of the current zone.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -187,7 +179,7 @@ CON_COMMAND_F(mom_zone_cancel, "Cancel the building of the current zone.\n", FCV
     g_MapZoneSystem.GetZoneEditor()->OnCancel();
 }
 
-CON_COMMAND_F(mom_zone_back, "Go back a step when zone building.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_back, "Go back a step when zone building.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -195,7 +187,7 @@ CON_COMMAND_F(mom_zone_back, "Go back a step when zone building.\n", FCVAR_CHEAT
     g_MapZoneSystem.GetZoneEditor()->OnRemove();
 }
 
-CON_COMMAND_F(mom_zone_create, "Create the zone.\n", FCVAR_CHEAT)
+CON_COMMAND_F(mom_zone_create, "Create the zone.\n", FCVAR_MAPPING)
 {
     if (!mom_zone_edit.GetBool())
         return;
@@ -205,7 +197,7 @@ CON_COMMAND_F(mom_zone_create, "Create the zone.\n", FCVAR_CHEAT)
 
 CON_COMMAND_F(mom_zone_info,
               "Sends info about the trigger that is being looked at (if one exists). Internal usage only.\n",
-              FCVAR_HIDDEN)
+              FCVAR_HIDDEN | FCVAR_MAPPING)
 {
     class CZoneTriggerTraceEnum : public IEntityEnumerator
     {
@@ -288,13 +280,6 @@ static void OnZoningMethodChanged(IConVar *var, const char *pOldValue, float flO
 
 void OnZoneEditingToggled(IConVar *var, const char *pOldVal, float fOldVal)
 {
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use the zone tools!\n");
-        ConVarRef(var).SetValue(0);
-        return;
-    }
-
     ConVarRef varRef(var);
     if (!varRef.GetBool())
     {

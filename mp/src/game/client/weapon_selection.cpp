@@ -85,9 +85,6 @@ void CBaseHudWeaponSelection::Init(void)
 {
 	Reset();
 
-	// Initialise the weapons resource
-	gWR.Init();
-
 	m_flSelectionTime = gpGlobals->curtime;
 }
 
@@ -96,8 +93,6 @@ void CBaseHudWeaponSelection::Init(void)
 //-----------------------------------------------------------------------------
 void CBaseHudWeaponSelection::Reset(void)
 {
-	gWR.Reset();
-
 	// Start hidden
 	m_bSelectionVisible = false;
 	m_flSelectionTime = gpGlobals->curtime;
@@ -117,16 +112,6 @@ void CBaseHudWeaponSelection::UpdateSelectionTime( void )
 //-----------------------------------------------------------------------------
 void CBaseHudWeaponSelection::VidInit(void)
 {
-	// If we've already loaded weapons, let's get new sprites
-	gWR.LoadAllWeaponSprites();
-
-	// set spacing of pickup history
-	CHudHistoryResource *pHudHR = GET_HUDELEMENT( CHudHistoryResource );
-	if( pHudHR )
-	{
-		pHudHR->SetHistoryGap( 21 );
-	}
-
 	Reset();
 }
 
@@ -585,7 +570,7 @@ C_BaseCombatWeapon *CBaseHudWeaponSelection::GetFirstPos( int iSlot )
 	if ( !player )
 		return NULL;
 
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = player->GetWeapon( i );
 		if ( !pWeapon )
@@ -619,7 +604,7 @@ C_BaseCombatWeapon *CBaseHudWeaponSelection::GetNextActivePos( int iSlot, int iS
 	C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
 	if ( !player )
 		return NULL;
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = player->GetWeapon( i );
 		if ( !pWeapon )

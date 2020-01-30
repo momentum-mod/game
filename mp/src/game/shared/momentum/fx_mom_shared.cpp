@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "fx_mom_shared.h"
 #include "weapon/weapon_base.h"
+#include "weapon/weapon_def.h"
 #include "mom_player_shared.h"
 
 #ifndef CLIENT_DLL
@@ -20,6 +21,13 @@
 #endif
 
 #include "tier0/memdbgon.h"
+
+static MAKE_TOGGLE_CONVAR(mom_fixed_spread, "1", FCVAR_REPLICATED, "Use fixed spread patterns for scatter shot weapons. 1 = ON (default), 0 = OFF\n");
+
+static const Vector g_vecFixedPattern[] = {
+    Vector(0, 0, 0),        Vector(1, 0, 0),       Vector(-1, 0, 0),        Vector(0, -1, 0),       Vector(0, 1, 0),
+    Vector(0.85, -0.85, 0), Vector(0.85, 0.85, 0), Vector(-0.85, -0.85, 0), Vector(-0.85, 0.85, 0), Vector(0, 0, 0),
+};
 
 #ifdef CLIENT_DLL
 
@@ -71,21 +79,16 @@ void EndGroupingSounds()
 
 #else
 
-
-void StartGroupingSounds() {}
-void EndGroupingSounds() {}
-void FX_WeaponSound(int iEntIndex, WeaponSound_t sound_type, const Vector &vOrigin, CWeaponInfo *pWeaponInfo)
+void FX_WeaponSound(int iEntIndex, const char *pShootSound, const Vector &vOrigin)
 {
-    // If we have some sounds from the weapon classname.txt file, play a random one of them
-    const char *shootsound = pWeaponInfo->aShootSounds[sound_type];
-    if (!shootsound || !shootsound[0])
+    if (!pShootSound || !pShootSound[0])
         return;
 
-    CPASAttenuationFilter filter(vOrigin, shootsound);
+    CPASAttenuationFilter filter(vOrigin, pShootSound);
     filter.UsePredictionRules();
     filter.MakeReliable();
 
-    CBaseEntity::EmitSound(filter, iEntIndex, shootsound, &vOrigin);
+    CBaseEntity::EmitSound(filter, iEntIndex, pShootSound, &vOrigin);
 };
 
 #endif
@@ -93,34 +96,29 @@ void FX_WeaponSound(int iEntIndex, WeaponSound_t sound_type, const Vector &vOrig
 // This runs on both the client and the server.
 // On the server, it only does the damage calculations.
 // On the client, it does all the effects.
-void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles, int iWeaponID, int iMode, int iSeed,
-                    float flSpread)
+void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles, int iAmmoType, bool bSecondaryMode, int iSeed, float flSpread)
 {
     bool bDoEffects = true;
 
-#ifdef CLIENT_DLL
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(ClientEntityList().GetBaseEntity(iEntIndex));
-#else
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_PlayerByIndex(iEntIndex));
-#endif
+    CBaseEntity *pAttacker = CBaseEntity::Instance(iEntIndex);
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pAttacker);
 
-    CWeaponInfo *pWeaponInfo = GetWeaponInfo((CWeaponID)iWeaponID);
-
-    if (!pWeaponInfo)
+    const auto hWeaponID = g_pAmmoDef->WeaponID(iAmmoType);
+    if (hWeaponID == WEAPON_NONE)
     {
-        DevMsg("FX_FireBullets: Cannot find weapon info for ID %i\n", iWeaponID);
+        DevMsg("FX_FireBullets: Cannot find weapon info for given ammo type %i\n", iAmmoType);
         return;
     }
 
 #ifndef CLIENT_DLL
     // if this is server code, send the effect over to client as temp entity
     // Dispatch one message for all the bullet impacts and sounds.
-    TE_FireBullets(iEntIndex, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+    TE_FireBullets(iEntIndex, vOrigin, vAngles, iAmmoType, bSecondaryMode, iSeed, flSpread);
 
     if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
     {
         DecalPacket decalPacket;
-        if (iWeaponID == WEAPON_PAINTGUN)
+        if (iAmmoType == AMMO_TYPE_PAINT)
         {
             Color decalColor;
             if (!MomUtil::GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
@@ -130,7 +128,7 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
         }
         else
         {
-            decalPacket = DecalPacket::Bullet( vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+            decalPacket = DecalPacket::Bullet( vOrigin, vAngles, iAmmoType, bSecondaryMode, iSeed, flSpread);
         }
 
         g_pMomentumGhostClient->SendDecalPacket(&decalPacket);
@@ -141,22 +139,19 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
 
     iSeed++;
 
-    int iDamage = pWeaponInfo->m_iDamage;
-    float flRange = pWeaponInfo->m_flRange;
-    int iPenetration = pWeaponInfo->m_iPenetration;
-    float flRangeModifier = pWeaponInfo->m_flRangeModifier;
-    int iAmmoType = pWeaponInfo->iAmmoType;
-
 #ifdef GAME_DLL
     // Weapon sounds are server-only for PAS ability
 
-    static ConVarRef paintgun("mom_paintgun_shoot_sound");
+    static ConVarRef paintgun_shoot_sound("mom_paintgun_shoot_sound");
 
     // Do an extra paintgun check here
-    const bool bPreventShootSound = iWeaponID == WEAPON_PAINTGUN && !paintgun.GetBool();
+    const bool bPreventShootSound = iAmmoType == AMMO_TYPE_PAINT && !paintgun_shoot_sound.GetBool();
 
     if (!bPreventShootSound)
-        FX_WeaponSound(iEntIndex, SINGLE, vOrigin, pWeaponInfo);
+    {
+        const auto pWeaponScript = g_pWeaponDef->GetWeaponScript(hWeaponID);
+        FX_WeaponSound(iEntIndex, pWeaponScript->pKVWeaponSounds->GetString("single_shot"), vOrigin);
+    }
 #endif
 
     // Fire bullets, calculate impacts & effects
@@ -173,33 +168,241 @@ void FX_FireBullets(int iEntIndex, const Vector &vOrigin, const QAngle &vAngles,
             return;
     }
 
-    StartGroupingSounds();
-
 #ifndef CLIENT_DLL
     // Move other players back to history positions based on local player's lag
     if (bLocalPlayerFired)
         lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());
+#else
+    StartGroupingSounds();
 #endif
 
-    for (int iBullet = 0; iBullet < pWeaponInfo->m_iBullets; iBullet++)
+    const auto iNumBullets = g_pAmmoDef->NumBullets(iAmmoType);
+    const bool bFixedSpread = iNumBullets > 1 && mom_fixed_spread.GetBool();
+
+    for (int iBullet = 0; iBullet < iNumBullets; iBullet++)
     {
-        RandomSeed(iSeed); // init random system with this seed
-
-        // Get circular gaussian spread.
         float x, y;
-        x = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
-        y = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
 
-        iSeed++; // use new seed for next bullet
+        if (bFixedSpread)
+        {
+            int iIndex = iBullet;
+            while (iIndex > 9)
+            {
+                iIndex -= 10;
+            }
 
-        pPlayer->FireBullet(vOrigin, vAngles, flSpread, flRange, iPenetration, iAmmoType, iDamage, flRangeModifier,
-                            pPlayer, bDoEffects, x, y);
+            x = 0.5f * g_vecFixedPattern[iIndex].x;
+            y = 0.5f * g_vecFixedPattern[iIndex].y;
+        }
+        else
+        {
+            RandomSeed(iSeed); // init random system with this seed
+
+            // Get circular gaussian spread.
+            x = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
+            y = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
+
+            iSeed++; // use new seed for next bullet
+        }
+
+        pPlayer->FireBullet(vOrigin, vAngles, flSpread, iAmmoType, pAttacker, bDoEffects, x, y);
     }
 
 #ifndef CLIENT_DLL
     if (bLocalPlayerFired)
         lagcompensation->FinishLagCompensation(pPlayer);
-#endif
-
+#else
     EndGroupingSounds();
+#endif
 }
+
+// TF2 explosions
+#ifndef CLIENT_DLL
+class CTETFExplosion : public CBaseTempEntity
+{
+  public:
+    DECLARE_CLASS(CTETFExplosion, CBaseTempEntity);
+    DECLARE_SERVERCLASS();
+
+    CTETFExplosion(const char *name);
+
+  public:
+    Vector m_vecOrigin;
+    Vector m_vecNormal;
+    WeaponID_t m_iWeaponID;
+};
+
+static CTETFExplosion g_TETFExplosion("TFExplosion");
+
+CTETFExplosion::CTETFExplosion(const char *name) : CBaseTempEntity(name)
+{
+    m_vecOrigin.Init();
+    m_vecNormal.Init();
+    m_iWeaponID = WEAPON_NONE;
+}
+
+IMPLEMENT_SERVERCLASS_ST(CTETFExplosion, DT_TETFExplosion)
+    SendPropVector(SENDINFO_NOCHECK(m_vecOrigin)),
+    SendPropVector(SENDINFO_NOCHECK(m_vecNormal), 6, 0, -1.0f, 1.0f),
+    SendPropInt(SENDINFO_NOCHECK(m_iWeaponID), Q_log2(WEAPON_MAX) + 1, SPROP_UNSIGNED),
+END_SEND_TABLE()
+
+void TE_TFExplosion(IRecipientFilter &filter, const Vector &vecOrigin, const Vector &vecNormal, WeaponID_t iWeaponID)
+{
+    VectorCopy(vecOrigin, g_TETFExplosion.m_vecOrigin);
+    VectorCopy(vecNormal, g_TETFExplosion.m_vecNormal);
+    g_TETFExplosion.m_iWeaponID = iWeaponID;
+
+    // Send it over the wire
+    g_TETFExplosion.Create(filter);
+}
+
+// TF2 Particle effects
+class CTETFParticleEffect : public CBaseTempEntity
+{
+  public:
+    DECLARE_CLASS(CTETFParticleEffect, CBaseTempEntity);
+    DECLARE_SERVERCLASS();
+
+    CTETFParticleEffect(const char *name);
+
+    void Init();
+
+  public:
+    Vector m_vecOrigin;
+    Vector m_vecStart;
+    QAngle m_vecAngles;
+
+    int m_iParticleSystemIndex;
+
+    int m_nEntIndex;
+
+    int m_iAttachType;
+    int m_iAttachmentPointIndex;
+
+    bool m_bResetParticles;
+};
+
+static CTETFParticleEffect g_TETFParticleEffect("TFParticleEffect");
+
+CTETFParticleEffect::CTETFParticleEffect(const char *name) : CBaseTempEntity(name) { Init(); }
+
+void CTETFParticleEffect::Init()
+{
+    m_vecOrigin.Init();
+    m_vecStart.Init();
+    m_vecAngles.Init();
+
+    m_iParticleSystemIndex = 0;
+
+    m_nEntIndex = -1;
+
+    m_iAttachType = PATTACH_ABSORIGIN;
+    m_iAttachmentPointIndex = 0;
+
+    m_bResetParticles = false;
+}
+
+IMPLEMENT_SERVERCLASS_ST(CTETFParticleEffect, DT_TETFParticleEffect)
+    SendPropVector(SENDINFO_NOCHECK(m_vecOrigin)),
+    SendPropVector(SENDINFO_NOCHECK(m_vecStart)),
+    SendPropQAngles(SENDINFO_NOCHECK(m_vecAngles), 7),
+    SendPropInt(SENDINFO_NOCHECK(m_iParticleSystemIndex), 16, SPROP_UNSIGNED), // probably way too high
+    SendPropInt(SENDINFO_NAME(m_nEntIndex, entindex), MAX_EDICT_BITS),
+    SendPropInt(SENDINFO_NOCHECK(m_iAttachType), 5, SPROP_UNSIGNED),
+    SendPropInt(SENDINFO_NOCHECK(m_iAttachmentPointIndex), Q_log2(MAX_PATTACH_TYPES) + 1, SPROP_UNSIGNED),
+    SendPropBool(SENDINFO_NOCHECK(m_bResetParticles)),
+END_SEND_TABLE()
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName,
+                         ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName,
+                         bool bResetAllParticlesOnEntity)
+{
+    int iAttachment = -1;
+    if (pEntity && pEntity->GetBaseAnimating())
+    {
+        // Find the attachment point index
+        iAttachment = pEntity->GetBaseAnimating()->LookupAttachment(pszAttachmentName);
+        if (iAttachment == -1)
+        {
+            Warning("Model '%s' doesn't have attachment '%s' to attach particle system '%s' to.\n",
+                    STRING(pEntity->GetBaseAnimating()->GetModelName()), pszAttachmentName, pszParticleName);
+            return;
+        }
+    }
+    TE_TFParticleEffect(filter, flDelay, pszParticleName, iAttachType, pEntity, iAttachment,
+                        bResetAllParticlesOnEntity);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Yet another overload, lets us supply vecStart
+//-----------------------------------------------------------------------------
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName, Vector vecOrigin,
+                         Vector vecStart, QAngle vecAngles, CBaseEntity *pEntity)
+{
+    int iIndex = GetParticleSystemIndex(pszParticleName);
+    TE_TFParticleEffect(filter, flDelay, iIndex, vecOrigin, vecStart, vecAngles, pEntity);
+}
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName,
+                         ParticleAttachment_t iAttachType, CBaseEntity *pEntity, int iAttachmentPoint,
+                         bool bResetAllParticlesOnEntity)
+{
+    g_TETFParticleEffect.Init();
+
+    g_TETFParticleEffect.m_iParticleSystemIndex = GetParticleSystemIndex(pszParticleName);
+    if (pEntity)
+    {
+        g_TETFParticleEffect.m_nEntIndex = pEntity->entindex();
+    }
+
+    g_TETFParticleEffect.m_iAttachType = iAttachType;
+    g_TETFParticleEffect.m_iAttachmentPointIndex = iAttachmentPoint;
+
+    if (bResetAllParticlesOnEntity)
+    {
+        g_TETFParticleEffect.m_bResetParticles = true;
+    }
+
+    g_TETFParticleEffect.Create(filter, flDelay);
+}
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, const char *pszParticleName, Vector vecOrigin,
+                         QAngle vecAngles, CBaseEntity *pEntity /*= NULL*/, int iAttachType /*= PATTACH_CUSTOMORIGIN*/)
+{
+    g_TETFParticleEffect.Init();
+
+    g_TETFParticleEffect.m_iParticleSystemIndex = GetParticleSystemIndex(pszParticleName);
+
+    VectorCopy(vecOrigin, g_TETFParticleEffect.m_vecOrigin);
+    VectorCopy(vecAngles, g_TETFParticleEffect.m_vecAngles);
+
+    if (pEntity)
+    {
+        g_TETFParticleEffect.m_nEntIndex = pEntity->entindex();
+        g_TETFParticleEffect.m_iAttachType = iAttachType;
+    }
+
+    g_TETFParticleEffect.Create(filter, flDelay);
+}
+
+void TE_TFParticleEffect(IRecipientFilter &filter, float flDelay, int iEffectIndex, Vector vecOrigin, Vector vecStart,
+                         QAngle vecAngles, CBaseEntity *pEntity)
+{
+    g_TETFParticleEffect.Init();
+
+    g_TETFParticleEffect.m_iParticleSystemIndex = iEffectIndex;
+
+    VectorCopy(vecOrigin, g_TETFParticleEffect.m_vecOrigin);
+    VectorCopy(vecStart, g_TETFParticleEffect.m_vecStart);
+    VectorCopy(vecAngles, g_TETFParticleEffect.m_vecAngles);
+
+    if (pEntity)
+    {
+        g_TETFParticleEffect.m_nEntIndex = pEntity->entindex();
+        g_TETFParticleEffect.m_iAttachType = PATTACH_CUSTOMORIGIN;
+    }
+
+    g_TETFParticleEffect.Create(filter, flDelay);
+}
+#endif

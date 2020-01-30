@@ -12,6 +12,7 @@
 #include "physics_saverestore.h"
 #include "datacache/imdlcache.h"
 #include "activitylist.h"
+#include "weapon/weapon_def.h"
 
 // NVNT start extra includes
 #include "haptics/haptic_utils.h"
@@ -53,15 +54,6 @@
 
 extern bool UTIL_ItemCanBeTouchedByPlayer( CBaseEntity *pItem, CBasePlayer *pPlayer );
 
-#if defined ( TF_CLIENT_DLL ) || defined ( TF_DLL )
-#ifdef _DEBUG
-ConVar tf_weapon_criticals_force_random( "tf_weapon_criticals_force_random", "0", FCVAR_REPLICATED | FCVAR_CHEAT );
-#endif // _DEBUG
-ConVar tf_weapon_criticals_bucket_cap( "tf_weapon_criticals_bucket_cap", "1000.0", FCVAR_REPLICATED | FCVAR_CHEAT );
-ConVar tf_weapon_criticals_bucket_bottom( "tf_weapon_criticals_bucket_bottom", "-250.0", FCVAR_REPLICATED | FCVAR_CHEAT );
-ConVar tf_weapon_criticals_bucket_default( "tf_weapon_criticals_bucket_default", "300.0", FCVAR_REPLICATED | FCVAR_CHEAT );
-#endif // TF
-
 CBaseCombatWeapon::CBaseCombatWeapon()
 {
 	// Constructor must call this
@@ -82,18 +74,16 @@ CBaseCombatWeapon::CBaseCombatWeapon()
 
 #if defined( CLIENT_DLL )
 	m_iState = m_iOldState = WEAPON_NOT_CARRIED;
+#endif
 	m_iClip1 = -1;
 	m_iClip2 = -1;
 	m_iPrimaryAmmoType = -1;
 	m_iSecondaryAmmoType = -1;
-#endif
 
 #if !defined( CLIENT_DLL )
 	m_pConstraint = NULL;
 	OnBaseCombatWeaponCreated( this );
 #endif
-
-	m_hWeaponFileInfo = GetInvalidWeaponInfoHandle();
 
 #if defined( TF_DLL )
 	UseClientSideAnimation();
@@ -231,15 +221,6 @@ void CBaseCombatWeapon::Spawn( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: get this game's encryption key for decoding weapon kv files
-// Output : virtual const unsigned char
-//-----------------------------------------------------------------------------
-const unsigned char *CBaseCombatWeapon::GetEncryptionKey( void ) 
-{ 
-	return g_pGameRules->GetEncryptionKey(); 
-}
-
-//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 void CBaseCombatWeapon::Precache( void )
@@ -248,78 +229,33 @@ void CBaseCombatWeapon::Precache( void )
 	Assert( Q_strlen( GetClassname() ) > 0 );
 	// Msg( "Client got %s\n", GetClassname() );
 #endif
-	m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
 
-	// Add this weapon to the weapon registry, and get our index into it
-	// Get weapon data from script file
-	if ( ReadWeaponDataFromFileForSlot( filesystem, GetClassname(), &m_hWeaponFileInfo, GetEncryptionKey() ) )
+	GetWeaponScript()->Precache(); // Precache sounds and particles
+
+	// Precache models (preload to avoid hitch)
+	m_iViewModelIndex = 0;
+	const auto pViewModelStr = GetViewModel();
+	if (pViewModelStr && pViewModelStr[0])
 	{
-		// Get the ammo indexes for the ammo's specified in the data file
-		if ( GetWpnData().szAmmo1[0] )
-		{
-			m_iPrimaryAmmoType = GetAmmoDef()->Index( GetWpnData().szAmmo1 );
-			if (m_iPrimaryAmmoType == -1)
-			{
-				Msg("ERROR: Weapon (%s) using undefined primary ammo type (%s)\n",GetClassname(), GetWpnData().szAmmo1);
-			}
- #if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-			// Ammo override
-			int iModUseMetalOverride = 0;
-			CALL_ATTRIB_HOOK_INT( iModUseMetalOverride, mod_use_metal_ammo_type );
-			if ( iModUseMetalOverride )
-			{
-				m_iPrimaryAmmoType = (int)TF_AMMO_METAL;
-			}
-#endif
- 		}
-		if ( GetWpnData().szAmmo2[0] )
-		{
-			m_iSecondaryAmmoType = GetAmmoDef()->Index( GetWpnData().szAmmo2 );
-			if (m_iSecondaryAmmoType == -1)
-			{
-				Msg("ERROR: Weapon (%s) using undefined secondary ammo type (%s)\n",GetClassname(),GetWpnData().szAmmo2);
-			}
-
-		}
-#if defined( CLIENT_DLL )
-		gWR.LoadWeaponSprites( GetWeaponFileInfoHandle() );
-#endif
-		// Precache models (preload to avoid hitch)
-		m_iViewModelIndex = 0;
-		m_iWorldModelIndex = 0;
-		if ( GetViewModel() && GetViewModel()[0] )
-		{
-			m_iViewModelIndex = CBaseEntity::PrecacheModel( GetViewModel() );
-		}
-		if ( GetWorldModel() && GetWorldModel()[0] )
-		{
-			m_iWorldModelIndex = CBaseEntity::PrecacheModel( GetWorldModel() );
-		}
-
-		// Precache sounds, too
-		for ( int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i )
-		{
-			const char *shootsound = GetShootSound( i );
-			if ( shootsound && shootsound[0] )
-			{
-				CBaseEntity::PrecacheScriptSound( shootsound );
-			}
-		}
+		m_iViewModelIndex = PrecacheModel(pViewModelStr);
 	}
-	else
+
+	m_iWorldModelIndex = 0;
+	const auto pWorldModelStr = GetWorldModel();
+	if (pWorldModelStr && pWorldModelStr[0])
 	{
-		// Couldn't read data file, remove myself
-		Warning( "Error reading weapon data file for: %s\n", GetClassname() );
-	//	Remove( );	//don't remove, this gets released soon!
+		m_iWorldModelIndex = PrecacheModel(pWorldModelStr);
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Get my data in the file weapon info array
-//-----------------------------------------------------------------------------
-const FileWeaponInfo_t &CBaseCombatWeapon::GetWpnData( void ) const
+WeaponScriptDefinition *CBaseCombatWeapon::GetWeaponScript() const
 {
-	return *GetFileWeaponInfoFromHandle( m_hWeaponFileInfo );
+    return g_pWeaponDef->GetWeaponScript(GetWeaponID());
+}
+
+const char* CBaseCombatWeapon::GetWeaponSound(const char *pToken) const
+{
+    return GetWeaponScript()->pKVWeaponSounds->GetString(pToken, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -327,7 +263,7 @@ const FileWeaponInfo_t &CBaseCombatWeapon::GetWpnData( void ) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is ignored in the base class here*/ ) const
 {
-	return GetWpnData().szViewModel;
+	return GetWeaponScript()->szViewModel;
 }
 
 //-----------------------------------------------------------------------------
@@ -335,7 +271,7 @@ const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetWorldModel( void ) const
 {
-	return GetWpnData().szWorldModel;
+	return GetWeaponScript()->szWorldModel;
 }
 
 //-----------------------------------------------------------------------------
@@ -343,7 +279,7 @@ const char *CBaseCombatWeapon::GetWorldModel( void ) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetAnimPrefix( void ) const
 {
-	return GetWpnData().szAnimationPrefix;
+	return GetWeaponScript()->szAnimationPrefix;
 }
 
 //-----------------------------------------------------------------------------
@@ -352,7 +288,7 @@ const char *CBaseCombatWeapon::GetAnimPrefix( void ) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetPrintName( void ) const
 {
-	return GetWpnData().szPrintName;
+	return GetWeaponScript()->szPrintName;
 }
 
 //-----------------------------------------------------------------------------
@@ -367,7 +303,7 @@ int CBaseCombatWeapon::GetMaxClip1( void ) const
 		return iModMaxClipOverride;
 #endif
 
-	return GetWpnData().iMaxClip1;
+	return GetWeaponScript()->iMaxClip1;
 }
 
 //-----------------------------------------------------------------------------
@@ -375,7 +311,7 @@ int CBaseCombatWeapon::GetMaxClip1( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetMaxClip2( void ) const
 {
-	return GetWpnData().iMaxClip2;
+	return GetWeaponScript()->iMaxClip2;
 }
 
 //-----------------------------------------------------------------------------
@@ -383,7 +319,7 @@ int CBaseCombatWeapon::GetMaxClip2( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetDefaultClip1( void ) const
 {
-	return GetWpnData().iDefaultClip1;
+	return GetWeaponScript()->iDefaultClip1;
 }
 
 //-----------------------------------------------------------------------------
@@ -391,7 +327,7 @@ int CBaseCombatWeapon::GetDefaultClip1( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetDefaultClip2( void ) const
 {
-	return GetWpnData().iDefaultClip2;
+	return GetWeaponScript()->iDefaultClip2;
 }
 
 //-----------------------------------------------------------------------------
@@ -404,7 +340,7 @@ bool CBaseCombatWeapon::UsesClipsForAmmo1( void ) const
 
 bool CBaseCombatWeapon::IsMeleeWeapon() const
 {
-	return GetWpnData().m_bMeleeWeapon;
+	return GetWeaponScript()->bMeleeWeapon;
 }
 
 //-----------------------------------------------------------------------------
@@ -420,7 +356,7 @@ bool CBaseCombatWeapon::UsesClipsForAmmo2( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetWeight( void ) const
 {
-	return GetWpnData().iWeight;
+	return GetWeaponScript()->iWeight;
 }
 
 //-----------------------------------------------------------------------------
@@ -429,7 +365,7 @@ int CBaseCombatWeapon::GetWeight( void ) const
 //-----------------------------------------------------------------------------
 bool CBaseCombatWeapon::AllowsAutoSwitchTo( void ) const
 {
-	return GetWpnData().bAutoSwitchTo;
+	return GetWeaponScript()->bAutoSwitchTo;
 }
 
 //-----------------------------------------------------------------------------
@@ -438,15 +374,7 @@ bool CBaseCombatWeapon::AllowsAutoSwitchTo( void ) const
 //-----------------------------------------------------------------------------
 bool CBaseCombatWeapon::AllowsAutoSwitchFrom( void ) const
 {
-	return GetWpnData().bAutoSwitchFrom;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-int CBaseCombatWeapon::GetWeaponFlags( void ) const
-{
-	return GetWpnData().iFlags;
+	return GetWeaponScript()->bAutoSwitchFrom;
 }
 
 //-----------------------------------------------------------------------------
@@ -454,7 +382,7 @@ int CBaseCombatWeapon::GetWeaponFlags( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetSlot( void ) const
 {
-	return GetWpnData().iSlot;
+	return GetWeaponScript()->iSlot;
 }
 
 //-----------------------------------------------------------------------------
@@ -462,7 +390,7 @@ int CBaseCombatWeapon::GetSlot( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetPosition( void ) const
 {
-	return GetWpnData().iPosition;
+	return GetWeaponScript()->iPosition;
 }
 
 //-----------------------------------------------------------------------------
@@ -470,87 +398,7 @@ int CBaseCombatWeapon::GetPosition( void ) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetName( void ) const
 {
-	return GetWpnData().szClassName;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteActive( void ) const
-{
-	return GetWpnData().iconActive;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteInactive( void ) const
-{
-	return GetWpnData().iconInactive;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteAmmo( void ) const
-{
-	return GetWpnData().iconAmmo;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteAmmo2( void ) const
-{
-	return GetWpnData().iconAmmo2;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteCrosshair( void ) const
-{
-	return GetWpnData().iconCrosshair;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteAutoaim( void ) const
-{
-	return GetWpnData().iconAutoaim;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteZoomedCrosshair( void ) const
-{
-	return GetWpnData().iconZoomedCrosshair;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CHudTexture const *CBaseCombatWeapon::GetSpriteZoomedAutoaim( void ) const
-{
-	return GetWpnData().iconZoomedAutoaim;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-const char *CBaseCombatWeapon::GetShootSound( int iIndex ) const
-{
-	return GetWpnData().aShootSounds[ iIndex ];
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-int CBaseCombatWeapon::GetRumbleEffect() const
-{
-	return GetWpnData().iRumbleEffect;
+	return g_pWeaponDef->GetWeaponDefinition(GetWeaponID())->szClassName;
 }
 
 //-----------------------------------------------------------------------------
@@ -616,8 +464,6 @@ bool CBaseCombatWeapon::HasAmmo( void )
 {
 	// Weapons with no ammo types can always be selected
 	if ( m_iPrimaryAmmoType == -1 && m_iSecondaryAmmoType == -1  )
-		return true;
-	if ( GetWeaponFlags() & ITEM_FLAG_SELECTONEMPTY )
 		return true;
 
 	CBasePlayer *player = ToBasePlayer( GetOwner() );
@@ -885,8 +731,7 @@ bool CBaseCombatWeapon::ShouldDisplayAltFireHUDHint()
 void CBaseCombatWeapon::DisplayAltFireHudHint()
 {
 #if !defined( CLIENT_DLL )
-	CFmtStr hint;
-	hint.sprintf( "#valve_hint_alt_%s", GetClassname() );
+	CFmtStr hint("#valve_hint_alt_%s", GetClassname());
 	UTIL_HudHintText( GetOwner(), hint.Access() );
 	m_iAltFireHudHintCount++;
 	m_bAltFireHudHintDisplayed = true;
@@ -1365,7 +1210,7 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 	if ( !HasAnyAmmo() && m_flNextPrimaryAttack < gpGlobals->curtime && m_flNextSecondaryAttack < gpGlobals->curtime )
 	{
 		// weapon isn't useable, switch.
-		if ( ( (GetWeaponFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY) == false ) && ( g_pGameRules->SwitchToNextBestWeapon( pOwner, this ) ) )
+		if ( g_pGameRules->SwitchToNextBestWeapon( pOwner, this ) )
 		{
 			m_flNextPrimaryAttack = gpGlobals->curtime + 0.3;
 			return true;
@@ -1376,7 +1221,6 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 		// Weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
 		if ( UsesClipsForAmmo1() && !AutoFiresFullClip() && 
 			 (m_iClip1 == 0) && 
-			 (GetWeaponFlags() & ITEM_FLAG_NOAUTORELOAD) == false && 
 			 m_flNextPrimaryAttack < gpGlobals->curtime && 
 			 m_flNextSecondaryAttack < gpGlobals->curtime )
 		{
@@ -1418,19 +1262,19 @@ bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 		SetViewModel();
 		SendWeaponAnim( iActivity );
 
-		pOwner->SetNextAttack( gpGlobals->curtime + SequenceDuration() );
+		pOwner->SetNextAttack( gpGlobals->curtime + DeployTime() );
 	}
 
 	// Can't shoot again until we've finished deploying
-	m_flNextPrimaryAttack	= gpGlobals->curtime + SequenceDuration();
-	m_flNextSecondaryAttack	= gpGlobals->curtime + SequenceDuration();
+	m_flNextPrimaryAttack	= gpGlobals->curtime + DeployTime();
+	m_flNextSecondaryAttack	= gpGlobals->curtime + DeployTime();
 	m_flHudHintMinDisplayTime = 0;
 
 	m_bAltFireHudHintDisplayed = false;
 	m_bReloadHudHintDisplayed = false;
 	m_flHudHintPollTime = gpGlobals->curtime + 5.0f;
 	
-	WeaponSound( DEPLOY );
+	WeaponSound( GetWeaponSound("deploy") );
 
 	SetWeaponVisible( true );
 
@@ -1573,56 +1417,6 @@ bool CBaseCombatWeapon::CanReload( void )
 	return true;
 }
 
-#if defined ( TF_CLIENT_DLL ) || defined ( TF_DLL )
-//-----------------------------------------------------------------------------
-// Purpose: Anti-hack
-//-----------------------------------------------------------------------------
-void CBaseCombatWeapon::AddToCritBucket( float flAmount )
-{
-	float flCap = tf_weapon_criticals_bucket_cap.GetFloat();
-
-	// Regulate crit frequency to reduce client-side seed hacking
-	if ( m_flCritTokenBucket < flCap )
-	{
-		// Treat raw damage as the resource by which we add or subtract from the bucket
-		m_flCritTokenBucket += flAmount;
-		m_flCritTokenBucket = Min( m_flCritTokenBucket, flCap );
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Anti-hack
-//-----------------------------------------------------------------------------
-bool CBaseCombatWeapon::IsAllowedToWithdrawFromCritBucket( float flDamage )
-{
-	// Note: If we're in this block of code, the assumption is that the
-	// seed said we should grant a random crit.  If allowed, the cost
-	// will be deducted here.
-
-	// Track each seed request - in cases where a player is hacking, we'll 
-	// see a silly ratio.
-	m_nCritSeedRequests++;
-
-	// Adjust token cost based on the ratio of requests vs granted, except
-	// melee, which crits much more than ranged (as high as 60% chance)
-	float flMult = ( IsMeleeWeapon() ) ? 0.5f : RemapValClamped( ( (float)m_nCritSeedRequests / (float)m_nCritChecks ), 0.1f, 1.f, 1.f, 3.f );
-
-	// Would this take us below our limit?
-	float flCost = ( flDamage * TF_DAMAGE_CRIT_MULTIPLIER ) * flMult;
-	if ( flCost > m_flCritTokenBucket )
-		return false;
-
-	// Withdraw
-	RemoveFromCritBucket( flCost );
-
-	float flBottom = tf_weapon_criticals_bucket_bottom.GetFloat();
-	if ( m_flCritTokenBucket < flBottom )
-		m_flCritTokenBucket = flBottom;
-
-	return true;
-}
-#endif // TF_DLL
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1700,14 +1494,14 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 		{
 			if (m_flNextEmptySoundTime < gpGlobals->curtime)
 			{
-				WeaponSound(EMPTY);
+				WeaponSound(GetWeaponSound("empty"));
 				m_flNextSecondaryAttack = m_flNextEmptySoundTime = gpGlobals->curtime + 0.5;
 			}
 		}
 		else if (pOwner->GetWaterLevel() == 3 && m_bAltFiresUnderwater == false)
 		{
 			// This weapon doesn't fire underwater
-			WeaponSound(EMPTY);
+			WeaponSound(GetWeaponSound("empty"));
 			m_flNextPrimaryAttack = gpGlobals->curtime + 0.2;
 			return;
 		}
@@ -1750,7 +1544,7 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 		else if (pOwner->GetWaterLevel() == 3 && m_bFiresUnderwater == false)
 		{
 			// This weapon doesn't fire underwater
-			WeaponSound(EMPTY);
+			WeaponSound(GetWeaponSound("empty"));
 			m_flNextPrimaryAttack = gpGlobals->curtime + 0.2;
 			return;
 		}
@@ -1816,7 +1610,7 @@ void CBaseCombatWeapon::HandleFireOnEmpty()
 	{
 		if (m_flNextEmptySoundTime < gpGlobals->curtime)
 		{
-			WeaponSound(EMPTY);
+			WeaponSound(GetWeaponSound("empty"));
 			m_flNextEmptySoundTime = gpGlobals->curtime + 0.5;
 		}
 		m_bFireOnEmpty = true;
@@ -1883,16 +1677,14 @@ float CBaseCombatWeapon::GetFireRate( void )
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
-void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /* = 0.0f */ )
+void CBaseCombatWeapon::WeaponSound( const char *pShootSound, float soundtime /* = 0.0f */ )
 {
-	// If we have some sounds from the weapon classname.txt file, play a random one of them
-	const char *shootsound = GetShootSound( sound_type );
-	if ( !shootsound || !shootsound[0] )
+	if ( !pShootSound || !pShootSound[0] )
 		return;
 
 	CSoundParameters params;
 	
-	if ( !GetParametersForSound( shootsound, params, NULL ) )
+	if ( !GetParametersForSound( pShootSound, params, nullptr ) )
 		return;
 
 	if ( params.play_to_owner_only )
@@ -1901,83 +1693,41 @@ void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /
 		if ( GetOwner() && GetOwner()->IsPlayer() )
 		{
 			CSingleUserRecipientFilter filter( ToBasePlayer( GetOwner() ) );
-			if ( IsPredicted() && CBaseEntity::GetPredictionPlayer() )
+			if ( IsPredicted() && GetPredictionPlayer() )
 			{
 				filter.UsePredictionRules();
 			}
-			EmitSound( filter, GetOwner()->entindex(), shootsound, NULL, soundtime );
+			EmitSound( filter, GetOwner()->entindex(), pShootSound, nullptr, soundtime );
 		}
 	}
 	else
 	{
-		// Play weapon sound from the owner
-		if ( GetOwner() )
-		{
-			CPASAttenuationFilter filter( GetOwner(), params.soundlevel );
-			if ( IsPredicted() && CBaseEntity::GetPredictionPlayer() )
-			{
-				filter.UsePredictionRules();
-			}
-			EmitSound( filter, GetOwner()->entindex(), shootsound, NULL, soundtime ); 
-
-#if !defined( CLIENT_DLL )
-			if( sound_type == EMPTY )
-			{
-				CSoundEnt::InsertSound( SOUND_COMBAT, GetOwner()->GetAbsOrigin(), SOUNDENT_VOLUME_EMPTY, 0.2, GetOwner() );
-			}
-#endif
-		}
-		// If no owner play from the weapon (this is used for thrown items)
+		const auto pOwner = GetOwner();
+		CBaseEntity* pEntity;
+		if (pOwner)
+			pEntity = pOwner;
 		else
-		{
-			CPASAttenuationFilter filter( this, params.soundlevel );
-			if ( IsPredicted() && CBaseEntity::GetPredictionPlayer() )
-			{
-				filter.UsePredictionRules();
-			}
-			EmitSound( filter, entindex(), shootsound, NULL, soundtime ); 
-		}
+			pEntity = this;
+
+		CPASAttenuationFilter filter(pEntity, params.soundlevel);
+		if (IsPredicted() && GetPredictionPlayer())
+			filter.UsePredictionRules();
+
+		EmitSound(filter, pEntity->entindex(), pShootSound, nullptr, soundtime);
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Stop a sound played by this weapon.
 //-----------------------------------------------------------------------------
-void CBaseCombatWeapon::StopWeaponSound( WeaponSound_t sound_type )
+void CBaseCombatWeapon::StopWeaponSound( const char *pShootSound )
 {
-	//if ( IsPredicted() )
-	//	return;
-
-	// If we have some sounds from the weapon classname.txt file, play a random one of them
-	const char *shootsound = GetShootSound( sound_type );
-	if ( !shootsound || !shootsound[0] )
-		return;
-	
-	CSoundParameters params;
-	if ( !GetParametersForSound( shootsound, params, NULL ) )
+	if ( !pShootSound || !pShootSound[0] )
 		return;
 
-	// Am I only to play to my owner?
-	if ( params.play_to_owner_only )
-	{
-		if ( GetOwner() )
-		{
-			StopSound( GetOwner()->entindex(), shootsound );
-		}
-	}
-	else
-	{
-		// Play weapon sound from the owner
-		if ( GetOwner() )
-		{
-			StopSound( GetOwner()->entindex(), shootsound );
-		}
-		// If no owner play from the weapon (this is used for thrown items)
-		else
-		{
-			StopSound( entindex(), shootsound );
-		}
-	}
+	// If no owner the sound is played from the weapon (this is used for thrown items)
+	const auto pOwner = GetOwner();
+	StopSound(pOwner ? pOwner->entindex() : entindex(), pShootSound);
 }
 
 //-----------------------------------------------------------------------------
@@ -2021,7 +1771,7 @@ bool CBaseCombatWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActi
 
 #ifdef CLIENT_DLL
 	// Play reload
-	WeaponSound( RELOAD );
+	WeaponSound( GetWeaponSound("reload") );
 #endif
 	SendWeaponAnim( iActivity );
 
@@ -2208,7 +1958,7 @@ void CBaseCombatWeapon::FinishReload( void )
 void CBaseCombatWeapon::AbortReload( void )
 {
 #ifdef CLIENT_DLL
-	StopWeaponSound( RELOAD ); 
+	StopWeaponSound( GetWeaponSound("reload") ); 
 #endif
 	m_bInReload = false;
 }
@@ -2301,7 +2051,7 @@ void CBaseCombatWeapon::PrimaryAttack( void )
 	while ( m_flNextPrimaryAttack <= gpGlobals->curtime )
 	{
 		// MUST call sound before removing a round from the clip of a CMachineGun
-		WeaponSound(SINGLE, m_flNextPrimaryAttack);
+		WeaponSound(GetWeaponSound("single_shot"), m_flNextPrimaryAttack);
 		m_flNextPrimaryAttack = m_flNextPrimaryAttack + fireRate;
 		info.m_iShots++;
 		if ( !fireRate )

@@ -58,7 +58,7 @@ void PrecachePhysicsSounds( void );
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar phys_speeds( "phys_speeds", "0" );
+ConVar phys_speeds( "phys_speeds", "0", FCVAR_MAPPING );
 
 // defined in phys_constraint
 extern IPhysicsConstraintEvent *g_pConstraintEvents;
@@ -87,7 +87,7 @@ void TimescaleChanged( IConVar *var, const char *pOldString, float flOldValue )
 	}
 }
 
-ConVar phys_timescale( "phys_timescale", "1", 0, "Scale time for physics", TimescaleChanged );
+ConVar phys_timescale( "phys_timescale", "1", FCVAR_MAPPING, "Scale time for physics", TimescaleChanged );
 
 #if _DEBUG
 ConVar phys_dontprintint( "phys_dontprintint", "1", FCVAR_NONE, "Don't print inter-penetration warnings." );
@@ -1278,7 +1278,7 @@ static void CallbackReport( CBaseEntity *pEntity )
 	Msg( "%s - %s\n", pEntity->GetClassname(), pName );
 }
 
-CON_COMMAND(physics_highlight_active, "Turns on the absbox for all active physics objects")
+CON_COMMAND_F(physics_highlight_active, "Turns on the absbox for all active physics objects", FCVAR_MAPPING)
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -1286,7 +1286,7 @@ CON_COMMAND(physics_highlight_active, "Turns on the absbox for all active physic
 	IterateActivePhysicsEntities( CallbackHighlight );
 }
 
-CON_COMMAND(physics_report_active, "Lists all active physics objects")
+CON_COMMAND_F(physics_report_active, "Lists all active physics objects", FCVAR_MAPPING)
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -1294,7 +1294,7 @@ CON_COMMAND(physics_report_active, "Lists all active physics objects")
 	IterateActivePhysicsEntities( CallbackReport );
 }
 
-CON_COMMAND_F(surfaceprop, "Reports the surface properties at the cursor", FCVAR_CHEAT )
+CON_COMMAND_F(surfaceprop, "Reports the surface properties at the cursor", FCVAR_CHEAT | FCVAR_MAPPING )
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -1538,7 +1538,7 @@ void PhysicsCommand( const CCommand &args, void (*func)( CBaseEntity *pEntity ) 
 	}
 }
 
-CON_COMMAND(physics_constraints, "Highlights constraint system graph for an entity")
+CON_COMMAND_F(physics_constraints, "Highlights constraint system graph for an entity", FCVAR_MAPPING)
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -1546,7 +1546,7 @@ CON_COMMAND(physics_constraints, "Highlights constraint system graph for an enti
 	PhysicsCommand( args, DebugConstraints );
 }
 
-CON_COMMAND(physics_debug_entity, "Dumps debug info for an entity")
+CON_COMMAND_F(physics_debug_entity, "Dumps debug info for an entity", FCVAR_MAPPING)
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -1554,7 +1554,7 @@ CON_COMMAND(physics_debug_entity, "Dumps debug info for an entity")
 	PhysicsCommand( args, OutputVPhysicsDebugInfo );
 }
 
-CON_COMMAND(physics_select, "Dumps debug info for an entity")
+CON_COMMAND_F(physics_select, "Dumps debug info for an entity", FCVAR_MAPPING)
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -1562,7 +1562,7 @@ CON_COMMAND(physics_select, "Dumps debug info for an entity")
 	PhysicsCommand( args, MarkVPhysicsDebug );
 }
 
-CON_COMMAND( physics_budget, "Times the cost of each active object" )
+CON_COMMAND_F( physics_budget, "Times the cost of each active object", FCVAR_MAPPING )
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
@@ -2840,23 +2840,6 @@ IPhysicsObject *FindPhysicsObjectByName( const char *pName, CBaseEntity *pErrorE
 	}
 	return pBestObject;
 }
-
-void CC_AirDensity( const CCommand &args )
-{
-	if ( !physenv )
-		return;
-
-	if ( args.ArgC() < 2 )
-	{
-		Msg( "air_density <value>\nCurrent air density is %.2f\n", physenv->GetAirDensity() );
-	}
-	else
-	{
-		float density = atof( args[1] );
-		physenv->SetAirDensity( density );
-	}
-}
-static ConCommand air_density("air_density", CC_AirDensity, "Changes the density of air for drag computations.", FCVAR_CHEAT);
 
 void DebugDrawContactPoints(IPhysicsObject *pPhysics)
 {

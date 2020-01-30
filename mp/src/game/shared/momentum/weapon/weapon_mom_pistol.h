@@ -24,14 +24,13 @@ class CMomentumPistol : public CWeaponBaseGun
 
     void ItemPostFrame() OVERRIDE;
 
-    void PistolFire();
     void FireRemaining(int &shotsFired, float &shootTime) const;
 #ifdef WEAPONS_USE_AMMO
     bool Reload() OVERRIDE;
 #endif
     void WeaponIdle() OVERRIDE;
 
-    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
 
   private:
     CMomentumPistol(const CMomentumPistol &);

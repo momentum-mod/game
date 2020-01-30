@@ -38,16 +38,6 @@ C_BaseCombatCharacter::~C_BaseCombatCharacter()
 {
 }
 
-/*
-//-----------------------------------------------------------------------------
-// Purpose: Returns the amount of ammunition of the specified type the character's carrying
-//-----------------------------------------------------------------------------
-int	C_BaseCombatCharacter::GetAmmoCount( char *szName ) const
-{
-	return GetAmmoCount( g_pGameRules->GetAmmoDef()->Index(szName) );
-}
-*/
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -108,6 +98,6 @@ BEGIN_PREDICTION_DATA( C_BaseCombatCharacter )
 	DEFINE_PRED_ARRAY( m_iAmmo, FIELD_INTEGER,  MAX_AMMO_TYPES, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flNextAttack, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_hActiveWeapon, FIELD_EHANDLE, FTYPEDESC_INSENDTABLE ),
-	DEFINE_PRED_ARRAY( m_hMyWeapons, FIELD_EHANDLE, MAX_WEAPONS, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_ARRAY( m_hMyWeapons, FIELD_EHANDLE, WEAPON_MAX, FTYPEDESC_INSENDTABLE ),
 
 END_PREDICTION_DATA()

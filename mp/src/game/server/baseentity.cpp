@@ -61,6 +61,7 @@
 #include "env_debughistory.h"
 #include "tier1/utlstring.h"
 #include "utlhashtable.h"
+#include "damagemodifier.h"
 
 #if defined( TF_DLL )
 #include "tf_gamerules.h"
@@ -1858,7 +1859,7 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 	DEFINE_GLOBAL_KEYFIELD( m_ModelName, FIELD_MODELNAME, "model" ),
 	
 	DEFINE_KEYFIELD( m_vecBaseVelocity, FIELD_VECTOR, "basevelocity" ),
-	DEFINE_FIELD( m_vecAbsVelocity, FIELD_VECTOR ),
+	DEFINE_KEYFIELD( m_vecAbsVelocity, FIELD_VECTOR, "absvelocity" ),
 	DEFINE_KEYFIELD( m_vecAngVelocity, FIELD_VECTOR, "avelocity" ),
 //	DEFINE_FIELD( m_vecAbsAngVelocity, FIELD_VECTOR ),
 	DEFINE_ARRAY( m_rgflCoordinateFrame, FIELD_FLOAT, 12 ), // NOTE: MUST BE IN LOCAL SPACE, NOT POSITION_VECTOR!!! (see CBaseEntity::Restore)
@@ -1934,6 +1935,7 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 
 	// Entity I/O methods to alter context
 	DEFINE_INPUTFUNC( FIELD_STRING, "AddContext", InputAddContext ),
+	DEFINE_INPUTFUNC( FIELD_STRING, "IncrementContext", InputIncrementContext ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "RemoveContext", InputRemoveContext ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "ClearContext", InputClearContext ),
 
@@ -1951,6 +1953,8 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 	DEFINE_OUTPUT( m_OnUser2, "OnUser2" ),
 	DEFINE_OUTPUT( m_OnUser3, "OnUser3" ),
 	DEFINE_OUTPUT( m_OnUser4, "OnUser4" ),
+
+	DEFINE_OUTPUT( m_OnKilled, "OnKilled" ),
 
 	// Function Pointers
 	DEFINE_FUNCTION( SUB_Remove ),
@@ -4133,6 +4137,8 @@ void CBaseEntity::GetInputDispatchEffectPosition( const char *sInputString, Vect
 //-----------------------------------------------------------------------------
 void CBaseEntity::InputKill( inputdata_t &inputdata )
 {
+    m_OnKilled.FireOutput(inputdata.pActivator, this);
+
 	// tell owner ( if any ) that we're dead.This is mostly for NPCMaker functionality.
 	CBaseEntity *pOwner = GetOwnerEntity();
 	if ( pOwner )
@@ -4141,11 +4147,21 @@ void CBaseEntity::InputKill( inputdata_t &inputdata )
 		SetOwnerEntity( NULL );
 	}
 
-	UTIL_Remove( this );
+	if (IsPlayer())
+    {
+        // never just delete players
+        engine->ServerCommand(UTIL_VarArgs("kickid %d CBaseEntity::InputKill()\n", engine->GetPlayerUserId(edict())));
+    }
+    else
+    {
+        UTIL_Remove(this);
+    }
 }
 
 void CBaseEntity::InputKillHierarchy( inputdata_t &inputdata )
 {
+    m_OnKilled.FireOutput(inputdata.pActivator, this);
+
 	CBaseEntity *pChild, *pNext;
 	for ( pChild = FirstMoveChild(); pChild; pChild = pNext )
 	{
@@ -4161,7 +4177,15 @@ void CBaseEntity::InputKillHierarchy( inputdata_t &inputdata )
 		SetOwnerEntity( NULL );
 	}
 
-	UTIL_Remove( this );
+	if (IsPlayer())
+    {
+        // never just delete players
+        engine->ServerCommand(UTIL_VarArgs("kickid %d CBaseEntity::InputKill()\n", engine->GetPlayerUserId(edict())));
+    }
+    else
+    {
+        UTIL_Remove(this);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -5101,7 +5125,7 @@ void CC_Ent_Remove( const CCommand& args )
 		UTIL_Remove( pEntity );
 	}
 }
-static ConCommand ent_remove("ent_remove", CC_Ent_Remove, "Removes the given entity(s)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_remove("ent_remove", CC_Ent_Remove, "Removes the given entity(s)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 void CC_Ent_RemoveAll( const CCommand& args )
@@ -5137,7 +5161,7 @@ void CC_Ent_RemoveAll( const CCommand& args )
 		}
 	}
 }
-static ConCommand ent_remove_all("ent_remove_all", CC_Ent_RemoveAll, "Removes all entities of the specified type\n\tArguments:   	{entity_name} / {class_name} ", FCVAR_CHEAT);
+static ConCommand ent_remove_all("ent_remove_all", CC_Ent_RemoveAll, "Removes all entities of the specified type\n\tArguments:   	{entity_name} / {class_name} ", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 void CC_Ent_SetName( const CCommand& args )
@@ -5183,7 +5207,7 @@ void CC_Ent_SetName( const CCommand& args )
 		}
 	}
 }
-static ConCommand ent_setname("ent_setname", CC_Ent_SetName, "Sets the targetname of the given entity(s)\n\tArguments:   	{new entity name} {entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_setname("ent_setname", CC_Ent_SetName, "Sets the targetname of the given entity(s)\n\tArguments:   	{new entity name} {entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 void CC_Find_Ent( const CCommand& args )
@@ -5355,12 +5379,6 @@ public:
 		{
 			return;
 		}
-
-        if (!CommandLine()->FindParm("-mapping"))
-        {
-            Warning("Launch the game with -mapping to be able to use ent_fire!\n");
-            return;
-        }
 
 		// fires a command from the console
 		if ( command.ArgC() < 2 )
@@ -5580,7 +5598,7 @@ private:
 };
 
 static CEntFireAutoCompletionFunctor g_EntFireAutoComplete;
-static ConCommand ent_fire("ent_fire", &g_EntFireAutoComplete, "Usage:\n   ent_fire <target> [action] [value] [delay]\n", FCVAR_CHEAT, &g_EntFireAutoComplete );
+static ConCommand ent_fire("ent_fire", &g_EntFireAutoComplete, "Usage:\n   ent_fire <target> [action] [value] [delay]\n", FCVAR_MAPPING, &g_EntFireAutoComplete );
 
 void CC_Ent_CancelPendingEntFires( const CCommand& args )
 {
@@ -5593,7 +5611,7 @@ void CC_Ent_CancelPendingEntFires( const CCommand& args )
 
 	g_EventQueue.CancelEvents( pPlayer );
 }
-static ConCommand ent_cancelpendingentfires("ent_cancelpendingentfires", CC_Ent_CancelPendingEntFires, "Cancels all ent_fire created outputs that are currently waiting for their delay to expire." );
+static ConCommand ent_cancelpendingentfires("ent_cancelpendingentfires", CC_Ent_CancelPendingEntFires, "Cancels all ent_fire created outputs that are currently waiting for their delay to expire.", FCVAR_MAPPING );
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -5685,7 +5703,7 @@ void CC_Ent_Pause( void )
 		CBaseEntity::Debug_Pause(true);
 	}
 }
-static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input/output message processing for entities.  When turned on processing of all message will stop.  Any messages displayed with 'ent_messages' will stop fading and be displayed indefinitely. To step through the messages one by one use 'ent_step'.", FCVAR_CHEAT);
+static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input/output message processing for entities.  When turned on processing of all message will stop.  Any messages displayed with 'ent_messages' will stop fading and be displayed indefinitely. To step through the messages one by one use 'ent_step'.", FCVAR_MAPPING);
 
 
 //------------------------------------------------------------------------------
@@ -5728,7 +5746,7 @@ void CC_Ent_Step( const CCommand& args )
 	}
 	CBaseEntity::Debug_SetSteps(nSteps);
 }
-static ConCommand ent_step("ent_step", CC_Ent_Step, "When 'ent_pause' is set this will step through one waiting input / output message at a time.", FCVAR_CHEAT);
+static ConCommand ent_step("ent_step", CC_Ent_Step, "When 'ent_pause' is set this will step through one waiting input / output message at a time.", FCVAR_MAPPING);
 
 void CBaseEntity::SetCheckUntouch( bool check )
 {
@@ -6504,6 +6522,15 @@ void CBaseEntity::InputAddContext( inputdata_t& inputdata )
 	AddContext( contextName );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+// Input  : inputdata -
+//-----------------------------------------------------------------------------
+void CBaseEntity::InputIncrementContext(inputdata_t &inputdata)
+{
+    const char *contextName = inputdata.value.String();
+    AddContext(contextName, true);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: User inputs. These fire the corresponding user outputs, and are
@@ -6541,41 +6568,49 @@ void CBaseEntity::InputFireUser4( inputdata_t& inputdata )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *contextName - 
+// Purpose:
+// Input  : *contextName -
 //-----------------------------------------------------------------------------
-void CBaseEntity::AddContext( const char *contextName )
+void CBaseEntity::AddContext(const char *contextName, bool increment)
 {
-	char key[ 128 ];
-	char value[ 128 ];
-	float duration;
+    char key[128];
+    char value[128];
+    float duration;
 
-	const char *p = contextName;
-	while ( p )
-	{
-		duration = 0.0f;
-		p = SplitContext( p, key, sizeof( key ), value, sizeof( value ), &duration );
-		if ( duration )
-		{
-			duration += gpGlobals->curtime;
-		}
+    const char *p = contextName;
+    while (p)
+    {
+        duration = 0.0f;
+        p = SplitContext(p, key, sizeof(key), value, sizeof(value), &duration);
+        if (duration)
+        {
+            duration += gpGlobals->curtime;
+        }
 
-		int iIndex = FindContextByName( key );
-		if ( iIndex != -1 )
-		{
-			// Set the existing context to the new value
-			m_ResponseContexts[iIndex].m_iszValue = AllocPooledString( value );
-			m_ResponseContexts[iIndex].m_fExpirationTime = duration;
-			continue;
-		}
+        int iIndex = FindContextByName(key);
+        if (iIndex != -1)
+        {
+            // Set the existing context to the new value, or increment if requested
+            if (increment)
+            {
+                int iValue = atoi(value) + atoi(m_ResponseContexts[iIndex].m_iszValue.ToCStr());
+                Q_snprintf(value, 128, "%d", iValue);
+                m_ResponseContexts[iIndex].m_iszValue = AllocPooledString(value);
+            }
+            else
+                m_ResponseContexts[iIndex].m_iszValue = AllocPooledString(value);
 
-		ResponseContext_t newContext;
-		newContext.m_iszName = AllocPooledString( key );
-		newContext.m_iszValue = AllocPooledString( value );
-		newContext.m_fExpirationTime = duration;
+            m_ResponseContexts[iIndex].m_fExpirationTime = duration;
+            continue;
+        }
 
-		m_ResponseContexts.AddToTail( newContext );
-	}
+        ResponseContext_t newContext;
+        newContext.m_iszName = AllocPooledString(key);
+        newContext.m_iszValue = AllocPooledString(value);
+        newContext.m_fExpirationTime = duration;
+
+        m_ResponseContexts.AddToTail(newContext);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -7369,12 +7404,6 @@ void CC_Ent_Create( const CCommand& args )
 		return;
 	}
 
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to be able to use ent_create!\n");
-        return;
-    }
-
 	// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
 	if ( !Q_stricmp( args[1], "point_servercommand" ) )
 	{
@@ -7431,7 +7460,7 @@ void CC_Ent_Create( const CCommand& args )
 	}
 	CBaseEntity::SetAllowPrecache( allowPrecache );
 }
-static ConCommand ent_create("ent_create", CC_Ent_Create, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL | FCVAR_CHEAT);
+static ConCommand ent_create("ent_create", CC_Ent_Create, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose: Teleport a specified entity to where the player is looking
@@ -7499,12 +7528,6 @@ void CC_Ent_Teleport( const CCommand& args )
 		return;
 	}
 
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use ent_teleport!\n");
-        return;
-    }
-
 	CBaseEntity *pEnt;
 	Vector vecTargetPoint;
 	if ( CC_GetCommandEnt( args, &pEnt, &vecTargetPoint, NULL ) )
@@ -7513,7 +7536,7 @@ void CC_Ent_Teleport( const CCommand& args )
 	}
 }
 
-static ConCommand ent_teleport("ent_teleport", CC_Ent_Teleport, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_CHEAT);
+static ConCommand ent_teleport("ent_teleport", CC_Ent_Teleport, "Teleport the specified entity to where the player is looking.\n\tFormat: ent_teleport <entity name>", FCVAR_MAPPING);
 
 //------------------------------------------------------------------------------
 // Purpose: Orient a specified entity to match the player's angles
@@ -7525,12 +7548,6 @@ void CC_Ent_Orient( const CCommand& args )
 		Msg( "Format: ent_orient <entity name> <optional: allangles>\n" );
 		return;
 	}
-
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        Warning("Launch the game with -mapping to use ent_orient!\n");
-        return;
-    }
 
 	CBaseEntity *pEnt;
 	QAngle vecPlayerAngles;
@@ -7550,4 +7567,4 @@ void CC_Ent_Orient( const CCommand& args )
 	}
 }
 
-static ConCommand ent_orient("ent_orient", CC_Ent_Orient, "Orient the specified entity to match the player's angles. By default, only orients target entity's YAW. Use the 'allangles' option to orient on all axis.\n\tFormat: ent_orient <entity name> <optional: allangles>", FCVAR_CHEAT);
+static ConCommand ent_orient("ent_orient", CC_Ent_Orient, "Orient the specified entity to match the player's angles. By default, only orients target entity's YAW. Use the 'allangles' option to orient on all axis.\n\tFormat: ent_orient <entity name> <optional: allangles>", FCVAR_MAPPING);

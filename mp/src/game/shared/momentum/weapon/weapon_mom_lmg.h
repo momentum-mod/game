@@ -16,9 +16,5 @@ public:
     CMomentumLMG();
 
     void PrimaryAttack() OVERRIDE;
-    CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_LMG; }
-
-private:
-    CMomentumLMG(const CMomentumLMG &);
-    void LMGFire();
+    WeaponID_t GetWeaponID() const OVERRIDE { return WEAPON_LMG; }
 };

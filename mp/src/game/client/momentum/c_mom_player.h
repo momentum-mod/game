@@ -65,11 +65,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 
     CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
 
-    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,
-                                 bool &bIsPaintAmmo);
-
-    void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
-                    int iBulletType, int iDamage, float flRangeModifier, CBaseEntity *pevAttacker, bool bDoEffects,
+    void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, CBaseEntity *pevAttacker, bool bDoEffects,
                     float x, float y);
 
     void KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max,

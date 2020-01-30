@@ -121,7 +121,7 @@ void CMomentumGhostClient::ResetOtherAppearanceData()
     g_pMomentumLobbySystem->ResetOtherAppearanceData();
 }
 
-void CMomentumGhostClient::SendAppearanceData(GhostAppearance_t appearance)
+void CMomentumGhostClient::SendAppearanceData(const AppearanceData_t &appearance)
 {
     // MOM_TODO: g_pMomentumServerSystem->SetAppearance(appearance);
     g_pMomentumLobbySystem->SetAppearanceInMemberData(appearance);
@@ -155,6 +155,11 @@ bool CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPack
 {
     // MOM_TODO: g_pMomentumServerSystem->SendSavelocReqPacket(target, packet);
     return g_pMomentumLobbySystem->SendSavelocReqPacket(target, packet);
+}
+
+bool CMomentumGhostClient::IsInOnlineSession()
+{
+    return g_pMomentumLobbySystem->LobbyValid(); /*MOM_TODO: || g_pMomentumServerSystem->ServerValid();*/
 }
 
 CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(const uint64& id)

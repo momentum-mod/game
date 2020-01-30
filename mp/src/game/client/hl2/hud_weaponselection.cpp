@@ -11,9 +11,8 @@
 #include "history_resource.h"
 #include "input.h"
 #include "../hud_crosshair.h"
+#include "weapon/weapon_def.h"
 
-#include "VGuiMatSurface/IMatSystemSurface.h"
-#include <KeyValues.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui/ISystem.h>
@@ -770,6 +769,7 @@ void CHudWeaponSelection::Paint()
 void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool bSelected, int xpos, int ypos, int boxWide, int boxTall, Color selectedColor, float alpha, int number )
 {
 	Color col = bSelected ? m_SelectedFgColor : GetFgColor();
+	const auto pWeaponHUDResource = g_pWeaponDef->GetWeaponHUDResource(pWeapon->GetWeaponID());
 	
 	switch ( hud_fastswitch.GetInt() )
 	{
@@ -780,7 +780,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 
 			// draw icon
 			col[3] *= (alpha / 255.0f);
-            const CHudTexture* pWeaponSpriteActive = pWeapon->GetSpriteActive();
+            const CHudTexture* pWeaponSpriteActive = pWeaponHUDResource->m_vecResources[HUD_RESOURCE_ACTIVE];
             if (pWeaponSpriteActive)
 			{
 				// find the center of the box to draw in
@@ -815,7 +815,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 				}
 				
 				// draw the inactive version
-				pWeapon->GetSpriteInactive()->DrawSelf( xpos + x_offs, ypos + y_offs, col );
+				pWeaponHUDResource->m_vecResources[HUD_RESOURCE_INACTIVE]->DrawSelf( xpos + x_offs, ypos + y_offs, col );
 			}
 		}
 		break;
@@ -847,7 +847,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 
 			// draw icon
 			col[3] *= (alpha / 255.0f);
-            const CHudTexture *pWeaponSpriteInactive = pWeapon->GetSpriteInactive();
+            const CHudTexture *pWeaponSpriteInactive = pWeaponHUDResource->m_vecResources[HUD_RESOURCE_INACTIVE];
             if (pWeaponSpriteInactive)
 			{
                 iconWidth = pWeaponSpriteInactive->Width();
@@ -873,7 +873,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 				// draw the inactive version
                 pWeaponSpriteInactive->DrawSelf(xpos + x_offs, ypos + y_offs, iconWidth, iconHeight, col);
 			}
-            const CHudTexture* pWeaponSpriteActive = pWeapon->GetSpriteActive();
+            const CHudTexture* pWeaponSpriteActive = pWeaponHUDResource->m_vecResources[HUD_RESOURCE_ACTIVE];
             if (bSelected && pWeaponSpriteActive)
 			{
 				// find the center of the box to draw in
@@ -924,12 +924,11 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 
 	// draw text
 	col = m_TextColor;
-	const FileWeaponInfo_t &weaponInfo = pWeapon->GetWpnData();
 
 	if ( bSelected )
 	{
 		wchar_t text[128];
-		wchar_t *tempString = g_pVGuiLocalize->Find(weaponInfo.szPrintName);
+		wchar_t *tempString = g_pVGuiLocalize->Find(pWeapon->GetPrintName());
 
 		// setup our localized string
 		if ( tempString )
@@ -944,7 +943,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 		else
 		{
 			// string wasn't found by g_pVGuiLocalize->Find()
-			g_pVGuiLocalize->ConvertANSIToUnicode(weaponInfo.szPrintName, text, sizeof(text));
+			g_pVGuiLocalize->ConvertANSIToUnicode(pWeapon->GetPrintName(), text, sizeof(text));
 		}
 
 		surface()->DrawSetTextColor( col );
@@ -1099,7 +1098,7 @@ C_BaseCombatWeapon *CHudWeaponSelection::FindNextWeaponInWeaponSelection(int iCu
 	// search all the weapons looking for the closest next
 	int iLowestNextSlot = MAX_WEAPON_SLOTS;
 	int iLowestNextPosition = MAX_WEAPON_POSITIONS;
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = pPlayer->GetWeapon(i);
 		if ( !pWeapon )
@@ -1140,7 +1139,7 @@ C_BaseCombatWeapon *CHudWeaponSelection::FindPrevWeaponInWeaponSelection(int iCu
 	// search all the weapons looking for the closest next
 	int iLowestPrevSlot = -1;
 	int iLowestPrevPosition = -1;
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = pPlayer->GetWeapon(i);
 		if ( !pWeapon )
@@ -1285,7 +1284,7 @@ int CHudWeaponSelection::GetLastPosInSlot( int iSlot ) const
 		return -1;
 
 	iMaxSlotPos = -1;
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = player->GetWeapon(i);
 		
@@ -1308,7 +1307,7 @@ C_BaseCombatWeapon *CHudWeaponSelection::GetWeaponInSlot( int iSlot, int iSlotPo
 	if ( !player )
 		return NULL;
 
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	for ( int i = 0; i < WEAPON_MAX; i++ )
 	{
 		C_BaseCombatWeapon *pWeapon = player->GetWeapon(i);
 

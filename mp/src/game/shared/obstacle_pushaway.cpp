@@ -23,12 +23,6 @@ ConVar sv_pushaway_clientside( "sv_pushaway_clientside", "0", SV_PUSH_CONVAR_FLA
 ConVar sv_pushaway_player_force( "sv_pushaway_player_force", "200000", SV_PUSH_CONVAR_FLAGS | FCVAR_CHEAT, "How hard the player is pushed away from physics objects (falls off with inverse square of distance)." );
 ConVar sv_pushaway_max_player_force( "sv_pushaway_max_player_force", "10000", SV_PUSH_CONVAR_FLAGS | FCVAR_CHEAT, "Maximum of how hard the player is pushed away from physics objects." );
 
-#ifdef CLIENT_DLL
-ConVar sv_turbophysics( "sv_turbophysics", "0", FCVAR_REPLICATED, "Turns on turbo physics" );
-#else
-extern ConVar sv_turbophysics;
-#endif
-
 //-----------------------------------------------------------------------------------------------------
 bool IsPushAwayEntity( CBaseEntity *pEnt )
 {
@@ -73,30 +67,6 @@ bool IsPushAwayEntity( CBaseEntity *pEnt )
 	}
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------------------------------
-bool IsPushableEntity( CBaseEntity *pEnt )
-{
-	if ( pEnt == NULL )
-		return false;
-
-	if ( sv_turbophysics.GetBool() )
-	{
-		if ( pEnt->GetCollisionGroup() == COLLISION_GROUP_NONE )
-		{
-#ifdef CLIENT_DLL
-			if ( FClassnameIs( pEnt, "class CPhysicsPropMultiplayer" ) )
-#else
-			if ( FClassnameIs( pEnt, "prop_physics_multiplayer" ) )
-#endif // CLIENT_DLL
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 //-----------------------------------------------------------------------------------------------------

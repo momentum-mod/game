@@ -4,14 +4,6 @@ WeaponData
     "CrosshairDeltaDistance"    "4"
     "BuiltRightHanded"          "1"
     
-    // Weapon characteristics:
-    "Penetration"       "1"
-    "Damage"            "22"
-    "Range"             "3000"
-    "RangeModifier"     "0.70"
-    "Bullets"           "6"
-    "CycleTime"         "0.25"
-    
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Shotgun"
     "viewmodel"         "models/weapons/v_mom_shotgun.mdl"
@@ -22,9 +14,6 @@ WeaponData
     "bucket_position"   "1"
 
     "clip_size"         "7"
-    
-    "primary_ammo"      "BULLET_PLAYER_BUCKSHOT"
-    "secondary_ammo"    "None"
 
     "weight"            "20"
     "item_flags"        "0"
@@ -76,19 +65,6 @@ WeaponData
                 "y"         "48"
                 "width"     "24"
                 "height"    "24"
-        }
-    }
-    ModelBounds
-    {
-        Viewmodel
-        {
-            Mins    "-13 -3 -11"
-            Maxs    "29 10 0"
-        }
-        World
-        {
-            Mins    "-4 -8 -4"
-            Maxs    "30 8 6"
         }
     }
 }

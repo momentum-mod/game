@@ -1,0 +1,10 @@
+"SpriteCard"
+{
+	"$basetexture" "particle\particle_ring_wave_5"
+	$vertexcolor 1
+	$vertexalpha 1
+	$translucent 1
+	$Additive 1
+	$NoCull 1
+	$DEPTHBLEND 1
+}

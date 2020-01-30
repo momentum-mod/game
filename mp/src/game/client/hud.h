@@ -12,8 +12,6 @@
 
 #include "utlvector.h"
 #include "utldict.h"
-#include "convar.h"
-#include <vgui/VGUI.h>
 #include <Color.h>
 #include <bitbuf.h>
 
@@ -142,8 +140,8 @@ public:
 	CHudTexture					*GetIcon( const char *szIcon );
 
 	// loads a new icon into the list, without duplicates
-	CHudTexture					*AddUnsearchableHudIconToList( CHudTexture& texture );
-	CHudTexture					*AddSearchableHudIconToList( CHudTexture& texture );
+	CHudTexture					*AddUnsearchableHudIconToList( const CHudTexture& texture );
+	CHudTexture					*AddSearchableHudIconToList( const CHudTexture& texture );
 
 	void						RefreshHudTextures();
 
@@ -200,7 +198,8 @@ extern CHud gHUD;
 //-----------------------------------------------------------------------------
 extern vgui::HFont g_hFontTrebuchet24;
 
-void LoadHudTextures( CUtlDict< CHudTexture *, int >& list, const char *szFilenameWithoutExtension, const unsigned char *pICEKey );
+void LoadHudTextures(CUtlDict<CHudTexture*>& list, const char *szFilenameWithoutExtension);
+void LoadHudTextures(CUtlDict<CHudTexture*>& list, KeyValues *pKvInput);
 
 void GetHudSize( int& w, int &h );
 

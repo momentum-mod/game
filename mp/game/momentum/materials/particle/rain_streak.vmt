@@ -1,0 +1,12 @@
+//"SpriteCard"
+"UnlitGeneric"
+{
+	"$basetexture" "particle/rain_streak"
+	$additive 1
+	$translucent 1
+	$splinetype 2
+	$depthblend 0
+
+	"$vertexalpha" "1"
+	"$vertexcolor" "1"
+}

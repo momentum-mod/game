@@ -889,15 +889,6 @@ ConVarRef suitcharger( "sk_suitcharger" );
 	//=========================================================
 	float CMultiplayRules::FlWeaponRespawnTime( CBaseCombatWeapon *pWeapon )
 	{
-		if ( weaponstay.GetInt() > 0 )
-		{
-			// make sure it's only certain weapons
-			if ( !(pWeapon->GetWeaponFlags() & ITEM_FLAG_LIMITINWORLD) )
-			{
-				return gpGlobals->curtime + 0;		// weapon respawns almost instantly
-			}
-		}
-
 		return gpGlobals->curtime + WEAPON_RESPAWN_TIME;
 	}
 
@@ -912,15 +903,6 @@ ConVarRef suitcharger( "sk_suitcharger" );
 	//=========================================================
 	float CMultiplayRules::FlWeaponTryRespawn( CBaseCombatWeapon *pWeapon )
 	{
-		if ( pWeapon && (pWeapon->GetWeaponFlags() & ITEM_FLAG_LIMITINWORLD) )
-		{
-			if ( gEntList.NumberOfEntities() < (gpGlobals->maxEntities - ENTITY_INTOLERANCE) )
-				return 0;
-
-			// we're past the entity tolerance level,  so delay the respawn
-			return FlWeaponRespawnTime( pWeapon );
-		}
-
 		return 0;
 	}
 
@@ -955,9 +937,6 @@ ConVarRef suitcharger( "sk_suitcharger" );
 	{
 		if ( weaponstay.GetInt() > 0 )
 		{
-			if ( pItem->GetWeaponFlags() & ITEM_FLAG_LIMITINWORLD )
-				return BaseClass::CanHavePlayerItem( pPlayer, pItem );
-
 			// check if the player already has this weapon
 			for ( int i = 0 ; i < pPlayer->WeaponCount() ; i++ )
 			{

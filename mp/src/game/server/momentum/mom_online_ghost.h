@@ -26,12 +26,11 @@ public:
     CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
     void SetGhostName(const char *pGhostName);
 
-    void SetLobbyGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate = false);
-    LobbyGhostAppearance_t GetLobbyGhostAppearance() const { return m_CurrentAppearance; }
+    void AppearanceFlashlightChanged(const AppearanceData_t &newApp) override;
+    void AppearanceModelColorChanged(const AppearanceData_t &newApp) override;
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
-    void SetGhostColor(const uint32 newHexColor) OVERRIDE;
     void SetGhostFlashlight(bool bEnable);
 
     void Spawn() OVERRIDE;
@@ -55,13 +54,13 @@ protected:
     void CreateTrail() OVERRIDE;
 
     void Think() OVERRIDE;
-    void Precache() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
     void DoPaint(const DecalPacket &packet);
     void DoKnifeSlash(const DecalPacket &packet);
     void ThrowGrenade(const DecalPacket &packet);
+    void FireRocket(const DecalPacket &packet);
 
     CUtlQueue<ReceivedFrame_t<PositionPacket>*> m_vecPositionPackets;
     ReceivedFrame_t<PositionPacket>* m_pCurrentFrame;
@@ -69,5 +68,4 @@ private:
     CUtlQueue<ReceivedFrame_t<DecalPacket>*> m_vecDecalPackets;
 
     CSteamID m_GhostSteamID;
-    LobbyGhostAppearance_t m_CurrentAppearance;
 };

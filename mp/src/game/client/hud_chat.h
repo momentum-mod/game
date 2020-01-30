@@ -23,6 +23,9 @@ class CHudChat : public CBaseHudChat
     STEAM_CALLBACK(CHudChat, OnLobbyMessage, LobbyChatMsg_t);
     STEAM_CALLBACK(CHudChat, OnLobbyDataUpdate, LobbyDataUpdate_t);
 
+    void GetTimestamp(char *pOut, int maxLen);
+    void Printf(int iFilter, const char *fmt, ...) OVERRIDE;
+
     void StartMessageMode(int) OVERRIDE;
     void StopMessageMode() OVERRIDE;
     void FireGameEvent(IGameEvent *event) OVERRIDE;

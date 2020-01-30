@@ -22,6 +22,10 @@
 
 #include "physics_saverestore.h"
 
+#include "utlbuffer.h"
+#include "momentum/util/mom_util.h"
+#include "icommandline.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -38,7 +42,7 @@ IPhysicsSurfaceProps *physprops = NULL;
 // UNDONE: Split into separate hashes?
 IPhysicsObjectPairHash *g_EntityCollisionHash = NULL;
 
-const char *SURFACEPROP_MANIFEST_FILE = "scripts/surfaceproperties_manifest.txt";
+#define SURFACEPROP_MANIFEST_FILE "scripts/surfaceproperties_manifest.txt"
 
 const objectparams_t g_PhysDefaultObjectParams =
 {
@@ -506,58 +510,78 @@ void PhysDestroyObject( IPhysicsObject *pObject, CBaseEntity *pEntity )
 	}
 }
 
-void AddSurfacepropFile( const char *pFileName, IPhysicsSurfaceProps *pProps, IFileSystem *pFileSystem )
+struct SurfacePropFileHash
 {
-	// Load file into memory
-	FileHandle_t file = pFileSystem->Open( pFileName, "rb", "GAME" );
+    const char *pFileName;
+    const char *pFileHash;
+};
 
-	if ( file )
-	{
-		int len = pFileSystem->Size( file );
+static const SurfacePropFileHash s_SurfacePropFiles[] = {
+    {"scripts/surfaceproperties.txt", "1c054b66d1f05298634294c6f93f5dcce5f81285"},
+    {"scripts/surfaceproperties_hl2.txt", "7bb21971c24982aa8d5b62002707c0986591300d"},
+    {"scripts/surfaceproperties_cs.txt", "145f4fc7e1f21b20db3b8e662871a9c39ce84797"},
+    {"scripts/surfaceproperties_tf.txt", "2074c1b2c2df38d5edf925ec8d4aaf48bbdee8b9"},
+};
 
-		// read the file
-		int nBufSize = len+1;
-		if ( IsXbox() )
-		{
-			nBufSize = AlignValue( nBufSize , 512 );
-		}
-		char *buffer = (char *)stackalloc( nBufSize );
-		pFileSystem->ReadEx( buffer, nBufSize, len, file );
-		pFileSystem->Close( file );
-		buffer[len] = 0;
-		pProps->ParseSurfaceData( pFileName, buffer );
-		// buffer is on the stack, no need to free
-	}
-	else
-	{
-		Error( "Unable to load surface prop file '%s' (referenced by manifest file '%s')\n", pFileName, SURFACEPROP_MANIFEST_FILE );
-	}
+bool AddSurfacepropFile(const char *pFileName, IPhysicsSurfaceProps *pProps, IFileSystem *pFileSystem,
+                        const char *pFileHashToVerify = nullptr)
+{
+    CUtlBuffer buf;
+    buf.SetBufferType(true, true);
+    if (pFileSystem->ReadFile(pFileName, "GAME", buf))
+    {
+        if (pFileHashToVerify)
+        {
+            char hash[41];
+            if (!MomUtil::GetSHA1Hash(buf, hash, 41))
+                return false;
+
+            if (!FStrEq(hash, pFileHashToVerify))
+                return false;
+        }
+
+        pProps->ParseSurfaceData(pFileName, buf.String());
+        return true;
+    }
+
+    return false;
 }
 
-void PhysParseSurfaceData( IPhysicsSurfaceProps *pProps, IFileSystem *pFileSystem )
+void PhysParseSurfaceData(IPhysicsSurfaceProps *pProps, IFileSystem *pFileSystem)
 {
-	KeyValues *manifest = new KeyValues( SURFACEPROP_MANIFEST_FILE );
-	if ( manifest->LoadFromFile( pFileSystem, SURFACEPROP_MANIFEST_FILE, "GAME" ) )
-	{
-		for ( KeyValues *sub = manifest->GetFirstSubKey(); sub != NULL; sub = sub->GetNextKey() )
-		{
-			if ( !Q_stricmp( sub->GetName(), "file" ) )
-			{
-				// Add
-				AddSurfacepropFile( sub->GetString(), pProps, pFileSystem );
-				continue;
-			}
-
-			Warning( "surfaceprops::Init:  Manifest '%s' with bogus file type '%s', expecting 'file'\n", 
-				SURFACEPROP_MANIFEST_FILE, sub->GetName() );
-		}
-	}
-	else
-	{
-		Error( "Unable to load manifest file '%s'\n", SURFACEPROP_MANIFEST_FILE );
-	}
-
-	manifest->deleteThis();
+    if (!CommandLine()->FindParm("-mapping"))
+    {
+        for (const auto &entry : s_SurfacePropFiles)
+        {
+            if (!AddSurfacepropFile(entry.pFileName, pProps, pFileSystem, entry.pFileHash))
+                Error("Error loading surface properties, try validating your game cache.\n");
+        }
+    }
+    else
+    {
+        KeyValuesAD manifest(SURFACEPROP_MANIFEST_FILE);
+        if (manifest->LoadFromFile(pFileSystem, SURFACEPROP_MANIFEST_FILE, "GAME"))
+        {
+            for (KeyValues *sub = manifest->GetFirstSubKey(); sub != nullptr; sub = sub->GetNextKey())
+            {
+                if (FStrEq(sub->GetName(), "file"))
+                {
+                    const auto pFileName = sub->GetString();
+                    if (!AddSurfacepropFile(pFileName, pProps, pFileSystem))
+                        Warning("Unable to load surfaceprop file '%s'\n", pFileName);
+                }
+                else
+                {
+                    Warning("surfaceprops::Init: Manifest '%s' with bogus file type '%s', expecting 'file'\n",
+                            SURFACEPROP_MANIFEST_FILE, sub->GetName());
+                }
+            }
+        }
+        else
+        {
+            Error("Unable to load manifest file '%s'\n", SURFACEPROP_MANIFEST_FILE);
+        }
+    }
 }
 
 void PhysCreateVirtualTerrain( CBaseEntity *pWorld, const objectparams_t &defaultParams )

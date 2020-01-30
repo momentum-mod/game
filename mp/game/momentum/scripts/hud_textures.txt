@@ -36,6 +36,22 @@
 				"width"		"40"
 				"height"	"40"
 		}
+		"crosshair_custom"
+		{
+				"file"		"sprites/crosshair_custom"
+				"x"			"0"
+				"y"			"0"
+				"width"		"40"
+				"height"	"40"
+		}
+		"crosshair_custom2"
+		{
+				"file"		"sprites/crosshair_custom2"
+				"x"			"0"
+				"y"			"0"
+				"width"		"40"
+				"height"	"40"
+		}
 		"crosshair_left"
 		{
 				"font"		"QuickInfo"

@@ -53,7 +53,7 @@ CMOMRulerTool::~CMOMRulerTool()
 
 void CMOMRulerTool::PostInit()
 {
-    LOCALIZE_TOKEN(distanceFormat, "#MOM_Ruler_Distance", m_szDistanceFormat);
+    FIND_LOCALIZATION(m_wDistanceFormat, "#MOM_Ruler_Distance");
 }
 
 // Create a laser that will signal that both points are connected
@@ -149,9 +149,23 @@ void CMOMRulerTool::Measure()
 
         if (m_pBeamConnector)
         {
-            char distString[BUFSIZ];
-            Q_snprintf(distString, BUFSIZ, m_szDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
+            char distString[32];
+
+            const wchar_t *pwDistanceStr = CConstructLocalizedString(m_wDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
+            g_pVGuiLocalize->ConvertUnicodeToANSI(pwDistanceStr, distString, 32);
             m_pBeamConnector->EntityText(0, distString, mom_ruler_duration.GetFloat());
+            Msg("%s", distString);
+
+            Q_snprintf(distString, 32, "X: %.4f\n", fabsf(m_vFirstPoint.x - m_vSecondPoint.x));
+            m_pBeamConnector->EntityText(1, distString, mom_ruler_duration.GetFloat());
+            Msg("%s", distString);
+
+            Q_snprintf(distString, 32, "Y: %.4f\n", fabsf(m_vFirstPoint.y - m_vSecondPoint.y));
+            m_pBeamConnector->EntityText(2, distString, mom_ruler_duration.GetFloat());
+            Msg("%s", distString);
+
+            Q_snprintf(distString, 32, "Z: %.4f\n", fabsf(m_vFirstPoint.z - m_vSecondPoint.z));
+            m_pBeamConnector->EntityText(3, distString, mom_ruler_duration.GetFloat());
             Msg("%s", distString);
         }
     }

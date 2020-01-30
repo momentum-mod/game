@@ -30,7 +30,7 @@ struct MumbleSharedMemory_t
 {
 #ifdef WIN32
 	uint32	uiVersion;
-	ulong	uiTick;
+	unsigned long	uiTick;
 #else
 	uint32_t uiVersion;
 	uint32_t uiTick;

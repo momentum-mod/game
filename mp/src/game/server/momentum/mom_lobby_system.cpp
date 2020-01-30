@@ -11,12 +11,7 @@
 #include "mom_modulecomms.h"
 #include "mom_timer.h"
 #include "fmtstr.h"
-
-#include "tier0/valve_minmax_off.h"
-// This is wrapped by minmax_off due to Valve making a macro for min and max...
-#include <cryptopp/base64.h>
-// Now we can unwrap
-#include "tier0/valve_minmax_on.h"
+#include "time.h"
 
 #include "tier0/memdbgon.h"
 
@@ -123,9 +118,9 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
         uint16 index = m_mapLobbyGhosts.FirstInorder();
         while (index != m_mapLobbyGhosts.InvalidIndex())
         {
-            CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[index];
+            const auto pEntity = m_mapLobbyGhosts[index];
             if (pEntity)
-                pEntity->SetLobbyGhostAppearance(pEntity->GetLobbyGhostAppearance(), true);
+                pEntity->SetAppearanceData(*pEntity->GetAppearanceData(), true);
 
             index = m_mapLobbyGhosts.NextInorder(index);
         }
@@ -159,6 +154,8 @@ void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
                 PositionPacket p;
                 if (pEnt->GetCurrentPositionPacketData(&p))
                 {
+                    g_pMomentumTimer->SetCanStart(false);
+
                     pPlayer->Teleport(&p.Position, &p.EyeAngle, nullptr);
                 }
             }
@@ -277,70 +274,60 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
 
         // Set our own data
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
-        // Note: Our appearance is also set on spawn, so no worries if we're null here.
-        CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
-        if (pPlayer)
-        {
-            SetAppearanceInMemberData(pPlayer->m_playerAppearanceProps);
-        }
+
         SetGameInfoStatus();
         // Get everybody else's data
         CheckToAdd(nullptr);
     }
 }
 
-// We got a message yaay
 void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
 {
     // MOM_TODO: Keep this for if we ever end up using binary messages 
 
     char *message = new char[4096];
     int written = SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
+    time_t now = time(nullptr);
+    struct tm *tm = localtime(&now);
     DevLog("SERVER: Got a chat message! Wrote %i byte(s) into buffer.\n", written);
-    Msg("SERVER: Chat message: %s\n", message);
+    Msg("SERVER: Chat message [%02d:%02d]: %s\n", tm->tm_hour, tm->tm_min, message);
     delete[] message;
 }
-void CMomentumLobbySystem::SetAppearanceInMemberData(GhostAppearance_t app)
+
+void CMomentumLobbySystem::SetAppearanceInMemberData(const AppearanceData_t &app)
 {
+    CHECK_STEAM_API(SteamMatchmaking());
+
     if (LobbyValid())
     {
-        CHECK_STEAM_API(SteamMatchmaking());
-        std::string base64Appearance;
+        KeyValuesAD pAppearanceKV("app");
+        app.ToKV(pAppearanceKV);
 
-        CryptoPP::StringSource ss(reinterpret_cast<unsigned char *>(&app), 
-                                  sizeof(GhostAppearance_t), 
-                                  true,
-                                  new CryptoPP::Base64Encoder(new CryptoPP::StringSink(base64Appearance))
-        );
+        CUtlBuffer buf;
+        buf.SetBufferType(true, false);
 
-        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance.c_str());
+        pAppearanceKV->RecursiveSaveToFile(buf, 0);
+
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, buf.String());
     }
 }
-bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, LobbyGhostAppearance_t &out)
+
+bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, AppearanceData_t &out)
 {
-    bool toReturn = false;
+    CHECK_STEAM_API_B(SteamMatchmaking());
+
     const char *pAppearance = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, LOBBY_DATA_APPEARANCE);
-    if (!FStrEq(pAppearance, ""))
+    if (pAppearance && !FStrEq(pAppearance, ""))
     {
-        Q_strncpy(out.base64, pAppearance, sizeof(out.base64));
+        KeyValuesAD pAppearanceKV("app");
+        pAppearanceKV->LoadFromBuffer(nullptr, pAppearance);
 
-        std::string encoded(pAppearance);
+        out.FromKV(pAppearanceKV);
 
-        CryptoPP::Base64Decoder decoder;
-        decoder.Put((byte*)encoded.data(), encoded.size());
-        decoder.MessageEnd();
-
-        GhostAppearance_t newAppearance;
-
-        const auto size = decoder.MaxRetrievable();
-        if (size && size == sizeof(GhostAppearance_t))
-        {
-            decoder.Get((byte*)&newAppearance, sizeof(GhostAppearance_t));
-            out.appearance = newAppearance;
-            toReturn = true;
-        }
+        return true;
     }
-    return toReturn;
+
+    return false;
 }
 
 CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(const uint64 &id)
@@ -465,9 +452,9 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
             CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(memberChanged);
             if (pEntity)
             {
-                LobbyGhostAppearance_t appear;
+                AppearanceData_t appear;
                 if (GetAppearanceFromMemberData(memberChanged, appear))
-                    pEntity->SetLobbyGhostAppearance(appear);
+                    pEntity->SetAppearanceData(appear, false);
             }
 
             CheckToAdd(&memberChanged);
@@ -593,9 +580,9 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 newPlayer->SetGhostSteamID(*pID);
                 newPlayer->SetGhostName(pName);
                 newPlayer->Spawn();
-                LobbyGhostAppearance_t appear;
+                AppearanceData_t appear;
                 if (GetAppearanceFromMemberData(*pID, appear))
-                    newPlayer->SetLobbyGhostAppearance(appear, true); // Appearance after spawn!
+                    newPlayer->SetAppearanceData(appear, true); // Appearance after spawn!
 
                 bool isSpectating = GetIsSpectatingFromMemberData(*pID);
 
@@ -696,170 +683,157 @@ bool CMomentumLobbySystem::TryJoinLobbyFromString(const char* pString)
 
 void CMomentumLobbySystem::SendAndReceiveP2PPackets()
 {
-    if (m_mapLobbyGhosts.Count() > 0)
+    if (m_mapLobbyGhosts.Count() == 0)
+        return;
+
+    uint32 size;
+    while (SteamNetworking()->IsP2PPacketAvailable(&size))
     {
-        // Read data
-        uint32 size;
-        while (SteamNetworking()->IsP2PPacketAvailable(&size))
+        uint8 *bytes = new uint8[size];
+        uint32 bytesRead;
+        CSteamID fromWho;
+        SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
+
+        CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
+        buf.SetBigEndian(false);
+
+        const auto type = buf.GetUnsignedChar();
+        switch (type)
         {
-            // Read the packet's data
-            uint8 *bytes = new uint8[size];
-            uint32 bytesRead;
-            CSteamID fromWho;
-            SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
-            
-            // Throw the data into a manageable reader
-            CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
-            buf.SetBigEndian(false);
-            
-            // Determine what type it is
-            uint8 type = buf.GetUnsignedChar();
-            switch (type)
+        case PACKET_TYPE_POSITION:
             {
-            case PT_POS_DATA: // Position update frame
+                PositionPacket frame(buf);
+                CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
+                    pEntity->AddPositionFrame(frame);
+            }
+            break;
+        case PACKET_TYPE_DECAL:
+            {
+                DecalPacket decals(buf);
+                if (decals.decal_type == DECAL_INVALID)
+                    break;
+
+                const auto pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
                 {
-                    PositionPacket frame(buf);
-                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
-                    if (pEntity)
-                        pEntity->AddPositionFrame(frame);
+                    pEntity->AddDecalFrame(decals);
                 }
-                break;
-            case PT_DECAL_DATA:
+            }
+            break;
+        case PACKET_TYPE_SPEC_UPDATE:
+            {
+                SpecUpdatePacket update(buf);
+                if (update.spec_type == SPEC_UPDATE_INVALID)
+                    break;
+
+                const auto pEntity = GetLobbyMemberEntity(fromWho);
+                if (pEntity)
                 {
-                    DecalPacket decals(buf);
-                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
-                    if (pEntity)
+                    pEntity->m_bSpectating = update.specTarget != 0;
+                    update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
+                }
+
+                WriteSpecMessage(update.spec_type, fromWho.ConvertToUint64(), update.specTarget);
+            }
+            break;
+        case PACKET_TYPE_SAVELOC_REQ:
+            {
+                SavelocReqPacket saveloc(buf);
+
+                // Done/fail states:
+                // 1. They hit "cancel" (most common)
+                // 2. They leave the map (same as 1, just accidental maybe)
+                // 3. They leave the lobby/server (manually, due to power outage, etc)
+                // 4. We leave the map
+                // 5. We leave the lobby/server
+                // 6. They get the savelocs they need
+
+                // Of the above, 1 and 6 are the ones that are manually sent.
+                // 2<->5 can be automatically detected with lobby/server hooks
+
+                // Fail requirements:
+                // Requester: set "requesting" to false, close the request UI
+                // Requestee: remove requester from requesters vector
+
+                DevLog(2, "Received a stage %i saveloc request packet!\n", saveloc.stage);
+
+                switch (saveloc.stage)
+                {
+                case SAVELOC_REQ_STAGE_COUNT_REQ:
                     {
-                        pEntity->AddDecalFrame(decals);
+                        if (!g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64()))
+                            break;
+
+                        SavelocReqPacket response;
+                        response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
+                        response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
+
+                        SendPacket(&response, &fromWho, k_EP2PSendReliable);
                     }
-                }
-                break;
-            case PT_SPEC_UPDATE:
-                {
-                    SpecUpdatePacket update(buf);
-                    uint64 fromWhoID = fromWho.ConvertToUint64(), specTargetID = update.specTarget;
-
-                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
-                    if (pEntity)
+                    break;
+                case SAVELOC_REQ_STAGE_COUNT_ACK:
                     {
-                        pEntity->m_bSpectating = update.specTarget != 0;
-                        update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
+                        KeyValues *pKV = new KeyValues("req_savelocs");
+                        pKV->SetInt("stage", SAVELOC_REQ_STAGE_COUNT_ACK);
+                        pKV->SetInt("count", saveloc.saveloc_count);
+                        g_pModuleComms->FireEvent(pKV);
                     }
-
-                    // Write it out to the Hud Chat
-                    WriteSpecMessage(update.spec_type, fromWhoID, specTargetID);
-                }
-                break;
-
-            case PT_SAVELOC_REQ:
-                {
-                    SavelocReqPacket saveloc(buf);
-
-                    // Done/fail states:
-                    // 1. They hit "cancel" (most common)
-                    // 2. They leave the map (same as 1, just accidental maybe)
-                    // 3. They leave the lobby/server (manually, due to power outage, etc)
-                    // 4. We leave the map
-                    // 5. We leave the lobby/server
-                    // 6. They get the savelocs they need
-
-                    // Of the above, 1 and 6 are the ones that are manually sent.
-                    // 2<->5 can be automatically detected with lobby/server hooks
-
-                    // Fail requirements:
-                    // Requester: set "requesting" to false, close the request UI
-                    // Requestee: remove requester from requesters vector
-
-                    switch (saveloc.stage)
+                    break;
+                case SAVELOC_REQ_STAGE_SAVELOC_REQ:
                     {
-                    case 0:
-                    default:
-                        DevWarning("Invalid stage for the saveloc request packet!\n");
-                        break;
-                    case 1:
-                        {
-                            DevLog(2, "Received a stage 1 saveloc request packet!\n");
-                            // Somebody wants our savelocs, let the saveloc system handle this
-                            g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
+                        SavelocReqPacket response;
+                        response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
 
-                            // Send them our saveloc count
-                            SavelocReqPacket response;
-                            response.stage = 2;
-                            response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
-
+                        if (g_pMOMSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
                             SendPacket(&response, &fromWho, k_EP2PSendReliable);
-                        }
-                        break;
-                    case 2:
+                    }
+                    break;
+                case SAVELOC_REQ_STAGE_SAVELOC_ACK:
+                    {
+                        if (g_pMOMSavelocSystem->ReadReceivedSavelocs(&saveloc, fromWho.ConvertToUint64()))
                         {
-                            DevLog(2, "Received a stage 2 saveloc request packet!\n");
-                            // We got the number of savelocs, pass this to the client
-                            KeyValues *pKV = new KeyValues("req_savelocs");
-                            pKV->SetInt("stage", 2);
-                            pKV->SetInt("count", saveloc.saveloc_count);
-                            g_pModuleComms->FireEvent(pKV);
-                        }
-                        break;
-                    case 3:
-                        {
-                            DevLog(2, "Received a stage 3 saveloc request packet!\n");
-                            // Somebody sent us the number of the savelocs they want, saveloc system pls help
                             SavelocReqPacket response;
-                            response.stage = 4;
-
-                            if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
-                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
-                        }
-                        break;
-                    case 4:
-                        {
-                            DevLog(2, "Received a stage 4 saveloc request packet!\n");
-                            // We got their savelocs, add it to the player's list of savelocs
-                            if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
+                            response.stage = SAVELOC_REQ_STAGE_DONE;
+                            if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
                             {
-                                // Send them a packet that we're all good
-                                SavelocReqPacket response;
-                                response.stage = -1;
-                                if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
-                                {
-                                    // Send ourselves an event saying we're all good
-                                    KeyValues *pKv = new KeyValues("req_savelocs");
-                                    pKv->SetInt("stage", -1);
-                                    g_pModuleComms->FireEvent(pKv);
-                                }
+                                KeyValues *pKv = new KeyValues("req_savelocs");
+                                pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
+                                g_pModuleComms->FireEvent(pKv);
                             }
                         }
-                        break;
-                    case -1: // The other player is all done/cancelled
-                        {
-                            // Remove the requester
-                            DevLog(2, "Received a stage -1 saveloc request packet!\n");
-                            g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
-                        }
-                        break;
                     }
+                    break;
+                case SAVELOC_REQ_STAGE_DONE:
+                    {
+                        g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+                    }
+                    break;
+                case SAVELOC_REQ_STAGE_INVALID:
+                default:
+                    DevWarning(2, "Invalid stage for the saveloc request packet!\n");
+                    break;
                 }
-                break;
-            default:
-                break;
             }
-
-            // Clear the buffer and free the memory
-            buf.Purge();
-            delete[] bytes;
+            break;
+        default:
+            break;
         }
 
-        // Send position data
-        if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
+        buf.Purge();
+        delete[] bytes;
+    }
+
+    if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)
+    {
+        PositionPacket frame;
+        if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
         {
-            PositionPacket frame;
-            if (g_pMomentumGhostClient->CreateNewNetFrame(frame) && SendPacket(&frame))
-            {
-                m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
-            }
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
         }
     }
 }
+
 void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 {
     CHECK_STEAM_API(SteamMatchmaking());
@@ -910,6 +884,7 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     
     SendSpectatorUpdatePacket(ghostTarget, type);
 }
+
 //Sends the spectator info update packet to all current ghosts
 void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type)
 {
@@ -965,7 +940,6 @@ void CMomentumLobbySystem::OnLobbyTypeChanged(int newType)
     // else the lobby isn't valid, but it'll apply to our next one!
 }
 
-
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
     CHECK_STEAM_API(SteamFriends());
@@ -979,5 +953,6 @@ void CMomentumLobbySystem::SetGameInfoStatus()
     //SteamFriends()->SetRichPresence("connect", connectStr);
     SteamFriends()->SetRichPresence("status", gameInfoStr);
 }
+
 static CMomentumLobbySystem s_MOMLobbySystem;
 CMomentumLobbySystem *g_pMomentumLobbySystem = &s_MOMLobbySystem;

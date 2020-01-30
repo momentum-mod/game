@@ -33,7 +33,7 @@ Scheme
         "MOM.Panel.Bg"				"211 211 211 50"
         "Green"             "153 255 153 255"
         "MomentumBlue"	    "30 150 210 255"
-        "MomentumRed"	    "255 75 75 255"
+        "MomentumRed"	    "255 125 125 255"
         "LightBlue"         "153 204 255 255"
     }
 
@@ -44,11 +44,11 @@ Scheme
     BaseSettings
     {
         // Map selector specific settings
-        "MapDownloadProgress.DownloadStartColor"    "MomentumBlue"
+        "MapDownloadProgress.DownloadStartColor"    "LightBlue"
         "MapDownloadProgress.DownloadEndColor"      "Green"
 
-        "MapList.DownloadQueued"        "MomentumBlue"
-        "MapList.DownloadNeeded"        "LightBlue"
+        "MapList.DownloadQueued"        "LightBlue"
+        "MapList.DownloadNeeded"        "OffWhite"
         "MapList.DownloadFailColor"     "MomentumRed"
         "MapList.DownloadSuccessColor"  "Green"
 

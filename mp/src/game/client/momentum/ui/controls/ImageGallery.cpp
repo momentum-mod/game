@@ -342,6 +342,12 @@ void ImageGallery::Paint()
     }
 }
 
+void ImageGallery::PerformLayout() 
+{ 
+    BaseClass::PerformLayout();
+    UpdateButtonStates(); 
+}
+
 void ImageGallery::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_LEFT)

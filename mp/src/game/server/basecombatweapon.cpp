@@ -10,13 +10,7 @@
 #include "basecombatweapon.h"
 #include "player.h"			// For gEvilImpulse101 / CBasePlayer
 #include "gamerules.h"		// For g_pGameRules
-#include <KeyValues.h>
-#include "ammodef.h"
 #include "baseviewmodel.h"
-#include "in_buttons.h"
-#include "soundent.h"
-#include "weapon_parse.h"
-#include "game.h"
 #include "engine/IEngineSound.h"
 #include "sendproxy.h"
 #include "tier1/strtools.h"
@@ -40,7 +34,6 @@ extern int	gEvilImpulse101;		// In Player.h
 //	Sprite Index info
 // -----------------------------------------
 short		g_sModelIndexLaser;			// holds the index for the laser beam
-const char	*g_pModelNameLaser = "sprites/laserbeam.vmt";
 short		g_sModelIndexLaserDot;		// holds the index for the laser beam dot
 short		g_sModelIndexFireball;		// holds the index for the fireball
 short		g_sModelIndexSmoke;			// holds the index for the smoke cloud
@@ -58,10 +51,6 @@ extern ConVar ai_debug_shoot_positions;
 //-----------------------------------------------------------------------------
 void W_Precache(void)
 {
-	PrecacheFileWeaponInfoDatabase( filesystem, g_pGameRules->GetEncryptionKey() );
-
-
-
 #ifdef HL1_DLL
 	g_sModelIndexWExplosion = CBaseEntity::PrecacheModel ("sprites/WXplo1.vmt");// underwater fireball
 	g_sModelIndexBloodSpray = CBaseEntity::PrecacheModel ("sprites/bloodspray.vmt"); // initial blood
@@ -74,7 +63,7 @@ void W_Precache(void)
 
 	g_sModelIndexSmoke = CBaseEntity::PrecacheModel ("sprites/steam1.vmt");// smoke
 	g_sModelIndexBubbles = CBaseEntity::PrecacheModel ("sprites/bubble.vmt");//bubbles
-	g_sModelIndexLaser = CBaseEntity::PrecacheModel( (char *)g_pModelNameLaser );
+	g_sModelIndexLaser = CBaseEntity::PrecacheModel( "sprites/laserbeam.vmt" );
 
 	PrecacheParticleSystem( "blood_impact_red_01" );
 	PrecacheParticleSystem( "blood_impact_green_01" );
@@ -168,11 +157,7 @@ void CBaseCombatWeapon::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseComb
 		}
 		else if ( pEvent->event == AE_WPN_PLAYWPNSOUND )
 		{
-			int iSnd = GetWeaponSoundFromString(pEvent->options);
-			if ( iSnd != -1 )
-			{
-				WeaponSound( (WeaponSound_t)iSnd );
-			}
+			WeaponSound(GetWeaponSound(pEvent->options));
 		}
 	}
 

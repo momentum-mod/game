@@ -12,6 +12,8 @@
 
 #include "tier0/memdbgon.h"
 
+#define GHOST_PITCH_REDUCTION_VALUE 10.0f
+
 static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                       "Paint a faint beam trail on the replay. 0 = OFF, 1 = ON\n", true, 0, true, 1);
 
@@ -56,6 +58,14 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
+void CMomentumReplayGhostEntity::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
+{
+    if (m_Data.m_bMapFinished)
+        return;
+
+    BaseClass::Teleport(newPosition, newAngles, newVelocity);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Sets up the entity's initial state
 //-----------------------------------------------------------------------------
@@ -69,13 +79,7 @@ void CMomentumReplayGhostEntity::Spawn()
     CMomentumPlayer *pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
     {
-        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
-        // now that we've set our appearance, the ghost should be visible again.
-        SetRenderMode(kRenderTransColor);
-        if (m_ghostAppearance.m_bGhostTrailEnable)
-        {
-            CreateTrail();
-        }
+        SetAppearanceData(*pPlayer->GetAppearanceData(), true);
     }
 
     if (m_pPlaybackReplay)
@@ -151,6 +155,19 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
     m_iCurrentTick = clamp<int>(m_iCurrentTick, 0, m_iTotalTicks);
 }
 
+void CMomentumReplayGhostEntity::LoadFromReplayBase(CMomReplayBase *pReplay)
+{
+    m_pPlaybackReplay = pReplay;
+
+    m_RunStats.FullyCopyFrom(*m_pPlaybackReplay->GetRunStats());
+    m_Data.m_iRunTime = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
+    m_Data.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+    m_Data.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
+    m_Data.m_iStartTick = m_pPlaybackReplay->GetStartTick();
+
+    m_pPlaybackReplay->SetRunEntity(this);
+}
+
 void CMomentumReplayGhostEntity::Think()
 {
     BaseClass::Think();
@@ -184,11 +201,18 @@ void CMomentumReplayGhostEntity::Think()
     float fTimeScale = mom_replay_timescale.GetFloat();
 
     // move the ghost
-    if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_iTotalTicks)
+    if (m_iCurrentTick < 0 || m_iCurrentTick >= m_iTotalTicks)
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
-        SetAbsVelocity(vec3_origin);
+        if (m_pCurrentSpecPlayer)
+        {
+            CReplayFrame *currentStep = GetCurrentStep();
+            SetAbsOrigin(currentStep->PlayerOrigin());
+            SetGhostAngles(currentStep->EyeAngles());
+            DetermineGhostVisibility();
+            SetAbsVelocity(vec3_origin);
+        }
     }
     else
     {
@@ -291,7 +315,7 @@ void CMomentumReplayGhostEntity::Think()
             HandleGhost();
     }
 
-    if (fTimeScale <= 1.0f)
+    if (fTimeScale < 1.0f)
     {
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * (1.0f / fTimeScale));
     }
@@ -336,31 +360,8 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         }
         SetAbsOrigin(currentStep->PlayerOrigin());
 
-        QAngle angles = currentStep->EyeAngles();
-
-        if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
-        {
-            // don't render the model when we're in first person mode
-            if (GetRenderMode() != kRenderNone)
-            {
-                SetRenderMode(kRenderNone);
-                AddEffects(EF_NOSHADOW);
-            }
-        }
-        else
-        {
-            // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-            angles.x /= 10.0f;
-
-            // remove the nodraw effects
-            if (GetRenderMode() != kRenderTransColor)
-            {
-                SetRenderMode(kRenderTransColor);
-                RemoveEffects(EF_NOSHADOW);
-            }
-        }
-
-        SetAbsAngles(angles);
+        SetGhostAngles(currentStep->EyeAngles());
+        DetermineGhostVisibility();
 
         bool bTeleportedThisFrame = (mom_replay_selection.GetInt() == 1) // Going backwards?
             ? prevStep->Teleported() : currentStep->Teleported();
@@ -371,14 +372,19 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         if (!bTeleportedNextFrame)
         {
+            float fTimeScale = mom_replay_timescale.GetFloat();
+
             // interpolate vel from difference in origin
             const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
             const Vector &pPlayerNextOrigin = nextStep->PlayerOrigin();
-            const float distX = fabs(pPlayerCurrentOrigin.x - pPlayerNextOrigin.x);
-            const float distY = fabs(pPlayerCurrentOrigin.y - pPlayerNextOrigin.y);
-            const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
-            interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
 
+            const float distX = pPlayerNextOrigin.x - pPlayerCurrentOrigin.x;
+            const float distY = pPlayerNextOrigin.y - pPlayerCurrentOrigin.y;
+            const float distZ = pPlayerNextOrigin.z - pPlayerCurrentOrigin.z;
+            const float fDeltaTime = fTimeScale < 1.0f
+                ? gpGlobals->interval_per_tick * (1.0f / fTimeScale) : gpGlobals->interval_per_tick;
+
+            interpolatedVel = Vector(distX, distY, distZ) / fDeltaTime;
             m_vecLastVel = interpolatedVel;
         }
         else
@@ -391,6 +397,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         {
             // Fix teleporting being interpolated.
             IncrementInterpolationFrame();
+            CreateTrail();
         }
         else
         {
@@ -406,6 +413,29 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         SetViewOffset(Vector(0, 0, currentStep->PlayerViewOffset()));
 
         HandleDucking();
+    }
+}
+
+void CMomentumReplayGhostEntity::SetGhostAngles(QAngle angles)
+{
+    if (m_pCurrentSpecPlayer->GetObserverMode() != OBS_MODE_IN_EYE)
+    {
+        // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+        angles.x /= GHOST_PITCH_REDUCTION_VALUE;
+    }
+
+    SetAbsAngles(angles);
+}
+
+void CMomentumReplayGhostEntity::DetermineGhostVisibility()
+{
+    if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
+    {
+        HideGhost();
+    }
+    else
+    {
+        UnHideGhost();
     }
 }
 
@@ -434,12 +464,11 @@ void CMomentumReplayGhostEntity::HandleGhost()
 
     SetAbsOrigin(currentStep->PlayerOrigin());
     SetAbsAngles(QAngle(currentStep->EyeAngles().x /
-                            10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                        GHOST_PITCH_REDUCTION_VALUE, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
                         currentStep->EyeAngles().y, currentStep->EyeAngles().z));
 
     // remove the nodraw effects
-    SetRenderMode(kRenderTransColor);
-    RemoveEffects(EF_NOSHADOW);
+    UnHideGhost();
 }
 
 void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
@@ -512,6 +541,8 @@ void CMomentumReplayGhostEntity::GoToTick(int tick)
         {
             Vector origin = pNewStep->PlayerOrigin();
             QAngle eyes = pNewStep->EyeAngles();
+            if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetObserverMode() != OBS_MODE_IN_EYE)
+                eyes.x /= GHOST_PITCH_REDUCTION_VALUE;
             Teleport(&origin, &eyes, nullptr);
             PhysicsCheckForEntityUntouch();
             // Entity will get full update next Think
@@ -617,7 +648,7 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
     case ZONE_TYPE_START:
         break;
     case ZONE_TYPE_STOP:
-
+        m_Data.m_bMapFinished = false;
         break;
     case ZONE_TYPE_CHECKPOINT:
         break;
@@ -630,17 +661,19 @@ void CMomentumReplayGhostEntity::OnZoneExit(CTriggerZone *pTrigger)
     CMomRunEntity::OnZoneExit(pTrigger);
 }
 
-
 void CMomentumReplayGhostEntity::CreateTrail()
 {
+    RemoveTrail();
+
     if (!mom_replay_trail_enable.GetBool())
         return;
+
     BaseClass::CreateTrail();
 }
-void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)
+
+void CMomentumReplayGhostEntity::AppearanceModelColorChanged(const AppearanceData_t &newApp)
 {
-    m_ghostAppearance.m_iGhostModelRGBAColorAsHex = newHexColor;
-    Color newColor;
-    if (MomUtil::GetColorFromHex(newHexColor, newColor))
-        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), 75);
+    CMomRunEntity::AppearanceModelColorChanged(newApp);
+
+    SetRenderColorA(75); // Making them at least always translucent
 }

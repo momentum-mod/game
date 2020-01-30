@@ -20,20 +20,21 @@ class CMomRocket : public CBaseProjectile
     CNetworkVector(m_vInitialVelocity);
 
     CMomRocket();
+    ~CMomRocket();
+
+    void Spawn() override;
+    void Precache() override;
 
 #ifdef CLIENT_DLL
     virtual int DrawModel(int flags) OVERRIDE;
-    virtual void Spawn() OVERRIDE;
-    virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
 
-    float m_flSpawnTime;
+    virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
+    void OnDataChanged(DataUpdateType_t updateType) override;
+
 #else
-    void Spawn() OVERRIDE;
-    void Precache() OVERRIDE;
     void RocketTouch(CBaseEntity *pOther);
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
     void Destroy(bool bNoGrenadeZone);
-    void DestroyTrail();
 
     float GetRadius() { return m_flRadius; }
     float GetDamage() OVERRIDE { return m_flDamage; }
@@ -46,19 +47,17 @@ class CMomRocket : public CBaseProjectile
     // sit still until it had gotten a few updates from the server.
     void SetupInitialTransmittedGrenadeVelocity(const Vector &velocity);
 
-    CHandle<CMomentumRocketLauncher> m_hOwner;
-
-    static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pentOwner = nullptr);
+    static CMomRocket *EmitRocket(const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner);
 
   protected:
-    void CreateSmokeTrail();
-
-    CHandle<RocketTrail> m_hRocketTrail;
     float m_flDamage;
     float m_flRadius;
+    float m_flSpawnTime;
 
   private:
     DECLARE_DATADESC();
+
+    void StopTrailSound();
 #endif
 
 public:

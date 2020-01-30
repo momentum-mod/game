@@ -45,7 +45,7 @@ $Configuration
 
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	".\;$BASE;$SRCDIR\vgui2\include;$SRCDIR\vgui2\controls;$SRCDIR\game\shared;.\game_controls;$SRCDIR\thirdparty\sixensesdk\include;$SRCDIR\game\shared\momentum"
+		$AdditionalIncludeDirectories	".\;$BASE;$SRCDIR\vgui2\include;$SRCDIR\vgui2\controls;$SRCDIR\game\shared;.\game_controls;$SRCDIR\game\shared\momentum"
 		$PreprocessorDefinitions		"$BASE;NO_STRING_T;CLIENT_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead" 
 		$PreprocessorDefinitions		"$BASE;fopen=dont_use_fopen" [$WIN32]
 		$PreprocessorDefinitions		"$BASE;USE_WEBM_FOR_REPLAY;" [$LINUXALL]
@@ -171,7 +171,6 @@ $Project
 		$File	"history_resource.cpp"
 		$File	"hud_weapon.cpp"
 		$File	"train.cpp"
-		$File	"$SRCDIR\game\shared\weapon_parse_default.cpp"
 		$File	"$SRCDIR\game\shared\achievement_saverestore.cpp"
 		$File	"$SRCDIR\game\shared\achievement_saverestore.h"
 		$File	"$SRCDIR\game\shared\achievementmgr.cpp"
@@ -270,7 +269,6 @@ $Project
 		$File	"c_sun.cpp"
 		$File	"c_team.cpp"
 		$File	"c_tesla.cpp"
-		$File	"c_test_proxytoggle.cpp"
 		$File	"c_user_message_register.cpp"
 		$File	"c_vehicle_choreo_generic.cpp"
 		$File	"c_vehicle_jeep.cpp"
@@ -443,7 +441,6 @@ $Project
 		$File	"$SRCDIR\game\shared\takedamageinfo.cpp"
 		$File	"$SRCDIR\game\shared\teamplay_gamerules.cpp"
 		$File	"$SRCDIR\game\shared\teamplayroundbased_gamerules.cpp"
-		$File	"$SRCDIR\game\shared\test_ehandle.cpp"
 		$File	"text_message.cpp"
 		$File	"texturescrollmaterialproxy.cpp"
 		$File	"timematerialproxy.cpp"
@@ -485,9 +482,7 @@ $Project
 		$File	"$SRCDIR\game\shared\voice_status.cpp"
 		$File	"warp_overlay.cpp"
 		$File	"WaterLODMaterialProxy.cpp"
-		$File	"$SRCDIR\game\shared\weapon_parse.cpp"
 		$File	"weapon_selection.cpp"
-		$File	"weapons_resource.cpp"
 		$File	"WorldDimsProxy.cpp"
 		$File	"vgui_video.cpp"
 		$File	"vgui_video_player.cpp"
@@ -497,16 +492,6 @@ $Project
 		//Haptics
 		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"	[!$X360]
 		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WIN32&&!$X360]
-
-		$Folder	"Sixense"
-		{
-			$File	"sixense\in_sixense.cpp"
-			$File	"sixense\in_sixense.h"
-			$File	"sixense\in_sixense_gesture_bindings.cpp"
-			$File	"sixense\in_sixense_gesture_bindings.h"
-			$File	"$SRCDIR\game\shared\sixense\sixense_convars.cpp"
-			$File	"$SRCDIR\game\shared\sixense\sixense_convars_extern.h"
-		}
 		
 		// Files not using precompiled header cbase.h
 
@@ -865,7 +850,6 @@ $Project
 		$File	"ViewConeImage.h"
 		$File	"viewrender.h"
 		$File	"weapon_selection.h"
-		$File	"weapons_resource.h"
 		$File	"vgui_video.h"
 		$File	"vgui_video_player.h"
 	}
@@ -1209,7 +1193,6 @@ $Project
 		$File	"$SRCDIR\game\shared\voice_gamemgr.h"
 		$File	"$SRCDIR\game\shared\voice_status.h"
 		$File	"$SRCDIR\game\shared\vphysics_sound.h"
-		$File	"$SRCDIR\game\shared\weapon_parse.h"
 		$File	"$SRCDIR\game\shared\weapon_proficiency.h"
 		$File	"$SRCDIR\game\shared\weapon_ifmsteadycam.h"
 		$File	"$SRCDIR\game\shared\mp_shareddefs.h"

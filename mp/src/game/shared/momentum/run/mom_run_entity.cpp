@@ -7,6 +7,7 @@
 
 #ifndef CLIENT_DLL
 #include "momentum/mom_triggers.h"
+#include "util/mom_util.h"
 #else
 
 #endif
@@ -77,6 +78,114 @@ void CMomRunEntity::OnZoneExit(CTriggerZone *pTrigger)
         pEvent->SetInt("zone_ent", pTrigger->entindex());
         pEvent->SetInt("num", pTrigger->GetZoneNumber());
         gameeventmanager->FireEvent(pEvent);
+    }
+}
+
+bool CMomRunEntity::SetAppearanceData(const AppearanceData_t &newApp, bool bForceUpdate)
+{
+    bool bSomethingChanged = false;
+    if (m_AppearanceData.m_iBodyGroup != newApp.m_iBodyGroup || bForceUpdate)
+    {
+        AppearanceBodygroupChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    if (m_AppearanceData.m_iModelRGBAColorAsHex != newApp.m_iModelRGBAColorAsHex || bForceUpdate)
+    {
+        AppearanceModelColorChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    if (m_AppearanceData.m_iTrailRGBAColorAsHex != newApp.m_iTrailRGBAColorAsHex ||
+        m_AppearanceData.m_iTrailLength != newApp.m_iTrailLength ||
+        m_AppearanceData.m_bTrailEnabled != newApp.m_bTrailEnabled || bForceUpdate)
+    {
+        AppearanceTrailChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    if (m_AppearanceData.m_bFlashlightEnabled != newApp.m_bFlashlightEnabled || bForceUpdate)
+    {
+        AppearanceFlashlightChanged(newApp);
+        bSomethingChanged = true;
+    }
+
+    return bSomethingChanged;
+}
+
+void CMomRunEntity::AppearanceTrailChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_iTrailLength = newApp.m_iTrailLength;
+    m_AppearanceData.m_iTrailRGBAColorAsHex = newApp.m_iTrailRGBAColorAsHex;
+    m_AppearanceData.m_bTrailEnabled = newApp.m_bTrailEnabled;
+    m_AppearanceData.ValidateValues();
+
+    CreateTrail();
+}
+
+void CMomRunEntity::AppearanceBodygroupChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_iBodyGroup = newApp.m_iBodyGroup;
+    m_AppearanceData.ValidateValues();
+
+    const auto pBaseAnimating = static_cast<CBaseAnimating*>(CBaseEntity::Instance(GetEntIndex()));
+    if (pBaseAnimating)
+    {
+        pBaseAnimating->SetBodygroup(1, m_AppearanceData.m_iBodyGroup);
+    }
+}
+
+void CMomRunEntity::AppearanceModelColorChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_iModelRGBAColorAsHex = newApp.m_iModelRGBAColorAsHex;
+
+    const auto pBaseEnt = CBaseEntity::Instance(GetEntIndex());
+    if (pBaseEnt)
+    {
+        Color newColor;
+        if (MomUtil::GetColorFromHex(m_AppearanceData.m_iModelRGBAColorAsHex, newColor))
+            pBaseEnt->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+    }
+}
+
+void CMomRunEntity::AppearanceFlashlightChanged(const AppearanceData_t &newApp)
+{
+    m_AppearanceData.m_bFlashlightEnabled = newApp.m_bFlashlightEnabled;
+}
+
+void CMomRunEntity::CreateTrail()
+{
+    RemoveTrail();
+
+    if (!m_AppearanceData.m_bTrailEnabled)
+        return;
+
+    const auto pMyEnt = CBaseEntity::Instance(GetEntIndex());
+
+    m_hTrailEntity = CreateEntityByName("env_spritetrail");
+    m_hTrailEntity->SetAbsOrigin(pMyEnt->GetAbsOrigin());
+    m_hTrailEntity->SetParent(pMyEnt);
+    m_hTrailEntity->SetRenderMode(kRenderTransAdd);
+    m_hTrailEntity->KeyValue("spritename", "materials/sprites/laser.vmt");
+    m_hTrailEntity->KeyValue("startwidth", "9.5");
+    m_hTrailEntity->KeyValue("endwidth", "1.05");
+    m_hTrailEntity->KeyValue("lifetime", m_AppearanceData.m_iTrailLength);
+
+    Color newColor;
+    if (MomUtil::GetColorFromHex(m_AppearanceData.m_iTrailRGBAColorAsHex, newColor))
+    {
+        m_hTrailEntity->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+    }
+
+    DispatchSpawn(m_hTrailEntity);
+}
+
+void CMomRunEntity::RemoveTrail()
+{
+    if (m_hTrailEntity.IsValid())
+    {
+        UTIL_RemoveImmediate(m_hTrailEntity);
+        m_hTrailEntity.Term();
     }
 }
 

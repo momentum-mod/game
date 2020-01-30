@@ -1112,7 +1112,7 @@ void CAI_PlayerAlly::TraceAttack( const CTakeDamageInfo &info, const Vector &vec
 	}
 
 	// set up the speech modifiers
-	CFmtStrN<128> modifiers( "%s,damageammo:%s", pszHitLocCriterion, info.GetAmmoName() );
+	CFmtStrN<128> modifiers( "%s", pszHitLocCriterion );
 
 	SpeakIfAllowed( TLK_SHOT, modifiers );
 

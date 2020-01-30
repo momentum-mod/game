@@ -54,5 +54,7 @@ void RegisterUserMessages(void)
     usermessages->Register("LobbyUpdateMsg", 9);
     usermessages->Register("SpecUpdateMsg", 17);
 
+    usermessages->Register("DamageIndicator", -1);
+
     RegisterHapticMessages();
 }

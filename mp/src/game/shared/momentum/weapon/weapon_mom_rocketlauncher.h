@@ -21,10 +21,20 @@ class CMomentumRocketLauncher : public CWeaponBaseGun
 
     void GetProjectileFireSetup(CMomentumPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward);
 
+    void SetModelType(bool bTF2Model);
+    const char *GetViewModel(int viewmodelindex = 0) const OVERRIDE;
+    const char *GetWorldModel() const OVERRIDE;
+
+    bool Deploy() OVERRIDE;
     bool CanDeploy() OVERRIDE;
 
-    CWeaponID GetWeaponID() const OVERRIDE { return WEAPON_ROCKETLAUNCHER; }
+    WeaponID_t GetWeaponID() const OVERRIDE { return WEAPON_ROCKETLAUNCHER; }
+
+    float DeployTime() const OVERRIDE { return 0.5f; }
 
   private:
-    void RocketLauncherFire();
+    CNetworkVar(int, m_iTFViewIndex);
+    CNetworkVar(int, m_iTFWorldIndex);
+    CNetworkVar(int, m_iMomViewIndex);
+    CNetworkVar(int, m_iMomWorldIndex);
 };

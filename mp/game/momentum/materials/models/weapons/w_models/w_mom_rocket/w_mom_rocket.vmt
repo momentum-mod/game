@@ -1,0 +1,13 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/weapons/w_models/w_mom_rocket/w_mom_rocket_d"
+	"$bumpmap" "models/weapons/w_models/w_mom_rocket/w_mom_rocket_n"
+	"$surfaceprop" "Metal"
+
+	"$phong" "1"
+	"$phongexponenttexture" "models/weapons/w_models/w_mom_rocket/w_mom_rocket_g"
+	"$phongfresnelranges" "[0.1 0.55 1]"
+	"$phongboost" "200"
+
+	"$selfillum" "1"
+}

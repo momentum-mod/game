@@ -1,44 +1,26 @@
 @include "base.fgd"
 
-//-------------------------------------------------------------------------
-//
-// PARALLAX CUBEMAP OVERRIDES
-// (Credit Brian Charles)
-//-------------------------------------------------------------------------
-
-// Overrides the base cubemap to allow tying to a parallax_obb brush for parallax cubemaps.
-@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map. Sizes above 256x256 may require higher resolutions than your display has."
-[
-	cubemapsize(choices) : "Cubemap Size" : 0 =
-	[
-		0 : "Default"
-		1 : "1x1"
-		2 : "2x2"
-		3 : "4x4"
-		4 : "8x8"
-		5 : "16x16"
-		6 : "32x32"
-		7 : "64x64"
-		8 : "128x128"
-		9 : "256x256"
-		10 : "512x512"
-		11 : "1024x1024"
-	]
-	sides(sidelist) : "Brush faces": : "(Optional) Brushes faces to directly attach to the env_cubemap. Press Pick then click on faces in the 3D View to select them. Use CTRL while clicking to add or remove from the selection."
-	parallaxobb(target_destination) : "Cubemap Bounds" : : "(Optional) assigns this cubemap a bounding box for parallax correction (brush entity tied to parallax_obb)."
-]
-
-@SolidClass iconsprite("editor/parallax.vmt") = parallax_obb
-[
-	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
-]
-
 // -----------------------------------------------------------------------
 //
 // TF2 COMPATIBILITY
 //
 // -----------------------------------------------------------------------
 @SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." []
+
+@PointClass base(Targetname,Studiomodel,Origin,Angles) studioprop() = momentum_generic_bomb : "Generic Bomb"
+[
+    // Params
+    damage(float) : "Explosion Damage" : 50 : "Amount of damage to do when exploding."
+    radius(float) : "Explosion Radius" : 100 : "Explosion radius."
+    health(integer) : "Health" : 1 : "Health of the bomb."
+    sound(sound) : "Explosion Sound" : "" : "Name of the sound effect to play when exploding."
+
+    // Inputs
+    input Detonate(void) : "Force detonation."
+
+    // Outputs
+    output OnDetonate(void) : "Fired when this bomb detonates."
+]
 
 //-------------------------------------------------------------------------
 //
@@ -80,34 +62,34 @@
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
     "The entity can have its Angles and Velocity reset by boolean settings." 
 [
-	// In other places default values for the spawnflags get carried over. But for some reason, I couldn't make it happen here
-	spawnflags(flags) =
-	[
-		8388608: "Teleport the player on EndTouch() instead of StartTouch()" : 0
-		1: "Clients" : 1
-		2: "NPCs" : 0
-		4: "Pushables": 0
-		8: "Physics Objects" : 0
-		16: "Only player ally NPCs" : 0
-		32: "Only clients in vehicles" : 0
-		64: "Everything (not including physics debris)" : 0
-		512: "Only clients *not* in vehicles" : 0
-		1024: "Physics debris" : 0
-		2048: "Only NPCs in vehicles (respects player ally flag)" : 0
-	]
+    // In other places default values for the spawnflags get carried over. But for some reason, I couldn't make it happen here
+    spawnflags(flags) =
+    [
+        8388608: "Teleport the player on EndTouch() instead of StartTouch()" : 0
+        1: "Clients" : 1
+        2: "NPCs" : 0
+        4: "Pushables": 0
+        8: "Physics Objects" : 0
+        16: "Only player ally NPCs" : 0
+        32: "Only clients in vehicles" : 0
+        64: "Everything (not including physics debris)" : 0
+        512: "Only clients *not* in vehicles" : 0
+        1024: "Physics debris" : 0
+        2048: "Only NPCs in vehicles (respects player ally flag)" : 0
+    ]
 ]
 
 @SolidClass base(ZoneTrigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
 [
-	speed_limit(float) : "Speed limit (UPS)" : 350 : "Max speed (Units Per Second) the player will be able to have, depending on the limit speed type."
-	look_angles(angle) : "Look angles" : "0 0 0" : "Where player will look when teleported to start."
-	start_on_jump(integer) : "Start timer on jump" : 1 : "Start the timer when the player jump in the start zone/trigger zone."
-	speed_limit_type(integer) : "Limit speed type" : 0 : "0) Limit the speed of the player no matter what. 1) Limit the speed only in air. 2) Limit the speed only on ground. 3) Limit the speed only on landing."
-	spawnflags(flags) =
-	[
-		8192: "Limit leave speed" : 1
-		16384: "Use look angles" : 0
-	]
+    speed_limit(float) : "Speed limit (UPS)" : 350 : "Max speed (Units Per Second) the player will be able to have, depending on the limit speed type."
+    look_angles(angle) : "Look angles" : "0 0 0" : "Where player will look when teleported to start."
+    start_on_jump(integer) : "Start timer on jump" : 1 : "Start the timer when the player jump in the start zone/trigger zone."
+    speed_limit_type(integer) : "Limit speed type" : 0 : "0) Limit the speed of the player no matter what. 1) Limit the speed only in air. 2) Limit the speed only on ground. 3) Limit the speed only on landing."
+    spawnflags(flags) =
+    [
+        8192: "Limit leave speed" : 1
+        16384: "Use look angles" : 0
+    ]
 ]
 
 @SolidClass base(ZoneTrigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." []
@@ -124,81 +106,81 @@
 
 @FilterClass base(Targetname) = filter_momentum_progress : "Filter that checks to see if the player is at or above the given progress number."
 [
-	progress_check(integer) : "Minimum req. prog. num" : -1 : "The minimum progress number that the player needs to be at in order for the filter to accept them."
+    progress_check(integer) : "Minimum req. prog. num" : -1 : "The minimum progress number that the player needs to be at in order for the filter to accept them."
 ]
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport_progress : "Trigger that teleports the player to their last touched trigger_momentum_progress." []
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_resetonehop : "Trigger that resets all of the onehop triggers the player has touched." 
 [
-	output OnResetOnehops(void) : "Fires when all hops are being reset."
+    output OnResetOnehops(void) : "Fires when all hops are being reset."
 ]
 
 @BaseClass base(TeleTrigger) = HopTrigger
 [
     hold(float) : "Hold time (seconds)" : "0.5" : "If the player is in this trigger for longer than this (in seconds), teleport them to the most recent progress trigger."
-	//being worked
-	//holdteleport(float) : "Time before reset teleport delay" : 1 : "If the player had activated previously the teleport, deactivate it by this amount of time (seconds)."
+    //being worked
+    //holdteleport(float) : "Time before reset teleport delay" : 1 : "If the player had activated previously the teleport, deactivate it by this amount of time (seconds)."
 ]
 
 @SolidClass base(HopTrigger) = trigger_momentum_multihop : "Trigger that allows for multiple hops inside of it, and teleports the player if they stay inside for longer than the hold time." []
 
 @SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that teleports the player after only one entry, or if they stay inside for longer than the hold time."
 [
-	spawnflags(flags) =
-	[	
-		32768: "Reset hop state if player hops onto another different onehop" : 1
-	]
-	// Features being worked
-	output OnHopNoLongerJumpable(void) : "Fires when this trigger is no longer jumpable by the activator."
-	//output OnResetOnehop(void) : "Fires when the hop is being reset."
+    spawnflags(flags) =
+    [    
+        32768: "Reset hop state if player hops onto another different onehop" : 1
+    ]
+    // Features being worked
+    output OnHopNoLongerJumpable(void) : "Fires when this trigger is no longer jumpable by the activator."
+    //output OnResetOnehop(void) : "Fires when the hop is being reset."
 ]
 
 @SolidClass base(Trigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
 [
-	output OnKeyPressed(void) : "Fires when the desired key is pressed"
-	lookedkey(choices) : "Key that fires" : "Forward" =
-	[
-		0 : "Forward"
-		1 : "Back"
-		2 : "Move Left"
-		3 : "Move Right"
-		4 : "Jump"
-		5 : "Duck"
-		6 : "Attack"
-		7 : "Attack 2"
-		8 : "Reload"	
-	]
+    output OnKeyPressed(void) : "Fires when the desired key is pressed"
+    lookedkey(choices) : "Key that fires" : "Forward" =
+    [
+        0 : "Forward"
+        1 : "Back"
+        2 : "Move Left"
+        3 : "Move Right"
+        4 : "Jump"
+        5 : "Duck"
+        6 : "Attack"
+        7 : "Attack 2"
+        8 : "Reload"    
+    ]
 ]
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_limitmovement : "Trigger that prevents the player from doing specific keypress movements."
 [
-	spawnflags(flags) = 
-	[
-		8192: "Prevent the player from moving forward" : 0
-		16384: "Prevent the player from moving to the left" : 0
-		32768: "Prevent the player from moving to the right" : 0
+    spawnflags(flags) = 
+    [
+        8192: "Prevent the player from moving forward" : 0
+        16384: "Prevent the player from moving to the left" : 0
+        32768: "Prevent the player from moving to the right" : 0
         65536: "Prevent the player from moving backward" : 0
-		131072: "Prevent the player from jumping" : 0
+        131072: "Prevent the player from jumping" : 0
         262144: "Prevent the player from crouching" : 0
-		524288: "Prevent the player from bhopping" : 0
-	]
+        524288: "Prevent the player from bhopping" : 0
+    ]
 ]
 
 @SolidClass = func_ladder : 
-	"Ladder. Players will be able to freely along this brush, as if it was a ladder. If you are using a model prop " +
-	"for the visual representation of the ladder in the map, apply the toolsinvisibleladder material to the " +
-	"func_ladder brush."
+    "Ladder. Players will be able to freely along this brush, as if it was a ladder. If you are using a model prop " +
+    "for the visual representation of the ladder in the map, apply the toolsinvisibleladder material to the " +
+    "func_ladder brush."
 [
 ]
 
 @SolidClass base(func_breakable) = func_shootboost : "Entity that pushes the player when hit by the momentum_gun."
 [
-	target(target_destination) : "Inside trigger" : : "If specified, the player must be inside this trigger for the func to work."
-	pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed."
-	force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
-	"Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
-	increase(choices) : "Handling of player's velocity" : 4 =
+    target(target_destination) : "Inside trigger" : : "If specified, the player must be inside this trigger for the func to work."
+    pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed."
+    force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
+    "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
+    increase(choices) : "Handling of player's velocity" : 4 =
     [
         0 : "Set player's velocity to push final force"
         1 : "Increase player's velocity by push final force"
@@ -207,9 +189,9 @@
         4 : "Act as basevelocity"
     ]
     spawnflags(flags) = 
-	[ 
-		524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
-	]
+    [ 
+        524288: "Use the direction vector as final force instead of calculating it by force amount" : 0
+    ]
 
     // THIS THROWS AN ERROR, BUT AS IT HIDES IT-> WE STAY WITH IT FOR NOW
     health(float) : "Strength" : 1 : "Number of points of damage to take before breaking. IT HAS TO BE ABOVE 0."
@@ -217,85 +199,84 @@
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_push : "A trigger volume that modifies velocity of players that touch it."
 [
-	pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
-	force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in units per second) " +
-	"Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
-	increase(choices) : "Handling of player's velocity" : 3 =
+    pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
+    force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in units per second) " +
+    "Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
+    increase(choices) : "Handling of player's velocity" : 3 =
     [
         0 : "Set player velocity to final push force"
         1 : "Increase player's current velocity by push final foce ammount"
         2 : "Only set the player's velocity to the final push velocity if player's velocity is lower than final push velocity"
         3 : "Act as basevelocity"
     ]
-	spawnflags(flags) = 
-	[ 
-		1048576: "Only allow for one touch before reseting" : 1
-		2097152: "Modify player velocity on StartTouch" : 0
-		4194304: "Modify player velocity on EndTouch" : 1
-		524288: "Use the direction vector as final force instead of calculating it by force amount" : 1
-	]
+    spawnflags(flags) = 
+    [ 
+        1048576: "Only allow for one touch before reseting" : 1
+        2097152: "Modify player velocity on StartTouch" : 0
+        4194304: "Modify player velocity on EndTouch" : 1
+        524288: "Use the direction vector as final force instead of calculating it by force amount" : 1
+    ]
 ]
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working properly brushes must be placed under the trigger." 
 [
-	StuckOnGround(integer) : "Stick player to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddenly down)"
-	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding on this trigger? (NOTE: Does not work while Stick player to ground is 1!!!)"
-	DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to lose speed while going up or increase speed while going down)"
-	FixUpsideSlope(integer) : "Fix Upside Slopes" : 0 : "When sometimes mounting a slope, you lose velocity, enable this to not lose speed while going up on the slopes."
+    StuckOnGround(integer) : "Stick player to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddenly down)"
+    AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding on this trigger? (NOTE: Does not work while Stick player to ground is 1!!!)"
+    DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to lose speed while going up or increase speed while going down)"
 ]
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_reversespeed : "Trigger for reversing the speed of the momentum player." 
 [
-	ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
-	ReverseVertical(integer) : "Reverse vertical speed" : 1 : "Reverse the z velocity."
-	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
-	Interval(float) : "Interval" : "1.0" : "Set here in seconds how many time the trigger should update."
+    ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
+    ReverseVertical(integer) : "Reverse vertical speed" : 1 : "Reverse the z velocity."
+    OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
+    Interval(float) : "Interval" : "1.0" : "Set here in seconds how many time the trigger should update."
 ]
 
 @SolidClass base(MomentumTrigger) = trigger_momentum_setspeed : "Trigger for setting speed of the momentum player." 
-[	
-	KeepHorizontalSpeed(integer) : "Keep horizontal speed" : 0 : "If you want to keep the horizontal (x/y axis velocity based) speed, set it to 1."
-	KeepVerticalSpeed(integer) : "Keep vertical speed" : 0 : "If you want to keep the vertical (z axis velocity based) speed, set it to 1."
-	HorizontalSpeedAmount(float) : "Horizontal speed amount" : 500 : "Set here the speed length based on x/y axis for the velocity direction."
-	VerticalSpeedAmount(float) : "Vertical speed amount" : 100 : "Set here the speed based on z axis for the velocity direction."
-	Direction(angle) : "Direction (Pitch Yaw Roll)" : "0 0 0" : "Direction of the speed applied. Keep in mind that only Y angle is taken into account because vertical speed can be set already."
-	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
-	Interval(float) : "Interval" : "1.0" : "Set here in seconds how many time the trigger should update."
+[    
+    KeepHorizontalSpeed(integer) : "Keep horizontal speed" : 0 : "If you want to keep the horizontal (x/y axis velocity based) speed, set it to 1."
+    KeepVerticalSpeed(integer) : "Keep vertical speed" : 0 : "If you want to keep the vertical (z axis velocity based) speed, set it to 1."
+    HorizontalSpeedAmount(float) : "Horizontal speed amount" : 500 : "Set here the speed length based on x/y axis for the velocity direction."
+    VerticalSpeedAmount(float) : "Vertical speed amount" : 100 : "Set here the speed based on z axis for the velocity direction."
+    Direction(angle) : "Direction (Pitch Yaw Roll)" : "0 0 0" : "Direction of the speed applied. Keep in mind that only Y angle is taken into account because vertical speed can be set already."
+    OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
+    Interval(float) : "Interval" : "1.0" : "Set here in seconds how many time the trigger should update."
     EveryTick(integer) : "Every tick" : 0 : "If you want the trigger to update and fire every tick, set this to 1."
 ]
 @PointClass base(Targetname) iconsprite("editor/momentum_serversettings.vmt") = point_momentum_serversettings : "An entity that sets the default specialized settings to the map."
 [
-	Gravity(float) : "Gravity value" : 800 : "Set here the default gravity value."
-	MaxVelocity(float) : "Maximum velocity" : 3500 : "Set here the default max velocity value."
-	WaterAccelerate(float) : "Water accelerate speed" : 10 : "Set here the default water accelerate speed value."
-	AirAccelerate(float) : "Air accelerate speed" : 150 : "Set here the default air accelerate speed value."
-	Accelerate(float) : "Accelerate speed" : 5 : "Set here the default ground accelerate speed value."
-	Friction(integer) : "Friction" : 4 : "Set here the default friction value. The lower the number, the more slippery the player will move, the higher the number, the more slower and gripped the player is to the floor. 4 is default."
-	BackSpeed(float) : "Back speed" : "0.6" : "How much to slow down backwards motion."
-	StopSpeed(float) : "Stop speed" : 75 : "Set here the default ground accelerate speed value."
-	StepSize(float) : "Step size" : 18 : "Vertical view fixup when eyes are near a new plane."
-	WaterDist(float) : "Water distance" : 12 : "Vertical view fixup when eyes are near water plane."
-	FootSteps(integer) : "Foot steps sound" : 1 : "Enable/Disable foot steps sounds."
-	SwimSound(integer) : "Swim sound" : 1 : "Enable/Disable swimming sounds."
+    Gravity(float) : "Gravity value" : 800 : "Set here the default gravity value."
+    MaxVelocity(float) : "Maximum velocity" : 3500 : "Set here the default max velocity value."
+    WaterAccelerate(float) : "Water accelerate speed" : 10 : "Set here the default water accelerate speed value."
+    AirAccelerate(float) : "Air accelerate speed" : 150 : "Set here the default air accelerate speed value."
+    Accelerate(float) : "Accelerate speed" : 5 : "Set here the default ground accelerate speed value."
+    Friction(integer) : "Friction" : 4 : "Set here the default friction value. The lower the number, the more slippery the player will move, the higher the number, the more slower and gripped the player is to the floor. 4 is default."
+    BackSpeed(float) : "Back speed" : "0.6" : "How much to slow down backwards motion."
+    StopSpeed(float) : "Stop speed" : 75 : "Set here the default ground accelerate speed value."
+    StepSize(float) : "Step size" : 18 : "Vertical view fixup when eyes are near a new plane."
+    WaterDist(float) : "Water distance" : 12 : "Vertical view fixup when eyes are near water plane."
+    FootSteps(integer) : "Foot steps sound" : 1 : "Enable/Disable foot steps sounds."
+    SwimSound(integer) : "Swim sound" : 1 : "Enable/Disable swimming sounds."
 ]
 @SolidClass base(MomentumTrigger) = trigger_momentum_speedthreshold : "Trigger that fires an output when player speed is above/below a given threshold." 
-[	
-	AboveOrBelow(choices) : "Above/Below" : 0 : "Sets whether to fire if the player goes above or below the threshold." =
+[    
+    AboveOrBelow(choices) : "Above/Below" : 0 : "Sets whether to fire if the player goes above or below the threshold." =
     [
         0 : "Above"
         1 : "Below"
     ]
-	Vertical(integer) : "Vertical" : 0 : "Activate the threshold for vertical speed."
-	Horizontal(integer) : "Horizontal" : 0 : "Activate the threshold for horizontal speed."
-	VerticalSpeed(float) : "Vertical speed threshold" : 500 : "The amount of units per second for vertical (Z axis) speed."
-	HorizontalSpeed(float) : "Horizontal speed threshold" : 1000 : "The amount of units per second for horizontal (XY axis) speed."
-	OnThink(choices) : "Check on set interval" : 0 : "If yes, this trigger will check at a given set interval while the player is in the trigger." =
+    Vertical(integer) : "Vertical" : 0 : "Activate the threshold for vertical speed."
+    Horizontal(integer) : "Horizontal" : 0 : "Activate the threshold for horizontal speed."
+    VerticalSpeed(float) : "Vertical speed threshold" : 500 : "The amount of units per second for vertical (Z axis) speed."
+    HorizontalSpeed(float) : "Horizontal speed threshold" : 1000 : "The amount of units per second for horizontal (XY axis) speed."
+    OnThink(choices) : "Check on set interval" : 0 : "If yes, this trigger will check at a given set interval while the player is in the trigger." =
     [
         0 : "No"
         1 : "Yes"
     ]
-	Interval(float) : "Interval" : "1.0" : "How many seconds between each check while the player is in the trigger."
-	output OnThreshold(void) : "Fires when the speed is above/below the given threshold."
+    Interval(float) : "Interval" : "1.0" : "How many seconds between each check while the player is in the trigger."
+    output OnThreshold(void) : "Fires when the speed is above/below the given threshold."
 ]
 
 @BaseClass = Campaign
@@ -306,11 +287,11 @@
 
 @SolidClass base(Targetname, Parentname, Origin, Inputfilter, Shadow, Campaign) = func_momentum_brush : "Brush entity used for the final stages in the campaign. The brush activates when the given stage of the given world is beat (or not beat, if this brush is inverted)" 
 [
-	vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush should cast lightmap shadows." =
-	[
-		0 : "No"
-		1 : "Yes"
-	]
+    vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush should cast lightmap shadows." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
 
     Invert(choices) : "Invert behavior" : 0 : "Set this to Yes if the behavior of the brush should be inverted (Yes = If the player has the stage beaten, the brush should be Disabled)." = 
     [
@@ -318,7 +299,7 @@
         1 : "Yes"
     ]
 
-	DisabledAlpha(integer) : "Disabled Alpha" : 102 : "The amount of translucency this brush has when disabled. 0 is transparent, 255 is opaque."
+    DisabledAlpha(integer) : "Disabled Alpha" : 102 : "The amount of translucency this brush has when disabled. 0 is transparent, 255 is opaque."
     DisableUI(choices) : "Disable UI Popup" : 0 : "If set to Yes, disables the UI popup/warning that occurs when the user touches the deactivated brush." =
     [
         0 : "No"
@@ -346,7 +327,7 @@
 
 @SolidClass base(MomentumTrigger, GameTypes, Campaign) = trigger_momentum_campaign_changelevel : "Trigger that changes the level to the specified world's stage of a given gametype. World number of -1 will teleport to the Hub." 
 [
-	map_name_override(string) : "Map Name Override" : "" : "If set, this trigger will load this specific map name."
+    map_name_override(string) : "Map Name Override" : "" : "If set, this trigger will load this specific map name."
 ]
 
 @PointClass base(Targetname, Campaign, GameTypes) = info_momentum_map : "An entity used to describe map information."
@@ -361,18 +342,18 @@
 //-------------------------------------------------------------------------
 @BaseClass color(0 0 200) base(Targetname, Angles) sphere(fademindist) sphere(fademaxdist) = Weapon
 [
-	spawnflags(Flags) =
-	[
-		1: "Start constrained" : 0
-	]
+    spawnflags(Flags) =
+    [
+        1: "Start constrained" : 0
+    ]
 
-	output OnPlayerUse(void) : "Fires when the player +uses this weapon"
-	output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
+    output OnPlayerUse(void) : "Fires when the player +uses this weapon"
+    output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
 
-	fademindist(float) : "Start Fade Dist/Pixels" : -1 : "Distance at which the prop starts to fade (<0 = use fademaxdist). If 'Screen Space Fade' is selected, this represents the number of pixels wide covered by the prop when it starts to fade."
-	fademaxdist(float) : "End Fade Dist/Pixels" : 0 : "Maximum distance at which the prop is visible (0 = don't fade out). If 'Screen Space Fade' is selected, this represents the *minimum* number of pixels wide covered by the prop when it fades."
-	fadescale(float) : "Fade Scale" : 1 : "If you specify a fade in the worldspawn, or if the engine is running under dx7, then the engine will forcibly fade out props even if fademindist/fademaxdist isn't specified." +
-												 " This scale factor gives you some control over the fade. Using 0 here turns off the forcible fades." +
+    fademindist(float) : "Start Fade Dist/Pixels" : -1 : "Distance at which the prop starts to fade (<0 = use fademaxdist). If 'Screen Space Fade' is selected, this represents the number of pixels wide covered by the prop when it starts to fade."
+    fademaxdist(float) : "End Fade Dist/Pixels" : 0 : "Maximum distance at which the prop is visible (0 = don't fade out). If 'Screen Space Fade' is selected, this represents the *minimum* number of pixels wide covered by the prop when it fades."
+    fadescale(float) : "Fade Scale" : 1 : "If you specify a fade in the worldspawn, or if the engine is running under dx7, then the engine will forcibly fade out props even if fademindist/fademaxdist isn't specified." +
+                                                 " This scale factor gives you some control over the fade. Using 0 here turns off the forcible fades." +
 ]
 
 @PointClass base(Weapon) studio("models/weapons/v_knife_t.mdl") = weapon_knife : "Knife" []
@@ -392,37 +373,13 @@
 //
 //-------------------------------------------------------------------------
 @PointClass base(Angles) color(0 0 200) studio("models/editor/ctstart.mdl") = info_player_counterterrorist :
-	"This entity marks the start point for counter-terrorists. One of these needs to be placed for each team member. " +
-	"20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls"
+    "This entity marks the start point for counter-terrorists. One of these needs to be placed for each team member. " +
+    "20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls"
 [
 ]
 
 @PointClass base(Angles) color(200 0 0) studio("models/editor/tstart.mdl") = info_player_terrorist :
-	"This entity marks the start point for terrorists. One of these needs to be placed for each team member. " +
-	"20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls."
+    "This entity marks the start point for terrorists. One of these needs to be placed for each team member. " +
+    "20 start points is typical. Should be placed at least 128 units away from each other and surrounding walls."
 [
 ]
-
-// -------------------------------------------------------------------------
-//
-// Add the speedmod entity as it apparently might be used by some, and it is only included in the HL2 FGD
-//
-//-------------------------------------------------------------------------
-@PointClass base(Targetname) size(-16 -16 -16, 16 16 16) = player_speedmod: "Speeds up or slows down player velocity over time (slow mo/fast forward)"
-[
-	spawnflags(Flags) =
-	[
-		1: "Suppress weapons" : 0
-		2: "Suppress HUD" : 0
-		4: "Suppress jump" : 0
-		8: "Suppress duck" : 0
-		16: "Suppress use" : 0
-		32: "Suppress sprint" : 0
-		64: "Suppress attack" : 0
-		128: "Suppress zoom" : 0
-	]
-
-	// Inputs
-	input ModifySpeed(float) : "Modifies player speed by X ammount."
-]
-

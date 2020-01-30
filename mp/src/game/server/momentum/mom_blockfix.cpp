@@ -3,6 +3,7 @@
 #include "doors.h"
 #include "buttons.h"
 #include "mom_player.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -32,7 +33,10 @@ CMOMBhopBlockFixSystem::CMOMBhopBlockFixSystem(const char* pName) : CAutoGameSys
 
 void CMOMBhopBlockFixSystem::LevelInitPostEntity()
 {
-    FindBhopBlocks();
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_BHOP))
+    {
+        FindBhopBlocks();
+    }
 }
 
 void CMOMBhopBlockFixSystem::LevelShutdownPostEntity()

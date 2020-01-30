@@ -14,10 +14,11 @@
 #include "vphysics_interface.h"
 #include "predictable_entity.h"
 #include "soundflags.h"
-#include "weapon_parse.h"
 #include "baseviewmodel_shared.h"
 #include "weapon_proficiency.h"
 #include "utlmap.h"
+
+#include "weapon/weapon_shareddefs.h"
 
 #if defined( CLIENT_DLL )
 #define CBaseCombatWeapon C_BaseCombatWeapon
@@ -39,6 +40,7 @@ class CBasePlayer;
 class CBaseCombatCharacter;
 class IPhysicsConstraint;
 class CUserCmd;
+struct WeaponScriptDefinition;
 
 // How many times to display altfire hud hints (per weapon)
 #define WEAPON_ALTFIRE_HUD_HINT_COUNT	1
@@ -247,6 +249,7 @@ public:
 	
 	virtual bool			CanHolster( void ) const { return TRUE; };		// returns true if the weapon can be holstered
 	virtual bool			DefaultDeploy( char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt );
+    virtual float           DeployTime() const { return 0.5f; }
 	virtual bool			CanDeploy( void ) { return true; }			// return true if the weapon's allowed to deploy
 	virtual bool			Deploy( void );								// returns true is deploy was successful
 	virtual bool			Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
@@ -311,8 +314,8 @@ public:
 	virtual float			GetMinRestTime() { return 0.3; }
 	virtual float			GetMaxRestTime() { return 0.6; }
 	virtual int				GetRandomBurst() { return random->RandomInt( GetMinBurst(), GetMaxBurst() ); }
-	virtual void			WeaponSound( WeaponSound_t sound_type, float soundtime = 0.0f );
-	virtual void			StopWeaponSound( WeaponSound_t sound_type );
+	virtual void			WeaponSound( const char *pShootSound, float soundtime = 0.0f );
+	virtual void			StopWeaponSound( const char *pShootSound );
 	virtual const WeaponProficiencyInfo_t *GetProficiencyValues();
 
 	// Autoaim
@@ -356,9 +359,11 @@ public:
 	virtual int				GetSkinOverride() const { return -1; }
 
 public:
+	virtual WeaponID_t GetWeaponID() const { return WEAPON_NONE; }
+	virtual WeaponScriptDefinition *GetWeaponScript() const;
+	virtual const char *GetWeaponSound(const char *pToken) const;
 
 	// Weapon info accessors for data in the weapon's data file
-	const FileWeaponInfo_t	&GetWpnData( void ) const;
 	virtual const char		*GetViewModel( int viewmodelindex = 0 ) const;
 	virtual const char		*GetWorldModel( void ) const;
 	virtual const char		*GetAnimPrefix( void ) const;
@@ -370,19 +375,13 @@ public:
 	virtual bool			AllowsAutoSwitchTo( void ) const;
 	virtual bool			AllowsAutoSwitchFrom( void ) const;
 	virtual bool			ForceWeaponSwitch( void ) const { return false; }
-	virtual int				GetWeaponFlags( void ) const;
 	virtual int				GetSlot( void ) const;
 	virtual int				GetPosition( void ) const;
 	virtual char const		*GetName( void ) const;
 	virtual char const		*GetPrintName( void ) const;
-	virtual char const		*GetShootSound( int iIndex ) const;
-	virtual int				GetRumbleEffect() const;
 	virtual bool			UsesClipsForAmmo1( void ) const;
 	virtual bool			UsesClipsForAmmo2( void ) const;
 	bool					IsMeleeWeapon() const;
-
-	// derive this function if you mod uses encrypted weapon info files
-	virtual const unsigned char *GetEncryptionKey( void );
 
 	virtual int				GetPrimaryAmmoType( void )  const { return m_iPrimaryAmmoType; }
 	virtual int				GetSecondaryAmmoType( void )  const { return m_iSecondaryAmmoType; }
@@ -397,15 +396,6 @@ public:
 
 	int GetSecondaryAmmoCount() { return m_iSecondaryAmmoCount; }
 	void SetSecondaryAmmoCount( int count ) { m_iSecondaryAmmoCount = count; }
-
-	virtual CHudTexture const	*GetSpriteActive( void ) const;
-	virtual CHudTexture const	*GetSpriteInactive( void ) const;
-	virtual CHudTexture const	*GetSpriteAmmo( void ) const;
-	virtual CHudTexture const	*GetSpriteAmmo2( void ) const;
-	virtual CHudTexture const	*GetSpriteCrosshair( void ) const;
-	virtual CHudTexture const	*GetSpriteAutoaim( void ) const;
-	virtual CHudTexture const	*GetSpriteZoomedCrosshair( void ) const;
-	virtual CHudTexture const	*GetSpriteZoomedAutoaim( void ) const;
 
 	virtual Activity		ActivityOverride( Activity baseAct, bool *pRequired );
 	virtual	acttable_t*		ActivityList( int &iActivityCount ) { return NULL; }
@@ -519,7 +509,6 @@ public:
 	virtual void			GetViewmodelBoneControllers(C_BaseViewModel *pViewModel, float controllers[MAXSTUDIOBONECTRLS]) { return; }
 
 	virtual void			NotifyShouldTransmit( ShouldTransmitState_t state );
-	WEAPON_FILE_INFO_HANDLE	GetWeaponFileInfoHandle() { return m_hWeaponFileInfo; }
 
 	virtual int				GetWorldModelIndex( void );
 
@@ -629,8 +618,6 @@ public:
 
 	IPhysicsConstraint		*GetConstraint() { return m_pConstraint; }
 
-
-	WEAPON_FILE_INFO_HANDLE	m_hWeaponFileInfo;
 private:
 	IPhysicsConstraint		*m_pConstraint;
 

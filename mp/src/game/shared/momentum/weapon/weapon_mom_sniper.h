@@ -15,16 +15,16 @@ class CMomentumSniper : public CWeaponBaseGun
 
     CMomentumSniper();
 
+    void Precache() override;
+
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
     void Drop(const Vector &vecVelocity) OVERRIDE;
 
     float GetMaxSpeed() const OVERRIDE;
 
-    CWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
 
   private:
-    void SniperFire();
-
     int m_iRequestedFOV;
 };

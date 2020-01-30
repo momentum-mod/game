@@ -20,6 +20,15 @@ CMomentumSniper::CMomentumSniper()
     m_flIdleInterval = 60.0f;
     m_flTimeToIdleAfterFire = 1.8f;
     m_iRequestedFOV = 0;
+
+    m_iPrimaryAmmoType = AMMO_TYPE_SNIPER;
+}
+
+void CMomentumSniper::Precache()
+{
+    BaseClass::Precache();
+
+    PrecacheScriptSound("Default.Zoom");
 }
 
 void CMomentumSniper::Drop(const Vector &vecVelocity)
@@ -57,7 +66,6 @@ void CMomentumSniper::SecondaryAttack()
 
     pPlayer->SetFOV(pPlayer, m_iRequestedFOV, flRate);
 
-    // MOM_TODO: Consider LJ gametype
     // pPlayer->ResetMaxSpeed();
 #endif
 
@@ -72,9 +80,7 @@ void CMomentumSniper::SecondaryAttack()
 #endif
 }
 
-void CMomentumSniper::PrimaryAttack(void) { SniperFire(); }
-
-void CMomentumSniper::SniperFire()
+void CMomentumSniper::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -98,7 +104,6 @@ void CMomentumSniper::SniperFire()
     pPlayer->SetPunchAngle(angle);
 }
 
-// MOM_TODO: Consider LJ gametype
 float CMomentumSniper::GetMaxSpeed() const
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();

@@ -3,7 +3,7 @@
 class PositionPacket;
 class DecalPacket;
 class SavelocReqPacket;
-struct GhostAppearance_t;
+struct AppearanceData_t;
 class CMomentumOnlineGhostEntity;
 
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
@@ -25,11 +25,13 @@ public:
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
     void ResetOtherAppearanceData(); // Resets every ghost's appearance data, mostly done when overrides are toggled, to apply them
-    void SendAppearanceData(GhostAppearance_t appearance);
+    void SendAppearanceData(const AppearanceData_t &appearance);
     void SetIsSpectating(bool state);
     void SetSpectatorTarget(CSteamID target, bool bStartedSpectating, bool bLeft = false);
     void SendDecalPacket(DecalPacket *packet);
     bool SendSavelocReqPacket(CSteamID &target, SavelocReqPacket *packet);
+
+    bool IsInOnlineSession();
 
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);

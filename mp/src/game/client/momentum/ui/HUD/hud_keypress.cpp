@@ -11,9 +11,9 @@
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 
+#include "c_mom_online_ghost.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
-#include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
 
@@ -73,6 +73,8 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     wchar_t m_pwJump[BUFSIZELOCL];
     wchar_t m_pwDuck[BUFSIZELOCL];
     wchar_t m_pwStrafe[BUFSIZELOCL];
+    wchar_t m_pwM1[BUFSIZELOCL];
+    wchar_t m_pwM2[BUFSIZELOCL];
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
 };
@@ -112,6 +114,8 @@ void CHudKeyPressDisplay::Init()
     // localize jump and duck strings
     FIND_LOCALIZATION(m_pwJump, "#MOM_Jump");
     FIND_LOCALIZATION(m_pwDuck, "#MOM_Duck");
+    FIND_LOCALIZATION(m_pwM1, "#MOM_M1");
+    FIND_LOCALIZATION(m_pwM2, "#MOM_M2");
 
     m_fJumpColorUntil = m_fDuckColorUntil = 0;
 
@@ -128,13 +132,14 @@ void CHudKeyPressDisplay::Init()
 
 void CHudKeyPressDisplay::Paint()
 {
-    //create local variable so we can mutate it without worry
+    // create local variable so we can mutate it without worry
     int nButtons = m_nButtons;
-    //do we need to invert the +left/+right due to negative yawspeed?
-    if (cl_yawspeed.GetInt() < 0 && !(nButtons & IN_STRAFE)){
-        //in_right = in_left
+    // do we need to invert the +left/+right due to negative yawspeed?
+    if (cl_yawspeed.GetInt() < 0 && !(nButtons & IN_STRAFE))
+    {
+        // in_right = in_left
         nButtons = (m_nButtons & IN_LEFT) ? (nButtons | IN_RIGHT) : (nButtons & (~IN_RIGHT));
-        //in_left = in_right
+        // in_left = in_right
         nButtons = (m_nButtons & IN_RIGHT) ? (nButtons | IN_LEFT) : (nButtons & (~IN_LEFT));
     }
     else if (cl_yawspeed.GetInt() == 0)
@@ -192,7 +197,7 @@ void CHudKeyPressDisplay::Paint()
     if (nButtons & IN_STRAFE)
     {
         CHECK_INPUT_P(IN_STRAFE);
-        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), ( lower_row_ypos + top_row_ypos) / 2.0f );
+        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), (lower_row_ypos + top_row_ypos) / 2.0f);
         surface()->DrawPrintText(m_pwStrafe, wcslen(m_pwStrafe));
     }
 
@@ -207,7 +212,7 @@ void CHudKeyPressDisplay::Paint()
         }
 
         surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled
-                                                                                                       : m_Normal);
+                                                                                                           : m_Normal);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
@@ -220,6 +225,21 @@ void CHudKeyPressDisplay::Paint()
         CHECK_INPUT_P(IN_DUCK);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
         surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
+    }
+    // Add M1 and M2 buttons
+    if (nButtons & IN_ATTACK)
+    {
+        CHECK_INPUT_P(IN_ATTACK);
+        int xposM1 = GetTextCenter(m_hWordTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM1)) * 1.5;
+        surface()->DrawSetTextPos(xposM1, top_row_ypos);
+        surface()->DrawPrintText(m_pwM1, wcslen(m_pwM1));
+    }
+    if (nButtons & IN_ATTACK2)
+    {
+        CHECK_INPUT_P(IN_ATTACK2);
+        int xposM2 = GetTextCenter(m_hWordTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM2)) * 1.5;
+        surface()->DrawSetTextPos(xposM2, top_row_ypos);
+        surface()->DrawPrintText(m_pwM2, wcslen(m_pwM2));
     }
     // ----------
     if (m_bShouldDrawCounts)
@@ -253,7 +273,7 @@ void CHudKeyPressDisplay::OnThink()
 
         if (pUIEnt->GetEntType() >= RUN_ENT_GHOST)
         {
-            const auto pGhost = static_cast<C_MomentumGhostBaseEntity*>(pUIEnt);
+            const auto pGhost = static_cast<C_MomentumGhostBaseEntity *>(pUIEnt);
             if (pUIEnt->GetEntType() == RUN_ENT_REPLAY)
             {
                 m_nStrafes = pGhost->m_RunStats.m_iZoneStrafes[0];
@@ -324,11 +344,19 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     // jump
     // Bullrush is Bhop being disabled
     surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled
-                                                                                                   : m_darkGray);
+                                                                                                       : m_darkGray);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
     surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     // duck
     CHECK_INPUT_N(IN_DUCK);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
     surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
+    CHECK_INPUT_N(IN_ATTACK);
+    int xposM1 = GetTextCenter(m_hWordTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM1)) * 1.5;
+    surface()->DrawSetTextPos(xposM1, top_row_ypos);
+    surface()->DrawPrintText(m_pwM1, wcslen(m_pwM1));
+    CHECK_INPUT_N(IN_ATTACK2);
+    int xposM2 = GetTextCenter(m_hWordTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM2)) * 1.5;
+    surface()->DrawSetTextPos(xposM2, top_row_ypos);
+    surface()->DrawPrintText(m_pwM2, wcslen(m_pwM2));
 }

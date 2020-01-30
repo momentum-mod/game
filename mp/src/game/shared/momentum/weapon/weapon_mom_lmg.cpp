@@ -21,14 +21,10 @@ CMomentumLMG::CMomentumLMG()
 {
     m_flTimeToIdleAfterFire = 1.6f;
     m_flIdleInterval = 20.0f;
-};
-
-void CMomentumLMG::PrimaryAttack(void)
-{
-    LMGFire();
+    m_iPrimaryAmmoType = AMMO_TYPE_LMG;
 }
 
-void CMomentumLMG::LMGFire()
+void CMomentumLMG::PrimaryAttack()
 {
     if (!BaseGunFire(0.0f, 0.08f, true))
         return;

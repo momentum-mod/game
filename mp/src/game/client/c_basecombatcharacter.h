@@ -1,19 +1,7 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: Defines the client-side representation of CBaseCombatCharacter.
-//
-// $NoKeywords: $
-//=============================================================================//
-
-#ifndef C_BASECOMBATCHARACTER_H
-#define C_BASECOMBATCHARACTER_H
-
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "shareddefs.h"
 #include "c_baseflex.h"
+#include "weapon/weapon_shareddefs.h"
 
 class C_BaseCombatWeapon;
 class C_WeaponCombatShield;
@@ -62,14 +50,13 @@ public:
 	// Ammo
 	// -----------------------
 	void				RemoveAmmo( int iCount, int iAmmoIndex );
-	void				RemoveAmmo( int iCount, const char *szName );
 	void				RemoveAllAmmo( );
 	int					GetAmmoCount( int iAmmoIndex ) const;
-	int					GetAmmoCount( char *szName ) const;
 
 	C_BaseCombatWeapon*	Weapon_OwnsThisType( const char *pszWeapon, int iSubType = 0 ) const;  // True if already owns a weapon of this class
 	virtual	bool		Weapon_Switch( C_BaseCombatWeapon *pWeapon, int viewmodelindex = 0 );
 	virtual bool		Weapon_CanSwitchTo(C_BaseCombatWeapon *pWeapon);
+	virtual void		GetCurrentWeaponIDs(CUtlVector<WeaponID_t> &vecWeaponIDs);
 	
 	// I can't use my current weapon anymore. Switch me to the next best weapon.
 	bool SwitchToNextBestWeapon(C_BaseCombatWeapon *pCurrent);
@@ -104,7 +91,7 @@ private:
 
 	CNetworkArray( int, m_iAmmo, MAX_AMMO_TYPES );
 
-	CHandle<C_BaseCombatWeapon>		m_hMyWeapons[MAX_WEAPONS];
+	CHandle<C_BaseCombatWeapon>		m_hMyWeapons[WEAPON_MAX];
 	CHandle< C_BaseCombatWeapon > m_hActiveWeapon;
 
 private:
@@ -157,7 +144,7 @@ inline C_BaseCombatCharacter *ToBaseCombatCharacter( C_BaseEntity *pEntity )
 //-----------------------------------------------------------------------------
 inline int	C_BaseCombatCharacter::WeaponCount() const
 {
-	return MAX_WEAPONS;
+	return WEAPON_MAX;
 }
 
 //-----------------------------------------------------------------------------
@@ -166,10 +153,8 @@ inline int	C_BaseCombatCharacter::WeaponCount() const
 //-----------------------------------------------------------------------------
 inline C_BaseCombatWeapon *C_BaseCombatCharacter::GetWeapon( int i ) const
 {
-	Assert( (i >= 0) && (i < MAX_WEAPONS) );
+	Assert( (i >= 0) && (i < WEAPON_MAX) );
 	return m_hMyWeapons[i].Get();
 }
 
 EXTERN_RECV_TABLE(DT_BaseCombatCharacter);
-
-#endif // C_BASECOMBATCHARACTER_H

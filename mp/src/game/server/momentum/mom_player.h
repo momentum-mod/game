@@ -21,7 +21,8 @@ struct SavedState_t
     Vector m_vecLastPos;      // Saved location before the replay was played or practice mode.
     QAngle m_angLastAng;      // Saved angles before the replay was played or practice mode.
     Vector m_vecLastVelocity; // Saved velocity before the replay was played or practice mode.
-    float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.    
+    float m_fLastViewOffset;  // Saved viewoffset before the replay was played or practice mode.
+    float m_fNextPrimaryAttack; // Saved next weapon shoot time
     // Stats-related
     int m_nSavedPerfectSyncTicks;
     int m_nSavedStrafeTicks;
@@ -49,10 +50,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     int FlashlightIsOn() OVERRIDE { return IsEffectActive(EF_DIMLIGHT); }
     void FlashlightTurnOn() OVERRIDE;
-    void FlashlightTurnOn(bool bEmitSound);
     void FlashlightTurnOff() OVERRIDE;
-    void FlashlightTurnOff(bool bEmitSound);
+    void FlashlightToggle(bool bOn, bool bEmitSound);
 
+    // Loads appearance from the convars
+    void LoadAppearance(bool bForceUpdate);
     void SendAppearance();
 
     void Spawn() OVERRIDE;
@@ -126,11 +128,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
 
 
-    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance, bool &bPaint);
-
-    void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
-                    int iBulletType, int iDamage, float flRangeModifier, CBaseEntity *pevAttacker, bool bDoEffects,
-                    float x, float y);
+    void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, 
+                    CBaseEntity *pevAttacker, bool bDoEffects, float x, float y);
 
     void KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max,
                   float lateral_max, int direction_change);
@@ -198,11 +197,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool KeyValue(const char *szKeyName, const char *szValue) OVERRIDE;
     bool KeyValue(const char *szKeyName, float flValue) OVERRIDE;
     bool KeyValue(const char *szKeyName, const Vector &vecValue) OVERRIDE;
-    void CreateTrail();
-    void RemoveTrail();
-     
-    // Player's apperence properties
-    GhostAppearance_t m_playerAppearanceProps;
+
     // Catches any messages the player sends through "say"
     void CheckChatText(char *p, int bufsize) OVERRIDE;
 
@@ -274,8 +269,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     void DestroyRockets();
     
-    // Resets all player properties to their default state
-    void ResetProps();
+    // Resets all player movement properties to their default state
+    void ResetMovementProperties();
 
     CSteamID m_sSpecTargetSteamID;
 
@@ -321,8 +316,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     Vector m_vecPreviousOrigins[MAX_PREVIOUS_ORIGINS];
 
     float m_flTweenVelValue;
-    // Trail pointer
-    CBaseEntity* m_eTrail;
     bool m_bWasInAir;
     bool m_bShouldLimitSpeed;
 

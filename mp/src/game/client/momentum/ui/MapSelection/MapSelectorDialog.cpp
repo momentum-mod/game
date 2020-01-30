@@ -56,7 +56,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     SetParent(parent);
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
-    SetSize(GetScaledVal(680), GetScaledVal(400));
+    SetSize(GetScaledVal(600), GetScaledVal(300));
     s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
@@ -158,7 +158,6 @@ CMapSelectorDialog::~CMapSelectorDialog()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::Open()
 {
-    MoveToCenterOfScreen();
     BaseClass::Activate();
     PostActionSignal(new KeyValues("MapSelectorOpened"));
     m_pTabPanel->RequestFocus();
@@ -226,7 +225,7 @@ void CMapSelectorDialog::LoadDefaultImageList()
     m_pImageList->SetImageAtIndex(INDX_MAP_IN_FAVORITES, LoadFileImage("materials/vgui/icon/map_selector/InFavorites.png", wide, tall, pNullImage));
     m_pImageList->SetImageAtIndex(INDX_MAP_NOT_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/NotInLibrary.png", wide, tall, pNullImage));
     m_pImageList->SetImageAtIndex(INDX_MAP_IN_LIBRARY, LoadFileImage("materials/vgui/icon/map_selector/InLibrary.png", wide, tall, pNullImage));
-    m_pImageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, scheme()->GetImage("maps/invalid_map", false));
+    m_pImageList->SetImageAtIndex(INDX_MAP_THUMBNAIL_UNKNOWN, LoadFileImage("materials/vgui/icon/map_selector/invalid_map.png", GetScaledVal(50), GetScaledVal(28), pNullImage));
 }
 
 void CMapSelectorDialog::OnMapCacheUpdated(KeyValues *pKv)
