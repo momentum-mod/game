@@ -8,6 +8,6 @@ VertexLitGeneric
 	"$phongexponenttexture" "models/weapons/w_models/w_mom_l12g/l12g_e"
 	"$phongfresnelranges" "[0 .2 .0625]"
 	"$phongalbedotint" "1"
-	"$phongexponent" "55"
-	"$phongboost" "8"
+	"$phongexponent" "128"
+	"$phongboost" "32"
 }

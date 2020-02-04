@@ -5,39 +5,40 @@ VertexLitGeneric
 	"$surfaceprop" "Weapon"
 
 	"$phong" "1"
+	"$phongexponenttexture" "models/weapons/w_models/w_mom_l12g/l12g_e"
 	"$envmap" "env_cubemap"
 	"$envmapfresnel" "1"
-	"$phongfresnelranges" "[0 .5 0.0625]"
+	"$phongfresnelranges" "[0 .1 0.0625]"
 	
 	"$selfillum" "1"
+	"$selfillumtint" "[32 12 3]"
 	"$selfillummask" "models/weapons/w_models/w_mom_l12g/l12g_emissive"
-	
+
 	"$lighting" "0.5"
 	
 	Proxies
 	{
-		"Pupil"
-			{
-				"TextureVar" "$basetexture"
-				"TextureFrameNumVar" "$frame"
-				"PupilCloseRate" "4"
-				"PupilOpenRate" "4"
-			}
-			"Equals"
-			{
-				"srcVar1"    "$lighting"
-				"resultVar"    "$envmaptint[0]"
-			}
-			"Equals"
-			{
-				"srcVar1"    "$lighting"
-				"resultVar"    "$envmaptint[1]"
-			}
-			"Equals"
-			{
-				"srcVar1"    "$lighting"
-				"resultVar"    "$envmaptint[2]"
-			}
+		{
+			"TextureVar" "$basetexture"
+			"TextureFrameNumVar" "$frame"
+			"PupilCloseRate" "0.0"
+			"PupilOpenRate" "0.0"
+		}
+		"Equals"
+		{
+			"srcVar1" "$lighting"
+			"resultVar" "$envmaptint[0]"
+		}
+		"Equals"
+		{
+			"srcVar1" "$lighting"
+			"resultVar" "$envmaptint[1]"
+		}
+		"Equals"
+		{
+			"srcVar1" "$lighting"
+			"resultVar" "$envmaptint[2]"
+		}
 	}
 
 }
