@@ -50,6 +50,7 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
 
   private:
     void LaunchGrenade();
+    bool DualFire() OVERRIDE { return true; }
     CMomStickybomb* FireStickybomb(CMomentumPlayer *pPlayer);
     CMomStickybomb* FireProjectile(CMomentumPlayer *pPlayer);
 
