@@ -1903,9 +1903,11 @@ int CMomentumPlayer::OnTakeDamage_Alive(const CTakeDamageInfo &info)
     CBaseEntity *pAttacker = info.GetAttacker();
     CBaseEntity *pInflictor = info.GetInflictor();
 
-    // Handle taking self damage from rockets and pumpkin bombs
+    // Handle taking self damage from rockets, pumpkin bombs and stickies
     if (pAttacker == GetLocalPlayer() &&
-        (FClassnameIs(pInflictor, "momentum_rocket") || FClassnameIs(pInflictor, "momentum_generic_bomb")))
+        (FClassnameIs(pInflictor, "momentum_rocket") 
+         || FClassnameIs(pInflictor, "momentum_generic_bomb")
+         || FClassnameIs(pInflictor, "momentum_stickybomb")))
     {
         // Grab the vector of the incoming attack.
         // (Pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
@@ -1934,14 +1936,14 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
         return;
 
     CBaseEntity *pAttacker = info.GetAttacker();
+    CBaseEntity *pInflictor = info.GetInflictor();
 
     if (!info.GetInflictor() || GetMoveType() != MOVETYPE_WALK || pAttacker->IsSolidFlagSet(FSOLID_TRIGGER))
         return;
 
-    // Apply different force scale when on ground
-    float flScale = 1.0f;
+    float flScale = 0.0f;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (FClassnameIs(pInflictor, "momentum_rocket") || FClassnameIs(pInflictor, "momentum_generic_bomb"))
     {
         if (GetFlags() & FL_ONGROUND)
         {
@@ -1957,6 +1959,11 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
                 flScale *= MOM_DAMAGESCALE_SELF_ROCKET;
             }
         }
+    }
+
+    if (FClassnameIs(pInflictor, "momentum_stickybomb"))
+    {
+        flScale = 6.75f; // 0.75f * 9.0f
     }
 
     // Scale force if we're ducked

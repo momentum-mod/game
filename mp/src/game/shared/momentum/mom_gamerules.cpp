@@ -242,9 +242,10 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 
 bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) 
 {
-    // Allow self damage from rockets and generic bombs
-    if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") 
-                                       || FClassnameIs(info.GetInflictor(), "momentum_generic_bomb")))
+    // Allow self damage from rockets, generic bombs and stickies
+    if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")))
         return true;
 
     return !pVictim->IsPlayer(); 
@@ -272,7 +273,8 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             continue;
         }
 
-        if (pEntity == pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        if (pEntity == pAttacker &&
+            (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)))
         {
             // Skip attacker, we will handle them separately (below)
             continue;
@@ -286,11 +288,16 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         ApplyRadiusDamage(pEntity, info, vecSrc, flRadius, flFalloff);
     }
 
-    if (pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (pAttacker)
     {
-        if (FClassnameIs(info.GetInflictor(), "momentum_rocket"))
+        CBaseEntity *pInflictor = info.GetInflictor();
+
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         {
-            flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+            if (FClassnameIs(pInflictor, "momentum_rocket"))
+            {
+                flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+            }
         }
 
         Vector nearestPoint;
