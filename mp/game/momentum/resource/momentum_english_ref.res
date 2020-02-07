@@ -14,6 +14,7 @@
         "MOM_Weapon_Shotgun" "For Zombie Invasions Only"
         "MOM_Weapon_Sniper" "360 Noscoper"
         "MOM_Weapon_RocketLauncher" "Controlled Combustion"
+        "MOM_Weapon_StickybombLauncher" "Something Stickied This Way Comes"
 
         "MOM_Weapon_SwitchToSemiAuto" "Switched to Semi-Auto mode"
         "MOM_Weapon_SwitchToBurstFire" "Switched to Burst Fire mode"
@@ -386,6 +387,15 @@
         "MOM_Settings_RJ_Trail_Sound_Enable_TT" "When enabled, rockets fired will have a sound following it."
         "MOM_Settings_RJ_Rocket_Decals_Enable" "Enable rocket decals"
         "MOM_Settings_RJ_Rocket_Decals_Enable_TT" "When enabled, rockets will create decals upon explosion."
+		
+        // Sticky Jump settings
+        "MOM_Settings_Tab_SJ" "SJ"
+        "MOM_Settings_SJ_Enable_Charge" "Enable charge mechanic"
+        "MOM_Settings_SJ_Enable_ChargeMeter" "Enable charge meter"
+        "MOM_Settings_SJ_Enable_Sticky_Counter" "Enable stickybomb counter"
+        "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"
+        "MOM_Settings_SJ_DrawDelayEntry_Tooltip" "In seconds. Default is 0.1, max 1."
+        "MOM_Settings_SJ_Enable_Charge_Tooltip" "Disabling will make stickybombs deploy instantly when holding primary fire."
 
         // Replay Info
         // Spec GUI
