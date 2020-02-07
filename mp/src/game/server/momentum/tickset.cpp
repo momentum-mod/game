@@ -106,6 +106,7 @@ bool TickSet::SetTickrate(int gameMode)
         return SetTickrate(s_DefinedRates[TICKRATE_100]);
     case GAMEMODE_SURF:
     case GAMEMODE_RJ:
+    case GAMEMODE_SJ:
     default:
         return SetTickrate(s_DefinedRates[TICKRATE_66]);
     }
