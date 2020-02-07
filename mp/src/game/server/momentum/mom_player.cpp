@@ -14,6 +14,7 @@
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_base_gun.h"
 #include "weapon/weapon_mom_paintgun.h"
+#include "weapon/weapon_mom_stickybomblauncher.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_saveloc.h"
 #include "util/mom_util.h"
@@ -22,6 +23,7 @@
 #include "mapzones.h"
 #include "fx_mom_shared.h"
 #include "mom_rocket.h"
+#include "mom_stickybomb.h"
 
 #include "tier0/memdbgon.h"
 
@@ -224,7 +226,7 @@ CMomentumPlayer::CMomentumPlayer()
         m_pStartZoneMarks[i] = nullptr;
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         gEntList.AddListenerEntity(this);
     }
@@ -235,10 +237,10 @@ CMomentumPlayer::~CMomentumPlayer()
     if (this == s_pPlayer)
         s_pPlayer = nullptr;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         gEntList.RemoveListenerEntity(this);
-        m_vecRockets.RemoveAll();
+        m_vecExplosives.RemoveAll();
     }
 
     RemoveAllOnehops();
@@ -667,7 +669,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     }
     if (FStrEq(cmd, "drop"))
     {
-        if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         {
             CWeaponBase *pWeapon = dynamic_cast<CWeaponBase *>(GetActiveWeapon());
 
@@ -904,11 +906,21 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
 
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
             {
-                DestroyRockets();
+                if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+                {
+                    // Disable stickybomb launcher charge while inside start zone
+                    const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(this->GetActiveWeapon());
+                    if (pLauncher)
+                    {
+                        pLauncher->SetChargeEnabled(false);
+                    }
+                }
 
-                // Don't limit speed in rocketjump mode,
+                DestroyExplosives();
+
+                // Don't limit speed in RJ/SJ,
                 // reset timer on zone enter and start on zone leave.
                 g_pMomentumTimer->Reset(this);
                 m_bStartTimerOnJump = false;
@@ -1036,6 +1048,15 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
     case ZONE_TYPE_CHECKPOINT:
         break;
     case ZONE_TYPE_START:
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+        {
+            // Re-enable charge on start zone exit
+            const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(this->GetActiveWeapon());
+            if (pLauncher)
+            {
+                pLauncher->SetChargeEnabled(true);
+            }
+        }
         // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
         g_pMomentumTimer->TryStart(this, true);
         if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
@@ -1087,22 +1108,44 @@ void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
 {
     if (pEntity->GetFlags() & FL_GRENADE)
     {
-        const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
-        if (pRocket && pRocket->GetOwnerEntity() == this)
+        if (FClassnameIs(pEntity, "momentum_rocket"))
         {
-            m_vecRockets.AddToTail(pRocket);
+            const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
+            if (pRocket && pRocket->GetOwnerEntity() == this)
+            {
+                m_vecExplosives.AddToTail(pRocket);
+            }
+        }
+        else if (FClassnameIs(pEntity, "momentum_stickybomb"))
+        {
+            const auto pSticky = dynamic_cast<CMomStickybomb *>(pEntity);
+            if (pSticky && pSticky->GetOwnerEntity() == this)
+            {
+                m_vecExplosives.AddToTail(pSticky);
+            }
         }
     }
 }
 
 void CMomentumPlayer::OnEntityDeleted(CBaseEntity *pEntity)
 {
-    if ((pEntity->GetFlags() & FL_GRENADE) && !m_vecRockets.IsEmpty())
+    if ((pEntity->GetFlags() & FL_GRENADE) && !m_vecExplosives.IsEmpty())
     {
-        const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
-        if (pRocket && pRocket->GetOwnerEntity() == this)
+        if (FClassnameIs(pEntity, "momentum_rocket"))
         {
-            m_vecRockets.FindAndRemove(pRocket);
+            const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
+            if (pRocket && pRocket->GetOwnerEntity() == this)
+            {
+                m_vecExplosives.FindAndRemove(pRocket);
+            }
+        }
+        else if (FClassnameIs(pEntity, "momentum_stickybomb"))
+        {
+            const auto pSticky = dynamic_cast<CMomStickybomb *>(pEntity);
+            if (pSticky && pSticky->GetOwnerEntity() == this)
+            {
+                m_vecExplosives.FindAndRemove(pSticky);
+            }
         }
     }
 }
@@ -1608,6 +1651,11 @@ bool CMomentumPlayer::StartObserverMode(int mode)
         SaveCurrentRunState(false);
         FIRE_GAME_WIDE_EVENT("spec_start");
 
+        // When entering spec mode and returning to the game, stickies that were placed beforehand are not assigned to the player
+        // and cannot be detonated anymore, so they are destroyed here
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+            DestroyExplosives();
+
         g_pMomentumGhostClient->SetIsSpectating(true);
     }
 
@@ -1654,10 +1702,7 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     g_pMomentumTimer->Stop(this);
     g_pMomentumTimer->SetCanStart(false);
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-    {
-        DestroyRockets();
-    }
+    DestroyExplosives();
 
     const auto pStart = g_pMomentumTimer->GetStartTrigger(track);
     if (pStart)
@@ -1695,10 +1740,7 @@ void CMomentumPlayer::TimerCommand_Reset()
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
         {
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-            {
-                DestroyRockets();
-            }
+            DestroyExplosives();
 
             // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
             Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
@@ -1710,18 +1752,31 @@ void CMomentumPlayer::TimerCommand_Reset()
     }
 }
 
-void CMomentumPlayer::DestroyRockets()
+void CMomentumPlayer::DestroyExplosives()
 {
-    FOR_EACH_VEC(m_vecRockets, i)
+    FOR_EACH_VEC(m_vecExplosives, i)
     {
-        const auto pRocket = m_vecRockets[i];
-        if (pRocket)
+        const auto pExplosive = m_vecExplosives[i];
+        if (pExplosive)
         {
-            pRocket->Destroy(true);
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            {
+                const auto pRocket = dynamic_cast<CMomRocket*>(pExplosive);
+
+                if (pRocket)
+                    pRocket->Destroy(true);
+            }
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+            {
+                const auto pSticky = dynamic_cast<CMomStickybomb*>(pExplosive);
+
+                if (pSticky)
+                    pSticky->RemoveStickybomb(true);
+            }
         }
     }
 
-    m_vecRockets.RemoveAll();
+    m_vecExplosives.RemoveAll();
 }
 
 void CMomentumPlayer::TogglePracticeMode()
@@ -1799,10 +1854,7 @@ void CMomentumPlayer::DisablePracticeMode()
     // Only when timer is running
     if (g_pMomentumTimer->IsRunning())
     {
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-        {
-            DestroyRockets();
-        }
+        DestroyExplosives();
 
         RestoreRunState(true);
     }
