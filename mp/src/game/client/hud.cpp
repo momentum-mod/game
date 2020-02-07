@@ -26,6 +26,7 @@
 #include <vgui_controls/AnimationController.h>
 #include <vgui/ISurface.h>
 #include "hud_lcd.h"
+#include "fmtstr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -57,9 +58,10 @@ struct HudTextureFileRef
 
 void LoadHudTextures(CUtlDict< CHudTexture*>& list, const char *szFilenameWithoutExtension)
 {
+	CFmtStr szFullName("%s.txt", szFilenameWithoutExtension);
 	KeyValuesAD pKeyValuesData("InputFile");
-	
-	if (pKeyValuesData->LoadFromFile(g_pFullFileSystem, szFilenameWithoutExtension, "GAME"))
+
+	if (pKeyValuesData->LoadFromFile(g_pFullFileSystem, szFullName, "GAME"))
 	{
 		LoadHudTextures(list, pKeyValuesData);
 	}
