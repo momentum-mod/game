@@ -33,7 +33,7 @@
 
 #define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f // not used
 
-#define NON_JUMP_VELOCITY ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 250.0f : 140.0f )
+#define NON_JUMP_VELOCITY ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 250.0f : 140.0f)
 
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
@@ -107,7 +107,7 @@ float CMomentumGameMovement::LadderDistance() const
 
 bool CMomentumGameMovement::GameHasLadders() const
 {
-    return !g_pGameModeSystem->GameModeIs(GAMEMODE_RJ);
+    return !(g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ));
 }
 
 void CMomentumGameMovement::DecayPunchAngle(void)
@@ -254,7 +254,7 @@ void CMomentumGameMovement::WalkMove()
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
 
     // Cap ground movement speed in RJ
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         float flNewSpeed = VectorLength(mv->m_vecVelocity);
         if (flNewSpeed > mv->m_flMaxSpeed)
@@ -547,7 +547,7 @@ bool CMomentumGameMovement::LadderMove(void)
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         // TF2 uses default speed cropping
         return BaseClass::HandleDuckingSpeedCrop();
@@ -673,7 +673,7 @@ void CMomentumGameMovement::Friction(void)
 
 void CMomentumGameMovement::Duck(void)
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         // Don't allowing ducking if deep enough in water
         if ((player->GetWaterLevel() >= WL_Feet && player->GetGroundEntity() == nullptr) ||
@@ -853,7 +853,7 @@ void CMomentumGameMovement::Duck(void)
                     //  that we'll unduck once we exit the tunnel, etc.
                     player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
 
-                    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+                    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
                     {
                         // Values from BaseClass::Duck(),
                         // FL_DUCKING flag is the important bit here,
@@ -1063,7 +1063,8 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // Cannot jump while ducked in TF2
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && (player->GetFlags() & FL_DUCKING))
+    if ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) &&
+        (player->GetFlags() & FL_DUCKING))
     {
         return false;
     }
@@ -1083,7 +1084,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         PreventBunnyHopping();
     }
@@ -1123,7 +1124,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Acclerate upward
     float startz = mv->m_vecVelocity[2];
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         // Gravity dependance, but ensuring it exactly gives 289 at 800 gravity
         float height = 289.0f * 289.0f / (2.0f * 800.0f);
@@ -1161,10 +1162,10 @@ bool CMomentumGameMovement::CheckJumpButton()
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.1f;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         mv->m_outStepHeight += 0.05f; // 0.15f total
 
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         // First do a trace all the way down to the ground
         TracePlayerBBox(mv->GetAbsOrigin(),
@@ -1314,7 +1315,7 @@ void CMomentumGameMovement::CategorizePosition()
             else
             {
                 // This is not necessary to do for other gamemodes as they do not reset the vertical velocity before WalkMove()
-                if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && player->GetGroundEntity() != nullptr &&
+                if ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) && player->GetGroundEntity() != nullptr &&
                     player->GetMoveType() == MOVETYPE_WALK && player->GetWaterLevel() < WL_Eyes)
                 {
                     Vector org = mv->GetAbsOrigin();
@@ -1542,14 +1543,14 @@ void CMomentumGameMovement::FullWalkMove()
 
         if (player->GetGroundEntity() != nullptr)
         {
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
                 mv->m_vecVelocity[2] = 0.f;
 
             WalkMove();
 
             CategorizePosition();
 
-            if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
             {
                 m_bCheckForGrabbableLadder = m_pPlayer->GetGroundEntity() == nullptr;
                 if (m_bCheckForGrabbableLadder)
@@ -1824,7 +1825,7 @@ void CMomentumGameMovement::AirMove(void)
     // (or maybe another monster?)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
         if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
         {
