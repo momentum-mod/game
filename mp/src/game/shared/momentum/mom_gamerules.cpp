@@ -53,7 +53,7 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         return &g_MOMViewVectorsRJ;
 
     return &g_MOMViewVectors;
