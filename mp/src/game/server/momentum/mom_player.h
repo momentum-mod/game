@@ -11,7 +11,6 @@ class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
-class CMomRocket;
 
 struct SavedState_t
 {
@@ -267,7 +266,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
     void SetPracticeModeState();
 
-    void DestroyRockets();
+    void DestroyExplosives();
     
     // Resets all player movement properties to their default state
     void ResetMovementProperties();
@@ -325,5 +324,5 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     SavedState_t m_SavedRunState; // Used when either entering practice mode or spectating while in a run
     SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
 
-    CUtlVector<CMomRocket*> m_vecRockets;
+    CUtlVector<CBaseEntity*> m_vecExplosives;
 };
