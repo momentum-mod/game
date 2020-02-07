@@ -44,6 +44,9 @@ class CWeaponBase : public CBaseCombatWeapon
     float CalcViewmodelBob(void) OVERRIDE;
     bool IsPredicted() const OVERRIDE { return true; }
 
+    // Allow use of both primary and secondary weapon functions at the same time when true
+    virtual bool DualFire() { return false; }
+
     // Pistols reset m_iShotsFired to 0 when the attack button is released.
     bool IsPistol() const { return GetWeaponID() == WEAPON_PISTOL; }
 
