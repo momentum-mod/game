@@ -1265,9 +1265,9 @@ bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 		pOwner->SetNextAttack( gpGlobals->curtime + DeployTime() );
 	}
 
-	// Can't shoot again until we've finished deploying
-	m_flNextPrimaryAttack	= gpGlobals->curtime + DeployTime();
-	m_flNextSecondaryAttack	= gpGlobals->curtime + DeployTime();
+	// Can't shoot again until we've finished deploying, but don't squash current delay as well
+	m_flNextPrimaryAttack	= Max<float>(m_flNextPrimaryAttack, gpGlobals->curtime + DeployTime());
+	m_flNextSecondaryAttack	= Max<float>(m_flNextSecondaryAttack, gpGlobals->curtime + DeployTime());
 	m_flHudHintMinDisplayTime = 0;
 
 	m_bAltFireHudHintDisplayed = false;
