@@ -88,7 +88,7 @@ public:
     GameMode_t GetType() override { return GAMEMODE_RJ; }
     const char* GetStatusString() override { return "Rocket Jumping"; }
     const char* GetDiscordIcon() override { return "mom_icon_rj"; }
-    const char* GetMapPrefix() override { return "jump_"; }
+    const char* GetMapPrefix() override { return "rj_"; }
     const char* GetGameModeCfg() override { return "rj.cfg"; }
     float GetViewScale() override { return 1.0f; }
 
