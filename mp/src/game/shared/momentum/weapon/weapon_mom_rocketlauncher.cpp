@@ -32,7 +32,7 @@ LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR_CV(mom_rj_center_fire, "0", FCVAR_ARCHIVE, "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n", nullptr,
+static MAKE_TOGGLE_CONVAR_CV(mom_rj_center_fire, "1", FCVAR_ARCHIVE, "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n", nullptr,
     [](IConVar *pVar, const char *pNewVal)
     {
         if (g_pMomentumTimer->IsRunning())
