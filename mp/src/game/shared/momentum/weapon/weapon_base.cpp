@@ -273,9 +273,10 @@ bool CWeaponBase::DefaultDeploy(char *szViewModel, char *szWeaponModel, int iAct
     SetViewModel();
     SendWeaponAnim(GetDeployActivity());
 
+    // Can't shoot again until we've finished deploying, but don't squash current delay as well
     pOwner->SetNextAttack(gpGlobals->curtime + DeployTime());
-    m_flNextPrimaryAttack = gpGlobals->curtime + DeployTime();
-    m_flNextSecondaryAttack = gpGlobals->curtime + DeployTime();
+    m_flNextPrimaryAttack = Max<float>(m_flNextPrimaryAttack, gpGlobals->curtime + DeployTime());
+    m_flNextSecondaryAttack = Max<float>(m_flNextSecondaryAttack, gpGlobals->curtime + DeployTime());
 
     SetWeaponVisible(true);
     SetWeaponModelIndex(szWeaponModel);
