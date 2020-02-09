@@ -1,8 +1,7 @@
 #pragma once
 
 #include "weapon_base_gun.h"
-
-class CMomStickybomb;
+#include "mom_stickybomb.h"
 
 #ifdef CLIENT_DLL
 #define CMomentumStickybombLauncher C_MomentumStickybombLauncher
