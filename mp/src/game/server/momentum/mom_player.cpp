@@ -226,7 +226,7 @@ CMomentumPlayer::CMomentumPlayer()
         m_pStartZoneMarks[i] = nullptr;
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         gEntList.AddListenerEntity(this);
     }
@@ -237,7 +237,7 @@ CMomentumPlayer::~CMomentumPlayer()
     if (this == s_pPlayer)
         s_pPlayer = nullptr;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         gEntList.RemoveListenerEntity(this);
         m_vecExplosives.RemoveAll();
@@ -669,7 +669,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     }
     if (FStrEq(cmd, "drop"))
     {
-        if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && !g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+        if (!g_pGameModeSystem->IsTF2BasedMode())
         {
             CWeaponBase *pWeapon = dynamic_cast<CWeaponBase *>(GetActiveWeapon());
 
@@ -906,7 +906,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
 
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+            if (g_pGameModeSystem->IsTF2BasedMode())
             {
                 if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
                 {
