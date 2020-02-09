@@ -74,8 +74,6 @@ public:
 	virtual bool	ShouldDrawViewModel();
 	virtual bool	ShouldDrawParticles( );
 	virtual bool	ShouldDrawCrosshair( void );
-	virtual bool	ShouldBlackoutAroundHUD() OVERRIDE;
-	virtual HeadtrackMovementMode_t ShouldOverrideHeadtrackControl() OVERRIDE;
 	virtual void	AdjustEngineViewport( int& x, int& y, int& width, int& height );
 	virtual void	PreRender(CViewSetup *pSetup);
 	virtual void	PostRender();
@@ -108,8 +106,6 @@ public:
 	virtual bool CanRecordDemo( char *errorMsg, int length ) const { return true; }
 
 	virtual int HandleSpectatorKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
-
-	virtual void	ComputeVguiResConditions( KeyValues *pkvConditions ) OVERRIDE;
 
 	//=============================================================================
 	// HPE_BEGIN:
