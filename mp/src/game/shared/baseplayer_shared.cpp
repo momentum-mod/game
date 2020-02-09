@@ -20,9 +20,7 @@
 	#include "c_basedoor.h"
 	#include "c_world.h"
 	#include "view.h"
-	#include "client_virtualreality.h"
 	#define CRecipientFilter C_RecipientFilter
-	#include "sourcevr/isourcevirtualreality.h"
 
 #else
 
@@ -422,23 +420,6 @@ void CBasePlayer::CacheVehicleView( void )
 		// Get our view for this frame
 		pVehicle->GetVehicleViewPosition( nRole, &m_vecVehicleViewOrigin, &m_vecVehicleViewAngles, &m_flVehicleViewFOV );
 		m_nVehicleViewSavedFrame = gpGlobals->framecount;
-
-#ifdef CLIENT_DLL
-		if( UseVR() )
-		{
-			C_BaseAnimating *pVehicleAnimating = dynamic_cast<C_BaseAnimating *>( pVehicle );
-			if( pVehicleAnimating )
-			{
-				int eyeAttachmentIndex = pVehicleAnimating->LookupAttachment( "vehicle_driver_eyes" );
-
-				Vector vehicleEyeOrigin;
-				QAngle vehicleEyeAngles;
-				pVehicleAnimating->GetAttachment( eyeAttachmentIndex, vehicleEyeOrigin, vehicleEyeAngles );
-
-				g_ClientVirtualReality.OverrideTorsoTransform( vehicleEyeOrigin, vehicleEyeAngles );
-			}
-		}
-#endif
 	}
 }
 
@@ -1516,10 +1497,6 @@ void CBasePlayer::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNear, 
 
 	if ( !pVehicle )
 	{
-#if defined( CLIENT_DLL )
-		if( UseVR() )
-			g_ClientVirtualReality.CancelTorsoTransformOverride();
-#endif
 
 		if ( IsObserver() )
 		{
