@@ -583,7 +583,7 @@ bool CMomentumGameMovement::CanUnduck()
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        newOrigin += -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+        newOrigin += -g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
     }
 
     UTIL_TraceHull(mv->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, PlayerSolidMask(), player,
@@ -673,7 +673,8 @@ void CMomentumGameMovement::Friction(void)
 
 void CMomentumGameMovement::Duck(void)
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
+    const auto pGameMode = g_pGameModeSystem->GetGameMode();
+    if (pGameMode->GetType() == GAMEMODE_RJ || pGameMode->GetType() == GAMEMODE_SJ)
     {
         // Don't allowing ducking if deep enough in water
         if ((player->GetWaterLevel() >= WL_Feet && player->GetGroundEntity() == nullptr) ||
@@ -739,7 +740,7 @@ void CMomentumGameMovement::Duck(void)
             VectorCopy(mv->GetAbsOrigin(), newOrigin);
             Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
             Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-            newOrigin -= VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+            newOrigin -= pGameMode->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
             groundCheck = newOrigin;
             groundCheck.z -= player->GetStepSize();
 
@@ -889,7 +890,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        Vector viewDelta = -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+        Vector viewDelta = -g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
 
         VectorAdd(newOrigin, viewDelta, newOrigin);
     }
@@ -914,7 +915,7 @@ void CMomentumGameMovement::FinishDuck(void)
     Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-    Vector viewDelta = VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+    Vector viewDelta = g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
 
     player->SetViewOffset(GetPlayerViewOffset(true));
     player->AddFlag(FL_DUCKING);

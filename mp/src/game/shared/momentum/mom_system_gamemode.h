@@ -6,9 +6,6 @@
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
-#define VIEW_SCALE                                                                                                     \
-    ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 1.0f : 0.5f)
-
 class CMomentumPlayer;
 
 abstract_class IGameMode
@@ -26,6 +23,9 @@ public:
     virtual void        ExecGameModeCfg() = 0;
     virtual float       GetIntervalPerTick() = 0;
 
+    // Movement vars
+    virtual float       GetViewScale() = 0;
+
     virtual ~IGameMode() {}
 };
 
@@ -39,6 +39,7 @@ public:
     const char* GetMapPrefix() override { return ""; }
     const char* GetGameModeCfg() override { return nullptr; }
     float GetIntervalPerTick() override { return 0.015f; }
+    float GetViewScale() override { return 0.5f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
@@ -88,6 +89,7 @@ public:
     const char* GetDiscordIcon() override { return "mom_icon_rj"; }
     const char* GetMapPrefix() override { return "jump_"; }
     const char* GetGameModeCfg() override { return "rj.cfg"; }
+    float GetViewScale() override { return 1.0f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
@@ -101,6 +103,7 @@ class CGameMode_SJ : public CGameModeBase
     const char *GetDiscordIcon() override { return "mom_icon_sj"; }
     const char *GetMapPrefix() override { return "sj_"; }
     const char *GetGameModeCfg() override { return "sj.cfg"; }
+    float GetViewScale() override { return 1.0f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
