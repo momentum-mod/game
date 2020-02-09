@@ -146,8 +146,10 @@ public:
     // Extra methods
     /// Gets current game mode
     IGameMode *GetGameMode() const { return m_pCurrentGameMode; }
+    /// Gets a specific game mode instance by type
+    IGameMode *GetGameMode(int eMode) const;
     /// Checks if the game mode is the given one.
-    /// (convenience method; functionally equivalent to `GetGameMode()->GetGameModeType() == eCheck`)
+    /// (convenience method; functionally equivalent to `GetGameMode()->GetType() == eCheck`)
     bool GameModeIs(GameMode_t eCheck) const { return m_pCurrentGameMode->GetType() == eCheck; }
     /// Sets the game mode directly
     void SetGameMode(GameMode_t eMode);

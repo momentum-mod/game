@@ -164,6 +164,17 @@ void CGameModeSystem::LevelInitPostEntity()
 #endif
 }
 
+IGameMode *CGameModeSystem::GetGameMode(int eMode) const
+{
+    if (eMode < GAMEMODE_UNKNOWN || eMode >= GAMEMODE_COUNT)
+    {
+        Warning("Attempted to get invalid game mode %i !\n", eMode);
+        eMode = GAMEMODE_UNKNOWN;
+    }
+
+    return m_vecGameModes[eMode];
+}
+
 void CGameModeSystem::SetGameMode(GameMode_t eMode)
 {
     m_pCurrentGameMode = m_vecGameModes[eMode];
@@ -177,7 +188,7 @@ void CGameModeSystem::SetGameMode(GameMode_t eMode)
 void CGameModeSystem::SetGameModeFromMapName(const char *pMapName)
 {
     // Set to unknown for now
-    m_pCurrentGameMode = m_vecGameModes[0];
+    m_pCurrentGameMode = m_vecGameModes[GAMEMODE_UNKNOWN];
 
     if (pMapName)
     {
