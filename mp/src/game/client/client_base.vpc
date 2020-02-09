@@ -288,8 +288,6 @@ $Project
 		$File	"classmap.cpp"
 		$File	"client_factorylist.cpp"
 		$File	"client_thinklist.cpp"
-		$File	"client_virtualreality.cpp"
-		$File	"client_virtualreality.h"
 		$File	"clienteffectprecachesystem.cpp"
 		$File	"cliententitylist.cpp"
 		$File	"clientleafsystem.cpp"
