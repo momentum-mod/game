@@ -13,8 +13,6 @@
 #include "vgui_controls/Controls.h"
 #include "vgui/ISurface.h"
 #include "ivrenderview.h"
-#include "client_virtualreality.h"
-#include "sourcevr/isourcevirtualreality.h"
 #include "weapon/weapon_base.h"
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
@@ -149,70 +147,30 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
     int vx, vy, vw, vh;
     surface()->GetFullscreenViewport( vx, vy, vw, vh );
 
-    float screenWidth = vw;
-    float screenHeight = vh;
-
-    float x = screenWidth / 2;
-    float y = screenHeight / 2;
-
-    bool bBehindCamera = false;
-
-    C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
-    if ( ( pPlayer != NULL ) && ( pPlayer->GetObserverMode()==OBS_MODE_NONE ) )
-    {
-        bool bUseOffset = false;
-        
-        Vector vecStart;
-        Vector vecEnd;
-
-        if ( UseVR() )
-        {
-            // These are the correct values to use, but they lag the high-speed view data...
-            vecStart = pPlayer->Weapon_ShootPosition();
-            Vector vecAimDirection = pPlayer->GetAutoaimVector( 1.0f );
-            // ...so in some aim modes, they get zapped by something completely up-to-date.
-            g_ClientVirtualReality.OverrideWeaponHudAimVectors ( &vecStart, &vecAimDirection );
-            vecEnd = vecStart + vecAimDirection * MAX_TRACE_LENGTH;
-
-            bUseOffset = true;
-        }
-
-        if ( bUseOffset )
-        {
-            trace_t tr;
-            UTIL_TraceLine( vecStart, vecEnd, MASK_SHOT, pPlayer, COLLISION_GROUP_NONE, &tr );
-
-            Vector screen;
-            screen.Init();
-            bBehindCamera = ScreenTransform(tr.endpos, screen) != 0;
-
-            x = 0.5f * ( 1.0f + screen[0] ) * screenWidth + 0.5f;
-            y = 0.5f * ( 1.0f - screen[1] ) * screenHeight + 0.5f;
-        }
-    }
+    float x = vw / 2.0f;
+    float y = vh / 2.0f;
 
     // MattB - angleCrosshairOffset is the autoaim angle.
     // if we're not using autoaim, just draw in the middle of the 
     // screen
     if ( angleCrosshairOffset != vec3_angle )
     {
-        QAngle angles;
         Vector forward;
         Vector point, screen;
 
         // this code is wrong
-        angles = curViewAngles + angleCrosshairOffset;
+        const QAngle angles = curViewAngles + angleCrosshairOffset;
         AngleVectors( angles, &forward );
         VectorAdd( curViewOrigin, forward, point );
         ScreenTransform( point, screen );
 
-        x += 0.5f * screen[0] * screenWidth + 0.5f;
-        y += 0.5f * screen[1] * screenHeight + 0.5f;
+        x += 0.5f * screen[0] * vw + 0.5f;
+        y += 0.5f * screen[1] * vh + 0.5f;
     }
 
     *pX = x;
     *pY = y;
-    *pbBehindCamera = bBehindCamera;
+    *pbBehindCamera = false;
 }
 
 void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
