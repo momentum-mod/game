@@ -11,8 +11,6 @@
 #include "rendertexture.h"
 #include "view_scene.h"
 #include "viewrender.h"
-#include "sourcevr/isourcevirtualreality.h"
-#include "client_virtualreality.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -95,24 +93,6 @@ bool ScreenTransform( const Vector& point, Vector& screen )
 	// UNDONE: Clean this up some, handle off-screen vertices
 	return FrustumTransform ( engine->WorldToScreenMatrix(), point, screen );
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Same as ScreenTransform, but transforms to HUD space.
-//			These are totally different things in VR mode!
-//-----------------------------------------------------------------------------
-bool HudTransform( const Vector& point, Vector& screen )
-{
-	if ( UseVR() )
-	{
-		return FrustumTransform ( g_ClientVirtualReality.GetHudProjectionFromWorld(), point, screen );
-	}
-	else
-	{
-		return FrustumTransform ( engine->WorldToScreenMatrix(), point, screen );
-	}
-}
-
-
 
 void UpdateFullScreenDepthTexture( void )
 {

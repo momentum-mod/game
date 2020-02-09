@@ -535,35 +535,6 @@ bool GetVectorInScreenSpace( Vector pos, int& iX, int& iY, Vector *vecOffset )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Get the x & y positions of a world position in HUD space
-//			Returns true if it's onscreen
-//-----------------------------------------------------------------------------
-bool GetVectorInHudSpace( Vector pos, int& iX, int& iY, Vector *vecOffset )
-{
-	Vector screen;
-
-	// Apply the offset, if one was specified
-	if ( vecOffset != NULL )
-		pos += *vecOffset;
-
-	// Transform to HUD space
-	int iFacing = HudTransform( pos, screen );
-	iX = 0.5f * ( 1.0f + screen[0] ) * ScreenWidth();
-	iY = 0.5f * ( 1.0f - screen[1] ) * ScreenHeight();
-
-	// Make sure the player's facing it
-	if ( iFacing )
-	{
-		// We're actually facing away from the Target. Stomp the screen position.
-		iX = -640;
-		iY = -640;
-		return false;
-	}
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Get the x & y positions of an entity in screenspace
 //			Returns true if it's onscreen
 //-----------------------------------------------------------------------------
@@ -571,16 +542,6 @@ bool GetTargetInScreenSpace( C_BaseEntity *pTargetEntity, int& iX, int& iY, Vect
 {
 	return GetVectorInScreenSpace( pTargetEntity->WorldSpaceCenter(), iX, iY, vecOffset );
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Get the x & y positions of an entity in Vgui space
-//			Returns true if it's onscreen
-//-----------------------------------------------------------------------------
-bool GetTargetInHudSpace( C_BaseEntity *pTargetEntity, int& iX, int& iY, Vector *vecOffset )
-{
-	return GetVectorInHudSpace( pTargetEntity->WorldSpaceCenter(), iX, iY, vecOffset );
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
