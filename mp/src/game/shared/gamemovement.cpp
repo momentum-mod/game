@@ -1278,7 +1278,6 @@ void CGameMovement::CheckWaterJump( void )
 	Vector	flatforward;
 	Vector forward;
 	Vector	flatvelocity;
-	float curspeed;
 
 	AngleVectors( mv->m_vecViewAngles, &forward );  // Determine movement angles
 
@@ -1296,7 +1295,7 @@ void CGameMovement::CheckWaterJump( void )
 	flatvelocity[2] = 0;
 
 	// Must be moving
-	curspeed = VectorNormalize( flatvelocity );
+	float curspeed = VectorNormalize( flatvelocity );
 	
 	// see if near an edge
 	flatforward[0] = forward[0];
@@ -1308,12 +1307,11 @@ void CGameMovement::CheckWaterJump( void )
 	if ( curspeed != 0.0 && ( DotProduct( flatvelocity, flatforward ) < 0.0 ) )
 		return;
 
-	Vector vecStart;
 	// Start line trace at waist height (using the center of the player for this here)
-	vecStart = mv->GetAbsOrigin() + (GetPlayerMins() + GetPlayerMaxs() ) * 0.5;
+	Vector vecStart = mv->GetAbsOrigin() + (GetPlayerMins() + GetPlayerMaxs() ) * 0.5;
 
 	Vector vecEnd;
-	VectorMA( vecStart, 24.0f, flatforward, vecEnd );
+	VectorMA( vecStart, GetWaterJumpForward(), flatforward, vecEnd );
 	
 	trace_t tr;
 	TracePlayerBBox( vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr );
@@ -1327,7 +1325,7 @@ void CGameMovement::CheckWaterJump( void )
 		}
 
 		vecStart.z = mv->GetAbsOrigin().z + player->GetViewOffset().z + WATERJUMP_HEIGHT; 
-		VectorMA( vecStart, 24.0f, flatforward, vecEnd );
+		VectorMA( vecStart, GetWaterJumpForward(), flatforward, vecEnd );
 		VectorMA( vec3_origin, -50.0f, tr.plane.normal, player->m_vecWaterJumpVel );
 
 		TracePlayerBBox( vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr );
@@ -1339,7 +1337,7 @@ void CGameMovement::CheckWaterJump( void )
 			TracePlayerBBox( vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr );
 			if ( ( tr.fraction < 1.0f ) && ( tr.plane.normal.z >= 0.7 ) )
 			{
-				mv->m_vecVelocity[2] = 256.0f;			// Push up
+				mv->m_vecVelocity[2] = GetWaterJumpUpZVelocity(); // Push up
 				mv->m_nOldButtons |= IN_JUMP;		// Don't jump again until released
 				player->AddFlag( FL_WATERJUMP );
 				player->m_flWaterJumpTime = 2000.0f;	// Do this for 2 seconds
@@ -1371,6 +1369,27 @@ void CGameMovement::WaterJump( void )
 	mv->m_vecVelocity[1] = player->m_vecWaterJumpVel[1];
 }
 
+void CGameMovement::CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward)
+{
+	// if we have the jump key down, move us up as well
+	if (mv->m_nButtons & IN_JUMP)
+	{
+		wishVel[2] += mv->m_flClientMaxSpeed;
+	}
+	// Sinking after no other movement occurs
+	else if (!mv->m_flForwardMove && !mv->m_flSideMove && !mv->m_flUpMove)
+	{
+		wishVel[2] -= 60.0f;		// drift towards bottom
+	}
+	else  // Go straight up by upmove amount.
+	{
+		// exaggerate upward movement along forward as well
+		float upwardMovememnt = mv->m_flForwardMove * forward.z * 2;
+		upwardMovememnt = clamp(upwardMovememnt, 0.f, mv->m_flClientMaxSpeed);
+		wishVel[2] += mv->m_flUpMove + upwardMovememnt;
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1396,23 +1415,7 @@ void CGameMovement::WaterMove( void )
 		wishvel[i] = forward[i]*mv->m_flForwardMove + right[i]*mv->m_flSideMove;
 	}
 
-	// if we have the jump key down, move us up as well
-	if (mv->m_nButtons & IN_JUMP)
-	{
-		wishvel[2] += mv->m_flClientMaxSpeed;
-	}
-	// Sinking after no other movement occurs
-	else if (!mv->m_flForwardMove && !mv->m_flSideMove && !mv->m_flUpMove)
-	{
-		wishvel[2] -= 60;		// drift towards bottom
-	}
-	else  // Go straight up by upmove amount.
-	{
-		// exaggerate upward movement along forward as well
-		float upwardMovememnt = mv->m_flForwardMove * forward.z * 2;
-		upwardMovememnt = clamp( upwardMovememnt, 0.f, mv->m_flClientMaxSpeed );
-		wishvel[2] += mv->m_flUpMove + upwardMovememnt;
-	}
+	CalculateWaterWishVelocityZ(wishvel, forward);
 
 	// Copy it over and determine speed
 	VectorCopy (wishvel, wishdir);
@@ -3517,82 +3520,83 @@ int CGameMovement::GetPointContentsCached( const Vector &point, int slot )
 //-----------------------------------------------------------------------------
 bool CGameMovement::CheckWater( void )
 {
-	Vector	point;
-	int		cont;
+	Vector point;
 
-	Vector vPlayerMins = GetPlayerMins();
-	Vector vPlayerMaxs = GetPlayerMaxs();
+	const Vector vPlayerMins = GetPlayerMins();
+	const Vector vPlayerMaxs = GetPlayerMaxs();
 
 	// Pick a spot just above the players feet.
-	point[0] = mv->GetAbsOrigin()[0] + (vPlayerMins[0] + vPlayerMaxs[0]) * 0.5;
-	point[1] = mv->GetAbsOrigin()[1] + (vPlayerMins[1] + vPlayerMaxs[1]) * 0.5;
-	point[2] = mv->GetAbsOrigin()[2] + vPlayerMins[2] + 1;
-	
+	point[0] = mv->GetAbsOrigin().x + (vPlayerMins.x + vPlayerMaxs.x) * 0.5f;
+	point[1] = mv->GetAbsOrigin().y + (vPlayerMins.y + vPlayerMaxs.y) * 0.5f;
+	point[2] = mv->GetAbsOrigin().z + vPlayerMins.z + 1.0f;
+
 	// Assume that we are not in water at all.
-	player->SetWaterLevel( WL_NotInWater );
-	player->SetWaterType( CONTENTS_EMPTY );
+	int iWaterType = WL_NotInWater;
+	int iWaterContents = CONTENTS_EMPTY;
 
 	// Grab point contents.
-	cont = GetPointContentsCached( point, 0 );	
-	
+	int iContents = GetPointContentsCached(point, 0);
+
 	// Are we under water? (not solid and not empty?)
-	if ( cont & MASK_WATER )
+	if (iContents & MASK_WATER)
 	{
-		// Set water type
-		player->SetWaterType( cont );
+		iWaterContents = iContents;
+		iWaterType = WL_Feet; // We are at least at level one
 
-		// We are at least at level one
-		player->SetWaterLevel( WL_Feet );
-
-		// Now check a point that is at the player hull midpoint.
-		point[2] = mv->GetAbsOrigin()[2] + (vPlayerMins[2] + vPlayerMaxs[2])*0.5;
-		cont = GetPointContentsCached( point, 1 );
-		// If that point is also under water...
-		if ( cont & MASK_WATER )
+		// Are we at the eyes already?
+		point[2] = mv->GetAbsOrigin().z + player->GetViewOffset().z;
+		iContents = GetPointContentsCached(point, 1);
+		if (iContents & MASK_WATER)
 		{
-			// Set a higher water level.
-			player->SetWaterLevel( WL_Waist );
-
-			// Now check the eye position.  (view_ofs is relative to the origin)
-			point[2] = mv->GetAbsOrigin()[2] + player->GetViewOffset()[2];
-			cont = GetPointContentsCached( point, 2 );
-			if ( cont & MASK_WATER )
-				player->SetWaterLevel( WL_Eyes );  // In over our eyes
+			iWaterType = WL_Eyes;
+		}
+		else
+		{
+			// Now check the waist point and see if that's underwater
+			point[2] = mv->GetAbsOrigin().z + (vPlayerMins.z + vPlayerMaxs.z) * 0.5f + GetWaterWaistOffset();
+			iContents = GetPointContentsCached(point, 1);
+			if (iContents & MASK_WATER)
+			{
+				iWaterType = WL_Waist;
+			}
 		}
 
 		// Adjust velocity based on water current, if any.
-		if ( cont & MASK_CURRENT )
+		if (iContents & MASK_CURRENT)
 		{
 			Vector v;
 			VectorClear(v);
-			if ( cont & CONTENTS_CURRENT_0 )
+			if (iContents & CONTENTS_CURRENT_0)
 				v[0] += 1;
-			if ( cont & CONTENTS_CURRENT_90 )
+			if (iContents & CONTENTS_CURRENT_90)
 				v[1] += 1;
-			if ( cont & CONTENTS_CURRENT_180 )
+			if (iContents & CONTENTS_CURRENT_180)
 				v[0] -= 1;
-			if ( cont & CONTENTS_CURRENT_270 )
+			if (iContents & CONTENTS_CURRENT_270)
 				v[1] -= 1;
-			if ( cont & CONTENTS_CURRENT_UP )
+			if (iContents & CONTENTS_CURRENT_UP)
 				v[2] += 1;
-			if ( cont & CONTENTS_CURRENT_DOWN )
+			if (iContents & CONTENTS_CURRENT_DOWN)
 				v[2] -= 1;
 
 			// BUGBUG -- this depends on the value of an unspecified enumerated type
 			// The deeper we are, the stronger the current.
 			Vector temp;
-			VectorMA( player->GetBaseVelocity(), 50.0*player->GetWaterLevel(), v, temp );
-			player->SetBaseVelocity( temp );
+			VectorMA(player->GetBaseVelocity(), 50.0f * player->GetWaterLevel(), v, temp);
+			player->SetBaseVelocity(temp);
 		}
 	}
 
+	player->SetWaterLevel(iWaterType);
+	player->SetWaterType(iWaterContents);
+
 	// if we just transitioned from not in water to in water, record the time it happened
-	if ( ( WL_NotInWater == m_nOldWaterLevel ) && ( player->GetWaterLevel() >  WL_NotInWater ) )
+	if ((WL_NotInWater == m_nOldWaterLevel) && (player->GetWaterLevel() > WL_NotInWater))
 	{
 		m_flWaterEntryTime = gpGlobals->curtime;
 	}
 
-	return ( player->GetWaterLevel() > WL_Feet );
+	return (player->GetWaterLevel() > WL_Feet);
 }
 
 void CGameMovement::SetGroundEntity( trace_t *pm )

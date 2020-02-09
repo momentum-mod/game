@@ -92,6 +92,7 @@ protected:
 	virtual void	CheckWaterJump(void );
 
 	virtual void	WaterMove( void );
+	virtual void    CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward);
 
 	void			WaterJump( void );
 
@@ -193,6 +194,9 @@ protected:
 	// Sets refWaterLevel and refWaterType appropriately.
 	// If in water, applies current to baseVelocity, and returns true.
 	virtual bool			CheckWater( void );
+	virtual float			GetWaterWaistOffset() { return 0.0f; }
+	virtual float			GetWaterJumpForward() { return 24.0f; }
+	virtual float			GetWaterJumpUpZVelocity() { return 256.0f; }
 	
 	// Determine if player is in water, on ground, etc.
 	virtual void CategorizePosition( void );
