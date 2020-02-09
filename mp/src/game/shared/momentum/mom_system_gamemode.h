@@ -151,6 +151,8 @@ public:
     /// Checks if the game mode is the given one.
     /// (convenience method; functionally equivalent to `GetGameMode()->GetType() == eCheck`)
     bool GameModeIs(GameMode_t eCheck) const { return m_pCurrentGameMode->GetType() == eCheck; }
+    /// Another convenience method to check if the current game mode is a TF2-based one (RJ || SJ)
+    bool IsTF2BasedMode() const { return GameModeIs(GAMEMODE_RJ) || GameModeIs(GAMEMODE_SJ); }
     /// Sets the game mode directly
     void SetGameMode(GameMode_t eMode);
     /// Sets the game mode from a map name (backup method)

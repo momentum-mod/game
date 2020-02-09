@@ -23,7 +23,7 @@ CMomentumGameRules::CMomentumGameRules()
 
 CMomentumGameRules::~CMomentumGameRules() {}
 
-static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
+static CViewVectors g_ViewVectorsMom(Vector(0, 0, 64), // eye position
                                      Vector(-16, -16, 0), // hull min
                                      Vector(16, 16, 62),  // hull max
 
@@ -37,7 +37,7 @@ static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(0, 0, 14) // dead view height
 );
 
-static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
+static CViewVectors g_ViewVectorsTF2(Vector(0, 0, 68), // eye position
                                      Vector(-24, -24, 0), // hull min
                                      Vector(24, 24, 82),  // hull max
 
@@ -53,10 +53,10 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-        return &g_MOMViewVectorsRJ;
+    if (g_pGameModeSystem->IsTF2BasedMode())
+        return &g_ViewVectorsTF2;
 
-    return &g_MOMViewVectors;
+    return &g_ViewVectorsMom;
 }
 
 bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
@@ -273,8 +273,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             continue;
         }
 
-        if (pEntity == pAttacker &&
-            (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)))
+        if (pEntity == pAttacker && g_pGameModeSystem->IsTF2BasedMode())
         {
             // Skip attacker, we will handle them separately (below)
             continue;
