@@ -37,8 +37,6 @@
 #include <vgui_controls/Controls.h>
 #include <vgui/ISurface.h>
 #include "ScreenSpaceEffects.h"
-#include "sourcevr/isourcevirtualreality.h"
-#include "client_virtualreality.h"
 
 #if defined( REPLAY_ENABLED )
 #include "replay/ireplaysystem.h"
@@ -144,34 +142,6 @@ static void CalcDemoViewOverride( Vector &origin, QAngle &angles )
 	origin = s_DemoView;
 	angles = s_DemoAngle;
 }
-
-
-
-// Selects the relevant member variable to update. You could do it manually, but...
-// We always set up the MONO eye, even when doing stereo, and it's set up to be mid-way between the left and right,
-// so if you don't really care about L/R (e.g. culling, sound, etc), just use MONO.
-CViewSetup &CViewRender::GetView(StereoEye_t eEye)
-{
-	if ( eEye == STEREO_EYE_MONO )
-    {
-		return m_View;
-    }
-	else if ( eEye == STEREO_EYE_RIGHT )
-    {
-        return m_ViewRight;
-    }
-	else
-    {
-        Assert ( eEye == STEREO_EYE_LEFT );
-		return m_ViewLeft;
-    }
-}
-
-const CViewSetup &CViewRender::GetView(StereoEye_t eEye) const
-{
-    return (const_cast<CViewRender*>(this))->GetView ( eEye );
-}
-
 
 //-----------------------------------------------------------------------------
 // Accessors to return the main view (where the player's looking)
@@ -313,10 +283,7 @@ void CViewRender::LevelInit( void )
 	m_BuildWorldListsNumber = 0;
 	m_BuildRenderableListsNumber = 0;
 
-	for( int i=0; i < STEREO_EYE_MAX; i++ )
-	{
-		m_rbTakeFreezeFrame[ i ] = false;
-	}
+	m_rbTakeFreezeFrame = false;
 	m_flFreezeFrameUntil = 0;
 
 	// Clear our overlay materials
@@ -465,24 +432,6 @@ void CViewRender::DriftPitch (void)
 
 
 
-StereoEye_t		CViewRender::GetFirstEye() const
-{
-	if( UseVR() )
-		return STEREO_EYE_LEFT;
-	else
-		return STEREO_EYE_MONO;
-}
-
-StereoEye_t		CViewRender::GetLastEye() const
-{
-	if( UseVR() )
-		return STEREO_EYE_RIGHT;
-	else
-		return STEREO_EYE_MONO;
-}
-
-
-
 
 // This is called by cdll_client_int to setup view model origins. This has to be done before
 // simulation so entities can access attachment points on view models during simulation.
@@ -559,8 +508,8 @@ const CViewSetup *CViewRender::GetViewSetup( void ) const
 // Output : const CViewSetup
 //-----------------------------------------------------------------------------
 const CViewSetup *CViewRender::GetPlayerViewSetup( void ) const
-{   
-    const CViewSetup &viewSetup = GetView ( STEREO_EYE_MONO );
+{
+	const CViewSetup &viewSetup = m_View;
     return &viewSetup;
 }
 
@@ -634,8 +583,6 @@ void CViewRender::SetUpViews()
 	viewSetup.fov				= default_fov.GetFloat();
 
 	viewSetup.m_bOrtho			= false;
-    viewSetup.m_bViewToProjectionOverride = false;
-	viewSetup.m_eStereoEye		= STEREO_EYE_MONO;
 
 	// Enable spatial partition access to edicts
 	partition->SuppressLists( PARTITION_ALL_CLIENT_EDICTS, false );
@@ -718,39 +665,6 @@ void CViewRender::SetUpViews()
 	//Adjust the viewmodel's FOV to move with any FOV offsets on the viewer's end
 	viewSetup.fovViewmodel = abs(g_pClientMode->GetViewModelFOV() - flFOVOffset);
 
-	if ( UseVR() )
-	{
-		// Let the headtracking read the status of the HMD, etc.
-		// This call can go almost anywhere, but it needs to know the player FOV for sniper weapon zoom, etc
-		if ( flFOVOffset == 0.0f )
-		{
-			g_ClientVirtualReality.ProcessCurrentTrackingState ( 0.0f );
-		}
-		else
-		{
-			g_ClientVirtualReality.ProcessCurrentTrackingState ( viewSetup.fov );
-		}
-
-		HeadtrackMovementMode_t hmmOverrideMode = g_pClientMode->ShouldOverrideHeadtrackControl();
-		g_ClientVirtualReality.OverrideView( &m_View, &ViewModelOrigin, &ViewModelAngles, hmmOverrideMode );
-
-		// left and right stereo views should default to being the same as the mono/middle view
-		m_ViewLeft = m_View;
-		m_ViewRight = m_View;
-		m_ViewLeft.m_eStereoEye = STEREO_EYE_LEFT;
-		m_ViewRight.m_eStereoEye = STEREO_EYE_RIGHT;
-
-		g_ClientVirtualReality.OverrideStereoView( &m_View, &m_ViewLeft, &m_ViewRight );
-	}
-	else
-	{
-		// left and right stereo views should default to being the same as the mono/middle view
-		m_ViewLeft = m_View;
-		m_ViewRight = m_View;
-		m_ViewLeft.m_eStereoEye = STEREO_EYE_LEFT;
-		m_ViewRight.m_eStereoEye = STEREO_EYE_RIGHT;
-	}
-
 	if ( bCalcViewModelView )
 	{
 		Assert ( pPlayer != NULL );
@@ -816,7 +730,7 @@ void CViewRender::WriteSaveGameScreenshotOfSize( const char *pFilename, int widt
 	pRenderContext->PushRenderTargetAndViewport( NULL, 0, 0, width, height );
 
 	// render out to the backbuffer
-    CViewSetup viewSetup = GetView ( STEREO_EYE_MONO );
+	CViewSetup viewSetup = m_View;
 	viewSetup.x = 0;
 	viewSetup.y = 0;
 	viewSetup.width = width;
@@ -994,31 +908,29 @@ void CViewRender::SetUpOverView()
 {
 	static int oldCRC = 0;
 
-    CViewSetup &viewSetup = GetView ( STEREO_EYE_MONO );
+	m_View.m_bOrtho = true;
 
-	viewSetup.m_bOrtho = true;
-
-	float aspect = (float)viewSetup.width/(float)viewSetup.height;
+	float aspect = (float)m_View.width/(float)m_View.height;
 
 	int size_y = 1024.0f * cl_leveloverview.GetFloat(); // scale factor, 1024 = OVERVIEW_MAP_SIZE
 	int	size_x = size_y * aspect;	// standard screen aspect 
 
-	viewSetup.origin.x -= size_x / 2;
-	viewSetup.origin.y += size_y / 2;
+	m_View.origin.x -= size_x / 2;
+	m_View.origin.y += size_y / 2;
 
-	viewSetup.m_OrthoLeft   = 0;
-	viewSetup.m_OrthoTop    = -size_y;
-	viewSetup.m_OrthoRight  = size_x;
-	viewSetup.m_OrthoBottom = 0;
+	m_View.m_OrthoLeft   = 0;
+	m_View.m_OrthoTop    = -size_y;
+	m_View.m_OrthoRight  = size_x;
+	m_View.m_OrthoBottom = 0;
 
-	viewSetup.angles = QAngle( 90, 90, 0 );
+	m_View.angles = QAngle( 90, 90, 0 );
 
 	// simple movement detector, show position if moved
-	int newCRC = viewSetup.origin.x + viewSetup.origin.y + viewSetup.origin.z;
+	int newCRC = m_View.origin.x + m_View.origin.y + m_View.origin.z;
 	if ( newCRC != oldCRC )
 	{
 		Msg( "Overview: scale %.2f, pos_x %.0f, pos_y %.0f\n", cl_leveloverview.GetFloat(),
-			viewSetup.origin.x, viewSetup.origin.y );
+			m_View.origin.x, m_View.origin.y );
 		oldCRC = newCRC;
 	}
 
@@ -1056,211 +968,151 @@ void CViewRender::Render( vrect_t *rect )
     // Set for console commands, etc.
     render->SetMainView ( m_View.origin, m_View.angles );
 
-    for( StereoEye_t eEye = GetFirstEye(); eEye <= GetLastEye(); eEye = (StereoEye_t)(eEye+1) )
+	#if 0 && defined( CSTRIKE_DLL )
+		const bool bPlayingBackReplay = g_pEngineClientReplay && g_pEngineClientReplay->IsPlayingReplayDemo();
+		if ( pPlayer && !bPlayingBackReplay )
+		{
+			C_BasePlayer *pViewTarget = pPlayer;
+
+			if ( pPlayer->IsObserver() && pPlayer->GetObserverMode() == OBS_MODE_IN_EYE )
+			{
+				pViewTarget = dynamic_cast<C_BasePlayer*>( pPlayer->GetObserverTarget() );
+			}
+
+			if ( pViewTarget )
+			{
+				float targetFOV = (float)pViewTarget->m_iFOV;
+
+				if ( targetFOV == 0 )
+				{
+					// FOV of 0 means use the default FOV
+					targetFOV = g_pGameRules->DefaultFOV();
+				}
+
+				float deltaFOV = view.fov - m_flLastFOV;
+				float FOVDirection = targetFOV - pViewTarget->m_iFOVStart;
+
+				// Clamp FOV changes to stop FOV oscillation
+				if ( ( deltaFOV < 0.0f && FOVDirection > 0.0f ) ||
+					( deltaFOV > 0.0f && FOVDirection < 0.0f ) )
+				{
+					view.fov = m_flLastFOV;
+				}
+
+				// Catch case where FOV overshoots its target FOV
+				if ( ( view.fov < targetFOV && FOVDirection <= 0.0f ) ||
+					( view.fov > targetFOV && FOVDirection >= 0.0f ) )
+				{
+					view.fov = targetFOV;
+				}
+
+				m_flLastFOV = view.fov;
+			}
+		}
+	#endif
+
+	static ConVarRef sv_restrict_aspect_ratio_fov( "sv_restrict_aspect_ratio_fov" );
+	float aspectRatio = engine->GetScreenAspectRatio() * 0.75f;	 // / (4/3)
+	float limitedAspectRatio = aspectRatio;
+	if ( ( sv_restrict_aspect_ratio_fov.GetInt() > 0 && engine->IsWindowedMode() && gpGlobals->maxClients > 1 ) ||
+		sv_restrict_aspect_ratio_fov.GetInt() == 2 )
 	{
-		CViewSetup &viewSetup = GetView( eEye );
+		limitedAspectRatio = MIN( aspectRatio, 1.85f * 0.75f ); // cap out the FOV advantage at a 1.85:1 ratio (about the widest any legit user should be)
+	}
 
-		#if 0 && defined( CSTRIKE_DLL )
-			const bool bPlayingBackReplay = g_pEngineClientReplay && g_pEngineClientReplay->IsPlayingReplayDemo();
-			if ( pPlayer && !bPlayingBackReplay )
-			{
-				C_BasePlayer *pViewTarget = pPlayer;
+	m_View.fov = ScaleFOVByWidthRatio(m_View.fov, limitedAspectRatio );
+	m_View.fovViewmodel = ScaleFOVByWidthRatio(m_View.fovViewmodel, aspectRatio );
 
-				if ( pPlayer->IsObserver() && pPlayer->GetObserverMode() == OBS_MODE_IN_EYE )
-				{
-					pViewTarget = dynamic_cast<C_BasePlayer*>( pPlayer->GetObserverTarget() );
-				}
+	// Let the client mode hook stuff.
+	g_pClientMode->PreRender(&m_View);
 
-				if ( pViewTarget )
-				{
-					float targetFOV = (float)pViewTarget->m_iFOV;
+	g_pClientMode->AdjustEngineViewport( vr.x, vr.y, vr.width, vr.height );
 
-					if ( targetFOV == 0 )
-					{
-						// FOV of 0 means use the default FOV
-						targetFOV = g_pGameRules->DefaultFOV();
-					}
+	ToolFramework_AdjustEngineViewport( vr.x, vr.y, vr.width, vr.height );
 
-					float deltaFOV = view.fov - m_flLastFOV;
-					float FOVDirection = targetFOV - pViewTarget->m_iFOVStart;
+	float flViewportScale = mat_viewportscale.GetFloat();
 
-					// Clamp FOV changes to stop FOV oscillation
-					if ( ( deltaFOV < 0.0f && FOVDirection > 0.0f ) ||
-						( deltaFOV > 0.0f && FOVDirection < 0.0f ) )
-					{
-						view.fov = m_flLastFOV;
-					}
+	m_View.m_nUnscaledX = vr.x;
+	m_View.m_nUnscaledY = vr.y;
+	m_View.m_nUnscaledWidth = vr.width;
+	m_View.m_nUnscaledHeight = vr.height;
 
-					// Catch case where FOV overshoots its target FOV
-					if ( ( view.fov < targetFOV && FOVDirection <= 0.0f ) ||
-						( view.fov > targetFOV && FOVDirection >= 0.0f ) )
-					{
-						view.fov = targetFOV;
-					}
-
-					m_flLastFOV = view.fov;
-				}
-			}
-		#endif
-
-	    static ConVarRef sv_restrict_aspect_ratio_fov( "sv_restrict_aspect_ratio_fov" );
-	    float aspectRatio = engine->GetScreenAspectRatio() * 0.75f;	 // / (4/3)
-	    float limitedAspectRatio = aspectRatio;
-	    if ( ( sv_restrict_aspect_ratio_fov.GetInt() > 0 && engine->IsWindowedMode() && gpGlobals->maxClients > 1 ) ||
-		    sv_restrict_aspect_ratio_fov.GetInt() == 2 )
-	    {
-		    limitedAspectRatio = MIN( aspectRatio, 1.85f * 0.75f ); // cap out the FOV advantage at a 1.85:1 ratio (about the widest any legit user should be)
-	    }
-
-	    viewSetup.fov = ScaleFOVByWidthRatio( viewSetup.fov, limitedAspectRatio );
-	    viewSetup.fovViewmodel = ScaleFOVByWidthRatio( viewSetup.fovViewmodel, aspectRatio );
-
-	    // Let the client mode hook stuff.
-	    g_pClientMode->PreRender(&viewSetup);
-
-	    g_pClientMode->AdjustEngineViewport( vr.x, vr.y, vr.width, vr.height );
-
-	    ToolFramework_AdjustEngineViewport( vr.x, vr.y, vr.width, vr.height );
-
-	    float flViewportScale = mat_viewportscale.GetFloat();
-
-		viewSetup.m_nUnscaledX = vr.x;
-		viewSetup.m_nUnscaledY = vr.y;
-		viewSetup.m_nUnscaledWidth = vr.width;
-		viewSetup.m_nUnscaledHeight = vr.height;
-
-        switch( eEye )
-		{
-			case STEREO_EYE_MONO:
-			{
 #if 0
-                // Good test mode for debugging viewports that are not full-size.
-	            view.width			= vr.width * flViewportScale * 0.75f;
-	            view.height			= vr.height * flViewportScale * 0.75f;
-	            view.x				= vr.x + view.width * 0.10f;
-	            view.y				= vr.y + view.height * 0.20f;
+	// Good test mode for debugging viewports that are not full-size.
+	view.width = vr.width * flViewportScale * 0.75f;
+	view.height = vr.height * flViewportScale * 0.75f;
+	view.x = vr.x + view.width * 0.10f;
+	view.y = vr.y + view.height * 0.20f;
 #else
-	            viewSetup.x				= vr.x * flViewportScale;
-				viewSetup.y				= vr.y * flViewportScale;
-				viewSetup.width			= vr.width * flViewportScale;
-				viewSetup.height			= vr.height * flViewportScale;
+	m_View.x = vr.x * flViewportScale;
+	m_View.y = vr.y * flViewportScale;
+	m_View.width = vr.width * flViewportScale;
+	m_View.height = vr.height * flViewportScale;
 #endif
-			    float engineAspectRatio = engine->GetScreenAspectRatio();
-			    viewSetup.m_flAspectRatio	= ( engineAspectRatio > 0.0f ) ? engineAspectRatio : ( (float)viewSetup.width / (float)viewSetup.height );
-			}
-			break;
+	float engineAspectRatio = engine->GetScreenAspectRatio();
+	m_View.m_flAspectRatio = (engineAspectRatio > 0.0f) ? engineAspectRatio : ((float)m_View.width / (float)m_View.height);
 
-			case STEREO_EYE_RIGHT:
-			case STEREO_EYE_LEFT:
-			{
-				g_pSourceVR->GetViewportBounds( (ISourceVirtualReality::VREye)(eEye - 1 ), &viewSetup.x, &viewSetup.y, &viewSetup.width, &viewSetup.height );
-				viewSetup.m_nUnscaledWidth = viewSetup.width;
-				viewSetup.m_nUnscaledHeight = viewSetup.height;
-				viewSetup.m_nUnscaledX = viewSetup.x;
-				viewSetup.m_nUnscaledY = viewSetup.y;
-			}
-			break;
+	// if we still don't have an aspect ratio, compute it from the view size
+	if(m_View.m_flAspectRatio <= 0.f )
+		m_View.m_flAspectRatio	= (float)m_View.width / (float)m_View.height;
 
-            default:
-                Assert ( false );
-                break;
-		}
+	int nClearFlags = VIEW_CLEAR_DEPTH | VIEW_CLEAR_STENCIL;
 
-		// if we still don't have an aspect ratio, compute it from the view size
-		if( viewSetup.m_flAspectRatio <= 0.f )
-		    viewSetup.m_flAspectRatio	= (float)viewSetup.width / (float)viewSetup.height;
+	if( gl_clear_randomcolor.GetBool() )
+	{
+		CMatRenderContextPtr pRenderContext( materials );
+		pRenderContext->ClearColor3ub( rand()%256, rand()%256, rand()%256 );
+		pRenderContext->ClearBuffers( true, false, false );
+		pRenderContext->Release();
+	}
+	else if ( gl_clear.GetBool() )
+	{
+		nClearFlags |= VIEW_CLEAR_COLOR;
+	}
+	else if ( IsPosix() )
+	{
+		MaterialAdapterInfo_t adapterInfo;
+		materials->GetDisplayAdapterInfo( materials->GetCurrentAdapter(), adapterInfo );
 
-	    int nClearFlags = VIEW_CLEAR_DEPTH | VIEW_CLEAR_STENCIL;
-
-	    if( gl_clear_randomcolor.GetBool() )
-	    {
-		    CMatRenderContextPtr pRenderContext( materials );
-		    pRenderContext->ClearColor3ub( rand()%256, rand()%256, rand()%256 );
-		    pRenderContext->ClearBuffers( true, false, false );
-		    pRenderContext->Release();
-	    }
-	    else if ( gl_clear.GetBool() )
-	    {
-		    nClearFlags |= VIEW_CLEAR_COLOR;
-	    }
-	    else if ( IsPosix() )
-	    {
-		    MaterialAdapterInfo_t adapterInfo;
-		    materials->GetDisplayAdapterInfo( materials->GetCurrentAdapter(), adapterInfo );
-
-		    // On Posix, on ATI, we always clear color if we're antialiasing
-		    if ( adapterInfo.m_VendorID == 0x1002 )
-		    {
-			    if ( g_pMaterialSystem->GetCurrentConfigForVideoCard().m_nAASamples > 0 )
-			    {
-				    nClearFlags |= VIEW_CLEAR_COLOR;
-			    }
-		    }
-	    }
-
-	    // Determine if we should draw view model ( client mode override )
-	    bool drawViewModel = g_pClientMode->ShouldDrawViewModel();
-
-	    if ( cl_leveloverview.GetFloat() > 0 )
-	    {
-		    SetUpOverView();		
-		    nClearFlags |= VIEW_CLEAR_COLOR;
-		    drawViewModel = false;
-	    }
-
-	    // Apply any player specific overrides
-	    if ( pPlayer )
-	    {
-		    // Override view model if necessary
-		    if ( !pPlayer->m_Local.m_bDrawViewmodel )
-		    {
-			    drawViewModel = false;
-		    }
-	    }
-
-	    int flags = 0;
-		if( eEye == STEREO_EYE_MONO || eEye == STEREO_EYE_LEFT || ( g_ClientVirtualReality.ShouldRenderHUDInWorld() ) )
+		// On Posix, on ATI, we always clear color if we're antialiasing
+		if ( adapterInfo.m_VendorID == 0x1002 )
 		{
-			flags = RENDERVIEW_DRAWHUD;
-		}
-	    if ( drawViewModel )
-	    {
-		    flags |= RENDERVIEW_DRAWVIEWMODEL;
-	    }
-		if( eEye == STEREO_EYE_RIGHT )
-		{
-			// we should use the monitor view from the left eye for both eyes
-			flags |= RENDERVIEW_SUPPRESSMONITORRENDERING;
-		}
-
-	    RenderView( viewSetup, nClearFlags, flags );
-
-		if ( UseVR() )
-		{
-			bool bDoUndistort = ! engine->IsTakingScreenshot();
-
-			if ( bDoUndistort )
+			if ( g_pMaterialSystem->GetCurrentConfigForVideoCard().m_nAASamples > 0 )
 			{
-				g_ClientVirtualReality.PostProcessFrame( eEye );
-			}
-
-			// logic here all cloned from code in viewrender.cpp around RenderHUDQuad:
-
-			// figure out if we really want to draw the HUD based on freeze cam
-			bool bInFreezeCam = ( pPlayer && pPlayer->GetObserverMode() == OBS_MODE_FREEZECAM );
-
-			// draw the HUD after the view model so its "I'm closer" depth queues work right.
-			if( !bInFreezeCam && g_ClientVirtualReality.ShouldRenderHUDInWorld() )
-			{
-				// TODO - a bit of a shonky test - basically trying to catch the main menu, the briefing screen, the loadout screen, etc.
-				bool bTranslucent = !g_pMatSystemSurface->IsCursorVisible();
-				g_ClientVirtualReality.OverlayHUDQuadWithUndistort( viewSetup, bDoUndistort, g_pClientMode->ShouldBlackoutAroundHUD(), bTranslucent );
+				nClearFlags |= VIEW_CLEAR_COLOR;
 			}
 		}
-    }
+	}
 
+	// Determine if we should draw view model ( client mode override )
+	bool drawViewModel = g_pClientMode->ShouldDrawViewModel();
 
-	// TODO: should these be inside or outside the stereo eye stuff?
+	if ( cl_leveloverview.GetFloat() > 0 )
+	{
+		SetUpOverView();		
+		nClearFlags |= VIEW_CLEAR_COLOR;
+		drawViewModel = false;
+	}
+
+	// Apply any player specific overrides
+	if ( pPlayer )
+	{
+		// Override view model if necessary
+		if ( !pPlayer->m_Local.m_bDrawViewmodel )
+		{
+			drawViewModel = false;
+		}
+	}
+
+	int flags = RENDERVIEW_DRAWHUD;
+
+	if ( drawViewModel )
+	{
+		flags |= RENDERVIEW_DRAWVIEWMODEL;
+	}
+
+	RenderView(m_View, nClearFlags, flags );
+
 	g_pClientMode->PostRender();
 	engine->EngineStats_EndFrame();
 
@@ -1272,8 +1124,6 @@ void CViewRender::Render( vrect_t *rect )
 
 	// Draw all of the UI stuff "fullscreen"
     // (this is not health, ammo, etc. Nor is it pre-game briefing interface stuff - this is the stuff that appears when you hit Esc in-game)
-	// In stereo mode this is rendered inside of RenderView so it goes into the render target
-	if( !g_ClientVirtualReality.ShouldRenderHUDInWorld() )
 	{
 		CViewSetup view2d;
 		view2d.x				= rect->x;
@@ -1285,12 +1135,7 @@ void CViewRender::Render( vrect_t *rect )
 		render->VGui_Paint( PAINT_UIPANELS | PAINT_CURSOR );
 		render->PopView( GetFrustum() );
 	}
-
-
 }
-
-
-
 
 static void GetPos( const CCommand &args, Vector &vecOrigin, QAngle &angles )
 {
