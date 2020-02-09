@@ -47,8 +47,10 @@ class CMomentumGameMovement : public CGameMovement
 
     void Friction() override;
 
-    void CheckWaterJump() override;
-    bool CheckWater() override;
+    float GetWaterWaistOffset() override;
+    float GetWaterJumpUpZVelocity() override;
+    float GetWaterJumpForward() override;
+    void CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward) override;
 
     // Duck
     void Duck() override;

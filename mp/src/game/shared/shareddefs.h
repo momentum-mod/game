@@ -99,11 +99,6 @@ public:
 #define VEC_DEAD_VIEWHEIGHT_SCALED( player )	( g_pGameRules->GetViewVectors()->m_vDeadViewHeight * player->GetModelScale() )
 
 #define WATERJUMP_HEIGHT			8
-#define WATERJUMP_FORWARD                                                                                              \
-    ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 30.0f : 24.0f)
-#define WATERJUMP_UP				( (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 300.0f : 256.0f )
-#define WATERWAIST_OFFSET                                                                                              \
-    ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 12.0f : 0.0f)
 
 #define MAX_CLIMB_SPEED		200
 
