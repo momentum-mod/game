@@ -565,6 +565,12 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
     }
 }
 
+float CMomentumGameMovement::GetTimeToDuck()
+{
+    const bool bIsTF2Mode = g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ);
+    return bIsTF2Mode ? 0.2f : BaseClass::GetTimeToDuck();
+}
+
 bool CMomentumGameMovement::CanUnduck()
 {
     trace_t trace;
@@ -775,11 +781,9 @@ void CMomentumGameMovement::Duck(void)
                 else if (player->m_Local.m_bDucking)
                 {
                     // Invert time if released before fully unducked
-                    float remainingDuckMilliseconds =
-                        (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_DUCK / TIME_TO_UNDUCK);
+                    float remainingDuckMilliseconds = (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
 
-                    player->m_Local.m_flDucktime =
-                        GAMEMOVEMENT_DUCK_TIME - TIME_TO_DUCK_MS + remainingDuckMilliseconds;
+                    player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
                 }
             }
 
@@ -791,14 +795,14 @@ void CMomentumGameMovement::Duck(void)
             if (player->m_Local.m_bDucking)
             {
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_DUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr))
+                if ((duckseconds > GetTimeToDuck()) || (!bIsSliding && player->GetGroundEntity() == nullptr))
                 {
                     FinishDuck();
                 }
                 else
                 {
                     // Calc parametric time
-                    float duckFraction = SimpleSpline(duckseconds / TIME_TO_DUCK);
+                    float duckFraction = SimpleSpline(duckseconds / GetTimeToDuck());
                     SetDuckedEyeOffset(duckFraction);
                 }
             }
@@ -821,7 +825,7 @@ void CMomentumGameMovement::Duck(void)
                     {
                         // Invert time if released before fully ducked
                         float remainingUnduckMilliseconds =
-                            (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / TIME_TO_DUCK);
+                            (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / GetTimeToDuck());
 
                         player->m_Local.m_flDucktime =
                             GAMEMOVEMENT_DUCK_TIME - TIME_TO_UNDUCK_MS + remainingUnduckMilliseconds;

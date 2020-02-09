@@ -4398,14 +4398,14 @@ void CGameMovement::Duck( void )
 				float flDuckSeconds = flDuckMilliseconds * 0.001f;
 				
 				// Finish in duck transition when transition time is over, in "duck", in air.
-				if ( ( flDuckSeconds > TIME_TO_DUCK ) || bInDuck || bInAir )
+				if ( ( flDuckSeconds > GetTimeToDuck() ) || bInDuck || bInAir )
 				{
 					FinishDuck();
 				}
 				else
 				{
 					// Calc parametric time
-					float flDuckFraction = SimpleSpline( flDuckSeconds / TIME_TO_DUCK );
+					float flDuckFraction = SimpleSpline( flDuckSeconds / GetTimeToDuck() );
 					SetDuckedEyeOffset( flDuckFraction );
 				}
 			}
@@ -4475,7 +4475,7 @@ void CGameMovement::Duck( void )
 					{
 						// Invert time if release before fully ducked!!!
 						float unduckMilliseconds = 1000.0f * TIME_TO_UNDUCK;
-						float duckMilliseconds = 1000.0f * TIME_TO_DUCK;
+						float duckMilliseconds = 1000.0f * GetTimeToDuck();
 						float elapsedMilliseconds = GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime;
 
 						float fracDucked = elapsedMilliseconds / duckMilliseconds;
