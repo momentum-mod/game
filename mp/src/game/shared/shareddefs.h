@@ -107,9 +107,6 @@ public:
 
 #define MAX_CLIMB_SPEED		200
 
-#define TIME_TO_DUCK        ( (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 0.2 : 0.4 )
-#define TIME_TO_DUCK_MS                                                                                                \
-    ((g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) || g_pGameModeSystem->GameModeIs(GAMEMODE_SJ)) ? 200.0f : 400.0f)
 #define TIME_TO_UNDUCK		0.2
 #define TIME_TO_UNDUCK_MS	200.0f
 

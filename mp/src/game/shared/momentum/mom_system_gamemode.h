@@ -40,6 +40,7 @@ public:
     const char* GetGameModeCfg() override { return nullptr; }
     float GetIntervalPerTick() override { return 0.015f; }
     float GetViewScale() override { return 0.5f; }
+
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
@@ -90,6 +91,7 @@ public:
     const char* GetMapPrefix() override { return "jump_"; }
     const char* GetGameModeCfg() override { return "rj.cfg"; }
     float GetViewScale() override { return 1.0f; }
+
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
@@ -104,6 +106,7 @@ class CGameMode_SJ : public CGameModeBase
     const char *GetMapPrefix() override { return "sj_"; }
     const char *GetGameModeCfg() override { return "sj.cfg"; }
     float GetViewScale() override { return 1.0f; }
+
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
