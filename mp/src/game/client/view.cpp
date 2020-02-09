@@ -118,15 +118,6 @@ ConVar	gl_clear_randomcolor( "gl_clear_randomcolor", "0", FCVAR_CHEAT, "Clear th
 static ConVar r_farz( "r_farz", "-1", FCVAR_CHEAT, "Override the far clipping plane. -1 means to use the value in env_fog_controller." );
 static ConVar cl_demoviewoverride( "cl_demoviewoverride", "0", 0, "Override view during demo playback" );
 
-
-void SoftwareCursorChangedCB( IConVar *pVar, const char *pOldValue, float fOldValue )
-{
-	ConVar *pConVar = (ConVar *)pVar;
-	vgui::surface()->SetSoftwareCursor( pConVar->GetBool() || UseVR() );
-}
-static ConVar cl_software_cursor ( "cl_software_cursor", "0", FCVAR_ARCHIVE, "Switches the game to use a larger software cursor instead of the normal OS cursor", SoftwareCursorChangedCB );
-
-
 static Vector s_DemoView;
 static QAngle s_DemoAngle;
 
