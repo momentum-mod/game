@@ -10,6 +10,7 @@
 #include "momentum/mom_triggers.h"
 #include "IEffects.h"
 #include "fx_mom_shared.h"
+#include "physics_collisionevent.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -353,7 +354,8 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
     if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
     {
         m_bTouched = true;
-        VPhysicsGetObject()->EnableMotion(false);
+
+        g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
 
         // Save impact data for explosions.
         m_bUseImpactNormal = true;
