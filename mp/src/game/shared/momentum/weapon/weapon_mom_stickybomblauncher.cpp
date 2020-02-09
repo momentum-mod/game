@@ -1,10 +1,10 @@
 #include "cbase.h"
 
+#include "weapon_mom_stickybomblauncher.h"
+
 #include "in_buttons.h"
 #include "mom_player_shared.h"
-#include "mom_stickybomb.h"
 #include "mom_system_gamemode.h"
-#include "weapon_mom_stickybomblauncher.h"
 
 #ifdef CLIENT_DLL
 #include "prediction.h"
