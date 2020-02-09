@@ -24,6 +24,7 @@ public:
     virtual bool        PlayerHasAutoBhop() = 0;
     virtual void        OnPlayerSpawn(CMomentumPlayer *pPlayer) = 0;
     virtual void        ExecGameModeCfg() = 0;
+    virtual float       GetIntervalPerTick() = 0;
 
     virtual ~IGameMode() {}
 };
@@ -37,6 +38,7 @@ public:
     const char* GetDiscordIcon() override { return "mom"; }
     const char* GetMapPrefix() override { return ""; }
     const char* GetGameModeCfg() override { return nullptr; }
+    float GetIntervalPerTick() override { return 0.015f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
@@ -61,6 +63,7 @@ public:
     const char* GetDiscordIcon() override { return "mom_icon_bhop"; }
     const char* GetMapPrefix() override { return "bhop_"; }
     const char* GetGameModeCfg() override { return "bhop.cfg"; }
+    float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
 };
 
@@ -72,6 +75,7 @@ public:
     const char* GetDiscordIcon() override { return "mom_icon_kz"; }
     const char* GetMapPrefix() override { return "kz_"; }
     const char* GetGameModeCfg() override { return "kz.cfg"; }
+    float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
 };
@@ -110,6 +114,7 @@ public:
     const char* GetDiscordIcon() override { return "mom_icon_tricksurf"; }
     const char* GetMapPrefix() override { return "tricksurf_"; }
     const char* GetGameModeCfg() override { return "tricksurf.cfg"; }
+    float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
 };
 

@@ -12,26 +12,27 @@
 #include "tier0/memdbgon.h"
 
 #ifdef GAME_DLL
-CON_COMMAND(mom_print_gamemode_vars, "Prints out the currently set values for commands like sv_maxvelocity, airaccel, etc")
+
+CON_COMMAND(mom_print_gamemode_vars, "Prints out the currently set values for commands like sv_maxvelocity, airaccel, etc\n")
 {
     g_pGameModeSystem->PrintGameModeVars();
 }
 
+extern ConVar sv_interval_per_tick;
 static void OnGamemodeChanged(IConVar* var, const char* pOldValue, float fOldValue)
 {
     ConVarRef gm(var);
     const auto gamemode = gm.GetInt();
 
-    TickSet::SetTickrate(gamemode);
-    // set the value of sv_interval_per_tick so it updates when gamemode changes the tickrate.
-    ConVarRef tr("sv_interval_per_tick");
-    tr.SetValue(TickSet::GetTickrate());
-
     g_pGameModeSystem->SetGameMode((GameMode_t)gamemode);
+
+    TickSet::SetTickrate(g_pGameModeSystem->GetGameMode()->GetIntervalPerTick());
+
+    sv_interval_per_tick.SetValue(TickSet::GetTickrate());
 }
 
-static ConVar mom_gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                       "", true, 0, false, 0, OnGamemodeChanged);
+static MAKE_CONVAR_C(mom_gamemode, "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN | FCVAR_CLIENTCMD_CAN_EXECUTE, "", 0, GAMEMODE_COUNT - 1, OnGamemodeChanged);
+
 #endif
 
 void CGameModeBase::SetGameModeVars()
@@ -56,7 +57,7 @@ void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 
 void CGameModeBase::ExecGameModeCfg()
 {
-#ifdef CLIENT_DLL // Without this ifdef, the game fails to build
+#ifdef CLIENT_DLL
     if (GetGameModeCfg())
     {
         engine->ClientCmd_Unrestricted(CFmtStr("exec %s", GetGameModeCfg()));

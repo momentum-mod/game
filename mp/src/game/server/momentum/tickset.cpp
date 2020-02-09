@@ -1,4 +1,5 @@
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include "Windows.h"
 #include "Psapi.h"
 #pragma comment(lib, "psapi.lib")
@@ -93,23 +94,6 @@ bool TickSet::TickInit()
 #endif //__linux__ or OSX
 #endif //WIN32
     return interval_per_tick ? true : false;
-}
-
-bool TickSet::SetTickrate(int gameMode)
-{
-    switch (gameMode)
-    {
-    case GAMEMODE_TRICKSURF:
-    case GAMEMODE_BHOP:
-    case GAMEMODE_KZ:
-        //MOM_TODO: add more gamemodes
-        return SetTickrate(s_DefinedRates[TICKRATE_100]);
-    case GAMEMODE_SURF:
-    case GAMEMODE_RJ:
-    case GAMEMODE_SJ:
-    default:
-        return SetTickrate(s_DefinedRates[TICKRATE_66]);
-    }
 }
 
 bool TickSet::SetTickrate(float tickrate)
