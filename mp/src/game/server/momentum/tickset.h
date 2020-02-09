@@ -42,8 +42,6 @@ public:
 
     static bool TickInit();
 
-    static bool SetTickrate(int gameMode);
-
     static Tickrate GetCurrentTickrate() { return (m_trCurrent.fTickRate > 0.0f ? m_trCurrent : s_DefinedRates[TICKRATE_66]); }
 
     static bool SetTickrate(Tickrate trNew);
@@ -59,3 +57,5 @@ private:
     static Tickrate m_trCurrent;
     static bool m_bInGameUpdate;
 };
+
+extern ConVar sv_interval_per_tick;
