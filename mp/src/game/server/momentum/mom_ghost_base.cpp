@@ -187,7 +187,7 @@ bool CMomentumGhostBaseEntity::CanUnduck()
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        newOrigin += -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+        newOrigin += -g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
     }
 
     UTIL_TraceHull(GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, this,

@@ -321,7 +321,7 @@ void CPlayerMove::PreventBounce(CBasePlayer *player, IMoveHelper *moveHelper, bo
 	{
 		Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
 		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-		offset.z += VIEW_SCALE * (hullSizeNormal - hullSizeCrouch).z;
+		offset.z += g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch).z;
 	}
 
 	// CGameMovement::TryTouchGround
