@@ -42,6 +42,9 @@ class ClientModeMOMNormal : public ClientModeShared
 
     bool DoPostScreenSpaceEffects(const CViewSetup* pSetup) OVERRIDE;
 
+    // Stub
+    void ComputeVguiResConditions(KeyValues *pkvConditions) override {}
+
     void SetupPointers();
     int MovementDirection(const QAngle viewangles, const Vector velocity);
     bool CreateMove(float flInputSampleTime, CUserCmd *cmd);
