@@ -29,7 +29,6 @@ void ViewTransform( const Vector &worldSpace, Vector &viewSpace );
 // Transform a world point into normalized screen space (X and Y from -1 to 1).
 // Returns true if the point is behind the viewer.
 bool ScreenTransform( const Vector& point, Vector& screen );
-bool HudTransform( const Vector& point, Vector& screen );
 
 
 extern ConVar r_updaterefracttexture;
