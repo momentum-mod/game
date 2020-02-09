@@ -110,7 +110,7 @@ bool CMomentumGameMovement::GameHasLadders() const
     return !g_pGameModeSystem->IsTF2BasedMode();
 }
 
-void CMomentumGameMovement::DecayPunchAngle(void)
+void CMomentumGameMovement::DecayPunchAngle()
 {
     float len;
 
@@ -130,7 +130,7 @@ void CMomentumGameMovement::DecayPunchAngle(void)
     m_pPlayer->m_Local.m_vecPunchAngle.Set(2, vPunchAngle.z);
 }
 
-float CMomentumGameMovement::LadderLateralMultiplier(void) const { return mv->m_nButtons & IN_DUCK ? 1.0f : 0.5f; }
+float CMomentumGameMovement::LadderLateralMultiplier() const { return mv->m_nButtons & IN_DUCK ? 1.0f : 0.5f; }
 
 bool CMomentumGameMovement::IsValidMovementTrace(trace_t &tr)
 {
@@ -169,7 +169,7 @@ bool CMomentumGameMovement::IsValidMovementTrace(trace_t &tr)
     return true;
 }
 
-float CMomentumGameMovement::ClimbSpeed(void) const
+float CMomentumGameMovement::ClimbSpeed() const
 {
     return (mv->m_nButtons & IN_DUCK ? BaseClass::ClimbSpeed() * DUCK_SPEED_MULTIPLIER : BaseClass::ClimbSpeed());
 }
@@ -356,7 +356,7 @@ void CMomentumGameMovement::WalkMove()
     StayOnGround();
 }
 
-bool CMomentumGameMovement::LadderMove(void)
+bool CMomentumGameMovement::LadderMove()
 {
     trace_t pm;
     bool onFloor;
@@ -600,7 +600,7 @@ bool CMomentumGameMovement::CanUnduck()
     return true;
 }
 
-void CMomentumGameMovement::Friction(void)
+void CMomentumGameMovement::Friction()
 {
     float speed, newspeed, control;
     float friction;
@@ -724,7 +724,7 @@ void CMomentumGameMovement::CalculateWaterWishVelocityZ(Vector &wishVel, const V
     }
 }
 
-void CMomentumGameMovement::Duck(void)
+void CMomentumGameMovement::Duck()
 {
     const auto pGameMode = g_pGameModeSystem->GetGameMode();
     if (pGameMode->GetType() == GAMEMODE_RJ || pGameMode->GetType() == GAMEMODE_SJ)
@@ -739,8 +739,7 @@ void CMomentumGameMovement::Duck(void)
 
     int buttonsChanged = (mv->m_nOldButtons ^ mv->m_nButtons); // These buttons have changed this frame
     int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
-    int buttonsReleased =
-        buttonsChanged & mv->m_nOldButtons; // The changed ones which were previously down are "released"
+    int buttonsReleased = buttonsChanged & mv->m_nOldButtons; // The changed ones which were previously down are "released"
 
     // Check to see if we are in the air.
     bool bInAir = player->GetGroundEntity() == nullptr && player->GetMoveType() != MOVETYPE_LADDER;
@@ -923,7 +922,7 @@ void CMomentumGameMovement::Duck(void)
 //-----------------------------------------------------------------------------
 // Purpose: Stop ducking
 //-----------------------------------------------------------------------------
-void CMomentumGameMovement::FinishUnDuck(void)
+void CMomentumGameMovement::FinishUnDuck()
 {
     trace_t trace;
     Vector newOrigin;
@@ -961,7 +960,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
 //-----------------------------------------------------------------------------
 // Purpose: Finish ducking
 //-----------------------------------------------------------------------------
-void CMomentumGameMovement::FinishDuck(void)
+void CMomentumGameMovement::FinishDuck()
 {
     Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
@@ -1338,7 +1337,7 @@ void CMomentumGameMovement::CategorizePosition()
                 Vector rampVelocity = mv->m_vecVelocity;
 
                 // Apply half of gravity as that would be done in the next tick before movement code
-                rampVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+                rampVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime);
 
                 if (pm.plane.normal.z >= 0.7f && pm.plane.normal.z < 1.0f)
                 {
@@ -1346,8 +1345,7 @@ void CMomentumGameMovement::CategorizePosition()
                 }
                 else if (pm.plane.normal.z < 0.7f)
                 {
-                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity,
-                                 1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity, 1.0f + sv_bounce.GetFloat() * (1.0f - player->m_surfaceFriction));
                 }
 
                 // Set ground entity if the player is not going to slide on the ramp next tick
@@ -1400,7 +1398,7 @@ void CMomentumGameMovement::CategorizePosition()
     }
 }
 
-void CMomentumGameMovement::FinishGravity(void)
+void CMomentumGameMovement::FinishGravity()
 {
     if (player->m_flWaterJumpTime)
         return;
@@ -1409,12 +1407,12 @@ void CMomentumGameMovement::FinishGravity(void)
         return;
 
     // Get the correct velocity for the end of the dt
-    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime);
 
     CheckVelocity();
 }
 
-void CMomentumGameMovement::StartGravity(void)
+void CMomentumGameMovement::StartGravity()
 {
     if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
@@ -1464,9 +1462,9 @@ void CMomentumGameMovement::FullWalkMove()
         }
 
         // If we are falling again, then we must not trying to jump out of water any more.
-        if (mv->m_vecVelocity[2] < 0 && player->m_flWaterJumpTime)
+        if (mv->m_vecVelocity[2] < 0.0f && player->m_flWaterJumpTime)
         {
-            player->m_flWaterJumpTime = 0;
+            player->m_flWaterJumpTime = 0.0f;
         }
 
         // Was jump button pressed?
@@ -1616,7 +1614,7 @@ void CMomentumGameMovement::FullWalkMove()
 // This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
 // bhop.
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
-void CMomentumGameMovement::LimitStartZoneSpeed(void)
+void CMomentumGameMovement::LimitStartZoneSpeed()
 {
 #ifndef CLIENT_DLL
     if (m_pPlayer->m_Data.m_bIsInZone && m_pPlayer->m_Data.m_iCurrentZone == 1 &&
@@ -1679,7 +1677,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
 #endif
 }
 
-void CMomentumGameMovement::StuckGround(void)
+void CMomentumGameMovement::StuckGround()
 {
     if (!m_pPlayer || !m_pPlayer->m_CurrentSlideTrigger.Get())
         return;
@@ -1754,7 +1752,7 @@ void CMomentumGameMovement::StuckGround(void)
     }
 }
 
-void CMomentumGameMovement::AirMove(void)
+void CMomentumGameMovement::AirMove()
 {
     int i;
     Vector wishvel;
@@ -2325,7 +2323,7 @@ bool CMomentumGameMovement::CanAccelerate()
     return BaseClass::CanAccelerate() || (player && player->IsObserver());
 }
 
-void CMomentumGameMovement::CheckParameters(void)
+void CMomentumGameMovement::CheckParameters()
 {
     // shift-walking useful for some maps with tight jumps
     if (mv->m_nButtons & IN_SPEED)
@@ -2336,7 +2334,7 @@ void CMomentumGameMovement::CheckParameters(void)
     BaseClass::CheckParameters();
 }
 
-void CMomentumGameMovement::ReduceTimers(void)
+void CMomentumGameMovement::ReduceTimers()
 {
     float frame_msec = 1000.0f * gpGlobals->frametime;
 
@@ -2354,7 +2352,7 @@ void CMomentumGameMovement::ReduceTimers(void)
 }
 
 // We're overriding this here so the game doesn't play any fall damage noises
-void CMomentumGameMovement::CheckFalling(void)
+void CMomentumGameMovement::CheckFalling()
 {
     // this function really deals with landing, not falling, so early out otherwise
     CBaseEntity *pGroundEntity = player->GetGroundEntity();
