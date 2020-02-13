@@ -92,7 +92,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     SetSize(pWide, pTall);
 
     m_hFont = INVALID_FONT;
-    m_iStartMapWhenReady = -1;
+    m_uStartMapWhenReady = 0;
     parent->AddActionSignalTarget(this);
 
     // Init UI
@@ -371,12 +371,12 @@ void CBaseMapsPage::OnMapListDataUpdate(int mapID)
         }
     }
 
-    if (m_iStartMapWhenReady == mapID)
+    if (m_uStartMapWhenReady == (uint32)mapID)
     {
         const auto pData = g_pMapCache->GetMapDataByID(mapID);
         if (pData && g_pMapCache->MapFileExists(pData))
         {
-            m_iStartMapWhenReady = -1;
+            m_uStartMapWhenReady = 0;
             MapSelectorDialog().OnMapStart(mapID);
         }
     }
@@ -417,9 +417,9 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
         m_pMapList->ApplyItemChanges(map->m_iListID);
     }
 
-    if (m_iStartMapWhenReady != -1 && (uint32)m_iStartMapWhenReady == id)
+    if (m_uStartMapWhenReady > 0 && (uint32)m_uStartMapWhenReady == id)
     {
-        m_iStartMapWhenReady = -1;
+        m_uStartMapWhenReady = 0;
         MapSelectorDialog().OnMapStart(id);
     }
 }
@@ -479,11 +479,11 @@ void CBaseMapsPage::StartRandomMap()
                 if (pMapData->m_bMapFileNeedsUpdate)
                 {
                     MapSelectorDialog().OnStartMapDownload(iMapID);
-                    m_iStartMapWhenReady = iMapID;
+                    m_uStartMapWhenReady = iMapID;
                 }
                 else
                 {
-                    m_iStartMapWhenReady = -1;
+                    m_uStartMapWhenReady = 0;
                     MapSelectorDialog().OnMapStart(iMapID);
                 }
             }
@@ -495,7 +495,7 @@ void CBaseMapsPage::StartRandomMap()
                 {
                     MapSelectorDialog().OnStartMapDownload(iMapID);
                 }
-                m_iStartMapWhenReady = iMapID;
+                m_uStartMapWhenReady = iMapID;
             }
         }
     }
@@ -546,7 +546,9 @@ void CBaseMapsPage::GetNewMapList()
     g_pMapCache->GetMapList(vecMaps, GetMapListType());
 
     FOR_EACH_VEC(vecMaps, i)
-    AddMapToList(vecMaps[i]);
+    {
+        AddMapToList(vecMaps[i]);
+    }
 
     OnGetNewMapList();
 }
