@@ -54,9 +54,11 @@ class CMomentumGameMovement : public CGameMovement
 
     // Duck
     void Duck() override;
-    void FinishUnDuck() override;
+    void DoDuck(int iButtonsPressed);
     void FinishDuck() override;
     bool CanUnduck() override;
+    void DoUnduck(int iButtonsReleased);
+    void FinishUnDuck() override;
     void HandleDuckingSpeedCrop() override;
     float GetTimeToDuck() override;
 
