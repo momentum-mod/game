@@ -141,8 +141,9 @@ protected:
 	bool			CheckInterval( IntervalType_t type );
 
 
-	// Decompoosed gravity
+	// Decomposed gravity
 	virtual void StartGravity( void );
+	virtual float GetPlayerGravity();
     virtual void FinishGravity( void );
 
 	// Apply normal ( undecomposed ) gravity

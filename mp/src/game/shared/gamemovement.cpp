@@ -1251,16 +1251,9 @@ void CGameMovement::DecayPunchAngle( void )
 //-----------------------------------------------------------------------------
 void CGameMovement::StartGravity( void )
 {
-	float ent_gravity;
-	
-	if (player->GetGravity())
-		ent_gravity = player->GetGravity();
-	else
-		ent_gravity = 1.0;
-
 	// Add gravity so they'll be in the correct position during movement
 	// yes, this 0.5 looks wrong, but it's not.  
-	mv->m_vecVelocity[2] -= (ent_gravity * GetCurrentGravity() * 0.5 * gpGlobals->frametime );
+	mv->m_vecVelocity[2] -= ( GetPlayerGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime );
 	mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
 
 	Vector temp = player->GetBaseVelocity();
@@ -1268,6 +1261,14 @@ void CGameMovement::StartGravity( void )
 	player->SetBaseVelocity( temp );
 
 	CheckVelocity();
+}
+
+float CGameMovement::GetPlayerGravity()
+{
+	if (player->GetGravity())
+		return player->GetGravity();
+
+	return 1.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -1690,18 +1691,11 @@ void CGameMovement::Friction( void )
 //-----------------------------------------------------------------------------
 void CGameMovement::FinishGravity( void )
 {
-	float ent_gravity;
-
 	if ( player->m_flWaterJumpTime )
 		return;
 
-	if ( player->GetGravity() )
-		ent_gravity = player->GetGravity();
-	else
-		ent_gravity = 1.0;
-
 	// Get the correct velocity for the end of the dt 
-  	mv->m_vecVelocity[2] -= (ent_gravity * GetCurrentGravity() * gpGlobals->frametime * 0.5);
+  	mv->m_vecVelocity[2] -= (GetPlayerGravity() * GetCurrentGravity() * gpGlobals->frametime * 0.5f);
 
 	CheckVelocity();
 }
