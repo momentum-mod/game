@@ -286,7 +286,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     QAngle m_qangLastAngle;
 
     // used by CMomentumGameMovement
-    bool m_duckUntilOnGround;
     float m_flStamina;
 
     bool m_bAllowUserTeleports;

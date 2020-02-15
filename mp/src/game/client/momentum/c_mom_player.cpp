@@ -36,7 +36,6 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_afButtonDisabled = 0;
     m_flStartSpeed = 0.0f;
     m_flEndSpeed = 0.0f;
-    m_duckUntilOnGround = false;
     m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
 

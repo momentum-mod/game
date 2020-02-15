@@ -187,7 +187,7 @@ static MAKE_TOGGLE_CONVAR_C(mom_trail_enable, "0", FCVAR_CLIENTCMD_CAN_EXECUTE |
 static CMomentumPlayer *s_pPlayer = nullptr;
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0.0f),
+    : m_flStamina(0.0f),
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
       m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1)
 {

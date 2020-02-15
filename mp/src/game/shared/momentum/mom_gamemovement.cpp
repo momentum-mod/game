@@ -743,8 +743,7 @@ void CMomentumGameMovement::CalculateWaterWishVelocityZ(Vector &wishVel, const V
 
 void CMomentumGameMovement::Duck()
 {
-    const auto pGameMode = g_pGameModeSystem->GetGameMode();
-    if (pGameMode->GetType() == GAMEMODE_RJ || pGameMode->GetType() == GAMEMODE_SJ)
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         // Don't allowing ducking if deep enough in water
         if ((player->GetWaterLevel() >= WL_Feet && player->GetGroundEntity() == nullptr) ||
@@ -758,9 +757,7 @@ void CMomentumGameMovement::Duck()
     int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
     int buttonsReleased = buttonsChanged & mv->m_nOldButtons; // The changed ones which were previously down are "released"
 
-    // Check to see if we are in the air.
-    bool bInAir = player->GetGroundEntity() == nullptr && player->GetMoveType() != MOVETYPE_LADDER;
-
+   
     if (mv->m_nButtons & IN_DUCK)
     {
         mv->m_nOldButtons |= IN_DUCK;
@@ -781,50 +778,6 @@ void CMomentumGameMovement::Duck()
     }
 
     HandleDuckingSpeedCrop();
-
-    if (m_pPlayer->m_duckUntilOnGround)
-    {
-        if (!bInAir)
-        {
-            m_pPlayer->m_duckUntilOnGround = false;
-            if (CanUnduck())
-            {
-                FinishUnDuck();
-            }
-            return;
-        }
-        else
-        {
-            if (mv->m_vecVelocity.z > 0.0f)
-                return;
-
-            // Check if we can un-duck.  We want to unduck if we have space for the standing hull, and
-            // if it is less than 2 inches off the ground.
-            trace_t trace;
-            Vector newOrigin;
-            Vector groundCheck;
-
-            VectorCopy(mv->GetAbsOrigin(), newOrigin);
-            Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
-            Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-            newOrigin -= pGameMode->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
-            groundCheck = newOrigin;
-            groundCheck.z -= player->GetStepSize();
-
-            UTIL_TraceHull(newOrigin, groundCheck, VEC_HULL_MIN, VEC_HULL_MAX, PlayerSolidMask(), player,
-                           COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
-
-            if (trace.startsolid || trace.fraction == 1.0f)
-                return; // Can't even stand up, or there's no ground underneath us
-
-            m_pPlayer->m_duckUntilOnGround = false;
-            if (CanUnduck())
-            {
-                FinishUnDuck();
-            }
-            return;
-        }
-    }
 
     // Holding duck, in process of ducking or fully ducked?
     if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
@@ -1189,13 +1142,6 @@ bool CMomentumGameMovement::CheckJumpButton()
     if (player->m_pSurfaceData)
     {
         flGroundFactor = player->m_pSurfaceData->game.jumpFactor;
-    }
-
-    // if we weren't ducking, bots and hostages do a crouchjump programatically
-    if (player->IsBot() && !(mv->m_nButtons & IN_DUCK))
-    {
-        m_pPlayer->m_duckUntilOnGround = true;
-        FinishDuck();
     }
 
     // Acclerate upward
