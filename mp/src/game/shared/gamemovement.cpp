@@ -3916,13 +3916,9 @@ void CGameMovement::CheckFalling( void )
 	if ( !IsDead() && player->m_Local.m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHOLD )
 	{
 		bool bAlive = true;
-		float fvol = 0.5;
+		float fvol = 0.5f;
 
-		if ( player->GetWaterLevel() > 0 )
-		{
-			// They landed in water.
-		}
-		else
+		if ( player->GetWaterLevel() <= 0 )
 		{
 			// Scale it down if we landed on something that's floating...
 			if ( player->GetGroundEntity()->IsFloating() )
@@ -3946,15 +3942,15 @@ void CGameMovement::CheckFalling( void )
 				// If they hit the ground going this fast they may take damage (and die).
 				//
 				bAlive = MoveHelper( )->PlayerFallingDamage();
-				fvol = 1.0;
+				fvol = 1.0f;
 			}
 			else if ( player->m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED / 2 )
 			{
-				fvol = 0.85;
+				fvol = 0.85f;
 			}
 			else if ( player->m_Local.m_flFallVelocity < PLAYER_MIN_BOUNCE_SPEED )
 			{
-				fvol = 0;
+				fvol = 0.0f;
 			}
 		}
 

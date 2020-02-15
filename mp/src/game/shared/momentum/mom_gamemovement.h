@@ -23,9 +23,6 @@ class CMomentumGameMovement : public CGameMovement
     void AirMove() override;
     void WalkMove() override;
 
-    // Override fall damage
-    void CheckFalling() override;
-
     void PlayerRoughLandingEffects(float) override;
 
     // Ladder
