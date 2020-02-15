@@ -3150,26 +3150,18 @@ void CGameMovement::PushEntity( Vector& push, trace_t *pTrace )
 //-----------------------------------------------------------------------------
 int CGameMovement::ClipVelocity( Vector in, Vector& normal, Vector& out, float overbounce )
 {
-	float	backoff;
-	float	change;
-	float angle;
-	int		i, blocked;
+	int blocked = 0x00;         // Assume unblocked.
+	if (normal[2] > 0)			// If the plane that is blocking us has a positive z component, then assume it's a floor.
+		blocked |= 0x01;	// Floor = 1
+	if (CloseEnough(normal[2], 0.0f, FLT_EPSILON))	// If the plane has no Z, it is vertical (wall/step)
+		blocked |= 0x02;	// Wall = 2
 	
-	angle = normal[ 2 ];
-
-	blocked = 0x00;         // Assume unblocked.
-	if (angle > 0)			// If the plane that is blocking us has a positive z component, then assume it's a floor.
-		blocked |= 0x01;	// 
-	if (!angle)				// If the plane has no Z, it is vertical (wall/step)
-		blocked |= 0x02;	// 
-	
-
 	// Determine how far along plane to slide based on incoming direction.
-	backoff = DotProduct (in, normal) * overbounce;
+	float backoff = DotProduct(in, normal) * overbounce;
 
-	for (i=0 ; i<3 ; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		change = normal[i]*backoff;
+		float change = normal[i] * backoff;
 		out[i] = in[i] - change; 
 	}
 	
@@ -3178,7 +3170,6 @@ int CGameMovement::ClipVelocity( Vector in, Vector& normal, Vector& out, float o
 	if( adjust < 0.0f )
 	{
 		out -= ( normal * adjust );
-//		Msg( "Adjustment = %lf\n", adjust );
 	}
 
 	// Return blocking flags.

@@ -2201,59 +2201,22 @@ void CMomentumGameMovement::ReduceTimers()
     BaseClass::ReduceTimers();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  : in -
-//            normal -
-//            out -
-//            overbounce -
-// Output : int
-//-----------------------------------------------------------------------------
 int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
 {
-    float backoff;
-    float change;
-    float angle;
-    int i, blocked;
-
-    angle = normal[2];
-
-    blocked = 0x00;      // Assume unblocked.
-    if (angle > 0)       // If the plane that is blocking us has a positive z component, then assume it's a floor.
-        blocked |= 0x01; //
-    if (CloseEnough(angle, 0.0f, FLT_EPSILON)) // If the plane has no Z, it is vertical (wall/step)
-        blocked |= 0x02;                       //
-
-    // Determine how far along plane to slide based on incoming direction.
-    backoff = DotProduct(in, normal) * overbounce;
-
-    for (i = 0; i < 3; i++)
-    {
-        change = normal[i] * backoff;
-        out[i] = in[i] - change;
-        // DevMsg("Backoff: %f || Change: %f || Velocity: %f\n", backoff, change, velocity);
-    }
-
-    // iterate once to make sure we aren't still moving through the plane
-    float adjust = DotProduct(out, normal);
-    if (adjust < 0.0f)
-    {
-        out -= (normal * adjust);
-        // DevMsg( "Adjustment = %lf\n", adjust );
-    }
+    const int blocked = BaseClass::ClipVelocity(in, normal, out, overbounce);
     
     // Check if the jump button is held to predict if the player wants to jump up an incline. Not checking for jumping
     // could allow players that hit the slope almost perpendicularly and still surf up the slope because they would
     // retain their horizontal speed
     if (sv_slope_fix.GetBool() && m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP))
     {
-        bool canJump = angle >= 0.7f && out.z <= NON_JUMP_VELOCITY;
+        bool canJump = normal[2] >= 0.7f && out.z <= NON_JUMP_VELOCITY;
         
         if (m_pPlayer->m_CurrentSlideTrigger)
             canJump &= m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump;
         
         // If the player do not gain horizontal speed while going up an incline, then act as if the surface is flat
-        if (canJump && normal.x*in.x + normal.y*in.y < 0.0f && out.Length2DSqr() <= in.Length2DSqr())
+        if (canJump && (normal.x*in.x + normal.y*in.y < 0.0f) && out.Length2DSqr() <= in.Length2DSqr())
         {
             out.x = in.x;
             out.y = in.y;
