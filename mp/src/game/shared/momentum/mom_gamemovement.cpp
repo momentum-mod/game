@@ -2268,6 +2268,6 @@ int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, 
 // Expose our interface.
 static CMomentumGameMovement g_GameMovement;
 CMomentumGameMovement *g_pMomentumGameMovement = &g_GameMovement;
-IGameMovement *g_pGameMovement = static_cast<IGameMovement *>(&g_GameMovement);
+IGameMovement *g_pGameMovement = &g_GameMovement;
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CMomentumGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);
