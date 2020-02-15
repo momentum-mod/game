@@ -63,6 +63,7 @@ class CMomentumGameMovement : public CGameMovement
     void ReduceTimers() override;
 
     void StartGravity() override;
+    float GetPlayerGravity() override;
     void FinishGravity() override;
 
     int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;
