@@ -1772,50 +1772,7 @@ void CMomentumGameMovement::StuckGround()
 
 void CMomentumGameMovement::AirMove()
 {
-    int i;
-    Vector wishvel;
-    float fmove, smove;
-    Vector wishdir;
-    float wishspeed;
-    Vector forward, right, up;
-
-    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
-
-    // Copy movement amounts
-    fmove = mv->m_flForwardMove;
-    smove = mv->m_flSideMove;
-
-    // Zero out z components of movement vectors
-    forward[2] = 0;
-    right[2] = 0;
-    VectorNormalize(forward); // Normalize remainder of vectors
-    VectorNormalize(right);   //
-
-    for (i = 0; i < 2; i++) // Determine x and y parts of velocity
-        wishvel[i] = forward[i] * fmove + right[i] * smove;
-    wishvel[2] = 0; // Zero out z part of velocity
-
-    VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
-    wishspeed = VectorNormalize(wishdir);
-
-    //
-    // clamp to server defined max speed
-    //
-    if (wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
-    {
-        VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
-        wishspeed = mv->m_flMaxSpeed;
-    }
-
-    AirAccelerate(wishdir, wishspeed, sv_airaccelerate.GetFloat());
-
-    // Add in any base velocity to the current velocity.
-    VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
-
-    TryPlayerMove();
-    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
-    // (or maybe another monster?)
-    VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
+    BaseClass::AirMove();
 
     if (!g_pGameModeSystem->IsTF2BasedMode())
     {
