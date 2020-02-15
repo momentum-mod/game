@@ -1619,36 +1619,38 @@ void CGameMovement::StepMove( Vector &vecDestination, trace_t &trace )
 //-----------------------------------------------------------------------------
 void CGameMovement::Friction( void )
 {
-	float	speed, newspeed, control;
-	float	friction;
-	float	drop;
-	
+	DoFriction(mv->m_vecVelocity);
+}
+
+void CGameMovement::DoFriction(Vector &velocity)
+{
 	// If we are in water jump cycle, don't apply friction
 	if (player->m_flWaterJumpTime)
 		return;
 
 	// Calculate speed
-	speed = VectorLength( mv->m_vecVelocity );
-	
+	float speed = VectorLength(velocity);
+
 	// If too slow, return
 	if (speed < 0.1f)
 	{
 		return;
 	}
 
-	drop = 0;
+	float drop = 0.0f;
 
 	// apply ground friction
-	if (player->GetGroundEntity() != NULL)  // On an entity that is the ground
+	if (player->GetGroundEntity() != nullptr)  // On an entity that is the ground
 	{
-		friction = sv_friction.GetFloat() * player->m_surfaceFriction;
+		float friction = sv_friction.GetFloat() * player->m_surfaceFriction;
 
 		// Bleed off some speed, but if we have less than the bleed
 		//  threshold, bleed the threshold amount.
+		float control;
 
-		if ( IsX360() )
+		if (IsX360())
 		{
-			if( player->m_Local.m_bDucked )
+			if (player->m_Local.m_bDucked)
 			{
 				control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
 			}
@@ -1660,30 +1662,30 @@ void CGameMovement::Friction( void )
 				control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
 #endif
 			}
-		}
+			}
 		else
 		{
 			control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
 		}
 
 		// Add the amount to the drop amount.
-		drop += control*friction*gpGlobals->frametime;
+		drop += control * friction * gpGlobals->frametime;
 	}
 
 	// scale the velocity
-	newspeed = speed - drop;
+	float newspeed = speed - drop;
 	if (newspeed < 0)
 		newspeed = 0;
 
-	if ( newspeed != speed )
+	if (newspeed != speed)
 	{
 		// Determine proportion of old speed we are using.
 		newspeed /= speed;
 		// Adjust velocity according to proportion.
-		VectorScale( mv->m_vecVelocity, newspeed, mv->m_vecVelocity );
+		VectorScale(velocity, newspeed, velocity);
 	}
 
- 	mv->m_outWishVel -= (1.f-newspeed) * mv->m_vecVelocity;
+	mv->m_outWishVel -= (1.f - newspeed) * velocity;
 }
 
 //-----------------------------------------------------------------------------

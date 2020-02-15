@@ -98,6 +98,7 @@ protected:
 
 	// Handles both ground friction and water friction
 	virtual void			Friction( void );
+	virtual void			DoFriction( Vector &velocity );
 
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
