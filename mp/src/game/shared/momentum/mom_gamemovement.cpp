@@ -684,6 +684,15 @@ void CMomentumGameMovement::Friction()
     mv->m_vecVelocity.y = velocity.y;
 }
 
+float CMomentumGameMovement::GetPlayerGravity()
+{
+    if (g_pGameModeSystem->IsTF2BasedMode())
+        return BaseClass::GetPlayerGravity();
+
+    // We otherwise don't mind if player gravity is set to 0
+    return player->GetGravity();
+}
+
 float CMomentumGameMovement::GetWaterWaistOffset()
 {
     return g_pGameModeSystem->IsTF2BasedMode() ? 12.0f : BaseClass::GetWaterWaistOffset();
@@ -1418,16 +1427,10 @@ void CMomentumGameMovement::CategorizePosition()
 
 void CMomentumGameMovement::FinishGravity()
 {
-    if (player->m_flWaterJumpTime)
-        return;
-
     if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
-    // Get the correct velocity for the end of the dt
-    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime);
-
-    CheckVelocity();
+    BaseClass::FinishGravity();
 }
 
 void CMomentumGameMovement::StartGravity()
@@ -1435,16 +1438,7 @@ void CMomentumGameMovement::StartGravity()
     if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
-    // Add gravity so they'll be in the correct position during movement
-    // yes, this 0.5 looks wrong, but it's not.
-    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime);
-    mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
-
-    Vector temp = player->GetBaseVelocity();
-    temp[2] = 0;
-    player->SetBaseVelocity(temp);
-
-    CheckVelocity();
+    BaseClass::StartGravity();
 }
 
 void CMomentumGameMovement::FullWalkMove()
@@ -1463,7 +1457,6 @@ void CMomentumGameMovement::FullWalkMove()
     {
         WaterJump();
         TryPlayerMove();
-        // See if we are still in water?
         CheckWater();
         return;
     }
