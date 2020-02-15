@@ -1010,9 +1010,7 @@ private:
 	int						m_rgItems[MAX_ITEMS];
 
 	// these are time-sensitive things that we keep track of
-	float					m_flSwimTime;		// how long player has been underwater
-	float					m_flDuckTime;		// how long we've been ducking
-	float					m_flDuckJumpTime;	
+	float					m_flSwimTime;		// how long player has been underwater	
 
 	float					m_flSuitUpdate;					// when to play next suit update
 	int						m_rgSuitPlayList[CSUITPLAYLIST];// next sentencenum to play for suit update

@@ -298,8 +298,6 @@ BEGIN_DATADESC( CBasePlayer )
 	// DEFINE_FIELD( m_PlayerInfo, CPlayerInfo ),
 
 	DEFINE_FIELD( m_flSwimTime, FIELD_TIME ),
-	DEFINE_FIELD( m_flDuckTime, FIELD_TIME ),
-	DEFINE_FIELD( m_flDuckJumpTime, FIELD_TIME ),
 
 	DEFINE_FIELD( m_flSuitUpdate, FIELD_TIME ),
 	DEFINE_AUTO_ARRAY( m_rgSuitPlayList, FIELD_INTEGER ),
