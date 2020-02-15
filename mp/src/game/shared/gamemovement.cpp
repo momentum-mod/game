@@ -3588,7 +3588,7 @@ bool CGameMovement::CheckWater( void )
 
 void CGameMovement::SetGroundEntity( trace_t *pm )
 {
-	CBaseEntity *newGround = pm ? pm->m_pEnt : NULL;
+	CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
 
 	CBaseEntity *oldGround = player->GetGroundEntity();
 	Vector vecBaseVelocity = player->GetBaseVelocity();
@@ -3610,7 +3610,6 @@ void CGameMovement::SetGroundEntity( trace_t *pm )
 	player->SetGroundEntity( newGround );
 
 	// If we are on something...
-
 	if ( newGround )
 	{
 		CategorizeGroundSurface( *pm );

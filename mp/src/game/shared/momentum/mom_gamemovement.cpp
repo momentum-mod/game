@@ -192,9 +192,7 @@ void CMomentumGameMovement::WalkMove()
     {
         if (m_pPlayer->m_flStamina > 0)
         {
-            float flRatio;
-
-            flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
+            float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0f) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
 
             // This Goldsrc code was run with variable timesteps and it had framerate dependencies.
             // People looking at Goldsrc for reference are usually
@@ -1737,7 +1735,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 else
                 {
                     ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity,
-                                 1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                                 1.0f + sv_bounce.GetFloat() * (1.0f - player->m_surfaceFriction));
                     VectorCopy(mv->m_vecVelocity, original_velocity);
                 }
             }
@@ -2106,66 +2104,34 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     return blocked;
 }
 
-// This was the virtual void, overriding it for snow friction
 void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
-    if (m_pPlayer->m_CurrentSlideTrigger &&
-        !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump))
+    const auto pSlideTrigger = m_pPlayer->m_CurrentSlideTrigger.Get();
+    if (pSlideTrigger && !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP) && pSlideTrigger->m_bAllowingJump))
         pm = nullptr;
 
-    CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
-
-    CBaseEntity *oldGround = player->GetGroundEntity();
-    Vector vecBaseVelocity = player->GetBaseVelocity();
-
+#ifdef GAME_DLL
     bool bLanded = false;
-    if (!oldGround && newGround)
+    if (player->GetGroundEntity() == nullptr && (pm && pm->m_pEnt))
     {
-        // Subtract ground velocity at instant we hit ground jumping
-        vecBaseVelocity -= newGround->GetAbsVelocity();
-        vecBaseVelocity.z = newGround->GetAbsVelocity().z;
-
-        // Fire that we landed on ground
         bLanded = true;
     }
-    else if (oldGround && !newGround)
-    {
-        // Add in ground velocity at instant we started jumping
-        vecBaseVelocity += oldGround->GetAbsVelocity();
-        vecBaseVelocity.z = oldGround->GetAbsVelocity().z;
-    }
+#endif
 
-    player->SetBaseVelocity(vecBaseVelocity);
-    player->SetGroundEntity(newGround);
+    BaseClass::SetGroundEntity(pm);
 
+#ifdef GAME_DLL
+    // Doing this after the BaseClass call in case OnLand wants to use the new ground stuffs
     if (bLanded)
     {
-#ifndef CLIENT_DLL
         m_pPlayer->SetIsInAirDueToJump(false);
 
         // Set the tick that we landed on something solid (can jump off of this)
         m_pPlayer->OnLand();
+    }
 #endif
-    }
-
-    // If we are on something...
-    if (newGround)
-    {
-        CategorizeGroundSurface(*pm); // Snow friction override
-
-        // Then we are not in water jump sequence
-        player->m_flWaterJumpTime = 0.0f;
-
-        // Standing on an entity other than the world, so signal that we are touching something.
-        if (!pm->DidHitWorld())
-        {
-            MoveHelper()->AddToTouched(*pm, mv->m_vecVelocity);
-        }
-
-        mv->m_vecVelocity.z = 0.0f;
-    }
 }
 
 bool CMomentumGameMovement::CanAccelerate()
