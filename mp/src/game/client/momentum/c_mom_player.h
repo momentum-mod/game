@@ -81,7 +81,6 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     // Ladder stuff
     float m_flGrabbableLadderTime;
 
-    bool m_duckUntilOnGround;
     float m_flStamina;
 
     CMomRunEntity *m_pSpecTarget;
