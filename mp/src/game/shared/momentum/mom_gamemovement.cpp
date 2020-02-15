@@ -610,75 +610,11 @@ bool CMomentumGameMovement::CanUnduck()
 
 void CMomentumGameMovement::Friction()
 {
-    float speed, newspeed, control;
-    float friction;
-    float drop;
-
-    // Friction should be affected by z velocity
+    // Friction shouldn't be affected by z velocity
     Vector velocity = mv->m_vecVelocity;
     velocity.z = 0.0f;
 
-    // If we are in water jump cycle, don't apply friction
-    if (player->m_flWaterJumpTime)
-        return;
-
-    // Calculate speed
-    speed = VectorLength(velocity);
-
-    // If too slow, return
-    if (speed < 0.1f)
-    {
-        return;
-    }
-
-    drop = 0;
-
-    // apply ground friction
-    if (player->GetGroundEntity() != NULL) // On an entity that is the ground
-    {
-        friction = sv_friction.GetFloat() * player->m_surfaceFriction;
-
-        // Bleed off some speed, but if we have less than the bleed
-        //  threshold, bleed the threshold amount.
-
-        if (IsX360())
-        {
-            if (player->m_Local.m_bDucked)
-            {
-                control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
-            }
-            else
-            {
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
-                control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
-#else
-                control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
-#endif
-            }
-        }
-        else
-        {
-            control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
-        }
-
-        // Add the amount to the drop amount.
-        drop += control * friction * gpGlobals->frametime;
-    }
-
-    // scale the velocity
-    newspeed = speed - drop;
-    if (newspeed < 0)
-        newspeed = 0;
-
-    if (newspeed != speed)
-    {
-        // Determine proportion of old speed we are using.
-        newspeed /= speed;
-        // Adjust velocity according to proportion.
-        VectorScale(velocity, newspeed, velocity);
-    }
-
-    mv->m_outWishVel -= (1.f - newspeed) * velocity;
+    DoFriction(velocity);
 
     mv->m_vecVelocity.x = velocity.x;
     mv->m_vecVelocity.y = velocity.y;
