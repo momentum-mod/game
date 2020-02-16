@@ -337,6 +337,7 @@ $Project "Client (Momentum)"
             $File   "momentum\clientmode_mom_normal.cpp"
             $File   "momentum\c_mom_ghost_base.h"
             $File   "momentum\c_mom_ghost_base.cpp"
+            $File   "momentum\tf2proxy.cpp"
 
             // RTT Shadows
             $File "momentum\worldlight.h"
