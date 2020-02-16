@@ -1,15 +1,13 @@
 #include "cbase.h"
-#include <vgui/ILocalize.h>
-#include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
+
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/ProgressBar.h>
 #include <vgui_controls/Label.h>
+
 #include "c_mom_player.h"
 #include "hud.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "ienginevgui.h"
 #include "mom_system_gamemode.h"
 #include "weapon/weapon_mom_stickybomblauncher.h"
 
