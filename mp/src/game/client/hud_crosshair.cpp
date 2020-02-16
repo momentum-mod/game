@@ -36,7 +36,7 @@ MAKE_TOGGLE_CONVAR(cl_crosshair_dynamic_fire, "1", FCVAR_ARCHIVE, "Toggle dynami
 
 MAKE_TOGGLE_CONVAR(cl_crosshair_dynamic_move, "1", FCVAR_ARCHIVE, "Toggle dynamic crosshair behaviour with player movement. 0 = OFF, 1 = ON\n");
 
-ConVar cl_crosshair_file("cl_crosshair_file", "", FCVAR_ARCHIVE,
+ConVar cl_crosshair_file("cl_crosshair_file", "crosshair_custom", FCVAR_ARCHIVE,
     "Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshair_style 1.\n");
 
 ConVar cl_crosshair_gap("cl_crosshair_gap", "4", FCVAR_ARCHIVE,
@@ -285,10 +285,10 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
 
     if (cl_crosshair_style.GetInt() != 2)
     {
-        m_pCrosshair = gHUD.GetIcon("whiteAdditive");
+        CHudTexture *m_pCrosshairTexture = gHUD.GetIcon("whiteAdditive");
 
-        if (m_pCrosshair)
-            weaponBase->m_iCrosshairTextureID = m_pCrosshair->textureId;
+        if (m_pCrosshairTexture)
+            weaponBase->m_iCrosshairTextureID = m_pCrosshairTexture->textureId;
         
         int iLeft = iHalfScreenWidth - (iCrosshairDistance + iBarSize);
         int iRight = iHalfScreenWidth + iCrosshairDistance;
@@ -330,7 +330,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
             if (!cl_crosshair_t.GetBool())
                 surface()->DrawTexturedRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
             surface()->DrawTexturedRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
-            
+		
             if (cl_crosshair_dot.GetBool())
             {
                 if (cl_crosshair_outline_enable.GetBool())
@@ -380,15 +380,14 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     }
     else
     {
-        m_pCrosshair = nullptr;
-
+        CHudTexture *m_pCrosshairTexture;
         if (FStrEq(cl_crosshair_file.GetString(), "") || FStrEq(cl_crosshair_file.GetString(), "null"))
-            m_pCrosshair = gHUD.GetIcon("whiteAdditive");
+            m_pCrosshairTexture = gHUD.GetIcon("whiteAdditive");
         else
-            m_pCrosshair = gHUD.GetIcon(cl_crosshair_file.GetString());
+            m_pCrosshairTexture = gHUD.GetIcon(cl_crosshair_file.GetString());
 
-        if (m_pCrosshair)
-            weaponBase->m_iCrosshairTextureID = m_pCrosshair->textureId;
+        if (m_pCrosshairTexture)
+            weaponBase->m_iCrosshairTextureID = m_pCrosshairTexture->textureId;
 
         surface()->DrawSetTexture(weaponBase->m_iCrosshairTextureID);
 
