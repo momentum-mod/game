@@ -323,9 +323,13 @@ public:
 			m_pShadowDetail->AddItem("#gameui_high", NULL);
 		}
 
-        m_pBloom = new CvarToggleCheckButton(this, "Bloom", "#GameUI_Bloom", "mat_disable_bloom");
+        m_pBloom = new ComboBox(this, "Bloom", 2, false);
+		m_pBloom->AddItem("#gameui_disabled", NULL);
+		m_pBloom->AddItem("#gameui_enabled", NULL);
 
-        m_pTonemap = new CvarToggleCheckButton(this, "Tonemap", "#GameUI_Tonemap", "mat_dynamic_tonemapping");
+        m_pTonemap = new ComboBox(this, "Tonemap", 2, false);
+		m_pTonemap->AddItem("#gameui_disabled", NULL);
+		m_pTonemap->AddItem("#gameui_enabled", NULL);
 
 		m_pWaterDetail = new ComboBox( this, "WaterDetail", 6, false );
 		m_pWaterDetail->AddItem("#gameui_noreflections", NULL);
@@ -619,8 +623,11 @@ public:
         ApplyChangesToConVar("mat_queue_mode", -m_pMulticore->GetActiveItem());
 
         m_pFOVSlider->ApplyChanges();
-        m_pBloom->ApplyChanges();
-        m_pTonemap->ApplyChanges();
+
+		// The cvar disables bloom so invert the item
+		ApplyChangesToConVar( "mat_disable_bloom", !m_pBloom->GetActiveItem() );
+
+		ApplyChangesToConVar( "mat_dynamic_tonemapping", m_pTonemap->GetActiveItem() );
 	}
 
 	virtual void OnResetData()
@@ -722,9 +729,10 @@ public:
 
         m_pMulticore->ActivateItem(- ConVarRef("mat_queue_mode").GetInt());
 
-        m_pBloom->Reset();
+		// The cvar disables bloom so invert the item
+        m_pBloom->ActivateItem(!ConVarRef("mat_disable_bloom").GetInt());
 
-        m_pTonemap->Reset();
+        m_pTonemap->ActivateItem(ConVarRef("mat_dynamic_tonemapping").GetInt());
 	}
 
 	virtual void OnCommand( const char *command )
@@ -790,7 +798,7 @@ private:
 	int m_nNumAAModes;
 	AAMode_t m_nAAModes[16];
 
-    vgui::CvarToggleCheckButton *m_pTonemap, *m_pBloom;
+    vgui::ComboBox *m_pTonemap, *m_pBloom;
 };
 
 //-----------------------------------------------------------------------------

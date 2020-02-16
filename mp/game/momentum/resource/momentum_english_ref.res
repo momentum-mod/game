@@ -202,8 +202,8 @@
         "MOM_Duck" "DUCK"
         "MOM_M1"   "M1"
         "MOM_M2"   "M2"
-        "GameUI_Tonemap" "Enable HDR tonemapping"
-        "GameUI_Bloom"   "Disable bloom"
+        "GameUI_Tonemap" "HDR Tonemapping"
+        "GameUI_Bloom"   "HDR Bloom"
 
         // Map Finished Panel
         //Overall
