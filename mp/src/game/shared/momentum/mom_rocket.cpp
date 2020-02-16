@@ -52,6 +52,7 @@ static MAKE_TOGGLE_CONVAR(mom_rj_trail_sound_enable, "1", FCVAR_ARCHIVE, "Toggle
 static MAKE_TOGGLE_CONVAR(mom_rj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on rocket explosion. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_CONVAR(mom_rj_trail, "1", FCVAR_ARCHIVE, "Toggles between the TF2 rocket trail and the Momentum one. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 3);
+static MAKE_CONVAR(mom_rj_rocket_drawdelay, "0.2", FCVAR_ARCHIVE, "Determines how long it takes for rockets to start being drawn after spawning.\n", 0, 1);
 #endif
 
 CMomRocket::CMomRocket()
@@ -160,8 +161,7 @@ void C_MomRocket::OnDataChanged(DataUpdateType_t updateType)
 
 int CMomRocket::DrawModel(int flags)
 {
-    // Don't draw rocket during the first 0.2 seconds.
-    if (gpGlobals->curtime - m_flSpawnTime < 0.2f)
+    if (gpGlobals->curtime - m_flSpawnTime < mom_rj_rocket_drawdelay.GetFloat())
     {
         return 0;
     }
