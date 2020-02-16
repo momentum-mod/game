@@ -117,6 +117,12 @@ void CMapZoneSystem::FrameUpdatePostEntityThink()
     m_Editor.FrameUpdate();
 }
 
+void PostInit()
+{
+    // Creates a folder for zonefiles if it doesn't exist yet
+    filesystem->CreateDirHierarchy(ZONE_FOLDER, "MOD");
+}
+
 bool CMapZoneSystem::ZoneTypeToClass(int type, char *dest, int maxlen)
 {
     switch (type)
