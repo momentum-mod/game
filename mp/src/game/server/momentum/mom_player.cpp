@@ -1050,11 +1050,12 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
     case ZONE_TYPE_START:
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         {
-            // Re-enable charge on start zone exit
+            // Re-enable charge on start zone exit and set charge time to 0 to prevent pre-charged stickies
             const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(this->GetActiveWeapon());
             if (pLauncher)
             {
                 pLauncher->SetChargeEnabled(true);
+                pLauncher->SetChargeBeginTime(0.0f);
             }
         }
         // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
