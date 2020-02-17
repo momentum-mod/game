@@ -4607,16 +4607,7 @@ void PrecacheInstancedScene( char const *pszScene )
 
 	// verify existence, cache is pre-populated, should be there
 	SceneCachedData_t sceneData;
-	if ( !scenefilecache->GetSceneCachedData( pszScene, &sceneData ) )
-	{
-		// Scenes are sloppy and don't always exist.
-		// A scene that is not in the pre-built cache image, but on disk, is a true error.
-		if ( developer.GetInt() && ( IsX360() && ( g_pFullFileSystem->GetDVDMode() != DVDMODE_STRICT ) && g_pFullFileSystem->FileExists( pszScene, "GAME" ) ) )
-		{
-			Warning( "PrecacheInstancedScene: Missing scene '%s' from scene image cache.\nRebuild scene image cache!\n", pszScene );
-		}
-	}
-	else
+	if ( scenefilecache->GetSceneCachedData( pszScene, &sceneData ) )
 	{
 		for ( int i = 0; i < sceneData.numSounds; ++i )
 		{

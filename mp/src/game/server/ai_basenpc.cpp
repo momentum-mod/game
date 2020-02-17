@@ -142,7 +142,7 @@ ConVar  ai_debug_enemies( "ai_debug_enemies", "0" );
 ConVar	ai_rebalance_thinks( "ai_rebalance_thinks", "1" );
 ConVar	ai_use_efficiency( "ai_use_efficiency", "1" );
 ConVar	ai_use_frame_think_limits( "ai_use_frame_think_limits", "1" );
-ConVar	ai_default_efficient( "ai_default_efficient", ( IsX360() ) ? "1" : "0" );
+ConVar	ai_default_efficient( "ai_default_efficient", "0" );
 ConVar	ai_efficiency_override( "ai_efficiency_override", "0" );
 ConVar	ai_debug_efficiency( "ai_debug_efficiency", "0" );
 ConVar	ai_debug_dyninteractions( "ai_debug_dyninteractions", "0", FCVAR_NONE, "Debug the NPC dynamic interaction system." );
@@ -205,7 +205,7 @@ ConVar	ai_spread_pattern_focus_time( "ai_spread_pattern_focus_time","0.8" );
 ConVar	ai_reaction_delay_idle( "ai_reaction_delay_idle","0.3" );
 ConVar	ai_reaction_delay_alert( "ai_reaction_delay_alert", "0.1" );
 
-ConVar ai_strong_optimizations( "ai_strong_optimizations", ( IsX360() ) ? "1" : "0" );
+ConVar ai_strong_optimizations( "ai_strong_optimizations", "0" );
 bool AIStrongOpt( void )
 {
 	return ai_strong_optimizations.GetBool();

@@ -252,7 +252,7 @@ void CAI_NetworkManager::SaveNetworkGraph( void )
 	// Now add the real map filename.
 	Q_strncat( szNrpFilename, "/", sizeof( szNrpFilename ), COPY_ALL_CHARACTERS  );
 	Q_strncat( szNrpFilename, STRING( gpGlobals->mapname ), sizeof( szNrpFilename ), COPY_ALL_CHARACTERS );
-	Q_strncat( szNrpFilename, IsX360() ? ".360.ain" : ".ain", sizeof( szNrpFilename ), COPY_ALL_CHARACTERS  );
+	Q_strncat( szNrpFilename, ".ain", sizeof( szNrpFilename ), COPY_ALL_CHARACTERS  );
 
 	CUtlBuffer buf;
 
@@ -280,10 +280,6 @@ void CAI_NetworkManager::SaveNetworkGraph( void )
 		buf.PutFloat( pNode->GetYaw() );
 		buf.Put( pNode->m_flVOffset, sizeof( pNode->m_flVOffset ) );
 		buf.PutChar( pNode->GetType() );
-		if ( IsX360() )
-		{
-			buf.SeekPut( CUtlBuffer::SEEK_CURRENT, 3 );
-		}
 		buf.PutUnsignedShort( pNode->m_eNodeInfo );
 		buf.PutShort( pNode->GetZone() );
 
@@ -503,30 +499,13 @@ void CAI_NetworkManager::LoadNetworkGraph( void )
 
 	Q_strncat( szNrpFilename, "/", sizeof( szNrpFilename ), COPY_ALL_CHARACTERS );
 	Q_strncat( szNrpFilename, STRING( gpGlobals->mapname ), sizeof( szNrpFilename ), COPY_ALL_CHARACTERS );
-	Q_strncat( szNrpFilename, IsX360() ? ".360.ain" : ".ain", sizeof( szNrpFilename ), COPY_ALL_CHARACTERS );
+	Q_strncat( szNrpFilename, ".ain", sizeof( szNrpFilename ), COPY_ALL_CHARACTERS );
 
 	MEM_ALLOC_CREDIT();
 
 	// Read the file in one gulp
 	CUtlBuffer buf;
 	bool bHaveAIN = false;
-	if ( IsX360() && g_pQueuedLoader->IsMapLoading() )
-	{
-		// .ain was loaded anonymously by bsp, should be ready
-		void *pData;
-		int nDataSize;
-		if ( g_pQueuedLoader->ClaimAnonymousJob( szNrpFilename, &pData, &nDataSize ) )
-		{
-			if ( nDataSize != 0 )
-			{
-				buf.Put( pData, nDataSize );
-				bHaveAIN = true;
-			}
-			filesystem->FreeOptimalReadBuffer( pData );
-		}
-	}
-	
-
 
 	if ( !bHaveAIN && !filesystem->ReadFile( szNrpFilename, "game", buf ) )
 	{
@@ -633,10 +612,6 @@ void CAI_NetworkManager::LoadNetworkGraph( void )
 
 		buf.Get( new_node->m_flVOffset, sizeof(new_node->m_flVOffset) );
 		new_node->m_eNodeType = (NodeType_e)buf.GetChar();
-		if ( IsX360() )
-		{
-			buf.SeekGet( CUtlBuffer::SEEK_CURRENT, 3 );
-		}
 
 		new_node->m_eNodeInfo = buf.GetUnsignedShort();
 		new_node->m_zone = buf.GetShort();
@@ -970,24 +945,16 @@ bool CAI_NetworkManager::IsAIFileCurrent ( const char *szMapName )
 	{
 		return false;
 	}
-
-	if ( IsX360() && ( filesystem->GetDVDMode() == DVDMODE_STRICT ) )
-	{
-		// dvd build process validates and guarantees correctness, timestamps are allowed to be wrong
-		return true;
-	}
 	
-	{
-		const char *pGameDir = CommandLine()->ParmValue( "-game", "hl2" );		
-		char szLoweredGameDir[256];
-		Q_strncpy( szLoweredGameDir, pGameDir, sizeof( szLoweredGameDir ) );
-		Q_strlower( szLoweredGameDir );
+	const char *pGameDir = CommandLine()->ParmValue( "-game", "hl2" );		
+	char szLoweredGameDir[256];
+	Q_strncpy( szLoweredGameDir, pGameDir, sizeof( szLoweredGameDir ) );
+	Q_strlower( szLoweredGameDir );
 		
-		if ( !V_stricmp( szLoweredGameDir, "hl2" ) || !V_stricmp( szLoweredGameDir, "episodic" ) || !V_stricmp( szLoweredGameDir, "ep2" ) || !V_stricmp( szLoweredGameDir, "portal" ) || !V_stricmp( szLoweredGameDir, "lostcoast" )  || !V_stricmp( szLoweredGameDir, "hl1" ) )
-		{
-			// we shipped good node graphs for our games
-			return true;
-		}
+	if ( !V_stricmp( szLoweredGameDir, "hl2" ) || !V_stricmp( szLoweredGameDir, "episodic" ) || !V_stricmp( szLoweredGameDir, "ep2" ) || !V_stricmp( szLoweredGameDir, "portal" ) || !V_stricmp( szLoweredGameDir, "lostcoast" )  || !V_stricmp( szLoweredGameDir, "hl1" ) )
+	{
+		// we shipped good node graphs for our games
+		return true;
 	}
 	
 	Q_snprintf( szBspFilename, sizeof( szBspFilename ), "maps/%s%s.bsp" ,szMapName, GetPlatformExt() );

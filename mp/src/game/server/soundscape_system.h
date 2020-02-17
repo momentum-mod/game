@@ -46,9 +46,6 @@ public:
 	void RemoveSoundscapeEntity( CEnvSoundscape *pSoundscape );
 	void PrintDebugInfo( void );
 
-	void AddSoundscapeSounds( KeyValues *pSoundscape, int soundscapeIndex );
-	void PrecacheSounds( int soundscapeIndex );
-
 private:
 	CStringRegistry							m_soundscapes;
 	int										m_soundscapeCount;
