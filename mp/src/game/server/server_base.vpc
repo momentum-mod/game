@@ -607,8 +607,6 @@ $Project
 		$File	"tanktrain.cpp"
 		$File	"team.cpp"
 		$File	"team.h"
-		$File	"$SRCDIR\game\shared\teamplay_gamerules.cpp"
-		$File	"$SRCDIR\game\shared\teamplay_gamerules.h"
 		$File	"$SRCDIR\game\shared\tempentity.h"
 		$File	"TemplateEntities.cpp"
 		$File	"TemplateEntities.h"
