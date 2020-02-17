@@ -43,9 +43,7 @@ class CUtlBuffer;
 namespace vgui
 {
 
-#if !defined(_X360)
 #define VGUI_USEDRAGDROP 1
-#endif
 
 #if defined(VGUI_USEKEYBINDINGMAPS)
 struct PanelKeyBindingMap;
