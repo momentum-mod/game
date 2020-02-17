@@ -54,10 +54,8 @@
 #define _getcwd getcwd
 #elif _WIN32
 #include <direct.h>
-#if !defined( _X360 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
 #endif
 
 #ifdef _WIN32
@@ -72,9 +70,6 @@
 #include <time.h>
 #include "tier0/basetypes.h"
 #include "tier1/utldict.h"
-#if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#endif
 #include "tier0/memdbgon.h"
 
 static int FastToLower( char c )
@@ -187,11 +182,7 @@ char *_V_strstr(const char* file, int line,  const char *s1, const char *search 
 	AssertValidStringPtr( s1 );
 	AssertValidStringPtr( search );
 
-#if defined( _X360 )
-	return (char *)strstr( (char *)s1, search );
-#else
 	return (char *)strstr( s1, search );
-#endif
 }
 
 wchar_t *_V_wcsupr (const char* file, int line, wchar_t *start)

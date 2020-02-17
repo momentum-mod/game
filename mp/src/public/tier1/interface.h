@@ -58,12 +58,7 @@ public:
 	virtual	~IBaseInterface() {}
 };
 
-#if !defined( _X360 )
 #define CREATEINTERFACE_PROCNAME	"CreateInterface"
-#else
-// x360 only allows ordinal exports, .def files export "CreateInterface" at 1
-#define CREATEINTERFACE_PROCNAME	((const char*)1)
-#endif
 
 typedef void* (*CreateInterfaceFn)(const char *pName, int *pReturnCode);
 typedef void* (*InstantiateInterfaceFn)();
@@ -165,10 +160,6 @@ enum
 // extend this for other error conditions/code
 //-----------------------------------------------------------------------------
 DLL_EXPORT void* CreateInterface(const char *pName, int *pReturnCode);
-
-#if defined( _X360 )
-DLL_EXPORT void *CreateInterfaceThunk( const char *pName, int *pReturnCode );
-#endif
 
 //-----------------------------------------------------------------------------
 // UNDONE: This is obsolete, use the module load/unload/get instead!!!
