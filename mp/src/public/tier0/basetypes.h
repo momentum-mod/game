@@ -31,11 +31,7 @@
 // tickrate changes.
 #include "xbox_codeline_defines.h"
 
-#ifdef IN_XBOX_CODELINE
-#define XBOX_CODELINE_ONLY()
-#else
 #define XBOX_CODELINE_ONLY() Error_Compiling_Code_Only_Valid_in_Xbox_Codeline
-#endif
 
 // stdio.h
 #ifndef NULL
@@ -159,7 +155,7 @@ typedef float vec_t;
 #if defined(__GNUC__)
 #define fpmin __builtin_fminf
 #define fpmax __builtin_fmaxf
-#elif !defined(_X360)
+#else
 #define fpmin min
 #define fpmax max
 #endif
