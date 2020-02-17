@@ -150,11 +150,6 @@ bool PhysicsDLLInit( CreateInterfaceFn physicsFactory )
 		return false;
 	}
 
-	if ( IsX360() )
-	{
-		// Reduce timescale to save perf on 360
-		cl_phys_timescale.SetValue(0.9f);
-	}
 	PhysParseSurfaceData( physprops, filesystem );
 	return true;
 }

@@ -332,8 +332,7 @@ void CHudCredits::DrawOutroCreditsName(void)
                 {
                     m_bLastOneInPlace = true;
 
-                    // 360 certification requires that we not hold a static image too long.
-                    m_flFadeTime = gpGlobals->curtime + (IsConsole() ? 2.0f : 5.0f);
+                    m_flFadeTime = gpGlobals->curtime + 5.0f;
                 }
             }
         }

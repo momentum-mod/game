@@ -90,44 +90,15 @@ void CAchievementNotificationPanel::FireGameEvent( IGameEvent * event )
 		int iMax = event->GetInt( "max_val" );
 		wchar_t szLocalizedName[256]=L"";
 
-		if ( IsPC() )
-		{
-			// shouldn't ever get achievement progress if steam not running and user logged in, but check just in case
-			if ( !SteamUserStats() )
-			{				
-				Msg( "Steam not running, achievement progress notification not displayed\n" );
-			}
-			else 
-			{
-				// use Steam to show achievement progress UI
-				SteamUserStats()->IndicateAchievementProgress( pchName, iCur, iMax );
-			}
+		// shouldn't ever get achievement progress if steam not running and user logged in, but check just in case
+		if ( !SteamUserStats() )
+		{				
+			Msg( "Steam not running, achievement progress notification not displayed\n" );
 		}
 		else 
 		{
-			// on X360 we need to show our own achievement progress UI
-
-			const wchar_t *pchLocalizedName = ACHIEVEMENT_LOCALIZED_NAME_FROM_STR( pchName );
-			Assert( pchLocalizedName );
-			if ( !pchLocalizedName || !pchLocalizedName[0] )
-				return;
-			Q_wcsncpy( szLocalizedName, pchLocalizedName, sizeof( szLocalizedName ) );
-
-			// this is achievement progress, compose the message of form: "<name> (<#>/<max>)"
-			wchar_t szFmt[128]=L"";
-			wchar_t szText[512]=L"";
-			wchar_t szNumFound[16]=L"";
-			wchar_t szNumTotal[16]=L"";
-			_snwprintf( szNumFound, ARRAYSIZE( szNumFound ), L"%i", iCur );
-			_snwprintf( szNumTotal, ARRAYSIZE( szNumTotal ), L"%i", iMax );
-
-			const wchar_t *pchFmt = g_pVGuiLocalize->Find( "#GameUI_Achievement_Progress_Fmt" );
-			if ( !pchFmt || !pchFmt[0] )
-				return;
-			Q_wcsncpy( szFmt, pchFmt, sizeof( szFmt ) );
-
-			g_pVGuiLocalize->ConstructString( szText, sizeof( szText ), szFmt, 3, szLocalizedName, szNumFound, szNumTotal );
-			AddNotification( pchName, g_pVGuiLocalize->Find( "#GameUI_Achievement_Progress" ), szText );
+			// use Steam to show achievement progress UI
+			SteamUserStats()->IndicateAchievementProgress( pchName, iCur, iMax );
 		}
 	}
 }

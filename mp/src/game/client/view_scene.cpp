@@ -102,14 +102,7 @@ void UpdateFullScreenDepthTexture( void )
 	ITexture *pDepthTex = GetFullFrameDepthTexture();
 	CMatRenderContextPtr pRenderContext( materials );
 
-	if( IsX360() )
-	{	
-		pRenderContext->CopyRenderTargetToTextureEx( pDepthTex, -1, NULL, NULL );
-	}
-	else
-	{
-		pRenderContext->CopyRenderTargetToTextureEx( pDepthTex, 0, NULL, NULL );
-	}
+	pRenderContext->CopyRenderTargetToTextureEx( pDepthTex, 0, NULL, NULL );
 
 	pRenderContext->SetFullScreenDepthTextureValidityFlag( true );
 
@@ -119,11 +112,8 @@ void UpdateFullScreenDepthTexture( void )
 		pMaterial->IncrementReferenceCount();
 		IMaterialVar *BaseTextureVar = pMaterial->FindVar( "$basetexture", NULL, false );
 		IMaterialVar *pDepthInAlpha = NULL;
-		if( IsPC() )
-		{
-			pDepthInAlpha = pMaterial->FindVar( "$ALPHADEPTH", NULL, false );
-			pDepthInAlpha->SetIntValue( 1 );
-		}
+		pDepthInAlpha = pMaterial->FindVar( "$ALPHADEPTH", NULL, false );
+		pDepthInAlpha->SetIntValue( 1 );
 		
 		BaseTextureVar->SetTextureValue( pDepthTex );
 

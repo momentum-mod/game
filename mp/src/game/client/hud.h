@@ -49,9 +49,6 @@ public:
 		return rc.bottom - rc.top;
 	}
 
-	// causes the font manager to generate the glyph, prevents run time hitches on platforms that have slow font managers
-	void Precache( void );
-
 	// returns width & height of icon with scale applied (scale is ignored if font is used to render)
 	int EffectiveWidth( float flScale ) const;
 	int EffectiveHeight( float flScale ) const;

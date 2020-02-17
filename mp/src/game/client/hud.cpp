@@ -554,19 +554,6 @@ CHud::~CHud()
 	}
 }
 
-void CHudTexture::Precache( void )
-{
-	// costly function, used selectively on specific hud elements to get font pages built out at load time
-	if ( IsX360() && bRenderUsingFont && !bPrecached && hFont != vgui::INVALID_FONT )
-	{
-		wchar_t wideChars[2];
-		wideChars[0] = (wchar_t)cCharacterInFont;
-		wideChars[1] = 0;
-		vgui::surface()->PrecacheFontCharacters( hFont, wideChars );
-		bPrecached = true;
-	}
-}
-
 void CHudTexture::DrawSelf( int x, int y, const Color& clr ) const
 {
 	DrawSelf( x, y, Width(), Height(), clr );

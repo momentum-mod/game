@@ -898,12 +898,9 @@ ControllerMove
 */
 void CInput::ControllerMove( float frametime, CUserCmd *cmd )
 {
-	if ( IsPC() )
+	if ( !m_fCameraInterceptingMouse && m_fMouseActive )
 	{
-		if ( !m_fCameraInterceptingMouse && m_fMouseActive )
-		{
-			MouseMove( cmd);
-		}
+		MouseMove( cmd);
 	}
 
 	JoyStickMove( frametime, cmd);
@@ -1517,12 +1514,8 @@ void CInput::Init_All (void)
 	m_fHadJoysticks = false;
 	m_flLastForwardMove = 0.0;
 
-	// Initialize inputs
-	if ( IsPC() )
-	{
-		Init_Mouse ();
-		Init_Keyboard();
-	}
+	Init_Mouse ();
+	Init_Keyboard();
 		
 	// Initialize third person camera controls.
 	Init_Camera();
