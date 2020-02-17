@@ -14,9 +14,7 @@
 #include "interface.h"
 #include "vgui/IPanel.h"
 
-#if !defined( _X360 )
 #include "xbox/xboxstubs.h"
-#endif
 
 // reasons why the user can't connect to a game server
 enum ESteamLoginFailure
