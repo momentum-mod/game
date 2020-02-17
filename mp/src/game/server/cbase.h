@@ -59,12 +59,6 @@
 #include "shareddefs.h"
 #include "ehandle.h"
 
-// app
-#if defined(_X360)
-#define DISABLE_DEBUG_HISTORY 1
-#endif
-
-
 #include "datamap.h"
 #include "util.h"
 #include "predictable_entity.h"
@@ -128,11 +122,7 @@ class CAI_BaseNPC;
 class CAI_ScriptedSequence;
 class CSound;
 
-#ifdef _XBOX
-//#define FUNCTANK_AUTOUSE  We haven't made the decision to use this yet (sjb)
-#else
 #undef FUNCTANK_AUTOUSE
-#endif//_XBOX
 
 // This is a precompiled header.  Include a bunch of common stuff.
 // This is kind of ugly in that it adds a bunch of dependency where it isn't needed.

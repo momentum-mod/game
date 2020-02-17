@@ -248,7 +248,6 @@ void CRagdollBoogie::BoogieThink( void )
 		flMagnitude = SimpleSplineRemapVal( dt, 0.0f, m_flBoogieLength, m_flMagnitude, 0.0f ); 
 	}
 
-#ifndef _XBOX
 	if ( m_nSuppressionCount == 0 )
 	{
 		ragdoll_t *pRagdollPhys = pRagdoll->GetRagdoll( );
@@ -262,7 +261,6 @@ void CRagdollBoogie::BoogieThink( void )
 			pRagdollPhys->list[j].pObject->ApplyForceCenter( vecForce ); 
 		}
 	}
-#endif // !_XBOX
 
 	SetNextThink( gpGlobals->curtime + random->RandomFloat( 0.1, 0.2f ) );
 }

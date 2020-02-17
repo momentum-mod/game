@@ -13,7 +13,7 @@
 
 */
 
-#if defined(_WIN32) && !defined(_XBOX)
+#if defined(_WIN32)
 
 #include "winlite.h"
 #include "datamap.h"

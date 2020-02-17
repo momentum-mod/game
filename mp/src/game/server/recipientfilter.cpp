@@ -373,11 +373,9 @@ void CPASAttenuationFilter::Filter( const Vector& origin, float attenuation /*= 
 			continue;
 		}
 
-#ifndef _XBOX
 		// never remove the HLTV or Replay bot
 		if ( player->IsHLTV() || player->IsReplay() )
 			continue;
-#endif
 
 		VectorSubtract( player->EarPosition(), origin, vecRelative );
 		distance = VectorLength( vecRelative );

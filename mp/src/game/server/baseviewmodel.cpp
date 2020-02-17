@@ -81,13 +81,11 @@ int CBaseViewModel::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 	if ( pRecipientEntity->IsPlayer() )
 	{
 		CBasePlayer *pPlayer = static_cast<CBasePlayer*>( pRecipientEntity );
-#ifndef _XBOX
 		if ( pPlayer->IsHLTV() || pPlayer->IsReplay() )
 		{
 			// if this is the HLTV client, transmit all viewmodels in our PVS
 			return FL_EDICT_PVSCHECK;
 		}
-#endif
 		if ( (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE)  && (pPlayer->GetObserverTarget() == pOwner) )
 		{
 			return FL_EDICT_ALWAYS;
