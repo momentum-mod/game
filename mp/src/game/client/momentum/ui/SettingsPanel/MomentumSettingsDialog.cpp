@@ -9,6 +9,7 @@
 #include "OnlineSettingsPage.h"
 #include "RocketJumpSettingsPage.h"
 #include "StickyJumpSettingsPage.h"
+#include "CrosshairSettingsPage.h"
 #include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
@@ -34,7 +35,7 @@ class CMomentumSettingsDialog : public PropertyDialog
 
   private:
     SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pAppearanceSettings,
-     *m_pOnlineSettings, *m_pRocketJumpSettings, *m_pStickyJumpSettings;
+     *m_pOnlineSettings, *m_pRocketJumpSettings, *m_pStickyJumpSettings, *m_pCrosshairSettings;
 };
 
 CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(nullptr, "CMomentumSettingsPanel")
@@ -68,6 +69,7 @@ CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(null
     m_pOnlineSettings = new OnlineSettingsPage(this);
     m_pRocketJumpSettings = new RocketJumpSettingsPage(this);
     m_pStickyJumpSettings = new StickyJumpSettingsPage(this);
+    m_pCrosshairSettings = new CrosshairSettingsPage(this);
 
     //Note: we're adding the scroll panels here, because we want to be able to scroll.
     AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gameplay");
@@ -77,6 +79,7 @@ CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(null
     AddPage(m_pOnlineSettings->GetScrollPanel(), "#MOM_Settings_Tab_Online");
     AddPage(m_pRocketJumpSettings->GetScrollPanel(), "#MOM_Settings_Tab_RJ");
     AddPage(m_pStickyJumpSettings->GetScrollPanel(), "#MOM_Settings_Tab_SJ");
+    AddPage(m_pCrosshairSettings->GetScrollPanel(), "#MOM_Settings_Tab_Crosshair");
 }
 
 CMomentumSettingsDialog::~CMomentumSettingsDialog()

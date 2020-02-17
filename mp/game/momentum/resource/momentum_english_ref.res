@@ -397,6 +397,30 @@
         "MOM_Settings_SJ_DrawDelayEntry_Tooltip" "In seconds. Default is 0.1, max 1."
         "MOM_Settings_SJ_Enable_Charge_Tooltip" "Disabling will make stickybombs deploy instantly when holding primary fire."
 
+        // Crosshair settings
+        "MOM_Settings_Tab_Crosshair" "Crosshair"
+        "MOM_Settings_Crosshair_Enable" "Draw the crosshair"
+        "MOM_Settings_Crosshair_Style" "Choose crosshair style"
+        "MOM_Settings_Crosshair_Size" "Set crosshair size"
+        "MOM_Settings_Crosshair_Scale" "Set crosshair scale (when using CS:S styled crosshair)"
+        "MOM_Settings_Crosshair_Scale_Enable" "Enables using crosshair scale"
+        "MOM_Settings_Crosshair_Gap" "Set crosshair gap"
+        "MOM_Settings_Crosshair_Gap_Weapon" "Use weapon gaps based on the currently held weapon"
+        "MOM_Settings_Crosshair_Thickness" "Set crosshair thickness"
+        "MOM_Settings_Crosshair_Color" "Set crosshair color"
+        "MOM_Settings_Crosshair_Alpha" "Enable crosshair transparency"
+        "MOM_Settings_Crosshair_Dot" "Enable centered dot"
+        "MOM_Settings_Crosshair_T" "Draw a T shaped crosshair"
+        "MOM_Settings_Crosshair_Outline" "Enable crosshair outline"
+        "MOM_Settings_Crosshair_Outline_Thickness" "Set crosshair outline thickness"
+        "MOM_Settings_Crosshair_Dynamic_Fire" "Enable dynamic crosshair behaviour when firing weapons"
+        "MOM_Settings_Crosshair_Dynamic_Move" "Enable dynamic crosshair behaviour when moving"
+        "MOM_Settings_Crosshair_File" "Choose a .vtf to use as your crosshair"
+        "MOM_Settings_Crosshair_Style_0" "Dots crosshair"
+        "MOM_Settings_Crosshair_Style_1" "CS:S"
+        "MOM_Settings_Crosshair_Style_2" "CS:GO-like"
+        "MOM_Settings_Crosshair_Style_3" "Custom .vtf"
+
         // Replay Info
         // Spec GUI
         "MOM_WatchingReplay"    "REPLAY"
