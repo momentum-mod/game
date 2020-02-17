@@ -124,8 +124,8 @@ static void RenderMaterial( const char *pMaterialName )
 static void OverlayWaterTexture( IMaterial *pMaterial, int xOffset, int yOffset, bool bFlip )
 {
 	// screen safe
-	float xBaseOffset = IsPC() ? 0 : 32;
-	float yBaseOffset = IsPC() ? 0 : 32;
+	float xBaseOffset = 0;
+	float yBaseOffset = 0;
 	float offsetS = ( 0.5f / 256.0f );
 	float offsetT = ( 0.5f / 256.0f );
 	float fFlip0 = bFlip ? 1.0f : 0.0f;
@@ -531,9 +531,6 @@ void CDebugViewRender::Draw3DDebuggingInfo( const CViewSetup &viewSetup )
 //-----------------------------------------------------------------------------
 void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &viewSetup )
 {
-	if ( IsX360() && IsRetail() )
-		return;
-
 	// HDRFIXME: Assert NULL rendertarget
 	if ( mat_yuv.GetInt() && (engine->GetDXSupportLevel() >= 80) )
 	{
@@ -658,9 +655,6 @@ CON_COMMAND_F( r_screenoverlay, "Draw specified material as an overlay", FCVAR_C
 // Used to verify frame syncing.
 void CDebugViewRender::GenerateOverdrawForTesting()
 {
-	if ( IsX360() )
-		return;
-
 	if ( !cl_overdraw_test.GetInt() )
 		return;
 

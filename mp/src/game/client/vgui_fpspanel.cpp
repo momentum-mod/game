@@ -122,11 +122,6 @@ void CFPSPanel::ComputeSize( void )
 
 	int x = wide - FPS_PANEL_WIDTH;
 	int y = 0;
-	if ( IsX360() )
-	{
-		x -= XBOX_MINBORDERSAFE * wide;
-		y += XBOX_MINBORDERSAFE * tall;
-	}
 	SetPos( x, y );
 	SetSize( FPS_PANEL_WIDTH, 4 * vgui::surface()->GetFontTall( m_hFont ) + 8 );
 }
@@ -187,12 +182,12 @@ void GetFPSColor( int nFps, unsigned char ucColor[3] )
 	int nFPSThreshold1 = 20;
 	int nFPSThreshold2 = 15;
 	
-	if ( IsPC() && g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 95 )
+	if ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 95 )
 	{
 		nFPSThreshold1 = 60;
 		nFPSThreshold2 = 50;
 	}
-	else if ( IsX360() || g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90 )
+	else if ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90 )
 	{
 		nFPSThreshold1 = 30;
 		nFPSThreshold2 = 25;
@@ -480,11 +475,7 @@ CBlockingFileIOPanel::CBlockingFileIOPanel( vgui::VPANEL parent ) : BaseClass( N
 
 	int x = 2;
 	int y = 100;
-	if ( IsX360() )
-	{
-		x += XBOX_MAXBORDERSAFE * wide;
-		y += XBOX_MAXBORDERSAFE * tall;
-	}
+
 	SetPos( x, y );
 
 	SetSize( IO_PANEL_WIDTH, 140 );

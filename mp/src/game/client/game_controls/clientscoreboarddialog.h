@@ -52,7 +52,7 @@ public:
 #ifdef CSS_PERF_TEST
 		return false;
 #endif
-		return IsPC(); 
+		return true; 
 	}
 
 	// both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui

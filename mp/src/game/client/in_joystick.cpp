@@ -126,7 +126,7 @@ extern ConVar thirdperson_screenspace;
 //-----------------------------------------------------------------
 bool CInput::EnableJoystickMode()
 {
-	return IsConsole() || in_joystick.GetBool();
+	return in_joystick.GetBool();
 }
 
 
@@ -456,12 +456,6 @@ void CInput::Joystick_Advanced(void)
 	int	i;
 	DWORD dwTemp;
 
-	if ( IsX360() )
-	{
-		// Xbox always uses a joystick
-		in_joystick.SetValue( 1 );
-	}
-
 	// Initialize all the maps
 	for ( i = 0; i < MAX_JOYSTICK_AXES; i++ )
 	{
@@ -612,21 +606,14 @@ float CInput::ScaleAxisValue( const float axisValue, const float axisThreshold )
 	// has a (potentially) unique threshold value.  If all axes were restricted to a single threshold
 	// as they are on the Xbox, this function could move to inputsystem and be slightly more optimal.
 	float result = 0.f;
-	if ( IsPC() )
+
+	if ( axisValue < -axisThreshold )
 	{
-		if ( axisValue < -axisThreshold )
-		{
-			result = ( axisValue + axisThreshold ) / ( MAX_BUTTONSAMPLE - axisThreshold );
-		}
-		else if ( axisValue > axisThreshold )
-		{
-			result = ( axisValue - axisThreshold ) / ( MAX_BUTTONSAMPLE - axisThreshold );
-		}
+		result = ( axisValue + axisThreshold ) / ( MAX_BUTTONSAMPLE - axisThreshold );
 	}
-	else
+	else if ( axisValue > axisThreshold )
 	{
-		// IsXbox
-		result =  axisValue * ( 1.f / MAX_BUTTONSAMPLE );
+		result = ( axisValue - axisThreshold ) / ( MAX_BUTTONSAMPLE - axisThreshold );
 	}
 
 	return result;
@@ -849,7 +836,7 @@ void CInput::JoyStickMove( float frametime, CUserCmd *cmd )
 	cmd->mousedx = angle;
 
 	// apply look control
-	if ( IsX360() || in_jlook.state & 1 )
+	if ( in_jlook.state & 1 )
 	{
 		if ( JOY_ABSOLUTE_AXIS == gameAxes[GAME_AXIS_PITCH].controlType )
 		{
@@ -890,17 +877,14 @@ void CInput::JoyStickMove( float frametime, CUserCmd *cmd )
 		cmd->sidemove += joySideMove;
 	}
 
-	if ( IsPC() )
+	CCommand tmp;
+	if ( FloatMakePositive(joyForwardMove) >= joy_autosprint.GetFloat() || FloatMakePositive(joySideMove) >= joy_autosprint.GetFloat() )
 	{
-		CCommand tmp;
-		if ( FloatMakePositive(joyForwardMove) >= joy_autosprint.GetFloat() || FloatMakePositive(joySideMove) >= joy_autosprint.GetFloat() )
-		{
-			KeyDown( &in_joyspeed, NULL );
-		}
-		else
-		{
-			KeyUp( &in_joyspeed, NULL );
-		}
+		KeyDown( &in_joyspeed, NULL );
+	}
+	else
+	{
+		KeyUp( &in_joyspeed, NULL );
 	}
 
 	// Bound pitch
