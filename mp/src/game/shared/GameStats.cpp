@@ -23,10 +23,6 @@
 #include "vehicle_base.h"
 #endif 
 
-#if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#endif
-
 #ifdef CLIENT_DLL
 #include "materialsystem/materialsystem_config.h"
 #include "vgui_int.h"

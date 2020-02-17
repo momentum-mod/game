@@ -1042,9 +1042,7 @@ bool CBaseCombatWeapon::SendWeaponAnim( int iActivity )
 #ifdef CLIENT_DLL
 	if ( prediction->InPrediction() && prediction->IsFirstTimePredicted() )
 #endif
-#ifndef _X360
 		HapticSendWeaponAnim(this,iActivity);
-#endif
 #endif
 	//For now, just set the ideal activity and be done with it
 	return SetIdealActivity( (Activity) iActivity );

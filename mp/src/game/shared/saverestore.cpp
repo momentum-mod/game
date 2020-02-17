@@ -824,18 +824,6 @@ int CSave::WriteFields( const char *pname, const void *pBaseData, datamap_t *pRo
 
 	count = 0;
 
-#ifdef _X360
-	__dcbt( 0, pBaseData );
-	__dcbt( 128, pBaseData );
-	__dcbt( 256, pBaseData );
-	__dcbt( 512, pBaseData );
-	void *pDest = m_pData->AccessCurPos();	
-	__dcbt( 0, pDest );
-	__dcbt( 128, pDest );
-	__dcbt( 256, pDest );
-	__dcbt( 512, pDest );
-#endif
-
 	for ( int i = 0; i < fieldCount; i++ )
 	{
 		pTest = &pFields[ i ];

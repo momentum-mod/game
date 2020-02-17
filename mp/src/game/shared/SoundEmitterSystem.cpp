@@ -45,10 +45,6 @@ static ConVar sv_snd_filter( "sv_snd_filter", "", FCVAR_REPLICATED, "Filters out
 extern ISoundEmitterSystemBase *soundemitterbase;
 static ConVar *g_pClosecaption = NULL;
 
-#ifdef _XBOX
-int LookupStringFromCloseCaptionToken( char const *token );
-const wchar_t *GetStringForIndex( int index );
-#endif
 static bool g_bPermitDirectSoundPrecache = false;
 
 #if !defined( CLIENT_DLL )
@@ -551,7 +547,7 @@ public:
 		{
 			EmitCloseCaption( filter, entindex, params, ep );
 		}
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 		// NVNT notify the haptics system of this sound
 		HapticProcessSound(ep.m_pSoundName, entindex);
 #endif
@@ -1028,8 +1024,6 @@ CON_COMMAND_F( sv_soundemitter_flush, "Flushes the sounds.txt system (server onl
 
 #if !defined( CLIENT_DLL ) 
 
-#if !defined( _XBOX )
-
 CON_COMMAND_F( sv_soundemitter_filecheck, "Report missing wave files for sounds and game_sounds files.", FCVAR_DEVELOPMENTONLY )
 {
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
@@ -1078,7 +1072,6 @@ CON_COMMAND_F( sv_findsoundname, "Find sound names which reference the specified
 		}
 	}
 }
-#endif // !_XBOX
 
 #else
 void Playgamesound_f( const CCommand &args )
