@@ -37,33 +37,33 @@ MAKE_TOGGLE_CONVAR(cl_crosshair_dynamic_fire, "1", FCVAR_ARCHIVE, "Toggle dynami
 MAKE_TOGGLE_CONVAR(cl_crosshair_dynamic_move, "1", FCVAR_ARCHIVE, "Toggle dynamic crosshair behaviour with player movement. 0 = OFF, 1 = ON\n");
 
 ConVar cl_crosshair_file("cl_crosshair_file", "crosshair_custom", FCVAR_ARCHIVE,
-    "Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshair_style 1.\n");
+    "Set the name of the custom VTF texture defined in scripts/hud_textures.txt to be used as a crosshair. Takes effect on cl_crosshair_style 3.\n");
 
 ConVar cl_crosshair_gap("cl_crosshair_gap", "4", FCVAR_ARCHIVE,
-    "Set the minimum distance between two crosshair lines. Takes effect on cl_crosshair_style 1/2.\n", true, 0, false, 0); //could add cvar to split into horizontal and vertical
+    "Set the minimum distance between two crosshair lines. Takes effect on cl_crosshair_style 2/3.\n", true, 0, false, 0); //could add cvar to split into horizontal and vertical
 
 MAKE_TOGGLE_CONVAR(cl_crosshair_gap_use_weapon_value, "1", FCVAR_ARCHIVE, "Toggle using defined crosshair distances per weapon. 0 = OFF, 1 = ON\n");
 
-MAKE_TOGGLE_CONVAR(cl_crosshair_outline_enable, "0", FCVAR_ARCHIVE, "Toggle using a black outline around the crosshair. Takes effect on cl_crosshair_style 0/1. 0 = OFF, 1 = ON\n");
+MAKE_TOGGLE_CONVAR(cl_crosshair_outline_enable, "0", FCVAR_ARCHIVE, "Toggle using a black outline around the crosshair. Takes effect on cl_crosshair_style 1/2. 0 = OFF, 1 = ON\n");
 
 ConVar cl_crosshair_outline_thickness("cl_crosshair_outline_thickness", "1", FCVAR_ARCHIVE,
     "Set the thickness of the crosshair's outline. Takes effect on cl_crosshair_outline_enable 1.\n", true, 0, false, 0);
 
 ConVar cl_crosshair_scale("cl_crosshair_scale", "0", FCVAR_ARCHIVE,
-    "Set the resolution to scale the crosshair to. Takes effect on cl_crosshair_style 0.\n", true, 0, false, 0);
+    "Set the resolution to scale the crosshair to. Takes effect on cl_crosshair_style 1.\n", true, 0, false, 0);
 
-MAKE_TOGGLE_CONVAR(cl_crosshair_scale_enable, "1", FCVAR_ARCHIVE, "Toggle scaling the crosshair to the resolution. Takes effect on cl_crosshair_style 0. 0 = OFF, 1 = ON\n");
+MAKE_TOGGLE_CONVAR(cl_crosshair_scale_enable, "1", FCVAR_ARCHIVE, "Toggle scaling the crosshair to the resolution. Takes effect on cl_crosshair_style 1. 0 = OFF, 1 = ON\n");
 
 ConVar cl_crosshair_size("cl_crosshair_size", "15", FCVAR_ARCHIVE,
-    "Set the length of a crosshair line. Takes effect on cl_crosshair_style 1/2.\n", true, 0, false, 0);
+    "Set the length of a crosshair line. Takes effect on cl_crosshair_style 2/3.\n", true, 0, false, 0);
 
 ConVar cl_crosshair_style("cl_crosshair_style", "0", FCVAR_ARCHIVE,
-    "Set crosshair style. 0 = CS:S, 1 = User CVars, 2 = Custom VTF\n", true, 0, true, 2);
+    "Set crosshair style. 0 = Dots, 1 = CS:S, 2 = User CVars, 3 = Custom VTF\n", true, 0, true, 3);
 
 MAKE_TOGGLE_CONVAR(cl_crosshair_t, "0", FCVAR_ARCHIVE, "Toggle T style crosshair. 0 = OFF, 1 = ON\n");
 
 ConVar cl_crosshair_thickness("cl_crosshair_thickness", "1", FCVAR_ARCHIVE,
-    "Set the thickness of a crosshair line. Takes effect on cl_crosshair_style 1.\n", true, 0, false, 0);
+    "Set the thickness of a crosshair line. Takes effect on cl_crosshair_style 2.\n", true, 0, false, 0);
 
 using namespace vgui;
 
@@ -211,7 +211,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
         iDistance = 10;
         iDeltaDistance = 5;
     }
-    if (cl_crosshair_style.GetInt() != 0 && !cl_crosshair_gap_use_weapon_value.GetBool())
+    if (cl_crosshair_style.GetInt() > 1 && !cl_crosshair_gap_use_weapon_value.GetBool())
     {
         iDeltaDistance *= cl_crosshair_gap.GetInt() / iDistance; //scale delta to weapon's delta, could be a cvar
         iDistance = cl_crosshair_gap.GetInt();
@@ -232,7 +232,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
     {
         if (cl_crosshair_dynamic_fire.GetBool() && pPlayer->m_iShotsFired > weaponBase->m_iAmmoLastCheck) // shots firing
         {
-            if (cl_crosshair_style.GetInt() == 0 || cl_crosshair_gap_use_weapon_value.GetBool())
+            if (cl_crosshair_style.GetInt() == 1 || cl_crosshair_gap_use_weapon_value.GetBool())
                 weaponBase->m_flCrosshairDistance = min(15, weaponBase->m_flCrosshairDistance + iDeltaDistance); // min of 15 (default crosshair size at 1080p) [but this is gap. not size] or (current distance) + delta
             else
                 weaponBase->m_flCrosshairDistance = min(iDistance * 1.6, weaponBase->m_flCrosshairDistance + iDeltaDistance); //scale growth to crosshair gap, could be a cvar (1.6 is arbitrary)
@@ -273,7 +273,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
         if (weaponBase)
             iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
         else
-            iCrosshairDistance = 20;
+            iCrosshairDistance = 20; //find a sane value
         iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
         iBarSize = max(1, (int)((float)iBarSize * scale));
         iBarThickness = max(1, (int)floor(scale + 0.5f)); //thickness of 1 (or odd) causes off-center crosshairs
@@ -285,7 +285,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
         if (weaponBase)
             iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
         else
-            iCrosshairDistance = 5;
+            iCrosshairDistance = 5; //find a sane value
         iBarSize = cl_crosshair_size.GetInt();
         iBarThickness = cl_crosshair_thickness.GetInt(); //thickness of 1 (or odd) causes off-center crosshairs
     }
@@ -326,7 +326,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
         m_pCrosshair->DrawSelfCropped(iX - (iWidth / 2), iY - (iHeight / 2), 0, 0, iTextureW, iTextureH, iWidth,
                                       iHeight, clr);
     }
-    else if (cl_crosshair_style.GetInt() != 2)
+    else if (cl_crosshair_style.GetInt() != 3)
     {
         CHudTexture *pCrosshairTexture = gHUD.GetIcon("whiteAdditive");
 
