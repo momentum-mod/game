@@ -1130,14 +1130,6 @@ void Panel::PaintTraverse( bool repaint, bool allowForce )
 	float oldAlphaMultiplier = surface()->DrawGetAlphaMultiplier();
 	float newAlphaMultiplier = oldAlphaMultiplier * m_flAlpha * 1.0f/255.0f;
 
-	if ( IsXbox() && !newAlphaMultiplier )
-	{
-		// xbox optimization not suitable for pc
-		// xbox panels are compliant and can early out and not traverse their children
-		// when they have no opacity
-		return;
-	}
-
 	if ( !repaint &&
 		 allowForce &&
 		 _flags.IsFlagSet( NEEDS_REPAINT ) )

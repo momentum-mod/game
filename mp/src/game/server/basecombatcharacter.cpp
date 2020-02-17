@@ -322,7 +322,7 @@ public:
 };
 
 static CUtlRBTree<VisibilityCacheEntry_t, unsigned short, CVisibilityCacheEntryLess> g_VisibilityCache;
-const float VIS_CACHE_ENTRY_LIFE = ( !IsXbox() ) ? .090 : .500;
+const float VIS_CACHE_ENTRY_LIFE = .090;
 
 bool CBaseCombatCharacter::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **ppBlocker )
 {
@@ -1910,11 +1910,6 @@ void CBaseCombatCharacter::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector
 		if ( pWeapon->UsesClipsForAmmo2() )
 		{
 			pWeapon->m_iClip2 = pWeapon->GetDefaultClip2();
-		}
-
-		if ( IsXbox() )
-		{
-			pWeapon->AddEffects( EF_ITEM_BLINK );
 		}
 	}
 

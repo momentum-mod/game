@@ -1618,14 +1618,11 @@ bool CSceneEntity::GetSoundNameForPlayer( CChoreoEvent *event, CBasePlayer *play
 	CopySoundNameWithModifierToken( buf, event->GetParameters(), buflen, pchToken );
 
 	bool usingEnglish = true;
-	if ( !IsXbox() )
-	{
-		char const *cvarvalue = engine->GetClientConVarValue( player->entindex(), "english" );
-		if ( cvarvalue && *cvarvalue && Q_atoi( cvarvalue ) != 1 )
-		{
-			usingEnglish = false;
-		}
 
+	char const *cvarvalue = engine->GetClientConVarValue( player->entindex(), "english" );
+	if ( cvarvalue && *cvarvalue && Q_atoi( cvarvalue ) != 1 )
+	{
+		usingEnglish = false;
 	}
 
 	// This makes it like they are running in another language
