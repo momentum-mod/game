@@ -18,7 +18,6 @@
 #else
 
 	#include "player.h"
-	#include "teamplay_gamerules.h"
 	#include "game.h"
 	#include "entitylist.h"
 	#include "basecombatweapon.h"
