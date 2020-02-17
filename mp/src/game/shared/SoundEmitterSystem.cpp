@@ -59,11 +59,6 @@ void ClearModelSoundsCache();
 
 void WaveTrace( char const *wavname, char const *funcname )
 {
-	if ( IsX360() && !IsDebug() )
-	{
-		return;
-	}
-
 	static CUtlSymbolTable s_WaveTrace;
 
 	// Make sure we only show the message once
@@ -1499,7 +1494,7 @@ void CBaseEntity::EmitCloseCaption( IRecipientFilter& filter, int entindex, char
 //-----------------------------------------------------------------------------
 bool CBaseEntity::PrecacheSound( const char *name )
 {
-	if ( IsPC() && !g_bPermitDirectSoundPrecache )
+	if ( !g_bPermitDirectSoundPrecache )
 	{
 		Warning( "Direct precache of %s\n", name );
 	}
