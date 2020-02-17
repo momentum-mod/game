@@ -551,11 +551,6 @@ float WaterFog( const float3 worldPos, const float3 projPos )
 
 float CalcFog( const float3 worldPos, const float3 projPos, const int fogType )
 {
-#if defined( _X360 )
-	// 360 only does pixel fog
-	return 1.0f;
-#endif
-
 	if( fogType == FOGTYPE_RANGE )
 	{
 		return RangeFog( projPos );
@@ -573,11 +568,6 @@ float CalcFog( const float3 worldPos, const float3 projPos, const int fogType )
 
 float CalcFog( const float3 worldPos, const float3 projPos, const bool bWaterFog )
 {
-#if defined( _X360 )
-	// 360 only does pixel fog
-	return 1.0f;
-#endif
-
 	float flFog;
 	if( !bWaterFog )
 	{
@@ -618,33 +608,23 @@ void SkinPosition( bool bSkinning, const float4 modelPos,
                    const float4 boneWeights, float4 fBoneIndices,
 				   out float3 worldPos )
 {
-#if !defined( _X360 )
 	int3 boneIndices = D3DCOLORtoUBYTE4( fBoneIndices );
-#else
-	int3 boneIndices = fBoneIndices;
-#endif
+ 
+	if ( !bSkinning )
+	{
+		worldPos = mul4x3( modelPos, cModel[0] );
+	}
+	else // skinning - always three bones
+	{
+		float4x3 mat1 = cModel[boneIndices[0]];
+		float4x3 mat2 = cModel[boneIndices[1]];
+		float4x3 mat3 = cModel[boneIndices[2]];
 
-	// Needed for invariance issues caused by multipass rendering
-#if defined( _X360 )
-	[isolate] 
-#endif
-	{ 
-		if ( !bSkinning )
-		{
-			worldPos = mul4x3( modelPos, cModel[0] );
-		}
-		else // skinning - always three bones
-		{
-			float4x3 mat1 = cModel[boneIndices[0]];
-			float4x3 mat2 = cModel[boneIndices[1]];
-			float4x3 mat3 = cModel[boneIndices[2]];
+		float3 weights = DecompressBoneWeights( boneWeights ).xyz;
+		weights[2] = 1 - (weights[0] + weights[1]);
 
-			float3 weights = DecompressBoneWeights( boneWeights ).xyz;
-			weights[2] = 1 - (weights[0] + weights[1]);
-
-			float4x3 blendMatrix = mat1 * weights[0] + mat2 * weights[1] + mat3 * weights[2];
-			worldPos = mul4x3( modelPos, blendMatrix );
-		}
+		float4x3 blendMatrix = mat1 * weights[0] + mat2 * weights[1] + mat3 * weights[2];
+		worldPos = mul4x3( modelPos, blendMatrix );
 	}
 }
 
@@ -652,38 +632,26 @@ void SkinPositionAndNormal( bool bSkinning, const float4 modelPos, const float3 
                             const float4 boneWeights, float4 fBoneIndices,
 						    out float3 worldPos, out float3 worldNormal )
 {
-	// Needed for invariance issues caused by multipass rendering
-#if defined( _X360 )
-	[isolate] 
-#endif
-	{ 
+	int3 boneIndices = D3DCOLORtoUBYTE4( fBoneIndices );
 
-#if !defined( _X360 )
-		int3 boneIndices = D3DCOLORtoUBYTE4( fBoneIndices );
-#else
-		int3 boneIndices = fBoneIndices;
-#endif
+	if ( !bSkinning )
+	{
+		worldPos = mul4x3( modelPos, cModel[0] );
+		worldNormal = mul3x3( modelNormal, ( const float3x3 )cModel[0] );
+	}
+	else // skinning - always three bones
+	{
+		float4x3 mat1 = cModel[boneIndices[0]];
+		float4x3 mat2 = cModel[boneIndices[1]];
+		float4x3 mat3 = cModel[boneIndices[2]];
 
-		if ( !bSkinning )
-		{
-			worldPos = mul4x3( modelPos, cModel[0] );
-			worldNormal = mul3x3( modelNormal, ( const float3x3 )cModel[0] );
-		}
-		else // skinning - always three bones
-		{
-			float4x3 mat1 = cModel[boneIndices[0]];
-			float4x3 mat2 = cModel[boneIndices[1]];
-			float4x3 mat3 = cModel[boneIndices[2]];
+		float3 weights = DecompressBoneWeights( boneWeights ).xyz;
+		weights[2] = 1 - (weights[0] + weights[1]);
 
-			float3 weights = DecompressBoneWeights( boneWeights ).xyz;
-			weights[2] = 1 - (weights[0] + weights[1]);
-
-			float4x3 blendMatrix = mat1 * weights[0] + mat2 * weights[1] + mat3 * weights[2];
-			worldPos = mul4x3( modelPos, blendMatrix );
-			worldNormal = mul3x3( modelNormal, ( float3x3 )blendMatrix );
-		}
-
-	} // end [isolate]
+		float4x3 blendMatrix = mat1 * weights[0] + mat2 * weights[1] + mat3 * weights[2];
+		worldPos = mul4x3( modelPos, blendMatrix );
+		worldNormal = mul3x3( modelNormal, ( float3x3 )blendMatrix );
+	}
 }
 
 // Is it worth keeping SkinPosition and SkinPositionAndNormal around since the optimizer
@@ -696,39 +664,29 @@ void SkinPositionNormalAndTangentSpace(
 						    out float3 worldPos, out float3 worldNormal, 
 							out float3 worldTangentS, out float3 worldTangentT )
 {
-#if !defined( _X360 )
 	int3 boneIndices = D3DCOLORtoUBYTE4( fBoneIndices );
-#else
-	int3 boneIndices = fBoneIndices;
-#endif
-
-	// Needed for invariance issues caused by multipass rendering
-#if defined( _X360 )
-	[isolate] 
-#endif
-	{ 
-		if ( !bSkinning )
-		{
-			worldPos = mul4x3( modelPos, cModel[0] );
-			worldNormal = mul3x3( modelNormal, ( const float3x3 )cModel[0] );
-			worldTangentS = mul3x3( ( float3 )modelTangentS, ( const float3x3 )cModel[0] );
-		}
-		else // skinning - always three bones
-		{
-			float4x3 mat1 = cModel[boneIndices[0]];
-			float4x3 mat2 = cModel[boneIndices[1]];
-			float4x3 mat3 = cModel[boneIndices[2]];
-
-			float3 weights = DecompressBoneWeights( boneWeights ).xyz;
-			weights[2] = 1 - (weights[0] + weights[1]);
-
-			float4x3 blendMatrix = mat1 * weights[0] + mat2 * weights[1] + mat3 * weights[2];
-			worldPos = mul4x3( modelPos, blendMatrix );
-			worldNormal = mul3x3( modelNormal, ( const float3x3 )blendMatrix );
-			worldTangentS = mul3x3( ( float3 )modelTangentS, ( const float3x3 )blendMatrix );
-		}
-		worldTangentT = cross( worldNormal, worldTangentS ) * modelTangentS.w;
+ 
+	if ( !bSkinning )
+	{
+		worldPos = mul4x3( modelPos, cModel[0] );
+		worldNormal = mul3x3( modelNormal, ( const float3x3 )cModel[0] );
+		worldTangentS = mul3x3( ( float3 )modelTangentS, ( const float3x3 )cModel[0] );
 	}
+	else // skinning - always three bones
+	{
+		float4x3 mat1 = cModel[boneIndices[0]];
+		float4x3 mat2 = cModel[boneIndices[1]];
+		float4x3 mat3 = cModel[boneIndices[2]];
+
+		float3 weights = DecompressBoneWeights( boneWeights ).xyz;
+		weights[2] = 1 - (weights[0] + weights[1]);
+
+		float4x3 blendMatrix = mat1 * weights[0] + mat2 * weights[1] + mat3 * weights[2];
+		worldPos = mul4x3( modelPos, blendMatrix );
+		worldNormal = mul3x3( modelNormal, ( const float3x3 )blendMatrix );
+		worldTangentS = mul3x3( ( float3 )modelTangentS, ( const float3x3 )blendMatrix );
+	}
+	worldTangentT = cross( worldNormal, worldTangentS ) * modelTangentS.w;
 }
 
 
@@ -766,19 +724,7 @@ float VertexAttenInternal( const float3 worldPos, int lightNum )
 	lightDir *= ooLightDist;
 
 	float3 vDist;
-#	if defined( _X360 )
-	{
-		//X360 dynamic compile hits an internal compiler error using dst(), this is the breakdown of how dst() works from the 360 docs.
-		vDist.x = 1;
-		vDist.y = lightDistSquared * ooLightDist;
-		vDist.z = lightDistSquared;
-		//flDist.w = ooLightDist;
-	}
-#	else
-	{
-		vDist = dst( lightDistSquared, ooLightDist );
-	}
-#	endif
+	vDist = dst( lightDistSquared, ooLightDist );
 
 	float flDistanceAtten = 1.0f / dot( cLightInfo[lightNum].atten.xyz, vDist );
 
@@ -858,11 +804,7 @@ float3 DoLighting( const float3 worldPos, const float3 worldNormal,
 	if( bStaticLight )			// Static light
 	{
 		float3 col = staticLightingColor * cOverbright;
-#if defined ( _X360 )
-		linearColor += col * col;
-#else
 		linearColor += GammaToLinear( col );
-#endif
 	}
 
 	if( bDynamicLight )			// Dynamic light

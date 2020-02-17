@@ -71,7 +71,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;	
-#if !defined( _X360 )    && !defined(SHADER_MODEL_VS_3_0)
+#if !defined(SHADER_MODEL_VS_3_0)
 	float  fog						: FOG;
 #endif
 
@@ -91,7 +91,7 @@ struct VS_OUTPUT
 	float4 lightmapTexCoord3		: TEXCOORD3;			// and basetexcoord*mask_scale
 	float4 worldPos_projPosZ		: TEXCOORD4;
 
-#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 )
+#if TANGENTSPACE || (LIGHTING_PREVIEW)
 #if CASCADED_SHADOW
 	float4 tangentSpaceTranspose_Row0	: TEXCOORD5;
 	float4 tangentSpaceTranspose_Row1	: TEXCOORD6;
@@ -132,33 +132,18 @@ VS_OUTPUT main( const VS_INPUT v )
 	
 	float3 worldNormal = mul( vObjNormal, ( float3x3 )cModel[0] );
 	
-#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 )
+#if TANGENTSPACE || (LIGHTING_PREVIEW)
 	float3 worldTangentS = mul( v.vTangentS, ( const float3x3 )cModel[0] );
 	float3 worldTangentT = mul( v.vTangentT, ( const float3x3 )cModel[0] );
 
-	#if SEAMLESS && BUMPMAP && defined( _X360 )
-		float3 n = normalize( worldNormal );
-		float3 n2 = n * n;           // sums to 1.
-
-		#if CASCADED_SHADOW
-			o.tangentSpaceTranspose_Row0.xyz = normalize( float3( n2.y + n2.z, 0.0f, n2.x ) );
-			o.tangentSpaceTranspose_Row1.xyz = normalize( float3( 0.0f, n2.x + n2.z, n2.y ) );
-			o.tangentSpaceTranspose_Row2.xyz = worldNormal;
-		#else
-			o.tangentSpaceTranspose[0] = normalize( float3( n2.y + n2.z, 0.0f, n2.x ) );
-			o.tangentSpaceTranspose[1] = normalize( float3( 0.0f, n2.x + n2.z, n2.y ) );
-			o.tangentSpaceTranspose[2] = worldNormal;
-		#endif
+	#if CASCADED_SHADOW
+		o.tangentSpaceTranspose_Row0.xyz = worldTangentS;
+		o.tangentSpaceTranspose_Row1.xyz = worldTangentT;
+		o.tangentSpaceTranspose_Row2.xyz = worldNormal;
 	#else
-		#if CASCADED_SHADOW
-			o.tangentSpaceTranspose_Row0.xyz = worldTangentS;
-			o.tangentSpaceTranspose_Row1.xyz = worldTangentT;
-			o.tangentSpaceTranspose_Row2.xyz = worldNormal;
-		#else
-			o.tangentSpaceTranspose[0] = worldTangentS;
-			o.tangentSpaceTranspose[1] = worldTangentT;
-			o.tangentSpaceTranspose[2] = worldNormal;
-		#endif
+		o.tangentSpaceTranspose[0] = worldTangentS;
+		o.tangentSpaceTranspose[1] = worldTangentT;
+		o.tangentSpaceTranspose[2] = worldNormal;
 	#endif
 	#if CASCADED_SHADOW
 		o.tangentSpaceTranspose_Row0.w = projPos.x;
@@ -242,7 +227,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	}
 #endif
 
-#if !defined( _X360 ) && !defined(SHADER_MODEL_VS_3_0)
+#if !defined(SHADER_MODEL_VS_3_0)
 	o.fog = CalcFog( worldPos, projPos, g_FogType );
 #endif
 

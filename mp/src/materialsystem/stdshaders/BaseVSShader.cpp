@@ -857,7 +857,6 @@ const char *CBaseVSShader::UnlitGeneric_ComputePixelShaderName( bool bMask,
 //-----------------------------------------------------------------------------
 void CBaseVSShader::SetHWMorphVertexShaderState( int nDimConst, int nSubrectConst, VertexTextureSampler_t morphSampler )
 {
-#ifndef _X360
 	if ( !s_pShaderAPI->IsHWMorphingEnabled() )
 		return;
 
@@ -876,7 +875,6 @@ void CBaseVSShader::SetHWMorphVertexShaderState( int nDimConst, int nSubrectCons
 	s_pShaderAPI->SetVertexShaderConstant( nSubrectConst, pMorphAccumSubrect );
 
 	s_pShaderAPI->BindStandardVertexTexture( morphSampler, TEXTURE_MORPH_ACCUMULATOR );
-#endif
 }
 
 
