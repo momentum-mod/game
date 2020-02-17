@@ -647,7 +647,7 @@ bool KeyValues::LoadFromFile( IBaseFileSystem *filesystem, const char *resourceN
 {
 	Assert(filesystem);
 #ifdef WIN32
-	Assert( IsX360() || ( IsPC() && _heapchk() == _HEAPOK ) );
+	Assert( _heapchk() == _HEAPOK );
 #endif
 
 #ifdef STAGING_ONLY

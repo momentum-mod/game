@@ -2284,10 +2284,6 @@ bool V_MakeRelativePath( const char *pFullPath, const char *pDirectory, char *pR
 bool V_IsAbsolutePath( const char *pStr )
 {
 	bool bIsAbsolute = ( pStr[0] && pStr[1] == ':' ) || pStr[0] == '/' || pStr[0] == '\\';
-	if ( IsX360() && !bIsAbsolute )
-	{
-		bIsAbsolute = ( V_stristr( pStr, ":" ) != NULL );
-	}
 	return bIsAbsolute;
 }
 
