@@ -68,18 +68,8 @@ enum VertexCompressionType_t
 // use DEFCONFIGMETHOD to define time-critical methods that we want to make just return constants
 // on the 360, so that the checks will happen at compile time. Not all methods are defined this way
 // - just the ones that I perceive as being called often in the frame interval.
-#ifdef _X360
-#define DEFCONFIGMETHOD( ret_type, method, xbox_return_value )		\
-FORCEINLINE ret_type method const 									\
-{																	\
-	return xbox_return_value;										\
-}
-
-
-#else
 #define DEFCONFIGMETHOD( ret_type, method, xbox_return_value )	\
 virtual ret_type method const = 0;
-#endif
 
 
 

@@ -98,10 +98,6 @@ public:
 	// A little hacky, owing to the fact the engine is loaded
 	// well after ICVar, so we can't use the standard connect pattern
 	virtual void			InstallCVarQuery( ICvarQuery *pQuery ) = 0;
-
-#if defined( _X360 )
-	virtual void			PublishToVXConsole( ) = 0;
-#endif
 	virtual bool			IsMaterialThreadSetAllowed( ) const = 0;
 	virtual void			QueueMaterialThreadSetValue( ConVar *pConVar, const char *pValue ) = 0;
 	virtual void			QueueMaterialThreadSetValue( ConVar *pConVar, int nValue ) = 0;
