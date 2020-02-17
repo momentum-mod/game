@@ -75,11 +75,8 @@ extern	CUtlVector<byte> *pdlightdata;
 extern	CUtlVector<char> dentdata;
 
 extern	int			    numleafs;
-#if !defined( _X360 )
 extern	dleaf_t			dleafs[MAX_MAP_LEAFS];
-#else
-extern	dleaf_t			*dleafs;
-#endif
+
 extern	CUtlVector<dleafambientlighting_t> *g_pLeafAmbientLighting;
 extern	CUtlVector<dleafambientindex_t> *g_pLeafAmbientIndex;
 extern	unsigned short  g_LeafMinDistToWater[MAX_MAP_LEAFS];
