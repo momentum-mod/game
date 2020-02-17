@@ -132,21 +132,6 @@ public:
 	void SetGrowSize( int size );
 
 protected:
-	void ValidateGrowSize()
-	{
-#ifdef _X360
-		if ( m_nGrowSize && m_nGrowSize != EXTERNAL_BUFFER_MARKER )
-		{
-			// Max grow size at 128 bytes on XBOX
-			const int MAX_GROW = 128;
-			if ( m_nGrowSize * sizeof(T) > MAX_GROW )
-			{
-				m_nGrowSize = max( 1, MAX_GROW / sizeof(T) );
-			}
-		}
-#endif
-	}
-
 	enum
 	{
 		EXTERNAL_BUFFER_MARKER = -1,
@@ -419,7 +404,6 @@ template< class T, class I >
 CUtlMemory<T,I>::CUtlMemory( int nGrowSize, int nInitAllocationCount ) : m_pMemory(0), 
 	m_nAllocationCount( nInitAllocationCount ), m_nGrowSize( nGrowSize )
 {
-	ValidateGrowSize();
 	Assert( nGrowSize >= 0 );
 	if (m_nAllocationCount)
 	{
@@ -471,7 +455,6 @@ void CUtlMemory<T,I>::Init( int nGrowSize /*= 0*/, int nInitSize /*= 0*/ )
 
 	m_nGrowSize = nGrowSize;
 	m_nAllocationCount = nInitSize;
-	ValidateGrowSize();
 	Assert( nGrowSize >= 0 );
 	if (m_nAllocationCount)
 	{
@@ -625,7 +608,6 @@ void CUtlMemory<T,I>::SetGrowSize( int nSize )
 	Assert( !IsExternallyAllocated() );
 	Assert( nSize >= 0 );
 	m_nGrowSize = nSize;
-	ValidateGrowSize();
 }
 
 
@@ -693,15 +675,7 @@ inline int UtlMemory_CalcNewAllocationCount( int nAllocationCount, int nGrowSize
 
 		while (nAllocationCount < nNewSize)
 		{
-#ifndef _X360
 			nAllocationCount *= 2;
-#else
-			int nNewAllocationCount = ( nAllocationCount * 9) / 8; // 12.5 %
-			if ( nNewAllocationCount > nAllocationCount )
-				nAllocationCount = nNewAllocationCount;
-			else
-				nAllocationCount *= 2;
-#endif
 		}
 	}
 
@@ -927,7 +901,6 @@ CUtlMemoryAligned<T, nAlignment>::CUtlMemoryAligned( int nGrowSize, int nInitAll
 	CUtlMemory<T>::m_pMemory = 0; 
 	CUtlMemory<T>::m_nAllocationCount = nInitAllocationCount;
 	CUtlMemory<T>::m_nGrowSize = nGrowSize;
-	this->ValidateGrowSize();
 
 	// Alignment must be a power of two
 	COMPILE_TIME_ASSERT( (nAlignment & (nAlignment-1)) == 0 );

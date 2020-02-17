@@ -210,35 +210,12 @@ private:
 	template<typename T> static void LowLevelByteSwap( T *output, T *input )
 	{
 		T temp = *output;
-#if defined( _X360 )
-		// Intrinsics need the source type to be fixed-point
-		DWORD* word = (DWORD*)input;
-		switch( sizeof(T) )
-		{
-		case 8:
-			{
-			__storewordbytereverse( *word, 0, &temp );
-			__storewordbytereverse( *(word+1), 4, &temp );
-			}
-			break;
 
-		case 4:
-			__storewordbytereverse( *word, 0, &temp );
-			break;
-
-		case 2:
-			__storeshortbytereverse( *input, 0, &temp );
-			break;
-
-		default:
-			Assert( "Invalid size in CByteswap::LowLevelByteSwap" && 0 );
-		}
-#else
 		for( int i = 0; i < sizeof(T); i++ )
 		{
 			((unsigned char* )&temp)[i] = ((unsigned char*)input)[sizeof(T)-(i+1)]; 
 		}
-#endif
+
 		Q_memcpy( output, &temp, sizeof(T) );
 	}
 

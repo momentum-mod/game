@@ -6,7 +6,7 @@
 //
 //=============================================================================//
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined( _WIN32 )
 #include <windows.h>		// for WideCharToMultiByte and MultiByteToWideChar
 #elif defined(POSIX)
 #include <wchar.h> // wcslen()
