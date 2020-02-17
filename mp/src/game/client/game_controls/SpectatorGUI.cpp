@@ -43,9 +43,7 @@ void AddSubKeyNamed( KeyValues *pKeys, const char *pszName );
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifndef _XBOX
 extern IGameUIFuncs *gameuifuncs; // for key binding details
-#endif
 
 // void DuckMessage(const char *str); // from vgui_teamfortressviewport.cpp
 

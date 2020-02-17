@@ -1056,14 +1056,11 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 
 	C_BaseAnimating::InitBoneSetupThreadPool();
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 	// NVNT connect haptics sytem
 	ConnectHaptics(appSystemFactory);
 #endif
-#ifndef _X360
 	HookHapticMessages(); // Always hook the messages
-#endif
-
 	return true;
 }
 
@@ -1159,7 +1156,7 @@ void CHLClient::Shutdown( void )
 
 	gameeventmanager = NULL;
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 	// NVNT Disconnect haptics system
 	DisconnectHaptics();
 #endif
@@ -1634,10 +1631,6 @@ void CHLClient::LevelShutdown( void )
 	g_pParticleSystemMgr->UncacheAllParticleSystems();
 #endif
 	UncacheAllMaterials();
-
-#ifdef _XBOX
-	ReleaseRenderTargets();
-#endif
 
 	// string tables are cleared on disconnect from a server, so reset our global pointers to NULL
 	ResetStringTablePointers();

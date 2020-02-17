@@ -17,11 +17,7 @@
 
 
 #define NUM_PARTICLES_PER_BATCH 200
-#ifndef _XBOX
 #define MAX_TOTAL_PARTICLES		2048	// Max particles in the world
-#else
-#define MAX_TOTAL_PARTICLES		1024
-#endif
 
 
 //

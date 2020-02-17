@@ -150,7 +150,7 @@ void C_PropVehicleChoreoGeneric::PostDataUpdate( DataUpdateType_t updateType )
 	// NVNT if we have entered this vehicle notify the haptics system
 	if ( m_hPlayer && !m_hPrevPlayer )
 	{
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 		//They have just entered the vehicle.
 		HapticsEnteredVehicle(this,m_hPlayer);
 #endif
@@ -158,7 +158,7 @@ void C_PropVehicleChoreoGeneric::PostDataUpdate( DataUpdateType_t updateType )
 
 	if ( !m_hPlayer && m_hPrevPlayer )
 	{
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 		// NVNT we have just exited this vehicle so we notify the haptics system
 		HapticsExitedVehicle(this,m_hPrevPlayer);
 #endif

@@ -142,24 +142,14 @@ private:
 private:
 	enum
 	{
-
-#ifndef _XBOX
 		// default max # of particles at one time
 		DEFAULT_PARTICLES	= 2048,
-#else
-		DEFAULT_PARTICLES   = 1024,
-#endif
 
 		// no fewer than this no matter what's on the command line
 		MIN_PARTICLES		= 512,	
 
-#ifndef _XBOX
 		// Maximum length of the free list.
 		BEAM_FREELIST_MAX	= 32
-#else
-		BEAM_FREELIST_MAX   = 4
-#endif
-
 	};
 
 	Beam_t					*m_pActiveBeams;

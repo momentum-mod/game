@@ -2179,10 +2179,6 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 		DumpTGAofRenderTarget( w, h, "BackBuffer" );
 	}
 
-#if defined( _X360 )
-	pRenderContext->PushVertexShaderGPRAllocation( 16 ); //max out pixel shader threads
-#endif
-
 	if ( r_queued_post_processing.GetInt() )
 	{
 		ICallQueue *pCallQueue = pRenderContext->GetCallQueue();
@@ -2543,10 +2539,6 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 			break;
 		}
 	}
-
-#if defined( _X360 )
-	pRenderContext->PopVertexShaderGPRAllocation();
-#endif
 }
 
 // Motion Blur Material Proxy =========================================================================================

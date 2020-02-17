@@ -4,7 +4,7 @@
 //
 //===========================================================================//
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #elif defined( POSIX )
@@ -19,7 +19,7 @@
 #include "view.h"
 #include "mumble.h"
 
-#if !defined( _X360 ) && !defined( NO_STEAM )
+#if !defined( NO_STEAM )
 #include "steam/isteamuser.h"
 #include "steam/steam_api.h"
 #endif
@@ -86,7 +86,7 @@ void CMumbleSystem::LevelInitPostEntity()
 	if ( g_pMumbleMemory )
 		return;
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 	g_hMapObject = OpenFileMappingW( FILE_MAP_ALL_ACCESS, FALSE, L"MumbleLink" );
 	if ( g_hMapObject == NULL )
 		return;
@@ -121,7 +121,7 @@ void CMumbleSystem::LevelInitPostEntity()
 
 void CMumbleSystem::LevelShutdownPreEntity()
 {
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 	if ( g_hMapObject )
 	{
 		CloseHandle( g_hMapObject );
