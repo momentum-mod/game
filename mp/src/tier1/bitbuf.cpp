@@ -470,7 +470,7 @@ bool bf_write::WriteBits(const void *pInData, int nBits)
 		nBitsLeft -= 8;
 	}
 	
-	if ( IsPC() && (nBitsLeft >= 32) && (m_iCurBit & 7) == 0 )
+	if ( (nBitsLeft >= 32) && (m_iCurBit & 7) == 0 )
 	{
 		// current bit is byte aligned, do block copy
 		int numbytes = nBitsLeft >> 3; 
@@ -482,8 +482,7 @@ bool bf_write::WriteBits(const void *pInData, int nBits)
 		m_iCurBit += numbits;
 	}
 
-	// X360TBD: Can't write dwords in WriteBits because they'll get swapped
-	if ( IsPC() && nBitsLeft >= 32 )
+	if ( nBitsLeft >= 32 )
 	{
 		unsigned long iBitsRight = (m_iCurBit & 31);
 		unsigned long iBitsLeft = 32 - iBitsRight;
@@ -892,16 +891,12 @@ void bf_read::ReadBits(void *pOutData, int nBits)
 		nBitsLeft -= 8;
 	}
 
-	// X360TBD: Can't read dwords in ReadBits because they'll get swapped
-	if ( IsPC() )
+	// read dwords
+	while ( nBitsLeft >= 32 )
 	{
-		// read dwords
-		while ( nBitsLeft >= 32 )
-		{
-			*((unsigned long*)pOut) = ReadUBitLong(32);
-			pOut += sizeof(unsigned long);
-			nBitsLeft -= 32;
-		}
+		*((unsigned long*)pOut) = ReadUBitLong(32);
+		pOut += sizeof(unsigned long);
+		nBitsLeft -= 32;
 	}
 
 	// read remaining bytes

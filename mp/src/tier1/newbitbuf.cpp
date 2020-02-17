@@ -493,15 +493,12 @@ void CBitRead::ReadBits(void *pOutData, int nBits)
 	}
 
 	// X360TBD: Can't read dwords in ReadBits because they'll get swapped
-	if ( IsPC() )
+	// read dwords
+	while ( nBitsLeft >= 32 )
 	{
-		// read dwords
-		while ( nBitsLeft >= 32 )
-		{
-			*((unsigned long*)pOut) = ReadUBitLong(32);
-			pOut += sizeof(unsigned long);
-			nBitsLeft -= 32;
-		}
+		*((unsigned long*)pOut) = ReadUBitLong(32);
+		pOut += sizeof(unsigned long);
+		nBitsLeft -= 32;
 	}
 
 	// read remaining bytes
