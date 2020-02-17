@@ -1443,18 +1443,6 @@ void CBreakableProp::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t
 		PlayPuntSound(); 
 	}
 
-	if ( IsX360() )
-	{
-		if( reason != PUNTED_BY_CANNON && (pPhysGunUser->m_nNumCrateHudHints < NUM_SUPPLY_CRATE_HUD_HINTS) )
-		{
-			if( FClassnameIs( this, "item_item_crate") )
-			{
-				pPhysGunUser->m_nNumCrateHudHints++;
-				UTIL_HudHintText( pPhysGunUser, "#Valve_Hint_Hold_ItemCrate" );
-			}
-		}
-	}
-
 	SetPhysicsAttacker( pPhysGunUser, gpGlobals->curtime );
 
 	// Store original BlockLOS, and disable BlockLOS

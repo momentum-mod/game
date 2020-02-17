@@ -1587,7 +1587,6 @@ private:
 
 	// Precache model sounds + particles
 	static void PrecacheModelComponents( int nModelIndex );
-	static void PrecacheSoundHelper( const char *pName );
 
 protected:
 	// Which frame did I simulate?

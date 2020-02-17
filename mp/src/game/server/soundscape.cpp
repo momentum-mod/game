@@ -375,10 +375,6 @@ void CEnvSoundscape::Precache()
 	}
 
 	m_soundscapeIndex = g_SoundscapeSystem.GetSoundscapeIndex( STRING(m_soundscapeName) );
-	if ( IsX360())
-	{
-		g_SoundscapeSystem.PrecacheSounds( m_soundscapeIndex );
-	}
 	if ( !g_SoundscapeSystem.IsValidIndex( m_soundscapeIndex ) )
 	{
 		DevWarning("Can't find soundscape: %s\n", STRING(m_soundscapeName) );
