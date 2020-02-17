@@ -18,12 +18,10 @@
 #include "SDK_vertexlit_and_unlit_generic_bump_ps20.inc"
 #include "SDK_vertexlit_and_unlit_generic_bump_ps20b.inc"
 
-#ifndef _X360
 #include "SDK_vertexlit_and_unlit_generic_vs30.inc"
 #include "SDK_vertexlit_and_unlit_generic_ps30.inc"
 #include "SDK_vertexlit_and_unlit_generic_bump_vs30.inc"
 #include "SDK_vertexlit_and_unlit_generic_bump_ps30.inc"
-#endif
 
 #include "commandbuilder.h"
 #include "convar.h"
@@ -370,9 +368,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 /*^*/ // 	printf("\t\t>DrawVertexLitGeneric_DX9_Internal\n");
 
 	bool bHasBump = IsTextureSet( info.m_nBumpmap, params );
-#if !defined( _X360 )
 	bool bIsDecal = IS_FLAG_SET( MATERIAL_VAR_DECAL );
-#endif
 
 	bool hasDiffuseLighting = bVertexLitGeneric;
 /*^*/ // 	printf("\t\t[%d] bVertexLitGeneric\n",(int)bVertexLitGeneric);
@@ -639,13 +635,11 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 				pTexCoordDim[1] = 0;
 			}
 
-#ifndef _X360
 			// Special morphed decal information 
 			if ( bIsDecal && g_pHardwareConfig->HasFastVertexTextures() )
 			{
 				nTexCoordCount = 3;
 			}
-#endif
 
 			// This shader supports compressed vertices, so OR in that flag:
 			flags |= VERTEX_FORMAT_COMPRESSED;
@@ -658,18 +652,13 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 
 			if ( bHasBump || bHasDiffuseWarp )
 			{
-#ifndef _X360
 				if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 				{
 					bool bUseStaticControlFlow = g_pHardwareConfig->SupportsStaticControlFlow();
 
 					DECLARE_STATIC_VERTEX_SHADER( sdk_vertexlit_and_unlit_generic_bump_vs20 );
 					SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT,  bHalfLambert);
 					SET_STATIC_VERTEX_SHADER_COMBO( USE_WITH_2B,  g_pHardwareConfig->SupportsPixelShaders_2_b() );
-#ifdef _X360
-					SET_STATIC_VERTEX_SHADER_COMBO( FLASHLIGHT,  bHasFlashlight );
-#endif
 					SET_STATIC_VERTEX_SHADER_COMBO( USE_STATIC_CONTROL_FLOW, bUseStaticControlFlow );
                     SET_STATIC_VERTEX_SHADER(sdk_vertexlit_and_unlit_generic_bump_vs20);
 				
@@ -707,7 +696,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
                         SET_STATIC_PIXEL_SHADER(sdk_vertexlit_and_unlit_generic_bump_ps20);
 					}
 				}
-#ifndef _X360
 				else
 				{
 					// The vertex shader uses the vertex id stream
@@ -734,7 +722,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					SET_STATIC_PIXEL_SHADER_COMBO( BLENDTINTBYBASEALPHA, bBlendTintByBaseAlpha );
                     SET_STATIC_PIXEL_SHADER(sdk_vertexlit_and_unlit_generic_bump_ps30);
 				}
-#endif
 			}
 			else // !(bHasBump || bHasDiffuseWarp)
 			{
@@ -754,9 +741,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					bOutline = IsBoolSet( info.m_nOutline, params );
 				}
 
-#ifndef _X360
 				if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 				{
 					bool bUseStaticControlFlow = g_pHardwareConfig->SupportsStaticControlFlow();
 
@@ -824,7 +809,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
                         SET_STATIC_PIXEL_SHADER(sdk_vertexlit_and_unlit_generic_ps20);
 					}
 				}
-#ifndef _X360
 				else
 				{
 					// The vertex shader uses the vertex id stream
@@ -866,7 +850,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					SET_STATIC_PIXEL_SHADER_COMBO( BLENDTINTBYBASEALPHA, bBlendTintByBaseAlpha );
                     SET_STATIC_PIXEL_SHADER(sdk_vertexlit_and_unlit_generic_ps30);
 				}
-#endif
 			}
 
 			if ( bHasFlashlight )
@@ -1231,9 +1214,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 
 		if ( bHasBump || bHasDiffuseWarp )
 		{
-#ifndef _X360
 			if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 			{
 				bool bUseStaticControlFlow = g_pHardwareConfig->SupportsStaticControlFlow();
 
@@ -1264,7 +1245,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
                     SET_DYNAMIC_PIXEL_SHADER_CMD(DynamicCmdsOut, sdk_vertexlit_and_unlit_generic_bump_ps20);
 				}
 			}
-#ifndef _X360
 			else
 			{
 				pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_10, VERTEX_SHADER_SHADER_SPECIFIC_CONST_11, SHADER_VERTEXTEXTURE_SAMPLER0 );
@@ -1286,7 +1266,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 				bool bUnusedTexCoords[3] = { false, false, !pShaderAPI->IsHWMorphingEnabled() || !bIsDecal };
 				pShaderAPI->MarkUnusedVertexFields( 0, 3, bUnusedTexCoords );
 			}
-#endif
 		}
 		else // !( bHasBump || bHasDiffuseWarp )
 		{
@@ -1297,9 +1276,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 				lightState.m_nNumLights = 0;
 			}
 
-#ifndef _X360
 			if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 			{
 				bool bUseStaticControlFlow = g_pHardwareConfig->SupportsStaticControlFlow();
 
@@ -1341,7 +1318,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
                     SET_DYNAMIC_PIXEL_SHADER_CMD(DynamicCmdsOut, sdk_vertexlit_and_unlit_generic_ps20);
 				}
 			}
-#ifndef _X360
 			else
 			{
 				pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_10, VERTEX_SHADER_SHADER_SPECIFIC_CONST_11, SHADER_VERTEXTEXTURE_SAMPLER0 );
@@ -1370,7 +1346,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 				bool bUnusedTexCoords[3] = { false, false, !pShaderAPI->IsHWMorphingEnabled() || !bIsDecal };
 				pShaderAPI->MarkUnusedVertexFields( 0, 3, bUnusedTexCoords );
 			}
-#endif
 		}
 
 		if ( ( info.m_nHDRColorScale != -1 ) && pShader->IsHDREnabled() )

@@ -70,9 +70,7 @@ struct VS_OUTPUT
 {
 	// Stuff that isn't seen by the pixel shader
 	float4 projPos												: POSITION;	
-#if !defined( _X360 )
 	float  fog													: FOG;
-#endif
 	// Stuff that is seen by the pixel shader
 
 	float4 baseTexCoord2_tangentSpaceVertToEyeVectorXY			: TEXCOORD0;
@@ -88,10 +86,6 @@ struct VS_OUTPUT
 	float4 worldPos_projPosZ									: TEXCOORD6;
 	float3 detailTexCoord_atten3								: TEXCOORD7;
 	float4 fogFactorW											: COLOR1;
-
-#if defined( _X360 ) && FLASHLIGHT
-	float4 flashlightSpacePos									: TEXCOORD8;
-#endif
 };
 
 
@@ -146,9 +140,7 @@ VS_OUTPUT main( const VS_INPUT v )
 #endif
 
 	o.fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
 	o.fog = o.fogFactorW;
-#endif
 
  	// Needed for water fog alpha and diffuse lighting
 	// FIXME: we shouldn't have to compute this all the time.
@@ -189,10 +181,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	// Detail texture coordinate transform
 	o.detailTexCoord_atten3.x = dot( v.vTexCoord0, cDetailTexCoordTransform[0] );
 	o.detailTexCoord_atten3.y = dot( v.vTexCoord0, cDetailTexCoordTransform[1] );
-
-#if defined( _X360 ) && FLASHLIGHT
-	o.flashlightSpacePos = mul( float4( worldPos, 1.0f ), g_FlashlightWorldToTexture );
-#endif
 
 	return o;
 }

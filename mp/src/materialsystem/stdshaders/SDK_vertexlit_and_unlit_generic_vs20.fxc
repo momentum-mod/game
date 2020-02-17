@@ -47,10 +47,6 @@ const float cSeamlessScale					: register( SHADER_SPECIFIC_CONST_2);
 
 const float4 cDetailTexCoordTransform[2]	:  register( SHADER_SPECIFIC_CONST_4 );
 
-#if defined ( _X360 )
-const float4x4 g_FlashlightWorldToTexture :  register( SHADER_SPECIFIC_CONST_6 ); // 6, 7, 8, 9
-#endif
-
 #ifdef SHADER_MODEL_VS_3_0
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
 //		 cMorphTargetTextureDim.z = 4tuples/morph
@@ -86,9 +82,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;			// Projection-space position	
-#if !defined( _X360 )
 	float  fog						: FOG;
-#endif
 
 #if SEAMLESS_BASE
 	HALF3 SeamlessTexCoord			: TEXCOORD0;		// Base texture x/y/z (indexed by swizzle)
@@ -102,15 +96,11 @@ struct VS_OUTPUT
 #endif
 	float4 color					: TEXCOORD2;		// Vertex color (from lighting or unlit)
 
-#if CUBEMAP || _X360
+#if CUBEMAP
 	float3 worldVertToEyeVector		: TEXCOORD3;		// Necessary for cubemaps
 #endif
 
 	float3 worldSpaceNormal			: TEXCOORD4;		// Necessary for cubemaps and flashlight
-
-#if defined ( _X360 ) && FLASHLIGHT
-	float4 flashlightSpacePos		: TEXCOORD5;
-#endif
 
 	float4 vProjPos					: TEXCOORD6;
 	float4 worldPos_ProjPosZ		: TEXCOORD7;
@@ -177,9 +167,7 @@ VS_OUTPUT main( const VS_INPUT v )
 
 	o.vProjPos = vProjPos;
 	o.fogFactorW.w = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
 	o.fog = o.fogFactorW.w;
-#endif	
 	o.worldPos_ProjPosZ.xyz = worldPos.xyz;
 	o.worldPos_ProjPosZ.w = vProjPos.z;
 
@@ -188,7 +176,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.worldVertToEyeVector.xyz = VSHADER_VECT_SCALE * (cEyePos - worldPos);
 #endif
 
-#if !defined (_X360) && FLASHLIGHT
+#if FLASHLIGHT
 	o.color = float4( 0.0f, 0.0f, 0.0f, 0.0f );
 #else
 	if ( g_bVertexColor )
@@ -238,10 +226,6 @@ VS_OUTPUT main( const VS_INPUT v )
 #if LIGHTING_PREVIEW
 	float dot=0.5+0.5*worldNormal*float3(0.7071,0.7071,0);
 	o.color.xyz=float3(dot,dot,dot);
-#endif
-
-#if defined ( _X360 ) && FLASHLIGHT
-	o.flashlightSpacePos = mul( float4( worldPos, 1.0f ), g_FlashlightWorldToTexture );
 #endif
 
 	return o;

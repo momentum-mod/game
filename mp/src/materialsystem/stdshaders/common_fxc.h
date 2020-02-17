@@ -44,11 +44,6 @@ static const HALF3 bumpBasisTranspose[3] = {
 	HALF3(  OO_SQRT_3, OO_SQRT_3, OO_SQRT_3 )
 };
 
-#if defined( _X360 )
-#define REVERSE_DEPTH_ON_X360 //uncomment to use D3DFMT_D24FS8 with an inverted depth viewport for better performance. Keep this in sync with the same named #define in public/shaderapi/shareddefs.h
-//Note that the reversal happens in the viewport. So ONLY reading back from a depth texture should be affected. Projected math is unaffected.
-#endif
-
 HALF3 CalcReflectionVectorNormalized( HALF3 normal, HALF3 eyeVector )
 {
 	// FIXME: might be better of normalizing with a normalizing cube map and
@@ -126,22 +121,12 @@ void ComputeBumpedLightmapCoordinates( HALF4 Lightmap1and2Coord, HALF2 Lightmap3
 
 float3 mul3x3(float3 v, float3x3 m)
 {
-#if !defined( _X360 )
     return float3(dot(v, transpose(m)[0]), dot(v, transpose(m)[1]), dot(v, transpose(m)[2]));
-#else
-	// xbox360 fxc.exe (new back end) borks with transposes, generates bad code
-	return mul( v, m );
-#endif
 }
 
 float3 mul4x3(float4 v, float4x3 m)
 {
-#if !defined( _X360 )
 	return float3(dot(v, transpose(m)[0]), dot(v, transpose(m)[1]), dot(v, transpose(m)[2]));
-#else
-	// xbox360 fxc.exe (new back end) borks with transposes, generates bad code
-	return mul( v, m );
-#endif
 }
 
 float3 DecompressHDR( float4 input )

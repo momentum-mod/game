@@ -36,9 +36,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;	
-#if !defined( _X360 )
 	float  fog						: FOG;
-#endif
 	float4 spotTexCoord				: TEXCOORD0;
 	float2 baseTexCoord				: TEXCOORD1;
 #if NORMALMAP
@@ -78,9 +76,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	float3 worldTangentT = mul( v.vTangentT, cModel[0] );
 #endif
 
-#if !defined( _X360 )
 	o.fog = CalcFog( worldPos, projPos, g_FogType );
-#endif
 
 	o.baseTexCoord.x = dot( v.vBaseTexCoord, cBaseTexCoordTransform[0] ) + cBaseTexCoordTransform[0].w;
 	o.baseTexCoord.y = dot( v.vBaseTexCoord, cBaseTexCoordTransform[1] ) + cBaseTexCoordTransform[1].w;
