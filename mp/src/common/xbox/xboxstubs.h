@@ -4,7 +4,7 @@
 //
 //=============================================================================
 
-#if !defined( XBOXSTUBS_H ) && !defined( _X360 )
+#if !defined( XBOXSTUBS_H )
 #define XBOXSTUBS_H
 
 #ifdef _WIN32
