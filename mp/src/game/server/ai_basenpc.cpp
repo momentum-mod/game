@@ -3696,7 +3696,7 @@ bool CAI_BaseNPC::PreNPCThink()
 #ifdef _DEBUG
 	const float NPC_THINK_LIMIT = 30.0 / 1000.0;
 #else
-	const float NPC_THINK_LIMIT = ( !IsXbox() ) ? (10.0 / 1000.0) : (12.5 / 1000.0);
+	const float NPC_THINK_LIMIT = 10.0 / 1000.0;
 #endif
 
 	g_StartTimeCurThink = 0;

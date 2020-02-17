@@ -290,10 +290,6 @@ void FX_GunshotSlimeSplash( const Vector &origin, const Vector &normal, float sc
 	sparkEmitter->m_ParticleCollision.SetGravity( 800.0f );
 	sparkEmitter->SetFlag( bitsPARTICLE_TRAIL_VELOCITY_DAMPEN );
 	sparkEmitter->SetVelocityDampen( 2.0f );
-	if ( IsXbox() )
-	{
-		sparkEmitter->GetBinding().SetBBox( origin - Vector( 32, 32, 64 ), origin + Vector( 32, 32, 64 ) );
-	}
 
 	//Dump out drops
 	for ( int i = 0; i < 24; i++ )
@@ -331,11 +327,6 @@ void FX_GunshotSlimeSplash( const Vector &origin, const Vector &normal, float sc
 	pSimple->SetSortOrigin( origin );
 	pSimple->SetClipHeight( origin.z );
 	pSimple->SetParticleCullRadius( scale * 2.0f );
-
-	if ( IsXbox() )
-	{
-		pSimple->GetBinding().SetBBox( origin - Vector( 32, 32, 64 ), origin + Vector( 32, 32, 64 ) );
-	}
 
 	SimpleParticle	*pParticle;
 
