@@ -518,7 +518,6 @@ void CGameMovement::DiffPrint( char const *fmt, ... )
 
 #endif // !PREDICTION_ERROR_CHECK_LEVEL
 
-#ifndef _XBOX
 void COM_Log( const char *pszFile, const char *fmt, ...)
 {
 	va_list		argptr;
@@ -545,7 +544,6 @@ void COM_Log( const char *pszFile, const char *fmt, ...)
 		filesystem->Close(fp);
 	}
 }
-#endif
 
 #ifndef CLIENT_DLL
 //-----------------------------------------------------------------------------

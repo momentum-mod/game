@@ -29,9 +29,6 @@
 #include "steam/steam_api.h"
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"
-#ifdef _X360
-#include "ixboxsystem.h"
-#endif  // _X360
 #include "engine/imatchmaking.h"
 #include "tier0/vprof.h"
 
@@ -73,11 +70,6 @@ static void WriteAchievementGlobalState( KeyValues *pKV, bool bPersistToSteamClo
 //=============================================================================
 
 {
-#ifdef _X360
-	if ( XBX_GetStorageDeviceId() == XBX_INVALID_STORAGE_ID || XBX_GetStorageDeviceId() == XBX_STORAGE_DECLINED )
-		return;
-#endif
-
 	char szFilename[_MAX_PATH];
 
 	Q_snprintf( szFilename, sizeof( szFilename ), "GameState.txt" );
@@ -147,13 +139,6 @@ static void WriteAchievementGlobalState( KeyValues *pKV, bool bPersistToSteamClo
     //=============================================================================
     // HPE_END
     //=============================================================================
-
-#ifdef _X360
-	if ( xboxsystem )
-	{
-		xboxsystem->FinishContainerWrites();
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -903,15 +888,6 @@ bool CAchievementMgr::CheckAchievementsEnabled()
 		return false;
 	}
 
-#if defined( _X360 )
-	uint state = XUserGetSigninState( XBX_GetPrimaryUserId() );
-	if ( state == eXUserSigninState_NotSignedIn )
-	{
-		Msg( "Achievements disabled: not signed in to XBox user account.\n" );
-		return false;
-	}
-#endif
-
 	// can't be in commentary mode, user is invincible
 	if ( IsInCommentaryMode() )
 	{
@@ -1060,7 +1036,6 @@ bool CalcHasNumClanPlayers( int iClanTeammates )
 {
 	Assert( g_pGameRules->IsMultiplayer() );
 
-#ifndef _X360
 	// Do a cheap rejection: check teammate count first to see if we even need to bother checking w/Steam
 	// Subtract 1 for the local player.
 	if ( CalcPlayerCount()-1 < iClanTeammates )
@@ -1096,7 +1071,6 @@ bool CalcHasNumClanPlayers( int iClanTeammates )
 			}
 		}
 	}
-#endif
 		return false;
 }
 

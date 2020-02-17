@@ -51,7 +51,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#if defined(GAME_DLL) && !defined(_XBOX)
+#if defined(GAME_DLL)
 	extern ConVar sv_pushaway_max_force;
 	extern ConVar sv_pushaway_force;
 
@@ -1825,7 +1825,6 @@ int CBasePlayer::GetDefaultFOV( void ) const
 
 void CBasePlayer::AvoidPhysicsProps( CUserCmd *pCmd )
 {
-#ifndef _XBOX
 	// Don't avoid if noclipping or in movetype none
 	switch ( GetMoveType() )
 	{
@@ -1841,7 +1840,6 @@ void CBasePlayer::AvoidPhysicsProps( CUserCmd *pCmd )
 		return;
 
 	AvoidPushawayProps( this, pCmd );
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1972,7 +1970,7 @@ void CBasePlayer::SetPlayerUnderwater( bool state )
 {
 	if ( m_bPlayerUnderwater != state )
 	{
-#if defined( WIN32 ) && !defined( _X360 ) 
+#if defined( WIN32 )
 		// NVNT turn on haptic drag when underwater
 		if(state)
 			HapticSetDrag(this,1);
