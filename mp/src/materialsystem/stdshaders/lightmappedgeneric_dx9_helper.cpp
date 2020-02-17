@@ -297,7 +297,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		int nAlphaChannelTextureVar = hasBaseTexture ? (int)info.m_nBaseTexture : (int)info.m_nEnvmapMask;
 		BlendType_t nBlendType = pShader->EvaluateBlendRequirements( nAlphaChannelTextureVar, hasBaseTexture );
 		bool bIsAlphaTested = IS_FLAG_SET( MATERIAL_VAR_ALPHATEST ) != 0;
-		bool bFullyOpaqueWithoutAlphaTest = (nBlendType != BT_BLENDADD) && (nBlendType != BT_BLEND) && (!hasFlashlight || IsX360()); //dest alpha is free for special use
+		bool bFullyOpaqueWithoutAlphaTest = (nBlendType != BT_BLENDADD) && (nBlendType != BT_BLEND) && (!hasFlashlight); //dest alpha is free for special use
 		bool bFullyOpaque = bFullyOpaqueWithoutAlphaTest && !bIsAlphaTested;
 		bool bNeedRegenStaticCmds = (! pContextData ) || pShaderShadow;
 
@@ -324,7 +324,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
         // Parallax cubemaps
         bool hasParallaxCorrection = params[info.m_nEnvmapParallaxObb1]->IsDefined();
 
-		if ( hasFlashlight && !IsX360() )				
+		if ( hasFlashlight )				
 		{
 			// !!speed!! do this in the caller so we don't build struct every time
 			CBaseVSShader::DrawFlashlight_dx90_Vars_t vars;
@@ -486,18 +486,15 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					pShaderShadow->EnableSRGBRead( SHADER_SAMPLER1, false );
 				}
 
-				if( hasEnvmap || ( IsX360() && hasFlashlight ) )
+				if( hasEnvmap )
 				{
-					if( hasEnvmap )
+					pShaderShadow->EnableTexture( SHADER_SAMPLER2, true );
+					if( g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE )
 					{
-						pShaderShadow->EnableTexture( SHADER_SAMPLER2, true );
-						if( g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE )
-						{
-							pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, true );
-						}
+						pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, true );
 					}
-					flags |= VERTEX_TANGENT_S | VERTEX_TANGENT_T | VERTEX_NORMAL;
 				}
+				flags |= VERTEX_TANGENT_S | VERTEX_TANGENT_T | VERTEX_NORMAL;
 
 				int nDetailBlendMode = 0;
 				if ( hasDetailTexture )
@@ -547,14 +544,6 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 				if( hasEnvmapMask )
 				{
 					pShaderShadow->EnableTexture( SHADER_SAMPLER5, true );
-				}
-
-				if( hasFlashlight && IsX360() )
-				{
-					pShaderShadow->EnableTexture( SHADER_SAMPLER13, true );
-					pShaderShadow->EnableTexture( SHADER_SAMPLER14, true );
-					pShaderShadow->SetShadowDepthFiltering( SHADER_SAMPLER14 );
-					pShaderShadow->EnableTexture( SHADER_SAMPLER15, true );
 				}
 
 				if( hasVertexColor || hasBaseTexture2 || hasBump2 )
@@ -1043,58 +1032,12 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
             SET_DYNAMIC_PIXEL_SHADER_CMD(DynamicCmdsOut, sdk_lightmappedgeneric_ps20);
 		}
 
-		if( hasFlashlight && IsX360() )
-		{
-			VMatrix worldToTexture;
-			ITexture *pFlashlightDepthTexture;
-			FlashlightState_t flashlightState = pShaderAPI->GetFlashlightStateEx( worldToTexture, &pFlashlightDepthTexture );
-
-			DynamicCmdsOut.SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, worldToTexture.Base(), 4 );
-
-			SetFlashLightColorFromState( flashlightState, pShaderAPI );
-
-			float atten[4], pos[4];
-			atten[0] = flashlightState.m_fConstantAtten;		// Set the flashlight attenuation factors
-			atten[1] = flashlightState.m_fLinearAtten;
-			atten[2] = flashlightState.m_fQuadraticAtten;
-			atten[3] = flashlightState.m_FarZ;
-			DynamicCmdsOut.SetPixelShaderConstant( 13, atten, 1 );
-
-			pos[0] = flashlightState.m_vecLightOrigin[0];		// Set the flashlight origin
-			pos[1] = flashlightState.m_vecLightOrigin[1];
-			pos[2] = flashlightState.m_vecLightOrigin[2];
-			DynamicCmdsOut.SetPixelShaderConstant( 14, pos, 1 );
-
-			pShader->BindTexture( SHADER_SAMPLER13, flashlightState.m_pSpotlightTexture, flashlightState.m_nSpotlightTextureFrame );
-
-			if( pFlashlightDepthTexture && g_pConfig->ShadowDepthTexture() && flashlightState.m_bEnableShadows )
-			{
-				pShader->BindTexture( SHADER_SAMPLER14, pFlashlightDepthTexture, 0 );
-				DynamicCmdsOut.BindStandardTexture( SHADER_SAMPLER15, TEXTURE_SHADOW_NOISE_2D );
-
-				// Tweaks associated with a given flashlight
-				float tweaks[4];
-				tweaks[0] = ShadowFilterFromState( flashlightState );
-				tweaks[1] = ShadowAttenFromState( flashlightState );
-				pShader->HashShadow2DJitter( flashlightState.m_flShadowJitterSeed, &tweaks[2], &tweaks[3] );
-				DynamicCmdsOut.SetPixelShaderConstant( 19, tweaks, 1 );
-
-				// Dimensions of screen, used for screen-space noise map sampling
-				float vScreenScale[4] = {1280.0f / 32.0f, 720.0f / 32.0f, 0, 0};
-				int nWidth, nHeight;
-				pShaderAPI->GetBackBufferDimensions( nWidth, nHeight );
-				vScreenScale[0] = (float) nWidth  / 32.0f;
-				vScreenScale[1] = (float) nHeight / 32.0f;
-				DynamicCmdsOut.SetPixelShaderConstant( 31, vScreenScale, 1 );
-			}
-		}
-
 		DynamicCmdsOut.End();
 		pShaderAPI->ExecuteCommandBuffer( DynamicCmdsOut.Base() );
 	}
 	pShader->Draw();
 
-	if( IsPC() && (IS_FLAG_SET( MATERIAL_VAR_ALPHATEST ) != 0) && pContextData->m_bFullyOpaqueWithoutAlphaTest )
+	if( (IS_FLAG_SET( MATERIAL_VAR_ALPHATEST ) != 0) && pContextData->m_bFullyOpaqueWithoutAlphaTest )
 	{
 		//Alpha testing makes it so we can't write to dest alpha
 		//Writing to depth makes it so later polygons can't write to dest alpha either
@@ -1112,7 +1055,7 @@ void DrawLightmappedGeneric_DX9(CBaseVSShader *pShader, IMaterialVar** params,
 {
 	bool hasFlashlight = pShader->UsingFlashlight( params );
     ConVarRef r_flashlight_version2("r_flashlight_version2");
-	if ( !IsX360() && !r_flashlight_version2.GetInt() )
+	if ( !r_flashlight_version2.GetInt() )
 	{
 		DrawLightmappedGeneric_DX9_Internal( pShader, params, hasFlashlight, pShaderAPI, pShaderShadow, info, pContextDataPtr );
 		return;

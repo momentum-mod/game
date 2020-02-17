@@ -955,11 +955,6 @@ void DrawSkin_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** params, IShad
 			vScreenScale[0] = (float) nWidth  / 32.0f;
 			vScreenScale[1] = (float) nHeight / 32.0f;
 			pShaderAPI->SetPixelShaderConstant( PSREG_FLASHLIGHT_SCREEN_SCALE, vScreenScale, 1 );
-
-			if ( IsX360() )
-			{
-				pShaderAPI->SetBooleanPixelShaderConstant( 0, &flashlightState.m_nShadowQuality, 1 );
-			}
 		}
 	}
 	pShader->Draw();
@@ -977,7 +972,7 @@ void DrawSkin_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynamic
 {
 	bool bHasFlashlight = pShader->UsingFlashlight( params );
     ConVarRef r_flashlight_version2("r_flashlight_version2");
-	if ( bHasFlashlight && ( IsX360() || r_flashlight_version2.GetInt() ) )
+	if ( bHasFlashlight && ( r_flashlight_version2.GetInt() ) )
 	{
 		DrawSkin_DX9_Internal( pShader, params, pShaderAPI,
 			pShaderShadow, false, info, vertexCompression, pContextDataPtr++ );
