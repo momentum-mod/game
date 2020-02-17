@@ -288,20 +288,10 @@ FORCEINLINE_PIXEL void CPixelWriter::SetPixelMemory( ImageFormat format, void* p
 	case IMAGE_FORMAT_LINEAR_RGBA16161616:
 #endif		
 		m_Size = 8;
-		if ( !IsX360() )
-		{
-			m_RShift = 0;
-			m_GShift = 16;
-			m_BShift = 32;
-			m_AShift = 48;
-		}
-		else
-		{
-			m_RShift = 48;
-			m_GShift = 32;
-			m_BShift = 16;
-			m_AShift = 0;
-		}
+		m_RShift = 0;
+		m_GShift = 16;
+		m_BShift = 32;
+		m_AShift = 48;
 		m_RMask = 0xFFFF;
 		m_GMask = 0xFFFF;
 		m_BMask = 0xFFFF;
@@ -411,9 +401,6 @@ FORCEINLINE_PIXEL void CPixelWriter::WritePixelNoAdvanceF( float r, float g, flo
 {
 	Assert( IsUsingFloatFormat() );
 
-	// X360TBD: Not ported
-	Assert( IsPC() );
-
 	if (PIXELWRITER_USING_16BIT_FLOAT_FORMAT & m_nFlags)
 	{
 		float16 fp16[4];
@@ -505,17 +492,8 @@ FORCEINLINE_PIXEL void CPixelWriter::WritePixelNoAdvance( int r, int g, int b, i
 			}
 		case 3:
 			{
-				if ( IsPC() || !IsX360() )
-				{
-					((unsigned short *)m_pBits)[0] = (unsigned short)((val & 0xffff));
-					m_pBits[2] = (unsigned char)((val >> 16) & 0xff);
-				}
-				else
-				{
-					m_pBits[0] = (unsigned char)(((val >> 16) & 0xff));
-					m_pBits[1] = (unsigned char)(((val >> 8 ) & 0xff));
-					m_pBits[2] = (unsigned char)(val & 0xff);
-				}
+				((unsigned short *)m_pBits)[0] = (unsigned short)((val & 0xffff));
+				m_pBits[2] = (unsigned char)((val >> 16) & 0xff);
 				return;
 			}
 		case 4:
@@ -527,7 +505,7 @@ FORCEINLINE_PIXEL void CPixelWriter::WritePixelNoAdvance( int r, int g, int b, i
 	}
 	else	// RGBA32323232 or RGBA16161616 -- PC only.
 	{
-		AssertMsg(!IsX360(), "Unsupported lightmap format used in WritePixelNoAdvance(). This is a severe performance fault.\n");
+		AssertMsg(true, "Unsupported lightmap format used in WritePixelNoAdvance(). This is a severe performance fault.\n");
 
 		int64 val = ( ( int64 )(r & m_RMask) ) << m_RShift;
 		val |=  ( ( int64 )(g & m_GMask) ) << m_GShift;
@@ -538,30 +516,14 @@ FORCEINLINE_PIXEL void CPixelWriter::WritePixelNoAdvance( int r, int g, int b, i
 		{
 		case 6:
 			{
-				if ( IsPC() || !IsX360() )
-				{
-					((unsigned int *)m_pBits)[0] = val & 0xffffffff;
-					((unsigned short *)m_pBits)[2] = (unsigned short)( ( val >> 32 ) & 0xffff );
-				}
-				else
-				{
-					((unsigned int *)m_pBits)[0] = (val >> 16) & 0xffffffff;
-					((unsigned short *)m_pBits)[2] = (unsigned short)( val & 0xffff );
-				}
+				((unsigned int *)m_pBits)[0] = val & 0xffffffff;
+				((unsigned short *)m_pBits)[2] = (unsigned short)( ( val >> 32 ) & 0xffff );
 				return;
 			}
 		case 8:
 			{
-				if ( IsPC() || !IsX360() )
-				{
-					((unsigned int *)m_pBits)[0] = val & 0xffffffff;
-					((unsigned int *)m_pBits)[1] = ( val >> 32 ) & 0xffffffff;
-				}
-				else
-				{
-					((unsigned int *)m_pBits)[0] = ( val >> 32 ) & 0xffffffff;
-					((unsigned int *)m_pBits)[1] = val & 0xffffffff;
-				}
+				((unsigned int *)m_pBits)[0] = val & 0xffffffff;
+				((unsigned int *)m_pBits)[1] = ( val >> 32 ) & 0xffffffff;
 				return;
 			}
 		default:
@@ -709,48 +671,21 @@ FORCEINLINE_PIXEL void CPixelWriter::WritePixelNoAdvanceSigned( int r, int g, in
 		val |=	(a & m_AMask) << m_AShift;
 		signed char *pSignedBits = (signed char *)m_pBits;
 
-		if ( IsPC() || !IsX360() )
+		switch ( m_Size )
 		{
-			switch ( m_Size )
-			{
-			case 4:
-				pSignedBits[3] = (signed char)((val >> 24) & 0xff);
-				// fall through intentionally.
-			case 3:
-				pSignedBits[2] = (signed char)((val >> 16) & 0xff);
-				// fall through intentionally.
-			case 2:
-				pSignedBits[1] = (signed char)((val >> 8) & 0xff);
-				// fall through intentionally.
-			case 1:
-				pSignedBits[0] = (signed char)((val & 0xff));
-				// fall through intentionally.
-				return;
-			}
-		}
-		else
-		{
-			switch ( m_Size )
-			{
-			case 4:
-				pSignedBits[0] = (signed char)((val >> 24) & 0xff);
-				pSignedBits[1] = (signed char)((val >> 16) & 0xff);
-				pSignedBits[2] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[3] = (signed char)(val & 0xff);
-				break;
-			case 3:
-				pSignedBits[0] = (signed char)((val >> 16) & 0xff);
-				pSignedBits[1] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[2] = (signed char)(val & 0xff);
-				break;
-			case 2:
-				pSignedBits[0] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[1] = (signed char)(val & 0xff);
-				break;
-			case 1:
-				pSignedBits[0] = (signed char)(val & 0xff);
-				break;
-			}
+		case 4:
+			pSignedBits[3] = (signed char)((val >> 24) & 0xff);
+			// fall through intentionally.
+		case 3:
+			pSignedBits[2] = (signed char)((val >> 16) & 0xff);
+			// fall through intentionally.
+		case 2:
+			pSignedBits[1] = (signed char)((val >> 8) & 0xff);
+			// fall through intentionally.
+		case 1:
+			pSignedBits[0] = (signed char)((val & 0xff));
+			// fall through intentionally.
+			return;
 		}
 	}
 	else
@@ -761,79 +696,31 @@ FORCEINLINE_PIXEL void CPixelWriter::WritePixelNoAdvanceSigned( int r, int g, in
 		val |=	( ( int64 )(a & m_AMask) ) << m_AShift;
 		signed char *pSignedBits = ( signed char * )m_pBits;
 
-		if ( IsPC() || !IsX360() )
+		switch( m_Size )
 		{
-			switch( m_Size )
-			{
-			case 8:
-				pSignedBits[7] = (signed char)((val >> 56) & 0xff);
-				pSignedBits[6] = (signed char)((val >> 48) & 0xff);
-				// fall through intentionally.
-			case 6:
-				pSignedBits[5] = (signed char)((val >> 40) & 0xff);
-				pSignedBits[4] = (signed char)((val >> 32) & 0xff);
-				// fall through intentionally.
-			case 4:
-				pSignedBits[3] = (signed char)((val >> 24) & 0xff);
-				// fall through intentionally.
-			case 3:
-				pSignedBits[2] = (signed char)((val >> 16) & 0xff);
-				// fall through intentionally.
-			case 2:
-				pSignedBits[1] = (signed char)((val >> 8) & 0xff);
-				// fall through intentionally.
-			case 1:
-				pSignedBits[0] = (signed char)((val & 0xff));
-				break;
-			default:
-				Assert( 0 );
-				return;
-			}
-		}
-		else
-		{
-			switch( m_Size )
-			{
-			case 8:
-				pSignedBits[0] = (signed char)((val >> 56) & 0xff);
-				pSignedBits[1] = (signed char)((val >> 48) & 0xff);
-				pSignedBits[2] = (signed char)((val >> 40) & 0xff);
-				pSignedBits[3] = (signed char)((val >> 32) & 0xff);
-				pSignedBits[4] = (signed char)((val >> 24) & 0xff);
-				pSignedBits[5] = (signed char)((val >> 16) & 0xff);
-				pSignedBits[6] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[7] = (signed char)(val & 0xff);
-				break;
-			case 6:
-				pSignedBits[0] = (signed char)((val >> 40) & 0xff);
-				pSignedBits[1] = (signed char)((val >> 32) & 0xff);
-				pSignedBits[2] = (signed char)((val >> 24) & 0xff);
-				pSignedBits[3] = (signed char)((val >> 16) & 0xff);
-				pSignedBits[4] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[5] = (signed char)(val & 0xff);
-				break;
-			case 4:
-				pSignedBits[0] = (signed char)((val >> 24) & 0xff);
-				pSignedBits[1] = (signed char)((val >> 16) & 0xff);
-				pSignedBits[2] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[3] = (signed char)(val & 0xff);
-				break;
-			case 3:
-				pSignedBits[0] = (signed char)((val >> 16) & 0xff);
-				pSignedBits[1] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[2] = (signed char)(val & 0xff);
-				break;	
-			case 2:
-				pSignedBits[0] = (signed char)((val >> 8) & 0xff);
-				pSignedBits[1] = (signed char)(val & 0xff);
-				break;
-			case 1:
-				pSignedBits[0] = (signed char)(val & 0xff);
-				break;
-			default:
-				Assert( 0 );
-				return;
-			}
+		case 8:
+			pSignedBits[7] = (signed char)((val >> 56) & 0xff);
+			pSignedBits[6] = (signed char)((val >> 48) & 0xff);
+			// fall through intentionally.
+		case 6:
+			pSignedBits[5] = (signed char)((val >> 40) & 0xff);
+			pSignedBits[4] = (signed char)((val >> 32) & 0xff);
+			// fall through intentionally.
+		case 4:
+			pSignedBits[3] = (signed char)((val >> 24) & 0xff);
+			// fall through intentionally.
+		case 3:
+			pSignedBits[2] = (signed char)((val >> 16) & 0xff);
+			// fall through intentionally.
+		case 2:
+			pSignedBits[1] = (signed char)((val >> 8) & 0xff);
+			// fall through intentionally.
+		case 1:
+			pSignedBits[0] = (signed char)((val & 0xff));
+			break;
+		default:
+			Assert( 0 );
+			return;
 		}
 	}
 }
@@ -845,31 +732,13 @@ FORCEINLINE_PIXEL void CPixelWriter::ReadPixelNoAdvance( int &r, int &g, int &b,
 	int val = m_pBits[0];
 	if ( m_Size > 1 )
 	{
-		if ( IsPC() || !IsX360() )
+		val |= (int)m_pBits[1] << 8;
+		if ( m_Size > 2 )
 		{
-			val |= (int)m_pBits[1] << 8;
-			if ( m_Size > 2 )
+			val |= (int)m_pBits[2] << 16;
+			if ( m_Size > 3 )
 			{
-				val |= (int)m_pBits[2] << 16;
-				if ( m_Size > 3 )
-				{
-					val |= (int)m_pBits[3] << 24;
-				}
-			}
-		}
-		else
-		{
-			val <<= 8;
-			val |= (int)m_pBits[1];
-			if ( m_Size > 2 )
-			{
-				val <<= 8;
-				val |= (int)m_pBits[2];
-				if ( m_Size > 3 )
-				{
-					val <<= 8;
-					val |= (int)m_pBits[3];
-				}
+				val |= (int)m_pBits[3] << 24;
 			}
 		}
 	}

@@ -1389,11 +1389,6 @@ PLATFORM_INTERFACE bool Is64BitOS();
 #define WM_XMP_PLAYBACKBEHAVIORCHANGED		(WM_USER + 122)
 #define WM_XMP_PLAYBACKCONTROLLERCHANGED	(WM_USER + 123)
 
-inline const char *GetPlatformExt( void )
-{
-	return IsX360() ? ".360" : "";
-}
-
 // flat view, 6 hw threads
 #define XBOX_PROCESSOR_0			( 1<<0 )
 #define XBOX_PROCESSOR_1			( 1<<1 )

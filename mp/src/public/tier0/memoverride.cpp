@@ -629,19 +629,16 @@ FREE_CALL void __cdecl _aligned_free( void *memblock )
 // aligned offset base
 ALLOC_CALL void * __cdecl _aligned_offset_malloc_base( size_t size, size_t align, size_t offset )
 {
-	Assert( IsPC() || 0 );
 	return NULL;
 }
 
 ALLOC_CALL void * __cdecl _aligned_offset_realloc_base( void * memblock, size_t size, size_t align, size_t offset)
 {
-	Assert( IsPC() || 0 );
 	return NULL;
 }
 
 ALLOC_CALL void * __cdecl _aligned_offset_recalloc_base( void * memblock, size_t size, size_t align, size_t offset)
 {
-	Assert( IsPC() || 0 );
 	return NULL;
 }
 
@@ -1032,7 +1029,6 @@ extern "C" int __cdecl _CrtGetCheckCount( void )
 // aligned offset debug
 extern "C" void * __cdecl _aligned_offset_recalloc_dbg( void * memblock, size_t count, size_t size, size_t align, size_t offset, const char * f_name, int line_n )
 {
-	Assert( IsPC() || 0 );
 	return ReallocUnattributed( memblock, size * count );
 }
 

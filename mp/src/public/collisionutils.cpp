@@ -542,12 +542,6 @@ bool IsPointInBox( const Vector& pt, const Vector& boxMin, const Vector& boxMax 
 	Assert( boxMin[1] <= boxMax[1] );
 	Assert( boxMin[2] <= boxMax[2] );
 
-	// on x360, force use of SIMD version.
-	if (IsX360())
-	{
-		return IsPointInBox( LoadUnaligned3SIMD(pt.Base()), LoadUnaligned3SIMD(boxMin.Base()), LoadUnaligned3SIMD(boxMax.Base()) ) ;
-	}
-
 	if ( (pt[0] > boxMax[0]) || (pt[0] < boxMin[0]) )
 		return false;
 	if ( (pt[1] > boxMax[1]) || (pt[1] < boxMin[1]) )
@@ -696,15 +690,7 @@ bool FASTCALL IsBoxIntersectingRay( const Vector& boxMin, const Vector& boxMax,
 #else
 	// On the x360, we force use of the SIMD functions.
 #if defined(_X360) 
-	if (IsX360())
-	{
-		fltx4 delta = LoadUnaligned3SIMD(vecDelta.Base());
-		return IsBoxIntersectingRay( 
-			LoadUnaligned3SIMD(boxMin.Base()), LoadUnaligned3SIMD(boxMax.Base()),
-			LoadUnaligned3SIMD(origin.Base()), delta, ReciprocalSIMD(delta), // ray parameters
-			ReplicateX4(flTolerance) ///< eg from ReplicateX4(flTolerance)
-			);
-	}
+
 #endif
 	Assert( boxMin[0] <= boxMax[0] );
 	Assert( boxMin[1] <= boxMax[1] );
@@ -821,14 +807,7 @@ bool FASTCALL IsBoxIntersectingRay( const Vector& boxMin, const Vector& boxMax,
 #else
 	// On the x360, we force use of the SIMD functions.
 #if defined(_X360) && !defined(PARANOID_SIMD_ASSERTING)
-	if (IsX360())
-	{
-		return IsBoxIntersectingRay( 
-			LoadUnaligned3SIMD(boxMin.Base()), LoadUnaligned3SIMD(boxMax.Base()),
-			LoadUnaligned3SIMD(origin.Base()), LoadUnaligned3SIMD(vecDelta.Base()), LoadUnaligned3SIMD(vecInvDelta.Base()), // ray parameters
-			ReplicateX4(flTolerance) ///< eg from ReplicateX4(flTolerance)
-			);
-	}
+
 #endif
 
 	Assert( boxMin[0] <= boxMax[0] );
@@ -894,12 +873,7 @@ bool FASTCALL IsBoxIntersectingRay( const Vector& vecBoxMin, const Vector& vecBo
 {
 	// On the x360, we force use of the SIMD functions.
 #if defined(_X360) 
-	if (IsX360())
-	{
-		return IsBoxIntersectingRay( 
-			LoadUnaligned3SIMD(vecBoxMin.Base()), LoadUnaligned3SIMD(vecBoxMax.Base()),
-			ray, flTolerance);
-	}
+
 #endif
 
 	if ( !ray.m_IsSwept )
