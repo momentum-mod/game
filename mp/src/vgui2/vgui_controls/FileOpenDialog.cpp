@@ -8,14 +8,13 @@
 
 #define PROTECTED_THINGS_DISABLE
 
-#if !defined( _X360 ) && defined( WIN32 )
+#if defined( WIN32 )
 #include "winlite.h"
 #include <shellapi.h>
 #elif defined( POSIX )
 #include <stdlib.h>
 #define _stat stat
 #define _wcsnicmp wcsncmp
-#elif defined( _X360 )
 #else
 #error
 #endif
@@ -47,11 +46,6 @@
 #include <vgui_controls/ImageList.h>
 #include <vgui_controls/MenuItem.h>
 #include <vgui_controls/Tooltip.h>
-
-#if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#undef GetCurrentDirectory
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -858,7 +852,7 @@ void FileOpenDialog::OnOpenInExplorer()
 {
 	char pCurrentDirectory[MAX_PATH];
 	GetCurrentDirectory( pCurrentDirectory, sizeof(pCurrentDirectory) );
-#if !defined( _X360 ) && defined( WIN32 )
+#if defined( WIN32 )
 	ShellExecute( NULL, NULL, pCurrentDirectory, NULL, NULL, SW_SHOWNORMAL );
 #elif defined( OSX )
 	char szCmd[ MAX_PATH * 2];

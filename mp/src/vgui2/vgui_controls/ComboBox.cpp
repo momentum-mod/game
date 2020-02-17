@@ -731,44 +731,6 @@ void ComboBox::OnCursorExited()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-#ifdef _X360
-void ComboBox::OnMenuItemSelected()
-{
-	m_bHighlight = true;
-	// For editable cbs, fill in the text field from whatever is chosen from the dropdown...
-
-	//=============================================================================
-	// HPE_BEGIN:
-	// [pfreese] The text for the combo box should be updated regardless of its
-	// editable state, and in any case, the member variable below was never 
-	// correctly initialized.
-	//=============================================================================
-	
-	// if ( m_bAllowEdit )
-	
-	//=============================================================================
-	// HPE_END
-	//=============================================================================
-	{
-		int idx = GetActiveItem();
-		if ( idx >= 0 )
-		{
-			wchar_t name[ 256 ];
-			GetItemText( idx, name, sizeof( name ) );
-
-			OnSetText( name );
-		}
-	}
-
-	Repaint();
-
-	// go to the next control
-	if(!NavigateDown())
-	{
-		NavigateUp();
-	}
-}
-#else
 void ComboBox::OnMenuItemSelected()
 {
 	m_bHighlight = true;
@@ -787,7 +749,6 @@ void ComboBox::OnMenuItemSelected()
 
 	Repaint();
 }
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -806,15 +767,6 @@ void ComboBox::OnSizeChanged(int wide, int tall)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-#ifdef _X360
-void ComboBox::OnSetFocus()
-{
-    BaseClass::OnSetFocus();
-
-	GotoTextEnd();
-	SelectAllText(true);
-}
-#else
 void ComboBox::OnSetFocus()
 {
     BaseClass::OnSetFocus();
@@ -822,49 +774,6 @@ void ComboBox::OnSetFocus()
 	GotoTextEnd();
 	SelectAllText(false);
 }
-#endif
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-#ifdef _X360
-void ComboBox::OnKeyCodePressed(KeyCode code)
-{
-	switch ( GetBaseButtonCode( code ) )
-    {
-	case KEY_XBUTTON_A:
-		DoClick();
-		break;
-    case KEY_XBUTTON_UP:
-	case KEY_XSTICK1_UP:
-	case KEY_XSTICK2_UP:
-		if(m_pDropDown->IsVisible())
-		{
-			MoveAlongMenuItemList(-1);
-		}
-		else
-		{
-			BaseClass::OnKeyCodePressed(code);
-		}
-        break;
-    case KEY_XBUTTON_DOWN:
-	case KEY_XSTICK1_DOWN:
-	case KEY_XSTICK2_DOWN:
-		if(m_pDropDown->IsVisible())
-		{
-			MoveAlongMenuItemList(1);
-		}
-		else
-		{
-			BaseClass::OnKeyCodePressed(code);
-		}
-        break;
-    default:
-        BaseClass::OnKeyCodePressed(code);
-        break;
-    }
-}
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Handles up/down arrows
