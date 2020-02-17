@@ -452,8 +452,6 @@ $Project
 		$File	"movement.cpp"
 		$File	"$SRCDIR\game\shared\movevars_shared.cpp"
 		$File	"movie_explosion.h"
-		$File	"$SRCDIR\game\shared\multiplay_gamerules.cpp"
-		$File	"$SRCDIR\game\shared\multiplay_gamerules.h"
 		$File	"ndebugoverlay.cpp"
 		$File	"ndebugoverlay.h"
 		$File	"networkstringtable_gamedll.h"
