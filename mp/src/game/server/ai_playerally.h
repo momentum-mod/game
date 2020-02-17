@@ -462,9 +462,6 @@ private:
 	float	m_flTimeLastRegen;		// Last time I regenerated a bit of health.
 	float	m_flHealthAccumulator;	// Counterpart to the damage accumulator in CBaseCombatCharacter. So ally health regeneration is accurate over time.
 
-#ifdef _XBOX
-protected:
-#endif
 	DECLARE_DATADESC();
 protected:
 	DEFINE_CUSTOM_AI;
