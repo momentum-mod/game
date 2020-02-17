@@ -906,11 +906,7 @@ void CHud::RemoveHudElement( CHudElement *pHudElement )
 //-----------------------------------------------------------------------------
 float CHud::GetSensitivity( void )
 {
-#ifndef _X360
 	return m_flMouseSensitivity;
-#else
-	return 1.0f;
-#endif
 }
 
 float CHud::GetFOVSensitivityAdjust()

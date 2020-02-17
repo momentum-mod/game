@@ -160,10 +160,8 @@ public:
 public:
 
 	int							m_iKeyBits;
-#ifndef _XBOX
 	float						m_flMouseSensitivity;
 	float						m_flMouseSensitivityFactor;
-#endif
 	float						m_flFOVSensitivityAdjust;
 
 	Color						m_clrNormal;

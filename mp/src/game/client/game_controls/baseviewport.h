@@ -45,17 +45,13 @@ public:
 	virtual void HideClientUI();
 	virtual bool AllowedToPrintText( void );
 	
-#ifndef _XBOX
 	virtual int GetViewPortScheme() { return m_pBackGround->GetScheme(); }
 	virtual vgui::VPANEL GetViewPortPanel() { return m_pBackGround->GetVParent(); }
-#endif
 	virtual vgui::AnimationController *GetAnimationController() { return m_pAnimController; }
 
 	virtual void ShowBackGround(bool bShow) 
 	{ 
-#ifndef _XBOX
 		m_pBackGround->SetVisible( bShow ); 
-#endif
 	}
 
 	virtual int GetDeathMessageStartHeight( void );	
@@ -70,7 +66,6 @@ protected:
 
 	bool LoadHudAnimations( void );
 
-#ifndef _XBOX
 	class CBackGroundPanel : public vgui::Frame
 	{
 	public:
@@ -86,7 +81,6 @@ protected:
 			return (vgui::VPANEL)0;
 		}
 	};
-#endif
 protected:
 
 	virtual void Paint();
@@ -97,9 +91,7 @@ protected:
 protected:
 	IGameUIFuncs*		m_GameuiFuncs; // for key binding details
 	IGameEventManager2*	m_GameEventManager;
-#ifndef _XBOX
 	CBackGroundPanel	*m_pBackGround;
-#endif
 	CUtlVector<IViewPortPanel*> m_Panels;
 	
 	bool				m_bHasParent; // Used to track if child windows have parents or not.

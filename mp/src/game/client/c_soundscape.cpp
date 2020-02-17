@@ -270,11 +270,8 @@ void Soundscape_Update( audioparams_t &audio )
 void C_SoundscapeSystem::AddSoundScapeFile( const char *filename )
 {
 	KeyValues *script = new KeyValues( filename );
-#ifndef _XBOX
+
 	if ( script->LoadFromFile( filesystem, filename ) )
-#else
-	if ( filesystem->LoadKeyValues( *script, IFileSystem::TYPE_SOUNDSCAPE, filename, "GAME" ) )
-#endif
 	{
 		// parse out all of the top level sections and save their names
 		KeyValues *pKeys = script;

@@ -34,18 +34,10 @@ public:
 		
 		pParticle->m_flRollDelta += pParticle->m_flRollDelta * ( timeDelta * -8.0f );
 
-#ifdef _XBOX
-		//Cap the minimum roll
-		if ( fabs( pParticle->m_flRollDelta ) < 0.1f )
-		{
-			pParticle->m_flRollDelta = ( pParticle->m_flRollDelta > 0.0f ) ? 0.1f : -0.1f;
-		}
-#else
 		if ( fabs( pParticle->m_flRollDelta ) < 0.5f )
 		{
 			pParticle->m_flRollDelta = ( pParticle->m_flRollDelta > 0.0f ) ? 0.5f : -0.5f;
 		}
-#endif // _XBOX
 
 		return pParticle->m_flRoll;
 	}
@@ -68,20 +60,11 @@ public:
 
 		pParticle->m_vecVelocity = pParticle->m_vecVelocity * decay;
 
-#ifdef _XBOX
-		//Cap the minimum speed
-		if ( pParticle->m_vecVelocity.LengthSqr() < (8.0f*8.0f) )
-		{
-			VectorNormalize( saveVelocity );
-			pParticle->m_vecVelocity = saveVelocity * 8.0f;
-		}
-#else
 		if ( pParticle->m_vecVelocity.LengthSqr() < (32.0f*32.0f) )
 		{
 			VectorNormalize( saveVelocity );
 			pParticle->m_vecVelocity = saveVelocity * 32.0f;
 		}
-#endif // _XBOX
 	}
 
 	//Alpha

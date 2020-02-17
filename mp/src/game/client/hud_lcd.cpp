@@ -4,7 +4,7 @@
 //
 //=====================================================================================//
 
-#if defined( WIN32 ) && !defined( _X360 )
+#if defined( WIN32 )
 #include <windows.h>
 #endif
 
@@ -33,10 +33,6 @@ const int DT_RIGHT = 3;
 #include "g15/ig15.h"
 
 #include "tier0/icommandline.h"
-
-#if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

@@ -42,11 +42,7 @@ ConVar r_pixelvisibility_spew( "r_pixelvisibility_spew", "0" );
 
 extern ConVar building_cubemaps;
 
-#ifndef _X360
 const float MIN_PROXY_PIXELS = 5.0f;
-#else
-const float MIN_PROXY_PIXELS = 25.0f;
-#endif
 
 float PixelVisibility_DrawProxy( IMatRenderContext *pRenderContext, OcclusionQueryObjectHandle_t queryHandle, Vector origin, float scale, float proxyAspect, IMaterial *pMaterial, bool screenspace )
 {
