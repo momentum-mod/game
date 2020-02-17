@@ -439,7 +439,10 @@ void CWeaponBase::DrawCrosshair()
     if (GetWeaponID() == WEAPON_SNIPER)
         return;
 
-    pCrosshair->DrawCrosshair(this);
+    int vx, vy, vw, vh;
+    vgui::surface()->GetFullscreenViewport(vx, vy, vw, vh);
+
+    pCrosshair->DrawCrosshair(this, vw / 2, vh / 2);
 }
 
 

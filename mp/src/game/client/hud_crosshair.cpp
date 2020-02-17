@@ -173,7 +173,7 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
     *pbBehindCamera = false;
 }
 
-void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
+void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth, int iHalfScreenHeight )
 {
     if ( !IsCurrentViewAccessAllowed() )
         return;
@@ -183,8 +183,11 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     if (!pPlayer)
         return;
 
-    // localplayer must be owner if not in Spec mode
-    Assert((pPlayer == weaponBase->GetPlayerOwner()) || (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE));
+    if (weaponBase)
+    {
+        // localplayer must be owner if not in Spec mode
+        Assert((pPlayer == weaponBase->GetPlayerOwner()) || (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE));
+    }
 
     // Draw the targeting zone around the pCrosshair
     if (pPlayer->IsInVGuiInputMode())
@@ -196,10 +199,18 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     
     if( bBehindCamera )
         return;
-    
-    int iDistance = weaponBase->GetWeaponScript()->iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
-    int iDeltaDistance = weaponBase->GetWeaponScript()->iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
 
+    int iDistance, iDeltaDistance;
+    if (weaponBase)
+    {
+        iDistance = weaponBase->GetWeaponScript()->iCrosshairMinDistance;        // The minimum distance the crosshair can achieve...
+        iDeltaDistance = weaponBase->GetWeaponScript()->iCrosshairDeltaDistance; // Distance at which the crosshair shrinks at each step
+    }
+    else
+    {
+        iDistance = 10;
+        iDeltaDistance = 5;
+    }
     if (cl_crosshair_style.GetInt() != 0 && !cl_crosshair_gap_use_weapon_value.GetBool())
     {
         iDeltaDistance *= cl_crosshair_gap.GetInt() / iDistance; //scale delta to weapon's delta, could be a cvar
@@ -217,23 +228,23 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
             iDistance *= 1.5f;
     }
 
-    if (cl_crosshair_dynamic_fire.GetBool() && pPlayer->m_iShotsFired > weaponBase->m_iAmmoLastCheck) // shots firing
+    if (weaponBase)
     {
-        if (cl_crosshair_style.GetInt() == 0 || cl_crosshair_gap_use_weapon_value.GetBool())
-            weaponBase->m_flCrosshairDistance = min(15, weaponBase->m_flCrosshairDistance + iDeltaDistance); // min of 15 (default crosshair size at 1080p) [but this is gap. not size] or (current distance) + delta
-        else
-            weaponBase->m_flCrosshairDistance = min(iDistance * 1.6, weaponBase->m_flCrosshairDistance + iDeltaDistance); //scale growth to crosshair gap, could be a cvar (1.6 is arbitrary)
+        if (cl_crosshair_dynamic_fire.GetBool() && pPlayer->m_iShotsFired > weaponBase->m_iAmmoLastCheck) // shots firing
+        {
+            if (cl_crosshair_style.GetInt() == 0 || cl_crosshair_gap_use_weapon_value.GetBool())
+                weaponBase->m_flCrosshairDistance = min(15, weaponBase->m_flCrosshairDistance + iDeltaDistance); // min of 15 (default crosshair size at 1080p) [but this is gap. not size] or (current distance) + delta
+            else
+                weaponBase->m_flCrosshairDistance = min(iDistance * 1.6, weaponBase->m_flCrosshairDistance + iDeltaDistance); //scale growth to crosshair gap, could be a cvar (1.6 is arbitrary)
+        }
+        else if (weaponBase->m_flCrosshairDistance > iDistance) // distance > min distance (defined at init or from if block above)
+            weaponBase->m_flCrosshairDistance -= 0.1f + weaponBase->m_flCrosshairDistance * 0.013; // decrease by 0.1 + 1.3% of current (decreases exponentially slow over time)
+
+        weaponBase->m_iAmmoLastCheck = pPlayer->m_iShotsFired;
+
+        if (weaponBase->m_flCrosshairDistance < iDistance) //less than minimum/when m_flCrosshairDistance is initialized
+            weaponBase->m_flCrosshairDistance = iDistance;
     }
-    else if (weaponBase->m_flCrosshairDistance > iDistance) // distance > min distance (defined at init or from if block above)
-    {
-        weaponBase->m_flCrosshairDistance -= 0.1f + weaponBase->m_flCrosshairDistance * 0.013; // decrease by 0.1 + 1.3% of current (decreases exponentially slow over time)
-    }
-
-    weaponBase->m_iAmmoLastCheck = pPlayer->m_iShotsFired;
-
-    if (weaponBase->m_flCrosshairDistance < iDistance) //less than minimum/when m_flCrosshairDistance is initialized
-        weaponBase->m_flCrosshairDistance = iDistance;
-
     // scale bar size to the resolution
     float scale;
     int iCrosshairDistance, iBarSize, iBarThickness;
@@ -241,7 +252,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     int vx, vy, vw, vh;
     surface()->GetFullscreenViewport( vx, vy, vw, vh );
 
-    if (cl_crosshair_style.GetInt() == 0) //only CS:S uses crosshair scaling
+    if (cl_crosshair_style.GetInt() == 1) //only CS:S uses crosshair scaling
     {
         int crosshairScale = cl_crosshair_scale.GetInt();
 
@@ -259,8 +270,10 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
             scale = 1.0f;
         else
             scale = float(vh) / float(crosshairScale);
-
-        iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
+        if (weaponBase)
+            iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
+        else
+            iCrosshairDistance = 20;
         iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
         iBarSize = max(1, (int)((float)iBarSize * scale));
         iBarThickness = max(1, (int)floor(scale + 0.5f)); //thickness of 1 (or odd) causes off-center crosshairs
@@ -269,7 +282,10 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     {
         scale = 1.0f;
 
-        iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
+        if (weaponBase)
+            iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
+        else
+            iCrosshairDistance = 5;
         iBarSize = cl_crosshair_size.GetInt();
         iBarThickness = cl_crosshair_thickness.GetInt(); //thickness of 1 (or odd) causes off-center crosshairs
     }
@@ -280,14 +296,41 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
     if (!cl_crosshair_alpha_enable.GetBool())
         crossColor.SetColor(crossColor.r(), crossColor.g(), crossColor.b(), 200);
 
-    int iHalfScreenWidth = vw / 2;
-    int iHalfScreenHeight = vh / 2;
+    if (cl_crosshair_style.GetInt() == 0)
+    {
+        if (weaponBase)
+            ResetCrosshair();
 
-    if (cl_crosshair_style.GetInt() != 2)
+        if (!m_pCrosshair)
+            return;
+
+        float flWeaponScale = 1.f;
+        int iTextureW = m_pCrosshair->Width();
+        int iTextureH = m_pCrosshair->Height();
+        C_BaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
+        if (pWeapon)
+        {
+            pWeapon->GetWeaponCrosshairScale(flWeaponScale);
+        }
+
+        float flPlayerScale = 1.0f;
+        Color clr = m_clrCrosshair;
+
+        float flWidth = flWeaponScale * flPlayerScale * (float)iTextureW;
+        float flHeight = flWeaponScale * flPlayerScale * (float)iTextureH;
+        int iWidth = (int)(flWidth + 0.5f);
+        int iHeight = (int)(flHeight + 0.5f);
+        int iX = (int)(x + 0.5f);
+        int iY = (int)(y + 0.5f);
+
+        m_pCrosshair->DrawSelfCropped(iX - (iWidth / 2), iY - (iHeight / 2), 0, 0, iTextureW, iTextureH, iWidth,
+                                      iHeight, clr);
+    }
+    else if (cl_crosshair_style.GetInt() != 2)
     {
         CHudTexture *pCrosshairTexture = gHUD.GetIcon("whiteAdditive");
 
-        if (pCrosshairTexture)
+        if (pCrosshairTexture && weaponBase)
             weaponBase->m_iCrosshairTextureID = pCrosshairTexture->textureId;
         
         int iLeft = iHalfScreenWidth - (iCrosshairDistance + iBarSize);
@@ -310,7 +353,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
         if (!cl_crosshair_alpha_enable.GetBool())
         {
             // Additive crosshair
-            surface()->DrawSetTexture(weaponBase->m_iCrosshairTextureID);
+            surface()->DrawSetTexture(pCrosshairTexture->textureId);
             
             if (cl_crosshair_outline_enable.GetBool())
             {
@@ -330,7 +373,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
             if (!cl_crosshair_t.GetBool())
                 surface()->DrawTexturedRect(iHalfLefter, iTop, iHalfRighter, iFarTop);
             surface()->DrawTexturedRect(iHalfLefter, iBottom, iHalfRighter, iFarBottom);
-		
+
             if (cl_crosshair_dot.GetBool())
             {
                 if (cl_crosshair_outline_enable.GetBool())
@@ -386,10 +429,10 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
         else
             pCrosshairTexture = gHUD.GetIcon(cl_crosshair_file.GetString());
 
-        if (pCrosshairTexture)
+        if (pCrosshairTexture && weaponBase)
             weaponBase->m_iCrosshairTextureID = pCrosshairTexture->textureId;
 
-        surface()->DrawSetTexture(weaponBase->m_iCrosshairTextureID);
+        surface()->DrawSetTexture(pCrosshairTexture->textureId);
 
         // make sure dynamic behaviour is ok
         int iLeft = iHalfScreenWidth - (iBarSize + iCrosshairDistance) / 2;
@@ -403,48 +446,9 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase )
 
 void CHudCrosshair::Paint( void )
 {
-    if ( !m_pCrosshair )
-        return;
-
-    if ( !IsCurrentViewAccessAllowed() )
-        return;
-
-    C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
-    if ( !pPlayer )
-        return;
-
-    float x, y;
-    bool bBehindCamera;
-    GetDrawPosition ( &x, &y, &bBehindCamera, m_vecCrossHairOffsetAngle );
-
-    if( bBehindCamera )
-        return;
-
-    float flWeaponScale = 1.f;
-    int iTextureW = m_pCrosshair->Width();
-    int iTextureH = m_pCrosshair->Height();
-    C_BaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
-    if ( pWeapon )
-    {
-        pWeapon->GetWeaponCrosshairScale( flWeaponScale );
-    }
-
-    float flPlayerScale = 1.0f;
-    Color clr = m_clrCrosshair;
-
-    float flWidth = flWeaponScale * flPlayerScale * (float)iTextureW;
-    float flHeight = flWeaponScale * flPlayerScale * (float)iTextureH;
-    int iWidth = (int)( flWidth + 0.5f );
-    int iHeight = (int)( flHeight + 0.5f );
-    int iX = (int)( x + 0.5f );
-    int iY = (int)( y + 0.5f );
-
-    m_pCrosshair->DrawSelfCropped (
-        iX-(iWidth/2), iY-(iHeight/2),
-        0, 0,
-        iTextureW, iTextureH,
-        iWidth, iHeight,
-        clr );
+    int vx, vy, vw, vh;
+    surface()->GetFullscreenViewport(vx, vy, vw, vh);
+    DrawCrosshair(nullptr, vw / 2, vh / 2);
 }
 
 //-----------------------------------------------------------------------------
