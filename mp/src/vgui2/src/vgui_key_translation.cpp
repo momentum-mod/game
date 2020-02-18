@@ -7,7 +7,6 @@
 #if defined( WIN32 )
 #include <wtypes.h>
 #include <winuser.h>
-#include "xbox/xboxstubs.h"
 #endif
 #include "tier0/dbg.h"
 #include "vgui_key_translation.h"
