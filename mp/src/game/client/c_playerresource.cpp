@@ -220,18 +220,6 @@ bool C_PlayerResource::IsHLTV(int index)
 
 bool C_PlayerResource::IsReplay(int index)
 {
-#if defined( REPLAY_ENABLED )
-	if ( !IsConnected( index ) )
-		return false;
-
-	player_info_t sPlayerInfo;
-
-	if ( engine->GetPlayerInfo( index, &sPlayerInfo ) )
-	{
-		return sPlayerInfo.isreplay;
-	}
-#endif
-
 	return false;
 }
 

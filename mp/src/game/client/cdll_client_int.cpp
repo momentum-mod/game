@@ -87,22 +87,6 @@
 #include "ihudlcd.h"
 #include "toolframework_client.h"
 #include "hltvcamera.h"
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#include "replay/replay_ragdoll.h"
-#include "qlimits.h"
-#include "replay/replay.h"
-#include "replay/ireplaysystem.h"
-#include "replay/iclientreplay.h"
-#include "replay/ienginereplay.h"
-#include "replay/ireplaymanager.h"
-#include "replay/ireplayscreenshotmanager.h"
-#include "replay/iclientreplaycontext.h"
-#include "replay/vgui/replayconfirmquitdlg.h"
-#include "replay/vgui/replaybrowsermainpanel.h"
-#include "replay/vgui/replayinputpanel.h"
-#include "replay/vgui/replayperformanceeditor.h"
-#endif
 #include "vgui/ILocalize.h"
 #include "vgui/IVGui.h"
 #include "ixboxsystem.h"
@@ -203,16 +187,6 @@ IXboxSystem *xboxsystem = NULL;	// Xbox 360 only
 IMatchmaking *matchmaking = NULL;
 IUploadGameStats *gamestatsuploader = NULL;
 IClientReplayContext *g_pClientReplayContext = NULL;
-#if defined( REPLAY_ENABLED )
-IReplayManager *g_pReplayManager = NULL;
-IReplayMovieManager *g_pReplayMovieManager = NULL;
-IReplayScreenshotManager *g_pReplayScreenshotManager = NULL;
-IReplayPerformanceManager *g_pReplayPerformanceManager = NULL;
-IReplayPerformanceController *g_pReplayPerformanceController = NULL;
-IEngineReplay *g_pEngineReplay = NULL;
-IEngineClientReplay *g_pEngineClientReplay = NULL;
-IReplaySystem *g_pReplay = NULL;
-#endif
 
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
@@ -239,9 +213,6 @@ BEGIN_BYTESWAP_DATADESC( player_info_s )
 	DEFINE_ARRAY( friendsName, FIELD_CHARACTER, MAX_PLAYER_NAME_LENGTH ),
 	DEFINE_FIELD( fakeplayer, FIELD_BOOLEAN ),
 	DEFINE_FIELD( ishltv, FIELD_BOOLEAN ),
-#if defined( REPLAY_ENABLED )
-	DEFINE_FIELD( isreplay, FIELD_BOOLEAN ),
-#endif
 	DEFINE_ARRAY( customFiles, FIELD_INTEGER, MAX_CUSTOM_FILES ),
 	DEFINE_FIELD( filesDownloaded, FIELD_INTEGER ),
 END_BYTESWAP_DATADESC()
@@ -925,13 +896,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
     /*if ((gameui = static_cast<IGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr))) == nullptr)
         return false;*/
 
-#if defined( REPLAY_ENABLED )
-	if ( IsPC() && (g_pEngineReplay = (IEngineReplay *)appSystemFactory( ENGINE_REPLAY_INTERFACE_VERSION, NULL )) == NULL )
-		return false;
-	if ( IsPC() && (g_pEngineClientReplay = (IEngineClientReplay *)appSystemFactory( ENGINE_REPLAY_CLIENT_INTERFACE_VERSION, NULL )) == NULL )
-		return false;
-#endif
-
 	if (!g_pMatSystemSurface)
 		return false;
 
@@ -1111,37 +1075,12 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 
 bool CHLClient::ReplayInit( CreateInterfaceFn fnReplayFactory )
 {
-#if defined( REPLAY_ENABLED )
-	if ( !IsPC() )
-		return false;
-	if ( (g_pReplay = (IReplaySystem *)fnReplayFactory( REPLAY_INTERFACE_VERSION, NULL ) ) == NULL )
-		return false;
-	if ( (g_pClientReplayContext = g_pReplay->CL_GetContext()) == NULL )
-		return false;
-
-	return true;
-#else
 	return false;
-#endif
 }
 
 bool CHLClient::ReplayPostInit()
 {
-#if defined( REPLAY_ENABLED )
-	if ( ( g_pReplayManager = g_pClientReplayContext->GetReplayManager() ) == NULL )
-		return false;
-	if ( ( g_pReplayScreenshotManager = g_pClientReplayContext->GetScreenshotManager() ) == NULL )
-		return false;
-	if ( ( g_pReplayPerformanceManager = g_pClientReplayContext->GetPerformanceManager() ) == NULL )
-		return false;
-	if ( ( g_pReplayPerformanceController = g_pClientReplayContext->GetPerformanceController() ) == NULL )
-		return false;
-	if ( ( g_pReplayMovieManager = g_pClientReplayContext->GetMovieManager() ) == NULL )
-		return false;
-	return true;
-#else
 	return false;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1312,16 +1251,6 @@ void CHLClient::HudText( const char * message )
 //-----------------------------------------------------------------------------
 bool CHLClient::ShouldDrawDropdownConsole()
 {
-#if defined( REPLAY_ENABLED )
-	extern ConVar hud_freezecamhide;
-	extern bool IsTakingAFreezecamScreenshot();
-
-	if ( hud_freezecamhide.GetBool() && IsTakingAFreezecamScreenshot() )
-	{
-		return false;
-	}
-#endif
-
 	return true;
 }
 
@@ -1391,13 +1320,6 @@ bool CHLClient::IN_IsKeyDown( const char *name, bool& isdown )
 //			*pszCurrentBinding - 
 void CHLClient::IN_OnMouseWheeled( int nDelta )
 {
-#if defined( REPLAY_ENABLED )
-	CReplayPerformanceEditorPanel *pPerfEditor = ReplayUI_GetPerformanceEditor();
-	if ( pPerfEditor )
-	{
-		pPerfEditor->OnInGameMouseWheelEvent( nDelta );
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1628,14 +1550,6 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 	g_RagdollLVManager.SetLowViolence( pMapName );
 
 	gHUD.LevelInit();
-
-#if defined( REPLAY_ENABLED )
-	// Initialize replay ragdoll recorder
-	if ( !engine->IsPlayingDemo() )
-	{
-		CReplayRagdollRecorder::Instance().Init();
-	}
-#endif
 }
 
 
@@ -1733,12 +1647,6 @@ void CHLClient::LevelShutdown( void )
 
 	// string tables are cleared on disconnect from a server, so reset our global pointers to NULL
 	ResetStringTablePointers();
-
-#if defined( REPLAY_ENABLED )
-	// Shutdown the ragdoll recorder
-	CReplayRagdollRecorder::Instance().Shutdown();
-	CReplayRagdollCache::Instance().Shutdown();
-#endif
 }
 
 
@@ -2219,12 +2127,6 @@ void OnRenderStart()
 		C_BaseEntity::ToolRecordEntities();
 	}
 
-#if defined( REPLAY_ENABLED )
-	// This will record any ragdolls if Replay mode is enabled on the server
-	CReplayRagdollRecorder::Instance().Think();
-	CReplayRagdollCache::Instance().Think();
-#endif
-
 	// Finally, link all the entities into the leaf system right before rendering.
 	C_BaseEntity::AddVisibleEntities();
 }
@@ -2306,9 +2208,6 @@ void CHLClient::FrameStageNotify( ClientFrameStage_t curStage )
 			// Let prediction copy off pristine data
 			prediction->PostEntityPacketReceived();
 			HLTVCamera()->PostEntityPacketReceived();
-#if defined( REPLAY_ENABLED )
-			ReplayCamera()->PostEntityPacketReceived();
-#endif
 		}
 		break;
 	case FRAME_START:
@@ -2459,12 +2358,6 @@ void CHLClient::OnDemoRecordStop()
 
 void CHLClient::OnDemoPlaybackStart( char const* pDemoBaseName )
 {
-#if defined( REPLAY_ENABLED )
-	// Load any ragdoll override frames from disk
-	char szRagdollFile[MAX_OSPATH];
-	V_snprintf( szRagdollFile, sizeof(szRagdollFile), "%s.dmx", pDemoBaseName );
-	CReplayRagdollCache::Instance().Init( szRagdollFile );
-#endif
 }
 
 void CHLClient::OnDemoPlaybackStop()
@@ -2474,10 +2367,6 @@ void CHLClient::OnDemoPlaybackStop()
 	{
 		DemoPolish_GetController().Shutdown();
 	}
-#endif
-
-#if defined( REPLAY_ENABLED )
-	CReplayRagdollCache::Instance().Shutdown();
 #endif
 }
 
@@ -2519,21 +2408,7 @@ void CHLClient::ReloadFilesInList( IFileList *pFilesToReload )
 
 bool CHLClient::HandleUiToggle()
 {
-#if defined( REPLAY_ENABLED )
-	if ( !g_pEngineReplay || !g_pEngineReplay->IsSupportedModAndPlatform() )
-		return false;
-
-	CReplayPerformanceEditorPanel *pEditor = ReplayUI_GetPerformanceEditor();
-	if ( !pEditor )
-		return false;
-
-	pEditor->HandleUiToggle();
-
-	return true;
-
-#else
 	return false;
-#endif
 }
 
 bool CHLClient::ShouldAllowConsole()

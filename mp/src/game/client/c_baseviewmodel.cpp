@@ -19,12 +19,6 @@
 #include "c_mom_player.h"
 #include "weapon/weapon_def.h"
 
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#include "replay/ireplaysystem.h"
-#include "replay/ienginereplay.h"
-#endif
-
 // NVNT haptics system interface
 #include "haptics/ihaptics.h"
 
@@ -269,13 +263,6 @@ bool C_BaseViewModel::ShouldDraw()
 		return ( HLTVCamera()->GetMode() == OBS_MODE_IN_EYE &&
 				 HLTVCamera()->GetPrimaryTarget() == GetOwner()	);
 	}
-#if defined( REPLAY_ENABLED )
-	else if ( g_pEngineClientReplay->IsPlayingReplayDemo() )
-	{
-		return ( ReplayCamera()->GetMode() == OBS_MODE_IN_EYE &&
-				 ReplayCamera()->GetPrimaryTarget() == GetOwner() );
-	}
-#endif
 	else
 	{
 		return BaseClass::ShouldDraw();
