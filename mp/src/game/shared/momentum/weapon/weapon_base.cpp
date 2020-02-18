@@ -442,7 +442,7 @@ void CWeaponBase::DrawCrosshair()
     int vx, vy, vw, vh;
     vgui::surface()->GetFullscreenViewport(vx, vy, vw, vh);
 
-    pCrosshair->DrawCrosshair(this, vw / 2, vh / 2);
+    pCrosshair->DrawCrosshair(this, false, vw / 2, vh / 2);
 }
 
 

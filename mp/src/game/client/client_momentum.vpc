@@ -88,6 +88,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\SettingsPanel\RocketJumpSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\StickyJumpSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\CrosshairSettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\CrosshairSettingsPreview.h"
                     }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
@@ -100,6 +101,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\SettingsPanel\RocketJumpSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\StickyJumpSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\CrosshairSettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\CrosshairSettingsPreview.cpp"
                 }
                 
                 $Folder "HUD"

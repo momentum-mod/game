@@ -173,32 +173,34 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
     *pbBehindCamera = false;
 }
 
-void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth, int iHalfScreenHeight )
+void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, bool bIsPreview, int iHalfScreenWidth, int iHalfScreenHeight )
 {
-    if ( !IsCurrentViewAccessAllowed() )
+    if ( !bIsPreview && !IsCurrentViewAccessAllowed() )
         return;
 
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
-
-    if (!pPlayer)
+    
+    if (!bIsPreview && !pPlayer)
         return;
-
-    if (weaponBase)
+    
+    if (!bIsPreview && weaponBase)
     {
         // localplayer must be owner if not in Spec mode
         Assert((pPlayer == weaponBase->GetPlayerOwner()) || (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE));
     }
-
     // Draw the targeting zone around the pCrosshair
-    if (pPlayer->IsInVGuiInputMode())
+    if (!bIsPreview && pPlayer->IsInVGuiInputMode())
         return;
-
-    float x, y;
-    bool bBehindCamera;
-    GetDrawPosition(&x, &y, &bBehindCamera, m_vecCrossHairOffsetAngle);
     
-    if( bBehindCamera )
-        return;
+    float x = iHalfScreenWidth, y = iHalfScreenHeight;
+    if (!bIsPreview)
+    {
+        bool bBehindCamera;
+        GetDrawPosition(&x, &y, &bBehindCamera, m_vecCrossHairOffsetAngle);
+    
+        if( bBehindCamera )
+            return;
+    }
 
     int iDistance, iDeltaDistance;
     if (weaponBase)
@@ -220,12 +222,15 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
     if (cl_crosshair_dynamic_move.GetBool())
     {
         // min distance multiplied by constants
-        if (!(pPlayer->GetFlags() & FL_ONGROUND))
-            iDistance *= 2.0f;
-        else if (pPlayer->GetFlags() & FL_DUCKING)
-            iDistance *= 0.5f;
-        else if (pPlayer->GetAbsVelocity().Length() > 100)
-            iDistance *= 1.5f;
+        if (pPlayer)
+        {
+            if (!(pPlayer->GetFlags() & FL_ONGROUND))
+                iDistance *= 2.0f;
+            else if (pPlayer->GetFlags() & FL_DUCKING)
+                iDistance *= 0.5f;
+            else if (pPlayer->GetAbsVelocity().Length() > 100)
+                iDistance *= 1.5f;
+        }
     }
 
     if (weaponBase)
@@ -248,7 +253,6 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
     // scale bar size to the resolution
     float scale;
     int iCrosshairDistance, iBarSize, iBarThickness;
-
     int vx, vy, vw, vh;
     surface()->GetFullscreenViewport( vx, vy, vw, vh );
 
@@ -298,7 +302,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
 
     if (cl_crosshair_style.GetInt() == 0)
     {
-        if (weaponBase)
+        if (weaponBase || bIsPreview)
             ResetCrosshair();
 
         if (!m_pCrosshair)
@@ -307,12 +311,14 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
         float flWeaponScale = 1.f;
         int iTextureW = m_pCrosshair->Width();
         int iTextureH = m_pCrosshair->Height();
-        C_BaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
-        if (pWeapon)
+        if (!bIsPreview)
         {
-            pWeapon->GetWeaponCrosshairScale(flWeaponScale);
+            C_BaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
+            if (pWeapon)
+            {
+                pWeapon->GetWeaponCrosshairScale(flWeaponScale);
+            }
         }
-
         float flPlayerScale = 1.0f;
         Color clr = m_clrCrosshair;
 
@@ -431,7 +437,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, int iHalfScreenWidth
 
         if (pCrosshairTexture && weaponBase)
             weaponBase->m_iCrosshairTextureID = pCrosshairTexture->textureId;
-
+        //something about DrawSetTextureRGBA
         surface()->DrawSetTexture(pCrosshairTexture->textureId);
 
         // make sure dynamic behaviour is ok
@@ -448,7 +454,7 @@ void CHudCrosshair::Paint( void )
 {
     int vx, vy, vw, vh;
     surface()->GetFullscreenViewport(vx, vy, vw, vh);
-    DrawCrosshair(nullptr, vw / 2, vh / 2);
+    DrawCrosshair(nullptr, false, vw / 2, vh / 2);
 }
 
 //-----------------------------------------------------------------------------

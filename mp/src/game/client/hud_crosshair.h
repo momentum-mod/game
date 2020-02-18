@@ -30,7 +30,7 @@ public:
     virtual void	SetCrosshairAngle( const QAngle& angle );
     virtual void	SetCrosshair( CHudTexture *texture, const Color& clr );
     virtual void	ResetCrosshair();
-    virtual void	DrawCrosshair( C_WeaponBase *weaponBase, int iHalfScreenWidth, int iHalfScreenHeight );
+    virtual void	DrawCrosshair( C_WeaponBase *weaponBase, bool pIsPreview, int iHalfScreenWidth, int iHalfScreenHeight );
     virtual bool	HasCrosshair( void ) { return ( m_pCrosshair != NULL ); }
     virtual bool	ShouldDraw();
 

@@ -2,8 +2,11 @@
 
 #include "SettingsPage.h"
 
-class CHudCrosshair;
-class C_RunComparisons;
+class C_CrosshairPreview;
+namespace vgui
+{
+    class ColorPicker;
+}
 
 class CrosshairSettingsPage : public SettingsPage
 {
@@ -39,20 +42,16 @@ class CrosshairSettingsPage : public SettingsPage
     // Used for updating the max stage buffer label
     void OnTextChanged(Panel *p) OVERRIDE;
 
-    MESSAGE_FUNC_PTR(CursorEnteredCallback, "OnCursorEntered", panel);
-    MESSAGE_FUNC_PTR(CursorExitedCallback, "OnCursorExited", panel);
     MESSAGE_FUNC_INT_INT(OnComparisonResize, "OnSizeChange", wide, tall);
 
   private:
-    vgui::CvarToggleCheckButton *m_pCompareShow, *m_pCompareFormat, *m_pTimeShowOverall, *m_pTimeShowZone,
-        *m_pVelocityShow, *m_pVelocityShowAvg, *m_pVelocityShowMax, *m_pVelocityShowEnter, *m_pVelocityShowExit,
-        *m_pSyncShow, *m_pSyncShowS1, *m_pSyncShowS2, *m_pJumpShow, *m_pStrafeShow;
-    vgui::TextEntry *m_pMaxZones;
-    vgui::ComboBox *m_pTimeType;
+    vgui::CvarToggleCheckButton *m_pCrosshairShow, *mp_CrosshairDot, *m_pAlphaEnable, *m_pDynamicFire, *m_pDynamicMove,
+        *m_pDrawT, *m_pWeaponGap, *m_pOutlineEnable, *m_pScaleEnable;
+    vgui::CvarSlider *m_pOutlineThicknessSlider, *m_pThicknessSlider, *m_pScaleSlider, *m_pSizeSlider, *m_pGapSlider;
+    vgui::TextEntry *m_pCustomFile;
+    vgui::ComboBox *m_pCrosshairStyle;
+    vgui::ColorPicker *m_pCrosshairColorPicker;
     vgui::Label *m_pTimeTypeLabel, *m_pMaxZonesLabel;
-    vgui::Frame *m_pComparisonsFrame;
-    C_RunComparisons *m_pBogusComparisonsPanel;
-
-    // Determines what should pulse for the bogus panel
-    int DetermineBogusPulse(Panel *panel) const;
+    vgui::Frame *m_pCrosshairPreviewFrame;
+    C_CrosshairPreview *m_pCrosshairPreviewPanel;
 };
