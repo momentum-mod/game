@@ -15,7 +15,6 @@
 #include "vgui_controls/Panel.h"
 #include "vgui_controls/PHandle.h"
 #include "vgui_controls/MenuItem.h"
-#include "vgui_controls/MessageDialog.h"
 #include "vgui/ISurface.h"
 
 class AchievementsAndStatsInterface
