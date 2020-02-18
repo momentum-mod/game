@@ -140,12 +140,6 @@ private:
 
 	void			ClearReplayMessageList();
 
-#if defined( REPLAY_ENABLED )
-	float					m_flReplayStartRecordTime;
-	float					m_flReplayStopRecordTime;
-	CReplayReminderPanel	*m_pReplayReminderPanel;
-#endif
-
 	// Message mode handling
 	// All modes share a common chat interface
 	CBaseHudChat			*m_pChatElement;

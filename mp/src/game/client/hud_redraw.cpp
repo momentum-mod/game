@@ -16,10 +16,6 @@
 #include "hud_crosshair.h"
 #include <vgui/ISurface.h>
 
-#if defined( REPLAY_ENABLED )
-#include "replay/ienginereplay.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -47,21 +43,11 @@ static ConVar fov_watcher( "_fov", "0", 0, "Automates fov command to server.", F
 //-----------------------------------------------------------------------------
 void CHud::Think(void)
 {
-#if defined( REPLAY_ENABLED )
-	// Don't draw this
-	extern IEngineClientReplay *g_EngineClientReplay;
-	const bool bPlayingReplay = g_pEngineClientReplay && g_pEngineClientReplay->IsPlayingReplayDemo();
-#endif
-
 	// Determine the visibility of all hud elements
 	for ( int i = 0; i < m_HudList.Size(); i++ )
 	{
 		// Visible?
 		bool visible = m_HudList[i]->ShouldDraw();
-
-#if defined( REPLAY_ENABLED )
-		visible = visible && !bPlayingReplay;
-#endif
 
 		m_HudList[i]->SetActive( visible );
 

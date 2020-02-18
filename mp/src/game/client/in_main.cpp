@@ -19,9 +19,6 @@
 #include "bitbuf.h"
 #include "checksum_md5.h"
 #include "hltvcamera.h"
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#endif
 #include <ctype.h> // isalnum()
 #include <voice_status.h>
 #include "cam_thirdperson.h"
@@ -1122,9 +1119,6 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 	cmd->random_seed = MD5_PseudoRandom( sequence_number ) & 0x7fffffff;
 
 	HLTVCamera()->CreateMove( cmd );
-#if defined( REPLAY_ENABLED )
-	ReplayCamera()->CreateMove( cmd );
-#endif
 
 #if defined( HL2_CLIENT_DLL )
 	// copy backchannel data
