@@ -22,10 +22,6 @@
 #include "smoke_fog_overlay.h"
 #include "bitmap/tgawriter.h"
 #include "hltvcamera.h"
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#include "replay/replay_screenshot.h"
-#endif
 #include "input.h"
 #include "filesystem.h"
 #include "materialsystem/itexture.h"
@@ -37,11 +33,6 @@
 #include <vgui_controls/Controls.h>
 #include <vgui/ISurface.h>
 #include "ScreenSpaceEffects.h"
-
-#if defined( REPLAY_ENABLED )
-#include "replay/ireplaysystem.h"
-#include "replay/ienginereplay.h"
-#endif
 
 #if defined( HL2_CLIENT_DLL ) || defined( CSTRIKE_DLL ) || defined ( SDK_DLL )
 #define USE_MONITORS
@@ -263,10 +254,6 @@ void CViewRender::Init( void )
 	engine->GetViewAngles( angles );
 	AngleVectors( angles, &m_vecLastFacing );
 
-#if defined( REPLAY_ENABLED )
-	m_pReplayScreenshotTaker = NULL;
-#endif
-
 #if defined( CSTRIKE_DLL )
 	m_flLastFOV = default_fov.GetFloat();
 #endif
@@ -366,11 +353,7 @@ void CViewRender::DriftPitch (void)
 	if ( !player )
 		return;
 
-#if defined( REPLAY_ENABLED )
-	if ( engine->IsHLTV() || g_pEngineClientReplay->IsPlayingReplayDemo() || ( player->GetGroundEntity() == NULL ) || engine->IsPlayingDemo() )
-#else
 	if ( engine->IsHLTV() || ( player->GetGroundEntity() == NULL ) || engine->IsPlayingDemo() )
-#endif
 	{
 		m_PitchDrift.driftmove = 0;
 		m_PitchDrift.pitchvel = 0;
@@ -598,12 +581,6 @@ void CViewRender::SetUpViews()
 	{
 		HLTVCamera()->CalcView( viewSetup.origin, viewSetup.angles, viewSetup.fov );
 	}
-#if defined( REPLAY_ENABLED )
-	else if ( g_pEngineClientReplay->IsPlayingReplayDemo() )
-	{
-		ReplayCamera()->CalcView( view.origin, view.angles, view.fov );
-	}
-#endif
 	else
 	{
 		// FIXME: Are there multiple views? If so, then what?
@@ -855,30 +832,6 @@ void CViewRender::WriteSaveGameScreenshotOfSize( const char *pFilename, int widt
 	pRenderContext->PopMatrix();
 
 	g_bRenderingScreenshot = false;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: takes a screenshot for the replay system
-//-----------------------------------------------------------------------------
-void CViewRender::WriteReplayScreenshot( WriteReplayScreenshotParams_t &params )
-{
-#if defined( REPLAY_ENABLED )
-	if ( !m_pReplayScreenshotTaker )
-		return;
-
-	m_pReplayScreenshotTaker->TakeScreenshot( params );
-#endif
-}
-
-void CViewRender::UpdateReplayScreenshotCache()
-{
-#if defined( REPLAY_ENABLED )
-	// Delete the old one
-	delete m_pReplayScreenshotTaker;
-
-	// Create a new one
-	m_pReplayScreenshotTaker = new CReplayScreenshotTaker( this, GetView ( STEREO_EYE_MONO ) );
 #endif
 }
 
