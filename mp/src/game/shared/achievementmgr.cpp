@@ -29,7 +29,6 @@
 #include "steam/steam_api.h"
 #include "tier3/tier3.h"
 #include "vgui/ILocalize.h"
-#include "engine/imatchmaking.h"
 #include "tier0/vprof.h"
 
 #if defined(TF_DLL) || defined(TF_CLIENT_DLL)
@@ -330,7 +329,7 @@ void CAchievementMgr::PostInit()
 	// load global state from file
 	LoadGlobalState();
 
-	// download achievements/stats from Steam/XBox Live
+	// download achievements/stats from Steam
 	DownloadUserData();
 
 }
@@ -437,7 +436,7 @@ void CAchievementMgr::LevelInitPreEntity()
 	// For single-player games, achievement mgr must live on the server.  (Only the server has detailed knowledge of game state.)
 	Assert( !GameRules()->IsMultiplayer() );	
 #else
-	// For multiplayer games, achievement mgr must live on the client.  (Only the client can read/write player state from Steam/XBox Live.)
+	// For multiplayer games, achievement mgr must live on the client.  (Only the client can read/write player state from Steam)
 	Assert( GameRules()->IsMultiplayer() );
 #endif 
 
@@ -558,7 +557,7 @@ bool CAchievementMgr::HasAchieved( const char *pchName )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: downloads user data from Steam or XBox Live
+// Purpose: downloads user data from Steam
 //-----------------------------------------------------------------------------
 void CAchievementMgr::DownloadUserData()
 {
