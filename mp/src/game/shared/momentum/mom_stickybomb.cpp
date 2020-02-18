@@ -10,6 +10,7 @@
 #include "momentum/mom_triggers.h"
 #include "IEffects.h"
 #include "fx_mom_shared.h"
+#include "mom_player_shared.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -58,6 +59,9 @@ PRECACHE_WEAPON_REGISTER(momentum_stickybomb);
 #ifdef CLIENT_DLL
 static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0.1", FCVAR_ARCHIVE,
                    "Determines how long it takes for stickies to start being drawn upon spawning.\n", 0, 1);
+#else
+static MAKE_TOGGLE_CONVAR(mom_sj_tick_triples, "0", FCVAR_ARCHIVE,
+                   "If set to 1, once a third sticky is placed and its arm time is reached, the oldest sticky will fizzle.");
 #endif
 
 CMomStickybomb::CMomStickybomb()
@@ -117,6 +121,8 @@ void CMomStickybomb::Spawn()
     SetGravity(MOM_STICKYBOMB_GRAVITY);
     SetFriction(MOM_STICKYBOMB_FRICTION);
     SetElasticity(MOM_STICKYBOMB_ELASTICITY);
+    SetThink(&CMomStickybomb::StickybombThink);
+    SetNextThink(gpGlobals->curtime);
 #endif
 }
 
@@ -359,6 +365,40 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
         m_bUseImpactNormal = true;
         pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
         m_vecImpactNormal.Negate();
+    }
+}
+
+void CMomStickybomb::StickybombThink()
+{
+    if (mom_sj_tick_triples.GetBool())
+    {
+        // This code kills the oldest sticky once more than 2 stickies are deployed and the newest one's arm time is
+        // reached
+        // Whether to allow fully powered triples or not is still up for debate
+        const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
+
+        if (!pPlayer)
+            return;
+
+        const auto pGun = dynamic_cast<CWeaponBase *>(pPlayer->GetActiveWeapon());
+
+        if (!pGun)
+            return;
+
+        const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(pGun);
+
+        if (!pLauncher)
+            return;
+
+        if (pLauncher->GetStickybombCount() == 3)
+        {
+            if (gpGlobals->curtime - pLauncher->GetStickyByCount(2)->GetCreationTime() > 0.8f)
+            {
+                pLauncher->GetStickyByCount(0)->RemoveStickybomb(true);
+            }
+        }
+
+        SetNextThink(gpGlobals->curtime + 0.1);
     }
 }
 #endif

@@ -67,6 +67,8 @@ class CMomStickybomb : public CBaseProjectile
     bool UseImpactNormal() { return m_bUseImpactNormal; }
     const Vector &GetImpactNormal() const { return m_vecImpactNormal; }
 
+    void StickybombThink();
+
   protected:
     float m_flDamage;
     float m_flRadius;
