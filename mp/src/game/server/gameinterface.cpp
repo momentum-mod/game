@@ -57,9 +57,6 @@
 #include "gameinterface.h"
 #include "eventqueue.h"
 #include "hltvdirector.h"
-#if defined( REPLAY_ENABLED )
-#include "replay/iserverreplaycontext.h"
-#endif
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "AI_ResponseSystem.h"
 #include "saverestore_stringtable.h"
@@ -125,10 +122,6 @@ extern ConVar tf_mm_servermode;
 #include "portal_player.h"
 #endif
 
-#if defined( REPLAY_ENABLED )
-#include "replay/ireplaysystem.h"
-#endif
-
 extern IToolFrameworkServer *g_pToolFrameworkServer;
 extern IParticleSystemQuery *g_pParticleSystemQuery;
 
@@ -177,10 +170,6 @@ IServerEngineTools *serverenginetools = NULL;
 ISceneFileCache *scenefilecache = NULL;
 IXboxSystem *xboxsystem = NULL;	// Xbox 360 only
 IMatchmaking *matchmaking = NULL;	// Xbox 360 only
-#if defined( REPLAY_ENABLED )
-IReplaySystem *g_pReplay = NULL;
-IServerReplayContext *g_pReplayServerContext = NULL;
-#endif
 
 IGameSystem *SoundEmitterSystem();
 
@@ -708,14 +697,6 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	if ( !IGameSystem::InitAllSystems() )
 		return false;
 
-#if defined( REPLAY_ENABLED )
-	if ( gameeventmanager->LoadEventsFromFile( "resource/replayevents.res" ) <= 0 )
-	{
-		Warning( "\n*\n* replayevents.res MISSING.\n*\n\n" );
-		return false;
-	}
-#endif
-
 	// Due to dependencies, these are not autogamesystems
 	if ( !ModelSoundsCacheInit() )
 	{
@@ -798,17 +779,7 @@ void CServerGameDLL::DLLShutdown( void )
 
 bool CServerGameDLL::ReplayInit( CreateInterfaceFn fnReplayFactory )
 {
-#if defined( REPLAY_ENABLED )
-	if ( !IsPC() )
-		return false;
-	if ( (g_pReplay = ( IReplaySystem *)fnReplayFactory( REPLAY_INTERFACE_VERSION, NULL )) == NULL )
-		return false;
-	if ( (g_pReplayServerContext = g_pReplay->SV_GetContext()) == NULL )
-		return false;
-	return true;
-#else
 	return false;
-#endif
 }
 
 //-----------------------------------------------------------------------------
