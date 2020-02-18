@@ -688,13 +688,7 @@ bool UTIL_IsCommandIssuedByServerAdmin( void )
 	if ( engine->IsDedicatedServer() && issuingPlayerIndex > 0 )
 		return false;
 
-#if defined( REPLAY_ENABLED )
-	// entity 1 is replay?
-	player_info_t pi;
-	bool bPlayerIsReplay = engine->GetPlayerInfo( 1, &pi ) && pi.isreplay;
-#else
 	bool bPlayerIsReplay = false;
-#endif
 
 	if ( bPlayerIsReplay )
 	{
