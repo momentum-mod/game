@@ -67,7 +67,6 @@ class CCommand;
 
 #define FCVAR_NOT_CONNECTED		(1<<22)	// cvar cannot be changed by a client that is connected to a server
 #define FCVAR_MATERIAL_SYSTEM_THREAD (1<<23)	// Indicates this cvar is read from the material system thread
-#define FCVAR_ARCHIVE_XBOX		(1<<24) // cvar written to config.cfg on the Xbox
 
 #define FCVAR_ACCESSIBLE_FROM_THREADS	(1<<25)	// used as a debugging tool necessary to check material system thread convars
 
