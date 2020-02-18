@@ -1405,9 +1405,6 @@ extern float LinearToGamma( float linear );
 
 extern float SrgbGammaToLinear( float flSrgbGammaValue );
 extern float SrgbLinearToGamma( float flLinearValue );
-extern float X360GammaToLinear( float fl360GammaValue );
-extern float X360LinearToGamma( float flLinearValue );
-extern float SrgbGammaTo360Gamma( float flSrgbGammaValue );
 
 // linear (0..4) to screen corrected vertex space (0..1?)
 FORCEINLINE float LinearToVertexLight( float f )
