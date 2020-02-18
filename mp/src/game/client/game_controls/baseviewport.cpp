@@ -51,11 +51,6 @@
 
 #include "tier0/etwprof.h"
 
-#if defined( REPLAY_ENABLED )
-#include "replay/ireplaysystem.h"
-#include "replay/ienginereplay.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -440,11 +435,7 @@ void CBaseViewport::ShowPanel( IViewPortPanel* pPanel, bool state )
 		if ( pPanel->HasInputElements() )
 		{
 			// don't show input panels during normal demo playback
-#if defined( REPLAY_ENABLED )
-			if ( engine->IsPlayingDemo() && !engine->IsHLTV() && !g_pEngineClientReplay->IsPlayingReplayDemo() )
-#else
 			if ( engine->IsPlayingDemo() && !engine->IsHLTV() )
-#endif
 				return;
 			if ( (m_pActivePanel != NULL) && (m_pActivePanel != pPanel) && (m_pActivePanel->IsVisible()) )
 			{
