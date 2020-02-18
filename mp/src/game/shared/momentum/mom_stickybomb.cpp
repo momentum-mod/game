@@ -56,7 +56,7 @@ LINK_ENTITY_TO_CLASS(momentum_stickybomb, CMomStickybomb);
 PRECACHE_WEAPON_REGISTER(momentum_stickybomb);
 
 #ifdef CLIENT_DLL
-static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0.1", FCVAR_ARCHIVE,
+static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0", FCVAR_ARCHIVE,
                    "Determines how long it takes for stickies to start being drawn upon spawning.\n", 0, 1);
 #endif
 
