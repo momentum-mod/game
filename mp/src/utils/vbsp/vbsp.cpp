@@ -1111,12 +1111,6 @@ int RunVBSP( int argc, char **argv )
 		{
 			g_bKeepStaleZip = true;
 		}
-		else if ( !Q_stricmp( argv[i], "-xbox" ) )
-		{
-			// enable mandatory xbox extensions
-			g_NodrawTriggers = true;
-			g_DisableWaterLighting = true;
-		}
 		else if ( !Q_stricmp( argv[i], "-allowdetailcracks"))
 		{
 			g_bAllowDetailCracks = true;
@@ -1231,9 +1225,6 @@ int RunVBSP( int argc, char **argv )
 				"  -keepstalezip   : Keep the BSP's zip files intact but regenerate everything\n"
 				"                    else.\n"
 				"  -virtualdispphysics : Use virtual (not precomputed) displacement collision models\n"
-				"  -xbox           : Enable mandatory xbox options\n"
-				"  -x360		   : Generate Xbox360 version of vsp\n"
-				"  -nox360		   : Disable generation Xbox360 version of vsp (default)\n"
 				"  -replacematerials : Substitute materials according to materialsub.txt in content\\maps\n"
 				"  -FullMinidumps  : Write large minidumps on crash.\n"
 				);

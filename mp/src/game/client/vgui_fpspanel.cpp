@@ -16,7 +16,6 @@
 #include <vgui/IPanel.h>
 #include "materialsystem/imaterialsystemhardwareconfig.h"
 #include "filesystem.h"
-#include "../common/xbox/xboxstubs.h"
 #include "steam/steam_api.h"
 #include "tier0/cpumonitoring.h"
 

@@ -1034,8 +1034,6 @@ void PrintUsage( int argc, char **argv )
 		"  -tmpout         : Make portals come from \\tmp\\<mapname>.\n"
 		"  -trace <start cluster> <end cluster> : Writes a linefile that traces the vis from one cluster to another for debugging map vis.\n"
 		"  -FullMinidumps  : Write large minidumps on crash.\n"
-		"  -x360		   : Generate Xbox360 version of vsp\n"
-		"  -nox360		   : Disable generation Xbox360 version of vsp (default)\n"
 		"\n"
 #if 1 // Disabled for the initial SDK release with VMPI so we can get feedback from selected users.
 		);

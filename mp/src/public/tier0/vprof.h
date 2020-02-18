@@ -14,7 +14,7 @@
 #include "tier0/threadtools.h"
 #include "tier0/vprof_telemetry.h"
 
-// VProf is enabled by default in all configurations -except- X360 Retail.
+// VProf is enabled by default in all configurations
 #if defined( _CERT )
 #define VPROF_ENABLED
 #endif
