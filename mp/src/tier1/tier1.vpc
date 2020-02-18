@@ -47,13 +47,13 @@ $Project "tier1"
 		$File	"memstack.cpp"
 		$File	"NetAdr.cpp"
 		$File	"splitstring.cpp"
-		$File	"processor_detect.cpp" [$WINDOWS||$X360]
+		$File	"processor_detect.cpp" [$WINDOWS]
 		{
 			$Configuration
 			{
 				$Compiler
 				{
-					$EnableC++Exceptions	"Yes (/EHsc)" [!$X360]
+					$EnableC++Exceptions	"Yes (/EHsc)"
 				}
 			}
 		}

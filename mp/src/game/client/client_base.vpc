@@ -17,9 +17,6 @@ $Configuration	"Debug"
 	{
 		$OutputDirectory			".\Debug_$GAMENAME"			[$WIN32]
 		$IntermediateDirectory		".\Debug_$GAMENAME"			[$WIN32]
-
-		$OutputDirectory			".\Debug_$GAMENAME_360"		[$X360]
-		$IntermediateDirectory		".\Debug_$GAMENAME_360"		[$X360]
 	}
 }
 
@@ -29,9 +26,6 @@ $Configuration	"Release"
 	{
 		$OutputDirectory			".\Release_$GAMENAME"		[$WIN32]
 		$IntermediateDirectory		".\Release_$GAMENAME"		[$WIN32]
-
-		$OutputDirectory			".\Release_$GAMENAME_360"	[$X360]
-		$IntermediateDirectory		".\Release_$GAMENAME_360"	[$X360]
 	}
 }
 
@@ -317,7 +311,6 @@ $Project
 		$File	"$SRCDIR\game\shared\ragdoll_shared.cpp"
 		$File	"recvproxy.cpp"
 		$File	"basepresence.cpp"			[$WIN32||$POSIX]
-		$File	"basepresence_xbox.cpp"		[$X360]
 		$File	"$SRCDIR\game\shared\rope_helpers.cpp"
 		$File	"$SRCDIR\game\shared\saverestore.cpp"
 		$File	"$SRCDIR\game\shared\sceneentity_shared.cpp"
@@ -386,8 +379,8 @@ $Project
 		$File	"$SRCDIR\game\client\c_vote_controller.h"
 		$File	"$SRCDIR\game\client\c_vote_controller.cpp"
 		//Haptics
-		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"	[!$X360]
-		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WIN32&&!$X360]
+		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"
+		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WIN32]
 		
 		// Files not using precompiled header cbase.h
 
