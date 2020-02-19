@@ -59,7 +59,7 @@ $Project "tier1"
 		}
 		
 		$File	"processor_detect_linux.cpp"	[$POSIX]
-		$File	"qsort_s.cpp"	[$LINUXALL||$PS3]
+		$File	"qsort_s.cpp"	[$LINUXALL]
 		$File	"rangecheckedvar.cpp"
 		$File	"reliabletimer.cpp"
 		$File	"stringpool.cpp"
