@@ -67,9 +67,9 @@ private:
     vgui::Frame *m_pCrosshairPreviewFrame;
     C_CrosshairPreview *m_pCrosshairPreviewPanel;
 
-    int iPrevCrosshair, iPrevAlphaEnable, iPrevDot, iPrevDynamicFire, iPrevDynamicMove, iPrevGap, iPrevWeaponGap,
-        iPrevOutlineEnable, iPrevOutlineThickness, iPrevScale, iPrevScaleEnable, iPrevSize, iPrevStyle, iPrevT,
-        iPrevThickness;
-    char *sPrevFile;
-    Color prevColor, currentColor;
+    int m_iPrevCrosshair, m_iPrevAlphaEnable, m_iPrevDot, m_iPrevDynamicFire, m_iPrevDynamicMove, m_iPrevGap,
+		m_iPrevWeaponGap, m_iPrevOutlineEnable, m_iPrevOutlineThickness, m_iPrevScale, m_iPrevScaleEnable,
+		m_iPrevSize, m_iPrevStyle, m_iPrevT, m_iPrevThickness;
+    char *m_sPrevFile;
+    Color m_prevColor, m_currentColor;
 };
