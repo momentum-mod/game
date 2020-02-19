@@ -18,7 +18,7 @@ class CrosshairSettingsPage : public SettingsPage
 
     void SetButtonColors();
 
-    // The "bogus" panel is a HUD comparisons panel initted just for this Settings Page.
+    // The "bogus" panel is a HUD crosshair preview panel initted just for this Settings Page.
     void DestroyBogusCrosshairPanel();
     void InitBogusCrosshairPanel();
 
@@ -44,7 +44,7 @@ class CrosshairSettingsPage : public SettingsPage
     // This uses OnCheckbox and not OnModified because we want to be able to enable
     // the other checkboxes regardless of whether the player clicks Apply/OK
     void OnCheckboxChecked(Panel *p) OVERRIDE;
-    // Used for updating the max stage buffer label
+    
     void OnTextChanged(Panel *p) OVERRIDE;
 
     void OnControlModified(Panel *p) OVERRIDE;
@@ -54,8 +54,6 @@ class CrosshairSettingsPage : public SettingsPage
 private:
     void UpdateSliderEntries() const;
     void UpdateStyleToggles() const;
-
-    //ConVarRef cl_crosshair_color, cl_crosshair_style, cl_crosshair_file;
 
     vgui::CvarToggleCheckButton *m_pCrosshairShow, *m_pCrosshairDot, *m_pCrosshairAlphaEnable, *m_pDynamicFire,
         *m_pDynamicMove, *m_pCrosshairDrawT, *m_pWeaponGap, *m_pOutlineEnable, *m_pScaleEnable;
@@ -69,9 +67,9 @@ private:
     vgui::Frame *m_pCrosshairPreviewFrame;
     C_CrosshairPreview *m_pCrosshairPreviewPanel;
 
-    int iPrevCrosshair, iPrevAlphaEnable, iPrevDot, iPrevDynamicFire, iPrevDynamicMove, iPrevGap, iPrevWeaponGap,
-        iPrevOutlineEnable, iPrevOutlineThickness, iPrevScale, iPrevScaleEnable, iPrevSize, iPrevStyle, iPrevT,
-        iPrevThickness;
-    char *sPrevFile;
-    Color prevColor, currentColor;
+    int m_iPrevCrosshair, m_iPrevAlphaEnable, m_iPrevDot, m_iPrevDynamicFire, m_iPrevDynamicMove, m_iPrevGap,
+		m_iPrevWeaponGap, m_iPrevOutlineEnable, m_iPrevOutlineThickness, m_iPrevScale, m_iPrevScaleEnable,
+		m_iPrevSize, m_iPrevStyle, m_iPrevT, m_iPrevThickness;
+    char *m_sPrevFile;
+    Color m_prevColor, m_currentColor;
 };

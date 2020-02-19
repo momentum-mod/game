@@ -659,7 +659,7 @@
     {
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "OutlineEnable"
-        "xpos" "-8"
+        "xpos" "-4"
         "ypos" "0"
         "autoResize"        "0"
         "pinCorner"     "0"

@@ -2,7 +2,6 @@
 
 #include <vgui_controls/Panel.h>
 #include <hudelement.h>
-#include "hud_crosshair.h"
 
 class C_CrosshairPreview : public CHudElement, public vgui::Panel
 {
@@ -23,7 +22,6 @@ public:
 
 private:
     int m_iDefaultWidth, m_iDefaultTall, m_iDefaultXPos, m_iDefaultYPos;
-    int m_iMaxWide, m_iWidestLabel, m_iWidestValue;
 };
 
 extern C_CrosshairPreview *g_pMOMCrosshairPreview;
