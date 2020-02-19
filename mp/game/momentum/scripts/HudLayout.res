@@ -126,6 +126,21 @@
         "text_xpos" "5"
         "text_ypos" "2"
     }
+
+    CHudCrosshairPreview
+    {
+        "fieldName" "CHudCrosshairPreview"
+        "xpos" "50"
+        "ypos" "c+50"
+        "wide" "200"
+        "tall" "150"
+        "visible" "1"
+        "enabled" "1"
+        "PaintBackgroundType" "2"
+        "format_spacing" "2"
+        "text_xpos" "5"
+        "text_ypos" "2"
+    }
     
     HudMapInfo
     {

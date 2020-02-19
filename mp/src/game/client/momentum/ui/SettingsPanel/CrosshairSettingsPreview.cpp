@@ -39,13 +39,20 @@ C_CrosshairPreview::C_CrosshairPreview(const char *pElementName, Panel *pParent 
 
 C_CrosshairPreview::~C_CrosshairPreview()
 {
-    //todo?
+}
+
+void C_CrosshairPreview::ApplySchemeSettings(vgui::IScheme *pScheme)
+{
+    Panel::ApplySchemeSettings(pScheme);
+    GetSize(m_iDefaultWidth, m_iDefaultTall); // gets "wide" and "tall" from scheme .res file
+    m_iMaxWide = m_iDefaultWidth;
+    GetPos(m_iDefaultXPos, m_iDefaultYPos); // gets "xpos" and "ypos" from scheme .res file
 }
 
 void C_CrosshairPreview::Paint()
 {
-    int x, y, wid, tal;
-    this->GetBounds(x, y, wid, tal);
+    SetPanelSize(m_iMaxWide, m_iDefaultTall);
+	
     CHudCrosshair *pCrosshair = GET_HUDELEMENT(CHudCrosshair);
-    pCrosshair->DrawCrosshair(nullptr, true, x + wid / 2, y + tal / 2);
+    pCrosshair->DrawCrosshair(nullptr, true, m_iDefaultXPos + m_iMaxWide / 2, m_iDefaultYPos + m_iDefaultTall / 2);
 }
