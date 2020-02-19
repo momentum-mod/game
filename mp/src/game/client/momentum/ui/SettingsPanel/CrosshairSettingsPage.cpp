@@ -14,7 +14,6 @@
 #include <vgui_controls/CvarTextEntry.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Frame.h>
-#include <vgui_controls/Label.h>
 #include <vgui_controls/Tooltip.h>
 #include "controls/ColorPicker.h"
 
@@ -26,6 +25,7 @@ using namespace vgui;
     button->SetDefaultColor(color, color);                                                                             \
     button->SetArmedColor(color, color);                                                                               \
     button->SetSelectedColor(color, color);
+//TODO - make settings change cvars whenever (to update preview), but revert to last used cvars when cancelling out of settings
 
 CrosshairSettingsPage::CrosshairSettingsPage(Panel *pParent) : BaseClass(pParent, "CrosshairSettings")
 {
@@ -95,9 +95,7 @@ CrosshairSettingsPage::CrosshairSettingsPage(Panel *pParent) : BaseClass(pParent
     m_pCustomFileEntry->AddActionSignalTarget(this);
 
     // ComboBox
-    m_pCrosshairStyleLabel = new Label(this, "CrosshairStyleLabel", "#MOM_Settings_Crosshair_Style_Label");
-    m_pCrosshairStyleLabel->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pCrosshairStyle = new ComboBox(this, "CrosshairStyle", 4, false);
+	m_pCrosshairStyle = new ComboBox(this, "CrosshairStyle", 4, false);
     m_pCrosshairStyle->AddItem("#MOM_Settings_Crosshair_Style_0", nullptr);
     m_pCrosshairStyle->AddItem("#MOM_Settings_Crosshair_Style_1", nullptr);
     m_pCrosshairStyle->AddItem("#MOM_Settings_Crosshair_Style_2", nullptr);
@@ -110,8 +108,7 @@ CrosshairSettingsPage::CrosshairSettingsPage(Panel *pParent) : BaseClass(pParent
     m_pCrosshairPreviewFrame = nullptr;
     m_pCrosshairPreviewPanel = nullptr;
 
-    // LoadControlSettings("resource/ui/SettingsPanel_CrosshairSettings.res");
-    LoadControlSettings("resource/ui/SettingsPanel_ComparisonsSettings.res");
+    LoadControlSettings("resource/ui/SettingsPanel_CrosshairSettings.res");
 }
 
 CrosshairSettingsPage::~CrosshairSettingsPage() {}
@@ -146,7 +143,7 @@ void CrosshairSettingsPage::InitBogusCrosshairPanel()
     m_pCrosshairPreviewFrame->SetMoveable(false);
     m_pCrosshairPreviewFrame->MoveToFront();
     m_pCrosshairPreviewFrame->SetSizeable(false);
-    m_pCrosshairPreviewFrame->SetTitle("#MOM_Settings_Compare_Bogus_Run", false);
+    m_pCrosshairPreviewFrame->SetTitle("#MOM_Settings_Crosshair_Bogus_Title", false);
     m_pCrosshairPreviewFrame->SetTitleBarVisible(true);
     m_pCrosshairPreviewFrame->SetMenuButtonResponsive(false);
     m_pCrosshairPreviewFrame->SetCloseButtonVisible(false);
@@ -280,12 +277,45 @@ void CrosshairSettingsPage::OnCheckboxChecked(Panel *p)
 
     if (p == m_pCrosshairShow)
     {
-        UpdateStyleToggles();
+        if (m_pCrosshairShow->IsSelected())
+        {
+            UpdateStyleToggles();
+            m_pCrosshairAlphaEnable->SetEnabled(true);
+            m_pCrosshairColorButton->SetEnabled(true);
+            m_pDynamicFire->SetEnabled(true);
+            m_pDynamicMove->SetEnabled(true);
+            m_pCrosshairStyle->SetEnabled(true);
+        }
+        else
+        {
+            m_pCrosshairAlphaEnable->SetEnabled(false);
+            m_pCrosshairColorButton->SetEnabled(false);
+            m_pDynamicFire->SetEnabled(false);
+            m_pDynamicMove->SetEnabled(false);
+            m_pCrosshairStyle->SetEnabled(false);
+
+			m_pCrosshairDot->SetEnabled(false);
+            m_pCustomFileEntry->SetEnabled(false);
+            m_pWeaponGap->SetEnabled(false);
+            m_pCrosshairGapSlider->SetEnabled(false);
+            m_pCrosshairGapEntry->SetEnabled(false);
+            m_pOutlineEnable->SetEnabled(false);
+            m_pOutlineThicknessSlider->SetEnabled(false);
+            m_pOutlineThicknessEntry->SetEnabled(false);
+            m_pScaleEnable->SetEnabled(false);
+            m_pCrosshairScaleSlider->SetEnabled(false);
+            m_pCrosshairScaleEntry->SetEnabled(false);
+            m_pCrosshairSizeSlider->SetEnabled(false);
+            m_pCrosshairSizeEntry->SetEnabled(false);
+            m_pCrosshairDrawT->SetEnabled(false);
+            m_pCrosshairThicknessSlider->SetEnabled(false);
+            m_pCrosshairThicknessEntry->SetEnabled(false);
+		}
     }
     else if (p == m_pWeaponGap)
     {
         bool bEnabled = m_pWeaponGap->IsSelected();
-        m_pCrosshairGapSlider->SetEnabled(bEnabled && m_pCrosshairStyle->GetActiveItem() != 1);
+        m_pCrosshairGapSlider->SetEnabled(!bEnabled && m_pCrosshairStyle->GetActiveItem() != 1);
     }
     else if (p == m_pOutlineEnable)
     {

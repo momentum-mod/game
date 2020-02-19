@@ -62,7 +62,6 @@ private:
         *m_pCrosshairSizeSlider, *m_pCrosshairGapSlider;
     vgui::TextEntry *m_pCustomFileEntry, *m_pOutlineThicknessEntry, *m_pCrosshairThicknessEntry,
         *m_pCrosshairScaleEntry, *m_pCrosshairSizeEntry, *m_pCrosshairGapEntry;
-    vgui::Label *m_pCrosshairStyleLabel;
     vgui::ComboBox *m_pCrosshairStyle;
     vgui::ColorPicker *m_pCrosshairColorPicker;
     vgui::Button *m_pCrosshairColorButton;
