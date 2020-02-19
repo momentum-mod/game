@@ -20,8 +20,6 @@ extern ConVar hud_fastswitch;
 // weapon switch types for Convar hud_fastswitch
 #define HUDTYPE_BUCKETS					0	// PC buckets
 #define HUDTYPE_FASTSWITCH				1	// PC fastswitch
-#define	HUDTYPE_PLUS					2	// console buckets
-#define HUDTYPE_CAROUSEL				3	// console carousel scroll
 
 //-----------------------------------------------------------------------------
 // Purpose: Base class for tf2 & hl2 weapon selection hud elements
