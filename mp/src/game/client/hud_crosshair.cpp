@@ -210,8 +210,8 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, bool bIsPreview, int
     }
     else
     {
-        iDistance = 10;
-        iDeltaDistance = 5;
+        iDistance = 4; // based on values from weapon_momentum_rocketlauncher.txt
+        iDeltaDistance = 4;
     }
     if (cl_crosshair_style.GetInt() > 1 && !cl_crosshair_gap_use_weapon_value.GetBool())
     {
@@ -277,7 +277,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, bool bIsPreview, int
         if (weaponBase)
             iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
         else
-            iCrosshairDistance = 20; //find a sane value
+            iCrosshairDistance = iDistance;
         iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
         iBarSize = max(1, (int)((float)iBarSize * scale));
         iBarThickness = max(1, (int)floor(scale + 0.5f)); //thickness of 1 (or odd) causes off-center crosshairs
@@ -289,7 +289,7 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, bool bIsPreview, int
         if (weaponBase)
             iCrosshairDistance = static_cast<int>(ceil(weaponBase->m_flCrosshairDistance * scale));
         else
-            iCrosshairDistance = 5; //find a sane value
+            iCrosshairDistance = iDistance;
         iBarSize = cl_crosshair_size.GetInt();
         iBarThickness = cl_crosshair_thickness.GetInt(); //thickness of 1 (or odd) causes off-center crosshairs
     }
@@ -429,16 +429,21 @@ void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, bool bIsPreview, int
     }
     else
     {
-        CHudTexture *pCrosshairTexture;
-        if (FStrEq(cl_crosshair_file.GetString(), "") || FStrEq(cl_crosshair_file.GetString(), "null"))
-            pCrosshairTexture = gHUD.GetIcon("whiteAdditive");
-        else
-            pCrosshairTexture = gHUD.GetIcon(cl_crosshair_file.GetString());
+        CHudTexture *pCrosshairTexture = gHUD.GetIcon(cl_crosshair_file.GetString());
 
-        if (pCrosshairTexture && weaponBase)
-            weaponBase->m_iCrosshairTextureID = pCrosshairTexture->textureId;
-        //something about DrawSetTextureRGBA
-        surface()->DrawSetTexture(pCrosshairTexture->textureId);
+        if (pCrosshairTexture)
+        {
+            if (weaponBase)
+                weaponBase->m_iCrosshairTextureID = pCrosshairTexture->textureId;
+
+            surface()->DrawSetTexture(pCrosshairTexture->textureId);
+        }
+        else
+        {
+            pCrosshairTexture = gHUD.GetIcon("whiteAdditive");
+            surface()->DrawSetTexture(pCrosshairTexture->textureId);
+        }
+        // DrawSetTextureRGBA might be able to be used for a recoloured and transparent texture?
 
         // make sure dynamic behaviour is ok
         int iLeft = iHalfScreenWidth - (iBarSize + iCrosshairDistance) / 2;

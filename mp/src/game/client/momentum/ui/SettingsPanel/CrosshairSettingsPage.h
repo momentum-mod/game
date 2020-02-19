@@ -29,6 +29,7 @@ class CrosshairSettingsPage : public SettingsPage
     // Handle custom controls
     MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
     void OnApplyChanges() OVERRIDE;
+    void OnClose() OVERRIDE;
     void OnCommand(const char *command) OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnScreenSizeChanged(int oldwide, int oldtall) override;
@@ -67,4 +68,10 @@ private:
     vgui::Button *m_pCrosshairColorButton;
     vgui::Frame *m_pCrosshairPreviewFrame;
     C_CrosshairPreview *m_pCrosshairPreviewPanel;
+
+    int iPrevCrosshair, iPrevAlphaEnable, iPrevDot, iPrevDynamicFire, iPrevDynamicMove, iPrevGap, iPrevWeaponGap,
+        iPrevOutlineEnable, iPrevOutlineThickness, iPrevScale, iPrevScaleEnable, iPrevSize, iPrevStyle, iPrevT,
+        iPrevThickness;
+    char *sPrevFile;
+    Color prevColor, currentColor;
 };
