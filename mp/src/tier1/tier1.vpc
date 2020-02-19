@@ -159,6 +159,5 @@ $Project "tier1"
 		$File	"$SRCDIR\public\tier1\utlsymbollarge.h"
 		$File	"$SRCDIR\public\tier1\utlvector.h"
 		$File	"$SRCDIR\public\tier1\utlbinaryblock.h"
-		$File	"$SRCDIR\common\xbox\xboxstubs.h"				[$WINDOWS]
 	}
 }

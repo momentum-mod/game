@@ -661,7 +661,7 @@ public:
 	virtual bool			GetPlayerView( CViewSetup &playerView );
 
 	// Matchmaking
-	virtual void			SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties );
+	virtual void			SetupGameProperties();
 	virtual uint			GetPresenceID( const char *pIDName );
 	virtual const char		*GetPropertyIdString( const uint id );
 	virtual void			GetPropertyDisplayString( uint id, uint value, char *pOutput, int nBytes );
@@ -1417,9 +1417,9 @@ bool CHLClient::GetPlayerView( CViewSetup &playerView )
 //-----------------------------------------------------------------------------
 // Matchmaking
 //-----------------------------------------------------------------------------
-void CHLClient::SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties )
+void CHLClient::SetupGameProperties()
 {
-	presence->SetupGameProperties( contexts, properties );
+	presence->SetupGameProperties();
 }
 
 uint CHLClient::GetPresenceID( const char *pIDName )

@@ -63,13 +63,13 @@ class CGameUI : public IGameUI
     bool IsMainMenuVisible() OVERRIDE;
 
     // ====== UNUSED ========
-    // Xbox 360
+    // Xbox 360: Can't remove these without engine license
     void OnCreditsFinished() OVERRIDE {}
-    void SystemNotification(const int notification) OVERRIDE {}
-    void SessionNotification(const int notification, const int param) OVERRIDE {}
-    void ShowMessageDialog(const uint nType, vgui::Panel *pOwner) OVERRIDE {}
-    bool ValidateStorageDevice(int *pStorageDeviceValidated) OVERRIDE { return true; }
-    void SessionSearchResult(int searchIdx, void *pHostData, XSESSION_SEARCHRESULT *pResult, int ping) OVERRIDE {}
+    void SystemNotification() OVERRIDE {}
+    void SessionNotification() OVERRIDE {}
+    void ShowMessageDialog() OVERRIDE {}
+    bool ValidateStorageDevice() OVERRIDE { return true; }
+    void SessionSearchResult() OVERRIDE {}
     // Bonus Maps
     void BonusMapUnlock(const char *pchFileName, const char *pchMapName) OVERRIDE {}
     void BonusMapComplete(const char *pchFileName, const char *pchMapName) OVERRIDE {}
@@ -82,7 +82,7 @@ class CGameUI : public IGameUI
     // Dialogs
     void ShowNewGameDialog(int chapter) OVERRIDE{}
     void SetMainMenuOverride(vgui::VPANEL panel) OVERRIDE{}
-    void UpdatePlayerInfo(uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost) OVERRIDE{}
+	void UpdatePlayerInfo() OVERRIDE {}
     // Connection
     void OLD_OnConnectToServer(const char *game, int IP, int port) OVERRIDE {} // OLD: use OnConnectToServer2
     void OnConnectToServer2(const char *game, int IP, int connectionPort, int queryPort) OVERRIDE {}

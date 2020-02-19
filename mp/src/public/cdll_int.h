@@ -20,8 +20,6 @@
 #include "inputsystem/ButtonCode.h"
 #include "modes.h"
 
-#include "xbox/xboxstubs.h"
-
 //-----------------------------------------------------------------------------
 // forward declarations
 //-----------------------------------------------------------------------------
@@ -733,7 +731,7 @@ public:
 	virtual bool			GetPlayerView( CViewSetup &playerView ) = 0;
 
 	// Matchmaking
-	virtual void			SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties ) = 0;
+	virtual void			SetupGameProperties() = 0;
 	virtual uint			GetPresenceID( const char *pIDName ) = 0;
 	virtual const char		*GetPropertyIdString( const uint id ) = 0;
 	virtual void			GetPropertyDisplayString( uint id, uint value, char *pOutput, int nBytes ) = 0;
