@@ -146,13 +146,9 @@ void CBaseHudWeaponSelection::ProcessInput()
 		// If so, close weapon selection when they press fire
 		if ( gHUD.m_iKeyBits & IN_ATTACK )
 		{
-			if ( HUDTYPE_PLUS != hud_fastswitch.GetInt() )
-			{
-				// Swallow the button
-				gHUD.m_iKeyBits &= ~IN_ATTACK;
-				input->ClearInputButton( IN_ATTACK );
-			}
-
+			// Swallow the button
+			gHUD.m_iKeyBits &= ~IN_ATTACK;
+			input->ClearInputButton( IN_ATTACK );
 			engine->ClientCmd( "cancelselect\n" );
 		}
 		return;
@@ -163,15 +159,10 @@ void CBaseHudWeaponSelection::ProcessInput()
 	{
 		if ( IsWeaponSelectable() )
 		{
-#ifndef TF_CLIENT_DLL
-			if ( HUDTYPE_PLUS != hud_fastswitch.GetInt() )
-#endif
-			{
-				// Swallow the button
-				gHUD.m_iKeyBits &= ~(IN_ATTACK | IN_ATTACK2);
-				input->ClearInputButton( IN_ATTACK );
-				input->ClearInputButton( IN_ATTACK2 );
-			}
+			// Swallow the button
+			gHUD.m_iKeyBits &= ~(IN_ATTACK | IN_ATTACK2);
+			input->ClearInputButton( IN_ATTACK );
+			input->ClearInputButton( IN_ATTACK2 );
 
 			// select weapon
 			SelectWeapon();
@@ -210,12 +201,6 @@ void CBaseHudWeaponSelection::HideSelection( void )
 //-----------------------------------------------------------------------------
 bool CBaseHudWeaponSelection::CanBeSelectedInHUD( C_BaseCombatWeapon *pWeapon )
 {
-	// Xbox: In plus type, weapons without ammo can still be selected in the HUD
-	if( HUDTYPE_PLUS == hud_fastswitch.GetInt() )
-	{
-		return pWeapon->VisibleInWeaponSelection();
-	}
-
 	if ( !pWeapon->VisibleInWeaponSelection() )
 	{
 		return false;
@@ -267,50 +252,22 @@ void CBaseHudWeaponSelection::OnWeaponPickup( C_BaseCombatWeapon *pWeapon )
 //------------------------------------------------------------------------
 void CBaseHudWeaponSelection::UserCmd_Slot1(void)
 {
-	if( HUDTYPE_CAROUSEL == hud_fastswitch.GetInt() )
-	{
-		UserCmd_LastWeapon();
-	}
-	else
-	{
-		SelectSlot( 1 );
-	}
+	SelectSlot( 1 );
 }
 
 void CBaseHudWeaponSelection::UserCmd_Slot2(void)
 {
-	if( HUDTYPE_CAROUSEL == hud_fastswitch.GetInt() )
-	{
-		UserCmd_NextWeapon();
-	}
-	else
-	{
-		SelectSlot( 2 );
-	}
+	SelectSlot( 2 );
 }
 
 void CBaseHudWeaponSelection::UserCmd_Slot3(void)
 {
-	if( HUDTYPE_CAROUSEL == hud_fastswitch.GetInt() )
-	{
-		engine->ClientCmd( "phys_swap" );
-	}
-	else
-	{
 		SelectSlot( 3 );
-	}
 }
 
 void CBaseHudWeaponSelection::UserCmd_Slot4(void)
 {
-	if( HUDTYPE_CAROUSEL == hud_fastswitch.GetInt() )
-	{
-		UserCmd_PrevWeapon();
-	}
-	else
-	{
-		SelectSlot( 4 );
-	}
+	SelectSlot( 4 );
 }
 
 void CBaseHudWeaponSelection::UserCmd_Slot5(void)
