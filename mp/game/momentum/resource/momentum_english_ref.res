@@ -400,7 +400,6 @@
         // Crosshair settings
         "MOM_Settings_Tab_Crosshair" "Crosshair"
         "MOM_Settings_Crosshair_Enable" "Draw the crosshair"
-        "MOM_Settings_Crosshair_Style" "Choose crosshair style"
         "MOM_Settings_Crosshair_Size" "Set crosshair size"
         "MOM_Settings_Crosshair_Scale" "Set crosshair scale (when using CS:S styled crosshair)"
         "MOM_Settings_Crosshair_Scale_Enable" "Enables using crosshair scale"
@@ -416,6 +415,7 @@
         "MOM_Settings_Crosshair_Dynamic_Fire" "Enable dynamic crosshair behaviour when firing weapons"
         "MOM_Settings_Crosshair_Dynamic_Move" "Enable dynamic crosshair behaviour when moving"
         "MOM_Settings_Crosshair_File" "Choose a .vtf to use as your crosshair"
+        "MOM_Settings_Crosshair_Style_Label" "Crosshair style:"
         "MOM_Settings_Crosshair_Style_0" "Dots crosshair"
         "MOM_Settings_Crosshair_Style_1" "CS:S"
         "MOM_Settings_Crosshair_Style_2" "CS:GO-like"

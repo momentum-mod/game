@@ -16,6 +16,8 @@ class CrosshairSettingsPage : public SettingsPage
 
     ~CrosshairSettingsPage();
 
+	void SetButtonColors();
+
     // The "bogus" panel is a HUD comparisons panel initted just for this Settings Page.
     void DestroyBogusCrosshairPanel();
     void InitBogusCrosshairPanel();
@@ -25,8 +27,10 @@ class CrosshairSettingsPage : public SettingsPage
     void OnMainDialogShow() OVERRIDE;
 
     // Handle custom controls
+    MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
     void OnApplyChanges() OVERRIDE;
-
+    void OnCommand(const char *command) OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnScreenSizeChanged(int oldwide, int oldtall) override;
 
     // Load the settings for this panel
@@ -42,16 +46,26 @@ class CrosshairSettingsPage : public SettingsPage
     // Used for updating the max stage buffer label
     void OnTextChanged(Panel *p) OVERRIDE;
 
-    MESSAGE_FUNC_INT_INT(OnComparisonResize, "OnSizeChange", wide, tall);
+	void OnControlModified(Panel *p) OVERRIDE;
 
-  private:
-    vgui::CvarToggleCheckButton *m_pCrosshairShow, *mp_CrosshairDot, *m_pAlphaEnable, *m_pDynamicFire, *m_pDynamicMove,
-        *m_pDrawT, *m_pWeaponGap, *m_pOutlineEnable, *m_pScaleEnable;
-    vgui::CvarSlider *m_pOutlineThicknessSlider, *m_pThicknessSlider, *m_pScaleSlider, *m_pSizeSlider, *m_pGapSlider;
-    vgui::TextEntry *m_pCustomFile;
+    MESSAGE_FUNC_INT_INT(OnCrosshairPreviewResize, "OnSizeChange", wide, tall);
+
+private:
+    void UpdateSliderEntries() const;
+    void UpdateStyleToggles() const;
+
+    //ConVarRef cl_crosshair_color, cl_crosshair_style, cl_crosshair_file;
+
+    vgui::CvarToggleCheckButton *m_pCrosshairShow, *m_pCrosshairDot, *m_pCrosshairAlphaEnable, *m_pDynamicFire,
+        *m_pDynamicMove, *m_pCrosshairDrawT, *m_pWeaponGap, *m_pOutlineEnable, *m_pScaleEnable;
+    vgui::CvarSlider *m_pOutlineThicknessSlider, *m_pCrosshairThicknessSlider, *m_pCrosshairScaleSlider,
+        *m_pCrosshairSizeSlider, *m_pCrosshairGapSlider;
+    vgui::TextEntry *m_pCustomFileEntry, *m_pOutlineThicknessEntry, *m_pCrosshairThicknessEntry,
+        *m_pCrosshairScaleEntry, *m_pCrosshairSizeEntry, *m_pCrosshairGapEntry;
+    vgui::Label *m_pCrosshairStyleLabel;
     vgui::ComboBox *m_pCrosshairStyle;
     vgui::ColorPicker *m_pCrosshairColorPicker;
-    vgui::Label *m_pTimeTypeLabel, *m_pMaxZonesLabel;
+    vgui::Button *m_pCrosshairColorButton;
     vgui::Frame *m_pCrosshairPreviewFrame;
     C_CrosshairPreview *m_pCrosshairPreviewPanel;
 };
