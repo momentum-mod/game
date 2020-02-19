@@ -119,13 +119,13 @@
         "MOM_Map_Authors" "By: %authors%"
         "MOM_Map_Difficulty" "Tier: %difficulty%"
         "MOM_InsideStartZone" "Main Start Zone"
-	    "MOM_InsideEndZone" "Main End Zone"
+        "MOM_InsideEndZone" "Main End Zone"
         "MOM_MapFinished" "Map Finished"
         "MOM_Checkpoint" "Checkpoint %s1"
         "MOM_Stage" "Stage %s1"
-		"MOM_Bonus_Start" "Bonus %s1 Start"
-		"MOM_Bonus" "Bonus %s1"
-		"MOM_Bonus_End" "Bonus %s1 End"
+        "MOM_Bonus_Start" "Bonus %s1 Start"
+        "MOM_Bonus" "Bonus %s1"
+        "MOM_Bonus_End" "Bonus %s1 End"
         "MOM_Stage_Start" "Stage %s1 Start"
         "MOM_Linear" "Linear Map"
         "MOM_Staged" "Staged Map"
@@ -387,7 +387,7 @@
         "MOM_Settings_RJ_Trail_Sound_Enable_TT" "When enabled, rockets fired will have a sound following it."
         "MOM_Settings_RJ_Rocket_Decals_Enable" "Enable rocket decals"
         "MOM_Settings_RJ_Rocket_Decals_Enable_TT" "When enabled, rockets will create decals upon explosion."
-		
+
         // Sticky Jump settings
         "MOM_Settings_Tab_SJ" "SJ"
         "MOM_Settings_SJ_Enable_Charge" "Enable charge mechanic"

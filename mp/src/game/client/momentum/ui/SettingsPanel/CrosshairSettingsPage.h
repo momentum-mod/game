@@ -16,7 +16,7 @@ class CrosshairSettingsPage : public SettingsPage
 
     ~CrosshairSettingsPage();
 
-	void SetButtonColors();
+    void SetButtonColors();
 
     // The "bogus" panel is a HUD comparisons panel initted just for this Settings Page.
     void DestroyBogusCrosshairPanel();
@@ -46,7 +46,7 @@ class CrosshairSettingsPage : public SettingsPage
     // Used for updating the max stage buffer label
     void OnTextChanged(Panel *p) OVERRIDE;
 
-	void OnControlModified(Panel *p) OVERRIDE;
+    void OnControlModified(Panel *p) OVERRIDE;
 
     MESSAGE_FUNC_INT_INT(OnCrosshairPreviewResize, "OnSizeChange", wide, tall);
 

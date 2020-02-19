@@ -52,7 +52,7 @@ void C_CrosshairPreview::ApplySchemeSettings(vgui::IScheme *pScheme)
 void C_CrosshairPreview::Paint()
 {
     SetPanelSize(m_iMaxWide, m_iDefaultTall);
-	
+
     CHudCrosshair *pCrosshair = GET_HUDELEMENT(CHudCrosshair);
     pCrosshair->DrawCrosshair(nullptr, true, m_iDefaultXPos + m_iMaxWide / 2, m_iDefaultYPos + m_iDefaultTall / 2);
 }
