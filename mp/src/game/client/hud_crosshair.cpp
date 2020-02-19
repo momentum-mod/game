@@ -175,7 +175,10 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
 
 void CHudCrosshair::DrawCrosshair( CWeaponBase *weaponBase, bool bIsPreview, int iHalfScreenWidth, int iHalfScreenHeight )
 {
-    if ( !bIsPreview && !IsCurrentViewAccessAllowed() )
+    if (!crosshair.GetBool())
+        return;
+	
+	if ( !bIsPreview && !IsCurrentViewAccessAllowed() )
         return;
 
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
