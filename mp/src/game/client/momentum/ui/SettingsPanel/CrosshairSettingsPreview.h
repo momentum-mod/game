@@ -23,7 +23,6 @@ public:
 
 private:
     int m_iDefaultWidth, m_iDefaultTall, m_iDefaultXPos, m_iDefaultYPos;
-    int m_iMaxWide, m_iWidestLabel, m_iWidestValue;
 };
 
 extern C_CrosshairPreview *g_pMOMCrosshairPreview;
