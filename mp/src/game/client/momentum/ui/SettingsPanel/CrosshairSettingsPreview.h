@@ -2,7 +2,6 @@
 
 #include <vgui_controls/Panel.h>
 #include <hudelement.h>
-#include "hud_crosshair.h"
 
 class C_CrosshairPreview : public CHudElement, public vgui::Panel
 {
