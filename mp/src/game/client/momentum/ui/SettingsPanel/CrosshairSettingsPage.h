@@ -29,7 +29,6 @@ class CrosshairSettingsPage : public SettingsPage
     // Handle custom controls
     MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
     void OnApplyChanges() OVERRIDE;
-    void OnClose() OVERRIDE;
     void OnCommand(const char *command) OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnScreenSizeChanged(int oldwide, int oldtall) override;
@@ -54,6 +53,7 @@ class CrosshairSettingsPage : public SettingsPage
 private:
     void UpdateSliderEntries() const;
     void UpdateStyleToggles() const;
+    void UpdatePreviousSettings();
 
     vgui::CvarToggleCheckButton *m_pCrosshairShow, *m_pCrosshairDot, *m_pCrosshairAlphaEnable, *m_pDynamicFire,
         *m_pDynamicMove, *m_pCrosshairDrawT, *m_pWeaponGap, *m_pOutlineEnable, *m_pScaleEnable;
