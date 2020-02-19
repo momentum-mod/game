@@ -282,8 +282,6 @@ float GammaToLinear( float gamma )
 	if ( gamma >= 0.95f )
 	{
 		// Use GammaToLinearFullRange maybe if you trip this.
-// X360TEMP
-//		Assert( gamma <= 1.0f );
 		return 1.0f;
 	}
 
