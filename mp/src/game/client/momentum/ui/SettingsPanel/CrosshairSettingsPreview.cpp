@@ -18,7 +18,6 @@
 
 using namespace vgui;
 
-// DECLARE_NAMED_HUDELEMENT(C_CrosshairPreview, CHudCrosshairPreview);
 static CHudElement *Create_CHudCrosshairPreview(void)
 {
     auto pPanel = new C_CrosshairPreview("CHudCrosshairPreview");
