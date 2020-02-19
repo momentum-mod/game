@@ -18,7 +18,7 @@ class IPresence
 public:
 	virtual void 		UserSetContext( unsigned int nUserIndex, unsigned int nContextId, unsigned int nContextValue, bool bAsync = false ) = 0;
 	virtual void 		UserSetProperty( unsigned int nUserIndex, unsigned int nPropertyId, unsigned int nBytes, const void *pvValue, bool bAsync = false ) = 0;
-	virtual void		SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties ) = 0;
+	virtual void		SetupGameProperties() = 0;
 	virtual uint		GetPresenceID( const char *pIDName ) = 0;
 	virtual const char	*GetPropertyIdString( const uint id ) = 0;
 	virtual void		GetPropertyDisplayString( uint id, uint value, char *pOutput, int nBytes ) = 0;

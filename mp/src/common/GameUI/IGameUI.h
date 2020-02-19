@@ -14,8 +14,6 @@
 #include "interface.h"
 #include "vgui/IPanel.h"
 
-#include "xbox/xboxstubs.h"
-
 // reasons why the user can't connect to a game server
 enum ESteamLoginFailure
 {
@@ -72,13 +70,13 @@ public:
 	// !!!!!!!!!members added after "GameUI011" initial release!!!!!!!!!!!!!!!!!!!
 	virtual void ShowNewGameDialog( int chapter ) = 0;
 
-	// Xbox 360
-	virtual void SessionNotification( const int notification, const int param = 0 ) = 0;
-	virtual void SystemNotification( const int notification ) = 0;
-	virtual void ShowMessageDialog( const uint nType, vgui::Panel *pOwner ) = 0;
-	virtual void UpdatePlayerInfo( uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost ) = 0;
-	virtual void SessionSearchResult( int searchIdx, void *pHostData, XSESSION_SEARCHRESULT *pResult, int ping ) = 0;
-	virtual void OnCreditsFinished( void ) = 0;
+	// Xbox 360: Can't fully remove these without engine license
+	virtual void SessionNotification() = 0;
+	virtual void SystemNotification() = 0;
+	virtual void ShowMessageDialog() = 0;
+	virtual void UpdatePlayerInfo() = 0;
+	virtual void SessionSearchResult() = 0;
+	virtual void OnCreditsFinished() = 0;
 
 	// inserts specified panel as background for level load dialog
 	virtual void SetLoadingBackgroundDialog( vgui::VPANEL panel ) = 0;
@@ -95,11 +93,12 @@ public:
 
 	virtual void OnConnectToServer2(const char *game, int IP, int connectionPort, int queryPort) = 0;
 
+	// This is also called by the engine
 	// X360 Storage device validation:
 	//		returns true right away if storage device has been previously selected.
 	//		otherwise returns false and will set the variable pointed by pStorageDeviceValidated to 1
-	//				  once the storage device is selected by user.
-	virtual bool ValidateStorageDevice( int *pStorageDeviceValidated ) = 0;
+	//				  once the storage device is selected by user. Needs license to remove.
+	virtual bool ValidateStorageDevice() = 0;
 
 	virtual void SetProgressOnStart() = 0;
 	virtual void OnDisconnectFromServer( uint8 eSteamLoginFailure ) = 0;
