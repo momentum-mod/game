@@ -31,10 +31,7 @@ $Group "shaders"
 {
 	"game_shader_dx9"
 }
-$Group "ghost_server"
-{
-	"ghost_server"
-}
+
 $Group "everything"
 {
 	"captioncompiler"
