@@ -7,26 +7,26 @@
 
 #include "tier1/KeyValues.h"
 
-#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/CvarComboBox.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
 
-Panel *Create_CvarToggleCheckButton()
+Panel *Create_CvarComboBox()
 {
-	return new CvarToggleCheckButton( nullptr, nullptr );
+    return new CvarComboBox( nullptr, nullptr );
 }
 
-DECLARE_BUILD_FACTORY_CUSTOM( CvarToggleCheckButton, Create_CvarToggleCheckButton );
-
+//not sure which build factory to use here (and if the constructor above is necessary)
+DECLARE_BUILD_FACTORY_CUSTOM( CvarComboBox, Create_CvarComboBox );
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CvarToggleCheckButton::CvarToggleCheckButton(Panel *parent, const char *panelName, const char *text, char const *cvarname, bool ignoreMissingCvar)
-    : CheckButton(parent, panelName, text), m_cvar((cvarname) ? cvarname : "", (cvarname) ? ignoreMissingCvar : true)
+CvarComboBox::CvarComboBox(Panel *parent, const char *panelName, int numLines, bool allowEdit, char const *cvarname, bool ignoreMissingCvar)
+    : ComboBox(parent, panelName, numLines, allowEdit), m_cvar((cvarname) ? cvarname : "", (cvarname) ? ignoreMissingCvar : true)
 {
     InitSettings();
     m_bIgnoreMissingCvar = ignoreMissingCvar;
@@ -41,14 +41,14 @@ CvarToggleCheckButton::CvarToggleCheckButton(Panel *parent, const char *panelNam
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
 //-----------------------------------------------------------------------------
-CvarToggleCheckButton::~CvarToggleCheckButton()
+CvarComboBox::~CvarComboBox()
 {
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CvarToggleCheckButton::Paint()
+void CvarComboBox::Paint()
 {
     if (!m_cvar.IsValid())
     {
@@ -56,12 +56,12 @@ void CvarToggleCheckButton::Paint()
         return;
     }
 
-    bool value = m_cvar.GetBool();
+    int value = m_cvar.GetInt();
 
-    if (value != m_bStartValue)
+    if (value != m_iStartValue)
     {
-        SetSelected(value);
-        m_bStartValue = value;
+        ActivateItemByRow(value);
+        m_iStartValue = value;
     }
     BaseClass::Paint();
 }
@@ -69,7 +69,7 @@ void CvarToggleCheckButton::Paint()
 //-----------------------------------------------------------------------------
 // Purpose: Called when the OK / Apply button is pressed.  Changed data should be written into cvar.
 //-----------------------------------------------------------------------------
-void CvarToggleCheckButton::OnApplyChanges()
+void CvarComboBox::OnApplyChanges()
 {
     ApplyChanges();
 }
@@ -77,39 +77,39 @@ void CvarToggleCheckButton::OnApplyChanges()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CvarToggleCheckButton::ApplyChanges()
+void CvarComboBox::ApplyChanges()
 {
     if (!m_cvar.IsValid())
         return;
 
-    m_bStartValue = IsSelected();
-    m_cvar.SetValue(m_bStartValue);
+    m_iStartValue = GetActiveItem();
+    m_cvar.SetValue(m_iStartValue);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CvarToggleCheckButton::Reset()
+void CvarComboBox::Reset()
 {
     if (!m_cvar.IsValid())
         return;
 
-    m_bStartValue = m_cvar.GetBool();
-    SetSelected(m_bStartValue);
+    m_iStartValue = m_cvar.GetInt();
+    ActivateItemByRow(m_iStartValue);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CvarToggleCheckButton::HasBeenModified()
+bool CvarComboBox::HasBeenModified()
 {
-    return IsSelected() != m_bStartValue;
+    return GetActiveItem() != m_iStartValue;
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CvarToggleCheckButton::OnButtonChecked()
+void CvarComboBox::OnTextChanged()
 {
     if (HasBeenModified())
     {
@@ -120,7 +120,7 @@ void CvarToggleCheckButton::OnButtonChecked()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CvarToggleCheckButton::ApplySettings(KeyValues *inResourceData)
+void CvarComboBox::ApplySettings(KeyValues *inResourceData)
 {
     BaseClass::ApplySettings(inResourceData);
 
@@ -128,21 +128,19 @@ void CvarToggleCheckButton::ApplySettings(KeyValues *inResourceData)
     const char *cvarValue = inResourceData->GetString("cvar_value", "");
 
     if (!cvarName || !Q_stricmp(cvarName, "") || m_cvar.IsValid())
-        return;// Doesn't have cvar set up in res file, or we were constructed with one
+        return; // Doesn't have cvar set up in res file, or we were constructed with one
 
-    if (Q_stricmp(cvarValue, "1") == 0)
-        m_bStartValue = true;
-    else
-        m_bStartValue = false;
+    //make sure m_iStartValue is set properly here!
+    m_iStartValue = (int)cvarValue - (int)'0';
 
     m_cvar.Init(cvarName, m_bIgnoreMissingCvar);
     if (m_cvar.IsValid())
     {
-        SetSelected(m_cvar.GetBool());
+        ActivateItemByRow(m_cvar.GetInt());
     }
 }
 
-void CvarToggleCheckButton::GetSettings(KeyValues *pOutResource)
+void CvarComboBox::GetSettings(KeyValues *pOutResource)
 {
     BaseClass::GetSettings(pOutResource);
 
@@ -150,7 +148,7 @@ void CvarToggleCheckButton::GetSettings(KeyValues *pOutResource)
     pOutResource->SetString("cvar_value", m_cvar.GetString());
 }
 
-void CvarToggleCheckButton::InitSettings()
+void CvarComboBox::InitSettings()
 {
     BEGIN_PANEL_SETTINGS()
     {"cvar_name", TYPE_STRING},

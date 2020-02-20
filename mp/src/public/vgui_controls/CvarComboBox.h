@@ -5,26 +5,27 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef CVARTOGGLECHECKBUTTON_H
-#define CVARTOGGLECHECKBUTTON_H
+#ifndef CVARCOMBOBOX_H
+#define CVARCOMBOBOX_H
 #ifdef _WIN32
 #pragma once
 #endif
 
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
-#include "vgui_controls/CheckButton.h"
+#include "vgui_controls/ComboBox.h"
 
 namespace vgui
 {
 
-class CvarToggleCheckButton : public CheckButton
+class CvarComboBox : public ComboBox
 {
-    DECLARE_CLASS_SIMPLE(CvarToggleCheckButton, CheckButton);
+    DECLARE_CLASS_SIMPLE(CvarComboBox, ComboBox);
 
-    CvarToggleCheckButton(Panel *parent, const char *panelName, const char *text = "", char const *cvarname = nullptr,
-                          bool ignoreMissingCvar = false);
-    ~CvarToggleCheckButton();
+    // default values taken from ComboBox_Factory()
+    CvarComboBox(Panel *parent, const char *panelName, int numLines = 5, bool allowEdit = true, char const *cvarname = nullptr,
+                 bool ignoreMissingCvar = false);
+    ~CvarComboBox();
 
     void Reset();
     void ApplyChanges();
@@ -38,13 +39,13 @@ class CvarToggleCheckButton : public CheckButton
   private:
     // Called when the OK / Apply button is pressed.  Changed data should be written into cvar.
     MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");
-    MESSAGE_FUNC(OnButtonChecked, "CheckButtonChecked");
+    MESSAGE_FUNC(OnTextChanged, "TextChanged");
 
     ConVarRef m_cvar;
-    bool m_bStartValue;
+    int m_iStartValue;
     bool m_bIgnoreMissingCvar;
 };
 
 } // namespace vgui
 
-#endif // CVARTOGGLECHECKBUTTON_H
+#endif // CVARCOMBOBOX_H
