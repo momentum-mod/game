@@ -115,6 +115,7 @@ void CvarComboBox::OnTextChanged()
     {
         PostActionSignal(new KeyValues("ControlModified"));
     }
+    ApplyChanges();
 }
 
 //-----------------------------------------------------------------------------
