@@ -910,8 +910,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             {
                 if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
                 {
-                    // Disable stickybomb launcher charge while inside start zone
-                    const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(this->GetActiveWeapon());
+                    const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetActiveWeapon());
                     if (pLauncher)
                     {
                         pLauncher->SetChargeEnabled(false);
@@ -920,21 +919,18 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
 
                 DestroyExplosives();
 
-                // Don't limit speed in RJ/SJ,
-                // reset timer on zone enter and start on zone leave.
-                g_pMomentumTimer->Reset(this);
+                // Don't limit speed in RJ/SJ, start on zone leave.
                 m_bStartTimerOnJump = false;
                 m_bShouldLimitPlayerSpeed = false;
-                break;
+            }
+            
+            if (!(g_pMomentumTimer->IsRunning() || m_bHasPracticeMode))
+            {
+                LimitSpeed(260.0f, false);
             }
 
-            // Limit to 260 if timer is not running and we're not in practice mode
-            if (!(g_pMomentumTimer->IsRunning() || m_bHasPracticeMode))
-                LimitSpeed(260.0f, false);
-
-            // When we start on jump, we reset on land (see OnLand)
             // If we're already on ground we can safely reset now
-            if (GetFlags() & FL_ONGROUND && GetMoveType() == MOVETYPE_WALK && !m_bHasPracticeMode)
+            if ((GetFlags() & FL_ONGROUND) && GetMoveType() == MOVETYPE_WALK && !m_bHasPracticeMode)
             {
                 g_pMomentumTimer->Reset(this);
             }
@@ -1051,7 +1047,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         {
             // Re-enable charge on start zone exit and set charge time to 0 to prevent pre-charged stickies
-            const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(this->GetActiveWeapon());
+            const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetActiveWeapon());
             if (pLauncher)
             {
                 pLauncher->SetChargeEnabled(true);
