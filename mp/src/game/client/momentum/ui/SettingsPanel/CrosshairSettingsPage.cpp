@@ -25,8 +25,6 @@ using namespace vgui;
 
 CrosshairSettingsPage::CrosshairSettingsPage(Panel *pParent) : BaseClass(pParent, "CrosshairSettings")
 {
-    m_sPrevFile = new char[64];
-
     // CvarToggleCheckButton
     m_pCrosshairShow = new CvarToggleCheckButton(this, "CrosshairShow", "#MOM_Settings_Crosshair_Enable", "crosshair");
     m_pCrosshairShow->AddActionSignalTarget(this);
@@ -105,30 +103,6 @@ CrosshairSettingsPage::CrosshairSettingsPage(Panel *pParent) : BaseClass(pParent
 
 CrosshairSettingsPage::~CrosshairSettingsPage() {}
 
-void CrosshairSettingsPage::UpdatePreviousSettings()
-{
-    m_iPrevCrosshair = ConVarRef("crosshair").GetInt();
-    m_iPrevAlphaEnable = ConVarRef("cl_crosshair_alpha_enable").GetInt();
-    m_iPrevDot = ConVarRef("cl_crosshair_dot").GetInt();
-    m_iPrevDynamicFire = ConVarRef("cl_crosshair_dynamic_fire").GetInt();
-    m_iPrevDynamicMove = ConVarRef("cl_crosshair_dynamic_move").GetInt();
-    m_iPrevGap = ConVarRef("cl_crosshair_gap").GetInt();
-    m_iPrevWeaponGap = ConVarRef("cl_crosshair_gap_use_weapon_value").GetInt();
-    m_iPrevOutlineEnable = ConVarRef("cl_crosshair_outline_enable").GetInt();
-    m_iPrevOutlineThickness = ConVarRef("cl_crosshair_outline_thickness").GetInt();
-    m_iPrevScale = ConVarRef("cl_crosshair_scale").GetInt();
-    m_iPrevScaleEnable = ConVarRef("cl_crosshair_scale_enable").GetInt();
-    m_iPrevSize = ConVarRef("cl_crosshair_size").GetInt();
-    m_iPrevStyle = ConVarRef("cl_crosshair_style").GetInt();
-    m_iPrevT = ConVarRef("cl_crosshair_t").GetInt();
-    m_iPrevThickness = ConVarRef("cl_crosshair_thickness").GetInt();
-
-    MomUtil::GetColorFromHex(ConVarRef("cl_crosshair_color").GetString(), m_prevColor);
-    m_currentColor = m_prevColor;
-
-    m_sPrevFile = const_cast<char *>(ConVarRef("cl_crosshair_file").GetString());
-}
-
 void CrosshairSettingsPage::SetButtonColors()
 {
     if (m_pCrosshairColorButton)
@@ -199,26 +173,6 @@ void CrosshairSettingsPage::OnMainDialogShow()
 void CrosshairSettingsPage::OnApplyChanges()
 {
     BaseClass::OnApplyChanges();
-
-    m_pCustomFileEntry->GetText(m_sPrevFile, 64);
-    m_prevColor = m_currentColor;
-    m_iPrevStyle = m_pCrosshairStyle->GetActiveItem();
-
-    m_iPrevCrosshair = m_pCrosshairShow->IsSelected();
-    m_iPrevDot = m_pCrosshairDot->IsSelected();
-    m_iPrevAlphaEnable = m_pCrosshairAlphaEnable->IsSelected();
-    m_iPrevDynamicFire = m_pDynamicFire->IsSelected();
-    m_iPrevDynamicMove = m_pDynamicMove->IsSelected();
-    m_iPrevT = m_pCrosshairDrawT->IsSelected();
-    m_iPrevWeaponGap = m_pWeaponGap->IsSelected();
-    m_iPrevOutlineEnable = m_pOutlineEnable->IsSelected();
-    m_iPrevScaleEnable = m_pScaleEnable->IsSelected();
-
-    m_iPrevOutlineThickness = m_pOutlineThicknessSlider->GetSliderValue();
-    m_iPrevThickness = m_pCrosshairThicknessSlider->GetSliderValue();
-    m_iPrevScale = m_pCrosshairScaleSlider->GetSliderValue();
-    m_iPrevSize = m_pCrosshairSizeSlider->GetSliderValue();
-    m_iPrevGap = m_pCrosshairGapSlider->GetSliderValue();
 }
 
 void CrosshairSettingsPage::OnCommand(const char *command)
@@ -239,7 +193,6 @@ void CrosshairSettingsPage::OnCommand(const char *command)
 
 void CrosshairSettingsPage::LoadSettings()
 {
-    UpdatePreviousSettings();
     SetButtonColors();
     m_pCrosshairStyle->ActivateItemByRow(ConVarRef("cl_crosshair_style").GetInt());
     m_pCustomFileEntry->SetText(ConVarRef("cl_crosshair_file").GetString());
@@ -262,36 +215,12 @@ void CrosshairSettingsPage::OnPageShow()
         InitBogusCrosshairPanel();
     else if (!m_pCrosshairPreviewFrame->IsVisible())
         m_pCrosshairPreviewFrame->Activate();
-
-	UpdatePreviousSettings();
 }
 
 void CrosshairSettingsPage::OnPageHide()
 {
     if (m_pCrosshairPreviewFrame)
         m_pCrosshairPreviewFrame->Close();
-
-    ConVarRef("crosshair").SetValue(m_iPrevCrosshair);
-    ConVarRef("cl_crosshair_alpha_enable").SetValue(m_iPrevAlphaEnable);
-
-    char *sPrevColor = new char[32];
-    MomUtil::GetHexStringFromColor(m_prevColor, sPrevColor, 32);
-    ConVarRef("cl_crosshair_color").SetValue(sPrevColor);
-
-    ConVarRef("cl_crosshair_dot").SetValue(m_iPrevDot);
-    ConVarRef("cl_crosshair_dynamic_fire").SetValue(m_iPrevDynamicFire);
-    ConVarRef("cl_crosshair_dynamic_move").SetValue(m_iPrevDynamicMove);
-    ConVarRef("cl_crosshair_file").SetValue(m_sPrevFile);
-    ConVarRef("cl_crosshair_gap").SetValue(m_iPrevGap);
-    ConVarRef("cl_crosshair_gap_use_weapon_value").SetValue(m_iPrevWeaponGap);
-    ConVarRef("cl_crosshair_outline_enable").SetValue(m_iPrevOutlineEnable);
-    ConVarRef("cl_crosshair_outline_thickness").SetValue(m_iPrevOutlineThickness);
-    ConVarRef("cl_crosshair_scale").SetValue(m_iPrevScale);
-    ConVarRef("cl_crosshair_scale_enable").SetValue(m_iPrevScaleEnable);
-    ConVarRef("cl_crosshair_size").SetValue(m_iPrevSize);
-    ConVarRef("cl_crosshair_style").SetValue(m_iPrevStyle);
-    ConVarRef("cl_crosshair_t").SetValue(m_iPrevT);
-    ConVarRef("cl_crosshair_thickness").SetValue(m_iPrevThickness);
 }
 
 void CrosshairSettingsPage::OnCheckboxChecked(Panel *p)
@@ -590,7 +519,6 @@ void CrosshairSettingsPage::OnControlModified(Panel *p)
 void CrosshairSettingsPage::OnColorSelected(KeyValues *pKv)
 {
     Color selected = pKv->GetColor("color");
-    m_currentColor = selected;
 
     Panel *pTarget = static_cast<Panel *>(pKv->GetPtr("targetCallback"));
 

@@ -53,7 +53,6 @@ class CrosshairSettingsPage : public SettingsPage
 private:
     void UpdateSliderEntries() const;
     void UpdateStyleToggles() const;
-    void UpdatePreviousSettings();
 
     vgui::CvarToggleCheckButton *m_pCrosshairShow, *m_pCrosshairDot, *m_pCrosshairAlphaEnable, *m_pDynamicFire,
         *m_pDynamicMove, *m_pCrosshairDrawT, *m_pWeaponGap, *m_pOutlineEnable, *m_pScaleEnable;
@@ -66,10 +65,4 @@ private:
     vgui::Button *m_pCrosshairColorButton;
     vgui::Frame *m_pCrosshairPreviewFrame;
     C_CrosshairPreview *m_pCrosshairPreviewPanel;
-
-    int m_iPrevCrosshair, m_iPrevAlphaEnable, m_iPrevDot, m_iPrevDynamicFire, m_iPrevDynamicMove, m_iPrevGap,
-		m_iPrevWeaponGap, m_iPrevOutlineEnable, m_iPrevOutlineThickness, m_iPrevScale, m_iPrevScaleEnable,
-		m_iPrevSize, m_iPrevStyle, m_iPrevT, m_iPrevThickness;
-    char *m_sPrevFile;
-    Color m_prevColor, m_currentColor;
 };
