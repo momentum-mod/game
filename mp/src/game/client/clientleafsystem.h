@@ -52,7 +52,7 @@ class CClientRenderablesList : public CRefCounted<>
 public:
 	enum
 	{
-		MAX_GROUP_ENTITIES = 4096
+		MAX_GROUP_ENTITIES = 8192
 	};
 
 	struct CEntry
