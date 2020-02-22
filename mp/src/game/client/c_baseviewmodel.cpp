@@ -40,8 +40,7 @@ MAKE_TOGGLE_CONVAR_CV(cl_righthand, "1", FCVAR_ARCHIVE, "Use right-handed view m
     return true;
 });
 
-MAKE_CONVAR(r_viewmodel_opacity, "255", FCVAR_ARCHIVE, "Set the opacity of view models. MIN = 10, MAX = 255.\n", 10.0f,
-            255.0f);
+MAKE_CONVAR(r_viewmodel_opacity, "255", FCVAR_ARCHIVE, "Set the opacity of view models. MIN = 10, MAX = 255.\n", 10.0f, 255.0f);
 
 #ifdef TF_CLIENT_DLL
 	ConVar cl_flipviewmodels( "cl_flipviewmodels", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Flip view models." );
