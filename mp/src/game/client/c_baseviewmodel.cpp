@@ -40,7 +40,7 @@ MAKE_TOGGLE_CONVAR_CV(cl_righthand, "1", FCVAR_ARCHIVE, "Use right-handed view m
     return true;
 });
 
-MAKE_CONVAR(r_viewmodel_opacity, "255", FCVAR_ARCHIVE, "Set the opacity of view models. MIN = 10, MAX = 255.\n", 10.0f, 255.0f);
+MAKE_CONVAR(r_viewmodel_opacity, "1", FCVAR_ARCHIVE, "Set the opacity of view models. MIN = 0.01, MAX = 1.\n", 0.01f, 1.0f);
 
 #ifdef TF_CLIENT_DLL
 	ConVar cl_flipviewmodels( "cl_flipviewmodels", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Flip view models." );
@@ -289,8 +289,8 @@ int C_BaseViewModel::DrawModel( int flags )
 		if ( blend <= 0.0f )
 			return 0;
 
-		// Tell engine the new value. For default cl_viewmodel_opacity this is obviously just blend * 1.
-        render->SetBlend(blend * (r_viewmodel_opacity.GetFloat() / 255.0f));
+		// Tell engine the new value, factoring in r_viewmodel_opacity
+        render->SetBlend(blend * r_viewmodel_opacity.GetFloat());
 
 		float color[3];
 		GetColorModulation( color );
