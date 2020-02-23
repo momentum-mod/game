@@ -1244,7 +1244,7 @@ void CMomentumGameMovement::CategorizePosition()
                 Vector vecNextVelocity = mv->m_vecVelocity;
 
                 // Apply half of gravity as that would be done in the next tick before movement code
-                vecNextVelocity -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+                vecNextVelocity.z -= player->GetGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime;
 
                 // Try to predict what would happen on the next tick if the player didn't get grounded
                 bool bGrounded = true; // Would the player be grounded next tick?
@@ -1303,7 +1303,7 @@ void CMomentumGameMovement::CategorizePosition()
 
                 // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
                 // grounded (exception if the player wants to bhop)
-                if (vecNextVelocity[2] <= NON_JUMP_VELOCITY && bGrounded)
+                if (vecNextVelocity.z <= NON_JUMP_VELOCITY && bGrounded)
                 {
                     // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
                     // velocity.z
