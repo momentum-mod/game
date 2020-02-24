@@ -1,10 +1,3 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================//
-
 #include "tier1/KeyValues.h"
 
 #include <vgui_controls/CvarComboBox.h>
@@ -22,61 +15,35 @@ Panel *Create_CvarComboBox()
 //not sure which build factory to use here (and if the constructor above is necessary)
 DECLARE_BUILD_FACTORY_CUSTOM( CvarComboBox, Create_CvarComboBox );
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
 CvarComboBox::CvarComboBox(Panel *parent, const char *panelName, int numLines, bool allowEdit, char const *cvarname, bool ignoreMissingCvar)
     : ComboBox(parent, panelName, numLines, allowEdit), m_cvar((cvarname) ? cvarname : "", (cvarname) ? ignoreMissingCvar : true)
 {
     InitSettings();
     m_bIgnoreMissingCvar = ignoreMissingCvar;
+    m_iStartValue = 0;
 
-    if (m_cvar.IsValid())
-    {
-        Reset();
-    }
+    Reset();
     AddActionSignalTarget(this);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
 CvarComboBox::~CvarComboBox()
 {
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CvarComboBox::Paint()
+void CvarComboBox::OnThink()
 {
-    if (!m_cvar.IsValid())
+    if (m_cvar.IsValid())
     {
-        BaseClass::Paint();
-        return;
+        if (m_cvar.GetInt() != m_iStartValue)
+            Reset();
     }
-
-    int value = m_cvar.GetInt();
-
-    if (value != m_iStartValue)
-    {
-        ActivateItemByRow(value);
-        m_iStartValue = value;
-    }
-    BaseClass::Paint();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Called when the OK / Apply button is pressed.  Changed data should be written into cvar.
-//-----------------------------------------------------------------------------
 void CvarComboBox::OnApplyChanges()
 {
     ApplyChanges();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CvarComboBox::ApplyChanges()
 {
     if (!m_cvar.IsValid())
@@ -86,9 +53,6 @@ void CvarComboBox::ApplyChanges()
     m_cvar.SetValue(m_iStartValue);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CvarComboBox::Reset()
 {
     if (!m_cvar.IsValid())
@@ -98,17 +62,11 @@ void CvarComboBox::Reset()
     ActivateItemByRow(m_iStartValue);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CvarComboBox::HasBeenModified()
 {
     return GetActiveItem() != m_iStartValue;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CvarComboBox::OnTextChanged()
 {
     if (HasBeenModified())
@@ -118,27 +76,17 @@ void CvarComboBox::OnTextChanged()
     ApplyChanges();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CvarComboBox::ApplySettings(KeyValues *inResourceData)
 {
     BaseClass::ApplySettings(inResourceData);
 
     const char *cvarName = inResourceData->GetString("cvar_name", nullptr);
-    const char *cvarValue = inResourceData->GetString("cvar_value", "");
 
     if (!cvarName || !Q_stricmp(cvarName, "") || m_cvar.IsValid())
         return; // Doesn't have cvar set up in res file, or we were constructed with one
 
-    //make sure m_iStartValue is set properly here!
-    m_iStartValue = (int)cvarValue - (int)'0';
-
     m_cvar.Init(cvarName, m_bIgnoreMissingCvar);
-    if (m_cvar.IsValid())
-    {
-        ActivateItemByRow(m_cvar.GetInt());
-    }
+    Reset();
 }
 
 void CvarComboBox::GetSettings(KeyValues *pOutResource)
