@@ -30,6 +30,7 @@ USING_BUILD_FACTORY( CBitmapImagePanel );
 USING_BUILD_FACTORY( CheckButton );
 USING_BUILD_FACTORY(CheckButtonList);
 USING_BUILD_FACTORY( ComboBox );
+USING_BUILD_FACTORY( CvarComboBox );
 USING_BUILD_FACTORY( CvarToggleCheckButton );
 USING_BUILD_FACTORY( Divider );
 USING_BUILD_FACTORY( ExpandButton );
