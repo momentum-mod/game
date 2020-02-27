@@ -253,6 +253,12 @@ void CMomentumStickybombLauncher::SecondaryAttack()
     }
 }
 
+float CMomentumStickybombLauncher::CalculateProjectileSpeed(float flProgress)
+{
+    return RemapValClamped(flProgress, 0.0f, MOM_STICKYBOMB_MAX_CHARGE_TIME,
+                           MOM_STICKYBOMB_MIN_CHARGE_VEL, MOM_STICKYBOMB_MAX_CHARGE_VEL);
+}
+
 float CMomentumStickybombLauncher::GetProjectileSpeed()
 {
 #ifdef CLIENT_DLL
@@ -262,10 +268,7 @@ float CMomentumStickybombLauncher::GetProjectileSpeed()
     if (!mom_sj_charge_enable.GetBool())
         return 900.0f;
 
-    return RemapValClamped((gpGlobals->curtime - m_flChargeBeginTime), 0.0f, 
-                           MOM_STICKYBOMB_MAX_CHARGE_TIME, 
-                           MOM_STICKYBOMB_MIN_CHARGE_VEL, 
-                           MOM_STICKYBOMB_MAX_CHARGE_VEL);
+    return CalculateProjectileSpeed(gpGlobals->curtime - m_flChargeBeginTime);
 }
 
 
