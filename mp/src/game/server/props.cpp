@@ -877,16 +877,6 @@ void CBreakableProp::Spawn()
 	else
 	{
 		m_takedamage = DAMAGE_YES;
-
-		if( g_pGameRules->GetAutoAimMode() == AUTOAIM_ON_CONSOLE )
-		{
-			if ( HasInteraction( PROPINTER_PHYSGUN_BREAK_EXPLODE ) ||
-				HasInteraction( PROPINTER_FIRE_IGNITE_HALFHEALTH ) )
-			{
-				// Exploding barrels, exploding gas cans
-				AddFlag( FL_AIMTARGET );	
-			}
-		}
 	}
 
 	m_iMaxHealth = ( m_iHealth > 0 ) ? m_iHealth : 1;

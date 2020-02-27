@@ -219,38 +219,6 @@ static float ResponseCurve( int curve, float x, int axis, float sensitivity )
 
 
 //-----------------------------------------------
-// If we have a valid autoaim target, dampen the 
-// player's stick input if it is moving away from
-// the target.
-//
-// This assists the player staying on target.
-//-----------------------------------------------
-float AutoAimDampening( float x, int axis, float dist )
-{
-	// FIXME: Autoaim support needs to be moved from HL2_DLL to the client dll, so all games can use it.
-#ifdef HL2_CLIENT_DLL
-	// Help the user stay on target if the feature is enabled and the user
-	// is not making a gross stick movement.
-	if( joy_autoaimdampen.GetFloat() > 0.0f && fabs(x) < joy_autoaimdampenrange.GetFloat() )
-	{
-		// Get the HL2 player
-		C_BaseHLPlayer *pLocalPlayer = (C_BaseHLPlayer *)C_BasePlayer::GetLocalPlayer();
-
-		if( pLocalPlayer )
-		{
-			// Get the autoaim target
-			if( pLocalPlayer->m_HL2Local.m_bAutoAimTarget )
-			{
-				return joy_autoaimdampen.GetFloat();
-			}
-		}
-	}
-#endif
-	return 1.0f;// No dampening.
-}
-
-
-//-----------------------------------------------
 // This structure holds persistent information used
 // to make decisions about how to modulate analog
 // stick input.
@@ -344,8 +312,6 @@ static float ResponseCurveLookDefault( float x, int axis, float otherAxis, float
 		x = joy_lowmap.GetFloat() * factor;
 	}
 
-	x *= AutoAimDampening( inputXCopy, axis, dist );
-
 	if( axis == YAW && x > 0.0f && joy_display_input.GetBool() )
 	{
 		Msg("In:%f Out:%f Frametime:%f\n", inputXCopy, x, frametime );
@@ -411,8 +377,6 @@ static float ResponseCurveLookAccelerated( float x, int axis, float otherAxis, f
 			}
 		}
 	}
-
-	x *= AutoAimDampening( inputXCopy, axis, dist );
 
 	if( axis == YAW && inputXCopy != 0.0f && joy_display_input.GetBool() )
 	{

@@ -267,7 +267,6 @@ enum DebugOverlayBits_t
 	OVERLAY_RBOX_BIT			=   0x00000040,     // show the rbox overlay
 	OVERLAY_SHOW_BLOCKSLOS		=	0x00000080,		// show entities that block NPC LOS
 	OVERLAY_ATTACHMENTS_BIT		=	0x00000100,		// show attachment points
-	OVERLAY_AUTOAIM_BIT			=	0x00000200,		// Display autoaim radius
 
 	OVERLAY_NPC_SELECTED_BIT	=	0x00001000,		// the npc is current selected
 	OVERLAY_NPC_NEAREST_BIT		=	0x00002000,		// show the nearest node of this npc
@@ -883,9 +882,6 @@ public:
 // still realize that they are teammates. (overridden for NPCs that form groups)
 	virtual Class_T Classify ( void );
 	virtual void	DeathNotice ( CBaseEntity *pVictim ) {}// NPC maker children use this to tell the NPC maker that they have died.
-	virtual bool	ShouldAttractAutoAim( CBaseEntity *pAimingEnt ) { return ((GetFlags() & FL_AIMTARGET) != 0); }
-	virtual float	GetAutoAimRadius();
-	virtual Vector	GetAutoAimCenter() { return WorldSpaceCenter(); }
 
 	virtual ITraceFilter*	GetBeamTraceFilter( void );
 
