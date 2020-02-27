@@ -101,7 +101,7 @@ void CHudStickyCharge::OnThink()
         return;
 
     // Reset the charge label when player stops charging
-    if (mom_hud_sj_chargemeter_units.GetInt() >= 0 && m_pLauncher->GetChargeBeginTime() == 0)
+    if (m_pLauncher->GetChargeBeginTime() == 0)
     {
         m_pChargeLabel->SetText("CHARGE");
     }
@@ -116,6 +116,10 @@ void CHudStickyCharge::OnThink()
     }
     else
     {
+        // If charge label was disabled by start zone, enable it again
+        if (!m_pChargeLabel->IsVisible())
+            m_pChargeLabel->SetVisible(true);
+
         m_pChargeMeter->SetFgColor(Color(235, 235, 235, 255));
         float flChargeMaxTime = m_pLauncher->GetChargeMaxTime();
 
@@ -133,7 +137,7 @@ void CHudStickyCharge::OnThink()
                 if (mom_hud_sj_chargemeter_units.GetInt() == 1)
                 {
                     char buf[64];
-                    Q_snprintf(buf, sizeof(buf), "%du/s", (int) RemapValClamped(flTimeCharged, 0.0f, 4.0f, 900.0f, 2400.0f));
+                    Q_snprintf(buf, sizeof(buf), "%du/s", (int) m_pLauncher->CalculateProjectileSpeed(flTimeCharged));
 
                     m_pChargeLabel->SetText(buf);
                 }
