@@ -373,8 +373,9 @@
         "MOM_Settings_Online_Trails" "Enable online ghost trails"
         "MOM_Settings_Online_Trails_TT" "When enabled, other players can have a trail showing their paths"
         
-        // Rocket Jump settings
-        "MOM_Settings_Tab_RJ" "RJ"
+        // Gamemode-specific settings
+        "MOM_Settings_Tab_Gamemodes" "Gamemodes"
+
         "MOM_Settings_RJ_None" "None"
         "MOM_Settings_RJ_TF2" "TF2"
         "MOM_Settings_RJ_Enable_TF_RocketModel" "Use TF2 rocket model"
@@ -388,9 +389,7 @@
         "MOM_Settings_RJ_Trail_Sound_Enable_TT" "When enabled, rockets fired will have a sound following it."
         "MOM_Settings_RJ_Rocket_Decals_Enable" "Enable rocket decals"
         "MOM_Settings_RJ_Rocket_Decals_Enable_TT" "When enabled, rockets will create decals upon explosion."
-		
-        // Sticky Jump settings
-        "MOM_Settings_Tab_SJ" "SJ"
+
         "MOM_Settings_SJ_Enable_Charge" "Enable charge mechanic"
         "MOM_Settings_SJ_Enable_ChargeMeter" "Enable charge meter"
         "MOM_Settings_SJ_Enable_Sticky_Counter" "Enable stickybomb counter"
