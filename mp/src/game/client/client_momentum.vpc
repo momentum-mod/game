@@ -83,6 +83,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\OnlineSettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.h"
                     }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
@@ -92,6 +93,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\OnlineSettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.cpp"
                 }
                 
                 $Folder "HUD"
