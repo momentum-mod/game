@@ -47,9 +47,7 @@ enum WeaponHudResource_t
     HUD_RESOURCE_AMMO,
     HUD_RESOURCE_AMMO2,
     HUD_RESOURCE_CROSSHAIR,
-    HUD_RESOURCE_AUTOAIM,
     HUD_RESOURCE_ZOOMED_CROSSHAIR,
-    HUD_RESOURCE_ZOOMED_AUTOAIM,
     HUD_RESOURCE_SMALL,
 
     HUD_RESOURCE_MAX
@@ -62,9 +60,7 @@ static const char * const g_szWeaponHudResourceNames[HUD_RESOURCE_MAX] =
     "ammo",
     "ammo2",
     "crosshair",
-    "autoaim",
     "zoom",
-    "zoom_autoaim",
     "weapon_small"
 };
 

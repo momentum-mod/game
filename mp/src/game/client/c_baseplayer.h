@@ -126,7 +126,6 @@ public:
 	virtual Vector			Weapon_ShootPosition();
 	virtual void			Weapon_DropPrimary( void ) {}
 
-	virtual Vector			GetAutoaimVector( float flScale );
 	void					SetSuitUpdate(const char *name, int fgroup, int iNoRepeat);
 
 	// Input handling
@@ -260,7 +259,6 @@ public:
 	virtual bool				Weapon_ShouldSelectItem( C_BaseCombatWeapon *pWeapon );
 	virtual	bool				Weapon_Switch( C_BaseCombatWeapon *pWeapon, int viewmodelindex = 0 );		// Switch to given weapon if has ammo (false if failed)
 	virtual C_BaseCombatWeapon *GetLastWeapon( void ) { return m_hLastWeapon.Get(); }
-	void						ResetAutoaim( void );
 	virtual void 				SelectItem( const char *pstr, int iSubType = 0 );
 
 	virtual void				UpdateClientData( void );

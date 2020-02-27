@@ -2063,86 +2063,58 @@ C_BaseCombatWeapon	*C_BasePlayer::GetActiveWeapon( void ) const
 	return fromPlayer->C_BaseCombatCharacter::GetActiveWeapon();
 }
 
-//=========================================================
-// Autoaim
-// set crosshair position to point to enemey
-//=========================================================
-Vector C_BasePlayer::GetAutoaimVector( float flScale )
-{
-	// Never autoaim a predicted weapon (for now)
-	Vector	forward;
-	AngleVectors( GetAbsAngles() + m_Local.m_vecPunchAngle, &forward );
-	return	forward;
-}
 
 void C_BasePlayer::PlayPlayerJingle()
 {
-
 	// Find player sound for shooter
 	player_info_t info;
 	engine->GetPlayerInfo( entindex(), &info );
 
-	if ( !cl_customsounds.GetBool() )
-		return;
+    if (!cl_customsounds.GetBool())
+        return;
 
-	// Doesn't have a jingle sound
-	 if ( !info.customFiles[1] )	
-		return;
+    // Doesn't have a jingle sound
+    if (!info.customFiles[1])
+        return;
 
-	char soundhex[ 16 ];
-	Q_binarytohex( (byte *)&info.customFiles[1], sizeof( info.customFiles[1] ), soundhex, sizeof( soundhex ) );
+    char soundhex[16];
+    Q_binarytohex((byte *)&info.customFiles[1], sizeof(info.customFiles[1]), soundhex, sizeof(soundhex));
 
-	// See if logo has been downloaded.
-	char fullsoundname[ 512 ];
-	Q_snprintf( fullsoundname, sizeof( fullsoundname ), "sound/temp/%s.wav", soundhex );
+    // See if logo has been downloaded.
+    char fullsoundname[512];
+    Q_snprintf(fullsoundname, sizeof(fullsoundname), "sound/temp/%s.wav", soundhex);
 
-	if ( !filesystem->FileExists( fullsoundname ) )
-	{
-		char custname[ 512 ];
-		Q_snprintf( custname, sizeof( custname ), "download/user_custom/%c%c/%s.dat", soundhex[0], soundhex[1], soundhex );
-		// it may have been downloaded but not copied under materials folder
-		if ( !filesystem->FileExists( custname ) )
-			return; // not downloaded yet
+    if (!filesystem->FileExists(fullsoundname))
+    {
+        char custname[512];
+        Q_snprintf(custname, sizeof(custname), "download/user_custom/%c%c/%s.dat", soundhex[0], soundhex[1], soundhex);
+        // it may have been downloaded but not copied under materials folder
+        if (!filesystem->FileExists(custname))
+            return; // not downloaded yet
 
-		// copy from download folder to materials/temp folder
-		// this is done since material system can access only materials/*.vtf files
+        // copy from download folder to materials/temp folder
+        // this is done since material system can access only materials/*.vtf files
 
-		if ( !engine->CopyLocalFile( custname, fullsoundname) )
-			return;
-	}
+        if (!engine->CopyLocalFile(custname, fullsoundname))
+            return;
+    }
 
-	Q_snprintf( fullsoundname, sizeof( fullsoundname ), "temp/%s.wav", soundhex );
+    Q_snprintf(fullsoundname, sizeof(fullsoundname), "temp/%s.wav", soundhex);
 
-	CLocalPlayerFilter filter;
+    CLocalPlayerFilter filter;
 
-	EmitSound_t ep;
-	ep.m_nChannel = CHAN_VOICE;
-	ep.m_pSoundName =  fullsoundname;
-	ep.m_flVolume = VOL_NORM;
-	ep.m_SoundLevel = SNDLVL_NORM;
+    EmitSound_t ep;
+    ep.m_nChannel = CHAN_VOICE;
+    ep.m_pSoundName = fullsoundname;
+    ep.m_flVolume = VOL_NORM;
+    ep.m_SoundLevel = SNDLVL_NORM;
 
-	C_BaseEntity::EmitSound( filter, GetSoundSourceIndex(), ep );
+    C_BaseEntity::EmitSound(filter, GetSoundSourceIndex(), ep);
 }
-
 // Stuff for prediction
 void C_BasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeat)
 {
 	// FIXME:  Do something here?
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void C_BasePlayer::ResetAutoaim( void )
-{
-#if 0
-	if (m_vecAutoAim.x != 0 || m_vecAutoAim.y != 0)
-	{
-		m_vecAutoAim = QAngle( 0, 0, 0 );
-		engine->CrosshairAngle( edict(), 0, 0 );
-	}
-#endif
-	m_fOnTarget = false;
 }
 
 bool C_BasePlayer::ShouldPredict( void )

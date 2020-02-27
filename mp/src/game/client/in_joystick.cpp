@@ -74,8 +74,6 @@ static ConVar joy_lowend( "joy_lowend", "1", FCVAR_ARCHIVE );
 static ConVar joy_lowmap( "joy_lowmap", "1", FCVAR_ARCHIVE );
 static ConVar joy_accelscale( "joy_accelscale", "0.6", FCVAR_ARCHIVE);
 static ConVar joy_accelmax( "joy_accelmax", "1.0", FCVAR_ARCHIVE);
-static ConVar joy_autoaimdampenrange( "joy_autoaimdampenrange", "0", FCVAR_ARCHIVE, "The stick range where autoaim dampening is applied. 0 = off" );
-static ConVar joy_autoaimdampen( "joy_autoaimdampen", "0", FCVAR_ARCHIVE, "How much to scale user stick input when the gun is pointing at a valid target." );
 
 static ConVar joy_vehicle_turn_lowend("joy_vehicle_turn_lowend", "0.7");
 static ConVar joy_vehicle_turn_lowmap("joy_vehicle_turn_lowmap", "0.4");
