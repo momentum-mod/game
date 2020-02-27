@@ -8,7 +8,7 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 $ErrorActionPreference= 'silentlycontinue'
 # This is the path to your steamworks dev folder (depo). This should be the folder with hl2.exe inside of it.
 # Your local momentum folder will be sym linked INSIDE this folder as momentum
-$path = "E:\Steamworks\dev\MomentumDev"
+$path = "E:\Steamworks\dev\Momentum"
 
 # Boot arguments
 $hl2exe = Join-Path $path hl2.exe 

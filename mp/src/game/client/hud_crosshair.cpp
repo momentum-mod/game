@@ -150,24 +150,6 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
     float x = vw / 2.0f;
     float y = vh / 2.0f;
 
-    // MattB - angleCrosshairOffset is the autoaim angle.
-    // if we're not using autoaim, just draw in the middle of the 
-    // screen
-    if ( angleCrosshairOffset != vec3_angle )
-    {
-        Vector forward;
-        Vector point, screen;
-
-        // this code is wrong
-        const QAngle angles = curViewAngles + angleCrosshairOffset;
-        AngleVectors( angles, &forward );
-        VectorAdd( curViewOrigin, forward, point );
-        ScreenTransform( point, screen );
-
-        x += 0.5f * screen[0] * vw + 0.5f;
-        y += 0.5f * screen[1] * vh + 0.5f;
-    }
-
     *pX = x;
     *pY = y;
     *pbBehindCamera = false;
