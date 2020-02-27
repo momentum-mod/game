@@ -101,7 +101,7 @@ void CHudStickyCharge::OnThink()
         return;
 
     // Reset the charge label when player stops charging
-    if (m_pLauncher->GetChargeBeginTime() == 0)
+    if (m_pLauncher->GetChargeBeginTime() <= 0.0f)
     {
         m_pChargeLabel->SetText("CHARGE");
     }
