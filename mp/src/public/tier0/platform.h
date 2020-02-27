@@ -96,7 +96,6 @@
 		#define IsPlatformOpenGL() false
 	#endif
 #elif defined(POSIX)
-	#define IsPC() true
 	#define IsWindows() false
 	#if defined( LINUX )
 		#define IsLinux() true
@@ -178,7 +177,6 @@ typedef signed char int8;
 //-----------------------------------------------------------------------------
 // Set up platform type defines.
 //-----------------------------------------------------------------------------
-#define IsPC()			true
 
 #ifdef PLATFORM_64BITS
 	#define IsPlatform64Bits()	true

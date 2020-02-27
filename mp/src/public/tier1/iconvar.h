@@ -81,6 +81,7 @@ class CCommand;
 // #define FCVAR_AVAILABLE			(1<<19)
 // #define FCVAR_AVAILABLE			(1<<20)
 // #define FCVAR_AVAILABLE			(1<<21)
+// #define FCVAR_AVAILABLE			(1<<24)
 // #define FCVAR_AVAILABLE			(1<<23)
 // #define FCVAR_AVAILABLE			(1<<26)
 // #define FCVAR_AVAILABLE			(1<<27)
