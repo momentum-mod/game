@@ -255,7 +255,6 @@ $Project
 		$File	"hud_vehicle.cpp"
 		$File	"$SRCDIR\game\shared\igamesystem.cpp"
 		$File	"in_camera.cpp"
-		$File	"in_joystick.cpp"
 		$File	"in_main.cpp"
 		$File	"initializer.cpp"
 		$File	"interpolatedvar.cpp"
