@@ -26,7 +26,6 @@
 bool ScreenTransform( const Vector& point, Vector& screen );
 
 extern ConVar default_fov;
-extern ConVar joy_response_move_vehicle;
 
 
 IMPLEMENT_CLIENTCLASS_DT(C_PropVehicleDriveable, DT_PropVehicleDriveable, CPropVehicleDriveable)
@@ -92,16 +91,6 @@ C_PropVehicleDriveable::C_PropVehicleDriveable() :
 C_PropVehicleDriveable::~C_PropVehicleDriveable()
 {
 }
-
-
-//-----------------------------------------------------------------------------
-// By default all driveable vehicles use the curve defined by the convar.
-//-----------------------------------------------------------------------------
-int C_PropVehicleDriveable::GetJoystickResponseCurve() const
-{
-	return joy_response_move_vehicle.GetInt();
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 

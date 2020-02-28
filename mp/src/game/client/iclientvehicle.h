@@ -42,9 +42,6 @@ public:
 
 	// Allows the vehicle to change the near clip plane
 	virtual void GetVehicleClipPlanes( float &flZNear, float &flZFar ) const = 0;
-	
-	// Allows vehicles to choose their own curves for players using joysticks
-	virtual int GetJoystickResponseCurve() const = 0;
 
 #ifdef HL2_CLIENT_DLL
 	// Ammo in the vehicles
