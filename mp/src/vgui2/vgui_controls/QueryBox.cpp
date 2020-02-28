@@ -208,14 +208,7 @@ void QueryBox::OnKeyCodeTyped( KeyCode code )
 //-----------------------------------------------------------------------------
 void QueryBox::OnKeyCodePressed( KeyCode code )
 {
-	if ( code == KEY_XBUTTON_B )
-	{
-		OnCommand("Cancel");
-	}
-	else
-	{
-		Frame::OnKeyCodePressed(code);
-	}
+	Frame::OnKeyCodePressed(code);
 }
 
 

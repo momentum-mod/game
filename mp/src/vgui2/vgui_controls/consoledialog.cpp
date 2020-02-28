@@ -1166,12 +1166,5 @@ void CConsoleDialog::DumpConsoleTextToFile()
 
 void CConsoleDialog::OnKeyCodePressed( vgui::KeyCode code )
 {
-	if ( code == KEY_XBUTTON_B )
-	{
-		Hide();
-	}
-	else
-	{
-		BaseClass::OnKeyCodePressed(code);
-	}
+	BaseClass::OnKeyCodePressed(code);
 }
