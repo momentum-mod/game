@@ -401,13 +401,6 @@ void COptionsSubKeyboard::FillInCurrentBindings( void )
 	// Clear any current settings
 	ClearBindItems();
 
-	bool bJoystick = false;
-	ConVarRef var( "joystick" );
-	if ( var.IsValid() )
-	{
-		bJoystick = var.GetBool();
-	}
-
 	for ( int i = 0; i < BUTTON_CODE_LAST; i++ )
 	{
 		ButtonCode_t bc = static_cast<ButtonCode_t>(i);
@@ -429,12 +422,6 @@ void COptionsSubKeyboard::FillInCurrentBindings( void )
 			if ( currentKey && currentKey[ 0 ] )
 			{
 				ButtonCode_t currentBC = (ButtonCode_t)gameuifuncs->GetButtonCodeForBind( currentKey );
-
-				// If we're using a joystick, joystick bindings override keyboard ones
-                bool bShouldOverride = bJoystick && IsJoystickCode(bc) && !IsJoystickCode(currentBC);
-
-				if ( !bShouldOverride )
-					continue;
 
 				// Remove the key we're about to override from the unbinding list
 				m_KeysToUnbind.FindAndRemove( currentBC );
