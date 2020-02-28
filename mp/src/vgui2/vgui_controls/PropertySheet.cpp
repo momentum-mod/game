@@ -1399,17 +1399,11 @@ void PropertySheet::OnKeyCodePressed(KeyCode code)
 		{
 			// for now left and right arrows just open or close submenus if they are there.
 		case KEY_RIGHT:
-		case KEY_XBUTTON_RIGHT:
-		case KEY_XSTICK1_RIGHT:
-		case KEY_XSTICK2_RIGHT:
 			{
 				ChangeActiveTab(_activeTabIndex+1);
 				break;
 			}
 		case KEY_LEFT:
-		case KEY_XBUTTON_LEFT:
-		case KEY_XSTICK1_LEFT:
-		case KEY_XSTICK2_LEFT:
 			{
 				ChangeActiveTab(_activeTabIndex-1);
 				break;
