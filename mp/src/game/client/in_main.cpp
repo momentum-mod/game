@@ -27,7 +27,6 @@
 #include "haptics/haptic_utils.h"
 #include <vgui/ISurface.h>
 
-extern ConVar in_joystick;
 extern ConVar cam_idealpitch;
 extern ConVar cam_idealyaw;
 
@@ -63,7 +62,6 @@ ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif
 ConVar lookspring( "lookspring", "0", FCVAR_ARCHIVE );
 ConVar lookstrafe( "lookstrafe", "0", FCVAR_ARCHIVE );
-ConVar in_joystick( "joystick","0", FCVAR_ARCHIVE );
 
 ConVar thirdperson_platformer( "thirdperson_platformer", "0", 0, "Player will aim in the direction they are moving." );
 ConVar thirdperson_screenspace( "thirdperson_screenspace", "0", 0, "Movement will be relative to the camera, eg: left means screen-left" );
@@ -146,16 +144,6 @@ void IN_CenterView_f (void)
 			engine->SetViewAngles( viewangles );
 		}
 	}
-}
-
-/*
-===========
-IN_Joystick_Advanced_f
-===========
-*/
-void IN_Joystick_Advanced_f (void)
-{
-	::input->Joystick_Advanced();
 }
 
 /*
@@ -901,36 +889,6 @@ void CInput::ControllerMove( float frametime, CUserCmd *cmd )
 	{
 		MouseMove( cmd);
 	}
-
-	JoyStickMove( frametime, cmd);
-
-	// NVNT if we have a haptic device..
-	if(haptics && haptics->HasDevice())
-	{
-		if(engine->IsPaused() || engine->IsLevelMainMenuBackground() || vgui::surface()->IsCursorVisible() || !engine->IsInGame())
-		{
-			// NVNT send a menu process to the haptics system.
-			haptics->MenuProcess();
-			return;
-		}
-#ifdef CSTRIKE_DLL
-		// NVNT cstrike fov grabing.
-		C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
-		if(player){
-			haptics->UpdatePlayerFOV(player->GetFOV());
-		}
-#endif
-		// NVNT calculate move with the navigation on the haptics system.
-		haptics->CalculateMove(cmd->forwardmove, cmd->sidemove, frametime);
-		// NVNT send a game process to the haptics system.
-		haptics->GameProcess();
-#if defined( WIN32 )
-		// NVNT update our avatar effect.
-		UpdateAvatarEffect();
-#endif
-	}
-
-
 }
 
 //-----------------------------------------------------------------------------
@@ -1078,19 +1036,6 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 
 	// Set button and flag bits
 	cmd->buttons = GetButtonBits( 1 );
-
-	// Using joystick?
-	if ( in_joystick.GetInt() )
-	{
-		if ( cmd->forwardmove > 0 )
-		{
-			cmd->buttons |= IN_FORWARD;
-		}
-		else if ( cmd->forwardmove < 0 )
-		{
-			cmd->buttons |= IN_BACK;
-		}
-	}
 
 	// Use new view angles if alive, otherwise user last angles we stored off.
 	if ( g_iAlive )
@@ -1470,7 +1415,6 @@ static ConCommand endgraph("-graph", IN_GraphUp);
 static ConCommand startbreak("+break",IN_BreakDown);
 static ConCommand endbreak("-break",IN_BreakUp);
 static ConCommand force_centerview("force_centerview", IN_CenterView_f);
-static ConCommand joyadvancedupdate("joyadvancedupdate", IN_Joystick_Advanced_f, "", FCVAR_CLIENTCMD_CAN_EXECUTE);
 static ConCommand startzoom("+zoom", IN_ZoomDown);
 static ConCommand endzoom("-zoom", IN_ZoomUp);
 static ConCommand endgrenade1( "-grenade1", IN_Grenade1Up );
@@ -1505,8 +1449,6 @@ void CInput::Init_All (void)
 	m_rgNewMouseParms[ MOUSE_SPEED_FACTOR ] = 1;		// 0 = disabled, 1 = threshold 1 enabled, 2 = threshold 2 enabled
 
 	m_fMouseParmsValid	= false;
-	m_fJoystickAdvancedInit = false;
-	m_fHadJoysticks = false;
 	m_flLastForwardMove = 0.0;
 
 	Init_Mouse ();
