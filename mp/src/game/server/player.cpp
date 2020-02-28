@@ -57,7 +57,6 @@
 #include "hltvdirector.h"
 #include "nav_mesh.h"
 #include "env_zoom.h"
-#include "rumble_shared.h"
 #include "gamestats.h"
 #include "npcevent.h"
 #include "datacache/imdlcache.h"
@@ -1645,8 +1644,6 @@ void CBasePlayer::Event_Killed( const CTakeDamageInfo &info )
 	g_pGameRules->PlayerKilled( this, info );
 
 	gamestats->Event_PlayerKilled( this, info );
-
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
 
 #if defined( WIN32 )
 	// NVNT set the drag to zero in the case of underwater death.
@@ -5026,8 +5023,6 @@ void CBasePlayer::Spawn( void )
 	}
 #endif
 
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
-
 	// Calculate this immediately
 	m_nVehicleViewSavedFrame = 0;
 
@@ -5047,8 +5042,6 @@ void CBasePlayer::Activate( void )
 	BaseClass::Activate();
 
 	AimTarget_ForceRepopulateList();
-
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
 
 	// Reset the analog bias. If the player is in a vehicle when the game
 	// reloads, it will autosense and apply the correct bias.
@@ -5550,9 +5543,6 @@ void CBasePlayer::LeaveVehicle( const Vector &vecExitPoint, const QAngle &vecExi
 			ShowCrosshair( true );
 		}
 	}
-
-	// Just cut all of the rumble effects. 
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
 }
 
 
@@ -6696,21 +6686,6 @@ void CBasePlayer::UpdateClientData( void )
 
 	// Let any global rules update the HUD, too
 	g_pGameRules->UpdateClientData( this );
-}
-
-void CBasePlayer::RumbleEffect( unsigned char index, unsigned char rumbleData, unsigned char rumbleFlags )
-{
-	if( !IsAlive() )
-		return;
-
-	CSingleUserRecipientFilter filter( this );
-	filter.MakeReliable();
-
-	UserMessageBegin( filter, "Rumble" );
-	WRITE_BYTE( index );
-	WRITE_BYTE( rumbleData );
-	WRITE_BYTE( rumbleFlags	);
-	MessageEnd();
 }
 
 void CBasePlayer::EnableControl(bool fControl)

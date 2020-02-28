@@ -13,7 +13,6 @@
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "decals.h"
 #include "coordsize.h"
-#include "rumble_shared.h"
 #include "mom_system_gamemode.h"
 
 #if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
@@ -3952,10 +3951,6 @@ void CGameMovement::PlayerRoughLandingEffects( float fvol )
 		{
 			player->m_Local.m_vecPunchAngle.Set( PITCH, 8 );
 		}
-
-#if !defined( CLIENT_DLL )
-		player->RumbleEffect( ( fvol > 0.85f ) ? ( RUMBLE_FALL_LONG ) : ( RUMBLE_FALL_SHORT ), 0, RUMBLE_FLAGS_NONE );
-#endif
 	}
 }
 
