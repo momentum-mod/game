@@ -13,14 +13,6 @@
 
 using namespace vgui;
 
-vgui::KeyCode g_iCodesForAliases[FM_NUM_KEYREPEAT_ALIASES] = 
-{
-	KEY_XBUTTON_UP,
-	KEY_XBUTTON_DOWN,
-	KEY_XBUTTON_LEFT,
-	KEY_XBUTTON_RIGHT,
-};
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

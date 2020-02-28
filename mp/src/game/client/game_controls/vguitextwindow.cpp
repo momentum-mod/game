@@ -374,12 +374,6 @@ void CTextWindow::OnCommand( const char *command )
 
 void CTextWindow::OnKeyCodePressed( vgui::KeyCode code )
 {
-	if ( code == KEY_XBUTTON_A || code == KEY_XBUTTON_B )
-	{
-		OnCommand( "okay" );
-		return;
-	}
-
 	BaseClass::OnKeyCodePressed(code);
 }
 
