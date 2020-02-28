@@ -2304,9 +2304,6 @@ void ListPanel::OnKeyCodePressed(KeyCode code)
 		break;
 
 	case KEY_UP:
-	case KEY_XBUTTON_UP:
-	case KEY_XSTICK1_UP:
-	case KEY_XSTICK2_UP:
 		if ( nTotalRows > 0 )
 		{
 			nSelectedRow--;
@@ -2315,9 +2312,6 @@ void ListPanel::OnKeyCodePressed(KeyCode code)
 		// fall through
 
 	case KEY_DOWN:
-	case KEY_XBUTTON_DOWN:
-	case KEY_XSTICK1_DOWN:
-	case KEY_XSTICK2_DOWN:
 		if ( nTotalRows > 0 )
 		{
 			nSelectedRow++;
@@ -2326,9 +2320,6 @@ void ListPanel::OnKeyCodePressed(KeyCode code)
 		// fall through
 
 	case KEY_LEFT:
-	case KEY_XBUTTON_LEFT:
-	case KEY_XSTICK1_LEFT:
-	case KEY_XSTICK2_LEFT:
 		if (m_bCanSelectIndividualCells && (GetSelectedItemsCount() == 1) && (nSelectedColumn >= 0) )
 		{
 			nSelectedColumn--;
@@ -2341,9 +2332,6 @@ void ListPanel::OnKeyCodePressed(KeyCode code)
 		// fall through
 
 	case KEY_RIGHT:
-	case KEY_XBUTTON_RIGHT:
-	case KEY_XSTICK1_RIGHT:
-	case KEY_XSTICK2_RIGHT:
 		if (m_bCanSelectIndividualCells && (GetSelectedItemsCount() == 1) && (nSelectedColumn >= 0) )
 		{
 			nSelectedColumn++;
