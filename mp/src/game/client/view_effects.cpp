@@ -296,7 +296,7 @@ void CViewEffects::CalcShake( void )
 		}
 		fraction = fraction * sin( angle );
 		
-		if( pShake->command == SHAKE_START_NORUMBLE )
+		if( pShake->command == SHAKE_START_NORUMBLE || pShake->command == SHAKE_START )
 		{
 			// As long as this isn't a RUMBLE ONLY effect, then accumulate screen shake
 			
