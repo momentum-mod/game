@@ -1059,14 +1059,6 @@ bool C_BasePlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 	}
 	else 
 	{
-		if ( joy_autosprint.GetBool() )
-		{
-			if ( input->KeyState( &in_joyspeed ) != 0.0f )
-			{
-				pCmd->buttons |= IN_SPEED;
-			}
-		}
-
 		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
 		if ( pWeapon )
 		{
