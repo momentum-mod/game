@@ -21,31 +21,6 @@ struct keystring_t
 	const char *name;
 };
 
-static const keystring_t s_ControllerButtons[] = {	{ KEY_XBUTTON_UP,				"KEY_XBUTTON_UP" },
-												{ KEY_XBUTTON_DOWN,				"KEY_XBUTTON_DOWN" },
-												{ KEY_XBUTTON_LEFT,				"KEY_XBUTTON_LEFT" },
-												{ KEY_XBUTTON_RIGHT,			"KEY_XBUTTON_RIGHT" },
-												{ KEY_XBUTTON_START,			"KEY_XBUTTON_START" },
-												{ KEY_XBUTTON_BACK,				"KEY_XBUTTON_BACK" },
-												{ KEY_XBUTTON_STICK1,			"KEY_XBUTTON_STICK1" },
-												{ KEY_XBUTTON_STICK2,			"KEY_XBUTTON_STICK2" },
-												{ KEY_XBUTTON_A,				"KEY_XBUTTON_A" },
-												{ KEY_XBUTTON_B,				"KEY_XBUTTON_B" },
-												{ KEY_XBUTTON_X,				"KEY_XBUTTON_X" },
-												{ KEY_XBUTTON_Y,				"KEY_XBUTTON_Y" },
-												{ KEY_XBUTTON_LEFT_SHOULDER,	"KEY_XBUTTON_LEFT_SHOULDER" },
-												{ KEY_XBUTTON_RIGHT_SHOULDER,	"KEY_XBUTTON_RIGHT_SHOULDER" },
-												{ KEY_XBUTTON_LTRIGGER, 		"KEY_XBUTTON_LTRIGGER" },
-												{ KEY_XBUTTON_RTRIGGER, 		"KEY_XBUTTON_RTRIGGER" },
-												{ KEY_XSTICK1_UP,				"KEY_XSTICK1_UP" },
-												{ KEY_XSTICK1_DOWN,				"KEY_XSTICK1_DOWN" },
-												{ KEY_XSTICK1_LEFT,				"KEY_XSTICK1_LEFT" },
-												{ KEY_XSTICK1_RIGHT,			"KEY_XSTICK1_RIGHT" },
-												{ KEY_XSTICK2_UP,				"KEY_XSTICK2_UP" },
-												{ KEY_XSTICK2_DOWN,				"KEY_XSTICK2_DOWN" },
-												{ KEY_XSTICK2_LEFT,				"KEY_XSTICK2_LEFT" },
-												{ KEY_XSTICK2_RIGHT,			"KEY_XSTICK2_RIGHT" } };
-
 //-----------------------------------------------------------------------------
 // Purpose: for the UtlMap
 //-----------------------------------------------------------------------------
@@ -59,11 +34,6 @@ bool lessFunc( const int &lhs, const int &rhs )
 //-----------------------------------------------------------------------------
 int StringToButtonCode( const char *name )
 {
-	for ( int i = 0; i < ARRAYSIZE( s_ControllerButtons ); ++i )
-	{
-		if ( !Q_stricmp( s_ControllerButtons[i].name, name ) )
-			return s_ControllerButtons[i].code;
-	}
 	return -1;
 }
 
