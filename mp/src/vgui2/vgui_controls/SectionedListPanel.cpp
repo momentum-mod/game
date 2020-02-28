@@ -1702,12 +1702,7 @@ void SectionedListPanel::OnKeyCodePressed( KeyCode code )
 
 	int buttonTall = GetSectionTall();
 
-	ButtonCode_t nButtonCode = GetBaseButtonCode( code );
-		
-	if ( nButtonCode == KEY_XBUTTON_DOWN || 
-		 nButtonCode == KEY_XSTICK1_DOWN ||
-		 nButtonCode == KEY_XSTICK2_DOWN ||
-		 code == KEY_DOWN )
+	if ( code == KEY_DOWN )
 	{
 		int itemID = GetSelectedItem();
 		MoveSelectionDown();
@@ -1717,10 +1712,7 @@ void SectionedListPanel::OnKeyCodePressed( KeyCode code )
 			return;
 		}
 	}
-	else if ( nButtonCode == KEY_XBUTTON_UP || 
-			  nButtonCode == KEY_XSTICK1_UP ||
-			  nButtonCode == KEY_XSTICK2_UP ||
-			  code == KEY_UP)
+	else if ( code == KEY_UP )
 	{
 		int itemID = GetSelectedItem();
 		MoveSelectionUp();
@@ -1807,7 +1799,7 @@ void SectionedListPanel::OnKeyCodePressed( KeyCode code )
         ScrollToItem(itemID);
 		return;
     }
-	else if ( code == KEY_ENTER || nButtonCode == KEY_XBUTTON_A )
+	else if ( code == KEY_ENTER )
 	{
 		Panel *pSelectedItem = m_hSelectedItem;
 		if ( pSelectedItem )

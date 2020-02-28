@@ -328,8 +328,6 @@ void Button::NavigateFrom()
 	BaseClass::NavigateFrom();
 
 	SetArmed( false );
-
-	OnKeyCodeReleased( KEY_XBUTTON_A );
 }
 	
 //-----------------------------------------------------------------------------
@@ -999,18 +997,7 @@ void Button::OnMouseReleased(MouseCode code)
 //-----------------------------------------------------------------------------
 void Button::OnKeyCodePressed(KeyCode code)
 {
-	KeyCode localCode = GetBaseButtonCode( code );
-
-	if( ( localCode == KEY_XBUTTON_A ) && IsEnabled() )
-	{
-		SetArmed( true );
-		_buttonFlags.SetFlag( BUTTON_KEY_DOWN );
-		if( _activationType != ACTIVATE_ONRELEASED )
-		{
-			DoClick();
-		}
-	}
-	else if (code == KEY_SPACE || code == KEY_ENTER)
+	if (code == KEY_SPACE || code == KEY_ENTER)
 	{
 		SetArmed(true);
 		_buttonFlags.SetFlag( BUTTON_KEY_DOWN );
@@ -1034,15 +1021,7 @@ void Button::OnKeyCodeReleased( KeyCode keycode )
 {
 	vgui::KeyCode code = GetBaseButtonCode( keycode );
 
-	if ( _buttonFlags.IsFlagSet( BUTTON_KEY_DOWN ) && ( code == KEY_XBUTTON_A || code == KEY_XBUTTON_START ) )
-	{
-		SetArmed( true );
-		if( _activationType != ACTIVATE_ONPRESSED )
-		{
-			DoClick();
-		}
-	}
-	else if (_buttonFlags.IsFlagSet( BUTTON_KEY_DOWN ) && (code == KEY_SPACE || code == KEY_ENTER))
+	if (_buttonFlags.IsFlagSet( BUTTON_KEY_DOWN ) && (code == KEY_SPACE || code == KEY_ENTER))
 	{
 		SetArmed(true);
 		OnMouseReleased(MOUSE_LEFT);
@@ -1053,10 +1032,7 @@ void Button::OnKeyCodeReleased( KeyCode keycode )
 	}
 	_buttonFlags.ClearFlag( BUTTON_KEY_DOWN );
 
-	if ( !( code == KEY_XSTICK1_UP || code == KEY_XSTICK1_DOWN || code == KEY_XSTICK1_LEFT || code == KEY_XSTICK1_RIGHT || 
-			code == KEY_XSTICK2_UP || code == KEY_XSTICK2_DOWN || code == KEY_XSTICK2_LEFT || code == KEY_XSTICK2_RIGHT || 
-			code == KEY_XBUTTON_UP || code == KEY_XBUTTON_DOWN || code == KEY_XBUTTON_LEFT || code == KEY_XBUTTON_RIGHT || 
-			keycode == KEY_UP|| keycode == KEY_DOWN || keycode == KEY_LEFT || keycode == KEY_RIGHT ) )
+	if ( !( keycode == KEY_UP|| keycode == KEY_DOWN || keycode == KEY_LEFT || keycode == KEY_RIGHT ) )
 	{
 		SetArmed( false );
 	}
