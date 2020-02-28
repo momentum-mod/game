@@ -5036,8 +5036,6 @@ void CBasePlayer::Activate( void )
 {
 	BaseClass::Activate();
 
-	AimTarget_ForceRepopulateList();
-
 	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
 
 	// Reset the analog bias. If the player is in a vehicle when the game
