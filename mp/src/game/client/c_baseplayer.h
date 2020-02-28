@@ -421,9 +421,6 @@ public:
 	int						m_iDefaultFOV;		// default FOV if no other zooms are occurring
 	EHANDLE					m_hZoomOwner;		// This is a pointer to the entity currently controlling the player's zoom
 												// Only this entity can change the zoom state once it has ownership
-
-	// For weapon prediction
-	bool			m_fOnTarget;		//Is the crosshair on a target?
 	
 	char			m_szAnimExtension[32];
 

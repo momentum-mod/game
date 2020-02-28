@@ -255,7 +255,6 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_FIELD( m_iDefaultFOV,FIELD_INTEGER ),
 	DEFINE_FIELD( m_flVehicleViewFOV, FIELD_FLOAT ),
 
-	//DEFINE_FIELD( m_fOnTarget, FIELD_BOOLEAN ), // Don't need to restore
 	DEFINE_FIELD( m_iObserverMode, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iObserverLastMode, FIELD_INTEGER ),
 	DEFINE_FIELD( m_hObserverTarget, FIELD_EHANDLE ),
@@ -4907,8 +4906,6 @@ void CBasePlayer::Spawn( void )
 		AddFlag( FL_CLIENT );
 	}
 
-	AddFlag( FL_AIMTARGET );
-
 	m_AirFinished	= gpGlobals->curtime + AIRTIME;
 	m_nDrownDmgRate	= DROWNING_DAMAGE_INITIAL;
 	
@@ -7405,8 +7402,6 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropFloat		( SENDINFO(m_flFriction),		8,	SPROP_ROUNDDOWN,	0.0f,	4.0f),
 
 		SendPropArray3		( SENDINFO_ARRAY3(m_iAmmo), SendPropInt( SENDINFO_ARRAY(m_iAmmo), -1, SPROP_VARINT | SPROP_UNSIGNED ) ),
-			
-		SendPropInt			( SENDINFO( m_fOnTarget ), 2, SPROP_UNSIGNED ),
 
 		SendPropInt			( SENDINFO( m_nTickBase ), -1, SPROP_CHANGES_OFTEN ),
 		SendPropInt			( SENDINFO( m_nNextThinkTick ) ),

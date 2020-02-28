@@ -141,7 +141,6 @@ void CGunTarget::Activate( void )
 void CGunTarget::Start( void )
 {
 	m_takedamage = DAMAGE_YES;
-	AddFlag( FL_AIMTARGET );
 	m_hTargetEnt = GetNextTarget();
 	if ( m_hTargetEnt == NULL )
 		return;

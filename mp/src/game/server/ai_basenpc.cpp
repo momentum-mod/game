@@ -6808,7 +6808,7 @@ void CAI_BaseNPC::NPCInit ( void )
 #endif
 
 	// Set fields common to all npcs
-	AddFlag( FL_AIMTARGET | FL_NPC );
+	AddFlag( FL_NPC );
 	AddSolidFlags( FSOLID_NOT_STANDABLE );
 
 	m_flOriginalYaw = GetAbsAngles().y;
