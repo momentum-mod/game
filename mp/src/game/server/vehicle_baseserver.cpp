@@ -19,7 +19,6 @@
 #include "collisionutils.h"
 #include "animation.h"
 #include "env_player_surface_trigger.h"
-#include "rumble_shared.h"
 
 #ifdef HL2_DLL
 	#include "hl2_player.h"
