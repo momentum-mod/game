@@ -1853,19 +1853,6 @@ bool CBaseServerVehicle::PlayCrashSound( float speed )
 	{
 		delta = fabs(m_lastSpeed - speed);
 	}
-	
-	float rumble = delta / 8.0f;
-
-	if( rumble > 60.0f )
-		rumble = 60.0f;
-
-	if( rumble > 5.0f )
-	{
-		if ( GetDriver() )
-		{
-			UTIL_ScreenShake( GetDriver()->GetAbsOrigin(), rumble, 150.0f, 1.0f, 240.0f, SHAKE_START_RUMBLEONLY, true );
-		}
-	}
 
 	for ( i = 0; i < m_vehicleSounds.crashSounds.Count(); i++ )
 	{
