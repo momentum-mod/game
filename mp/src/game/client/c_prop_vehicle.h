@@ -55,7 +55,6 @@ public:
 #endif
 
 	virtual bool IsPredicted() const { return false; }
-	virtual int GetJoystickResponseCurve() const;
 
 // C_BaseEntity overrides.
 public:
