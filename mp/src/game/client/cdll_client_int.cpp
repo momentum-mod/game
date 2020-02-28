@@ -1334,10 +1334,9 @@ void CHLClient::ExtraMouseSample( float frametime, bool active )
 
 void CHLClient::IN_SetSampleTime( float frametime )
 {
-
-	input->Joystick_SetSampleTime( frametime );
 	input->IN_SetSampleTime( frametime );
 }
+
 //-----------------------------------------------------------------------------
 // Purpose: Fills in usercmd_s structure based on current view angles and key/controller inputs
 // Input  : frametime - timestamp for last frame
