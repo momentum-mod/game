@@ -54,8 +54,6 @@ ConVar hl2_episodic( "hl2_episodic", "0", FCVAR_REPLICATED );
 #include "tf_weaponbase.h"
 #endif // TF_DLL
 
-#include "rumble_shared.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1630,29 +1628,6 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 #if defined( HL2MP ) && defined( GAME_DLL )
 	bDoServerEffects = false;
 #endif
-
-#if defined( GAME_DLL )
-	if( IsPlayer() )
-	{
-		CBasePlayer *pPlayer = dynamic_cast<CBasePlayer*>(this);
-
-		int rumbleEffect = RUMBLE_INVALID; // Unfortunately not in this PR's scope, TODO REMOVEME
-
-		if( rumbleEffect != RUMBLE_INVALID )
-		{
-			if( rumbleEffect == RUMBLE_SHOTGUN_SINGLE )
-			{
-				if( info.m_iShots == 12 )
-				{
-					// Upgrade to double barrel rumble effect
-					rumbleEffect = RUMBLE_SHOTGUN_DOUBLE;
-				}
-			}
-
-			pPlayer->RumbleEffect( rumbleEffect, 0, RUMBLE_FLAG_RESTART );
-		}
-	}
-#endif// GAME_DLL
 
 	int iPlayerDamage = info.m_iPlayerDamage;
 
