@@ -375,7 +375,7 @@ screenshake_t *CViewEffects::FindLongestShake()
 //-----------------------------------------------------------------------------
 void CViewEffects::Shake( ScreenShake_t &data )
 {
-	if ( ( data.command == SHAKE_START ) && ( m_ShakeList.Count() < MAX_SHAKES ) )
+	if ( ( data.command == SHAKE_START || data.command == SHAKE_START_NORUMBLE ) && ( m_ShakeList.Count() < MAX_SHAKES ) )
 	{
 		screenshake_t *pNewShake = new screenshake_t;
 			
