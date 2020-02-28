@@ -158,10 +158,6 @@ CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 
 }
 #endif // _DEBUG
 
-static void __MsgFunc_Rumble( bf_read &msg )
-{
-}
-
 static void __MsgFunc_VGUIMenu( bf_read &msg )
 {
 	char panelname[2048]; 
@@ -308,7 +304,6 @@ void ClientModeShared::Init()
 	m_CursorNone = dc_none;
 
 	HOOK_MESSAGE( VGUIMenu );
-	HOOK_MESSAGE( Rumble );
 }
 
 
