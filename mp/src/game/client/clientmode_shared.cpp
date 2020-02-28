@@ -28,7 +28,6 @@
 #include "particlemgr.h"
 #include "c_vguiscreen.h"
 #include "c_team.h"
-#include "c_rumble.h"
 #include "fmtstr.h"
 #include "achievementmgr.h"
 #include "c_playerresource.h"
@@ -161,15 +160,6 @@ CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 
 
 static void __MsgFunc_Rumble( bf_read &msg )
 {
-	unsigned char waveformIndex;
-	unsigned char rumbleData;
-	unsigned char rumbleFlags;
-
-	waveformIndex = msg.ReadByte();
-	rumbleData = msg.ReadByte();
-	rumbleFlags = msg.ReadByte();
-
-	RumbleEffect( waveformIndex, rumbleData, rumbleFlags );
 }
 
 static void __MsgFunc_VGUIMenu( bf_read &msg )
@@ -528,8 +518,6 @@ void ClientModeShared::Update()
 	{
 		m_pViewport->SetVisible( cl_drawhud.GetBool() );
 	}
-
-	UpdateRumbleEffects();
 
 	if ( cl_show_num_particle_systems.GetBool() )
 	{

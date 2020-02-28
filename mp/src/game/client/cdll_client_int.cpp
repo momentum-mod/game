@@ -253,8 +253,6 @@ class CHudChat;
 class CViewRender;
 extern CViewRender g_DefaultViewRender;
 
-extern void StopAllRumbleEffects( void );
-
 static C_BaseEntityClassList *s_pClassLists = NULL;
 C_BaseEntityClassList::C_BaseEntityClassList()
 {
@@ -1611,8 +1609,6 @@ void CHLClient::LevelShutdown( void )
 	view->LevelShutdown();
 	beams->ClearBeams();
 	ParticleMgr()->RemoveAllEffects();
-	
-	StopAllRumbleEffects();
 
 	gHUD.LevelShutdown();
 
