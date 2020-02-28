@@ -201,7 +201,6 @@ void CEnvShake::ApplyShake( ShakeCommand_t command )
 		{
 		case SHAKE_START:
 		case SHAKE_START_NORUMBLE:
-		case SHAKE_START_RUMBLEONLY:
 			{
 				m_stopTime = gpGlobals->curtime + Duration();
 				m_nextShake = 0;
@@ -261,10 +260,6 @@ void CEnvShake::InputStartShake( inputdata_t &inputdata )
 	if ( HasSpawnFlags( SF_SHAKE_NO_RUMBLE ) )
 	{
 		ApplyShake( SHAKE_START_NORUMBLE );
-	}
-	else if ( HasSpawnFlags( SF_SHAKE_NO_VIEW ) )
-	{
-		ApplyShake( SHAKE_START_RUMBLEONLY );
 	}
 	else
 	{
