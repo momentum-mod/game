@@ -45,24 +45,7 @@ public:
 
 private:
 	int			GetIndexForCode( vgui::KeyCode code )
-	{ 
-		switch ( code )
-		{
-		case KEY_XBUTTON_DOWN: 
-		case KEY_XSTICK1_DOWN:
-			return KR_ALIAS_DOWN; break;
-		case KEY_XBUTTON_UP: 
-		case KEY_XSTICK1_UP:
-			return KR_ALIAS_UP; break;
-		case KEY_XBUTTON_LEFT: 
-		case KEY_XSTICK1_LEFT:
-			return KR_ALIAS_LEFT; break;
-		case KEY_XBUTTON_RIGHT: 
-		case KEY_XSTICK1_RIGHT:
-			return KR_ALIAS_RIGHT; break;
-		default:
-			break;
-		}
+	{
 		return -1;
 	}
 

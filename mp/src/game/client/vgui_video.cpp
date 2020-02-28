@@ -170,13 +170,7 @@ void VideoPanel::OnKeyCodePressed( vgui::KeyCode code )
 	if ( code == KEY_ESCAPE || 
 		 code == KEY_BACKQUOTE || 
 		 code == KEY_SPACE || 
-		 code == KEY_ENTER ||
-		 code == KEY_XBUTTON_A || 
-		 code == KEY_XBUTTON_B ||
-		 code == KEY_XBUTTON_X || 
-		 code == KEY_XBUTTON_Y || 
-		 code == KEY_XBUTTON_START || 
-		 code == KEY_XBUTTON_BACK )
+		 code == KEY_ENTER )
 	{
 		OnClose();
 	}
