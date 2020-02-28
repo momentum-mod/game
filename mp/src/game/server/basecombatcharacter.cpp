@@ -3092,19 +3092,6 @@ void CBaseCombatCharacter::VPhysicsShadowCollision( int index, gamevcollisioneve
 			float len = damageForce.Length();
 			damageForce.z += len*phys_upimpactforcescale.GetFloat();
 			//Msg("Force %.1f / %.1f\n", damageForce.Length(), damageForce.z );
-
-			if ( pPassenger->IsPlayer() )
-			{
-				CBasePlayer *pPlayer = assert_cast<CBasePlayer *>(pPassenger);
-				if( damage >= GetMaxHealth() )
-				{
-					pPlayer->RumbleEffect( RUMBLE_357, 0, RUMBLE_FLAG_RESTART );
-				}
-				else
-				{
-					pPlayer->RumbleEffect( RUMBLE_PISTOL, 0, RUMBLE_FLAG_RESTART );
-				}
-			}
 		}
 	}
 
