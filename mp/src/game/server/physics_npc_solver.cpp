@@ -307,13 +307,6 @@ IMotionEvent::simresult_e CPhysicsNPCSolver::Simulate( IPhysicsMotionController 
 		ResetCancelTime();
 		angular.Init();
 		linear.Init();
-		
-		// Don't push on vehicles because they won't move
-		if ( pObject->GetGameFlags() & FVPHYSICS_MULTIOBJECT_ENTITY )
-		{
-			if ( m_hEntity->GetServerVehicle() )
-				return SIM_NOTHING;
-		}
 
 		Vector origin, vel;
 		pObject->GetPosition( &origin, NULL );
