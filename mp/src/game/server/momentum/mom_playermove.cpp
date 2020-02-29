@@ -3,9 +3,7 @@
 #include "player.h"
 #include "igamemovement.h"
 #include "ipredictionsystem.h"
-#include "iservervehicle.h"
 #include "mom_player.h"
-#include "vehicle_base.h"
 #include "gamestats.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -16,8 +14,6 @@ class CMOMPlayerMove : public CPlayerMove
     DECLARE_CLASS(CMOMPlayerMove, CPlayerMove);
 public:
     CMOMPlayerMove() :
-        m_bWasInVehicle(false),
-        m_bVehicleFlipped(false),
         m_bInGodMode(true),
         m_bInNoClip(false)
     {
@@ -29,8 +25,6 @@ public:
 
 private:
     Vector m_vecSaveOrigin;
-    bool m_bWasInVehicle;
-    bool m_bVehicleFlipped;
     bool m_bInGodMode;
     bool m_bInNoClip;
 };
