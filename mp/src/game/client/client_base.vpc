@@ -1046,7 +1046,6 @@ $Project
 		$File	"$SRCDIR\game\shared\usercmd.h"
 		$File	"$SRCDIR\game\shared\usermessages.h"
 		$File	"$SRCDIR\game\shared\util_shared.h"
-		$File	"$SRCDIR\game\shared\vehicle_choreo_generic_shared.h"
 		$File	"$SRCDIR\game\shared\vehicle_viewblend_shared.h"
 		$File	"$SRCDIR\game\shared\vgui_defaultinputsignal.h"
 		$File	"$SRCDIR\game\shared\viewport_panel_names.h"
