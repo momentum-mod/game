@@ -2052,17 +2052,6 @@ C_BaseCombatWeapon	*C_BasePlayer::GetActiveWeapon( void ) const
 	return fromPlayer->C_BaseCombatCharacter::GetActiveWeapon();
 }
 
-//=========================================================
-// Autoaim
-// set crosshair position to point to enemey
-//=========================================================
-Vector C_BasePlayer::GetAutoaimVector( float flScale )
-{
-	// Never autoaim a predicted weapon (for now)
-	Vector	forward;
-	AngleVectors( GetAbsAngles() + m_Local.m_vecPunchAngle, &forward );
-	return	forward;
-}
 
 void C_BasePlayer::PlayPlayerJingle()
 {
@@ -2117,20 +2106,6 @@ void C_BasePlayer::PlayPlayerJingle()
 void C_BasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeat)
 {
 	// FIXME:  Do something here?
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void C_BasePlayer::ResetAutoaim( void )
-{
-#if 0
-	if (m_vecAutoAim.x != 0 || m_vecAutoAim.y != 0)
-	{
-		m_vecAutoAim = QAngle( 0, 0, 0 );
-		engine->CrosshairAngle( edict(), 0, 0 );
-	}
-#endif
 }
 
 bool C_BasePlayer::ShouldPredict( void )
