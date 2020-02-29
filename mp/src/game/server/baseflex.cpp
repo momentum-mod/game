@@ -687,11 +687,6 @@ bool CBaseFlex::StartFacingSceneEvent( CSceneEventInfo *info, CChoreoScene *scen
 {
 	if ( pTarget )
 	{
-		// Don't allow FACE commands while sitting in the vehicle
-		CAI_BaseNPC *myNpc = MyNPCPointer();
-		if ( myNpc && myNpc->IsInAVehicle() )
-			return false;
-
 		info->m_bIsMoving = false;
 		return true;
 	}
@@ -1343,14 +1338,6 @@ bool CBaseFlex::ProcessMoveToSceneEvent( CSceneEventInfo *info, CChoreoScene *sc
 	if (info->m_hTarget == this)
 	{
 		return true;
-	}
-
-	// If we're in a vehicle, make us exit and *then* begin the run
-	if ( myNpc->IsInAVehicle() )
-	{
-		// Make us exit and wait
-		myNpc->ExitVehicle();
-		return false;
 	}
 
 	const Task_t *pCurTask = myNpc->GetTask();
