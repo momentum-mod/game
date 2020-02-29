@@ -267,7 +267,6 @@ enum DebugOverlayBits_t
 	OVERLAY_RBOX_BIT			=   0x00000040,     // show the rbox overlay
 	OVERLAY_SHOW_BLOCKSLOS		=	0x00000080,		// show entities that block NPC LOS
 	OVERLAY_ATTACHMENTS_BIT		=	0x00000100,		// show attachment points
-	OVERLAY_AUTOAIM_BIT			=	0x00000200,		// Display autoaim radius
 
 	OVERLAY_NPC_SELECTED_BIT	=	0x00001000,		// the npc is current selected
 	OVERLAY_NPC_NEAREST_BIT		=	0x00002000,		// show the nearest node of this npc
