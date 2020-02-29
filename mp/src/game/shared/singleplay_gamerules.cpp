@@ -315,13 +315,6 @@ bool CSingleplayRules::Damage_ShouldNotBleed( int iDmgType )
 
 	//=========================================================
 	//=========================================================
-	int	CSingleplayRules::GetAutoAimMode()
-	{
-		return 0;
-	}
-
-	//=========================================================
-	//=========================================================
 	bool CSingleplayRules::FPlayerCanRespawn( CBasePlayer *pPlayer )
 	{
 		return true;
