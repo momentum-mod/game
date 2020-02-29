@@ -19,9 +19,6 @@
 #include "tier1/utldict.h"
 #include "tier0/icommandline.h"
 #include <time.h>
-#ifdef GAME_DLL
-#include "vehicle_base.h"
-#endif 
 
 #ifdef CLIENT_DLL
 #include "materialsystem/materialsystem_config.h"
@@ -388,11 +385,6 @@ void CBaseGameStats::Event_Punted( CBaseEntity *pObject )
 
 void CBaseGameStats::Event_PlayerTraveled( CBasePlayer *pBasePlayer, float distanceInInches, bool bInVehicle, bool bSprinting )
 {
-}
-
-void CBaseGameStats::Event_FlippedVehicle( CBasePlayer *pDriver, CPropVehicleDriveable *pVehicle )
-{
-	StatsLog( "CBaseGameStats::Event_FlippedVehicle [%s] flipped [%s]\n", pDriver->GetPlayerName(), pVehicle->GetClassname() );
 }
 
 // Called before .sav file is actually loaded (player should still be in previous level, if any)
