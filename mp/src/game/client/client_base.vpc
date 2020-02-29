@@ -410,7 +410,6 @@ $Project
 				"$SRCDIR\public\jigglebones.cpp"					\
 				"hud_lcd.cpp"										\
 				"in_mouse.cpp"										\
-				"mumble.cpp"						\
 				"$SRCDIR\public\renamed_recvtable_compat.cpp"		\
 				"rendertexture.cpp"									
 				{
@@ -678,7 +677,6 @@ $Project
 		$File	"lerp_functions.h"
 		$File	"menu.h"
 		$File	"movehelper_client.h"
-		$File	"mumble.h"
 		$File	"networkstringtable_clientdll.h"
 		$File	"panelmetaclassmgr.h"
 		$File	"particle_collision.h"
