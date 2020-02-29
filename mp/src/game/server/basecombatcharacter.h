@@ -311,13 +311,6 @@ protected:
 	Relationship_t			*FindEntityRelationship( CBaseEntity *pTarget );
 
 public:
-	
-	// Vehicle queries
-	virtual bool IsInAVehicle( void ) const { return false; }
-	virtual IServerVehicle *GetVehicle( void ) { return NULL; }
-	virtual CBaseEntity *GetVehicleEntity( void ) { return NULL; }
-	virtual bool ExitVehicle( void ) { return false; }
-
 	// Blood color (see BLOOD_COLOR_* macros in baseentity.h)
 	void SetBloodColor( int nBloodColor );
 
