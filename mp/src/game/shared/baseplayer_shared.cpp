@@ -15,7 +15,6 @@
 
 #if defined( CLIENT_DLL )
 
-	#include "iclientvehicle.h"
 	#include "prediction.h"
 	#include "c_basedoor.h"
 	#include "c_world.h"
@@ -24,7 +23,6 @@
 
 #else
 
-	#include "iservervehicle.h"
 	#include "trains.h"
 	#include "world.h"
 	#include "doors.h"
@@ -187,34 +185,6 @@ void CBasePlayer::ItemPreFrame()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Output : Returns true on success, false on failure.
-//-----------------------------------------------------------------------------
-bool CBasePlayer::UsingStandardWeaponsInVehicle( void )
-{
-	Assert( IsInAVehicle() );
-#if !defined( CLIENT_DLL )
-	IServerVehicle *pVehicle = GetVehicle();
-#else
-	IClientVehicle *pVehicle = GetVehicle();
-#endif
-	Assert( pVehicle );
-	if ( !pVehicle )
-		return true;
-
-	// NOTE: We *have* to do this before ItemPostFrame because ItemPostFrame
-	// may dump us out of the vehicle
-	int nRole = pVehicle->GetPassengerRole( this );
-	bool bUsingStandardWeapons = pVehicle->IsPassengerUsingStandardWeapons( nRole );
-
-	// Fall through and check weapons, etc. if we're using them 
-	if (!bUsingStandardWeapons )
-		return false;
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Called every usercmd by the player PostThink
 //-----------------------------------------------------------------------------
 void CBasePlayer::ItemPostFrame()
@@ -224,34 +194,10 @@ void CBasePlayer::ItemPostFrame()
 	// Put viewmodels into basically correct place based on new player origin
 	CalcViewModelView( EyePosition(), EyeAngles() );
 
-	// Don't process items while in a vehicle.
-	if ( GetVehicle() )
-	{
-#if defined( CLIENT_DLL )
-		IClientVehicle *pVehicle = GetVehicle();
-#else
-		IServerVehicle *pVehicle = GetVehicle();
-#endif
-
-		bool bUsingStandardWeapons = UsingStandardWeaponsInVehicle();
-
-#if defined( CLIENT_DLL )
-		if ( pVehicle->IsPredicted() )
-#endif
-		{
-			pVehicle->ItemPostFrame( this );
-		}
-
-		if (!bUsingStandardWeapons || !GetVehicle())
-			return;
-	}
-
-
 	// check if the player is using something
 	if ( m_hUseEntity != NULL )
 	{
 #if !defined( CLIENT_DLL )
-		Assert( !IsInAVehicle() );
 		ImpulseCommands();// this will call playerUse
 #endif
 		return;
@@ -266,7 +212,7 @@ void CBasePlayer::ItemPostFrame()
 	}
 	else
 	{
-		if ( GetActiveWeapon() && (!IsInAVehicle() || UsingStandardWeaponsInVehicle()) )
+		if ( GetActiveWeapon() )
 		{
 #if defined( CLIENT_DLL )
 			// Not predicting this weapon
@@ -323,28 +269,19 @@ const QAngle &CBasePlayer::LocalEyeAngles()
 //-----------------------------------------------------------------------------
 Vector CBasePlayer::EyePosition( )
 {
-	if ( GetVehicle() != NULL )
-	{
-		// Return the cached result
-		CacheVehicleView();
-		return m_vecVehicleViewOrigin;
-	}
-	else
-	{
 #ifdef CLIENT_DLL
-		if ( IsObserver() )
+	if ( IsObserver() )
+	{
+		if ( GetObserverMode() == OBS_MODE_CHASE || GetObserverMode() == OBS_MODE_POI )
 		{
-			if ( GetObserverMode() == OBS_MODE_CHASE || GetObserverMode() == OBS_MODE_POI )
+			if ( IsLocalPlayer() )
 			{
-				if ( IsLocalPlayer() )
-				{
-					return MainViewOrigin();
-				}
+				return MainViewOrigin();
 			}
 		}
+	}
 #endif
 		return BaseClass::EyePosition();
-	}
 }
 
 
@@ -397,45 +334,11 @@ const Vector CBasePlayer::GetPlayerMaxs( void ) const
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Update the vehicle view, or simply return the cached position and angles
-//-----------------------------------------------------------------------------
-void CBasePlayer::CacheVehicleView( void )
-{
-	// If we've calculated the view this frame, then there's no need to recalculate it
-	if ( m_nVehicleViewSavedFrame == gpGlobals->framecount )
-		return;
-
-#ifdef CLIENT_DLL
-	IClientVehicle *pVehicle = GetVehicle();
-#else
-	IServerVehicle *pVehicle = GetVehicle();
-#endif
-
-	if ( pVehicle != NULL )
-	{		
-		int nRole = pVehicle->GetPassengerRole( this );
-
-		// Get our view for this frame
-		pVehicle->GetVehicleViewPosition( nRole, &m_vecVehicleViewOrigin, &m_vecVehicleViewAngles, &m_flVehicleViewFOV );
-		m_nVehicleViewSavedFrame = gpGlobals->framecount;
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Returns eye vectors
 //-----------------------------------------------------------------------------
 void CBasePlayer::EyeVectors( Vector *pForward, Vector *pRight, Vector *pUp )
 {
-	if ( GetVehicle() != NULL )
-	{
-		// Cache or retrieve our calculated position in the vehicle
-		CacheVehicleView();
-		AngleVectors( m_vecVehicleViewAngles, pForward, pRight, pUp );
-	}
-	else
-	{
-		AngleVectors( EyeAngles(), pForward, pRight, pUp );
-	}
+	AngleVectors( EyeAngles(), pForward, pRight, pUp );
 }
 
 //-----------------------------------------------------------------------------
@@ -444,22 +347,8 @@ void CBasePlayer::EyeVectors( Vector *pForward, Vector *pRight, Vector *pUp )
 void CBasePlayer::EyePositionAndVectors( Vector *pPosition, Vector *pForward,
 										 Vector *pRight, Vector *pUp )
 {
-	// Handle the view in the vehicle
-	if ( GetVehicle() != NULL )
-	{
-		CacheVehicleView();
-		AngleVectors( m_vecVehicleViewAngles, pForward, pRight, pUp );
-		
-		if ( pPosition != NULL )
-		{
-			*pPosition = m_vecVehicleViewOrigin;
-		}
-	}
-	else
-	{
-		VectorCopy( BaseClass::EyePosition(), *pPosition );
-		AngleVectors( EyeAngles(), pForward, pRight, pUp );
-	}
+	VectorCopy( BaseClass::EyePosition(), *pPosition );
+	AngleVectors( EyeAngles(), pForward, pRight, pUp );
 }
 
 #ifdef CLIENT_DLL
@@ -1359,10 +1248,6 @@ void CBasePlayer::ViewPunch( const QAngle &angleOffset )
 	if ( sv_suppress_viewpunch.GetBool() )
 		return;
 
-	// We don't allow view kicks in the vehicle
-	if ( IsInAVehicle() )
-		return;
-
 	m_Local.m_vecPunchAngleVel += angleOffset * 20;
 }
 
@@ -1483,28 +1368,13 @@ void CBasePlayer::ResetObserverMode()
 //-----------------------------------------------------------------------------
 void CBasePlayer::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNear, float &zFar, float &fov )
 {
-#if defined( CLIENT_DLL )
-	IClientVehicle *pVehicle; 
-#else
-	IServerVehicle *pVehicle;
-#endif
-	pVehicle = GetVehicle();
-
-	if ( !pVehicle )
+	if ( IsObserver() )
 	{
-
-		if ( IsObserver() )
-		{
-			CalcObserverView( eyeOrigin, eyeAngles, fov );
-		}
-		else
-		{
-			CalcPlayerView( eyeOrigin, eyeAngles, fov );
-		}
+		CalcObserverView( eyeOrigin, eyeAngles, fov );
 	}
 	else
 	{
-		CalcVehicleView( pVehicle, eyeOrigin, eyeAngles, zNear, zFar, fov );
+		CalcPlayerView( eyeOrigin, eyeAngles, fov );
 	}
 }
 
@@ -1569,53 +1439,6 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 	// calc current FOV
 	fov = GetFOV();
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: The main view setup function for vehicles
-//-----------------------------------------------------------------------------
-void CBasePlayer::CalcVehicleView( 
-#if defined( CLIENT_DLL )
-	IClientVehicle *pVehicle, 
-#else
-	IServerVehicle *pVehicle,
-#endif
-	Vector& eyeOrigin, QAngle& eyeAngles,
-	float& zNear, float& zFar, float& fov )
-{
-	Assert( pVehicle );
-
-	// Start with our base origin and angles
-	CacheVehicleView();
-	eyeOrigin = m_vecVehicleViewOrigin;
-	eyeAngles = m_vecVehicleViewAngles;
-
-#if defined( CLIENT_DLL )
-
-	fov = GetFOV();
-
-	// Allows the vehicle to change the clip planes
-	pVehicle->GetVehicleClipPlanes( zNear, zFar );
-#endif
-
-	// Snack off the origin before bob + water offset are applied
-	Vector vecBaseEyePosition = eyeOrigin;
-
-	CalcViewRoll( eyeAngles );
-
-	// Apply punch angle
-	VectorAdd( eyeAngles, m_Local.m_vecPunchAngle, eyeAngles );
-
-#if defined( CLIENT_DLL )
-	if ( !prediction->InPrediction() )
-	{
-		// Shake it up baby!
-		vieweffects->CalcShake();
-		vieweffects->ApplyShake( eyeOrigin, eyeAngles, 1.0 );
-	}
-#endif
-
-}
-
 
 void CBasePlayer::CalcObserverView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov )
 {
