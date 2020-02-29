@@ -3838,27 +3838,22 @@ void CGameMovement::CategorizePosition( void )
 		}
 
 #ifndef CLIENT_DLL
-		
-		//Adrian: vehicle code handles for us.
-		if ( player->IsInAVehicle() == false )
+		// If our gamematerial has changed, tell any player surface triggers that are watching
+		IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
+		surfacedata_t *pSurfaceProp = pPhysprops->GetSurfaceData( pm.surface.surfaceProps );
+		char cCurrGameMaterial = pSurfaceProp->game.material;
+		if ( !player->GetGroundEntity() )
 		{
-			// If our gamematerial has changed, tell any player surface triggers that are watching
-			IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
-			surfacedata_t *pSurfaceProp = pPhysprops->GetSurfaceData( pm.surface.surfaceProps );
-			char cCurrGameMaterial = pSurfaceProp->game.material;
-			if ( !player->GetGroundEntity() )
-			{
-				cCurrGameMaterial = 0;
-			}
-
-			// Changed?
-			if ( player->m_chPreviousTextureType != cCurrGameMaterial )
-			{
-				CEnvPlayerSurfaceTrigger::SetPlayerSurface( player, cCurrGameMaterial );
-			}
-
-			player->m_chPreviousTextureType = cCurrGameMaterial;
+			cCurrGameMaterial = 0;
 		}
+
+		// Changed?
+		if ( player->m_chPreviousTextureType != cCurrGameMaterial )
+		{
+			CEnvPlayerSurfaceTrigger::SetPlayerSurface( player, cCurrGameMaterial );
+		}
+
+		player->m_chPreviousTextureType = cCurrGameMaterial;
 #endif
 	}
 }
@@ -4478,7 +4473,7 @@ void CGameMovement::Duck( void )
 	//
 	// If the player is still alive and not an observer, check to make sure that
 	// his view height is at the standing height.
-	else if ( !IsDead() && !player->IsObserver() && !player->IsInAVehicle() )
+	else if ( !IsDead() && !player->IsObserver() )
 	{
 		if ( ( player->m_Local.m_flDuckJumpTime == 0.0f ) && ( fabs(player->GetViewOffset().z - GetPlayerViewOffset( false ).z) > 0.1 ) )
 		{

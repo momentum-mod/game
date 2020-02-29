@@ -679,10 +679,6 @@ bool CGameRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 	// NOTE: Don't change their order without rewriting this code !!!
 	// --------------------------------------------------------------------------
 
-	// Don't bother if either is in a vehicle...
-	if (( collisionGroup0 == COLLISION_GROUP_IN_VEHICLE ) || ( collisionGroup1 == COLLISION_GROUP_IN_VEHICLE ))
-		return false;
-
 	if ( ( collisionGroup1 == COLLISION_GROUP_DOOR_BLOCKER ) && ( collisionGroup0 != COLLISION_GROUP_NPC ) )
 		return false;
 
@@ -732,29 +728,16 @@ bool CGameRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 		}
 	}
 
-	// Don't let vehicles collide with weapons
 	// Don't let players collide with weapons...
 	// Don't let NPCs collide with weapons
 	// Weapons are triggers, too, so they should still touch because of that
 	if ( collisionGroup1 == COLLISION_GROUP_WEAPON )
 	{
-		if ( collisionGroup0 == COLLISION_GROUP_VEHICLE || 
-			collisionGroup0 == COLLISION_GROUP_PLAYER ||
+		if ( collisionGroup0 == COLLISION_GROUP_PLAYER ||
 			collisionGroup0 == COLLISION_GROUP_NPC )
 		{
 			return false;
 		}
-	}
-
-	// collision with vehicle clip entity??
-	if ( collisionGroup0 == COLLISION_GROUP_VEHICLE_CLIP || collisionGroup1 == COLLISION_GROUP_VEHICLE_CLIP )
-	{
-		// yes then if it's a vehicle, collide, otherwise no collision
-		// vehicle sorts lower than vehicle clip, so must be in 0
-		if ( collisionGroup0 == COLLISION_GROUP_VEHICLE )
-			return true;
-		// vehicle clip against non-vehicle, no collision
-		return false;
 	}
 
 	return true;
