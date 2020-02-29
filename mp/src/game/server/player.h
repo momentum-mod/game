@@ -81,7 +81,6 @@ class CBaseCombatWeapon;
 class CBaseViewModel;
 class CTeam;
 class IPhysicsPlayerController;
-class IServerVehicle;
 class CUserCmd;
 class CFuncLadder;
 class CNavArea;
@@ -196,7 +195,6 @@ public:
 	virtual bool IsPlayer();
 	virtual bool IsFakeClient();
 	virtual bool IsDead();
-	virtual bool IsInAVehicle();
 	virtual bool IsObserver();
 	virtual const Vector GetAbsOrigin();
 	virtual const QAngle GetAbsAngles();
@@ -333,7 +331,6 @@ public:
 	void					EyePositionAndVectors( Vector *pPosition, Vector *pForward, Vector *pRight, Vector *pUp );
 	virtual const QAngle	&LocalEyeAngles();		// Direction of eyes
 	void					EyeVectors( Vector *pForward, Vector *pRight = NULL, Vector *pUp = NULL );
-	void					CacheVehicleView( void );	// Calculate and cache the position of the player in the vehicle
 
 	// Sets the view angles
 	void					SnapEyeAngles( const QAngle &viewAngles );
@@ -485,21 +482,6 @@ public:
 	virtual void			CreateCorpse( void ) { }
 	virtual CBaseEntity		*EntSelectSpawnPoint( void );
 
-	// Vehicles
-	virtual bool			IsInAVehicle( void ) const;
-			bool			CanEnterVehicle( IServerVehicle *pVehicle, int nRole );
-	virtual bool			GetInVehicle( IServerVehicle *pVehicle, int nRole );
-	virtual void			LeaveVehicle( const Vector &vecExitPoint = vec3_origin, const QAngle &vecExitAngles = vec3_angle );
-	int						GetVehicleAnalogControlBias() { return m_iVehicleAnalogBias; }
-	void					SetVehicleAnalogControlBias( int bias ) { m_iVehicleAnalogBias = bias; }
-	
-	// override these for 
-	virtual void			OnVehicleStart() {}
-	virtual void			OnVehicleEnd( Vector &playerDestPosition ) {} 
-	IServerVehicle			*GetVehicle();
-	CBaseEntity				*GetVehicleEntity( void );
-	bool					UsingStandardWeaponsInVehicle( void );
-	
 	void					AddPoints( int score, bool bAllowNegativeScore );
 	void					AddPointsToTeam( int score, bool bAllowNegativeScore );
 	virtual bool			BumpWeapon( CBaseCombatWeapon *pWeapon );
@@ -889,8 +871,6 @@ private:
 protected:
 
 	void					CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );
-	void					CalcVehicleView( IServerVehicle *pVehicle, Vector& eyeOrigin, QAngle& eyeAngles, 	
-								float& zNear, float& zFar, float& fov );
 	void					CalcObserverView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );
 	void					CalcViewModelView( const Vector& eyeOrigin, const QAngle& eyeAngles);
 
@@ -910,11 +890,6 @@ protected:
 
 	float					m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
  	unsigned int			m_afPhysicsFlags;	// physics flags - set when 'normal' physics should be revisited or overriden
-	
-	// Vehicles
-	CNetworkHandle( CBaseEntity, m_hVehicle );
-
-	int						m_iVehicleAnalogBias;
 
 	void					UpdateButtonState( int nUserCmdButtonMask );
 
@@ -1138,11 +1113,6 @@ protected:
 	// These are generated while running usercmds, then given to UpdateVPhysicsPosition after running all queued commands.
 	Vector m_vNewVPhysicsPosition;
 	Vector m_vNewVPhysicsVelocity;
-	
-	Vector	m_vecVehicleViewOrigin;		// Used to store the calculated view of the player while riding in a vehicle
-	QAngle	m_vecVehicleViewAngles;		// Vehicle angles
-	float	m_flVehicleViewFOV;			// FOV of the vehicle driver
-	int		m_nVehicleViewSavedFrame;	// Used to mark which frame was the last one the view was calculated for
 
 	Vector m_vecPreviouslyPredictedOrigin; // Used to determine if non-gamemovement game code has teleported, or tweaked the player's origin
 	int		m_nBodyPitchPoseParam;
@@ -1289,22 +1259,6 @@ inline const CUserCmd *CBasePlayer::GetCurrentUserCommand() const
 {
 	Assert( m_pCurrentCommand );
 	return m_pCurrentCommand;
-}
-
-inline IServerVehicle *CBasePlayer::GetVehicle() 
-{ 
-	CBaseEntity *pVehicleEnt = m_hVehicle.Get();
-	return pVehicleEnt ? pVehicleEnt->GetServerVehicle() : NULL;
-}
-
-inline CBaseEntity *CBasePlayer::GetVehicleEntity() 
-{ 
-	return m_hVehicle.Get();
-}
-
-inline bool CBasePlayer::IsInAVehicle( void ) const 
-{ 
-	return ( NULL != m_hVehicle.Get() ) ? true : false; 
 }
 
 inline void CBasePlayer::SetTouchedPhysics( bool bTouch ) 
@@ -1529,12 +1483,5 @@ int CollectHumanPlayers( CUtlVector< T * > *playerVector, int team = TEAM_ANY, b
 
 	return playerVector->Count();
 }
-
-enum
-{
-	VEHICLE_ANALOG_BIAS_NONE = 0,
-	VEHICLE_ANALOG_BIAS_FORWARD,
-	VEHICLE_ANALOG_BIAS_REVERSE,
-};
 
 #endif // PLAYER_H

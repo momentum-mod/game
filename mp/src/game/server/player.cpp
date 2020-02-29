@@ -39,11 +39,9 @@
 #include "movehelper_server.h"
 #include "igamemovement.h"
 #include "saverestoretypes.h"
-#include "iservervehicle.h"
 #include "movevars_shared.h"
 #include "vcollide_parse.h"
 #include "player_command.h"
-#include "vehicle_base.h"
 #include "AI_Criteria.h"
 #include "globals.h"
 #include "usermessages.h"
@@ -249,7 +247,6 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_FIELD( m_iFOVStart,	FIELD_INTEGER ),
 	DEFINE_FIELD( m_flFOVTime,	FIELD_TIME ),
 	DEFINE_FIELD( m_iDefaultFOV,FIELD_INTEGER ),
-	DEFINE_FIELD( m_flVehicleViewFOV, FIELD_FLOAT ),
 
 	DEFINE_FIELD( m_iObserverMode, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iObserverLastMode, FIELD_INTEGER ),
@@ -270,7 +267,6 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_FIELD( m_iTrain, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iRespawnFrames, FIELD_FLOAT ),
 	DEFINE_FIELD( m_afPhysicsFlags, FIELD_INTEGER ),
-	DEFINE_FIELD( m_hVehicle, FIELD_EHANDLE ),
 
 	// recreate, don't restore
 	// DEFINE_FIELD( m_CommandContext, CUtlVector < CCommandContext > ),
@@ -556,7 +552,6 @@ CBasePlayer::CBasePlayer( )
 	m_bitsDamageType = 0;
 
 	m_bForceOrigin = false;
-	m_hVehicle = NULL;
 	m_pCurrentCommand = NULL;
 	m_iLockViewanglesTickNumber = 0;
 	m_qangLockViewangles.Init();
@@ -1042,14 +1037,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	float flHealthPrev = m_iHealth;
 
 	CTakeDamageInfo info = inputInfo;
-
-	IServerVehicle *pVehicle = GetVehicle();
-	if ( pVehicle )
-	{
-		// Let the vehicle decide if we should take this damage or not
-		if ( pVehicle->PassengerShouldReceiveDamage( info ) == false )
-			return 0;
-	}
 
  	if ( IsInCommentaryMode() )
 	{
@@ -1693,12 +1680,6 @@ void CBasePlayer::Event_Dying( const CTakeDamageInfo& info )
 	// NOT GIBBED, RUN THIS CODE
 
 	DeathSound( info );
-
-	// The dead body rolls out of the vehicle.
-	if ( IsInAVehicle() )
-	{
-		LeaveVehicle();
-	}
 
 	QAngle angles = GetLocalAngles();
 
@@ -4116,12 +4097,6 @@ void CBasePlayer::UpdateGeigerCounter( void )
 	// send range to radition source to client
 	range = (byte) clamp(Floor2Int(m_flgeigerRange / 4), 0, 255);
 
-	// This is to make sure you aren't driven crazy by geiger while in the airboat
-	if ( IsInAVehicle() )
-	{
-		range = clamp( (int)range * 4, 0, 255 );
-	}
-
 	if (range != m_igeigerRangePrev)
 	{
 		m_igeigerRangePrev = range;
@@ -4531,10 +4506,7 @@ void CBasePlayer::PostThink()
 
 			// select the proper animation for the player character	
 			VPROF( "CBasePlayer::PostThink-Animation" );
-			// If he's in a vehicle, sit down
-			if ( IsInAVehicle() )
-				SetAnimation( PLAYER_IN_VEHICLE );
-			else if (!GetAbsVelocity().x && !GetAbsVelocity().y)
+			if (!GetAbsVelocity().x && !GetAbsVelocity().y)
 				SetAnimation( PLAYER_IDLE );
 			else if ((GetAbsVelocity().x || GetAbsVelocity().y) && ( GetFlags() & FL_ONGROUND ))
 				SetAnimation( PLAYER_WALK );
@@ -4706,11 +4678,7 @@ void CBasePlayer::UpdatePhysicsShadowToPosition( const Vector &vecAbsOrigin )
 }
 
 Vector CBasePlayer::GetSmoothedVelocity( void )
-{ 
-	if ( IsInAVehicle() )
-	{
-		return GetVehicle()->GetVehicleEnt()->GetSmoothedVelocity();
-	}
+{
 	return m_vecSmoothedVelocity;
 }
 
@@ -4996,9 +4964,6 @@ void CBasePlayer::Spawn( void )
 	}
 #endif
 
-	// Calculate this immediately
-	m_nVehicleViewSavedFrame = 0;
-
 	// track where we are in the nav mesh
 	UpdateLastKnownArea();
 
@@ -5013,11 +4978,6 @@ void CBasePlayer::Spawn( void )
 void CBasePlayer::Activate( void )
 {
 	BaseClass::Activate();
-
-
-	// Reset the analog bias. If the player is in a vehicle when the game
-	// reloads, it will autosense and apply the correct bias.
-	m_iVehicleAnalogBias = VEHICLE_ANALOG_BIAS_NONE;
 }
 
 void CBasePlayer::Precache( void )
@@ -5191,9 +5151,6 @@ void CBasePlayer::OnRestore( void )
 	SetViewEntity( m_hViewEntity );
 	SetDefaultFOV(m_iDefaultFOV);		// force this to reset if zero
 
-	// Calculate this immediately
-	m_nVehicleViewSavedFrame = 0;
-
 	m_nBodyPitchPoseParam = LookupPoseParameter( "body_pitch" );
 }
 
@@ -5323,200 +5280,6 @@ void CBasePlayer::VelocityPunch( const Vector &vecForce )
 	SetGroundEntity( NULL );
 	ApplyAbsVelocityImpulse(vecForce );
 }
-
-
-//--------------------------------------------------------------------------------------------------------------
-// VEHICLES
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// Purpose: Whether or not the player is currently able to enter the vehicle
-// Output : Returns true on success, false on failure.
-//-----------------------------------------------------------------------------
-bool CBasePlayer::CanEnterVehicle( IServerVehicle *pVehicle, int nRole )
-{
-	// Must not have a passenger there already
-	if ( pVehicle->GetPassenger( nRole ) )
-		return false;
-
-	// Must be able to holster our current weapon (ie. grav gun!)
-	if ( pVehicle->IsPassengerUsingStandardWeapons( nRole ) == false )
-	{
-		//Must be able to stow our weapon
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ( ( pWeapon != NULL ) && ( pWeapon->CanHolster() == false ) )
-			return false;
-	}
-
-	// Must be alive
-	if ( IsAlive() == false )
-		return false;
-
-	// Can't be pulled by a barnacle
-	if ( IsEFlagSet( EFL_IS_BEING_LIFTED_BY_BARNACLE ) )
-		return false;
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Put this player in a vehicle 
-//-----------------------------------------------------------------------------
-bool CBasePlayer::GetInVehicle( IServerVehicle *pVehicle, int nRole )
-{
-	Assert( NULL == m_hVehicle.Get() );
-	Assert( nRole >= 0 );
-	
-	// Make sure we can enter the vehicle
-	if ( CanEnterVehicle( pVehicle, nRole ) == false )
-		return false;
-
-	CBaseEntity *pEnt = pVehicle->GetVehicleEnt();
-	Assert( pEnt );
-
-	// Try to stow weapons
-	if ( pVehicle->IsPassengerUsingStandardWeapons( nRole ) == false )
-	{
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ( pWeapon != NULL )
-		{
-			pWeapon->Holster( NULL );
-		}
-
-#ifndef HL2_DLL
-		m_Local.m_iHideHUD |= HIDEHUD_WEAPONSELECTION;
-#endif
-		m_Local.m_iHideHUD |= HIDEHUD_INVEHICLE;
-	}
-
-	if ( !pVehicle->IsPassengerVisible( nRole ) )
-	{
-		AddEffects( EF_NODRAW );
-	}
-
-	// Put us in the vehicle
-	pVehicle->SetPassenger( nRole, this );
-
-	ViewPunchReset();
-
-	// Setting the velocity to 0 will cause the IDLE animation to play
-	SetAbsVelocity( vec3_origin );
-	SetMoveType( MOVETYPE_NOCLIP );
-
-	// This is a hack to fixup the player's stats since they really didn't "cheat" and enter noclip from the console
-	gamestats->Event_DecrementPlayerEnteredNoClip( this );
-
-	// Get the seat position we'll be at in this vehicle
-	Vector vSeatOrigin;
-	QAngle qSeatAngles;
-	pVehicle->GetPassengerSeatPoint( nRole, &vSeatOrigin, &qSeatAngles );
-	
-	// Set us to that position
-	SetAbsOrigin( vSeatOrigin );
-	SetAbsAngles( qSeatAngles );
-	
-	// Parent to the vehicle
-	SetParent( pEnt );
-
-	SetCollisionGroup( COLLISION_GROUP_IN_VEHICLE );
-	
-	// We cannot be ducking -- do all this before SetPassenger because it
-	// saves our view offset for restoration when we exit the vehicle.
-	RemoveFlag( FL_DUCKING );
-	SetViewOffset( VEC_VIEW_SCALED( this ) );
-	m_Local.m_bDucked = false;
-	m_Local.m_bDucking  = false;
-	m_Local.m_flDucktime = 0.0f;
-	m_Local.m_flDuckJumpTime = 0.0f;
-	m_Local.m_flJumpTime = 0.0f;
-
-	// Turn our toggled duck off
-	if ( GetToggledDuckState() )
-	{
-		ToggleDuck();
-	}
-
-	m_hVehicle = pEnt;
-
-	// Throw an event indicating that the player entered the vehicle.
-	g_pNotify->ReportNamedEvent( this, "PlayerEnteredVehicle" );
-
-	m_iVehicleAnalogBias = VEHICLE_ANALOG_BIAS_NONE;
-
-	OnVehicleStart();
-
-	return true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Remove this player from a vehicle
-//-----------------------------------------------------------------------------
-void CBasePlayer::LeaveVehicle( const Vector &vecExitPoint, const QAngle &vecExitAngles )
-{
-	if ( NULL == m_hVehicle.Get() )
-		return;
-
-	IServerVehicle *pVehicle = GetVehicle();
-	Assert( pVehicle );
-
-	int nRole = pVehicle->GetPassengerRole( this );
-	Assert( nRole >= 0 );
-
-	SetParent( NULL );
-
-	// Find the first non-blocked exit point:
-	Vector vNewPos = GetAbsOrigin();
-	QAngle qAngles = GetAbsAngles();
-	if ( vecExitPoint == vec3_origin )
-	{
-		// FIXME: this might fail to find a safe exit point!!
-		pVehicle->GetPassengerExitPoint( nRole, &vNewPos, &qAngles );
-	}
-	else
-	{
-		vNewPos = vecExitPoint;
-		qAngles = vecExitAngles;
-	}
-	OnVehicleEnd( vNewPos );
-	SetAbsOrigin( vNewPos );
-	SetAbsAngles( qAngles );
-	// Clear out any leftover velocity
-	SetAbsVelocity( vec3_origin );
-
-	qAngles[ROLL] = 0;
-	SnapEyeAngles( qAngles );
-
-#ifndef HL2_DLL
-	m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
-#endif
-
-	m_Local.m_iHideHUD &= ~HIDEHUD_INVEHICLE;
-
-	RemoveEffects( EF_NODRAW );
-
-	SetMoveType( MOVETYPE_WALK );
-	SetCollisionGroup( COLLISION_GROUP_PLAYER );
-
-	if ( VPhysicsGetObject() )
-	{
-		VPhysicsGetObject()->SetPosition( vNewPos, vec3_angle, true );
-	}
-
-	m_hVehicle = NULL;
-	pVehicle->SetPassenger(nRole, NULL);
-
-	// Re-deploy our weapon
-	if ( IsAlive() )
-	{
-		if ( GetActiveWeapon() && GetActiveWeapon()->IsWeaponVisible() == false )
-		{
-			GetActiveWeapon()->Deploy();
-			ShowCrosshair( true );
-		}
-	}
-}
-
 
 //==============================================
 // !!!UNDONE:ultra temporary SprayCan entity to apply
@@ -6144,31 +5907,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 	}
 	else
 #endif // _DEBUG
-	if( stricmp( cmd, "vehicleRole" ) == 0 )
-	{
-		// Get the vehicle role value.
-		if ( args.ArgC() == 2 )
-		{
-			// Check to see if a player is in a vehicle.
-			if ( IsInAVehicle() )
-			{
-				int nRole = atoi( args[1] );
-				IServerVehicle *pVehicle = GetVehicle();
-				if ( pVehicle )
-				{
-					// Only switch roles if role is empty!
-					if ( !pVehicle->GetPassenger( nRole ) )
-					{
-						LeaveVehicle();
-						GetInVehicle( pVehicle, nRole );
-					}
-				}			
-			}
-
-			return true;
-		}
-	}
-	else if ( HandleVoteCommands( args ) )
+	if ( HandleVoteCommands( args ) )
 	{
 		return true;
 	}
@@ -6441,27 +6180,20 @@ bool CBasePlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
 		pWeapon->AddEffects( EF_NODRAW );
 
 		Weapon_Equip( pWeapon );
-		if ( IsInAVehicle() )
-		{
-			pWeapon->Holster();
-		}
-		else
-		{
 #ifdef HL2_DLL
 
-			// Always switch to a newly-picked up weapon
-			if ( !PlayerHasMegaPhysCannon() )
+		// Always switch to a newly-picked up weapon
+		if ( !PlayerHasMegaPhysCannon() )
+		{
+			// If it uses clips, load it full. (this is the first time you've picked up this type of weapon)
+			if ( pWeapon->UsesClipsForAmmo1() )
 			{
-				// If it uses clips, load it full. (this is the first time you've picked up this type of weapon)
-				if ( pWeapon->UsesClipsForAmmo1() )
-				{
-					pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
-				}
-
-				Weapon_Switch( pWeapon );
+				pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
 			}
-#endif
+
+			Weapon_Switch( pWeapon );
 		}
+#endif
 		return true;
 	}
 }
@@ -6530,10 +6262,6 @@ QAngle CBasePlayer::BodyAngles()
 //------------------------------------------------------------------------------
 Vector CBasePlayer::BodyTarget( const Vector &posSrc, bool bNoisy ) 
 { 
-	if ( IsInAVehicle() )
-	{
-		return GetVehicle()->GetVehicleEnt()->BodyTarget( posSrc, bNoisy );
-	}
 	if (bNoisy)
 	{
 		return GetAbsOrigin() + (GetViewOffset() * random->RandomFloat( 0.7, 1.0 )); 
@@ -7406,7 +7134,6 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 
 		SendPropDataTable(SENDINFO_DT(pl), &REFERENCE_SEND_TABLE(DT_PlayerState), SendProxy_DataTableToDataTable),
 
-		SendPropEHandle(SENDINFO(m_hVehicle)),
 		SendPropEHandle(SENDINFO(m_hUseEntity)),
 		SendPropInt		(SENDINFO(m_iHealth), -1, SPROP_VARINT | SPROP_CHANGES_OFTEN ),
 		SendPropInt		(SENDINFO(m_lifeState), 3, SPROP_UNSIGNED ),
@@ -7819,17 +7546,8 @@ int CBasePlayer::GetFOV( void )
 {
 	int nDefaultFOV;
 
-	// The vehicle's FOV wins if we're asking for a default value
-	if ( GetVehicle() )
-	{
-		CacheVehicleView();
-		nDefaultFOV = ( m_flVehicleViewFOV == 0 ) ? GetDefaultFOV() : (int) m_flVehicleViewFOV;
-	}
-	else
-	{
-		nDefaultFOV = GetDefaultFOV();
-	}
-	
+	nDefaultFOV = GetDefaultFOV();
+
 	int fFOV = ( m_iFOV == 0 ) ? nDefaultFOV : m_iFOV;
 
 	// If it's immediate, just do it
@@ -7860,16 +7578,7 @@ int CBasePlayer::GetFOVForNetworking( void )
 {
 	int nDefaultFOV;
 
-	// The vehicle's FOV wins if we're asking for a default value
-	if ( GetVehicle() )
-	{
-		CacheVehicleView();
-		nDefaultFOV = ( m_flVehicleViewFOV == 0 ) ? GetDefaultFOV() : (int) m_flVehicleViewFOV;
-	}
-	else
-	{
-		nDefaultFOV = GetDefaultFOV();
-	}
+	nDefaultFOV = GetDefaultFOV();
 
 	int fFOV = ( m_iFOV == 0 ) ? nDefaultFOV : m_iFOV;
 
@@ -8471,12 +8180,6 @@ bool CPlayerInfo::IsDead()
 { 
 	Assert( m_pParent );
 	return m_pParent->IsDead(); 
-}
-
-bool CPlayerInfo::IsInAVehicle() 
-{ 
-	Assert( m_pParent );
-	return m_pParent->IsInAVehicle(); 
 }
 
 bool CPlayerInfo::IsObserver() 
