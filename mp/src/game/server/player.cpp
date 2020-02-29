@@ -257,7 +257,6 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_FIELD( m_iDefaultFOV,FIELD_INTEGER ),
 	DEFINE_FIELD( m_flVehicleViewFOV, FIELD_FLOAT ),
 
-	//DEFINE_FIELD( m_fOnTarget, FIELD_BOOLEAN ), // Don't need to restore
 	DEFINE_FIELD( m_iObserverMode, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iObserverLastMode, FIELD_INTEGER ),
 	DEFINE_FIELD( m_hObserverTarget, FIELD_EHANDLE ),
@@ -6778,10 +6777,6 @@ void CBasePlayer::GetAutoaimVector( autoaim_params_t &params )
 
 	QAngle angles = AutoaimDeflection( vecSrc, params );
 
-	// update ontarget if changed
-	if ( !g_pGameRules->AllowAutoTargetCrosshair() )
-		m_fOnTarget = false;
-
 	if (angles.x > 180)
 		angles.x -= 360;
 	if (angles.x < -180)
@@ -6870,7 +6865,6 @@ QAngle CBasePlayer::AutoaimDeflection( Vector &vecSrc, autoaim_params_t &params 
 
 	if ( ShouldAutoaim() == false )
 	{
-		m_fOnTarget = false;
 		return vec3_angle;
 	}
 
@@ -6882,8 +6876,6 @@ QAngle CBasePlayer::AutoaimDeflection( Vector &vecSrc, autoaim_params_t &params 
 	bestscore = 0.0f;
 	bestent = NULL;
 
-	//Reset this data
-	m_fOnTarget					= false;
 	params.m_bOnTargetNatural	= false;
 	
 	CBaseEntity *pIgnore = NULL;
@@ -6920,10 +6912,6 @@ QAngle CBasePlayer::AutoaimDeflection( Vector &vecSrc, autoaim_params_t &params 
 
 				if( bAimAtThis )
 				{
-					if ( pEntHit->GetFlags() & FL_AIMTARGET )
-					{
-						m_fOnTarget = true;
-					}
 
 					// Player is already on target naturally, don't autoaim.
 					// Fill out the autoaim_params_t struct, though.
@@ -7050,7 +7038,6 @@ QAngle CBasePlayer::AutoaimDeflection( Vector &vecSrc, autoaim_params_t &params 
 				bestang -= EyeAngles() - m_Local.m_vecPunchAngle;
 			}
 
-			m_fOnTarget = true;
 
 			// Autoaim detected a target for us. Aim automatically at its bodytarget.
 			params.m_hAutoAimEntity.Set(bestent);
@@ -7075,7 +7062,6 @@ void CBasePlayer::ResetAutoaim( void )
 		m_vecAutoAim = QAngle( 0, 0, 0 );
 		engine->CrosshairAngle( edict(), 0, 0 );
 	}
-	m_fOnTarget = false;
 }
 
 // ==========================================================================
@@ -7753,8 +7739,6 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropFloat		( SENDINFO(m_flFriction),		8,	SPROP_ROUNDDOWN,	0.0f,	4.0f),
 
 		SendPropArray3		( SENDINFO_ARRAY3(m_iAmmo), SendPropInt( SENDINFO_ARRAY(m_iAmmo), -1, SPROP_VARINT | SPROP_UNSIGNED ) ),
-			
-		SendPropInt			( SENDINFO( m_fOnTarget ), 2, SPROP_UNSIGNED ),
 
 		SendPropInt			( SENDINFO( m_nTickBase ), -1, SPROP_CHANGES_OFTEN ),
 		SendPropInt			( SENDINFO( m_nNextThinkTick ) ),
