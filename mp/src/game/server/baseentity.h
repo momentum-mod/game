@@ -70,7 +70,6 @@ class Vector;
 struct gamevcollisionevent_t;
 class CBaseAnimating;
 class CBasePlayer;
-class IServerVehicle;
 struct solid_t;
 struct notify_system_event_params_t;
 class CAI_BaseNPC;
@@ -950,9 +949,6 @@ public:
 	virtual bool	IsBaseCombatWeapon( void ) const { return false; }
 	virtual bool	IsWearable( void ) const { return false; }
 	virtual CBaseCombatWeapon *MyCombatWeaponPointer( void ) { return NULL; }
-
-	// If this is a vehicle, returns the vehicle interface
-	virtual IServerVehicle*			GetServerVehicle() { return NULL; }
 
 	// UNDONE: Make this data instead of procedural?
 	virtual bool	IsViewable( void );					// is this something that would be looked at (model, sprite, etc.)?

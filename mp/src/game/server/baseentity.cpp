@@ -46,7 +46,6 @@
 #include "game.h"
 #include "tier0/vprof.h"
 #include "ai_basenpc.h"
-#include "iservervehicle.h"
 #include "eventlist.h"
 #include "scriptevent.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -2786,14 +2785,6 @@ bool CBaseEntity::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **p
 		// If we hit the entity we're looking for, it's visible
 		if ( tr.m_pEnt == pEntity )
 			return true;
-
-		// Got line of sight on the vehicle the player is driving!
-		if ( pEntity && pEntity->IsPlayer() )
-		{
-			CBasePlayer *pPlayer = assert_cast<CBasePlayer*>( pEntity );
-			if ( tr.m_pEnt == pPlayer->GetVehicleEntity() )
-				return true;
-		}
 
 		if (ppBlocker)
 		{
