@@ -14,7 +14,6 @@
 #include "clientmode.h"
 #include "engine/IEngineSound.h"
 #include "ienginevgui.h"
-#include "ihudlcd.h"
 #include "text_message.h"
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
@@ -1495,15 +1494,6 @@ void CBaseHudChat::ChatPrintf(int iPlayerIndex, int iFilter, const char *fmt, ..
     {
         if (GetClientVoiceMgr() && GetClientVoiceMgr()->IsPlayerBlocked(iPlayerIndex))
             return;
-    }
-
-    if (*pmsg < 32)
-    {
-        hudlcd->AddChatLine(pmsg + 1);
-    }
-    else
-    {
-        hudlcd->AddChatLine(pmsg);
     }
 
     line->SetText("");
