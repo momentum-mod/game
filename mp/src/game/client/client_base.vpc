@@ -655,7 +655,6 @@ $Project
 		$File	"idebugoverlaypanel.h"
 		$File	"ifpspanel.h"
 		$File	"$SRCDIR\game\shared\econ\ihasowner.h"
-		$File	"ihudlcd.h"
 		$File	"ipresence.h"
 		$File	"iinput.h"
 		$File	"iloadingdisc.h"
