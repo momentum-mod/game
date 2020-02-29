@@ -444,17 +444,6 @@ bool CAI_FollowBehavior::UpdateFollowPosition()
 		return false;
 	}
 
-	CBaseEntity *pFollowTarget = GetFollowTarget();
-
-	if ( pFollowTarget->GetParent() )
-	{
-		if ( pFollowTarget->GetParent()->GetServerVehicle() )
-		{
-			m_FollowNavGoal.targetMoveTolerance *= 1.5;
-			m_FollowNavGoal.range += pFollowTarget->GetParent()->BoundingRadius() * 0.333;
-		}
-	}
-
 #if TODO
 	// @TODO (toml 07-27-03): this is too simplistic. fails when the new point is an inappropriate target
 	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer *>(m_hFollowTarget.Get());
@@ -1647,14 +1636,7 @@ void CAI_FollowBehavior::RunTask( const Task_t *pTask )
 						vGoalPosition = GetGoalPosition();
 
 					AI_NavGoal_t goal( vGoalPosition, AIN_DEF_ACTIVITY, GetGoalTolerance() );
-					if ( !m_hFollowTarget->GetParent() || !m_hFollowTarget->GetParent()->GetServerVehicle() )
-					{
-						goal.pTarget = m_hFollowTarget;
-					}
-					else
-					{
-						goal.pTarget = m_hFollowTarget->GetParent();
-					}
+					goal.pTarget = m_hFollowTarget->GetParent();
 
 					bool bSuccess = true;
 					if ( !GetNavigator()->SetGoal( goal, AIN_NO_PATH_TASK_FAIL ) )

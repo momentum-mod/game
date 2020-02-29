@@ -68,7 +68,6 @@
 #include "globals.h"
 #include "saverestore_bitstring.h"
 #include "checksum_crc.h"
-#include "iservervehicle.h"
 #include "filters.h"
 #ifdef HL2_DLL
 #include "npc_bullseye.h"
@@ -669,16 +668,8 @@ bool CAI_BaseNPC::PassesDamageFilter( const CTakeDamageInfo &info )
 	{
 		// check attackers relationship with me
 		CBaseCombatCharacter *npcEnemy = info.GetAttacker()->MyCombatCharacterPointer();
-		bool bHitByVehicle = false;
-		if ( !npcEnemy )
-		{
-			if ( info.GetAttacker()->GetServerVehicle() )
-			{
-				bHitByVehicle = true;
-			}
-		}
 
-		if ( bHitByVehicle || (npcEnemy && npcEnemy->IRelationType( this ) == D_LI) )
+		if ( (npcEnemy && npcEnemy->IRelationType( this ) == D_LI) )
 		{
 			m_fNoDamageDecal = true;
 
@@ -2823,10 +2814,6 @@ void CAI_BaseNPC::MaintainLookTargets ( float flInterval )
 
 void CAI_BaseNPC::MaintainTurnActivity( )
 {
-	// Don't bother if we're in a vehicle
-	if ( IsInAVehicle() )
-		return;
-
 	AI_PROFILE_SCOPE( CAI_BaseNPC_MaintainTurnActivity );
 	GetMotor()->MaintainTurnActivity( );
 }
@@ -5370,21 +5357,6 @@ bool CAI_BaseNPC::InnateWeaponLOSCondition( const Vector &ownerPos, const Vector
 	}
 	
 	CBaseEntity	*pHitEntity = tr.m_pEnt;
-	
-	// Translate a hit vehicle into its passenger if found
-	if ( GetEnemy() != NULL )
-	{
-		CBaseCombatCharacter *pCCEnemy = GetEnemy()->MyCombatCharacterPointer();
-		if ( pCCEnemy != NULL && pCCEnemy->IsInAVehicle() )
-		{
-			// Ok, player in vehicle, check if vehicle is target we're looking at, fire if it is
-			// Also, check to see if the owner of the entity is the vehicle, in which case it's valid too.
-			// This catches vehicles that use bone followers.
-			CBaseEntity *pVehicleEnt = pCCEnemy->GetVehicleEntity();
-			if ( pHitEntity == pVehicleEnt || pHitEntity->GetOwnerEntity() == pVehicleEnt )
-				return true;
-		}
-	}
 
 	if ( pHitEntity == GetEnemy() )
 	{
@@ -6629,7 +6601,7 @@ void CAI_BaseNPC::CheckPhysicsContacts()
 				float otherMass = PhysGetEntityMass(pOtherEntity);
 
 				if ( pOtherEntity->GetMoveType() == MOVETYPE_VPHYSICS &&  pOther->IsMoveable() && 
-					otherMass < VPHYSICS_LARGE_OBJECT_MASS  && !pOtherEntity->GetServerVehicle() )
+					otherMass < VPHYSICS_LARGE_OBJECT_MASS )
 				{
 					m_bCheckContacts = true;
 					Vector vel, point;
@@ -9418,10 +9390,6 @@ CanPlaySequence_t CAI_BaseNPC::CanPlaySequence( bool fDisregardNPCState, int int
 		// npc is dead!
 		return CANNOT_PLAY;
 	}
-
-	// An NPC in a vehicle cannot play a scripted sequence
-	if ( IsInAVehicle() )
-		return CANNOT_PLAY;
 
 	if ( fDisregardNPCState )
 	{
@@ -12593,13 +12561,6 @@ bool CAI_BaseNPC::IsCoverPosition( const Vector &vecThreat, const Vector &vecPos
 		bool bThreatPosIsEnemy = ( (vecThreat - GetEnemy()->EyePosition()).LengthSqr() < 0.1f );
 		if ( bThreatPosIsEnemy )
 		{
-			CBaseCombatCharacter *pCCEnemy = GetEnemy()->MyCombatCharacterPointer();
-			if ( pCCEnemy != NULL && pCCEnemy->IsInAVehicle() )
-			{
-				// Ignore the vehicle
-				filter.SetPassEntity( pCCEnemy->GetVehicleEntity() );
-			}
-
 			if ( !filter.GetPassEntity() )
 			{
 				filter.SetPassEntity( pEnemy );

@@ -258,17 +258,7 @@ CPathTrack *CAI_TrackPather::BestPointOnPath( CPathTrack *pPath, const Vector &t
 		return NULL;
 	}
 
-	// Our target may be in a vehicle
-	CBaseEntity *pVehicle = NULL;
-	CBaseEntity *pTargetEnt = GetTrackPatherTargetEnt();	
-	if ( pTargetEnt != NULL )
-	{
-		CBaseCombatCharacter *pCCTarget = pTargetEnt->MyCombatCharacterPointer();
-		if ( pCCTarget != NULL && pCCTarget->IsInAVehicle() )
-		{
-			pVehicle = pCCTarget->GetVehicleEntity();
-		}
-	}
+	CBaseEntity *pTargetEnt = GetTrackPatherTargetEnt();
 
 	// Faster math...
 	flAvoidRadius *= flAvoidRadius;
@@ -323,9 +313,8 @@ CPathTrack *CAI_TrackPather::BestPointOnPath( CPathTrack *pPath, const Vector &t
 				// If it has to be visible, run those checks
 				CBaseEntity *pBlocker = FindTrackBlocker( pTravPath->GetAbsOrigin(), targetPos );
 
-				// Check to see if we've hit the target, or the player's vehicle if it's a player in a vehicle
-				bool bHitTarget = ( pTargetEnt && ( pTargetEnt == pBlocker ) ) ||
-									( pVehicle && ( pVehicle == pBlocker ) );
+				// Check to see if we've hit the target
+				bool bHitTarget = ( pTargetEnt && ( pTargetEnt == pBlocker ) );
 
 				// If we hit something, and it wasn't the target or his vehicle, then no dice
 				// If we hit the target and forced move was set, *still* no dice
@@ -490,20 +479,11 @@ bool CAI_TrackPather::HasLOSToTarget( CPathTrack *pTrack )
 	if ( !GetTrackPatherTarget( &targetPos ) )
 		return true;
 
-	// Translate driver into vehicle for testing
-	CBaseEntity *pVehicle = NULL;
-	CBaseCombatCharacter *pCCTarget = pTargetEnt->MyCombatCharacterPointer();
-	if ( pCCTarget != NULL && pCCTarget->IsInAVehicle() )
-	{
-		pVehicle = pCCTarget->GetVehicleEntity();
-	}
-
 	// If it has to be visible, run those checks
 	CBaseEntity *pBlocker = FindTrackBlocker( pTrack->GetAbsOrigin(), targetPos );
 
-	// Check to see if we've hit the target, or the player's vehicle if it's a player in a vehicle
-	bool bHitTarget = ( pTargetEnt && ( pTargetEnt == pBlocker ) ) ||
-						( pVehicle && ( pVehicle == pBlocker ) );
+	// Check to see if we've hit the target
+	bool bHitTarget = ( pTargetEnt && ( pTargetEnt == pBlocker ) );
 
 	return (pBlocker == NULL) || bHitTarget;
 }
