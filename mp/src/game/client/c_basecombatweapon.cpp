@@ -264,21 +264,12 @@ void C_BaseCombatWeapon::DrawCrosshair()
 	if ( !pCrosshair )
 		return;
 
-	// Find out if this weapon's auto-aimed onto a target
-	bool bOnTarget = ( m_iState == WEAPON_IS_ONTARGET );
 
 	const auto pWeaponHud = g_pWeaponDef->GetWeaponHUDResource(GetWeaponID());
 	
 	if ( player->GetFOV() >= 90 )
-	{ 
-		// normal crosshairs
-		if ( bOnTarget && pWeaponHud->m_vecResources[HUD_RESOURCE_AUTOAIM] )
-		{
-			clr[3] = 255;
-
-			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_AUTOAIM], clr );
-		}
-		else if (pWeaponHud->m_vecResources[HUD_RESOURCE_CROSSHAIR])
+	{
+		if (pWeaponHud->m_vecResources[HUD_RESOURCE_CROSSHAIR])
 		{
 			clr[3] = 255;
 			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_CROSSHAIR], clr );
@@ -291,9 +282,7 @@ void C_BaseCombatWeapon::DrawCrosshair()
 	else
 	{
 		// zoomed crosshairs
-		if (bOnTarget && pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_AUTOAIM])
-			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_AUTOAIM], COLOR_WHITE);
-		else if ( pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_CROSSHAIR])
+		if ( pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_CROSSHAIR])
 			pCrosshair->SetCrosshair(pWeaponHud->m_vecResources[HUD_RESOURCE_ZOOMED_CROSSHAIR], COLOR_WHITE );
 		else
 			pCrosshair->ResetCrosshair();
