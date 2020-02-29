@@ -63,7 +63,7 @@ bool CPointTeleport::EntityMayTeleport( CBaseEntity *pTarget )
 	{
 		// Passengers in a vehicle are allowed to teleport; their behavior handles it
 		CBaseCombatCharacter *pBCC = pTarget->MyCombatCharacterPointer();
-		if ( pBCC == NULL || ( pBCC != NULL && pBCC->IsInAVehicle() == false ) )
+		if ( pBCC == NULL )
 			return false;
 	}
 
