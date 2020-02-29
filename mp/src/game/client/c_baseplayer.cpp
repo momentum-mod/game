@@ -20,7 +20,6 @@
 #include "c_soundscape.h"
 #include "usercmd.h"
 #include "c_playerresource.h"
-#include "iclientvehicle.h"
 #include "view_shared.h"
 #include "movevars_shared.h"
 #include "prediction.h"
@@ -263,7 +262,6 @@ END_RECV_TABLE()
 		RecvPropInt		(RECVINFO(m_iDefaultFOV)),
 		RecvPropEHandle (RECVINFO(m_hZoomOwner)),
 
-		RecvPropEHandle( RECVINFO(m_hVehicle) ),
 		RecvPropEHandle( RECVINFO(m_hUseEntity) ),
 
 		RecvPropInt		(RECVINFO(m_iHealth)),
@@ -343,7 +341,6 @@ BEGIN_PREDICTION_DATA( C_BasePlayer )
 	DEFINE_PRED_FIELD( m_flFOVTime, FIELD_FLOAT, 0 ),
 	DEFINE_PRED_FIELD( m_iFOVStart, FIELD_INTEGER, 0 ),
 
-	DEFINE_PRED_FIELD( m_hVehicle, FIELD_EHANDLE, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD_TOL( m_flMaxspeed, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, 0.5f ),
 	DEFINE_PRED_FIELD( m_iHealth, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_iBonusProgress, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
@@ -640,23 +637,6 @@ bool C_BasePlayer::IsPlayerDead()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void C_BasePlayer::SetVehicleRole( int nRole )
-{
-	if ( !IsInAVehicle() )
-		return;
-
-	// HL2 has only a player in a vehicle.
-	if ( nRole > VEHICLE_ROLE_DRIVER )
-		return;
-
-	char szCmd[64];
-	Q_snprintf( szCmd, sizeof( szCmd ), "vehicleRole %i\n", nRole );
-	engine->ServerCmd( szCmd );
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Store original ammo data to see what has changed
 // Input  : bnewentity - 
 //-----------------------------------------------------------------------------
@@ -901,18 +881,6 @@ void C_BasePlayer::OnDataChanged( DataUpdateType_t updateType )
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// Did we just enter a vehicle this frame?
-//-----------------------------------------------------------------------------
-bool C_BasePlayer::JustEnteredVehicle()
-{
-	if ( !IsInAVehicle() )
-		return false;
-
-	return ( m_hOldVehicle == m_hVehicle );
-}
-
 //-----------------------------------------------------------------------------
 // Are we in VGUI input mode?.
 //-----------------------------------------------------------------------------
@@ -982,14 +950,13 @@ void C_BasePlayer::DetermineVguiInputMode( CUserCmd *pCmd )
 	}
 
 	// Not in vgui mode if we're pushing any movement key at all
-	// Not in vgui mode if we're in a vehicle...
 	// ROBIN: Disabled movement preventing VGUI screen usage
 	//if ((pCmd->forwardmove > MAX_VGUI_INPUT_MODE_SPEED) ||
 	//	(pCmd->sidemove > MAX_VGUI_INPUT_MODE_SPEED) ||
 	//	(pCmd->upmove > MAX_VGUI_INPUT_MODE_SPEED) ||
 	//	(pCmd->buttons & IN_JUMP) ||
 	//	(bAttacking) )
-	if ( bAttacking || IsInAVehicle() )
+	if ( bAttacking )
 	{ 
 		DeactivateVguiScreen( m_pCurrentVguiScreen.Get() );
 		m_pCurrentVguiScreen.Set( NULL );
@@ -1029,23 +996,10 @@ void C_BasePlayer::DetermineVguiInputMode( CUserCmd *pCmd )
 //-----------------------------------------------------------------------------
 bool C_BasePlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 {
-	// Allow the vehicle to clamp the view angles
-	if ( IsInAVehicle() )
+	CBaseCombatWeapon *pWeapon = GetActiveWeapon();
+	if ( pWeapon )
 	{
-		IClientVehicle *pVehicle = m_hVehicle.Get()->GetClientVehicle();
-		if ( pVehicle )
-		{
-			pVehicle->UpdateViewAngles( this, pCmd );
-			engine->SetViewAngles( pCmd->viewangles );
-		}
-	}
-	else 
-	{
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ( pWeapon )
-		{
-			pWeapon->CreateMove( flInputSampleTime, pCmd, m_vecOldViewAngles );
-		}
+		pWeapon->CreateMove( flInputSampleTime, pCmd, m_vecOldViewAngles );
 	}
 
 	// If the frozen flag is set, prevent view movement (server prevents the rest of the movement)
@@ -2222,19 +2176,9 @@ float C_BasePlayer::GetFOV( void )
 		}
 	}
 
-	// Allow our vehicle to override our FOV if it's currently at the default FOV.
 	float flDefaultFOV;
-	IClientVehicle *pVehicle = GetVehicle();
-	if ( pVehicle )
-	{
-		CacheVehicleView();
-		flDefaultFOV = ( m_flVehicleViewFOV == 0 ) ? GetDefaultFOV() : m_flVehicleViewFOV;
-	}
-	else
-	{
-		flDefaultFOV = GetDefaultFOV();
-	}
-	
+	flDefaultFOV = GetDefaultFOV();
+
 	float fFOV = ( m_iFOV == 0 ) ? flDefaultFOV : m_iFOV;
 
 	// Don't do lerping during prediction. It's only necessary when actually rendering,
@@ -2343,49 +2287,6 @@ void RecvProxy_ObserverMode( const CRecvProxyData *pData, void *pStruct, void *p
 
 	pPlayer->SetObserverMode ( pData->m_Value.m_Int );
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Remove this player from a vehicle
-//-----------------------------------------------------------------------------
-void C_BasePlayer::LeaveVehicle( void )
-{
-	if ( NULL == m_hVehicle.Get() )
-		return;
-
-// Let server do this for now
-#if 0
-	IClientVehicle *pVehicle = GetVehicle();
-	Assert( pVehicle );
-
-	int nRole = pVehicle->GetPassengerRole( this );
-	Assert( nRole != VEHICLE_ROLE_NONE );
-
-	SetParent( NULL );
-
-	// Find the first non-blocked exit point:
-	Vector vNewPos = GetAbsOrigin();
-	QAngle qAngles = GetAbsAngles();
-	pVehicle->GetPassengerExitPoint( nRole, &vNewPos, &qAngles );
-	OnVehicleEnd( vNewPos );
-	SetAbsOrigin( vNewPos );
-	SetAbsAngles( qAngles );
-
-	m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
-	RemoveEffects( EF_NODRAW );
-
-	SetMoveType( MOVETYPE_WALK );
-	SetCollisionGroup( COLLISION_GROUP_PLAYER );
-
-	qAngles[ROLL] = 0;
-	SnapEyeAngles( qAngles );
-
-	m_hVehicle = NULL;
-	pVehicle->SetPassenger(nRole, NULL);
-
-	Weapon_Switch( m_hLastWeapon );
-#endif
-}
-
 
 float C_BasePlayer::GetMinFOV()	const
 {
