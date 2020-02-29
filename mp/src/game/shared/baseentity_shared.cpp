@@ -168,7 +168,7 @@ const Vector &CBaseEntity::WorldSpaceCenter( ) const
 }
 
 #if !defined( CLIENT_DLL )
-#define CHANGE_FLAGS(flags,newFlags) { unsigned int old = flags; flags = (newFlags); gEntList.ReportEntityFlagsChanged( this, old, flags ); }
+#define CHANGE_FLAGS(flags,newFlags) { flags = (newFlags); }
 #else
 #define CHANGE_FLAGS(flags,newFlags) (flags = (newFlags))
 #endif

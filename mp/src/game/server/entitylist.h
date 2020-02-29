@@ -106,8 +106,6 @@ public:
 	void AddListenerEntity( IEntityListener *pListener );
 	void RemoveListenerEntity( IEntityListener *pListener );
 
-	void ReportEntityFlagsChanged( CBaseEntity *pEntity, unsigned int flagsOld, unsigned int flagsNow );
-
 	// entity is about to be removed, notify the listeners
 	void NotifyCreateEntity( CBaseEntity *pEnt );
 	void NotifySpawn( CBaseEntity *pEnt );
@@ -352,9 +350,6 @@ public:
 extern INotify *g_pNotify;
 
 void EntityTouch_Add( CBaseEntity *pEntity );
-int AimTarget_ListCount();
-int AimTarget_ListCopy( CBaseEntity *pList[], int listMax );
-void AimTarget_ForceRepopulateList();
 
 void SimThink_EntityChanged( CBaseEntity *pEntity );
 int SimThink_ListCount();
