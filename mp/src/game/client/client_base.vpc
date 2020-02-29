@@ -408,7 +408,6 @@ $Project
 				"$SRCDIR\public\vallocator.cpp"						\
 				"$SRCDIR\public\vgui_controls\vgui_controls.cpp"	\
 				"$SRCDIR\public\jigglebones.cpp"					\
-				"hud_lcd.cpp"										\
 				"in_mouse.cpp"										\
 				"mumble.cpp"						\
 				"$SRCDIR\public\renamed_recvtable_compat.cpp"		\
@@ -640,7 +639,6 @@ $Project
 		$File	"hud_closecaption.h"
 		$File	"hud_crosshair.h"
 		$File	"hud_element_helper.h"
-		$File	"hud_lcd.h"
 		$File	"hud_macros.h"
 		$File	"hud_numericdisplay.h"
 		$File	"hud_pdump.h"
