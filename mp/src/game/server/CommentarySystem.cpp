@@ -360,7 +360,8 @@ public:
 		// See if the player's looking at a commentary node
 		trace_t tr;
 		Vector vecSrc = pPlayer->EyePosition();
-		Vector vecForward = pPlayer->GetAutoaimVector( AUTOAIM_SCALE_DIRECT_ONLY );	
+    Vector vecForward;
+    AngleVectors(pPlayer->EyeAngles() + pPlayer->m_Local.m_vecPunchAngle, &vecForward);
 
 		g_bTracingVsCommentaryNodes = true;
 		UTIL_TraceLine( vecSrc, vecSrc + vecForward * MAX_TRACE_LENGTH, MASK_SOLID, pPlayer, COLLISION_GROUP_NONE, &tr );

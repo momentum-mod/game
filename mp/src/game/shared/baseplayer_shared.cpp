@@ -835,7 +835,6 @@ bool CBasePlayer::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex 
 		Assert( pViewModel );
 		if ( pViewModel && pViewModel->IsEffectActive(EF_NODRAW) )
 			pViewModel->RemoveEffects( EF_NODRAW );
-		ResetAutoaim( );
 		return true;
 	}
 	return false;
@@ -1018,8 +1017,6 @@ void CBasePlayer::SelectItem( const char *pstr, int iSubType )
 	{
 		if ( !GetActiveWeapon()->CanHolster() && !pItem->ForceWeaponSwitch() )
 			return;
-
-		ResetAutoaim( );
 	}
 
 	Weapon_Switch( pItem );
