@@ -318,10 +318,6 @@ public:
 	virtual void			StopWeaponSound( const char *pShootSound );
 	virtual const WeaponProficiencyInfo_t *GetProficiencyValues();
 
-	// Autoaim
-	virtual float			GetMaxAutoAimDeflection() { return 0.99f; }
-	virtual float			WeaponAutoAimScale() { return 1.0f; } // allows a weapon to influence the perceived size of the target's autoaim radius.
-
 	// TF Sprinting functions
 	virtual bool			StartSprinting( void ) { return false; };
 	virtual bool			StopSprinting( void ) { return false; };
