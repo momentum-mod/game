@@ -127,7 +127,6 @@ public:
 	virtual bool IsPlayer() = 0;
 	virtual bool IsFakeClient() = 0;
 	virtual bool IsDead() = 0;
-	virtual bool IsInAVehicle() = 0;
 	virtual bool IsObserver() = 0;
 
 	// player position and size
