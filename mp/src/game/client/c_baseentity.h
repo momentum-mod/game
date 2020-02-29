@@ -42,7 +42,6 @@
 
 class C_Team;
 class IPhysicsObject;
-class IClientVehicle;
 class CPredictionCopy;
 class C_BasePlayer;
 struct studiohdr_t;
@@ -662,10 +661,6 @@ public:
 
 	bool IsStandable() const;
 	bool IsBSPModel() const;
-
-	
-	// If this is a vehicle, returns the vehicle interface
-	virtual IClientVehicle*			GetClientVehicle() { return NULL; }
 
 	// Returns the aiment render origin + angles
 	virtual void					GetAimEntOrigin( IClientEntity *pAttachedTo, Vector *pAbsOrigin, QAngle *pAbsAngles );
