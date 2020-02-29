@@ -164,7 +164,6 @@ $Project
 		$File	"c_team.cpp"
 		$File	"c_tesla.cpp"
 		$File	"c_user_message_register.cpp"
-		$File	"c_vehicle_choreo_generic.cpp"
 		$File	"c_vguiscreen.cpp"
 		$File	"hl2\c_waterbullet.cpp"
 		$File	"C_WaterLODControl.cpp"
