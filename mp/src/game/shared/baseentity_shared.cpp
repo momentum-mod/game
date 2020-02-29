@@ -167,30 +167,24 @@ const Vector &CBaseEntity::WorldSpaceCenter( ) const
 	return CollisionProp()->WorldSpaceCenter();
 }
 
-#if !defined( CLIENT_DLL )
-#define CHANGE_FLAGS(flags,newFlags) { flags = (newFlags); }
-#else
-#define CHANGE_FLAGS(flags,newFlags) (flags = (newFlags))
-#endif
-
-void CBaseEntity::AddFlag( int flags )
+void CBaseEntity::AddFlag(int flags)
 {
-	CHANGE_FLAGS( m_fFlags, m_fFlags | flags );
+	m_fFlags |= flags;
 }
 
-void CBaseEntity::RemoveFlag( int flagsToRemove )
+void CBaseEntity::RemoveFlag(int flagsToRemove)
 {
-	CHANGE_FLAGS( m_fFlags, m_fFlags & ~flagsToRemove );
+	m_fFlags &= ~flagsToRemove;
 }
 
-void CBaseEntity::ClearFlags( void )
+void CBaseEntity::ClearFlags(void)
 {
-	CHANGE_FLAGS( m_fFlags, 0 );
+	m_fFlags = 0;
 }
 
-void CBaseEntity::ToggleFlag( int flagToToggle )
-{
-	CHANGE_FLAGS( m_fFlags, m_fFlags ^ flagToToggle );
+void CBaseEntity::ToggleFlag(int flagToToggle)
+{ 
+	m_fFlags ^= flagToToggle;
 }
 
 void CBaseEntity::SetEffects( int nEffects )
