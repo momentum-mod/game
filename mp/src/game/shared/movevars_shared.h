@@ -39,19 +39,6 @@ extern ConVar sv_specspeed;
 extern ConVar sv_specnoclip;
 extern ConVar sv_swimsound;
 
-// Vehicle convars
-extern ConVar r_VehicleViewDampen;
-
-// Jeep convars
-extern ConVar r_JeepViewDampenFreq;
-extern ConVar r_JeepViewDampenDamp;
-extern ConVar r_JeepViewZHeight;
-
-// Airboat convars
-extern ConVar r_AirboatViewDampenFreq;
-extern ConVar r_AirboatViewDampenDamp;
-extern ConVar r_AirboatViewZHeight;
-
 // Momentum convars
 extern ConVar sv_considered_on_ground;
 extern ConVar sv_duck_collision_fix;
