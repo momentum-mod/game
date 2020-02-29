@@ -84,7 +84,6 @@
 #include "scenefilecache/ISceneFileCache.h"
 #include "tier2/tier2dm.h"
 #include "tier3/tier3.h"
-#include "ihudlcd.h"
 #include "toolframework_client.h"
 #include "hltvcamera.h"
 #include "vgui/ILocalize.h"
@@ -1206,9 +1205,6 @@ void CHLClient::HudUpdate( bool bActive )
 	// run vgui animations
 	vgui::GetAnimationController()->UpdateAnimations( engine->Time() );
 
-	hudlcd->SetGlobalStat( "(time_int)", VarArgs( "%d", (int)gpGlobals->curtime ) );
-	hudlcd->SetGlobalStat( "(time_float)", VarArgs( "%.2f", gpGlobals->curtime ) );
-
 	// I don't think this is necessary any longer, but I will leave it until
 	// I can check into this further.
 	C_BaseTempEntity::CheckDynamicTempEnts();
@@ -1490,8 +1486,6 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 	// Tell mode manager that map is changing
 	modemanager->LevelInit( pMapName );
 	ParticleMgr()->LevelInit();
-
-	hudlcd->SetGlobalStat( "(mapname)", pMapName );
 
 	C_BaseTempEntity::ClearDynamicTempEnts();
 	clienteffects->Flush();
