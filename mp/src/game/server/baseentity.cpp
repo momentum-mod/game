@@ -71,7 +71,6 @@
 #include "tier0/memdbgon.h"
 
 extern bool g_bTestMoveTypeStepSimulation;
-extern ConVar sv_vehicle_autoaim_scale;
 
 // Init static class variables
 bool CBaseEntity::m_bInDebugSelect = false;	// Used for selection in debug overlays
@@ -948,57 +947,6 @@ void CBaseEntity::DrawDebugGeometryOverlays(void)
 		{
 			NDebugOverlay::EntityBounds(this, 255, 255, 255, 0, 0 );
 		}
-	}
-	if ( m_debugOverlays & OVERLAY_AUTOAIM_BIT && (GetFlags()&FL_AIMTARGET) && AI_GetSinglePlayer() != NULL )
-	{
-		// Crude, but it gets the point across.
-		Vector vecCenter = GetAutoAimCenter();
-		Vector vecRight, vecUp, vecDiag;
-		CBasePlayer *pPlayer = AI_GetSinglePlayer();
-		float radius = GetAutoAimRadius();
-
-		QAngle angles = pPlayer->EyeAngles();
-		AngleVectors( angles, NULL, &vecRight, &vecUp );
-
-		int r,g,b;
-
-		if( ((int)gpGlobals->curtime) % 2 == 1 )
-		{
-			r = 255; 
-			g = 255;
-			b = 255;
-
-			if( pPlayer->GetActiveWeapon() != NULL )
-				radius *= pPlayer->GetActiveWeapon()->WeaponAutoAimScale();
-
-		}
-		else
-		{
-			r = 255;g=0;b=0;
-
-			if( !ShouldAttractAutoAim(pPlayer) )
-			{
-				g = 255;
-			}
-		}
-
-		if( pPlayer->IsInAVehicle() )
-		{
-			radius *= sv_vehicle_autoaim_scale.GetFloat();
-		}
-
-		NDebugOverlay::Line( vecCenter, vecCenter + vecRight * radius, r, g, b, true, 0.1 );
-		NDebugOverlay::Line( vecCenter, vecCenter - vecRight * radius, r, g, b, true, 0.1 );
-		NDebugOverlay::Line( vecCenter, vecCenter + vecUp * radius, r, g, b, true, 0.1 );
-		NDebugOverlay::Line( vecCenter, vecCenter - vecUp * radius, r, g, b, true, 0.1 );
-
-		vecDiag = vecRight + vecUp;
-		VectorNormalize( vecDiag );
-		NDebugOverlay::Line( vecCenter - vecDiag * radius, vecCenter + vecDiag * radius, r, g, b, true, 0.1 );
-
-		vecDiag = vecRight - vecUp;
-		VectorNormalize( vecDiag );
-		NDebugOverlay::Line( vecCenter - vecDiag * radius, vecCenter + vecDiag * radius, r, g, b, true, 0.1 );
 	}
 }
 
@@ -2944,14 +2892,6 @@ ConVar ai_debug_los("ai_debug_los", "0", FCVAR_CHEAT, "NPC Line-Of-Sight debug m
 Class_T CBaseEntity::Classify ( void )
 { 
 	return CLASS_NONE;
-}
-
-float CBaseEntity::GetAutoAimRadius()
-{
-	if( g_pGameRules->GetAutoAimMode() == AUTOAIM_ON_CONSOLE )
-		return 48.0f;
-	else
-		return 24.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -6669,15 +6609,6 @@ void CC_Ent_Show_Response_Criteria( const CCommand& args )
 	}
 }
 static ConCommand ent_show_response_criteria("ent_show_response_criteria", CC_Ent_Show_Response_Criteria, "Print, to the console, an entity's current criteria set used to select responses.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
-
-//------------------------------------------------------------------------------
-// Purpose: Show an entity's autoaim radius
-//------------------------------------------------------------------------------
-void CC_Ent_Autoaim( const CCommand& args )
-{
-	SetDebugBits( UTIL_GetCommandClient(),args[1], OVERLAY_AUTOAIM_BIT );
-}
-static ConCommand ent_autoaim("ent_autoaim", CC_Ent_Autoaim, "Displays the entity's autoaim radius.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at", FCVAR_CHEAT );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
