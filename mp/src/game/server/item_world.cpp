@@ -10,7 +10,6 @@
 #include "items.h"
 #include "gamerules.h"
 #include "engine/IEngineSound.h"
-#include "iservervehicle.h"
 #include "physics_saverestore.h"
 #include "world.h"
 
@@ -339,10 +338,6 @@ bool UTIL_ItemCanBeTouchedByPlayer( CBaseEntity *pItem, CBasePlayer *pPlayer )
 	if ( pItem == NULL || pPlayer == NULL )
 		return false;
 
-	// For now, always allow a vehicle riding player to pick up things they're driving over
-	if ( pPlayer->IsInAVehicle() )
-		return true;
-
 	// Get our test positions
 	Vector vecStartPos;
 	IPhysicsObject *pPhysObj = pItem->VPhysicsGetObject();
@@ -392,14 +387,6 @@ bool CItem::ItemCanBeTouchedByPlayer( CBasePlayer *pPlayer )
 //-----------------------------------------------------------------------------
 void CItem::ItemTouch( CBaseEntity *pOther )
 {
-	// Vehicles can touch items + pick them up
-	if ( pOther->GetServerVehicle() )
-	{
-		pOther = pOther->GetServerVehicle()->GetPassenger();
-		if ( !pOther )
-			return;
-	}
-
 	// if it's not a player, ignore
 	if ( !pOther->IsPlayer() )
 		return;
