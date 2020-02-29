@@ -39,7 +39,6 @@ class CBasePlayer;
 class CItem;
 class CTacticalMissionManager;
 
-extern ConVar sk_autoaim_mode;
 
 // Autoaiming modes
 enum
