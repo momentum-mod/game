@@ -55,8 +55,6 @@ class CMomRocket : public CBaseProjectile
     float m_flSpawnTime;
 
   private:
-    DECLARE_DATADESC();
-
     void StopTrailSound();
 #endif
 

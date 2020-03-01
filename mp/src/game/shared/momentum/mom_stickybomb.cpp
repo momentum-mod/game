@@ -1,5 +1,7 @@
 #include "cbase.h"
+
 #include "mom_stickybomb.h"
+
 #include "weapon/weapon_mom_stickybomblauncher.h"
 #include "mom_shareddefs.h"
 #include "weapon/weapon_def.h"
@@ -22,19 +24,6 @@
 #define MOM_STICKYBOMB_GRAVITY 0.5f
 #define MOM_STICKYBOMB_FRICTION 0.8f
 #define MOM_STICKYBOMB_ELASTICITY 0.45f
-
-#ifndef CLIENT_DLL
-BEGIN_DATADESC(CMomStickybomb)
-    // Fields
-    DEFINE_FIELD(m_hLauncher, FIELD_EHANDLE),
-    DEFINE_FIELD(m_flDamage, FIELD_FLOAT),
-    DEFINE_FIELD(m_bTouched, FIELD_BOOLEAN),
-    DEFINE_FIELD(m_bPulsed, FIELD_BOOLEAN),
-
-    // Functions
-    DEFINE_ENTITYFUNC(Touch),
-END_DATADESC();
-#endif
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 
