@@ -27,6 +27,7 @@ class CMomStickybomb : public CMomExplosive
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
 
+    bool IsArmed() const;
 #ifdef CLIENT_DLL
   public:
     virtual int DrawModel(int flags) OVERRIDE;

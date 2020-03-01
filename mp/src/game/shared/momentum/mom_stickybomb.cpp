@@ -24,6 +24,7 @@
 #define MOM_STICKYBOMB_GRAVITY 0.5f
 #define MOM_STICKYBOMB_FRICTION 0.8f
 #define MOM_STICKYBOMB_ELASTICITY 0.45f
+#define MOM_STICKYBOMB_ARMTIME 0.8f // Takes 0.8 seconds to arm (pulse)
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 
@@ -107,6 +108,15 @@ void CMomStickybomb::Precache()
     BaseClass::Precache();
 
     PrecacheModel(MOM_STICKYBOMB_MODEL);
+}
+
+bool CMomStickybomb::IsArmed() const
+{
+#ifdef CLIENT_DLL
+    return (gpGlobals->curtime - m_flSpawnTime) >= MOM_STICKYBOMB_ARMTIME;
+#else
+    return (gpGlobals->curtime - m_flCreationTime) >= MOM_STICKYBOMB_ARMTIME;
+#endif
 }
 
 #ifdef CLIENT_DLL

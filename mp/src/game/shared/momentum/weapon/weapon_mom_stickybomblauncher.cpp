@@ -388,7 +388,7 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
 #endif
             if (!bFizzle)
             {
-                if ((gpGlobals->curtime - pTemp->GetCreationTime()) < 0.8f) // Stickybomb arm time
+                if (!pTemp->IsArmed())
                 {
                     bFailedToDetonate = true;
                     continue;
