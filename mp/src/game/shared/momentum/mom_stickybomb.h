@@ -4,8 +4,6 @@
 
 #ifdef CLIENT_DLL
 #define CMomStickybomb C_MomStickybomb
-#else
-class CMomentumStickybombLauncher;
 #endif
 
 class CMomStickybomb : public CMomExplosive
@@ -33,10 +31,8 @@ class CMomStickybomb : public CMomExplosive
   public:
     virtual int DrawModel(int flags) OVERRIDE;
     virtual void OnDataChanged(DataUpdateType_t type) OVERRIDE;
-    bool GetHasPulsed() { return m_bPulsed; }
     void Simulate() OVERRIDE;
 
-    float m_flSpawnTime;
 #else
 
     static CMomStickybomb *Create(const Vector &position, const QAngle &angles, const Vector &velocity,
@@ -46,7 +42,6 @@ class CMomStickybomb : public CMomExplosive
 
     float GetRadius() { return m_flRadius; }
     float GetDamage() OVERRIDE { return m_flDamage; }
-    bool GetHasTouchedWorld() { return m_bTouched; }
     void Fizzle();
     void Detonate();
     void RemoveStickybomb(bool bNoGrenadeZone);
@@ -60,10 +55,6 @@ class CMomStickybomb : public CMomExplosive
     // sit still until it had gotten a few updates from the server.
     void SetupInitialTransmittedGrenadeVelocity(const Vector &velocity);
 
-
-    bool UseImpactNormal() { return m_bUseImpactNormal; }
-    const Vector &GetImpactNormal() const { return m_vecImpactNormal; }
-
   protected:
     float m_flDamage;
     float m_flRadius;
@@ -73,7 +64,6 @@ class CMomStickybomb : public CMomExplosive
 #endif
 
   private:
-    CNetworkVar(bool, m_bTouched);
     bool m_bPulsed;
     float m_flChargeTime;
     float m_flCreationTime;

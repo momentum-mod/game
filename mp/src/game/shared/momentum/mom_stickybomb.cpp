@@ -51,10 +51,8 @@ static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0", FCVAR_ARCHIVE,
 CMomStickybomb::CMomStickybomb()
 {
     m_vInitialVelocity.Init();
-    m_bTouched = false;
     m_flChargeTime = 0.0f;
 #ifdef CLIENT_DLL
-    m_flSpawnTime = 0.0f;
 #else
     m_flDamage = 0.0f;
     m_flCreationTime = 0.0f;
@@ -81,9 +79,8 @@ void CMomStickybomb::UpdateOnRemove()
 void CMomStickybomb::Spawn()
 {
     BaseClass::Spawn();
-#ifdef CLIENT_DLL
-    m_flSpawnTime = gpGlobals->curtime;
-#else
+
+#ifdef GAME_DLL
     SetModel(MOM_STICKYBOMB_MODEL);
 
     UseClientSideAnimation();
@@ -97,7 +94,6 @@ void CMomStickybomb::Spawn()
 
     VPhysicsInitNormal(SOLID_BBOX, 0, false);
 
-    m_bTouched = false;
     m_flCreationTime = gpGlobals->curtime;
     m_takedamage = DAMAGE_NO;
     SetGravity(MOM_STICKYBOMB_GRAVITY);
@@ -247,12 +243,10 @@ void CMomStickybomb::RemoveStickybomb(bool bNoGrenadeZone)
 
 void CMomStickybomb::Detonate()
 {
-    trace_t tr;
-    Vector vecSpot;
-
     SetThink(nullptr);
 
-    vecSpot = GetAbsOrigin() + Vector(0, 0, 8);
+    const Vector vecSpot = GetAbsOrigin() + Vector(0, 0, 8);
+    trace_t tr;
     UTIL_TraceLine(vecSpot, vecSpot + Vector(0, 0, -32), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
 
     Explode(&tr, tr.m_pEnt);
@@ -284,8 +278,6 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
         SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
     }
 
-    CBaseEntity *pOwner = GetOwnerEntity();
-
     float flDamage = GetDamage();
     float flRadius = GetRadius();
 
@@ -296,6 +288,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     const Vector vecNormal = m_bUseImpactNormal ? m_vecImpactNormal : pTrace->plane.normal;
     TE_TFExplosion(filter, vecOrigin, vecNormal, WEAPON_STICKYLAUNCHER);
 
+    const auto pOwner = GetOwnerEntity();
     Vector vecReported = pOwner ? pOwner->GetAbsOrigin() : vec3_origin;
 
     // Damage
@@ -335,10 +328,8 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
     bool bIsDynamicProp = (nullptr != dynamic_cast<CDynamicProp *>(pHitEntity));
 
     // Stickybombs stick to the world when they touch it
-    if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp) && gpGlobals->curtime > 0)
+    if (pHitEntity && (pHitEntity->IsWorld() || bIsDynamicProp))
     {
-        m_bTouched = true;
-
         g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
 
         // Save impact data for explosions.
