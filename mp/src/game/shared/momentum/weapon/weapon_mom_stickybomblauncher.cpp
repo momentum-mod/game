@@ -288,7 +288,7 @@ CMomStickybomb *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPl
             if (pTemp)
             {
                 pTemp->Fizzle();
-                pTemp->RemoveStickybomb(true);
+                pTemp->Destroy(true);
             }
 
             m_Stickybombs.Remove(0);
@@ -338,7 +338,7 @@ CMomStickybomb *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPl
     vecSrc += vecForward * 16.0f + vecRight * yOffset + vecUp * -6.0f;
     Vector vecVelocity = (vecForward * vel) + (vecUp * 200.0f);
 
-    return CMomStickybomb::Create(vecSrc, pPlayer->EyeAngles(), vecVelocity, AngularImpulse(600, 0, 0), pPlayer);
+    return CMomStickybomb::Create(vecSrc, pPlayer->EyeAngles(), vecVelocity, pPlayer);
 #endif
     return nullptr;
 }

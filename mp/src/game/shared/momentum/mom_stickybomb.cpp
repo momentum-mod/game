@@ -7,8 +7,6 @@
 #include "weapon/weapon_def.h"
 
 #ifndef CLIENT_DLL
-#include "Sprite.h"
-#include "explode.h"
 #include "momentum/mom_triggers.h"
 #include "IEffects.h"
 #include "fx_mom_shared.h"
@@ -29,16 +27,6 @@
 IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 
 BEGIN_NETWORK_TABLE(CMomStickybomb, DT_MomStickybomb)
-#ifdef CLIENT_DLL
-RecvPropVector(RECVINFO(m_vInitialVelocity)),
-RecvPropInt(RECVINFO(m_bTouched)),
-RecvPropVector(RECVINFO_NAME(m_vecNetworkOrigin, m_vecOrigin)),
-#else
-SendPropVector(SENDINFO(m_vInitialVelocity), 20, 0, -3000, 3000),
-SendPropExclude("DT_BaseEntity", "m_vecOrigin"),
-SendPropBool(SENDINFO(m_bTouched)),
-SendPropVector(SENDINFO(m_vecOrigin), -1, SPROP_COORD_MP_INTEGRAL | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin),
-#endif
 END_NETWORK_TABLE();
 
 LINK_ENTITY_TO_CLASS(momentum_stickybomb, CMomStickybomb);
@@ -51,14 +39,15 @@ static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0", FCVAR_ARCHIVE,
 
 CMomStickybomb::CMomStickybomb()
 {
-    m_vInitialVelocity.Init();
     m_flChargeTime = 0.0f;
-#ifdef CLIENT_DLL
-#else
-    m_flDamage = 0.0f;
+
+#ifdef GAME_DLL
+    m_bFizzle = false;
     m_flCreationTime = 0.0f;
     m_bUseImpactNormal = false;
     m_vecImpactNormal.Init();
+#else
+    m_bPulsed = false;
 #endif
 }
 
@@ -84,19 +73,12 @@ void CMomStickybomb::Spawn()
 #ifdef GAME_DLL
     SetModel(MOM_STICKYBOMB_MODEL);
 
-    UseClientSideAnimation();
-    SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
-    SetSolidFlags(FSOLID_NOT_STANDABLE);
     SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
-    SetSolid(SOLID_BBOX);
-    AddEffects(EF_NOSHADOW);
     SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
-    AddFlag(FL_GRENADE);
 
     VPhysicsInitNormal(SOLID_BBOX, 0, false);
 
     m_flCreationTime = gpGlobals->curtime;
-    m_takedamage = DAMAGE_NO;
     SetGravity(MOM_STICKYBOMB_GRAVITY);
     SetFriction(MOM_STICKYBOMB_FRICTION);
     SetElasticity(MOM_STICKYBOMB_ELASTICITY);
@@ -121,19 +103,26 @@ bool CMomStickybomb::IsArmed() const
 
 #ifdef CLIENT_DLL
 
+float CMomStickybomb::GetDrawDelayTime()
+{
+    return mom_sj_stickybomb_drawdelay.GetFloat();
+}
+
+void CMomStickybomb::CreateTrailParticles()
+{
+    const auto pWepScript = g_pWeaponDef->GetWeaponScript(WEAPON_STICKYLAUNCHER);
+
+    const char *pParticle = pWepScript->pKVWeaponParticles->GetString("StickybombTrail_TF2");
+
+    ParticleProp()->Create(pParticle, PATTACH_ABSORIGIN_FOLLOW);
+}
+
 void CMomStickybomb::OnDataChanged(DataUpdateType_t type)
 {
     BaseClass::OnDataChanged(type);
 
     if (type == DATA_UPDATE_CREATED)
     {
-        m_flCreationTime = gpGlobals->curtime;
-
-        const auto pWepScript = g_pWeaponDef->GetWeaponScript(WEAPON_STICKYLAUNCHER);
-
-        const char *pParticle = pWepScript->pKVWeaponParticles->GetString("StickybombTrail_TF2");
-
-        ParticleProp()->Create(pParticle, PATTACH_ABSORIGIN_FOLLOW);
         m_bPulsed = false;
 
         const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetOriginalLauncher());
@@ -141,113 +130,51 @@ void CMomStickybomb::OnDataChanged(DataUpdateType_t type)
         {
             pLauncher->AddStickybomb(this);
         }
-
-        // Now stick our initial velocity into the interpolation history
-        CInterpolatedVar<Vector> &interpolator = GetOriginInterpolator();
-        interpolator.ClearHistory();
-
-        CInterpolatedVar<QAngle> &rotInterpolator = GetRotationInterpolator();
-        rotInterpolator.ClearHistory();
-
-        float changeTime = GetLastChangeTime(LATCH_SIMULATION_VAR);
-
-        // Add a sample 1 second back.
-        Vector vCurOrigin = GetLocalOrigin() - m_vInitialVelocity;
-        interpolator.AddToHead(changeTime - 1.0f, &vCurOrigin, false);
-
-        QAngle vCurAngles = GetLocalAngles();
-        rotInterpolator.AddToHead(changeTime - 1.0f, &vCurAngles, false);
-
-        // Add the current sample.
-        vCurOrigin = GetLocalOrigin();
-        interpolator.AddToHead(changeTime, &vCurOrigin, false);
-
-        rotInterpolator.AddToHead(changeTime, &vCurAngles, false);
     }
-}
-
-int CMomStickybomb::DrawModel(int flags)
-{
-    // Don't draw the stickybomb during the time defined by the cvar.
-    if (gpGlobals->curtime - m_flSpawnTime < mom_sj_stickybomb_drawdelay.GetFloat())
-    {
-        return 0;
-    }
-
-    return BaseClass::DrawModel(flags);
 }
 
 void CMomStickybomb::Simulate()
 {
-    if (!m_bPulsed)
+    if (!m_bPulsed && IsArmed())
     {
-        if ((gpGlobals->curtime - m_flCreationTime) >= 0.8f)
-        {
-            const auto pWepScript = g_pWeaponDef->GetWeaponScript(WEAPON_STICKYLAUNCHER);
+        const auto pWepScript = g_pWeaponDef->GetWeaponScript(WEAPON_STICKYLAUNCHER);
 
-            const char *pParticle = pWepScript->pKVWeaponParticles->GetString("StickybombPulse_TF2");
+        const char *pParticle = pWepScript->pKVWeaponParticles->GetString("StickybombPulse_TF2");
 
-            ParticleProp()->Create(pParticle, PATTACH_ABSORIGIN_FOLLOW);
-            m_bPulsed = true;
-        }
+        ParticleProp()->Create(pParticle, PATTACH_ABSORIGIN_FOLLOW);
+
+        m_bPulsed = true;
     }
+
     BaseClass::Simulate();
 }
 
 #else
 
-void CMomStickybomb::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity) { m_vInitialVelocity = velocity; }
-
-CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &angles, const Vector &velocity,
-                                       const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner)
+CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &angles, const Vector &velocity, CBaseEntity *pOwner)
 {
-    CMomStickybomb *pStickybomb =
-        static_cast<CMomStickybomb *>(CBaseEntity::CreateNoSpawn("momentum_stickybomb", position, angles, pOwner));
+    const auto pStickybomb = dynamic_cast<CMomStickybomb *>(CreateNoSpawn("momentum_stickybomb", position, angles, pOwner));
 
     if (pStickybomb)
     {
         DispatchSpawn(pStickybomb);
-        pStickybomb->InitStickybomb(velocity, angVelocity);
-        pStickybomb->ApplyLocalAngularVelocityImpulse(angVelocity);
-        pStickybomb->SetAbsVelocity(velocity);
-        pStickybomb->SetAbsAngles(angles);
-
-        pStickybomb->SetDamage(120.0f);
-        pStickybomb->SetRadius(146.0f);
+        pStickybomb->InitExplosive(pOwner, velocity, angles);
     }
 
     return pStickybomb;
 }
 
-void CMomStickybomb::InitStickybomb(const Vector &velocity, const AngularImpulse &angVelocity)
+void CMomStickybomb::InitExplosive(CBaseEntity *pOwner, const Vector &velocity, const QAngle &angles)
 {
-    SetupInitialTransmittedGrenadeVelocity(velocity);
+    BaseClass::InitExplosive(pOwner, velocity, angles);
 
-    IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
+    const AngularImpulse angVelocity(600, 0, 0);
+    ApplyLocalAngularVelocityImpulse(angVelocity);
+
+    const auto pPhysicsObject = VPhysicsGetObject();
     if (pPhysicsObject)
     {
         pPhysicsObject->AddVelocity(&velocity, &angVelocity);
-    }
-}
-
-void CMomStickybomb::RemoveStickybomb(bool bNoGrenadeZone)
-{
-    // Kill it
-    SetThink(&BaseClass::SUB_Remove);
-    SetNextThink(gpGlobals->curtime);
-    SetTouch(nullptr);
-    AddEffects(EF_NODRAW);
-
-    if (bNoGrenadeZone)
-    {
-        // Sprite flash
-        CSprite *pGlowSprite = CSprite::SpriteCreate(NOGRENADE_SPRITE, GetAbsOrigin(), false);
-        if (pGlowSprite)
-        {
-            pGlowSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxFadeFast);
-            pGlowSprite->SetThink(&CSprite::SUB_Remove);
-            pGlowSprite->SetNextThink(gpGlobals->curtime + 1.0);
-        }
     }
 }
 
@@ -266,14 +193,14 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
     if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
     {
-        RemoveStickybomb(true);
+        Destroy(true);
         return;
     }
 
     if (m_bFizzle)
     {
         g_pEffects->Sparks(GetAbsOrigin());
-        RemoveStickybomb(true);
+        Destroy(true);
         return;
     }
 
@@ -288,9 +215,6 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
         SetAbsOrigin(pTrace->endpos + (pTrace->plane.normal * 1.0f));
     }
 
-    float flDamage = GetDamage();
-    float flRadius = GetRadius();
-
     // Explosion effect on client
     Vector vecOrigin = GetAbsOrigin();
     CPVSFilter filter(vecOrigin);
@@ -302,8 +226,8 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     Vector vecReported = pOwner ? pOwner->GetAbsOrigin() : vec3_origin;
 
     // Damage
-    CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, flDamage, GetDamageType(), 0, &vecReported);
-    RadiusDamage(info, vecOrigin, flRadius, CLASS_NONE, nullptr);
+    CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, GetDamage(), GetDamageType(), 0, &vecReported);
+    RadiusDamage(info, vecOrigin, MOM_EXPLOSIVE_RADIUS, CLASS_NONE, nullptr);
 
     if (pOther && !pOther->IsPlayer())
     {
