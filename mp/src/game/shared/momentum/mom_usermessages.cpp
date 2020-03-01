@@ -2,7 +2,6 @@
 #include "usermessages.h"
 #include "shake.h"
 #include "voice_gamemgr.h"
-#include "haptics/haptic_msgs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -54,6 +53,4 @@ void RegisterUserMessages(void)
     usermessages->Register("SpecUpdateMsg", 17);
 
     usermessages->Register("DamageIndicator", -1);
-
-    RegisterHapticMessages();
 }
