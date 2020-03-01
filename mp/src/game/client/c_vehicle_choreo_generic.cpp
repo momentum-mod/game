@@ -12,8 +12,6 @@
 #include <Color.h>
 #include "vehicle_choreo_generic_shared.h"
 #include "vehicle_viewblend_shared.h"
-// NVNT haptic utils
-#include "haptics/haptic_utils.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -146,21 +144,8 @@ void C_PropVehicleChoreoGeneric::PostDataUpdate( DataUpdateType_t updateType )
 {
 	BaseClass::PostDataUpdate( updateType );
 
-	// NVNT if we have entered this vehicle notify the haptics system
-	if ( m_hPlayer && !m_hPrevPlayer )
-	{
-#if defined( WIN32 )
-		//They have just entered the vehicle.
-		HapticsEnteredVehicle(this,m_hPlayer);
-#endif
-	}
-
 	if ( !m_hPlayer && m_hPrevPlayer )
 	{
-#if defined( WIN32 )
-		// NVNT we have just exited this vehicle so we notify the haptics system
-		HapticsExitedVehicle(this,m_hPrevPlayer);
-#endif
 		// They have just exited the vehicle.
 		// Sometimes we never reach the end of our exit anim, such as if the
 		// animation doesn't have fadeout 0 specified in the QC, so we fail to
