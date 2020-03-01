@@ -103,12 +103,6 @@
 #include "renamed_recvtable_compat.h"
 #include "mouthinfo.h"
 
-// NVNT includes
-#include "hud_macros.h"
-#include "haptics/ihaptics.h"
-#include "haptics/haptic_utils.h"
-#include "haptics/haptic_msgs.h"
-
 #if defined( TF_CLIENT_DLL )
 #include "abuse_report.h"
 #endif
@@ -128,7 +122,6 @@
 
 #include "inetchannelinfo.h"
 #include "GameUI/IGameUI.h"
-extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
 // HPE_BEGIN
@@ -181,8 +174,6 @@ IInputSystem *inputsystem = NULL;
 ISceneFileCache *scenefilecache = NULL;
 IUploadGameStats *gamestatsuploader = NULL;
 IClientReplayContext *g_pClientReplayContext = NULL;
-
-IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
 //=============================================================================
 // HPE_BEGIN
@@ -1046,12 +1037,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	ClientWorldFactoryInit();
 
 	C_BaseAnimating::InitBoneSetupThreadPool();
-
-#if defined( WIN32 )
-	// NVNT connect haptics sytem
-	ConnectHaptics(appSystemFactory);
-#endif
-	HookHapticMessages(); // Always hook the messages
 	return true;
 }
 
@@ -1146,11 +1131,6 @@ void CHLClient::Shutdown( void )
 	DisconnectTier1Libraries( );
 
 	gameeventmanager = NULL;
-
-#if defined( WIN32 )
-	// NVNT Disconnect haptics system
-	DisconnectHaptics();
-#endif
 }
 
 

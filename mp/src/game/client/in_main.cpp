@@ -23,8 +23,6 @@
 #include <voice_status.h>
 #include "cam_thirdperson.h"
 
-// NVNT Include
-#include "haptics/haptic_utils.h"
 #include <vgui/ISurface.h>
 
 extern ConVar cam_idealpitch;

@@ -14,8 +14,6 @@
 #include "viewrender.h"
 #include "con_nprint.h"
 #include "saverestoretypes.h"
-// NVNT haptics interface system
-#include "haptics/ihaptics.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
