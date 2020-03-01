@@ -1,6 +1,6 @@
 #pragma once
 
-#include "baseprojectile.h"
+#include "mom_explosive.h"
 
 #ifdef CLIENT_DLL
 #define CMomStickybomb C_MomStickybomb
@@ -8,10 +8,10 @@
 class CMomentumStickybombLauncher;
 #endif
 
-class CMomStickybomb : public CBaseProjectile
+class CMomStickybomb : public CMomExplosive
 {
   public:
-    DECLARE_CLASS(CMomStickybomb, CBaseProjectile);
+    DECLARE_CLASS(CMomStickybomb, CMomExplosive);
     DECLARE_NETWORKCLASS();
 
     // This gets sent to the client and placed in the client's interpolation history
