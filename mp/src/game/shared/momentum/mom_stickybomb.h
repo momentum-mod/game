@@ -24,8 +24,6 @@ class CMomStickybomb : public CBaseProjectile
     float GetCreationTime() { return m_flCreationTime; }
     void SetChargeTime(float flChargeTime) { m_flChargeTime = flChargeTime; }
 
-    CNetworkHandle(CBaseEntity, m_hLauncher);
-
     void UpdateOnRemove() OVERRIDE;
 
     void Spawn() OVERRIDE;
@@ -62,7 +60,6 @@ class CMomStickybomb : public CBaseProjectile
     // sit still until it had gotten a few updates from the server.
     void SetupInitialTransmittedGrenadeVelocity(const Vector &velocity);
 
-    void SetLauncher(CBaseEntity *pLauncher) OVERRIDE { m_hLauncher.Set(pLauncher); }
 
     bool UseImpactNormal() { return m_bUseImpactNormal; }
     const Vector &GetImpactNormal() const { return m_vecImpactNormal; }
