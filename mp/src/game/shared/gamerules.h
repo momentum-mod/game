@@ -195,9 +195,6 @@ public:
 
 	virtual void GetTaggedConVarList( KeyValues *pCvarTagList ) {}
 
-	// NVNT see if the client of the player entered is using a haptic device.
-	virtual void CheckHaptics(CBasePlayer* pPlayer);
-
 // CBaseEntity overrides.
 public:
 
