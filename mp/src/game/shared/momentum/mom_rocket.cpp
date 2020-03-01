@@ -22,17 +22,6 @@
 
 #define MOM_TRAIL_PARTICLE_B "mom_rocket_trail_b" // MOM_TODO REMOVEME
 
-#ifndef CLIENT_DLL
-
-BEGIN_DATADESC(CMomRocket)
-    // Fields
-    DEFINE_FIELD(m_flDamage, FIELD_FLOAT),
-
-    // Functions
-    DEFINE_ENTITYFUNC(Touch),
-END_DATADESC();
-#endif
-
 IMPLEMENT_NETWORKCLASS_ALIASED(MomRocket, DT_MomRocket)
 
 BEGIN_NETWORK_TABLE(CMomRocket, DT_MomRocket)

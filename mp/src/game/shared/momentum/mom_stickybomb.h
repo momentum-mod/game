@@ -73,9 +73,6 @@ class CMomStickybomb : public CBaseProjectile
     bool m_bFizzle;
     bool m_bUseImpactNormal;
     Vector m_vecImpactNormal;
-
-  private:
-    DECLARE_DATADESC();
 #endif
 
   private:
