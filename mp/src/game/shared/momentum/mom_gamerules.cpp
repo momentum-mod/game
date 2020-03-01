@@ -504,14 +504,6 @@ void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
         // iFov = clamp(iFov, 75, 90);
         pPlayer->SetDefaultFOV(iFov);
     }
-
-    // NVNT see if this user is still or has began using a haptic device
-    const char *pszHH = engine->GetClientConVarValue(pPlayer->entindex(), "hap_HasDevice");
-    if (pszHH)
-    {
-        int iHH = atoi(pszHH);
-        pPlayer->SetHaptics(iHH != 0);
-    }
 }
 
 void FovChanged(IConVar *pVar, const char *pOldValue, float flOldValue)
