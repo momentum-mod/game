@@ -9,6 +9,7 @@
 #else
 class CBaseMomZoneTrigger;
 class CTriggerZone;
+class CMomExplosive;
 #endif
 
 enum RUN_ENT_TYPE
@@ -20,6 +21,9 @@ enum RUN_ENT_TYPE
 };
 
 class CMomRunEntity
+#ifdef GAME_DLL
+    : public IEntityListener
+#endif
 {
  public:
     DECLARE_CLASS_NOBASE(CMomRunEntity);
@@ -28,7 +32,7 @@ class CMomRunEntity
 
     virtual RUN_ENT_TYPE GetEntType() = 0;
 
-#ifndef CLIENT_DLL
+#ifdef GAME_DLL
     // Used by all zone triggers, moves logic to per-entity-impl.
     virtual void OnZoneEnter(CTriggerZone *pTrigger);
     virtual void OnZoneExit(CTriggerZone *pTrigger);
@@ -48,6 +52,12 @@ class CMomRunEntity
     virtual void AppearanceModelColorChanged(const AppearanceData_t &newApp);
     virtual void AppearanceTrailChanged(const AppearanceData_t &newApp);
     virtual void AppearanceFlashlightChanged(const AppearanceData_t &newApp);
+
+    // IEntityListener
+    void OnEntitySpawned(CBaseEntity *pEntity) override;
+    void OnEntityDeleted(CBaseEntity *pEntity) override;
+
+    void DestroyExplosives();
 #else
     virtual float GetCurrentRunTime() = 0;
 #endif
@@ -57,10 +67,10 @@ class CMomRunEntity
     virtual CMomRunStats *GetRunStats() = 0;
     virtual CMomRunEntityData *GetRunEntData() = 0;
 
-#ifndef CLIENT_DLL
+#ifdef GAME_DLL
 protected:
     EHANDLE m_hTrailEntity;
     AppearanceData_t m_AppearanceData;
+    CUtlVector<CMomExplosive*> m_vecExplosives;
 #endif
-
 };

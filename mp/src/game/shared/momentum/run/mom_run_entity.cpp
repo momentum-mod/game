@@ -4,19 +4,36 @@
 #include "mom_shareddefs.h"
 
 #include "mom_entity_run_data.h"
+#include "mom_system_gamemode.h"
 
-#ifndef CLIENT_DLL
+#ifdef GAME_DLL
+#include "mom_explosive.h"
 #include "momentum/mom_triggers.h"
 #include "util/mom_util.h"
-#else
-
 #endif
 
 #include "tier0/memdbgon.h"
 
-CMomRunEntity::CMomRunEntity() {}
+CMomRunEntity::CMomRunEntity()
+{
+#ifdef GAME_DLL
+    if (g_pGameModeSystem->IsTF2BasedMode())
+    {
+        gEntList.AddListenerEntity(this);
+    }
+#endif
+}
 
-CMomRunEntity::~CMomRunEntity() {}
+CMomRunEntity::~CMomRunEntity()
+{
+#ifdef GAME_DLL
+    if (g_pGameModeSystem->IsTF2BasedMode())
+    {
+        gEntList.RemoveListenerEntity(this);
+        m_vecExplosives.RemoveAll();
+    }
+#endif
+}
 
 #ifndef CLIENT_DLL
 
@@ -189,4 +206,41 @@ void CMomRunEntity::RemoveTrail()
     }
 }
 
+void CMomRunEntity::OnEntitySpawned(CBaseEntity *pEntity)
+{
+    if (pEntity->GetFlags() & FL_GRENADE)
+    {
+        const auto pExplosive = dynamic_cast<CMomExplosive *>(pEntity);
+        if (pExplosive && pExplosive->GetOwnerEntity() == CBaseEntity::Instance(GetEntIndex()))
+        {
+            m_vecExplosives.AddToTail(pExplosive);
+        }
+    }
+}
+
+void CMomRunEntity::OnEntityDeleted(CBaseEntity *pEntity)
+{
+    if ((pEntity->GetFlags() & FL_GRENADE) && !m_vecExplosives.IsEmpty())
+    {
+        const auto pExplosive = dynamic_cast<CMomExplosive *>(pEntity);
+        if (pExplosive && pExplosive->GetOwnerEntity() == CBaseEntity::Instance(GetEntIndex()))
+        {
+            m_vecExplosives.FindAndRemove(pExplosive);
+        }
+    }
+}
+
+void CMomRunEntity::DestroyExplosives()
+{
+    FOR_EACH_VEC(m_vecExplosives, i)
+    {
+        const auto pExplosive = m_vecExplosives[i];
+        if (pExplosive)
+        {
+            pExplosive->Destroy(true);
+        }
+    }
+
+    m_vecExplosives.RemoveAll();
+}
 #endif

@@ -22,8 +22,6 @@
 #include "run/mom_replay_base.h"
 #include "mapzones.h"
 #include "fx_mom_shared.h"
-#include "mom_rocket.h"
-#include "mom_stickybomb.h"
 
 #include "tier0/memdbgon.h"
 
@@ -225,23 +223,12 @@ CMomentumPlayer::CMomentumPlayer()
     {
         m_pStartZoneMarks[i] = nullptr;
     }
-
-    if (g_pGameModeSystem->IsTF2BasedMode())
-    {
-        gEntList.AddListenerEntity(this);
-    }
 }
 
 CMomentumPlayer::~CMomentumPlayer()
 {
     if (this == s_pPlayer)
         s_pPlayer = nullptr;
-
-    if (g_pGameModeSystem->IsTF2BasedMode())
-    {
-        gEntList.RemoveListenerEntity(this);
-        m_vecExplosives.RemoveAll();
-    }
 
     RemoveAllOnehops();
 
@@ -1101,52 +1088,6 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
     }
 }
 
-void CMomentumPlayer::OnEntitySpawned(CBaseEntity *pEntity)
-{
-    if (pEntity->GetFlags() & FL_GRENADE)
-    {
-        if (FClassnameIs(pEntity, "momentum_rocket"))
-        {
-            const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
-            if (pRocket && pRocket->GetOwnerEntity() == this)
-            {
-                m_vecExplosives.AddToTail(pRocket);
-            }
-        }
-        else if (FClassnameIs(pEntity, "momentum_stickybomb"))
-        {
-            const auto pSticky = dynamic_cast<CMomStickybomb *>(pEntity);
-            if (pSticky && pSticky->GetOwnerEntity() == this)
-            {
-                m_vecExplosives.AddToTail(pSticky);
-            }
-        }
-    }
-}
-
-void CMomentumPlayer::OnEntityDeleted(CBaseEntity *pEntity)
-{
-    if ((pEntity->GetFlags() & FL_GRENADE) && !m_vecExplosives.IsEmpty())
-    {
-        if (FClassnameIs(pEntity, "momentum_rocket"))
-        {
-            const auto pRocket = dynamic_cast<CMomRocket *>(pEntity);
-            if (pRocket && pRocket->GetOwnerEntity() == this)
-            {
-                m_vecExplosives.FindAndRemove(pRocket);
-            }
-        }
-        else if (FClassnameIs(pEntity, "momentum_stickybomb"))
-        {
-            const auto pSticky = dynamic_cast<CMomStickybomb *>(pEntity);
-            if (pSticky && pSticky->GetOwnerEntity() == this)
-            {
-                m_vecExplosives.FindAndRemove(pSticky);
-            }
-        }
-    }
-}
-
 void CMomentumPlayer::PlayerThink()
 {
     // If we're in practicing mode, don't update.
@@ -1747,33 +1688,6 @@ void CMomentumPlayer::TimerCommand_Reset()
             Warning("Cannot reset, you have no current zone!\n");
         }
     }
-}
-
-void CMomentumPlayer::DestroyExplosives()
-{
-    FOR_EACH_VEC(m_vecExplosives, i)
-    {
-        const auto pExplosive = m_vecExplosives[i];
-        if (pExplosive)
-        {
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-            {
-                const auto pRocket = dynamic_cast<CMomRocket*>(pExplosive);
-
-                if (pRocket)
-                    pRocket->Destroy(true);
-            }
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-            {
-                const auto pSticky = dynamic_cast<CMomStickybomb*>(pExplosive);
-
-                if (pSticky)
-                    pSticky->RemoveStickybomb(true);
-            }
-        }
-    }
-
-    m_vecExplosives.RemoveAll();
 }
 
 void CMomentumPlayer::TogglePracticeMode()
