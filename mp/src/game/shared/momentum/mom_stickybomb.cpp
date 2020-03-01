@@ -32,13 +32,11 @@ BEGIN_NETWORK_TABLE(CMomStickybomb, DT_MomStickybomb)
 RecvPropVector(RECVINFO(m_vInitialVelocity)),
 RecvPropInt(RECVINFO(m_bTouched)),
 RecvPropVector(RECVINFO_NAME(m_vecNetworkOrigin, m_vecOrigin)),
-RecvPropEHandle(RECVINFO(m_hLauncher)),
 #else
 SendPropVector(SENDINFO(m_vInitialVelocity), 20, 0, -3000, 3000),
 SendPropExclude("DT_BaseEntity", "m_vecOrigin"),
 SendPropBool(SENDINFO(m_bTouched)),
 SendPropVector(SENDINFO(m_vecOrigin), -1, SPROP_COORD_MP_INTEGRAL | SPROP_CHANGES_OFTEN, 0.0f, HIGH_DEFAULT, SendProxy_Origin),
-SendPropEHandle(SENDINFO(m_hLauncher)),
 #endif
 END_NETWORK_TABLE();
 
@@ -71,9 +69,7 @@ CMomStickybomb::~CMomStickybomb()
 
 void CMomStickybomb::UpdateOnRemove()
 {
-    // Tell our launcher that we were removed
-    CMomentumStickybombLauncher *pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(m_hLauncher.Get());
-
+    const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetOriginalLauncher());
     if (pLauncher)
     {
         pLauncher->DeathNotice(this);
@@ -134,8 +130,7 @@ void CMomStickybomb::OnDataChanged(DataUpdateType_t type)
         ParticleProp()->Create(pParticle, PATTACH_ABSORIGIN_FOLLOW);
         m_bPulsed = false;
 
-        CMomentumStickybombLauncher *pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(m_hLauncher.Get());
-
+        const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetOriginalLauncher());
         if (pLauncher)
         {
             pLauncher->AddStickybomb(this);
