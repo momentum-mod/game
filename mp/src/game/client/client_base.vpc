@@ -953,8 +953,6 @@ $Project
 		$File	"$SRCDIR\public\vgui_controls\WizardSubPanel.h"
 		$File	"$SRCDIR\public\worldsize.h"
 		$File	"$SRCDIR\public\zip_uncompressed.h"
-		//Haptics
-		$File	"$SRCDIR\public\haptics\ihaptics.h"	[$WIN32]
 	}
 
 	$Folder	"Game Shared Header Files"
