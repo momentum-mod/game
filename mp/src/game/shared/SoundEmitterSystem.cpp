@@ -21,9 +21,6 @@
 #include "tf_classdata.h"
 #endif
 
-// NVNT haptic utils
-#include "haptics/haptic_utils.h"
-
 #ifndef CLIENT_DLL
 #include "envmicrophone.h"
 #include "sceneentity.h"
@@ -547,10 +544,6 @@ public:
 		{
 			EmitCloseCaption( filter, entindex, params, ep );
 		}
-#if defined( WIN32 )
-		// NVNT notify the haptics system of this sound
-		HapticProcessSound(ep.m_pSoundName, entindex);
-#endif
 	}
 
 	void EmitSound( IRecipientFilter& filter, int entindex, const EmitSound_t & ep )
