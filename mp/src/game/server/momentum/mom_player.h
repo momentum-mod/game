@@ -33,7 +33,7 @@ struct SavedState_t
 #define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 #define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
 
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity, public IEntityListener
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -248,10 +248,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
 
-    // IEntityListener
-    void OnEntitySpawned(CBaseEntity *pEntity) override;
-    void OnEntityDeleted(CBaseEntity *pEntity) override;
-
   private:
     // Player think function called every tick
     // Used to update run stats
@@ -271,7 +267,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
     void SetPracticeModeState();
 
-    void DestroyExplosives();
     
     // Resets all player movement properties to their default state
     void ResetMovementProperties();
@@ -331,6 +326,4 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     SavedState_t m_SavedRunState; // Used when either entering practice mode or spectating while in a run
     SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
-
-    CUtlVector<CBaseEntity*> m_vecExplosives;
 };
