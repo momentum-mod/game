@@ -629,8 +629,6 @@ $Project
 		$File	"$SRCDIR\game\shared\SharedFunctorUtils.h"
 		$File	"$SRCDIR\game\server\vote_controller.h"
 		$File	"$SRCDIR\game\server\vote_controller.cpp"
-                //Haptics
-		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"
 
 		// Not using precompiled header cbase.h
 
