@@ -1191,14 +1191,8 @@ public:
 	inline void DisableAutoKick( bool disabled );
 
 	void	DumpPerfToRecipient( CBasePlayer *pRecipient, int nMaxRecords );
-	// NVNT returns true if user has a haptic device
-	virtual bool HasHaptics(){return m_bhasHaptics;}
-	// NVNT sets weather a user should receive haptic device messages.
-	virtual void SetHaptics(bool has) { m_bhasHaptics = has;}
-private:
-	// NVNT member variable holding if this user is using a haptic device.
-	bool m_bhasHaptics;
 
+private:
 	bool m_autoKickDisabled;
 
 	struct StepSoundCache_t
