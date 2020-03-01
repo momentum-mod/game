@@ -13,8 +13,7 @@
 #include "ivieweffects.h"
 #include "shake.h"
 #include "eventlist.h"
-// NVNT haptic include for notification of world precache
-#include "haptics/haptic_utils.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -171,9 +170,6 @@ void C_World::Precache( void )
 
 	// Call all registered precachers.
 	CPrecacheRegister::Precache();
-	// NVNT notify system of precache
-	if (haptics)
-		haptics->WorldPrecache();
 }
 
 void C_World::Spawn( void )
