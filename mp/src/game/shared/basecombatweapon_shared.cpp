@@ -14,13 +14,6 @@
 #include "activitylist.h"
 #include "weapon/weapon_def.h"
 
-// NVNT start extra includes
-#include "haptics/haptic_utils.h"
-#ifdef CLIENT_DLL
-	#include "prediction.h"
-#endif
-// NVNT end extra includes
-
 #if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
 #include "tf_shareddefs.h"
 #endif
@@ -1036,13 +1029,6 @@ bool CBaseCombatWeapon::SendWeaponAnim( int iActivity )
 {
 #ifdef USES_ECON_ITEMS
 	iActivity = TranslateViewmodelHandActivity( (Activity)iActivity );
-#endif		
-	// NVNT notify the haptics system of this weapons new activity
-#ifdef WIN32
-#ifdef CLIENT_DLL
-	if ( prediction->InPrediction() && prediction->IsFirstTimePredicted() )
-#endif
-		HapticSendWeaponAnim(this,iActivity);
 #endif
 	//For now, just set the ideal activity and be done with it
 	return SetIdealActivity( (Activity) iActivity );
