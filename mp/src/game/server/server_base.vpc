@@ -631,7 +631,6 @@ $Project
 		$File	"$SRCDIR\game\server\vote_controller.cpp"
                 //Haptics
 		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"
-		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WIN32]
 
 		// Not using precompiled header cbase.h
 
@@ -961,8 +960,6 @@ $Project
 		$File	"$SRCDIR\public\zip_uncompressed.h"
 		$File	"$SRCDIR\game\shared\mp_shareddefs.h"
 		$File	"$SRCDIR\game\shared\econ\ihasowner.h"
-		//Haptics
-		$File	"$SRCDIR\public\haptics\haptic_utils.h"	[$WIN32]
 	}
 
 	$Folder	"Tools Framework"
