@@ -275,7 +275,6 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     const Vector velocity = vecForward * MOM_ROCKET_SPEED;
     pRocket->SetAbsVelocity(velocity);
     pRocket->SetupInitialTransmittedGrenadeVelocity(velocity);
-    pRocket->SetThrower(pOwner);
 
     QAngle angles;
     VectorAngles(velocity, angles);

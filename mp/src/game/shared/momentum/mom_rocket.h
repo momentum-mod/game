@@ -57,11 +57,4 @@ class CMomRocket : public CBaseProjectile
   private:
     void StopTrailSound();
 #endif
-
-public:
-    CBaseEntity *GetThrower() { return m_hThrower; }
-    void SetThrower(CBaseEntity *pThrower) { m_hThrower = pThrower; }
-
-protected:
-    CBaseEntity* m_hThrower;
 };
