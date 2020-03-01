@@ -40,6 +40,8 @@ void CMomRocket::Spawn()
     BaseClass::Spawn();
 
 #ifdef GAME_DLL
+    SetModel(mom_rj_use_tf_rocketmodel.GetBool() ? TF_ROCKET_MODEL : MOM_ROCKET_MODEL);
+
     SetMoveType(MOVETYPE_FLY, MOVECOLLIDE_FLY_CUSTOM);
     AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
     SetSize(Vector(0, 0, 0), Vector(0, 0, 0));
@@ -171,15 +173,6 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
     const auto pRocket = dynamic_cast<CMomRocket *>(CreateNoSpawn("momentum_rocket", vecOrigin, vecAngles, pOwner));
     if (!pRocket)
         return nullptr;
-
-    if (!mom_rj_use_tf_rocketmodel.GetBool())
-    {
-        pRocket->SetModel(MOM_ROCKET_MODEL);
-    }
-    else
-    {
-        pRocket->SetModel(TF_ROCKET_MODEL);
-    }
 
     DispatchSpawn(pRocket);
 
