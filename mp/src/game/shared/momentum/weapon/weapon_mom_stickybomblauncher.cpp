@@ -10,6 +10,7 @@
 #include "prediction.h"
 #else
 #include "momentum/mom_triggers.h"
+#include "momentum/ghost_client.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -322,7 +323,6 @@ CMomStickybomb *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPl
         }
     }
 
-    Vector vecForward, vecRight, vecUp;
     float yOffset = 8.0f;
 
     if (!cl_righthand.GetBool())
@@ -330,14 +330,20 @@ CMomStickybomb *CMomentumStickybombLauncher::FireStickybomb(CMomentumPlayer *pPl
         yOffset *= -1.0f;
     }
 
-    AngleVectors(pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp);
+    const QAngle angPlayer = pPlayer->EyeAngles();
+
+    Vector vecForward, vecRight, vecUp;
+    AngleVectors(angPlayer, &vecForward, &vecRight, &vecUp);
 
     Vector vecSrc = pPlayer->Weapon_ShootPosition();
 
     vecSrc += vecForward * 16.0f + vecRight * yOffset + vecUp * -6.0f;
-    Vector vecVelocity = (vecForward * vel) + (vecUp * 200.0f);
+    const Vector vecVelocity = (vecForward * vel) + (vecUp * 200.0f);
 
-    return CMomStickybomb::Create(vecSrc, pPlayer->EyeAngles(), vecVelocity, pPlayer);
+    DecalPacket stickyShoot = DecalPacket::StickyShoot(vecSrc, angPlayer, vecVelocity);
+    g_pMomentumGhostClient->SendDecalPacket(&stickyShoot);
+
+    return CMomStickybomb::Create(vecSrc, angPlayer, vecVelocity, pPlayer);
 #endif
     return nullptr;
 }
@@ -398,6 +404,11 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
 #endif
         }
     }
+
+#ifdef GAME_DLL
+    DecalPacket stickyDet = DecalPacket::StickyDet();
+    g_pMomentumGhostClient->SendDecalPacket(&stickyDet);
+#endif
 
     return bFailedToDetonate;
 }
