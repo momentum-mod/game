@@ -10,6 +10,7 @@
 #include "te_effect_dispatch.h"
 #include "weapon/weapon_def.h"
 #include "ghost_client.h"
+#include "mom_stickybomb.h"
 
 #include "tier0/memdbgon.h"
 
@@ -105,6 +106,13 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
         break;
     case DECAL_ROCKET:
         FireRocket(decal);
+        break;
+    case DECAL_STICKY_SHOOT:
+        FireSticky(decal);
+        break;
+    case DECAL_STICKY_DETONATE:
+        DetonateStickies();
+        break;
     default:
         break;
     }
@@ -199,8 +207,43 @@ void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 
 void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
 {
-    const auto pRocket = CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
-    pRocket->SetDamage(0.0f); // Rockets do no damage unless... MOM_TODO: set this per map/gamemode flag?
+    CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
+}
+
+void CMomentumOnlineGhostEntity::FireSticky(const DecalPacket &packet)
+{
+    CMomStickybomb::Create(packet.vOrigin, packet.vAngle, packet.data.stickyShoot.velocity, this);
+
+    // If we've gone over the max stickybomb count, fizzle the oldest
+    if (m_vecExplosives.Count() > MOM_WEAPON_STICKYBOMB_COUNT)
+    {
+        const auto pTemp = m_vecExplosives[0];
+        if (pTemp)
+        {
+            pTemp->Destroy(true);
+        }
+    }
+}
+
+void CMomentumOnlineGhostEntity::DetonateStickies()
+{
+    FOR_EACH_VEC_BACK(m_vecExplosives, i)
+    {
+        CMomStickybomb *pTemp = dynamic_cast<CMomStickybomb *>(m_vecExplosives[i]);
+        if (pTemp)
+        {
+            // This guy will die soon enough.
+            if (pTemp->IsEffectActive(EF_NODRAW))
+                continue;
+
+            if (!pTemp->IsArmed())
+            {
+                continue;
+            }
+
+            pTemp->Detonate();
+        }
+    }
 }
 
 void CMomentumOnlineGhostEntity::SetGhostName(const char *pGhostName)
