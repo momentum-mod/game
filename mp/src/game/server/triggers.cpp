@@ -372,12 +372,6 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 					return false;
 				}
 			}
-
-			if ( HasSpawnFlags( SF_TRIGGER_ONLY_NPCS_IN_VEHICLES ) )
-			{
-				if ( !pNPC )
-					return false;
-			}
 		}
 
 		bool bOtherIsPlayer = pOther->IsPlayer();
