@@ -869,6 +869,12 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		}
 	}
 
+	// Latch in impulse.
+	if ( ucmd->impulse )
+	{
+		player->m_nImpulse = ucmd->impulse;
+	}
+
 	// Get button states
 	player->UpdateButtonState( ucmd->buttons );
 
@@ -889,6 +895,10 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	
 		SetupMove( player, ucmd, moveHelper, g_pMoveData );
 	}
+
+	// RUN MOVEMENT
+    Assert( g_pGameMovement );
+    g_pGameMovement->ProcessMovement( player, g_pMoveData );
 
 	FinishMove( player, ucmd, g_pMoveData );
 
