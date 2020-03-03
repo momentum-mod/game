@@ -370,6 +370,8 @@
         "MOM_Settings_Online_Rotations_TT" "When enabled, ghosts rotate about their origin" 
         "MOM_Settings_Online_Sounds" "Enable online ghost flashlight sounds"
         "MOM_Settings_Online_Sounds_TT" "When enabled, other players flashlights make sounds when turned on or off"
+        "MOM_Settings_Entity_Panels" "Enable other players' name and avatar panels"
+        "MOM_Settings_Entity_Panels_TT" "When enabled, other players' name and steam avatar panels are visible"
         "MOM_Settings_Online_Trails" "Enable online ghost trails"
         "MOM_Settings_Online_Trails_TT" "When enabled, other players can have a trail showing their paths"
         
