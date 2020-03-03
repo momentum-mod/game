@@ -283,8 +283,7 @@ bool CBaseCombatWeapon::WeaponLOSCondition( const Vector &ownerPos, const Vector
 		return true;
 	}
 
-	CBaseCombatCharacter *pBCC;
-	pBCC = ToBaseCombatCharacter( pHitEnt );
+	CBaseCombatCharacter *pBCC = ToBaseCombatCharacter( pHitEnt );
 
 	if ( pBCC ) 
 	{

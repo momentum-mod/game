@@ -7544,9 +7544,7 @@ void CBasePlayer::SetVCollisionState( const Vector &vecAbsOrigin, const Vector &
 //-----------------------------------------------------------------------------
 int CBasePlayer::GetFOV( void )
 {
-	int nDefaultFOV;
-
-	nDefaultFOV = GetDefaultFOV();
+	int nDefaultFOV = GetDefaultFOV();
 
 	int fFOV = ( m_iFOV == 0 ) ? nDefaultFOV : m_iFOV;
 
@@ -7576,9 +7574,7 @@ int CBasePlayer::GetFOV( void )
 //-----------------------------------------------------------------------------
 int CBasePlayer::GetFOVForNetworking( void )
 {
-	int nDefaultFOV;
-
-	nDefaultFOV = GetDefaultFOV();
+	int nDefaultFOV = GetDefaultFOV();
 
 	int fFOV = ( m_iFOV == 0 ) ? nDefaultFOV : m_iFOV;
 
