@@ -424,6 +424,12 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		}
 	}
 
+	// Latch in impulse.
+	if ( ucmd->impulse )
+	{
+		player->m_nImpulse = ucmd->impulse;
+	}
+
 	// Update player input button states
 	VPROF_SCOPE_BEGIN( "player->UpdateButtonState" );
 	player->UpdateButtonState( ucmd->buttons );
