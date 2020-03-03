@@ -1636,7 +1636,14 @@ void CAI_FollowBehavior::RunTask( const Task_t *pTask )
 						vGoalPosition = GetGoalPosition();
 
 					AI_NavGoal_t goal( vGoalPosition, AIN_DEF_ACTIVITY, GetGoalTolerance() );
-					goal.pTarget = m_hFollowTarget->GetParent();
+                    if ( !m_hFollowTarget->GetParent() )
+                    {
+                        goal.pTarget = m_hFollowTarget;
+                    }
+                    else
+                    {
+                        goal.pTarget = m_hFollowTarget->GetParent();
+                    }
 
 					bool bSuccess = true;
 					if ( !GetNavigator()->SetGoal( goal, AIN_NO_PATH_TASK_FAIL ) )
