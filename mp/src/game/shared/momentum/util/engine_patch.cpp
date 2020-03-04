@@ -55,6 +55,28 @@ void EnginePatch::InitPatches()
 #endif //WIN32
 
 #ifdef _WIN32
+	// Prevent the culling of skyboxes at high FOVs
+	// https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
+	// TODO: Use a value derived from FOV instead
+	unsigned char pattern[] = { 0xF3, 0x0F, 0x59, 0x15, '?', '?', '?', '?', 0xF3, 0x0F, 0x58, 0xC1, 0xF3, 0x0F, 0x10, 0x0D };
+	auto addr = reinterpret_cast<uintptr_t>(FindPattern(pattern, "xxxx????xxxxxxxx", 16));
+
+	if (addr)
+	{
+		// The value is stored in the data segment so it needs write permission
+		float* fValue = *reinterpret_cast<float**>(addr);
+
+		// 0x40 is read,write,execute
+		unsigned long iOldProtection, iNewProtection = 0x40;
+
+		if (VirtualProtect((void*)fValue, sizeof(float), iNewProtection, &iOldProtection))
+		{
+			*fValue = -1;
+
+			// Restore old protections
+			VirtualProtect((void*)fValue, sizeof(float), iOldProtection, &iNewProtection);
+		}
+	}
 #else //POSIX
 #endif //WIN32
 }
