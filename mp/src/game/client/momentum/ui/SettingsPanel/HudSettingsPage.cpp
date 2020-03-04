@@ -28,14 +28,21 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
     m_pSyncColorize->AddActionSignalTarget(this);
 
-    m_pSpeedometerShow = new CvarToggleCheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_hud_speedometer");
+    m_pSpeedometerShow =
+        new CvarToggleCheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_hud_speedometer");
     m_pSpeedometerShow->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowLastJump = new CvarToggleCheckButton(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", "mom_hud_speedometer_showlastjumpvel");
+    m_pSpeedometerHorizShow = new CvarToggleCheckButton(this, "SpeedoHorizShow", "#MOM_Settings_Speedometer_Horiz_Show",
+                                                        "mom_hud_speedometer_horiz");
+    m_pSpeedometerHorizShow->AddActionSignalTarget(this);
+
+    m_pSpeedometerShowLastJump = new CvarToggleCheckButton(
+        this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", "mom_hud_speedometer_showlastjumpvel");
     m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowVerticalVel = new CvarToggleCheckButton(this, "ShowSpeedoHvel", "#MOM_Settings_Speedometer_Show_Hvel", "mom_hud_speedometer_hvel");
-    m_pSpeedometerShowVerticalVel->AddActionSignalTarget(this);
+    m_pSpeedometerUnitLabels = new CvarToggleCheckButton(this, "SpeedoShowUnitLabels", "#MOM_Settings_Speedometer_Unit_Labels",
+                                                         "mom_hud_speedometer_unit_labels");
+    m_pSpeedometerUnitLabels->AddActionSignalTarget(this);
 
     m_pSpeedometerColorize = new ComboBox(this, "SpeedoShowColor", 3, false);
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_None", nullptr);
@@ -46,10 +53,12 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSyncShow = new CvarToggleCheckButton(this, "SyncShow", "#MOM_Settings_Sync_Show", "mom_hud_strafesync_draw");
     m_pSyncShow->AddActionSignalTarget(this);
 
-    m_pSyncShowBar = new CvarToggleCheckButton(this, "SyncShowBar", "#MOM_Settings_Sync_Show_Bar", "mom_hud_strafesync_drawbar");
+    m_pSyncShowBar =
+        new CvarToggleCheckButton(this, "SyncShowBar", "#MOM_Settings_Sync_Show_Bar", "mom_hud_strafesync_drawbar");
     m_pSyncShowBar->AddActionSignalTarget(this);
 
-    m_pButtonsShow = new CvarToggleCheckButton(this, "ButtonsShow", "#MOM_Settings_Buttons_Show", "mom_hud_showkeypresses");
+    m_pButtonsShow =
+        new CvarToggleCheckButton(this, "ButtonsShow", "#MOM_Settings_Buttons_Show", "mom_hud_showkeypresses");
     m_pButtonsShow->AddActionSignalTarget(this);
 
     m_pTimerShow = new CvarToggleCheckButton(this, "TimerShow", "#MOM_Settings_Timer_Show", "mom_hud_timer");
@@ -85,12 +94,12 @@ void HudSettingsPage::OnCheckboxChecked(Panel *p)
 {
     BaseClass::OnCheckboxChecked(p);
 
-    if (p == m_pSpeedometerShow)
+    if (p == m_pSpeedometerShow || p == m_pSpeedometerHorizShow || p == m_pSpeedometerShowLastJump)
     {
-        const auto bEnabled = m_pSpeedometerShow->IsSelected();
-        m_pSpeedometerShowLastJump->SetEnabled(bEnabled);
-        m_pSpeedometerShowVerticalVel->SetEnabled(bEnabled);
+        bool bEnabled = m_pSpeedometerShow->IsSelected() || m_pSpeedometerHorizShow->IsSelected() ||
+                        m_pSpeedometerShowLastJump->IsSelected();
         m_pSpeedometerUnits->SetEnabled(bEnabled);
         m_pSpeedometerColorize->SetEnabled(bEnabled);
+        m_pSpeedometerUnitLabels->SetEnabled(bEnabled);
     }
 }

@@ -1,33 +1,17 @@
 "Resource/HudLayout.res"
 {
-    //Speedometer
-    HudSpeedMeter
-    {
-        "fieldName"     "HudSpeedMeter"
-        "xpos"          "c-60"
-        "ypos"          "310"
-        "wide"          "120"
-        "tall"          "80"
-        "visible"       "1"
-        "enabled"       "1"
-        "NumberFont"    "HudNumbersSmallBold"
-        "SmallNumberFont" "HudNumbersExtremelySmall"
-        "text_ypos"     "5"
-        "digit_ypos"    "15"
-        "digit2_ypos"   "30"
-        "PrimaryValueColor" "MOM.Panel.Fg"
-        "SecondaryValueColor" "Light Gray"
-        "LabelColor"    "MOM.Panel.Fg"
-        "BgColor"   "Blank"
-        "StageAlpha" "0.0"//Used for fading
-        "JumpAlpha" "0.0"//Used for fading
-    }
     //Timer
     HudTimer
     {
         "fieldName"     "HudTimer"
         // See resource/ui/Timer.res for changing settings
     }
+	//Speedometer
+	HudSpeedMeter
+	{
+		"fieldName"		"HudSpeedMeter"
+        // See resource/ui/Speedometer.res for changing settings
+	}
     //Strafe Sync Meter
     CHudSyncMeter
     {
