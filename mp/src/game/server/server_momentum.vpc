@@ -26,6 +26,19 @@ $Project "Server (Momentum)"
         {
             $Folder "Util"
             {
+                $File "$SRCDIR\game\shared\momentum\util\engine_patch.h"
+                
+                $File "$SRCDIR\game\shared\momentum\util\engine_patch.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
+                
                 $File "momentum\tickset.h"
 
                 $File "momentum\tickset.cpp"
