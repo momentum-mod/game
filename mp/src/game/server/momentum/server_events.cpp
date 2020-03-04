@@ -5,6 +5,7 @@
 #include "tickset.h"
 #include "icommandline.h"
 
+#include "util/engine_patch.h"
 #include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
@@ -23,6 +24,7 @@ inline void UnloadConVarOrCommand(const char *pName)
 bool CMomServerEvents::Init()
 {
     MomUtil::MountGameFiles();
+	EnginePatch::InitPatches();
 
     if (!CommandLine()->FindParm("-mapping"))
     {
