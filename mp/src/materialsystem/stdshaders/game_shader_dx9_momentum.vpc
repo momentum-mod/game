@@ -52,6 +52,8 @@ $Project "Shaders (Momentum)"
     {
         $File	"BaseVSShader.cpp"
 
+        $File	"pbr_dx9.cpp"
+
 		$File	"cloak_blended_pass_helper.cpp"
 		$File	"emissive_scroll_blended_pass_helper.cpp"
 		$File	"flesh_interior_blended_pass_helper.cpp"
