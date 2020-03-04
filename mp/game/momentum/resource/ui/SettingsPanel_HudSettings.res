@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "HudSettings"
-        "tall" "230"
+        "tall" "240"
         "wide" "1000"
     }
     
@@ -64,6 +64,35 @@
         "cvar_name"		"mom_hud_speedometer"
         "Font"		"DefaultVerySmall"
     }
+	"SpeedoHorizShow"
+    {
+        "ControlName"		"CvarToggleCheckButton"
+        "fieldName"		"SpeedoHorizShow"
+        "xpos"		"0"
+        "ypos"		"0"
+        "autoResize"		"0"
+        "pin_to_sibling" "SpeedoShow"
+        "pin_corner_to_sibling"		"0"
+        "pin_to_sibling_corner"		"2"
+        "visible"		"1"
+        "enabled"		"1"
+        "tabPosition"		"0"
+        "labelText"		"#MOM_Settings_Speedometer_Horiz_Show"
+        "textAlignment"		"west"
+        "dulltext"		"0"
+        "brighttext"		"0"
+        "wrap"		"0"
+        "centerwrap"		"0"
+        "textinsetx"		"6"
+        "textinsety"		"0"
+        "auto_wide_tocontents"		"1"
+        "auto_tall_tocontents" "1"
+        "use_proportional_insets"		"0"
+        "Default"		"0"
+        "cvar_name"		"mom_hud_speedometer_horiz"
+        "cvar_value"		"1"
+        "Font"		"DefaultVerySmall"
+    }
     "SpeedoShowJump"
     {
         "ControlName"		"CvarToggleCheckButton"
@@ -72,7 +101,7 @@
         "ypos"		"0"
         "autoResize"		"0"
         "pinCorner"		"0"
-        "pin_to_sibling" "SpeedoShow"
+        "pin_to_sibling" "SpeedoHorizShow"
         "pin_corner_to_sibling"		"0"
         "pin_to_sibling_corner"		"2"
         "visible"		"1"
@@ -90,13 +119,13 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
         "Default"		"0"
-        "cvar_name"		"mom_hud_speedometer_showlastjumpvel"
+        "cvar_name"		"mom_hud_speedometer_lastjumpvel"
         "Font"		"DefaultVerySmall"
     }
-    "ShowSpeedoHvel"
-    {
+	"SpeedoShowUnitLabels"
+	{
         "ControlName"		"CvarToggleCheckButton"
-        "fieldName"		"ShowSpeedoHvel"
+        "fieldName"		"SpeedoShowUnitLabels"
         "xpos"		"0"
         "ypos"		"0"
         "autoResize"		"0"
@@ -107,7 +136,7 @@
         "visible"		"1"
         "enabled"		"1"
         "tabPosition"		"0"
-        "labelText"		"#MOM_Settings_Speedometer_Show_Hvel"
+        "labelText"		"#MOM_Settings_Speedometer_Unit_Labels"
         "textAlignment"		"west"
         "dulltext"		"0"
         "brighttext"		"0"
@@ -119,9 +148,9 @@
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
         "Default"		"0"
-        "cvar_name"		"mom_hud_speedometer_hvel"
+        "cvar_name"		"mom_hud_speedometer_unit_labels"
         "Font"		"DefaultVerySmall"
-    }
+	}
     "SpeedoUnitsLabel"
     {
         "ControlName"		"Label"
@@ -130,7 +159,7 @@
         "ypos"		"0"
         "autoResize"		"0"
         "pinCorner"		"0"
-        "pin_to_sibling" "ShowSpeedoHvel"
+        "pin_to_sibling" "SpeedoShowUnitLabels"
         "pin_corner_to_sibling"		"0"
         "pin_to_sibling_corner"		"2"
         "visible"		"1"
@@ -155,7 +184,7 @@
         "fieldName"		"SpeedoUnits"
         "xpos"		"3"
         "ypos"		"0"
-        "wide"		"96"
+        "wide"		"110"
         "tall"		"12"
         "autoResize"		"0"
         "pinCorner"		"0"
@@ -222,7 +251,7 @@
         "unicode"		"0"
         "font" "DefaultVerySmall"
     }
-    
+	
     
     
     

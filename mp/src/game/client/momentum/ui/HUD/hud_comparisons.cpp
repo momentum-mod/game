@@ -79,7 +79,7 @@ C_RunComparisons *g_pMOMRunCompare = nullptr;
 
 C_RunComparisons::C_RunComparisons(const char *pElementName, Panel *pParent /* = nullptr*/)
     : CHudElement(pElementName), Panel(pParent ? pParent : g_pClientMode->GetViewport(), pElementName),
-    m_cvarVelType("mom_hud_speedometer_hvel")
+    m_cvarVelType("mom_hud_velocity_type")
 {
     SetProportional(true);
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?

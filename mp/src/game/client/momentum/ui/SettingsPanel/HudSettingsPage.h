@@ -21,6 +21,6 @@ class HudSettingsPage : public SettingsPage
 private:
     vgui::ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
 
-    vgui::CvarToggleCheckButton *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel,
-        *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;
+    vgui::CvarToggleCheckButton *m_pSpeedometerShow, *m_pSpeedometerHorizShow, *m_pSpeedometerShowLastJump,
+        *m_pSpeedometerUnitLabels, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;
 };

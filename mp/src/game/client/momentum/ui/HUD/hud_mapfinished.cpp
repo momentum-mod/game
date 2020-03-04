@@ -149,8 +149,7 @@ void CHudMapFinishedDialog::OnThink()
 {
     BaseClass::OnThink();
 
-    static ConVarRef hvel("mom_hud_speedometer_hvel");
-    m_iVelocityType = hvel.GetBool();
+    m_iVelocityType = ConVarRef("mom_hud_velocity_type").GetInt();
 
     m_pPlayReplayButton->SetVisible(!m_bIsGhost);
     m_pRunUploadStatus->SetVisible(!m_bIsGhost);
