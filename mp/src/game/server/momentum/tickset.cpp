@@ -1,13 +1,5 @@
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include "Windows.h"
-#include "Psapi.h"
-#pragma comment(lib, "psapi.lib")
-#elif defined (POSIX)
-#include "util/os_utils.h"
-#endif
-
 #include "tickset.h"
+#include "util/engine_patch.h"
 #include "mom_shareddefs.h"
 #include "tier0/platform.h"
 
@@ -19,72 +11,34 @@ const Tickrate TickSet::s_DefinedRates[] = {
 Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
 bool TickSet::m_bInGameUpdate = false;
 
-inline bool TickSet::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
-{
-    for (; *mask != 0; ++data, ++pattern, ++mask)
-        if (*mask == 'x' && *data != *pattern)
-            return false;
-
-    return (*mask == 0);
-}
-
-void* TickSet::FindPattern(const void* start, size_t length, const unsigned char* pattern, const char* mask)
-{
-    auto maskLength = strlen(mask);
-    for (size_t i = 0; i <= length - maskLength; ++i)
-    {
-        auto addr = reinterpret_cast<const unsigned char*>(start)+i;
-        if (DataCompare(addr, pattern, mask))
-            return const_cast<void*>(reinterpret_cast<const void*>(addr));
-    }
-
-    return nullptr;
-}
-
 bool TickSet::TickInit()
 {
 #ifdef _WIN32
-    HMODULE handle = GetModuleHandleA("engine.dll");
-    if (!handle)
-        return false;    
-    
-    MODULEINFO info;
-    GetModuleInformation(GetCurrentProcess(), handle, &info, sizeof(info));
-
-    auto moduleBase = info.lpBaseOfDll;
-    auto moduleSize = info.SizeOfImage;
-
     unsigned char pattern[] = { 0x8B, 0x0D, '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 0xFF, '?', 0xD9, 0x15, '?', '?',
         '?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
-    auto p = reinterpret_cast<uintptr_t>(FindPattern(moduleBase, moduleSize, pattern, "xx????????????x?xx????xx????xxxx????xxxxxxxxxx"));
-    if (p)
-        interval_per_tick = *reinterpret_cast<float**>(p + 18);
+    auto addr = reinterpret_cast<uintptr_t>(EnginePatch::FindPattern(pattern, "xx????????????x?xx????xx????xxxx????xxxxxxxxxx", 18));
+    if (addr)
+        interval_per_tick = *reinterpret_cast<float**>(addr);
 
 #else //POSIX
-    void *base;
-    size_t length;
-
-    if (GetModuleInformation(ENGINE_DLL_NAME, &base, &length))
-        return false;
-
 #ifdef __linux__
 
     // mov ds:interval_per_tick, 3C75C28Fh         <-- float for 0.015
     unsigned char pattern[] = { 0xC7,0x05, '?','?','?','?', 0x8F,0xC2,0x75,0x3C, 0xE8 };
-    void* addr = FindPattern(base, length, pattern, "xx????xxxxx");
+    void* addr = EnginePatch::FindPattern(pattern, "xx????xxxxx", 2);
     if (addr)
-        interval_per_tick = *(float**)(addr + 2); //MOM_TODO: fix pointer arithmetic on void pointer?
+        interval_per_tick = *(float**)(addr); //MOM_TODO: fix pointer arithmetic on void pointer?
 
 #elif defined (OSX)
-    if (length == 12581936) //magic engine.dylib file size as of august 2017
+    if (EnginePatch::moduleSize == 12581936) //magic engine.dylib file size as of august 2017
     {
-        interval_per_tick = reinterpret_cast<float*>((char*)base + 0x7DC120); //use offset since it's quicker than searching
+        interval_per_tick = reinterpret_cast<float*>((char*)EnginePatch::moduleBase + 0x7DC120); //use offset since it's quicker than searching
         printf("engine.dylib not updated. using offset! address: %#08x\n", interval_per_tick);
     }
     else //valve updated engine, try to use search pattern...
     {
         unsigned char pattern[] = {0x8F, 0xC2, 0x75, 0x3C, 0x78, '?', '?', 0x0C, 0x6C, '?', '?', '?', 0x01, 0x00};
-        auto addr = reinterpret_cast<uintptr_t>(FindPattern(base, length, pattern, "xxxxx??xx???xx"));
+        auto addr = reinterpret_cast<uintptr_t>(EnginePatch::FindPattern(pattern, "xxxxx??xx???xx"));
         if (addr)
         {
             interval_per_tick = reinterpret_cast<float*>(addr);
