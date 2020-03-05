@@ -455,6 +455,9 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
                 AppearanceData_t appear;
                 if (GetAppearanceFromMemberData(memberChanged, appear))
                     pEntity->SetAppearanceData(appear, false);
+
+                pEntity->m_bSpectating = GetIsSpectatingFromMemberData(memberChanged);
+                // We also have spec target inside LOBBY_DATA_SPEC_TARGET
             }
 
             CheckToAdd(&memberChanged);
