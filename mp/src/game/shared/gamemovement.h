@@ -209,7 +209,7 @@ protected:
 
 	virtual void	CheckFalling( void );
 
-	virtual void	PlayerRoughLandingEffects( float fvol );
+	virtual void PlayerRoughLandingEffects(float fvol, short surfacePropsIndexOverride = -1);
 
 	void			PlayerWaterSounds( void );
 
