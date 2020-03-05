@@ -30,7 +30,7 @@ CMomRunEntity::~CMomRunEntity()
     if (g_pGameModeSystem->IsTF2BasedMode())
     {
         gEntList.RemoveListenerEntity(this);
-        m_vecExplosives.RemoveAll();
+        DestroyExplosives();
     }
 #endif
 }
@@ -45,6 +45,7 @@ void CMomRunEntity::OnZoneEnter(CTriggerZone *pTrigger)
     {
     case ZONE_TYPE_START:
         pData->m_bMapFinished = false;
+        DestroyExplosives();
         break;
     case ZONE_TYPE_STOP:
         break;
