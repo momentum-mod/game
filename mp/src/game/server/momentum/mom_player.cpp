@@ -714,6 +714,9 @@ void CMomentumPlayer::RemoveAllOnehops()
 
 void CMomentumPlayer::SetCurrentProgressTrigger(CBaseMomentumTrigger *pTrigger)
 {
+    if (m_bHasPracticeMode)
+        return;
+
     const auto pProgressCheck = dynamic_cast<CTriggerProgress*>(pTrigger);
     if (pProgressCheck)
         m_iProgressNumber = pProgressCheck->GetProgressNumber();
