@@ -23,8 +23,6 @@ class CMomentumGameMovement : public CGameMovement
     void AirMove() override;
     void WalkMove() override;
 
-    void PlayerRoughLandingEffects(float);
-
     // Ladder
     float LadderDistance() const override;
     bool GameHasLadders() const override;
