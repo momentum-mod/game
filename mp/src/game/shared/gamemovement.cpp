@@ -3926,26 +3926,24 @@ void CGameMovement::CheckFalling( void )
 	player->m_Local.m_flFallVelocity = 0.0f;
 }
 
-void CGameMovement::PlayerRoughLandingEffects( float fvol )
+void CGameMovement::PlayerRoughLandingEffects(float fvol, short surfacePropsIndexOverride /* = -1 */)
 {
 	if ( fvol > 0.0 )
 	{
-		//
-		// Play landing sound right away.
 		player->m_flStepSoundTime = 400;
 
-		// Play step sound for current texture.
-		player->PlayStepSound( (Vector &)mv->GetAbsOrigin(), player->m_pSurfaceData, fvol, true );
-
-		//
-		// Knock the screen around a little bit, temporary effect.
-		//
-		player->m_Local.m_vecPunchAngle.Set( ROLL, player->m_Local.m_flFallVelocity * 0.013 );
-
-		if ( player->m_Local.m_vecPunchAngle[PITCH] > 8 )
+		surfacedata_t* pSurfaceData = nullptr;
+		if (surfacePropsIndexOverride != -1)
 		{
-			player->m_Local.m_vecPunchAngle.Set( PITCH, 8 );
+			pSurfaceData = MoveHelper()->GetSurfaceProps()->GetSurfaceData(surfacePropsIndexOverride);
 		}
+
+		if (!pSurfaceData)
+		{
+			pSurfaceData = player->m_pSurfaceData;
+		}
+
+		player->PlayStepSound((Vector&)mv->GetAbsOrigin(), pSurfaceData, fvol, true);
 	}
 }
 
