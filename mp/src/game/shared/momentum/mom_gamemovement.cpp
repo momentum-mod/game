@@ -2115,20 +2115,14 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             VectorCopy(vec3_origin, mv->m_vecVelocity);
     }
 
-    // Check if they slammed into a wall
-    float fSlamVol = 0.0f;
-
     float fLateralStoppingAmount = primal_velocity.Length2D() - mv->m_vecVelocity.Length2D();
-    if (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED * 2.0f)
+    if (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED)
     {
-        fSlamVol = 1.0f;
+        float fSlamVol = (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED * 2.0f) ? 1.0f : 0.85f;
+        
+        // Play rough landing sound with last traced surface.
+        PlayerRoughLandingEffects(fSlamVol, pm.surface.surfaceProps);
     }
-    else if (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED)
-    {
-        fSlamVol = 0.85f;
-    }
-
-    PlayerRoughLandingEffects(fSlamVol);
 
     return blocked;
 }
