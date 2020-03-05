@@ -904,8 +904,6 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                     }
                 }
 
-                DestroyExplosives();
-
                 // Don't limit speed in RJ/SJ, start on zone leave.
                 m_bStartTimerOnJump = false;
                 m_bShouldLimitPlayerSpeed = false;
