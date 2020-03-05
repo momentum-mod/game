@@ -2399,7 +2399,7 @@ bool CGameMovement::CheckJumpButton( void )
 	// In the air now.
     SetGroundEntity( NULL );
 	
-	player->PlayStepSound( (Vector &)mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true );
+	player->PlayStepSound( mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true );
 	
 	MoveHelper()->PlayerSetAnimation( PLAYER_JUMP );
 
@@ -3948,7 +3948,7 @@ void CGameMovement::PlayerRoughLandingEffects(float fvol, short surfacePropsInde
 			pSurfaceData = player->m_pSurfaceData;
 		}
 
-		player->PlayStepSound((Vector&)mv->GetAbsOrigin(), pSurfaceData, fvol, true);
+		player->PlayStepSound(mv->GetAbsOrigin(), pSurfaceData, fvol, true);
 	}
 }
 
