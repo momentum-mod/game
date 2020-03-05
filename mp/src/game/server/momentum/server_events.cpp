@@ -24,7 +24,6 @@ inline void UnloadConVarOrCommand(const char *pName)
 bool CMomServerEvents::Init()
 {
     MomUtil::MountGameFiles();
-	EnginePatch::InitPatches();
 
     if (!CommandLine()->FindParm("-mapping"))
     {

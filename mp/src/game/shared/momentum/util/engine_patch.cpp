@@ -11,47 +11,66 @@
 #include "mom_shareddefs.h"
 #include "tier0/platform.h"
 
-void* EnginePatch::moduleBase = nullptr;
-size_t EnginePatch::moduleSize;
+void* CEngineBinary::moduleBase = nullptr;
+size_t CEngineBinary::moduleSize;
 
-inline bool EnginePatch::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
+CEngineBinary::CEngineBinary() : CAutoGameSystem("CEngineBinary")
 {
-	for (; *mask != 0; ++data, ++pattern, ++mask)
-		if (*mask == 'x' && *data != *pattern)
-			return false;
-
-	return (*mask == 0);
 }
 
-void* EnginePatch::FindPattern(const unsigned char* pattern, const char* mask, size_t offset = 0)
+// Get the engine's base address and size
+bool CEngineBinary::Init()
 {
-	auto maskLength = strlen(mask);
-	for (size_t i = 0; i <= moduleSize - maskLength; ++i)
-	{
-		auto addr = reinterpret_cast<const unsigned char*>(moduleBase) + i;
-		if (DataCompare(addr, pattern, mask))
-			return const_cast<void*>(reinterpret_cast<const void*>(addr + offset));
-	}
-
-	return nullptr;
-}
-
-void EnginePatch::InitPatches()
-{
-	// Get the engine's base address and size
 #ifdef _WIN32
-	HMODULE handle = GetModuleHandleA("engine.dll");
-	if (!handle)
-		return;
+    HMODULE handle = GetModuleHandleA("engine.dll");
+    if (!handle)
+        return false;
 
-	MODULEINFO info;
-	GetModuleInformation(GetCurrentProcess(), handle, &info, sizeof(info));
+    MODULEINFO info;
+    GetModuleInformation(GetCurrentProcess(), handle, &info, sizeof(info));
 
-	moduleBase = info.lpBaseOfDll;
-	moduleSize = info.SizeOfImage;
+    moduleBase = info.lpBaseOfDll;
+    moduleSize = info.SizeOfImage;
 #else //POSIX
-	if (GetModuleInformation(ENGINE_DLL_NAME, &moduleBase, &moduleSize))
-		return;
+    if (GetModuleInformation(ENGINE_DLL_NAME, &moduleBase, &moduleSize))
+        return false;
+#endif //WIN32
+
+    return true;
+}
+
+void CEngineBinary::PostInit()
+{
+}
+
+inline bool CEngineBinary::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
+{
+    for (; *mask != 0; ++data, ++pattern, ++mask)
+        if (*mask == 'x' && *data != *pattern)
+            return false;
+
+    return (*mask == 0);
+}
+
+//---------------------------------------------------------------------------------------------------------
+// Finds a pattern of bytes in the engine memory given a signature and a mask
+// Returns the address of the first (and hopefully only) match with an optional offset, otherwise nullptr
+//---------------------------------------------------------------------------------------------------------
+void* CEngineBinary::FindPattern(const unsigned char* pattern, const char* mask, size_t offset = 0)
+{
+    auto maskLength = strlen(mask);
+    for (size_t i = 0; i <= moduleSize - maskLength; ++i)
+    {
+        auto addr = reinterpret_cast<const unsigned char*>(moduleBase) + i;
+        if (DataCompare(addr, pattern, mask))
+            return const_cast<void*>(reinterpret_cast<const void*>(addr + offset));
+    }
+
+    return nullptr;
+}
+
+CEngineBinary g_EngineBinary;
+
 #endif //WIN32
 
 #ifdef _WIN32
