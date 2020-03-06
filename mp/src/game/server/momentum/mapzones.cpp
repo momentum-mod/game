@@ -119,7 +119,6 @@ void CMapZoneSystem::FrameUpdatePostEntityThink()
 
 void CMapZoneSystem::PostInit()
 {
-    // Creates a folder for zonefiles if it doesn't exist yet
     filesystem->CreateDirHierarchy(ZONE_FOLDER, "MOD");
 }
 
