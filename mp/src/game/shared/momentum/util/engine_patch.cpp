@@ -85,7 +85,7 @@ CEngineBinary g_EngineBinary;
 // Immediate or referenced variable
 // Patch bytes (int/float/char*)
 #ifdef _WIN32
-CEnginePatch g_CEnginePatches[] =
+CEnginePatch g_EnginePatches[] =
 {
     // Prevent the culling of skyboxes at high FOVs
     // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
@@ -118,7 +118,7 @@ CEnginePatch g_CEnginePatches[] =
     //}
 };
 #elif __linux__
-CEnginePatch g_CEnginePatches[] =
+CEnginePatch g_EnginePatches[] =
 {
     // Prevent the culling of skyboxes at high FOVs
     // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
@@ -136,24 +136,22 @@ CEnginePatch g_CEnginePatches[] =
 
 void CEnginePatch::ApplyAll()
 {
-#if defined (OSX)
-    // No OSX patches yet
-    return;
-#endif
+#if !defined (OSX) // No OSX patches yet
     int err;
 
-    for (int i = 0; i < sizeof(g_CEnginePatches) / sizeof(*g_CEnginePatches); i++)
+    for (int i = 0; i < sizeof(g_EnginePatches) / sizeof(*g_EnginePatches); i++)
     {
-        err = g_CEnginePatches[i].ApplyPatch();
+        err = g_EnginePatches[i].ApplyPatch();
         switch (err)
         {
         case 1:
-            Warning("Engine patch \"%s\" FAILED: Could not override memory protection\n", g_CEnginePatches[i].getName());
+            Warning("Engine patch \"%s\" FAILED: Could not override memory protection\n", g_EnginePatches[i].getName());
             break;
         case 2:
-            Warning("Engine patch \"%s\" FAILED: Could not find signature\n", g_CEnginePatches[i].getName());
+            Warning("Engine patch \"%s\" FAILED: Could not find signature\n", g_EnginePatches[i].getName());
         }
     }
+#endif // (OSX)
 }
 
 // Apply a patch to engine memory
