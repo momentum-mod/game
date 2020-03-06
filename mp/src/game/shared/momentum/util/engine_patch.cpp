@@ -61,7 +61,7 @@ inline bool CEngineBinary::DataCompare(const unsigned char* data, const unsigned
 // Finds a pattern of bytes in the engine memory given a signature and a mask
 // Returns the address of the first (and hopefully only) match with an optional offset, otherwise nullptr
 //---------------------------------------------------------------------------------------------------------
-void* CEngineBinary::FindPattern(const unsigned char* pattern, const char* mask, size_t offset = 0)
+void* CEngineBinary::FindPattern(const unsigned char* pattern, const char* mask, size_t offset)
 {
     auto maskLength = strlen(mask);
     for (size_t i = 0; i <= moduleSize - maskLength; ++i)

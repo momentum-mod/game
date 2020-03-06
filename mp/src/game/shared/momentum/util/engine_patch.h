@@ -15,7 +15,10 @@ public:
     void PostInit() OVERRIDE;
 
     static inline bool DataCompare(const unsigned char*, const unsigned char*, const char*);
-    static void* FindPattern(const unsigned char*, const char*, size_t);
+    static void* FindPattern(const unsigned char*, const char*, size_t = 0);
+
+	static void* getModuleBase() { return moduleBase; }
+	static size_t getModuleSize() { return moduleSize; }
 
 private:
     static void* moduleBase;

@@ -30,9 +30,9 @@ bool TickSet::TickInit()
         interval_per_tick = *(float**)(addr); //MOM_TODO: fix pointer arithmetic on void pointer?
 
 #elif defined (OSX)
-    if (CEngineBinary::moduleSize == 12581936) //magic engine.dylib file size as of august 2017
+    if (CEngineBinary::getModuleSize() == 12581936) //magic engine.dylib file size as of august 2017
     {
-        interval_per_tick = reinterpret_cast<float*>((char*)CEngineBinary::moduleBase + 0x7DC120); //use offset since it's quicker than searching
+        interval_per_tick = reinterpret_cast<float*>((char*)CEngineBinary::getModuleBase() + 0x7DC120); //use offset since it's quicker than searching
         printf("engine.dylib not updated. using offset! address: %#08x\n", interval_per_tick);
     }
     else //valve updated engine, try to use search pattern...
