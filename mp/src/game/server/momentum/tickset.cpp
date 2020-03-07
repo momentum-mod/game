@@ -14,9 +14,8 @@ bool TickSet::m_bInGameUpdate = false;
 bool TickSet::TickInit()
 {
 #ifdef _WIN32
-    unsigned char pattern[] = { 0x8B, 0x0D, '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 0xFF, '?', 0xD9, 0x15, '?', '?',
-        '?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
-    auto addr = reinterpret_cast<uintptr_t>(CEngineBinary::FindPattern(pattern, "xx????????????x?xx????xx????xxxx????xxxxxxxxxx", 18));
+    const char pattern[] = "\x8B\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\x00\xD9\x15\x00\x00\x00\x00\xDD\x05\x00\x00\x00\x00\xDB\xF1\xDD\x05";
+    auto addr = reinterpret_cast<uintptr_t>(CEngineBinary::FindPattern(pattern, "xx????????????x?xx????xx????xxxx", 18));
     if (addr)
         interval_per_tick = *reinterpret_cast<float**>(addr);
 
@@ -24,20 +23,20 @@ bool TickSet::TickInit()
 #ifdef __linux__
 
     // mov ds:interval_per_tick, 3C75C28Fh         <-- float for 0.015
-    unsigned char pattern[] = { 0xC7,0x05, '?','?','?','?', 0x8F,0xC2,0x75,0x3C, 0xE8 };
+    const char pattern[] = "\xC7\x05\x00\x00\x00\x00\x8F\xC2\x75\x3C\xE8";
     void* addr = CEngineBinary::FindPattern(pattern, "xx????xxxxx", 2);
     if (addr)
         interval_per_tick = *(float**)(addr); //MOM_TODO: fix pointer arithmetic on void pointer?
 
 #elif defined (OSX)
-    if (CEngineBinary::getModuleSize() == 12581936) //magic engine.dylib file size as of august 2017
+    if (CEngineBinary::GetModuleSize() == 12581936) //magic engine.dylib file size as of august 2017
     {
-        interval_per_tick = reinterpret_cast<float*>((char*)CEngineBinary::getModuleBase() + 0x7DC120); //use offset since it's quicker than searching
+        interval_per_tick = reinterpret_cast<float*>((char*)CEngineBinary::GetModuleBase() + 0x7DC120); //use offset since it's quicker than searching
         printf("engine.dylib not updated. using offset! address: %#08x\n", interval_per_tick);
     }
     else //valve updated engine, try to use search pattern...
     {
-        unsigned char pattern[] = {0x8F, 0xC2, 0x75, 0x3C, 0x78, '?', '?', 0x0C, 0x6C, '?', '?', '?', 0x01, 0x00};
+        const char pattern[] = "\x8F\xC2\x75\x3C\x78\x00\x00\x0C\x6C\x00\x00\x00\x01\x00";
         auto addr = reinterpret_cast<uintptr_t>(CEngineBinary::FindPattern(pattern, "xxxxx??xx???xx"));
         if (addr)
         {
