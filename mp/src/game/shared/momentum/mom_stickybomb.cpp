@@ -34,6 +34,8 @@ PRECACHE_WEAPON_REGISTER(momentum_stickybomb);
 #ifdef CLIENT_DLL
 static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0", FCVAR_ARCHIVE,
                    "Determines how long it takes for stickies to start being drawn upon spawning.\n", 0, 1);
+#else
+static MAKE_TOGGLE_CONVAR(mom_sj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on sticky explosion. 0 = OFF, 1 = ON\n");
 #endif
 
 CMomStickybomb::CMomStickybomb()
@@ -213,7 +215,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     CTakeDamageInfo info(this, pOwner, vec3_origin, vecOrigin, GetDamage(), GetDamageType(), 0, &vecReported);
     RadiusDamage(info, vecOrigin, MOM_EXPLOSIVE_RADIUS, CLASS_NONE, nullptr);
 
-    if (pOther && !pOther->IsPlayer())
+    if (mom_sj_decals_enable.GetBool() && pOther && !pOther->IsPlayer())
     {
         UTIL_DecalTrace(pTrace, "StickyScorch");
     }
