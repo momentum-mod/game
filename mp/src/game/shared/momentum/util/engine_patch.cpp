@@ -77,6 +77,7 @@ int CEngineBinary::SetMemoryProtection(void* pAddress, size_t iLength, int iProt
 #ifdef _WIN32
     return VirtualProtect(pAddress, iLength, iProtection, pOriginalProtection);
 #else //POSIX
+    return mprotect(LALIGN(pAddress), iLength + LALDIF(pAddress), iProtection) == 0;
 #endif //_WIN32
 }
 
@@ -132,12 +133,30 @@ CEnginePatch g_EnginePatches[] =
     // TODO: Use a value derived from FOV instead
     {
         "SkyboxCulling",
-        (unsigned char*)"\xF3\x0F\x59\x0D\x00\x00\x00\x00\xF3\x0F\x58\xC2\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
+        "\xF3\x0F\x59\x0D\x00\x00\x00\x00\xF3\x0F\x58\xC2\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
         "xxxx????xxxxxxxxxxxx",
         20,
-        false,
-        (float)-1
-    }
+        PATCH_REFERENCE,
+        -1.0f
+    },
+    // Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
+    //{
+    //    "BrushLimit",
+    //    "\xBE\x00\x00\x00\x00\xF7\xE6\x89\xD6\xC1\xEE\x03\x81\xFE",
+    //    "x????xxxxxxxxx",
+    //    14,
+    //    PATCH_IMMEDIATE,
+    //    16384
+    //},
+    // The same patch as above but using a pure hex value
+    //{
+    //    "BrushLimitHex",
+    //    "\xBE\x00\x00\x00\x00\xF7\xE6\x89\xD6\xC1\xEE\x03\x81\xFE",
+    //    "x????xxxxxxxxx",
+    //    14,
+    //    PATCH_IMMEDIATE,
+    //    "\x00\x40\x00\x00"
+    //}
 };
 #endif //_WIN32
 
@@ -186,6 +205,8 @@ int CEnginePatch::ApplyPatch()
         unsigned long iNewProtection = PAGE_EXECUTE_READWRITE;
 #else //POSIX
         // http://man7.org/linux/man-pages/man2/mprotect.2.html
+        unsigned long iOldProtection = PROT_READ | PROT_EXEC;
+        unsigned long iNewProtection = PROT_READ | PROT_WRITE | PROT_EXEC;
 #endif //_WIN32
 
         if (CEngineBinary::SetMemoryProtection(pMemory, m_iLength, iNewProtection, &iOldProtection))

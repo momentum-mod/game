@@ -6,6 +6,12 @@
 #include "cbase.h"
 #include "tier0/platform.h"
 
+#ifdef POSIX
+// Addresses must be aligned to page size for linux
+#define LALIGN(addr) (void*)((uintptr_t)(addr) & ~(getpagesize() - 1))
+#define LALDIF(addr) ((uintptr_t)(addr) % getpagesize())
+#endif
+
 class CEngineBinary : CAutoGameSystem
 {
 public:
