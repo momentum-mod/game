@@ -215,7 +215,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 
     if (pOther && !pOther->IsPlayer())
     {
-        UTIL_DecalTrace(pTrace, "Scorch");
+        UTIL_DecalTrace(pTrace, "StickyScorch");
     }
 
     SetThink(&CMomStickybomb::SUB_Remove);
