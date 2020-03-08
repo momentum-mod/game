@@ -82,6 +82,17 @@ CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 
 CMomentumStickybombLauncher::~CMomentumStickybombLauncher()
 {
+    if (m_iStickybombCount)
+    {
+        FOR_EACH_VEC(m_Stickybombs, i)
+        {
+            const auto pStickybomb = m_Stickybombs[i];
+            if (pStickybomb)
+            {
+                pStickybomb->Destroy(true);
+            }
+        }
+    }
 }
 
 void CMomentumStickybombLauncher::Precache()
