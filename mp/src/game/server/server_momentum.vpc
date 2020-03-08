@@ -28,7 +28,7 @@ $Project "Server (Momentum)"
             {
                 $File "$SRCDIR\game\shared\momentum\util\engine_patch.h"
                 $File "$SRCDIR\game\shared\momentum\util\engine_patch.cpp"
-				{
+                {
                     $Configuration
                     {
                         $Compiler

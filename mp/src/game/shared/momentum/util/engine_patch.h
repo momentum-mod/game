@@ -19,7 +19,7 @@ public:
     static void* GetModuleBase() { return m_pModuleBase; }
     static size_t GetModuleSize() { return m_iModuleSize; }
 
-	static void ApplyAllPatches();
+    static void ApplyAllPatches();
 
 private:
     static void* m_pModuleBase;
@@ -47,10 +47,10 @@ private:
 
     char *m_pSignature;
     char *m_pMask;
-	char *m_pPatch;
+    char *m_pPatch;
 
     size_t m_iOffset;
     size_t m_iLength;
 
-	bool m_bImmediate;
+    bool m_bImmediate;
 };
