@@ -76,18 +76,10 @@ bool CHudStickyCharge::ShouldDraw()
 
     const auto pWeapon = pPlayer->GetActiveWeapon();
 
-    if (!pWeapon)
+    if (!pWeapon || pWeapon->GetWeaponID() != WEAPON_STICKYLAUNCHER)
         return false;
 
-    if (pWeapon->GetWeaponID() != WEAPON_STICKYLAUNCHER)
-    {
-        return false;
-    }
-    else
-    {
-        if (!m_pLauncher)
-            m_pLauncher = static_cast<CMomentumStickybombLauncher *>(pWeapon);
-    }
+    m_pLauncher = static_cast<CMomentumStickybombLauncher *>(pWeapon);
 
     if (!mom_sj_charge_enable.GetBool())
         return false;
