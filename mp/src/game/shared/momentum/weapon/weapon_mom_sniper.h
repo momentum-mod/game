@@ -15,8 +15,6 @@ class CMomentumSniper : public CWeaponBaseGun
 
     CMomentumSniper();
 
-    void Precache() override;
-
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
     void Drop(const Vector &vecVelocity) OVERRIDE;

@@ -13,9 +13,7 @@ WeaponData
     "bucket_position"   "1"
 
     "clip_size"         "10"
-
     "weight"            "30"
-    "item_flags"        "0"
 
     "ModelData"
     {
@@ -23,13 +21,11 @@ WeaponData
         "world" "models/weapons/mom_sniper.mdl"
     }
 
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    // Sounds for the weapon.
     SoundData
     {
-        //"reload"          "Weapon_AWP.Reload"
-        //"empty"               "Default.ClipEmpty_Rifle"
         "single_shot"       "Weapon_Scout.Single"
-        special3            Default.Zoom
+        "zoom"              "Default.Zoom"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
@@ -49,14 +45,6 @@ WeaponData
         {
                 "font"      "WeaponIconsSmall"
                 "character"     "n"
-        }
-        "autoaim"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
         }
     }
 }
