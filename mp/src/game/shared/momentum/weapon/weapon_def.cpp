@@ -37,12 +37,16 @@ WeaponScriptDefinition::WeaponScriptDefinition()
     iCrosshairDeltaDistance = 0;
     iCrosshairMinDistance = 0;
 
+    pKVWeaponModels = nullptr;
     pKVWeaponParticles = nullptr;
     pKVWeaponSounds = nullptr;
 }
 
 WeaponScriptDefinition::~WeaponScriptDefinition()
 {
+    if (pKVWeaponModels)
+        pKVWeaponModels->deleteThis();
+
     if (pKVWeaponSounds)
         pKVWeaponSounds->deleteThis();
 
@@ -73,6 +77,13 @@ void WeaponScriptDefinition::Parse(KeyValues *pKvInput)
     iCrosshairMinDistance = pKvInput->GetInt("CrosshairMinDistance", 4);
     iCrosshairDeltaDistance = pKvInput->GetInt("CrosshairDeltaDistance", 3);
 
+    if (pKVWeaponModels)
+    {
+        pKVWeaponModels->deleteThis();
+        pKVWeaponModels = nullptr;
+    }
+    pKVWeaponModels = pKvInput->FindKey("ModelData", true)->MakeCopy();
+
     if (pKVWeaponSounds)
     {
         pKVWeaponSounds->deleteThis();
@@ -86,15 +97,22 @@ void WeaponScriptDefinition::Parse(KeyValues *pKvInput)
         pKVWeaponParticles = nullptr;
     }
     pKVWeaponParticles = pKvInput->FindKey("ParticleData", true)->MakeCopy();
-
-#ifdef GAME_DLL
-    // Model bounds are rounded to the nearest integer, then extended by 1
-    engine->ForceModelBounds(szWorldModel, Vector(-15, -12, -18), Vector(44, 16, 19));
-#endif
 }
 
 void WeaponScriptDefinition::Precache()
 {
+#ifdef GAME_DLL
+    // Model bounds are rounded to the nearest integer, then extended by 1
+    engine->ForceModelBounds(szWorldModel, Vector(-15, -12, -18), Vector(44, 16, 19));
+#endif
+
+    FOR_EACH_VALUE(pKVWeaponModels, pKvModel)
+    {
+        const auto pWepMdl = pKvModel->GetString();
+        if (pWepMdl && pWepMdl[0])
+            CBaseEntity::PrecacheModel(pWepMdl);
+    }
+
     FOR_EACH_VALUE(pKVWeaponSounds, pKvSound)
     {
         const auto pSoundStr = pKvSound->GetString();

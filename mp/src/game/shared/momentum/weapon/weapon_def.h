@@ -38,6 +38,8 @@ struct WeaponScriptDefinition
     int iCrosshairMinDistance;
     int iCrosshairDeltaDistance;
 
+    // Weapon models
+    KeyValues *pKVWeaponModels;
     // Particle effects of weapons
     KeyValues *pKVWeaponParticles;
     // Sound Data
