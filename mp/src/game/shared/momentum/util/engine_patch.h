@@ -1,8 +1,7 @@
-#pragma once
 //------------------------------------------------------------------------------------
 // Functions used to find patterns of bytes in the engine's memory to hook or patch
-//------------------------------------------------------------------------------------
-//
+//-----------------------------------------------------------------------------------
+#pragma once
 
 class CEngineBinary : CAutoGameSystem
 {
@@ -17,26 +16,20 @@ public:
 
     static bool SetMemoryProtection(void*, size_t, int);
 
-    static void* GetModuleBase() { return moduleBase; }
-    static size_t GetModuleSize() { return moduleSize; }
+    static void* GetModuleBase() { return m_pModuleBase; }
+    static size_t GetModuleSize() { return m_iModuleSize; }
+
+	static void ApplyAllPatches();
 
 private:
-    static void* moduleBase;
-    static size_t moduleSize;
+    static void* m_pModuleBase;
+    static size_t m_iModuleSize;
 };
 
 enum PatchType
 {
     PATCH_IMMEDIATE = true,
     PATCH_REFERENCE = false
-};
-
-enum PatchStatus
-{
-    PATCH_SUCCESS,
-    PATCH_MEMPROTECT_FAIL,
-    PATCH_INVALID_SIGNATURE,
-    PATCH_NO_VALUE
 };
 
 class CEnginePatch
@@ -47,17 +40,17 @@ public:
     CEnginePatch(const char*, char*, char*, size_t, bool, float);
     CEnginePatch(const char*, char*, char*, size_t, bool, char*);
 
-    int ApplyPatch();
-    static void ApplyAll();
-
-    const char* GetName() { return m_sName; }
+    void ApplyPatch();
 
 private:
-    const char* m_sName;
+    const char *m_sName;
+
     char *m_pSignature;
-    const char *m_pMask;
+    char *m_pMask;
+	char *m_pPatch;
+
     size_t m_iOffset;
-    bool m_bImmediate;
-    char* m_pPatch;
     size_t m_iLength;
+
+	bool m_bImmediate;
 };

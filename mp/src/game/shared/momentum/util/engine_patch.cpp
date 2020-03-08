@@ -1,6 +1,3 @@
-//------------------------------------------------------------------------------------
-// Functions used to find patterns of bytes in the engine's memory to hook or patch
-//------------------------------------------------------------------------------------
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "Windows.h"
@@ -23,28 +20,105 @@
 #include "util/os_utils.h"
 #include "engine_patch.h"
 
-void* CEngineBinary::moduleBase = nullptr;
-size_t CEngineBinary::moduleSize;
+// Engine Patch format:
+//==============================
+// m_sName:         Patch name
+// m_pSignature:    Memory signature
+// m_pMask:         Signature mask
+// m_iOffset:       Patch offset
+// m_bImmediate:    Immediate or referenced variable
+// m_pPatch:        Patch bytes (int/float/char*)
+//==============================
+#ifdef _WIN32
+CEnginePatch g_EnginePatches[] =
+{
+	// Prevent the culling of skyboxes at high FOVs
+	// https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
+	// TODO: Use a value derived from FOV instead
+	{
+		"SkyboxCulling",
+		"\xF3\x0F\x59\x15\x00\x00\x00\x00\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
+		"xxxx????xxxxxxxx",
+		16,
+		PATCH_REFERENCE,
+		-1.0f
+	},
+	// Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
+	//{
+	//    "BrushLimit",
+	//    "\xC1\xEF\x03\x81\xFF\x00\x00\x00\x00",
+	//    "xxxxx????",
+	//    5,
+	//    PATCH_IMMEDIATE,
+	//    16384
+	//},
+	// The same patch as above but using a pure hex value
+	//{
+	//    "BrushLimitHex",
+	//    "\xC1\xEF\x03\x81\xFF\x00\x00\x00\x00",
+	//    "xxxxx????",
+	//    5,
+	//    PATCH_IMMEDIATE,
+	//    "\x00\x40\x00\x00"
+	//}
+};
+#elif __linux__
+CEnginePatch g_EnginePatches[] =
+{
+	// Prevent the culling of skyboxes at high FOVs
+	// https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
+	// TODO: Use a value derived from FOV instead
+	{
+		"SkyboxCulling",
+		"\xF3\x0F\x59\x0D\x00\x00\x00\x00\xF3\x0F\x58\xC2\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
+		"xxxx????xxxxxxxxxxxx",
+		20,
+		PATCH_REFERENCE,
+		-1.0f
+	},
+	// Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
+	//{
+	//    "BrushLimit",
+	//    "\xBE\x00\x00\x00\x00\xF7\xE6\x89\xD6\xC1\xEE\x03\x81\xFE",
+	//    "x????xxxxxxxxx",
+	//    14,
+	//    PATCH_IMMEDIATE,
+	//    16384
+	//},
+	// The same patch as above but using a pure hex value
+	//{
+	//    "BrushLimitHex",
+	//    "\xBE\x00\x00\x00\x00\xF7\xE6\x89\xD6\xC1\xEE\x03\x81\xFE",
+	//    "x????xxxxxxxxx",
+	//    14,
+	//    PATCH_IMMEDIATE,
+	//    "\x00\x40\x00\x00"
+	//}
+};
+#endif //_WIN32
 
 CEngineBinary::CEngineBinary() : CAutoGameSystem("CEngineBinary")
 {
 }
 
+void* CEngineBinary::m_pModuleBase = nullptr;
+size_t CEngineBinary::m_iModuleSize = 0;
+
 // Get the engine's base address and size
 bool CEngineBinary::Init()
 {
 #ifdef _WIN32
-    HMODULE handle = GetModuleHandleA("engine.dll");
+    HMODULE handle = GetModuleHandleA(ENGINE_DLL_NAME);
     if (!handle)
         return false;
 
     MODULEINFO info;
     GetModuleInformation(GetCurrentProcess(), handle, &info, sizeof(info));
 
-    moduleBase = info.lpBaseOfDll;
-    moduleSize = info.SizeOfImage;
+    m_pModuleBase = info.lpBaseOfDll;
+    m_iModuleSize = info.SizeOfImage;
 #else //POSIX
-    if (GetModuleInformation(ENGINE_DLL_NAME, &moduleBase, &moduleSize))
+    if (GetModuleInformation(ENGINE_DLL_NAME, &m_pModuleBase, &m_iModuleSize))
         return false;
 #endif //_WIN32
 
@@ -53,7 +127,9 @@ bool CEngineBinary::Init()
 
 void CEngineBinary::PostInit()
 {
-    CEnginePatch::ApplyAll();
+#if !defined (OSX) // No OSX patches
+    ApplyAllPatches();
+#endif // (OSX)
 }
 
 inline bool CEngineBinary::DataCompare(const char* data, const char* pattern, const char* mask)
@@ -72,11 +148,11 @@ inline bool CEngineBinary::DataCompare(const char* data, const char* pattern, co
 void* CEngineBinary::FindPattern(const char* pattern, const char* mask, size_t offset)
 {
     auto maskLength = strlen(mask);
-    for (size_t i = 0; i <= moduleSize - maskLength; ++i)
+    for (size_t i = 0; i <= m_iModuleSize - maskLength; ++i)
     {
-        auto addr = reinterpret_cast<char*>(moduleBase) + i;
+        auto addr = reinterpret_cast<char*>(m_pModuleBase) + i;
         if (DataCompare(addr, pattern, mask))
-            return const_cast<void*>(reinterpret_cast<const void*>(addr + offset));
+            return reinterpret_cast<void*>(addr + offset);
     }
 
     return nullptr;
@@ -108,116 +184,21 @@ bool CEngineBinary::SetMemoryProtection(void* pAddress, size_t iLength, int iPro
 #endif //_WIN32
 }
 
-CEngineBinary g_EngineBinary;
-
-// Engine Patch format:
-//==============================
-// m_sName:         Patch name
-// m_pSignature:    Memory signature
-// m_pMask:         Signature mask
-// m_iOffset:       Patch offset
-// m_bImmediate:    Immediate or referenced variable
-// m_pPatch:        Patch bytes (int/float/char*)
-//==============================
-#ifdef _WIN32
-CEnginePatch g_EnginePatches[] =
+void CEngineBinary::ApplyAllPatches()
 {
-    // Prevent the culling of skyboxes at high FOVs
-    // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
-    // TODO: Use a value derived from FOV instead
-    {
-        "SkyboxCulling",
-        "\xF3\x0F\x59\x15\x00\x00\x00\x00\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
-        "xxxx????xxxxxxxx",
-        16,
-        PATCH_REFERENCE,
-        -1.0f
-    },
-    // Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
-    //{
-    //    "BrushLimit",
-    //    "\xC1\xEF\x03\x81\xFF\x00\x00\x00\x00",
-    //    "xxxxx????",
-    //    5,
-    //    PATCH_IMMEDIATE,
-    //    16384
-    //},
-    // The same patch as above but using a pure hex value
-    //{
-    //    "BrushLimitHex",
-    //    "\xC1\xEF\x03\x81\xFF\x00\x00\x00\x00",
-    //    "xxxxx????",
-    //    5,
-    //    PATCH_IMMEDIATE,
-    //    "\x00\x40\x00\x00"
-    //}
-};
-#elif __linux__
-CEnginePatch g_EnginePatches[] =
-{
-    // Prevent the culling of skyboxes at high FOVs
-    // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
-    // TODO: Use a value derived from FOV instead
-    {
-        "SkyboxCulling",
-        "\xF3\x0F\x59\x0D\x00\x00\x00\x00\xF3\x0F\x58\xC2\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
-        "xxxx????xxxxxxxxxxxx",
-        20,
-        PATCH_REFERENCE,
-        -1.0f
-    },
-    // Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
-    //{
-    //    "BrushLimit",
-    //    "\xBE\x00\x00\x00\x00\xF7\xE6\x89\xD6\xC1\xEE\x03\x81\xFE",
-    //    "x????xxxxxxxxx",
-    //    14,
-    //    PATCH_IMMEDIATE,
-    //    16384
-    //},
-    // The same patch as above but using a pure hex value
-    //{
-    //    "BrushLimitHex",
-    //    "\xBE\x00\x00\x00\x00\xF7\xE6\x89\xD6\xC1\xEE\x03\x81\xFE",
-    //    "x????xxxxxxxxx",
-    //    14,
-    //    PATCH_IMMEDIATE,
-    //    "\x00\x40\x00\x00"
-    //}
-};
-#endif //_WIN32
-
-void CEnginePatch::ApplyAll()
-{
-#if !defined (OSX) // No OSX patches
-    int err;
-
-    for (int i = 0; i < sizeof(g_EnginePatches) / sizeof(*g_EnginePatches); i++)
-    {
-        err = g_EnginePatches[i].ApplyPatch();
-        switch (err)
-        {
-        case PATCH_SUCCESS:
-            DevLog("Engine patch \"%s\" applied successfully\n", g_EnginePatches[i].GetName());
-            break;
-        case PATCH_MEMPROTECT_FAIL:
-            Warning("Engine patch \"%s\" FAILED: Could not override memory protection\n", g_EnginePatches[i].GetName());
-            break;
-        case PATCH_INVALID_SIGNATURE:
-            Warning("Engine patch \"%s\" FAILED: Could not find signature\n", g_EnginePatches[i].GetName());
-            break;
-        case PATCH_NO_VALUE:
-            Warning("Engine patch \"%s\" FAILED: No value provided\n", g_EnginePatches[i].GetName());
-        }
-    }
-#endif // (OSX)
+	for (int i = 0; i < sizeof(g_EnginePatches) / sizeof(*g_EnginePatches); i++)
+		g_EnginePatches[i].ApplyPatch();
 }
 
-// Apply a patch to engine memory
-int CEnginePatch::ApplyPatch()
+CEngineBinary g_EngineBinary;
+
+void CEnginePatch::ApplyPatch()
 {
-    if (!m_pPatch)
-        return PATCH_NO_VALUE;
+	if (!m_pPatch)
+	{
+		Warning("Engine patch \"%s\" FAILED: No value provided\n", m_sName);
+		return;
+	}
 
     void* addr = CEngineBinary::FindPattern(m_pSignature, m_pMask, m_iOffset);
 
@@ -232,14 +213,16 @@ int CEnginePatch::ApplyPatch()
 
             CEngineBinary::SetMemoryProtection(pMemory, m_iLength, MEM_READ|MEM_EXEC);
 
-            return PATCH_SUCCESS;
+			DevLog("Engine patch \"%s\" applied successfully\n", m_sName);
+			return;
         }
-        return PATCH_MEMPROTECT_FAIL;
+        Warning("Engine patch \"%s\" FAILED: Could not override memory protection\n", m_sName);
+		return;
     }
-    return PATCH_INVALID_SIGNATURE;
+	Warning("Engine patch \"%s\" FAILED: Could not find signature\n", m_sName);
+	return;
 }
 
-// Constructors
 CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate)
 {
     m_sName = name;
