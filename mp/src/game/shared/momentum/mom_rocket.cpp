@@ -78,9 +78,7 @@ void CMomRocket::CreateTrailParticles()
     const bool bIsTF2Trail = mom_rj_trail.GetInt() == 2;
     const char *pAttachmentName = bIsMomModel ? "0" : "trail";
 
-    const auto pWepScript = g_pWeaponDef->GetWeaponScript(WEAPON_ROCKETLAUNCHER);
-
-    const char *pParticle = pWepScript->pKVWeaponParticles->GetString(bIsTF2Trail ? "RocketTrail_TF2" : "RocketTrail");
+    const char *pParticle = g_pWeaponDef->GetWeaponParticle(WEAPON_ROCKETLAUNCHER, bIsTF2Trail ? "RocketTrail_TF2" : "RocketTrail");
 
     // MOM_TODO REMOVEME
     if (mom_rj_trail.GetInt() == 3)
@@ -93,9 +91,7 @@ void CMomRocket::CreateTrailParticles()
 
 void CMomRocket::StopTrailSound()
 {
-    const auto pWepInfo = g_pWeaponDef->GetWeaponScript(WEAPON_ROCKETLAUNCHER);
-
-    StopSound(pWepInfo->pKVWeaponSounds->GetString("RocketTrail"));
+    StopSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "RocketTrail"));
 }
 
 void CMomRocket::Destroy(bool bShowFizzleSprite)
@@ -188,8 +184,7 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
 
     if (mom_rj_trail_sound_enable.GetBool())
     {
-        const auto pWepInfo = g_pWeaponDef->GetWeaponScript(WEAPON_ROCKETLAUNCHER);
-        pRocket->EmitSound(pWepInfo->pKVWeaponSounds->GetString("RocketTrail"));
+        pRocket->EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "RocketTrail"));
     }
 
     return pRocket;

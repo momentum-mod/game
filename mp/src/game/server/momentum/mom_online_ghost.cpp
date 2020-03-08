@@ -172,9 +172,7 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
     // Play the paintgun sound
     if (mom_paintgun_shoot_sound.GetBool())
     {
-        const auto pWeaponScript = g_pWeaponDef->GetWeaponScript(WEAPON_PAINTGUN);
-
-        const char *shootsound = pWeaponScript->pKVWeaponSounds->GetString("single_shot");
+        const char *shootsound = g_pWeaponDef->GetWeaponSound(WEAPON_PAINTGUN, "single_shot");
         if (!shootsound || !shootsound[0])
             return;
 
@@ -186,7 +184,7 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
     }
 }
 
-void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket&packet)
+void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket &packet)
 {
     trace_t tr;
     Vector vForward;
@@ -198,10 +196,10 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket&packet)
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 {
-    const auto pGrenadeInfo = g_pWeaponDef->GetWeaponScript(WEAPON_GRENADE);
+    const auto pGrenadeWorldMdl = g_pWeaponDef->GetWeaponModel(WEAPON_GRENADE, "world");
     // Vector values stored in a QAngle, shhh~
     Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
-    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
+    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeWorldMdl);
     grenade->SetDamage(0.0f); // These grenades should not do damage
 }
 
