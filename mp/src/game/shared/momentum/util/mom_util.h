@@ -63,7 +63,4 @@ namespace MomUtil
     // Check to see if a file exists via a known hash for it. Handles reading the file and getting its hash.
     bool FileExists(const char *pFileName, const char *pFileHash, const char *pPath = "GAME");
     bool MapThumbnailExists(const char *pMapName);
-
-    void KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker, CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut);
-    void KnifeSmack(const trace_t &tr_in, CBaseEntity *pSoundSource, const QAngle &lookAng, const bool bStab);
 };

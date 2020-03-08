@@ -35,6 +35,9 @@ class CKnife : public CWeaponBase
 
     WeaponID_t GetWeaponID() const OVERRIDE { return WEAPON_KNIFE; }
 
+    static void KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker, CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut);
+    static void KnifeSmack(const trace_t &tr_in, CBaseEntity *pSoundSource, const QAngle &lookAng, const bool bStab);
+
 private:
     trace_t m_trHit;
     EHANDLE m_pTraceHitEnt;
