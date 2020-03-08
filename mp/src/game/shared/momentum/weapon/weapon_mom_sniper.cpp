@@ -24,18 +24,12 @@ CMomentumSniper::CMomentumSniper()
     m_iPrimaryAmmoType = AMMO_TYPE_SNIPER;
 }
 
-void CMomentumSniper::Precache()
-{
-    BaseClass::Precache();
-
-    PrecacheScriptSound("Default.Zoom");
-}
-
 void CMomentumSniper::Drop(const Vector &vecVelocity)
 {
     const auto pPlayer = GetPlayerOwner();
     if (pPlayer)
         pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV());
+
     BaseClass::Drop(vecVelocity);
 }
 
@@ -76,7 +70,7 @@ void CMomentumSniper::SecondaryAttack()
     // If this isn't guarded, the sound will be emitted twice, once by the server and once by the client.
     // Let the server play it since if only the client plays it, it's liable to get played twice cause of
     // a prediction error. joy.
-    EmitSound("Default.Zoom"); // zoom sound
+    EmitSound(GetWeaponSound("zoom"));
 #endif
 }
 
