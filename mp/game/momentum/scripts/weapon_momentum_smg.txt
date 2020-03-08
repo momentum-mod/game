@@ -5,9 +5,7 @@ WeaponData
     "BuiltRightHanded"          "1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#MOM_Weapon_SMG"
-    "viewmodel"         "models/weapons/v_smg_old.mdl"
-    "playermodel"       "models/weapons/v_smg_old.mdl"
+    "printname"         "#MOM_Weapon_SMG" 
     
     "anim_prefix"       "anim"
     "bucket"            "0"
@@ -17,6 +15,12 @@ WeaponData
 
     "weight"            "26"
     "item_flags"        "0"
+
+    "ModelData"
+    {
+        "view"  "models/weapons/v_smg_old.mdl"
+        "world" "models/weapons/v_smg_old.mdl"
+    }
 
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData

@@ -6,8 +6,6 @@ WeaponData
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Pistol"
-    "viewmodel"         "models/weapons/v_mom_pistol.mdl"
-    "playermodel"       "models/weapons/w_mom_pistol.mdl"
     "anim_prefix"       "anim"
     "bucket"            "1"
     "bucket_position"   "0"
@@ -16,6 +14,12 @@ WeaponData
 
     "weight"            "5"
     "item_flags"        "0"
+
+    "ModelData"
+    {
+        "view"  "models/weapons/v_mom_pistol.mdl"
+        "world" "models/weapons/w_mom_pistol.mdl"
+    }
 
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
