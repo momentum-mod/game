@@ -10,14 +10,14 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomentumPistol, DT_MomentumPistol)
 
 BEGIN_NETWORK_TABLE(CMomentumPistol, DT_MomentumPistol)
 #ifdef CLIENT_DLL
-RecvPropBool(RECVINFO(m_bBurstMode))
+    RecvPropBool(RECVINFO(m_bBurstMode))
 #else
-SendPropBool(SENDINFO(m_bBurstMode))
+    SendPropBool(SENDINFO(m_bBurstMode))
 #endif
-END_NETWORK_TABLE()
+END_NETWORK_TABLE();
 
 BEGIN_PREDICTION_DATA(CMomentumPistol)
-END_PREDICTION_DATA()
+END_PREDICTION_DATA();
 
 LINK_ENTITY_TO_CLASS(weapon_momentum_pistol, CMomentumPistol);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_pistol);
@@ -27,7 +27,7 @@ CMomentumPistol::CMomentumPistol()
 {
     m_iPistolShotsFired = 0;
     m_flPistolShoot = 0.0f;
-    m_flAccuracy = 0.9;
+    m_flAccuracy = 0.9f;
     m_flLastFire = gpGlobals->curtime;
 
     m_iPrimaryAmmoType = AMMO_TYPE_PISTOL;
@@ -42,13 +42,6 @@ void CMomentumPistol::Spawn()
     m_flPistolShoot = 0.0f;
     m_flNextPrimaryAttack = 0.0f;
     m_flNextSecondaryAttack = 0.0f;
-}
-
-void CMomentumPistol::Precache()
-{
-    BaseClass::Precache();
-    // MOM_TODO: Determine if this is the effect we want
-    // PrecacheParticleSystem("weapon_muzzle_smoke");
 }
 
 bool CMomentumPistol::Deploy()

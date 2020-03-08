@@ -16,7 +16,6 @@ class CMomentumPistol : public CWeaponBaseGun
     CMomentumPistol();
 
     void Spawn() OVERRIDE;
-    void Precache() OVERRIDE;
 
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
