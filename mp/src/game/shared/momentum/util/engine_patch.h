@@ -3,8 +3,6 @@
 // Functions used to find patterns of bytes in the engine's memory to hook or patch
 //------------------------------------------------------------------------------------
 //
-#include "cbase.h"
-#include "tier0/platform.h"
 
 class CEngineBinary : CAutoGameSystem
 {

@@ -27,9 +27,8 @@ $Project "Server (Momentum)"
             $Folder "Util"
             {
                 $File "$SRCDIR\game\shared\momentum\util\engine_patch.h"
-                
                 $File "$SRCDIR\game\shared\momentum\util\engine_patch.cpp"
-                {
+				{
                     $Configuration
                     {
                         $Compiler
@@ -38,20 +37,8 @@ $Project "Server (Momentum)"
                         }
                     }
                 }
-                
                 $File "momentum\tickset.h"
-
                 $File "momentum\tickset.cpp"
-                {
-                    $Configuration
-                    {
-                        $Compiler
-                        {
-                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-                        }
-                    }
-                }
-                
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.h"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.cpp"
