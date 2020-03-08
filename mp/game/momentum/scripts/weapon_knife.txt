@@ -24,12 +24,14 @@ WeaponData
         "world" "models/weapons/w_knife_t.mdl"
     }
 
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
     {
-        "reload"            "Default.Reload"
-        "empty"             "Default.ClipEmpty_Rifle"
-        "single_shot"       "Weapon_Deagle.Single"
+        "deploy"  "Weapon_Knife.Deploy"
+
+        "swish"   "Weapon_Knife.Slash"    // Swinging the knife through air
+        "stab"    "Weapon_Knife.Stab"     // Hit a player/ghost using stab (+attack2)
+        "hit"     "Weapon_Knife.Hit"      // Hit a player/ghost using normal (+attack)
+        "hit_wall" "Weapon_Knife.HitWall" // Hit a wall using stab or normal
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
@@ -54,14 +56,6 @@ WeaponData
                 "height"    "15"
         }
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"
