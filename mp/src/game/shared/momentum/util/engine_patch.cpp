@@ -127,9 +127,7 @@ bool CEngineBinary::Init()
 
 void CEngineBinary::PostInit()
 {
-#if !defined (OSX) // No OSX patches
     ApplyAllPatches();
-#endif // (OSX)
 }
 
 inline bool CEngineBinary::DataCompare(const char* data, const char* pattern, const char* mask)
@@ -186,8 +184,10 @@ bool CEngineBinary::SetMemoryProtection(void* pAddress, size_t iLength, int iPro
 
 void CEngineBinary::ApplyAllPatches()
 {
+#if !defined (OSX) // No OSX patches
     for (int i = 0; i < sizeof(g_EnginePatches) / sizeof(*g_EnginePatches); i++)
         g_EnginePatches[i].ApplyPatch();
+#endif
 }
 
 CEngineBinary g_EngineBinary;
