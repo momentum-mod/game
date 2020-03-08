@@ -26,6 +26,7 @@ WeaponData
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
     {
+        "bounce" "Grenade.Bounce"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
@@ -52,14 +53,6 @@ WeaponData
 				"character"	"g"
 		}
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"

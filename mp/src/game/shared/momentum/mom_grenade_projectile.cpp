@@ -1,38 +1,48 @@
 #include "cbase.h"
 #include "mom_grenade_projectile.h"
 
+#include "weapon/weapon_def.h"
+
 #ifndef CLIENT_DLL
-#include "soundent.h"
 #include "te_effect_dispatch.h"
 #include "momentum/mom_player.h"
 #endif
 
 #include "tier0/memdbgon.h"
 
-#ifndef CLIENT_DLL
+#define GRENADE_GRAVITY         0.4f
+#define GRENADE_ELASTICITY      0.45f
+#define GRENADE_FRICTION        0.2f
 
-BEGIN_DATADESC(CMomGrenadeProjectile)
-DEFINE_THINKFUNC(DangerSoundThink),
-END_DATADESC()
+IMPLEMENT_NETWORKCLASS_ALIASED(MomGrenadeProjectile, DT_MomGrenadeProjectile);
 
-#endif
-
-IMPLEMENT_NETWORKCLASS_ALIASED(MomGrenadeProjectile, DT_MomGrenadeProjectile)
 BEGIN_NETWORK_TABLE(CMomGrenadeProjectile, DT_MomGrenadeProjectile)
 #ifdef CLIENT_DLL
-RecvPropVector(RECVINFO(m_vInitialVelocity))
+    RecvPropVector(RECVINFO(m_vInitialVelocity))
 #else
-SendPropVector(SENDINFO(m_vInitialVelocity),
-               20,    // nbits
-               0,     // flags
-               -3000, // low value
-               3000   // high value
-               )
+    SendPropVector(SENDINFO(m_vInitialVelocity), 20, 0, -3000, 3000)
 #endif
-END_NETWORK_TABLE()
+END_NETWORK_TABLE();
 
 LINK_ENTITY_TO_CLASS(mom_grenade_projectile, CMomGrenadeProjectile);
 PRECACHE_WEAPON_REGISTER(mom_grenade_projectile);
+
+void CMomGrenadeProjectile::Spawn()
+{
+    BaseClass::Spawn();
+#ifdef CLIENT_DLL
+    m_flSpawnTime = gpGlobals->curtime;
+#else
+    SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_GRENADE, "world"));
+
+    SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
+    SetSolidFlags(FSOLID_NOT_STANDABLE);
+    SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_CUSTOM);
+    SetSolid(SOLID_BBOX); // So it will collide with physics props!
+    // smaller, cube bounding box so we rest on the ground
+    SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
+#endif
+}
 
 #ifdef CLIENT_DLL
 
@@ -58,62 +68,11 @@ void CMomGrenadeProjectile::PostDataUpdate(DataUpdateType_t type)
     }
 }
 
-int CMomGrenadeProjectile::DrawModel(int flags)
-{
-    // During the first half-second of our life, don't draw ourselves if he's
-    // still playing his throw animation.
-    // (better yet, we could draw ourselves in his hand).
-    if (GetThrower() != C_BasePlayer::GetLocalPlayer())
-    {
-        if (gpGlobals->curtime - m_flSpawnTime < 0.5)
-        {
-            // MOM_TODO: inspect the below
-            // CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer*>( GetThrower() );
-            // if ( pPlayer && pPlayer->m_PlayerAnimState->IsThrowingGrenade() )
-            //{
-            //	return 0;
-            //}
-        }
-    }
-
-    return BaseClass::DrawModel(flags);
-}
-
-void CMomGrenadeProjectile::Spawn()
-{
-    m_flSpawnTime = gpGlobals->curtime;
-    BaseClass::Spawn();
-}
-
 #else
 
-void CMomGrenadeProjectile::Spawn()
+CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner)
 {
-    BaseClass::Spawn();
-
-    SetCollisionGroup(COLLISION_GROUP_PROJECTILE);
-    SetSolidFlags(FSOLID_NOT_STANDABLE);
-    SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_CUSTOM);
-    SetSolid(SOLID_BBOX); // So it will collide with physics props!
-    // smaller, cube bounding box so we rest on the ground
-    SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
-}
-
-void CMomGrenadeProjectile::Precache()
-{
-    PrecacheScriptSound("MOMGrenade.Bounce");
-
-    BaseClass::Precache();
-}
-
-void CMomGrenadeProjectile::BounceSound() { EmitSound("MOMGrenade.Bounce"); }
-
-CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, const QAngle &angles,
-                                                     const Vector &velocity, const AngularImpulse &angVelocity,
-                                                     CBaseEntity *pOwner, const char *pModel)
-{
-    auto *pGrenade = static_cast<CMomGrenadeProjectile *>(CreateNoSpawn("mom_grenade_projectile", position, angles, pOwner));
-    pGrenade->SetModel(pModel);
+    const auto pGrenade = dynamic_cast<CMomGrenadeProjectile *>(CreateNoSpawn("mom_grenade_projectile", position, angles, pOwner));
     DispatchSpawn(pGrenade);
 
     // Set the timer for 1 second less than requested. We're going to issue a SOUND_DANGER
@@ -123,9 +82,9 @@ CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, con
     pGrenade->SetupInitialTransmittedGrenadeVelocity(velocity);
     pGrenade->SetThrower(pOwner);
 
-    pGrenade->SetGravity(GetGrenadeGravity());
-    pGrenade->SetFriction(GetGrenadeFriction());
-    pGrenade->SetElasticity(GetGrenadeElasticity());
+    pGrenade->SetGravity(GRENADE_GRAVITY);
+    pGrenade->SetFriction(GRENADE_FRICTION);
+    pGrenade->SetElasticity(GRENADE_ELASTICITY);
 
     if (pOwner->IsPlayer())
     {
@@ -136,41 +95,27 @@ CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, con
     {
         pGrenade->SetDamage(0.0f);
     }
+
     pGrenade->SetDamageRadius(pGrenade->GetDamage() * 3.5f);
     pGrenade->ApplyLocalAngularVelocityImpulse(angVelocity);
 
-    // make NPCs afaid of it while in the air
-    pGrenade->SetThink(&CMomGrenadeProjectile::DangerSoundThink);
+    pGrenade->SetThink(&CMomGrenadeProjectile::DetonateThink);
     pGrenade->SetNextThink(gpGlobals->curtime);
 
     return pGrenade;
 }
 
-void CMomGrenadeProjectile::DangerSoundThink(void)
+void CMomGrenadeProjectile::DetonateThink()
 {
-    if (!IsInWorld())
-    {
-        Remove();
-        return;
-    }
-
     if (gpGlobals->curtime > m_flDetonateTime)
     {
         Detonate();
         return;
     }
 
-    CSoundEnt::InsertSound(SOUND_DANGER, GetAbsOrigin() + GetAbsVelocity() * 0.5, GetAbsVelocity().Length(), 0.2);
-
-    SetNextThink(gpGlobals->curtime + 0.2);
-
-    if (GetWaterLevel() != 0)
-    {
-        SetAbsVelocity(GetAbsVelocity() * 0.5);
-    }
+    DangerSoundThink();
 }
 
-// Sets the time at which the grenade will explode
 void CMomGrenadeProjectile::SetDetonateTimerLength(float timer) { m_flDetonateTime = gpGlobals->curtime + timer; }
 
 void CMomGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity)
@@ -203,9 +148,7 @@ void CMomGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector &ve
         if (trace.m_pEnt->m_iHealth <= 0)
         {
             // slow our flight a little bit
-            Vector vel = GetAbsVelocity();
-
-            vel *= 0.4;
+            Vector vel = GetAbsVelocity() * 0.4f;
 
             SetAbsVelocity(vel);
             return;
@@ -284,7 +227,7 @@ void CMomGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector &ve
         }
     }
 
-    BounceSound();
+    EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_GRENADE, "bounce"));
 }
 
 void CMomGrenadeProjectile::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity)

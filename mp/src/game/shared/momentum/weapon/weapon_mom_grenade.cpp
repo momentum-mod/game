@@ -284,6 +284,6 @@ void CMomentumGrenade::EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles
     DecalPacket packet = DecalPacket::Bullet(vecSrc, vecThrowOnline, AMMO_TYPE_GRENADE, angImpulse.y, 0, 0.0f);
     g_pMomentumGhostClient->SendDecalPacket(&packet);
 
-    CMomGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pOwner, GetWorldModel());
+    CMomGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pOwner);
 }
 #endif
