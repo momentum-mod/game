@@ -6,9 +6,18 @@
 #include "Windows.h"
 #include "Psapi.h"
 #pragma comment(lib, "psapi.lib")
+#define MEM_READ 1
+#define MEM_WRITE 2
+#define MEM_EXEC 4
 #elif defined (POSIX)
 #include "util/os_utils.h"
 #include "sys/mman.h"
+#define MEM_READ PROT_READ
+#define MEM_WRITE PROT_WRITE
+#define MEM_EXEC PROT_EXEC
+// Addresses must be aligned to page size for linux
+#define LALIGN(addr) (void*)((uintptr_t)(addr) & ~(getpagesize() - 1))
+#define LALDIF(addr) ((uintptr_t)(addr) % getpagesize())
 #endif
 
 #include "engine_patch.h"
@@ -72,10 +81,27 @@ void* CEngineBinary::FindPattern(const char* pattern, const char* mask, size_t o
     return nullptr;
 }
 
-int CEngineBinary::SetMemoryProtection(void* pAddress, size_t iLength, int iProtection, unsigned long* pOriginalProtection)
+bool CEngineBinary::SetMemoryProtection(void* pAddress, size_t iLength, int iProtection)
 {
 #ifdef _WIN32
-    return VirtualProtect(pAddress, iLength, iProtection, pOriginalProtection);
+	// VirtualProtect requires a valid pointer to store the old protection value
+	DWORD tmp;
+	DWORD prot;
+
+	switch (iProtection)
+	{
+	case MEM_READ:
+		prot = PAGE_READONLY; break;
+	case MEM_READ | MEM_WRITE:
+		prot = PAGE_READWRITE; break;
+	case MEM_READ | MEM_EXEC:
+		prot = PAGE_EXECUTE_READ; break;
+	default:
+	case MEM_READ | MEM_WRITE | MEM_EXEC:
+		prot = PAGE_EXECUTE_READWRITE; break;
+	}
+
+    return VirtualProtect(pAddress, iLength, prot, &tmp);
 #else //POSIX
     return mprotect(LALIGN(pAddress), iLength + LALDIF(pAddress), iProtection) == 0;
 #endif //_WIN32
@@ -199,22 +225,11 @@ int CEnginePatch::ApplyPatch()
         auto pMemory = m_bImmediate ? (uintptr_t*)addr : *reinterpret_cast<uintptr_t**>(addr);
 
         // Memory is write-protected so it needs to be lifted before the patch is applied
-#ifdef _WIN32
-        // https://docs.microsoft.com/en-us/windows/win32/memory/memory-protection-constants
-        unsigned long iOldProtection;
-        unsigned long iNewProtection = PAGE_EXECUTE_READWRITE;
-#else //POSIX
-        // http://man7.org/linux/man-pages/man2/mprotect.2.html
-        unsigned long iOldProtection = PROT_READ | PROT_EXEC;
-        unsigned long iNewProtection = PROT_READ | PROT_WRITE | PROT_EXEC;
-#endif //_WIN32
-
-        if (CEngineBinary::SetMemoryProtection(pMemory, m_iLength, iNewProtection, &iOldProtection))
+        if (CEngineBinary::SetMemoryProtection(pMemory, m_iLength, MEM_READ|MEM_WRITE|MEM_EXEC))
         {
             Q_memcpy(pMemory, m_pPatch, m_iLength);
 
-            // Restore old protections
-            CEngineBinary::SetMemoryProtection(pMemory, m_iLength, iOldProtection, &iNewProtection);
+            CEngineBinary::SetMemoryProtection(pMemory, m_iLength, MEM_READ|MEM_EXEC);
 
             return PATCH_SUCCESS;
         }
