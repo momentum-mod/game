@@ -90,6 +90,11 @@ public:
     void ReloadWeaponDefinitions();
     void ReloadWeaponDefinition(WeaponID_t id);
 
+    // Convenience methods
+    const char *GetWeaponParticle(WeaponID_t id, const char *pKey);
+    const char *GetWeaponModel(WeaponID_t id, const char *pKey);
+    const char *GetWeaponSound(WeaponID_t id, const char *pKey);
+
     WeaponDefinition *GetWeaponDefinition(WeaponID_t id);
     WeaponScriptDefinition *GetWeaponScript(WeaponID_t id);
 
