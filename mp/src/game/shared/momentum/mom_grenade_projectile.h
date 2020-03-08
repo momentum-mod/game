@@ -12,39 +12,22 @@ class CMomGrenadeProjectile : public CBaseGrenade
     DECLARE_CLASS(CMomGrenadeProjectile, CBaseGrenade);
     DECLARE_NETWORKCLASS();
 
-#ifndef CLIENT_DLL
-    // Overrides.
     void Spawn() OVERRIDE;
-    void Precache() OVERRIDE;
-    void BounceSound(void) OVERRIDE;
-#else
-    virtual void Spawn() OVERRIDE;
-#endif
 
-  public:
     // This gets sent to the client and placed in the client's interpolation history
     // so the projectile starts out moving right off the bat.
     CNetworkVector(m_vInitialVelocity);
 
 #ifdef CLIENT_DLL
-    CMomGrenadeProjectile() {}
-    CMomGrenadeProjectile(const CMomGrenadeProjectile &) {}
-    virtual int DrawModel(int flags) OVERRIDE;
     virtual void PostDataUpdate(DataUpdateType_t type) OVERRIDE;
-
-    float m_flSpawnTime;
 #else
-    DECLARE_DATADESC();
 
-    // Constants for all CS Grenades
-    static inline float GetGrenadeGravity() { return 0.4f; }
-    static inline const float GetGrenadeFriction() { return 0.2f; }
-    static inline const float GetGrenadeElasticity() { return 0.45f; }
+    static CMomGrenadeProjectile *Create(const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner);
 
     // Think function to emit danger sounds for the AI
-    void DangerSoundThink(void);
+    void DetonateThink();
 
-    virtual float GetShakeAmplitude(void) OVERRIDE { return 0.0f; }
+    virtual float GetShakeAmplitude() OVERRIDE { return 0.0f; }
     virtual void Splash() OVERRIDE;
 
     // Specify what velocity we want the grenade to have on the client immediately.
@@ -61,10 +44,5 @@ class CMomGrenadeProjectile : public CBaseGrenade
     virtual void ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity) OVERRIDE;
 
     float m_flDetonateTime;
-
-  public:
-    // Grenade stuff.
-    static CMomGrenadeProjectile *Create(const Vector &position, const QAngle &angles, const Vector &velocity,
-                                         const AngularImpulse &angVelocity, CBaseEntity *pOwner, const char *pModelPath);
 #endif
 };
