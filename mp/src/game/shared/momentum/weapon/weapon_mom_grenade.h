@@ -15,46 +15,33 @@ class CMomentumGrenade : public CWeaponBase
 
     CMomentumGrenade();
 
-    virtual void Precache();
+    WeaponID_t GetWeaponID() const OVERRIDE { return WEAPON_GRENADE; }
 
-    bool Deploy();
-    bool Holster(CBaseCombatWeapon *pSwitchingTo);
+    bool Deploy() override;
+    bool Holster(CBaseCombatWeapon *pSwitchingTo) override;
 
-    void PrimaryAttack();
-    void SecondaryAttack();
+    void PrimaryAttack() override;
+    void SecondaryAttack() override;
 
-    bool Reload();
+    bool Reload() override;
 
-    virtual void ItemPostFrame();
+    void ItemPostFrame() override;
 
     void DecrementAmmo(CBaseCombatCharacter *pOwner);
     virtual void StartGrenadeThrow();
     virtual void ThrowGrenade();
-    virtual void DropGrenade();
 
     bool IsPinPulled() const { return m_bPinPulled; }
     bool IsBeingThrown() const { return m_fThrowTime > 0; }
 
-#ifndef CLIENT_DLL
-    DECLARE_DATADESC();
-
-    virtual bool AllowsAutoSwitchFrom(void) const;
-
-    int CapabilitiesGet();
-
-    // Each derived grenade class implements this.
-    virtual void EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel,
-                             AngularImpulse angImpulse, CBaseEntity *pOwner);
+#ifdef GAME_DLL
+    bool AllowsAutoSwitchFrom() const override { return !m_bPinPulled; }
+    int CapabilitiesGet() override { return bits_CAP_WEAPON_RANGE_ATTACK1; }
+    virtual void EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel, CBaseEntity *pOwner);
 #endif
 
   protected:
     CNetworkVar(bool, m_bRedraw);    // Draw the weapon again after throwing a grenade
     CNetworkVar(bool, m_bPinPulled); // Set to true when the pin has been pulled but the grenade hasn't been thrown yet.
-    CNetworkVar(float, m_fThrowTime); // the time at which the grenade will be thrown.  If this value is 0 then the time
-                                      // hasn't been set yet.
-
-  public:
-    CMomentumGrenade(const CMomentumGrenade &) {}
-
-    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_GRENADE; }
+    CNetworkVar(float, m_fThrowTime); // the time at which the grenade will be thrown.  If this value is 0 then the time hasn't been set yet.
 };
