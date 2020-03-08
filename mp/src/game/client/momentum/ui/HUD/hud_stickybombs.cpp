@@ -25,10 +25,8 @@ class CHudStickybombs : public CHudElement, public EditablePanel
 
     bool ShouldDraw() OVERRIDE;
     void OnThink() OVERRIDE;
-    void Reset() OVERRIDE;
 
   private:
-    CMomentumStickybombLauncher *m_pLauncher;
     Label *m_pStickyLabel;
 };
 
@@ -39,16 +37,9 @@ CHudStickybombs::CHudStickybombs(const char *pElementName)
 {
     m_pStickyLabel = new Label(this, "StickybombsLabel", "");
 
-    m_pLauncher = nullptr;
-
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
 
     LoadControlSettings("resource/ui/HudStickybombs.res");
-}
-
-void CHudStickybombs::Reset()
-{
-    m_pLauncher = nullptr;
 }
 
 bool CHudStickybombs::ShouldDraw()
@@ -71,13 +62,13 @@ void CHudStickybombs::OnThink()
     if (!pPlayer)
         return;
 
-    if (!m_pLauncher)
-        m_pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(pPlayer->GetActiveWeapon());
-
-    if (!m_pLauncher)
+    const auto pStickyPtr = pPlayer->GetWeapon(WEAPON_STICKYLAUNCHER);
+    if (!pStickyPtr)
         return;
 
-    const auto iStickybombs = m_pLauncher->GetStickybombCount();
+    const auto pStickylauncher = static_cast<CMomentumStickybombLauncher *>(pStickyPtr);
+
+    const auto iStickybombs = pStickylauncher->GetStickybombCount();
     if (mom_hud_sj_stickycount_autohide.GetBool())
     {
         m_pStickyLabel->SetVisible(iStickybombs > 0);
