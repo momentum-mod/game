@@ -19,6 +19,8 @@ WeaponData
     {
         "view"      "models/weapons/v_models/v_stickybomb_launcher_demo.mdl"
         "world"     "models/weapons/w_models/w_stickybomb_launcher.mdl"
+
+        "sticky"    "models/weapons/w_models/w_stickybomb.mdl"
     }
 
     // Sounds for the weapon.

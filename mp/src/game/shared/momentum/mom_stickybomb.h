@@ -20,7 +20,6 @@ class CMomStickybomb : public CMomExplosive
     void UpdateOnRemove() OVERRIDE;
 
     void Spawn() OVERRIDE;
-    void Precache() OVERRIDE;
 
     bool IsArmed() const;
 #ifdef CLIENT_DLL
