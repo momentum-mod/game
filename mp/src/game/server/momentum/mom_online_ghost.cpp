@@ -4,11 +4,11 @@
 
 #include "in_buttons.h"
 #include "fx_mom_shared.h"
-#include "util/mom_util.h"
 #include "mom_grenade_projectile.h"
 #include "mom_rocket.h"
 #include "te_effect_dispatch.h"
 #include "weapon/weapon_def.h"
+#include "weapon/weapon_knife.h"
 #include "ghost_client.h"
 #include "mom_stickybomb.h"
 
@@ -189,9 +189,9 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket &packet)
     trace_t tr;
     Vector vForward;
     // Trace data here, play miss sound and do damage if hit
-    MomUtil::KnifeTrace(packet.vOrigin, packet.vAngle, packet.data.knife.bStab, this, this, &tr, &vForward);
+    CKnife::KnifeTrace(packet.vOrigin, packet.vAngle, packet.data.knife.bStab, this, this, &tr, &vForward);
     // Play the smacking sounds and do the decal if it actually hit
-    MomUtil::KnifeSmack(tr, this, packet.vAngle, packet.data.knife.bStab);
+    CKnife::KnifeSmack(tr, this, packet.vAngle, packet.data.knife.bStab);
 }
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
