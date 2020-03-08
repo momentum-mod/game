@@ -54,8 +54,6 @@ class CWeaponBase : public CBaseCombatWeapon
 
     virtual float GetMaxSpeed() const; // What's the player's max speed while holding this weapon.
 
-    virtual void SetWeaponModelIndex(const char *pName);
-
   public:
 #if defined(CLIENT_DLL)
 
@@ -88,8 +86,7 @@ class CWeaponBase : public CBaseCombatWeapon
     bool IsUseable();
     bool CanDeploy() OVERRIDE;
     bool CanBeSelected() OVERRIDE;
-    virtual Activity GetDeployActivity();
-    bool DefaultDeploy(char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt) OVERRIDE;
+    bool DefaultDeploy(const char *szViewModel, const char *szWeaponModel, int iActivity, const char *szAnimExt) OVERRIDE;
     void DefaultTouch(CBaseEntity *pOther) OVERRIDE; // default weapon touch
     virtual bool DefaultPistolReload();
 

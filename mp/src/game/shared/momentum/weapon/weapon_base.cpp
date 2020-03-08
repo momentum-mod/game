@@ -254,39 +254,11 @@ void CWeaponBase::Precache()
     PrecacheScriptSound("Default.ClipEmpty_Rifle");
 }
 
-Activity CWeaponBase::GetDeployActivity(void)
+bool CWeaponBase::DefaultDeploy(const char *szViewModel, const char *szWeaponModel, int iActivity, const char *szAnimExt)
 {
-    return ACT_VM_DRAW;
-}
+    m_iWorldModelIndex = modelinfo->GetModelIndex(szWeaponModel);
 
-bool CWeaponBase::DefaultDeploy(char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt)
-{
-    // Msg( "deploy %s at %f\n", GetClassname(), gpGlobals->curtime );
-    CMomentumPlayer *pOwner = GetPlayerOwner();
-    if (!pOwner)
-    {
-        return false;
-    }
-
-    pOwner->SetAnimationExtension(szAnimExt);
-
-    SetViewModel();
-    SendWeaponAnim(GetDeployActivity());
-
-    // Can't shoot again until we've finished deploying, but don't squash current delay as well
-    pOwner->SetNextAttack(gpGlobals->curtime + DeployTime());
-    m_flNextPrimaryAttack = Max<float>(m_flNextPrimaryAttack, gpGlobals->curtime + DeployTime());
-    m_flNextSecondaryAttack = Max<float>(m_flNextSecondaryAttack, gpGlobals->curtime + DeployTime());
-
-    SetWeaponVisible(true);
-    SetWeaponModelIndex(szWeaponModel);
-
-    return true;
-}
-
-void CWeaponBase::SetWeaponModelIndex(const char *pName)
-{
-    m_iWorldModelIndex = modelinfo->GetModelIndex(pName);
+    return BaseClass::DefaultDeploy(szViewModel, szWeaponModel, iActivity, szAnimExt);
 }
 
 bool CWeaponBase::CanBeSelected(void)
