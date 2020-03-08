@@ -7,8 +7,6 @@ WeaponData
         
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Sniper"
-    "viewmodel"         "models/weapons/mom_sniper.mdl"
-    "playermodel"       "models/weapons/mom_sniper.mdl"
     
     "anim_prefix"       "anim"
     "bucket"            "0"
@@ -18,6 +16,12 @@ WeaponData
 
     "weight"            "30"
     "item_flags"        "0"
+
+    "ModelData"
+    {
+        "view"  "models/weapons/mom_sniper.mdl"
+        "world" "models/weapons/mom_sniper.mdl"
+    }
 
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData

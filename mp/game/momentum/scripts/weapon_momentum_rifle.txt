@@ -6,9 +6,7 @@ WeaponData
     "PlayerAnimationExtension"  "ak"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#MOM_Weapon_Rifle"
-    "viewmodel"         "models/weapons/v_irifle.mdl"
-    "playermodel"       "models/weapons/w_irifle.mdl"
+    "printname"         "#MOM_Weapon_Rifle"  
     
     "anim_prefix"      "anim"
     "bucket"            "0"
@@ -18,6 +16,12 @@ WeaponData
 
     "weight"            "25"
     "item_flags"        "0"
+
+    "ModelData"
+    {
+        "view"  "models/weapons/v_irifle.mdl"
+        "world" "models/weapons/w_irifle.mdl"
+    }
 
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
