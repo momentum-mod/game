@@ -225,6 +225,21 @@ void CWeaponDef::ReloadWeaponDefinition(const WeaponID_t id)
 #endif
 }
 
+const char *CWeaponDef::GetWeaponParticle(WeaponID_t id, const char *pKey)
+{
+    return m_vecWeaponDefs[id]->m_WeaponScript.pKVWeaponParticles->GetString(pKey);
+}
+
+const char *CWeaponDef::GetWeaponModel(WeaponID_t id, const char *pKey)
+{
+    return m_vecWeaponDefs[id]->m_WeaponScript.pKVWeaponModels->GetString(pKey);
+}
+
+const char *CWeaponDef::GetWeaponSound(WeaponID_t id, const char *pKey)
+{
+    return m_vecWeaponDefs[id]->m_WeaponScript.pKVWeaponSounds->GetString(pKey);
+}
+
 WeaponDefinition *CWeaponDef::GetWeaponDefinition(const WeaponID_t id)
 {
     return m_vecWeaponDefs[id];
