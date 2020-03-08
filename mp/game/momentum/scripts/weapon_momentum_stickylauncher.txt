@@ -13,9 +13,7 @@ WeaponData
     "bucket_position"   "0"
 
     "clip_size"         "4"
-
     "weight"            "25"
-    "item_flags"        "0"
 
     "ModelData"
     {
@@ -75,14 +73,6 @@ WeaponData
                 "character"	"x"
         }
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"

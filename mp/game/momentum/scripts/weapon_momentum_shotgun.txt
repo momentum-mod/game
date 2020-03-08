@@ -12,9 +12,7 @@ WeaponData
     "bucket_position"   "1"
 
     "clip_size"         "7"
-
     "weight"            "20"
-    "item_flags"        "0"
 
     "ModelData"
     {
@@ -22,13 +20,10 @@ WeaponData
         "world" "models/weapons/mom_shotgun.mdl"
     }
 
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    // Sounds for the weapon.
     SoundData
     {
-        //"reload"          "Default.Reload"
-        //"empty"               "Default.ClipEmpty_Rifle"
         "single_shot"       "Weapon_Shotgun.Single"
-        special3            Default.Zoom
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
@@ -55,14 +50,6 @@ WeaponData
 				"character"	"h"
 		}
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"

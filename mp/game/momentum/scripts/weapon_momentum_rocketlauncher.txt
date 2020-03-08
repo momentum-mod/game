@@ -83,13 +83,5 @@ WeaponData
             "width"     "24"
             "height"    "24"
         }
-        "autoaim"
-        {
-            "file"      "sprites/crosshairs"
-            "x"         "0"
-            "y"         "48"
-            "width"     "24"
-            "height"    "24"
-        }
     }
 }

@@ -23,7 +23,7 @@ WeaponData
         "world" "models/weapons/w_mom_paintgun.mdl"
     }
 
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    // Sounds for the weapon.
     SoundData
     {
         "single_shot"       "Weapon_Paintgun.Single"
@@ -54,14 +54,6 @@ WeaponData
 				"character"	"t"
 		}
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"
