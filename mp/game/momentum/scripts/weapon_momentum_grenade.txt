@@ -16,7 +16,6 @@ WeaponData
     "default_clip"          "1"
 
     "weight"                  "2"
-    "ITEM_FLAG_EXHAUSTIBLE"   "1"
 
     "ModelData"
     {

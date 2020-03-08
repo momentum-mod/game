@@ -15,7 +15,6 @@ WeaponData
     "clip_size"         "4"
 
     "weight"            "25"
-    "item_flags"        "0"
 
     "ModelData"
     {
