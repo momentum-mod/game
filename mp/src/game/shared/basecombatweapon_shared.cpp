@@ -252,7 +252,7 @@ const char* CBaseCombatWeapon::GetWeaponSound(const char *pToken) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is ignored in the base class here*/ ) const
 {
-	return GetWeaponScript()->szViewModel;
+	return GetWeaponScript()->pKVWeaponModels->GetString("view");
 }
 
 //-----------------------------------------------------------------------------
@@ -260,7 +260,7 @@ const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetWorldModel( void ) const
 {
-	return GetWeaponScript()->szWorldModel;
+	return GetWeaponScript()->pKVWeaponModels->GetString("world");
 }
 
 //-----------------------------------------------------------------------------
