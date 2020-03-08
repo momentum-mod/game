@@ -20,6 +20,8 @@ WeaponData
     {
         "view"  "models/weapons/v_mom_rocketlauncher.mdl"
         "world" "models/weapons/w_mom_rocketlauncher.mdl"
+
+        "rocket" "models/weapons/w_missile.mdl"
     }
 
     // Sounds for the weapon

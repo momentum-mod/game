@@ -13,10 +13,6 @@
 #include "tier0/memdbgon.h"
 
 #define MOM_ROCKET_SPEED 1100.0f
-#define MOM_ROCKET_MODEL "models/weapons/w_missile.mdl"
-#define TF_ROCKET_MODEL "models/weapons/w_models/w_rocket.mdl"
-
-#define MOM_TRAIL_PARTICLE_B "mom_rocket_trail_b" // MOM_TODO REMOVEME
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomRocket, DT_MomRocket);
 
@@ -40,7 +36,7 @@ void CMomRocket::Spawn()
     BaseClass::Spawn();
 
 #ifdef GAME_DLL
-    SetModel(mom_rj_use_tf_rocketmodel.GetBool() ? TF_ROCKET_MODEL : MOM_ROCKET_MODEL);
+    SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_ROCKETLAUNCHER, "rocket"));
 
     SetMoveType(MOVETYPE_FLY, MOVECOLLIDE_FLY_CUSTOM);
     AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
@@ -51,14 +47,6 @@ void CMomRocket::Spawn()
     SetTouch(&CMomRocket::RocketTouch);
     SetNextThink(gpGlobals->curtime);
 #endif
-}
-
-void CMomRocket::Precache()
-{
-    BaseClass::Precache();
-
-    PrecacheModel(MOM_ROCKET_MODEL);
-    PrecacheModel(TF_ROCKET_MODEL);
 }
 
 #ifdef CLIENT_DLL
@@ -79,10 +67,6 @@ void CMomRocket::CreateTrailParticles()
     const char *pAttachmentName = bIsMomModel ? "0" : "trail";
 
     const char *pParticle = g_pWeaponDef->GetWeaponParticle(WEAPON_ROCKETLAUNCHER, bIsTF2Trail ? "RocketTrail_TF2" : "RocketTrail");
-
-    // MOM_TODO REMOVEME
-    if (mom_rj_trail.GetInt() == 3)
-        pParticle = MOM_TRAIL_PARTICLE_B;
 
     ParticleProp()->Create(pParticle, PATTACH_POINT_FOLLOW, pAttachmentName);
 }
