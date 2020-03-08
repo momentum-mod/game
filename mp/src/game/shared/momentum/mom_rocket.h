@@ -13,7 +13,6 @@ class CMomRocket : public CMomExplosive
     DECLARE_NETWORKCLASS();
 
     void Spawn() override;
-    void Precache() override;
 
 #ifdef CLIENT_DLL
     float GetDrawDelayTime() override;
