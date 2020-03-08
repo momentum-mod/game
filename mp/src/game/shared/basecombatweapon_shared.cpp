@@ -1214,10 +1214,8 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 //			*szAnimExt - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt )
+bool CBaseCombatWeapon::DefaultDeploy( const char *szViewModel, const char *szWeaponModel, int iActivity, const char *szAnimExt )
 {
-	// Msg( "deploy %s at %f\n", GetClassname(), gpGlobals->curtime );
-
 	// Weapons that don't autoswitch away when they run out of ammo 
 	// can still be deployed when they have no ammo.
 	if ( !HasAnyAmmo() && AllowsAutoSwitchFrom() )
@@ -1269,7 +1267,7 @@ selects and deploys each weapon as you pass it. (sjb)
 bool CBaseCombatWeapon::Deploy( )
 {
 	MDLCACHE_CRITICAL_SECTION();
-	bool bResult = DefaultDeploy( (char*)GetViewModel(), (char*)GetWorldModel(), GetDrawActivity(), (char*)GetAnimPrefix() );
+	bool bResult = DefaultDeploy( GetViewModel(), GetWorldModel(), GetDrawActivity(), GetAnimPrefix() );
 
 	// override pose parameters
 	PoseParameterOverride( false );
