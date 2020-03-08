@@ -25,7 +25,6 @@ CMomentumSMG::CMomentumSMG()
     m_iPrimaryAmmoType = AMMO_TYPE_SMG;
 }
 
-
 void CMomentumSMG::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();

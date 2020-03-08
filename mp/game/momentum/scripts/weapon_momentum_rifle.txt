@@ -13,9 +13,7 @@ WeaponData
     "bucket_position"   "3"
 
     "clip_size"         "30"
-
     "weight"            "25"
-    "item_flags"        "0"
 
     "ModelData"
     {
@@ -23,7 +21,7 @@ WeaponData
         "world" "models/weapons/w_irifle.mdl"
     }
 
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    // Sounds for the weapon.
     SoundData
     {
         "single_shot"       "Weapon_Rifle.Single"
@@ -54,14 +52,6 @@ WeaponData
 				"character"	"r"
 		}
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"
