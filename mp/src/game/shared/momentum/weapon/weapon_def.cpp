@@ -17,8 +17,6 @@
 WeaponScriptDefinition::WeaponScriptDefinition()
 {
     szPrintName[0] = 0;
-    szViewModel[0] = 0;
-    szWorldModel[0] = 0;
     szAnimationPrefix[0] = 0;
 
     iSlot = 0;
@@ -57,8 +55,6 @@ WeaponScriptDefinition::~WeaponScriptDefinition()
 void WeaponScriptDefinition::Parse(KeyValues *pKvInput)
 {
     Q_strncpy(szPrintName, pKvInput->GetString("printname", WEAPON_PRINTNAME_MISSING), MAX_WEAPON_STRING);
-    Q_strncpy(szViewModel, pKvInput->GetString("viewmodel"), MAX_WEAPON_STRING);
-    Q_strncpy(szWorldModel, pKvInput->GetString("playermodel"), MAX_WEAPON_STRING);
     Q_strncpy(szAnimationPrefix, pKvInput->GetString("anim_prefix"), MAX_WEAPON_PREFIX);
     iSlot = pKvInput->GetInt("bucket", 0);
     iPosition = pKvInput->GetInt("bucket_position", 0);
@@ -103,7 +99,7 @@ void WeaponScriptDefinition::Precache()
 {
 #ifdef GAME_DLL
     // Model bounds are rounded to the nearest integer, then extended by 1
-    engine->ForceModelBounds(szWorldModel, Vector(-15, -12, -18), Vector(44, 16, 19));
+    engine->ForceModelBounds(pKVWeaponModels->GetString("world"), Vector(-15, -12, -18), Vector(44, 16, 19));
 #endif
 
     FOR_EACH_VALUE(pKVWeaponModels, pKvModel)
