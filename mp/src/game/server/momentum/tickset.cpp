@@ -1,3 +1,4 @@
+#include "cbase.h"
 #include "tickset.h"
 #include "util/engine_patch.h"
 #include "mom_shareddefs.h"

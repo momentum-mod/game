@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 struct Tickrate
 {
     float fTickRate;

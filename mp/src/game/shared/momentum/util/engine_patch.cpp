@@ -10,7 +10,6 @@
 #define MEM_WRITE 2
 #define MEM_EXEC 4
 #elif defined (POSIX)
-#include "util/os_utils.h"
 #include "sys/mman.h"
 #define MEM_READ PROT_READ
 #define MEM_WRITE PROT_WRITE
@@ -20,6 +19,8 @@
 #define LALDIF(addr) ((uintptr_t)(addr) % getpagesize())
 #endif
 
+#include "cbase.h"
+#include "util/os_utils.h"
 #include "engine_patch.h"
 
 void* CEngineBinary::moduleBase = nullptr;
