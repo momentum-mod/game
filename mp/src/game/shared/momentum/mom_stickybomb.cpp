@@ -15,7 +15,6 @@
 
 #include "tier0/memdbgon.h"
 
-#define MOM_STICKYBOMB_MODEL "models/weapons/w_models/w_stickybomb.mdl"
 #define MOM_STICKYBOMB_RADIUS 146.0f
 #define MOM_STICKYBOMB_INITIAL_SPEED 900.0f
 #define MOM_STICKYBOMB_MAX_SPEED 2400.0f
@@ -71,7 +70,7 @@ void CMomStickybomb::Spawn()
     BaseClass::Spawn();
 
 #ifdef GAME_DLL
-    SetModel(MOM_STICKYBOMB_MODEL);
+    SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_STICKYLAUNCHER, "sticky"));
 
     SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
     SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
@@ -83,13 +82,6 @@ void CMomStickybomb::Spawn()
     SetFriction(MOM_STICKYBOMB_FRICTION);
     SetElasticity(MOM_STICKYBOMB_ELASTICITY);
 #endif
-}
-
-void CMomStickybomb::Precache()
-{
-    BaseClass::Precache();
-
-    PrecacheModel(MOM_STICKYBOMB_MODEL);
 }
 
 bool CMomStickybomb::IsArmed() const
