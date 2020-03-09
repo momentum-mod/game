@@ -67,6 +67,8 @@ static MAKE_TOGGLE_CONVAR_CV(mom_sj_charge_enable, "1", FCVAR_ARCHIVE,
 );
 #endif
 
+static ConVar mom_sj_buffer_window("mom_sj_buffer_window", "0.2", FCVAR_MAPPING, "Amount of time in seconds you can buffer a primary fire before you can shoot.", true, 0, true, 0.6f);
+
 CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 {
     m_flTimeToIdleAfterFire = 0.6f;
@@ -180,7 +182,6 @@ void CMomentumStickybombLauncher::ItemPostFrame()
 #ifdef CLIENT_DLL
     static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
 #endif
-
     BaseClass::ItemPostFrame();
 
     // Allow player to fire and detonate at the same time.
@@ -195,7 +196,7 @@ void CMomentumStickybombLauncher::ItemPostFrame()
     if (pOwner && !(pOwner->m_nButtons & IN_ATTACK))
     {
         // If M1 is released within the buffer zone before you can fire
-        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= MOM_STICKYLAUNCHER_BUFFER_WINDOW && m_bEarlyPrimaryFire)
+        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= mom_sj_buffer_window.GetFloat() && m_bEarlyPrimaryFire)
         {
             m_flChargeBeginTime = m_flNextPrimaryAttack;
         }
