@@ -19,6 +19,8 @@
 #define MOM_STICKYBOMB_MAX_CHARGE_VEL 2400
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
 
+#define MOM_STICKYLAUNCHER_BUFFER_WINDOW 0.2f
+
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
 BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
@@ -113,7 +115,7 @@ void CMomentumStickybombLauncher::WeaponIdle()
     static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
 #endif
 
-    if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool())
+    if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool() && m_flChargeBeginTime <= gpGlobals->curtime)
     {
         LaunchGrenade();
     }
@@ -152,6 +154,8 @@ void CMomentumStickybombLauncher::LaunchGrenade()
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
 
+    m_bEarlyPrimaryFire = false;
+
     DoFireEffects();
     WeaponSound(GetWeaponSound("single_shot"));
 
@@ -181,9 +185,27 @@ void CMomentumStickybombLauncher::ItemPostFrame()
 
     // Allow player to fire and detonate at the same time.
     CMomentumPlayer *pOwner = GetPlayerOwner();
+
+    // If M1 is pressed early
+    if (pOwner && pOwner->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack > gpGlobals->curtime)
+    {
+        m_bEarlyPrimaryFire = true;
+    }
+
     if (pOwner && !(pOwner->m_nButtons & IN_ATTACK))
     {
-        if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool())
+        // If M1 is released within the buffer zone before you can fire
+        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= MOM_STICKYLAUNCHER_BUFFER_WINDOW && m_bEarlyPrimaryFire)
+        {
+            m_flChargeBeginTime = m_flNextPrimaryAttack;
+        }
+        // Otherwise we missed the buffer
+        else
+        {
+            m_bEarlyPrimaryFire = false;
+        }
+
+        if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool() && m_flChargeBeginTime <= gpGlobals->curtime)
         {
             LaunchGrenade();
         }
