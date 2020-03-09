@@ -196,7 +196,7 @@ void CMomentumStickybombLauncher::ItemPostFrame()
     if (pOwner && !(pOwner->m_nButtons & IN_ATTACK))
     {
         // If M1 is released within the buffer zone before you can fire
-        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= mom_sj_buffer_window.GetFloat() && m_bEarlyPrimaryFire)
+        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= mom_sj_buffer_window.GetFloat() && m_bEarlyPrimaryFire && mom_sj_charge_enable.GetBool())
         {
             m_flChargeBeginTime = m_flNextPrimaryAttack;
         }
