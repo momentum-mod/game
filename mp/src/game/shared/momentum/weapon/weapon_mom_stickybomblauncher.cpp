@@ -19,8 +19,6 @@
 #define MOM_STICKYBOMB_MAX_CHARGE_VEL 2400
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
 
-#define MOM_STICKYLAUNCHER_BUFFER_WINDOW 0.2f
-
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
 BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
