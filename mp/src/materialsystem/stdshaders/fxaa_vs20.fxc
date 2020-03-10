@@ -1,0 +1,32 @@
+// Constants ========================================================================================
+#define FXAA_HLSL_3 1
+
+// Includes =========================================================================================
+#include "common_vs_fxc.h"
+
+// Samplers =========================================================================================
+const float2		rcpFrame			: register(SHADER_SPECIFIC_CONST_0);
+const float			subpix_shift		: register(SHADER_SPECIFIC_CONST_1);
+#define FXAA_SUBPIX_SHIFT (1.0/subpix_shift)
+
+// FXAA Library =====================================================================================
+#include "fxaa_vs20.h"
+
+// Structs ==========================================================================================
+struct VS_OUTPUT
+{
+	float4 pos       : POSITION0;
+	float4 texCoord  : TEXCOORD0;
+};
+
+// Main =============================================================================================
+VS_OUTPUT main(float4 Position : POSITION, 
+				  float2 TexCoord : TEXCOORD0)
+{
+	VS_OUTPUT o = ( VS_OUTPUT )0;
+
+	o.pos = Position;
+	o.texCoord = FxaaVertexShader( Position.xy, rcpFrame );
+  
+	return o;
+}

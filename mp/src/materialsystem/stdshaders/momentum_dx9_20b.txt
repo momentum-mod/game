@@ -1,6 +1,9 @@
 pbr_ps20b.fxc
 pbr_vs20b.fxc
 
+fxaa_ps20.fxc
+fxaa_vs20.fxc
+
 ////gauss_blur_3x3_ps30.fxc
 ////gauss_blur_3x3_vs30.fxc
 //

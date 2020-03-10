@@ -1,0 +1,4 @@
+"FXAA"
+{
+    "$framebuffer" "_rt_FullFrameFB"
+}
