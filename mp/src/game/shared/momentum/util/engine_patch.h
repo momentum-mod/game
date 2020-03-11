@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-class CEngineBinary : CAutoGameSystem
+class CEngineBinary : public CAutoGameSystem
 {
 public:
     CEngineBinary();
