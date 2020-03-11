@@ -29,12 +29,11 @@
 // m_bImmediate:    Immediate or referenced variable
 // m_pPatch:        Patch bytes (int/float/char*)
 //==============================
-#ifdef _WIN32
 CEnginePatch g_EnginePatches[] =
 {
+#ifdef _WIN32
     // Prevent the culling of skyboxes at high FOVs
     // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
-    // TODO: Use a value derived from FOV instead
     {
         "SkyboxCulling",
         "\xF3\x0F\x59\x15\x00\x00\x00\x00\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
@@ -61,13 +60,9 @@ CEnginePatch g_EnginePatches[] =
     //    PATCH_IMMEDIATE,
     //    "\x00\x40\x00\x00"
     //}
-};
 #elif __linux__
-CEnginePatch g_EnginePatches[] =
-{
     // Prevent the culling of skyboxes at high FOVs
     // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/gl_warp.cpp#L315
-    // TODO: Use a value derived from FOV instead
     {
         "SkyboxCulling",
         "\xF3\x0F\x59\x0D\x00\x00\x00\x00\xF3\x0F\x58\xC2\xF3\x0F\x58\xC1\xF3\x0F\x10\x0D",
@@ -94,8 +89,8 @@ CEnginePatch g_EnginePatches[] =
     //    PATCH_IMMEDIATE,
     //    "\x00\x40\x00\x00"
     //}
-};
 #endif //_WIN32
+};
 
 CEngineBinary::CEngineBinary() : CAutoGameSystem("CEngineBinary")
 {
@@ -214,13 +209,16 @@ void CEnginePatch::ApplyPatch()
             CEngineBinary::SetMemoryProtection(pMemory, m_iLength, MEM_READ|MEM_EXEC);
 
             DevLog("Engine patch \"%s\" applied successfully\n", m_sName);
-            return;
         }
-        Warning("Engine patch \"%s\" FAILED: Could not override memory protection\n", m_sName);
-        return;
+        else
+        {
+            Warning("Engine patch \"%s\" FAILED: Could not override memory protection\n", m_sName);
+        }
     }
-    Warning("Engine patch \"%s\" FAILED: Could not find signature\n", m_sName);
-    return;
+    else
+    {
+        Warning("Engine patch \"%s\" FAILED: Could not find signature\n", m_sName);
+    }
 }
 
 CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate)

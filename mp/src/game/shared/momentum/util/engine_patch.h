@@ -19,9 +19,9 @@ public:
     static void* GetModuleBase() { return m_pModuleBase; }
     static size_t GetModuleSize() { return m_iModuleSize; }
 
-    static void ApplyAllPatches();
-
 private:
+    void ApplyAllPatches();
+
     static void* m_pModuleBase;
     static size_t m_iModuleSize;
 };
