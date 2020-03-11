@@ -18,7 +18,7 @@ bool TickSet::m_bInGameUpdate = false;
 bool TickSet::TickInit()
 {
 #ifdef _WIN32
-    const char pattern[] = "\x8B\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\x00\xD9\x15\x00\x00\x00\x00\xDD\x05\x00\x00\x00\x00\xDB\xF1\xDD\x05";
+    const char *pattern = "\x8B\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\x00\xD9\x15\x00\x00\x00\x00\xDD\x05\x00\x00\x00\x00\xDB\xF1\xDD\x05";
     auto addr = reinterpret_cast<uintptr_t>(CEngineBinary::FindPattern(pattern, "xx????????????x?xx????xx????xxxx", 18));
     if (addr)
         interval_per_tick = *reinterpret_cast<float**>(addr);
@@ -27,7 +27,7 @@ bool TickSet::TickInit()
 #ifdef __linux__
 
     // mov ds:interval_per_tick, 3C75C28Fh         <-- float for 0.015
-    const char pattern[] = "\xC7\x05\x00\x00\x00\x00\x8F\xC2\x75\x3C\xE8";
+    const char *pattern = "\xC7\x05\x00\x00\x00\x00\x8F\xC2\x75\x3C\xE8";
     void* addr = CEngineBinary::FindPattern(pattern, "xx????xxxxx", 2);
     if (addr)
         interval_per_tick = *(float**)(addr); //MOM_TODO: fix pointer arithmetic on void pointer?
@@ -40,7 +40,7 @@ bool TickSet::TickInit()
     }
     else //valve updated engine, try to use search pattern...
     {
-        const char pattern[] = "\x8F\xC2\x75\x3C\x78\x00\x00\x0C\x6C\x00\x00\x00\x01\x00";
+        const char *pattern = "\x8F\xC2\x75\x3C\x78\x00\x00\x0C\x6C\x00\x00\x00\x01\x00";
         auto addr = reinterpret_cast<uintptr_t>(CEngineBinary::FindPattern(pattern, "xxxxx??xx???xx"));
         if (addr)
         {
