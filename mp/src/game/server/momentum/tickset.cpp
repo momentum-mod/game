@@ -4,6 +4,9 @@
 #include "mom_shareddefs.h"
 #include "tier0/platform.h"
 
+// memdbgon must be the last include file in a .cpp file!!!
+#include "tier0/memdbgon.h"
+
 float* TickSet::interval_per_tick = nullptr;
 const Tickrate TickSet::s_DefinedRates[] = {
     { 0.015f, "66" },
