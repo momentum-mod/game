@@ -54,6 +54,8 @@ private:
     vgui::Frame *m_pComparisonsFrame;
     C_RunComparisons *m_pBogusComparisonsPanel;
 
+    bool m_bComparisonsFrameIsFadingOut;
+
     //Determines what should pulse for the bogus panel
     int DetermineBogusPulse(Panel *panel) const;
 };

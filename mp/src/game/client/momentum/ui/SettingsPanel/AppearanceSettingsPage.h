@@ -46,4 +46,6 @@ private:
     vgui::TextEntry *m_pTrailLengthEntry;
     vgui::ColorPicker *m_pColorPicker;
     vgui::Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
+
+    bool m_bModelPreviewFrameIsFadingOut;
 };
