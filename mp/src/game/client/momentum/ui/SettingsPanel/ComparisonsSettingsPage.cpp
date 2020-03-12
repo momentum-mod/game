@@ -16,7 +16,8 @@
 
 using namespace vgui;
 
-ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pParent, "ComparisonsSettings")
+ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent)
+    : BaseClass(pParent, "ComparisonsSettings"), m_bComparisonsFrameIsFadingOut(false)
 {
     m_pCompareShow = new CvarToggleCheckButton(this, "CompareShow", "#MOM_Settings_Compare_Show", "mom_comparisons");
     m_pCompareShow->AddActionSignalTarget(this);
@@ -191,14 +192,20 @@ void ComparisonsSettingsPage::OnPageShow()
 
     if (!m_pComparisonsFrame)
         InitBogusComparePanel();
-    else if (!m_pComparisonsFrame->IsVisible())
+    else if (!m_pComparisonsFrame->IsVisible() || m_bComparisonsFrameIsFadingOut)
+    {
         m_pComparisonsFrame->Activate();
+        m_bComparisonsFrameIsFadingOut = false;
+    }
 }
 
 void ComparisonsSettingsPage::OnPageHide()
 {
     if (m_pComparisonsFrame)
+    {
         m_pComparisonsFrame->Close();
+        m_bComparisonsFrameIsFadingOut = true;
+    }
 }
 
 void ComparisonsSettingsPage::OnCheckboxChecked(Panel *p)

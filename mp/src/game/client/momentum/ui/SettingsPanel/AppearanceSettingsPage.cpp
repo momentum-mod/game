@@ -21,8 +21,8 @@ using namespace vgui;
     button->SetArmedColor(color, color); \
     button->SetSelectedColor(color, color);
 
-AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pParent, "AppearanceSettings"), ghost_color("mom_ghost_color"),
-ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), ghost_trail_length("mom_trail_length")
+AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pParent, "AppearanceSettings"), ghost_color("mom_ghost_color"), ghost_bodygroup("mom_ghost_bodygroup"),
+      ghost_trail_color("mom_trail_color"), ghost_trail_length("mom_trail_length"), m_bModelPreviewFrameIsFadingOut(false)
 {
     // Outer frame for the model preview
     m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
@@ -121,14 +121,20 @@ void AppearanceSettingsPage::LoadSettings()
 
 void AppearanceSettingsPage::OnPageShow()
 {
-    if (!m_pModelPreviewFrame->IsVisible())
+    if (!m_pModelPreviewFrame->IsVisible() || m_bModelPreviewFrameIsFadingOut)
+    {
         m_pModelPreviewFrame->Activate();
+        m_bModelPreviewFrameIsFadingOut = false;
+    }
 }
 
 void AppearanceSettingsPage::OnPageHide()
 {
     if (m_pModelPreviewFrame)
+    {
         m_pModelPreviewFrame->Close();
+        m_bModelPreviewFrameIsFadingOut = true;
+    }
 }
 
 void AppearanceSettingsPage::OnMainDialogClosed()
