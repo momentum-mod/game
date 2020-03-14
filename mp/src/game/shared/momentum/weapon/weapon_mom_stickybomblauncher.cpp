@@ -65,7 +65,7 @@ static MAKE_TOGGLE_CONVAR_CV(mom_sj_charge_enable, "1", FCVAR_ARCHIVE,
 );
 #endif
 
-static ConVar mom_sj_buffer_window("mom_sj_buffer_window", "0.2", FCVAR_MAPPING, "Amount of time in seconds you can buffer a primary fire before you can shoot.", true, 0, true, 0.6f);
+static ConVar mom_sj_buffer_window("mom_sj_buffer_window", "0.05", FCVAR_MAPPING, "Amount of time in seconds you can buffer a primary fire before you can shoot.", true, 0, true, 0.6f);
 
 CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 {
