@@ -1,0 +1,15 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/shadertest/pbr_asset1_diffuse"
+	"$bumpmap" "models/shadertest/pbr_asset1_n"
+
+	"$envmap" "env_cubemap"
+	"$envmapcontrast" "0.01"
+	"$envmapsaturation" "0.7"
+
+	"$phong" "1"
+	"$phongexponenttexture" "models/shadertest/pbr_asset1_g"
+	"$phongfresnelranges" "[0 0.5 0.3]"
+	"$phongalbedotint" "1"
+	"$phongboost" "0.2"
+}

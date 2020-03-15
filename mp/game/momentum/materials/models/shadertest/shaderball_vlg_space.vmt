@@ -1,0 +1,14 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/shadertest/shaderball_space_d"
+	"$bumpmap" "models/shadertest/shaderball_space_n"
+
+	"$detail" "models/shadertest/shaderball_space_e"
+	"$detailblendmode" "1"
+	"$detailscale" "1"
+	"$detailblendfactor" "3"
+
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "1"
+	"$envmaptint" "[0.80 0.60 0.40]"
+}

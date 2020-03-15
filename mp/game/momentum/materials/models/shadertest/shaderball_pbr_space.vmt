@@ -1,0 +1,8 @@
+PBR
+{
+	$basetexture		"models/shadertest/shaderball_space_bc"
+	$bumpmap			"models/shadertest/shaderball_space_n"
+	$mraotexture		"models/shadertest/shaderball_space_mrao"
+	$emissiontexture	"models/shadertest/shaderball_space_e"
+	$model				"1"
+}

@@ -1,0 +1,6 @@
+PBR
+{
+	$basetexture	"models/shadertest/shaderball_default_bc"
+	$mraotexture	"models/shadertest/shaderball_default_mrao"
+	$model			"1"
+}
