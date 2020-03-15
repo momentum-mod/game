@@ -1,0 +1,7 @@
+unlitgeneric
+{
+	$hdrcompressedtexture "skybox/sky_cape_hillbk"
+	$basetexture "skybox/sky_cape_hillbk"
+	$nofog 1
+	$ignorez 1
+}
