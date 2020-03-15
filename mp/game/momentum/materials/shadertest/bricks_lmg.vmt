@@ -1,0 +1,9 @@
+LightmappedGeneric
+{
+	"$basetexture" "shadertest/bricks_lmg_d"
+	"$bumpmap" "shadertest/bricks_lmg_n"
+
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "1"
+	"$envmaptint" "[0.02 0.02 0.02]"
+}

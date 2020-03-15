@@ -1,0 +1,14 @@
+PBR
+{
+	"$basetexture" "shadertest/pbr_tile_d"
+	"$bumpmap" "shadertest/pbr_tile_n"
+	"$surfaceprop" "default"
+
+	"$envmap" "env_cubemap"
+
+	"$mraotexture" "shadertest/pbr_tile_mrao"
+	"$parallax" "1"
+	"$parallaxdepth" "0.03"
+	"$parallaxcenter" "0.0"
+
+}
