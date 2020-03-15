@@ -1,0 +1,6 @@
+PBR
+{
+	"$basetexture" "shadertest/bricks_pbr_bc"
+	"$bumpmap" "shadertest/bricks_pbr_n"
+	"$mraotexture" "shadertest/bricks_pbr_mrao"
+}

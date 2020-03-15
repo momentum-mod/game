@@ -1,0 +1,10 @@
+PBR
+{
+	"$basetexture" "shadertest/pbr_bcolor"
+	"$bumpmap" "shadertest/dev_test_normal"
+	"$surfaceprop" "Metal"
+
+	"$envmap" "env_cubemap"
+
+	"$mraotexture" "shadertest/pbr_mrao"
+}

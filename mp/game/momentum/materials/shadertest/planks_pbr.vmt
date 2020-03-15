@@ -1,0 +1,6 @@
+PBR
+{
+	"$basetexture" "shadertest/planks_pbr_bc"
+	"$bumpmap" "shadertest/planks_pbr_n"
+	"$mraotexture" "shadertest/planks_pbr_mrao"
+}
