@@ -1,0 +1,12 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/shadertest/fence_diffuse_opacity"
+	"$bumpmap" "models/shadertest/fence_normal_gloss"
+
+	"$alphatest" "1"
+	"$alphatestreference" "0.3"
+
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "1"
+	"$envmaptint" "[0.4 0.4 0.4]"
+}

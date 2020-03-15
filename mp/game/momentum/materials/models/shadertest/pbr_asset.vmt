@@ -1,0 +1,9 @@
+PBR
+{
+	$basetexture "models\shadertest\pbr_asset1_d"
+	$mraotexture "models\shadertest\pbr_asset1_mrao"
+	$bumpmap "models\shadertest\pbr_asset1_n"
+	
+	$envmap "env_cubemap"
+	$model "1"
+}

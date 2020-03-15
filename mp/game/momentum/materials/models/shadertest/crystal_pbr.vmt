@@ -1,0 +1,8 @@
+PBR
+{
+	$basetexture		"models/shadertest/crystal_bc"
+	$bumpmap			"models/shadertest/crystal_n"
+	$mraotexture		"models/shadertest/crystal_mrao"
+	$emissiontexture	"models/shadertest/crystal_e"
+	$model				"1"
+}
