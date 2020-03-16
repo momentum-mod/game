@@ -156,7 +156,8 @@ float3 ambientLookupLightmap(float3 normal, float3 EnvAmbientCube[6], float3 tex
     return diffuseLighting;
 }
 
-float3 ambientLookup(float3 normal, float3 EnvAmbientCube[6], float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation){
+float3 ambientLookup(float3 normal, float3 EnvAmbientCube[6], float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation)
+{
 #if LIGHTMAPPED
     return ambientLookupLightmap(normal, EnvAmbientCube, textureNormal, lightmapTexCoord1And2, lightmapTexCoord3, LightmapSampler, g_DiffuseModulation);
 #else
