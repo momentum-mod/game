@@ -8,6 +8,5 @@
 *  Add .fxc files to the file lists `momentum_dx9_30.txt` and `momentum_dx9_20b.txt`
 
 # HOW TO COMPILE SHADERS
-*  Change the `GAMEDIR` variable in `buildmomentumshaders.bat` to the absolute path of your game folder (where `gameinfo.txt` is located)
 *  Change the `SDKBINDIR` variable in `buildmomentumshaders.bat` to the absolute path of your bin folder (where `shadercompile.exe` is located)
 *  Run `buildmomentumshaders.bat`
