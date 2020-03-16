@@ -155,15 +155,9 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         Assert(info.mraoTexture >= 0);
         LoadTexture(info.mraoTexture, 0);
 
-        //bool bIsBaseTextureTranslucent = false;
         if (params[info.baseTexture]->IsDefined())
         {
             LoadTexture(info.baseTexture, TEXTUREFLAGS_SRGB);
-
-            //if (params[info.baseTexture]->GetTextureValue()->IsTranslucent())
-            //{
-            //    bIsBaseTextureTranslucent = true;
-            //}
         }
 
         if (params[info.specularTexture]->IsDefined())
@@ -171,8 +165,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             LoadTexture(info.specularTexture, TEXTUREFLAGS_SRGB);
         }
 
-        // Set material var2 flags specific to models
-        if (IS_FLAG_SET(MATERIAL_VAR_MODEL))
+        if (IS_FLAG_SET(MATERIAL_VAR_MODEL)) // Set material var2 flags specific to models
         {
             SET_FLAGS2(MATERIAL_VAR2_SUPPORTS_HW_SKINNING);             // Required for skinning
             SET_FLAGS2(MATERIAL_VAR2_DIFFUSE_BUMPMAPPED_MODEL);         // Required for dynamic lighting
@@ -182,9 +175,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             SET_FLAGS2(MATERIAL_VAR2_SUPPORTS_FLASHLIGHT);              // Required for flashlight
             SET_FLAGS2(MATERIAL_VAR2_USE_FLASHLIGHT);                   // Required for flashlight
         }
-
-        // Set material var2 flags specific to brushes
-        else
+        else // Set material var2 flags specific to brushes
         {
             SET_FLAGS2(MATERIAL_VAR2_LIGHTING_LIGHTMAP);                // Required for lightmaps
             SET_FLAGS2(MATERIAL_VAR2_LIGHTING_BUMPED_LIGHTMAP);         // Required for lightmaps
@@ -226,37 +217,40 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 pShaderShadow->AlphaFunc(SHADER_ALPHAFUNC_GEQUAL, params[info.alphaTestReference]->GetFloatValue());
             }
 
-            if ( bHasFlashlight ) {
-                pShaderShadow->EnableBlending( true );
-                pShaderShadow->BlendFunc( SHADER_BLEND_ONE, SHADER_BLEND_ONE );        // Additive blending
-            } else {
+            if (bHasFlashlight )
+            {
+                pShaderShadow->EnableBlending(true);
+                pShaderShadow->BlendFunc(SHADER_BLEND_ONE, SHADER_BLEND_ONE); // Additive blending
+            }
+            else
+            {
                 SetDefaultBlendingShadowState(info.baseTexture, true);
             }
 
             int nShadowFilterMode = bHasFlashlight ? g_pHardwareConfig->GetShadowFilterMode() : 0;
 
             // Setting up samplers
-            pShaderShadow->EnableTexture(SAMPLER_BASETEXTURE, true);  // Basecolor texture
-            pShaderShadow->EnableSRGBRead(SAMPLER_BASETEXTURE, true); // Basecolor is sRGB
-            pShaderShadow->EnableTexture(SAMPLER_EMISSIVE, true); // Emission texture
-            pShaderShadow->EnableSRGBRead(SAMPLER_EMISSIVE, true); // Emission is sRGB
-            pShaderShadow->EnableTexture(SAMPLER_LIGHTMAP, true); // Lightmap texture
-            pShaderShadow->EnableSRGBRead(SAMPLER_LIGHTMAP, false); // Lightmaps aren't sRGB
-            pShaderShadow->EnableTexture(SAMPLER_MRAO, true); // MRAO texture
-            pShaderShadow->EnableSRGBRead(SAMPLER_MRAO, false); // MRAO isn't sRGB
-            pShaderShadow->EnableTexture(SAMPLER_NORMAL, true); // Normal texture
-            pShaderShadow->EnableSRGBRead(SAMPLER_NORMAL, false); // Normals aren't sRGB
-            pShaderShadow->EnableTexture(SAMPLER_SPECULAR, true); // Specular F0 texture
-            pShaderShadow->EnableSRGBRead(SAMPLER_SPECULAR, true); // Specular F0 is sRGB
+            pShaderShadow->EnableTexture(SAMPLER_BASETEXTURE, true);    // Basecolor texture
+            pShaderShadow->EnableSRGBRead(SAMPLER_BASETEXTURE, true);   // Basecolor is sRGB
+            pShaderShadow->EnableTexture(SAMPLER_EMISSIVE, true);       // Emission texture
+            pShaderShadow->EnableSRGBRead(SAMPLER_EMISSIVE, true);      // Emission is sRGB
+            pShaderShadow->EnableTexture(SAMPLER_LIGHTMAP, true);       // Lightmap texture
+            pShaderShadow->EnableSRGBRead(SAMPLER_LIGHTMAP, false);     // Lightmaps aren't sRGB
+            pShaderShadow->EnableTexture(SAMPLER_MRAO, true);           // MRAO texture
+            pShaderShadow->EnableSRGBRead(SAMPLER_MRAO, false);         // MRAO isn't sRGB
+            pShaderShadow->EnableTexture(SAMPLER_NORMAL, true);         // Normal texture
+            pShaderShadow->EnableSRGBRead(SAMPLER_NORMAL, false);       // Normals aren't sRGB
+            pShaderShadow->EnableTexture(SAMPLER_SPECULAR, true);       // Specular F0 texture
+            pShaderShadow->EnableSRGBRead(SAMPLER_SPECULAR, true);      // Specular F0 is sRGB
 
             // If the flashlight is on, set up its textures
             if (bHasFlashlight)
             {
-                pShaderShadow->EnableTexture(SAMPLER_SHADOWDEPTH, true); // Shadow depth map
+                pShaderShadow->EnableTexture(SAMPLER_SHADOWDEPTH, true);        // Shadow depth map
                 pShaderShadow->SetShadowDepthFiltering(SAMPLER_SHADOWDEPTH);
                 pShaderShadow->EnableSRGBRead(SAMPLER_SHADOWDEPTH, false);
-                pShaderShadow->EnableTexture(SAMPLER_RANDOMROTATION, true); // Noise map
-                pShaderShadow->EnableTexture(SAMPLER_FLASHLIGHT, true); // Flashlight cookie
+                pShaderShadow->EnableTexture(SAMPLER_RANDOMROTATION, true);     // Noise map
+                pShaderShadow->EnableTexture(SAMPLER_FLASHLIGHT, true);         // Flashlight cookie
                 pShaderShadow->EnableSRGBRead(SAMPLER_FLASHLIGHT, true);
             }
 
@@ -291,13 +285,13 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             }
         
             int useParallax = params[info.useParallax]->GetIntValue();
-            if (!mat_pbr_parallaxmap.GetBool()) {
+            if (!mat_pbr_parallaxmap.GetBool())
+            {
                 useParallax = 0;
             }
 
             if (!g_pHardwareConfig->SupportsShaderModel_3_0() || mat_pbr_force_20b.GetBool())
             {
-
                 // Setting up static vertex shader
                 DECLARE_STATIC_VERTEX_SHADER(pbr_vs20b);
                 SET_STATIC_VERTEX_SHADER(pbr_vs20b);
@@ -310,28 +304,24 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
                 SET_STATIC_PIXEL_SHADER_COMBO(SPECULAR, 0);
                 SET_STATIC_PIXEL_SHADER(pbr_ps20b);
-
             }
-            else {
-
+            else
+            {
                 // Setting up static vertex shader
                 DECLARE_STATIC_VERTEX_SHADER(pbr_vs30);
                 SET_STATIC_VERTEX_SHADER(pbr_vs30);
 
-
-                        // Setting up static pixel shader
-                        DECLARE_STATIC_PIXEL_SHADER(pbr_ps30);
-                        SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHT, bHasFlashlight);
-                        SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode);
-                        SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
-                        SET_STATIC_PIXEL_SHADER_COMBO(USEENVAMBIENT, bUseEnvAmbient);
-                        SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
-                        SET_STATIC_PIXEL_SHADER_COMBO(SPECULAR, bHasSpecularTexture);
-                        SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXOCCLUSION, useParallax);
-                        SET_STATIC_PIXEL_SHADER(pbr_ps30);
-
+                // Setting up static pixel shader
+                DECLARE_STATIC_PIXEL_SHADER(pbr_ps30);
+                SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHT, bHasFlashlight);
+                SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode);
+                SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
+                SET_STATIC_PIXEL_SHADER_COMBO(USEENVAMBIENT, bUseEnvAmbient);
+                SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
+                SET_STATIC_PIXEL_SHADER_COMBO(SPECULAR, bHasSpecularTexture);
+                SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXOCCLUSION, useParallax);
+                SET_STATIC_PIXEL_SHADER(pbr_ps30);
             }
-
 
             // Setting up fog
             DefaultFog(); // I think this is correct
@@ -494,6 +484,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
 
             // Setting lightmap texture
             s_pShaderAPI->BindStandardTexture(SAMPLER_LIGHTMAP, TEXTURE_LIGHTMAP_BUMPED);
+
             if (!g_pHardwareConfig->SupportsShaderModel_3_0() || mat_pbr_force_20b.GetBool())
             {
                 // Setting up dynamic vertex shader
@@ -514,7 +505,8 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_DYNAMIC_PIXEL_SHADER_COMBO(FLASHLIGHTSHADOWS, bFlashlightShadows);
                 SET_DYNAMIC_PIXEL_SHADER(pbr_ps20b);
             }
-            else {
+            else
+            {
                 // Setting up dynamic vertex shader
                 DECLARE_DYNAMIC_VERTEX_SHADER(pbr_vs30);
                 SET_DYNAMIC_VERTEX_SHADER_COMBO(DOWATERFOG, fogIndex);
@@ -549,13 +541,13 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             // Handle mat_fullbright 2 (diffuse lighting only)
             if (bLightingOnly)
             {
-                pShaderAPI->BindStandardTexture(SAMPLER_BASETEXTURE, TEXTURE_GREY); // basecolor
+                pShaderAPI->BindStandardTexture(SAMPLER_BASETEXTURE, TEXTURE_GREY); // Basecolor
             }
 
             // Handle mat_specular 0 (no envmap reflections)
             if (!mat_specular.GetBool())
             {
-                pShaderAPI->BindStandardTexture(SAMPLER_ENVMAP, TEXTURE_BLACK); // envmap
+                pShaderAPI->BindStandardTexture(SAMPLER_ENVMAP, TEXTURE_BLACK); // Envmap
             }
 
             // Sending fog info to the pixel shader
