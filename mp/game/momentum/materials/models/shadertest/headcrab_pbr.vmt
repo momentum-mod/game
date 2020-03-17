@@ -1,0 +1,7 @@
+PBR
+{
+	$basetexture	"models/shadertest/headcrab_diffuse"
+	$bumpmap		"models/shadertest/headcrab_normal"
+	$mraotexture	"models/shadertest/headcrab_mrao"
+	$model			"1"
+}
