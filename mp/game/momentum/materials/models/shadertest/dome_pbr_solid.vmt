@@ -1,0 +1,7 @@
+PBR
+{
+	$basetexture	"models/shadertest/dome_pbr_bc"
+	$bumpmap		"models/shadertest/dome_pbr_n"
+	$mraotexture	"models/shadertest/dome_pbr_mrao"
+	$model			"1"
+}
