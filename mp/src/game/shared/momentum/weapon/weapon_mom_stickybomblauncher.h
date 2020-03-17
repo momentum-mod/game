@@ -69,5 +69,5 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
 
     CMomentumStickybombLauncher(const CMomentumStickybombLauncher &) {}
 
-    bool m_bEarlyPrimaryFire = false;
+    CNetworkVar(bool, m_bEarlyPrimaryFire);
 };

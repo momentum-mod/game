@@ -26,16 +26,19 @@ BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
     RecvPropInt(RECVINFO(m_iStickybombCount)),
     RecvPropFloat(RECVINFO(m_flChargeBeginTime)),
     RecvPropBool(RECVINFO(m_bIsChargeEnabled)),
+    RecvPropBool(RECVINFO(m_bEarlyPrimaryFire)),
 #else
     SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
     SendPropFloat(SENDINFO(m_flChargeBeginTime), 5, SPROP_NOSCALE | SPROP_CHANGES_OFTEN),
     SendPropBool(SENDINFO(m_bIsChargeEnabled)),
+    SendPropBool(SENDINFO(m_bEarlyPrimaryFire)),
 #endif
 END_NETWORK_TABLE()
 
 #ifdef CLIENT_DLL
 BEGIN_PREDICTION_DATA(CMomentumStickybombLauncher) 
-    DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
+    DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT),
+    DEFINE_FIELD(m_bEarlyPrimaryFire, FIELD_BOOLEAN)
 END_PREDICTION_DATA()
 #endif
 
@@ -74,6 +77,7 @@ CMomentumStickybombLauncher::CMomentumStickybombLauncher()
     m_flChargeBeginTime = 0.0f;
     m_bIsChargeEnabled.Set(true);
     m_iStickybombCount.Set(0);
+    m_bEarlyPrimaryFire.Set(false);
 }
 
 CMomentumStickybombLauncher::~CMomentumStickybombLauncher()
