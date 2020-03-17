@@ -18,6 +18,7 @@
 #define MOM_STICKYBOMB_MIN_CHARGE_VEL 900
 #define MOM_STICKYBOMB_MAX_CHARGE_VEL 2400
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
+#define MOM_STICKYBOMB_BUFFER_WINDOW 0.05f
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
@@ -68,7 +69,6 @@ static MAKE_TOGGLE_CONVAR_CV(mom_sj_charge_enable, "1", FCVAR_ARCHIVE,
 );
 #endif
 
-static ConVar mom_sj_buffer_window("mom_sj_buffer_window", "0.05", FCVAR_MAPPING, "Amount of time in seconds you can buffer a primary fire before you can shoot.", true, 0, true, 0.6f);
 
 CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 {
@@ -198,7 +198,7 @@ void CMomentumStickybombLauncher::ItemPostFrame()
     if (pOwner && !(pOwner->m_nButtons & IN_ATTACK))
     {
         // If M1 is released within the buffer zone before you can fire
-        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= mom_sj_buffer_window.GetFloat() && m_bEarlyPrimaryFire && mom_sj_charge_enable.GetBool())
+        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= MOM_STICKYBOMB_BUFFER_WINDOW && m_bEarlyPrimaryFire && mom_sj_charge_enable.GetBool())
         {
             m_flChargeBeginTime = m_flNextPrimaryAttack;
         }
