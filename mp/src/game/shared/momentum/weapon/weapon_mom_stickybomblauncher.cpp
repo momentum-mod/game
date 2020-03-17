@@ -188,14 +188,16 @@ void CMomentumStickybombLauncher::ItemPostFrame()
 
     // Allow player to fire and detonate at the same time.
     CMomentumPlayer *pOwner = GetPlayerOwner();
+    if (!pOwner)
+        return;
 
     // If M1 is pressed early
-    if (pOwner && pOwner->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack > gpGlobals->curtime)
+    if (pOwner->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack > gpGlobals->curtime)
     {
         m_bEarlyPrimaryFire = true;
     }
 
-    if (pOwner && !(pOwner->m_nButtons & IN_ATTACK))
+    if (!(pOwner->m_nButtons & IN_ATTACK))
     {
         // If M1 is released within the buffer zone before you can fire
         if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= MOM_STICKYBOMB_BUFFER_WINDOW && m_bEarlyPrimaryFire && mom_sj_charge_enable.GetBool())
