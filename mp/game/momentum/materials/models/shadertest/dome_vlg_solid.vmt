@@ -1,0 +1,15 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/shadertest/dome_vlg_d"
+	"$bumpmap" "models/shadertest/dome_vlg_n"
+
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "1"
+	"$envmaptint" "[0.2 0.2 0.2]"
+	"$envmapcontrast" "1"
+
+	"$phong" "1"
+	"$phongexponenttexture" "models/shadertest/dome_vlg_g"
+	"$phongfresnelranges" "[0.1 0.55 1]"
+	"$phongboost" "50"
+}
