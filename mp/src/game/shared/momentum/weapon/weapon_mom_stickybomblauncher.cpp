@@ -191,29 +191,30 @@ void CMomentumStickybombLauncher::ItemPostFrame()
     if (!pOwner)
         return;
 
-    // If M1 is pressed early
-    if (pOwner->m_nButtons & IN_ATTACK && m_flNextPrimaryAttack > gpGlobals->curtime)
-    {
-        m_bEarlyPrimaryFire = true;
-    }
+    const float flTimeToNextAttack = m_flNextPrimaryAttack - gpGlobals->curtime;
+    const bool bIsInBufferWindow = flTimeToNextAttack > 0.0f && flTimeToNextAttack <= MOM_STICKYBOMB_BUFFER_WINDOW;
+    const bool bPressingM1 = pOwner->m_nButtons & IN_ATTACK;
 
-    if (!(pOwner->m_nButtons & IN_ATTACK))
+    if (bIsInBufferWindow)
     {
-        // If M1 is released within the buffer zone before you can fire
-        if (m_flNextPrimaryAttack > gpGlobals->curtime && m_flNextPrimaryAttack - gpGlobals->curtime <= MOM_STICKYBOMB_BUFFER_WINDOW && m_bEarlyPrimaryFire && mom_sj_charge_enable.GetBool())
+        if (bPressingM1)
+        {
+            if (!m_bEarlyPrimaryFire)
+                m_bEarlyPrimaryFire.Set(true);
+        }
+        else if (m_bEarlyPrimaryFire)
         {
             m_flChargeBeginTime = m_flNextPrimaryAttack;
         }
-        // Otherwise we missed the buffer
-        else
-        {
-            m_bEarlyPrimaryFire = false;
-        }
+    }
+    else
+    {
+        m_bEarlyPrimaryFire.Set(false);
+    }
 
-        if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool() && m_flChargeBeginTime <= gpGlobals->curtime)
-        {
-            LaunchGrenade();
-        }
+    if (!bPressingM1 && m_flChargeBeginTime > 0.0f && m_flChargeBeginTime <= gpGlobals->curtime)
+    {
+        LaunchGrenade();
     }
 }
 
