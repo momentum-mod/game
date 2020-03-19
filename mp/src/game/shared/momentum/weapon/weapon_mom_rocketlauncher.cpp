@@ -175,10 +175,6 @@ void CMomentumRocketLauncher::PrimaryAttack()
     {
         WeaponSound(GetWeaponSound("single_shot"));
     }
-    else if (mom_rj_sounds.GetInt() == 2)
-    {
-        WeaponSound(GetWeaponSound("single_shot_TF2"));
-    }
 
     // MOM_FIXME:
     // Should no longer Assert, unsure about BaseGunFire() though

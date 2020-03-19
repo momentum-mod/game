@@ -61,14 +61,7 @@ void CMomRocket::CreateTrailParticles()
     if (mom_rj_trail.GetInt() == 0)
         return;
 
-    static ConVarRef mom_rj_use_tf_rocketmodel("mom_rj_use_tf_rocketmodel");
-    const bool bIsMomModel = !mom_rj_use_tf_rocketmodel.GetBool();
-    const bool bIsTF2Trail = mom_rj_trail.GetInt() == 2;
-    const char *pAttachmentName = bIsMomModel ? "0" : "trail";
-
-    const char *pParticle = g_pWeaponDef->GetWeaponParticle(WEAPON_ROCKETLAUNCHER, bIsTF2Trail ? "RocketTrail_TF2" : "RocketTrail");
-
-    ParticleProp()->Create(pParticle, PATTACH_POINT_FOLLOW, pAttachmentName);
+    ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_ROCKETLAUNCHER, "RocketTrail"), PATTACH_POINT_FOLLOW, "trail");
 }
 
 #else
