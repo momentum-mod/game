@@ -68,4 +68,6 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     CUtlVector<StickybombHandle> m_Stickybombs;
 
     CMomentumStickybombLauncher(const CMomentumStickybombLauncher &) {}
+
+    CNetworkVar(bool, m_bEarlyPrimaryFire);
 };

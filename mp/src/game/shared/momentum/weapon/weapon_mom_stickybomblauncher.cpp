@@ -18,6 +18,7 @@
 #define MOM_STICKYBOMB_MIN_CHARGE_VEL 900
 #define MOM_STICKYBOMB_MAX_CHARGE_VEL 2400
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
+#define MOM_STICKYBOMB_BUFFER_WINDOW 0.05f
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
@@ -26,16 +27,19 @@ BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
     RecvPropInt(RECVINFO(m_iStickybombCount)),
     RecvPropFloat(RECVINFO(m_flChargeBeginTime)),
     RecvPropBool(RECVINFO(m_bIsChargeEnabled)),
+    RecvPropBool(RECVINFO(m_bEarlyPrimaryFire)),
 #else
     SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
     SendPropFloat(SENDINFO(m_flChargeBeginTime), 5, SPROP_NOSCALE | SPROP_CHANGES_OFTEN),
     SendPropBool(SENDINFO(m_bIsChargeEnabled)),
+    SendPropBool(SENDINFO(m_bEarlyPrimaryFire)),
 #endif
 END_NETWORK_TABLE()
 
 #ifdef CLIENT_DLL
 BEGIN_PREDICTION_DATA(CMomentumStickybombLauncher) 
-    DEFINE_FIELD(m_flChargeBeginTime, FIELD_FLOAT)
+    DEFINE_PRED_FIELD(m_flChargeBeginTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
+    DEFINE_PRED_FIELD(m_bEarlyPrimaryFire, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE)
 END_PREDICTION_DATA()
 #endif
 
@@ -65,6 +69,7 @@ static MAKE_TOGGLE_CONVAR_CV(mom_sj_charge_enable, "1", FCVAR_ARCHIVE,
 );
 #endif
 
+
 CMomentumStickybombLauncher::CMomentumStickybombLauncher()
 {
     m_flTimeToIdleAfterFire = 0.6f;
@@ -72,6 +77,7 @@ CMomentumStickybombLauncher::CMomentumStickybombLauncher()
     m_flChargeBeginTime = 0.0f;
     m_bIsChargeEnabled.Set(true);
     m_iStickybombCount.Set(0);
+    m_bEarlyPrimaryFire.Set(false);
 }
 
 CMomentumStickybombLauncher::~CMomentumStickybombLauncher()
@@ -113,7 +119,7 @@ void CMomentumStickybombLauncher::WeaponIdle()
     static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
 #endif
 
-    if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool())
+    if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool() && m_flChargeBeginTime <= gpGlobals->curtime)
     {
         LaunchGrenade();
     }
@@ -152,6 +158,8 @@ void CMomentumStickybombLauncher::LaunchGrenade()
     SetWeaponIdleTime(gpGlobals->curtime + m_flTimeToIdleAfterFire);
     pPlayer->m_iShotsFired++;
 
+    m_bEarlyPrimaryFire = false;
+
     DoFireEffects();
     WeaponSound(GetWeaponSound("single_shot"));
 
@@ -176,17 +184,37 @@ void CMomentumStickybombLauncher::ItemPostFrame()
 #ifdef CLIENT_DLL
     static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
 #endif
-
     BaseClass::ItemPostFrame();
 
     // Allow player to fire and detonate at the same time.
     CMomentumPlayer *pOwner = GetPlayerOwner();
-    if (pOwner && !(pOwner->m_nButtons & IN_ATTACK))
+    if (!pOwner)
+        return;
+
+    const float flTimeToNextAttack = m_flNextPrimaryAttack - gpGlobals->curtime;
+    const bool bIsInBufferWindow = flTimeToNextAttack > 0.0f && flTimeToNextAttack <= MOM_STICKYBOMB_BUFFER_WINDOW;
+    const bool bPressingM1 = pOwner->m_nButtons & IN_ATTACK;
+
+    if (bIsInBufferWindow)
     {
-        if (m_flChargeBeginTime > 0 && mom_sj_charge_enable.GetBool())
+        if (bPressingM1)
         {
-            LaunchGrenade();
+            if (!m_bEarlyPrimaryFire)
+                m_bEarlyPrimaryFire.Set(true);
         }
+        else if (m_bEarlyPrimaryFire)
+        {
+            m_flChargeBeginTime = m_flNextPrimaryAttack;
+        }
+    }
+    else
+    {
+        m_bEarlyPrimaryFire.Set(false);
+    }
+
+    if (!bPressingM1 && m_flChargeBeginTime > 0.0f && m_flChargeBeginTime <= gpGlobals->curtime)
+    {
+        LaunchGrenade();
     }
 }
 
