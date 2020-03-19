@@ -6,8 +6,10 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_CONVAR(mom_rj_particles, "1", FCVAR_ARCHIVE, "Switches between the particles for rocket explosions.\n"
-    "0 = None\n1 = Use weapon script (momentum)\n2 = Force TF2 particles\n3 through 6 = alternative momentum particles", 0, 6);
+static MAKE_TOGGLE_CONVAR(mom_sj_particle_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the particles for sticky explosions. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_sj_sound_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the sticky explosion sound. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_particle_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the particles for rocket explosions. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_sound_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket explosion sound. 0 = OFF, 1 = ON\n");
 
 class C_TETFExplosion : public C_BaseTempEntity
 {
@@ -50,16 +52,27 @@ void C_TETFExplosion::PostDataUpdate(DataUpdateType_t updateType)
         if (!bInAir)
             VectorAngles(m_vecNormal, angExplosion);
 
-        static ConVarRef mom_rj_sounds("mom_rj_sounds");
+        bool bPlaySound = false;
+        bool bDispatchParticles = false;
 
-        if (mom_rj_sounds.GetInt() > 0)
+        if (m_iWeaponID == WEAPON_ROCKETLAUNCHER)
         {
+            bPlaySound = mom_rj_sound_explosion_enable.GetBool();
+            bDispatchParticles = mom_rj_particle_explosion_enable.GetBool();
+        }
+        else if (m_iWeaponID == WEAPON_STICKYLAUNCHER)
+        {
+            bPlaySound = mom_sj_sound_explosion_enable.GetBool();
+            bDispatchParticles = mom_sj_particle_explosion_enable.GetBool();
+        }
 
+        if (bPlaySound)
+        {
             CLocalPlayerFilter filter;
             C_BaseEntity::EmitSound(filter, SOUND_FROM_WORLD, pWeaponInfo->pKVWeaponSounds->GetString("explosion"), &m_vecOrigin);
         }
 
-        if (mom_rj_particles.GetInt() > 0)
+        if (bDispatchParticles)
         {
             const char *pszEffect;
 

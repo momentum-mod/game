@@ -22,6 +22,8 @@ END_PREDICTION_DATA();
 LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
 
+MAKE_TOGGLE_CONVAR(mom_rj_sound_shoot_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the rocket shooting sound on or off. 0 = OFF, 1 = ON\n");
+
 #ifdef GAME_DLL
 static MAKE_TOGGLE_CONVAR_CV(mom_rj_center_fire, "1", FCVAR_ARCHIVE, "If enabled, all rockets will be fired from the center of the screen. 0 = OFF, 1 = ON\n", nullptr,
     [](IConVar *pVar, const char *pNewVal)
@@ -35,8 +37,6 @@ static MAKE_TOGGLE_CONVAR_CV(mom_rj_center_fire, "1", FCVAR_ARCHIVE, "If enabled
         return true;
     }
 );
-static MAKE_CONVAR(mom_rj_sounds, "1", FCVAR_ARCHIVE,
-                   "Toggles between the TF2 rocket and weapon sounds and the Momentum ones. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 2);
 #endif
 
 CMomentumRocketLauncher::CMomentumRocketLauncher()
@@ -118,11 +118,7 @@ void CMomentumRocketLauncher::PrimaryAttack()
 
     DoFireEffects();
 
-#ifdef CLIENT_DLL
-    static ConVarRef mom_rj_sounds("mom_rj_sounds");
-#endif
-
-    if (mom_rj_sounds.GetInt() == 1)
+    if (mom_rj_sound_shoot_enable.GetBool())
     {
         WeaponSound(GetWeaponSound("single_shot"));
     }
