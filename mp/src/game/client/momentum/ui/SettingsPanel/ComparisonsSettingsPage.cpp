@@ -132,7 +132,7 @@ void ComparisonsSettingsPage::OnMainDialogClosed()
 void ComparisonsSettingsPage::OnMainDialogShow()
 {
     if (m_pComparisonsFrame)
-        m_pComparisonsFrame->SetVisible(true);
+        m_pComparisonsFrame->Activate();
 }
 
 void ComparisonsSettingsPage::OnApplyChanges()
@@ -190,9 +190,13 @@ void ComparisonsSettingsPage::OnPageShow()
     BaseClass::OnPageShow();
 
     if (!m_pComparisonsFrame)
+    {
         InitBogusComparePanel();
-    else if (!m_pComparisonsFrame->IsVisible())
+    }
+    else
+    {
         m_pComparisonsFrame->Activate();
+    }
 }
 
 void ComparisonsSettingsPage::OnPageHide()

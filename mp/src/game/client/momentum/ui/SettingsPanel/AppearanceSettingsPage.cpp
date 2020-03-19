@@ -121,7 +121,7 @@ void AppearanceSettingsPage::LoadSettings()
 
 void AppearanceSettingsPage::OnPageShow()
 {
-    if (!m_pModelPreviewFrame->IsVisible())
+    if (m_pModelPreviewFrame)
         m_pModelPreviewFrame->Activate();
 }
 
