@@ -27,7 +27,7 @@ WeaponData
     SoundData
     {
         "single_shot"       "StickybombLauncher.Single"
-        "explosion_TF2"     "BaseExplosionEffect.SoundTF2"
+        "explosion"         "BaseExplosionEffect.SoundTF2"
         "detonate"          "StickybombLauncher.Detonate"
         "deny"              "StickybombLauncher.Deny"
         "charge"            "StickybombLauncher.Charge"
@@ -41,13 +41,8 @@ WeaponData
         "ExplosionMidAirEffect"    "mom_rocket_explosion_b"
         "ExplosionWaterEffect"     "mom_rocket_explosion_b_"
 
-        // TF2 versions
-        "ExplosionEffect_TF2"       "ExplosionCore_sapperdestroyed" // ExplosionCore_wall
-        "ExplosionMidAirEffect_TF2" "ExplosionCore_MidAir"
-        "ExplosionWaterEffect_TF2"  "ExplosionCore_MidAir_underwater"
-
-        "StickybombTrail_TF2"       "stickybombtrail_red"
-        "StickybombPulse_TF2"       "stickybomb_pulse_red"
+        "StickybombTrail"       "stickybombtrail_red"
+        "StickybombPulse"       "stickybomb_pulse_red"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
