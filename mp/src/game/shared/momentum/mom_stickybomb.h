@@ -35,6 +35,7 @@ class CMomStickybomb : public CMomExplosive
     static CMomStickybomb *Create(const Vector &position, const QAngle &angles, const Vector &velocity, CBaseEntity *pOwner);
 
     void Explode(trace_t *pTrace, CBaseEntity *pOther);
+    void Destroy(bool bShowFizzleSprite) override;
 
     void Fizzle();
     void Detonate();
@@ -42,6 +43,7 @@ class CMomStickybomb : public CMomExplosive
 #endif
 
   private:
+    IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_fFlags);
 #ifdef CLIENT_DLL
     bool m_bPulsed;
 #else

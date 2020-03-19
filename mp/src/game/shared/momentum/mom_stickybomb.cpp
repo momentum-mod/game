@@ -26,6 +26,11 @@
 IMPLEMENT_NETWORKCLASS_ALIASED(MomStickybomb, DT_MomStickybomb)
 
 BEGIN_NETWORK_TABLE(CMomStickybomb, DT_MomStickybomb)
+#ifdef CLIENT_DLL
+  RecvPropInt(RECVINFO(m_fFlags)),
+#else
+  SendPropInt(SENDINFO(m_fFlags), -1, SPROP_UNSIGNED),
+#endif
 END_NETWORK_TABLE();
 
 LINK_ENTITY_TO_CLASS(momentum_stickybomb, CMomStickybomb);
@@ -164,6 +169,19 @@ void CMomStickybomb::InitExplosive(CBaseEntity *pOwner, const Vector &velocity, 
     }
 }
 
+void CMomStickybomb::Destroy(bool bShowFizzleSprite)
+{
+    if (bShowFizzleSprite)
+    {
+        m_bFizzle = true;
+        Dissolve(nullptr, gpGlobals->curtime, false, ENTITY_DISSOLVE_CORE);
+    }
+    else
+    {
+        BaseClass::Destroy(bShowFizzleSprite);
+    }
+}
+
 void CMomStickybomb::Detonate()
 {
     SetThink(nullptr);
@@ -177,15 +195,8 @@ void CMomStickybomb::Detonate()
 
 void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
 {
-    if (CNoGrenadesZone::IsInsideNoGrenadesZone(this))
+    if (CNoGrenadesZone::IsInsideNoGrenadesZone(this) || m_bFizzle)
     {
-        Destroy(true);
-        return;
-    }
-
-    if (m_bFizzle)
-    {
-        g_pEffects->Sparks(GetAbsOrigin());
         Destroy(true);
         return;
     }
