@@ -7,6 +7,13 @@
 #define CMomentumStickybombLauncher C_MomentumStickybombLauncher
 #endif
 
+enum StickyDetonationStatus_t
+{
+    DET_STATUS_NONE = 0,            // You have 1+ out but they didn't detonate (are being removed most likely)
+    DET_STATUS_FAIL = 1 << 0,       // There was at least one bomb that wasn't armed yet
+    DET_STATUS_SUCCESS = 1 << 1     // There was at least one bomb that successfully detonated
+};
+
 class CMomentumStickybombLauncher : public CWeaponBaseGun
 #ifdef GAME_DLL
 , public IEntityListener
@@ -34,7 +41,7 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     void ItemPostFrame() OVERRIDE;
 
     void AddStickybomb(CMomStickybomb *pBomb);
-    bool DetonateRemoteStickybombs(bool bFizzle);
+    int DetonateRemoteStickybombs(bool bFizzle);
     void DeathNotice(CBaseEntity *pVictim);
     int GetStickybombCount() { return m_iStickybombCount.Get(); }
     float GetProjectileSpeed();
