@@ -422,7 +422,7 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
         if (pTemp)
         {
             // This guy will die soon enough.
-            if (pTemp->IsEffectActive(EF_NODRAW))
+            if (pTemp->IsEffectActive(EF_NODRAW) || pTemp->GetFlags() & FL_DISSOLVING)
                 continue;
 #ifdef GAME_DLL
             if (bFizzle)
