@@ -11,22 +11,13 @@
 
 #include "tier0/memdbgon.h"
 
-#define TF_ROCKETLAUNCHER_MODEL "models/weapons/v_models/v_rocketlauncher_soldier.mdl"
-#define TF_ROCKETLAUNCHER_WMODEL "models/weapons/w_models/w_rocketlauncher.mdl"
-
-IMPLEMENT_NETWORKCLASS_ALIASED(MomentumRocketLauncher, DT_MomentumRocketLauncher)
+IMPLEMENT_NETWORKCLASS_ALIASED(MomentumRocketLauncher, DT_MomentumRocketLauncher);
 
 BEGIN_NETWORK_TABLE(CMomentumRocketLauncher, DT_MomentumRocketLauncher)
-END_NETWORK_TABLE()
+END_NETWORK_TABLE();
 
 BEGIN_PREDICTION_DATA(CMomentumRocketLauncher)
-#ifdef CLIENT_DLL
-    DEFINE_PRED_FIELD(m_iTFViewIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
-    DEFINE_PRED_FIELD(m_iTFWorldIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
-    DEFINE_PRED_FIELD(m_iMomViewIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
-    DEFINE_PRED_FIELD(m_iMomWorldIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE | FTYPEDESC_MODELINDEX),
-#endif
-END_PREDICTION_DATA()
+END_PREDICTION_DATA();
 
 LINK_ENTITY_TO_CLASS(weapon_momentum_rocketlauncher, CMomentumRocketLauncher);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_rocketlauncher);
@@ -44,8 +35,6 @@ static MAKE_TOGGLE_CONVAR_CV(mom_rj_center_fire, "1", FCVAR_ARCHIVE, "If enabled
         return true;
     }
 );
-static MAKE_TOGGLE_CONVAR(mom_rj_use_tf_viewmodel, "0", FCVAR_ARCHIVE,
-                          "Toggles between the TF2 Rocket Launcher model and the Momentum one. 0 = Momentum, 1 = TF2\n");
 static MAKE_CONVAR(mom_rj_sounds, "1", FCVAR_ARCHIVE,
                    "Toggles between the TF2 rocket and weapon sounds and the Momentum ones. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 2);
 #endif
@@ -54,53 +43,15 @@ CMomentumRocketLauncher::CMomentumRocketLauncher()
 {
     m_flTimeToIdleAfterFire = 0.8f;
     m_flIdleInterval = 20.0f;
-    m_iTFViewIndex = -1;
-    m_iTFWorldIndex = -1;
 }
 
 void CMomentumRocketLauncher::Precache()
 {
     BaseClass::Precache();
 
-    m_iMomViewIndex = m_iViewModelIndex;
-    m_iMomWorldIndex = m_iWorldModelIndex;
-    m_iTFViewIndex = PrecacheModel(TF_ROCKETLAUNCHER_MODEL);
-    m_iTFWorldIndex = PrecacheModel(TF_ROCKETLAUNCHER_WMODEL);
-
 #ifndef CLIENT_DLL
     UTIL_PrecacheOther("momentum_rocket");
 #endif
-}
-
-bool CMomentumRocketLauncher::Deploy()
-{
-    CMomentumPlayer *pOwner = GetPlayerOwner();
-    if (pOwner)
-    {
-#ifdef CLIENT_DLL
-        static ConVarRef mom_rj_use_tf_viewmodel("mom_rj_use_tf_viewmodel");
-#endif
-        SetModelType(mom_rj_use_tf_viewmodel.GetBool());
-    }
-
-    return BaseClass::Deploy();
-}
-
-const char *CMomentumRocketLauncher::GetViewModel(int indx) const
-{
-    return m_iViewModelIndex == m_iTFViewIndex ? TF_ROCKETLAUNCHER_MODEL : BaseClass::GetViewModel(indx);
-}
-
-const char *CMomentumRocketLauncher::GetWorldModel() const
-{
-    return m_iWorldModelIndex == m_iTFWorldIndex ? TF_ROCKETLAUNCHER_WMODEL : BaseClass::GetWorldModel();
-}
-
-void CMomentumRocketLauncher::SetModelType(bool bTF2Model)
-{
-    m_iViewModelIndex = bTF2Model ? m_iTFViewIndex.Get() : m_iMomViewIndex.Get();
-    m_iWorldModelIndex = bTF2Model ? m_iTFWorldIndex.Get() : m_iMomWorldIndex.Get();
-    SetModel(GetViewModel());
 }
 
 //-----------------------------------------------------------------------------
@@ -176,11 +127,8 @@ void CMomentumRocketLauncher::PrimaryAttack()
         WeaponSound(GetWeaponSound("single_shot"));
     }
 
-    // MOM_FIXME:
-    // Should no longer Assert, unsure about BaseGunFire() though
     SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 
-    // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 #ifdef GAME_DLL
