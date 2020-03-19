@@ -391,8 +391,6 @@
         
         "MOM_Settings_SJ_Enable_Explosion_Particle" "Enable stickybomb explosion particle"
         "MOM_Settings_SJ_Enable_Explosion_Sound" "Enable stickybomb explosion sound"
-        "MOM_Settings_SJ_Enable_Charge" "Enable charge mechanic"
-        "MOM_Settings_SJ_Enable_Charge_Tooltip" "Disabling will make stickybombs deploy instantly when holding primary fire."
         "MOM_Settings_SJ_Enable_ChargeMeter" "Enable charge meter"
         "MOM_Settings_SJ_Enable_Sticky_Counter" "Enable stickybomb counter"
         "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"

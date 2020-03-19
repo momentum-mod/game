@@ -44,7 +44,6 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     int DetonateRemoteStickybombs(bool bFizzle);
     void DeathNotice(CBaseEntity *pVictim);
     int GetStickybombCount() { return m_iStickybombCount.Get(); }
-    float GetProjectileSpeed();
     float CalculateProjectileSpeed(float flProgress);
 
     bool IsChargeEnabled() { return m_bIsChargeEnabled.Get(); }

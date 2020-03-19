@@ -64,8 +64,6 @@ void CHudStickyCharge::Reset()
 
 bool CHudStickyCharge::ShouldDraw()
 {
-    static ConVarRef mom_sj_charge_enable("mom_sj_charge_enable");
-
     if (!mom_hud_sj_chargemeter_enable.GetBool())
         return false;
 
@@ -80,9 +78,6 @@ bool CHudStickyCharge::ShouldDraw()
         return false;
 
     m_pLauncher = static_cast<CMomentumStickybombLauncher *>(pWeapon);
-
-    if (!mom_sj_charge_enable.GetBool())
-        return false;
 
     return CHudElement::ShouldDraw();
 }
