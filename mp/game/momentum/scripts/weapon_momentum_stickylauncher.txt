@@ -17,17 +17,17 @@ WeaponData
 
     "ModelData"
     {
-        "view"      "models/weapons/v_models/v_stickybomb_launcher_demo.mdl"
-        "world"     "models/weapons/w_models/w_stickybomb_launcher.mdl"
+        "view"      "models/weapons/mom_stickylauncher_classic/mom_stickylauncher_classic.mdl"
+        "world"     "models/weapons/mom_stickylauncher_classic/mom_stickylauncher_classic.mdl"
 
-        "sticky"    "models/weapons/w_models/w_stickybomb.mdl"
+        "sticky"    "models/weapons/mom_stickybomb_classic/mom_stickybomb_classic.mdl"
     }
 
     // Sounds for the weapon.
     SoundData
     {
         "single_shot"       "StickybombLauncher.Single"
-        "explosion"         "BaseExplosionEffect.SoundTF2"
+        "explosion"         "StickybombLauncher.Explosion"
         "detonate"          "StickybombLauncher.Detonate"
         "deny"              "StickybombLauncher.Deny"
         "charge"            "StickybombLauncher.Charge"
@@ -41,8 +41,8 @@ WeaponData
         "ExplosionMidAirEffect"    "mom_rocket_explosion_b"
         "ExplosionWaterEffect"     "mom_rocket_explosion_b_"
 
-        "StickybombTrail"       "stickybombtrail_red"
-        "StickybombPulse"       "stickybomb_pulse_red"
+        "StickybombTrail"       "mom_sticky_blue"
+        "StickybombPulse"       "mom_stickypulse_blue"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
