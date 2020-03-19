@@ -102,7 +102,7 @@ float CMomStickybomb::GetDrawDelayTime()
 
 void CMomStickybomb::CreateTrailParticles()
 {
-    ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombTrail_TF2"), PATTACH_ABSORIGIN_FOLLOW);
+    ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombTrail"), PATTACH_ABSORIGIN_FOLLOW);
 }
 
 void CMomStickybomb::OnDataChanged(DataUpdateType_t type)
@@ -125,7 +125,7 @@ void CMomStickybomb::Simulate()
 {
     if (!m_bPulsed && IsArmed())
     {
-        ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombPulse_TF2"), PATTACH_ABSORIGIN_FOLLOW);
+        ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombPulse"), PATTACH_ABSORIGIN_FOLLOW);
 
         m_bPulsed = true;
     }

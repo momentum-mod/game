@@ -54,45 +54,29 @@ void C_TETFExplosion::PostDataUpdate(DataUpdateType_t updateType)
 
         if (mom_rj_sounds.GetInt() > 0)
         {
-            const bool bIsTF2Sound = mom_rj_sounds.GetInt() == 2;
-            const char *pszSound = pWeaponInfo->pKVWeaponSounds->GetString(bIsTF2Sound ? "explosion_TF2" : "explosion");
 
             CLocalPlayerFilter filter;
-            C_BaseEntity::EmitSound(filter, SOUND_FROM_WORLD, pszSound, &m_vecOrigin);
+            C_BaseEntity::EmitSound(filter, SOUND_FROM_WORLD, pWeaponInfo->pKVWeaponSounds->GetString("explosion"), &m_vecOrigin);
         }
 
         if (mom_rj_particles.GetInt() > 0)
         {
             const char *pszEffect;
-            const bool bIsTF2Particle = mom_rj_particles.GetInt() == 2;
 
             if (bIsWater)
             {
-                pszEffect = pWeaponInfo->pKVWeaponParticles->GetString(bIsTF2Particle ? "ExplosionWaterEffect_TF2" : "ExplosionWaterEffect");
+                pszEffect = "ExplosionWaterEffect";
+            }
+            else if (bInAir)
+            {
+                pszEffect = "ExplosionMidAirEffect";
             }
             else
             {
-                if (bInAir)
-                {
-                    pszEffect = pWeaponInfo->pKVWeaponParticles->GetString(bIsTF2Particle ? "ExplosionMidAirEffect_TF2" : "ExplosionMidAirEffect");
-                }
-                else
-                {
-                    pszEffect = pWeaponInfo->pKVWeaponParticles->GetString(bIsTF2Particle ? "ExplosionEffect_TF2" : "ExplosionEffect");
-                }
+                pszEffect = "ExplosionEffect";
             }
 
-            // MOM_TODO REMOVEME
-            if (mom_rj_particles.GetInt() == 3)
-                pszEffect = "mom_rocket_explosion_b";
-            else if (mom_rj_particles.GetInt() == 4)
-                pszEffect = "mom_rocket_explosion_b_";
-            else if (mom_rj_particles.GetInt() == 5)
-                pszEffect = "mom_rocket_explosion_c";
-            else if (mom_rj_particles.GetInt() == 6)
-                pszEffect = "mom_rocket_explosion_d";
-
-            DispatchParticleEffect(pszEffect, m_vecOrigin, angExplosion);
+            DispatchParticleEffect(pWeaponInfo->pKVWeaponParticles->GetString(pszEffect), m_vecOrigin, angExplosion);
         }
     }
 }
