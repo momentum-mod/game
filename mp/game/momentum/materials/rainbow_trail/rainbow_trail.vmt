@@ -1,0 +1,15 @@
+UnlitGeneric
+{
+	$basetexture "rainbow_trail/mom_rainbow"
+	$additive 1
+	
+	Proxies
+	{
+		AnimatedTexture
+		{
+			animatedtexturevar		$basetexture
+			animatedtextureframenumvar	$frame
+			animatedtextureframerate	60
+		}
+	}
+}

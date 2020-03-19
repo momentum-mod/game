@@ -1,0 +1,5 @@
+SpriteCard
+{
+	"$basetexture" "rainbow_trail/rainbow_trail_circle"
+	"$additive" 1
+}
