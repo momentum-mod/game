@@ -276,18 +276,18 @@ void CMomentumStickybombLauncher::SecondaryAttack()
     if (!pPlayer)
         return;
 
-    if (DetonateRemoteStickybombs(false))
+    const auto detStatus = DetonateRemoteStickybombs(false);
+
+    if (detStatus & DET_STATUS_FAIL)
     {
         if (m_flLastDenySoundTime <= gpGlobals->curtime)
         {
-            // Deny!
-            m_flLastDenySoundTime = gpGlobals->curtime + 1;
+            m_flLastDenySoundTime = gpGlobals->curtime + 1.0f;
             WeaponSound(GetWeaponSound("deny"));
         }
     }
-    else
+    else if (detStatus & DET_STATUS_SUCCESS)
     {
-        // Play a detonate sound.
         WeaponSound(GetWeaponSound("detonate"));
     }
 }
@@ -326,7 +326,6 @@ CMomStickybomb *CMomentumStickybombLauncher::FireProjectile(CMomentumPlayer *pPl
             CMomStickybomb *pTemp = m_Stickybombs[0];
             if (pTemp)
             {
-                pTemp->Fizzle();
                 pTemp->Destroy(true);
             }
 
@@ -402,8 +401,7 @@ void CMomentumStickybombLauncher::DeathNotice(CBaseEntity *pVictim)
     const auto pSticky = dynamic_cast<CMomStickybomb *>(pVictim);
     Assert(pSticky);
 
-    StickybombHandle hHandle;
-    hHandle = pSticky;
+    StickybombHandle hHandle = pSticky;
     m_Stickybombs.FindAndRemove(hHandle);
 
     m_iStickybombCount = m_Stickybombs.Count();
@@ -412,9 +410,9 @@ void CMomentumStickybombLauncher::DeathNotice(CBaseEntity *pVictim)
 //-----------------------------------------------------------------------------
 // Purpose: Remove *with* explosions
 //-----------------------------------------------------------------------------
-bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
+int CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
 {
-    bool bFailedToDetonate = false;
+    int detStatus = DET_STATUS_NONE;
 
     FOR_EACH_VEC_BACK(m_Stickybombs, i)
     {
@@ -434,22 +432,26 @@ bool CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
             {
                 if (!pTemp->IsArmed())
                 {
-                    bFailedToDetonate = true;
+                    detStatus |= DET_STATUS_FAIL;
                     continue;
                 }
             }
 #ifdef GAME_DLL
             pTemp->Detonate();
+            detStatus |= DET_STATUS_SUCCESS;
 #endif
         }
     }
 
 #ifdef GAME_DLL
-    DecalPacket stickyDet = DecalPacket::StickyDet();
-    g_pMomentumGhostClient->SendDecalPacket(&stickyDet);
+    if (detStatus & DET_STATUS_SUCCESS)
+    {
+        DecalPacket stickyDet = DecalPacket::StickyDet();
+        g_pMomentumGhostClient->SendDecalPacket(&stickyDet);
+    }
 #endif
 
-    return bFailedToDetonate;
+    return detStatus;
 }
 
 float CMomentumStickybombLauncher::GetChargeMaxTime()
