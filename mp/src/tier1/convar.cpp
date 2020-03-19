@@ -955,7 +955,7 @@ void ConVar::SetValue( float value )
 
 	char temp[32];
 	Q_snprintf(temp, sizeof(temp), "%f", value);
-	m_pParent->InternalSetValue( temp );
+	m_pParent->SetValue( temp );
 }
 
 //-----------------------------------------------------------------------------
@@ -969,7 +969,7 @@ void ConVar::SetValue( int value )
 
     char temp[32];
     Q_snprintf(temp, sizeof(temp), "%d", value);
-    m_pParent->InternalSetValue(temp);
+    m_pParent->SetValue(temp);
 }
 
 //-----------------------------------------------------------------------------
