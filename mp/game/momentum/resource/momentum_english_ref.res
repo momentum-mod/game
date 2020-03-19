@@ -376,26 +376,27 @@
         // Gamemode-specific settings
         "MOM_Settings_Tab_Gamemodes" "Gamemodes"
 
-        "MOM_Settings_RJ_None" "None"
-        "MOM_Settings_RJ_TF2" "TF2"
-        "MOM_Settings_RJ_Enable_TF_RocketModel" "Use TF2 rocket model"
-        "MOM_Settings_RJ_Enable_TF_ViewModel" "Use TF2 view model"
-        "MOM_Settings_RJ_Enable_Center_Fire" "Fire projectiles from screen center"
-        "MOM_Settings_RJ_Particle_Label" "Explosion particles"
-        "MOM_Settings_RJ_Particle_Tooltip" "You can use custom particles by editing the value of the 'ExplosionEffect' fields in the rocket weapon script file."
-        "MOM_Settings_RJ_Sounds_Label" "Explosion and firing sounds"
-        "MOM_Settings_RJ_Trail_Label" "Trail effect"
-        "MOM_Settings_RJ_Trail_Sound_Enable" "Use rocket trail sound"
-        "MOM_Settings_RJ_Trail_Sound_Enable_TT" "When enabled, rockets fired will have a sound following it."
-        "MOM_Settings_RJ_Rocket_Decals_Enable" "Enable rocket decals"
-        "MOM_Settings_RJ_Rocket_Decals_Enable_TT" "When enabled, rockets will create decals upon explosion."
-
+        "MOM_Settings_RJ_Enable_Trail_Particle" "Enable rocket trail particle"
+        "MOM_Settings_RJ_Enable_Explosion_Particle" "Enable rocket explosion particle"
+        "MOM_Settings_RJ_Enable_Shoot_Sound" "Enable rocket launcher firing sound"
+        "MOM_Settings_RJ_Enable_Trail_Sound" "Enable rocket trail sound"
+        "MOM_Settings_RJ_Enable_Trail_Sound_TT" "When enabled, rockets fired will have a sound following it."
+        "MOM_Settings_RJ_Enable_Explosion_Sound" "Enable rocket explosion sound"
+        "MOM_Settings_RJ_Enable_Rocket_Decals" "Enable rocket explosion decals"
+        "MOM_Settings_RJ_Enable_Rocket_Decals_TT" "When enabled, rockets will create decals upon explosion."
+        "MOM_Settings_RJ_Enable_Center_Fire" "Fire rocket projectiles from screen center"
+        "MOM_Settings_RJ_Enable_Center_Fire_TT" "When enabled, rockets will fire from the center of the screen like the Original from Team Fortress 2 / Quake."
+        "MOM_Settings_RJ_RocketDrawDelayEntry_Label" "Delay before rockets are rendered"
+        "MOM_Settings_SJ_RocketDrawDelayEntry_Tooltip" "In seconds. Default is 0.2, max 1."
+        
+        "MOM_Settings_SJ_Enable_Explosion_Particle" "Enable stickybomb explosion particle"
+        "MOM_Settings_SJ_Enable_Explosion_Sound" "Enable stickybomb explosion sound"
         "MOM_Settings_SJ_Enable_Charge" "Enable charge mechanic"
+        "MOM_Settings_SJ_Enable_Charge_Tooltip" "Disabling will make stickybombs deploy instantly when holding primary fire."
         "MOM_Settings_SJ_Enable_ChargeMeter" "Enable charge meter"
         "MOM_Settings_SJ_Enable_Sticky_Counter" "Enable stickybomb counter"
         "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"
-        "MOM_Settings_SJ_DrawDelayEntry_Tooltip" "In seconds. Default is 0.1, max 1."
-        "MOM_Settings_SJ_Enable_Charge_Tooltip" "Disabling will make stickybombs deploy instantly when holding primary fire."
+        "MOM_Settings_SJ_DrawDelayEntry_Tooltip" "In seconds. Default is 0, max 1."
 
         // Replay Info
         // Spec GUI

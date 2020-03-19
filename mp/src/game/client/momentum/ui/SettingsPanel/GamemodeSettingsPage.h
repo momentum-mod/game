@@ -11,15 +11,15 @@ class GamemodeSettingsPage : public SettingsPage
     GamemodeSettingsPage(Panel *pParent);
     ~GamemodeSettingsPage();
 
-    void OnApplyChanges() OVERRIDE;
-    void LoadSettings() OVERRIDE;
-
   private:
-    ComboBox *m_pRJParticlesBox, *m_pRJSoundsBox, *m_pRJTrailBox;
+    CvarToggleCheckButton *m_pRJEnableTrailParticle, *m_pRJEnableExplosionParticle, *m_pRJEnableShootSound,
+                          *m_pRJToggleRocketTrailSound, *m_pRJToggleRocketExplosionSound, *m_pRJToggleRocketDecals,
+                          *m_pRJEnableCenterFire;
 
-    CvarToggleCheckButton *m_pRJEnableTFRocketModel, *m_pRJEnableTFViewModel, *m_pRJEnableCenterFire,
-        *m_pRJToggleRocketTrailSound, *m_pRJToggleRocketDecals, *m_pSJEnableCharge, *m_pSJEnableChargeMeter,
-        *m_pSJEnableStickyCounter;
+    CvarTextEntry *m_pRJRocketDrawDelayEntry;
+
+    CvarToggleCheckButton *m_pSJEnableExplosionParticle, *m_pSJEnableExplosionSound, *m_pSJEnableCharge,
+                          *m_pSJEnableChargeMeter, *m_pSJEnableStickyCounter;
 
     CvarTextEntry *m_pSJStickyDrawDelayEntry;
 };
