@@ -23,11 +23,10 @@ LINK_ENTITY_TO_CLASS(momentum_rocket, CMomRocket);
 PRECACHE_WEAPON_REGISTER(momentum_rocket);
 
 #ifdef GAME_DLL
-static MAKE_TOGGLE_CONVAR(mom_rj_use_tf_rocketmodel, "0", FCVAR_ARCHIVE, "Toggles between the TF2 rocket model and the Momentum one. 0 = Momentum, 1 = TF2\n");
-static MAKE_TOGGLE_CONVAR(mom_rj_trail_sound_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail sound. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_sound_trail_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail sound. 0 = OFF, 1 = ON\n");
 static MAKE_TOGGLE_CONVAR(mom_rj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on rocket explosion. 0 = OFF, 1 = ON\n");
 #else
-static MAKE_CONVAR(mom_rj_trail, "1", FCVAR_ARCHIVE, "Toggles between the TF2 rocket trail and the Momentum one. 0 = None, 1 = Momentum, 2 = TF2\n", 0, 3);
+static MAKE_TOGGLE_CONVAR(mom_rj_particle_trail_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket trail particle. 0 = OFF, 1 = ON\n");
 static MAKE_CONVAR(mom_rj_rocket_drawdelay, "0.2", FCVAR_ARCHIVE, "Determines how long it takes for rockets to start being drawn after spawning.\n", 0, 1);
 #endif
 
@@ -58,7 +57,7 @@ float CMomRocket::GetDrawDelayTime()
 
 void CMomRocket::CreateTrailParticles()
 {
-    if (mom_rj_trail.GetInt() == 0)
+    if (!mom_rj_particle_trail_enable.GetBool())
         return;
 
     ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_ROCKETLAUNCHER, "RocketTrail"), PATTACH_POINT_FOLLOW, "trail");
@@ -159,7 +158,7 @@ CMomRocket *CMomRocket::EmitRocket(const Vector &vecOrigin, const QAngle &vecAng
 
     pRocket->InitExplosive(pOwner, velocity, angles);
 
-    if (mom_rj_trail_sound_enable.GetBool())
+    if (mom_rj_sound_trail_enable.GetBool())
     {
         pRocket->EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "RocketTrail"));
     }
