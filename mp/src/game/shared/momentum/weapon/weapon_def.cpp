@@ -284,7 +284,7 @@ CON_COMMAND(weapon_reload_scripts, "Reloads all weapon scripts.\n")
 
             FOR_EACH_VEC(vecCurrentWeps, i)
             {
-                pPlayer->GiveNamedItem(g_szWeaponNames[vecCurrentWeps[i]]);
+                pPlayer->GiveWeapon(vecCurrentWeps[i]);
             }
 
             pPlayer->Weapon_Switch(pPlayer->GetWeapon(iActiveWpn));
@@ -316,7 +316,7 @@ CON_COMMAND(weapon_reload_script_current, "Reloads weapon script for the current
         g_pWeaponDef->ReloadWeaponDefinition(iWpnID);
 
         const auto pName = g_szWeaponNames[iWpnID];
-        pPlayer->GiveNamedItem(pName);
+        pPlayer->GiveWeapon(iWpnID);
         pPlayer->Weapon_Switch(pPlayer->GetWeapon(iWpnID));
 
         Msg("Successfully reloaded weapon script for weapon %s.\n", pName);

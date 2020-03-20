@@ -122,8 +122,8 @@ void CGameMode_RJ::SetGameModeVars()
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
-    pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
-    pPlayer->GiveNamedItem("weapon_momentum_shotgun");
+    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_SHOTGUN);
 #endif
 }
 
@@ -153,8 +153,8 @@ void CGameMode_SJ::SetGameModeVars()
 void CGameMode_SJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
-    pPlayer->GiveNamedItem("weapon_momentum_stickylauncher");
-    pPlayer->GiveNamedItem("weapon_momentum_pistol");
+    pPlayer->GiveWeapon(WEAPON_STICKYLAUNCHER);
+    pPlayer->GiveWeapon(WEAPON_PISTOL);
 #endif
 }
 
