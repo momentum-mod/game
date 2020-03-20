@@ -5737,24 +5737,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		EquipSuit();
 
 		// Give the player everything!
-        // MOM_TODO give the player all momentum guns
-		GiveNamedItem( "weapon_smg1" );
-		GiveNamedItem( "weapon_frag" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_pistol" );
-		GiveNamedItem( "weapon_ar2" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "weapon_physcannon" );
-		GiveNamedItem( "weapon_bugbait" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "weapon_crossbow" );
-#ifdef HL2_EPISODIC
-		// GiveNamedItem( "weapon_magnade" );
-#endif
-		if ( GetHealth() < 100 )
+		for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
 		{
-			TakeHealth( 25, DMG_GENERIC );
+		    GiveNamedItem(g_szWeaponNames[weaponID]);
 		}
 		
 		gEvilImpulse101		= false;
