@@ -182,33 +182,6 @@ ConVar  sv_player_display_usercommand_errors( "sv_player_display_usercommand_err
 ConVar  player_debug_print_damage( "player_debug_print_damage", "0", FCVAR_CHEAT, "When true, print amount and type of all damage received by player to console." );
 
 
-void CC_GiveCurrentAmmo( void )
-{
-	CBasePlayer *pPlayer = UTIL_PlayerByIndex(1);
-
-	if( pPlayer )
-	{
-		CBaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
-
-		if( pWeapon )
-		{
-            int ammoIndex = -1;
-			if( pWeapon->UsesPrimaryAmmo() )
-			{
-				ammoIndex = pWeapon->GetPrimaryAmmoType();
-			}
-            else if (pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo())
-            {
-                ammoIndex = pWeapon->GetSecondaryAmmoType();
-            }
-
-            pPlayer->GiveAmmo(g_pAmmoDef->MaxCarry(ammoIndex), ammoIndex);
-		}
-	}
-}
-static ConCommand givecurrentammo("givecurrentammo", CC_GiveCurrentAmmo, "Give a supply of ammo for current weapon..\n", FCVAR_CHEAT );
-
-
 // pl
 BEGIN_SIMPLE_DATADESC( CPlayerState )
 	// DEFINE_FIELD( netname, FIELD_STRING ),  // Don't stomp player name with what's in save/restore
