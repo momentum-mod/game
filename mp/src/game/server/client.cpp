@@ -859,7 +859,7 @@ static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETI
 
 	int current = 0;
 	// Skip over weapon_none
-	for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
+	for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
 	{
 		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed((WeaponID_t)weaponID))
 			continue;
@@ -882,7 +882,7 @@ CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCom
 	if (pPlayer && !pPlayer->IsObserver() && args.ArgC() == 2)
 	{
 		WeaponID_t foundID = WEAPON_NONE;
-		for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
+		for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
 		{
 		    if (!Q_strnicmp(g_szWeaponNames[weaponID], args.Arg(1), 64))
 		    {
