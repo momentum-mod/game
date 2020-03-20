@@ -892,6 +892,58 @@ CON_COMMAND( give, "Give item to player.\n\tArguments: <item_name>" )
 	}
 }
 
+static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+	const auto pCmdName = "give_weapon";
+	char *substring = nullptr;
+	if (Q_strstr(pPartial, pCmdName) && strlen(pPartial) > strlen(pCmdName) + 1)
+	{
+		substring = (char *)pPartial + strlen(pCmdName) + 1;
+	}
+
+	int current = 0;
+	// Skip over weapon_none
+	for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
+	{
+	    if ((!substring || !substring[0]) || Q_stristr(g_szWeaponNames[weaponID], substring))
+	    {
+			char command[COMMAND_COMPLETION_ITEM_LENGTH];
+			Q_snprintf(command, COMMAND_COMPLETION_ITEM_LENGTH, "%s %s", pCmdName, g_szWeaponNames[weaponID]);
+	        Q_strncpy(commands[current], command, COMMAND_COMPLETION_ITEM_LENGTH);
+			current++;
+	    }
+	}
+
+	return current;
+}
+
+CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCompletion)
+{
+	CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+	if (pPlayer && !pPlayer->IsObserver() && args.ArgC() == 2)
+	{
+		bool bFound = false;
+		for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
+		{
+		    if (!Q_strnicmp(g_szWeaponNames[weaponID], args.Arg(1), 64))
+		    {
+	            bFound = true;
+				break;
+		    }
+		}
+
+		if (!bFound)
+		{
+		    Warning("Could not give weapon with name %s, weapon not found!\n", args.Arg(1));
+			return;
+		}
+
+		char item[64];
+		Q_strncpy(item, args.Arg(1), 64);
+		Q_strnlwr(item, 64);
+		pPlayer->GiveNamedItem(item);
+	}
+}
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
