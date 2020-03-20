@@ -848,51 +848,6 @@ CON_COMMAND( say_team, "Display player message to team" )
 	}
 }
 
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-CON_COMMAND( give, "Give item to player.\n\tArguments: <item_name>" )
-{
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( pPlayer 
-		&& (gpGlobals->maxClients == 1 || sv_cheats->GetBool()) 
-		&& args.ArgC() >= 2
-		&& !pPlayer->IsObserver() )
-	{
-		char item_to_give[ 256 ];
-		Q_strncpy( item_to_give, args[1], sizeof( item_to_give ) );
-		Q_strlower( item_to_give );
-
-		// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
-		if ( !Q_stricmp( item_to_give, "point_servercommand" ) )
-		{
-			if ( engine->IsDedicatedServer() )
-			{
-				// We allow people with disabled autokick to do it, because they already have rcon.
-				if ( pPlayer->IsAutoKickDisabled() == false )
-					return;
-			}
-			else if ( gpGlobals->maxClients > 1 )
-			{
-				// On listen servers with more than 1 player, only allow the host to create point_servercommand.
-				CBasePlayer *pHostPlayer = UTIL_GetListenServerHost();
-				if ( pPlayer != pHostPlayer )
-					return;
-			}
-		}
-
-		// Dirty hack to avoid suit playing it's pickup sound
-		if ( !Q_stricmp( item_to_give, "item_suit" ) )
-		{
-			pPlayer->EquipSuit( false );
-			return;
-		}
-
-		string_t iszItem = AllocPooledString( item_to_give );	// Make a copy of the classname
-		pPlayer->GiveNamedItem( STRING(iszItem) );
-	}
-}
-
 static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
 	const auto pCmdName = "give_weapon";
