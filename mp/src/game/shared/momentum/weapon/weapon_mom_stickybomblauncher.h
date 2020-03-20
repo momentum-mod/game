@@ -27,7 +27,6 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
 
-    bool CanDeploy() OVERRIDE;
     bool Deploy() OVERRIDE;
     bool Holster(CBaseCombatWeapon *pSwitchingTo) OVERRIDE;
     void WeaponIdle() OVERRIDE;
