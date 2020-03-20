@@ -25,8 +25,11 @@ static ConCommand sv_tickrate("sv_tickrate", OnTickRateSet,
 float *TickSet::interval_per_tick = nullptr;
 
 const Tickrate TickSet::s_DefinedRates[] = {
+    { 0.015625f, "64" },
     { 0.015f, "66" },
-    { 0.01f, "100" }
+    { 0.01171875f, "85" },
+    { 0.01f, "100" },
+    { 0.0078125f, "128" }
 };
 Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
 bool TickSet::m_bInGameUpdate = false;
@@ -74,8 +77,16 @@ bool TickSet::SetTickrate(float tickrate)
     if (!CloseEnough(m_trCurrent.fTickRate, tickrate, FLT_EPSILON))
     {
         Tickrate tr;
-        if (CloseEnough(tickrate, 0.01f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_100];
-        else if (CloseEnough(tickrate, 0.015f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_66];
+        if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_128].fTickRate, FLT_EPSILON))
+            tr = s_DefinedRates[TICKRATE_128];
+        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_100].fTickRate, FLT_EPSILON))
+            tr = s_DefinedRates[TICKRATE_100];
+        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_85].fTickRate, FLT_EPSILON))
+            tr = s_DefinedRates[TICKRATE_85];
+        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_66].fTickRate, FLT_EPSILON))
+            tr = s_DefinedRates[TICKRATE_66];
+        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_64].fTickRate, FLT_EPSILON))
+            tr = s_DefinedRates[TICKRATE_64];
         else
         {
             tr.fTickRate = tickrate;
