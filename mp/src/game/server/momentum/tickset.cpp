@@ -154,11 +154,12 @@ static int OnTickRateAutocomplete(const char* partial,
     unsigned suggestionCount = 0;
 
     // Search defined rates for one with a string matching the command argument.
-    for (unsigned rateI = 0; rateI < rateCount; rateI++)
+    for (unsigned rateI = 0; rateI < rateCount && rateI < COMMAND_COMPLETION_MAXITEMS; rateI++)
     {
         if (!strncmp(partial, TickSet::s_DefinedRates[rateI].sType, partialLength))
         {
-            strcpy(commands[suggestionCount], TickSet::s_DefinedRates[rateI].sType);
+            strncpy(commands[suggestionCount], TickSet::s_DefinedRates[rateI].sType,
+                COMMAND_COMPLETION_ITEM_LENGTH);
             ++suggestionCount;
         }
     }
