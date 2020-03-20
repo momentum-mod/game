@@ -29,7 +29,17 @@ bool CMomServerEvents::Init()
         FileFindHandle_t handle;
         const auto pFound = g_pFullFileSystem->FindFirstEx("addons/*.vdf", "GAME", &handle);
         if (pFound)
-            Error("Boot the game with -mapping to be able to use plugins!");
+        {
+            char foundFile[MAX_PATH];
+            Q_snprintf(foundFile, MAX_PATH, "addons/%s", pFound);
+
+            char fullPath[MAX_PATH];
+            g_pFullFileSystem->RelativePathToFullPath_safe(foundFile, "GAME", fullPath);
+
+            Error("Boot the game with -mapping to be able to use plugins!\n"
+                "A common fix to this is to rename your \"addons\" folder in your TF2/CSS folders.\n"
+                "Full path to bad folder: %s", fullPath);
+        }
 
         g_pFullFileSystem->FindClose(handle);
 
@@ -39,6 +49,7 @@ bool CMomServerEvents::Init()
         UnloadConVarOrCommand("net_fakeloss");
         UnloadConVarOrCommand("net_droppackets");
         UnloadConVarOrCommand("net_fakejitter");
+        UnloadConVarOrCommand("net_blockmsg");
         UnloadConVarOrCommand("singlestep");
         UnloadConVarOrCommand("host_sleep");
         UnloadConVarOrCommand("map_edit");
