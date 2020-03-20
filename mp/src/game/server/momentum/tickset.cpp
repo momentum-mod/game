@@ -7,11 +7,12 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-float* TickSet::interval_per_tick = nullptr;
+static void OnIntervalPerTickChange(IConVar *var, const char *pOldValue, float fOldValue);
 
 MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
     "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, "
     "so 100 tickrate = 0.01.", 0.001f, 0.1f, OnIntervalPerTickChange);
+float *TickSet::interval_per_tick = nullptr;
 const Tickrate TickSet::s_DefinedRates[] = {
     { 0.015f, "66" },
     { 0.01f, "100" }
@@ -100,7 +101,8 @@ bool TickSet::SetTickrate(Tickrate trNew)
     return false;
 }
 
-static void OnTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
+
+static void OnIntervalPerTickChange(IConVar *var, const char* pOldValue, float fOldValue)
 {
     ConVarRef tr(var);
     float tickrate = tr.GetFloat();
