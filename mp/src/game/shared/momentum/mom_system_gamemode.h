@@ -22,6 +22,7 @@ public:
     virtual void        OnPlayerSpawn(CMomentumPlayer *pPlayer) = 0;
     virtual void        ExecGameModeCfg() = 0;
     virtual float       GetIntervalPerTick() = 0;
+    virtual bool        WeaponIsAllowed(WeaponID_t weapon) = 0;
 
     // Movement vars
     virtual float       GetViewScale() = 0;
@@ -45,6 +46,7 @@ public:
     bool PlayerHasAutoBhop() override { return true; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     void ExecGameModeCfg() override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override { return true; } // Unknown allows all weapons
 };
 
 class CGameMode_Surf : public CGameModeBase
@@ -55,6 +57,7 @@ public:
     const char* GetDiscordIcon() override { return "mom_icon_surf"; }
     const char* GetMapPrefix() override { return "surf_"; }
     const char* GetGameModeCfg() override { return "surf.cfg"; }
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
 };
 
 class CGameMode_Bhop : public CGameModeBase
@@ -67,6 +70,7 @@ public:
     const char* GetGameModeCfg() override { return "bhop.cfg"; }
     float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
 };
 
 class CGameMode_KZ : public CGameModeBase
@@ -80,6 +84,7 @@ public:
     float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
 };
 
 class CGameMode_RJ : public CGameModeBase
@@ -95,6 +100,7 @@ public:
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
 };
 
 class CGameMode_SJ : public CGameModeBase
@@ -110,6 +116,7 @@ class CGameMode_SJ : public CGameModeBase
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
 };
 
 class CGameMode_Tricksurf : public CGameModeBase
