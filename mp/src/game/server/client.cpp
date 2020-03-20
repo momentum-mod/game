@@ -864,13 +864,13 @@ static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETI
 		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed((WeaponID_t)weaponID))
 			continue;
 
-	    if ((!substring || !substring[0]) || Q_stristr(g_szWeaponNames[weaponID], substring))
-	    {
+		if ((!substring || !substring[0]) || Q_stristr(g_szWeaponNames[weaponID], substring))
+		{
 			char command[COMMAND_COMPLETION_ITEM_LENGTH];
 			Q_snprintf(command, COMMAND_COMPLETION_ITEM_LENGTH, "%s %s", pCmdName, g_szWeaponNames[weaponID]);
-	        Q_strncpy(commands[current], command, COMMAND_COMPLETION_ITEM_LENGTH);
+			Q_strncpy(commands[current], command, COMMAND_COMPLETION_ITEM_LENGTH);
 			current++;
-	    }
+		}
 	}
 
 	return current;
@@ -884,24 +884,24 @@ CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCom
 		WeaponID_t foundID = WEAPON_NONE;
 		for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
 		{
-		    if (!Q_strnicmp(g_szWeaponNames[weaponID], args.Arg(1), 64))
-		    {
-	            foundID = (WeaponID_t)weaponID;
+			if (!Q_strnicmp(g_szWeaponNames[weaponID], args.Arg(1), 64))
+			{
+				foundID = (WeaponID_t)weaponID;
 				break;
-		    }
+			}
 		}
 
 		if (foundID == WEAPON_NONE)
 		{
-		    Warning("Could not give weapon with name %s, weapon not found!\n", args.Arg(1));
+			Warning("Could not give weapon with name %s, weapon not found!\n", args.Arg(1));
 			return;
 		}
 
-	    if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed(foundID))
-	    {
-	        Warning("The weapon %s is not allowed in this gamemode!\n", args.Arg(1));
+		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed(foundID))
+		{
+			Warning("The weapon %s is not allowed in this gamemode!\n", args.Arg(1));
 			return;
-	    }
+		}
 
 		pPlayer->GiveWeapon(foundID);
 	}

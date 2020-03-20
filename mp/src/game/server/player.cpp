@@ -5712,7 +5712,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		// Give the player everything!
 		for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
 		{
-		    GiveNamedItem(g_szWeaponNames[weaponID]);
+			GiveNamedItem(g_szWeaponNames[weaponID]);
 		}
 		
 		gEvilImpulse101		= false;
