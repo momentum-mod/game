@@ -9,6 +9,10 @@
 
 static void OnIntervalPerTickChange(IConVar *var, const char *pOldValue, float fOldValue);
 
+static void OnTickRateSet(const CCommand &command);
+static int OnTickRateAutocomplete(const char *partial,
+    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+
 MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
     "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, "
     "so 100 tickrate = 0.01.", 0.001f, 0.1f, OnIntervalPerTickChange);
@@ -101,6 +105,48 @@ bool TickSet::SetTickrate(Tickrate trNew)
     return false;
 }
 
+
+static void OnTickRateSet(const CCommand &command)
+{
+    constexpr unsigned rateCount = sizeof(TickSet::s_DefinedRates) /
+        sizeof(*TickSet::s_DefinedRates);
+
+    // Search defined rates for one with a string matching the command argument.
+    for (unsigned rateI = 0; rateI < rateCount; rateI++)
+    {
+        if (!strcmp(command.ArgS(), TickSet::s_DefinedRates[rateI].sType))
+        {
+            TickSet::SetTickrate(TickSet::s_DefinedRates[rateI].fTickRate);
+            return;
+        }
+    }
+    Warning("Unknown tickrate. Use sv_interval_per_tick to set custom tickrates.");
+}
+
+static int OnTickRateAutocomplete(const char* partial,
+    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    constexpr unsigned rateCount = sizeof(TickSet::s_DefinedRates) /
+        sizeof(*TickSet::s_DefinedRates);
+
+    // Move start of the string to expected start of parameter. (null char counted for space)
+    partial += sizeof("sv_tickrate");
+
+    const unsigned partialLength = strlen(partial);
+    unsigned suggestionCount = 0;
+
+    // Search defined rates for one with a string matching the command argument.
+    for (unsigned rateI = 0; rateI < rateCount; rateI++)
+    {
+        if (!strncmp(partial, TickSet::s_DefinedRates[rateI].sType, partialLength))
+        {
+            strcpy(commands[suggestionCount], TickSet::s_DefinedRates[rateI].sType);
+            ++suggestionCount;
+        }
+    }
+
+    return suggestionCount;
+}
 
 static void OnIntervalPerTickChange(IConVar *var, const char* pOldValue, float fOldValue)
 {
