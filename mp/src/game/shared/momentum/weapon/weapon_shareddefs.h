@@ -24,6 +24,9 @@ enum WeaponID_t
     WEAPON_STICKYLAUNCHER,
 
     WEAPON_MAX, // number of weapons weapon index
+
+    WEAPON_FIRST = WEAPON_PISTOL,
+    WEAPON_LAST = WEAPON_STICKYLAUNCHER,
 };
 
 static const char *const g_szWeaponNames[WEAPON_MAX] = 

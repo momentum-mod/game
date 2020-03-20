@@ -5710,7 +5710,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		EquipSuit();
 
 		// Give the player everything!
-		for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
+		for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
 		{
 		    GiveNamedItem(g_szWeaponNames[weaponID]);
 		}
