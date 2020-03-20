@@ -16,7 +16,14 @@ static int OnTickRateAutocomplete(const char *partial,
 MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
     "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, "
     "so 100 tickrate = 0.01.", 0.001f, 0.1f, OnIntervalPerTickChange);
+
+static ConCommand sv_tickrate("sv_tickrate", OnTickRateSet,
+    "Changes the tickrate to one of a defined set of values. "
+    "Custom tickrates can be set using sv_interval_per_tick.",
+    0, OnTickRateAutocomplete);
+
 float *TickSet::interval_per_tick = nullptr;
+
 const Tickrate TickSet::s_DefinedRates[] = {
     { 0.015f, "66" },
     { 0.01f, "100" }
