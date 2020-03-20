@@ -31,8 +31,8 @@ const Tickrate TickSet::s_DefinedRates[] = {
     { 0.01f, "100" },
     { 0.0078125f, "128" }
 };
+
 Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
-bool TickSet::m_bInGameUpdate = false;
 
 bool TickSet::TickInit()
 {
