@@ -18,8 +18,8 @@ class GamemodeSettingsPage : public SettingsPage
 
     CvarTextEntry *m_pRJRocketDrawDelayEntry;
 
-    CvarToggleCheckButton *m_pSJEnableExplosionParticle, *m_pSJEnableExplosionSound, *m_pSJEnableCharge,
-                          *m_pSJEnableChargeMeter, *m_pSJEnableStickyCounter;
+    CvarToggleCheckButton *m_pSJEnableExplosionParticle, *m_pSJEnableExplosionSound, *m_pSJEnableDetonateSuccessSound,
+                          *m_pSJEnableDetonateFailSound, *m_pSJEnableChargeSound, *m_pSJEnableChargeMeter, *m_pSJEnableStickyCounter;
 
     CvarTextEntry *m_pSJStickyDrawDelayEntry;
 };
