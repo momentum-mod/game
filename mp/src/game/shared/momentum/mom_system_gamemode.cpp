@@ -66,6 +66,13 @@ void CGameModeBase::ExecGameModeCfg()
 #endif
 }
 
+bool CGameMode_Surf::WeaponIsAllowed(WeaponID_t weapon)
+{
+    // Surf only blacklists weapons
+    return weapon != WEAPON_ROCKETLAUNCHER &&
+           weapon != WEAPON_STICKYLAUNCHER;
+}
+
 void CGameMode_Bhop::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
@@ -75,6 +82,13 @@ void CGameMode_Bhop::SetGameModeVars()
     sv_airaccelerate.SetValue(1000);
 }
 
+bool CGameMode_Bhop::WeaponIsAllowed(WeaponID_t weapon)
+{
+    // Bhop only blacklists weapons
+    return weapon != WEAPON_ROCKETLAUNCHER &&
+           weapon != WEAPON_STICKYLAUNCHER;
+}
+
 void CGameMode_KZ::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
@@ -82,6 +96,13 @@ void CGameMode_KZ::SetGameModeVars()
     // KZ-specific
     sv_airaccelerate.SetValue(100);
     sv_maxspeed.SetValue(250);
+}
+
+bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)
+{
+    // KZ only blacklists weapons
+    return weapon != WEAPON_ROCKETLAUNCHER &&
+           weapon != WEAPON_STICKYLAUNCHER;
 }
 
 void CGameMode_RJ::SetGameModeVars()
@@ -98,6 +119,23 @@ void CGameMode_RJ::SetGameModeVars()
     sv_ground_trigger_fix.SetValue(false); // MOM_TODO Remove when bounce triggers have been implemented
 }
 
+void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+#ifdef GAME_DLL
+    pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
+    pPlayer->GiveNamedItem("weapon_momentum_shotgun");
+#endif
+}
+
+bool CGameMode_RJ::WeaponIsAllowed(WeaponID_t weapon)
+{
+    // RJ only allows 3 weapons + paintgun:
+    return weapon == WEAPON_ROCKETLAUNCHER ||
+           weapon == WEAPON_SHOTGUN        ||
+           weapon == WEAPON_KNIFE          ||
+           weapon == WEAPON_PAINTGUN;
+}
+
 void CGameMode_SJ::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
@@ -112,20 +150,21 @@ void CGameMode_SJ::SetGameModeVars()
     sv_ground_trigger_fix.SetValue(false); // MOM_TODO Remove when bounce triggers have been implemented
 }
 
-void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
-{
-#ifdef GAME_DLL
-    pPlayer->GiveNamedItem("weapon_momentum_rocketlauncher");
-    pPlayer->GiveNamedItem("weapon_momentum_shotgun");
-#endif
-}
-
 void CGameMode_SJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
     pPlayer->GiveNamedItem("weapon_momentum_stickylauncher");
     pPlayer->GiveNamedItem("weapon_momentum_pistol");
 #endif
+}
+
+bool CGameMode_SJ::WeaponIsAllowed(WeaponID_t weapon)
+{
+    // SJ only allows 3 weapons + paintgun:
+    return weapon == WEAPON_STICKYLAUNCHER ||
+           weapon == WEAPON_PISTOL         ||
+           weapon == WEAPON_KNIFE          ||
+           weapon == WEAPON_PAINTGUN;
 }
 
 void CGameMode_Tricksurf::SetGameModeVars()
