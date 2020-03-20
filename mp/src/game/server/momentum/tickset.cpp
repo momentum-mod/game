@@ -8,6 +8,10 @@
 #include "tier0/memdbgon.h"
 
 float* TickSet::interval_per_tick = nullptr;
+
+MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
+    "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, "
+    "so 100 tickrate = 0.01.", 0.001f, 0.1f, OnIntervalPerTickChange);
 const Tickrate TickSet::s_DefinedRates[] = {
     { 0.015f, "66" },
     { 0.01f, "100" }
@@ -112,7 +116,3 @@ static void OnTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     }*/
     TickSet::SetTickrate(tickrate);
 }
-
-MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING, 
-              "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01\n",
-              0.001f, 0.1f, OnTickRateChange);
