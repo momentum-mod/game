@@ -34,8 +34,11 @@ public:
 
     enum
     {
-        TICKRATE_66 = 0,
-        TICKRATE_100 = 1    
+        TICKRATE_64 = 0,
+        TICKRATE_66 = 1,
+        TICKRATE_85 = 2,
+        TICKRATE_100 = 3,
+        TICKRATE_128 = 4
     };
 
     static bool TickInit();
