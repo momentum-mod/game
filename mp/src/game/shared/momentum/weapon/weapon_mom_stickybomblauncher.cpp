@@ -445,11 +445,3 @@ float CMomentumStickybombLauncher::GetChargeMaxTime()
 {
     return MOM_STICKYBOMB_MAX_CHARGE_TIME;
 }
-
-bool CMomentumStickybombLauncher::CanDeploy()
-{
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
-        return false;
-
-    return BaseClass::CanDeploy();
-}

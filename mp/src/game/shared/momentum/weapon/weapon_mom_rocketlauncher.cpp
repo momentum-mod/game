@@ -213,11 +213,3 @@ void CMomentumRocketLauncher::PrimaryAttack()
     g_pMomentumGhostClient->SendDecalPacket(&rocket);
 #endif
 }
-
-bool CMomentumRocketLauncher::CanDeploy()
-{
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-        return false;
-
-    return BaseClass::CanDeploy();
-}
