@@ -20,6 +20,10 @@
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
 #define MOM_STICKYBOMB_BUFFER_WINDOW 0.05f
 
+MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_fail_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate fail sound. 0 = OFF, 1 = ON\n");
+MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_success_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate success sound. 0 = OFF, 1 = ON\n");
+MAKE_TOGGLE_CONVAR(mom_sj_sound_charge_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher charging sound. 0 = OFF, 1 = ON\n");
+
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
 BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
@@ -212,7 +216,11 @@ void CMomentumStickybombLauncher::PrimaryAttack()
         if (m_bIsChargeEnabled.Get())
         {
             SendWeaponAnim(ACT_VM_PULLBACK);
-            WeaponSound(GetWeaponSound("charge"));
+
+            if (mom_sj_sound_charge_enable.GetBool())
+            {
+                WeaponSound(GetWeaponSound("charge"));
+            }
         }
     }
     else
@@ -237,17 +245,27 @@ void CMomentumStickybombLauncher::SecondaryAttack()
 
     const auto detStatus = DetonateRemoteStickybombs(false);
 
+    bool bPlayedFail = false;
     if (detStatus & DET_STATUS_FAIL)
     {
         if (m_flLastDenySoundTime <= gpGlobals->curtime)
         {
             m_flLastDenySoundTime = gpGlobals->curtime + 1.0f;
-            WeaponSound(GetWeaponSound("deny"));
+
+            if (mom_sj_sound_detonate_fail_enable.GetBool())
+            {
+                WeaponSound(GetWeaponSound("deny"));
+                bPlayedFail = true;
+            }
         }
     }
-    else if (detStatus & DET_STATUS_SUCCESS)
+
+    if (!bPlayedFail && (detStatus & DET_STATUS_SUCCESS))
     {
-        WeaponSound(GetWeaponSound("detonate"));
+        if (mom_sj_sound_detonate_success_enable.GetBool())
+        {
+            WeaponSound(GetWeaponSound("detonate"));
+        }
     }
 }
 
