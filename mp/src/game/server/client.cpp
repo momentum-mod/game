@@ -851,11 +851,13 @@ CON_COMMAND( say_team, "Display player message to team" )
 static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
 	const auto pCmdName = "give_weapon";
-	char *substring = nullptr;
+	char *pSubstring = nullptr;
 	if (Q_strstr(pPartial, pCmdName) && strlen(pPartial) > strlen(pCmdName) + 1)
 	{
-		substring = (char *)pPartial + strlen(pCmdName) + 1;
+		pSubstring = (char *)pPartial + strlen(pCmdName) + 1;
 	}
+
+	const bool bSubstringNullOrEmpty = !pSubstring || !pSubstring[0];
 
 	int current = 0;
 	// Skip over weapon_none
@@ -864,7 +866,7 @@ static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETI
 		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed((WeaponID_t)weaponID))
 			continue;
 
-		if ((!substring || !substring[0]) || Q_stristr(g_szWeaponNames[weaponID], substring))
+		if (bSubstringNullOrEmpty || Q_stristr(g_szWeaponNames[weaponID], pSubstring))
 		{
 			char command[COMMAND_COMPLETION_ITEM_LENGTH];
 			Q_snprintf(command, COMMAND_COMPLETION_ITEM_LENGTH, "%s %s", pCmdName, g_szWeaponNames[weaponID]);
