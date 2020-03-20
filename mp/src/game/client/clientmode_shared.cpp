@@ -553,6 +553,11 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 {
 	if ( engine->Con_IsVisible() )
 		return 1;
+
+	if (vgui::input()->GetAppModalSurface() != 0)
+	{
+		return 0;
+	}
 	
 	// Should we start typing a message?
 	if ( pszCurrentBinding &&
