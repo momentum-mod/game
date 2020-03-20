@@ -391,6 +391,10 @@
         
         "MOM_Settings_SJ_Enable_Explosion_Particle" "Enable stickybomb explosion particle"
         "MOM_Settings_SJ_Enable_Explosion_Sound" "Enable stickybomb explosion sound"
+        "MOM_Settings_SJ_Enable_Detonation_Fail_Sound" "Enable stickybomb detonation fail sound"
+        "MOM_Settings_SJ_Enable_Detonation_Fail_Sound_TT" "Note: if this is disabled and success sound is enabled, success sound will play if partial detonation happens."
+        "MOM_Settings_SJ_Enable_Detonation_Success_Sound" "Enable stickybomb detonation success sound"
+        "MOM_Settings_SJ_Enable_Charge_Sound" "Enable sticky launcher charging sound"
         "MOM_Settings_SJ_Enable_ChargeMeter" "Enable charge meter"
         "MOM_Settings_SJ_Enable_Sticky_Counter" "Enable stickybomb counter"
         "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"
