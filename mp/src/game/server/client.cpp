@@ -923,7 +923,7 @@ static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETI
 
 CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCompletion)
 {
-	CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+	const auto pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
 	if (pPlayer && !pPlayer->IsObserver() && args.ArgC() == 2)
 	{
 		WeaponID_t foundID = WEAPON_NONE;
@@ -948,10 +948,7 @@ CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCom
 			return;
 	    }
 
-		char item[64];
-		Q_strncpy(item, args.Arg(1), 64);
-		Q_strnlwr(item, 64);
-		pPlayer->GiveNamedItem(item);
+		pPlayer->GiveWeapon(foundID);
 	}
 }
 
