@@ -379,6 +379,11 @@ bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
     return BaseClass::BumpWeapon(pWeapon);
 }
 
+bool CMomentumPlayer::Weapon_CanUse(CBaseCombatWeapon *pWeapon)
+{
+    return g_pGameModeSystem->GetGameMode()->WeaponIsAllowed(pWeapon->GetWeaponID());
+}
+
 void CMomentumPlayer::FlashlightTurnOn()
 {
     // Emit sound by default
