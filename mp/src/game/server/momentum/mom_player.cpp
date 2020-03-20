@@ -384,6 +384,17 @@ bool CMomentumPlayer::Weapon_CanUse(CBaseCombatWeapon *pWeapon)
     return g_pGameModeSystem->GetGameMode()->WeaponIsAllowed(pWeapon->GetWeaponID());
 }
 
+bool CMomentumPlayer::GiveWeapon(WeaponID_t weapon)
+{
+    if (GetWeapon(weapon))
+    {
+        Warning("Failed to give the player the weapon %s, they already have it!\n", g_szWeaponNames[weapon]);
+        return false;
+    }
+
+    return GiveNamedItem(g_szWeaponNames[weapon]) != nullptr;
+}
+
 void CMomentumPlayer::FlashlightTurnOn()
 {
     // Emit sound by default
