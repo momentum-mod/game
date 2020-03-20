@@ -7,11 +7,52 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-static void OnIntervalPerTickChange(IConVar *var, const char *pOldValue, float fOldValue);
+static void OnIntervalPerTickChange(IConVar *var, const char *pOldValue, float fOldValue)
+{
+    ConVarRef tr(var);
+    float tickrate = tr.GetFloat();
+    if (CloseEnough(tickrate, TickSet::GetTickrate(), FLT_EPSILON))
+        return;
 
-static void OnTickRateSet(const CCommand &command);
+    TickSet::SetTickrate(tickrate);
+}
+
+static void OnTickRateSet(const CCommand &command)
+{
+    // Search defined rates for one with a string matching the command argument.
+    for (unsigned rateIndx = TickSet::TICKRATE_FIRST; rateIndx < TickSet::TICKRATE_COUNT; rateIndx++)
+    {
+        if (!strcmp(command.ArgS(), TickSet::s_DefinedRates[rateIndx].sType))
+        {
+            TickSet::SetTickrate(TickSet::s_DefinedRates[rateIndx].fTickRate);
+            return;
+        }
+    }
+    Warning("Unknown tickrate. Use \"sv_interval_per_tick\" to set custom tickrates.");
+}
+
 static int OnTickRateAutocomplete(const char *partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
+                                  char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    // Move start of the string to expected start of parameter.
+    partial += 12; // strlen("sv_tickrate ")
+
+    const unsigned partialLength = Q_strlen(partial);
+    int suggestionCount = 0;
+
+    // Search defined rates for one with a string matching the command argument.
+    for (unsigned rateIndx = TickSet::TICKRATE_FIRST; rateIndx < TickSet::TICKRATE_COUNT && suggestionCount < COMMAND_COMPLETION_MAXITEMS; rateIndx++)
+    {
+        if (!Q_strncmp(partial, TickSet::s_DefinedRates[rateIndx].sType, partialLength))
+        {
+            Q_strncpy(commands[suggestionCount], TickSet::s_DefinedRates[rateIndx].sType,
+                      COMMAND_COMPLETION_ITEM_LENGTH);
+            ++suggestionCount;
+        }
+    }
+
+    return suggestionCount;
+}
 
 MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
     "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, "
@@ -19,8 +60,8 @@ MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
 
 static ConCommand sv_tickrate("sv_tickrate", OnTickRateSet,
     "Changes the tickrate to one of a defined set of values. "
-    "Custom tickrates can be set using sv_interval_per_tick.",
-    0, OnTickRateAutocomplete);
+    "Custom tickrates can be set using \"sv_interval_per_tick.\"",
+    FCVAR_MAPPING, OnTickRateAutocomplete);
 
 float *TickSet::interval_per_tick = nullptr;
 
@@ -76,21 +117,14 @@ bool TickSet::SetTickrate(float tickrate)
 {
     if (!CloseEnough(m_trCurrent.fTickRate, tickrate, FLT_EPSILON))
     {
-        Tickrate tr;
-        if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_128].fTickRate, FLT_EPSILON))
-            tr = s_DefinedRates[TICKRATE_128];
-        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_100].fTickRate, FLT_EPSILON))
-            tr = s_DefinedRates[TICKRATE_100];
-        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_85].fTickRate, FLT_EPSILON))
-            tr = s_DefinedRates[TICKRATE_85];
-        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_66].fTickRate, FLT_EPSILON))
-            tr = s_DefinedRates[TICKRATE_66];
-        else if (CloseEnough(tickrate, s_DefinedRates[TICKRATE_64].fTickRate, FLT_EPSILON))
-            tr = s_DefinedRates[TICKRATE_64];
-        else
+        Tickrate tr = {tickrate, "CUSTOM"};
+        for (int tickRateIndx = TICKRATE_FIRST; tickRateIndx < TICKRATE_COUNT; tickRateIndx++)
         {
-            tr.fTickRate = tickrate;
-            tr.sType = "CUSTOM";
+            if (CloseEnough(tickrate, s_DefinedRates[tickRateIndx].fTickRate, FLT_EPSILON))
+            {
+                tr = s_DefinedRates[tickRateIndx];
+                break;
+            }
         }
         return SetTickrate(tr);
     }
@@ -121,65 +155,4 @@ bool TickSet::SetTickrate(Tickrate trNew)
     }
     Warning("Failed to set tickrate: bad hook\n");
     return false;
-}
-
-
-static void OnTickRateSet(const CCommand &command)
-{
-    constexpr unsigned rateCount = sizeof(TickSet::s_DefinedRates) /
-        sizeof(*TickSet::s_DefinedRates);
-
-    // Search defined rates for one with a string matching the command argument.
-    for (unsigned rateI = 0; rateI < rateCount; rateI++)
-    {
-        if (!strcmp(command.ArgS(), TickSet::s_DefinedRates[rateI].sType))
-        {
-            TickSet::SetTickrate(TickSet::s_DefinedRates[rateI].fTickRate);
-            return;
-        }
-    }
-    Warning("Unknown tickrate. Use sv_interval_per_tick to set custom tickrates.");
-}
-
-static int OnTickRateAutocomplete(const char* partial,
-    char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
-{
-    constexpr unsigned rateCount = sizeof(TickSet::s_DefinedRates) /
-        sizeof(*TickSet::s_DefinedRates);
-
-    // Move start of the string to expected start of parameter. (null char counted for space)
-    partial += sizeof("sv_tickrate");
-
-    const unsigned partialLength = strlen(partial);
-    unsigned suggestionCount = 0;
-
-    // Search defined rates for one with a string matching the command argument.
-    for (unsigned rateI = 0; rateI < rateCount && rateI < COMMAND_COMPLETION_MAXITEMS; rateI++)
-    {
-        if (!strncmp(partial, TickSet::s_DefinedRates[rateI].sType, partialLength))
-        {
-            strncpy(commands[suggestionCount], TickSet::s_DefinedRates[rateI].sType,
-                COMMAND_COMPLETION_ITEM_LENGTH);
-            ++suggestionCount;
-        }
-    }
-
-    return suggestionCount;
-}
-
-static void OnIntervalPerTickChange(IConVar *var, const char* pOldValue, float fOldValue)
-{
-    ConVarRef tr(var);
-    float tickrate = tr.GetFloat();
-    if (CloseEnough(tickrate, TickSet::GetTickrate(), FLT_EPSILON)) return;
-    //MOM_TODO: Re-implement the bound
-
-    /*
-    if (toCheck < 0.01f || toCheck > 0.015f)
-    {
-        Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
-        var->SetValue(((ConVar*) var)->GetDefault());
-        return;
-    }*/
-    TickSet::SetTickrate(tickrate);
 }
