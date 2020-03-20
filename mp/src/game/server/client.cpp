@@ -34,6 +34,7 @@
 #include "icommandline.h"
 #include "mom_gamerules.h"
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 
 #ifdef HL2_DLL
 #include "weapon_physcannon.h"
@@ -905,6 +906,9 @@ static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETI
 	// Skip over weapon_none
 	for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
 	{
+		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed((WeaponID_t)weaponID))
+			continue;
+
 	    if ((!substring || !substring[0]) || Q_stristr(g_szWeaponNames[weaponID], substring))
 	    {
 			char command[COMMAND_COMPLETION_ITEM_LENGTH];
@@ -922,21 +926,27 @@ CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCom
 	CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
 	if (pPlayer && !pPlayer->IsObserver() && args.ArgC() == 2)
 	{
-		bool bFound = false;
+		WeaponID_t foundID = WEAPON_NONE;
 		for (int weaponID = WEAPON_PISTOL; weaponID < WEAPON_MAX; weaponID++)
 		{
 		    if (!Q_strnicmp(g_szWeaponNames[weaponID], args.Arg(1), 64))
 		    {
-	            bFound = true;
+	            foundID = (WeaponID_t)weaponID;
 				break;
 		    }
 		}
 
-		if (!bFound)
+		if (foundID == WEAPON_NONE)
 		{
 		    Warning("Could not give weapon with name %s, weapon not found!\n", args.Arg(1));
 			return;
 		}
+
+	    if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed(foundID))
+	    {
+	        Warning("The weapon %s is not allowed in this gamemode!\n", args.Arg(1));
+			return;
+	    }
 
 		char item[64];
 		Q_strncpy(item, args.Arg(1), 64);
