@@ -859,7 +859,7 @@ static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETI
 
 	int current = 0;
 	// Skip over weapon_none
-	for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
+	for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX && current < COMMAND_COMPLETION_MAXITEMS; weaponID++)
 	{
 		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed((WeaponID_t)weaponID))
 			continue;
