@@ -58,3 +58,5 @@ private:
 
     static Tickrate m_trCurrent;
 };
+
+extern ConVar sv_interval_per_tick;

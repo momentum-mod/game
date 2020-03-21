@@ -22,9 +22,9 @@ static void OnTickRateSet(const CCommand &command)
     // Search defined rates for one with a string matching the command argument.
     for (unsigned rateIndx = TickSet::TICKRATE_FIRST; rateIndx < TickSet::TICKRATE_COUNT; rateIndx++)
     {
-        if (!strcmp(command.ArgS(), TickSet::s_DefinedRates[rateIndx].sType))
+        if (FStrEq(command.ArgS(), TickSet::s_DefinedRates[rateIndx].sType))
         {
-            TickSet::SetTickrate(TickSet::s_DefinedRates[rateIndx].fTickRate);
+            sv_interval_per_tick.SetValue(TickSet::s_DefinedRates[rateIndx].fTickRate);
             return;
         }
     }
@@ -34,8 +34,18 @@ static void OnTickRateSet(const CCommand &command)
 static int OnTickRateAutocomplete(const char *partial,
                                   char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-    // Move start of the string to expected start of parameter.
-    partial += 12; // strlen("sv_tickrate ")
+    const int commandLength = Q_strlen("sv_tickrate ");
+
+    if (Q_strlen(partial) < commandLength)
+    {
+        // Checking for circumstances where partial is not as long as expected.
+        partial = "";
+    }
+    else
+    {
+        // Move start of the string to expected start of parameter.
+        partial += commandLength;
+    }
 
     const unsigned partialLength = Q_strlen(partial);
     int suggestionCount = 0;
@@ -45,8 +55,7 @@ static int OnTickRateAutocomplete(const char *partial,
     {
         if (!Q_strncmp(partial, TickSet::s_DefinedRates[rateIndx].sType, partialLength))
         {
-            Q_strncpy(commands[suggestionCount], TickSet::s_DefinedRates[rateIndx].sType,
-                      COMMAND_COMPLETION_ITEM_LENGTH);
+            Q_snprintf(commands[suggestionCount], COMMAND_COMPLETION_ITEM_LENGTH, "sv_tickrate %s", TickSet::s_DefinedRates[rateIndx].sType);
             ++suggestionCount;
         }
     }
@@ -55,12 +64,11 @@ static int OnTickRateAutocomplete(const char *partial,
 }
 
 MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
-    "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, "
-    "so 100 tickrate = 0.01.", 0.001f, 0.1f, OnIntervalPerTickChange);
+    "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01.",
+    0.001f, 0.1f, OnIntervalPerTickChange);
 
 static ConCommand sv_tickrate("sv_tickrate", OnTickRateSet,
-    "Changes the tickrate to one of a defined set of values. "
-    "Custom tickrates can be set using \"sv_interval_per_tick.\"",
+    "Changes the tickrate to one of a defined set of values. Custom tickrates can be set using \"sv_interval_per_tick.\"",
     FCVAR_MAPPING, OnTickRateAutocomplete);
 
 float *TickSet::interval_per_tick = nullptr;
