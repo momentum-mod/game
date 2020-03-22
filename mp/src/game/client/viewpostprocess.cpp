@@ -38,7 +38,6 @@ bool g_bFlashlightIsOn = false;
 
 // hdr parameters
 ConVar mat_bloomscale( "mat_bloomscale", "1" );
-ConVar mat_hdr_level( "mat_hdr_level", "2", FCVAR_ARCHIVE );
 
 ConVar mat_bloomamount_rate( "mat_bloomamount_rate", "0.05f", FCVAR_CHEAT );
 static ConVar debug_postproc( "mat_debug_postprocessing_effects", "0", FCVAR_NONE, "0 = off, 1 = show post-processing passes in quadrants of the screen, 2 = only apply post-processing to the centre of the screen" );
@@ -1399,7 +1398,7 @@ static float GetBloomAmount( void )
 
 	HDRType_t hdrType = g_pMaterialSystemHardwareConfig->GetHDRType();
 
-	bool bBloomEnabled = (mat_hdr_level.GetInt() >= 1);
+	bool bBloomEnabled = true;
 	
 	if ( !engine->MapHasHDRLighting() )
 		bBloomEnabled = false;
