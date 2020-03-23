@@ -1139,7 +1139,7 @@ void CBaseEntity::SetParent( CBaseEntity *pParentEntity, int iAttachment )
 		m_iParentAttachment = (char)iAttachment;
 
 		EntityMatrix matrix, childMatrix;
-		matrix.InitFromEntity( const_cast<CBaseEntity *>(pParentEntity), m_iParentAttachment ); // parent->world
+		matrix.InitFromEntity( pParentEntity, m_iParentAttachment ); // parent->world
 		childMatrix.InitFromEntityLocal( this ); // child->world
 		Vector localOrigin = matrix.WorldToLocal( GetLocalOrigin() );
 		

@@ -294,9 +294,10 @@ CEntityDissolve *CEntityDissolve::Create( CBaseEntity *pTarget, CBaseEntity *pSo
 void CEntityDissolve::AttachToEntity( CBaseEntity *pTarget )
 {
 	// So our dissolver follows the entity around on the server.
+	AssertMsg(pTarget, "CEntityDissolve::AttachToEntity pTarget is null!\n");
+	SetLocalOrigin(pTarget->GetLocalOrigin());
+	SetLocalAngles(vec3_angle);
 	SetParent( pTarget );
-	SetLocalOrigin( vec3_origin );
-	SetLocalAngles( vec3_angle );
 }
 
 
