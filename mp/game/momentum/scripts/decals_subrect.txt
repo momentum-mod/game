@@ -311,6 +311,12 @@
     "decals/rocket_scorch2" "1"
 }
 
+"StickyScorch"
+{
+    "decals/rocket_scorch1" "1"
+    "decals/rocket_scorch2" "1"
+}
+
 "Models"
 {
 	// World Model specific decal precache.

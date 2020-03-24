@@ -35,9 +35,8 @@ $Configuration
 	{
 		$AdditionalIncludeDirectories	"$BASE;fxctmp9;vshtmp9;"	[$WIN32||$POSIX]
 //		$AdditionalIncludeDirectories	"$BASE;..\..\dx9sdk\include"	[$WIN32]
-		$AdditionalIncludeDirectories	"$BASE;fxctmp9_360;vshtmp9_360"					[$X360]
 		$PreprocessorDefinitions		"$BASE;STDSHADER_DX9_DLL_EXPORT;FAST_MATERIALVAR_ACCESS"
-		$PreprocessorDefinitions		"$BASE;USE_ACTUAL_DX" [($WIN32||$X360) && !$GL]
+		$PreprocessorDefinitions		"$BASE;USE_ACTUAL_DX" [($WIN32) && !$GL]
 	}
 
 	$Linker
@@ -52,6 +51,8 @@ $Project "Shaders (Momentum)"
     $Folder "Source Files"
     {
         $File	"BaseVSShader.cpp"
+
+        $File	"pbr_dx9.cpp"
 
 		$File	"cloak_blended_pass_helper.cpp"
 		$File	"emissive_scroll_blended_pass_helper.cpp"

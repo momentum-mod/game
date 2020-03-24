@@ -43,6 +43,7 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     m_pGameModeFilter->AddItem("#MOM_GameType_Bhop", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_KZ", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_RJ", nullptr);
+    m_pGameModeFilter->AddItem("#MOM_GameType_SJ", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_Tricksurf", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_Trikz", nullptr);
     m_pGameModeFilter->AddActionSignalTarget(this);

@@ -14,7 +14,6 @@
 #include "tier1/utlstack.h"
 #include "iviewrender.h"
 #include "view_shared.h"
-#include "replay/ireplayscreenshotsystem.h"
 
 
 //-----------------------------------------------------------------------------
@@ -22,7 +21,6 @@
 //-----------------------------------------------------------------------------
 class ConVar;
 class CClientRenderablesList;
-class IClientVehicle;
 class C_PointCamera;
 class C_EnvProjectedTexture;
 class IScreenSpaceEffect;
@@ -30,8 +28,6 @@ class CClientViewSetup;
 class CViewRender;
 struct ClientWorldListInfo_t;
 class C_BaseEntity;
-struct WriteReplayScreenshotParams_t;
-class CReplayScreenshotTaker;
 
 #ifdef HL2_EPISODIC
 	class CStunEffect;
@@ -294,8 +290,7 @@ public:
 // Purpose: Implements the interface to view rendering for the client .dll
 //-----------------------------------------------------------------------------
 
-class CViewRender : public IViewRender,
-					public IReplayScreenshotSystem
+class CViewRender : public IViewRender
 {
 	DECLARE_CLASS_NOBASE( CViewRender );
 public:
@@ -327,23 +322,8 @@ protected:
 	virtual void	WriteSaveGameScreenshotOfSize( const char *pFilename, int width, int height, bool bCreatePowerOf2Padded = false, bool bWriteVTF = false );
 	void			WriteSaveGameScreenshot( const char *filename );
 
-	virtual IReplayScreenshotSystem *GetReplayScreenshotSystem() { return this; }
-
-	// IReplayScreenshot implementation
-	virtual void	WriteReplayScreenshot( WriteReplayScreenshotParams_t &params );
-	virtual void	UpdateReplayScreenshotCache();
-
-    StereoEye_t		GetFirstEye() const;
-    StereoEye_t		GetLastEye() const;
-    CViewSetup &    GetView(StereoEye_t eEye);
-    const CViewSetup &    GetView(StereoEye_t eEye) const ;
-
-
 	// This stores all of the view setup parameters that the engine needs to know about.
-    // Best way to pick the right one is with ::GetView(), rather than directly.
-	CViewSetup		m_View;         // mono <- in stereo mode, this will be between the two eyes and is the "main" view.
-	CViewSetup		m_ViewLeft;     // left (unused for mono)
-	CViewSetup		m_ViewRight;    // right (unused for mono)
+	CViewSetup		m_View;
 
 	// Pitch drifting data
 	CPitchDrift		m_PitchDrift;
@@ -517,12 +497,8 @@ private:
 	CBase3dView *m_pActiveRenderer;
 	CSimpleRenderExecutor m_SimpleExecutor;
 
-	bool			m_rbTakeFreezeFrame[ STEREO_EYE_MAX ];
+	bool			m_rbTakeFreezeFrame;
 	float			m_flFreezeFrameUntil;
-
-#if defined( REPLAY_ENABLED )
-	CReplayScreenshotTaker	*m_pReplayScreenshotTaker;
-#endif
 };
 
 #endif // VIEWRENDER_H

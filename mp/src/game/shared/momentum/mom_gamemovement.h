@@ -23,11 +23,6 @@ class CMomentumGameMovement : public CGameMovement
     void AirMove() override;
     void WalkMove() override;
 
-    // Override fall damage
-    void CheckFalling() override;
-
-    void PlayerRoughLandingEffects(float) override;
-
     // Ladder
     float LadderDistance() const override;
     bool GameHasLadders() const override;
@@ -47,20 +42,26 @@ class CMomentumGameMovement : public CGameMovement
 
     void Friction() override;
 
-    void CheckWaterJump() override;
-    bool CheckWater() override;
+    float GetWaterWaistOffset() override;
+    float GetWaterJumpUpZVelocity() override;
+    float GetWaterJumpForward() override;
+    void CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward) override;
 
     // Duck
     void Duck() override;
-    void FinishUnDuck() override;
+    void DoDuck(int iButtonsPressed);
     void FinishDuck() override;
     bool CanUnduck() override;
+    void DoUnduck(int iButtonsReleased);
+    void FinishUnDuck() override;
     void HandleDuckingSpeedCrop() override;
+    float GetTimeToDuck() override;
 
     void CheckParameters() override;
     void ReduceTimers() override;
 
     void StartGravity() override;
+    float GetPlayerGravity() override;
     void FinishGravity() override;
 
     int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;

@@ -61,6 +61,8 @@ private:
     void DoKnifeSlash(const DecalPacket &packet);
     void ThrowGrenade(const DecalPacket &packet);
     void FireRocket(const DecalPacket &packet);
+    void FireSticky(const DecalPacket &packet);
+    void DetonateStickies();
 
     CUtlQueue<ReceivedFrame_t<PositionPacket>*> m_vecPositionPackets;
     ReceivedFrame_t<PositionPacket>* m_pCurrentFrame;

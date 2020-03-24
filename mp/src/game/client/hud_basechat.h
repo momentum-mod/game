@@ -243,7 +243,6 @@ class CBaseHudChat : public CHudElement, public vgui::EditablePanel
     virtual void MsgFunc_SayText(bf_read &msg);
     virtual void MsgFunc_SayText2(bf_read &msg);
     virtual void MsgFunc_TextMsg(bf_read &msg);
-    virtual void MsgFunc_VoiceSubtitle(bf_read &msg);
 
     CBaseHudChatInputLine *GetChatInput(void) { return m_pChatInput; }
     CHudChatFilterPanel *GetChatFilterPanel(void);

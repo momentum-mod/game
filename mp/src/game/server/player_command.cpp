@@ -12,7 +12,6 @@
 #include "client.h"
 #include "player_command.h"
 #include "movehelper_server.h"
-#include "iservervehicle.h"
 #include "tier0/vprof.h"
 
 #include "in_buttons.h"
@@ -321,7 +320,7 @@ void CPlayerMove::PreventBounce(CBasePlayer *player, IMoveHelper *moveHelper, bo
 	{
 		Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
 		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-		offset.z += VIEW_SCALE * (hullSizeNormal - hullSizeCrouch).z;
+		offset.z += g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch).z;
 	}
 
 	// CGameMovement::TryTouchGround
@@ -425,17 +424,10 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		}
 	}
 
-	IServerVehicle *pVehicle = player->GetVehicle();
-
 	// Latch in impulse.
 	if ( ucmd->impulse )
 	{
-		// Discard impulse commands unless the vehicle allows them.
-		// FIXME: UsingStandardWeapons seems like a bad filter for this. The flashlight is an impulse command, for example.
-		if ( !pVehicle || player->UsingStandardWeaponsInVehicle() )
-		{
-			player->m_nImpulse = ucmd->impulse;
-		}
+		player->m_nImpulse = ucmd->impulse;
 	}
 
 	// Update player input button states
@@ -484,18 +476,10 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	SetupMove( player, ucmd, moveHelper, g_pMoveData );
 
 	// Let the game do the movement.
-	if ( !pVehicle )
-	{
-		VPROF( "g_pGameMovement->ProcessMovement()" );
-		Assert( g_pGameMovement );
-		g_pGameMovement->ProcessMovement( player, g_pMoveData );
-	}
-	else
-	{
-		VPROF( "pVehicle->ProcessMovement()" );
-		pVehicle->ProcessMovement( player, g_pMoveData );
-	}
-			
+	VPROF( "g_pGameMovement->ProcessMovement()" );
+	Assert( g_pGameMovement );
+	g_pGameMovement->ProcessMovement( player, g_pMoveData );
+
 	// Copy output
 	FinishMove( player, ucmd, g_pMoveData );
 

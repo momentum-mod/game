@@ -51,7 +51,6 @@
 #include "posedebugger.h"
 #include "tier0/icommandline.h"
 #include "prediction.h"
-#include "replay/replay_ragdoll.h"
 #include "studio_stats.h"
 #include "tier1/callqueue.h"
 
@@ -722,9 +721,7 @@ C_BaseAnimating::C_BaseAnimating() :
 	m_flModelScale = 1.0f;
 
 	m_iEyeAttachment = 0;
-#ifdef _XBOX
-	m_iAccumulatedBoneMask = 0;
-#endif
+
 	m_pStudioHdr = NULL;
 	m_hStudioHdr = MDLHANDLE_INVALID;
 
@@ -1464,12 +1461,8 @@ void C_BaseAnimating::BuildTransformations( CStudioHdr *hdr, Vector *pos, Quater
 		m_BoneAccessor.SetWritableBones( BONE_USED_BY_ANYTHING );
 		m_BoneAccessor.SetReadableBones( BONE_USED_BY_ANYTHING );
 		
-#if defined( REPLAY_ENABLED )
 		// If we're playing back a demo, override the ragdoll bones with cached version if available - otherwise, simulate.
-		if ( ( !engine->IsPlayingDemo() && !engine->IsPlayingTimeDemo() ) ||
-			 !CReplayRagdollCache::Instance().IsInitialized() ||
-			 !CReplayRagdollCache::Instance().GetFrame( this, engine->GetDemoPlaybackTick(), boneSimulated, &m_BoneAccessor ) )
-#endif
+		if ( !engine->IsPlayingDemo() && !engine->IsPlayingTimeDemo() )
 		{
 			m_pRagdoll->RagdollBone( this, pbones, hdr->numbones(), boneSimulated, m_BoneAccessor );
 		}
@@ -4754,17 +4747,6 @@ bool C_BaseAnimating::InitAsClientRagdoll( const matrix3x4_t *pDeltaBones0, cons
 
 	UpdateVisibility();
 
-#if defined( REPLAY_ENABLED )
-	// If Replay is enabled on server, add an entry to the ragdoll recorder for this entity
-	ConVar* pReplayEnable = (ConVar*)cvar->FindVar( "replay_enable" );
-	if ( m_pRagdoll && pReplayEnable && pReplayEnable->GetInt() && !engine->IsPlayingDemo() && !engine->IsPlayingTimeDemo() )
-	{
-		CReplayRagdollRecorder& RagdollRecorder = CReplayRagdollRecorder::Instance();
-		int nStartTick = TIME_TO_TICKS( engine->GetLastTimeStamp() );
-		RagdollRecorder.AddEntry( this, nStartTick, m_pRagdoll->RagdollBoneCount() );
-	}
-#endif
-
 	return true;
 }
 
@@ -5719,16 +5701,6 @@ void C_BaseAnimating::ClearRagdoll()
 		{
 			SetCollisionBounds( m_vecPreRagdollMins, m_vecPreRagdollMaxs );
 		}
-
-#if defined( REPLAY_ENABLED )
-		// Delete entry from ragdoll recorder if Replay is enabled on server
-		ConVar* pReplayEnable = (ConVar*)cvar->FindVar( "replay_enable" );
-		if ( pReplayEnable && pReplayEnable->GetInt() && !engine->IsPlayingDemo() && !engine->IsPlayingTimeDemo() )
-		{
-			CReplayRagdollRecorder& RagdollRecorder = CReplayRagdollRecorder::Instance();
-			RagdollRecorder.StopRecordingRagdoll( this );
-		}
-#endif
 	}
 	m_builtRagdoll = false;
 }

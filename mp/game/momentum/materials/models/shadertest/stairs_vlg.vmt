@@ -1,0 +1,20 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/shadertest/diamond_d_a"
+	"$bumpmap" "models/shadertest/diamond_n"
+
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[0.20 0.20 0.20]"
+	"$envmapcontrast" "1"
+	"$envmapfresnel" "1"
+
+	"$phong" "1"
+	"$phongfresnelranges" "[0.5 0.75 1]"
+	"$phongalbedotint" "1"
+	"$phongexponent" "1"
+	"$phongboost" "2.7"
+
+	"$color2" "[0.37 0.37 0.37]"
+
+	"$mraotexture" "models\shadertest\diamond_mrao"
+}

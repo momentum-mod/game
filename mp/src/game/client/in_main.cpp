@@ -19,21 +19,12 @@
 #include "bitbuf.h"
 #include "checksum_md5.h"
 #include "hltvcamera.h"
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#endif
 #include <ctype.h> // isalnum()
 #include <voice_status.h>
 #include "cam_thirdperson.h"
 
-#include "client_virtualreality.h"
-#include "sourcevr/isourcevirtualreality.h"
-
-// NVNT Include
-#include "haptics/haptic_utils.h"
 #include <vgui/ISurface.h>
 
-extern ConVar in_joystick;
 extern ConVar cam_idealpitch;
 extern ConVar cam_idealyaw;
 
@@ -69,7 +60,6 @@ ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif
 ConVar lookspring( "lookspring", "0", FCVAR_ARCHIVE );
 ConVar lookstrafe( "lookstrafe", "0", FCVAR_ARCHIVE );
-ConVar in_joystick( "joystick","0", FCVAR_ARCHIVE );
 
 ConVar thirdperson_platformer( "thirdperson_platformer", "0", 0, "Player will aim in the direction they are moving." );
 ConVar thirdperson_screenspace( "thirdperson_screenspace", "0", 0, "Movement will be relative to the camera, eg: left means screen-left" );
@@ -152,16 +142,6 @@ void IN_CenterView_f (void)
 			engine->SetViewAngles( viewangles );
 		}
 	}
-}
-
-/*
-===========
-IN_Joystick_Advanced_f
-===========
-*/
-void IN_Joystick_Advanced_f (void)
-{
-	::input->Joystick_Advanced();
 }
 
 /*
@@ -475,7 +455,6 @@ void IN_ZoomDown( const CCommand &args ) {KeyDown(&in_zoom, args[1] );}
 void IN_ZoomUp( const CCommand &args ) {KeyUp(&in_zoom, args[1] );}
 void IN_Grenade1Up( const CCommand &args ) { KeyUp( &in_grenade1, args[1] ); }
 void IN_Grenade1Down( const CCommand &args ) { KeyDown( &in_grenade1, args[1] ); }
-void IN_XboxStub( const CCommand &args ) { /*do nothing*/ }
 void IN_Attack3Down( const CCommand &args ) { KeyDown(&in_attack3, args[1] );}
 void IN_Attack3Up( const CCommand &args ) { KeyUp(&in_attack3, args[1] );}
 
@@ -904,43 +883,10 @@ ControllerMove
 */
 void CInput::ControllerMove( float frametime, CUserCmd *cmd )
 {
-	if ( IsPC() )
+	if ( !m_fCameraInterceptingMouse && m_fMouseActive )
 	{
-		if ( !m_fCameraInterceptingMouse && m_fMouseActive )
-		{
-			MouseMove( cmd);
-		}
+		MouseMove( cmd);
 	}
-
-	JoyStickMove( frametime, cmd);
-
-	// NVNT if we have a haptic device..
-	if(haptics && haptics->HasDevice())
-	{
-		if(engine->IsPaused() || engine->IsLevelMainMenuBackground() || vgui::surface()->IsCursorVisible() || !engine->IsInGame())
-		{
-			// NVNT send a menu process to the haptics system.
-			haptics->MenuProcess();
-			return;
-		}
-#ifdef CSTRIKE_DLL
-		// NVNT cstrike fov grabing.
-		C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
-		if(player){
-			haptics->UpdatePlayerFOV(player->GetFOV());
-		}
-#endif
-		// NVNT calculate move with the navigation on the haptics system.
-		haptics->CalculateMove(cmd->forwardmove, cmd->sidemove, frametime);
-		// NVNT send a game process to the haptics system.
-		haptics->GameProcess();
-#if defined( WIN32 ) && !defined( _X360 )
-		// NVNT update our avatar effect.
-		UpdateAvatarEffect();
-#endif
-	}
-
-
 }
 
 //-----------------------------------------------------------------------------
@@ -1020,33 +966,6 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 		engine->SetViewAngles( cmd->viewangles );
 		prediction->SetLocalViewAngles( cmd->viewangles );
 	}
-
-	// Let the headtracker override the view at the very end of the process so
-	// that vehicles and other stuff in g_pClientMode->CreateMove can override 
-	// first
-	if ( active && UseVR() )
-	{
-		C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-		if( pPlayer && !pPlayer->GetVehicle() )
-		{
-			QAngle curViewangles, newViewangles;
-			Vector curMotion, newMotion;
-			engine->GetViewAngles( curViewangles );
-			curMotion.Init ( 
-				cmd->forwardmove,
-				cmd->sidemove,
-				cmd->upmove );
-			g_ClientVirtualReality.OverridePlayerMotion ( frametime, originalViewangles, curViewangles, curMotion, &newViewangles, &newMotion );
-			engine->SetViewAngles( newViewangles );
-			cmd->forwardmove = newMotion[0];
-			cmd->sidemove = newMotion[1];
-			cmd->upmove = newMotion[2];
-
-			cmd->viewangles = newViewangles;
-			prediction->SetLocalViewAngles( cmd->viewangles );
-		}
-	}
-
 }
 
 void CInput::CreateMove ( int sequence_number, float input_sample_frametime, bool active )
@@ -1116,19 +1035,6 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 	// Set button and flag bits
 	cmd->buttons = GetButtonBits( 1 );
 
-	// Using joystick?
-	if ( in_joystick.GetInt() )
-	{
-		if ( cmd->forwardmove > 0 )
-		{
-			cmd->buttons |= IN_FORWARD;
-		}
-		else if ( cmd->forwardmove < 0 )
-		{
-			cmd->buttons |= IN_BACK;
-		}
-	}
-
 	// Use new view angles if alive, otherwise user last angles we stored off.
 	if ( g_iAlive )
 	{
@@ -1145,33 +1051,6 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 	{
 		// Get current view angles after the client mode tweaks with it
 		engine->SetViewAngles( cmd->viewangles );
-
-		if ( UseVR() )
-		{
-			C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-			if( pPlayer && !pPlayer->GetVehicle() )
-			{
-				QAngle curViewangles, newViewangles;
-				Vector curMotion, newMotion;
-				engine->GetViewAngles( curViewangles );
-				curMotion.Init ( 
-					cmd->forwardmove,
-					cmd->sidemove,
-					cmd->upmove );
-				g_ClientVirtualReality.OverridePlayerMotion ( input_sample_frametime, originalViewangles, curViewangles, curMotion, &newViewangles, &newMotion );
-				engine->SetViewAngles( newViewangles );
-				cmd->forwardmove = newMotion[0];
-				cmd->sidemove = newMotion[1];
-				cmd->upmove = newMotion[2];
-				cmd->viewangles = newViewangles;
-			}
-			else
-			{
-				Vector vPos;
-				g_ClientVirtualReality.GetTorsoRelativeAim( &vPos, &cmd->viewangles );
-				engine->SetViewAngles( cmd->viewangles );
-			}
-		}
 	}
 
 	m_flLastForwardMove = cmd->forwardmove;
@@ -1179,9 +1058,6 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 	cmd->random_seed = MD5_PseudoRandom( sequence_number ) & 0x7fffffff;
 
 	HLTVCamera()->CreateMove( cmd );
-#if defined( REPLAY_ENABLED )
-	ReplayCamera()->CreateMove( cmd );
-#endif
 
 #if defined( HL2_CLIENT_DLL )
 	// copy backchannel data
@@ -1537,7 +1413,6 @@ static ConCommand endgraph("-graph", IN_GraphUp);
 static ConCommand startbreak("+break",IN_BreakDown);
 static ConCommand endbreak("-break",IN_BreakUp);
 static ConCommand force_centerview("force_centerview", IN_CenterView_f);
-static ConCommand joyadvancedupdate("joyadvancedupdate", IN_Joystick_Advanced_f, "", FCVAR_CLIENTCMD_CAN_EXECUTE);
 static ConCommand startzoom("+zoom", IN_ZoomDown);
 static ConCommand endzoom("-zoom", IN_ZoomUp);
 static ConCommand endgrenade1( "-grenade1", IN_Grenade1Up );
@@ -1548,10 +1423,6 @@ static ConCommand endattack3("-attack3", IN_Attack3Up);
 #ifdef TF_CLIENT_DLL
 static ConCommand toggle_duck( "toggle_duck", IN_DuckToggle );
 #endif
-
-// Xbox 360 stub commands
-static ConCommand xboxmove("xmove", IN_XboxStub);
-static ConCommand xboxlook("xlook", IN_XboxStub);
 
 /*
 ============
@@ -1576,16 +1447,10 @@ void CInput::Init_All (void)
 	m_rgNewMouseParms[ MOUSE_SPEED_FACTOR ] = 1;		// 0 = disabled, 1 = threshold 1 enabled, 2 = threshold 2 enabled
 
 	m_fMouseParmsValid	= false;
-	m_fJoystickAdvancedInit = false;
-	m_fHadJoysticks = false;
 	m_flLastForwardMove = 0.0;
 
-	// Initialize inputs
-	if ( IsPC() )
-	{
-		Init_Mouse ();
-		Init_Keyboard();
-	}
+	Init_Mouse ();
+	Init_Keyboard();
 		
 	// Initialize third person camera controls.
 	Init_Camera();

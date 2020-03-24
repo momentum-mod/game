@@ -388,5 +388,15 @@
         "enabled"       "1"
         "bgcolor_override"  "0 0 0 0"
         "PaintBackgroundType"   "0" // rounded corners
-    }   
+    }
+    
+    HudStickyCharge
+    {
+        "fieldName"		"HudStickyCharge"
+    }
+
+    CHudStickybombs
+    {
+        "fieldName"		"CHudStickybombs"
+    }
 }

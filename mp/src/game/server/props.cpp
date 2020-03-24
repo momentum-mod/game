@@ -40,7 +40,6 @@
 #include "doors.h"
 #include "physics_collisionevent.h"
 #include "gamestats.h"
-#include "vehicle_base.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -877,16 +876,6 @@ void CBreakableProp::Spawn()
 	else
 	{
 		m_takedamage = DAMAGE_YES;
-
-		if( g_pGameRules->GetAutoAimMode() == AUTOAIM_ON_CONSOLE )
-		{
-			if ( HasInteraction( PROPINTER_PHYSGUN_BREAK_EXPLODE ) ||
-				HasInteraction( PROPINTER_FIRE_IGNITE_HALFHEALTH ) )
-			{
-				// Exploding barrels, exploding gas cans
-				AddFlag( FL_AIMTARGET );	
-			}
-		}
 	}
 
 	m_iMaxHealth = ( m_iHealth > 0 ) ? m_iHealth : 1;
@@ -1443,18 +1432,6 @@ void CBreakableProp::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t
 		PlayPuntSound(); 
 	}
 
-	if ( IsX360() )
-	{
-		if( reason != PUNTED_BY_CANNON && (pPhysGunUser->m_nNumCrateHudHints < NUM_SUPPLY_CRATE_HUD_HINTS) )
-		{
-			if( FClassnameIs( this, "item_item_crate") )
-			{
-				pPhysGunUser->m_nNumCrateHudHints++;
-				UTIL_HudHintText( pPhysGunUser, "#Valve_Hint_Hold_ItemCrate" );
-			}
-		}
-	}
-
 	SetPhysicsAttacker( pPhysGunUser, gpGlobals->curtime );
 
 	// Store original BlockLOS, and disable BlockLOS
@@ -1608,15 +1585,6 @@ void CBreakableProp::Break( CBaseEntity *pBreaker, const CTakeDamageInfo &info )
 		else if ( m_hPhysicsAttacker.Get() && m_hPhysicsAttacker->IsPlayer() )
 		{
 			bSmashed = true;
-		}
-		else if ( pBreaker && dynamic_cast< CPropVehicleDriveable * >( pBreaker ) )
-		{
-			CPropVehicleDriveable *veh = static_cast< CPropVehicleDriveable * >( pBreaker );
-			CBaseEntity *driver = veh->GetDriver();
-			if ( driver && driver->IsPlayer() )
-			{
-				bSmashed = true;
-			}
 		}
 		if ( bSmashed )
 		{

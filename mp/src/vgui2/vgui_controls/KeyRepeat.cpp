@@ -13,14 +13,6 @@
 
 using namespace vgui;
 
-vgui::KeyCode g_iCodesForAliases[FM_NUM_KEYREPEAT_ALIASES] = 
-{
-	KEY_XBUTTON_UP,
-	KEY_XBUTTON_DOWN,
-	KEY_XBUTTON_LEFT,
-	KEY_XBUTTON_RIGHT,
-};
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -66,24 +58,6 @@ void CKeyRepeatHandler::KeyUp( vgui::KeyCode code )
 //-----------------------------------------------------------------------------
 vgui::KeyCode CKeyRepeatHandler::KeyRepeated( void )
 {
-	if ( IsPC() )
-		return BUTTON_CODE_NONE;
-
-	if ( !m_bHaveKeyDown )
-		return BUTTON_CODE_NONE;
-
-	if ( m_flNextKeyRepeat < system()->GetCurrentTime() )
-	{
-		for ( int i = 0; i < FM_NUM_KEYREPEAT_ALIASES; i++ )
-		{
-			if ( m_bAliasDown[i] )
-			{
-				m_flNextKeyRepeat = system()->GetCurrentTime() + m_flRepeatTimes[i];
-				return g_iCodesForAliases[i];
-			}
-		}
-	}
-
 	return BUTTON_CODE_NONE;
 }
 

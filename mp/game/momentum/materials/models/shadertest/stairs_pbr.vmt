@@ -1,0 +1,9 @@
+PBR
+{
+	$basetexture "models\shadertest\diamond_d"
+	$mraotexture "models\shadertest\diamond_mrao"
+	$bumpmap "models\shadertest\diamond_n"
+	
+	$envmap env_cubemap
+	$model 1
+}

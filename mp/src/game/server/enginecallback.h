@@ -25,7 +25,6 @@ class IVDebugOverlay;
 class IDataCache;
 class IMDLCache;
 class IServerEngineTools;
-class IXboxSystem;
 class CSteamAPIContext;
 class CSteamGameServerAPIContext;
 
@@ -42,7 +41,6 @@ extern IVDebugOverlay			*debugoverlay;
 extern IDataCache				*datacache;
 extern IMDLCache				*mdlcache;
 extern IServerEngineTools		*serverenginetools;
-extern IXboxSystem				*xboxsystem; // 360 only
 extern CSteamAPIContext			*steamapicontext; // available on game clients
 extern CSteamGameServerAPIContext *steamgameserverapicontext; //available on game servers
 

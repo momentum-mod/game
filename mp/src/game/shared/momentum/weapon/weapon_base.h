@@ -44,14 +44,15 @@ class CWeaponBase : public CBaseCombatWeapon
     float CalcViewmodelBob(void) OVERRIDE;
     bool IsPredicted() const OVERRIDE { return true; }
 
+    // Allow use of both primary and secondary weapon functions at the same time when true
+    virtual bool DualFire() { return false; }
+
     // Pistols reset m_iShotsFired to 0 when the attack button is released.
     bool IsPistol() const { return GetWeaponID() == WEAPON_PISTOL; }
 
     CMomentumPlayer *GetPlayerOwner() const;
 
     virtual float GetMaxSpeed() const; // What's the player's max speed while holding this weapon.
-
-    virtual void SetWeaponModelIndex(const char *pName);
 
   public:
 #if defined(CLIENT_DLL)
@@ -85,8 +86,7 @@ class CWeaponBase : public CBaseCombatWeapon
     bool IsUseable();
     bool CanDeploy() OVERRIDE;
     bool CanBeSelected() OVERRIDE;
-    virtual Activity GetDeployActivity();
-    bool DefaultDeploy(char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt) OVERRIDE;
+    bool DefaultDeploy(const char *szViewModel, const char *szWeaponModel, int iActivity, const char *szAnimExt) OVERRIDE;
     void DefaultTouch(CBaseEntity *pOther) OVERRIDE; // default weapon touch
     virtual bool DefaultPistolReload();
 

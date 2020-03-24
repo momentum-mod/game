@@ -2,7 +2,6 @@
 #include "usermessages.h"
 #include "shake.h"
 #include "voice_gamemgr.h"
-#include "haptics/haptic_msgs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -24,7 +23,6 @@ void RegisterUserMessages(void)
     usermessages->Register("Shake", 13);
     usermessages->Register("Fade", 10);
     usermessages->Register("VGUIMenu", -1);     // Show VGUI menu
-    usermessages->Register("Rumble", 3);        // Send a rumble to a controller
     //usermessages->Register("Battery", 2);
     usermessages->Register("Damage", 18);       // BUG: floats are sent for coords, no variable bitfields in hud & fixed size Msg
     usermessages->Register("VoiceMask", VOICE_MAX_PLAYERS_DW * 4 * 2 + 1);
@@ -55,6 +53,4 @@ void RegisterUserMessages(void)
     usermessages->Register("SpecUpdateMsg", 17);
 
     usermessages->Register("DamageIndicator", -1);
-
-    RegisterHapticMessages();
 }

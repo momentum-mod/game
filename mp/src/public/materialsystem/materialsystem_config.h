@@ -180,7 +180,7 @@ struct MaterialSystem_Config_t
 		m_fGammaTVRangeMin = 16.0f;
 		m_fGammaTVRangeMax = 255.0f;
 		m_fGammaTVExponent = 2.5;
-		m_bGammaTVEnabled = IsX360();
+		m_bGammaTVEnabled = false;
 
 		m_nAASamples = 1;
 		m_bShadowDepthTexture = false;

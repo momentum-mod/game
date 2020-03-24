@@ -7,7 +7,7 @@
 #include "ComparisonsSettingsPage.h"
 #include "AppearanceSettingsPage.h"
 #include "OnlineSettingsPage.h"
-#include "RocketJumpSettingsPage.h"
+#include "GamemodeSettingsPage.h"
 #include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
@@ -33,7 +33,7 @@ class CMomentumSettingsDialog : public PropertyDialog
 
   private:
     SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pAppearanceSettings,
-     *m_pOnlineSettings, *m_pRocketJumpSettings;
+     *m_pOnlineSettings, *m_pGamemodeSettings;
 };
 
 CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(nullptr, "CMomentumSettingsPanel")
@@ -65,7 +65,7 @@ CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(null
     m_pCompareSettings = new ComparisonsSettingsPage(this);
     m_pAppearanceSettings = new AppearanceSettingsPage(this);
     m_pOnlineSettings = new OnlineSettingsPage(this);
-    m_pRocketJumpSettings = new RocketJumpSettingsPage(this);
+    m_pGamemodeSettings = new GamemodeSettingsPage(this);
 
     //Note: we're adding the scroll panels here, because we want to be able to scroll.
     AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gameplay");
@@ -73,7 +73,7 @@ CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(null
     AddPage(m_pCompareSettings->GetScrollPanel(), "#MOM_Settings_Tab_Comparisons");
     AddPage(m_pAppearanceSettings->GetScrollPanel(), "#MOM_Settings_Tab_Appearance");
     AddPage(m_pOnlineSettings->GetScrollPanel(), "#MOM_Settings_Tab_Online");
-    AddPage(m_pRocketJumpSettings->GetScrollPanel(), "#MOM_Settings_Tab_RJ");
+    AddPage(m_pGamemodeSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gamemodes");
 }
 
 CMomentumSettingsDialog::~CMomentumSettingsDialog()

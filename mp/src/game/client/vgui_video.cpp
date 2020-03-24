@@ -71,18 +71,6 @@ VideoPanel::~VideoPanel( void )
 //-----------------------------------------------------------------------------
 bool VideoPanel::BeginPlayback( const char *pFilename )
 {
-	// Who the heck hacked this in?
-#ifdef _X360
-	XVIDEO_MODE videoMode;
-	XGetVideoMode( &videoMode );
-
-	// for 50Hz PAL, load a 25Hz version of the ep1_recap movie.
-	if( ( videoMode.RefreshRate < 59.0f ) && ( Q_stricmp( pFilename, "media/ep1_recap.bik" ) == 0 ) )
-	{
-		pFilename = "media/ep1_recap_25fps.bik";
-	}
-#endif
-
 	// need working video services
 	if ( g_pVideo == NULL )
 		return false;
@@ -182,13 +170,7 @@ void VideoPanel::OnKeyCodePressed( vgui::KeyCode code )
 	if ( code == KEY_ESCAPE || 
 		 code == KEY_BACKQUOTE || 
 		 code == KEY_SPACE || 
-		 code == KEY_ENTER ||
-		 code == KEY_XBUTTON_A || 
-		 code == KEY_XBUTTON_B ||
-		 code == KEY_XBUTTON_X || 
-		 code == KEY_XBUTTON_Y || 
-		 code == KEY_XBUTTON_START || 
-		 code == KEY_XBUTTON_BACK )
+		 code == KEY_ENTER )
 	{
 		OnClose();
 	}

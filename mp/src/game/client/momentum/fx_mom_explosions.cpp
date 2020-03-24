@@ -6,8 +6,10 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_CONVAR(mom_rj_particles, "1", FCVAR_ARCHIVE, "Switches between the particles for rocket explosions.\n"
-    "0 = None\n1 = Use weapon script (momentum)\n2 = Force TF2 particles\n3 through 6 = alternative momentum particles", 0, 6);
+static MAKE_TOGGLE_CONVAR(mom_sj_particle_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the particles for sticky explosions. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_sj_sound_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the sticky explosion sound. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_particle_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the particles for rocket explosions. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_rj_sound_explosion_enable, "1", FCVAR_ARCHIVE, "Toggles the rocket explosion sound. 0 = OFF, 1 = ON\n");
 
 class C_TETFExplosion : public C_BaseTempEntity
 {
@@ -50,49 +52,44 @@ void C_TETFExplosion::PostDataUpdate(DataUpdateType_t updateType)
         if (!bInAir)
             VectorAngles(m_vecNormal, angExplosion);
 
-        static ConVarRef mom_rj_sounds("mom_rj_sounds");
+        bool bPlaySound = false;
+        bool bDispatchParticles = false;
 
-        if (mom_rj_sounds.GetInt() > 0)
+        if (m_iWeaponID == WEAPON_ROCKETLAUNCHER)
         {
-            const bool bIsTF2Sound = mom_rj_sounds.GetInt() == 2;
-            const char *pszSound = pWeaponInfo->pKVWeaponSounds->GetString(bIsTF2Sound ? "explosion_TF2" : "explosion");
-
-            CLocalPlayerFilter filter;
-            C_BaseEntity::EmitSound(filter, SOUND_FROM_WORLD, pszSound, &m_vecOrigin);
+            bPlaySound = mom_rj_sound_explosion_enable.GetBool();
+            bDispatchParticles = mom_rj_particle_explosion_enable.GetBool();
+        }
+        else if (m_iWeaponID == WEAPON_STICKYLAUNCHER)
+        {
+            bPlaySound = mom_sj_sound_explosion_enable.GetBool();
+            bDispatchParticles = mom_sj_particle_explosion_enable.GetBool();
         }
 
-        if (mom_rj_particles.GetInt() > 0)
+        if (bPlaySound)
+        {
+            CLocalPlayerFilter filter;
+            C_BaseEntity::EmitSound(filter, SOUND_FROM_WORLD, pWeaponInfo->pKVWeaponSounds->GetString("explosion"), &m_vecOrigin);
+        }
+
+        if (bDispatchParticles)
         {
             const char *pszEffect;
-            const bool bIsTF2Particle = mom_rj_particles.GetInt() == 2;
 
             if (bIsWater)
             {
-                pszEffect = pWeaponInfo->pKVWeaponParticles->GetString(bIsTF2Particle ? "ExplosionWaterEffect_TF2" : "ExplosionWaterEffect");
+                pszEffect = "ExplosionWaterEffect";
+            }
+            else if (bInAir)
+            {
+                pszEffect = "ExplosionMidAirEffect";
             }
             else
             {
-                if (bInAir)
-                {
-                    pszEffect = pWeaponInfo->pKVWeaponParticles->GetString(bIsTF2Particle ? "ExplosionMidAirEffect_TF2" : "ExplosionMidAirEffect");
-                }
-                else
-                {
-                    pszEffect = pWeaponInfo->pKVWeaponParticles->GetString(bIsTF2Particle ? "ExplosionEffect_TF2" : "ExplosionEffect");
-                }
+                pszEffect = "ExplosionEffect";
             }
 
-            // MOM_TODO REMOVEME
-            if (mom_rj_particles.GetInt() == 3)
-                pszEffect = "mom_rocket_explosion_b";
-            else if (mom_rj_particles.GetInt() == 4)
-                pszEffect = "mom_rocket_explosion_b_";
-            else if (mom_rj_particles.GetInt() == 5)
-                pszEffect = "mom_rocket_explosion_c";
-            else if (mom_rj_particles.GetInt() == 6)
-                pszEffect = "mom_rocket_explosion_d";
-
-            DispatchParticleEffect(pszEffect, m_vecOrigin, angExplosion);
+            DispatchParticleEffect(pWeaponInfo->pKVWeaponParticles->GetString(pszEffect), m_vecOrigin, angExplosion);
         }
     }
 }

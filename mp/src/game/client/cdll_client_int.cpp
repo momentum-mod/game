@@ -84,30 +84,11 @@
 #include "scenefilecache/ISceneFileCache.h"
 #include "tier2/tier2dm.h"
 #include "tier3/tier3.h"
-#include "ihudlcd.h"
 #include "toolframework_client.h"
 #include "hltvcamera.h"
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#include "replay/replay_ragdoll.h"
-#include "qlimits.h"
-#include "replay/replay.h"
-#include "replay/ireplaysystem.h"
-#include "replay/iclientreplay.h"
-#include "replay/ienginereplay.h"
-#include "replay/ireplaymanager.h"
-#include "replay/ireplayscreenshotmanager.h"
-#include "replay/iclientreplaycontext.h"
-#include "replay/vgui/replayconfirmquitdlg.h"
-#include "replay/vgui/replaybrowsermainpanel.h"
-#include "replay/vgui/replayinputpanel.h"
-#include "replay/vgui/replayperformanceeditor.h"
-#endif
 #include "vgui/ILocalize.h"
 #include "vgui/IVGui.h"
-#include "ixboxsystem.h"
 #include "ipresence.h"
-#include "engine/imatchmaking.h"
 #include "cdll_bounded_cvars.h"
 #include "matsys_controls/matsyscontrols.h"
 #include "gamestats.h"
@@ -121,15 +102,6 @@
 #include "clientsteamcontext.h"
 #include "renamed_recvtable_compat.h"
 #include "mouthinfo.h"
-#include "sourcevr/isourcevirtualreality.h"
-#include "client_virtualreality.h"
-#include "mumble.h"
-
-// NVNT includes
-#include "hud_macros.h"
-#include "haptics/ihaptics.h"
-#include "haptics/haptic_utils.h"
-#include "haptics/haptic_msgs.h"
 
 #if defined( TF_CLIENT_DLL )
 #include "abuse_report.h"
@@ -150,7 +122,6 @@
 
 #include "inetchannelinfo.h"
 #include "GameUI/IGameUI.h"
-extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
 // HPE_BEGIN
@@ -201,22 +172,8 @@ IGameEventManager2 *gameeventmanager = NULL;
 ISoundEmitterSystemBase *soundemitterbase = NULL;
 IInputSystem *inputsystem = NULL;
 ISceneFileCache *scenefilecache = NULL;
-IXboxSystem *xboxsystem = NULL;	// Xbox 360 only
-IMatchmaking *matchmaking = NULL;
 IUploadGameStats *gamestatsuploader = NULL;
 IClientReplayContext *g_pClientReplayContext = NULL;
-#if defined( REPLAY_ENABLED )
-IReplayManager *g_pReplayManager = NULL;
-IReplayMovieManager *g_pReplayMovieManager = NULL;
-IReplayScreenshotManager *g_pReplayScreenshotManager = NULL;
-IReplayPerformanceManager *g_pReplayPerformanceManager = NULL;
-IReplayPerformanceController *g_pReplayPerformanceController = NULL;
-IEngineReplay *g_pEngineReplay = NULL;
-IEngineClientReplay *g_pEngineClientReplay = NULL;
-IReplaySystem *g_pReplay = NULL;
-#endif
-
-IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
 //=============================================================================
 // HPE_BEGIN
@@ -241,9 +198,6 @@ BEGIN_BYTESWAP_DATADESC( player_info_s )
 	DEFINE_ARRAY( friendsName, FIELD_CHARACTER, MAX_PLAYER_NAME_LENGTH ),
 	DEFINE_FIELD( fakeplayer, FIELD_BOOLEAN ),
 	DEFINE_FIELD( ishltv, FIELD_BOOLEAN ),
-#if defined( REPLAY_ENABLED )
-	DEFINE_FIELD( isreplay, FIELD_BOOLEAN ),
-#endif
 	DEFINE_ARRAY( customFiles, FIELD_INTEGER, MAX_CUSTOM_FILES ),
 	DEFINE_FIELD( filesDownloaded, FIELD_INTEGER ),
 END_BYTESWAP_DATADESC()
@@ -287,8 +241,6 @@ CGlobalVarsBase *gpGlobals = &dummyvars;
 class CHudChat;
 class CViewRender;
 extern CViewRender g_DefaultViewRender;
-
-extern void StopAllRumbleEffects( void );
 
 static C_BaseEntityClassList *s_pClassLists = NULL;
 C_BaseEntityClassList::C_BaseEntityClassList()
@@ -696,7 +648,7 @@ public:
 	virtual bool			GetPlayerView( CViewSetup &playerView );
 
 	// Matchmaking
-	virtual void			SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties );
+	virtual void			SetupGameProperties();
 	virtual uint			GetPresenceID( const char *pIDName );
 	virtual const char		*GetPropertyIdString( const uint id );
 	virtual void			GetPropertyDisplayString( uint id, uint value, char *pOutput, int nBytes );
@@ -849,10 +801,6 @@ CHLClient::CHLClient()
 
 extern IGameSystem *ViewportClientSystem();
 
-
-//-----------------------------------------------------------------------------
-ISourceVirtualReality *g_pSourceVR = NULL;
-
 // Purpose: Called when the DLL is first loaded.
 // Input  : engineFactory - 
 // Output : int
@@ -919,24 +867,11 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 		return false;
 	if ( (scenefilecache = (ISceneFileCache *)appSystemFactory( SCENE_FILE_CACHE_INTERFACE_VERSION, NULL )) == NULL )
 		return false;
-	if ( IsX360() && (xboxsystem = (IXboxSystem *)appSystemFactory( XBOXSYSTEM_INTERFACE_VERSION, NULL )) == NULL )
-		return false;
-	if ( IsX360() && (matchmaking = (IMatchmaking *)appSystemFactory( VENGINE_MATCHMAKING_VERSION, NULL )) == NULL )
-		return false;
-#ifndef _XBOX
 	if ( ( gamestatsuploader = (IUploadGameStats *)appSystemFactory( INTERFACEVERSION_UPLOADGAMESTATS, NULL )) == NULL )
 		return false;
-#endif
 
     /*if ((gameui = static_cast<IGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr))) == nullptr)
         return false;*/
-
-#if defined( REPLAY_ENABLED )
-	if ( IsPC() && (g_pEngineReplay = (IEngineReplay *)appSystemFactory( ENGINE_REPLAY_INTERFACE_VERSION, NULL )) == NULL )
-		return false;
-	if ( IsPC() && (g_pEngineClientReplay = (IEngineClientReplay *)appSystemFactory( ENGINE_REPLAY_CLIENT_INTERFACE_VERSION, NULL )) == NULL )
-		return false;
-#endif
 
 	if (!g_pMatSystemSurface)
 		return false;
@@ -948,9 +883,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 		return false;
 	InitFbx();
 #endif
-
-	// it's ok if this is NULL. That just means the sourcevr.dll wasn't found
-	g_pSourceVR = (ISourceVirtualReality *)appSystemFactory(SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION, NULL);
 
 	factorylist_t factories;
 	factories.appSystemFactory = appSystemFactory;
@@ -1038,7 +970,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	IGameSystem::Add( ClientThinkList() );
 	IGameSystem::Add( ClientSoundscapeSystem() );
 	IGameSystem::Add( PerfVisualBenchmark() );
-	IGameSystem::Add( MumbleSystem() );
 	
 	#if defined( TF_CLIENT_DLL )
 	IGameSystem::Add( CustomTextureToolCacheGameSystem() );
@@ -1106,51 +1037,17 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	ClientWorldFactoryInit();
 
 	C_BaseAnimating::InitBoneSetupThreadPool();
-
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT connect haptics sytem
-	ConnectHaptics(appSystemFactory);
-#endif
-#ifndef _X360
-	HookHapticMessages(); // Always hook the messages
-#endif
-
 	return true;
 }
 
 bool CHLClient::ReplayInit( CreateInterfaceFn fnReplayFactory )
 {
-#if defined( REPLAY_ENABLED )
-	if ( !IsPC() )
-		return false;
-	if ( (g_pReplay = (IReplaySystem *)fnReplayFactory( REPLAY_INTERFACE_VERSION, NULL ) ) == NULL )
-		return false;
-	if ( (g_pClientReplayContext = g_pReplay->CL_GetContext()) == NULL )
-		return false;
-
-	return true;
-#else
 	return false;
-#endif
 }
 
 bool CHLClient::ReplayPostInit()
 {
-#if defined( REPLAY_ENABLED )
-	if ( ( g_pReplayManager = g_pClientReplayContext->GetReplayManager() ) == NULL )
-		return false;
-	if ( ( g_pReplayScreenshotManager = g_pClientReplayContext->GetScreenshotManager() ) == NULL )
-		return false;
-	if ( ( g_pReplayPerformanceManager = g_pClientReplayContext->GetPerformanceManager() ) == NULL )
-		return false;
-	if ( ( g_pReplayPerformanceController = g_pClientReplayContext->GetPerformanceController() ) == NULL )
-		return false;
-	if ( ( g_pReplayMovieManager = g_pClientReplayContext->GetMovieManager() ) == NULL )
-		return false;
-	return true;
-#else
 	return false;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1159,8 +1056,6 @@ bool CHLClient::ReplayPostInit()
 void CHLClient::PostInit()
 {
 	IGameSystem::PostInitAllSystems();
-
-	g_ClientVirtualReality.StartupComplete();
 
 #ifdef HL1MP_CLIENT_DLL
 	if ( s_cl_load_hl1_content.GetBool() && steamapicontext && SteamApps() )
@@ -1236,11 +1131,6 @@ void CHLClient::Shutdown( void )
 	DisconnectTier1Libraries( );
 
 	gameeventmanager = NULL;
-
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT Disconnect haptics system
-	DisconnectHaptics();
-#endif
 }
 
 
@@ -1293,9 +1183,6 @@ void CHLClient::HudUpdate( bool bActive )
 	// run vgui animations
 	vgui::GetAnimationController()->UpdateAnimations( engine->Time() );
 
-	hudlcd->SetGlobalStat( "(time_int)", VarArgs( "%d", (int)gpGlobals->curtime ) );
-	hudlcd->SetGlobalStat( "(time_float)", VarArgs( "%.2f", gpGlobals->curtime ) );
-
 	// I don't think this is necessary any longer, but I will leave it until
 	// I can check into this further.
 	C_BaseTempEntity::CheckDynamicTempEnts();
@@ -1323,16 +1210,6 @@ void CHLClient::HudText( const char * message )
 //-----------------------------------------------------------------------------
 bool CHLClient::ShouldDrawDropdownConsole()
 {
-#if defined( REPLAY_ENABLED )
-	extern ConVar hud_freezecamhide;
-	extern bool IsTakingAFreezecamScreenshot();
-
-	if ( hud_freezecamhide.GetBool() && IsTakingAFreezecamScreenshot() )
-	{
-		return false;
-	}
-#endif
-
 	return true;
 }
 
@@ -1402,13 +1279,6 @@ bool CHLClient::IN_IsKeyDown( const char *name, bool& isdown )
 //			*pszCurrentBinding - 
 void CHLClient::IN_OnMouseWheeled( int nDelta )
 {
-#if defined( REPLAY_ENABLED )
-	CReplayPerformanceEditorPanel *pPerfEditor = ReplayUI_GetPerformanceEditor();
-	if ( pPerfEditor )
-	{
-		pPerfEditor->OnInGameMouseWheelEvent( nDelta );
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1436,10 +1306,9 @@ void CHLClient::ExtraMouseSample( float frametime, bool active )
 
 void CHLClient::IN_SetSampleTime( float frametime )
 {
-
-	input->Joystick_SetSampleTime( frametime );
 	input->IN_SetSampleTime( frametime );
 }
+
 //-----------------------------------------------------------------------------
 // Purpose: Fills in usercmd_s structure based on current view angles and key/controller inputs
 // Input  : frametime - timestamp for last frame
@@ -1519,9 +1388,9 @@ bool CHLClient::GetPlayerView( CViewSetup &playerView )
 //-----------------------------------------------------------------------------
 // Matchmaking
 //-----------------------------------------------------------------------------
-void CHLClient::SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties )
+void CHLClient::SetupGameProperties()
 {
-	presence->SetupGameProperties( contexts, properties );
+	presence->SetupGameProperties();
 }
 
 uint CHLClient::GetPresenceID( const char *pIDName )
@@ -1596,8 +1465,6 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 	modemanager->LevelInit( pMapName );
 	ParticleMgr()->LevelInit();
 
-	hudlcd->SetGlobalStat( "(mapname)", pMapName );
-
 	C_BaseTempEntity::ClearDynamicTempEnts();
 	clienteffects->Flush();
 	view->LevelInit();
@@ -1639,14 +1506,6 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 	g_RagdollLVManager.SetLowViolence( pMapName );
 
 	gHUD.LevelInit();
-
-#if defined( REPLAY_ENABLED )
-	// Initialize replay ragdoll recorder
-	if ( !engine->IsPlayingDemo() )
-	{
-		CReplayRagdollRecorder::Instance().Init();
-	}
-#endif
 }
 
 
@@ -1722,8 +1581,6 @@ void CHLClient::LevelShutdown( void )
 	view->LevelShutdown();
 	beams->ClearBeams();
 	ParticleMgr()->RemoveAllEffects();
-	
-	StopAllRumbleEffects();
 
 	gHUD.LevelShutdown();
 
@@ -1738,18 +1595,8 @@ void CHLClient::LevelShutdown( void )
 #endif
 	UncacheAllMaterials();
 
-#ifdef _XBOX
-	ReleaseRenderTargets();
-#endif
-
 	// string tables are cleared on disconnect from a server, so reset our global pointers to NULL
 	ResetStringTablePointers();
-
-#if defined( REPLAY_ENABLED )
-	// Shutdown the ragdoll recorder
-	CReplayRagdollRecorder::Instance().Shutdown();
-	CReplayRagdollCache::Instance().Shutdown();
-#endif
 }
 
 
@@ -2230,12 +2077,6 @@ void OnRenderStart()
 		C_BaseEntity::ToolRecordEntities();
 	}
 
-#if defined( REPLAY_ENABLED )
-	// This will record any ragdolls if Replay mode is enabled on the server
-	CReplayRagdollRecorder::Instance().Think();
-	CReplayRagdollCache::Instance().Think();
-#endif
-
 	// Finally, link all the entities into the leaf system right before rendering.
 	C_BaseEntity::AddVisibleEntities();
 }
@@ -2317,9 +2158,6 @@ void CHLClient::FrameStageNotify( ClientFrameStage_t curStage )
 			// Let prediction copy off pristine data
 			prediction->PostEntityPacketReceived();
 			HLTVCamera()->PostEntityPacketReceived();
-#if defined( REPLAY_ENABLED )
-			ReplayCamera()->PostEntityPacketReceived();
-#endif
 		}
 		break;
 	case FRAME_START:
@@ -2470,12 +2308,6 @@ void CHLClient::OnDemoRecordStop()
 
 void CHLClient::OnDemoPlaybackStart( char const* pDemoBaseName )
 {
-#if defined( REPLAY_ENABLED )
-	// Load any ragdoll override frames from disk
-	char szRagdollFile[MAX_OSPATH];
-	V_snprintf( szRagdollFile, sizeof(szRagdollFile), "%s.dmx", pDemoBaseName );
-	CReplayRagdollCache::Instance().Init( szRagdollFile );
-#endif
 }
 
 void CHLClient::OnDemoPlaybackStop()
@@ -2485,10 +2317,6 @@ void CHLClient::OnDemoPlaybackStop()
 	{
 		DemoPolish_GetController().Shutdown();
 	}
-#endif
-
-#if defined( REPLAY_ENABLED )
-	CReplayRagdollCache::Instance().Shutdown();
 #endif
 }
 
@@ -2530,21 +2358,7 @@ void CHLClient::ReloadFilesInList( IFileList *pFilesToReload )
 
 bool CHLClient::HandleUiToggle()
 {
-#if defined( REPLAY_ENABLED )
-	if ( !g_pEngineReplay || !g_pEngineReplay->IsSupportedModAndPlatform() )
-		return false;
-
-	CReplayPerformanceEditorPanel *pEditor = ReplayUI_GetPerformanceEditor();
-	if ( !pEditor )
-		return false;
-
-	pEditor->HandleUiToggle();
-
-	return true;
-
-#else
 	return false;
-#endif
 }
 
 bool CHLClient::ShouldAllowConsole()

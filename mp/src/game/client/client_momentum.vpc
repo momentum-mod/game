@@ -22,8 +22,6 @@ $Project "Client (Momentum)"
 {
     $Folder "Source Files"
     {
-        $File   "c_team_objectiveresource.cpp"
-        $File   "c_team_objectiveresource.h"
         
         $File "vgui_entitypanel.cpp"
 
@@ -85,7 +83,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
                         $File "momentum\ui\SettingsPanel\OnlineSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\RocketJumpSettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.h"
                     }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
@@ -95,7 +93,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\OnlineSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\RocketJumpSettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.cpp"
                 }
                 
                 $Folder "HUD"
@@ -121,6 +119,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_spectatorinfo.h"
                     $File "momentum\ui\HUD\hud_spectatorinfo.cpp"
                     $File "momentum\ui\HUD\hud_damageindicator.cpp"
+                    $File "momentum\ui\HUD\hud_stickybombcharge.cpp"
+                    $File "momentum\ui\HUD\hud_stickybombs.cpp"
                 }
                 
                 $Folder "Controls"
@@ -215,6 +215,8 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_rifle.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_rocketlauncher.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_rocketlauncher.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_stickybomblauncher.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_stickybomblauncher.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_shotgun.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_shotgun.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_smg.h"
@@ -302,6 +304,10 @@ $Project "Client (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_player_shared.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_rocket.h"
             $File   "$SRCDIR\game\shared\momentum\mom_rocket.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_stickybomb.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_stickybomb.h"
+            $File   "$SRCDIR\game\shared\momentum\mom_explosive.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_explosive.h"
             $File   "$SRCDIR\game\shared\momentum\mom_gamerules.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_gamerules.h"
             $File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
@@ -329,6 +335,7 @@ $Project "Client (Momentum)"
             $File   "momentum\clientmode_mom_normal.cpp"
             $File   "momentum\c_mom_ghost_base.h"
             $File   "momentum\c_mom_ghost_base.cpp"
+            $File   "momentum\tf2proxy.cpp"
 
             // RTT Shadows
             $File "momentum\worldlight.h"

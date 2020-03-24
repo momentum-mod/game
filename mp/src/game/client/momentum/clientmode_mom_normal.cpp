@@ -154,7 +154,7 @@ void ClientModeMOMNormal::Init()
     // Load up the combine control panel scheme
     g_hVGuiCombineScheme = scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
-        IsXbox() ? "resource/ClientScheme.res" : "resource/CombinePanelScheme.res", "CombineScheme");
+        "resource/CombinePanelScheme.res", "CombineScheme");
     if (!g_hVGuiCombineScheme)
     {
         Warning("Couldn't load combine panel scheme!\n");

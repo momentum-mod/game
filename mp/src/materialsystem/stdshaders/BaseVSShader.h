@@ -18,13 +18,9 @@
 #include "convar.h"
 #include <renderparm.h>
 
-#ifdef _X360
-#define SUPPORT_DX8 0
-#define SUPPORT_DX7 0
-#else
 #define SUPPORT_DX8 1
 #define SUPPORT_DX7 1
-#endif
+
 //-----------------------------------------------------------------------------
 // Helper macro for vertex shaders
 //-----------------------------------------------------------------------------

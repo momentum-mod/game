@@ -30,11 +30,7 @@
 
 #if !defined(_MINIMUM_BUILD_)
 #include <stdio.h>  // Needed for file access
-#if defined( _PS3 )
-#include <sys/memory.h>
-#else
 #include <memory.h>
-#endif
 #include <string.h> // Needed for strcat and strcpy
 #endif
 

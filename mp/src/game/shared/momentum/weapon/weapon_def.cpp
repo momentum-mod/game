@@ -17,8 +17,6 @@
 WeaponScriptDefinition::WeaponScriptDefinition()
 {
     szPrintName[0] = 0;
-    szViewModel[0] = 0;
-    szWorldModel[0] = 0;
     szAnimationPrefix[0] = 0;
 
     iSlot = 0;
@@ -37,12 +35,16 @@ WeaponScriptDefinition::WeaponScriptDefinition()
     iCrosshairDeltaDistance = 0;
     iCrosshairMinDistance = 0;
 
+    pKVWeaponModels = nullptr;
     pKVWeaponParticles = nullptr;
     pKVWeaponSounds = nullptr;
 }
 
 WeaponScriptDefinition::~WeaponScriptDefinition()
 {
+    if (pKVWeaponModels)
+        pKVWeaponModels->deleteThis();
+
     if (pKVWeaponSounds)
         pKVWeaponSounds->deleteThis();
 
@@ -53,8 +55,6 @@ WeaponScriptDefinition::~WeaponScriptDefinition()
 void WeaponScriptDefinition::Parse(KeyValues *pKvInput)
 {
     Q_strncpy(szPrintName, pKvInput->GetString("printname", WEAPON_PRINTNAME_MISSING), MAX_WEAPON_STRING);
-    Q_strncpy(szViewModel, pKvInput->GetString("viewmodel"), MAX_WEAPON_STRING);
-    Q_strncpy(szWorldModel, pKvInput->GetString("playermodel"), MAX_WEAPON_STRING);
     Q_strncpy(szAnimationPrefix, pKvInput->GetString("anim_prefix"), MAX_WEAPON_PREFIX);
     iSlot = pKvInput->GetInt("bucket", 0);
     iPosition = pKvInput->GetInt("bucket_position", 0);
@@ -73,6 +73,13 @@ void WeaponScriptDefinition::Parse(KeyValues *pKvInput)
     iCrosshairMinDistance = pKvInput->GetInt("CrosshairMinDistance", 4);
     iCrosshairDeltaDistance = pKvInput->GetInt("CrosshairDeltaDistance", 3);
 
+    if (pKVWeaponModels)
+    {
+        pKVWeaponModels->deleteThis();
+        pKVWeaponModels = nullptr;
+    }
+    pKVWeaponModels = pKvInput->FindKey("ModelData", true)->MakeCopy();
+
     if (pKVWeaponSounds)
     {
         pKVWeaponSounds->deleteThis();
@@ -86,15 +93,22 @@ void WeaponScriptDefinition::Parse(KeyValues *pKvInput)
         pKVWeaponParticles = nullptr;
     }
     pKVWeaponParticles = pKvInput->FindKey("ParticleData", true)->MakeCopy();
-
-#ifdef GAME_DLL
-    // Model bounds are rounded to the nearest integer, then extended by 1
-    engine->ForceModelBounds(szWorldModel, Vector(-15, -12, -18), Vector(44, 16, 19));
-#endif
 }
 
 void WeaponScriptDefinition::Precache()
 {
+#ifdef GAME_DLL
+    // Model bounds are rounded to the nearest integer, then extended by 1
+    engine->ForceModelBounds(pKVWeaponModels->GetString("world"), Vector(-15, -12, -18), Vector(44, 16, 19));
+#endif
+
+    FOR_EACH_VALUE(pKVWeaponModels, pKvModel)
+    {
+        const auto pWepMdl = pKvModel->GetString();
+        if (pWepMdl && pWepMdl[0])
+            CBaseEntity::PrecacheModel(pWepMdl);
+    }
+
     FOR_EACH_VALUE(pKVWeaponSounds, pKvSound)
     {
         const auto pSoundStr = pKvSound->GetString();
@@ -182,6 +196,7 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_KNIFE]           = ParseWeaponScript(g_szWeaponNames[WEAPON_KNIFE]);
     m_vecWeaponDefs[WEAPON_PAINTGUN]        = ParseWeaponScript(g_szWeaponNames[WEAPON_PAINTGUN]);
     m_vecWeaponDefs[WEAPON_ROCKETLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_ROCKETLAUNCHER]);
+    m_vecWeaponDefs[WEAPON_STICKYLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_STICKYLAUNCHER]);
 }
 
 void CWeaponDef::ReloadWeaponDefinitions()
@@ -204,6 +219,21 @@ void CWeaponDef::ReloadWeaponDefinition(const WeaponID_t id)
 #ifdef GAME_DLL
     FireWeaponDefinitionReloadedEvent(id);
 #endif
+}
+
+const char *CWeaponDef::GetWeaponParticle(WeaponID_t id, const char *pKey)
+{
+    return m_vecWeaponDefs[id]->m_WeaponScript.pKVWeaponParticles->GetString(pKey);
+}
+
+const char *CWeaponDef::GetWeaponModel(WeaponID_t id, const char *pKey)
+{
+    return m_vecWeaponDefs[id]->m_WeaponScript.pKVWeaponModels->GetString(pKey);
+}
+
+const char *CWeaponDef::GetWeaponSound(WeaponID_t id, const char *pKey)
+{
+    return m_vecWeaponDefs[id]->m_WeaponScript.pKVWeaponSounds->GetString(pKey);
 }
 
 WeaponDefinition *CWeaponDef::GetWeaponDefinition(const WeaponID_t id)
@@ -283,7 +313,7 @@ CON_COMMAND(weapon_reload_scripts, "Reloads all weapon scripts.\n")
 
             FOR_EACH_VEC(vecCurrentWeps, i)
             {
-                pPlayer->GiveNamedItem(g_szWeaponNames[vecCurrentWeps[i]]);
+                pPlayer->GiveWeapon(vecCurrentWeps[i]);
             }
 
             pPlayer->Weapon_Switch(pPlayer->GetWeapon(iActiveWpn));
@@ -315,7 +345,7 @@ CON_COMMAND(weapon_reload_script_current, "Reloads weapon script for the current
         g_pWeaponDef->ReloadWeaponDefinition(iWpnID);
 
         const auto pName = g_szWeaponNames[iWpnID];
-        pPlayer->GiveNamedItem(pName);
+        pPlayer->GiveWeapon(iWpnID);
         pPlayer->Weapon_Switch(pPlayer->GetWeapon(iWpnID));
 
         Msg("Successfully reloaded weapon script for weapon %s.\n", pName);

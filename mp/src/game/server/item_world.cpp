@@ -10,7 +10,6 @@
 #include "items.h"
 #include "gamerules.h"
 #include "engine/IEngineSound.h"
-#include "iservervehicle.h"
 #include "physics_saverestore.h"
 #include "world.h"
 
@@ -159,11 +158,6 @@ void CItem::Spawn( void )
 	SetSolid( SOLID_BBOX );
 	SetBlocksLOS( false );
 	AddEFlags( EFL_NO_ROTORWASH_PUSH );
-	
-	if( IsX360() )
-	{
-		AddEffects( EF_ITEM_BLINK );
-	}
 
 	// This will make them not collide with the player, but will collide
 	// against other items + weapons
@@ -344,10 +338,6 @@ bool UTIL_ItemCanBeTouchedByPlayer( CBaseEntity *pItem, CBasePlayer *pPlayer )
 	if ( pItem == NULL || pPlayer == NULL )
 		return false;
 
-	// For now, always allow a vehicle riding player to pick up things they're driving over
-	if ( pPlayer->IsInAVehicle() )
-		return true;
-
 	// Get our test positions
 	Vector vecStartPos;
 	IPhysicsObject *pPhysObj = pItem->VPhysicsGetObject();
@@ -397,14 +387,6 @@ bool CItem::ItemCanBeTouchedByPlayer( CBasePlayer *pPlayer )
 //-----------------------------------------------------------------------------
 void CItem::ItemTouch( CBaseEntity *pOther )
 {
-	// Vehicles can touch items + pick them up
-	if ( pOther->GetServerVehicle() )
-	{
-		pOther = pOther->GetServerVehicle()->GetPassenger();
-		if ( !pOther )
-			return;
-	}
-
 	// if it's not a player, ignore
 	if ( !pOther->IsPlayer() )
 		return;

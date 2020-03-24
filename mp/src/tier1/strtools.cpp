@@ -54,10 +54,8 @@
 #define _getcwd getcwd
 #elif _WIN32
 #include <direct.h>
-#if !defined( _X360 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#endif
 #endif
 
 #ifdef _WIN32
@@ -72,9 +70,6 @@
 #include <time.h>
 #include "tier0/basetypes.h"
 #include "tier1/utldict.h"
-#if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#endif
 #include "tier0/memdbgon.h"
 
 static int FastToLower( char c )
@@ -187,11 +182,7 @@ char *_V_strstr(const char* file, int line,  const char *s1, const char *search 
 	AssertValidStringPtr( s1 );
 	AssertValidStringPtr( search );
 
-#if defined( _X360 )
-	return (char *)strstr( (char *)s1, search );
-#else
 	return (char *)strstr( s1, search );
-#endif
 }
 
 wchar_t *_V_wcsupr (const char* file, int line, wchar_t *start)
@@ -1534,9 +1525,6 @@ int _V_UTF8ToUCS2( const char *pUTF8, int cubSrcInBytes, ucs2 *pUCS2, int cubDes
 #ifdef _WIN32
 	// under win32 wchar_t == ucs2, sigh
 	int cchResult = MultiByteToWideChar( CP_UTF8, 0, pUTF8, -1, pUCS2, cubDestSizeInBytes / sizeof(wchar_t) );
-#elif defined( _PS3 ) // bugbug JLB
-	int cchResult = 0;
-	Assert( 0 );
 #elif defined(POSIX)
 	iconv_t conv_t = iconv_open( "UCS-2LE", "UTF-8" );
 	size_t cchResult = -1;
@@ -2284,10 +2272,6 @@ bool V_MakeRelativePath( const char *pFullPath, const char *pDirectory, char *pR
 bool V_IsAbsolutePath( const char *pStr )
 {
 	bool bIsAbsolute = ( pStr[0] && pStr[1] == ':' ) || pStr[0] == '/' || pStr[0] == '\\';
-	if ( IsX360() && !bIsAbsolute )
-	{
-		bIsAbsolute = ( V_stristr( pStr, ":" ) != NULL );
-	}
 	return bIsAbsolute;
 }
 
@@ -2874,7 +2858,7 @@ size_t Q_URLDecodeRaw( char *pchDecodeDest, int nDecodeDestLen, const char *pchE
 	return Q_URLDecodeInternal( pchDecodeDest, nDecodeDestLen, pchEncodedSource, nEncodedSourceLen, false );
 }
 
-#if defined( LINUX ) || defined( _PS3 )
+#if defined( LINUX )
 extern "C" void qsort_s( void *base, size_t num, size_t width, int (*compare )(void *, const void *, const void *), void * context );
 #endif
 

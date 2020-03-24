@@ -1,89 +1,115 @@
-#ifdef _WIN32
-#include "Windows.h"
-#include "Psapi.h"
-#pragma comment(lib, "psapi.lib")
-#elif defined (POSIX)
-#include "util/os_utils.h"
-#endif
-
+#include "cbase.h"
 #include "tickset.h"
+#include "util/engine_patch.h"
 #include "mom_shareddefs.h"
 #include "tier0/platform.h"
 
-float* TickSet::interval_per_tick = nullptr;
-const Tickrate TickSet::s_DefinedRates[] = {
-    { 0.015f, "66" },
-    { 0.01f, "100" }
-};
-Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
-bool TickSet::m_bInGameUpdate = false;
+// memdbgon must be the last include file in a .cpp file!!!
+#include "tier0/memdbgon.h"
 
-inline bool TickSet::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
+static void OnIntervalPerTickChange(IConVar *var, const char *pOldValue, float fOldValue)
 {
-    for (; *mask != 0; ++data, ++pattern, ++mask)
-        if (*mask == 'x' && *data != *pattern)
-            return false;
+    ConVarRef tr(var);
+    float tickrate = tr.GetFloat();
+    if (CloseEnough(tickrate, TickSet::GetTickrate(), FLT_EPSILON))
+        return;
 
-    return (*mask == 0);
+    TickSet::SetTickrate(tickrate);
 }
 
-void* TickSet::FindPattern(const void* start, size_t length, const unsigned char* pattern, const char* mask)
+static void OnTickRateSet(const CCommand &command)
 {
-    auto maskLength = strlen(mask);
-    for (size_t i = 0; i <= length - maskLength; ++i)
+    // Search defined rates for one with a string matching the command argument.
+    for (unsigned rateIndx = TickSet::TICKRATE_FIRST; rateIndx < TickSet::TICKRATE_COUNT; rateIndx++)
     {
-        auto addr = reinterpret_cast<const unsigned char*>(start)+i;
-        if (DataCompare(addr, pattern, mask))
-            return const_cast<void*>(reinterpret_cast<const void*>(addr));
+        if (FStrEq(command.ArgS(), TickSet::s_DefinedRates[rateIndx].sType))
+        {
+            sv_interval_per_tick.SetValue(TickSet::s_DefinedRates[rateIndx].fTickRate);
+            return;
+        }
+    }
+    Warning("Unknown tickrate. Use \"sv_interval_per_tick\" to set custom tickrates.");
+}
+
+static int OnTickRateAutocomplete(const char *partial,
+                                  char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
+{
+    const int commandLength = Q_strlen("sv_tickrate ");
+
+    if (Q_strlen(partial) < commandLength)
+    {
+        // Checking for circumstances where partial is not as long as expected.
+        partial = "";
+    }
+    else
+    {
+        // Move start of the string to expected start of parameter.
+        partial += commandLength;
     }
 
-    return nullptr;
+    const unsigned partialLength = Q_strlen(partial);
+    int suggestionCount = 0;
+
+    // Search defined rates for one with a string matching the command argument.
+    for (unsigned rateIndx = TickSet::TICKRATE_FIRST; rateIndx < TickSet::TICKRATE_COUNT && suggestionCount < COMMAND_COMPLETION_MAXITEMS; rateIndx++)
+    {
+        if (!Q_strncmp(partial, TickSet::s_DefinedRates[rateIndx].sType, partialLength))
+        {
+            Q_snprintf(commands[suggestionCount], COMMAND_COMPLETION_ITEM_LENGTH, "sv_tickrate %s", TickSet::s_DefinedRates[rateIndx].sType);
+            ++suggestionCount;
+        }
+    }
+
+    return suggestionCount;
 }
+
+MAKE_CONVAR_C(sv_interval_per_tick, "0.015", FCVAR_MAPPING,
+    "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01.",
+    0.001f, 0.1f, OnIntervalPerTickChange);
+
+static ConCommand sv_tickrate("sv_tickrate", OnTickRateSet,
+    "Changes the tickrate to one of a defined set of values. Custom tickrates can be set using \"sv_interval_per_tick.\"",
+    FCVAR_MAPPING, OnTickRateAutocomplete);
+
+float *TickSet::interval_per_tick = nullptr;
+
+const Tickrate TickSet::s_DefinedRates[] = {
+    { 0.015625f, "64" },
+    { 0.015f, "66" },
+    { 0.01171875f, "85" },
+    { 0.01f, "100" },
+    { 0.0078125f, "128" }
+};
+
+Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
 
 bool TickSet::TickInit()
 {
 #ifdef _WIN32
-    HMODULE handle = GetModuleHandleA("engine.dll");
-    if (!handle)
-        return false;    
-    
-    MODULEINFO info;
-    GetModuleInformation(GetCurrentProcess(), handle, &info, sizeof(info));
-
-    auto moduleBase = info.lpBaseOfDll;
-    auto moduleSize = info.SizeOfImage;
-
-    unsigned char pattern[] = { 0x8B, 0x0D, '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 0xFF, '?', 0xD9, 0x15, '?', '?',
-        '?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
-    auto p = reinterpret_cast<uintptr_t>(FindPattern(moduleBase, moduleSize, pattern, "xx????????????x?xx????xx????xxxx????xxxxxxxxxx"));
-    if (p)
-        interval_per_tick = *reinterpret_cast<float**>(p + 18);
+    const char *pattern = "\x8B\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\x00\xD9\x15\x00\x00\x00\x00\xDD\x05\x00\x00\x00\x00\xDB\xF1\xDD\x05";
+    auto addr = reinterpret_cast<uintptr_t>(CEngineBinary::FindPattern(pattern, "xx????????????x?xx????xx????xxxx", 18));
+    if (addr)
+        interval_per_tick = *reinterpret_cast<float**>(addr);
 
 #else //POSIX
-    void *base;
-    size_t length;
-
-    if (GetModuleInformation(ENGINE_DLL_NAME, &base, &length))
-        return false;
-
 #ifdef __linux__
 
     // mov ds:interval_per_tick, 3C75C28Fh         <-- float for 0.015
-    unsigned char pattern[] = { 0xC7,0x05, '?','?','?','?', 0x8F,0xC2,0x75,0x3C, 0xE8 };
-    void* addr = FindPattern(base, length, pattern, "xx????xxxxx");
+    const char *pattern = "\xC7\x05\x00\x00\x00\x00\x8F\xC2\x75\x3C\xE8";
+    void* addr = CEngineBinary::FindPattern(pattern, "xx????xxxxx", 2);
     if (addr)
-        interval_per_tick = *(float**)(addr + 2); //MOM_TODO: fix pointer arithmetic on void pointer?
+        interval_per_tick = *(float**)(addr); //MOM_TODO: fix pointer arithmetic on void pointer?
 
 #elif defined (OSX)
-    if (length == 12581936) //magic engine.dylib file size as of august 2017
+    if (CEngineBinary::GetModuleSize() == 12581936) //magic engine.dylib file size as of august 2017
     {
-        interval_per_tick = reinterpret_cast<float*>((char*)base + 0x7DC120); //use offset since it's quicker than searching
+        interval_per_tick = reinterpret_cast<float*>((char*)CEngineBinary::GetModuleBase() + 0x7DC120); //use offset since it's quicker than searching
         printf("engine.dylib not updated. using offset! address: %#08x\n", interval_per_tick);
     }
     else //valve updated engine, try to use search pattern...
     {
-        unsigned char pattern[] = {0x8F, 0xC2, 0x75, 0x3C, 0x78, '?', '?', 0x0C, 0x6C, '?', '?', '?', 0x01, 0x00};
-        auto addr = reinterpret_cast<uintptr_t>(FindPattern(base, length, pattern, "xxxxx??xx???xx"));
+        const char *pattern = "\x8F\xC2\x75\x3C\x78\x00\x00\x0C\x6C\x00\x00\x00\x01\x00";
+        auto addr = reinterpret_cast<uintptr_t>(CEngineBinary::FindPattern(pattern, "xxxxx??xx???xx"));
         if (addr)
         {
             interval_per_tick = reinterpret_cast<float*>(addr);
@@ -95,33 +121,18 @@ bool TickSet::TickInit()
     return interval_per_tick ? true : false;
 }
 
-bool TickSet::SetTickrate(int gameMode)
-{
-    switch (gameMode)
-    {
-    case GAMEMODE_TRICKSURF:
-    case GAMEMODE_BHOP:
-    case GAMEMODE_KZ:
-        //MOM_TODO: add more gamemodes
-        return SetTickrate(s_DefinedRates[TICKRATE_100]);
-    case GAMEMODE_SURF:
-    case GAMEMODE_RJ:
-    default:
-        return SetTickrate(s_DefinedRates[TICKRATE_66]);
-    }
-}
-
 bool TickSet::SetTickrate(float tickrate)
 {
     if (!CloseEnough(m_trCurrent.fTickRate, tickrate, FLT_EPSILON))
     {
-        Tickrate tr;
-        if (CloseEnough(tickrate, 0.01f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_100];
-        else if (CloseEnough(tickrate, 0.015f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_66];
-        else
+        Tickrate tr = {tickrate, "CUSTOM"};
+        for (int tickRateIndx = TICKRATE_FIRST; tickRateIndx < TICKRATE_COUNT; tickRateIndx++)
         {
-            tr.fTickRate = tickrate;
-            tr.sType = "CUSTOM";
+            if (CloseEnough(tickrate, s_DefinedRates[tickRateIndx].fTickRate, FLT_EPSILON))
+            {
+                tr = s_DefinedRates[tickRateIndx];
+                break;
+            }
         }
         return SetTickrate(tr);
     }
@@ -153,24 +164,3 @@ bool TickSet::SetTickrate(Tickrate trNew)
     Warning("Failed to set tickrate: bad hook\n");
     return false;
 }
-
-static void OnTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
-{
-    ConVarRef tr(var);
-    float tickrate = tr.GetFloat();
-    if (CloseEnough(tickrate, TickSet::GetTickrate(), FLT_EPSILON)) return;
-    //MOM_TODO: Re-implement the bound
-
-    /*
-    if (toCheck < 0.01f || toCheck > 0.015f)
-    {
-        Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
-        var->SetValue(((ConVar*) var)->GetDefault());
-        return;
-    }*/
-    TickSet::SetTickrate(tickrate);
-}
-
-static ConVar intervalPerTick("sv_interval_per_tick", "0.015", 0,
-                              "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01",
-                              true, 0.001f, true, 0.1f, OnTickRateChange);

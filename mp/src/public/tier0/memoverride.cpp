@@ -11,7 +11,7 @@
 
 #undef PROTECTED_THINGS_ENABLE   // allow use of _vsnprintf
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined( _WIN32 )
 #define WIN_32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -46,7 +46,7 @@
 #undef _CrtGetCheckCount
 #undef _CrtSetDebugFillThreshold
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined( _WIN32 )
 const char *MakeModuleFileName()
 {
 #if _MSC_VER < 1900
@@ -393,7 +393,6 @@ void *realloc_db( void *pMem, size_t nSize, const char *pFileName, int nLine )
 extern "C"
 {
 
-#if !defined( _X360 )
 	int __cdecl _heap_init()
 	{
 		return g_pMemAlloc != NULL;
@@ -402,7 +401,6 @@ extern "C"
 	void __cdecl _heap_term()
 	{
 	}
-#endif
 
 }
 #endif
@@ -520,14 +518,6 @@ void *__cdecl _malloc_dbg( size_t nSize, int nBlockUse,
 	return g_pMemAlloc->Alloc(nSize, pFileName, nLine);
 }
 
-#if defined( _X360 )
-void *__cdecl _calloc_dbg_impl( size_t nNum, size_t nSize, int nBlockUse, 
-								const char * szFileName, int nLine, int * errno_tmp )
-{
-	return _calloc_dbg( nNum, nSize, nBlockUse, szFileName, nLine );
-}
-#endif
-
 void *__cdecl _calloc_dbg( size_t nNum, size_t nSize, int nBlockUse,
 							const char *pFileName, int nLine )
 {
@@ -629,19 +619,16 @@ FREE_CALL void __cdecl _aligned_free( void *memblock )
 // aligned offset base
 ALLOC_CALL void * __cdecl _aligned_offset_malloc_base( size_t size, size_t align, size_t offset )
 {
-	Assert( IsPC() || 0 );
 	return NULL;
 }
 
 ALLOC_CALL void * __cdecl _aligned_offset_realloc_base( void * memblock, size_t size, size_t align, size_t offset)
 {
-	Assert( IsPC() || 0 );
 	return NULL;
 }
 
 ALLOC_CALL void * __cdecl _aligned_offset_recalloc_base( void * memblock, size_t size, size_t align, size_t offset)
 {
-	Assert( IsPC() || 0 );
 	return NULL;
 }
 
@@ -1032,7 +1019,6 @@ extern "C" int __cdecl _CrtGetCheckCount( void )
 // aligned offset debug
 extern "C" void * __cdecl _aligned_offset_recalloc_dbg( void * memblock, size_t count, size_t size, size_t align, size_t offset, const char * f_name, int line_n )
 {
-	Assert( IsPC() || 0 );
 	return ReallocUnattributed( memblock, size * count );
 }
 
@@ -1273,151 +1259,6 @@ wchar_t * __cdecl _wcsdup ( const wchar_t * string )
 } // end extern "C"
 
 #if _MSC_VER >= 1400
-
-//-----------------------------------------------------------------------------
-// 	XBox Memory Allocator Override
-//-----------------------------------------------------------------------------
-#if defined( _X360 )
-#if defined( _DEBUG ) || defined( USE_MEM_DEBUG )
-#include "utlmap.h"
-
-MEMALLOC_DEFINE_EXTERNAL_TRACKING( XMem );
-
-CThreadFastMutex g_XMemAllocMutex;
-
-void XMemAlloc_RegisterAllocation( void *p, DWORD dwAllocAttributes )
-{
-	if ( !g_pMemAlloc )
-	{
-		// core xallocs cannot be journaled until system is ready
-		return;
-	}
-
-	AUTO_LOCK_FM( g_XMemAllocMutex );
-	int size = XMemSize( p, dwAllocAttributes );
-	MemAlloc_RegisterExternalAllocation( XMem, p, size );
-}
-
-void XMemAlloc_RegisterDeallocation( void *p, DWORD dwAllocAttributes )
-{
-	if ( !g_pMemAlloc )
-	{
-		// core xallocs cannot be journaled until system is ready
-		return;
-	}
-
-	AUTO_LOCK_FM( g_XMemAllocMutex );
-	int size = XMemSize( p, dwAllocAttributes );
-	MemAlloc_RegisterExternalDeallocation( XMem, p, size );
-}
-
-#else
-
-#define XMemAlloc_RegisterAllocation( p, a )	((void)0)
-#define XMemAlloc_RegisterDeallocation( p, a )	((void)0)
-
-#endif
-
-//-----------------------------------------------------------------------------
-//	XMemAlloc
-//
-//	XBox Memory Allocator Override
-//-----------------------------------------------------------------------------
-LPVOID WINAPI XMemAlloc( SIZE_T dwSize, DWORD dwAllocAttributes )
-{
-	LPVOID	ptr;
-	XALLOC_ATTRIBUTES *pAttribs = (XALLOC_ATTRIBUTES *)&dwAllocAttributes;
-	bool bPhysical = ( pAttribs->dwMemoryType == XALLOC_MEMTYPE_PHYSICAL );
-
-	if ( !bPhysical && !pAttribs->dwHeapTracksAttributes && pAttribs->dwAllocatorId != eXALLOCAllocatorId_XUI )
-	{
-		MEM_ALLOC_CREDIT();
-		switch ( pAttribs->dwAlignment )
-		{
-		case XALLOC_ALIGNMENT_4:
-			ptr = g_pMemAlloc->Alloc( dwSize );
-			break;
-		case XALLOC_ALIGNMENT_8:
-			ptr = MemAlloc_AllocAligned( dwSize, 8 );
-			break;
-		case XALLOC_ALIGNMENT_DEFAULT:
-		case XALLOC_ALIGNMENT_16:
-		default:
-			ptr = MemAlloc_AllocAligned( dwSize, 16 );
-			break;
-		}
-		if ( pAttribs->dwZeroInitialize != 0 )
-		{
-			memset( ptr, 0, XMemSize( ptr, dwAllocAttributes ) );
-		}
-		return ptr;
-	}
-
-	ptr = XMemAllocDefault( dwSize, dwAllocAttributes );
-	if ( ptr )
-	{
-		XMemAlloc_RegisterAllocation( ptr, dwAllocAttributes );
-	}
-
-	return ptr;
-}
-
-//-----------------------------------------------------------------------------
-//	XMemFree
-//
-//	XBox Memory Allocator Override
-//-----------------------------------------------------------------------------
-VOID WINAPI XMemFree( PVOID pAddress, DWORD dwAllocAttributes )
-{
-	if ( !pAddress )
-	{
-		return;
-	}
-
-	XALLOC_ATTRIBUTES *pAttribs = (XALLOC_ATTRIBUTES *)&dwAllocAttributes;
-	bool bPhysical = ( pAttribs->dwMemoryType == XALLOC_MEMTYPE_PHYSICAL );
-
-	if ( !bPhysical && !pAttribs->dwHeapTracksAttributes && pAttribs->dwAllocatorId != eXALLOCAllocatorId_XUI )
-	{
-		switch ( pAttribs->dwAlignment )
-		{
-		case XALLOC_ALIGNMENT_4:
-			return g_pMemAlloc->Free( pAddress );
-		default:
-			return MemAlloc_FreeAligned( pAddress );
-		}
-		return;
-	}
-
-	XMemAlloc_RegisterDeallocation( pAddress, dwAllocAttributes );
-
-	XMemFreeDefault( pAddress, dwAllocAttributes );
-}
-
-//-----------------------------------------------------------------------------
-//	XMemSize
-//
-//	XBox Memory Allocator Override
-//-----------------------------------------------------------------------------
-SIZE_T WINAPI XMemSize( PVOID pAddress, DWORD dwAllocAttributes )
-{
-	XALLOC_ATTRIBUTES *pAttribs = (XALLOC_ATTRIBUTES *)&dwAllocAttributes;
-	bool bPhysical = ( pAttribs->dwMemoryType == XALLOC_MEMTYPE_PHYSICAL );
-
-	if ( !bPhysical && !pAttribs->dwHeapTracksAttributes && pAttribs->dwAllocatorId != eXALLOCAllocatorId_XUI )
-	{
-		switch ( pAttribs->dwAlignment )
-		{
-		case XALLOC_ALIGNMENT_4:
-			return g_pMemAlloc->GetSize( pAddress );
-		default:
-			return MemAlloc_GetSizeAligned( pAddress );
-		}
-	}
-
-	return XMemSizeDefault( pAddress, dwAllocAttributes );
-}
-#endif // _X360
 
 #define MAX_LANG_LEN        64  /* max language name length */
 #define MAX_CTRY_LEN        64  /* max country name length */

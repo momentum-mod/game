@@ -1,0 +1,10 @@
+PBR
+{
+	"$basetexture" "shadertest/pbr_brick_d"
+	"$bumpmap" "shadertest/pbr_brick_n"
+	"$surfaceprop" "default"
+
+	"$envmap" "env_cubemap"
+
+	"$mraotexture" "shadertest/pbr_brick_mrao"
+}

@@ -1,0 +1,28 @@
+"VertexLitGeneric"
+{
+
+	$basetexture 			"models/weapons/mom_stickybomb_classic/mom_stickybomb_classic_d"
+	$bumpMap				"models/weapons/mom_stickybomb_classic/mom_stickybomb_classic_n"
+	
+	$selfIllum 						1									//Disables Shading on $baseTexture's alpha
+	$selfIllumTint 					"[1 1 1]"							//Tints the self-illumination
+	//$selfIllumFresnel				1									//Enables self-illumination $selfIllumFresnelMinMaxExp
+	//$selfIllumFresnelMinMaxExp	"[0 5 3]"							//Sets minimum intensity [0] , maximum intensity [1] and fresnel factor [2]
+	
+	$envMap						"cubemaps\cubemap_sheen001.hdr"		//Sets the closest env_cubemap as the environment map (specular reflection)
+	$envMapTint					"[.3 .3 .32]"						//Tints the envmap
+	$envMapFresnel				.72									//Renders the envmap with a fresnel. -NEEDS PHONG-
+	
+	$phong 						1									//Makes use of the phong algorithm for diffuse reflections
+	$phongexponent 				8									//Sets how tight the reflection shape is. Higher is tighter
+	$phongboost 				3									//Sets how intense the reflection
+	$phongTint					"[.9 .96 1]"						//Tints the reflection.
+	$phongFresnelRanges			"[.02 .3 1]"						//Makes use of a fresnel factor to modify the intesity of the reflection depending on the viewing angle
+	$halfLambert				1									//The range for lighting the model is extended
+	
+	$rimlight					1									//Highlights the model from lights that would shine from behind
+	$rimlightexponent			1									//Same functionality as $phongexponent
+	$rimlightBoost				.5									//Same functionality as $phongboost
+
+
+}

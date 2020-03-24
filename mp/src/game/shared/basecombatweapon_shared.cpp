@@ -14,13 +14,6 @@
 #include "activitylist.h"
 #include "weapon/weapon_def.h"
 
-// NVNT start extra includes
-#include "haptics/haptic_utils.h"
-#ifdef CLIENT_DLL
-	#include "prediction.h"
-#endif
-// NVNT end extra includes
-
 #if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
 #include "tf_shareddefs.h"
 #endif
@@ -190,10 +183,6 @@ void CBaseCombatWeapon::Spawn( void )
 	}
 
 #if !defined( CLIENT_DLL )
-	if( IsX360() )
-	{
-		AddEffects( EF_ITEM_BLINK );
-	}
 
 	FallInit();
 	SetCollisionGroup( COLLISION_GROUP_WEAPON );
@@ -263,7 +252,7 @@ const char* CBaseCombatWeapon::GetWeaponSound(const char *pToken) const
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is ignored in the base class here*/ ) const
 {
-	return GetWeaponScript()->szViewModel;
+	return GetWeaponScript()->pKVWeaponModels->GetString("view");
 }
 
 //-----------------------------------------------------------------------------
@@ -271,7 +260,7 @@ const char *CBaseCombatWeapon::GetViewModel( int /*viewmodelindex = 0 -- this is
 //-----------------------------------------------------------------------------
 const char *CBaseCombatWeapon::GetWorldModel( void ) const
 {
-	return GetWeaponScript()->szWorldModel;
+	return GetWeaponScript()->pKVWeaponModels->GetString("world");
 }
 
 //-----------------------------------------------------------------------------
@@ -911,14 +900,7 @@ int CBaseCombatWeapon::UpdateClientData( CBasePlayer *pPlayer )
 
 	if ( pPlayer->GetActiveWeapon() == this )
 	{
-		if ( pPlayer->m_fOnTarget ) 
-		{
-			iNewState = WEAPON_IS_ONTARGET;
-		}
-		else
-		{
-			iNewState = WEAPON_IS_ACTIVE;
-		}
+		iNewState = WEAPON_IS_ACTIVE;
 	}
 	else
 	{
@@ -1040,15 +1022,6 @@ bool CBaseCombatWeapon::SendWeaponAnim( int iActivity )
 {
 #ifdef USES_ECON_ITEMS
 	iActivity = TranslateViewmodelHandActivity( (Activity)iActivity );
-#endif		
-	// NVNT notify the haptics system of this weapons new activity
-#ifdef WIN32
-#ifdef CLIENT_DLL
-	if ( prediction->InPrediction() && prediction->IsFirstTimePredicted() )
-#endif
-#ifndef _X360
-		HapticSendWeaponAnim(this,iActivity);
-#endif
 #endif
 	//For now, just set the ideal activity and be done with it
 	return SetIdealActivity( (Activity) iActivity );
@@ -1241,10 +1214,8 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 //			*szAnimExt - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt )
+bool CBaseCombatWeapon::DefaultDeploy( const char *szViewModel, const char *szWeaponModel, int iActivity, const char *szAnimExt )
 {
-	// Msg( "deploy %s at %f\n", GetClassname(), gpGlobals->curtime );
-
 	// Weapons that don't autoswitch away when they run out of ammo 
 	// can still be deployed when they have no ammo.
 	if ( !HasAnyAmmo() && AllowsAutoSwitchFrom() )
@@ -1265,9 +1236,9 @@ bool CBaseCombatWeapon::DefaultDeploy( char *szViewModel, char *szWeaponModel, i
 		pOwner->SetNextAttack( gpGlobals->curtime + DeployTime() );
 	}
 
-	// Can't shoot again until we've finished deploying
-	m_flNextPrimaryAttack	= gpGlobals->curtime + DeployTime();
-	m_flNextSecondaryAttack	= gpGlobals->curtime + DeployTime();
+	// Can't shoot again until we've finished deploying, but don't squash current delay as well
+	m_flNextPrimaryAttack	= Max<float>(m_flNextPrimaryAttack, gpGlobals->curtime + DeployTime());
+	m_flNextSecondaryAttack	= Max<float>(m_flNextSecondaryAttack, gpGlobals->curtime + DeployTime());
 	m_flHudHintMinDisplayTime = 0;
 
 	m_bAltFireHudHintDisplayed = false;
@@ -1296,7 +1267,7 @@ selects and deploys each weapon as you pass it. (sjb)
 bool CBaseCombatWeapon::Deploy( )
 {
 	MDLCACHE_CRITICAL_SECTION();
-	bool bResult = DefaultDeploy( (char*)GetViewModel(), (char*)GetWorldModel(), GetDrawActivity(), (char*)GetAnimPrefix() );
+	bool bResult = DefaultDeploy( GetViewModel(), GetWorldModel(), GetDrawActivity(), GetAnimPrefix() );
 
 	// override pose parameters
 	PoseParameterOverride( false );
@@ -1423,40 +1394,6 @@ bool CBaseCombatWeapon::CanReload( void )
 void CBaseCombatWeapon::ItemPreFrame( void )
 {
 	MaintainIdealActivity();
-
-#ifndef CLIENT_DLL
-#ifndef HL2_EPISODIC
-	if ( IsX360() )
-#endif
-	{
-		// If we haven't displayed the hint enough times yet, it's time to try to 
-		// display the hint, and the player is not standing still, try to show a hud hint.
-		// If the player IS standing still, assume they could change away from this weapon at
-		// any second.
-		if( (!m_bAltFireHudHintDisplayed || !m_bReloadHudHintDisplayed) && gpGlobals->curtime > m_flHudHintMinDisplayTime && gpGlobals->curtime > m_flHudHintPollTime && GetOwner() && GetOwner()->IsPlayer() )
-		{
-			CBasePlayer *pPlayer = (CBasePlayer*)(GetOwner());
-
-			if( pPlayer && pPlayer->GetStickDist() > 0.0f )
-			{
-				// If the player is moving, they're unlikely to switch away from the current weapon
-				// the moment this weapon displays its HUD hint.
-				if( ShouldDisplayReloadHUDHint() )
-				{
-					DisplayReloadHudHint();
-				}
-				else if( ShouldDisplayAltFireHUDHint() )
-				{
-					DisplayAltFireHudHint();
-				}
-			}
-			else
-			{
-				m_flHudHintPollTime = gpGlobals->curtime + 2.0f;
-			}
-		}
-	}
-#endif
 }
 
 bool CBaseCombatWeapon::CanPerformSecondaryAttack() const
@@ -1507,16 +1444,7 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 		}
 		else
 		{
-			// FIXME: This isn't necessarily true if the weapon doesn't have a secondary fire!
-			// For instance, the crossbow doesn't have a 'real' secondary fire, but it still 
-			// stops the crossbow from firing on the 360 if the player chooses to hold down their
-			// zoom button. (sjb) Orange Box 7/25/2007
-#if !defined(CLIENT_DLL)
-			if( !IsX360() || !ClassMatches("weapon_crossbow") )
-#endif
-			{
-				bFired = ShouldBlockPrimaryFire();
-			}
+			bFired = ShouldBlockPrimaryFire();
 
 			SecondaryAttack();
 
@@ -2040,8 +1968,7 @@ void CBaseCombatWeapon::PrimaryAttack( void )
 
 	FireBulletsInfo_t info;
 	info.m_vecSrc	 = pPlayer->Weapon_ShootPosition( );
-	
-	info.m_vecDirShooting = pPlayer->GetAutoaimVector( AUTOAIM_SCALE_DEFAULT );
+  AngleVectors(pPlayer->EyeAngles() + pPlayer->m_Local.m_vecPunchAngle, &info.m_vecDirShooting);
 
 	// To make the firing framerate independent, we may have to fire more than one bullet here on low-framerate systems, 
 	// especially if the weapon we're firing has a really fast rate of fire.

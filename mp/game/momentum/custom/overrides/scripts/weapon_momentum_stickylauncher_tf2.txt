@@ -1,0 +1,80 @@
+WeaponData
+{
+    "CrosshairMinDistance"      "4"
+    "CrosshairDeltaDistance"    "4"
+    "BuiltRightHanded"          "1"
+    "PlayerAnimationExtension"  "ak"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "#MOM_Weapon_StickybombLauncher"
+    
+    "anim_prefix"      "anim"
+    "bucket"            "0"
+    "bucket_position"   "0"
+
+    "clip_size"         "4"
+    "weight"            "25"
+
+    "ModelData"
+    {
+        "view"      "models/weapons/v_models/v_stickybomb_launcher_demo.mdl"
+        "world"     "models/weapons/w_models/w_stickybomb_launcher.mdl"
+
+        "sticky"    "models/weapons/w_models/w_stickybomb.mdl"
+    }
+
+    // Sounds for the weapon.
+    SoundData
+    {
+        "single_shot"       "StickybombLauncher.Single"
+        "explosion"         "BaseExplosionEffect.SoundTF2"
+        "detonate"          "StickybombLauncher.Detonate"
+        "deny"              "StickybombLauncher.Deny"
+        "charge"            "StickybombLauncher.Charge"
+    }
+    
+    // Weapon particles
+    ParticleData
+    {
+        "ExplosionEffect"       "ExplosionCore_sapperdestroyed" // or ExplosionCore_wall
+        "ExplosionMidAirEffect" "ExplosionCore_MidAir"
+        "ExplosionWaterEffect"  "ExplosionCore_MidAir_underwater"
+
+        "StickybombTrail"       "stickybombtrail_red" // or _blue
+        "StickybombPulse"       "stickybomb_pulse_red" // or _blue
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        //Weapon Select Images
+        "weapon"
+        {
+                "font"		"WeaponIcons"
+                "character"	"i"
+        }
+        "weapon_s"
+        {	
+                "font"		"WeaponIconsSelected"
+                "character"	"i"
+        }
+        "weapon_small"
+        {
+                "font"		"WeaponIconsSmall"
+                "character"	"i"
+        }
+        "ammo"
+        {
+                "font"		"WeaponIconsSmall"
+                "character"	"x"
+        }
+        "crosshair"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+    }
+}

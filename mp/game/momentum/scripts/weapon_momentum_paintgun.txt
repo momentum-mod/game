@@ -6,8 +6,6 @@ WeaponData
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Paintgun"
-    "viewmodel"         "models/weapons/v_mom_paintgun.mdl"
-    "playermodel"       "models/weapons/w_mom_paintgun.mdl"
     
     "anim_prefix"      "anim"
     "bucket"            "4"
@@ -19,7 +17,13 @@ WeaponData
     "item_flags"        "0"
     "autoswitchfrom" "0"
 
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    "ModelData"
+    {
+        "view"  "models/weapons/v_mom_paintgun.mdl"
+        "world" "models/weapons/w_mom_paintgun.mdl"
+    }
+
+    // Sounds for the weapon.
     SoundData
     {
         "single_shot"       "Weapon_Paintgun.Single"
@@ -50,14 +54,6 @@ WeaponData
 				"character"	"t"
 		}
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"

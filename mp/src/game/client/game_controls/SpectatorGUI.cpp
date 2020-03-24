@@ -25,9 +25,6 @@
 #include <game/client/iviewport.h>
 #include "commandmenu.h"
 #include "hltvcamera.h"
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#endif
 
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/Panel.h>
@@ -46,9 +43,7 @@ void AddSubKeyNamed( KeyValues *pKeys, const char *pszName );
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifndef _XBOX
 extern IGameUIFuncs *gameuifuncs; // for key binding details
-#endif
 
 // void DuckMessage(const char *str); // from vgui_teamfortressviewport.cpp
 

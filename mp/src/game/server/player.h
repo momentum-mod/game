@@ -81,7 +81,6 @@ class CBaseCombatWeapon;
 class CBaseViewModel;
 class CTeam;
 class IPhysicsPlayerController;
-class IServerVehicle;
 class CUserCmd;
 class CFuncLadder;
 class CNavArea;
@@ -137,12 +136,6 @@ enum PlayerPhysFlag_e
 // constant items
 #define ITEM_HEALTHKIT		1
 #define ITEM_BATTERY		4
-
-#define AUTOAIM_2DEGREES  0.0348994967025
-#define AUTOAIM_5DEGREES  0.08715574274766
-#define AUTOAIM_8DEGREES  0.1391731009601
-#define AUTOAIM_10DEGREES 0.1736481776669
-#define AUTOAIM_20DEGREES 0.3490658503989
 
 // useful cosines
 #define DOT_1DEGREE   0.9998476951564
@@ -202,7 +195,6 @@ public:
 	virtual bool IsPlayer();
 	virtual bool IsFakeClient();
 	virtual bool IsDead();
-	virtual bool IsInAVehicle();
 	virtual bool IsObserver();
 	virtual const Vector GetAbsOrigin();
 	virtual const QAngle GetAbsAngles();
@@ -339,7 +331,6 @@ public:
 	void					EyePositionAndVectors( Vector *pPosition, Vector *pForward, Vector *pRight, Vector *pUp );
 	virtual const QAngle	&LocalEyeAngles();		// Direction of eyes
 	void					EyeVectors( Vector *pForward, Vector *pRight = NULL, Vector *pUp = NULL );
-	void					CacheVehicleView( void );	// Calculate and cache the position of the player in the vehicle
 
 	// Sets the view angles
 	void					SnapEyeAngles( const QAngle &viewAngles );
@@ -425,8 +416,7 @@ public:
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void			UpdateClientData( void );
-	void					RumbleEffect( unsigned char index, unsigned char rumbleData, unsigned char rumbleFlags );
-	
+
 	// Player is moved across the transition by other means
 	virtual int				ObjectCaps( void ) { return BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	virtual void			Precache( void );
@@ -442,7 +432,7 @@ public:
 	
 	void					UpdatePlayerSound ( void );
 	virtual void			UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity );
-	virtual void			PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
+	virtual void			PlayStepSound( const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
 	virtual const char	   *GetOverrideStepSound( const char *pszBaseStepSoundName ) { return pszBaseStepSoundName; }
 	virtual void			GetStepSoundVelocities( float *velwalk, float *velrun );
 	virtual void			SetStepSoundTime( stepsoundtimes_t iStepSoundTime, bool bWalking );
@@ -492,21 +482,6 @@ public:
 	virtual void			CreateCorpse( void ) { }
 	virtual CBaseEntity		*EntSelectSpawnPoint( void );
 
-	// Vehicles
-	virtual bool			IsInAVehicle( void ) const;
-			bool			CanEnterVehicle( IServerVehicle *pVehicle, int nRole );
-	virtual bool			GetInVehicle( IServerVehicle *pVehicle, int nRole );
-	virtual void			LeaveVehicle( const Vector &vecExitPoint = vec3_origin, const QAngle &vecExitAngles = vec3_angle );
-	int						GetVehicleAnalogControlBias() { return m_iVehicleAnalogBias; }
-	void					SetVehicleAnalogControlBias( int bias ) { m_iVehicleAnalogBias = bias; }
-	
-	// override these for 
-	virtual void			OnVehicleStart() {}
-	virtual void			OnVehicleEnd( Vector &playerDestPosition ) {} 
-	IServerVehicle			*GetVehicle();
-	CBaseEntity				*GetVehicleEntity( void );
-	bool					UsingStandardWeaponsInVehicle( void );
-	
 	void					AddPoints( int score, bool bAllowNegativeScore );
 	void					AddPointsToTeam( int score, bool bAllowNegativeScore );
 	virtual bool			BumpWeapon( CBaseCombatWeapon *pWeapon );
@@ -556,15 +531,6 @@ public:
 	virtual void			UpdateGeigerCounter( void );
 	void					CheckTimeBasedDamage( void );
 
-	void					ResetAutoaim( void );
-	
-	virtual Vector			GetAutoaimVector( float flScale );
-	virtual Vector			GetAutoaimVector( float flScale, float flMaxDist );
-	virtual void			GetAutoaimVector( autoaim_params_t &params );
-
-	float					GetAutoaimScore( const Vector &eyePosition, const Vector &viewDir, const Vector &vecTarget, CBaseEntity *pTarget, float fScale, CBaseCombatWeapon *pActiveWeapon );
-	QAngle					AutoaimDeflection( Vector &vecSrc, autoaim_params_t &params );
-	virtual bool			ShouldAutoaim( void );
 	void					SetTargetInfo( Vector &vecSrc, float flDist );
 
 	void					SetViewEntity( CBaseEntity *pEntity );
@@ -669,7 +635,6 @@ public:
 	inline void SetActivity( Activity eActivity ) { m_Activity = eActivity; }
 	bool	IsPlayerLockedInPlace() const { return m_iPlayerLocked != 0; }
 	bool	IsObserver() const		{ return (m_afPhysicsFlags & PFLAG_OBSERVER) != 0; }
-	bool	IsOnTarget() const		{ return m_fOnTarget; }
 	float	MuzzleFlashTime() const { return m_flFlashTime; }
 	float	PlayerDrownTime() const	{ return m_AirFinished; }
 
@@ -874,7 +839,6 @@ public:
 
     CNetworkVarForDerived(int, m_afButtonDisabled);
 
-	CNetworkVar( bool, m_fOnTarget );		//Is the crosshair on a target?
 
 	char					m_szAnimExtension[32];
 
@@ -907,8 +871,6 @@ private:
 protected:
 
 	void					CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );
-	void					CalcVehicleView( IServerVehicle *pVehicle, Vector& eyeOrigin, QAngle& eyeAngles, 	
-								float& zNear, float& zFar, float& fov );
 	void					CalcObserverView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );
 	void					CalcViewModelView( const Vector& eyeOrigin, const QAngle& eyeAngles);
 
@@ -928,11 +890,6 @@ protected:
 
 	float					m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
  	unsigned int			m_afPhysicsFlags;	// physics flags - set when 'normal' physics should be revisited or overriden
-	
-	// Vehicles
-	CNetworkHandle( CBaseEntity, m_hVehicle );
-
-	int						m_iVehicleAnalogBias;
 
 	void					UpdateButtonState( int nUserCmdButtonMask );
 
@@ -1010,9 +967,7 @@ private:
 	int						m_rgItems[MAX_ITEMS];
 
 	// these are time-sensitive things that we keep track of
-	float					m_flSwimTime;		// how long player has been underwater
-	float					m_flDuckTime;		// how long we've been ducking
-	float					m_flDuckJumpTime;	
+	float					m_flSwimTime;		// how long player has been underwater	
 
 	float					m_flSuitUpdate;					// when to play next suit update
 	int						m_rgSuitPlayList[CSUITPLAYLIST];// next sentencenum to play for suit update
@@ -1030,10 +985,6 @@ private:
 
 	int						m_iUpdateTime;		// stores the number of frame ticks before sending HUD update messages
 	int						m_iClientBattery;	// the Battery currently known by the client.  If this changes, send a new
-
-	// Autoaim data
-	QAngle					m_vecAutoAim;
-	int						m_lastx, m_lasty;	// These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 
 	int						m_iFrags;
 	int						m_iDeaths;
@@ -1162,11 +1113,6 @@ protected:
 	// These are generated while running usercmds, then given to UpdateVPhysicsPosition after running all queued commands.
 	Vector m_vNewVPhysicsPosition;
 	Vector m_vNewVPhysicsVelocity;
-	
-	Vector	m_vecVehicleViewOrigin;		// Used to store the calculated view of the player while riding in a vehicle
-	QAngle	m_vecVehicleViewAngles;		// Vehicle angles
-	float	m_flVehicleViewFOV;			// FOV of the vehicle driver
-	int		m_nVehicleViewSavedFrame;	// Used to mark which frame was the last one the view was calculated for
 
 	Vector m_vecPreviouslyPredictedOrigin; // Used to determine if non-gamemovement game code has teleported, or tweaked the player's origin
 	int		m_nBodyPitchPoseParam;
@@ -1194,14 +1140,8 @@ public:
 	inline void DisableAutoKick( bool disabled );
 
 	void	DumpPerfToRecipient( CBasePlayer *pRecipient, int nMaxRecords );
-	// NVNT returns true if user has a haptic device
-	virtual bool HasHaptics(){return m_bhasHaptics;}
-	// NVNT sets weather a user should receive haptic device messages.
-	virtual void SetHaptics(bool has) { m_bhasHaptics = has;}
-private:
-	// NVNT member variable holding if this user is using a haptic device.
-	bool m_bhasHaptics;
 
+private:
 	bool m_autoKickDisabled;
 
 	struct StepSoundCache_t
@@ -1319,22 +1259,6 @@ inline const CUserCmd *CBasePlayer::GetCurrentUserCommand() const
 {
 	Assert( m_pCurrentCommand );
 	return m_pCurrentCommand;
-}
-
-inline IServerVehicle *CBasePlayer::GetVehicle() 
-{ 
-	CBaseEntity *pVehicleEnt = m_hVehicle.Get();
-	return pVehicleEnt ? pVehicleEnt->GetServerVehicle() : NULL;
-}
-
-inline CBaseEntity *CBasePlayer::GetVehicleEntity() 
-{ 
-	return m_hVehicle.Get();
-}
-
-inline bool CBasePlayer::IsInAVehicle( void ) const 
-{ 
-	return ( NULL != m_hVehicle.Get() ) ? true : false; 
 }
 
 inline void CBasePlayer::SetTouchedPhysics( bool bTouch ) 
@@ -1559,12 +1483,5 @@ int CollectHumanPlayers( CUtlVector< T * > *playerVector, int team = TEAM_ANY, b
 
 	return playerVector->Count();
 }
-
-enum
-{
-	VEHICLE_ANALOG_BIAS_NONE = 0,
-	VEHICLE_ANALOG_BIAS_FORWARD,
-	VEHICLE_ANALOG_BIAS_REVERSE,
-};
 
 #endif // PLAYER_H

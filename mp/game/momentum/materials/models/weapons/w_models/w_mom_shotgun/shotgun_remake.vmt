@@ -6,13 +6,73 @@ VertexLitGeneric
 
 	"$envmap" "env_cubemap"
 	"$normalmapalphaenvmapmask" "1"
-	"$envmaptint" "[0.28 0.28 0.28]"
-	"$envmapcontrast" "1"
 	"$envmapfresnel" "1"
 
 	"$phong" "1"
-	"$phongfresnelranges" "[0.35 0.68 0.8]"
 	"$phongalbedotint" "1"
-	"$phongexponent" "7"
-	"$phongboost" "8"
+	"$phongexponent" "64"
+	"$phongboost" "1024"
+	"$phongexponenttexture" "models/weapons/w_models/w_mom_shotgun/shotgun_remake_exp"
+	"$phongfresnelranges" "[0 .25 .00625]"
+	
+	"$selfillum" "1"
+	"$selfillummask" "models/weapons/w_models/w_mom_shotgun/shotgun_remake_emissive"
+	"$selfillumtint" "[1 1 1]"
+	
+	"$selfillumpulse" "32"
+	"$sinemod" "0"
+	"$lighting" "0.5"
+	
+	Proxies
+	{	
+		"GaussianNoise"
+		{
+			resultVar	"$sinemod"
+			mean		"16"
+			halfwidth	"32"
+			minVal		".85"
+			maxVal		"1"
+		}
+		"Sine"
+		{
+			"sineperiod" "4"
+			"sinemin" "4"
+			"sinemax" "16"
+			"timeoffset" "0"
+			"resultVar" "$selfillumpulse"
+		}
+		"Multiply"
+		{
+			"srcVar1" "$selfillumpulse"
+			"srcVar2" "$sinemod"
+			"resultVar" "$selfillumpulse"
+		}
+		"Equals"
+		{
+			"srcVar1" "$selfillumpulse"
+			"resultVar" "$selfillumtint"
+		}
+		"Pupil"
+		{
+			"TextureVar"			"$basetexture"
+			"TextureFrameNumVar"	"$frame"
+			"PupilCloseRate"		"0"
+			"PupilOpenRate"			"0"
+		}
+		"Equals"
+		{
+			"srcVar1"		"$lighting"
+			"resultVar"	"$envmaptint[0]"
+		}
+		"Equals"
+		{
+			"srcVar1"		"$lighting"
+			"resultVar"	"$envmaptint[1]"
+		}
+		"Equals"
+		{
+			"srcVar1"		"$lighting"
+			"resultVar"	"$envmaptint[2]"
+		}
+	}
 }

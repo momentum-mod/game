@@ -5,6 +5,8 @@
 #define MAX_WEAPON_PREFIX 16
 #define WEAPON_PRINTNAME_MISSING "!!! Missing printname on weapon"
 
+#define MOM_WEAPON_STICKYBOMB_COUNT 3
+
 enum WeaponID_t
 {
     WEAPON_NONE = 0,
@@ -19,8 +21,12 @@ enum WeaponID_t
     WEAPON_KNIFE,
     WEAPON_PAINTGUN,
     WEAPON_ROCKETLAUNCHER,
+    WEAPON_STICKYLAUNCHER,
 
     WEAPON_MAX, // number of weapons weapon index
+
+    WEAPON_FIRST = WEAPON_PISTOL,
+    WEAPON_LAST = WEAPON_STICKYLAUNCHER,
 };
 
 static const char *const g_szWeaponNames[WEAPON_MAX] = 
@@ -35,7 +41,8 @@ static const char *const g_szWeaponNames[WEAPON_MAX] =
     "weapon_momentum_grenade",
     "weapon_knife",
     "weapon_momentum_paintgun",
-    "weapon_momentum_rocketlauncher"
+    "weapon_momentum_rocketlauncher",
+    "weapon_momentum_stickylauncher"
 };
 
 enum WeaponHudResource_t
@@ -45,9 +52,7 @@ enum WeaponHudResource_t
     HUD_RESOURCE_AMMO,
     HUD_RESOURCE_AMMO2,
     HUD_RESOURCE_CROSSHAIR,
-    HUD_RESOURCE_AUTOAIM,
     HUD_RESOURCE_ZOOMED_CROSSHAIR,
-    HUD_RESOURCE_ZOOMED_AUTOAIM,
     HUD_RESOURCE_SMALL,
 
     HUD_RESOURCE_MAX
@@ -60,9 +65,7 @@ static const char * const g_szWeaponHudResourceNames[HUD_RESOURCE_MAX] =
     "ammo",
     "ammo2",
     "crosshair",
-    "autoaim",
     "zoom",
-    "zoom_autoaim",
     "weapon_small"
 };
 

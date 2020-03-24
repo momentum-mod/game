@@ -21,7 +21,6 @@
 #include "utlbuffer.h"
 #include "stringpool.h"
 #include "fmtstr.h"
-#include "multiplay_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -2629,11 +2628,7 @@ int	CResponseSystem::GetCurrentToken() const
 void CResponseSystem::ResponseWarning( const char *fmt, ... )
 {
 	va_list		argptr;
-#ifndef _XBOX
 	static char	string[1024];
-#else
-	char		string[1024];
-#endif	
 
 	va_start (argptr, fmt);
 	Q_vsnprintf(string, sizeof(string), fmt,argptr);

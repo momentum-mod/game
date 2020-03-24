@@ -99,14 +99,9 @@ public:
 #define VEC_DEAD_VIEWHEIGHT_SCALED( player )	( g_pGameRules->GetViewVectors()->m_vDeadViewHeight * player->GetModelScale() )
 
 #define WATERJUMP_HEIGHT			8
-#define WATERJUMP_FORWARD			( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 30.0f : 24.0f )
-#define WATERJUMP_UP				( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 300.0f : 256.0f )
-#define WATERWAIST_OFFSET			( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 12.0f : 0.0f )
 
 #define MAX_CLIMB_SPEED		200
 
-#define TIME_TO_DUCK        ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 0.2 : 0.4 )
-#define TIME_TO_DUCK_MS     ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 200.0f : 400.0f )
 #define TIME_TO_UNDUCK		0.2
 #define TIME_TO_UNDUCK_MS	200.0f
 
@@ -267,21 +262,6 @@ enum CastVote
 #define SKILL_HARD		3
 
 
-// Weapon flags
-// -----------------------------------------
-//	Flags - NOTE: KEEP g_ItemFlags IN WEAPON_PARSE.CPP UPDATED WITH THESE
-// -----------------------------------------
-#define ITEM_FLAG_SELECTONEMPTY		(1<<0)
-#define ITEM_FLAG_NOAUTORELOAD		(1<<1)
-#define ITEM_FLAG_NOAUTOSWITCHEMPTY	(1<<2)
-#define ITEM_FLAG_LIMITINWORLD		(1<<3)
-#define ITEM_FLAG_EXHAUSTIBLE		(1<<4)	// A player can totally exhaust their ammo supply and lose this weapon
-#define ITEM_FLAG_DOHITLOCATIONDMG	(1<<5)	// This weapon take hit location into account when applying damage
-#define ITEM_FLAG_NOAMMOPICKUPS		(1<<6)	// Don't draw ammo pickup sprites/sounds when ammo is received
-#define ITEM_FLAG_NOITEMPICKUP		(1<<7)	// Don't draw weapon pickup when this weapon is picked up by the player
-// NOTE: KEEP g_ItemFlags IN WEAPON_PARSE.CPP UPDATED WITH THESE
-
-
 // Humans only have left and right hands, though we might have aliens with more
 //  than two, sigh
 #define MAX_VIEWMODELS			2
@@ -381,16 +361,6 @@ enum PLAYER_ANIM
 #define PLAYER_FALL_PUNCH_THRESHOLD 350.0f // won't punch player's screen/make scrape noise unless player falling at least this fast.
 #endif
 #define DAMAGE_FOR_FALL_SPEED		100.0f / ( PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED ) // damage per unit per second.
-
-
-#define AUTOAIM_2DEGREES  0.0348994967025
-#define AUTOAIM_5DEGREES  0.08715574274766
-#define AUTOAIM_8DEGREES  0.1391731009601
-#define AUTOAIM_10DEGREES 0.1736481776669
-#define AUTOAIM_20DEGREES 0.3490658503989
-
-#define AUTOAIM_SCALE_DEFAULT		1.0f
-#define AUTOAIM_SCALE_DIRECT_ONLY	0.0f
 
 // instant damage
 

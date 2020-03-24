@@ -130,7 +130,7 @@
 #endif
 
 
-#if defined( PROTECTED_THINGS_ENABLE ) && !defined( _X360 ) && !defined(DISABLE_PROTECTED_THINGS)
+#if defined( PROTECTED_THINGS_ENABLE ) && !defined(DISABLE_PROTECTED_THINGS)
 
 	#if defined( GetTickCount )
 		#undef GetTickCount

@@ -542,12 +542,6 @@ bool IsPointInBox( const Vector& pt, const Vector& boxMin, const Vector& boxMax 
 	Assert( boxMin[1] <= boxMax[1] );
 	Assert( boxMin[2] <= boxMax[2] );
 
-	// on x360, force use of SIMD version.
-	if (IsX360())
-	{
-		return IsPointInBox( LoadUnaligned3SIMD(pt.Base()), LoadUnaligned3SIMD(boxMin.Base()), LoadUnaligned3SIMD(boxMax.Base()) ) ;
-	}
-
 	if ( (pt[0] > boxMax[0]) || (pt[0] < boxMin[0]) )
 		return false;
 	if ( (pt[1] > boxMax[1]) || (pt[1] < boxMin[1]) )
@@ -694,18 +688,6 @@ bool FASTCALL IsBoxIntersectingRay( const Vector& boxMin, const Vector& boxMax,
 
 	return IsAllZeros(separation);
 #else
-	// On the x360, we force use of the SIMD functions.
-#if defined(_X360) 
-	if (IsX360())
-	{
-		fltx4 delta = LoadUnaligned3SIMD(vecDelta.Base());
-		return IsBoxIntersectingRay( 
-			LoadUnaligned3SIMD(boxMin.Base()), LoadUnaligned3SIMD(boxMax.Base()),
-			LoadUnaligned3SIMD(origin.Base()), delta, ReciprocalSIMD(delta), // ray parameters
-			ReplicateX4(flTolerance) ///< eg from ReplicateX4(flTolerance)
-			);
-	}
-#endif
 	Assert( boxMin[0] <= boxMax[0] );
 	Assert( boxMin[1] <= boxMax[1] );
 	Assert( boxMin[2] <= boxMax[2] );
@@ -819,17 +801,6 @@ bool FASTCALL IsBoxIntersectingRay( const Vector& boxMin, const Vector& boxMax,
 
 	return IsAllZeros(separation);
 #else
-	// On the x360, we force use of the SIMD functions.
-#if defined(_X360) && !defined(PARANOID_SIMD_ASSERTING)
-	if (IsX360())
-	{
-		return IsBoxIntersectingRay( 
-			LoadUnaligned3SIMD(boxMin.Base()), LoadUnaligned3SIMD(boxMax.Base()),
-			LoadUnaligned3SIMD(origin.Base()), LoadUnaligned3SIMD(vecDelta.Base()), LoadUnaligned3SIMD(vecInvDelta.Base()), // ray parameters
-			ReplicateX4(flTolerance) ///< eg from ReplicateX4(flTolerance)
-			);
-	}
-#endif
 
 	Assert( boxMin[0] <= boxMax[0] );
 	Assert( boxMin[1] <= boxMax[1] );
@@ -892,16 +863,6 @@ bool FASTCALL IsBoxIntersectingRay( const Vector& boxMin, const Vector& boxMax,
 //-----------------------------------------------------------------------------
 bool FASTCALL IsBoxIntersectingRay( const Vector& vecBoxMin, const Vector& vecBoxMax, const Ray_t& ray, float flTolerance )
 {
-	// On the x360, we force use of the SIMD functions.
-#if defined(_X360) 
-	if (IsX360())
-	{
-		return IsBoxIntersectingRay( 
-			LoadUnaligned3SIMD(vecBoxMin.Base()), LoadUnaligned3SIMD(vecBoxMax.Base()),
-			ray, flTolerance);
-	}
-#endif
-
 	if ( !ray.m_IsSwept )
 	{
 		Vector rayMins, rayMaxs;
@@ -926,30 +887,17 @@ bool FASTCALL IsBoxIntersectingRay( const Vector& vecBoxMin, const Vector& vecBo
 // returns true if there's an intersection between box and ray (SIMD version)
 //-----------------------------------------------------------------------------
 
-
-#ifdef _X360
-bool FASTCALL IsBoxIntersectingRay( fltx4 boxMin, fltx4 boxMax, 
-								    fltx4 origin, fltx4 delta, fltx4 invDelta, // ray parameters
-									fltx4 vTolerance ///< eg from ReplicateX4(flTolerance)
-									)
-#else
 bool FASTCALL IsBoxIntersectingRay( const fltx4 &inBoxMin, const fltx4 & inBoxMax, 
 								   const fltx4 & origin, const fltx4 & delta, const fltx4 & invDelta, // ray parameters
 								   const fltx4 & vTolerance ///< eg from ReplicateX4(flTolerance)
 								   )
-#endif
 {
 	// Load the unaligned ray/box parameters into SIMD registers
 	// compute the mins/maxs of the box expanded by the ray extents
 	// relocate the problem so that the ray start is at the origin.
 
-#ifdef _X360
-	boxMin = SubSIMD(boxMin, origin);
-	boxMax = SubSIMD(boxMax, origin);
-#else
 	fltx4 boxMin = SubSIMD(inBoxMin, origin);
 	fltx4 boxMax = SubSIMD(inBoxMax, origin);
-#endif
 
 	// Check to see if the origin (start point) and the end point (delta) are on the same side
 	// of any of the box sides - if so there can be no intersection

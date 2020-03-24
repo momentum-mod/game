@@ -31,13 +31,6 @@ void CUtlMemoryPool::SetErrorReportFunc( MemoryPoolReportFunc_t func )
 //-----------------------------------------------------------------------------
 CUtlMemoryPool::CUtlMemoryPool( int blockSize, int numElements, int growMode, const char *pszAllocOwner, int nAlignment )
 {
-#ifdef _X360
-	if( numElements > 0 && growMode != UTLMEMORYPOOL_GROW_NONE )
-	{
-		numElements = 1;
-	}
-#endif
-
 	m_nAlignment = ( nAlignment != 0 ) ? nAlignment : 1;
 	Assert( IsPowerOfTwo( m_nAlignment ) );
 	m_BlockSize = blockSize < sizeof(void*) ? sizeof(void*) : blockSize;

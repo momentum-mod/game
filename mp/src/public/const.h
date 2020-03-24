@@ -40,11 +40,7 @@
 // the 360 only allows 15 char + 0, but stick with the larger PC size for cross-platform communication
 #define MAX_PLAYER_NAME_LENGTH		32
 
-#ifdef _X360
-#define MAX_PLAYERS_PER_CLIENT		XUSER_MAX_COUNT	// Xbox 360 supports 4 players per console
-#else
 #define MAX_PLAYERS_PER_CLIENT		1	// One player per PC
-#endif
 
 // Max decorated map name, with things like workshop/cp_foo.ugc123456
 #define MAX_MAP_NAME				96
@@ -128,7 +124,6 @@
 #define	FL_NPC					(1<<13)
 #define	FL_GODMODE				(1<<14)
 #define	FL_NOTARGET				(1<<15)
-#define	FL_AIMTARGET			(1<<16)	// set if the crosshair needs to aim onto the entity
 #define	FL_PARTIALGROUND		(1<<17)	// not all corners are valid
 #define FL_STATICPROP			(1<<18)	// Eetsa static prop!		
 #define FL_GRAPHED				(1<<19) // worldgraph has this ent listed as something that blocks a connection
@@ -170,7 +165,6 @@
 #define	FL_NPC					(1<<14)
 #define	FL_GODMODE				(1<<15)
 #define	FL_NOTARGET				(1<<16)
-#define	FL_AIMTARGET			(1<<17)	// set if the crosshair needs to aim onto the entity
 #define	FL_PARTIALGROUND		(1<<18)	// not all corners are valid
 #define FL_STATICPROP			(1<<19)	// Eetsa static prop!		
 #define FL_GRAPHED				(1<<20) // worldgraph has this ent listed as something that blocks a connection

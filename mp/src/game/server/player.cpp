@@ -39,11 +39,9 @@
 #include "movehelper_server.h"
 #include "igamemovement.h"
 #include "saverestoretypes.h"
-#include "iservervehicle.h"
 #include "movevars_shared.h"
 #include "vcollide_parse.h"
 #include "player_command.h"
-#include "vehicle_base.h"
 #include "AI_Criteria.h"
 #include "globals.h"
 #include "usermessages.h"
@@ -57,7 +55,6 @@
 #include "hltvdirector.h"
 #include "nav_mesh.h"
 #include "env_zoom.h"
-#include "rumble_shared.h"
 #include "gamestats.h"
 #include "npcevent.h"
 #include "datacache/imdlcache.h"
@@ -74,16 +71,10 @@
 #include "econ_wearable.h"
 #endif
 
-// NVNT haptic utils
-#include "haptics/haptic_utils.h"
-
 #ifdef HL2_DLL
 #include "combine_mine.h"
 #include "weapon_physcannon.h"
 #endif
-
-ConVar autoaim_max_dist( "autoaim_max_dist", "2160" ); // 2160 = 180 feet
-ConVar autoaim_max_deflect( "autoaim_max_deflect", "0.99" );
 
 #ifdef CSTRIKE_DLL
 ConVar	spec_freeze_time( "spec_freeze_time", "5.0", FCVAR_CHEAT | FCVAR_REPLICATED, "Time spend frozen in observer freeze cam." );
@@ -191,33 +182,6 @@ ConVar  sv_player_display_usercommand_errors( "sv_player_display_usercommand_err
 ConVar  player_debug_print_damage( "player_debug_print_damage", "0", FCVAR_CHEAT, "When true, print amount and type of all damage received by player to console." );
 
 
-void CC_GiveCurrentAmmo( void )
-{
-	CBasePlayer *pPlayer = UTIL_PlayerByIndex(1);
-
-	if( pPlayer )
-	{
-		CBaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
-
-		if( pWeapon )
-		{
-            int ammoIndex = -1;
-			if( pWeapon->UsesPrimaryAmmo() )
-			{
-				ammoIndex = pWeapon->GetPrimaryAmmoType();
-			}
-            else if (pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo())
-            {
-                ammoIndex = pWeapon->GetSecondaryAmmoType();
-            }
-
-            pPlayer->GiveAmmo(g_pAmmoDef->MaxCarry(ammoIndex), ammoIndex);
-		}
-	}
-}
-static ConCommand givecurrentammo("givecurrentammo", CC_GiveCurrentAmmo, "Give a supply of ammo for current weapon..\n", FCVAR_CHEAT );
-
-
 // pl
 BEGIN_SIMPLE_DATADESC( CPlayerState )
 	// DEFINE_FIELD( netname, FIELD_STRING ),  // Don't stomp player name with what's in save/restore
@@ -256,9 +220,7 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_FIELD( m_iFOVStart,	FIELD_INTEGER ),
 	DEFINE_FIELD( m_flFOVTime,	FIELD_TIME ),
 	DEFINE_FIELD( m_iDefaultFOV,FIELD_INTEGER ),
-	DEFINE_FIELD( m_flVehicleViewFOV, FIELD_FLOAT ),
 
-	//DEFINE_FIELD( m_fOnTarget, FIELD_BOOLEAN ), // Don't need to restore
 	DEFINE_FIELD( m_iObserverMode, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iObserverLastMode, FIELD_INTEGER ),
 	DEFINE_FIELD( m_hObserverTarget, FIELD_EHANDLE ),
@@ -278,7 +240,6 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_FIELD( m_iTrain, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iRespawnFrames, FIELD_FLOAT ),
 	DEFINE_FIELD( m_afPhysicsFlags, FIELD_INTEGER ),
-	DEFINE_FIELD( m_hVehicle, FIELD_EHANDLE ),
 
 	// recreate, don't restore
 	// DEFINE_FIELD( m_CommandContext, CUtlVector < CCommandContext > ),
@@ -298,8 +259,6 @@ BEGIN_DATADESC( CBasePlayer )
 	// DEFINE_FIELD( m_PlayerInfo, CPlayerInfo ),
 
 	DEFINE_FIELD( m_flSwimTime, FIELD_TIME ),
-	DEFINE_FIELD( m_flDuckTime, FIELD_TIME ),
-	DEFINE_FIELD( m_flDuckJumpTime, FIELD_TIME ),
 
 	DEFINE_FIELD( m_flSuitUpdate, FIELD_TIME ),
 	DEFINE_AUTO_ARRAY( m_rgSuitPlayList, FIELD_INTEGER ),
@@ -535,7 +494,6 @@ CBasePlayer::CBasePlayer( )
 	AddEFlags( EFL_NO_AUTO_EDICT_ATTACH );
 
 #ifdef _DEBUG
-	m_vecAutoAim.Init();
 	m_vecAdditionalPVSOrigin.Init();
 	m_vecCameraPVSOrigin.Init();
 	m_DmgOrigin.Init();
@@ -567,7 +525,6 @@ CBasePlayer::CBasePlayer( )
 	m_bitsDamageType = 0;
 
 	m_bForceOrigin = false;
-	m_hVehicle = NULL;
 	m_pCurrentCommand = NULL;
 	m_iLockViewanglesTickNumber = 0;
 	m_qangLockViewangles.Init();
@@ -613,9 +570,6 @@ CBasePlayer::CBasePlayer( )
 	m_nBodyPitchPoseParam = -1;
 	m_flForwardMove = 0;
 	m_flSideMove = 0;
-
-	// NVNT default to no haptics
-	m_bhasHaptics = false;
 
 	m_vecConstraintCenter = vec3_origin;
 
@@ -1057,14 +1011,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 
 	CTakeDamageInfo info = inputInfo;
 
-	IServerVehicle *pVehicle = GetVehicle();
-	if ( pVehicle )
-	{
-		// Let the vehicle decide if we should take this damage or not
-		if ( pVehicle->PassengerShouldReceiveDamage( info ) == false )
-			return 0;
-	}
-
  	if ( IsInCommentaryMode() )
 	{
 		if( !ShouldTakeDamageInCommentaryMode( info ) )
@@ -1176,13 +1122,6 @@ int CBasePlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 		
 		info.SetDamage( flNew );
 	}
-
-
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT if player's client has a haptic device send them a user message with the damage.
-	if(HasHaptics())
-		HapticsDamage(this,info);
-#endif
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
@@ -1532,7 +1471,6 @@ void CBasePlayer::RemoveAllItems( bool removeSuit )
 {
 	if (GetActiveWeapon())
 	{
-		ResetAutoaim( );
 		GetActiveWeapon()->Holster( );
 	}
 
@@ -1648,12 +1586,6 @@ void CBasePlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	gamestats->Event_PlayerKilled( this, info );
 
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
-
-#if defined( WIN32 ) && !defined( _X360 )
-	// NVNT set the drag to zero in the case of underwater death.
-	HapticSetDrag(this,0);
-#endif
 	ClearUseEntity();
 	
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
@@ -1721,12 +1653,6 @@ void CBasePlayer::Event_Dying( const CTakeDamageInfo& info )
 	// NOT GIBBED, RUN THIS CODE
 
 	DeathSound( info );
-
-	// The dead body rolls out of the vehicle.
-	if ( IsInAVehicle() )
-	{
-		LeaveVehicle();
-	}
 
 	QAngle angles = GetLocalAngles();
 
@@ -2534,7 +2460,6 @@ CBaseEntity * CBasePlayer::GetObserverTarget()
 
 void CBasePlayer::ObserverUse( bool bIsPressed )
 {
-#ifndef _XBOX
 	if ( !HLTVDirector()->IsActive() )
 		return;
 
@@ -2593,7 +2518,6 @@ void CBasePlayer::ObserverUse( bool bIsPressed )
 		return;
 
 	SetAbsOrigin( tr.endpos ); */
-#endif
 }
 
 void CBasePlayer::JumptoPosition(const Vector &origin, const QAngle &angles)
@@ -4146,12 +4070,6 @@ void CBasePlayer::UpdateGeigerCounter( void )
 	// send range to radition source to client
 	range = (byte) clamp(Floor2Int(m_flgeigerRange / 4), 0, 255);
 
-	// This is to make sure you aren't driven crazy by geiger while in the airboat
-	if ( IsInAVehicle() )
-	{
-		range = clamp( (int)range * 4, 0, 255 );
-	}
-
 	if (range != m_igeigerRangePrev)
 	{
 		m_igeigerRangePrev = range;
@@ -4561,10 +4479,7 @@ void CBasePlayer::PostThink()
 
 			// select the proper animation for the player character	
 			VPROF( "CBasePlayer::PostThink-Animation" );
-			// If he's in a vehicle, sit down
-			if ( IsInAVehicle() )
-				SetAnimation( PLAYER_IN_VEHICLE );
-			else if (!GetAbsVelocity().x && !GetAbsVelocity().y)
+			if (!GetAbsVelocity().x && !GetAbsVelocity().y)
 				SetAnimation( PLAYER_IDLE );
 			else if ((GetAbsVelocity().x || GetAbsVelocity().y) && ( GetFlags() & FL_ONGROUND ))
 				SetAnimation( PLAYER_WALK );
@@ -4736,11 +4651,7 @@ void CBasePlayer::UpdatePhysicsShadowToPosition( const Vector &vecAbsOrigin )
 }
 
 Vector CBasePlayer::GetSmoothedVelocity( void )
-{ 
-	if ( IsInAVehicle() )
-	{
-		return GetVehicle()->GetVehicleEnt()->GetSmoothedVelocity();
-	}
+{
 	return m_vecSmoothedVelocity;
 }
 
@@ -4916,8 +4827,6 @@ void CBasePlayer::Spawn( void )
 		AddFlag( FL_CLIENT );
 	}
 
-	AddFlag( FL_AIMTARGET );
-
 	m_AirFinished	= gpGlobals->curtime + AIRTIME;
 	m_nDrownDmgRate	= DROWNING_DAMAGE_INITIAL;
 	
@@ -4981,8 +4890,6 @@ void CBasePlayer::Spawn( void )
 	m_fWeapon = false;
 	m_iClientBattery = -1;
 
-	m_lastx = m_lasty = 0;
-
 	Q_strncpy( m_szLastPlaceName.GetForModify(), "", MAX_PLACE_NAME_LENGTH );
 	
 	CSingleUserRecipientFilter user( this );
@@ -5030,11 +4937,6 @@ void CBasePlayer::Spawn( void )
 	}
 #endif
 
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
-
-	// Calculate this immediately
-	m_nVehicleViewSavedFrame = 0;
-
 	// track where we are in the nav mesh
 	UpdateLastKnownArea();
 
@@ -5049,14 +4951,6 @@ void CBasePlayer::Spawn( void )
 void CBasePlayer::Activate( void )
 {
 	BaseClass::Activate();
-
-	AimTarget_ForceRepopulateList();
-
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
-
-	// Reset the analog bias. If the player is in a vehicle when the game
-	// reloads, it will autosense and apply the correct bias.
-	m_iVehicleAnalogBias = VEHICLE_ANALOG_BIAS_NONE;
 }
 
 void CBasePlayer::Precache( void )
@@ -5230,9 +5124,6 @@ void CBasePlayer::OnRestore( void )
 	SetViewEntity( m_hViewEntity );
 	SetDefaultFOV(m_iDefaultFOV);		// force this to reset if zero
 
-	// Calculate this immediately
-	m_nVehicleViewSavedFrame = 0;
-
 	m_nBodyPitchPoseParam = LookupPoseParameter( "body_pitch" );
 }
 
@@ -5362,203 +5253,6 @@ void CBasePlayer::VelocityPunch( const Vector &vecForce )
 	SetGroundEntity( NULL );
 	ApplyAbsVelocityImpulse(vecForce );
 }
-
-
-//--------------------------------------------------------------------------------------------------------------
-// VEHICLES
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// Purpose: Whether or not the player is currently able to enter the vehicle
-// Output : Returns true on success, false on failure.
-//-----------------------------------------------------------------------------
-bool CBasePlayer::CanEnterVehicle( IServerVehicle *pVehicle, int nRole )
-{
-	// Must not have a passenger there already
-	if ( pVehicle->GetPassenger( nRole ) )
-		return false;
-
-	// Must be able to holster our current weapon (ie. grav gun!)
-	if ( pVehicle->IsPassengerUsingStandardWeapons( nRole ) == false )
-	{
-		//Must be able to stow our weapon
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ( ( pWeapon != NULL ) && ( pWeapon->CanHolster() == false ) )
-			return false;
-	}
-
-	// Must be alive
-	if ( IsAlive() == false )
-		return false;
-
-	// Can't be pulled by a barnacle
-	if ( IsEFlagSet( EFL_IS_BEING_LIFTED_BY_BARNACLE ) )
-		return false;
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Put this player in a vehicle 
-//-----------------------------------------------------------------------------
-bool CBasePlayer::GetInVehicle( IServerVehicle *pVehicle, int nRole )
-{
-	Assert( NULL == m_hVehicle.Get() );
-	Assert( nRole >= 0 );
-	
-	// Make sure we can enter the vehicle
-	if ( CanEnterVehicle( pVehicle, nRole ) == false )
-		return false;
-
-	CBaseEntity *pEnt = pVehicle->GetVehicleEnt();
-	Assert( pEnt );
-
-	// Try to stow weapons
-	if ( pVehicle->IsPassengerUsingStandardWeapons( nRole ) == false )
-	{
-		CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-		if ( pWeapon != NULL )
-		{
-			pWeapon->Holster( NULL );
-		}
-
-#ifndef HL2_DLL
-		m_Local.m_iHideHUD |= HIDEHUD_WEAPONSELECTION;
-#endif
-		m_Local.m_iHideHUD |= HIDEHUD_INVEHICLE;
-	}
-
-	if ( !pVehicle->IsPassengerVisible( nRole ) )
-	{
-		AddEffects( EF_NODRAW );
-	}
-
-	// Put us in the vehicle
-	pVehicle->SetPassenger( nRole, this );
-
-	ViewPunchReset();
-
-	// Setting the velocity to 0 will cause the IDLE animation to play
-	SetAbsVelocity( vec3_origin );
-	SetMoveType( MOVETYPE_NOCLIP );
-
-	// This is a hack to fixup the player's stats since they really didn't "cheat" and enter noclip from the console
-	gamestats->Event_DecrementPlayerEnteredNoClip( this );
-
-	// Get the seat position we'll be at in this vehicle
-	Vector vSeatOrigin;
-	QAngle qSeatAngles;
-	pVehicle->GetPassengerSeatPoint( nRole, &vSeatOrigin, &qSeatAngles );
-	
-	// Set us to that position
-	SetAbsOrigin( vSeatOrigin );
-	SetAbsAngles( qSeatAngles );
-	
-	// Parent to the vehicle
-	SetParent( pEnt );
-
-	SetCollisionGroup( COLLISION_GROUP_IN_VEHICLE );
-	
-	// We cannot be ducking -- do all this before SetPassenger because it
-	// saves our view offset for restoration when we exit the vehicle.
-	RemoveFlag( FL_DUCKING );
-	SetViewOffset( VEC_VIEW_SCALED( this ) );
-	m_Local.m_bDucked = false;
-	m_Local.m_bDucking  = false;
-	m_Local.m_flDucktime = 0.0f;
-	m_Local.m_flDuckJumpTime = 0.0f;
-	m_Local.m_flJumpTime = 0.0f;
-
-	// Turn our toggled duck off
-	if ( GetToggledDuckState() )
-	{
-		ToggleDuck();
-	}
-
-	m_hVehicle = pEnt;
-
-	// Throw an event indicating that the player entered the vehicle.
-	g_pNotify->ReportNamedEvent( this, "PlayerEnteredVehicle" );
-
-	m_iVehicleAnalogBias = VEHICLE_ANALOG_BIAS_NONE;
-
-	OnVehicleStart();
-
-	return true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Remove this player from a vehicle
-//-----------------------------------------------------------------------------
-void CBasePlayer::LeaveVehicle( const Vector &vecExitPoint, const QAngle &vecExitAngles )
-{
-	if ( NULL == m_hVehicle.Get() )
-		return;
-
-	IServerVehicle *pVehicle = GetVehicle();
-	Assert( pVehicle );
-
-	int nRole = pVehicle->GetPassengerRole( this );
-	Assert( nRole >= 0 );
-
-	SetParent( NULL );
-
-	// Find the first non-blocked exit point:
-	Vector vNewPos = GetAbsOrigin();
-	QAngle qAngles = GetAbsAngles();
-	if ( vecExitPoint == vec3_origin )
-	{
-		// FIXME: this might fail to find a safe exit point!!
-		pVehicle->GetPassengerExitPoint( nRole, &vNewPos, &qAngles );
-	}
-	else
-	{
-		vNewPos = vecExitPoint;
-		qAngles = vecExitAngles;
-	}
-	OnVehicleEnd( vNewPos );
-	SetAbsOrigin( vNewPos );
-	SetAbsAngles( qAngles );
-	// Clear out any leftover velocity
-	SetAbsVelocity( vec3_origin );
-
-	qAngles[ROLL] = 0;
-	SnapEyeAngles( qAngles );
-
-#ifndef HL2_DLL
-	m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
-#endif
-
-	m_Local.m_iHideHUD &= ~HIDEHUD_INVEHICLE;
-
-	RemoveEffects( EF_NODRAW );
-
-	SetMoveType( MOVETYPE_WALK );
-	SetCollisionGroup( COLLISION_GROUP_PLAYER );
-
-	if ( VPhysicsGetObject() )
-	{
-		VPhysicsGetObject()->SetPosition( vNewPos, vec3_angle, true );
-	}
-
-	m_hVehicle = NULL;
-	pVehicle->SetPassenger(nRole, NULL);
-
-	// Re-deploy our weapon
-	if ( IsAlive() )
-	{
-		if ( GetActiveWeapon() && GetActiveWeapon()->IsWeaponVisible() == false )
-		{
-			GetActiveWeapon()->Deploy();
-			ShowCrosshair( true );
-		}
-	}
-
-	// Just cut all of the rumble effects. 
-	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
-}
-
 
 //==============================================
 // !!!UNDONE:ultra temporary SprayCan entity to apply
@@ -6016,24 +5710,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		EquipSuit();
 
 		// Give the player everything!
-        // MOM_TODO give the player all momentum guns
-		GiveNamedItem( "weapon_smg1" );
-		GiveNamedItem( "weapon_frag" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_pistol" );
-		GiveNamedItem( "weapon_ar2" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "weapon_physcannon" );
-		GiveNamedItem( "weapon_bugbait" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "weapon_crossbow" );
-#ifdef HL2_EPISODIC
-		// GiveNamedItem( "weapon_magnade" );
-#endif
-		if ( GetHealth() < 100 )
+		for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
 		{
-			TakeHealth( 25, DMG_GENERIC );
+			GiveNamedItem(g_szWeaponNames[weaponID]);
 		}
 		
 		gEvilImpulse101		= false;
@@ -6186,31 +5865,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 	}
 	else
 #endif // _DEBUG
-	if( stricmp( cmd, "vehicleRole" ) == 0 )
-	{
-		// Get the vehicle role value.
-		if ( args.ArgC() == 2 )
-		{
-			// Check to see if a player is in a vehicle.
-			if ( IsInAVehicle() )
-			{
-				int nRole = atoi( args[1] );
-				IServerVehicle *pVehicle = GetVehicle();
-				if ( pVehicle )
-				{
-					// Only switch roles if role is empty!
-					if ( !pVehicle->GetPassenger( nRole ) )
-					{
-						LeaveVehicle();
-						GetInVehicle( pVehicle, nRole );
-					}
-				}			
-			}
-
-			return true;
-		}
-	}
-	else if ( HandleVoteCommands( args ) )
+	if ( HandleVoteCommands( args ) )
 	{
 		return true;
 	}
@@ -6483,34 +6138,20 @@ bool CBasePlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
 		pWeapon->AddEffects( EF_NODRAW );
 
 		Weapon_Equip( pWeapon );
-		if ( IsInAVehicle() )
-		{
-			pWeapon->Holster();
-		}
-		else
-		{
 #ifdef HL2_DLL
 
-			if ( IsX360() )
+		// Always switch to a newly-picked up weapon
+		if ( !PlayerHasMegaPhysCannon() )
+		{
+			// If it uses clips, load it full. (this is the first time you've picked up this type of weapon)
+			if ( pWeapon->UsesClipsForAmmo1() )
 			{
-				CFmtStr hint;
-				hint.sprintf( "#valve_hint_select_%s", pWeapon->GetClassname() );
-				UTIL_HudHintText( this, hint.Access() );
+				pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
 			}
 
-			// Always switch to a newly-picked up weapon
-			if ( !PlayerHasMegaPhysCannon() )
-			{
-				// If it uses clips, load it full. (this is the first time you've picked up this type of weapon)
-				if ( pWeapon->UsesClipsForAmmo1() )
-				{
-					pWeapon->m_iClip1 = pWeapon->GetMaxClip1();
-				}
-
-				Weapon_Switch( pWeapon );
-			}
-#endif
+			Weapon_Switch( pWeapon );
 		}
+#endif
 		return true;
 	}
 }
@@ -6520,7 +6161,6 @@ bool CBasePlayer::RemovePlayerItem( CBaseCombatWeapon *pItem )
 {
 	if (GetActiveWeapon() == pItem)
 	{
-		ResetAutoaim( );
 		pItem->Holster( );
 		pItem->SetNextThink( TICK_NEVER_THINK );; // crowbar may be trying to swing again, etc
 		pItem->SetThink( NULL );
@@ -6580,10 +6220,6 @@ QAngle CBasePlayer::BodyAngles()
 //------------------------------------------------------------------------------
 Vector CBasePlayer::BodyTarget( const Vector &posSrc, bool bNoisy ) 
 { 
-	if ( IsInAVehicle() )
-	{
-		return GetVehicle()->GetVehicleEnt()->BodyTarget( posSrc, bNoisy );
-	}
 	if (bNoisy)
 	{
 		return GetAbsOrigin() + (GetViewOffset() * random->RandomFloat( 0.7, 1.0 )); 
@@ -6709,21 +6345,6 @@ void CBasePlayer::UpdateClientData( void )
 	g_pGameRules->UpdateClientData( this );
 }
 
-void CBasePlayer::RumbleEffect( unsigned char index, unsigned char rumbleData, unsigned char rumbleFlags )
-{
-	if( !IsAlive() )
-		return;
-
-	CSingleUserRecipientFilter filter( this );
-	filter.MakeReliable();
-
-	UserMessageBegin( filter, "Rumble" );
-	WRITE_BYTE( index );
-	WRITE_BYTE( rumbleData );
-	WRITE_BYTE( rumbleFlags	);
-	MessageEnd();
-}
-
 void CBasePlayer::EnableControl(bool fControl)
 {
 	if (!fControl)
@@ -6747,371 +6368,6 @@ void CBasePlayer::CheckTrainUpdate( void )
 
 		m_iTrain &= ~TRAIN_NEW;
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns whether the player should autoaim or not
-// Output : Returns true on success, false on failure.
-//-----------------------------------------------------------------------------
-bool CBasePlayer::ShouldAutoaim( void )
-{
-	// cannot be in multiplayer
-	if ( gpGlobals->maxClients > 1 )
-		return false;
-
-	// autoaiming is only for easy and medium skill
-	return ( IsX360() || !g_pGameRules->IsSkillLevel(SKILL_HARD) );
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-Vector CBasePlayer::GetAutoaimVector( float flScale )
-{
-	autoaim_params_t params;
-
-	params.m_fScale = flScale;
-	params.m_fMaxDist = autoaim_max_dist.GetFloat();
-
-	GetAutoaimVector( params );
-	return params.m_vecAutoAimDir;
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-Vector CBasePlayer::GetAutoaimVector( float flScale, float flMaxDist )
-{
-	autoaim_params_t params;
-
-	params.m_fScale = flScale;
-	params.m_fMaxDist = flMaxDist;
-
-	GetAutoaimVector( params );
-	return params.m_vecAutoAimDir;
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void CBasePlayer::GetAutoaimVector( autoaim_params_t &params )
-{
-	// Assume autoaim will not be assisting.
-	params.m_bAutoAimAssisting = false;
-
-	if ( ( ShouldAutoaim() == false ) || ( params.m_fScale == AUTOAIM_SCALE_DIRECT_ONLY ) )
-	{
-		Vector	forward;
-		AngleVectors( EyeAngles() + m_Local.m_vecPunchAngle, &forward );
-
-		params.m_vecAutoAimDir = forward;
-		params.m_hAutoAimEntity.Set(NULL);
-		params.m_vecAutoAimPoint = vec3_invalid;
-		params.m_bAutoAimAssisting = false;
-		return;
-	}
-
-	Vector vecSrc	= Weapon_ShootPosition( );
-
-	m_vecAutoAim.Init( 0.0f, 0.0f, 0.0f );
-
-	QAngle angles = AutoaimDeflection( vecSrc, params );
-
-	// update ontarget if changed
-	if ( !g_pGameRules->AllowAutoTargetCrosshair() )
-		m_fOnTarget = false;
-
-	if (angles.x > 180)
-		angles.x -= 360;
-	if (angles.x < -180)
-		angles.x += 360;
-	if (angles.y > 180)
-		angles.y -= 360;
-	if (angles.y < -180)
-		angles.y += 360;
-
-	if (angles.x > 25)
-		angles.x = 25;
-	if (angles.x < -25)
-		angles.x = -25;
-	if (angles.y > 12)
-		angles.y = 12;
-	if (angles.y < -12)
-		angles.y = -12;
-
-	Vector	forward;
-
-	if( IsInAVehicle() && g_pGameRules->GetAutoAimMode() == AUTOAIM_ON_CONSOLE )
-	{
-		m_vecAutoAim = angles;
-		AngleVectors( EyeAngles() + m_vecAutoAim, &forward );
-	}
-	else
-	{
-		// always use non-sticky autoaim
-		m_vecAutoAim = angles * 0.9f;
-		AngleVectors( EyeAngles() + m_Local.m_vecPunchAngle + m_vecAutoAim, &forward );
-	}
-
-	params.m_vecAutoAimDir = forward;
-}
-
-//-----------------------------------------------------------------------------
-// Targets represent themselves to autoaim as a viewplane-parallel disc with
-// a radius specified by the target. The player then modifies this radius
-// to achieve more or less aggressive aiming assistance
-//-----------------------------------------------------------------------------
-float CBasePlayer::GetAutoaimScore( const Vector &eyePosition, const Vector &viewDir, const Vector &vecTarget, CBaseEntity *pTarget, float fScale, CBaseCombatWeapon *pActiveWeapon )
-{
-	float radiusSqr;
-	float targetRadius = pTarget->GetAutoAimRadius() * fScale;
-
-	if( pActiveWeapon != NULL )
-		targetRadius *= pActiveWeapon->WeaponAutoAimScale();
-
-	float targetRadiusSqr = Square( targetRadius );
-
-	Vector vecNearestPoint = PointOnLineNearestPoint( eyePosition, eyePosition + viewDir * 8192, vecTarget );
-	Vector vecDiff = vecTarget - vecNearestPoint;
-
-	radiusSqr = vecDiff.LengthSqr();
-
-	if( radiusSqr <= targetRadiusSqr )
-	{
-		float score;
-
-		score = 1.0f - (radiusSqr / targetRadiusSqr);
-
-		Assert( score >= 0.0f && score <= 1.0f );
-		return score;
-	}
-	
-	// 0 means no score- doesn't qualify for autoaim.
-	return 0.0f;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : &vecSrc - 
-//			flDist - 
-//			flDelta - 
-// Output : Vector
-//-----------------------------------------------------------------------------
-QAngle CBasePlayer::AutoaimDeflection( Vector &vecSrc, autoaim_params_t &params )
-{
-	float		bestscore;
-	float		score;
-	QAngle		eyeAngles;
-	Vector		bestdir;
-	CBaseEntity	*bestent;
-	trace_t		tr;
-	Vector		v_forward, v_right, v_up;
-
-	if ( ShouldAutoaim() == false )
-	{
-		m_fOnTarget = false;
-		return vec3_angle;
-	}
-
-	eyeAngles = EyeAngles();
-	AngleVectors( eyeAngles + m_Local.m_vecPunchAngle + m_vecAutoAim, &v_forward, &v_right, &v_up );
-
-	// try all possible entities
-	bestdir = v_forward;
-	bestscore = 0.0f;
-	bestent = NULL;
-
-	//Reset this data
-	m_fOnTarget					= false;
-	params.m_bOnTargetNatural	= false;
-	
-	CBaseEntity *pIgnore = NULL;
-
-	if( IsInAVehicle() )
-	{
-		pIgnore = GetVehicleEntity();
-	}
-
-	CTraceFilterSkipTwoEntities traceFilter( this, pIgnore, COLLISION_GROUP_NONE );
-
-	UTIL_TraceLine( vecSrc, vecSrc + bestdir * MAX_COORD_FLOAT, MASK_SHOT, &traceFilter, &tr );
-
-	CBaseEntity *pEntHit = tr.m_pEnt;
-
-	if ( pEntHit && pEntHit->m_takedamage != DAMAGE_NO && pEntHit->GetHealth() > 0 )
-	{
-		// don't look through water
-		if (!((GetWaterLevel() != 3 && pEntHit->GetWaterLevel() == 3) || (GetWaterLevel() == 3 && pEntHit->GetWaterLevel() == 0)))
-		{
-			if( pEntHit->ShouldAttractAutoAim(this) )
-			{
-				bool bAimAtThis = true;
-
-				if( pEntHit->IsNPC() && g_pGameRules->GetAutoAimMode() > AUTOAIM_NONE )
-				{
-					int iRelationType = GetDefaultRelationshipDisposition( pEntHit->Classify() );
-
-					if( iRelationType != D_HT )
-					{
-						bAimAtThis = false;
-					}
-				}
-
-				if( bAimAtThis )
-				{
-					if ( pEntHit->GetFlags() & FL_AIMTARGET )
-					{
-						m_fOnTarget = true;
-					}
-
-					// Player is already on target naturally, don't autoaim.
-					// Fill out the autoaim_params_t struct, though.
-					params.m_hAutoAimEntity.Set(pEntHit);
-					params.m_vecAutoAimDir = bestdir;
-					params.m_vecAutoAimPoint = tr.endpos;
-					params.m_bAutoAimAssisting = false;
-					params.m_bOnTargetNatural = true;
-					return vec3_angle;
-				}
-			}
-
-			//Fall through and look for an autoaim ent.
-		}
-	}
-
-	int count = AimTarget_ListCount();
-	if ( count )
-	{
-		CBaseEntity **pList = (CBaseEntity **)stackalloc( sizeof(CBaseEntity *) * count );
-		AimTarget_ListCopy( pList, count );
-
-		for ( int i = 0; i < count; i++ )
-		{
-			Vector center;
-			Vector dir;
-			CBaseEntity *pEntity = pList[i];
-
-			// Don't autoaim at anything that doesn't want to be.
-			if( !pEntity->ShouldAttractAutoAim(this) )
-				continue;
-
-			// Don't shoot yourself
-			if ( pEntity == this )
-				continue;
-
-			if ( (pEntity->IsNPC() && !pEntity->IsAlive()) || !pEntity->edict() )
-				continue;
-
-			if ( !g_pGameRules->ShouldAutoAim( this, pEntity->edict() ) )
-				continue;
-
-			// don't look through water
-			if ((GetWaterLevel() != 3 && pEntity->GetWaterLevel() == 3) || (GetWaterLevel() == 3 && pEntity->GetWaterLevel() == 0))
-				continue;
-
-			if( pEntity->MyNPCPointer() )
-			{
-				// If this entity is an NPC, only aim if it is an enemy.
-				if ( IRelationType( pEntity ) != D_HT )
-				{
-					if ( !pEntity->IsPlayer() && !g_pGameRules->IsDeathmatch())
-						// Msg( "friend\n");
-						continue;
-				}
-			}
-
-			// Don't autoaim at the noisy bodytarget, this makes the autoaim crosshair wobble.
-			//center = pEntity->BodyTarget( vecSrc, false );
-			center = pEntity->WorldSpaceCenter();
-
-			dir = (center - vecSrc);
-			
-			float dist = dir.Length2D();
-			VectorNormalize( dir );
-
-			// Skip if out of range.
-			if( dist > params.m_fMaxDist )
-				continue;
-
-			float dot = DotProduct (dir, v_forward );
-
-			// make sure it's in front of the player
-			if( dot < 0 )
-				continue;
-
-			if( !(pEntity->GetFlags() & FL_FLY) )
-			{
-				// Refuse to take wild shots at targets far from reticle.
-				if( GetActiveWeapon() != NULL && dot < GetActiveWeapon()->GetMaxAutoAimDeflection() )
-				{
-					// Be lenient if the player is looking down, though. 30 degrees through 90 degrees of pitch.
-					// (90 degrees is looking down at player's own 'feet'. Looking straight ahead is 0 degrees pitch.
-					// This was done for XBox to make it easier to fight headcrabs around the player's feet.
-					if( eyeAngles.x < 30.0f || eyeAngles.x > 90.0f || g_pGameRules->GetAutoAimMode() != AUTOAIM_ON_CONSOLE )
-					{
-						continue;
-					}
-				}
-			}
-
-			score = GetAutoaimScore(vecSrc, v_forward, pEntity->GetAutoAimCenter(), pEntity, params.m_fScale, GetActiveWeapon() );
-
-			if( score <= bestscore )
-			{
-				continue;
-			}
-
-			UTIL_TraceLine( vecSrc, center, MASK_SHOT, &traceFilter, &tr );
-
-			if (tr.fraction != 1.0 && tr.m_pEnt != pEntity )
-			{
-				// Msg( "hit %s, can't see %s\n", STRING( tr.u.ent->classname ), STRING( pEdict->classname ) );
-				continue;
-			}
-
-			// This is the best candidate so far.
-			bestscore = score;
-			bestent = pEntity;
-			bestdir = dir;
-		}
-		if ( bestent )
-		{
-			QAngle bestang;
-
-			VectorAngles( bestdir, bestang );
-
-			if( IsInAVehicle() )
-			{
-				bestang -= EyeAngles();
-			}
-			else
-			{
-				bestang -= EyeAngles() - m_Local.m_vecPunchAngle;
-			}
-
-			m_fOnTarget = true;
-
-			// Autoaim detected a target for us. Aim automatically at its bodytarget.
-			params.m_hAutoAimEntity.Set(bestent);
-			params.m_vecAutoAimDir = bestdir;
-			params.m_vecAutoAimPoint = bestent->BodyTarget( vecSrc, false );
-			params.m_bAutoAimAssisting = true;
-
-			return bestang;
-		}
-	}
-
-	return vec3_angle;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CBasePlayer::ResetAutoaim( void )
-{
-	if (m_vecAutoAim.x != 0 || m_vecAutoAim.y != 0)
-	{
-		m_vecAutoAim = QAngle( 0, 0, 0 );
-		engine->CrosshairAngle( edict(), 0, 0 );
-	}
-	m_fOnTarget = false;
 }
 
 // ==========================================================================
@@ -7693,10 +6949,6 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 	{
 		pPlayer = (CBasePlayer *)data.pActivator;
 	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = UTIL_GetLocalPlayer();
-	}
 
 	if ( pPlayer )
 	{
@@ -7793,8 +7045,6 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropFloat		( SENDINFO(m_flFriction),		8,	SPROP_ROUNDDOWN,	0.0f,	4.0f),
 
 		SendPropArray3		( SENDINFO_ARRAY3(m_iAmmo), SendPropInt( SENDINFO_ARRAY(m_iAmmo), -1, SPROP_VARINT | SPROP_UNSIGNED ) ),
-			
-		SendPropInt			( SENDINFO( m_fOnTarget ), 2, SPROP_UNSIGNED ),
 
 		SendPropInt			( SENDINFO( m_nTickBase ), -1, SPROP_CHANGES_OFTEN ),
 		SendPropInt			( SENDINFO( m_nNextThinkTick ) ),
@@ -7842,7 +7092,6 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 
 		SendPropDataTable(SENDINFO_DT(pl), &REFERENCE_SEND_TABLE(DT_PlayerState), SendProxy_DataTableToDataTable),
 
-		SendPropEHandle(SENDINFO(m_hVehicle)),
 		SendPropEHandle(SENDINFO(m_hUseEntity)),
 		SendPropInt		(SENDINFO(m_iHealth), -1, SPROP_VARINT | SPROP_CHANGES_OFTEN ),
 		SendPropInt		(SENDINFO(m_lifeState), 3, SPROP_UNSIGNED ),
@@ -8253,19 +7502,8 @@ void CBasePlayer::SetVCollisionState( const Vector &vecAbsOrigin, const Vector &
 //-----------------------------------------------------------------------------
 int CBasePlayer::GetFOV( void )
 {
-	int nDefaultFOV;
+	int nDefaultFOV = GetDefaultFOV();
 
-	// The vehicle's FOV wins if we're asking for a default value
-	if ( GetVehicle() )
-	{
-		CacheVehicleView();
-		nDefaultFOV = ( m_flVehicleViewFOV == 0 ) ? GetDefaultFOV() : (int) m_flVehicleViewFOV;
-	}
-	else
-	{
-		nDefaultFOV = GetDefaultFOV();
-	}
-	
 	int fFOV = ( m_iFOV == 0 ) ? nDefaultFOV : m_iFOV;
 
 	// If it's immediate, just do it
@@ -8294,18 +7532,7 @@ int CBasePlayer::GetFOV( void )
 //-----------------------------------------------------------------------------
 int CBasePlayer::GetFOVForNetworking( void )
 {
-	int nDefaultFOV;
-
-	// The vehicle's FOV wins if we're asking for a default value
-	if ( GetVehicle() )
-	{
-		CacheVehicleView();
-		nDefaultFOV = ( m_flVehicleViewFOV == 0 ) ? GetDefaultFOV() : (int) m_flVehicleViewFOV;
-	}
-	else
-	{
-		nDefaultFOV = GetDefaultFOV();
-	}
+	int nDefaultFOV = GetDefaultFOV();
 
 	int fFOV = ( m_iFOV == 0 ) ? nDefaultFOV : m_iFOV;
 
@@ -8907,12 +8134,6 @@ bool CPlayerInfo::IsDead()
 { 
 	Assert( m_pParent );
 	return m_pParent->IsDead(); 
-}
-
-bool CPlayerInfo::IsInAVehicle() 
-{ 
-	Assert( m_pParent );
-	return m_pParent->IsInAVehicle(); 
 }
 
 bool CPlayerInfo::IsObserver() 

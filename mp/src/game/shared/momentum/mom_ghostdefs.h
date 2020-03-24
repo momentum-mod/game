@@ -217,9 +217,11 @@ enum DecalType
     DECAL_PAINT,
     DECAL_KNIFE,
     DECAL_ROCKET,
+    DECAL_STICKY_SHOOT,
+    DECAL_STICKY_DETONATE,
 
     DECAL_FIRST = DECAL_BULLET,
-    DECAL_LAST = DECAL_ROCKET,
+    DECAL_LAST = DECAL_STICKY_DETONATE,
     DECAL_INVALID = -1
 };
 
@@ -242,6 +244,11 @@ struct KnifeDecalData
     bool bStab;
 };
 
+struct StickyShootDecalData
+{
+    Vector velocity;
+};
+
 class DecalPacket : public MomentumPacket
 {
   private:
@@ -262,9 +269,10 @@ class DecalPacket : public MomentumPacket
     union DecalData
     {
         DecalData() {}
-        BulletDecalData bullet; // When decal type is DECAL_BULLET
-        PaintDecalData paint;   // When decal type is DECAL_PAINT
-        KnifeDecalData knife;   // When decal type is DECAL_KNIFE
+        BulletDecalData bullet;
+        PaintDecalData paint;
+        KnifeDecalData knife;
+        StickyShootDecalData stickyShoot;
     };
     DecalData data;
 
@@ -288,7 +296,7 @@ class DecalPacket : public MomentumPacket
         return packet;
     }
 
-    static DecalPacket Knife( Vector origin, QAngle angle, bool bStab )
+    static DecalPacket Knife(Vector origin, QAngle angle, bool bStab)
     {
         DecalPacket packet(DECAL_KNIFE, origin, angle);
         packet.data.knife.bStab = bStab;
@@ -298,6 +306,19 @@ class DecalPacket : public MomentumPacket
     static DecalPacket Rocket(Vector origin, QAngle angle)
     {
         DecalPacket pack(DECAL_ROCKET, origin, angle);
+        return pack;
+    }
+
+    static DecalPacket StickyShoot(const Vector &origin, const QAngle &angle, const Vector &velocity)
+    {
+        DecalPacket packet(DECAL_STICKY_SHOOT, origin, angle);
+        packet.data.stickyShoot.velocity = velocity;
+        return packet;
+    }
+
+    static DecalPacket StickyDet()
+    {
+        DecalPacket pack(DECAL_STICKY_DETONATE, vec3_origin, vec3_angle);
         return pack;
     }
 

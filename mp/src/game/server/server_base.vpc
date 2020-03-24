@@ -10,7 +10,6 @@ $Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
 $MacroRequired "GAMENAME"
 
 $include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
-$Include "$SRCDIR\vpc_scripts\source_replay.vpc"	[$TF]
 
 $Configuration	"Debug"
 {
@@ -18,9 +17,6 @@ $Configuration	"Debug"
 	{
 		$OutputDirectory		".\Debug_$GAMENAME"			[$WIN32]
 		$IntermediateDirectory	".\Debug_$GAMENAME"			[$WIN32]
-
-		$OutputDirectory		".\Debug_$GAMENAME_360"		[$X360]
-		$IntermediateDirectory	".\Debug_$GAMENAME_360"		[$X360]
 	}
 }
 
@@ -30,9 +26,6 @@ $Configuration	"Release"
 	{
 		$OutputDirectory		".\Release_$GAMENAME"		[$WIN32]
 		$IntermediateDirectory	".\Release_$GAMENAME"		[$WIN32]
-
-		$OutputDirectory		".\Release_$GAMENAME_360"	[$X360]
-		$IntermediateDirectory	".\Release_$GAMENAME_360"	[$X360]
 	}
 }
 
@@ -48,7 +41,7 @@ $Configuration
 		$AdditionalIncludeDirectories	"$BASE;.\;$SRCDIR\game\shared;$SRCDIR\utils\common;$SRCDIR\game\shared\econ;$SRCDIR\game\server\NextBot"
 		$PreprocessorDefinitions		"$BASE;GAME_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;sprintf=use_Q_snprintf_instead_of_sprintf;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead"
 		$PreprocessorDefinitions		"$BASE;SWDS" [$POSIX]
-		$PreprocessorDefinitions		"$BASE;fopen=dont_use_fopen" [$WINDOWS||$X360]
+		$PreprocessorDefinitions		"$BASE;fopen=dont_use_fopen" [$WINDOWS]
 		$Create/UsePrecompiledHeader	"Use Precompiled Header (/Yu)"
 		$Create/UsePCHThroughFile		"cbase.h"
 	}
@@ -62,15 +55,6 @@ $Configuration
 
 $Project
 {
-	$Folder "Replay"
-	{
-		$File	"gamedll_replay.cpp"
-		$File	"$SRCDIR\common\replay\ireplaysessionrecorder.h"
-		
-		$File	"$SRCDIR\game\shared\replay_gamestats_shared.cpp"	[$BUILD_REPLAY]
-		$File	"$SRCDIR\game\shared\replay_gamestats_shared.h"	[$BUILD_REPLAY]
-	}
-	
 	$Folder	"Source Files"
 	{
 		$File	"$SRCDIR\game\shared\achievement_saverestore.cpp"
@@ -351,8 +335,6 @@ $Project
 		$File	"fish.cpp"
 		$File	"fish.h"
 		$File	"fogcontroller.cpp"
-		$File	"fourwheelvehiclephysics.cpp"
-		$File	"fourwheelvehiclephysics.h"
 		$File	"func_areaportal.cpp"
 		$File	"func_areaportalbase.cpp"
 		$File	"func_areaportalbase.h"
@@ -422,7 +404,6 @@ $Project
 		$File	"$SRCDIR\game\shared\interval.h"
 		$File	"$SRCDIR\public\iregistry.h"
 		$File	"$SRCDIR\game\shared\iscenetokenprocessor.h"
-		$File	"iservervehicle.h"
 		$File	"item_world.cpp"
 		$File	"items.h"
 		$File	"$SRCDIR\public\ivoiceserver.h"
@@ -452,13 +433,10 @@ $Project
 		$File	"movement.cpp"
 		$File	"$SRCDIR\game\shared\movevars_shared.cpp"
 		$File	"movie_explosion.h"
-		$File	"$SRCDIR\game\shared\multiplay_gamerules.cpp"
-		$File	"$SRCDIR\game\shared\multiplay_gamerules.h"
 		$File	"ndebugoverlay.cpp"
 		$File	"ndebugoverlay.h"
 		$File	"networkstringtable_gamedll.h"
 		$File	"$SRCDIR\public\networkstringtabledefs.h"
-		$File	"npc_vehicledriver.cpp"
 		$File	"$SRCDIR\game\shared\obstacle_pushaway.cpp"
 		$File	"$SRCDIR\game\shared\obstacle_pushaway.h"
 		$File	"particle_fire.h"
@@ -607,8 +585,6 @@ $Project
 		$File	"tanktrain.cpp"
 		$File	"team.cpp"
 		$File	"team.h"
-		$File	"$SRCDIR\game\shared\teamplay_gamerules.cpp"
-		$File	"$SRCDIR\game\shared\teamplay_gamerules.h"
 		$File	"$SRCDIR\game\shared\tempentity.h"
 		$File	"TemplateEntities.cpp"
 		$File	"TemplateEntities.h"
@@ -625,10 +601,6 @@ $Project
 		$File	"util.h"
 		$File	"$SRCDIR\game\shared\util_shared.cpp"
 		$File	"variant_t.cpp"
-		$File	"vehicle_base.cpp"
-		$File	"vehicle_baseserver.cpp"
-		$File	"vehicle_sounds.h"
-		$File	"$SRCDIR\game\shared\vehicle_viewblend_shared.cpp"
 		$File	"vguiscreen.cpp"
 		$File	"vguiscreen.h"
 		$File	"$SRCDIR\public\mathlib\vmatrix.h"
@@ -649,9 +621,6 @@ $Project
 		$File	"$SRCDIR\game\shared\SharedFunctorUtils.h"
 		$File	"$SRCDIR\game\server\vote_controller.h"
 		$File	"$SRCDIR\game\server\vote_controller.cpp"
-                //Haptics
-		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"
-		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WIN32]
 
 		// Not using precompiled header cbase.h
 
@@ -834,7 +803,6 @@ $Project
 		$File	"globals.h"
 		$File	"$SRCDIR\public\globalvars_base.h"
 		$File	"$SRCDIR\game\shared\groundlink.h"
-		$File	"$SRCDIR\game\shared\hl2\hl2_vehicle_radar.h"
 		$File	"$SRCDIR\public\iachievementmgr.h"
 		$File	"$SRCDIR\public\appframework\IAppSystem.h"
 		$File	"$SRCDIR\public\icliententity.h"
@@ -874,7 +842,6 @@ $Project
 		$File	"$SRCDIR\public\engine\IStaticPropMgr.h"
 		$File	"$SRCDIR\game\shared\itempents.h"
 		$File	"$SRCDIR\public\engine\ivdebugoverlay.h"
-		$File	"$SRCDIR\game\shared\IVehicle.h"
 		$File	"$SRCDIR\public\engine\ivmodelinfo.h"
 		$File	"$SRCDIR\public\tier1\KeyValues.h"
 		$File	"$SRCDIR\common\language.h"
@@ -891,7 +858,6 @@ $Project
 		$File	"modelentities.h"
 		$File	"$SRCDIR\game\shared\movevars_shared.h"
 		$File	"$SRCDIR\public\networkvar.h"
-		$File	"npc_vehicledriver.h"
 		$File	"$SRCDIR\game\shared\npcevent.h"
 		$File	"$SRCDIR\public\vphysics\object_hash.h"
 		$File	"particle_system.h"
@@ -966,10 +932,6 @@ $Project
 		$File	"$SRCDIR\public\mathlib\vector.h"
 		$File	"$SRCDIR\public\mathlib\vector2d.h"
 		$File	"$SRCDIR\public\mathlib\vector4d.h"
-		$File	"vehicle_base.h"
-		$File	"vehicle_baseserver.h"
-		$File	"$SRCDIR\game\shared\vehicle_viewblend_shared.h"
-		$File	"$SRCDIR\public\vphysics\vehicles.h"
 		$File	"$SRCDIR\public\vgui\VGUI.h"
 		$File	"$SRCDIR\public\vphysics_interface.h"
 		$File	"$SRCDIR\game\shared\vphysics_sound.h"
@@ -981,8 +943,6 @@ $Project
 		$File	"$SRCDIR\public\zip_uncompressed.h"
 		$File	"$SRCDIR\game\shared\mp_shareddefs.h"
 		$File	"$SRCDIR\game\shared\econ\ihasowner.h"
-		//Haptics
-		$File	"$SRCDIR\public\haptics\haptic_utils.h"	[$WIN32]
 	}
 
 	$Folder	"Tools Framework"

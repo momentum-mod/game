@@ -108,11 +108,6 @@ public:
 
 	virtual void DeleteIfUnreferenced() = 0;
 
-#if defined( _X360 )
-	virtual bool ClearTexture( int r, int g, int b, int a ) = 0;
-	virtual bool CreateRenderTargetSurface( int width, int height, ImageFormat format, bool bSameAsTexture ) = 0;
-#endif
-
 	// swap everything except the name with another texture
 	virtual void SwapContents( ITexture *pOther ) = 0;
 

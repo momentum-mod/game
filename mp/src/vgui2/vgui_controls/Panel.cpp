@@ -1130,14 +1130,6 @@ void Panel::PaintTraverse( bool repaint, bool allowForce )
 	float oldAlphaMultiplier = surface()->DrawGetAlphaMultiplier();
 	float newAlphaMultiplier = oldAlphaMultiplier * m_flAlpha * 1.0f/255.0f;
 
-	if ( IsXbox() && !newAlphaMultiplier )
-	{
-		// xbox optimization not suitable for pc
-		// xbox panels are compliant and can early out and not traverse their children
-		// when they have no opacity
-		return;
-	}
-
 	if ( !repaint &&
 		 allowForce &&
 		 _flags.IsFlagSet( NEEDS_REPAINT ) )
@@ -2926,8 +2918,7 @@ void Panel::InternalSetCursor()
 void Panel::OnThink()
 {
 #if defined( VGUI_USEDRAGDROP )
-	if ( IsPC() && 
-		m_pDragDrop->m_bDragEnabled &&
+	if ( m_pDragDrop->m_bDragEnabled &&
 		m_pDragDrop->m_bDragging &&
 		m_pDragDrop->m_bDragStarted )
 	{
@@ -3063,9 +3054,6 @@ void Panel::OnKeyCodePressed(KeyCode code)
 	bool handled = false;
 	switch( GetBaseButtonCode( code ) )
 	{
-	case KEY_XBUTTON_UP:
-	case KEY_XSTICK1_UP:
-	case KEY_XSTICK2_UP:
 	case KEY_UP:
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateUp() )
 		{
@@ -3074,9 +3062,6 @@ void Panel::OnKeyCodePressed(KeyCode code)
 			handled = true;
 		}
 		break;
-	case KEY_XBUTTON_DOWN:
-	case KEY_XSTICK1_DOWN:
-	case KEY_XSTICK2_DOWN:
 	case KEY_DOWN:
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateDown() )
 		{
@@ -3085,9 +3070,6 @@ void Panel::OnKeyCodePressed(KeyCode code)
 			handled = true;
 		}
 		break;
-	case KEY_XBUTTON_LEFT:
-	case KEY_XSTICK1_LEFT:
-	case KEY_XSTICK2_LEFT:
 	case KEY_LEFT:
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateLeft() )
 		{
@@ -3096,19 +3078,8 @@ void Panel::OnKeyCodePressed(KeyCode code)
 			handled = true;
 		}
 		break;
-	case KEY_XBUTTON_RIGHT:
-	case KEY_XSTICK1_RIGHT:
-	case KEY_XSTICK2_RIGHT:
 	case KEY_RIGHT:
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateRight() )
-		{
-			vgui_nav_lock.SetValue( 1 );
-			surface()->PlaySound( "UI/menu_focus.wav" );
-			handled = true;
-		}
-		break;
-	case KEY_XBUTTON_B:
-		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateBack() )
 		{
 			vgui_nav_lock.SetValue( 1 );
 			surface()->PlaySound( "UI/menu_focus.wav" );
@@ -3128,36 +3099,11 @@ void Panel::OnKeyCodeTyped(KeyCode keycode)
 	KeyCode code = GetBaseButtonCode( keycode );
 
 	// handle focus change
-	if ( IsX360() || IsConsoleStylePanel() )
+	if ( IsConsoleStylePanel() )
 	{
 		// eat these typed codes, will get handled in OnKeyCodePressed
 		switch ( code )
 		{
-		case KEY_XBUTTON_UP:
-		case KEY_XSTICK1_UP:
-		case KEY_XSTICK2_UP:
-		case KEY_XBUTTON_DOWN:
-		case KEY_XSTICK1_DOWN:
-		case KEY_XSTICK2_DOWN:
-		case KEY_XBUTTON_LEFT:
-		case KEY_XSTICK1_LEFT:
-		case KEY_XSTICK2_LEFT:
-		case KEY_XBUTTON_RIGHT:
-		case KEY_XSTICK1_RIGHT:
-		case KEY_XSTICK2_RIGHT:
-		case KEY_XBUTTON_A:
-		case KEY_XBUTTON_B:
-		case KEY_XBUTTON_X:
-		case KEY_XBUTTON_Y:
-		case KEY_XBUTTON_LEFT_SHOULDER:
-		case KEY_XBUTTON_RIGHT_SHOULDER:
-		case KEY_XBUTTON_BACK:
-		case KEY_XBUTTON_START:
-		case KEY_XBUTTON_STICK1:
-		case KEY_XBUTTON_STICK2:
-		case KEY_XBUTTON_LTRIGGER:
-		case KEY_XBUTTON_RTRIGGER:
-
 		case KEY_UP:
 		case KEY_DOWN:
 		case KEY_LEFT:
@@ -3514,7 +3460,7 @@ void Panel::RequestFocus(int direction)
 {
 	// NOTE: This doesn't make any sense if we don't have keyboard input enabled
 	//Assert( ( IsX360() || IsConsoleStylePanel() ) || IsKeyBoardInputEnabled() );
-    if (!IsX360() && !IsConsoleStylePanel() && !IsKeyBoardInputEnabled())
+    if (!IsConsoleStylePanel() && !IsKeyBoardInputEnabled())
         Warning("A panel is requesting focus when it probably shouldn't!\n");
 	//	ivgui()->DPrintf2("RequestFocus(%s, %s)\n", GetName(), GetClassName());
 	OnRequestFocus(GetVPanel(), NULL);
@@ -4599,7 +4545,7 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 	excludeEdgeFromTitleSafe.width = 0;
 	excludeEdgeFromTitleSafe.height = 0;
 
-	if ( IsX360() || panel_test_title_safe.GetBool() )
+	if ( panel_test_title_safe.GetBool() )
 	{
 		// "usetitlesafe" "1" - required inner 90%
 		// "usetitlesafe" "2" - suggested inner 85%
@@ -5801,11 +5747,11 @@ void Panel::PreparePanelMap( PanelMap_t *panelMap )
 void Panel::OnDelete()
 {
 #ifdef WIN32
-	Assert( IsX360() || ( IsPC() && _heapchk() == _HEAPOK ) );
+	Assert( _heapchk() == _HEAPOK );
 #endif
 	delete this;
 #ifdef WIN32
-	Assert( IsX360() || ( IsPC() && _heapchk() == _HEAPOK ) );
+	Assert( _heapchk() == _HEAPOK );
 #endif
 }
 
@@ -8044,11 +7990,6 @@ Panel* Panel::NavigateBack()
 //-----------------------------------------------------------------------------
 void Panel::NavigateTo()
 {
-	if ( IsX360() )
-	{
-		RequestFocus( 0 );
-	}
-
 	CallParentFunction( new KeyValues( "OnNavigateTo", "panelName", GetName() ) );
 
 	Panel *target = GetNavToRelay();

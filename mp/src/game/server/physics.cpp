@@ -24,8 +24,6 @@
 #include "decals.h"
 #include "physics_fx.h"
 #include "vphysics_sound.h"
-#include "vphysics/vehicles.h"
-#include "vehicle_sounds.h"
 #include "movevars_shared.h"
 #include "physics_saverestore.h"
 #include "solidsetdefaults.h"
@@ -104,14 +102,6 @@ IPhysicsCollisionSolver * const g_pCollisionSolver = &g_Collisions;
 IPhysicsCollisionEvent * const g_pCollisionEventHandler = &g_Collisions;
 IPhysicsObjectEvent * const g_pObjectEventHandler = &g_Collisions;
 
-
-struct vehiclescript_t
-{
-	string_t scriptName;
-	vehicleparams_t params;
-	vehiclesounds_t sounds;
-};
-
 class CPhysicsHook : public CBaseGameSystemPerFrame
 {
 public:
@@ -125,12 +115,6 @@ public:
 	virtual void FrameUpdatePostEntityThink();
 	virtual void PreClientUpdate();
 
-	bool FindOrAddVehicleScript( const char *pScriptName, vehicleparams_t *pVehicle, vehiclesounds_t *pSounds );
-	void FlushVehicleScripts()
-	{
-		m_vehicleScripts.RemoveAll();
-	}
-
 	bool ShouldSimulate()
 	{
 		return (physenv && !m_bPaused) ? true : false;
@@ -140,7 +124,6 @@ public:
 	CUtlVector<physicssound::breaksound_t> m_breakSounds;
 
 	CUtlVector<masscenteroverride_t>	m_massCenterOverrides;
-	CUtlVector<vehiclescript_t>			m_vehicleScripts;
 
 	float		m_impactSoundTime;
 	bool		m_bPaused;
@@ -182,7 +165,6 @@ bool CPhysicsHook::Init( void )
 
 	m_isFinalTick = true;
 	m_impactSoundTime = 0;
-	m_vehicleScripts.EnsureCapacity(4);
 	return true;
 }
 
@@ -298,76 +280,6 @@ void CPhysicsHook::LevelShutdownPostEntity()
 	m_impactSounds.RemoveAll();
 	m_breakSounds.RemoveAll();
 	m_massCenterOverrides.Purge();
-	FlushVehicleScripts();
-}
-
-
-bool CPhysicsHook::FindOrAddVehicleScript( const char *pScriptName, vehicleparams_t *pVehicle, vehiclesounds_t *pSounds )
-{
-	bool bLoadedSounds = false;
-	int index = -1;
-	for ( int i = 0; i < m_vehicleScripts.Count(); i++ )
-	{
-		if ( !Q_stricmp(m_vehicleScripts[i].scriptName.ToCStr(), pScriptName) )
-		{
-			index = i;
-			bLoadedSounds = true;
-			break;
-		}
-	}
-
-	if ( index < 0 )
-	{
-		byte *pFile = UTIL_LoadFileForMe( pScriptName, NULL );
-		if ( pFile )
-		{
-			// new script, parse it and write to the table
-			index = m_vehicleScripts.AddToTail();
-			m_vehicleScripts[index].scriptName = AllocPooledString(pScriptName);
-			m_vehicleScripts[index].sounds.Init();
-
-			IVPhysicsKeyParser *pParse = physcollision->VPhysicsKeyParserCreate( (char *)pFile );
-			while ( !pParse->Finished() )
-			{
-				const char *pBlock = pParse->GetCurrentBlockName();
-				if ( !strcmpi( pBlock, "vehicle" ) )
-				{
-					pParse->ParseVehicle( &m_vehicleScripts[index].params, NULL );
-				}
-				else if ( !Q_stricmp( pBlock, "vehicle_sounds" ) )
-				{
-					bLoadedSounds = true;
-					CVehicleSoundsParser soundParser;
-					pParse->ParseCustom( &m_vehicleScripts[index].sounds, &soundParser );
-				}
-				else
-				{
-					pParse->SkipBlock();
-				}
-			}
-			physcollision->VPhysicsKeyParserDestroy( pParse );
-			UTIL_FreeFile( pFile );
-		}
-	}
-
-	if ( index >= 0 )
-	{
-		if ( pVehicle )
-		{
-			*pVehicle = m_vehicleScripts[index].params;
-		}
-		if ( pSounds )
-		{
-			// We must pass back valid data here!
-			if ( bLoadedSounds == false )
-				return false;
-
-			*pSounds = m_vehicleScripts[index].sounds;
-		}
-		return true;
-	}
-
-	return false;
 }
 
 // called after entities think
@@ -667,11 +579,6 @@ bool CCollisionEvent::ShouldFreezeObject( IPhysicsObject *pObject )
 	{
 		if (pEntity->GetMoveType() == MOVETYPE_PUSH )
 			return false;
-		
-		// don't limit vehicle collisions either, limit can make breaking through a pile of breakable
-		// props very hitchy
-		if (pEntity->GetServerVehicle() && !(pObject->GetCallbackFlags() & CALLBACK_IS_VEHICLE_WHEEL))
-			return false;
 	}
 
 	// if we're freezing a debris object, then it's probably due to some kind of solver issue
@@ -957,7 +864,7 @@ static bool CanResolvePenetrationWithNPC( CBaseEntity *pEntity, IPhysicsObject *
 		// hinged objects won't be able to be pushed out anyway, so don't try the npc solver
 		if ( !pObject->IsHinged() && !pObject->IsAttachedToConstraint(true) )
 		{
-			if ( pObject->IsMoveable() || pEntity->GetServerVehicle() )
+			if ( pObject->IsMoveable() )
 				return true;
 		}
 	}
@@ -2797,16 +2704,6 @@ void PhysSetEntityGameFlags( CBaseEntity *pEntity, unsigned short flags )
 	{
 		PhysSetGameFlags( pList[i], flags );
 	}
-}
-
-bool PhysFindOrAddVehicleScript( const char *pScriptName, vehicleparams_t *pParams, vehiclesounds_t *pSounds )
-{
-	return g_PhysicsHook.FindOrAddVehicleScript(pScriptName, pParams, pSounds);
-}
-
-void PhysFlushVehicleScripts()
-{
-	g_PhysicsHook.FlushVehicleScripts();
 }
 
 IPhysicsObject *FindPhysicsObjectByName( const char *pName, CBaseEntity *pErrorEntity )

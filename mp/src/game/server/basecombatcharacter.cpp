@@ -23,7 +23,6 @@
 #include "EntityFlame.h"
 #include "CRagdollMagnet.h"
 #include "IEffects.h"
-#include "iservervehicle.h"
 #include "igamesystem.h"
 #include "globals.h"
 #include "physics_prop_ragdoll.h"
@@ -35,7 +34,6 @@
 #include "items.h"
 #include "movevars_shared.h"
 #include "RagdollBoogie.h"
-#include "rumble_shared.h"
 #include "saverestoretypes.h"
 #include "nav_mesh.h"
 
@@ -162,19 +160,6 @@ void *SendProxy_SendBaseCombatCharacterLocalDataTable( const SendProp *pProp, co
 		if ( pBCC->IsPlayer() )
 		{
 			pRecipients->SetOnly( pBCC->entindex() - 1 );
-		}
-		else
-		{
-			// If it's a vehicle, send to "driver" (e.g., operator of tf2 manned guns)
-			IServerVehicle *pVehicle = pBCC->GetServerVehicle();
-			if ( pVehicle != NULL )
-			{
-				CBaseCombatCharacter *pDriver = pVehicle->GetPassenger();
-				if ( pDriver != NULL )
-				{
-					pRecipients->SetOnly( pDriver->entindex() - 1 );
-				}
-			}
 		}
 	}
 	return ( void * )pVarData;
@@ -322,7 +307,7 @@ public:
 };
 
 static CUtlRBTree<VisibilityCacheEntry_t, unsigned short, CVisibilityCacheEntryLess> g_VisibilityCache;
-const float VIS_CACHE_ENTRY_LIFE = ( !IsXbox() ) ? .090 : .500;
+const float VIS_CACHE_ENTRY_LIFE = .090;
 
 bool CBaseCombatCharacter::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **ppBlocker )
 {
@@ -1911,11 +1896,6 @@ void CBaseCombatCharacter::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector
 		{
 			pWeapon->m_iClip2 = pWeapon->GetDefaultClip2();
 		}
-
-		if ( IsXbox() )
-		{
-			pWeapon->AddEffects( EF_ITEM_BLINK );
-		}
 	}
 
 	if ( IsPlayer() )
@@ -3084,34 +3064,6 @@ void CBaseCombatCharacter::VPhysicsShadowCollision( int index, gamevcollisioneve
 	// REVISIT: Maybe resolve this collision on death with a different (not approximately infinite like AABB tensor)
 	// inertia tensor to get torque?
 	Vector damageForce = pEvent->postVelocity[index] * pEvent->pObjects[index]->GetMass() * phys_impactforcescale.GetFloat();
-	
-	IServerVehicle *vehicleOther = pOther->GetServerVehicle();
-	if ( vehicleOther )
-	{
-		CBaseCombatCharacter *pPassenger = vehicleOther->GetPassenger();
-		if ( pPassenger != NULL )
-		{
-			// flag as vehicle damage
-			damageType |= DMG_VEHICLE;
-			// if hit by vehicle driven by player, add some upward velocity to force
-			float len = damageForce.Length();
-			damageForce.z += len*phys_upimpactforcescale.GetFloat();
-			//Msg("Force %.1f / %.1f\n", damageForce.Length(), damageForce.z );
-
-			if ( pPassenger->IsPlayer() )
-			{
-				CBasePlayer *pPlayer = assert_cast<CBasePlayer *>(pPassenger);
-				if( damage >= GetMaxHealth() )
-				{
-					pPlayer->RumbleEffect( RUMBLE_357, 0, RUMBLE_FLAG_RESTART );
-				}
-				else
-				{
-					pPlayer->RumbleEffect( RUMBLE_PISTOL, 0, RUMBLE_FLAG_RESTART );
-				}
-			}
-		}
-	}
 
 	Vector damagePos;
 	pEvent->pInternalData->GetContactPoint( damagePos );

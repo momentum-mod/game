@@ -28,7 +28,6 @@
 #include "particlemgr.h"
 #include "c_vguiscreen.h"
 #include "c_team.h"
-#include "c_rumble.h"
 #include "fmtstr.h"
 #include "achievementmgr.h"
 #include "c_playerresource.h"
@@ -37,25 +36,6 @@
 #include <vgui/ISurface.h>
 #include "hud_vote.h"
 #include "ienginevgui.h"
-#include "sourcevr/isourcevirtualreality.h"
-#if defined( _X360 )
-#include "xbox/xbox_console.h"
-#endif
-
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#include "replay/ireplaysystem.h"
-#include "replay/iclientreplaycontext.h"
-#include "replay/ireplaymanager.h"
-#include "replay/replay.h"
-#include "replay/ienginereplay.h"
-#include "replay/vgui/replayreminderpanel.h"
-#include "replay/vgui/replaymessagepanel.h"
-#include "econ/econ_controls.h"
-#include "econ/confirm_dialog.h"
-extern IClientReplayContext *g_pClientReplayContext;
-extern ConVar replay_rendersetting_renderglow;
-#endif
 
 #if defined USES_ECON_ITEMS
 #include "econ_item_view.h"
@@ -154,7 +134,7 @@ CON_COMMAND( hud_reloadscheme, "Reloads hud layout and animation scripts." )
 }
 
 #ifdef _DEBUG
-CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 0: read from NULL\n 1: write to NULL\n 2: DmCrashDump() (xbox360 only)", FCVAR_CHEAT )
+CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 0: read from NULL\n 1: write to NULL", FCVAR_CHEAT )
 {
 	int crashtype = 0;
 	int dummy;
@@ -171,30 +151,12 @@ CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 
 		case 1:
 			*((int *)NULL) = 42;
 			break;
-#if defined( _X360 )
-		case 2:
-			XBX_CrashDump(false);
-			break;
-#endif
 		default:
 			Msg("Unknown variety of crash. You have now failed to crash. I hope you're happy.\n");
 			break;
 	}
 }
 #endif // _DEBUG
-
-static void __MsgFunc_Rumble( bf_read &msg )
-{
-	unsigned char waveformIndex;
-	unsigned char rumbleData;
-	unsigned char rumbleFlags;
-
-	waveformIndex = msg.ReadByte();
-	rumbleData = msg.ReadByte();
-	rumbleFlags = msg.ReadByte();
-
-	RumbleEffect( waveformIndex, rumbleData, rumbleFlags );
-}
 
 static void __MsgFunc_VGUIMenu( bf_read &msg )
 {
@@ -285,12 +247,6 @@ ClientModeShared::ClientModeShared()
 	m_pChatElement = NULL;
 	m_pWeaponSelection = NULL;
 	m_nRootSize[ 0 ] = m_nRootSize[ 1 ] = -1;
-
-#if defined( REPLAY_ENABLED )
-	m_pReplayReminderPanel = NULL;
-	m_flReplayStartRecordTime = 0.0f;
-	m_flReplayStopRecordTime = 0.0f;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -314,18 +270,6 @@ void ClientModeShared::ReloadScheme( bool flushLowLevel )
 }
 
 
-//----------------------------------------------------------------------------
-// Purpose: Let the client mode set some vgui conditions
-//-----------------------------------------------------------------------------
-void	ClientModeShared::ComputeVguiResConditions( KeyValues *pkvConditions ) 
-{
-	if ( UseVR() )
-	{
-		pkvConditions->FindKey( "if_vr", true );
-	}
-}
-
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -345,11 +289,6 @@ void ClientModeShared::Init()
 	Assert( m_pViewport );
 	m_pViewport->LoadControlSettings( "scripts/HudLayout.res", NULL, NULL, pConditions );
 
-#if defined( REPLAY_ENABLED )
- 	m_pReplayReminderPanel = GET_HUDELEMENT( CReplayReminderPanel );
- 	Assert( m_pReplayReminderPanel );
-#endif
-
 	ListenForGameEvent( "player_connect_client" );
 	ListenForGameEvent( "player_disconnect" );
 	ListenForGameEvent( "player_team" );
@@ -362,25 +301,9 @@ void ClientModeShared::Init()
 	ListenForGameEvent( "item_found" );
 #endif 
 
-#if defined( REPLAY_ENABLED )
-	ListenForGameEvent( "replay_startrecord" );
-	ListenForGameEvent( "replay_endrecord" );
-	ListenForGameEvent( "replay_replaysavailable" );
-	ListenForGameEvent( "replay_servererror" );
-	ListenForGameEvent( "game_newmap" );
-#endif
-
-#ifndef _XBOX
-	HLTVCamera()->Init();
-#if defined( REPLAY_ENABLED )
-	ReplayCamera()->Init();
-#endif
-#endif
-
 	m_CursorNone = dc_none;
 
 	HOOK_MESSAGE( VGUIMenu );
-	HOOK_MESSAGE( Rumble );
 }
 
 
@@ -526,25 +449,6 @@ bool ClientModeShared::ShouldDrawDetailObjects( )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Returns true if VR mode should black out everything outside the HUD.
-//			This is used for things like sniper scopes and full screen UI
-//-----------------------------------------------------------------------------
-bool ClientModeShared::ShouldBlackoutAroundHUD()
-{
-	return enginevgui->IsGameUIVisible();
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Allows the client mode to override mouse control stuff in sourcevr
-//-----------------------------------------------------------------------------
-HeadtrackMovementMode_t ClientModeShared::ShouldOverrideHeadtrackControl() 
-{
-	return HMM_NOOVERRIDE;
-}
-
-
-//-----------------------------------------------------------------------------
 // Purpose: 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
@@ -605,16 +509,10 @@ void ClientModeShared::PostRenderVGui()
 //-----------------------------------------------------------------------------
 void ClientModeShared::Update()
 {
-#if defined( REPLAY_ENABLED )
-	UpdateReplayMessages();
-#endif
-
 	if ( m_pViewport->IsVisible() != cl_drawhud.GetBool() )
 	{
 		m_pViewport->SetVisible( cl_drawhud.GetBool() );
 	}
-
-	UpdateRumbleEffects();
 
 	if ( cl_show_num_particle_systems.GetBool() )
 	{
@@ -655,6 +553,11 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 {
 	if ( engine->Con_IsVisible() )
 		return 1;
+
+	if (vgui::input()->GetAppModalSurface() != 0)
+	{
+		return 0;
+	}
 	
 	// Should we start typing a message?
 	if ( pszCurrentBinding &&
@@ -744,9 +647,6 @@ int ClientModeShared::HandleSpectatorKeyInput( int down, ButtonCode_t keynum, co
 	else if ( down && pszCurrentBinding && Q_strcmp( pszCurrentBinding, "+strafe" ) == 0 )
 	{
 		HLTVCamera()->SetAutoDirector( true );
-#if defined( REPLAY_ENABLED )
-		ReplayCamera()->SetAutoDirector( true );
-#endif
 		return 0;
 	}
 
@@ -766,16 +666,6 @@ int ClientModeShared::HudElementKeyInput( int down, ButtonCode_t keynum, const c
 		}
 	}
 
-#if defined( REPLAY_ENABLED )
-	if ( m_pReplayReminderPanel )
-	{
-		if ( m_pReplayReminderPanel->HudElementKeyInput( down, keynum, pszCurrentBinding ) )
-		{
-			return 0;
-		}
-	}
-#endif
-
 	return 1;
 }
 
@@ -785,13 +675,6 @@ int ClientModeShared::HudElementKeyInput( int down, ButtonCode_t keynum, const c
 //-----------------------------------------------------------------------------
 bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 {
-#if defined( REPLAY_ENABLED )
-	if ( engine->IsPlayingDemo() )
-	{
-		if ( !replay_rendersetting_renderglow.GetBool() )
-			return false;
-	}
-#endif 
 	return true;
 }
 
@@ -1006,14 +889,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 
 			wchar_t wszLocalized[100];
-			if (IsPC())
-			{
-				g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#game_player_left_game" ), 2, wszPlayerName, wszReason );
-			}
-			else
-			{
-				g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#game_player_left_game" ), 1, wszPlayerName );
-			}
+			g_pVGuiLocalize->ConstructString( wszLocalized, sizeof( wszLocalized ), g_pVGuiLocalize->Find( "#game_player_left_game" ), 2, wszPlayerName, wszReason );
 
 			char szLocalized[100];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof(szLocalized) );
@@ -1358,31 +1234,6 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		}		
 	}
 #endif
-#if defined( REPLAY_ENABLED )
-	else if ( !V_strcmp( "replay_servererror", eventname ) )
-	{
-		DisplayReplayMessage( event->GetString( "error", "#Replay_DefaultServerError" ), replay_msgduration_error.GetFloat(), true, NULL, false );
-	}
-	else if ( !V_strcmp( "replay_startrecord", eventname ) )
-	{
-		m_flReplayStartRecordTime = gpGlobals->curtime;
-	}
-	else if ( !V_strcmp( "replay_endrecord", eventname ) )
-	{
-		m_flReplayStopRecordTime = gpGlobals->curtime;
-	}
-	else if ( !V_strcmp( "replay_replaysavailable", eventname ) )
-	{
-		DisplayReplayMessage( "#Replay_ReplaysAvailable", replay_msgduration_replaysavailable.GetFloat(), false, NULL, false );
-	}
-
-	else if ( !V_strcmp( "game_newmap", eventname ) )
-	{
-		// Make sure the instance count is reset to 0.  Sometimes the count stay in sync and we get replay messages displaying lower than they should.
-		CReplayMessagePanel::RemoveAll();
-	}
-#endif
-
 	else
 	{
 		DevMsg( 2, "Unhandled GameEvent in ClientModeShared::FireGameEvent - %s\n", event->GetName()  );
@@ -1391,106 +1242,19 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 
 void ClientModeShared::UpdateReplayMessages()
 {
-#if defined( REPLAY_ENABLED )
-	// Received a replay_startrecord event?
-	if ( m_flReplayStartRecordTime != 0.0f )
-	{
-		DisplayReplayMessage( "#Replay_StartRecord", replay_msgduration_startrecord.GetFloat(), true, "replay\\startrecord.mp3", false );
-
-		m_flReplayStartRecordTime = 0.0f;
-		m_flReplayStopRecordTime = 0.0f;
-	}
-
-	// Received a replay_endrecord event?
-	if ( m_flReplayStopRecordTime != 0.0f )
-	{
-		DisplayReplayMessage( "#Replay_EndRecord", replay_msgduration_stoprecord.GetFloat(), true, "replay\\stoprecord.wav", false );
-
-		// Hide the replay reminder
-		if ( m_pReplayReminderPanel )
-		{
-			m_pReplayReminderPanel->Hide();
-		}
-
-		m_flReplayStopRecordTime = 0.0f;
-	}
-
-	if ( !engine->IsConnected() )
-	{
-		ClearReplayMessageList();
-	}
-#endif
 }
 
 void ClientModeShared::ClearReplayMessageList()
 {
-#if defined( REPLAY_ENABLED )
-	CReplayMessagePanel::RemoveAll();
-#endif
 }
 
 void ClientModeShared::DisplayReplayMessage( const char *pLocalizeName, float flDuration, bool bUrgent,
 											 const char *pSound, bool bDlg )
 {
-#if defined( REPLAY_ENABLED )
-	// Don't display during replay playback, and don't allow more than 4 at a time
-	const bool bInReplay = g_pEngineClientReplay->IsPlayingReplayDemo();
-	if ( bInReplay || ( !bDlg && CReplayMessagePanel::InstanceCount() >= 4 ) )
-		return;
-
-	// Use default duration?
-	if ( flDuration == -1.0f )
-	{
-		flDuration = replay_msgduration_misc.GetFloat();
-	}
-
-	// Display a replay message
-	if ( bDlg )
-	{
-		if ( engine->IsInGame() )
-		{
-			Panel *pPanel = new CReplayMessageDlg( pLocalizeName );
-			pPanel->SetVisible( true );
-			pPanel->MakePopup();
-			pPanel->MoveToFront();
-			pPanel->SetKeyBoardInputEnabled( true );
-			pPanel->SetMouseInputEnabled( true );
-#if defined( TF_CLIENT_DLL )
-			TFModalStack()->PushModal( pPanel );
-#endif
-		}
-		else
-		{
-			ShowMessageBox( "#Replay_GenericMsgTitle", pLocalizeName, "#GameUI_OK" );
-		}
-	}
-	else
-	{
-		CReplayMessagePanel *pMsgPanel = new CReplayMessagePanel( pLocalizeName, flDuration, bUrgent );
-		pMsgPanel->Show();
-	}
-
-	// Play a sound if appropriate
-	if ( pSound )
-	{
-		surface()->PlaySound( pSound );
-	}
-#endif
 }
 
 void ClientModeShared::DisplayReplayReminder()
 {
-#if defined( REPLAY_ENABLED )
-	if ( m_pReplayReminderPanel && g_pReplay->IsRecording() )
-	{
-		// Only display the panel if we haven't already requested a replay for the given life
-		CReplay *pCurLifeReplay = static_cast< CReplay * >( g_pClientReplayContext->GetReplayManager()->GetReplayForCurrentLife() );
-		if ( pCurLifeReplay && !pCurLifeReplay->m_bRequestedByUser && !pCurLifeReplay->m_bSaved )
-		{
-			m_pReplayReminderPanel->Show();
-		}
-	}
-#endif
 }
 
 

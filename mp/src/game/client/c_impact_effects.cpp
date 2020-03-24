@@ -149,7 +149,7 @@ void GetColorForSurface( trace_t *trace, Vector *color )
 #define	FLECK_DAMPEN		0.3f
 #define	FLECK_ANGULAR_SPRAY	0.6f
 
-#ifndef _XBOX
+
 
 //
 // PC ONLY!
@@ -224,7 +224,6 @@ static void CreateFleckParticles( const Vector& origin, const Vector &color, tra
 	}
 }
 
-#endif // _XBOX
 
 //-----------------------------------------------------------------------------
 // Purpose: Debris flecks caused by impacts
@@ -239,112 +238,6 @@ void FX_DebrisFlecks( const Vector& origin, trace_t *tr, char materialType, int 
 
 	if ( !fx_drawimpactdebris.GetBool() )
 		return;
-
-#ifdef _XBOX
-
-	//
-	// XBox version
-	//
-
-	Vector	offset;
-	float	spread = 0.2f;
-
-	CSmartPtr<CDustParticle> pSimple = CDustParticle::Create( "dust" );
-	pSimple->SetSortOrigin( origin );
-	
-	// Lock the bbox
-	pSimple->GetBinding().SetBBox( origin - ( Vector( 16, 16, 16 ) * iScale ), origin + ( Vector( 16, 16, 16 ) * iScale ) );
-
-	// Get the color of the surface we've impacted
-	Vector	color;
-	float	colorRamp;
-	GetColorForSurface( tr, &color );
-
-	int i;
-	SimpleParticle	*pParticle;
-	for ( i = 0; i < 4; i++ )
-	{
-		if ( i == 3 )
-		{
-			pParticle = (SimpleParticle *) pSimple->AddParticle( sizeof( SimpleParticle ), g_Mat_BloodPuff[0], origin );
-		}
-		else
-		{
-			pParticle = (SimpleParticle *) pSimple->AddParticle( sizeof( SimpleParticle ), g_Mat_DustPuff[0], origin );
-		}
-
-		if ( pParticle != NULL )
-		{
-			pParticle->m_flLifetime = 0.0f;
-			pParticle->m_flDieTime	= random->RandomFloat( 0.5f, 1.0f );
-
-			pParticle->m_vecVelocity.Random( -spread, spread );
-			pParticle->m_vecVelocity += ( tr->plane.normal * random->RandomFloat( 1.0f, 6.0f ) );
-
-			VectorNormalize( pParticle->m_vecVelocity );
-
-			float	fForce = random->RandomFloat( 250, 500 ) * i * 0.5f;
-
-			// scaled
-			pParticle->m_vecVelocity *= fForce * iScale;
-
-			// Ramp the color
-			colorRamp = random->RandomFloat( 0.5f, 1.25f );
-			pParticle->m_uchColor[0]	= MIN( 1.0f, color[0] * colorRamp ) * 255.0f;
-			pParticle->m_uchColor[1]	= MIN( 1.0f, color[1] * colorRamp ) * 255.0f;
-			pParticle->m_uchColor[2]	= MIN( 1.0f, color[2] * colorRamp ) * 255.0f;
-
-			// scaled
-			pParticle->m_uchStartSize	= (iScale*0.5f) * random->RandomInt( 3, 4 ) * (i+1);
-
-			// scaled
-			pParticle->m_uchEndSize		= (iScale*0.5f) * pParticle->m_uchStartSize * 4;
-
-			pParticle->m_uchStartAlpha	= random->RandomInt( 200, 255 );
-			pParticle->m_uchEndAlpha	= 0;
-
-			pParticle->m_flRoll			= random->RandomInt( 0, 360 );
-			pParticle->m_flRollDelta	= random->RandomFloat( -1.0f, 1.0f );
-		}
-	}			
-
-	// Covers the impact spot with flecks
-	pParticle = (SimpleParticle *) pSimple->AddParticle( sizeof( SimpleParticle ), g_DustPuff2, origin );
-
-	if ( pParticle != NULL )
-	{
-		offset = origin;
-		offset[0] += random->RandomFloat( -8.0f, 8.0f );
-		offset[1] += random->RandomFloat( -8.0f, 8.0f );
-
-		pParticle->m_flLifetime = 0.0f;
-		pParticle->m_flDieTime	= random->RandomFloat( 0.5f, 1.0f );
-
-		spread = 1.0f;
-
-		pParticle->m_vecVelocity.Init();
-
-		colorRamp = random->RandomFloat( 0.5f, 1.25f );
-
-		pParticle->m_uchColor[0]	= MIN( 1.0f, color[0] * colorRamp ) * 255.0f;
-		pParticle->m_uchColor[1]	= MIN( 1.0f, color[1] * colorRamp ) * 255.0f;
-		pParticle->m_uchColor[2]	= MIN( 1.0f, color[2] * colorRamp ) * 255.0f;
-
-		pParticle->m_uchStartSize	= random->RandomInt( 4, 8 );
-		pParticle->m_uchEndSize		= pParticle->m_uchStartSize * 4;
-
-		pParticle->m_uchStartAlpha	= random->RandomInt( 64, 128 );
-		pParticle->m_uchEndAlpha	= 0;
-
-		pParticle->m_flRoll			= random->RandomInt( 0, 360 );
-		pParticle->m_flRollDelta	= random->RandomFloat( -0.1f, 0.1f );
-	}
-
-#else
-
-	//
-	// PC version
-	//
 
 	Vector	color;
 	GetColorForSurface( tr, &color );
@@ -461,8 +354,6 @@ void FX_DebrisFlecks( const Vector& origin, trace_t *tr, char materialType, int 
 	newParticle.m_uchColor[2] = MIN( 1.0f, color[2]*colorRamp )*255.0f;
 
 	AddSimpleParticle( &newParticle, g_Mat_DustPuff[0] );
-
-#endif
 }
 
 #define	GLASS_SHARD_MIN_LIFE	2.5f
@@ -620,10 +511,6 @@ DECLARE_CLIENT_EFFECT( "GlassImpact", GlassImpactCallback );
 //-----------------------------------------------------------------------------
 void FX_AntlionImpact( const Vector &pos, trace_t *trace )
 {
-#if defined( _X360 )
-	return;
-#endif // _X360
-
 	VPROF_BUDGET( "FX_AntlionImpact", VPROF_BUDGETGROUP_PARTICLE_RENDERING );
 
 	CSmartPtr<CSimple3DEmitter> fleckEmitter = CSimple3DEmitter::Create( "FX_DebrisFlecks" );
@@ -755,15 +642,10 @@ void FX_AntlionImpact( const Vector &pos, trace_t *trace )
 // Input  : &pos - 
 //			&dir - 
 //-----------------------------------------------------------------------------
-#if defined( _XBOX )
-#define NUM_BUG_BLOOD	16
-#define NUM_BUG_BLOOD2	8
-#define NUM_BUG_SPLATS	8
-#else
 #define NUM_BUG_BLOOD	32
 #define NUM_BUG_BLOOD2	16
 #define NUM_BUG_SPLATS	16
-#endif
+
 void FX_BugBlood( Vector &pos, Vector &dir, Vector &vWorldMins, Vector &vWorldMaxs )
 {
 	VPROF_BUDGET( "FX_BugBlood", VPROF_BUDGETGROUP_PARTICLE_RENDERING );
@@ -962,114 +844,7 @@ void FX_DustImpact( const Vector &origin, trace_t *tr, int iScale )
 	if ( !fx_drawimpactdust.GetBool() )
 		return;
 
-#ifdef _XBOX
-
-	//
-	// XBox version
-	//
-
-	VPROF_BUDGET( "FX_DustImpact", VPROF_BUDGETGROUP_PARTICLE_RENDERING );
-	Vector	offset;
-	float	spread = 0.2f;
-
-	CSmartPtr<CDustParticle> pSimple = CDustParticle::Create( "dust" );
-	pSimple->SetSortOrigin( origin );
-	pSimple->GetBinding().SetBBox( origin - ( Vector( 32, 32, 32 ) * iScale ), origin + ( Vector( 32, 32, 32 ) * iScale ) );
-
-	Vector	color;
-	float	colorRamp;
-	GetColorForSurface( tr, &color );
-
-	int i;
-	SimpleParticle *pParticle;
-	for ( i = 0; i < 4; i++ )
-	{
-		// Last puff is gritty (hides end)
-		if ( i == 3 )
-		{
-			pParticle = (SimpleParticle *) pSimple->AddParticle( sizeof( SimpleParticle ), g_Mat_BloodPuff[0], origin );
-		}
-		else
-		{
-			pParticle = (SimpleParticle *) pSimple->AddParticle( sizeof( SimpleParticle ), g_Mat_DustPuff[0], origin );
-		}
-
-		if ( pParticle != NULL )
-		{
-			pParticle->m_flLifetime = 0.0f;
-
-			pParticle->m_vecVelocity.Random( -spread, spread );
-			pParticle->m_vecVelocity += ( tr->plane.normal * random->RandomFloat( 1.0f, 6.0f ) );
-
-			VectorNormalize( pParticle->m_vecVelocity );
-
-			float	fForce = random->RandomFloat( 250, 500 ) * i;
-
-			// scaled
-			pParticle->m_vecVelocity *= fForce * iScale;
-
-			colorRamp = random->RandomFloat( 0.75f, 1.25f );
-
-			pParticle->m_uchColor[0]	= MIN( 1.0f, color[0] * colorRamp ) * 255.0f;
-			pParticle->m_uchColor[1]	= MIN( 1.0f, color[1] * colorRamp ) * 255.0f;
-			pParticle->m_uchColor[2]	= MIN( 1.0f, color[2] * colorRamp ) * 255.0f;
-
-			// scaled
-			pParticle->m_uchStartSize	= iScale * random->RandomInt( 3, 4 ) * (i+1);
-
-			// scaled
-			pParticle->m_uchEndSize		= iScale * pParticle->m_uchStartSize * 4;
-
-			pParticle->m_uchStartAlpha	= random->RandomInt( 32, 255 );
-			pParticle->m_uchEndAlpha	= 0;
-
-			pParticle->m_flRoll			= random->RandomInt( 0, 360 );
-
-			if ( i == 3 )
-			{
-				pParticle->m_flRollDelta = random->RandomFloat( -0.1f, 0.1f );
-				pParticle->m_flDieTime	= 0.5f;
-			}
-			else
-			{
-				pParticle->m_flRollDelta = random->RandomFloat( -8.0f, 8.0f );
-				pParticle->m_flDieTime	= random->RandomFloat( 0.5f, 1.0f );
-			}
-		}
-	}			
-
-	//Impact hit
-	pParticle = (SimpleParticle *) pSimple->AddParticle( sizeof( SimpleParticle ), g_DustPuff, origin );
-
-	if ( pParticle != NULL )
-	{
-		offset = origin;
-		offset[0] += random->RandomFloat( -8.0f, 8.0f );
-		offset[1] += random->RandomFloat( -8.0f, 8.0f );
-
-		pParticle->m_flLifetime = 0.0f;
-		pParticle->m_flDieTime	= random->RandomFloat( 0.5f, 1.0f );
-
-		pParticle->m_vecVelocity.Init();
-
-		colorRamp = random->RandomFloat( 0.75f, 1.25f );
-		pParticle->m_uchColor[0]	= MIN( 1.0f, color[0] * colorRamp ) * 255.0f;
-		pParticle->m_uchColor[1]	= MIN( 1.0f, color[1] * colorRamp ) * 255.0f;
-		pParticle->m_uchColor[2]	= MIN( 1.0f, color[2] * colorRamp ) * 255.0f;
-
-		pParticle->m_uchStartSize	= random->RandomInt( 4, 8 );
-		pParticle->m_uchEndSize		= pParticle->m_uchStartSize * 4;
-
-		pParticle->m_uchStartAlpha	= random->RandomInt( 32, 64 );
-		pParticle->m_uchEndAlpha	= 0;
-
-		pParticle->m_flRoll			= random->RandomInt( 0, 360 );
-		pParticle->m_flRollDelta	= random->RandomFloat( -1.0f, 1.0f );
-	}
-
-#else
 	FX_DustImpact( origin, tr, (float)iScale );
-#endif // _XBOX
 }
 
 void FX_DustImpact( const Vector &origin, trace_t *tr, float flScale )
@@ -1226,9 +1001,6 @@ void FX_DustImpact( const Vector &origin, trace_t *tr, float flScale )
 	}			
 }
 
-#ifdef _XBOX
-extern PMaterialHandle g_Material_Spark;
-#endif // _XBOX
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -1247,79 +1019,7 @@ void FX_GaussExplosion( const Vector &pos, const Vector &dir, int type )
 	VectorNormalize( vDir );
 
 	int i;
-
-#if defined(_XBOX) || defined(_X360)
-
-	//
-	// XBox version
-	//
-	CSmartPtr<CTrailParticles> pSparkEmitter = CTrailParticles::Create( "FX_GaussExplosion" );
-	if ( pSparkEmitter == NULL )
-	{
-		Assert(0);
-		return;
-	}
-
-	if ( g_Material_Spark == NULL )
-	{
-		g_Material_Spark = pSparkEmitter->GetPMaterial( "effects/spark" );
-	}
-
-	pSparkEmitter->SetSortOrigin( pos );
-	pSparkEmitter->m_ParticleCollision.SetGravity( 800.0f );
-	pSparkEmitter->SetFlag( bitsPARTICLE_TRAIL_VELOCITY_DAMPEN );
-	pSparkEmitter->GetBinding().SetBBox( pos - Vector( 32, 32, 32 ), pos + Vector( 32, 32, 32 ) );
-
-	int numSparks = random->RandomInt( 8, 16 );
-	TrailParticle	*pParticle;
 	
-	// Dump out sparks
-	for ( i = 0; i < numSparks; i++ )
-	{
-		pParticle = (TrailParticle *) pSparkEmitter->AddParticle( sizeof(TrailParticle), g_Material_Spark, pos );
-
-		if ( pParticle == NULL )
-			return;
-
-		pParticle->m_flLifetime	= 0.0f;
-
-		vDir.Random( -0.6f, 0.6f );
-		vDir += dir;
-		VectorNormalize( vDir );
-		
-		pParticle->m_flWidth		= random->RandomFloat( 1.0f, 4.0f );
-		pParticle->m_flLength		= random->RandomFloat( 0.01f, 0.1f );
-		pParticle->m_flDieTime		= random->RandomFloat( 0.25f, 0.5f );
-		
-		pParticle->m_vecVelocity	= vDir * random->RandomFloat( 128, 512 );
-
-		Color32Init( pParticle->m_color, 255, 255, 255, 255 );
-	}
-
-	// End cap
-	SimpleParticle particle;
-
-	particle.m_Pos = pos;
-	particle.m_flLifetime = 0.0f;
-	particle.m_flDieTime = 0.1f;
-	particle.m_vecVelocity.Init();
-	particle.m_flRoll = random->RandomInt( 0, 360 );
-	particle.m_flRollDelta = 0.0f;
-	particle.m_uchColor[0] = 255;
-	particle.m_uchColor[1] = 255;
-	particle.m_uchColor[2] = 255;
-	particle.m_uchStartAlpha = 255;
-	particle.m_uchEndAlpha = 255;
-	particle.m_uchStartSize = random->RandomInt( 24, 32 );
-	particle.m_uchEndSize = 0;
-
-	AddSimpleParticle( &particle, ParticleMgr()->GetPMaterial( "effects/yellowflare" ) );
-
-#else
-	
-	//
-	// PC version
-	//
 	CSmartPtr<CTrailParticles> pSparkEmitter = CTrailParticles::Create( "FX_ElectricSpark" );
 
 	if ( !pSparkEmitter )
@@ -1366,7 +1066,6 @@ void FX_GaussExplosion( const Vector &pos, const Vector &dir, int type )
 
 
 	FX_ElectricSpark( pos, 1, 1, &vDir );
-#endif
 }
 
 class C_TEGaussExplosion : public C_TEParticleSystem

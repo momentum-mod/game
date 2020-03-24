@@ -1,66 +1,29 @@
 #include "cbase.h"
+
+#include "weapon_knife.h"
+
 #include "effect_dispatch_data.h"
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
-#include "weapon_knife.h"
+#include "weapon_def.h"
 
 #ifndef CLIENT_DLL
 #include "ilagcompensationmanager.h"
 #include "momentum/ghost_client.h"
 #endif
 
+#include "tier0/memdbgon.h"
+
 #define KNIFE_BODYHIT_VOLUME 128
 #define KNIFE_WALLHIT_VOLUME 512
 
-#ifndef CLIENT_DLL
-//-----------------------------------------------------------------------------
-// Purpose: Only send to local player if this weapon is the active weapon
-// Input  : *pStruct -
-//			*pVarData -
-//			*pRecipients -
-//			objectID -
-// Output : void*
-//-----------------------------------------------------------------------------
-void *SendProxy_SendActiveLocalKnifeDataTable(const SendProp *pProp, const void *pStruct, const void *pVarData,
-                                              CSendProxyRecipients *pRecipients, int objectID)
-{
-    // Get the weapon entity
-    CBaseCombatWeapon *pWeapon = (CBaseCombatWeapon *)pVarData;
-    if (pWeapon)
-    {
-        // Only send this chunk of data to the player carrying this weapon
-        CBasePlayer *pPlayer = ToBasePlayer(pWeapon->GetOwner());
-        if (pPlayer /*&& pPlayer->GetActiveWeapon() == pWeapon*/)
-        {
-            pRecipients->SetOnly(pPlayer->GetClientIndex());
-            return (void *)pVarData;
-        }
-    }
+IMPLEMENT_NETWORKCLASS_ALIASED(Knife, DT_WeaponKnife);
 
-    return nullptr;
-}
-REGISTER_SEND_PROXY_NON_MODIFIED_POINTER(SendProxy_SendActiveLocalKnifeDataTable);
-#endif
-
-// ----------------------------------------------------------------------------- //
-// CKnife tables.
-// ----------------------------------------------------------------------------- //
-
-IMPLEMENT_NETWORKCLASS_ALIASED(Knife, DT_WeaponKnife)
-
-BEGIN_NETWORK_TABLE_NOBASE(CKnife, DT_LocalActiveWeaponKnifeData)
+BEGIN_NETWORK_TABLE(CKnife, DT_WeaponKnife)
 #ifdef GAME_DLL
     SendPropTime(SENDINFO(m_flSmackTime)),
 #else
     RecvPropTime(RECVINFO(m_flSmackTime)),
-#endif
-END_NETWORK_TABLE();
-
-BEGIN_NETWORK_TABLE(CKnife, DT_WeaponKnife)
-#ifdef GAME_DLL
-    SendPropDataTable("LocalActiveWeaponKnifeData", 0, &REFERENCE_SEND_TABLE(DT_LocalActiveWeaponKnifeData), SendProxy_SendActiveLocalKnifeDataTable),
-#else
-    RecvPropDataTable("LocalActiveWeaponKnifeData", 0, 0, &REFERENCE_RECV_TABLE(DT_LocalActiveWeaponKnifeData)),
 #endif
 END_NETWORK_TABLE();
 
@@ -73,61 +36,10 @@ END_PREDICTION_DATA();
 LINK_ENTITY_TO_CLASS(weapon_knife, CKnife);
 PRECACHE_WEAPON_REGISTER(weapon_knife);
 
-#ifndef CLIENT_DLL
-
-BEGIN_DATADESC(CKnife)
-DEFINE_FUNCTION(Smack)
-END_DATADESC()
-
-#endif
-
-// ----------------------------------------------------------------------------- //
-// CKnife implementation.
-// ----------------------------------------------------------------------------- //
-
 CKnife::CKnife()
 {
     m_bStab = false;
-}
-
-bool CKnife::HasPrimaryAmmo() { return true; }
-
-bool CKnife::CanBeSelected() { return true; }
-
-void CKnife::Precache()
-{
-    BaseClass::Precache();
-
-    PrecacheScriptSound("Weapon_Knife.Deploy");
-    PrecacheScriptSound("Weapon_Knife.Slash");
-    PrecacheScriptSound("Weapon_Knife.Stab");
-    PrecacheScriptSound("Weapon_Knife.Hit");
-    PrecacheScriptSound("Weapon_Knife.HitWall");
-}
-
-void CKnife::Spawn()
-{
-    Precache();
-
     m_iClip1 = -1;
-    BaseClass::Spawn();
-}
-
-bool CKnife::Deploy()
-{
-    CPASAttenuationFilter filter(GetOwner()->EarPosition());
-    filter.UsePredictionRules();
-    EmitSound(filter, GetOwner()->entindex(), "Weapon_Knife.Deploy");
-
-    return BaseClass::Deploy();
-}
-
-void CKnife::Holster(int skiplocal)
-{
-    if (GetPlayerOwner())
-    {
-        GetPlayerOwner()->m_flNextAttack = gpGlobals->curtime + 0.5f;
-    }
 }
 
 void CKnife::PrimaryAttack() { DoAttack(false); }
@@ -139,25 +51,27 @@ void CKnife::DoAttack(bool bIsSecondary)
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (pPlayer)
     {
-#if !defined(CLIENT_DLL)
+#ifndef CLIENT_DLL
         // Move other players back to history positions based on local player's lag
         lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());
 #endif
+
         SwingOrStab(bIsSecondary);
-#if !defined(CLIENT_DLL)
+
+#ifndef CLIENT_DLL
         lagcompensation->FinishLagCompensation(pPlayer);
 #endif
     }
 }
 
-void CKnife::Smack(void)
+void CKnife::Smack()
 {
     if (!GetPlayerOwner())
         return;
 
     m_trHit.m_pEnt = m_pTraceHitEnt;
 
-    MomUtil::KnifeSmack(m_trHit, this, GetPlayerOwner()->GetAbsAngles(), m_bStab);
+    KnifeSmack(m_trHit, this, GetPlayerOwner()->GetAbsAngles(), m_bStab);
 }
 
 void CKnife::WeaponIdle()
@@ -169,7 +83,7 @@ void CKnife::WeaponIdle()
     if (!pPlayer)
         return;
 
-    SetWeaponIdleTime(gpGlobals->curtime + 20);
+    SetWeaponIdleTime(gpGlobals->curtime + 20.0f);
 
     // only idle if the slid isn't back
     SendWeaponAnim(ACT_VM_IDLE);
@@ -183,8 +97,7 @@ bool CKnife::SwingOrStab(bool bStab)
 
     trace_t tr;
     Vector vForward;
-    MomUtil::KnifeTrace(pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab, pPlayer, this, &tr,
-                                &vForward);
+    KnifeTrace(pPlayer->Weapon_ShootPosition(), pPlayer->EyeAngles(), bStab, pPlayer, this, &tr, &vForward);
 
     bool bDidHit = tr.fraction < 1.0f;
 
@@ -213,7 +126,7 @@ bool CKnife::SwingOrStab(bool bStab)
 
     m_flNextPrimaryAttack = gpGlobals->curtime + fPrimDelay;
     m_flNextSecondaryAttack = gpGlobals->curtime + fSecDelay;
-    SetWeaponIdleTime(gpGlobals->curtime + 2);
+    SetWeaponIdleTime(gpGlobals->curtime + 2.0f);
 
     if (bDidHit)
     {
@@ -236,13 +149,165 @@ bool CKnife::SwingOrStab(bool bStab)
     return bDidHit;
 }
 
-void CKnife::ItemPostFrame(void)
+void CKnife::ItemPostFrame()
 {
-    if (m_flSmackTime > 0 && gpGlobals->curtime > m_flSmackTime)
+    if (m_flSmackTime > 0.0f && gpGlobals->curtime > m_flSmackTime)
     {
         Smack();
         m_flSmackTime = -1;
     }
 
     BaseClass::ItemPostFrame();
+}
+
+inline void FindHullIntersection(const Vector &vecSrc, trace_t &tr, const Vector &mins, const Vector &maxs, CBaseEntity *pEntity)
+{
+    const Vector vecHullEnd = vecSrc + ((tr.endpos - vecSrc) * 2.0f);
+    trace_t tmpTrace;
+    UTIL_TraceLine(vecSrc, vecHullEnd, MASK_SOLID, pEntity, COLLISION_GROUP_NONE, &tmpTrace);
+    if (tmpTrace.fraction < 1.0f)
+    {
+        tr = tmpTrace;
+        return;
+    }
+
+    Vector minmaxs[2] = { mins, maxs };
+    Vector vecEnd;
+    float distance = 1e6f;
+
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            for (int k = 0; k < 2; k++)
+            {
+                vecEnd.x = vecHullEnd.x + minmaxs[i][0];
+                vecEnd.y = vecHullEnd.y + minmaxs[j][1];
+                vecEnd.z = vecHullEnd.z + minmaxs[k][2];
+
+                UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pEntity, COLLISION_GROUP_NONE, &tmpTrace);
+                if (tmpTrace.fraction < 1.0f)
+                {
+                    float thisDistance = (tmpTrace.endpos - vecSrc).Length();
+                    if (thisDistance < distance)
+                    {
+                        tr = tmpTrace;
+                        distance = thisDistance;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CKnife::KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker,
+                        CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut)
+{
+    float fRange = bStab ? 32.0f : 48.0f; // knife range
+
+    AngleVectors(lookAng, vForwardOut);
+    Vector vecSrc = vecShootPos;
+    Vector vecEnd = vecSrc + *vForwardOut * fRange;
+
+    UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
+
+#ifndef CLIENT_DLL
+    if (pAttacker->IsPlayer())
+    {
+        //check for hitting glass
+        CTakeDamageInfo glassDamage(pAttacker, pAttacker, 42.0f, DMG_BULLET | DMG_NEVERGIB);
+        pSoundSource->TraceAttackToTriggers(glassDamage, trOutput->startpos, trOutput->endpos, *vForwardOut);
+    }
+#endif
+
+    if (trOutput->fraction >= 1.0f)
+    {
+        Vector head_hull_mins(-16, -16, -18);
+        Vector head_hull_maxs(16, 16, 18);
+        UTIL_TraceHull(vecSrc, vecEnd, head_hull_mins, head_hull_maxs, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
+        if (trOutput->fraction < 1.0f)
+        {
+            // Calculate the point of intersection of the line (or hull) and the object we hit
+            // This is and approximation of the "best" intersection
+            CBaseEntity *pHit = trOutput->m_pEnt;
+            if (!pHit || pHit->IsBSPModel())
+                FindHullIntersection(vecSrc, *trOutput, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, pAttacker);
+            //vecEnd = trOutput->endpos; // This is the point on the actual surface (the hull could have hit space)
+        }
+    }
+
+    bool bDidHit = trOutput->fraction < 1.0f;
+
+    if (!bDidHit)
+    {
+        const auto pSound = g_pWeaponDef->GetWeaponSound(WEAPON_KNIFE, "swish");
+
+        CPASAttenuationFilter filter(trOutput->endpos, pSound);
+        filter.UsePredictionRules();
+        EmitSound(filter, pSoundSource->entindex(), pSound);
+    }
+#ifndef CLIENT_DLL
+    else if (pAttacker->IsPlayer())
+    {
+        CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(pAttacker);
+        if (pPlayer->m_bHasPracticeMode)
+            return;
+
+        CBaseEntity *pHitEntity = trOutput->m_pEnt;
+
+        ClearMultiDamage();
+
+        const float flDamage = bStab ? 65.0f : 20.0f;
+
+        CTakeDamageInfo info(pAttacker, pAttacker, flDamage, DMG_BULLET | DMG_NEVERGIB);
+
+        CalculateMeleeDamageForce(&info, *vForwardOut, trOutput->endpos, 1.0f / flDamage);
+        pHitEntity->DispatchTraceAttack(info, *vForwardOut, trOutput);
+        ApplyMultiDamage();
+    }
+#endif
+}
+
+void CKnife::KnifeSmack(const trace_t &trIn, CBaseEntity *pSoundSource, const QAngle &lookAng, const bool bStab)
+{
+    if (!trIn.m_pEnt || (trIn.surface.flags & SURF_SKY))
+        return;
+
+    if (trIn.fraction == 1.0f)
+        return;
+
+    if (trIn.m_pEnt)
+    {
+        CPASAttenuationFilter filter(trIn.endpos);
+        filter.UsePredictionRules();
+
+        const auto pWepScript = g_pWeaponDef->GetWeaponScript(WEAPON_KNIFE);
+        const char *pSound = pWepScript->pKVWeaponSounds->GetString("hit_wall");
+
+        const auto pRunEnt = dynamic_cast<CMomRunEntity *>(trIn.m_pEnt);
+        if (pRunEnt)
+        {
+            pSound = pWepScript->pKVWeaponSounds->GetString(bStab ? "stab" : "hit");
+        }
+
+        EmitSound(filter, pSoundSource->entindex(), pSound);
+    }
+
+    CEffectData data;
+    data.m_vOrigin = trIn.endpos;
+    data.m_vStart = trIn.startpos;
+    data.m_nSurfaceProp = trIn.surface.surfaceProps;
+    data.m_nDamageType = DMG_SLASH;
+    data.m_nHitBox = trIn.hitbox;
+#ifdef CLIENT_DLL
+    data.m_hEntity = trIn.m_pEnt->GetRefEHandle();
+#else
+    data.m_nEntIndex = trIn.m_pEnt->entindex();
+#endif
+
+    CPASFilter filter(data.m_vOrigin);
+    data.m_vAngles = lookAng;
+    data.m_fFlags = 0x1; //IMPACT_NODECAL;
+
+    te->DispatchEffect(filter, 0.0f, data.m_vOrigin, "KnifeSlash", data);
 }

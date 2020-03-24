@@ -10,7 +10,7 @@
 #undef fopen
 #endif
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined( _WIN32 )
 #include <windows.h>
 #include <direct.h>
 #include <io.h>
@@ -29,23 +29,11 @@
 #include "KeyValues.h"
 #include "appframework/IAppSystemGroup.h"
 #include "tier1/smartptr.h"
-#if defined( _X360 )
-#include "xbox\xbox_win32stubs.h"
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-#if !defined( _X360 )
 #define GAMEINFO_FILENAME			"gameinfo.txt"
-#else
-// The .xtx file is a TCR requirement, as .txt files cannot live on the DVD.
-// The .xtx file only exists outside the zips (same as .txt and is made during the image build) and is read to setup the search paths.
-// So all other code should be able to safely expect gameinfo.txt after the zip is mounted as the .txt file exists inside the zips.
-// The .xtx concept is private and should only have to occurr here. As a safety measure, if the .xtx file is not found
-// a retry is made with the original .txt name
-#define GAMEINFO_FILENAME			"gameinfo.xtx"
-#endif
 #define GAMEINFO_FILENAME_ALTERNATE	"gameinfo.txt"
 
 static char g_FileSystemError[256];
@@ -329,16 +317,6 @@ bool FileSystem_GetExecutableDir( char *exedir, int exeDirLen )
 		return false;
 	Q_StripFilename( exedir );
 
-	if ( IsX360() )
-	{
-		// The 360 can have its exe and dlls reside on different volumes
-		// use the optional basedir as the exe dir
-		if ( CommandLine()->FindParm( "-basedir" ) )
-		{
-			strcpy( exedir, CommandLine()->ParmValue( "-basedir", "" ) );
-		}
-	}
-
 	Q_FixSlashes( exedir );
 
 	// Return the bin directory as the executable dir if it's not in there
@@ -368,7 +346,7 @@ static bool FileSystem_GetBaseDir( char *baseDir, int baseDirLen )
 
 void LaunchVConfig()
 {
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined( _WIN32 )
 	char vconfigExe[MAX_PATH];
 	FileSystem_GetExecutableDir( vconfigExe, sizeof( vconfigExe ) );
 	Q_AppendSlash( vconfigExe, sizeof( vconfigExe ) );
@@ -382,8 +360,6 @@ void LaunchVConfig()
 	};
 
 	_spawnv( _P_NOWAIT, vconfigExe, argv );
-#elif defined( _X360 )
-	Msg( "Launching vconfig.exe not supported\n" );
 #endif
 }
 
@@ -430,15 +406,7 @@ FSReturnCode_t LoadGameInfoFile(
 	Q_strncat( gameinfoFilename, GAMEINFO_FILENAME, sizeof( gameinfoFilename ), COPY_ALL_CHARACTERS );
 	Q_FixSlashes( gameinfoFilename );
 	pMainFile = ReadKeyValuesFile( gameinfoFilename );
-	if ( IsX360() && !pMainFile )
-	{
-		// try again
-		Q_strncpy( gameinfoFilename, pDirectoryName, sizeof( gameinfoFilename ) );
-		Q_AppendSlash( gameinfoFilename, sizeof( gameinfoFilename ) );
-		Q_strncat( gameinfoFilename, GAMEINFO_FILENAME_ALTERNATE, sizeof( gameinfoFilename ), COPY_ALL_CHARACTERS );
-		Q_FixSlashes( gameinfoFilename );
-		pMainFile = ReadKeyValuesFile( gameinfoFilename );
-	}
+
 	if ( !pMainFile )
 	{
 		return SetupFileSystemError( true, FS_MISSING_GAMEINFO_FILE, "%s is missing.", gameinfoFilename );
@@ -776,10 +744,6 @@ static FSReturnCode_t TryLocateGameInfoFile( char *pOutDir, int outDirLen, bool 
 		{
 			return FS_OK;
 		}
-		if ( IsX360() && DoesFileExistIn( pOutDir, GAMEINFO_FILENAME_ALTERNATE ) ) 
-		{
-			return FS_OK;
-		}
 	} 
 	while ( bBubbleDir && Q_StripLastDir( pOutDir, outDirLen ) );
 
@@ -795,10 +759,6 @@ static FSReturnCode_t TryLocateGameInfoFile( char *pOutDir, int outDirLen, bool 
 		do
 		{
 			if ( DoesFileExistIn( pOutDir, GAMEINFO_FILENAME ) )
-			{
-				return FS_OK;
-			}
-			if ( IsX360() && DoesFileExistIn( pOutDir, GAMEINFO_FILENAME_ALTERNATE ) )
 			{
 				return FS_OK;
 			}
@@ -819,30 +779,9 @@ FSReturnCode_t LocateGameInfoFile( const CFSSteamSetupInfo &fsInfo, char *pOutDi
 			return SetupFileSystemError( false, FS_MISSING_GAMEINFO_FILE, "bOnlyUseDirectoryName=1 and pDirectoryName=NULL." );
 
 		bool bExists = DoesFileExistIn( fsInfo.m_pDirectoryName, GAMEINFO_FILENAME );
-		if ( IsX360() && !bExists )
-		{
-			bExists = DoesFileExistIn( fsInfo.m_pDirectoryName, GAMEINFO_FILENAME_ALTERNATE );
-		}
+
 		if ( !bExists )
 		{
-			if ( IsX360() && CommandLine()->FindParm( "-basedir" ) )
-			{
-				char basePath[MAX_PATH];
-				strcpy( basePath, CommandLine()->ParmValue( "-basedir", "" ) );
-				Q_AppendSlash( basePath, sizeof( basePath ) );
-				Q_strncat( basePath, fsInfo.m_pDirectoryName, sizeof( basePath ), COPY_ALL_CHARACTERS );
-				if ( DoesFileExistIn( basePath, GAMEINFO_FILENAME ) )
-				{
-					Q_strncpy( pOutDir, basePath, outDirLen );
-					return FS_OK;
-				}
-				if ( IsX360() && DoesFileExistIn( basePath, GAMEINFO_FILENAME_ALTERNATE ) )
-				{
-					Q_strncpy( pOutDir, basePath, outDirLen );
-					return FS_OK;
-				}
-			}
-
 			return SetupFileSystemError( true, FS_MISSING_GAMEINFO_FILE, "Setup file '%s' doesn't exist in subdirectory '%s'.\nCheck your -game parameter or VCONFIG setting.", GAMEINFO_FILENAME, fsInfo.m_pDirectoryName );
 		}
 
@@ -859,29 +798,6 @@ FSReturnCode_t LocateGameInfoFile( const CFSSteamSetupInfo &fsInfo, char *pOutDi
 		{
 			Q_MakeAbsolutePath( pOutDir, outDirLen, pProject );
 			return FS_OK;
-		}
-		if ( IsX360() && DoesFileExistIn( pProject, GAMEINFO_FILENAME_ALTERNATE ) )	
-		{
-			Q_MakeAbsolutePath( pOutDir, outDirLen, pProject );
-			return FS_OK;
-		}
-
-		if ( IsX360() && CommandLine()->FindParm( "-basedir" ) )
-		{
-			char basePath[MAX_PATH];
-			strcpy( basePath, CommandLine()->ParmValue( "-basedir", "" ) );
-			Q_AppendSlash( basePath, sizeof( basePath ) );
-			Q_strncat( basePath, pProject, sizeof( basePath ), COPY_ALL_CHARACTERS );
-			if ( DoesFileExistIn( basePath, GAMEINFO_FILENAME ) )
-			{
-				Q_strncpy( pOutDir, basePath, outDirLen );
-				return FS_OK;
-			}
-			if ( DoesFileExistIn( basePath, GAMEINFO_FILENAME_ALTERNATE ) )
-			{
-				Q_strncpy( pOutDir, basePath, outDirLen );
-				return FS_OK;
-			}
 		}
 		
 		if ( fsInfo.m_bNoGameInfo )
@@ -922,24 +838,21 @@ FSReturnCode_t LocateGameInfoFile( const CFSSteamSetupInfo &fsInfo, char *pOutDi
 		 FS_OK == TryLocateGameInfoFile( pOutDir, outDirLen, false ) )
 		return FS_OK;
 
-	if ( IsPC() )
-	{
-		Warning( "Warning: falling back to auto detection of vproject directory.\n" );
+	Warning( "Warning: falling back to auto detection of vproject directory.\n" );
 		
-		// Now look for it in the directory they passed in.
-		if ( fsInfo.m_pDirectoryName )
-			Q_MakeAbsolutePath( pOutDir, outDirLen, fsInfo.m_pDirectoryName );
-		else
-			Q_MakeAbsolutePath( pOutDir, outDirLen, "." );
+	// Now look for it in the directory they passed in.
+	if ( fsInfo.m_pDirectoryName )
+		Q_MakeAbsolutePath( pOutDir, outDirLen, fsInfo.m_pDirectoryName );
+	else
+		Q_MakeAbsolutePath( pOutDir, outDirLen, "." );
 
-		if ( FS_OK == TryLocateGameInfoFile( pOutDir, outDirLen, true ) )
-			return FS_OK;
+	if ( FS_OK == TryLocateGameInfoFile( pOutDir, outDirLen, true ) )
+		return FS_OK;
 
-		// Use the CWD
-		Q_getwd( pOutDir, outDirLen );
-		if ( FS_OK == TryLocateGameInfoFile( pOutDir, outDirLen, true ) )
-			return FS_OK;
-	}
+	// Use the CWD
+	Q_getwd( pOutDir, outDirLen );
+	if ( FS_OK == TryLocateGameInfoFile( pOutDir, outDirLen, true ) )
+		return FS_OK;
 
 ShowError:
 	return SetupFileSystemError( true, FS_MISSING_GAMEINFO_FILE, 
@@ -1095,8 +1008,6 @@ FSReturnCode_t FileSystem_GetFileSystemDLLName( char *pFileSystemDLL, int nMaxLe
 	// Assume we'll use local files
 	Q_snprintf( pFileSystemDLL, nMaxLen, "%s%cfilesystem_stdio" DLL_EXT_STRING, executablePath, CORRECT_PATH_SEPARATOR );
 
-	#if !defined( _X360 )
-
 		// Use filsystem_steam if it exists?
 		#if defined( OSX ) || defined( LINUX )
 			struct stat statBuf;
@@ -1111,7 +1022,6 @@ FSReturnCode_t FileSystem_GetFileSystemDLLName( char *pFileSystemDLL, int nMaxLe
 			Q_snprintf( pFileSystemDLL, nMaxLen, "%s%cfilesystem_steam" DLL_EXT_STRING, executablePath, CORRECT_PATH_SEPARATOR );
 			bSteam = true;
 		}
-	#endif
 
 	return FS_OK;
 }

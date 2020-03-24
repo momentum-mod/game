@@ -4,7 +4,6 @@
 #include "mom_gamemovement.h"
 #include "mom_player_shared.h"
 #include "movevars_shared.h"
-#include "rumble_shared.h"
 #include "mom_system_gamemode.h"
 
 #ifdef CLIENT_DLL
@@ -33,7 +32,7 @@
 
 #define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f // not used
 
-#define NON_JUMP_VELOCITY ( g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) ? 250.0f : 140.0f )
+#define NON_JUMP_VELOCITY ((g_pGameModeSystem->IsTF2BasedMode()) ? 250.0f : 140.0f)
 
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
@@ -53,8 +52,6 @@ ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED,
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
-static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                          "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
 CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr) {}
@@ -67,37 +64,6 @@ void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *dat
     BaseClass::ProcessMovement(pPlayer, data);
 }
 
-void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
-{
-    if (fvol > 0.0)
-    {
-        //
-        // Play landing sound right away.
-        player->m_flStepSoundTime = 400;
-
-        // Play step sound for current texture.
-        player->PlayStepSound(const_cast<Vector &>(mv->GetAbsOrigin()), player->m_pSurfaceData, fvol, true);
-
-#ifndef CLIENT_DLL
-        //
-        // Knock the screen around a little bit, temporary effect (IF ENABLED)
-        //
-        if (mom_punchangle_enable.GetBool())
-        {
-            player->m_Local.m_vecPunchAngle.Set(ROLL, player->m_Local.m_flFallVelocity * 0.013 *
-                                                          mom_punchangle_enable.GetInt());
-
-            if (player->m_Local.m_vecPunchAngle[PITCH] > 8)
-            {
-                player->m_Local.m_vecPunchAngle.Set(PITCH, 8);
-            }
-        }
-
-        player->RumbleEffect((fvol > 0.85f) ? (RUMBLE_FALL_LONG) : (RUMBLE_FALL_SHORT), 0, RUMBLE_FLAGS_NONE);
-#endif
-    }
-}
-
 float CMomentumGameMovement::LadderDistance() const
 {
     if (player->GetMoveType() == MOVETYPE_LADDER)
@@ -107,10 +73,10 @@ float CMomentumGameMovement::LadderDistance() const
 
 bool CMomentumGameMovement::GameHasLadders() const
 {
-    return !g_pGameModeSystem->GameModeIs(GAMEMODE_RJ);
+    return !g_pGameModeSystem->IsTF2BasedMode();
 }
 
-void CMomentumGameMovement::DecayPunchAngle(void)
+void CMomentumGameMovement::DecayPunchAngle()
 {
     float len;
 
@@ -130,7 +96,7 @@ void CMomentumGameMovement::DecayPunchAngle(void)
     m_pPlayer->m_Local.m_vecPunchAngle.Set(2, vPunchAngle.z);
 }
 
-float CMomentumGameMovement::LadderLateralMultiplier(void) const { return mv->m_nButtons & IN_DUCK ? 1.0f : 0.5f; }
+float CMomentumGameMovement::LadderLateralMultiplier() const { return mv->m_nButtons & IN_DUCK ? 1.0f : 0.5f; }
 
 bool CMomentumGameMovement::IsValidMovementTrace(trace_t &tr)
 {
@@ -169,7 +135,7 @@ bool CMomentumGameMovement::IsValidMovementTrace(trace_t &tr)
     return true;
 }
 
-float CMomentumGameMovement::ClimbSpeed(void) const
+float CMomentumGameMovement::ClimbSpeed() const
 {
     return (mv->m_nButtons & IN_DUCK ? BaseClass::ClimbSpeed() * DUCK_SPEED_MULTIPLIER : BaseClass::ClimbSpeed());
 }
@@ -192,9 +158,7 @@ void CMomentumGameMovement::WalkMove()
     {
         if (m_pPlayer->m_flStamina > 0)
         {
-            float flRatio;
-
-            flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
+            float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0f) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
 
             // This Goldsrc code was run with variable timesteps and it had framerate dependencies.
             // People looking at Goldsrc for reference are usually
@@ -253,8 +217,8 @@ void CMomentumGameMovement::WalkMove()
     // Set pmove velocity
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
 
-    // Cap ground movement speed in RJ
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    // Cap ground movement speed in tf2 modes
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         float flNewSpeed = VectorLength(mv->m_vecVelocity);
         if (flNewSpeed > mv->m_flMaxSpeed)
@@ -286,6 +250,14 @@ void CMomentumGameMovement::WalkMove()
 
                 // reassemble velocity
                 mv->m_vecVelocity = vecBackMove + vecRightMove;
+
+                flNewSpeed = VectorLength(mv->m_vecVelocity);
+                if (flNewSpeed > mv->m_flMaxSpeed)
+                {
+                    float flScale = (mv->m_flMaxSpeed / flNewSpeed);
+                    mv->m_vecVelocity.x *= flScale;
+                    mv->m_vecVelocity.y *= flScale;
+                }
             }
         }
     }
@@ -356,7 +328,7 @@ void CMomentumGameMovement::WalkMove()
     StayOnGround();
 }
 
-bool CMomentumGameMovement::LadderMove(void)
+bool CMomentumGameMovement::LadderMove()
 {
     trace_t pm;
     bool onFloor;
@@ -547,7 +519,7 @@ bool CMomentumGameMovement::LadderMove(void)
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         // TF2 uses default speed cropping
         return BaseClass::HandleDuckingSpeedCrop();
@@ -563,6 +535,11 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
             m_iSpeedCropped |= SPEED_CROPPED_DUCK;
         }
     }
+}
+
+float CMomentumGameMovement::GetTimeToDuck()
+{
+    return g_pGameModeSystem->IsTF2BasedMode() ? 0.2f : BaseClass::GetTimeToDuck();
 }
 
 bool CMomentumGameMovement::CanUnduck()
@@ -583,7 +560,7 @@ bool CMomentumGameMovement::CanUnduck()
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        newOrigin += -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+        newOrigin += -g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
     }
 
     UTIL_TraceHull(mv->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, PlayerSolidMask(), player,
@@ -595,85 +572,78 @@ bool CMomentumGameMovement::CanUnduck()
     return true;
 }
 
-void CMomentumGameMovement::Friction(void)
+void CMomentumGameMovement::Friction()
 {
-    float speed, newspeed, control;
-    float friction;
-    float drop;
-
-    // Friction should be affected by z velocity
+    // Friction shouldn't be affected by z velocity
     Vector velocity = mv->m_vecVelocity;
     velocity.z = 0.0f;
 
-    // If we are in water jump cycle, don't apply friction
-    if (player->m_flWaterJumpTime)
-        return;
-
-    // Calculate speed
-    speed = VectorLength(velocity);
-
-    // If too slow, return
-    if (speed < 0.1f)
-    {
-        return;
-    }
-
-    drop = 0;
-
-    // apply ground friction
-    if (player->GetGroundEntity() != NULL) // On an entity that is the ground
-    {
-        friction = sv_friction.GetFloat() * player->m_surfaceFriction;
-
-        // Bleed off some speed, but if we have less than the bleed
-        //  threshold, bleed the threshold amount.
-
-        if (IsX360())
-        {
-            if (player->m_Local.m_bDucked)
-            {
-                control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
-            }
-            else
-            {
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
-                control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
-#else
-                control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
-#endif
-            }
-        }
-        else
-        {
-            control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
-        }
-
-        // Add the amount to the drop amount.
-        drop += control * friction * gpGlobals->frametime;
-    }
-
-    // scale the velocity
-    newspeed = speed - drop;
-    if (newspeed < 0)
-        newspeed = 0;
-
-    if (newspeed != speed)
-    {
-        // Determine proportion of old speed we are using.
-        newspeed /= speed;
-        // Adjust velocity according to proportion.
-        VectorScale(velocity, newspeed, velocity);
-    }
-
-    mv->m_outWishVel -= (1.f - newspeed) * velocity;
+    DoFriction(velocity);
 
     mv->m_vecVelocity.x = velocity.x;
     mv->m_vecVelocity.y = velocity.y;
 }
 
-void CMomentumGameMovement::Duck(void)
+float CMomentumGameMovement::GetPlayerGravity()
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->IsTF2BasedMode())
+        return BaseClass::GetPlayerGravity();
+
+    // We otherwise don't mind if player gravity is set to 0
+    return player->GetGravity();
+}
+
+float CMomentumGameMovement::GetWaterWaistOffset()
+{
+    return g_pGameModeSystem->IsTF2BasedMode() ? 12.0f : BaseClass::GetWaterWaistOffset();
+}
+
+float CMomentumGameMovement::GetWaterJumpUpZVelocity()
+{
+    return g_pGameModeSystem->IsTF2BasedMode() ? 300.0f : BaseClass::GetWaterJumpUpZVelocity();
+}
+
+float CMomentumGameMovement::GetWaterJumpForward()
+{
+    return g_pGameModeSystem->IsTF2BasedMode() ? 30.0f : BaseClass::GetWaterJumpForward();
+}
+
+void CMomentumGameMovement::CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward)
+{
+    const bool bTF2Mode = g_pGameModeSystem->IsTF2BasedMode();
+
+    // if we have the jump key down, move us up as well
+    if (mv->m_nButtons & IN_JUMP)
+    {
+        if (bTF2Mode && m_pPlayer->GetWaterLevel() != WL_Eyes)
+            return;
+
+        wishVel[2] += mv->m_flClientMaxSpeed;
+    }
+    // Sinking after no other movement occurs
+    else if (!mv->m_flForwardMove && !mv->m_flSideMove && !mv->m_flUpMove)
+    {
+        wishVel[2] -= 60.0f; // drift towards bottom
+    }
+    else
+    {
+        if (bTF2Mode)
+        {
+            wishVel[2] += mv->m_flUpMove;
+        }
+        else
+        {
+            // exaggerate upward movement along forward as well
+            float upwardMovememnt = mv->m_flForwardMove * forward.z * 2;
+            upwardMovememnt = clamp(upwardMovememnt, 0.f, mv->m_flClientMaxSpeed);
+            wishVel[2] += mv->m_flUpMove + upwardMovememnt;
+        }
+    }
+}
+
+void CMomentumGameMovement::Duck()
+{
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         // Don't allowing ducking if deep enough in water
         if ((player->GetWaterLevel() >= WL_Feet && player->GetGroundEntity() == nullptr) ||
@@ -685,14 +655,9 @@ void CMomentumGameMovement::Duck(void)
 
     int buttonsChanged = (mv->m_nOldButtons ^ mv->m_nButtons); // These buttons have changed this frame
     int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
-    int buttonsReleased =
-        buttonsChanged & mv->m_nOldButtons; // The changed ones which were previously down are "released"
+    int buttonsReleased = buttonsChanged & mv->m_nOldButtons; // The changed ones which were previously down are "released"
 
-    // Check to see if we are in the air.
-    bool bInAir = player->GetGroundEntity() == nullptr && player->GetMoveType() != MOVETYPE_LADDER;
-
-    bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
-
+   
     if (mv->m_nButtons & IN_DUCK)
     {
         mv->m_nOldButtons |= IN_DUCK;
@@ -714,155 +679,121 @@ void CMomentumGameMovement::Duck(void)
 
     HandleDuckingSpeedCrop();
 
-    if (m_pPlayer->m_duckUntilOnGround)
-    {
-        if (!bInAir)
-        {
-            m_pPlayer->m_duckUntilOnGround = false;
-            if (CanUnduck())
-            {
-                FinishUnDuck();
-            }
-            return;
-        }
-        else
-        {
-            if (mv->m_vecVelocity.z > 0.0f)
-                return;
-
-            // Check if we can un-duck.  We want to unduck if we have space for the standing hull, and
-            // if it is less than 2 inches off the ground.
-            trace_t trace;
-            Vector newOrigin;
-            Vector groundCheck;
-
-            VectorCopy(mv->GetAbsOrigin(), newOrigin);
-            Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
-            Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-            newOrigin -= VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
-            groundCheck = newOrigin;
-            groundCheck.z -= player->GetStepSize();
-
-            UTIL_TraceHull(newOrigin, groundCheck, VEC_HULL_MIN, VEC_HULL_MAX, PlayerSolidMask(), player,
-                           COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
-
-            if (trace.startsolid || trace.fraction == 1.0f)
-                return; // Can't even stand up, or there's no ground underneath us
-
-            m_pPlayer->m_duckUntilOnGround = false;
-            if (CanUnduck())
-            {
-                FinishUnDuck();
-            }
-            return;
-        }
-    }
-
     // Holding duck, in process of ducking or fully ducked?
     if ((mv->m_nButtons & IN_DUCK) || (player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
     {
         if (mv->m_nButtons & IN_DUCK)
-        {        
-            if (buttonsPressed & IN_DUCK)
-            {
-                if (!(player->GetFlags() & FL_DUCKING))
-                {
-                    // Use 1 second so super long jump will work
-                    player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
-                    player->m_Local.m_bDucking = true;
-                }
-                else if (player->m_Local.m_bDucking)
-                {
-                    // Invert time if released before fully unducked
-                    float remainingDuckMilliseconds =
-                        (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_DUCK / TIME_TO_UNDUCK);
+        {
+            DoDuck(buttonsPressed);
+        }
+        else
+        {
+            DoUnduck(buttonsReleased);
+        }
+    }
+}
 
-                    player->m_Local.m_flDucktime =
-                        GAMEMOVEMENT_DUCK_TIME - TIME_TO_DUCK_MS + remainingDuckMilliseconds;
-                }
+void CMomentumGameMovement::DoDuck(int iButtonsPressed)
+{
+    const bool bFullyCrouched = (player->GetFlags() & FL_DUCKING) == FL_DUCKING;
+
+    if (iButtonsPressed & IN_DUCK)
+    {
+        if (!bFullyCrouched)
+        {
+            // Use 1 second so super long jump will work
+            player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+            player->m_Local.m_bDucking = true;
+        }
+        else if (player->m_Local.m_bDucking)
+        {
+            // Invert time if released before fully unducked
+            float remainingDuckMilliseconds = (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
+
+            player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
+        }
+    }
+
+    if (player->m_Local.m_bDucking)
+    {
+        float duckmilliseconds = max(0.0f, GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime);
+        float duckseconds = duckmilliseconds / 1000.0f;
+
+        const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
+
+        // Finish ducking immediately if duck time is over or not on ground
+        if (duckseconds > GetTimeToDuck() || bFullyCrouched || (!bIsSliding && player->GetGroundEntity() == nullptr))
+        {
+            FinishDuck();
+        }
+        else
+        {
+            // Calc parametric time
+            float duckFraction = SimpleSpline(duckseconds / GetTimeToDuck());
+            SetDuckedEyeOffset(duckFraction);
+        }
+    }
+}
+
+void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
+{
+    const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
+    // Try to unduck unless automovement is not allowed
+    // NOTE: When not onground, you can always unduck
+    if (player->m_Local.m_bAllowAutoMovement || (!bIsSliding && player->GetGroundEntity() == nullptr))
+    {
+        if (iButtonsReleased & IN_DUCK)
+        {
+            if (player->GetFlags() & FL_DUCKING)
+            {
+                // Use 1 second so super long jump will work
+                player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+                player->m_Local.m_bDucking = true; // or unducking
             }
-
-            float duckmilliseconds = max(0.0f, GAMEMOVEMENT_DUCK_TIME - (float)player->m_Local.m_flDucktime);
-            float duckseconds = duckmilliseconds / 1000.0f;
-
-            // time = max( 0.0, ( 1.0 - (float)player->m_Local.m_flDucktime / 1000.0 ) );
-
-            if (player->m_Local.m_bDucking)
+            else if (player->m_Local.m_bDucking)
             {
+                // Invert time if released before fully ducked
+                float remainingUnduckMilliseconds = (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / GetTimeToDuck());
+
+                player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME - TIME_TO_UNDUCK_MS + remainingUnduckMilliseconds;
+            }
+        }
+
+        if (CanUnduck())
+        {
+            if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
+            {
+                float duckmilliseconds = max(0.0f, GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime);
+                float duckseconds = duckmilliseconds / 1000.0f;
+
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_DUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr))
+                if ((duckseconds > TIME_TO_UNDUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr))
                 {
-                    FinishDuck();
+                    FinishUnDuck();
                 }
                 else
                 {
                     // Calc parametric time
-                    float duckFraction = SimpleSpline(duckseconds / TIME_TO_DUCK);
+                    float duckFraction = SimpleSpline(1.0f - (duckseconds / TIME_TO_UNDUCK));
                     SetDuckedEyeOffset(duckFraction);
+                    player->m_Local.m_bDucking = true;
                 }
             }
         }
         else
         {
-            // Try to unduck unless automovement is not allowed
-            // NOTE: When not onground, you can always unduck
-            if (player->m_Local.m_bAllowAutoMovement || (!bIsSliding && player->GetGroundEntity() == nullptr))
+            // Still under something where we can't unduck, so make sure we reset this timer so
+            //  that we'll unduck once we exit the tunnel, etc.
+            player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
+
+            if (g_pGameModeSystem->IsTF2BasedMode())
             {
-                if (buttonsReleased & IN_DUCK)
-                {
-                    if (player->GetFlags() & FL_DUCKING)
-                    {
-                        // Use 1 second so super long jump will work
-                        player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
-                        player->m_Local.m_bDucking = true; // or unducking
-                    }
-                    else if (player->m_Local.m_bDucking)
-                    {
-                        // Invert time if released before fully ducked
-                        float remainingUnduckMilliseconds =
-                            (GAMEMOVEMENT_DUCK_TIME - player->m_Local.m_flDucktime) * (TIME_TO_UNDUCK / TIME_TO_DUCK);
-
-                        player->m_Local.m_flDucktime =
-                            GAMEMOVEMENT_DUCK_TIME - TIME_TO_UNDUCK_MS + remainingUnduckMilliseconds;
-                    }
-                }
-
-                float duckmilliseconds = max(0.0f, GAMEMOVEMENT_DUCK_TIME - (float)player->m_Local.m_flDucktime);
-                float duckseconds = duckmilliseconds / 1000.0f;
-
-                if (CanUnduck())
-                {
-                    if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
-                    {
-                        // Finish ducking immediately if duck time is over or not on ground
-                        if ((duckseconds > TIME_TO_UNDUCK) || (!bIsSliding && player->GetGroundEntity() == nullptr))
-                        {
-                            FinishUnDuck();
-                        }
-                        else
-                        {
-                            // Calc parametric time
-                            float duckFraction = SimpleSpline(1.0f - (duckseconds / TIME_TO_UNDUCK));
-                            SetDuckedEyeOffset(duckFraction);
-                        }
-                    }
-                }
-                else
-                {
-                    // Still under something where we can't unduck, so make sure we reset this timer so
-                    //  that we'll unduck once we exit the tunnel, etc.
-                    player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
-
-                    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-                    {
-                        // Values from BaseClass::Duck(),
-                        // FL_DUCKING flag is the important bit here,
-                        // as it will allow for ctaps.
-                        SetDuckedEyeOffset(1.0f);
-                        player->m_Local.m_bDucked = true;
-                        player->AddFlag(FL_DUCKING);
-                    }
-                }
+                SetDuckedEyeOffset(1.0f);
+                player->m_Local.m_bDucked = true;
+                player->m_Local.m_bDucking = false;
+                // FL_DUCKING flag is the important bit here,
+                // as it will allow for ctaps.
+                player->AddFlag(FL_DUCKING);
             }
         }
     }
@@ -871,7 +802,7 @@ void CMomentumGameMovement::Duck(void)
 //-----------------------------------------------------------------------------
 // Purpose: Stop ducking
 //-----------------------------------------------------------------------------
-void CMomentumGameMovement::FinishUnDuck(void)
+void CMomentumGameMovement::FinishUnDuck()
 {
     trace_t trace;
     Vector newOrigin;
@@ -889,7 +820,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-        Vector viewDelta = -VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+        Vector viewDelta = -g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
 
         VectorAdd(newOrigin, viewDelta, newOrigin);
     }
@@ -909,12 +840,12 @@ void CMomentumGameMovement::FinishUnDuck(void)
 //-----------------------------------------------------------------------------
 // Purpose: Finish ducking
 //-----------------------------------------------------------------------------
-void CMomentumGameMovement::FinishDuck(void)
+void CMomentumGameMovement::FinishDuck()
 {
     Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
-    Vector viewDelta = VIEW_SCALE * (hullSizeNormal - hullSizeCrouch);
+    Vector viewDelta = g_pGameModeSystem->GetGameMode()->GetViewScale() * (hullSizeNormal - hullSizeCrouch);
 
     player->SetViewOffset(GetPlayerViewOffset(true));
     player->AddFlag(FL_DUCKING);
@@ -1063,7 +994,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // Cannot jump while ducked in TF2
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && (player->GetFlags() & FL_DUCKING))
+    if (g_pGameModeSystem->IsTF2BasedMode() && player->GetFlags() & FL_DUCKING)
     {
         return false;
     }
@@ -1083,7 +1014,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         PreventBunnyHopping();
     }
@@ -1102,7 +1033,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Set the last jump time
     m_pPlayer->m_Data.m_flLastJumpTime = gpGlobals->curtime;
 
-    player->PlayStepSound(const_cast<Vector &>(mv->GetAbsOrigin()), player->m_pSurfaceData, 1.0, true);
+    player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
 
     // MoveHelper()->PlayerSetAnimation( PLAYER_JUMP );
     // player->DoAnimationEvent(PLAYERANIMEVENT_JUMP);
@@ -1113,17 +1044,10 @@ bool CMomentumGameMovement::CheckJumpButton()
         flGroundFactor = player->m_pSurfaceData->game.jumpFactor;
     }
 
-    // if we weren't ducking, bots and hostages do a crouchjump programatically
-    if (player->IsBot() && !(mv->m_nButtons & IN_DUCK))
-    {
-        m_pPlayer->m_duckUntilOnGround = true;
-        FinishDuck();
-    }
-
     // Acclerate upward
     float startz = mv->m_vecVelocity[2];
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->IsTF2BasedMode())
     {
         // Gravity dependance, but ensuring it exactly gives 289 at 800 gravity
         float height = 289.0f * 289.0f / (2.0f * 800.0f);
@@ -1161,10 +1085,10 @@ bool CMomentumGameMovement::CheckJumpButton()
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.1f;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (g_pGameModeSystem->IsTF2BasedMode())
         mv->m_outStepHeight += 0.05f; // 0.15f total
 
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (!g_pGameModeSystem->IsTF2BasedMode())
     {
         // First do a trace all the way down to the ground
         TracePlayerBBox(mv->GetAbsOrigin(),
@@ -1283,38 +1207,84 @@ void CMomentumGameMovement::CategorizePosition()
         {
             if (player->GetGroundEntity() == nullptr)
             {
-                Vector rampVelocity = mv->m_vecVelocity;
+                Vector vecNextVelocity = mv->m_vecVelocity;
 
                 // Apply half of gravity as that would be done in the next tick before movement code
-                rampVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+                vecNextVelocity.z -= player->GetGravity() * GetCurrentGravity() * 0.5f * gpGlobals->frametime;
 
-                if (pm.plane.normal.z >= 0.7f && pm.plane.normal.z < 1.0f)
+                // Try to predict what would happen on the next tick if the player didn't get grounded
+                bool bGrounded = true; // Would the player be grounded next tick?
+                if (sv_edge_fix.GetBool() && !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)))
                 {
-                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity, 1.0f);
-                }
-                else if (pm.plane.normal.z < 0.7f)
-                {
-                    ClipVelocity(rampVelocity, pm.plane.normal, rampVelocity,
-                                 1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                    trace_t pmFall;
+
+                    // Don't simulate the fall to the ground if the player is already directly on it
+                    if (pm.fraction != 0.0f)
+                    {
+                        // Simulate the fall next tick
+                        Vector endFall;
+                        VectorMA(mv->GetAbsOrigin(), gpGlobals->frametime, vecNextVelocity, endFall);
+
+                        TracePlayerBBox(mv->GetAbsOrigin(), endFall, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pmFall);
+                    }
+                    else if (m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount)
+                    {
+                        // Pretend we are starting the edgebug from where we hit the surface and then simulate a max
+                        // distance edgebug to ensure consistency (see note on the sliding simulation)
+                        pmFall = m_pPlayer->GetLastCollisionTrace();
+                    }
+                    else
+                    {
+                        // Fallback if the fraction is zero, but the player hasn't collided this tick for some reason
+                        pmFall = pm;
+                    }
+
+                    if (!pmFall.DidHit())
+                    {
+                        bGrounded = false; // Would miss the ground the next tick
+                    }
+                    else
+                    {
+                        ClipVelocity(vecNextVelocity, pmFall.plane.normal, vecNextVelocity, 1.0f);
+
+                        // Simulate the sliding on the ground (notice that we are using the full frametime to allow
+                        // consistent max distance edgebugs)
+                        Vector endSlide;
+                        VectorMA(pmFall.endpos, gpGlobals->frametime, vecNextVelocity, endSlide);
+
+                        trace_t pmSlide;
+                        TracePlayerBBox(mv->GetAbsOrigin(), endSlide, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pmSlide);
+
+                        // Check if there is ground under the player (otherwise it would be an edgebug)
+                        trace_t pmGround;
+                        TryTouchGround(pmSlide.endpos, pmSlide.endpos - Vector(0.0f, 0.0f, flOffset), GetPlayerMins(),
+                                       GetPlayerMaxs(), MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, pmGround);
+
+                        if (!pmGround.DidHit())
+                            bGrounded = false; // Would edgebug next tick
+                    }
                 }
 
-                // Set ground entity if the player is not going to slide on the ramp next tick
-                if (rampVelocity[2] <= NON_JUMP_VELOCITY)
+                ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
+
+                // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
+                // grounded (exception if the player wants to bhop)
+                if (vecNextVelocity.z <= NON_JUMP_VELOCITY && bGrounded)
                 {
                     // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
                     // velocity.z
-                    if (sv_slope_fix.GetBool() && rampVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                    if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
                     {
-                        VectorCopy(rampVelocity, mv->m_vecVelocity);
+                        VectorCopy(vecNextVelocity, mv->m_vecVelocity);
                     }
-                    
+
                     SetGroundEntity(&pm);
                 }
             }
             else
             {
                 // This is not necessary to do for other gamemodes as they do not reset the vertical velocity before WalkMove()
-                if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ) && player->GetGroundEntity() != nullptr &&
+                if (g_pGameModeSystem->IsTF2BasedMode() && player->GetGroundEntity() != nullptr &&
                     player->GetMoveType() == MOVETYPE_WALK && player->GetWaterLevel() < WL_Eyes)
                 {
                     Vector org = mv->GetAbsOrigin();
@@ -1348,110 +1318,20 @@ void CMomentumGameMovement::CategorizePosition()
     }
 }
 
-void CMomentumGameMovement::FinishGravity(void)
-{
-    if (player->m_flWaterJumpTime)
-        return;
-
-    if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
-        return;
-
-    // Get the correct velocity for the end of the dt
-    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
-
-    CheckVelocity();
-}
-
-void CMomentumGameMovement::StartGravity(void)
+void CMomentumGameMovement::FinishGravity()
 {
     if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
-    // Add gravity so they'll be in the correct position during movement
-    // yes, this 0.5 looks wrong, but it's not.
-    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
-    mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
-
-    Vector temp = player->GetBaseVelocity();
-    temp[2] = 0;
-    player->SetBaseVelocity(temp);
-
-    CheckVelocity();
+    BaseClass::FinishGravity();
 }
 
-void CMomentumGameMovement::CheckWaterJump(void)
+void CMomentumGameMovement::StartGravity()
 {
-    Vector flatforward;
-    Vector forward;
-    Vector flatvelocity;
-    float curspeed;
-
-    AngleVectors(mv->m_vecViewAngles, &forward); // Determine movement angles
-
-    // Already water jumping.
-    if (player->m_flWaterJumpTime)
+    if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
-    // Don't hop out if we just jumped in
-    if (mv->m_vecVelocity[2] < -180)
-        return; // only hop out if we are moving up
-
-    // See if we are backing up
-    flatvelocity[0] = mv->m_vecVelocity[0];
-    flatvelocity[1] = mv->m_vecVelocity[1];
-    flatvelocity[2] = 0;
-
-    // Must be moving
-    curspeed = VectorNormalize(flatvelocity);
-
-    // see if near an edge
-    flatforward[0] = forward[0];
-    flatforward[1] = forward[1];
-    flatforward[2] = 0;
-    VectorNormalize(flatforward);
-
-    // Are we backing into water from steps or something?  If so, don't pop forward
-    if (curspeed != 0.0 && (DotProduct(flatvelocity, flatforward) < 0.0))
-        return;
-
-    Vector vecStart;
-    // Start line trace at waist height (using the center of the player for this here)
-    vecStart = mv->GetAbsOrigin() + (GetPlayerMins() + GetPlayerMaxs()) * 0.5;
-
-    Vector vecEnd;
-    VectorMA(vecStart, WATERJUMP_FORWARD, flatforward, vecEnd);
-
-    trace_t tr;
-    TracePlayerBBox(vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
-    if (tr.fraction < 1.0) // solid at waist
-    {
-        IPhysicsObject *pPhysObj = tr.m_pEnt->VPhysicsGetObject();
-        if (pPhysObj)
-        {
-            if (pPhysObj->GetGameFlags() & FVPHYSICS_PLAYER_HELD)
-                return;
-        }
-
-        vecStart.z = mv->GetAbsOrigin().z + player->GetViewOffset().z + WATERJUMP_HEIGHT;
-        VectorMA(vecStart, WATERJUMP_FORWARD, flatforward, vecEnd);
-        VectorMA(vec3_origin, -50.0f, tr.plane.normal, player->m_vecWaterJumpVel);
-
-        TracePlayerBBox(vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
-        if (tr.fraction == 1.0) // open at eye level
-        {
-            // Now trace down to see if we would actually land on a standable surface.
-            VectorCopy(vecEnd, vecStart);
-            vecEnd.z -= 1024.0f;
-            TracePlayerBBox(vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
-            if ((tr.fraction < 1.0f) && (tr.plane.normal.z >= 0.7))
-            {
-                mv->m_vecVelocity[2] = WATERJUMP_UP; // Push up
-                mv->m_nOldButtons |= IN_JUMP;  // Don't jump again until released
-                player->AddFlag(FL_WATERJUMP);
-                player->m_flWaterJumpTime = 2000.0f; // Do this for 2 seconds
-            }
-        }
-    }
+    BaseClass::StartGravity();
 }
 
 void CMomentumGameMovement::FullWalkMove()
@@ -1470,7 +1350,6 @@ void CMomentumGameMovement::FullWalkMove()
     {
         WaterJump();
         TryPlayerMove();
-        // See if we are still in water?
         CheckWater();
         return;
     }
@@ -1487,9 +1366,9 @@ void CMomentumGameMovement::FullWalkMove()
         }
 
         // If we are falling again, then we must not trying to jump out of water any more.
-        if (mv->m_vecVelocity[2] < 0 && player->m_flWaterJumpTime)
+        if (mv->m_vecVelocity[2] < 0.0f && player->m_flWaterJumpTime)
         {
-            player->m_flWaterJumpTime = 0;
+            player->m_flWaterJumpTime = 0.0f;
         }
 
         // Was jump button pressed?
@@ -1542,14 +1421,14 @@ void CMomentumGameMovement::FullWalkMove()
 
         if (player->GetGroundEntity() != nullptr)
         {
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            if (g_pGameModeSystem->IsTF2BasedMode())
                 mv->m_vecVelocity[2] = 0.f;
 
             WalkMove();
 
             CategorizePosition();
 
-            if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+            if (!g_pGameModeSystem->IsTF2BasedMode())
             {
                 m_bCheckForGrabbableLadder = m_pPlayer->GetGroundEntity() == nullptr;
                 if (m_bCheckForGrabbableLadder)
@@ -1586,8 +1465,22 @@ void CMomentumGameMovement::FullWalkMove()
                 mv->SetAbsOrigin(vecNewOrigin);
         }
 
+        bool bInAirBefore = player->GetGroundEntity() == nullptr;
+
         // Set final flags.
         CategorizePosition();
+
+        bool bInAirAfter = player->GetGroundEntity() == nullptr;
+
+        // Let player bhop after an edgebug
+        trace_t &tr = m_pPlayer->GetLastCollisionTrace();
+        if (sv_edge_fix.GetBool() && !m_pPlayer->m_CurrentSlideTrigger &&
+            bInAirBefore && bInAirAfter && m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount && // Player edgebugged
+            (m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)) && // Player wants to bhop
+            tr.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY) // Player can jump on what they edgebugged on
+        {
+            SetGroundEntity(&tr); // Allows the player to jump next tick
+        }
 
         // Make sure velocity is valid.
         CheckVelocity();
@@ -1639,7 +1532,7 @@ void CMomentumGameMovement::FullWalkMove()
 // This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
 // bhop.
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
-void CMomentumGameMovement::LimitStartZoneSpeed(void)
+void CMomentumGameMovement::LimitStartZoneSpeed()
 {
 #ifndef CLIENT_DLL
     if (m_pPlayer->m_Data.m_bIsInZone && m_pPlayer->m_Data.m_iCurrentZone == 1 &&
@@ -1702,7 +1595,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
 #endif
 }
 
-void CMomentumGameMovement::StuckGround(void)
+void CMomentumGameMovement::StuckGround()
 {
     if (!m_pPlayer || !m_pPlayer->m_CurrentSlideTrigger.Get())
         return;
@@ -1777,54 +1670,11 @@ void CMomentumGameMovement::StuckGround(void)
     }
 }
 
-void CMomentumGameMovement::AirMove(void)
+void CMomentumGameMovement::AirMove()
 {
-    int i;
-    Vector wishvel;
-    float fmove, smove;
-    Vector wishdir;
-    float wishspeed;
-    Vector forward, right, up;
+    BaseClass::AirMove();
 
-    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
-
-    // Copy movement amounts
-    fmove = mv->m_flForwardMove;
-    smove = mv->m_flSideMove;
-
-    // Zero out z components of movement vectors
-    forward[2] = 0;
-    right[2] = 0;
-    VectorNormalize(forward); // Normalize remainder of vectors
-    VectorNormalize(right);   //
-
-    for (i = 0; i < 2; i++) // Determine x and y parts of velocity
-        wishvel[i] = forward[i] * fmove + right[i] * smove;
-    wishvel[2] = 0; // Zero out z part of velocity
-
-    VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
-    wishspeed = VectorNormalize(wishdir);
-
-    //
-    // clamp to server defined max speed
-    //
-    if (wishspeed != 0 && (wishspeed > mv->m_flMaxSpeed))
-    {
-        VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
-        wishspeed = mv->m_flMaxSpeed;
-    }
-
-    AirAccelerate(wishdir, wishspeed, sv_airaccelerate.GetFloat());
-
-    // Add in any base velocity to the current velocity.
-    VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
-
-    TryPlayerMove();
-    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
-    // (or maybe another monster?)
-    VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
-
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (!g_pGameModeSystem->IsTF2BasedMode())
     {
         if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
         {
@@ -1912,7 +1762,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 else
                 {
                     ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity,
-                                 1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                                 1.0f + sv_bounce.GetFloat() * (1.0f - player->m_surfaceFriction));
                     VectorCopy(mv->m_vecVelocity, original_velocity);
                 }
             }
@@ -2101,6 +1951,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  for contact
         // Add it if it's not already in the list!!!
         MoveHelper()->AddToTouched(pm, mv->m_vecVelocity);
+        if (!CloseEnough(pm.plane.normal[2], 0.0f)) // Filter out staight walls
+            m_pPlayer->SetLastCollision(pm);
 
         // If the plane we hit has a high z component in the normal, then
         //  it's probably a floor
@@ -2263,164 +2115,49 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             VectorCopy(vec3_origin, mv->m_vecVelocity);
     }
 
-    // Check if they slammed into a wall
-    float fSlamVol = 0.0f;
-
     float fLateralStoppingAmount = primal_velocity.Length2D() - mv->m_vecVelocity.Length2D();
-    if (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED * 2.0f)
+    if (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED)
     {
-        fSlamVol = 1.0f;
+        float fSlamVol = (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED * 2.0f) ? 1.0f : 0.85f;
+        
+        // Play rough landing sound with last traced surface.
+        PlayerRoughLandingEffects(fSlamVol, pm.surface.surfaceProps);
     }
-    else if (fLateralStoppingAmount > PLAYER_MAX_SAFE_FALL_SPEED)
-    {
-        fSlamVol = 0.85f;
-    }
-
-    PlayerRoughLandingEffects(fSlamVol);
 
     return blocked;
 }
 
-bool CMomentumGameMovement::CheckWater(void)
-{
-    Vector point;
-    int cont;
-
-    Vector vPlayerMins = GetPlayerMins();
-    Vector vPlayerMaxs = GetPlayerMaxs();
-
-    // Pick a spot just above the players feet.
-    point[0] = mv->GetAbsOrigin()[0] + (vPlayerMins[0] + vPlayerMaxs[0]) * 0.5;
-    point[1] = mv->GetAbsOrigin()[1] + (vPlayerMins[1] + vPlayerMaxs[1]) * 0.5;
-    point[2] = mv->GetAbsOrigin()[2] + vPlayerMins[2] + 1;
-
-    // Assume that we are not in water at all.
-    player->SetWaterLevel(WL_NotInWater);
-    player->SetWaterType(CONTENTS_EMPTY);
-
-    // Grab point contents.
-    cont = GetPointContentsCached(point, 0);
-
-    // Are we under water? (not solid and not empty?)
-    if (cont & MASK_WATER)
-    {
-        // Set water type
-        player->SetWaterType(cont);
-
-        // We are at least at level one
-        player->SetWaterLevel(WL_Feet);
-
-        // Now check a point that is at the player hull midpoint.
-        point[2] = mv->GetAbsOrigin()[2] + (vPlayerMins[2] + vPlayerMaxs[2]) * 0.5 + WATERWAIST_OFFSET;
-        cont = GetPointContentsCached(point, 1);
-        // If that point is also under water...
-        if (cont & MASK_WATER)
-        {
-            // Set a higher water level.
-            player->SetWaterLevel(WL_Waist);
-
-            // Now check the eye position.  (view_ofs is relative to the origin)
-            point[2] = mv->GetAbsOrigin()[2] + player->GetViewOffset()[2];
-            cont = GetPointContentsCached(point, 2);
-            if (cont & MASK_WATER)
-                player->SetWaterLevel(WL_Eyes); // In over our eyes
-        }
-
-        // Adjust velocity based on water current, if any.
-        if (cont & MASK_CURRENT)
-        {
-            Vector v;
-            VectorClear(v);
-            if (cont & CONTENTS_CURRENT_0)
-                v[0] += 1;
-            if (cont & CONTENTS_CURRENT_90)
-                v[1] += 1;
-            if (cont & CONTENTS_CURRENT_180)
-                v[0] -= 1;
-            if (cont & CONTENTS_CURRENT_270)
-                v[1] -= 1;
-            if (cont & CONTENTS_CURRENT_UP)
-                v[2] += 1;
-            if (cont & CONTENTS_CURRENT_DOWN)
-                v[2] -= 1;
-
-            // BUGBUG -- this depends on the value of an unspecified enumerated type
-            // The deeper we are, the stronger the current.
-            Vector temp;
-            VectorMA(player->GetBaseVelocity(), 50.0 * player->GetWaterLevel(), v, temp);
-            player->SetBaseVelocity(temp);
-        }
-    }
-
-    // if we just transitioned from not in water to in water, record the time it happened
-    if ((WL_NotInWater == m_nOldWaterLevel) && (player->GetWaterLevel() > WL_NotInWater))
-    {
-        m_flWaterEntryTime = gpGlobals->curtime;
-    }
-
-    return (player->GetWaterLevel() > WL_Feet);
-}
-
-// This was the virtual void, overriding it for snow friction
 void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
-    if (m_pPlayer->m_CurrentSlideTrigger &&
-        !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump))
+    const auto pSlideTrigger = m_pPlayer->m_CurrentSlideTrigger.Get();
+    if (pSlideTrigger && !(m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP) && pSlideTrigger->m_bAllowingJump))
         pm = nullptr;
 
-    CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
-
-    CBaseEntity *oldGround = player->GetGroundEntity();
-    Vector vecBaseVelocity = player->GetBaseVelocity();
-
+#ifdef GAME_DLL
     bool bLanded = false;
-    if (!oldGround && newGround)
+    if (player->GetGroundEntity() == nullptr && (pm && pm->m_pEnt))
     {
-        // Subtract ground velocity at instant we hit ground jumping
-        vecBaseVelocity -= newGround->GetAbsVelocity();
-        vecBaseVelocity.z = newGround->GetAbsVelocity().z;
-
-        // Fire that we landed on ground
         bLanded = true;
     }
-    else if (oldGround && !newGround)
-    {
-        // Add in ground velocity at instant we started jumping
-        vecBaseVelocity += oldGround->GetAbsVelocity();
-        vecBaseVelocity.z = oldGround->GetAbsVelocity().z;
-    }
+#endif
 
-    player->SetBaseVelocity(vecBaseVelocity);
-    player->SetGroundEntity(newGround);
+    BaseClass::SetGroundEntity(pm);
 
+    if (pm && pm->m_pEnt) // if (newGround)
+        m_pPlayer->SetLastCollision(*pm);
+
+#ifdef GAME_DLL
+    // Doing this after the BaseClass call in case OnLand wants to use the new ground stuffs
     if (bLanded)
     {
-#ifndef CLIENT_DLL
         m_pPlayer->SetIsInAirDueToJump(false);
 
         // Set the tick that we landed on something solid (can jump off of this)
         m_pPlayer->OnLand();
+    }
 #endif
-    }
-
-    // If we are on something...
-    if (newGround)
-    {
-        CategorizeGroundSurface(*pm); // Snow friction override
-
-        // Then we are not in water jump sequence
-        player->m_flWaterJumpTime = 0.0f;
-
-        // Standing on an entity other than the world, so signal that we are touching something.
-        if (!pm->DidHitWorld())
-        {
-            MoveHelper()->AddToTouched(*pm, mv->m_vecVelocity);
-        }
-
-        mv->m_vecVelocity.z = 0.0f;
-    }
 }
 
 bool CMomentumGameMovement::CanAccelerate()
@@ -2428,7 +2165,7 @@ bool CMomentumGameMovement::CanAccelerate()
     return BaseClass::CanAccelerate() || (player && player->IsObserver());
 }
 
-void CMomentumGameMovement::CheckParameters(void)
+void CMomentumGameMovement::CheckParameters()
 {
     // shift-walking useful for some maps with tight jumps
     if (mv->m_nButtons & IN_SPEED)
@@ -2439,7 +2176,7 @@ void CMomentumGameMovement::CheckParameters(void)
     BaseClass::CheckParameters();
 }
 
-void CMomentumGameMovement::ReduceTimers(void)
+void CMomentumGameMovement::ReduceTimers()
 {
     float frame_msec = 1000.0f * gpGlobals->frametime;
 
@@ -2456,129 +2193,22 @@ void CMomentumGameMovement::ReduceTimers(void)
     BaseClass::ReduceTimers();
 }
 
-// We're overriding this here so the game doesn't play any fall damage noises
-void CMomentumGameMovement::CheckFalling(void)
-{
-    // this function really deals with landing, not falling, so early out otherwise
-    CBaseEntity *pGroundEntity = player->GetGroundEntity();
-    if (!pGroundEntity || player->m_Local.m_flFallVelocity <= 0.0f)
-        return;
-
-    if (!IsDead() && player->m_Local.m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHOLD)
-    {
-        bool bAlive = true;
-        float fvol = 0.5f;
-
-        if (player->GetWaterLevel() <= 0.0f)
-        {
-            // Scale it down if we landed on something that's floating...
-            if (pGroundEntity->IsFloating())
-            {
-                player->m_Local.m_flFallVelocity -= PLAYER_LAND_ON_FLOATING_OBJECT;
-            }
-
-            //
-            // They hit the ground.
-            //
-            if (pGroundEntity->GetAbsVelocity().z < 0.0f)
-            {
-                // Player landed on a descending object. Subtract the velocity of the ground entity.
-                player->m_Local.m_flFallVelocity += pGroundEntity->GetAbsVelocity().z;
-                player->m_Local.m_flFallVelocity = MAX(0.1f, player->m_Local.m_flFallVelocity);
-            }
-
-            if (player->m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED)
-            {
-                //
-                // If they hit the ground going this fast they may take damage (and die).
-                //
-                // NOTE: We override this here since this way we can play the noise without having to go to the
-                // MoveHelper
-                // MOM_TODO: Revisit if we want custom fall noises.
-                bAlive = true; // MoveHelper()->PlayerFallingDamage();
-                fvol = 1.0f;
-            }
-            else if (player->m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED / 2)
-            {
-                fvol = 0.85f;
-            }
-            else if (player->m_Local.m_flFallVelocity < PLAYER_MIN_BOUNCE_SPEED)
-            {
-                fvol = 0.0f;
-            }
-        }
-
-        // MOM_TODO: This plays a step sound, revisit if we want to override
-        PlayerRoughLandingEffects(fvol);
-
-        if (bAlive)
-        {
-            MoveHelper()->PlayerSetAnimation(PLAYER_WALK);
-        }
-    }
-
-    // let any subclasses know that the player has landed and how hard
-    OnLand(player->m_Local.m_flFallVelocity);
-
-    //
-    // Clear the fall velocity so the impact doesn't happen again.
-    //
-    player->m_Local.m_flFallVelocity = 0.0f;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-// Input  : in -
-//            normal -
-//            out -
-//            overbounce -
-// Output : int
-//-----------------------------------------------------------------------------
 int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
 {
-    float backoff;
-    float change;
-    float angle;
-    int i, blocked;
-
-    angle = normal[2];
-
-    blocked = 0x00;      // Assume unblocked.
-    if (angle > 0)       // If the plane that is blocking us has a positive z component, then assume it's a floor.
-        blocked |= 0x01; //
-    if (CloseEnough(angle, 0.0f, FLT_EPSILON)) // If the plane has no Z, it is vertical (wall/step)
-        blocked |= 0x02;                       //
-
-    // Determine how far along plane to slide based on incoming direction.
-    backoff = DotProduct(in, normal) * overbounce;
-
-    for (i = 0; i < 3; i++)
-    {
-        change = normal[i] * backoff;
-        out[i] = in[i] - change;
-        // DevMsg("Backoff: %f || Change: %f || Velocity: %f\n", backoff, change, velocity);
-    }
-
-    // iterate once to make sure we aren't still moving through the plane
-    float adjust = DotProduct(out, normal);
-    if (adjust < 0.0f)
-    {
-        out -= (normal * adjust);
-        // DevMsg( "Adjustment = %lf\n", adjust );
-    }
+    const int blocked = BaseClass::ClipVelocity(in, normal, out, overbounce);
     
     // Check if the jump button is held to predict if the player wants to jump up an incline. Not checking for jumping
     // could allow players that hit the slope almost perpendicularly and still surf up the slope because they would
     // retain their horizontal speed
     if (sv_slope_fix.GetBool() && m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP))
     {
-        bool canJump = angle >= 0.7f && out.z <= NON_JUMP_VELOCITY;
+        bool canJump = normal[2] >= 0.7f && out.z <= NON_JUMP_VELOCITY;
         
         if (m_pPlayer->m_CurrentSlideTrigger)
             canJump &= m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump;
         
         // If the player do not gain horizontal speed while going up an incline, then act as if the surface is flat
-        if (canJump && normal.x*in.x + normal.y*in.y < 0.0f && out.Length2DSqr() <= in.Length2DSqr())
+        if (canJump && (normal.x*in.x + normal.y*in.y < 0.0f) && out.Length2DSqr() <= in.Length2DSqr())
         {
             out.x = in.x;
             out.y = in.y;
@@ -2593,6 +2223,6 @@ int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, 
 // Expose our interface.
 static CMomentumGameMovement g_GameMovement;
 CMomentumGameMovement *g_pMomentumGameMovement = &g_GameMovement;
-IGameMovement *g_pGameMovement = static_cast<IGameMovement *>(&g_GameMovement);
+IGameMovement *g_pGameMovement = &g_GameMovement;
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CMomentumGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);

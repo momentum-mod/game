@@ -11,7 +11,6 @@ class CTriggerOnehop;
 class CTriggerProgress;
 class CTriggerSlide;
 class CMomentumGhostBaseEntity;
-class CMomRocket;
 
 struct SavedState_t
 {
@@ -34,7 +33,7 @@ struct SavedState_t
 #define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 #define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
 
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity, public IEntityListener
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -70,6 +69,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     // Make sure we don't pick up weapons we shouldn't (default behaviour is weird)
     bool BumpWeapon(CBaseCombatWeapon *pWeapon) OVERRIDE;
+    bool Weapon_CanUse(CBaseCombatWeapon *pWeapon) override;
+    bool GiveWeapon(WeaponID_t weapon);
 
     // MOM_TODO: This is called when the player spawns so that HUD elements can be updated
     // void InitHUD() OVERRIDE;
@@ -233,6 +234,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
 
+    // Last collision
+    void SetLastCollision(const trace_t &tr);
+    int GetLastCollisionTick() const { return m_iLastCollisionTick; }
+    trace_t& GetLastCollisionTrace() { return m_trLastCollisionTrace; }
+
     void SetLastEyeAngles(const QAngle &ang) { m_qangLastAngle = ang; }
     const QAngle &LastEyeAngles() const { return m_qangLastAngle; }
 
@@ -243,10 +249,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
-
-    // IEntityListener
-    void OnEntitySpawned(CBaseEntity *pEntity) override;
-    void OnEntityDeleted(CBaseEntity *pEntity) override;
 
   private:
     // Player think function called every tick
@@ -267,7 +269,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
     void SetPracticeModeState();
 
-    void DestroyRockets();
     
     // Resets all player movement properties to their default state
     void ResetMovementProperties();
@@ -287,13 +288,16 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     QAngle m_qangLastAngle;
 
     // used by CMomentumGameMovement
-    bool m_duckUntilOnGround;
     float m_flStamina;
 
     bool m_bAllowUserTeleports;
 
     // Ladder stuff
     float m_flGrabbableLadderTime;
+
+    // Last collision
+    int m_iLastCollisionTick; // Tick at which the player last collided with a non-vertical surface
+    trace_t m_trLastCollisionTrace; // (startpos and endpos raised up to player head for ceilings)
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;
@@ -324,6 +328,4 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     SavedState_t m_SavedRunState; // Used when either entering practice mode or spectating while in a run
     SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
-
-    CUtlVector<CMomRocket*> m_vecRockets;
 };

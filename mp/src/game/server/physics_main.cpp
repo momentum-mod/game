@@ -31,9 +31,6 @@
 #include "tier0/memdbgon.h"
 
 extern ConVar think_limit;
-#ifdef _XBOX
-ConVar vprof_think_limit( "vprof_think_limit", "0" );
-#endif
 
 ConVar vprof_scope_entity_thinks( "vprof_scope_entity_thinks", "0" );
 ConVar vprof_scope_entity_gamephys( "vprof_scope_entity_gamephys", "0" );
@@ -944,13 +941,6 @@ void CBaseEntity::PhysicsDispatchThink( BASEPTR thinkFunc )
 		float fTime = ( engine->Time() - startTime ) * 1000.0f;
 		if ( fTime > thinkLimit )
 		{
-#if defined( _XBOX ) && !defined( _RETAIL )
-			if ( vprof_think_limit.GetBool() )
-			{
-				extern bool g_VProfSignalSpike;
-				g_VProfSignalSpike = true;
-			}
-#endif
 			// If its an NPC print out the shedule/task that took so long
 			CAI_BaseNPC *pNPC = MyNPCPointer();
 			if (pNPC && pNPC->GetCurSchedule())

@@ -156,13 +156,6 @@ public:
 	void			Swap( CUtlBuffer &buf );
 	void			Swap( CUtlMemory<uint8> &mem );
 
-	FORCEINLINE void ActivateByteSwappingIfBigEndian( void )
-	{
-		if ( IsX360() )
-			ActivateByteSwapping( true );
-	}
-
-
 	// Controls endian-ness of binary utlbufs - default matches the current platform
 	void			ActivateByteSwapping( bool bActivate );
 	void			SetBigEndian( bool bigEndian );
@@ -410,9 +403,6 @@ protected:
 	unsigned char m_Error;
 	unsigned char m_Flags;
 	unsigned char m_Reserved;
-#if defined( _X360 )
-	unsigned char pad;
-#endif
 
 	int m_nTab;
 	int m_nMaxPut;
@@ -650,19 +640,10 @@ inline void CUtlBuffer::GetTypeBin< float >( float &dest )
 	if ( CheckGet( sizeof( float ) ) )
 	{
 		uintptr_t pData = (uintptr_t)PeekGet();
-		if ( IsX360() && ( pData & 0x03 ) )
-		{
-			// handle unaligned read
-			((unsigned char*)&dest)[0] = ((unsigned char*)pData)[0];
-			((unsigned char*)&dest)[1] = ((unsigned char*)pData)[1];
-			((unsigned char*)&dest)[2] = ((unsigned char*)pData)[2];
-			((unsigned char*)&dest)[3] = ((unsigned char*)pData)[3];
-		}
-		else
-		{
-			// aligned read
-			dest = *(float *)pData;
-		}
+
+		// aligned read
+		dest = *(float *)pData;
+
 		if ( m_Byteswap.IsSwappingBytes() )
 		{
 			m_Byteswap.SwapBufferToTargetEndian< float >( &dest, &dest );

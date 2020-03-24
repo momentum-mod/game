@@ -1,0 +1,37 @@
+"Resource/ui/HudStickybombs.res"
+{
+    "CHudStickybombs"
+    {
+        "ControlName"		"CHudStickybombs"
+        "fieldName"		"CHudStickybombs"
+        "visible"		"1"
+        "enabled"		"1"
+        "xpos"          "c-75"
+        "ypos"          "c35"
+        "wide"			"150"
+        "tall"			"50"
+        "fgcolor_override"		"0 0 0 0"
+        "bgcolor_override"		"0 0 0 0"
+    }
+    "StickybombsLabel"
+    {
+        "ControlName"	"Label"
+        "fieldName"		"StickybombsLabel"
+        "xpos"			"0"
+        "ypos"			"20"
+        "wide"			"f0"
+        "proportionalToParent" "1"
+        "tall"			"20"
+        "autoResize"	"1"
+        "pinCorner"		"2"
+        "visible"		"1"
+        "enabled"		"1"
+        "tabPosition"	"0"
+        "textAlignment"	"center"
+        "dulltext"		"0"
+        "brighttext"	"0"
+        "font"			"HudNumbersSmallBold"
+        "fgcolor"       "243 243 243 255"
+        "auto_tall_tocontents" "1"
+    }
+}

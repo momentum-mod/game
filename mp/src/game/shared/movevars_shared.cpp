@@ -118,20 +118,8 @@ ConVar  sv_waterdist	( "sv_waterdist","12", FCVAR_REPLICATED | FCVAR_DEVELOPMENT
 
 ConVar	sv_skyname		( "sv_skyname", "sky_urb01", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Current name of the skybox texture" );
 
-// Vehicle convars
-ConVar r_VehicleViewDampen( "r_VehicleViewDampen", "1", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED );
-
-// Jeep convars
-ConVar r_JeepViewDampenFreq( "r_JeepViewDampenFreq", "7.0", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED );
-ConVar r_JeepViewDampenDamp( "r_JeepViewDampenDamp", "1.0", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED);
-ConVar r_JeepViewZHeight( "r_JeepViewZHeight", "10.0", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED );
-
-// Airboat convars
-ConVar r_AirboatViewDampenFreq( "r_AirboatViewDampenFreq", "7.0", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED );
-ConVar r_AirboatViewDampenDamp( "r_AirboatViewDampenDamp", "1.0", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED);
-ConVar r_AirboatViewZHeight( "r_AirboatViewZHeight", "0.0", FCVAR_CHEAT | FCVAR_NOTIFY | FCVAR_REPLICATED );
-
 // Momentum convars
 MAKE_CONVAR(sv_considered_on_ground, "1.0", FCVAR_MAPPING, "Amount of units you have to be above the ground to be considered on ground.\n", 0.0f, 5.f);
 MAKE_TOGGLE_CONVAR(sv_duck_collision_fix, "1", FCVAR_MAPPING, "Fixes headbugs by updating the collision box after duck code instead of at the end of the tick. 1 = ON, 0 = OFF.\n");
 MAKE_TOGGLE_CONVAR(sv_ground_trigger_fix, "1", FCVAR_MAPPING, "Fixes being able to jump off the ground if grounded with a trigger under the player (bounces and jumpbugs). 1 = ON, 0 = OFF.\n");
+MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consistent and allows for bunnyhopping instead of edgebugging. 1 = ON, 0 = OFF.\n");

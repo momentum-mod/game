@@ -12,8 +12,6 @@ class CHudTexture;
 struct WeaponScriptDefinition
 {
     char szPrintName[MAX_WEAPON_STRING];       // Name for showing in HUD
-    char szViewModel[MAX_WEAPON_STRING];       // View model of this weapon
-    char szWorldModel[MAX_WEAPON_STRING];      // Model of this weapon seen carried by the player
     char szAnimationPrefix[MAX_WEAPON_PREFIX]; // Prefix of the animations that should be used by the player carrying this weapon
     int iSlot;                                 // inventory slot.
     int iPosition;                             // position in the inventory slot.
@@ -38,6 +36,8 @@ struct WeaponScriptDefinition
     int iCrosshairMinDistance;
     int iCrosshairDeltaDistance;
 
+    // Weapon models
+    KeyValues *pKVWeaponModels;
     // Particle effects of weapons
     KeyValues *pKVWeaponParticles;
     // Sound Data
@@ -87,6 +87,11 @@ public:
     void LoadWeaponDefinitions();
     void ReloadWeaponDefinitions();
     void ReloadWeaponDefinition(WeaponID_t id);
+
+    // Convenience methods
+    const char *GetWeaponParticle(WeaponID_t id, const char *pKey);
+    const char *GetWeaponModel(WeaponID_t id, const char *pKey);
+    const char *GetWeaponSound(WeaponID_t id, const char *pKey);
 
     WeaponDefinition *GetWeaponDefinition(WeaponID_t id);
     WeaponScriptDefinition *GetWeaponScript(WeaponID_t id);

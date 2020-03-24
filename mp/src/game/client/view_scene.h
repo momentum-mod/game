@@ -29,7 +29,6 @@ void ViewTransform( const Vector &worldSpace, Vector &viewSpace );
 // Transform a world point into normalized screen space (X and Y from -1 to 1).
 // Returns true if the point is behind the viewer.
 bool ScreenTransform( const Vector& point, Vector& screen );
-bool HudTransform( const Vector& point, Vector& screen );
 
 
 extern ConVar r_updaterefracttexture;
@@ -47,18 +46,17 @@ inline void UpdateRefractTexture( int x, int y, int w, int h, bool bForceUpdate 
 
 	CMatRenderContextPtr pRenderContext( materials );
 	ITexture *pTexture = GetPowerOfTwoFrameBufferTexture();
-	if ( IsPC() || bForceUpdate || g_bAllowMultipleRefractUpdatesPerScenePerFrame || (gpGlobals->framecount != g_viewscene_refractUpdateFrame) )
-	{
-		// forced or only once per frame 
-		Rect_t rect;
-		rect.x = x;
-		rect.y = y;
-		rect.width = w;
-		rect.height = h;
-		pRenderContext->CopyRenderTargetToTextureEx( pTexture, 0, &rect, NULL );
 
-		g_viewscene_refractUpdateFrame = gpGlobals->framecount;
-	}
+	// forced or only once per frame 
+	Rect_t rect;
+	rect.x = x;
+	rect.y = y;
+	rect.width = w;
+	rect.height = h;
+	pRenderContext->CopyRenderTargetToTextureEx( pTexture, 0, &rect, NULL );
+
+	g_viewscene_refractUpdateFrame = gpGlobals->framecount;
+
 	pRenderContext->SetFrameBufferCopyTexture( pTexture );
 }
 

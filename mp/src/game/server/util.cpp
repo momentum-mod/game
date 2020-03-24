@@ -24,7 +24,6 @@
 #include "saverestoretypes.h"
 #include "checksum_crc.h"
 #include "hierarchy.h"
-#include "iservervehicle.h"
 #include "te_effect_dispatch.h"
 #include "utldict.h"
 #include "collisionutils.h"
@@ -688,13 +687,7 @@ bool UTIL_IsCommandIssuedByServerAdmin( void )
 	if ( engine->IsDedicatedServer() && issuingPlayerIndex > 0 )
 		return false;
 
-#if defined( REPLAY_ENABLED )
-	// entity 1 is replay?
-	player_info_t pi;
-	bool bPlayerIsReplay = engine->GetPlayerInfo( 1, &pi ) && pi.isreplay;
-#else
 	bool bPlayerIsReplay = false;
-#endif
 
 	if ( bPlayerIsReplay )
 	{
@@ -2452,39 +2445,21 @@ void UTIL_PredictedPosition( CBaseEntity *pTarget, float flTimeDelta, Vector *ve
 	//Player works differently than other entities
 	if ( pPlayer != NULL )
 	{
-		if ( pPlayer->IsInAVehicle() )
-		{
-			//Calculate the predicted position in this vehicle
-			vecPredictedVel = pPlayer->GetVehicleEntity()->GetSmoothedVelocity();
-		}
-		else
-		{
-			//Get the player's stored velocity
-			vecPredictedVel = pPlayer->GetSmoothedVelocity();
-		}
+		//Get the player's stored velocity
+		vecPredictedVel = pPlayer->GetSmoothedVelocity();
 	}
 	else
 	{
-		// See if we're a combat character in a vehicle
-		CBaseCombatCharacter *pCCTarget = pTarget->MyCombatCharacterPointer();
-		if ( pCCTarget != NULL && pCCTarget->IsInAVehicle() )
+		// See if we're an animating entity
+		CBaseAnimating *pAnimating = dynamic_cast<CBaseAnimating *>(pTarget);
+		if ( pAnimating != NULL )
 		{
-			//Calculate the predicted position in this vehicle
-			vecPredictedVel = pCCTarget->GetVehicleEntity()->GetSmoothedVelocity();
+			vecPredictedVel = pAnimating->GetGroundSpeedVelocity();
 		}
 		else
 		{
-			// See if we're an animating entity
-			CBaseAnimating *pAnimating = dynamic_cast<CBaseAnimating *>(pTarget);
-			if ( pAnimating != NULL )
-			{
-				vecPredictedVel = pAnimating->GetGroundSpeedVelocity();
-			}
-			else
-			{
-				// Otherwise we're a vanilla entity
-				vecPredictedVel = pTarget->GetSmoothedVelocity();				
-			}
+			// Otherwise we're a vanilla entity
+			vecPredictedVel = pTarget->GetSmoothedVelocity();				
 		}
 	}
 

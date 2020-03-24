@@ -70,7 +70,6 @@ class Vector;
 struct gamevcollisionevent_t;
 class CBaseAnimating;
 class CBasePlayer;
-class IServerVehicle;
 struct solid_t;
 struct notify_system_event_params_t;
 class CAI_BaseNPC;
@@ -267,7 +266,6 @@ enum DebugOverlayBits_t
 	OVERLAY_RBOX_BIT			=   0x00000040,     // show the rbox overlay
 	OVERLAY_SHOW_BLOCKSLOS		=	0x00000080,		// show entities that block NPC LOS
 	OVERLAY_ATTACHMENTS_BIT		=	0x00000100,		// show attachment points
-	OVERLAY_AUTOAIM_BIT			=	0x00000200,		// Display autoaim radius
 
 	OVERLAY_NPC_SELECTED_BIT	=	0x00001000,		// the npc is current selected
 	OVERLAY_NPC_NEAREST_BIT		=	0x00002000,		// show the nearest node of this npc
@@ -883,9 +881,6 @@ public:
 // still realize that they are teammates. (overridden for NPCs that form groups)
 	virtual Class_T Classify ( void );
 	virtual void	DeathNotice ( CBaseEntity *pVictim ) {}// NPC maker children use this to tell the NPC maker that they have died.
-	virtual bool	ShouldAttractAutoAim( CBaseEntity *pAimingEnt ) { return ((GetFlags() & FL_AIMTARGET) != 0); }
-	virtual float	GetAutoAimRadius();
-	virtual Vector	GetAutoAimCenter() { return WorldSpaceCenter(); }
 
 	virtual ITraceFilter*	GetBeamTraceFilter( void );
 
@@ -954,9 +949,6 @@ public:
 	virtual bool	IsBaseCombatWeapon( void ) const { return false; }
 	virtual bool	IsWearable( void ) const { return false; }
 	virtual CBaseCombatWeapon *MyCombatWeaponPointer( void ) { return NULL; }
-
-	// If this is a vehicle, returns the vehicle interface
-	virtual IServerVehicle*			GetServerVehicle() { return NULL; }
 
 	// UNDONE: Make this data instead of procedural?
 	virtual bool	IsViewable( void );					// is this something that would be looked at (model, sprite, etc.)?
@@ -1587,7 +1579,6 @@ private:
 
 	// Precache model sounds + particles
 	static void PrecacheModelComponents( int nModelIndex );
-	static void PrecacheSoundHelper( const char *pName );
 
 protected:
 	// Which frame did I simulate?
@@ -2692,6 +2683,6 @@ public:
 void SendProxy_Origin( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID );
 void SendProxy_OriginXY( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID );
 void SendProxy_OriginZ( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID );
-
+void SendProxy_Angles(const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID);
 
 #endif // BASEENTITY_H

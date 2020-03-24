@@ -360,33 +360,8 @@ void FX_ElectricSpark( const Vector &pos, int nMagnitude, int nTrailLength, cons
 		Color32Init( pParticle->m_color, 255, 255, 255, 255 );
 	}
 
-#ifdef _XBOX
 
-	//
-	// Cap
-	//
 
-	SimpleParticle sParticle;
-
-	sParticle.m_Pos = pos;
-	sParticle.m_flLifetime		= 0.0f;
-	sParticle.m_flDieTime		= 0.2f;
-
-	sParticle.m_vecVelocity.Init();
-
-	sParticle.m_uchColor[0]	= 255;
-	sParticle.m_uchColor[1]	= 255;
-	sParticle.m_uchColor[2]	= 255;
-	sParticle.m_uchStartAlpha	= 255;
-	sParticle.m_uchEndAlpha	= 255;
-	sParticle.m_uchStartSize	= nMagnitude * random->RandomInt( 4, 8 );
-	sParticle.m_uchEndSize		= 0;
-	sParticle.m_flRoll			= random->RandomInt( 0, 360 );
-	sParticle.m_flRollDelta	= 0.0f;
-
-	AddSimpleParticle( &sParticle, ParticleMgr()->GetPMaterial( "effects/yellowflare" ) );
-
-#else
 
 	//
 	// Little sparks
@@ -531,8 +506,6 @@ void FX_ElectricSpark( const Vector &pos, int nMagnitude, int nTrailLength, cons
 	dl->radius	= random->RandomFloat(16,32);
 	dl->die		= gpGlobals->curtime + 0.001;
 	*/
-
-#endif	// !_XBOX
 }
 
 //-----------------------------------------------------------------------------

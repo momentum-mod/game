@@ -53,11 +53,6 @@ public:
 	// Look for key
 	virtual kbutton_t	*FindKey( const char *name ) = 0;
 
-	// Issue commands from controllers
-	virtual void		ControllerCommands( void ) = 0;
-	// Extra initialization for some joysticks
-	virtual void		Joystick_Advanced( void ) = 0;
-	virtual void		Joystick_SetSampleTime( float frametime ) = 0;
 	virtual void		IN_SetSampleTime( float frametime ) = 0;
 
 	// Accumulate mouse delta
@@ -76,10 +71,6 @@ public:
 	virtual void		SetFullscreenMousePos( int mx, int my ) = 0;
 	virtual void		ResetMouse( void ) = 0;
 	virtual	float		GetLastForwardMove( void ) = 0;
-	virtual	float		Joystick_GetForward( void ) = 0;
-	virtual	float		Joystick_GetSide( void ) = 0;
-	virtual	float		Joystick_GetPitch( void ) = 0;
-	virtual	float		Joystick_GetYaw( void ) = 0;
 
 	// Third Person camera ( TODO/FIXME:  Move this to a separate interface? )
 	virtual void		CAM_Think( void ) = 0;
@@ -109,8 +100,6 @@ public:
 
 	virtual	void		CAM_SetCameraThirdData( CameraThirdData_t *pCameraData, const QAngle &vecCameraOffset ) = 0;
 	virtual void		CAM_CameraThirdThink( void ) = 0;
-
-	virtual	bool		EnableJoystickMode() = 0;
 };
 
 extern ::IInput *input;

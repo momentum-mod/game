@@ -1269,7 +1269,6 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 	switch (code)
 	{
 	case KEY_ESCAPE:
-	case KEY_XBUTTON_B: 
 		{
 			// hide the menu on ESC
 			SetVisible(false);
@@ -1278,8 +1277,6 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 		// arrow keys scroll through items on the list.
 		// they should also scroll the scroll bar if needed
 	case KEY_UP:
-	case KEY_XBUTTON_UP: 
-	case KEY_XSTICK1_UP: 
 		{
 			MoveAlongMenuItemList(MENU_UP, 0);
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
@@ -1293,8 +1290,6 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 			break;
 		}
 	case KEY_DOWN:
-	case KEY_XBUTTON_DOWN: 
-	case KEY_XSTICK1_DOWN: 
 		{
 			MoveAlongMenuItemList(MENU_DOWN, 0);
 			if ( m_MenuItems.IsValidIndex( m_iCurrentlySelectedItemID ) )
@@ -1309,8 +1304,6 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 		}
 	// for now left and right arrows just open or close submenus if they are there.
 	case KEY_RIGHT:
-	case KEY_XBUTTON_RIGHT: 
-	case KEY_XSTICK1_RIGHT: 
 		{
 			// make sure a menuItem is currently selected
 			if ( m_MenuItems.IsValidIndex(m_iCurrentlySelectedItemID) )
@@ -1331,8 +1324,6 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 			break;
 		}
 	case KEY_LEFT:
-	case KEY_XBUTTON_LEFT: 
-	case KEY_XSTICK1_LEFT: 
 		{
 			// if our parent is a menu item then we are a submenu so close us.
 			if (GetParentMenuItem())
@@ -1346,7 +1337,6 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 			break;
 		}
 	case KEY_ENTER:
-	case KEY_XBUTTON_A:
 		{
 			// make sure a menuItem is currently selected
 			if ( m_MenuItems.IsValidIndex(m_iCurrentlySelectedItemID) )

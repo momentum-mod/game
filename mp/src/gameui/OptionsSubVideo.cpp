@@ -323,9 +323,13 @@ public:
 			m_pShadowDetail->AddItem("#gameui_high", NULL);
 		}
 
-        m_pBloom = new CvarToggleCheckButton(this, "Bloom", "#GameUI_Bloom", "mat_disable_bloom");
+        m_pBloom = new ComboBox(this, "Bloom", 2, false);
+		m_pBloom->AddItem("#gameui_disabled", NULL);
+		m_pBloom->AddItem("#gameui_enabled", NULL);
 
-        m_pTonemap = new CvarToggleCheckButton(this, "Tonemap", "#GameUI_Tonemap", "mat_dynamic_tonemapping");
+        m_pTonemap = new ComboBox(this, "Tonemap", 2, false);
+		m_pTonemap->AddItem("#gameui_disabled", NULL);
+		m_pTonemap->AddItem("#gameui_enabled", NULL);
 
 		m_pWaterDetail = new ComboBox( this, "WaterDetail", 6, false );
 		m_pWaterDetail->AddItem("#gameui_noreflections", NULL);
@@ -441,9 +445,7 @@ public:
 		int nAAQuality = pKeyValues->GetInt( "ConVar.mat_aaquality", 0 );
 		int nRenderToTextureShadows = pKeyValues->GetInt( "ConVar.r_shadowrendertotexture", 0 );
 		int nShadowDepthTextureShadows = pKeyValues->GetInt( "ConVar.r_flashlightdepthtexture", 0 );
-#ifndef _X360
 		int nWaterUseRealtimeReflection = pKeyValues->GetInt( "ConVar.r_waterforceexpensive", 0 );
-#endif
 		int nWaterUseEntityReflection = pKeyValues->GetInt( "ConVar.r_waterforcereflectentities", 0 );
 		int nMatVSync = pKeyValues->GetInt( "ConVar.mat_vsync", 1 );
 		int nRootLOD = pKeyValues->GetInt( "ConVar.r_rootlod", 0 );
@@ -495,9 +497,7 @@ public:
 
 		SetComboItemAsRecommended( m_pShaderDetail, nReduceFillRate ? 0 : 1 );
 		
-#ifndef _X360
 		if ( nWaterUseRealtimeReflection )
-#endif
 		{
 			if ( nWaterUseEntityReflection )
 			{
@@ -508,12 +508,10 @@ public:
 				SetComboItemAsRecommended( m_pWaterDetail, 1 );
 			}
 		}
-#ifndef _X360
 		else
 		{
 			SetComboItemAsRecommended( m_pWaterDetail, 0 );
 		}
-#endif
 
 		SetComboItemAsRecommended( m_pVSync, nMatVSync != 0 );
 
@@ -591,21 +589,15 @@ public:
 		{
 		default:
 		case 0:
-#ifndef _X360
 			ApplyChangesToConVar( "r_waterforceexpensive", false );
-#endif
 			ApplyChangesToConVar( "r_waterforcereflectentities", false );
 			break;
 		case 1:
-#ifndef _X360
 			ApplyChangesToConVar( "r_waterforceexpensive", true );
-#endif
 			ApplyChangesToConVar( "r_waterforcereflectentities", false );
 			break;
 		case 2:
-#ifndef _X360
 			ApplyChangesToConVar( "r_waterforceexpensive", true );
-#endif
 			ApplyChangesToConVar( "r_waterforcereflectentities", true );
 			break;
 		}
@@ -619,8 +611,11 @@ public:
         ApplyChangesToConVar("mat_queue_mode", -m_pMulticore->GetActiveItem());
 
         m_pFOVSlider->ApplyChanges();
-        m_pBloom->ApplyChanges();
-        m_pTonemap->ApplyChanges();
+
+		// The cvar disables bloom so invert the item
+		ApplyChangesToConVar( "mat_disable_bloom", !m_pBloom->GetActiveItem() );
+
+		ApplyChangesToConVar( "mat_dynamic_tonemapping", m_pTonemap->GetActiveItem() );
 	}
 
 	virtual void OnResetData()
@@ -633,9 +628,7 @@ public:
 		ConVarRef mat_aaquality( "mat_aaquality" );
 		ConVarRef mat_vsync( "mat_vsync" );
 		ConVarRef r_flashlightdepthtexture( "r_flashlightdepthtexture" );
-#ifndef _X360
 		ConVarRef r_waterforceexpensive( "r_waterforceexpensive" );
-#endif
 		ConVarRef r_waterforcereflectentities( "r_waterforcereflectentities" );
 		ConVarRef mat_reducefillrate("mat_reducefillrate" );
 		ConVarRef mat_colorcorrection( "mat_colorcorrection" );
@@ -694,9 +687,7 @@ public:
 		int nMSAAMode = FindMSAAMode( nAASamples, nAAQuality );
 		m_pAntialiasingMode->ActivateItem( nMSAAMode );
 		
-#ifndef _X360
 		if ( r_waterforceexpensive.GetBool() )
-#endif
 		{
 			if ( r_waterforcereflectentities.GetBool() )
 			{
@@ -707,12 +698,10 @@ public:
 				m_pWaterDetail->ActivateItem( 1 );
 			}
 		}
-#ifndef _X360
 		else
 		{
 			m_pWaterDetail->ActivateItem( 0 );
 		}
-#endif
 
 		m_pVSync->ActivateItem( mat_vsync.GetInt() );
 
@@ -722,9 +711,10 @@ public:
 
         m_pMulticore->ActivateItem(- ConVarRef("mat_queue_mode").GetInt());
 
-        m_pBloom->Reset();
+		// The cvar disables bloom so invert the item
+        m_pBloom->ActivateItem(!ConVarRef("mat_disable_bloom").GetInt());
 
-        m_pTonemap->Reset();
+        m_pTonemap->ActivateItem(ConVarRef("mat_dynamic_tonemapping").GetInt());
 	}
 
 	virtual void OnCommand( const char *command )
@@ -790,7 +780,7 @@ private:
 	int m_nNumAAModes;
 	AAMode_t m_nAAModes[16];
 
-    vgui::CvarToggleCheckButton *m_pTonemap, *m_pBloom;
+    vgui::ComboBox *m_pTonemap, *m_pBloom;
 };
 
 //-----------------------------------------------------------------------------

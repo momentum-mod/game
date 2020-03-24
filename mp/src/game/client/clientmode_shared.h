@@ -74,8 +74,6 @@ public:
 	virtual bool	ShouldDrawViewModel();
 	virtual bool	ShouldDrawParticles( );
 	virtual bool	ShouldDrawCrosshair( void );
-	virtual bool	ShouldBlackoutAroundHUD() OVERRIDE;
-	virtual HeadtrackMovementMode_t ShouldOverrideHeadtrackControl() OVERRIDE;
 	virtual void	AdjustEngineViewport( int& x, int& y, int& width, int& height );
 	virtual void	PreRender(CViewSetup *pSetup);
 	virtual void	PostRender();
@@ -109,8 +107,6 @@ public:
 
 	virtual int HandleSpectatorKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
 
-	virtual void	ComputeVguiResConditions( KeyValues *pkvConditions ) OVERRIDE;
-
 	//=============================================================================
 	// HPE_BEGIN:
 	// [menglish] Save server information shown to the client in a persistent place
@@ -143,12 +139,6 @@ private:
 	virtual void	UpdateReplayMessages();
 
 	void			ClearReplayMessageList();
-
-#if defined( REPLAY_ENABLED )
-	float					m_flReplayStartRecordTime;
-	float					m_flReplayStopRecordTime;
-	CReplayReminderPanel	*m_pReplayReminderPanel;
-#endif
 
 	// Message mode handling
 	// All modes share a common chat interface

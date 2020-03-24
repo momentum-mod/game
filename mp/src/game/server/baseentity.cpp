@@ -46,7 +46,6 @@
 #include "game.h"
 #include "tier0/vprof.h"
 #include "ai_basenpc.h"
-#include "iservervehicle.h"
 #include "eventlist.h"
 #include "scriptevent.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -71,7 +70,6 @@
 #include "tier0/memdbgon.h"
 
 extern bool g_bTestMoveTypeStepSimulation;
-extern ConVar sv_vehicle_autoaim_scale;
 
 // Init static class variables
 bool CBaseEntity::m_bInDebugSelect = false;	// Used for selection in debug overlays
@@ -419,9 +417,7 @@ CBaseEntity::CBaseEntity( bool bServerOnly )
 	}
 	NetworkProp()->MarkPVSInformationDirty();
 
-#ifndef _XBOX
 	AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
-#endif
 
 #ifdef GLOWS_ENABLE
     m_bGlowEnabled.Set(false);
@@ -951,57 +947,6 @@ void CBaseEntity::DrawDebugGeometryOverlays(void)
 			NDebugOverlay::EntityBounds(this, 255, 255, 255, 0, 0 );
 		}
 	}
-	if ( m_debugOverlays & OVERLAY_AUTOAIM_BIT && (GetFlags()&FL_AIMTARGET) && AI_GetSinglePlayer() != NULL )
-	{
-		// Crude, but it gets the point across.
-		Vector vecCenter = GetAutoAimCenter();
-		Vector vecRight, vecUp, vecDiag;
-		CBasePlayer *pPlayer = AI_GetSinglePlayer();
-		float radius = GetAutoAimRadius();
-
-		QAngle angles = pPlayer->EyeAngles();
-		AngleVectors( angles, NULL, &vecRight, &vecUp );
-
-		int r,g,b;
-
-		if( ((int)gpGlobals->curtime) % 2 == 1 )
-		{
-			r = 255; 
-			g = 255;
-			b = 255;
-
-			if( pPlayer->GetActiveWeapon() != NULL )
-				radius *= pPlayer->GetActiveWeapon()->WeaponAutoAimScale();
-
-		}
-		else
-		{
-			r = 255;g=0;b=0;
-
-			if( !ShouldAttractAutoAim(pPlayer) )
-			{
-				g = 255;
-			}
-		}
-
-		if( pPlayer->IsInAVehicle() )
-		{
-			radius *= sv_vehicle_autoaim_scale.GetFloat();
-		}
-
-		NDebugOverlay::Line( vecCenter, vecCenter + vecRight * radius, r, g, b, true, 0.1 );
-		NDebugOverlay::Line( vecCenter, vecCenter - vecRight * radius, r, g, b, true, 0.1 );
-		NDebugOverlay::Line( vecCenter, vecCenter + vecUp * radius, r, g, b, true, 0.1 );
-		NDebugOverlay::Line( vecCenter, vecCenter - vecUp * radius, r, g, b, true, 0.1 );
-
-		vecDiag = vecRight + vecUp;
-		VectorNormalize( vecDiag );
-		NDebugOverlay::Line( vecCenter - vecDiag * radius, vecCenter + vecDiag * radius, r, g, b, true, 0.1 );
-
-		vecDiag = vecRight - vecUp;
-		VectorNormalize( vecDiag );
-		NDebugOverlay::Line( vecCenter - vecDiag * radius, vecCenter + vecDiag * radius, r, g, b, true, 0.1 );
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1194,7 +1139,7 @@ void CBaseEntity::SetParent( CBaseEntity *pParentEntity, int iAttachment )
 		m_iParentAttachment = (char)iAttachment;
 
 		EntityMatrix matrix, childMatrix;
-		matrix.InitFromEntity( const_cast<CBaseEntity *>(pParentEntity), m_iParentAttachment ); // parent->world
+		matrix.InitFromEntity( pParentEntity, m_iParentAttachment ); // parent->world
 		childMatrix.InitFromEntityLocal( this ); // child->world
 		Vector localOrigin = matrix.WorldToLocal( GetLocalOrigin() );
 		
@@ -2812,7 +2757,7 @@ bool CBaseEntity::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **p
 	Vector vecTargetOrigin = pEntity->EyePosition();
 
 	trace_t tr;
-	if ( !IsXbox() && ai_LOS_mode.GetBool() )
+	if ( ai_LOS_mode.GetBool() )
 	{
 		UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, traceMask, this, COLLISION_GROUP_NONE, &tr);
 	}
@@ -2840,14 +2785,6 @@ bool CBaseEntity::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **p
 		// If we hit the entity we're looking for, it's visible
 		if ( tr.m_pEnt == pEntity )
 			return true;
-
-		// Got line of sight on the vehicle the player is driving!
-		if ( pEntity && pEntity->IsPlayer() )
-		{
-			CBasePlayer *pPlayer = assert_cast<CBasePlayer*>( pEntity );
-			if ( tr.m_pEnt == pPlayer->GetVehicleEntity() )
-				return true;
-		}
 
 		if (ppBlocker)
 		{
@@ -2946,14 +2883,6 @@ ConVar ai_debug_los("ai_debug_los", "0", FCVAR_CHEAT, "NPC Line-Of-Sight debug m
 Class_T CBaseEntity::Classify ( void )
 { 
 	return CLASS_NONE;
-}
-
-float CBaseEntity::GetAutoAimRadius()
-{
-	if( g_pGameRules->GetAutoAimMode() == AUTOAIM_ON_CONSOLE )
-		return 48.0f;
-	else
-		return 24.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -4638,11 +4567,6 @@ static CUtlCachedFileData< CModelSoundsCache > g_ModelSoundsCache( "modelsounds.
 
 void ClearModelSoundsCache()
 {
-	if ( IsX360() )
-	{
-		return;
-	}
-
 	g_ModelSoundsCache.Reload();
 }
 
@@ -4652,11 +4576,6 @@ void ClearModelSoundsCache()
 //-----------------------------------------------------------------------------
 bool ModelSoundsCacheInit()
 {
-	if ( IsX360() )
-	{
-		return true;
-	}
-
 	return g_ModelSoundsCache.Init();
 }
 
@@ -4665,11 +4584,6 @@ bool ModelSoundsCacheInit()
 //-----------------------------------------------------------------------------
 void ModelSoundsCacheShutdown()
 {
-	if ( IsX360() )
-	{
-		return;
-	}
-
 	g_ModelSoundsCache.Shutdown();
 }
 
@@ -4682,11 +4596,6 @@ public:
 	}
 	virtual void LevelInitPostEntity()
 	{
-		if ( IsX360() )
-		{
-			return;
-		}
-
 		if ( g_ModelSoundsCache.IsDirty() )
 		{
 			g_ModelSoundsCache.Save();
@@ -4694,15 +4603,6 @@ public:
 	}
 	virtual void LevelShutdownPostEntity()
 	{
-		if ( IsX360() )
-		{
-			// Unforunate that this table must persist through duration of level.
-			// It is the common case that PrecacheModel() still gets called (and needs this table),
-			// after LevelInitPostEntity, as PrecacheModel() redundantly precaches.
-			g_ModelSoundsSymbolHelper.RemoveAll();
-			return;
-		}
-
 		if ( g_ModelSoundsCache.IsDirty() )
 		{
 			g_ModelSoundsCache.Save();
@@ -4756,33 +4656,6 @@ static CWatchForModelAccess g_WatchForModels;
 #define CL_EVENT_MFOOTSTEP_RIGHT	6007
 
 //-----------------------------------------------------------------------------
-// Precache model sound. Requires a local symbol table to prevent
-// a very expensive call to PrecacheScriptSound().
-//-----------------------------------------------------------------------------
-void CBaseEntity::PrecacheSoundHelper( const char *pName )
-{
-	if ( !IsX360() )
-	{
-		// 360 only
-		Assert( 0 );
-		return;
-	}
-
-	if ( !pName || !pName[0] )
-	{
-		return;
-	}
-
-	if ( UTL_INVAL_SYMBOL == g_ModelSoundsSymbolHelper.Find( pName ) )
-	{
-		g_ModelSoundsSymbolHelper.AddString( pName );
-
-		// very expensive, only call when required
-		PrecacheScriptSound( pName );
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Precache model components
 //-----------------------------------------------------------------------------
 void CBaseEntity::PrecacheModelComponents( int nModelIndex )
@@ -4795,38 +4668,35 @@ void CBaseEntity::PrecacheModelComponents( int nModelIndex )
 	}
 
 	// sounds
-	if ( IsPC() )
+	const char *name = modelinfo->GetModelName( pModel );
+	if ( !g_ModelSoundsCache.EntryExists( name ) )
 	{
-		const char *name = modelinfo->GetModelName( pModel );
-		if ( !g_ModelSoundsCache.EntryExists( name ) )
-		{
-			char extension[ 8 ];
-			Q_ExtractFileExtension( name, extension, sizeof( extension ) );
+		char extension[ 8 ];
+		Q_ExtractFileExtension( name, extension, sizeof( extension ) );
 
-			if ( Q_stristr( extension, "mdl" ) )
+		if ( Q_stristr( extension, "mdl" ) )
+		{
+			DevMsg( 2, "Late precache of %s, need to rebuild modelsounds.cache\n", name );
+		}
+		else
+		{
+			if ( !extension[ 0 ] )
 			{
-				DevMsg( 2, "Late precache of %s, need to rebuild modelsounds.cache\n", name );
+				Warning( "Precache of %s ambigious (no extension specified)\n", name );
 			}
 			else
 			{
-				if ( !extension[ 0 ] )
-				{
-					Warning( "Precache of %s ambigious (no extension specified)\n", name );
-				}
-				else
-				{
-					Warning( "Late precache of %s (file missing?)\n", name );
-				}
-				return;
+				Warning( "Late precache of %s (file missing?)\n", name );
 			}
+			return;
 		}
+	}
 
-		CModelSoundsCache *entry = g_ModelSoundsCache.Get( name );
-		Assert( entry );
-		if ( entry )
-		{
-			entry->PrecacheSoundList();
-		}
+	CModelSoundsCache *entry = g_ModelSoundsCache.Get( name );
+	Assert( entry );
+	if ( entry )
+	{
+		entry->PrecacheSoundList();
 	}
 
 	// particles
@@ -4879,68 +4749,6 @@ void CBaseEntity::PrecacheModelComponents( int nModelIndex )
 								PrecacheParticleSystem( token );
 							}
 							continue;
-						}
-					}
-
-					// 360 precaches the model sounds now at init time, the cost is now ~250 msecs worst case.
-					// The disk based solution was not needed. Now at runtime partly due to already crawling the sequences
-					// for the particles and the expensive part was redundant PrecacheScriptSound(), which is now prevented
-					// by a local symbol table.
-					if ( IsX360() )
-					{
-						switch ( pEvent->event )
-						{
-						default:
-							{
-								if ( ( pEvent->type & AE_TYPE_NEWEVENTSYSTEM ) && ( pEvent->event == AE_SV_PLAYSOUND ) )
-								{
-									PrecacheSoundHelper( pEvent->pszOptions() );
-								}
-							}
-							break;
-						case CL_EVENT_FOOTSTEP_LEFT:
-						case CL_EVENT_FOOTSTEP_RIGHT:
-							{
-								char soundname[256];
-								char const *options = pEvent->pszOptions();
-								if ( !options || !options[0] )
-								{
-									options = "NPC_CombineS";
-								}
-
-								Q_snprintf( soundname, sizeof( soundname ), "%s.RunFootstepLeft", options );
-								PrecacheSoundHelper( soundname );
-								Q_snprintf( soundname, sizeof( soundname ), "%s.RunFootstepRight", options );
-								PrecacheSoundHelper( soundname );
-								Q_snprintf( soundname, sizeof( soundname ), "%s.FootstepLeft", options );
-								PrecacheSoundHelper( soundname );
-								Q_snprintf( soundname, sizeof( soundname ), "%s.FootstepRight", options );
-								PrecacheSoundHelper( soundname );
-							}
-							break;
-						case AE_CL_PLAYSOUND:
-							{
-								if ( !( pEvent->type & AE_TYPE_CLIENT ) )
-									break;
-
-								if ( pEvent->pszOptions()[0] )
-								{
-									PrecacheSoundHelper( pEvent->pszOptions() );
-								}
-								else
-								{
-									Warning( "-- Error --:  empty soundname, .qc error on AE_CL_PLAYSOUND in model %s, sequence %s, animevent # %i\n", 
-										studioHdr.GetRenderHdr()->pszName(), seq.pszLabel(), j+1 );
-								}
-							}
-							break;
-						case CL_EVENT_SOUND:
-						case SCRIPT_EVENT_SOUND:
-						case SCRIPT_EVENT_SOUND_VOICE:
-							{
-								PrecacheSoundHelper( pEvent->pszOptions() );
-							}
-							break;
 						}
 					}
 				}
@@ -6124,22 +5932,12 @@ void CBaseEntity::SetLocalOrigin( const Vector& origin )
 
 void CBaseEntity::SetLocalAngles( const QAngle& angles )
 {
-	// NOTE: The angle normalize is a little expensive, but we can save
-	// a bunch of time in interpolation if we don't have to invalidate everything
-	// and sometimes it's off by a normalization amount
-
-	// FIXME: The normalize caused problems in server code like momentary_rot_button that isn't
-	//        handling things like +/-180 degrees properly. This should be revisited.
-	//QAngle angleNormalize( AngleNormalize( angles.x ), AngleNormalize( angles.y ), AngleNormalize( angles.z ) );
-
 	// Safety check against NaN's or really huge numbers
+	// And actually normalize the angles rather than freeze the entity and spam warnings
 	if ( !IsEntityQAngleReasonable( angles ) )
 	{
-		if ( CheckEmitReasonablePhysicsSpew() )
-		{
-			Warning( "Bad SetLocalAngles(%f,%f,%f) on %s\n", angles.x, angles.y, angles.z, GetDebugName() );
-		}
-		AssertMsg( false, "Bad SetLocalAngles(%f,%f,%f) on %s\n", angles.x, angles.y, angles.z, GetDebugName() );
+		QAngle angleNormalize(AngleNormalize(angles.x), AngleNormalize(angles.y), AngleNormalize(angles.z));
+		SetLocalAngles(angleNormalize);
 		return;
 	}
 
@@ -6793,15 +6591,6 @@ void CC_Ent_Show_Response_Criteria( const CCommand& args )
 }
 static ConCommand ent_show_response_criteria("ent_show_response_criteria", CC_Ent_Show_Response_Criteria, "Print, to the console, an entity's current criteria set used to select responses.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
 
-//------------------------------------------------------------------------------
-// Purpose: Show an entity's autoaim radius
-//------------------------------------------------------------------------------
-void CC_Ent_Autoaim( const CCommand& args )
-{
-	SetDebugBits( UTIL_GetCommandClient(),args[1], OVERLAY_AUTOAIM_BIT );
-}
-static ConCommand ent_autoaim("ent_autoaim", CC_Ent_Autoaim, "Displays the entity's autoaim radius.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at", FCVAR_CHEAT );
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -7051,26 +6840,13 @@ void CBaseEntity::RemoveRecipientsIfNotCloseCaptioning( CRecipientFilter& filter
 		CBasePlayer *player = static_cast< CBasePlayer * >( CBaseEntity::Instance( playerIndex ) );
 		if ( !player )
 			continue;
-#if !defined( _XBOX )
+
 		const char *cvarvalue = engine->GetClientConVarValue( playerIndex, "closecaption" );
 		Assert( cvarvalue );
 		if ( !cvarvalue[ 0 ] )
 			continue;
 
 		int value = atoi( cvarvalue );
-#else
-		static ConVar *s_pCloseCaption = NULL;
-		if ( !s_pCloseCaption )
-		{
-			s_pCloseCaption = cvar->FindVar( "closecaption" );
-			if ( !s_pCloseCaption )
-			{
-				Error( "XBOX couldn't find closecaption convar!!!" );
-			}
-		}
-
-		int value = s_pCloseCaption->GetInt();
-#endif
 		// No close captions?
 		if ( value == 0 )
 		{
@@ -7254,13 +7030,10 @@ bool CBaseEntity::SUB_AllowedToFade( void )
 			return false;
 	}
 
-	// on Xbox, allow these to fade out
-#ifndef _XBOX
 	CBasePlayer *pPlayer = ( AI_IsSinglePlayer() ) ? UTIL_GetLocalPlayer() : NULL;
 
 	if ( pPlayer && pPlayer->FInViewCone( this ) )
 		return false;
-#endif
 
 	return true;
 }

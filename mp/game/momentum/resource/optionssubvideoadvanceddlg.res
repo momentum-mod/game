@@ -340,25 +340,23 @@
 	}
 	"Bloom"
 	{
-		"ControlName"		"CvarToggleCheckButton"
+		"ControlName"		"ComboBox"
 		"fieldName"		"Bloom"
 		"xpos"		"22"
 		"ypos"		"316"
-		"wide"		"120"
+		"wide"		"132"
 		"tall"		"24"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"visible"		"1" [!$OSX]
 		"visible"		"0" [$OSX]
 		"enabled"		"1"
-		"tabPosition"		"13"
-		"labelText"		"#GameUI_Bloom"
-		"textAlignment"		"west"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"wrap"		"0"
-		"Default"		"1"
-		"selected"		"0"
+		"tabPosition"		"5"
+		"textHidden"		"0"
+		"editable"		"0"
+		"maxchars"		"-1"
+		"NumericInputOnly"		"0"
+		"unicode"		"0"
 	}
 	"WaterDetail"
 	{
@@ -455,28 +453,6 @@
 		"NumericInputOnly"		"0"
 		"unicode"		"0"
 	}
-	"Tonemap"
-	{
-		"ControlName"		"CvarToggleCheckButton"
-		"fieldName"		"Tonemap"
-		"xpos"		"250"
-		"ypos"		"316"
-		"wide"		"175"
-		"tall"		"24"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1" [!$OSX]
-		"visible"		"0" [$OSX]
-		"enabled"		"1"
-		"tabPosition"		"13"
-		"labelText"		"#GameUI_Tonemap"
-		"textAlignment"		"west"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"wrap"		"0"
-		"Default"		"1"
-		"selected"		"0"
-	}
 	"Motion Blur Label"
 	{
 		"ControlName"		"Label"
@@ -492,7 +468,47 @@
 		"tabPosition"		"0"
 		"labelText"		"#GameUI_MotionBlur"
 		"textAlignment"		"west"
-		"associate"		"Bloom"
+		"associate"		"MotionBlur"
+		"dulltext"		"0"
+		"brighttext"		"0"
+		"wrap"		"0"
+	}
+	"Tonemap"
+	{
+		"ControlName"		"ComboBox"
+		"fieldName"		"Tonemap"
+		"xpos"		"176"
+		"ypos"		"316"
+		"wide"		"132"
+		"tall"		"24"
+		"autoResize"		"0"
+		"pinCorner"		"0"
+		"visible"		"1" [!$OSX]
+		"visible"		"0" [$OSX]
+		"enabled"		"1"
+		"tabPosition"		"5"
+		"textHidden"		"0"
+		"editable"		"0"
+		"maxchars"		"-1"
+		"NumericInputOnly"		"0"
+		"unicode"		"0"
+	}
+	"Tonemap Label"
+	{
+		"ControlName"		"Label"
+		"fieldName"		"Tonemap Label"
+		"xpos"		"176"
+		"ypos"		"292"
+		"wide"		"175"
+		"tall"		"24"
+		"autoResize"		"0"
+		"pinCorner"		"0"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"		"0"
+		"labelText"		"#GameUI_Tonemap"
+		"textAlignment"		"west"
+		"associate"		"Tonemap"
 		"dulltext"		"0"
 		"brighttext"		"0"
 		"wrap"		"0"
@@ -799,10 +815,10 @@
 		"Font"		"DefaultSmall"
 		"wrap"		"0"
 	}
-	"HDRLabel"
+	"BloomLabel"
 	{
 		"ControlName"		"Label"
-		"fieldName"		"HDRLabel"
+		"fieldName"		"BloomLabel"
 		"xpos"		"22"
 		"ypos"		"292"
 		"wide"		"138"
@@ -813,7 +829,7 @@
 		"visible"		"0" [$OSX]
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"#GameUI_HDR"
+		"labelText"		"#GameUI_Bloom"
 		"textAlignment"		"west"
 		"associate"		"Bloom"
 		"dulltext"		"0"

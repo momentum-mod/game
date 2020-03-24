@@ -25,7 +25,7 @@
 #include "filesystem.h"
 #include <vgui_controls/AnimationController.h>
 #include <vgui/ISurface.h>
-#include "hud_lcd.h"
+#include "fmtstr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -57,9 +57,10 @@ struct HudTextureFileRef
 
 void LoadHudTextures(CUtlDict< CHudTexture*>& list, const char *szFilenameWithoutExtension)
 {
+	CFmtStr szFullName("%s.txt", szFilenameWithoutExtension);
 	KeyValuesAD pKeyValuesData("InputFile");
-	
-	if (pKeyValuesData->LoadFromFile(g_pFullFileSystem, szFilenameWithoutExtension, "GAME"))
+
+	if (pKeyValuesData->LoadFromFile(g_pFullFileSystem, szFullName, "GAME"))
 	{
 		LoadHudTextures(list, pKeyValuesData);
 	}
@@ -382,8 +383,6 @@ void CHud::Init( void )
 	// Create all the Hud elements
 	CHudElementHelper::CreateAllElements();
 
-	gLCD.Init();
-
 	// Initialize all created elements
 	for ( int i = 0; i < m_HudList.Size(); i++ )
 	{
@@ -474,8 +473,6 @@ void CHud::InitFonts()
 //-----------------------------------------------------------------------------
 void CHud::Shutdown( void )
 {
-	gLCD.Shutdown();
-
 	// Deleting hudlist items can result in them being removed from the same hudlist (m_bNeedsRemove).
 	//	So go through and kill the last item until the array is empty.
 	while ( m_HudList.Size() > 0 )
@@ -549,19 +546,6 @@ CHud::~CHud()
 		CHudRenderGroup *group = m_RenderGroups[ i ];
 		m_RenderGroups.RemoveAt(i);
 		delete group;
-	}
-}
-
-void CHudTexture::Precache( void )
-{
-	// costly function, used selectively on specific hud elements to get font pages built out at load time
-	if ( IsX360() && bRenderUsingFont && !bPrecached && hFont != vgui::INVALID_FONT )
-	{
-		wchar_t wideChars[2];
-		wideChars[0] = (wchar_t)cCharacterInFont;
-		wideChars[1] = 0;
-		vgui::surface()->PrecacheFontCharacters( hFont, wideChars );
-		bPrecached = true;
 	}
 }
 
@@ -917,11 +901,7 @@ void CHud::RemoveHudElement( CHudElement *pHudElement )
 //-----------------------------------------------------------------------------
 float CHud::GetSensitivity( void )
 {
-#ifndef _X360
 	return m_flMouseSensitivity;
-#else
-	return 1.0f;
-#endif
 }
 
 float CHud::GetFOVSensitivityAdjust()
@@ -1165,8 +1145,6 @@ void CHud::UpdateHud( bool bActive )
 	m_iKeyBits &= (~(IN_WEAPON1|IN_WEAPON2));
 
 	g_pClientMode->Update();
-
-	gLCD.Update();
 }
 
 //-----------------------------------------------------------------------------

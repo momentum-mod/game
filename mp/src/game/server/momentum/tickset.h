@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cbase.h"
-
 struct Tickrate
 {
     float fTickRate;
@@ -36,13 +34,18 @@ public:
 
     enum
     {
-        TICKRATE_66 = 0,
-        TICKRATE_100 = 1    
+        TICKRATE_64 = 0,
+        TICKRATE_66,
+        TICKRATE_85,
+        TICKRATE_100,
+        TICKRATE_128,
+
+        TICKRATE_COUNT,
+        TICKRATE_FIRST = TICKRATE_64,
+        TICKRATE_LAST = TICKRATE_128,
     };
 
     static bool TickInit();
-
-    static bool SetTickrate(int gameMode);
 
     static Tickrate GetCurrentTickrate() { return (m_trCurrent.fTickRate > 0.0f ? m_trCurrent : s_DefinedRates[TICKRATE_66]); }
 
@@ -51,11 +54,9 @@ public:
     static float GetTickrate() { return *interval_per_tick; }
 
 private:
-    // RevEng things
-    static inline bool DataCompare(const unsigned char*, const unsigned char*, const char*);
-    static void *FindPattern(const void*, size_t, const unsigned char*, const char*);
     static float *interval_per_tick;
 
     static Tickrate m_trCurrent;
-    static bool m_bInGameUpdate;
 };
+
+extern ConVar sv_interval_per_tick;

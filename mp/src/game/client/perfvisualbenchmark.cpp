@@ -21,9 +21,7 @@ static CPerfVisualBenchmark s_PerfVisualBenchmark; // singleton
 
 IGameSystem* PerfVisualBenchmark() { return &s_PerfVisualBenchmark; }
 
-#ifndef _XBOX
 extern ConVar cl_mouseenable;
-#endif
 
 void usrCmd_Start()
 {
@@ -211,10 +209,8 @@ bool CPerfVisualBenchmark::Init()
 
 void CPerfVisualBenchmark::Start()
 {
-#ifndef _XBOX
 	m_bSaveMouseEnable = cl_mouseenable.GetBool();
 	cl_mouseenable.SetValue( 0 );
-#endif
 	m_iCurVar = 0;
 	m_flTimer = gpGlobals->realtime + FPS_STABILIZE_TIME;
 	m_bWaiting = true;
@@ -228,9 +224,7 @@ void CPerfVisualBenchmark::Start()
 
 void CPerfVisualBenchmark::Stop()
 {
-#ifndef _XBOX
 	cl_mouseenable.SetValue( m_bSaveMouseEnable );
-#endif
 	m_bIsOn = false;
 	Print();
 	engine->ClientCmd_Unrestricted("host_timescale 0");					// pause the mofo

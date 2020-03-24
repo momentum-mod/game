@@ -4,12 +4,13 @@
 
 #include "in_buttons.h"
 #include "fx_mom_shared.h"
-#include "util/mom_util.h"
 #include "mom_grenade_projectile.h"
 #include "mom_rocket.h"
 #include "te_effect_dispatch.h"
 #include "weapon/weapon_def.h"
+#include "weapon/weapon_knife.h"
 #include "ghost_client.h"
+#include "mom_stickybomb.h"
 
 #include "tier0/memdbgon.h"
 
@@ -105,6 +106,13 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
         break;
     case DECAL_ROCKET:
         FireRocket(decal);
+        break;
+    case DECAL_STICKY_SHOOT:
+        FireSticky(decal);
+        break;
+    case DECAL_STICKY_DETONATE:
+        DetonateStickies();
+        break;
     default:
         break;
     }
@@ -164,9 +172,7 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
     // Play the paintgun sound
     if (mom_paintgun_shoot_sound.GetBool())
     {
-        const auto pWeaponScript = g_pWeaponDef->GetWeaponScript(WEAPON_PAINTGUN);
-
-        const char *shootsound = pWeaponScript->pKVWeaponSounds->GetString("single_shot");
+        const char *shootsound = g_pWeaponDef->GetWeaponSound(WEAPON_PAINTGUN, "single_shot");
         if (!shootsound || !shootsound[0])
             return;
 
@@ -178,29 +184,62 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket& packet)
     }
 }
 
-void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket&packet)
+void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket &packet)
 {
     trace_t tr;
     Vector vForward;
     // Trace data here, play miss sound and do damage if hit
-    MomUtil::KnifeTrace(packet.vOrigin, packet.vAngle, packet.data.knife.bStab, this, this, &tr, &vForward);
+    CKnife::KnifeTrace(packet.vOrigin, packet.vAngle, packet.data.knife.bStab, this, this, &tr, &vForward);
     // Play the smacking sounds and do the decal if it actually hit
-    MomUtil::KnifeSmack(tr, this, packet.vAngle, packet.data.knife.bStab);
+    CKnife::KnifeSmack(tr, this, packet.vAngle, packet.data.knife.bStab);
 }
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 {
-    const auto pGrenadeInfo = g_pWeaponDef->GetWeaponScript(WEAPON_GRENADE);
     // Vector values stored in a QAngle, shhh~
     Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
-    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this, pGrenadeInfo->szWorldModel);
-    grenade->SetDamage(0.0f); // These grenades should not do damage
+    CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.data.bullet.iMode, 0), this);
 }
 
 void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
 {
-    const auto pRocket = CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
-    pRocket->SetDamage(0.0f); // Rockets do no damage unless... MOM_TODO: set this per map/gamemode flag?
+    CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
+}
+
+void CMomentumOnlineGhostEntity::FireSticky(const DecalPacket &packet)
+{
+    CMomStickybomb::Create(packet.vOrigin, packet.vAngle, packet.data.stickyShoot.velocity, this);
+
+    // If we've gone over the max stickybomb count, fizzle the oldest
+    if (m_vecExplosives.Count() > MOM_WEAPON_STICKYBOMB_COUNT)
+    {
+        const auto pTemp = m_vecExplosives[0];
+        if (pTemp)
+        {
+            pTemp->Destroy(true);
+        }
+    }
+}
+
+void CMomentumOnlineGhostEntity::DetonateStickies()
+{
+    FOR_EACH_VEC_BACK(m_vecExplosives, i)
+    {
+        CMomStickybomb *pTemp = dynamic_cast<CMomStickybomb *>(m_vecExplosives[i]);
+        if (pTemp)
+        {
+            // This guy will die soon enough.
+            if (pTemp->IsEffectActive(EF_NODRAW))
+                continue;
+
+            if (!pTemp->IsArmed())
+            {
+                continue;
+            }
+
+            pTemp->Detonate();
+        }
+    }
 }
 
 void CMomentumOnlineGhostEntity::SetGhostName(const char *pGhostName)

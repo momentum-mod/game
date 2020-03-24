@@ -20,10 +20,6 @@
 #include "inputsystem/ButtonCode.h"
 #include "modes.h"
 
-#if !defined( _X360 )
-#include "xbox/xboxstubs.h"
-#endif
-
 //-----------------------------------------------------------------------------
 // forward declarations
 //-----------------------------------------------------------------------------
@@ -85,10 +81,6 @@ typedef struct player_info_s
 	bool			fakeplayer;
 	// true if player is the HLTV proxy
 	bool			ishltv;
-#if defined( REPLAY_ENABLED )
-	// true if player is the Replay proxy
-	bool			isreplay;
-#endif
 	// custom files CRC for this player
 	CRC32_t			customFiles[MAX_CUSTOM_FILES];
 	// this counter increases each time the server downloaded a new file
@@ -739,7 +731,7 @@ public:
 	virtual bool			GetPlayerView( CViewSetup &playerView ) = 0;
 
 	// Matchmaking
-	virtual void			SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties ) = 0;
+	virtual void			SetupGameProperties() = 0;
 	virtual uint			GetPresenceID( const char *pIDName ) = 0;
 	virtual const char		*GetPropertyIdString( const uint id ) = 0;
 	virtual void			GetPropertyDisplayString( uint id, uint value, char *pOutput, int nBytes ) = 0;

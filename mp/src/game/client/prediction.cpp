@@ -15,7 +15,6 @@
 #include <vgui/ISurface.h>
 #include <vgui/IScheme.h>
 #include "hud.h"
-#include "iclientvehicle.h"
 #include "in_buttons.h"
 #include "con_nprint.h"
 #include "hud_pdump.h"
@@ -425,9 +424,7 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 	Q_snprintf( sz, sizeof( sz ), "postnetworkdata%d", commands_acknowledged );
 	PREDICTION_TRACKVALUECHANGESCOPE( sz );
 #endif
-#ifndef _XBOX
 	CPDumpPanel *dump = GetPDumpPanel();
-#endif
 	//Msg( "%i/%i ack %i commands/slot\n",
 	//	gpGlobals->framecount,
 	//	gpGlobals->tickcount,
@@ -512,7 +509,6 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 						ent->GetPredictable() ? "predicted" : "client created" );
 				}
 			}
-#ifndef _XBOX
 			if ( error_check && 
 				!entityDumped &&
 				dump &&
@@ -521,7 +517,6 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 				entityDumped = true;
 				dump->DumpEntity( ent, m_nServerCommandsAcknowledged );
 			}
-#endif
 		}
 
 		if ( showlist >= 2 )
@@ -558,7 +553,6 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 	}
 
 	// Can also look at regular entities
-#ifndef _XBOX
 	int dumpentindex = cl_predictionentitydump.GetInt();
 	if ( dump && error_check && !entityDumped && dumpentindex != -1 )
 	{
@@ -573,7 +567,6 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 			}
 		}
 	}
-#endif
 	if ( cl_predict->GetBool() != m_bOldCLPredictValue )
 	{
 		if ( !m_bOldCLPredictValue )
@@ -588,12 +581,10 @@ void CPrediction::PostNetworkDataReceived( int commands_acknowledged )
 
 	m_bOldCLPredictValue = cl_predict->GetInt();
 
-#ifndef _XBOX
 	if ( dump && error_check && !entityDumped )
 	{
 		dump->Clear();
 	}
-#endif
 #endif
 
 }
@@ -651,12 +642,6 @@ void CPrediction::SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *
 		move->m_flSideMove			= ucmd->sidemove;
 		move->m_flUpMove			= ucmd->upmove;
 	}
-		
-	IClientVehicle *pVehicle = player->GetVehicle();
-	if (pVehicle)
-	{
-		pVehicle->SetupMove( player, ucmd, pHelper, move ); 
-	}
 
 	// Copy constraint information
 	if ( player->m_hConstraintEntity )
@@ -706,12 +691,6 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 	m_hLastGround = player->GetGroundEntity();
  
 	player->SetLocalOrigin( move->GetAbsOrigin() );
-
-	IClientVehicle *pVehicle = player->GetVehicle();
-	if (pVehicle)
-	{
-		pVehicle->FinishMove( player, ucmd, move ); 
-	}
 
 	// Sanity checks
 	if ( player->m_hConstraintEntity )
@@ -891,16 +870,9 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	}
 
 	// Latch in impulse.
-	IClientVehicle *pVehicle = player->GetVehicle();
 	if ( ucmd->impulse )
 	{
-		// Discard impulse commands unless the vehicle allows them.
-		// FIXME: UsingStandardWeapons seems like a bad filter for this. 
-		// The flashlight is an impulse command, for example.
-		if ( !pVehicle || player->UsingStandardWeaponsInVehicle() )
-		{
-			player->m_nImpulse = ucmd->impulse;
-		}
+		player->m_nImpulse = ucmd->impulse;
 	}
 
 	// Get button states
@@ -925,15 +897,8 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	}
 
 	// RUN MOVEMENT
-	if ( !pVehicle )
-	{
-		Assert( g_pGameMovement );
-		g_pGameMovement->ProcessMovement( player, g_pMoveData );
-	}
-	else
-	{
-		pVehicle->ProcessMovement( player, g_pMoveData );
-	}
+    Assert( g_pGameMovement );
+    g_pGameMovement->ProcessMovement( player, g_pMoveData );
 
 	FinishMove( player, ucmd, g_pMoveData );
 
@@ -968,10 +933,6 @@ void CPrediction::SetIdealPitch ( C_BasePlayer *player, const Vector& origin, co
 	trace_t tr;
 
 	if ( player->GetGroundEntity() == NULL )
-		return;
-	
-	// Don't do this on the 360..
-	if ( IsX360() )
 		return;
 
 	AngleVectors( angles, &forward );

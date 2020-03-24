@@ -26,7 +26,6 @@
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
 #include "view.h"
-#include "ixboxsystem.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -535,35 +534,6 @@ bool GetVectorInScreenSpace( Vector pos, int& iX, int& iY, Vector *vecOffset )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Get the x & y positions of a world position in HUD space
-//			Returns true if it's onscreen
-//-----------------------------------------------------------------------------
-bool GetVectorInHudSpace( Vector pos, int& iX, int& iY, Vector *vecOffset )
-{
-	Vector screen;
-
-	// Apply the offset, if one was specified
-	if ( vecOffset != NULL )
-		pos += *vecOffset;
-
-	// Transform to HUD space
-	int iFacing = HudTransform( pos, screen );
-	iX = 0.5f * ( 1.0f + screen[0] ) * ScreenWidth();
-	iY = 0.5f * ( 1.0f - screen[1] ) * ScreenHeight();
-
-	// Make sure the player's facing it
-	if ( iFacing )
-	{
-		// We're actually facing away from the Target. Stomp the screen position.
-		iX = -640;
-		iY = -640;
-		return false;
-	}
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Get the x & y positions of an entity in screenspace
 //			Returns true if it's onscreen
 //-----------------------------------------------------------------------------
@@ -571,16 +541,6 @@ bool GetTargetInScreenSpace( C_BaseEntity *pTargetEntity, int& iX, int& iY, Vect
 {
 	return GetVectorInScreenSpace( pTargetEntity->WorldSpaceCenter(), iX, iY, vecOffset );
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Get the x & y positions of an entity in Vgui space
-//			Returns true if it's onscreen
-//-----------------------------------------------------------------------------
-bool GetTargetInHudSpace( C_BaseEntity *pTargetEntity, int& iX, int& iY, Vector *vecOffset )
-{
-	return GetVectorInHudSpace( pTargetEntity->WorldSpaceCenter(), iX, iY, vecOffset );
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -950,28 +910,13 @@ void UTIL_ReplaceKeyBindings( const wchar_t *inbuf, int inbufsizebytes, OUT_Z_BY
 				const char *key = engine->Key_LookupBinding( *binding == '+' ? binding + 1 : binding );
 				if ( !key )
 				{
-					key = IsX360() ? "" : "< not bound >";
+					key = "< not bound >";
 				}
 
 				//!! change some key names into better names
 				char friendlyName[64];
 				bool bAddBrackets = false;
-				if ( IsX360() )
-				{
-					if ( !key || !key[0] )
-					{
-						Q_snprintf( friendlyName, sizeof(friendlyName), "#GameUI_None" );
-						bAddBrackets = true;
-					}
-					else
-					{
-						Q_snprintf( friendlyName, sizeof(friendlyName), "#GameUI_KeyNames_%s", key );
-					}
-				}
-				else
-				{
-					Q_snprintf( friendlyName, sizeof(friendlyName), "%s", key );
-				}
+				Q_snprintf( friendlyName, sizeof(friendlyName), "%s", key );
 				Q_strupr( friendlyName );
 
 				wchar_t *locName = g_pVGuiLocalize->Find( friendlyName );
@@ -1154,7 +1099,7 @@ unsigned char UTIL_ComputeEntityFade( C_BaseEntity *pEntity, float flMinDist, fl
 			vecAbsCenter = pEntity->GetRenderOrigin();
 		}
 
-		unsigned char nGlobalAlpha = IsXbox() ? 255 : modelinfo->ComputeLevelScreenFade( vecAbsCenter, flRadius, flFadeScale );
+		unsigned char nGlobalAlpha = modelinfo->ComputeLevelScreenFade( vecAbsCenter, flRadius, flFadeScale );
 		unsigned char nDistAlpha;
 
 		if ( !engine->IsLevelMainMenuBackground() )
@@ -1194,33 +1139,14 @@ void UTIL_BoundToWorldSize( Vector *pVecPos )
 	}
 }
 
-#ifdef _X360
-#define MAP_KEY_FILE_DIR	"cfg"
-#else
 #define MAP_KEY_FILE_DIR	"media"
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns the filename to count map loads in
 //-----------------------------------------------------------------------------
 bool UTIL_GetMapLoadCountFileName( const char *pszFilePrependName, char *pszBuffer, int iBuflen )
 {
-	if ( IsX360() )
-	{
-#ifdef _X360
-		if ( XBX_GetStorageDeviceId() == XBX_INVALID_STORAGE_ID || XBX_GetStorageDeviceId() == XBX_STORAGE_DECLINED )
-			return false;
-#endif
-	}
-
-	if ( IsX360() )
-	{
-		Q_snprintf( pszBuffer, iBuflen, "%s:/%s", MAP_KEY_FILE_DIR, pszFilePrependName );
-	}
-	else
-	{
-		Q_snprintf( pszBuffer, iBuflen, "%s/%s", MAP_KEY_FILE_DIR, pszFilePrependName );
-	}
+	Q_snprintf( pszBuffer, iBuflen, "%s/%s", MAP_KEY_FILE_DIR, pszFilePrependName );
 
 	return true;
 }
@@ -1278,13 +1204,6 @@ void UTIL_IncrementMapKey( const char *pszCustomKey )
 		g_pFullFileSystem->WriteFile( szFilename, "MOD", buf );
 
 		kvMapLoadFile->deleteThis();
-	}
-
-	if ( IsX360() )
-	{
-#ifdef _X360
-		xboxsystem->FinishContainerWrites();
-#endif
 	}
 }
 

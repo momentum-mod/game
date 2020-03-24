@@ -1639,8 +1639,7 @@ void TextEntry::OnKeyCodePressed(KeyCode code)
 	}
 	
 	// Pass on the joystick and mouse codes
-	if ( IsMouseCode(code) || IsNovintButtonCode(code) || IsJoystickCode(code) || IsJoystickButtonCode(code) ||
-	     IsJoystickPOVCode(code) || IsJoystickAxisCode(code) )
+	if ( IsMouseCode(code) )
 	{
 		Panel::OnKeyCodePressed( code );
 		return;

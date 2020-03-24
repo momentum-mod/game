@@ -19,7 +19,6 @@
 abstract_class IGameClientExports : public IBaseInterface
 {
 public:
-#ifndef _XBOX
 	// ingame voice manipulation
 	virtual bool IsPlayerGameVoiceMuted(int playerIndex) = 0;
 	virtual void MutePlayerGameVoice(int playerIndex) = 0;
@@ -28,7 +27,6 @@ public:
 	// notification of gameui state changes
 	virtual void OnGameUIActivated() = 0;
 	virtual void OnGameUIHidden() = 0;
-#endif
 
     //=============================================================================
     // HPE_BEGIN

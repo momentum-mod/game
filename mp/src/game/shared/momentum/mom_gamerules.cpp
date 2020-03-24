@@ -23,7 +23,7 @@ CMomentumGameRules::CMomentumGameRules()
 
 CMomentumGameRules::~CMomentumGameRules() {}
 
-static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
+static CViewVectors g_ViewVectorsMom(Vector(0, 0, 64), // eye position
                                      Vector(-16, -16, 0), // hull min
                                      Vector(16, 16, 62),  // hull max
 
@@ -37,7 +37,7 @@ static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(0, 0, 14) // dead view height
 );
 
-static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
+static CViewVectors g_ViewVectorsTF2(Vector(0, 0, 68), // eye position
                                      Vector(-24, -24, 0), // hull min
                                      Vector(24, 24, 82),  // hull max
 
@@ -53,10 +53,10 @@ static CViewVectors g_MOMViewVectorsRJ(Vector(0, 0, 68), // eye position
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
-        return &g_MOMViewVectorsRJ;
+    if (g_pGameModeSystem->IsTF2BasedMode())
+        return &g_ViewVectorsTF2;
 
-    return &g_MOMViewVectors;
+    return &g_ViewVectorsMom;
 }
 
 bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
@@ -242,9 +242,10 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 
 bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) 
 {
-    // Allow self damage from rockets and generic bombs
-    if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") 
-                                       || FClassnameIs(info.GetInflictor(), "momentum_generic_bomb")))
+    // Allow self damage from rockets, generic bombs and stickies
+    if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")))
         return true;
 
     return !pVictim->IsPlayer(); 
@@ -272,7 +273,7 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             continue;
         }
 
-        if (pEntity == pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+        if (pEntity == pAttacker && g_pGameModeSystem->IsTF2BasedMode())
         {
             // Skip attacker, we will handle them separately (below)
             continue;
@@ -286,11 +287,16 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
         ApplyRadiusDamage(pEntity, info, vecSrc, flRadius, flFalloff);
     }
 
-    if (pAttacker && g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
+    if (pAttacker)
     {
-        if (FClassnameIs(info.GetInflictor(), "momentum_rocket"))
+        CBaseEntity *pInflictor = info.GetInflictor();
+
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_RJ))
         {
-            flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+            if (FClassnameIs(pInflictor, "momentum_rocket"))
+            {
+                flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+            }
         }
 
         Vector nearestPoint;
@@ -497,14 +503,6 @@ void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
         int iFov = atoi(pszFov);
         // iFov = clamp(iFov, 75, 90);
         pPlayer->SetDefaultFOV(iFov);
-    }
-
-    // NVNT see if this user is still or has began using a haptic device
-    const char *pszHH = engine->GetClientConVarValue(pPlayer->entindex(), "hap_HasDevice");
-    if (pszHH)
-    {
-        int iHH = atoi(pszHH);
-        pPlayer->SetHaptics(iHH != 0);
     }
 }
 

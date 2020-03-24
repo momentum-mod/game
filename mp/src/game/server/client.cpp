@@ -34,6 +34,7 @@
 #include "icommandline.h"
 #include "mom_gamerules.h"
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 
 #ifdef HL2_DLL
 #include "weapon_physcannon.h"
@@ -847,51 +848,66 @@ CON_COMMAND( say_team, "Display player message to team" )
 	}
 }
 
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-CON_COMMAND( give, "Give item to player.\n\tArguments: <item_name>" )
+static int WeaponCompletion(const char *pPartial, char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH])
 {
-	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( pPlayer 
-		&& (gpGlobals->maxClients == 1 || sv_cheats->GetBool()) 
-		&& args.ArgC() >= 2
-		&& !pPlayer->IsObserver() )
+	const auto pCmdName = "give_weapon";
+	char *pSubstring = nullptr;
+	if (Q_strstr(pPartial, pCmdName) && strlen(pPartial) > strlen(pCmdName) + 1)
 	{
-		char item_to_give[ 256 ];
-		Q_strncpy( item_to_give, args[1], sizeof( item_to_give ) );
-		Q_strlower( item_to_give );
+		pSubstring = (char *)pPartial + strlen(pCmdName) + 1;
+	}
 
-		// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
-		if ( !Q_stricmp( item_to_give, "point_servercommand" ) )
+	const bool bSubstringNullOrEmpty = !pSubstring || !pSubstring[0];
+
+	int current = 0;
+	// Skip over weapon_none
+	for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX && current < COMMAND_COMPLETION_MAXITEMS; weaponID++)
+	{
+		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed((WeaponID_t)weaponID))
+			continue;
+
+		if (bSubstringNullOrEmpty || Q_stristr(g_szWeaponNames[weaponID], pSubstring))
 		{
-			if ( engine->IsDedicatedServer() )
+			char command[COMMAND_COMPLETION_ITEM_LENGTH];
+			Q_snprintf(command, COMMAND_COMPLETION_ITEM_LENGTH, "%s %s", pCmdName, g_szWeaponNames[weaponID]);
+			Q_strncpy(commands[current], command, COMMAND_COMPLETION_ITEM_LENGTH);
+			current++;
+		}
+	}
+
+	return current;
+}
+
+CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCompletion)
+{
+	const auto pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
+	if (pPlayer && !pPlayer->IsObserver() && args.ArgC() == 2)
+	{
+		WeaponID_t foundID = WEAPON_NONE;
+		for (int weaponID = WEAPON_FIRST; weaponID < WEAPON_MAX; weaponID++)
+		{
+			if (!Q_strnicmp(g_szWeaponNames[weaponID], args.Arg(1), 64))
 			{
-				// We allow people with disabled autokick to do it, because they already have rcon.
-				if ( pPlayer->IsAutoKickDisabled() == false )
-					return;
-			}
-			else if ( gpGlobals->maxClients > 1 )
-			{
-				// On listen servers with more than 1 player, only allow the host to create point_servercommand.
-				CBasePlayer *pHostPlayer = UTIL_GetListenServerHost();
-				if ( pPlayer != pHostPlayer )
-					return;
+				foundID = (WeaponID_t)weaponID;
+				break;
 			}
 		}
 
-		// Dirty hack to avoid suit playing it's pickup sound
-		if ( !Q_stricmp( item_to_give, "item_suit" ) )
+		if (foundID == WEAPON_NONE)
 		{
-			pPlayer->EquipSuit( false );
+			Warning("Could not give weapon with name %s, weapon not found!\n", args.Arg(1));
 			return;
 		}
 
-		string_t iszItem = AllocPooledString( item_to_give );	// Make a copy of the classname
-		pPlayer->GiveNamedItem( STRING(iszItem) );
+		if (!g_pGameModeSystem->GetGameMode()->WeaponIsAllowed(foundID))
+		{
+			Warning("The weapon %s is not allowed in this gamemode!\n", args.Arg(1));
+			return;
+		}
+
+		pPlayer->GiveWeapon(foundID);
 	}
 }
-
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

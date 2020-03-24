@@ -108,9 +108,7 @@ void UTIL_PrecacheOther( const char *szClassname );
 void UTIL_SetTrace(trace_t& tr, const Ray_t& ray, C_BaseEntity *edict, float fraction, int hitgroup, unsigned int contents, const Vector& normal, float intercept );
 
 bool GetVectorInScreenSpace( Vector pos, int& iX, int& iY, Vector *vecOffset = NULL );
-bool GetVectorInHudSpace( Vector pos, int& iX, int& iY, Vector *vecOffset = NULL );
 bool GetTargetInScreenSpace( C_BaseEntity *pTargetEntity, int& iX, int& iY, Vector *vecOffset = NULL );
-bool GetTargetInHudSpace( C_BaseEntity *pTargetEntity, int& iX, int& iY, Vector *vecOffset = NULL );
 
 // prints messages through the HUD (stub in client .dll right now )
 class C_BasePlayer;

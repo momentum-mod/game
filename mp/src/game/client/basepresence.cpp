@@ -42,7 +42,7 @@ void CBasePresence::UserSetProperty( unsigned int nUserIndex, unsigned int nProp
 {
 	// TODO: Implement for PC
 }
-void CBasePresence::SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties )
+void CBasePresence::SetupGameProperties()
 {
 	// TODO: Implement for PC
 }

@@ -19,15 +19,6 @@
 #include "c_mom_player.h"
 #include "weapon/weapon_def.h"
 
-#if defined( REPLAY_ENABLED )
-#include "replay/replaycamera.h"
-#include "replay/ireplaysystem.h"
-#include "replay/ienginereplay.h"
-#endif
-
-// NVNT haptics system interface
-#include "haptics/ihaptics.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -45,6 +36,8 @@ MAKE_TOGGLE_CONVAR_CV(cl_righthand, "1", FCVAR_ARCHIVE, "Use right-handed view m
 
     return true;
 });
+
+MAKE_CONVAR(r_viewmodel_opacity, "1", FCVAR_ARCHIVE, "Set the opacity of view models. MIN = 0.01, MAX = 1.\n", 0.01f, 1.0f);
 
 #ifdef TF_CLIENT_DLL
 	ConVar cl_flipviewmodels( "cl_flipviewmodels", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Flip view models." );
@@ -141,10 +134,6 @@ void C_BaseViewModel::FireEvent( const Vector& origin, const QAngle& angles, int
 	C_BaseCombatWeapon *pWeapon = GetActiveWeapon();
 	if ( pWeapon )
 	{
-		// NVNT notify the haptics system of our viewmodel's event
-		if ( haptics )
-			haptics->ProcessHapticEvent(4,"Weapons",pWeapon->GetName(),"AnimationEvents",VarArgs("%i",event));
-
 		bool bResult = pWeapon->OnFireEvent( this, origin, angles, event, options );
 		if ( !bResult )
 		{
@@ -269,13 +258,6 @@ bool C_BaseViewModel::ShouldDraw()
 		return ( HLTVCamera()->GetMode() == OBS_MODE_IN_EYE &&
 				 HLTVCamera()->GetPrimaryTarget() == GetOwner()	);
 	}
-#if defined( REPLAY_ENABLED )
-	else if ( g_pEngineClientReplay->IsPlayingReplayDemo() )
-	{
-		return ( ReplayCamera()->GetMode() == OBS_MODE_IN_EYE &&
-				 ReplayCamera()->GetPrimaryTarget() == GetOwner() );
-	}
-#endif
 	else
 	{
 		return BaseClass::ShouldDraw();
@@ -300,8 +282,8 @@ int C_BaseViewModel::DrawModel( int flags )
 		if ( blend <= 0.0f )
 			return 0;
 
-		// Tell engine
-		render->SetBlend( blend );
+		// Tell engine the new value, factoring in r_viewmodel_opacity
+        render->SetBlend(blend * r_viewmodel_opacity.GetFloat());
 
 		float color[3];
 		GetColorModulation( color );

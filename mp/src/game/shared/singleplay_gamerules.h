@@ -83,7 +83,6 @@ public:
 	virtual float FlPlayerSpawnTime( CBasePlayer *pPlayer );
 
 	virtual bool AllowAutoTargetCrosshair( void );
-	virtual	int	GetAutoAimMode();
 
 // Client kills/scoring
 	virtual int IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled );

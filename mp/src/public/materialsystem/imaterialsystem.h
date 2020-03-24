@@ -296,7 +296,6 @@ private:
 //-----------------------------------------------------------------------------
 enum StencilOperation_t 
 {
-#if !defined( _X360 )
 	STENCILOPERATION_KEEP = 1,
 	STENCILOPERATION_ZERO = 2,
 	STENCILOPERATION_REPLACE = 3,
@@ -305,22 +304,12 @@ enum StencilOperation_t
 	STENCILOPERATION_INVERT = 6,
 	STENCILOPERATION_INCR = 7,
 	STENCILOPERATION_DECR = 8,
-#else
-	STENCILOPERATION_KEEP = D3DSTENCILOP_KEEP,
-	STENCILOPERATION_ZERO = D3DSTENCILOP_ZERO,
-	STENCILOPERATION_REPLACE = D3DSTENCILOP_REPLACE,
-	STENCILOPERATION_INCRSAT = D3DSTENCILOP_INCRSAT,
-	STENCILOPERATION_DECRSAT = D3DSTENCILOP_DECRSAT,
-	STENCILOPERATION_INVERT = D3DSTENCILOP_INVERT,
-	STENCILOPERATION_INCR = D3DSTENCILOP_INCR,
-	STENCILOPERATION_DECR = D3DSTENCILOP_DECR,
-#endif
+
 	STENCILOPERATION_FORCE_DWORD = 0x7fffffff
 };
 
 enum StencilComparisonFunction_t 
 {
-#if !defined( _X360 )
 	STENCILCOMPARISONFUNCTION_NEVER = 1,
 	STENCILCOMPARISONFUNCTION_LESS = 2,
 	STENCILCOMPARISONFUNCTION_EQUAL = 3,
@@ -329,16 +318,6 @@ enum StencilComparisonFunction_t
 	STENCILCOMPARISONFUNCTION_NOTEQUAL = 6,
 	STENCILCOMPARISONFUNCTION_GREATEREQUAL = 7,
 	STENCILCOMPARISONFUNCTION_ALWAYS = 8,
-#else
-	STENCILCOMPARISONFUNCTION_NEVER = D3DCMP_NEVER,
-	STENCILCOMPARISONFUNCTION_LESS = D3DCMP_LESS,
-	STENCILCOMPARISONFUNCTION_EQUAL = D3DCMP_EQUAL,
-	STENCILCOMPARISONFUNCTION_LESSEQUAL = D3DCMP_LESSEQUAL,
-	STENCILCOMPARISONFUNCTION_GREATER = D3DCMP_GREATER,
-	STENCILCOMPARISONFUNCTION_NOTEQUAL = D3DCMP_NOTEQUAL,
-	STENCILCOMPARISONFUNCTION_GREATEREQUAL = D3DCMP_GREATEREQUAL,
-	STENCILCOMPARISONFUNCTION_ALWAYS = D3DCMP_ALWAYS,
-#endif
 
 	STENCILCOMPARISONFUNCTION_FORCE_DWORD = 0x7fffffff
 };
@@ -969,24 +948,6 @@ public:
 	virtual void				ClearBuffers( bool bClearColor, bool bClearDepth, bool bClearStencil = false ) = 0;
 
 	// -----------------------------------------------------------
-	// X360 specifics
-	// -----------------------------------------------------------
-
-#if defined( _X360 )
-	virtual void				ListUsedMaterials( void ) = 0;
-	virtual HXUIFONT			OpenTrueTypeFont( const char *pFontname, int tall, int style ) = 0;
-	virtual void				CloseTrueTypeFont( HXUIFONT hFont ) = 0;
-	virtual bool				GetTrueTypeFontMetrics( HXUIFONT hFont, XUIFontMetrics *pFontMetrics, XUICharMetrics charMetrics[256] ) = 0;
-	// Render a sequence of characters and extract the data into a buffer
-	// For each character, provide the width+height of the font texture subrect,
-	// an offset to apply when rendering the glyph, and an offset into a buffer to receive the RGBA data
-	virtual bool				GetTrueTypeGlyphs( HXUIFONT hFont, int numChars, wchar_t *pWch, int *pOffsetX, int *pOffsetY, int *pWidth, int *pHeight, unsigned char *pRGBA, int *pRGBAOffset ) = 0;
-	virtual void				PersistDisplay() = 0;
-	virtual void				*GetD3DDevice() = 0;
-	virtual bool				OwnGPUResources( bool bEnable ) = 0;
-#endif
-
-	// -----------------------------------------------------------
 	// Access the render contexts
 	// -----------------------------------------------------------
 	virtual IMatRenderContext *	GetRenderContext() = 0;
@@ -1482,12 +1443,6 @@ public:
 		IMesh* pVertexOverride = 0,	IMesh* pIndexOverride = 0, IMaterial *pAutoBind = 0 ) = 0;
 
 	virtual void				FogMaxDensity( float flMaxDensity ) = 0;
-
-#if defined( _X360 )
-	//Seems best to expose GPR allocation to scene rendering code. 128 total to split between vertex/pixel shaders (pixel will be set to 128 - vertex). Minimum value of 16. More GPR's = more threads.
-	virtual void				PushVertexShaderGPRAllocation( int iVertexShaderCount = 64 ) = 0;
-	virtual void				PopVertexShaderGPRAllocation( void ) = 0;
-#endif
 
 	virtual IMaterial *GetCurrentMaterial() = 0;
 	virtual int  GetCurrentNumBones() const = 0;

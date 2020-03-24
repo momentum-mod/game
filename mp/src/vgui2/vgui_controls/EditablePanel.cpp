@@ -124,29 +124,15 @@ void EditablePanel::OnKeyCodePressed( KeyCode code )
 		{
 			switch ( nButtonCode )
 			{
-			case KEY_XBUTTON_UP:
-			case KEY_XSTICK1_UP:
-			case KEY_XSTICK2_UP:
 			case KEY_UP:
-			case KEY_XBUTTON_DOWN:
-			case KEY_XSTICK1_DOWN:
-			case KEY_XSTICK2_DOWN:
 			case KEY_DOWN:
-			case KEY_XBUTTON_LEFT:
-			case KEY_XSTICK1_LEFT:
-			case KEY_XSTICK2_LEFT:
 			case KEY_LEFT:
-			case KEY_XBUTTON_RIGHT:
-			case KEY_XSTICK1_RIGHT:
-			case KEY_XSTICK2_RIGHT:
 			case KEY_RIGHT:
-			case KEY_XBUTTON_B:
 				// Navigating menus
 				vgui_nav_lock_default_button.SetValue( 1 );
 				PostMessage( panel, new KeyValues( "KeyCodePressed", "code", code ) );
 				return;
 			
-			case KEY_XBUTTON_A:
 			case KEY_ENTER:
 				if ( ipanel()->IsVisible( panel ) && ipanel()->IsEnabled( panel ) )
 				{
@@ -675,7 +661,7 @@ FocusNavGroup &EditablePanel::GetFocusNavGroup()
 bool EditablePanel::RequestFocusNext(VPANEL panel)
 {
 	bool bRet = m_NavGroup.RequestFocusNext(panel);
-	if ( IsPC() && !bRet && IsConsoleStylePanel() )
+	if ( !bRet && IsConsoleStylePanel() )
 	{
 		NavigateDown();
 	}
@@ -688,7 +674,7 @@ bool EditablePanel::RequestFocusNext(VPANEL panel)
 bool EditablePanel::RequestFocusPrev(VPANEL panel)
 {
 	bool bRet = m_NavGroup.RequestFocusPrev(panel);
-	if ( IsPC() && !bRet && IsConsoleStylePanel() )
+	if ( !bRet && IsConsoleStylePanel() )
 	{
 		NavigateUp();
 	}

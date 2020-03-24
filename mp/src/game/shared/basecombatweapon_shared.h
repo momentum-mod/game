@@ -248,7 +248,7 @@ public:
 	void					GiveDefaultAmmo( void );
 	
 	virtual bool			CanHolster( void ) const { return TRUE; };		// returns true if the weapon can be holstered
-	virtual bool			DefaultDeploy( char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt );
+	virtual bool			DefaultDeploy( const char *szViewModel, const char *szWeaponModel, int iActivity, const char *szAnimExt );
     virtual float           DeployTime() const { return 0.5f; }
 	virtual bool			CanDeploy( void ) { return true; }			// return true if the weapon's allowed to deploy
 	virtual bool			Deploy( void );								// returns true is deploy was successful
@@ -317,10 +317,6 @@ public:
 	virtual void			WeaponSound( const char *pShootSound, float soundtime = 0.0f );
 	virtual void			StopWeaponSound( const char *pShootSound );
 	virtual const WeaponProficiencyInfo_t *GetProficiencyValues();
-
-	// Autoaim
-	virtual float			GetMaxAutoAimDeflection() { return 0.99f; }
-	virtual float			WeaponAutoAimScale() { return 1.0f; } // allows a weapon to influence the perceived size of the target's autoaim radius.
 
 	// TF Sprinting functions
 	virtual bool			StartSprinting( void ) { return false; };

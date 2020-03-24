@@ -399,24 +399,12 @@ void CTeamMenu::OnKeyCodePressed(KeyCode code)
 
 	switch ( code )
 	{
-	case KEY_XBUTTON_UP:
-	case KEY_XSTICK1_UP:
-	case KEY_XSTICK2_UP:
 	case KEY_UP:
-	case KEY_XBUTTON_LEFT:
-	case KEY_XSTICK1_LEFT:
-	case KEY_XSTICK2_LEFT:
 	case KEY_LEFT:
 		nDir = -1;
 		break;
 
-	case KEY_XBUTTON_DOWN:
-	case KEY_XSTICK1_DOWN:
-	case KEY_XSTICK2_DOWN:
 	case KEY_DOWN:
-	case KEY_XBUTTON_RIGHT:
-	case KEY_XSTICK1_RIGHT:
-	case KEY_XSTICK2_RIGHT:
 	case KEY_RIGHT:
 		nDir = 1;
 		break;

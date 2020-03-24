@@ -14,6 +14,7 @@
         "MOM_Weapon_Shotgun" "For Zombie Invasions Only"
         "MOM_Weapon_Sniper" "360 Noscoper"
         "MOM_Weapon_RocketLauncher" "Controlled Combustion"
+        "MOM_Weapon_StickybombLauncher" "Something Stickied This Way Comes"
 
         "MOM_Weapon_SwitchToSemiAuto" "Switched to Semi-Auto mode"
         "MOM_Weapon_SwitchToBurstFire" "Switched to Burst Fire mode"
@@ -178,7 +179,8 @@
         "MOM_GameType_Surf" "Surf"
         "MOM_GameType_Bhop" "Bhop"
         "MOM_GameType_KZ" "Climb (KZ)"
-        "MOM_GameType_RJ" "Jump"
+        "MOM_GameType_RJ" "Rocket Jump"
+        "MOM_GameType_SJ" "Sticky Jump"
         "MOM_GameType_Tricksurf" "Tricksurf"
         "MOM_GameType_Trikz" "Trikz"
 
@@ -201,8 +203,8 @@
         "MOM_Duck" "DUCK"
         "MOM_M1"   "M1"
         "MOM_M2"   "M2"
-        "GameUI_Tonemap" "Enable HDR tonemapping"
-        "GameUI_Bloom"   "Disable bloom"
+        "GameUI_Tonemap" "HDR Tonemapping"
+        "GameUI_Bloom"   "HDR Bloom"
 
         // Map Finished Panel
         //Overall
@@ -371,21 +373,32 @@
         "MOM_Settings_Online_Trails" "Enable online ghost trails"
         "MOM_Settings_Online_Trails_TT" "When enabled, other players can have a trail showing their paths"
         
-        // Rocket Jump settings
-        "MOM_Settings_Tab_RJ" "RJ"
-        "MOM_Settings_RJ_None" "None"
-        "MOM_Settings_RJ_TF2" "TF2"
-        "MOM_Settings_RJ_Enable_TF_RocketModel" "Use TF2 rocket model"
-        "MOM_Settings_RJ_Enable_TF_ViewModel" "Use TF2 view model"
-        "MOM_Settings_RJ_Enable_Center_Fire" "Fire projectiles from screen center"
-        "MOM_Settings_RJ_Particle_Label" "Explosion particles"
-        "MOM_Settings_RJ_Particle_Tooltip" "You can use custom particles by editing the value of the 'ExplosionEffect' fields in the rocket weapon script file."
-        "MOM_Settings_RJ_Sounds_Label" "Explosion and firing sounds"
-        "MOM_Settings_RJ_Trail_Label" "Trail effect"
-        "MOM_Settings_RJ_Trail_Sound_Enable" "Use rocket trail sound"
-        "MOM_Settings_RJ_Trail_Sound_Enable_TT" "When enabled, rockets fired will have a sound following it."
-        "MOM_Settings_RJ_Rocket_Decals_Enable" "Enable rocket decals"
-        "MOM_Settings_RJ_Rocket_Decals_Enable_TT" "When enabled, rockets will create decals upon explosion."
+        // Gamemode-specific settings
+        "MOM_Settings_Tab_Gamemodes" "Gamemodes"
+
+        "MOM_Settings_RJ_Enable_Trail_Particle" "Enable rocket trail particle"
+        "MOM_Settings_RJ_Enable_Explosion_Particle" "Enable rocket explosion particle"
+        "MOM_Settings_RJ_Enable_Shoot_Sound" "Enable rocket launcher firing sound"
+        "MOM_Settings_RJ_Enable_Trail_Sound" "Enable rocket trail sound"
+        "MOM_Settings_RJ_Enable_Trail_Sound_TT" "When enabled, rockets fired will have a sound following it."
+        "MOM_Settings_RJ_Enable_Explosion_Sound" "Enable rocket explosion sound"
+        "MOM_Settings_RJ_Enable_Rocket_Decals" "Enable rocket explosion decals"
+        "MOM_Settings_RJ_Enable_Rocket_Decals_TT" "When enabled, rockets will create decals upon explosion."
+        "MOM_Settings_RJ_Enable_Center_Fire" "Fire rocket projectiles from screen center"
+        "MOM_Settings_RJ_Enable_Center_Fire_TT" "When enabled, rockets will fire from the center of the screen like the Original from Team Fortress 2 / Quake."
+        "MOM_Settings_RJ_RocketDrawDelayEntry_Label" "Delay before rockets are rendered"
+        "MOM_Settings_SJ_RocketDrawDelayEntry_Tooltip" "In seconds. Default is 0.2, max 1."
+        
+        "MOM_Settings_SJ_Enable_Explosion_Particle" "Enable stickybomb explosion particle"
+        "MOM_Settings_SJ_Enable_Explosion_Sound" "Enable stickybomb explosion sound"
+        "MOM_Settings_SJ_Enable_Detonation_Fail_Sound" "Enable stickybomb detonation fail sound"
+        "MOM_Settings_SJ_Enable_Detonation_Fail_Sound_TT" "Note: if this is disabled and success sound is enabled, success sound will play if partial detonation happens."
+        "MOM_Settings_SJ_Enable_Detonation_Success_Sound" "Enable stickybomb detonation success sound"
+        "MOM_Settings_SJ_Enable_Charge_Sound" "Enable sticky launcher charging sound"
+        "MOM_Settings_SJ_Enable_ChargeMeter" "Enable charge meter"
+        "MOM_Settings_SJ_Enable_Sticky_Counter" "Enable stickybomb counter"
+        "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"
+        "MOM_Settings_SJ_DrawDelayEntry_Tooltip" "In seconds. Default is 0, max 1."
 
         // Replay Info
         // Spec GUI

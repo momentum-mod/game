@@ -19,9 +19,6 @@
 #include "tier0/platform.h"
 
 PLATFORM_INTERFACE uint64 g_ClockSpeed;
-#if defined( _X360 ) && defined( _CERT )
-PLATFORM_INTERFACE unsigned long g_dwFakeFastCounter;
-#endif
 
 PLATFORM_INTERFACE double g_ClockSpeedMicrosecondsMultiplier;
 PLATFORM_INTERFACE double g_ClockSpeedMillisecondsMultiplier;
@@ -372,16 +369,6 @@ inline void CFastTimer::End()
 {
 	CCycleCount cnt;
 	cnt.Sample();
-	if ( IsX360() )
-	{
-		// have to handle rollover, hires timer is only accurate to 32 bits
-		// more than one overflow should not have occurred, otherwise caller should use a slower timer
-		if ( (uint64)cnt.m_Int64 <= (uint64)m_Duration.m_Int64 )
-		{
-			// rollover occurred	
-			cnt.m_Int64 += 0x100000000LL;	
-		}
-	}
 
 	m_Duration.m_Int64 = cnt.m_Int64 - m_Duration.m_Int64;
 
@@ -394,16 +381,6 @@ inline CCycleCount CFastTimer::GetDurationInProgress() const
 {
 	CCycleCount cnt;
 	cnt.Sample();
-	if ( IsX360() )
-	{
-		// have to handle rollover, hires timer is only accurate to 32 bits
-		// more than one overflow should not have occurred, otherwise caller should use a slower timer
-		if ( (uint64)cnt.m_Int64 <= (uint64)m_Duration.m_Int64 )
-		{
-			// rollover occurred	
-			cnt.m_Int64 += 0x100000000LL;	
-		}
-	}
 
 	CCycleCount result;
 	result.m_Int64 = cnt.m_Int64 - m_Duration.m_Int64;

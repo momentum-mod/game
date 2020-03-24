@@ -790,11 +790,8 @@
         4: "Pushables": 0
         8: "Physics Objects" : 0
         16: "Only player ally NPCs" : 0
-        32: "Only clients in vehicles" : 0
         64: "Everything (not including physics debris)" : 0
-        512: "Only clients *not* in vehicles" : 0
         1024: "Physics debris" : 0
-        2048: "Only NPCs in vehicles (respects player ally flag)" : 0
         4096: "Disallow Bots" : 0
     ]
 

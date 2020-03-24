@@ -1,0 +1,9 @@
+PBR
+{
+	$basetexture "models\shadertest\plain_titanium_d"
+	$bumpmap "models\shadertest\plain_titanium_n"
+	$mraotexture "models\shadertest\plain_titanium_mrao"
+	
+	$envmap env_cubemap
+	$model 1
+}

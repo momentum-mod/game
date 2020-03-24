@@ -4,6 +4,7 @@
 #include "in_buttons.h"
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
+#include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
 #include "fmtstr.h"
 #include "mom_timer.h"
@@ -1419,29 +1420,7 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
             else
             {
                 // Otherwise go to a specific world stage
-
-                // Build the string
-                const char *pMapPrefix;
-                switch (m_iGametype)
-                {
-                case GAMEMODE_SURF:
-                case GAMEMODE_TRICKSURF:
-                    pMapPrefix = "surf_";
-                    break;
-                case GAMEMODE_BHOP:
-                    pMapPrefix = "bhop_";
-                    break;
-                case GAMEMODE_KZ:
-                    pMapPrefix = "kz_";
-                    break;
-                case GAMEMODE_RJ:
-                    pMapPrefix = "jump_";
-                    break;
-                    // MOM_TODO: Add the rest of the gametypes here
-                default:
-                    pMapPrefix = "";
-                    break;
-                }
+                const char *pMapPrefix = g_pGameModeSystem->GetGameMode(m_iGametype)->GetMapPrefix();
 
                 engine->ClientCommand(pOther->edict(), CFmtStr("map %sw%i_s%i\n", pMapPrefix, m_iWorld, m_iStage).Get());
             }

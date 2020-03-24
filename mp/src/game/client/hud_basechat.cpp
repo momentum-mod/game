@@ -14,8 +14,6 @@
 #include "clientmode.h"
 #include "engine/IEngineSound.h"
 #include "ienginevgui.h"
-#include "ihudlcd.h"
-#include "multiplay_gamerules.h"
 #include "text_message.h"
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
@@ -834,68 +832,6 @@ void CBaseHudChat::MsgFunc_TextMsg(bf_read &msg)
     }
 }
 
-void CBaseHudChat::MsgFunc_VoiceSubtitle(bf_read &msg)
-{
-    // Got message during connection
-    if (!g_PR)
-        return;
-
-    if (!cl_showtextmsg.GetInt())
-        return;
-
-    char szString[2048];
-    char szPrefix[64]; //(Voice)
-    wchar_t szBuf[128];
-
-    int client = msg.ReadByte();
-    int iMenu = msg.ReadByte();
-    int iItem = msg.ReadByte();
-
-    const char *pszSubtitle = "";
-
-    CGameRules *pGameRules = GameRules();
-
-    CMultiplayRules *pMultiRules = dynamic_cast<CMultiplayRules *>(pGameRules);
-
-    Assert(pMultiRules);
-
-    if (pMultiRules)
-    {
-        pszSubtitle = pMultiRules->GetVoiceCommandSubtitle(iMenu, iItem);
-    }
-
-    SetVoiceSubtitleState(true);
-
-    const wchar_t *pBuf = g_pVGuiLocalize->Find(pszSubtitle);
-    if (pBuf)
-    {
-        // Copy pBuf into szBuf[i].
-        int nMaxChars = sizeof(szBuf) / sizeof(wchar_t);
-        wcsncpy(szBuf, pBuf, nMaxChars);
-        szBuf[nMaxChars - 1] = 0;
-    }
-    else
-    {
-        g_pVGuiLocalize->ConvertANSIToUnicode(pszSubtitle, szBuf, sizeof(szBuf));
-    }
-
-    int len;
-    g_pVGuiLocalize->ConvertUnicodeToANSI(szBuf, szString, sizeof(szString));
-    len = strlen(szString);
-    if (len && szString[len - 1] != '\n' && szString[len - 1] != '\r')
-    {
-        Q_strncat(szString, "\n", sizeof(szString), 1);
-    }
-
-    const wchar_t *pVoicePrefix = g_pVGuiLocalize->Find("#Voice");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(pVoicePrefix, szPrefix, sizeof(szPrefix));
-
-    ChatPrintf(client, CHAT_FILTER_NONE, "%c(%s) %s%c: %s", COLOR_PLAYERNAME, szPrefix,
-               GetDisplayedSubtitlePlayerName(client), COLOR_NORMAL, ConvertCRtoNL(szString));
-
-    SetVoiceSubtitleState(false);
-}
-
 const char *CBaseHudChat::GetDisplayedSubtitlePlayerName(int clientIndex) { return g_PR->GetPlayerName(clientIndex); }
 
 //-----------------------------------------------------------------------------
@@ -1558,15 +1494,6 @@ void CBaseHudChat::ChatPrintf(int iPlayerIndex, int iFilter, const char *fmt, ..
     {
         if (GetClientVoiceMgr() && GetClientVoiceMgr()->IsPlayerBlocked(iPlayerIndex))
             return;
-    }
-
-    if (*pmsg < 32)
-    {
-        hudlcd->AddChatLine(pmsg + 1);
-    }
-    else
-    {
-        hudlcd->AddChatLine(pmsg);
     }
 
     line->SetText("");

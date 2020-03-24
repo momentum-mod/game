@@ -40,10 +40,6 @@
 #include <vgui_controls/MessageBox.h>
 #include "filesystem.h"
 
-#if defined( _X360 )
-#include "xbox/xbox_win32stubs.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
@@ -891,17 +887,10 @@ void BuildGroup::LoadControlSettings(const char *controlResourceName, const char
 
 		if ( bSuccess )
 		{
-			if ( IsX360() )
+			ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+			if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
 			{
-				rDat->ProcessResolutionKeys( surface()->GetResolutionKey() );
-			}
-			if ( IsPC() )
-			{
-				ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
-				if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
-				{
-					rDat->ProcessResolutionKeys( "_minmode" );
-				}
+				rDat->ProcessResolutionKeys( "_minmode" );
 			}
 
 			if ( pConditions && pConditions->GetFirstSubKey() )

@@ -20,9 +20,6 @@
 #include "icvar.h"
 #include "tier0/dbg.h"
 #include "Color.h"
-#if defined( _X360 )
-#include "xbox/xbox_console.h"
-#endif
 #include "tier0/memdbgon.h"
 
 #ifndef NDEBUG
@@ -958,7 +955,7 @@ void ConVar::SetValue( float value )
 
 	char temp[32];
 	Q_snprintf(temp, sizeof(temp), "%f", value);
-	m_pParent->InternalSetValue( temp );
+	m_pParent->SetValue( temp );
 }
 
 //-----------------------------------------------------------------------------
@@ -972,7 +969,7 @@ void ConVar::SetValue( int value )
 
     char temp[32];
     Q_snprintf(temp, sizeof(temp), "%d", value);
-    m_pParent->InternalSetValue(temp);
+    m_pParent->SetValue(temp);
 }
 
 //-----------------------------------------------------------------------------

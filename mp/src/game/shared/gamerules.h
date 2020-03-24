@@ -39,16 +39,6 @@ class CBasePlayer;
 class CItem;
 class CTacticalMissionManager;
 
-extern ConVar sk_autoaim_mode;
-
-// Autoaiming modes
-enum
-{
-	AUTOAIM_NONE = 0,		// No autoaim at all.
-	AUTOAIM_ON,				// Autoaim is on.
-	AUTOAIM_ON_CONSOLE,		// Autoaim is on, including enhanced features for Console gaming (more assistance, etc)
-};
-
 // weapon respawning return codes
 enum
 {	
@@ -205,9 +195,6 @@ public:
 
 	virtual void GetTaggedConVarList( KeyValues *pCvarTagList ) {}
 
-	// NVNT see if the client of the player entered is using a haptic device.
-	virtual void CheckHaptics(CBasePlayer* pPlayer);
-
 // CBaseEntity overrides.
 public:
 
@@ -270,9 +257,6 @@ public:
 // Client damage rules
 	virtual float FlPlayerFallDamage( CBasePlayer *pPlayer ) = 0;// this client just hit the ground after a fall. How much damage?
 	virtual bool  FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker, const CTakeDamageInfo &info ) {return TRUE;};// can this player take damage from this attacker?
-	virtual bool ShouldAutoAim( CBasePlayer *pPlayer, edict_t *target ) { return TRUE; }
-	virtual float GetAutoAimScale( CBasePlayer *pPlayer ) { return 1.0f; }
-	virtual int	GetAutoAimMode()	{ return AUTOAIM_ON; }
 
 	virtual bool ShouldUseRobustRadiusDamage(CBaseEntity *pEntity) { return false; }
 	virtual void  RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore );

@@ -23,7 +23,6 @@
 #include "physics_saverestore.h"
 #include "te_effect_dispatch.h"
 #include "ammodef.h"
-#include "iservervehicle.h"
 #include "movevars_shared.h"
 #include "physics_prop_ragdoll.h"
 #include "props.h"
@@ -157,20 +156,10 @@ void CBaseTrigger::InputTouchTest( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 void CBaseTrigger::Spawn()
 {
-	if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) || HasSpawnFlags( SF_TRIGGER_ONLY_NPCS_IN_VEHICLES ) )
+	if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) )
 	{
 		// Automatically set this trigger to work with NPC's.
 		AddSpawnFlags( SF_TRIGGER_ALLOW_NPCS );
-	}
-
-	if ( HasSpawnFlags( SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES ) )
-	{
-		AddSpawnFlags( SF_TRIGGER_ALLOW_CLIENTS );
-	}
-
-	if ( HasSpawnFlags( SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES ) )
-	{
-		AddSpawnFlags( SF_TRIGGER_ALLOW_CLIENTS );
 	}
 
 	BaseClass::Spawn();
@@ -383,12 +372,6 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 					return false;
 				}
 			}
-
-			if ( HasSpawnFlags( SF_TRIGGER_ONLY_NPCS_IN_VEHICLES ) )
-			{
-				if ( !pNPC || !pNPC->IsInAVehicle() )
-					return false;
-			}
 		}
 
 		bool bOtherIsPlayer = pOther->IsPlayer();
@@ -398,26 +381,6 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 			CBasePlayer *pPlayer = (CBasePlayer*)pOther;
 			if ( !pPlayer->IsAlive() )
 				return false;
-
-			if ( HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES) )
-			{
-				if ( !pPlayer->IsInAVehicle() )
-					return false;
-
-				// Make sure we're also not exiting the vehicle at the moment
-				IServerVehicle *pVehicleServer = pPlayer->GetVehicle();
-				if ( pVehicleServer == NULL )
-					return false;
-
-				if ( pVehicleServer->IsPassengerExiting() )
-					return false;
-			}
-
-			if ( HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES) )
-			{
-				if ( pPlayer->IsInAVehicle() )
-					return false;
-			}
 
 			if ( HasSpawnFlags( SF_TRIGGER_DISALLOW_BOTS ) )
 			{
@@ -1161,15 +1124,6 @@ void CTriggerLook::Touch(CBaseEntity *pOther)
 		if ( HasSpawnFlags( SF_TRIGGERLOOK_USEVELOCITY ) )
 		{
 			vLookDir = pOther->GetAbsVelocity();
-			if ( vLookDir == vec3_origin )
-			{
-				// See if they're in a vehicle
-				CBasePlayer *pPlayer = (CBasePlayer *)pOther;
-				if ( pPlayer->IsInAVehicle() )
-				{
-					vLookDir = pPlayer->GetVehicle()->GetVehicleEnt()->GetSmoothedVelocity();
-				}
-			}
 			VectorNormalize( vLookDir );
 		}
 		else
@@ -1706,7 +1660,7 @@ void CChangeLevel::TouchChangeLevel( CBaseEntity *pOther )
 		return;
 	}
 
-	if ( !pPlayer->IsInAVehicle() && pPlayer->GetMoveType() == MOVETYPE_NOCLIP )
+	if ( pPlayer->GetMoveType() == MOVETYPE_NOCLIP )
 	{
 		DevMsg("In level transition: %s %s\n", st_szNextMap, st_szNextSpot );
 		return;
@@ -4507,18 +4461,6 @@ bool CBaseVPhysicsTrigger::PassesTriggerFilters( CBaseEntity *pOther )
 			}
 		}
 
-		if ( HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES) && bOtherIsPlayer )
-		{
-			if ( !((CBasePlayer*)pOther)->IsInAVehicle() )
-				return false;
-		}
-
-		if ( HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES) && bOtherIsPlayer )
-		{
-			if ( ((CBasePlayer*)pOther)->IsInAVehicle() )
-				return false;
-		}
-
 		CBaseFilter *pFilter = m_hFilter.Get();
 		return (!pFilter) ? true : pFilter->PassesFilter( this, pOther );
 	}
@@ -4565,9 +4507,7 @@ public:
 private:
 	IPhysicsMotionController	*m_pController;
 
-#ifndef _XBOX
 	EntityParticleTrailInfo_t	m_ParticleTrail;
-#endif //!_XBOX
 
 	float						m_gravityScale;
 	float						m_addAirDensity;
@@ -4589,9 +4529,7 @@ private:
 //------------------------------------------------------------------------------
 BEGIN_DATADESC( CTriggerVPhysicsMotion )
 	DEFINE_PHYSPTR( m_pController ),
-#ifndef _XBOX
 	DEFINE_EMBEDDED( m_ParticleTrail ),
-#endif //!_XBOX
 	DEFINE_INPUT( m_gravityScale, FIELD_FLOAT, "SetGravityScale" ),
 	DEFINE_INPUT( m_addAirDensity, FIELD_FLOAT, "SetAdditionalAirDensity" ),
 	DEFINE_INPUT( m_linearLimit, FIELD_FLOAT, "SetVelocityLimit" ),
@@ -4626,12 +4564,10 @@ void CTriggerVPhysicsMotion::Spawn()
 //------------------------------------------------------------------------------
 void CTriggerVPhysicsMotion::Precache()
 {
-#ifndef _XBOX
 	if ( m_ParticleTrail.m_strMaterialName != NULL_STRING )
 	{
 		PrecacheMaterial( STRING(m_ParticleTrail.m_strMaterialName) ); 
 	}
-#endif //!_XBOX
 }
 
 //------------------------------------------------------------------------------
@@ -4722,13 +4658,10 @@ void CTriggerVPhysicsMotion::StartTouch( CBaseEntity *pOther )
 		m_pController->AttachObject( event.pObject, true );
 	}
 
-	// Don't show these particles on the XBox
-#ifndef _XBOX
 	if ( m_ParticleTrail.m_strMaterialName != NULL_STRING )
 	{
 		CEntityParticleTrail::Create( pOther, m_ParticleTrail, this ); 
 	}
-#endif
 
 	if ( pOther->GetBaseAnimating() && pOther->GetBaseAnimating()->IsRagdoll() )
 	{
@@ -4759,12 +4692,10 @@ void CTriggerVPhysicsMotion::EndTouch( CBaseEntity *pOther )
 		m_pController->DetachObject( event.pObject );
 	}
 
-#ifndef _XBOX
 	if ( m_ParticleTrail.m_strMaterialName != NULL_STRING )
 	{
 		CEntityParticleTrail::Destroy( pOther, m_ParticleTrail ); 
 	}
-#endif //!_XBOX
 
 	if ( pOther->GetBaseAnimating() && pOther->GetBaseAnimating()->IsRagdoll() )
 	{

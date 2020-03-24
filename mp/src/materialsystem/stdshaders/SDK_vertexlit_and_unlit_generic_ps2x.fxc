@@ -69,7 +69,6 @@
 // BlendTintByBaseAlpha is incompatible with other interpretations of alpha
 // SKIP: ($BLENDTINTBYBASEALPHA) && ($SELFILLUM || (($DISTANCEALPHA) && ($DISTANCEALPHAFROMDETAIL == 0)) || $BASEALPHAENVMAPMASK)
 
-// Only _XBOX allows flashlight and cubemap in the current implementation
 // SKIP: $FLASHLIGHT && $CUBEMAP [PC]
 
 // SKIP: $CUBEMAP_SPHERE_LEGACY && ($CUBEMAP == 0)
@@ -128,12 +127,6 @@ struct PS_INPUT
 	float4 color					: TEXCOORD2;	// Vertex color (from lighting or unlit)
 	float3 worldVertToEyeVector		: TEXCOORD3;	// Necessary for reflection
 	float3 worldSpaceNormal			: TEXCOORD4;	// Necessary for cubemaps and flashlight
-
-#if defined ( _X360 )
-#if FLASHLIGHT
-	float4 flashlightSpacePos		: TEXCOORD5;
-#endif
-#endif
 
 	float4 projPos					: TEXCOORD6;
 	float4 worldPos_projPosZ		: TEXCOORD7;
@@ -388,11 +381,7 @@ float4 main( PS_INPUT i ) : COLOR
 		bDoShadows = true;
 #endif
 
-#if defined ( _X360 )
-		float4 flashlightSpacePosition = i.flashlightSpacePos;
-#else
 		float4 flashlightSpacePosition = mul( float4( i.worldPos_projPosZ.xyz, 1.0f ), g_FlashlightWorldToTexture );
-#endif
 
 	// We want the N.L to happen on the flashlight pass, but can't afford it on ps20
 	bool bUseWorldNormal = true;
@@ -404,11 +393,7 @@ float4 main( PS_INPUT i ) : COLOR
 			g_FlashlightAttenuationFactors.w, FlashlightSampler, ShadowDepthSampler,
 			RandRotSampler, nShadowSampleLevel, bDoShadows, false, i.projPos.xy / i.projPos.w, false, g_EnvmapContrast_ShadowTweaks, bUseWorldNormal );
 
-#if defined ( _X360 )
-		diffuseLighting += flashlightColor;
-#else
 		diffuseLighting = flashlightColor;
-#endif
 	}
 
 	if( bVertexColor && bDiffuseLighting )
@@ -427,7 +412,7 @@ float4 main( PS_INPUT i ) : COLOR
 
 	HALF3 specularLighting = HALF3( 0.0f, 0.0f, 0.0f );
 
-#if !FLASHLIGHT || defined ( _X360 )
+#if !FLASHLIGHT
 	#if SELFILLUM_ENVMAPMASK_ALPHA
 		// range of alpha:
 	    // 0 - 0.125 = lerp(diffuse,selfillum,alpha*8)

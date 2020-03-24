@@ -42,7 +42,6 @@
 
 class C_Team;
 class IPhysicsObject;
-class IClientVehicle;
 class CPredictionCopy;
 class C_BasePlayer;
 struct studiohdr_t;
@@ -662,10 +661,6 @@ public:
 
 	bool IsStandable() const;
 	bool IsBSPModel() const;
-
-	
-	// If this is a vehicle, returns the vehicle interface
-	virtual IClientVehicle*			GetClientVehicle() { return NULL; }
 
 	// Returns the aiment render origin + angles
 	virtual void					GetAimEntOrigin( IClientEntity *pAttachedTo, Vector *pAbsOrigin, QAngle *pAbsAngles );
@@ -1778,14 +1773,14 @@ inline bool C_BaseEntity::IsServerEntity( void )
 //-----------------------------------------------------------------------------
 inline matrix3x4_t &C_BaseEntity::EntityToWorldTransform()
 { 
-	Assert( s_bAbsQueriesValid );
+	// Assert( s_bAbsQueriesValid );
 	CalcAbsolutePosition();
 	return m_rgflCoordinateFrame; 
 }
 
 inline const matrix3x4_t &C_BaseEntity::EntityToWorldTransform() const
 {
-	Assert( s_bAbsQueriesValid );
+	// Assert( s_bAbsQueriesValid );
 	const_cast<C_BaseEntity*>(this)->CalcAbsolutePosition();
 	return m_rgflCoordinateFrame; 
 }

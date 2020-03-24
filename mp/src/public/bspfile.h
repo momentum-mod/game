@@ -53,7 +53,6 @@
 #define NUM_DISP_POWER_VERTS(power)	( ((1 << (power)) + 1) * ((1 << (power)) + 1) )
 #define NUM_DISP_POWER_TRIS(power)	( (1 << (power)) * (1 << (power)) * 2 )
 
-#if !defined( BSP_USE_LESS_MEMORY )
 // Common limits
 // leaffaces, leafbrushes, planes, and verts are still bounded by
 // 16 bit short limits
@@ -100,53 +99,6 @@
 #define MAX_MAP_PRIMITIVES				32768
 #define MAX_MAP_PRIMVERTS				65536
 #define MAX_MAP_PRIMINDICES				65536
-
-#else
-
-// Xbox 360 - Force static arrays to be very small
-#define	MAX_MAP_MODELS					2
-#define	MAX_MAP_BRUSHES					2
-#define	MAX_MAP_ENTITIES				2
-#define	MAX_MAP_TEXINFO					2
-#define MAX_MAP_TEXDATA					2
-#define MAX_MAP_DISPINFO				2
-#define MAX_MAP_DISP_VERTS				( MAX_MAP_DISPINFO * ((1<<MAX_MAP_DISP_POWER)+1) * ((1<<MAX_MAP_DISP_POWER)+1) )
-#define MAX_MAP_DISP_TRIS				( (1 << MAX_MAP_DISP_POWER) * (1 << MAX_MAP_DISP_POWER) * 2 )
-#define MAX_DISPVERTS					NUM_DISP_POWER_VERTS( MAX_MAP_DISP_POWER )
-#define MAX_DISPTRIS					NUM_DISP_POWER_TRIS( MAX_MAP_DISP_POWER )
-#define	MAX_MAP_AREAS					2
-#define MAX_MAP_AREA_BYTES				2
-#define	MAX_MAP_AREAPORTALS				2
-#define	MAX_MAP_PLANES					2
-#define	MAX_MAP_NODES					2
-#define	MAX_MAP_BRUSHSIDES				2
-#define	MAX_MAP_LEAFS					2
-#define	MAX_MAP_VERTS					2
-#define MAX_MAP_VERTNORMALS				2
-#define MAX_MAP_VERTNORMALINDICES		2
-#define	MAX_MAP_FACES					2
-#define	MAX_MAP_LEAFFACES				2
-#define	MAX_MAP_LEAFBRUSHES				2
-#define	MAX_MAP_PORTALS					2
-#define MAX_MAP_CLUSTERS				2
-#define MAX_MAP_LEAFWATERDATA			2
-#define MAX_MAP_PORTALVERTS				2
-#define	MAX_MAP_EDGES					2
-#define	MAX_MAP_SURFEDGES				2
-#define	MAX_MAP_LIGHTING				2
-#define	MAX_MAP_VISIBILITY				2
-#define	MAX_MAP_TEXTURES				2
-#define MAX_MAP_WORLDLIGHTS				2
-#define MAX_MAP_CUBEMAPSAMPLES			2
-#define MAX_MAP_OVERLAYS				2 
-#define MAX_MAP_WATEROVERLAYS			2
-#define MAX_MAP_TEXDATA_STRING_DATA		2
-#define MAX_MAP_TEXDATA_STRING_TABLE	2
-#define MAX_MAP_PRIMITIVES				2
-#define MAX_MAP_PRIMVERTS				2
-#define MAX_MAP_PRIMINDICES				2
-
-#endif // BSP_USE_LESS_MEMORY
 
 // key / value pair sizes
 #define	MAX_KEY		32
@@ -791,9 +743,6 @@ struct dfaceid_t
 #define LEAF_FLAGS_RADIAL		0x02		// This leaf culled away some portals due to radial vis
 #define LEAF_FLAGS_SKY2D		0x04		// This leaf has 2D sky in its PVS
 
-#if defined( _X360 )
-#pragma bitfield_order( push, lsb_to_msb )
-#endif
 #pragma warning( disable:4201 )	// C4201: nonstandard extension used: nameless struct/union
 struct dleaf_version_0_t
 {
@@ -849,9 +798,6 @@ struct dleaf_t
 //	CompressedLightCube m_AmbientLighting;
 };
 #pragma warning( default:4201 )	// C4201: nonstandard extension used: nameless struct/union
-#if defined( _X360 )
-#pragma bitfield_order( pop )
-#endif
 
 // each leaf contains N samples of the ambient lighting
 // each sample contains a cube of ambient light projected on to each axis

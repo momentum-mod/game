@@ -26,7 +26,6 @@
 #else
 	#include "te_effect_dispatch.h"
 	#include "soundent.h"
-	#include "iservervehicle.h"
 	#include "player_pickup.h"
 	#include "waterbullet.h"
 	#include "func_break.h"
@@ -53,8 +52,6 @@ ConVar hl2_episodic( "hl2_episodic", "0", FCVAR_REPLICATED );
 #include "tf_gamerules.h"
 #include "tf_weaponbase.h"
 #endif // TF_DLL
-
-#include "rumble_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -169,30 +166,24 @@ const Vector &CBaseEntity::WorldSpaceCenter( ) const
 	return CollisionProp()->WorldSpaceCenter();
 }
 
-#if !defined( CLIENT_DLL )
-#define CHANGE_FLAGS(flags,newFlags) { unsigned int old = flags; flags = (newFlags); gEntList.ReportEntityFlagsChanged( this, old, flags ); }
-#else
-#define CHANGE_FLAGS(flags,newFlags) (flags = (newFlags))
-#endif
-
-void CBaseEntity::AddFlag( int flags )
+void CBaseEntity::AddFlag(int flags)
 {
-	CHANGE_FLAGS( m_fFlags, m_fFlags | flags );
+	m_fFlags |= flags;
 }
 
-void CBaseEntity::RemoveFlag( int flagsToRemove )
+void CBaseEntity::RemoveFlag(int flagsToRemove)
 {
-	CHANGE_FLAGS( m_fFlags, m_fFlags & ~flagsToRemove );
+	m_fFlags &= ~flagsToRemove;
 }
 
-void CBaseEntity::ClearFlags( void )
+void CBaseEntity::ClearFlags(void)
 {
-	CHANGE_FLAGS( m_fFlags, 0 );
+	m_fFlags = 0;
 }
 
-void CBaseEntity::ToggleFlag( int flagToToggle )
-{
-	CHANGE_FLAGS( m_fFlags, m_fFlags ^ flagToToggle );
+void CBaseEntity::ToggleFlag(int flagToToggle)
+{ 
+	m_fFlags ^= flagToToggle;
 }
 
 void CBaseEntity::SetEffects( int nEffects )
@@ -1631,29 +1622,6 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	bDoServerEffects = false;
 #endif
 
-#if defined( GAME_DLL )
-	if( IsPlayer() )
-	{
-		CBasePlayer *pPlayer = dynamic_cast<CBasePlayer*>(this);
-
-		int rumbleEffect = RUMBLE_INVALID; // Unfortunately not in this PR's scope, TODO REMOVEME
-
-		if( rumbleEffect != RUMBLE_INVALID )
-		{
-			if( rumbleEffect == RUMBLE_SHOTGUN_SINGLE )
-			{
-				if( info.m_iShots == 12 )
-				{
-					// Upgrade to double barrel rumble effect
-					rumbleEffect = RUMBLE_SHOTGUN_DOUBLE;
-				}
-			}
-
-			pPlayer->RumbleEffect( rumbleEffect, 0, RUMBLE_FLAG_RESTART );
-		}
-	}
-#endif// GAME_DLL
-
 	int iPlayerDamage = info.m_iPlayerDamage;
 
 	// the default attacker is ourselves
@@ -1885,15 +1853,6 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 				{
 					flActualDamage = iPlayerDamage;
 				}
-#ifdef GAME_DLL
-				else if ( tr.m_pEnt->GetServerVehicle() )
-				{
-					if ( tr.m_pEnt->GetServerVehicle()->GetPassenger() && tr.m_pEnt->GetServerVehicle()->GetPassenger()->IsPlayer() )
-					{
-						flActualDamage = iPlayerDamage;
-					}
-				}
-#endif
 			}
 
 			int nActualDamageType = nDamageType;
@@ -2543,7 +2502,7 @@ void CBaseEntity::SetWaterType( int nType )
 		m_nWaterType |= 2;
 }
 
-ConVar	sv_alternateticks( "sv_alternateticks", ( IsX360() ) ? "1" : "0", FCVAR_SPONLY, "If set, server only simulates entities on even numbered ticks.\n" );
+ConVar	sv_alternateticks( "sv_alternateticks", ( "0", FCVAR_SPONLY, "If set, server only simulates entities on even numbered ticks.\n" ) );
 
 //-----------------------------------------------------------------------------
 // Purpose: 

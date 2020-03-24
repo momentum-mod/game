@@ -6,7 +6,7 @@
 //
 //=============================================================================//
 
-#if defined( _WIN32 ) && !defined( _X360 )
+#if defined( _WIN32 )
 #include <windows.h>		// for WideCharToMultiByte and MultiByteToWideChar
 #elif defined(POSIX)
 #include <wchar.h> // wcslen()
@@ -647,7 +647,7 @@ bool KeyValues::LoadFromFile( IBaseFileSystem *filesystem, const char *resourceN
 {
 	Assert(filesystem);
 #ifdef WIN32
-	Assert( IsX360() || ( IsPC() && _heapchk() == _HEAPOK ) );
+	Assert( _heapchk() == _HEAPOK );
 #endif
 
 #ifdef STAGING_ONLY
@@ -2192,11 +2192,12 @@ bool EvaluateConditional( const char *str )
 	if ( *str == '!' )
 		bNot = true;
 
+	// keeping these two in case they're needed somewhere
 	if ( Q_stristr( str, "$X360" ) )
-		return IsX360() ^ bNot;
+		return bNot; // IsX360() ^ bNot
 	
 	if ( Q_stristr( str, "$WIN32" ) )
-		return IsPC() ^ bNot; // hack hack - for now WIN32 really means IsPC
+		return !bNot; // IsPC() ^ bNot : hack hack - for now WIN32 really means IsPC
 
 	if ( Q_stristr( str, "$WINDOWS" ) )
 		return IsWindows() ^ bNot;

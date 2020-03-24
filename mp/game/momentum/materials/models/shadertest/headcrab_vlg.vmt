@@ -1,0 +1,15 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/shadertest/headcrab_diffuse"
+	"$bumpmap" "models/shadertest/headcrab_normal"
+
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "1"
+	"$envmaptint" "[0.05 0.05 0.05]"
+	"$envmapcontrast" "1"
+
+	"$phong" "1"
+	"$phongexponenttexture" "models/shadertest/headcrab_gloss"
+	"$phongfresnelranges" "[0.1 0.55 1]"
+	"$phongboost" "2"
+}

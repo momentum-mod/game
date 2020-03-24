@@ -759,14 +759,14 @@
 }
 
 // weapon_rpg.txt
-"Weapon_RPG.Single"
-{
-	"channel"		"CHAN_WEAPON"
-	"volume"		"0.55"
-	"soundlevel"	"SNDLVL_GUNFIRE"
-
-	"wave"		")weapons/rpg/rocketfire1.wav"
-}
+//"Weapon_RPG.Single"
+//{
+//	"channel"		"CHAN_WEAPON"
+//	"volume"		"0.55"
+//	"soundlevel"	"SNDLVL_GUNFIRE"
+//
+//	"wave"		")weapons/rpg/rocketfire1.wav"
+//}
 
 "Weapon_RPG.NPC_Single"
 {

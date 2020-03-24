@@ -18,7 +18,6 @@
 #else
 
 	#include "player.h"
-	#include "teamplay_gamerules.h"
 	#include "game.h"
 	#include "entitylist.h"
 	#include "basecombatweapon.h"
@@ -35,7 +34,6 @@
 
 
 ConVar g_Language( "g_Language", "0", FCVAR_REPLICATED );
-ConVar sk_autoaim_mode( "sk_autoaim_mode", "1", FCVAR_ARCHIVE | FCVAR_REPLICATED );
 
 #ifndef CLIENT_DLL
 ConVar log_verbose_enable( "log_verbose_enable", "0", FCVAR_GAMEDLL, "Set to 1 to enable verbose server log on the server." );
@@ -681,10 +679,6 @@ bool CGameRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 	// NOTE: Don't change their order without rewriting this code !!!
 	// --------------------------------------------------------------------------
 
-	// Don't bother if either is in a vehicle...
-	if (( collisionGroup0 == COLLISION_GROUP_IN_VEHICLE ) || ( collisionGroup1 == COLLISION_GROUP_IN_VEHICLE ))
-		return false;
-
 	if ( ( collisionGroup1 == COLLISION_GROUP_DOOR_BLOCKER ) && ( collisionGroup0 != COLLISION_GROUP_NPC ) )
 		return false;
 
@@ -734,29 +728,16 @@ bool CGameRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 		}
 	}
 
-	// Don't let vehicles collide with weapons
 	// Don't let players collide with weapons...
 	// Don't let NPCs collide with weapons
 	// Weapons are triggers, too, so they should still touch because of that
 	if ( collisionGroup1 == COLLISION_GROUP_WEAPON )
 	{
-		if ( collisionGroup0 == COLLISION_GROUP_VEHICLE || 
-			collisionGroup0 == COLLISION_GROUP_PLAYER ||
+		if ( collisionGroup0 == COLLISION_GROUP_PLAYER ||
 			collisionGroup0 == COLLISION_GROUP_NPC )
 		{
 			return false;
 		}
-	}
-
-	// collision with vehicle clip entity??
-	if ( collisionGroup0 == COLLISION_GROUP_VEHICLE_CLIP || collisionGroup1 == COLLISION_GROUP_VEHICLE_CLIP )
-	{
-		// yes then if it's a vehicle, collide, otherwise no collision
-		// vehicle sorts lower than vehicle clip, so must be in 0
-		if ( collisionGroup0 == COLLISION_GROUP_VEHICLE )
-			return true;
-		// vehicle clip against non-vehicle, no collision
-		return false;
 	}
 
 	return true;
@@ -797,17 +778,6 @@ const char *CGameRules::GetChatPrefix( bool bTeamOnly, CBasePlayer *pPlayer )
 	return "";
 }
 
-void CGameRules::CheckHaptics(CBasePlayer* pPlayer)
-{
-	// NVNT see if the client of pPlayer is using a haptic device.
-	const char *pszHH = engine->GetClientConVarValue( pPlayer->entindex(), "hap_HasDevice" );
-	if( pszHH )
-	{
-		int iHH = atoi( pszHH );
-		pPlayer->SetHaptics( iHH != 0 );
-	}
-}
-
 void CGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 {
 	const char *pszName = engine->GetClientConVarValue( pPlayer->entindex(), "name" );
@@ -841,14 +811,6 @@ void CGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 		int iFov = atoi(pszFov);
 		iFov = clamp( iFov, 75, 90 );
 		pPlayer->SetDefaultFOV( iFov );
-	}
-
-	// NVNT see if this user is still or has began using a haptic device
-	const char *pszHH = engine->GetClientConVarValue( pPlayer->entindex(), "hap_HasDevice" );
-	if( pszHH )
-	{
-		int iHH = atoi( pszHH );
-		pPlayer->SetHaptics( iHH != 0 );
 	}
 }
 

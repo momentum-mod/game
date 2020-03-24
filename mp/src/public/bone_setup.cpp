@@ -430,15 +430,7 @@ void CalcBoneQuaternion( int frame, float s,
 			AngleQuaternion( angle1, q1 );
 			AngleQuaternion( angle2, q2 );
 
-	#ifdef _X360
-			fltx4 q1simd, q2simd, qsimd;
-			q1simd = LoadAlignedSIMD( q1 );
-			q2simd = LoadAlignedSIMD( q2 );
-			qsimd = QuaternionBlendSIMD( q1simd, q2simd, s );
-			StoreUnalignedSIMD( q.Base(), qsimd );
-	#else
 			QuaternionBlend( q1, q2, s, q );
-	#endif
 		}
 		else
 		{
@@ -1446,14 +1438,8 @@ void SlerpBones(
 
 			if ( seqdesc.flags & STUDIO_POST )
 			{
-#ifndef _X360
 				QuaternionMA( q1[i], s2, q2[i], q1[i] );
-#else
-				fltx4 q1simd = LoadUnalignedSIMD( q1[i].Base() );
-				fltx4 q2simd = LoadAlignedSIMD( q2[i] );
-				fltx4 result = QuaternionMASIMD( q1simd, s2, q2simd );
-				StoreUnalignedSIMD( q1[i].Base(), result );
-#endif
+
 				// FIXME: are these correct?
 				pos1[i][0] = pos1[i][0] + pos2[i][0] * s2;
 				pos1[i][1] = pos1[i][1] + pos2[i][1] * s2;
@@ -1461,14 +1447,7 @@ void SlerpBones(
 			}
 			else
 			{
-#ifndef _X360
 				QuaternionSM( s2, q2[i], q1[i], q1[i] );
-#else
-				fltx4 q1simd = LoadUnalignedSIMD( q1[i].Base() );
-				fltx4 q2simd = LoadAlignedSIMD( q2[i] );
-				fltx4 result = QuaternionSMSIMD( s2, q2simd, q1simd );
-				StoreUnalignedSIMD( q1[i].Base(), result );
-#endif
 
 				// FIXME: are these correct?
 				pos1[i][0] = pos1[i][0] + pos2[i][0] * s2;
@@ -1488,36 +1467,19 @@ void SlerpBones(
 
 		s1 = 1.0 - s2;
 
-#ifdef _X360
-		fltx4  q1simd, q2simd, result;
-		q1simd = LoadUnalignedSIMD( q1[i].Base() );
-		q2simd = LoadAlignedSIMD( q2[i] );
-#endif
 		if ( pStudioHdr->boneFlags(i) & BONE_FIXED_ALIGNMENT )
 		{
-#ifndef _X360
 			QuaternionSlerpNoAlign( q2[i], q1[i], s1, q3 );
-#else
-			result = QuaternionSlerpNoAlignSIMD( q2simd, q1simd, s1 );
-#endif
 		}
 		else
 		{
-#ifndef _X360
 			QuaternionSlerp( q2[i], q1[i], s1, q3 );
-#else
-			result = QuaternionSlerpSIMD( q2simd, q1simd, s1 );
-#endif
 		}
 
-#ifndef _X360
 		q1[i][0] = q3[0];
 		q1[i][1] = q3[1];
 		q1[i][2] = q3[2];
 		q1[i][3] = q3[3];
-#else
-		StoreUnalignedSIMD( q1[i].Base(), result );
-#endif
 
 		pos1[i][0] = pos1[i][0] * s1 + pos2[i][0] * s2;
 		pos1[i][1] = pos1[i][1] * s1 + pos2[i][1] * s2;

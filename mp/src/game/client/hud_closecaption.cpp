@@ -31,12 +31,12 @@
 extern ISoundEmitterSystemBase *soundemitterbase;
 
 // Marked as FCVAR_USERINFO so that the server can cull CC messages before networking them down to us!!!
-ConVar closecaption( "closecaption", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX | FCVAR_USERINFO, "Enable close captioning." );
+ConVar closecaption( "closecaption", "0", FCVAR_ARCHIVE | FCVAR_USERINFO, "Enable close captioning." );
 extern ConVar cc_lang;
 static ConVar cc_linger_time( "cc_linger_time", "1.0", FCVAR_ARCHIVE, "Close caption linger time." );
 static ConVar cc_predisplay_time( "cc_predisplay_time", "0.25", FCVAR_ARCHIVE, "Close caption delay before showing caption." );
 static ConVar cc_captiontrace( "cc_captiontrace", "1", 0, "Show missing closecaptions (0 = no, 1 = devconsole, 2 = show in hud)" );
-static ConVar cc_subtitles( "cc_subtitles", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "If set, don't show sound effect captions, just voice overs (i.e., won't help hearing impaired players)." );
+static ConVar cc_subtitles( "cc_subtitles", "0", FCVAR_ARCHIVE, "If set, don't show sound effect captions, just voice overs (i.e., won't help hearing impaired players)." );
 ConVar english( "english", "1", FCVAR_USERINFO, "If set to 1, running the english language set of assets." );
 static ConVar cc_smallfontlength( "cc_smallfontlength", "300", 0, "If text stream is this long, force usage of small font size." );
 
@@ -836,10 +836,7 @@ CHudCloseCaption::CHudCloseCaption( const char *pElementName )
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 0 );
 
-	if ( !IsX360() )
-	{
-		g_pVGuiLocalize->AddFile( "resource/closecaption_%language%.txt", "GAME", true );
-	}
+	g_pVGuiLocalize->AddFile( "resource/closecaption_%language%.txt", "GAME", true );
 
 	HOOK_HUD_MESSAGE( CHudCloseCaption, CloseCaption );
 
@@ -1577,18 +1574,9 @@ void CHudCloseCaption::CreateFonts( void )
 	vgui::IScheme *pScheme = vgui::scheme()->GetIScheme( GetScheme() );
 
 	m_hFonts[CCFONT_NORMAL] = pScheme->GetFont( "CloseCaption_Normal" );
-
-	if ( IsPC() )
-	{
-		m_hFonts[CCFONT_BOLD] = pScheme->GetFont( "CloseCaption_Bold" );
-		m_hFonts[CCFONT_ITALIC] = pScheme->GetFont( "CloseCaption_Italic" );
-		m_hFonts[CCFONT_ITALICBOLD] = pScheme->GetFont( "CloseCaption_BoldItalic" );
-	}
-	else
-	{
-		m_hFonts[CCFONT_SMALL] = pScheme->GetFont( "CloseCaption_Small" );
-	}
-
+	m_hFonts[CCFONT_BOLD] = pScheme->GetFont( "CloseCaption_Bold" );
+	m_hFonts[CCFONT_ITALIC] = pScheme->GetFont( "CloseCaption_Italic" );
+	m_hFonts[CCFONT_ITALICBOLD] = pScheme->GetFont( "CloseCaption_BoldItalic" );
 	m_nLineHeight = MAX( 6, vgui::surface()->GetFontTall( m_hFonts[ CCFONT_NORMAL ] ) );
 }
 
@@ -1698,7 +1686,6 @@ void CHudCloseCaption::ComputeStreamWork( int available_width, CCloseCaptionItem
 	WorkUnitParams params;
 
 	const wchar_t *curpos = item->GetStream();
-	int streamlen = wcslen( curpos );
 	CUtlVector< Color > colorStack;
 
 	const wchar_t *most_recent_space = NULL;
@@ -1775,14 +1762,7 @@ void CHudCloseCaption::ComputeStreamWork( int available_width, CCloseCaptionItem
 		}
 
 		int font;
-		if ( IsPC() )
-		{
-			font = params.GetFontNumber();
-		}
-		else
-		{
-			font = streamlen >= cc_smallfontlength.GetInt() ? CCFONT_SMALL : CCFONT_NORMAL;
-		}
+		font = params.GetFontNumber();
 		vgui::HFont useF = m_hFonts[font];
 		params.font = useF;
 
@@ -2502,7 +2482,7 @@ void CHudCloseCaption::MsgFunc_CloseCaption(bf_read &msg)
 	bool bIsMale = flagbyte & CLOSE_CAPTION_GENDER_MALE ? true : false;
 	bool bIsFemale = flagbyte & CLOSE_CAPTION_GENDER_FEMALE ? true : false;
 
-	if ( warnonmissing && !IsX360() )
+	if ( warnonmissing )
 	{
 		wchar_t *pcheck = g_pVGuiLocalize->Find( tokenname );
 		if ( !pcheck )
@@ -2527,7 +2507,7 @@ void CHudCloseCaption::MsgFunc_CloseCaption(bf_read &msg)
 
 int CHudCloseCaption::GetFontNumber( bool bold, bool italic )
 {
-	if ( IsPC() && ( bold || italic ) )
+	if ( bold || italic )
 	{
 		if( bold && italic )
 		{
@@ -2569,22 +2549,9 @@ void CHudCloseCaption::InitCaptionDictionary( const char *dbfile )
 
 	for ( char *path = strtok( searchPaths, ";" ); path; path = strtok( NULL, ";" ) )
 	{
-		if ( IsX360() && ( filesystem->GetDVDMode() == DVDMODE_STRICT ) && !V_stristr( path, ".zip" ) )
-		{
-			// only want zip paths
-			continue;
-		} 
-
 		char fullpath[MAX_PATH];
 		Q_snprintf( fullpath, sizeof( fullpath ), "%s%s", path, dbfile );
 		Q_FixSlashes( fullpath );
-
-		if ( IsX360() )
-		{
-			char fullpath360[MAX_PATH];
-			UpdateOrCreateCaptionFile( fullpath, fullpath360, sizeof( fullpath360 ) );
-			Q_strncpy( fullpath, fullpath360, sizeof( fullpath ) );
-		}
 
         FileHandle_t fh = filesystem->Open( fullpath, "rb" );
 		if ( FILESYSTEM_INVALID_HANDLE != fh )
@@ -2638,8 +2605,7 @@ void CHudCloseCaption::OnFinishAsyncLoad( int nFileIndex, int nBlockNum, AsyncCa
 //-----------------------------------------------------------------------------
 void CHudCloseCaption::Lock( void )
 {
-	if ( !IsXbox() )
-		m_bLocked = true;
+	m_bLocked = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -2653,7 +2619,7 @@ void CHudCloseCaption::Unlock( void )
 static int EmitCaptionCompletion( const char *partial, char commands[ COMMAND_COMPLETION_MAXITEMS ][ COMMAND_COMPLETION_ITEM_LENGTH ] )
 {
 	int current = 0;
-	if ( !g_pVGuiLocalize || IsX360() )
+	if ( !g_pVGuiLocalize )
 		return current;
 
 	const char *cmdname = "cc_emit";
@@ -2747,10 +2713,7 @@ void OnCaptionLanguageChanged( IConVar *pConVar, const char *pOldString, float f
 	Q_snprintf( fn, sizeof( fn ), "resource/closecaption_%s.txt", var.GetString() );
 
 	// Re-adding the file, even if it's "english" will overwrite the tokens as needed
-	if ( !IsX360() )
-	{
-		g_pVGuiLocalize->AddFile( "resource/closecaption_%language%.txt", "GAME", true );
-	}
+	g_pVGuiLocalize->AddFile( "resource/closecaption_%language%.txt", "GAME", true );
 
 	char uilanguage[ 64 ];
 	uilanguage[0] = 0;
@@ -2761,20 +2724,17 @@ void OnCaptionLanguageChanged( IConVar *pConVar, const char *pOldString, float f
 	// If it's not the default, load the language on top of the user's default language
 	if ( Q_strlen( var.GetString() ) > 0 && Q_stricmp( var.GetString(), uilanguage ) )
 	{
-		if ( !IsX360() )
+		if ( g_pFullFileSystem->FileExists( fn ) )
 		{
-			if ( g_pFullFileSystem->FileExists( fn ) )
-			{
-				g_pVGuiLocalize->AddFile( fn, "GAME", true );
-			}
-			else
-			{
-				char fallback[ 512 ];
-				Q_snprintf( fallback, sizeof( fallback ), "resource/closecaption_%s.txt", uilanguage );
+			g_pVGuiLocalize->AddFile( fn, "GAME", true );
+		}
+		else
+		{
+			char fallback[ 512 ];
+			Q_snprintf( fallback, sizeof( fallback ), "resource/closecaption_%s.txt", uilanguage );
 
-				Msg( "%s not found\n", fn );
-				Msg( "%s will be used\n", fallback );
-			}
+			Msg( "%s not found\n", fn );
+			Msg( "%s will be used\n", fallback );
 		}
 
 		if ( hudCloseCaption )
@@ -2890,18 +2850,15 @@ void CHudCloseCaption::FindSound( char const *pchANSI )
 					}
 				}
 
-				if ( IsPC() )
+				for ( int r = g_pVGuiLocalize->GetFirstStringIndex(); r != INVALID_LOCALIZE_STRING_INDEX; r = g_pVGuiLocalize->GetNextStringIndex( r ) )
 				{
-					for ( int r = g_pVGuiLocalize->GetFirstStringIndex(); r != INVALID_LOCALIZE_STRING_INDEX; r = g_pVGuiLocalize->GetNextStringIndex( r ) )
+					const char *strName = g_pVGuiLocalize->GetNameByIndex( r );
+
+					search.SetHash( strName );
+
+					if ( search.hash == lu.hash )
 					{
-						const char *strName = g_pVGuiLocalize->GetNameByIndex( r );
-
-						search.SetHash( strName );
-
-						if ( search.hash == lu.hash )
-						{
-							Msg( "    '%s' localization matches\n", strName );
-						}
+						Msg( "    '%s' localization matches\n", strName );
 					}
 				}
 			}

@@ -92,11 +92,13 @@ protected:
 	virtual void	CheckWaterJump(void );
 
 	virtual void	WaterMove( void );
+	virtual void    CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward);
 
 	void			WaterJump( void );
 
 	// Handles both ground friction and water friction
 	virtual void			Friction( void );
+	virtual void			DoFriction( Vector &velocity );
 
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
@@ -140,8 +142,9 @@ protected:
 	bool			CheckInterval( IntervalType_t type );
 
 
-	// Decompoosed gravity
+	// Decomposed gravity
 	virtual void StartGravity( void );
+	virtual float GetPlayerGravity();
     virtual void FinishGravity( void );
 
 	// Apply normal ( undecomposed ) gravity
@@ -193,6 +196,9 @@ protected:
 	// Sets refWaterLevel and refWaterType appropriately.
 	// If in water, applies current to baseVelocity, and returns true.
 	virtual bool			CheckWater( void );
+	virtual float			GetWaterWaistOffset() { return 0.0f; }
+	virtual float			GetWaterJumpForward() { return 24.0f; }
+	virtual float			GetWaterJumpUpZVelocity() { return 256.0f; }
 	
 	// Determine if player is in water, on ground, etc.
 	virtual void CategorizePosition( void );
@@ -203,7 +209,7 @@ protected:
 
 	virtual void	CheckFalling( void );
 
-	virtual void	PlayerRoughLandingEffects( float fvol );
+	virtual void PlayerRoughLandingEffects(float fvol, short surfacePropsIndexOverride = -1);
 
 	void			PlayerWaterSounds( void );
 
@@ -216,6 +222,7 @@ protected:
 	virtual void	FinishUnDuck( void );
 	virtual void	FinishDuck( void );
 	virtual bool	CanUnduck();
+	virtual float	GetTimeToDuck() { return 0.4f; }
 	void			UpdateDuckJumpEyeOffset( void );
 	bool			CanUnDuckJump( trace_t &trace );
 	void			StartUnDuckJump( void );

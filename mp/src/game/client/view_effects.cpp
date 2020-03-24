@@ -14,9 +14,6 @@
 #include "viewrender.h"
 #include "con_nprint.h"
 #include "saverestoretypes.h"
-#include "c_rumble.h"
-// NVNT haptics interface system
-#include "haptics/ihaptics.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -219,10 +216,6 @@ void CViewEffects::CalcShake( void )
 	// We'll accumulate the aggregate shake for this frame into these data members.
 	m_vecShakeAppliedOffset.Init(0, 0, 0);
 	m_flShakeAppliedAngle = 0;
-	float flRumbleAngle = 0;
-
-	// NVNT - haptic shake effect amplitude
-	float hapticShakeAmp = 0;
 
 	bool bShow = shake_show.GetBool();
 
@@ -301,13 +294,7 @@ void CViewEffects::CalcShake( void )
 		}
 		fraction = fraction * sin( angle );
 		
-		if( pShake->command != SHAKE_START_NORUMBLE )
-		{
-			// As long as this isn't a NO RUMBLE effect, then accumulate rumble
-			flRumbleAngle += pShake->angle * fraction;
-		}
-
-		if( pShake->command != SHAKE_START_RUMBLEONLY )
+		if( pShake->command == SHAKE_START_NORUMBLE || pShake->command == SHAKE_START )
 		{
 			// As long as this isn't a RUMBLE ONLY effect, then accumulate screen shake
 			
@@ -320,15 +307,7 @@ void CViewEffects::CalcShake( void )
 
 		// Drop amplitude a bit, less for higher frequency shakes
 		pShake->amplitude -= pShake->amplitude * ( gpGlobals->frametime / (pShake->duration * pShake->frequency) );
-		// NVNT - update our amplitude.
-		hapticShakeAmp += pShake->amplitude*fraction;
 	}
-	// NVNT - apply our screen shake update
-	if ( haptics )
-		haptics->SetShake(hapticShakeAmp,1);
-
-	// Feed this to the rumble system!
-	UpdateScreenShakeRumble( flRumbleAngle );
 }
 
 
@@ -394,7 +373,7 @@ screenshake_t *CViewEffects::FindLongestShake()
 //-----------------------------------------------------------------------------
 void CViewEffects::Shake( ScreenShake_t &data )
 {
-	if ( ( data.command == SHAKE_START || data.command == SHAKE_START_RUMBLEONLY ) && ( m_ShakeList.Count() < MAX_SHAKES ) )
+	if ( ( data.command == SHAKE_START || data.command == SHAKE_START_NORUMBLE ) && ( m_ShakeList.Count() < MAX_SHAKES ) )
 	{
 		screenshake_t *pNewShake = new screenshake_t;
 			

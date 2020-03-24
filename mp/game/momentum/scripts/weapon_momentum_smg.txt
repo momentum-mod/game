@@ -5,20 +5,22 @@ WeaponData
     "BuiltRightHanded"          "1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#MOM_Weapon_SMG"
-    "viewmodel"         "models/weapons/v_smg_old.mdl"
-    "playermodel"       "models/weapons/v_smg_old.mdl"
+    "printname"         "#MOM_Weapon_SMG" 
     
     "anim_prefix"       "anim"
     "bucket"            "0"
     "bucket_position"   "2"
 
     "clip_size"         "50"
-
     "weight"            "26"
-    "item_flags"        "0"
 
-    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    "ModelData"
+    {
+        "view"  "models/weapons/v_smg_old.mdl"
+        "world" "models/weapons/v_smg_old.mdl"
+    }
+
+    // Sounds for the weapon.
     SoundData
     {
         "single_shot"       "Weapon_SMG1.Single"
@@ -48,14 +50,6 @@ WeaponData
 				"character"	"s"
 		}
         "crosshair"
-        {
-                "file"      "sprites/crosshairs"
-                "x"         "0"
-                "y"         "48"
-                "width"     "24"
-                "height"    "24"
-        }
-        "autoaim"
         {
                 "file"      "sprites/crosshairs"
                 "x"         "0"

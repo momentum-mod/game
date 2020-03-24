@@ -12,7 +12,6 @@
 #include "EnvMessage.h"
 #include "player.h"
 #include "gamerules.h"
-#include "teamplay_gamerules.h"
 #include "physics.h"
 #include "isaverestore.h"
 #include "activitylist.h"
@@ -380,13 +379,8 @@ BEGIN_DATADESC( CWorld )
 	DEFINE_KEYFIELD( m_bDisplayTitle,	FIELD_BOOLEAN, "gametitle" ),
 	DEFINE_FIELD( m_WorldMins, FIELD_VECTOR ),
 	DEFINE_FIELD( m_WorldMaxs, FIELD_VECTOR ),
-#ifdef _X360
-	DEFINE_KEYFIELD( m_flMaxOccludeeArea, FIELD_FLOAT, "maxoccludeearea_x360" ),
-	DEFINE_KEYFIELD( m_flMinOccluderArea, FIELD_FLOAT, "minoccluderarea_x360" ),
-#else
 	DEFINE_KEYFIELD( m_flMaxOccludeeArea, FIELD_FLOAT, "maxoccludeearea" ),
 	DEFINE_KEYFIELD( m_flMinOccluderArea, FIELD_FLOAT, "minoccluderarea" ),
-#endif
 	DEFINE_KEYFIELD( m_flMaxPropScreenSpaceWidth, FIELD_FLOAT, "maxpropscreenwidth" ),
 	DEFINE_KEYFIELD( m_flMinPropScreenSpaceWidth, FIELD_FLOAT, "minpropscreenwidth" ),
 	DEFINE_KEYFIELD( m_iszDetailSpriteMaterial, FIELD_STRING, "detailmaterial" ),
@@ -528,8 +522,9 @@ void CWorld::Spawn( void )
 
 	g_EventQueue.Init();
 	Precache( );
-	GlobalEntity_Add( "is_console", STRING(gpGlobals->mapname), ( IsConsole() ) ? GLOBAL_ON : GLOBAL_OFF );
-	GlobalEntity_Add( "is_pc", STRING(gpGlobals->mapname), ( !IsConsole() ) ? GLOBAL_ON : GLOBAL_OFF );
+	// xen: keeping these commented out for now
+	// GlobalEntity_Add( "is_console", STRING(gpGlobals->mapname), ( IsConsole() ) ? GLOBAL_ON : GLOBAL_OFF );
+	// GlobalEntity_Add( "is_pc", STRING(gpGlobals->mapname), ( !IsConsole() ) ? GLOBAL_ON : GLOBAL_OFF );
 }
 
 static const char *g_DefaultLightstyles[] =

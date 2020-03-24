@@ -29,7 +29,7 @@ public:
 	// IPresence Interface
 	virtual void 		UserSetContext( unsigned int nUserIndex, unsigned int nContextId, unsigned int nContextValue, bool bAsync = false );
 	virtual void 		UserSetProperty( unsigned int nUserIndex, unsigned int nPropertyId, unsigned int nBytes, const void *pvValue, bool bAsync = false );
-	virtual void		SetupGameProperties( CUtlVector< XUSER_CONTEXT > &contexts, CUtlVector< XUSER_PROPERTY > &properties );
+	virtual void		SetupGameProperties();
 	virtual uint		GetPresenceID( const char *pIdName );
 	virtual void		GetPropertyDisplayString( uint id, uint value, char *pOutput, int nBytes );
 	virtual const char	*GetPropertyIdString( const uint id );
@@ -43,7 +43,7 @@ protected:
 	bool							m_bArbitrated;
 	bool							m_bReportingStats;
 	HANDLE							m_hSession;
-	CUtlVector< XUSER_PROPERTY >	m_PlayerStats;	
+	void**							m_PlayerStats;	
 
 	//---------------------------------------------------------
 	// Debug support
