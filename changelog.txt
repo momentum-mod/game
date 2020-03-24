@@ -1,3 +1,53 @@
+0.8.4
+= Added
+  Added Stickybomb Launcher from TF2 and the Sticky Jumping gamemode
+  Stickybombs are networked to others in a lobby
+  Added “mom_sj_stickybomb_drawdelay”, defaulted to 0
+  Added “mom_rj_rocket_drawdelay” to match stickybomb convar
+  Added “mom_hud_sj_stickycount_autohide” which auto-hides the count if 0
+  Add ConVar “mom_hud_sj_chargemeter_units” to show stickybomb speed when charged
+  Added 0.05 second buffer to firing Stickybomb Launcher
+  Charge mechanic is disabled whilst inside a start trigger
+  Added “sv_edge_fix” (off by default)
+  Added "r_viewmodel_opacity" to adjust viewmodel opacity
+  The PBR Shader has been added, supporting the Metal/Roughness workflow and Parallax Occlusion
+  Various PBR assets and “shadertest” map
+  Added “sv_tickrate” convar for simpler tickrate adjustments
+  Added a “ModelData” block inside weapon scripts that define the path to every model the weapon uses
+  Added TF2 override scripts inside “custom/overrides/scripts/” with a README on how to use them (weapon model hotswitching has been removed in favor of these)
+  Added “give_weapon” command that autocompletes which weapons you can give yourself depending on gamemodes
+
+= Fixed
+  Fixed changing weapons from and to the rocket launcher allowing faster rocket firing
+  Fixed TF2 materials from going pitch black
+  Fixed showing default “dots” crosshair with weapon crosshairs and fix custom crosshair files
+  Fixed the player_speedmod entity defaulting to the local player
+  Fixed missing default crosshair
+  Fixed incorrect sound playing when landing on a slope
+  Fixed Main Menu/func_rotating crash after running for long periods of time
+  Fixed user stats not showing for players
+  Fixed Discord integration for Linux
+  Fixed ConVarRefs being able to bypass ConVar_Validated validator funcs
+  Fixed modals (settings panel, paintgun panel) not preventing input to the game
+
+= Improved
+  Make RJ/SJ follow the other gamemodes' start zone logic (reset on landing, limit speed on enter)
+  Center fire is now the default RJ firing mode to better cater to newer players
+  Officially changed the map prefix for RJ from “jump_” to “rj_”
+  Added updated RJ trail/explosion particles by Vortex
+  Shotgun material has been reworked
+  The options for HDR bloom and tonemapping now use combo boxes
+  Consolidate gamemode settings pages into a single “Gamemodes” tab
+  The momentum rocket model now has and uses the "trail" bone for TF2-consistency (thanks to bonjorno7)
+  Updated the Main Menu background for SJ Gamemode
+  Skybox is no longer culled at >90 FoV
+  Converted hotswitching convars over to enable toggle vars
+  Removed VR support
+  Removed controller support
+  Removed Logitech G15 integration
+  Removed Mumble integration
+  Gamemodes define which weapons they can use, with the “unknown” gamemode allowing any weapon
+
 0.8.3
 = Added
   Added the ability to toggle between official momentum and TF2 sounds, models and particles
@@ -62,33 +112,3 @@
   Online packets are now validated to ensure garbage/malicious packets do not affect the game negatively
   Improved the shotgun’s animations
   Refactored weapon script code to make more sense and limit script changes to visual modifications
-
-0.8.2
-= Added
-  Added initial Rocket Jump implementation
-  Added TF2 Content Mounting
-  Added online flashlight support (mom_online_ghost_flashlights_enable [0/1])
-  Added a command to teleport to where the player is looking (mom_eyetele)
-  Added an outline to the player’s time on the leaderboards
-
-= Improved
-  Improved the project to compile using Visual Studio 2019 from 2013
-  Added localization support for pistol fire mode text
-  Limited sv_interval_per_tick to the engine’s max and min
-  Removed player speed cap when leaving the start zone from a saveloc
-  Made the mapcache.dat refresh after each update
-  Removed redundant map name label in the spectator GUI
-  Improved the look and feel of the map selection UI
-
-= Fixed
-  Fixed SetSpeed for func_conveyor not reading the float values properly
-  Fixed func_conveyor to allow 0 speed on spawn
-  Fixed func_shootboost taking a direction instead of an angle
-  Fixed crashes due missing null checks in the lobby
-  Fixed duplicate users showing on the lobby UI
-  Fixed the player ducking while under a roof when using noclip
-  Fixed spectator state not being reset when leaving a map
-  Fixed time-ago strings showing “-1 seconds ago”
-  Fixed Momentum teleport triggers
-  Fixed picking up a weapon when switching to another weapon in the same slot
-  Fixed OSX crash caused by compatibility issues
