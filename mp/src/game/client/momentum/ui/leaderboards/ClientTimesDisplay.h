@@ -38,6 +38,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void ShowPanel(bool bShow) OVERRIDE;
 
+    void SetMouseInputEnabled(bool bState) OVERRIDE;
+
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
     vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
     bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }

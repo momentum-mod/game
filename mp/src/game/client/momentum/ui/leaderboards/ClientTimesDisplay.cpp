@@ -182,6 +182,11 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     }
 }
 
+void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
+{
+    BaseClass::SetMouseInputEnabled(bState);
+}
+
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
 {
     if (!event)
