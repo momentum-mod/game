@@ -153,6 +153,15 @@ void CClientTimesDisplay::PerformLayout()
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::ShowPanel(bool bShow)
 {
+    if (m_bToggledOpen)
+    {
+        if (bShow == false)
+        {
+            m_bToggledOpen = false;
+        }
+        return;
+    }
+
     if (m_pTimes)
         m_pTimes->OnPanelShow(bShow);
 
@@ -185,6 +194,9 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
 {
     BaseClass::SetMouseInputEnabled(bState);
+
+    if(bState)
+        m_bToggledOpen = true;
 }
 
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
