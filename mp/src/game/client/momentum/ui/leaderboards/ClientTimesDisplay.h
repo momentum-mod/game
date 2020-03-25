@@ -76,6 +76,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     float m_flNextUpdateTime;
 
+    bool m_bToggledOpen;
+
     // methods
     void FillScoreBoard();
     void FillScoreBoard(bool pFullUpdate);

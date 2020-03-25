@@ -25,6 +25,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 
     m_nCloseKey = BUTTON_CODE_INVALID;
 
+    m_bToggledOpen = false;
+
     m_pViewPort = pViewPort;
     // initialize dialog
     SetProportional(true);
