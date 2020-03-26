@@ -195,9 +195,12 @@ void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
 {
     BaseClass::SetMouseInputEnabled(bState);
 
-    if(bState)
+    if (bState)
+    {
         m_bToggledOpen = true;
+    }
 }
+
 void CClientTimesDisplay::SetVisible(bool bState)
 {
     BaseClass::SetVisible(bState);
