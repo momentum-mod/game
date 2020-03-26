@@ -41,7 +41,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_ghost_online_rotations"
-		"cvar_value"		"0"
         "actionsignallevel" "1"
 		"Font"		"DefaultVerySmall"
 	}
@@ -74,7 +73,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_ghost_online_sounds"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
 		"Font"		"DefaultVerySmall"
 	}
@@ -105,7 +103,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_entpanels_enable"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
 		"Font"		"DefaultVerySmall"		
 	}
@@ -136,7 +133,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_ghost_online_trail_enable"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
 		"Font"		"DefaultVerySmall"
 	}
@@ -169,7 +165,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_ghost_online_alpha_override_enable"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
 		"Font"		"DefaultVerySmall"
 	}
