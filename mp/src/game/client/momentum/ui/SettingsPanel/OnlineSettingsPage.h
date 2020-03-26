@@ -27,5 +27,6 @@ private:
 
     vgui::CvarSlider *m_pAlphaOverrideSlider;
     vgui::TextEntry *m_pAlphaOverrideInput;
-    vgui::CvarToggleCheckButton *m_pEnableColorAlphaOverride;
+    vgui::CvarToggleCheckButton *m_pEnableGhostRotations, *m_pEnableGhostSounds, *m_pEnableEntityPanels,
+        *m_pEnableGhostTrails, *m_pEnableColorAlphaOverride;
 };
