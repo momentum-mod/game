@@ -258,6 +258,21 @@ void CClientTimesDisplay::FillScoreBoard(bool bFullUpdate)
         m_pTimes->FillLeaderboards(bFullUpdate);
 }
 
+void CClientTimesDisplay::SetLeaderboardsHideHud(bool bState)
+{
+    C_BasePlayer* player = C_BasePlayer::GetLocalPlayer();
+    if (player)
+    {
+        if (bState)
+        {
+            player->m_Local.m_iHideHUD |= HIDEHUD_LEADERBOARDS;
+        }
+        else
+        {
+            player->m_Local.m_iHideHUD &= ~HIDEHUD_LEADERBOARDS;
+        }
+    }
+}
 //-----------------------------------------------------------------------------
 // Purpose: Center the dialog on the screen.  (vgui has this method on
 //          Frame, but we're an EditablePanel, need to roll our own.)
