@@ -790,16 +790,6 @@ void CMomentumPlayer::DoMuzzleFlash()
     }
 }
 
-void CMomentumPlayer::PreThink()
-{
-    BaseClass::PreThink();
-
-    if (m_nButtons & IN_SCORE)
-        m_Local.m_iHideHUD |= HIDEHUD_LEADERBOARDS;
-    else
-        m_Local.m_iHideHUD &= ~HIDEHUD_LEADERBOARDS;
-}
-
 void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
 {
     if (m_Local.m_bDucked != bState)
