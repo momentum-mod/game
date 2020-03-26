@@ -83,4 +83,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // methods
     void FillScoreBoard();
     void FillScoreBoard(bool pFullUpdate);
+
+    void SetLeaderboardsHideHud(bool bState);
 };
