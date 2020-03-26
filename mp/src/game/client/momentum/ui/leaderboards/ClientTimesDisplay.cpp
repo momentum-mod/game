@@ -198,6 +198,12 @@ void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
     if(bState)
         m_bToggledOpen = true;
 }
+void CClientTimesDisplay::SetVisible(bool bState)
+{
+    BaseClass::SetVisible(bState);
+
+    SetLeaderboardsHideHud(bState);
+}
 
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
 {
