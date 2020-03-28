@@ -232,9 +232,7 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 
 bool CHudSpeedMeter::ShouldDraw() 
 { 
-    return (mom_hud_speedometer.GetBool() || mom_hud_speedometer_horiz.GetBool() ||
-        mom_hud_speedometer_lastjumpvel.GetBool() || mom_hud_speedometer_showenterspeed.GetBool()) && 
-        CHudElement::ShouldDraw();
+    return CHudElement::ShouldDraw();
 }
 
 void CHudSpeedMeter::OnThink()
