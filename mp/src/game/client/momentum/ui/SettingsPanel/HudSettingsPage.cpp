@@ -93,12 +93,14 @@ void HudSettingsPage::OnCheckboxChecked(Panel *p)
 {
     BaseClass::OnCheckboxChecked(p);
 
-    if (p == m_pSpeedometerShow || p == m_pSpeedometerHorizShow || p == m_pSpeedometerShowLastJump)
+    if (p == m_pSpeedometerShow || p == m_pSpeedometerHorizShow || p == m_pSpeedometerShowLastJump || p == m_pSpeedometerShowStageEnter)
     {
-        bool bEnabled = m_pSpeedometerShow->IsSelected() || m_pSpeedometerHorizShow->IsSelected() ||
-                        m_pSpeedometerShowLastJump->IsSelected();
-        m_pSpeedometerUnits->SetEnabled(bEnabled);
-        m_pSpeedometerColorize->SetEnabled(bEnabled);
-        m_pSpeedometerUnitLabels->SetEnabled(bEnabled);
+        bool bEnableUnits = m_pSpeedometerShow->IsSelected() || m_pSpeedometerHorizShow->IsSelected() ||
+                        m_pSpeedometerShowLastJump->IsSelected() || m_pSpeedometerShowStageEnter->IsSelected();
+        m_pSpeedometerUnits->SetEnabled(bEnableUnits);
+        m_pSpeedometerUnitLabels->SetEnabled(bEnableUnits);
+
+        bool bEnableColorize = m_pSpeedometerShow->IsSelected() || m_pSpeedometerHorizShow->IsSelected();
+        m_pSpeedometerColorize->SetEnabled(bEnableColorize);
     }
 }
