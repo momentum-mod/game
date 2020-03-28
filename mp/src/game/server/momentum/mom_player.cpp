@@ -31,6 +31,7 @@ static MAKE_TOGGLE_CONVAR(
     mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
     "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
 
+
 CON_COMMAND_F(
     mom_practice,
     "Toggle. Allows player to fly around in noclip during a run, teleports the player back upon untoggling.\n"
@@ -167,7 +168,6 @@ static MAKE_CONVAR_C(mom_trail_length, "4", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_
                      APPEARANCE_TRAIL_LEN_MIN, APPEARANCE_TRAIL_LEN_MAX, AppearanceCallback);
 
 static MAKE_TOGGLE_CONVAR_C(mom_trail_enable, "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", AppearanceCallback);
-
 // Equivalent to "tf_damagescale_self_soldier" (default: 0.6) in TF2
 // Used for scaling damage when not on ground and not in water
 #define MOM_DAMAGESCALE_SELF_ROCKET 0.6f
@@ -1573,14 +1573,13 @@ void CMomentumPlayer::TravelSpectateTargets(bool bReverse)
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
     // slowdown when map is finished
-    if (m_Data.m_bMapFinished)
+    if (m_Data.m_bMapFinished && !ConVarRef("mom_mapfinished_movement_enable").GetBool())
         // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else
         m_flTweenVelValue = GetLaggedMovementValue(); // Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
-
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "TWEEN");
 }
 
