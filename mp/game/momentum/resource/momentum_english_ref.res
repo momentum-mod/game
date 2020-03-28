@@ -391,6 +391,7 @@
         "MOM_Settings_RJ_RocketDrawDelayEntry_Label" "Delay before rockets are rendered"
         "MOM_Settings_SJ_RocketDrawDelayEntry_Tooltip" "In seconds. Default is 0.2, max 1."
         
+        "MOM_Settings_SJ_Enable_Trail_Particle" "Enable stickybomb trail particle"
         "MOM_Settings_SJ_Enable_Explosion_Particle" "Enable stickybomb explosion particle"
         "MOM_Settings_SJ_Enable_Explosion_Sound" "Enable stickybomb explosion sound"
         "MOM_Settings_SJ_Enable_Detonation_Fail_Sound" "Enable stickybomb detonation fail sound"
