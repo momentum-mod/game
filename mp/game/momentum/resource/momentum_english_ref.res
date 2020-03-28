@@ -393,6 +393,8 @@
         
         "MOM_Settings_SJ_Enable_Trail_Particle" "Enable stickybomb trail particle"
         "MOM_Settings_SJ_Enable_Explosion_Particle" "Enable stickybomb explosion particle"
+        "MOM_Settings_SJ_Enable_Stickybomb_Decals" "Enable stickybomb explosion decals"
+        "MOM_Settings_SJ_Enable_Stickybomb_Decals_TT" "When enabled, stickybombs will create decals upon explosion."
         "MOM_Settings_SJ_Enable_Explosion_Sound" "Enable stickybomb explosion sound"
         "MOM_Settings_SJ_Enable_Detonation_Fail_Sound" "Enable stickybomb detonation fail sound"
         "MOM_Settings_SJ_Enable_Detonation_Fail_Sound_TT" "Note: if this is disabled and success sound is enabled, success sound will play if partial detonation happens."
