@@ -277,6 +277,7 @@
         "MOM_Settings_Speedometer_Show" "Display absolute speed of player."
         "MOM_Settings_Speedometer_Horiz_Show" "Display horizontal speed of player."
         "MOM_Settings_Speedometer_Show_Jump" "Display velocity of player's last jump (XY only)."
+        "MOM_Settings_Speedometer_Show_StageEnter" "Display the absolute speed of the player when entering a stage or zone."
         "MOM_Settings_Speedometer_Unit_Labels" "Display unit labels (U/S, KM/H, MPH, Energy)."		
         "MOM_Settings_Speedometer_Color_Type_Label" "Speedometer Color Mode:"
         "MOM_Settings_Speedometer_Color_Type_None" "No color"
