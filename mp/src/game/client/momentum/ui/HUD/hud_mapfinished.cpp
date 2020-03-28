@@ -20,6 +20,9 @@
 
 using namespace vgui;
 
+static MAKE_TOGGLE_CONVAR(mom_mapfinished_movement_enable, "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                          "Toggles being able to move. 0 = OFF, 1 = ON\n");
+
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName),
