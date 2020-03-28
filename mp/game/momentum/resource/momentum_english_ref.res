@@ -389,7 +389,7 @@
         "MOM_Settings_RJ_Enable_Center_Fire" "Fire rocket projectiles from screen center"
         "MOM_Settings_RJ_Enable_Center_Fire_TT" "When enabled, rockets will fire from the center of the screen like the Original from Team Fortress 2 / Quake."
         "MOM_Settings_RJ_RocketDrawDelayEntry_Label" "Delay before rockets are rendered"
-        "MOM_Settings_SJ_RocketDrawDelayEntry_Tooltip" "In seconds. Default is 0.2, max 1."
+        "MOM_Settings_RJ_RocketDrawDelayEntry_Tooltip" "In seconds. Default is 0.2, max 1."
         
         "MOM_Settings_SJ_Enable_Trail_Particle" "Enable stickybomb trail particle"
         "MOM_Settings_SJ_Enable_Explosion_Particle" "Enable stickybomb explosion particle"
@@ -401,7 +401,13 @@
         "MOM_Settings_SJ_Enable_Detonation_Success_Sound" "Enable stickybomb detonation success sound"
         "MOM_Settings_SJ_Enable_Charge_Sound" "Enable sticky launcher charging sound"
         "MOM_Settings_SJ_Enable_ChargeMeter" "Enable charge meter"
+        "MOM_Settings_SJ_ChargeMeter_Units_Label" "Chargemeter Units:"
+        "MOM_Settings_SJ_ChargeMeter_Units_Type_None" "None"
+        "MOM_Settings_SJ_ChargeMeter_Units_Type_1" "Hammer units per second (UPS)"
+        "MOM_Settings_SJ_ChargeMeter_Units_Type_2" "Speed in percent"
         "MOM_Settings_SJ_Enable_Sticky_Counter" "Enable stickybomb counter"
+        "MOM_Settings_SJ_Enable_Sticky_Counter_Autohide" "Enable autohide on stickybomb counter"
+        "MOM_Settings_SJ_Enable_Sticky_Counter_Autohide_TT" "Autohide when sticky count is 0."
         "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"
         "MOM_Settings_SJ_DrawDelayEntry_Tooltip" "In seconds. Default is 0, max 1."
 

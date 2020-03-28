@@ -4,6 +4,7 @@
 
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/CvarTextEntry.h>
+#include "vgui_controls/CvarComboBox.h"
 #include <vgui_controls/Frame.h>
 
 #include "tier0/memdbgon.h"
@@ -34,13 +35,30 @@ GamemodeSettingsPage::GamemodeSettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pSJEnableChargeSound = new CvarToggleCheckButton(this, "SJEnableChargeSound", "#MOM_Settings_SJ_Enable_Charge_Sound", "mom_sj_sound_charge_enable");
     m_pSJEnableChargeMeter = new CvarToggleCheckButton(this, "EnableChargeMeter", "#MOM_Settings_SJ_Enable_Charge_Meter", "mom_hud_sj_chargemeter_enable");
     m_pSJEnableStickyCounter = new CvarToggleCheckButton(this, "EnableStickyCounter", "#MOM_Settings_SJ_Enable_Sticky_Counter", "mom_hud_sj_stickycount_enable");
+    m_pSJStickyCounterAutohide = new CvarToggleCheckButton(this, "EnableStickyCounterAutohide", "#MOM_Settings_SJ_Enable_Sticky_Counter_Autohide", "mom_hud_sj_stickycount_autohide");
+
+    m_pSJChargeMeterUnits = new CvarComboBox(this, "ChargeMeterUnits", 3, false, "mom_hud_sj_chargemeter_units");
+    m_pSJChargeMeterUnits->AddItem("#MOM_Settings_SJ_ChargeMeter_Units_Type_None", nullptr);
+    m_pSJChargeMeterUnits->AddItem("#MOM_Settings_SJ_ChargeMeter_Units_Type_1", nullptr);
+    m_pSJChargeMeterUnits->AddItem("#MOM_Settings_SJ_ChargeMeter_Units_Type_2", nullptr);
+    m_pSJChargeMeterUnits->AddActionSignalTarget(this);
 
     m_pSJStickyDrawDelayEntry = new CvarTextEntry(this, "StickyDrawDelayEntry", "mom_sj_stickybomb_drawdelay");
     m_pSJStickyDrawDelayEntry->SetAllowNumericInputOnly(true);
     m_pSJStickyDrawDelayEntry->AddActionSignalTarget(this);
 
-
     LoadControlSettings("resource/ui/SettingsPanel_GamemodeSettings.res");
 }
 
 GamemodeSettingsPage::~GamemodeSettingsPage() {}
+
+void GamemodeSettingsPage::OnCheckboxChecked(Panel *p)
+{
+    BaseClass::OnCheckboxChecked(p);
+
+    if (p == m_pSJEnableStickyCounter)
+        m_pSJStickyCounterAutohide->SetEnabled(m_pSJEnableStickyCounter->IsSelected());
+
+    if (p == m_pSJEnableChargeMeter)
+        m_pSJChargeMeterUnits->SetEnabled(m_pSJEnableChargeMeter->IsSelected());
+}
