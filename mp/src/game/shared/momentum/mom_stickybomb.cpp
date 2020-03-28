@@ -39,6 +39,8 @@ PRECACHE_WEAPON_REGISTER(momentum_stickybomb);
 #ifdef CLIENT_DLL
 static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0", FCVAR_ARCHIVE,
                    "Determines how long it takes for stickies to start being drawn upon spawning.\n", 0, 1);
+static MAKE_TOGGLE_CONVAR(mom_sj_particle_trail_enable, "1", FCVAR_ARCHIVE,
+                          "Toggles the sticky trail particle. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_TOGGLE_CONVAR(mom_sj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on sticky explosion. 0 = OFF, 1 = ON\n");
 #endif
@@ -109,6 +111,9 @@ float CMomStickybomb::GetDrawDelayTime()
 
 void CMomStickybomb::CreateTrailParticles()
 {
+    if (!mom_sj_particle_trail_enable.GetBool())
+        return;
+
     ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombTrail"), PATTACH_ABSORIGIN_FOLLOW);
 }
 
