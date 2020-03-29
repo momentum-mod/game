@@ -28,8 +28,7 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
     m_pSyncColorize->AddActionSignalTarget(this);
 
-    m_pSpeedometerShow =
-        new CvarToggleCheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_hud_speedometer");
+    m_pSpeedometerShow = new CvarToggleCheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_hud_speedometer");
     m_pSpeedometerShow->AddActionSignalTarget(this);
 
     m_pSpeedometerHorizShow = new CvarToggleCheckButton(this, "SpeedoHorizShow", "#MOM_Settings_Speedometer_Horiz_Show",
