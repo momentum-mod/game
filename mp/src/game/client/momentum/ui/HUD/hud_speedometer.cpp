@@ -68,7 +68,6 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
     void OnThink() OVERRIDE;
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
-    bool ShouldDraw() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
 
@@ -153,7 +152,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
     m_pStageEnterExitComparisonLabel->SetFont(m_pStageEnterExitLabel->GetFont()); //need to have same font
 
-    m_defaultYPos = this->GetYPos();
+    m_defaultYPos = GetYPos();
 }
 
 void CHudSpeedMeter::inactivateLabel(Label *label)
@@ -227,12 +226,7 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 
     m_pStageEnterExitComparisonLabel->SetFont(m_pStageEnterExitLabel->GetFont()); // need to have same font
 
-    m_defaultYPos = this->GetYPos();
-}
-
-bool CHudSpeedMeter::ShouldDraw() 
-{ 
-    return CHudElement::ShouldDraw();
+    m_defaultYPos = GetYPos();
 }
 
 void CHudSpeedMeter::OnThink()
@@ -455,7 +449,7 @@ void CHudSpeedMeter::Paint()
     if (!mom_hud_speedometer_lastjumpvel.GetBool()) yIndent += m_defaultLastJumpVelLabelHeight;
     if (!mom_hud_speedometer_unit_labels.GetBool()) yIndent += m_defaultUnitsLabelHeight;
     if (!mom_hud_speedometer_showenterspeed.GetBool()) yIndent += m_defaultStageEnterExitLabelHeight;
-    this->SetPos(this->GetXPos(), m_defaultYPos + yIndent);
+    SetPos(GetXPos(), m_defaultYPos + yIndent);
 
     if (mom_hud_speedometer.GetBool())
     {
