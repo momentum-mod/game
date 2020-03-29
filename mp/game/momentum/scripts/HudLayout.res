@@ -379,12 +379,14 @@
         "fieldName"		"HudStickyCharge"
         "pin_to_sibling" "HudSpeedMeter"
         "pin_to_sibling_corner" "4"
+        "pin_corner_to_sibling" "6"
     }
 
     CHudStickybombs
     {
         "fieldName"		"CHudStickybombs"
         "pin_to_sibling" "HudStickyCharge"
-        "pin_to_sibling_corner" "4"
+        "pin_to_sibling_corner" "4" //top center
+        "pin_corner_to_sibling" "6" //bottom center
     }
 }
