@@ -72,7 +72,6 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
 
     void Paint() OVERRIDE;
-    //void PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits) OVERRIDE;
 
   private:
     float m_flNextColorizeCheck;
