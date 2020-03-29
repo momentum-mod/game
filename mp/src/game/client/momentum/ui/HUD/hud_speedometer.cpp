@@ -236,8 +236,7 @@ void CHudSpeedMeter::OnThink()
         m_pRunEntData = pPlayer->GetCurrentUIEntData();
         // Note: Velocity is also set to the player when watching first person
         Vector velocity = pPlayer->GetAbsVelocity();
-        Vector horizVelocity = pPlayer->GetAbsVelocity();
-        horizVelocity.z = 0;
+        Vector horizVelocity = Vector(velocity.x, velocity.y, 0);
 
         if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
         {
