@@ -22,6 +22,7 @@ public:
     void FireGameEvent(IGameEvent*) OVERRIDE;
     void LevelShutdown() OVERRIDE;
     void OnThink() OVERRIDE;
+    void Paint() OVERRIDE;
 
     void SetMouseInputEnabled(bool state) OVERRIDE;
 
@@ -41,6 +42,7 @@ public:
 
 protected:
     CPanelAnimationVar(vgui::HFont, m_hTextFont, "TextFont", "Default");
+    CPanelAnimationVar(float, m_fPanelAlpha, "PanelAlpha", "0.0"); // Used for fading
 
 private:
     void FirePanelClosedEvent(bool bRestartingMap);
