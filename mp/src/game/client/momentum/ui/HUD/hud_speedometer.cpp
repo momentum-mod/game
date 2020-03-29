@@ -210,7 +210,7 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
 
 void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 {
-    Panel::ApplySchemeSettings(pScheme);
+    BaseClass::ApplySchemeSettings(pScheme);
     m_NormalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
     m_IncreaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
     m_DecreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
