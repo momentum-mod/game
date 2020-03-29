@@ -51,6 +51,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pPlayReplayButton = new ImagePanel(this, "Replay_Icon");
     m_pRepeatButton = new ImagePanel(this, "Repeat_Button");
     m_pDetachMouseLabel = new Label(this, "Detach_Mouse", "#MOM_MF_DetachMouse");
+    m_pAttachMouseLabel = new Label(this, "Attach_Mouse", "#MOM_MF_AttachMouse");
     m_pCurrentZoneLabel = new Label(this, "Current_Zone", "#MOM_MF_OverallStats");
     m_pZoneOverallTime = new Label(this, "Zone_Overall_Time", "#MOM_MF_RunTime");
     m_pZoneEnterTime = new Label(this, "Zone_Enter_Time", "#MOM_MF_Zone_Enter");
@@ -162,6 +163,7 @@ void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
 {
     BaseClass::SetMouseInputEnabled(state);
     m_pDetachMouseLabel->SetVisible(!state);
+    m_pAttachMouseLabel->SetVisible(state);
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
@@ -186,6 +188,7 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
     m_pDetachMouseLabel->SetFont(m_hTextFont);
+    m_pAttachMouseLabel->SetFont(m_hTextFont);
     m_pCurrentZoneLabel->SetFont(m_hTextFont);
     m_pZoneOverallTime->SetFont(m_hTextFont);
     m_pZoneEnterTime->SetFont(m_hTextFont);
@@ -296,6 +299,10 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
             if (ClosePanel())
                 FirePanelClosedEvent(false);
         }
+    }
+    else if (code == MOUSE_RIGHT)
+    {
+        SetMouseInputEnabled(false);
     }
 }
 
