@@ -93,6 +93,7 @@ private:
 
     bool m_bIsGhost;
     bool m_bCanClose;
+    bool m_bNotSpec;
 
     int m_iCurrentPage;
 

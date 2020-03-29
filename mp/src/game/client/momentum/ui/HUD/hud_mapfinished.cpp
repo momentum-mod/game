@@ -35,6 +35,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pRunStats = nullptr;
     m_bIsGhost = false;
     m_bCanClose = false;
+    m_bNotSpec = true;
     m_iCurrentPage = 0;
 
     ListenForGameEvent("spec_start");
@@ -139,6 +140,7 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     {
         const bool bSpecStart = FStrEq(pEvent->GetName(), "spec_start");
         m_pRepeatButton->GetTooltip()->SetText(bSpecStart ? "#MOM_MF_Restart_Replay" : "#MOM_MF_Restart_Map");
+        m_bNotSpec = !bSpecStart;
     }
 }
 
@@ -148,6 +150,7 @@ void CHudMapFinishedDialog::LevelShutdown()
     m_pRunData = nullptr;
     m_bIsGhost = false;
     m_bCanClose = false;
+    m_bNotSpec = true;
 }
 
 void CHudMapFinishedDialog::OnThink()
@@ -163,7 +166,7 @@ void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
 {
     BaseClass::SetMouseInputEnabled(state);
     m_pDetachMouseLabel->SetVisible(!state);
-    m_pAttachMouseLabel->SetVisible(state);
+    m_pAttachMouseLabel->SetVisible(state && m_bNotSpec);
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
@@ -302,7 +305,8 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
     }
     else if (code == MOUSE_RIGHT)
     {
-        SetMouseInputEnabled(false);
+        // Can't disable mouse if specing
+        if (m_bNotSpec) SetMouseInputEnabled(false);
     }
 }
 
