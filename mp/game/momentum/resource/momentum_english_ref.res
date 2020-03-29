@@ -219,6 +219,7 @@
         "MOM_MF_XPGainRank" "Rank XP Gained: %s1"
         "MOM_MF_PlayReplay" "Play Replay"
         "MOM_MF_DetachMouse" "Right click to enable the mouse!"
+        "MOM_MF_AttachMouse" "Right click to disable the mouse!"
         "MOM_MF_Restart_Map" "Restart Map"
         "MOM_MF_Restart_Replay" "Restart Replay"
         "MOM_MF_Right_Arrow" "Next Zone"

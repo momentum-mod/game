@@ -487,4 +487,28 @@
         "auto_wide_tocontents" "0"
         "auto_tall_tocontents" "1"
     }
+    "Attach_Mouse"
+    {
+        "ControlName" "Label"
+        "fieldName" "Attach_Mouse"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "6"
+        "ypos"          "5"
+        "wide"          "f0"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "labelText"     "#MOM_MF_AttachMouse"
+        "textAlignment" "center"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "proportionalToParent" "1"
+        "pin_to_sibling" "XP_Gain_Rank"
+        "pin_to_sibling_corner" "2"
+        "pin_corner_to_sibling" "0"
+        "auto_wide_tocontents" "0"
+        "auto_tall_tocontents" "1"
+    }
 }
