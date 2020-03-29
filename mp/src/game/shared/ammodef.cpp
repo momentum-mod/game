@@ -104,7 +104,7 @@ CAmmoGrenade::CAmmoGrenade()
 CAmmoPaint::CAmmoPaint()
 {
     m_WeaponID = WEAPON_PAINTGUN;
-    m_iDamageAmount = 1;
+    m_iDamageAmount = 0;
     m_iPenetrationAmount = 0;
 }
 

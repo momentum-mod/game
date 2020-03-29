@@ -87,7 +87,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
     CBasePlayer *lastPlayerHit = nullptr;
 
     // MDLCACHE_CRITICAL_SECTION();
-    while (fCurrentDamage > 0)
+    while (fCurrentDamage > 0 || bPaintGun)
     {
         Vector vecEnd = vecSrc + vecDir * flDistance;
 
@@ -166,7 +166,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         int iDamageType = DMG_BULLET | DMG_NEVERGIB;
 
         bool shouldDecal = !(tr.surface.flags & (SURF_SKY | SURF_NODRAW | SURF_HINT | SURF_SKIP));
-        bool bEntNotNull = tr.m_pEnt != nullptr;
+        bool bEntValid = tr.m_pEnt != nullptr;
 
         if (bDoEffects)
         {
@@ -177,7 +177,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
                 UTIL_TraceLine(vecSrc, tr.endpos, (MASK_SHOT | CONTENTS_WATER | CONTENTS_SLIME), this,
                                COLLISION_GROUP_NONE, &waterTrace);
 
-                if (waterTrace.allsolid != 1)
+                if (!waterTrace.allsolid)
                 {
                     CEffectData data;
                     data.m_vOrigin = waterTrace.endpos;
@@ -192,15 +192,17 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
                     DispatchEffect("gunshotsplash", data);
                 }
             }
-            else if (shouldDecal && bEntNotNull)
+            else if (shouldDecal && bEntValid)
             {
                 UTIL_ImpactTrace(&tr, iDamageType, bPaintGun ? "Painting" : nullptr);
             }
-        } // bDoEffects
+        }
 
-        // add damage to entity that we hit
+        if (bPaintGun)
+            return;
 
 #ifndef CLIENT_DLL
+        // add damage to entity that we hit
         if (pevAttacker->IsPlayer())
         {
             CMomentumPlayer *pPlayerAttacker = static_cast<CMomentumPlayer*>(pevAttacker);
@@ -270,7 +272,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         // bullet did penetrate object, exit Decal
         if (bDoEffects)
         {
-            UTIL_ImpactTrace(&tr, iDamageType, bPaintGun ? "Painting" : nullptr);
+            UTIL_ImpactTrace(&tr, iDamageType);
         }
 
         // setup new start end parameters for successive trace
