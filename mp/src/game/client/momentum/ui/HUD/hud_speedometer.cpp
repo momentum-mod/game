@@ -271,7 +271,7 @@ void CHudSpeedMeter::OnThink()
             m_bRanFadeOutJumpSpeed = false;
         }
 
-        switch (ConVarRef("mom_hud_speedometer_units").GetInt())
+        switch (mom_hud_speedometer_units.GetInt())
         {
         case 2:
             // 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
@@ -304,24 +304,24 @@ void CHudSpeedMeter::OnThink()
             break;
         }
         // if we don't show labels, remove it.
-        if (!ConVarRef("mom_hud_speedometer_unit_labels").GetBool())
+        if (!mom_hud_speedometer_unit_labels.GetBool())
         {
             m_SpeedometerUnitLabelText = L"";
         }
 
         // only called if we need to update color
-        if (ConVarRef("mom_hud_speedometer_colorize").GetInt())
+        if (mom_hud_speedometer_colorize.GetInt())
         {
             if (m_flNextColorizeCheck <= gpGlobals->curtime)
             {
-                if (ConVarRef("mom_hud_speedometer_colorize").GetInt() == 1)
+                if (mom_hud_speedometer_colorize.GetInt() == 1)
                 {
                     if (m_flLastVelocity != 0)
                     {
                         float variation = 0.0f;
                         const float deadzone = 2.0f;
 
-                        if (ConVarRef("mom_hud_speedometer_units").GetInt() == 4)
+                        if (mom_hud_speedometer_units.GetInt() == 4)
                         {
                             // For energy, if current value is larger than previous value then we've got an increase
                             variation = vel - m_flLastVelocity;
@@ -351,7 +351,7 @@ void CHudSpeedMeter::OnThink()
                         float hvariation = 0.0f;
                         const float deadzone = 2.0f;
 
-                        if (ConVarRef("mom_hud_speedometer_units").GetInt() == 4)
+                        if (mom_hud_speedometer_units.GetInt() == 4)
                         {
                             hvariation = hvel - m_flLastHVelocity;
                         }
@@ -515,7 +515,7 @@ void CHudSpeedMeter::Paint()
     }
 
     // Draw the enter speed split, if toggled on. Cannot be done in OnThink()
-    if (ConVarRef("mom_hud_speedometer_showenterspeed").GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning &&
+    if (mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning &&
         m_fStageStartAlpha > 0.0f)
     {
         ActivateLabel(m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
@@ -576,7 +576,7 @@ void CHudSpeedMeter::Paint()
             m_pStageEnterExitComparisonLabel->SetText("");
         }
     }
-    else if (!ConVarRef("mom_hud_speedometer_showenterspeed").GetBool())
+    else if (!mom_hud_speedometer_showenterspeed.GetBool())
     {
         InactivateLabel(m_pStageEnterExitLabel);
         InactivateLabel(m_pStageEnterExitComparisonLabel);
