@@ -305,7 +305,9 @@ void CHudSpeedMeter::OnThink()
         }
         // if we don't show labels, remove it.
         if (!ConVarRef("mom_hud_speedometer_unit_labels").GetBool())
+        {
             m_SpeedometerUnitLabelText = L"";
+        }
 
         // only called if we need to update color
         if (ConVarRef("mom_hud_speedometer_colorize").GetInt())
@@ -350,9 +352,13 @@ void CHudSpeedMeter::OnThink()
                         const float deadzone = 2.0f;
 
                         if (ConVarRef("mom_hud_speedometer_units").GetInt() == 4)
+                        {
                             hvariation = hvel - m_flLastHVelocity;
+                        }
                         else
+                        {
                             hvariation = fabs(hvel) - fabs(m_flLastHVelocity);
+                        }
                         m_hCurrentColor = MomUtil::GetColorFromVariation(hvariation, deadzone, m_NormalColor,
                                                                          m_IncreaseColor, m_DecreaseColor);
                     }
@@ -412,7 +418,9 @@ void CHudSpeedMeter::OnThink()
 
             // reset last jump velocity when we (or a ghost ent) restart a run by entering the start zone
             if (m_pRunEntData->m_bIsInZone && m_pRunEntData->m_iCurrentZone == 1)
+            {
                 m_flLastJumpVelocity = 0;
+            }
 
             if (CloseEnough(lastJumpVel, 0.0f))
             {
@@ -457,7 +465,9 @@ void CHudSpeedMeter::Paint()
         m_pAbsSpeedoLabel->SetText(speedoValue);
     }
     else
+    {
         inactivateLabel(m_pAbsSpeedoLabel);
+    }
 
     if (mom_hud_speedometer_horiz.GetBool())
     {
@@ -467,7 +477,9 @@ void CHudSpeedMeter::Paint()
         m_pHorizSpeedoLabel->SetText(hSpeedoValue);
     }
     else
+    {
         inactivateLabel(m_pHorizSpeedoLabel);
+    }
 
     if (mom_hud_speedometer_lastjumpvel.GetBool())
     {
@@ -481,7 +493,9 @@ void CHudSpeedMeter::Paint()
         m_pLastJumpVelLabel->SetFgColor(m_LastJumpVelColor);
     }
     else
+    {
         inactivateLabel(m_pLastJumpVelLabel);
+    }
 
     if (mom_hud_speedometer_unit_labels.GetBool())
     {
@@ -489,12 +503,16 @@ void CHudSpeedMeter::Paint()
         m_pUnitsLabel->SetText(m_SpeedometerUnitLabelText);
     }
     else
+    {
         inactivateLabel(m_pUnitsLabel);
+    }
     //if every speedometer is off, don't bother drawing unit labels
     if (!mom_hud_speedometer.GetBool() && !mom_hud_speedometer_horiz.GetBool() && 
         !mom_hud_speedometer_lastjumpvel.GetBool() && !mom_hud_speedometer_showenterspeed.GetBool() && 
         mom_hud_speedometer_unit_labels.GetBool())
+    {
         inactivateLabel(m_pUnitsLabel);
+    }
 
     // Draw the enter speed split, if toggled on. Cannot be done in OnThink()
     if (ConVarRef("mom_hud_speedometer_showenterspeed").GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning &&
