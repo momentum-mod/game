@@ -144,6 +144,9 @@ void CMomentumStickybombLauncher::LaunchGrenade()
     m_bEarlyPrimaryFire = false;
 
     DoFireEffects();
+
+    StopWeaponSound(GetWeaponSound("charge"));
+
     WeaponSound(GetWeaponSound("single_shot"));
 
     m_flChargeBeginTime = 0;
