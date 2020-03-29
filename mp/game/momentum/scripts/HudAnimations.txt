@@ -65,6 +65,13 @@ event MenuClose
 	Animate CHudMenuStatic MenuItemColor	"0 0 0 0" Linear 0.0 1
 }
 
+event FadeOutMapFinishedPanel
+{
+	//Fade out map finished panel over 15 seconds
+	//Only done when movement after map finish is enabled
+	Animate CHudMapFinishedDialog PanelAlpha "0" Accel 15.0 0.75
+}
+
 //Fades out the stage enter speed 
 event FadeOutEnterSpeed
 {

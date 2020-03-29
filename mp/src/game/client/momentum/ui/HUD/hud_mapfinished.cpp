@@ -9,6 +9,7 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Label.h>
 #include "vgui_controls/Tooltip.h"
+#include <vgui_controls/AnimationController.h>
 #include <vgui/IInput.h>
 #include "vgui/ISurface.h"
 #include "vgui/ILocalize.h"
@@ -37,6 +38,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_bCanClose = false;
     m_bNotSpec = true;
     m_iCurrentPage = 0;
+    m_fPanelAlpha = 255.0f;
 
     ListenForGameEvent("spec_start");
     ListenForGameEvent("spec_stop");
@@ -160,6 +162,13 @@ void CHudMapFinishedDialog::OnThink()
     m_pPlayReplayButton->SetVisible(!m_bIsGhost);
     m_pRunUploadStatus->SetVisible(!m_bIsGhost);
     m_pRunSaveStatus->SetVisible(!m_bIsGhost);
+
+    // hacky but works well
+    if (mom_mapfinished_movement_enable.GetBool() && m_bNotSpec && m_fPanelAlpha < 0.5f)
+    {
+        if (ClosePanel())
+            FirePanelClosedEvent(false);
+    }
 }
 
 void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
@@ -251,6 +260,8 @@ bool CHudMapFinishedDialog::ClosePanel()
     SetRunSaved(false);
     SetRunUploaded(false);
     m_bCanClose = false;
+    g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
+    m_fPanelAlpha = 255.0f;
 
     return true;
 }
@@ -268,6 +279,14 @@ void CHudMapFinishedDialog::FirePanelClosedEvent(bool bRestartingMap)
 
 void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
 {
+    //prevent from closing when pressing mouse (irrelevant when spec)
+    if (mom_mapfinished_movement_enable.GetBool() && m_bNotSpec)
+    {
+        g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
+        m_fPanelAlpha = 255.0f;
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutMapFinishedPanel");
+    }
+
     if (code == MOUSE_LEFT)
     {
         const auto panelOver = input()->GetMouseOver();
@@ -317,6 +336,7 @@ void CHudMapFinishedDialog::Reset()
     SetRunSaved(false);
     SetRunUploaded(false);
     m_bCanClose = false;
+    m_fPanelAlpha = 255.0f;
 
     // --- cache localization tokens ---
     FIND_LOCALIZATION(m_pwCurrentPageOverall, "#MOM_MF_OverallStats");
@@ -348,10 +368,21 @@ void CHudMapFinishedDialog::SetVisible(bool bVisible)
     if (bVisible)
     {
         SetCurrentPage(0);
+        m_fPanelAlpha = 255.0f;
 
         const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
         if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
             SetMouseInputEnabled(true);
+
+        if (mom_mapfinished_movement_enable.GetBool())
+        {
+            g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutMapFinishedPanel");
+        }
+        else
+        {
+            g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
+        }
     }
 }
 
@@ -420,4 +451,17 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
     m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, velType) : 0.0f));
 
     m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, velType) : 0.0f));
+}
+
+void CHudMapFinishedDialog::Paint() 
+{
+    BaseClass::Paint();
+    if (mom_mapfinished_movement_enable.GetBool() && m_bNotSpec)
+    {
+        SetAlpha(m_fPanelAlpha);
+    }
+    else
+    {
+        SetAlpha(255.0f);
+    }
 }
