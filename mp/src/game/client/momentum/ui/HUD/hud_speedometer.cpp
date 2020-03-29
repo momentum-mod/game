@@ -97,8 +97,8 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
 
     int m_defaultYPos;
 
-    void inactivateLabel(Label *label);
-    void activateLabel(Label *label, int defaultHeight);
+    void InactivateLabel(Label *label);
+    void ActivateLabel(Label *label, int defaultHeight);
 
     CMomRunStats *m_pRunStats;
     CMomRunEntityData *m_pRunEntData;
@@ -154,14 +154,14 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_defaultYPos = GetYPos();
 }
 
-void CHudSpeedMeter::inactivateLabel(Label *label)
+void CHudSpeedMeter::InactivateLabel(Label *label)
 {
     label->SetAutoTall(false);
     label->SetText("");
     label->SetTall(0);
 }
 
-void CHudSpeedMeter::activateLabel(Label *label, int defaultHeight)
+void CHudSpeedMeter::ActivateLabel(Label *label, int defaultHeight)
 {
     label->SetAutoTall(true);
     label->SetTall(defaultHeight);
@@ -459,31 +459,31 @@ void CHudSpeedMeter::Paint()
 
     if (mom_hud_speedometer.GetBool())
     {
-        activateLabel(m_pAbsSpeedoLabel, m_defaultAbsSpeedoLabelHeight);
+        ActivateLabel(m_pAbsSpeedoLabel, m_defaultAbsSpeedoLabelHeight);
         char speedoValue[BUFSIZELOCL];
         Q_snprintf(speedoValue, sizeof(speedoValue), "%i", m_iRoundedVel);
         m_pAbsSpeedoLabel->SetText(speedoValue);
     }
     else
     {
-        inactivateLabel(m_pAbsSpeedoLabel);
+        InactivateLabel(m_pAbsSpeedoLabel);
     }
 
     if (mom_hud_speedometer_horiz.GetBool())
     {
-        activateLabel(m_pHorizSpeedoLabel, m_defaultHorizSpeedoLabelHeight);
+        ActivateLabel(m_pHorizSpeedoLabel, m_defaultHorizSpeedoLabelHeight);
         char hSpeedoValue[BUFSIZELOCL];
         Q_snprintf(hSpeedoValue, sizeof(hSpeedoValue), "%i", m_iRoundedHVel);
         m_pHorizSpeedoLabel->SetText(hSpeedoValue);
     }
     else
     {
-        inactivateLabel(m_pHorizSpeedoLabel);
+        InactivateLabel(m_pHorizSpeedoLabel);
     }
 
     if (mom_hud_speedometer_lastjumpvel.GetBool())
     {
-        activateLabel(m_pLastJumpVelLabel, m_defaultLastJumpVelLabelHeight);
+        ActivateLabel(m_pLastJumpVelLabel, m_defaultLastJumpVelLabelHeight);
         char lastJumpVelValue[BUFSIZELOCL];
         Q_snprintf(lastJumpVelValue, sizeof(lastJumpVelValue), "%i", m_iRoundedLastJumpVel);
         m_pLastJumpVelLabel->SetText(lastJumpVelValue);
@@ -494,32 +494,32 @@ void CHudSpeedMeter::Paint()
     }
     else
     {
-        inactivateLabel(m_pLastJumpVelLabel);
+        InactivateLabel(m_pLastJumpVelLabel);
     }
 
     if (mom_hud_speedometer_unit_labels.GetBool())
     {
-        activateLabel(m_pUnitsLabel, m_defaultUnitsLabelHeight);
+        ActivateLabel(m_pUnitsLabel, m_defaultUnitsLabelHeight);
         m_pUnitsLabel->SetText(m_SpeedometerUnitLabelText);
     }
     else
     {
-        inactivateLabel(m_pUnitsLabel);
+        InactivateLabel(m_pUnitsLabel);
     }
     //if every speedometer is off, don't bother drawing unit labels
     if (!mom_hud_speedometer.GetBool() && !mom_hud_speedometer_horiz.GetBool() && 
         !mom_hud_speedometer_lastjumpvel.GetBool() && !mom_hud_speedometer_showenterspeed.GetBool() && 
         mom_hud_speedometer_unit_labels.GetBool())
     {
-        inactivateLabel(m_pUnitsLabel);
+        InactivateLabel(m_pUnitsLabel);
     }
 
     // Draw the enter speed split, if toggled on. Cannot be done in OnThink()
     if (ConVarRef("mom_hud_speedometer_showenterspeed").GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning &&
         m_fStageStartAlpha > 0.0f)
     {
-        activateLabel(m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
-        activateLabel(m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
+        ActivateLabel(m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
+        ActivateLabel(m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
 
         char enterVelUnrounded[BUFSIZELOCL], enterVelRounded[BUFSIZELOCL], enterVelComparisonUnrounded[BUFSIZELOCL],
             enterVelComparisonRounded[BUFSIZELOCL];
@@ -578,7 +578,7 @@ void CHudSpeedMeter::Paint()
     }
     else if (!ConVarRef("mom_hud_speedometer_showenterspeed").GetBool())
     {
-        inactivateLabel(m_pStageEnterExitLabel);
-        inactivateLabel(m_pStageEnterExitComparisonLabel);
+        InactivateLabel(m_pStageEnterExitLabel);
+        InactivateLabel(m_pStageEnterExitComparisonLabel);
     }
 }
