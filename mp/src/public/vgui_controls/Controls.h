@@ -91,6 +91,7 @@ class Button;
 class CheckButton;
 class CheckButtonList;
 class CircularProgressBar;
+class CvarComboBox;
 class CvarToggleCheckButton;
 class CvarSlider;
 class CvarTextEntry;
