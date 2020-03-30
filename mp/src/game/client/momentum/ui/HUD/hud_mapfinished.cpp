@@ -171,8 +171,6 @@ void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
 {
     BaseClass::SetMouseInputEnabled(state);
     m_pMouseStateLabel->SetText(state ? "#MOM_MF_MouseActive" : "#MOM_MF_MouseInactive");
-    //not visible when in spec (specGUI handles mouse toggle)
-    m_pMouseStateLabel->SetVisible(!m_bIsGhost);
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
