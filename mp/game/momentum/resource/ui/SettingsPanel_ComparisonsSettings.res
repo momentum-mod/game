@@ -39,7 +39,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultSmall"
     }
@@ -71,7 +70,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_format_output"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultSmall"
     }
@@ -211,7 +209,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_time_show_overall"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -244,7 +241,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_time_show_perzone"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -276,7 +272,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -308,7 +303,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_avg"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -340,7 +334,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_max"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -373,7 +366,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_exit"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -405,7 +397,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_enter"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -437,7 +428,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_sync_show"
-		"cvar_value"		"0"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -470,7 +460,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_sync_show_sync1"
-		"cvar_value"		"0"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -503,7 +492,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_sync_show_sync2"
-		"cvar_value"		"0"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -535,7 +523,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_jumps_show"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
@@ -567,7 +554,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_strafe_show"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultVerySmall"
     }
