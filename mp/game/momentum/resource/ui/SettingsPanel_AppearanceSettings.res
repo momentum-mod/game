@@ -154,7 +154,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_trail_enable"
-		"cvar_value"		"1"
 		"Font"		"DefaultVerySmall"
 	}
     "TrailEntryLabel"

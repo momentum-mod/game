@@ -118,7 +118,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_bhop_playblocksound"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultSmall"
     }
@@ -153,7 +152,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_practice_safeguard"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultSmall"
     }
@@ -185,7 +183,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_saveloc_save_between_sessions"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultSmall"
     }
@@ -216,7 +213,6 @@
 		"use_proportional_insets"		"0"
 		"Default"		"0"
 		"cvar_name"		"mom_weapon_speed_lower_enable"
-		"cvar_value"		"1"
         "actionsignallevel" "1"
         "font" "DefaultSmall"
     }
@@ -293,7 +289,6 @@
 		"Default"		"0"
 		"selected"		"0"
         "cvar_name"		"r_worldlight_castshadows"
-		"cvar_value"		"1"
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
         "pin_to_sibling" "LowerSpeedEntry"
@@ -321,7 +316,6 @@
 		"Default"		"0"
 		"selected"		"0"
         "cvar_name"		"mom_enable_overlapping_keys"
-		"cvar_value"		"0"
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
         "pin_to_sibling" "LowerSpeedEntry"
@@ -349,7 +343,6 @@
 		"Default"		"1"
 		"selected"		"0"
         "cvar_name"		"mom_release_forward_on_jump"
-		"cvar_value"		"1"
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
         "pin_to_sibling" "OverlappingKeys"
