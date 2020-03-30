@@ -73,8 +73,7 @@ private:
     vgui::ImagePanel *m_pRepeatButton;
     vgui::ImagePanel *m_pNextZoneButton;
     vgui::ImagePanel *m_pPrevZoneButton;
-    vgui::Label *m_pDetachMouseLabel;
-    vgui::Label *m_pAttachMouseLabel;
+    vgui::Label *m_pMouseStateLabel;
     vgui::Label *m_pCurrentZoneLabel;
     vgui::Label *m_pZoneOverallTime;//Also known as "Zone Time"
     vgui::Label *m_pZoneEnterTime;
@@ -95,7 +94,6 @@ private:
 
     bool m_bIsGhost;
     bool m_bCanClose;
-    bool m_bNotSpec;
 
     int m_iCurrentPage;
 

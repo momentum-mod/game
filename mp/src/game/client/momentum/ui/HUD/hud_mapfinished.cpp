@@ -36,7 +36,6 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pRunStats = nullptr;
     m_bIsGhost = false;
     m_bCanClose = false;
-    m_bNotSpec = true;
     m_iCurrentPage = 0;
     m_fPanelAlpha = 255.0f;
 
@@ -53,8 +52,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pPrevZoneButton = new ImagePanel(this, "Prev_Zone");
     m_pPlayReplayButton = new ImagePanel(this, "Replay_Icon");
     m_pRepeatButton = new ImagePanel(this, "Repeat_Button");
-    m_pDetachMouseLabel = new Label(this, "Detach_Mouse", "#MOM_MF_DetachMouse");
-    m_pAttachMouseLabel = new Label(this, "Attach_Mouse", "#MOM_MF_AttachMouse");
+    m_pMouseStateLabel = new Label(this, "Mouse_State", "#MOM_MF_MouseInactive");
     m_pCurrentZoneLabel = new Label(this, "Current_Zone", "#MOM_MF_OverallStats");
     m_pZoneOverallTime = new Label(this, "Zone_Overall_Time", "#MOM_MF_RunTime");
     m_pZoneEnterTime = new Label(this, "Zone_Enter_Time", "#MOM_MF_Zone_Enter");
@@ -142,7 +140,6 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     {
         const bool bSpecStart = FStrEq(pEvent->GetName(), "spec_start");
         m_pRepeatButton->GetTooltip()->SetText(bSpecStart ? "#MOM_MF_Restart_Replay" : "#MOM_MF_Restart_Map");
-        m_bNotSpec = !bSpecStart;
     }
 }
 
@@ -152,7 +149,6 @@ void CHudMapFinishedDialog::LevelShutdown()
     m_pRunData = nullptr;
     m_bIsGhost = false;
     m_bCanClose = false;
-    m_bNotSpec = true;
 }
 
 void CHudMapFinishedDialog::OnThink()
@@ -164,7 +160,7 @@ void CHudMapFinishedDialog::OnThink()
     m_pRunSaveStatus->SetVisible(!m_bIsGhost);
 
     // hacky but works well
-    if (mom_mapfinished_movement_enable.GetBool() && m_bNotSpec && m_fPanelAlpha < 0.5f)
+    if (mom_mapfinished_movement_enable.GetBool() && !m_bIsGhost && m_fPanelAlpha < 0.5f)
     {
         if (ClosePanel())
             FirePanelClosedEvent(false);
@@ -174,8 +170,9 @@ void CHudMapFinishedDialog::OnThink()
 void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
 {
     BaseClass::SetMouseInputEnabled(state);
-    m_pDetachMouseLabel->SetVisible(!state);
-    m_pAttachMouseLabel->SetVisible(state && m_bNotSpec);
+    m_pMouseStateLabel->SetText(state ? "#MOM_MF_MouseActive" : "#MOM_MF_MouseInactive");
+    //not visible when in spec (specGUI handles mouse toggle)
+    m_pMouseStateLabel->SetVisible(!m_bIsGhost);
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
@@ -199,8 +196,7 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     BaseClass::ApplySchemeSettings(pScheme);
 
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
-    m_pDetachMouseLabel->SetFont(m_hTextFont);
-    m_pAttachMouseLabel->SetFont(m_hTextFont);
+    m_pMouseStateLabel->SetFont(m_hTextFont);
     m_pCurrentZoneLabel->SetFont(m_hTextFont);
     m_pZoneOverallTime->SetFont(m_hTextFont);
     m_pZoneEnterTime->SetFont(m_hTextFont);
@@ -279,8 +275,8 @@ void CHudMapFinishedDialog::FirePanelClosedEvent(bool bRestartingMap)
 
 void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
 {
-    //prevent from closing when pressing mouse (irrelevant when spec)
-    if (mom_mapfinished_movement_enable.GetBool() && m_bNotSpec)
+    //prevent from closing when pressing mouse (irrelevant when in replay)
+    if (mom_mapfinished_movement_enable.GetBool() && !m_bIsGhost)
     {
         g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
         m_fPanelAlpha = 255.0f;
@@ -324,8 +320,16 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
     }
     else if (code == MOUSE_RIGHT)
     {
-        // Can't disable mouse if specing
-        if (m_bNotSpec) SetMouseInputEnabled(false);
+        // disable mouse input
+        if (m_bIsGhost)
+        {
+            const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+            if (pSpecUI && pSpecUI->IsVisible())
+            {
+                ipanel()->SetMouseInputEnabled(pSpecUI->GetVPanel(), false);
+            }
+        }
+        SetMouseInputEnabled(false);
     }
 }
 
@@ -456,7 +460,7 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
 void CHudMapFinishedDialog::Paint() 
 {
     BaseClass::Paint();
-    if (mom_mapfinished_movement_enable.GetBool() && m_bNotSpec)
+    if (mom_mapfinished_movement_enable.GetBool() && !m_bIsGhost)
     {
         SetAlpha(m_fPanelAlpha);
     }
