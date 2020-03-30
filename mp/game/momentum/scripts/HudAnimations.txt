@@ -69,7 +69,7 @@ event FadeOutMapFinishedPanel
 {
 	//Fade out map finished panel over 15 seconds
 	//Only done when movement after map finish is enabled
-	Animate CHudMapFinishedDialog PanelAlpha "0" Accel 15.0 0.75
+	Animate CHudMapFinishedDialog alpha "0" Accel 15.0 0.75
 }
 
 //Fades out the stage enter speed 
