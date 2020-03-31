@@ -8,6 +8,8 @@
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
+RecvPropBool(RECVINFO(m_bIsSprinting)),
+RecvPropBool(RECVINFO(m_bIsWalking)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
 RecvPropInt(RECVINFO(m_iLandTick)),
@@ -44,6 +46,8 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
 
+    m_bIsSprinting = false;
+    m_bIsWalking = false;
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
     m_RunStats.Init();
