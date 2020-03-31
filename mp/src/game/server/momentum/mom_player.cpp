@@ -187,7 +187,8 @@ static CMomentumPlayer *s_pPlayer = nullptr;
 CMomentumPlayer::CMomentumPlayer()
     : m_flStamina(0.0f),
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
-      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1)
+      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1), 
+      m_cvarMapFinMoveEnable("mom_mapfinished_movement_enable")
 {
     m_bAllowUserTeleports = true;
     m_flPunishTime = -1;
@@ -805,7 +806,7 @@ void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClie
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
-    if (!m_bAllowUserTeleports || (m_Data.m_bMapFinished && !ConVarRef("mom_mapfinished_movement_enable").GetBool()))
+    if (!m_bAllowUserTeleports || (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool()))
         return;
 
     // No need to remove the trail here, CreateTrail() already does it for us
@@ -1573,7 +1574,7 @@ void CMomentumPlayer::TravelSpectateTargets(bool bReverse)
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
     // slowdown when map is finished
-    if (m_Data.m_bMapFinished && !ConVarRef("mom_mapfinished_movement_enable").GetBool())
+    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
         // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else
