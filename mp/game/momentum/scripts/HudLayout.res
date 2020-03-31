@@ -83,6 +83,8 @@
         "lower_row_ypos"    "35"
         "jump_row_ypos" "45"
         "duck_row_ypos" "55"
+        "walk_row_ypos" "65"
+        "sprint_row_ypos" "75"
         "strafe_count_xpos" "110"
         "jump_count_xpos"   "110"
         "TextFont"      "MomentumIcons"
