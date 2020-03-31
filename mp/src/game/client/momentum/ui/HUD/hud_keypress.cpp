@@ -14,10 +14,18 @@
 #include "c_mom_online_ghost.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
 #define KEYDRAW_MIN 0.07f
+
+#define STR_M1      L"M1"
+#define STR_M2      L"M2"
+#define STR_JUMP    L"JUMP"
+#define STR_DUCK    L"DUCK"
+#define STR_WALK    L"WALK"
+#define STR_SPEED   L"SPEED"
 
 using namespace vgui;
 
@@ -56,6 +64,8 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     CPanelAnimationVarAliasType(float, lower_row_ypos, "lower_row_ypos", "35", "proportional_float");
     CPanelAnimationVarAliasType(float, jump_row_ypos, "jump_row_ypos", "60", "proportional_float");
     CPanelAnimationVarAliasType(float, duck_row_ypos, "duck_row_ypos", "70", "proportional_float");
+    CPanelAnimationVarAliasType(float, walk_row_ypos, "walk_row_ypos", "80", "proportional_float");
+    CPanelAnimationVarAliasType(float, sprint_row_ypos, "sprint_row_ypos", "90", "proportional_float");
     CPanelAnimationVarAliasType(float, strafe_count_xpos, "strafe_count_xpos", "80", "proportional_float");
     CPanelAnimationVarAliasType(float, jump_count_xpos, "jump_count_xpos", "80", "proportional_float");
 
@@ -70,11 +80,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     wchar_t m_pwLeft[BUFSIZESHORT];
     wchar_t m_pwBack[BUFSIZESHORT];
     wchar_t m_pwRight[BUFSIZESHORT];
-    wchar_t m_pwJump[BUFSIZELOCL];
-    wchar_t m_pwDuck[BUFSIZELOCL];
     wchar_t m_pwStrafe[BUFSIZELOCL];
-    wchar_t m_pwM1[BUFSIZELOCL];
-    wchar_t m_pwM2[BUFSIZELOCL];
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
 };
@@ -110,12 +116,6 @@ void CHudKeyPressDisplay::Init()
     wcscpy(m_pwBack, L"S");
     wcscpy(m_pwRight, L"D");
     wcscpy(m_pwStrafe, L"O");
-
-    // localize jump and duck strings
-    FIND_LOCALIZATION(m_pwJump, "#MOM_Jump");
-    FIND_LOCALIZATION(m_pwDuck, "#MOM_Duck");
-    FIND_LOCALIZATION(m_pwM1, "#MOM_M1");
-    FIND_LOCALIZATION(m_pwM2, "#MOM_M2");
 
     m_fJumpColorUntil = m_fDuckColorUntil = 0;
 
@@ -211,11 +211,11 @@ void CHudKeyPressDisplay::Paint()
             m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
 
-        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled
-                                                                                                           : m_Normal);
-        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
-        surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
+        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled : m_Normal);
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_JUMP), jump_row_ypos);
+        surface()->DrawPrintText(STR_JUMP, 4);
     }
+
     if (nButtons & IN_DUCK || m_bIsDucked || gpGlobals->curtime < m_fDuckColorUntil)
     {
         if (nButtons & IN_DUCK)
@@ -223,23 +223,40 @@ void CHudKeyPressDisplay::Paint()
             m_fDuckColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
         CHECK_INPUT_P(IN_DUCK);
-        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
-        surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_DUCK), duck_row_ypos);
+        surface()->DrawPrintText(STR_DUCK, 4);
     }
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        if (nButtons & IN_WALK)
+        {
+            CHECK_INPUT_P(IN_WALK);
+            surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_WALK), walk_row_ypos);
+            surface()->DrawPrintText(STR_WALK, 4);
+        }
+        if (nButtons & IN_SPEED)
+        {
+            CHECK_INPUT_P(IN_SPEED);
+            surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_SPEED), sprint_row_ypos);
+            surface()->DrawPrintText(STR_SPEED, 5);
+        }
+    }
+
     // Add M1 and M2 buttons
     if (nButtons & IN_ATTACK)
     {
         CHECK_INPUT_P(IN_ATTACK);
-        int xposM1 = GetTextCenter(m_hWordTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM1)) * 1.5;
+        int xposM1 = GetTextCenter(m_hWordTextFont, STR_M1) - (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M1)) * 1.5;
         surface()->DrawSetTextPos(xposM1, top_row_ypos);
-        surface()->DrawPrintText(m_pwM1, wcslen(m_pwM1));
+        surface()->DrawPrintText(STR_M1, 2);
     }
     if (nButtons & IN_ATTACK2)
     {
         CHECK_INPUT_P(IN_ATTACK2);
-        int xposM2 = GetTextCenter(m_hWordTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM2)) * 1.5;
+        int xposM2 = GetTextCenter(m_hWordTextFont, STR_M2) + (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M2)) * 1.5;
         surface()->DrawSetTextPos(xposM2, top_row_ypos);
-        surface()->DrawPrintText(m_pwM2, wcslen(m_pwM2));
+        surface()->DrawPrintText(STR_M2, 2);
     }
     // ----------
     if (m_bShouldDrawCounts)
@@ -341,22 +358,33 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
 
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
-    // jump
-    // Bullrush is Bhop being disabled
-    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled
-                                                                                                       : m_darkGray);
-    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
-    surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
-    // duck
+
+    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BHOPDISABLED) ? m_Disabled : m_darkGray);
+    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_JUMP), jump_row_ypos);
+    surface()->DrawPrintText(STR_JUMP, 4);
+
     CHECK_INPUT_N(IN_DUCK);
-    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
-    surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
+    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_DUCK), duck_row_ypos);
+    surface()->DrawPrintText(STR_DUCK, 4);
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        CHECK_INPUT_N(IN_WALK);
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_WALK), walk_row_ypos);
+        surface()->DrawPrintText(STR_WALK, 4);
+
+        CHECK_INPUT_N(IN_SPEED);
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_SPEED), sprint_row_ypos);
+        surface()->DrawPrintText(STR_SPEED, 5);
+    }
+
     CHECK_INPUT_N(IN_ATTACK);
-    int xposM1 = GetTextCenter(m_hWordTextFont, m_pwM1) - (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM1)) * 1.5;
+    int xposM1 = GetTextCenter(m_hWordTextFont, STR_M1) - (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M1)) * 1.5;
     surface()->DrawSetTextPos(xposM1, top_row_ypos);
-    surface()->DrawPrintText(m_pwM1, wcslen(m_pwM1));
+    surface()->DrawPrintText(STR_M1, 2);
+
     CHECK_INPUT_N(IN_ATTACK2);
-    int xposM2 = GetTextCenter(m_hWordTextFont, m_pwM2) + (UTIL_ComputeStringWidth(m_hWordTextFont, m_pwM2)) * 1.5;
+    int xposM2 = GetTextCenter(m_hWordTextFont, STR_M2) + (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M2)) * 1.5;
     surface()->DrawSetTextPos(xposM2, top_row_ypos);
-    surface()->DrawPrintText(m_pwM2, wcslen(m_pwM2));
+    surface()->DrawPrintText(STR_M2, 2);
 }
