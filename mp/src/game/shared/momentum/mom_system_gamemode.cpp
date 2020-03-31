@@ -122,6 +122,8 @@ void CGameMode_RJ::SetGameModeVars()
 
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
 #ifdef GAME_DLL
     pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
     pPlayer->GiveWeapon(WEAPON_SHOTGUN);
@@ -153,6 +155,8 @@ void CGameMode_SJ::SetGameModeVars()
 
 void CGameMode_SJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
 #ifdef GAME_DLL
     pPlayer->GiveWeapon(WEAPON_STICKYLAUNCHER);
     pPlayer->GiveWeapon(WEAPON_PISTOL);
@@ -188,6 +192,15 @@ void CGameMode_Ahop::SetGameModeVars()
     sv_maxspeed.SetValue(320);
     sv_stopspeed.SetValue(100);
     sv_considered_on_ground.SetValue(2);
+}
+
+void CGameMode_Ahop::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->ToggleSprint(false);
+#endif
 }
 
 bool CGameMode_Ahop::WeaponIsAllowed(WeaponID_t weapon)
