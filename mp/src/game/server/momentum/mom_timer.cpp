@@ -25,8 +25,8 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-CMomentumTimer::CMomentumTimer()
-    : CAutoGameSystemPerFrame("CMomentumTimer"), m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
+CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
+      m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
       m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 }
@@ -355,8 +355,7 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 
 //--------- Commands --------------------------------
 
-CON_COMMAND(mom_start_mark_create,
-            "Marks a starting point inside the start trigger for a more customized starting location.\n")
+CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start trigger for a more customized starting location.\n")
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)
