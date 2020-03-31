@@ -7,6 +7,7 @@
 #include "mom_system_saveloc.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
+#include "tickset.h"
 
 #include "tier0/memdbgon.h"
 
@@ -24,9 +25,10 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
-    m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
-    m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+CMomentumTimer::CMomentumTimer()
+    : CAutoGameSystemPerFrame("CMomentumTimer"), m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
+      m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0),
+      m_bShouldUseStartZoneOffset(false)
 {
 }
 
@@ -62,6 +64,11 @@ void CMomentumTimer::DispatchCheatsMessage(CMomentumPlayer *pPlayer)
     UTIL_ShowMessage("CHEATER", pPlayer);
     // MOM_TODO play a special sound here?
     m_bWasCheatsMsgShown = true;
+}
+
+void CMomentumTimer::DispatchTickrateMessage(CMomentumPlayer *pPlayer)
+{
+    UTIL_ShowMessage("NON_DEFAULT_TICKRATE", pPlayer);
 }
 
 bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
@@ -103,6 +110,11 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     {
         // We allow cheats to be enabled but we should warn the player that times won't submit
         DispatchCheatsMessage(pPlayer);
+    }
+    if (TickSet::GetCurrentTickrate() != TickSet::s_DefinedRates[TickSet::TICKRATE_66])
+    {
+        // We also allow different tickrates, but warn the player that times won't submit on anything other than 66 tick
+        DispatchTickrateMessage(CMomentumPlayer::GetLocalPlayer());
     }
 
     m_iStartTick = gpGlobals->tickcount;
@@ -252,7 +264,8 @@ void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
         if (pTrigger && pTrigger->GetTrackNumber() == track)
             m_hStartTriggers[track] = pTrigger;
         else
-            Warning("Cannot set the start trigger for the given track; the trigger is null or its track doesn't match!\n");
+            Warning(
+                "Cannot set the start trigger for the given track; the trigger is null or its track doesn't match!\n");
     }
     else
     {
@@ -344,7 +357,8 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 
 //--------- Commands --------------------------------
 
-CON_COMMAND(mom_start_mark_create, "Marks a starting point inside the start trigger for a more customized starting location.\n")
+CON_COMMAND(mom_start_mark_create,
+            "Marks a starting point inside the start trigger for a more customized starting location.\n")
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (pPlayer)

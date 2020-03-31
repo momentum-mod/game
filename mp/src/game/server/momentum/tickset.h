@@ -26,6 +26,10 @@ struct Tickrate
         return (CloseEnough(other.fTickRate, fTickRate, FLT_EPSILON)
             && !Q_strcmp(other.sType, sType));
     }
+    bool operator!=(const Tickrate &other) const
+    {
+        return !(CloseEnough(other.fTickRate, fTickRate, FLT_EPSILON)) || Q_strcmp(other.sType, sType);
+    }
 };
 
 class TickSet {
