@@ -151,6 +151,7 @@ public:
     const char *GetMapPrefix() override { return "ahop_"; }
     const char *GetGameModeCfg() override { return "ahop.cfg"; }
     void SetGameModeVars() override;
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
 
     float GetViewScale() override { return 1.0f; }
