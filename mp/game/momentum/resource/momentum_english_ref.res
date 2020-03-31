@@ -202,10 +202,6 @@
         "MOM_LT" "<"
 
         // UI stuff
-        "MOM_Jump" "JUMP"
-        "MOM_Duck" "DUCK"
-        "MOM_M1"   "M1"
-        "MOM_M2"   "M2"
         "GameUI_Tonemap" "HDR Tonemapping"
         "GameUI_Bloom"   "HDR Bloom"
 
