@@ -62,7 +62,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void Precache() OVERRIDE;
 
     void CreateViewModel(int index = 0) OVERRIDE;
-    void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) OVERRIDE;
     void SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize) OVERRIDE;
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
