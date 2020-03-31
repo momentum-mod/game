@@ -6,12 +6,12 @@
         "fieldName"     "HudTimer"
         // See resource/ui/Timer.res for changing settings
     }
-	//Speedometer
-	HudSpeedMeter
-	{
+    //Speedometer
+    HudSpeedMeter
+    {
         "fieldName"		"HudSpeedMeter"
-        // See resource/ui/Speedometer.res for changing settings
-	}
+         // See resource/ui/Speedometer.res for changing settings
+    }
     //Strafe Sync Meter
     CHudSyncMeter
     {
