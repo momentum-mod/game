@@ -208,6 +208,8 @@ void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
 
 void CMomentumOnlineGhostEntity::FireSticky(const DecalPacket &packet)
 {
+    EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_STICKYLAUNCHER, "single_shot"));
+
     CMomStickybomb::Create(packet.vOrigin, packet.vAngle, packet.data.stickyShoot.velocity, this);
 
     // If we've gone over the max stickybomb count, fizzle the oldest
