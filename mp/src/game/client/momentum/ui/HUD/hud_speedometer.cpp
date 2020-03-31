@@ -41,7 +41,7 @@ static MAKE_CONVAR(mom_hud_speedometer_colorize, "1", FLAG_HUD_CVAR | FCVAR_CLIE
                    " 2 = ON (Staged by relative velocity to max.)\n", 0, 2);
 
 static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_unit_labels, "0", FLAG_HUD_CVAR,
-                          "Toggles showing the unit value labels (KM/H, MPH, Energy, U/S). 0 = OFF, 1 = ON\n");
+                          "Toggles showing the unit value labels (KM/H, MPH, Energy, UPS). 0 = OFF, 1 = ON\n");
 
 static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_showenterspeed, "1", FLAG_HUD_CVAR,
     "Toggles showing the stage/checkpoint enter speed (and comparison, if existent). 0 = OFF, 1 = ON\n");
@@ -298,7 +298,7 @@ void CHudSpeedMeter::OnThink()
         case 1:
         default:
             // We do nothing but break out of the switch, as default vel is already in UPS
-            m_pUnitsLabel->SetText(L"U/S");
+            m_pUnitsLabel->SetText(L"UPS");
             break;
         }
 
