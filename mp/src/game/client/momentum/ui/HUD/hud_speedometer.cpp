@@ -100,6 +100,8 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
 
     CMomRunStats *m_pRunStats;
     CMomRunEntityData *m_pRunEntData;
+
+    ConVarRef m_cvarTimeScale;
   protected:
     CPanelAnimationVar(Color, m_bgColor, "BgColor", "Blank");
     // NOTE: These need to be floats because of animations (thanks volvo)
@@ -110,7 +112,8 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
 DECLARE_HUDELEMENT(CHudSpeedMeter);
 
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
-    : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudSpeedMeter")
+    : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudSpeedMeter"), 
+    m_cvarTimeScale("mom_replay_timescale")
 {
     ListenForGameEvent("zone_exit");
     ListenForGameEvent("zone_enter");
@@ -238,7 +241,7 @@ void CHudSpeedMeter::OnThink()
 
         if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
         {
-            const float fReplayTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
+            const float fReplayTimeScale = m_cvarTimeScale.GetFloat();
             if (fReplayTimeScale < 1.0f)
             {
                 velocity /= fReplayTimeScale;
@@ -362,7 +365,7 @@ void CHudSpeedMeter::OnThink()
                 }
                 else //color based on relation to max vel
                 {
-                    const float maxvel = ConVarRef("sv_maxvelocity").GetFloat();
+                    const float maxvel = sv_maxvelocity.GetFloat();
                     switch (static_cast<int>(vel / maxvel * 5.0f))
                     {
                     case 0:

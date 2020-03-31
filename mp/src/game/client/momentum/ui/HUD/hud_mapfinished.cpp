@@ -23,7 +23,8 @@ using namespace vgui;
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName),
-    BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
+    BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog"),
+    m_cvarVelType("mom_hud_velocity_type")
 {
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetProportional(true);
@@ -148,8 +149,6 @@ void CHudMapFinishedDialog::LevelShutdown()
 void CHudMapFinishedDialog::OnThink()
 {
     BaseClass::OnThink();
-
-    m_iVelocityType = ConVarRef("mom_hud_velocity_type").GetInt();
 
     m_pPlayReplayButton->SetVisible(!m_bIsGhost);
     m_pRunUploadStatus->SetVisible(!m_bIsGhost);
@@ -399,11 +398,12 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
     m_pZoneSync2->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone,
                                                     m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f));
 
-    m_pZoneVelEnter->SetText(CConstructLocalizedString(m_pwVelZoneEnter, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    int velType = m_cvarVelType.GetInt();
+    m_pZoneVelEnter->SetText(CConstructLocalizedString(m_pwVelZoneEnter, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, velType) : 0.0f));
 
-    m_pZoneVelExit->SetText(CConstructLocalizedString(m_pwVelZoneExit, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    m_pZoneVelExit->SetText(CConstructLocalizedString(m_pwVelZoneExit, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, velType) : 0.0f));
 
-    m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, velType) : 0.0f));
 
-    m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, velType) : 0.0f));
 }
