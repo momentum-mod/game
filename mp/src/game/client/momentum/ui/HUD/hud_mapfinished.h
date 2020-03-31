@@ -93,5 +93,7 @@ private:
     bool m_bIsGhost;
     bool m_bCanClose;
 
-    int m_iCurrentPage, m_iVelocityType;
+    int m_iCurrentPage;
+
+    ConVarRef m_cvarVelType;
 };
