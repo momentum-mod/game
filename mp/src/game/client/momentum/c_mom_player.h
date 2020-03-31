@@ -53,6 +53,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 
     int m_afButtonDisabled;
     CNetworkVar(bool, m_bAutoBhop);
+    bool m_bIsSprinting, m_bIsWalking;
 
     // CMomRunEnt stuff
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }

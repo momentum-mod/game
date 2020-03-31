@@ -26,6 +26,7 @@
 #include "tier0/memdbgon.h"
 
 #define AVERAGE_STATS_INTERVAL 0.1
+#define SND_SPRINT "HL2Player.SprintStart"
 
 static MAKE_TOGGLE_CONVAR(
     mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
@@ -116,7 +117,9 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), 
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
+SendPropBool(SENDINFO(m_bIsSprinting)),
+SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
 SendPropInt(SENDINFO(m_iLandTick)),
@@ -223,6 +226,9 @@ CMomentumPlayer::CMomentumPlayer()
     {
         m_pStartZoneMarks[i] = nullptr;
     }
+
+    m_bIsWalking = false;
+    m_bIsSprinting = false;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -257,6 +263,7 @@ void CMomentumPlayer::Precache()
 
     PrecacheScriptSound(SND_FLASHLIGHT_ON);
     PrecacheScriptSound(SND_FLASHLIGHT_OFF);
+    PrecacheScriptSound(SND_SPRINT);
 
     BaseClass::Precache();
 }
@@ -744,6 +751,79 @@ void CMomentumPlayer::DoMuzzleFlash()
     {
         BaseClass::DoMuzzleFlash();
     }
+}
+
+bool CMomentumPlayer::CanSprint() const
+{
+    return !(m_afButtonDisabled & IN_SPEED) &&
+           !m_bIsWalking &&
+           !(m_Local.m_bDucked && !m_Local.m_bDucking) &&
+           GetWaterLevel() < 3;
+}
+
+void CMomentumPlayer::ToggleSprint(bool bShouldSprint)
+{
+    m_bIsSprinting = bShouldSprint;
+    SetMaxSpeed(bShouldSprint ? AHOP_SPRINT_SPEED : AHOP_NORM_SPEED);
+
+    if (bShouldSprint)
+    {
+        EmitSound(SND_SPRINT);
+    }
+}
+
+void CMomentumPlayer::ToggleWalk(bool bShouldWalk)
+{
+    m_bIsWalking = bShouldWalk;
+    SetMaxSpeed(m_bIsWalking ? AHOP_WALK_SPEED : AHOP_NORM_SPEED);
+}
+
+void CMomentumPlayer::HandleSprintAndWalkChanges()
+{
+    const int buttonsChanged = m_afButtonPressed | m_afButtonReleased;
+
+    const bool bWantSprint = (CanSprint() && (m_nButtons & IN_SPEED));
+    if (m_bIsSprinting != bWantSprint && (buttonsChanged & IN_SPEED))
+    {
+        // If someone wants to sprint, make sure they've pressed the button to do so. We want to prevent the
+        // case where a player can hold down the sprint key and burn tiny bursts of sprint as the suit recharges
+        // We want a full debounce of the key to resume sprinting after the suit is completely drained
+        ToggleSprint(bWantSprint);
+
+        if (!bWantSprint)
+        {
+            // Reset key, so it will be activated post whatever is suppressing it.
+            m_nButtons &= ~IN_SPEED;
+        }
+    }
+
+    if (m_bIsSprinting)
+    {
+        // Disable sprint while ducked unless we're in the air (jumping)
+        if (IsDucked() && GetGroundEntity())
+        {
+            ToggleSprint(false);
+        }
+    }
+
+    // have suit, pressing button, not sprinting or ducking
+    const auto bWantWalk = (m_nButtons & IN_WALK) && !m_bIsSprinting && !(m_nButtons & IN_DUCK);
+
+    if (m_bIsWalking != bWantWalk)
+    {
+        ToggleWalk(bWantWalk);
+    }
+}
+
+void CMomentumPlayer::PreThink()
+{
+    // Handle Ahop related things
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        HandleSprintAndWalkChanges();
+    }
+
+    BaseClass::PreThink();
 }
 
 void CMomentumPlayer::ToggleDuckThisFrame(bool bState)

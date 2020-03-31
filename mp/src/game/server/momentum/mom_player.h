@@ -222,6 +222,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void ClearStartMark(int track);
 
     void DoMuzzleFlash() OVERRIDE;
+    void PreThink() override;
     void PostThink() OVERRIDE;
 
     int OnTakeDamage_Alive(const CTakeDamageInfo &info) OVERRIDE;
@@ -247,6 +248,14 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
+
+    // Ahop stuff
+    CNetworkVar(bool, m_bIsSprinting);
+    CNetworkVar(bool, m_bIsWalking);
+    void HandleSprintAndWalkChanges();
+    bool CanSprint() const;
+    void ToggleSprint(bool bShouldSprint);
+    void ToggleWalk(bool bShouldWalk);
 
   private:
     // Player think function called every tick
