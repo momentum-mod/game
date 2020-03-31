@@ -181,11 +181,11 @@
         "MOM_GameType" "Game Type"
         "MOM_GameType_Surf" "Surf"
         "MOM_GameType_Bhop" "Bhop"
-        "MOM_GameType_KZ" "Climb (KZ)"
+        "MOM_GameType_KZ" "Climb"
         "MOM_GameType_RJ" "Rocket Jump"
         "MOM_GameType_SJ" "Sticky Jump"
         "MOM_GameType_Tricksurf" "Tricksurf"
-        "MOM_GameType_Trikz" "Trikz"
+        "MOM_GameType_Ahop" "Ahop"
 
         // Map Info Dialog
         "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode:"

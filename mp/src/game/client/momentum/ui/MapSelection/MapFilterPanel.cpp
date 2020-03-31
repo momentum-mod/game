@@ -46,7 +46,7 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     m_pGameModeFilter->AddItem("#MOM_GameType_RJ", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_SJ", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_Tricksurf", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_Trikz", nullptr);
+    m_pGameModeFilter->AddItem("#MOM_GameType_Ahop", nullptr);
     m_pGameModeFilter->AddActionSignalTarget(this);
 
     m_pMapNameFilter->SetMaximumCharCount(MAX_MAP_NAME);

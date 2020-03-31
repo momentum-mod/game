@@ -325,11 +325,11 @@
         0 : "Unknown"
         1 : "Surf"
         2 : "Bhop"
-        3 : "Kz (Climbing)"
+        3 : "Climb"
         4 : "RJ"
         5 : "SJ"
         6 : "Tricksurf"
-        7 : "Trikz"
+        7 : "Ahop"
     ]
 ]
 
