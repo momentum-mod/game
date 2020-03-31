@@ -4488,12 +4488,8 @@ void CGameMovement::Duck( void )
 	// his view height is at the standing height.
 	else if ( !IsDead() && !player->IsObserver() )
 	{
-		if ( ( player->m_Local.m_flDuckJumpTime == 0.0f ) && ( fabs(player->GetViewOffset().z - GetPlayerViewOffset( false ).z) > 0.1 ) )
+		if ( ( player->m_Local.m_flDuckJumpTime == 0.0f ) && ( fabsf(player->GetViewOffset().z - GetPlayerViewOffset( false ).z) > 0.1f ) )
 		{
-			// we should rarely ever get here, so assert so a coder knows when it happens
-			Assert(0);
-			DevMsg( 1, "Restoring player view height\n" );
-
 			// set the eye height to the non-ducked height
 			SetDuckedEyeOffset(0.0f);
 		}
