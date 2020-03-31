@@ -87,8 +87,6 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
     Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
     Color m_LastJumpVelColor;
 
-    wchar_t *m_SpeedometerUnitLabelText;
-
     Label *m_pUnitsLabel, *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, 
         *m_pStageEnterExitLabel, *m_pStageEnterExitComparisonLabel;
 
@@ -97,7 +95,7 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
 
     int m_defaultYPos;
 
-    void InactivateLabel(Label *label);
+    void DeactivateLabel(Label *label);
     void ActivateLabel(Label *label, int defaultHeight);
 
     CMomRunStats *m_pRunStats;
@@ -154,7 +152,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_defaultYPos = GetYPos();
 }
 
-void CHudSpeedMeter::InactivateLabel(Label *label)
+void CHudSpeedMeter::DeactivateLabel(Label *label)
 {
     label->SetAutoTall(false);
     label->SetText("");
@@ -278,14 +276,14 @@ void CHudSpeedMeter::OnThink()
             vel *= 0.06858f;
             hvel *= 0.06858f;
             lastJumpVel *= 0.06858f;
-            m_SpeedometerUnitLabelText = L"KM/H";
+            m_pUnitsLabel->SetText(L"KM/H");
             break;
         case 3:
             // 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
             vel *= 0.04262f;
             hvel *= 0.04262f;
             lastJumpVel *= 0.04262f;
-            m_SpeedometerUnitLabelText = L"MPH";
+            m_pUnitsLabel->SetText(L"MPH");
             break;
         case 4:
         {
@@ -294,19 +292,14 @@ void CHudSpeedMeter::OnThink()
             vel = (pPlayer->GetAbsVelocity().LengthSqr() / 2.0f +
                    gravity * (pPlayer->GetLocalOrigin().z - m_pRunEntData->m_flLastJumpZPos)) / gravity;
             hvel = vel;
-            m_SpeedometerUnitLabelText = L"Energy";
+            m_pUnitsLabel->SetText(L"Energy");
             break;
         }
         case 1:
         default:
             // We do nothing but break out of the switch, as default vel is already in UPS
-            m_SpeedometerUnitLabelText = L"U/S";
+            m_pUnitsLabel->SetText(L"U/S");
             break;
-        }
-        // if we don't show labels, remove it.
-        if (!mom_hud_speedometer_unit_labels.GetBool())
-        {
-            m_SpeedometerUnitLabelText = L"";
         }
 
         // only called if we need to update color
@@ -466,7 +459,7 @@ void CHudSpeedMeter::Paint()
     }
     else
     {
-        InactivateLabel(m_pAbsSpeedoLabel);
+        DeactivateLabel(m_pAbsSpeedoLabel);
     }
 
     if (mom_hud_speedometer_horiz.GetBool())
@@ -478,7 +471,7 @@ void CHudSpeedMeter::Paint()
     }
     else
     {
-        InactivateLabel(m_pHorizSpeedoLabel);
+        DeactivateLabel(m_pHorizSpeedoLabel);
     }
 
     if (mom_hud_speedometer_lastjumpvel.GetBool())
@@ -494,24 +487,23 @@ void CHudSpeedMeter::Paint()
     }
     else
     {
-        InactivateLabel(m_pLastJumpVelLabel);
+        DeactivateLabel(m_pLastJumpVelLabel);
     }
 
     if (mom_hud_speedometer_unit_labels.GetBool())
     {
         ActivateLabel(m_pUnitsLabel, m_defaultUnitsLabelHeight);
-        m_pUnitsLabel->SetText(m_SpeedometerUnitLabelText);
     }
     else
     {
-        InactivateLabel(m_pUnitsLabel);
+        DeactivateLabel(m_pUnitsLabel);
     }
     //if every speedometer is off, don't bother drawing unit labels
     if (!mom_hud_speedometer.GetBool() && !mom_hud_speedometer_horiz.GetBool() && 
         !mom_hud_speedometer_lastjumpvel.GetBool() && !mom_hud_speedometer_showenterspeed.GetBool() && 
         mom_hud_speedometer_unit_labels.GetBool())
     {
-        InactivateLabel(m_pUnitsLabel);
+        DeactivateLabel(m_pUnitsLabel);
     }
 
     // Draw the enter speed split, if toggled on. Cannot be done in OnThink()
@@ -578,7 +570,7 @@ void CHudSpeedMeter::Paint()
     }
     else if (!mom_hud_speedometer_showenterspeed.GetBool())
     {
-        InactivateLabel(m_pStageEnterExitLabel);
-        InactivateLabel(m_pStageEnterExitComparisonLabel);
+        DeactivateLabel(m_pStageEnterExitLabel);
+        DeactivateLabel(m_pStageEnterExitComparisonLabel);
     }
 }
