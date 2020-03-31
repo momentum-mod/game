@@ -173,6 +173,9 @@ public:
     bool GameModeIs(GameMode_t eCheck) const { return m_pCurrentGameMode->GetType() == eCheck; }
     /// Another convenience method to check if the current game mode is a TF2-based one (RJ || SJ)
     bool IsTF2BasedMode() const { return GameModeIs(GAMEMODE_RJ) || GameModeIs(GAMEMODE_SJ); }
+    /// Another convenience method to check if the current game mode is a CS-based one (Surf || Bhop || KZ || Unknown)
+    bool IsCSBasedMode() const { return GameModeIs(GAMEMODE_SURF) || GameModeIs(GAMEMODE_BHOP) ||
+                                        GameModeIs(GAMEMODE_KZ) || GameModeIs(GAMEMODE_UNKNOWN); }
     /// Sets the game mode directly
     void SetGameMode(GameMode_t eMode);
     /// Sets the game mode from a map name (backup method)
