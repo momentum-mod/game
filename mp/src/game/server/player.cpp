@@ -3558,9 +3558,6 @@ void CBasePlayer::DumpPerfToRecipient( CBasePlayer *pRecipient, int nMaxRecords 
 	}
 }
 
-// Duck debouncing code to stop menu changes from disallowing crouch/uncrouch
-ConVar xc_crouch_debounce( "xc_crouch_debounce", "0", FCVAR_NONE );
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : *ucmd - 
@@ -3574,11 +3571,13 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	{
 		VectorCopy ( ucmd->viewangles, pl.v_angle.GetForModify() );
 	}
+	else if (pl.fixangle == FIXANGLE_ABSOLUTE)
+	{
+		VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
+	}
 
-	// Handle FL_FROZEN.
-	// Prevent player moving for some seconds after New Game, so that they pick up everything
-	if( GetFlags() & FL_FROZEN || 
-		(developer.GetInt() == 0 && gpGlobals->eLoadType == MapLoad_NewGame && gpGlobals->curtime < 3.0 ) )
+	// Handle FL_FROZEN
+	if( GetFlags() & FL_FROZEN )
 	{
 		ucmd->forwardmove = 0;
 		ucmd->sidemove = 0;
@@ -3587,24 +3586,9 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->impulse = 0;
 		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
 	}
-	else
+	else if ( GetToggledDuckState() )
 	{
-		// Force a duck if we're toggled
-		if ( GetToggledDuckState() )
-		{
-			// If this is set, we've altered our menu options and need to debounce the duck
-			if ( xc_crouch_debounce.GetBool() )
-			{
-				ToggleDuck();
-				
-				// Mark it as handled
-				xc_crouch_debounce.SetValue( 0 );
-			}
-			else
-			{
-				ucmd->buttons |= IN_DUCK;
-			}
-		}
+		ucmd->buttons |= IN_DUCK;
 	}
 	
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);

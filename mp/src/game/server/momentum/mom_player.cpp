@@ -289,50 +289,6 @@ void CMomentumPlayer::CreateViewModel(int index)
     }
 }
 
-// Overridden so the player isn't frozen on a new map change
-void CMomentumPlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
-{
-    m_touchedPhysObject = false;
-
-    if (pl.fixangle == FIXANGLE_NONE)
-    {
-        VectorCopy(ucmd->viewangles, pl.v_angle.GetForModify());
-    }
-    else if (pl.fixangle == FIXANGLE_ABSOLUTE)
-    {
-        VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
-    }
-
-    // Handle FL_FROZEN.
-    if (GetFlags() & FL_FROZEN)
-    {
-        ucmd->forwardmove = 0;
-        ucmd->sidemove = 0;
-        ucmd->upmove = 0;
-        ucmd->buttons = 0;
-        ucmd->impulse = 0;
-        VectorCopy(pl.v_angle.Get(), ucmd->viewangles);
-    }
-    else if (GetToggledDuckState()) // Force a duck if we're toggled
-    {
-        ConVarRef xc_crouch_debounce("xc_crouch_debounce");
-        // If this is set, we've altered our menu options and need to debounce the duck
-        if (xc_crouch_debounce.GetBool())
-        {
-            ToggleDuck();
-
-            // Mark it as handled
-            xc_crouch_debounce.SetValue(0);
-        }
-        else
-        {
-            ucmd->buttons |= IN_DUCK;
-        }
-    }
-
-    PlayerMove()->RunCommand(this, ucmd, moveHelper);
-}
-
 void CMomentumPlayer::SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize)
 {
     BaseClass::SetupVisibility(pViewEntity, pvs, pvssize);
