@@ -100,7 +100,7 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     {
         m_bCanClose = true;
 
-        SetRunSaved(pEvent->GetBool("save"));
+        SetRunSaved(pEvent->GetBool("save") && IsVisible());
         SetCurrentPage(m_iCurrentPage);
         // MOM_TODO: There's a file name parameter as well, do we want to use it here?
     }
@@ -111,9 +111,10 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     else if (FStrEq(pEvent->GetName(), "run_upload"))
     {
         const auto bPosted = pEvent->GetBool("run_posted");
-        SetRunUploaded(bPosted);
-        if (bPosted)
+        // don't write to labels if panel is not visible
+        if (bPosted && IsVisible())
         {
+            SetRunUploaded(true);
             const auto cXP = pEvent->GetInt("cos_xp");
             m_pXPGainCosmetic->SetVisible(cXP > 0);
             if (cXP)
