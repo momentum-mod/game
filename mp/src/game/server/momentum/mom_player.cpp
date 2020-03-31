@@ -2001,3 +2001,18 @@ void CMomentumPlayer::DoPaint()
     // Delay next time we paint
     m_flNextPaintTime = gpGlobals->curtime + CMomentumPaintGun::GetPrimaryCycleTime();
 }
+
+CON_COMMAND(toggle_duck, "Toggles duck state of the player. Only usable in the Ahop gamemode!\n")
+{
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+        return;
+
+    const auto pPlayer = UTIL_GetCommandClient();
+    if (!pPlayer)
+        return;
+
+    if (pPlayer->GetFlags() & FL_FROZEN)
+        return;
+
+    pPlayer->ToggleDuck();
+}
