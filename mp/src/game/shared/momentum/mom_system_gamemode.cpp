@@ -38,6 +38,7 @@ static MAKE_CONVAR_C(mom_gamemode, "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED |
 void CGameModeBase::SetGameModeVars()
 {
     // Default game mode vars
+    sv_gravity.SetValue(800);
     sv_maxvelocity.SetValue(3500);
     sv_airaccelerate.SetValue(150);
     sv_accelerate.SetValue(5);
@@ -176,6 +177,26 @@ void CGameMode_Tricksurf::SetGameModeVars()
     sv_accelerate.SetValue(10);
 }
 
+void CGameMode_Ahop::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    // Ahop-specific
+    sv_gravity.SetValue(600);
+    sv_airaccelerate.SetValue(10);
+    sv_accelerate.SetValue(10);
+    sv_maxspeed.SetValue(320);
+    sv_stopspeed.SetValue(100);
+    sv_considered_on_ground.SetValue(2);
+}
+
+bool CGameMode_Ahop::WeaponIsAllowed(WeaponID_t weapon)
+{
+    // Ahop only blacklists weapons
+    return weapon != WEAPON_ROCKETLAUNCHER &&
+           weapon != WEAPON_STICKYLAUNCHER;
+}
+
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
 {
     m_pCurrentGameMode = new CGameModeBase; // Unknown game mode
@@ -186,7 +207,7 @@ CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
     m_vecGameModes.AddToTail(new CGameMode_RJ);
     m_vecGameModes.AddToTail(new CGameMode_SJ);
     m_vecGameModes.AddToTail(new CGameMode_Tricksurf);
-    m_vecGameModes.AddToTail(new CGameMode_Trikz);
+    m_vecGameModes.AddToTail(new CGameMode_Ahop);
 }
 
 CGameModeSystem::~CGameModeSystem()
