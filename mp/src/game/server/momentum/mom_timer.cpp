@@ -27,8 +27,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 
 CMomentumTimer::CMomentumTimer()
     : CAutoGameSystemPerFrame("CMomentumTimer"), m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
-      m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0),
-      m_bShouldUseStartZoneOffset(false)
+      m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 }
 
@@ -264,8 +263,7 @@ void CMomentumTimer::SetStartTrigger(int track, CTriggerTimerStart *pTrigger)
         if (pTrigger && pTrigger->GetTrackNumber() == track)
             m_hStartTriggers[track] = pTrigger;
         else
-            Warning(
-                "Cannot set the start trigger for the given track; the trigger is null or its track doesn't match!\n");
+            Warning("Cannot set the start trigger for the given track; the trigger is null or its track doesn't match!\n");
     }
     else
     {
