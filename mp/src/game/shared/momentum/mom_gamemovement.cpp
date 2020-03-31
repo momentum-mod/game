@@ -2347,7 +2347,7 @@ bool CMomentumGameMovement::CanAccelerate()
 void CMomentumGameMovement::CheckParameters()
 {
     // shift-walking useful for some maps with tight jumps
-    if (mv->m_nButtons & IN_SPEED)
+    if (mv->m_nButtons & IN_SPEED && g_pGameModeSystem->IsCSBasedMode())
     {
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
     }
