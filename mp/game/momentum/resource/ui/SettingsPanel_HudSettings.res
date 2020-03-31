@@ -90,7 +90,6 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
         "cvar_name"		"mom_hud_speedometer_horiz"
-        "cvar_value"		"1"
         "Font"		"DefaultVerySmall"
     }
     "SpeedoShowJump"
@@ -150,7 +149,6 @@
         "use_proportional_insets"		"0"
         "Default"		"0"
         "cvar_name"		"mom_hud_speedometer_showenterspeed"
-        "cvar_value"		"1"
         "Font"		"DefaultVerySmall"
     }
 	"SpeedoShowUnitLabels"
