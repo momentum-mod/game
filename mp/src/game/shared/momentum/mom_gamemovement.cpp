@@ -519,9 +519,8 @@ bool CMomentumGameMovement::LadderMove()
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
 {
-    if (g_pGameModeSystem->IsTF2BasedMode())
+    if (g_pGameModeSystem->IsTF2BasedMode() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
-        // TF2 uses default speed cropping
         return BaseClass::HandleDuckingSpeedCrop();
     }
 
@@ -643,6 +642,12 @@ void CMomentumGameMovement::CalculateWaterWishVelocityZ(Vector &wishVel, const V
 
 void CMomentumGameMovement::Duck()
 {
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        BaseClass::Duck();
+        return;
+    }
+
     if (g_pGameModeSystem->IsTF2BasedMode())
     {
         // Don't allowing ducking if deep enough in water
@@ -738,9 +743,11 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
 void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
 {
     const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
+    const bool bInAir = player->GetGroundEntity() == nullptr;
+
     // Try to unduck unless automovement is not allowed
     // NOTE: When not onground, you can always unduck
-    if (player->m_Local.m_bAllowAutoMovement || (!bIsSliding && player->GetGroundEntity() == nullptr))
+    if (player->m_Local.m_bAllowAutoMovement || (!bIsSliding && bInAir))
     {
         if (iButtonsReleased & IN_DUCK)
         {
@@ -786,7 +793,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
             //  that we'll unduck once we exit the tunnel, etc.
             player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
 
-            if (g_pGameModeSystem->IsTF2BasedMode())
+            if (g_pGameModeSystem->IsTF2BasedMode() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
             {
                 SetDuckedEyeOffset(1.0f);
                 player->m_Local.m_bDucked = true;
@@ -804,9 +811,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
 //-----------------------------------------------------------------------------
 void CMomentumGameMovement::FinishUnDuck()
 {
-    trace_t trace;
     Vector newOrigin;
-
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
     if (player->GetGroundEntity() != nullptr || m_pPlayer->m_CurrentSlideTrigger)
@@ -828,10 +833,18 @@ void CMomentumGameMovement::FinishUnDuck()
     player->m_Local.m_bDucked = false;
     player->RemoveFlag(FL_DUCKING);
     player->m_Local.m_bDucking = false;
+    player->m_Local.m_bInDuckJump = false;
     player->SetViewOffset(GetPlayerViewOffset(false));
     player->m_Local.m_flDucktime = 0.f;
 
     mv->SetAbsOrigin(newOrigin);
+
+#ifdef CLIENT_DLL
+    if (!g_pGameModeSystem->IsCSBasedMode())
+    {
+        player->ResetLatched();
+    }
+#endif
 
     // Recategorize position since ducking can change origin
     CategorizePosition();
@@ -866,6 +879,13 @@ void CMomentumGameMovement::FinishDuck()
         mv->SetAbsOrigin(org);
 
         player->m_Local.m_bDucked = true;
+
+#ifdef CLIENT_DLL
+        if (!g_pGameModeSystem->IsCSBasedMode())
+        {
+            player->ResetLatched();
+        }
+#endif
     }
 
     // See if we are stuck?
@@ -917,7 +937,7 @@ void CMomentumGameMovement::PlayerMove()
             }
             player->SetViewOffset(offset);
         }
-        else
+        else if (!g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
         {
             if ((player->GetFlags() & FL_DUCKING) == 0 && !player->m_Local.m_bDucking && !player->m_Local.m_bDucked)
             {
@@ -1027,6 +1047,17 @@ bool CMomentumGameMovement::CheckJumpButton()
             return false; // don't pogo stick
     }
 
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        // Cannot jump while in the unduck transition.
+        if (player->m_Local.m_bDucking && (player->GetFlags() & FL_DUCKING))
+            return false;
+
+        // Still updating the eye position.
+        if (player->m_Local.m_flDuckJumpTime > 0.0f)
+            return false;
+    }
+
     // In the air now.
     SetGroundEntity(nullptr);
 
@@ -1063,13 +1094,39 @@ bool CMomentumGameMovement::CheckJumpButton()
     {
         if (m_pPlayer->m_flStamina > 0)
         {
-            float flRatio;
-
-            flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
+            float flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
             mv->m_vecVelocity[2] *= flRatio;
         }
 
         m_pPlayer->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0;
+    }
+
+    // Add the accelerated hop movement
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        Vector vecForward;
+        AngleVectors(mv->m_vecViewAngles, &vecForward);
+        vecForward.z = 0;
+        VectorNormalize(vecForward);
+
+        // We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
+        // to not accumulate over time.
+        float flSpeedBoostPerc = (!m_pPlayer->m_bIsSprinting && !player->m_Local.m_bDucked) ? 0.5f : 0.1f;
+        float flSpeedAddition = fabsf(mv->m_flForwardMove * flSpeedBoostPerc);
+        float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
+        float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
+
+        // If we're over the maximum, we want to only boost as much as will get us to the goal speed
+        if (flNewSpeed > flMaxSpeed)
+        {
+            flSpeedAddition -= flNewSpeed - flMaxSpeed;
+        }
+
+        if (mv->m_flForwardMove < 0.0f)
+            flSpeedAddition *= -1.0f;
+
+        // Add it on
+        VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
     }
 
     FinishGravity();
@@ -1077,10 +1134,10 @@ bool CMomentumGameMovement::CheckJumpButton()
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.1f;
 
-    if (g_pGameModeSystem->IsTF2BasedMode())
+    if (g_pGameModeSystem->IsTF2BasedMode() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
         mv->m_outStepHeight += 0.05f; // 0.15f total
 
-    if (!g_pGameModeSystem->IsTF2BasedMode())
+    if (g_pGameModeSystem->IsCSBasedMode())
     {
         // First do a trace all the way down to the ground
         TracePlayerBBox(mv->GetAbsOrigin(),
@@ -1101,9 +1158,22 @@ bool CMomentumGameMovement::CheckJumpButton()
             }
         }
     }
+    else if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        player->m_Local.m_flJumpTime = GAMEMOVEMENT_JUMP_TIME;
+        player->m_Local.m_bInDuckJump = true;
+
+#ifdef GAME_DLL
+        if (player->GetToggledDuckState())
+        {
+            // Uncrouch while toggleducked and jumping
+            player->ToggleDuck();
+        }
+#endif
+    }
 
     // Flag that we jumped.
-    mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
+    mv->m_nOldButtons |= IN_JUMP;
 
 #ifndef CLIENT_DLL
     m_pPlayer->SetIsInAirDueToJump(true);
@@ -1328,10 +1398,6 @@ void CMomentumGameMovement::StartGravity()
 
 void CMomentumGameMovement::FullWalkMove()
 {
-    Vector vecOldOrigin;
-
-    bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
-
     if (!CheckWater())
     {
         StartGravity();
@@ -1350,6 +1416,7 @@ void CMomentumGameMovement::FullWalkMove()
     //  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
     // If sliding is set we prefer to simulate sliding than being in water.. Could be fun for some mappers
     // that want sliding/iceskating into water. Who knows.
+    bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
     if ((player->GetWaterLevel() >= WL_Waist) && !bIsSliding)
     {
         if (player->GetWaterLevel() == WL_Waist)
@@ -1402,12 +1469,14 @@ void CMomentumGameMovement::FullWalkMove()
         //  we don't slow when standing still, relative to the conveyor.
         if (player->GetGroundEntity() != nullptr)
         {
+            mv->m_vecVelocity[2] = 0.0;
             Friction();
         }
 
         // Make sure velocity is valid.
         CheckVelocity();
 
+        Vector vecOldOrigin;
         if (bIsSliding)
             vecOldOrigin = mv->GetAbsOrigin();
 
@@ -1418,7 +1487,10 @@ void CMomentumGameMovement::FullWalkMove()
 
             WalkMove();
 
-            CategorizePosition();
+            if (g_pGameModeSystem->IsCSBasedMode())
+            {
+                CategorizePosition();
+            }
 
             if (!g_pGameModeSystem->IsTF2BasedMode())
             {
@@ -1466,7 +1538,7 @@ void CMomentumGameMovement::FullWalkMove()
 
         // Let player bhop after an edgebug
         trace_t &tr = m_pPlayer->GetLastCollisionTrace();
-        if (sv_edge_fix.GetBool() && !m_pPlayer->m_CurrentSlideTrigger &&
+        if (sv_edge_fix.GetBool() && !bIsSliding &&
             bInAirBefore && bInAirAfter && m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount && // Player edgebugged
             (m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)) && // Player wants to bhop
             tr.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY) // Player can jump on what they edgebugged on
