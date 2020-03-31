@@ -131,14 +131,23 @@ public:
     void SetGameModeVars() override;
 };
 
-// MOM_TODO
-class CGameMode_Trikz : public CGameModeBase
+// Ahop-specific defines
+#define AHOP_WALK_SPEED   150.0f
+#define AHOP_NORM_SPEED   190.0f
+#define AHOP_SPRINT_SPEED 320.0f
+
+class CGameMode_Ahop : public CGameModeBase
 {
 public:
-    GameMode_t GetType() override { return GAMEMODE_TRIKZ; }
-    const char* GetDiscordIcon() override { return "mom_icon_trikz"; }
-    const char* GetMapPrefix() override { return "trikz_"; }
-    const char* GetGameModeCfg() override { return "trikz.cfg"; }
+    GameMode_t GetType() override { return GAMEMODE_AHOP; }
+    const char *GetStatusString() override { return "Accelerated hopping"; }
+    const char *GetDiscordIcon() override { return "mom_icon_ahop"; }
+    const char *GetMapPrefix() override { return "ahop_"; }
+    const char *GetGameModeCfg() override { return "ahop.cfg"; }
+    void SetGameModeVars() override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
+
+    float GetViewScale() override { return 1.0f; }
 };
 
 class CGameModeSystem : public CAutoGameSystem

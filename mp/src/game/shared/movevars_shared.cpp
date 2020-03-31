@@ -12,13 +12,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-// some cvars used by player movement system
-#if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
-#define DEFAULT_GRAVITY_STRING	"800"
-#else
-#define DEFAULT_GRAVITY_STRING	"800"
-#endif
-
 float GetCurrentGravity( void )
 {
 #if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
@@ -68,7 +61,7 @@ static void GravityChanged_Callback(IConVar *var, const char *pOldString, float)
 }
 #endif
 
-ConVar	sv_gravity("sv_gravity", DEFAULT_GRAVITY_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING, "World gravity."
+ConVar	sv_gravity("sv_gravity", "800", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_MAPPING, "World gravity."
 #ifdef GAME_DLL
     , GravityChanged_Callback
 #endif

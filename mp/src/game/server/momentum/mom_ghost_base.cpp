@@ -134,7 +134,7 @@ bool CMomentumGhostBaseEntity::GetBhopEnabled() const
 bool CMomentumGhostBaseEntity::ShouldCollide(int collisionGroup, int contentsMask) const
 {
     if (collisionGroup == COLLISION_GROUP_PROJECTILE)
-        return false; // MOM_TODO allow if it's trikz gamemode
+        return false;
 
     return BaseClass::ShouldCollide(collisionGroup, contentsMask);
 }
