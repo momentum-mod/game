@@ -5,7 +5,7 @@
 #define MAX_WEAPON_PREFIX 16
 #define WEAPON_PRINTNAME_MISSING "!!! Missing printname on weapon"
 
-#define MOM_WEAPON_STICKYBOMB_COUNT 3
+#define MOM_WEAPON_STICKYBOMB_COUNT 4
 
 enum WeaponID_t
 {
