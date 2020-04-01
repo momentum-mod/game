@@ -417,7 +417,7 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
         m_pMapList->ApplyItemChanges(map->m_iListID);
     }
 
-    if (m_uStartMapWhenReady > 0 && (uint32)m_uStartMapWhenReady == id)
+    if (m_uStartMapWhenReady > 0 && m_uStartMapWhenReady == id)
     {
         m_uStartMapWhenReady = 0;
         MapSelectorDialog().OnMapStart(id);
