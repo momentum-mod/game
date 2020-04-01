@@ -41,7 +41,7 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     void ItemPostFrame() OVERRIDE;
 
     void AddStickybomb(CMomStickybomb *pBomb);
-    int DetonateRemoteStickybombs(bool bFizzle);
+    int DetonateRemoteStickybombs();
     void DeathNotice(CBaseEntity *pVictim);
     int GetStickybombCount() { return m_iStickybombCount.Get(); }
     float CalculateProjectileSpeed(float flProgress);

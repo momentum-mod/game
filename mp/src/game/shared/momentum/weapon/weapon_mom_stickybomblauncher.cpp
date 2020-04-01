@@ -254,7 +254,7 @@ void CMomentumStickybombLauncher::SecondaryAttack()
     if (!pPlayer)
         return;
 
-    const auto detStatus = DetonateRemoteStickybombs(false);
+    const auto detStatus = DetonateRemoteStickybombs();
 
     bool bPlayedFail = false;
     if (detStatus & DET_STATUS_FAIL)
@@ -393,11 +393,14 @@ void CMomentumStickybombLauncher::DeathNotice(CBaseEntity *pVictim)
 //-----------------------------------------------------------------------------
 // Purpose: Remove *with* explosions
 //-----------------------------------------------------------------------------
-int CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
+int CMomentumStickybombLauncher::DetonateRemoteStickybombs()
 {
     int detStatus = DET_STATUS_NONE;
 
-    FOR_EACH_VEC_BACK(m_Stickybombs, i)
+    CHandle<CMomStickybomb> stickyBombsAffecting[2] {nullptr, nullptr};
+    float fClosest1 = FLT_MAX, fClosest2 = FLT_MAX;
+    CUtlVector<CHandle<CMomStickybomb>> vecArmedStickies;
+    FOR_EACH_VEC(m_Stickybombs, i)
     {
         CMomStickybomb *pTemp = m_Stickybombs[i];
         if (pTemp)
@@ -405,26 +408,57 @@ int CMomentumStickybombLauncher::DetonateRemoteStickybombs(bool bFizzle)
             // This guy will die soon enough.
             if (pTemp->IsEffectActive(EF_NODRAW) || pTemp->GetFlags() & FL_DISSOLVING)
                 continue;
-#ifdef GAME_DLL
-            if (bFizzle)
+
+            if (pTemp->IsArmed())
             {
-                pTemp->Fizzle();
-            }
-#endif
-            if (!bFizzle)
-            {
-                if (!pTemp->IsArmed())
+                vecArmedStickies.AddToTail(pTemp);
+
+                const float fDist = pTemp->GetAbsOrigin().DistTo(GetOwner()->GetAbsOrigin());
+
+                if (fDist < fClosest1)
                 {
-                    detStatus |= DET_STATUS_FAIL;
-                    continue;
+                    if (stickyBombsAffecting[0].Get())
+                    {
+                        // Bump closest1 back to second
+                        fClosest2 = fClosest1;
+                        stickyBombsAffecting[1] = stickyBombsAffecting[0];
+                    }
+
+                    stickyBombsAffecting[0] = pTemp;
+                    fClosest1 = fDist;
+                }
+                else if (fDist < fClosest2)
+                {
+                    fClosest2 = fDist;
+                    stickyBombsAffecting[1] = pTemp;
                 }
             }
-#ifdef GAME_DLL
-            pTemp->Detonate();
-            detStatus |= DET_STATUS_SUCCESS;
-#endif
+            else
+            {
+                detStatus |= DET_STATUS_FAIL;
+            }
         }
     }
+
+    for (const auto hCloseSticky : stickyBombsAffecting)
+    {
+        vecArmedStickies.FindAndRemove(hCloseSticky);
+
+        if (hCloseSticky.Get())
+        {
+#ifdef GAME_DLL
+            hCloseSticky->Detonate();
+#endif
+            detStatus |= DET_STATUS_SUCCESS;
+        }
+    }
+
+#ifdef GAME_DLL
+    FOR_EACH_VEC(vecArmedStickies, i)
+    {
+        vecArmedStickies[i]->Destroy(true);
+    }
+#endif
 
 #ifdef GAME_DLL
     if (detStatus & DET_STATUS_SUCCESS)
