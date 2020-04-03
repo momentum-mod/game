@@ -142,16 +142,6 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pStageEnterExitComparisonLabel = new Label(this, "StageEnterExitComparisonLabel", "");
     
     LoadControlSettings("resource/ui/Speedometer.res");
-
-    m_defaultAbsSpeedoLabelHeight = m_pAbsSpeedoLabel->GetTall();
-    m_defaultHorizSpeedoLabelHeight = m_pHorizSpeedoLabel->GetTall();
-    m_defaultLastJumpVelLabelHeight = m_pLastJumpVelLabel->GetTall();
-    m_defaultUnitsLabelHeight = m_pUnitsLabel->GetTall();
-    m_defaultStageEnterExitLabelHeight = m_pStageEnterExitLabel->GetTall();
-
-    m_pStageEnterExitComparisonLabel->SetFont(m_pStageEnterExitLabel->GetFont()); //need to have same font
-
-    m_defaultYPos = GetYPos();
 }
 
 void CHudSpeedMeter::DeactivateLabel(Label *label)
