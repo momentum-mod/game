@@ -476,7 +476,7 @@
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "labelText"     "#MOM_MF_MouseInactive"
+        "labelText"     "#MOM_MF_MouseToggle"
         "textAlignment" "center"
         "dulltext"      "0"
         "brighttext"    "0"

@@ -52,7 +52,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pPrevZoneButton = new ImagePanel(this, "Prev_Zone");
     m_pPlayReplayButton = new ImagePanel(this, "Replay_Icon");
     m_pRepeatButton = new ImagePanel(this, "Repeat_Button");
-    m_pMouseStateLabel = new Label(this, "Mouse_State", "#MOM_MF_MouseInactive");
+    m_pMouseStateLabel = new Label(this, "Mouse_State", "#MOM_MF_MouseToggle");
     m_pCurrentZoneLabel = new Label(this, "Current_Zone", "#MOM_MF_OverallStats");
     m_pZoneOverallTime = new Label(this, "Zone_Overall_Time", "#MOM_MF_RunTime");
     m_pZoneEnterTime = new Label(this, "Zone_Enter_Time", "#MOM_MF_Zone_Enter");
@@ -165,12 +165,6 @@ void CHudMapFinishedDialog::OnThink()
         if (ClosePanel())
             FirePanelClosedEvent(false);
     }
-}
-
-void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
-{
-    BaseClass::SetMouseInputEnabled(state);
-    m_pMouseStateLabel->SetText(state ? "#MOM_MF_MouseActive" : "#MOM_MF_MouseInactive");
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
