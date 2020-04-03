@@ -24,8 +24,6 @@ public:
     void OnThink() OVERRIDE;
     void Paint() OVERRIDE;
 
-    void SetMouseInputEnabled(bool state) OVERRIDE;
-
     bool IsBuildGroupEnabled() OVERRIDE { return false; }
 
     void OnMousePressed(vgui::MouseCode code) OVERRIDE;
