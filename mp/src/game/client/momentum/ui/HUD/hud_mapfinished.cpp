@@ -37,7 +37,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_bIsGhost = false;
     m_bCanClose = false;
     m_iCurrentPage = 0;
-    SetAlpha(255.0f);
+    SetAlpha(255);
 
     ListenForGameEvent("spec_start");
     ListenForGameEvent("spec_stop");
@@ -255,7 +255,7 @@ bool CHudMapFinishedDialog::ClosePanel()
     SetRunUploaded(false);
     m_bCanClose = false;
     g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
-    SetAlpha(255.0f);
+    SetAlpha(255);
 
     return true;
 }
@@ -277,7 +277,7 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
     if (mom_mapfinished_movement_enable.GetBool() && !m_bIsGhost)
     {
         g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
-        SetAlpha(255.0f);
+        SetAlpha(255);
         g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutMapFinishedPanel");
     }
 
@@ -338,7 +338,7 @@ void CHudMapFinishedDialog::Reset()
     SetRunSaved(false);
     SetRunUploaded(false);
     m_bCanClose = false;
-    SetAlpha(255.0f);
+    SetAlpha(255);
 
     // --- cache localization tokens ---
     FIND_LOCALIZATION(m_pwCurrentPageOverall, "#MOM_MF_OverallStats");
@@ -370,7 +370,7 @@ void CHudMapFinishedDialog::SetVisible(bool bVisible)
     if (bVisible)
     {
         SetCurrentPage(0);
-        SetAlpha(255.0f);
+        SetAlpha(255);
 
         const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
         if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
@@ -461,6 +461,6 @@ void CHudMapFinishedDialog::Paint()
 
     if (!mom_mapfinished_movement_enable.GetBool() || m_bIsGhost)
     {
-        SetAlpha(255.0f);
+        SetAlpha(255);
     }
 }
