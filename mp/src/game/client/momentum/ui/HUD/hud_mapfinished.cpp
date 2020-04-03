@@ -376,14 +376,10 @@ void CHudMapFinishedDialog::SetVisible(bool bVisible)
         if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
             SetMouseInputEnabled(true);
 
+        g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
         if (mom_mapfinished_movement_enable.GetBool())
         {
-            g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutMapFinishedPanel");
-        }
-        else
-        {
-            g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
         }
     }
 }
