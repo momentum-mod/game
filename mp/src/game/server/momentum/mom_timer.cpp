@@ -5,9 +5,9 @@
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
+#include "mom_system_gamemode.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
-#include "tickset.h"
 
 #include "tier0/memdbgon.h"
 
@@ -110,9 +110,10 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
         // We allow cheats to be enabled but we should warn the player that times won't submit
         DispatchCheatsMessage(pPlayer);
     }
-    if (TickSet::GetCurrentTickrate() != TickSet::s_DefinedRates[TickSet::TICKRATE_66])
+    if (!CloseEnough(gpGlobals->interval_per_tick, g_pGameModeSystem->GetGameMode()->GetIntervalPerTick(), FLT_EPSILON))
     {
-        // We also allow different tickrates, but warn the player that times won't submit on anything other than 66 tick
+        // We also allow different tickrates, but warn the player that times won't submit on anything other than the
+        // default tickrate for the current game mode
         DispatchTickrateMessage(CMomentumPlayer::GetLocalPlayer());
     }
 
