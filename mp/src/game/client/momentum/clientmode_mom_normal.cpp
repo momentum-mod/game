@@ -241,19 +241,19 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
             return 0; // we handled it, don't handle twice or send to server
         }
 
-        if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack") &&
-            !m_pSpectatorGUI->IsMouseInputEnabled())
+        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) ||
+            (m_pLobbyMembers && m_pLobbyMembers->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
+        if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_next");
             return 0;
         }
-        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack2") &&
-                 !m_pSpectatorGUI->IsMouseInputEnabled())
+        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack2") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_prev");
             return 0;
         }
-        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+jump"))
+        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+jump") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_mode");
             return 0;
