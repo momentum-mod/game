@@ -233,6 +233,8 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
             m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
             if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
                 m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
+            if (m_pLobbyMembers && m_pLobbyMembers->IsVisible())
+                m_pLobbyMembers->SetMouseInputEnabled(!bMouseState);
             // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
