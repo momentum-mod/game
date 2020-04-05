@@ -78,6 +78,8 @@ void CMomStickybomb::Spawn()
 {
     BaseClass::Spawn();
 
+    SetRenderMode(kRenderTransColor);
+
 #ifdef GAME_DLL
     SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_STICKYLAUNCHER, "sticky"));
 
