@@ -726,6 +726,10 @@ void CTriggerLimitMovement::ToggleButtons(CMomRunEntity* pEnt, bool bEnable)
         pEnt->SetButtonsEnabled(IN_JUMP, bEnable);
     if (m_spawnflags & SF_LIMIT_CROUCH)
         pEnt->SetButtonsEnabled(IN_DUCK, bEnable);
+    if (m_spawnflags & SF_LIMIT_WALK)
+        pEnt->SetButtonsEnabled(IN_WALK, bEnable);
+    if (m_spawnflags & SF_LIMIT_SPRINT)
+        pEnt->SetButtonsEnabled(IN_SPEED, bEnable);
     if (m_spawnflags & SF_LIMIT_BHOP)
         pEnt->SetBhopEnabled(bEnable);
 }

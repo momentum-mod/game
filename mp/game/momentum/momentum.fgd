@@ -164,6 +164,8 @@
         131072: "Prevent the player from jumping" : 0
         262144: "Prevent the player from crouching" : 0
         524288: "Prevent the player from bhopping" : 0
+        1048576‬: "Prevent the player from walking" : 0
+        2097152: "Prevent the player from sprinting" : 0
     ]
 ]
 
