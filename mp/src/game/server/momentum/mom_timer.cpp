@@ -114,7 +114,7 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     {
         // We also allow different tickrates, but warn the player that times won't submit on anything other than the
         // default tickrate for the current game mode
-        DispatchTickrateMessage(CMomentumPlayer::GetLocalPlayer());
+        DispatchTickrateMessage(pPlayer);
     }
 
     m_iStartTick = gpGlobals->tickcount;
