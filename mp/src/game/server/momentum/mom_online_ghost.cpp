@@ -39,17 +39,23 @@ static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_
 
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                           "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
+
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                             "Toggle overriding other player's ghost alpha values to the one defined in "
                             "\"mom_ghost_online_color_alpha_override\".\n",
                             RefreshGhostData);
+
 static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                      "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
+
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                             "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
+
 extern ConVar mom_paintgun_shoot_sound;
 
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_flashlights_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles drawing other ghosts' flashlights. 0 = OFF, 1 = ON\n", RefreshGhostData);
+
+static MAKE_CONVAR(mom_ghost_online_sticky_alpha, "50", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Sets the ghost stickybomb alpha value. 10 = more transparent, 255 = opaque.", 10.0f, 255.0f);
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
@@ -210,7 +216,12 @@ void CMomentumOnlineGhostEntity::FireSticky(const DecalPacket &packet)
 {
     EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_STICKYLAUNCHER, "single_shot"));
 
-    CMomStickybomb::Create(packet.vOrigin, packet.vAngle, packet.data.stickyShoot.velocity, this);
+    const auto pSticky = CMomStickybomb::Create(packet.vOrigin, packet.vAngle, packet.data.stickyShoot.velocity, this);
+
+    if (pSticky)
+    {
+        pSticky->SetRenderColorA(mom_ghost_online_sticky_alpha.GetInt());
+    }
 
     // If we've gone over the max stickybomb count, fizzle the oldest
     if (m_vecExplosives.Count() > MOM_WEAPON_STICKYBOMB_COUNT)
