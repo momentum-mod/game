@@ -2,6 +2,7 @@
 #include "weapon_mom_pistol.h"
 #include "fx_mom_shared.h"
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -57,19 +58,18 @@ void CMomentumPistol::SecondaryAttack()
     if (!pPlayer)
         return;
 
-    // MOM_TODO: Create an effect (animation maybe, lights on the gun?) that shows switch, don't wanna use ugly text
-    if (m_bBurstMode)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
     {
-        ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToSemiAuto");
-        m_bBurstMode = false;
+        const auto pWeapon = pPlayer->GetWeapon(WEAPON_STICKYLAUNCHER);
+        if (pWeapon)
+        {
+            pWeapon->SecondaryAttack();
+        }
     }
     else
     {
-        ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToBurstFire");
-        m_bBurstMode = true;
+        ToggleBurst(pPlayer);
     }
-    SendWeaponAnim(ACT_VM_SECONDARYATTACK_SPECIAL);
-    m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
 }
 
 void CMomentumPistol::FireRemaining(int &shotsFired, float &shootTime) const
@@ -235,4 +235,22 @@ void CMomentumPistol::WeaponIdle()
     {
         SendWeaponAnim(ACT_VM_IDLE);
     }
+}
+
+void CMomentumPistol::ToggleBurst(CMomentumPlayer *pPlayer)
+{
+    // MOM_TODO: Create an effect (animation maybe, lights on the gun?) that shows switch, don't wanna use ugly text
+    if (m_bBurstMode)
+    {
+        ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToSemiAuto");
+        m_bBurstMode = false;
+}
+    else
+    {
+        ClientPrint(pPlayer, HUD_PRINTCENTER, "#MOM_Weapon_SwitchToBurstFire");
+        m_bBurstMode = true;
+    }
+    SendWeaponAnim(ACT_VM_SECONDARYATTACK_SPECIAL);
+
+    m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
 }
