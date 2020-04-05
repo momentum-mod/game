@@ -3,6 +3,7 @@
 #include "mom_explosive.h"
 
 #ifdef GAME_DLL
+#include "momentum/mom_timer.h"
 #include "momentum/mom_player.h"
 #include "Sprite.h"
 #include "momentum/mom_triggers.h"
@@ -115,7 +116,7 @@ void CMomExplosive::InitExplosive(CBaseEntity *pOwner, const Vector &velocity, c
     if (pOwner->IsPlayer())
     {
         const auto pPlayer = static_cast<CMomentumPlayer *>(pOwner);
-        m_fDamage = pPlayer->m_bHasPracticeMode ? 0.0f : GetDamageAmount();
+        m_fDamage = (pPlayer->m_bHasPracticeMode && g_pMomentumTimer->IsRunning()) ? 0.0f : GetDamageAmount();
     }
     else
     {
