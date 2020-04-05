@@ -32,6 +32,8 @@ public:
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
     void SetGhostFlashlight(bool bEnable);
+    void SetSpectateState(bool bEnable);
+    bool IsSpectating() const { return m_bSpectating.Get(); }
 
     void Spawn() OVERRIDE;
     void HandleGhost() OVERRIDE;
@@ -42,9 +44,6 @@ public:
     bool GetCurrentPositionPacketData(PositionPacket *out) const;
 
     void UpdatePlayerSpectate();
-
-    CNetworkVar(uint32, m_uiAccountID);
-    CNetworkVar(bool, m_bSpectating);
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_vecViewOffset);
 
@@ -57,6 +56,9 @@ protected:
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
+    CNetworkVar(uint32, m_uiAccountID);
+    CNetworkVar(bool, m_bSpectating);
+
     void DoPaint(const DecalPacket &packet);
     void DoKnifeSlash(const DecalPacket &packet);
     void ThrowGrenade(const DecalPacket &packet);
