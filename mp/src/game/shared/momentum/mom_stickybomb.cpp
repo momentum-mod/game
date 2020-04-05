@@ -7,10 +7,12 @@
 #include "weapon/weapon_def.h"
 
 #ifndef CLIENT_DLL
+#include "vcollide_parse.h"
 #include "momentum/mom_triggers.h"
 #include "IEffects.h"
 #include "fx_mom_shared.h"
 #include "physics_collisionevent.h"
+#include "momentum/mom_stickybomb_verts.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -82,11 +84,36 @@ void CMomStickybomb::Spawn()
 
 #ifdef GAME_DLL
     SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_STICKYLAUNCHER, "sticky"));
-
-    SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
+    
     SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
 
-    VPhysicsInitNormal(SOLID_BBOX, 0, false);
+    objectparams_t params;
+    params.massCenterOverride = nullptr;
+    params.mass = 5.0f;
+    params.inertia = 1.0f;
+    params.damping = 0.0f;
+    params.rotdamping = 0.0f;
+    params.rotInertiaLimit = 0.05f;
+    params.pName = "stickybombmod";
+    params.pGameData = this;
+    params.volume = 336.820007f;
+    params.dragCoefficient = 1.0f;
+    params.enableCollisions = true;
+
+    const auto pNewObject = physenv->CreatePolyObject(GetStickybombCollide(), 0, GetAbsOrigin(), GetAbsAngles(), &params);
+
+    pNewObject->EnableCollisions(true);
+    pNewObject->EnableGravity(true);
+    pNewObject->EnableDrag(true);
+    pNewObject->EnableMotion(true);
+
+    VPhysicsDestroyObject();
+
+    SetSolid(SOLID_BBOX);
+
+    VPhysicsSetObject(pNewObject);
+    SetMoveType(MOVETYPE_VPHYSICS);
+    pNewObject->Wake();
 
     m_flCreationTime = gpGlobals->curtime;
     SetGravity(MOM_STICKYBOMB_GRAVITY);
