@@ -456,7 +456,7 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
                 if (GetAppearanceFromMemberData(memberChanged, appear))
                     pEntity->SetAppearanceData(appear, false);
 
-                pEntity->m_bSpectating = GetIsSpectatingFromMemberData(memberChanged);
+                pEntity->SetSpectateState(GetIsSpectatingFromMemberData(memberChanged));
                 // We also have spec target inside LOBBY_DATA_SPEC_TARGET
             }
 
@@ -592,7 +592,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 // Spawn but hide them 
                 if (isSpectating)
                 {
-                    newPlayer->m_bSpectating = true;
+                    newPlayer->SetSpectateState(true);
                     newPlayer->HideGhost();
                 }
 
@@ -733,7 +733,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                 const auto pEntity = GetLobbyMemberEntity(fromWho);
                 if (pEntity)
                 {
-                    pEntity->m_bSpectating = update.specTarget != 0;
+                    pEntity->SetSpectateState(update.specTarget != 0);
                     update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
                 }
 

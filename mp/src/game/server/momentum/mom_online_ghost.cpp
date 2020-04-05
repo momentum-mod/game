@@ -468,3 +468,10 @@ void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
             EmitSound(SND_FLASHLIGHT_OFF);
     }
 }
+
+void CMomentumOnlineGhostEntity::SetSpectateState(bool bEnable)
+{
+    DestroyExplosives();
+
+    m_bSpectating = bEnable;
+}

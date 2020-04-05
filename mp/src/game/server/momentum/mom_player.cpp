@@ -1294,7 +1294,7 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
         if (FStrEq(target->GetClassname(), "mom_online_ghost")) // target is an online ghost
         {
             CMomentumOnlineGhostEntity *pEntity = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
-            return pEntity && !pEntity->m_bSpectating;
+            return pEntity && !pEntity->IsSpectating();
         }
         return false;
     }
@@ -1393,7 +1393,7 @@ int CMomentumPlayer::GetNextObserverSearchStartPoint(bool bReverse)
 
 inline bool TestGhost(CMomentumOnlineGhostEntity *pEnt)
 {
-    return pEnt && !pEnt->m_bSpectating;
+    return pEnt && !pEnt->IsSpectating();
 }
 
 inline CBaseEntity *IterateAndFindViableNextGhost(uint16 startIndx, bool bReverse, CBaseEntity *pReplay, bool bTestStart)
