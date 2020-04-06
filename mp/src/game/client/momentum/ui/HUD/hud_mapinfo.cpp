@@ -19,11 +19,10 @@
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_mapname, "1", FLAG_HUD_CVAR, "Toggles showing the map name. 0 = OFF, 1 = ON");
-
-static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_author, "0", FLAG_HUD_CVAR, "Toggles showing the map author. 0 = OFF, 1 = ON");
-
-static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR, "Toggles showing the map difficulty. 0 = OFF, 1 = ON");
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_mapname, "1", FLAG_HUD_CVAR, "Toggles showing the map name. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_author, "0", FLAG_HUD_CVAR, "Toggles showing the map author. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR, "Toggles showing the map difficulty. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_hud_mapinfo_show_status, "1", FLAG_HUD_CVAR, "Toggles showing the main status label. 0 = OFF, 1 = ON\n");
 
 class C_HudMapInfo : public CHudElement, public EditablePanel
 {
@@ -86,6 +85,7 @@ void C_HudMapInfo::OnThink()
     m_pMapNameLabel->SetVisible(mom_hud_mapinfo_show_mapname.GetBool());
     m_pMapAuthorLabel->SetVisible(mom_hud_mapinfo_show_author.GetBool());
     m_pMapDifficultyLabel->SetVisible(mom_hud_mapinfo_show_difficulty.GetBool());
+    m_pMainStatusLabel->SetVisible(mom_hud_mapinfo_show_status.GetBool());
 
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (pPlayer)
