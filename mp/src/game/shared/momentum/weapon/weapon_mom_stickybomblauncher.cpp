@@ -231,7 +231,15 @@ void CMomentumStickybombLauncher::PrimaryAttack()
         float flTotalChargeTime = gpGlobals->curtime - m_flChargeBeginTime;
         if (flTotalChargeTime >= MOM_STICKYBOMB_MAX_CHARGE_TIME)
         {
-            LaunchGrenade();
+            if (m_bIsChargeEnabled)
+            {
+                LaunchGrenade();
+            }
+            else
+            {
+                // stop this from getting too large
+                m_flChargeBeginTime = 0.0f;
+            }
         }
     }
 }
