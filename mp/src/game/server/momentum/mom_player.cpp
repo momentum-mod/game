@@ -910,6 +910,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
                     const auto pLauncher = static_cast<CMomentumStickybombLauncher *> (GetWeapon(WEAPON_STICKYLAUNCHER));
                     if (pLauncher)
                     {
+                        pLauncher->StopChargeSound();
                         pLauncher->SetChargeEnabled(false);
                     }
                 }
