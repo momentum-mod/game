@@ -15,7 +15,7 @@
 #include "tier0/vprof_telemetry.h"
 
 // VProf is enabled by default in all configurations
-#if defined( _CERT )
+#ifndef _CERT
 #define VPROF_ENABLED
 #endif
 
@@ -279,7 +279,6 @@ public:
 	double GetTotalTimeLessChildren();
 
 	int GetPrevL2CacheMissLessChildren();
-	int GetPrevLoadHitStoreLessChildren();
 
 	void ClearPrevTime();
 
@@ -818,19 +817,6 @@ inline int CVProfNode::GetPrevL2CacheMissLessChildren()
 	while ( pChild )
 	{
 		result -= pChild->m_iPrevL2CacheMiss;
-		pChild = pChild->GetSibling();
-	}
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-inline int CVProfNode::GetPrevLoadHitStoreLessChildren()
-{
-	int result = m_iPrevLoadHitStores;
-	CVProfNode *pChild = GetChild();
-	while ( pChild )
-	{
-		result -= pChild->m_iPrevLoadHitStores;
 		pChild = pChild->GetSibling();
 	}
 	return result;
