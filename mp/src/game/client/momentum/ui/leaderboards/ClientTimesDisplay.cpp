@@ -208,6 +208,13 @@ void CClientTimesDisplay::SetVisible(bool bState)
     SetLeaderboardsHideHud(bState);
 }
 
+void CClientTimesDisplay::Close()
+{
+    m_bToggledOpen = false;
+    SetVisible(false);
+    SetMouseInputEnabled(false);
+}
+
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
 {
     if (!event)
@@ -226,12 +233,12 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
     }
 }
 
-bool CClientTimesDisplay::NeedsUpdate(void) { return (m_flNextUpdateTime < gpGlobals->curtime); }
+bool CClientTimesDisplay::NeedsUpdate() { return (m_flNextUpdateTime < gpGlobals->curtime); }
 
 //-----------------------------------------------------------------------------
 // Purpose: Recalculate the internal scoreboard data
 //-----------------------------------------------------------------------------
-void CClientTimesDisplay::Update(void) { Update(false); }
+void CClientTimesDisplay::Update() { Update(false); }
 
 void CClientTimesDisplay::Update(bool pFullUpdate)
 {

@@ -839,6 +839,7 @@ void CLeaderboardsTimes::OnReplayDownloadEnd(KeyValues* pKvEnd)
             // Play it
             CFmtStr command("mom_replay_play %s/%s-%lld%s\n", RECORDING_ONLINE_PATH, m_pParentPanel->MapName(), m_mapReplayDownloads[fileIndx], EXT_RECORDING_FILE);
             engine->ClientCmd(command.Get());
+            m_pParentPanel->Close();
         }
 
         m_mapReplayDownloads.RemoveAt(fileIndx);
@@ -1014,7 +1015,7 @@ void CLeaderboardsTimes::OnContextVisitProfile(uint64 profile)
     if (profile != 0 && SteamFriends())
     {
         SteamFriends()->ActivateGameOverlayToUser("steamid", CSteamID(profile));
-        m_pParentPanel->ShowPanel(false);
+        m_pParentPanel->Close();
     }
 }
 
@@ -1040,12 +1041,14 @@ void CLeaderboardsTimes::OnContextWatchOnlineReplay(KeyValues* data)
         DevLog("Already had the replay locally, no need to download!\n");
         CFmtStr comm("mom_replay_play %s\n", fileNameLocal.Get());
         engine->ClientCmd(comm.Get());
+        m_pParentPanel->Close();
     }
     else if (MomUtil::FileExists(filePathOnline.Get(), pReplayHash, "MOD"))
     {
         DevLog("Already downloaded the replay, no need to download again!\n");
         CFmtStr command("mom_replay_play %s/%s\n", RECORDING_ONLINE_PATH, fileNameOnline.Get());
         engine->ClientCmd(command.Get());
+        m_pParentPanel->Close();
     }
     else
     {
@@ -1096,7 +1099,7 @@ void CLeaderboardsTimes::OnContextWatchReplay(const char* runName)
         char command[MAX_PATH];
         Q_snprintf(command, MAX_PATH, "mom_replay_play %s", runName);
         engine->ServerCmd(command);
-        m_pParentPanel->ShowPanel(false);
+        m_pParentPanel->Close();
     }
 }
 
