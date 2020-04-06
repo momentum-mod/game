@@ -907,7 +907,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             {
                 if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
                 {
-                    const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetActiveWeapon());
+                    const auto pLauncher = static_cast<CMomentumStickybombLauncher *> (GetWeapon(WEAPON_STICKYLAUNCHER));
                     if (pLauncher)
                     {
                         pLauncher->SetChargeEnabled(false);
@@ -1042,7 +1042,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         {
             // Re-enable charge on start zone exit and set charge time to 0 to prevent pre-charged stickies
-            const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetActiveWeapon());
+            const auto pLauncher = static_cast<CMomentumStickybombLauncher *>(GetWeapon(WEAPON_STICKYLAUNCHER));
             if (pLauncher)
             {
                 pLauncher->SetChargeEnabled(true);
