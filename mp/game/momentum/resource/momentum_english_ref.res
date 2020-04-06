@@ -91,6 +91,7 @@
         "MOM_SavedLocation" "Saveloc %s1/%s2"
         "MOM_Cheater_Message" "For your times to be able to submit,\nyou must turn sv_cheats off!"
         "MOM_Tickrate_Warning" "For your times to be able to submit, you must\nuse the default tickrate for this gamemode!"
+        "MOM_Practice_Warning" "Upon disabling practice mode, you will\nreturn to your current spot in the run!\nTo cancel this, stop your timer with\n\"mom_timer_stop\"!"
         "MOM_NoTimer" "No Timer"
         "MOM_PracticeMode" "Practice Mode"
 

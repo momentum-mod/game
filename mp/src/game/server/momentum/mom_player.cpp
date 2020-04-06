@@ -27,10 +27,11 @@
 
 #define AVERAGE_STATS_INTERVAL 0.1
 
-static MAKE_TOGGLE_CONVAR(
-    mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-    "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
+static MAKE_TOGGLE_CONVAR(mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                          "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
 
+static MAKE_TOGGLE_CONVAR(mom_practice_warning_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                          "Toggles the warning for enabling practice mode during a run. 0 = OFF, 1 = ON\n");
 
 CON_COMMAND_F(
     mom_practice,
@@ -1732,14 +1733,23 @@ void CMomentumPlayer::EnablePracticeMode()
     if (m_bHasPracticeMode)
         return;
 
-    if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
+    if (g_pMomentumTimer->IsRunning())
     {
-        const auto safeGuard = (m_nButtons & (IN_FORWARD|IN_MOVELEFT|IN_MOVERIGHT|IN_BACK|IN_JUMP|IN_DUCK|IN_WALK)) != 0;
-        if (safeGuard)
+        if (mom_practice_safeguard.GetBool())
         {
-            Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with "
-                    "\"mom_practice_safeguard\"!\n");
-            return;
+            const auto safeGuard = (m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
+            if (safeGuard)
+            {
+                Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
+                return;
+            }
+        }
+
+        if (mom_practice_warning_enable.GetBool())
+        {
+            UTIL_ShowMessage("PRACTICE_MODE_WARN", this);
+            Warning("NOTE: Upon disabling practice mode, you will return to your current spot in the run!\n"
+                    "To cancel this, stop your time with \"mom_timer_stop\".\nYou can disable this warning with \"mom_practice_warning_enable 0\"\n");
         }
     }
 
