@@ -14,6 +14,12 @@
 
 #include "tier0/memdbgon.h"
 
+static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_bbox_enable, "0", FCVAR_DEVELOPMENTONLY,
+                          "Toggles showing the bounding boxes for momentum triggers, needs map restart if changed!\n");
+
+static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_text_enable, "0", FCVAR_DEVELOPMENTONLY,
+                          "Toggles showing the entity text for momentum triggers, needs map restart if changed!\n");
+
 // ------------- Base Trigger ------------------------------------
 BEGIN_DATADESC(CBaseMomentumTrigger)
     DEFINE_KEYFIELD(m_iTrackNumber, FIELD_INTEGER, "track_number")
@@ -29,8 +35,9 @@ void CBaseMomentumTrigger::Spawn()
     AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     BaseClass::Spawn();
     InitTrigger();
-    // temporary
-    m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+
+    m_debugOverlays |= ((OVERLAY_BBOX_BIT * mom_triggers_overlay_bbox_enable.GetBool()) |
+                        (OVERLAY_TEXT_BIT * mom_triggers_overlay_text_enable.GetBool()));
 }
 
 bool CBaseMomentumTrigger::PassesTriggerFilters(CBaseEntity* pOther)
