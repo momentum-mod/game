@@ -286,6 +286,15 @@ float CMomentumStickybombLauncher::CalculateProjectileSpeed(float flProgress)
                            MOM_STICKYBOMB_MIN_CHARGE_VEL, MOM_STICKYBOMB_MAX_CHARGE_VEL);
 }
 
+void CMomentumStickybombLauncher::StopChargeSound() 
+{
+    if (m_flChargeBeginTime > 0) // stop only if charging
+    {
+        StopWeaponSound(GetWeaponSound("charge"));
+        WeaponSound(GetWeaponSound("chargestop"));
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Add stickybombs to our list as they're fired
 //-----------------------------------------------------------------------------

@@ -148,6 +148,14 @@
     "wave"		"weapons/stickybomblauncher_charge_up.wav"
 }
 
+"StickybombLauncher.ChargeStop"
+{
+    "channel"	"CHAN_AUTO"
+    "volume"	"1.0"
+    "soundlevel"	"SNDLVL_94dB"
+    "wave"		"common/wpn_denyselect.wav"
+}
+
 "StickybombLauncher.Explosion"
 {
     "channel" "CHAN_WEAPON"
