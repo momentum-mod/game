@@ -28,7 +28,7 @@ Scheme
 		"TransparentBlack"    "0 0 0 196"
 		"TransparentLightBlack"    "0 0 0 90"
 	
-		"Blank"                "0 0 0 1"
+		"Blank"                "0 0 0 0"
 
 		//"MOM.Panel.Bg"				"211 211 211 50"
 		"MomentumBlue"	"30 150 210 255"
