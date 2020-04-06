@@ -206,6 +206,11 @@ GAMESAVING_360
 
 $position 0.65 -1
 
+PRACTICE_MODE_WARN
+{
+#MOM_Practice_Warning
+}
+
 CHEATER
 {
 #MOM_Cheater_Message
