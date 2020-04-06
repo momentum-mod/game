@@ -110,11 +110,7 @@ static ConVar r_drawopaqueworld( "r_drawopaqueworld", "1", FCVAR_CHEAT );
 static ConVar r_drawtranslucentworld( "r_drawtranslucentworld", "1", FCVAR_CHEAT );
 static ConVar r_3dsky( "r_3dsky","1", 0, "Enable the rendering of 3d sky boxes" );
 static ConVar r_skybox( "r_skybox","1", FCVAR_CHEAT, "Enable the rendering of sky boxes" );
-#ifdef TF_CLIENT_DLL
-ConVar r_drawviewmodel( "r_drawviewmodel","1", FCVAR_ARCHIVE );
-#else
-ConVar r_drawviewmodel( "r_drawviewmodel","1", FCVAR_CHEAT );
-#endif
+ConVar r_drawviewmodel( "r_drawviewmodel", "1", FCVAR_ARCHIVE );
 static ConVar r_drawtranslucentrenderables( "r_drawtranslucentrenderables", "1", FCVAR_CHEAT );
 static ConVar r_drawopaquerenderables( "r_drawopaquerenderables", "1", FCVAR_CHEAT );
 static ConVar r_threaded_renderables( "r_threaded_renderables", "0" );
