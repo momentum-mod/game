@@ -162,7 +162,7 @@ void C_RunComparisons::LoadComparisons()
         {
             UnloadComparisons();
             m_rcCurrentComparison = new RunCompare_t();
-            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, pRunData->m_iCurrentTrack, runFlags, m_rcCurrentComparison);
         }
     }
 }
