@@ -90,6 +90,7 @@
     //Timer
         "MOM_SavedLocation" "Saveloc %s1/%s2"
         "MOM_Cheater_Message" "For your times to be able to submit,\nyou must turn sv_cheats off!"
+        "MOM_Tickrate_Warning" "For your times to be able to submit, you must\nuse the default tickrate for this gamemode!"
         "MOM_NoTimer" "No Timer"
         "MOM_PracticeMode" "Practice Mode"
 
