@@ -157,6 +157,7 @@ void C_RunComparisons::LoadComparisons()
 
         const float tickRate = pRunData->m_flTickRate;
         const int runFlags = pRunData->m_iRunFlags;
+        const int currentTrack = pRunData->m_iCurrentTrack;
 
         if (!m_bLoadedComparison || !CloseEnough(tickRate, m_fLoadedTickRate) || runFlags != m_iLoadedRunFlags)
         {

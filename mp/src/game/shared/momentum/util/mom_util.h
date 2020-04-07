@@ -44,8 +44,8 @@ namespace MomUtil
     // Converts an ISO-8601 date string to a time_t
     bool ISODateToTimeT(const char *pISODate, time_t *out);
 
-    CMomReplayBase *GetBestTime(const char *szMapName, float tickrate, uint32 flags = 0);
-    bool GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into);
+    CMomReplayBase *GetBestTime(const char *szMapName, float tickrate, int trackNumber, uint32 flags = 0);
+    bool GetRunComparison(const char *szMapName, const float tickRate, const int trackNumber, const int flags, RunCompare_t *into);
     void FillRunComparison(const char *compareName, CMomRunStats *kvBestRun, RunCompare_t *into);
 
     // Checks if source is within a rectangle formed by leftCorner and rightCorner

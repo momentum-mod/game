@@ -359,7 +359,7 @@ inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float
 }
 
 //!!! NOTE: The value returned here MUST BE DELETED, otherwise you get a memory leak!
-CMomReplayBase *MomUtil::GetBestTime(const char *szMapName, float tickrate, uint32 flags)
+CMomReplayBase *MomUtil::GetBestTime(const char *szMapName, float tickrate, int trackNumber, uint32 flags)
 {
     if (szMapName)
     {
@@ -380,7 +380,7 @@ CMomReplayBase *MomUtil::GetBestTime(const char *szMapName, float tickrate, uint
             CMomReplayBase *pBase = g_ReplayFactory.LoadReplayFile(pReplayPath, false);
             assert(pBase != nullptr);
                 
-            if (CheckReplayB(pFastest, pBase, tickrate, flags))
+            if (pBase->GetTrackNumber() == trackNumber && CheckReplayB(pFastest, pBase, tickrate, flags))
             {
                 pFastest = pBase;
             }
@@ -398,11 +398,11 @@ CMomReplayBase *MomUtil::GetBestTime(const char *szMapName, float tickrate, uint
     return nullptr;
 }
 
-bool MomUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into)
+bool MomUtil::GetRunComparison(const char *szMapName, const float tickRate, const int trackNumber, const int flags, RunCompare_t *into)
 {
     if (into && szMapName)
     {
-        CMomReplayBase *bestRun = GetBestTime(szMapName, tickRate, flags);
+        CMomReplayBase *bestRun = GetBestTime(szMapName, tickRate, trackNumber, flags);
         if (bestRun)
         {
             // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
