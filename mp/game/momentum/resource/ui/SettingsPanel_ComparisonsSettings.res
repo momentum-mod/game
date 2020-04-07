@@ -158,7 +158,7 @@
     
     "TimeType"
 	{
-		"ControlName"		"ComboBox"
+		"ControlName"		"CvarComboBox"
 		"fieldName"		"TimeType"
 		"xpos"		"4"
 		"ypos"		"0"
@@ -177,6 +177,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"0"
 		"unicode"		"0"
+		"cvar_name"     "mom_comparisons_time_type"
         "font" "DefaultVerySmall"
         "actionsignallevel" "1"
 	}

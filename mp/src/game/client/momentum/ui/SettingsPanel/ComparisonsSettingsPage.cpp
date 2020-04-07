@@ -6,7 +6,7 @@
 #include "hud_comparisons.h"
 
 #include <vgui_controls/Label.h>
-#include <vgui_controls/ComboBox.h>
+#include <vgui_controls/CvarComboBox.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Tooltip.h>
 #include <vgui_controls/Frame.h>
@@ -30,7 +30,7 @@ ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent)
 
     m_pTimeTypeLabel = new Label(this, "TimeTypeLabel", "#MOM_Settings_Compare_Time_Type_Label");
     m_pTimeTypeLabel->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pTimeType = new ComboBox(this, "TimeType", 2, false);
+    m_pTimeType = new CvarComboBox(this, "TimeType", 2, false, "mom_comparisons_time_type");
     m_pTimeType->AddItem("#MOM_Settings_Compare_Time_Type_Overall", nullptr);
     m_pTimeType->AddItem("#MOM_Settings_Compare_Time_Type_PerZone", nullptr);
     m_pTimeType->AddActionSignalTarget(this);
@@ -159,11 +159,6 @@ void ComparisonsSettingsPage::OnApplyChanges()
             zones.SetValue(zonesNum);
         }
     }
-
-    if (m_pTimeType)
-    {
-        ConVarRef("mom_comparisons_time_type").SetValue(m_pTimeType->GetActiveItem());
-    }
 }
 
 void ComparisonsSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
@@ -178,11 +173,6 @@ void ComparisonsSettingsPage::LoadSettings()
     if (m_pMaxZones)
     {
         m_pMaxZones->SetText(ConVarRef("mom_comparisons_max_zones").GetString());
-    }
-
-    if (m_pTimeType)
-    {
-        m_pTimeType->ActivateItemByRow(ConVarRef("mom_comparisons_time_type").GetInt());
     }
 }
 
