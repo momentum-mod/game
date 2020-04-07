@@ -20,6 +20,18 @@ CvarComboBox::CvarComboBox(Panel *parent, const char *panelName, int numLines, b
 {
     InitSettings();
     m_bIgnoreMissingCvar = ignoreMissingCvar;
+    float m_flCvarMin, m_flCvarMax;
+    m_iCvarMin = m_cvar.GetMin(m_flCvarMin) ? RoundFloatToInt(m_flCvarMin) : 0;
+    m_iCvarMax = m_cvar.GetMin(m_flCvarMax) ? RoundFloatToInt(m_flCvarMax) : 0;
+    float m_flCvarMin;
+    if (m_cvar.GetMin(m_flCvarMin))
+    {
+        m_iCvarMin = RoundFloatToInt(m_flCvarMin);
+    }
+    else
+    {
+        m_iCvarMin = 0;
+    }
     m_iStartValue = 0;
 
     Reset();
@@ -34,7 +46,7 @@ void CvarComboBox::OnThink()
 {
     if (m_cvar.IsValid())
     {
-        if (m_cvar.GetInt() != m_iStartValue)
+        if (m_cvar.GetInt() != m_iStartValue + m_iCvarMin)
             Reset();
     }
 }
@@ -50,7 +62,7 @@ void CvarComboBox::ApplyChanges()
         return;
 
     m_iStartValue = GetActiveItem();
-    m_cvar.SetValue(m_iStartValue);
+    m_cvar.SetValue(m_iStartValue + m_iCvarMin);
 }
 
 void CvarComboBox::Reset()
@@ -59,12 +71,12 @@ void CvarComboBox::Reset()
         return;
 
     m_iStartValue = m_cvar.GetInt();
-    ActivateItemByRow(m_iStartValue);
+    ActivateItemByRow(m_iStartValue - m_iCvarMin);
 }
 
 bool CvarComboBox::HasBeenModified()
 {
-    return GetActiveItem() != m_iStartValue;
+    return GetActiveItem() != m_iStartValue - m_iCvarMin;
 }
 
 void CvarComboBox::OnTextChanged()
