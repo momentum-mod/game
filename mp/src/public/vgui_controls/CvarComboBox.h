@@ -25,6 +25,8 @@ class CvarComboBox : public ComboBox
     void GetSettings(KeyValues *outResources) OVERRIDE;
     void InitSettings() OVERRIDE;
 
+    int AddItem(const char *itemText, const KeyValues *userData) OVERRIDE;
+
   private:
     MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");
     MESSAGE_FUNC(OnTextChanged, "TextChanged");

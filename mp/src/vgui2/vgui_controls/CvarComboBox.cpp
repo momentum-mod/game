@@ -23,23 +23,24 @@ CvarComboBox::CvarComboBox(Panel *parent, const char *panelName, int numLines, b
     float m_flCvarMin, m_flCvarMax;
     m_iCvarMin = m_cvar.GetMin(m_flCvarMin) ? RoundFloatToInt(m_flCvarMin) : 0;
     m_iCvarMax = m_cvar.GetMin(m_flCvarMax) ? RoundFloatToInt(m_flCvarMax) : 0;
-    float m_flCvarMin;
-    if (m_cvar.GetMin(m_flCvarMin))
-    {
-        m_iCvarMin = RoundFloatToInt(m_flCvarMin);
-    }
-    else
-    {
-        m_iCvarMin = 0;
-    }
     m_iStartValue = 0;
 
-    Reset();
     AddActionSignalTarget(this);
 }
 
 CvarComboBox::~CvarComboBox()
 {
+}
+
+int CvarComboBox::AddItem(const char* itemText, const KeyValues* userData)
+{
+    int iRtnVal = BaseClass::AddItem(itemText, userData);
+    // reset combobox when it's full
+    if (GetItemCount() >= m_iCvarMax - m_iCvarMin) 
+    {
+        Reset();
+    }
+    return iRtnVal;
 }
 
 void CvarComboBox::OnThink()
