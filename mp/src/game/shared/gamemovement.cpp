@@ -1269,10 +1269,10 @@ float CGameMovement::GetPlayerGravity()
 void CGameMovement::CheckWaterJump( void )
 {
 	Vector	flatforward;
-	Vector forward;
+	Vector forward, right;
 	Vector	flatvelocity;
 
-	AngleVectors( mv->m_vecViewAngles, &forward );  // Determine movement angles
+	AngleVectors( mv->m_vecViewAngles, &forward, &right, nullptr );  // Determine movement angles
 
 	// Already water jumping.
 	if (player->m_flWaterJumpTime)
@@ -1291,13 +1291,28 @@ void CGameMovement::CheckWaterJump( void )
 	float curspeed = VectorNormalize( flatvelocity );
 	
 	// see if near an edge
-	flatforward[0] = forward[0];
-	flatforward[1] = forward[1];
+	if (g_pGameModeSystem->IsTF2BasedMode())
+	{
+		const auto forwardMove = mv->m_flForwardMove;
+		const auto sideMove = mv->m_flSideMove;
+
+		for (int axis = 0; axis < 2; ++axis)
+		{
+			flatforward[axis] = forward[axis] * forwardMove + right[axis] * sideMove;
+		}
+	}
+	else
+	{
+		flatforward[0] = forward[0];
+		flatforward[1] = forward[1];
+	}
+
 	flatforward[2] = 0;
-	VectorNormalize (flatforward);
+	VectorNormalize(flatforward);
 
 	// Are we backing into water from steps or something?  If so, don't pop forward
-	if ( curspeed != 0.0 && ( DotProduct( flatvelocity, flatforward ) < 0.0 ) )
+	const bool bJumpCheck = g_pGameModeSystem->IsTF2BasedMode() ? (mv->m_nButtons & IN_JUMP) != 0 : false;
+	if ( curspeed != 0.0 && ( DotProduct( flatvelocity, flatforward ) < 0.0 ) && !bJumpCheck )
 		return;
 
 	// Start line trace at waist height (using the center of the player for this here)
@@ -3515,7 +3530,7 @@ bool CGameMovement::CheckWater( void )
 		{
 			// Now check the waist point and see if that's underwater
 			point[2] = mv->GetAbsOrigin().z + (vPlayerMins.z + vPlayerMaxs.z) * 0.5f + GetWaterWaistOffset();
-			iContents = GetPointContentsCached(point, 1);
+			iContents = GetPointContentsCached(point, 2);
 			if (iContents & MASK_WATER)
 			{
 				iWaterType = WL_Waist;

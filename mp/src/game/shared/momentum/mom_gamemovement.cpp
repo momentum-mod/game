@@ -645,9 +645,19 @@ void CMomentumGameMovement::Duck()
 {
     if (g_pGameModeSystem->IsTF2BasedMode())
     {
-        // Don't allowing ducking if deep enough in water
+        // Don't allow ducking if deep enough in water
         if ((player->GetWaterLevel() >= WL_Feet && player->GetGroundEntity() == nullptr) ||
             player->GetWaterLevel() >= WL_Eyes)
+        {
+            mv->m_nButtons &= ~IN_DUCK;
+        }
+
+        if (gpGlobals->curtime < m_pPlayer->m_fDuckTimer && player->GetGroundEntity() != nullptr)
+        {
+            mv->m_nButtons &= ~IN_DUCK;
+        }
+
+        if (player->m_Local.m_bDucked && player->m_Local.m_bDucking)
         {
             mv->m_nButtons &= ~IN_DUCK;
         }
@@ -737,6 +747,14 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
 
 void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
 {
+    if (g_pGameModeSystem->IsTF2BasedMode())
+    {
+        if (iButtonsReleased & IN_DUCK)
+        {
+            m_pPlayer->m_fDuckTimer = gpGlobals->curtime + 0.3f;
+        }
+    }
+
     const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
     // Try to unduck unless automovement is not allowed
     // NOTE: When not onground, you can always unduck
@@ -833,6 +851,10 @@ void CMomentumGameMovement::FinishUnDuck()
 
     mv->SetAbsOrigin(newOrigin);
 
+#ifdef CLIENT_DLL
+    player->ResetLatched();
+#endif
+
     // Recategorize position since ducking can change origin
     CategorizePosition();
 }
@@ -866,6 +888,10 @@ void CMomentumGameMovement::FinishDuck()
         mv->SetAbsOrigin(org);
 
         player->m_Local.m_bDucked = true;
+
+#ifdef CLIENT_DLL
+        player->ResetLatched();
+#endif
     }
 
     // See if we are stuck?
@@ -917,7 +943,7 @@ void CMomentumGameMovement::PlayerMove()
             }
             player->SetViewOffset(offset);
         }
-        else
+        else if (!g_pGameModeSystem->IsTF2BasedMode())
         {
             if ((player->GetFlags() & FL_DUCKING) == 0 && !player->m_Local.m_bDucking && !player->m_Local.m_bDucked)
             {
@@ -1131,11 +1157,6 @@ void CMomentumGameMovement::CategorizePosition()
     // downward really quickly
     player->m_surfaceFriction = 1.0f;
 
-    // if the player hull point one unit down is solid, the player
-    // is on ground
-
-    // see if standing on something solid
-
     // Doing this before we move may introduce a potential latency in water detection, but
     // doing it after can get us stuck on the bottom in water if the amount we move up
     // is less than the 1 pixel 'threshold' we're about to snap to.    Also, we'll call
@@ -1340,7 +1361,7 @@ void CMomentumGameMovement::FullWalkMove()
 
     bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
-    if (!CheckWater())
+    if (!InWater())
     {
         StartGravity();
     }
@@ -1486,7 +1507,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckVelocity();
 
         // Add any remaining gravitational component.
-        if (!CheckWater())
+        if (!InWater())
         {
             FinishGravity();
         }
