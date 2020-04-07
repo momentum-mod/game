@@ -51,6 +51,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     CNetworkArray(int, m_iZoneCount, MAX_TRACKS); // The number of zones for a given track
     CNetworkArray(bool, m_iLinearTracks, MAX_TRACKS); // If a given track is linear or not
 
+    float m_fDuckTimer;
     int m_afButtonDisabled;
     CNetworkVar(bool, m_bAutoBhop);
 

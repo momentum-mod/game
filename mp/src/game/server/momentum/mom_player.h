@@ -128,6 +128,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int m_iSuccessiveBhops;   // How many successive bhops this player has
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
 
+    CNetworkVar(float, m_fDuckTimer);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, 
                     CBaseEntity *pevAttacker, bool bDoEffects, float x, float y);

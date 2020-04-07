@@ -15,6 +15,7 @@ RecvPropInt(RECVINFO(m_iLastZoomFOV), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
+RecvPropFloat(RECVINFO(m_fDuckTimer)),
 RecvPropArray3(RECVINFO_ARRAY(m_iZoneCount), RecvPropInt(RECVINFO(m_iZoneCount[0]), SPROP_UNSIGNED)),
 RecvPropArray3(RECVINFO_ARRAY(m_iLinearTracks), RecvPropInt(RECVINFO(m_iLinearTracks[0]), SPROP_UNSIGNED)),
 RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
@@ -24,6 +25,7 @@ END_RECV_TABLE();
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
 DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_fDuckTimer, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
 static C_MomentumPlayer *s_pLocalPlayer = nullptr;
@@ -42,6 +44,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
     m_RunStats.Init();
+    m_fDuckTimer = 0.0f;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
