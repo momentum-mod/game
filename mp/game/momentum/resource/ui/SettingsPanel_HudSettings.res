@@ -209,7 +209,7 @@
     }
     "SpeedoUnits"
     {
-        "ControlName"		"ComboBox"
+        "ControlName"		"CvarComboBox"
         "fieldName"		"SpeedoUnits"
         "xpos"		"3"
         "ypos"		"0"
@@ -228,6 +228,7 @@
         "maxchars"		"-1"
         "NumericInputOnly"		"0"
         "unicode"		"0"
+        "cvar_name"		"mom_hud_speedometer_units"
         "font" "DefaultVerySmall"
     }   
     "SpeedoColorLabel"
@@ -259,7 +260,7 @@
     }
     "SpeedoShowColor"
     {
-        "ControlName"		"ComboBox"
+        "ControlName"		"CvarComboBox"
         "fieldName"		"SpeedoShowColor"
         "xpos"		"3"
         "ypos"		"0"
@@ -279,6 +280,7 @@
         "maxchars"		"-1"
         "NumericInputOnly"		"0"
         "unicode"		"0"
+        "cvar_name"     "mom_hud_speedometer_colorize"
         "font" "DefaultVerySmall"
     }
 	
@@ -460,7 +462,7 @@
     }
     "SyncType"
     {
-        "ControlName"		"ComboBox"
+        "ControlName"		"CvarComboBox"
         "fieldName"		"SyncType"
         "xpos"		"3"
         "ypos"		"0"
@@ -479,6 +481,7 @@
         "maxchars"		"-1"
         "NumericInputOnly"		"0"
         "unicode"		"0"
+        "cvar_name"     "mom_hud_strafesync_type"
         "font" "DefaultVerySmall"
     }
     "SyncColorTypeLabel"
@@ -510,7 +513,7 @@
     }
     "SyncColorize"
     {
-        "ControlName"		"ComboBox"
+        "ControlName"		"CvarComboBox"
         "fieldName"		"SyncColorize"
         "xpos"		"3"
         "ypos"		"0"
@@ -529,6 +532,7 @@
         "maxchars"		"-1"
         "NumericInputOnly"		"0"
         "unicode"		"0"
+        "cvar_name"     "mom_hud_strafesync_colorize"
         "font" "DefaultVerySmall"
     }
     
