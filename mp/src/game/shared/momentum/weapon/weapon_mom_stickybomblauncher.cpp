@@ -286,13 +286,17 @@ float CMomentumStickybombLauncher::CalculateProjectileSpeed(float flProgress)
                            MOM_STICKYBOMB_MIN_CHARGE_VEL, MOM_STICKYBOMB_MAX_CHARGE_VEL);
 }
 
-void CMomentumStickybombLauncher::StopChargeSound() 
+bool CMomentumStickybombLauncher::SetChargeEnabled(bool state) 
 {
-    if (m_flChargeBeginTime > 0) // stop only if charging
+    if (!state)
     {
         StopWeaponSound(GetWeaponSound("charge"));
-        WeaponSound(GetWeaponSound("chargestop"));
+        if (m_flChargeBeginTime > 0) // was charging when disabled
+        {
+            WeaponSound(GetWeaponSound("chargestop"));
+        }
     }
+    return m_bIsChargeEnabled.Set(state); 
 }
 
 //-----------------------------------------------------------------------------
