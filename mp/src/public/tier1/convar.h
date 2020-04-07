@@ -502,6 +502,9 @@ public:
     const char *GetString(void) const;
     Color GetColor(void) const;
 
+    bool GetMin(float &minVal) const;
+    bool GetMax(float &maxVal) const;
+
 	void SetValue( const char *pValue );
 	void SetValue( float flValue );
 	void SetValue( int nValue );
@@ -559,6 +562,16 @@ FORCEINLINE_CVAR Color ConVarRef::GetColor() const
     extern void CONVAR_StringToColor(Color & color, const char *pString);
     CONVAR_StringToColor(clr, m_pConVarState->m_pszString);
     return clr;
+}
+
+FORCEINLINE_CVAR bool ConVarRef::GetMin(float &minVal) const
+{ 
+    return m_pConVarState->GetMin(minVal);
+}
+
+FORCEINLINE_CVAR bool ConVarRef::GetMax(float &maxVal) const
+{ 
+    return m_pConVarState->GetMax(maxVal);
 }
 
 //-----------------------------------------------------------------------------

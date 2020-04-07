@@ -30,7 +30,7 @@ class CvarComboBox : public ComboBox
     MESSAGE_FUNC(OnTextChanged, "TextChanged");
 
     ConVarRef m_cvar;
-    int m_iStartValue;
+    int m_iStartValue, m_iCvarMin, m_iCvarMax;
     bool m_bIgnoreMissingCvar;
 };
 
