@@ -340,11 +340,11 @@ void MomUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLe
     Q_snprintf(pBuffer, maxLen, "%08x", colorHex);
 }
 
-inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
+inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, int trackNumber, uint32 flags)
 {
     if (pCheck)
     {
-        if (pCheck->GetRunFlags() == flags && CloseEnough(tickrate, pCheck->GetTickInterval(), FLT_EPSILON))
+        if (pCheck->GetRunFlags() == flags && pCheck->GetTrackNumber() == trackNumber && CloseEnough(tickrate, pCheck->GetTickInterval(), FLT_EPSILON))
         {
             if (pFastest)
             {
@@ -380,7 +380,7 @@ CMomReplayBase *MomUtil::GetBestTime(const char *szMapName, float tickrate, int 
             CMomReplayBase *pBase = g_ReplayFactory.LoadReplayFile(pReplayPath, false);
             assert(pBase != nullptr);
                 
-            if (pBase->GetTrackNumber() == trackNumber && CheckReplayB(pFastest, pBase, tickrate, flags))
+            if (CheckReplayB(pFastest, pBase, tickrate, trackNumber, flags))
             {
                 pFastest = pBase;
             }

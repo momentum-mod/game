@@ -157,13 +157,12 @@ void C_RunComparisons::LoadComparisons()
 
         const float tickRate = pRunData->m_flTickRate;
         const int runFlags = pRunData->m_iRunFlags;
-        const int currentTrack = pRunData->m_iCurrentTrack;
 
         if (!m_bLoadedComparison || !CloseEnough(tickRate, m_fLoadedTickRate) || runFlags != m_iLoadedRunFlags)
         {
             UnloadComparisons();
             m_rcCurrentComparison = new RunCompare_t();
-            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, currentTrack, runFlags, m_rcCurrentComparison);
+            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, pRunData->m_iCurrentTrack, runFlags, m_rcCurrentComparison);
         }
     }
 }
