@@ -70,8 +70,6 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
 
-    void Paint() OVERRIDE;
-
   private:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
@@ -179,6 +177,7 @@ void CHudSpeedMeter::Reset()
 void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
 {
     C_MomentumPlayer *pLocal = C_MomentumPlayer::GetLocalMomPlayer();
+
     if (pLocal)
     {
         const auto ent = pEvent->GetInt("ent");
@@ -429,140 +428,143 @@ void CHudSpeedMeter::OnThink()
         m_iRoundedLastJumpVel = RoundFloatToInt(lastJumpVel);
         m_pAbsSpeedoLabel->SetFgColor(m_CurrentColor);
         m_pHorizSpeedoLabel->SetFgColor(m_hCurrentColor);
-    }
-}
 
-void CHudSpeedMeter::Paint() 
-{
-    int yIndent = 0;
-    if (!mom_hud_speedometer.GetBool()) yIndent += m_defaultAbsSpeedoLabelHeight;
-    if (!mom_hud_speedometer_horiz.GetBool()) yIndent += m_defaultHorizSpeedoLabelHeight;
-    if (!mom_hud_speedometer_lastjumpvel.GetBool()) yIndent += m_defaultLastJumpVelLabelHeight;
-    if (!mom_hud_speedometer_unit_labels.GetBool()) yIndent += m_defaultUnitsLabelHeight;
-    if (!mom_hud_speedometer_showenterspeed.GetBool()) yIndent += m_defaultStageEnterExitLabelHeight;
-    SetPos(GetXPos(), m_defaultYPos + yIndent);
 
-    if (mom_hud_speedometer.GetBool())
-    {
-        ActivateLabel(m_pAbsSpeedoLabel, m_defaultAbsSpeedoLabelHeight);
-        char speedoValue[BUFSIZELOCL];
-        Q_snprintf(speedoValue, sizeof(speedoValue), "%i", m_iRoundedVel);
-        m_pAbsSpeedoLabel->SetText(speedoValue);
-    }
-    else
-    {
-        DeactivateLabel(m_pAbsSpeedoLabel);
-    }
+        int yIndent = 0;
+        if (!mom_hud_speedometer.GetBool())
+            yIndent += m_defaultAbsSpeedoLabelHeight;
+        if (!mom_hud_speedometer_horiz.GetBool())
+            yIndent += m_defaultHorizSpeedoLabelHeight;
+        if (!mom_hud_speedometer_lastjumpvel.GetBool())
+            yIndent += m_defaultLastJumpVelLabelHeight;
+        if (!mom_hud_speedometer_unit_labels.GetBool())
+            yIndent += m_defaultUnitsLabelHeight;
+        if (!mom_hud_speedometer_showenterspeed.GetBool())
+            yIndent += m_defaultStageEnterExitLabelHeight;
+        SetPos(GetXPos(), m_defaultYPos + yIndent);
 
-    if (mom_hud_speedometer_horiz.GetBool())
-    {
-        ActivateLabel(m_pHorizSpeedoLabel, m_defaultHorizSpeedoLabelHeight);
-        char hSpeedoValue[BUFSIZELOCL];
-        Q_snprintf(hSpeedoValue, sizeof(hSpeedoValue), "%i", m_iRoundedHVel);
-        m_pHorizSpeedoLabel->SetText(hSpeedoValue);
-    }
-    else
-    {
-        DeactivateLabel(m_pHorizSpeedoLabel);
-    }
-
-    if (mom_hud_speedometer_lastjumpvel.GetBool())
-    {
-        ActivateLabel(m_pLastJumpVelLabel, m_defaultLastJumpVelLabelHeight);
-        char lastJumpVelValue[BUFSIZELOCL];
-        Q_snprintf(lastJumpVelValue, sizeof(lastJumpVelValue), "%i", m_iRoundedLastJumpVel);
-        m_pLastJumpVelLabel->SetText(lastJumpVelValue);
-        // Fade out last jump vel based on the lastJumpAlpha value
-        m_LastJumpVelColor =
-            Color(m_LastJumpVelColor.r(), m_LastJumpVelColor.g(), m_LastJumpVelColor.b(), m_fLastJumpVelAlpha);
-        m_pLastJumpVelLabel->SetFgColor(m_LastJumpVelColor);
-    }
-    else
-    {
-        DeactivateLabel(m_pLastJumpVelLabel);
-    }
-
-    if (mom_hud_speedometer_unit_labels.GetBool())
-    {
-        ActivateLabel(m_pUnitsLabel, m_defaultUnitsLabelHeight);
-    }
-    else
-    {
-        DeactivateLabel(m_pUnitsLabel);
-    }
-    //if every speedometer is off, don't bother drawing unit labels
-    if (!mom_hud_speedometer.GetBool() && !mom_hud_speedometer_horiz.GetBool() && 
-        !mom_hud_speedometer_lastjumpvel.GetBool() && !mom_hud_speedometer_showenterspeed.GetBool() && 
-        mom_hud_speedometer_unit_labels.GetBool())
-    {
-        DeactivateLabel(m_pUnitsLabel);
-    }
-
-    // Draw the enter speed split, if toggled on. Cannot be done in OnThink()
-    if (mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning &&
-        m_fStageStartAlpha > 0.0f)
-    {
-        ActivateLabel(m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
-        ActivateLabel(m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
-
-        char enterVelUnrounded[BUFSIZELOCL], enterVelRounded[BUFSIZELOCL], enterVelComparisonUnrounded[BUFSIZELOCL],
-            enterVelComparisonRounded[BUFSIZELOCL];
-
-        Color compareColorFade = Color(0, 0, 0, 0);
-        Color compareColor = Color(0, 0, 0, 0);
-
-        Color fg = GetFgColor();
-        Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), m_fStageStartAlpha);
-
-        g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_pRunEntData->m_iCurrentZone,
-                                              enterVelUnrounded, enterVelComparisonUnrounded, &compareColor);
-        // Round velocity
-        Q_snprintf(enterVelRounded, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelUnrounded))));
-
-        bool loadedComparison = g_pMOMRunCompare->LoadedComparison();
-
-        HFont labelFont = m_pStageEnterExitLabel->GetFont();
-        int spaceBetweenLabels = UTIL_ComputeStringWidth(labelFont, " ");
-        // compute the combined length of the enter/exit and comparison
-        int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelRounded);
-        if (loadedComparison)
+        if (mom_hud_speedometer.GetBool())
         {
-            // Really gross way of ripping apart this string and
-            // making some sort of quasi-frankenstein string of the float as a rounded int
-            char firstThree[3];
-            Q_strncpy(firstThree, enterVelComparisonUnrounded, 3);
-            const char *compFloat = enterVelComparisonUnrounded;
-            Q_snprintf(enterVelComparisonRounded, BUFSIZELOCL, " %s %i)", firstThree,
-                       RoundFloatToInt(Q_atof(compFloat + 3)));
-
-            // Update the compare color to have the alpha defined by animations (fade out if 5+ sec)
-            compareColorFade.SetColor(compareColor.r(), compareColor.g(), compareColor.b(), m_fStageStartAlpha);
-            
-            // Add the compare string to the length
-            combinedLength += spaceBetweenLabels + UTIL_ComputeStringWidth(labelFont, enterVelComparisonRounded);
+            ActivateLabel(m_pAbsSpeedoLabel, m_defaultAbsSpeedoLabelHeight);
+            char speedoValue[BUFSIZELOCL];
+            Q_snprintf(speedoValue, sizeof(speedoValue), "%i", m_iRoundedVel);
+            m_pAbsSpeedoLabel->SetText(speedoValue);
         }
-        int offsetXPos = 0 - ((GetWide() - combinedLength) / 2);
-
-        //split_xpos = GetWide() / 2 - (enterVelANSIWidth + increaseX) / 2;
-        m_pStageEnterExitLabel->SetPos(offsetXPos, m_pStageEnterExitLabel->GetYPos());
-        m_pStageEnterExitLabel->SetFgColor(actualColorFade);
-        m_pStageEnterExitLabel->SetText(enterVelRounded);
-
-        //print comparison as well
-        if (loadedComparison)
+        else
         {
-            m_pStageEnterExitComparisonLabel->SetPos(spaceBetweenLabels, m_pStageEnterExitLabel->GetYPos());
-            m_pStageEnterExitComparisonLabel->SetFgColor(compareColorFade);
-            m_pStageEnterExitComparisonLabel->SetText(enterVelComparisonRounded);
+            DeactivateLabel(m_pAbsSpeedoLabel);
         }
-        else //only print velocity
+
+        if (mom_hud_speedometer_horiz.GetBool())
         {
-            m_pStageEnterExitComparisonLabel->SetText("");
+            ActivateLabel(m_pHorizSpeedoLabel, m_defaultHorizSpeedoLabelHeight);
+            char hSpeedoValue[BUFSIZELOCL];
+            Q_snprintf(hSpeedoValue, sizeof(hSpeedoValue), "%i", m_iRoundedHVel);
+            m_pHorizSpeedoLabel->SetText(hSpeedoValue);
         }
-    }
-    else if (!mom_hud_speedometer_showenterspeed.GetBool())
-    {
-        DeactivateLabel(m_pStageEnterExitLabel);
-        DeactivateLabel(m_pStageEnterExitComparisonLabel);
+        else
+        {
+            DeactivateLabel(m_pHorizSpeedoLabel);
+        }
+
+        if (mom_hud_speedometer_lastjumpvel.GetBool())
+        {
+            ActivateLabel(m_pLastJumpVelLabel, m_defaultLastJumpVelLabelHeight);
+            char lastJumpVelValue[BUFSIZELOCL];
+            Q_snprintf(lastJumpVelValue, sizeof(lastJumpVelValue), "%i", m_iRoundedLastJumpVel);
+            m_pLastJumpVelLabel->SetText(lastJumpVelValue);
+            // Fade out last jump vel based on the lastJumpAlpha value
+            m_LastJumpVelColor =
+                Color(m_LastJumpVelColor.r(), m_LastJumpVelColor.g(), m_LastJumpVelColor.b(), m_fLastJumpVelAlpha);
+            m_pLastJumpVelLabel->SetFgColor(m_LastJumpVelColor);
+        }
+        else
+        {
+            DeactivateLabel(m_pLastJumpVelLabel);
+        }
+
+        if (mom_hud_speedometer_unit_labels.GetBool())
+        {
+            ActivateLabel(m_pUnitsLabel, m_defaultUnitsLabelHeight);
+        }
+        else
+        {
+            DeactivateLabel(m_pUnitsLabel);
+        }
+        // if every speedometer is off, don't bother drawing unit labels
+        if (!mom_hud_speedometer.GetBool() && !mom_hud_speedometer_horiz.GetBool() &&
+            !mom_hud_speedometer_lastjumpvel.GetBool() && !mom_hud_speedometer_showenterspeed.GetBool() &&
+            mom_hud_speedometer_unit_labels.GetBool())
+        {
+            DeactivateLabel(m_pUnitsLabel);
+        }
+
+        // Draw the enter speed split, if toggled on. Cannot be done in OnThink()
+        if (mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning &&
+            m_fStageStartAlpha > 0.0f)
+        {
+            ActivateLabel(m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
+            ActivateLabel(m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
+
+            char enterVelUnrounded[BUFSIZELOCL], enterVelRounded[BUFSIZELOCL], enterVelComparisonUnrounded[BUFSIZELOCL],
+                enterVelComparisonRounded[BUFSIZELOCL];
+
+            Color compareColorFade = Color(0, 0, 0, 0);
+            Color compareColor = Color(0, 0, 0, 0);
+
+            Color fg = GetFgColor();
+            Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), m_fStageStartAlpha);
+
+            g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_pRunEntData->m_iCurrentZone,
+                                                  enterVelUnrounded, enterVelComparisonUnrounded, &compareColor);
+            // Round velocity
+            Q_snprintf(enterVelRounded, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelUnrounded))));
+
+            bool loadedComparison = g_pMOMRunCompare->LoadedComparison();
+
+            HFont labelFont = m_pStageEnterExitLabel->GetFont();
+            int spaceBetweenLabels = UTIL_ComputeStringWidth(labelFont, " ");
+            // compute the combined length of the enter/exit and comparison
+            int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelRounded);
+            if (loadedComparison)
+            {
+                // Really gross way of ripping apart this string and
+                // making some sort of quasi-frankenstein string of the float as a rounded int
+                char firstThree[3];
+                Q_strncpy(firstThree, enterVelComparisonUnrounded, 3);
+                const char *compFloat = enterVelComparisonUnrounded;
+                Q_snprintf(enterVelComparisonRounded, BUFSIZELOCL, " %s %i)", firstThree,
+                           RoundFloatToInt(Q_atof(compFloat + 3)));
+
+                // Update the compare color to have the alpha defined by animations (fade out if 5+ sec)
+                compareColorFade.SetColor(compareColor.r(), compareColor.g(), compareColor.b(), m_fStageStartAlpha);
+
+                // Add the compare string to the length
+                combinedLength += spaceBetweenLabels + UTIL_ComputeStringWidth(labelFont, enterVelComparisonRounded);
+            }
+            int offsetXPos = 0 - ((GetWide() - combinedLength) / 2);
+
+            // split_xpos = GetWide() / 2 - (enterVelANSIWidth + increaseX) / 2;
+            m_pStageEnterExitLabel->SetPos(offsetXPos, m_pStageEnterExitLabel->GetYPos());
+            m_pStageEnterExitLabel->SetFgColor(actualColorFade);
+            m_pStageEnterExitLabel->SetText(enterVelRounded);
+
+            // print comparison as well
+            if (loadedComparison)
+            {
+                m_pStageEnterExitComparisonLabel->SetPos(spaceBetweenLabels, m_pStageEnterExitLabel->GetYPos());
+                m_pStageEnterExitComparisonLabel->SetFgColor(compareColorFade);
+                m_pStageEnterExitComparisonLabel->SetText(enterVelComparisonRounded);
+            }
+            else // only print velocity
+            {
+                m_pStageEnterExitComparisonLabel->SetText("");
+            }
+        }
+        else if (!mom_hud_speedometer_showenterspeed.GetBool())
+        {
+            DeactivateLabel(m_pStageEnterExitLabel);
+            DeactivateLabel(m_pStageEnterExitComparisonLabel);
+        }
     }
 }
