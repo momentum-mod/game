@@ -5,7 +5,6 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include <game/client/iviewport.h>
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
