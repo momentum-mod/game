@@ -5370,7 +5370,7 @@ CBaseEntity	*CBasePlayer::GiveNamedItem( const char *pszName, int iSubType )
 		return NULL;
 	}
 
-	pent->SetLocalOrigin( GetLocalOrigin() );
+	pent->SetLocalOrigin( CollisionProp()->WorldSpaceCenter() );
 	pent->AddSpawnFlags( SF_NORESPAWN );
 
 	CBaseCombatWeapon *pWeapon = dynamic_cast<CBaseCombatWeapon*>( (CBaseEntity*)pent );
@@ -6099,12 +6099,6 @@ bool CBasePlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
 	{
 		// Don't let the player touch the item unless unobstructed
 		if ( !UTIL_ItemCanBeTouchedByPlayer( pWeapon, this ) && !gEvilImpulse101 )
-			return false;
-	}
-	else
-	{
-		// Don't let the player fetch weapons through walls (use MASK_SOLID so that you can't pickup through windows)
-		if( pWeapon->FVisible( this, MASK_SOLID ) == false && !(GetFlags() & FL_NOTARGET) )
 			return false;
 	}
 	
