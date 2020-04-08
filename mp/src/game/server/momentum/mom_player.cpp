@@ -376,6 +376,7 @@ bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
     {
         // Switch to that weapon for convenience
         Weapon_Switch(pCurrWeapon);
+        UTIL_Remove(pWeapon);
         return false;
     }
     // Otherwise we can try to pick up that weapon
