@@ -209,6 +209,8 @@ void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 
 void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
 {
+    EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "single_shot"));
+
     CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
 }
 
