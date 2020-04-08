@@ -51,3 +51,6 @@ ccache binary
 gtest_output_test_golden_lin.txt binary
 
 *.res text
+
+surfaceproperties_cs.txt text eol=crlf
+surfaceproperties_tf.txt text eol=crlf
