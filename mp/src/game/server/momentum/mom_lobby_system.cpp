@@ -3,6 +3,7 @@
 #include "mom_lobby_system.h"
 
 #include "filesystem.h"
+#include "fmtstr.h"
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
 #include "mom_system_gamemode.h"
@@ -10,7 +11,7 @@
 #include "mom_player_shared.h"
 #include "mom_modulecomms.h"
 #include "mom_timer.h"
-#include "fmtstr.h"
+#include "mom_system_steam_richpresence.h"
 #include "time.h"
 
 #include "tier0/memdbgon.h"
@@ -237,16 +238,16 @@ void CMomentumLobbySystem::LeaveLobby()
     {
         // Actually leave the lobby
         SteamMatchmaking()->LeaveLobby(m_sLobbyID);
+
         // Clear the ghosts stored in our lobby system
         g_pMomentumGhostClient->ClearCurrentGhosts(true);
-        // Clear out any rich presence 
-        SteamFriends()->ClearRichPresence();
 
         // Notify literally everything that can listen that we left
         FIRE_GAME_WIDE_EVENT("lobby_leave");
         
-        // Lastly, set the lobby ID to nil
         m_sLobbyID = k_steamIDNil;
+
+        g_pSteamRichPresence->Update();
 
         DevLog("Left the lobby!\n");
     }
@@ -275,7 +276,7 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
         // Set our own data
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
 
-        SetGameInfoStatus();
+        g_pSteamRichPresence->Update();
         // Get everybody else's data
         CheckToAdd(nullptr);
     }
@@ -441,6 +442,7 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
             // We could have a new owner
             // Or new member limit
             // Or new lobby type
+            g_pSteamRichPresence->Update();
         }
         else
         {
@@ -476,6 +478,8 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         // Note: The lobby data update method handles adding
 
         WriteLobbyMessage(LOBBY_UPDATE_MEMBER_JOIN, pParam->m_ulSteamIDUserChanged);
+
+        g_pSteamRichPresence->Update();
     }
     if (state & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
@@ -496,6 +500,8 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         }
 
         WriteLobbyMessage(LOBBY_UPDATE_MEMBER_LEAVE, pParam->m_ulSteamIDUserChanged);
+
+        g_pSteamRichPresence->Update();
     }
 }
 
@@ -534,7 +540,6 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
         CHECK_STEAM_API(SteamMatchmaking());
         DevLog("Setting the map to %s!\n", pMapName ? pMapName : "INVALID (main menu/loading)");
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
-        SetGameInfoStatus();
         m_flNextUpdateTime = -1.0f;
 
         // Now check if this map is the same as somebody else's in the lobby
@@ -941,20 +946,6 @@ void CMomentumLobbySystem::OnLobbyTypeChanged(int newType)
             Warning("Cannot change the lobby type; you are not the lobby owner!\n");
     }
     // else the lobby isn't valid, but it'll apply to our next one!
-}
-
-void CMomentumLobbySystem::SetGameInfoStatus()
-{
-    CHECK_STEAM_API(SteamFriends());
-    CHECK_STEAM_API(SteamMatchmaking());
-    char gameInfoStr[64];// , connectStr[64];
-    int numPlayers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
-    V_snprintf(gameInfoStr, sizeof(gameInfoStr), numPlayers <= 1 ? "%s on %s" : "%s on %s with %i other player%s",
-               g_pGameModeSystem->GetGameMode()->GetStatusString(), STRING(gpGlobals->mapname), numPlayers - 1, numPlayers > 2 ? "s" : "");
-    //V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
-
-    //SteamFriends()->SetRichPresence("connect", connectStr);
-    SteamFriends()->SetRichPresence("status", gameInfoStr);
 }
 
 static CMomentumLobbySystem s_MOMLobbySystem;
