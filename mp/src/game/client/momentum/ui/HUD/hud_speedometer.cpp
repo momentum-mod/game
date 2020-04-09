@@ -347,58 +347,35 @@ void CHudSpeedMeter::OnThink()
         SetLabelHeight(isEnterSpeedActive, m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
         if (isEnterSpeedActive && m_pRunEntData && m_pRunEntData->m_bTimerRunning && m_fStageStartAlpha > 0.0f)
         {
-            char enterVelUnrounded[BUFSIZELOCL], enterVelRounded[BUFSIZELOCL], 
-                 enterVelComparisonUnrounded[BUFSIZELOCL], enterVelComparisonRounded[BUFSIZELOCL];
+            char enterVelStr[BUFSIZELOCL], enterVelComparisonStr[BUFSIZELOCL];
 
-            Color compareColorFade = Color(0, 0, 0, 0), compareColor = Color(0, 0, 0, 0);
-
-            Color fg = m_pStageEnterExitLabel->GetFgColor();
-            Color enterColorFade = Color(fg.r(), fg.g(), fg.b(), m_fStageStartAlpha);
+            Color compareColor = Color(0, 0, 0, 0);
+            Color enterColor = m_pStageEnterExitLabel->GetFgColor();
 
             g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_pRunEntData->m_iCurrentZone,
-                                                  enterVelUnrounded, enterVelComparisonUnrounded, &compareColor);
-            // Round velocity
-            Q_snprintf(enterVelRounded, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelUnrounded))));
-
-            bool loadedComparison = g_pMOMRunCompare->LoadedComparison();
+                                                  enterVelStr, enterVelComparisonStr, &compareColor, true);
 
             HFont labelFont = m_pStageEnterExitLabel->GetFont();
-            int spaceBetweenLabels = UTIL_ComputeStringWidth(labelFont, " ");
             // compute the combined length of the enter/exit and comparison
-            int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelRounded);
-            if (loadedComparison)
+            int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelStr);
+            if (g_pMOMRunCompare->LoadedComparison()) // comparison is available
             {
-                // Really gross way of ripping apart this string and
-                // making some sort of quasi-frankenstein string of the float as a rounded int
-                char firstThree[3];
-                Q_strncpy(firstThree, enterVelComparisonUnrounded, 3);
-                const char *compFloat = enterVelComparisonUnrounded;
-                Q_snprintf(enterVelComparisonRounded, BUFSIZELOCL, " %s %i)", firstThree,
-                           RoundFloatToInt(Q_atof(compFloat + 3)));
-
-                // Update the compare color to have the alpha defined by animations (fade out if 5+ sec)
-                compareColorFade.SetColor(compareColor.r(), compareColor.g(), compareColor.b(), m_fStageStartAlpha);
-
+                m_pStageEnterExitComparisonLabel->SetPos(0, m_pStageEnterExitLabel->GetYPos());
+                m_pStageEnterExitComparisonLabel->SetFgColor(Color(compareColor.r(), compareColor.g(), compareColor.b(), m_fStageStartAlpha));
+                m_pStageEnterExitComparisonLabel->SetText(enterVelComparisonStr);
                 // Add the compare string to the length
-                combinedLength += spaceBetweenLabels + UTIL_ComputeStringWidth(labelFont, enterVelComparisonRounded);
+                combinedLength += UTIL_ComputeStringWidth(labelFont, enterVelComparisonStr);
             }
+            else
+            {
+                // ignore ending space as comparison is not being shown
+                combinedLength -= UTIL_ComputeStringWidth(labelFont, " ");
+            }
+
             int offsetXPos = 0 - ((GetWide() - combinedLength) / 2);
-
             m_pStageEnterExitLabel->SetPos(offsetXPos, m_pStageEnterExitLabel->GetYPos());
-            m_pStageEnterExitLabel->SetFgColor(enterColorFade);
-            m_pStageEnterExitLabel->SetText(enterVelRounded);
-
-            // set comparison as well
-            if (loadedComparison)
-            {
-                m_pStageEnterExitComparisonLabel->SetPos(spaceBetweenLabels, m_pStageEnterExitLabel->GetYPos());
-                m_pStageEnterExitComparisonLabel->SetFgColor(compareColorFade);
-                m_pStageEnterExitComparisonLabel->SetText(enterVelComparisonRounded);
-            }
-            else // only print velocity
-            {
-                m_pStageEnterExitComparisonLabel->SetText("");
-            }
+            m_pStageEnterExitLabel->SetFgColor(Color(enterColor.r(), enterColor.g(), enterColor.b(), m_fStageStartAlpha));
+            m_pStageEnterExitLabel->SetText(enterVelStr);
         }
     }
 }
