@@ -56,7 +56,6 @@ public:
     void OnLobbyMaxPlayersChanged(int newMax);
     void OnLobbyTypeChanged(int newType);
 
-    void SetGameInfoStatus();
     bool GetAppearanceFromMemberData(const CSteamID &member, AppearanceData_t &out);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
