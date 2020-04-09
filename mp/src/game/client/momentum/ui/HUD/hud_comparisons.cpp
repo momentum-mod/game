@@ -360,7 +360,7 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
 // only obtaining the actual, only obtaining the comparison, or only obtaining the color.
 void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats *stats, int zone,
                                            char *ansiActualBufferOut, char *ansiCompareBufferOut,
-                                           Color *compareColorOut)
+                                           Color *compareColorOut, bool roundVelocity)
 {
     if (!stats)
         return;
@@ -478,9 +478,19 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
     else
     {
         if (ansiActualBufferOut)
-            V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%.3f ", act);
+        {
+            if (roundVelocity)
+                V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%i ", RoundFloatToInt(act));
+            else
+                V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%.3f ", act);
+        }
         if (LoadedComparison() && ansiCompareBufferOut)
-            V_snprintf(ansiCompareBufferOut, BUFSIZELOCL, "(%c %.3f)", diffChar, diff);
+        {
+            if (roundVelocity)
+                V_snprintf(ansiCompareBufferOut, BUFSIZELOCL, "(%c %i)", diffChar, RoundFloatToInt(diff));
+            else
+                V_snprintf(ansiCompareBufferOut, BUFSIZELOCL, "(%c %.3f)", diffChar, diff);
+        }
     }
 }
 
