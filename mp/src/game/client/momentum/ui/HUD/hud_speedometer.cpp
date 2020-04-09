@@ -80,7 +80,6 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
 
     bool m_bRanFadeOutJumpSpeed;
 
-    //int m_iRoundedVel, m_iRoundedHVel, m_iRoundedLastJumpVel;
     Color m_LastColor, m_hLastColor, m_CurrentColor, m_hCurrentColor, m_LastJumpVelColor, 
         m_NormalColor, m_IncreaseColor, m_DecreaseColor;
 
