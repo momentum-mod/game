@@ -20,9 +20,9 @@ CvarComboBox::CvarComboBox(Panel *parent, const char *panelName, int numLines, b
 {
     InitSettings();
     m_bIgnoreMissingCvar = ignoreMissingCvar;
-    float m_flCvarMin, m_flCvarMax;
-    m_iCvarMin = m_cvar.GetMin(m_flCvarMin) ? RoundFloatToInt(m_flCvarMin) : 0;
-    m_iCvarMax = m_cvar.GetMin(m_flCvarMax) ? RoundFloatToInt(m_flCvarMax) : 0;
+    float flCvarMin, flCvarMax;
+    m_iCvarMin = m_cvar.GetMin(flCvarMin) ? RoundFloatToInt(flCvarMin) : 0;
+    m_iCvarMax = m_cvar.GetMax(flCvarMax) ? RoundFloatToInt(flCvarMax) : 0;
     m_iStartValue = 0;
 
     AddActionSignalTarget(this);
