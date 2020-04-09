@@ -12,6 +12,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+extern bool g_bRollingCredits;
+
 using namespace vgui;
 
 #define UPDATE_INTERVAL 15.0f
@@ -175,6 +177,9 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 
     if (bShow)
     {
+        if (g_bRollingCredits)
+            return;
+
         Reset(true);
         SetVisible(true);
         MoveToFront();

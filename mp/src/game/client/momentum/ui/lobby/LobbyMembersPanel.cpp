@@ -28,6 +28,8 @@
 
 #include "tier0/memdbgon.h"
 
+extern bool g_bRollingCredits;
+
 using namespace vgui;
 
 static CSteamID s_LobbyID = k_steamIDNil;
@@ -296,6 +298,9 @@ void LobbyMembersPanel::ShowPanel(bool bShow)
 
     if (bShow)
     {
+        if (g_bRollingCredits)
+            return;
+
         Reset();
         SetVisible(true);
         // SetEnabled(true);
