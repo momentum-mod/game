@@ -135,9 +135,9 @@ void CMomentumDiscord::LevelInitPostEntity()
         V_strncpy(m_szDiscordSmallImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordSmallImageKey));
     }
 
-    V_strncpy(m_szDiscordState, "Playing", sizeof(m_szDiscordState));
+    V_strncpy(m_szDiscordState, g_pGameModeSystem->GetGameMode()->GetStatusString(), sizeof(m_szDiscordState));
     V_strncpy(m_szDiscordDetails, MapName(), sizeof(m_szDiscordDetails));
-    V_strncpy(m_szDiscordLargeImageText, MapName(), sizeof(m_szDiscordLargeImageText));
+    V_strncpy(m_szDiscordLargeImageText, g_pGameModeSystem->GetGameMode()->GetStatusString(), sizeof(m_szDiscordLargeImageText));
     m_iDiscordStartTimestamp = time(nullptr);
 
     // Check to see if we are joining this map to spectate a player
@@ -266,7 +266,7 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
             }
             else
             {
-                Q_strncpy(m_szDiscordState, "Playing", sizeof(m_szDiscordState));
+                Q_strncpy(m_szDiscordState, g_pGameModeSystem->GetGameMode()->GetStatusString(), sizeof(m_szDiscordState));
             }
         }
     }
@@ -285,7 +285,7 @@ void CMomentumDiscord::FireGameEvent(IGameEvent *event)
     }
     else if (FStrEq(pName, "spec_stop"))
     {
-        Q_strncpy(m_szDiscordState, "Playing", sizeof(m_szDiscordState));
+        Q_strncpy(m_szDiscordState, g_pGameModeSystem->GetGameMode()->GetStatusString(), sizeof(m_szDiscordState));
     }
 
     DiscordUpdate();
