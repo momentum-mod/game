@@ -58,6 +58,11 @@ static MAKE_CONVAR(mom_hud_speedometer_lastjumpvel_fadeout, "3.0", FLAG_HUD_CVAR
 static MAKE_TOGGLE_CONVAR(mom_hud_velocity_type, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                    "Toggles the velocity type used in comparisons and map finished dialog. 0 = ABSOLUTE, 1 = HORIZONTAL\n");
 
+// 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
+#define UPS_TO_KMH_FACTOR 0.06858f
+// 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
+#define UPS_TO_MPH_FACTOR 0.04262f
+
 class CHudSpeedMeter : public CHudElement, public EditablePanel
 {
     DECLARE_CLASS_SIMPLE(CHudSpeedMeter, EditablePanel);
@@ -90,11 +95,6 @@ class CHudSpeedMeter : public CHudElement, public EditablePanel
 
     int m_defaultUnitsLabelHeight, m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, 
         m_defaultLastJumpVelLabelHeight, m_defaultStageEnterExitLabelHeight, m_defaultYPos;
-
-    // 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
-    const float m_flKPHfactor = 0.06858f;
-    // 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
-    const float m_flMPHfactor = 0.04262f;
 
     CMomRunStats *m_pRunStats;
     CMomRunEntityData *m_pRunEntData;
@@ -258,11 +258,15 @@ void CHudSpeedMeter::OnThink()
         switch (mom_hud_speedometer_units.GetInt())
         {
         case 2: // KM/H
-            vel *= m_flKPHfactor; hvel *= m_flKPHfactor; lastJumpVel *= m_flKPHfactor;
+            vel *= UPS_TO_KMH_FACTOR;
+            hvel *= UPS_TO_KMH_FACTOR;
+            lastJumpVel *= UPS_TO_KMH_FACTOR;
             m_pUnitsLabel->SetText(L"KM/H");
             break;
         case 3: // MPH
-            vel *= m_flMPHfactor; hvel *= m_flMPHfactor; lastJumpVel *= m_flMPHfactor;
+            vel *= UPS_TO_MPH_FACTOR;
+            hvel *= UPS_TO_MPH_FACTOR;
+            lastJumpVel *= UPS_TO_MPH_FACTOR;
             m_pUnitsLabel->SetText(L"MPH");
             break;
         case 4: // Normalized units of energy
