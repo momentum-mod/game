@@ -8,6 +8,7 @@
 #include <vgui_controls/Label.h>
 #include <vgui_controls/CvarComboBox.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/CvarTextEntry.h>
 #include <vgui_controls/Tooltip.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/AnimationController.h>
@@ -21,7 +22,7 @@ ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent)
 {
     m_pCompareShow = new CvarToggleCheckButton(this, "CompareShow", "#MOM_Settings_Compare_Show", "mom_comparisons");
     m_pCompareShow->AddActionSignalTarget(this);
-    m_pMaxZones = new TextEntry(this, "Zones");
+    m_pMaxZones = new CvarTextEntry(this, "Zones", "mom_comparisons_max_zones");
     m_pMaxZones->AddActionSignalTarget(this);
     m_pMaxZonesLabel = new Label(this, "ZonesLabel", "#MOM_Settings_Zones_Label");
 
@@ -136,44 +137,11 @@ void ComparisonsSettingsPage::OnMainDialogShow()
         m_pComparisonsFrame->SetVisible(true);
 }
 
-void ComparisonsSettingsPage::OnApplyChanges()
-{
-    BaseClass::OnApplyChanges();
-
-    if (m_pMaxZones)
-    {
-        ConVarRef zones("mom_comparisons_max_zones");
-        char buf[64];
-        m_pMaxZones->GetText(buf, sizeof(buf));
-        int zonesNum = atoi(buf);
-        if (zonesNum < 0) // Less than min
-        {
-            zones.SetValue(1);
-        }
-        else if (zonesNum > 10) // Greater than max
-        {
-            zones.SetValue(10);
-        }
-        else // In range
-        {
-            zones.SetValue(zonesNum);
-        }
-    }
-}
-
 void ComparisonsSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
 {
     BaseClass::OnScreenSizeChanged(oldwide, oldtall);
 
     DestroyBogusComparePanel();
-}
-
-void ComparisonsSettingsPage::LoadSettings()
-{
-    if (m_pMaxZones)
-    {
-        m_pMaxZones->SetText(ConVarRef("mom_comparisons_max_zones").GetString());
-    }
 }
 
 void ComparisonsSettingsPage::OnPageShow()
