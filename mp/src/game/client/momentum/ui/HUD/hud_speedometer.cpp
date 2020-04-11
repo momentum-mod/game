@@ -257,19 +257,19 @@ void CHudSpeedMeter::OnThink()
 
         switch (mom_hud_speedometer_units.GetInt())
         {
-        case 2: // KM/H
+        case SPEEDOMETER_UNITS_KMH:
             vel *= UPS_TO_KMH_FACTOR;
             hvel *= UPS_TO_KMH_FACTOR;
             lastJumpVel *= UPS_TO_KMH_FACTOR;
             m_pUnitsLabel->SetText(L"KM/H");
             break;
-        case 3: // MPH
+        case SPEEDOMETER_UNITS_MPH:
             vel *= UPS_TO_MPH_FACTOR;
             hvel *= UPS_TO_MPH_FACTOR;
             lastJumpVel *= UPS_TO_MPH_FACTOR;
             m_pUnitsLabel->SetText(L"MPH");
             break;
-        case 4: // Normalized units of energy
+        case SPEEDOMETER_UNITS_ENERGY:
         {
             const auto gravity = sv_gravity.GetFloat();
             vel = (velocity.LengthSqr() / 2.0f + gravity * (pPlayer->GetLocalOrigin().z - m_pRunEntData->m_flLastJumpZPos)) / gravity;
@@ -277,7 +277,7 @@ void CHudSpeedMeter::OnThink()
             m_pUnitsLabel->SetText(L"Energy");
             break;
         }
-        case 1: // UPS
+        case SPEEDOMETER_UNITS_UPS:
         default:
             m_pUnitsLabel->SetText(L"UPS");
             break;
@@ -414,7 +414,7 @@ void CHudSpeedMeter::ColorBasedOnAccel(Color &color, int currentVel, int lastVel
         float variation = 0.0f;
         const float deadzone = 2.0f;
 
-        if (mom_hud_speedometer_units.GetInt() == 4)
+        if (mom_hud_speedometer_units.GetInt() == SPEEDOMETER_UNITS_ENERGY)
         {
             // For energy, if current value is larger than previous value then we've got an increase
             variation = currentVel - lastVel;
