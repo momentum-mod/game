@@ -20,13 +20,9 @@ class ComparisonsSettingsPage : public SettingsPage
     void OnMainDialogClosed() OVERRIDE;
     void OnMainDialogShow() OVERRIDE;
 
-    //Handle custom controls
-    void OnApplyChanges() OVERRIDE;
-
     void OnScreenSizeChanged(int oldwide, int oldtall) override;
 
     //Load the settings for this panel
-    void LoadSettings() OVERRIDE;
     void OnPageShow() OVERRIDE;
 
     //Overridden from PropertyPage so we can hide the comparisons frame
@@ -48,7 +44,7 @@ private:
     vgui::CvarToggleCheckButton *m_pCompareShow, *m_pCompareFormat, *m_pTimeShowOverall,
         *m_pTimeShowZone, *m_pVelocityShow, *m_pVelocityShowAvg, *m_pVelocityShowMax, *m_pVelocityShowEnter, 
         *m_pVelocityShowExit, *m_pSyncShow, *m_pSyncShowS1, *m_pSyncShowS2, *m_pJumpShow, *m_pStrafeShow;
-    vgui::TextEntry *m_pMaxZones;
+    vgui::CvarTextEntry *m_pMaxZones;
     vgui::ComboBox *m_pTimeType;
     vgui::Label *m_pTimeTypeLabel, *m_pMaxZonesLabel;
     vgui::Frame *m_pComparisonsFrame;

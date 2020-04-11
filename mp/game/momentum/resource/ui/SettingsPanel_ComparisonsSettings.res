@@ -104,7 +104,7 @@
     
     "Zones"
     {
-		"ControlName"		"TextEntry"
+		"ControlName"		"CvarTextEntry"
 		"fieldName"		"Zones"
 		"xpos"		"4"
 		"ypos"		"0"
@@ -124,6 +124,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+        "cvar_name"     "mom_comparisons_max_zones"
         "actionsignallevel" "1"
 	}
     
