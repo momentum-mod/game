@@ -303,7 +303,8 @@ void CHudSpeedMeter::OnThink()
                 default:
                     break;
                 }
-                m_LastColor = m_CurrentColor; m_hLastColor = m_hCurrentColor;
+                m_LastColor = m_CurrentColor; 
+                m_hLastColor = m_hCurrentColor;
                 m_flLastVelocity = vel; m_flLastHVelocity = hvel;
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
