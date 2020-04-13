@@ -4,6 +4,7 @@
 #include "mom_gamemovement.h"
 #include "mom_player_shared.h"
 #include "movevars_shared.h"
+#include "coordsize.h"
 #include "mom_system_gamemode.h"
 
 #ifdef CLIENT_DLL
@@ -37,6 +38,7 @@
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
+ConVar sv_nojump_slope_boosts("sv_nojump_slope_boosts", "1", 0, "Keep original engine behavior which makes going up slopes without holding jump usually result in extra speed.");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
 ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.2", 0,
                                       "Amount of units used in offset for retraces", true, 0.2f, true, 5.f);
@@ -326,6 +328,119 @@ void CMomentumGameMovement::WalkMove()
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
     StayOnGround();
+}
+
+void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
+{
+    Vector vecEndPos;
+    VectorCopy(vecDestination, vecEndPos);
+
+    // Try sliding forward both on ground and up 16 pixels
+    //  take the move that goes farthest
+    Vector vecPos, vecVel;
+    VectorCopy(mv->GetAbsOrigin(), vecPos);
+    VectorCopy(mv->m_vecVelocity, vecVel);
+
+    // Slide move down.
+    TryPlayerMove(&vecEndPos, &trace);
+
+    // The original StepMove will use the up result but with the down result's z-velocity if the up result goes farther.
+    // This generates z-velocity from nowhere, which means it is beneficial to hit uphill slopes without pressing jump
+    // to do ground movement instead of air movement. Instead, we should use one entire result or the other instead of
+    // combining them. The main reason we might want to use the down result over the up result even if the up result
+    // goes farther is if the down result causes the player to not be grounded in the future.
+    if (!sv_nojump_slope_boosts.GetBool() && mv->m_vecVelocity.z > NON_JUMP_VELOCITY)
+    {
+        float flStepDist = mv->GetAbsOrigin().z - vecPos.z;
+        if (flStepDist > 0.0f)
+        {
+            mv->m_outStepHeight += flStepDist;
+        }
+        return;
+    }
+
+    // Down results.
+    Vector vecDownPos, vecDownVel;
+    VectorCopy(mv->GetAbsOrigin(), vecDownPos);
+    VectorCopy(mv->m_vecVelocity, vecDownVel);
+
+    // Reset original values.
+    mv->SetAbsOrigin(vecPos);
+    VectorCopy(vecVel, mv->m_vecVelocity);
+
+    // Move up a stair height.
+    VectorCopy(mv->GetAbsOrigin(), vecEndPos);
+    if (player->m_Local.m_bAllowAutoMovement)
+    {
+        vecEndPos.z += player->m_Local.m_flStepSize + DIST_EPSILON;
+    }
+
+    TracePlayerBBox(mv->GetAbsOrigin(), vecEndPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+    if (!trace.startsolid && !trace.allsolid)
+    {
+        mv->SetAbsOrigin(trace.endpos);
+    }
+
+    // Slide move up.
+    TryPlayerMove();
+
+    // Move down a stair (attempt to).
+    VectorCopy(mv->GetAbsOrigin(), vecEndPos);
+    if (player->m_Local.m_bAllowAutoMovement)
+    {
+        vecEndPos.z -= player->m_Local.m_flStepSize + DIST_EPSILON;
+    }
+
+    TracePlayerBBox(mv->GetAbsOrigin(), vecEndPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+
+    // If we are not on the ground any more then use the original movement attempt.
+    if (trace.plane.normal[2] < 0.7)
+    {
+        mv->SetAbsOrigin(vecDownPos);
+        VectorCopy(vecDownVel, mv->m_vecVelocity);
+        float flStepDist = mv->GetAbsOrigin().z - vecPos.z;
+        if (flStepDist > 0.0f)
+        {
+            mv->m_outStepHeight += flStepDist;
+        }
+        return;
+    }
+
+    // If the trace ended up in empty space, copy the end over to the origin.
+    if (!trace.startsolid && !trace.allsolid)
+    {
+        mv->SetAbsOrigin(trace.endpos);
+    }
+
+    // Copy this origin to up.
+    Vector vecUpPos;
+    VectorCopy(mv->GetAbsOrigin(), vecUpPos);
+
+    // decide which one went farther
+    float flDownDist =
+        (vecDownPos.x - vecPos.x) * (vecDownPos.x - vecPos.x) + (vecDownPos.y - vecPos.y) * (vecDownPos.y - vecPos.y);
+    float flUpDist =
+        (vecUpPos.x - vecPos.x) * (vecUpPos.x - vecPos.x) + (vecUpPos.y - vecPos.y) * (vecUpPos.y - vecPos.y);
+    if (flDownDist > flUpDist)
+    {
+        mv->SetAbsOrigin(vecDownPos);
+        VectorCopy(vecDownVel, mv->m_vecVelocity);
+    }
+    else
+    {
+        if (sv_nojump_slope_boosts.GetBool())
+        {
+            // copy z value from slide move
+            // This probably results in gaining some z-velocity for free!
+            mv->m_vecVelocity.z = vecDownVel.z;
+        }
+    }
+
+    float flStepDist = mv->GetAbsOrigin().z - vecPos.z;
+    if (flStepDist > 0)
+    {
+        mv->m_outStepHeight += flStepDist;
+    }
 }
 
 bool CMomentumGameMovement::LadderMove()
