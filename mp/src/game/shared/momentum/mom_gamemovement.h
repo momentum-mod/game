@@ -64,8 +64,6 @@ class CMomentumGameMovement : public CGameMovement
     float GetPlayerGravity() override;
     void FinishGravity() override;
 
-    int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;
-
     // Momentum-specific
     virtual void StuckGround();
     virtual void LimitStartZoneSpeed();

@@ -1286,14 +1286,14 @@ void CMomentumGameMovement::CategorizePosition()
                     }
                 }
 
-                ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
-
                 // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
                 // grounded (exception if the player wants to bhop)
-                if (vecNextVelocity.z <= NON_JUMP_VELOCITY && bGrounded)
+                if (bGrounded)
                 {
                     // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
                     // velocity.z
+                    ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
+
                     if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
                     {
                         VectorCopy(vecNextVelocity, mv->m_vecVelocity);
@@ -1887,6 +1887,43 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             else
             {
                 TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+                // This fix might also need to be applied after the sv_ramp_fix TracePlayerBBox above...
+                // Applying it here will handle the vast majority of cases, though.
+                if (sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
+                    player->GetGroundEntity() == nullptr)
+                {
+                    bool bValidHit = !pm.allsolid && pm.fraction < 1.0f;
+
+                    // TODO: Account for additional gamemode-specific restrictions restricting landing
+                    bool bCouldStandHere = pm.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY;
+
+                    bool bMovingIntoPlane2D =
+                        pm.plane.normal.x * mv->m_vecVelocity.x + pm.plane.normal.y * mv->m_vecVelocity.y < 0.0f;
+
+                    // Don't perform this fix on additional collisions this tick which have trace fraction == 0.0.
+                    // This situation occurs when wedged between a standable slope and a ceiling.
+                    // The player would be locked in place with full velocity (but no movement) without this check.
+                    bool bWedged = m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount && pm.fraction == 0.0f;
+
+                    if (bValidHit && bCouldStandHere && bMovingIntoPlane2D && !bWedged)
+                    {
+                        Vector vecNewVelocity;
+                        ClipVelocity(mv->m_vecVelocity, pm.plane.normal, vecNewVelocity, 1.0f);
+
+                        // Make sure allowing this collision would not actually be beneficial (2D speed gain)
+                        if (vecNewVelocity.Length2DSqr() <= mv->m_vecVelocity.Length2DSqr())
+                        {
+                            // A fraction of 1.0 implies no collision, which means ClipVelocity will not be called.
+                            // It also suggests movement for this tick is complete, so TryPlayerMove won't perform
+                            // additonal movement traces and the tick will essentially end early. We want this to
+                            // happen because we need landing/jumping logic to be applied before movement continues.
+                            // Ending the tick early is a safe and easy way to do this.
+
+                            pm.fraction = 1.0f;
+                        }
+                    }
+                }
             }
         }
 
@@ -2212,33 +2249,6 @@ void CMomentumGameMovement::ReduceTimers()
     }
 
     BaseClass::ReduceTimers();
-}
-
-int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
-{
-    const int blocked = BaseClass::ClipVelocity(in, normal, out, overbounce);
-    
-    // Check if the jump button is held to predict if the player wants to jump up an incline. Not checking for jumping
-    // could allow players that hit the slope almost perpendicularly and still surf up the slope because they would
-    // retain their horizontal speed
-    if (sv_slope_fix.GetBool() && m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP))
-    {
-        bool canJump = normal[2] >= 0.7f && out.z <= NON_JUMP_VELOCITY;
-        
-        if (m_pPlayer->m_CurrentSlideTrigger)
-            canJump &= m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump;
-        
-        // If the player do not gain horizontal speed while going up an incline, then act as if the surface is flat
-        if (canJump && (normal.x*in.x + normal.y*in.y < 0.0f) && out.Length2DSqr() <= in.Length2DSqr())
-        {
-            out.x = in.x;
-            out.y = in.y;
-            out.z = 0.0f;
-        }
-    }
-
-    // Return blocking flags.
-    return blocked;
 }
 
 // Expose our interface.
