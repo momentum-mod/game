@@ -36,6 +36,7 @@ class CMomentumGameMovement : public CGameMovement
 
     int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr) override;
     void FullWalkMove() override;
+    void StepMove(Vector &vecDestination, trace_t &trace) override;
     void CategorizePosition() override;
 
     void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) override;
