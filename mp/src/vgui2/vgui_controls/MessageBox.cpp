@@ -117,43 +117,6 @@ void MessageBox::OnCommand( const char *pCommand )
 	}
 }
 
-void MessageBox::ApplySchemeSettings(IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	int wide, tall;
-	m_pMessageLabel->GetContentSize(wide, tall);
-	m_pMessageLabel->SetSize(wide, tall);
-
-	wide += 100;
-	tall += 100;
-	SetSize(wide, tall);
-
-	if ( m_bShowMessageBoxOverCursor )
-	{
-		PlaceUnderCursor();
-		return;
-	}
-
-	// move to the middle of the screen
-	if ( m_pFrameOver )
-	{
-		int frameX, frameY;
-		int frameWide, frameTall;
-		m_pFrameOver->GetPos(frameX, frameY);
-		m_pFrameOver->GetSize(frameWide, frameTall);
-
-		SetPos((frameWide - wide) / 2 + frameX, (frameTall - tall) / 2 + frameY);
-	}
-	else
-	{
-		int swide, stall;
-		surface()->GetScreenSize(swide, stall);
-		// put the dialog in the middle of the screen
-		SetPos((swide - wide) / 2, (stall - tall) / 2);
-	}
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Put the message box into a modal state
@@ -261,6 +224,33 @@ void MessageBox::PerformLayout()
 	{
 		m_pOkButton->SetPos((wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
 		m_pCancelButton->SetPos((3*wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
+	}
+
+	m_pMessageLabel->GetContentSize(wide, tall);
+	m_pMessageLabel->SetSize(wide, tall);
+
+	wide += GetScaledVal(75);
+	tall += GetScaledVal(75);
+	SetSize(wide, tall);
+
+	if (m_bShowMessageBoxOverCursor)
+	{
+		PlaceUnderCursor();
+		return;
+	}
+
+	if (m_pFrameOver)
+	{
+		int frameX, frameY;
+		int frameWide, frameTall;
+		m_pFrameOver->GetPos(frameX, frameY);
+		m_pFrameOver->GetSize(frameWide, frameTall);
+
+		SetPos((frameWide - wide) / 2 + frameX, (frameTall - tall) / 2 + frameY);
+	}
+	else
+	{
+		MoveToCenterOfScreen();
 	}
 
 	BaseClass::PerformLayout();

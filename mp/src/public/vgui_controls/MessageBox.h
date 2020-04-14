@@ -73,7 +73,6 @@ public:
 
 protected:
 	virtual void PerformLayout();
-	virtual void ApplySchemeSettings(IScheme *pScheme);
 
 protected:
 	Button				*m_pOkButton;
