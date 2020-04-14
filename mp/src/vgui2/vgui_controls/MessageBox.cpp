@@ -57,6 +57,7 @@ void MessageBox::Init()
 	SetMinimizeButtonVisible(false);
 	SetCloseButtonVisible(false);
 	SetSizeable(false);
+	SetProportional(true);
 	
 	m_pOkButton = new Button(this, "OkButton", "#MessageBox_OK");
 	m_pOkButton->SetCommand( "OnOk" );
@@ -218,7 +219,7 @@ void MessageBox::ShowWindow(Frame *pFrameOver)
 }
 
 void MessageBox::PerformLayout()
-{	
+{
 	int x, y, wide, tall;
 	GetClientArea(x, y, wide, tall);
 	wide += x;
@@ -247,25 +248,22 @@ void MessageBox::PerformLayout()
 		m_pCancelButton->SetSize(btnWide2, btnTall2);
 	}
 
-	boxWidth = max(boxWidth, m_pMessageLabel->GetWide() + 100);
+	boxWidth = max(boxWidth, m_pMessageLabel->GetWide() + GetScaledVal(50));
 	boxWidth = max(boxWidth, (btnWide + btnWide2) * 2 + 30);
 	SetSize(boxWidth, boxTall);
-
-	GetSize(boxWidth, boxTall);
 
 	m_pMessageLabel->SetPos((wide/2)-(m_pMessageLabel->GetWide()/2) + x, y + 5 );
 	if ( !m_pCancelButton->IsVisible() )
 	{
-		m_pOkButton->SetPos((wide/2)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - 15);
+		m_pOkButton->SetPos((wide/2)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
 	}
 	else
 	{
-		m_pOkButton->SetPos((wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - 15);
-		m_pCancelButton->SetPos((3*wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - 15);
+		m_pOkButton->SetPos((wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
+		m_pCancelButton->SetPos((3*wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
 	}
 
 	BaseClass::PerformLayout();
-	GetSize(boxWidth, boxTall);
 }
 
 void MessageBox::SetCommand(const char *command)
