@@ -74,8 +74,8 @@ Scheme
 		Frame.TitleTextInsetX			16
 		Frame.ClientInsetX				8
 		Frame.ClientInsetY				6
-		Frame.BgColor					"MOM.Panel.Bg"	
-		Frame.OutOfFocusBgColor			"97 100 102 240"	
+		Frame.BgColor					"97 100 102 240" 
+		Frame.OutOfFocusBgColor			"MOM.Panel.Bg"
 		Frame.FocusTransitionEffectTime	"0.3"					// time it takes for a window to fade in/out on focus/out of focus
 		Frame.TransitionEffectTime		"0.3"					// time it takes for a window to fade in/out on open/close
 		Frame.AutoSnapRange				"0"
