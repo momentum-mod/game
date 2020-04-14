@@ -16,7 +16,7 @@
 #include "util/mom_util.h"
 #include "controls/FileImage.h"
 
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 #include "vgui_controls/PropertySheet.h"
 #include "vgui_controls/ImageList.h"
 #include "vgui/IVGui.h"
@@ -514,7 +514,7 @@ void CMapSelectorDialog::OnStartMapDownload(int id)
             }
             else
             {
-                const auto pPanel = messageboxpanel->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmOverwrite", 
+                const auto pPanel = g_pMessageBox->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmOverwrite", 
                                                                            "#MOM_MapSelector_ConfirmOverwriteMsg",
                                                        new KeyValues("ConfirmOverwrite", "id", id),
                                                        new KeyValues("RejectOverwrite", "id", id),
@@ -541,7 +541,7 @@ void CMapSelectorDialog::OnCancelMapDownload(int id)
         const auto indx = m_mapCancelConfirmDlgs.Find(id);
         if (!m_mapCancelConfirmDlgs.IsValidIndex(indx))
         {
-            Panel *pConfirm = messageboxpanel->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmCancel", "#MOM_MapSelector_ConfirmCancelMsg",
+            Panel *pConfirm = g_pMessageBox->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmCancel", "#MOM_MapSelector_ConfirmCancelMsg",
                                                                      new KeyValues("ConfirmCancelDownload", "id", id),
                                                                      new KeyValues("RejectCancelDownload", "id", id),
                                                                      "#GameUI_Yes", "#GameUI_No");

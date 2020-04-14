@@ -11,7 +11,7 @@
 #include "vgui/ISurface.h"
 
 #include "ClientTimesDisplay.h"
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 #include "LeaderboardsContextMenu.h"
 
 #include "hud_comparisons.h"
@@ -1004,7 +1004,7 @@ void CLeaderboardsTimes::OnContextDeleteReplay(int itemID, const char* runName)
 
         KeyValues *pCommand = new KeyValues("ConfirmDeleteReplay", "file", file);
         pCommand->SetInt("itemID", itemID);
-        messageboxpanel->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay",
+        g_pMessageBox->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay",
                                                "#MOM_MB_DeleteRunConfirmation", pCommand,
                                                nullptr, "#MOM_Leaderboards_DeleteReplay");
     }
