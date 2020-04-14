@@ -67,11 +67,11 @@ CheckButton::CheckButton(Panel *parent, const char *panelName, const char *text)
  	SetContentAlignment(a_west);
 	m_bCheckButtonCheckable = true;
 
-	// create the image
 	_checkBoxImage = new CheckImage(this);
+	m_iCheckInset = 6;
 
 	SetTextImageIndex(1);
-	SetImageAtIndex(0, _checkBoxImage, CHECK_INSET);
+	SetImageAtIndex(0, _checkBoxImage, m_iCheckInset);
 
 	_selectedFgColor = Color( 196, 181, 80, 255 );
 	_disabledFgColor = Color(130, 130, 130, 255);
@@ -115,7 +115,14 @@ void CheckButton::ApplySchemeSettings(IScheme *pScheme)
 
 	_checkBoxImage->SetFont( pScheme->GetFont("Marlett", IsProportional()) );
 	_checkBoxImage->ResizeImageToContent();
-	SetImageAtIndex(0, _checkBoxImage, CHECK_INSET);
+
+	const auto pInsetString = pScheme->GetResourceString("CheckButton.CheckInset");
+	if (pInsetString && pInsetString[0])
+	{
+		m_iCheckInset = Q_atoi(pInsetString);
+	}
+
+	SetImageAtIndex(0, _checkBoxImage, m_iCheckInset);
 
 	// don't draw a background
 	SetPaintBackgroundEnabled(false);

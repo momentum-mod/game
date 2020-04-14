@@ -77,6 +77,8 @@ public:
 
 	CheckImage *GetCheckImage() { return _checkBoxImage; }
 
+	void SetCheckInset(int inset) { m_iCheckInset = inset; }
+
 	virtual void SetHighlightColor(Color fgColor);
 
 protected:
@@ -93,7 +95,7 @@ protected:
 
 
 private:
-	enum { CHECK_INSET = 6 };
+	int m_iCheckInset;
 	bool m_bCheckButtonCheckable;
 	CheckImage *_checkBoxImage;
 	Color _disabledFgColor;
