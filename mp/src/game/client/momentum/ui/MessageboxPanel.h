@@ -7,6 +7,8 @@
 class MessageBoxVarRef : public vgui::MessageBox
 {
 public:
+    DECLARE_CLASS_SIMPLE(MessageBoxVarRef, vgui::MessageBox);
+
     MessageBoxVarRef(const char *title, const char *msg, const char *cvar);
     ~MessageBoxVarRef();
 

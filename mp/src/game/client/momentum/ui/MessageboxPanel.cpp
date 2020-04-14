@@ -1,6 +1,7 @@
 #include "cbase.h"
 
 #include "MessageboxPanel.h"
+
 #include "mom_shareddefs.h"
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include "hud_macros.h"
@@ -18,58 +19,30 @@ void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 
 MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvarName) : MessageBox(title, msg)
 {
-    // When toggled, will not allow the panel to be created (We don't check it here because we've done it on our 2 interfaces (Messaging and IMEssageBox)
-    // this also allows us to show this even if the toggle says no! (Like, for important stuff)
-    m_pToggleCheckButton = new vgui::CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvarName);
+    m_pToggleCheckButton = new CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvarName);
     AddActionSignalTarget(m_pToggleCheckButton); // Catch that OK button press
+    m_pToggleCheckButton->SetAutoWide(true);
+    m_pToggleCheckButton->SetAutoTall(true);
+    m_pToggleCheckButton->SetCheckInset(0);
+
+    // Needed for saving the variable
+    SetCommand(new KeyValues("ApplyChanges"));
 }
 
 MessageBoxVarRef::~MessageBoxVarRef()
 {
-    if (m_pToggleCheckButton)
-    {
-        m_pToggleCheckButton->DeletePanel();
-        m_pToggleCheckButton = nullptr;
-    }
 }
 
-// Overridden 
 void MessageBoxVarRef::PerformLayout()
 {
-    int x, y, wide, tall;
-    GetClientArea(x, y, wide, tall);
-    wide += x;
-    tall += y;
+    BaseClass::PerformLayout();
 
-    int boxWidth, boxTall;
-    GetSize(boxWidth, boxTall);
+    int x = m_pMessageLabel->GetXPos();
+    int y = m_pMessageLabel->GetYPos() + m_pMessageLabel->GetTall() + GetScaledVal(16);
 
-    int oldWide, oldTall;
-    m_pOkButton->GetSize(oldWide, oldTall);
+    m_pToggleCheckButton->SetPos(x, y);
 
-    int btnWide, btnTall;
-    m_pOkButton->GetContentSize(btnWide, btnTall);
-    btnWide = max(oldWide, btnWide + 10);
-    btnTall = max(oldTall, btnTall + 10);
-    m_pOkButton->SetSize(btnWide, btnTall);
-
-    boxWidth = max(boxWidth, m_pMessageLabel->GetWide() + 100);
-    boxWidth = max(boxWidth, btnWide * 2 + 30);
-    SetSize(boxWidth, boxTall);
-
-    m_pMessageLabel->SetPos((wide / 2) - (m_pMessageLabel->GetWide() / 2) + x, y + 5);
-    m_pOkButton->SetPos((wide / 2) - (m_pOkButton->GetWide() / 2) + x, tall - m_pOkButton->GetTall() - 25);
-
-    if (m_pToggleCheckButton)
-    {
-        int dummy, okY;
-        m_pOkButton->GetPos(dummy, okY);
-        m_pToggleCheckButton->SetAutoWide(true);
-        m_pToggleCheckButton->SetPos(x, tall - m_pToggleCheckButton->GetTall());
-    }
-
-    // Bypass BaseClass and call its BaseClass
-    Frame::PerformLayout();
+    m_pOkButton->SetPos((m_pMessageLabel->GetXPos() + m_pMessageLabel->GetWide()) - m_pOkButton->GetWide(), y);
 }
 
 // Constuctor: Initializes the Panel
