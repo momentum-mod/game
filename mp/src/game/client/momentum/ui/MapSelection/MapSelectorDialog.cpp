@@ -25,6 +25,8 @@
 
 using namespace vgui;
 
+extern ConVar mom_map_download_cancel_confirm;
+
 static CMapSelectorDialog *s_MapDlg = nullptr;
 
 CMapSelectorDialog &MapSelectorDialog()
@@ -536,7 +538,7 @@ void CMapSelectorDialog::OnRemoveFromQueue(int id)
 
 void CMapSelectorDialog::OnCancelMapDownload(int id)
 {
-    if (ConVarRef("mom_map_download_cancel_confirm").GetBool())
+    if (mom_map_download_cancel_confirm.GetBool())
     {
         const auto indx = m_mapCancelConfirmDlgs.Find(id);
         if (!m_mapCancelConfirmDlgs.IsValidIndex(indx))
