@@ -29,7 +29,7 @@
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
-#include "momentum/ui/IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 #include "clientmode_mom_normal.h"
 #include "ChangelogPanel.h"
 
@@ -128,7 +128,6 @@ inline void VGui_CreateMomentumPanels()
     mapselector->Create(gameMenu);
     changelogpanel->Create(gameMenu);
     momentum_settings->Create(gameMenu);
-    messageboxpanel->Create(gameMenu);
 }
 
 inline void VGui_DestroyMomentumPanels()
@@ -136,7 +135,7 @@ inline void VGui_DestroyMomentumPanels()
     mapselector->Destroy();
     changelogpanel->Destroy();
     momentum_settings->Destroy();
-    messageboxpanel->Destroy();
+    g_pMessageBox->DiscardMessageboxes();
 }
 
 

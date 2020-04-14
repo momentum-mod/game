@@ -3,7 +3,7 @@
 #include "client_events.h"
 
 #include "filesystem.h"
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 #include "fmtstr.h"
 #include "steam/steam_api.h"
 #include "util/mom_util.h"
@@ -46,12 +46,12 @@ void CMOMClientEvents::PostInit()
     // Version warning
     // MOM_TODO: Change this once we hit Beta
     // MOM_CURRENT_VERSION
-    messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "#MOM_StartupMsg_Alpha",
+    g_pMessageBox->CreateMessageboxVarRef("#MOM_StartupMsg_Alpha_Title", "#MOM_StartupMsg_Alpha",
                                             "mom_toggle_versionwarn", "#MOM_IUnderstand");
     
     if (!SteamAPI_IsSteamRunning() || !SteamHTTP())
     {
-        vgui::Panel *pPanel = messageboxpanel->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title",
+        vgui::Panel *pPanel = g_pMessageBox->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title",
                                                         "#MOM_StartupMsg_NoSteamApiContext", "#MOM_IUnderstand");
         pPanel->MoveToFront();
         pPanel->RequestFocus();

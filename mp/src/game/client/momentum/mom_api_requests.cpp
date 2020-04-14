@@ -6,7 +6,7 @@
 #include "mom_shareddefs.h"
 #include "filesystem.h"
 
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 
 #include "tier0/memdbgon.h"
 
@@ -412,7 +412,7 @@ void CAPIRequests::OnAuthHTTP(KeyValues *pResponse)
             const auto pErrorObj = pErr->FindKey("error");
             if (pErrorObj)
             {
-                messageboxpanel->CreateMessagebox("Error Authenticating", pErrorObj->GetString("message"));
+                g_pMessageBox->CreateMessagebox("Error Authenticating", pErrorObj->GetString("message"));
             }
         }
     }

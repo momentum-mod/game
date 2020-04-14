@@ -168,7 +168,6 @@ $Project "Client (Momentum)"
                 
                 $Folder "Messagebox"
                 {
-                    $File "momentum\ui\IMessageboxPanel.h"
                     $File "momentum\ui\MessageboxPanel.cpp"
                     $File "momentum\ui\MessageboxPanel.h"
                 }

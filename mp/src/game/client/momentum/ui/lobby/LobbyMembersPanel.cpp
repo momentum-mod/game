@@ -13,7 +13,7 @@
 #include "controls/FileImage.h"
 #include "vgui_controls/Tooltip.h"
 
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 
 #include "mom_shareddefs.h"
 #include "vgui_avatarimage.h"
@@ -465,7 +465,7 @@ void LobbyMembersPanel::OnLobbyEnter(LobbyEnter_t* pParam)
             "Too many join attempts in a very short period of time. Try waiting a bit before trying again." // k_EChatRoomEnterResponseRatelimitExceeded
         };
 
-        messageboxpanel->CreateMessagebox("#MOM_Lobby_JoinFail", szJoinFails[pParam->m_EChatRoomEnterResponse - 2]);
+        g_pMessageBox->CreateMessagebox("#MOM_Lobby_JoinFail", szJoinFails[pParam->m_EChatRoomEnterResponse - 2]);
     }
 }
 
