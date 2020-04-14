@@ -732,7 +732,7 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
         // Finish ducking immediately if duck time is over or not on ground
-        if (duckseconds > GetTimeToDuck() || bFullyCrouched || (!bIsSliding && player->GetGroundEntity() == nullptr))
+        if (duckseconds > GetTimeToDuck() || (!bIsSliding && player->GetGroundEntity() == nullptr))
         {
             FinishDuck();
         }
