@@ -29,18 +29,20 @@ vgui::Panel *MessageBox_Factory()
 }
 
 DECLARE_BUILD_FACTORY_CUSTOM( MessageBox, MessageBox_Factory );
-MessageBox::MessageBox(const char *title, const char *text, Panel *parent) : Frame(parent, NULL, false)
+
+
+MessageBox::MessageBox(const char *title, const char *text, Panel *parent) : Frame(parent, "MessageBoxFrame", false)
 {
 	SetTitle(title, true);
-	m_pMessageLabel = new Label(this, NULL, text);
+	m_pMessageLabel = new Label(this, "MessageLabel", text);
 
 	Init();
 }
 
-MessageBox::MessageBox(const wchar_t *wszTitle, const wchar_t *wszText, Panel *parent) : Frame(parent, NULL, false)
+MessageBox::MessageBox(const wchar_t *wszTitle, const wchar_t *wszText, Panel *parent) : Frame(parent, "MessageBoxFrame", false)
 {	
 	SetTitle(wszTitle, true);
-	m_pMessageLabel = new Label(this, NULL, wszText);
+	m_pMessageLabel = new Label(this, "MessageLabel", wszText);
 
 	Init();
 }
@@ -48,7 +50,7 @@ MessageBox::MessageBox(const wchar_t *wszTitle, const wchar_t *wszText, Panel *p
 void MessageBox::Init()
 {
 	SetDeleteSelfOnClose(true);
-	m_pFrameOver = NULL;
+	m_pFrameOver = nullptr;
 	m_bShowMessageBoxOverCursor = false;
 
 	SetMenuButtonResponsive(false);
@@ -56,16 +58,16 @@ void MessageBox::Init()
 	SetCloseButtonVisible(false);
 	SetSizeable(false);
 	
-	m_pOkButton = new Button(this, NULL, "#MessageBox_OK");
+	m_pOkButton = new Button(this, "OkButton", "#MessageBox_OK");
 	m_pOkButton->SetCommand( "OnOk" );
 	m_pOkButton->AddActionSignalTarget(this);
 
-	m_pCancelButton = new Button(this, NULL, "#MessageBox_Cancel");
+	m_pCancelButton = new Button(this, "CancelButton", "#MessageBox_Cancel");
 	m_pCancelButton->SetCommand( "OnCancel" );
 	m_pCancelButton->AddActionSignalTarget(this);
 	m_pCancelButton->SetVisible( false );
 
-	m_OkCommand = m_CancelCommand = NULL;
+	m_OkCommand = m_CancelCommand = nullptr;
 	m_bNoAutoClose = false;
 }
 
@@ -88,9 +90,9 @@ void MessageBox::ShowMessageBoxOverCursor( bool bEnable )
 
 void MessageBox::OnCommand( const char *pCommand )
 {
-	if ( vgui::input()->GetAppModalSurface() == GetVPanel() )
+	if ( input()->GetAppModalSurface() == GetVPanel() )
 	{
-		vgui::input()->ReleaseAppModalSurface();
+		input()->ReleaseAppModalSurface();
 	}
 
 	if ( !Q_stricmp( pCommand, "OnOk" ) )
