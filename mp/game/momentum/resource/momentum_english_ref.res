@@ -486,7 +486,7 @@
 
         // Alpha
         "MOM_StartupMsg_Alpha_Title" "Momentum Mod Alpha"
-        "MOM_StartupMsg_Alpha" "PLEASE NOTE: You are playing the Momentum Mod ALPHA!\nEverything you are about to play is subject to change! Please give us feedback in the discord channel!"
+        "MOM_StartupMsg_Alpha" "PLEASE NOTE: You are playing the Momentum Mod ALPHA!\nEverything you are about to play is subject to change!\nPlease give us feedback in the discord channel!"
         // Beta
         "MOM_StartupMsg_Beta_Title" "Momentum Mod Beta"
         "MOM_StartupMsg_Beta" "PLEASE NOTE: You are playing the Momentum Mod BETA!\nThis version is for fine-tuning everything before we officially release.\nSimilar to the Alpha release, we want as much information as possible regarding bugs and other broken things. \nTry to break things, and let us know how you did it!"
