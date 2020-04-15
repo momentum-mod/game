@@ -231,22 +231,6 @@ void ComparisonsSettingsPage::OnCheckboxChecked(Panel *p)
     }
 }
 
-void ComparisonsSettingsPage::OnTextChanged(Panel *p)
-{
-    BaseClass::OnTextChanged(p);
-
-    if (p == m_pMaxZones)
-    {
-        char buf[64];
-        m_pMaxZones->GetText(buf, 64);
-        int input = Q_atoi(buf);
-        if (input > 0 && input < 11)
-        {
-            ConVarRef("mom_comparisons_max_zones").SetValue(input);
-        }
-    }
-}
-
 int ComparisonsSettingsPage::DetermineBogusPulse(Panel *panel) const
 {
     int bogusPulse = 0;

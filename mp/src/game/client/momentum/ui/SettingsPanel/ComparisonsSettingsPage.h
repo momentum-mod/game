@@ -31,8 +31,6 @@ class ComparisonsSettingsPage : public SettingsPage
     // This uses OnCheckbox and not OnModified because we want to be able to enable
     // the other checkboxes regardless of whether the player clicks Apply/OK
     void OnCheckboxChecked(Panel *p) OVERRIDE;
-    // Used for updating the max stage buffer label
-    void OnTextChanged(Panel *p) OVERRIDE;
 
     MESSAGE_FUNC_PTR(CursorEnteredCallback, "OnCursorEntered", panel);
     MESSAGE_FUNC_PTR(CursorExitedCallback, "OnCursorExited", panel);
