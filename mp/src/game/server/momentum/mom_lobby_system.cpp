@@ -857,6 +857,19 @@ bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
     return (specChar && specChar[0]) ? true : false;
 }
 
+uint64 CMomentumLobbySystem::GetSpectatingTargetFromMemberData(const CSteamID &person)
+{
+    CHECK_STEAM_API_I(SteamMatchmaking());
+
+    uint64 toReturn = 0;
+
+    const auto specTarget = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, person, LOBBY_DATA_SPEC_TARGET);
+    if (specTarget && specTarget[0])
+        toReturn = Q_atoui64(specTarget);
+
+    return toReturn;
+}
+
 bool CMomentumLobbySystem::SendDecalPacket(DecalPacket *packet)
 {
     return LobbyValid() && SendPacket(packet);
