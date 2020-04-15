@@ -27,6 +27,8 @@ public:
     virtual void HandleGhostFirstPerson() = 0;
     virtual void UpdateStats(const Vector &ghostVel) = 0; // for hud display..
 
+    virtual void SetSteamID(uint64 steamID);
+
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
 
@@ -40,6 +42,8 @@ public:
     CNetworkVar(int, m_iDisabledButtons);
     CNetworkVar(bool, m_bBhopDisabled);
     CNetworkVar(bool, m_bSpectated); // Is the ghost being spectated by us?
+    CNetworkVar(int32, m_AccountID);
+    uint64 m_SteamID;
 
     void HideGhost();
     void UnHideGhost();
@@ -54,6 +58,7 @@ public:
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; }
     virtual int GetEntIndex() OVERRIDE { return entindex(); }
+    uint64 GetSteamID() override { return m_SteamID; }
 
 protected:
     virtual void Spawn() OVERRIDE;

@@ -386,9 +386,9 @@ bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, CSteamID *pTarget,
         auto index = m_mapLobbyGhosts.FirstInorder();
         while (index != m_mapLobbyGhosts.InvalidIndex())
         {
-            const auto ghostID = m_mapLobbyGhosts[index]->GetGhostSteamID();
+            const auto ghostID = m_mapLobbyGhosts[index]->GetSteamID();
 
-            if (!SteamNetworking()->SendP2PPacket(ghostID, buf.Base(), buf.TellPut(), sendType))
+            if (!SteamNetworking()->SendP2PPacket(CSteamID(ghostID), buf.Base(), buf.TellPut(), sendType))
             {
                 DevWarning("Failed to send the packet to %s!\n", SteamFriends()->GetFriendPersonaName(ghostID));
             }
@@ -585,7 +585,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             if (!validIndx && gpGlobals->eLoadType != MapLoad_Background && !FStrEq(pMapName, "credits"))
             {
                 CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
-                newPlayer->SetGhostSteamID(*pID);
+                newPlayer->SetSteamID(pID_int);
                 newPlayer->SetGhostName(pName);
                 newPlayer->Spawn();
                 AppearanceData_t appear;

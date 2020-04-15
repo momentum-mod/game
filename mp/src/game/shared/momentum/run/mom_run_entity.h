@@ -66,6 +66,7 @@ class CMomRunEntity
     virtual int GetEntIndex() = 0;
     virtual CMomRunStats *GetRunStats() = 0;
     virtual CMomRunEntityData *GetRunEntData() = 0;
+    virtual uint64 GetSteamID() = 0;
 
 #ifdef GAME_DLL
 protected:

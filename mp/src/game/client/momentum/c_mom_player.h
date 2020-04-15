@@ -63,6 +63,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; };
     virtual int GetEntIndex() OVERRIDE { return m_index; }
     virtual float GetCurrentRunTime() OVERRIDE;
+    uint64 GetSteamID() override;
 
     CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
 

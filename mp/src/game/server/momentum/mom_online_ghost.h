@@ -22,8 +22,6 @@ public:
     // Places a decal in the world, according to the packet and decal type
     void FireDecal(const DecalPacket &decal);
 
-    void SetGhostSteamID(const CSteamID &steamID);
-    CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
     void SetGhostName(const char *pGhostName);
 
     void AppearanceFlashlightChanged(const AppearanceData_t &newApp) override;
@@ -56,7 +54,6 @@ protected:
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
-    CNetworkVar(uint32, m_uiAccountID);
     CNetworkVar(bool, m_bSpectating);
 
     void DoPaint(const DecalPacket &packet);
@@ -70,6 +67,4 @@ private:
     ReceivedFrame_t<PositionPacket>* m_pCurrentFrame;
     ReceivedFrame_t<PositionPacket>* m_pNextFrame;
     CUtlQueue<ReceivedFrame_t<DecalPacket>*> m_vecDecalPackets;
-
-    CSteamID m_GhostSteamID;
 };

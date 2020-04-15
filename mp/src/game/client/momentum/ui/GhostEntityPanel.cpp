@@ -66,9 +66,9 @@ void CGhostEntityPanel::OnThink()
 
     if (m_pEntity)
     {
-        if (!m_pAvatarImage->IsValid() && m_pEntity->m_SteamID)
+        if (!m_pAvatarImage->IsValid() && m_pEntity->GetSteamID())
         {
-            m_pAvatarImage->SetAvatarSteamID(CSteamID(m_pEntity->m_SteamID), k_EAvatarSize64x64);
+            m_pAvatarImage->SetAvatarSteamID(CSteamID(m_pEntity->GetSteamID()), k_EAvatarSize64x64);
         }
 
         // MOM_TODO: Blink the panel if they're typing? Maybe an icon or something? Idk
