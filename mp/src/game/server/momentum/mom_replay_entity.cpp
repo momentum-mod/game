@@ -159,6 +159,8 @@ void CMomentumReplayGhostEntity::LoadFromReplayBase(CMomReplayBase *pReplay)
 {
     m_pPlaybackReplay = pReplay;
 
+    SetSteamID(pReplay->GetPlayerSteamID());
+
     m_RunStats.FullyCopyFrom(*m_pPlaybackReplay->GetRunStats());
     m_Data.m_iRunTime = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();
     m_Data.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();

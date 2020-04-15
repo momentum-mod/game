@@ -12,10 +12,12 @@ public:
     C_MomentumGhostBaseEntity();
 
     bool IsValidIDTarget() OVERRIDE{ return true; }
+    void PostDataUpdate(DataUpdateType_t updateType) override;
 
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
 
+    CNetworkVar(int32, m_AccountID);
     CNetworkString(m_szGhostName, MAX_PLAYER_NAME_LENGTH);
     CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(int, m_iDisabledButtons);
@@ -30,9 +32,13 @@ public:
     virtual CMomRunStats *GetRunStats() OVERRIDE {return &m_RunStats;}
     virtual int GetEntIndex() OVERRIDE { return m_index; }
     virtual float GetCurrentRunTime() OVERRIDE;
+    uint64 GetSteamID() override { return m_SteamID; }
 
     CInterpolatedVar<Vector> m_iv_vecViewOffset;
 
 protected:
     bool ShouldInterpolate() OVERRIDE { return true; }
+
+private:
+    uint64 m_SteamID;
 };

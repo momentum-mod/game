@@ -1,5 +1,8 @@
 #include "cbase.h"
 #include "c_mom_player.h"
+
+#include <steam/isteamuser.h>
+
 #include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
@@ -152,4 +155,9 @@ float C_MomentumPlayer::GetCurrentRunTime()
         iTotalTicks = m_Data.m_iRunTime;
 
     return float(iTotalTicks) * m_Data.m_flTickRate;
+}
+
+uint64 C_MomentumPlayer::GetSteamID()
+{
+    return SteamUser() ? SteamUser()->GetSteamID().ConvertToUint64() : 0;
 }

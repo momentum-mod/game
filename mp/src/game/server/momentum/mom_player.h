@@ -109,6 +109,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; }
     virtual int GetEntIndex() OVERRIDE { return entindex(); }
+    uint64 GetSteamID() override;
 
     CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
     CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag

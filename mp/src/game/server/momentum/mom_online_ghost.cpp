@@ -17,7 +17,6 @@
 LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
-SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
 SendPropBool(SENDINFO(m_bSpectating)),
 SendPropFloat(SENDINFO_VECTORELEM(m_vecViewOffset, 0), 8, SPROP_ROUNDDOWN, -32.0, 32.0f),
 SendPropFloat(SENDINFO_VECTORELEM(m_vecViewOffset, 1), 8, SPROP_ROUNDDOWN, -32.0, 32.0f),
@@ -62,12 +61,10 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
     ListenForGameEvent("mapfinished_panel_closed");
     m_nGhostButtons = 0;
     m_bSpectating = false;
-    m_GhostSteamID.Clear();
 }
 
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
-    m_GhostSteamID.Clear();
     m_vecPositionPackets.Purge();
     m_vecDecalPackets.Purge();
 }
@@ -122,12 +119,6 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
     default:
         break;
     }
-}
-
-void CMomentumOnlineGhostEntity::SetGhostSteamID(const CSteamID &steamID)
-{
-    m_GhostSteamID = steamID;
-    m_uiAccountID = m_GhostSteamID.ConvertToUint64();
 }
 
 void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)

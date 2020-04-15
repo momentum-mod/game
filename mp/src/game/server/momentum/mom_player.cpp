@@ -1082,6 +1082,11 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
     CMomRunEntity::OnZoneExit(pTrigger);
 }
 
+uint64 CMomentumPlayer::GetSteamID()
+{
+    return SteamUser() ? SteamUser()->GetSteamID().ConvertToUint64() : 0;
+}
+
 void CMomentumPlayer::ResetMovementProperties()
 {
     SetLaggedMovementValue(1.0f);
@@ -1341,7 +1346,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         if (pGhostToSpectate->IsOnlineGhost())
         {
             const auto pOnlineEnt = static_cast<CMomentumOnlineGhostEntity*>(target);
-            m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
+            m_sSpecTargetSteamID = pOnlineEnt->GetSteamID();
         }
         else if (pGhostToSpectate->IsReplayGhost())
         {
@@ -1460,7 +1465,7 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
                 const auto pOnlineEnt = static_cast<CMomentumOnlineGhostEntity*>(pGhostEnt);
                 if (pOnlineEnt)
                 {
-                    const auto indx = pOnlineGhostMap->Find(pOnlineEnt->GetGhostSteamID().ConvertToUint64());
+                    const auto indx = pOnlineGhostMap->Find(pOnlineEnt->GetSteamID());
                     return IterateAndFindViableNextGhost(indx, bReverse, pCurrentReplayEnt, false);
                 }
             }
