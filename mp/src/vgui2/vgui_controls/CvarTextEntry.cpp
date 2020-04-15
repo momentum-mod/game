@@ -62,6 +62,25 @@ void CvarTextEntry::GetSettings(KeyValues* pOutResource)
     pOutResource->SetString("cvar_name", m_cvarRef.GetName());
 }
 
+void CvarTextEntry::SetText(const char* text)
+{
+    if (!text || !text[0]) 
+        return;
+
+    if (text[strnlen(text, MAX_CVAR_TEXT) - 1] == '.')
+    {
+        // trying to enter a decimal number so set the text normally
+        BaseClass::SetText(text);
+    }
+    else // not in the middle of setting a decimal number
+    {
+        // making sure the formatting is correct (removing trailing zeros via %g)
+        char newText[MAX_CVAR_TEXT];
+        Q_snprintf(newText, MAX_CVAR_TEXT, "%g", atof(text));
+        BaseClass::SetText(newText);
+    }
+}
+
 void CvarTextEntry::InitSettings()
 {
     BEGIN_PANEL_SETTINGS()
