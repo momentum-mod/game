@@ -2006,7 +2006,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 // This fix might also need to be applied after the sv_ramp_fix TracePlayerBBox above...
                 // Applying it here will handle the vast majority of cases, though.
                 if (sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
-                    player->GetGroundEntity() == nullptr)
+                    player->GetGroundEntity() == nullptr && player->GetWaterLevel() < WL_Waist)
                 {
                     bool bValidHit = !pm.allsolid && pm.fraction < 1.0f;
 
@@ -2031,7 +2031,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                         {
                             // A fraction of 1.0 implies no collision, which means ClipVelocity will not be called.
                             // It also suggests movement for this tick is complete, so TryPlayerMove won't perform
-                            // additonal movement traces and the tick will essentially end early. We want this to
+                            // additional movement traces and the tick will essentially end early. We want this to
                             // happen because we need landing/jumping logic to be applied before movement continues.
                             // Ending the tick early is a safe and easy way to do this.
 
