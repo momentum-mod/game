@@ -130,5 +130,6 @@ void CvarTextEntry::OnTextChanged()
     if (HasBeenModified())
     {
         PostActionSignal(new KeyValues("ControlModified"));
+        ApplyChanges();
     }
 }
