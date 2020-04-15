@@ -26,6 +26,7 @@ public:
 
     // Movement vars
     virtual float       GetViewScale() = 0;
+    virtual bool        CanBhop() = 0;
 
     virtual ~IGameMode() {}
 };
@@ -41,6 +42,7 @@ public:
     const char* GetGameModeCfg() override { return nullptr; }
     float GetIntervalPerTick() override { return 0.015f; }
     float GetViewScale() override { return 0.5f; }
+    bool CanBhop() override { return true; }
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }
@@ -96,6 +98,7 @@ public:
     const char* GetMapPrefix() override { return "rj_"; }
     const char* GetGameModeCfg() override { return "rj.cfg"; }
     float GetViewScale() override { return 1.0f; }
+    bool CanBhop() override { return false; }
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
@@ -112,6 +115,7 @@ class CGameMode_SJ : public CGameModeBase
     const char *GetMapPrefix() override { return "sj_"; }
     const char *GetGameModeCfg() override { return "sj.cfg"; }
     float GetViewScale() override { return 1.0f; }
+    bool CanBhop() override { return false; }
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }

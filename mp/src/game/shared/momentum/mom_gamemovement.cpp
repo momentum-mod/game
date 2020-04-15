@@ -38,7 +38,8 @@
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
-ConVar sv_nojump_slope_boosts("sv_nojump_slope_boosts", "1", 0, "Keep original engine behavior which makes going up slopes without holding jump usually result in extra speed.");
+ConVar sv_nojump_slope_boosts("sv_nojump_slope_boosts", "1", 0,
+    "Keep original engine behavior which makes going up slopes without holding jump usually result in extra speed.");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
 ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.2", 0,
                                       "Amount of units used in offset for retraces", true, 0.2f, true, 5.f);
@@ -1155,7 +1156,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    if (g_pGameModeSystem->IsTF2BasedMode())
+    if (!g_pGameModeSystem->GetGameMode()->CanBhop())
     {
         PreventBunnyHopping();
     }
@@ -1401,20 +1402,43 @@ void CMomentumGameMovement::CategorizePosition()
                     }
                 }
 
-                // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
-                // grounded (exception if the player wants to bhop)
                 if (bGrounded)
                 {
-                    // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
-                    // velocity.z
-                    ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
-
-                    if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                    if (sv_slope_fix.GetBool())
                     {
-                        VectorCopy(vecNextVelocity, mv->m_vecVelocity);
-                    }
+                        ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
 
-                    SetGroundEntity(&pm);
+                        // What constitutes a favorable landing depends on if the player is allowed to bhop.
+
+                        // It also depends on if ground speed is capped *and* if the player actually bhops
+                        // on the next tick, but if we assume ground speed is capped only when bhopping isn't
+                        // allowed, all that matters is if bhopping is allowed.
+
+                        // On modes that can't bhop, colliding before landing is better if it means they start sliding.
+                        if (g_pGameModeSystem->GetGameMode()->CanBhop() || vecNextVelocity.z <= NON_JUMP_VELOCITY)
+                        {
+                            // Only update velocity as if we collided if it results in horizontal speed gain.
+                            // Otherwise, we are probably going uphill and are actually trying to avoid this collision.
+                            if (vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                            {
+                                VectorCopy(vecNextVelocity, mv->m_vecVelocity);
+                            }
+
+                            SetGroundEntity(&pm);
+                        }
+                        else
+                        {
+                            // Pretend the player collided first and since that means they can't land,
+                            // don't set the ground entity
+
+                            // Should we also pre-apply the ClipVelocity result?
+                            // VectorCopy(vecNextVelocity, mv->m_vecVelocity);
+                        }
+                    }
+                    else
+                    {
+                        SetGroundEntity(&pm);
+                    }
                 }
             }
             else
@@ -2006,7 +2030,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 // This fix might also need to be applied after the sv_ramp_fix TracePlayerBBox above...
                 // Applying it here will handle the vast majority of cases, though.
                 if (sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
-                    player->GetGroundEntity() == nullptr && player->GetWaterLevel() < WL_Waist)
+                    player->GetGroundEntity() == nullptr && player->GetWaterLevel() < WL_Waist &&
+                    g_pGameModeSystem->GetGameMode()->CanBhop())
                 {
                     bool bValidHit = !pm.allsolid && pm.fraction < 1.0f;
 
