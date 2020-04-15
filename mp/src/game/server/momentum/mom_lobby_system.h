@@ -51,6 +51,7 @@ public:
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
+    uint64 GetSpectatingTargetFromMemberData(const CSteamID &person);
     bool SendDecalPacket(DecalPacket *packet);
 
     void OnLobbyMaxPlayersChanged(int newMax);

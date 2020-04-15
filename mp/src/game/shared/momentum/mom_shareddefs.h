@@ -260,6 +260,7 @@ enum SpectateMessageType_t
     Warning("%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
     __FUNCTION__, __LINE__, #steam_interface); ret; }
 
+#define CHECK_STEAM_API_I(steam_interface) ____CHECK_STEAM_API(steam_interface, return 0)
 #define CHECK_STEAM_API_B(steam_interface) ____CHECK_STEAM_API(steam_interface, return false)
 #define CHECK_STEAM_API(steam_interface) ____CHECK_STEAM_API(steam_interface, return)
 
