@@ -100,6 +100,7 @@ void CvarTextEntry::Reset()
     {
         SetText(value);
         Q_strncpy(m_pszStartValue, value, sizeof(m_pszStartValue));
+        GotoTextEnd();
     }
 }
 
