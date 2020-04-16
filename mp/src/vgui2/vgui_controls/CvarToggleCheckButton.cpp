@@ -114,6 +114,7 @@ void CvarToggleCheckButton::OnButtonChecked()
     if (HasBeenModified())
     {
         PostActionSignal(new KeyValues("ControlModified"));
+        ApplyChanges();
     }
 }
 
