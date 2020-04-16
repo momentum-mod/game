@@ -129,6 +129,19 @@ void CvarTextEntry::OnThink()
         Reset();
 }
 
+void CvarTextEntry::OnKillFocus()
+{
+    if (!m_cvarRef.IsValid())
+        return;
+
+    char entryValue[MAX_CVAR_TEXT];
+    GetText(entryValue, MAX_CVAR_TEXT);
+    if (!entryValue[0] || stricmp(m_cvarRef.GetString(), m_pszStartValue) != 0)
+    {
+        Reset();
+    }
+}
+
 bool CvarTextEntry::HasBeenModified()
 {
     char szText[MAX_CVAR_TEXT];

@@ -27,6 +27,7 @@ namespace vgui
         void InitSettings() OVERRIDE;
         void Reset();
         void OnThink() OVERRIDE;
+        void OnKillFocus() OVERRIDE;
         bool HasBeenModified();
         bool HasBeenModifiedExternally() const;
 
