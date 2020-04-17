@@ -552,13 +552,7 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
-	bool bAllowed = (sAllowPointCommand == eAllowAlways);
-
-    if (sAllowPointCommand == eAllowWhitelist)
-    {
-        GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
-        return;
-    }
+	bool bAllowed = (sAllowPointCommand == eAllowAlways || sAllowPointCommand == eAllowWhitelist);
 
     if (!bAllowed)
     {
@@ -590,7 +584,14 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !pClient || !pClient->GetUnknown() )
 		return;
 
-	engine->ClientCommand( pClient, "%s\n", inputdata.value.String() );
+	if (sAllowPointCommand == eAllowWhitelist)
+	{
+		GameRulesMomentum()->RunPointClientCommandWhitelisted(pClient, inputdata.value.String());
+	}
+	else
+	{
+		engine->ClientCommand(pClient, "%s\n", inputdata.value.String());
+	}
 }
 
 BEGIN_DATADESC( CPointClientCommand )
@@ -622,7 +623,7 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	bool bAllowed = ( sAllowPointCommand == eAllowAlways );
     if (sAllowPointCommand == eAllowWhitelist)
     {
-        GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+        GameRulesMomentum()->RunPointServerCommandWhitelisted(inputdata.value.String());
         return;
     }
 

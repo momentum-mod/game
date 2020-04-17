@@ -48,7 +48,8 @@ class CMomentumGameRules : public CSingleplayRules
     void ApplyRadiusDamage(CBaseEntity *pEntity, const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, float falloff);
 
     // Whitelist checking
-    void PointCommandWhitelisted(const char *pCmd);
+    void RunPointServerCommandWhitelisted(const char* pCmd);
+    void RunPointClientCommandWhitelisted(edict_t* pClient, const char *pCmd);
 
     void ClientSettingsChanged(CBasePlayer *) OVERRIDE;
 

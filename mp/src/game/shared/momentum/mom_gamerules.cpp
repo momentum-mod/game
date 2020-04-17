@@ -173,13 +173,13 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
     return pPlayer->ClientCommand(args);
 }
 
-struct WhiteListedCmd
+struct WhiteListedServerCmd
 {
     const char *pName;
     ConVar *pVar;
 };
 
-static WhiteListedCmd const g_szWhitelistedCmds[] = {
+static WhiteListedServerCmd const g_szWhitelistedServerCmds[] = {
     { "sv_gravity", &sv_gravity },
     { "sv_maxvelocity", &sv_maxvelocity },
     { "sv_airaccelerate", &sv_airaccelerate },
@@ -187,23 +187,64 @@ static WhiteListedCmd const g_szWhitelistedCmds[] = {
     { "disconnect", nullptr }
 };
 
-void CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
+void CMomentumGameRules::RunPointServerCommandWhitelisted(const char *pCmd)
 {
     CUtlVector<char *> vec;
     V_SplitString(pCmd, ";", vec);
     FOR_EACH_VEC(vec, i)
     {
-        for (const auto pWl : g_szWhitelistedCmds)
+        bool bAllowed = false;
+        for (const auto pWl : g_szWhitelistedServerCmds)
         {
             const auto strLen = V_strlen(pWl.pName);
             if (!V_strnicmp(vec[i], pWl.pName, strLen))
             {
+                bAllowed = true;
+
                 if (pWl.pVar)
                     pWl.pVar->SetValue(vec[i] + strLen + 1);
                 else
                     engine->ServerCommand(vec[i]);
+
+                break;
             }
         }
+
+        if (!bAllowed)
+            Warning("point_servercommand \"%s\" usage blocked by sv_allow_point_command setting\n", vec[i]);
+    }
+
+    vec.PurgeAndDeleteElements();
+}
+
+static char* const g_szWhitelistedClientCmds[] = {
+    "r_screenoverlay",
+    "play",
+    "playgamesound"
+};
+
+void CMomentumGameRules::RunPointClientCommandWhitelisted(edict_t* pClient, const char* pCmd)
+{
+    CUtlVector<char*> vec;
+    V_SplitString(pCmd, ";", vec);
+    FOR_EACH_VEC(vec, i)
+    {
+        bool bAllowed = false;
+        for (const auto pWl : g_szWhitelistedClientCmds)
+        {
+            const auto strLen = V_strlen(pWl);
+            if (!V_strnicmp(vec[i], pWl, strLen))
+            {
+                bAllowed = true;
+
+                engine->ClientCommand(pClient, "%s\n", vec[i]);
+
+                break;
+            }
+        }
+
+        if (!bAllowed)
+            Warning("point_clientcommand \"%s\" usage blocked by sv_allow_point_command setting\n", vec[i]);
     }
 
     vec.PurgeAndDeleteElements();
