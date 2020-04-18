@@ -37,13 +37,13 @@ private:
     vgui::Frame *m_pModelPreviewFrame;
     CRenderPanel *m_pModelPreview;
 
-    ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color, ghost_trail_length; // MOM_TODO add the rest of visible things here
+    ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color; // MOM_TODO add the rest of visible things here
 
     vgui::ComboBox *m_pBodygroupCombo;
 
     vgui::CvarToggleCheckButton *m_pEnableTrail;
 
-    vgui::TextEntry *m_pTrailLengthEntry;
+    vgui::CvarTextEntry *m_pTrailLengthEntry;
     vgui::ColorPicker *m_pColorPicker;
     vgui::Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
 

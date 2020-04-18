@@ -8,6 +8,7 @@
 
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/ComboBox.h>
+#include <vgui_controls/CvarTextEntry.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include "controls/ModelPanel.h"
 #include "controls/ColorPicker.h"
@@ -21,8 +22,8 @@ using namespace vgui;
     button->SetArmedColor(color, color); \
     button->SetSelectedColor(color, color);
 
-AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pParent, "AppearanceSettings"), ghost_color("mom_ghost_color"), ghost_bodygroup("mom_ghost_bodygroup"),
-      ghost_trail_color("mom_trail_color"), ghost_trail_length("mom_trail_length"), m_bModelPreviewFrameIsFadingOut(false)
+AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pParent, "AppearanceSettings"), ghost_color("mom_ghost_color"), 
+    ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), m_bModelPreviewFrameIsFadingOut(false)
 {
     // Outer frame for the model preview
     m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
@@ -56,7 +57,8 @@ AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pPare
 
     m_pPickBodyColorButton = new Button(this, "PickBodyColorButton", "", this, "picker_body");
 
-    m_pTrailLengthEntry = new TextEntry(this, "TrailEntry");
+    m_pTrailLengthEntry = new CvarTextEntry(this, "TrailEntry", "mom_trail_length");
+    m_pTrailLengthEntry->SetAllowNumericInputOnly(true);
 
     m_pBodygroupCombo = new ComboBox(this, "BodygroupCombo", 15, false);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_0", nullptr);
@@ -112,7 +114,6 @@ void AppearanceSettingsPage::LoadSettings()
     SetButtonColors();
 
     m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
-    m_pTrailLengthEntry->SetText(ghost_trail_length.GetString());
 
     const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
     if (result)
@@ -155,12 +156,6 @@ void AppearanceSettingsPage::OnTextChanged(Panel *p)
     {
         ghost_bodygroup.SetValue(m_pBodygroupCombo->GetActiveItem());
         UpdateModelSettings();
-    }
-    else if (p == m_pTrailLengthEntry)
-    {
-        char buf[3];
-        m_pTrailLengthEntry->GetText(buf, 3);
-        ghost_trail_length.SetValue(buf);
     }
 }
 

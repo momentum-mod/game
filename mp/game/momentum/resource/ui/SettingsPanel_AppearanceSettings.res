@@ -185,7 +185,7 @@
     }
     "TrailEntry"
 	{
-		"ControlName"		"TextEntry"
+		"ControlName"		"CvarTextEntry"
 		"fieldName"		"TrailEntry"
 		"xpos"		"0"
 		"ypos"		"4"
@@ -204,6 +204,7 @@
 		"maxchars"		"3"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+		"cvar_name"     "mom_trail_length"
         "actionsignallevel" "1"
 		"Font"		"DefaultVerySmall"
 	}
