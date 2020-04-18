@@ -39,8 +39,8 @@ struct EventQueuePrioritizedEvent_t
 class CEventQueueEvent
 {
 public:
-	void FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe );
-	void ToPrioritizedEvent( EventQueuePrioritizedEvent_t *pe ) const;
+	void FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe, CBaseEntity *pAbstractedEntity );
+	void ToPrioritizedEvent( EventQueuePrioritizedEvent_t *pe, CBaseEntity *pAbstractedEntity ) const;
 	void LoadFromKeyValues( KeyValues* kv );
 	void SaveToKeyValues( KeyValues* kv ) const;
 public:
@@ -53,6 +53,13 @@ public:
 	string_t m_szEntTarget; // name of entity to target; overrides m_iTarget
 
 	variant_t m_VariantValue; // variable-type parameter
+
+	// This event gets saved with respect to a certain entity we are interested in (probably a player).
+	// If any of the target, activator, or caller are that entity, keep a record of that so we can
+	// set those to the entity we end up restoring this event for later.
+	bool m_bAbstractTarget;
+	bool m_bAbstractActivator;
+	bool m_bAbstractCaller;
 };
 
 class CEventQueueState
@@ -75,6 +82,7 @@ public:
 	void CancelEvents( CBaseEntity *pCaller );
 	void CancelEventOn( CBaseEntity *pTarget, const char *sInputName );
 	bool HasEventPending( CBaseEntity *pTarget, const char *sInputName );
+	bool EventAffectsEntity( EventQueuePrioritizedEvent_t* event, CBaseEntity* pTarget );
 
 	// services the queue, firing off any events who's time hath come
 	void ServiceEvents( void );
