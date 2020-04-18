@@ -7,8 +7,8 @@
 #include "mom_shareddefs.h"
 
 #include <vgui_controls/Frame.h>
-#include <vgui_controls/ComboBox.h>
 #include <vgui_controls/CvarTextEntry.h>
+#include <vgui_controls/CvarComboBox.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include "controls/ModelPanel.h"
 #include "controls/ColorPicker.h"
@@ -60,7 +60,7 @@ AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pPare
     m_pTrailLengthEntry = new CvarTextEntry(this, "TrailEntry", "mom_trail_length");
     m_pTrailLengthEntry->SetAllowNumericInputOnly(true);
 
-    m_pBodygroupCombo = new ComboBox(this, "BodygroupCombo", 15, false);
+    m_pBodygroupCombo = new CvarComboBox(this, "BodygroupCombo", 15, false, "mom_ghost_bodygroup", true);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_0", nullptr);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_1", nullptr);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_2", nullptr);
@@ -113,8 +113,6 @@ void AppearanceSettingsPage::LoadSettings()
 {
     SetButtonColors();
 
-    m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
-
     const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
     if (result)
         UpdateModelSettings();
@@ -154,7 +152,6 @@ void AppearanceSettingsPage::OnTextChanged(Panel *p)
     
     if (p == m_pBodygroupCombo)
     {
-        ghost_bodygroup.SetValue(m_pBodygroupCombo->GetActiveItem());
         UpdateModelSettings();
     }
 }

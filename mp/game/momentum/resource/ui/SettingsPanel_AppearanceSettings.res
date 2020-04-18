@@ -63,7 +63,7 @@
     }
     "BodygroupCombo"
 	{
-		"ControlName"		"ComboBox"
+		"ControlName"		"CvarComboBox"
 		"fieldName"		"BodygroupCombo"
 		"xpos"		"3"
 		"ypos"		"0"
@@ -82,6 +82,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"0"
 		"unicode"		"0"
+		"cvar_name"     "mom_ghost_bodygroup"
         "font" "DefaultVerySmall"
 	}
     
