@@ -39,7 +39,7 @@ private:
 
     ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color; // MOM_TODO add the rest of visible things here
 
-    vgui::ComboBox *m_pBodygroupCombo;
+    vgui::CvarComboBox *m_pBodygroupCombo;
 
     vgui::CvarToggleCheckButton *m_pEnableTrail;
 
