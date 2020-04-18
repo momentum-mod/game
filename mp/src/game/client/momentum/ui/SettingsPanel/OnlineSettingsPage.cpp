@@ -32,5 +32,16 @@ OnlineSettingsPage::OnlineSettingsPage(Panel* pParent) : BaseClass(pParent, "Onl
 
 void OnlineSettingsPage::LoadSettings()
 {
-    BaseClass::LoadSettings();
+    m_pAlphaOverrideSlider->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+    m_pAlphaOverrideInput->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+}
+
+void OnlineSettingsPage::OnCheckboxChecked(Panel *p)
+{
+    BaseClass::OnCheckboxChecked(p);
+    if (p == m_pEnableColorAlphaOverride)
+    {
+        m_pAlphaOverrideSlider->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+        m_pAlphaOverrideInput->SetEnabled(m_pEnableColorAlphaOverride->IsSelected());
+    }
 }
