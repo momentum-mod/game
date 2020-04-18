@@ -13,7 +13,7 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 {
     m_pYawSpeedSlider = new CvarSlider(this, "YawSpeed", nullptr, 0.0f, 360.0f, "cl_yawspeed", false, true);
     m_pYawSpeedSlider->AddActionSignalTarget(this);
-    m_pYawSpeedEntry = new TextEntry(this, "YawSpeedEntry");
+    m_pYawSpeedEntry = new CvarTextEntry(this, "YawSpeedEntry", "cl_yawspeed");
     m_pYawSpeedEntry->SetAllowNumericInputOnly(true);
     m_pYawSpeedEntry->AddActionSignalTarget(this);
 
