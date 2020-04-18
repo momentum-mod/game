@@ -12,6 +12,8 @@ class OnlineSettingsPage : public SettingsPage
 
     void LoadSettings() OVERRIDE;
 
+    void OnCheckboxChecked(Panel *p) OVERRIDE;
+
 private:
     vgui::CvarSlider *m_pAlphaOverrideSlider;
     vgui::CvarTextEntry *m_pAlphaOverrideInput;
