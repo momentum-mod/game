@@ -12,15 +12,9 @@ class GameplaySettingsPage : public SettingsPage
 
     void LoadSettings() OVERRIDE;
 
-    void OnTextChanged(Panel *p) OVERRIDE;
-
-    void OnControlModified(Panel *p) OVERRIDE;
-
     void OnCheckboxChecked(Panel *p) OVERRIDE;
 
 private:
-    void UpdateSliderEntries() const;
-
     vgui::CvarToggleCheckButton *m_pOverlappingKeys;
     vgui::CvarToggleCheckButton *m_pReleaseForwardOnJump;
 
