@@ -1051,7 +1051,8 @@ void CEventQueue::CancelEvents( CBaseEntity *pCaller )
 bool CEventQueue::EventAffectsEntity(EventQueuePrioritizedEvent_t* event, CBaseEntity* pTarget)
 {
 	CBaseEntity* pSearchingEntity = event->m_pCaller;
-	if (event->m_pEntTarget == pTarget ||
+	if (event->m_pActivator == pTarget ||
+		event->m_pEntTarget == pTarget ||
 		pTarget == gEntList.FindEntityByName(nullptr, event->m_iTarget, pSearchingEntity, event->m_pActivator, event->m_pCaller))
 	{
 		return true;
