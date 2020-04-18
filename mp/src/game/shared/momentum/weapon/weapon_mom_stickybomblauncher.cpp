@@ -19,10 +19,12 @@
 #define MOM_STICKYBOMB_MAX_CHARGE_VEL 2400
 #define MOM_STICKYBOMB_MAX_CHARGE_TIME 4.0f
 #define MOM_STICKYBOMB_BUFFER_WINDOW 0.05f
+#define MOM_STICKYBOMB_TICK_EPSILON 0.001f
 
 MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_fail_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate fail sound. 0 = OFF, 1 = ON\n");
 MAKE_TOGGLE_CONVAR(mom_sj_sound_detonate_success_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher detonate success sound. 0 = OFF, 1 = ON\n");
 MAKE_TOGGLE_CONVAR(mom_sj_sound_charge_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle the sticky launcher charging sound. 0 = OFF, 1 = ON\n");
+MAKE_CONVAR(mom_sj_det_buffer_ticks, "5", FCVAR_ARCHIVE | FCVAR_REPLICATED, "TO BE TESTED - Number of ticks (0.015s each) after detonating two stickies at same time before another detonation is allowed", 0, 99);
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 
@@ -30,11 +32,13 @@ BEGIN_NETWORK_TABLE(CMomentumStickybombLauncher, DT_MomentumStickybombLauncher)
 #ifdef CLIENT_DLL
     RecvPropInt(RECVINFO(m_iStickybombCount)),
     RecvPropFloat(RECVINFO(m_flChargeBeginTime)),
+    RecvPropFloat(RECVINFO(m_fl2DetCooldownBeginTime)),
     RecvPropBool(RECVINFO(m_bIsChargeEnabled)),
     RecvPropBool(RECVINFO(m_bEarlyPrimaryFire)),
 #else
     SendPropInt(SENDINFO(m_iStickybombCount), 5, SPROP_UNSIGNED),
     SendPropFloat(SENDINFO(m_flChargeBeginTime), 5, SPROP_NOSCALE | SPROP_CHANGES_OFTEN),
+    SendPropFloat(SENDINFO(m_fl2DetCooldownBeginTime), 5, SPROP_NOSCALE | SPROP_CHANGES_OFTEN),
     SendPropBool(SENDINFO(m_bIsChargeEnabled)),
     SendPropBool(SENDINFO(m_bEarlyPrimaryFire)),
 #endif
@@ -55,6 +59,7 @@ CMomentumStickybombLauncher::CMomentumStickybombLauncher()
     m_flTimeToIdleAfterFire = 0.6f;
     m_flLastDenySoundTime = 0.0f;
     m_flChargeBeginTime = 0.0f;
+    m_fl2DetCooldownBeginTime = 0.0f;
     m_bIsChargeEnabled.Set(true);
     m_iStickybombCount.Set(0);
     m_bEarlyPrimaryFire.Set(false);
@@ -238,6 +243,10 @@ void CMomentumStickybombLauncher::SecondaryAttack()
     if (m_iStickybombCount == 0)
         return;
 
+    float flTimeFrom2Det = gpGlobals->curtime - m_fl2DetCooldownBeginTime;
+    if (flTimeFrom2Det < mom_sj_det_buffer_ticks.GetInt() * 0.015f + MOM_STICKYBOMB_TICK_EPSILON)
+        return;
+
     const auto pPlayer = GetPlayerOwner();
 
     if (!pPlayer)
@@ -416,6 +425,12 @@ int CMomentumStickybombLauncher::DetonateRemoteStickybombs()
         }
     }
 
+    // If two stickies have been det, mark time for buffer
+    if (stickyBombsAffecting[1])
+    {
+        m_fl2DetCooldownBeginTime = gpGlobals->curtime;
+    }
+    
     for (const auto hCloseSticky : stickyBombsAffecting)
     {
         vecArmedStickies.FindAndRemove(hCloseSticky);
