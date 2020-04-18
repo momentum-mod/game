@@ -23,6 +23,7 @@ ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent)
     m_pCompareShow = new CvarToggleCheckButton(this, "CompareShow", "#MOM_Settings_Compare_Show", "mom_comparisons");
     m_pCompareShow->AddActionSignalTarget(this);
     m_pMaxZones = new CvarTextEntry(this, "Zones", "mom_comparisons_max_zones");
+    m_pMaxZones->SetAllowNumericInputOnly(true);
     m_pMaxZones->AddActionSignalTarget(this);
     m_pMaxZonesLabel = new Label(this, "ZonesLabel", "#MOM_Settings_Zones_Label");
 
