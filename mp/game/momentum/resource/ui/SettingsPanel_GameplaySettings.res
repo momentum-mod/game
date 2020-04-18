@@ -41,7 +41,7 @@
     
     "YawSpeedEntry"
     {
-		"ControlName"		"TextEntry"
+		"ControlName"		"CvarTextEntry"
 		"fieldName"		"YawSpeedEntry"
 		"xpos"		"206"
 		"ypos"		"16"
@@ -61,6 +61,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+        "cvar_name" "cl_yawspeed"
         "actionsignallevel" "1"
 	}
     

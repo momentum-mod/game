@@ -27,7 +27,7 @@ private:
     vgui::CvarToggleCheckButton *m_pPlayBlockSound;
     vgui::CvarToggleCheckButton *m_pSaveCheckpoints;
     vgui::CvarSlider *m_pYawSpeedSlider;
-    vgui::TextEntry *m_pYawSpeedEntry;
+    vgui::CvarTextEntry *m_pYawSpeedEntry;
 
     vgui::CvarTextEntry *m_pLowerSpeedCVarEntry;
     vgui::CvarToggleCheckButton *m_pLowerSpeed;

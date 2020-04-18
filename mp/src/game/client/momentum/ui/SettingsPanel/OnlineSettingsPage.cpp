@@ -2,7 +2,7 @@
 
 #include "OnlineSettingsPage.h"
 #include "vgui_controls/CvarSlider.h"
-#include "vgui_controls/TextEntry.h"
+#include "vgui_controls/CvarTextEntry.h"
 #include <vgui_controls/CvarToggleCheckButton.h>
 
 #include "tier0/memdbgon.h"
@@ -23,7 +23,7 @@ OnlineSettingsPage::OnlineSettingsPage(Panel* pParent) : BaseClass(pParent, "Onl
     m_pEnableColorAlphaOverride->AddActionSignalTarget(this);
     m_pAlphaOverrideSlider = new CvarSlider(this, "AlphaOverrideSlider", nullptr, 0.0f, 255.0f, "mom_ghost_online_alpha_override", false, true);
     m_pAlphaOverrideSlider->AddActionSignalTarget(this);
-    m_pAlphaOverrideInput = new TextEntry(this, "AlphaOverrideEntry");
+    m_pAlphaOverrideInput = new CvarTextEntry(this, "AlphaOverrideEntry", "mom_ghost_online_alpha_override");
     m_pAlphaOverrideInput->SetAllowNumericInputOnly(true);
     m_pAlphaOverrideInput->AddActionSignalTarget(this);
 

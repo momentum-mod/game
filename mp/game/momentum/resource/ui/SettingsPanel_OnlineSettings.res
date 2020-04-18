@@ -194,7 +194,7 @@
 	}
 	"AlphaOverrideEntry"
 	{
-		"ControlName"		"TextEntry"
+		"ControlName"		"CvarTextEntry"
 		"fieldName"		"AlphaOverrideEntry"
 		"xpos"		"5"
 		"ypos"		"0"
@@ -214,6 +214,7 @@
 		"maxchars"		"3"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+		"cvar_name"		"mom_ghost_online_alpha_override"
         "actionsignallevel" "1"
 		"Font"		"DefaultVerySmall"
 	}
