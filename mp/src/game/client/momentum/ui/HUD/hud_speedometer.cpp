@@ -346,10 +346,10 @@ void CHudSpeedMeter::OnThink()
                             mom_hud_speedometer_lastjumpvel.GetBool() || mom_hud_speedometer_showenterspeed.GetBool()),
                        m_pUnitsLabel, m_defaultUnitsLabelHeight);
 
-        const bool isEnterSpeedActive = mom_hud_speedometer_showenterspeed.GetBool();
+        const bool isEnterSpeedActive = mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning && m_fStageStartAlpha > 0.0f;
         SetLabelHeight(isEnterSpeedActive, m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
         SetLabelHeight(isEnterSpeedActive, m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
-        if (isEnterSpeedActive && m_pRunEntData && m_pRunEntData->m_bTimerRunning && m_fStageStartAlpha > 0.0f)
+        if (isEnterSpeedActive)
         {
             char enterVelStr[BUFSIZELOCL], enterVelComparisonStr[BUFSIZELOCL];
 
