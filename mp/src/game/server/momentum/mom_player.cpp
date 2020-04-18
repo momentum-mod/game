@@ -240,6 +240,11 @@ CMomentumPlayer::~CMomentumPlayer()
     g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
 }
 
+void CMomentumPlayer::PostClientActive()
+{
+    g_MapZoneSystem.DispatchMapInfo(this);
+}
+
 CMomentumPlayer* CMomentumPlayer::CreatePlayer(const char *className, edict_t *ed)
 {
     s_PlayerEdict = ed;

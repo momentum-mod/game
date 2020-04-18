@@ -44,6 +44,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CMomentumPlayer();
     ~CMomentumPlayer(void);
 
+    void PostClientActive() override;
+
     static CMomentumPlayer* CreatePlayer(const char *className, edict_t *ed);
     static CMomentumPlayer* GetLocalPlayer();
 

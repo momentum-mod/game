@@ -92,7 +92,7 @@ void CMapZoneSystem::LevelInitPreEntity()
 void CMapZoneSystem::LevelInitPostEntity()
 {
     m_Editor.LevelInit();
-    CalculateZoneCounts(CMomentumPlayer::GetLocalPlayer());
+    CalculateZoneCounts();
 }
 
 void CMapZoneSystem::LevelShutdownPreEntity()
@@ -426,7 +426,7 @@ void CMapZoneSystem::SaveZonesToFile()
     }
 }
 
-void CMapZoneSystem::CalculateZoneCounts(CMomentumPlayer *pDispatch)
+void CMapZoneSystem::CalculateZoneCounts()
 {
     // Reset our counts
     ResetCounts();
@@ -471,9 +471,6 @@ void CMapZoneSystem::CalculateZoneCounts(CMomentumPlayer *pDispatch)
             m_iZoneCount[i] += globalZones;
         }
     }
-
-    if (pDispatch)
-        DispatchMapInfo(pDispatch);
 }
 
 void CMapZoneSystem::DispatchMapInfo(CMomentumPlayer *pPlayer) const
