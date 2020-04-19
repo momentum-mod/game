@@ -39,14 +39,13 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 
 void GameplaySettingsPage::LoadSettings()
 {
-    if (m_pLowerSpeedCVarEntry && m_pLowerSpeed)
-        m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
+    m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
 }
 
 void GameplaySettingsPage::OnCheckboxChecked(Panel* p)
 {
     BaseClass::OnCheckboxChecked(p);
-    if (p == m_pLowerSpeed && m_pLowerSpeedCVarEntry)
+    if (p == m_pLowerSpeed)
     {
         m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
         m_pLowerSpeedLabel->SetEnabled(m_pLowerSpeed->IsSelected());
