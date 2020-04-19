@@ -244,7 +244,10 @@ void CMomentumStickybombLauncher::SecondaryAttack()
         return;
 
     float flTimeFrom2Det = gpGlobals->curtime - m_fl2DetCooldownBeginTime;
-    if (flTimeFrom2Det < mom_sj_det_buffer_ticks.GetInt() * 0.015f + MOM_STICKYBOMB_TICK_EPSILON)
+    // TODO: replace with time value calculated from chosen tick count if this change is agreed upon
+    float flTestingBufferLength =
+        mom_sj_det_buffer_ticks.GetInt() * gpGlobals->interval_per_tick + MOM_STICKYBOMB_TICK_EPSILON;
+    if (flTimeFrom2Det < flTestingBufferLength)
         return;
 
     const auto pPlayer = GetPlayerOwner();
@@ -430,7 +433,11 @@ int CMomentumStickybombLauncher::DetonateRemoteStickybombs()
     {
         m_fl2DetCooldownBeginTime = gpGlobals->curtime;
     }
-    
+    else
+    {
+        m_fl2DetCooldownBeginTime = 0;
+    }
+
     for (const auto hCloseSticky : stickyBombsAffecting)
     {
         vecArmedStickies.FindAndRemove(hCloseSticky);
