@@ -47,7 +47,9 @@ CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(null
 
     SetMinimumSize(GetScaledVal(400), GetScaledVal(260));
     SetSize(GetScaledVal(400), GetScaledVal(260));
-    SetApplyButtonVisible(true);
+    SetOKButtonVisible(false);
+    SetCancelButtonVisible(false);
+    SetApplyButtonVisible(false);
     SetTitleBarVisible(true);
     SetMenuButtonResponsive(false);
     SetSysMenu(nullptr);

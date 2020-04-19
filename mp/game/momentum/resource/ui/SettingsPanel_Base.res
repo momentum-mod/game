@@ -13,7 +13,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"settitlebarvisible"		"1"
-        "sheetinset_bottom" "24"
+        "sheetinset_bottom" "0"
 		"title"		"#MOM_Settings_Title"
 	}
     "Sheet"
