@@ -27,10 +27,6 @@ class SettingsPage : public vgui::PropertyPage
 
     // MOM_TODO: Add more message funcs if need be (other controls added)
 
-    // When the "Apply" button is pressed. Each settings panel should handle this separately.
-    // Due to different controls for each, which cannot be automated through here.
-    void OnApplyChanges() OVERRIDE;
-
     // Called when this page needs to load the current values into controls on the page.
     // This is primarily used for ComboBoxes, since there is no ConvarComboBox class.
     virtual void LoadSettings()
@@ -92,14 +88,6 @@ class SettingsPageScrollPanel : public vgui::ScrollableEditablePanel
         if (m_pChild)
         {
             m_pChild->OnPageHide();
-        }
-    }
-
-    MESSAGE_FUNC(OnApplyChanges, "ApplyChanges")
-    {
-        if (m_pChild)
-        {
-            m_pChild->OnApplyChanges();
         }
     }
 

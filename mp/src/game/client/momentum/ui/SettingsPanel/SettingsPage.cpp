@@ -22,20 +22,6 @@ void SettingsPage::NotifyParentOfUpdate()
     PostMessage(m_pScrollPanel->GetParent()->GetVPanel(), new KeyValues("ApplyButtonEnable"));
 }
 
-void SettingsPage::OnApplyChanges()
-{
-    // We're going to fire this to all our children, so the CVarToggleCheckButtons apply
-    // their new settings to the convars.
-    for (int i = 0; i < GetChildCount(); i++)
-    {
-        Panel *pChild = GetChild(i);
-        if (pChild)
-        {
-            PostMessage(pChild, new KeyValues("ApplyChanges"));
-        }
-    }
-}
-
 void SettingsPage::OnPageShow()
 {
     LoadSettings();
