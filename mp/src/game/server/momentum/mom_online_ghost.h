@@ -29,9 +29,11 @@ public:
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
+    SpectateMessageType_t UpdateSpectateState(bool bIsSpec, uint64 specTargetID);
     void SetGhostFlashlight(bool bEnable);
     void SetSpectateState(bool bEnable);
     bool IsSpectating() const { return m_bSpectating.Get(); }
+    uint64 GetSpecTarget() const { return m_specTargetID; }
 
     void Spawn() OVERRIDE;
     void HandleGhost() OVERRIDE;
@@ -55,6 +57,7 @@ protected:
 
 private:
     CNetworkVar(bool, m_bSpectating);
+    uint64 m_specTargetID;
 
     void DoPaint(const DecalPacket &packet);
     void DoKnifeSlash(const DecalPacket &packet);
@@ -62,6 +65,8 @@ private:
     void FireRocket(const DecalPacket &packet);
     void FireSticky(const DecalPacket &packet);
     void DetonateStickies();
+
+    void SetIsSpectating(bool bState);
 
     CUtlQueue<ReceivedFrame_t<PositionPacket>*> m_vecPositionPackets;
     ReceivedFrame_t<PositionPacket>* m_pCurrentFrame;
