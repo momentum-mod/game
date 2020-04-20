@@ -1,8 +1,8 @@
 #include "cbase.h"
 #include "mom_online_ghost.h"
+
 #include "mom_player_shared.h"
 
-#include "in_buttons.h"
 #include "fx_mom_shared.h"
 #include "mom_grenade_projectile.h"
 #include "mom_rocket.h"
@@ -61,6 +61,7 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
     ListenForGameEvent("mapfinished_panel_closed");
     m_nGhostButtons = 0;
     m_bSpectating = false;
+    m_specTargetID = 0;
 }
 
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
@@ -438,6 +439,37 @@ void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
     }
 }
 
+SpectateMessageType_t CMomentumOnlineGhostEntity::UpdateSpectateState(bool bIsSpec, uint64 specTargetID)
+{
+    SpectateMessageType_t type = SPEC_UPDATE_INVALID;
+    const auto bTargetChanged = m_specTargetID != specTargetID;
+    if (bTargetChanged)
+    {
+        m_specTargetID = specTargetID;
+    }
+
+    const auto bStateChanged = bIsSpec != m_bSpectating;
+    if (bStateChanged)
+    {
+        if (!m_bSpectating && bIsSpec)
+        {
+            type = SPEC_UPDATE_STARTED;
+        }
+        else if (m_bSpectating && !bIsSpec)
+        {
+            type = SPEC_UPDATE_STOP;
+        }
+
+        SetIsSpectating(bIsSpec);
+    }
+    else if (bTargetChanged)
+    {
+        type = SPEC_UPDATE_CHANGETARGET;
+    }
+
+    return type;
+}
+
 void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
 {
     if (!mom_ghost_online_flashlights_enable.GetBool())
@@ -459,6 +491,21 @@ void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
         RemoveEffects(EF_DIMLIGHT);
         if (mom_ghost_online_sounds.GetBool())
             EmitSound(SND_FLASHLIGHT_OFF);
+    }
+}
+
+void CMomentumOnlineGhostEntity::SetIsSpectating(bool bState)
+{
+    m_bSpectating = bState;
+
+    if (m_bSpectating)
+    {
+        DestroyExplosives();
+        HideGhost();
+    }
+    else
+    {
+        UnHideGhost();
     }
 }
 
