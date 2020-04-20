@@ -1078,15 +1078,13 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Acclerate upward
     float startz = mv->m_vecVelocity[2];
 
-    const float fJumpFactor = sqrtf(2.f * sv_gravity.GetFloat() * g_pGameModeSystem->GetGameMode()->GetJumpHeight());
-
     if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking || player->GetFlags() & FL_DUCKING))
     {
-        mv->m_vecVelocity[2] = flGroundFactor * fJumpFactor;
+        mv->m_vecVelocity[2] = flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
     }
     else
     {
-        mv->m_vecVelocity[2] += flGroundFactor * fJumpFactor;
+        mv->m_vecVelocity[2] += flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
     }
 
     // stamina stuff (scroll/kz gamemode only)

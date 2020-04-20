@@ -26,7 +26,7 @@ public:
 
     // Movement vars
     virtual float       GetViewScale() = 0;
-    virtual float       GetJumpHeight() = 0;
+    virtual float       GetJumpFactor() = 0;
 
     virtual ~IGameMode() {}
 };
@@ -42,7 +42,7 @@ public:
     const char* GetGameModeCfg() override { return nullptr; }
     float GetIntervalPerTick() override { return 0.015f; }
     float GetViewScale() override { return 0.5f; }
-    float GetJumpHeight() override { return 57.0f; }
+    float GetJumpFactor() override;
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }
@@ -98,7 +98,7 @@ public:
     const char* GetMapPrefix() override { return "rj_"; }
     const char* GetGameModeCfg() override { return "rj.cfg"; }
     float GetViewScale() override { return 1.0f; }
-    float GetJumpHeight() override { return 52.200625; }
+    float GetJumpFactor() override;
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
@@ -115,7 +115,7 @@ class CGameMode_SJ : public CGameModeBase
     const char *GetMapPrefix() override { return "sj_"; }
     const char *GetGameModeCfg() override { return "sj.cfg"; }
     float GetViewScale() override { return 1.0f; }
-    float GetJumpHeight() override { return 52.200625; }
+    float GetJumpFactor() override;
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
@@ -153,7 +153,7 @@ public:
     bool WeaponIsAllowed(WeaponID_t weapon) override;
 
     float GetViewScale() override { return 1.0f; }
-    float GetJumpHeight() override { return 21.333333333333333; }
+    float GetJumpFactor() override;
 };
 
 class CGameModeSystem : public CAutoGameSystem
