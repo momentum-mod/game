@@ -1076,7 +1076,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     if (g_pGameModeSystem->IsTF2BasedMode())
     {
         // Gravity dependance, but ensuring it exactly gives 289 at 800 gravity
-        float height = 289.0f * 289.0f / (2.0f * 800.0f);
+        float height = 289.0f * 289.0f / (2.0f * GetCurrentGravity());
         float vel = GetCurrentGravity() == 800.0f ? 289.0f : sqrt(2.f * GetCurrentGravity() * height);
         if (player->m_Local.m_bDucking)
         {
@@ -1089,7 +1089,9 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
     else
     {
-        mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
+        float height = 301.99337741083f * 301.99337741083f / (2.0f * GetCurrentGravity());
+        float vel = GetCurrentGravity() == 800.0f ? 301.99337741083f : sqrt(2.f * GetCurrentGravity() * height);
+        mv->m_vecVelocity[2] += flGroundFactor * vel; // 2 * gravity * height
     }
 
     // stamina stuff (scroll/kz gamemode only)
