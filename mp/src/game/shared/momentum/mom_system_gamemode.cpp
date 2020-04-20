@@ -50,6 +50,12 @@ void CGameModeBase::SetGameModeVars()
     sv_edge_fix.SetValue(false); // MOM_TODO Let people test the edge fix in 0.8.4 so we can get their opinions
 }
 
+float CGameModeBase::GetJumpFactor()
+{
+    // sqrt(JumpHeight * 2 * GamemodeBaseGrav)
+    return sqrtf(57.0f * 2.0f * 800.0f);
+}
+
 void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
@@ -120,6 +126,11 @@ void CGameMode_RJ::SetGameModeVars()
     sv_ground_trigger_fix.SetValue(false); // MOM_TODO Remove when bounce triggers have been implemented
 }
 
+float CGameMode_RJ::GetJumpFactor()
+{
+    return 289.0f;
+}
+
 void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
     CGameModeBase::OnPlayerSpawn(pPlayer);
@@ -151,6 +162,11 @@ void CGameMode_SJ::SetGameModeVars()
     sv_considered_on_ground.SetValue(2);
     sv_duck_collision_fix.SetValue(false);
     sv_ground_trigger_fix.SetValue(false); // MOM_TODO Remove when bounce triggers have been implemented
+}
+
+float CGameMode_SJ::GetJumpFactor()
+{
+    return 289.0f;
 }
 
 void CGameMode_SJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
@@ -192,6 +208,11 @@ void CGameMode_Ahop::SetGameModeVars()
     sv_maxspeed.SetValue(320);
     sv_stopspeed.SetValue(100);
     sv_considered_on_ground.SetValue(2);
+}
+
+float CGameMode_Ahop::GetJumpFactor()
+{
+    return 160.0f;
 }
 
 void CGameMode_Ahop::OnPlayerSpawn(CMomentumPlayer *pPlayer)
