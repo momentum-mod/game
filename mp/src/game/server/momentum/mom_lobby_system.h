@@ -45,6 +45,9 @@ public:
     void LevelChange(const char *pMapName); // This client has changed levels to (potentially) a different map
     void CheckToAdd(CSteamID *pID);
 
+    void CreateLobbyGhostEntity(const CSteamID &lobbyMember);
+    void CreateLobbyGhostEntities(); // Creates everyone's ghosts if possible
+
     void SendAndReceiveP2PPackets();
 
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
