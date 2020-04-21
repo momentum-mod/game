@@ -1404,6 +1404,8 @@ void CMomentumGameMovement::CategorizePosition()
                         // allowed, all that matters is if bhopping is allowed.
 
                         // On modes that can't bhop, colliding before landing is better if it means they start sliding.
+                        // If this check fails, we want to pretend they collided first and couldn't land,
+                        // so we don't set the ground entity.
                         if (g_pGameModeSystem->GetGameMode()->CanBhop() || vecNextVelocity.z <= NON_JUMP_VELOCITY)
                         {
                             // Only update velocity as if we collided if it results in horizontal speed gain.
@@ -1414,14 +1416,6 @@ void CMomentumGameMovement::CategorizePosition()
                             }
 
                             SetGroundEntity(&pm);
-                        }
-                        else
-                        {
-                            // Pretend the player collided first and since that means they can't land,
-                            // don't set the ground entity
-
-                            // Should we also pre-apply the ClipVelocity result?
-                            // VectorCopy(vecNextVelocity, mv->m_vecVelocity);
                         }
                     }
                     else
@@ -2016,8 +2010,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             {
                 TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-                // This fix might also need to be applied after the sv_ramp_fix TracePlayerBBox above...
-                // Applying it here will handle the vast majority of cases, though.
                 if (sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
                     player->GetGroundEntity() == nullptr && player->GetWaterLevel() < WL_Waist &&
                     g_pGameModeSystem->GetGameMode()->CanBhop())
