@@ -448,6 +448,23 @@ bool CMomentumLobbySystem::IsInSameMapAs(const CSteamID &other)
     return pMapName && pMapName[0] && gpGlobals->eLoadType != MapLoad_Background && !FStrEq(pMapName, "credits") && FStrEq(pMapName, pOtherMap);
 }
 
+bool CMomentumLobbySystem::IsInLobby(const CSteamID &other)
+{
+    CHECK_STEAM_API_B(SteamMatchmaking());
+
+    if (!LobbyValid())
+        return false;
+
+    const auto numMembers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
+    for (int i = 0; i < numMembers; i++)
+    {
+        if (other == SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i))
+            return true;
+    }
+
+    return false;
+}
+
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
     CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
