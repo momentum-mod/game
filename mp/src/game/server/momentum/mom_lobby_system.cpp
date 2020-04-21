@@ -65,7 +65,6 @@ static void LobbyTypeChanged(IConVar *pVar, const char *pVal, float oldVal)
 static MAKE_CONVAR_C(mom_lobby_max_players, "16", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the maximum number of players allowed in lobbies you create.\n", 2, 250, LobbyMaxPlayersChanged);
 static MAKE_CONVAR_C(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the type of the lobby. 0 = Invite only, 1 = Friends Only, 2 = Public\n", 0, 2, LobbyTypeChanged);
 
-// So basically, if a user wants to connect to us, we're considered the host. 
 void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
 {
     const char *pName = SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
@@ -221,38 +220,46 @@ void CMomentumLobbySystem::CallResult_LobbyJoined(LobbyEnter_t* pEntered, bool I
 
 void CMomentumLobbySystem::StartLobby()
 {
-    if (!(m_cLobbyCreated.IsActive() || LobbyValid()))
-    {
-        CHECK_STEAM_API(SteamMatchmaking());
-        SteamAPICall_t call = SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>(mom_lobby_type.GetInt()), mom_lobby_max_players.GetInt());
-        m_cLobbyCreated.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyCreated);
-        DevLog("The lobby call successfully happened!\n");
-    }
-    else
-        Warning("The lobby could not be created because you already made one or are in one!\n");
-}
-
-void CMomentumLobbySystem::LeaveLobby()
-{
     if (LobbyValid())
     {
-        // Actually leave the lobby
-        SteamMatchmaking()->LeaveLobby(m_sLobbyID);
-
-        // Clear the ghosts stored in our lobby system
-        g_pMomentumGhostClient->ClearCurrentGhosts(true);
-
-        // Notify literally everything that can listen that we left
-        FIRE_GAME_WIDE_EVENT("lobby_leave");
-        
-        m_sLobbyID = k_steamIDNil;
-
-        g_pSteamRichPresence->Update();
-
-        DevLog("Left the lobby!\n");
+        Warning("The lobby could not be created because you are already in one!\n");
+        return;
     }
-    else
-        DevLog("Could not leave lobby, are you in one?\n");
+
+    if (m_cLobbyCreated.IsActive())
+    {
+        Warning("You are already creating a lobby!\n");
+        return;
+    }
+
+    CHECK_STEAM_API(SteamMatchmaking());
+    SteamAPICall_t call = SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>(mom_lobby_type.GetInt()), mom_lobby_max_players.GetInt());
+    m_cLobbyCreated.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyCreated);
+    DevLog("The lobby call successfully happened!\n");
+}
+
+void CMomentumLobbySystem::LeaveLobby() const
+{
+    if (!LobbyValid())
+    {
+        Log("Could not leave lobby, are you in one?\n");
+        return;
+    }
+
+    // Actually leave the lobby
+    SteamMatchmaking()->LeaveLobby(m_sLobbyID);
+
+    // Clear the ghosts stored in our lobby system
+    g_pMomentumGhostClient->ClearCurrentGhosts(true);
+
+    // Notify literally everything that can listen that we left
+    FIRE_GAME_WIDE_EVENT("lobby_leave");
+    
+    m_sLobbyID = k_steamIDNil;
+
+    g_pSteamRichPresence->Update();
+
+    DevLog("Left the lobby!\n");
 }
 
 // Called when we enter a lobby
@@ -299,18 +306,18 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(const AppearanceData_t &app
 {
     CHECK_STEAM_API(SteamMatchmaking());
 
-    if (LobbyValid())
-    {
-        KeyValuesAD pAppearanceKV("app");
-        app.ToKV(pAppearanceKV);
+    if (!LobbyValid())
+        return;
 
-        CUtlBuffer buf;
-        buf.SetBufferType(true, false);
+    KeyValuesAD pAppearanceKV("app");
+    app.ToKV(pAppearanceKV);
 
-        pAppearanceKV->RecursiveSaveToFile(buf, 0);
+    CUtlBuffer buf;
+    buf.SetBufferType(true, false);
 
-        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, buf.String());
-    }
+    pAppearanceKV->RecursiveSaveToFile(buf, 0);
+
+    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, buf.String());
 }
 
 bool CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member, AppearanceData_t &out)
@@ -340,26 +347,26 @@ CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(const uin
     return nullptr;
 }
 
-void CMomentumLobbySystem::ClearCurrentGhosts(bool bRemoveEnts)
+void CMomentumLobbySystem::ClearCurrentGhosts(bool bLeavingLobby)
 {
-    // We have to remove every entity manually if we left this lobby
-    if (m_mapLobbyGhosts.Count() > 0)
+    if (m_mapLobbyGhosts.Count() == 0)
+        return;
+
+    // If leaving the lobby while in the map, we need to remove the ghosts ourselves
+    if (bLeavingLobby)
     {
-        if (bRemoveEnts)
+        unsigned short currIndx = m_mapLobbyGhosts.FirstInorder();
+        while (currIndx != m_mapLobbyGhosts.InvalidIndex())
         {
-            unsigned short currIndx = m_mapLobbyGhosts.FirstInorder();
-            while (currIndx != m_mapLobbyGhosts.InvalidIndex())
-            {
-                CMomentumOnlineGhostEntity *pEnt = m_mapLobbyGhosts[currIndx];
-                if (pEnt)
-                    pEnt->Remove();
+            CMomentumOnlineGhostEntity *pEnt = m_mapLobbyGhosts[currIndx];
+            if (pEnt)
+                pEnt->Remove();
 
-                currIndx = m_mapLobbyGhosts.NextInorder(currIndx);
-            }
+            currIndx = m_mapLobbyGhosts.NextInorder(currIndx);
         }
-
-        m_mapLobbyGhosts.RemoveAll(); // No need to purge, the game handles the entities' memory
     }
+
+    m_mapLobbyGhosts.RemoveAll();
 }
 
 bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
@@ -526,11 +533,6 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
             }
         }
     }
-}
-
-CSteamID CMomentumLobbySystem::GetLobbyId()
-{
-    return m_sLobbyID;
 }
 
 void CMomentumLobbySystem::LevelChange(const char* pMapName)
@@ -920,45 +922,51 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget
 
 void CMomentumLobbySystem::OnLobbyMaxPlayersChanged(int newMax)
 {
-    // We can only change while in a lobby if we're the lobby owner
-    if (LobbyValid())
+    // If the lobby isn't valid, it'll apply to our next one!
+    if (!LobbyValid())
+        return;
+
+    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API(SteamMatchmaking());
+
+    const auto pLocID = SteamUser()->GetSteamID().ConvertToUint64();
+    if (SteamMatchmaking()->GetLobbyOwner(m_sLobbyID).ConvertToUint64() == pLocID)
     {
-        CHECK_STEAM_API(SteamUser());
-        const auto pLocID = SteamUser()->GetSteamID().ConvertToUint64();
-        if (SteamMatchmaking()->GetLobbyOwner(m_sLobbyID).ConvertToUint64() == pLocID)
-        {
-            // Change the lobby type to this type
-            newMax = clamp<int>(newMax, 2, 250);
-            if (SteamMatchmaking()->SetLobbyMemberLimit(m_sLobbyID, newMax))
-                Log("Successfully changed the maximum player count to %i!\n", newMax);
-        }
-        else
-            Warning("Cannot change the lobby max players; you are not the lobby owner!\n");
+        // Change the lobby type to this type
+        newMax = clamp<int>(newMax, 2, 250);
+        if (SteamMatchmaking()->SetLobbyMemberLimit(m_sLobbyID, newMax))
+            Log("Successfully changed the maximum player count to %i!\n", newMax);
     }
-    // else the lobby isn't valid, but it'll apply to our next one!
+    else
+    {
+        Warning("Cannot change the lobby max players; you are not the lobby owner!\n");
+    }
 }
 
 void CMomentumLobbySystem::OnLobbyTypeChanged(int newType)
 {
-    // We can only change while in a lobby if we're the lobby owner
-    if (LobbyValid())
+    // If the lobby isn't valid, it'll apply to our next one!
+    if (!LobbyValid())
+        return;
+
+    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API(SteamMatchmaking());
+
+    const auto pLocID = SteamUser()->GetSteamID().ConvertToUint64();
+    if (SteamMatchmaking()->GetLobbyOwner(m_sLobbyID).ConvertToUint64() == pLocID)
     {
-        CHECK_STEAM_API(SteamUser());
-        const auto pLocID = SteamUser()->GetSteamID().ConvertToUint64();
-        if (SteamMatchmaking()->GetLobbyOwner(m_sLobbyID).ConvertToUint64() == pLocID)
+        // Change the lobby type to this type
+        newType = clamp<int>(newType, k_ELobbyTypePrivate, k_ELobbyTypePublic);
+        if (SteamMatchmaking()->SetLobbyType(m_sLobbyID, (ELobbyType)newType))
         {
-            // Change the lobby type to this type
-            newType = clamp<int>(newType, k_ELobbyTypePrivate, k_ELobbyTypePublic);
-            if (SteamMatchmaking()->SetLobbyType(m_sLobbyID, (ELobbyType)newType))
-            {
-                if (SteamMatchmaking()->SetLobbyData(m_sLobbyID, LOBBY_DATA_TYPE, CFmtStrN<10>("%i", newType).Get()))
-                   Log("Successfully changed the lobby type to %i!\n", newType);
-            }
+            if (SteamMatchmaking()->SetLobbyData(m_sLobbyID, LOBBY_DATA_TYPE, CFmtStrN<10>("%i", newType).Get()))
+               Log("Successfully changed the lobby type to %i!\n", newType);
         }
-        else
-            Warning("Cannot change the lobby type; you are not the lobby owner!\n");
     }
-    // else the lobby isn't valid, but it'll apply to our next one!
+    else
+    {
+        Warning("Cannot change the lobby type; you are not the lobby owner!\n");
+    }
 }
 
 static CMomentumLobbySystem s_MOMLobbySystem;
