@@ -547,7 +547,7 @@ CBaseHudChat::CBaseHudChat(const char *pElementName)
 
     SetHiddenBits(HIDEHUD_CHAT);
 
-    m_pFiltersButton = new Button(this, "ChatFiltersButton", "FiltersToggle");
+    m_pFiltersButton = new Button(this, "ChatFiltersButton", "Filters", this, "FiltersToggle");
 
     if (m_pFiltersButton)
     {
