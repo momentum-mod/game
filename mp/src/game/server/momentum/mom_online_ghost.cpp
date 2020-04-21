@@ -508,10 +508,3 @@ void CMomentumOnlineGhostEntity::SetIsSpectating(bool bState)
         UnHideGhost();
     }
 }
-
-void CMomentumOnlineGhostEntity::SetSpectateState(bool bEnable)
-{
-    DestroyExplosives();
-
-    m_bSpectating = bEnable;
-}

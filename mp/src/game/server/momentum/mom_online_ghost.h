@@ -31,7 +31,6 @@ public:
 
     SpectateMessageType_t UpdateSpectateState(bool bIsSpec, uint64 specTargetID);
     void SetGhostFlashlight(bool bEnable);
-    void SetSpectateState(bool bEnable);
     bool IsSpectating() const { return m_bSpectating.Get(); }
     uint64 GetSpecTarget() const { return m_specTargetID; }
 
