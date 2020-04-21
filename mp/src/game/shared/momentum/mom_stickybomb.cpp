@@ -166,7 +166,7 @@ void CMomStickybomb::OnDataChanged(DataUpdateType_t type)
 
 void CMomStickybomb::Simulate()
 {
-    if (!m_bPulsed && IsArmed())
+    if (!m_bPulsed && (gpGlobals->curtime - m_flSpawnTime) > (MOM_STICKYBOMB_ARMTIME - 0.25f))
     {
         ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombPulse"), PATTACH_ABSORIGIN_FOLLOW);
 
