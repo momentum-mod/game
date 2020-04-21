@@ -103,10 +103,10 @@ void CMomentumGhostClient::Shutdown()
     g_pMomentumLobbySystem->LeaveLobby(); // Leave the lobby if we're still in it
 }
 
-void CMomentumGhostClient::ClearCurrentGhosts(bool bRemoveGhostEnts)
+void CMomentumGhostClient::ClearCurrentGhosts(bool bLeavingLobby)
 {
-    // MOM_TODO: g_pMomentumServerSystem->ClearCurrentGhosts(bRemoveGhostEnts)
-    g_pMomentumLobbySystem->ClearCurrentGhosts(bRemoveGhostEnts);
+    // MOM_TODO: g_pMomentumServerSystem->ClearCurrentGhosts(bLeavingLobby)
+    g_pMomentumLobbySystem->ClearCurrentGhosts(bLeavingLobby);
 }
 
 void CMomentumGhostClient::SendChatMessage(char* pMessage)

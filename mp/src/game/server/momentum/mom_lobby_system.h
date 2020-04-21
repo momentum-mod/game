@@ -18,7 +18,7 @@ public:
     void CallResult_LobbyJoined(LobbyEnter_t *pEntered, bool IOFailure);
 
     void StartLobby();
-    void LeaveLobby();
+    void LeaveLobby() const;
     bool TryJoinLobby(const CSteamID &lobbyID);
     bool TryJoinLobbyFromString(const char *pString);
 
@@ -39,7 +39,7 @@ public:
     static CSteamID m_sLobbyID;
     static float m_flNextUpdateTime;
 
-    static CSteamID GetLobbyId();
+    static CSteamID GetLobbyId() { return m_sLobbyID; }
     static bool LobbyValid() { return m_sLobbyID.IsValid() && m_sLobbyID.IsLobby(); }
 
     void LevelChange(const char *pMapName); // This client has changed levels to (potentially) a different map
@@ -62,7 +62,7 @@ public:
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);
 
-    void ClearCurrentGhosts(bool bRemoveEnts); // Clears the current ghosts stored in the map
+    void ClearCurrentGhosts(bool bLeavingLobby); // Clears the current ghosts stored in the map
 
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineEntMap() { return &m_mapLobbyGhosts;}
 
