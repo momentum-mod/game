@@ -465,6 +465,15 @@ bool CMomentumLobbySystem::IsInLobby(const CSteamID &other)
     return false;
 }
 
+bool CMomentumLobbySystem::IsUserBlocked(const CSteamID &other)
+{
+    CHECK_STEAM_API_B(SteamFriends());
+
+    // Check if this person was block communication'd
+    EFriendRelationship relationship = SteamFriends()->GetFriendRelationship(other);
+    return relationship == k_EFriendRelationshipIgnored || relationship == k_EFriendRelationshipIgnoredFriend;
+}
+
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
     CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);

@@ -82,6 +82,7 @@ private:
 
     bool IsInSameMapAs(const CSteamID &other);
     bool IsInLobby(const CSteamID &other);
+    bool IsUserBlocked(const CSteamID &other);
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
 };
