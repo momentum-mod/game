@@ -495,6 +495,34 @@ void CMomentumLobbySystem::UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostE
     }
 }
 
+void CMomentumLobbySystem::OnLobbyMemberDataChanged(const CSteamID &memberChanged)
+{
+    if (memberChanged == SteamUser()->GetSteamID())
+        return;
+
+    const bool bSameMap = IsInSameMapAs(memberChanged);
+
+    const auto pEntity = GetLobbyMemberEntity(memberChanged);
+    if (pEntity)
+    {
+        if (bSameMap)
+        {
+            UpdateLobbyEntityFromMemberData(pEntity);
+        }
+        else
+        {
+            OnLobbyMemberLeave(memberChanged);
+
+            // "_____ just left your map."
+            WriteLobbyMessage(LOBBY_UPDATE_MEMBER_LEAVE_MAP, memberChanged.ConvertToUint64());
+        }
+    }
+    else
+    {
+        CreateLobbyGhostEntity(memberChanged);
+    }
+}
+
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
     CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
@@ -511,23 +539,7 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
         }
         else
         {
-            // Don't care if it's us that changed
-            if (memberChanged == SteamUser()->GetSteamID())
-                return;
-            
-            // Check their appearance for any changes
-            CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(memberChanged);
-            if (pEntity)
-            {
-                AppearanceData_t appear;
-                if (GetAppearanceFromMemberData(memberChanged, appear))
-                    pEntity->SetAppearanceData(appear, false);
-
-                pEntity->SetSpectateState(GetIsSpectatingFromMemberData(memberChanged));
-                // We also have spec target inside LOBBY_DATA_SPEC_TARGET
-            }
-
-            CheckToAdd(&memberChanged);
+            OnLobbyMemberDataChanged(memberChanged);
         }
     }
 }
