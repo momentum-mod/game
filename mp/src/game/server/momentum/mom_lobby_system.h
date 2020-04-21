@@ -80,6 +80,7 @@ private:
     void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
     void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 targetID);
 
+    bool IsInSameMapAs(const CSteamID &other);
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
 };

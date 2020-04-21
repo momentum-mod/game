@@ -440,6 +440,14 @@ void CMomentumLobbySystem::WriteSpecMessage(SpectateMessageType_t type, uint64 p
     }
 }
 
+bool CMomentumLobbySystem::IsInSameMapAs(const CSteamID &other)
+{
+    const char *pMapName = gpGlobals->mapname.ToCStr();
+    const char *pOtherMap = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, other, LOBBY_DATA_MAP);
+
+    return pMapName && pMapName[0] && gpGlobals->eLoadType != MapLoad_Background && !FStrEq(pMapName, "credits") && FStrEq(pMapName, pOtherMap);
+}
+
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
     CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
