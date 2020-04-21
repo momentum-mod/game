@@ -75,6 +75,7 @@ private:
 
     // Sends a packet to a specific person
     bool SendPacket(MomentumPacket *packet, const CSteamID &target, EP2PSend sendType = k_EP2PSendUnreliable) const;
+    bool SendPacketToEveryone(MomentumPacket *pPacket, EP2PSend sendType = k_EP2PSendUnreliable);
 
     void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
     void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 targetID);
