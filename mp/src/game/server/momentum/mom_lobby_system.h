@@ -46,7 +46,7 @@ public:
     void CheckToAdd(CSteamID *pID);
 
     void SendAndReceiveP2PPackets();
-    void SetAppearanceInMemberData(const AppearanceData_t &appearance);
+
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type);
@@ -57,6 +57,7 @@ public:
     void OnLobbyMaxPlayersChanged(int newMax);
     void OnLobbyTypeChanged(int newType);
 
+    void SetAppearanceInMemberData(const AppearanceData_t &appearance);
     bool GetAppearanceFromMemberData(const CSteamID &member, AppearanceData_t &out);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
@@ -83,6 +84,8 @@ private:
     bool IsInSameMapAs(const CSteamID &other);
     bool IsInLobby(const CSteamID &other);
     bool IsUserBlocked(const CSteamID &other);
+
+    void UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostEntity *pEntity);
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
 };
