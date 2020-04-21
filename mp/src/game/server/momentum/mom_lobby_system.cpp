@@ -883,11 +883,12 @@ bool CMomentumLobbySystem::SendDecalPacket(DecalPacket *packet)
 void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating, bool bLeft)
 {
     CHECK_STEAM_API(SteamMatchmaking());
+    CHECK_STEAM_API(SteamUser());
 
     SpectateMessageType_t type;
     if (bStartedSpectating)
     {
-        type = SPEC_UPDATE_JOIN;
+        type = SPEC_UPDATE_STARTED;
     }
     else if (!ghostTarget.IsValid() && ghostTarget.ConvertToUint64() != 1)
     {
@@ -896,7 +897,6 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     else
         type = SPEC_UPDATE_CHANGETARGET;
 
-    // MOM_TODO: Keep me for updating the client
     if (type == SPEC_UPDATE_STOP || type == SPEC_UPDATE_LEAVE)
     {
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, nullptr);
