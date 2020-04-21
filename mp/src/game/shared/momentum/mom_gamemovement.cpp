@@ -38,8 +38,6 @@
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
-ConVar sv_nojump_slope_boosts("sv_nojump_slope_boosts", "1", 0,
-    "Keep original engine behavior which makes going up slopes without holding jump usually result in extra speed.");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
 ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.2", 0,
                                       "Amount of units used in offset for retraces", true, 0.2f, true, 5.f);
@@ -350,7 +348,7 @@ void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
     // to do ground movement instead of air movement. Instead, we should use one entire result or the other instead of
     // combining them. The main reason we might want to use the down result over the up result even if the up result
     // goes farther is if the down result causes the player to not be grounded in the future.
-    if (!sv_nojump_slope_boosts.GetBool() && mv->m_vecVelocity.z > NON_JUMP_VELOCITY)
+    if (mv->m_vecVelocity.z > NON_JUMP_VELOCITY)
     {
         float flStepDist = mv->GetAbsOrigin().z - vecPos.z;
         if (flStepDist > 0.0f)
@@ -426,15 +424,6 @@ void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
     {
         mv->SetAbsOrigin(vecDownPos);
         VectorCopy(vecDownVel, mv->m_vecVelocity);
-    }
-    else
-    {
-        if (sv_nojump_slope_boosts.GetBool())
-        {
-            // copy z value from slide move
-            // This probably results in gaining some z-velocity for free!
-            mv->m_vecVelocity.z = vecDownVel.z;
-        }
     }
 
     float flStepDist = mv->GetAbsOrigin().z - vecPos.z;
