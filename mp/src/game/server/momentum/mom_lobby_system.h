@@ -77,7 +77,7 @@ private:
     bool SendPacket(MomentumPacket *packet, const CSteamID &target, EP2PSend sendType = k_EP2PSendUnreliable) const;
 
     void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
-    void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 ghostID);
+    void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 targetID);
 
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;

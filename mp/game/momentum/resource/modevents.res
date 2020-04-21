@@ -115,4 +115,15 @@
     {
         "id" "byte"
     }
+    "lobby_update_msg"
+    {
+        "type" "byte"
+        "id" "string"
+    }
+    "lobby_spec_update_msg"
+    {
+        "type" "byte"
+        "id" "string"     // Person speccing
+        "target" "string" // Spec target
+    }
 }

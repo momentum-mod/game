@@ -389,30 +389,29 @@ bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, const CSteamID &ta
 
 void CMomentumLobbySystem::WriteLobbyMessage(LobbyMessageType_t type, uint64 pID_int)
 {
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
+    const auto pEvent = gameeventmanager->CreateEvent("lobby_update_msg");
+
+    if (pEvent)
     {
-        CSingleUserRecipientFilter user(pPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "LobbyUpdateMsg");
-        WRITE_BYTE(type);
-        WRITE_BYTES(&pID_int, sizeof(uint64));
-        MessageEnd();
+        pEvent->SetInt("type", type);
+        pEvent->SetString("id", CFmtStr("%llu", pID_int).Get());
+
+        gameeventmanager->FireEventClientSide(pEvent);
     }
 }
 
-void CMomentumLobbySystem::WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 ghostID)
+void CMomentumLobbySystem::WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 targetID)
 {
-    const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
+    const auto pEvent = gameeventmanager->CreateEvent("lobby_spec_update_msg");
+
+    if (pEvent)
     {
-        CSingleUserRecipientFilter user(pPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "SpecUpdateMsg");
-        WRITE_BYTE(type);
-        WRITE_BYTES(&playerID, sizeof(uint64));
-        WRITE_BYTES(&ghostID, sizeof(uint64));
-        MessageEnd();
+        pEvent->SetInt("type", type);
+
+        pEvent->SetString("id", CFmtStr("%llu", playerID));
+        pEvent->SetString("target", CFmtStr("%llu", targetID));
+
+        gameeventmanager->FireEventClientSide(pEvent);
     }
 }
 
