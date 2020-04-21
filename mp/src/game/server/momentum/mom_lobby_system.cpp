@@ -703,6 +703,63 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
     }
 }
 
+void CMomentumLobbySystem::CreateLobbyGhostEntity(const CSteamID &lobbyMember)
+{
+    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API(SteamMatchmaking());
+    CHECK_STEAM_API(SteamFriends());
+
+    const char *pName = SteamFriends()->GetFriendPersonaName(lobbyMember);
+
+    if (IsUserBlocked(lobbyMember) || m_vecBlocked.HasElement(lobbyMember))
+    {
+        DevLog("Not allowing %s to talk with us, we have them ignored!\n", pName);
+        return;
+    }
+
+    const auto lobbyMemberID = lobbyMember.ConvertToUint64();
+
+    const auto findIndex = m_mapLobbyGhosts.Find(lobbyMemberID);
+    const bool bValidGhost = m_mapLobbyGhosts.IsValidIndex(findIndex);
+
+    if (!bValidGhost && IsInSameMapAs(lobbyMember))
+    {
+        const auto pNewPlayer = static_cast<CMomentumOnlineGhostEntity *>(CreateEntityByName("mom_online_ghost"));
+        pNewPlayer->SetSteamID(lobbyMemberID);
+        pNewPlayer->SetGhostName(pName);
+        pNewPlayer->Spawn();
+
+        UpdateLobbyEntityFromMemberData(pNewPlayer);
+
+        m_mapLobbyGhosts.Insert(lobbyMemberID, pNewPlayer);
+
+        if (m_flNextUpdateTime < 0)
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
+
+        // "_____ just joined your map."
+        WriteLobbyMessage(LOBBY_UPDATE_MEMBER_JOIN_MAP, lobbyMemberID);
+    }
+}
+
+void CMomentumLobbySystem::CreateLobbyGhostEntities()
+{
+    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API(SteamMatchmaking());
+
+    const auto localID = SteamUser()->GetSteamID();
+
+    const auto numMembers = SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
+    for (int i = 0; i < numMembers; i++)
+    {
+        const auto member = SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
+
+        if (member == localID)
+            continue;
+
+        CreateLobbyGhostEntity(member);
+    }
+}
+
 bool CMomentumLobbySystem::TryJoinLobby(const CSteamID &lobbyID)
 {
     CHECK_STEAM_API_B(SteamMatchmaking());
