@@ -13,6 +13,8 @@
 #include "fx_mom_shared.h"
 #include "physics_collisionevent.h"
 #include "momentum/mom_stickybomb_verts.h"
+#else
+#include "functionproxy.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -173,6 +175,26 @@ void CMomStickybomb::Simulate()
 
     BaseClass::Simulate();
 }
+
+class CStickybombArmTimeProxy : public CResultProxy
+{
+public:
+    void OnBind(void *pC_BaseEntity) override
+    {
+        Assert(m_pResult);
+
+        if (!pC_BaseEntity)
+            return;
+
+        const auto pEntity = BindArgToEntity(pC_BaseEntity);
+        if (!pEntity)
+            return;
+
+        m_pResult->SetFloatValue(RemapValClamped(gpGlobals->curtime - pEntity->m_flSpawnTime, MOM_STICKYBOMB_ARMTIME - 0.15f, MOM_STICKYBOMB_ARMTIME, 0.0f, 1.0f));
+    }
+};
+
+EXPOSE_INTERFACE(CStickybombArmTimeProxy, IMaterialProxy, "ArmTime" IMATERIAL_PROXY_INTERFACE_VERSION);
 
 #else
 
