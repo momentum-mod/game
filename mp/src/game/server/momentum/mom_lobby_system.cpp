@@ -376,9 +376,7 @@ bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, CSteamID *pTarget,
     if (!pTarget && m_mapLobbyGhosts.Count() == 0)
         return false;
 
-    // Write the packet out to binary
     CUtlBuffer buf;
-    buf.SetBigEndian(false);
     packet->Write(buf);
 
     if (pTarget)
