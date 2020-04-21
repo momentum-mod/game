@@ -182,39 +182,6 @@ struct ReceivedFrame_t
     }
 };
 
-class SpecUpdatePacket : public MomentumPacket
-{
-  public:
-    uint64 specTarget;
-    SpectateMessageType_t spec_type;
-
-    SpecUpdatePacket(uint64 uID, SpectateMessageType_t specType)
-    {
-        specTarget = uID;
-        spec_type = specType;
-    }
-
-    SpecUpdatePacket(CUtlBuffer &buf)
-    {
-        specTarget = static_cast<uint64>(buf.GetInt64());
-
-        auto iSpecType = buf.GetInt();
-        if (iSpecType < SPEC_UPDATE_FIRST || iSpecType > SPEC_UPDATE_LAST)
-            iSpecType = SPEC_UPDATE_INVALID;
-
-        spec_type = static_cast<SpectateMessageType_t>(iSpecType);
-    }
-
-    PacketType GetType() const OVERRIDE { return PACKET_TYPE_SPEC_UPDATE; }
-
-    void Write(CUtlBuffer& buf) OVERRIDE
-    {
-        MomentumPacket::Write(buf);
-        buf.PutUint64(specTarget);
-        buf.PutInt(spec_type);
-    }
-};
-
 enum DecalType
 {
     DECAL_BULLET = 0,

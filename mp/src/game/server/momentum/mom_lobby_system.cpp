@@ -783,22 +783,6 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                 }
             }
             break;
-        case PACKET_TYPE_SPEC_UPDATE:
-            {
-                SpecUpdatePacket update(buf);
-                if (update.spec_type == SPEC_UPDATE_INVALID)
-                    break;
-
-                const auto pEntity = GetLobbyMemberEntity(fromWho);
-                if (pEntity)
-                {
-                    pEntity->SetSpectateState(update.specTarget != 0);
-                    update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
-                }
-
-                WriteSpecMessage(update.spec_type, fromWho.ConvertToUint64(), update.specTarget);
-            }
-            break;
         case PACKET_TYPE_SAVELOC_REQ:
             {
                 SavelocReqPacket saveloc(buf);
@@ -956,20 +940,10 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
         Q_snprintf(steamID, 64, "%llu", ghostTarget.ConvertToUint64());
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, steamID);
     }
-    
-    SendSpectatorUpdatePacket(ghostTarget, type);
-}
 
-//Sends the spectator info update packet to all current ghosts
-void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type)
-{
-    SpecUpdatePacket newUpdate(ghostTarget.ConvertToUint64(), type);
-    if (SendPacket(&newUpdate, nullptr, k_EP2PSendReliable))
-    {
-        uint64 playerID = SteamUser()->GetSteamID().ConvertToUint64();
-        uint64 ghostID = ghostTarget.ConvertToUint64();
-        WriteSpecMessage(type, playerID, ghostID);
-    }
+    uint64 playerID = SteamUser()->GetSteamID().ConvertToUint64();
+    uint64 ghostID = ghostTarget.ConvertToUint64();
+    WriteSpecMessage(type, playerID, ghostID);
 }
 
 void CMomentumLobbySystem::OnLobbyMaxPlayersChanged(int newMax)
