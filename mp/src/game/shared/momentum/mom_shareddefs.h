@@ -47,6 +47,14 @@ enum RunSubmitState_t
     RUN_SUBMIT_COUNT
 };
 
+enum SpeedometerUnits_t
+{
+    SPEEDOMETER_UNITS_UPS = 1,
+    SPEEDOMETER_UNITS_KMH,
+    SPEEDOMETER_UNITS_MPH,
+    SPEEDOMETER_UNITS_ENERGY
+};
+
 static const char *const g_szSubmitStates[] = {
     "#MOM_MF_RunSubmitFail_Unknown",          // RUN_SUBMIT_UNKNOWN
     "#MOM_MF_RunSubmitted",                   // RUN_SUBMIT_SUCCESS
