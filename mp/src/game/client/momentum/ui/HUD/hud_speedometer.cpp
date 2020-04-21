@@ -1,5 +1,7 @@
 #include "cbase.h"
 
+#include "hud_speedometer.h"
+
 #include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
@@ -11,14 +13,11 @@
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/EditablePanel.h>
-#include <vgui_controls/Panel.h>
 #include <vgui_controls/Label.h>
-#include <vgui_controls/AnimationController.h>
 
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
-#include "c_mom_replay_entity.h"
 
 #include "c_baseplayer.h"
 #include "movevars_shared.h"
@@ -57,56 +56,6 @@ static MAKE_CONVAR(mom_hud_speedometer_lastjumpvel_fadeout, "3.0", FLAG_HUD_CVAR
 
 static MAKE_TOGGLE_CONVAR(mom_hud_velocity_type, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                    "Toggles the velocity type used in comparisons and map finished dialog. 0 = ABSOLUTE, 1 = HORIZONTAL\n");
-
-// 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
-#define UPS_TO_KMH_FACTOR 0.06858f
-// 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
-#define UPS_TO_MPH_FACTOR 0.04262f
-
-class CHudSpeedMeter : public CHudElement, public EditablePanel
-{
-    DECLARE_CLASS_SIMPLE(CHudSpeedMeter, EditablePanel);
-
-  public:
-    CHudSpeedMeter(const char *pElementName);
-    void Init() OVERRIDE;
-    void Reset() OVERRIDE;
-    void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
-    void OnThink() OVERRIDE;
-
-  private:
-    void SetLabelHeight(bool isActive, Label *label, int height);
-    void SetSpeedometerLabel(bool isActive, Label *label, int height, int roundedSpeed, Color color,
-                             float alpha = -1.0f);
-    void ColorBasedOnAccel(Color &color, int currentVel, int lastVel);
-    void ColorRelativeToMax(Color &color, int vel);
-
-    float m_flNextColorizeCheck, m_flLastVelocity, m_flLastHVelocity, m_flLastJumpVelocity;
-
-    bool m_bRanFadeOutJumpSpeed;
-
-    Color m_LastColor, m_hLastColor, m_CurrentColor, m_hCurrentColor, m_LastJumpVelColor, m_NormalColor,
-        m_IncreaseColor, m_DecreaseColor;
-
-    Color m_MaxVelColorLevel1, m_MaxVelColorLevel2, m_MaxVelColorLevel3, m_MaxVelColorLevel4, m_MaxVelColorLevel5;
-
-    Label *m_pUnitsLabel, *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, 
-        *m_pStageEnterExitLabel, *m_pStageEnterExitComparisonLabel;
-
-    int m_defaultUnitsLabelHeight, m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, 
-        m_defaultLastJumpVelLabelHeight, m_defaultStageEnterExitLabelHeight, m_defaultYPos;
-
-    CMomRunStats *m_pRunStats;
-    CMomRunEntityData *m_pRunEntData;
-
-    ConVarRef m_cvarTimeScale;
-
-  protected:
-    // NOTE: These need to be floats because of animations (thanks volvo)
-    CPanelAnimationVar(float, m_fStageStartAlpha, "StageAlpha", "0.0"); // Used for fading
-    CPanelAnimationVar(float, m_fLastJumpVelAlpha, "JumpAlpha", "0.0");
-};
 
 DECLARE_HUDELEMENT(CHudSpeedMeter);
 
