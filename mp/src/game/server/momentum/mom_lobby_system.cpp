@@ -523,6 +523,28 @@ void CMomentumLobbySystem::OnLobbyMemberDataChanged(const CSteamID &memberChange
     }
 }
 
+void CMomentumLobbySystem::OnLobbyMemberLeave(const CSteamID &member)
+{
+    const auto lobbyMemberID = member.ConvertToUint64();
+
+    // Remove them if they're a requester
+    g_pMOMSavelocSystem->RequesterLeft(lobbyMemberID);
+
+    const auto findIndex = m_mapLobbyGhosts.Find(lobbyMemberID);
+
+    if (!m_mapLobbyGhosts.IsValidIndex(findIndex))
+        return;
+
+    const auto pEntity = m_mapLobbyGhosts[findIndex];
+    if (pEntity)
+    {
+        pEntity->UpdatePlayerSpectate();
+        pEntity->Remove();
+    }
+
+    m_mapLobbyGhosts.RemoveAt(findIndex);
+}
+
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
     CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
@@ -562,19 +584,7 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
     {
         DevLog("User left/disconnected!\n");
 
-        // Check if they're a saveloc requester
-        g_pMOMSavelocSystem->RequesterLeft(changedPerson.ConvertToUint64());
-
-        uint16 findMember = m_mapLobbyGhosts.Find(changedPerson.ConvertToUint64());
-        if (findMember != m_mapLobbyGhosts.InvalidIndex())
-        {
-            // Remove their entity from the CUtlMap
-            CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[findMember];
-            if (pEntity)
-                pEntity->Remove();
-
-            m_mapLobbyGhosts.RemoveAt(findMember);
-        }
+        OnLobbyMemberLeave(changedPerson);
 
         WriteLobbyMessage(LOBBY_UPDATE_MEMBER_LEAVE, pParam->m_ulSteamIDUserChanged);
 

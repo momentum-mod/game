@@ -90,6 +90,10 @@ private:
 
     void UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostEntity *pEntity);
     void OnLobbyMemberDataChanged(const CSteamID &memberID);
+
+    // When the lobby member leaves either the map or the lobby
+    void OnLobbyMemberLeave(const CSteamID &member);
+
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
 };
