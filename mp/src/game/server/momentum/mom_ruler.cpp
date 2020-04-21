@@ -51,7 +51,7 @@ CMOMRulerTool::~CMOMRulerTool()
     m_pBeamConnector = nullptr;
 }
 
-void CMOMRulerTool::PostInit()
+void CMOMRulerTool::LevelInitPostEntity() 
 {
     FIND_LOCALIZATION(m_wDistanceFormat, "#MOM_Ruler_Distance");
 }

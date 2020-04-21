@@ -46,7 +46,7 @@ public:
     CMOMRulerTool(const char* pName);
     ~CMOMRulerTool();
 
-    void PostInit() OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
 
     void ConnectMarks();
     void Reset();
