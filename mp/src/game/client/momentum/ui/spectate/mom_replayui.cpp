@@ -83,8 +83,6 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     SetBounds(20, 100, GetScaledVal(280), GetScaledVal(150));
     SetTitle("#MOM_ReplayControls", true);
 
-    FIND_LOCALIZATION(m_pwReplayTime, "#MOM_ReplayTime");
-    FIND_LOCALIZATION(m_pwReplayTimeTick, "#MOM_ReplayTimeTick");
     m_pSpecGUI = nullptr;
 }
 
@@ -255,6 +253,8 @@ void C_MOMReplayUI::ShowPanel(bool state)
     if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
         SetMouseInputEnabled(true);
     if (state)
+        FIND_LOCALIZATION(m_pwReplayTime, "#MOM_ReplayTime");
+        FIND_LOCALIZATION(m_pwReplayTimeTick, "#MOM_ReplayTimeTick");
         MoveToFront();
     m_bWasClosed = false;
 }
