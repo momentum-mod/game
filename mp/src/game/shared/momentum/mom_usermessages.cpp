@@ -49,8 +49,6 @@ void RegisterUserMessages(void)
     usermessages->Register("ZoneInfo", 8);
     //usermessages->Register("Timer_GameMode", 4);
     usermessages->Register("MB_PlayerTriedSaveOrLoad", 0);
-    usermessages->Register("LobbyUpdateMsg", 9);
-    usermessages->Register("SpecUpdateMsg", 17);
 
     usermessages->Register("DamageIndicator", -1);
 }
