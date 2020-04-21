@@ -72,7 +72,11 @@ class MomentumPacket
     virtual PacketType GetType() const = 0;
     virtual ~MomentumPacket() {};
 
-    virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(GetType()); }
+    virtual void Write(CUtlBuffer &buf)
+    {
+        buf.SetBigEndian(false);
+        buf.PutUnsignedChar(GetType());
+    }
 };
 
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
