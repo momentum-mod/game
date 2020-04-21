@@ -274,25 +274,23 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
     if (pEnter->m_EChatRoomEnterResponse != k_EChatRoomEnterResponseSuccess)
     {
         Warning("Failed to enter chat room! Error code: %i\n", pEnter->m_EChatRoomEnterResponse);
+        return;
     }
-    else
+
+    Log("Lobby entered! Lobby ID: %lld\n", pEnter->m_ulSteamIDLobby);
+
+    if (!m_sLobbyID.IsValid())
     {
-        Log("Lobby entered! Lobby ID: %lld\n", pEnter->m_ulSteamIDLobby);
-
-        if (!m_sLobbyID.IsValid())
-        {
-            m_sLobbyID = CSteamID(pEnter->m_ulSteamIDLobby);
-        }
-
-        FIRE_GAME_WIDE_EVENT("lobby_join");
-
-        // Set our own data
-        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
-
-        g_pSteamRichPresence->Update();
-        // Get everybody else's data
-        CheckToAdd(nullptr);
+        m_sLobbyID = CSteamID(pEnter->m_ulSteamIDLobby);
     }
+
+    FIRE_GAME_WIDE_EVENT("lobby_join");
+
+    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
+
+    g_pSteamRichPresence->Update();
+
+    CreateLobbyGhostEntities();
 }
 
 void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
