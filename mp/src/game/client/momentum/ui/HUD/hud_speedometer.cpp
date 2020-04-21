@@ -58,49 +58,51 @@ static MAKE_CONVAR(mom_hud_speedometer_lastjumpvel_fadeout, "3.0", FLAG_HUD_CVAR
 static MAKE_TOGGLE_CONVAR(mom_hud_velocity_type, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                    "Toggles the velocity type used in comparisons and map finished dialog. 0 = ABSOLUTE, 1 = HORIZONTAL\n");
 
+// 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
+#define UPS_TO_KMH_FACTOR 0.06858f
+// 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
+#define UPS_TO_MPH_FACTOR 0.04262f
+
 class CHudSpeedMeter : public CHudElement, public EditablePanel
 {
     DECLARE_CLASS_SIMPLE(CHudSpeedMeter, EditablePanel);
 
   public:
     CHudSpeedMeter(const char *pElementName);
-    void OnThink() OVERRIDE;
     void Init() OVERRIDE;
     void Reset() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
+    void OnThink() OVERRIDE;
 
   private:
-    float m_flNextColorizeCheck;
-    float m_flLastVelocity;
-    float m_flLastHVelocity;
-    float m_flLastJumpVelocity;
+    void SetLabelHeight(bool isActive, Label *label, int height);
+    void SetSpeedometerLabel(bool isActive, Label *label, int height, int roundedSpeed, Color color,
+                             float alpha = -1.0f);
+    void ColorBasedOnAccel(Color &color, int currentVel, int lastVel);
+    void ColorRelativeToMax(Color &color, int vel);
+
+    float m_flNextColorizeCheck, m_flLastVelocity, m_flLastHVelocity, m_flLastJumpVelocity;
 
     bool m_bRanFadeOutJumpSpeed;
 
-    int m_iRoundedVel, m_iRoundedHVel, m_iRoundedLastJumpVel;
-    Color m_LastColor, m_hLastColor;
-    Color m_CurrentColor, m_hCurrentColor;
-    Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
-    Color m_LastJumpVelColor;
+    Color m_LastColor, m_hLastColor, m_CurrentColor, m_hCurrentColor, m_LastJumpVelColor, m_NormalColor,
+        m_IncreaseColor, m_DecreaseColor;
+
+    Color m_MaxVelColorLevel1, m_MaxVelColorLevel2, m_MaxVelColorLevel3, m_MaxVelColorLevel4, m_MaxVelColorLevel5;
 
     Label *m_pUnitsLabel, *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, 
         *m_pStageEnterExitLabel, *m_pStageEnterExitComparisonLabel;
 
     int m_defaultUnitsLabelHeight, m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, 
-        m_defaultLastJumpVelLabelHeight, m_defaultStageEnterExitLabelHeight;
-
-    int m_defaultYPos;
-
-    void DeactivateLabel(Label *label);
-    void ActivateLabel(Label *label, int defaultHeight);
+        m_defaultLastJumpVelLabelHeight, m_defaultStageEnterExitLabelHeight, m_defaultYPos;
 
     CMomRunStats *m_pRunStats;
     CMomRunEntityData *m_pRunEntData;
 
     ConVarRef m_cvarTimeScale;
+
   protected:
-    CPanelAnimationVar(Color, m_bgColor, "BgColor", "Blank");
     // NOTE: These need to be floats because of animations (thanks volvo)
     CPanelAnimationVar(float, m_fStageStartAlpha, "StageAlpha", "0.0"); // Used for fading
     CPanelAnimationVar(float, m_fLastJumpVelAlpha, "JumpAlpha", "0.0");
@@ -128,10 +130,6 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_flLastHVelocity = 0;
     m_flLastJumpVelocity = 0;
 
-    m_iRoundedVel = 0;
-    m_iRoundedHVel = 0;
-    m_iRoundedLastJumpVel = 0;
-
     m_pUnitsLabel = new Label(this, "UnitsLabel", "");
     m_pAbsSpeedoLabel = new Label(this, "AbsSpeedoLabel", "");
     m_pHorizSpeedoLabel = new Label(this, "HorizSpeedoLabel", "");
@@ -140,19 +138,6 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pStageEnterExitComparisonLabel = new Label(this, "StageEnterExitComparisonLabel", "");
     
     LoadControlSettings("resource/ui/Speedometer.res");
-}
-
-void CHudSpeedMeter::DeactivateLabel(Label *label)
-{
-    label->SetAutoTall(false);
-    label->SetText("");
-    label->SetTall(0);
-}
-
-void CHudSpeedMeter::ActivateLabel(Label *label, int defaultHeight)
-{
-    label->SetAutoTall(true);
-    label->SetTall(defaultHeight);
 }
 
 void CHudSpeedMeter::Init()
@@ -203,8 +188,14 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
     m_NormalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
     m_IncreaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
     m_DecreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
+    m_MaxVelColorLevel1 = GetSchemeColor("MOM.Speedometer.MaxVelColoring.Level1", pScheme);
+    m_MaxVelColorLevel2 = GetSchemeColor("MOM.Speedometer.MaxVelColoring.Level2", pScheme);
+    m_MaxVelColorLevel3 = GetSchemeColor("MOM.Speedometer.MaxVelColoring.Level3", pScheme);
+    m_MaxVelColorLevel4 = GetSchemeColor("MOM.Speedometer.MaxVelColoring.Level4", pScheme);
+    m_MaxVelColorLevel5 = GetSchemeColor("MOM.Speedometer.MaxVelColoring.Level5", pScheme);
+
     SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
-    SetBgColor(m_bgColor);
+    SetBgColor(GetSchemeColor("Blank", pScheme));
 
     m_defaultAbsSpeedoLabelHeight = m_pAbsSpeedoLabel->GetTall();
     m_defaultHorizSpeedoLabelHeight = m_pHorizSpeedoLabel->GetTall();
@@ -242,14 +233,19 @@ void CHudSpeedMeter::OnThink()
         // Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
         float vel = static_cast<float>(velocity.Length());
         float hvel = static_cast<float>(horizVelocity.Length());
-        // The last jump velocity & z-coordinate
         float lastJumpVel = m_pRunEntData->m_flLastJumpVel;
+
+        // reset last jump velocity when we (or a ghost ent) restart a run by entering the start zone
+        if (m_pRunEntData->m_bIsInZone && m_pRunEntData->m_iCurrentZone == 1)
+        {
+            m_flLastJumpVelocity = 0;
+        }
+
         if (gpGlobals->curtime - m_pRunEntData->m_flLastJumpTime > mom_hud_speedometer_lastjumpvel_fadeout.GetFloat())
         {
             if (!m_bRanFadeOutJumpSpeed)
             {
-                m_bRanFadeOutJumpSpeed =
-                    g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutJumpSpeed");
+                m_bRanFadeOutJumpSpeed = g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutJumpSpeed");
             }
         }
         else
@@ -262,33 +258,29 @@ void CHudSpeedMeter::OnThink()
 
         switch (mom_hud_speedometer_units.GetInt())
         {
-        case 2:
-            // 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
-            vel *= 0.06858f;
-            hvel *= 0.06858f;
-            lastJumpVel *= 0.06858f;
+        case SPEEDOMETER_UNITS_KMH:
+            vel *= UPS_TO_KMH_FACTOR;
+            hvel *= UPS_TO_KMH_FACTOR;
+            lastJumpVel *= UPS_TO_KMH_FACTOR;
             m_pUnitsLabel->SetText(L"KM/H");
             break;
-        case 3:
-            // 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
-            vel *= 0.04262f;
-            hvel *= 0.04262f;
-            lastJumpVel *= 0.04262f;
+        case SPEEDOMETER_UNITS_MPH:
+            vel *= UPS_TO_MPH_FACTOR;
+            hvel *= UPS_TO_MPH_FACTOR;
+            lastJumpVel *= UPS_TO_MPH_FACTOR;
             m_pUnitsLabel->SetText(L"MPH");
             break;
-        case 4:
+        case SPEEDOMETER_UNITS_ENERGY:
         {
             // Normalized units of energy
             const auto gravity = sv_gravity.GetFloat();
-            vel = (pPlayer->GetAbsVelocity().LengthSqr() / 2.0f +
-                   gravity * (pPlayer->GetLocalOrigin().z - m_pRunEntData->m_flLastJumpZPos)) / gravity;
+            vel = (velocity.LengthSqr() / 2.0f + gravity * (pPlayer->GetLocalOrigin().z - m_pRunEntData->m_flLastJumpZPos)) / gravity;
             hvel = vel;
             m_pUnitsLabel->SetText(L"Energy");
             break;
         }
-        case 1:
+        case SPEEDOMETER_UNITS_UPS:
         default:
-            // We do nothing but break out of the switch, as default vel is already in UPS
             m_pUnitsLabel->SetText(L"UPS");
             break;
         }
@@ -296,102 +288,22 @@ void CHudSpeedMeter::OnThink()
         // only called if we need to update color
         if (mom_hud_speedometer_colorize.GetInt())
         {
+            // speedometer coloring
             if (m_flNextColorizeCheck <= gpGlobals->curtime)
             {
-                if (mom_hud_speedometer_colorize.GetInt() == 1)
+                switch (mom_hud_speedometer_colorize.GetInt())
                 {
-                    if (m_flLastVelocity != 0)
-                    {
-                        float variation = 0.0f;
-                        const float deadzone = 2.0f;
-
-                        if (mom_hud_speedometer_units.GetInt() == 4)
-                        {
-                            // For energy, if current value is larger than previous value then we've got an increase
-                            variation = vel - m_flLastVelocity;
-                        }
-                        else
-                        {
-                            // Otherwise, if magnitude of value (ie. with abs) is larger then we've got an increase
-                            // Example: vel = -500, lastvel = -300 counts as an increase in value since magnitude of vel
-                            // > magnitude of lastvel
-                            variation = fabs(vel) - fabs(m_flLastVelocity);
-                        }
-
-                        // Get colour from the variation in value
-                        // If variation > deadzone then color shows as increase
-                        // Otherwise if variation < deadzone then color shows as decrease
-                        m_CurrentColor = MomUtil::GetColorFromVariation(variation, deadzone, m_NormalColor,
-                                                                        m_IncreaseColor, m_DecreaseColor);
-                    }
-                    else
-                    {
-                        m_CurrentColor = m_NormalColor;
-                    }
-
-                    //Now the same but for the horizontal speedometer
-                    if (m_flLastHVelocity != 0)
-                    {
-                        float hvariation = 0.0f;
-                        const float deadzone = 2.0f;
-
-                        if (mom_hud_speedometer_units.GetInt() == 4)
-                        {
-                            hvariation = hvel - m_flLastHVelocity;
-                        }
-                        else
-                        {
-                            hvariation = fabs(hvel) - fabs(m_flLastHVelocity);
-                        }
-                        m_hCurrentColor = MomUtil::GetColorFromVariation(hvariation, deadzone, m_NormalColor,
-                                                                         m_IncreaseColor, m_DecreaseColor);
-                    }
-                    else
-                    {
-                        m_hCurrentColor = m_NormalColor;
-                    }
-                }
-                else //color based on relation to max vel
-                {
-                    const float maxvel = sv_maxvelocity.GetFloat();
-                    switch (static_cast<int>(vel / maxvel * 5.0f))
-                    {
-                    case 0:
-                    default:
-                        m_CurrentColor = Color(255, 255, 255, 255); // White
-                        break;
-                    case 1:
-                        m_CurrentColor = Color(255, 255, 0, 255); // Yellow
-                        break;
-                    case 2:
-                        m_CurrentColor = Color(255, 165, 0, 255); // Orange
-                        break;
-                    case 3:
-                        m_CurrentColor = Color(255, 0, 0, 255); // Red
-                        break;
-                    case 4:
-                        m_CurrentColor = Color(128, 0, 128, 255); // Purple
-                        break;
-                    }
-                    switch (static_cast<int>(hvel / maxvel * 5.0f))
-                    {
-                    case 0:
-                    default:
-                        m_hCurrentColor = Color(255, 255, 255, 255); // White
-                        break;
-                    case 1:
-                        m_hCurrentColor = Color(255, 255, 0, 255); // Yellow
-                        break;
-                    case 2:
-                        m_hCurrentColor = Color(255, 165, 0, 255); // Orange
-                        break;
-                    case 3:
-                        m_hCurrentColor = Color(255, 0, 0, 255); // Red
-                        break;
-                    case 4:
-                        m_hCurrentColor = Color(128, 0, 128, 255); // Purple
-                        break;
-                    }
+                case 1:
+                    ColorBasedOnAccel(m_CurrentColor, vel, m_flLastVelocity);
+                    ColorBasedOnAccel(m_hCurrentColor, hvel, m_flLastHVelocity);
+                    break;
+                case 2:
+                    ColorRelativeToMax(m_CurrentColor, vel);
+                    ColorRelativeToMax(m_hCurrentColor, hvel);
+                    break;
+                case 0:
+                default:
+                    break;
                 }
                 m_LastColor = m_CurrentColor;
                 m_hLastColor = m_hCurrentColor;
@@ -400,21 +312,15 @@ void CHudSpeedMeter::OnThink()
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
 
-            // reset last jump velocity when we (or a ghost ent) restart a run by entering the start zone
-            if (m_pRunEntData->m_bIsInZone && m_pRunEntData->m_iCurrentZone == 1)
-            {
-                m_flLastJumpVelocity = 0;
-            }
-
+            // last jump vel coloring
             if (CloseEnough(lastJumpVel, 0.0f))
             {
                 m_LastJumpVelColor = m_NormalColor;
             }
             else if (m_flLastJumpVelocity != lastJumpVel)
             {
-                m_LastJumpVelColor =
-                    MomUtil::GetColorFromVariation(fabs(lastJumpVel) - fabs(m_flLastJumpVelocity), 0.0f,
-                                                                m_NormalColor, m_IncreaseColor, m_DecreaseColor);
+                m_LastJumpVelColor = MomUtil::GetColorFromVariation(fabs(lastJumpVel) - fabs(m_flLastJumpVelocity), 0.0f,
+                                                                    m_NormalColor, m_IncreaseColor, m_DecreaseColor);
                 m_flLastJumpVelocity = lastJumpVel;
             }
         }
@@ -423,148 +329,143 @@ void CHudSpeedMeter::OnThink()
             m_LastJumpVelColor = m_CurrentColor = m_hCurrentColor = m_NormalColor;
         }
 
-        m_iRoundedVel = RoundFloatToInt(vel);
-        m_iRoundedHVel = RoundFloatToInt(hvel);
-        m_iRoundedLastJumpVel = RoundFloatToInt(lastJumpVel);
-        m_pAbsSpeedoLabel->SetFgColor(m_CurrentColor);
-        m_pHorizSpeedoLabel->SetFgColor(m_hCurrentColor);
-
-
+        // move panel down based on what is currently active
         int yIndent = 0;
-        if (!mom_hud_speedometer.GetBool())
-            yIndent += m_defaultAbsSpeedoLabelHeight;
-        if (!mom_hud_speedometer_horiz.GetBool())
-            yIndent += m_defaultHorizSpeedoLabelHeight;
-        if (!mom_hud_speedometer_lastjumpvel.GetBool())
-            yIndent += m_defaultLastJumpVelLabelHeight;
-        if (!mom_hud_speedometer_unit_labels.GetBool())
-            yIndent += m_defaultUnitsLabelHeight;
-        if (!mom_hud_speedometer_showenterspeed.GetBool())
-            yIndent += m_defaultStageEnterExitLabelHeight;
+        yIndent += mom_hud_speedometer.GetBool() ? 0 : m_defaultAbsSpeedoLabelHeight;
+        yIndent += mom_hud_speedometer_horiz.GetBool() ? 0 : m_defaultHorizSpeedoLabelHeight;
+        yIndent += mom_hud_speedometer_lastjumpvel.GetBool() ? 0 : m_defaultLastJumpVelLabelHeight;
+        yIndent += mom_hud_speedometer_unit_labels.GetBool() ? 0 : m_defaultUnitsLabelHeight;
+        yIndent += mom_hud_speedometer_showenterspeed.GetBool() ? 0 : m_defaultStageEnterExitLabelHeight;
         SetPos(GetXPos(), m_defaultYPos + yIndent);
 
-        if (mom_hud_speedometer.GetBool())
-        {
-            ActivateLabel(m_pAbsSpeedoLabel, m_defaultAbsSpeedoLabelHeight);
-            char speedoValue[BUFSIZELOCL];
-            Q_snprintf(speedoValue, sizeof(speedoValue), "%i", m_iRoundedVel);
-            m_pAbsSpeedoLabel->SetText(speedoValue);
-        }
-        else
-        {
-            DeactivateLabel(m_pAbsSpeedoLabel);
-        }
+        SetSpeedometerLabel(mom_hud_speedometer.GetBool(), m_pAbsSpeedoLabel, m_defaultAbsSpeedoLabelHeight, RoundFloatToInt(vel), m_CurrentColor);
+        SetSpeedometerLabel(mom_hud_speedometer_horiz.GetBool(), m_pHorizSpeedoLabel, m_defaultHorizSpeedoLabelHeight, RoundFloatToInt(hvel), m_hCurrentColor);
+        SetSpeedometerLabel(mom_hud_speedometer_lastjumpvel.GetBool(), m_pLastJumpVelLabel,
+                            m_defaultLastJumpVelLabelHeight, RoundFloatToInt(lastJumpVel), m_LastJumpVelColor,
+                            m_fLastJumpVelAlpha);
 
-        if (mom_hud_speedometer_horiz.GetBool())
-        {
-            ActivateLabel(m_pHorizSpeedoLabel, m_defaultHorizSpeedoLabelHeight);
-            char hSpeedoValue[BUFSIZELOCL];
-            Q_snprintf(hSpeedoValue, sizeof(hSpeedoValue), "%i", m_iRoundedHVel);
-            m_pHorizSpeedoLabel->SetText(hSpeedoValue);
-        }
-        else
-        {
-            DeactivateLabel(m_pHorizSpeedoLabel);
-        }
+        // don't display unit labels if all other speedometers are off
+        SetLabelHeight(mom_hud_speedometer_unit_labels.GetBool() &&
+                      (mom_hud_speedometer.GetBool() || mom_hud_speedometer_horiz.GetBool() ||
+                       mom_hud_speedometer_lastjumpvel.GetBool() || mom_hud_speedometer_showenterspeed.GetBool()),
+            m_pUnitsLabel, m_defaultUnitsLabelHeight);
 
-        if (mom_hud_speedometer_lastjumpvel.GetBool())
+        const bool isEnterSpeedActive = mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData &&
+                                        m_pRunEntData->m_bTimerRunning && m_fStageStartAlpha > 0.0f;
+        SetLabelHeight(isEnterSpeedActive, m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
+        SetLabelHeight(isEnterSpeedActive, m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
+        if (isEnterSpeedActive)
         {
-            ActivateLabel(m_pLastJumpVelLabel, m_defaultLastJumpVelLabelHeight);
-            char lastJumpVelValue[BUFSIZELOCL];
-            Q_snprintf(lastJumpVelValue, sizeof(lastJumpVelValue), "%i", m_iRoundedLastJumpVel);
-            m_pLastJumpVelLabel->SetText(lastJumpVelValue);
-            // Fade out last jump vel based on the lastJumpAlpha value
-            m_LastJumpVelColor =
-                Color(m_LastJumpVelColor.r(), m_LastJumpVelColor.g(), m_LastJumpVelColor.b(), m_fLastJumpVelAlpha);
-            m_pLastJumpVelLabel->SetFgColor(m_LastJumpVelColor);
-        }
-        else
-        {
-            DeactivateLabel(m_pLastJumpVelLabel);
-        }
+            char enterVelStr[BUFSIZELOCL], enterVelComparisonStr[BUFSIZELOCL];
 
-        if (mom_hud_speedometer_unit_labels.GetBool())
-        {
-            ActivateLabel(m_pUnitsLabel, m_defaultUnitsLabelHeight);
-        }
-        else
-        {
-            DeactivateLabel(m_pUnitsLabel);
-        }
-        // if every speedometer is off, don't bother drawing unit labels
-        if (!mom_hud_speedometer.GetBool() && !mom_hud_speedometer_horiz.GetBool() &&
-            !mom_hud_speedometer_lastjumpvel.GetBool() && !mom_hud_speedometer_showenterspeed.GetBool() &&
-            mom_hud_speedometer_unit_labels.GetBool())
-        {
-            DeactivateLabel(m_pUnitsLabel);
-        }
-
-        // Draw the enter speed split, if toggled on. Cannot be done in OnThink()
-        if (mom_hud_speedometer_showenterspeed.GetBool() && m_pRunEntData && m_pRunEntData->m_bTimerRunning &&
-            m_fStageStartAlpha > 0.0f)
-        {
-            ActivateLabel(m_pStageEnterExitLabel, m_defaultStageEnterExitLabelHeight);
-            ActivateLabel(m_pStageEnterExitComparisonLabel, m_defaultStageEnterExitLabelHeight);
-
-            char enterVelUnrounded[BUFSIZELOCL], enterVelRounded[BUFSIZELOCL], enterVelComparisonUnrounded[BUFSIZELOCL],
-                enterVelComparisonRounded[BUFSIZELOCL];
-
-            Color compareColorFade = Color(0, 0, 0, 0);
             Color compareColor = Color(0, 0, 0, 0);
-
-            Color fg = GetFgColor();
-            Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), m_fStageStartAlpha);
+            Color enterColor = m_pStageEnterExitLabel->GetFgColor();
 
             g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_pRunEntData->m_iCurrentZone,
-                                                  enterVelUnrounded, enterVelComparisonUnrounded, &compareColor);
-            // Round velocity
-            Q_snprintf(enterVelRounded, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelUnrounded))));
-
-            bool loadedComparison = g_pMOMRunCompare->LoadedComparison();
+                                                  enterVelStr, enterVelComparisonStr, &compareColor, true);
 
             HFont labelFont = m_pStageEnterExitLabel->GetFont();
-            int spaceBetweenLabels = UTIL_ComputeStringWidth(labelFont, " ");
             // compute the combined length of the enter/exit and comparison
-            int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelRounded);
-            if (loadedComparison)
+            int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelStr);
+            if (g_pMOMRunCompare->LoadedComparison()) // comparison is available
             {
-                // Really gross way of ripping apart this string and
-                // making some sort of quasi-frankenstein string of the float as a rounded int
-                char firstThree[3];
-                Q_strncpy(firstThree, enterVelComparisonUnrounded, 3);
-                const char *compFloat = enterVelComparisonUnrounded;
-                Q_snprintf(enterVelComparisonRounded, BUFSIZELOCL, " %s %i)", firstThree,
-                           RoundFloatToInt(Q_atof(compFloat + 3)));
-
-                // Update the compare color to have the alpha defined by animations (fade out if 5+ sec)
-                compareColorFade.SetColor(compareColor.r(), compareColor.g(), compareColor.b(), m_fStageStartAlpha);
-
+                m_pStageEnterExitComparisonLabel->SetPos(0, m_pStageEnterExitLabel->GetYPos());
+                m_pStageEnterExitComparisonLabel->SetFgColor(
+                    Color(compareColor.r(), compareColor.g(), compareColor.b(), m_fStageStartAlpha));
+                m_pStageEnterExitComparisonLabel->SetText(enterVelComparisonStr);
                 // Add the compare string to the length
-                combinedLength += spaceBetweenLabels + UTIL_ComputeStringWidth(labelFont, enterVelComparisonRounded);
+                combinedLength += UTIL_ComputeStringWidth(labelFont, enterVelComparisonStr);
             }
+            else
+            {
+                // ignore ending space as comparison is not being shown
+                combinedLength -= UTIL_ComputeStringWidth(labelFont, " ");
+            }
+
             int offsetXPos = 0 - ((GetWide() - combinedLength) / 2);
-
-            // split_xpos = GetWide() / 2 - (enterVelANSIWidth + increaseX) / 2;
             m_pStageEnterExitLabel->SetPos(offsetXPos, m_pStageEnterExitLabel->GetYPos());
-            m_pStageEnterExitLabel->SetFgColor(actualColorFade);
-            m_pStageEnterExitLabel->SetText(enterVelRounded);
+            m_pStageEnterExitLabel->SetFgColor(Color(enterColor.r(), enterColor.g(), enterColor.b(), m_fStageStartAlpha));
+            m_pStageEnterExitLabel->SetText(enterVelStr);
+        }
+    }
+}
 
-            // print comparison as well
-            if (loadedComparison)
-            {
-                m_pStageEnterExitComparisonLabel->SetPos(spaceBetweenLabels, m_pStageEnterExitLabel->GetYPos());
-                m_pStageEnterExitComparisonLabel->SetFgColor(compareColorFade);
-                m_pStageEnterExitComparisonLabel->SetText(enterVelComparisonRounded);
-            }
-            else // only print velocity
-            {
-                m_pStageEnterExitComparisonLabel->SetText("");
-            }
-        }
-        else if (!mom_hud_speedometer_showenterspeed.GetBool())
+void CHudSpeedMeter::SetLabelHeight(bool isActive, Label *label, int height)
+{
+    label->SetAutoTall(isActive);
+    label->SetTall(isActive ? height : 0);
+    if (!isActive)
+        label->SetText("");
+}
+
+void CHudSpeedMeter::SetSpeedometerLabel(bool isActive, Label *label, int height, int roundedSpeed, Color color, float alpha)
+{
+    if (isActive)
+    {
+        char speedoValue[BUFSIZELOCL];
+        Q_snprintf(speedoValue, sizeof(speedoValue), "%i", roundedSpeed);
+        label->SetText(speedoValue);
+        if (alpha >= 0.0f) // apply fade if specified
         {
-            DeactivateLabel(m_pStageEnterExitLabel);
-            DeactivateLabel(m_pStageEnterExitComparisonLabel);
+            color = Color(color.r(), color.g(), color.b(), alpha);
         }
+        label->SetFgColor(color);
+    }
+    SetLabelHeight(isActive, label, height);
+}
+
+void CHudSpeedMeter::ColorBasedOnAccel(Color &color, int currentVel, int lastVel)
+{
+    if (!CloseEnough(lastVel, 0.0f))
+    {
+        float variation = 0.0f;
+        const float deadzone = 2.0f;
+
+        if (mom_hud_speedometer_units.GetInt() == SPEEDOMETER_UNITS_ENERGY)
+        {
+            // For energy, if current value is larger than previous value then we've got an increase
+            variation = currentVel - lastVel;
+        }
+        else
+        {
+            // Otherwise, if magnitude of value (ie. with abs) is larger then we've got an increase
+            // Example: vel = -500, lastvel = -300 counts as an increase in value since magnitude of vel
+            // > magnitude of lastvel
+            variation = fabs(currentVel) - fabs(lastVel);
+        }
+
+        // Get colour from the variation in value
+        // If variation > deadzone then color shows as increase
+        // Otherwise if variation < deadzone then color shows as decrease
+        color = MomUtil::GetColorFromVariation(variation, deadzone, m_NormalColor, m_IncreaseColor, m_DecreaseColor);
+    }
+    else
+    {
+        color = m_NormalColor;
+    }
+}
+
+void CHudSpeedMeter::ColorRelativeToMax(Color &color, int vel)
+{
+    const float maxvel = sv_maxvelocity.GetFloat();
+    // MOM_TODO allow player to define custom ranges
+    switch (static_cast<int>(vel / maxvel * 5.0f))
+    {
+    case 0:
+    default:
+        color = m_MaxVelColorLevel1;
+        break;
+    case 1:
+        color = m_MaxVelColorLevel2;
+        break;
+    case 2:
+        color = m_MaxVelColorLevel3;
+        break;
+    case 3:
+        color = m_MaxVelColorLevel4;
+        break;
+    case 4:
+        color = m_MaxVelColorLevel5;
+        break;
     }
 }
