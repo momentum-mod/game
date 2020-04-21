@@ -592,21 +592,18 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
 
 void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
 {
-    //DevLog("HandlePersonaCallback: %u with changeflags: %i\n", pParam->m_ulSteamID, pParam->m_nChangeFlags);
-    CSteamID person = CSteamID(pParam->m_ulSteamID);
-    if (pParam->m_nChangeFlags & k_EPersonaChangeName && LobbyValid())
+    if (!LobbyValid())
+        return;
+
+    const auto person = CSteamID(pParam->m_ulSteamID);
+    if (pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
-        // Quick and ugly check to see if they're in our lobby
-        const char *pCheck = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, person, LOBBY_DATA_MAP);
-        if (pCheck)
+        if (IsInLobby(person))
         {
-            // It's not null so they're here, but are they in our map?
-            CMomentumOnlineGhostEntity *pGhost = GetLobbyMemberEntity(pParam->m_ulSteamID);
+            const auto pGhost = GetLobbyMemberEntity(pParam->m_ulSteamID);
             if (pGhost)
             {
-                // Yes they are
                 const char *pName = SteamFriends()->GetFriendPersonaName(person);
-                DevLog("Got the name of %lld: %s\n", pParam->m_ulSteamID, pName);
                 pGhost->SetGhostName(pName);
             }
         }
