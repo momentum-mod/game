@@ -111,12 +111,6 @@ void CHudKeyPressDisplay::Init()
     wcscpy(m_pwRight, L"D");
     wcscpy(m_pwStrafe, L"O");
 
-    // localize jump and duck strings
-    FIND_LOCALIZATION(m_pwJump, "#MOM_Jump");
-    FIND_LOCALIZATION(m_pwDuck, "#MOM_Duck");
-    FIND_LOCALIZATION(m_pwM1, "#MOM_M1");
-    FIND_LOCALIZATION(m_pwM2, "#MOM_M2");
-
     m_fJumpColorUntil = m_fDuckColorUntil = 0;
 
     m_nButtons = 0;
@@ -308,6 +302,12 @@ void CHudKeyPressDisplay::Reset()
     m_nDisabledButtons = 0;
     m_fDuckColorUntil = 0;
     m_fJumpColorUntil = 0;
+
+    // localize jump and duck strings
+    FIND_LOCALIZATION(m_pwJump, "#MOM_Jump");
+    FIND_LOCALIZATION(m_pwDuck, "#MOM_Duck");
+    FIND_LOCALIZATION(m_pwM1, "#MOM_M1");
+    FIND_LOCALIZATION(m_pwM2, "#MOM_M2");
 }
 
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)

@@ -101,21 +101,6 @@ C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
 
 void C_RunComparisons::Init()
 {
-    // LOCALIZE STUFF HERE
-    FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
-    FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
-    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Zone", stageTimeLocalized);
-    LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
-    LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
-    LOCALIZE_TOKEN(VelAvg, "#MOM_Compare_Velocity_Avg", velocityAvgLocalized);
-    LOCALIZE_TOKEN(VelMax, "#MOM_Compare_Velocity_Max", velocityMaxLocalized);
-    LOCALIZE_TOKEN(VelEnter, "#MOM_Compare_Velocity_Enter", velocityStartLocalized);
-    LOCALIZE_TOKEN(VelExit, "#MOM_Compare_Velocity_Exit", velocityExitLocalized);
-    LOCALIZE_TOKEN(Sync1, "#MOM_Compare_Sync1", sync1Localized);
-    LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
-    LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
-    LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
-
     if (!m_bLoadedBogusComparison)
         ListenForGameEvent("replay_save");
 }
@@ -145,6 +130,21 @@ void C_RunComparisons::Reset()
     m_iMaxWide = m_iDefaultWidth;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
+
+    // LOCALIZE STUFF HERE
+    FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
+    FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
+    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Zone", stageTimeLocalized);
+    LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
+    LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
+    LOCALIZE_TOKEN(VelAvg, "#MOM_Compare_Velocity_Avg", velocityAvgLocalized);
+    LOCALIZE_TOKEN(VelMax, "#MOM_Compare_Velocity_Max", velocityMaxLocalized);
+    LOCALIZE_TOKEN(VelEnter, "#MOM_Compare_Velocity_Enter", velocityStartLocalized);
+    LOCALIZE_TOKEN(VelExit, "#MOM_Compare_Velocity_Exit", velocityExitLocalized);
+    LOCALIZE_TOKEN(Sync1, "#MOM_Compare_Sync1", sync1Localized);
+    LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
+    LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
+    LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
 }
 
 void C_RunComparisons::LoadComparisons()
