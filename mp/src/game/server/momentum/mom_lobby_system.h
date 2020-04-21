@@ -89,6 +89,7 @@ private:
     bool IsUserBlocked(const CSteamID &other);
 
     void UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostEntity *pEntity);
+    void OnLobbyMemberDataChanged(const CSteamID &memberID);
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
 };
