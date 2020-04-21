@@ -474,6 +474,21 @@ bool CMomentumLobbySystem::IsUserBlocked(const CSteamID &other)
     return relationship == k_EFriendRelationshipIgnored || relationship == k_EFriendRelationshipIgnoredFriend;
 }
 
+void CMomentumLobbySystem::UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostEntity *pEntity)
+{
+    const auto steamID = CSteamID(pEntity->GetSteamID());
+
+    AppearanceData_t appear;
+    if (GetAppearanceFromMemberData(steamID, appear))
+        pEntity->SetAppearanceData(appear, false);
+
+    const auto state = pEntity->UpdateSpectateState(GetIsSpectatingFromMemberData(steamID), GetSpectatingTargetFromMemberData(steamID));
+    if (state != SPEC_UPDATE_INVALID)
+    {
+        WriteSpecMessage(state, pEntity->GetSteamID(), pEntity->GetSpecTarget());
+    }
+}
+
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
     CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
