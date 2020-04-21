@@ -129,7 +129,7 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
 
 bool CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket* p)
 {
-    return LobbyValid() && SendPacket(p, &target, k_EP2PSendReliable);
+    return LobbyValid() && SendPacket(p, target, k_EP2PSendReliable);
 }
 
 void CMomentumLobbySystem::TeleportToLobbyMember(const char *pIDStr)
@@ -369,37 +369,18 @@ void CMomentumLobbySystem::ClearCurrentGhosts(bool bLeavingLobby)
     m_mapLobbyGhosts.RemoveAll();
 }
 
-bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
+bool CMomentumLobbySystem::SendPacket(MomentumPacket *packet, const CSteamID &target, EP2PSend sendType /* = k_EP2PSendUnreliable*/) const
 {
     CHECK_STEAM_API_B(SteamNetworking());
 
-    if (!pTarget && m_mapLobbyGhosts.Count() == 0)
+    if (m_mapLobbyGhosts.Count() == 0)
         return false;
 
     CUtlBuffer buf;
     packet->Write(buf);
 
-    if (pTarget)
+    if (SteamNetworking()->SendP2PPacket(target, buf.Base(), buf.TellPut(), sendType))
     {
-        if (SteamNetworking()->SendP2PPacket(*pTarget, buf.Base(), buf.TellPut(), sendType))
-        {
-            return true;
-        }
-    }
-    else if (m_mapLobbyGhosts.Count() > 0) // It's everybody
-    {
-        auto index = m_mapLobbyGhosts.FirstInorder();
-        while (index != m_mapLobbyGhosts.InvalidIndex())
-        {
-            const auto ghostID = m_mapLobbyGhosts[index]->GetSteamID();
-
-            if (!SteamNetworking()->SendP2PPacket(CSteamID(ghostID), buf.Base(), buf.TellPut(), sendType))
-            {
-                DevWarning("Failed to send the packet to %s!\n", SteamFriends()->GetFriendPersonaName(ghostID));
-            }
-
-            index = m_mapLobbyGhosts.NextInorder(index);
-        }
         return true;
     }
 
@@ -777,7 +758,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                         response.stage = SAVELOC_REQ_STAGE_COUNT_ACK;
                         response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
 
-                        SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                        SendPacket(&response, fromWho, k_EP2PSendReliable);
                     }
                     break;
                 case SAVELOC_REQ_STAGE_COUNT_ACK:
@@ -794,7 +775,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                         response.stage = SAVELOC_REQ_STAGE_SAVELOC_ACK;
 
                         if (g_pMOMSavelocSystem->WriteRequestedSavelocs(&saveloc, &response, fromWho.ConvertToUint64()))
-                            SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                            SendPacket(&response, fromWho, k_EP2PSendReliable);
                     }
                     break;
                 case SAVELOC_REQ_STAGE_SAVELOC_ACK:
@@ -803,7 +784,7 @@ void CMomentumLobbySystem::SendAndReceiveP2PPackets()
                         {
                             SavelocReqPacket response;
                             response.stage = SAVELOC_REQ_STAGE_DONE;
-                            if (SendPacket(&response, &fromWho, k_EP2PSendReliable))
+                            if (SendPacket(&response, fromWho, k_EP2PSendReliable))
                             {
                                 KeyValues *pKv = new KeyValues("req_savelocs");
                                 pKv->SetInt("stage", SAVELOC_REQ_STAGE_DONE);
