@@ -73,8 +73,8 @@ private:
 
     bool m_bHostingLobby;
 
-    // Sends a packet to a specific person, or everybody (if pTarget is null)
-    bool SendPacket(MomentumPacket *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
+    // Sends a packet to a specific person
+    bool SendPacket(MomentumPacket *packet, const CSteamID &target, EP2PSend sendType = k_EP2PSendUnreliable) const;
 
     void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
     void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 ghostID);
