@@ -33,7 +33,8 @@ public:
     void UnloadComparisons();
     void UnloadBogusComparisons();
     void DrawComparisonString(ComparisonString_t, int stage, int Ypos);
-    void GetComparisonString(ComparisonString_t type, CMomRunStats *pStats, int zone, char *ansiActualBufferOut, char *ansiCompareBufferOut, Color *compareColorOut);
+    void GetComparisonString(ComparisonString_t type, CMomRunStats *pStats, int zone, char *ansiActualBufferOut, char *ansiCompareBufferOut, 
+                             Color *compareColorOut, bool roundVelocity = false);
     void GetDiffColor(float diff, Color *into, bool positiveIsGain = true);
     int GetMaximumTall();
     void SetMaxWide(int);
