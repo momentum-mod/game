@@ -5,9 +5,8 @@
 	$bumpMap				"models/weapons/mom_stickybomb_classic/mom_stickybomb_classic_n"
 	
 	$selfIllum 						1									//Disables Shading on $baseTexture's alpha
-	$selfIllumTint 					"[1 1 1]"							//Tints the self-illumination
-	//$selfIllumFresnel				1									//Enables self-illumination $selfIllumFresnelMinMaxExp
-	//$selfIllumFresnelMinMaxExp	"[0 5 3]"							//Sets minimum intensity [0] , maximum intensity [1] and fresnel factor [2]
+	$selfIllumFresnel				1									//Enables self-illumination $selfIllumFresnelMinMaxExp
+	$selfIllumFresnelMinMaxExp	    "[0 1 0]"							//Sets minimum intensity [0] , maximum intensity [1] and fresnel factor [2]
 	
 	$envMap						"cubemaps\cubemap_sheen001.hdr"		//Sets the closest env_cubemap as the environment map (specular reflection)
 	$envMapTint					"[.3 .3 .32]"						//Tints the envmap
@@ -24,5 +23,11 @@
 	$rimlightexponent			1									//Same functionality as $phongexponent
 	$rimlightBoost				.5									//Same functionality as $phongboost
 
-
+    Proxies
+    {
+        ArmTime
+        {
+			resultvar	"$selfIllumFresnelMinMaxExp[1]"
+        }
+    }
 }
