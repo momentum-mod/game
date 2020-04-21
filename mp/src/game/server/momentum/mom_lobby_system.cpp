@@ -67,16 +67,22 @@ static MAKE_CONVAR_C(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Set
 
 void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
 {
-    const char *pName = SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
+    if (!IsInLobby(m_sLobbyID))
+        return;
+
+    if (IsUserBlocked(info->m_steamIDRemote) && !m_vecBlocked.HasElement(info->m_steamIDRemote))
+    {
+        m_vecBlocked.AddToTail(info->m_steamIDRemote);
+    }
 
     // MOM_TODO: Make a (temp) block list that only refreshes on game restart?
-    if (m_vecBlocked.Find(info->m_steamIDRemote) != -1)
+
+    if (m_vecBlocked.HasElement(info->m_steamIDRemote))
     {
+        const char *pName = SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
         DevLog("Not allowing %s to talk with us, we've marked them as blocked!\n", pName);
         return;
     }
-
-    // MOM_TODO: Take into account that this user could potentially not be in our lobby (security)
 
     // Needs to be done to open the connection with them
     SteamNetworking()->AcceptP2PSessionWithUser(info->m_steamIDRemote);
