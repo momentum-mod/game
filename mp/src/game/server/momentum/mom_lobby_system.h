@@ -43,7 +43,6 @@ public:
     static bool LobbyValid() { return m_sLobbyID.IsValid() && m_sLobbyID.IsLobby(); }
 
     void LevelChange(const char *pMapName); // This client has changed levels to (potentially) a different map
-    void CheckToAdd(CSteamID *pID);
 
     void CreateLobbyGhostEntity(const CSteamID &lobbyMember);
     void CreateLobbyGhostEntities(); // Creates everyone's ghosts if possible
