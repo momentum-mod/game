@@ -612,18 +612,22 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
 
 void CMomentumLobbySystem::LevelChange(const char* pMapName)
 {
-    if (LobbyValid())
-    {
-        CHECK_STEAM_API(SteamMatchmaking());
-        DevLog("Setting the map to %s!\n", pMapName ? pMapName : "INVALID (main menu/loading)");
-        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
-        m_flNextUpdateTime = -1.0f;
+    if (!LobbyValid())
+        return;
 
-        // Now check if this map is the same as somebody else's in the lobby
-        if (pMapName && !FStrEq(pMapName, ""))
-            CheckToAdd(nullptr);
-        else
-            g_pMomentumGhostClient->ClearCurrentGhosts(false);
+    CHECK_STEAM_API(SteamMatchmaking());
+
+    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
+    m_flNextUpdateTime = -1.0f;
+
+    const bool bValidMap = pMapName && !FStrEq(pMapName, "");
+    if (bValidMap)
+    {
+        CreateLobbyGhostEntities();
+    }
+    else
+    {
+        g_pMomentumGhostClient->ClearCurrentGhosts(false);
     }
 }
 
