@@ -1334,20 +1334,32 @@ void CEventQueueEvent::ToPrioritizedEvent(EventQueuePrioritizedEvent_t* pe, CBas
 	pe->m_iTarget = m_iTarget;
 	pe->m_iTargetInput = m_iTargetInput;
 
-	if (pAbstractedEntity && m_bAbstractActivator)
+	if ( pAbstractedEntity && m_bAbstractActivator )
+	{
 		pe->m_pActivator = pAbstractedEntity;
+	}
 	else
+	{
 		pe->m_pActivator = GetEntityFromName( m_szActivator );
+	}
 
-	if (pAbstractedEntity && m_bAbstractCaller)
+	if ( pAbstractedEntity && m_bAbstractCaller )
+	{
 		pe->m_pCaller = pAbstractedEntity;
+	}
 	else
+	{
 		pe->m_pCaller = UTIL_EntityByIndex( m_iCaller );
+	}
 
-	if (pAbstractedEntity && m_bAbstractTarget)
+	if ( pAbstractedEntity && m_bAbstractTarget )
+	{
 		pe->m_pEntTarget = pAbstractedEntity;
+	}
 	else
+	{
 		pe->m_pEntTarget = GetEntityFromName( m_szEntTarget );
+	}
 
 	pe->m_VariantValue = m_VariantValue;
 }
