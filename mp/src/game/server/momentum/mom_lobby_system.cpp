@@ -909,6 +909,9 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     CHECK_STEAM_API(SteamMatchmaking());
     CHECK_STEAM_API(SteamUser());
 
+    if (!LobbyValid())
+        return;
+
     SpectateMessageType_t type;
     if (bStartedSpectating)
     {
