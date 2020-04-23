@@ -62,6 +62,7 @@ CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSele
     s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
+    m_uStartMapWhenReady = 0;
 
     LoadUserData();
 
@@ -402,6 +403,11 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
     pDataKv->SetInt(KEYNAME_MAP_IMAGE, pMap->m_iThumbnailImageIndx);
 
     PostActionSignal(new KeyValues("MapListDataUpdate", "id", pMapData->m_uID));
+
+    if (m_uStartMapWhenReady == pMapData->m_uID && g_pMapCache->MapFileExists(pMapData))
+    {
+        OnMapStart(pMapData->m_uID);
+    }
 }
 
 MapListData* CMapSelectorDialog::GetMapListDataByID(uint32 uMapID)
@@ -484,6 +490,11 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
     const auto pMsg = pKv->MakeCopy();
     pMsg->SetName("MapDownloadEnd");
     PostActionSignal(pMsg);
+
+    if (m_uStartMapWhenReady > 0 && m_uStartMapWhenReady == uID)
+    {
+        OnMapStart(uID);
+    }
 }
 
 bool CMapSelectorDialog::IsMapDownloading(uint32 uMapID) const
@@ -593,6 +604,9 @@ void CMapSelectorDialog::OnAddMapToLibrary(int id)
 
 void CMapSelectorDialog::OnMapStart(int id)
 {
+    m_uStartMapWhenReady = 0;
+    m_pFilterPanel->ResetFeelingLucky();
+
     if (g_pMapCache->PlayMap(id))
     {
         CloseMapInfoDialog(id);
