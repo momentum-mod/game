@@ -16,6 +16,8 @@ class MapFilterPanel : public vgui::EditablePanel
     void ApplyFilters();
     void ResetFilters();
 
+    void ResetFeelingLucky();
+
 protected:
     void OnCommand(const char* command) OVERRIDE;
 

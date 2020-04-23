@@ -126,12 +126,18 @@ void MapFilterPanel::UpdateFilterSettings(bool bApply /* = true*/)
 void MapFilterPanel::ApplyFilters()
 {
     MapSelectorDialog().ApplyFiltersToCurrentTab(m_Filters);
-    m_pFeelingLuckyButton->SetEnabled(MapSelectorDialog().GetFilteredItemsCount() > 0);
+
+    ResetFeelingLucky();
 }
 
 void MapFilterPanel::ResetFilters()
 {
     m_Filters.Reset();
+}
+
+void MapFilterPanel::ResetFeelingLucky()
+{
+    m_pFeelingLuckyButton->SetEnabled(MapSelectorDialog().GetMapToStart() == 0 && MapSelectorDialog().GetFilteredItemsCount() > 0);
 }
 
 void MapFilterPanel::OnCommand(const char* command)
@@ -152,11 +158,13 @@ void MapFilterPanel::OnCommand(const char* command)
     }
     else if (FStrEq(command, "FeelingLucky"))
     {
+        m_pFeelingLuckyButton->SetEnabled(false);
         MapSelectorDialog().StartRandomMapFromCurrentTab();
-        m_pFeelingLuckyButton->SetEnabled(true);
     }
     else
+    {
         BaseClass::OnCommand(command);
+    }
 }
 
 void MapFilterPanel::OnTextChanged(KeyValues* pKv)
