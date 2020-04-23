@@ -39,14 +39,13 @@
     }
     "AbsSpeedoLabel"
     {
-        "ControlName"   "Label"
+        "ControlName"   "SpeedometerLabel"
         "fieldName"     "AbsSpeedoLabel"
         "xpos"          "0"
         "ypos"          "0"
         "pin_to_sibling" "UnitsLabel"
-        "pin_to_sibling_corner" "2"
-        "pin_corner_to_sibling" "0"
-        "autoResize"     "1"
+        "pin_to_sibling_corner" "6" //bottom center
+        "pin_corner_to_sibling" "4" //top center
         "PinnedCornerOffsetX" "0"
         "PinnedCornerOffsetY" "0"
         "UnpinnedCornerOffsetX" "0"
@@ -61,16 +60,17 @@
         "FgColor"       "MOM.Panel.Fg"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
+        "auto_wide_tocontents" "1"
     }
     "HorizSpeedoLabel"
     {
-        "ControlName" "Label"
+        "ControlName" "SpeedometerLabel"
         "fieldName"   "HorizSpeedoLabel"
         "xpos"        "0"
         "ypos"        "0"
-        "pin_to_sibling" "AbsSpeedoLabel"
-        "pin_to_sibling_corner" "2"
-        "pin_corner_to_sibling" "0"
+        "pin_to_sibling" "UnitsLabel"
+        "pin_to_sibling_corner" "6" //bottom center
+        "pin_corner_to_sibling" "4" //top center
         "autoResize"     "1"
         "PinnedCornerOffsetX" "0"
         "PinnedCornerOffsetY" "0"
@@ -86,16 +86,17 @@
         "FgColor"       "MOM.Panel.Fg"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
+        "auto_wide_tocontents" "1"
     }
     "LastJumpVelLabel"
     {
-        "ControlName" "Label"
+        "ControlName" "SpeedometerLabel"
         "fieldName"	  "LastJumpVelLabel"
         "xpos"        "0"
         "ypos"        "0"
-        "pin_to_sibling" "HorizSpeedoLabel"
-        "pin_to_sibling_corner" "2"
-        "pin_corner_to_sibling" "0"
+        "pin_to_sibling" "UnitsLabel"
+        "pin_to_sibling_corner" "6" //bottom center
+        "pin_corner_to_sibling" "4" //top center
         "autoResize"     "1"
         "PinnedCornerOffsetX" "0"
         "PinnedCornerOffsetY" "0"
@@ -110,14 +111,15 @@
         "font"          "HudNumbersExtremelySmall"
         "wrap"          "0"
         "auto_tall_tocontents" "1"
+        "auto_wide_tocontents" "1"
     }
     "StageEnterExitLabel"
     {
-        "ControlName" "Label"
+        "ControlName" "SpeedometerLabel"
         "fieldName"   "StageEnterExitLabel"
         "xpos"        "0"
         "ypos"        "0"
-        "pin_to_sibling" "LastJumpVelLabel"
+        "pin_to_sibling" "UnitsLabel"
         "pin_to_sibling_corner" "2"
         "pin_corner_to_sibling" "0"
         "PinnedCornerOffsetX" "0"
@@ -137,7 +139,7 @@
     }
     "StageEnterExitComparisonLabel"
     {
-        "ControlName" "Label"
+        "ControlName" "SpeedometerLabel"
         "fieldName"   "StageEnterExitComparisonLabel"
         "xpos"        "0"
         "ypos"        "0"

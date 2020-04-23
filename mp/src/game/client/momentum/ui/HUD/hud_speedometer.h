@@ -1,7 +1,9 @@
 #pragma once
 
+#include "hud_speedometer_label.h"
 #include "c_mom_replay_entity.h"
 #include "hudelement.h"
+#include "mom_player_shared.h"
 
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/EditablePanel.h>
@@ -22,37 +24,30 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     void Reset() OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
+    void PerformLayout() OVERRIDE;
     void OnThink() OVERRIDE;
 
   private:
-    void SetLabelHeight(bool isActive, vgui::Label *label, int height);
-    void SetSpeedometerLabel(bool isActive, vgui::Label *label, int height, int roundedSpeed, Color color,
-                             float alpha = -1.0f);
-    void ColorBasedOnAccel(Color &color, int currentVel, int lastVel);
-    void ColorRelativeToMax(Color &color, int vel);
+    SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, *m_pStageExitLabel,
+        *m_pStageExitComparisonLabel;
+    vgui::Label *m_pUnitsLabel;
 
-    float m_flNextColorizeCheck, m_flLastVelocity, m_flLastHVelocity, m_flLastJumpVelocity;
+    int m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, m_defaultLastJumpVelLabelHeight;
 
-    bool m_bRanFadeOutJumpSpeed;
+    void SetComparison(C_MomentumPlayer *pLocal);
 
-    Color m_LastColor, m_hLastColor, m_CurrentColor, m_hCurrentColor, m_LastJumpVelColor, m_NormalColor,
-        m_IncreaseColor, m_DecreaseColor;
+    static float GetAbsVelocity(C_MomentumPlayer *pPlayer);
+    static float GetHorizVelocity(C_MomentumPlayer *pPlayer);
+    static float GetLastJumpVelocity(C_MomentumPlayer *pPlayer);
+    static void LastJumpVelColorizeOverride(Color &currentColor, Color lastColor, float currentVel, float lastVel,
+                                            Color normalColor, Color increaseColor, Color decreaseColor);
 
-    Color m_MaxVelColorLevel1, m_MaxVelColorLevel2, m_MaxVelColorLevel3, m_MaxVelColorLevel4, m_MaxVelColorLevel5;
-
-    vgui::Label *m_pUnitsLabel, *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, *m_pStageEnterExitLabel,
-        *m_pStageEnterExitComparisonLabel;
-
-    int m_defaultUnitsLabelHeight, m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight,
-        m_defaultLastJumpVelLabelHeight, m_defaultStageEnterExitLabelHeight, m_defaultYPos;
-
-    CMomRunStats *m_pRunStats;
-    CMomRunEntityData *m_pRunEntData;
-
-    ConVarRef m_cvarTimeScale;
+    // helper functions
+    static void AdjustToReplayTimeScale(float &vel);
+    static void AdjustToUnits(float &vel, C_MomentumPlayer *pPlayer);
 
   protected:
     // NOTE: These need to be floats because of animations (thanks volvo)
-    CPanelAnimationVar(float, m_fStageStartAlpha, "StageAlpha", "0.0"); // Used for fading
-    CPanelAnimationVar(float, m_fLastJumpVelAlpha, "JumpAlpha", "0.0");
+    CPanelAnimationVar(float, m_flStageStartAlpha, "StageAlpha", "0.0f");
+    CPanelAnimationVar(float, m_flLastJumpVelAlpha, "JumpAlpha", "0.0f");
 };
