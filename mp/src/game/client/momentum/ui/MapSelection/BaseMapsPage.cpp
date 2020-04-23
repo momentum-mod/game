@@ -92,7 +92,6 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     SetSize(pWide, pTall);
 
     m_hFont = INVALID_FONT;
-    m_uStartMapWhenReady = 0;
     parent->AddActionSignalTarget(this);
 
     // Init UI
@@ -439,12 +438,6 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
         pKvInto->SetColor("cellcolor", pKv->GetBool("error") ? m_cMapDLFailed : m_cMapDLSuccess);
         m_pMapList->ApplyItemChanges(map->m_iListID);
     }
-
-    if (m_uStartMapWhenReady > 0 && m_uStartMapWhenReady == id)
-    {
-        m_uStartMapWhenReady = 0;
-        MapSelectorDialog().OnMapStart(id);
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -453,30 +446,10 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
 //-----------------------------------------------------------------------------
 bool CBaseMapsPage::OnGameListEnterPressed()
 {
-    if (GetSelectedItemsCount() > 0)
-    {
-        const auto iListID = m_pMapList->GetSelectedItem(0);
-        const auto iMapID = m_pMapList->GetItemUserData(iListID);
-        if (iMapID == 0)
-            return false;
+    if (GetSelectedItemsCount() == 0)
+        return false;
 
-        const auto pMapData = g_pMapCache->GetMapDataByID(iMapID);
-        if (pMapData)
-        {
-            if (pMapData->m_bInLibrary)
-            {
-                if (pMapData->m_bMapFileNeedsUpdate)
-                    MapSelectorDialog().OnStartMapDownload(iMapID);
-                else
-                    MapSelectorDialog().OnMapStart(iMapID);
-            }
-            else
-                MapSelectorDialog().OnAddMapToLibrary(iMapID);
-
-            return true;
-        }
-    }
-    return false;
+    return TryStartMapFromRow(m_pMapList->GetSelectedItem(0)) != 0;
 }
 
 int CBaseMapsPage::GetFilteredItemsCount() 
@@ -487,41 +460,21 @@ int CBaseMapsPage::GetFilteredItemsCount()
 void CBaseMapsPage::StartRandomMap()
 {
     const auto iVisibleItemsCount = GetFilteredItemsCount();
-    if (iVisibleItemsCount > 0)
-    {
-        const auto iListID = m_pMapList->GetItemIDFromRow(RandomInt(0, iVisibleItemsCount - 1));
-        const auto iMapID = m_pMapList->GetItemUserData(iListID);
-        if (iMapID == 0)
-            return;
 
-        const auto pMapData = g_pMapCache->GetMapDataByID(iMapID);
-        if (pMapData)
-        {
-            if (pMapData->m_bInLibrary)
-            {
-                if (pMapData->m_bMapFileNeedsUpdate)
-                {
-                    MapSelectorDialog().OnStartMapDownload(iMapID);
-                    m_uStartMapWhenReady = iMapID;
-                }
-                else
-                {
-                    m_uStartMapWhenReady = 0;
-                    MapSelectorDialog().OnMapStart(iMapID);
-                }
-            }
-            else
-            {
-                MapSelectorDialog().OnAddMapToLibrary(iMapID);
-                const auto pData = g_pMapCache->GetMapDataByID(iMapID);
-                if (pData && !g_pMapCache->MapFileExists(pData))
-                {
-                    MapSelectorDialog().OnStartMapDownload(iMapID);
-                }
-                m_uStartMapWhenReady = iMapID;
-            }
-        }
-    }
+    if (iVisibleItemsCount == 0)
+        return;
+
+    if (MapSelectorDialog().GetMapToStart() > 0)
+        return;
+
+    const auto iListID = m_pMapList->GetItemIDFromRow(RandomInt(0, iVisibleItemsCount - 1));
+    const auto iMapID = m_pMapList->GetItemUserData(iListID);
+    if (iMapID == 0)
+        return;
+
+    MapSelectorDialog().SetMapToStart(iMapID);
+
+    TryStartMapFromRow(iListID);
 }
 
 //-----------------------------------------------------------------------------
