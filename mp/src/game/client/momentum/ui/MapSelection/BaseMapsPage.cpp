@@ -352,32 +352,26 @@ void CBaseMapsPage::AddMapToList(MapData *pData)
 
 void CBaseMapsPage::OnMapListDataUpdate(int mapID)
 {
-    MapDisplay_t *pMapDisplay = GetMapDisplayByID(mapID);
+    const auto pMapDisplay = GetMapDisplayByID(mapID);
 
-    if (pMapDisplay)
+    if (!pMapDisplay)
+        return;
+
+    if (m_pMapList->IsValidItemID(pMapDisplay->m_iListID))
     {
-        if (m_pMapList->IsValidItemID(pMapDisplay->m_iListID))
+        m_pMapList->ApplyItemChanges(pMapDisplay->m_iListID);
+    }
+    else
+    {
+        // Otherwise we need to add it
+        const auto pData = MapSelectorDialog().GetMapListDataByID(mapID);
+        if (pData)
         {
-            m_pMapList->ApplyItemChanges(pMapDisplay->m_iListID);
+            pMapDisplay->m_iListID = m_pMapList->AddItem(pData->m_pKv, mapID, false, false, false);
         }
         else
         {
-            // Otherwise we need to add it
-            MapListData *pData = MapSelectorDialog().GetMapListDataByID(mapID);
-            if (pData)
-                pMapDisplay->m_iListID = m_pMapList->AddItem(pData->m_pKv, mapID, false, false, false);
-            else
-                MapSelectorDialog().CreateMapListData(pMapDisplay->m_pMap);
-        }
-    }
-
-    if (m_uStartMapWhenReady == (uint32)mapID)
-    {
-        const auto pData = g_pMapCache->GetMapDataByID(mapID);
-        if (pData && g_pMapCache->MapFileExists(pData))
-        {
-            m_uStartMapWhenReady = 0;
-            MapSelectorDialog().OnMapStart(mapID);
+            MapSelectorDialog().CreateMapListData(pMapDisplay->m_pMap);
         }
     }
 }
