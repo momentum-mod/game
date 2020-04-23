@@ -39,10 +39,6 @@ MAKE_TOGGLE_CONVAR_CV(cl_righthand, "1", FCVAR_ARCHIVE, "Use right-handed view m
 
 MAKE_CONVAR(r_viewmodel_opacity, "1", FCVAR_ARCHIVE, "Set the opacity of view models. MIN = 0.01, MAX = 1.\n", 0.01f, 1.0f);
 
-#ifdef TF_CLIENT_DLL
-	ConVar cl_flipviewmodels( "cl_flipviewmodels", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Flip view models." );
-#endif
-
 void PostToolMessage( HTOOLHANDLE hEntity, KeyValues *msg );
 
 void FormatViewModelAttachment( Vector &vOrigin, bool bInverse )
@@ -200,14 +196,6 @@ bool C_BaseViewModel::ShouldFlipViewModel()
 		const auto pInfo = pWeapon->GetWeaponScript();
 		return pInfo->bAllowFlipping && pInfo->bBuiltRightHanded != cl_righthand.GetBool();
 	}
-
-#ifdef TF_CLIENT_DLL
-	CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
-	if ( pWeapon )
-	{
-		return pWeapon->m_bFlipViewModel != cl_flipviewmodels.GetBool();
-	}
-#endif
 
 	return false;
 }
