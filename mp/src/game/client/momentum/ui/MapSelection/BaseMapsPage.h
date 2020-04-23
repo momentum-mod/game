@@ -125,5 +125,4 @@ private:
     vgui::HFont m_hFont;
 
     Color m_cMapDLFailed, m_cMapDLSuccess;
-    uint32 m_uStartMapWhenReady;
 };
