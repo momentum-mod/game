@@ -350,6 +350,35 @@ void CBaseMapsPage::AddMapToList(MapData *pData)
     UpdateStatus();
 }
 
+uint32 CBaseMapsPage::TryStartMapFromRow(int itemID)
+{
+    const auto iMapID = m_pMapList->GetItemUserData(itemID);
+    if (iMapID == 0)
+        return 0;
+
+    const auto pMapData = g_pMapCache->GetMapDataByID(iMapID);
+    if (!pMapData)
+        return 0;
+
+    if (pMapData->m_bInLibrary)
+    {
+        if (pMapData->m_bMapFileNeedsUpdate)
+        {
+            MapSelectorDialog().OnStartMapDownload(iMapID);
+        }
+        else
+        {
+            MapSelectorDialog().OnMapStart(iMapID);
+        }
+    }
+    else
+    {
+        MapSelectorDialog().OnAddMapToLibrary(iMapID);
+    }
+
+    return iMapID;
+}
+
 void CBaseMapsPage::OnMapListDataUpdate(int mapID)
 {
     const auto pMapDisplay = GetMapDisplayByID(mapID);

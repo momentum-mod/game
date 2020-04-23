@@ -102,6 +102,8 @@ protected:
 
     virtual void AddMapToList(MapData *pData);
 
+    uint32 TryStartMapFromRow(int itemID);
+
     // Removes map from list
     void RemoveMap(MapDisplay_t&);
 
