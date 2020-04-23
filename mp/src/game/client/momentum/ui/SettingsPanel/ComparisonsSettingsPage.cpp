@@ -114,6 +114,7 @@ void ComparisonsSettingsPage::InitBogusComparePanel()
     m_pBogusComparisonsPanel->SetPaintBackgroundEnabled(true);
     m_pBogusComparisonsPanel->SetPaintBackgroundType(2);
     m_pBogusComparisonsPanel->Init();
+    m_pBogusComparisonsPanel->Reset();
     int x, y, wid, tal;
     m_pComparisonsFrame->GetClientArea(x, y, wid, tal);
     m_pBogusComparisonsPanel->SetBounds(x, y, wid, tal);
