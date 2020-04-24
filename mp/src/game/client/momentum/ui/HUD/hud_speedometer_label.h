@@ -11,11 +11,7 @@ enum SpeedometerLabelUpdate_t
 {
     // Don't update velocity/color, just apply fadeout. Useful for event based speedos.
     SPEEDOMETER_LABEL_UPDATE_ONLYFADE = 0,   
-    // Only update velocity/color when the velocity differs from the previously calculated velocity.
-    // Useful for speedos with values that don't update constantly (eg. last jump velocity)
-    SPEEDOMETER_LABEL_UPDATE_ON_DIFFVELONLY,
-    // Update velocity/color every tick.
-    SPEEDOMETER_LABEL_UPDATE_ON_SAMEVEL
+    SPEEDOMETER_LABEL_UPDATE_ALWAYS,
 };
 
 class SpeedometerLabel : public vgui::Label
@@ -25,8 +21,8 @@ class SpeedometerLabel : public vgui::Label
   public:
     // constructor for sending in velocity/colorize functions
     SpeedometerLabel(vgui::Panel *parent, const char *panelName, ConVar *CvarLabelEnabled, 
-                     SpeedometerLabelUpdate_t updateType, float (*funcCalcVel)(C_MomentumPlayer *pPlayer) = nullptr,
-                     void (*funcColorize)(Color &currentColor, Color lastColor, float currentVel, float lastVel,
+                     SpeedometerLabelUpdate_t updateType, bool (*funcCalcVel)(C_MomentumPlayer *pPlayer, float *velocity, float *pPrevVelocityInContext) = nullptr,
+                     void (*funcColorize)(Color &currentColor, float currentVel, float lastVel,
                                           Color normalColor, Color increaseColor, Color decreaseColor) = nullptr);
     //SpeedometerLabel(Panel *parent, const char *panelName, const wchar_t *wszText);
 
@@ -43,10 +39,12 @@ class SpeedometerLabel : public vgui::Label
     bool StartFade();
     bool StopFade();
     void ApplyFade();
+    bool GetAlpha(float *alpha);
+    bool SetAlpha(float alpha);
 
   private:
-    float (*CalcVelocity)(C_MomentumPlayer *pPlayer);
-    void (*ColorizeOverride)(Color &currentColor, Color lastColor, float currentVel, float lastVel,
+    bool (*GetVelocity)(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
+    void (*ColorizeOverride)(Color &currentColor, float currentVel, float lastVel,
                              Color normalColor, Color increaseColor, Color decreaseColor);
 
     void Colorize();
@@ -54,16 +52,20 @@ class SpeedometerLabel : public vgui::Label
 
     SpeedometerLabelUpdate_t m_eUpdateType;
 
-    Color m_LastColor, m_CurrentColor, m_NormalColor, m_IncreaseColor, m_DecreaseColor,
+    Color m_CurrentColor, m_NormalColor, m_IncreaseColor, m_DecreaseColor,
         m_MaxVelColorLevel1, m_MaxVelColorLevel2, m_MaxVelColorLevel3, m_MaxVelColorLevel4, m_MaxVelColorLevel5;
 
     int m_DefaultHeight;
 
     float m_flNextColorizeCheck, m_flCurrentVelocity, m_flLastVelocity;
+    // let user set their own previously known velocity if they choose
+    float m_pPrevVelocityInContext;
 
     // fadeout related variables
     const char *m_strAnimationName;
     float *m_flAlpha;
+
+    bool m_bFadedOut;
     
     ConVar *m_cvarIsEnabled;
     ConVarRef m_cvarMaxVel, m_cvarSpeedoUnits, m_cvarSpeedoColorize;

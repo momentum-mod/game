@@ -28,23 +28,21 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     void OnThink() OVERRIDE;
 
   private:
-    SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, *m_pStageExitLabel,
-        *m_pStageExitComparisonLabel;
+    SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, *m_pStageEnterLabel,
+        *m_pStageEnterComparisonLabel;
     vgui::Label *m_pUnitsLabel;
 
     int m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, m_defaultLastJumpVelLabelHeight;
 
-    void SetComparison(C_MomentumPlayer *pLocal);
-
-    static float GetAbsVelocity(C_MomentumPlayer *pPlayer);
-    static float GetHorizVelocity(C_MomentumPlayer *pPlayer);
-    static float GetLastJumpVelocity(C_MomentumPlayer *pPlayer);
-    static void LastJumpVelColorizeOverride(Color &currentColor, Color lastColor, float currentVel, float lastVel,
+    static bool GetAbsVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
+    static bool GetHorizVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
+    static bool GetLastJumpVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
+    static void LastJumpVelColorizeOverride(Color &currentColor, float currentVel, float lastVel,
                                             Color normalColor, Color increaseColor, Color decreaseColor);
 
     // helper functions
-    static void AdjustToReplayTimeScale(float &vel);
-    static void AdjustToUnits(float &vel, C_MomentumPlayer *pPlayer);
+    static void AdjustToReplayTimeScale(float *vel);
+    static void AdjustToUnits(float *vel, C_MomentumPlayer *pPlayer);
 
   protected:
     // NOTE: These need to be floats because of animations (thanks volvo)

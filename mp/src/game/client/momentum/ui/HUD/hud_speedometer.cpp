@@ -60,6 +60,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
     ListenForGameEvent("zone_exit");
+    ListenForGameEvent("zone_enter");
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
@@ -67,17 +68,17 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
     m_pUnitsLabel = new Label(this, "UnitsLabel", "");
 
-    m_pAbsSpeedoLabel = new SpeedometerLabel(this, "AbsSpeedoLabel", &mom_hud_speedometer, SPEEDOMETER_LABEL_UPDATE_ON_SAMEVEL, GetAbsVelocity);
-    m_pHorizSpeedoLabel = new SpeedometerLabel(this, "HorizSpeedoLabel", &mom_hud_speedometer_horiz, SPEEDOMETER_LABEL_UPDATE_ON_SAMEVEL, GetHorizVelocity);
+    m_pAbsSpeedoLabel = new SpeedometerLabel(this, "AbsSpeedoLabel", &mom_hud_speedometer, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetAbsVelocity);
+    m_pHorizSpeedoLabel = new SpeedometerLabel(this, "HorizSpeedoLabel", &mom_hud_speedometer_horiz, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetHorizVelocity);
 
-    m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelLabel", &mom_hud_speedometer_lastjumpvel, SPEEDOMETER_LABEL_UPDATE_ON_DIFFVELONLY,
+    m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelLabel", &mom_hud_speedometer_lastjumpvel, SPEEDOMETER_LABEL_UPDATE_ALWAYS,
                                                GetLastJumpVelocity, LastJumpVelColorizeOverride);
     m_pLastJumpVelLabel->SetFadeOutAnimation("FadeOutJumpSpeed", &m_flLastJumpVelAlpha);
 
-    m_pStageExitLabel = new SpeedometerLabel(this, "StageEnterExitLabel", &mom_hud_speedometer_showenterspeed, SPEEDOMETER_LABEL_UPDATE_ONLYFADE);
-    m_pStageExitLabel->SetFadeOutAnimation("FadeOutEnterSpeed", &m_flStageStartAlpha);
-    m_pStageExitComparisonLabel = new SpeedometerLabel(this, "StageEnterExitComparisonLabel", &mom_hud_speedometer_showenterspeed, SPEEDOMETER_LABEL_UPDATE_ONLYFADE);
-    m_pStageExitComparisonLabel->SetFadeOutAnimation("FadeOutEnterSpeed", &m_flStageStartAlpha);
+    m_pStageEnterLabel = new SpeedometerLabel(this, "StageEnterExitLabel", &mom_hud_speedometer_showenterspeed, SPEEDOMETER_LABEL_UPDATE_ONLYFADE);
+    m_pStageEnterLabel->SetFadeOutAnimation("FadeOutEnterSpeed", &m_flStageStartAlpha);
+    m_pStageEnterComparisonLabel = new SpeedometerLabel(this, "StageEnterExitComparisonLabel", &mom_hud_speedometer_showenterspeed, SPEEDOMETER_LABEL_UPDATE_ONLYFADE);
+    m_pStageEnterComparisonLabel->SetFadeOutAnimation("FadeOutEnterSpeed", &m_flStageStartAlpha);
     
     LoadControlSettings("resource/ui/Speedometer.res");
 }
@@ -95,8 +96,8 @@ void CHudSpeedMeter::Reset()
     m_pAbsSpeedoLabel->Reset();
     m_pHorizSpeedoLabel->Reset();
     m_pLastJumpVelLabel->Reset();
-    m_pStageExitLabel->Reset();
-    m_pStageExitComparisonLabel->Reset();
+    m_pStageEnterLabel->Reset();
+    m_pStageEnterComparisonLabel->Reset();
 }
 
 void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
@@ -108,48 +109,27 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         const auto ent = pEvent->GetInt("ent");
         if (ent == pLocal->GetCurrentUIEntity()->GetEntIndex())
         {
-            if (FStrEq(pEvent->GetName(), "zone_exit"))
+            const auto pRunEntData = pLocal->GetCurrentUIEntData();
+            if (FStrEq(pEvent->GetName(), "zone_exit") && pRunEntData->m_iCurrentZone == 1)
             {
-                SetComparison(pLocal);
+                // start fade when exiting start zone as well
+                m_pStageEnterLabel->StartFade();
+            }
+            else if (FStrEq(pEvent->GetName(), "zone_enter"))
+            {
+                if (pRunEntData->m_iCurrentZone == 1)
+                {
+                    // reset alphas when run is restarted
+                    m_flStageStartAlpha = 0.0f;
+                    m_flLastJumpVelAlpha = 0.0f;
+                }
+                else
+                {
+                    // stop fade out & make visible
+                    m_pStageEnterLabel->StartFade();
+                }
             }
         }
-    }
-}
-
-void CHudSpeedMeter::SetComparison(C_MomentumPlayer *pLocal)
-{
-    // Set stage enter vel
-    const auto pRunEntData = pLocal->GetCurrentUIEntData();
-    const auto pRunStats = pLocal->GetCurrentUIEntStats();
-    if (pRunEntData && pRunEntData->m_bTimerRunning)
-    {
-        char enterVelComparisonStr[BUFSIZELOCL], enterVelStr[BUFSIZELOCL];
-        //Q_snprintf(enterVelStr, BUFSIZELOCL, "%u", RoundFloatToInt(m_flStageEnterVel));
-        Color compareColor = Color(0, 0, 0, 0);
-
-        g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, pRunStats, pRunEntData->m_iCurrentZone, enterVelStr,
-                                              enterVelComparisonStr, &compareColor, true);
-        
-        HFont labelFont = m_pStageExitLabel->GetFont();
-        int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelStr);
-        if (g_pMOMRunCompare->LoadedComparison()) // comparison is available
-        {
-            m_pStageExitComparisonLabel->SetFgColor(compareColor);
-            m_pStageExitComparisonLabel->SetText(enterVelComparisonStr);
-
-            combinedLength += UTIL_ComputeStringWidth(labelFont, enterVelComparisonStr);
-        }
-        else
-        {
-            combinedLength -= UTIL_ComputeStringWidth(labelFont, " ");
-        }
-        int xOffset = (GetWide() - combinedLength) / 2;
-        m_pStageExitLabel->SetText(enterVelStr);
-        m_pStageExitLabel->SetPos(0 - xOffset, m_pStageExitLabel->GetYPos());
-
-        // start fadeout
-        m_flStageStartAlpha = 255.0f;
-        m_pStageExitLabel->StartFade();
     }
 }
 
@@ -162,7 +142,7 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
     m_defaultAbsSpeedoLabelHeight = surface()->GetFontTall(m_pAbsSpeedoLabel->GetFont());
     m_defaultHorizSpeedoLabelHeight = surface()->GetFontTall(m_pHorizSpeedoLabel->GetFont());
     m_defaultLastJumpVelLabelHeight = surface()->GetFontTall(m_pLastJumpVelLabel->GetFont());
-    m_pStageExitComparisonLabel->SetFont(m_pStageExitLabel->GetFont()); // need to have same font
+    m_pStageEnterComparisonLabel->SetFont(m_pStageEnterLabel->GetFont()); // need to have same font
 }
 
 void CHudSpeedMeter::PerformLayout()
@@ -170,8 +150,8 @@ void CHudSpeedMeter::PerformLayout()
     m_pAbsSpeedoLabel->SetPos(m_pAbsSpeedoLabel->GetXPos(), 0);
     m_pHorizSpeedoLabel->SetPos(m_pHorizSpeedoLabel->GetXPos(), 0);
     m_pLastJumpVelLabel->SetPos(m_pLastJumpVelLabel->GetXPos(), 0);
-    m_pStageExitLabel->SetPos(m_pStageExitLabel->GetXPos(), 0);
-    m_pStageExitComparisonLabel->SetPos(m_pStageExitComparisonLabel->GetXPos(), 0);
+    m_pStageEnterLabel->SetPos(m_pStageEnterLabel->GetXPos(), 0);
+    m_pStageEnterComparisonLabel->SetPos(m_pStageEnterComparisonLabel->GetXPos(), 0);
 
     int absSpeedoTall = mom_hud_speedometer.GetBool() ? m_defaultAbsSpeedoLabelHeight : 0,
         horizSpeedoTall = mom_hud_speedometer_horiz.GetBool() ? m_defaultHorizSpeedoLabelHeight : 0,
@@ -179,7 +159,7 @@ void CHudSpeedMeter::PerformLayout()
 
     m_pHorizSpeedoLabel->SetPos(m_pHorizSpeedoLabel->GetXPos(), absSpeedoTall);
     m_pLastJumpVelLabel->SetPos(m_pLastJumpVelLabel->GetXPos(), absSpeedoTall + horizSpeedoTall);
-    m_pStageExitLabel->SetPos(m_pStageExitLabel->GetXPos(), absSpeedoTall + horizSpeedoTall + lastJumpVelTall);
+    m_pStageEnterLabel->SetPos(m_pStageEnterLabel->GetXPos(), absSpeedoTall + horizSpeedoTall + lastJumpVelTall);
 }
 
 void CHudSpeedMeter::OnThink()
@@ -209,34 +189,65 @@ void CHudSpeedMeter::OnThink()
         m_pUnitsLabel->SetTall(0);
         m_pUnitsLabel->SetText(L"");
     }
+
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (!pPlayer)
+        return;
+    // Set stage enter vel
+    const auto pRunEntData = pPlayer->GetCurrentUIEntData();
+    const auto pRunStats = pPlayer->GetCurrentUIEntStats();
+    if (pRunEntData && pRunEntData->m_bTimerRunning)
+    {
+        char enterVelComparisonStr[BUFSIZELOCL], enterVelStr[BUFSIZELOCL];
+        Color compareColor = Color(0, 0, 0, 0);
+
+        g_pMOMRunCompare->GetComparisonString(VELOCITY_ENTER, pRunStats, pRunEntData->m_iCurrentZone, enterVelStr,
+                                              enterVelComparisonStr, &compareColor, true);
+
+        HFont labelFont = m_pStageEnterLabel->GetFont();
+        int combinedLength = UTIL_ComputeStringWidth(labelFont, enterVelStr);
+        if (g_pMOMRunCompare->LoadedComparison()) // comparison is available
+        {
+            m_pStageEnterComparisonLabel->SetFgColor(compareColor);
+            m_pStageEnterComparisonLabel->SetText(enterVelComparisonStr);
+            combinedLength += UTIL_ComputeStringWidth(labelFont, enterVelComparisonStr);
+        }
+        else
+        {
+            combinedLength -= UTIL_ComputeStringWidth(labelFont, " ");
+        }
+        int xOffset = (GetWide() - combinedLength) / 2;
+        m_pStageEnterLabel->SetText(enterVelStr);
+        m_pStageEnterLabel->SetPos(0 - xOffset, m_pStageEnterLabel->GetYPos());
+    }
 }
 
-void CHudSpeedMeter::AdjustToReplayTimeScale(float &vel)
+void CHudSpeedMeter::AdjustToReplayTimeScale(float *vel)
 {
     static ConVarRef CvarTimeScale("mom_replay_timescale");
     float timescale = CvarTimeScale.GetFloat();
     if (timescale < 1.0f)
     {
-        vel /= timescale;
+        *vel /= timescale;
     }
 }
 
-void CHudSpeedMeter::AdjustToUnits(float &vel, C_MomentumPlayer *pPlayer)
+void CHudSpeedMeter::AdjustToUnits(float *vel, C_MomentumPlayer *pPlayer)
 {
     // Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
     switch (mom_hud_speedometer_units.GetInt())
     {
     case SPEEDOMETER_UNITS_KMH:
-        vel *= UPS_TO_KMH_FACTOR;
+        *vel *= UPS_TO_KMH_FACTOR;
         break;
     case SPEEDOMETER_UNITS_MPH:
-        vel *= UPS_TO_MPH_FACTOR;
+        *vel *= UPS_TO_MPH_FACTOR;
         break;
     case SPEEDOMETER_UNITS_ENERGY:
     {
         // Normalized units of energy
         const auto gravity = sv_gravity.GetFloat();
-        vel = (Square(vel) / 2.0f + gravity * (pPlayer->GetLocalOrigin().z - pPlayer->GetCurrentUIEntData()->m_flLastJumpZPos)) / gravity;
+        *vel = (Square(*vel) / 2.0f + gravity * (pPlayer->GetLocalOrigin().z - pPlayer->GetCurrentUIEntData()->m_flLastJumpZPos)) / gravity;
         break;
     }
     case SPEEDOMETER_UNITS_UPS:
@@ -245,43 +256,51 @@ void CHudSpeedMeter::AdjustToUnits(float &vel, C_MomentumPlayer *pPlayer)
     }
 }
 
-float CHudSpeedMeter::GetAbsVelocity(C_MomentumPlayer *pPlayer)
+bool CHudSpeedMeter::GetAbsVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
 {
     Vector vecVelocity = pPlayer->GetAbsVelocity();
-    float flVelocity = static_cast<float>(vecVelocity.Length());
+    *pVelocity = static_cast<float>(vecVelocity.Length());
     if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
     {
-        AdjustToReplayTimeScale(flVelocity);
+        AdjustToReplayTimeScale(pVelocity);
     }
-    AdjustToUnits(flVelocity, pPlayer);
-    return flVelocity;
+    AdjustToUnits(pVelocity, pPlayer);
+    return true;
 }
 
-float CHudSpeedMeter::GetHorizVelocity(C_MomentumPlayer *pPlayer)
+bool CHudSpeedMeter::GetHorizVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
 {
     Vector vecVelocity = pPlayer->GetAbsVelocity();
     vecVelocity.z = 0;
-    float flVelocity = static_cast<float>(vecVelocity.Length());
+    *pVelocity = static_cast<float>(vecVelocity.Length());
     if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
     {
-        AdjustToReplayTimeScale(flVelocity);
+        AdjustToReplayTimeScale(pVelocity);
     }
-    AdjustToUnits(flVelocity, pPlayer);
-    return flVelocity;
+    AdjustToUnits(pVelocity, pPlayer);
+    return true;
 }
 
-float CHudSpeedMeter::GetLastJumpVelocity(C_MomentumPlayer* pPlayer)
+bool CHudSpeedMeter::GetLastJumpVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
 {
     const auto pRunEntData = pPlayer->GetRunEntData();
     float lastJumpVel = pRunEntData->m_flLastJumpVel;
-    AdjustToUnits(lastJumpVel, pPlayer);
-    return lastJumpVel;
+    float lastJumpTime = pRunEntData->m_flLastJumpTime;
+
+    bool shouldUpdate = *pPrevVelocityInContext != lastJumpTime; // new jump since last called
+    if (shouldUpdate)
+    {
+        *pVelocity = lastJumpVel;
+        *pPrevVelocityInContext = lastJumpTime;
+        AdjustToUnits(pVelocity, pPlayer);
+    }
+    return shouldUpdate;
 }
 
-void CHudSpeedMeter::LastJumpVelColorizeOverride(Color &currentColor, Color lastColor, float currentVel, float lastVel,
+void CHudSpeedMeter::LastJumpVelColorizeOverride(Color &currentColor, float currentVel, float lastVel,
                                                  Color normalColor, Color increaseColor, Color decreaseColor)
 {
-    if (CloseEnough(currentVel, 0.0f))
+    if (CloseEnough(currentVel, lastVel))
     {
         currentColor = normalColor;
     }
