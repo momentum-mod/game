@@ -36,31 +36,19 @@ public:
 	~COptionsSubMouse();
 
 	virtual void OnResetData();
-	virtual void OnApplyChanges();
-
-protected:
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 
 private:
-	MESSAGE_FUNC_PTR( OnControlModified, "ControlModified", panel );
-    MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel );
-	MESSAGE_FUNC_PTR( OnCheckButtonChecked, "CheckButtonChecked", panel )
-	{
-		OnControlModified( panel );
-	}
-
-    void UpdateSensitivityLabel();
-    void UpdateAccelLabel();
+	MESSAGE_FUNC_PTR( OnCheckButtonChecked, "CheckButtonChecked", panel );
 
 	CvarNegateCheckButton		*m_pReverseMouseCheckBox;
 	vgui::CvarToggleCheckButton	*m_pMouseFilterCheckBox , *m_pMouseRawCheckbox;
 
     vgui::CvarSlider					*m_pMouseSensitivitySlider;
-    vgui::TextEntry             *m_pMouseSensitivityLabel;
+    vgui::CvarTextEntry             *m_pMouseSensitivityLabel;
 
     vgui::CheckButton *m_pMouseAccelToggle;
     vgui::CvarSlider *m_pMouseAccelSlider;
-    vgui::TextEntry *m_pMouseAccelLabel;
+    vgui::CvarTextEntry *m_pMouseAccelLabel;
 };
 
 

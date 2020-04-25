@@ -33,6 +33,7 @@
 	{
 		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"MouseFilter"
+        "cvar_name"     "m_filter"
 		"xpos"		"200"
 		"ypos"		"10"
 		"tooltiptext"		"#GameUI_MouseFilterLabel"
@@ -62,6 +63,7 @@
 	{
 		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"MouseRaw"
+        "cvar_name"     "m_rawinput"
 		"xpos"		"30"
 		"ypos"		"70"
 		"tooltiptext"		"#GameUI_MouseRaw_Hint"
@@ -121,6 +123,7 @@
 	{
 		"ControlName"		"CvarSlider"
 		"fieldName"		"Slider"
+        "cvar_name"     "sensitivity"
 		"xpos"		"200"
 		"ypos"		"40"
 		"wide"		"200"
@@ -138,8 +141,9 @@
 	}
 	"SensitivityLabel"
 	{
-		"ControlName"		"TextEntry"
+		"ControlName"		"CvarTextEntry"
 		"fieldName"		"SensitivityLabel"
+		"cvar_name"     "sensitivity"
 		"xpos"		"400"
 		"ypos"		"40"
 		"wide"		"50"
@@ -162,6 +166,7 @@
 	{
 		"ControlName"		"CvarSlider"
 		"fieldName"		"MouseAccelerationSlider"
+        "cvar_name"     "m_customaccel_exponent"
 		"xpos"		"200"
 		"ypos"		"100"
 		"tooltiptext"		"#GameUI_MouseAccelerationAmount_Hint"
@@ -181,8 +186,9 @@
 	}
 	"MouseAccelerationLabel"
 	{
-		"ControlName"		"TextEntry"
+		"ControlName"		"CvarTextEntry"
 		"fieldName"		"MouseAccelerationLabel"
+        "cvar_name"     "m_customaccel_exponent"
 		"xpos"		"400"
 		"ypos"		"100"
 		"tooltiptext"		"#GameUI_MouseAccelerationAmount_Hint"
@@ -200,7 +206,7 @@
 		"textHidden"		"0"
 		"editable"		"1"
 		"maxchars"		"-1"
-		"NumericInputOnly"		"0"
+		"NumericInputOnly"		"1"
 		"unicode"		"0"
 	}
 	"Label3"
