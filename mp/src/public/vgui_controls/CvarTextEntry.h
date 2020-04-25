@@ -15,7 +15,7 @@ namespace vgui
         DECLARE_CLASS_SIMPLE(CvarTextEntry, vgui::TextEntry);
 
     public:
-        CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname);
+        CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname, const char *numberFormat = "%g");
 
         MESSAGE_FUNC(OnTextChanged, "TextChanged");
         MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");
@@ -34,5 +34,6 @@ namespace vgui
     private:
         ConVarRef m_cvarRef;
         char m_pszStartValue[64];
+        char m_szNumberFormat[8];
     };
 }
