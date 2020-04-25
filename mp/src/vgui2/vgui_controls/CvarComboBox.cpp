@@ -43,6 +43,25 @@ int CvarComboBox::AddItem(const char* itemText, const KeyValues* userData)
     return iRtnVal;
 }
 
+void CvarComboBox::OnKeyCodeTyped(KeyCode code)
+{
+    BaseClass::OnKeyCodeTyped(code);
+    // updates cvar to text in combobox when up/down keys are used
+    int activeItem = GetActiveItem();
+    if (code == KEY_DOWN)
+    {
+        activeItem++;
+        activeItem %= GetItemCount();
+    }
+    else if (code == KEY_UP)
+    {
+        activeItem--;
+        if (activeItem < 0)
+            activeItem = GetItemCount() - 1;
+    }
+    ActivateItemByRow(activeItem);
+}
+
 void CvarComboBox::OnThink()
 {
     if (m_cvar.IsValid())

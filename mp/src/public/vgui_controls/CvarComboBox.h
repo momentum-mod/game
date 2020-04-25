@@ -20,6 +20,7 @@ class CvarComboBox : public ComboBox
     void ApplyChanges();
     bool HasBeenModified();
 
+    void OnKeyCodeTyped(KeyCode code) OVERRIDE;
     void OnThink() OVERRIDE;
     void ApplySettings(KeyValues *inResourceData) OVERRIDE;
     void GetSettings(KeyValues *outResources) OVERRIDE;
