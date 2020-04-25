@@ -42,15 +42,15 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 {
     SetSize(20, 20);
 
-	m_pSFXSlider = new CvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume" );
-	m_pMusicSlider = new CvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "snd_musicvolume" );
+	m_pSFXSlider = new CvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume", false, true );
+	m_pMusicSlider = new CvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "snd_musicvolume", false, true );
 	
-	m_pCloseCaptionCombo = new ComboBox( this, "CloseCaptionCheck", 6, false );
+	m_pCloseCaptionCombo = new ComboBox( this, "CloseCaptionCheck", 3, false );
 	m_pCloseCaptionCombo->AddItem( "#GameUI_NoClosedCaptions", NULL );
 	m_pCloseCaptionCombo->AddItem( "#GameUI_SubtitlesAndSoundEffects", NULL );
 	m_pCloseCaptionCombo->AddItem( "#GameUI_Subtitles", NULL );
 
-	m_pSoundQualityCombo = new ComboBox( this, "SoundQuality", 6, false );
+	m_pSoundQualityCombo = new ComboBox( this, "SoundQuality", 3, false );
 	m_pSoundQualityCombo->AddItem( "#GameUI_High", new KeyValues("SoundQuality", "quality", SOUNDQUALITY_HIGH) );
 	m_pSoundQualityCombo->AddItem( "#GameUI_Medium", new KeyValues("SoundQuality", "quality", SOUNDQUALITY_MEDIUM) );
 	m_pSoundQualityCombo->AddItem( "#GameUI_Low", new KeyValues("SoundQuality", "quality", SOUNDQUALITY_LOW) );
@@ -62,9 +62,9 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 	m_pSpeakerSetupCombo->AddItem( "#GameUI_5Speakers", new KeyValues("SpeakerSetup", "speakers", 5) );
 	m_pSpeakerSetupCombo->AddItem( "#GameUI_7Speakers", new KeyValues("SpeakerSetup", "speakers", 7) );
 
-   m_pSpokenLanguageCombo = new ComboBox (this, "AudioSpokenLanguage", 6, false );
+    m_pSpokenLanguageCombo = new ComboBox (this, "AudioSpokenLanguage", 6, false );
 
-   m_pMuteLoseFocus = new CvarToggleCheckButton(this, "snd_mute_losefocus", "#GameUI_SndMuteLoseFocus", "snd_mute_losefocus");
+    m_pMuteLoseFocus = new CvarToggleCheckButton(this, "snd_mute_losefocus", "#GameUI_SndMuteLoseFocus", "snd_mute_losefocus");
 
 	LoadControlSettings("resource/optionssubaudio.res");
 }
@@ -82,8 +82,6 @@ COptionsSubAudio::~COptionsSubAudio()
 void COptionsSubAudio::OnResetData()
 {
 	m_bRequireRestart = false;
-	m_pSFXSlider->Reset();
-	m_pMusicSlider->Reset();
     m_pMuteLoseFocus->Reset();
 
 	// reset the combo boxes
@@ -195,120 +193,123 @@ void COptionsSubAudio::OnResetData()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Applies changes
-//-----------------------------------------------------------------------------
-void COptionsSubAudio::OnApplyChanges()
-{
-	m_pSFXSlider->ApplyChanges();
-	m_pMusicSlider->ApplyChanges();
-    m_pMuteLoseFocus->ApplyChanges();
-
-	// set the cvars appropriately
-	// Tracker 28933:  Note we can't do this because closecaption is marked
-	//  FCVAR_USERINFO and it won't get sent to server is we direct set it, we
-	//  need to pass it along to the engine parser!!!
-	// ConVar *closecaption = (ConVar *)cvar->FindVar("closecaption");
-	int closecaption_value = 0;
-
-	ConVarRef cc_subtitles( "cc_subtitles" );
-	switch (m_pCloseCaptionCombo->GetActiveItem())
-	{
-	default:
-	case 0:
-		closecaption_value = 0;
-		cc_subtitles.SetValue( 0 );
-		break;
-	case 1:
-		closecaption_value = 1;
-		cc_subtitles.SetValue( 0 );
-		break;
-	case 2:
-		closecaption_value = 1;
-		cc_subtitles.SetValue( 1 );
-		break;
-	}
-
-	// Stuff the close caption change to the console so that it can be
-	//  sent to the server (FCVAR_USERINFO) so that you don't have to restart
-	//  the level for the change to take effect.
-	char cmd[ 64 ];
-	Q_snprintf( cmd, sizeof( cmd ), "closecaption %i\n", closecaption_value );
-	engine->ClientCmd_Unrestricted( cmd );
-
-	ConVarRef snd_surround_speakers( "Snd_Surround_Speakers" );
-	int speakers = m_pSpeakerSetupCombo->GetActiveItemUserData()->GetInt( "speakers" );
-	snd_surround_speakers.SetValue( speakers );
-
-	// quality
-	ConVarRef Snd_PitchQuality( "Snd_PitchQuality" );
-	ConVarRef dsp_slow_cpu( "dsp_slow_cpu" );
-	int quality = m_pSoundQualityCombo->GetActiveItemUserData()->GetInt( "quality" );
-	switch ( quality )
-	{
-	case SOUNDQUALITY_LOW:
-		dsp_slow_cpu.SetValue(true);
-		Snd_PitchQuality.SetValue(false);
-		break;
-	case SOUNDQUALITY_MEDIUM:
-		dsp_slow_cpu.SetValue(false);
-		Snd_PitchQuality.SetValue(false);
-		break;
-	default:
-		Assert("Undefined sound quality setting.");
-	case SOUNDQUALITY_HIGH:
-		dsp_slow_cpu.SetValue(false);
-		Snd_PitchQuality.SetValue(true);
-		break;
-	};
-
-	// headphones at high quality get enhanced stereo turned on
-	ConVarRef dsp_enhance_stereo( "dsp_enhance_stereo" );
-	if (speakers == 0 && quality == SOUNDQUALITY_HIGH)
-	{
-		dsp_enhance_stereo.SetValue( 1 );
-	}
-	else
-	{
-		dsp_enhance_stereo.SetValue( 0 );
-	}
-
-   // Audio spoken language
-   KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData( m_pSpokenLanguageCombo->GetActiveItem() );
-   const ELanguage nUpdatedAudioLanguage = (ELanguage)( kv ? kv->GetInt( "language" ) : k_Lang_English );
-
-   if ( nUpdatedAudioLanguage != m_nCurrentAudioLanguage )
-   {
-      // Store new language in static member so that it can be accessed during shutdown when this instance is gone
-      m_pchUpdatedAudioLanguage = (char *) GetLanguageShortName( nUpdatedAudioLanguage );
-      
-      // Inform user that they need to restart in order change language at this time
-      QueryBox *qb = new QueryBox( "#GameUI_ChangeLanguageRestart_Title", "#GameUI_ChangeLanguageRestart_Info", GetParent()->GetParent()->GetParent() );
-      if (qb != NULL)
-      {
-         qb->SetOKCommand( new KeyValues( "Command", "command", "RestartWithNewLanguage" ) );
-         qb->SetOKButtonText( "#GameUI_ChangeLanguageRestart_OkButton" );
-         qb->SetCancelButtonText( "#GameUI_ChangeLanguageRestart_CancelButton" );
-         qb->AddActionSignalTarget( GetParent()->GetParent()->GetParent() );
-         qb->DoModal();
-      }
-   }
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Called on controls changing, enables the Apply button
 //-----------------------------------------------------------------------------
-void COptionsSubAudio::OnControlModified()
+void COptionsSubAudio::OnControlModified(Panel *panel)
 {
 	PostActionSignal(new KeyValues("ApplyButtonEnable"));
-}
 
-//-----------------------------------------------------------------------------
-// Purpose: returns true if the engine needs to be restarted
-//-----------------------------------------------------------------------------
-bool COptionsSubAudio::RequiresRestart()
-{
-	// nothing in audio requires a restart like now
-	return false;
+    if (panel == m_pCloseCaptionCombo)
+    {
+        // Tracker 28933:  Note we can't do this because closecaption is marked
+        //  FCVAR_USERINFO and it won't get sent to server is we direct set it, we
+        //  need to pass it along to the engine parser!!!
+        // ConVar *closecaption = (ConVar *)cvar->FindVar("closecaption");
+        int closecaption_value = 0;
+
+        ConVarRef cc_subtitles("cc_subtitles");
+        switch (m_pCloseCaptionCombo->GetActiveItem())
+        {
+        default:
+        case 0:
+            closecaption_value = 0;
+            cc_subtitles.SetValue(0);
+            break;
+        case 1:
+            closecaption_value = 1;
+            cc_subtitles.SetValue(0);
+            break;
+        case 2:
+            closecaption_value = 1;
+            cc_subtitles.SetValue(1);
+            break;
+        }
+
+        // Stuff the close caption change to the console so that it can be
+        //  sent to the server (FCVAR_USERINFO) so that you don't have to restart
+        //  the level for the change to take effect.
+        char cmd[64];
+        Q_snprintf(cmd, sizeof(cmd), "closecaption %i\n", closecaption_value);
+        engine->ClientCmd_Unrestricted(cmd);
+    }
+    else if (panel == m_pSoundQualityCombo)
+    {
+        ConVarRef Snd_PitchQuality("Snd_PitchQuality");
+        ConVarRef dsp_slow_cpu("dsp_slow_cpu");
+        ConVarRef snd_surround_speakers("Snd_Surround_Speakers");
+        int speakers = m_pSpeakerSetupCombo->GetActiveItemUserData()->GetInt("speakers");
+        int quality = m_pSoundQualityCombo->GetActiveItemUserData()->GetInt("quality");
+        switch (quality)
+        {
+        case SOUNDQUALITY_LOW:
+            dsp_slow_cpu.SetValue(true);
+            Snd_PitchQuality.SetValue(false);
+            break;
+        case SOUNDQUALITY_MEDIUM:
+            dsp_slow_cpu.SetValue(false);
+            Snd_PitchQuality.SetValue(false);
+            break;
+        default:
+            Assert("Undefined sound quality setting.");
+        case SOUNDQUALITY_HIGH:
+            dsp_slow_cpu.SetValue(false);
+            Snd_PitchQuality.SetValue(true);
+            break;
+        };
+
+        // headphones at high quality get enhanced stereo turned on
+        ConVarRef dsp_enhance_stereo("dsp_enhance_stereo");
+        if (speakers == 0 && quality == SOUNDQUALITY_HIGH)
+        {
+            dsp_enhance_stereo.SetValue(1);
+        }
+        else
+        {
+            dsp_enhance_stereo.SetValue(0);
+        }
+    }
+    else if (panel == m_pSpeakerSetupCombo)
+    {
+        ConVarRef snd_surround_speakers("Snd_Surround_Speakers");
+        int speakers = m_pSpeakerSetupCombo->GetActiveItemUserData()->GetInt("speakers");
+        int quality = m_pSoundQualityCombo->GetActiveItemUserData()->GetInt("quality");
+        snd_surround_speakers.SetValue(speakers);
+
+        // headphones at high quality get enhanced stereo turned on
+        ConVarRef dsp_enhance_stereo("dsp_enhance_stereo");
+        if (speakers == 0 && quality == SOUNDQUALITY_HIGH)
+        {
+            dsp_enhance_stereo.SetValue(1);
+        }
+        else
+        {
+            dsp_enhance_stereo.SetValue(0);
+        }
+    }
+    else if (panel == m_pSpokenLanguageCombo)
+    {
+        // Audio spoken language
+        KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData(m_pSpokenLanguageCombo->GetActiveItem());
+        const ELanguage nUpdatedAudioLanguage = (ELanguage)(kv ? kv->GetInt("language") : k_Lang_English);
+
+        if (nUpdatedAudioLanguage != m_nCurrentAudioLanguage)
+        {
+            // Store new language in static member so that it can be accessed during shutdown when this instance is gone
+            m_pchUpdatedAudioLanguage = (char *)GetLanguageShortName(nUpdatedAudioLanguage);
+
+            // Inform user that they need to restart in order change language at this time
+            QueryBox *qb = new QueryBox("#GameUI_ChangeLanguageRestart_Title", "#GameUI_ChangeLanguageRestart_Info",
+                                        GetParent()->GetParent()->GetParent());
+            if (qb != NULL)
+            {
+                qb->SetOKCommand(new KeyValues("Command", "command", "RestartWithNewLanguage"));
+                qb->SetOKButtonText("#GameUI_ChangeLanguageRestart_OkButton");
+                qb->SetCancelButtonText("#GameUI_ChangeLanguageRestart_CancelButton");
+                qb->AddActionSignalTarget(GetParent()->GetParent()->GetParent());
+                qb->DoModal();
+            }
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------

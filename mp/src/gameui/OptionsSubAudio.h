@@ -31,16 +31,14 @@ public:
 	~COptionsSubAudio();
 
 	virtual void OnResetData();
-	virtual void OnApplyChanges();
 	virtual void OnCommand( const char *command );
-	bool RequiresRestart();
-   static char* GetUpdatedAudioLanguage() { return m_pchUpdatedAudioLanguage; }
+    static char* GetUpdatedAudioLanguage() { return m_pchUpdatedAudioLanguage; }
 
 private:
-	MESSAGE_FUNC( OnControlModified, "ControlModified" );
-	MESSAGE_FUNC( OnTextChanged, "TextChanged" )
+	MESSAGE_FUNC_PTR( OnControlModified, "ControlModified", panel );
+	MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel )
 	{
-		OnControlModified();
+		OnControlModified(panel);
 	}
 
 	MESSAGE_FUNC( RunTestSpeakers, "RunTestSpeakers" );
