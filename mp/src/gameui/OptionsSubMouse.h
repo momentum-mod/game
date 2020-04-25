@@ -49,6 +49,8 @@ private:
     vgui::CheckButton *m_pMouseAccelToggle;
     vgui::CvarSlider *m_pMouseAccelSlider;
     vgui::CvarTextEntry *m_pMouseAccelLabel;
+
+    ConVarRef m_cvarCustomAccel;
 };
 
 
