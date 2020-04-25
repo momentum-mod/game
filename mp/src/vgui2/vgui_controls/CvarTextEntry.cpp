@@ -18,11 +18,12 @@ static const int MAX_CVAR_TEXT = 64;
 
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CvarTextEntry, "");
 
-CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname)
+CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname, const char *numberFormat)
     : TextEntry(parent, panelName), m_cvarRef(cvarname, true)
 {
     InitSettings();
     m_pszStartValue[0] = 0;
+    Q_strncpy(m_szNumberFormat, numberFormat, sizeof(m_szNumberFormat));
 
     if (m_cvarRef.IsValid())
     {
@@ -78,7 +79,7 @@ void CvarTextEntry::SetText(const char* text)
         {
             // making sure the formatting is correct (removing trailing zeros via %g)
             char newText[MAX_CVAR_TEXT];
-            Q_snprintf(newText, MAX_CVAR_TEXT, "%g", atof(text));
+            Q_snprintf(newText, MAX_CVAR_TEXT, m_szNumberFormat, atof(text));
             BaseClass::SetText(newText);
         }
     }
