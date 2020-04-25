@@ -71,13 +71,13 @@ void CvarComboBox::Reset()
     if (!m_cvar.IsValid())
         return;
 
-    m_iStartValue = m_cvar.GetInt();
-    ActivateItemByRow(m_iStartValue - m_iCvarMin);
+    m_iStartValue = m_cvar.GetInt() - m_iCvarMin;
+    ActivateItemByRow(m_iStartValue);
 }
 
 bool CvarComboBox::HasBeenModified()
 {
-    return GetActiveItem() != m_iStartValue - m_iCvarMin;
+    return GetActiveItem() != m_iStartValue;
 }
 
 void CvarComboBox::OnTextChanged()
