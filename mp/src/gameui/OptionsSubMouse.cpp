@@ -23,7 +23,7 @@
 
 using namespace vgui;
 
-COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, NULL)
+COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, NULL), m_cvarCustomAccel("m_customaccel")
 {
     SetSize(20, 20);
 
@@ -75,7 +75,7 @@ void COptionsSubMouse::OnResetData()
 {
 	m_pReverseMouseCheckBox->Reset();
 
-    m_pMouseAccelToggle->SetSelected(ConVarRef("m_customaccel").GetInt() == 3);
+    m_pMouseAccelToggle->SetSelected(m_cvarCustomAccel.GetInt() == 3);
 
     bool bEnabled = m_pMouseAccelToggle->IsSelected();
     m_pMouseAccelSlider->SetEnabled(bEnabled);
@@ -90,7 +90,7 @@ void COptionsSubMouse::OnCheckButtonChecked(Panel *panel)
     if (panel == m_pMouseAccelToggle)
     {
         bool bMouseAccelEnabled = m_pMouseAccelToggle->IsSelected();
-        ConVarRef("m_customaccel").SetValue(bMouseAccelEnabled ? 3 : 0);
+        m_cvarCustomAccel.SetValue(bMouseAccelEnabled ? 3 : 0);
         m_pMouseAccelSlider->SetEnabled(bMouseAccelEnabled);
         m_pMouseAccelLabel->SetEnabled(bMouseAccelEnabled);
     }
