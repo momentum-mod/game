@@ -44,11 +44,11 @@ private:
 	vgui::CvarToggleCheckButton	*m_pMouseFilterCheckBox , *m_pMouseRawCheckbox;
 
     vgui::CvarSlider					*m_pMouseSensitivitySlider;
-    vgui::CvarTextEntry             *m_pMouseSensitivityLabel;
+    vgui::CvarTextEntry             *m_pMouseSensitivityEntry;
 
     vgui::CheckButton *m_pMouseAccelToggle;
     vgui::CvarSlider *m_pMouseAccelSlider;
-    vgui::CvarTextEntry *m_pMouseAccelLabel;
+    vgui::CvarTextEntry *m_pMouseAccelEntry;
 
     ConVarRef m_cvarCustomAccel;
 };

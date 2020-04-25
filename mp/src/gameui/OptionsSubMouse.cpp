@@ -48,13 +48,13 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 	m_pMouseSensitivitySlider = new CvarSlider( this, "Slider", "#GameUI_MouseSensitivity",
         0.0001f, 20.0f, "sensitivity", true, true);
 
-    m_pMouseSensitivityLabel = new CvarTextEntry(this, "SensitivityLabel", "sensitivity", "%.3f");
-    m_pMouseSensitivityLabel->AddActionSignalTarget(this);
-    m_pMouseSensitivityLabel->SetAllowNumericInputOnly(true);
+    m_pMouseSensitivityEntry = new CvarTextEntry(this, "SensitivityLabel", "sensitivity", "%.3f");
+    m_pMouseSensitivityEntry->AddActionSignalTarget(this);
+    m_pMouseSensitivityEntry->SetAllowNumericInputOnly(true);
 
-    m_pMouseAccelLabel = new CvarTextEntry(this, "MouseAccelerationLabel", "m_customaccel_exponent", "%.3f");
-    m_pMouseAccelLabel->AddActionSignalTarget(this);
-    m_pMouseAccelLabel->SetAllowNumericInputOnly(true);
+    m_pMouseAccelEntry = new CvarTextEntry(this, "MouseAccelerationLabel", "m_customaccel_exponent", "%.3f");
+    m_pMouseAccelEntry->AddActionSignalTarget(this);
+    m_pMouseAccelEntry->SetAllowNumericInputOnly(true);
     m_pMouseAccelToggle = new CheckButton(this, "MouseAccelerationCheckbox", "#GameUI_MouseAcceleration");
     m_pMouseAccelSlider = new CvarSlider(this, "MouseAccelerationSlider", "#GameUI_MouseAcceleration", 1.0f, 20.0f, "m_customaccel_exponent", true, true);
 
@@ -79,7 +79,7 @@ void COptionsSubMouse::OnResetData()
 
     bool bEnabled = m_pMouseAccelToggle->IsSelected();
     m_pMouseAccelSlider->SetEnabled(bEnabled);
-    m_pMouseAccelLabel->SetEnabled(bEnabled);
+    m_pMouseAccelEntry->SetEnabled(bEnabled);
 }
 
 //-----------------------------------------------------------------------------
@@ -92,6 +92,6 @@ void COptionsSubMouse::OnCheckButtonChecked(Panel *panel)
         bool bMouseAccelEnabled = m_pMouseAccelToggle->IsSelected();
         m_cvarCustomAccel.SetValue(bMouseAccelEnabled ? 3 : 0);
         m_pMouseAccelSlider->SetEnabled(bMouseAccelEnabled);
-        m_pMouseAccelLabel->SetEnabled(bMouseAccelEnabled);
+        m_pMouseAccelEntry->SetEnabled(bMouseAccelEnabled);
     }
 }
