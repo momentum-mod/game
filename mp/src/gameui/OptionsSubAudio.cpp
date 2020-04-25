@@ -38,7 +38,9 @@ enum SoundQuality_e
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, NULL)
+COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, NULL), m_cvarSubtitles("cc_subtitles"), m_cvarCloseCaption("closecaption"),
+      m_cvarSndSurroundSpeakers("Snd_Surround_Speakers"), m_cvarSndPitchQuality("Snd_PitchQuality"),
+      m_cvarDSPSlowCPU("dsp_slow_cpu"), m_cvarDSPEnhanceStereo("dsp_enhance_stereo")
 {
     SetSize(20, 20);
 
@@ -87,11 +89,9 @@ void COptionsSubAudio::OnResetData()
 	// reset the combo boxes
 
 	// close captions
-	ConVarRef closecaption("closecaption");
-	ConVarRef cc_subtitles("cc_subtitles");
-	if (closecaption.GetBool())
+    if (m_cvarCloseCaption.GetBool())
 	{
-		if (cc_subtitles.GetBool())
+		if (m_cvarSubtitles.GetBool())
 		{
 			m_pCloseCaptionCombo->ActivateItem(2);
 		}
@@ -106,8 +106,7 @@ void COptionsSubAudio::OnResetData()
 	}
 
 	// speakers
-	ConVarRef snd_surround_speakers("Snd_Surround_Speakers");
-	int speakers = snd_surround_speakers.GetInt();
+	int speakers = m_cvarSndSurroundSpeakers.GetInt();
 	{for (int itemID = 0; itemID < m_pSpeakerSetupCombo->GetItemCount(); itemID++)
 	{
 		KeyValues *kv = m_pSpeakerSetupCombo->GetItemUserData(itemID);
@@ -118,14 +117,12 @@ void COptionsSubAudio::OnResetData()
 	}}
 	
 	// sound quality is made up from several cvars
-	ConVarRef Snd_PitchQuality("Snd_PitchQuality");
-	ConVarRef dsp_slow_cpu("dsp_slow_cpu");
 	int quality = SOUNDQUALITY_LOW;
-	if (dsp_slow_cpu.GetBool() == false)
+	if (m_cvarDSPSlowCPU.GetBool() == false)
 	{
 		quality = SOUNDQUALITY_MEDIUM;
 	}
-	if (Snd_PitchQuality.GetBool())
+	if (m_cvarSndPitchQuality.GetBool())
 	{
 		quality = SOUNDQUALITY_HIGH;
 	}
@@ -207,21 +204,20 @@ void COptionsSubAudio::OnControlModified(Panel *panel)
         // ConVar *closecaption = (ConVar *)cvar->FindVar("closecaption");
         int closecaption_value = 0;
 
-        ConVarRef cc_subtitles("cc_subtitles");
         switch (m_pCloseCaptionCombo->GetActiveItem())
         {
         default:
         case 0:
             closecaption_value = 0;
-            cc_subtitles.SetValue(0);
+            m_cvarSubtitles.SetValue(0);
             break;
         case 1:
             closecaption_value = 1;
-            cc_subtitles.SetValue(0);
+            m_cvarSubtitles.SetValue(0);
             break;
         case 2:
             closecaption_value = 1;
-            cc_subtitles.SetValue(1);
+            m_cvarSubtitles.SetValue(1);
             break;
         }
 
@@ -234,56 +230,50 @@ void COptionsSubAudio::OnControlModified(Panel *panel)
     }
     else if (panel == m_pSoundQualityCombo)
     {
-        ConVarRef Snd_PitchQuality("Snd_PitchQuality");
-        ConVarRef dsp_slow_cpu("dsp_slow_cpu");
-        ConVarRef snd_surround_speakers("Snd_Surround_Speakers");
         int speakers = m_pSpeakerSetupCombo->GetActiveItemUserData()->GetInt("speakers");
         int quality = m_pSoundQualityCombo->GetActiveItemUserData()->GetInt("quality");
         switch (quality)
         {
         case SOUNDQUALITY_LOW:
-            dsp_slow_cpu.SetValue(true);
-            Snd_PitchQuality.SetValue(false);
+            m_cvarDSPSlowCPU.SetValue(true);
+            m_cvarSndPitchQuality.SetValue(false);
             break;
         case SOUNDQUALITY_MEDIUM:
-            dsp_slow_cpu.SetValue(false);
-            Snd_PitchQuality.SetValue(false);
+            m_cvarDSPSlowCPU.SetValue(false);
+            m_cvarSndPitchQuality.SetValue(false);
             break;
         default:
             Assert("Undefined sound quality setting.");
         case SOUNDQUALITY_HIGH:
-            dsp_slow_cpu.SetValue(false);
-            Snd_PitchQuality.SetValue(true);
+            m_cvarDSPSlowCPU.SetValue(false);
+            m_cvarSndPitchQuality.SetValue(true);
             break;
         };
 
         // headphones at high quality get enhanced stereo turned on
-        ConVarRef dsp_enhance_stereo("dsp_enhance_stereo");
         if (speakers == 0 && quality == SOUNDQUALITY_HIGH)
         {
-            dsp_enhance_stereo.SetValue(1);
+            m_cvarDSPEnhanceStereo.SetValue(1);
         }
         else
         {
-            dsp_enhance_stereo.SetValue(0);
+            m_cvarDSPEnhanceStereo.SetValue(0);
         }
     }
     else if (panel == m_pSpeakerSetupCombo)
     {
-        ConVarRef snd_surround_speakers("Snd_Surround_Speakers");
         int speakers = m_pSpeakerSetupCombo->GetActiveItemUserData()->GetInt("speakers");
         int quality = m_pSoundQualityCombo->GetActiveItemUserData()->GetInt("quality");
-        snd_surround_speakers.SetValue(speakers);
+        m_cvarSndSurroundSpeakers.SetValue(speakers);
 
         // headphones at high quality get enhanced stereo turned on
-        ConVarRef dsp_enhance_stereo("dsp_enhance_stereo");
         if (speakers == 0 && quality == SOUNDQUALITY_HIGH)
         {
-            dsp_enhance_stereo.SetValue(1);
+            m_cvarDSPEnhanceStereo.SetValue(1);
         }
         else
         {
-            dsp_enhance_stereo.SetValue(0);
+            m_cvarDSPEnhanceStereo.SetValue(0);
         }
     }
     else if (panel == m_pSpokenLanguageCombo)

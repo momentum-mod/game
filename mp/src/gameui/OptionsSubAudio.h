@@ -57,6 +57,8 @@ private:
    static char             *m_pchUpdatedAudioLanguage;
 
     vgui::CvarToggleCheckButton *m_pMuteLoseFocus;
+
+    ConVarRef m_cvarSubtitles, m_cvarCloseCaption, m_cvarSndSurroundSpeakers, m_cvarSndPitchQuality, m_cvarDSPSlowCPU, m_cvarDSPEnhanceStereo;
 };
 
 
