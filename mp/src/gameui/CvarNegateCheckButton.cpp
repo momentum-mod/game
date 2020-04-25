@@ -120,5 +120,6 @@ void CvarNegateCheckButton::OnButtonChecked()
 	if (HasBeenModified())
 	{
 		PostActionSignal(new KeyValues("ControlModified"));
+        ApplyChanges();
 	}
 }
