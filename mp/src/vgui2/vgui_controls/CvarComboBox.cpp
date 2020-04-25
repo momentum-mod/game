@@ -85,8 +85,8 @@ void CvarComboBox::OnTextChanged()
     if (HasBeenModified())
     {
         PostActionSignal(new KeyValues("ControlModified"));
+        ApplyChanges();
     }
-    ApplyChanges();
 }
 
 void CvarComboBox::ApplySettings(KeyValues *inResourceData)
