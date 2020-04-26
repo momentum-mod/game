@@ -31,7 +31,6 @@ public:
 	~COptionsSubVideo();
 
 	virtual void OnResetData();
-	virtual void OnApplyChanges();
 	virtual void PerformLayout();
 
 	virtual bool RequiresRestart();
