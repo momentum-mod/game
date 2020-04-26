@@ -154,7 +154,13 @@ void CGammaDialog::OnKeyCodeTyped(KeyCode code)
 // Purpose: advanced video settings dialog
 //-----------------------------------------------------------------------------
 COptionsSubVideoAdvancedDlg::COptionsSubVideoAdvancedDlg(vgui::Panel *parent)
-    : BaseClass(parent, "OptionsSubVideoAdvancedDlg")
+    : BaseClass(parent, "OptionsSubVideoAdvancedDlg"), m_cvarPicmip("mat_picmip"), m_cvarForceaniso("mat_forceaniso"),
+      m_cvarTrilinear("mat_trilinear"), m_cvarAntialias("mat_antialias"), m_cvarAAQuality("mat_aaquality"),
+      m_cvarShadowRenderToTexture("r_shadowrendertotexture"), m_cvarFlashlightDepthTexture("r_flashlightdepthtexture"),
+      m_cvarWaterForceExpensive("r_waterforceexpensive"), m_cvarWaterForceReflectEntities("r_waterforcereflectentities"), 
+      m_cvarVSync("mat_vsync"), m_cvarRootlod("r_rootlod"), m_cvarReduceFillrate("mat_reducefillrate"),
+      m_cvarColorCorreciton("mat_colorcorrection"), m_cvarMotionBlur("mat_motion_blur_enabled"), m_cvarQueueMode("mat_queue_mode"),
+      m_cvarDisableBloom("mat_disable_bloom"), m_cvarDynamicTonemapping("mat_dynamic_tonemapping")
 {
 	SetTitle("#GameUI_VideoAdvanced_Title", true);
 	SetSize( 260, 400 );
@@ -451,126 +457,105 @@ void COptionsSubVideoAdvancedDlg::MarkDefaultSettingsAsRecommended()
 	pKeyValues->deleteThis();
 }
 
-void COptionsSubVideoAdvancedDlg::ApplyChangesToConVar(const char *pConVarName, int value)
-{
-    ConVarRef var(pConVarName);
-    var.SetValue(value);
-}
-
 void COptionsSubVideoAdvancedDlg::ApplyChanges()
 {
 	if (!m_bUseChanges)
 		return;
 
-	ApplyChangesToConVar( "r_rootlod", 2 - m_pModelDetail->GetActiveItem());
-	ApplyChangesToConVar( "mat_picmip", 2 - m_pTextureDetail->GetActiveItem());
+    m_cvarRootlod.SetValue(2 - m_pModelDetail->GetActiveItem());
+    m_cvarPicmip.SetValue(2 - m_pTextureDetail->GetActiveItem());
 
 	// reset everything tied to the filtering mode, then the switch sets the appropriate one
-	ApplyChangesToConVar( "mat_trilinear", false );
-	ApplyChangesToConVar( "mat_forceaniso", 1 );
+    m_cvarTrilinear.SetValue(false);
+    m_cvarForceaniso.SetValue(1);
 	switch (m_pFilteringMode->GetActiveItem())
 	{
 	case 0:
 		break;
 	case 1:
-		ApplyChangesToConVar( "mat_trilinear", true );
+        m_cvarTrilinear.SetValue(true);
 		break;
-	case 2:
-		ApplyChangesToConVar( "mat_forceaniso", 2 );
+    case 2:
+        m_cvarForceaniso.SetValue(2);
 		break;
-	case 3:
-		ApplyChangesToConVar( "mat_forceaniso", 4 );
+    case 3:
+        m_cvarForceaniso.SetValue(4);
 		break;
-	case 4:
-		ApplyChangesToConVar( "mat_forceaniso", 8 );
+    case 4:
+        m_cvarForceaniso.SetValue(8);
 		break;
-	case 5:
-		ApplyChangesToConVar( "mat_forceaniso", 16 );
+    case 5:
+        m_cvarForceaniso.SetValue(16);
 		break;
 	}
 
 	// Set the AA convars according to the menu item chosen
 	int nActiveAAItem = m_pAntialiasingMode->GetActiveItem();
-	ApplyChangesToConVar( "mat_antialias", m_nAAModes[nActiveAAItem].m_nNumSamples );
-	ApplyChangesToConVar( "mat_aaquality", m_nAAModes[nActiveAAItem].m_nQualityLevel );
+    m_cvarAntialias.SetValue(m_nAAModes[nActiveAAItem].m_nNumSamples);
+    m_cvarAAQuality.SetValue(m_nAAModes[nActiveAAItem].m_nQualityLevel);
 
-	if ( m_pShadowDetail->GetActiveItem() == 0 )						// Blobby shadows
+	if ( m_pShadowDetail->GetActiveItem() == 0 ) // Blobby shadows
 	{
-		ApplyChangesToConVar( "r_shadowrendertotexture", 0 );			// Turn off RTT shadows
-		ApplyChangesToConVar( "r_flashlightdepthtexture", 0 );			// Turn off shadow depth textures
+		m_cvarShadowRenderToTexture.SetValue(0);  // Turn off RTT shadows
+		m_cvarFlashlightDepthTexture.SetValue(0); // Turn off shadow depth textures
 	}
-	else if ( m_pShadowDetail->GetActiveItem() == 1 )					// RTT shadows only
-	{
-		ApplyChangesToConVar( "r_shadowrendertotexture", 1 );			// Turn on RTT shadows
-		ApplyChangesToConVar( "r_flashlightdepthtexture", 0 );			// Turn off shadow depth textures
+	else if ( m_pShadowDetail->GetActiveItem() == 1 ) // RTT shadows only
+    {
+        m_cvarShadowRenderToTexture.SetValue(1);  // Turn on RTT shadows
+        m_cvarFlashlightDepthTexture.SetValue(0); // Turn off shadow depth textures
 	}
-	else if ( m_pShadowDetail->GetActiveItem() == 2 )					// Shadow depth textures
-	{
-		ApplyChangesToConVar( "r_shadowrendertotexture", 1 );			// Turn on RTT shadows
-		ApplyChangesToConVar( "r_flashlightdepthtexture", 1 );			// Turn on shadow depth textures
+	else if ( m_pShadowDetail->GetActiveItem() == 2 ) // Shadow depth textures
+    {
+        m_cvarShadowRenderToTexture.SetValue(1);  // Turn on RTT shadows
+        m_cvarFlashlightDepthTexture.SetValue(1); // Turn on shadow depth textures
 	}
 
-	ApplyChangesToConVar( "mat_reducefillrate", ( m_pShaderDetail->GetActiveItem() > 0 ) ? 0 : 1 );
+    m_cvarReduceFillrate.SetValue((m_pShaderDetail->GetActiveItem() > 0) ? 0 : 1);
 
 	switch ( m_pWaterDetail->GetActiveItem() )
 	{
 	default:
 	case 0:
-		ApplyChangesToConVar( "r_waterforceexpensive", false );
-		ApplyChangesToConVar( "r_waterforcereflectentities", false );
+        m_cvarWaterForceExpensive.SetValue(false);
+        m_cvarWaterForceReflectEntities.SetValue(false);
 		break;
-	case 1:
-		ApplyChangesToConVar( "r_waterforceexpensive", true );
-		ApplyChangesToConVar( "r_waterforcereflectentities", false );
+    case 1:
+        m_cvarWaterForceExpensive.SetValue(true);
+        m_cvarWaterForceReflectEntities.SetValue(false);
 		break;
-	case 2:
-		ApplyChangesToConVar( "r_waterforceexpensive", true );
-		ApplyChangesToConVar( "r_waterforcereflectentities", true );
+    case 2:
+        m_cvarWaterForceExpensive.SetValue(true);
+        m_cvarWaterForceReflectEntities.SetValue(true);
 		break;
 	}
+ 
+    m_cvarVSync.SetValue(m_pVSync->GetActiveItem());
 
-	ApplyChangesToConVar( "mat_vsync", m_pVSync->GetActiveItem() );	 
+    m_cvarColorCorreciton.SetValue(m_pColorCorrection->GetActiveItem());
 
-	ApplyChangesToConVar( "mat_colorcorrection", m_pColorCorrection->GetActiveItem() );
+    m_cvarMotionBlur.SetValue(m_pMotionBlur->GetActiveItem());
 
-	ApplyChangesToConVar( "mat_motion_blur_enabled", m_pMotionBlur->GetActiveItem() );
-		
-    ApplyChangesToConVar("mat_queue_mode", -m_pMulticore->GetActiveItem());
+    m_cvarQueueMode.SetValue(-m_pMulticore->GetActiveItem());
 
     m_pFOVSlider->ApplyChanges();
 
 	// The cvar disables bloom so invert the item
-	ApplyChangesToConVar( "mat_disable_bloom", !m_pBloom->GetActiveItem() );
+    m_cvarDisableBloom.SetValue(!m_pBloom->GetActiveItem());
 
-	ApplyChangesToConVar( "mat_dynamic_tonemapping", m_pTonemap->GetActiveItem() );
+    m_cvarDynamicTonemapping.SetValue(m_pTonemap->GetActiveItem());
 }
 
 void COptionsSubVideoAdvancedDlg::OnResetData()
 {
-	ConVarRef r_rootlod( "r_rootlod" );
-	ConVarRef mat_picmip( "mat_picmip" );
-	ConVarRef mat_trilinear( "mat_trilinear" );
-	ConVarRef mat_forceaniso( "mat_forceaniso" );
-	ConVarRef mat_antialias( "mat_antialias" );
-	ConVarRef mat_aaquality( "mat_aaquality" );
-	ConVarRef mat_vsync( "mat_vsync" );
-	ConVarRef r_flashlightdepthtexture( "r_flashlightdepthtexture" );
-	ConVarRef r_waterforceexpensive( "r_waterforceexpensive" );
-	ConVarRef r_waterforcereflectentities( "r_waterforcereflectentities" );
-	ConVarRef mat_reducefillrate("mat_reducefillrate" );
-	ConVarRef mat_colorcorrection( "mat_colorcorrection" );
-	ConVarRef mat_motion_blur_enabled( "mat_motion_blur_enabled" );
-	ConVarRef r_shadowrendertotexture( "r_shadowrendertotexture" );
+	m_pModelDetail->ActivateItem( 2 - clamp(m_cvarRootlod.GetInt(), 0, 2) );
+	m_pTextureDetail->ActivateItem( 2 - clamp(m_cvarPicmip.GetInt(), -1, 2) );
 
-	m_pModelDetail->ActivateItem( 2 - clamp(r_rootlod.GetInt(), 0, 2) );
-	m_pTextureDetail->ActivateItem( 2 - clamp(mat_picmip.GetInt(), -1, 2) );
-
-	if ( r_flashlightdepthtexture.GetBool() )		// If we're doing flashlight shadow depth texturing...
+	if ( m_cvarFlashlightDepthTexture.GetBool() ) // If we're doing flashlight shadow depth texturing...
 	{
-		r_shadowrendertotexture.SetValue( 1 );		// ...be sure render to texture shadows are also on
+		m_cvarShadowRenderToTexture.SetValue( 1 ); // ...be sure render to texture shadows are also on
 		m_pShadowDetail->ActivateItem( 2 );
 	}
-	else if ( r_shadowrendertotexture.GetBool() )	// RTT shadows, but not shadow depth texturing
+    else if (m_cvarShadowRenderToTexture.GetBool()) // RTT shadows, but not shadow depth texturing
 	{
 		m_pShadowDetail->ActivateItem( 1 );
 	}
@@ -579,9 +564,9 @@ void COptionsSubVideoAdvancedDlg::OnResetData()
 		m_pShadowDetail->ActivateItem( 0 );
 	}
 
-	m_pShaderDetail->ActivateItem( mat_reducefillrate.GetBool() ? 0 : 1 );
+	m_pShaderDetail->ActivateItem( m_cvarReduceFillrate.GetBool() ? 0 : 1 );
 
-	switch (mat_forceaniso.GetInt())
+	switch (m_cvarForceaniso.GetInt())
 	{
 	case 2:
 		m_pFilteringMode->ActivateItem( 2 );
@@ -597,7 +582,7 @@ void COptionsSubVideoAdvancedDlg::OnResetData()
 		break;
 	case 0:
 	default:
-		if (mat_trilinear.GetBool())
+		if (m_cvarTrilinear.GetBool())
 		{
 			m_pFilteringMode->ActivateItem( 1 );
 		}
@@ -609,14 +594,14 @@ void COptionsSubVideoAdvancedDlg::OnResetData()
 	}
 
 	// Map convar to item on AA drop-down
-	int nAASamples = mat_antialias.GetInt();
-	int nAAQuality = mat_aaquality.GetInt();
+	int nAASamples = m_cvarAntialias.GetInt();
+	int nAAQuality = m_cvarAAQuality.GetInt();
 	int nMSAAMode = FindMSAAMode( nAASamples, nAAQuality );
 	m_pAntialiasingMode->ActivateItem( nMSAAMode );
 		
-	if ( r_waterforceexpensive.GetBool() )
+	if ( m_cvarWaterForceExpensive.GetBool() )
 	{
-		if ( r_waterforcereflectentities.GetBool() )
+		if ( m_cvarWaterForceReflectEntities.GetBool() )
 		{
 			m_pWaterDetail->ActivateItem( 2 );
 		}
@@ -630,18 +615,18 @@ void COptionsSubVideoAdvancedDlg::OnResetData()
 		m_pWaterDetail->ActivateItem( 0 );
 	}
 
-	m_pVSync->ActivateItem( mat_vsync.GetInt() );
+	m_pVSync->ActivateItem( m_cvarVSync.GetInt() );
 
-	m_pColorCorrection->ActivateItem( mat_colorcorrection.GetInt() );
+	m_pColorCorrection->ActivateItem( m_cvarColorCorreciton.GetInt() );
 
-	m_pMotionBlur->ActivateItem( mat_motion_blur_enabled.GetInt() );
+	m_pMotionBlur->ActivateItem( m_cvarMotionBlur.GetInt() );
 
-    m_pMulticore->ActivateItem(- ConVarRef("mat_queue_mode").GetInt());
+    m_pMulticore->ActivateItem(- m_cvarQueueMode.GetInt());
 
 	// The cvar disables bloom so invert the item
-    m_pBloom->ActivateItem(!ConVarRef("mat_disable_bloom").GetInt());
+    m_pBloom->ActivateItem(!m_cvarDisableBloom.GetInt());
 
-    m_pTonemap->ActivateItem(ConVarRef("mat_dynamic_tonemapping").GetInt());
+    m_pTonemap->ActivateItem(m_cvarDynamicTonemapping.GetInt());
 }
 
 void COptionsSubVideoAdvancedDlg::OnCommand(const char *command)

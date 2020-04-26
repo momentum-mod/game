@@ -126,7 +126,6 @@ class COptionsSubVideoAdvancedDlg : public vgui::Frame
     void SetComboItemAsRecommended(vgui::ComboBox *combo, int iItem);
     int FindMSAAMode(int nAASamples, int nAAQuality);
     void MarkDefaultSettingsAsRecommended();
-    void ApplyChangesToConVar(const char *pConVarName, int value);
 
     MESSAGE_FUNC(OnGameUIHidden, "GameUIHidden") // called when the GameUI is hidden
     {
@@ -149,6 +148,11 @@ class COptionsSubVideoAdvancedDlg : public vgui::Frame
     AAMode_t m_nAAModes[16];
 
     vgui::ComboBox *m_pTonemap, *m_pBloom;
+
+    ConVarRef m_cvarPicmip, m_cvarForceaniso, m_cvarTrilinear, m_cvarAntialias, m_cvarAAQuality,
+        m_cvarShadowRenderToTexture, m_cvarFlashlightDepthTexture, m_cvarWaterForceExpensive, 
+        m_cvarWaterForceReflectEntities, m_cvarVSync, m_cvarRootlod, m_cvarReduceFillrate, m_cvarColorCorreciton,
+        m_cvarMotionBlur, m_cvarQueueMode, m_cvarDisableBloom, m_cvarDynamicTonemapping;
 };
 
 
