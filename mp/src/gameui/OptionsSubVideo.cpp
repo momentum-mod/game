@@ -733,6 +733,7 @@ public:
 			}
 
 			m_bUseChanges = true;
+            ApplyChanges();
 			Close();
 		}
 		else
@@ -991,7 +992,7 @@ void COptionsSubVideo::SetCurrentResolutionComboItem()
 //-----------------------------------------------------------------------------
 // Purpose: restarts the game
 //-----------------------------------------------------------------------------
-void COptionsSubVideo::OnApplyChanges()
+void COptionsSubVideo::OnDataChanged()
 {
 	if ( RequiresRestart() )
 	{
@@ -1095,14 +1096,6 @@ void COptionsSubVideo::OnTextChanged(Panel *pPanel, const char *pszText)
 		PrepareResolutionList();
 		OnDataChanged();
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: enables apply button
-//-----------------------------------------------------------------------------
-void COptionsSubVideo::OnDataChanged()
-{
-	PostActionSignal(new KeyValues("ApplyButtonEnable"));
 }
 
 //-----------------------------------------------------------------------------
