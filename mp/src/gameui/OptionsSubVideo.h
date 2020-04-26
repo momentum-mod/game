@@ -65,6 +65,33 @@ private:
    vgui::DHANDLE<class COptionsSubVideoThirdPartyCreditsDlg> m_OptionsSubVideoThirdPartyCreditsDlg;
 };
 
+//-----------------------------------------------------------------------------
+// Purpose: Gamma-adjust dialog
+//-----------------------------------------------------------------------------
+class CGammaDialog : public vgui::Frame
+{
+    DECLARE_CLASS_SIMPLE(CGammaDialog, vgui::Frame);
+
+  public:
+    CGammaDialog(vgui::VPANEL hParent);
+
+    MESSAGE_FUNC_PTR(OnGammaChanged, "SliderMoved", panel);
+    MESSAGE_FUNC(OnOK, "OK");
+    MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
+    MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
+
+    virtual void Activate();
+    virtual void OnClose();
+    void OnKeyCodeTyped(vgui::KeyCode code);
+    void UpdateGammaLabel();
+
+  private:
+    vgui::CvarSlider *m_pGammaSlider;
+    vgui::Label *m_pGammaLabel;
+    vgui::TextEntry *m_pGammaEntry;
+    float m_flOriginalGamma;
+};
+
 class COptionsSubVideoThirdPartyCreditsDlg : public vgui::Frame
 {
 	DECLARE_CLASS_SIMPLE( COptionsSubVideoThirdPartyCreditsDlg, vgui::Frame );
