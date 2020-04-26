@@ -318,8 +318,6 @@ COptionsSubVideoAdvancedDlg::COptionsSubVideoAdvancedDlg(vgui::Panel *parent)
 	}
 		
 	MarkDefaultSettingsAsRecommended();
-
-	m_bUseChanges = false;
 }
 
 void COptionsSubVideoAdvancedDlg::Activate()
@@ -328,11 +326,8 @@ void COptionsSubVideoAdvancedDlg::Activate()
 
 	input()->SetAppModalSurface(GetVPanel());
 
-	if (!m_bUseChanges)
-	{
-		// reset the data
-		OnResetData();
-	}
+	// reset the data
+	OnResetData();
 }
 
 void COptionsSubVideoAdvancedDlg::SetComboItemAsRecommended(vgui::ComboBox *combo, int iItem)
@@ -459,9 +454,6 @@ void COptionsSubVideoAdvancedDlg::MarkDefaultSettingsAsRecommended()
 
 void COptionsSubVideoAdvancedDlg::ApplyChanges()
 {
-	if (!m_bUseChanges)
-		return;
-
     m_cvarRootlod.SetValue(2 - m_pModelDetail->GetActiveItem());
     m_cvarPicmip.SetValue(2 - m_pTextureDetail->GetActiveItem());
 
@@ -646,7 +638,6 @@ void COptionsSubVideoAdvancedDlg::OnCommand(const char *command)
 			return;
 		}
 
-		m_bUseChanges = true;
         ApplyChanges();
 		Close();
 	}
@@ -683,7 +674,6 @@ bool COptionsSubVideoAdvancedDlg::RequiresRestart()
 
 void COptionsSubVideoAdvancedDlg::OK_Confirmed()
 {
-    m_bUseChanges = true;
     ApplyChanges();
     Close();
 }

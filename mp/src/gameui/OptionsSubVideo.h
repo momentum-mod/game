@@ -134,7 +134,6 @@ class COptionsSubVideoAdvancedDlg : public vgui::Frame
 	MESSAGE_FUNC(OK_Confirmed, "OK_Confirmed");
 
   private: 
-    bool m_bUseChanges;
     vgui::ComboBox *m_pModelDetail, *m_pTextureDetail, *m_pAntialiasingMode, *m_pFilteringMode;
     vgui::ComboBox *m_pShadowDetail, *m_pWaterDetail, *m_pVSync, *m_pShaderDetail;
     vgui::ComboBox *m_pColorCorrection;
