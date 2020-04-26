@@ -14,6 +14,8 @@
 #include "tier1/utlvector.h"
 #include "tier1/utlsymbol.h"
 
+#include <vgui_controls/Panel.h>
+#include "vgui_controls/Frame.h"
 #include "vgui_controls/PropertyPage.h"
 class VControlsListPanel;
 
@@ -99,5 +101,23 @@ private:
 	// List of all the keys that need to have their binding removed
 	CUtlVector<CUtlSymbol> m_KeysToUnbind;
 };
+
+
+//-----------------------------------------------------------------------------
+// Purpose: advanced keyboard settings dialog
+//-----------------------------------------------------------------------------
+class COptionsSubKeyboardAdvancedDlg : public vgui::Frame
+{
+    DECLARE_CLASS_SIMPLE(COptionsSubKeyboardAdvancedDlg, vgui::Frame);
+
+  public:
+    COptionsSubKeyboardAdvancedDlg(vgui::VPANEL hParent);
+
+    virtual void Activate();
+    virtual void OnApplyData();
+    virtual void OnCommand(const char *command);
+    void OnKeyCodeTyped(vgui::KeyCode code);
+};
+
 
 #endif // OPTIONS_SUB_KEYBOARD_H

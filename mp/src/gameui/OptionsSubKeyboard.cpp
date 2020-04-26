@@ -735,79 +735,73 @@ void COptionsSubKeyboard::OnKeyCodePressed(vgui::KeyCode code)
 //-----------------------------------------------------------------------------
 // Purpose: advanced keyboard settings dialog
 //-----------------------------------------------------------------------------
-class COptionsSubKeyboardAdvancedDlg : public vgui::Frame
+COptionsSubKeyboardAdvancedDlg::COptionsSubKeyboardAdvancedDlg(vgui::VPANEL hParent) : BaseClass(NULL, NULL)
 {
-	DECLARE_CLASS_SIMPLE( COptionsSubKeyboardAdvancedDlg, vgui::Frame );
-public:
-	COptionsSubKeyboardAdvancedDlg( vgui::VPANEL hParent ) : BaseClass( NULL, NULL )
-	{
-		// parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
+    // parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
+    SetTitle("#GameUI_KeyboardAdvanced_Title", true);
+    SetSize(280, 140);
+    LoadControlSettings("resource/OptionsSubKeyboardAdvancedDlg.res");
+    MoveToCenterOfScreen();
+    SetSizeable(false);
+    SetDeleteSelfOnClose(true);
+}
 
-		SetTitle("#GameUI_KeyboardAdvanced_Title", true);
-		SetSize( 280, 140 );
-		LoadControlSettings( "resource/OptionsSubKeyboardAdvancedDlg.res" );
-		MoveToCenterOfScreen();
-		SetSizeable( false );
-		SetDeleteSelfOnClose( true );
+void COptionsSubKeyboardAdvancedDlg::Activate()
+{
+	BaseClass::Activate();
+
+	input()->SetAppModalSurface(GetVPanel());
+
+	// reset the data
+	ConVarRef con_enable( "con_enable" );
+	if ( con_enable.IsValid() )
+	{
+		SetControlInt("ConsoleCheck", con_enable.GetInt() ? 1 : 0);
 	}
 
-	virtual void Activate()
+	ConVarRef hud_fastswitch( "hud_fastswitch", true );
+	if ( hud_fastswitch.IsValid() )
 	{
-		BaseClass::Activate();
-
-		input()->SetAppModalSurface(GetVPanel());
-
-		// reset the data
-		ConVarRef con_enable( "con_enable" );
-		if ( con_enable.IsValid() )
-		{
-			SetControlInt("ConsoleCheck", con_enable.GetInt() ? 1 : 0);
-		}
-
-		ConVarRef hud_fastswitch( "hud_fastswitch", true );
-		if ( hud_fastswitch.IsValid() )
-		{
-			SetControlInt("FastSwitchCheck", hud_fastswitch.GetInt() ? 1 : 0);
-		}
+		SetControlInt("FastSwitchCheck", hud_fastswitch.GetInt() ? 1 : 0);
 	}
+}
 
-	virtual void OnApplyData()
+void COptionsSubKeyboardAdvancedDlg::OnApplyData()
+{
+	// apply data
+	ConVarRef con_enable( "con_enable" );
+	con_enable.SetValue( GetControlInt( "ConsoleCheck", 0 ) );
+
+	ConVarRef hud_fastswitch( "hud_fastswitch", true );
+	hud_fastswitch.SetValue( GetControlInt( "FastSwitchCheck", 0 ) );
+}
+
+void COptionsSubKeyboardAdvancedDlg::OnCommand(const char *command)
+{
+	if ( !stricmp(command, "OK") )
 	{
-		// apply data
-		ConVarRef con_enable( "con_enable" );
-		con_enable.SetValue( GetControlInt( "ConsoleCheck", 0 ) );
-
-		ConVarRef hud_fastswitch( "hud_fastswitch", true );
-		hud_fastswitch.SetValue( GetControlInt( "FastSwitchCheck", 0 ) );
+		// apply the data
+		OnApplyData();
+		Close();
 	}
-
-	virtual void OnCommand( const char *command )
+	else
 	{
-		if ( !stricmp(command, "OK") )
-		{
-			// apply the data
-			OnApplyData();
-			Close();
-		}
-		else
-		{
-			BaseClass::OnCommand( command );
-		}
+		BaseClass::OnCommand( command );
 	}
+}
 
-	void OnKeyCodeTyped(KeyCode code)
+void COptionsSubKeyboardAdvancedDlg::OnKeyCodeTyped(KeyCode code)
+{
+	// force ourselves to be closed if the escape key it pressed
+	if (code == KEY_ESCAPE)
 	{
-		// force ourselves to be closed if the escape key it pressed
-		if (code == KEY_ESCAPE)
-		{
-			Close();
-		}
-		else
-		{
-			BaseClass::OnKeyCodeTyped(code);
-		}
+		Close();
 	}
-};
+	else
+	{
+		BaseClass::OnKeyCodeTyped(code);
+	}
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Open advanced keyboard options
