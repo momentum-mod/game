@@ -92,116 +92,103 @@ void GetResolutionName( vmode_t *mode, char *sz, int sizeofsz )
 //-----------------------------------------------------------------------------
 // Purpose: Gamma-adjust dialog
 //-----------------------------------------------------------------------------
-class CGammaDialog : public vgui::Frame
+CGammaDialog::CGammaDialog(vgui::VPANEL hParent) : BaseClass(NULL, "OptionsSubVideoGammaDlg")
 {
-	DECLARE_CLASS_SIMPLE( CGammaDialog, vgui::Frame );
-public:
-	CGammaDialog( vgui::VPANEL hParent ) : BaseClass( NULL, "OptionsSubVideoGammaDlg" )
+    // parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
+    SetTitle("#GameUI_AdjustGamma_Title", true);
+    SetSize(400, 260);
+    SetDeleteSelfOnClose(true);
+
+    m_pGammaSlider = new CvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma");
+    m_pGammaLabel = new Label(this, "Gamma label", "#GameUI_Gamma");
+    m_pGammaEntry = new TextEntry(this, "GammaEntry");
+
+    Button *ok = new Button(this, "OKButton", "#vgui_ok");
+    ok->SetCommand(new KeyValues("OK"));
+
+    LoadControlSettings("resource/OptionsSubVideoGammaDlg.res");
+    MoveToCenterOfScreen();
+    SetSizeable(false);
+
+    m_pGammaSlider->SetTickCaptions("#GameUI_Light", "#GameUI_Dark");
+}
+
+void CGammaDialog::OnGammaChanged(Panel *panel)
+{
+    if (panel == m_pGammaSlider)
+    {
+        m_pGammaSlider->ApplyChanges();
+    }
+}
+
+void CGammaDialog::Activate()
+{
+	BaseClass::Activate();
+	m_flOriginalGamma = m_pGammaSlider->GetValue();
+	UpdateGammaLabel();
+}
+
+void CGammaDialog::OnOK()
+{
+    // make the gamma stick
+    m_flOriginalGamma = m_pGammaSlider->GetValue();
+    Close();
+}
+
+void CGammaDialog::OnClose()
+{
+	// reset to the original gamma
+	m_pGammaSlider->SetValue( m_flOriginalGamma );
+	m_pGammaSlider->ApplyChanges();
+	BaseClass::OnClose();
+}
+
+void CGammaDialog::OnKeyCodeTyped(KeyCode code)
+{
+	// force ourselves to be closed if the escape key it pressed
+	if (code == KEY_ESCAPE)
 	{
-		// parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
-		SetTitle("#GameUI_AdjustGamma_Title", true);
-		SetSize( 400, 260 );
-		SetDeleteSelfOnClose( true );
-
-		m_pGammaSlider = new CvarSlider( this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma" );
-		m_pGammaLabel = new Label( this, "Gamma label", "#GameUI_Gamma" );
-		m_pGammaEntry = new TextEntry( this, "GammaEntry" );
-
-		Button *ok = new Button( this, "OKButton", "#vgui_ok" );
-		ok->SetCommand( new KeyValues("OK") );
-
-		LoadControlSettings( "resource/OptionsSubVideoGammaDlg.res" );
-		MoveToCenterOfScreen();
-		SetSizeable( false );
-
-		m_pGammaSlider->SetTickCaptions( "#GameUI_Light", "#GameUI_Dark" );
-	}
-
-	MESSAGE_FUNC_PTR( OnGammaChanged, "SliderMoved", panel )
-	{
-		if (panel == m_pGammaSlider)
-		{
-			m_pGammaSlider->ApplyChanges();
-		}
-	}
-
-	virtual void Activate()
-	{
-		BaseClass::Activate();
-		m_flOriginalGamma = m_pGammaSlider->GetValue();
-		UpdateGammaLabel();
-	}
-
-	MESSAGE_FUNC( OnOK, "OK" )
-	{
-		// make the gamma stick
-		m_flOriginalGamma = m_pGammaSlider->GetValue();
 		Close();
 	}
-
-	virtual void OnClose()
+	else
 	{
-		// reset to the original gamma
-		m_pGammaSlider->SetValue( m_flOriginalGamma );
-		m_pGammaSlider->ApplyChanges();
-		BaseClass::OnClose();
+		BaseClass::OnKeyCodeTyped(code);
 	}
+}
 
-	void OnKeyCodeTyped(KeyCode code)
-	{
-		// force ourselves to be closed if the escape key it pressed
-		if (code == KEY_ESCAPE)
-		{
-			Close();
-		}
-		else
-		{
-			BaseClass::OnKeyCodeTyped(code);
-		}
-	}
+void CGammaDialog::OnControlModified(Panel *panel)
+{
+    // the HasBeenModified() check is so that if the value is outside of the range of the
+    // slider, it won't use the slider to determine the display value but leave the
+    // real value that we determined in the constructor
+    if (panel == m_pGammaSlider && m_pGammaSlider->HasBeenModified())
+    {
+        UpdateGammaLabel();
+    }
+}
 
-	MESSAGE_FUNC_PTR( OnControlModified, "ControlModified", panel )
-	{
-		// the HasBeenModified() check is so that if the value is outside of the range of the
-		// slider, it won't use the slider to determine the display value but leave the
-		// real value that we determined in the constructor
-		if (panel == m_pGammaSlider && m_pGammaSlider->HasBeenModified())
-		{
-			UpdateGammaLabel();
-		}
-	}
+void CGammaDialog::OnTextChanged(Panel *panel)
+{
+    if (panel == m_pGammaEntry)
+    {
+        char buf[64];
+        m_pGammaEntry->GetText(buf, 64);
 
-	MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel )
-	{
-		if (panel == m_pGammaEntry)
-		{
-			char buf[64];
-			m_pGammaEntry->GetText(buf, 64);
+        float fValue = (float)atof(buf);
+        if (fValue >= 1.0)
+        {
+            m_pGammaSlider->SetSliderValue(fValue);
+            PostActionSignal(new KeyValues("ApplyButtonEnable"));
+        }
+    }
+}
 
-			float fValue = (float) atof(buf);
-			if (fValue >= 1.0)
-			{
-				m_pGammaSlider->SetSliderValue(fValue);
-				PostActionSignal(new KeyValues("ApplyButtonEnable"));
-			}
-		}
-	}
-
-	void UpdateGammaLabel()
+void CGammaDialog::UpdateGammaLabel()
 	{
 		char buf[64];
 		Q_snprintf(buf, sizeof( buf ), " %.1f", m_pGammaSlider->GetSliderValue());
 		m_pGammaEntry->SetText(buf);
 	}
-
-
-private:
-	CvarSlider			*m_pGammaSlider;
-	vgui::Label			*m_pGammaLabel;
-	vgui::TextEntry		*m_pGammaEntry;
-	float				m_flOriginalGamma;
-};
-
 
 //-----------------------------------------------------------------------------
 // Purpose: advanced video settings dialog
