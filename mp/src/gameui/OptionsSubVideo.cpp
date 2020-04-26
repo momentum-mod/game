@@ -627,6 +627,8 @@ void COptionsSubVideoAdvancedDlg::OnResetData()
     m_pBloom->ActivateItem(!m_cvarDisableBloom.GetInt());
 
     m_pTonemap->ActivateItem(m_cvarDynamicTonemapping.GetInt());
+
+    m_pFOVSlider->Reset();
 }
 
 void COptionsSubVideoAdvancedDlg::OnCommand(const char *command)
