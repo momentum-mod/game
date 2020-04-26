@@ -48,7 +48,6 @@ private:
 	vgui::CvarSlider					*m_pSFXSlider;
 	vgui::CvarSlider					*m_pMusicSlider;
 	vgui::ComboBox				*m_pCloseCaptionCombo;
-	bool						   m_bRequireRestart;
    
    vgui::ComboBox				*m_pSpokenLanguageCombo;
    MESSAGE_FUNC( OpenThirdPartySoundCreditsDialog, "OpenThirdPartySoundCreditsDialog" );
@@ -59,6 +58,18 @@ private:
     vgui::CvarToggleCheckButton *m_pMuteLoseFocus;
 
     ConVarRef m_cvarSubtitles, m_cvarCloseCaption, m_cvarSndSurroundSpeakers, m_cvarSndPitchQuality, m_cvarDSPSlowCPU, m_cvarDSPEnhanceStereo;
+
+    // helper functions
+    void ResetCloseCaption();
+    void ResetSpeakerSetup();
+    void ResetSoundQuality();
+    void ResetSpokenLanguage();
+
+    void ApplyCloseCaption();
+    void ApplySpeakerSetup();
+    void ApplySoundQuality();
+    void ApplySpokenLanguage();
+    void ApplyEnhanceStereo();
 };
 
 
