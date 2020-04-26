@@ -49,12 +49,6 @@ RatioToAspectMode_t g_RatioToAspectModes[] =
 	{	2,		16.0f / 10.0f },
 	{	2,		1.0f },
 };
-
-struct AAMode_t
-{
-	int m_nNumSamples;
-	int m_nQualityLevel;
-};
 	
 //-----------------------------------------------------------------------------
 // Purpose: returns the aspect ratio mode number for the given resolution
@@ -210,552 +204,538 @@ private:
 
 
 //-----------------------------------------------------------------------------
-// Purpose: advanced keyboard settings dialog
+// Purpose: advanced video settings dialog
 //-----------------------------------------------------------------------------
-class COptionsSubVideoAdvancedDlg : public vgui::Frame
+COptionsSubVideoAdvancedDlg::COptionsSubVideoAdvancedDlg(vgui::Panel *parent)
+    : BaseClass(parent, "OptionsSubVideoAdvancedDlg")
 {
-	DECLARE_CLASS_SIMPLE( COptionsSubVideoAdvancedDlg, vgui::Frame );
-public:
-	COptionsSubVideoAdvancedDlg( vgui::Panel *parent ) : BaseClass( parent , "OptionsSubVideoAdvancedDlg" )
+	SetTitle("#GameUI_VideoAdvanced_Title", true);
+	SetSize( 260, 400 );
+
+	m_pModelDetail = new ComboBox( this, "ModelDetail", 6, false );
+	m_pModelDetail->AddItem("#gameui_low", NULL);
+	m_pModelDetail->AddItem("#gameui_medium", NULL);
+	m_pModelDetail->AddItem("#gameui_high", NULL);
+
+	m_pTextureDetail = new ComboBox( this, "TextureDetail", 6, false );
+	m_pTextureDetail->AddItem("#gameui_low", NULL);
+	m_pTextureDetail->AddItem("#gameui_medium", NULL);
+	m_pTextureDetail->AddItem("#gameui_high", NULL);
+	m_pTextureDetail->AddItem("#gameui_ultra", NULL);
+
+	// Build list of MSAA and CSAA modes, based upon those which are supported by the device
+	//
+	// The modes that we've seen in the wild to date are as follows (in perf order, fastest to slowest)
+	//
+	//								2x	4x	6x	8x	16x	8x	16xQ
+	//		Texture/Shader Samples	1	1	1	1	1	1	1
+	//		Stored Color/Z Samples	2	4	6	4	4	8	8
+	//		Coverage Samples		2	4	6	8	16	8	16
+	//		MSAA or CSAA			M	M	M	C	C	M	C
+	//
+	//	The CSAA modes are nVidia only (added in the G80 generation of GPUs)
+	//
+	m_nNumAAModes = 0;
+	m_pAntialiasingMode = new ComboBox( this, "AntialiasingMode", 10, false );
+	m_pAntialiasingMode->AddItem("#GameUI_None", NULL);
+	m_nAAModes[m_nNumAAModes].m_nNumSamples = 1;
+	m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
+	m_nNumAAModes++;
+
+	if ( materials->SupportsMSAAMode(2) )
 	{
-		SetTitle("#GameUI_VideoAdvanced_Title", true);
-		SetSize( 260, 400 );
-
-		m_pModelDetail = new ComboBox( this, "ModelDetail", 6, false );
-		m_pModelDetail->AddItem("#gameui_low", NULL);
-		m_pModelDetail->AddItem("#gameui_medium", NULL);
-		m_pModelDetail->AddItem("#gameui_high", NULL);
-
-		m_pTextureDetail = new ComboBox( this, "TextureDetail", 6, false );
-		m_pTextureDetail->AddItem("#gameui_low", NULL);
-		m_pTextureDetail->AddItem("#gameui_medium", NULL);
-		m_pTextureDetail->AddItem("#gameui_high", NULL);
-		m_pTextureDetail->AddItem("#gameui_ultra", NULL);
-
-		// Build list of MSAA and CSAA modes, based upon those which are supported by the device
-		//
-		// The modes that we've seen in the wild to date are as follows (in perf order, fastest to slowest)
-		//
-		//								2x	4x	6x	8x	16x	8x	16xQ
-		//		Texture/Shader Samples	1	1	1	1	1	1	1
-		//		Stored Color/Z Samples	2	4	6	4	4	8	8
-		//		Coverage Samples		2	4	6	8	16	8	16
-		//		MSAA or CSAA			M	M	M	C	C	M	C
-		//
-		//	The CSAA modes are nVidia only (added in the G80 generation of GPUs)
-		//
-		m_nNumAAModes = 0;
-		m_pAntialiasingMode = new ComboBox( this, "AntialiasingMode", 10, false );
-		m_pAntialiasingMode->AddItem("#GameUI_None", NULL);
-		m_nAAModes[m_nNumAAModes].m_nNumSamples = 1;
+		m_pAntialiasingMode->AddItem("#GameUI_2X", NULL);
+		m_nAAModes[m_nNumAAModes].m_nNumSamples = 2;
 		m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
 		m_nNumAAModes++;
+	}
 
-		if ( materials->SupportsMSAAMode(2) )
+	if ( materials->SupportsMSAAMode(4) )
+	{
+		m_pAntialiasingMode->AddItem("#GameUI_4X", NULL);
+		m_nAAModes[m_nNumAAModes].m_nNumSamples = 4;
+		m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
+		m_nNumAAModes++;
+	}
+
+	if ( materials->SupportsMSAAMode(6) )
+	{
+		m_pAntialiasingMode->AddItem("#GameUI_6X", NULL);
+		m_nAAModes[m_nNumAAModes].m_nNumSamples = 6;
+		m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
+		m_nNumAAModes++;
+	}
+
+	if ( materials->SupportsCSAAMode(4, 2) )							// nVidia CSAA			"8x"
+	{
+		m_pAntialiasingMode->AddItem("#GameUI_8X_CSAA", NULL);
+		m_nAAModes[m_nNumAAModes].m_nNumSamples = 4;
+		m_nAAModes[m_nNumAAModes].m_nQualityLevel = 2;
+		m_nNumAAModes++;
+	}
+
+	if ( materials->SupportsCSAAMode(4, 4) )							// nVidia CSAA			"16x"
+	{
+		m_pAntialiasingMode->AddItem("#GameUI_16X_CSAA", NULL);
+		m_nAAModes[m_nNumAAModes].m_nNumSamples = 4;
+		m_nAAModes[m_nNumAAModes].m_nQualityLevel = 4;
+		m_nNumAAModes++;
+	}
+
+	if ( materials->SupportsMSAAMode(8) )
+	{
+		m_pAntialiasingMode->AddItem("#GameUI_8X", NULL);
+		m_nAAModes[m_nNumAAModes].m_nNumSamples = 8;
+		m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
+		m_nNumAAModes++;
+	}
+
+	if ( materials->SupportsCSAAMode(8, 2) )							// nVidia CSAA			"16xQ"
+	{
+		m_pAntialiasingMode->AddItem("#GameUI_16XQ_CSAA", NULL);
+		m_nAAModes[m_nNumAAModes].m_nNumSamples = 8;
+		m_nAAModes[m_nNumAAModes].m_nQualityLevel = 2;
+		m_nNumAAModes++;
+	}
+
+	m_pFilteringMode = new ComboBox( this, "FilteringMode", 6, false );
+	m_pFilteringMode->AddItem("#GameUI_Bilinear", NULL);
+	m_pFilteringMode->AddItem("#GameUI_Trilinear", NULL);
+	m_pFilteringMode->AddItem("#GameUI_Anisotropic2X", NULL);
+	m_pFilteringMode->AddItem("#GameUI_Anisotropic4X", NULL);
+	m_pFilteringMode->AddItem("#GameUI_Anisotropic8X", NULL);
+	m_pFilteringMode->AddItem("#GameUI_Anisotropic16X", NULL);
+
+	m_pShadowDetail = new ComboBox( this, "ShadowDetail", 6, false );
+	m_pShadowDetail->AddItem("#gameui_low", NULL);
+	m_pShadowDetail->AddItem("#gameui_medium", NULL);
+	if ( materials->SupportsShadowDepthTextures() )
+	{
+		m_pShadowDetail->AddItem("#gameui_high", NULL);
+	}
+
+    m_pBloom = new ComboBox(this, "Bloom", 2, false);
+	m_pBloom->AddItem("#gameui_disabled", NULL);
+	m_pBloom->AddItem("#gameui_enabled", NULL);
+
+    m_pTonemap = new ComboBox(this, "Tonemap", 2, false);
+	m_pTonemap->AddItem("#gameui_disabled", NULL);
+	m_pTonemap->AddItem("#gameui_enabled", NULL);
+
+	m_pWaterDetail = new ComboBox( this, "WaterDetail", 6, false );
+	m_pWaterDetail->AddItem("#gameui_noreflections", NULL);
+	m_pWaterDetail->AddItem("#gameui_reflectonlyworld", NULL);
+	m_pWaterDetail->AddItem("#gameui_reflectall", NULL);
+
+	m_pVSync = new ComboBox( this, "VSync", 2, false );
+	m_pVSync->AddItem("#gameui_disabled", NULL);
+	m_pVSync->AddItem("#gameui_enabled", NULL);
+
+	m_pShaderDetail = new ComboBox( this, "ShaderDetail", 6, false );
+	m_pShaderDetail->AddItem("#gameui_low", NULL);
+	m_pShaderDetail->AddItem("#gameui_high", NULL);
+
+	m_pColorCorrection = new ComboBox( this, "ColorCorrection", 2, false );
+	m_pColorCorrection->AddItem("#gameui_disabled", NULL);
+	m_pColorCorrection->AddItem("#gameui_enabled", NULL);
+
+	m_pMotionBlur = new ComboBox( this, "MotionBlur", 2, false );
+	m_pMotionBlur->AddItem("#gameui_disabled", NULL);
+	m_pMotionBlur->AddItem("#gameui_enabled", NULL);
+
+    m_pMulticore = new ComboBox(this, "Multicore", 2, false);
+    m_pMulticore->AddItem("#gameui_disabled", NULL);
+    m_pMulticore->AddItem("#gameui_enabled", NULL);
+
+    m_pFOVSlider = new CvarSlider(this, "FovSlider", "", 90.0f, 179.0f, "fov_desired", false);
+
+	LoadControlSettings( "resource/OptionsSubVideoAdvancedDlg.res" );
+	MoveToCenterOfScreen();
+	SetSizeable( false );
+
+	if ( g_pCVar->FindVar( "fov_desired" ) == NULL )
+	{
+        m_pFOVSlider->SetVisible(false);
+
+		Panel *pFOV = FindChildByName( "FovLabel" );
+		if ( pFOV )
 		{
-			m_pAntialiasingMode->AddItem("#GameUI_2X", NULL);
-			m_nAAModes[m_nNumAAModes].m_nNumSamples = 2;
-			m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
-			m_nNumAAModes++;
+			pFOV->SetVisible( false );
 		}
-
-		if ( materials->SupportsMSAAMode(4) )
-		{
-			m_pAntialiasingMode->AddItem("#GameUI_4X", NULL);
-			m_nAAModes[m_nNumAAModes].m_nNumSamples = 4;
-			m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
-			m_nNumAAModes++;
-		}
-
-		if ( materials->SupportsMSAAMode(6) )
-		{
-			m_pAntialiasingMode->AddItem("#GameUI_6X", NULL);
-			m_nAAModes[m_nNumAAModes].m_nNumSamples = 6;
-			m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
-			m_nNumAAModes++;
-		}
-
-		if ( materials->SupportsCSAAMode(4, 2) )							// nVidia CSAA			"8x"
-		{
-			m_pAntialiasingMode->AddItem("#GameUI_8X_CSAA", NULL);
-			m_nAAModes[m_nNumAAModes].m_nNumSamples = 4;
-			m_nAAModes[m_nNumAAModes].m_nQualityLevel = 2;
-			m_nNumAAModes++;
-		}
-
-		if ( materials->SupportsCSAAMode(4, 4) )							// nVidia CSAA			"16x"
-		{
-			m_pAntialiasingMode->AddItem("#GameUI_16X_CSAA", NULL);
-			m_nAAModes[m_nNumAAModes].m_nNumSamples = 4;
-			m_nAAModes[m_nNumAAModes].m_nQualityLevel = 4;
-			m_nNumAAModes++;
-		}
-
-		if ( materials->SupportsMSAAMode(8) )
-		{
-			m_pAntialiasingMode->AddItem("#GameUI_8X", NULL);
-			m_nAAModes[m_nNumAAModes].m_nNumSamples = 8;
-			m_nAAModes[m_nNumAAModes].m_nQualityLevel = 0;
-			m_nNumAAModes++;
-		}
-
-		if ( materials->SupportsCSAAMode(8, 2) )							// nVidia CSAA			"16xQ"
-		{
-			m_pAntialiasingMode->AddItem("#GameUI_16XQ_CSAA", NULL);
-			m_nAAModes[m_nNumAAModes].m_nNumSamples = 8;
-			m_nAAModes[m_nNumAAModes].m_nQualityLevel = 2;
-			m_nNumAAModes++;
-		}
-
-		m_pFilteringMode = new ComboBox( this, "FilteringMode", 6, false );
-		m_pFilteringMode->AddItem("#GameUI_Bilinear", NULL);
-		m_pFilteringMode->AddItem("#GameUI_Trilinear", NULL);
-		m_pFilteringMode->AddItem("#GameUI_Anisotropic2X", NULL);
-		m_pFilteringMode->AddItem("#GameUI_Anisotropic4X", NULL);
-		m_pFilteringMode->AddItem("#GameUI_Anisotropic8X", NULL);
-		m_pFilteringMode->AddItem("#GameUI_Anisotropic16X", NULL);
-
-		m_pShadowDetail = new ComboBox( this, "ShadowDetail", 6, false );
-		m_pShadowDetail->AddItem("#gameui_low", NULL);
-		m_pShadowDetail->AddItem("#gameui_medium", NULL);
-		if ( materials->SupportsShadowDepthTextures() )
-		{
-			m_pShadowDetail->AddItem("#gameui_high", NULL);
-		}
-
-        m_pBloom = new ComboBox(this, "Bloom", 2, false);
-		m_pBloom->AddItem("#gameui_disabled", NULL);
-		m_pBloom->AddItem("#gameui_enabled", NULL);
-
-        m_pTonemap = new ComboBox(this, "Tonemap", 2, false);
-		m_pTonemap->AddItem("#gameui_disabled", NULL);
-		m_pTonemap->AddItem("#gameui_enabled", NULL);
-
-		m_pWaterDetail = new ComboBox( this, "WaterDetail", 6, false );
-		m_pWaterDetail->AddItem("#gameui_noreflections", NULL);
-		m_pWaterDetail->AddItem("#gameui_reflectonlyworld", NULL);
-		m_pWaterDetail->AddItem("#gameui_reflectall", NULL);
-
-		m_pVSync = new ComboBox( this, "VSync", 2, false );
-		m_pVSync->AddItem("#gameui_disabled", NULL);
-		m_pVSync->AddItem("#gameui_enabled", NULL);
-
-		m_pShaderDetail = new ComboBox( this, "ShaderDetail", 6, false );
-		m_pShaderDetail->AddItem("#gameui_low", NULL);
-		m_pShaderDetail->AddItem("#gameui_high", NULL);
-
-		m_pColorCorrection = new ComboBox( this, "ColorCorrection", 2, false );
-		m_pColorCorrection->AddItem("#gameui_disabled", NULL);
-		m_pColorCorrection->AddItem("#gameui_enabled", NULL);
-
-		m_pMotionBlur = new ComboBox( this, "MotionBlur", 2, false );
-		m_pMotionBlur->AddItem("#gameui_disabled", NULL);
-		m_pMotionBlur->AddItem("#gameui_enabled", NULL);
-
-        m_pMulticore = new ComboBox(this, "Multicore", 2, false);
-        m_pMulticore->AddItem("#gameui_disabled", NULL);
-        m_pMulticore->AddItem("#gameui_enabled", NULL);
-
-        m_pFOVSlider = new CvarSlider(this, "FovSlider", "", 90.0f, 179.0f, "fov_desired", false);
-
-		LoadControlSettings( "resource/OptionsSubVideoAdvancedDlg.res" );
-		MoveToCenterOfScreen();
-		SetSizeable( false );
-
-		if ( g_pCVar->FindVar( "fov_desired" ) == NULL )
-		{
-            m_pFOVSlider->SetVisible(false);
-
-			Panel *pFOV = FindChildByName( "FovLabel" );
-			if ( pFOV )
-			{
-				pFOV->SetVisible( false );
-			}
-		}
+	}
 		
-		MarkDefaultSettingsAsRecommended();
+	MarkDefaultSettingsAsRecommended();
 
-		m_bUseChanges = false;
-	}
+	m_bUseChanges = false;
+}
 
-	virtual void Activate()
+void COptionsSubVideoAdvancedDlg::Activate()
+{
+	BaseClass::Activate();
+
+	input()->SetAppModalSurface(GetVPanel());
+
+	if (!m_bUseChanges)
 	{
-		BaseClass::Activate();
+		// reset the data
+		OnResetData();
+	}
+}
 
-		input()->SetAppModalSurface(GetVPanel());
+void COptionsSubVideoAdvancedDlg::SetComboItemAsRecommended(vgui::ComboBox *combo, int iItem)
+{
+	// get the item text
+	wchar_t text[512];
+	combo->GetItemText(iItem, text, sizeof(text));
 
-		if (!m_bUseChanges)
+	// append the recommended flag
+	wchar_t newText[512];
+    V_snwprintf(newText, sizeof(newText) / sizeof(wchar_t), L"%ls *", text);
+
+	// reset
+	combo->UpdateItem(iItem, newText, NULL);
+}
+
+int COptionsSubVideoAdvancedDlg::FindMSAAMode(int nAASamples, int nAAQuality)
+{
+	// Run through the AA Modes supported by the device
+    for ( int nAAMode = 0; nAAMode < m_nNumAAModes; nAAMode++ )
+	{
+		// If we found the mode that matches what we're looking for, return the index
+		if ( ( m_nAAModes[nAAMode].m_nNumSamples == nAASamples) && ( m_nAAModes[nAAMode].m_nQualityLevel == nAAQuality) )
 		{
-			// reset the data
-			OnResetData();
+			return nAAMode;
 		}
 	}
 
-	void SetComboItemAsRecommended( vgui::ComboBox *combo, int iItem )
-	{
-		// get the item text
-		wchar_t text[512];
-		combo->GetItemText(iItem, text, sizeof(text));
+	return 0;	// Didn't find what we're looking for, so no AA
+}
 
-		// append the recommended flag
-		wchar_t newText[512];
-        V_snwprintf(newText, sizeof(newText) / sizeof(wchar_t), L"%ls *", text);
+void COptionsSubVideoAdvancedDlg::MarkDefaultSettingsAsRecommended()
+{
+	// Pull in data from dxsupport.cfg database (includes fine-grained per-vendor/per-device config data)
+	KeyValues *pKeyValues = new KeyValues( "config" );
+	materials->GetRecommendedConfigurationInfo( 0, pKeyValues );	
 
-		// reset
-		combo->UpdateItem(iItem, newText, NULL);
-	}
-
-	int FindMSAAMode( int nAASamples, int nAAQuality )
-	{
-		// Run through the AA Modes supported by the device
-        for ( int nAAMode = 0; nAAMode < m_nNumAAModes; nAAMode++ )
-		{
-			// If we found the mode that matches what we're looking for, return the index
-			if ( ( m_nAAModes[nAAMode].m_nNumSamples == nAASamples) && ( m_nAAModes[nAAMode].m_nQualityLevel == nAAQuality) )
-			{
-				return nAAMode;
-			}
-		}
-
-		return 0;	// Didn't find what we're looking for, so no AA
-	}
-
-	MESSAGE_FUNC( OnGameUIHidden, "GameUIHidden" )	// called when the GameUI is hidden
-	{
-		Close();
-	}
-
-	MESSAGE_FUNC( OK_Confirmed, "OK_Confirmed" )
-	{
-		m_bUseChanges = true;
-		Close();
-	}
-
-	void MarkDefaultSettingsAsRecommended()
-	{
-		// Pull in data from dxsupport.cfg database (includes fine-grained per-vendor/per-device config data)
-		KeyValues *pKeyValues = new KeyValues( "config" );
-		materials->GetRecommendedConfigurationInfo( 0, pKeyValues );	
-
-		// Read individual values from keyvalues which came from dxsupport.cfg database
-		int nSkipLevels = pKeyValues->GetInt( "ConVar.mat_picmip", 0 );
-		int nAnisotropicLevel = pKeyValues->GetInt( "ConVar.mat_forceaniso", 1 );
-		int nForceTrilinear = pKeyValues->GetInt( "ConVar.mat_trilinear", 0 );
-		int nAASamples = pKeyValues->GetInt( "ConVar.mat_antialias", 0 );
-		int nAAQuality = pKeyValues->GetInt( "ConVar.mat_aaquality", 0 );
-		int nRenderToTextureShadows = pKeyValues->GetInt( "ConVar.r_shadowrendertotexture", 0 );
-		int nShadowDepthTextureShadows = pKeyValues->GetInt( "ConVar.r_flashlightdepthtexture", 0 );
-		int nWaterUseRealtimeReflection = pKeyValues->GetInt( "ConVar.r_waterforceexpensive", 0 );
-		int nWaterUseEntityReflection = pKeyValues->GetInt( "ConVar.r_waterforcereflectentities", 0 );
-		int nMatVSync = pKeyValues->GetInt( "ConVar.mat_vsync", 1 );
-		int nRootLOD = pKeyValues->GetInt( "ConVar.r_rootlod", 0 );
-		int nReduceFillRate = pKeyValues->GetInt( "ConVar.mat_reducefillrate", 0 );
-		int nColorCorrection = pKeyValues->GetInt( "ConVar.mat_colorcorrection", 0 );
-		int nMotionBlur = pKeyValues->GetInt( "ConVar.mat_motion_blur_enabled", 0 );
-        int nMulticore = pKeyValues->GetInt("ConVar.mat_queue_mode", -1);
+	// Read individual values from keyvalues which came from dxsupport.cfg database
+	int nSkipLevels = pKeyValues->GetInt( "ConVar.mat_picmip", 0 );
+	int nAnisotropicLevel = pKeyValues->GetInt( "ConVar.mat_forceaniso", 1 );
+	int nForceTrilinear = pKeyValues->GetInt( "ConVar.mat_trilinear", 0 );
+	int nAASamples = pKeyValues->GetInt( "ConVar.mat_antialias", 0 );
+	int nAAQuality = pKeyValues->GetInt( "ConVar.mat_aaquality", 0 );
+	int nRenderToTextureShadows = pKeyValues->GetInt( "ConVar.r_shadowrendertotexture", 0 );
+	int nShadowDepthTextureShadows = pKeyValues->GetInt( "ConVar.r_flashlightdepthtexture", 0 );
+	int nWaterUseRealtimeReflection = pKeyValues->GetInt( "ConVar.r_waterforceexpensive", 0 );
+	int nWaterUseEntityReflection = pKeyValues->GetInt( "ConVar.r_waterforcereflectentities", 0 );
+	int nMatVSync = pKeyValues->GetInt( "ConVar.mat_vsync", 1 );
+	int nRootLOD = pKeyValues->GetInt( "ConVar.r_rootlod", 0 );
+	int nReduceFillRate = pKeyValues->GetInt( "ConVar.mat_reducefillrate", 0 );
+	int nColorCorrection = pKeyValues->GetInt( "ConVar.mat_colorcorrection", 0 );
+	int nMotionBlur = pKeyValues->GetInt( "ConVar.mat_motion_blur_enabled", 0 );
+    int nMulticore = pKeyValues->GetInt("ConVar.mat_queue_mode", -1);
 	
-		SetComboItemAsRecommended( m_pModelDetail, 2 - nRootLOD );
-		SetComboItemAsRecommended( m_pTextureDetail, 2 - nSkipLevels );
+	SetComboItemAsRecommended( m_pModelDetail, 2 - nRootLOD );
+	SetComboItemAsRecommended( m_pTextureDetail, 2 - nSkipLevels );
 
-		switch ( nAnisotropicLevel )
+	switch ( nAnisotropicLevel )
+	{
+	case 2:
+		SetComboItemAsRecommended( m_pFilteringMode, 2 );
+		break;
+	case 4:
+		SetComboItemAsRecommended( m_pFilteringMode, 3 );
+		break;
+	case 8:
+		SetComboItemAsRecommended( m_pFilteringMode, 4 );
+		break;
+	case 16:
+		SetComboItemAsRecommended( m_pFilteringMode, 5 );
+		break;
+	case 0:
+	default:
+		if ( nForceTrilinear != 0 )
 		{
-		case 2:
-			SetComboItemAsRecommended( m_pFilteringMode, 2 );
-			break;
-		case 4:
-			SetComboItemAsRecommended( m_pFilteringMode, 3 );
-			break;
-		case 8:
-			SetComboItemAsRecommended( m_pFilteringMode, 4 );
-			break;
-		case 16:
-			SetComboItemAsRecommended( m_pFilteringMode, 5 );
-			break;
-		case 0:
-		default:
-			if ( nForceTrilinear != 0 )
-			{
-				SetComboItemAsRecommended( m_pFilteringMode, 1 );
-			}
-			else
-			{
-				SetComboItemAsRecommended( m_pFilteringMode, 0 );
-			}
-			break;
+			SetComboItemAsRecommended( m_pFilteringMode, 1 );
 		}
-
-		// Map desired mode to list item number
-		int nMSAAMode = FindMSAAMode( nAASamples, nAAQuality );
-		SetComboItemAsRecommended( m_pAntialiasingMode, nMSAAMode );
-
-		if ( nShadowDepthTextureShadows )
-			SetComboItemAsRecommended( m_pShadowDetail, 2 );	// Shadow depth mapping (in addition to RTT shadows)
-		else if ( nRenderToTextureShadows )
-			SetComboItemAsRecommended( m_pShadowDetail, 1 );	// RTT shadows
 		else
-			SetComboItemAsRecommended( m_pShadowDetail, 0 );	// Blobbies
+		{
+			SetComboItemAsRecommended( m_pFilteringMode, 0 );
+		}
+		break;
+	}
 
-		SetComboItemAsRecommended( m_pShaderDetail, nReduceFillRate ? 0 : 1 );
+	// Map desired mode to list item number
+	int nMSAAMode = FindMSAAMode( nAASamples, nAAQuality );
+	SetComboItemAsRecommended( m_pAntialiasingMode, nMSAAMode );
+
+	if ( nShadowDepthTextureShadows )
+		SetComboItemAsRecommended( m_pShadowDetail, 2 );	// Shadow depth mapping (in addition to RTT shadows)
+	else if ( nRenderToTextureShadows )
+		SetComboItemAsRecommended( m_pShadowDetail, 1 );	// RTT shadows
+	else
+		SetComboItemAsRecommended( m_pShadowDetail, 0 );	// Blobbies
+
+	SetComboItemAsRecommended( m_pShaderDetail, nReduceFillRate ? 0 : 1 );
 		
-		if ( nWaterUseRealtimeReflection )
+	if ( nWaterUseRealtimeReflection )
+	{
+		if ( nWaterUseEntityReflection )
 		{
-			if ( nWaterUseEntityReflection )
-			{
-				SetComboItemAsRecommended( m_pWaterDetail, 2 );
-			}
-			else
-			{
-				SetComboItemAsRecommended( m_pWaterDetail, 1 );
-			}
+			SetComboItemAsRecommended( m_pWaterDetail, 2 );
 		}
 		else
 		{
-			SetComboItemAsRecommended( m_pWaterDetail, 0 );
+			SetComboItemAsRecommended( m_pWaterDetail, 1 );
 		}
-
-		SetComboItemAsRecommended( m_pVSync, nMatVSync != 0 );
-
-		SetComboItemAsRecommended( m_pColorCorrection, nColorCorrection );
-
-		SetComboItemAsRecommended( m_pMotionBlur, nMotionBlur );
-
-        SetComboItemAsRecommended(m_pMulticore, -nMulticore);
-
-		pKeyValues->deleteThis();
+	}
+	else
+	{
+		SetComboItemAsRecommended( m_pWaterDetail, 0 );
 	}
 
-	void ApplyChangesToConVar( const char *pConVarName, int value )
+	SetComboItemAsRecommended( m_pVSync, nMatVSync != 0 );
+
+	SetComboItemAsRecommended( m_pColorCorrection, nColorCorrection );
+
+	SetComboItemAsRecommended( m_pMotionBlur, nMotionBlur );
+
+    SetComboItemAsRecommended(m_pMulticore, -nMulticore);
+
+	pKeyValues->deleteThis();
+}
+
+void COptionsSubVideoAdvancedDlg::ApplyChangesToConVar(const char *pConVarName, int value)
+{
+    ConVarRef var(pConVarName);
+    var.SetValue(value);
+}
+
+void COptionsSubVideoAdvancedDlg::ApplyChanges()
+{
+	if (!m_bUseChanges)
+		return;
+
+	ApplyChangesToConVar( "r_rootlod", 2 - m_pModelDetail->GetActiveItem());
+	ApplyChangesToConVar( "mat_picmip", 2 - m_pTextureDetail->GetActiveItem());
+
+	// reset everything tied to the filtering mode, then the switch sets the appropriate one
+	ApplyChangesToConVar( "mat_trilinear", false );
+	ApplyChangesToConVar( "mat_forceaniso", 1 );
+	switch (m_pFilteringMode->GetActiveItem())
 	{
-        ConVarRef var(pConVarName);
-        var.SetValue(value);
+	case 0:
+		break;
+	case 1:
+		ApplyChangesToConVar( "mat_trilinear", true );
+		break;
+	case 2:
+		ApplyChangesToConVar( "mat_forceaniso", 2 );
+		break;
+	case 3:
+		ApplyChangesToConVar( "mat_forceaniso", 4 );
+		break;
+	case 4:
+		ApplyChangesToConVar( "mat_forceaniso", 8 );
+		break;
+	case 5:
+		ApplyChangesToConVar( "mat_forceaniso", 16 );
+		break;
 	}
 
-	virtual void ApplyChanges()
+	// Set the AA convars according to the menu item chosen
+	int nActiveAAItem = m_pAntialiasingMode->GetActiveItem();
+	ApplyChangesToConVar( "mat_antialias", m_nAAModes[nActiveAAItem].m_nNumSamples );
+	ApplyChangesToConVar( "mat_aaquality", m_nAAModes[nActiveAAItem].m_nQualityLevel );
+
+	if ( m_pShadowDetail->GetActiveItem() == 0 )						// Blobby shadows
 	{
-		if (!m_bUseChanges)
+		ApplyChangesToConVar( "r_shadowrendertotexture", 0 );			// Turn off RTT shadows
+		ApplyChangesToConVar( "r_flashlightdepthtexture", 0 );			// Turn off shadow depth textures
+	}
+	else if ( m_pShadowDetail->GetActiveItem() == 1 )					// RTT shadows only
+	{
+		ApplyChangesToConVar( "r_shadowrendertotexture", 1 );			// Turn on RTT shadows
+		ApplyChangesToConVar( "r_flashlightdepthtexture", 0 );			// Turn off shadow depth textures
+	}
+	else if ( m_pShadowDetail->GetActiveItem() == 2 )					// Shadow depth textures
+	{
+		ApplyChangesToConVar( "r_shadowrendertotexture", 1 );			// Turn on RTT shadows
+		ApplyChangesToConVar( "r_flashlightdepthtexture", 1 );			// Turn on shadow depth textures
+	}
+
+	ApplyChangesToConVar( "mat_reducefillrate", ( m_pShaderDetail->GetActiveItem() > 0 ) ? 0 : 1 );
+
+	switch ( m_pWaterDetail->GetActiveItem() )
+	{
+	default:
+	case 0:
+		ApplyChangesToConVar( "r_waterforceexpensive", false );
+		ApplyChangesToConVar( "r_waterforcereflectentities", false );
+		break;
+	case 1:
+		ApplyChangesToConVar( "r_waterforceexpensive", true );
+		ApplyChangesToConVar( "r_waterforcereflectentities", false );
+		break;
+	case 2:
+		ApplyChangesToConVar( "r_waterforceexpensive", true );
+		ApplyChangesToConVar( "r_waterforcereflectentities", true );
+		break;
+	}
+
+	ApplyChangesToConVar( "mat_vsync", m_pVSync->GetActiveItem() );	 
+
+	ApplyChangesToConVar( "mat_colorcorrection", m_pColorCorrection->GetActiveItem() );
+
+	ApplyChangesToConVar( "mat_motion_blur_enabled", m_pMotionBlur->GetActiveItem() );
+		
+    ApplyChangesToConVar("mat_queue_mode", -m_pMulticore->GetActiveItem());
+
+    m_pFOVSlider->ApplyChanges();
+
+	// The cvar disables bloom so invert the item
+	ApplyChangesToConVar( "mat_disable_bloom", !m_pBloom->GetActiveItem() );
+
+	ApplyChangesToConVar( "mat_dynamic_tonemapping", m_pTonemap->GetActiveItem() );
+}
+
+void COptionsSubVideoAdvancedDlg::OnResetData()
+{
+	ConVarRef r_rootlod( "r_rootlod" );
+	ConVarRef mat_picmip( "mat_picmip" );
+	ConVarRef mat_trilinear( "mat_trilinear" );
+	ConVarRef mat_forceaniso( "mat_forceaniso" );
+	ConVarRef mat_antialias( "mat_antialias" );
+	ConVarRef mat_aaquality( "mat_aaquality" );
+	ConVarRef mat_vsync( "mat_vsync" );
+	ConVarRef r_flashlightdepthtexture( "r_flashlightdepthtexture" );
+	ConVarRef r_waterforceexpensive( "r_waterforceexpensive" );
+	ConVarRef r_waterforcereflectentities( "r_waterforcereflectentities" );
+	ConVarRef mat_reducefillrate("mat_reducefillrate" );
+	ConVarRef mat_colorcorrection( "mat_colorcorrection" );
+	ConVarRef mat_motion_blur_enabled( "mat_motion_blur_enabled" );
+	ConVarRef r_shadowrendertotexture( "r_shadowrendertotexture" );
+
+	m_pModelDetail->ActivateItem( 2 - clamp(r_rootlod.GetInt(), 0, 2) );
+	m_pTextureDetail->ActivateItem( 2 - clamp(mat_picmip.GetInt(), -1, 2) );
+
+	if ( r_flashlightdepthtexture.GetBool() )		// If we're doing flashlight shadow depth texturing...
+	{
+		r_shadowrendertotexture.SetValue( 1 );		// ...be sure render to texture shadows are also on
+		m_pShadowDetail->ActivateItem( 2 );
+	}
+	else if ( r_shadowrendertotexture.GetBool() )	// RTT shadows, but not shadow depth texturing
+	{
+		m_pShadowDetail->ActivateItem( 1 );
+	}
+	else	// Lowest shadow quality
+	{
+		m_pShadowDetail->ActivateItem( 0 );
+	}
+
+	m_pShaderDetail->ActivateItem( mat_reducefillrate.GetBool() ? 0 : 1 );
+
+	switch (mat_forceaniso.GetInt())
+	{
+	case 2:
+		m_pFilteringMode->ActivateItem( 2 );
+		break;
+	case 4:
+		m_pFilteringMode->ActivateItem( 3 );
+		break;
+	case 8:
+		m_pFilteringMode->ActivateItem( 4 );
+		break;
+	case 16:
+		m_pFilteringMode->ActivateItem( 5 );
+		break;
+	case 0:
+	default:
+		if (mat_trilinear.GetBool())
+		{
+			m_pFilteringMode->ActivateItem( 1 );
+		}
+		else
+		{
+			m_pFilteringMode->ActivateItem( 0 );
+		}
+		break;
+	}
+
+	// Map convar to item on AA drop-down
+	int nAASamples = mat_antialias.GetInt();
+	int nAAQuality = mat_aaquality.GetInt();
+	int nMSAAMode = FindMSAAMode( nAASamples, nAAQuality );
+	m_pAntialiasingMode->ActivateItem( nMSAAMode );
+		
+	if ( r_waterforceexpensive.GetBool() )
+	{
+		if ( r_waterforcereflectentities.GetBool() )
+		{
+			m_pWaterDetail->ActivateItem( 2 );
+		}
+		else
+		{
+			m_pWaterDetail->ActivateItem( 1 );
+		}
+	}
+	else
+	{
+		m_pWaterDetail->ActivateItem( 0 );
+	}
+
+	m_pVSync->ActivateItem( mat_vsync.GetInt() );
+
+	m_pColorCorrection->ActivateItem( mat_colorcorrection.GetInt() );
+
+	m_pMotionBlur->ActivateItem( mat_motion_blur_enabled.GetInt() );
+
+    m_pMulticore->ActivateItem(- ConVarRef("mat_queue_mode").GetInt());
+
+	// The cvar disables bloom so invert the item
+    m_pBloom->ActivateItem(!ConVarRef("mat_disable_bloom").GetInt());
+
+    m_pTonemap->ActivateItem(ConVarRef("mat_dynamic_tonemapping").GetInt());
+}
+
+void COptionsSubVideoAdvancedDlg::OnCommand(const char *command)
+{
+	if ( !stricmp(command, "OK") )
+	{
+		if ( RequiresRestart() )
+		{
+			// Bring up the confirmation dialog
+			QueryBox *box = new QueryBox("#GameUI_SettingRequiresDisconnect_Title", "#GameUI_SettingRequiresDisconnect_Info");
+			box->AddActionSignalTarget( this );
+			box->SetOKCommand(new KeyValues("OK_Confirmed"));
+			box->DoModal();
+			box->MoveToFront();
 			return;
-
-		ApplyChangesToConVar( "r_rootlod", 2 - m_pModelDetail->GetActiveItem());
-		ApplyChangesToConVar( "mat_picmip", 2 - m_pTextureDetail->GetActiveItem());
-
-		// reset everything tied to the filtering mode, then the switch sets the appropriate one
-		ApplyChangesToConVar( "mat_trilinear", false );
-		ApplyChangesToConVar( "mat_forceaniso", 1 );
-		switch (m_pFilteringMode->GetActiveItem())
-		{
-		case 0:
-			break;
-		case 1:
-			ApplyChangesToConVar( "mat_trilinear", true );
-			break;
-		case 2:
-			ApplyChangesToConVar( "mat_forceaniso", 2 );
-			break;
-		case 3:
-			ApplyChangesToConVar( "mat_forceaniso", 4 );
-			break;
-		case 4:
-			ApplyChangesToConVar( "mat_forceaniso", 8 );
-			break;
-		case 5:
-			ApplyChangesToConVar( "mat_forceaniso", 16 );
-			break;
 		}
 
-		// Set the AA convars according to the menu item chosen
-		int nActiveAAItem = m_pAntialiasingMode->GetActiveItem();
-		ApplyChangesToConVar( "mat_antialias", m_nAAModes[nActiveAAItem].m_nNumSamples );
-		ApplyChangesToConVar( "mat_aaquality", m_nAAModes[nActiveAAItem].m_nQualityLevel );
-
-		if ( m_pShadowDetail->GetActiveItem() == 0 )						// Blobby shadows
-		{
-			ApplyChangesToConVar( "r_shadowrendertotexture", 0 );			// Turn off RTT shadows
-			ApplyChangesToConVar( "r_flashlightdepthtexture", 0 );			// Turn off shadow depth textures
-		}
-		else if ( m_pShadowDetail->GetActiveItem() == 1 )					// RTT shadows only
-		{
-			ApplyChangesToConVar( "r_shadowrendertotexture", 1 );			// Turn on RTT shadows
-			ApplyChangesToConVar( "r_flashlightdepthtexture", 0 );			// Turn off shadow depth textures
-		}
-		else if ( m_pShadowDetail->GetActiveItem() == 2 )					// Shadow depth textures
-		{
-			ApplyChangesToConVar( "r_shadowrendertotexture", 1 );			// Turn on RTT shadows
-			ApplyChangesToConVar( "r_flashlightdepthtexture", 1 );			// Turn on shadow depth textures
-		}
-
-		ApplyChangesToConVar( "mat_reducefillrate", ( m_pShaderDetail->GetActiveItem() > 0 ) ? 0 : 1 );
-
-		switch ( m_pWaterDetail->GetActiveItem() )
-		{
-		default:
-		case 0:
-			ApplyChangesToConVar( "r_waterforceexpensive", false );
-			ApplyChangesToConVar( "r_waterforcereflectentities", false );
-			break;
-		case 1:
-			ApplyChangesToConVar( "r_waterforceexpensive", true );
-			ApplyChangesToConVar( "r_waterforcereflectentities", false );
-			break;
-		case 2:
-			ApplyChangesToConVar( "r_waterforceexpensive", true );
-			ApplyChangesToConVar( "r_waterforcereflectentities", true );
-			break;
-		}
-
-		ApplyChangesToConVar( "mat_vsync", m_pVSync->GetActiveItem() );	 
-
-		ApplyChangesToConVar( "mat_colorcorrection", m_pColorCorrection->GetActiveItem() );
-
-		ApplyChangesToConVar( "mat_motion_blur_enabled", m_pMotionBlur->GetActiveItem() );
-		
-        ApplyChangesToConVar("mat_queue_mode", -m_pMulticore->GetActiveItem());
-
-        m_pFOVSlider->ApplyChanges();
-
-		// The cvar disables bloom so invert the item
-		ApplyChangesToConVar( "mat_disable_bloom", !m_pBloom->GetActiveItem() );
-
-		ApplyChangesToConVar( "mat_dynamic_tonemapping", m_pTonemap->GetActiveItem() );
+		m_bUseChanges = true;
+        ApplyChanges();
+		Close();
 	}
-
-	virtual void OnResetData()
+	else
 	{
-		ConVarRef r_rootlod( "r_rootlod" );
-		ConVarRef mat_picmip( "mat_picmip" );
-		ConVarRef mat_trilinear( "mat_trilinear" );
-		ConVarRef mat_forceaniso( "mat_forceaniso" );
-		ConVarRef mat_antialias( "mat_antialias" );
-		ConVarRef mat_aaquality( "mat_aaquality" );
-		ConVarRef mat_vsync( "mat_vsync" );
-		ConVarRef r_flashlightdepthtexture( "r_flashlightdepthtexture" );
-		ConVarRef r_waterforceexpensive( "r_waterforceexpensive" );
-		ConVarRef r_waterforcereflectentities( "r_waterforcereflectentities" );
-		ConVarRef mat_reducefillrate("mat_reducefillrate" );
-		ConVarRef mat_colorcorrection( "mat_colorcorrection" );
-		ConVarRef mat_motion_blur_enabled( "mat_motion_blur_enabled" );
-		ConVarRef r_shadowrendertotexture( "r_shadowrendertotexture" );
-
-		m_pModelDetail->ActivateItem( 2 - clamp(r_rootlod.GetInt(), 0, 2) );
-		m_pTextureDetail->ActivateItem( 2 - clamp(mat_picmip.GetInt(), -1, 2) );
-
-		if ( r_flashlightdepthtexture.GetBool() )		// If we're doing flashlight shadow depth texturing...
-		{
-			r_shadowrendertotexture.SetValue( 1 );		// ...be sure render to texture shadows are also on
-			m_pShadowDetail->ActivateItem( 2 );
-		}
-		else if ( r_shadowrendertotexture.GetBool() )	// RTT shadows, but not shadow depth texturing
-		{
-			m_pShadowDetail->ActivateItem( 1 );
-		}
-		else	// Lowest shadow quality
-		{
-			m_pShadowDetail->ActivateItem( 0 );
-		}
-
-		m_pShaderDetail->ActivateItem( mat_reducefillrate.GetBool() ? 0 : 1 );
-
-		switch (mat_forceaniso.GetInt())
-		{
-		case 2:
-			m_pFilteringMode->ActivateItem( 2 );
-			break;
-		case 4:
-			m_pFilteringMode->ActivateItem( 3 );
-			break;
-		case 8:
-			m_pFilteringMode->ActivateItem( 4 );
-			break;
-		case 16:
-			m_pFilteringMode->ActivateItem( 5 );
-			break;
-		case 0:
-		default:
-			if (mat_trilinear.GetBool())
-			{
-				m_pFilteringMode->ActivateItem( 1 );
-			}
-			else
-			{
-				m_pFilteringMode->ActivateItem( 0 );
-			}
-			break;
-		}
-
-		// Map convar to item on AA drop-down
-		int nAASamples = mat_antialias.GetInt();
-		int nAAQuality = mat_aaquality.GetInt();
-		int nMSAAMode = FindMSAAMode( nAASamples, nAAQuality );
-		m_pAntialiasingMode->ActivateItem( nMSAAMode );
-		
-		if ( r_waterforceexpensive.GetBool() )
-		{
-			if ( r_waterforcereflectentities.GetBool() )
-			{
-				m_pWaterDetail->ActivateItem( 2 );
-			}
-			else
-			{
-				m_pWaterDetail->ActivateItem( 1 );
-			}
-		}
-		else
-		{
-			m_pWaterDetail->ActivateItem( 0 );
-		}
-
-		m_pVSync->ActivateItem( mat_vsync.GetInt() );
-
-		m_pColorCorrection->ActivateItem( mat_colorcorrection.GetInt() );
-
-		m_pMotionBlur->ActivateItem( mat_motion_blur_enabled.GetInt() );
-
-        m_pMulticore->ActivateItem(- ConVarRef("mat_queue_mode").GetInt());
-
-		// The cvar disables bloom so invert the item
-        m_pBloom->ActivateItem(!ConVarRef("mat_disable_bloom").GetInt());
-
-        m_pTonemap->ActivateItem(ConVarRef("mat_dynamic_tonemapping").GetInt());
+		BaseClass::OnCommand( command );
 	}
+}
 
-	virtual void OnCommand( const char *command )
+void COptionsSubVideoAdvancedDlg::OnKeyCodeTyped(KeyCode code)
+{
+	// force ourselves to be closed if the escape key it pressed
+	if (code == KEY_ESCAPE)
 	{
-		if ( !stricmp(command, "OK") )
-		{
-			if ( RequiresRestart() )
-			{
-				// Bring up the confirmation dialog
-				QueryBox *box = new QueryBox("#GameUI_SettingRequiresDisconnect_Title", "#GameUI_SettingRequiresDisconnect_Info");
-				box->AddActionSignalTarget( this );
-				box->SetOKCommand(new KeyValues("OK_Confirmed"));
-				box->DoModal();
-				box->MoveToFront();
-				return;
-			}
-
-			m_bUseChanges = true;
-            ApplyChanges();
-			Close();
-		}
-		else
-		{
-			BaseClass::OnCommand( command );
-		}
+		Close();
 	}
-
-	void OnKeyCodeTyped(KeyCode code)
+	else
 	{
-		// force ourselves to be closed if the escape key it pressed
-		if (code == KEY_ESCAPE)
-		{
-			Close();
-		}
-		else
-		{
-			BaseClass::OnKeyCodeTyped(code);
-		}
+		BaseClass::OnKeyCodeTyped(code);
 	}
+}
 
-	bool RequiresRestart()
+bool COptionsSubVideoAdvancedDlg::RequiresRestart()
 	{
 		if ( GameUI().IsInLevel() )
 		{
@@ -767,22 +747,13 @@ public:
 		return false;
 	}
 
-private:
-	bool m_bUseChanges;
-	vgui::ComboBox *m_pModelDetail, *m_pTextureDetail, *m_pAntialiasingMode, *m_pFilteringMode;
-	vgui::ComboBox *m_pShadowDetail, *m_pWaterDetail, *m_pVSync, *m_pShaderDetail;
-	vgui::ComboBox *m_pColorCorrection;
-	vgui::ComboBox *m_pMotionBlur;
+void COptionsSubVideoAdvancedDlg::OK_Confirmed()
+{
+    m_bUseChanges = true;
+    ApplyChanges();
+    Close();
+}
 
-    vgui::ComboBox *m_pMulticore;
-
-    CvarSlider *m_pFOVSlider;
-
-	int m_nNumAAModes;
-	AAMode_t m_nAAModes[16];
-
-    vgui::ComboBox *m_pTonemap, *m_pBloom;
-};
 
 //-----------------------------------------------------------------------------
 // Purpose: 

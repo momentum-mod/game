@@ -75,5 +75,56 @@ public:
 	void OnKeyCodeTyped(vgui::KeyCode code);
 };
 
+struct AAMode_t
+{
+    int m_nNumSamples;
+    int m_nQualityLevel;
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: advanced video settings dialog
+//-----------------------------------------------------------------------------
+class COptionsSubVideoAdvancedDlg : public vgui::Frame
+{
+    DECLARE_CLASS_SIMPLE(COptionsSubVideoAdvancedDlg, vgui::Frame);
+
+  public:
+    COptionsSubVideoAdvancedDlg(vgui::Panel *parent);
+
+    void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
+    virtual void OnCommand(const char *command) OVERRIDE;
+    virtual void Activate();
+    virtual void ApplyChanges();
+    virtual void OnResetData();
+
+    bool RequiresRestart();
+    void SetComboItemAsRecommended(vgui::ComboBox *combo, int iItem);
+    int FindMSAAMode(int nAASamples, int nAAQuality);
+    void MarkDefaultSettingsAsRecommended();
+    void ApplyChangesToConVar(const char *pConVarName, int value);
+
+    MESSAGE_FUNC(OnGameUIHidden, "GameUIHidden") // called when the GameUI is hidden
+    {
+        Close();
+    }
+	MESSAGE_FUNC(OK_Confirmed, "OK_Confirmed");
+
+  private: 
+    bool m_bUseChanges;
+    vgui::ComboBox *m_pModelDetail, *m_pTextureDetail, *m_pAntialiasingMode, *m_pFilteringMode;
+    vgui::ComboBox *m_pShadowDetail, *m_pWaterDetail, *m_pVSync, *m_pShaderDetail;
+    vgui::ComboBox *m_pColorCorrection;
+    vgui::ComboBox *m_pMotionBlur;
+
+    vgui::ComboBox *m_pMulticore;
+
+    vgui::CvarSlider *m_pFOVSlider;
+
+    int m_nNumAAModes;
+    AAMode_t m_nAAModes[16];
+
+    vgui::ComboBox *m_pTonemap, *m_pBloom;
+};
+
 
 #endif // OPTIONS_SUB_VIDEO_H
