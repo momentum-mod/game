@@ -18,6 +18,7 @@
 #include "vgui_controls/Frame.h"
 #include "vgui_controls/QueryBox.h"
 #include "vgui_controls/CvarSlider.h"
+#include "vgui_controls/CvarTextEntry.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
 #include "tier1/KeyValues.h"
 #include "vgui/IInput.h"
@@ -92,16 +93,17 @@ void GetResolutionName( vmode_t *mode, char *sz, int sizeofsz )
 //-----------------------------------------------------------------------------
 // Purpose: Gamma-adjust dialog
 //-----------------------------------------------------------------------------
-CGammaDialog::CGammaDialog(vgui::VPANEL hParent) : BaseClass(NULL, "OptionsSubVideoGammaDlg")
+CGammaDialog::CGammaDialog(vgui::VPANEL hParent) : BaseClass(NULL, "OptionsSubVideoGammaDlg"), m_cvarGamma("mat_monitorgamma")
 {
     // parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
     SetTitle("#GameUI_AdjustGamma_Title", true);
     SetSize(400, 260);
     SetDeleteSelfOnClose(true);
 
-    m_pGammaSlider = new CvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma");
+    m_pGammaSlider = new CvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma", false, true);
     m_pGammaLabel = new Label(this, "Gamma label", "#GameUI_Gamma");
-    m_pGammaEntry = new TextEntry(this, "GammaEntry");
+    m_pGammaEntry = new CvarTextEntry(this, "GammaEntry", "mat_monitorgamma", "%.1f");
+    m_pGammaEntry->SetAllowNumericInputOnly(true);
 
     Button *ok = new Button(this, "OKButton", "#vgui_ok");
     ok->SetCommand(new KeyValues("OK"));
@@ -111,35 +113,27 @@ CGammaDialog::CGammaDialog(vgui::VPANEL hParent) : BaseClass(NULL, "OptionsSubVi
     SetSizeable(false);
 
     m_pGammaSlider->SetTickCaptions("#GameUI_Light", "#GameUI_Dark");
-}
 
-void CGammaDialog::OnGammaChanged(Panel *panel)
-{
-    if (panel == m_pGammaSlider)
-    {
-        m_pGammaSlider->ApplyChanges();
-    }
+    m_flOriginalGamma = m_cvarGamma.GetFloat();
 }
 
 void CGammaDialog::Activate()
 {
 	BaseClass::Activate();
-	m_flOriginalGamma = m_pGammaSlider->GetValue();
-	UpdateGammaLabel();
+    m_flOriginalGamma = m_cvarGamma.GetFloat();
 }
 
 void CGammaDialog::OnOK()
 {
     // make the gamma stick
-    m_flOriginalGamma = m_pGammaSlider->GetValue();
+    m_flOriginalGamma = m_cvarGamma.GetFloat();
     Close();
 }
 
 void CGammaDialog::OnClose()
 {
 	// reset to the original gamma
-	m_pGammaSlider->SetValue( m_flOriginalGamma );
-	m_pGammaSlider->ApplyChanges();
+    m_cvarGamma.SetValue(m_flOriginalGamma);
 	BaseClass::OnClose();
 }
 
@@ -155,40 +149,6 @@ void CGammaDialog::OnKeyCodeTyped(KeyCode code)
 		BaseClass::OnKeyCodeTyped(code);
 	}
 }
-
-void CGammaDialog::OnControlModified(Panel *panel)
-{
-    // the HasBeenModified() check is so that if the value is outside of the range of the
-    // slider, it won't use the slider to determine the display value but leave the
-    // real value that we determined in the constructor
-    if (panel == m_pGammaSlider && m_pGammaSlider->HasBeenModified())
-    {
-        UpdateGammaLabel();
-    }
-}
-
-void CGammaDialog::OnTextChanged(Panel *panel)
-{
-    if (panel == m_pGammaEntry)
-    {
-        char buf[64];
-        m_pGammaEntry->GetText(buf, 64);
-
-        float fValue = (float)atof(buf);
-        if (fValue >= 1.0)
-        {
-            m_pGammaSlider->SetSliderValue(fValue);
-            PostActionSignal(new KeyValues("ApplyButtonEnable"));
-        }
-    }
-}
-
-void CGammaDialog::UpdateGammaLabel()
-	{
-		char buf[64];
-		Q_snprintf(buf, sizeof( buf ), " %.1f", m_pGammaSlider->GetSliderValue());
-		m_pGammaEntry->SetText(buf);
-	}
 
 //-----------------------------------------------------------------------------
 // Purpose: advanced video settings dialog
