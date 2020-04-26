@@ -735,7 +735,8 @@ void COptionsSubKeyboard::OnKeyCodePressed(vgui::KeyCode code)
 //-----------------------------------------------------------------------------
 // Purpose: advanced keyboard settings dialog
 //-----------------------------------------------------------------------------
-COptionsSubKeyboardAdvancedDlg::COptionsSubKeyboardAdvancedDlg(vgui::VPANEL hParent) : BaseClass(NULL, NULL)
+COptionsSubKeyboardAdvancedDlg::COptionsSubKeyboardAdvancedDlg(vgui::VPANEL hParent) : BaseClass(NULL, NULL),
+    m_cvarConEnable("con_enable"), m_cvarFastSwitch("hud_fastswitch", true)
 {
     // parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
     SetTitle("#GameUI_KeyboardAdvanced_Title", true);
@@ -753,27 +754,23 @@ void COptionsSubKeyboardAdvancedDlg::Activate()
 	input()->SetAppModalSurface(GetVPanel());
 
 	// reset the data
-	ConVarRef con_enable( "con_enable" );
-	if ( con_enable.IsValid() )
+	if ( m_cvarConEnable.IsValid() )
 	{
-		SetControlInt("ConsoleCheck", con_enable.GetInt() ? 1 : 0);
+        SetControlInt("ConsoleCheck", m_cvarConEnable.GetInt() ? 1 : 0);
 	}
 
-	ConVarRef hud_fastswitch( "hud_fastswitch", true );
-	if ( hud_fastswitch.IsValid() )
+	if ( m_cvarFastSwitch.IsValid() )
 	{
-		SetControlInt("FastSwitchCheck", hud_fastswitch.GetInt() ? 1 : 0);
+        SetControlInt("FastSwitchCheck", m_cvarFastSwitch.GetInt() ? 1 : 0);
 	}
 }
 
 void COptionsSubKeyboardAdvancedDlg::OnApplyData()
 {
 	// apply data
-	ConVarRef con_enable( "con_enable" );
-	con_enable.SetValue( GetControlInt( "ConsoleCheck", 0 ) );
+    m_cvarConEnable.SetValue(GetControlInt("ConsoleCheck", 0));
 
-	ConVarRef hud_fastswitch( "hud_fastswitch", true );
-	hud_fastswitch.SetValue( GetControlInt( "FastSwitchCheck", 0 ) );
+	m_cvarFastSwitch.SetValue(GetControlInt("FastSwitchCheck", 0));
 }
 
 void COptionsSubKeyboardAdvancedDlg::OnCommand(const char *command)

@@ -117,6 +117,9 @@ class COptionsSubKeyboardAdvancedDlg : public vgui::Frame
     virtual void OnApplyData();
     virtual void OnCommand(const char *command);
     void OnKeyCodeTyped(vgui::KeyCode code);
+
+  private:
+    ConVarRef m_cvarConEnable, m_cvarFastSwitch;
 };
 
 
