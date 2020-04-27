@@ -688,3 +688,24 @@ public:
 
     bool m_bAirborneOnly;
 };
+
+
+// CTriggerMomentumCatapult
+class CTriggerMomentumCatapult : public CBaseMomentumTrigger
+{
+  public:
+    DECLARE_CLASS(CTriggerMomentumCatapult, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+    // CTriggerMomentumCatapult();
+
+  public:
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
+
+  private:
+    float m_fPlayerSpeed;
+    int m_iUseExactVelocity;
+    int m_iExactVelocityChoiceType;
+    Vector m_vLaunchDirection;
+    EHANDLE m_hLaunchTarget;
+};

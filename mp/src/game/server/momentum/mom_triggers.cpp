@@ -11,6 +11,7 @@
 #include "mom_timer.h"
 #include "mom_modulecomms.h"
 #include "trigger_trace_enums.h"
+#include "movevars_shared.h"
 
 #include "dt_utlvector_send.h"
 
@@ -1578,3 +1579,129 @@ bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
 
     return false;
 }
+
+//-----------------------------------------------------------------------------------------------
+
+//--------- CTriggerMomentumCatapult -------------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(trigger_momentum_catapult, CTriggerMomentumCatapult);
+
+BEGIN_DATADESC(CTriggerMomentumCatapult)
+    DEFINE_KEYFIELD(m_fPlayerSpeed, FIELD_FLOAT, "playerSpeed"),
+    DEFINE_KEYFIELD(m_iUseExactVelocity, FIELD_INTEGER, "useExactVelocity"),
+    DEFINE_KEYFIELD(m_iExactVelocityChoiceType, FIELD_INTEGER, "exactVelocityChoiceType"),
+    DEFINE_KEYFIELD(m_vLaunchDirection, FIELD_VECTOR, "launchDirection"),
+    DEFINE_KEYFIELD(m_target, FIELD_STRING, "launchTarget"),
+END_DATADESC()
+
+
+void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity *pOther)
+{
+    if (pOther)
+    {
+        if (!m_hLaunchTarget.Get())
+        {
+            if (m_target != NULL_STRING)
+                m_hLaunchTarget = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
+            else
+            {
+                DevWarning("CTriggerMomentumCatapult no target found\n");
+                return;
+            }
+        }
+
+        pOther->SetGroundEntity(NULL);
+
+        Vector vecPlayerOrigin = pOther->GetAbsOrigin();
+
+        // Is there something like this to compensate for eye-height?
+        // vecPlayerOrigin.z += 50.0f;
+
+        if (m_iUseExactVelocity)
+        {
+            // Uses exact trig and gravity
+            // Pro: Has two possibly valid solutions like exact velocity case
+            // Con: Not really actually correct from testing
+
+            Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+            Vector vecAbsDifferenceXY = Vector(vecAbsDifference.x, vecAbsDifference.y, 0.0f);
+
+            float fSpeed2 = m_fPlayerSpeed * m_fPlayerSpeed;
+            float fSpeed4 = m_fPlayerSpeed * m_fPlayerSpeed * m_fPlayerSpeed * m_fPlayerSpeed;
+            float fAbsX = vecAbsDifferenceXY.Length();
+            float fAbsZ = vecAbsDifference.z;
+            float fGravity = GetCurrentGravity();
+
+            float fDiscriminant = fSpeed4 - fGravity * (fGravity * fAbsX * fAbsX + 2 * fAbsZ * fSpeed2);
+
+            // Maybe not this but some sanity check ofc
+            if (m_fPlayerSpeed < sqrtf(fGravity * (fAbsZ + vecAbsDifference.Length())))
+            {
+                DevWarning("Not enough speed to reach target.\n");
+            }
+
+            if (fDiscriminant < FLT_EPSILON)
+            {
+                DevWarning("NO SOLUTION\n");
+                return;
+            }
+
+            fDiscriminant = sqrtf(fDiscriminant);
+            float fLowAng = atan2f(fSpeed2 - fDiscriminant, fGravity * fAbsX);
+            float fHighAng = atan2f(fSpeed2 + fDiscriminant, fGravity * fAbsX);
+            float fLaunchAng = 0.0f;
+            switch (m_iExactVelocityChoiceType)
+            {
+            // Best case just uses fLowAng for now
+            case 0:
+            case 1:
+                fLaunchAng = fLowAng;
+                break;
+            case 2:
+                fLaunchAng = fHighAng;
+                break;
+            default:
+                break;
+            }
+
+            Vector fGroundDir = vecAbsDifferenceXY.Normalized();
+            Vector vecVelocity = m_fPlayerSpeed * (fGroundDir * cosf(fLaunchAng) + Vector(0, 0, 1) * sinf(fLaunchAng));
+
+            pOther->SetAbsVelocity(vecVelocity);
+
+            // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecVelocity, 255, 0, 255,
+            // 1, 5);
+        }
+        else
+        {
+            // Calculated from time ignoring grav, then compensating for gravity later ??
+            // Pro: Comes up with one solution like default case
+            // Con: Still not really right from testing
+
+            Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+            float fSpeed2 = m_fPlayerSpeed * m_fPlayerSpeed;
+            float fGravity = GetCurrentGravity();
+
+            float fDiscriminant = 4.0f * fSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
+
+            // Maybe not this but some sanity check ofc
+            if (m_fPlayerSpeed < sqrtf(fGravity * (vecAbsDifference.z + vecAbsDifference.Length())))
+            {
+                DevWarning("Not enough speed to reach target.\n");
+            }
+
+            fDiscriminant = sqrtf(fDiscriminant);
+            float fTime = 0.5f * (fDiscriminant / fSpeed2);
+
+            Vector vecLaunchVelocity = (vecAbsDifference / fTime);
+
+            Vector vecGravityComp = 0.5 * (fGravity * Vector(0, 0, -1)) * fTime;
+            vecLaunchVelocity -= vecGravityComp;
+
+            pOther->SetAbsVelocity(vecLaunchVelocity);
+            // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecLaunchVelocity, 0, 0,
+            // 255, 1, 5);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------------------------
