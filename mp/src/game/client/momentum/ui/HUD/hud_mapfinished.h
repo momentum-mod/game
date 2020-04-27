@@ -31,6 +31,8 @@ public:
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
     void SetCurrentPage(int pageNum);
+    void LoadPlayerBestTime();
+    void GetDiffString(float diff, char *compareString, Color *compareColorOut);
 
     void SetRunSaved(bool bState);
     void SetRunUploaded(bool bState);
@@ -85,9 +87,17 @@ private:
     vgui::Label *m_pRunSaveStatus;
     vgui::Label *m_pRunUploadStatus;
     vgui::Label *m_pXPGainCosmetic, *m_pXPGainRank, *m_pLevelGain;
+    vgui::Label *m_pComparisonLabel;
+
+    Color m_cGain, m_cLoss;
 
     CMomRunStats* m_pRunStats;
+    CMomRunStats* m_pPbRunStats;
     C_MomRunEntityData *m_pRunData;
+
+    float m_flPbOverallTime;
+    float m_flOverallDiff;
+    bool m_bPbNeedUpdate;
 
     bool m_bIsGhost;
     bool m_bCanClose;
