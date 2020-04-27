@@ -487,4 +487,27 @@
         "auto_wide_tocontents" "0"
         "auto_tall_tocontents" "1"
     }
+    
+    "ComparisonLabel"
+    {
+        "ControlName" "Label"
+        "fieldName"  "ComparisonLabel"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
+        "wide"          "100"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "1"
+        "visible"       "1"
+        "enabled"       "1"
+        "textAlignment" "west"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "pin_to_sibling" "Zone_Overall_Time"
+        "pin_corner_to_sibling" "0"
+        "pin_to_sibling_corner" "1"
+        "auto_wide_tocontents" "1"
+        "UnpinnedCornerOffsetX" "3"
+    }
 }
