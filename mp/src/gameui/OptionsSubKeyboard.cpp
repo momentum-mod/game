@@ -27,6 +27,7 @@
 #include "vstdlib/IKeyValuesSystem.h"
 #include "tier2/tier2.h"
 #include "inputsystem/iinputsystem.h"
+#include "fmtstr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -39,13 +40,10 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 COptionsSubKeyboard::COptionsSubKeyboard(vgui::Panel *parent) : PropertyPage(parent, "OptionsSubKeyboard" )
 {
-	memset( m_Bindings, 0, sizeof( m_Bindings ));
     SetSize(0, 2);
 
-	// create the key bindings list
-	CreateKeyBindingList();
-	// Store all current key bindings
-	SaveCurrentBindings();
+    // create the key bindings list
+    m_pKeyBindList = new VControlsListPanel(this, "listpanel_keybindlist");
 	// Parse default descriptions
 	ParseActionDescriptions();
 	
@@ -57,14 +55,6 @@ COptionsSubKeyboard::COptionsSubKeyboard(vgui::Panel *parent) : PropertyPage(par
 	m_pSetBindingButton->SetEnabled(false);
 	m_pClearBindingButton->SetEnabled(false);
 	SetPaintBackgroundEnabled( false );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-COptionsSubKeyboard::~COptionsSubKeyboard()
-{
-	DeleteSavedBindings();
 }
 
 //-----------------------------------------------------------------------------
@@ -85,16 +75,8 @@ void COptionsSubKeyboard::OnResetData()
 //-----------------------------------------------------------------------------
 void COptionsSubKeyboard::OnApplyChanges()
 {
-	ApplyAllBindings();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Create key bindings list control
-//-----------------------------------------------------------------------------
-void COptionsSubKeyboard::CreateKeyBindingList()
-{
-	// Create the control
-	m_pKeyBindList = new VControlsListPanel(this, "listpanel_keybindlist");
+    // Now exec their custom bindings
+    engine->ClientCmd_Unrestricted("exec userconfig.cfg\nhost_writeconfig\n");
 }
 
 //-----------------------------------------------------------------------------
@@ -150,34 +132,6 @@ void COptionsSubKeyboard::OnCommand( const char *command )
 	}
 }
 
-const char *UTIL_Parse( const char *data, char *token, int sizeofToken )
-{
-	data = engine->ParseFile( data, token, sizeofToken );
-	return data;
-}
-static char *UTIL_CopyString( const char *in )
-{
-	int len = strlen( in ) + 1;
-	char *out = new char[ len ];
-	Q_strncpy( out, in, len );
-	return out;
-}
-
-char *UTIL_va(char *format, ...)
-{
-	va_list		argptr;
-	static char	string[4][1024];
-	static int	curstring = 0;
-	
-	curstring = ( curstring + 1 ) % 4;
-
-	va_start (argptr, format);
-	Q_vsnprintf( string[curstring], 1024, format, argptr );
-	va_end (argptr);
-
-	return string[curstring];  
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -199,14 +153,14 @@ void COptionsSubKeyboard::ParseActionDescriptions( void )
 	char token[512];
 	while ( 1 )
 	{
-		data = UTIL_Parse( data, token, sizeof(token) );
+        data = engine->ParseFile(data, token, sizeof(token));
 		// Done.
 		if ( strlen( token ) <= 0 )  
 			break;
 
 		Q_strncpy( szBinding, token, sizeof( szBinding ) );
 
-		data = UTIL_Parse( data, token, sizeof(token) );
+		data = engine->ParseFile(data, token, sizeof(token));
 		if ( strlen(token) <= 0 )
 		{
 			break;
@@ -308,6 +262,7 @@ void COptionsSubKeyboard::AddBinding( KeyValues *item, const char *keyname )
 		if (!stricmp(curbinding, binding))
 		{
 			curitem->SetString( "Key", keyname );
+            BindKey(keyname, binding);
 			m_pKeyBindList->InvalidateItem(i);
 		}
 	}
@@ -358,7 +313,8 @@ void COptionsSubKeyboard::RemoveKeyFromBindItems( KeyValues *org_item, const cha
 			continue;
 
 		// If it's bound to the primary: then remove it
-		if ( !stricmp( pszKey, item->GetString( "Key", "" ) ) )
+        const char *curKey = item->GetString("Key", "");
+		if ( !stricmp( pszKey,  curKey ) )
 		{
 			bool bClearEntry = true;
 
@@ -376,7 +332,8 @@ void COptionsSubKeyboard::RemoveKeyFromBindItems( KeyValues *org_item, const cha
 			}
 
 			if ( bClearEntry )
-			{
+            {
+                UnbindKey(key);
 				item->SetString( "Key", "" );
 				m_pKeyBindList->InvalidateItem(i);
 			}
@@ -394,10 +351,6 @@ void COptionsSubKeyboard::RemoveKeyFromBindItems( KeyValues *org_item, const cha
 //-----------------------------------------------------------------------------
 void COptionsSubKeyboard::FillInCurrentBindings( void )
 {
-	// reset the unbind list
-	// we only unbind keys used by the normal config items (not custom binds)
-	m_KeysToUnbind.RemoveAll();
-
 	// Clear any current settings
 	ClearBindItems();
 
@@ -415,55 +368,8 @@ void COptionsSubKeyboard::FillInCurrentBindings( void )
 		if ( item )
 		{
 			// Bind it by name
-			const char *keyName = g_pInputSystem->ButtonCodeToString( bc );
-
-			// Already in list, means user had two keys bound to this item.  We'll only note the first one we encounter
-			char const *currentKey = item->GetString( "Key", "" );
-			if ( currentKey && currentKey[ 0 ] )
-			{
-				ButtonCode_t currentBC = (ButtonCode_t)gameuifuncs->GetButtonCodeForBind( currentKey );
-
-				// Remove the key we're about to override from the unbinding list
-				m_KeysToUnbind.FindAndRemove( currentBC );
-			}
-
-			AddBinding( item, keyName );
-
-			// remember to apply unbinding of this key when we apply
-			m_KeysToUnbind.AddToTail( keyName );
+            AddBinding(item, g_pInputSystem->ButtonCodeToString(bc));
 		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Clean up memory used by saved bindings
-//-----------------------------------------------------------------------------
-void COptionsSubKeyboard::DeleteSavedBindings( void )
-{
-	for ( int i = 0; i < BUTTON_CODE_LAST; i++ )
-	{
-		if ( m_Bindings[ i ].binding )
-		{
-			delete[] m_Bindings[ i ].binding;
-			m_Bindings[ i ].binding = NULL;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Copy all bindings into save array
-//-----------------------------------------------------------------------------
-void COptionsSubKeyboard::SaveCurrentBindings( void )
-{
-    DeleteSavedBindings();
-	for (int i = 0; i < BUTTON_CODE_LAST; i++)
-	{
-		const char *binding = gameuifuncs->GetBindingForButtonCode( (ButtonCode_t)i );
-		if ( !binding || !binding[0])
-			continue;
-
-		// Copy the binding string
-		m_Bindings[ i ].binding = UTIL_CopyString( binding );
 	}
 }
 
@@ -472,7 +378,7 @@ void COptionsSubKeyboard::SaveCurrentBindings( void )
 //-----------------------------------------------------------------------------
 void COptionsSubKeyboard::BindKey( const char *key, const char *binding )
 {
-    engine->ClientCmd_Unrestricted(UTIL_va("bind \"%s\" \"%s\"\n", key, binding));
+    engine->ClientCmd_Unrestricted(CFmtStr("bind \"%s\" \"%s\"\n", key, binding));
 }
 
 //-----------------------------------------------------------------------------
@@ -480,53 +386,7 @@ void COptionsSubKeyboard::BindKey( const char *key, const char *binding )
 //-----------------------------------------------------------------------------
 void COptionsSubKeyboard::UnbindKey( const char *key )
 {
-    engine->ClientCmd_Unrestricted(UTIL_va("unbind \"%s\"\n", key));
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Go through list and bind specified keys to actions
-//-----------------------------------------------------------------------------
-void COptionsSubKeyboard::ApplyAllBindings( void )
-{
-	// unbind everything that the user unbound
-	for (int i = 0; i < m_KeysToUnbind.Count(); i++)
-	{
-        UnbindKey(m_KeysToUnbind[i].String());
-	}
-	m_KeysToUnbind.RemoveAll();
-
-	// free binding memory
-    DeleteSavedBindings();
-
-	for (int i = 0; i < m_pKeyBindList->GetItemCount(); i++)
-	{
-		KeyValues *item = m_pKeyBindList->GetItemData(m_pKeyBindList->GetItemIDFromRow(i));
-		if ( !item )
-			continue;
-
-		// See if it has a binding
-		const char *binding = item->GetString( "Binding", "" );
-		if ( !binding || !binding[ 0 ] )
-			continue;
-
-		const char *keyname;
-		
-		// Check main binding
-		keyname = item->GetString( "Key", "" );
-		if ( keyname && keyname[ 0 ] )
-		{
-            // Tell the engine
-            BindKey(keyname, binding);
-            ButtonCode_t code = g_pInputSystem->StringToButtonCode(keyname);
-            if (code != BUTTON_CODE_INVALID)
-            {
-                m_Bindings[code].binding = UTIL_CopyString(binding);
-            }
-		}
-	}
-
-	// Now exec their custom bindings
-	engine->ClientCmd_Unrestricted( "exec userconfig.cfg\nhost_writeconfig\n" );
+    engine->ClientCmd_Unrestricted(CFmtStr("unbind \"%s\"\n", key));
 }
 
 //-----------------------------------------------------------------------------
@@ -559,7 +419,7 @@ void COptionsSubKeyboard::FillInDefaultBindings( void )
 	while ( data != NULL )
 	{
         char cmd[64];
-        data = UTIL_Parse(data, cmd, sizeof(cmd));
+        data = engine->ParseFile(data, cmd, sizeof(cmd));
         if (strlen(cmd) <= 0)
             break;
 
@@ -567,12 +427,12 @@ void COptionsSubKeyboard::FillInDefaultBindings( void )
         {
             // Key name
             char szKeyName[256];
-            data = UTIL_Parse(data, szKeyName, sizeof(szKeyName));
+            data = engine->ParseFile(data, szKeyName, sizeof(szKeyName));
             if (strlen(szKeyName) <= 0)
                 break; // Error
 
             char szBinding[256];
-            data = UTIL_Parse(data, szBinding, sizeof(szBinding));
+            data = engine->ParseFile(data, szBinding, sizeof(szBinding));
             if (strlen(szKeyName) <= 0)
                 break; // Error
 
