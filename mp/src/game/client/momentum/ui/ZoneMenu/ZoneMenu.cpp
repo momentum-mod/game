@@ -67,8 +67,8 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pZoneTypeCombo->ActivateItemByRow(0);
 
     m_pGridSizeLabel = new Label(this, "GridSizeLabel", "");
-    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider");
-    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid");
+    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "", 0.0f, 1.0f, "mom_zone_grid", false, true, true);
+    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid", "%.0f");
     m_pGridSizeTextEntry->SetAllowNumericInputOnly(true);
     m_bUpdateGridSizeSlider = false;
 
@@ -197,44 +197,9 @@ void C_MomZoneMenu::OnClose()
     BaseClass::OnClose();
 }
 
-void C_MomZoneMenu::OnControlModified(Panel *pPanel)
-{
-    if (pPanel == m_pGridSizeSlider)
-    {
-        // Don't retrigger the cvar change if it was already updated by textentry
-        if (!m_bUpdateGridSizeSlider)
-        {
-            m_bUpdateGridSizeSlider = true;
-            return;
-        }
-
-        // Round val to whole number, because no one wants to align to 6.1238765426
-        float flVal = roundf(m_pGridSizeSlider->GetSliderValue());
-        m_pGridSizeSlider->SetSliderValue(flVal);
-        m_pGridSizeSlider->ApplyChanges();
-        // update textentry control
-        char szVal[32];
-        Q_snprintf(szVal, sizeof(szVal), "%.0f", flVal);
-        m_pGridSizeTextEntry->SetText(szVal);
-    }
-    else if (pPanel == m_pToggleZoneEdit)
-        m_pToggleZoneEdit->ApplyChanges();
-    else if (pPanel == m_pToggleUsePointMethod)
-        m_pToggleUsePointMethod->ApplyChanges();
-}
-
 void C_MomZoneMenu::OnTextChanged(Panel *pPanel)
 {
-    if (pPanel == m_pGridSizeTextEntry)
-    {
-        m_bUpdateGridSizeSlider = false;
-        m_pGridSizeTextEntry->ApplyChanges();
-    }
-    else if (pPanel == m_pTrackNumberEntry)
-        m_pTrackNumberEntry->ApplyChanges();
-    else if (pPanel == m_pZoneNumberEntry)
-        m_pZoneNumberEntry->ApplyChanges();
-    else if (pPanel == m_pZoneTypeCombo)
+    if (pPanel == m_pZoneTypeCombo)
     {
         static ConVarRef mom_zone_type("mom_zone_type");
 

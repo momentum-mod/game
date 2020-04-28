@@ -9,7 +9,6 @@ class C_MomZoneMenu : public vgui::Frame
   public: // vgui::Frame
     C_MomZoneMenu();
 
-    MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
     MESSAGE_FUNC_PTR_INT(OnButtonChecked, "CheckButtonChecked", panel, state);
 
