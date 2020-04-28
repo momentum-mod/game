@@ -117,15 +117,12 @@ void COptionsSubAudio::ResetSpokenLanguage()
     // Fallback to current engine language
     engine->GetUILanguage(szCurrentLanguage, sizeof(szCurrentLanguage));
 
-    // In a Steam environment we get the current language
-#if !defined(NO_STEAM)
     // When Steam isn't running we can't get the language info...
     if (SteamApps())
     {
         Q_strncpy(szCurrentLanguage, SteamApps()->GetCurrentGameLanguage(), sizeof(szCurrentLanguage));
         Q_strncpy(szAvailableLanguages, SteamApps()->GetAvailableGameLanguages(), sizeof(szAvailableLanguages));
     }
-#endif
 
     // Get the spoken language and store it for comparison purposes
     m_nCurrentAudioLanguage = PchLanguageToELanguage(szCurrentLanguage);
@@ -151,15 +148,13 @@ void COptionsSubAudio::ResetSpokenLanguage()
     }
 
     // Activate the current language in the combo
+    for (int itemID = 0; itemID < m_pSpokenLanguageCombo->GetItemCount(); itemID++)
     {
-        for (int itemID = 0; itemID < m_pSpokenLanguageCombo->GetItemCount(); itemID++)
+        KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData(itemID);
+        if (kv && kv->GetInt("language") == m_nCurrentAudioLanguage)
         {
-            KeyValues *kv = m_pSpokenLanguageCombo->GetItemUserData(itemID);
-            if (kv && kv->GetInt("language") == m_nCurrentAudioLanguage)
-            {
-                m_pSpokenLanguageCombo->ActivateItem(itemID);
-                break;
-            }
+            m_pSpokenLanguageCombo->ActivateItem(itemID);
+            break;
         }
     }
 }
@@ -167,7 +162,7 @@ void COptionsSubAudio::ResetSpokenLanguage()
 void COptionsSubAudio::ResetSoundQuality()
 {
     int quality = SOUNDQUALITY_LOW;
-    if (m_cvarDSPSlowCPU.GetBool() == false)
+    if (!m_cvarDSPSlowCPU.GetBool())
     {
         quality = SOUNDQUALITY_MEDIUM;
     }
@@ -176,14 +171,12 @@ void COptionsSubAudio::ResetSoundQuality()
         quality = SOUNDQUALITY_HIGH;
     }
     // find the item in the list and activate it
+    for (int itemID = 0; itemID < m_pSoundQualityCombo->GetItemCount(); itemID++)
     {
-        for (int itemID = 0; itemID < m_pSoundQualityCombo->GetItemCount(); itemID++)
+        KeyValues *kv = m_pSoundQualityCombo->GetItemUserData(itemID);
+        if (kv && kv->GetInt("quality") == quality)
         {
-            KeyValues *kv = m_pSoundQualityCombo->GetItemUserData(itemID);
-            if (kv && kv->GetInt("quality") == quality)
-            {
-                m_pSoundQualityCombo->ActivateItem(itemID);
-            }
+            m_pSoundQualityCombo->ActivateItem(itemID);
         }
     }
 }
@@ -191,14 +184,12 @@ void COptionsSubAudio::ResetSoundQuality()
 void COptionsSubAudio::ResetSpeakerSetup()
 {
     int speakers = m_cvarSndSurroundSpeakers.GetInt();
+    for (int itemID = 0; itemID < m_pSpeakerSetupCombo->GetItemCount(); itemID++)
     {
-        for (int itemID = 0; itemID < m_pSpeakerSetupCombo->GetItemCount(); itemID++)
+        KeyValues *kv = m_pSpeakerSetupCombo->GetItemUserData(itemID);
+        if (kv && kv->GetInt("speakers") == speakers)
         {
-            KeyValues *kv = m_pSpeakerSetupCombo->GetItemUserData(itemID);
-            if (kv && kv->GetInt("speakers") == speakers)
-            {
-                m_pSpeakerSetupCombo->ActivateItem(itemID);
-            }
+            m_pSpeakerSetupCombo->ActivateItem(itemID);
         }
     }
 }
@@ -286,7 +277,12 @@ void COptionsSubAudio::ApplySpokenLanguage()
 
 void COptionsSubAudio::ApplySoundQuality()
 {
-    switch (m_pSoundQualityCombo->GetActiveItemUserData()->GetInt("quality"))
+    KeyValues *qualityKv = m_pSoundQualityCombo->GetActiveItemUserData();
+
+    if (!qualityKv)
+        return;
+
+    switch (qualityKv->GetInt("quality"))
     {
     case SOUNDQUALITY_LOW:
         m_cvarDSPSlowCPU.SetValue(true);
@@ -296,12 +292,12 @@ void COptionsSubAudio::ApplySoundQuality()
         m_cvarDSPSlowCPU.SetValue(false);
         m_cvarSndPitchQuality.SetValue(false);
         break;
-    default:
-        Assert("Undefined sound quality setting.");
     case SOUNDQUALITY_HIGH:
         m_cvarDSPSlowCPU.SetValue(false);
         m_cvarSndPitchQuality.SetValue(true);
         break;
+    default:
+        Assert("Undefined sound quality setting.");
     };
 
     ApplyEnhanceStereo();
@@ -309,16 +305,25 @@ void COptionsSubAudio::ApplySoundQuality()
 
 void COptionsSubAudio::ApplySpeakerSetup()
 {
-    m_cvarSndSurroundSpeakers.SetValue(m_pSpeakerSetupCombo->GetActiveItemUserData()->GetInt("speakers"));
-    ApplyEnhanceStereo();
+    KeyValues *speakersKv = m_pSpeakerSetupCombo->GetActiveItemUserData();
+
+    if (speakersKv)
+    {
+        m_cvarSndSurroundSpeakers.SetValue(speakersKv->GetInt("speakers"));
+        ApplyEnhanceStereo();
+    }
 }
 
 void COptionsSubAudio::ApplyEnhanceStereo()
 {
-    int speakers = m_pSpeakerSetupCombo->GetActiveItemUserData()->GetInt("speakers");
-    int quality = m_pSoundQualityCombo->GetActiveItemUserData()->GetInt("quality");
+    KeyValues *speakersKv = m_pSpeakerSetupCombo->GetActiveItemUserData();
+    KeyValues *qualityKv = m_pSoundQualityCombo->GetActiveItemUserData();
+
+    if (!speakersKv || !qualityKv)
+        return;
+
     // headphones at high quality get enhanced stereo turned on
-    if (speakers == 0 && quality == SOUNDQUALITY_HIGH)
+    if (speakersKv->GetInt("speakers") == 0 && qualityKv->GetInt("quality") == SOUNDQUALITY_HIGH)
     {
         m_cvarDSPEnhanceStereo.SetValue(1);
     }
