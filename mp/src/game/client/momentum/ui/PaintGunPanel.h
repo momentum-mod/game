@@ -23,20 +23,12 @@ class PaintGunPanel : public EditablePanel, public CGameEventListener
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
-    void SetLabelText() const;
-
     // From the color picker
     MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
 
-    // When the slider changes, we want to update the text panel
-    MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
-
-    // When the text entry updates, we want to update the slider
-    MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
-
     ColorPicker *m_pColorPicker;
     CvarSlider *m_pSliderScale;
-    TextEntry *m_pTextSliderScale;
+    CvarTextEntry *m_pTextSliderScale;
     Label *m_pLabelSliderScale;
     Label *m_pLabelColorButton;
     CvarToggleCheckButton *m_pToggleViewmodel, *m_pToggleSound;

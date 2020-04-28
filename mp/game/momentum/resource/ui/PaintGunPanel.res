@@ -65,7 +65,7 @@
     }
     "TextSliderScale"
     {
-        "ControlName"	"TextEntry"
+        "ControlName"	"CvarTextEntry"
         "fieldName"		"TextSliderScale"
         "xpos"		"0"
         "ypos"		"0"
@@ -79,6 +79,7 @@
         "textHidden"		"0"
         "editable"		"1"
         "maxchars"		"-1"
+        "cvar_name" "mom_paintgun_scale"
         "NumericInputOnly"		"1"
         "unicode"		"0"
         "mouseinputenabled" "1"
