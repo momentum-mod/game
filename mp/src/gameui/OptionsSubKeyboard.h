@@ -40,32 +40,22 @@ public:
 	VControlsListPanel* GetControlsList( void ) { return m_pKeyBindList; }
 
 private:
-	void Finish( ButtonCode_t code );
+    void Finish( ButtonCode_t code );
 
-	virtual void	OnCommand( const char *command );
-
-	// Tell engine to bind/unbind a key
-	void			BindKey( const char *key, const char *binding );
-	void			UnbindKey( const char *key );
+    virtual void OnCommand( const char *command );
 
 	// Get column 0 action descriptions for all keys
-	void			ParseActionDescriptions( void );
+    void ParseActionDescriptions( void );
 
-	// Populate list of actions with current engine keybindings
-	void			FillInCurrentBindings( void );
-	// Remove all current bindings from list of bindings
-	void			ClearBindItems( void );
-	// Fill in bindings with mod-specified defaults
-	void			FillInDefaultBindings( void );
+    void BindKey(const char *key, const char *binding);
+    void UnbindKey(const char *key);
+    void FillInCurrentBindings( void );
+    void ClearBindItems( void );
+    void FillInDefaultBindings( void );
+    void AddBinding( KeyValues *item, const char *keyname );
+    void RemoveKeyFromBindItems( KeyValues *org_item, const char *key );
 
-	// Bind a key to the item
-	void			AddBinding( KeyValues *item, const char *keyname );
-
-	// Remove all instances of a key from all bindings
-	void			RemoveKeyFromBindItems( KeyValues *org_item, const char *key );
-
-	// Find item by binding name
-	KeyValues *GetItemForBinding( const char *binding );
+    KeyValues *GetItemForBinding( const char *binding );
 
 private:
 	void OpenKeyboardAdvancedDialog();

@@ -109,7 +109,6 @@ void COptionsSubKeyboard::OnCommand( const char *command )
 	}
 	else if ( !stricmp(command, "DefaultsOK"))
 	{
-		// Restore defaults from default keybindings file
 		FillInDefaultBindings();
 		m_pKeyBindList->RequestFocus();
 	}
@@ -191,12 +190,10 @@ void COptionsSubKeyboard::ParseActionDescriptions( void )
 				// Create a new: blank item
 				item = new KeyValues( "Item" );
 				
-				// fill in data
 				item->SetString("Action", szDescription);
 				item->SetString("Binding", szBinding);
 				item->SetString("Key", "");
 
-				// Add to list
 				m_pKeyBindList->AddItem(sectionIndex, item);
 				item->deleteThis();
 			}
@@ -280,7 +277,6 @@ void COptionsSubKeyboard::ClearBindItems( void )
 		if ( !item )
 			continue;
 
-		// Reset keys
 		item->SetString( "Key", "" );
 
 		m_pKeyBindList->InvalidateItem(i);
@@ -399,7 +395,6 @@ void COptionsSubKeyboard::FillInDefaultBindings( void )
 	if (fh == FILESYSTEM_INVALID_HANDLE)
 		return;
 
-	// L4D: also unbind other keys
 	engine->ClientCmd_Unrestricted( "unbindall\n" );
 
 	int size = g_pFullFileSystem->Size(fh) + 1;
@@ -410,12 +405,11 @@ void COptionsSubKeyboard::FillInDefaultBindings( void )
 	// NULL terminate!
 	((char*)buf.Base())[ size - 1 ] = '\0';
 
-	// Clear out all current bindings
 	ClearBindItems();
 
 	const char *data = (const char*)buf.Base();
 
-	// loop through all the binding
+	// loop through all the bindings
 	while ( data != NULL )
 	{
         char cmd[64];
@@ -425,22 +419,19 @@ void COptionsSubKeyboard::FillInDefaultBindings( void )
 
         if (!stricmp(cmd, "bind"))
         {
-            // Key name
             char szKeyName[256];
             data = engine->ParseFile(data, szKeyName, sizeof(szKeyName));
             if (strlen(szKeyName) <= 0)
-                break; // Error
+                break; 
 
             char szBinding[256];
             data = engine->ParseFile(data, szBinding, sizeof(szBinding));
             if (strlen(szKeyName) <= 0)
-                break; // Error
+                break; 
 
-            // Find item
             KeyValues *item = GetItemForBinding(szBinding);
             if (item)
             {
-                // Bind it
                 AddBinding(item, szKeyName);
             }
         }
@@ -452,13 +443,11 @@ void COptionsSubKeyboard::FillInDefaultBindings( void )
     KeyValues *item = GetItemForBinding( "toggleconsole" );
     if ( item )
     {
-        // Bind it
         AddBinding( item, "`" );
     }
     item = GetItemForBinding( "cancelselect" );
     if ( item )
     {
-        // Bind it
         AddBinding( item, "ESCAPE" );
     }
 }
@@ -537,8 +526,6 @@ void COptionsSubKeyboard::Finish( ButtonCode_t code )
 void COptionsSubKeyboard::OnThink()
 {
 	BaseClass::OnThink();
-
-	//m_pKeyBindList->GetScrollBar()->UseImages( "scroll_up", "scroll_down", "scroll_line", "scroll_box" );
 
 	if ( m_pKeyBindList->IsCapturing() )
 	{
@@ -627,7 +614,6 @@ void COptionsSubKeyboardAdvancedDlg::Activate()
 
 void COptionsSubKeyboardAdvancedDlg::OnApplyData()
 {
-	// apply data
     m_cvarConEnable.SetValue(GetControlInt("ConsoleCheck", 0));
 
 	m_cvarFastSwitch.SetValue(GetControlInt("FastSwitchCheck", 0));
@@ -637,7 +623,6 @@ void COptionsSubKeyboardAdvancedDlg::OnCommand(const char *command)
 {
 	if ( !stricmp(command, "OK") )
 	{
-		// apply the data
 		OnApplyData();
 		Close();
 	}
@@ -649,7 +634,6 @@ void COptionsSubKeyboardAdvancedDlg::OnCommand(const char *command)
 
 void COptionsSubKeyboardAdvancedDlg::OnKeyCodeTyped(KeyCode code)
 {
-	// force ourselves to be closed if the escape key it pressed
 	if (code == KEY_ESCAPE)
 	{
 		Close();
