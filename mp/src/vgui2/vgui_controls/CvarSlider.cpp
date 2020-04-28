@@ -26,7 +26,7 @@ DECLARE_BUILD_FACTORY(CvarSlider);
 CvarSlider::CvarSlider(Panel *parent, const char *name) : Slider(parent, name), m_cvar("", true)
 {
     InitSettings();
-    SetupSlider(0.0f, 1.0f, "", false, false);
+    SetupSlider(0.0f, 1.0f, "", false, false, false);
     m_bCreatedInCode = false;
 
     AddActionSignalTarget(this);
@@ -36,13 +36,13 @@ CvarSlider::CvarSlider(Panel *parent, const char *name) : Slider(parent, name), 
 // Purpose:
 //-----------------------------------------------------------------------------
 CvarSlider::CvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
-                         char const *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges)
+                         char const *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges, bool bOnlyIntegers)
     : Slider(parent, panelName), m_cvar(cvarname)
 {
     InitSettings();
     AddActionSignalTarget(this);
 
-    SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges);
+    SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges, bOnlyIntegers);
 
     // For backwards compatability. Ignore .res file settings for forced setup sliders.
     m_bCreatedInCode = true;
@@ -51,10 +51,11 @@ CvarSlider::CvarSlider(Panel *parent, const char *panelName, char const *caption
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CvarSlider::SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges)
+void CvarSlider::SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges, bool bOnlyIntegers)
 {
     m_flMinValue = minValue;
     m_flMaxValue = maxValue;
+    m_bOnlyIntegers = bOnlyIntegers;
 
     // scale by CVARSLIDER_SCALE_FACTOR
     SetRange(static_cast<int>(CVARSLIDER_SCALE_FACTOR * minValue), static_cast<int>(CVARSLIDER_SCALE_FACTOR * maxValue));
@@ -95,9 +96,10 @@ void CvarSlider::ApplySettings(KeyValues *inResourceData)
     const char *cvarname = inResourceData->GetString("cvar_name");
     bool bAllowOutOfRange = inResourceData->GetBool("allowoutofrange");
     bool bAutoApplyChanges = inResourceData->GetBool("autoapply", false);
+    bool bOnlyIntegers = inResourceData->GetBool("onlyintegers", false);
 
     if (!m_bCreatedInCode)
-        SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges);
+        SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges, bOnlyIntegers);
 
     if (GetParent())
     {
@@ -124,6 +126,7 @@ void CvarSlider::GetSettings(KeyValues *outResourceData)
     outResourceData->SetFloat("maxvalue", m_flMaxValue);
     outResourceData->SetString("cvar_name", m_szCvarName);
     outResourceData->SetBool("allowoutofrange", m_bAllowOutOfRange);
+    outResourceData->SetBool("onlyintegers", m_bOnlyIntegers);
 }
 
 void CvarSlider::SetCVarName(char const *cvarname)
@@ -198,7 +201,7 @@ void CvarSlider::ApplyChanges()
             m_fStartValue = static_cast<float>(m_iStartValue) / CVARSLIDER_SCALE_FACTOR;
         }
 
-        m_cvar.SetValue(m_fStartValue);
+        m_cvar.SetValue(m_bOnlyIntegers ? RoundFloatToInt(m_fStartValue) : m_fStartValue);
     }
 }
 
@@ -308,6 +311,7 @@ void CvarSlider::InitSettings()
     {"cvar_name", TYPE_STRING},
     {"minvalue", TYPE_FLOAT},
     {"maxvalue", TYPE_FLOAT},
-    {"allowoutofrange", TYPE_BOOL}
+    {"allowoutofrange", TYPE_BOOL},
+    {"onlyintegers", TYPE_BOOL}
     END_PANEL_SETTINGS();
 }
