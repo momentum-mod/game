@@ -697,15 +697,29 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerMomentumCatapult, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
-    // CTriggerMomentumCatapult();
+    CTriggerMomentumCatapult();
 
   public:
     void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void Spawn() OVERRIDE;
 
   private:
-    float m_fPlayerSpeed;
+    Vector CalculateLaunchVelocity(CBaseEntity *);
+    Vector CalculateLaunchVelocityExact(CBaseEntity *);
+    void LaunchAtDirection(CBaseEntity *);
+    void LaunchAtTarget(CBaseEntity *);
+
+  private:
+    float m_flPlayerSpeed;
     int m_iUseExactVelocity;
     int m_iExactVelocityChoiceType;
-    Vector m_vLaunchDirection;
+    QAngle m_vLaunchDirection;
     EHANDLE m_hLaunchTarget;
+    bool m_bUseLaunchTarget;
+    bool m_bUseThresholdCheck;
+    float m_flLowerThreshold;
+    float m_flUpperThreshold;
+    bool m_bOnlyCheckVelocity;
+    float m_flEntryAngleTolerance;
+    COutputEvent m_OnCatapulted;
 };
