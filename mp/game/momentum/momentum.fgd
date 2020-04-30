@@ -345,12 +345,12 @@
     author(string) : "Map Author" : "" : "The map's original author(s)."
 ]
 
-@SolidClass base(Trigger) = trigger_catapult : "Catapult the player in a given diretion at a given velocity."
+@SolidClass base(Trigger) = trigger_momentum_catapult : "Catapult the player in a given diretion at a given velocity."
 [
 	playerSpeed(float) : "Player Speed" : 450 : "Speed at which to launch the players (u/sec)"
 	//physicsSpeed(float) : "Physics Object Speed" : 450 : "Speed at which to launch physics objects (u/sec)"
-	//useThresholdCheck(integer) : "Use Threshold Check" : 0
-	//entryAngleTolerance(float) : "Entry Angle Tolerance" : "0.0" : "Flung object's velocity must be pointing this much at the target. Specify a value between [-1...1] 1 means exactly, 0 means within 180 degrees -1 means any angle is accepted. This is only used if Use Threshold Check is set to yes."
+	useThresholdCheck(integer) : "Use Threshold Check" : 0
+	entryAngleTolerance(float) : "Entry Angle Tolerance" : "0.0" : "Flung object's velocity must be pointing this much at the target. Specify a value between [-1...1] 1 means exactly, 0 means within 180 degrees -1 means any angle is accepted. This is only used if Use Threshold Check is set to yes."
 	useExactVelocity(integer) : "Use Exact Velocity" : 0 : "Try to fling exactly at the speed specified - this prevents the added upward velocity from a launch target."
 	exactVelocityChoiceType(choices) : "Exact Solution Method" : 0 :
 	"Using exact velocity generates two correct solutions. Use this to force which one you choose." =
@@ -359,11 +359,11 @@
 		1 : "Solution One"
 		2 : "Solution Two"
 	]
-	//lowerThreshold(float) : "Lower Threshold" : "0.15" : "Flung object must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .15) This is only used if Use Threshold Check is set to yes."
-	//upperThreshold(float) : "Upper Threshold" : "0.30" : "Flung object must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .30) This is only used if Use Threshold Check is set to yes."
-	//launchDirection(angle) : "Launch direction" : "0 0 0" : "Direction to launch the player in."
+	lowerThreshold(float) : "Lower Threshold" : "0.15" : "Flung object must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .15) This is only used if Use Threshold Check is set to yes."
+	upperThreshold(float) : "Upper Threshold" : "0.30" : "Flung object must be within this percentage value in order to activate fling. Specify a value between [0...1] (default is .30) This is only used if Use Threshold Check is set to yes."
+	launchDirection(angle) : "Launch direction" : "0 0 0" : "Direction to launch the player in."
 	launchTarget(target_destination) : "Launch target" : "" : "Entity to try to 'hit' when we're launched."
-	//onlyVelocityCheck(integer) : "Only check velocity" : 0 : "Only check velocity of the touching object - don't actually catapult it.  Use in conjunction with OnCatapulted to create velocity checking triggers.  Only works when Use Threshhold Check is enabled."
+	onlyVelocityCheck(integer) : "Only check velocity" : 0 : "Only check velocity of the touching object - don't actually catapult it.  Use in conjunction with OnCatapulted to create velocity checking triggers.  Only works when Use Threshhold Check is enabled."
 	//applyAngularImpulse(integer) : "Apply angular impulse" : 1 : "If a random angular impulse should be applied to physics objects being catapulted."
 	//AirCtrlSupressionTime(float) : "Air Control SupressionTime" : "-1.0" : "[Launch by target only!]If greater than zero, supress player aircontrol for this number (in seconds). If less than zero use the default (quarter second)."
 

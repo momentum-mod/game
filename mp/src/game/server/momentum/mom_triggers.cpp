@@ -1586,121 +1586,226 @@ bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_catapult, CTriggerMomentumCatapult);
 
 BEGIN_DATADESC(CTriggerMomentumCatapult)
-    DEFINE_KEYFIELD(m_fPlayerSpeed, FIELD_FLOAT, "playerSpeed"),
+    DEFINE_KEYFIELD(m_flPlayerSpeed, FIELD_FLOAT, "playerSpeed"),
+    DEFINE_KEYFIELD(m_bUseThresholdCheck, FIELD_INTEGER, "useThresholdCheck"),
+    DEFINE_KEYFIELD(m_flEntryAngleTolerance, FIELD_FLOAT, "entryAngleTolerance"),
     DEFINE_KEYFIELD(m_iUseExactVelocity, FIELD_INTEGER, "useExactVelocity"),
     DEFINE_KEYFIELD(m_iExactVelocityChoiceType, FIELD_INTEGER, "exactVelocityChoiceType"),
+    DEFINE_KEYFIELD(m_flLowerThreshold, FIELD_FLOAT, "lowerThreshold"),
+    DEFINE_KEYFIELD(m_flUpperThreshold, FIELD_FLOAT, "upperThreshold"),
     DEFINE_KEYFIELD(m_vLaunchDirection, FIELD_VECTOR, "launchDirection"),
     DEFINE_KEYFIELD(m_target, FIELD_STRING, "launchTarget"),
-END_DATADESC()
+    DEFINE_KEYFIELD(m_bOnlyCheckVelocity, FIELD_INTEGER, "onlyCheckVelocity"),
+    DEFINE_OUTPUT(m_OnCatapulted, "OnCatapulted"),
+    END_DATADESC()
 
 
-void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity *pOther)
+CTriggerMomentumCatapult::CTriggerMomentumCatapult()
 {
-    if (pOther)
+}
+
+void CTriggerMomentumCatapult::Spawn()
+{ 
+    BaseClass::Spawn();
+
+    m_flLowerThreshold = clamp(m_flLowerThreshold, 0.0f, 1.0f);
+    m_flUpperThreshold = clamp(m_flUpperThreshold, 0.0f, 1.0f);
+
+    m_flEntryAngleTolerance = clamp(m_flEntryAngleTolerance, -1.0f, 1.0f);
+
+    if (!m_hLaunchTarget.Get())
     {
-        if (!m_hLaunchTarget.Get())
+        if (m_target != NULL_STRING)
         {
-            if (m_target != NULL_STRING)
-                m_hLaunchTarget = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
-            else
-            {
-                DevWarning("CTriggerMomentumCatapult no target found\n");
-                return;
-            }
-        }
-
-        pOther->SetGroundEntity(NULL);
-
-        Vector vecPlayerOrigin = pOther->GetAbsOrigin();
-
-        // Is there something like this to compensate for eye-height?
-        // vecPlayerOrigin.z += 50.0f;
-
-        if (m_iUseExactVelocity)
-        {
-            // Uses exact trig and gravity
-            // Pro: Has two possibly valid solutions like exact velocity case
-            // Con: Not really actually correct from testing
-
-            Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
-            Vector vecAbsDifferenceXY = Vector(vecAbsDifference.x, vecAbsDifference.y, 0.0f);
-
-            float fSpeed2 = m_fPlayerSpeed * m_fPlayerSpeed;
-            float fSpeed4 = m_fPlayerSpeed * m_fPlayerSpeed * m_fPlayerSpeed * m_fPlayerSpeed;
-            float fAbsX = vecAbsDifferenceXY.Length();
-            float fAbsZ = vecAbsDifference.z;
-            float fGravity = GetCurrentGravity();
-
-            float fDiscriminant = fSpeed4 - fGravity * (fGravity * fAbsX * fAbsX + 2 * fAbsZ * fSpeed2);
-
-            // Maybe not this but some sanity check ofc
-            if (m_fPlayerSpeed < sqrtf(fGravity * (fAbsZ + vecAbsDifference.Length())))
-            {
-                DevWarning("Not enough speed to reach target.\n");
-            }
-
-            if (fDiscriminant < FLT_EPSILON)
-            {
-                DevWarning("NO SOLUTION\n");
-                return;
-            }
-
-            fDiscriminant = sqrtf(fDiscriminant);
-            float fLowAng = atan2f(fSpeed2 - fDiscriminant, fGravity * fAbsX);
-            float fHighAng = atan2f(fSpeed2 + fDiscriminant, fGravity * fAbsX);
-            float fLaunchAng = 0.0f;
-            switch (m_iExactVelocityChoiceType)
-            {
-            // Best case just uses fLowAng for now
-            case 0:
-            case 1:
-                fLaunchAng = fLowAng;
-                break;
-            case 2:
-                fLaunchAng = fHighAng;
-                break;
-            default:
-                break;
-            }
-
-            Vector fGroundDir = vecAbsDifferenceXY.Normalized();
-            Vector vecVelocity = m_fPlayerSpeed * (fGroundDir * cosf(fLaunchAng) + Vector(0, 0, 1) * sinf(fLaunchAng));
-
-            pOther->SetAbsVelocity(vecVelocity);
-
-            // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecVelocity, 255, 0, 255,
-            // 1, 5);
+            m_hLaunchTarget = gEntList.FindEntityByName(nullptr, m_target);
+            m_bUseLaunchTarget = true;
         }
         else
         {
-            // Calculated from time ignoring grav, then compensating for gravity later ??
-            // Pro: Comes up with one solution like default case
-            // Con: Still not really right from testing
-
-            Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
-            float fSpeed2 = m_fPlayerSpeed * m_fPlayerSpeed;
-            float fGravity = GetCurrentGravity();
-
-            float fDiscriminant = 4.0f * fSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
-
-            // Maybe not this but some sanity check ofc
-            if (m_fPlayerSpeed < sqrtf(fGravity * (vecAbsDifference.z + vecAbsDifference.Length())))
-            {
-                DevWarning("Not enough speed to reach target.\n");
-            }
-
-            fDiscriminant = sqrtf(fDiscriminant);
-            float fTime = 0.5f * (fDiscriminant / fSpeed2);
-
-            Vector vecLaunchVelocity = (vecAbsDifference / fTime);
-
-            Vector vecGravityComp = 0.5 * (fGravity * Vector(0, 0, -1)) * fTime;
-            vecLaunchVelocity -= vecGravityComp;
-
-            pOther->SetAbsVelocity(vecLaunchVelocity);
-            // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecLaunchVelocity, 0, 0,
-            // 255, 1, 5);
+            m_bUseLaunchTarget = false;
         }
+    }
+}
+
+Vector CTriggerMomentumCatapult::CalculateLaunchVelocity(CBaseEntity *pOther)
+{
+    // Calculated from time ignoring grav, then compensating for gravity later ??
+
+    Vector vecPlayerOrigin = pOther->GetAbsOrigin();
+    // Is there something like this to compensate for eye-height? (this value seems to work 1:1)
+    vecPlayerOrigin.z += 32.0f;
+    Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+    float fSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
+    float fGravity = GetCurrentGravity();
+
+    float fDiscriminant = 4.0f * fSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
+
+    fDiscriminant = sqrtf(fDiscriminant);
+    float fTime = 0.5f * (fDiscriminant / fSpeed2);
+
+    Vector vecLaunchVelocity = (vecAbsDifference / fTime);
+
+    Vector vecGravityComp = 0.5 * (fGravity * Vector(0, 0, -1)) * fTime;
+    vecLaunchVelocity -= vecGravityComp;
+
+    return vecLaunchVelocity;
+}
+
+Vector CTriggerMomentumCatapult::CalculateLaunchVelocityExact(CBaseEntity* pOther)
+{
+    // Uses exact trig and gravity
+
+    Vector vecPlayerOrigin = pOther->GetAbsOrigin();
+    // Is there something like this to compensate for eye-height? (this value seems to work 1:1)
+    vecPlayerOrigin.z += 32.0f;
+    Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
+    Vector vecAbsDifferenceXY = Vector(vecAbsDifference.x, vecAbsDifference.y, 0.0f);
+    if (vecAbsDifferenceXY.Length() == 0.0f)
+    {
+        DevWarning("Target cannot be the same position as catapult!\n");
+    }
+
+    float fSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
+    float fSpeed4 = m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed;
+    float fAbsX = vecAbsDifferenceXY.Length();
+    float fAbsZ = vecAbsDifference.z;
+    float fGravity = GetCurrentGravity();
+
+    float fDiscriminant = fSpeed4 - fGravity * (fGravity * fAbsX * fAbsX + 2 * fAbsZ * fSpeed2);
+
+    // Maybe not this but some sanity check ofc, then default to non exact case which should always have a solution
+    if (m_flPlayerSpeed < sqrtf(fGravity * (fAbsZ + vecAbsDifference.Length())))
+    {
+        DevWarning("Not enough speed to reach target.\n");
+        return CalculateLaunchVelocity(pOther);
+    }
+    if (fDiscriminant < 0.0f)
+    {
+        DevWarning("Not enough speed to reach target.\n");
+        return CalculateLaunchVelocity(pOther);
+    }
+
+    fDiscriminant = sqrtf(fDiscriminant);
+
+    // Denom shouldn't be 0 ever but who knows
+    float fLowAng = atan2f(fSpeed2 - fDiscriminant, fGravity * fAbsX);
+    float fHighAng = atan2f(fSpeed2 + fDiscriminant, fGravity * fAbsX);
+
+    Vector fGroundDir = vecAbsDifferenceXY.Normalized();
+    Vector vecLowAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(fLowAng) + Vector(0, 0, 1) * sinf(fLowAng));
+    Vector vecHighAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(fHighAng) + Vector(0, 0, 1) * sinf(fHighAng));
+    Vector vecLaunchVelocity = vec3_origin;
+    Vector vecPlayerEntrySpeed = pOther->GetAbsVelocity();
+
+    switch (m_iExactVelocityChoiceType)
+    {
+    case 0:
+        vecLaunchVelocity = vecPlayerEntrySpeed.Dot(vecLowAngVelocity) < vecPlayerEntrySpeed.Dot(vecHighAngVelocity)
+                                ? vecLowAngVelocity
+                                : vecHighAngVelocity;
+        break;
+    case 1:
+        vecLaunchVelocity = vecLowAngVelocity;
+        break;
+    case 2:
+        vecLaunchVelocity = vecHighAngVelocity;
+        break;
+    default:
+        break;
+    }
+
+    return vecLaunchVelocity;
+}
+void CTriggerMomentumCatapult::LaunchAtDirection(CBaseEntity *pOther)
+{
+    pOther->SetGroundEntity(nullptr);
+    Vector vecLaunchDir = vec3_origin;
+    AngleVectors(m_vLaunchDirection, &vecLaunchDir);
+    pOther->SetAbsVelocity(m_flPlayerSpeed * vecLaunchDir);
+    m_OnCatapulted.FireOutput(pOther, this);
+}
+
+void CTriggerMomentumCatapult::LaunchAtTarget(CBaseEntity *pOther)
+{
+    pOther->SetGroundEntity(nullptr);
+    if (m_iUseExactVelocity)
+    {
+        Vector vecLaunchVelocity = CalculateLaunchVelocityExact(pOther);
+        pOther->SetAbsVelocity(vecLaunchVelocity);
+
+        // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecVelocity, 255, 0, 255,
+        // 1, 5);        
+    }
+    else
+    {
+        Vector vecLaunchVelocity = CalculateLaunchVelocity(pOther);
+        pOther->SetAbsVelocity(vecLaunchVelocity);
+        // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecLaunchVelocity, 0, 0,
+        // 255, 1, 5);
+    }
+
+    m_OnCatapulted.FireOutput(pOther, this);
+}
+
+void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
+{
+    // Ignore vphys only allow players
+    if (pOther && pOther->IsPlayer())
+    {
+        // Check threshold
+        if (m_bUseThresholdCheck)
+        {
+            Vector vecPlayerVelocity = pOther->GetAbsVelocity();
+            float flPlayerSpeed = vecPlayerVelocity.Length();
+            
+            // From VDC
+            if (flPlayerSpeed > m_flPlayerSpeed - (m_flPlayerSpeed * m_flLowerThreshold) &&
+                flPlayerSpeed < m_flPlayerSpeed + (m_flPlayerSpeed * m_flUpperThreshold))
+            {
+                if (m_bUseLaunchTarget)
+                {
+                    Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - pOther->GetAbsOrigin();                    
+
+                    float flPlayerEntryAng = DotProduct(vecAbsDifference.Normalized(), vecPlayerVelocity.Normalized());
+
+                    // VDC uses brackets so inclusive??
+                    if (flPlayerEntryAng >= m_flEntryAngleTolerance)
+                    {
+                        if (m_bOnlyCheckVelocity)
+                        {
+                            m_OnCatapulted.FireOutput(pOther, this);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    Vector vecLaunchDir = vec3_origin;
+                    AngleVectors(m_vLaunchDirection, &vecLaunchDir);
+                    float flPlayerEntryAng = DotProduct(vecLaunchDir.Normalized(), vecPlayerVelocity.Normalized());
+
+                    // VDC uses brackets so inclusive??
+                    if (flPlayerEntryAng >= m_flEntryAngleTolerance)
+                    {
+                        if (m_bOnlyCheckVelocity)
+                        {
+                            m_OnCatapulted.FireOutput(pOther, this);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (m_bUseLaunchTarget)
+        {
+            LaunchAtTarget(pOther);
+        }
+        else
+        {
+            LaunchAtDirection(pOther);
+        }
+
     }
 }
 
