@@ -385,7 +385,7 @@ class CMOMReplayCommands
             auto pLoaded = g_ReplaySystem.LoadPlayback(recordingName);
             if (pLoaded)
             {
-                if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
+                if (!Q_stricmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
                 {
                     g_ReplaySystem.StartPlayback(firstperson);
                 }
