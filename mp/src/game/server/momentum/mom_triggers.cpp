@@ -1752,12 +1752,15 @@ void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
     // Ignore vphys only allow players
     if (pOther && pOther->IsPlayer())
     {
+        bool bLaunch = true;
+
         // Check threshold
         if (m_bUseThresholdCheck)
         {
             Vector vecPlayerVelocity = pOther->GetAbsVelocity();
             float flPlayerSpeed = vecPlayerVelocity.Length();
-            
+            bLaunch = false;
+
             // From VDC
             if (flPlayerSpeed > m_flPlayerSpeed - (m_flPlayerSpeed * m_flLowerThreshold) &&
                 flPlayerSpeed < m_flPlayerSpeed + (m_flPlayerSpeed * m_flUpperThreshold))
@@ -1776,6 +1779,7 @@ void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
                             m_OnCatapulted.FireOutput(pOther, this);
                             return;
                         }
+                        bLaunch = true;
                     }
                 }
                 else
@@ -1792,18 +1796,22 @@ void CTriggerMomentumCatapult::OnStartTouch(CBaseEntity* pOther)
                             m_OnCatapulted.FireOutput(pOther, this);
                             return;
                         }
+                        bLaunch = true;
                     }
                 }
             }
         }
 
-        if (m_bUseLaunchTarget)
+        if (bLaunch)
         {
-            LaunchAtTarget(pOther);
-        }
-        else
-        {
-            LaunchAtDirection(pOther);
+            if (m_bUseLaunchTarget)
+            {
+                LaunchAtTarget(pOther);
+            }
+            else
+            {
+                LaunchAtDirection(pOther);
+            }
         }
 
     }
