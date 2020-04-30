@@ -320,9 +320,12 @@ void CLeaderboardsTimes::FillLeaderboards(bool bFullUpdate)
     }
 }
 
-void CLeaderboardsTimes::SetPlaceColors(vgui::SectionedListPanel* panel, TimeType_t type) const
+void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t type) const
 {
     int itemCount = panel->GetItemCount();
+    if (itemCount == 0)
+        return;
+
     if (type == TIMES_LOCAL || type == TIMES_TOP10)
     {
         panel->SetItemBgColor(panel->GetItemIDFromRow(0), m_cFirstPlace);
@@ -573,7 +576,7 @@ void CLeaderboardsTimes::ResetLeaderboardContextMenu()
     m_pLeaderboardReplayCMenu->DeleteAllItems();
 }
 
-bool CLeaderboardsTimes::StaticLocalTimeSortFunc(vgui::SectionedListPanel* list, int itemID1, int itemID2)
+bool CLeaderboardsTimes::StaticLocalTimeSortFunc(SectionedListPanel* list, int itemID1, int itemID2)
 {
     KeyValues *it1 = list->GetItemData(itemID1);
     KeyValues *it2 = list->GetItemData(itemID2);
@@ -591,7 +594,7 @@ bool CLeaderboardsTimes::StaticLocalTimeSortFunc(vgui::SectionedListPanel* list,
     return itemID1 < itemID2;
 }
 
-bool CLeaderboardsTimes::StaticOnlineTimeSortFunc(vgui::SectionedListPanel* list, int itemID1, int itemID2)
+bool CLeaderboardsTimes::StaticOnlineTimeSortFunc(SectionedListPanel* list, int itemID1, int itemID2)
 {
     // Uses rank insetad of time (Momentum page will handle players with same times)
     KeyValues *it1 = list->GetItemData(itemID1);
@@ -955,7 +958,7 @@ void CLeaderboardsTimes::OnCommand(const char* pCommand)
     }
 }
 
-void CLeaderboardsTimes::ApplySchemeSettings(vgui::IScheme* pScheme)
+void CLeaderboardsTimes::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
