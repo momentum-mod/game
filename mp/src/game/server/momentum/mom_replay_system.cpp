@@ -298,7 +298,8 @@ void CMomentumReplaySystem::SetReplayHeaderAndStats()
     // Stats
     CMomRunStats *stats = m_pRecordingReplay->CreateRunStats(pPlayer->m_RunStats.GetTotalZones());
     stats->FullyCopyFrom(pPlayer->m_RunStats);
-    // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
+    // Store Overall Time at iZoneTicks[0]
+    stats->SetZoneTicks(0, (m_pRecordingReplay->GetStopTick() - m_pRecordingReplay->GetStartTick()));
 }
 
 void CMomentumReplaySystem::SetTeleportedThisFrame()

@@ -35,8 +35,6 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     SetProportional(true);
     SetSize(10, 10); // Fix "not sized yet" spew
     m_pRunStats = nullptr;
-    m_pPbRunStats = new CMomRunStats;
-    m_bPbNeedUpdate = true;
     m_bIsGhost = false;
     m_bCanClose = false;
     m_iCurrentPage = 0;
@@ -96,7 +94,6 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
 CHudMapFinishedDialog::~CHudMapFinishedDialog()
 {
     m_pRunStats = nullptr;
-    m_pPbRunStats = nullptr;
 }
 
 void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
@@ -149,6 +146,11 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     }
 }
 
+void CHudMapFinishedDialog::LevelInitPostEntity() 
+{
+    LoadPlayerBestTime(); 
+}
+
 void CHudMapFinishedDialog::LevelShutdown()
 {
     m_pRunStats = nullptr;
@@ -178,12 +180,6 @@ bool CHudMapFinishedDialog::ShouldDraw()
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (!pPlayer)
         return false;
-
-    if (m_bPbNeedUpdate)
-    {
-        LoadPlayerBestTime();
-        m_bPbNeedUpdate = false;
-    }
 
     m_pRunData = pPlayer->GetCurrentUIEntData();
     m_pRunStats = pPlayer->GetCurrentUIEntStats();
@@ -221,6 +217,7 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     m_pLevelGain->SetFgColor(COLOR_GREEN);
     m_cGain = GetSchemeColor("MOM.Compare.Gain", pScheme);
     m_cLoss = GetSchemeColor("MOM.Compare.Loss", pScheme);
+    m_cTie = GetSchemeColor("MOM.Compare.Tie", pScheme);
 }
 
 void CHudMapFinishedDialog::SetRunSaved(bool bState)
@@ -259,11 +256,7 @@ bool CHudMapFinishedDialog::ClosePanel()
     if (!m_bCanClose && !m_bIsGhost)
         return false;
 
-    // If player gets a new pb, update player best
-    if (m_flOverallDiff < 0.00f)
-    {
-        m_bPbNeedUpdate = true;
-    }
+    LoadPlayerBestTime();
 
     SetMouseInputEnabled(false);
     SetRunSaved(false);
@@ -401,29 +394,22 @@ void CHudMapFinishedDialog::SetVisible(bool bVisible)
 
 void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
 {
+    if (!engine->IsInGame())
+        return;
+
     m_iCurrentPage = pageNum;
+    SetComparisonForPage(m_iCurrentPage);
 
     wchar_t unicodeTime[BUFSIZETIME];
-    char diffString[BUFSIZETIME];
-    Color diffColor;
 
     //"Time:" shows up when m_iCurrentPage  == 0
     if (m_iCurrentPage < 1)// == 0, but I'm lazy to do an else-if
     {
-        
         m_pCurrentZoneLabel->SetText(m_pwCurrentPageOverall);
 
-        MomUtil::FormatTime(m_pRunData ? float(m_pRunData->m_iRunTime) * m_pRunData->m_flTickRate : 0.0f, m_pszEndRunTime);
+        MomUtil::FormatTime(float(m_pRunData->m_iRunTime) * m_pRunData->m_flTickRate, m_pszEndRunTime);
         ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
         m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwOverallTime, unicodeTime));//"Time" (overall run time)
-
-        // Comparison for overall time
-        m_flOverallDiff = m_pRunData ? (m_pRunData->m_iRunTime * m_pRunData->m_flTickRate) : 0.0;
-        m_flOverallDiff -= m_flPbOverallTime;
-        GetDiffString(m_flOverallDiff, diffString, &diffColor);
-
-        m_pComparisonLabel->SetFgColor(diffColor);
-        m_pComparisonLabel->SetText(diffString);
 
         m_pZoneEnterTime->SetVisible(false);
         m_pZoneEnterTime->SetEnabled(false);
@@ -434,24 +420,16 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
 
         //"Zone Time:" shows up when m_iCurrentPage > 0
         char ansiTime[BUFSIZETIME];
-        MomUtil::FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneTicks(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
+        MomUtil::FormatTime(float(m_pRunStats->GetZoneTicks(m_iCurrentPage)) * m_pRunData->m_flTickRate, ansiTime);
         ANSI_TO_UNICODE(ansiTime, unicodeTime);
         m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwZoneTime, unicodeTime));//"Zone time" (time for that zone)
-
-        // Comparison for each page using runStats
-        float diff =m_pRunStats->GetZoneTicks(m_iCurrentPage) * m_pRunData->m_flTickRate;
-        diff -= m_pPbRunStats->GetZoneTicks(m_iCurrentPage) * m_pRunData->m_flTickRate;
-        GetDiffString(diff, diffString, &diffColor);
-
-        m_pComparisonLabel->SetFgColor(diffColor);
-        m_pComparisonLabel->SetText(diffString);
 
         //"Zone Enter Time:" shows up when m_iCurrentPage > 1
         if (m_iCurrentPage > 1)
         {
             m_pZoneEnterTime->SetEnabled(true);
             m_pZoneEnterTime->SetVisible(true);
-            MomUtil::FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneEnterTick(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
+            MomUtil::FormatTime(float(m_pRunStats->GetZoneEnterTick(m_iCurrentPage)) * m_pRunData->m_flTickRate, ansiTime);
             ANSI_TO_UNICODE(ansiTime, unicodeTime);
             m_pZoneEnterTime->SetText(CConstructLocalizedString(m_pwZoneEnterTime, unicodeTime));//"Zone enter time:" (time entered that zone)
         }
@@ -465,34 +443,33 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
     //MOM_TODO: Set every label's Y pos higher if there's no ZoneEnterTime visible
 
     m_pZoneJumps->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone,
-                                                    m_pRunStats ? m_pRunStats->GetZoneJumps(m_iCurrentPage) : 0));
+                                                    m_pRunStats->GetZoneJumps(m_iCurrentPage)));
 
     m_pZoneStrafes->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone,
-                                                      m_pRunStats ? m_pRunStats->GetZoneStrafes(m_iCurrentPage) : 0));
+                                                      m_pRunStats->GetZoneStrafes(m_iCurrentPage)));
 
     m_pZoneSync1->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone,
-                                                    m_pRunStats ? m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage) : 0.0f));
+                                                    m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage)));
 
     m_pZoneSync2->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone,
-                                                    m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f));
+                                                    m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage)));
 
     int velType = m_cvarVelType.GetInt();
-    m_pZoneVelEnter->SetText(CConstructLocalizedString(m_pwVelZoneEnter, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, velType) : 0.0f));
+    m_pZoneVelEnter->SetText(CConstructLocalizedString(m_pwVelZoneEnter, m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, velType)));
 
-    m_pZoneVelExit->SetText(CConstructLocalizedString(m_pwVelZoneExit, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, velType) : 0.0f));
+    m_pZoneVelExit->SetText(CConstructLocalizedString(m_pwVelZoneExit, m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, velType)));
 
-    m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, velType) : 0.0f));
+    m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, velType)));
 
-    m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, velType) : 0.0f));
+    m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, velType)));
 }
 
 void CHudMapFinishedDialog::LoadPlayerBestTime()
 {
     const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
     if (!pPlayer)
-    {
         return;
-    }
+
     const auto pRunData = pPlayer->GetCurrentUIEntData();
 
     CMomReplayBase *pBase = MomUtil::GetBestTime(g_pGameRules->MapName(), pRunData->m_flTickRate,
@@ -500,11 +477,11 @@ void CHudMapFinishedDialog::LoadPlayerBestTime()
 
     if (!pBase)
     {
+        m_pPbRunStats.Init();
         return;
     }
     
-    m_pPbRunStats->FullyCopyFrom(*pBase->GetRunStats());
-    m_flPbOverallTime = pBase->GetRunTime();
+    m_pPbRunStats.FullyCopyFrom(*pBase->GetRunStats());
 
     delete pBase;
 }
@@ -512,22 +489,41 @@ void CHudMapFinishedDialog::LoadPlayerBestTime()
 void CHudMapFinishedDialog::GetDiffString(float diff, char* compareStringOut, Color* compareColorOut) 
 {
     char tempANSITimeOutput[BUFSIZETIME];
-    char diffSign;
 
-    diffSign = diff > 0.0f ? '+' : '-';
-
-    if (diffSign == '+')
+    if (CloseEnough(diff, 0.0f, FLT_EPSILON))
     {
-        compareColorOut->SetRawColor(m_cLoss.GetRawColor());
-    }
-    else
-    {
-        compareColorOut->SetRawColor(m_cGain.GetRawColor());
+        compareColorOut->SetRawColor(m_cTie.GetRawColor());
+        MomUtil::FormatTime(diff, tempANSITimeOutput);
+        V_snprintf(compareStringOut, BUFSIZELOCL, "(%s)", tempANSITimeOutput);
+        return;
     }
 
-    diff = abs(diff);
+    char diffSign = diff > 0.0f ? '+' : '-';
+    compareColorOut->SetRawColor(diff > 0.0f ? m_cLoss.GetRawColor() : m_cGain.GetRawColor());
+
+    diff = fabs(diff);
     MomUtil::FormatTime(diff, tempANSITimeOutput);
     V_snprintf(compareStringOut, BUFSIZELOCL, "(%c %s)", diffSign, tempANSITimeOutput);
+}
+
+void CHudMapFinishedDialog::SetComparisonForPage(int iPage)
+{
+    if (m_pPbRunStats.GetZoneTicks(0) == 0)
+    {
+        m_pComparisonLabel->SetText("");
+        return;
+    }
+
+    int runTicks = iPage == 0 ? m_pRunData->m_iRunTime : m_pRunStats->GetZoneTicks(iPage);
+
+    float diff = float(runTicks - m_pPbRunStats.GetZoneTicks(iPage)) * m_pRunData->m_flTickRate;
+
+    char diffString[BUFSIZETIME];
+    Color diffColor;
+    GetDiffString(diff, diffString, &diffColor);
+
+    m_pComparisonLabel->SetFgColor(diffColor);
+    m_pComparisonLabel->SetText(diffString);
 }
 
 void CHudMapFinishedDialog::Paint() 
