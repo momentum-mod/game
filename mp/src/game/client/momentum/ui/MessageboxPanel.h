@@ -37,7 +37,7 @@ public:
     void DiscardMessageboxes();
 
 private:
-    CUtlVector<vgui::MessageBox *> m_mbItems;
+    CUtlVector<vgui::DHANDLE<vgui::MessageBox>> m_mbItems;
 };
 
 extern CMessageboxInterface *g_pMessageBox;
