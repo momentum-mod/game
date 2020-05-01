@@ -28,6 +28,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_nCloseKey = BUTTON_CODE_INVALID;
 
     m_bToggledOpen = false;
+    m_flNextUpdateTime = 0.0f;
 
     m_pViewPort = pViewPort;
     // initialize dialog
@@ -111,7 +112,7 @@ void CClientTimesDisplay::Reset() { Reset(false); }
 
 void CClientTimesDisplay::Reset(bool bFullReset)
 {
-    m_flNextUpdateTime = 0;
+    m_flNextUpdateTime = 0.0f;
 
     // add all the sections
     if (m_pTimes)
@@ -247,6 +248,9 @@ void CClientTimesDisplay::Update() { Update(false); }
 
 void CClientTimesDisplay::Update(bool pFullUpdate)
 {
+    if (!NeedsUpdate())
+        return;
+
     FillScoreBoard(pFullUpdate);
 
     MoveToCenterOfScreen();
@@ -265,15 +269,14 @@ void CClientTimesDisplay::FillScoreBoard()
 
 void CClientTimesDisplay::FillScoreBoard(bool bFullUpdate)
 {
-    // Header
+    if (!engine->IsInGame())
+        return;
+
     if (m_pHeader)
         m_pHeader->LoadData(MapName(), bFullUpdate);
 
-    // Stats
     if (m_pStats)
-    {
         m_pStats->LoadData(bFullUpdate);
-    }
 
     if (m_pTimes)
         m_pTimes->FillLeaderboards(bFullUpdate);
