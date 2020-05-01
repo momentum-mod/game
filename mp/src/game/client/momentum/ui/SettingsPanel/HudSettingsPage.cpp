@@ -35,10 +35,10 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
                                                         "mom_hud_speedometer_horiz");
     m_pSpeedometerHorizShow->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowLastJump = new CvarToggleCheckButton(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", "mom_hud_speedometer_showlastjumpvel");
+    m_pSpeedometerShowLastJump = new CvarToggleCheckButton(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", "mom_hud_speedometer_lastjumpvel");
     m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowStageEnter = new CvarToggleCheckButton(this, "SpeedoShowStageEnter", "#MOM_Settings_Speedometer_Show_StageEnter", "mom_hud_speedometer_showlastjumpvel");
+    m_pSpeedometerShowStageEnter = new CvarToggleCheckButton(this, "SpeedoShowStageEnter", "#MOM_Settings_Speedometer_Show_StageEnter", "mom_hud_speedometer_showenterspeed");
     m_pSpeedometerShowStageEnter->AddActionSignalTarget(this);
 
     m_pSpeedometerUnitLabels = new CvarToggleCheckButton(this, "SpeedoShowUnitLabels", "#MOM_Settings_Speedometer_Unit_Labels", "mom_hud_speedometer_unit_labels");
