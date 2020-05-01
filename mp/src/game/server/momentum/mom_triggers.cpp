@@ -1597,10 +1597,11 @@ BEGIN_DATADESC(CTriggerMomentumCatapult)
     DEFINE_KEYFIELD(m_target, FIELD_STRING, "launchTarget"),
     DEFINE_KEYFIELD(m_bOnlyCheckVelocity, FIELD_INTEGER, "onlyCheckVelocity"),
     DEFINE_OUTPUT(m_OnCatapulted, "OnCatapulted"),
-    END_DATADESC()
+END_DATADESC()
 
 
 CTriggerMomentumCatapult::CTriggerMomentumCatapult()
+    : m_hLaunchTarget(nullptr)
 {
 }
 
@@ -1629,23 +1630,27 @@ void CTriggerMomentumCatapult::Spawn()
 
 Vector CTriggerMomentumCatapult::CalculateLaunchVelocity(CBaseEntity *pOther)
 {
-    // Calculated from time ignoring grav, then compensating for gravity later ??
+    // Calculated from time ignoring grav, then compensating for gravity later
+    // From https://www.gamasutra.com/blogs/KainShin/20090515/83954/Predictive_Aim_Mathematics_for_AI_Targeting.php
+    // and setting the target's velocity vector to zero
 
     Vector vecPlayerOrigin = pOther->GetAbsOrigin();
+
     // Is there something like this to compensate for eye-height? (this value seems to work 1:1)
     vecPlayerOrigin.z += 32.0f;
+
     Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
-    float fSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
-    float fGravity = GetCurrentGravity();
+    float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
+    float flGravity = GetCurrentGravity();
 
-    float fDiscriminant = 4.0f * fSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
+    float flDiscriminant = 4.0f * flSpeed2 * vecAbsDifference.Length() * vecAbsDifference.Length();
 
-    fDiscriminant = sqrtf(fDiscriminant);
-    float fTime = 0.5f * (fDiscriminant / fSpeed2);
+    flDiscriminant = sqrtf(flDiscriminant);
+    float fTime = 0.5f * (flDiscriminant / flSpeed2);
 
     Vector vecLaunchVelocity = (vecAbsDifference / fTime);
 
-    Vector vecGravityComp = 0.5 * (fGravity * Vector(0, 0, -1)) * fTime;
+    Vector vecGravityComp = 0.5 * (flGravity * Vector(0, 0, -1)) * fTime;
     vecLaunchVelocity -= vecGravityComp;
 
     return vecLaunchVelocity;
@@ -1656,60 +1661,66 @@ Vector CTriggerMomentumCatapult::CalculateLaunchVelocityExact(CBaseEntity* pOthe
     // Uses exact trig and gravity
 
     Vector vecPlayerOrigin = pOther->GetAbsOrigin();
+
     // Is there something like this to compensate for eye-height? (this value seems to work 1:1)
     vecPlayerOrigin.z += 32.0f;
+
     Vector vecAbsDifference = m_hLaunchTarget->GetAbsOrigin() - vecPlayerOrigin;
     Vector vecAbsDifferenceXY = Vector(vecAbsDifference.x, vecAbsDifference.y, 0.0f);
-    if (vecAbsDifferenceXY.Length() == 0.0f)
-    {
-        DevWarning("Target cannot be the same position as catapult!\n");
-    }
 
-    float fSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
-    float fSpeed4 = m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed;
-    float fAbsX = vecAbsDifferenceXY.Length();
-    float fAbsZ = vecAbsDifference.z;
-    float fGravity = GetCurrentGravity();
+    float flSpeed2 = m_flPlayerSpeed * m_flPlayerSpeed;
+    float flSpeed4 = m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed * m_flPlayerSpeed;
+    float flAbsX = vecAbsDifferenceXY.Length();
+    float flAbsZ = vecAbsDifference.z;
+    float flGravity = GetCurrentGravity();
 
-    float fDiscriminant = fSpeed4 - fGravity * (fGravity * fAbsX * fAbsX + 2 * fAbsZ * fSpeed2);
+    float flDiscriminant = flSpeed4 - flGravity * (flGravity * flAbsX * flAbsX + 2 * flAbsZ * flSpeed2);
 
     // Maybe not this but some sanity check ofc, then default to non exact case which should always have a solution
-    if (m_flPlayerSpeed < sqrtf(fGravity * (fAbsZ + vecAbsDifference.Length())))
+    if (m_flPlayerSpeed < sqrtf(flGravity * (flAbsZ + vecAbsDifference.Length())))
     {
         DevWarning("Not enough speed to reach target.\n");
         return CalculateLaunchVelocity(pOther);
     }
-    if (fDiscriminant < 0.0f)
+    if (flDiscriminant < 0.0f)
     {
         DevWarning("Not enough speed to reach target.\n");
         return CalculateLaunchVelocity(pOther);
     }
+    if (flAbsX == 0.0f)
+    {
+        DevWarning("Target position cannot be the same as catapult position?\n");
+        return CalculateLaunchVelocity(pOther);
+    }
 
-    fDiscriminant = sqrtf(fDiscriminant);
+    flDiscriminant = sqrtf(flDiscriminant);
 
-    // Denom shouldn't be 0 ever but who knows
-    float fLowAng = atan2f(fSpeed2 - fDiscriminant, fGravity * fAbsX);
-    float fHighAng = atan2f(fSpeed2 + fDiscriminant, fGravity * fAbsX);
+    float flLowAng = atanf((flSpeed2 - flDiscriminant) / (flGravity * flAbsX));
+    float flHighAng = atanf((flSpeed2 + flDiscriminant) / (flGravity * flAbsX));
 
     Vector fGroundDir = vecAbsDifferenceXY.Normalized();
-    Vector vecLowAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(fLowAng) + Vector(0, 0, 1) * sinf(fLowAng));
-    Vector vecHighAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(fHighAng) + Vector(0, 0, 1) * sinf(fHighAng));
+    Vector vecLowAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flLowAng) + Vector(0, 0, 1) * sinf(flLowAng));
+    Vector vecHighAngVelocity = m_flPlayerSpeed * (fGroundDir * cosf(flHighAng) + Vector(0, 0, 1) * sinf(flHighAng));
     Vector vecLaunchVelocity = vec3_origin;
-    Vector vecPlayerEntrySpeed = pOther->GetAbsVelocity();
+    Vector vecPlayerEntryVel = pOther->GetAbsVelocity();
 
     switch (m_iExactVelocityChoiceType)
     {
-    case 0:
-        vecLaunchVelocity = vecPlayerEntrySpeed.Dot(vecLowAngVelocity) < vecPlayerEntrySpeed.Dot(vecHighAngVelocity)
+    case BEST:
+        // "Best" solution seems to minimize angle of entry with respect to launch vector
+        vecLaunchVelocity = vecPlayerEntryVel.Dot(vecLowAngVelocity) < vecPlayerEntryVel.Dot(vecHighAngVelocity)
                                 ? vecLowAngVelocity
                                 : vecHighAngVelocity;
         break;
-    case 1:
+
+    case SOLUTION_ONE:
         vecLaunchVelocity = vecLowAngVelocity;
         break;
-    case 2:
+
+    case SOLUTION_TWO:
         vecLaunchVelocity = vecHighAngVelocity;
         break;
+
     default:
         break;
     }
@@ -1731,17 +1742,12 @@ void CTriggerMomentumCatapult::LaunchAtTarget(CBaseEntity *pOther)
     if (m_iUseExactVelocity)
     {
         Vector vecLaunchVelocity = CalculateLaunchVelocityExact(pOther);
-        pOther->SetAbsVelocity(vecLaunchVelocity);
-
-        // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecVelocity, 255, 0, 255,
-        // 1, 5);        
+        pOther->SetAbsVelocity(vecLaunchVelocity);      
     }
     else
     {
         Vector vecLaunchVelocity = CalculateLaunchVelocity(pOther);
         pOther->SetAbsVelocity(vecLaunchVelocity);
-        // debugoverlay->AddLineOverlay(pOther->GetAbsOrigin(), pOther->GetAbsOrigin() + vecLaunchVelocity, 0, 0,
-        // 255, 1, 5);
     }
 
     m_OnCatapulted.FireOutput(pOther, this);

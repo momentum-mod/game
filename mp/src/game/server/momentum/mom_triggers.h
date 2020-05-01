@@ -710,6 +710,14 @@ class CTriggerMomentumCatapult : public CBaseMomentumTrigger
     void LaunchAtTarget(CBaseEntity *);
 
   private:
+
+    enum
+    {
+        BEST=0,
+        SOLUTION_ONE,
+        SOLUTION_TWO,
+    };
+
     float m_flPlayerSpeed;
     int m_iUseExactVelocity;
     int m_iExactVelocityChoiceType;
