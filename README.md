@@ -4,7 +4,7 @@
 
 ## Contributing
 
-You can read about how to contribute to the development of the mod at the [contributing](CONTRIBUTING.md) section. Just branch off of develop, and keep your branches and commits small!
+You can read about how to contribute to the development of the mod at the [contributing](.github/CONTRIBUTING.md) section. Just branch off of develop, and keep your branches and commits small!
 
 A guide for building the game can be found [on our documentation website](https://docs.momentum-mod.org/guide/building-the-game/).
 
