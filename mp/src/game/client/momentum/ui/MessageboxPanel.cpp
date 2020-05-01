@@ -62,7 +62,9 @@ Panel *CMessageboxInterface::CreateMessagebox(const char *pTitle, const char *pM
     pMessageBox->MoveToCenterOfScreen();
     pMessageBox->DoModal();
 
-    m_mbItems.AddToTail(pMessageBox);
+    DHANDLE<MessageBox> hMsgBox;
+    hMsgBox = pMessageBox;
+    m_mbItems.AddToTail(hMsgBox);
 
     return pMessageBox;
 }
@@ -102,7 +104,9 @@ Panel *CMessageboxInterface::CreateConfirmationBox(Panel *pTarget, const char *p
     pMessageBox->DoModal();
     pMessageBox->MoveToFront();
 
-    m_mbItems.AddToTail(pMessageBox);
+    DHANDLE<MessageBox> hMsgBox;
+    hMsgBox = pMessageBox;
+    m_mbItems.AddToTail(hMsgBox);
 
     return pMessageBox;
 }
@@ -127,7 +131,9 @@ Panel *CMessageboxInterface::CreateMessageboxVarRef(const char *pTitle, const ch
     pMessageBox->MoveToCenterOfScreen();
     pMessageBox->DoModal();
 
-    m_mbItems.AddToTail(pMessageBox);
+    DHANDLE<MessageBox> hMsgBox;
+    hMsgBox = pMessageBox;
+    m_mbItems.AddToTail(hMsgBox);
 
     return pMessageBox;
 }
@@ -136,13 +142,13 @@ void CMessageboxInterface::DiscardMessageboxes()
 {
     FOR_EACH_VEC(m_mbItems, iIterator)
     {
-        MessageBox *pItem = m_mbItems[iIterator];
+        auto pItem = m_mbItems[iIterator];
         if (pItem)
         {
             pItem->Close();
-            pItem->DeletePanel();
         }
     }
+
     m_mbItems.RemoveAll();
 }
 
