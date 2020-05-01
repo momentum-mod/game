@@ -342,7 +342,6 @@ $Project
 		$File	"vgui_consolepanel.cpp"
 		$File	"vgui_debugoverlaypanel.cpp"
 		$File	"vgui_fpspanel.cpp"
-		$File	"vgui_game_viewport.cpp"
 		$File	"vgui_grid.cpp"
 		$File	"vgui_int.cpp"
 		$File	"vgui_loadingdiscpanel.cpp"
