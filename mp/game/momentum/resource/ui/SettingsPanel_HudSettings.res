@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "HudSettings"
-        "tall" "300"
+        "tall" "310"
         "wide" "1000"
     }
     
