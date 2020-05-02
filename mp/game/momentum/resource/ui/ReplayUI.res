@@ -327,7 +327,7 @@
     }
     "TimescaleEntry"
     {
-        "ControlName"		"TextEntry"
+        "ControlName"		"CvarTextEntry"
         "fieldName"		"TimescaleEntry"
         "xpos"		"0"
         "ypos"		"14"
@@ -341,6 +341,7 @@
         "textHidden"		"0"
         "editable"		"1"
         "maxchars"		"-1"
+        "cvar_name" "mom_replay_timescale"
         "NumericInputOnly"		"1"
         "unicode"		"0"
         "mouseinputenabled" "1"

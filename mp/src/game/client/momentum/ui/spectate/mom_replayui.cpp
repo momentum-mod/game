@@ -63,13 +63,12 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     m_pGotoTick->SetAllowNumericInputOnly(true);
     m_pGotoTick->AddActionSignalTarget(this);
 
-    m_pTimescaleSlider = new CvarSlider(this, "TimescaleSlider", nullptr, 0.1f, 10.0f, "mom_replay_timescale");
+    m_pTimescaleSlider = new CvarSlider(this, "TimescaleSlider", nullptr, 0.1f, 10.0f, "mom_replay_timescale", false, true);
     m_pTimescaleSlider->AddActionSignalTarget(this);
     m_pTimescaleLabel = new Label(this, "TimescaleLabel", "#MOM_ReplayTimescale");
-    m_pTimescaleEntry = new TextEntry(this, "TimescaleEntry");
+    m_pTimescaleEntry = new CvarTextEntry(this, "TimescaleEntry", "mom_replay_timescale", "%.1f");
     m_pTimescaleEntry->SetAllowNumericInputOnly(true);
     m_pTimescaleEntry->AddActionSignalTarget(this);
-    SetLabelText();
 
     m_pProgress = new ScrubbableProgressBar(this, "ReplayProgress");
     m_pProgress->AddActionSignalTarget(this);
@@ -187,30 +186,6 @@ void C_MOMReplayUI::OnThink()
     }
 }
 
-void C_MOMReplayUI::OnControlModified(Panel *p)
-{
-    if (p == m_pTimescaleSlider && m_pTimescaleSlider->HasBeenModified())
-    {
-        SetLabelText();
-    }
-}
-
-void C_MOMReplayUI::OnTextChanged(Panel *p)
-{
-    if (p == m_pTimescaleEntry)
-    {
-        char buf[64];
-        m_pTimescaleEntry->GetText(buf, 64);
-
-        float fValue = V_atof(buf);
-        if (fValue >= 0.01f && fValue <= 10.0f)
-        {
-            m_pTimescaleSlider->SetSliderValue(fValue);
-            m_pTimescaleSlider->ApplyChanges();
-        }
-    }
-}
-
 void C_MOMReplayUI::OnNewProgress(float scale)
 {
     int tickToGo = static_cast<int>(scale * m_iTotalDuration);
@@ -221,20 +196,6 @@ void C_MOMReplayUI::OnNewProgress(float scale)
 }
 
 void C_MOMReplayUI::OnPBMouseWheeled(int delta) { OnCommand(delta > 0 ? "nextframe" : "prevframe"); }
-
-void C_MOMReplayUI::SetLabelText() const
-{
-    if (m_pTimescaleSlider && m_pTimescaleEntry)
-    {
-        char buf[64];
-        Q_snprintf(buf, sizeof(buf), "%.1f", m_pTimescaleSlider->GetSliderValue());
-        m_pTimescaleEntry->SetText(buf);
-
-        float newVal = V_atof(buf);
-        m_pTimescaleSlider->SetSliderValue(newVal);
-        m_pTimescaleSlider->ApplyChanges();
-    }
-}
 
 void C_MOMReplayUI::SetWasClosed(bool bWasClosed)
 {
