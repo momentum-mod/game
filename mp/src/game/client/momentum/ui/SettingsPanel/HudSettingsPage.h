@@ -18,5 +18,6 @@ private:
     vgui::CvarComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
 
     vgui::CvarToggleCheckButton *m_pSpeedometerShow, *m_pSpeedometerHorizShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowStageEnter,
-        *m_pSpeedometerUnitLabels, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;
+        *m_pSpeedometerUnitLabels, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow, *m_pTimerSoundFailEnable,
+        *m_pTimerSoundStartEnable, *m_pTimerSoundStopEnable, *m_pTimerSoundFinishEnable;
 };
