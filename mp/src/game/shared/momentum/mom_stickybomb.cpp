@@ -198,6 +198,10 @@ EXPOSE_INTERFACE(CStickybombArmTimeProxy, IMaterialProxy, "ArmTime" IMATERIAL_PR
 
 #else
 
+bool CMomStickybomb::GetUseImpactNormal() {
+    return m_bUseImpactNormal;
+}
+
 CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &angles, const Vector &velocity, CBaseEntity *pOwner)
 {
     const auto pStickybomb = dynamic_cast<CMomStickybomb *>(CreateNoSpawn("momentum_stickybomb", position, angles, pOwner));

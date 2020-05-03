@@ -5,7 +5,14 @@
 // TF2 COMPATIBILITY
 //
 // -----------------------------------------------------------------------
-@SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." []
+@SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." 
+[
+    airborne_only(choices) : "Remove airborne explosions only" : 0 = 
+    [
+        0 : "False"
+        1 : "True"
+    ]
+]
 
 @PointClass base(Targetname,Studiomodel,Origin,Angles) studioprop() = momentum_generic_bomb : "Generic Bomb"
 [
