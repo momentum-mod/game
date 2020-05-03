@@ -345,12 +345,6 @@ $Project "Client (Momentum)"
             $File "$SRCDIR\game\shared\momentum\run\mom_run_entity.cpp"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.cpp"
-            
-            $Folder "Project-9"
-            {
-                $File "momentum\dynamicrendertargets.cpp"
-                $File "momentum\dynamicrendertargets.h"
-            }
         }
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
