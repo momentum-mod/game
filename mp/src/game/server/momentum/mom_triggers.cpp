@@ -6,6 +6,7 @@
 #include "mom_replay_entity.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
+#include "mom_stickybomb.h"
 #include "fmtstr.h"
 #include "mom_timer.h"
 #include "mom_modulecomms.h"
@@ -1471,6 +1472,10 @@ static CUtlVector<CNoGrenadesZone *> s_vecNoGrenadeZones;
 
 LINK_ENTITY_TO_CLASS(func_nogrenades, CNoGrenadesZone);
 
+BEGIN_DATADESC(CNoGrenadesZone)
+    DEFINE_KEYFIELD(m_bAirborneOnly, FIELD_BOOLEAN, "airborne_only")
+END_DATADESC()
+
 CNoGrenadesZone::~CNoGrenadesZone()
 {
     s_vecNoGrenadeZones.FindAndFastRemove(this);
@@ -1497,10 +1502,14 @@ bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
 {
     if ( pOther )
     {
+        CMomStickybomb* pSticky = dynamic_cast<CMomStickybomb*>(pOther);
         FOR_EACH_VEC(s_vecNoGrenadeZones, i)
         {
             const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
-            if (!pNoGrenadeZone->m_bDisabled && pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
+
+            bool bLandedStickyInWallpogoNonades = pSticky ? (pSticky->GetUseImpactNormal() && pNoGrenadeZone->m_bAirborneOnly) : false;
+
+            if (!pNoGrenadeZone->m_bDisabled && pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()) && !bLandedStickyInWallpogoNonades)
                 return true;
         }
     }

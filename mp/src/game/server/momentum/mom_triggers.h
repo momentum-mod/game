@@ -664,6 +664,7 @@ class CNoGrenadesZone : public CBaseTrigger
 {
 public:
     DECLARE_CLASS(CNoGrenadesZone, CBaseTrigger);
+    DECLARE_DATADESC();
 
     ~CNoGrenadesZone();
 
@@ -675,4 +676,6 @@ public:
     void InputToggle(inputdata_t &inputdata) override { m_bDisabled = !m_bDisabled; }
 
     static bool IsInsideNoGrenadesZone(CBaseEntity *pOther);
+
+    bool m_bAirborneOnly;
 };

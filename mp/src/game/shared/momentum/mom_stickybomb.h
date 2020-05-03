@@ -40,6 +40,8 @@ class CMomStickybomb : public CMomExplosive
     void Fizzle();
     void Detonate();
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
+
+    bool GetUseImpactNormal();
 #endif
 
   private:
