@@ -62,6 +62,18 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pTimerShow = new CvarToggleCheckButton(this, "TimerShow", "#MOM_Settings_Timer_Show", "mom_hud_timer");
     m_pTimerShow->AddActionSignalTarget(this);
 
+    m_pTimerSoundFailEnable = new CvarToggleCheckButton(this, "TimerSoundFailEnable", "#MOM_Settings_Timer_Sound_Fail_Enable", "mom_timer_sound_fail_enable");
+    m_pTimerSoundFailEnable->AddActionSignalTarget(this);
+
+    m_pTimerSoundStartEnable = new CvarToggleCheckButton(this, "TimerSoundStartEnable", "#MOM_Settings_Timer_Sound_Start_Enable", "mom_timer_sound_start_enable");
+    m_pTimerSoundStartEnable->AddActionSignalTarget(this);
+
+    m_pTimerSoundStopEnable = new CvarToggleCheckButton(this, "TimerSoundStopEnable", "#MOM_Settings_Timer_Sound_Stop_Enable", "mom_timer_sound_stop_enable");
+    m_pTimerSoundStopEnable->AddActionSignalTarget(this);
+
+    m_pTimerSoundFinishEnable = new CvarToggleCheckButton(this, "TimerSoundFinishEnable", "#MOM_Settings_Timer_Sound_Finish_Enable", "mom_timer_sound_finish_enable");
+    m_pTimerSoundFinishEnable->AddActionSignalTarget(this);
+
     LoadControlSettings("resource/ui/SettingsPanel_HudSettings.res");
 }
 

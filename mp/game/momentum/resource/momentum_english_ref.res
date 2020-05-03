@@ -310,6 +310,11 @@
 
         "MOM_Timer_Label" "Timer"
         "MOM_Settings_Timer_Show" "Display Timer"
+        "MOM_Settings_Timer_Sound_Fail_Enable" "Play sound on timer fail"
+        "MOM_Settings_Timer_Sound_Start_Enable" "Play sound on timer start"
+        "MOM_Settings_Timer_Sound_Stop_Enable" "Play sound on timer stop"
+        "MOM_Settings_Timer_Sound_Finish_Enable" "Play sound on timer finish"
+
 
         // "Run Comparisons"
         "MOM_Settings_Tab_Comparisons" "Run Comparisons"
