@@ -1,6 +1,5 @@
 #include "cbase.h"
 #include "c_mom_triggers.h"
-#include "dynamicrendertargets.h"
 #include "model_types.h"
 #include "util/mom_util.h"
 
