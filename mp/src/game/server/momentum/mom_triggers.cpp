@@ -1473,8 +1473,8 @@ static CUtlVector<CNoGrenadesZone *> s_vecNoGrenadeZones;
 LINK_ENTITY_TO_CLASS(func_nogrenades, CNoGrenadesZone);
 
 BEGIN_DATADESC(CNoGrenadesZone)
-    DEFINE_KEYFIELD(m_bAirborneOnly, FIELD_BOOLEAN, "airborne_only")
-END_DATADESC()
+DEFINE_KEYFIELD(m_bAirborneOnly, FIELD_BOOLEAN, "airborne_only")
+END_DATADESC();
 
 CNoGrenadesZone::~CNoGrenadesZone()
 {
@@ -1502,15 +1502,18 @@ bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
 {
     if ( pOther )
     {
-        CMomStickybomb* pSticky = dynamic_cast<CMomStickybomb*>(pOther);
+        const auto pSticky = dynamic_cast<CMomStickybomb*>(pOther);
         FOR_EACH_VEC(s_vecNoGrenadeZones, i)
         {
             const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
 
-            bool bLandedStickyInWallpogoNonades = pSticky ? (pSticky->GetUseImpactNormal() && pNoGrenadeZone->m_bAirborneOnly) : false;
+            if (pNoGrenadeZone->m_bDisabled || !pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
+                continue;
 
-            if (!pNoGrenadeZone->m_bDisabled && pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()) && !bLandedStickyInWallpogoNonades)
-                return true;
+            if (!pSticky)
+                return true; // This is a rocket in a nonade zone and should fizzle
+
+            return !pNoGrenadeZone->m_bAirborneOnly || !pSticky->DidHitWorld();
         }
     }
 
