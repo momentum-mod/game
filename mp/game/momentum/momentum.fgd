@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------
 @SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." 
 [
-    airborne_only(choices) : "Remove airborne explosions only" : 0 = 
+    airborne_only(choices) : "Prevent airborne explosions only" : 0 = 
     [
         0 : "False"
         1 : "True"

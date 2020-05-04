@@ -56,7 +56,7 @@ CMomStickybomb::CMomStickybomb()
 #ifdef GAME_DLL
     m_bFizzle = false;
     m_flCreationTime = 0.0f;
-    m_bUseImpactNormal = false;
+    m_bDidHitWorld = false;
     m_vecImpactNormal.Init();
 #else
     m_bPulsed = false;
@@ -198,10 +198,6 @@ EXPOSE_INTERFACE(CStickybombArmTimeProxy, IMaterialProxy, "ArmTime" IMATERIAL_PR
 
 #else
 
-bool CMomStickybomb::GetUseImpactNormal() {
-    return m_bUseImpactNormal;
-}
-
 CMomStickybomb *CMomStickybomb::Create(const Vector &position, const QAngle &angles, const Vector &velocity, CBaseEntity *pOwner)
 {
     const auto pStickybomb = dynamic_cast<CMomStickybomb *>(CreateNoSpawn("momentum_stickybomb", position, angles, pOwner));
@@ -276,7 +272,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     Vector vecOrigin = GetAbsOrigin();
     CPVSFilter filter(vecOrigin);
 
-    const Vector vecNormal = m_bUseImpactNormal ? m_vecImpactNormal : pTrace->plane.normal;
+    const Vector vecNormal = m_bDidHitWorld ? m_vecImpactNormal : pTrace->plane.normal;
     TE_TFExplosion(filter, vecOrigin, vecNormal, WEAPON_STICKYLAUNCHER);
 
     const auto pOwner = GetOwnerEntity();
@@ -324,7 +320,7 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
         g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
 
         // Save impact data for explosions.
-        m_bUseImpactNormal = true;
+        m_bDidHitWorld = true;
         pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
         m_vecImpactNormal.Negate();
     }
