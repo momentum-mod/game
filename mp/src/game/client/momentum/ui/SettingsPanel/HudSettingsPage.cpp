@@ -10,19 +10,19 @@ using namespace vgui;
 
 HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettings")
 {
-    m_pSpeedometerUnits = new CvarComboBox(this, "SpeedoUnits", 4, false, "mom_hud_speedometer_units");
+    m_pSpeedometerUnits = new CvarComboBox(this, "SpeedoUnits", "mom_hud_speedometer_units");
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_UPS", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_KPH", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_MPH", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_Energy", nullptr);
     m_pSpeedometerUnits->AddActionSignalTarget(this);
 
-    m_pSyncType = new CvarComboBox(this, "SyncType", 2, false, "mom_hud_strafesync_type");
+    m_pSyncType = new CvarComboBox(this, "SyncType", "mom_hud_strafesync_type");
     m_pSyncType->AddItem("#MOM_Settings_Sync_Type_Sync1", nullptr);
     m_pSyncType->AddItem("#MOM_Settings_Sync_Type_Sync2", nullptr);
     m_pSyncType->AddActionSignalTarget(this);
 
-    m_pSyncColorize = new CvarComboBox(this, "SyncColorize", 3, false, "mom_hud_strafesync_colorize");
+    m_pSyncColorize = new CvarComboBox(this, "SyncColorize", "mom_hud_strafesync_colorize");
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_None", nullptr);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_1", nullptr);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
@@ -44,7 +44,7 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSpeedometerUnitLabels = new CvarToggleCheckButton(this, "SpeedoShowUnitLabels", "#MOM_Settings_Speedometer_Unit_Labels", "mom_hud_speedometer_unit_labels");
     m_pSpeedometerUnitLabels->AddActionSignalTarget(this);
 
-    m_pSpeedometerColorize = new CvarComboBox(this, "SpeedoShowColor", 3, false, "mom_hud_speedometer_colorize");
+    m_pSpeedometerColorize = new CvarComboBox(this, "SpeedoShowColor", "mom_hud_speedometer_colorize");
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_None", nullptr);
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_1", nullptr);
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_2", nullptr);

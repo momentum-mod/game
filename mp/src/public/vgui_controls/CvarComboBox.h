@@ -12,9 +12,7 @@ class CvarComboBox : public ComboBox
 {
     DECLARE_CLASS_SIMPLE(CvarComboBox, ComboBox);
 
-    CvarComboBox(Panel *parent, const char *panelName, int numLines = 5, bool allowEdit = true, char const *cvarname = nullptr,
-                 bool ignoreMissingCvar = false);
-    ~CvarComboBox();
+    CvarComboBox(Panel *parent, const char *panelName, char const *cvarname = nullptr);
 
     void Reset();
     void ApplyChanges();
@@ -34,7 +32,6 @@ class CvarComboBox : public ComboBox
 
     ConVarRef m_cvar;
     int m_iStartValue, m_iCvarMin, m_iCvarMax;
-    bool m_bIgnoreMissingCvar;
 };
 
 }

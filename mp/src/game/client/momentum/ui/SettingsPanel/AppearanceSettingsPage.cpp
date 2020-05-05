@@ -60,7 +60,7 @@ AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pPare
     m_pTrailLengthEntry = new CvarTextEntry(this, "TrailEntry", "mom_trail_length");
     m_pTrailLengthEntry->SetAllowNumericInputOnly(true);
 
-    m_pBodygroupCombo = new CvarComboBox(this, "BodygroupCombo", 15, false, "mom_ghost_bodygroup", true);
+    m_pBodygroupCombo = new CvarComboBox(this, "BodygroupCombo", "mom_ghost_bodygroup");
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_0", nullptr);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_1", nullptr);
     m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_2", nullptr);
