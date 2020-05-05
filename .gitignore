@@ -117,6 +117,9 @@ CMakeLists.txt
 mp/game/momentum/cfg/pet.txt
 *.exe
 
+# Shader tools
+!mp/src/devtools/bin/shadercompile
+
 # Shader output
 mp/src/materialsystem/stdshaders/filestocopy.txt
 mp/src/materialsystem/stdshaders/filelist.txt
@@ -130,3 +133,5 @@ mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_20b.copy
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30
 mp/src/materialsystem/stdshaders/makefile.momentum_dx9_30.copy
+mp/src/materialsystem/stdshaders/shaders
+mp/src/materialsystem/stdshaders/include
