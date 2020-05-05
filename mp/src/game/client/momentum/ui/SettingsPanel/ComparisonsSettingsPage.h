@@ -43,7 +43,7 @@ private:
         *m_pTimeShowZone, *m_pVelocityShow, *m_pVelocityShowAvg, *m_pVelocityShowMax, *m_pVelocityShowEnter, 
         *m_pVelocityShowExit, *m_pSyncShow, *m_pSyncShowS1, *m_pSyncShowS2, *m_pJumpShow, *m_pStrafeShow;
     vgui::CvarTextEntry *m_pMaxZones;
-    vgui::ComboBox *m_pTimeType;
+    vgui::CvarComboBox *m_pTimeType;
     vgui::Label *m_pTimeTypeLabel, *m_pMaxZonesLabel;
     vgui::Frame *m_pComparisonsFrame;
     C_RunComparisons *m_pBogusComparisonsPanel;

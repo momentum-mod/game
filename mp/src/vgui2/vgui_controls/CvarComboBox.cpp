@@ -9,27 +9,26 @@ using namespace vgui;
 
 Panel *Create_CvarComboBox()
 {
-    return new CvarComboBox( nullptr, nullptr );
+    return new CvarComboBox( nullptr, nullptr, nullptr );
 }
 
 //not sure which build factory to use here (and if the constructor above is necessary)
 DECLARE_BUILD_FACTORY_CUSTOM( CvarComboBox, Create_CvarComboBox );
 
-CvarComboBox::CvarComboBox(Panel *parent, const char *panelName, int numLines, bool allowEdit, char const *cvarname, bool ignoreMissingCvar)
-    : ComboBox(parent, panelName, numLines, allowEdit), m_cvar((cvarname) ? cvarname : "", (cvarname) ? ignoreMissingCvar : true)
+CvarComboBox::CvarComboBox(Panel *parent, const char *panelName, char const *cvarname)
+    : ComboBox(parent, panelName, 5, false), m_cvar(cvarname)
 {
     InitSettings();
-    m_bIgnoreMissingCvar = ignoreMissingCvar;
+
     float flCvarMin, flCvarMax;
     m_iCvarMin = m_cvar.GetMin(flCvarMin) ? RoundFloatToInt(flCvarMin) : 0;
     m_iCvarMax = m_cvar.GetMax(flCvarMax) ? RoundFloatToInt(flCvarMax) : 0;
+
+    SetNumberOfEditLines( (m_iCvarMax - m_iCvarMin) + 1 );
+
     m_iStartValue = 0;
 
     AddActionSignalTarget(this);
-}
-
-CvarComboBox::~CvarComboBox()
-{
 }
 
 int CvarComboBox::AddItem(const char* itemText, const KeyValues* userData)
@@ -117,7 +116,7 @@ void CvarComboBox::ApplySettings(KeyValues *inResourceData)
     if (!cvarName || !Q_stricmp(cvarName, "") || m_cvar.IsValid())
         return; // Doesn't have cvar set up in res file, or we were constructed with one
 
-    m_cvar.Init(cvarName, m_bIgnoreMissingCvar);
+    m_cvar.Init(cvarName);
     Reset();
 }
 
