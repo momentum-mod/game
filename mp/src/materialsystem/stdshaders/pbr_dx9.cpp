@@ -112,6 +112,14 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         if (!params[BUMPMAP]->IsDefined())
             params[BUMPMAP]->SetStringValue("dev/flat_normal");
 
+        // Set a good default base texture
+        if (!params[BASETEXTURE]->IsDefined())
+            params[BASETEXTURE]->SetStringValue("dev/pbr_basetexture");
+
+        // Set a good default mrao texture
+        if (!params[MRAOTEXTURE]->IsDefined())
+            params[MRAOTEXTURE]->SetStringValue("dev/pbr_mraotexture");
+
         // PBR relies heavily on envmaps
         if (!params[ENVMAP]->IsDefined())
             params[ENVMAP]->SetStringValue("env_cubemap");
