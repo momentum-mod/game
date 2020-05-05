@@ -87,9 +87,6 @@ $Project "Shaders (Momentum)"
         $Lib	shaderlib
     }
 
-	$File	"buildsdkshaders.bat"
-	$File	"buildshaders.bat"
-
 	$Shaders	"momentum_dx9_20b.txt"
 	$Shaders	"momentum_dx9_30.txt"
 }
