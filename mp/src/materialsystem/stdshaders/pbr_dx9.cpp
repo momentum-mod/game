@@ -112,6 +112,10 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         if (!params[BUMPMAP]->IsDefined())
             params[BUMPMAP]->SetStringValue("dev/flat_normal");
 
+        // Set a good default mrao texture
+        if (!params[MRAOTEXTURE]->IsDefined())
+            params[MRAOTEXTURE]->SetStringValue("dev/pbr_mraotexture");
+
         // PBR relies heavily on envmaps
         if (!params[ENVMAP]->IsDefined())
             params[ENVMAP]->SetStringValue("env_cubemap");
@@ -340,7 +344,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             }
             else
             {
-                pShaderAPI->BindStandardTexture(SAMPLER_BASETEXTURE, TEXTURE_WHITE);
+                pShaderAPI->BindStandardTexture(SAMPLER_BASETEXTURE, TEXTURE_GREY);
             }
 
             // Setting up vertex color
