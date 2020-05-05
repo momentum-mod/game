@@ -188,11 +188,11 @@ float2 parallaxCorrect(float2 texCoord, float3 viewRelativeDir, sampler depthMap
     float2 vParallaxOffsetTS = vParallaxDirection * fParallaxLength;
     vParallaxOffsetTS *= parallaxDepth;
 
-     // Compute all the derivatives:
-    float2 dx = ddx( texCoord );
-    float2 dy = ddy( texCoord );
+    // Compute all the derivatives:
+    // float2 dx = ddx( texCoord );
+    // float2 dy = ddy( texCoord );
 
-    int nNumSteps = 20;
+    int nNumSteps = 10;
 
     float fCurrHeight = 0.0;
     float fStepSize   = 1.0 / (float) nNumSteps;
@@ -217,7 +217,8 @@ float2 parallaxCorrect(float2 texCoord, float3 viewRelativeDir, sampler depthMap
         vTexCurrentOffset -= vTexOffsetPerStep;
 
         // Sample height map which in this case is stored in the alpha channel of the normal map:
-        fCurrHeight = parallaxCenter + tex2Dgrad( depthMap, vTexCurrentOffset, dx, dy ).a;
+        // fCurrHeight = parallaxCenter + tex2Dgrad( depthMap, vTexCurrentOffset, dx, dy ).a;
+        fCurrHeight = parallaxCenter + tex2D( depthMap, vTexCurrentOffset ).a;
 
         fCurrentBound -= fStepSize;
 
