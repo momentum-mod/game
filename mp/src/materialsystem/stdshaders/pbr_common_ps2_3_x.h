@@ -212,6 +212,7 @@ float2 parallaxCorrect(float2 texCoord, float3 viewRelativeDir, sampler depthMap
 
     float2 texOffset2 = 0;
 
+    [unroll]
     while ( nStepIndex < nNumSteps ) 
     {
         vTexCurrentOffset -= vTexOffsetPerStep;
