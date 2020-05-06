@@ -9,12 +9,12 @@
 #include "skin_dx9_helper.h"
 #include "convar.h"
 #include "cpp_shader_constant_register_map.h"
-#include "SDK_skin_vs20.inc"
-#include "SDK_skin_ps20b.inc"
+#include "sdk_skin_vs20.inc"
+#include "sdk_skin_ps20b.inc"
 #include "commandbuilder.h"
 
-#include "SDK_skin_vs30.inc"
-#include "SDK_skin_ps30.inc"
+#include "sdk_skin_vs30.inc"
+#include "sdk_skin_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

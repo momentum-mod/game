@@ -90,11 +90,10 @@
 #include "convar.h"
 
 // Auto generated inc files
-#include "SDK_emissive_scroll_blended_pass_vs20.inc"
-#include "SDK_emissive_scroll_blended_pass_ps20.inc"
-#include "SDK_emissive_scroll_blended_pass_ps20b.inc"
-#include "SDK_emissive_scroll_blended_pass_vs30.inc"
-#include "SDK_emissive_scroll_blended_pass_ps30.inc"
+#include "sdk_emissive_scroll_blended_pass_vs20.inc"
+#include "sdk_emissive_scroll_blended_pass_ps20b.inc"
+#include "sdk_emissive_scroll_blended_pass_vs30.inc"
+#include "sdk_emissive_scroll_blended_pass_ps30.inc"
 
 void InitParamsEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, EmissiveScrollBlendedPassVars_t &info )
 {
@@ -147,16 +146,8 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 			SET_STATIC_VERTEX_SHADER( sdk_emissive_scroll_blended_pass_vs20 );
 
 			// Pixel Shader
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
-				SET_STATIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20 );
-				SET_STATIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
+			SET_STATIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
 		}
 		else
 		{
@@ -200,16 +191,8 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 			// None?
 
 			// Set Pixel Shader Combos
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( sdk_emissive_scroll_blended_pass_ps20b );
 		}
 		else
 		{
