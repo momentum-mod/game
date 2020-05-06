@@ -34,8 +34,14 @@ namespace vgui
         int GetPrecision() const { return m_iPrecision; }
 
     private:
+        bool ShouldUpdate(const char *szText);
+        void SetCvarVal(const char *szText);
+        int GetPrecisionOfText(const char *szText);
+
         ConVarRef m_cvarRef;
         int m_iPrecision;
+        float m_fClosestToZeroPossible;
+        bool m_bCvarMinAboveZero;
         char m_pszStartValue[64];
         char m_szNumberFormat[8];
     };
