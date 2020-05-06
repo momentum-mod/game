@@ -11,78 +11,92 @@
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/PropertyPage.h>
 
-#define CVARSLIDER_SCALE_FACTOR 100.0f
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
 
-DECLARE_BUILD_FACTORY(CvarSlider);
+Panel *Create_CvarSlider() 
+{ 
+    return new CvarSlider(nullptr, nullptr);
+}
+
+DECLARE_BUILD_FACTORY_CUSTOM(CvarSlider, Create_CvarSlider);
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: For setting up the slider in a res file instead of in code
 //-----------------------------------------------------------------------------
 CvarSlider::CvarSlider(Panel *parent, const char *name) : Slider(parent, name), m_cvar("", true)
 {
     InitSettings();
-    SetupSlider(0.0f, 1.0f, "", false, false, false);
+    SetupSlider("", 2, false, false);
     m_bCreatedInCode = false;
-
     AddActionSignalTarget(this);
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: For sliders that use min/max from a cvar
 //-----------------------------------------------------------------------------
-CvarSlider::CvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
-                         char const *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges, bool bOnlyIntegers)
+CvarSlider::CvarSlider(Panel *parent, const char *panelName, char const *cvarname, int precision, bool bAutoApplyChanges)
     : Slider(parent, panelName), m_cvar(cvarname)
 {
     InitSettings();
-    AddActionSignalTarget(this);
-
-    SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges, bOnlyIntegers);
-
-    // For backwards compatability. Ignore .res file settings for forced setup sliders.
+    SetupSlider(cvarname, precision, bAutoApplyChanges);
     m_bCreatedInCode = true;
+    AddActionSignalTarget(this);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: For sliders that define their own min/max 
+//-----------------------------------------------------------------------------
+CvarSlider::CvarSlider(Panel *parent, const char *panelName, char const *cvarname, float minValue, float maxValue,
+                       int precision, bool bAutoApplyChanges)
+    : Slider(parent, panelName), m_cvar(cvarname)
+{
+    InitSettings();
+    SetupSlider(cvarname, precision, bAutoApplyChanges, false, minValue, maxValue);
+    m_bCreatedInCode = true;
+    AddActionSignalTarget(this);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CvarSlider::SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange, bool bAutoApplyChanges, bool bOnlyIntegers)
+void CvarSlider::SetupSlider(const char *cvarname, int precision, bool bAutoApplyChanges, bool bUseCvarBounds,
+                             float minValue, float maxValue)
 {
-    m_flMinValue = minValue;
-    m_flMaxValue = maxValue;
-    m_bOnlyIntegers = bOnlyIntegers;
-
-    // scale by CVARSLIDER_SCALE_FACTOR
-    SetRange(static_cast<int>(CVARSLIDER_SCALE_FACTOR * minValue), static_cast<int>(CVARSLIDER_SCALE_FACTOR * maxValue));
-
-    char szMin[32];
-    char szMax[32];
-
-    Q_snprintf(szMin, sizeof(szMin), "%.2f", minValue);
-    Q_snprintf(szMax, sizeof(szMax), "%.2f", maxValue);
-
-    SetTickCaptions(szMin, szMax);
-
     Q_strncpy(m_szCvarName, cvarname, sizeof(m_szCvarName));
     m_cvar = ConVarRef(m_szCvarName, cvarname[0] == '\0');
 
     m_bModifiedOnce = false;
     m_bAutoApplyChanges = bAutoApplyChanges;
-    m_bAllowOutOfRange = bAllowOutOfRange;
+    m_bUseCvarBounds = bUseCvarBounds;
+    SetPrecision(precision);
 
-    // Set slider to current value
-    Reset();
+    if (bUseCvarBounds) // ignore min/max param, just use cvar's min/max
+    {
+        minValue = m_cvar.GetMin(minValue) ? minValue : 0.0f;
+        maxValue = m_cvar.GetMax(maxValue) ? maxValue : 1.0f;
+    }
+    
+    m_flMinValue = ceilf(minValue * m_fScaleFactor) / m_fScaleFactor;
+    m_flMaxValue = (maxValue * m_fScaleFactor) / m_fScaleFactor;
+
+    SetMinMaxValues();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-CvarSlider::~CvarSlider() {}
+void CvarSlider::SetPrecision(int precision)
+{
+    m_iPrecision = precision < 0 ? 0 : precision;
+    if (m_iPrecision) // dont worry about setting if 0 as float will be rounded
+    {
+        Q_snprintf(m_szPrecisionFormat, sizeof(m_szPrecisionFormat), "%%.%if", m_iPrecision);
+    }
+    m_fScaleFactor = powf(10, m_iPrecision);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -91,15 +105,15 @@ void CvarSlider::ApplySettings(KeyValues *inResourceData)
 {
     BaseClass::ApplySettings(inResourceData);
 
-    float minValue = inResourceData->GetFloat("minvalue", 0.0f);
-    float maxValue = inResourceData->GetFloat("maxvalue", 1.0f);
+    float flMinValue = inResourceData->GetFloat("minvalue", 0.0f);
+    float flMaxValue = inResourceData->GetFloat("maxvalue", 1.0f);
     const char *cvarname = inResourceData->GetString("cvar_name");
-    bool bAllowOutOfRange = inResourceData->GetBool("allowoutofrange");
+    int iPrecision = inResourceData->GetInt("precision", 2);
     bool bAutoApplyChanges = inResourceData->GetBool("autoapply", false);
-    bool bOnlyIntegers = inResourceData->GetBool("onlyintegers", false);
+    bool bUseCvarBounds = inResourceData->GetBool("usecvarbounds", false);
 
     if (!m_bCreatedInCode)
-        SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange, bAutoApplyChanges, bOnlyIntegers);
+        SetupSlider(cvarname, iPrecision, bAutoApplyChanges, bUseCvarBounds, flMinValue, flMaxValue);
 
     if (GetParent())
     {
@@ -125,8 +139,9 @@ void CvarSlider::GetSettings(KeyValues *outResourceData)
     outResourceData->SetFloat("minvalue", m_flMinValue);
     outResourceData->SetFloat("maxvalue", m_flMaxValue);
     outResourceData->SetString("cvar_name", m_szCvarName);
-    outResourceData->SetBool("allowoutofrange", m_bAllowOutOfRange);
-    outResourceData->SetBool("onlyintegers", m_bOnlyIntegers);
+    outResourceData->SetInt("precision", m_iPrecision);
+    outResourceData->SetBool("autoapply", m_bAutoApplyChanges);
+    outResourceData->SetBool("usecvarbounds", m_bUseCvarBounds);
 }
 
 void CvarSlider::SetCVarName(char const *cvarname)
@@ -139,26 +154,30 @@ void CvarSlider::SetCVarName(char const *cvarname)
     Reset();
 }
 
-void CvarSlider::SetMinMaxValues(float minValue, float maxValue, bool bSetTickDisplay)
+void CvarSlider::SetMinMaxValues()
 {
-    SetRange(int(CVARSLIDER_SCALE_FACTOR * minValue), int(CVARSLIDER_SCALE_FACTOR * maxValue));
+    SetRange(static_cast<int>(m_fScaleFactor * m_flMinValue), static_cast<int>(m_fScaleFactor * m_flMaxValue));
 
-    if (bSetTickDisplay)
+    char szMin[32];
+    char szMax[32];
+
+    if (m_iPrecision)
     {
-        char szMin[32];
-        char szMax[32];
-
-        Q_snprintf(szMin, sizeof(szMin), "%.2f", minValue);
-        Q_snprintf(szMax, sizeof(szMax), "%.2f", maxValue);
-
-        SetTickCaptions(szMin, szMax);
+        Q_snprintf(szMin, sizeof(szMin), m_szPrecisionFormat, m_flMinValue);
+        Q_snprintf(szMax, sizeof(szMax), m_szPrecisionFormat, m_flMaxValue);
     }
+    else
+    {
+        Q_snprintf(szMin, sizeof(szMin), "%i", RoundFloatToInt(m_flMinValue));
+        Q_snprintf(szMax, sizeof(szMax), "%i", RoundFloatToInt(m_flMaxValue));
+    }
+
+    // overridden if leftText/rightText is defined in res file
+    SetTickCaptions(szMin, szMax);
 
     // Set slider to current value
     Reset();
 }
-
-void CvarSlider::SetTickColor(Color color) { m_TickColor = color; }
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -173,7 +192,7 @@ void CvarSlider::Paint()
     // did it get changed from under us?
     if (!CloseEnough(curvalue, m_fStartValue, FLT_EPSILON))
     {
-        int val = static_cast<int>(CVARSLIDER_SCALE_FACTOR * curvalue);
+        int val = static_cast<int>(m_fScaleFactor * curvalue);
         m_fStartValue = curvalue;
         m_fCurrentValue = curvalue;
 
@@ -192,16 +211,10 @@ void CvarSlider::ApplyChanges()
     if (m_bModifiedOnce)
     {
         m_iStartValue = GetValue();
-        if (m_bAllowOutOfRange)
-        {
-            m_fStartValue = m_fCurrentValue;
-        }
-        else
-        {
-            m_fStartValue = static_cast<float>(m_iStartValue) / CVARSLIDER_SCALE_FACTOR;
-        }
+        m_fStartValue =
+            m_bUseCvarBounds ? static_cast<float>(m_iStartValue) / m_fScaleFactor : m_fCurrentValue;
 
-        m_cvar.SetValue(m_bOnlyIntegers ? RoundFloatToInt(m_fStartValue) : m_fStartValue);
+        m_cvar.SetValue(m_iPrecision ? m_fStartValue : RoundFloatToInt(m_fStartValue));
     }
 }
 
@@ -210,12 +223,10 @@ void CvarSlider::ApplyChanges()
 //-----------------------------------------------------------------------------
 float CvarSlider::GetSliderValue()
 {
-    if (m_bAllowOutOfRange)
-    {
-        return m_fCurrentValue;
-    }
+    if (m_bUseCvarBounds)
+        return float(GetValue()) / m_fScaleFactor;
 
-    return float(GetValue()) / CVARSLIDER_SCALE_FACTOR;
+    return m_fCurrentValue / m_fScaleFactor;
 }
 
 //-----------------------------------------------------------------------------
@@ -223,7 +234,7 @@ float CvarSlider::GetSliderValue()
 //-----------------------------------------------------------------------------
 void CvarSlider::SetSliderValue(float fValue)
 {
-    int nVal = static_cast<int>(CVARSLIDER_SCALE_FACTOR * fValue);
+    int nVal = static_cast<int>(m_fScaleFactor * fValue);
     SetValue(nVal, false);
 
     // remember this slider value
@@ -253,7 +264,7 @@ void CvarSlider::Reset()
     m_fStartValue = m_cvar.GetFloat();
     m_fCurrentValue = m_fStartValue;
 
-    int value = static_cast<int>(CVARSLIDER_SCALE_FACTOR * m_fStartValue);
+    int value = static_cast<int>(m_fScaleFactor * m_fStartValue);
     SetValue(value);
 
     m_iStartValue = GetValue();
@@ -281,7 +292,17 @@ void CvarSlider::OnSliderMoved()
     if (m_iLastSliderValue != GetValue())
     {
         m_iLastSliderValue = GetValue();
-        m_fCurrentValue = static_cast<float>(m_iLastSliderValue) / CVARSLIDER_SCALE_FACTOR;
+        m_fCurrentValue = static_cast<float>(m_iLastSliderValue) / m_fScaleFactor;
+
+        if (!m_bUseCvarBounds) // cvar value can be above/below bounds
+        {
+            // if at min/max value but cvar is lower/higher, allow it
+            bool bBelowMin = CloseEnough(m_fCurrentValue, m_flMinValue, FLT_EPSILON) && m_cvar.GetFloat() < m_flMinValue,
+                 bAboveMax = CloseEnough(m_fCurrentValue, m_flMaxValue, FLT_EPSILON) && m_cvar.GetFloat() > m_flMaxValue;
+            if (bBelowMin || bAboveMax)
+                return;
+        }
+
         m_bModifiedOnce = true;
 
         if (ShouldAutoApplyChanges())
@@ -299,10 +320,7 @@ void CvarSlider::OnSliderMoved()
 //-----------------------------------------------------------------------------
 void CvarSlider::OnApplyChanges(void)
 {
-    if (!m_bCreatedInCode)
-    {
-        ApplyChanges();
-    }
+    ApplyChanges();
 }
 
 void CvarSlider::InitSettings()
@@ -311,7 +329,8 @@ void CvarSlider::InitSettings()
     {"cvar_name", TYPE_STRING},
     {"minvalue", TYPE_FLOAT},
     {"maxvalue", TYPE_FLOAT},
-    {"allowoutofrange", TYPE_BOOL},
-    {"onlyintegers", TYPE_BOOL}
+    {"precision", TYPE_INTEGER},
+    {"autoapply", TYPE_BOOL},
+    {"usecvarbounds", TYPE_BOOL}
     END_PANEL_SETTINGS();
 }

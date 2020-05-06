@@ -21,7 +21,7 @@ OnlineSettingsPage::OnlineSettingsPage(Panel* pParent) : BaseClass(pParent, "Onl
     m_pEnableGhostTrails->AddActionSignalTarget(this);
     m_pEnableColorAlphaOverride = new CvarToggleCheckButton(this, "EnableAlphaOverride", "#MOM_Settings_Override_Alpha_Enable", "mom_ghost_online_alpha_override_enable");
     m_pEnableColorAlphaOverride->AddActionSignalTarget(this);
-    m_pAlphaOverrideSlider = new CvarSlider(this, "AlphaOverrideSlider", nullptr, 0.0f, 255.0f, "mom_ghost_online_alpha_override", false, true);
+    m_pAlphaOverrideSlider = new CvarSlider(this, "AlphaOverrideSlider", "mom_ghost_online_alpha_override", 0, true);
     m_pAlphaOverrideSlider->AddActionSignalTarget(this);
     m_pAlphaOverrideInput = new CvarTextEntry(this, "AlphaOverrideEntry", "mom_ghost_online_alpha_override");
     m_pAlphaOverrideInput->SetAllowNumericInputOnly(true);

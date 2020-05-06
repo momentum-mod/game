@@ -100,7 +100,7 @@ CGammaDialog::CGammaDialog(vgui::VPANEL hParent) : BaseClass(NULL, "OptionsSubVi
     SetSize(400, 260);
     SetDeleteSelfOnClose(true);
 
-    m_pGammaSlider = new CvarSlider(this, "Gamma", "#GameUI_Gamma", 1.6f, 2.6f, "mat_monitorgamma", false, true);
+    m_pGammaSlider = new CvarSlider(this, "Gamma", "mat_monitorgamma", 1, true);
     m_pGammaLabel = new Label(this, "Gamma label", "#GameUI_Gamma");
     m_pGammaEntry = new CvarTextEntry(this, "GammaEntry", "mat_monitorgamma", "%.1f");
     m_pGammaEntry->SetAllowNumericInputOnly(true);
@@ -300,7 +300,7 @@ COptionsSubVideoAdvancedDlg::COptionsSubVideoAdvancedDlg(vgui::Panel *parent)
     m_pMulticore->AddItem("#gameui_disabled", NULL);
     m_pMulticore->AddItem("#gameui_enabled", NULL);
 
-    m_pFOVSlider = new CvarSlider(this, "FovSlider", "", 90.0f, 179.0f, "fov_desired", false);
+    m_pFOVSlider = new CvarSlider(this, "FovSlider", "fov_desired", 90.0f, 179.0f, 0, false);
 
 	LoadControlSettings( "resource/OptionsSubVideoAdvancedDlg.res" );
 	MoveToCenterOfScreen();

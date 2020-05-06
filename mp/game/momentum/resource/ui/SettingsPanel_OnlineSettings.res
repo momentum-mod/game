@@ -186,10 +186,10 @@
 		"tabPosition"		"0"
 		"leftText"		"#GameUI_Low"
 		"rightText"		"#GameUI_High"
-		"minvalue"		"0"
-		"maxvalue"		"255"
 		"cvar_name"		"mom_ghost_online_alpha_override"
-		"allowoutofrange"		"0"
+        "precision"     "0"
+        "autoapply"     "1"
+		"usecvarbounds" "1"
         "actionsignallevel" "1"
 	}
 	"AlphaOverrideEntry"

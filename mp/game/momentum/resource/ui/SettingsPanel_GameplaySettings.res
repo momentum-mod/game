@@ -32,10 +32,12 @@
 		"tabPosition"		"0"
 		"leftText"		"#GameUI_Low"
 		"rightText"		"#GameUI_High"
-        "minvalue" "0"
-        "maxvalue" "360"
-        "cvar_name" "cl_yawspeed"
-        "allowoutofrange" "0"
+        "cvar_name"     "cl_yawspeed"
+        "minvalue"      "0"
+        "maxvalue"      "360"
+        "precision"     "2"
+        "autoapply"     "1"
+		"usecvarbounds" "0"
         "actionsignallevel" "1"
     }
     
