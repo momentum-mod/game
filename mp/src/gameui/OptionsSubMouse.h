@@ -21,7 +21,6 @@ namespace vgui
     class Label;
     class Panel;
     class CvarToggleCheckButton;
-    class CvarSlider;
 }
 
 //-----------------------------------------------------------------------------

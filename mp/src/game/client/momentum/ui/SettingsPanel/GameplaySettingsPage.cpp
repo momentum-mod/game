@@ -11,7 +11,7 @@ using namespace vgui;
 
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
-    m_pYawSpeedSlider = new CvarSlider(this, "YawSpeed", nullptr, 0.0f, 360.0f, "cl_yawspeed", false, true);
+    m_pYawSpeedSlider = new CvarSlider(this, "YawSpeed", "cl_yawspeed", 0.0f, 360.0f, 1, true);
     m_pYawSpeedSlider->AddActionSignalTarget(this);
     m_pYawSpeedEntry = new CvarTextEntry(this, "YawSpeedEntry", "cl_yawspeed");
     m_pYawSpeedEntry->SetAllowNumericInputOnly(true);

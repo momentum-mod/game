@@ -355,10 +355,10 @@
         "thumbwidth"		"8.000000"
         "rangeMin"		"100"
         "rangeMax"		"6400"
-        "minvalue"		"1.000000"
-        "maxvalue"		"64.000000"
         "cvar_name"		"mom_zone_grid"
-        "allowoutofrange"		"0"
+        "precision"     "0"
+        "autoapply"     "1"
+		"usecvarbounds" "1"
     }
     "GridSizeTextEntry"
     {

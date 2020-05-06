@@ -882,7 +882,9 @@
 		"minvalue"		"90"
 		"maxvalue"		"179"
 		"cvar_name"		"fov_desired"
-		"allowoutofrange"		"0"
+        "precision"     "0"
+        "autoapply"     "0"
+		"usecvarbounds" "0"
 	}
 	"FOVLabel"
 	{

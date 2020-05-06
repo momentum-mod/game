@@ -67,7 +67,7 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pZoneTypeCombo->ActivateItemByRow(0);
 
     m_pGridSizeLabel = new Label(this, "GridSizeLabel", "");
-    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "", 0.0f, 1.0f, "mom_zone_grid", false, true, true);
+    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "mom_zone_grid", 0, true);
     m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid", "%.0f");
     m_pGridSizeTextEntry->SetAllowNumericInputOnly(true);
     m_bUpdateGridSizeSlider = false;

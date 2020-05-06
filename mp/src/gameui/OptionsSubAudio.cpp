@@ -44,8 +44,8 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 {
     SetSize(20, 20);
 
-	m_pSFXSlider = new CvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume", false, true );
-	m_pMusicSlider = new CvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "snd_musicvolume", false, true );
+	m_pSFXSlider = new CvarSlider(this, "SFXSlider", "volume", 2, true);
+    m_pMusicSlider = new CvarSlider(this, "MusicSlider", "snd_musicvolume", 2, true);
 	
 	m_pCloseCaptionCombo = new ComboBox( this, "CloseCaptionCheck", 3, false );
 	m_pCloseCaptionCombo->AddItem( "#GameUI_NoClosedCaptions", NULL );
