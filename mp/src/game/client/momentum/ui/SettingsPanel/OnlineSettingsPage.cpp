@@ -23,7 +23,7 @@ OnlineSettingsPage::OnlineSettingsPage(Panel* pParent) : BaseClass(pParent, "Onl
     m_pEnableColorAlphaOverride->AddActionSignalTarget(this);
     m_pAlphaOverrideSlider = new CvarSlider(this, "AlphaOverrideSlider", "mom_ghost_online_alpha_override", 0, true);
     m_pAlphaOverrideSlider->AddActionSignalTarget(this);
-    m_pAlphaOverrideInput = new CvarTextEntry(this, "AlphaOverrideEntry", "mom_ghost_online_alpha_override");
+    m_pAlphaOverrideInput = new CvarTextEntry(this, "AlphaOverrideEntry", "mom_ghost_online_alpha_override", 0);
     m_pAlphaOverrideInput->SetAllowNumericInputOnly(true);
     m_pAlphaOverrideInput->AddActionSignalTarget(this);
 

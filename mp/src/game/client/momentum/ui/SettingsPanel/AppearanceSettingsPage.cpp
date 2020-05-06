@@ -57,7 +57,7 @@ AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pPare
 
     m_pPickBodyColorButton = new Button(this, "PickBodyColorButton", "", this, "picker_body");
 
-    m_pTrailLengthEntry = new CvarTextEntry(this, "TrailEntry", "mom_trail_length");
+    m_pTrailLengthEntry = new CvarTextEntry(this, "TrailEntry", "mom_trail_length", 1);
     m_pTrailLengthEntry->SetAllowNumericInputOnly(true);
 
     m_pBodygroupCombo = new CvarComboBox(this, "BodygroupCombo", "mom_ghost_bodygroup");

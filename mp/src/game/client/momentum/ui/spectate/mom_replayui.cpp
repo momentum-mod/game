@@ -66,7 +66,7 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     m_pTimescaleSlider = new CvarSlider(this, "TimescaleSlider", "mom_replay_timescale", 1, true);
     m_pTimescaleSlider->AddActionSignalTarget(this);
     m_pTimescaleLabel = new Label(this, "TimescaleLabel", "#MOM_ReplayTimescale");
-    m_pTimescaleEntry = new CvarTextEntry(this, "TimescaleEntry", "mom_replay_timescale", "%.1f");
+    m_pTimescaleEntry = new CvarTextEntry(this, "TimescaleEntry", "mom_replay_timescale", 1);
     m_pTimescaleEntry->SetAllowNumericInputOnly(true);
     m_pTimescaleEntry->AddActionSignalTarget(this);
 

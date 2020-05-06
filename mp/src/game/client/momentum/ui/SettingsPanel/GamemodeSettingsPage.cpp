@@ -21,7 +21,7 @@ GamemodeSettingsPage::GamemodeSettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pRJToggleRocketExplosionSound = new CvarToggleCheckButton(this, "ToggleRJExplosionSound", "#MOM_Settings_RJ_Enable_Explosion_Sound", "mom_rj_sound_explosion_enable");
     m_pRJToggleRocketDecals = new CvarToggleCheckButton(this, "ToggleRocketDecals", "#MOM_Settings_RJ_Enable_Rocket_Decals", "mom_rj_decals_enable");
     m_pRJEnableCenterFire = new CvarToggleCheckButton(this, "EnableCenterFire", "#MOM_Settings_RJ_Enable_Center_Fire", "mom_rj_center_fire");
-    m_pRJRocketDrawDelayEntry = new CvarTextEntry(this, "RocketDrawDelayEntry", "mom_rj_rocket_drawdelay");
+    m_pRJRocketDrawDelayEntry = new CvarTextEntry(this, "RocketDrawDelayEntry", "mom_rj_rocket_drawdelay", 1);
     m_pRJRocketDrawDelayEntry->SetAllowNumericInputOnly(true);
     m_pRJRocketDrawDelayEntry->AddActionSignalTarget(this);
 
@@ -43,7 +43,7 @@ GamemodeSettingsPage::GamemodeSettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pSJChargeMeterUnits->AddItem("#MOM_Settings_SJ_ChargeMeter_Units_Type_2", nullptr);
     m_pSJChargeMeterUnits->AddActionSignalTarget(this);
 
-    m_pSJStickyDrawDelayEntry = new CvarTextEntry(this, "StickyDrawDelayEntry", "mom_sj_stickybomb_drawdelay");
+    m_pSJStickyDrawDelayEntry = new CvarTextEntry(this, "StickyDrawDelayEntry", "mom_sj_stickybomb_drawdelay", 1);
     m_pSJStickyDrawDelayEntry->SetAllowNumericInputOnly(true);
     m_pSJStickyDrawDelayEntry->AddActionSignalTarget(this);
 

@@ -15,7 +15,7 @@ namespace vgui
         DECLARE_CLASS_SIMPLE(CvarTextEntry, vgui::TextEntry);
 
     public:
-        CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname, const char *numberFormat = "%g");
+        CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname, int precision = 2);
 
         MESSAGE_FUNC(OnTextChanged, "TextChanged");
         MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");
@@ -30,9 +30,12 @@ namespace vgui
         void OnKillFocus() OVERRIDE;
         bool HasBeenModified();
         bool HasBeenModifiedExternally() const;
+        void SetPrecision(int precision);
+        int GetPrecision() const { return m_iPrecision; }
 
     private:
         ConVarRef m_cvarRef;
+        int m_iPrecision;
         char m_pszStartValue[64];
         char m_szNumberFormat[8];
     };

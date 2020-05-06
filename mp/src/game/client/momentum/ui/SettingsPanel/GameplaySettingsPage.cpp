@@ -13,12 +13,12 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 {
     m_pYawSpeedSlider = new CvarSlider(this, "YawSpeed", "cl_yawspeed", 0.0f, 360.0f, 1, true);
     m_pYawSpeedSlider->AddActionSignalTarget(this);
-    m_pYawSpeedEntry = new CvarTextEntry(this, "YawSpeedEntry", "cl_yawspeed");
+    m_pYawSpeedEntry = new CvarTextEntry(this, "YawSpeedEntry", "cl_yawspeed", 1);
     m_pYawSpeedEntry->SetAllowNumericInputOnly(true);
     m_pYawSpeedEntry->AddActionSignalTarget(this);
 
     m_pLowerSpeedLabel = new Label(this, "LowerSpeedLabel", "#MOM_Settings_SpeedToLower");
-    m_pLowerSpeedCVarEntry = new CvarTextEntry(this, "LowerSpeedEntry", "mom_weapon_speed_lower");
+    m_pLowerSpeedCVarEntry = new CvarTextEntry(this, "LowerSpeedEntry", "mom_weapon_speed_lower", 1);
     m_pLowerSpeedCVarEntry->SetAllowNumericInputOnly(true);
     m_pLowerSpeedCVarEntry->AddActionSignalTarget(this);
     m_pLowerSpeed = new CvarToggleCheckButton(this, "LowerWeaponButton", "#MOM_Settings_LowerWeapon", "mom_weapon_speed_lower_enable");

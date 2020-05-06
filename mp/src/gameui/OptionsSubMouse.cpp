@@ -47,11 +47,11 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 
 	m_pMouseSensitivitySlider = new CvarSlider(this, "Slider", "sensitivity", 0.0001f, 20.0f, 3, true);
 
-    m_pMouseSensitivityEntry = new CvarTextEntry(this, "SensitivityLabel", "sensitivity", "%.3f");
+    m_pMouseSensitivityEntry = new CvarTextEntry(this, "SensitivityLabel", "sensitivity", 3);
     m_pMouseSensitivityEntry->AddActionSignalTarget(this);
     m_pMouseSensitivityEntry->SetAllowNumericInputOnly(true);
 
-    m_pMouseAccelEntry = new CvarTextEntry(this, "MouseAccelerationLabel", "m_customaccel_exponent", "%.3f");
+    m_pMouseAccelEntry = new CvarTextEntry(this, "MouseAccelerationLabel", "m_customaccel_exponent", 3);
     m_pMouseAccelEntry->AddActionSignalTarget(this);
     m_pMouseAccelEntry->SetAllowNumericInputOnly(true);
     m_pMouseAccelToggle = new CheckButton(this, "MouseAccelerationCheckbox", "#GameUI_MouseAcceleration");

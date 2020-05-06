@@ -49,7 +49,7 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
     m_pPickColorButton = new Button(this, "PickColorButton", "", this, "picker");
     m_pSliderScale = new CvarSlider(this, "SliderScale", "mom_paintgun_scale", 2, true);
 
-    m_pTextSliderScale = new CvarTextEntry(this, "TextSliderScale", "mom_paintgun_scale", "%.2f");
+    m_pTextSliderScale = new CvarTextEntry(this, "TextSliderScale", "mom_paintgun_scale", 2);
     m_pTextSliderScale->AddActionSignalTarget(this);
     m_pTextSliderScale->SetAllowNumericInputOnly(true);
 

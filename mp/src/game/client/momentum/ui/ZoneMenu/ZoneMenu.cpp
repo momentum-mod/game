@@ -49,11 +49,11 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pSaveZonesButton = new Button(this, "SaveZonesButton", "#MOM_ZoneMenu_SaveZones", this, "SaveZones");
 
     m_pTrackNumberLabel = new Label(this, "TrackNumberLabel", "#MOM_ZoneMenu_TrackNumber");
-    m_pTrackNumberEntry = new CvarTextEntry(this, "TrackNumberEntry", "mom_zone_track");
+    m_pTrackNumberEntry = new CvarTextEntry(this, "TrackNumberEntry", "mom_zone_track", 0);
     m_pTrackNumberEntry->SetAllowNumericInputOnly(true);
 
     m_pZoneNumberLabel = new Label(this, "ZoneNumberLabel", "#MOM_ZoneMenu_ZoneNumber");
-    m_pZoneNumberEntry = new CvarTextEntry(this, "ZoneNumberEntry", "mom_zone_zonenum");
+    m_pZoneNumberEntry = new CvarTextEntry(this, "ZoneNumberEntry", "mom_zone_zonenum", 0);
     m_pZoneNumberEntry->SetAllowNumericInputOnly(true);
 
     m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "#MOM_ZoneMenu_ZoneType");
@@ -68,7 +68,7 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
 
     m_pGridSizeLabel = new Label(this, "GridSizeLabel", "");
     m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "mom_zone_grid", 0, true);
-    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid", "%.0f");
+    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid", 0);
     m_pGridSizeTextEntry->SetAllowNumericInputOnly(true);
     m_bUpdateGridSizeSlider = false;
 
