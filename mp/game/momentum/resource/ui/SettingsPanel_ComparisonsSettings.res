@@ -121,7 +121,7 @@
 		"tabPosition"		"3"
 		"textHidden"		"0"
 		"editable"		"1"
-		"maxchars"		"-1"
+		"maxchars"		"2"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
         "cvar_name"     "mom_comparisons_max_zones"
