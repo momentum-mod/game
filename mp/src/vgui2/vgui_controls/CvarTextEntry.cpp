@@ -18,12 +18,12 @@ static const int MAX_CVAR_TEXT = 64;
 
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CvarTextEntry, "");
 
-CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname, const char *numberFormat)
+CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname, int precision)
     : TextEntry(parent, panelName), m_cvarRef(cvarname, true)
 {
     InitSettings();
+    SetPrecision(precision);
     m_pszStartValue[0] = 0;
-    Q_strncpy(m_szNumberFormat, numberFormat, sizeof(m_szNumberFormat));
 
     if (m_cvarRef.IsValid())
     {
@@ -31,6 +31,15 @@ CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *c
     }
     
     AddActionSignalTarget(this);
+}
+
+void CvarTextEntry::SetPrecision(int precision)
+{
+    m_iPrecision = precision < 0 ? 0 : precision;
+    if (m_iPrecision) // dont worry about setting if 0 as float will be rounded
+    {
+        Q_snprintf(m_szNumberFormat, sizeof(m_szNumberFormat), "%%.%if", m_iPrecision);
+    }
 }
 
 void CvarTextEntry::ApplySchemeSettings(IScheme *pScheme)
@@ -48,7 +57,7 @@ void CvarTextEntry::ApplySettings(KeyValues* inResourceData)
 
     const char *cvarName = inResourceData->GetString("cvar_name", "");
 
-    m_cvarRef.Init(cvarName, true);
+    m_cvarRef.Init(cvarName);
 
     if (m_cvarRef.IsValid())
     {
@@ -70,16 +79,24 @@ void CvarTextEntry::SetText(const char* text)
 
     if (GetAllowNumericInputOnly())
     {
-        if (text[strnlen(text, MAX_CVAR_TEXT) - 1] == '.')
+        if (m_iPrecision)
         {
-            // trying to enter a decimal number so set the text normally
-            BaseClass::SetText(text);
+            if (text[strnlen(text, MAX_CVAR_TEXT) - 1] == '.')
+            {
+                // trying to enter a decimal number so set the text normally
+                BaseClass::SetText(text);
+            }
+            else // not in the middle of setting a decimal number
+            {
+                char newText[MAX_CVAR_TEXT];
+                Q_snprintf(newText, MAX_CVAR_TEXT, m_szNumberFormat, atof(text));
+                BaseClass::SetText(newText);
+            }
         }
-        else // not in the middle of setting a decimal number
+        else
         {
-            // making sure the formatting is correct (removing trailing zeros via %g)
             char newText[MAX_CVAR_TEXT];
-            Q_snprintf(newText, MAX_CVAR_TEXT, m_szNumberFormat, atof(text));
+            Q_snprintf(newText, MAX_CVAR_TEXT, "%i", atoi(text));
             BaseClass::SetText(newText);
         }
     }

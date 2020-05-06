@@ -102,7 +102,7 @@ CGammaDialog::CGammaDialog(vgui::VPANEL hParent) : BaseClass(NULL, "OptionsSubVi
 
     m_pGammaSlider = new CvarSlider(this, "Gamma", "mat_monitorgamma", 1, true);
     m_pGammaLabel = new Label(this, "Gamma label", "#GameUI_Gamma");
-    m_pGammaEntry = new CvarTextEntry(this, "GammaEntry", "mat_monitorgamma", "%.1f");
+    m_pGammaEntry = new CvarTextEntry(this, "GammaEntry", "mat_monitorgamma", 1);
     m_pGammaEntry->SetAllowNumericInputOnly(true);
 
     Button *ok = new Button(this, "OKButton", "#vgui_ok");
