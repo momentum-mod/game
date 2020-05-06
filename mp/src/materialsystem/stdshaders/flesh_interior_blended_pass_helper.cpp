@@ -124,9 +124,8 @@
 #include "flesh_interior_blended_pass_helper.h"
 
 // Auto generated inc files
-#include "SDK_flesh_interior_blended_pass_vs20.inc"
-#include "SDK_flesh_interior_blended_pass_ps20.inc"
-#include "SDK_flesh_interior_blended_pass_ps20b.inc"
+#include "sdk_flesh_interior_blended_pass_vs20.inc"
+#include "sdk_flesh_interior_blended_pass_ps20b.inc"
 
 void InitParamsFleshInteriorBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, FleshInteriorBlendedPassVars_t &info )
 {
@@ -183,16 +182,8 @@ void DrawFleshInteriorBlendedPass( CBaseVSShader *pShader, IMaterialVar** params
         SET_STATIC_VERTEX_SHADER(sdk_flesh_interior_blended_pass_vs20);
 
 		// Pixel Shader
-		if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-		{
-            DECLARE_STATIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
-            SET_STATIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
-		}
-		else
-		{
-            DECLARE_STATIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20);
-            SET_STATIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20);
-		}
+        DECLARE_STATIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
+        SET_STATIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
 
 		// Textures
 		pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
@@ -298,16 +289,8 @@ void DrawFleshInteriorBlendedPass( CBaseVSShader *pShader, IMaterialVar** params
 		pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, vVsConst4, 4 );
 
 		// Set Pixel Shader Combos
-		if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-		{
-            DECLARE_DYNAMIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
-            SET_DYNAMIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
-		}
-		else
-		{
-            DECLARE_DYNAMIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20);
-            SET_DYNAMIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20);
-		}
+        DECLARE_DYNAMIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
+        SET_DYNAMIC_PIXEL_SHADER(sdk_flesh_interior_blended_pass_ps20b);
 
 		// Bind textures
 		pShader->BindTexture( SHADER_SAMPLER0, info.m_nFleshTexture );

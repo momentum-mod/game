@@ -33,7 +33,7 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;fxctmp9;vshtmp9;"	[$WIN32||$POSIX]
+		$AdditionalIncludeDirectories	"$BASE;include;"	[$WIN32||$POSIX]
 //		$AdditionalIncludeDirectories	"$BASE;..\..\dx9sdk\include"	[$WIN32]
 		$PreprocessorDefinitions		"$BASE;STDSHADER_DX9_DLL_EXPORT;FAST_MATERIALVAR_ACCESS"
 		$PreprocessorDefinitions		"$BASE;USE_ACTUAL_DX" [($WIN32) && !$GL]

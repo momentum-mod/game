@@ -29,7 +29,7 @@ BEGIN_VS_SHADER(COLORPICKER_BLEND, "")
             pShaderShadow->VertexShaderVertexFormat(VERTEX_POSITION, 1, nullptr, 0);
 
             pShaderShadow->SetVertexShader("colorpicker_blend_vs20", 0);
-            pShaderShadow->SetPixelShader("colorpicker_blend_ps20", 0);
+            pShaderShadow->SetPixelShader("colorpicker_blend_ps20b", 0);
         }
         DYNAMIC_STATE
         {
