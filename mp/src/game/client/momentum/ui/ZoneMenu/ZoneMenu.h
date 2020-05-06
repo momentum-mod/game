@@ -48,7 +48,6 @@ protected:
     vgui::Label         *m_pGridSizeLabel;
     vgui::CvarSlider    *m_pGridSizeSlider;
     vgui::CvarTextEntry *m_pGridSizeTextEntry;
-    bool                 m_bUpdateGridSizeSlider;
 
     // Whether or not menu should bind mouse/keyboard input to zoning commands
     bool m_bBindKeys;

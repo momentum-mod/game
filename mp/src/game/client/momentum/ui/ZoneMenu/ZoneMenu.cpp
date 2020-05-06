@@ -70,7 +70,6 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "mom_zone_grid", 0, true);
     m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid", 0);
     m_pGridSizeTextEntry->SetAllowNumericInputOnly(true);
-    m_bUpdateGridSizeSlider = false;
 
     LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
 
