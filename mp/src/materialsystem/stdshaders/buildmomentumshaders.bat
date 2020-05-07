@@ -8,25 +8,16 @@ rem == Set the absolute path to your mod's game directory with gameinfo.txt ==
 rem This should already be correct
 set GAMEDIR="%cd%\..\..\..\game\momentum"
 
-rem == Set the absolute or relative path to the bin folder with shadercompile.exe ==
-rem You must change this in order to compile shaders
-set SDKBINDIR="C:\Games\MomentumDev\bin"
-
 rem ==  Set the Path to your mod's root source code ==
 rem This should already be correct
 set SOURCEDIR="..\.."
 
 rem Remove quotes from paths
 call dequote.bat GAMEDIR
-call dequote.bat SDKBINDIR
 call dequote.bat SOURCEDIR
 
 rem ==== MOD PATH CONFIGURATIONS END ===
 rem ====================================
-
-
-call "%VS120COMNTOOLS%vsvars32.bat"
-
 
 set TTEXE=..\..\devtools\bin\timeprecise.exe
 if not exist %TTEXE% goto no_ttexe
