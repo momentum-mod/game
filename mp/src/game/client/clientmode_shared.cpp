@@ -700,6 +700,11 @@ void ClientModeShared::StartMessageMode( int iMessageModeType )
 	{
 		return;
 	}*/
+
+    // avoid softlock of starting message mode when hud/viewport isn't visible
+    if ( !m_pViewport->IsVisible() )
+        return;
+
 	if ( m_pChatElement )
 	{
 		m_pChatElement->StartMessageMode( iMessageModeType );
