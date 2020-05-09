@@ -47,7 +47,10 @@ COptionsDialog::COptionsDialog(vgui::Panel *parent) : PropertyDialog(parent, "Op
 //	double s5 = system()->GetCurrentTime();
 //	Msg("COptionsDialog::COptionsDialog(): %.3fms\n", (float)(s5 - s4) * 1000.0f);
 
-	SetApplyButtonVisible(true);
+    SetOKButtonVisible(false);
+    SetCancelButtonVisible(true);
+    SetApplyButtonVisible(false);
+    SetCancelButtonText("Write settings to config file");
 	GetPropertySheet()->SetTabWidth(84);
 }
 
@@ -59,12 +62,17 @@ COptionsDialog::~COptionsDialog()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Brings the dialog to the fore
+// Purpose: Writes users config to file
 //-----------------------------------------------------------------------------
-void COptionsDialog::Activate()
+void COptionsDialog::OnCancel()
 {
-	BaseClass::Activate();
-	EnableApplyButton(false);
+    engine->ClientCmd_Unrestricted("exec userconfig.cfg\nhost_writeconfig\n");
+}
+
+void COptionsDialog::OnClose()
+{ 
+    OnCancel();
+    BaseClass::OnClose();
 }
 
 //-----------------------------------------------------------------------------
