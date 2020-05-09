@@ -30,7 +30,6 @@ public:
 	COptionsSubKeyboard(vgui::Panel *parent);
 
 	virtual void	OnResetData();
-	virtual void	OnApplyChanges();
 	virtual void	OnKeyCodePressed( vgui::KeyCode code );
 	virtual void	OnThink();
 
