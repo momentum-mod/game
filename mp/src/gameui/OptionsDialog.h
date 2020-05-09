@@ -26,8 +26,9 @@ public:
 	~COptionsDialog();
 
 	void Run();
-	virtual void Activate();
 	void OpenGammaDialog();
+    virtual void OnCancel() OVERRIDE;
+    virtual void OnClose() OVERRIDE;
 
 	MESSAGE_FUNC( OnGameUIHidden, "GameUIHidden" );	// called when the GameUI is hidden
 
