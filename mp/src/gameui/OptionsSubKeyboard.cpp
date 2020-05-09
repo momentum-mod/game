@@ -71,15 +71,6 @@ void COptionsSubKeyboard::OnResetData()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: saves out keybinding changes
-//-----------------------------------------------------------------------------
-void COptionsSubKeyboard::OnApplyChanges()
-{
-    // Now exec their custom bindings
-    engine->ClientCmd_Unrestricted("exec userconfig.cfg\nhost_writeconfig\n");
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: binds double-clicking or hitting enter in the keybind list to changing the key
 //-----------------------------------------------------------------------------
 void COptionsSubKeyboard::OnKeyCodeTyped(vgui::KeyCode code)
@@ -436,8 +427,6 @@ void COptionsSubKeyboard::FillInDefaultBindings( void )
             }
         }
 	}
-	
-	PostActionSignal(new KeyValues("ApplyButtonEnable"));
 
 	// Make sure console and escape key are always valid
     KeyValues *item = GetItemForBinding( "toggleconsole" );
@@ -510,7 +499,6 @@ void COptionsSubKeyboard::Finish( ButtonCode_t code )
 		{
 			// Bind the named key
 			AddBinding( item, g_pInputSystem->ButtonCodeToString( code ) );
-			PostActionSignal( new KeyValues( "ApplyButtonEnable" ) );	
 		}
 
 		m_pKeyBindList->InvalidateItem(r);
@@ -566,7 +554,6 @@ void COptionsSubKeyboard::OnKeyCodePressed(vgui::KeyCode code)
 
 				m_pClearBindingButton->SetEnabled(false);
 				m_pKeyBindList->InvalidateItem(r);
-				PostActionSignal(new KeyValues("ApplyButtonEnable"));
 
 				// message handled, don't pass on
 				return;
