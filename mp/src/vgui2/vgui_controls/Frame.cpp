@@ -582,6 +582,8 @@ namespace vgui
 				SetArmedColor(_disabledFgColor, _disabledBgColor);
 				SetDepressedColor(_disabledFgColor, _disabledBgColor);
 			}
+
+			InvalidateLayout();
 		}
 
         virtual void PerformLayout()
@@ -1125,10 +1127,6 @@ void Frame::OnFrameFocusChanged(bool bHasFocus)
 	_closeButton->SetDisabledLook(!bHasFocus);
 	_minimizeToSysTrayButton->SetDisabledLook(!bHasFocus);
 	_menuButton->SetEnabled(bHasFocus);
-	_minimizeButton->InvalidateLayout();
-	_maximizeButton->InvalidateLayout();
-	_minimizeToSysTrayButton->InvalidateLayout();
-	_closeButton->InvalidateLayout();
 	_menuButton->InvalidateLayout();
 
 	if (bHasFocus)
