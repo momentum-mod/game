@@ -539,6 +539,8 @@ void Label::Paint()
 					x -= _textInset[0];
 					break;
 				}
+				default:
+				    break;
 			}
 		}
 
@@ -1396,10 +1398,17 @@ void Label::HandleAutoSizing( void )
 	{
 		m_bAutoSizeDirty = false;
 
-		// Only change our width to match our content
-		int wide, tall;
-		GetContentSize(wide, tall);
-		SetSize(m_bAutoWideToContents ? wide : GetWide(), m_bAutoTallToContents ? tall : GetTall());
+		if ( m_bAutoWideToContents && m_bAutoTallToContents )
+		{
+		    SizeToContents();
+		}
+		else
+		{
+			// Only change our width/tall to match our content
+			int wide, tall;
+			GetContentSize(wide, tall);
+			SetSize(m_bAutoWideToContents ? wide : GetWide(), m_bAutoTallToContents ? tall : GetTall());
+		}
 	}
 }
 
