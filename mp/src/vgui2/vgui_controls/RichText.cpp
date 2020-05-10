@@ -1344,7 +1344,10 @@ void RichText::RecalculateLineBreaks()
 
 	_recalcSavedRenderState = true;
 	if (!HasText())
+	{
+	    LayoutVerticalScrollBarSlider();
 		return;
+	}
 	
 	int selection0 = -1, selection1 = -1;
 
