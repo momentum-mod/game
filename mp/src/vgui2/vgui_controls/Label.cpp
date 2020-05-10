@@ -990,15 +990,7 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	if (!_fontOverrideName.IsEmpty())
-	{
-		// use the custom specified font since we have one set
-		SetFont(pScheme->GetFont(_fontOverrideName, IsProportional()));
-	}
-	if ( GetFont() == INVALID_FONT )
-	{
-		SetFont( pScheme->GetFont( "Default", IsProportional() ) );
-	}	
+	SetFont(GetSchemeFont(pScheme, _fontOverrideName, "Label.Font"));
 
 	if ( m_bWrap || m_bCenterWrap )
 	{
