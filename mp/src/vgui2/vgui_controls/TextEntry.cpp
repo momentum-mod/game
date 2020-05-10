@@ -155,8 +155,8 @@ void TextEntry::ApplySchemeSettings(IScheme *pScheme)
 		}
 	}
 
-	_font = pScheme->GetFont(_fontName.IsEmpty() ? "Default" : _fontName.Get(), IsProportional() );
-	_smallfont = pScheme->GetFont(_smallFontName.IsEmpty() ? "DefaultVerySmall" : _smallFontName.Get(), IsProportional() );
+	_font = GetSchemeFont(pScheme, _fontName.Get(), "TextEntry.Font");
+	_smallfont = GetSchemeFont(pScheme, _smallFontName.Get(), "TextEntry.SmallFont", "DefaultVerySmall" );
 
 	SetFont( _font );
 }
