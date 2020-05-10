@@ -132,7 +132,7 @@ void TextEntry::ApplySchemeSettings(IScheme *pScheme)
 	
 	SetFgColor(GetSchemeColor("TextEntry.TextColor", pScheme));
 	SetBgColor(GetSchemeColor("TextEntry.BgColor", pScheme));
-	
+
 	_cursorColor = GetSchemeColor("TextEntry.CursorColor", pScheme);
 	_disabledFgColor = GetSchemeColor("TextEntry.DisabledTextColor", pScheme);
 	_disabledBgColor = GetSchemeColor("TextEntry.DisabledBgColor", pScheme);
@@ -142,7 +142,18 @@ void TextEntry::ApplySchemeSettings(IScheme *pScheme)
 	_defaultSelectionBG2Color = GetSchemeColor("TextEntry.OutOfFocusSelectedBgColor", pScheme);
 	_focusEdgeColor = GetSchemeColor("TextEntry.FocusEdgeColor", Color(0, 0, 0, 0), pScheme);
 
-	SetBorder( pScheme->GetBorder("ButtonDepressedBorder"));
+	if (!GetBorder())
+	{
+		const auto pBorderName = pScheme->GetResourceString("TextEntry.Border");
+		if (pBorderName && *pBorderName)
+		{
+		    SetBorder(pScheme->GetBorder(pBorderName));
+		}
+		else
+		{
+		    SetBorder(pScheme->GetBorder("DepressedButtonBorder"));
+		}
+	}
 
 	_font = pScheme->GetFont(_fontName.IsEmpty() ? "Default" : _fontName.Get(), IsProportional() );
 	_smallfont = pScheme->GetFont(_smallFontName.IsEmpty() ? "DefaultVerySmall" : _smallFontName.Get(), IsProportional() );
@@ -879,10 +890,6 @@ void TextEntry::PaintBackground()
 			surface()->DrawSetTextColor(col);
 		}
 	}
-
-	// custom border
-	//!! need to replace this with scheme stuff (TextEntryBorder/TextEntrySelectedBorder)
-	surface()->DrawSetColor(50, 50, 50, 255);
 	
 	if (IsEnabled() && IsEditable() && HasFocus())
 	{
@@ -2183,6 +2190,7 @@ bool TextEntry::SelectCheck( bool fromMouse /*=false*/ )
 	{
 		_select[0] = _cursorPos;
 	}
+
 	return bret;
 }
 
@@ -3830,7 +3838,7 @@ void TextEntry::ApplySettings( KeyValues *inResourceData )
 	SetMaximumCharCount(inResourceData->GetInt("maxchars", -1));
 	SetAllowNumericInputOnly(inResourceData->GetBool("NumericInputOnly", false));
 	SetAllowNonAsciiCharacters(inResourceData->GetBool("unicode", false));
-	SelectAllOnFirstFocus(inResourceData->GetInt("selectallonfirstfocus", 0));
+	SelectAllOnFirstFocus(inResourceData->GetBool("selectallonfirstfocus", false));
 }
 
 //-----------------------------------------------------------------------------
