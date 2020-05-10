@@ -56,6 +56,7 @@ namespace
 			_dragging = false;
 			_dragMultX = xdir;
 			_dragMultY = ydir;
+			SetZPos(500);
 			SetPaintEnabled(false);
 			SetPaintBackgroundEnabled(false);
 			SetPaintBorderEnabled(false);
@@ -265,6 +266,7 @@ namespace
 	public:
 		CaptionGripPanel(Frame* frame, const char *name) : GripPanel(frame, name, 0, 0)
 		{
+			SetZPos(0);
 		}
 		
 		void moved(int dx, int dy)
