@@ -547,6 +547,18 @@ namespace vgui
 			_brightBorder = pScheme->GetBorder("TitleButtonBorder");
 			_depressedBorder = pScheme->GetBorder("TitleButtonDepressedBorder");
 			_disabledBorder = pScheme->GetBorder("TitleButtonDisabledBorder");
+
+			HFont marfont = INVALID_FONT;
+			if (static_cast<Frame*>(GetParent())->IsSmallCaption())
+			{
+				marfont = pScheme->GetFont("MarlettSmall", IsProportional());
+			}
+			else
+			{
+				marfont = pScheme->GetFont("Marlett", IsProportional());
+			}
+
+			SetFont(marfont);
 			
 			SetDisabledLook(_disabledLook);
 		}
@@ -1634,7 +1646,7 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 	SetOverridableColor( &_titleBarDisabledFgColor, GetSchemeColor("FrameTitleBar.DisabledTextColor", pScheme) );
 	SetOverridableColor( &_titleBarDisabledBgColor, GetSchemeColor("FrameTitleBar.DisabledBgColor", pScheme) );
 
-	const char *font = NULL;
+	const char *font = nullptr;
 	if ( m_bSmallCaption )
 	{
 		font = pScheme->GetResourceString("FrameTitleBar.SmallFont");
@@ -1656,21 +1668,6 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 
 	_title->SetFont( titlefont );
 	_title->ResizeImageToContent();
-
-	HFont marfont = (HFont)0;
-	if ( m_bSmallCaption )
-	{
-		marfont = pScheme->GetFont( "MarlettSmall", IsProportional() );
-	}
-	else
-	{
-		marfont = pScheme->GetFont( "Marlett", IsProportional() );
-	}
-
-	_minimizeButton->SetFont(marfont);
-	_maximizeButton->SetFont(marfont);
-	_minimizeToSysTrayButton->SetFont(marfont);
-	_closeButton->SetFont(marfont);
 
 	m_flTransitionEffectTime = atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
 	m_flFocusTransitionEffectTime = atof(pScheme->GetResourceString("Frame.FocusTransitionEffectTime"));
