@@ -196,6 +196,13 @@ namespace
 			GetParent()->OnMouseDoublePressed(code);
 		}
 
+		void PerformLayout() override
+		{
+		    Panel::PerformLayout();
+
+			MoveToFront();
+		}
+
 		void Paint()
 		{
 			// draw the grab handle in the bottom right of the frame
@@ -580,6 +587,7 @@ namespace vgui
         virtual void PerformLayout()
         {
             Button::PerformLayout();
+			MoveToFront();
             Repaint();
         }
 		
@@ -1237,19 +1245,6 @@ void Frame::PerformLayout()
 	
 	_captionGrip->SetSize(wide-10,GetCaptionHeight());
 	
-	_topGrip->MoveToFront();
-	_bottomGrip->MoveToFront();
-	_leftGrip->MoveToFront();
-	_rightGrip->MoveToFront();
-	_topLeftGrip->MoveToFront();
-	_topRightGrip->MoveToFront();
-	_bottomLeftGrip->MoveToFront();
-	_bottomRightGrip->MoveToFront();
-	
-	_maximizeButton->MoveToFront();
-	_menuButton->MoveToFront();
-	_minimizeButton->MoveToFront();
-	_minimizeToSysTrayButton->MoveToFront();
 	_menuButton->SetBounds(5+2, 5+3, GetCaptionHeight()-5, GetCaptionHeight()-5);
 
 	float scale = 1;
