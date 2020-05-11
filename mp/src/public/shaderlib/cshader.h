@@ -354,23 +354,23 @@ inline bool CShader_IsFlag2Set( IMaterialVar **params, MaterialVarFlags2_t _flag
 // psh ## shader is used here to generate a warning if you don't ever call SET_DYNAMIC_PIXEL_SHADER
 #define DECLARE_DYNAMIC_PIXEL_SHADER( shader ) \
 	shader ## _Dynamic_Index _pshIndex( pShaderAPI ); \
-	const int psh ## shader = 1
+	constexpr int psh ## shader = 1
 
 // vsh ## shader is used here to generate a warning if you don't ever call SET_DYNAMIC_VERTEX_SHADER
 #define DECLARE_DYNAMIC_VERTEX_SHADER( shader ) \
 	shader ## _Dynamic_Index _vshIndex( pShaderAPI ); \
-	const int vsh ## shader = 1
+	constexpr int vsh ## shader = 1
 
 
 // psh ## shader is used here to generate a warning if you don't ever call SET_STATIC_PIXEL_SHADER
 #define DECLARE_STATIC_PIXEL_SHADER( shader ) \
 	shader ## _Static_Index _pshIndex( pShaderShadow, params ); \
-	const int psh ## shader = 1
+	constexpr int psh ## shader = 1
 
 // vsh ## shader is used here to generate a warning if you don't ever call SET_STATIC_VERTEX_SHADER
 #define DECLARE_STATIC_VERTEX_SHADER( shader ) \
 	shader ## _Static_Index _vshIndex( pShaderShadow, params ); \
-	const int vsh ## shader = 1
+	constexpr int vsh ## shader = 1
 
 
 // psh_forgot_to_set_dynamic_ ## var is used to make sure that you set all
@@ -378,7 +378,7 @@ inline bool CShader_IsFlag2Set( IMaterialVar **params, MaterialVarFlags2_t _flag
 // in the SET_DYNAMIC_PIXEL_SHADER block.
 #define SET_DYNAMIC_PIXEL_SHADER_COMBO( var, val ) \
 	_pshIndex.Set ## var( ( val ) ); \
-	const int psh_forgot_to_set_dynamic_ ## var = 1
+	constexpr int psh_forgot_to_set_dynamic_ ## var = 1
 
 #define SET_DYNAMIC_PIXEL_SHADER_COMBO_OVERRIDE_DEFAULT( var, val ) \
 	_pshIndex.Set ## var( ( val ) );
@@ -389,7 +389,7 @@ inline bool CShader_IsFlag2Set( IMaterialVar **params, MaterialVarFlags2_t _flag
 // in the SET_DYNAMIC_VERTEX_SHADER block.
 #define SET_DYNAMIC_VERTEX_SHADER_COMBO( var, val ) \
 	_vshIndex.Set ## var( ( val ) ); \
-	const int vsh_forgot_to_set_dynamic_ ## var = 1
+	constexpr int vsh_forgot_to_set_dynamic_ ## var = 1
 
 #define SET_DYNAMIC_VERTEX_SHADER_COMBO_OVERRIDE_DEFAULT( var, val ) \
 	_vshIndex.Set ## var( ( val ) );
@@ -400,7 +400,7 @@ inline bool CShader_IsFlag2Set( IMaterialVar **params, MaterialVarFlags2_t _flag
 // in the SET_STATIC_PIXEL_SHADER block.
 #define SET_STATIC_PIXEL_SHADER_COMBO( var, val ) \
 	_pshIndex.Set ## var( ( val ) ); \
-	const int psh_forgot_to_set_static_ ## var = 1
+	constexpr int psh_forgot_to_set_static_ ## var = 1
 
 #define SET_STATIC_PIXEL_SHADER_COMBO_OVERRIDE_DEFAULT( var, val ) \
 	_pshIndex.Set ## var( ( val ) );
@@ -411,7 +411,7 @@ inline bool CShader_IsFlag2Set( IMaterialVar **params, MaterialVarFlags2_t _flag
 // in the SET_STATIC_VERTEX_SHADER block.
 #define SET_STATIC_VERTEX_SHADER_COMBO( var, val ) \
 	_vshIndex.Set ## var( ( val ) ); \
-	const int vsh_forgot_to_set_static_ ## var = 1
+	constexpr int vsh_forgot_to_set_static_ ## var = 1
 
 #define SET_STATIC_VERTEX_SHADER_COMBO_OVERRIDE_DEFAULT( var, val ) \
 	_vshIndex.Set ## var( ( val ) );
