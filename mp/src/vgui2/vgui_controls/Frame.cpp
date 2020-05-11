@@ -790,7 +790,7 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 
 	m_hPreviousModal = 0;
 
-	_title=null;
+	_title = new TextImage("");
 	_moveable=true;
 	_sizeable=true;
 	m_bHasFocus=false;
@@ -1312,12 +1312,6 @@ void Frame::PerformLayout()
 //-----------------------------------------------------------------------------
 void Frame::SetTitle(const char *title, bool surfaceTitle)
 {
-	if (!_title)
-	{
-		_title = new TextImage( "" );
-	}
-
-	Assert(title);
 	_title->SetText(title);
 
     // see if the combobox text has changed, and if so, post a message detailing the new text
@@ -1354,10 +1348,6 @@ void Frame::SetTitle(const char *title, bool surfaceTitle)
 //-----------------------------------------------------------------------------
 void Frame::SetTitle(const wchar_t *title, bool surfaceTitle)
 {
-	if (!_title)
-	{
-		_title = new TextImage( "" );
-	}
 	_title->SetText(title);
 	if (surfaceTitle)
 	{
@@ -1606,30 +1596,27 @@ void Frame::PaintBackground()
 
 		surface()->DrawFilledRect(inset, inset, wide - inset, captionHeight );
 		
-		if (_title)
+		int nTitleX = m_iTitleTextInsetXOverride ? m_iTitleTextInsetXOverride : m_iTitleTextInsetX;
+		int nTitleWidth = wide - 72;
+		if ( _menuButton && _menuButton->IsVisible() )
 		{
-			int nTitleX = m_iTitleTextInsetXOverride ? m_iTitleTextInsetXOverride : m_iTitleTextInsetX;
-			int nTitleWidth = wide - 72;
-			if ( _menuButton && _menuButton->IsVisible() )
-			{
-				int mw, mh;
-				_menuButton->GetImageSize( mw, mh );
-				nTitleX += mw;
-				nTitleWidth -= mw;
-			}
-			int nTitleY;
-			if ( m_iTitleTextInsetYOverride )
-			{
-				nTitleY = m_iTitleTextInsetYOverride;
-			}
-			else
-			{
-				nTitleY = m_bSmallCaption ? 2 : 9;
-			}
-			_title->SetPos( nTitleX, nTitleY );		
-			_title->SetSize( nTitleWidth, tall);
-			_title->Paint();
+			int mw, mh;
+			_menuButton->GetImageSize( mw, mh );
+			nTitleX += mw;
+			nTitleWidth -= mw;
 		}
+		int nTitleY;
+		if ( m_iTitleTextInsetYOverride )
+		{
+			nTitleY = m_iTitleTextInsetYOverride;
+		}
+		else
+		{
+			nTitleY = m_bSmallCaption ? 2 : 9;
+		}
+		_title->SetPos( nTitleX, nTitleY );		
+		_title->SetSize( nTitleWidth, tall);
+		_title->Paint();
 	}
 }
 
@@ -1666,7 +1653,7 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 		titlefont = pScheme->GetFont((font && *font) ? font : "Default", IsProportional());
 	}
 
-	_title->SetFont( titlefont );
+	_title->SetFont(titlefont);
 	_title->ResizeImageToContent();
 
 	m_flTransitionEffectTime = atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
@@ -1761,14 +1748,11 @@ void Frame::GetSettings(KeyValues *outResourceData)
 	outResourceData->SetBool("settitlebarvisible", _drawTitleBar );
     outResourceData->SetBool("cliptoparent", m_bClipToParent);
 
-	if (_title)
+	char buf[256];
+	_title->GetUnlocalizedText( buf, 255 );
+	if (buf[0])
 	{
-		char buf[256];
-		_title->GetUnlocalizedText( buf, 255 );
-		if (buf[0])
-		{
-			outResourceData->SetString("title", buf);
-		}
+		outResourceData->SetString("title", buf);
 	}
 
     if (m_hCustomTitleFont != INVALID_FONT)
