@@ -121,8 +121,7 @@ mp/game/momentum/cfg/pet.txt
 mp/src/materialsystem/stdshaders/filestocopy.txt
 mp/src/materialsystem/stdshaders/filelist.txt
 mp/src/materialsystem/stdshaders/filelistgen.txt
-fxctmp9_tmp/
-stdshaders/shaders/
+mp/src/materialsystem/stdshaders/shaders/
 mp/src/materialsystem/stdshaders/inclist.txt
 mp/src/materialsystem/stdshaders/vcslist.txt
 mp/src/materialsystem/stdshaders/uniquefilestocopy.txt
