@@ -10,7 +10,7 @@
 // STATIC: "USEENVAMBIENT"              "0..1"
 // STATIC: "EMISSIVE"                   "0..1"
 // STATIC: "SPECULAR"                   "0..1"
-// STATIC:  "PARALLAXOCCLUSION"         "0..1"
+// STATIC: "PARALLAXOCCLUSION"          "0..1"
 
 // DYNAMIC: "WRITEWATERFOGTODESTALPHA"  "0..1"
 // DYNAMIC: "PIXELFOGTYPE"              "0..1"
@@ -42,6 +42,8 @@ const float4 g_FlashlightPos                    : register(PSREG_FLASHLIGHT_POSI
 const float4x4 g_FlashlightWorldToTexture       : register(PSREG_FLASHLIGHT_TO_WORLD_TEXTURE);
 PixelShaderLightInfo cLightInfo[3]              : register(PSREG_LIGHT_INFO_ARRAY);         // 2 registers each - 6 registers total (4th light spread across w's)
 const float4 g_BaseColor                        : register(PSREG_SELFILLUMTINT);
+const float4 g_MraoScale                        : register(c41);
+const float4 g_EmissionScale                    : register(c42);
 
 #if PARALLAXOCCLUSION
 const float4 g_ParallaxParms                    : register( c40 );
@@ -107,10 +109,10 @@ float4 main(PS_INPUT i) : COLOR
     float4 albedo = tex2D(BaseTextureSampler, correctedTexCoord);
     albedo.xyz *= g_BaseColor;
 
-    float3 mrao = tex2D(MRAOTextureSampler, correctedTexCoord).xyz;
+    float3 mrao = tex2D(MRAOTextureSampler, correctedTexCoord).xyz * g_MraoScale.xyz;
     float metalness = mrao.x, roughness = mrao.y, ambientOcclusion = mrao.z;
 #if EMISSIVE
-    float3 emission = tex2D(EmissionTextureSampler, correctedTexCoord).xyz;
+    float3 emission = tex2D(EmissionTextureSampler, correctedTexCoord).xyz  * g_EmissionScale.xyz;
 #endif
 #if SPECULAR
     float3 specular = tex2D(SpecularTextureSampler, correctedTexCoord).xyz;
