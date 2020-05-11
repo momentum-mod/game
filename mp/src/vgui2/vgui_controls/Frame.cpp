@@ -893,20 +893,6 @@ Frame::~Frame()
 		}
 	}
 
-	delete _topGrip;
-	delete _bottomGrip;
-	delete _leftGrip;
-	delete _rightGrip;
-	delete _topLeftGrip;
-	delete _topRightGrip;
-	delete _bottomLeftGrip;
-	delete _bottomRightGrip;
-	delete _captionGrip;
-	delete _minimizeButton;
-	delete _maximizeButton;
-	delete _closeButton;
-	delete _menuButton;
-	delete _minimizeToSysTrayButton;
 	delete _title;
 }
 
