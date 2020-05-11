@@ -33,7 +33,6 @@ PropertyDialog::PropertyDialog(Panel *parent, const char *panelName) : Frame(par
     _okButton->SetAutoWide(true);
     _okButton->SetAutoTall(true);
     _okButton->SetContentAlignment(Label::a_center);
-    _okButton->SetPos(5, 0);
     _okButton->SetTextInset(10, 0);
 	GetFocusNavGroup().SetDefaultButton(_okButton);
 
@@ -42,7 +41,6 @@ PropertyDialog::PropertyDialog(Panel *parent, const char *panelName) : Frame(par
     _cancelButton->SetAutoWide(true);
     _cancelButton->SetAutoTall(true);
     _cancelButton->SetContentAlignment(Label::a_center);
-    _cancelButton->SetPos(5, 0);
     _cancelButton->SetTextInset(10, 0);
 
 	_applyButton = new Button(this, "ApplyButton", "#PropertyDialog_Apply", this, "Apply");
@@ -51,13 +49,8 @@ PropertyDialog::PropertyDialog(Panel *parent, const char *panelName) : Frame(par
     _applyButton->SetEnabled(false);        // default to not enabled
     _applyButton->SetAutoWide(true);
     _applyButton->SetAutoTall(true);
-    _applyButton->SetPos(0, 5);
     _applyButton->SetTextInset(10, 0);
     _applyButton->SetContentAlignment(Label::a_center);
-
-    _applyButton->PinToSibling("Sheet", PIN_TOPRIGHT, PIN_BOTTOMRIGHT);
-    _cancelButton->PinToSibling("ApplyButton", PIN_TOPRIGHT, PIN_TOPLEFT);
-    _okButton->PinToSibling("CancelButton", PIN_TOPRIGHT, PIN_TOPLEFT);
 
 	SetSizeable(false);
 }
@@ -117,6 +110,8 @@ void PropertyDialog::ApplyChanges()
 void PropertyDialog::PerformLayout()
 {
 	BaseClass::PerformLayout();
+
+    UpdateButtonPositions();
 
 	int iBottom = m_iSheetInsetBottom;
 	if ( IsProportional() )
@@ -309,6 +304,54 @@ void PropertyDialog::ApplySchemeSettings(IScheme* pScheme)
             _okButton->SetFont(font);
             _applyButton->SetFont(font);
             _cancelButton->SetFont(font);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Updates pinning & positions of OK/Cancel/Apply buttons based on their visibility
+//-----------------------------------------------------------------------------
+void PropertyDialog::UpdateButtonPositions()
+{
+    if (_applyButton->IsVisible())
+    {
+        _applyButton->PinToSibling("Sheet", PIN_TOPRIGHT, PIN_BOTTOMRIGHT);
+        _applyButton->SetPos(0, 5);
+    }
+
+    if (_cancelButton->IsVisible())
+    {
+        if (!_applyButton->IsVisible())
+        {
+            _cancelButton->PinToSibling("Sheet", PIN_TOPRIGHT, PIN_BOTTOMRIGHT);
+            _cancelButton->SetPos(0, 5);
+        }
+        else
+        {
+            _cancelButton->PinToSibling("ApplyButton", PIN_TOPRIGHT, PIN_TOPLEFT);
+            _cancelButton->SetPos(5, 0);
+        }
+    }
+
+    if (_okButton->IsVisible())
+    {
+        if (_cancelButton->IsVisible())
+        {
+            _okButton->PinToSibling("CancelButton", PIN_TOPRIGHT, PIN_TOPLEFT);
+            _okButton->SetPos(5, 0);
+        }
+        else
+        {
+            if (_applyButton->IsVisible())
+            {
+                _okButton->PinToSibling("ApplyButton", PIN_TOPRIGHT, PIN_TOPLEFT);
+                _okButton->SetPos(5, 0);
+            }
+            else
+            {
+                _okButton->PinToSibling("Sheet", PIN_TOPRIGHT, PIN_BOTTOMRIGHT);
+                _okButton->SetPos(0, 5);
+            }
         }
     }
 }
