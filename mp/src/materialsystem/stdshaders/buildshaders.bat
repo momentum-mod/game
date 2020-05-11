@@ -68,12 +68,6 @@ set SrcDirBase=%~5
 
 REM ** use the -game parameter to tell us where to put the files
 set targetdir=%~3\shaders
-if not "%dynamic_shaders%" == "1" (
-if not exist "%targetdir%" goto SyncDone
-if not exist "%shaderDir%" mkdir %shaderDir%
-if not "%targetdir%"=="%shaderDir%" robocopy "%targetdir%" "%shaderDir%" /mir /np /nfl > NUL
-)
-:SyncDone
 
 if not exist "%~3\gameinfo.txt" goto InvalidGameDirectory
 
