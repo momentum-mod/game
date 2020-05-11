@@ -59,6 +59,8 @@ struct PBR_Vars_t
     int mraoTexture;
     int useEnvAmbient;
     int specularTexture;
+    int mraoScale;
+    int emissionScale;
 };
 
 // Beginning the shader
@@ -77,6 +79,8 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         SHADER_PARAM(PARALLAX, SHADER_PARAM_TYPE_BOOL, "0", "Use Parallax Occlusion Mapping.");
         SHADER_PARAM(PARALLAXDEPTH, SHADER_PARAM_TYPE_FLOAT, "0.0030", "Depth of the Parallax Map");
         SHADER_PARAM(PARALLAXCENTER, SHADER_PARAM_TYPE_FLOAT, "0.5", "Center depth of the Parallax Map");
+        SHADER_PARAM(MRAOSCALE, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Factors for metalness, roughness, and ambient occlusion");
+        SHADER_PARAM(EMISSIONSCALE, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "Color to multiply emission texture with");
     END_SHADER_PARAMS;
 
     // Setting up variables for this shader
@@ -99,6 +103,8 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         info.useParallax = PARALLAX;
         info.parallaxDepth = PARALLAXDEPTH;
         info.parallaxCenter = PARALLAXCENTER;
+        info.mraoScale = MRAOSCALE;
+        info.emissionScale = EMISSIONSCALE;
     };
 
     // Initializing parameters
@@ -206,6 +212,8 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         bool bLightMapped = !IS_FLAG_SET(MATERIAL_VAR_MODEL);
         bool bUseEnvAmbient = (info.useEnvAmbient != -1) && (params[info.useEnvAmbient]->GetIntValue() == 1);
         bool bHasSpecularTexture = (info.specularTexture != -1) && params[info.specularTexture]->IsTexture();
+        bool bHasMraoScale = (info.mraoScale != -1) && params[info.mraoScale]->IsDefined();
+        bool bHasEmissionScale = (info.emissionScale != -1) && params[info.emissionScale]->IsDefined();
 
         // Determining whether we're dealing with a fully opaque material
         BlendType_t nBlendType = EvaluateBlendRequirements(info.baseTexture, true);
@@ -347,7 +355,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 pShaderAPI->BindStandardTexture(SAMPLER_BASETEXTURE, TEXTURE_GREY);
             }
 
-            // Setting up vertex color
+            // Setting up basecolor tint
             Vector color;
             if (bHasColor)
             {
@@ -355,9 +363,36 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             }
             else
             {
-                color = Vector{1.f, 1.f, 1.f};
+                color.Init(1.0f, 1.0f, 1.0f);
             }
             pShaderAPI->SetPixelShaderConstant(PSREG_SELFILLUMTINT, color.Base());
+
+            if (g_pHardwareConfig->SupportsShaderModel_3_0() && !mat_pbr_force_20b.GetBool())
+            {
+                // Setting up mrao scale
+                Vector mraoScale;
+                if (bHasMraoScale)
+                {
+                    params[info.mraoScale]->GetVecValue(mraoScale.Base(), 3);
+                }
+                else
+                {
+                    mraoScale.Init(1.0f, 1.0f, 1.0f);
+                }
+                pShaderAPI->SetPixelShaderConstant(41, mraoScale.Base());
+
+                // Setting up emission scale
+                Vector emissionScale;
+                if (bHasEmissionScale)
+                {
+                    params[info.emissionScale]->GetVecValue(emissionScale.Base(), 3);
+                }
+                else
+                {
+                    emissionScale.Init(1.0f, 1.0f, 1.0f);
+                }
+                pShaderAPI->SetPixelShaderConstant(42, emissionScale.Base());
+            }
 
             // Setting up environment map
             if (bHasEnvTexture)
