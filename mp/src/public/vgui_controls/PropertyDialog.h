@@ -72,6 +72,8 @@ protected:
 	void EnableApplyButton(bool bEnable);
 	
 private:
+    void UpdateButtonPositions();
+
 	PropertySheet *_propertySheet;
 	Button *_okButton;
 	Button *_cancelButton;
