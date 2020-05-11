@@ -1,0 +1,51 @@
+"Gamemodes"
+{
+    "surf"
+    {
+        "abs"           "1"
+        "vert"          "0"
+        "horiz"         "0"
+        "lastjump"      "1"
+        "stageenter"    "1"
+        "rampenterexit" "1"
+        "units"         "1"
+        "unitlabels"    "0"
+        "colorize"      "1"
+    }
+    "bhop"
+    {
+        "abs"           "1"
+        "vert"          "0"
+        "horiz"         "0"
+        "lastjump"      "1"
+        "stageenter"    "1"
+        "rampenterexit" "0"
+        "units"         "1"
+        "unitlabels"    "0"
+        "colorize"      "1"
+    }
+    "RJ"
+    {
+        "abs"           "0"
+        "vert"          "0"
+        "horiz"         "1"
+        "lastjump"      "0"
+        "stageenter"    "1"
+        "rampenterexit" "0"
+        "units"         "1"
+        "unitlabels"    "0"
+        "colorize"      "1"
+	}
+    "SJ"
+    {
+        "abs"           "1"
+        "vert"          "0"
+        "horiz"         "1"
+        "lastjump"      "0"
+        "stageenter"    "1"
+        "rampenterexit" "0"
+        "units"         "1"
+        "unitlabels"    "0"
+        "colorize"      "1"
+    }
+}

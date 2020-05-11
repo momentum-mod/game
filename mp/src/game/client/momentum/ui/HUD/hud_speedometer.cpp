@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "filesystem.h"
 
 #include "hud_speedometer.h"
 
@@ -16,6 +17,7 @@
 #include <vgui_controls/Label.h>
 
 #include "mom_player_shared.h"
+#include "mom_system_gamemode.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
 
@@ -54,11 +56,27 @@ static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_lastjumpvel, "1", FLAG_HUD_CVAR | 
 static MAKE_TOGGLE_CONVAR(mom_hud_velocity_type, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                    "Toggles the velocity type used in comparisons and map finished dialog. 0 = ABSOLUTE, 1 = HORIZONTAL\n");
 
+static CHudSpeedMeter *g_pSpeedometer = nullptr;
+
+CON_COMMAND_F(mom_hud_speedometer_writecfg, "Writes the speedometer setup for the current gamemode to file.", 
+                    FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE)
+{
+    g_pSpeedometer->SaveGamemodeData();
+}
+
+CON_COMMAND_F(mom_hud_speedometer_loadcfg, "Loads the speedometer setup for the current gamemode from file.",
+              FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE)
+{
+    g_pSpeedometer->LoadGamemodeData();
+}
+
 DECLARE_HUDELEMENT(CHudSpeedMeter);
 
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
+    g_pSpeedometer = this;
+
     ListenForGameEvent("zone_exit");
     ListenForGameEvent("zone_enter");
     SetProportional(true);
@@ -98,6 +116,8 @@ void CHudSpeedMeter::Reset()
     m_pLastJumpVelLabel->Reset();
     m_pStageEnterLabel->Reset();
     m_pStageEnterComparisonLabel->Reset();
+
+    LoadGamemodeData();
 }
 
 void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
@@ -308,5 +328,82 @@ void CHudSpeedMeter::LastJumpVelColorizeOverride(Color &currentColor, float curr
     {
         currentColor = MomUtil::GetColorFromVariation(fabs(currentVel) - fabs(lastVel), 0.0f,
                                                       normalColor, increaseColor, decreaseColor);
+    }
+}
+
+void CHudSpeedMeter::LoadGamemodeData()
+{
+    if (m_pGamemodeSetupData)
+        m_pGamemodeSetupData->deleteThis();
+
+    m_pGamemodeSetupData = new KeyValues("Gamemodes");
+    m_pGamemodeSetupData->LoadFromFile(g_pFullFileSystem, "cfg/Speedometer.vdf", "MOD");
+
+    KeyValues *GamemodeKV = nullptr;
+    const auto gamemode = g_pGameModeSystem->GetGameMode()->GetType();
+    switch (gamemode)
+    {
+    case GAMEMODE_SURF:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("surf");
+        break;
+    case GAMEMODE_BHOP:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("bhop");
+        break;
+    case GAMEMODE_RJ:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("RJ");
+        break;
+    case GAMEMODE_SJ:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("SJ");
+        break;
+    default: break;
+    }
+
+    if (GamemodeKV) // game mode is known
+    {
+        mom_hud_speedometer.SetValue(GamemodeKV->FindKey("abs")->GetBool());
+        mom_hud_speedometer_horiz.SetValue(GamemodeKV->FindKey("horiz")->GetBool());
+        mom_hud_speedometer_lastjumpvel.SetValue(GamemodeKV->FindKey("lastjump")->GetBool());
+        mom_hud_speedometer_showenterspeed.SetValue(GamemodeKV->FindKey("stageenter")->GetBool());
+        mom_hud_speedometer_units.SetValue(GamemodeKV->FindKey("units")->GetInt());
+        mom_hud_speedometer_unit_labels.SetValue(GamemodeKV->FindKey("unitlabels")->GetBool());
+        mom_hud_speedometer_colorize.SetValue(GamemodeKV->FindKey("colorize")->GetInt());
+    }
+}
+
+void CHudSpeedMeter::SaveGamemodeData()
+{
+    if (!g_pFullFileSystem)
+        return;
+
+    KeyValues *GamemodeKV = nullptr;
+    const auto gamemode = g_pGameModeSystem->GetGameMode()->GetType();
+    switch (gamemode)
+    {
+    case GAMEMODE_SURF:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("surf");
+        break;
+    case GAMEMODE_BHOP:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("bhop");
+        break;
+    case GAMEMODE_RJ:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("RJ");
+        break;
+    case GAMEMODE_SJ:
+        GamemodeKV = m_pGamemodeSetupData->FindKey("SJ");
+        break;
+    default: break;
+    }
+
+    if (GamemodeKV) // game mode is known
+    {
+        GamemodeKV->SetBool("abs", mom_hud_speedometer.GetBool());
+        GamemodeKV->SetBool("horiz", mom_hud_speedometer_horiz.GetBool());
+        GamemodeKV->SetBool("lastjump", mom_hud_speedometer_lastjumpvel.GetBool());
+        GamemodeKV->SetBool("stageenter", mom_hud_speedometer_showenterspeed.GetBool());
+        GamemodeKV->SetBool("units", mom_hud_speedometer_units.GetInt());
+        GamemodeKV->SetBool("unitlabels", mom_hud_speedometer_unit_labels.GetBool());
+        GamemodeKV->SetBool("colorize", mom_hud_speedometer_colorize.GetInt());
+
+        m_pGamemodeSetupData->SaveToFile(g_pFullFileSystem, "cfg/Speedometer.vdf", "MOD");
     }
 }

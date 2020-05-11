@@ -27,12 +27,18 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     void PerformLayout() OVERRIDE;
     void OnThink() OVERRIDE;
 
+    // load/saves gamemode specific speedometer setups
+    void LoadGamemodeData();
+    void SaveGamemodeData();
+
   private:
     SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, *m_pStageEnterLabel,
         *m_pStageEnterComparisonLabel;
     vgui::Label *m_pUnitsLabel;
 
     int m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, m_defaultLastJumpVelLabelHeight;
+
+    KeyValues *m_pGamemodeSetupData;
 
     static bool GetAbsVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
     static bool GetHorizVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
