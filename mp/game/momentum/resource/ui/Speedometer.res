@@ -88,6 +88,32 @@
         "auto_tall_tocontents" "1"
         "auto_wide_tocontents" "1"
     }
+    "VertSpeedoLabel"
+    {
+        "ControlName" "SpeedometerLabel"
+        "fieldName"   "VertSpeedoLabel"
+        "xpos"        "0"
+        "ypos"        "0"
+        "pin_to_sibling" "UnitsLabel"
+        "pin_to_sibling_corner" "6" //bottom center
+        "pin_corner_to_sibling" "4" //top center
+        "autoResize"     "1"
+        "PinnedCornerOffsetX" "0"
+        "PinnedCornerOffsetY" "0"
+        "UnpinnedCornerOffsetX" "0"
+        "UnpinnedCornerOffsetY" "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "tabPosition"   "0"
+        "textAlignment" "center"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "font"          "HudNumbersSmallBold"
+        "FgColor"       "MOM.Panel.Fg"
+        "wrap"          "0"
+        "auto_tall_tocontents" "1"
+        "auto_wide_tocontents" "1"
+    }
     "LastJumpVelLabel"
     {
         "ControlName" "SpeedometerLabel"

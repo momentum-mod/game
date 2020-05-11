@@ -48,7 +48,10 @@ static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_showenterspeed, "1", FLAG_HUD_CVAR
     "Toggles showing the stage/checkpoint enter speed (and comparison, if existent). 0 = OFF, 1 = ON\n");
 
 static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_horiz, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles displaying the speedometer. 0 = OFF, 1 = ON\n");
+                          "Toggles displaying the horizontal speedometer. 0 = OFF, 1 = ON\n");
+
+static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_vert, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
+                          "Toggles displaying the vertical speedometer. 0 = OFF, 1 = ON\n");
 
 static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_lastjumpvel, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                           "Toggles showing player velocity at last jump (XY only). 0 = OFF, 1 = ON\n");
@@ -88,6 +91,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
     m_pAbsSpeedoLabel = new SpeedometerLabel(this, "AbsSpeedoLabel", &mom_hud_speedometer, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetAbsVelocity);
     m_pHorizSpeedoLabel = new SpeedometerLabel(this, "HorizSpeedoLabel", &mom_hud_speedometer_horiz, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetHorizVelocity);
+    m_pVertSpeedoLabel = new SpeedometerLabel(this, "VertSpeedoLabel", &mom_hud_speedometer_vert, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetVertVelocity);
 
     m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelLabel", &mom_hud_speedometer_lastjumpvel, SPEEDOMETER_LABEL_UPDATE_ALWAYS,
                                                GetLastJumpVelocity, LastJumpVelColorizeOverride);
@@ -161,6 +165,7 @@ void CHudSpeedMeter::ApplySchemeSettings(IScheme *pScheme)
 
     m_defaultAbsSpeedoLabelHeight = surface()->GetFontTall(m_pAbsSpeedoLabel->GetFont());
     m_defaultHorizSpeedoLabelHeight = surface()->GetFontTall(m_pHorizSpeedoLabel->GetFont());
+    m_defaultVertSpeedoLabelHeight = surface()->GetFontTall(m_pVertSpeedoLabel->GetFont());
     m_defaultLastJumpVelLabelHeight = surface()->GetFontTall(m_pLastJumpVelLabel->GetFont());
     m_pStageEnterComparisonLabel->SetFont(m_pStageEnterLabel->GetFont()); // need to have same font
 }
@@ -169,23 +174,26 @@ void CHudSpeedMeter::PerformLayout()
 {
     m_pAbsSpeedoLabel->SetPos(m_pAbsSpeedoLabel->GetXPos(), 0);
     m_pHorizSpeedoLabel->SetPos(m_pHorizSpeedoLabel->GetXPos(), 0);
+    m_pVertSpeedoLabel->SetPos(m_pVertSpeedoLabel->GetXPos(), 0);
     m_pLastJumpVelLabel->SetPos(m_pLastJumpVelLabel->GetXPos(), 0);
     m_pStageEnterLabel->SetPos(m_pStageEnterLabel->GetXPos(), 0);
     m_pStageEnterComparisonLabel->SetPos(m_pStageEnterComparisonLabel->GetXPos(), 0);
 
     int absSpeedoTall = mom_hud_speedometer.GetBool() ? m_defaultAbsSpeedoLabelHeight : 0,
         horizSpeedoTall = mom_hud_speedometer_horiz.GetBool() ? m_defaultHorizSpeedoLabelHeight : 0,
+        vertSpeedoTall = mom_hud_speedometer_vert.GetBool() ? m_defaultVertSpeedoLabelHeight : 0,
         lastJumpVelTall = mom_hud_speedometer_lastjumpvel.GetBool() ? m_defaultLastJumpVelLabelHeight : 0;
 
     m_pHorizSpeedoLabel->SetPos(m_pHorizSpeedoLabel->GetXPos(), absSpeedoTall);
-    m_pLastJumpVelLabel->SetPos(m_pLastJumpVelLabel->GetXPos(), absSpeedoTall + horizSpeedoTall);
-    m_pStageEnterLabel->SetPos(m_pStageEnterLabel->GetXPos(), absSpeedoTall + horizSpeedoTall + lastJumpVelTall);
+    m_pVertSpeedoLabel->SetPos(m_pVertSpeedoLabel->GetXPos(), absSpeedoTall + horizSpeedoTall);
+    m_pLastJumpVelLabel->SetPos(m_pLastJumpVelLabel->GetXPos(), absSpeedoTall + horizSpeedoTall + vertSpeedoTall);
+    m_pStageEnterLabel->SetPos(m_pStageEnterLabel->GetXPos(), absSpeedoTall + horizSpeedoTall + vertSpeedoTall + lastJumpVelTall);
 }
 
 void CHudSpeedMeter::OnThink()
 {
     if (mom_hud_speedometer_unit_labels.GetBool() &&
-        (mom_hud_speedometer.GetBool() || mom_hud_speedometer_horiz.GetBool() ||
+        (mom_hud_speedometer.GetBool() || mom_hud_speedometer_horiz.GetBool() || mom_hud_speedometer_vert.GetBool() || 
          mom_hud_speedometer_lastjumpvel.GetBool() || mom_hud_speedometer_showenterspeed.GetBool()))
     {
         switch (mom_hud_speedometer_units.GetInt())
@@ -301,6 +309,20 @@ bool CHudSpeedMeter::GetHorizVelocity(C_MomentumPlayer *pPlayer, float *pVelocit
     return true;
 }
 
+bool CHudSpeedMeter::GetVertVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
+{
+    Vector vecVelocity = pPlayer->GetAbsVelocity();
+    vecVelocity.x = 0;
+    vecVelocity.y = 0;
+    *pVelocity = static_cast<float>(vecVelocity.Length());
+    if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
+    {
+        AdjustToReplayTimeScale(pVelocity);
+    }
+    AdjustToUnits(pVelocity, pPlayer);
+    return true;
+}
+
 bool CHudSpeedMeter::GetLastJumpVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
 {
     const auto pRunEntData = pPlayer->GetRunEntData();
@@ -362,6 +384,7 @@ void CHudSpeedMeter::LoadGamemodeData()
     {
         mom_hud_speedometer.SetValue(GamemodeKV->FindKey("abs")->GetBool());
         mom_hud_speedometer_horiz.SetValue(GamemodeKV->FindKey("horiz")->GetBool());
+        mom_hud_speedometer_vert.SetValue(GamemodeKV->FindKey("vert")->GetBool());
         mom_hud_speedometer_lastjumpvel.SetValue(GamemodeKV->FindKey("lastjump")->GetBool());
         mom_hud_speedometer_showenterspeed.SetValue(GamemodeKV->FindKey("stageenter")->GetBool());
         mom_hud_speedometer_units.SetValue(GamemodeKV->FindKey("units")->GetInt());
@@ -398,6 +421,7 @@ void CHudSpeedMeter::SaveGamemodeData()
     {
         GamemodeKV->SetBool("abs", mom_hud_speedometer.GetBool());
         GamemodeKV->SetBool("horiz", mom_hud_speedometer_horiz.GetBool());
+        GamemodeKV->SetBool("vert", mom_hud_speedometer_vert.GetBool());
         GamemodeKV->SetBool("lastjump", mom_hud_speedometer_lastjumpvel.GetBool());
         GamemodeKV->SetBool("stageenter", mom_hud_speedometer_showenterspeed.GetBool());
         GamemodeKV->SetBool("units", mom_hud_speedometer_units.GetInt());

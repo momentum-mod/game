@@ -32,16 +32,17 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     void SaveGamemodeData();
 
   private:
-    SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, *m_pStageEnterLabel,
-        *m_pStageEnterComparisonLabel;
+    SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pVertSpeedoLabel,
+        *m_pLastJumpVelLabel, *m_pStageEnterLabel, *m_pStageEnterComparisonLabel;
     vgui::Label *m_pUnitsLabel;
 
-    int m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, m_defaultLastJumpVelLabelHeight;
+    int m_defaultAbsSpeedoLabelHeight, m_defaultHorizSpeedoLabelHeight, m_defaultVertSpeedoLabelHeight, m_defaultLastJumpVelLabelHeight;
 
     KeyValues *m_pGamemodeSetupData;
 
     static bool GetAbsVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
     static bool GetHorizVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
+    static bool GetVertVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
     static bool GetLastJumpVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext);
     static void LastJumpVelColorizeOverride(Color &currentColor, float currentVel, float lastVel,
                                             Color normalColor, Color increaseColor, Color decreaseColor);
