@@ -15,10 +15,9 @@
 #include "tier1/utlvector.h"
 #include "vgui_controls/EditablePanel.h"
 #include "vgui_controls/Frame.h"
-#include "icvar.h"
 
+class CNonFocusableMenu;
 class ConCommandBase;
-
 
 namespace vgui
 {
@@ -72,13 +71,7 @@ public:
 	bool TextEntryHasFocus() const;
 	void TextEntryRequestFocus();
 
-
-
 private:
-	enum
-	{
-		MAX_HISTORY_ITEMS = 100,
-	};
 	void SubmitCommand();
 
 	class CompletionItem
@@ -117,7 +110,7 @@ protected:
 
 	vgui::RichText *m_pHistory;
 	vgui::TextEntry *m_pEntry;
-	vgui::Menu *m_pCompletionList;
+	CNonFocusableMenu *m_pCompletionList;
 	Color m_PrintColor;
 	Color m_DPrintColor;
 	Color m_UserColor;

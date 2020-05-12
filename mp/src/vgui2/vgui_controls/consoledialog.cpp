@@ -24,8 +24,6 @@
 #include "icvar.h"
 #include "filesystem.h"
 
-#include <stdlib.h>
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -34,6 +32,9 @@ using namespace vgui;
 #define DEFAULT_CONSOLE_COLOR Color(216, 222, 211, 255)
 #define DEFAULT_CONSOLED_COLOR Color(196, 181, 80, 255)
 #define DEFAULT_USER_COLOR Color(24, 150, 211, 255)
+
+#define MAX_COMPLETION_ITEMS	10
+#define MAX_HISTORY_ITEMS		100
 
 //-----------------------------------------------------------------------------
 // Used by the autocompletion system
@@ -276,7 +277,6 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
 	// create controls
 	m_pHistory = new RichText(this, "ConsoleHistory");
 	m_pHistory->SetAllowKeyBindingChainToParent( false );
-	SETUP_PANEL( m_pHistory );
 	m_pHistory->SetVerticalScrollbar( !m_bStatusVersion );
 	if ( m_bStatusVersion )
 	{
@@ -284,17 +284,14 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
 	}
 	m_pHistory->GotoTextEnd();
 
-	CNonFocusableMenu *pCompletionList = new CNonFocusableMenu( this, "CompletionList" );
-	m_pCompletionList = pCompletionList;
+	m_pCompletionList = new CNonFocusableMenu( this, "CompletionList" );
 	m_pCompletionList->SetVisible(false);
 
 	m_pEntry = new TabCatchingTextEntry(this, "ConsoleEntry", m_pCompletionList->GetVPanel() );
 	m_pEntry->AddActionSignalTarget(this);
-	m_pEntry->SendNewLine(true);
-	pCompletionList->SetFocusPanel( m_pEntry );
 
-    m_pEntry->PinToSibling("ConsoleHistory", PIN_TOPLEFT, PIN_BOTTOMLEFT);
-    pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
+	m_pCompletionList->SetFocusPanel( m_pEntry );
+	m_pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
 
 	// need to set up default colors, since ApplySchemeSettings won't be called until later
 	m_PrintColor = DEFAULT_CONSOLE_COLOR;
@@ -303,7 +300,7 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
 
 	m_bAutoCompleteMode = false;
 	m_szPartialText[0] = 0;
-	m_szPreviousPartialText[0]=0;
+	m_szPreviousPartialText[0] = 0;
 
 	// Add to global console list
 	g_pCVar->InstallConsoleDisplayFunc( this );
@@ -383,13 +380,7 @@ void CConsolePanel::DPrint( const char *msg )
 
 void CConsolePanel::ClearCompletionList()
 {
-	int c = m_CompletionList.Count();
-	int i;
-	for ( i = c - 1; i >= 0; i-- )
-	{
-		delete m_CompletionList[ i ];
-	}
-	m_CompletionList.Purge();
+	m_CompletionList.PurgeAndDeleteElements();
 }
 
 
@@ -454,9 +445,8 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 		CUtlVector< CUtlString > commands;
 		int count = pCommand->AutoCompleteSuggest( text, commands );
 		Assert( count <= COMMAND_COMPLETION_MAXITEMS );
-		int i;
 
-		for ( i = 0; i < count; i++ )
+		for ( int i = 0; i < count; i++ )
 		{
 			// match found, add to list
 			CompletionItem *item = new CompletionItem();
@@ -621,6 +611,8 @@ void CConsolePanel::OnAutoComplete(bool reverse)
 	char completedText[256];
 	CompletionItem *item = m_CompletionList[m_iNextCompletion];
 	Assert( item );
+	if (!item)
+		return;
 
 	if ( !item->m_bIsCommand && item->m_pCommand )
 	{
@@ -700,14 +692,13 @@ void CConsolePanel::OnTextChanged(Panel *panel)
 	{
 		m_pCompletionList->SetVisible(true);
 		m_pCompletionList->DeleteAllItems();
-		const int MAX_MENU_ITEMS = 10;
 
 		// add the first ten items to the list
-		for (int i = 0; i < m_CompletionList.Count() && i < MAX_MENU_ITEMS; i++)
+		for (int i = 0; i < m_CompletionList.Count() && i < MAX_COMPLETION_ITEMS; i++)
 		{
 			char text[256];
 			text[0] = 0;
-			if (i == MAX_MENU_ITEMS - 1)
+			if (i == MAX_COMPLETION_ITEMS - 1)
 			{
 				Q_strncpy(text, "...", sizeof( text ) );
 			}
