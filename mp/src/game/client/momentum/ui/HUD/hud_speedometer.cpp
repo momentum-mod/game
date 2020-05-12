@@ -29,9 +29,6 @@
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles displaying the speedometer. 0 = OFF, 1 = ON\n");
-
 static MAKE_CONVAR(mom_hud_speedometer_units, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                    "Changes the units of measurement of the speedometer.\n 1 = Units per second\n 2 = "
                    "Kilometers per hour\n 3 = Miles per hour\n 4 = Energy",
@@ -46,12 +43,6 @@ static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_unit_labels, "0", FLAG_HUD_CVAR,
 
 static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_showenterspeed, "1", FLAG_HUD_CVAR,
     "Toggles showing the stage/checkpoint enter speed (and comparison, if existent). 0 = OFF, 1 = ON\n");
-
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_horiz, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles displaying the horizontal speedometer. 0 = OFF, 1 = ON\n");
-
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_vert, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles displaying the vertical speedometer. 0 = OFF, 1 = ON\n");
 
 static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_lastjumpvel, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                           "Toggles showing player velocity at last jump (XY only). 0 = OFF, 1 = ON\n");
@@ -88,10 +79,6 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
 
     m_pUnitsLabel = new Label(this, "UnitsLabel", "");
-
-    m_pAbsSpeedoLabel = new SpeedometerLabel(this, "AbsSpeedoLabel", &mom_hud_speedometer, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetAbsVelocity);
-    m_pHorizSpeedoLabel = new SpeedometerLabel(this, "HorizSpeedoLabel", &mom_hud_speedometer_horiz, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetHorizVelocity);
-    m_pVertSpeedoLabel = new SpeedometerLabel(this, "VertSpeedoLabel", &mom_hud_speedometer_vert, SPEEDOMETER_LABEL_UPDATE_ALWAYS, GetVertVelocity);
 
     m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelLabel", &mom_hud_speedometer_lastjumpvel, SPEEDOMETER_LABEL_UPDATE_ALWAYS,
                                                GetLastJumpVelocity, LastJumpVelColorizeOverride);
@@ -250,16 +237,6 @@ void CHudSpeedMeter::OnThink()
     }
 }
 
-void CHudSpeedMeter::AdjustToReplayTimeScale(float *vel)
-{
-    static ConVarRef CvarTimeScale("mom_replay_timescale");
-    float timescale = CvarTimeScale.GetFloat();
-    if (timescale < 1.0f)
-    {
-        *vel /= timescale;
-    }
-}
-
 void CHudSpeedMeter::AdjustToUnits(float *vel, C_MomentumPlayer *pPlayer)
 {
     // Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
@@ -282,45 +259,6 @@ void CHudSpeedMeter::AdjustToUnits(float *vel, C_MomentumPlayer *pPlayer)
     default:
         break;
     }
-}
-
-bool CHudSpeedMeter::GetAbsVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
-{
-    Vector vecVelocity = pPlayer->GetAbsVelocity();
-    *pVelocity = static_cast<float>(vecVelocity.Length());
-    if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
-    {
-        AdjustToReplayTimeScale(pVelocity);
-    }
-    AdjustToUnits(pVelocity, pPlayer);
-    return true;
-}
-
-bool CHudSpeedMeter::GetHorizVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
-{
-    Vector vecVelocity = pPlayer->GetAbsVelocity();
-    vecVelocity.z = 0;
-    *pVelocity = static_cast<float>(vecVelocity.Length());
-    if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
-    {
-        AdjustToReplayTimeScale(pVelocity);
-    }
-    AdjustToUnits(pVelocity, pPlayer);
-    return true;
-}
-
-bool CHudSpeedMeter::GetVertVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
-{
-    Vector vecVelocity = pPlayer->GetAbsVelocity();
-    vecVelocity.x = 0;
-    vecVelocity.y = 0;
-    *pVelocity = static_cast<float>(vecVelocity.Length());
-    if (pPlayer->IsObserver() && pPlayer->GetCurrentUIEntity()->GetEntType() == RUN_ENT_REPLAY)
-    {
-        AdjustToReplayTimeScale(pVelocity);
-    }
-    AdjustToUnits(pVelocity, pPlayer);
-    return true;
 }
 
 bool CHudSpeedMeter::GetLastJumpVelocity(C_MomentumPlayer *pPlayer, float *pVelocity, float *pPrevVelocityInContext)
