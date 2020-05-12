@@ -98,7 +98,7 @@ float4 main(PS_INPUT i) : COLOR
 #if SPECULAR
     float3 fresnelReflectance = specular.rgb; // F0
 #else
-    float3 dielectricCoefficient = 0.04; //F0 dielectric
+    float3 dielectricCoefficient = 0.04; // F0 dielectric
     float3 fresnelReflectance = lerp(dielectricCoefficient, albedo.rgb, metalness); // F0
 #endif
 
@@ -144,7 +144,7 @@ float4 main(PS_INPUT i) : COLOR
     if (FLASHLIGHT)
     {
         float4 flashlightSpacePosition = mul(float4(i.worldPos, 1.0), g_FlashlightWorldToTexture);
-        clip( flashlightSpacePosition.w ); // stop projected textures from projecting backwards (only really happens if they have a big FOV because they get frustum culled.)
+        clip( flashlightSpacePosition.w ); // Stop projected textures from projecting backwards (only really happens if they have a big FOV because they get frustum culled)
         float3 vProjCoords = flashlightSpacePosition.xyz / flashlightSpacePosition.w;
 
         float3 delta = g_FlashlightPos.xyz - i.worldPos;
