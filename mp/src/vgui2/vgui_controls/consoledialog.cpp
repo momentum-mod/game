@@ -31,6 +31,9 @@
 
 using namespace vgui;
 
+#define DEFAULT_CONSOLE_COLOR Color(216, 222, 211, 255)
+#define DEFAULT_CONSOLED_COLOR Color(196, 181, 80, 255)
+#define DEFAULT_USER_COLOR Color(24, 150, 211, 255)
 
 //-----------------------------------------------------------------------------
 // Used by the autocompletion system
@@ -294,10 +297,9 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
     pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
 
 	// need to set up default colors, since ApplySchemeSettings won't be called until later
-	m_PrintColor = Color(216, 222, 211, 255);
-	m_DPrintColor = Color(196, 181, 80, 255);
-
-	m_pEntry->SetTabPosition(1);
+	m_PrintColor = DEFAULT_CONSOLE_COLOR;
+	m_DPrintColor = DEFAULT_CONSOLED_COLOR;
+	m_UserColor = DEFAULT_USER_COLOR;
 
 	m_bAutoCompleteMode = false;
 	m_szPartialText[0] = 0;
@@ -871,10 +873,12 @@ void CConsolePanel::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	m_PrintColor = GetSchemeColor("Console.TextColor", pScheme);
-	m_DPrintColor = GetSchemeColor("Console.DevTextColor", pScheme);
 	m_pHistory->SetFont( pScheme->GetFont( "ConsoleText", IsProportional() ) );
 	m_pCompletionList->SetFont( pScheme->GetFont( "DefaultSmall", IsProportional() ) );
+	m_PrintColor = GetSchemeColor("Console.TextColor", DEFAULT_CONSOLE_COLOR, pScheme);
+	m_DPrintColor = GetSchemeColor("Console.DevTextColor", DEFAULT_CONSOLED_COLOR, pScheme);
+	m_UserColor = GetSchemeColor("Console.UserInputColor", DEFAULT_USER_COLOR, pScheme);
+
 	InvalidateLayout();
 }
 

@@ -120,6 +120,7 @@ protected:
 	vgui::Menu *m_pCompletionList;
 	Color m_PrintColor;
 	Color m_DPrintColor;
+	Color m_UserColor;
 
 	int m_iNextCompletion;		// the completion that we'll next go to
 	char m_szPartialText[256];
