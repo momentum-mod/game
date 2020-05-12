@@ -3,6 +3,9 @@
 #include "HudSettingsPage.h"
 #include "vgui_controls/CvarComboBox.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
+#include "vgui_controls/Button.h"
+
+#include "hud_speedometer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -76,6 +79,9 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pTimerSoundFinishEnable = new CvarToggleCheckButton(this, "TimerSoundFinishEnable", "#MOM_Settings_Timer_Sound_Finish_Enable", "mom_timer_sound_finish_enable");
     m_pTimerSoundFinishEnable->AddActionSignalTarget(this);
 
+    m_pLoadSpeedoCFG = new Button(this, "LoadSpeedoCFGButton", "#MOM_Settings_Speedometer_Load_CFG", this, "LoadSpeedoCFG");
+    m_pWriteSpeedoCFG = new Button(this, "WriteSpeedoCFGButton", "#MOM_Settings_Speedometer_Write_CFG", this, "WriteSpeedoCFG");
+
     LoadControlSettings("resource/ui/SettingsPanel_HudSettings.res");
 }
 
@@ -92,5 +98,17 @@ void HudSettingsPage::OnCheckboxChecked(Panel *p)
 
         bool bEnableColorize = m_pSpeedometerShow->IsSelected() || m_pSpeedometerHorizShow->IsSelected();
         m_pSpeedometerColorize->SetEnabled(bEnableColorize);
+    }
+}
+
+void HudSettingsPage::OnCommand(const char* pCommand)
+{
+    if (FStrEq(pCommand, "LoadSpeedoCFG"))
+    {
+        engine->ClientCmd_Unrestricted("mom_hud_speedometer_loadcfg");
+    }
+    if (FStrEq(pCommand, "WriteSpeedoCFG"))
+    {
+        engine->ClientCmd_Unrestricted("mom_hud_speedometer_writecfg");
     }
 }

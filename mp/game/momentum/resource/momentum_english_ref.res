@@ -294,6 +294,10 @@
         "MOM_Settings_Speedometer_Units_KPH" "Kilometers per hour (KM/H)"
         "MOM_Settings_Speedometer_Units_MPH" "Miles per hour (MPH)"
         "MOM_Settings_Speedometer_Units_Energy" "Energy"
+        "MOM_Settings_Speedometer_Load_CFG" "Load from CFG"
+        "MOM_Settings_Speedometer_Load_CFG_TT" "Loads the stored speedometer settings for the current gamemode from cfg/Speedometer.vdf"
+        "MOM_Settings_Speedometer_Write_CFG" "Write to CFG"
+        "MOM_Settings_Speedometer_Write_CFG_TT" "Writes the current speedometer settings for the current gamemode to cfg/Speedometer.vdf"
 
         "MOM_Settings_Sync_Label" "Strafe Sync"
         "MOM_Settings_Sync_Show" "Display strafe sync data."

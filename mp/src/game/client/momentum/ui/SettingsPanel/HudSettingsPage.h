@@ -14,6 +14,9 @@ class HudSettingsPage : public SettingsPage
     // the other checkboxes regardless of whether the player clicks Apply/OK
     void OnCheckboxChecked(Panel *p) OVERRIDE;
 
+    // For speedo cfg load/write
+    void OnCommand(const char *pCommand) OVERRIDE;
+
 private:
     vgui::CvarComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
 
@@ -21,4 +24,6 @@ private:
         *m_pSpeedometerShowLastJump, *m_pSpeedometerShowStageEnter, *m_pSpeedometerUnitLabels, *m_pSyncShow,
         *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow, *m_pTimerSoundFailEnable,
         *m_pTimerSoundStartEnable, *m_pTimerSoundStopEnable, *m_pTimerSoundFinishEnable;
+
+    vgui::Button *m_pLoadSpeedoCFG, *m_pWriteSpeedoCFG;
 };
