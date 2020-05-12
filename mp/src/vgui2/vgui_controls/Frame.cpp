@@ -207,7 +207,10 @@ namespace
 		{
 			// draw the grab handle in the bottom right of the frame
 			surface()->DrawSetTextFont(_marlettFont);
-			surface()->DrawSetTextPos(0, 0);
+
+			int wide = surface()->GetCharacterWidth(_marlettFont, 'p');
+			int tall = surface()->GetFontTall(_marlettFont);
+			surface()->DrawSetTextPos(GetWide() - wide - 3, GetTall() - tall - 3);
 			
 			// thin highlight lines
 			surface()->DrawSetTextColor(GetFgColor());
@@ -218,7 +221,10 @@ namespace
 		{
 			// draw the grab handle in the bottom right of the frame
 			surface()->DrawSetTextFont(_marlettFont);
-			surface()->DrawSetTextPos(0, 0);
+
+			int wide = surface()->GetCharacterWidth(_marlettFont, 'o');
+			int tall = surface()->GetFontTall(_marlettFont);
+			surface()->DrawSetTextPos(GetWide() - wide - 3, GetTall() - tall - 3);
 			
 			// thick shadow lines
 			surface()->DrawSetTextColor(GetBgColor());
@@ -240,9 +246,8 @@ namespace
 		void ApplySchemeSettings(IScheme *pScheme)
 		{
 			Panel::ApplySchemeSettings(pScheme);
-			bool isSmall = ((Frame *)GetParent())->IsSmallCaption();
 
-			_marlettFont = pScheme->GetFont( isSmall ? "MarlettSmall" : "Marlett");
+			_marlettFont = pScheme->GetFont( _frame->IsSmallCaption() ? "MarlettSmall" : "Marlett");
 			SetFgColor(GetSchemeColor("FrameGrip.Color1", pScheme));
 			SetBgColor(GetSchemeColor("FrameGrip.Color2", pScheme));
 
