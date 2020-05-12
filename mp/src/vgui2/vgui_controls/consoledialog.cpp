@@ -539,7 +539,46 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 			}
 		}
 	}
+}
 
+void CConsolePanel::SubmitCommand()
+{
+	// submit the entry as a console commmand
+	char szCommand[256];
+	m_pEntry->GetText(szCommand, sizeof(szCommand));
+
+	CUtlString comm(szCommand);
+	comm.Trim(); // Do whitespace trimming here so we're all good for later on
+	PostActionSignal(new KeyValues("CommandSubmitted", "command", comm.Get()));
+
+	// add to the history
+	ColorPrint(m_UserColor, "] ");
+	Print(comm);
+	Print("\n");
+
+	// clear the field
+	m_pEntry->SetText("");
+
+	// clear the completion state
+	OnTextChanged(m_pEntry);
+
+	// always go the end of the buffer when the user has typed something
+	m_pHistory->GotoTextEnd();
+
+	// Extract the extra variables, if any
+	CUtlString ex;
+	const char *extra = strchr(comm, ' ');
+	if (extra)
+	{
+		int indx = extra - comm.Get();
+		ex = comm.Slice(indx + 1);
+		comm.SetLength(indx);
+	}
+
+	if (!comm.IsEmpty())
+		AddToHistory(comm, ex);
+
+	m_pCompletionList->SetVisible(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -695,42 +734,7 @@ void CConsolePanel::OnCommand(const char *command)
 {
 	if ( !Q_stricmp( command, "Submit" ) )
 	{
-		// submit the entry as a console commmand
-		char szCommand[256];
-		m_pEntry->GetText(szCommand, sizeof(szCommand));
-        CUtlString comm(szCommand);
-        comm.Trim(); // Do whitespace trimming here so we're all good for later on
-		PostActionSignal( new KeyValues( "CommandSubmitted", "command", comm.Get() ) );
-
-		// add to the history
-		Print("] ");
-		Print(comm);
-		Print("\n");
-
-		// clear the field
-		m_pEntry->SetText("");
-
-		// clear the completion state
-		OnTextChanged(m_pEntry);
-
-		// always go the end of the buffer when the user has typed something
-		m_pHistory->GotoTextEnd();
-
-        // Extract the extra variables, if any
-        CUtlString ex;
-		const char *extra = strchr(comm, ' ');
-		if ( extra )
-		{
-            int indx = extra - comm.Get();
-            ex = comm.Slice(indx+1);
-            comm.SetLength(indx);
-		}
-
-        // Add the command to the history
-        if (!comm.IsEmpty())
-            AddToHistory(comm, ex);
-
-		m_pCompletionList->SetVisible(false);
+		SubmitCommand();
 	}
 	else
 	{

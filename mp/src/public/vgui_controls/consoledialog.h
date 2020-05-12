@@ -79,6 +79,7 @@ private:
 	{
 		MAX_HISTORY_ITEMS = 100,
 	};
+	void SubmitCommand();
 
 	class CompletionItem
 	{
