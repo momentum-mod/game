@@ -279,6 +279,7 @@
         "MOM_Settings_Speedometer_Label" "Speedometer"
         "MOM_Settings_Speedometer_Show" "Display absolute speed of player."
         "MOM_Settings_Speedometer_Horiz_Show" "Display horizontal speed of player."
+        "MOM_Settings_Speedometer_Vert_Show" "Display vertical speed of player."
         "MOM_Settings_Speedometer_Show_Jump" "Display velocity of player's last jump (XY only)."
         "MOM_Settings_Speedometer_Show_StageEnter" "Display the absolute UPS speed of the player when entering a stage or zone."
         "MOM_Settings_Speedometer_Show_StageEnter_TT" "Also displays a stage enter speed comparison."
