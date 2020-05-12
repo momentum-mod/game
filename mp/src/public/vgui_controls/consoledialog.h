@@ -116,7 +116,6 @@ protected:
 
 	vgui::RichText *m_pHistory;
 	vgui::TextEntry *m_pEntry;
-	vgui::Button *m_pSubmit;
 	vgui::Menu *m_pCompletionList;
 	Color m_PrintColor;
 	Color m_DPrintColor;
