@@ -1043,14 +1043,16 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bS
 	SetVisible( false );
     SetProportional(!bStatusVersion);
 	SetTitle( "#Console_Title", true );
+
+	HScheme consoleScheme = scheme()->LoadSchemeFromFile("resource/ConsoleScheme.res", "ConsoleScheme");
+	if (consoleScheme)
+	{
+		SetScheme(consoleScheme);
+	}
+
 	m_pConsolePanel = new CConsolePanel( this, "ConsolePage", bStatusVersion );
 	m_pConsolePanel->AddActionSignalTarget( this );
 
-    HScheme consoleScheme = scheme()->LoadSchemeFromFile("resource/ConsoleScheme.res", "ConsoleScheme");
-    if (consoleScheme)
-    {
-        SetScheme(consoleScheme);
-    }
 }
 
 void CConsoleDialog::OnScreenSizeChanged( int iOldWide, int iOldTall )
