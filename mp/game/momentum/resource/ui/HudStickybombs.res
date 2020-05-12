@@ -2,13 +2,13 @@
 {
     "CHudStickybombs"
     {
-        "ControlName"		"CHudStickybombs"
+        "ControlName"   "CHudStickybombs"
         "fieldName"		"CHudStickybombs"
         "visible"		"1"
         "enabled"		"1"
         "xpos"          "0"
         "ypos"          "0"
-        "wide"			"20"
+        "wide"			"120"
         "tall"			"22"
         "fgcolor_override"		"0 0 0 0"
         "bgcolor_override"		"0 0 0 0"
