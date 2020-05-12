@@ -805,10 +805,6 @@ void CConsolePanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
-	m_pEntry->SetBorder(pScheme->GetBorder("DepressedButtonBorder"));
-	m_pHistory->SetBorder(pScheme->GetBorder("DepressedButtonBorder"));
-
 	// layout controls
 	int wide, tall;
 	GetSize(wide, tall);
@@ -873,11 +869,13 @@ void CConsolePanel::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	m_pHistory->SetFont( pScheme->GetFont( "ConsoleText", IsProportional() ) );
-	m_pCompletionList->SetFont( pScheme->GetFont( "DefaultSmall", IsProportional() ) );
 	m_PrintColor = GetSchemeColor("Console.TextColor", DEFAULT_CONSOLE_COLOR, pScheme);
 	m_DPrintColor = GetSchemeColor("Console.DevTextColor", DEFAULT_CONSOLED_COLOR, pScheme);
 	m_UserColor = GetSchemeColor("Console.UserInputColor", DEFAULT_USER_COLOR, pScheme);
+
+	m_pHistory->SetFont(GetSchemeFont(pScheme, "ConsoleText", nullptr, "DefaultSmall"));
+	m_pEntry->SetFont(GetSchemeFont(pScheme, "ConsoleEntryTextFont", nullptr, "DefaultSmall"));
+	m_pCompletionList->SetFont(GetSchemeFont(pScheme, "ConsoleCompletionListFont", nullptr, "DefaultSmall"));
 
 	InvalidateLayout();
 }
