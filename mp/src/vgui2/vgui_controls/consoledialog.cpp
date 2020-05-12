@@ -84,7 +84,7 @@ public:
 		}
 		else if ( code == KEY_ENTER )
 		{
-			// submit is the default button whose click event will have been called already
+			GetParent()->OnCommand("Submit");
 		}
 		else
 		{
@@ -280,13 +280,6 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
 		m_pHistory->SetDrawOffsets( 3, 3 );
 	}
 	m_pHistory->GotoTextEnd();
-	
-	m_pSubmit = new Button(this, "ConsoleSubmit", "#Console_Submit");
-	m_pSubmit->SetCommand("submit");
-	m_pSubmit->SetVisible( !m_bStatusVersion );
-    m_pSubmit->SetContentAlignment(Label::a_center);
-    m_pSubmit->SetAutoWide(true);
-    m_pSubmit->SetAutoTall(true);
 
 	CNonFocusableMenu *pCompletionList = new CNonFocusableMenu( this, "CompletionList" );
 	m_pCompletionList = pCompletionList;
@@ -298,7 +291,6 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
 	pCompletionList->SetFocusPanel( m_pEntry );
 
     m_pEntry->PinToSibling("ConsoleHistory", PIN_TOPLEFT, PIN_BOTTOMLEFT);
-    m_pSubmit->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_TOPRIGHT);
     pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
 
 	// need to set up default colors, since ApplySchemeSettings won't be called until later
@@ -806,9 +798,6 @@ void CConsolePanel::OnKeyCodeTyped(KeyCode code)
 void CConsolePanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
-
-	// setup tab ordering
-	GetFocusNavGroup().SetDefaultButton(m_pSubmit);
 
 	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
 	m_pEntry->SetBorder(pScheme->GetBorder("DepressedButtonBorder"));
