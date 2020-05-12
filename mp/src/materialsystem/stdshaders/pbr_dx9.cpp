@@ -26,7 +26,6 @@ const Sampler_t SAMPLER_FLASHLIGHT = SHADER_SAMPLER6;
 const Sampler_t SAMPLER_LIGHTMAP = SHADER_SAMPLER7;
 const Sampler_t SAMPLER_MRAO = SHADER_SAMPLER10;
 const Sampler_t SAMPLER_EMISSIVE = SHADER_SAMPLER11;
-const Sampler_t SAMPLER_SPECULAR = SHADER_SAMPLER12;
 
 // Convars
 static ConVar mat_fullbright("mat_fullbright", "0", FCVAR_CHEAT);
@@ -57,8 +56,6 @@ struct PBR_Vars_t
     int flashlightTextureFrame;
     int emissionTexture;
     int mraoTexture;
-    int useEnvAmbient;
-    int specularTexture;
     int mraoScale;
     int emissionScale;
 };
@@ -74,8 +71,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         SHADER_PARAM(EMISSIONTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Emission texture");
         SHADER_PARAM(NORMALTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Normal texture (deprecated, use $bumpmap)");
         SHADER_PARAM(BUMPMAP, SHADER_PARAM_TYPE_TEXTURE, "", "Normal texture");
-        SHADER_PARAM(USEENVAMBIENT, SHADER_PARAM_TYPE_BOOL, "0", "Use the cubemaps to compute ambient light.");
-        SHADER_PARAM(SPECULARTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Specular F0 RGB map");
         SHADER_PARAM(PARALLAX, SHADER_PARAM_TYPE_BOOL, "0", "Use Parallax Occlusion Mapping.");
         SHADER_PARAM(PARALLAXDEPTH, SHADER_PARAM_TYPE_FLOAT, "0.0030", "Depth of the Parallax Map");
         SHADER_PARAM(PARALLAXCENTER, SHADER_PARAM_TYPE_FLOAT, "0.5", "Center depth of the Parallax Map");
@@ -98,8 +93,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         info.envMap = ENVMAP;
         info.emissionTexture = EMISSIONTEXTURE;
         info.mraoTexture = MRAOTEXTURE;
-        info.useEnvAmbient = USEENVAMBIENT;
-        info.specularTexture = SPECULARTEXTURE;
         info.useParallax = PARALLAX;
         info.parallaxDepth = PARALLAXDEPTH;
         info.parallaxCenter = PARALLAXCENTER;
@@ -170,11 +163,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             LoadTexture(info.baseTexture, TEXTUREFLAGS_SRGB);
         }
 
-        if (params[info.specularTexture]->IsDefined())
-        {
-            LoadTexture(info.specularTexture, TEXTUREFLAGS_SRGB);
-        }
-
         if (IS_FLAG_SET(MATERIAL_VAR_MODEL)) // Set material var2 flags specific to models
         {
             SET_FLAGS2(MATERIAL_VAR2_SUPPORTS_HW_SKINNING);             // Required for skinning
@@ -210,8 +198,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
         bool bHasFlashlight = UsingFlashlight(params);
         bool bHasColor = (info.baseColor != -1) && params[info.baseColor]->IsDefined();
         bool bLightMapped = !IS_FLAG_SET(MATERIAL_VAR_MODEL);
-        bool bUseEnvAmbient = (info.useEnvAmbient != -1) && (params[info.useEnvAmbient]->GetIntValue() == 1);
-        bool bHasSpecularTexture = (info.specularTexture != -1) && params[info.specularTexture]->IsTexture();
         bool bHasMraoScale = (info.mraoScale != -1) && params[info.mraoScale]->IsDefined();
         bool bHasEmissionScale = (info.emissionScale != -1) && params[info.emissionScale]->IsDefined();
 
@@ -252,8 +238,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             pShaderShadow->EnableSRGBRead(SAMPLER_MRAO, false);         // MRAO isn't sRGB
             pShaderShadow->EnableTexture(SAMPLER_NORMAL, true);         // Normal texture
             pShaderShadow->EnableSRGBRead(SAMPLER_NORMAL, false);       // Normals aren't sRGB
-            pShaderShadow->EnableTexture(SAMPLER_SPECULAR, true);       // Specular F0 texture
-            pShaderShadow->EnableSRGBRead(SAMPLER_SPECULAR, true);      // Specular F0 is sRGB
 
             // If the flashlight is on, set up its textures
             if (bHasFlashlight)
@@ -314,7 +298,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode);
                 SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
-                SET_STATIC_PIXEL_SHADER_COMBO(SPECULAR, 0);
                 SET_STATIC_PIXEL_SHADER(pbr_ps20b);
             }
             else
@@ -328,9 +311,7 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
                 SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHT, bHasFlashlight);
                 SET_STATIC_PIXEL_SHADER_COMBO(FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode);
                 SET_STATIC_PIXEL_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
-                SET_STATIC_PIXEL_SHADER_COMBO(USEENVAMBIENT, bUseEnvAmbient);
                 SET_STATIC_PIXEL_SHADER_COMBO(EMISSIVE, bHasEmissionTexture);
-                SET_STATIC_PIXEL_SHADER_COMBO(SPECULAR, bHasSpecularTexture);
                 SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXOCCLUSION, useParallax);
                 SET_STATIC_PIXEL_SHADER(pbr_ps30);
             }
@@ -432,15 +413,6 @@ BEGIN_VS_SHADER(PBR, "PBR shader")
             else
             {
                 pShaderAPI->BindStandardTexture(SAMPLER_MRAO, TEXTURE_WHITE);
-            }
-
-            if (bHasSpecularTexture)
-            {
-                BindTexture(SAMPLER_SPECULAR, info.specularTexture, 0);
-            }
-            else
-            {
-                pShaderAPI->BindStandardTexture(SAMPLER_SPECULAR, TEXTURE_BLACK);
             }
 
             // Getting the light state

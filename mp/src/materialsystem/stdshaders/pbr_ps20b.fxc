@@ -8,7 +8,6 @@
 // STATIC: "FLASHLIGHTDEPTHFILTERMODE"  "0..2"
 // STATIC: "LIGHTMAPPED"                "0..1"
 // STATIC: "EMISSIVE"                   "0..1"
-// STATIC: "SPECULAR"                   "0..1"
 
 // DYNAMIC: "WRITEWATERFOGTODESTALPHA"  "0..1"
 // DYNAMIC: "PIXELFOGTYPE"              "0..1"
@@ -52,9 +51,6 @@ sampler MRAOTextureSampler          : register(s10);    // MRAO texture
 #if EMISSIVE
 sampler EmissionTextureSampler      : register(s11);    // Emission texture
 #endif
-#if SPECULAR
-sampler SpecularTextureSampler      : register(s12);    // Specular F0 texture
-#endif
 
 #define ENVMAPLOD (g_EyePos.a)
 
@@ -80,12 +76,11 @@ float4 main(PS_INPUT i) : COLOR
 
     float3 mrao = tex2D(MRAOTextureSampler, correctedTexCoord).xyz;
     float metalness = mrao.x, roughness = mrao.y, ambientOcclusion = mrao.z;
+
 #if EMISSIVE
     float3 emission = tex2D(EmissionTextureSampler, correctedTexCoord).xyz;
 #endif
-#if SPECULAR
-    float3 specular = tex2D(SpecularTextureSampler, correctedTexCoord).xyz;
-#endif
+
     float3x3 normalBasis = float3x3(i.worldTangent, cross(i.worldNormal, i.worldTangent), i.worldNormal);
     float3 textureNormal = normalize((tex2D( NormalTextureSampler, correctedTexCoord).xyz - float3(0.5, 0.5, 0.5)) * 2);
     float3 normal = normalize(mul(textureNormal, normalBasis)); // World Normal
@@ -95,12 +90,8 @@ float4 main(PS_INPUT i) : COLOR
 
     float3 specularReflectionVector = 2.0 * lightDirectionAngle * normal - outgoingLightDirection; // Lr
 
-#if SPECULAR
-    float3 fresnelReflectance = specular.rgb; // F0
-#else
     float3 dielectricCoefficient = 0.04; // F0 dielectric
     float3 fresnelReflectance = lerp(dielectricCoefficient, albedo.rgb, metalness); // F0
-#endif
 
     // Prepare ambient and direct
     float3 ambientLighting = 0.0;
@@ -112,16 +103,11 @@ float4 main(PS_INPUT i) : COLOR
     float3 diffuseIrradiance = ambientLookup(normal, cAmbientCube, textureNormal, i.lightmapTexCoord1And2, i.lightmapTexCoord3, LightmapSampler, g_DiffuseModulation);
     float3 ambientLightingFresnelTerm = fresnelSchlick(fresnelReflectance, lightDirectionAngle); // F
 
-#if SPECULAR
-    float3 diffuseContributionFactor = 1 - ambientLightingFresnelTerm; // kd
-#else
     float3 diffuseContributionFactor = lerp(1 - ambientLightingFresnelTerm, 0, metalness); ; // kd
-#endif // SPECULAR
-
     float3 diffuseIBL = diffuseContributionFactor * albedo.rgb * diffuseIrradiance;
 
     float4 specularUV = float4(specularReflectionVector, roughness * ENVMAPLOD);
-    float3 lookupHigh = ENV_MAP_SCALE * texCUBE(EnvmapSampler, specularUV).xyz;
+    float3 lookupHigh = ENV_MAP_SCALE * texCUBE(EnvmapSampler, specularUV.xyz).xyz;
 
     float3 lookupLow = PixelShaderAmbientLight(specularReflectionVector, cAmbientCube);
     float3 specularIrradiance = lerp(lookupHigh, lookupLow, roughness * roughness);
