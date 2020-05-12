@@ -50,7 +50,7 @@ class CConsolePanel : public vgui::EditablePanel, public IConsoleDisplayFunc
 	DECLARE_CLASS_SIMPLE( CConsolePanel, vgui::EditablePanel );
 
 public:
-	CConsolePanel( Panel *pParent, const char *pName, bool bStatusVersion );
+	CConsolePanel( Panel *pParent, const char *pName );
 	~CConsolePanel();
 
 	// Inherited from IConsoleDisplayFunc
@@ -119,8 +119,6 @@ protected:
 	char m_szPartialText[256];
 	char m_szPreviousPartialText[256];
 	bool m_bAutoCompleteMode;	// true if the user is currently tabbing through completion options
-	bool m_bWasBackspacing;
-	bool m_bStatusVersion;
 
 	CUtlVector< CompletionItem * > m_CompletionList;
 	CUtlVector< CHistoryItem >	m_CommandHistory;
@@ -134,7 +132,7 @@ class CConsoleDialog : public vgui::Frame
 	DECLARE_CLASS_SIMPLE( CConsoleDialog, vgui::Frame );
 
 public:
-	CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bStatusVersion );
+	CConsoleDialog( vgui::Panel *pParent, const char *pName );
 
 	virtual void OnScreenSizeChanged( int iOldWide, int iOldTall );
 	virtual void Close();
