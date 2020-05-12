@@ -294,6 +294,8 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName ) : BaseCl
 	m_szPartialText[0] = 0;
 	m_szPreviousPartialText[0] = 0;
 
+	LoadControlSettings("resource/ui/ConsolePanel.res");
+
 	// Add to global console list
 	g_pCVar->InstallConsoleDisplayFunc( this );
 }
@@ -995,6 +997,7 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName ) : Base
 	m_pConsolePanel = new CConsolePanel( this, "ConsolePage" );
 	m_pConsolePanel->AddActionSignalTarget( this );
 
+	LoadControlSettings("resource/ui/ConsoleDialog.res");
 }
 
 void CConsoleDialog::OnScreenSizeChanged( int iOldWide, int iOldTall )
