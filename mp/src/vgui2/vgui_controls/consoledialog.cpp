@@ -264,24 +264,16 @@ const char *CConsolePanel::CompletionItem::GetCommand( void ) const
 //-----------------------------------------------------------------------------
 // Purpose: Constructor, destuctor
 //-----------------------------------------------------------------------------
-CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bStatusVersion ) : 
-	BaseClass( pParent, pName ), m_bStatusVersion( bStatusVersion )
+CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName ) : BaseClass( pParent, pName )
 {
 	SetKeyBoardInputEnabled( true );
 
-	if ( !m_bStatusVersion )
-	{
-		SetMinimumSize(100,100);
-	}
+	SetMinimumSize(100,100);
 
 	// create controls
 	m_pHistory = new RichText(this, "ConsoleHistory");
 	m_pHistory->SetAllowKeyBindingChainToParent( false );
-	m_pHistory->SetVerticalScrollbar( !m_bStatusVersion );
-	if ( m_bStatusVersion )
-	{
-		m_pHistory->SetDrawOffsets( 3, 3 );
-	}
+	m_pHistory->SetVerticalScrollbar(true);
 	m_pHistory->GotoTextEnd();
 
 	m_pCompletionList = new CNonFocusableMenu( this, "CompletionList" );
@@ -350,11 +342,6 @@ void CConsolePanel::Clear()
 //-----------------------------------------------------------------------------
 void CConsolePanel::ColorPrint( const Color& clr, const char *msg )
 {
-	if ( m_bStatusVersion )
-	{
-		Clear();
-	}
-
 	m_pHistory->InsertColorChange( clr );
 	m_pHistory->InsertString( msg );
 }
@@ -796,39 +783,6 @@ void CConsolePanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	// layout controls
-	int wide, tall;
-	GetSize(wide, tall);
-
-	if ( !m_bStatusVersion )
-	{
-		const int inset = 8;
-		const int entryHeight = surface()->GetFontTall(m_pEntry->GetFont());
-		const int topHeight = 4;
-		const int entryInset = 4;
-		const int submitWide = m_pSubmit->GetWide();
-
-		m_pHistory->SetPos(inset, inset + topHeight); 
-		m_pHistory->SetSize(wide - (inset * 2), tall - (entryInset * 2 + inset * 2 + topHeight + entryHeight));
-		m_pHistory->InvalidateLayout();
-
-	     m_pEntry->SetSize( wide - submitWide - 2 * inset, entryHeight);
-	}
-	else
-	{
-		const int inset = 2;
-
-		int entryWidth = wide / 2;
-		if ( wide > 400 )
-		{
-			entryWidth = 200;
-		}
-
-		m_pEntry->SetBounds( inset, inset, entryWidth, tall - 2 * inset );
-
-		m_pHistory->SetBounds( inset + entryWidth + inset, inset, ( wide - entryWidth ) - inset, tall - 2 * inset );
-	}
-
 	UpdateCompletionListPosition();
 }
 
@@ -1025,12 +979,11 @@ void CConsolePanel::DumpConsoleTextToFile()
 // Console dialog starts here
 //
 //-----------------------------------------------------------------------------
-CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bStatusVersion ) : 
-	BaseClass( pParent, pName )
+CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName ) : BaseClass( pParent, pName )
 {
 	// initialize dialog
 	SetVisible( false );
-    SetProportional(!bStatusVersion);
+    SetProportional(true);
 	SetTitle( "#Console_Title", true );
 
 	HScheme consoleScheme = scheme()->LoadSchemeFromFile("resource/ConsoleScheme.res", "ConsoleScheme");
@@ -1039,7 +992,7 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bS
 		SetScheme(consoleScheme);
 	}
 
-	m_pConsolePanel = new CConsolePanel( this, "ConsolePage", bStatusVersion );
+	m_pConsolePanel = new CConsolePanel( this, "ConsolePage" );
 	m_pConsolePanel->AddActionSignalTarget( this );
 
 }
