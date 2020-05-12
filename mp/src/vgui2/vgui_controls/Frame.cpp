@@ -515,28 +515,17 @@ namespace vgui
 		bool _disabledLook;
 	
 	public:
-	
-		static int GetButtonSide( Frame *pFrame )
-		{
-			if ( pFrame->IsSmallCaption() )
-			{
-				return 12;
-			}
-
-			return 18;
-		}
-		
-		
 		FrameButton(Panel *parent, const char *name, const char *text) : Button(parent, name, text)
 		{
-			SetSize( FrameButton::GetButtonSide( (Frame *)parent ), FrameButton::GetButtonSide( (Frame *)parent ) );
 			_brightBorder = NULL;
 			_depressedBorder = NULL;
 			_disabledBorder = NULL;
 			_disabledLook = true;
-			SetContentAlignment(Label::a_northwest);
+			SetContentAlignment(a_center);
 			SetTextInset(2, 1);
 			SetBlockDragChaining( true );
+			SetAutoWide(true);
+			SetAutoTall(true);
 		}
 		
 		virtual void ApplySchemeSettings(IScheme *pScheme)
@@ -1034,26 +1023,6 @@ void Frame::MoveToCenterOfScreen()
 	SetPos((ww - GetWide()) / 2, (wt - GetTall()) / 2);
 }
 
-
-void Frame::LayoutProportional( FrameButton *bt )
-{
-	float scale = 1.0;
-
-	if( IsProportional() )
-	{	
-		int screenW, screenH;
-		surface()->GetScreenSize( screenW, screenH );
-
-		int proW,proH;
-		surface()->GetProportionalBase( proW, proH );
-
-		scale =	( (float)( screenH ) / (float)( proH ) );
-	}
-
-	bt->SetSize( (int)( FrameButton::GetButtonSide( this ) * scale ), (int)( FrameButton::GetButtonSide( this ) * scale ) );
-	bt->SetTextInset( (int)( ceil( 2 * scale ) ), (int) ( ceil(1 * scale ) ) );
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: per-frame thinking, used for transition effects
 //			only gets called if the Frame is visible
@@ -1246,55 +1215,40 @@ void Frame::PerformLayout()
 	
 	_captionGrip->SetSize(wide-10,GetCaptionHeight());
 	
-	_menuButton->SetBounds(5+2, 5+3, GetCaptionHeight()-5, GetCaptionHeight()-5);
+	_menuButton->SetBounds(7, 8, GetCaptionHeight()-5, GetCaptionHeight()-5);
 
-	float scale = 1;
-	if (IsProportional())
-	{
-		int screenW, screenH;
-		surface()->GetScreenSize( screenW, screenH );
-
-		int proW,proH;
-		surface()->GetProportionalBase( proW, proH );
-
-		scale =	( (float)( screenH ) / (float)( proH ) );
-	}
-
-	int offset_start = (int)( 20 * scale );
+	int offset_start = GetScaledVal(20);
 	int offset = offset_start;
 
-	int top_border_offset = (int) ( ( 5+3 ) * scale );
+	int top_border_offset = GetScaledVal(6);
 	if ( m_bSmallCaption )
 	{
-		top_border_offset = (int) ( ( 3 ) * scale );
+		top_border_offset = GetScaledVal(3);
 	}
 
-	int side_border_offset = (int) ( 5 * scale );
+	int side_border_offset = GetScaledVal(5);
 	// push the buttons against the east side
 	if (_closeButton->IsVisible())
 	{
-		_closeButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
+		_closeButton->SetPos(wide - offset, top_border_offset);
 		offset += offset_start;
-		LayoutProportional( _closeButton );
-
 	}
+
 	if (_minimizeToSysTrayButton->IsVisible())
 	{
 		_minimizeToSysTrayButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
 		offset += offset_start;
-		LayoutProportional( _minimizeToSysTrayButton );
 	}
+
 	if (_maximizeButton->IsVisible())
 	{
 		_maximizeButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
 		offset += offset_start;
-		LayoutProportional( _maximizeButton );
 	}
+
 	if (_minimizeButton->IsVisible())
 	{
 		_minimizeButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
-		offset += offset_start;
-		LayoutProportional( _minimizeButton );
 	}
 }
 
