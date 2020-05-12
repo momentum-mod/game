@@ -195,7 +195,6 @@ private:
 	MESSAGE_FUNC_PARAMS( OnDialogVariablesChanged, "DialogVariables", dialogVariables );
 
 	void SetupResizeCursors();
-	void LayoutProportional( FrameButton *bt);
 	void FinishClose();
 	void OnFrameFocusChanged(bool bHasFocus);
 
