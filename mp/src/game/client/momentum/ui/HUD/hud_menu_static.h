@@ -32,9 +32,12 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     {
         SelectFunc = SelecFunc;
         CloseFunc = ClosFunc;
+        m_bLoadedFromFile = false;
         ShowMenu_KeyValueItems(kv);
     }
+    virtual void ShowMenu(const char *file, void (*ClosFunc)() = nullptr);
     virtual void SelectMenuItem(int menu_item);
+    void SelectMenuItemFromFile(int menu_item);
 
     void ProcessText(void);
     void ShowMenu_KeyValueItems(KeyValues *pKV);
@@ -68,6 +71,9 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     float m_flSelectionTime;
 
   private:
+    KeyValues *m_kvFromFile;
+    bool m_bLoadedFromFile;
+
     CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
     CPanelAnimationStringVar(32, m_szTextFont, "TextFont", "Default");
     vgui::HFont m_hTextFont;

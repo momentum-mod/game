@@ -1,5 +1,6 @@
 "Saveloc Menu"
 {
+    "menu_name" "Saveloc Menu"
     "1" // Button number
     {
         "label" "#MOM_Menu_SaveCurLoc"
