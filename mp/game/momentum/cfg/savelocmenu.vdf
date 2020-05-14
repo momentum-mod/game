@@ -1,0 +1,43 @@
+"Saveloc Menu"
+{
+    "1" // Button number
+    {
+        "label" "#MOM_Menu_SaveCurLoc"
+        "command" "mom_saveloc_create"
+    }
+    "2"
+    {
+        "label" "#MOM_Menu_ToCurrentSL"
+        "command" "mom_saveloc_current"
+    }
+    "3"
+    {
+        "label" "#MOM_Menu_ToNextSL"
+        "command" "mom_saveloc_nav_next"
+    }
+    "4"
+    {
+        "label" "#MOM_Menu_ToPrevSL"
+        "command" "mom_saveloc_nav_prev"
+    }
+    "5"
+    {
+        "label" "#MOM_Menu_ToFirstSL"
+        "command" "mom_saveloc_nav_first"
+    }
+    "6"
+    {
+        "label" "#MOM_Menu_ToLastSL"
+        "command" "mom_saveloc_nav_last"
+    }
+    "7"
+    {
+        "label" "#MOM_Menu_RemoveCurrentSL"
+        "command" "mom_saveloc_remove_current"
+    }
+    "8"
+    {
+        "label" "#MOM_Menu_RemoveEverySL"
+        "command" "mom_saveloc_remove_all"
+    }
+}
