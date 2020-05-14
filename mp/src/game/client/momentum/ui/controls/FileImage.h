@@ -68,6 +68,10 @@ namespace vgui
 
         void PaintDefaultImage();
 
+        ThreadHandle_t m_hResizeThread;
+        CThreadFastMutex m_Mutex;
+        static unsigned DoResizeAsyncFn(void *pParam);
+        void ResizeImageBufferAsync();
     };
 
     // Like FileImage but streamed from the web (meaning not requiring to be locally downloaded & stored)

@@ -14,6 +14,9 @@
 #define STBI_NO_HDR
 #include "stb/image/stb_image.h"
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb/image/stb_image_resize.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -68,6 +71,7 @@ FileImage::FileImage(IImage *pDefaultImage /* = nullptr*/) : m_iX(0), m_iY(0), m
                                                              m_iDesiredTall(0), m_iRotation(0),
                                                              m_iTextureID(-1), m_pDefaultImage(pDefaultImage),
                                                              m_iOriginalImageWide(0), m_iOriginalImageTall(0),
+                                                             m_hResizeThread(nullptr)
 {
     m_DrawColor = Color(255, 255, 255, 255);
     m_szFileName[0] = '\0';
@@ -81,6 +85,9 @@ FileImage::FileImage(const char *pFileName, const char *pPathID, IImage *pDefaul
 
 FileImage::~FileImage()
 {
+    if (m_hResizeThread)
+        ReleaseThreadHandle(m_hResizeThread);
+
     g_FileImageCache.RemoveImageFromCache(m_szFileName);
 
     DestroyTexture();
@@ -146,6 +153,10 @@ bool FileImage::LoadFromUtlBufferInternal()
 
     if (m_iDesiredTall != m_iOriginalImageTall || m_iDesiredWide != m_iOriginalImageWide)
     {
+        if (!m_hResizeThread)
+        {
+            m_hResizeThread = CreateSimpleThread( DoResizeAsyncFn, this );
+        }
     }
     else
     {
@@ -154,6 +165,29 @@ bool FileImage::LoadFromUtlBufferInternal()
     }
 
     return true;
+}
+
+unsigned FileImage::DoResizeAsyncFn(void *pParam)
+{
+    static_cast<FileImage *>(pParam)->ResizeImageBufferAsync();
+    return 0;
+}
+
+void FileImage::ResizeImageBufferAsync()
+{
+    AUTO_LOCK_FM(m_Mutex);
+    
+    int size = m_iDesiredWide * m_iDesiredTall * 4;
+    unsigned char *pResizedData = new uint8[size];
+
+    stbir_resize_uint8((stbi_uc *)m_bufOriginalImage.Base(), m_iOriginalImageWide, m_iOriginalImageTall, 0,
+                       pResizedData, m_iDesiredWide, m_iDesiredTall, 0,
+                       4);
+
+    m_bufImage.EnsureCapacity(size);
+    m_bufImage.AssumeMemory(pResizedData, size, size);
+
+    m_iTextureID = -2;
 }
 
 void FileImage::LoadFromRGBA(const uint8* pData, int wide, int tall)
@@ -168,10 +202,22 @@ void FileImage::LoadFromRGBA(const uint8* pData, int wide, int tall)
 
 void FileImage::Paint()
 {
+    AUTO_LOCK_FM(m_Mutex);
+
     if (m_iTextureID == -1)
     {
         PaintDefaultImage();
         return;
+    }
+
+    if (m_iTextureID == -2)
+    {
+        LoadFromRGBA((uint8 *)m_bufImage.Base(), m_iDesiredWide, m_iDesiredTall);
+
+        if (m_hResizeThread)
+            ReleaseThreadHandle(m_hResizeThread);
+
+        m_hResizeThread = nullptr;
     }
 
     if (m_iTextureID != -1)
