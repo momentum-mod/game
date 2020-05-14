@@ -29,13 +29,13 @@ namespace vgui
         void SetPos(int x, int y) OVERRIDE { m_iX = x; m_iY = y; }
 
         // Gets the size of the content
-        void GetContentSize(int &wide, int &tall) OVERRIDE { wide = m_iImageWide; tall = m_iImageTall; }
+        void GetContentSize(int &wide, int &tall) OVERRIDE { wide = m_iOriginalImageWide; tall = m_iOriginalImageTall; }
 
         // Get the size the image will actually draw in (usually defaults to the content size)
         void GetSize(int& wide, int& tall) OVERRIDE;
 
         // Sets the size of the image
-        void SetSize(int wide, int tall) OVERRIDE { m_iDesiredWide = wide; m_iDesiredTall = tall; }
+        void SetSize(int wide, int tall) OVERRIDE;
 
         // Set the draw color 
         void SetColor(Color col) OVERRIDE { m_DrawColor = col; }
@@ -53,10 +53,15 @@ namespace vgui
 
     protected:
         Color m_DrawColor;
-        int m_iX, m_iY, m_iImageWide, m_iDesiredWide, m_iImageTall, m_iDesiredTall, m_iRotation, m_iTextureID;
+        int m_iX, m_iY, m_iDesiredWide, m_iDesiredTall, m_iRotation, m_iTextureID;
+
         IImage *m_pDefaultImage;
+
+        int m_iOriginalImageWide, m_iOriginalImageTall; // Original dimensions when loaded
+        CUtlBuffer m_bufOriginalImage, m_bufImage;
     private:
         bool LoadFromFileInternal();
+        bool LoadFromUtlBufferInternal();
         void DestroyTexture();
         char m_szFileName[MAX_PATH];
         char m_szPathID[16];
