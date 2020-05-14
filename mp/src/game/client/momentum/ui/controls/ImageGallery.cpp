@@ -148,6 +148,7 @@ class GalleryModalViewPanel : public Frame
     ~GalleryModalViewPanel()
     {
         m_pGallery->RemoveActionSignalTarget(this);
+        m_pGallery->OnGalleryModalClosed();
     }
 
 protected:
@@ -224,7 +225,7 @@ private:
 };
 
 ImageGallery::ImageGallery(Panel *pParent, const char *pName, bool bDeleteImagesWhenDone /* = false*/) : EditablePanel(pParent, pName), 
-    m_bDeleteOnDone(bDeleteImagesWhenDone)
+    m_bDeleteOnDone(bDeleteImagesWhenDone), m_pGalleryModal(nullptr)
 {
     m_bUseTallButtons = true;
     m_iCurrentIndex = 0;
@@ -328,18 +329,30 @@ void ImageGallery::NextImage()
     SetCurrentIndex(m_iCurrentIndex + 1);
 }
 
+void ImageGallery::ShowGalleryModal()
+{
+    if (m_pGalleryModal)
+        return;
+
+    m_pGalleryModal = new GalleryModalViewPanel(this);
+    m_pGalleryModal->DoModal();
+}
+
 void ImageGallery::Paint()
 {
     BaseClass::Paint();
 
-    if (m_pCurrentImage)
-    {
-        int wide, tall;
-        GetSize(wide, tall);
-        m_pCurrentImage->SetSize(wide, tall);
-        m_pCurrentImage->SetColor(Color(255, 255, 255, 255));
-        m_pCurrentImage->Paint();
-    }
+    if (m_pGalleryModal)
+        return;
+
+    if (!m_pCurrentImage)
+        return;
+
+    int wide, tall;
+    GetSize(wide, tall);
+    m_pCurrentImage->SetSize(wide, tall);
+    m_pCurrentImage->SetColor(Color(255, 255, 255, 255));
+    m_pCurrentImage->Paint();
 }
 
 void ImageGallery::PerformLayout() 
@@ -350,14 +363,12 @@ void ImageGallery::PerformLayout()
 
 void ImageGallery::OnMousePressed(MouseCode code)
 {
-    if (code == MOUSE_LEFT)
+    if (code != MOUSE_LEFT)
+        return;
+
+    if (m_pImages->GetImageCount())
     {
-        if (m_pImages->GetImageCount())
-        {
-            // Pop open a modal frame with just the full res photo
-            GalleryModalViewPanel *pPanel = new GalleryModalViewPanel(this);
-            pPanel->DoModal();
-        }
+        ShowGalleryModal();
     }
 }
 
