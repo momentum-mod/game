@@ -39,10 +39,35 @@ jobs:
     - name: Upload bin artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: bin_${{ env.short_commit_sha }}
+        name: bin_${{ runner.os }}-${{ env.short_commit_sha }}
         path: artifacts\bin
     - name: Upload pdb artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: pdb_${{ env.short_commit_sha }}
+        name: pdb_${{ runner.os }}-${{ env.short_commit_sha }}
         path: artifacts\pdb
+
+  build-linux:
+    runs-on: ubuntu-latest
+    container: gocnak/steam-runtime-i386:momentum
+    env:
+      USING_DOCKER: true
+    steps:
+      - uses: actions/checkout@v1
+      - name: Creating game project files
+        working-directory: mp/src
+        run: ./creategameprojects
+      - name: Building the game
+        working-directory: mp/src
+        run: make -j$(nproc --all) -f games.mak
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          mkdir -v artifacts
+          shopt -s extglob
+          mv -v mp/game/bin/!(*.dbg) mp/game/momentum/bin/!(*.dbg|*.dll) artifacts
+          echo "::set-env name=short_commit_sha::$(git rev-parse --short HEAD)"
+      - uses: actions/upload-artifact@v1
+        with:
+          name: bin_${{ runner.os }}-${{ env.short_commit_sha }}
+          path: artifacts
