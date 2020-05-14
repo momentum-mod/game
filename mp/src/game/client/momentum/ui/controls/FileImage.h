@@ -60,6 +60,9 @@ namespace vgui
         void DestroyTexture();
         char m_szFileName[MAX_PATH];
         char m_szPathID[16];
+
+        void PaintDefaultImage();
+
     };
 
     // Like FileImage but streamed from the web (meaning not requiring to be locally downloaded & stored)
