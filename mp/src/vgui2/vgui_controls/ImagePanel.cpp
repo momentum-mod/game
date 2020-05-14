@@ -169,17 +169,13 @@ void ImagePanel::PaintBackground()
 
 		if (m_bScaleImage)
 		{
-			// Image size is stored in the bitmap, so temporarily set its size
-			// to our panel size and then restore after we draw it.
-
-			int imageWide, imageTall;
-			m_pImage->GetSize( imageWide, imageTall );
-
 			if ( m_fScaleAmount > 0.0f )
 			{
-				float wide, tall;
-				wide = static_cast<float>(imageWide) * m_fScaleAmount;
-				tall = static_cast<float>(imageTall) * m_fScaleAmount;
+				int imageWide, imageTall;
+				m_pImage->GetSize( imageWide, imageTall );
+
+				float wide = static_cast<float>(imageWide) * m_fScaleAmount;
+				float tall = static_cast<float>(imageTall) * m_fScaleAmount;
 				m_pImage->SetSize( static_cast<int>(wide), static_cast<int>(tall) );
 			}
 			else
@@ -190,8 +186,6 @@ void ImagePanel::PaintBackground()
 			}
 
 			m_pImage->Paint();
-
-			m_pImage->SetSize( imageWide, imageTall );
 		}
 		else if ( m_bTileImage || m_bTileHorizontally || m_bTileVertically )
 		{
