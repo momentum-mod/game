@@ -64,8 +64,10 @@ public:
 
 CFileImageCache g_FileImageCache;
 
-FileImage::FileImage(IImage *pDefaultImage /* = nullptr*/): m_iX(0), m_iY(0), m_iImageWide(0), 
-    m_iDesiredWide(0), m_iImageTall(0), m_iDesiredTall(0), m_iRotation(0), m_iTextureID(-1), m_pDefaultImage(pDefaultImage)
+FileImage::FileImage(IImage *pDefaultImage /* = nullptr*/) : m_iX(0), m_iY(0), m_iDesiredWide(0),
+                                                             m_iDesiredTall(0), m_iRotation(0),
+                                                             m_iTextureID(-1), m_pDefaultImage(pDefaultImage),
+                                                             m_iOriginalImageWide(0), m_iOriginalImageTall(0),
 {
     m_DrawColor = Color(255, 255, 255, 255);
     m_szFileName[0] = '\0';
@@ -79,6 +81,8 @@ FileImage::FileImage(const char *pFileName, const char *pPathID, IImage *pDefaul
 
 FileImage::~FileImage()
 {
+    g_FileImageCache.RemoveImageFromCache(m_szFileName);
+
     DestroyTexture();
 }
 
@@ -86,6 +90,12 @@ bool FileImage::LoadFromFile(const char* pFileName, const char* pPathID /* = "GA
 {
     Q_strncpy(m_szFileName, pFileName, sizeof(m_szFileName));
     Q_strncpy(m_szPathID, pPathID, sizeof(m_szPathID));
+
+    const auto pFound = g_FileImageCache.FindImageByPath(m_szFileName);
+    if (pFound)
+    {
+        return LoadFromUtlBuffer(pFound->m_bufOriginalImage);
+    }
 
     return LoadFromFileInternal();
 }
@@ -96,22 +106,52 @@ bool FileImage::LoadFromFileInternal()
     if (!g_pFullFileSystem->ReadFile(m_szFileName, m_szPathID, fileBuf))
         return false;
 
-    return LoadFromUtlBuffer(fileBuf);
+    const auto bRet = LoadFromUtlBuffer(fileBuf);
+
+    if (bRet)
+    {
+        g_FileImageCache.AddImageToCache(m_szFileName, m_bufOriginalImage);
+    }
+
+    return bRet;
 }
 
 bool FileImage::LoadFromUtlBuffer(CUtlBuffer &buf)
 {
-    // Read our image data
-    int w, h, channels;
-    unsigned char *pImageData = stbi_load_from_memory((stbi_uc*) buf.Base(), buf.TellPut(), &w, &h, &channels, STBI_rgb_alpha);
+    int channels;
+    unsigned char *pImageData = stbi_load_from_memory((stbi_uc*)buf.Base(), buf.TellPut(),
+                                                      &m_iOriginalImageWide, &m_iOriginalImageTall,
+                                                      &channels, STBI_rgb_alpha);
+
     if (!pImageData)
         return false;
 
-    // Image data gets memcpy'd over in this function...
-    LoadFromRGBA(pImageData, w, h);
+    const auto inSize = m_iOriginalImageTall * m_iOriginalImageWide * channels;
+    m_bufOriginalImage.EnsureCapacity(inSize);
+    m_bufOriginalImage.AssumeMemory(pImageData, inSize, inSize);
 
-    // ... So we can clean up here
-    stbi_image_free(pImageData);
+    return LoadFromUtlBufferInternal();
+}
+
+bool FileImage::LoadFromUtlBufferInternal()
+{
+    if (m_bufOriginalImage.TellPut() == 0)
+        return false;
+
+    if (m_iDesiredWide == 0)
+        m_iDesiredWide = m_iOriginalImageWide;
+
+    if (m_iDesiredTall == 0)
+        m_iDesiredTall = m_iOriginalImageTall;
+
+    if (m_iDesiredTall != m_iOriginalImageTall || m_iDesiredWide != m_iOriginalImageWide)
+    {
+    }
+    else
+    {
+        // Create with the original image buffer
+        LoadFromRGBA((stbi_uc*) m_bufOriginalImage.Base(), m_iDesiredWide, m_iDesiredTall);
+    }
 
     return true;
 }
@@ -124,14 +164,6 @@ void FileImage::LoadFromRGBA(const uint8* pData, int wide, int tall)
     m_iTextureID = surface()->CreateNewTextureID(true);
     // Image data gets memcpy'd over in this function...
     surface()->DrawSetTextureRGBAEx(m_iTextureID, pData, wide, tall, IMAGE_FORMAT_RGBA8888);
-    
-    m_iImageWide = wide;
-    m_iImageTall = tall;
-
-    if (m_iDesiredWide == 0)
-        m_iDesiredWide = wide;
-    if (m_iDesiredTall == 0)
-        m_iDesiredTall = tall;
 }
 
 void FileImage::Paint()
@@ -202,7 +234,9 @@ void FileImage::PaintDefaultImage()
 void FileImage::GetSize(int& wide, int& tall)
 {
     if (m_iDesiredWide == 0 && m_iDesiredTall == 0)
+    {
         GetContentSize(wide, tall);
+    }
     else
     {
         wide = m_iDesiredWide; 
@@ -210,10 +244,35 @@ void FileImage::GetSize(int& wide, int& tall)
     }
 }
 
+void FileImage::SetSize(int wide, int tall)
+{
+    bool change = false;
+    if (wide != m_iDesiredWide)
+    {
+        m_iDesiredWide = wide;
+        change = true;
+    }
+
+    if (tall != m_iDesiredTall)
+    {
+        m_iDesiredTall = tall;
+        change = true;
+    }
+
+    if (change)
+    {
+        LoadFromUtlBufferInternal(); // Reload the image with proper resizing
+    }
+}
+
 bool FileImage::Evict()
 {
     if (m_szFileName[0])
         return LoadFromFileInternal();
+
+    if (m_bufOriginalImage.TellPut() > 0)
+        return LoadFromUtlBufferInternal();
+
     return false;
 }
 
@@ -248,6 +307,12 @@ URLImage::~URLImage()
 bool URLImage::LoadFromURL(const char* pURL)
 {
     Q_strncpy(m_szURL, pURL, sizeof(m_szURL));
+
+    const auto pFound = g_FileImageCache.FindImageByPath(m_szURL);
+    if (pFound)
+    {
+        return LoadFromUtlBuffer(pFound->m_bufOriginalImage);
+    }
 
     return LoadFromURLInternal();
 }
@@ -285,8 +350,9 @@ void URLImage::Paint()
 
 bool URLImage::Evict()
 {
-    if (m_szURL[0])
+    if (!FileImage::Evict() && m_szURL[0])
         return LoadFromURLInternal();
+
     return false;
 }
 
