@@ -138,6 +138,17 @@ void CHudMenuStatic::ShowMenu(const char *filename, void (*ClosFunc)())
 
     Q_snprintf(strTemp, sizeof(strTemp), "cfg/%s.vdf", filename);
 
+    // Copy from default file if there is no non-default file
+    if (!g_pFullFileSystem->FileExists(strTemp))
+    {
+        char strFileNameDefault[64];
+        Q_snprintf(strFileNameDefault, sizeof(strFileNameDefault), "cfg/%s_default.vdf", filename);
+        KeyValues *pKVTemp = new KeyValues(filename);
+        pKVTemp->LoadFromFile(g_pFullFileSystem, strFileNameDefault, "MOD");
+        pKVTemp->SaveToFile(g_pFullFileSystem, strTemp, "MOD");
+        pKVTemp->deleteThis();
+    }
+
     m_kvFromFile->LoadFromFile(g_pFullFileSystem, strTemp, "MOD");
     KeyValues *pKv = new KeyValues(m_kvFromFile->GetString("menu_name", "NOT FOUND"));
 
