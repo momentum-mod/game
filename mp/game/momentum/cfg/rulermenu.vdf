@@ -1,0 +1,18 @@
+"Ruler Menu"
+{
+    "1" // Button number
+    {
+        "label" "#MOM_Ruler_FirstPoint"
+        "command" "mom_ruler_first"
+    }
+    "2"
+    {
+        "label" "#MOM_Ruler_SecondPoint"
+        "command" "mom_ruler_second"
+    }
+    "3"
+    {
+        "label" "#MOM_Ruler_Measure"
+        "command" "mom_ruler_measure"
+    }
+}
