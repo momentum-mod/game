@@ -40,6 +40,8 @@ public:
 	virtual void AddSoundscapeFile( const char *filename );
 	int	GetSoundscapeIndex( const char *pName );
 	bool IsValidIndex( int index );
+	void PrecacheSounds( int index );
+	void AddSoundscapeSounds( KeyValues *pSoundscape, int soundscapeIndex );
 
 	void FlushSoundscapes( void );
 	void AddSoundscapeEntity( CEnvSoundscape *pSoundscape );
