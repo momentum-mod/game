@@ -33,6 +33,10 @@ public:
 
     void AddImageToCache(const char *pPath, const CUtlBuffer &pBuf)
     {
+        const auto foundIndex = m_dictImages.Find(pPath);
+        if (m_dictImages.IsValidIndex(foundIndex))
+            return;
+
         const auto pEntry = new ImageCacheEntry;
         pEntry->m_bufOriginalImage.CopyBuffer(pBuf);
 
