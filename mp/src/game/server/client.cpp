@@ -906,6 +906,12 @@ CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCom
 			return;
 		}
 
+        if (FStrEq(STRING(gpGlobals->mapname), "credits") || gpGlobals->eLoadType == MapLoad_Background)
+        {
+            Warning("Cannot give weapons in this map!");
+            return;
+        }
+
 		pPlayer->GiveWeapon(foundID);
 	}
 }
