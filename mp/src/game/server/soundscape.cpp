@@ -379,6 +379,10 @@ void CEnvSoundscape::Precache()
 	{
 		DevWarning("Can't find soundscape: %s\n", STRING(m_soundscapeName) );
 	}
+	else
+	{
+		g_SoundscapeSystem.PrecacheSounds(m_soundscapeIndex);
+	}
 }
 
 void CEnvSoundscape::DrawDebugGeometryOverlays( void )
