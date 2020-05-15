@@ -2066,15 +2066,13 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
                 if (sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
                     player->GetGroundEntity() == nullptr && player->GetWaterLevel() < WL_Waist &&
-                    g_pGameModeSystem->GetGameMode()->CanBhop())
+                    g_pGameModeSystem->GetGameMode()->CanBhop() && !g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
                 {
                     bool bValidHit = !pm.allsolid && pm.fraction < 1.0f;
 
-                    // TODO: Account for additional gamemode-specific restrictions restricting landing
                     bool bCouldStandHere = pm.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY;
 
-                    bool bMovingIntoPlane2D =
-                        pm.plane.normal.x * mv->m_vecVelocity.x + pm.plane.normal.y * mv->m_vecVelocity.y < 0.0f;
+                    bool bMovingIntoPlane2D = (pm.plane.normal.x * mv->m_vecVelocity.x) + (pm.plane.normal.y * mv->m_vecVelocity.y) < 0.0f;
 
                     // Don't perform this fix on additional collisions this tick which have trace fraction == 0.0.
                     // This situation occurs when wedged between a standable slope and a ceiling.
