@@ -1,12 +1,12 @@
-# Definitely check out appveyor.com/docs/appveyor-yml/ for more info on what's in this document.
+# Definitely check out https://www.appveyor.com/docs/appveyor-yml/ for more info on what's in this document.
 # Change all lines with CHANGEME in a comment above them to fit your project structure.
-# Appveyor is really nice and I recommend it for anybody looking for automating their 
-# windows builds. Check it out at https://ci.appveyor.com !
+# AppVeyor is really nice and I recommend it for anybody looking for automating their 
+# Windows builds. Check it out at https://ci.appveyor.com !
 
 version: '{branch}-{build}'
 
 # We only care about master and develop for our project.
-# CHANGEME if you want Appveyor to build other branches!
+# CHANGEME if you want AppVeyor to build other branches!
 branches:
   only:
     - master
@@ -21,31 +21,24 @@ only_commits:
 # Don't build when tags are made
 skip_tags: true
 
-# At most one job during this build
-max_jobs: 1
-
 # Build image
 image: Visual Studio 2019
 
-# Clone the project into this folder
-# You can change me, but make sure to change it for every other part of the build!
-clone_folder: c:\build
+# Clone to only the last commit
+clone_depth: 1
 
-# Clone to only the last 5 commits
-clone_depth: 5
-
-# Init script is called before the project is cloned. Not needed for our project, maybe for yours.
-# init:
+# environment variables
+environment:
+  POWERSHELL_TELEMETRY_OPTOUT: 1
 
 # Install script is called after cloning the repository
 install:
 
-# Gotta do some fun Registry stuff here for the VPC to work with only 2017 installed.
-  - REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\10.0\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" /v DefaultProjectExtension /t REG_SZ /d vcproj /f
+# Gotta do some fun Registry stuff here for VPC to work without VS2013 installed.
+  - REG ADD "HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\10.0\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" /v DefaultProjectExtension /t REG_SZ /d vcproj /f
 
 # Let's get into this source directory, where our "creategameprojects" script normally is
-# NOTE: This will change depending on if you've changed the clone directory!
-  - cd c:\build\mp\src
+  - cd mp\src
 
 # It's important to note that this is what is found inside of createallprojects.bat, but our script pauses
 # to help know if something went wrong with VPC, so we directly call it here instead.
@@ -68,38 +61,38 @@ install:
 configuration: Release
 
 build_script:
-  - run_build.bat
+  - msbuild everything.sln /m /nologo /p:Configuration=%CONFIGURATION% /t:Clean;Build /v:m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 # Disable automatic testing
 test: off  
-  
+
 # After build scripts run... well, after the build, of course. Mainly here to clean some stuff up.
 after_build:
-# Gonna be deleting some PDB files, these things are nasty big and we won't want them for our build artifacts zip.
-# CHANGEME to be your correct game's name (not momentum I hope)
-  - if exist c:\build\mp\game\momentum\bin\*.pdb del /f c:\build\mp\game\momentum\bin\*.pdb
-  - if exist c:\build\mp\game\bin\*.pdb del /f c:\build\mp\game\bin\*.pdb
 
 # This is trimming the commit hash to be only around 7 characters long, much more bearable when you have it
 # sent to a slack channel or something. Feel free to CHANGEME if you don't use/don't want to shorten it.
-  - set APPVEYOR_REPO_COMMIT=%APPVEYOR_REPO_COMMIT:~0,7%
+  - ps: $env:APPVEYOR_REPO_COMMIT=$(git rev-parse --short HEAD)
+
+# Gonna be creating zip files.
+# CHANGEME to be your correct game's name (not Momentum I hope)
+  - |
+    cd %APPVEYOR_BUILD_FOLDER%\mp\game
+    7z a ..\..\bin_%APPVEYOR_REPO_COMMIT%.zip bin momentum\bin -xr!*.pdb
+    7z a ..\..\pdb_%APPVEYOR_REPO_COMMIT%.zip bin\*.pdb momentum\bin\*.pdb
+    cd %APPVEYOR_BUILD_FOLDER%
 
 
 # Lastly, and certainly not leastly (it's the reason we're doing this!), Artifacts.
 artifacts:
 
-# First one is all of the tool binary files
+# First one is all of the binary files
 # CHANGEME if you don't build everything feel free to remove this
-  - path: mp\game\bin
-    name: tools_bin_$(APPVEYOR_REPO_COMMIT)
-    type: zip
+  - path: bin_%APPVEYOR_REPO_COMMIT%.zip
 
-# Secondly, the main output of the build, game binaries
-# CHANGEME: Our game's name is momentum, change it to be yours!
-  - path: mp\game\momentum\bin
-    name: game_bin_$(APPVEYOR_REPO_COMMIT)
-    type: zip
-    
+# Secondly, the pdbs (used for debugging)
+# CHANGEME: Our game's name is Momentum, change it to be yours!
+  - path: pdb_%APPVEYOR_REPO_COMMIT%.zip
+
 # It's worth to note that notifications can be set up either in this file or online. I recommend the latter.
 # You can do that in your project settings -> Notifications. Slack (and Discord's webhook with /slack at the end)
 # both work wonders.
