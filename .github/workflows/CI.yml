@@ -30,11 +30,19 @@ jobs:
       run: msbuild mp\src\everything.sln /m /nologo /p:Configuration=Release /t:"Clean;Build" /v:m
     - name: Prepare artifacts
       run: |
-        robocopy mp\game\bin artifacts\bin /xf *.pdb /r:0 /w:0
-        robocopy mp\game\momentum\bin artifacts\momentum\bin /xf *.pdb /r:0 /w:0
+        robocopy mp\game\bin artifacts\bin\bin /xf *.pdb /r:0 /w:0
+        robocopy mp\game\momentum\bin artifacts\bin\momentum\bin /xf *.pdb /r:0 /w:0
+        robocopy mp\game\bin artifacts\pdb\bin *.pdb /r:0 /w:0
+        robocopy mp\game\momentum\bin artifacts\pdb\momentum\bin *.pdb /r:0 /w:0
         If ($LastExitCode -le 7) { echo "LastExitCode = $LastExitCode"; $LastExitCode = 0 }
         echo "::set-env name=short_commit_sha::$(git rev-parse --short HEAD)"
-    - uses: actions/upload-artifact@v2
+    - name: Upload bin artifacts
+      uses: actions/upload-artifact@v2
       with:
         name: bin_${{ env.short_commit_sha }}
-        path: artifacts
+        path: artifacts\bin
+    - name: Upload pdb artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: pdb_${{ env.short_commit_sha }}
+        path: artifacts\pdb
