@@ -51,8 +51,6 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
     m_bHaveDarkenedBackground = false;
     m_BackdropColor = Color(0, 0, 0, 128);
 
-    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
-
     SetZPos(-100);
     m_pMainMenu = new MainMenu(this);
     SETUP_PANEL(m_pMainMenu);

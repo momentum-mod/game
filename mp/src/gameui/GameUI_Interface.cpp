@@ -257,8 +257,8 @@ void CGameUI::Start()
     
 
     // localization
-    g_pVGuiLocalize->AddFile("Resource/platform_%language%.txt");
-    g_pVGuiLocalize->AddFile("Resource/vgui_%language%.txt");
+    g_pVGuiLocalize->AddFile("resource/platform_%language%.txt");
+    g_pVGuiLocalize->AddFile("resource/vgui_%language%.txt");
 
     // Delay playing the startup music until two frames
     // this allows cbuf commands that occur on the first frame that may start a map
