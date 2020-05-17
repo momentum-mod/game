@@ -281,6 +281,8 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName ) : BaseCl
 
 	m_pEntry = new TabCatchingTextEntry(this, "ConsoleEntry", m_pCompletionList->GetVPanel() );
 	m_pEntry->AddActionSignalTarget(this);
+	m_pEntry->SetTabPosition(1);
+	GetFocusNavGroup().SetDefaultButton(m_pEntry);
 
 	m_pCompletionList->SetFocusPanel( m_pEntry );
 	m_pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
