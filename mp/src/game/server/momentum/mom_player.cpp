@@ -34,6 +34,8 @@ static MAKE_TOGGLE_CONVAR(mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REP
 static MAKE_TOGGLE_CONVAR(mom_practice_warning_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
                           "Toggles the warning for enabling practice mode during a run. 0 = OFF, 1 = ON\n");
 
+static MAKE_TOGGLE_CONVAR(mom_ahop_sound_sprint_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the sound made when enabling sprint. 0 = OFF, 1 = ON.\n");
+
 CON_COMMAND_F(
     mom_practice,
     "Toggle. Allows player to fly around in noclip during a run, teleports the player back upon untoggling.\n"
@@ -775,7 +777,7 @@ void CMomentumPlayer::ToggleSprint(bool bShouldSprint)
     m_bIsSprinting = bShouldSprint;
     SetMaxSpeed(bShouldSprint ? AHOP_SPRINT_SPEED : AHOP_NORM_SPEED);
 
-    if (bShouldSprint)
+    if (bShouldSprint && mom_ahop_sound_sprint_enable.GetBool())
     {
         EmitSound(SND_SPRINT);
     }
