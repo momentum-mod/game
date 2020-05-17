@@ -7,13 +7,11 @@
 #include "cbase.h"
 #include "gamemovement.h"
 #include "in_buttons.h"
-#include <stdarg.h>
 #include "movevars_shared.h"
 #include "engine/IEngineTrace.h"
-#include "SoundEmitterSystem/isoundemittersystembase.h"
-#include "decals.h"
 #include "coordsize.h"
 #include "mom_system_gamemode.h"
+#include "filesystem.h"
 
 #if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
 	#include "hl_movedata.h"
@@ -25,16 +23,12 @@
 #define	STOP_EPSILON		0.1
 #define	MAX_CLIP_PLANES		5
 
-#include "filesystem.h"
-#include <stdarg.h>
-
-extern IFileSystem *filesystem;
-
 #ifndef CLIENT_DLL
 	#include "env_player_surface_trigger.h"
 	static ConVar dispcoll_drawplane( "dispcoll_drawplane", "0" );
 #endif
 
+MAKE_TOGGLE_CONVAR(sv_debug_velocity_check, "0", FCVAR_NONE, "Prints out checks with velocity. 0 = OFF, 1 = ON.\n");
 
 // tickcount currently isn't set during prediction, although gpGlobals->curtime and
 // gpGlobals->frametime are. We should probably set tickcount (to player->m_nTickBase),
@@ -44,10 +38,6 @@ extern IFileSystem *filesystem;
 
 #if defined( HL2_DLL )
 ConVar xc_uncrouch_on_jump( "xc_uncrouch_on_jump", "1", FCVAR_ARCHIVE, "Uncrouch when jump occurs" );
-#endif
-
-#if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
-ConVar player_limit_jump_speed( "player_limit_jump_speed", "1", FCVAR_REPLICATED );
 #endif
 
 #ifdef STAGING_ONLY
@@ -3016,23 +3006,12 @@ bool CGameMovement::LadderMove( void )
 #if !defined(_STATIC_LINKED) || defined(CLIENT_DLL)
 const char *DescribeAxis( int axis )
 {
-	static char sz[ 32 ];
+	if (axis < 0 || axis > 2)
+		return "BAD AXIS!";
 
-	switch ( axis )
-	{
-	case 0:
-		Q_strncpy( sz, "X", sizeof( sz ) );
-		break;
-	case 1:
-		Q_strncpy( sz, "Y", sizeof( sz ) );
-		break;
-	case 2:
-	default:
-		Q_strncpy( sz, "Z", sizeof( sz ) );
-		break;
-	}
+	static const char *pArray[] = { "X", "Y", "Z" };
 
-	return sz;
+	return pArray[axis];
 }
 #else
 const char *DescribeAxis( int axis );
@@ -3043,26 +3022,25 @@ const char *DescribeAxis( int axis );
 //-----------------------------------------------------------------------------
 void CGameMovement::CheckVelocity( void )
 {
-	int i;
-
-	//
-	// bound velocity
-	//
-
 	Vector org = mv->GetAbsOrigin();
+	const bool bPrint = sv_debug_velocity_check.GetBool();
 
-	for (i=0; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		// See if it's bogus.
 		if (IS_NAN(mv->m_vecVelocity[i]))
 		{
-			DevMsg( 1, "PM  Got a NaN velocity %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a NaN velocity %s\n", DescribeAxis( i ) );
+
 			mv->m_vecVelocity[i] = 0;
 		}
 
 		if (IS_NAN(org[i]))
 		{
-			DevMsg( 1, "PM  Got a NaN origin on %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a NaN origin on %s\n", DescribeAxis( i ) );
+
 			org[ i ] = 0;
 			mv->SetAbsOrigin( org );
 		}
@@ -3070,12 +3048,16 @@ void CGameMovement::CheckVelocity( void )
 		// Bound it.
 		if (mv->m_vecVelocity[i] > sv_maxvelocity.GetFloat()) 
 		{
-			DevMsg( 1, "PM  Got a velocity too high on %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a velocity too high on %s\n", DescribeAxis( i ) );
+
 			mv->m_vecVelocity[i] = sv_maxvelocity.GetFloat();
 		}
 		else if (mv->m_vecVelocity[i] < -sv_maxvelocity.GetFloat())
 		{
-			DevMsg( 1, "PM  Got a velocity too low on %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a velocity too low on %s\n", DescribeAxis( i ) );
+
 			mv->m_vecVelocity[i] = -sv_maxvelocity.GetFloat();
 		}
 	}
