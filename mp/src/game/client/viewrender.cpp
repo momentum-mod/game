@@ -775,11 +775,7 @@ CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffects)
 	CLIENTEFFECT_MATERIAL( "dev/blurfiltery_nohdr" )
 	CLIENTEFFECT_MATERIAL( "dev/bloomadd" )
 	CLIENTEFFECT_MATERIAL( "dev/downsample" )
-	//#ifdef CSTRIKE_DLL
-		CLIENTEFFECT_MATERIAL( "dev/downsample_non_hdr_cstrike" )
-	//#else
-	//	CLIENTEFFECT_MATERIAL( "dev/downsample_non_hdr" )
-	//#endif
+	CLIENTEFFECT_MATERIAL( "dev/downsample_non_hdr_cstrike" )
 	CLIENTEFFECT_MATERIAL( "dev/no_pixel_write" )
 	CLIENTEFFECT_MATERIAL( "dev/lumcompare" )
 	CLIENTEFFECT_MATERIAL( "dev/floattoscreen_combine" )
