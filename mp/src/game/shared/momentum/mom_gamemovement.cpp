@@ -1300,6 +1300,9 @@ bool CMomentumGameMovement::CheckJumpButton()
     m_pPlayer->SetIsInAirDueToJump(true);
     // Fire that we jumped
     m_pPlayer->OnJump();
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("player_jumped");
+    if (pEvent)
+        gameeventmanager->FireEvent(pEvent);
 #endif
 
     return true;
