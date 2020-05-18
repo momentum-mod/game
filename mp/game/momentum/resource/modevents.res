@@ -130,4 +130,7 @@
     {
         "map" "string"
     }
+    "player_jumped"
+    {
+    }
 }
