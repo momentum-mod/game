@@ -1,0 +1,270 @@
+"Gamemodes"
+{
+    "#MOM_GameType_Surf"
+    {
+        "order"
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "LastJumpVelocity"
+            "4" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+        "RampEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+    }
+
+    "#MOM_GameType_Bhop"
+    {
+        "order"
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "LastJumpVelocity"
+            "4" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+        "RampEnterExitVelocity"
+        {
+            "visible"  "0"
+        }
+    }
+
+    "#MOM_GameType_RJ"
+    {
+        "order"
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "LastJumpVelocity"
+            "4" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible" "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "1"
+            "ranges"
+            {
+                "1"
+                {
+                    "min"   "850"
+                    "max"   "1050"
+                    "color" "24 150 211 255"
+                }
+                "2"
+                {
+                    "min"   "1050"
+                    "max"   "1150"
+                    "color" "153 255 153 255"
+                }
+                "3"
+                {
+                    "min"   "1150"
+                    "max"   "1350"
+                    "color" "24 150 211 255"
+                }
+            }
+            "units"    "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+        "RampEnterExitVelocity"
+        {
+            "visible"  "0"
+        }
+    }
+
+    "#MOM_GameType_SJ"
+    {
+        "order"
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "LastJumpVelocity"
+            "4" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible" "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "1"
+            "ranges"
+            {
+                "1"
+                {
+                    "min"   "700"
+                    "max"   "860"
+                    "color" "24 150 211 255"
+                }
+                "2"
+                {
+                    "min"   "860"
+                    "max"   "910"
+                    "color" "153 255 153 255"
+                }
+                "3"
+                {
+                    "min"   "910"
+                    "max"   "1200"
+                    "color" "24 150 211 255"
+                }
+            }
+            "units"    "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "1"
+            "ranges"
+            {
+                "1"
+                {
+                    "min"   "800"
+                    "max"   "1000"
+                    "color" "24 150 211 255"
+                }
+                "2"
+                {
+                    "min"   "1000"
+                    "max"   "1100"
+                    "color" "153 255 153 255"
+                }
+                "3"
+                {
+                    "min"   "1100"
+                    "max"   "1300"
+                    "color" "24 150 211 255"
+                }
+            }
+            "units"    "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+        "RampEnterExitVelocity"
+        {
+            "visible"  "0"
+        }
+    }
+
+    "#MOM_GameType_Ahop"
+    {
+        "order"
+        {
+            "1" "AbsSpeedometer"
+            "2" "HorizSpeedometer"
+            "3" "LastJumpVelocity"
+            "4" "StageEnterExitVelocity"
+        }
+        "AbsSpeedometer"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "HorizSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "VertSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "LastJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "2"
+            "units"    "0"
+        }
+        "StageEnterExitVelocity"
+        {
+            "visible"  "1"
+            "colorize" "3"
+            "units"    "0"
+        }
+        "RampEnterExitVelocity"
+        {
+            "visible"  "0"
+        }
+    }
+}
