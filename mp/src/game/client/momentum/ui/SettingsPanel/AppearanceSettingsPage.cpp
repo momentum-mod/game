@@ -25,32 +25,7 @@ using namespace vgui;
 AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pParent, "AppearanceSettings"), ghost_color("mom_ghost_color"), 
     ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), m_bModelPreviewFrameIsFadingOut(false)
 {
-    // Outer frame for the model preview
-    m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
-    m_pModelPreviewFrame->SetProportional(true);
-    m_pModelPreviewFrame->SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
-    m_pModelPreviewFrame->SetSize(scheme()->GetProportionalScaledValue(200), scheme()->GetProportionalScaledValue(275));
-    m_pModelPreviewFrame->SetMoveable(false);
-    m_pModelPreviewFrame->MoveToFront();
-    m_pModelPreviewFrame->SetSizeable(false);
-    m_pModelPreviewFrame->SetTitle("#MOM_Settings_Tab_Appearance", false);
-    m_pModelPreviewFrame->SetTitleBarVisible(true);
-    m_pModelPreviewFrame->SetMenuButtonResponsive(false);
-    m_pModelPreviewFrame->SetCloseButtonVisible(false);
-    m_pModelPreviewFrame->SetMinimizeButtonVisible(false);
-    m_pModelPreviewFrame->SetMaximizeButtonVisible(false);
-    m_pModelPreviewFrame->PinToSibling("CMomentumSettingsPanel", PIN_TOPRIGHT, PIN_TOPLEFT);
-    m_pModelPreviewFrame->InvalidateLayout(true);
-    m_pModelPreviewFrame->MakeReadyForUse();
-
-    // Actual model preview
-    m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
-    int x, y, wid, tall;
-    m_pModelPreviewFrame->GetClientArea(x, y, wid, tall);
-    m_pModelPreview->SetBounds(x, y, wid, tall);
-    m_pModelPreview->SetPaintBorderEnabled(false);
-    m_pModelPreview->MakeReadyForUse();
-    m_pModelPreview->SetVisible(true);
+    CreateModelPanel();
 
     m_pEnableTrail = new CvarToggleCheckButton(this, "EnableTrail", "#MOM_Settings_Enable_Trail", "mom_trail_enable");
     m_pPickTrailColorButton = new Button(this, "PickTrailColorButton", "", this, "picker_trail");
@@ -113,14 +88,12 @@ void AppearanceSettingsPage::LoadSettings()
 {
     SetButtonColors();
 
-    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
-    if (result)
-        UpdateModelSettings();
+    LoadModelData();
 }
 
 void AppearanceSettingsPage::OnPageShow()
 {
-    if (!m_pModelPreviewFrame->IsVisible() || m_bModelPreviewFrameIsFadingOut)
+    if ((m_pModelPreviewFrame && !m_pModelPreviewFrame->IsVisible()) || m_bModelPreviewFrameIsFadingOut)
     {
         m_pModelPreviewFrame->Activate();
         m_bModelPreviewFrameIsFadingOut = false;
@@ -220,6 +193,8 @@ void AppearanceSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
     BaseClass::OnScreenSizeChanged(oldwide, oldtall);
 
     DestroyModelPanel();
+    CreateModelPanel();
+    LoadModelData();
 }
 
 void AppearanceSettingsPage::UpdateModelSettings()
@@ -249,4 +224,41 @@ void AppearanceSettingsPage::DestroyModelPanel()
 
     m_pModelPreviewFrame = nullptr;
     m_pModelPreview = nullptr;
+}
+
+void AppearanceSettingsPage::CreateModelPanel()
+{
+    // Outer frame for the model preview
+    m_pModelPreviewFrame = new Frame(this, "ModelPreviewFrame");
+    m_pModelPreviewFrame->SetProportional(true);
+    m_pModelPreviewFrame->SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
+    m_pModelPreviewFrame->SetSize(scheme()->GetProportionalScaledValue(200), scheme()->GetProportionalScaledValue(275));
+    m_pModelPreviewFrame->SetMoveable(false);
+    m_pModelPreviewFrame->MoveToFront();
+    m_pModelPreviewFrame->SetSizeable(false);
+    m_pModelPreviewFrame->SetTitle("#MOM_Settings_Tab_Appearance", false);
+    m_pModelPreviewFrame->SetTitleBarVisible(true);
+    m_pModelPreviewFrame->SetMenuButtonResponsive(false);
+    m_pModelPreviewFrame->SetCloseButtonVisible(false);
+    m_pModelPreviewFrame->SetMinimizeButtonVisible(false);
+    m_pModelPreviewFrame->SetMaximizeButtonVisible(false);
+    m_pModelPreviewFrame->PinToSibling("CMomentumSettingsPanel", PIN_TOPRIGHT, PIN_TOPLEFT);
+    m_pModelPreviewFrame->InvalidateLayout(true);
+    m_pModelPreviewFrame->MakeReadyForUse();
+
+    // Actual model preview
+    m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
+    int x, y, wid, tall;
+    m_pModelPreviewFrame->GetClientArea(x, y, wid, tall);
+    m_pModelPreview->SetBounds(x, y, wid, tall);
+    m_pModelPreview->SetPaintBorderEnabled(false);
+    m_pModelPreview->MakeReadyForUse();
+    m_pModelPreview->SetVisible(true);
+}
+
+void AppearanceSettingsPage::LoadModelData()
+{
+    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
+    if (result)
+        UpdateModelSettings();
 }

@@ -144,6 +144,7 @@ void ComparisonsSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
     BaseClass::OnScreenSizeChanged(oldwide, oldtall);
 
     DestroyBogusComparePanel();
+    InitBogusComparePanel();
 }
 
 void ComparisonsSettingsPage::OnPageShow()
@@ -151,7 +152,9 @@ void ComparisonsSettingsPage::OnPageShow()
     BaseClass::OnPageShow();
 
     if (!m_pComparisonsFrame)
+    {
         InitBogusComparePanel();
+    }
     else if (!m_pComparisonsFrame->IsVisible() || m_bComparisonsFrameIsFadingOut)
     {
         m_pComparisonsFrame->Activate();

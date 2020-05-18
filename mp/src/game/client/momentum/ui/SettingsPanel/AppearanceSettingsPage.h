@@ -33,9 +33,11 @@ class AppearanceSettingsPage : public SettingsPage
 private:
     void UpdateModelSettings();
     void DestroyModelPanel();
+    void CreateModelPanel();
+    void LoadModelData();
 
-    vgui::Frame *m_pModelPreviewFrame;
-    CRenderPanel *m_pModelPreview;
+    vgui::DHANDLE<vgui::Frame> m_pModelPreviewFrame;
+    vgui::DHANDLE<CRenderPanel> m_pModelPreview;
 
     ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color; // MOM_TODO add the rest of visible things here
 
