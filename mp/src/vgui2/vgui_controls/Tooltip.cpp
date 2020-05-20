@@ -339,13 +339,11 @@ void TextTooltip::PerformLayout()
 
 	_isDirty = false;
     _visible = true;
+
 	s_TooltipWindow->SetVisible(true);
-	s_TooltipWindow->MakePopup( false, true );
+	surface()->MovePopupToFront(s_TooltipWindow->GetVPanel());
 	s_TooltipWindow->SetKeyBoardInputEnabled( false );
 	s_TooltipWindow->SetMouseInputEnabled( false );
-
-	// relayout the textwindow immediately so that we know it's size
-	//m_pTextEntry->InvalidateLayout(true);
 
     SizeTextWindow();
     PositionWindow();
