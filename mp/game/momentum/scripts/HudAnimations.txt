@@ -72,26 +72,14 @@ event FadeOutMapFinishedPanel
 	Animate CHudMapFinishedDialog alpha "0" Accel 15.0 0.75
 }
 
-//Fades out the stage enter speed 
-event FadeOutEnterSpeed
+// Speedometer Fadeouts
+event FadeOutLastJumpVel
 {
-    //Take 5 seconds to fade the number out
-    Animate HudSpeedMeter StageAlpha "0" Accel 5.0 0.75
+    Animate HudSpeedMeter LastJumpVelAlpha "0" Accel 3.0 0.75
 }
-
-event FadeOutJumpSpeed
+event FadeOutStageVel
 {
-    //Fade out the last jump speed immediately, the time calculation is done in code
-    Animate HudSpeedMeter JumpAlpha "0" Accel 0.0 0.75
-}
-
-event ResetJumpSpeed
-{
-   //Stop any fadeout happening
-   StopEvent FadeOutJumpSpeed 0.0
-   
-   //Reset the alpha back to normal immediately MOM_TODO: should this fade back in?
-   Animate HudSpeedMeter JumpAlpha "255" Linear 0.0 0.001
+    Animate HudSpeedMeter StageVelAlpha "0" Accel 5.0 0.75
 }
 
 event PulseComparePanel
