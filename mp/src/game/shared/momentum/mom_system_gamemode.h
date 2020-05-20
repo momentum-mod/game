@@ -101,6 +101,7 @@ public:
     const char* GetGameModeCfg() override { return "rj.cfg"; }
     float GetViewScale() override { return 1.0f; }
     float GetJumpFactor() override;
+    bool CanBhop() override { return false; }
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
@@ -118,6 +119,7 @@ class CGameMode_SJ : public CGameModeBase
     const char *GetGameModeCfg() override { return "sj.cfg"; }
     float GetViewScale() override { return 1.0f; }
     float GetJumpFactor() override;
+    bool CanBhop() override { return false; }
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
