@@ -36,9 +36,9 @@ Scheme
 
 		"MOM.Panel.Fg"				"255 255 255 125"
 		"MOM.Panel.Bg"				"0 0 0 76"
-		"MOM.Speedometer.Normal"	"255 255 255 125"
-		"MOM.Speedometer.Increase"	"30 150 210 255"
-		"MOM.Speedometer.Decrease"	"255 75 75 255"
+		"MOM.Speedometer.Normal"	"200 200 200 255"
+		"MOM.Speedometer.Increase"	"24 150 211 255"
+		"MOM.Speedometer.Decrease"	"255 106 106 255"
         "MOM.Compare.Gain" "30 150 210 255"
         "MOM.Compare.Loss" "255 75 75 255"
         "MOM.Compare.Tie" "255 255 255 255"
