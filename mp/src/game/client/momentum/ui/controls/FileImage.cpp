@@ -92,8 +92,6 @@ FileImage::~FileImage()
     if (m_hResizeThread)
         ReleaseThreadHandle(m_hResizeThread);
 
-    g_FileImageCache.RemoveImageFromCache(m_szFileName);
-
     DestroyTexture();
 }
 
