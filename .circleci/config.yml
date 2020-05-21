@@ -25,9 +25,4 @@ jobs:
 workflows:
   build_game:
     jobs:
-      - build_linux:
-          filters:
-            branches:
-              only:
-                - master
-                - develop
+      - build_linux
