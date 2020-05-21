@@ -1646,8 +1646,10 @@ void Frame::SetFadeEffectDisableOverride( bool disabled )
 //-----------------------------------------------------------------------------
 void Frame::ApplySettings(KeyValues *inResourceData)
 {
-	// Don't change the frame's visibility, remove that setting from the config data
-	inResourceData->SetInt("visible", -1);
+	// Don't change the frame's visibility if there is no specific override for it
+	if (!inResourceData->FindKey("visible"))
+	    inResourceData->SetInt("visible", -1);
+
 	BaseClass::ApplySettings(inResourceData);
 
 	// if "title" is "0" then don't draw the title bar
