@@ -30,6 +30,7 @@ class CMomentumSettingsDialog : public PropertyDialog
   protected:
     // VGUI overrides:
     void OnThink() OVERRIDE;
+    void OnReloadControls() override;
 
   private:
     SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pAppearanceSettings,
@@ -137,7 +138,7 @@ class CMomentumSettingsPanelInterface : public IMomentumSettingsPanel
 
 //Expose this interface to the DLL
 static CMomentumSettingsPanelInterface g_SettingsPanel;
-IMomentumSettingsPanel *momentum_settings = static_cast<IMomentumSettingsPanel *>(&g_SettingsPanel);
+IMomentumSettingsPanel *momentum_settings = &g_SettingsPanel;
 
 CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n",
               FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN)
@@ -151,4 +152,12 @@ void CMomentumSettingsDialog::OnThink()
 
     if (g_pClientMode->GetViewport() && g_pClientMode->GetViewportAnimationController())
         g_pClientMode->GetViewportAnimationController()->UpdateAnimations(system()->GetFrameTime());
+}
+
+void CMomentumSettingsDialog::OnReloadControls()
+{
+    BaseClass::OnReloadControls();
+
+    if (g_pClientMode->GetViewportAnimationController())
+        g_pClientMode->GetViewportAnimationController()->CancelAllAnimations();
 }
