@@ -945,7 +945,7 @@ CBaseEntity *CBasePlayer::FindUseEntity()
 
     // Some debris objects are +usable, and clip brushes can be made into
     // +usable entities.
-    int usableContents = MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_PLAYERCLIP;
+    int usableContents = MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_PLAYERCLIP | CONTENTS_OPAQUE | CONTENTS_MONSTERCLIP;
 
     // However, we occasionally need to ignore clip brushes so that objects
     // inside of or beyond them can be +used.
