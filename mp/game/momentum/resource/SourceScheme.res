@@ -76,20 +76,20 @@ Scheme
         Border.DarkSolid				"MomGreydientStep1"
         Border.Subtle					"80 80 80 255"
 
-        Button.TextColor				"82 82 82 255"
-        Button.BgColor					"227 227 227 255"
-        Button.ArmedTextColor			"46 114 178 255"
-        Button.ArmedBgColor				"240 240 240 255"	
+        Button.TextColor				"White"
+        Button.BgColor					"MomGreydientStep4"
+        Button.ArmedTextColor			"MomentumBlue"
+        Button.ArmedBgColor				"MomGreydientStep4"	
         Button.DepressedTextColor		"White"
-        Button.DepressedBgColor			"84 178 245 255"
-        Button.FocusBorderColor			"82 82 82 20"
+        Button.DepressedBgColor			"MomentumBlue"
+        Button.FocusBorderColor			"82 82 82 0"
 
         CheckButton.TextColor			"White"
         CheckButton.SelectedTextColor	"White"
         CheckButton.BgColor				"MOM.Panel.Bg"
         CheckButton.Border1  			"Border.Subtle" 		// the left checkbutton border
         CheckButton.Border2  			"Border.Subtle"		// the right checkbutton border
-        CheckButton.Check				"118 189 118 255"	// color of the check itself
+        CheckButton.Check				"MomentumBlue"	// color of the check itself
         CheckButton.HighlightFgColor	"OffWhite"
         CheckButton.ArmedBgColor		"Blank"
         CheckButton.DepressedBgColor	"Blank"
@@ -219,7 +219,7 @@ Scheme
         ToggleButton.SelectedTextColor	"White"
 
         Tooltip.TextColor			"White"
-        Tooltip.BgColor				"MOM.Panel.Bg"
+        Tooltip.BgColor				"MomGreydientStep5"
 
         TreeView.BgColor			"Light Gray"
 
@@ -288,9 +288,8 @@ Scheme
         {
             "1"
             {
-                "name"		"Tahoma" [!$LINUX]
-                "name"		"Verdana" [$LINUX]
-                "tall"		"16"
+                "name"		"Noto Sans"
+                "tall"		"12"
                 "weight"	"500"
                 "antialias" "1"
             }
@@ -921,11 +920,13 @@ Scheme
     Borders
     {
         BaseBorder		SubtleBorder
-        ButtonBorder	RaisedBorder
+        ButtonBorder	FrameBorder
         ComboBoxBorder	DepressedBorder
         MenuBorder		SubtleBorder
         BrowserBorder	DepressedBorder
         PropertySheetBorder	RaisedBorder
+        ButtonKeyFocusBorder FrameBorder // this is the border used for default buttons (the button that gets pressed when you hit enter)
+        ButtonDepressedBorder FrameBorder
 
         FrameBorder
         {
@@ -1215,6 +1216,45 @@ Scheme
             }
         }
 
+        TextEntryBorder
+        {
+            Left
+            {
+                "1"
+                {
+                    "color" "Border.DarkSolid"
+                    "offset" "0 0"
+                }
+            }
+
+            Right
+            {
+                "1"
+                {
+                    "color" "Border.DarkSolid"
+                    "offset" "0 0"
+                }
+            }
+
+            Top
+            {
+                "1"
+                {
+                    "color" "Border.DarkSolid"
+                    "offset" "0 0"
+                }
+            }
+
+            Bottom
+            {
+                "1"
+                {
+                    "color" "Border.DarkSolid"
+                    "offset" "0 0"
+                }
+            }
+        }
+
         TabBorder
         {
             "inset" "0 0 1 1"
@@ -1297,84 +1337,6 @@ Scheme
                 {
                     "color" "Border.DarkSolid"
                     "offset" "0 0"
-                }
-            }
-
-            Top
-            {
-                "1"
-                {
-                    "color" "Border.DarkSolid"
-                    "offset" "0 0"
-                }
-            }
-
-            Bottom
-            {
-                "1"
-                {
-                    "color" "Border.DarkSolid"
-                    "offset" "0 0"
-                }
-            }
-        }
-
-        // this is the border used for default buttons (the button that gets pressed when you hit enter)
-        ButtonKeyFocusBorder
-        {
-            "inset" "0 0 0 0"
-            Left
-            {
-                "1"
-                {
-                    "color" "Border.Selection"
-                    "offset" "0 0"
-                }
-            }
-            Top
-            {
-                "1"
-                {
-                    "color" "Border.Selection"
-                    "offset" "0 0"
-                }
-            }
-            Right
-            {
-                "1"
-                {
-                    "color" "Border.Selection"
-                    "offset" "0 0"
-                }
-            }
-            Bottom
-            {
-                "1"
-                {
-                    "color" "Border.Selection"
-                    "offset" "0 0"
-                }
-            }
-        }
-
-        ButtonDepressedBorder
-        {
-            "inset" "0 0 0 0"
-            Left
-            {
-                "1"
-                {
-                    "color" "Border.DarkSolid"
-                    "offset" "0 1"
-                }
-            }
-
-            Right
-            {
-                "1"
-                {
-                    "color" "Border.DarkSolid"
-                    "offset" "1 0"
                 }
             }
 
