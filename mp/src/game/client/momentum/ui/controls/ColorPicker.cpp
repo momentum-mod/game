@@ -13,6 +13,7 @@
 #include "vgui_controls/Frame.h"
 #include "vgui_controls/Menu.h"
 #include "vgui_controls/Slider.h"
+#include "vgui_controls/TextEntry.h"
 
 #include "KeyValues.h"
 
@@ -153,6 +154,7 @@ void HSV_Select_Base::OnCursorMoved(int x, int y)
     if (m_bIsReading)
         ReadValues();
 }
+
 void HSV_Select_Base::ReadValues() { PostActionSignal(new KeyValues("HSVUpdate")); }
 
 DECLARE_BUILD_FACTORY(HSV_Select_SV);
@@ -163,8 +165,11 @@ HSV_Select_SV::HSV_Select_SV(Panel *parent, const char *pElementName) : BaseClas
     m_flS = 0;
     m_flV = 0;
 }
+
 void HSV_Select_SV::Paint()
 {
+    BaseClass::Paint();
+
     surface()->DrawSetTexture(m_iMat);
     surface()->DrawSetColor(Color(255, 255, 255, 255));
     int x, y, sx, sy;
@@ -179,6 +184,7 @@ void HSV_Select_SV::Paint()
     IMaterial *pMatColorpicker = materials->FindMaterial("vgui/colorpicker", TEXTURE_GROUP_OTHER);
     if (IsErrorMaterial(pMatColorpicker))
         return;
+
     bool bFound = false;
     IMaterialVar *pVar_00 = pMatColorpicker->FindVar("$COLOR_00", &bFound);
     IMaterialVar *pVar_10 = pMatColorpicker->FindVar("$COLOR_10", &bFound);
@@ -197,6 +203,7 @@ void HSV_Select_SV::Paint()
 
     surface()->DrawTexturedRect(0, 0, sx, sy);
 }
+
 void HSV_Select_SV::ReadValues()
 {
     int mx, my;
@@ -223,6 +230,8 @@ HSV_Select_Hue::HSV_Select_Hue(Panel *parent, const char *pElementName) : BaseCl
 }
 void HSV_Select_Hue::Paint()
 {
+    BaseClass::Paint();
+
     surface()->DrawSetTexture(m_iMat);
     surface()->DrawSetColor(Color(255, 255, 255, 255));
     int x, y, sx, sy;
@@ -325,6 +334,7 @@ ColorPicker::ColorPicker(Panel *parent, Panel *pActionsignalTarget) : BaseClass(
     AddActionSignalTarget(pActionsignalTarget);
     Init();
 }
+
 ColorPicker::ColorPicker(Panel *parent, TextEntry *pTargetEntry) : BaseClass(parent, "CColorPicker")
 {
     pTarget = pTargetEntry;
@@ -348,7 +358,7 @@ ColorPicker::~ColorPicker()
 
 void ColorPicker::Init()
 {
-    SetProportional(false);
+    SetProportional(true);
     m_vecColor.Init(0, 0, 0, 1);
     m_vecHSV.Init();
 
@@ -383,11 +393,8 @@ void ColorPicker::Init()
         m_pText_RGBA[i] = FindControl<TextEntry>(tentry_name);
     }
 
-    SetFadeEffectDisableOverride(true);
     SetVisible(false);
     SetSizeable(false);
-    SetSize(440, 300);
-    SetTitle("Color Picker", false);
 
     SetupVguiTex(m_iVgui_Pick_Hue, "vgui/colorpicker_hue");
     SetupVguiTex(m_iVgui_Pick_SV, "vgui/colorpicker_sv");
@@ -402,10 +409,6 @@ void ColorPicker::Init()
 
 void ColorPicker::Paint()
 {
-    Color bg = GetBgColor();
-    bg[3] = 160;
-    SetBgColor(bg);
-
     BaseClass::Paint();
 
     surface()->DrawSetColor(Color(0, 0, 0, 255));
@@ -417,6 +420,7 @@ void ColorPicker::Paint()
     sx += __EXTRUDE_BORDER * 2;
     sy += __EXTRUDE_BORDER * 2;
     surface()->DrawFilledRect(x, y, x + sx, y + sy);
+
     m_pSelect_SV->GetBounds(x, y, sx, sy);
     x -= __EXTRUDE_BORDER;
     y -= __EXTRUDE_BORDER;
@@ -429,6 +433,8 @@ void ColorPicker::Paint()
 
 void ColorPicker::OnThink()
 {
+    BaseClass::OnThink();
+
     int x, y, sx, sy;
     m_pSelect_Hue->GetBounds(x, y, sx, sy);
     float hue = clamp((360.0f - m_pSelect_Hue->GetHue()) / 360.0f, 0.0f, 360.0f);
@@ -449,7 +455,6 @@ void ColorPicker::SetPickerColor(const Color &col)
 
     SetPickerColor(m_vecColor);
 }
-
 void ColorPicker::SetPickerColor(const Vector4D &col)
 {
     for (int i = 0; i < 4; i++)
@@ -460,6 +465,7 @@ void ColorPicker::SetPickerColor(const Vector4D &col)
     UpdateAllVars();
 }
 Vector4D ColorPicker::GetPickerColor() const { return m_vecColor; }
+
 void ColorPicker::SetPickerColorHSV(const Vector &col)
 {
     m_vecHSV = col;
@@ -467,7 +473,6 @@ void ColorPicker::SetPickerColorHSV(const Vector &col)
     UpdateAllVars();
 }
 Vector ColorPicker::GetPickerColorHSV() const { return m_vecHSV; }
-void ColorPicker::ApplySchemeSettings(IScheme *pScheme) { BaseClass::ApplySchemeSettings(pScheme); }
 
 void ColorPicker::UpdateAlpha(bool bWasSlider)
 {
