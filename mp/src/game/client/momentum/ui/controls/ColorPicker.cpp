@@ -398,13 +398,6 @@ void ColorPicker::Init()
     UpdateAllVars();
 }
 
-void ColorPicker::Show()
-{
-    DoModal();
-    MakeReadyForUse();
-    InvalidateLayout(true, true);
-}
-
 void ColorPicker::Paint()
 {
     Color bg = GetBgColor();

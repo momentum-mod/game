@@ -118,7 +118,7 @@ void PaintGunPanel::OnCommand(const char *pCommand)
         if (MomUtil::GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
         {
             m_pColorPicker->SetPickerColor(TextureColor);
-            m_pColorPicker->Show();
+            m_pColorPicker->DoModal();
         }
     }
     else if (FStrEq(pCommand, "Close"))

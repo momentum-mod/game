@@ -165,7 +165,7 @@ void AppearanceSettingsPage::OnCommand(const char* command)
         {
             m_pColorPicker->SetPickerColor(trailColor);
             m_pColorPicker->SetTargetCallback(m_pPickTrailColorButton);
-            m_pColorPicker->Show();
+            m_pColorPicker->DoModal();
         }
     }
     else if (FStrEq(command, "picker_body"))
@@ -175,7 +175,7 @@ void AppearanceSettingsPage::OnCommand(const char* command)
         {
             m_pColorPicker->SetPickerColor(bodyColor);
             m_pColorPicker->SetTargetCallback(m_pPickBodyColorButton);
-            m_pColorPicker->Show();
+            m_pColorPicker->DoModal();
         }
     }
 
