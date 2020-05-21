@@ -79,6 +79,7 @@ ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent)
 
 ComparisonsSettingsPage::~ComparisonsSettingsPage()
 {
+    DestroyBogusComparePanel();
 }
 
 void ComparisonsSettingsPage::DestroyBogusComparePanel()
@@ -139,12 +140,14 @@ void ComparisonsSettingsPage::OnMainDialogShow()
         m_pComparisonsFrame->SetVisible(true);
 }
 
-void ComparisonsSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
+void ComparisonsSettingsPage::OnReloadControls()
 {
-    BaseClass::OnScreenSizeChanged(oldwide, oldtall);
+    BaseClass::OnReloadControls();
 
+    const bool bWasVisible = m_pComparisonsFrame.Get() && m_pComparisonsFrame->IsVisible();
     DestroyBogusComparePanel();
     InitBogusComparePanel();
+    m_pComparisonsFrame->SetVisible(bWasVisible);
 }
 
 void ComparisonsSettingsPage::OnPageShow()

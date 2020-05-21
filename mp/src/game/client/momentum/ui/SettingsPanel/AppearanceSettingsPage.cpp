@@ -61,6 +61,7 @@ AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pPare
 
 AppearanceSettingsPage::~AppearanceSettingsPage()
 {
+    DestroyModelPanel();
 }
 
 void AppearanceSettingsPage::SetButtonColors()
@@ -93,7 +94,7 @@ void AppearanceSettingsPage::LoadSettings()
 
 void AppearanceSettingsPage::OnPageShow()
 {
-    if ((m_pModelPreviewFrame && !m_pModelPreviewFrame->IsVisible()) || m_bModelPreviewFrameIsFadingOut)
+    if ((m_pModelPreviewFrame.Get() && !m_pModelPreviewFrame->IsVisible()) || m_bModelPreviewFrameIsFadingOut)
     {
         m_pModelPreviewFrame->Activate();
         m_bModelPreviewFrameIsFadingOut = false;
@@ -188,13 +189,19 @@ void AppearanceSettingsPage::ApplySchemeSettings(IScheme* pScheme)
     SetButtonColors();
 }
 
-void AppearanceSettingsPage::OnScreenSizeChanged(int oldwide, int oldtall)
+void AppearanceSettingsPage::OnReloadControls()
 {
-    BaseClass::OnScreenSizeChanged(oldwide, oldtall);
+    BaseClass::OnReloadControls();
 
+    const bool bWasVisible = m_pModelPreviewFrame.Get() && m_pModelPreviewFrame->IsVisible();
     DestroyModelPanel();
     CreateModelPanel();
     LoadModelData();
+
+    if (bWasVisible)
+    {
+        m_pModelPreviewFrame->Activate();
+    }
 }
 
 void AppearanceSettingsPage::UpdateModelSettings()
@@ -229,7 +236,7 @@ void AppearanceSettingsPage::DestroyModelPanel()
 void AppearanceSettingsPage::CreateModelPanel()
 {
     // Outer frame for the model preview
-    m_pModelPreviewFrame = new Frame(this, "ModelPreviewFrame");
+    m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
     m_pModelPreviewFrame->SetProportional(true);
     m_pModelPreviewFrame->SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     m_pModelPreviewFrame->SetSize(scheme()->GetProportionalScaledValue(200), scheme()->GetProportionalScaledValue(275));
@@ -245,6 +252,7 @@ void AppearanceSettingsPage::CreateModelPanel()
     m_pModelPreviewFrame->PinToSibling("CMomentumSettingsPanel", PIN_TOPRIGHT, PIN_TOPLEFT);
     m_pModelPreviewFrame->InvalidateLayout(true);
     m_pModelPreviewFrame->MakeReadyForUse();
+    m_pModelPreviewFrame->SetVisible(false);
 
     // Actual model preview
     m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");

@@ -20,7 +20,7 @@ class ComparisonsSettingsPage : public SettingsPage
     void OnMainDialogClosed() OVERRIDE;
     void OnMainDialogShow() OVERRIDE;
 
-    void OnScreenSizeChanged(int oldwide, int oldtall) override;
+    void OnReloadControls() override;
 
     //Load the settings for this panel
     void OnPageShow() OVERRIDE;
@@ -45,8 +45,8 @@ private:
     vgui::CvarTextEntry *m_pMaxZones;
     vgui::CvarComboBox *m_pTimeType;
     vgui::Label *m_pTimeTypeLabel, *m_pMaxZonesLabel;
-    vgui::Frame *m_pComparisonsFrame;
-    C_RunComparisons *m_pBogusComparisonsPanel;
+    vgui::DHANDLE<vgui::Frame> m_pComparisonsFrame;
+    vgui::DHANDLE<C_RunComparisons> m_pBogusComparisonsPanel;
 
     bool m_bComparisonsFrameIsFadingOut;
 

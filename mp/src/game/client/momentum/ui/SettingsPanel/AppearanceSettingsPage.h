@@ -28,7 +28,7 @@ class AppearanceSettingsPage : public SettingsPage
     MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
     void OnCommand(const char* command) OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
-    void OnScreenSizeChanged(int oldwide, int oldtall) override;
+    void OnReloadControls() override;
 
 private:
     void UpdateModelSettings();
