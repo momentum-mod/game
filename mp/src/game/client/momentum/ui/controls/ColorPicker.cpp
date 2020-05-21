@@ -117,6 +117,8 @@ HSV_Select_Base::HSV_Select_Base(Panel *parent, const char *pElementName) : Base
     if (parent)
         AddActionSignalTarget(parent->GetVPanel());
 
+    SetPaintBackgroundEnabled(true);
+
     m_bIsReading = false;
     SetupVguiTex(m_iMat, "vgui/colorpicker");
 }
@@ -370,7 +372,7 @@ void ColorPicker::Init()
     LoadControlSettings("resource/ui/ColorPicker.res");
 
     m_pColorPreview->SetPaintEnabled(false);
-    m_pColorPreview->SetPaintBackgroundEnabled(false);
+    m_pColorPreview->SetPaintBackgroundEnabled(true);
 
     m_pAlphaSlider->SetValue(255, false);
 
@@ -422,15 +424,7 @@ void ColorPicker::Paint()
     sy += __EXTRUDE_BORDER * 2;
     surface()->DrawFilledRect(x, y, x + sx, y + sy);
 
-    m_pColorPreview->GetBounds(x, y, sx, sy);
-    surface()->DrawSetColor(Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, m_vecColor.w * 255));
-    surface()->DrawFilledRect(x, y, x + sx, y + sy);
-
-    x -= __EXTRUDE_BORDER;
-    y -= __EXTRUDE_BORDER;
-    sx += __EXTRUDE_BORDER * 2;
-    sy += __EXTRUDE_BORDER * 2;
-    surface()->DrawFilledRect(x, y, x + sx, y + sy);
+    m_pColorPreview->SetBgColor(Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, m_vecColor.w * 255));
 }
 
 void ColorPicker::OnThink()
