@@ -1,16 +1,13 @@
-#ifndef C_CPICKER_H
-#define C_CPICKER_H
-
 #pragma once
 
 #include "vgui_controls/Frame.h"
 #include "vgui_controls/Panel.h"
-#include "vgui_controls/TextEntry.h"
 
 class PickerHelper;
 
 namespace vgui
 {
+class TextEntry;
 
 class HSV_Select_Base : public Panel
 {
@@ -91,12 +88,8 @@ class ColorPicker : public Frame
     Vector GetPickerColorHSV() const;
 
     MESSAGE_FUNC_PTR(OnHSVUpdate, "HSVUpdate", panel); // update from hsv
-
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel); // update from textentry
-
     MESSAGE_FUNC_PTR(OnSliderMoved, "SliderMoved", panel); // update from alpha slider
-
-    virtual void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
 
     void UpdateAlpha(bool bWasSlider);
 
@@ -132,5 +125,3 @@ class ColorPicker : public Frame
 };
 
 } // namespace vgui
-
-#endif
