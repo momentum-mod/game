@@ -575,5 +575,92 @@
         "GameUI2_RespawnDescription" "Spawn back in game"
 
         "GameUI2_TitleOptions" "Options"
+
+        // Game tips
+        // Specific
+        "MOM_Tip_Not_Found" "No tip found! This may be an error, tell a programmer!"
+        "MOM_Tip_Verify_Cache" "No tips found, you should verify your game cache!"
+
+        // General
+        "MOM_Tip_General_1" "Tip: Check out the run replays on the leaderboard to see how others play the map."
+        "MOM_Tip_General_2" "Tip: You can adjust the HUD layout and visibility on screen by going to the HUD settings."
+        "MOM_Tip_General_3" "Tip: You can teleport to others by right clicking their name in the lobby menu."
+        "MOM_Tip_General_4" "Tip: You can use saved locations (default bind 'Z') to save your location and velocity, allowing easy practice for various sections of a map."
+        "MOM_Tip_General_5" "Tip: Gain Ranked points each time you beat your previous best time."
+        "MOM_Tip_General_6" "Tip: It can be helpful to look over the map in practice mode to better understand it."
+        "MOM_Tip_General_7" "Tip: You can use practice mode during a run without stopping your timer."
+        "MOM_Tip_General_8" "Tip: If you’re having too much trouble with a map, try another one."
+        "MOM_Tip_General_9" "Tip: The higher a map's tier (difficulty) is, the harder it is to complete, but the more XP and points you gain!"
+        "MOM_Tip_General_10" "Tip: When in the air, pressing a movement key opposite to the direction of movement will rapidly decrease your speed." // Block57
+        "MOM_Tip_General_11" "Tip: Remember to have fun. Don't get frustrated trying to beat your times on a map!" // hex
+        "MOM_Tip_General_12" "Tip: Use 'mom_practice' to explore and test if you are stuck or lost on a map." // hex
+        "MOM_Tip_General_13" "Tip: Adjust your mouse senstivity to your liking and try to avoid changing it frequently." // amp
+        "MOM_Tip_General_14" "Tip: Crouching while mid-air raises your feet and lowers your head, but extends your jump distance." // Bela + BorkChops
+        "MOM_Tip_General_15" "Tip: Check out the Momentum Discord to talk about game modes, discuss announcements, and more!" // BorkChops
+        "MOM_Tip_General_16" "Tip: The command 'cl_yawspeed' controls the speed of your turn binds, if you have any." // Pretzl
+        "MOM_Tip_General_17" "Tip: Being comfortable with your keybinds and posture helps avoid gaming-related injuries." // hex
+        "MOM_Tip_General_18" "Tip: Some game modes may be daunting at first, but don't let this stop you from learning them!" // amp
+        "MOM_Tip_General_19" "Tip: In the air, don't hold your forward key to go forwards. Let your momentum take care of that - control your movement with strafe keys." // porkie
+
+        // General meme/alt tips
+        "MOM_Tip_General_Alt_1" "Posture check." // roger
+        "MOM_Tip_General_Alt_2" "Good choice! This game mode is the best one." // hex
+        "MOM_Tip_General_Alt_3" "Tip: Go fast to get a good run." // matter
+
+        // Bhop
+        "MOM_Tip_Bhop_1" "Tip: The better sync you maintain throughout a run, the more speed you'll have."
+        "MOM_Tip_Bhop_2" "Tip: Jumping while crouched will give you a little extra hangtime to clear hard gaps."
+        "MOM_Tip_Bhop_3" "Tip: Landing on flat ground right before a slope will give you more height and make you lose less speed." // Bela
+        "MOM_Tip_Bhop_4" "Tip: Struggling with surf ramps in Bhop maps? Check out the surf game mode to practice." // roger
+        "MOM_Tip_Bhop_5" "Tip: You can pre-strafe up to a speed of 288 units per second in the start zone. Practice the timing - every unit helps." // roger
+        "MOM_Tip_Bhop_6" "Tip: Landing on downward slopes converts vertical speed into extra horizontal speed." // roger
+        "MOM_Tip_Bhop_7" "Tip: If you are going too fast, quickly strafing left and right can help burn off speed." // BorkChops
+        "MOM_Tip_Bhop_8" "Tip: Strafe using wider arcs/curves to maintain speed on closely-spaced platforms." // amp
+        "MOM_Tip_Bhop_9" "Tip: Adding multiple strafes per jump is faster, when done right." // roger
+        "MOM_Tip_Bhop_10" "Tip: Turn binds are great for maintaining speed in tight locations." // amp
+
+        // Surf
+        "MOM_Tip_Surf_1" "Tip: The lower you go on a surf ramp, the more velocity you'll gain."
+        "MOM_Tip_Surf_2" "Tip: The smoother your mouse movement, the better your momentum."
+        "MOM_Tip_Surf_3" "Tip: The faster you’re going, the slower you need to turn in order to preserve speed."
+        "MOM_Tip_Surf_4" "Tip: Avoid crouching, especially at high speeds, as it can negatively affect your ability to air strafe."
+        "MOM_Tip_Surf_5" "Tip: Having trouble completing spins? Try assigning keys to turn left/right in the Momentum Settings menu." // Pyrt
+        "MOM_Tip_Surf_6" "Tip: You can maintain more speed by 'boarding' ramps more smoothly. Try not to smack into ramps!" // Imbellis
+        "MOM_Tip_Surf_7" "Tip: Landing as high as you can on ramps, without losing speed to do so, helps maintain high speeds." // Bela
+        "MOM_Tip_Surf_8" "Tip: Be sure to practice your Bhop skills. Bhop trains your strafing, which helps you navigate in the air. Having a better strafe ability will make you a better surfer!" // Garanimal
+        "MOM_Tip_Surf_9" "Tip: Sometimes leaving a ramp early is better than riding it all the way to its end." // Pretzl
+        
+        // Surf meme tips
+        "MOM_Tip_Surf_Alt_1" "Tip: Be smooth. B)" // maz
+
+        // Climb
+        "MOM_Tip_KZ_1" "Tip: When starting out, use ‘saveloc’s to save your place in case you fall."
+        
+        // Climb meme tips
+        "MOM_Tip_KZ_Alt_1" "Tip: If you stumble and fall, just get right back up." // Aux
+
+        // Rocket Jump
+        "MOM_Tip_RJ_1" "Tip: You can toggle center fire on or off in the options menu under Gameplay Settings."
+        "MOM_Tip_RJ_2" "Tip: Jump and crouch before firing a rocket to deliver a much more powerful boost."
+        "MOM_Tip_RJ_3" "Tip: Rockets travel at a fixed speed of 1100 units per second, regardless of the player’s speed."
+        "MOM_Tip_RJ_4" "Tip: Unlike other game modes, crouching in Rocket Jump does not affect air-strafing." // Mac
+        "MOM_Tip_RJ_5" "Tip: Looking back up towards rockets previously fired for sync jumps may help with your final rocket's timing." // porkie
+        "MOM_Tip_RJ_6" "Tip: Rocket jumping out of shallow water launches you farther." // porkie
+        "MOM_Tip_RJ_7" "Tip: Having trouble hitting a tele-sync? Use the paint gun (or your +paint bind) to mark your spawn location."
+        "MOM_Tip_RJ_8" "Tip: Tapping your backwards key while airborne can help you slow down and gain more control." // yi yi
+        "MOM_Tip_RJ_9" "Tip: Sometimes there is more than one way to beat a jump. Get creative!" // porkie
+
+        // Sticky Jump
+        "MOM_Tip_SJ_1" "Tip: An uncharged stickybomb is fired at 900 units per second, regardless of the player’s speed."
+        "MOM_Tip_SJ_2" "Tip: Jump and crouch before detonating a stickybomb to receive a much more powerful boost."
+        "MOM_Tip_SJ_3" "Tip: Crouching without jumping before detonating a stickybomb will allow a more horizontal boost."
+        "MOM_Tip_SJ_4" "Tip: Shooting stickies as early possible is essential to improving your course times." // hex
+
+        // Ahop
+        "MOM_Tip_Ahop_1" "Tip: Hold sprint while airborne to gain maximum air control."
+        "MOM_Tip_Ahop_2" "Tip: Although ABH is faster, ASH/AFH is often preferred due to more control."
+        "MOM_Tip_Ahop_3" "Tip: Delaying jumps can be used to control your speed." // Imbellis
+
+        // etc
     }
 }
