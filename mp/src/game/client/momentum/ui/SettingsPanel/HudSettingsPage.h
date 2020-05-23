@@ -2,22 +2,34 @@
 
 #include "SettingsPage.h"
 
+class SpeedometerLabel;
+
 class HudSettingsPage : public SettingsPage
 {
     DECLARE_CLASS_SIMPLE(HudSettingsPage, SettingsPage);
 
     HudSettingsPage(Panel *pParent);
-
     ~HudSettingsPage() {}
 
-    //This uses OnCheckbox and not OnModified because we want to be able to enable
-    // the other checkboxes regardless of whether the player clicks Apply/OK
-    void OnCheckboxChecked(Panel *p) OVERRIDE;
+    void OnCheckboxChecked(Panel *pPanel) override;
+    void OnTextChanged(Panel *pPanel) override;
+    void LoadSettings() override;
+
+    // to handle speedo changes through console
+    void OnPageShow() override { LoadSettings(); }
+    void OnSetFocus() override { LoadSettings(); }
 
 private:
-    vgui::CvarComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
+    // speedo helper methods
+    SpeedometerLabel *GetSpeedoLabelFromType();
+    void LoadSpeedoSetup();
 
-    vgui::CvarToggleCheckButton *m_pSpeedometerShow, *m_pSpeedometerHorizShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowStageEnter,
-        *m_pSpeedometerUnitLabels, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow, *m_pTimerSoundFailEnable,
+    vgui::CvarComboBox *m_pSyncType, *m_pSyncColorize;
+
+    vgui::CvarToggleCheckButton *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow, *m_pTimerSoundFailEnable,
         *m_pTimerSoundStartEnable, *m_pTimerSoundStopEnable, *m_pTimerSoundFinishEnable;
+
+    // speedo controls
+    vgui::ComboBox *m_pSpeedometerGameType, *m_pSpeedometerType, *m_pSpeedometerUnits, *m_pSpeedometerColorize;
+    vgui::CheckButton *m_pSpeedometerShow;
 };

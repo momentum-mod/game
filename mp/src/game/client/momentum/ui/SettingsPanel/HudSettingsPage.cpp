@@ -1,6 +1,11 @@
 #include "cbase.h"
 
 #include "HudSettingsPage.h"
+
+#include "hud_speedometer.h"
+#include "hud_speedometer_label.h"
+#include "hud_speedometer_data.h"
+
 #include "vgui_controls/CvarComboBox.h"
 #include "vgui_controls/CvarToggleCheckButton.h"
 
@@ -10,12 +15,38 @@ using namespace vgui;
 
 HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettings")
 {
-    m_pSpeedometerUnits = new CvarComboBox(this, "SpeedoUnits", "mom_hud_speedometer_units");
+    m_pSpeedometerGameType = new ComboBox(this, "SpeedoGameType", GAMEMODE_COUNT - 1, false);
+    for (auto i = 1; i < GAMEMODE_COUNT; i++)
+    {
+        m_pSpeedometerGameType->AddItem(g_szGameModes[i], nullptr);
+    }
+    m_pSpeedometerGameType->AddActionSignalTarget(this);
+    m_pSpeedometerGameType->SilentActivateItemByRow(0);
+
+    m_pSpeedometerType = new ComboBox(this, "SpeedoType", SPEEDOMETER_MAX_LABELS, false);
+    m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Absolute", nullptr);
+    m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Horiz", nullptr);
+    m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_LastJump", nullptr);
+    m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_StageEnterExit", nullptr);
+    m_pSpeedometerType->AddActionSignalTarget(this);
+    m_pSpeedometerType->SilentActivateItemByRow(0);
+
+    m_pSpeedometerShow = new CheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show");
+    m_pSpeedometerShow->AddActionSignalTarget(this);
+
+    m_pSpeedometerUnits = new ComboBox(this, "SpeedoUnits", 4, false);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_UPS", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_KPH", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_MPH", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_Energy", nullptr);
     m_pSpeedometerUnits->AddActionSignalTarget(this);
+
+    m_pSpeedometerColorize = new ComboBox(this, "SpeedoColorize", 4, false);
+    m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Colorize_Type_None", nullptr);
+    m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Colorize_Type_1", nullptr);
+    m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Colorize_Type_2", nullptr);
+    m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Colorize_Type_3", nullptr);
+    m_pSpeedometerColorize->AddActionSignalTarget(this);
 
     m_pSyncType = new CvarComboBox(this, "SyncType", "mom_hud_strafesync_type");
     m_pSyncType->AddItem("#MOM_Settings_Sync_Type_Sync1", nullptr);
@@ -27,28 +58,6 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_1", nullptr);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
     m_pSyncColorize->AddActionSignalTarget(this);
-
-    m_pSpeedometerShow = new CvarToggleCheckButton(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_hud_speedometer");
-    m_pSpeedometerShow->AddActionSignalTarget(this);
-
-    m_pSpeedometerHorizShow = new CvarToggleCheckButton(this, "SpeedoHorizShow", "#MOM_Settings_Speedometer_Horiz_Show",
-                                                        "mom_hud_speedometer_horiz");
-    m_pSpeedometerHorizShow->AddActionSignalTarget(this);
-
-    m_pSpeedometerShowLastJump = new CvarToggleCheckButton(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", "mom_hud_speedometer_lastjumpvel");
-    m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
-
-    m_pSpeedometerShowStageEnter = new CvarToggleCheckButton(this, "SpeedoShowStageEnter", "#MOM_Settings_Speedometer_Show_StageEnter", "mom_hud_speedometer_showenterspeed");
-    m_pSpeedometerShowStageEnter->AddActionSignalTarget(this);
-
-    m_pSpeedometerUnitLabels = new CvarToggleCheckButton(this, "SpeedoShowUnitLabels", "#MOM_Settings_Speedometer_Unit_Labels", "mom_hud_speedometer_unit_labels");
-    m_pSpeedometerUnitLabels->AddActionSignalTarget(this);
-
-    m_pSpeedometerColorize = new CvarComboBox(this, "SpeedoShowColor", "mom_hud_speedometer_colorize");
-    m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_None", nullptr);
-    m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_1", nullptr);
-    m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_2", nullptr);
-    m_pSpeedometerColorize->AddActionSignalTarget(this);
 
     m_pSyncShow = new CvarToggleCheckButton(this, "SyncShow", "#MOM_Settings_Sync_Show", "mom_hud_strafesync_draw");
     m_pSyncShow->AddActionSignalTarget(this);
@@ -77,18 +86,55 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     LoadControlSettings("resource/ui/SettingsPanel_HudSettings.res");
 }
 
-void HudSettingsPage::OnCheckboxChecked(Panel *p)
+void HudSettingsPage::LoadSettings()
 {
-    BaseClass::OnCheckboxChecked(p);
+    m_pSpeedometerGameType->SilentActivateItemByRow(g_pSpeedometerData->GetCurrentlyLoadedGameMode() - 1);
+    LoadSpeedoSetup();
+}
 
-    if (p == m_pSpeedometerShow || p == m_pSpeedometerHorizShow || p == m_pSpeedometerShowLastJump || p == m_pSpeedometerShowStageEnter)
+void HudSettingsPage::OnCheckboxChecked(Panel* pPanel)
+{
+    if (pPanel == m_pSpeedometerShow)
     {
-        bool bEnableUnits = m_pSpeedometerShow->IsSelected() || m_pSpeedometerHorizShow->IsSelected() ||
-                        m_pSpeedometerShowLastJump->IsSelected() || m_pSpeedometerShowStageEnter->IsSelected();
-        m_pSpeedometerUnits->SetEnabled(bEnableUnits);
-        m_pSpeedometerUnitLabels->SetEnabled(bEnableUnits);
-
-        bool bEnableColorize = m_pSpeedometerShow->IsSelected() || m_pSpeedometerHorizShow->IsSelected();
-        m_pSpeedometerColorize->SetEnabled(bEnableColorize);
+        GetSpeedoLabelFromType()->SetVisible(m_pSpeedometerShow->IsSelected());
+        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
     }
+}
+
+void HudSettingsPage::OnTextChanged(Panel *pPanel)
+{
+    if (pPanel == m_pSpeedometerGameType || pPanel == m_pSpeedometerType)
+    {
+        if (pPanel == m_pSpeedometerGameType) // load if game type changed
+        {
+            g_pSpeedometerData->LoadGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
+        }
+        LoadSpeedoSetup();
+    }
+    else if (pPanel == m_pSpeedometerUnits)
+    {
+        GetSpeedoLabelFromType()->SetUnitType(m_pSpeedometerUnits->GetCurrentItem());
+        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
+    }
+    else if (pPanel == m_pSpeedometerColorize)
+    {
+        GetSpeedoLabelFromType()->SetColorizeType(m_pSpeedometerColorize->GetCurrentItem());
+        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
+    }
+}
+
+void HudSettingsPage::LoadSpeedoSetup()
+{
+    // silently set settings from the currently selected speedo label
+    SpeedometerLabel *pSpeedoLabel = GetSpeedoLabelFromType();
+    m_pSpeedometerShow->SilentSetSelected(pSpeedoLabel->IsVisible());
+    m_pSpeedometerColorize->SilentActivateItemByRow(pSpeedoLabel->GetColorizeType());
+    m_pSpeedometerColorize->SetItemEnabled("#MOM_Settings_Speedometer_Colorize_Type_3", pSpeedoLabel->GetSupportsSeparateComparison());
+    m_pSpeedometerUnits->SetItemEnabled("#MOM_Settings_Speedometer_Units_Energy", pSpeedoLabel->GetSupportsEnergyUnits());
+    m_pSpeedometerUnits->SilentActivateItemByRow(pSpeedoLabel->GetUnitType());
+}
+
+SpeedometerLabel* HudSettingsPage::GetSpeedoLabelFromType()
+{
+    return g_pSpeedometer->GetLabel(m_pSpeedometerType->GetCurrentItem());
 }
