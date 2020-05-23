@@ -16,30 +16,6 @@
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles displaying the speedometer. 0 = OFF, 1 = ON\n");
-
-
-static MAKE_CONVAR(mom_hud_speedometer_units, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                   "Changes the units of measurement of the speedometer.\n 0 = Units per second\n 1 = "
-                   "Kilometers per hour\n 2 = Miles per hour\n 3 = Energy", 0, 3);
-
-static MAKE_CONVAR(mom_hud_speedometer_colorize, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                   "Toggles speedometer colorization. 0 = OFF, 1 = ON (Based on Range), 2 = ON (Based on comparison), "
-                   "3 = ON (Based on comparison which is written to a separate label)\n", 0, 3);
-
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_unit_labels, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles showing the unit value labels (KM/H, MPH, Energy, UPS). 0 = OFF, 1 = ON\n");
-
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_showenterspeed, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-    "Toggles showing the stage/checkpoint enter speed (and comparison, if existent). 0 = OFF, 1 = ON\n");
-
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_horiz, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles displaying the speedometer. 0 = OFF, 1 = ON\n");
-
-static MAKE_TOGGLE_CONVAR(mom_hud_speedometer_lastjumpvel, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles showing player velocity at last jump (XY only). 0 = OFF, 1 = ON\n");
-
 static MAKE_TOGGLE_CONVAR(mom_hud_velocity_type, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                    "Toggles the velocity type used in comparisons and map finished dialog. 0 = ABSOLUTE, 1 = HORIZONTAL\n");
 
