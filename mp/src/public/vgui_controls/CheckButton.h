@@ -65,7 +65,8 @@ public:
 	~CheckButton();
 
 	// Check the button
-	virtual void SetSelected(bool state );
+    virtual void SetSelected(bool state);
+    virtual void SilentSetSelected(bool state);
 
 	// sets whether or not the state of the check can be changed
 	// if this is set to false, then no input in the code or by the user can change it's state
@@ -95,6 +96,8 @@ protected:
 
 
 private:
+    void SetSelected(bool state, bool bPostActionSignal);
+
 	int m_iCheckInset;
 	bool m_bCheckButtonCheckable;
 	CheckImage *_checkBoxImage;
