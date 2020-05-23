@@ -30,7 +30,7 @@ FileImage::FileImage(IImage *pDefaultImage /* = nullptr*/) : m_iX(0), m_iY(0), m
                                                              m_iDesiredTall(0), m_iRotation(0),
                                                              m_iTextureID(-1), m_pDefaultImage(pDefaultImage),
                                                              m_iOriginalImageWide(0), m_iOriginalImageTall(0),
-                                                             m_hResizeThread(nullptr)
+                                                             m_hResizeThread(nullptr), m_bShouldResize(true)
 {
     m_DrawColor = Color(255, 255, 255, 255);
     m_szFileName[0] = '\0';
@@ -90,7 +90,7 @@ bool FileImage::LoadFromUtlBuffer(CUtlBuffer &buf)
     if (!pImageData)
         return false;
 
-    const auto inSize = m_iOriginalImageTall * m_iOriginalImageWide * channels;
+    const auto inSize = m_iOriginalImageTall * m_iOriginalImageWide * 4;
     m_bufOriginalImage.EnsureCapacity(inSize);
     m_bufOriginalImage.AssumeMemory(pImageData, inSize, inSize);
 
@@ -108,7 +108,7 @@ bool FileImage::LoadFromUtlBufferInternal()
     if (m_iDesiredTall == 0)
         m_iDesiredTall = m_iOriginalImageTall;
 
-    if (m_iDesiredTall != m_iOriginalImageTall || m_iDesiredWide != m_iOriginalImageWide)
+    if ((m_iDesiredTall != m_iOriginalImageTall || m_iDesiredWide != m_iOriginalImageWide) && m_bShouldResize)
     {
         if (!m_hResizeThread)
         {
@@ -135,7 +135,7 @@ void FileImage::ResizeImageBufferAsync()
     AUTO_LOCK_FM(m_Mutex);
     
     int size = m_iDesiredWide * m_iDesiredTall * 4;
-    unsigned char *pResizedData = new uint8[size];
+    uint8 *pResizedData = new uint8[size];
 
     stbir_resize_uint8((stbi_uc *)m_bufOriginalImage.Base(), m_iOriginalImageWide, m_iOriginalImageTall, 0,
                        pResizedData, m_iDesiredWide, m_iDesiredTall, 0,
@@ -289,7 +289,7 @@ void FileImage::DestroyTexture()
 }
 
 URLImage::URLImage(IImage *pDefaultImage/* = nullptr*/, bool bDrawProgress /* = false*/) : FileImage(pDefaultImage), 
-        m_hRequest(INVALID_HTTPREQUEST_HANDLE), m_bDrawProgressBar(bDrawProgress)
+                                                                                           m_hRequest(INVALID_HTTPREQUEST_HANDLE), m_bDrawProgressBar(bDrawProgress)
 {
     m_szURL[0] = '\0';
     m_fProgress = 0.0f;
