@@ -126,4 +126,8 @@
         "id" "string"     // Person speccing
         "target" "string" // Spec target
     }
+    "mapcache_map_load"
+    {
+        "map" "string"
+    }
 }
