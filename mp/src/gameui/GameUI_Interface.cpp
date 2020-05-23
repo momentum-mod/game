@@ -1,23 +1,12 @@
-//===== Copyright � 1996-2005, Valve Corporation, All rights reserved. ======//
-//
-// Purpose: Implements all the functions exported by the GameUI dll
-//
-// $NoKeywords: $
-//===========================================================================//
+#include "GameUI_Interface.h"
 
-#include <stdio.h>
-#include <sys/stat.h>
 #include <tier0/dbg.h>
-#include <time.h>
 
 #include "filesystem.h"
-#include "GameUI_Interface.h"
-#include "string.h"
 #include "tier0/icommandline.h"
 
 // interface to engine
 #include "EngineInterface.h"
-#include "GameConsole.h"
 #include "ienginevgui.h"
 #include "IGameUIFuncs.h"
 #include "LoadingDialog.h"
@@ -55,14 +44,9 @@ IAchievementMgr *achievementmgr = nullptr;
 IGameEventManager2 *gameeventmanager = nullptr;
 static CBasePanel *staticPanel = nullptr;
 
-class CGameUI;
-CGameUI *g_pGameUI = nullptr;
-
 class CLoadingDialog;
 vgui::DHANDLE<CLoadingDialog> g_hLoadingDialog;
 vgui::VPANEL g_hLoadingBackgroundDialog = NULL;
-
-static CGameUI g_GameUI;
 
 static IGameClientExports *g_pGameClientExports = nullptr;
 IGameClientExports *GameClientExports() { return g_pGameClientExports; }
@@ -70,26 +54,17 @@ IGameClientExports *GameClientExports() { return g_pGameClientExports; }
 //-----------------------------------------------------------------------------
 // Purpose: singleton accessor
 //-----------------------------------------------------------------------------
+CGameUI *g_pGameUI = nullptr;
+static CGameUI g_GameUI;
 CGameUI &GameUI() { return g_GameUI; }
-
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CGameUI, IGameUI, GAMEUI_INTERFACE_VERSION, g_GameUI);
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
 CGameUI::CGameUI()
 {
     g_pGameUI = this;
-    m_bActivatedUI = false;
-    m_szPreviousStatusText[0] = 0;
-    m_bHasSavedThisMenuSession = false;
-    m_bOpenProgressOnStart = false;
     m_iPlayGameStartupSound = 0;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
 CGameUI::~CGameUI() { g_pGameUI = nullptr; }
 
 //-----------------------------------------------------------------------------
@@ -194,48 +169,43 @@ void CGameUI::PlayGameStartupSound()
     Q_FixSlashes(path);
 
     char const *fn = g_pFullFileSystem->FindFirstEx(path, "MOD", &fh);
-    if (fn)
+    if (!fn)
     {
-        do
-        {
-            char ext[10];
-            Q_ExtractFileExtension(fn, ext, sizeof(ext));
-
-            if (!Q_stricmp(ext, "mp3"))
-            {
-                char temp[512];
-                Q_snprintf(temp, sizeof(temp), "ui/%s", fn);
-
-                char *found = new char[strlen(temp) + 1];
-                Q_strncpy(found, temp, strlen(temp) + 1);
-
-                Q_FixSlashes(found);
-                fileNames.AddToTail(found);
-            }
-
-            fn = g_pFullFileSystem->FindNext(fh);
-
-        } while (fn);
-
         g_pFullFileSystem->FindClose(fh);
+        return;
     }
 
-    // did we find any?
+    do
+    {
+        char ext[10];
+        Q_ExtractFileExtension(fn, ext, sizeof(ext));
+
+        if (!Q_stricmp(ext, "mp3"))
+        {
+            char temp[512];
+            Q_snprintf(temp, sizeof(temp), "ui/%s", fn);
+
+            char *found = new char[strlen(temp) + 1];
+            Q_strncpy(found, temp, strlen(temp) + 1);
+
+            Q_FixSlashes(found);
+            fileNames.AddToTail(found);
+        }
+
+        fn = g_pFullFileSystem->FindNext(fh);
+
+    } while (fn);
+
+    g_pFullFileSystem->FindClose(fh);
+
     if (fileNames.Count() > 0)
     {
-        time_t t;
-        time(&t);
-        int index = t % fileNames.Count();
+        char found[512];
 
-        if (fileNames.IsValidIndex(index) && fileNames[index])
-        {
-            char found[512];
+        // escape chars "*#" make it stream, and be affected by snd_musicvolume
+        Q_snprintf(found, sizeof(found), "play *#%s", fileNames.Random());
 
-            // escape chars "*#" make it stream, and be affected by snd_musicvolume
-            Q_snprintf(found, sizeof(found), "play *#%s", fileNames[index]);
-
-            engine->ClientCmd_Unrestricted(found);
-        }
+        engine->ClientCmd_Unrestricted(found);
 
         fileNames.PurgeAndDeleteElements();
     }
@@ -246,7 +216,6 @@ void CGameUI::PlayGameStartupSound()
 //-----------------------------------------------------------------------------
 void CGameUI::Start()
 {
-    // setup config file directory
     char szConfigDir[512];
     g_pFullFileSystem->RelativePathToFullPath("config", "PLATFORM", szConfigDir, sizeof(szConfigDir));
 
@@ -255,13 +224,11 @@ void CGameUI::Start()
     g_pFullFileSystem->AddSearchPath(szConfigDir, "CONFIG");
     g_pFullFileSystem->CreateDirHierarchy("", "CONFIG");
 
-    // user dialog configuration
     vgui::system()->SetUserConfigFile("InGameDialogConfig.vdf", "CONFIG");
 
     g_pFullFileSystem->AddSearchPath("platform", "PLATFORM");
     
 
-    // localization
     g_pVGuiLocalize->AddFile("resource/platform_%language%.txt");
     g_pVGuiLocalize->AddFile("resource/vgui_%language%.txt");
 
@@ -308,14 +275,6 @@ void CGameUI::AllowEngineHideGameUI() { engine->ExecuteClientCmd("gameui_allowes
 //-----------------------------------------------------------------------------
 void CGameUI::OnGameUIActivated()
 {
-    m_bActivatedUI = true;
-
-    // pause the server in case it is pausable
-    //engine->ClientCmd_Unrestricted( "setpause nomsg" );
-
-    SetSavedThisMenuSession(false);
-
-    // Notify taskbar
     GetBasePanel()->OnGameUIActivated();
 }
 
@@ -324,11 +283,6 @@ void CGameUI::OnGameUIActivated()
 //-----------------------------------------------------------------------------
 void CGameUI::OnGameUIHidden()
 {
-    m_bActivatedUI = false;
-
-    // unpause the game when leaving the UI
-    //engine->ClientCmd_Unrestricted( "unpause nomsg" );
-
     GetBasePanel()->OnGameUIHidden();
 }
 
@@ -338,20 +292,9 @@ void CGameUI::OnGameUIHidden()
 void CGameUI::RunFrame()
 {
     int wide, tall;
-#if defined(TOOLFRAMEWORK_VGUI_REFACTOR)
-    // resize the background panel to the screen size
-    vgui::VPANEL clientDllPanel = enginevguifuncs->GetPanel(PANEL_ROOT);
-
-    int x, y;
-    vgui::ipanel()->GetPos(clientDllPanel, x, y);
-    vgui::ipanel()->GetSize(clientDllPanel, wide, tall);
-    staticPanel->SetBounds(x, y, wide, tall);
-#else
     vgui::surface()->GetScreenSize(wide, tall);
     staticPanel->SetSize(wide, tall);
-#endif
 
-    // Run frames
     GetBasePanel()->RunFrame();
 
     // Play the start-up music the first time we run frame
@@ -398,10 +341,8 @@ void CGameUI::OnLevelLoadingFinished(bool bError, const char *failureReason, con
 
     HideLoadingBackgroundDialog();
 
-    // hide the UI
     HideGameUI();
 
-    // notify
     GetBasePanel()->OnLevelLoadingFinished();
 }
 
@@ -411,7 +352,6 @@ void CGameUI::OnLevelLoadingFinished(bool bError, const char *failureReason, con
 //-----------------------------------------------------------------------------
 bool CGameUI::UpdateProgressBar(float progress, const char *statusText)
 {
-    // if either the progress bar or the status text changes, redraw the screen
     bool bRedraw = false;
 
     if (ContinueProgressBar(progress))
@@ -449,9 +389,6 @@ void CGameUI::GetLocalizedString(const char* pToken, wchar_t** pOut)
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void CGameUI::StartProgressBar()
 {
     if (!g_hLoadingDialog.Get())
@@ -465,9 +402,6 @@ void CGameUI::StartProgressBar()
     g_hLoadingDialog->Open();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns true if the screen should be updated
-//-----------------------------------------------------------------------------
 bool CGameUI::ContinueProgressBar(float progressFraction)
 {
     if (!g_hLoadingDialog.Get())
@@ -477,9 +411,6 @@ bool CGameUI::ContinueProgressBar(float progressFraction)
     return g_hLoadingDialog->SetProgressPoint(progressFraction);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void CGameUI::SetProgressLevelName(const char *levelName)
 {
     MEM_ALLOC_CREDIT();
@@ -496,9 +427,6 @@ void CGameUI::SetProgressLevelName(const char *levelName)
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: stops progress bar, displays error if necessary
-//-----------------------------------------------------------------------------
 void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char *extendedReason)
 {
     if (!g_hLoadingDialog.Get())
@@ -518,9 +446,6 @@ void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char
     // should update the background to be in a transition here
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: sets loading info text
-//-----------------------------------------------------------------------------
 bool CGameUI::SetProgressBarStatusText(const char *statusText)
 {
     if (!g_hLoadingDialog.Get())
@@ -537,31 +462,6 @@ bool CGameUI::SetProgressBarStatusText(const char *statusText)
     return true;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CGameUI::SetSecondaryProgressBar(float progress /* range [0..1] */)
-{
-    if (!g_hLoadingDialog.Get())
-        return;
-
-    g_hLoadingDialog->SetSecondaryProgress(progress);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CGameUI::SetSecondaryProgressBarText(const char *statusText)
-{
-    if (!g_hLoadingDialog.Get())
-        return;
-
-    g_hLoadingDialog->SetSecondaryProgressText(statusText);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns prev settings
-//-----------------------------------------------------------------------------
 bool CGameUI::SetShowProgressText(bool show)
 {
     if (!g_hLoadingDialog.Get())
@@ -570,17 +470,11 @@ bool CGameUI::SetShowProgressText(bool show)
     return g_hLoadingDialog->SetShowProgressText(show);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns true if we're currently playing the game
-//-----------------------------------------------------------------------------
 bool CGameUI::IsInLevel()
 {
     return engine->IsInGame() && !engine->IsLevelMainMenuBackground();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns true if we're at the main menu and a background level is loaded
-//-----------------------------------------------------------------------------
 bool CGameUI::IsInBackgroundLevel()
 {
     return (engine->IsInGame() && engine->IsLevelMainMenuBackground());
@@ -591,21 +485,8 @@ bool CGameUI::IsInMenu()
     return IsInBackgroundLevel() || GetBasePanel()->GetMenuBackgroundState() == BACKGROUND_DISCONNECTED;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns true if we're in a multiplayer game
-//-----------------------------------------------------------------------------
 bool CGameUI::IsInMultiplayer() { return (IsInLevel() && engine->GetMaxClients() > 1); }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns true if we've saved without closing the menu
-//-----------------------------------------------------------------------------
-bool CGameUI::HasSavedThisMenuSession() { return m_bHasSavedThisMenuSession; }
-
-void CGameUI::SetSavedThisMenuSession(bool bState) { m_bHasSavedThisMenuSession = bState; }
-
-//-----------------------------------------------------------------------------
-// Purpose: Makes the loading background dialog visible, if one has been set
-//-----------------------------------------------------------------------------
 void CGameUI::ShowLoadingBackgroundDialog()
 {
     if (g_hLoadingBackgroundDialog)
@@ -618,9 +499,6 @@ void CGameUI::ShowLoadingBackgroundDialog()
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Hides the loading background dialog, if one has been set
-//-----------------------------------------------------------------------------
 void CGameUI::HideLoadingBackgroundDialog()
 {
     if (g_hLoadingBackgroundDialog)
@@ -638,14 +516,6 @@ void CGameUI::HideLoadingBackgroundDialog()
         vgui::ivgui()->PostMessage(g_hLoadingBackgroundDialog, new KeyValues("HideAsLoadingPanel"), NULL);
     }
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns whether a loading background dialog has been set
-//-----------------------------------------------------------------------------
-bool CGameUI::HasLoadingBackgroundDialog() { return (NULL != g_hLoadingBackgroundDialog); }
-
-//-----------------------------------------------------------------------------
-void CGameUI::SetProgressOnStart() { m_bOpenProgressOnStart = true; }
 
 void CGameUI::SendMainMenuCommand(const char* pszCommand)
 {
