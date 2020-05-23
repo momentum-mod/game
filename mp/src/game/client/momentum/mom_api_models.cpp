@@ -449,15 +449,29 @@ bool MapData::GetCreditString(CUtlString *pOut, MapCreditType_t creditType)
             people.CopyAndAddToTail(m_vecCredits[i].m_User.m_szAlias);
         }
     }
+
     const auto count = people.Count();
-    for (int i = 0; i < count; i++)
+
+    if (count == 0)
+        return false;
+
+    if (count > 3)
     {
-        pOut->Append(people[i]);
-        if (i < count - 2)
-            pOut->Append(", ", 2);
-        else if (i < count - 1)
-            pOut->Append(" and ");
+        pOut->Format("%s, %s and %i others", people[0], people[1], count - 2);
     }
+    else if (count == 3)
+    {
+        pOut->Format("%s, %s and %s", people[0], people[1], people[2]);
+    }
+    else if (count == 2)
+    {
+        pOut->Format("%s and %s", people[0], people[1]);
+    }
+    else
+    {
+        pOut->Append(people[0]);
+    }
+
     return true;
 }
 
