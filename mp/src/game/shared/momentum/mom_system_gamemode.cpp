@@ -270,6 +270,25 @@ IGameMode *CGameModeSystem::GetGameMode(int eMode) const
     return m_vecGameModes[eMode];
 }
 
+IGameMode *CGameModeSystem::GetGameModeFromMapName(const char *pMapName)
+{
+    if (!pMapName || !pMapName[0])
+        return nullptr;
+
+    // Skip over unknown in the loop
+    for (auto i = 1; i < m_vecGameModes.Count(); ++i)
+    {
+        const auto pPrefix = m_vecGameModes[i]->GetMapPrefix();
+        const auto strLen = Q_strlen(pPrefix);
+        if (!Q_strnicmp(pPrefix, pMapName, strLen))
+        {
+            return m_vecGameModes[i];
+        }
+    }
+
+    return nullptr;
+}
+
 void CGameModeSystem::SetGameMode(GameMode_t eMode)
 {
     m_pCurrentGameMode = m_vecGameModes[eMode];
@@ -285,19 +304,10 @@ void CGameModeSystem::SetGameModeFromMapName(const char *pMapName)
     // Set to unknown for now
     m_pCurrentGameMode = m_vecGameModes[GAMEMODE_UNKNOWN];
 
-    if (pMapName)
+    const auto pFoundMode = GetGameModeFromMapName(pMapName);
+    if (pFoundMode)
     {
-        // Skip over unknown in the loop
-        for (auto i = 1; i < m_vecGameModes.Count(); ++i)
-        {
-            const auto pPrefix = m_vecGameModes[i]->GetMapPrefix();
-            const auto strLen = Q_strlen(pPrefix);
-            if (!Q_strnicmp(pPrefix, pMapName, strLen))
-            {
-                m_pCurrentGameMode = m_vecGameModes[i];
-                break;
-            }
-        }
+        m_pCurrentGameMode = pFoundMode;
     }
 
 #ifdef CLIENT_DLL

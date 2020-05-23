@@ -174,6 +174,8 @@ public:
     IGameMode *GetGameMode() const { return m_pCurrentGameMode; }
     /// Gets a specific game mode instance by type
     IGameMode *GetGameMode(int eMode) const;
+    /// Gets a game mode based off of the map name
+    IGameMode *GetGameModeFromMapName(const char *pMapName);
     /// Checks if the game mode is the given one.
     /// (convenience method; functionally equivalent to `GetGameMode()->GetType() == eCheck`)
     bool GameModeIs(GameMode_t eCheck) const { return m_pCurrentGameMode->GetType() == eCheck; }
