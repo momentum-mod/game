@@ -157,6 +157,11 @@ void CGameUI::PostInit()
 //-----------------------------------------------------------------------------
 void CGameUI::SetLoadingBackgroundDialog(vgui::VPANEL panel) { g_hLoadingBackgroundDialog = panel; }
 
+vgui::VPANEL CGameUI::GetLoadingBackgroundDialog()
+{
+    return g_hLoadingBackgroundDialog;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: connects to client interfaces
 //-----------------------------------------------------------------------------

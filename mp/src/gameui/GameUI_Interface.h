@@ -39,7 +39,8 @@ class CGameUI : public IGameUI
     void PreventEngineHideGameUI();
     void AllowEngineHideGameUI();
 
-    void SetLoadingBackgroundDialog(vgui::VPANEL panel) OVERRIDE;;
+    void SetLoadingBackgroundDialog(vgui::VPANEL panel) OVERRIDE;
+    vgui::VPANEL GetLoadingBackgroundDialog();
 
     // notifications
     void OnGameUIActivated() OVERRIDE;
