@@ -37,6 +37,9 @@ namespace vgui
         // Sets the size of the image
         void SetSize(int wide, int tall) OVERRIDE;
 
+        // Toggle resizing
+        void SetShouldResize(bool bResize) { m_bShouldResize = bResize; }
+
         // Set the draw color 
         void SetColor(Color col) OVERRIDE { m_DrawColor = col; }
 
@@ -65,6 +68,7 @@ namespace vgui
         void DestroyTexture();
         char m_szFileName[MAX_PATH];
         char m_szPathID[16];
+        bool m_bShouldResize;
 
         void PaintDefaultImage();
 
