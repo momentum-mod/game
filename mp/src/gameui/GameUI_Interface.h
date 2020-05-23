@@ -19,7 +19,7 @@ class CGameUI : public IGameUI
 {
   public:
     CGameUI();
-    ~CGameUI();
+    virtual ~CGameUI();
 
     void Initialize(CreateInterfaceFn appFactory) OVERRIDE;
     void Connect(CreateInterfaceFn gameFactory) OVERRIDE;
@@ -95,12 +95,9 @@ class CGameUI : public IGameUI
     bool IsInBackgroundLevel();
     bool IsInMenu();
     bool IsInMultiplayer();
-    bool HasSavedThisMenuSession();
-    void SetSavedThisMenuSession(bool bState);
 
     void ShowLoadingBackgroundDialog();
     void HideLoadingBackgroundDialog();
-    bool HasLoadingBackgroundDialog();
 
     virtual Vector2D GetViewport() const;
 
@@ -112,17 +109,7 @@ class CGameUI : public IGameUI
     virtual void StopProgressBar(bool bError, const char *failureReason, const char *extendedReason = NULL);
     virtual bool SetProgressBarStatusText(const char *statusText);
 
-    //!! these functions currently not implemented
-    virtual void SetSecondaryProgressBar(float progress /* range [0..1] */);
-    virtual void SetSecondaryProgressBarText(const char *statusText);
-
-    bool m_bActivatedUI : 1;
-    bool m_bHasSavedThisMenuSession : 1;
-    bool m_bOpenProgressOnStart : 1;
     int m_iPlayGameStartupSound;
-
-    char m_szPreviousStatusText[128];
-    char m_szPlatformDir[MAX_PATH];
 };
 
 // Purpose: singleton accessor
