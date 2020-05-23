@@ -454,13 +454,13 @@ void COptionsSubVideoAdvancedDlg::MarkDefaultSettingsAsRecommended()
 
 void COptionsSubVideoAdvancedDlg::ApplyChanges()
 {
-    m_cvarRootlod.SetValue(2 - m_pModelDetail->GetActiveItem());
-    m_cvarPicmip.SetValue(2 - m_pTextureDetail->GetActiveItem());
+    m_cvarRootlod.SetValue(2 - m_pModelDetail->GetCurrentItem());
+    m_cvarPicmip.SetValue(2 - m_pTextureDetail->GetCurrentItem());
 
 	// reset everything tied to the filtering mode, then the switch sets the appropriate one
     m_cvarTrilinear.SetValue(false);
     m_cvarForceaniso.SetValue(1);
-	switch (m_pFilteringMode->GetActiveItem())
+	switch (m_pFilteringMode->GetCurrentItem())
 	{
 	case 0:
 		break;
@@ -482,29 +482,29 @@ void COptionsSubVideoAdvancedDlg::ApplyChanges()
 	}
 
 	// Set the AA convars according to the menu item chosen
-	int nActiveAAItem = m_pAntialiasingMode->GetActiveItem();
+	int nActiveAAItem = m_pAntialiasingMode->GetCurrentItem();
     m_cvarAntialias.SetValue(m_nAAModes[nActiveAAItem].m_nNumSamples);
     m_cvarAAQuality.SetValue(m_nAAModes[nActiveAAItem].m_nQualityLevel);
 
-	if ( m_pShadowDetail->GetActiveItem() == 0 ) // Blobby shadows
+	if ( m_pShadowDetail->GetCurrentItem() == 0 ) // Blobby shadows
 	{
 		m_cvarShadowRenderToTexture.SetValue(0);  // Turn off RTT shadows
 		m_cvarFlashlightDepthTexture.SetValue(0); // Turn off shadow depth textures
 	}
-	else if ( m_pShadowDetail->GetActiveItem() == 1 ) // RTT shadows only
+	else if ( m_pShadowDetail->GetCurrentItem() == 1 ) // RTT shadows only
     {
         m_cvarShadowRenderToTexture.SetValue(1);  // Turn on RTT shadows
         m_cvarFlashlightDepthTexture.SetValue(0); // Turn off shadow depth textures
 	}
-	else if ( m_pShadowDetail->GetActiveItem() == 2 ) // Shadow depth textures
+	else if ( m_pShadowDetail->GetCurrentItem() == 2 ) // Shadow depth textures
     {
         m_cvarShadowRenderToTexture.SetValue(1);  // Turn on RTT shadows
         m_cvarFlashlightDepthTexture.SetValue(1); // Turn on shadow depth textures
 	}
 
-    m_cvarReduceFillrate.SetValue((m_pShaderDetail->GetActiveItem() > 0) ? 0 : 1);
+    m_cvarReduceFillrate.SetValue((m_pShaderDetail->GetCurrentItem() > 0) ? 0 : 1);
 
-	switch ( m_pWaterDetail->GetActiveItem() )
+	switch ( m_pWaterDetail->GetCurrentItem() )
 	{
 	default:
 	case 0:
@@ -521,20 +521,20 @@ void COptionsSubVideoAdvancedDlg::ApplyChanges()
 		break;
 	}
  
-    m_cvarVSync.SetValue(m_pVSync->GetActiveItem());
+    m_cvarVSync.SetValue(m_pVSync->GetCurrentItem());
 
-    m_cvarColorCorreciton.SetValue(m_pColorCorrection->GetActiveItem());
+    m_cvarColorCorreciton.SetValue(m_pColorCorrection->GetCurrentItem());
 
-    m_cvarMotionBlur.SetValue(m_pMotionBlur->GetActiveItem());
+    m_cvarMotionBlur.SetValue(m_pMotionBlur->GetCurrentItem());
 
-    m_cvarQueueMode.SetValue(-m_pMulticore->GetActiveItem());
+    m_cvarQueueMode.SetValue(-m_pMulticore->GetCurrentItem());
 
     m_pFOVSlider->ApplyChanges();
 
 	// The cvar disables bloom so invert the item
-    m_cvarDisableBloom.SetValue(!m_pBloom->GetActiveItem());
+    m_cvarDisableBloom.SetValue(!m_pBloom->GetCurrentItem());
 
-    m_cvarDynamicTonemapping.SetValue(m_pTonemap->GetActiveItem());
+    m_cvarDynamicTonemapping.SetValue(m_pTonemap->GetCurrentItem());
 }
 
 void COptionsSubVideoAdvancedDlg::OnResetData()
@@ -766,7 +766,7 @@ void COptionsSubVideo::PrepareResolutionList()
 
 	const MaterialSystem_Config_t &config = materials->GetCurrentConfigForVideoCard();
 
-	bool bWindowed = (m_pWindowed->GetActiveItem() > 0);
+	bool bWindowed = (m_pWindowed->GetCurrentItem() > 0);
 	int desktopWidth, desktopHeight;
 	gameuifuncs->GetDesktopResolution( desktopWidth, desktopHeight );
 
@@ -791,7 +791,7 @@ void COptionsSubVideo::PrepareResolutionList()
 		}
 
 		// filter the list for those matching the current aspect
-		if ( iAspectMode == m_pAspectRatio->GetActiveItem() )
+		if ( iAspectMode == m_pAspectRatio->GetCurrentItem() )
 		{
 			itemID = m_pMode->AddItem(resolution, NULL);
 		}
@@ -931,7 +931,7 @@ void COptionsSubVideo::OnDataChanged()
 	sscanf( sz, "%i x %i", &width, &height );
 
 	// windowed
-	bool windowed = (m_pWindowed->GetActiveItem() > 0) ? true : false;
+	bool windowed = (m_pWindowed->GetCurrentItem() > 0) ? true : false;
 
 	// make sure there is a change
 	const MaterialSystem_Config_t &config = materials->GetCurrentConfigForVideoCard();
@@ -973,7 +973,7 @@ void COptionsSubVideo::OnTextChanged(Panel *pPanel, const char *pszText)
     {
 		const MaterialSystem_Config_t &config = materials->GetCurrentConfigForVideoCard();
 
-		m_nSelectedMode = m_pMode->GetActiveItem();
+		m_nSelectedMode = m_pMode->GetCurrentItem();
 
 		int w = 0, h = 0;
 		sscanf(pszText, "%i x %i", &w, &h);
