@@ -53,7 +53,6 @@ $Project "GameUI"
         $File   "EngineInterface.h"
         $File   "GameConsole.h"
         $File   "GameUI_Interface.h"
-        $File   "LoadingDialog.h"
         $File   "ModInfo.h"
         $File   "MouseMessageForwardingPanel.h"
         $File   "PanelListPanel.h"
@@ -99,7 +98,6 @@ $Project "GameUI"
     {
         $File   "GameConsoleDialog.cpp"
         $File   "GameConsoleDialog.h"
-        $File   "LoadingDialog.cpp"
     }
 
     $Folder "Options Dialog"
