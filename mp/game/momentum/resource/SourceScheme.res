@@ -153,8 +153,8 @@ Scheme
         Panel.FgColor					"Gray"
         Panel.BgColor					"Blank"
 
-        ProgressBar.FgColor				"White"
-        ProgressBar.BgColor				"MOM.Panel.Bg"
+        ProgressBar.FgColor				"MomentumBlue"
+        ProgressBar.BgColor				"MomGreydientStep1"
         ProgressBar.ProgressTextColor   "White"
         ProgressBar.ProgressTextFont    "DefaultSmall"
 
@@ -378,10 +378,9 @@ Scheme
         {
             "1"
             {
-                "name"		"Tahoma" [!$LINUX]
-                "name"		"Verdana" [$LINUX]
+                "name"		"Noto Sans"
                 "tall"		"18"
-                "weight"	"0"
+                "weight"	"600"
                 "antialias" "1"
             }
         }
@@ -389,8 +388,7 @@ Scheme
         {
             "1"
             {
-                "name"		"Tahoma" [!$LINUX]
-                "name"		"Verdana" [$LINUX]
+                "name"		"Noto Sans"
                 "tall"		"18"
                 "weight"	"0"
                 "dropshadow" "1"
@@ -401,8 +399,7 @@ Scheme
         {
             "1"
             {
-                "name" "Tahoma" [!$LINUX]
-                "name" "Verdana" [$LINUX]
+                "name" "Noto Sans"
                 "tall" "22"
                 "antialias" "1"
             }
@@ -446,6 +443,39 @@ Scheme
                 "weight"		"2000"
                 "blur"			"3"
                 "blur_hidef"	"5"
+            }
+        }
+        "LoadingLarge"
+        {
+            "1"
+            {
+                "name"      "Bebas Neue"
+                "tall"      "28"
+                "weight"    "500"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "LoadingSmall"
+        {
+            "1"
+            {
+                "name"      "Bebas Neue"
+                "tall"      "20"
+                "weight"    "500"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "LoadingTip"
+        {
+            "1"
+            {
+                "name" "Noto Sans"
+                "tall" "14"
+                "weight" "500"
+                "antialias" "1"
+                "dropshadow" "1"
             }
         }
         "MenuLarge"

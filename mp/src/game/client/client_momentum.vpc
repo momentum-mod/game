@@ -31,6 +31,8 @@ $Project "Client (Momentum)"
             {
                 $Folder "LoadingScreen"
                 {
+                    $File "momentum\ui\loadingscreen\LoadingScreen.cpp"
+                    $File "momentum\ui\loadingscreen\LoadingScreen.h"
                     $File "momentum\ui\loadingscreen\TipManager.h"
                     $File "momentum\ui\loadingscreen\TipManager.cpp"
                 }
