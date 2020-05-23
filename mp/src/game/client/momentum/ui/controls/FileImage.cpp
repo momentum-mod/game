@@ -119,6 +119,8 @@ bool FileImage::LoadFromUtlBufferInternal()
     {
         // Create with the original image buffer
         LoadFromRGBA((stbi_uc*) m_bufOriginalImage.Base(), m_iDesiredWide, m_iDesiredTall);
+
+        FireImageLoadMessage();
     }
 
     return true;
@@ -175,6 +177,8 @@ void FileImage::Paint()
             ReleaseThreadHandle(m_hResizeThread);
 
         m_hResizeThread = nullptr;
+
+        FireImageLoadMessage();
     }
 
     if (m_iTextureID != -1)
@@ -285,6 +289,14 @@ void FileImage::DestroyTexture()
     {
         surface()->DestroyTextureID(m_iTextureID);
         m_iTextureID = -1;
+    }
+}
+
+void FileImage::FireImageLoadMessage()
+{
+    FOR_EACH_VEC(m_vecImageLoadListeners, i)
+    {
+        ipanel()->SendMessage(m_vecImageLoadListeners[i], new KeyValues("ImageLoad"), NULL);
     }
 }
 
