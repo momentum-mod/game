@@ -713,6 +713,13 @@ void CMapCache::PreLevelInit(KeyValues* pKv)
     }
 
     SetMapGamemode(pMapName);
+
+    const auto pEvent = gameeventmanager->CreateEvent("mapcache_map_load");
+    if (pEvent)
+    {
+        pEvent->SetString("map", pMapName);
+        gameeventmanager->FireEventClientSide(pEvent);
+    }
 }
 
 void CMapCache::LevelInitPreEntity()
