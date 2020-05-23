@@ -101,6 +101,7 @@ public:
 	void SilentActivateItemByRow(int row);	// Sets the menu to the appropriate row without sending a TextChanged message
 
 	int GetActiveItem();
+    int GetCurrentItem();
 	KeyValues *GetActiveItemUserData();
 	KeyValues *GetItemUserData(int itemID);
 	void GetItemText( int itemID, OUT_Z_BYTECAP(bufLenInBytes) wchar_t *text, int bufLenInBytes );

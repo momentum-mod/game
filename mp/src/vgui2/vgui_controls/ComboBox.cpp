@@ -376,6 +376,16 @@ int ComboBox::GetActiveItem()
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: return the index of the current item. Returns the highlighted item unless
+// no item is highlighted, in which case returns the active item.
+//-----------------------------------------------------------------------------
+int ComboBox::GetCurrentItem()
+{
+    int iHLItem = m_pDropDown->GetCurrentlyHighlightedItem();
+    return iHLItem >= 0 ? iHLItem : m_pDropDown->GetActiveItem();
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 KeyValues *ComboBox::GetActiveItemUserData()
