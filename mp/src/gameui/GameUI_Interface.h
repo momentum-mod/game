@@ -51,13 +51,6 @@ class CGameUI : public IGameUI
 
     // progress
     bool UpdateProgressBar(float progress, const char *statusText) OVERRIDE;
-    // Shows progress desc, returns previous setting... (used with custom progress bars )
-    bool SetShowProgressText(bool show) OVERRIDE;
-
-    // Allows the level loading progress to show map-specific info
-    virtual void SetProgressLevelName(const char *levelName);
-
-    void SetProgressOnStart() OVERRIDE;
 
     void SendMainMenuCommand(const char *pszCommand) OVERRIDE;
     void OnConfirmQuit() OVERRIDE;
@@ -84,6 +77,9 @@ class CGameUI : public IGameUI
     void ShowNewGameDialog(int chapter) OVERRIDE{}
     void SetMainMenuOverride(vgui::VPANEL panel) OVERRIDE{}
 	void UpdatePlayerInfo() OVERRIDE {}
+    // Progress
+    void SetProgressOnStart() OVERRIDE {}
+    bool SetShowProgressText(bool show) OVERRIDE { return false; }
     // Connection
     void OLD_OnConnectToServer(const char *game, int IP, int port) OVERRIDE {} // OLD: use OnConnectToServer2
     void OnConnectToServer2(const char *game, int IP, int connectionPort, int queryPort) OVERRIDE {}
@@ -104,10 +100,7 @@ class CGameUI : public IGameUI
     void GetLocalizedString(const char *pToken, wchar_t **pOut);
 
   private:
-    virtual void StartProgressBar();
     virtual bool ContinueProgressBar(float progressFraction);
-    virtual void StopProgressBar(bool bError, const char *failureReason, const char *extendedReason = NULL);
-    virtual bool SetProgressBarStatusText(const char *statusText);
 
     int m_iPlayGameStartupSound;
 };

@@ -9,7 +9,6 @@
 #include "EngineInterface.h"
 #include "ienginevgui.h"
 #include "IGameUIFuncs.h"
-#include "LoadingDialog.h"
 #include "ModInfo.h"
 #include "game/client/IGameClientExports.h"
 #include "iachievementmgr.h"
@@ -26,7 +25,6 @@
 #include "vgui/ISurface.h"
 #include "vgui/ISystem.h"
 #include "vgui/IVGui.h"
-#include "vgui_controls/PHandle.h"
 #include "MainMenu.h"
 
 #include "BasePanel.h"
@@ -44,8 +42,6 @@ IAchievementMgr *achievementmgr = nullptr;
 IGameEventManager2 *gameeventmanager = nullptr;
 static CBasePanel *staticPanel = nullptr;
 
-class CLoadingDialog;
-vgui::DHANDLE<CLoadingDialog> g_hLoadingDialog;
 vgui::VPANEL g_hLoadingBackgroundDialog = NULL;
 
 static IGameClientExports *g_pGameClientExports = nullptr;
@@ -321,12 +317,8 @@ Vector2D CGameUI::GetViewport() const
 void CGameUI::OnLevelLoadingStarted(bool bShowProgressDialog)
 {
     GetBasePanel()->OnLevelLoadingStarted();
-    ShowLoadingBackgroundDialog();
 
-    //if (bShowProgressDialog)
-    {
-        StartProgressBar();
-    }
+    ShowLoadingBackgroundDialog();
 
     // Don't play the start game sound if this happens before we get to the first frame
     m_iPlayGameStartupSound = 0;
@@ -337,8 +329,6 @@ void CGameUI::OnLevelLoadingStarted(bool bShowProgressDialog)
 //-----------------------------------------------------------------------------
 void CGameUI::OnLevelLoadingFinished(bool bError, const char *failureReason, const char *extendedReason)
 {
-    StopProgressBar(bError, failureReason, extendedReason);
-
     HideLoadingBackgroundDialog();
 
     HideGameUI();
@@ -355,11 +345,6 @@ bool CGameUI::UpdateProgressBar(float progress, const char *statusText)
     bool bRedraw = false;
 
     if (ContinueProgressBar(progress))
-    {
-        bRedraw = true;
-    }
-
-    if (SetProgressBarStatusText(statusText))
     {
         bRedraw = true;
     }
@@ -389,85 +374,15 @@ void CGameUI::GetLocalizedString(const char* pToken, wchar_t** pOut)
     }
 }
 
-void CGameUI::StartProgressBar()
-{
-    if (!g_hLoadingDialog.Get())
-    {
-        g_hLoadingDialog = new CLoadingDialog(staticPanel);
-    }
-
-    // open a loading dialog
-    m_szPreviousStatusText[0] = 0;
-    g_hLoadingDialog->SetProgressPoint(0.0f);
-    g_hLoadingDialog->Open();
-}
-
 bool CGameUI::ContinueProgressBar(float progressFraction)
 {
-    if (!g_hLoadingDialog.Get())
+    if (g_hLoadingBackgroundDialog == NULL)
         return false;
 
-    g_hLoadingDialog->Activate();
-    return g_hLoadingDialog->SetProgressPoint(progressFraction);
-}
-
-void CGameUI::SetProgressLevelName(const char *levelName)
-{
-    MEM_ALLOC_CREDIT();
-    if (g_hLoadingBackgroundDialog)
-    {
-        KeyValues *pKV = new KeyValues("ProgressLevelName");
-        pKV->SetString("levelName", levelName);
-        vgui::ivgui()->PostMessage(g_hLoadingBackgroundDialog, pKV, NULL);
-    }
-
-    if (g_hLoadingDialog.Get())
-    {
-        // TODO: g_hLoadingDialog->SetLevelName( levelName );
-    }
-}
-
-void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char *extendedReason)
-{
-    if (!g_hLoadingDialog.Get())
-        return;
-
-    if (bError)
-    {
-        // turn the dialog to error display mode
-        g_hLoadingDialog->DisplayGenericError(failureReason, extendedReason);
-    }
-    else
-    {
-        // close loading dialog
-        g_hLoadingDialog->Close();
-        g_hLoadingDialog = nullptr;
-    }
-    // should update the background to be in a transition here
-}
-
-bool CGameUI::SetProgressBarStatusText(const char *statusText)
-{
-    if (!g_hLoadingDialog.Get())
-        return false;
-
-    if (!statusText)
-        return false;
-
-    if (!stricmp(statusText, m_szPreviousStatusText))
-        return false;
-
-    g_hLoadingDialog->SetStatusText(statusText);
-    Q_strncpy(m_szPreviousStatusText, statusText, sizeof(m_szPreviousStatusText));
+    KeyValues *pKV = new KeyValues("ProgressFraction");
+    pKV->SetFloat("percent", progressFraction);
+    vgui::ivgui()->PostMessage(g_hLoadingBackgroundDialog, pKV, NULL);
     return true;
-}
-
-bool CGameUI::SetShowProgressText(bool show)
-{
-    if (!g_hLoadingDialog.Get())
-        return false;
-
-    return g_hLoadingDialog->SetShowProgressText(show);
 }
 
 bool CGameUI::IsInLevel()
@@ -492,10 +407,7 @@ void CGameUI::ShowLoadingBackgroundDialog()
     if (g_hLoadingBackgroundDialog)
     {
         vgui::ipanel()->SetParent(g_hLoadingBackgroundDialog, staticPanel->GetVPanel());
-        vgui::ipanel()->PerformApplySchemeSettings(g_hLoadingBackgroundDialog);
-        vgui::ipanel()->SetVisible(g_hLoadingBackgroundDialog, true);
-        vgui::ipanel()->MoveToFront(g_hLoadingBackgroundDialog);
-        vgui::ipanel()->SendMessage(g_hLoadingBackgroundDialog, new KeyValues("activate"), staticPanel->GetVPanel());
+        vgui::ipanel()->SendMessage(g_hLoadingBackgroundDialog, new KeyValues("Activate"), staticPanel->GetVPanel());
     }
 }
 
@@ -503,17 +415,7 @@ void CGameUI::HideLoadingBackgroundDialog()
 {
     if (g_hLoadingBackgroundDialog)
     {
-        if (engine->IsInGame())
-        {
-            vgui::ivgui()->PostMessage(g_hLoadingBackgroundDialog, new KeyValues("LoadedIntoGame"), NULL);
-        }
-        else
-        {
-            vgui::ipanel()->SetVisible(g_hLoadingBackgroundDialog, false);
-            vgui::ipanel()->MoveToBack(g_hLoadingBackgroundDialog);
-        }
-
-        vgui::ivgui()->PostMessage(g_hLoadingBackgroundDialog, new KeyValues("HideAsLoadingPanel"), NULL);
+        vgui::ivgui()->PostMessage(g_hLoadingBackgroundDialog, new KeyValues("Deactivate", "loaded_into_game", engine->IsInGame()), staticPanel->GetVPanel());
     }
 }
 

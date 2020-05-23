@@ -1,27 +1,17 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
-//
-// Purpose:
-//
-// $NoKeywords: $
-//===========================================================================//
-
 #include "GameConsoleDialog.h"
 #include "GameUI_Interface.h"
 #include "IGameUIFuncs.h"
-#include "LoadingDialog.h"
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
 #include "vgui/KeyCode.h"
 #include "EngineInterface.h"
+#include "BasePanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
 CGameConsoleDialog::CGameConsoleDialog() : BaseClass(nullptr, "GameConsole") { AddActionSignalTarget(this); }
 
 //-----------------------------------------------------------------------------
@@ -73,18 +63,15 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 //-----------------------------------------------------------------------------
 void CGameConsoleDialog::OnCommandSubmitted(const char *pCommand) { engine->ClientCmd_Unrestricted(pCommand); }
 
-//-----------------------------------------------------------------------------
-// Submits a command
-//-----------------------------------------------------------------------------
 void CGameConsoleDialog::OnClosedByHittingTilde()
 {
-    if (!LoadingDialog())
+    if (!GetBasePanel()->IsInLoading())
     {
         Hide();
         GameUI().HideGameUI();
     }
     else
     {
-        surface()->RestrictPaintToSinglePanel(LoadingDialog()->GetVPanel());
+        surface()->RestrictPaintToSinglePanel(GameUI().GetLoadingBackgroundDialog());
     }
 }

@@ -10,14 +10,13 @@
 #include "EngineInterface.h"
 #include "vgui_controls/MessageBox.h"
 #include "vgui_controls/AnimationController.h"
-#include "LoadingDialog.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-extern DHANDLE<CLoadingDialog> g_hLoadingDialog;
+extern VPANEL g_hLoadingBackgroundDialog;
 
 static CBasePanel *g_pBasePanel;
 CBasePanel *GetBasePanel() { return g_pBasePanel; }
@@ -355,7 +354,7 @@ void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
 
 void CBasePanel::PaintBackground()
 {
-    if (!GameUI().IsInLevel() || g_hLoadingDialog.Get())
+    if (!GameUI().IsInLevel() || ipanel()->IsVisible(g_hLoadingBackgroundDialog))
     {
         // not in the game or loading dialog active or exiting, draw the ui background
         DrawBackgroundImage();
