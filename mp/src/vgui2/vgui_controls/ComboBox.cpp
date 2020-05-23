@@ -842,7 +842,10 @@ void ComboBox::OnKeyCodeTyped(KeyCode code)
 //-----------------------------------------------------------------------------
 void ComboBox::OnKeyTyped(wchar_t unichar)
 {
-	if ( IsEditable() || unichar == '\t') // don't play with key presses in edit mode
+    // don't play with key presses in edit mode
+    // x1b = escape key. This is needed as escape conflicts with hiding settings in game
+    // (combobox was being reset to first item when settings are hidden)
+	if ( IsEditable() || unichar == '\t' || unichar == '\x1b') 
 	{
 		BaseClass::OnKeyTyped( unichar );
 		return;
