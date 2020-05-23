@@ -23,6 +23,9 @@
 
 #include "clienteffectprecachesystem.h"
 
+#include "loadingscreen/LoadingScreen.h"
+#include "GameUI/IGameUI.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -33,12 +36,12 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Globals
 //-----------------------------------------------------------------------------
-static MAKE_TOGGLE_CONVAR(
-    mom_enable_overlapping_keys, "1", FCVAR_ARCHIVE,
-    "If enabled the game will allow you to press 2 keys at once which will null out the movement gain.");
+static MAKE_TOGGLE_CONVAR(mom_enable_overlapping_keys, "1", FCVAR_ARCHIVE,
+                          "If enabled the game will allow you to press 2 keys at once which will null out the movement gain.\n");
+
 static MAKE_TOGGLE_CONVAR(mom_release_forward_on_jump, "0", FCVAR_ARCHIVE,
                           "When enabled the game will auto release the forward key which is determined by movement, so "
-                          "it can be used on all styles except \"half\" styles e.g. HSW.");
+                          "it can be used on all styles except \"half\" styles e.g. HSW.\n");
 
 CON_COMMAND(hud_reloadcontrols, "Reloads the control res files for hud elements.")
 {
@@ -54,6 +57,9 @@ extern ConVar cl_sidespeed;
 
 HScheme g_hVGuiCombineScheme = 0;
 
+static CDllDemandLoader g_GameUI("GameUI");
+
+CLoadingScreen *g_pLoadingScreen = nullptr;
 
 // Instance the singleton and expose the interface to it.
 IClientMode *GetClientModeNormal()
@@ -144,9 +150,6 @@ ClientModeMOMNormal::~ClientModeMOMNormal()
     // MOM_TODO: delete pointers (m_pViewport) here?
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void ClientModeMOMNormal::Init()
 {
     BaseClass::Init();
@@ -155,9 +158,21 @@ void ClientModeMOMNormal::Init()
     g_hVGuiCombineScheme = scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
         "resource/CombinePanelScheme.res", "CombineScheme");
+
     if (!g_hVGuiCombineScheme)
     {
         Warning("Couldn't load combine panel scheme!\n");
+    }
+
+    const auto gameUIFactory = g_GameUI.GetFactory();
+    if (gameUIFactory)
+    {
+        const auto pGameUI = static_cast<IGameUI*>(gameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
+        if (pGameUI)
+        {
+            g_pLoadingScreen = new CLoadingScreen();
+            pGameUI->SetLoadingBackgroundDialog(g_pLoadingScreen->GetVPanel());
+        }
     }
 }
 
