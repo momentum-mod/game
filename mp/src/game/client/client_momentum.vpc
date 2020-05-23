@@ -139,6 +139,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\controls\ModelPanel.cpp"
                     $File "momentum\ui\controls\FileImage.cpp"
                     $File "momentum\ui\controls\FileImage.h"
+                    $File "momentum\ui\FileImageCache.h"
                     $File "momentum\ui\controls\ImageGallery.h"
                     $File "momentum\ui\controls\ImageGallery.cpp"
                 }
