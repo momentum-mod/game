@@ -49,6 +49,9 @@ namespace vgui
         // Overridden to cause a reload
         bool Evict() OVERRIDE;
 
+        void AddImageLoadListener(VPANEL pDelegatePanel) { m_vecImageLoadListeners.AddToTail(pDelegatePanel); }
+        void RemoveImageLoadListener(VPANEL pFind) { m_vecImageLoadListeners.FindAndRemove(pFind); }
+
         // Unused
         int GetNumFrames() OVERRIDE { return 0; }
         void SetFrame(int nFrame) OVERRIDE {}
@@ -76,6 +79,9 @@ namespace vgui
         CThreadFastMutex m_Mutex;
         static unsigned DoResizeAsyncFn(void *pParam);
         void ResizeImageBufferAsync();
+
+        CUtlVector<VPANEL> m_vecImageLoadListeners;
+        void FireImageLoadMessage();
     };
 
     // Like FileImage but streamed from the web (meaning not requiring to be locally downloaded & stored)
