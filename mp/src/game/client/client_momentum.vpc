@@ -29,6 +29,12 @@ $Project "Client (Momentum)"
         {
             $Folder "UI"
             {
+                $Folder "LoadingScreen"
+                {
+                    $File "momentum\ui\loadingscreen\TipManager.h"
+                    $File "momentum\ui\loadingscreen\TipManager.cpp"
+                }
+
                 $Folder "Zone Menu"
                 {
                     $File "momentum\ui\ZoneMenu\ZoneMenu.h"
