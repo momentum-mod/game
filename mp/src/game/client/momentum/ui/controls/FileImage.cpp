@@ -74,7 +74,7 @@ bool FileImage::LoadFromFileInternal()
 
     if (bRet)
     {
-        g_FileImageCache.AddImageToCache(m_szFileName, m_bufOriginalImage);
+        g_FileImageCache.AddImageToCache(m_szFileName, fileBuf);
     }
 
     return bRet;
@@ -396,6 +396,8 @@ void URLImage::OnFileStreamEnd(KeyValues* pKv)
         if (pBuf)
         {
             LoadFromUtlBuffer(*pBuf);
+
+            g_FileImageCache.AddImageToCache(m_szURL, *pBuf);
         }
     }
 }
