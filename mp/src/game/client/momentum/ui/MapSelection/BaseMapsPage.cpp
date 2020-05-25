@@ -156,6 +156,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetColumnTextAlignment(HEADER_BEST_TIME, Label::a_center);
 
     // Sort Functions
+    m_pMapList->SetColumnSortable(HEADER_MAP_IN_LIBRARY, false);
+    m_pMapList->SetColumnSortable(HEADER_MAP_IN_FAVORITES, false);
     m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
     m_pMapList->SetSortFunc(HEADER_WORLD_RECORD, MapWorldRecordSortFunc);
     m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapPersonalBestSortFunc);
