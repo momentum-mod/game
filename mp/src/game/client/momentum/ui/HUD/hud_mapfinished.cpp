@@ -514,9 +514,9 @@ void CHudMapFinishedDialog::SetComparisonForPage(int iPage)
         return;
     }
 
-    int runTicks = iPage == 0 ? m_pRunData->m_iRunTime : m_pRunStats->GetZoneTicks(iPage);
+    int runTicks = iPage == 0 ? m_pRunData->m_iRunTime : static_cast<int>(m_pRunStats->GetZoneTicks(iPage));
 
-    float diff = float(runTicks - m_pPbRunStats.GetZoneTicks(iPage)) * m_pRunData->m_flTickRate;
+    float diff = static_cast<float>(runTicks - static_cast<int>(m_pPbRunStats.GetZoneTicks(iPage))) * m_pRunData->m_flTickRate;
 
     char diffString[BUFSIZETIME];
     Color diffColor;
