@@ -852,7 +852,13 @@ void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClie
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
-    if (!m_bAllowUserTeleports || (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool()))
+    if (!m_bAllowUserTeleports)
+        return;
+
+    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
+        return;
+
+    if (m_bHasPracticeMode && (m_nButtons & IN_JUMP))
         return;
 
     // No need to remove the trail here, CreateTrail() already does it for us
