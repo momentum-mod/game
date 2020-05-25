@@ -103,7 +103,6 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
         m_bCanClose = true;
 
         SetRunSaved(pEvent->GetBool("save") && IsVisible());
-        SetCurrentPage(m_iCurrentPage);
         // MOM_TODO: There's a file name parameter as well, do we want to use it here?
     }
     else if (FStrEq(pEvent->GetName(), "run_submit"))
