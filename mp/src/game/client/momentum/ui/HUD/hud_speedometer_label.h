@@ -67,6 +67,7 @@ class SpeedometerLabel : public vgui::Label
     float m_flCurrentValue;
     float m_flPastValue;
     float m_flDiff;
+    float m_flNextUpdateCheck;
 
     bool m_bDrawComparison;
     bool m_bSupportsEnergyUnits;

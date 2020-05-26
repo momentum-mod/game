@@ -112,6 +112,7 @@ void SpeedometerLabel::Reset()
     m_flCurrentValue = 0.0f;
     m_flPastValue = 0.0f;
     m_flDiff = 0.0f;
+    m_flNextUpdateCheck = 0.0f;
 
     m_bCustomDiff = false;
     m_bDrawComparison = true;
@@ -138,8 +139,6 @@ void SpeedometerLabel::Update(float value)
     SetText(m_flCurrentValue);
     Colorize();
     m_bDoneFading = HasFadeOutAnimation() ? !StartFadeout() : false;
-
-    m_flPastValue = m_flCurrentValue;
 }
 
 void SpeedometerLabel::SetUnitType(int type) 
@@ -192,6 +191,9 @@ void SpeedometerLabel::SetColorizeType(int type)
 
 void SpeedometerLabel::Colorize()
 {
+    if (m_flNextUpdateCheck > gpGlobals->curtime)
+        return;
+
     switch (m_eColorizeType)
     {
     case SPEEDOMETER_COLORIZE_RANGE:
@@ -207,6 +209,9 @@ void SpeedometerLabel::Colorize()
         SetFgColor(m_NormalColor);
         break;
     }
+
+    m_flPastValue = m_flCurrentValue;
+    m_flNextUpdateCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
 }
 
 void SpeedometerLabel::SetFadeOutAnimation(char *animationName, float *animationAlpha)
