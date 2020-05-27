@@ -59,7 +59,7 @@ namespace vgui
 
     protected:
         Color m_DrawColor;
-        int m_iX, m_iY, m_iDesiredWide, m_iDesiredTall, m_iRotation, m_iTextureID;
+        int m_iX, m_iY, m_iDesiredWide, m_iDesiredTall, m_iRotation;
 
         IImage *m_pDefaultImage;
 
@@ -76,7 +76,7 @@ namespace vgui
         void PaintDefaultImage();
 
         ThreadHandle_t m_hResizeThread;
-        CThreadFastMutex m_Mutex;
+        CInterlockedInt m_iTextureID;
         static unsigned DoResizeAsyncFn(void *pParam);
         void ResizeImageBufferAsync();
 

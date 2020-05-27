@@ -134,8 +134,6 @@ unsigned FileImage::DoResizeAsyncFn(void *pParam)
 
 void FileImage::ResizeImageBufferAsync()
 {
-    AUTO_LOCK_FM(m_Mutex);
-    
     int size = m_iDesiredWide * m_iDesiredTall * 4;
     uint8 *pResizedData = new uint8[size];
 
@@ -161,8 +159,6 @@ void FileImage::LoadFromRGBA(const uint8* pData, int wide, int tall)
 
 void FileImage::Paint()
 {
-    AUTO_LOCK_FM(m_Mutex);
-
     if (m_iTextureID == -1)
     {
         PaintDefaultImage();
@@ -253,6 +249,9 @@ void FileImage::GetSize(int& wide, int& tall)
 
 void FileImage::SetSize(int wide, int tall)
 {
+    if (m_hResizeThread)
+        return;
+
     bool change = false;
     if (wide != m_iDesiredWide)
     {
