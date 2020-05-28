@@ -16,8 +16,8 @@
 
 class sdk_cloak_blended_pass_ps30_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nBUMPMAP : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nBUMPMAP : 2;
 #ifdef _DEBUG
 	bool m_bBUMPMAP : 1;
 #endif	// _DEBUG

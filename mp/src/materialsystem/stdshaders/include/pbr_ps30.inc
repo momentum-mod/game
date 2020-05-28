@@ -33,11 +33,11 @@
 
 class pbr_ps30_Static_Index
 {
-	int m_nFLASHLIGHT : 3;
-	int m_nFLASHLIGHTDEPTHFILTERMODE : 3;
-	int m_nLIGHTMAPPED : 3;
-	int m_nEMISSIVE : 3;
-	int m_nPARALLAXOCCLUSION : 3;
+	unsigned int m_nFLASHLIGHT : 2;
+	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
+	unsigned int m_nLIGHTMAPPED : 2;
+	unsigned int m_nEMISSIVE : 2;
+	unsigned int m_nPARALLAXOCCLUSION : 2;
 #ifdef _DEBUG
 	bool m_bFLASHLIGHT : 1;
 	bool m_bFLASHLIGHTDEPTHFILTERMODE : 1;
@@ -119,11 +119,11 @@ public:
 
 class pbr_ps30_Dynamic_Index
 {
-	int m_nWRITEWATERFOGTODESTALPHA : 3;
-	int m_nPIXELFOGTYPE : 3;
-	int m_nNUM_LIGHTS : 4;
-	int m_nWRITE_DEPTH_TO_DESTALPHA : 3;
-	int m_nFLASHLIGHTSHADOWS : 3;
+	unsigned int m_nWRITEWATERFOGTODESTALPHA : 2;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nNUM_LIGHTS : 3;
+	unsigned int m_nWRITE_DEPTH_TO_DESTALPHA : 2;
+	unsigned int m_nFLASHLIGHTSHADOWS : 2;
 #ifdef _DEBUG
 	bool m_bWRITEWATERFOGTODESTALPHA : 1;
 	bool m_bPIXELFOGTYPE : 1;

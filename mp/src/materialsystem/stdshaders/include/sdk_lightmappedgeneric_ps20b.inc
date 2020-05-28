@@ -64,30 +64,30 @@
 
 class sdk_lightmappedgeneric_ps20b_Static_Index
 {
-	int m_nMASKEDBLENDING : 3;
-	int m_nBASETEXTURE2 : 3;
-	int m_nDETAILTEXTURE : 3;
-	int m_nBUMPMAP : 3;
-	int m_nBUMPMAP2 : 3;
-	int m_nCUBEMAP : 3;
-	int m_nENVMAPMASK : 3;
-	int m_nBASEALPHAENVMAPMASK : 3;
-	int m_nSELFILLUM : 3;
-	int m_nNORMALMAPALPHAENVMAPMASK : 3;
-	int m_nDIFFUSEBUMPMAP : 3;
-	int m_nBASETEXTURENOENVMAP : 3;
-	int m_nBASETEXTURE2NOENVMAP : 3;
-	int m_nWARPLIGHTING : 3;
-	int m_nFANCY_BLENDING : 3;
-	int m_nRELIEF_MAPPING : 2;
-	int m_nSEAMLESS : 3;
-	int m_nOUTLINE : 3;
-	int m_nSOFTEDGES : 3;
-	int m_nBUMPMASK : 3;
-	int m_nNORMAL_DECODE_MODE : 2;
-	int m_nNORMALMASK_DECODE_MODE : 2;
-	int m_nDETAIL_BLEND_MODE : 5;
-	int m_nPARALLAXCORRECT : 3;
+	unsigned int m_nMASKEDBLENDING : 2;
+	unsigned int m_nBASETEXTURE2 : 2;
+	unsigned int m_nDETAILTEXTURE : 2;
+	unsigned int m_nBUMPMAP : 2;
+	unsigned int m_nBUMPMAP2 : 2;
+	unsigned int m_nCUBEMAP : 2;
+	unsigned int m_nENVMAPMASK : 2;
+	unsigned int m_nBASEALPHAENVMAPMASK : 2;
+	unsigned int m_nSELFILLUM : 2;
+	unsigned int m_nNORMALMAPALPHAENVMAPMASK : 2;
+	unsigned int m_nDIFFUSEBUMPMAP : 2;
+	unsigned int m_nBASETEXTURENOENVMAP : 2;
+	unsigned int m_nBASETEXTURE2NOENVMAP : 2;
+	unsigned int m_nWARPLIGHTING : 2;
+	unsigned int m_nFANCY_BLENDING : 2;
+	unsigned int m_nRELIEF_MAPPING : 1;
+	unsigned int m_nSEAMLESS : 2;
+	unsigned int m_nOUTLINE : 2;
+	unsigned int m_nSOFTEDGES : 2;
+	unsigned int m_nBUMPMASK : 2;
+	unsigned int m_nNORMAL_DECODE_MODE : 1;
+	unsigned int m_nNORMALMASK_DECODE_MODE : 1;
+	unsigned int m_nDETAIL_BLEND_MODE : 4;
+	unsigned int m_nPARALLAXCORRECT : 2;
 #ifdef _DEBUG
 	bool m_bMASKEDBLENDING : 1;
 	bool m_bBASETEXTURE2 : 1;
@@ -397,12 +397,12 @@ public:
 
 class sdk_lightmappedgeneric_ps20b_Dynamic_Index
 {
-	int m_nFASTPATHENVMAPCONTRAST : 3;
-	int m_nFASTPATH : 3;
-	int m_nWRITEWATERFOGTODESTALPHA : 3;
-	int m_nPIXELFOGTYPE : 3;
-	int m_nLIGHTING_PREVIEW : 3;
-	int m_nWRITE_DEPTH_TO_DESTALPHA : 3;
+	unsigned int m_nFASTPATHENVMAPCONTRAST : 2;
+	unsigned int m_nFASTPATH : 2;
+	unsigned int m_nWRITEWATERFOGTODESTALPHA : 2;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nLIGHTING_PREVIEW : 2;
+	unsigned int m_nWRITE_DEPTH_TO_DESTALPHA : 2;
 #ifdef _DEBUG
 	bool m_bFASTPATHENVMAPCONTRAST : 1;
 	bool m_bFASTPATH : 1;
