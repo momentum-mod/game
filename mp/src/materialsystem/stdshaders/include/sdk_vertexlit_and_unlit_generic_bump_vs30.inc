@@ -10,9 +10,9 @@
 
 class sdk_vertexlit_and_unlit_generic_bump_vs30_Static_Index
 {
-	int m_nHALFLAMBERT : 3;
-	int m_nUSE_WITH_2B : 3;
-	int m_nDECAL : 3;
+	unsigned int m_nHALFLAMBERT : 2;
+	unsigned int m_nUSE_WITH_2B : 2;
+	unsigned int m_nDECAL : 2;
 #ifdef _DEBUG
 	bool m_bHALFLAMBERT : 1;
 	bool m_bUSE_WITH_2B : 1;
@@ -70,10 +70,10 @@ public:
 
 class sdk_vertexlit_and_unlit_generic_bump_vs30_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nSKINNING : 3;
-	int m_nMORPHING : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nMORPHING : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bDOWATERFOG : 1;

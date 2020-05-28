@@ -12,15 +12,15 @@
 
 class sdk_vertexlit_and_unlit_generic_vs30_Static_Index
 {
-	int m_nVERTEXCOLOR : 3;
-	int m_nCUBEMAP : 3;
-	int m_nHALFLAMBERT : 3;
-	int m_nFLASHLIGHT : 3;
-	int m_nSEAMLESS_BASE : 3;
-	int m_nSEAMLESS_DETAIL : 3;
-	int m_nSEPARATE_DETAIL_UVS : 3;
-	int m_nDECAL : 3;
-	int m_nDONT_GAMMA_CONVERT_VERTEX_COLOR : 3;
+	unsigned int m_nVERTEXCOLOR : 2;
+	unsigned int m_nCUBEMAP : 2;
+	unsigned int m_nHALFLAMBERT : 2;
+	unsigned int m_nFLASHLIGHT : 2;
+	unsigned int m_nSEAMLESS_BASE : 2;
+	unsigned int m_nSEAMLESS_DETAIL : 2;
+	unsigned int m_nSEPARATE_DETAIL_UVS : 2;
+	unsigned int m_nDECAL : 2;
+	unsigned int m_nDONT_GAMMA_CONVERT_VERTEX_COLOR : 2;
 #ifdef _DEBUG
 	bool m_bVERTEXCOLOR : 1;
 	bool m_bCUBEMAP : 1;
@@ -150,14 +150,14 @@ public:
 
 class sdk_vertexlit_and_unlit_generic_vs30_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nDYNAMIC_LIGHT : 3;
-	int m_nSTATIC_LIGHT_VERTEX : 3;
-	int m_nSTATIC_LIGHT_LIGHTMAP : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nSKINNING : 3;
-	int m_nLIGHTING_PREVIEW : 3;
-	int m_nMORPHING : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nDYNAMIC_LIGHT : 2;
+	unsigned int m_nSTATIC_LIGHT_VERTEX : 2;
+	unsigned int m_nSTATIC_LIGHT_LIGHTMAP : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nLIGHTING_PREVIEW : 2;
+	unsigned int m_nMORPHING : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bDYNAMIC_LIGHT : 1;

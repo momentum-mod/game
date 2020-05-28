@@ -10,10 +10,10 @@
 
 class sdk_lightmappedgeneric_flashlight_vs20_Static_Index
 {
-	int m_nNORMALMAP : 3;
-	int m_nWORLDVERTEXTRANSITION : 3;
-	int m_nSEAMLESS : 3;
-	int m_nDETAIL : 3;
+	unsigned int m_nNORMALMAP : 2;
+	unsigned int m_nWORLDVERTEXTRANSITION : 2;
+	unsigned int m_nSEAMLESS : 2;
+	unsigned int m_nDETAIL : 2;
 #ifdef _DEBUG
 	bool m_bNORMALMAP : 1;
 	bool m_bWORLDVERTEXTRANSITION : 1;
@@ -83,7 +83,7 @@ public:
 
 class sdk_lightmappedgeneric_flashlight_vs20_Dynamic_Index
 {
-	int m_nDOWATERFOG : 3;
+	unsigned int m_nDOWATERFOG : 2;
 #ifdef _DEBUG
 	bool m_bDOWATERFOG : 1;
 #endif	// _DEBUG

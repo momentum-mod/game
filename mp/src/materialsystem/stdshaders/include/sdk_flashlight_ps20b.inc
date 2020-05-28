@@ -26,13 +26,13 @@
 
 class sdk_flashlight_ps20b_Static_Index
 {
-	int m_nNORMALMAP : 3;
-	int m_nNORMALMAP2 : 3;
-	int m_nWORLDVERTEXTRANSITION : 3;
-	int m_nSEAMLESS : 3;
-	int m_nDETAILTEXTURE : 3;
-	int m_nDETAIL_BLEND_MODE : 3;
-	int m_nFLASHLIGHTDEPTHFILTERMODE : 3;
+	unsigned int m_nNORMALMAP : 2;
+	unsigned int m_nNORMALMAP2 : 2;
+	unsigned int m_nWORLDVERTEXTRANSITION : 2;
+	unsigned int m_nSEAMLESS : 2;
+	unsigned int m_nDETAILTEXTURE : 2;
+	unsigned int m_nDETAIL_BLEND_MODE : 2;
+	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
 #ifdef _DEBUG
 	bool m_bNORMALMAP : 1;
 	bool m_bNORMALMAP2 : 1;
@@ -138,8 +138,8 @@ public:
 
 class sdk_flashlight_ps20b_Dynamic_Index
 {
-	int m_nPIXELFOGTYPE : 3;
-	int m_nFLASHLIGHTSHADOWS : 3;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nFLASHLIGHTSHADOWS : 2;
 #ifdef _DEBUG
 	bool m_bPIXELFOGTYPE : 1;
 	bool m_bFLASHLIGHTSHADOWS : 1;

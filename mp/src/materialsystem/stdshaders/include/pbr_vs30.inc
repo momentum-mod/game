@@ -26,11 +26,11 @@ public:
 
 class pbr_vs30_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nSKINNING : 3;
-	int m_nLIGHTING_PREVIEW : 3;
-	int m_nNUM_LIGHTS : 4;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nLIGHTING_PREVIEW : 2;
+	unsigned int m_nNUM_LIGHTS : 3;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bDOWATERFOG : 1;

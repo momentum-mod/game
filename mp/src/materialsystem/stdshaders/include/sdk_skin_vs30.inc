@@ -10,7 +10,7 @@
 
 class sdk_skin_vs30_Static_Index
 {
-	int m_nDECAL : 3;
+	unsigned int m_nDECAL : 2;
 #ifdef _DEBUG
 	bool m_bDECAL : 1;
 #endif	// _DEBUG
@@ -44,11 +44,11 @@ public:
 
 class sdk_skin_vs30_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nSKINNING : 3;
-	int m_nLIGHTING_PREVIEW : 3;
-	int m_nMORPHING : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nLIGHTING_PREVIEW : 2;
+	unsigned int m_nMORPHING : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bDOWATERFOG : 1;

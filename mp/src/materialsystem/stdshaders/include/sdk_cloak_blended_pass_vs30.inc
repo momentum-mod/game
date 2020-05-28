@@ -10,7 +10,7 @@
 
 class sdk_cloak_blended_pass_vs30_Static_Index
 {
-	int m_nBUMPMAP : 3;
+	unsigned int m_nBUMPMAP : 2;
 #ifdef _DEBUG
 	bool m_bBUMPMAP : 1;
 #endif	// _DEBUG
@@ -44,9 +44,9 @@ public:
 
 class sdk_cloak_blended_pass_vs30_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nSKINNING : 3;
-	int m_nMORPHING : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nMORPHING : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bSKINNING : 1;
