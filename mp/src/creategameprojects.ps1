@@ -19,7 +19,7 @@ $bin_sym = Join-Path $path bin
 $momentum = [System.IO.Path]::GetFullPath("..\game\momentum") # This is your local dev folder
 $bin = [System.IO.Path]::GetFullPath("..\game\bin")
 cmd /c mklink /D $momentum_sym $momentum
-cmd /c mklink /J $bin $bin_sym
+cmd /c mklink /J $bin $bin_sym # Hard link so visual studio can put the file in the proper place automatically
 
 $data = @"
 <?xml version="1.0" encoding="utf-8"?>
