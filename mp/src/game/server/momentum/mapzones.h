@@ -17,6 +17,8 @@ public:
     void LevelShutdownPostEntity() OVERRIDE;
     void FrameUpdatePostEntityThink() OVERRIDE;
 
+    void PostInit() OVERRIDE;
+
     bool ZoneTypeToClass(int type, char *dest, int maxlen);
 
     void ClearMapZones();
