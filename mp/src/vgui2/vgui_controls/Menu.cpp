@@ -1611,36 +1611,41 @@ void Menu::OnMouseWheeled(int delta)
 //-----------------------------------------------------------------------------
 void Menu::OnKillFocus()
 {
+	const auto calculatedFocus = input()->GetCalculatedFocus();
+
+	if (!calculatedFocus)
+		return;
+
 	// check to see if it's a child taking it
-	if (!input()->GetFocus() || !ipanel()->HasParent(input()->GetFocus(), GetVPanel()))
+	const bool bFocusWentToChild = ipanel()->HasParent(calculatedFocus, GetVPanel());
+	if (bFocusWentToChild)
+		return;
+
+	// if we don't accept keyboard input, then we have to ignore the killfocus if it's not actually being stolen
+	if (!IsKeyBoardInputEnabled())
+		return;
+
+	// get the parent of this menu. 
+	MenuItem *item = GetParentMenuItem();
+	// if the parent is a menu item, this menu is a cascading menu
+	// if the panel that is getting focus is the parent menu, don't close this menu.
+	if ( (item) && (input()->GetFocus() == item->GetVParent()) )
 	{
-		// if we don't accept keyboard input, then we have to ignore the killfocus if it's not actually being stolen
-		if (!IsKeyBoardInputEnabled() && !input()->GetFocus())
-			return;
-
-		// get the parent of this menu. 
-		MenuItem *item = GetParentMenuItem();
-		// if the parent is a menu item, this menu is a cascading menu
-		// if the panel that is getting focus is the parent menu, don't close this menu.
-		if ( (item) && (input()->GetFocus() == item->GetVParent()) )
+		// if we are in mouse mode and we clicked on the menuitem that
+		// triggers the cascading menu, leave it open.
+		if (m_iInputMode == MOUSE)
 		{
-			// if we are in mouse mode and we clicked on the menuitem that
-			// triggers the cascading menu, leave it open.
-			if (m_iInputMode == MOUSE)
-			{
-				// return the focus to the cascading menu.
-				MoveToFront();
-				return;
-			}
+			// return the focus to the cascading menu.
+			MoveToFront();
+			return;
 		}
-
-		// forward the message to the parent.
-		PostActionSignal(new KeyValues("MenuClose"));
-
-		// hide this menu
-		SetVisible(false);
 	}
-	
+
+	// forward the message to the parent.
+	PostActionSignal(new KeyValues("MenuClose"));
+
+	// hide this menu
+	SetVisible(false);
 }
 
 namespace vgui
