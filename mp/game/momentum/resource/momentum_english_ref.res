@@ -29,6 +29,7 @@
         "MOM_Controls_ToggleTimes" "Show leaderboards"
         "MOM_Controls_Drop" "Drop current weapon"
         "MOM_Controls_ToggleLobbyMembers" "Show lobby members"
+        "MOM_Controls_Paint" "Apply paint decal"
 
     //Saveloc Menu
         "MOM_Menu_SaveCurLoc" "Save Current Location"
