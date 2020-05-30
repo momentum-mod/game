@@ -80,6 +80,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pPrevZoneButton->InstallMouseHandler(this);
     m_pPlayReplayButton->SetMouseInputEnabled(true);
     m_pPlayReplayButton->InstallMouseHandler(this);
+    m_pPlayReplayButton->SetEnabled(false); // enabled upon replay save event
     m_pRepeatButton->SetMouseInputEnabled(true);
     m_pRepeatButton->InstallMouseHandler(this);
     m_pClosePanelButton->SetMouseInputEnabled(true);
@@ -223,6 +224,7 @@ void CHudMapFinishedDialog::SetRunSaved(bool bState)
 {
     m_pRunSaveStatus->SetText(bState ? "#MOM_MF_RunSaved" : "#MOM_MF_RunNotSaved");
     m_pRunSaveStatus->SetFgColor(bState ? COLOR_GREEN : COLOR_RED);
+    m_pPlayReplayButton->SetEnabled(bState);
 }
 
 void CHudMapFinishedDialog::SetRunUploaded(bool bState)
@@ -291,7 +293,7 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
     if (code == MOUSE_LEFT)
     {
         const auto panelOver = input()->GetMouseOver();
-        if (panelOver == m_pPlayReplayButton->GetVPanel())
+        if (panelOver == m_pPlayReplayButton->GetVPanel() && m_pPlayReplayButton->IsEnabled())
         {
             engine->ClientCmd_Unrestricted("mom_replay_play_loaded\n");
             ClosePanel();
@@ -345,6 +347,7 @@ void CHudMapFinishedDialog::Reset()
     SetRunSaved(false);
     SetRunUploaded(false);
     m_bCanClose = false;
+    m_pPlayReplayButton->SetEnabled(false);
     SetAlpha(255);
 
     // --- cache localization tokens ---
