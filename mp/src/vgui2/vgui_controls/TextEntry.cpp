@@ -1344,13 +1344,11 @@ void TextEntry::CreateEditMenu()
 			delete[] langs;
 		}
 
-		IInput::ConversionModeItem *modes = NULL;
-
 		count = input()->GetIMEConversionModes( NULL, 0 );
 		// if count == 0 then native mode is the only mode...
 		if ( count > 0 )
 		{
-			modes = new IInput::ConversionModeItem[ count ];
+			const auto modes = new IInput::ConversionModeItem[ count ];
 			input()->GetIMEConversionModes( modes, count );
 
 			// Create a submenu
@@ -1372,13 +1370,11 @@ void TextEntry::CreateEditMenu()
 			delete[] modes;
 		}
 
-		IInput::SentenceModeItem *sentencemodes = NULL;
-
 		count = input()->GetIMESentenceModes( NULL, 0 );
 		// if count == 0 then native mode is the only mode...
 		if ( count > 0 )
 		{
-			sentencemodes = new IInput::SentenceModeItem[ count ];
+			const auto sentencemodes = new IInput::SentenceModeItem[ count ];
 			input()->GetIMESentenceModes( sentencemodes, count );
 
 			// Create a submenu
@@ -1388,8 +1384,8 @@ void TextEntry::CreateEditMenu()
 
 			for ( int i = 0; i < count; ++i )
 			{
-				int id = subMenu->AddCheckableMenuItem( "SentenceMode", UnlocalizeUnicode( sentencemodes[ i ].menuname ), new KeyValues( "DoConversionModeChanged", "handle", modes[ i ].handleValue ), this );
-				if ( modes[ i ].active )
+				int id = subMenu->AddCheckableMenuItem( "SentenceMode", UnlocalizeUnicode( sentencemodes[ i ].menuname ), new KeyValues( "DoConversionModeChanged", "handle", sentencemodes[ i ].handleValue ), this );
+				if ( sentencemodes[ i ].active )
 				{
 					subMenu->SetMenuItemChecked( id, true );
 				}
