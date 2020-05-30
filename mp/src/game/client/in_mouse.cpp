@@ -52,6 +52,7 @@ static ConVar m_strafe_option_factor("m_strafe_option_factor", "2.0", FCVAR_ARCH
 static ConVar m_side( "m_side","0.8", FCVAR_ARCHIVE, "Mouse side factor." );
 static ConVar m_yaw( "m_yaw","0.022", FCVAR_ARCHIVE, "Mouse yaw factor." );
 static ConVar m_pitch("m_pitch", "0.022", FCVAR_ARCHIVE, "Mouse pitch factor.");
+static ConVar m_pitch_inverse( "m_pitch_inverse", "0", FCVAR_ARCHIVE, "Inverses (negates) mouse pitch. 0 = OFF, 1 = ON.", true, 0, true, 1.0f);
 static ConVar m_forward( "m_forward","1", FCVAR_ARCHIVE, "Mouse forward factor." );
 
 static ConVar m_customaccel( "m_customaccel", "0", FCVAR_ARCHIVE, "Custom mouse acceleration:"
@@ -81,6 +82,14 @@ ConVar cl_mouseenable( "cl_mouseenable", "1" );
 // From other modules...
 void GetVGUICursorPos( int& x, int& y );
 void SetVGUICursorPos( int x, int y );
+
+inline float GetMousePitch()
+{
+	if (m_pitch_inverse.GetBool())
+		return m_pitch.GetFloat() * -1.0f;
+
+	return m_pitch.GetFloat();
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Hides cursor and starts accumulation/re-centering
@@ -390,7 +399,7 @@ void CInput::ScaleMouse( float *x, float *y )
 		if ( m_customaccel.GetInt() == 2 )
 		{ 
 			*x *= m_yaw.GetFloat(); 
-			*y *= m_pitch.GetFloat(); 
+			*y *= GetMousePitch(); 
 		} 
 	}
 	else if ( m_customaccel.GetInt() == 3 )
@@ -491,7 +500,7 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 			}
 			else
 			{
-				viewangles[PITCH] += CAM_CapPitch( m_pitch.GetFloat() * mouse_y );
+				viewangles[PITCH] += CAM_CapPitch( GetMousePitch() * mouse_y );
 			}
 
 			// Check pitch bounds
