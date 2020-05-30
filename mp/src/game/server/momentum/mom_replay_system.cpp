@@ -144,20 +144,20 @@ void CMomentumReplaySystem::FinishRecording()
     SetReplayHeaderAndStats();
 
     char newRecordingPath[MAX_PATH];
-    if (StoreReplay(newRecordingPath, MAX_PATH))
+    bool bStoredReplay = StoreReplay(newRecordingPath, MAX_PATH);
+
+    const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+    if (pReplaySavedEvent)
+    {
+        pReplaySavedEvent->SetBool("save", bStoredReplay);
+        pReplaySavedEvent->SetString("filepath", newRecordingPath);
+        pReplaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
+        gameeventmanager->FireEvent(pReplaySavedEvent);
+    }
+
+    if (bStoredReplay)
     {
         Log("Recording Stopped! Ticks: %i\n", m_pRecordingReplay->GetFrameCount());
-
-        const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
-        if (pReplaySavedEvent)
-        {
-            pReplaySavedEvent->SetBool("save", true);
-            // replaySavedEvent->SetString("filename", newRecordingName);
-            pReplaySavedEvent->SetString("filepath", newRecordingPath);
-            pReplaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
-            gameeventmanager->FireEvent(pReplaySavedEvent);
-        }
-
         UnloadPlayback();
         m_pPlaybackReplay = m_pRecordingReplay;
         LoadReplayGhost();
