@@ -34,5 +34,6 @@
         "pin_to_sibling" "ConsoleHistory"
         "pin_to_sibling_corner" "2"
         "pin_corner_to_sibling" "0"
+        "unicode" "1"
     }
 }
