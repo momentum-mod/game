@@ -3,6 +3,16 @@
 #include <vgui_controls/Label.h>
 #include "mom_shareddefs.h"
 
+// for ranged based coloring
+struct Range_t
+{
+    // min/max are inclusive
+    int min;
+    int max;
+    Color color;
+};
+typedef CUtlVector<Range_t> RangeList;
+
 class SpeedometerLabel : public vgui::Label
 {
     DECLARE_CLASS_SIMPLE(SpeedometerLabel, vgui::Label);
@@ -41,7 +51,9 @@ class SpeedometerLabel : public vgui::Label
     void Colorize();
     bool StartFadeout();
 
+    void ColorizeRange();
     void ColorizeComparison();
+
     float m_flCurrentValue;
     float m_flPastValue;
     float m_flDiff;
@@ -54,6 +66,8 @@ class SpeedometerLabel : public vgui::Label
     bool m_bDoneFading;
 
     Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
+
+    RangeList m_vecRangeList;
 
     SpeedometerUnits_t m_eUnitType;
 

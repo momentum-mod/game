@@ -143,6 +143,9 @@ void SpeedometerLabel::Colorize()
 {
     switch (m_eColorizeType)
     {
+    case SPEEDOMETER_COLORIZE_RANGE:
+        ColorizeRange();
+        break;
     case SPEEDOMETER_COLORIZE_COMPARISON:
         ColorizeComparison();
         break;
@@ -164,6 +167,22 @@ bool SpeedometerLabel::StartFadeout()
     g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(GetParent(), m_pszAnimationName);
     *m_pflAlpha = 255.0f;
     return g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(m_pszAnimationName);
+}
+
+void SpeedometerLabel::ColorizeRange()
+{
+    int roundedCurrentValue = RoundFloatToInt(m_flCurrentValue);
+    Color newColor = m_NormalColor;
+    FOR_EACH_VEC(m_vecRangeList, i)
+    {
+        Range_t range = m_vecRangeList[i];
+        if (roundedCurrentValue >= range.min && roundedCurrentValue <= range.max)
+        {
+            newColor = range.color;
+            break;
+        }
+    }
+    SetFgColor(newColor);
 }
 
 void SpeedometerLabel::ColorizeComparison()
