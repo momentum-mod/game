@@ -22,6 +22,7 @@ class SpeedometerLabel : public vgui::Label
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
     void OnThink() override; // for applying fadeout
+    void PerformLayout() override;
     
     void SetVisible(bool bVisible) override;
 
@@ -29,6 +30,11 @@ class SpeedometerLabel : public vgui::Label
     void Reset();
     void SetText(int value);
     void SetText(float value) { SetText(RoundFloatToInt(value)); }
+
+    // for separate comparison label
+    void SetCustomDiff(float diff);
+    // colorize will function as no color option if false
+    void SetDrawComparison(bool bEnabled) { m_bDrawComparison = bEnabled; }
 
     // fadeout related functions
     void SetFadeOutAnimation(char *animationName, float *animationAlpha);
@@ -46,6 +52,9 @@ class SpeedometerLabel : public vgui::Label
     bool GetSupportsEnergyUnits() { return m_bSupportsEnergyUnits; }
     void SetSupportsEnergyUnits(bool bSupportsEnergyUnits) { m_bSupportsEnergyUnits = bSupportsEnergyUnits; }
 
+    bool GetSupportsSeparateComparison() { return m_bSupportsSeparateComparison; }
+    void SetSupportsSeparateComparison(bool bSupportsSeparateComparison) { m_bSupportsSeparateComparison = bSupportsSeparateComparison; }
+
   private:
     void ConvertUnits();
     void Colorize();
@@ -53,12 +62,16 @@ class SpeedometerLabel : public vgui::Label
 
     void ColorizeRange();
     void ColorizeComparison();
+    void ColorizeComparisonSeparate();
 
     float m_flCurrentValue;
     float m_flPastValue;
     float m_flDiff;
 
+    bool m_bDrawComparison;
     bool m_bSupportsEnergyUnits;
+    bool m_bSupportsSeparateComparison;
+    bool m_bCustomDiff;
 
     // fadeout animation fields
     float *m_pflAlpha;
@@ -66,6 +79,8 @@ class SpeedometerLabel : public vgui::Label
     bool m_bDoneFading;
 
     Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
+
+    vgui::Label *m_pComparisonLabel;
 
     RangeList m_vecRangeList;
 
