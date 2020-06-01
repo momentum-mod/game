@@ -157,7 +157,9 @@ void CMomentumReplaySystem::FinishRecording()
 
     if (bStoredReplay)
     {
-        Log("Recording Stopped! Ticks: %i\n", m_pRecordingReplay->GetFrameCount());
+        char szRuntime[BUFSIZETIME];
+        MomUtil::FormatTime(m_pRecordingReplay->GetRunTime(), szRuntime);
+        Log("Recording Stopped! Ticks: %i | Time: %s\n", m_pRecordingReplay->GetFrameCount(), szRuntime);
         UnloadPlayback();
         m_pPlaybackReplay = m_pRecordingReplay;
         LoadReplayGhost();
