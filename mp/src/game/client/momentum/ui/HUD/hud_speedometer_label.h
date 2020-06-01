@@ -44,6 +44,7 @@ class SpeedometerLabel : public vgui::Label
     // fadeout animation fields
     float *m_pflAlpha;
     char m_pszAnimationName[BUFSIZELOCL];
+    bool m_bDoneFading;
 
     SpeedometerUnits_t m_eUnitType;
 };

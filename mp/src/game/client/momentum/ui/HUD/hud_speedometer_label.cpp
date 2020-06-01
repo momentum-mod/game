@@ -20,7 +20,8 @@ extern ConVar sv_gravity;
 
 SpeedometerLabel::SpeedometerLabel(Panel *parent, const char *panelName)
     : Label(parent, panelName, ""), m_bSupportsEnergyUnits(false),
-      m_eUnitType(SPEEDOMETER_UNITS_UPS), m_pflAlpha(nullptr)
+      m_eUnitType(SPEEDOMETER_UNITS_UPS), m_pflAlpha(nullptr), 
+      m_bDoneFading(false)
 {
     Reset();
 }
@@ -36,10 +37,16 @@ void SpeedometerLabel::OnThink()
 {
     BaseClass::OnThink();
 
-    if (!HasFadeOutAnimation())
+    if (!HasFadeOutAnimation() || m_bDoneFading)
         return;
 
     SetAlpha(*m_pflAlpha);
+
+    if (CloseEnough(*m_pflAlpha, 0.0f, FLT_EPSILON))
+    {
+        m_bDoneFading = true;
+        Reset();
+    }
 }
 
 void SpeedometerLabel::Reset()
@@ -47,6 +54,7 @@ void SpeedometerLabel::Reset()
     m_flCurrentValue = 0.0f;
     m_flPastValue = 0.0f;
     m_flDiff = 0.0f;
+    m_bDoneFading = true;
     BaseClass::SetText("");
 
     SetAlpha(HasFadeOutAnimation() ? 0 : 255);
@@ -65,8 +73,7 @@ void SpeedometerLabel::Update(float value)
 
     ConvertUnits();
     SetText(m_flCurrentValue);
-    if (HasFadeOutAnimation())
-        StartFadeout();
+    m_bDoneFading = HasFadeOutAnimation() ? !StartFadeout() : false;
 
     m_flPastValue = m_flCurrentValue;
 }
