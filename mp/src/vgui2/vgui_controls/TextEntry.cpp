@@ -592,7 +592,7 @@ int TextEntry::DrawChar(wchar_t ch, HFont font, int index, int x, int y)
 		if (index == selection1)
 		{
 			// we've come out of selection, reset the color
-			surface()->DrawSetTextColor(GetFgColor());
+			surface()->DrawSetTextColor(IsEnabled() ? GetFgColor() : _disabledFgColor);
 		}
 
 		surface()->DrawSetTextPos(x, y);
