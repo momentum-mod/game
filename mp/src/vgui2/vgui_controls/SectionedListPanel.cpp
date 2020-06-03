@@ -1048,7 +1048,21 @@ void SectionedListPanel::ApplySchemeSettings(IScheme *pScheme)
 	BaseClass::ApplySchemeSettings(pScheme);
 
 	SetBgColor(GetSchemeColor("SectionedListPanel.BgColor", GetBgColor(), pScheme));
-	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+
+	const auto pDefinedBorder = GetBorderOverrideName();
+	if (!pDefinedBorder || !pDefinedBorder[0])
+	{
+		const char *pSchemeBorder = pScheme->GetResourceString("SectionedListPanel.Border");
+		if (pSchemeBorder && pSchemeBorder[0])
+		{
+		    SetBorder(pScheme->GetBorder(pSchemeBorder));
+		}
+		else
+		{
+		    SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+		}
+	}
+
 
 	FOR_EACH_LL( m_Items, j )
 	{
