@@ -6,7 +6,6 @@
 
 #include "BaseVSShader.h"
 #include "unlittwotexture_vs20.inc"
-#include "monitorscreen_ps20.inc"
 #include "monitorscreen_ps20b.inc"
 #include "cpp_shader_constant_register_map.h"
 
@@ -118,28 +117,18 @@ BEGIN_VS_SHADER( MonitorScreen_DX9,
 			DECLARE_STATIC_VERTEX_SHADER( unlittwotexture_vs20 );
 			SET_STATIC_VERTEX_SHADER( unlittwotexture_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( monitorscreen_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( TEXTURE2, (bHasTexture2)?(1):(0) );
-				SET_STATIC_PIXEL_SHADER( monitorscreen_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( monitorscreen_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( TEXTURE2, (bHasTexture2)?(1):(0) );
-				SET_STATIC_PIXEL_SHADER( monitorscreen_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( monitorscreen_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( TEXTURE2, (bHasTexture2)?(1):(0) );
+			SET_STATIC_PIXEL_SHADER( monitorscreen_ps20b );
 
 			DefaultFog();
 
 			pShaderShadow->EnableAlphaWrites( bFullyOpaque );
-			PI_BeginCommandBuffer();
-			PI_SetModulationVertexShaderDynamicState();
-			PI_EndCommandBuffer();
 		}
 		DYNAMIC_STATE
 		{
+			SetModulationVertexShaderDynamicState();
+
 			BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 			if( bHasTexture2 )
 			{
@@ -165,17 +154,9 @@ BEGIN_VS_SHADER( MonitorScreen_DX9,
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( WORLD_NORMAL, 0 );
 			SET_DYNAMIC_VERTEX_SHADER( unlittwotexture_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( monitorscreen_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
-				SET_DYNAMIC_PIXEL_SHADER( monitorscreen_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( monitorscreen_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( monitorscreen_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( monitorscreen_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
+			SET_DYNAMIC_PIXEL_SHADER( monitorscreen_ps20b );
 		}
 		Draw();
 	}

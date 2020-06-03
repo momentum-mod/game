@@ -28,8 +28,6 @@ BEGIN_VS_SHADER( Wireframe_DX9,
 	SHADER_INIT_PARAMS()
 	{
 		VertexLitGeneric_DX9_Vars_t vars;
-		vars.m_nDisplacementMap = DISPLACEMENTMAP;
-		vars.m_nDisplacementWrinkleMap = DISPLACEMENTWRINKLE;
 		InitParamsVertexLitGeneric_DX9( this, params, pMaterialName, false, vars );
 
 		SET_FLAGS( MATERIAL_VAR_NO_DEBUG_OVERRIDE );
@@ -40,16 +38,12 @@ BEGIN_VS_SHADER( Wireframe_DX9,
 	SHADER_INIT
 	{
 		VertexLitGeneric_DX9_Vars_t vars;
-		vars.m_nDisplacementMap = DISPLACEMENTMAP;
-		vars.m_nDisplacementWrinkleMap = DISPLACEMENTWRINKLE;
 		InitVertexLitGeneric_DX9( this, params, false, vars );
 	}
 
 	SHADER_DRAW
 	{
 		VertexLitGeneric_DX9_Vars_t vars;
-		vars.m_nDisplacementMap = DISPLACEMENTMAP;
-		vars.m_nDisplacementWrinkleMap = DISPLACEMENTWRINKLE;
 		DrawVertexLitGeneric_DX9( this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr );
 	}
 END_SHADER

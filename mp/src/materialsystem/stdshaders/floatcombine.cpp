@@ -8,7 +8,6 @@
 #include "BaseVSShader.h"
 
 #include "screenspaceeffect_vs20.inc"
-#include "floatcombine_ps20.inc"
 #include "floatcombine_ps20b.inc"
 
 // NOTE: This has to be the last file included!
@@ -63,16 +62,8 @@ BEGIN_VS_SHADER_FLAGS( floatcombine, "Help for floatcombine", SHADER_NOT_EDITABL
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( floatcombine_ps20b );
-				SET_STATIC_PIXEL_SHADER( floatcombine_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( floatcombine_ps20 );
-				SET_STATIC_PIXEL_SHADER( floatcombine_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( floatcombine_ps20b );
+			SET_STATIC_PIXEL_SHADER( floatcombine_ps20b );
 		}
 
 		DYNAMIC_STATE
@@ -100,16 +91,8 @@ BEGIN_VS_SHADER_FLAGS( floatcombine, "Help for floatcombine", SHADER_NOT_EDITABL
 			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( floatcombine_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( floatcombine_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( floatcombine_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( floatcombine_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( floatcombine_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( floatcombine_ps20b );
 		}
 		Draw();
 	}

@@ -8,7 +8,6 @@
 
 #include "BaseVSShader.h"
 
-#include "shadow_ps20.inc"
 #include "shadow_ps20b.inc"
 #include "shadow_vs20.inc"
 
@@ -118,20 +117,10 @@ BEGIN_VS_SHADER_FLAGS( Shadow, "Help for Shadow", SHADER_NOT_EDITABLE )
 			SET_STATIC_VERTEX_SHADER_COMBO( DEFERRED_SHADOWS, bDeferredShadows );
 			SET_STATIC_VERTEX_SHADER( shadow_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( shadow_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( DEFERRED_SHADOWS, bDeferredShadows );
-				SET_STATIC_PIXEL_SHADER_COMBO( BLOBBY_SHADOWS, bBlobbyShadows );
-				SET_STATIC_PIXEL_SHADER( shadow_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( shadow_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( DEFERRED_SHADOWS, bDeferredShadows );
-				SET_STATIC_PIXEL_SHADER_COMBO( BLOBBY_SHADOWS, bBlobbyShadows );
-				SET_STATIC_PIXEL_SHADER( shadow_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( shadow_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( DEFERRED_SHADOWS, bDeferredShadows );
+			SET_STATIC_PIXEL_SHADER_COMBO( BLOBBY_SHADOWS, bBlobbyShadows );
+			SET_STATIC_PIXEL_SHADER( shadow_ps20b );
 
 			pShaderShadow->EnableSRGBWrite( true );
 
@@ -181,16 +170,8 @@ BEGIN_VS_SHADER_FLAGS( Shadow, "Help for Shadow", SHADER_NOT_EDITABLE )
 			DECLARE_DYNAMIC_VERTEX_SHADER( shadow_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( shadow_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( shadow_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( shadow_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( shadow_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( shadow_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( shadow_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( shadow_ps20b );
 
 			float eyePos[4];
 			pShaderAPI->GetWorldSpaceCameraPosition( eyePos );

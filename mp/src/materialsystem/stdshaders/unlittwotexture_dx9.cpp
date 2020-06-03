@@ -11,7 +11,6 @@
 #include "cpp_shader_constant_register_map.h"
 
 #include "unlittwotexture_vs20.inc"
-#include "unlittwotexture_ps20.inc"
 #include "unlittwotexture_ps20b.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -120,7 +119,7 @@ BEGIN_VS_SHADER( UnlitTwoTexture_DX9, "Help for UnlitTwoTexture_DX9" )
 		}
 
 		// Skip flashlight pass for unlit stuff
-		bool bNewFlashlightPath = IsX360();
+		bool bNewFlashlightPath = false;
 		if ( bDrawStandardPass && ( pShaderShadow == NULL ) && ( pShaderAPI != NULL ) &&
 			!bNewFlashlightPath && ( pShaderAPI->InFlashlightMode() ) ) // not snapshotting && flashlight pass)
 		{
@@ -180,36 +179,24 @@ BEGIN_VS_SHADER( UnlitTwoTexture_DX9, "Help for UnlitTwoTexture_DX9" )
 				// If this is set, blend with the alpha channels of the textures and modulation color
 				bool bTranslucent = IsAlphaModulating() || IS_FLAG_SET( MATERIAL_VAR_TRANSLUCENT ) || TextureIsTranslucent( BASETEXTURE, true ) || TextureIsTranslucent( TEXTURE2, true );
 
-				int nLightingPreviewMode = IS_FLAG2_SET( MATERIAL_VAR2_USE_GBUFFER0 ) + 2 * IS_FLAG2_SET( MATERIAL_VAR2_USE_GBUFFER1 );
+				int nLightingPreviewMode = 0;
 
 				DECLARE_STATIC_VERTEX_SHADER( unlittwotexture_vs20 );
 				SET_STATIC_VERTEX_SHADER( unlittwotexture_vs20 );
 
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_STATIC_PIXEL_SHADER( unlittwotexture_ps20b );
-					SET_STATIC_PIXEL_SHADER_COMBO( TRANSLUCENT, bTranslucent );
-					SET_STATIC_PIXEL_SHADER_COMBO( LIGHTING_PREVIEW, nLightingPreviewMode );
-					SET_STATIC_PIXEL_SHADER( unlittwotexture_ps20b );
-				}
-				else
-				{
-					DECLARE_STATIC_PIXEL_SHADER( unlittwotexture_ps20 );
-					SET_STATIC_PIXEL_SHADER_COMBO( TRANSLUCENT, bTranslucent );
-					SET_STATIC_PIXEL_SHADER_COMBO( LIGHTING_PREVIEW, nLightingPreviewMode );
-					SET_STATIC_PIXEL_SHADER( unlittwotexture_ps20 );
-				}
+				DECLARE_STATIC_PIXEL_SHADER( unlittwotexture_ps20b );
+				SET_STATIC_PIXEL_SHADER_COMBO( TRANSLUCENT, bTranslucent );
+				SET_STATIC_PIXEL_SHADER_COMBO( LIGHTING_PREVIEW, nLightingPreviewMode );
+				SET_STATIC_PIXEL_SHADER( unlittwotexture_ps20b );
 
 				DefaultFog();
 
 				pShaderShadow->EnableAlphaWrites( bFullyOpaque );
-
-				PI_BeginCommandBuffer();
-				PI_SetModulationPixelShaderDynamicState_LinearColorSpace( 1 );
-				PI_EndCommandBuffer();
 			}
 			DYNAMIC_STATE
 			{
+				SetModulationPixelShaderDynamicState_LinearColorSpace( 1 );
+
 				BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 				BindTexture( SHADER_SAMPLER1, TEXTURE2, FRAME2 );
 				SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, BASETEXTURETRANSFORM );
@@ -224,36 +211,15 @@ BEGIN_VS_SHADER( UnlitTwoTexture_DX9, "Help for UnlitTwoTexture_DX9" )
 
 				int numBones = pShaderAPI->GetCurrentNumBones();
 
-				bool bWorldNormal = pShaderAPI->GetIntRenderingParameter( INT_RENDERPARM_ENABLE_FIXED_LIGHTING ) == ENABLE_FIXED_LIGHTING_OUTPUTNORMAL_AND_DEPTH;
-				if ( IsPC() && bWorldNormal )
-				{
-					float vEyeDir[4];
-					pShaderAPI->GetWorldSpaceCameraDirection( vEyeDir );
-
-					float flFarZ = pShaderAPI->GetFarZ();
-					vEyeDir[0] /= flFarZ;	// Divide by farZ for SSAO algorithm
-					vEyeDir[1] /= flFarZ;
-					vEyeDir[2] /= flFarZ;
-					pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_4, vEyeDir );
-				}
-
 				DECLARE_DYNAMIC_VERTEX_SHADER( unlittwotexture_vs20 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  numBones > 0 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( WORLD_NORMAL, bWorldNormal );
+				SET_DYNAMIC_VERTEX_SHADER_COMBO( WORLD_NORMAL, false );
 				SET_DYNAMIC_VERTEX_SHADER( unlittwotexture_vs20 );
 
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
-					SET_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20b );
-				}
-				else
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20 );
-				}
+				DECLARE_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20b );
+				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
+				SET_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20b );
 			}
 			Draw();
 		}

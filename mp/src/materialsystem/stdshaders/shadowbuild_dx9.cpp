@@ -11,13 +11,10 @@
 #include "mathlib/VMatrix.h"
 
 #include "unlitgeneric_vs20.inc"
-#include "shadowbuildtexture_ps20.inc"
 #include "shadowbuildtexture_ps20b.inc"
 
-#if !defined( _X360 )
-	#include "shadowbuildtexture_ps30.inc"
-	#include "unlitgeneric_vs30.inc"
-#endif
+#include "unlitgeneric_vs30.inc"
+#include "shadowbuildtexture_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -74,30 +71,18 @@ BEGIN_VS_SHADER_FLAGS( ShadowBuild_DX9, "Help for ShadowBuild", SHADER_NOT_EDITA
 			unsigned int userDataSize = 0;
 			pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-#ifndef _X360
 			if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 			{
 				DECLARE_STATIC_VERTEX_SHADER( unlitgeneric_vs20 );
 				SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, 0  );
 				SET_STATIC_VERTEX_SHADER( unlitgeneric_vs20 );
 
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_STATIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
-					SET_STATIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
-				}
-				else
-				{
-					DECLARE_STATIC_PIXEL_SHADER( shadowbuildtexture_ps20 );
-					SET_STATIC_PIXEL_SHADER( shadowbuildtexture_ps20 );
-				}
+				DECLARE_STATIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
+				SET_STATIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
 			}
-#ifndef _X360
 			else
 			{
 				SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
-				SET_FLAGS2( MATERIAL_VAR2_SUPPORTS_TESSELLATION );
 
 				DECLARE_STATIC_VERTEX_SHADER( unlitgeneric_vs30 );
 				SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, 0  );
@@ -106,13 +91,11 @@ BEGIN_VS_SHADER_FLAGS( ShadowBuild_DX9, "Help for ShadowBuild", SHADER_NOT_EDITA
 				DECLARE_STATIC_PIXEL_SHADER( shadowbuildtexture_ps30 );
 				SET_STATIC_PIXEL_SHADER( shadowbuildtexture_ps30 );
 			}
-#endif
-			PI_BeginCommandBuffer();
-			PI_SetModulationVertexShaderDynamicState();
-			PI_EndCommandBuffer();
 		}
 		DYNAMIC_STATE
 		{
+			// set constant color for modulation
+			SetModulationVertexShaderDynamicState();
 
 			// Snack important parameters from the original material
 			// FIXME: What about alpha modulation? Need a solution for that
@@ -146,66 +129,30 @@ BEGIN_VS_SHADER_FLAGS( ShadowBuild_DX9, "Help for ShadowBuild", SHADER_NOT_EDITA
 				pShaderAPI->BindStandardTexture( SHADER_SAMPLER0, TEXTURE_LIGHTMAP_FULLBRIGHT );
 			}
 
-#ifndef _X360
-			TessellationMode_t nTessellationMode = TESSELLATION_MODE_DISABLED;
 			if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 			{
 				// Compute the vertex shader index.
 				DECLARE_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs20 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( TESSELLATION, 0 );
+				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 				SET_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs20 );
 
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
-				}
-				else
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps20 );
-				}
+				DECLARE_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
+				SET_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps20b );
 			}
-#ifndef _X360
 			else
 			{
-				nTessellationMode = pShaderAPI->GetTessellationMode();
-				if ( nTessellationMode != TESSELLATION_MODE_DISABLED )
-				{
-					pShaderAPI->BindStandardVertexTexture( SHADER_VERTEXTEXTURE_SAMPLER1, TEXTURE_SUBDIVISION_PATCHES );
-
-					bool bHasDisplacement = false; // TODO
-					float vSubDDimensions[4] = { 1.0f/pShaderAPI->GetSubDHeight(), bHasDisplacement && mat_displacementmap.GetBool() ? 1.0f : 0.0f, 0.0f, 0.0f };
-					pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_8, vSubDDimensions );
-
-// JasonM - revisit this later...requires plumbing in a separate vertex texture param type??
-//					bool bHasDisplacement = (info.m_nDisplacementMap != -1) && params[info.m_nDisplacementMap]->IsTexture();
-//					if( bHasDisplacement )
-//					{
-//						pShader->BindVertexTexture( SHADER_VERTEXTEXTURE_SAMPLER2, info.m_nDisplacementMap );
-//					}
-//					else
-//					{
-//						pShaderAPI->BindStandardVertexTexture( SHADER_VERTEXTEXTURE_SAMPLER2, VERTEX_TEXTURE_BLACK );
-//					}
-				}
-
 				// Compute the vertex shader index.
 				DECLARE_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs30 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( TESSELLATION, nTessellationMode );
+				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 				SET_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs30 );
 
 				DECLARE_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps30 );
 				SET_DYNAMIC_PIXEL_SHADER( shadowbuildtexture_ps30 );
 			}
-#endif
-
-			
 		}
 		Draw( );
 	}

@@ -6,7 +6,7 @@
 
 #include "BaseVSShader.h"
 #include "cloud_vs20.inc"
-#include "cloud_ps20.inc"
+#include "cloud_ps20b.inc"
 
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -67,8 +67,8 @@ BEGIN_VS_SHADER( Cloud_dx9, "Help for Cloud" )
 			DECLARE_STATIC_VERTEX_SHADER( cloud_vs20 );
 			SET_STATIC_VERTEX_SHADER( cloud_vs20 );
 
-			DECLARE_STATIC_PIXEL_SHADER( cloud_ps20 );
-			SET_STATIC_PIXEL_SHADER( cloud_ps20 );
+			DECLARE_STATIC_PIXEL_SHADER( cloud_ps20b );
+			SET_STATIC_PIXEL_SHADER( cloud_ps20b );
 
 			DefaultFog();
 		}
@@ -85,8 +85,8 @@ BEGIN_VS_SHADER( Cloud_dx9, "Help for Cloud" )
 			DECLARE_DYNAMIC_VERTEX_SHADER( cloud_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( cloud_vs20 );
 
-			DECLARE_DYNAMIC_PIXEL_SHADER( cloud_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER( cloud_ps20 );
+			DECLARE_DYNAMIC_PIXEL_SHADER( cloud_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( cloud_ps20b );
 		}
 
 		Draw();

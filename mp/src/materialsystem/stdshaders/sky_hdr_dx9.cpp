@@ -7,11 +7,8 @@
 //=============================================================================//
 #include "BaseVSShader.h"
 #include "sky_vs20.inc"
-#include "sky_ps20.inc"
 #include "sky_ps20b.inc"
-#include "sky_hdr_compressed_ps20.inc"
 #include "sky_hdr_compressed_ps20b.inc"
-#include "sky_hdr_compressed_rgbs_ps20.inc"
 #include "sky_hdr_compressed_rgbs_ps20b.inc"
 
 #include "convar.h"
@@ -138,16 +135,8 @@ BEGIN_VS_SHADER( Sky_HDR_DX9, "Help for Sky_HDR_DX9 shader" )
 				 mat_use_compressed_hdr_textures.GetBool() )
 			{
 				pShaderShadow->EnableSRGBRead(SHADER_SAMPLER0,false);
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_STATIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
-					SET_STATIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
-				}
-				else
-				{
-					DECLARE_STATIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20 );
-					SET_STATIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20 );
-				}
+				DECLARE_STATIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
+				SET_STATIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
 			}
 			else
 			{
@@ -159,16 +148,8 @@ BEGIN_VS_SHADER( Sky_HDR_DX9, "Help for Sky_HDR_DX9 shader" )
 					pShaderShadow->EnableSRGBRead(SHADER_SAMPLER0,false);
 					pShaderShadow->EnableSRGBRead(SHADER_SAMPLER1,false);
 					pShaderShadow->EnableSRGBRead(SHADER_SAMPLER2,false);
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_STATIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
-						SET_STATIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
-					}
-					else
-					{
-						DECLARE_STATIC_PIXEL_SHADER( sky_hdr_compressed_ps20 );
-						SET_STATIC_PIXEL_SHADER( sky_hdr_compressed_ps20 );
-					}
+					DECLARE_STATIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
+					SET_STATIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
 				}
 				else
 				{
@@ -179,16 +160,8 @@ BEGIN_VS_SHADER( Sky_HDR_DX9, "Help for Sky_HDR_DX9 shader" )
 					else
 						pShaderShadow->EnableSRGBRead(SHADER_SAMPLER0,true);
 					
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_STATIC_PIXEL_SHADER( sky_ps20b );
-						SET_STATIC_PIXEL_SHADER( sky_ps20b );
-					}
-					else
-					{
-						DECLARE_STATIC_PIXEL_SHADER( sky_ps20 );
-						SET_STATIC_PIXEL_SHADER( sky_ps20 );
-					}
+					DECLARE_STATIC_PIXEL_SHADER( sky_ps20b );
+					SET_STATIC_PIXEL_SHADER( sky_ps20b );
 				}
 			}
 			// we are writing linear values from this shader.
@@ -227,17 +200,9 @@ BEGIN_VS_SHADER( Sky_HDR_DX9, "Help for Sky_HDR_DX9 shader" )
 				c0[0]*=8.0;
 				c0[1]*=8.0;
 				c0[2]*=8.0;
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
-					SET_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
-				}
-				else
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20 );
-				}
+				DECLARE_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
+				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
+				SET_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_rgbs_ps20b );
 			}
 			else
 			{
@@ -249,18 +214,9 @@ BEGIN_VS_SHADER( Sky_HDR_DX9, "Help for Sky_HDR_DX9 shader" )
 					BindTexture( SHADER_SAMPLER0, HDRCOMPRESSEDTEXTURE0, FRAME );
 					BindTexture( SHADER_SAMPLER1, HDRCOMPRESSEDTEXTURE1, FRAME );
 					BindTexture( SHADER_SAMPLER2, HDRCOMPRESSEDTEXTURE2, FRAME );
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
-						SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
-						SET_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
-					}
-					else
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_ps20 );
-						SET_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_ps20 );
-					}
-
+					DECLARE_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
+					SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
+					SET_DYNAMIC_PIXEL_SHADER( sky_hdr_compressed_ps20b );
 				}
 				else
 				{
@@ -277,17 +233,9 @@ BEGIN_VS_SHADER( Sky_HDR_DX9, "Help for Sky_HDR_DX9 shader" )
 						c0[1]*=16.0;
 						c0[2]*=16.0;
 					}
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( sky_ps20b );
-						SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
-						SET_DYNAMIC_PIXEL_SHADER( sky_ps20b );
-					}
-					else
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( sky_ps20 );
-						SET_DYNAMIC_PIXEL_SHADER( sky_ps20 );
-					}
+					DECLARE_DYNAMIC_PIXEL_SHADER( sky_ps20b );
+					SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
+					SET_DYNAMIC_PIXEL_SHADER( sky_ps20b );
 				}
 			}
 			pShaderAPI->SetPixelShaderConstant( 0, c0, 1 );

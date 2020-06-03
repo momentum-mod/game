@@ -9,14 +9,11 @@
 #include "BaseVSShader.h"
 #include "vertexlitgeneric_dx9_helper.h"
 #include "vortwarp_vs20.inc"
-#include "vortwarp_ps20.inc"
 #include "vortwarp_ps20b.inc"
 #include "convar.h"
 
-#ifndef _X360
 #include "vortwarp_vs30.inc"
 #include "vortwarp_ps30.inc"
-#endif
 
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
@@ -187,40 +184,22 @@ void DrawVortWarp_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 
 		Assert( hasBump );
 	
-#ifndef _X360
 		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 		{
 			DECLARE_STATIC_VERTEX_SHADER( vortwarp_vs20 );
 			SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT,  bHalfLambert);
 			SET_STATIC_VERTEX_SHADER( vortwarp_vs20 );
 			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( vortwarp_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE,  hasBaseTexture );
-				SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  hasEnvmap );
-				SET_STATIC_PIXEL_SHADER_COMBO( DIFFUSELIGHTING,  !params[info.m_nUnlit]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER_COMBO( NORMALMAPALPHAENVMAPMASK,  hasNormalMapAlphaEnvmapMask );
-				SET_STATIC_PIXEL_SHADER_COMBO( HALFLAMBERT,  bHalfLambert);
-				SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT,  hasFlashlight );
-				SET_STATIC_PIXEL_SHADER_COMBO( TRANSLUCENT, blendType == BT_BLEND );
-				SET_STATIC_PIXEL_SHADER( vortwarp_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( vortwarp_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE,  hasBaseTexture );
-				SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  hasEnvmap );
-				SET_STATIC_PIXEL_SHADER_COMBO( DIFFUSELIGHTING,  !params[info.m_nUnlit]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER_COMBO( NORMALMAPALPHAENVMAPMASK,  hasNormalMapAlphaEnvmapMask );
-				SET_STATIC_PIXEL_SHADER_COMBO( HALFLAMBERT,  bHalfLambert);
-				SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT,  hasFlashlight );
-				SET_STATIC_PIXEL_SHADER_COMBO( TRANSLUCENT, blendType == BT_BLEND );
-				SET_STATIC_PIXEL_SHADER( vortwarp_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( vortwarp_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE,  hasBaseTexture );
+			SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  hasEnvmap );
+			SET_STATIC_PIXEL_SHADER_COMBO( DIFFUSELIGHTING,  !params[info.m_nUnlit]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER_COMBO( NORMALMAPALPHAENVMAPMASK,  hasNormalMapAlphaEnvmapMask );
+			SET_STATIC_PIXEL_SHADER_COMBO( HALFLAMBERT,  bHalfLambert);
+			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT,  hasFlashlight );
+			SET_STATIC_PIXEL_SHADER_COMBO( TRANSLUCENT, blendType == BT_BLEND );
+			SET_STATIC_PIXEL_SHADER( vortwarp_ps20b );
 		}
-#ifndef _X360
 		else
 		{
 			// The vertex shader uses the vertex id stream
@@ -240,7 +219,6 @@ void DrawVortWarp_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 			SET_STATIC_PIXEL_SHADER_COMBO( TRANSLUCENT, blendType == BT_BLEND );
 			SET_STATIC_PIXEL_SHADER( vortwarp_ps30 );
 		}
-#endif
 
 		if( hasFlashlight )
 		{
@@ -261,27 +239,24 @@ void DrawVortWarp_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 		{
 			pShaderShadow->EnableAlphaWrites( true );
 		}
-
-		// Lighting constants
-		pShader->PI_BeginCommandBuffer();
-		if( hasBump )
-		{
-			pShader->PI_SetPixelShaderAmbientLightCube( 5 );
-			pShader->PI_SetPixelShaderLocalLighting( 13 );
-		}
-		pShader->PI_SetVertexShaderAmbientLightCube();
-		if ( ( info.m_nHDRColorScale != -1 ) && pShader->IsHDREnabled() )
-		{
-			pShader->PI_SetModulationPixelShaderDynamicState_LinearColorSpace_LinearScale( 1, params[info.m_nHDRColorScale]->GetFloatValue() );
-		}
-		else
-		{
-			pShader->PI_SetModulationPixelShaderDynamicState_LinearColorSpace( 1 );
-		}
-		pShader->PI_EndCommandBuffer();
 	}
 	else
 	{
+		if( hasBump )
+		{
+			pShaderAPI->SetPixelShaderStateAmbientLightCube( 5 );
+		}
+		pShaderAPI->SetVertexShaderStateAmbientLightCube();
+		if( ( info.m_nHDRColorScale != -1 ) && pShader->IsHDREnabled() )
+		{
+			pShader->SetModulationPixelShaderDynamicState_LinearColorSpace_LinearScale( 1, params[info.m_nHDRColorScale]->GetFloatValue() );
+			pShaderAPI->CommitPixelShaderLighting( 13 );
+		}
+		else
+		{
+			pShader->SetModulationPixelShaderDynamicState_LinearColorSpace( 1 );
+		}
+
 		bool hasEnvmap = !hasFlashlight && params[info.m_nEnvmap]->IsTexture();
 		bool hasEnvmapMask = !hasFlashlight && params[info.m_nEnvmapMask]->IsTexture();
 
@@ -338,43 +313,24 @@ void DrawVortWarp_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 
 		Assert( hasBump );
 
-#ifndef _X360
 		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
 		{
 			DECLARE_DYNAMIC_VERTEX_SHADER( vortwarp_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  numBones > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
 			SET_DYNAMIC_VERTEX_SHADER( vortwarp_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( vortwarp_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( NUM_LIGHTS, lightState.m_nNumLights );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AMBIENT_LIGHT, lightState.m_bAmbientLight ? 1 : 0 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA,  fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z &&
-					blendType != BT_BLENDADD && blendType != BT_BLEND && !bIsAlphaTested );
-				float warpParam = params[info.m_nWarpParam]->GetFloatValue();
-		//		float selfIllumTint = params[info.m_nSelfIllumTint]->GetFloatValue();
-		//		DevMsg( 1, "warpParam: %f %f\n", warpParam, selfIllumTint );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WARPINGIN, warpParam > 0.0f && warpParam < 1.0f );
-				SET_DYNAMIC_PIXEL_SHADER( vortwarp_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( vortwarp_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( NUM_LIGHTS, lightState.m_nNumLights );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AMBIENT_LIGHT, lightState.m_bAmbientLight ? 1 : 0 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA,  fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z &&
-					blendType != BT_BLENDADD && blendType != BT_BLEND && !bIsAlphaTested );
-				float warpParam = params[info.m_nWarpParam]->GetFloatValue();
-		//		float selfIllumTint = params[info.m_nSelfIllumTint]->GetFloatValue();
-		//		DevMsg( 1, "warpParam: %f %f\n", warpParam, selfIllumTint );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WARPINGIN, warpParam > 0.0f && warpParam < 1.0f );
-				SET_DYNAMIC_PIXEL_SHADER( vortwarp_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( vortwarp_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( NUM_LIGHTS, lightState.m_nNumLights );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( AMBIENT_LIGHT, lightState.m_bAmbientLight ? 1 : 0 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA,  fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z &&
+				blendType != BT_BLENDADD && blendType != BT_BLEND && !bIsAlphaTested );
+			float warpParam = params[info.m_nWarpParam]->GetFloatValue();
+	//		float selfIllumTint = params[info.m_nSelfIllumTint]->GetFloatValue();
+	//		DevMsg( 1, "warpParam: %f %f\n", warpParam, selfIllumTint );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( WARPINGIN, warpParam > 0.0f && warpParam < 1.0f );
+			SET_DYNAMIC_PIXEL_SHADER( vortwarp_ps20b );
 		}
-#ifndef _X360
 		else
 		{
 			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
@@ -395,7 +351,6 @@ void DrawVortWarp_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( WARPINGIN, warpParam > 0.0f && warpParam < 1.0f );
 			SET_DYNAMIC_PIXEL_SHADER( vortwarp_ps30 );
 		}
-#endif
 
 		pShader->SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.m_nBaseTextureTransform );
 
@@ -468,7 +423,7 @@ void DrawVortWarp_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 			atten[0] = flashlightState.m_fConstantAtten;
 			atten[1] = flashlightState.m_fLinearAtten;
 			atten[2] = flashlightState.m_fQuadraticAtten;
-			atten[3] = flashlightState.m_FarZAtten;
+			atten[3] = 0.0f;
 			pShaderAPI->SetPixelShaderConstant( 22, atten, 1 );
 
 			// Set the flashlight origin
@@ -616,17 +571,8 @@ BEGIN_VS_SHADER( VortWarp_DX9,
 	{
 		VortWarp_DX9_Vars_t vars;
 		SetupVars( vars );
-		// UGH!!!  FIXME!!!!!  Should fix VertexlitGeneric_dx9_helper so that you
-		// can override the vertex shader/pixel shader used (along with the combo vars).
+
 		bool bHasFlashlight = UsingFlashlight( params );
-		if ( bHasFlashlight && IsX360() )
-		{
-			DrawVortWarp_DX9( this, params, pShaderAPI, pShaderShadow, true, false, vars, vertexCompression );
-			SHADOW_STATE
-			{
-				SetInitialShadowState();
-			}
-		}
 		DrawVortWarp_DX9( this, params, pShaderAPI, pShaderShadow, true, bHasFlashlight, vars, vertexCompression );
 	}
 END_SHADER

@@ -8,9 +8,7 @@
 #include "basevsshader.h"
 
 #include "screenspaceeffect_vs20.inc"
-#include "filmdust_ps20.inc"
-
-#include "..\materialsystem_global.h"
+#include "filmdust_ps20b.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -51,8 +49,8 @@ BEGIN_VS_SHADER_FLAGS( FilmDust, "Help for FilmDust", SHADER_NOT_EDITABLE )
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
-			DECLARE_STATIC_PIXEL_SHADER( filmdust_ps20 );
-			SET_STATIC_PIXEL_SHADER( filmdust_ps20 );
+			DECLARE_STATIC_PIXEL_SHADER( filmdust_ps20b );
+			SET_STATIC_PIXEL_SHADER( filmdust_ps20b );
 		}
 		DYNAMIC_STATE
 		{

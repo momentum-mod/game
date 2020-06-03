@@ -10,7 +10,6 @@
 #include "shaderlib/cshader.h"
 
 #include "eyeglint_vs20.inc"
-#include "eyeglint_ps20.inc"
 #include "eyeglint_ps20b.inc"
 
 DEFINE_FALLBACK_SHADER( EyeGlint, EyeGlint_dx9 )
@@ -51,7 +50,8 @@ SHADER_DRAW
 		DECLARE_STATIC_VERTEX_SHADER( eyeglint_vs20 );
 		SET_STATIC_VERTEX_SHADER( eyeglint_vs20 );
 
-		SET_STATIC_PS2X_PIXEL_SHADER_NO_COMBOS( eyeglint );
+		DECLARE_STATIC_PIXEL_SHADER( eyeglint_ps20b );
+		SET_STATIC_PIXEL_SHADER( eyeglint_ps20b );
 	}
 
 	DYNAMIC_STATE
@@ -59,7 +59,8 @@ SHADER_DRAW
 		DECLARE_DYNAMIC_VERTEX_SHADER( eyeglint_vs20 );
 		SET_DYNAMIC_VERTEX_SHADER( eyeglint_vs20 );
 
-		SET_DYNAMIC_PS2X_PIXEL_SHADER_NO_COMBOS( eyeglint );
+		DECLARE_DYNAMIC_PIXEL_SHADER( eyeglint_ps20b );
+		SET_DYNAMIC_PIXEL_SHADER( eyeglint_ps20b );
 	}
 	Draw();
 }

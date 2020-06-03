@@ -6,7 +6,6 @@
 
 #include "BaseVSShader.h"
 #include "blurfilter_vs20.inc"
-#include "blurfilter_ps20.inc"
 #include "blurfilter_ps20b.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -71,20 +70,10 @@ BEGIN_VS_SHADER_FLAGS( BlurFilterY, "Help for BlurFilterY", SHADER_NOT_EDITABLE 
 			SET_STATIC_VERTEX_SHADER_COMBO( KERNEL, params[ KERNEL ]->GetIntValue() ? 1 : 0 );
 			SET_STATIC_VERTEX_SHADER( blurfilter_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( blurfilter_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( KERNEL, params[ KERNEL ]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER_COMBO( CLEAR_COLOR, params[ ENABLECLEARCOLOR ]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER( blurfilter_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( blurfilter_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( KERNEL, params[ KERNEL ]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER_COMBO( CLEAR_COLOR, params[ ENABLECLEARCOLOR ]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER( blurfilter_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( blurfilter_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( KERNEL, params[ KERNEL ]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER_COMBO( CLEAR_COLOR, params[ ENABLECLEARCOLOR ]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER( blurfilter_ps20b );
 
 			if ( IS_FLAG_SET( MATERIAL_VAR_ADDITIVE ) )
 				EnableAlphaBlending( SHADER_BLEND_ONE, SHADER_BLEND_ONE );
@@ -135,19 +124,11 @@ BEGIN_VS_SHADER_FLAGS( BlurFilterY, "Help for BlurFilterY", SHADER_NOT_EDITABLE 
 			v[3] = 0.0f;
 			pShaderAPI->SetPixelShaderConstant( 5, v, 1 );
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( blurfilter_ps20 );
-			SET_DYNAMIC_VERTEX_SHADER( blurfilter_ps20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( blurfilter_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( blurfilter_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( blurfilter_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( blurfilter_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
 		}
 		Draw();
 	}

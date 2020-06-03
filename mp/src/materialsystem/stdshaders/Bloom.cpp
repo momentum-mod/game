@@ -8,7 +8,6 @@
 #include "BaseVSShader.h"
 
 #include "SDK_screenspaceeffect_vs20.inc"
-#include "SDK_Bloom_ps20.inc"
 #include "SDK_Bloom_ps20b.inc"
 
 BEGIN_VS_SHADER_FLAGS( SDK_Bloom, "Help for Bloom", SHADER_NOT_EDITABLE )
@@ -55,16 +54,8 @@ BEGIN_VS_SHADER_FLAGS( SDK_Bloom, "Help for Bloom", SHADER_NOT_EDITABLE )
 			DECLARE_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
 			SET_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( sdk_bloom_ps20b );
-				SET_STATIC_PIXEL_SHADER( sdk_bloom_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( sdk_bloom_ps20 );
-				SET_STATIC_PIXEL_SHADER( sdk_bloom_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( sdk_bloom_ps20b );
+			SET_STATIC_PIXEL_SHADER( sdk_bloom_ps20b );
 		}
 
 		DYNAMIC_STATE
@@ -74,16 +65,8 @@ BEGIN_VS_SHADER_FLAGS( SDK_Bloom, "Help for Bloom", SHADER_NOT_EDITABLE )
 			DECLARE_DYNAMIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( sdk_bloom_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( sdk_bloom_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( sdk_bloom_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( sdk_bloom_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( sdk_bloom_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( sdk_bloom_ps20b );
 		}
 		Draw();
 	}

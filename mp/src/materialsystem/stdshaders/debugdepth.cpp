@@ -9,7 +9,6 @@
 #include "shaderlib/cshader.h"
 #include "convar.h"
 #include "debugdrawdepth_vs20.inc"
-#include "debugdrawdepth_ps20.inc"
 #include "debugdrawdepth_ps20b.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -55,16 +54,8 @@ BEGIN_SHADER_FLAGS( DebugDepth, "Help for DebugDepth", SHADER_NOT_EDITABLE )
 			DECLARE_STATIC_VERTEX_SHADER( debugdrawdepth_vs20 );
 			SET_STATIC_VERTEX_SHADER( debugdrawdepth_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawdepth_ps20b );
-				SET_STATIC_PIXEL_SHADER( debugdrawdepth_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawdepth_ps20 );
-				SET_STATIC_PIXEL_SHADER( debugdrawdepth_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( debugdrawdepth_ps20b );
+			SET_STATIC_PIXEL_SHADER( debugdrawdepth_ps20b );
 		}
 		DYNAMIC_STATE
 		{

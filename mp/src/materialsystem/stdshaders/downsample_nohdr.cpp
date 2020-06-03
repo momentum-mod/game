@@ -8,7 +8,6 @@
 #include "common_hlsl_cpp_consts.h"
 #include "convar.h"
 
-#include "downsample_nohdr_ps20.inc"
 #include "downsample_nohdr_ps20b.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -62,20 +61,11 @@ BEGIN_VS_SHADER_FLAGS( Downsample_nohdr, "Help for Downsample_nohdr", SHADER_NOT
 
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
 
-			pShaderShadow->SetVertexShader( "Downsample_vs20", 0 );
+			pShaderShadow->SetVertexShader( "downsample_vs20", 0 );
 			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( BLOOMTYPE, params[BLOOMTYPE]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( BLOOMTYPE, params[BLOOMTYPE]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( downsample_nohdr_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( BLOOMTYPE, params[BLOOMTYPE]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER( downsample_nohdr_ps20b );
 		}
 
 		DYNAMIC_STATE
@@ -119,19 +109,11 @@ BEGIN_VS_SHADER_FLAGS( Downsample_nohdr, "Help for Downsample_nohdr", SHADER_NOT
 			vPsConst1[1] = params[BLOOMSATURATION]->GetFloatValue();
 			pShaderAPI->SetPixelShaderConstant( 1, vPsConst1, 1 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				int floatBackBuffer = ( ( g_pHardwareConfig->GetHDRType() == HDR_TYPE_FLOAT ) && !IsX360() ) ? 1 : 0;
+			int floatBackBuffer = ( ( g_pHardwareConfig->GetHDRType() == HDR_TYPE_FLOAT ) ) ? 1 : 0;
 
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( FLOAT_BACK_BUFFER, floatBackBuffer );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( FLOAT_BACK_BUFFER, floatBackBuffer );
+			SET_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20b );
 		}
 		Draw();
 	}

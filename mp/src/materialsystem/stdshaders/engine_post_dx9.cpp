@@ -8,10 +8,7 @@
 #include "basevsshader.h"
 
 #include "screenspaceeffect_vs20.inc"
-#include "Engine_Post_ps20.inc"
-#include "Engine_Post_ps20b.inc"
-
-#include "..\materialsystem_global.h"
+#include "engine_post_ps20b.inc"
 
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
@@ -338,20 +335,10 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( engine_post_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( TOOL_MODE, bToolMode );
-				SET_STATIC_PIXEL_SHADER_COMBO( DEPTH_BLUR_ENABLE, bDepthBlurEnable );
-				SET_STATIC_PIXEL_SHADER( engine_post_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( engine_post_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( TOOL_MODE, bToolMode );
-				SET_STATIC_PIXEL_SHADER_COMBO( DEPTH_BLUR_ENABLE, false );
-				SET_STATIC_PIXEL_SHADER( engine_post_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( engine_post_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( TOOL_MODE, bToolMode );
+			SET_STATIC_PIXEL_SHADER_COMBO( DEPTH_BLUR_ENABLE, bDepthBlurEnable );
+			SET_STATIC_PIXEL_SHADER( engine_post_ps20b );
 		}
 		DYNAMIC_STATE
 		{
@@ -374,7 +361,7 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			}
 
 			// PC, ps20b has a desaturation control that overrides color correction
-			bool bDesaturateEnable = bToolMode && ( params[DESATURATEENABLE]->GetIntValue() != 0 ) && g_pHardwareConfig->SupportsPixelShaders_2_b() && IsPC();
+			bool bDesaturateEnable = bToolMode && ( params[DESATURATEENABLE]->GetIntValue() != 0 ) && g_pHardwareConfig->SupportsPixelShaders_2_b();
 			
 			float vPsConst16[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 			vPsConst16[0] = params[ DESATURATION ]->GetFloatValue();
@@ -452,7 +439,7 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			pShaderAPI->SetPixelShaderConstant( 3, &ccInfo.m_flDefaultWeight );
 			pShaderAPI->SetPixelShaderConstant( 4, ccInfo.m_pLookupWeights );
 
-			int aaEnabled			= ( IsX360() && ( params[ AAINTERNAL1 ]->GetVecValue()[0] != 0.0f ) ) ? 1 : 0;
+			int aaEnabled			= 0;
 			int bloomEnabled		= ( params[ BLOOMENABLE ]->GetIntValue() == 0 ) ? 0 : 1;
 			int colCorrectEnabled	= ccInfo.m_bIsEnabled;
 
@@ -474,14 +461,10 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			{
 				bloomConstant[2] = mat_depth_blur_focal_distance_override.GetFloat();
 			}
-#ifdef _X360
-			bloomConstant[3] = 0.0f; // Depth blur is currently broken on X360 because we're not writing out the depth scale properly
-#else // !_X360
 			if ( mat_depth_blur_strength_override.GetFloat() >= 0.0f )
 			{
 				bloomConstant[3] = mat_depth_blur_strength_override.GetFloat();
 			}
-#endif // _X360
 			
 			pShaderAPI->SetPixelShaderConstant( 5, bloomConstant );
 
@@ -512,11 +495,6 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 				if ( mat_grain_scale_override.GetFloat() != -1.0f )
 				{
 					vPsConst6[0] = mat_grain_scale_override.GetFloat();
-				}
-
-				if ( IsX360() )
-				{
-					vPsConst6[0] *= 0.15f;
 				}
 
 				if ( vPsConst6[0] <= 0.0f )
@@ -590,11 +568,24 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 				pShaderAPI->SetPixelShaderConstant( 12, vPsConst, 1 );
 
 				// Get viewport and render target dimensions and set shader constant to do a 2D mad
-				int nViewportX, nViewportY, nViewportWidth, nViewportHeight;
-				pShaderAPI->GetCurrentViewport( nViewportX, nViewportY, nViewportWidth, nViewportHeight );
+				ShaderViewport_t vp;
+				pShaderAPI->GetViewports( &vp, 1 );
+				int nViewportX = vp.m_nTopLeftX;
+				int nViewportY = vp.m_nTopLeftY;
+				int nViewportWidth = vp.m_nWidth;
+				int nViewportHeight = vp.m_nHeight;
 
 				int nRtWidth, nRtHeight;
-				pShaderAPI->GetCurrentRenderTargetDimensions( nRtWidth, nRtHeight );
+				ITexture *pRenderTarget = pShaderAPI->GetRenderTargetEx( 0 );
+				if( pRenderTarget != nullptr )
+				{
+					nRtWidth = pRenderTarget->GetActualWidth();
+					nRtHeight = pRenderTarget->GetActualHeight();
+				}
+				else
+				{
+					pShaderAPI->GetBackBufferDimensions( nRtWidth, nRtHeight );
+				}
 
 				float vViewportMad[4];
 
@@ -623,32 +614,19 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			// JasonM - double check this if the SFM needs to use the engine post FX clip in main
 			bool bConvertToLinear = bToolMode && bConvertFromLinear && ( g_pHardwareConfig->GetHDRType() == HDR_TYPE_FLOAT );
 
-			if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( engine_post_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_ENABLE,						aaEnabled );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( COL_CORRECT_NUM_LOOKUPS,		colCorrectNumLookups );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( CONVERT_FROM_LINEAR,			bConvertFromLinear );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( CONVERT_TO_LINEAR,				bConvertToLinear );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( NOISE_ENABLE,					bNoiseEnable );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( VIGNETTE_ENABLE,				bVignetteEnable );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( LOCAL_CONTRAST_ENABLE,			bLocalContrastEnable );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( BLURRED_VIGNETTE_ENABLE,		bBlurredVignetteEnable );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( VOMIT_ENABLE,					bVomitEnable );
-#ifndef _X360
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( TV_GAMMA,						params[TV_GAMMA]->GetIntValue() && bToolMode ? 1 : 0 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( DESATURATEENABLE,				bDesaturateEnable );
-#endif
-				SET_DYNAMIC_PIXEL_SHADER( engine_post_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( engine_post_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_ENABLE,						aaEnabled );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( COL_CORRECT_NUM_LOOKUPS,		colCorrectNumLookups );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( VOMIT_ENABLE,					bVomitEnable );
-				SET_DYNAMIC_PIXEL_SHADER( engine_post_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( engine_post_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_ENABLE,						aaEnabled );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( COL_CORRECT_NUM_LOOKUPS,		colCorrectNumLookups );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( CONVERT_FROM_LINEAR,			bConvertFromLinear );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( CONVERT_TO_LINEAR,				bConvertToLinear );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( NOISE_ENABLE,					bNoiseEnable );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( VIGNETTE_ENABLE,				bVignetteEnable );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( LOCAL_CONTRAST_ENABLE,			bLocalContrastEnable );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( BLURRED_VIGNETTE_ENABLE,		bBlurredVignetteEnable );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( VOMIT_ENABLE,					bVomitEnable );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( TV_GAMMA,						params[TV_GAMMA]->GetIntValue() && bToolMode ? 1 : 0 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( DESATURATEENABLE,				bDesaturateEnable );
+			SET_DYNAMIC_PIXEL_SHADER( engine_post_ps20b );
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );

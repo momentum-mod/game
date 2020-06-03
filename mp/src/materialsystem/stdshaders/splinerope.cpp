@@ -3,7 +3,6 @@
 #include "BaseVSShader.h"
 #include "convar.h"
 
-#include "splinerope_ps20.inc"
 #include "splinerope_ps20b.inc"
 #include "splinerope_vs20.inc"
 
@@ -45,7 +44,7 @@ BEGIN_VS_SHADER( SplineRope, "Help for SplineRope" )
 
 	SHADER_DRAW
 	{
-		bool bShaderSrgbRead = ( IsX360() && params[SHADERSRGBREAD360]->GetIntValue() );
+		bool bShaderSrgbRead = false;
 		bool bShadowDepth = ( params[SHADOWDEPTH]->GetIntValue() != 0 );
 		SHADOW_STATE
 		{
@@ -92,20 +91,10 @@ BEGIN_VS_SHADER( SplineRope, "Help for SplineRope" )
 			DECLARE_STATIC_VERTEX_SHADER( splinerope_vs20 );
 			SET_STATIC_VERTEX_SHADER( splinerope_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( splinerope_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( SHADER_SRGB_READ, bShaderSrgbRead );
-				SET_STATIC_PIXEL_SHADER_COMBO( SHADOWDEPTH, bShadowDepth );
-				SET_STATIC_PIXEL_SHADER( splinerope_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( splinerope_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( SHADER_SRGB_READ, bShaderSrgbRead );
-				SET_STATIC_PIXEL_SHADER_COMBO( SHADOWDEPTH, bShadowDepth );
-				SET_STATIC_PIXEL_SHADER( splinerope_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( splinerope_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( SHADER_SRGB_READ, bShaderSrgbRead );
+			SET_STATIC_PIXEL_SHADER_COMBO( SHADOWDEPTH, bShadowDepth );
+			SET_STATIC_PIXEL_SHADER( splinerope_ps20b );
 		}
 		DYNAMIC_STATE
 		{
@@ -114,8 +103,9 @@ BEGIN_VS_SHADER( SplineRope, "Help for SplineRope" )
 			LoadProjectionMatrixIntoVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_3 );
 
 			// Get viewport and render target dimensions and set shader constant to do a 2D mad
-			int nViewportX, nViewportY, nViewportWidth, nViewportHeight;
-			pShaderAPI->GetCurrentViewport( nViewportX, nViewportY, nViewportWidth, nViewportHeight );
+			ShaderViewport_t vp;
+			pShaderAPI->GetViewports( &vp, 1 );
+			int nViewportWidth = vp.m_nWidth;
 
 			float c7[4]={ 0.0f, 0.0f, 0.0f, 0.0f };
 			if ( !g_pHardwareConfig->IsAAEnabled() )
@@ -144,18 +134,9 @@ BEGIN_VS_SHADER( SplineRope, "Help for SplineRope" )
 			DECLARE_DYNAMIC_VERTEX_SHADER( splinerope_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( splinerope_vs20 );
 
-			if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( splinerope_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
-				SET_DYNAMIC_PIXEL_SHADER( splinerope_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( splinerope_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
-				SET_DYNAMIC_PIXEL_SHADER( splinerope_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( splinerope_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
+			SET_DYNAMIC_PIXEL_SHADER( splinerope_ps20b );
 		}
 		Draw( );
 	}

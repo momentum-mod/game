@@ -8,7 +8,6 @@
 
 #include "BaseVSShader.h"
 
-#include "shatteredglass_ps20.inc"
 #include "shatteredglass_ps20b.inc"
 #include "shatteredglass_vs20.inc"
 
@@ -198,35 +197,20 @@ BEGIN_VS_SHADER( ShatteredGlass,
 			SET_STATIC_VERTEX_SHADER_COMBO( ENVMAP_MASK,  bHasEnvmapMask );
 			SET_STATIC_VERTEX_SHADER( shatteredglass_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( shatteredglass_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  bHasEnvmap );
-				SET_STATIC_PIXEL_SHADER_COMBO( VERTEXCOLOR,  bHasVertexColor );
-				SET_STATIC_PIXEL_SHADER_COMBO( ENVMAPMASK,  bHasEnvmapMask );
-				SET_STATIC_PIXEL_SHADER_COMBO( BASEALPHAENVMAPMASK,  bHasBaseAlphaEnvmapMask );
-				SET_STATIC_PIXEL_SHADER_COMBO( HDRTYPE,  g_pHardwareConfig->GetHDRType() );
-				SET_STATIC_PIXEL_SHADER( shatteredglass_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( shatteredglass_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  bHasEnvmap );
-				SET_STATIC_PIXEL_SHADER_COMBO( VERTEXCOLOR,  bHasVertexColor );
-				SET_STATIC_PIXEL_SHADER_COMBO( ENVMAPMASK,  bHasEnvmapMask );
-				SET_STATIC_PIXEL_SHADER_COMBO( BASEALPHAENVMAPMASK,  bHasBaseAlphaEnvmapMask );
-				SET_STATIC_PIXEL_SHADER_COMBO( HDRTYPE,  g_pHardwareConfig->GetHDRType() );
-				SET_STATIC_PIXEL_SHADER( shatteredglass_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( shatteredglass_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  bHasEnvmap );
+			SET_STATIC_PIXEL_SHADER_COMBO( VERTEXCOLOR,  bHasVertexColor );
+			SET_STATIC_PIXEL_SHADER_COMBO( ENVMAPMASK,  bHasEnvmapMask );
+			SET_STATIC_PIXEL_SHADER_COMBO( BASEALPHAENVMAPMASK,  bHasBaseAlphaEnvmapMask );
+			SET_STATIC_PIXEL_SHADER_COMBO( HDRTYPE,  g_pHardwareConfig->GetHDRType() );
+			SET_STATIC_PIXEL_SHADER( shatteredglass_ps20b );
 
 			DefaultFog();
-
-			PI_BeginCommandBuffer();
-			PI_SetModulationPixelShaderDynamicState( 1 );
-			PI_EndCommandBuffer();
 		}
 		DYNAMIC_STATE
 		{
+			SetModulationPixelShaderDynamicState( 1 );
+
 			SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, BASETEXTURETRANSFORM );
 			SetVertexShaderTextureScale( VERTEX_SHADER_SHADER_SPECIFIC_CONST_2, DETAILSCALE );
 
@@ -248,16 +232,8 @@ BEGIN_VS_SHADER( ShatteredGlass,
 			DECLARE_DYNAMIC_VERTEX_SHADER( shatteredglass_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( shatteredglass_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( shatteredglass_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( shatteredglass_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( shatteredglass_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( shatteredglass_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( shatteredglass_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( shatteredglass_ps20b );
 
 			SetEnvMapTintPixelShaderDynamicState( 0, ENVMAPTINT, -1 );
 			SetPixelShaderConstant( 2, ENVMAPCONTRAST );
