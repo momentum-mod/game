@@ -1108,25 +1108,9 @@ HFont SectionedListPanel::GetRowFont( void ) const
 void SectionedListPanel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
-	m_iLineSpacing = inResourceData->GetInt("linespacing", 0);
-	if (!m_iLineSpacing)
-	{
-		m_iLineSpacing = DEFAULT_LINE_SPACING;
-	}
-	if (IsProportional())
-	{
-		m_iLineSpacing = scheme()->GetProportionalScaledValueEx(GetScheme(), m_iLineSpacing);
-	}
 
-	m_iSectionGap = inResourceData->GetInt("sectiongap", 0);
-	if (!m_iSectionGap)
-	{
-		m_iSectionGap = DEFAULT_SECTION_GAP;
-	}
-	if (IsProportional())
-	{
-		m_iSectionGap = scheme()->GetProportionalScaledValueEx(GetScheme(), m_iSectionGap);
-	}
+	m_iLineSpacing = GetScaledVal(inResourceData->GetInt("linespacing", DEFAULT_LINE_SPACING));
+	m_iSectionGap = GetScaledVal(inResourceData->GetInt("sectiongap", DEFAULT_SECTION_GAP));
 
     SetClickable(inResourceData->GetBool("clickable", true));
     SetVerticalScrollbar(inResourceData->GetBool("vertical_scrollbar", true));
