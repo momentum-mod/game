@@ -186,10 +186,13 @@ void InitParamsLightmappedGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** pa
 	InitFloatParam( info.m_nOutlineAlpha, params, 1.0 );
 
     // Parallax cubemaps
-    //cubemap parallax correction requires all 4 lines (if the 2nd, 3rd, or 4th are undef, undef the first one (checking done on first var)
-    if (!(params[info.m_nEnvmapParallaxObb2]->IsDefined() && params[info.m_nEnvmapParallaxObb3]->IsDefined() && params[info.m_nEnvmapOrigin]->IsDefined()))
+    //cubemap parallax correction requires all 4 lines (if the 1st, 2nd, 3rd, or 4th are undef, undef the first one -- checking done on first var)
+    if (!( params[info.m_nEnvmapParallaxObb1]->IsDefined() &&
+		params[info.m_nEnvmapParallaxObb2]->IsDefined() &&
+		params[info.m_nEnvmapParallaxObb3]->IsDefined() &&
+		params[info.m_nEnvmapOrigin]->IsDefined()))
     {
-        params[info.m_nEnvmapParallaxObb1]->SetUndefined();
+		params[info.m_nEnvmapParallaxObb1]->SetVecValue( NAN, NAN, NAN, NAN );
     }
 }
 
@@ -321,7 +324,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		bool hasNormalMapAlphaEnvmapMask = IS_FLAG_SET( MATERIAL_VAR_NORMALMAPALPHAENVMAPMASK );
 
         // Parallax cubemaps
-        bool hasParallaxCorrection = params[info.m_nEnvmapParallaxObb1]->IsDefined();
+        bool hasParallaxCorrection = !isnan(*params[info.m_nEnvmapParallaxObb1]->GetVecValue());
 
 		if ( hasFlashlight )				
 		{
@@ -580,9 +583,9 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 				bool bReliefMapping = false; //( bumpmap_variant == 2 ) && ( ! bSeamlessMapping );
 				SET_STATIC_VERTEX_SHADER_COMBO( RELIEF_MAPPING, false );//bReliefMapping );
 				SET_STATIC_VERTEX_SHADER_COMBO( SEAMLESS, bSeamlessMapping );
-                SET_STATIC_VERTEX_SHADER(sdk_lightmappedgeneric_vs20);
+				SET_STATIC_VERTEX_SHADER(sdk_lightmappedgeneric_vs20);
 
-                DECLARE_STATIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20b);
+				DECLARE_STATIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20b);
 				SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE2, hasBaseTexture2 );
 				SET_STATIC_PIXEL_SHADER_COMBO( DETAILTEXTURE, hasDetailTexture );
 				SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP,  bumpmap_variant );
