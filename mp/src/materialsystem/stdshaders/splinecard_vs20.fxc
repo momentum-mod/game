@@ -105,16 +105,12 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.blendfactor0.xyzw = float4( 0.0f, 0.0f, 0.0f, 0.0f );
 #endif
 #if DEPTHBLEND
-	#if defined( REVERSE_DEPTH_ON_X360 )
-		o.vScreenPos_ReverseZ.xyzw = float4( 0.0f, 0.0f, 0.0f, 0.0f );
-	#else 
-		o.vScreenPos.xyzw = float4( 0.0f, 0.0f, 0.0f, 0.0f );
-	#endif
+	o.vScreenPos.xyzw = float4( 0.0f, 0.0f, 0.0f, 0.0f );
 #endif
 
-	#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+	#if !defined( SHADER_MODEL_VS_3_0 )
 	{
-		o.fog = CalcFixedFunctionFog( posrad.xyz, 0 );
+		o.fog = CalcFog( posrad.xyz, o.projPos.xyz, 0 );
 	}
 	#endif
 

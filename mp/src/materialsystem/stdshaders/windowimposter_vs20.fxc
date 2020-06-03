@@ -18,7 +18,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos			: POSITION;	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+#if !defined( SHADER_MODEL_VS_3_0 )
 	float  fog				: FOG;
 #endif
 	float3 eyeToVertVector	: TEXCOORD0;
@@ -37,8 +37,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.worldPos_projPosZ = float4( worldPos.xyz, o.projPos.z );
 	o.eyeToVertVector = worldPos - cEyePos;
 	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	o.fog = CalcFixedFunctionFog( worldPos, g_FogType );
+#if !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFog( worldPos, o.projPos.xyz, g_FogType );
 #endif
 
 	o.vertexColor = cModulationColor;

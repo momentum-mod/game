@@ -56,9 +56,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos			: POSITION;
-#if !defined( _X360 )    
 	float  fog				: FOG;
-#endif
 	float2 baseTexCoord		: TEXCOORD0;		// Base texture coordinates
 	float4 spotTexCoord		: TEXCOORD1;		// Spotlight texture coordinates
 	float3 vertAtten		: TEXCOORD2;		// Distance/spot attenuation
@@ -104,10 +102,10 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.projPos = mul( float4( worldPos, 1 ), cViewProj );
 	o.worldPos = worldPos.xyz;
 	o.vProjPos = o.projPos;
-#if !defined( _X360 )
+	
 	// Set fixed-function fog factor
 	o.fog = CalcFog( worldPos, o.projPos, g_FogType );
-#endif
+	
 	// Spotlight texture coordinates
 	o.spotTexCoord.x = dot( cSpotlightProj1, float4(worldPos, 1) );
 	o.spotTexCoord.y = dot( cSpotlightProj2, float4(worldPos, 1) );

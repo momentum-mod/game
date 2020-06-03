@@ -67,9 +67,9 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.texCoord.xy = float2( 1.0f - v.vParms.z, v.vParms.y );
 	o.argbcolor = float4( v.vTint.rgb, v.vTint.a );
 
-	#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+	#if !defined( SHADER_MODEL_VS_3_0 )
 	{
-		o.fog = CalcFixedFunctionFog( posrad.xyz, 0 );
+		o.fog = CalcFog( posrad.xyz, o.projPos.xyz, 0 );
 	}
 	#endif
 

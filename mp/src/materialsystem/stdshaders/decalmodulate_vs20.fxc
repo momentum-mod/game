@@ -30,7 +30,7 @@ const float4 cBaseTexCoordTransform[2]		: register( SHADER_SPECIFIC_CONST_0 );
 //		 cMorphTargetTextureDim.z = 4tuples/morph
 const float3 cMorphTargetTextureDim			: register( SHADER_SPECIFIC_CONST_10 );
 const float4 cMorphSubrect					: register( SHADER_SPECIFIC_CONST_11 );
-sampler2D morphSampler						: register( D3DVERTEXTEXTURESAMPLER0, s0 );
+sampler2D morphSampler						: register( s0 );
 #endif
 
 struct VS_INPUT
@@ -60,7 +60,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;			// Projection-space position	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+#if !defined( SHADER_MODEL_VS_3_0 )
 	float  fog						: FOG;
 #endif
 
@@ -110,8 +110,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
 	o.projPos = projPos;
 	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	o.fog = CalcFixedFunctionFog( worldPos, g_FogType );
+#if !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFog( worldPos, projPos.xyz, g_FogType );
 #endif
 
 	o.worldPos_ProjPosZ.xyz = worldPos.xyz;

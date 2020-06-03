@@ -9,13 +9,6 @@ struct PS_INPUT
 {
 	float2 vTexCoord0	: TEXCOORD0;
 	float4 vColor		: COLOR0;
-		
-#if defined( _X360 ) //matching pixel shader inputs to vertex shader outputs to avoid shader patches	
-	float2 vTexCoord1	: TEXCOORD1;
-	float2 vTexCoord2	: TEXCOORD2;
-	float2 vTexCoord3	: TEXCOORD3;
-	float4 worldPos_projPosZ		: TEXCOORD7;		// Necessary for pixel fog
-#endif
 };
 
 HALF4 main( PS_INPUT i ) : COLOR

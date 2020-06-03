@@ -50,7 +50,6 @@ float4 main( PS_INPUT i ) : COLOR
 	
 	float flTotalBlurWeight = 0.0f;
 	
-	// @TODO: unroll loop on X360?
 	for ( int x = 1; x < NUM_SAMPLES; x ++ )
 	{
 		// Calculate offset uv

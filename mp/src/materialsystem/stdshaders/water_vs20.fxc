@@ -22,9 +22,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 vProjPos_POSITION		: POSITION;
-#if !defined( _X360 )
 	float  vFog						: FOG;
-#endif
 	float2 vBumpTexCoord			: TEXCOORD0;
 	float3 vTangentEyeVect			: TEXCOORD1;
 	float4 vReflectXY_vRefractYX	: TEXCOORD2;
@@ -75,9 +73,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	// Compute fog based on the position
 	float3 vWorldPos = mul( v.vPos, cModel[0] );
 	o.fogFactorW = CalcFog( vWorldPos, vProjPos, FOGTYPE_RANGE );
-#if !defined( _X360 )
 	o.vFog = o.fogFactorW;
-#endif
 
 	// Eye vector
 	float3 vWorldEyeVect = cEyePos - vWorldPos;

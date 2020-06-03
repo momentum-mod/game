@@ -9,7 +9,7 @@
 
 static const int  g_FogType			= DOWATERFOG;
 static const bool g_bHalfLambert	= HALFLAMBERT ? true : false;
-static const int  g_nSkinning		= SKINNING;
+static const bool g_bSkinning		= SKINNING ? true : false;
 static const bool g_bDynamicLight	= DYNAMIC_LIGHT ? true : false;
 static const bool g_bStaticLight	= STATIC_LIGHT ? true : false;
 
@@ -33,9 +33,7 @@ struct VS_OUTPUT
 	float4 vProjPos		: POSITION;	
 	float3 vColor0		: COLOR0;
 
-#if !defined( _X360 )    
 	float  fog			: FOG;
-#endif
 };
 
 
@@ -51,8 +49,8 @@ VS_OUTPUT main( const VS_INPUT v )
 
 	o.vProjPos = mul( float4( worldPos, 1 ), cViewProj );
 
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	o.fog = CalcFixedFunctionFog( worldPos, g_FogType );
+#if !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFog( worldPos, o.vProjPos.xyz, g_FogType );
 #endif
 
 	// Compute vertex lighting

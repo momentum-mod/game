@@ -32,17 +32,10 @@ sampler sDepth			: register( s1 );
 struct PS_INPUT
 {
 	HALF4 worldPos_projPosZ		    : TEXCOORD0;
-	#if defined( _X360 )
-		float4 vFalloffParams			: TEXCOORD1_centroid;
-		float3 texCoord0_shadowAlpha	: TEXCOORD2_centroid;
-	#else
-		float4 vFalloffParams			: TEXCOORD1;
-		float3 texCoord0_shadowAlpha	: TEXCOORD2;
-	#endif
-#if !defined( _X360 )
+	float4 vFalloffParams			: TEXCOORD1;
+	float3 texCoord0_shadowAlpha	: TEXCOORD2;
 	float4 texCoord1_2				: TEXCOORD3;
 	float4 texCoord3_4				: TEXCOORD4;
-#endif
 };
 
 float4 main( PS_INPUT i ) : COLOR
@@ -53,7 +46,7 @@ float4 main( PS_INPUT i ) : COLOR
 	{
 		shadowCoverage = tex2D( ShadowSampler, i.texCoord0_shadowAlpha.xy ).a;
 	}
-	#elif !defined( _X360 )
+	#else
 	{
 		HALF samples0;
 		HALF4  samples1_4;
@@ -65,21 +58,6 @@ float4 main( PS_INPUT i ) : COLOR
 
 		// Interpolate between a bunch of jittered shadow samples.
 		shadowCoverage = samples0 * 0.2 + dot( samples1_4, HALF4( 0.2, 0.2, 0.2, 0.2 ) );
-	}
-	#else
-	{
-		float samples0 = tex2D( ShadowSampler, i.texCoord0_shadowAlpha.xy ).a;
-		float2 texCoord = i.texCoord0_shadowAlpha.xy;
-		float4 samples1_4;
-		asm {
-			tfetch2D samples1_4.w___, texCoord.xy, ShadowSampler, OffsetX = -1.0, OffsetY = -1.0
-			tfetch2D samples1_4._w__, texCoord.xy, ShadowSampler, OffsetX =  1.0, OffsetY = -1.0
-			tfetch2D samples1_4.__w_, texCoord.xy, ShadowSampler, OffsetX = -1.0, OffsetY =  1.0
-			tfetch2D samples1_4.___w, texCoord.xy, ShadowSampler, OffsetX =  1.0, OffsetY =  1.0
-		};
-
-		// Interpolate between a bunch of jittered shadow samples.
-		shadowCoverage = samples0 * 0.2 + dot( samples1_4, HALF4( 0.2,0.2,0.2,0.2 ) );
 	}
 	#endif
 

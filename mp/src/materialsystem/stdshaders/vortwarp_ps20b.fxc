@@ -96,7 +96,7 @@ float4 main( PS_INPUT i ) : COLOR
 		diffuseLighting = PixelShaderDoLighting( i.worldPos_projPosZ.xyz, worldSpaceNormal,
 			   float3( 0.0f, 0.0f, 0.0f ), false, bAmbientLight, i.lightAtten,
 			   cAmbientCube, NormalizeSampler, nNumLights, cLightInfo, bHalfLambert,
-			   false, NormalizeSampler );
+			   false, 0, false, NormalizeSampler );
 	}
 
 	HALF3 albedo = HALF3( 1.0f, 1.0f, 1.0f );

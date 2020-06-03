@@ -28,7 +28,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;			// Projection-space position	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+#if !defined( SHADER_MODEL_VS_3_0 )
 	float  fog						: FOG;
 #endif
 	HALF2 baseTexCoord				: TEXCOORD0;		// Base texture coordinate
@@ -52,8 +52,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
 	o.projPos = projPos;
 	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	o.fog = CalcFixedFunctionFog( worldPos, g_FogType );
+#if !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFog( worldPos, projPos.xyz, g_FogType );
 #endif
 
 	// Needed for water fog alpha; 
