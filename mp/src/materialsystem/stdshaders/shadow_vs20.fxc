@@ -1,0 +1,135 @@
+
+// STATIC: "DEFERRED_SHADOWS"	"0..1"
+#include "common_fog_vs_fxc.h"
+
+#include "common_vs_fxc.h"
+
+static const int g_FogType = DOWATERFOG;
+
+const float4 cBaseTexCoordTransform[2]			: register( SHADER_SPECIFIC_CONST_0 );
+const float4 cTextureJitter[2]					: register( SHADER_SPECIFIC_CONST_2 );
+
+#if DEFERRED_SHADOWS == 0 
+
+struct VS_INPUT
+{
+	// This is all of the stuff that we ever use.
+	float4 vPos				: POSITION;
+	float4 vColor			: COLOR0;
+	float4 vTexCoord0		: TEXCOORD0;
+	float3 vFalloffParams	: TEXCOORD1;
+};
+
+struct VS_OUTPUT
+{
+    float4 projPos					: POSITION;	
+#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+	float  fog						: FOG;
+#endif
+	HALF4 worldPos_projPosZ		    : TEXCOORD0;
+	float4 vFalloffParams			: TEXCOORD1;
+	float3 texCoord0_shadowAlpha	: TEXCOORD2;
+#if !defined( _X360 )
+	float4 texCoord1_2				: TEXCOORD3;
+	float4 texCoord3_4				: TEXCOORD4;
+#endif
+};
+
+VS_OUTPUT main( const VS_INPUT v )
+{
+	VS_OUTPUT o = ( VS_OUTPUT )0;
+
+	float3 worldPos;
+	float2 texCoord;
+	worldPos = mul( v.vPos, cModel[0] );
+
+	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
+	o.projPos = projPos;
+	
+#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFixedFunctionFog( worldPos, g_FogType );
+#endif
+
+	o.worldPos_projPosZ = float4( worldPos, projPos.z );
+
+	o.vFalloffParams.xyz = v.vFalloffParams;
+	o.vFalloffParams.w = v.vTexCoord0.z;
+	texCoord.x = dot( v.vTexCoord0, cBaseTexCoordTransform[0] );
+	texCoord.y = dot( v.vTexCoord0, cBaseTexCoordTransform[1] );
+
+	o.texCoord0_shadowAlpha.xy = texCoord;
+#if !defined( _X360 )
+	{
+		o.texCoord1_2.xy = texCoord + cTextureJitter[0];
+		o.texCoord1_2.wz = texCoord - cTextureJitter[0];
+		o.texCoord3_4.xy = texCoord + cTextureJitter[1];
+		o.texCoord3_4.wz = texCoord - cTextureJitter[1];
+	}
+#endif
+
+	o.texCoord0_shadowAlpha.z = v.vColor.a;
+	return o;
+}
+
+
+#else // DEFERRED_SHADOWS == 1
+
+struct VS_INPUT
+{
+	float4 vPos				: POSITION;
+	float3 vNormal			: NORMAL;
+	float3 vShadowDir		: TEXCOORD0;
+	float4 vTexCoordBiasScale	: TEXCOORD1;
+	float4 vProjToTex0			: TEXCOORD2;
+	float4 vProjToTex1			: TEXCOORD3;
+	float4 vProjToTex2			: TEXCOORD4;
+	float4 vProjToTex3			: TEXCOORD5;
+	float3 vFalloffParams		: TEXCOORD6;
+};
+
+struct VS_OUTPUT
+{
+    float4 projPos				: POSITION;	
+	float4 vTexCoordBiasScale	: TEXCOORD0;
+	float4 vProjToTex0			: TEXCOORD1;
+	float4 vProjToTex1			: TEXCOORD2;
+	float4 vProjToTex2			: TEXCOORD3;
+	float4 vProjToTex3			: TEXCOORD4;
+	float3 vFalloffParams		: TEXCOORD5;
+};
+
+VS_OUTPUT main( const VS_INPUT v )
+{
+	VS_OUTPUT o = ( VS_OUTPUT )0;
+
+	float3 worldNormal, worldPos;
+	float2 texCoord;
+
+	// obj->world xform currently handled on CPU for batching
+	/*
+	worldPos = mul( v.vPos, cModel[0] );
+	worldNormal = mul( v.vNormal, cModel[0] );
+	*/
+
+	worldPos = v.vPos.xyz;
+	worldNormal = v.vNormal.xyz;
+	
+	// bounding volume extrusion
+	if ( dot( worldNormal, v.vShadowDir ) > 0.0 )
+	{
+		worldPos += v.vShadowDir;
+	}
+
+	o.vTexCoordBiasScale = v.vTexCoordBiasScale;
+	o.vProjToTex0 = v.vProjToTex0;
+	o.vProjToTex1 = v.vProjToTex1;
+	o.vProjToTex2 = v.vProjToTex2;
+	o.vProjToTex3 = v.vProjToTex3;
+	o.vFalloffParams.xyz = v.vFalloffParams;
+
+	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
+	o.projPos = projPos;
+	return o;
+}
+
+#endif
