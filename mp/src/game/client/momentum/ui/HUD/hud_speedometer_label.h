@@ -8,8 +8,9 @@ class SpeedometerLabel : public vgui::Label
     DECLARE_CLASS_SIMPLE(SpeedometerLabel, vgui::Label);
 
   public:
-    SpeedometerLabel(Panel *parent, const char *panelName);
+    SpeedometerLabel(Panel *parent, const char *panelName, SpeedometerColorize_t colorizeType);
 
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
     void OnThink() override; // for applying fadeout
     
     void SetVisible(bool bVisible) override;
@@ -28,13 +29,19 @@ class SpeedometerLabel : public vgui::Label
     void SetUnitType(SpeedometerUnits_t type) { m_eUnitType = type; }
     void SetUnitType(int type);
 
+    SpeedometerColorize_t GetColorizeType() { return m_eColorizeType; }
+    void SetColorizeType(SpeedometerColorize_t type) { m_eColorizeType = type; Reset(); }
+    void SetColorizeType(int type);
+
     bool GetSupportsEnergyUnits() { return m_bSupportsEnergyUnits; }
     void SetSupportsEnergyUnits(bool bSupportsEnergyUnits) { m_bSupportsEnergyUnits = bSupportsEnergyUnits; }
 
   private:
     void ConvertUnits();
+    void Colorize();
     bool StartFadeout();
 
+    void ColorizeComparison();
     float m_flCurrentValue;
     float m_flPastValue;
     float m_flDiff;
@@ -46,5 +53,9 @@ class SpeedometerLabel : public vgui::Label
     char m_pszAnimationName[BUFSIZELOCL];
     bool m_bDoneFading;
 
+    Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
+
     SpeedometerUnits_t m_eUnitType;
+
+    SpeedometerColorize_t m_eColorizeType;
 };
