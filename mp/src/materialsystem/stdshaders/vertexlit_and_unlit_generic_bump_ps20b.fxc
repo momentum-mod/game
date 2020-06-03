@@ -56,7 +56,6 @@
 // BlendTintByBaseAlpha is incompatible with other interpretations of alpha
 // SKIP: ($BLENDTINTBYBASEALPHA) && ($SELFILLUM)
 
-// Only _XBOX allows flashlight and cubemap in the current implementation
 // SKIP: $FLASHLIGHT && $CUBEMAP [PC]
 
 // Meaningless combinations
@@ -122,12 +121,6 @@ struct PS_INPUT
 	float4 worldPos_projPosZ									: TEXCOORD6;
 	float3 detailTexCoord_atten3								: TEXCOORD7;
 	float4 fogFactorW											: COLOR1;
-
-#if defined( _X360 )
-#if FLASHLIGHT
-	float4 flashlightSpacePos									: TEXCOORD8;
-#endif
-#endif
 };
 
 // Calculate both types of Fog and lerp to get result
@@ -259,23 +252,15 @@ float4 main( PS_INPUT i ) : COLOR
 		vProjPos = i.vProjPos.xy / i.vProjPos.w;	// Screen-space position for shadow map noise
 #endif
 
-#if defined ( _X360 )
-		float4 flashlightSpacePosition = i.flashlightSpacePos;
-#else
+
 		float4 flashlightSpacePosition = mul( float4( i.worldPos_projPosZ.xyz, 1.0f ), g_FlashlightWorldToTexture );
-#endif
 
 		float3 flashlightColor = DoFlashlight( g_FlashlightPos, i.worldPos_projPosZ.xyz, flashlightSpacePosition,
 			worldSpaceNormal, g_FlashlightAttenuationFactors.xyz, 
 			g_FlashlightAttenuationFactors.w, FlashlightSampler, ShadowDepthSampler,
 			RandRotSampler, nShadowSampleLevel, bDoShadows, false, vProjPos, false, g_EnvmapContrast_ShadowTweaks );
 
-#if defined ( _X360 )
-		diffuseLighting += flashlightColor;
-#else
 		diffuseLighting = flashlightColor;
-#endif
-
 	}
 #endif
 
@@ -283,7 +268,7 @@ float4 main( PS_INPUT i ) : COLOR
 	float3 diffuseComponent = albedo * diffuseLighting;
 
 
-#if !FLASHLIGHT || defined ( _X360 )
+#if !FLASHLIGHT
 	if ( bSelfIllum )
 	{
 		#if ( SELFILLUMFRESNEL == 1 ) // To free up the constant register...see top of file
@@ -309,7 +294,7 @@ float4 main( PS_INPUT i ) : COLOR
 #endif
 
 	float3 specularLighting = float3( 0.0f, 0.0f, 0.0f );
-#if !FLASHLIGHT || defined ( _X360 )
+#if !FLASHLIGHT
 	if( bCubemap )
 	{
 		float3 reflectVect = CalcReflectionVectorUnnormalized( worldSpaceNormal, i.worldVertToEyeVectorXYZ_tangentSpaceVertToEyeVectorZ.xyz );

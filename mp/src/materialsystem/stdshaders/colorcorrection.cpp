@@ -7,7 +7,7 @@
 
 #include "basevsshader.h"
 
-#include "sdk_screenspaceeffect_vs20.inc"
+#include "screenspaceeffect_vs20.inc"
 #include "colorcorrection_ps20b.inc"
 
 // NOTE: This has to be the last file included!
@@ -77,8 +77,8 @@ BEGIN_VS_SHADER_FLAGS( ColorCorrection, "Help for ColorCorrection", SHADER_NOT_E
 			int fmt = VERTEX_POSITION;
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
-			DECLARE_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
-			SET_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
+			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
 			DECLARE_STATIC_PIXEL_SHADER( colorcorrection_ps20b );
 			SET_STATIC_PIXEL_SHADER( colorcorrection_ps20b );

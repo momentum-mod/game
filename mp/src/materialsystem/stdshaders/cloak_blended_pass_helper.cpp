@@ -135,10 +135,10 @@
 #include "convar.h"
 
 // Auto generated inc files
-#include "sdk_cloak_blended_pass_vs20.inc"
-#include "sdk_cloak_blended_pass_ps20b.inc"
-#include "sdk_cloak_blended_pass_vs30.inc"
-#include "sdk_cloak_blended_pass_ps30.inc"
+#include "cloak_blended_pass_vs20.inc"
+#include "cloak_blended_pass_ps20b.inc"
+#include "cloak_blended_pass_vs30.inc"
+#include "cloak_blended_pass_ps30.inc"
 
 void InitParamsCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, CloakBlendedPassVars_t &info )
 {
@@ -200,14 +200,14 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 		if ( !g_pHardwareConfig->HasFastVertexTextures() )
 		{
 			// Vertex Shader
-			DECLARE_STATIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( cloak_blended_pass_vs20 );
 			SET_STATIC_VERTEX_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-			SET_STATIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs20 );
+			SET_STATIC_VERTEX_SHADER( cloak_blended_pass_vs20 );
 
 			// Pixel Shader
-			DECLARE_STATIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps20b );
+			DECLARE_STATIC_PIXEL_SHADER( cloak_blended_pass_ps20b );
 			SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-			SET_STATIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps20b );
+			SET_STATIC_PIXEL_SHADER( cloak_blended_pass_ps20b );
 		}
 		else
 		{
@@ -215,14 +215,14 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 			SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
 
 			// Vertex Shader
-			DECLARE_STATIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs30 );
+			DECLARE_STATIC_VERTEX_SHADER( cloak_blended_pass_vs30 );
 			SET_STATIC_VERTEX_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-			SET_STATIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs30 );
+			SET_STATIC_VERTEX_SHADER( cloak_blended_pass_vs30 );
 
 			// Pixel Shader
-			DECLARE_STATIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps30 );
+			DECLARE_STATIC_PIXEL_SHADER( cloak_blended_pass_ps30 );
 			SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-			SET_STATIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps30 );
+			SET_STATIC_PIXEL_SHADER( cloak_blended_pass_ps30 );
 		}
 		// Textures
 		pShaderShadow->EnableTexture( SHADER_SAMPLER0, true ); // Refraction texture
@@ -255,29 +255,29 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 		if ( !g_pHardwareConfig->HasFastVertexTextures() )
 		{
 			// Set Vertex Shader Combos
-			DECLARE_DYNAMIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( cloak_blended_pass_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( cloak_blended_pass_vs20 );
 
 			// Set Pixel Shader Combos
-			DECLARE_DYNAMIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps20b );
-			SET_DYNAMIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps20b );
+			DECLARE_DYNAMIC_PIXEL_SHADER( cloak_blended_pass_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( cloak_blended_pass_ps20b );
 		}
 		else
 		{
 			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
 
 			// Set Vertex Shader Combos
-			DECLARE_DYNAMIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs30 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( cloak_blended_pass_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, pShaderAPI->IsHWMorphingEnabled() );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( sdk_cloak_blended_pass_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( cloak_blended_pass_vs30 );
 
 			// Set Pixel Shader Combos
-			DECLARE_DYNAMIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps30 );
-			SET_DYNAMIC_PIXEL_SHADER( sdk_cloak_blended_pass_ps30 );
+			DECLARE_DYNAMIC_PIXEL_SHADER( cloak_blended_pass_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( cloak_blended_pass_ps30 );
 		}
 
 		// Bind textures

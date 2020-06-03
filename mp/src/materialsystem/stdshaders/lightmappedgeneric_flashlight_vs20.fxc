@@ -43,9 +43,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;
-#if !defined( _X360 )
 	float  fog						: FOG;
-#endif
 
 	float4 spotTexCoord				: TEXCOORD0;
 
@@ -101,9 +99,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.worldPos_worldTransition = float4( worldPos.xyz, 1.0f );
 
 	o.fogFactorW = CalcFog( worldPos, projPos, g_FogType );
-#if !defined( _X360 )
 	o.fog = o.fogFactorW.w;
-#endif
 
 #if NORMALMAP
 	float3 worldTangentS = mul( v.vTangentS, cModel[0] );
