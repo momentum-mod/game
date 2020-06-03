@@ -60,6 +60,12 @@ BEGIN_VS_SHADER( SDK_WorldVertexTransition_DX9, "Help for WorldVertexTransition"
 		SHADER_PARAM( MASKEDBLENDING, SHADER_PARAM_TYPE_INTEGER, "0", "blend using texture with no vertex alpha. For using texture blending on non-displacements" )
 		SHADER_PARAM( SSBUMP, SHADER_PARAM_TYPE_INTEGER, "0", "whether or not to use alternate bumpmap format with height" )
 		SHADER_PARAM( SEAMLESS_SCALE, SHADER_PARAM_TYPE_FLOAT, "0", "Scale factor for 'seamless' texture mapping. 0 means to use ordinary mapping" )
+
+        // Parallax cubemaps
+        SHADER_PARAM(ENVMAPPARALLAXOBB1, SHADER_PARAM_TYPE_VEC4, "[1 0 0 0]", "The first line of the parallax correction OBB matrix")
+        SHADER_PARAM(ENVMAPPARALLAXOBB2, SHADER_PARAM_TYPE_VEC4, "[0 1 0 0]", "The second line of the parallax correction OBB matrix")
+        SHADER_PARAM(ENVMAPPARALLAXOBB3, SHADER_PARAM_TYPE_VEC4, "[0 0 1 0]", "The third line of the parallax correction OBB matrix")
+        SHADER_PARAM(ENVMAPORIGIN, SHADER_PARAM_TYPE_VEC3, "[0 0 0]", "The world space position of the env_cubemap being corrected")
 	END_SHADER_PARAMS
 
 	void SetupVars( LightmappedGeneric_DX9_Vars_t& info )
@@ -108,6 +114,12 @@ BEGIN_VS_SHADER( SDK_WorldVertexTransition_DX9, "Help for WorldVertexTransition"
 		info.m_nSelfShadowedBumpFlag = SSBUMP;
 		info.m_nSeamlessMappingScale = SEAMLESS_SCALE;
 		info.m_nAlphaTestReference = -1;
+
+		// Parallax cubemaps
+		info.m_nEnvmapParallaxObb1 = ENVMAPPARALLAXOBB1;
+		info.m_nEnvmapParallaxObb2 = ENVMAPPARALLAXOBB2;
+		info.m_nEnvmapParallaxObb3 = ENVMAPPARALLAXOBB3;
+		info.m_nEnvmapOrigin = ENVMAPORIGIN;
 	}
 
 	SHADER_FALLBACK

@@ -13,7 +13,7 @@
 SOFTWARE_VERTEX_SHADER( myHappyLittleSoftwareVertexShader )
 {
 	float t = pShaderAPI->CurrentTime();
-	for( int i = 0; i < meshBuilder.NumVertices(); i++ )
+	for( int i = 0; i < meshBuilder.VertexCount(); i++ )
 	{
 		const float *pPos = meshBuilder.Position();
 		meshBuilder.Position3f( pPos[0], pPos[1], pPos[2] + 10.0f * sin( t + pPos[0] ) );

@@ -9,20 +9,14 @@
 //Note: Not upgraded to vs/ps 2.0 fxc's because this shader is unused and there are no test cases to verify against.
 #include "BaseVSShader.h"
 
-#if !defined( _X360 )
-#include "shadowmodel_ps20.inc"
+#include "shadowmodel_ps20b.inc"
 #include "shadowmodel_vs20.inc"
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 DEFINE_FALLBACK_SHADER( ShadowModel, ShadowModel_DX9 )
 
-
-#if !defined( _X360 ) //not used for anything at time of 360 ship, and we want to avoid storing/loading assembly shaders
-
-//PC version
 BEGIN_VS_SHADER_FLAGS( ShadowModel_DX9, "Help for ShadowModel", SHADER_NOT_EDITABLE )
 
 BEGIN_SHADER_PARAMS
@@ -80,8 +74,8 @@ SHADER_DRAW
 		DECLARE_STATIC_VERTEX_SHADER( shadowmodel_vs20 );
 		SET_STATIC_VERTEX_SHADER( shadowmodel_vs20 );
 
-		DECLARE_STATIC_PIXEL_SHADER( shadowmodel_ps20 );
-		SET_STATIC_PIXEL_SHADER( shadowmodel_ps20 );
+		DECLARE_STATIC_PIXEL_SHADER( shadowmodel_ps20b );
+		SET_STATIC_PIXEL_SHADER( shadowmodel_ps20b );
 
 		// We need to fog to *white* regardless of overbrighting...
 		FogToWhite();
@@ -110,45 +104,9 @@ SHADER_DRAW
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 		SET_DYNAMIC_VERTEX_SHADER( shadowmodel_vs20 );
 
-		DECLARE_DYNAMIC_PIXEL_SHADER( shadowmodel_ps20 );
-		SET_DYNAMIC_PIXEL_SHADER( shadowmodel_ps20 );
+		DECLARE_DYNAMIC_PIXEL_SHADER( shadowmodel_ps20b );
+		SET_DYNAMIC_PIXEL_SHADER( shadowmodel_ps20b );
 	}
 	Draw( );
 }
 END_SHADER
-
-
-#else
-
-//360 version
-
-BEGIN_VS_SHADER_FLAGS( ShadowModel_DX9, "Help for ShadowModel", SHADER_NOT_EDITABLE )
-
-BEGIN_SHADER_PARAMS
-SHADER_PARAM( BASETEXTUREOFFSET, SHADER_PARAM_TYPE_VEC2, "[0 0]", "$baseTexture texcoord offset" )
-SHADER_PARAM( BASETEXTURESCALE, SHADER_PARAM_TYPE_VEC2, "[1 1]", "$baseTexture texcoord scale" )
-SHADER_PARAM( FALLOFFOFFSET, SHADER_PARAM_TYPE_FLOAT, "0", "Distance at which shadow starts to fade" )
-SHADER_PARAM( FALLOFFDISTANCE, SHADER_PARAM_TYPE_FLOAT, "100", "Max shadow distance" )
-SHADER_PARAM( FALLOFFAMOUNT, SHADER_PARAM_TYPE_FLOAT, "0.9", "Amount to brighten the shadow at max dist" )
-END_SHADER_PARAMS
-
-SHADER_INIT_PARAMS()
-{
-}
-
-SHADER_FALLBACK
-{
-	return 0;
-}
-
-SHADER_INIT
-{
-}
-
-SHADER_DRAW
-{
-	Draw( false );
-}
-END_SHADER
-
-#endif

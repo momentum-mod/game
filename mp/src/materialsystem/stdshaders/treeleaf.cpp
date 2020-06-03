@@ -8,7 +8,6 @@
 
 #include "BaseVSShader.h"
 
-#include "treeleaf_ps20.inc"
 #include "treeleaf_ps20b.inc"
 #include "treeleaf_vs20.inc"
 
@@ -58,16 +57,8 @@ BEGIN_VS_SHADER_FLAGS( TreeLeaf, "Help for TreeLeaf", SHADER_NOT_EDITABLE )
 			SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT, true );
 			SET_STATIC_VERTEX_SHADER( treeleaf_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( treeleaf_ps20b );
-				SET_STATIC_PIXEL_SHADER( treeleaf_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( treeleaf_ps20 );
-				SET_STATIC_PIXEL_SHADER( treeleaf_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( treeleaf_ps20b );
+			SET_STATIC_PIXEL_SHADER( treeleaf_ps20b );
 
 			// we are writing linear values from this shader.
 			// This is kinda wrong.  We are writing linear or gamma depending on "IsHDREnabled" below.
@@ -88,7 +79,7 @@ BEGIN_VS_SHADER_FLAGS( TreeLeaf, "Help for TreeLeaf", SHADER_NOT_EDITABLE )
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( treeleaf_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DYNAMIC_LIGHT, lightState.HasDynamicLight() );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT,  lightState.m_bStaticLight  ? 1 : 0 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT,  lightState.m_bStaticLightVertex  ? 1 : 0 );
 			SET_DYNAMIC_VERTEX_SHADER( treeleaf_vs20 );
 		}
 		Draw( );

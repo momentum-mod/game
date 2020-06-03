@@ -31,8 +31,8 @@ BEGIN_VS_SHADER( Eyes_dx8,
 		SHADER_PARAM( GLINTV, SHADER_PARAM_TYPE_VEC4, "[0 0 1 0]", "V projection vector for the glint" )
 		SHADER_PARAM( DILATION, SHADER_PARAM_TYPE_FLOAT, "0", "Iris dilation" )
 		SHADER_PARAM( INTRO, SHADER_PARAM_TYPE_BOOL, "0", "is eyes in the ep1 intro" )
- 	    SHADER_PARAM( ENTITYORIGIN, SHADER_PARAM_TYPE_VEC3,"0.0","center if the model in world space" )
- 	    SHADER_PARAM( WARPPARAM, SHADER_PARAM_TYPE_FLOAT,"0.0","animation param between 0 and 1" )
+		SHADER_PARAM( ENTITYORIGIN, SHADER_PARAM_TYPE_VEC3,"0.0","center if the model in world space" )
+		SHADER_PARAM( WARPPARAM, SHADER_PARAM_TYPE_FLOAT,"0.0","animation param between 0 and 1" )
 
 		// Cloak Pass
 		SHADER_PARAM( CLOAKPASSENABLED, SHADER_PARAM_TYPE_BOOL, "0", "Enables cloak render in a second pass" )
@@ -98,9 +98,11 @@ BEGIN_VS_SHADER( Eyes_dx8,
 
 	SHADER_INIT_PARAMS()
 	{
-		Eyes_DX8_DX9_Vars_t info;
-		SetupVars( info );
-		InitParamsEyes_DX8_DX9( this, params, pMaterialName, info );
+		{
+			Eyes_DX8_DX9_Vars_t info;
+			SetupVars( info );
+			InitParamsEyes_DX8_DX9( this, params, pMaterialName, info );
+		}
 
 		// Cloak Pass
 		if ( !params[CLOAKPASSENABLED]->IsDefined() )
@@ -117,7 +119,7 @@ BEGIN_VS_SHADER( Eyes_dx8,
 
 	SHADER_FALLBACK
 	{
-		if ( IsPC() && g_pHardwareConfig->GetDXSupportLevel() < 80 )
+		if ( g_pHardwareConfig->GetDXSupportLevel() < 80 )
 			return "Eyes_dx6";
 
 		return 0;
@@ -125,9 +127,11 @@ BEGIN_VS_SHADER( Eyes_dx8,
 
 	SHADER_INIT
 	{
-		Eyes_DX8_DX9_Vars_t info;
-		SetupVars( info );
-		InitEyes_DX8_DX9( this, params, info );
+		{
+			Eyes_DX8_DX9_Vars_t info;
+			SetupVars( info );
+			InitEyes_DX8_DX9( this, params, info );
+		}
 
 		// Cloak Pass
 		if ( params[CLOAKPASSENABLED]->GetIntValue() )

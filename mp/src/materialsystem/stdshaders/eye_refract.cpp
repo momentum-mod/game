@@ -33,8 +33,8 @@ BEGIN_VS_SHADER( EyeRefract_dx9, "Help for Eyes" )
 		SHADER_PARAM( EYEBALLRADIUS, SHADER_PARAM_TYPE_FLOAT, "0", "Eyeball radius for ray casting" )
 
 		SHADER_PARAM( INTRO, SHADER_PARAM_TYPE_BOOL, "0", "is eyes in the ep1 intro" )
- 	    SHADER_PARAM( ENTITYORIGIN, SHADER_PARAM_TYPE_VEC3,"0.0","center if the model in world space" )
- 	    SHADER_PARAM( WARPPARAM, SHADER_PARAM_TYPE_FLOAT,"0.0","animation param between 0 and 1" )
+		SHADER_PARAM( ENTITYORIGIN, SHADER_PARAM_TYPE_VEC3,"0.0","center if the model in world space" )
+		SHADER_PARAM( WARPPARAM, SHADER_PARAM_TYPE_FLOAT,"0.0","animation param between 0 and 1" )
 
 		SHADER_PARAM( LIGHTWARPTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "shadertest/BaseTexture", "1D ramp texture for tinting scalar diffuse term" )
 
@@ -127,9 +127,11 @@ BEGIN_VS_SHADER( EyeRefract_dx9, "Help for Eyes" )
 
 	SHADER_INIT_PARAMS()
 	{
-		Eye_Refract_Vars_t info;
-		SetupVarsEyeRefract( info );
-		InitParams_Eyes_Refract( this, params, pMaterialName, info );
+		{
+			Eye_Refract_Vars_t info;
+			SetupVarsEyeRefract( info );
+			InitParams_Eyes_Refract( this, params, pMaterialName, info );
+		}
 
 		// Cloak Pass
 		if ( !params[CLOAKPASSENABLED]->IsDefined() )
@@ -168,9 +170,11 @@ BEGIN_VS_SHADER( EyeRefract_dx9, "Help for Eyes" )
 
 	SHADER_INIT
 	{
-		Eye_Refract_Vars_t info;
-		SetupVarsEyeRefract( info );
-		Init_Eyes_Refract( this, params, info );
+		{
+			Eye_Refract_Vars_t info;
+			SetupVarsEyeRefract( info );
+			Init_Eyes_Refract( this, params, info );
+		}
 
 		// Cloak Pass
 		if ( params[CLOAKPASSENABLED]->GetIntValue() )

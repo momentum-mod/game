@@ -9,7 +9,6 @@
 #include "shaderlib/CShader.h"
 
 #include "debugluxel_ps20b.inc"
-#include "debugluxel_ps20.inc"
 #include "debugluxel_vs20.inc"
 
 
@@ -47,16 +46,8 @@ BEGIN_SHADER_FLAGS( DebugLuxels, "Help for DebugLuxels", SHADER_NOT_EDITABLE )
 			DECLARE_STATIC_VERTEX_SHADER( debugluxel_vs20 );
 			SET_STATIC_VERTEX_SHADER( debugluxel_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugluxel_ps20b );
-				SET_STATIC_PIXEL_SHADER( debugluxel_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugluxel_ps20 );
-				SET_STATIC_PIXEL_SHADER( debugluxel_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( debugluxel_ps20b );
+			SET_STATIC_PIXEL_SHADER( debugluxel_ps20b );
 
 			SetDefaultBlendingShadowState( BASETEXTURE );
 			DisableFog();
@@ -75,16 +66,8 @@ BEGIN_SHADER_FLAGS( DebugLuxels, "Help for DebugLuxels", SHADER_NOT_EDITABLE )
 			DECLARE_DYNAMIC_VERTEX_SHADER( debugluxel_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( debugluxel_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugluxel_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( debugluxel_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugluxel_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( debugluxel_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( debugluxel_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( debugluxel_ps20b );
 
 			//texture scale transform
 			Vector4D transformation[2];

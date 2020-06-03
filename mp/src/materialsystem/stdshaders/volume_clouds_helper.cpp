@@ -7,7 +7,6 @@
 
 // Auto generated inc files
 #include "volume_clouds_vs20.inc"
-#include "volume_clouds_ps20.inc"
 #include "volume_clouds_ps20b.inc"
 
 
@@ -58,16 +57,8 @@ void DrawVolumeClouds( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 		SET_STATIC_VERTEX_SHADER( volume_clouds_vs20 );
 	
 		// Pixel Shader
-		if( g_pHardwareConfig->SupportsPixelShaders_2_b() && !IsOpenGL() ) // Always send POSIX down the 20 path (rg - why?)
-		{
-			DECLARE_STATIC_PIXEL_SHADER( volume_clouds_ps20b );
-			SET_STATIC_PIXEL_SHADER( volume_clouds_ps20b );
-		}
-		else
-		{
-			DECLARE_STATIC_PIXEL_SHADER( volume_clouds_ps20 );
-			SET_STATIC_PIXEL_SHADER( volume_clouds_ps20 );
-		}
+		DECLARE_STATIC_PIXEL_SHADER( volume_clouds_ps20b );
+		SET_STATIC_PIXEL_SHADER( volume_clouds_ps20b );
 
 		// Textures
 		pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
@@ -108,16 +99,8 @@ void DrawVolumeClouds( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 		pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, vPackedVsConst1, 1 );
 
 		// Set Pixel Shader Combos
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() && !IsOpenGL() ) // Always send POSIX down the 20 path (rg - why?)
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20b );
-			SET_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20b );
-		}
-		else
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20 );
-		}
+		DECLARE_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20b );
+		SET_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20b );
 
 		// Bind textures
 		pShader->BindTexture( SHADER_SAMPLER0, info.m_nTexture1 );

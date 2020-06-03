@@ -37,7 +37,6 @@ BEGIN_SHADER_FLAGS( DebugModifyVertex, "Help for DebugModifyVertex", SHADER_NOT_
 			SHADOW_STATE
 			{
 				pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
-				pShaderShadow->EnableVertexDataPreprocess( true );
 				pShaderShadow->DrawFlags( SHADER_DRAW_POSITION | SHADER_DRAW_TEXCOORD0 );
 				FogToFogColor();
 			}
@@ -46,15 +45,16 @@ BEGIN_SHADER_FLAGS( DebugModifyVertex, "Help for DebugModifyVertex", SHADER_NOT_
 			{
 				BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 
+				CMeshBuilder* pMeshBuilder = pShaderAPI->GetVertexModifyBuilder();
 				float amp = params[WAVE]->GetFloatValue();
 				float currTime = pShaderAPI->CurrentTime();
-				for (int i = 0; i < MeshBuilder()->NumVertices(); ++i)
+				for (int i = 0; i < pMeshBuilder->VertexCount(); ++i)
 				{
-					float const* pPos = MeshBuilder()->Position();
-					MeshBuilder()->Position3f( pPos[0] + amp * sin( currTime + pPos[2] / 4 ),
+					float const* pPos = pMeshBuilder->Position();
+					pMeshBuilder->Position3f( pPos[0] + amp * sin( currTime + pPos[2] / 4 ),
 												pPos[1] + amp * sin( currTime + pPos[2] / 4 + 2 * 3.14 / 3 ),
 												pPos[2] + amp * sin( currTime + pPos[2] / 4 + 4 * 3.14 / 3 ) );
-					MeshBuilder()->AdvanceVertex();
+					pMeshBuilder->AdvanceVertex();
 				}
 			}
 			Draw();
@@ -70,16 +70,17 @@ BEGIN_SHADER_FLAGS( DebugModifyVertex, "Help for DebugModifyVertex", SHADER_NOT_
 			{
 				BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 
+				CMeshBuilder* pMeshBuilder = pShaderAPI->GetVertexModifyBuilder();
 				// Notice here that since we didn't modify the position, and this is a second
 				// pass, the position has been reset to it's initial, unmodified position
 				float currTime = pShaderAPI->CurrentTime();
-				for (int i = 0; i < MeshBuilder()->NumVertices(); ++i)
+				for (int i = 0; i < pMeshBuilder->VertexCount(); ++i)
 				{
-					float const* pPos = MeshBuilder()->Position();
-					MeshBuilder()->Color3f( ( sin( currTime + pPos[0] ) + 1.0F) * 0.5,
+					float const* pPos = pMeshBuilder->Position();
+					pMeshBuilder->Color3f( ( sin( currTime + pPos[0] ) + 1.0F) * 0.5,
 											( sin( currTime + pPos[1] ) + 1.0F) * 0.5,
 											( sin( currTime + pPos[2] ) + 1.0F) * 0.5 );
-					MeshBuilder()->AdvanceVertex();
+					pMeshBuilder->AdvanceVertex();
 				}
 			}
 			Draw();

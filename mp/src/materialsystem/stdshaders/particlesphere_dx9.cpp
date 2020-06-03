@@ -9,7 +9,6 @@
 #include "BaseVSShader.h"
 
 #include "particlesphere_vs20.inc"
-#include "particlesphere_ps20.inc"
 #include "particlesphere_ps20b.inc"
 
 #include "cpp_shader_constant_register_map.h"
@@ -86,17 +85,9 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_N
 			DECLARE_STATIC_VERTEX_SHADER( particlesphere_vs20 );
 			SET_STATIC_VERTEX_SHADER( particlesphere_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( particlesphere_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( DEPTHBLEND, bDepthBlend );
-				SET_STATIC_PIXEL_SHADER( particlesphere_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( particlesphere_ps20 );
-				SET_STATIC_PIXEL_SHADER( particlesphere_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( particlesphere_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( DEPTHBLEND, bDepthBlend );
+			SET_STATIC_PIXEL_SHADER( particlesphere_ps20b );
 
 			FogToFogColor();
 		}
@@ -138,11 +129,24 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_N
 			pShaderAPI->SetDepthFeatheringPixelShaderConstant( 0, params[DEPTHBLENDSCALE]->GetFloatValue() );
 
 			// Get viewport and render target dimensions and set shader constant to do a 2D mad
-			int nViewportX, nViewportY, nViewportWidth, nViewportHeight;
-			pShaderAPI->GetCurrentViewport( nViewportX, nViewportY, nViewportWidth, nViewportHeight );
+			ShaderViewport_t vp;
+			pShaderAPI->GetViewports( &vp, 1 );
+			int nViewportX = vp.m_nTopLeftX;
+			int nViewportY = vp.m_nTopLeftY;
+			int nViewportWidth = vp.m_nWidth;
+			int nViewportHeight = vp.m_nHeight;
 
 			int nRtWidth, nRtHeight;
-			pShaderAPI->GetCurrentRenderTargetDimensions( nRtWidth, nRtHeight );
+			ITexture* pRenderTarget = pShaderAPI->GetRenderTargetEx( 0 );
+			if( pRenderTarget != nullptr )
+			{
+				nRtWidth = pRenderTarget->GetActualWidth();
+				nRtHeight = pRenderTarget->GetActualHeight();
+			}
+			else
+			{
+				pShaderAPI->GetBackBufferDimensions( nRtWidth, nRtHeight );
+			}
 
 			float vViewportMad[4];
 			vViewportMad[0] = ( float )nViewportWidth / ( float )nRtWidth;
@@ -156,16 +160,8 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_N
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( FOGTYPE, s_pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 			SET_DYNAMIC_VERTEX_SHADER( particlesphere_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( particlesphere_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( particlesphere_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( particlesphere_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( particlesphere_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( particlesphere_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( particlesphere_ps20b );
 		}
 		Draw();
 	}

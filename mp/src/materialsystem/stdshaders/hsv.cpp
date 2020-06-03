@@ -7,7 +7,6 @@
 
 #include "BaseVSShader.h"
 #include "screenspaceeffect_vs20.inc"
-#include "hsv_ps20.inc"
 #include "hsv_ps20b.inc"
 
 // NOTE: This has to be the last file included!
@@ -43,16 +42,8 @@ BEGIN_VS_SHADER_FLAGS( HSV, "Help for HSV", SHADER_NOT_EDITABLE )
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( hsv_ps20b );
-				SET_STATIC_PIXEL_SHADER( hsv_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( hsv_ps20 );
-				SET_STATIC_PIXEL_SHADER( hsv_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( hsv_ps20b );
+			SET_STATIC_PIXEL_SHADER( hsv_ps20b );
 		}
 		DYNAMIC_STATE
 		{

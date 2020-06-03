@@ -8,7 +8,6 @@
 #include "BaseVSShader.h"
 
 #include "screenspaceeffect_vs20.inc"
-#include "floattoscreen_ps20.inc"
 #include "floattoscreen_ps20b.inc"
 #include "convar.h"
 
@@ -45,18 +44,14 @@ BEGIN_VS_SHADER_FLAGS( floattoscreen, "Help for floattoscreen", SHADER_NOT_EDITA
 			int fmt = VERTEX_POSITION;
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
-			// convert from linear to gamma on write.
-			if ( !IsX360() ) // The 360 is using this shader when it shouldn't...this is just a quick hack to keep things looking right on the 360
-			{
-				pShaderShadow->EnableSRGBWrite( true );
-			}
+			pShaderShadow->EnableSRGBWrite( true );
 
 			// Pre-cache shaders
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
-//			DECLARE_STATIC_PIXEL_SHADER( floattoscreen_ps20 );
-//			SET_STATIC_PIXEL_SHADER( floattoscreen_ps20 );
+//			DECLARE_STATIC_PIXEL_SHADER( floattoscreen_ps20b );
+//			SET_STATIC_PIXEL_SHADER( floattoscreen_ps20b );
 			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 			{
 				const char *szPixelShader = params[PIXSHADER]->GetStringValue();
@@ -88,8 +83,8 @@ BEGIN_VS_SHADER_FLAGS( floattoscreen, "Help for floattoscreen", SHADER_NOT_EDITA
 			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
 
-//			DECLARE_DYNAMIC_PIXEL_SHADER( floattoscreen_ps20 );
-//			SET_DYNAMIC_PIXEL_SHADER( floattoscreen_ps20 );
+//			DECLARE_DYNAMIC_PIXEL_SHADER( floattoscreen_ps20b );
+//			SET_DYNAMIC_PIXEL_SHADER( floattoscreen_ps20b );
 			pShaderAPI->SetPixelShaderIndex( 0 );
 		}
 		Draw();

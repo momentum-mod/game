@@ -8,7 +8,8 @@
 
 #include "BaseVSShader.h"
 
-#include "lightmappedgeneric_decal.inc"
+#include "lightmappedgeneric_decal_vs20.inc"
+#include "lightmappedgeneric_decal_ps20b.inc"
 #include "mathlib/bumpvects.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -89,9 +90,12 @@ BEGIN_VS_SHADER( LightmappedGeneric_Decal,
 			int pTexCoords[3] = { 2, 2, 1 };
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION | VERTEX_COLOR, 3, pTexCoords, 0 );
 
-			lightmappedgeneric_decal_Static_Index vshIndex;
-			pShaderShadow->SetVertexShader( "LightmappedGeneric_Decal", vshIndex.GetIndex() );
-			pShaderShadow->SetPixelShader( "LightmappedGeneric_Decal" );
+			DECLARE_STATIC_VERTEX_SHADER( lightmappedgeneric_decal_vs20 );
+			SET_STATIC_VERTEX_SHADER( lightmappedgeneric_decal_vs20 );
+
+			DECLARE_STATIC_PIXEL_SHADER( lightmappedgeneric_decal_ps20b );
+			SET_STATIC_PIXEL_SHADER( lightmappedgeneric_decal_ps20b );
+
 			FogToFogColor();
 		}
 		else
@@ -113,9 +117,9 @@ BEGIN_VS_SHADER( LightmappedGeneric_Decal,
 			SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, BASETEXTURETRANSFORM );
 			SetModulationPixelShaderDynamicState( 3 );
 
-			lightmappedgeneric_decal_Dynamic_Index vshIndex;
-			vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-			pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
+			DECLARE_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_decal_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
+			SET_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_decal_vs20 );
 		}
 		Draw();
 	}
@@ -124,8 +128,30 @@ BEGIN_VS_SHADER( LightmappedGeneric_Decal,
 	{
 		if( UsingFlashlight( params ) )
 		{
-			DrawFlashlight_dx80( params, pShaderAPI, pShaderShadow, false, -1, -1, -1, 
-				FLASHLIGHTTEXTURE, FLASHLIGHTTEXTUREFRAME, true, false, 0, -1, -1 );
+			CBaseVSShader::DrawFlashlight_dx90_Vars_t vars;
+			vars.m_bBump = false;
+			vars.m_nBumpmapVar = -1;
+			vars.m_nBumpmapFrame = -1;
+			vars.m_nBumpTransform = -1;
+			vars.m_nFlashlightTextureVar = FLASHLIGHTTEXTURE;
+			vars.m_nFlashlightTextureFrameVar = FLASHLIGHTTEXTUREFRAME;
+			vars.m_bLightmappedGeneric = true;
+			vars.m_bWorldVertexTransition = false;
+			vars.m_nBaseTexture2Var = -1;
+			vars.m_nBaseTexture2FrameVar = -1;
+			vars.m_nBumpmap2Var = -1;
+			vars.m_nBumpmap2Frame = -1;
+			vars.m_nBump2Transform = -1;
+			vars.m_nAlphaTestReference = -1;
+			vars.m_bSSBump = false;
+			vars.m_nDetailVar = -1;
+			vars.m_nDetailScale = -1;
+			vars.m_nDetailTextureCombineMode = -1;
+			vars.m_nDetailTextureBlendFactor = -1;
+			vars.m_nDetailTint = -1;
+			vars.m_fSeamlessScale = 0.0;
+
+			DrawFlashlight_dx90( params, pShaderAPI, pShaderShadow, vars );
 		}
 		else
 		{
