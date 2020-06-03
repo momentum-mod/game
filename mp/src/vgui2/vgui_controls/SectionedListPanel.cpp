@@ -74,7 +74,7 @@ void SectionedListPanelHeader::ApplySchemeSettings(IScheme *pScheme)
 	SetFgColor(GetSchemeColor("SectionedListPanel.HeaderTextColor", pScheme));
 	m_SectionDividerColor = GetSchemeColor("SectionedListPanel.DividerColor", pScheme);
 	SetBgColor(GetSchemeColor("SectionedListPanelHeader.BgColor", GetBgColor(), pScheme));
-	SetFont(pScheme->GetFont("DefaultVerySmall", IsProportional()));
+	SetFont(GetSchemeFont(pScheme, nullptr, "SectionedListPanel.HeaderFont", "DefaultVerySmall"));
 	ClearImages();
 	
 	HFont hFont = m_pListPanel->GetHeaderFont();
