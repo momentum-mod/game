@@ -806,10 +806,6 @@ Panel::~Panel()
 
 	// delete VPanel
 	ivgui()->FreePanel(_vpanel);
-	// free our name
-	_panelName.Purge();
-	_tooltipText.Purge();
-	_pinToSibling.Purge();
 
 	_vpanel = NULL;
 #if defined( VGUI_USEDRAGDROP )
@@ -4712,6 +4708,9 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 	const char *pBorder = inResourceData->GetString("border");
 	if ( *pBorder )
 	{
+		_borderOverrideName.Purge();
+		_borderOverrideName.Set(pBorder);
+
 		IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
 		SetBorder( pScheme->GetBorder( pBorder ) );
 	}
@@ -4862,7 +4861,9 @@ void Panel::GetSettings( KeyValues *outResourceData )
 		outResourceData->SetInt( "ypos", y );
 	}
 	if (!_tooltipText.IsEmpty())
+	{
 		outResourceData->SetString("tooltiptext", _tooltipText.Get());
+	}
 
 	int wide, tall;
 	GetSize( wide, tall );
@@ -4919,7 +4920,7 @@ void Panel::GetSettings( KeyValues *outResourceData )
 
     outResourceData->SetInt("actionsignallevel", m_nActionSignalLevel);
 
-    outResourceData->SetString("border", _border ? _border->GetName() : "");
+    outResourceData->SetString("border", _border ? _border->GetName() : _borderOverrideName.String());
 
     // nav
     outResourceData->SetString("navUp", m_sNavUpName);
