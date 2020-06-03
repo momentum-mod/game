@@ -793,6 +793,7 @@ class Panel : public IClientPanel, public virtual IForceVirtualInheritancePanel
     const char *GetNavActivateName(void) const { return m_sNavActivateName.String(); }
     const char *GetNavBackName(void) const { return m_sNavBackName.String(); }
 
+    const char *GetBorderOverrideName() const { return _borderOverrideName.String(); }
   protected:
     // this will return m_NavDown and will not look for the next visible panel
     Panel *GetNavUpPanel();
@@ -931,6 +932,7 @@ class Panel : public IClientPanel, public virtual IForceVirtualInheritancePanel
     VPANEL _vpanel;   // handle to a vgui panel
     CUtlString _panelName; // string name of the panel - only unique within the current context
     IBorder *_border;
+    CUtlString _borderOverrideName;
 
     CUtlFlags<unsigned short> _flags;   // see PanelFlags_t
     Dar<HPanel> _actionSignalTargetDar; // the panel to direct notify messages to ("Command", "TextChanged", etc.)
