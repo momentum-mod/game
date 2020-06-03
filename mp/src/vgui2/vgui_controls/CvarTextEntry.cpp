@@ -58,6 +58,12 @@ void CvarTextEntry::ApplySettings(KeyValues* inResourceData)
 {
     BaseClass::ApplySettings(inResourceData);
 
+    const auto precision = inResourceData->GetInt("precision", -1);
+    if (precision > -1)
+    {
+        SetPrecision(precision);
+    }
+
     const char *cvarName = inResourceData->GetString("cvar_name", "");
 
     m_cvarRef.Init(cvarName);
@@ -73,6 +79,7 @@ void CvarTextEntry::GetSettings(KeyValues* pOutResource)
     BaseClass::GetSettings(pOutResource);
 
     pOutResource->SetString("cvar_name", m_cvarRef.GetName());
+    pOutResource->SetInt("precision", m_iPrecision);
 }
 
 void CvarTextEntry::SetText(const char* text)
@@ -102,7 +109,8 @@ void CvarTextEntry::SetText(const char* text)
 void CvarTextEntry::InitSettings()
 {
     BEGIN_PANEL_SETTINGS()
-    {"cvar_name", TYPE_STRING}
+    {"cvar_name", TYPE_STRING},
+    {"precision", TYPE_INTEGER},
     END_PANEL_SETTINGS();
 }
 
