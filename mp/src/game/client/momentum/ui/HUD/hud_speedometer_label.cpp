@@ -273,3 +273,50 @@ void SpeedometerLabel::ColorizeComparisonSeparate()
     m_pComparisonLabel->SetText(szText);
     m_pComparisonLabel->SetFgColor(compareColor);
 }
+
+void SpeedometerLabel::SaveToKV(KeyValues* pOut)
+{
+    pOut->Clear();
+    pOut->SetBool("visible", IsVisible());
+    pOut->SetInt("colorize", GetColorizeType());
+    KeyValues *pRangesKV = pOut->FindKey("ranges", true);
+    char tmp[BUFSIZELOCL];
+
+    FOR_EACH_VEC(m_vecRangeList, i)
+    {
+        Range_t range = m_vecRangeList[i];
+        Q_snprintf(tmp, BUFSIZELOCL, "%i", i + 1);
+        KeyValues *rangeKV = pRangesKV->FindKey(tmp, true);
+        rangeKV->SetInt("min", range.min);
+        rangeKV->SetInt("max", range.max);
+        rangeKV->SetColor("color", range.color);
+    }
+    pOut->SetInt("units", GetUnitType());
+}
+
+void SpeedometerLabel::LoadFromKV(KeyValues* pIn)
+{
+    SetVisible(pIn->GetBool("visible", false));
+    if (!IsVisible())
+        return;
+
+    int colorize = pIn->GetInt("colorize", SPEEDOMETER_COLORIZE_NONE);
+    if (colorize == SPEEDOMETER_COLORIZE_RANGE)
+    {
+        KeyValues *pRangesKV = pIn->FindKey("ranges");
+        if (!pRangesKV)
+            return;
+
+        m_vecRangeList.RemoveAll();
+        FOR_EACH_SUBKEY(pRangesKV, pRangeItem)
+        {
+            Range_t range;
+            range.min = pRangeItem->GetInt("min", 0);
+            range.max = pRangeItem->GetInt("max", 0);
+            range.color = pRangeItem->GetColor("color");
+            m_vecRangeList.AddToTail(range);
+        }
+    }
+    SetColorizeType(colorize);
+    SetUnitType(pIn->GetInt("units", SPEEDOMETER_UNITS_UPS));
+}
