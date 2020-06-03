@@ -47,9 +47,6 @@ float4 main( PS_INPUT i ) : COLOR
 	vRollBlurVector.xy *= flRollBlurIntensity;
 
 	float2 vFinalBlurVector = vGlobalBlurVector.xy + vFallingMotionBlurVector.xy + vRollBlurVector.xy;
-	#if defined( _X360 ) // Disable falling blur on the 360 for perf
-		vFinalBlurVector.xy = vGlobalBlurVector.xy + vRollBlurVector.xy;
-	#endif
 
 	// Clamp blur vector to max length
 	if ( length( vFinalBlurVector.xy ) > g_flMaxMotionBlur )
@@ -71,9 +68,6 @@ float4 main( PS_INPUT i ) : COLOR
 	#endif
 
 	float4 cColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-	#if defined( _X360 )
-		[unroll]
-	#endif
 	for ( int x = 0; x <= D_NUM_BLUR_SAMPLES; x++ )
 	{
 		// Calculate uv

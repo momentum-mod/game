@@ -38,10 +38,6 @@ struct PS_INPUT
 	HALF2 baseTexCoord				: TEXCOORD0;		// Base texture coordinate
 	HALF2 baseTexCoord2				: TEXCOORD1;		// Base texture coordinate
 	float4 worldPos_projPosZ		: TEXCOORD7;		// Necessary for water fog dest alpha
-	
-#if defined( _X360 ) //matching pixel shader inputs to vertex shader outputs to avoid shader patches	
-	float4 vColor	: COLOR0;
-#endif
 };
 
 #if LIGHTING_PREVIEW == 2

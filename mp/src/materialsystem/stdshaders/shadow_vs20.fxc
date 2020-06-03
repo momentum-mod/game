@@ -23,16 +23,14 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+#if !defined( SHADER_MODEL_VS_3_0 )
 	float  fog						: FOG;
 #endif
 	HALF4 worldPos_projPosZ		    : TEXCOORD0;
 	float4 vFalloffParams			: TEXCOORD1;
 	float3 texCoord0_shadowAlpha	: TEXCOORD2;
-#if !defined( _X360 )
 	float4 texCoord1_2				: TEXCOORD3;
 	float4 texCoord3_4				: TEXCOORD4;
-#endif
 };
 
 VS_OUTPUT main( const VS_INPUT v )
@@ -46,8 +44,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
 	o.projPos = projPos;
 	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	o.fog = CalcFixedFunctionFog( worldPos, g_FogType );
+#if !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFog( worldPos, projPos.xyz, g_FogType );
 #endif
 
 	o.worldPos_projPosZ = float4( worldPos, projPos.z );
@@ -58,14 +56,10 @@ VS_OUTPUT main( const VS_INPUT v )
 	texCoord.y = dot( v.vTexCoord0, cBaseTexCoordTransform[1] );
 
 	o.texCoord0_shadowAlpha.xy = texCoord;
-#if !defined( _X360 )
-	{
-		o.texCoord1_2.xy = texCoord + cTextureJitter[0];
-		o.texCoord1_2.wz = texCoord - cTextureJitter[0];
-		o.texCoord3_4.xy = texCoord + cTextureJitter[1];
-		o.texCoord3_4.wz = texCoord - cTextureJitter[1];
-	}
-#endif
+	o.texCoord1_2.xy = texCoord + cTextureJitter[0];
+	o.texCoord1_2.wz = texCoord - cTextureJitter[0];
+	o.texCoord3_4.xy = texCoord + cTextureJitter[1];
+	o.texCoord3_4.wz = texCoord - cTextureJitter[1];
 
 	o.texCoord0_shadowAlpha.z = v.vColor.a;
 	return o;

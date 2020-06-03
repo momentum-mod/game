@@ -20,7 +20,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
+#if !defined( SHADER_MODEL_VS_3_0 )
 	float  fog						: FOG;
 #endif
 	float2 baseTexCoord				: TEXCOORD0;
@@ -54,8 +54,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.envmapMaskTexCoord.y = dot( v.vDetailTexCoord, cDetailTexCoordTransform[1] ) + cDetailTexCoordTransform[1].w;
 	o.lightmapTexCoord = v.vLightmapTexCoord;
 	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	o.fog = CalcFixedFunctionFog( o.worldPos_projPosZ.xyz, g_FogType );
+#if !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFog( o.worldPos_projPosZ.xyz, projPos.xyz, g_FogType );
 #endif
 
 	o.vertexColor = cModulationColor;

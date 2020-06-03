@@ -35,16 +35,8 @@ const float4 ViewportTransformScaled : register(SHADER_SPECIFIC_CONST_10);
 #define START_FAR_FADE  ( SizeParms2.x )
 #define FAR_FADE_FACTOR ( SizeParms2.y )	   // alpha = 1-min(1,max(0, (dist-start_fade)*factor))
 
-// Define stuff for instancing on 360
-#if ( defined( _X360 ) && defined( SHADER_MODEL_VS_2_0 ) )
-#define CONST_PC 
-#define VERTEX_INDEX_PARAM_360 ,int Index:INDEX
-#define DO_INSTANCING 1
-#else
 #define CONST_PC const
 #define VERTEX_INDEX_PARAM_360
-#endif
-
 
 struct VS_INPUT
 {
@@ -81,11 +73,7 @@ struct VS_OUTPUT
 	float2 vSeq2TexCoord1   : TEXCOORD6;
 #endif
 
-#if defined( _X360 )
-	float4 vScreenPos_ReverseZ		: TEXCOORD7;
-#else
 	float4 vScreenPos		: TEXCOORD7;
-#endif
 };
 
 #define BLENDFACTOR v.vParms.x
@@ -334,11 +322,7 @@ VS_OUTPUT main( CONST_PC VS_INPUT v
 	// Need to also account for the viewport transform, which matters when rendering with mat_viewportscale != 1.0
 	vScreenPos = (vScreenPos * ViewportTransformScaled.xy) + (projPos.w * ViewportTransformScaled.zw);
 	
-#if defined( _X360 )
-	o.vScreenPos_ReverseZ = float4(vScreenPos.x, vScreenPos.y, projPos.w - projPos.z, projPos.w );
-#else
 	o.vScreenPos = float4(vScreenPos.x, vScreenPos.y, projPos.z, projPos.w );
-#endif
 
 	o.argbcolor = tint;
 	return o;

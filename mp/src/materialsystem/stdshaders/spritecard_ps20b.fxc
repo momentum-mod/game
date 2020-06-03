@@ -42,12 +42,8 @@ struct PS_INPUT
 	float2 vSeq2TexCoord0   : TEXCOORD5;
 	float2 vSeq2TexCoord1   : TEXCOORD6; 
 #endif
-	
-#if defined( REVERSE_DEPTH_ON_X360 )
-	float4 vScreenPos_ReverseZ		: TEXCOORD7;
-#else
+
 	float4 vScreenPos		: TEXCOORD7;
-#endif
 };
 
 sampler BaseTextureSampler	: register( s0 );
@@ -145,11 +141,7 @@ float4 main( PS_INPUT i ) : COLOR
 
 	//Soft Particles FTW
 #	if (DEPTHBLEND == 1)
-#		if defined( _X360 )
-			float fDepthBlend = DepthFeathering( DepthSampler, i.vScreenPos_ReverseZ.xy / i.vScreenPos_ReverseZ.w, i.vScreenPos_ReverseZ.z, i.vScreenPos_ReverseZ.w, g_DepthFeatheringConstants );
-#		else
-			float fDepthBlend = DepthFeathering( DepthSampler, i.vScreenPos.xy / i.vScreenPos.w, i.vScreenPos.z, i.vScreenPos.w, g_DepthFeatheringConstants );
-#		endif
+		float fDepthBlend = DepthFeathering( DepthSampler, i.vScreenPos.xy / i.vScreenPos.w, i.vScreenPos.z, i.vScreenPos.w, g_DepthFeatheringConstants );
 		i.argbcolor.a *= fDepthBlend;
 #	endif
 

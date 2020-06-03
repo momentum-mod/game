@@ -27,12 +27,10 @@ struct PS_INPUT
 
 float4 main( PS_INPUT i ) : COLOR
 {
-#if !defined( _X360 )
 	if ( i.vBaseTexCoord.x < 0.0 || i.vBaseTexCoord.x > 1.0 || i.vBaseTexCoord.y < 0.0 || i.vBaseTexCoord.y > 1.0 )
 	{
 		discard;
 	}
-#endif
 
 	float3 vResult = tex2D( BaseSampler1, i.vBaseTexCoord.xy ) * cFlashlightColor.rgb;
 

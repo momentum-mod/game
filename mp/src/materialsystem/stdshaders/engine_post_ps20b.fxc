@@ -219,34 +219,17 @@ float4 main( PS_INPUT i ) : COLOR
 		float3 dnlf;
 		float3 dnrt;
 
-		#if defined( _X360 )
-		asm
-		{
-			tfetch2D up.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = 0.0,  OffsetY = -1.0, MagFilter = point, MinFilter = point, MipFilter = point
-			tfetch2D dn.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = 0.0,  OffsetY = 1.0,  MagFilter = point, MinFilter = point, MipFilter = point
-			tfetch2D lf.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = -1.0, OffsetY = 0.0,  MagFilter = point, MinFilter = point, MipFilter = point
-			tfetch2D rt.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = 1.0,  OffsetY = 0.0,  MagFilter = point, MinFilter = point, MipFilter = point
-
-			tfetch2D uplf.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = -1.0, OffsetY = -1.0, MagFilter = point, MinFilter = point, MipFilter = point
-			tfetch2D uprt.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = 1.0,  OffsetY = -1.0, MagFilter = point, MinFilter = point, MipFilter = point
-			tfetch2D dnlf.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = -1.0, OffsetY = 1.0,  MagFilter = point, MinFilter = point, MipFilter = point
-			tfetch2D dnrt.xyz, fbTexCoord.xy, FBTextureSampler, OffsetX = 1.0,  OffsetY = 1.0,  MagFilter = point, MinFilter = point, MipFilter = point
-		};
-		#else
-		{
-			// psTapOffs_packed contains 1-pixel offsets: ( +dX, 0, +dY, -dX )
-			float4 texelDelta = psTapOffs_Packed.xyzw;
-		 	dn = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.yz ).rgb; // ( 0,+1)
-			rt = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.xy ).rgb; // (+1, 0)
-			up = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.yz ).rgb; // ( 0,-1)
-			lf = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.xy ).rgb; // (-1, 0)
-			dnlf = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.wz ).rgb; // (-1,+1)
-			uprt = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.wz ).rgb; // (+1,-1)
-			texelDelta.y = texelDelta.z; // Can't quite get all 8 sample offsets from a single float4 with the allowed swizzles!
-			uplf = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.xy ).rgb; // (+1,+1)
-			dnrt = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.xy ).rgb; // (-1,-1)
-		}
-		#endif
+		// psTapOffs_packed contains 1-pixel offsets: ( +dX, 0, +dY, -dX )
+		float4 texelDelta = psTapOffs_Packed.xyzw;
+		dn = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.yz ).rgb; // ( 0,+1)
+		rt = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.xy ).rgb; // (+1, 0)
+		up = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.yz ).rgb; // ( 0,-1)
+		lf = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.xy ).rgb; // (-1, 0)
+		dnlf = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.wz ).rgb; // (-1,+1)
+		uprt = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.wz ).rgb; // (+1,-1)
+		texelDelta.y = texelDelta.z; // Can't quite get all 8 sample offsets from a single float4 with the allowed swizzles!
+		uplf = tex2D( FBTextureSampler, fbTexCoord.xy + texelDelta.xy ).rgb; // (+1,+1)
+		dnrt = tex2D( FBTextureSampler, fbTexCoord.xy - texelDelta.xy ).rgb; // (-1,-1)
 
 		// Generate the edge mask
 		float flBaseLum = Luminance( baseColor.rgb );
@@ -255,9 +238,6 @@ float4 main( PS_INPUT i ) : COLOR
 		flEdge += saturate( abs( Luminance( lf.rgb ) - flBaseLum ) - 0.1 );
 		flEdge += saturate( abs( Luminance( rt.rgb ) - flBaseLum ) - 0.1 );
 		flEdge *= 5.0;
-		#if defined( _X360 )
-			flEdge *= 4.0; // Magic number to compensate for 360 gamma space
-		#endif
 
 		// Average full 3x3 neighborhood of pixels giving more weight to the center sample
 		float3 vBlurColor = ( baseColor.rgb * 4.0f ) + up.rgb + dn.rgb + lf.rgb + rt.rgb + dnrt.rgb + uprt.rgb + dnlf.rgb + uplf.rgb;
@@ -362,28 +342,13 @@ float4 main( PS_INPUT i ) : COLOR
 		//float2 vTmp = ( vUv.xy * 2.0 ) - 1.0;
 		float flVignette;
 
-		#if defined( _X360 )
-		{
-			// Make title safe and deal with different gamma space
-			//flVignette = 1.0 - pow( abs( vTmp.x ), 4.0f );
-			//flVignette *= 1.0 - pow( abs( vTmp.y ), 4.0f );
-			//flVignette = 1.0 - ( 1.0 - flVignette ) * ( ( saturate( ( 1.0 - vUv.y ) - 0.1 ) / 0.9 ) );
+		//flVignette = 1.0 - pow( abs( vTmp.x ), 6.0f );
+		//flVignette *= 1.0 - pow( abs( vTmp.y ), 6.0f );
+		//flVignette = 1.0 - ( 1.0 - flVignette ) * ( ( saturate( ( 1.0 - vUv.y ) - 0.3 ) / 0.7 ) );
 
-			// This tex2D solves the 3 lines of math above
-			flVignette = tex2D( VignetteSampler, vUv.xy ).g; // Green is for the 360
-			flVignette = saturate( flVignette * 0.75 + 0.26 );
-		}
-		#else
-		{
-			//flVignette = 1.0 - pow( abs( vTmp.x ), 6.0f );
-			//flVignette *= 1.0 - pow( abs( vTmp.y ), 6.0f );
-			//flVignette = 1.0 - ( 1.0 - flVignette ) * ( ( saturate( ( 1.0 - vUv.y ) - 0.3 ) / 0.7 ) );
-
-			// This tex2D solves the 3 lines of math above
-			flVignette = tex2D( VignetteSampler, vUv.xy ).r; // Red is for the PC
-			flVignette = saturate( flVignette * 0.55 + 0.46 );
-		}
-		#endif
+		// This tex2D solves the 3 lines of math above
+		flVignette = tex2D( VignetteSampler, vUv.xy ).r; // Red is for the PC
+		flVignette = saturate( flVignette * 0.55 + 0.46 );
 
 		outColor.rgb *= flVignette;
 	}
@@ -403,19 +368,8 @@ float4 main( PS_INPUT i ) : COLOR
 		float3 vTmp = { 0.2125f, 0.7154f, 0.0721f };
 		float flLuminance = saturate( dot( outColor.rgb, vTmp.rgb ) );
 
-		#if defined( _X360 )
-		{
-			// 360
-			float flNoiseScalar = 0.2f + 1.0f * ( saturate( pow( 1.0 - flLuminance, 64.0 ) ) );
-			outColor.rgb += ( ( flNoiseTexel * 0.3f ) - 0.15f  ) * g_flNoiseScalar * flNoiseScalar;
-		}
-		#else
-		{
-			// PC
-			float flNoiseScalar = 0.2f + 0.8f * ( saturate( pow( 1.0 - flLuminance, 12.0 ) ) );
-			outColor.rgb += ( ( flNoiseTexel * 0.3f ) - 0.15f  ) * g_flNoiseScalar * flNoiseScalar;
-		}
-		#endif
+		float flNoiseScalar = 0.2f + 0.8f * ( saturate( pow( 1.0 - flLuminance, 12.0 ) ) );
+		outColor.rgb += ( ( flNoiseTexel * 0.3f ) - 0.15f  ) * g_flNoiseScalar * flNoiseScalar;
 	}
 	#endif
 

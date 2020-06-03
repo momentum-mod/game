@@ -20,6 +20,24 @@ float3 g_EyePos							: register( c1 );
 sampler BaseTextureSampler	: register( s0 );
 sampler NormalSampler		: register( s1 );
 
+float4 tex2Dsrgb( sampler iSampler, float2 iUv )
+{
+	// This function is named as a hint that the texture is meant to be read with
+	// an sRGB->linear conversion.
+	#if ( SHADER_SRGB_READ == 0 )
+	{
+		// Don't fake the srgb read in shader code
+		return tex2D( iSampler, iUv.xy );
+	}
+	#else
+	{
+		float4 vTextureValue = tex2D( iSampler, iUv.xy );
+		vTextureValue.rgb = SrgbGammaToLinear( vTextureValue.rgb );
+		return vTextureValue.rgba;
+	}
+	#endif
+}
+
 float4 main( PS_INPUT i ) : COLOR
 {
 	#if ( SHADOWDEPTH == 0 )
