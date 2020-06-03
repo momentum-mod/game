@@ -307,6 +307,11 @@ void ScrollBar::PerformLayout()
 		SetScrollbarButtonsVisible( _slider->IsSliderVisible() );
 	}
 
+	if (m_bNoButtons)
+	{
+	    SetScrollbarButtonsVisible(false);
+	}
+
 	// get tooltips to draw
 	Panel::PerformLayout();
 }
@@ -576,7 +581,7 @@ void ScrollBar::SetScrollbarButtonsVisible(bool visible)
     {
         if (pButton)
         {
-            pButton->SetShouldPaint(visible);
+            pButton->SetVisible(visible);
             pButton->SetEnabled(visible);
         }
     }
