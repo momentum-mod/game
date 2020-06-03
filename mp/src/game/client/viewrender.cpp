@@ -1980,7 +1980,7 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 				pRenderContext.GetFrom( materials );
 				{
 					PIXEVENT( pRenderContext, "DoImageSpaceMotionBlur" );
-					DoImageSpaceMotionBlur( viewSetup, viewSetup.x, viewSetup.y, viewSetup.width, viewSetup.height );
+					DoImageSpaceMotionBlur( viewSetup );
 				}
 				pRenderContext.SafeRelease();
 			}
