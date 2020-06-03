@@ -1,5 +1,3 @@
-
-// STATIC: "DEFERRED_SHADOWS"	"0..1"
 #include "common_fog_vs_fxc.h"
 
 #include "common_vs_fxc.h"
@@ -8,8 +6,6 @@ static const int g_FogType = DOWATERFOG;
 
 const float4 cBaseTexCoordTransform[2]			: register( SHADER_SPECIFIC_CONST_0 );
 const float4 cTextureJitter[2]					: register( SHADER_SPECIFIC_CONST_2 );
-
-#if DEFERRED_SHADOWS == 0 
 
 struct VS_INPUT
 {
@@ -64,66 +60,3 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.texCoord0_shadowAlpha.z = v.vColor.a;
 	return o;
 }
-
-
-#else // DEFERRED_SHADOWS == 1
-
-struct VS_INPUT
-{
-	float4 vPos				: POSITION;
-	float3 vNormal			: NORMAL;
-	float3 vShadowDir		: TEXCOORD0;
-	float4 vTexCoordBiasScale	: TEXCOORD1;
-	float4 vProjToTex0			: TEXCOORD2;
-	float4 vProjToTex1			: TEXCOORD3;
-	float4 vProjToTex2			: TEXCOORD4;
-	float4 vProjToTex3			: TEXCOORD5;
-	float3 vFalloffParams		: TEXCOORD6;
-};
-
-struct VS_OUTPUT
-{
-    float4 projPos				: POSITION;	
-	float4 vTexCoordBiasScale	: TEXCOORD0;
-	float4 vProjToTex0			: TEXCOORD1;
-	float4 vProjToTex1			: TEXCOORD2;
-	float4 vProjToTex2			: TEXCOORD3;
-	float4 vProjToTex3			: TEXCOORD4;
-	float3 vFalloffParams		: TEXCOORD5;
-};
-
-VS_OUTPUT main( const VS_INPUT v )
-{
-	VS_OUTPUT o = ( VS_OUTPUT )0;
-
-	float3 worldNormal, worldPos;
-	float2 texCoord;
-
-	// obj->world xform currently handled on CPU for batching
-	/*
-	worldPos = mul( v.vPos, cModel[0] );
-	worldNormal = mul( v.vNormal, cModel[0] );
-	*/
-
-	worldPos = v.vPos.xyz;
-	worldNormal = v.vNormal.xyz;
-	
-	// bounding volume extrusion
-	if ( dot( worldNormal, v.vShadowDir ) > 0.0 )
-	{
-		worldPos += v.vShadowDir;
-	}
-
-	o.vTexCoordBiasScale = v.vTexCoordBiasScale;
-	o.vProjToTex0 = v.vProjToTex0;
-	o.vProjToTex1 = v.vProjToTex1;
-	o.vProjToTex2 = v.vProjToTex2;
-	o.vProjToTex3 = v.vProjToTex3;
-	o.vFalloffParams.xyz = v.vFalloffParams;
-
-	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
-	o.projPos = projPos;
-	return o;
-}
-
-#endif
