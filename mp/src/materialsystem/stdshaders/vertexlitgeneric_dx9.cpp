@@ -13,8 +13,9 @@
 #include "flesh_interior_blended_pass_helper.h"
 //#include "weapon_sheen_pass_helper.h"
 
+DEFINE_FALLBACK_SHADER( SDK_VertexLitGeneric, VertexLitGeneric );
 
-BEGIN_VS_SHADER( SDK_VertexLitGeneric, "Help for SDK_VertexLitGeneric" )
+BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM( ALBEDO, SHADER_PARAM_TYPE_TEXTURE, "shadertest/BaseTexture", "albedo (Base texture with no baked lighting)" )
 		SHADER_PARAM( COMPRESS, SHADER_PARAM_TYPE_TEXTURE, "shadertest/BaseTexture", "compression wrinklemap" )

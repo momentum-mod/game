@@ -258,10 +258,6 @@ float4 main( PS_INPUT i ) : COLOR
 	}
 
 	// If the exponent passed in as a constant is zero, use the value from the map as the exponent
-#if defined( _X360 )
-	[flatten]
-#endif
-	
 #if ( PHONG_USE_EXPONENT_FACTOR )
 	fSpecExp = ( 1.0f + g_EyePos_SpecExponent.w * vSpecExpMap.r );
 #else
@@ -269,9 +265,6 @@ float4 main( PS_INPUT i ) : COLOR
 #endif
 
 	// If constant tint is negative, tint with albedo, based upon scalar tint map
-#if defined( _X360 )
-	[flatten]
-#endif
 	vSpecularTint = lerp( float3(1.0f, 1.0f, 1.0f), baseColor.rgb, vSpecExpMap.g );
 	vSpecularTint = (g_SpecularTint.r >= 0.0) ? g_SpecularTint.rgb : vSpecularTint;
 		

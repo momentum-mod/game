@@ -58,15 +58,15 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;	
-#if !defined( _X360 )    
+#if !defined(SHADER_MODEL_VS_3_0)
 	float  fog						: FOG;
 #endif
 
 #if SEAMLESS
-	float3 SeamlessTexCoord         : TEXCOORD0;            // x y z 
+	float4 SeamlessTexCoord_VertexBlend      : TEXCOORD0;            // x y z 
 	float4 detailOrBumpAndEnvmapMaskTexCoord : TEXCOORD1;   // envmap mask
 #else
-	float2 baseTexCoord				: TEXCOORD0;
+	float3 baseTexCoord_VertexBlend          : TEXCOORD0;
 	// detail textures and bumpmaps are mutually exclusive so that we have enough texcoords.
 #if RELIEF_MAPPING
 	float3 TangentSpaceViewRay		: TEXCOORD1;
@@ -78,19 +78,16 @@ struct VS_OUTPUT
 	float4 lightmapTexCoord3		: TEXCOORD3;			// and basetexcoord*mask_scale
 	float4 worldPos_projPosZ		: TEXCOORD4;
 
-#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 )
+#if TANGENTSPACE || (LIGHTING_PREVIEW)
 	float3x3 tangentSpaceTranspose	: TEXCOORD5;	// and 6 and 7
 #endif
 
 	float4 vertexColor				: COLOR;				// in seamless, r g b = blend weights
-	float4 vertexBlendX_fogFactorW	: COLOR1;
 
 	// Extra iterators on 360, used in flashlight combo
-#if defined( _X360 )
 #if FLASHLIGHT
 	float4 flashlightSpacePos		: TEXCOORD8;
-	float4 vProjPos					: TEXCOORD9;
-#endif
+	//float4 vProjPos					: TEXCOORD9;
 #endif
 
 };
@@ -102,32 +99,25 @@ VS_OUTPUT main( const VS_INPUT v )
 	float3 vObjNormal;
 	DecompressVertex_Normal( v.vNormal, vObjNormal );
 
-	float3 worldPos = mul( float4( v.vPos, 1 ), cModel[0] );
+	float4 projPos;
+	float3 worldPos;
 
-	float4 vProjPos = mul( float4( v.vPos, 1 ), cModelViewProj );
-	o.projPos = vProjPos;
-	vProjPos.z = dot( float4( v.vPos, 1 ), cModelViewProjZ );
+	projPos = mul( float4( v.vPos, 1 ), cModelViewProj );
+	o.projPos = projPos;
+
+	worldPos = mul( float4( v.vPos, 1 ), cModel[0] );
 	
-	o.worldPos_projPosZ = float4( worldPos, vProjPos.z );
+	o.worldPos_projPosZ = float4( worldPos, projPos.z );
 	
 	float3 worldNormal = mul( vObjNormal, ( float3x3 )cModel[0] );
 	
-#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 )
+#if TANGENTSPACE || (LIGHTING_PREVIEW)
 	float3 worldTangentS = mul( v.vTangentS, ( const float3x3 )cModel[0] );
 	float3 worldTangentT = mul( v.vTangentT, ( const float3x3 )cModel[0] );
 
-	#if SEAMLESS && BUMPMAP && defined( _X360 )
-		float3 n = normalize( worldNormal );
-		float3 n2 = n * n;           // sums to 1.
-
-		o.tangentSpaceTranspose[0] = normalize( float3( n2.y + n2.z, 0.0f, n2.x ) );
-		o.tangentSpaceTranspose[1] = normalize( float3( 0.0f, n2.x + n2.z, n2.y ) );
-		o.tangentSpaceTranspose[2] = worldNormal;
-	#else
 		o.tangentSpaceTranspose[0] = worldTangentS;
 		o.tangentSpaceTranspose[1] = worldTangentT;
 		o.tangentSpaceTranspose[2] = worldNormal;
-	#endif
 
 #endif
 
@@ -136,18 +126,18 @@ VS_OUTPUT main( const VS_INPUT v )
 #if SEAMLESS
 	{
 		// we need to fill in the texture coordinate projections
-		o.SeamlessTexCoord = SEAMLESS_SCALE*worldPos;
+		o.SeamlessTexCoord_VertexBlend.xyz = SEAMLESS_SCALE*worldPos;
 	}
 #else
 	{
 		if (FASTPATH)
 		{
-			o.baseTexCoord.xy = v.vBaseTexCoord;
+			o.baseTexCoord_VertexBlend.xy = v.vBaseTexCoord;
 		}
 		else
 		{
-			o.baseTexCoord.x = dot( v.vBaseTexCoord, cBaseTexCoordTransform[0] ) + cBaseTexCoordTransform[0].w;
-			o.baseTexCoord.y = dot( v.vBaseTexCoord, cBaseTexCoordTransform[1] ) + cBaseTexCoordTransform[1].w;
+			o.baseTexCoord_VertexBlend.x = dot( v.vBaseTexCoord, cBaseTexCoordTransform[0] ) + cBaseTexCoordTransform[0].w;
+			o.baseTexCoord_VertexBlend.y = dot( v.vBaseTexCoord, cBaseTexCoordTransform[1] ) + cBaseTexCoordTransform[1].w;
 		}
 #if ( RELIEF_MAPPING == 0 )
 		{
@@ -205,9 +195,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	}
 #endif
 
-	o.vertexBlendX_fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
-	o.fog = o.vertexBlendX_fogFactorW;
+#if !defined(SHADER_MODEL_VS_3_0)
+	o.fog = CalcFog( worldPos, projPos, g_FogType );
 #endif
 
 	if (!g_bVertexColor)
@@ -238,16 +227,18 @@ VS_OUTPUT main( const VS_INPUT v )
 #endif
 
 // On 360, we have extra iterators and can fold the flashlight into this shader
-#if defined( _X360 )
-	#if FLASHLIGHT
-		o.flashlightSpacePos = mul( float4( worldPos, 1.0f ), g_FlashlightWorldToTexture );
-		o.vProjPos = vProjPos;
-	#endif
+#if FLASHLIGHT
+	o.flashlightSpacePos = mul( float4( worldPos, 1.0f ), g_FlashlightWorldToTexture );
+	//o.vProjPos = projPos;
 #endif
 
 	if ( g_bVertexAlphaTexBlendFactor )
 	{
-		o.vertexBlendX_fogFactorW.r = v.vColor.a;
+#if SEAMLESS
+		o.SeamlessTexCoord_VertexBlend.w = v.vColor.a;
+#else
+		o.baseTexCoord_VertexBlend.z = v.vColor.a;
+#endif
 	}
 	
 	return o;
