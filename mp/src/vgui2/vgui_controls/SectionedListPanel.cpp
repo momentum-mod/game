@@ -976,7 +976,7 @@ void SectionedListPanel::LayoutPanels(int &contentTall)
 		        {
 		            int cx, cwide;
 		            item->GetCellBounds(1, cx, cwide);
-		            m_hEditModePanel->SetBounds(cx, y, cwide, tall);
+		            m_hEditModePanel->SetBounds(cx, y, cwide, m_iLineSpacing);
 		        }
 
 		        y += m_iLineSpacing;
