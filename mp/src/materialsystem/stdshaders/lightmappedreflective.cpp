@@ -27,6 +27,7 @@ BEGIN_VS_SHADER( LightmappedReflective_DX90, "Help for Lightmapped Reflective" )
 		SHADER_PARAM( ENVMAPMASK, SHADER_PARAM_TYPE_TEXTURE, "shadertest/shadertest_envmask", "envmap mask" )
 		SHADER_PARAM( ENVMAPMASKFRAME, SHADER_PARAM_TYPE_INTEGER, "", "" )
 		SHADER_PARAM( REFLECTANCE, SHADER_PARAM_TYPE_FLOAT, "0.25", "" )
+		SHADER_PARAM( MINREFLECTIVITY, SHADER_PARAM_TYPE_FLOAT, "", "" )
 	END_SHADER_PARAMS
 
 	SHADER_INIT_PARAMS()
@@ -34,6 +35,13 @@ BEGIN_VS_SHADER( LightmappedReflective_DX90, "Help for Lightmapped Reflective" )
 		if ( !params[REFLECTANCE]->IsDefined() )
 		{
 			params[REFLECTANCE]->SetFloatValue( 0.25f );
+		}
+
+		// In order to look consistent with materials targetted toward default SDK2013 version of this shader
+		// we allow $minreflectivity to override the $reflectance value
+		if ( params[MINREFLECTIVITY]->IsDefined() )
+		{
+			params[REFLECTANCE]->SetFloatValue( params[MINREFLECTIVITY]->GetFloatValue() );
 		}
 
 		SET_FLAGS2( MATERIAL_VAR2_NEEDS_TANGENT_SPACES );
