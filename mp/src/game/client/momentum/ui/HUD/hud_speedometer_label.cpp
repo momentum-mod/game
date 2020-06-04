@@ -2,6 +2,7 @@
 
 #include "hud_speedometer_label.h"
 
+#include <vgui_controls/AnimationController.h>
 #include "iclientmode.h"
 #include "momentum/util/mom_util.h"
 #include "mom_player_shared.h"
@@ -18,17 +19,27 @@ using namespace vgui;
 extern ConVar sv_gravity;
 
 SpeedometerLabel::SpeedometerLabel(Panel *parent, const char *panelName)
-    : Label(parent, panelName, ""), m_bSupportsEnergyUnits(false)
+    : Label(parent, panelName, ""), m_bSupportsEnergyUnits(false),
+      m_eUnitType(SPEEDOMETER_UNITS_UPS), m_pflAlpha(nullptr)
 {
     Reset();
 }
 
 void SpeedometerLabel::SetVisible(bool bVisible)
 {
-    m_pComparisonLabel->SetVisible(bVisible);
     BaseClass::SetVisible(bVisible);
     // parent's layout depends on the visiblity of this, so invalidate it
     GetParent()->InvalidateLayout();
+}
+
+void SpeedometerLabel::OnThink()
+{
+    BaseClass::OnThink();
+
+    if (!HasFadeOutAnimation())
+        return;
+
+    SetAlpha(*m_pflAlpha);
 }
 
 void SpeedometerLabel::Reset()
@@ -37,6 +48,8 @@ void SpeedometerLabel::Reset()
     m_flPastValue = 0.0f;
     m_flDiff = 0.0f;
     BaseClass::SetText("");
+
+    SetAlpha(HasFadeOutAnimation() ? 0 : 255);
 }
 
 void SpeedometerLabel::SetText(int value)
@@ -52,6 +65,8 @@ void SpeedometerLabel::Update(float value)
 
     ConvertUnits();
     SetText(m_flCurrentValue);
+    if (HasFadeOutAnimation())
+        StartFadeout();
 
     m_flPastValue = m_flCurrentValue;
 }
@@ -96,4 +111,18 @@ void SpeedometerLabel::ConvertUnits()
     default:
         break;
     }
+}
+
+void SpeedometerLabel::SetFadeOutAnimation(char *animationName, float *animationAlpha)
+{
+    Q_strncpy(m_pszAnimationName, animationName, sizeof(m_pszAnimationName));
+    m_pflAlpha = animationAlpha;
+}
+
+bool SpeedometerLabel::StartFadeout()
+{
+    Assert(HasFadeOutAnimation());
+    g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(GetParent(), m_pszAnimationName);
+    *m_pflAlpha = 255.0f;
+    return g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(m_pszAnimationName);
 }

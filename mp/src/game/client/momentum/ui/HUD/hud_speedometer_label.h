@@ -9,6 +9,8 @@ class SpeedometerLabel : public vgui::Label
 
   public:
     SpeedometerLabel(Panel *parent, const char *panelName);
+
+    void OnThink() override; // for applying fadeout
     
     void SetVisible(bool bVisible) override;
 
@@ -17,6 +19,9 @@ class SpeedometerLabel : public vgui::Label
     void SetText(int value);
     void SetText(float value) { SetText(RoundFloatToInt(value)); }
 
+    // fadeout related functions
+    void SetFadeOutAnimation(char *animationName, float *animationAlpha);
+    bool HasFadeOutAnimation() { return m_pszAnimationName[0] != '\0' && m_pflAlpha; }
 
     // getter/setters
     SpeedometerUnits_t GetUnitType() { return m_eUnitType; }
@@ -28,12 +33,17 @@ class SpeedometerLabel : public vgui::Label
 
   private:
     void ConvertUnits();
+    bool StartFadeout();
 
     float m_flCurrentValue;
     float m_flPastValue;
     float m_flDiff;
 
     bool m_bSupportsEnergyUnits;
+
+    // fadeout animation fields
+    float *m_pflAlpha;
+    char m_pszAnimationName[BUFSIZELOCL];
 
     SpeedometerUnits_t m_eUnitType;
 };
