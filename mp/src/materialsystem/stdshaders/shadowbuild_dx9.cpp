@@ -8,7 +8,7 @@
 
 #include "BaseVSShader.h"
 #include "convar.h"
-#include "mathlib/VMatrix.h"
+#include "mathlib/vmatrix.h"
 
 #include "unlitgeneric_vs20.inc"
 #include "shadowbuildtexture_ps20b.inc"
