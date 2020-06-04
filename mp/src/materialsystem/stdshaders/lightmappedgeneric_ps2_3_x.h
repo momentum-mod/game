@@ -180,12 +180,6 @@ struct PS_INPUT
 	// tangentSpaceTranspose		: TEXCOORD7
 	HALF4 vertexColor				: COLOR;
 	float4 vertexBlendX_fogFactorW	: COLOR1;
-
-	// Extra iterators on 360, used in flashlight combo
-#if defined( _X360 ) && FLASHLIGHT
-	float4 flashlightSpacePos		: TEXCOORD8;
-	float4 vProjPos					: TEXCOORD9;
-#endif
 };
 
 #if LIGHTING_PREVIEW == 2
