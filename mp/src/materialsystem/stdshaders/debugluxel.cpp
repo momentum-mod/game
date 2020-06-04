@@ -6,7 +6,7 @@
 // $NoKeywords: $
 //===========================================================================//
 
-#include "shaderlib/CShader.h"
+#include "shaderlib/cshader.h"
 
 #include "debugluxel_ps20b.inc"
 #include "debugluxel_vs20.inc"

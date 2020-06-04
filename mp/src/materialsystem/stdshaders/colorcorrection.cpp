@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "basevsshader.h"
+#include "BaseVSShader.h"
 
 #include "screenspaceeffect_vs20.inc"
 #include "colorcorrection_ps20b.inc"

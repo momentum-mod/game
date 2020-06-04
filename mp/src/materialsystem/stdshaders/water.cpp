@@ -10,9 +10,9 @@
 #include "common_hlsl_cpp_consts.h" // hack hack hack!
 #include "convar.h"
 
-#include "WaterCheap_vs20.inc"
-#include "WaterCheap_ps20b.inc"
-#include "Water_vs20.inc"
+#include "watercheap_vs20.inc"
+#include "watercheap_ps20b.inc"
+#include "water_vs20.inc"
 #include "water_ps20b.inc"
 
 static ConVar r_waterforceexpensive( "r_waterforceexpensive", "0", FCVAR_ARCHIVE );
