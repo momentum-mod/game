@@ -1,0 +1,38 @@
+"engine_post"
+{
+    "$additive" 0
+    "$basetexture" "_rt_SmallFB0"
+    "%noToolTexture" 1
+    "$ignorez" 1
+    "$nocull" 1
+    "$bloomEnable" 1
+    "$fbtexture" "_rt_FullFrameFB"
+
+    "$colCorrectEnable" 1
+    "$colCorrect_NumLookups" 1
+    "$colCorrect_DefaultWeight" 1
+    "$colCorrect_LookupWeights" "[0 0 0 0]"
+
+    "$AllowVignette" "1"
+    "$AllowNoise" "1"
+    "$AllowLocalContrast" "1"
+    
+    "$AAEnable" 1
+    "$AAInternal1" "[0 0 0 0]"
+    "$AAInternal2" "[0 0 0 0]"
+    "$AAInternal3" "[0 0 0 0]"
+    
+    "$noiseScale" "1.0"
+    "$noiseTexture" "dev/noise_post"
+    
+    "$localcontrastenable" "1"
+    "$noiseEnable" "1"
+    "$vignetteEnable" "1"
+
+    "Proxies"
+    {
+        "Engine_Post"
+        {
+        }
+    }
+}
