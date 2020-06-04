@@ -38,14 +38,6 @@ enum StereoEye_t
 };
 
 
-enum MotionBlurMode_t
-{
-	MOTION_BLUR_DISABLE = 1,
-	MOTION_BLUR_GAME = 2,			// Game uses real-time inter-frame data
-	MOTION_BLUR_SFM = 3				// Use SFM data passed in CViewSetup structure
-};
-
-
 //-----------------------------------------------------------------------------
 // Purpose: Renderer setup data.  
 //-----------------------------------------------------------------------------
@@ -119,14 +111,6 @@ public:
 	// The aspect ratio to use for computing the perspective projection matrix
 	// (0.0f means use the viewport)
 	float		m_flAspectRatio;
-
-	// Camera settings to control motion blur
-	MotionBlurMode_t	m_nMotionBlurMode;
-	float	m_flShutterTime;				// In seconds
-	Vector	m_vShutterOpenPosition;			// Start of frame or "shutter open"
-	QAngle	m_shutterOpenAngles;			//
-	Vector	m_vShutterClosePosition;		// End of frame or "shutter close"
-	QAngle	m_shutterCloseAngles;			// 
 
 	// Controls for off-center projection (needed for poster rendering)
 	bool		m_bOffCenter;

@@ -2747,7 +2747,7 @@ struct MotionBlurHistory_t
 
 void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 {
-	if ( ( !mat_motion_blur_enabled.GetInt() ) || ( viewSetup.m_nMotionBlurMode == MOTION_BLUR_DISABLE ) )
+	if ( !mat_motion_blur_enabled.GetInt() )
 	{
 		return;
 	}
@@ -2756,8 +2756,6 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 	int y = viewSetup.y;
 	int w = viewSetup.width;
 	int h = viewSetup.height;
-
-	bool bSFMBlur = ( viewSetup.m_nMotionBlurMode == MOTION_BLUR_SFM );
 
 	//======================================================================================================//
 	// Get these convars here to make it easier to remove them later and to default each client differently //
@@ -2783,45 +2781,13 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 		//float vPreviousForwardVec[3] = { s_mPreviousFrameBasisVectors[0][0], s_mPreviousFrameBasisVectors[1][0], s_mPreviousFrameBasisVectors[2][0] };
 		//float vPreviousUpVec[3] = { s_mPreviousFrameBasisVectors[0][2], s_mPreviousFrameBasisVectors[1][2], s_mPreviousFrameBasisVectors[2][2] };
 
-		float flTimeElapsed;
-
-		// Motion blur driven by CViewSetup, not engine time (currently only driven by SFM)
-		if ( bSFMBlur )
-		{
-			history.m_flLastTimeUpdate = 0.0f;											// Don't care about these, but zero them out
-			history.m_flNoRotationalMotionBlurUntil = 0.0f;								//
-
-			flTimeElapsed = viewSetup.m_flShutterTime;
-
-			history.m_vPreviousPositon[0] = viewSetup.m_vShutterOpenPosition.x;				//
-			history.m_vPreviousPositon[1] = viewSetup.m_vShutterOpenPosition.y;				// Slam "previous" values to shutter open values
-			history.m_vPreviousPositon[2] = viewSetup.m_vShutterOpenPosition.z;				//
-			AngleMatrix( viewSetup.m_shutterOpenAngles, history.m_mPreviousFrameBasisVectors );//
-
-			history.m_flPreviousPitch = viewSetup.m_shutterOpenAngles[PITCH];					// Get "previous" pitch & wrap to +-180
-			while ( history.m_flPreviousPitch > 180.0f )
-				history.m_flPreviousPitch -= 360.0f;
-			while ( history.m_flPreviousPitch < -180.0f )
-				history.m_flPreviousPitch += 360.0f;
-
-			history.m_flPreviousYaw = viewSetup.m_shutterOpenAngles[YAW];						// Get "previous" yaw & wrap to +-180
-			while ( history.m_flPreviousYaw > 180.0f )
-				history.m_flPreviousYaw -= 360.0f;
-			while ( history.m_flPreviousYaw < -180.0f )
-				history.m_flPreviousYaw += 360.0f;
-		}
-		else // view.m_nDoMotionBlurMode == MOTION_BLUR_GAME 
-		{
-			flTimeElapsed = gpGlobals->realtime - history.m_flLastTimeUpdate;
-		}
+		float flTimeElapsed = gpGlobals->realtime - history.m_flLastTimeUpdate;
 
 
 		//===================================//
 		// Get current pitch & wrap to +-180 //
 		//===================================//
 		float flCurrentPitch = viewSetup.angles[PITCH];
-		if ( bSFMBlur )
-			flCurrentPitch = viewSetup.m_shutterCloseAngles[PITCH];
 		while ( flCurrentPitch > 180.0f )
 			flCurrentPitch -= 360.0f;
 		while ( flCurrentPitch < -180.0f )
@@ -2831,8 +2797,6 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 		// Get current yaw & wrap to +-180 //
 		//=================================//
 		float flCurrentYaw = viewSetup.angles[YAW];
-		if ( bSFMBlur )
-			flCurrentYaw = viewSetup.m_shutterCloseAngles[YAW];
 		while ( flCurrentYaw > 180.0f )
 			flCurrentYaw -= 360.0f;
 		while ( flCurrentYaw < -180.0f )
@@ -2848,39 +2812,24 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 		// Get current basis vectors //
 		//===========================//
 		matrix3x4_t mCurrentBasisVectors;
-
-		if ( bSFMBlur )
-		{
-			AngleMatrix( viewSetup.m_shutterCloseAngles, mCurrentBasisVectors );
-		}
-		else
-		{
-			AngleMatrix( viewSetup.angles, mCurrentBasisVectors );
-		}
+		AngleMatrix( viewSetup.angles, mCurrentBasisVectors );
 
 
 		Vector vCurrentSideVec(  mCurrentBasisVectors[0][1], mCurrentBasisVectors[1][1], mCurrentBasisVectors[2][1] );
 		Vector vCurrentForwardVec( mCurrentBasisVectors[0][0], mCurrentBasisVectors[1][0], mCurrentBasisVectors[2][0] );
 		//Vector vCurrentUpVec( mCurrentBasisVectors[0][2], mCurrentBasisVectors[1][2], mCurrentBasisVectors[2][2] );
 
-		//===========================================================================//
-		// Get current position (shutter close time when SFM is driving motion blur) //
-		//===========================================================================//
+		//======================//
+		// Get current position //
+		//======================//
 		Vector vCurrentPosition = viewSetup.origin;
-
-		if ( bSFMBlur )
-		{
-			vCurrentPosition[0] = viewSetup.m_vShutterClosePosition.x;
-			vCurrentPosition[1] = viewSetup.m_vShutterClosePosition.y;
-			vCurrentPosition[2] = viewSetup.m_vShutterClosePosition.z;
-		}
 
 		//===============================================================//
 		// Evaluate change in position to determine if we need to update //
 		//===============================================================//
 		Vector vPositionChange( 0.0f, 0.0f, 0.0f );
 		VectorSubtract( history.m_vPreviousPositon, vCurrentPosition, vPositionChange );
-		if ( ( VectorLength( vPositionChange ) > 30.0f ) && ( flTimeElapsed >= 0.5f ) && !bSFMBlur )
+		if ( ( VectorLength( vPositionChange ) > 30.0f ) && ( flTimeElapsed >= 0.5f ) )
 		{
 			//=======================================================//
 			// If we moved a far distance in one frame and more than //
@@ -2893,7 +2842,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 			g_vMotionBlurValues[2] = 0.0f;
 			g_vMotionBlurValues[3] = 0.0f;
 		}
-		else if ( ( flTimeElapsed > ( 1.0f / 15.0f ) ) && !bSFMBlur )
+		else if ( ( flTimeElapsed > ( 1.0f / 15.0f ) ) )
 		{
 			//==========================================//
 			// If slower than 15 fps, don't motion blur //
@@ -2903,7 +2852,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 			g_vMotionBlurValues[2] = 0.0f;
 			g_vMotionBlurValues[3] = 0.0f;
 		}
-		else if ( ( VectorLength( vPositionChange ) > 50.0f ) && !bSFMBlur )
+		else if ( ( VectorLength( vPositionChange ) > 50.0f ) )
 		{
 			//================================================================================//
 			// We moved a far distance in a frame, use the same motion blur as last frame	  //
@@ -3009,24 +2958,21 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 			//===============================================================//
 			// Dampen motion blur from 100%-0% as fps drops from 50fps-30fps //
 			//===============================================================//
-			if ( !bSFMBlur ) // I'm not doing this on the 360 yet since I can't test it.  SFM doesn't need it either
-			{
-				float flSlowFps = 30.0f;
-				float flFastFps = 50.0f;
-				float flCurrentFps = ( flTimeElapsed > 0.0f ) ? ( 1.0f / flTimeElapsed ) : 0.0f;
-				float flDampenFactor = clamp( ( ( flCurrentFps - flSlowFps ) / ( flFastFps - flSlowFps ) ), 0.0f, 1.0f );
+			float flSlowFps = 30.0f;
+			float flFastFps = 50.0f;
+			float flCurrentFps = ( flTimeElapsed > 0.0f ) ? ( 1.0f / flTimeElapsed ) : 0.0f;
+			float flDampenFactor = clamp( ( ( flCurrentFps - flSlowFps ) / ( flFastFps - flSlowFps ) ), 0.0f, 1.0f );
 
-				//engine->Con_NPrintf( 4, "gpGlobals->realtime %.2f  gpGlobals->curtime %.2f", gpGlobals->realtime, gpGlobals->curtime );
-				//engine->Con_NPrintf( 5, "flCurrentFps %.2f", flCurrentFps );
-				//engine->Con_NPrintf( 7, "flTimeElapsed %.2f", flTimeElapsed );
+			//engine->Con_NPrintf( 4, "gpGlobals->realtime %.2f  gpGlobals->curtime %.2f", gpGlobals->realtime, gpGlobals->curtime );
+			//engine->Con_NPrintf( 5, "flCurrentFps %.2f", flCurrentFps );
+			//engine->Con_NPrintf( 7, "flTimeElapsed %.2f", flTimeElapsed );
 
-				g_vMotionBlurValues[0] *= flDampenFactor;
-				g_vMotionBlurValues[1] *= flDampenFactor;
-				g_vMotionBlurValues[2] *= flDampenFactor;
-				g_vMotionBlurValues[3] *= flDampenFactor;
+			g_vMotionBlurValues[0] *= flDampenFactor;
+			g_vMotionBlurValues[1] *= flDampenFactor;
+			g_vMotionBlurValues[2] *= flDampenFactor;
+			g_vMotionBlurValues[3] *= flDampenFactor;
 
-				//engine->Con_NPrintf( 6, "Dampen: %.2f", flDampenFactor );
-			}
+			//engine->Con_NPrintf( 6, "Dampen: %.2f", flDampenFactor );
 
 			//engine->Con_NPrintf( 6, "Final values: { %6.2f%%, %6.2f%%, %6.2f%%, %6.2f%% }", g_vMotionBlurValues[0]*100.0f, g_vMotionBlurValues[1]*100.0f, g_vMotionBlurValues[2]*100.0f, g_vMotionBlurValues[3]*100.0f );
 		}
@@ -3034,7 +2980,7 @@ void DoImageSpaceMotionBlur( const CViewSetup &viewSetup )
 		//============================================//
 		// Zero out blur if still in that time window //
 		//============================================//
-		if ( !bSFMBlur && ( gpGlobals->realtime < history.m_flNoRotationalMotionBlurUntil ) )
+		if ( gpGlobals->realtime < history.m_flNoRotationalMotionBlurUntil )
 		{
 			//engine->Con_NPrintf( 9, " No Rotation @ %f ", gpGlobals->realtime );
 
