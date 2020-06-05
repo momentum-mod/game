@@ -49,7 +49,9 @@ public:
 	virtual void Activate();
 	virtual void Spawn();
 	virtual void Precache();
+    virtual void UpdateOnRemove();
 	virtual void SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways );
+    virtual int ShouldTransmit(const CCheckTransmitInfo* pInfo);
 
 	virtual int	 Restore( IRestore &restore );
 	virtual void OnRestore();
@@ -409,6 +411,12 @@ private:
 	memhandle_t		m_boneCacheHandle;
 	unsigned short	m_fBoneCacheFlags;		// Used for bone cache state on model
 
+    // Glows
+public:
+    virtual void				AddGlowEffect(void);
+    virtual void				RemoveGlowEffect(void);
+    virtual bool				IsGlowEffectActive(void);
+    virtual void                SetGlowColor(color32);
 protected:
 	CNetworkVar( float, m_fadeMinDist );	// Point at which fading is absolute
 	CNetworkVar( float, m_fadeMaxDist );	// Point at which fading is inactive

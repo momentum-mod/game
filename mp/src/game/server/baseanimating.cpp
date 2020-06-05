@@ -288,6 +288,7 @@ CBaseAnimating::CBaseAnimating()
 	m_fadeMaxDist = 0;
 	m_flFadeScale = 0.0f;
 	m_fBoneCacheFlags = 0;
+    m_bGlowEnabled.Set(false);
 }
 
 CBaseAnimating::~CBaseAnimating()
@@ -306,6 +307,13 @@ void CBaseAnimating::Precache()
 #endif
 
 	BaseClass::Precache();
+}
+
+void CBaseAnimating::UpdateOnRemove()
+{
+    RemoveGlowEffect();
+
+    BaseClass::UpdateOnRemove();
 }
 
 //-----------------------------------------------------------------------------
@@ -348,6 +356,14 @@ void CBaseAnimating::SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways )
 	{
 		m_hLightingOriginRelative->SetTransmit( pInfo, bAlways );
 	}
+}
+
+int CBaseAnimating::ShouldTransmit(const CCheckTransmitInfo* pInfo)
+{
+    if (IsGlowEffectActive())
+        return FL_EDICT_ALWAYS;
+
+    return BaseClass::ShouldTransmit(pInfo);
 }
 
 //-----------------------------------------------------------------------------
@@ -619,6 +635,30 @@ void CBaseAnimating::InputSetModelScale( inputdata_t &inputdata )
 	inputdata.value.Vector3D( vecScale );
 
 	SetModelScale( vecScale.x, vecScale.y );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::AddGlowEffect(void)
+{
+    m_bGlowEnabled.Set(true);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::RemoveGlowEffect(void)
+{
+    m_bGlowEnabled.Set(false);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CBaseAnimating::IsGlowEffectActive(void)
+{
+    return m_bGlowEnabled;
 }
 
 

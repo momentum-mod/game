@@ -477,8 +477,6 @@ BEGIN_RECV_TABLE_NOBASE(C_BaseEntity, DT_BaseEntity)
 	RecvPropArray3( RECVINFO_ARRAY(m_nModelIndexOverrides),	RecvPropInt( RECVINFO(m_nModelIndexOverrides[0]) ) ),
 #endif
 
-    RecvPropBool(RECVINFO(m_bGlowEnabled)),
-
 END_RECV_TABLE()
 
 const float coordTolerance = 2.0f / (float)( 1 << COORD_FRACTIONAL_BITS );
@@ -967,11 +965,6 @@ C_BaseEntity::C_BaseEntity() :
 #endif
 
 	ParticleProp()->Init( this );
-
-    m_pGlowEffect = NULL;
-    m_bGlowEnabled = false;
-    m_bOldGlowEnabled = false;
-    m_bClientSideGlowEnabled = false;
 }
 
 
@@ -989,8 +982,6 @@ C_BaseEntity::~C_BaseEntity()
 #endif
 	RemoveFromInterpolationList();
 	RemoveFromTeleportList();
-
-    DestroyGlowEffect();
 }
 
 void C_BaseEntity::Clear( void )
@@ -3273,8 +3264,6 @@ void C_BaseEntity::OnPreDataChanged( DataUpdateType_t type )
 {
 	m_hOldMoveParent = m_hNetworkMoveParent;
 	m_iOldParentAttachment = m_iParentAttachment;
-
-    m_bOldGlowEnabled = m_bGlowEnabled;
 }
 
 void C_BaseEntity::OnDataChanged( DataUpdateType_t type )
@@ -3289,21 +3278,6 @@ void C_BaseEntity::OnDataChanged( DataUpdateType_t type )
 	{
 		UpdateVisibility();
 	}
-
-    if (m_bOldGlowEnabled != m_bGlowEnabled)
-    {
-        UpdateGlowEffect();
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void C_BaseEntity::GetGlowEffectColor(float *r, float *g, float *b)
-{
-    *r = 0.76f;
-    *g = 0.76f;
-    *b = 0.76f;
 }
 
 //-----------------------------------------------------------------------------
@@ -3321,39 +3295,6 @@ DestroyGlowEffect();
 m_pGlowEffect = new CGlowObject( this, Vector( r, g, b ), 1.0, true );
 }
 */
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void C_BaseEntity::UpdateGlowEffect(void)
-{
-    // destroy the existing effect
-    if (m_pGlowEffect)
-    {
-        DestroyGlowEffect();
-    }
-
-    // create a new effect
-    if (m_bGlowEnabled || m_bClientSideGlowEnabled)
-    {
-        float r, g, b;
-        GetGlowEffectColor(&r, &g, &b);
-
-        m_pGlowEffect = new CGlowObject(this, Vector(r, g, b), 1.0, true);
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void C_BaseEntity::DestroyGlowEffect(void)
-{
-    if (m_pGlowEffect)
-    {
-        delete m_pGlowEffect;
-        m_pGlowEffect = NULL;
-    }
-}
 
 ClientThinkHandle_t C_BaseEntity::GetThinkHandle()
 {

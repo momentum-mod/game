@@ -36,8 +36,6 @@
 #include "toolframework/itoolentity.h"
 #include "tier0/threadtools.h"
 
-#include "glow_outline_effect.h"
-
 class C_Team;
 class IPhysicsObject;
 class CPredictionCopy;
@@ -1689,22 +1687,6 @@ protected:
 	RenderMode_t m_PreviousRenderMode;
 	color32 m_PreviousRenderColor;
 #endif
-
-public:
-    CGlowObject			*GetGlowObject(void) { return m_pGlowEffect; }
-    virtual void		GetGlowEffectColor(float *r, float *g, float *b);
-    //	void				EnableGlowEffect( float r, float g, float b );
-
-    void				SetClientSideGlowEnabled(bool bEnabled) { m_bClientSideGlowEnabled = bEnabled; UpdateGlowEffect(); }
-    bool				IsClientSideGlowEnabled(void) { return m_bClientSideGlowEnabled; }
-protected:
-    virtual void		UpdateGlowEffect(void);
-    virtual void		DestroyGlowEffect(void);
-private:
-    bool				m_bClientSideGlowEnabled;	// client-side only value used for spectator
-    bool				m_bGlowEnabled;				// networked value
-    bool				m_bOldGlowEnabled;
-    CGlowObject			*m_pGlowEffect;
 };
 
 EXTERN_RECV_TABLE(DT_BaseEntity);

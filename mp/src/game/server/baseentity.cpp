@@ -305,8 +305,6 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CBaseEntity, DT_BaseEntity )
 	SendPropArray3( SENDINFO_ARRAY3(m_nModelIndexOverrides), SendPropInt( SENDINFO_ARRAY(m_nModelIndexOverrides), SP_MODEL_INDEX_BITS, 0 ) ),
 #endif
 
-    SendPropBool(SENDINFO(m_bGlowEnabled)),
-
 END_SEND_TABLE()
 
 
@@ -416,8 +414,6 @@ CBaseEntity::CBaseEntity( bool bServerOnly )
 	NetworkProp()->MarkPVSInformationDirty();
 
 	AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
-
-    m_bGlowEnabled.Set(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1563,9 +1559,7 @@ int CBaseEntity::VPhysicsTakeDamage( const CTakeDamageInfo &info )
 	// Character killed (only fired once)
 void CBaseEntity::Event_Killed( const CTakeDamageInfo &info )
 {
-    RemoveGlowEffect();
-
-	if( info.GetAttacker() )
+    if( info.GetAttacker() )
 	{
 		info.GetAttacker()->Event_KilledOther(this, info);
 	}
@@ -1945,9 +1939,7 @@ extern bool g_bReceivedChainedUpdateOnRemove;
 //-----------------------------------------------------------------------------
 void CBaseEntity::UpdateOnRemove( void )
 {
-    RemoveGlowEffect();
-
-	g_bReceivedChainedUpdateOnRemove = true;
+    g_bReceivedChainedUpdateOnRemove = true;
 
 	// Virtual call to shut down any looping sounds.
 	StopLoopingSounds();
@@ -4288,9 +4280,7 @@ void CBaseEntity::InputSetTeam( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 void CBaseEntity::ChangeTeam( int iTeamNum )
 {
-    RemoveGlowEffect();
-
-	m_iTeamNum = iTeamNum;
+    m_iTeamNum = iTeamNum;
 }
 
 //-----------------------------------------------------------------------------
@@ -7124,33 +7114,6 @@ void CBaseEntity::SetCollisionBoundsFromModel()
 		UTIL_SetSize( this, mns, mxs );
 	}
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CBaseEntity::AddGlowEffect(void)
-{
-    SetTransmitState(FL_EDICT_ALWAYS);
-    m_bGlowEnabled.Set(true);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CBaseEntity::RemoveGlowEffect(void)
-{
-    m_bGlowEnabled.Set(false);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-bool CBaseEntity::IsGlowEffectActive(void)
-{
-    return m_bGlowEnabled;
-}
-
 
 //------------------------------------------------------------------------------
 // Purpose: Create an NPC of the given type
