@@ -14,8 +14,6 @@
 #include "utlvector.h"
 #include "mathlib/vector.h"
 
-#ifdef GLOWS_ENABLE
-
 class C_BaseEntity;
 class CViewSetup;
 class CMatRenderContextPtr;
@@ -206,7 +204,5 @@ private:
 	CGlowObject( const CGlowObject &other );
 	CGlowObject& operator=( const CGlowObject &other );
 };
-
-#endif // GLOWS_ENABLE
 
 #endif // GLOW_OUTLINE_EFFECT_H

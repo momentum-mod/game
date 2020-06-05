@@ -15,8 +15,6 @@
 
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
 
-#ifdef GLOWS_ENABLE
-
 ConVar glow_outline_effect_enable( "glow_outline_effect_enable", "1", FCVAR_ARCHIVE, "Enable entity outline glow effects." );
 ConVar glow_outline_effect_width( "glow_outline_width", "2.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
 
@@ -346,5 +344,3 @@ void CGlowObjectManager::GlowObjectDefinition_t::DrawModel()
 		}
 	}
 }
-
-#endif // GLOWS_ENABLE

@@ -477,9 +477,7 @@ BEGIN_RECV_TABLE_NOBASE(C_BaseEntity, DT_BaseEntity)
 	RecvPropArray3( RECVINFO_ARRAY(m_nModelIndexOverrides),	RecvPropInt( RECVINFO(m_nModelIndexOverrides[0]) ) ),
 #endif
 
-#ifdef GLOWS_ENABLE
     RecvPropBool(RECVINFO(m_bGlowEnabled)),
-#endif // GLOWS_ENABLE
 
 END_RECV_TABLE()
 
@@ -970,12 +968,10 @@ C_BaseEntity::C_BaseEntity() :
 
 	ParticleProp()->Init( this );
 
-#ifdef GLOWS_ENABLE
     m_pGlowEffect = NULL;
     m_bGlowEnabled = false;
     m_bOldGlowEnabled = false;
     m_bClientSideGlowEnabled = false;
-#endif // GLOWS_ENABLE
 }
 
 
@@ -994,9 +990,7 @@ C_BaseEntity::~C_BaseEntity()
 	RemoveFromInterpolationList();
 	RemoveFromTeleportList();
 
-#ifdef GLOWS_ENABLE
     DestroyGlowEffect();
-#endif // GLOWS_ENABLE
 }
 
 void C_BaseEntity::Clear( void )
@@ -3280,9 +3274,7 @@ void C_BaseEntity::OnPreDataChanged( DataUpdateType_t type )
 	m_hOldMoveParent = m_hNetworkMoveParent;
 	m_iOldParentAttachment = m_iParentAttachment;
 
-#ifdef GLOWS_ENABLE
     m_bOldGlowEnabled = m_bGlowEnabled;
-#endif // GLOWS_ENABLE
 }
 
 void C_BaseEntity::OnDataChanged( DataUpdateType_t type )
@@ -3298,15 +3290,12 @@ void C_BaseEntity::OnDataChanged( DataUpdateType_t type )
 		UpdateVisibility();
 	}
 
-#ifdef GLOWS_ENABLE
     if (m_bOldGlowEnabled != m_bGlowEnabled)
     {
         UpdateGlowEffect();
     }
-#endif // GLOWS_ENABLE
 }
 
-#ifdef GLOWS_ENABLE
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -3365,7 +3354,6 @@ void C_BaseEntity::DestroyGlowEffect(void)
         m_pGlowEffect = NULL;
     }
 }
-#endif // GLOWS_ENABLE
 
 ClientThinkHandle_t C_BaseEntity::GetThinkHandle()
 {
