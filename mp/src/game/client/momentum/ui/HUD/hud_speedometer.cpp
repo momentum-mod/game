@@ -31,7 +31,7 @@ CHudSpeedMeter *g_pSpeedometer = nullptr;
 
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudSpeedMeter"), 
-    m_cvarTimeScale("mom_replay_timescale"), m_pRunStats(nullptr), m_pRunEntData(nullptr)
+    m_cvarTimeScale("mom_replay_timescale"), m_pRunStats(nullptr), m_pRunEntData(nullptr), m_iLastZone(0)
 {
     ListenForGameEvent("zone_exit");
     ListenForGameEvent("zone_enter");
@@ -67,12 +67,14 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
 void CHudSpeedMeter::Init()
 {
+    m_iLastZone = 0;
     m_pRunStats = nullptr;
     m_pRunEntData = nullptr;
 }
 
 void CHudSpeedMeter::Reset()
 {
+    m_iLastZone = 0;
     m_pRunStats = nullptr;
     m_pRunEntData = nullptr;
     g_pSpeedometerData->LoadGamemodeData();
@@ -99,12 +101,16 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
     {
         const auto bExit = FStrEq(pEvent->GetName(), "zone_exit");
         const auto bLinear = pLocal->m_iLinearTracks.Get(pLocal->m_Data.m_iCurrentTrack);
+        int iCurrentZone = m_pRunEntData->m_iCurrentZone;
 
         // Logical XOR; equivalent to (bLinear && !bExit) || (!bLinear && bExit)
-        if (m_pRunEntData->m_bTimerRunning && (bLinear != bExit))
+        // if map is linear, only update if player progresses to a new zone further into the map
+        if (m_pRunEntData->m_bTimerRunning && (bLinear != bExit) && (iCurrentZone > m_iLastZone || !bLinear))
         {
+            m_iLastZone = iCurrentZone;
+
             int velType = mom_hud_velocity_type.GetInt();
-            float act = m_pRunStats->GetZoneEnterSpeed(m_pRunEntData->m_iCurrentZone, velType);
+            float act = m_pRunStats->GetZoneEnterSpeed(iCurrentZone, velType);
             bool bComparisonLoaded = g_pMOMRunCompare->LoadedComparison();
             if (bComparisonLoaded)
             {
@@ -116,10 +122,12 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
             m_pStageEnterExitVelLabel->SetDrawComparison(bComparisonLoaded);
             m_pStageEnterExitVelLabel->Update(act);
         }
-        else if (m_pRunEntData->m_bIsInZone && m_pRunEntData->m_iCurrentZone == 1 && FStrEq(pEvent->GetName(), "zone_enter"))
+        else if (m_pRunEntData->m_bIsInZone && iCurrentZone == 1 && FStrEq(pEvent->GetName(), "zone_enter"))
         {   // disappear when entering start zone
             m_fLastJumpVelAlpha = 0.0f;
             m_fStageVelAlpha = 0.0f;
+
+            m_iLastZone = 0;
         }
     }
 }

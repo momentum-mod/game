@@ -34,6 +34,8 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     void ResetLabelOrder();
 
   private:
+    int m_iLastZone;
+
     SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pLastJumpVelLabel, *m_pStageEnterExitVelLabel;
 
     SpeedoLabelList m_LabelOrderList;
