@@ -279,6 +279,7 @@
         "MOM_Settings_Speedometer_Type_Horiz" "Horizontal Speedometer"
         "MOM_Settings_Speedometer_Type_Vert" "Vertical Speedometer"
         "MOM_Settings_Speedometer_Type_LastJump" "Last Jump Velocity"
+        "MOM_Settings_Speedometer_Type_RampBoardLeave" "Ramp Board/Leave Velocity"
         "MOM_Settings_Speedometer_Type_StageEnterExit" "Stage Enter/Exit Velocity"
         "MOM_Settings_Speedometer_Show" "Display this speedometer."
         "MOM_Settings_Speedometer_Units_Label" "Speedometer Units:"
