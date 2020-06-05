@@ -1796,15 +1796,6 @@ public:
 	}
 
 	virtual bool ShouldBlockNav() const { return true; }
-
-    // Glows
-public:
-    virtual void				AddGlowEffect(void);
-    virtual void				RemoveGlowEffect(void);
-    virtual bool				IsGlowEffectActive(void);
-
-protected:
-    CNetworkVar(bool, m_bGlowEnabled);
 };
 
 // Send tables exposed in this module.
