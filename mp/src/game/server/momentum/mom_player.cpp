@@ -135,6 +135,9 @@ SendPropInt(SENDINFO(m_afButtonDisabled)),
 SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropFloat(SENDINFO(m_fDuckTimer)),
+SendPropBool(SENDINFO(m_bSurfing)),
+SendPropVector(SENDINFO(m_vecRampBoardVel)),
+SendPropVector(SENDINFO(m_vecRampLeaveVel)),
 SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
 SendPropArray3(SENDINFO_ARRAY3(m_iLinearTracks), SendPropInt(SENDINFO_ARRAY(m_iLinearTracks), 1, SPROP_UNSIGNED)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
@@ -197,6 +200,9 @@ CMomentumPlayer::CMomentumPlayer()
       m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1), 
       m_cvarMapFinMoveEnable("mom_mapfinished_movement_enable")
 {
+    m_bSurfing = false;
+    m_vecRampBoardVel.Init();
+    m_vecRampLeaveVel.Init();
     m_bAllowUserTeleports = true;
     m_flPunishTime = -1;
     m_iLastBlock = -1;

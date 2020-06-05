@@ -119,6 +119,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(int, m_iShotsFired); // Used in various weapon code
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
+    CNetworkVar(bool, m_bSurfing);
+    CNetworkVector(m_vecRampBoardVel);
+    CNetworkVector(m_vecRampLeaveVel);
 
     CNetworkArray(int, m_iZoneCount, MAX_TRACKS); // The number of zones for a given track
     CNetworkArray(bool, m_iLinearTracks, MAX_TRACKS); // If a given track is linear or not
@@ -260,6 +263,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool CanSprint() const;
     void ToggleSprint(bool bShouldSprint);
     void ToggleWalk(bool bShouldWalk);
+
+    // Ramp stuff
+    void SetRampBoardVelocity(const Vector &vecVel);
+    void SetRampLeaveVelocity(const Vector &vecVel);
 
   private:
     // Player think function called every tick

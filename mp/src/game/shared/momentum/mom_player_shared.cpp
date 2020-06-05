@@ -52,6 +52,35 @@ inline void UTIL_TraceLineIgnoreTwoEntities(const Vector &vecAbsStart, const Vec
     }
 }
 
+void CMomentumPlayer::SetRampBoardVelocity(const Vector &vecVel)
+{
+    m_vecRampBoardVel = vecVel;
+    m_bSurfing = true;
+
+#ifdef GAME_DLL
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("ramp_board");
+    if (pEvent)
+    {
+        pEvent->SetFloat("speed", vecVel.Length());
+        gameeventmanager->FireEvent(pEvent);
+    }
+#endif
+}
+void CMomentumPlayer::SetRampLeaveVelocity(const Vector &vecVel)
+{
+    m_vecRampLeaveVel = vecVel;
+    m_bSurfing = false;
+
+#ifdef GAME_DLL
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("ramp_leave");
+    if (pEvent)
+    {
+        pEvent->SetFloat("speed", vecVel.Length());
+        gameeventmanager->FireEvent(pEvent);
+    }
+#endif
+}
+
 void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
                                  const QAngle &shootAngles, // shooting angle
                                  float vecSpread,           // spread vector
