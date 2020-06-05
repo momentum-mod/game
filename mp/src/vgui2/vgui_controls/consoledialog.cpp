@@ -423,33 +423,36 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 
 	bool bNormalBuild = true;
 
-	// if there is a space in the text, and the command isn't of the type to know how to autocomplet, then command completion is over
+	// if there is a space in the text, and the command isn't of the type to know how to autocomplete, then command completion is over
 	const char *space = strstr( text, " " );
 	if ( space )
 	{
 		ConCommand *pCommand = FindAutoCompleteCommmandFromPartial( text );
-		if ( !pCommand )
-			return;
-
-		bNormalBuild = false;
-
-		CUtlVector< CUtlString > commands;
-		int count = pCommand->AutoCompleteSuggest( text, commands );
-		Assert( count <= COMMAND_COMPLETION_MAXITEMS );
-
-		for ( int i = 0; i < count; i++ )
+		if ( pCommand )
 		{
-			// match found, add to list
-			CompletionItem *item = new CompletionItem();
-			m_CompletionList.AddToTail( item );
-			item->m_bIsCommand = false;
-			item->m_pCommand = nullptr;
-			item->m_pText = new CHistoryItem( commands[ i ].String() );
+			bNormalBuild = false;
+
+			CUtlVector< CUtlString > commands;
+			int count = pCommand->AutoCompleteSuggest( text, commands );
+			Assert( count <= COMMAND_COMPLETION_MAXITEMS );
+
+			for ( int i = 0; i < count; i++ )
+			{
+				// match found, add to list
+				CompletionItem *item = new CompletionItem();
+				m_CompletionList.AddToTail( item );
+				item->m_bIsCommand = false;
+				item->m_pCommand = nullptr;
+				item->m_pText = new CHistoryItem( commands[ i ].String() );
+			}
 		}
 	}
 				 
 	if ( bNormalBuild )
 	{
+		// First character as space means we should search commands rather than autocomplete
+		bool bSearch = ( text[0] == ' ' );
+
 		// look through the command list for all matches
 		ConCommandBase const *cmd = (ConCommandBase const *)cvar->GetCommands();
 		while (cmd)
@@ -460,7 +463,20 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 				continue;
 			}
 
-			if ( !strnicmp(text, cmd->GetName(), len))
+			bool bMatch;
+			if ( bSearch )
+			{
+				// Substring search, starting after space
+				// If only space is there then match all
+				bMatch = ( len == 1 ) || V_stristr( cmd->GetName(), &text[1] );
+			}
+			else
+			{
+				// Simple autocomplete
+				bMatch = !strnicmp( text, cmd->GetName(), len );
+			}
+
+			if ( bMatch )
 			{
 				// match found, add to list
 				CompletionItem *item = new CompletionItem();
