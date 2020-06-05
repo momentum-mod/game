@@ -6,8 +6,9 @@
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
-            "3" "LastJumpVelocity"
-            "4" "StageEnterExitVelocity"
+            "3" "VertSpeedometer"
+            "4" "LastJumpVelocity"
+            "5" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -49,8 +50,9 @@
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
-            "3" "LastJumpVelocity"
-            "4" "StageEnterExitVelocity"
+            "3" "VertSpeedometer"
+            "4" "LastJumpVelocity"
+            "5" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -90,8 +92,9 @@
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
-            "3" "LastJumpVelocity"
-            "4" "StageEnterExitVelocity"
+            "3" "VertSpeedometer"
+            "4" "LastJumpVelocity"
+            "5" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -150,8 +153,9 @@
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
-            "3" "LastJumpVelocity"
-            "4" "StageEnterExitVelocity"
+            "3" "VertSpeedometer"
+            "4" "LastJumpVelocity"
+            "5" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -233,8 +237,9 @@
         {
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
-            "3" "LastJumpVelocity"
-            "4" "StageEnterExitVelocity"
+            "3" "VertSpeedometer"
+            "4" "LastJumpVelocity"
+            "5" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {

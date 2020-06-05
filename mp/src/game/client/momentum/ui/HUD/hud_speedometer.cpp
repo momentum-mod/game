@@ -49,6 +49,9 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pHorizSpeedoLabel = new SpeedometerLabel(this, "HorizSpeedometer", SPEEDOMETER_COLORIZE_COMPARISON);
     m_pHorizSpeedoLabel->SetSupportsSeparateComparison(false);
 
+    m_pVertSpeedoLabel = new SpeedometerLabel(this, "VertSpeedometer", SPEEDOMETER_COLORIZE_COMPARISON);
+    m_pVertSpeedoLabel->SetSupportsSeparateComparison(false);
+
     m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelocity", SPEEDOMETER_COLORIZE_COMPARISON);
     m_pLastJumpVelLabel->SetFadeOutAnimation("FadeOutLastJumpVel", &m_fLastJumpVelAlpha);
 
@@ -57,8 +60,9 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
     m_Labels[0] = m_pAbsSpeedoLabel;
     m_Labels[1] = m_pHorizSpeedoLabel;
-    m_Labels[2] = m_pLastJumpVelLabel;
-    m_Labels[3] = m_pStageEnterExitVelLabel;
+    m_Labels[2] = m_pVertSpeedoLabel;
+    m_Labels[3] = m_pLastJumpVelLabel;
+    m_Labels[4] = m_pStageEnterExitVelLabel;
 
     ResetLabelOrder();
 
@@ -183,9 +187,11 @@ void CHudSpeedMeter::OnThink()
 
     float absVel = velocity.Length();
     float horizVel = Vector(velocity.x, velocity.y, 0).Length();
+    float vertVel = Vector(0, 0, velocity.z).Length();
 
     m_pAbsSpeedoLabel->Update(absVel);
     m_pHorizSpeedoLabel->Update(horizVel);
+    m_pVertSpeedoLabel->Update(vertVel);
 }
 
 void CHudSpeedMeter::ResetLabelOrder()

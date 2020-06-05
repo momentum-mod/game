@@ -277,6 +277,7 @@
         "MOM_Settings_Speedometer_Type_Label" "Type:"
         "MOM_Settings_Speedometer_Type_Absolute" "Absolute Speedometer"
         "MOM_Settings_Speedometer_Type_Horiz" "Horizontal Speedometer"
+        "MOM_Settings_Speedometer_Type_Vert" "Vertical Speedometer"
         "MOM_Settings_Speedometer_Type_LastJump" "Last Jump Velocity"
         "MOM_Settings_Speedometer_Type_StageEnterExit" "Stage Enter/Exit Velocity"
         "MOM_Settings_Speedometer_Show" "Display this speedometer."
