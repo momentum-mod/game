@@ -26,6 +26,7 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSpeedometerType = new ComboBox(this, "SpeedoType", SPEEDOMETER_MAX_LABELS, false);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Absolute", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Horiz", nullptr);
+    m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Vert", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_LastJump", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_StageEnterExit", nullptr);
     m_pSpeedometerType->AddActionSignalTarget(this);
