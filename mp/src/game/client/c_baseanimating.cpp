@@ -205,6 +205,10 @@ IMPLEMENT_CLIENTCLASS_DT(C_BaseAnimating, DT_BaseAnimating, CBaseAnimating)
 	RecvPropFloat( RECVINFO( m_fadeMaxDist ) ), 
 	RecvPropFloat( RECVINFO( m_flFadeScale ) ), 
 
+    RecvPropBool(RECVINFO(m_bGlowEnabled)),
+    RecvPropFloat(RECVINFO(m_flGlowMaxDist)),
+    RecvPropInt(RECVINFO(m_clrGlow), 0, RecvProxy_IntToColor32),
+
 END_RECV_TABLE()
 
 BEGIN_PREDICTION_DATA( C_BaseAnimating )
@@ -743,7 +747,6 @@ C_BaseAnimating::C_BaseAnimating() :
     m_pGlowEffect = NULL;
     m_bGlowEnabled = false;
     m_bOldGlowEnabled = false;
-    m_bClientSideGlowEnabled = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -4858,14 +4861,21 @@ void C_BaseAnimating::OnDataChanged( DataUpdateType_t updateType )
 	}
 }
 
+void C_BaseAnimating::ClientThink()
+{
+    BaseClass::ClientThink();
+
+    UpdateGlowEffect();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void C_BaseAnimating::GetGlowEffectColor(float* r, float* g, float* b)
 {
-    *r = 0.76f;
-    *g = 0.76f;
-    *b = 0.76f;
+    *r = m_clrGlow.r / 255.0f;
+    *g = m_clrGlow.g / 255.0f;
+    *b = m_clrGlow.b / 255.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -4873,20 +4883,29 @@ void C_BaseAnimating::GetGlowEffectColor(float* r, float* g, float* b)
 //-----------------------------------------------------------------------------
 void C_BaseAnimating::UpdateGlowEffect(void)
 {
-    // destroy the existing effect
-    if (m_pGlowEffect)
+    DestroyGlowEffect();
+
+    if (!m_bGlowEnabled)
+       return;
+
+    float r, g, b;
+    GetGlowEffectColor(&r, &g, &b);
+
+    float flAlpha = 1.0f;
+
+    C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+
+    // Lerp alpha based on distance
+    if (pPlayer)
     {
-        DestroyGlowEffect();
+        float flDistance = 0;
+        flDistance = (GetAbsOrigin() - pPlayer->GetAbsOrigin()).Length();
+        flAlpha = clamp(1.0f - (flDistance / m_flGlowMaxDist), 0.0f, 1.0f);
     }
 
-    // create a new effect
-    if (m_bGlowEnabled || m_bClientSideGlowEnabled)
-    {
-        float r, g, b;
-        GetGlowEffectColor(&r, &g, &b);
+    m_pGlowEffect = new CGlowObject(this, Vector(r, g, b), flAlpha, true);
 
-        m_pGlowEffect = new CGlowObject(this, Vector(r, g, b), 1.0, true);
-    }
+    SetNextClientThink(gpGlobals->curtime + 0.1f);
 }
 
 //-----------------------------------------------------------------------------
