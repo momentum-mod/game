@@ -133,4 +133,12 @@
     "player_jumped"
     {
     }
+    "ramp_board"
+    {
+        "speed" "float"
+    }
+    "ramp_leave"
+    {
+        "speed" "float"
+    }
 }
