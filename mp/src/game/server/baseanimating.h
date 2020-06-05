@@ -413,14 +413,24 @@ private:
 
     // Glows
 public:
+    void InputSetGlowEnabled(inputdata_t& inputdata);
+    void InputSetGlowDisabled(inputdata_t& inputdata);
+    void InputSetGlowColor(inputdata_t& inputdata);
+    void InputSetGlowDistance(inputdata_t& inputdata);
+
     virtual void				AddGlowEffect(void);
     virtual void				RemoveGlowEffect(void);
     virtual bool				IsGlowEffectActive(void);
     virtual void                SetGlowColor(color32);
+
 protected:
 	CNetworkVar( float, m_fadeMinDist );	// Point at which fading is absolute
 	CNetworkVar( float, m_fadeMaxDist );	// Point at which fading is inactive
 	CNetworkVar( float, m_flFadeScale );	// Scale applied to min / max
+
+    CNetworkVar(bool, m_bGlowEnabled);
+    CNetworkColor32(m_clrGlow);
+    CNetworkVar(float, m_flGlowMaxDist);
 
 public:
 	COutputEvent m_OnIgnite;
