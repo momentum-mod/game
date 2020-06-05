@@ -1,0 +1,48 @@
+//========= Copyright © 1996-2007, Valve Corporation, All rights reserved. ============//
+
+// STATIC: "FOW"						"0..1"
+
+#include "shader_constant_register_map.h"
+#include "common_fog_ps_fxc.h"
+#include "fow_ps_fxc.h"
+
+sampler BaseSampler1					: register( s1 );	// Base map 1
+
+#if ( FOW == 1 )
+
+sampler FoWSampler					: register( s10 );	// Fog of War
+
+#endif
+
+
+struct PS_INPUT
+{
+	float4 projPos							: POSITION;	
+	float2 vBaseTexCoord					: TEXCOORD0;
+#if ( FOW == 1 )
+	float2 vFowCoord						: TEXCOORD3;
+#endif
+};
+
+
+float4 main( PS_INPUT i ) : COLOR
+{
+#if !defined( _X360 )
+	if ( i.vBaseTexCoord.x < 0.0 || i.vBaseTexCoord.x > 1.0 || i.vBaseTexCoord.y < 0.0 || i.vBaseTexCoord.y > 1.0 )
+	{
+		discard;
+	}
+#endif
+
+	float3 vResult = tex2D( BaseSampler1, i.vBaseTexCoord.xy ) * cFlashlightColor.rgb;
+
+#if ( FOW == 1 )
+//	return float4( vFoWResult, 0, 0, 255 );
+	vResult.rgb = CalcFoW( FoWSampler, i.vFowCoord, vResult.rgb );
+#endif
+
+	float fogFactor = 0.0f;
+	
+	return FinalOutput( float4( vResult, 1.0 ), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR );
+}
+
