@@ -285,9 +285,7 @@ CLIENTEFFECT_REGISTER_END_CONDITIONAL(engine->GetDXSupportLevel() >= 90)
 
 bool ClientModeMOMNormal::DoPostScreenSpaceEffects(const CViewSetup* pSetup)
 {
-#ifdef GLOW_ENABLE
     g_GlowObjectManager.RenderGlowEffects(pSetup, 0);
-#endif
 
     return BaseClass::DoPostScreenSpaceEffects(pSetup);
 }

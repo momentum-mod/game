@@ -36,9 +36,7 @@
 #include "toolframework/itoolentity.h"
 #include "tier0/threadtools.h"
 
-#ifdef GLOWS_ENABLE
 #include "glow_outline_effect.h"
-#endif // GLOWS_ENABLE
 
 class C_Team;
 class IPhysicsObject;
@@ -1692,7 +1690,6 @@ protected:
 	color32 m_PreviousRenderColor;
 #endif
 
-#ifdef GLOWS_ENABLE
 public:
     CGlowObject			*GetGlowObject(void) { return m_pGlowEffect; }
     virtual void		GetGlowEffectColor(float *r, float *g, float *b);
@@ -1708,7 +1705,6 @@ private:
     bool				m_bGlowEnabled;				// networked value
     bool				m_bOldGlowEnabled;
     CGlowObject			*m_pGlowEffect;
-#endif // GLOWS_ENABLE
 };
 
 EXTERN_RECV_TABLE(DT_BaseEntity);

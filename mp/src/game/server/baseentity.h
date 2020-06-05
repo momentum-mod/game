@@ -1797,7 +1797,6 @@ public:
 
 	virtual bool ShouldBlockNav() const { return true; }
 
-#ifdef GLOWS_ENABLE
     // Glows
 public:
     virtual void				AddGlowEffect(void);
@@ -1806,7 +1805,6 @@ public:
 
 protected:
     CNetworkVar(bool, m_bGlowEnabled);
-#endif
 };
 
 // Send tables exposed in this module.
