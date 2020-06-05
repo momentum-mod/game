@@ -113,39 +113,44 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
 
     // zone enter/exit
     const auto ent = pEvent->GetInt("ent");
-    if (ent == pLocal->GetCurrentUIEntity()->GetEntIndex())
+    if (ent != pLocal->GetCurrentUIEntity()->GetEntIndex())
+        return;
+
+    int iCurrentZone = m_pRunEntData->m_iCurrentZone;
+    const bool bExit = FStrEq(pEvent->GetName(), "zone_exit"), bEnter = FStrEq(pEvent->GetName(), "zone_enter");
+
+    if (m_pRunEntData->m_bIsInZone && iCurrentZone == 1 && bEnter)
     {
-        const auto bExit = FStrEq(pEvent->GetName(), "zone_exit");
-        const auto bLinear = pLocal->m_iLinearTracks.Get(pLocal->m_Data.m_iCurrentTrack);
-        int iCurrentZone = m_pRunEntData->m_iCurrentZone;
+        // disappear when entering start zone
+        m_fLastJumpVelAlpha = 0.0f;
+        m_fStageVelAlpha = 0.0f;
+        m_fRampVelAlpha = 0.0f;
+        m_iLastZone = 0;
+    }
 
-        // Logical XOR; equivalent to (bLinear && !bExit) || (!bLinear && bExit)
-        // if map is linear, only update if player progresses to a new zone further into the map
-        if (m_pRunEntData->m_bTimerRunning && (bLinear != bExit) && (iCurrentZone > m_iLastZone || !bLinear))
+    const auto bLinear = pLocal->m_iLinearTracks.Get(pLocal->m_Data.m_iCurrentTrack);
+
+    // return on current or previous zone on a linear map
+    if (!m_pRunEntData->m_bTimerRunning || (iCurrentZone <= m_iLastZone && bLinear))
+        return;
+
+    // Logical XOR; equivalent to (bLinear && !bExit) || (!bLinear && bExit)
+    if (bLinear != bExit)
+    {
+        m_iLastZone = iCurrentZone;
+
+        int velType = mom_hud_velocity_type.GetInt();
+        float act = m_pRunStats->GetZoneEnterSpeed(iCurrentZone, velType);
+        bool bComparisonLoaded = g_pMOMRunCompare->LoadedComparison();
+        if (bComparisonLoaded)
         {
-            m_iLastZone = iCurrentZone;
-
-            int velType = mom_hud_velocity_type.GetInt();
-            float act = m_pRunStats->GetZoneEnterSpeed(iCurrentZone, velType);
-            bool bComparisonLoaded = g_pMOMRunCompare->LoadedComparison();
-            if (bComparisonLoaded)
-            {
-                // set the label's custom diff
-                float diff = act - g_pMOMRunCompare->GetRunComparisons()->runStats.GetZoneEnterSpeed(
-                                        m_pRunEntData->m_iCurrentZone, velType);
-                m_pStageEnterExitVelLabel->SetCustomDiff(diff);
-            }
-            m_pStageEnterExitVelLabel->SetDrawComparison(bComparisonLoaded);
-            m_pStageEnterExitVelLabel->Update(act);
+            // set the label's custom diff
+            float diff = act - g_pMOMRunCompare->GetRunComparisons()->runStats.GetZoneEnterSpeed(
+                                    m_pRunEntData->m_iCurrentZone, velType);
+            m_pStageEnterExitVelLabel->SetCustomDiff(diff);
         }
-        else if (m_pRunEntData->m_bIsInZone && iCurrentZone == 1 && FStrEq(pEvent->GetName(), "zone_enter"))
-        {   // disappear when entering start zone
-            m_fLastJumpVelAlpha = 0.0f;
-            m_fStageVelAlpha = 0.0f;
-            m_fRampVelAlpha = 0.0f;
-
-            m_iLastZone = 0;
-        }
+        m_pStageEnterExitVelLabel->SetDrawComparison(bComparisonLoaded);
+        m_pStageEnterExitVelLabel->Update(act);
     }
 }
 
