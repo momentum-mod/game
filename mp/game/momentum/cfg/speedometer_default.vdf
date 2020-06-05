@@ -8,7 +8,8 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "StageEnterExitVelocity"
+            "5" "RampBoardLeaveVelocity"
+            "6" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -36,7 +37,7 @@
             "colorize" "3"
             "units"    "0"
         }
-        "RampEnterExitVelocity"
+        "RampBoardLeaveVelocity"
         {
             "visible"  "1"
             "colorize" "2"
@@ -52,7 +53,8 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "StageEnterExitVelocity"
+            "5" "RampBoardLeaveVelocity"
+            "6" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -80,7 +82,7 @@
             "colorize" "3"
             "units"    "0"
         }
-        "RampEnterExitVelocity"
+        "RampBoardLeaveVelocity"
         {
             "visible"  "0"
         }
@@ -94,7 +96,8 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "StageEnterExitVelocity"
+            "5" "RampBoardLeaveVelocity"
+            "6" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -141,7 +144,7 @@
             "colorize" "3"
             "units"    "0"
         }
-        "RampEnterExitVelocity"
+        "RampBoardLeaveVelocity"
         {
             "visible"  "0"
         }
@@ -155,7 +158,8 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "StageEnterExitVelocity"
+            "5" "RampBoardLeaveVelocity"
+            "6" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -225,7 +229,7 @@
             "colorize" "3"
             "units"    "0"
         }
-        "RampEnterExitVelocity"
+        "RampBoardLeaveVelocity"
         {
             "visible"  "0"
         }
@@ -239,7 +243,8 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "StageEnterExitVelocity"
+            "5" "RampBoardLeaveVelocity"
+            "6" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -267,7 +272,7 @@
             "colorize" "3"
             "units"    "0"
         }
-        "RampEnterExitVelocity"
+        "RampBoardLeaveVelocity"
         {
             "visible"  "0"
         }

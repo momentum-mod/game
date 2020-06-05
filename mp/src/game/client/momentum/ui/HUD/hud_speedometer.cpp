@@ -36,6 +36,8 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     ListenForGameEvent("zone_exit");
     ListenForGameEvent("zone_enter");
     ListenForGameEvent("player_jumped");
+    ListenForGameEvent("ramp_leave");
+    ListenForGameEvent("ramp_board");
     
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
@@ -55,6 +57,9 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelocity", SPEEDOMETER_COLORIZE_COMPARISON);
     m_pLastJumpVelLabel->SetFadeOutAnimation("FadeOutLastJumpVel", &m_fLastJumpVelAlpha);
 
+    m_pRampBoardLeaveVelLabel = new SpeedometerLabel(this, "RampBoardLeaveVelocity", SPEEDOMETER_COLORIZE_COMPARISON);
+    m_pRampBoardLeaveVelLabel->SetFadeOutAnimation("FadeOutRampVel", &m_fRampVelAlpha);
+
     m_pStageEnterExitVelLabel = new SpeedometerLabel(this, "StageEnterExitVelocity", SPEEDOMETER_COLORIZE_COMPARISON_SEPARATE);
     m_pStageEnterExitVelLabel->SetFadeOutAnimation("FadeOutStageVel", &m_fStageVelAlpha);
 
@@ -62,7 +67,8 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_Labels[1] = m_pHorizSpeedoLabel;
     m_Labels[2] = m_pVertSpeedoLabel;
     m_Labels[3] = m_pLastJumpVelLabel;
-    m_Labels[4] = m_pStageEnterExitVelLabel;
+    m_Labels[4] = m_pRampBoardLeaveVelLabel;
+    m_Labels[5] = m_pStageEnterExitVelLabel;
 
     ResetLabelOrder();
 
@@ -93,6 +99,12 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
     if (FStrEq(pEvent->GetName(), "player_jumped"))
     {
         m_pLastJumpVelLabel->Update(m_pRunEntData->m_flLastJumpVel);
+        return;
+    }
+
+    if (FStrEq(pEvent->GetName(), "ramp_board") || FStrEq(pEvent->GetName(), "ramp_leave"))
+    {
+        m_pRampBoardLeaveVelLabel->Update(pEvent->GetFloat("speed"));
         return;
     }
 
@@ -130,6 +142,7 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         {   // disappear when entering start zone
             m_fLastJumpVelAlpha = 0.0f;
             m_fStageVelAlpha = 0.0f;
+            m_fRampVelAlpha = 0.0f;
 
             m_iLastZone = 0;
         }

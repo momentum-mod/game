@@ -120,7 +120,7 @@
         "fieldName"		"SpeedoType"
         "xpos"		"3"
         "ypos"		"0"
-        "wide"		"110"
+        "wide"		"130"
         "tall"		"12"
         "autoResize"		"0"
         "pinCorner"		"0"
