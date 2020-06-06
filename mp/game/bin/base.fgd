@@ -29,6 +29,9 @@
     model(studio) : "World Model"
     skin(integer) : "Skin" : 0 : "Some models have multiple versions of their textures, called skins. Set this to a number other than 0 to use that skin instead of the default."
     modelscale(float) : "Model Scale" : "1.0" : "A multiplier for the size of the model."
+    glowdist(integer) : "Glow Max Distance" : 1024 : "The distance for glow falloff, -1 is infinite."
+    glowenabled(boolean) : "Enable glow effect" : 0
+    glowcolor(color255) : "Glow Color (R G B)" : "255 255 255" : "The color of the glow (if enabled)."
 
     disableshadows(choices) : "Disable Shadows" : 0 : "Used to disable dynamic shadows on this entity." =
     [
@@ -42,6 +45,10 @@
     input EnableShadow(void) : "Turn shadow on."
     input AlternativeSorting(bool) : "Used to attempt to fix sorting problems when rendering. True activates, false deactivates"
     input SetModelScale(string) : "Takes two values separated by a space. The first is the target model scale. The second value is the number of seconds the change in scale will be spread over."
+    input SetGlowEnabled(void) : "Enable the glow effect"
+    input SetGlowDisabled(void) : "Disable the glow effect"
+    input SetGlowColor(color255) : "Change the glow's color. Format: <Red 0-255> <Green 0-255> <Blue 0-255>"
+    input SetGlowDistance(float) : "Change the glow's max distance."
 
     // Outputs
     output OnIgnite(void) : "Fired when this object catches fire."
