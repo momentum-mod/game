@@ -422,6 +422,7 @@ public:
     virtual void				RemoveGlowEffect(void);
     virtual bool				IsGlowEffectActive(void);
     virtual void                SetGlowColor(color32);
+    virtual void                SetGlowDistance(float);
 
 protected:
 	CNetworkVar( float, m_fadeMinDist );	// Point at which fading is absolute

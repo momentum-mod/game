@@ -677,7 +677,7 @@ void CBaseAnimating::InputSetGlowColor(inputdata_t& inputdata)
 //-----------------------------------------------------------------------------
 void CBaseAnimating::InputSetGlowDistance(inputdata_t& inputdata)
 {
-    m_flGlowMaxDist = inputdata.value.Float();
+    SetGlowDistance(inputdata.value.Float());
 }
 
 //-----------------------------------------------------------------------------
@@ -710,6 +710,14 @@ bool CBaseAnimating::IsGlowEffectActive(void)
 void CBaseAnimating::SetGlowColor(color32 color)
 {
     m_clrGlow.Set(color);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::SetGlowDistance(float distance)
+{
+    m_flGlowMaxDist = distance;
 }
 
 
