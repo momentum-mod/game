@@ -2909,6 +2909,11 @@ int RunVRAD( int argc, char **argv )
 	CmdLib_InitFileSystem( argv[ i ] );
 	Q_FileBase( source, source, sizeof( source ) );
 
+	if ( !g_bUseMPI )
+	{
+		LoadCmdLineFromFile( argc, argv, source, "vrad" ); // Don't do this if we're a VMPI worker..
+	}
+
 	VRAD_LoadBSP( argv[i] );
 
 	if ( (! onlydetail) && (! g_bOnlyStaticProps ) )
@@ -2945,14 +2950,8 @@ int VRAD_Main(int argc, char **argv)
 	else
 #endif
 	{
-		LoadCmdLineFromFile( argc, argv, source, "vrad" ); // Don't do this if we're a VMPI worker..
 		SetupDefaultToolsMinidumpHandler();
 	}
 	
 	return RunVRAD( argc, argv );
 }
-
-
-
-
-
