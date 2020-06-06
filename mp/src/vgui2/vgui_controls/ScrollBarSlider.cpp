@@ -399,8 +399,9 @@ void ScrollBarSlider::Paint()
 //-----------------------------------------------------------------------------
 void ScrollBarSlider::PaintBackground()
 {
-//	BaseClass::PaintBackground();
-	
+	if (!IsSliderVisible())
+		return;
+
 	int wide,tall;
 	GetPaintSize(wide,tall);
 	surface()->DrawSetColor(GetBgColor());
