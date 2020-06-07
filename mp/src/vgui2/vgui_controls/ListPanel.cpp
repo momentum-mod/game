@@ -5,21 +5,9 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include <stdio.h>
-
-#define PROTECTED_THINGS_DISABLE
-
-#include <vgui/Cursor.h>
-#include <vgui/IInput.h>
-#include <vgui/ILocalize.h>
-#include <vgui/IPanel.h>
-#include <vgui/IScheme.h>
-#include <vgui/ISystem.h>
-#include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
-#include <vgui/KeyCode.h>
-#include <KeyValues.h>
-#include <vgui/MouseCode.h>
+#include "vgui/IInput.h"
+#include "vgui/ISurface.h"
+#include "vgui/IVGui.h"
 
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Controls.h>
@@ -28,6 +16,7 @@
 #include <vgui_controls/Label.h>
 #include <vgui_controls/ListPanel.h>
 #include <vgui_controls/ScrollBar.h>
+#include <vgui_controls/ScrollBarSlider.h>
 #include <vgui_controls/TextImage.h>
 #include <vgui_controls/Menu.h>
 #include <vgui_controls/Tooltip.h>
@@ -36,19 +25,6 @@
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
-
-
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)    (((a) < (b)) ? (a) : (b))
-#endif
-
-#ifndef clamp
-#define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
-#endif
 
 //-----------------------------------------------------------------------------
 //
@@ -1660,7 +1636,7 @@ void ListPanel::PerformLayout()
 	m_vbar->SetSize(m_vbar->GetWide(), tall);
 	m_vbar->InvalidateLayout();
 
-	int buttonMaxXPos = wide - m_vbar->GetWide();
+	int buttonMaxXPos = wide - (m_vbar->IsVisible() && m_vbar->GetSlider()->IsSliderVisible() ? m_vbar->GetWide() : 0);
 	
 	int nColumns = m_CurrentColumns.Count();
 	// number of bars that can be resized
@@ -1916,7 +1892,7 @@ void ListPanel::Paint()
 		nStartItem = m_vbar->GetValue();
 	}
 
-	int vbarInset = m_vbar->IsVisible() ? m_vbar->GetWide() : 0;
+	int vbarInset = (m_vbar->IsVisible() && m_vbar->GetSlider()->IsSliderVisible() ? m_vbar->GetWide() : 0);
 	int maxw = panelWide - vbarInset;
 
 //	debug timing functions
