@@ -1231,7 +1231,8 @@ void Frame::PerformLayout()
 	// push the buttons against the east side
 	if (_closeButton->IsVisible())
 	{
-		_closeButton->SetPos(wide - offset, top_border_offset);
+		offset = wide - _closeButton->GetWide() - top_border_offset;
+		_closeButton->SetPos(offset, top_border_offset);
 		offset += offset_start;
 	}
 
