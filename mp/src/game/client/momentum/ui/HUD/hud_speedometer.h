@@ -4,7 +4,7 @@
 
 #include <vgui_controls/EditablePanel.h>
 
-#define SPEEDOMETER_MAX_LABELS 6
+#define SPEEDOMETER_MAX_LABELS 7
 
 class SpeedometerLabel;
 class C_MomRunStats;
@@ -37,7 +37,7 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     int m_iLastZone;
 
     SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pVertSpeedoLabel, *m_pLastJumpVelLabel, 
-                     *m_pRampBoardLeaveVelLabel, *m_pStageEnterExitVelLabel;
+                     *m_pRampBoardVelLabel, *m_pRampLeaveVelLabel, *m_pStageEnterExitVelLabel;
 
     SpeedoLabelList m_LabelOrderList;
 
@@ -51,7 +51,8 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
   protected:
     CPanelAnimationVar(Color, m_bgColor, "BgColor", "Blank");
     CPanelAnimationVar(float, m_fLastJumpVelAlpha, "LastJumpVelAlpha", "0.0");
-    CPanelAnimationVar(float, m_fRampVelAlpha, "RampVelAlpha", "0.0");
+    CPanelAnimationVar(float, m_fRampBoardVelAlpha, "RampBoardVelAlpha", "0.0");
+    CPanelAnimationVar(float, m_fRampLeaveVelAlpha, "RampLeaveVelAlpha", "0.0");
     CPanelAnimationVar(float, m_fStageVelAlpha, "StageVelAlpha", "0.0");
 };
 
