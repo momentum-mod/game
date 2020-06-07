@@ -34,4 +34,12 @@ class CvarComboBox : public ComboBox
     int m_iStartValue, m_iCvarMin, m_iCvarMax;
 };
 
+// CvarComboBox that has just an "Enable" and "Disable" option for a cvar
+class CvarToggleComboBox : public CvarComboBox
+{
+    DECLARE_CLASS_SIMPLE(CvarToggleComboBox, vgui::CvarComboBox);
+
+    CvarToggleComboBox(Panel *pParent, const char *pName, const char *cvarName);
+};
+
 }
