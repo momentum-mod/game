@@ -38,7 +38,7 @@ float4 main( PS_INPUT i ) : COLOR
 	// Since we're blending with a mod2x, we need to compensate with this hack
 	// NOTE: If the fog color (not fog density) is extremely dark, this can makes some decals seem
 	//       a little transparent, but it's better than not doing this
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
 	fogFactor = pow( saturate( g_fFogScaleTweak * fogFactor ), g_fFogExponentTweak );
 
 	return FinalOutput( result, fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_NONE );

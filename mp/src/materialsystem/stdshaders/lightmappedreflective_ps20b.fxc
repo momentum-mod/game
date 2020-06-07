@@ -176,7 +176,7 @@ float4 main( PS_INPUT i ) : COLOR
 	float fogFactor = 0.0f;
 	#if ( PIXELFOGTYPE == PIXEL_FOG_TYPE_RANGE )
 	{
-		fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_PixelFogParams, g_EyePos.xyz, i.worldPos.xyz, i.vProjPos.z );
+		fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_PixelFogParams, g_EyePos.z, i.worldPos.z, i.vProjPos.z );
 	}
 	#endif
 
