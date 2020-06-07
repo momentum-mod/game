@@ -135,3 +135,12 @@ void CvarComboBox::InitSettings()
     {"cvar_value", TYPE_STRING}
     END_PANEL_SETTINGS();
 }
+
+
+CvarToggleComboBox::CvarToggleComboBox(Panel *pParent, const char *pName, const char *pCvar) : BaseClass(pParent, pName, pCvar)
+{
+    SetEditable(false);
+    AddItem("#GameUI_Disabled", nullptr);
+    AddItem("#GameUI_Enabled", nullptr);
+    SetNumberOfEditLines(2);
+}
