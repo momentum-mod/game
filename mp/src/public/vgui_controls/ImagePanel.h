@@ -76,6 +76,7 @@ private:
 	bool m_bPositionImage;
 	bool m_bCenterImage;
 	bool m_bScaleImage;
+	bool m_bScalePanelToImage;
 	bool m_bTileImage;
 	bool m_bTileHorizontally;
 	bool m_bTileVertically;
