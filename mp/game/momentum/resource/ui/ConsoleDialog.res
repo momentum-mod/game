@@ -4,11 +4,7 @@
     {
         "ControlName"		"EditablePanel"
         "fieldName"		"ConsolePage"
-        "xpos"		"0"
-        "ypos"		"-10"
-        "proportionalToParent" "1"
-        "wide" "f0"
-        "tall" "f0"
+        // Position handled by code
         "autoResize"		"0"
         "pinCorner"		"0"
         "visible"		"1"
