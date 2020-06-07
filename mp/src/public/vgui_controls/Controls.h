@@ -123,6 +123,7 @@ class QueryBox;
 class RadioButton;
 class RichText;
 class ScalableImagePanel;
+class ScrollableEditablePanel;
 class ScrollBar;
 class ScrollBarSlider;
 class ScrubbableProgressBar;

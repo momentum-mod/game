@@ -10,24 +10,28 @@ class ScrollBar;
 //-----------------------------------------------------------------------------
 class ScrollableEditablePanel : public EditablePanel
 {
+public:
     DECLARE_CLASS_SIMPLE(ScrollableEditablePanel, vgui::EditablePanel);
 
-  public:
     ScrollableEditablePanel(Panel *pParent, EditablePanel *pChild, const char *pName);
     virtual ~ScrollableEditablePanel() {}
 
-    virtual void ApplySettings(KeyValues *pInResourceData) OVERRIDE;
-    virtual void PerformLayout() OVERRIDE;
+    void SetChild(Panel *pChild);
+
+    void ApplySettings(KeyValues *pInResourceData) override;
+    void PerformLayout() override;
 
     void ScrollToTop();
 
-    ScrollBar *GetScrollbar(void) { return m_pScrollBar; }
+    ScrollBar *GetScrollbar() const { return m_pScrollBar; }
+    Panel *GetDirectChild() const { return m_pChild; }
 
+protected:
     MESSAGE_FUNC(OnScrollBarSliderMoved, "ScrollBarSliderMoved");
-    virtual void OnMouseWheeled(int delta); // respond to mouse wheel events
+    void OnMouseWheeled(int delta) override; // respond to mouse wheel events
 
   private:
     ScrollBar *m_pScrollBar;
-    EditablePanel *m_pChild;
+    Panel *m_pChild;
 };
 }
