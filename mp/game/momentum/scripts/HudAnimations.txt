@@ -77,9 +77,13 @@ event FadeOutLastJumpVel
 {
     Animate HudSpeedMeter LastJumpVelAlpha "0" Accel 3.0 0.75
 }
-event FadeOutRampVel
+event FadeOutRampBoardVel
 {
-    Animate HudSpeedMeter RampVelAlpha "0" Accel 3.0 0.75
+    Animate HudSpeedMeter RampBoardVelAlpha "0" Accel 10.0 0.75
+}
+event FadeOutRampLeaveVel
+{
+    Animate HudSpeedMeter RampLeaveVelAlpha "0" Accel 10.0 0.75
 }
 event FadeOutStageVel
 {

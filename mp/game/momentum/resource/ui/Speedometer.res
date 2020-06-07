@@ -65,10 +65,23 @@
         "auto_tall_tocontents" "1"
         "auto_wide_tocontents" "1"
     }
-    "RampBoardLeaveVelocity"
+    "RampBoardVelocity"
     {
         "ControlName"   "SpeedometerLabel"
-        "fieldName"	    "RampBoardLeaveVelocity"
+        "fieldName"	    "RampBoardVelocity"
+        "xpos"          "0"
+        "ypos"          "0"
+        "textAlignment" "center"
+        "font"          "HudNumbersExtremelySmall"
+        "FgColor"       "MOM.Speedometer.Normal"
+        "wrap"          "0"
+        "auto_tall_tocontents" "1"
+        "auto_wide_tocontents" "1"
+    }
+    "RampLeaveVelocity"
+    {
+        "ControlName"   "SpeedometerLabel"
+        "fieldName"	    "RampLeaveVelocity"
         "xpos"          "0"
         "ypos"          "0"
         "textAlignment" "center"

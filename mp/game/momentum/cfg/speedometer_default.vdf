@@ -8,8 +8,9 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "RampBoardLeaveVelocity"
-            "6" "StageEnterExitVelocity"
+            "5" "RampBoardVelocity"
+            "6" "RampLeaveVelocity"
+            "7" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -31,16 +32,22 @@
             "colorize" "2"
             "units"    "0"
         }
+        "RampBoardVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
         "StageEnterExitVelocity"
         {
             "visible"  "1"
             "colorize" "3"
-            "units"    "0"
-        }
-        "RampBoardLeaveVelocity"
-        {
-            "visible"  "1"
-            "colorize" "2"
             "units"    "0"
         }
     }
@@ -53,8 +60,9 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "RampBoardLeaveVelocity"
-            "6" "StageEnterExitVelocity"
+            "5" "RampBoardVelocity"
+            "6" "RampLeaveVelocity"
+            "7" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -76,15 +84,19 @@
             "colorize" "2"
             "units"    "0"
         }
+        "RampBoardVelocity"
+        {
+            "visible"  "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "0"
+        }
         "StageEnterExitVelocity"
         {
             "visible"  "1"
             "colorize" "3"
             "units"    "0"
-        }
-        "RampBoardLeaveVelocity"
-        {
-            "visible"  "0"
         }
     }
 
@@ -96,8 +108,9 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "RampBoardLeaveVelocity"
-            "6" "StageEnterExitVelocity"
+            "5" "RampBoardVelocity"
+            "6" "RampLeaveVelocity"
+            "7" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -138,15 +151,19 @@
         {
             "visible"  "0"
         }
+        "RampBoardVelocity"
+        {
+            "visible"  "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "0"
+        }
         "StageEnterExitVelocity"
         {
             "visible"  "1"
             "colorize" "3"
             "units"    "0"
-        }
-        "RampBoardLeaveVelocity"
-        {
-            "visible"  "0"
         }
     }
 
@@ -158,8 +175,9 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "RampBoardLeaveVelocity"
-            "6" "StageEnterExitVelocity"
+            "5" "RampBoardVelocity"
+            "6" "RampLeaveVelocity"
+            "7" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -223,15 +241,19 @@
         {
             "visible"  "0"
         }
+        "RampBoardVelocity"
+        {
+            "visible"  "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "0"
+        }
         "StageEnterExitVelocity"
         {
             "visible"  "1"
             "colorize" "3"
             "units"    "0"
-        }
-        "RampBoardLeaveVelocity"
-        {
-            "visible"  "0"
         }
     }
 
@@ -243,8 +265,9 @@
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
             "4" "LastJumpVelocity"
-            "5" "RampBoardLeaveVelocity"
-            "6" "StageEnterExitVelocity"
+            "5" "RampBoardVelocity"
+            "6" "RampLeaveVelocity"
+            "7" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -266,15 +289,19 @@
             "colorize" "2"
             "units"    "0"
         }
+        "RampBoardVelocity"
+        {
+            "visible"  "0"
+        }
+        "RampLeaveVelocity"
+        {
+            "visible"  "0"
+        }
         "StageEnterExitVelocity"
         {
             "visible"  "1"
             "colorize" "3"
             "units"    "0"
-        }
-        "RampBoardLeaveVelocity"
-        {
-            "visible"  "0"
         }
     }
 }
