@@ -122,7 +122,7 @@ float4 main( PS_INPUT i ) : COLOR
 	// Do it somewhat unlit
 	HALF3 result = albedo*(g_OverbrightFactor.z*diffuseLighting + g_OverbrightFactor.y) + specularLighting;
 	
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
 	return FinalOutput( HALF4( result, alpha ), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR );
 }
 

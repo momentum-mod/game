@@ -50,6 +50,6 @@ float4 main( PS_INPUT i ) : COLOR
 	resultColor.rgb = lerp( tempColor.rgb, resultColor.rgb, g_Saturation.rgb );			// blend between color and greyscale
 	resultColor.rgb = resultColor.rgb * g_Tint.rgb;										// tint
 	
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
 	return FinalOutput( resultColor, fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_NONE, (WRITE_DEPTH_TO_DESTALPHA != 0), i.worldPos_projPosZ.w );
 }
