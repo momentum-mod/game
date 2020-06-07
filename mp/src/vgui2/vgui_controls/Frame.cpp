@@ -2105,6 +2105,10 @@ void Frame::OnKeyCodeTyped(KeyCode code)
             ivgui()->RunFrame();
 		}
 	}
+	else if (ctrl && shift && alt && code == KEY_L)
+	{
+	    g_pVGuiLocalize->ReloadLocalizationFiles();
+	}
 	else if (alt && code == KEY_F4)
 	{
 		// user has hit the close
