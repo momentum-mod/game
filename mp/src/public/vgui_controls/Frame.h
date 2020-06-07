@@ -246,6 +246,7 @@ private:
 	bool	m_bChainKeysToParent : 1;
 	bool	m_bPrimed : 1;
 	bool	m_iClientInsetXOverridden : 1;
+	bool	m_bCenterTitle;
 										 
 	CPanelAnimationVarAliasType( int, m_iTitleTextInsetXOverride, "titletextinsetX", "0", "proportional_int" );
 	CPanelAnimationVar( int, m_iTitleTextInsetYOverride, "titletextinsetY", "0" );
