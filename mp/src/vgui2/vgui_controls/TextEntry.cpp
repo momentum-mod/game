@@ -29,15 +29,12 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-enum
-{
-	// maximum size of text buffer
-	BUFFER_SIZE=999999,
-};
-
 using namespace vgui;
 
-static const int DRAW_OFFSET_X = 3,DRAW_OFFSET_Y = 1; 
+#define MAX_BUFFER_SIZE		999999
+
+#define DEFAULT_DRAW_OFFSET_X	4
+#define DEFAULT_DRAW_OFFSET_Y	2
 
 DECLARE_BUILD_FACTORY( TextEntry );
 
@@ -54,6 +51,8 @@ TextEntry::TextEntry(Panel *parent, const char *panelName) : BaseClass(parent, p
 
 	m_szComposition[ 0 ] = L'\0';
 
+	_drawOffsetX = GetScaledVal(DEFAULT_DRAW_OFFSET_X);
+	_drawOffsetY = GetScaledVal(DEFAULT_DRAW_OFFSET_Y);
 	m_bAllowNumericInputOnly = false;
 	m_bAllowNonAsciiCharacters = false;
 	_hideText = false;
@@ -96,7 +95,7 @@ TextEntry::TextEntry(Panel *parent, const char *panelName) : BaseClass(parent, p
 	SetEditable(true);
 	
 	// initialize the line break array
-	m_LineBreaks.AddToTail(BUFFER_SIZE);
+	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 	
 	_recalculateBreaksIndex = 0;
 	
@@ -142,7 +141,7 @@ void TextEntry::ApplySchemeSettings(IScheme *pScheme)
 	_defaultSelectionBG2Color = GetSchemeColor("TextEntry.OutOfFocusSelectedBgColor", pScheme);
 	_focusEdgeColor = GetSchemeColor("TextEntry.FocusEdgeColor", Color(0, 0, 0, 0), pScheme);
 
-	if (!GetBorder())
+	if (!GetBorderOverrideName()[0])
 	{
 		const auto pBorderName = pScheme->GetResourceString("TextEntry.Border");
 		if (pBorderName && *pBorderName)
@@ -237,7 +236,7 @@ void TextEntry::OnSizeChanged(int newWide, int newTall)
    	// blow away the line breaks list 
 	_recalculateBreaksIndex = 0;
 	m_LineBreaks.RemoveAll();
-	m_LineBreaks.AddToTail(BUFFER_SIZE);
+	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 
     // if we're bigger, see if we can scroll left to put more text in the window
     if (newWide > _drawWidth)
@@ -325,7 +324,7 @@ void TextEntry::SetText(const wchar_t *wszText)
 	// blow away the line breaks list 
 	_recalculateBreaksIndex = 0;
 	m_LineBreaks.RemoveAll();
-	m_LineBreaks.AddToTail(BUFFER_SIZE);
+	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 	
 	InvalidateLayout();
 }
@@ -343,7 +342,7 @@ void TextEntry::SetCharAt(wchar_t ch, int index)
 		{
 			_recalculateBreaksIndex = 0;
 			m_LineBreaks.RemoveAll();
-			m_LineBreaks.AddToTail(BUFFER_SIZE);
+			m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 		}
 	}
 	
@@ -400,7 +399,7 @@ void TextEntry::CursorToPixelSpace(int cursorPos, int &cx, int &cy)
 {
 	int yStart = GetYStart();
 	
-	int x = DRAW_OFFSET_X, y = yStart;
+	int x = _drawOffsetX, y = yStart;
 	_pixelsIndent = 0;
 	int lineBreakIndexIndex = 0;
 	
@@ -474,7 +473,7 @@ int TextEntry::PixelToCursorSpace(int cx, int cy)
 	
 	// where to Start reading
 	int yStart = GetYStart();
-	int x = DRAW_OFFSET_X, y = yStart;
+	int x = _drawOffsetX, y = yStart;
 	_pixelsIndent = 0;
 	int lineBreakIndexIndex = 0;
 	
@@ -510,7 +509,7 @@ int TextEntry::PixelToCursorSpace(int cx, int cy)
 			onRightLine = true;
 			_putCursorAtEnd = true;	// this will make the text scroll up if needed
 		}
-		else if (cy >= y && (cy < (y + fontTall + DRAW_OFFSET_Y)))
+		else if (cy >= y && (cy < (y + fontTall + _drawOffsetY)))
 		{
 			onRightLine = true;
 		}
@@ -523,7 +522,7 @@ int TextEntry::PixelToCursorSpace(int cx, int cy)
 			if (cx > GetWide())	  // off right side of window
 			{
 			}
-			else if (cx < (DRAW_OFFSET_X + _pixelsIndent) || cy < yStart)	 // off left side of window
+			else if (cx < (_drawOffsetX + _pixelsIndent) || cy < yStart)	 // off left side of window
 			{
 				return i; // move cursor one to left
 			}
@@ -628,7 +627,7 @@ bool TextEntry::NeedsEllipses( HFont font, int *pIndex )
 {
 	Assert( pIndex );
 	*pIndex = -1;
-	int wide = DRAW_OFFSET_X; // buffer on left and right end of text.
+	int wide = _drawOffsetX; // buffer on left and right end of text.
 	for ( int i = 0; i < m_TextStream.Count(); ++i )
 	{	
 		wide += getCharWidth( font , m_TextStream[i] );
@@ -667,7 +666,7 @@ void TextEntry::PaintBackground()
 //	surface()->DrawFilledRect(0, 0, wide, tall);
 
 	// where to Start drawing
-	int x = DRAW_OFFSET_X + _pixelsIndent, y = GetYStart();
+	int x = _drawOffsetX + _pixelsIndent, y = GetYStart();
 
 	m_nLangInset = 0;
 
@@ -966,8 +965,8 @@ void TextEntry::PerformLayout()
 // moves x,y to the Start of the next line of text
 void TextEntry::AddAnotherLine(int &cx, int &cy)
 {
-	cx = DRAW_OFFSET_X + _pixelsIndent;
-	cy += (surface()->GetFontTall(_font) + DRAW_OFFSET_Y);
+	cx = _drawOffsetX + _pixelsIndent;
+	cy += (surface()->GetFontTall(_font) + _drawOffsetY);
 }
 
 
@@ -995,7 +994,7 @@ void TextEntry::RecalculateLineBreaks()
 	}
 	
 	int charWidth;
-	int x = DRAW_OFFSET_X, y = DRAW_OFFSET_Y;
+	int x = _drawOffsetX, y = _drawOffsetY;
 		
 	int wordStartIndex = 0;
 	int wordLength = 0;
@@ -1103,7 +1102,7 @@ void TextEntry::RecalculateLineBreaks()
 	_charCount = i-1;
 	
 	// end the list
-	m_LineBreaks.AddToTail(BUFFER_SIZE);
+	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 	
 	// set up the scrollbar
 	LayoutVerticalScrollBarSlider();
@@ -1133,7 +1132,7 @@ void TextEntry::LayoutVerticalScrollBarSlider()
 		_vertScrollBar->SetSize(_vertScrollBar->GetWide(), tall - ibottom - itop);
 		
 		// calculate how many lines we can fully display
-		int displayLines = tall / (surface()->GetFontTall(_font) + DRAW_OFFSET_Y);
+		int displayLines = tall / (surface()->GetFontTall(_font) + _drawOffsetY);
 		int numLines = m_LineBreaks.Count();
 		
 		if (numLines <= displayLines)
@@ -1278,6 +1277,13 @@ const wchar_t *UnlocalizeUnicode( wchar_t *unicode )
 Menu * TextEntry::GetEditMenu()
 {
 	return m_pEditMenu;
+}
+
+void TextEntry::SetDrawOffset(int x, int y)
+{
+    _drawOffsetX = x;
+    _drawOffsetY = y;
+    InvalidateLayout();
 }
 
 //-----------------------------------------------------------------------------
@@ -1924,7 +1930,7 @@ void TextEntry::OnKeyCodeTyped(KeyCode code)
 				// if there is a scroll bar scroll down one rangewindow
 				if (_multiline)
 				{
-					int displayLines = GetTall() / (surface()->GetFontTall(_font) + DRAW_OFFSET_Y);
+					int displayLines = GetTall() / (surface()->GetFontTall(_font) + _drawOffsetY);
 					// move the cursor down
 					for (int i=0; i < displayLines; i++)
 					{
@@ -1954,7 +1960,7 @@ void TextEntry::OnKeyCodeTyped(KeyCode code)
 				
 				if (_multiline)
 				{
-					int displayLines = GetTall() / (surface()->GetFontTall(_font) + DRAW_OFFSET_Y);
+					int displayLines = GetTall() / (surface()->GetFontTall(_font) + _drawOffsetY);
 					// move the cursor down
 					for (int i=0; i < displayLines; i++)
 					{
@@ -2408,7 +2414,7 @@ int TextEntry::GetYStart()
 	if (_multiline)
 	{
 		// just Start from the top
-		return DRAW_OFFSET_Y;
+		return _drawOffsetY;
 	}
 
 	int fontTall = surface()->GetFontTall(_font);
@@ -2431,7 +2437,7 @@ void TextEntry::MoveCursor(int line, int pixelsAcross)
 	
 	int yStart = GetYStart();
 	
-	int x = DRAW_OFFSET_X, y = yStart;
+	int x = _drawOffsetX, y = yStart;
 	int lineBreakIndexIndex = 0;
 	_pixelsIndent = 0;
 	int i;
@@ -3135,7 +3141,7 @@ void TextEntry::Backspace()
 	// recalculate linebreaks (the fast incremental linebreak function doesn't work in this case)
 	_recalculateBreaksIndex = 0;
 	m_LineBreaks.RemoveAll();
-	m_LineBreaks.AddToTail(BUFFER_SIZE);
+	m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 
 	LayoutVerticalScrollBarSlider();
 	ResetCursorBlink();
@@ -3175,7 +3181,7 @@ void TextEntry::DeleteSelectedRange(int x0, int x1)
 
     _recalculateBreaksIndex = 0;
     m_LineBreaks.RemoveAll();
-    m_LineBreaks.AddToTail(BUFFER_SIZE);
+    m_LineBreaks.AddToTail(MAX_BUFFER_SIZE);
 
     CalcBreakIndex();
 
@@ -3564,7 +3570,7 @@ int TextEntry::GetStartDrawIndex(int &lineBreakIndexIndex)
 	{
 		// check to see if the cursor is off the screen-multiline case
 		HFont font = _font;
-		int displayLines = GetTall() / (surface()->GetFontTall(font) + DRAW_OFFSET_Y);
+		int displayLines = GetTall() / (surface()->GetFontTall(font) + _drawOffsetY);
 		if (displayLines < 1)
 		{
 			displayLines = 1;
@@ -3606,7 +3612,7 @@ int TextEntry::GetStartDrawIndex(int &lineBreakIndexIndex)
 			while ( !done )
 			{
 				done = true;
-				int x = DRAW_OFFSET_X;
+				int x = _drawOffsetX;
 				for (int i = _currentStartIndex; i < m_TextStream.Count(); i++)
 				{
 					done = false;
@@ -3828,10 +3834,11 @@ void TextEntry::ApplySettings( KeyValues *inResourceData )
 {
 	BaseClass::ApplySettings( inResourceData );
 
+	_drawOffsetX = GetScaledVal(inResourceData->GetInt("draw_offset_x", DEFAULT_DRAW_OFFSET_X));
+	_drawOffsetY = GetScaledVal(inResourceData->GetInt("draw_offset_y", DEFAULT_DRAW_OFFSET_Y));
+
     _fontName = inResourceData->GetString("font", "Default");
     _smallFontName = inResourceData->GetString("fontSmall", "DefaultVerySmall");
-	_font = scheme()->GetIScheme( GetScheme() )->GetFont( _fontName, IsProportional() );
-	SetFont( _font );
 
 	SetTextHidden(inResourceData->GetBool("textHidden", false));
 	SetEditable(inResourceData->GetBool("editable", true));
@@ -3855,6 +3862,8 @@ void TextEntry::GetSettings( KeyValues *outResourceData )
     outResourceData->SetBool("selectallonfirstfocus", _selectAllOnFirstFocus);
     outResourceData->SetString("font", _fontName);
     outResourceData->SetString("fontSmall", _smallFontName);
+	outResourceData->SetInt("draw_offset_x", _drawOffsetX);
+	outResourceData->SetInt("draw_offset_y", _drawOffsetY);
 }
 
 void TextEntry::InitSettings()
@@ -3867,7 +3876,9 @@ void TextEntry::InitSettings()
     {"maxchars", TYPE_INTEGER},
     {"NumericInputOnly", TYPE_BOOL},
     {"unicode", TYPE_BOOL},
-    {"selectallonfirstfocus", TYPE_BOOL}
+    {"selectallonfirstfocus", TYPE_BOOL},
+	{"draw_offset_x", TYPE_INTEGER},
+	{"draw_offset_y", TYPE_INTEGER}
     END_PANEL_SETTINGS();
 }
 
@@ -3885,13 +3896,14 @@ int TextEntry::GetNumLines()
 void TextEntry::SetToFullHeight()
 {
 	PerformLayout();
+
 	int wide, tall;
 	GetSize(wide, tall);
 	
-	tall = GetNumLines() * (surface()->GetFontTall(_font) + DRAW_OFFSET_Y) + DRAW_OFFSET_Y + 2;
-	SetSize (wide, tall);
+	tall = GetNumLines() * (surface()->GetFontTall(_font) + _drawOffsetY) + _drawOffsetY + 2;
+	SetSize(wide, tall);
+
 	PerformLayout();
-	
 }
 
 //-----------------------------------------------------------------------------
@@ -3937,7 +3949,7 @@ void TextEntry::SetToFullWidth()
 		return;
 	
 	PerformLayout();
-	int wide = 2*DRAW_OFFSET_X; // buffer on left and right end of text.
+	int wide = 2 * _drawOffsetX; // buffer on left and right end of text.
 	
 	// loop through all the characters and sum their widths	
 	for (int i = 0; i < m_TextStream.Count(); ++i)
@@ -3946,7 +3958,7 @@ void TextEntry::SetToFullWidth()
 	}
 	
 	// height of one line of text
-	int tall = (surface()->GetFontTall(_font) + DRAW_OFFSET_Y) + DRAW_OFFSET_Y + 2;
+	int tall = (surface()->GetFontTall(_font) + _drawOffsetY) + _drawOffsetY + 2;
 	
 	SetSize (wide, tall);
 	PerformLayout();
