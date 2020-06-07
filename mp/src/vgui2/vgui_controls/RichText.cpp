@@ -170,21 +170,8 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 	// set default foreground color to black
 	_defaultTextColor =  Color(0, 0, 0, 0);
 
-	if ( IsProportional() )
-	{
-		int width, height;
-		int sw,sh;
-		surface()->GetProportionalBase( width, height );
-		surface()->GetScreenSize(sw, sh);
-		
-		_drawOffsetX = static_cast<int>( static_cast<float>( DRAW_OFFSET_X )*( static_cast<float>( sw )/ static_cast<float>( width )));
-		_drawOffsetY = static_cast<int>( static_cast<float>( DRAW_OFFSET_Y )*( static_cast<float>( sw )/ static_cast<float>( width )));
-	}
-	else
-	{
-		_drawOffsetX = DRAW_OFFSET_X;
-		_drawOffsetY = DRAW_OFFSET_Y;
-	}
+	_drawOffsetX = GetScaledVal(DRAW_OFFSET_X);
+	_drawOffsetY = GetScaledVal(DRAW_OFFSET_Y);
 
     // initialize the line break array
     InvalidateLineBreakStream(false);
@@ -255,6 +242,15 @@ void RichText::ApplySchemeSettings(IScheme *pScheme)
 	if ( Q_strlen( pScheme->GetResourceString( "RichText.InsetX" ) ) )
 	{
 		SetDrawOffsets( atoi( pScheme->GetResourceString( "RichText.InsetX" ) ), atoi( pScheme->GetResourceString( "RichText.InsetY" ) ) );
+	}
+
+	if (!GetBorderOverrideName()[0])
+	{
+		const auto pBorderName = pScheme->GetResourceString("RichText.Border");
+		if (pBorderName && *pBorderName)
+		{
+			SetBorder(pScheme->GetBorder(pBorderName));
+		}
 	}
 }
 
