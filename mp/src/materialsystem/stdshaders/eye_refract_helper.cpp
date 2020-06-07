@@ -444,18 +444,9 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 }
 
 
-extern ConVar r_flashlight_version2;
 void Draw_Eyes_Refract( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynamicAPI *pShaderAPI,
 	IShaderShadow* pShaderShadow, Eye_Refract_Vars_t &info, VertexCompressionType_t vertexCompression )
 {
 	bool bHasFlashlight = pShader->UsingFlashlight( params );
-	if( bHasFlashlight && ( IsX360() || r_flashlight_version2.GetInt() ) )
-	{
-		Draw_Eyes_Refract_Internal( pShader, params, pShaderAPI, pShaderShadow, false, info, vertexCompression );
-		if ( pShaderShadow )
-		{
-			pShader->SetInitialShadowState( );
-		}
-	}
 	Draw_Eyes_Refract_Internal( pShader, params, pShaderAPI, pShaderShadow, bHasFlashlight, info, vertexCompression );
 }

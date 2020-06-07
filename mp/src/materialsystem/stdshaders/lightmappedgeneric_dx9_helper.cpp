@@ -19,7 +19,6 @@ ConVar mat_disable_lightwarp( "mat_disable_lightwarp", "0" );
 ConVar mat_disable_fancy_blending( "mat_disable_fancy_blending", "0" );
 ConVar mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
 ConVar my_mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
-//extern ConVar r_flashlight_version2;
 
 class CLightmappedGeneric_DX9_Context : public CBasePerMaterialContextData
 {
@@ -1002,12 +1001,5 @@ void DrawLightmappedGeneric_DX9(CBaseVSShader *pShader, IMaterialVar** params,
 										 CBasePerMaterialContextData **pContextDataPtr )
 {
 	bool hasFlashlight = pShader->UsingFlashlight( params );
-    ConVarRef r_flashlight_version2("r_flashlight_version2");
-	if ( !r_flashlight_version2.GetInt() )
-	{
-		DrawLightmappedGeneric_DX9_Internal( pShader, params, hasFlashlight, pShaderAPI, pShaderShadow, info, pContextDataPtr );
-		return;
-	}
-	
 	DrawLightmappedGeneric_DX9_Internal( pShader, params, hasFlashlight, pShaderAPI, pShaderShadow, info, pContextDataPtr );
 }

@@ -31,8 +31,6 @@
 
 #endif
 
-ConVar r_flashlight_version2( "r_flashlight_version2", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-
 void InitParamsEyes_DX8_DX9( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, 
 							Eyes_DX8_DX9_Vars_t &info )
 {
@@ -527,7 +525,6 @@ static void DrawEyes_DX8_DX9_Internal( bool bDX9, CBaseVSShader *pShader, IMater
 	}
 }
 
-extern ConVar r_flashlight_version2;
 void DrawEyes_DX8_DX9( bool bDX9, CBaseVSShader *pShader, IMaterialVar** params, IShaderDynamicAPI *pShaderAPI,
 					  IShaderShadow* pShaderShadow, Eyes_DX8_DX9_Vars_t &info, VertexCompressionType_t vertexCompression )
 {
@@ -536,14 +533,6 @@ void DrawEyes_DX8_DX9( bool bDX9, CBaseVSShader *pShader, IMaterialVar** params,
 		SET_FLAGS2( MATERIAL_VAR2_LIGHTING_VERTEX_LIT );
 	}
 	bool bHasFlashlight = pShader->UsingFlashlight( params );
-	if( bHasFlashlight && ( IsX360() || r_flashlight_version2.GetInt() ) )
-	{
-		DrawEyes_DX8_DX9_Internal( bDX9, pShader, params, pShaderAPI, pShaderShadow, false, info, vertexCompression );
-		if ( pShaderShadow )
-		{
-			pShader->SetInitialShadowState( );
-		}
-	}
 	DrawEyes_DX8_DX9_Internal( bDX9, pShader, params, pShaderAPI, pShaderShadow, bHasFlashlight, info, vertexCompression );
 }
 
