@@ -120,7 +120,7 @@ void Button::SetButtonBorderEnabled( bool state )
 	if ( state != _buttonFlags.IsFlagSet( BUTTON_BORDER_ENABLED ) )
 	{
 		_buttonFlags.SetFlag( BUTTON_BORDER_ENABLED, state );
-		InvalidateLayout(false);
+		InvalidateLayout();
 	}
 }
 
@@ -133,13 +133,13 @@ void Button::SetSelected( bool state )
 	{
 		_buttonFlags.SetFlag( SELECTED, state );
 		RecalculateDepressedState();
-		InvalidateLayout(false);
+		InvalidateLayout();
 	}
 
 	if ( state && _buttonFlags.IsFlagSet( ARMED ) )
 	{
 		_buttonFlags.SetFlag( ARMED,  false );
-		InvalidateLayout(false);
+		InvalidateLayout();
 	}
 }
 
@@ -149,7 +149,7 @@ void Button::SetBlink( bool state )
 	{
 		_buttonFlags.SetFlag( BLINK, state );
 		RecalculateDepressedState();
-		InvalidateLayout(false);
+		InvalidateLayout();
 	}
 }
 
@@ -162,7 +162,7 @@ void Button::ForceDepressed(bool state)
 	{
 		_buttonFlags.SetFlag( FORCE_DEPRESSED, state );
 		RecalculateDepressedState();
-		InvalidateLayout(false);
+		InvalidateLayout();
 	}
 }
 
@@ -219,7 +219,7 @@ void Button::SetArmed(bool state)
 	{
 		_buttonFlags.SetFlag( ARMED, state );
 		RecalculateDepressedState();
-		InvalidateLayout(false);
+		InvalidateLayout();
 
 		// play any sounds specified
 		if (state && !m_sArmedSoundName.IsEmpty())
