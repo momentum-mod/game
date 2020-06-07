@@ -11,8 +11,8 @@
 
 class water_vs20_Static_Index
 {
-	int m_nBASETEXTURE : 3;
-	int m_nMULTITEXTURE : 3;
+	unsigned int m_nBASETEXTURE : 2;
+	unsigned int m_nMULTITEXTURE : 2;
 #ifdef _DEBUG
 	bool m_bBASETEXTURE : 1;
 	bool m_bMULTITEXTURE : 1;

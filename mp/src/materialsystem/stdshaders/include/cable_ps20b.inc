@@ -23,7 +23,7 @@
 
 class cable_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
@@ -47,8 +47,8 @@ public:
 
 class cable_ps20b_Dynamic_Index
 {
-	int m_nPIXELFOGTYPE : 3;
-	int m_nWRITE_DEPTH_TO_DESTALPHA : 3;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nWRITE_DEPTH_TO_DESTALPHA : 2;
 #ifdef _DEBUG
 	bool m_bPIXELFOGTYPE : 1;
 	bool m_bWRITE_DEPTH_TO_DESTALPHA : 1;

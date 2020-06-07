@@ -11,7 +11,7 @@
 
 class skin_vs20_Static_Index
 {
-	int m_nUSE_STATIC_CONTROL_FLOW : 3;
+	unsigned int m_nUSE_STATIC_CONTROL_FLOW : 2;
 #ifdef _DEBUG
 	bool m_bUSE_STATIC_CONTROL_FLOW : 1;
 #endif	// _DEBUG
@@ -45,11 +45,11 @@ public:
 
 class skin_vs20_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nSKINNING : 3;
-	int m_nLIGHTING_PREVIEW : 3;
-	int m_nNUM_LIGHTS : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nLIGHTING_PREVIEW : 2;
+	unsigned int m_nNUM_LIGHTS : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bDOWATERFOG : 1;

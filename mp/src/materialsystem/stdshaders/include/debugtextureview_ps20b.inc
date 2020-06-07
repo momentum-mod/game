@@ -16,8 +16,8 @@
 
 class debugtextureview_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nSHOWALPHA : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nSHOWALPHA : 2;
 #ifdef _DEBUG
 	bool m_bSHOWALPHA : 1;
 #endif	// _DEBUG
@@ -58,7 +58,7 @@ public:
 
 class debugtextureview_ps20b_Dynamic_Index
 {
-	int m_nISCUBEMAP : 3;
+	unsigned int m_nISCUBEMAP : 2;
 #ifdef _DEBUG
 	bool m_bISCUBEMAP : 1;
 #endif	// _DEBUG

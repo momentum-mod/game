@@ -23,7 +23,7 @@
 
 class lightmappedgeneric_decal_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
@@ -47,7 +47,7 @@ public:
 
 class lightmappedgeneric_decal_ps20b_Dynamic_Index
 {
-	int m_nPIXELFOGTYPE : 3;
+	unsigned int m_nPIXELFOGTYPE : 2;
 #ifdef _DEBUG
 	bool m_bPIXELFOGTYPE : 1;
 #endif	// _DEBUG

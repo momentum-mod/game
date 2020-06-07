@@ -10,8 +10,8 @@
 
 class sprite_vs20_Static_Index
 {
-	int m_nVERTEXCOLOR : 3;
-	int m_nSRGB : 3;
+	unsigned int m_nVERTEXCOLOR : 2;
+	unsigned int m_nSRGB : 2;
 #ifdef _DEBUG
 	bool m_bVERTEXCOLOR : 1;
 	bool m_bSRGB : 1;
@@ -57,7 +57,7 @@ public:
 
 class sprite_vs20_Dynamic_Index
 {
-	int m_nDOWATERFOG : 3;
+	unsigned int m_nDOWATERFOG : 2;
 #ifdef _DEBUG
 	bool m_bDOWATERFOG : 1;
 #endif	// _DEBUG

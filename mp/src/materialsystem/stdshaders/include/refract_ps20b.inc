@@ -24,16 +24,16 @@
 
 class refract_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nBLUR : 3;
-	int m_nFADEOUTONSILHOUETTE : 3;
-	int m_nCUBEMAP : 3;
-	int m_nREFRACTTINTTEXTURE : 3;
-	int m_nMASKED : 3;
-	int m_nCOLORMODULATE : 3;
-	int m_nSECONDARY_NORMAL : 3;
-	int m_nNORMAL_DECODE_MODE : 2;
-	int m_nSHADER_SRGB_READ : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nBLUR : 2;
+	unsigned int m_nFADEOUTONSILHOUETTE : 2;
+	unsigned int m_nCUBEMAP : 2;
+	unsigned int m_nREFRACTTINTTEXTURE : 2;
+	unsigned int m_nMASKED : 2;
+	unsigned int m_nCOLORMODULATE : 2;
+	unsigned int m_nSECONDARY_NORMAL : 2;
+	unsigned int m_nNORMAL_DECODE_MODE : 1;
+	unsigned int m_nSHADER_SRGB_READ : 2;
 #ifdef _DEBUG
 	bool m_bBLUR : 1;
 	bool m_bFADEOUTONSILHOUETTE : 1;
@@ -170,8 +170,8 @@ public:
 
 class refract_ps20b_Dynamic_Index
 {
-	int m_nPIXELFOGTYPE : 3;
-	int m_nWRITE_DEPTH_TO_DESTALPHA : 3;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nWRITE_DEPTH_TO_DESTALPHA : 2;
 #ifdef _DEBUG
 	bool m_bPIXELFOGTYPE : 1;
 	bool m_bWRITE_DEPTH_TO_DESTALPHA : 1;

@@ -7,7 +7,7 @@
 
 class depthwrite_ps20b_Static_Index
 {
-	int m_nCOLOR_DEPTH : 3;
+	unsigned int m_nCOLOR_DEPTH : 2;
 #ifdef _DEBUG
 	bool m_bCOLOR_DEPTH : 1;
 #endif	// _DEBUG
@@ -41,7 +41,7 @@ public:
 
 class depthwrite_ps20b_Dynamic_Index
 {
-	int m_nALPHACLIP : 3;
+	unsigned int m_nALPHACLIP : 2;
 #ifdef _DEBUG
 	bool m_bALPHACLIP : 1;
 #endif	// _DEBUG

@@ -30,16 +30,16 @@
 
 class worldtwotextureblend_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nDETAILTEXTURE : 3;
-	int m_nBUMPMAP : 3;
-	int m_nVERTEXCOLOR : 3;
-	int m_nSELFILLUM : 3;
-	int m_nDIFFUSEBUMPMAP : 3;
-	int m_nDETAIL_ALPHA_MASK_BASE_TEXTURE : 3;
-	int m_nFLASHLIGHT : 3;
-	int m_nSEAMLESS : 3;
-	int m_nFLASHLIGHTDEPTHFILTERMODE : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nDETAILTEXTURE : 2;
+	unsigned int m_nBUMPMAP : 2;
+	unsigned int m_nVERTEXCOLOR : 2;
+	unsigned int m_nSELFILLUM : 2;
+	unsigned int m_nDIFFUSEBUMPMAP : 2;
+	unsigned int m_nDETAIL_ALPHA_MASK_BASE_TEXTURE : 2;
+	unsigned int m_nFLASHLIGHT : 2;
+	unsigned int m_nSEAMLESS : 2;
+	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
 #ifdef _DEBUG
 	bool m_bDETAILTEXTURE : 1;
 	bool m_bBUMPMAP : 1;
@@ -176,10 +176,10 @@ public:
 
 class worldtwotextureblend_ps20b_Dynamic_Index
 {
-	int m_nWRITEWATERFOGTODESTALPHA : 3;
-	int m_nPIXELFOGTYPE : 3;
-	int m_nWRITE_DEPTH_TO_DESTALPHA : 3;
-	int m_nFLASHLIGHTSHADOWS : 3;
+	unsigned int m_nWRITEWATERFOGTODESTALPHA : 2;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nWRITE_DEPTH_TO_DESTALPHA : 2;
+	unsigned int m_nFLASHLIGHTSHADOWS : 2;
 #ifdef _DEBUG
 	bool m_bWRITEWATERFOGTODESTALPHA : 1;
 	bool m_bPIXELFOGTYPE : 1;

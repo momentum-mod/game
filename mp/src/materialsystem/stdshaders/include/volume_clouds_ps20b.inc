@@ -16,7 +16,7 @@
 
 class volume_clouds_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{

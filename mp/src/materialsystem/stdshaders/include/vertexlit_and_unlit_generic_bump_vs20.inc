@@ -11,9 +11,9 @@
 
 class vertexlit_and_unlit_generic_bump_vs20_Static_Index
 {
-	int m_nHALFLAMBERT : 3;
-	int m_nUSE_WITH_2B : 3;
-	int m_nUSE_STATIC_CONTROL_FLOW : 3;
+	unsigned int m_nHALFLAMBERT : 2;
+	unsigned int m_nUSE_WITH_2B : 2;
+	unsigned int m_nUSE_STATIC_CONTROL_FLOW : 2;
 #ifdef _DEBUG
 	bool m_bHALFLAMBERT : 1;
 	bool m_bUSE_WITH_2B : 1;
@@ -71,10 +71,10 @@ public:
 
 class vertexlit_and_unlit_generic_bump_vs20_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nSKINNING : 3;
-	int m_nNUM_LIGHTS : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nNUM_LIGHTS : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bDOWATERFOG : 1;

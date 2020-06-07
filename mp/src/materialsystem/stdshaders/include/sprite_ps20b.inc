@@ -23,12 +23,12 @@
 
 class sprite_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nVERTEXCOLOR : 3;
-	int m_nCONSTANTCOLOR : 3;
-	int m_nHDRTYPE : 3;
-	int m_nSRGB : 3;
-	int m_nSRGB_OUTPUT_ADAPTER : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nVERTEXCOLOR : 2;
+	unsigned int m_nCONSTANTCOLOR : 2;
+	unsigned int m_nHDRTYPE : 2;
+	unsigned int m_nSRGB : 2;
+	unsigned int m_nSRGB_OUTPUT_ADAPTER : 2;
 #ifdef _DEBUG
 	bool m_bVERTEXCOLOR : 1;
 	bool m_bCONSTANTCOLOR : 1;
@@ -117,8 +117,8 @@ public:
 
 class sprite_ps20b_Dynamic_Index
 {
-	int m_nHDRENABLED : 3;
-	int m_nPIXELFOGTYPE : 3;
+	unsigned int m_nHDRENABLED : 2;
+	unsigned int m_nPIXELFOGTYPE : 2;
 #ifdef _DEBUG
 	bool m_bHDRENABLED : 1;
 	bool m_bPIXELFOGTYPE : 1;

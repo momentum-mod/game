@@ -16,44 +16,49 @@
 
 class blurfilter_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nAPPROX_SRGB_ADAPTER : 3;
+	unsigned int m_nKERNEL : 3;
+	unsigned int m_nCLEAR_COLOR : 2;
 #ifdef _DEBUG
-	bool m_bAPPROX_SRGB_ADAPTER : 1;
+	bool m_bKERNEL : 1;
+	bool m_bCLEAR_COLOR : 1;
 #endif	// _DEBUG
 public:
-	void SetCONVERT_TO_SRGB( int i )
+	void SetKERNEL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
-		m_nCONVERT_TO_SRGB = i;
+		Assert( i >= 0 && i <= 4 );
+		m_nKERNEL = i;
+#ifdef _DEBUG
+		m_bKERNEL = true;
+#endif	// _DEBUG
 	}
 
-	void SetAPPROX_SRGB_ADAPTER( int i )
+	void SetCLEAR_COLOR( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
-		m_nAPPROX_SRGB_ADAPTER = i;
+		m_nCLEAR_COLOR = i;
 #ifdef _DEBUG
-		m_bAPPROX_SRGB_ADAPTER = true;
+		m_bCLEAR_COLOR = true;
 #endif	// _DEBUG
 	}
 
 	blurfilter_ps20b_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
-		m_nCONVERT_TO_SRGB = g_pHardwareConfig->NeedsShaderSRGBConversion();
-		m_nAPPROX_SRGB_ADAPTER = 0;
+		m_nKERNEL = 0;
+		m_nCLEAR_COLOR = 0;
 #ifdef _DEBUG
-		m_bAPPROX_SRGB_ADAPTER = false;
+		m_bKERNEL = false;
+		m_bCLEAR_COLOR = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bAPPROX_SRGB_ADAPTER );
-		return ( 1 * m_nCONVERT_TO_SRGB ) + ( 2 * m_nAPPROX_SRGB_ADAPTER ) + 0;
+		Assert( m_bKERNEL && m_bCLEAR_COLOR );
+		return ( 1 * m_nKERNEL ) + ( 5 * m_nCLEAR_COLOR ) + 0;
 	}
 };
 
-#define shaderStaticTest_blurfilter_ps20b psh_forgot_to_set_static_APPROX_SRGB_ADAPTER
+#define shaderStaticTest_blurfilter_ps20b psh_forgot_to_set_static_KERNEL + psh_forgot_to_set_static_CLEAR_COLOR
 
 
 class blurfilter_ps20b_Dynamic_Index

@@ -14,15 +14,15 @@
 
 class lightmappedgeneric_vs20_Static_Index
 {
-	int m_nENVMAP_MASK : 3;
-	int m_nTANGENTSPACE : 3;
-	int m_nBUMPMAP : 3;
-	int m_nDIFFUSEBUMPMAP : 3;
-	int m_nVERTEXCOLOR : 3;
-	int m_nVERTEXALPHATEXBLENDFACTOR : 3;
-	int m_nRELIEF_MAPPING : 2;
-	int m_nSEAMLESS : 3;
-	int m_nBUMPMASK : 3;
+	unsigned int m_nENVMAP_MASK : 2;
+	unsigned int m_nTANGENTSPACE : 2;
+	unsigned int m_nBUMPMAP : 2;
+	unsigned int m_nDIFFUSEBUMPMAP : 2;
+	unsigned int m_nVERTEXCOLOR : 2;
+	unsigned int m_nVERTEXALPHATEXBLENDFACTOR : 2;
+	unsigned int m_nRELIEF_MAPPING : 1;
+	unsigned int m_nSEAMLESS : 2;
+	unsigned int m_nBUMPMASK : 2;
 #ifdef _DEBUG
 	bool m_bENVMAP_MASK : 1;
 	bool m_bTANGENTSPACE : 1;
@@ -152,9 +152,9 @@ public:
 
 class lightmappedgeneric_vs20_Dynamic_Index
 {
-	int m_nFASTPATH : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nLIGHTING_PREVIEW : 3;
+	unsigned int m_nFASTPATH : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nLIGHTING_PREVIEW : 2;
 #ifdef _DEBUG
 	bool m_bFASTPATH : 1;
 	bool m_bDOWATERFOG : 1;

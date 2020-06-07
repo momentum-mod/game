@@ -26,7 +26,7 @@ public:
 
 class cable_vs20_Dynamic_Index
 {
-	int m_nDOWATERFOG : 3;
+	unsigned int m_nDOWATERFOG : 2;
 #ifdef _DEBUG
 	bool m_bDOWATERFOG : 1;
 #endif	// _DEBUG
