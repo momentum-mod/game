@@ -27,6 +27,7 @@ Scheme
     // controls use these to determine their settings
     BaseSettings
     {
+        RichText.Border "FrameBorder"
     }
 
     //////////////////////// FONTS /////////////////////////////
@@ -41,6 +42,7 @@ Scheme
                 "name"		 "Source Code Pro"
                 "tall"		"10"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
         
@@ -51,6 +53,7 @@ Scheme
                 "name" "Source Code Pro"
                 "tall" "14"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
 
@@ -61,6 +64,7 @@ Scheme
                 "name" "Source Code Pro"
                 "tall" "14"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
 
