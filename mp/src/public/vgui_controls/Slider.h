@@ -86,7 +86,12 @@ private:
 	int _buttonOffset;
 	IBorder *_sliderBorder;
 	IBorder *_insetBorder;
-	float _nobSize;
+	float _thumbWidth;
+	int _trackOffsetX;
+	int _trackOffsetY;
+	int _trackHeight;
+	int _tickOffset;
+	int _tickHeight;
 
 	TextImage *_leftCaption;
 	TextImage *_rightCaption;

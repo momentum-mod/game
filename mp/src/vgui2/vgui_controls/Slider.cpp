@@ -5,17 +5,12 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include <stdio.h>
-#define PROTECTED_THINGS_DISABLE
-
 #include <vgui/MouseCode.h>
 #include <KeyValues.h>
-#include <vgui/IBorder.h>
-#include <vgui/IInput.h>
-#include <vgui/ISystem.h>
-#include <vgui/IScheme.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
+
+#include "vgui/IInput.h"
+#include "vgui/ISurface.h"
+#include "vgui/IBorder.h"
 
 #include <vgui_controls/Slider.h>
 #include <vgui_controls/Controls.h>
@@ -28,7 +23,11 @@ using namespace vgui;
 
 DECLARE_BUILD_FACTORY( Slider );
 
-static const float NOB_SIZE = 8.0f;
+#define DEFAULT_THUMB_WIDTH 8.0f
+#define DEFAULT_TRACK_OFFSET_Y 8
+#define DEFAULT_TRACK_HEIGHT 4
+#define DEFAULT_TICK_OFFSET 4
+#define DEFAULT_TICK_HEIGHT 5
 
 //-----------------------------------------------------------------------------
 // Purpose: Create a slider bar with ticks underneath it
@@ -53,7 +52,13 @@ Slider::Slider(Panel *parent, const char *panelName ) : BaseClass(parent, panelN
 	m_bUseSubRange = false;
 	m_bInverted = false;
 
-	SetThumbWidth( 8.0f );
+	_trackOffsetX = 0;
+	_trackOffsetY = GetScaledVal(DEFAULT_TRACK_OFFSET_Y);
+	_trackHeight = GetScaledVal(DEFAULT_TRACK_HEIGHT);
+	_tickOffset = GetScaledVal(DEFAULT_TICK_OFFSET);
+	_tickHeight = GetScaledVal(DEFAULT_TICK_HEIGHT);
+
+	SetThumbWidth( DEFAULT_THUMB_WIDTH );
 	RecomputeNobPosFromValue();
 	AddActionSignalTarget(this);
 	SetBlockDragChaining( true );
@@ -161,34 +166,34 @@ void Slider::RecomputeNobPosFromValue()
 	GetTrackRect( x, y, wide, tall );
 
 	float usevalue = _value;
-	int *userange = &_range[ 0 ];
+	int *userange = _range;
 	if ( m_bUseSubRange )
 	{
-		userange = &_subrange[ 0 ];
+		userange = _subrange;
 		usevalue = clamp( _value, _subrange[ 0 ], _subrange[ 1 ] );
 	}
 
-	float fwide=(float)wide;
-	float frange=(float)(userange[1] -userange[0]);
-	float fvalue=(float)(usevalue -userange[0]);
+	float fwide = (float)wide;
+	float frange = (float) (userange[1] -userange[0]);
+	float fvalue = (float) (usevalue -userange[0]);
 	float fper = (frange != 0.0f) ? fvalue / frange : 0.0f;
 
 	if ( m_bInverted )
 		fper = 1.0f - fper;
 
-	float freepixels = fwide - _nobSize;
+	float freepixels = fwide - _thumbWidth;
 	float leftpixel = (float)x;
 	float firstpixel = leftpixel + freepixels * fper + 0.5f;
 
 	_nobPos[0]=(int)( firstpixel );
-	_nobPos[1]=(int)( firstpixel + _nobSize );
+	_nobPos[1]=(int)( firstpixel + _thumbWidth );
 
 
 	int rightEdge = x + wide;
 
 	if(_nobPos[1]> rightEdge )
 	{
-		_nobPos[0]=rightEdge-((int)_nobSize);
+		_nobPos[0]=rightEdge-((int)_thumbWidth);
 		_nobPos[1]=rightEdge;
 	}
 	
@@ -218,7 +223,7 @@ int Slider::EstimateValueAtPos( int localMouseX, int /*localMouseY*/ )
 	float fwide = (float)wide;
 	float fvalue = (float)( _value - userange[0] );
 	float fnob = (float)( localMouseX - x );
-	float freepixels = fwide - _nobSize;
+	float freepixels = fwide - _thumbWidth;
 
 	// Map into reduced range
 	fvalue = freepixels != 0.0f ? fnob / freepixels : 0.0f;
@@ -274,8 +279,6 @@ void Slider::ApplySchemeSettings(IScheme *pScheme)
 	BaseClass::ApplySchemeSettings(pScheme);
 
 	SetFgColor(GetSchemeColor("Slider.NobColor", pScheme));
-	// this line is useful for debugging
-	//SetBgColor(GetSchemeColor("0 0 0 255"));
     SetBgColor(GetSchemeColor("Slider.BgColor", pScheme));
 
 	m_TickColor = pScheme->GetColor( "Slider.TextColor", GetFgColor() );
@@ -323,10 +326,17 @@ void Slider::GetSettings(KeyValues *outResourceData)
 	    outResourceData->SetString("rightText", "");
 
     outResourceData->SetInt("numTicks", m_nNumTicks);
-    outResourceData->SetFloat("thumbwidth", _nobSize);
+    outResourceData->SetFloat("thumbwidth", _thumbWidth);
 
     outResourceData->SetInt("rangeMin", _range[0]);
     outResourceData->SetInt("rangeMax", _range[1]);
+
+	outResourceData->SetInt("trackoffset_x", _trackOffsetX);
+	outResourceData->SetInt("trackoffset_y", _trackOffsetY);
+	outResourceData->SetInt("trackheight", _trackHeight);
+
+	outResourceData->SetInt("tickheight", _tickHeight);
+	outResourceData->SetInt("tickoffset", _tickOffset);
 }
 
 //-----------------------------------------------------------------------------
@@ -336,15 +346,14 @@ void Slider::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 
-	const char *left = inResourceData->GetString("leftText", nullptr);
-	const char *right = inResourceData->GetString("rightText", nullptr);
-
-	float thumbWidth = inResourceData->GetFloat("thumbwidth", 8.0f);
+	float thumbWidth = inResourceData->GetFloat("thumbwidth", DEFAULT_THUMB_WIDTH);
 	if (thumbWidth > 0.0f)
 	{
 		SetThumbWidth(thumbWidth);
 	}
 
+	const char *left = inResourceData->GetString("leftText", nullptr);
+	const char *right = inResourceData->GetString("rightText", nullptr);
 	SetTickCaptions(left, right);
 
 	int nNumTicks = inResourceData->GetInt( "numTicks", 10 );
@@ -352,6 +361,13 @@ void Slider::ApplySettings(KeyValues *inResourceData)
 	{
 		SetNumTicks( nNumTicks );
 	}
+
+	_trackOffsetX = GetScaledVal(inResourceData->GetInt("trackoffset_x"));
+	_trackOffsetY = GetScaledVal(inResourceData->GetInt("trackoffset_y", DEFAULT_TRACK_OFFSET_Y));
+	_trackHeight = GetScaledVal(inResourceData->GetInt("trackheight", DEFAULT_TRACK_HEIGHT));
+
+	_tickHeight = GetScaledVal(inResourceData->GetInt("tickheight", DEFAULT_TICK_HEIGHT));
+	_tickOffset = GetScaledVal(inResourceData->GetInt("tickoffset", DEFAULT_TICK_OFFSET));
 
 	const char *pRangeMin = inResourceData->GetString( "rangeMin" );
 	const char *pRangeMax = inResourceData->GetString( "rangeMax" );
@@ -381,7 +397,12 @@ void Slider::InitSettings()
     {"thumbwidth", TYPE_FLOAT},
     {"numTicks", TYPE_INTEGER},
     {"rangeMin", TYPE_INTEGER},
-    {"rangeMax", TYPE_INTEGER}
+    {"rangeMax", TYPE_INTEGER},
+	{"trackheight", TYPE_INTEGER},
+	{"trackoffset_x", TYPE_INTEGER},
+	{"trackoffset_y", TYPE_INTEGER},
+	{"tickoffset", TYPE_INTEGER},
+	{"tickheight", TYPE_INTEGER},
     END_PANEL_SETTINGS();
 }
 
@@ -393,10 +414,10 @@ void Slider::GetTrackRect( int& x, int& y, int& w, int& h )
 	int wide, tall;
 	GetPaintSize( wide, tall );
 
-	x = 0;
-	y = 8;
-	w = wide - (int)_nobSize;
-	h = 4;
+	x = _trackOffsetX;
+	y = _trackOffsetY;
+	w = wide - (int)_thumbWidth;
+	h = _trackHeight;
 }
 
 //-----------------------------------------------------------------------------
@@ -425,38 +446,37 @@ void Slider::DrawTicks()
 //	GetPaintSize( wide, tall );
 
 	float fwide  = (float)wide;
-	float freepixels = fwide - _nobSize;
+	float freepixels = fwide - _thumbWidth;
 
-	float leftpixel = _nobSize / 2.0f;
+	float leftpixel = _thumbWidth / 2.0f;
 
 	float pixelspertick = freepixels / ( m_nNumTicks );
 
-	y += (int)_nobSize;
-	int tickHeight = 5;
+	y += _trackHeight + _tickOffset;
 
     if (IsEnabled())
     {
-        surface()->DrawSetColor( m_TickColor ); //vgui::Color( 127, 140, 127, 255 ) );
+        surface()->DrawSetColor( m_TickColor );
     	for ( int i = 0; i <= m_nNumTicks; i++ )
     	{
     		int xpos = (int)( leftpixel + i * pixelspertick );
     
-    		surface()->DrawFilledRect( xpos, y, xpos + 1, y + tickHeight );
+    		surface()->DrawFilledRect( xpos, y, xpos + 1, y + _tickHeight );
     	}
     }
     else
     {
-        surface()->DrawSetColor( m_DisabledTextColor1 ); //vgui::Color( 127, 140, 127, 255 ) );
+        surface()->DrawSetColor( m_DisabledTextColor1 );
     	for ( int i = 0; i <= m_nNumTicks; i++ )
     	{
     		int xpos = (int)( leftpixel + i * pixelspertick );
-    		surface()->DrawFilledRect( xpos+1, y+1, xpos + 2, y + tickHeight + 1 );
+    		surface()->DrawFilledRect( xpos+1, y+1, xpos + 2, y + _tickHeight + 1 );
     	}
-        surface()->DrawSetColor( m_DisabledTextColor2 ); //vgui::Color( 127, 140, 127, 255 ) );
+        surface()->DrawSetColor( m_DisabledTextColor2 );
     	for ( int i = 0; i <= m_nNumTicks; i++ )
     	{
     		int xpos = (int)( leftpixel + i * pixelspertick );
-    		surface()->DrawFilledRect( xpos, y, xpos + 1, y + tickHeight );
+    		surface()->DrawFilledRect( xpos, y, xpos + 1, y + _tickHeight );
     	}
     }
 }
@@ -472,13 +492,13 @@ void Slider::DrawTickLabels()
 
 	// Figure out how to draw the ticks
 //	GetPaintSize( wide, tall );
-	y += (int)NOB_SIZE + 4;
+	y += _trackHeight + _tickOffset + _tickHeight;
 
 	// Draw Start and end range values
     if (IsEnabled())
-	    surface()->DrawSetTextColor( m_TickColor ); //vgui::Color( 127, 140, 127, 255 ) );
+	    surface()->DrawSetTextColor( m_TickColor );
     else
-	    surface()->DrawSetTextColor( m_DisabledTextColor1 ); //vgui::Color( 127, 140, 127, 255 ) );
+	    surface()->DrawSetTextColor( m_DisabledTextColor1 );
 
 
 	if ( _leftCaption != nullptr )
@@ -526,7 +546,7 @@ void Slider::DrawNob()
 	Color col = GetFgColor();
 	surface()->DrawSetColor(col);
 
-	int nobheight = 16;
+	int nobheight = GetScaledVal(16);
 
 	surface()->DrawFilledRect(
 		_nobPos[0], 
@@ -918,7 +938,7 @@ void Slider::SetButtonOffset(int buttonOffset)
 
 void Slider::SetThumbWidth( float width )
 {
-	_nobSize = width;
+	_thumbWidth = width;
 }
 
 
