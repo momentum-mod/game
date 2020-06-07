@@ -179,6 +179,10 @@ public:
 	virtual void SetMenuItemHeight(int itemHeight);
 	virtual int  GetMenuItemHeight() const;
 
+	// Sets the offset of each menu item
+	void SetMenuItemHeightOffset(int itemOffset) { m_iMenuItemHeightOffset = itemOffset; }
+	int GetMenuItemHeightOffset() const { return m_iMenuItemHeightOffset; }
+
 	// Set the max number of items visible (scrollbar appears with more)
 	virtual void SetNumberOfVisibleItems( int numItems );
 
@@ -303,7 +307,6 @@ protected:
 
 	enum 
 	{
-		DEFAULT_MENU_ITEM_HEIGHT = 22, // height of items in the menu
 		MENU_UP = -1, // used for moving up/down list of menu items in the menu
 		MENU_DOWN = 1
 	};
@@ -316,6 +319,7 @@ private:
 	MenuItem *GetParentMenuItem();
 
 	int 			m_iMenuItemHeight;
+	int				m_iMenuItemHeightOffset;
 	int 			m_iFixedWidth;
 	int 			m_iMinimumWidth; // a minimum width the menu has to be if it is not fixed width
 	int 			m_iNumVisibleLines;	// number of items in menu before scroll bar adds on
