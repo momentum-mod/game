@@ -1,0 +1,7 @@
+"UnLitGeneric"
+{
+	$baseTexture "models/weapons/w_models/w_mom_conc/conc_map_medium"
+	$model "1"
+	$selfillum "1"
+	$selfillumtint "[1.5 1.5 1.5]"
+}
