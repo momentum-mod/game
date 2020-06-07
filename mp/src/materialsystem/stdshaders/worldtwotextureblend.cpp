@@ -17,8 +17,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern ConVar r_flashlight_version2;
-
 // FIXME: Need to make a dx9 version so that "CENTROID" works.
 BEGIN_VS_SHADER( WorldTwoTextureBlend, 
 			  "Help for WorldTwoTextureBlend" )
@@ -485,14 +483,6 @@ END_SHADER_PARAMS
 	SHADER_DRAW
 	{
 		bool bHasFlashlight = UsingFlashlight( params );
-		if ( bHasFlashlight && ( IsX360() || r_flashlight_version2.GetInt() ) )
-		{
-			DrawPass( params, pShaderAPI, pShaderShadow, false, vertexCompression );
-			SHADOW_STATE
-			{
-				SetInitialShadowState( );
-			}
-		}
 		DrawPass( params, pShaderAPI, pShaderShadow, bHasFlashlight, vertexCompression );
 	}
 

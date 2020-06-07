@@ -9,8 +9,6 @@
 #include "BaseVSShader.h"
 #include "vertexlitgeneric_dx9_helper.h"
 
-//extern ConVar r_flashlight_version2;
-
 DEFINE_FALLBACK_SHADER( SDK_UnlitGeneric, UnlitGeneric );
 
 BEGIN_VS_SHADER( UnlitGeneric, "Help for UnlitGeneric" )
@@ -188,16 +186,6 @@ BEGIN_VS_SHADER( UnlitGeneric, "Help for UnlitGeneric" )
 	{
 		VertexLitGeneric_DX9_Vars_t vars;
 		SetupVars( vars );
-
-		//bool bNewFlashlightPath = ( r_flashlight_version2.GetInt() != 0 );
-		//if ( ( pShaderShadow == NULL ) && ( pShaderAPI != NULL ) && !bNewFlashlightPath && pShaderAPI->InFlashlightMode() ) // Not snapshotting && flashlight pass
-		//{
-		//	Draw( false );
-		//}
-		//else
-		//{
-		//	DrawVertexLitGeneric_DX9( this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr );
-		//}
 
 		const bool bSnapshotting = pShaderShadow != nullptr;
 		const bool bHasFlashlight = pShaderAPI && pShaderAPI->InFlashlightMode();
