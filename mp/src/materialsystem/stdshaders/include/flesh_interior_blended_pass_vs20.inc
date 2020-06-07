@@ -11,8 +11,8 @@
 
 class flesh_interior_blended_pass_vs20_Static_Index
 {
-	int m_nHALFLAMBERT : 3;
-	int m_nUSE_STATIC_CONTROL_FLOW : 3;
+	unsigned int m_nHALFLAMBERT : 2;
+	unsigned int m_nUSE_STATIC_CONTROL_FLOW : 2;
 #ifdef _DEBUG
 	bool m_bHALFLAMBERT : 1;
 	bool m_bUSE_STATIC_CONTROL_FLOW : 1;
@@ -58,12 +58,12 @@ public:
 
 class flesh_interior_blended_pass_vs20_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nSKINNING : 3;
-	int m_nDOWATERFOG : 3;
-	int m_nDYNAMIC_LIGHT : 3;
-	int m_nSTATIC_LIGHT : 3;
-	int m_nNUM_LIGHTS : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nSKINNING : 2;
+	unsigned int m_nDOWATERFOG : 2;
+	unsigned int m_nDYNAMIC_LIGHT : 2;
+	unsigned int m_nSTATIC_LIGHT : 2;
+	unsigned int m_nNUM_LIGHTS : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bSKINNING : 1;

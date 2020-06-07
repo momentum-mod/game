@@ -16,17 +16,17 @@
 
 class spritecard_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nDUALSEQUENCE : 3;
-	int m_nSEQUENCE_BLEND_MODE : 3;
-	int m_nADDBASETEXTURE2 : 3;
-	int m_nMAXLUMFRAMEBLEND1 : 3;
-	int m_nMAXLUMFRAMEBLEND2 : 3;
-	int m_nEXTRACTGREENALPHA : 3;
-	int m_nCOLORRAMP : 3;
-	int m_nANIMBLEND : 3;
-	int m_nADDSELF : 3;
-	int m_nDEPTHBLEND : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nDUALSEQUENCE : 2;
+	unsigned int m_nSEQUENCE_BLEND_MODE : 2;
+	unsigned int m_nADDBASETEXTURE2 : 2;
+	unsigned int m_nMAXLUMFRAMEBLEND1 : 2;
+	unsigned int m_nMAXLUMFRAMEBLEND2 : 2;
+	unsigned int m_nEXTRACTGREENALPHA : 2;
+	unsigned int m_nCOLORRAMP : 2;
+	unsigned int m_nANIMBLEND : 2;
+	unsigned int m_nADDSELF : 2;
+	unsigned int m_nDEPTHBLEND : 2;
 #ifdef _DEBUG
 	bool m_bDUALSEQUENCE : 1;
 	bool m_bSEQUENCE_BLEND_MODE : 1;

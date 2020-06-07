@@ -38,18 +38,18 @@
 
 class vertexlit_and_unlit_generic_bump_ps30_Static_Index
 {
-	int m_nCUBEMAP : 3;
-	int m_nDIFFUSELIGHTING : 3;
-	int m_nLIGHTWARPTEXTURE : 3;
-	int m_nSELFILLUM : 3;
-	int m_nSELFILLUMFRESNEL : 3;
-	int m_nNORMALMAPALPHAENVMAPMASK : 3;
-	int m_nHALFLAMBERT : 3;
-	int m_nFLASHLIGHT : 3;
-	int m_nDETAILTEXTURE : 3;
-	int m_nDETAIL_BLEND_MODE : 4;
-	int m_nFLASHLIGHTDEPTHFILTERMODE : 3;
-	int m_nBLENDTINTBYBASEALPHA : 3;
+	unsigned int m_nCUBEMAP : 2;
+	unsigned int m_nDIFFUSELIGHTING : 2;
+	unsigned int m_nLIGHTWARPTEXTURE : 2;
+	unsigned int m_nSELFILLUM : 2;
+	unsigned int m_nSELFILLUMFRESNEL : 2;
+	unsigned int m_nNORMALMAPALPHAENVMAPMASK : 2;
+	unsigned int m_nHALFLAMBERT : 2;
+	unsigned int m_nFLASHLIGHT : 2;
+	unsigned int m_nDETAILTEXTURE : 2;
+	unsigned int m_nDETAIL_BLEND_MODE : 3;
+	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
+	unsigned int m_nBLENDTINTBYBASEALPHA : 2;
 #ifdef _DEBUG
 	bool m_bCUBEMAP : 1;
 	bool m_bDIFFUSELIGHTING : 1;
@@ -215,9 +215,9 @@ public:
 
 class vertexlit_and_unlit_generic_bump_ps30_Dynamic_Index
 {
-	int m_nNUM_LIGHTS : 4;
-	int m_nAMBIENT_LIGHT : 3;
-	int m_nFLASHLIGHTSHADOWS : 3;
+	unsigned int m_nNUM_LIGHTS : 3;
+	unsigned int m_nAMBIENT_LIGHT : 2;
+	unsigned int m_nFLASHLIGHTSHADOWS : 2;
 #ifdef _DEBUG
 	bool m_bNUM_LIGHTS : 1;
 	bool m_bAMBIENT_LIGHT : 1;

@@ -10,8 +10,8 @@
 
 class depthwrite_vs20_Static_Index
 {
-	int m_nONLY_PROJECT_POSITION : 2;
-	int m_nCOLOR_DEPTH : 3;
+	unsigned int m_nONLY_PROJECT_POSITION : 1;
+	unsigned int m_nCOLOR_DEPTH : 2;
 #ifdef _DEBUG
 	bool m_bONLY_PROJECT_POSITION : 1;
 	bool m_bCOLOR_DEPTH : 1;
@@ -57,8 +57,8 @@ public:
 
 class depthwrite_vs20_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nSKINNING : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nSKINNING : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bSKINNING : 1;

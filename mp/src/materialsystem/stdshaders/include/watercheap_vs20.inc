@@ -10,7 +10,7 @@
 
 class watercheap_vs20_Static_Index
 {
-	int m_nBLEND : 3;
+	unsigned int m_nBLEND : 2;
 #ifdef _DEBUG
 	bool m_bBLEND : 1;
 #endif	// _DEBUG

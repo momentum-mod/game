@@ -10,8 +10,8 @@
 
 class refract_vs20_Static_Index
 {
-	int m_nMODEL : 3;
-	int m_nCOLORMODULATE : 3;
+	unsigned int m_nMODEL : 2;
+	unsigned int m_nCOLORMODULATE : 2;
 #ifdef _DEBUG
 	bool m_bMODEL : 1;
 	bool m_bCOLORMODULATE : 1;
@@ -57,8 +57,8 @@ public:
 
 class refract_vs20_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
-	int m_nSKINNING : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
+	unsigned int m_nSKINNING : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bSKINNING : 1;

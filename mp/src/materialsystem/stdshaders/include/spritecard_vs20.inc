@@ -10,10 +10,10 @@
 
 class spritecard_vs20_Static_Index
 {
-	int m_nZOOM_ANIMATE_SEQ2 : 3;
-	int m_nDUALSEQUENCE : 3;
-	int m_nEXTRACTGREENALPHA : 3;
-	int m_nUSE_INSTANCING : 3;
+	unsigned int m_nZOOM_ANIMATE_SEQ2 : 2;
+	unsigned int m_nDUALSEQUENCE : 2;
+	unsigned int m_nEXTRACTGREENALPHA : 2;
+	unsigned int m_nUSE_INSTANCING : 2;
 #ifdef _DEBUG
 	bool m_bZOOM_ANIMATE_SEQ2 : 1;
 	bool m_bDUALSEQUENCE : 1;
@@ -83,7 +83,7 @@ public:
 
 class spritecard_vs20_Dynamic_Index
 {
-	int m_nORIENTATION : 3;
+	unsigned int m_nORIENTATION : 2;
 #ifdef _DEBUG
 	bool m_bORIENTATION : 1;
 #endif	// _DEBUG

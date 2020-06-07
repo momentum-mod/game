@@ -16,9 +16,9 @@
 
 class vertexlit_lighting_only_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nDIFFUSELIGHTING : 3;
-	int m_nHALFLAMBERT : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nDIFFUSELIGHTING : 2;
+	unsigned int m_nHALFLAMBERT : 2;
 #ifdef _DEBUG
 	bool m_bDIFFUSELIGHTING : 1;
 	bool m_bHALFLAMBERT : 1;
@@ -71,8 +71,8 @@ public:
 
 class vertexlit_lighting_only_ps20b_Dynamic_Index
 {
-	int m_nAMBIENT_LIGHT : 3;
-	int m_nNUM_LIGHTS : 4;
+	unsigned int m_nAMBIENT_LIGHT : 2;
+	unsigned int m_nNUM_LIGHTS : 3;
 #ifdef _DEBUG
 	bool m_bAMBIENT_LIGHT : 1;
 	bool m_bNUM_LIGHTS : 1;

@@ -16,13 +16,13 @@
 
 class watercheap_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nMULTITEXTURE : 3;
-	int m_nFRESNEL : 3;
-	int m_nBLEND : 3;
-	int m_nREFRACTALPHA : 3;
-	int m_nHDRTYPE : 3;
-	int m_nNORMAL_DECODE_MODE : 2;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nMULTITEXTURE : 2;
+	unsigned int m_nFRESNEL : 2;
+	unsigned int m_nBLEND : 2;
+	unsigned int m_nREFRACTALPHA : 2;
+	unsigned int m_nHDRTYPE : 2;
+	unsigned int m_nNORMAL_DECODE_MODE : 1;
 #ifdef _DEBUG
 	bool m_bMULTITEXTURE : 1;
 	bool m_bFRESNEL : 1;
@@ -123,8 +123,8 @@ public:
 
 class watercheap_ps20b_Dynamic_Index
 {
-	int m_nHDRENABLED : 3;
-	int m_nPIXELFOGTYPE : 3;
+	unsigned int m_nHDRENABLED : 2;
+	unsigned int m_nPIXELFOGTYPE : 2;
 #ifdef _DEBUG
 	bool m_bHDRENABLED : 1;
 	bool m_bPIXELFOGTYPE : 1;

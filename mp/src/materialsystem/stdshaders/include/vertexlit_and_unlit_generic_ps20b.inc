@@ -45,28 +45,28 @@
 
 class vertexlit_and_unlit_generic_ps20b_Static_Index
 {
-	int m_nDETAILTEXTURE : 3;
-	int m_nCUBEMAP : 3;
-	int m_nDIFFUSELIGHTING : 3;
-	int m_nENVMAPMASK : 3;
-	int m_nBASEALPHAENVMAPMASK : 3;
-	int m_nSELFILLUM : 3;
-	int m_nVERTEXCOLOR : 3;
-	int m_nFLASHLIGHT : 3;
-	int m_nSELFILLUM_ENVMAPMASK_ALPHA : 3;
-	int m_nDETAIL_BLEND_MODE : 5;
-	int m_nSEAMLESS_BASE : 3;
-	int m_nSEAMLESS_DETAIL : 3;
-	int m_nDISTANCEALPHA : 3;
-	int m_nDISTANCEALPHAFROMDETAIL : 3;
-	int m_nSOFT_MASK : 3;
-	int m_nOUTLINE : 3;
-	int m_nOUTER_GLOW : 3;
-	int m_nFLASHLIGHTDEPTHFILTERMODE : 3;
-	int m_nDEPTHBLEND : 3;
-	int m_nBLENDTINTBYBASEALPHA : 3;
-	int m_nSRGB_INPUT_ADAPTER : 3;
-	int m_nCUBEMAP_SPHERE_LEGACY : 3;
+	unsigned int m_nDETAILTEXTURE : 2;
+	unsigned int m_nCUBEMAP : 2;
+	unsigned int m_nDIFFUSELIGHTING : 2;
+	unsigned int m_nENVMAPMASK : 2;
+	unsigned int m_nBASEALPHAENVMAPMASK : 2;
+	unsigned int m_nSELFILLUM : 2;
+	unsigned int m_nVERTEXCOLOR : 2;
+	unsigned int m_nFLASHLIGHT : 2;
+	unsigned int m_nSELFILLUM_ENVMAPMASK_ALPHA : 2;
+	unsigned int m_nDETAIL_BLEND_MODE : 4;
+	unsigned int m_nSEAMLESS_BASE : 2;
+	unsigned int m_nSEAMLESS_DETAIL : 2;
+	unsigned int m_nDISTANCEALPHA : 2;
+	unsigned int m_nDISTANCEALPHAFROMDETAIL : 2;
+	unsigned int m_nSOFT_MASK : 2;
+	unsigned int m_nOUTLINE : 2;
+	unsigned int m_nOUTER_GLOW : 2;
+	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
+	unsigned int m_nDEPTHBLEND : 2;
+	unsigned int m_nBLENDTINTBYBASEALPHA : 2;
+	unsigned int m_nSRGB_INPUT_ADAPTER : 2;
+	unsigned int m_nCUBEMAP_SPHERE_LEGACY : 2;
 #ifdef _DEBUG
 	bool m_bDETAILTEXTURE : 1;
 	bool m_bCUBEMAP : 1;
@@ -352,10 +352,10 @@ public:
 
 class vertexlit_and_unlit_generic_ps20b_Dynamic_Index
 {
-	int m_nLIGHTING_PREVIEW : 3;
-	int m_nFLASHLIGHTSHADOWS : 3;
-	int m_nSTATIC_LIGHT_LIGHTMAP : 3;
-	int m_nDEBUG_LUXELS : 3;
+	unsigned int m_nLIGHTING_PREVIEW : 2;
+	unsigned int m_nFLASHLIGHTSHADOWS : 2;
+	unsigned int m_nSTATIC_LIGHT_LIGHTMAP : 2;
+	unsigned int m_nDEBUG_LUXELS : 2;
 #ifdef _DEBUG
 	bool m_bLIGHTING_PREVIEW : 1;
 	bool m_bFLASHLIGHTSHADOWS : 1;

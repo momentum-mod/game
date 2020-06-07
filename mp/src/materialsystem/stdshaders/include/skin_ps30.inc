@@ -32,20 +32,20 @@
 
 class skin_ps30_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 2;
-	int m_nCUBEMAP : 3;
-	int m_nSELFILLUM : 3;
-	int m_nSELFILLUMFRESNEL : 3;
-	int m_nFLASHLIGHT : 3;
-	int m_nLIGHTWARPTEXTURE : 3;
-	int m_nPHONGWARPTEXTURE : 3;
-	int m_nWRINKLEMAP : 3;
-	int m_nDETAIL_BLEND_MODE : 4;
-	int m_nDETAILTEXTURE : 3;
-	int m_nRIMLIGHT : 3;
-	int m_nFLASHLIGHTDEPTHFILTERMODE : 3;
-	int m_nFASTPATH_NOBUMP : 3;
-	int m_nBLENDTINTBYBASEALPHA : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 1;
+	unsigned int m_nCUBEMAP : 2;
+	unsigned int m_nSELFILLUM : 2;
+	unsigned int m_nSELFILLUMFRESNEL : 2;
+	unsigned int m_nFLASHLIGHT : 2;
+	unsigned int m_nLIGHTWARPTEXTURE : 2;
+	unsigned int m_nPHONGWARPTEXTURE : 2;
+	unsigned int m_nWRINKLEMAP : 2;
+	unsigned int m_nDETAIL_BLEND_MODE : 3;
+	unsigned int m_nDETAILTEXTURE : 2;
+	unsigned int m_nRIMLIGHT : 2;
+	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
+	unsigned int m_nFASTPATH_NOBUMP : 2;
+	unsigned int m_nBLENDTINTBYBASEALPHA : 2;
 #ifdef _DEBUG
 	bool m_bCONVERT_TO_SRGB : 1;
 	bool m_bCUBEMAP : 1;
@@ -235,12 +235,12 @@ public:
 
 class skin_ps30_Dynamic_Index
 {
-	int m_nWRITEWATERFOGTODESTALPHA : 3;
-	int m_nPIXELFOGTYPE : 3;
-	int m_nNUM_LIGHTS : 4;
-	int m_nWRITE_DEPTH_TO_DESTALPHA : 3;
-	int m_nFLASHLIGHTSHADOWS : 3;
-	int m_nPHONG_USE_EXPONENT_FACTOR : 3;
+	unsigned int m_nWRITEWATERFOGTODESTALPHA : 2;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nNUM_LIGHTS : 3;
+	unsigned int m_nWRITE_DEPTH_TO_DESTALPHA : 2;
+	unsigned int m_nFLASHLIGHTSHADOWS : 2;
+	unsigned int m_nPHONG_USE_EXPONENT_FACTOR : 2;
 #ifdef _DEBUG
 	bool m_bWRITEWATERFOGTODESTALPHA : 1;
 	bool m_bPIXELFOGTYPE : 1;

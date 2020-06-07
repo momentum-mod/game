@@ -26,7 +26,7 @@ public:
 
 class debugtextureview_vs20_Dynamic_Index
 {
-	int m_nCOMPRESSED_VERTS : 3;
+	unsigned int m_nCOMPRESSED_VERTS : 2;
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 #endif	// _DEBUG

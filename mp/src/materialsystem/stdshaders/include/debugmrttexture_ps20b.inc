@@ -16,8 +16,8 @@
 
 class debugmrttexture_ps20b_Static_Index
 {
-	int m_nCONVERT_TO_SRGB : 3;
-	int m_nMRTINDEX : 3;
+	unsigned int m_nCONVERT_TO_SRGB : 2;
+	unsigned int m_nMRTINDEX : 2;
 #ifdef _DEBUG
 	bool m_bMRTINDEX : 1;
 #endif	// _DEBUG
