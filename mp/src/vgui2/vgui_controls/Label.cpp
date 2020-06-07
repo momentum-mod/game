@@ -1299,10 +1299,7 @@ void Label::PerformLayout()
 			_textImage->GetContentSize(twide, ttall);
 			
 			// tell the textImage how much space we have to draw in
-			if ( wide < twide)
-				_textImage->SetSize(wide, ttall);
-			else
-				_textImage->SetSize(twide, ttall);
+			_textImage->SetSize(min(wide, twide), ttall);
 		}
 
 		HandleAutoSizing();
@@ -1330,7 +1327,7 @@ void Label::PerformLayout()
 		// add up the bounds
 		int iWide, iTall;
 		image->GetSize(iWide, iTall);		
-		widthOfImages += iWide;
+		widthOfImages += iWide + imageInfo.offset;
 	}
 
 	// so this is how much room we have to draw the textimage part
@@ -1343,7 +1340,7 @@ void Label::PerformLayout()
 	int twide, ttall;
 	_textImage->GetSize (twide, ttall);
 	// tell the textImage how much space we have to draw in
-	_textImage->SetSize(spaceAvail, ttall);	
+	_textImage->SetSize(m_bAutoWideToContents ? max(spaceAvail, twide) : min(spaceAvail, twide), ttall);
 
 	HandleAutoSizing();
 }
