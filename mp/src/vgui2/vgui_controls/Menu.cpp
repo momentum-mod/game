@@ -9,7 +9,10 @@
 
 // memdbgon must be the last include file in a .cpp file
 #include "tier0/memdbgon.h"
+
 #define MENU_SEPARATOR_HEIGHT 3
+#define DEFAULT_MENU_ITEM_HEIGHT 22 // height of items in the menu by default
+#define DEFAULT_MENU_ITEM_HEIGHT_OFFSET 4 // Offset, pixels between each menu item
 
 using namespace vgui;
 
@@ -76,16 +79,9 @@ Menu::Menu(Panel *parent, const char *panelName) : Panel(parent, panelName)
 	m_bUseFallbackFont = false;
 	m_hFallbackItemFont = INVALID_FONT;
 
-	if (IsProportional())
-	{
-		m_iMenuItemHeight =  scheme()->GetProportionalScaledValueEx( GetScheme(), DEFAULT_MENU_ITEM_HEIGHT );
-	}
-	else
-	{
-		m_iMenuItemHeight =  DEFAULT_MENU_ITEM_HEIGHT;
-	}
+	m_iMenuItemHeightOffset = GetScaledVal(DEFAULT_MENU_ITEM_HEIGHT_OFFSET);
+	m_iMenuItemHeight = GetScaledVal(DEFAULT_MENU_ITEM_HEIGHT) + m_iMenuItemHeightOffset;
 	m_hItemFont = INVALID_FONT;
-
 
 	m_eTypeAheadMode = COMPAT_MODE;
 	m_szTypeAheadBuf[0] = '\0';
@@ -545,7 +541,7 @@ void Menu::SetFixedWidth(int width)
 //-----------------------------------------------------------------------------
 void Menu::SetMenuItemHeight(int itemHeight)
 {
-	m_iMenuItemHeight = itemHeight;
+	m_iMenuItemHeight = itemHeight + m_iMenuItemHeightOffset;
 }
 
 int  Menu::GetMenuItemHeight() const
@@ -2599,7 +2595,7 @@ void Menu::SetFont( HFont font )
 	m_hItemFont = font;
 	if ( font )
 	{
-		m_iMenuItemHeight = surface()->GetFontTall( font ) + 2;
+		SetMenuItemHeight(surface()->GetFontTall(font));
 	}
 	InvalidateLayout();
 }
