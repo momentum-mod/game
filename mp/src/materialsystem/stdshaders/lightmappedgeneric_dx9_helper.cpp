@@ -494,8 +494,8 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					{
 						pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, true );
 					}
+					flags |= VERTEX_TANGENT_S | VERTEX_TANGENT_T | VERTEX_NORMAL;
 				}
-				flags |= VERTEX_TANGENT_S | VERTEX_TANGENT_T | VERTEX_NORMAL;
 
 				int nDetailBlendMode = 0;
 				if ( hasDetailTexture )
