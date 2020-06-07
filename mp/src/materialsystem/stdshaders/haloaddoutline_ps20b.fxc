@@ -1,0 +1,30 @@
+//========== Copyright (c) Valve Corporation, All rights reserved. ==========//
+
+#include "common_ps_fxc.h"
+
+sampler TexSampler : register( s0 );
+
+float g_flDimValue : register( c0 );
+float2 g_vSampleOffset : register( c1 );
+
+struct PS_INPUT
+{
+	HALF2 baseTexCoord				: TEXCOORD0;		// Base texture coordinate
+};
+
+float4 main( PS_INPUT i ) : COLOR
+{
+	float4 result = tex2D( TexSampler, i.baseTexCoord + float2( g_vSampleOffset.x, g_vSampleOffset.y ) );
+	result = max( result, tex2D( TexSampler, i.baseTexCoord + float2( -g_vSampleOffset.x,  g_vSampleOffset.y ) ) );
+	result = max( result, tex2D( TexSampler, i.baseTexCoord + float2( -g_vSampleOffset.x, -g_vSampleOffset.y ) ) );
+	result = max( result, tex2D( TexSampler, i.baseTexCoord + float2(  g_vSampleOffset.x, -g_vSampleOffset.y ) ) );
+
+	// Scale by dim value before computing luminance below
+	result.rgb *= saturate( g_flDimValue );
+
+	// Store max color component in alpha for alpha blend of one/invSrcAlpha
+	float flLuminance = max( result.r, max( result.g, result.b ) );
+	result.a = pow( flLuminance, 0.8f );
+
+	return result.rgba;
+}
