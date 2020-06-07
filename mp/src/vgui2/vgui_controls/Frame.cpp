@@ -39,7 +39,7 @@
 using namespace vgui;
 
 static const int DEFAULT_SNAP_RANGE = 10; // number of pixels distance before the frame will snap to an edge
-static const int CAPTION_TITLE_BORDER = 7;
+static const int CAPTION_TITLE_BORDER = 4;
 static const int CAPTION_TITLE_BORDER_SMALL = 0;
 
 namespace
@@ -805,6 +805,7 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 	m_bChainKeysToParent = false;
 	m_bPrimed = false;
 	m_hCustomTitleFont = INVALID_FONT;
+	m_bCenterTitle = false;
 
 	SetTitle("#Frame_Untitled", parent ? false : true);
 	
@@ -1367,7 +1368,7 @@ void Frame::GetClientArea(int &x, int &y, int &wide, int &tall)
 	{
 		int captionTall = surface()->GetFontTall(_title->GetFont());
 
-		int border = m_bSmallCaption ? CAPTION_TITLE_BORDER_SMALL : CAPTION_TITLE_BORDER;
+		int border = m_bSmallCaption ? CAPTION_TITLE_BORDER_SMALL : GetScaledVal(CAPTION_TITLE_BORDER);
 		int yinset = m_bSmallCaption ? 0 : m_iClientInsetY;
 
 		yinset += m_iTitleTextInsetYOverride;
@@ -1534,24 +1535,8 @@ void Frame::PaintBackground()
 		int wide = GetWide();
 		int tall = surface()->GetFontTall(_title->GetFont());
 
-		// caption
-		surface()->DrawSetColor(titleColor);
-		int inset = m_bSmallCaption ? 3 : 5;
-		int captionHeight = m_bSmallCaption ? 14: 28;
-
-		surface()->DrawFilledRect(inset, inset, wide - inset, captionHeight );
-		
-		int nTitleX = m_iTitleTextInsetXOverride ? m_iTitleTextInsetXOverride : m_iTitleTextInsetX;
-		int nTitleWidth = wide - 72;
-		if ( _menuButton && _menuButton->IsVisible() )
-		{
-			int mw, mh;
-			_menuButton->GetImageSize( mw, mh );
-			nTitleX += mw;
-			nTitleWidth -= mw;
-		}
 		int nTitleY;
-		if ( m_iTitleTextInsetYOverride )
+		if (m_iTitleTextInsetYOverride)
 		{
 			nTitleY = m_iTitleTextInsetYOverride;
 		}
@@ -1559,8 +1544,38 @@ void Frame::PaintBackground()
 		{
 			nTitleY = m_bSmallCaption ? 2 : 9;
 		}
-		_title->SetPos( nTitleX, nTitleY );		
-		_title->SetSize( nTitleWidth, tall);
+
+		// caption
+		surface()->DrawSetColor(titleColor);
+		int inset = m_bSmallCaption ? 3 : 5;
+		int captionHeight = m_bSmallCaption ? 14 : 28;
+
+		surface()->DrawFilledRect(inset, inset, wide - inset, captionHeight);
+
+		if (m_bCenterTitle)
+		{
+			int contentWide, contentTall;
+			_title->ResizeImageToContentMaxWidth(wide);
+		    _title->GetContentSize(contentWide, contentTall);
+
+			_title->SetPos((wide - contentWide) / 2, nTitleY);
+		}
+		else
+		{
+			int nTitleX = m_iTitleTextInsetXOverride ? m_iTitleTextInsetXOverride : m_iTitleTextInsetX;
+			int nTitleWidth = wide - 72;
+			if (_menuButton && _menuButton->IsVisible())
+			{
+				int mw, mh;
+				_menuButton->GetImageSize(mw, mh);
+				nTitleX += mw;
+				nTitleWidth -= mw;
+			}
+
+			_title->SetPos(nTitleX, nTitleY);
+			_title->SetSize(nTitleWidth, tall);
+		}
+
 		_title->Paint();
 	}
 }
@@ -1682,6 +1697,8 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 		m_iClientInsetX = pKV->GetInt();
 		m_iClientInsetXOverridden = true;
 	}
+
+	m_bCenterTitle = inResourceData->GetBool("center_title");
 }
 
 //-----------------------------------------------------------------------------
@@ -1715,6 +1732,8 @@ void Frame::GetSettings(KeyValues *outResourceData)
 	{
 		outResourceData->SetInt( "clientinsetx_override", m_iClientInsetX );
 	}
+
+	outResourceData->SetBool("center_title", m_bCenterTitle);
 }
 
 void Frame::InitSettings()
@@ -1725,7 +1744,8 @@ void Frame::InitSettings()
     {"settitlebarvisible", TYPE_BOOL},
     {"title_font", TYPE_STRING},
     {"clientinsetx_override", TYPE_INTEGER},
-    {"cliptoparent", TYPE_BOOL}
+    {"cliptoparent", TYPE_BOOL},
+	{"center_title", TYPE_BOOL}
     END_PANEL_SETTINGS();
 }
 
