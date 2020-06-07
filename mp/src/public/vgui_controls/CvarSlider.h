@@ -18,7 +18,6 @@ namespace vgui
                          float minValue = 0.0f, float maxValue = 1.0f);
 
         void SetCVarName(char const *cvarname);
-        void SetTickColor(Color color) { m_TickColor = color; }
 
         void Paint() OVERRIDE;
 
