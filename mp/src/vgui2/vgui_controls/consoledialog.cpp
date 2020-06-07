@@ -803,6 +803,16 @@ void CConsolePanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
+	int wide, tall;
+	GetSize(wide, tall);
+
+	m_pEntry->SetToFullHeight();
+
+	m_pHistory->SetBounds(0, 0, wide, tall - m_pEntry->GetTall());
+
+	m_pEntry->SetPos(0, m_pHistory->GetTall());
+	m_pEntry->SetWide(wide);
+
 	UpdateCompletionListPosition();
 }
 
@@ -1001,7 +1011,6 @@ void CConsolePanel::DumpConsoleTextToFile()
 //-----------------------------------------------------------------------------
 CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName ) : BaseClass( pParent, pName )
 {
-	// initialize dialog
 	SetVisible( false );
     SetProportional(true);
 	SetTitle( "#Console_Title", true );
@@ -1018,29 +1027,23 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName ) : Base
 	LoadControlSettings("resource/ui/ConsoleDialog.res");
 }
 
+void CConsoleDialog::SizeToScreen()
+{
+	// set the console to taking up most of the right-half of the screen
+	int swide, stall;
+	surface()->GetScreenSize(swide, stall);
+	int offset = scheme()->GetProportionalScaledValue(16);
+
+	SetBounds(swide / 2 - (offset * 4), offset, (swide / 2) + (offset * 3), stall - (offset * 8));
+
+	InvalidateLayout();
+}
+
 void CConsoleDialog::OnScreenSizeChanged( int iOldWide, int iOldTall )
 {
 	BaseClass::OnScreenSizeChanged( iOldWide, iOldTall );
 
-	int sx, sy;
-	surface()->GetScreenSize( sx, sy );
-									 
-	int w, h;
-	GetSize( w, h );
-	if ( w > sx || h > sy  )
-	{
-		if ( w > sx )
-		{
-			w = sx;
-		}
-		if ( h > sy )
-		{
-			h = sy;
-		}
-
-		// Try and lower the size to match the screen bounds
-		SetSize( w, h );
-	}
+	SizeToScreen();
 }
 
 

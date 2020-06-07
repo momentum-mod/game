@@ -134,6 +134,8 @@ class CConsoleDialog : public vgui::Frame
 public:
 	CConsoleDialog( vgui::Panel *pParent, const char *pName );
 
+	void SizeToScreen();
+
 	virtual void OnScreenSizeChanged( int iOldWide, int iOldTall );
 	virtual void Close();
 	virtual void PerformLayout();
