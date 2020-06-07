@@ -5,9 +5,6 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include <stdarg.h>
-#include <stdio.h>
-
 #include <vgui/ISurface.h>
 #include <vgui/IScheme.h>
 #include <KeyValues.h>
@@ -19,6 +16,8 @@
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
+
+#define DEFAULT_CHECK_INSET 3
 
 void CheckImage::Paint()
 {
@@ -64,11 +63,10 @@ DECLARE_BUILD_FACTORY_DEFAULT_TEXT( CheckButton, CheckButton );
 //-----------------------------------------------------------------------------
 CheckButton::CheckButton(Panel *parent, const char *panelName, const char *text) : ToggleButton(parent, panelName, text)
 {
- 	SetContentAlignment(a_west);
 	m_bCheckButtonCheckable = true;
 
 	_checkBoxImage = new CheckImage(this);
-	m_iCheckInset = 6;
+	m_iCheckInset = GetScaledVal(DEFAULT_CHECK_INSET);
 
 	SetTextImageIndex(1);
 	SetImageAtIndex(0, _checkBoxImage, m_iCheckInset);
@@ -111,18 +109,26 @@ void CheckButton::ApplySchemeSettings(IScheme *pScheme)
 
 	_highlightFgColor = GetSchemeColor( "CheckButton.HighlightFgColor", Color(62, 70, 55, 255), pScheme); 
 
-	SetContentAlignment(Label::a_west);
-
 	_checkBoxImage->SetFont(GetSchemeFont(pScheme, nullptr, "CheckButton.CheckFont", "Marlett"));
 	_checkBoxImage->ResizeImageToContent();
 
 	const auto pInsetString = pScheme->GetResourceString("CheckButton.CheckInset");
 	if (pInsetString && pInsetString[0])
 	{
-		m_iCheckInset = Q_atoi(pInsetString);
+		m_iCheckInset = GetScaledVal(Q_atoi(pInsetString));
+	}
+	else
+	{
+	    m_iCheckInset = GetScaledVal(DEFAULT_CHECK_INSET);
 	}
 
 	SetImageAtIndex(0, _checkBoxImage, m_iCheckInset);
+
+	const auto pTextInsetString = pScheme->GetResourceString("CheckButton.TextInset");
+	if (pTextInsetString && pTextInsetString[0])
+	{
+		SetImageAtIndex(1, GetTextImage(), GetScaledVal(Q_atoi(pTextInsetString)));
+	}
 
 	// don't draw a background
 	SetPaintBackgroundEnabled(false);
