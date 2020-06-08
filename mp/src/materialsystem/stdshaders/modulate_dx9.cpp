@@ -30,6 +30,7 @@ BEGIN_VS_SHADER( Modulate_DX9,
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM( WRITEZ, SHADER_PARAM_TYPE_BOOL, "0", "Forces z to be written if set" )
 		SHADER_PARAM( MOD2X, SHADER_PARAM_TYPE_BOOL, "0", "forces a 2x modulate so that you can brighten and darken things" )
+		SHADER_PARAM( SCREEN, SHADER_PARAM_TYPE_BOOL, "0", "" )
 
 		// Cloak Pass
 		SHADER_PARAM( CLOAKPASSENABLED, SHADER_PARAM_TYPE_BOOL, "0", "Enables cloak render in a second pass" )
@@ -83,6 +84,11 @@ BEGIN_VS_SHADER( Modulate_DX9,
 	{
 		SET_FLAGS2( MATERIAL_VAR2_SUPPORTS_HW_SKINNING );
 
+		if ( !params[SCREEN]->IsDefined() )
+		{
+			params[SCREEN]->SetIntValue( 0 );
+		}
+
 		// Cloak Pass
 		if ( !params[CLOAKPASSENABLED]->IsDefined() )
 		{
@@ -130,6 +136,7 @@ BEGIN_VS_SHADER( Modulate_DX9,
 		if ( bDrawStandardPass )
 		{
 			bool bMod2X = params[MOD2X]->IsDefined() && params[MOD2X]->GetIntValue();
+			bool bScreen = params[SCREEN]->IsDefined() && params[SCREEN]->GetIntValue();
 			bool bVertexColorOrAlpha = IS_FLAG_SET( MATERIAL_VAR_VERTEXCOLOR ) || IS_FLAG_SET( MATERIAL_VAR_VERTEXALPHA );
 			bool bWriteZ = params[WRITEZ]->GetIntValue() != 0;
 			BlendType_t nBlendType = EvaluateBlendRequirements( BASETEXTURE, true );
@@ -137,7 +144,11 @@ BEGIN_VS_SHADER( Modulate_DX9,
 
 			SHADOW_STATE
 			{
-				if( bMod2X )
+				if ( bScreen )
+				{
+					EnableAlphaBlending( SHADER_BLEND_ONE_MINUS_DST_COLOR, SHADER_BLEND_ONE );
+				}
+				else if ( bMod2X )
 				{
 					EnableAlphaBlending( SHADER_BLEND_DST_COLOR, SHADER_BLEND_SRC_COLOR );
 				}
@@ -225,15 +236,19 @@ BEGIN_VS_SHADER( Modulate_DX9,
 				// set constant color for modulation
 				SetModulationVertexShaderDynamicState();
 
-				// We need to fog to *white* regardless of overbrighting...
-				if( bMod2X )
+				if( bScreen )
+				{
+					float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+					pShaderAPI->SetPixelShaderConstant( 0, black );
+				}
+				else if( bMod2X )
 				{
 					float grey[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
 					pShaderAPI->SetPixelShaderConstant( 0, grey );
 				}
 				else
 				{
-					float white[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+					float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 					pShaderAPI->SetPixelShaderConstant( 0, white );
 				}
 
