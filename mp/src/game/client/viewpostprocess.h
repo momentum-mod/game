@@ -11,7 +11,7 @@
 #pragma once
 #endif
 
-#include "postprocess_shared.h"
+struct PostProcessParameters_t;
 
 void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, bool bPostVGui = false );
 void DoImageSpaceMotionBlur( const CViewSetup &viewSetup );
