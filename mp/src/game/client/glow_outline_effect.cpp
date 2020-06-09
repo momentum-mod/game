@@ -18,7 +18,7 @@
 #ifdef GLOWS_ENABLE
 
 ConVar glow_outline_effect_enable( "glow_outline_effect_enable", "1", FCVAR_ARCHIVE, "Enable entity outline glow effects." );
-ConVar glow_outline_effect_width( "glow_outline_width", "10.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
+ConVar glow_outline_effect_width( "glow_outline_width", "2.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
 
 extern bool g_bDumpRenderTargets; // in viewpostprocess.cpp
 
@@ -288,7 +288,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		IMaterialVar *pDimVar = pMatHaloAddToScreen->FindVar( "$C0_X", nullptr );
 		pDimVar->SetFloatValue( 1.0f );
 
-		float flOutlineWidth = 2.0f;
+		float flOutlineWidth = flBloomScale;
 		float flSampleOffsetX = flOutlineWidth * ( 1.0f / nSrcWidth );
 		float flSampleOffsetY = flOutlineWidth * ( 1.0f / nSrcHeight );
 
