@@ -975,11 +975,14 @@ void Button::OnMouseReleased(MouseCode code)
 	if (!IsMouseClickEnabled(code))
 		return;
 
+	if (!IsEnabled())
+		return;
+
 	if (!IsSelected() && _activationType == ACTIVATE_ONPRESSEDANDRELEASED)
 		return;
 
 	// it has to be both enabled and (mouse over the button or using a key) to fire
-	if ( IsEnabled() && ( GetVPanel() == input()->GetMouseOver() || _buttonFlags.IsFlagSet( BUTTON_KEY_DOWN ) ) )
+	if (GetVPanel() == input()->GetMouseOver() || _buttonFlags.IsFlagSet( BUTTON_KEY_DOWN ))
 	{
 		DoClick();
 	}
