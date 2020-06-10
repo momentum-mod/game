@@ -4872,35 +4872,40 @@ void C_BaseAnimating::ClientThink()
 //=========================================================
 // Glow effect
 //=========================================================
+Vector C_BaseAnimating::GetGlowEffectColor()
 {
-    *r = m_clrGlow.r / 255.0f;
-    *g = m_clrGlow.g / 255.0f;
-    *b = m_clrGlow.b / 255.0f;
+    return Vector(m_clrGlow.r, m_clrGlow.g, m_clrGlow.b);
 }
 
 void C_BaseAnimating::UpdateGlowEffect(void)
 {
-    DestroyGlowEffect();
-
     if (!m_bGlowEnabled)
-       return;
-
-    float r, g, b;
-    GetGlowEffectColor(&r, &g, &b);
+    {
+        DestroyGlowEffect();
+        return;
+    }
 
     float flAlpha = 1.0f;
 
-    C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
-
-    // Lerp alpha based on distance
-    if (pPlayer)
+    if (m_flGlowMaxDist > 0.0f)
     {
-        float flDistance = 0;
-        flDistance = (GetAbsOrigin() - pPlayer->GetAbsOrigin()).Length();
-        flAlpha = clamp(1.0f - (flDistance / m_flGlowMaxDist), 0.0f, 1.0f);
+        C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+
+        // Lerp alpha based on distance
+        if (pPlayer)
+        {
+            float flDistance = 0;
+            flDistance = (GetAbsOrigin() - pPlayer->GetAbsOrigin()).Length();
+            flAlpha = clamp(1.0f - (flDistance / m_flGlowMaxDist), 0.0f, 1.0f);
+        }
     }
 
-    m_pGlowEffect = new CGlowObject(this, Vector(r, g, b), flAlpha, true);
+    if (!m_pGlowEffect)
+        m_pGlowEffect = new CGlowObject(this);
+
+    m_pGlowEffect->SetColor(GetGlowEffectColor());
+    m_pGlowEffect->SetAlpha(flAlpha);
+    m_pGlowEffect->SetRenderFlags(true, false);
 
     SetNextClientThink(gpGlobals->curtime + 0.1f);
 }
