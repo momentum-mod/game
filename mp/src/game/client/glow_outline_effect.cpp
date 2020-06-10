@@ -15,8 +15,8 @@
 
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
 
-ConVar glow_outline_effect_enable( "glow_outline_effect_enable", "1", FCVAR_ARCHIVE, "Enable entity outline glow effects." );
-ConVar glow_outline_effect_width( "glow_outline_width", "2.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
+ConVar mat_glow_outline_enable( "mat_glow_outline_enable", "1", FCVAR_ARCHIVE, "Enable entity outline glow effects." );
+ConVar mat_glow_outline_width( "mat_glow_outline_width", "3.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
 
 extern bool g_bDumpRenderTargets; // in viewpostprocess.cpp
 
@@ -59,7 +59,7 @@ void CGlowObjectManager::RenderGlowEffects( const CViewSetup *pSetup, int nSplit
 {
 	if ( g_pMaterialSystemHardwareConfig->SupportsPixelShaders_2_0() )
 	{
-		if ( glow_outline_effect_enable.GetBool() )
+		if ( mat_glow_outline_enable.GetBool() )
 		{
 			CMatRenderContextPtr pRenderContext( materials );
 
@@ -67,7 +67,7 @@ void CGlowObjectManager::RenderGlowEffects( const CViewSetup *pSetup, int nSplit
 			pRenderContext->GetViewport( nX, nY, nWidth, nHeight );
 
 			PIXEvent _pixEvent( pRenderContext, "EntityGlowEffects" );
-			ApplyEntityGlowEffects( pSetup, nSplitScreenSlot, pRenderContext, glow_outline_effect_width.GetFloat(), nX, nY, nWidth, nHeight );
+			ApplyEntityGlowEffects( pSetup, nSplitScreenSlot, pRenderContext, mat_glow_outline_width.GetFloat(), nX, nY, nWidth, nHeight );
 		}
 	}
 }
@@ -150,7 +150,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	pRenderContext->PopRenderTargetAndViewport();
 }
 
-void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int nSplitScreenSlot, CMatRenderContextPtr &pRenderContext, float flBloomScale, int x, int y, int w, int h )
+void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int nSplitScreenSlot, CMatRenderContextPtr &pRenderContext, float flGlowWidth, int x, int y, int w, int h )
 {
 	//=======================================================//
 	// Render objects into stencil buffer					 //
@@ -286,9 +286,8 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		IMaterialVar *pDimVar = pMatHaloAddToScreen->FindVar( "$C0_X", nullptr );
 		pDimVar->SetFloatValue( 1.0f );
 
-		float flOutlineWidth = flBloomScale;
-		float flSampleOffsetX = flOutlineWidth * ( 1.0f / nSrcWidth );
-		float flSampleOffsetY = flOutlineWidth * ( 1.0f / nSrcHeight );
+		float flSampleOffsetX = flGlowWidth * ( 1.0f / nSrcWidth );
+		float flSampleOffsetY = flGlowWidth * ( 1.0f / nSrcHeight );
 
 		IMaterialVar *pSampleOffsetX = pMatHaloAddToScreen->FindVar( "$C1_X", nullptr );
 		pSampleOffsetX->SetFloatValue( flSampleOffsetX );
