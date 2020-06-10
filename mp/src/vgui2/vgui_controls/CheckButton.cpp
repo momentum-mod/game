@@ -7,6 +7,7 @@
 
 #include <vgui/ISurface.h>
 #include <vgui/IScheme.h>
+#include <vgui/IBorder.h>
 #include <KeyValues.h>
 
 #include <vgui_controls/Image.h>
@@ -19,30 +20,38 @@ using namespace vgui;
 
 #define DEFAULT_CHECK_INSET 3
 
+CheckImage::CheckImage(CheckButton *pCheckButton) : TextImage("g"), _border(nullptr), _CheckButton(pCheckButton)
+{
+    SetSize(20, 13);
+}
+
 void CheckImage::Paint()
 {
-	DrawSetTextFont(GetFont());
-
 	// draw background
 	if (_CheckButton->IsEnabled() && _CheckButton->IsCheckButtonCheckable() )
 	{
-		DrawSetTextColor(_bgColor);
+		DrawSetColor(_bgColor);
 	}
 	else
 	{
-		DrawSetTextColor(_CheckButton->GetDisabledBgColor());
+		DrawSetColor(_CheckButton->GetDisabledBgColor());
 	}
-	DrawPrintChar(0, 1, 'g');
+	int x, y, wide, tall;
+	GetPos(x, y);
+	GetSize(wide, tall);
+	surface()->DrawFilledRect(x, y, x + wide, y + tall);
 
 	// draw border box
-	DrawSetTextColor(_borderColor1);
-	DrawPrintChar(0, 1, 'e');
-	DrawSetTextColor(_borderColor2);
-	DrawPrintChar(0, 1, 'f');
+	if (_border)
+	{
+		_border->Paint(x, y, x + wide, y + tall);
+	}
 
 	// draw selected check
 	if (_CheckButton->IsSelected())
 	{
+		DrawSetTextFont(GetFont());
+
 		if ( !_CheckButton->IsEnabled() )
 		{
 			DrawSetTextColor( _CheckButton->GetDisabledFgColor() );
@@ -52,7 +61,7 @@ void CheckImage::Paint()
 			DrawSetTextColor(_checkColor);
 		}
 
-		DrawPrintChar(0, 2, 'b');
+		DrawPrintChar(0, 1, 'b');
 	}
 }
 
@@ -93,10 +102,10 @@ void CheckButton::ApplySchemeSettings(IScheme *pScheme)
 	BaseClass::ApplySchemeSettings(pScheme);
 
 	SetDefaultColor( GetSchemeColor("CheckButton.TextColor", pScheme), GetBgColor() );
-	_checkBoxImage->_bgColor = GetSchemeColor("CheckButton.BgColor", Color(62, 70, 55, 255), pScheme);
-	_checkBoxImage->_borderColor1 = GetSchemeColor("CheckButton.Border1", Color(20, 20, 20, 255), pScheme);
-	_checkBoxImage->_borderColor2 = GetSchemeColor("CheckButton.Border2", Color(90, 90, 90, 255), pScheme);
-	_checkBoxImage->_checkColor = GetSchemeColor("CheckButton.Check", Color(20, 20, 20, 255), pScheme);
+	_checkBoxImage->SetBkColor(GetSchemeColor("CheckButton.BgColor", Color(62, 70, 55, 255), pScheme));
+	const auto pCheckBtnBorder = pScheme->GetBorder("CheckButtonBorder");
+	_checkBoxImage->SetBorder(pCheckBtnBorder ? pCheckBtnBorder : pScheme->GetBorder("ButtonDepressedBorder"));
+	_checkBoxImage->SetCheckColor(GetSchemeColor("CheckButton.Check", Color(20, 20, 20, 255), pScheme));
 	_selectedFgColor = GetSchemeColor("CheckButton.SelectedTextColor", GetSchemeColor("ControlText", pScheme), pScheme);
 	_disabledFgColor = GetSchemeColor("CheckButton.DisabledFgColor", Color(130, 130, 130, 255), pScheme);
 	_disabledBgColor = GetSchemeColor("CheckButton.DisabledBgColor", Color(62, 70, 55, 255), pScheme);
