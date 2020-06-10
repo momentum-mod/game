@@ -36,6 +36,14 @@ Divider::~Divider()
 //-----------------------------------------------------------------------------
 void Divider::ApplySchemeSettings(IScheme *pScheme)
 {
-	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
 	BaseClass::ApplySchemeSettings(pScheme);
+
+	if (!GetBorderOverrideName()[0])
+	{
+		auto pDividerBorder = pScheme->GetBorder("DividerBorder");
+		if (!pDividerBorder)
+			pDividerBorder = pScheme->GetBorder("ButtonDepressedBorder");
+
+	    SetBorder(pDividerBorder);
+	}
 }
