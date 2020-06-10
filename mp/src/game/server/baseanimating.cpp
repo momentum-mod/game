@@ -302,7 +302,7 @@ CBaseAnimating::CBaseAnimating()
 	m_fBoneCacheFlags = 0;
     m_bGlowEnabled.Set(false);
     m_clrGlow.Init(255, 255, 255);
-    m_flGlowMaxDist = -1.0f;
+    m_flGlowMaxDist = 0.0f;
 }
 
 CBaseAnimating::~CBaseAnimating()
