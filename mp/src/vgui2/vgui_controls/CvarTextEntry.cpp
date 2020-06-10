@@ -14,7 +14,7 @@
 
 using namespace vgui;
 
-static const int MAX_CVAR_TEXT = 64;
+#define MAX_CVAR_TEXT 64
 
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CvarTextEntry, "");
 
@@ -184,8 +184,8 @@ bool CvarTextEntry::ShouldUpdate(const char *szText)
     if (strLength == 1 && szText[0] == '-')
         return false;
 
-    bool isJustZero = szText[strLength - 1] == '0' && 
-        (strLength == 1 || (strLength == 2 && szText[0] == '-')); // 0 or -0
+    // 0 or -0
+    bool isJustZero = szText[strLength - 1] == '0' && (strLength == 1 || (strLength == 2 && szText[0] == '-'));
     if (isJustZero)
         return true;
 
@@ -221,7 +221,7 @@ void CvarTextEntry::SetCvarVal(const char* szText)
 
     if (m_iPrecision == 0) // integer
     {
-        m_cvarRef.SetValue(Q_atoi(szCorrectedText));
+        m_cvarRef.SetValue(szCorrectedText);
         Q_strncpy(m_pszStartValue, szCorrectedText, sizeof(m_pszStartValue));
         return;
     }
