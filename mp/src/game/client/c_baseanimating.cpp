@@ -4868,19 +4868,16 @@ void C_BaseAnimating::ClientThink()
     UpdateGlowEffect();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void C_BaseAnimating::GetGlowEffectColor(float* r, float* g, float* b)
+
+//=========================================================
+// Glow effect
+//=========================================================
 {
     *r = m_clrGlow.r / 255.0f;
     *g = m_clrGlow.g / 255.0f;
     *b = m_clrGlow.b / 255.0f;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_BaseAnimating::UpdateGlowEffect(void)
 {
     DestroyGlowEffect();
@@ -4908,9 +4905,6 @@ void C_BaseAnimating::UpdateGlowEffect(void)
     SetNextClientThink(gpGlobals->curtime + 0.1f);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_BaseAnimating::DestroyGlowEffect(void)
 {
     if (m_pGlowEffect)

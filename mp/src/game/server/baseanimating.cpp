@@ -651,70 +651,51 @@ void CBaseAnimating::InputSetModelScale( inputdata_t &inputdata )
 	SetModelScale( vecScale.x, vecScale.y );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
+//=========================================================
+// Input handlers for glow
+//=========================================================
+
 void CBaseAnimating::InputSetGlowEnabled(inputdata_t& inputdata)
 {
     AddGlowEffect();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CBaseAnimating::InputSetGlowDisabled(inputdata_t& inputdata)
 {
     RemoveGlowEffect();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CBaseAnimating::InputSetGlowColor(inputdata_t& inputdata)
 {
-    color32 color = inputdata.value.Color32();
-    SetGlowColor(color);
+    SetGlowColor(inputdata.value.Color32());
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 void CBaseAnimating::InputSetGlowDistance(inputdata_t& inputdata)
 {
     SetGlowDistance(inputdata.value.Float());
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CBaseAnimating::AddGlowEffect(void)
 {
     m_bGlowEnabled.Set(true);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CBaseAnimating::RemoveGlowEffect(void)
 {
     m_bGlowEnabled.Set(false);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 bool CBaseAnimating::IsGlowEffectActive(void)
 {
     return m_bGlowEnabled;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CBaseAnimating::SetGlowColor(color32 color)
 {
     m_clrGlow.Set(color);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CBaseAnimating::SetGlowDistance(float distance)
 {
     m_flGlowMaxDist = distance;

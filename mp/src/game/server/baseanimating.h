@@ -418,11 +418,11 @@ public:
     void InputSetGlowColor(inputdata_t& inputdata);
     void InputSetGlowDistance(inputdata_t& inputdata);
 
-    virtual void				AddGlowEffect(void);
-    virtual void				RemoveGlowEffect(void);
-    virtual bool				IsGlowEffectActive(void);
-    virtual void                SetGlowColor(color32);
-    virtual void                SetGlowDistance(float);
+    virtual void AddGlowEffect(void);
+    virtual void RemoveGlowEffect(void);
+    virtual bool IsGlowEffectActive(void);
+    virtual void SetGlowColor(color32);
+    virtual void SetGlowDistance(float);
 
 protected:
 	CNetworkVar( float, m_fadeMinDist );	// Point at which fading is absolute
