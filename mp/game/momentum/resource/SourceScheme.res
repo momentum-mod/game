@@ -42,6 +42,7 @@ Scheme
         "MomentumRed"	    "255 106 106 255"
         "MomentumGreen"	    "152 255 153 255"
         "MomentumBlue"	    "24 150 211 255"
+        "MomentumBlueHO"    "24 150 211 128"
         "MomentumLightBlue"	"76 139 180 255"
 
         "MomGreydientStep1" "32 32 32 255"
@@ -69,6 +70,10 @@ Scheme
     // controls use these to determine their settings
     BaseSettings
     {
+        "MOM.Compare.Gain" "MomentumBlue"
+        "MOM.Compare.Loss" "MomentumRed"
+        "MOM.Compare.Tie" "MOM.Panel.Fg"
+
         // vgui_controls color specifications
         Border.Bright					"200 200 200 255"	// the lit side of a control
         Border.Dark						"40 40 40 100"		// the dark/unlit side of a control
@@ -79,32 +84,35 @@ Scheme
         Button.TextColor				"White"
         Button.BgColor					"MomGreydientStep4"
         Button.ArmedTextColor			"MomentumBlue"
-        Button.ArmedBgColor				"MomGreydientStep4"	
+        Button.ArmedBgColor				"MomGreydientStep4"
+        Button.SelectedTextColor		"White"
+        Button.SelectedBgColor			"MomentumBlue"
         Button.DepressedTextColor		"White"
         Button.DepressedBgColor			"MomentumBlue"
         Button.FocusBorderColor			"82 82 82 0"
 
         CheckButton.TextColor			"White"
         CheckButton.SelectedTextColor	"White"
-        CheckButton.BgColor				"MOM.Panel.Bg"
-        CheckButton.Border1  			"Border.Subtle" 		// the left checkbutton border
-        CheckButton.Border2  			"Border.Subtle"		// the right checkbutton border
+        CheckButton.BgColor				"MomGreydientStep5"
+        CheckButton.Border1  			"MomGreydientStep1" 	// the left checkbutton border color
+        CheckButton.Border2  			"MomGreydientStep1"		// the right checkbutton border color
         CheckButton.Check				"MomentumBlue"	// color of the check itself
         CheckButton.HighlightFgColor	"OffWhite"
         CheckButton.ArmedBgColor		"Blank"
         CheckButton.DepressedBgColor	"Blank"
-        CheckButton.DisabledBgColor	   	"153 153 153 255"
+        CheckButton.DisabledFgColor     "MomGreydientStep5"
+        CheckButton.DisabledBgColor	   	"MomGreydientStep3"
 
-        ComboBoxButton.ArrowColor		"81 81 81 255"
-        ComboBoxButton.ArmedArrowColor	"MomentumBlue"
-        ComboBoxButton.BgColor			"MOM.Panel.Bg"
-        ComboBoxButton.DisabledBgColor	"Light Gray"
+        ComboBoxButton.ArrowColor		"MomentumBlue"
+        ComboBoxButton.ArmedArrowColor	"MomGreydientStep8"
+        ComboBoxButton.BgColor			"MomGreydientStep3"
+        ComboBoxButton.DisabledBgColor	"MomGreydientHOStep3"
 
         Frame.TitleTextInsetX			8
         Frame.ClientInsetX				8
-        Frame.ClientInsetY				2
+        Frame.ClientInsetY				8
         Frame.BgColor					"MomGreydientStep3"
-        Frame.OutOfFocusBgColor			"MomGreydientHOStep3"	
+        Frame.OutOfFocusBgColor			"MomGreydientHOStep3"
         Frame.FocusTransitionEffectTime	"0.3"					// time it takes for a window to fade in/out on focus/out of focus
         Frame.TransitionEffectTime		"0.3"					// time it takes for a window to fade in/out on open/close
         Frame.AutoSnapRange				"0"
@@ -127,13 +135,15 @@ Scheme
         GraphPanel.FgColor				"White"
         GraphPanel.BgColor				"TransparentBlack"
 
+        InlineEditPanel.Color           "MomentumBlue"
+
         Label.TextDullColor				"DullWhite"
         Label.TextColor					"White"
         Label.TextBrightColor			"White"
         Label.SelectedTextColor			"White"
         Label.BgColor					"Blank"
-        Label.DisabledFgColor1			"110 110 110 255"
-        Label.DisabledFgColor2			"50 50 50 255"
+        Label.DisabledFgColor1			"Blank"
+        Label.DisabledFgColor2			"MomGreydientStep7"
 
         ListPanel.TextColor					"White"
         ListPanel.TextBgColor				"Blank"
@@ -187,39 +197,40 @@ Scheme
         ScrollBarSlider.FgColor				"MomGreydientStep6"	// nob color
         ScrollBarSlider.BgColor				"MomGreydientStep2"	// slider background color
 
-        SectionedListPanel.HeaderTextColor	"White"
+        SectionedListPanel.HeaderTextColor	"MomGreydientStep8"
         SectionedListPanel.HeaderBgColor	"Blank"
-        SectionedListPanel.DividerColor		"Dark Gray"
-        SectionedListPanel.TextColor		"Light Gray"
+        SectionedListPanel.DividerColor		"MomGreydientStep1"
+        SectionedListPanel.TextColor		"White"
         SectionedListPanel.BrightTextColor	"White"
-        SectionedListPanel.BgColor			"TransparentBlack"
+        SectionedListPanel.BgColor			"Blank"
         SectionedListPanel.SelectedTextColor			"White"
         SectionedListPanel.SelectedBgColor				"MomentumBlue"
         SectionedListPanel.OutOfFocusSelectedTextColor	"White"
-        SectionedListPanel.OutOfFocusSelectedBgColor	"132 183 241 100"
+        SectionedListPanel.OutOfFocusSelectedBgColor	"MomentumBlueHO"
 
-        Slider.NobColor				"White"
+        Slider.NobColor				"MomGreydientStep4"
         Slider.TextColor			"White"
         Slider.BgColor              "Blank"
-        Slider.TrackColor			"White"
-        Slider.DisabledTextColor1	"Dark Gray"
-        Slider.DisabledTextColor2	"50 50 50 255"
+        Slider.TrackColor			"MomGreydientStep2"
+        Slider.DisabledTextColor1	"MomGreydientHOStep8"
+        Slider.DisabledTextColor2	"MomGreydientHOStep8"
 
         TextEntry.TextColor			"White"
         TextEntry.BgColor			"MomGreydientStep5"
-        TextEntry.CursorColor		"Black"
-        TextEntry.DisabledTextColor	"Light Gray"
+        TextEntry.CursorColor		"MomGreydientStep2"
+        TextEntry.DisabledTextColor	"MomGreydientHOStep8"
         TextEntry.DisabledBgColor	"TransparentBlack"
         TextEntry.SelectedTextColor	"White"
         TextEntry.SelectedBgColor	"MomentumBlue"
-        TextEntry.OutOfFocusSelectedBgColor	"132 183 241 100"
+        TextEntry.OutOfFocusSelectedBgColor	"MomentumBlueHO"
         TextEntry.FocusEdgeColor	"0 0 0 196"
         TextEntry.Border            "TextEntryBorder"
 
         ToggleButton.SelectedTextColor	"White"
 
         Tooltip.TextColor			"White"
-        Tooltip.BgColor				"MomGreydientStep5"
+        Tooltip.BgColor				"MomGreydientStep3"
+        Tooltip.TextFont            "DefaultSmall"
 
         TreeView.BgColor			"Light Gray"
 
@@ -290,8 +301,9 @@ Scheme
             {
                 "name"		"Noto Sans"
                 "tall"		"12"
-                "weight"	"500"
+                "weight"	"400"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
         "DefaultBold"
@@ -342,12 +354,11 @@ Scheme
         {
             "1"
             {
-                "name"		"Tahoma" [!$LINUX]
-                "name"		"Verdana" [$LINUX]
-                "tall"		"12" [!$LINUX]
-                "tall"		"16" [$LINUX]
-                "weight"	"0"
+                "name"		"Noto Sans"
+                "tall"		"11"
+                "weight"	"400"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
         "DefaultSmallDropShadow"
@@ -362,15 +373,70 @@ Scheme
                 "antialias" "1"
             }
         }
+        "Default10"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"10"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Default12"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"12"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Default14"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"14"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Default16"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"16"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Default20"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"20"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
         "DefaultVerySmall"
         {
             "1"
             {
-                "name"		"Tahoma" [!$LINUX]
-                "name"		"Verdana" [$LINUX]
+                "name"		"Noto Sans"
                 "tall"		"11"
-                "weight"	"0"
+                "weight" "400"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
 
@@ -382,6 +448,7 @@ Scheme
                 "tall"		"18"
                 "weight"	"600"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
         "DefaultLargeDropShadow"
@@ -659,12 +726,6 @@ Scheme
                 "tall"		"10"
                 "weight"	"0"
             }
-//			"1"
-//			{
-//				"name"		"FixedSys"
-//				"tall"		"20"
-//				"weight"	"0"
-//			}
         }
 
         "DefaultFixedDropShadow"
@@ -680,12 +741,6 @@ Scheme
                 "weight"	"0"
                 "dropshadow" "1"
             }
-//			"1"
-//			{
-//				"name"		"FixedSys"
-//				"tall"		"20"
-//				"weight"	"0"
-//			}
         }
 
         "CloseCaption_Normal"
@@ -737,6 +792,7 @@ Scheme
                 "name" "Bebas Neue"
                 "tall" "16"
                 "antialias" "1"
+                "dropshadow" "1"
             }
         }
 
@@ -952,11 +1008,12 @@ Scheme
         BaseBorder		SubtleBorder
         ButtonBorder	FrameBorder
         ComboBoxBorder	DepressedBorder
-        MenuBorder		SubtleBorder
+        MenuBorder		FrameBorder
         BrowserBorder	DepressedBorder
         PropertySheetBorder	RaisedBorder
         ButtonKeyFocusBorder FrameBorder // this is the border used for default buttons (the button that gets pressed when you hit enter)
         ButtonDepressedBorder FrameBorder
+        CheckButtonBorder FrameBorder
 
         FrameBorder
         {
@@ -995,6 +1052,48 @@ Scheme
                 "1"
                 {
                     "color" "Border.DarkSolid"
+                    "offset" "0 0"
+                }
+            }
+        }
+
+        DividerBorder
+        {
+            // rounded corners for frames
+            //"backgroundtype" "2"
+
+            Left
+            {
+                "1"
+                {
+                    "color" "MomGreydientStep3"
+                    "offset" "0 0"
+                }
+            }
+
+            Right
+            {
+                "1"
+                {
+                    "color" "MomGreydientStep3"
+                    "offset" "0 0"
+                }
+            }
+
+            Top
+            {
+                "1"
+                {
+                    "color" "MomGreydientStep3"
+                    "offset" "0 0"
+                }
+            }
+
+            Bottom
+            {
+                "1"
+                {
+                    "color" "MomGreydientStep3"
                     "offset" "0 0"
                 }
             }
