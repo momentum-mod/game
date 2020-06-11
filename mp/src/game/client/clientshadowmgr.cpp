@@ -933,9 +933,6 @@ private:
 	// Builds a list of active shadows requiring shadow depth renders
 	int		BuildActiveShadowDepthList( const CViewSetup &viewSetup, int nMaxDepthShadows, ClientShadowHandle_t *pActiveDepthShadows );
 
-	// Sets the view's active flashlight render state
-	void	SetViewFlashlightState( int nActiveFlashlightCount, ClientShadowHandle_t* pActiveFlashlights );
-
     //Dynamic RTT shadow angles
     void	UpdateDirtyShadow(ClientShadowHandle_t handle);
     void	UpdateShadowDirectionFromLocalLightSource(ClientShadowHandle_t shadowHandle);
@@ -3873,25 +3870,6 @@ int CClientShadowMgr::BuildActiveShadowDepthList( const CViewSetup &viewSetup, i
 	return nActiveDepthShadowCount;
 }
 
-
-//-----------------------------------------------------------------------------
-// Sets the view's active flashlight render state
-//-----------------------------------------------------------------------------
-void CClientShadowMgr::SetViewFlashlightState( int nActiveFlashlightCount, ClientShadowHandle_t* pActiveFlashlights )
-{
-	Assert( nActiveFlashlightCount<= 1 ); 
-	if ( nActiveFlashlightCount > 0 )
-	{
-		Assert( ( m_Shadows[ pActiveFlashlights[0] ].m_Flags & SHADOW_FLAGS_FLASHLIGHT ) != 0 );
-		shadowmgr->SetFlashlightRenderState( pActiveFlashlights[0] );
-	}
-	else
-	{
-		shadowmgr->SetFlashlightRenderState( SHADOW_HANDLE_INVALID );
-	}
-}
-
-
 //-----------------------------------------------------------------------------
 // Re-render shadow depth textures that lie in the leaf list
 //-----------------------------------------------------------------------------
@@ -3962,8 +3940,6 @@ void CClientShadowMgr::ComputeShadowDepthTextures( const CViewSetup &viewSetup )
 		// Associate the shadow depth texture and stencil bit with the flashlight for use during scene rendering
 		shadowmgr->SetFlashlightDepthTexture( shadow.m_ShadowHandle, shadowDepthTexture, 0 );
 	}
-
-	SetViewFlashlightState( nActiveDepthShadowCount, pActiveDepthShadows );
 }
 
 	
@@ -4113,7 +4089,6 @@ void CClientShadowMgr::UnlockAllShadowDepthTextures()
 	{
 		m_DepthTextureCacheLocks[i] = false;
 	}
-	SetViewFlashlightState( 0, NULL );
 }
 
 void CClientShadowMgr::SetFlashlightTarget( ClientShadowHandle_t shadowHandle, EHANDLE targetEntity )
