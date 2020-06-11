@@ -43,6 +43,7 @@ struct DownloadRequest
 {
     DownloadRequest() : handle(INVALID_HTTPREQUEST_HANDLE), completeResult(nullptr), m_bSaveToFile(true)
     {
+        m_dSentTime = -1;
         m_szFileName[0] = '\0';
         m_szFilePathID[0] = '\0';
         m_szURL[0] = '\0';

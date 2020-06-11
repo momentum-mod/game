@@ -129,18 +129,25 @@ void CLoadingScreen::LoadMapData(const char *pMapName)
 
         m_pTrackZonesLabel->SetVisible(true);
 
-        const auto pEntry = g_pFileImageCache->FindImageByPath(pMapData->m_Thumbnail.m_szURLLarge);
-        if (pEntry)
+        const auto pEntryLarge = g_pFileImageCache->FindImageByPath(pMapData->m_Thumbnail.m_szURLLarge);
+        const auto pEntrySmall = g_pFileImageCache->FindImageByPath(pMapData->m_Thumbnail.m_szURLSmall);
+        if (pEntryLarge)
         {
             m_pMapImage = new URLImage;
-            m_pMapImage->LoadFromUtlBuffer(pEntry->m_bufOriginalImage);
+            m_pMapImage->LoadFromUtlBuffer(pEntryLarge->m_bufOriginalImage);
         }
-        else
+        else if (pEntrySmall)
         {
-            m_pMapImage = new URLImage(pMapData->m_Thumbnail.m_szURLSmall);
+            m_pMapImage = new URLImage;
+            m_pMapImage->LoadFromUtlBuffer(pEntrySmall->m_bufOriginalImage);
+
             m_pMapImageStreaming = new URLImage;
             m_pMapImageStreaming->AddImageLoadListener(GetVPanel());
             m_pMapImageStreaming->LoadFromURL(pMapData->m_Thumbnail.m_szURLLarge);
+        }
+        else
+        {
+            m_pMapImage = new URLImage(pMapData->m_Thumbnail.m_szURLLarge);
         }
 
         m_pMapImagePanel->SetImage(m_pMapImage);
@@ -176,7 +183,7 @@ void CLoadingScreen::OnLargeImageLoad()
 {
     if (m_pMapImagePanel->IsVisible())
     {
-        FileImage *pOld = m_pMapImage;
+        const auto pOld = m_pMapImage;
 
         m_pMapImage = m_pMapImageStreaming;
         m_pMapImagePanel->SetImage(m_pMapImage);
