@@ -82,26 +82,7 @@ $Project "Client (Momentum)"
                 
                 $Folder "SettingsPanel"
                 {
-                    $Folder "Headers"
-                    {
-                        $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
-                        $File "momentum\ui\SettingsPanel\SettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\OnlineSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.h"
-                    }
-
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
-                    $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\OnlineSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.h"
                     $File "momentum\ui\SettingsPanel\SettingsPanel.cpp"
                     $File "momentum\ui\SettingsPanel\SettingsPanel.h"
