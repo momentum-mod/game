@@ -35,7 +35,6 @@ public:
     void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
     void OnCursorMoved(int x, int y) OVERRIDE;
     void OnMouseWheeled(int delta) OVERRIDE;
-    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
     // View stuff
     void SetupView(CViewSetup &setup);
