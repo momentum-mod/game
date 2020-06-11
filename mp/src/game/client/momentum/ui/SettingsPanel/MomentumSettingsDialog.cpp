@@ -1,149 +1,175 @@
 #include "cbase.h"
 
-#include "IMomentumSettingsPanel.h"
-#include "SettingsPage.h"
-#include "HudSettingsPage.h"
-#include "GameplaySettingsPage.h"
-#include "ComparisonsSettingsPage.h"
-#include "AppearanceSettingsPage.h"
-#include "OnlineSettingsPage.h"
-#include "GamemodeSettingsPage.h"
-#include <vgui/IVGui.h>
-#include <vgui_controls/Frame.h>
-#include <vgui_controls/pch_vgui_controls.h>
+#include "MomentumSettingsDialog.h"
+
+#include "SettingsPanel.h"
+#include "InputSettingsPanel.h"
+#include "AudioSettingsPanel.h"
+#include "VideoSettingsPanel.h"
+#include "OnlineSettingsPanel.h"
+#include "GameplaySettingsPanel.h"
+#include "HUDSettingsPanel.h"
+
+#include "vgui/ISystem.h"
+
+#include "vgui_controls/Frame.h"
+#include "vgui_controls/ToggleButton.h"
+#include "vgui_controls/AnimationController.h"
+#include "vgui_controls/ScrollableEditablePanel.h"
+
 #include "clientmode.h"
+#include "ienginevgui.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-class CMomentumSettingsDialog : public PropertyDialog
+class GroupPanel : public Panel
 {
-    DECLARE_CLASS_SIMPLE(CMomentumSettingsDialog, PropertyDialog);
+    DECLARE_CLASS_SIMPLE(GroupPanel, vgui::Panel);
 
-    CMomentumSettingsDialog(VPANEL parent);
-    ~CMomentumSettingsDialog();
+    GroupPanel(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
+    {
+        m_iSpacingX = GetScaledVal(10);
+    }
 
-    void OnClose() OVERRIDE;
-    void Activate() OVERRIDE;
+    void AddPanelToGroup(Panel *pPanel)
+    {
+        PHandle handle;
+        handle = pPanel;
+        m_vecPanels.AddToTail(handle);
+    }
 
-  protected:
-    // VGUI overrides:
-    void OnThink() OVERRIDE;
-    void OnReloadControls() override;
+    void PerformLayout() override
+    {
+        BaseClass::PerformLayout();
 
-  private:
-    SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pAppearanceSettings,
-     *m_pOnlineSettings, *m_pGamemodeSettings;
+        int wide, tall;
+        GetSize(wide, tall);
+
+        int totalWide = 0;
+        FOR_EACH_VEC(m_vecPanels, i)
+        {
+            totalWide += m_vecPanels[i]->GetWide();
+        }
+
+        totalWide += m_iSpacingX * (m_vecPanels.Count() - 1);
+
+        int x = (wide / 2) - (totalWide / 2);
+        FOR_EACH_VEC(m_vecPanels, i)
+        {
+            auto pPanel = m_vecPanels[i];
+
+            pPanel->SetPos(x, GetYPos() + (tall / 2) - (pPanel->GetTall() / 2));
+            x += m_vecPanels[i]->GetWide() + m_iSpacingX;
+        }
+    }
+
+private:
+    CUtlVector<PHandle> m_vecPanels;
+
+    int m_iSpacingX;
 };
 
-CMomentumSettingsDialog::CMomentumSettingsDialog(VPANEL parent) : BaseClass(nullptr, "CMomentumSettingsPanel")
+
+static CMomentumSettingsDialog *g_pSettingsDialog = nullptr;
+
+CMomentumSettingsDialog::CMomentumSettingsDialog() : BaseClass(nullptr, "SettingsDialog")
 {
-    SetParent(parent);
+    g_pSettingsDialog = this;
+
+    m_pCurrentSettingsPage = nullptr;
+
+    SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     SetProportional(true);
-    SetScheme("SourceScheme");
-    LoadControlSettings("resource/ui/SettingsPanel_Base.res");
+
+    const auto settingsScheme = scheme()->LoadSchemeFromFile("resource/SettingsScheme.res", "SettingsScheme");
+    SetScheme(settingsScheme ? settingsScheme : scheme()->GetDefaultScheme());
+
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
+    SetDeleteSelfOnClose(false);
 
-    SetMinimumSize(GetScaledVal(400), GetScaledVal(260));
-    SetSize(GetScaledVal(400), GetScaledVal(260));
-    SetOKButtonVisible(false);
-    SetCancelButtonVisible(false);
-    SetApplyButtonVisible(false);
+    SetCloseButtonVisible(true);
+    SetMaximizeButtonVisible(false);
+    SetMinimizeButtonVisible(false);
+    SetMenuButtonVisible(false);
+    SetMinimizeToSysTrayButtonVisible(false);
+
     SetTitleBarVisible(true);
     SetMenuButtonResponsive(false);
     SetSysMenu(nullptr);
     SetMinimizeButtonVisible(false);
     SetMaximizeButtonVisible(false);
     SetCloseButtonVisible(true);
-    SetMoveable(true);
+    SetMoveable(false);
+    SetSizeable(false);
+
+    m_pButtonGroup = new GroupPanel(this, "ButtonGroup");
+
+    m_pScrollableSettingsPanel = new ScrollableEditablePanel(this, nullptr, "CurrentSettings");
+
+    m_pInputButton = new Button(this, "InputButton", "#MOM_Settings_Input", this, "Input");
+    m_pInputButton->SetStaySelectedOnClick(true);
+    m_pButtonGroup->AddPanelToGroup(m_pInputButton);
+
+    m_pAudioButton = new Button(this, "AudioButton", "#MOM_Settings_Audio", this, "Audio");
+    m_pInputButton->SetStaySelectedOnClick(true);
+    m_pButtonGroup->AddPanelToGroup(m_pAudioButton);
+
+    m_pVideoButton = new Button(this, "VideoButton", "#MOM_Settings_Video", this, "Video");
+    m_pButtonGroup->AddPanelToGroup(m_pVideoButton);
+
+    m_pOnlineButton = new Button(this, "OnlineButton", "#MOM_Settings_Online", this, "Online");
+    m_pButtonGroup->AddPanelToGroup(m_pOnlineButton);
+
+    m_pGameplayButton = new Button(this, "GameplayButton", "#MOM_Settings_Gameplay", this, "Gameplay");
+    m_pButtonGroup->AddPanelToGroup(m_pGameplayButton);
+
+    m_pHUDButton = new Button(this, "HUDButton", "#MOM_Settings_HUD", this, "HUD");
+    m_pButtonGroup->AddPanelToGroup(m_pHUDButton);
+
+    LoadControlSettings("resource/ui/settings/SettingsDialog.res");
     SetVisible(false);
-    SetSizeable(true);
-    GetPropertySheet()->SetSmallTabs(true);
 
-    //Create the pages here
-    m_pControlsSettings = new GameplaySettingsPage(this);
-    m_pHudSettings = new HudSettingsPage(this);
-    m_pCompareSettings = new ComparisonsSettingsPage(this);
-    m_pAppearanceSettings = new AppearanceSettingsPage(this);
-    m_pOnlineSettings = new OnlineSettingsPage(this);
-    m_pGamemodeSettings = new GamemodeSettingsPage(this);
+    m_pInputPage = new InputSettingsPanel(m_pScrollableSettingsPanel, m_pInputButton);
+    m_pAudioPage = new AudioSettingsPanel(m_pScrollableSettingsPanel, m_pAudioButton);
+    m_pVideoPage = new VideoSettingsPanel(m_pScrollableSettingsPanel, m_pVideoButton);
+    m_pOnlinePage = new OnlineSettingsPanel(m_pScrollableSettingsPanel, m_pOnlineButton);
+    m_pGameplayPage = new GameplaySettingsPanel(m_pScrollableSettingsPanel, m_pGameplayButton);
+    m_pHUDPage = new HUDSettingsPanel(m_pScrollableSettingsPanel, m_pHUDButton);
 
-    //Note: we're adding the scroll panels here, because we want to be able to scroll.
-    AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gameplay");
-    AddPage(m_pHudSettings->GetScrollPanel(), "#MOM_Settings_Tab_HUD");
-    AddPage(m_pCompareSettings->GetScrollPanel(), "#MOM_Settings_Tab_Comparisons");
-    AddPage(m_pAppearanceSettings->GetScrollPanel(), "#MOM_Settings_Tab_Appearance");
-    AddPage(m_pOnlineSettings->GetScrollPanel(), "#MOM_Settings_Tab_Online");
-    AddPage(m_pGamemodeSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gamemodes");
+    SetActivePanel(m_pInputPage);
 }
 
 CMomentumSettingsDialog::~CMomentumSettingsDialog()
 {
+    g_pSettingsDialog = nullptr;
+}
+
+void CMomentumSettingsDialog::Init()
+{
+    if (g_pSettingsDialog)
+        return;
+
+    g_pSettingsDialog = new CMomentumSettingsDialog;
 }
 
 void CMomentumSettingsDialog::OnClose()
 {
-    BaseClass::OnClose();
+    if (g_pClientMode->GetViewportAnimationController())
+        g_pClientMode->GetViewportAnimationController()->CancelAllAnimations();
 
-    //Let the comparisons settings page/Replay model panel know so they can fade too
-    if (GetActivePage())
-        PostMessage(GetActivePage(), new KeyValues("OnMainDialogClosed"));
+    engine->ClientCmd_Unrestricted("exec userconfig.cfg\nhost_writeconfig\n");
+
+    BaseClass::OnClose();
 }
 
 void CMomentumSettingsDialog::Activate()
 {
     BaseClass::Activate();
 
-    MoveToCenterOfScreen();
-    //Let the comparisons settings page/replay model panel know so they can show back up
-    if (GetActivePage())
-        PostMessage(GetActivePage(), new KeyValues("OnMainDialogShow"));
-}
-
-class CMomentumSettingsPanelInterface : public IMomentumSettingsPanel
-{
-  private:
-    CMomentumSettingsDialog *settings_panel;
-
-  public:
-    CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
-    ~CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
-    void Create(VPANEL parent) OVERRIDE { settings_panel = new CMomentumSettingsDialog(parent); }
-    void Destroy() OVERRIDE
-    {
-        if (settings_panel)
-        {
-            settings_panel->SetParent(nullptr);
-            settings_panel->DeletePanel();
-        }
-        settings_panel = nullptr;
-    }
-    void Activate(void) OVERRIDE
-    {
-        if (settings_panel)
-        {
-            settings_panel->Activate();
-        }
-    }
-    void Close() OVERRIDE
-    {
-        if (settings_panel)
-        {
-            settings_panel->Close();
-        }
-    }
-};
-
-//Expose this interface to the DLL
-static CMomentumSettingsPanelInterface g_SettingsPanel;
-IMomentumSettingsPanel *momentum_settings = &g_SettingsPanel;
-
-CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n",
-              FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN)
-{
-    momentum_settings->Activate();
+    SetActivePanel(m_pInputPage);
 }
 
 void CMomentumSettingsDialog::OnThink()
@@ -160,4 +186,70 @@ void CMomentumSettingsDialog::OnReloadControls()
 
     if (g_pClientMode->GetViewportAnimationController())
         g_pClientMode->GetViewportAnimationController()->CancelAllAnimations();
+
+    SetActivePanel(m_pCurrentSettingsPage);
+}
+
+void CMomentumSettingsDialog::OnScreenSizeChanged(int iOldWide, int iOldTall)
+{
+    BaseClass::OnScreenSizeChanged(iOldWide, iOldTall);
+
+    PostMessage(this, new KeyValues("ReloadControls"), 0.2);
+}
+
+void CMomentumSettingsDialog::OnCommand(const char *command)
+{
+    if (FStrEq(command, "Input"))
+    {
+        SetActivePanel(m_pInputPage);
+    }
+    else if (FStrEq(command, "Audio"))
+    {
+        SetActivePanel(m_pAudioPage);
+    }
+    else if (FStrEq(command, "Video"))
+    {
+        SetActivePanel(m_pVideoPage);
+    }
+    else if (FStrEq(command, "Online"))
+    {
+        SetActivePanel(m_pOnlinePage);
+    }
+    else if (FStrEq(command, "Gameplay"))
+    {
+        SetActivePanel(m_pGameplayPage);
+    }
+    else if (FStrEq(command, "HUD"))
+    {
+        SetActivePanel(m_pHUDPage);
+    }
+    else
+    {
+        BaseClass::OnCommand(command);
+    }
+}
+
+void CMomentumSettingsDialog::SetActivePanel(SettingsPanel *pPanel)
+{
+    if (m_pCurrentSettingsPage && m_pCurrentSettingsPage != pPanel)
+    {
+        m_pCurrentSettingsPage->OnPageHide();
+        m_pCurrentSettingsPage->SetVisible(false);
+    }
+
+    m_pScrollableSettingsPanel->SetChild(pPanel);
+    pPanel->SetVisible(true);
+
+    m_pCurrentSettingsPage = pPanel;
+    m_pCurrentSettingsPage->OnPageShow();
+}
+
+CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN)
+{
+    if (!g_pSettingsDialog)
+    {
+        CMomentumSettingsDialog::Init();
+    }
+
+    g_pSettingsDialog->DoModal();
 }
