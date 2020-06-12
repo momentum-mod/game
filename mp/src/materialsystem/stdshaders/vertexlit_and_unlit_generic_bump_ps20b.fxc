@@ -124,10 +124,10 @@ struct PS_INPUT
 };
 
 // Calculate both types of Fog and lerp to get result
-float CalcPixelFogFactorConst( float fPixelFogType, const float4 fogParams, const float flEyePosZ, const float flWorldPosZ, const float flProjPosZ )
+float CalcPixelFogFactorConst( float fPixelFogType, const float4 fogParams, const float3 vEyePos, const float3 vWorldPos, const float flProjPosZ )
 {
-	float fRangeFog = CalcRangeFog( flProjPosZ, fogParams.x, fogParams.z, fogParams.w );
-	float fHeightFog = CalcWaterFogAlpha( fogParams.y, flEyePosZ, flWorldPosZ, flProjPosZ, fogParams.w );
+	float fRangeFog = CalcRangeFogFactorNonFixedFunction( vWorldPos, vEyePos, fogParams.z, fogParams.x, fogParams.w );
+	float fHeightFog = CalcWaterFogAlpha( fogParams.y, vEyePos.z, vWorldPos.z, flProjPosZ, fogParams.w );
 	return lerp( fRangeFog, fHeightFog, fPixelFogType );
 }
 
@@ -310,13 +310,13 @@ float4 main( PS_INPUT i ) : COLOR
 #endif
 
 	float3 result = diffuseComponent + specularLighting;
-
+	
 #if defined(SHADER_MODEL_PS_2_0)
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
 #else
-	float fogFactor = CalcPixelFogFactorConst( g_fPixelFogType, g_FogParams, g_EyePos.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactorConst( g_fPixelFogType, g_FogParams, g_EyePos.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
 #endif
-
+	
 #if defined( SHADER_MODEL_PS_2_0 )
 	#if WRITEWATERFOGTODESTALPHA && (PIXELFOGTYPE == PIXEL_FOG_TYPE_HEIGHT)
 		alpha = fogFactor;

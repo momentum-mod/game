@@ -183,7 +183,7 @@ float4 main(PS_INPUT i) : COLOR
 #endif // !FLASHLIGHT
 
 #if FLASHLIGHT
-    float fogFactor = CalcPixelFogFactor(PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos.z, i.projPos.z);
+    float fogFactor = CalcPixelFogFactor(PIXELFOGTYPE, g_FogParams, g_EyePos.xyz, i.worldPos.xyz, i.projPos.z);
 #else
     float fogFactor = 0.0f;
 #endif

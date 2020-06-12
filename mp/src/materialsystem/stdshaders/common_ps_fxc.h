@@ -233,7 +233,7 @@ float CalcRangeFog( const float flProjPosZ, const float flFogStartOverRange, con
 #endif
 }
 
-float CalcPixelFogFactor( int iPIXELFOGTYPE, const float4 fogParams, const float flEyePosZ, const float flWorldPosZ, const float flProjPosZ )
+float CalcPixelFogFactor( int iPIXELFOGTYPE, const float4 fogParams, const float3 vEyePos, const float3 vWorldPos, const float flProjPosZ )
 {
 	float retVal;
 	if ( iPIXELFOGTYPE == PIXEL_FOG_TYPE_NONE )
@@ -242,11 +242,15 @@ float CalcPixelFogFactor( int iPIXELFOGTYPE, const float4 fogParams, const float
 	}
 	if ( iPIXELFOGTYPE == PIXEL_FOG_TYPE_RANGE ) //range fog, or no fog depending on fog parameters
 	{
-		retVal = CalcRangeFog( flProjPosZ, fogParams.x, fogParams.z, fogParams.w );
+		// This is one only path that we go down for L4D.
+		float flFogMaxDensity = fogParams.z;
+		float flFogEndOverRange = fogParams.x;
+		float flFogOORange = fogParams.w;
+		retVal = CalcRangeFogFactorNonFixedFunction( vWorldPos, vEyePos, flFogMaxDensity, flFogEndOverRange, flFogOORange );
 	}
 	else if ( iPIXELFOGTYPE == PIXEL_FOG_TYPE_HEIGHT ) //height fog
 	{
-		retVal = CalcWaterFogAlpha( fogParams.y, flEyePosZ, flWorldPosZ, flProjPosZ, fogParams.w );
+		retVal = CalcWaterFogAlpha( fogParams.y, vEyePos.z, vWorldPos.z, flProjPosZ, fogParams.w );
 	}
 
 	return retVal;
@@ -260,23 +264,25 @@ float CalcPixelFogFactor( int iPIXELFOGTYPE, const float4 fogParams, const float
 
 float3 BlendPixelFog( const float3 vShaderColor, float pixelFogFactor, const float3 vFogColor, const int iPIXELFOGTYPE )
 {
+	float3 flRet = 0;
 	if( iPIXELFOGTYPE == PIXEL_FOG_TYPE_RANGE ) //either range fog or no fog depending on fog parameters and whether this is ps20 or ps2b
 	{
 #	if !(defined(SHADER_MODEL_PS_1_1) || defined(SHADER_MODEL_PS_1_4) || defined(SHADER_MODEL_PS_2_0)) //Minimum requirement of ps2b
 		pixelFogFactor = saturate( pixelFogFactor );
-		return lerp( vShaderColor.rgb, vFogColor.rgb, pixelFogFactor * pixelFogFactor ); //squaring the factor will get the middle range mixing closer to hardware fog
+		flRet = lerp( vShaderColor.rgb, vFogColor.rgb, pixelFogFactor * pixelFogFactor ); //squaring the factor will get the middle range mixing closer to hardware fog
 #	else
-		return vShaderColor;
+		flRet = vShaderColor;
 #	endif
 	}
 	else if( iPIXELFOGTYPE == PIXEL_FOG_TYPE_HEIGHT )
 	{
-		return lerp( vShaderColor.rgb, vFogColor.rgb, saturate( pixelFogFactor ) );
+		flRet = lerp( vShaderColor.rgb, vFogColor.rgb, saturate( pixelFogFactor ) );
 	}
 	else if( iPIXELFOGTYPE == PIXEL_FOG_TYPE_NONE )
 	{
-		return vShaderColor;
+		flRet = vShaderColor;
 	}
+	return flRet;
 }
 
 
