@@ -60,7 +60,7 @@ float4 main( PS_INPUT i ) : COLOR
 	float4 baseSample = tex2D( BaseTextureSampler, i.baseTexCoord );
 	result *= baseSample.rgb;									// Multiply by base map and diffuse
 
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos.z, i.projPos.z );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.xyz, i.worldPos.xyz, i.projPos.z );
 	return FinalOutput( float4( result, baseSample.a ), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR );
 }
 

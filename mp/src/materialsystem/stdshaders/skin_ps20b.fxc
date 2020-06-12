@@ -180,7 +180,7 @@ float4 main( PS_INPUT i ) : COLOR
 	baseColor = TextureCombine( baseColor, detailColor, DETAIL_BLEND_MODE, g_SelfIllumTint_and_DetailBlendFactor.w );
 #endif
 
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.z, vWorldPos.z, vProjPos.z );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.xyz, vWorldPos.xyz, vProjPos.z );
 
 	float3 vEyeDir = normalize(i.worldVertToEyeVectorXYZ_tangentSpaceVertToEyeVectorZ.xyz);
 	float3 vRimAmbientCubeColor = PixelShaderAmbientLight(vEyeDir, cAmbientCube);

@@ -84,7 +84,7 @@ float4 main( PS_INPUT i ) : COLOR
 {
 	float3 result;
 	
-	float pixelFogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
+	float pixelFogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
 
 #if FADEOUTONSILHOUETTE
 	//float blend = -i.projNormal.z;
