@@ -38,6 +38,17 @@ struct PostProcessParameters_t
 	}
 
 	float m_flParameters[ POST_PROCESS_PARAMETER_COUNT ];
+
+    bool operator !=(PostProcessParameters_t other)
+    {
+        for (int i = 0; i < POST_PROCESS_PARAMETER_COUNT; ++i)
+        {
+            if (m_flParameters[i] != other.m_flParameters[i])
+                return true;
+        }
+
+        return false;
+    }
 };
 
 #endif // POSTPROCESS_SHARED_H
