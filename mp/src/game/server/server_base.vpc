@@ -503,6 +503,8 @@ $Project
 		$File	"PointAngularVelocitySensor.cpp"
 		$File	"pointhurt.cpp"
 		$File	"pointteleport.cpp"
+		$File	"postprocesscontroller.cpp"
+		$File	"postprocesscontroller.h"
 		$File	"$SRCDIR\public\mathlib\polyhedron.h"
 		$File	"$SRCDIR\game\shared\positionwatcher.h"
 		$File	"$SRCDIR\game\shared\precache_register.cpp"
