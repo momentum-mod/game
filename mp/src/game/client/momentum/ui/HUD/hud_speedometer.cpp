@@ -38,6 +38,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     ListenForGameEvent("player_jumped");
     ListenForGameEvent("ramp_leave");
     ListenForGameEvent("ramp_board");
+    ListenForGameEvent("player_explosive_hit");
     
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
@@ -54,6 +55,9 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pVertSpeedoLabel = new SpeedometerLabel(this, "VertSpeedometer", SPEEDOMETER_COLORIZE_COMPARISON);
     m_pVertSpeedoLabel->SetSupportsSeparateComparison(false);
 
+    m_pExplosiveJumpVelLabel = new SpeedometerLabel(this, "ExplosiveJumpVelocity", SPEEDOMETER_COLORIZE_COMPARISON);
+    m_pExplosiveJumpVelLabel->SetFadeOutAnimation("FadeOutExplosiveJumpVel", &m_fExplosiveJumpVelAlpha);
+
     m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelocity", SPEEDOMETER_COLORIZE_COMPARISON);
     m_pLastJumpVelLabel->SetFadeOutAnimation("FadeOutLastJumpVel", &m_fLastJumpVelAlpha);
 
@@ -69,10 +73,11 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_Labels[0] = m_pAbsSpeedoLabel;
     m_Labels[1] = m_pHorizSpeedoLabel;
     m_Labels[2] = m_pVertSpeedoLabel;
-    m_Labels[3] = m_pLastJumpVelLabel;
-    m_Labels[4] = m_pRampBoardVelLabel;
-    m_Labels[5] = m_pRampLeaveVelLabel;
-    m_Labels[6] = m_pStageEnterExitVelLabel;
+    m_Labels[3] = m_pExplosiveJumpVelLabel;
+    m_Labels[4] = m_pLastJumpVelLabel;
+    m_Labels[5] = m_pRampBoardVelLabel;
+    m_Labels[6] = m_pRampLeaveVelLabel;
+    m_Labels[7] = m_pStageEnterExitVelLabel;
 
     ResetLabelOrder();
 
@@ -99,6 +104,12 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
     C_MomentumPlayer *pLocal = C_MomentumPlayer::GetLocalMomPlayer();
     if (!pLocal || !m_pRunEntData)
         return; 
+        
+    if (FStrEq(pEvent->GetName(), "player_explosive_hit"))
+    {
+        m_pExplosiveJumpVelLabel->Update(pEvent->GetFloat("speed"));
+        return;
+    }
 
     if (FStrEq(pEvent->GetName(), "player_jumped"))
     {
@@ -132,6 +143,7 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
     if (m_pRunEntData->m_bIsInZone && iCurrentZone == 1 && bEnter)
     {
         // disappear when entering start zone
+        m_fExplosiveJumpVelAlpha = 0.0f;
         m_fLastJumpVelAlpha = 0.0f;
         m_fStageVelAlpha = 0.0f;
         m_fRampBoardVelAlpha = 0.0f;

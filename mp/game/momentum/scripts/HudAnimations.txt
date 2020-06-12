@@ -73,6 +73,10 @@ event FadeOutMapFinishedPanel
 }
 
 // Speedometer Fadeouts
+event FadeOutExplosiveJumpVel
+{
+    Animate HudSpeedMeter ExplosiveJumpVelAlpha "0" Accel 10.0 0.75
+}
 event FadeOutLastJumpVel
 {
     Animate HudSpeedMeter LastJumpVelAlpha "0" Accel 3.0 0.75

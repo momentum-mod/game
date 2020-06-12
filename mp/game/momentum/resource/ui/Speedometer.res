@@ -52,6 +52,19 @@
         "auto_tall_tocontents" "1"
         "auto_wide_tocontents" "1"
     }
+    "ExplosiveJumpVelocity"
+    {
+        "ControlName"   "SpeedometerLabel"
+        "fieldName"	    "ExplosiveJumpVelocity"
+        "xpos"          "0"
+        "ypos"          "0"
+        "textAlignment" "center"
+        "font"          "HudNumbersExtremelySmall"
+        "FgColor"       "MOM.Speedometer.Normal"
+        "wrap"          "0"
+        "auto_tall_tocontents" "1"
+        "auto_wide_tocontents" "1"
+    }
     "LastJumpVelocity"
     {
         "ControlName"   "SpeedometerLabel"

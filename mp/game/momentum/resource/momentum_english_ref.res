@@ -378,6 +378,7 @@
         "MOM_Settings_Speedometer_Type_Absolute" "Absolute Speedometer"
         "MOM_Settings_Speedometer_Type_Horiz" "Horizontal Speedometer"
         "MOM_Settings_Speedometer_Type_Vert" "Vertical Speedometer"
+        "MOM_Settings_Speedometer_Type_ExplosiveJump" "Explosive Jump Velocity"
         "MOM_Settings_Speedometer_Type_LastJump" "Last Jump Velocity"
         "MOM_Settings_Speedometer_Type_RampBoard" "Ramp Board Velocity"
         "MOM_Settings_Speedometer_Type_RampLeave" "Ramp Leave Velocity"

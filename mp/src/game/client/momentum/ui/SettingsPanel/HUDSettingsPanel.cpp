@@ -32,6 +32,7 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Absolute", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Horiz", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_Vert", nullptr);
+    m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_ExplosiveJump", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_LastJump", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_RampBoard", nullptr);
     m_pSpeedometerType->AddItem("#MOM_Settings_Speedometer_Type_RampLeave", nullptr);
