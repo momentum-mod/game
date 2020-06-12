@@ -148,6 +148,8 @@ $Project
 		$File	"c_playerresource.cpp"
 		$File	"c_point_camera.cpp"
 		$File	"c_point_commentary_node.cpp"
+		$File	"c_postprocesscontroller.cpp"
+		$File	"c_postprocesscontroller.h"
 		$File	"c_props.cpp"
 		$File	"c_props.h"
 		$File	"c_ragdoll_manager.cpp"
