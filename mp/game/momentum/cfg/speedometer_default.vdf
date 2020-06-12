@@ -7,10 +7,11 @@
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
-            "4" "LastJumpVelocity"
-            "5" "RampBoardVelocity"
-            "6" "RampLeaveVelocity"
-            "7" "StageEnterExitVelocity"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -23,6 +24,10 @@
             "visible"  "0"
         }
         "VertSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "ExplosiveJumpVelocity"
         {
             "visible"  "0"
         }
@@ -59,10 +64,11 @@
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
-            "4" "LastJumpVelocity"
-            "5" "RampBoardVelocity"
-            "6" "RampLeaveVelocity"
-            "7" "StageEnterExitVelocity"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -75,6 +81,10 @@
             "visible"  "0"
         }
         "VertSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "ExplosiveJumpVelocity"
         {
             "visible"  "0"
         }
@@ -107,10 +117,11 @@
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
-            "4" "LastJumpVelocity"
-            "5" "RampBoardVelocity"
-            "6" "RampLeaveVelocity"
-            "7" "StageEnterExitVelocity"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -147,6 +158,12 @@
         {
             "visible"  "0"
         }
+        "ExplosiveJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
         "LastJumpVelocity"
         {
             "visible"  "0"
@@ -174,10 +191,11 @@
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
-            "4" "LastJumpVelocity"
-            "5" "RampBoardVelocity"
-            "6" "RampLeaveVelocity"
-            "7" "StageEnterExitVelocity"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -237,6 +255,12 @@
             }
             "units"    "0"
         }
+        "ExplosiveJumpVelocity"
+        {
+            "visible"  "1"
+            "colorize" "0"
+            "units"    "0"
+        }
         "LastJumpVelocity"
         {
             "visible"  "0"
@@ -264,10 +288,11 @@
             "1" "AbsSpeedometer"
             "2" "HorizSpeedometer"
             "3" "VertSpeedometer"
-            "4" "LastJumpVelocity"
-            "5" "RampBoardVelocity"
-            "6" "RampLeaveVelocity"
-            "7" "StageEnterExitVelocity"
+            "4" "ExplosiveJumpVelocity"
+            "5" "LastJumpVelocity"
+            "6" "RampBoardVelocity"
+            "7" "RampLeaveVelocity"
+            "8" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -280,6 +305,10 @@
             "visible"  "0"
         }
         "VertSpeedometer"
+        {
+            "visible"  "0"
+        }
+        "ExplosiveJumpVelocity"
         {
             "visible"  "0"
         }
