@@ -395,6 +395,8 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_nNumCrateHudHints, FIELD_INTEGER ),
 
+    DEFINE_FIELD( m_hPostProcessCtrl, FIELD_EHANDLE ),
+
 
 
 	// DEFINE_FIELD( m_nBodyPitchPoseParam, FIELD_INTEGER ),
@@ -577,6 +579,8 @@ CBasePlayer::CBasePlayer( )
 	m_flMovementTimeForUserCmdProcessingRemaining = 0.0f;
 
 	m_flLastObjectiveTime = -1.f;
+
+    m_hPostProcessCtrl.Set(NULL);
 }
 
 CBasePlayer::~CBasePlayer( )
@@ -4820,8 +4824,9 @@ void CBasePlayer::Spawn( void )
 
 	IncrementInterpolationFrame();
 
-	// Initialize the fog and postprocess controllers.
-	InitFogController();
+    // Initialize the fog and postprocess controllers.
+    InitFogController();
+    InitPostProcessController();
 
 	m_DmgTake		= 0;
 	m_DmgSave		= 0;
@@ -7087,6 +7092,9 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropArray	( SendPropEHandle( SENDINFO_ARRAY( m_hViewModel ) ), m_hViewModel ),
 		SendPropString	(SENDINFO(m_szLastPlaceName) ),
 
+        // Postprocess data
+        SendPropEHandle(SENDINFO(m_hPostProcessCtrl)),
+
 #if defined USES_ECON_ITEMS
 		SendPropUtlVector( SENDINFO_UTLVECTOR( m_hMyWearables ), MAX_WEARABLES_SENT_FROM_SERVER, SendPropEHandle( NULL, 0 ) ),
 #endif // USES_ECON_ITEMS
@@ -7761,6 +7769,37 @@ void CBasePlayer::InitFogController( void )
 {
 	// Setup with the default master controller.
 	m_Local.m_PlayerFog.m_hCtrl = FogSystem()->GetMasterFogController();
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InitPostProcessController(void)
+{
+    // Setup with the default master controller.
+    m_hPostProcessCtrl = PostProcessSystem()->GetMasterPostProcessController();
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InputSetPostProcessController(inputdata_t& inputdata)
+{
+    // Find the postprocess controller with the given name.
+    CPostProcessController* pController = NULL;
+    if (inputdata.value.FieldType() == FIELD_EHANDLE)
+    {
+        pController = dynamic_cast<CPostProcessController*>(inputdata.value.Entity().Get());
+    }
+    else
+    {
+        pController = dynamic_cast<CPostProcessController*>(gEntList.FindEntityByName(NULL, inputdata.value.String()));
+    }
+
+    if (pController)
+    {
+        m_hPostProcessCtrl.Set(pController);
+    }
 }
 
 //-----------------------------------------------------------------------------

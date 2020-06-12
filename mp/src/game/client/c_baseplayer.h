@@ -23,6 +23,7 @@
 #include "hintsystem.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "c_env_fog_controller.h"
+#include "c_postProcessController.h"
 #include "igameevents.h"
 #include "GameEventListener.h"
 
@@ -367,6 +368,8 @@ public:
 	void					UpdateFogController( void );
 	void					UpdateFogBlend( void );
 
+    C_PostProcessController* GetActivePostProcessController() const;
+
 	float					GetFOVTime( void ){ return m_flFOVTime; }
 
 	virtual void			OnAchievementAchieved( int iAchievement ) {}
@@ -599,6 +602,8 @@ private:
 	};
 	// One for left and one for right side of step
 	StepSoundCache_t		m_StepSoundCache[ 2 ];
+
+    CNetworkHandle(CPostProcessController, m_hPostProcessCtrl);	// active postprocessing controller
 
 public:
 
