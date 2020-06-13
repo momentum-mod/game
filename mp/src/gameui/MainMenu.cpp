@@ -63,23 +63,20 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     CreateMenu();
 
     m_pButtonLobby = new MainMenuButton(this);
-    m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
-    m_pButtonLobby->SetButtonDescription("");
+    m_pButtonLobby->SetText("#GameUI2_HostLobby");
     m_pButtonLobby->SetEngineCommand("mom_lobby_create");
     m_pButtonLobby->SetVisible(true);
     m_pButtonLobby->SetTextAlignment(RIGHT);
     m_pButtonLobby->SetButtonType(SHARED);
 
     m_pButtonInviteFriends = new MainMenuButton(this);
-    m_pButtonInviteFriends->SetButtonText("#GameUI2_InviteLobby");
-    m_pButtonInviteFriends->SetButtonDescription("");
+    m_pButtonInviteFriends->SetText("#GameUI2_InviteLobby");
     m_pButtonInviteFriends->SetEngineCommand("mom_lobby_invite");
     m_pButtonInviteFriends->SetTextAlignment(RIGHT);
     m_pButtonInviteFriends->SetButtonType(SHARED);
 
     m_pButtonSpectate = new MainMenuButton(this);
-    m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
-    m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
+    m_pButtonSpectate->SetText("#GameUI2_Spectate");
     m_pButtonSpectate->SetEngineCommand("mom_spectate");
     m_pButtonSpectate->SetPriority(90);
     m_pButtonSpectate->SetButtonType(IN_GAME);
@@ -164,28 +161,26 @@ void MainMenu::FireGameEvent(IGameEvent* event)
 {
     if (!Q_strcmp(event->GetName(), "lobby_leave"))
     {
-        m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
+        m_pButtonLobby->SetText("#GameUI2_HostLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_create");
         m_pButtonInviteFriends->SetVisible(false);
         m_pButtonSpectate->SetVisible(false);
     }
     else if (!Q_strcmp(event->GetName(), "lobby_join"))
     {
-        m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
+        m_pButtonLobby->SetText("#GameUI2_LeaveLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_leave");
         m_pButtonInviteFriends->SetVisible(true);
         m_pButtonSpectate->SetVisible(true);
     }
     else if (!Q_strcmp(event->GetName(), "spec_start"))
     {
-        m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
+        m_pButtonSpectate->SetText("#GameUI2_Respawn");
         m_pButtonSpectate->SetEngineCommand("mom_spectate_stop");
     }
     else if (!Q_strcmp(event->GetName(), "spec_stop"))
     {
-        m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
+        m_pButtonSpectate->SetText("#GameUI2_Spectate");
         m_pButtonSpectate->SetEngineCommand("mom_spectate");
     }
 }
@@ -194,16 +189,16 @@ void MainMenu::CreateMenu()
 {
     m_pButtons.PurgeAndDeleteElements();
 
-    KeyValues *datafile = new KeyValues("MainMenu");
+    KeyValuesAD datafile("MainMenu");
     datafile->UsesEscapeSequences(true);
     if (datafile->LoadFromFile(g_pFullFileSystem, "resource/mainmenu.res", "GAME"))
     {
         FOR_EACH_SUBKEY(datafile, dat)
         {
             MainMenuButton *button = new MainMenuButton(this);
+            button->SetName(dat->GetName());
             button->SetPriority(dat->GetInt("priority", 1));
-            button->SetButtonText(dat->GetString("text", "no text"));
-            button->SetButtonDescription(dat->GetString("description", "no description"));
+            button->SetText(dat->GetString("text", "no text"));
             button->SetBlank(dat->GetBool("blank"));
 
             button->SetCommand(dat->GetString("command", nullptr));
@@ -211,15 +206,17 @@ void MainMenu::CreateMenu()
 
             const char *specifics = dat->GetString("specifics", "shared");
             if (!Q_strcasecmp(specifics, "ingame"))
+            {
                 button->SetButtonType(IN_GAME);
+            }
             else if (!Q_strcasecmp(specifics, "mainmenu"))
+            {
                 button->SetButtonType(MAIN_MENU);
+            }
 
             m_pButtons.AddToTail(button);
         }
     }
-
-    datafile->deleteThis();
 }
 
 int32 __cdecl ButtonsPositionBottom(MainMenuButton *const *s1, MainMenuButton *const *s2)
@@ -250,9 +247,13 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
     if (!m_bLogoText)
     {
         if (m_pLogoImage)
+        {
             m_pLogoImage->EvictImage();
+        }
         else
+        {
             m_pLogoImage = new ImagePanel(this, "GameLogo");
+        }
 
         m_pLogoImage->SetShouldScaleImage(true);
         m_pLogoImage->SetImage(pScheme->GetResourceString("MainMenu.Logo.Image"));

@@ -36,7 +36,6 @@ class MainMenuButton : public vgui::Button
     virtual void DrawButton();
     virtual void DrawButton_Blur();
     virtual void DrawText();
-    virtual void DrawDescription();
     void Paint() OVERRIDE;
     virtual void Animations();
 
@@ -47,8 +46,6 @@ class MainMenuButton : public vgui::Button
     void OnMousePressed(vgui::MouseCode code) OVERRIDE;
 
     virtual void SetButtonText(const char *text);
-    virtual void SetButtonDescription(const char *description);
-
     int32 GetWidth() const { return m_iWidth; }
     int32 GetHeight() const { return m_iHeight; }
 
@@ -68,12 +65,10 @@ class MainMenuButton : public vgui::Button
   private:
 
     void CalculateTextX(int textOffset, int textWide, int &out);
-    int CalculateDescOffsetX(int descWide);
 
     ButtonState m_sButtonState;
     ButtonState m_sButtonStateOld;
     wchar_t *m_ButtonText;
-    wchar_t *m_ButtonDescription;
     int32 m_iPriority;
     int32 m_iTextPositionX;
     int32 m_iTextPositionY;
@@ -85,7 +80,6 @@ class MainMenuButton : public vgui::Button
     CPanelAnimationVar(Color, m_cBackground, "m_cBackground", "0 0 0 0");
     CPanelAnimationVar(Color, m_cBackgroundOutline, "m_cBackgroundOutline", "0 0 0 0");
     CPanelAnimationVar(Color, m_cText, "m_cText", "0 0 0 0");
-    CPanelAnimationVar(Color, m_cDescription, "m_cDescription", "0 0 0 0");
     CPanelAnimationVar(Color, m_cBackgroundBlurAlpha, "m_cBackgroundBlurAlpha", "0 0 0 0");
 
     int m_iWidthOut;
@@ -100,14 +94,6 @@ class MainMenuButton : public vgui::Button
 
     int m_iTextOffsetX;
     int m_iTextOffsetY;
-
-    int m_iDescriptionOffsetX;
-    int m_iDescriptionOffsetY;
-
-    bool m_bDescriptionHideOut;
-    bool m_bDescriptionHideOver;
-    bool m_bDescriptionHidePressed;
-    bool m_bDescriptionHideReleased;
 
     // Animation durations (in seconds)
     float m_fAnimationWidth;
@@ -131,18 +117,12 @@ class MainMenuButton : public vgui::Button
     Color m_cTextPressed;
     Color m_cTextReleased;
 
-    Color m_cDescriptionOut;
-    Color m_cDescriptionOver;
-    Color m_cDescriptionPressed;
-    Color m_cDescriptionReleased;
-
     bool m_bBackgroundBlurOut;
     bool m_bBackgroundBlurOver;
     bool m_bBackgroundBlurPressed;
     bool m_bBackgroundBlurReleased;
 
     vgui::HFont m_fTextFont;
-    vgui::HFont m_fDescriptionFont;
 
     bool m_bIsBlank;
     TextAlignment m_iTextAlignment;
