@@ -2451,7 +2451,15 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
 
     m_BgColor = GetSchemeColor("ListPanel.BgColor", pScheme);
 	SetBgColor(m_BgColor);
-	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+
+	if (!GetBorderOverrideName()[0])
+	{
+		auto pBorder = pScheme->GetBorder("ListPanel.Border");
+		if (!pBorder)
+			pBorder = pScheme->GetBorder("ButtonDepressedBorder");
+
+		SetBorder(pBorder);
+	}
 
 	m_pLabel->SetBgColor(m_BgColor);
 
