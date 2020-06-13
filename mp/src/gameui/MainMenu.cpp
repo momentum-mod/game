@@ -345,19 +345,6 @@ void MainMenu::DrawMainMenu()
                 GameUI().GetViewport().y - (m_iButtonsOffsetY + m_pButtons[i]->GetHeight()));
         }
     }
-
-    const Vector2D vp = GameUI().GetViewport();
-
-    m_pButtonLobby->SetPos(vp.x - m_pButtonLobby->GetWidth() - m_iButtonsOffsetX, 
-        vp.y - m_pButtonLobby->GetTall() - m_iButtonsOffsetY);
-
-    m_pButtonInviteFriends->SetPos(vp.x - m_pButtonInviteFriends->GetWidth() - m_iButtonsOffsetX, 
-        m_pButtonLobby->GetYPos() - m_pButtonInviteFriends->GetTall() - m_iButtonsSpace);
-
-    m_pButtonSpectate->SetPos(vp.x - m_pButtonSpectate->GetWidth() - m_iButtonsOffsetX, 
-        m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_iButtonsSpace);
-
-    m_pVersionLabel->SetPos(vp.x - m_pVersionLabel->GetWide() - 4, 2);
 }
 
 void MainMenu::DrawLogo()
@@ -449,6 +436,25 @@ void MainMenu::Paint()
 
     DrawMainMenu();
     DrawLogo();
+}
+
+void MainMenu::PerformLayout()
+{
+    BaseClass::PerformLayout();
+
+    int screenWide, screenTall;
+    surface()->GetScreenSize(screenWide, screenTall);
+
+    m_pButtonLobby->SetPos(screenWide - m_pButtonLobby->GetWidth() - m_iButtonsOffsetX,
+                           screenTall - m_pButtonLobby->GetTall() - m_iButtonsOffsetY);
+
+    m_pButtonInviteFriends->SetPos(screenWide - m_pButtonInviteFriends->GetWidth() - m_iButtonsOffsetX,
+        m_pButtonLobby->GetYPos() - m_pButtonInviteFriends->GetTall() - m_iButtonsSpace);
+
+    m_pButtonSpectate->SetPos(screenWide - m_pButtonSpectate->GetWidth() - m_iButtonsOffsetX,
+        m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_iButtonsSpace);
+
+    m_pVersionLabel->SetPos(screenWide - m_pVersionLabel->GetWide() - GetScaledVal(4), GetScaledVal(2));
 }
 
 void MainMenu::Activate()
