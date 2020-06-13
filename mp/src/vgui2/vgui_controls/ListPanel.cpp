@@ -414,6 +414,7 @@ DECLARE_BUILD_FACTORY( ListPanel );
 //-----------------------------------------------------------------------------
 ListPanel::ListPanel(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
+	m_bAutoTallHeaderToFont = false;
 	m_bIgnoreDoubleClick = false;
 	m_bMultiselectEnabled = true;
 	m_iEditModeItemID = 0;
@@ -510,6 +511,7 @@ void ListPanel::SetImageList(ImageList *imageList, bool deleteImageListWhenDone)
 void ListPanel::SetColumnHeaderHeight( int height )
 {
 	m_iHeaderHeight = height;
+	InvalidateLayout();
 }
 
 //-----------------------------------------------------------------------------
@@ -573,7 +575,7 @@ void ListPanel::AddColumnHeader(int index, const char *columnName, const char *c
 	// create the column header button
 	Button *pButton = SETUP_PANEL(new ColumnButton(this, columnName, columnText));  // the cell rendering mucks with the button visibility during the solvetraverse loop,
 																					//so force applyschemesettings to make sure its run
-	pButton->SetSize(width, 24);
+	pButton->SetSize(width, m_iHeaderHeight);
 	pButton->AddActionSignalTarget(this);
 	pButton->SetContentAlignment(Label::a_west);
 	pButton->SetTextInset(5, 0);
@@ -1723,13 +1725,18 @@ void ListPanel::PerformLayout()
 		m_lastBarWidth = buttonMaxXPos;
 	}
 
+	int iMaxHeaderTall = 0;
 	// Make sure nothing is smaller than minwidth to start with or else we'll get into trouble below.
 	for ( int i=0; i < nColumns; i++ )
 	{
 		column_t &column = m_ColumnsData[m_CurrentColumns[i]];
-		Panel *header = column.m_pHeader;
+		auto header = column.m_pHeader;
 		if ( header->GetWide() < column.m_iMinWidth )
 			header->SetWide( column.m_iMinWidth );
+
+		int dummy, headerContentTall;
+		header->GetContentSize(dummy, headerContentTall);
+		iMaxHeaderTall = max(iMaxHeaderTall, headerContentTall + GetScaledVal(3));
 	}
 
 	// Place headers as is
@@ -1780,7 +1787,8 @@ void ListPanel::PerformLayout()
 			hWide = column.m_iMaxWidth;
 		}
 
-		header->SetSize(hWide, m_vbar->GetWide());
+		int headerHeight = m_bAutoTallHeaderToFont ? iMaxHeaderTall : m_iHeaderHeight;
+		header->SetSize(hWide, headerHeight);
 		x += hWide;
 
 		// set the resizers
@@ -1795,7 +1803,7 @@ void ListPanel::PerformLayout()
 		}
 		sizer->MoveToFront();
 		sizer->SetPos(x - 4, 0);
-		sizer->SetSize(8, m_vbar->GetWide());
+		sizer->SetSize(8, headerHeight);
 	}
 
 	// setup edit mode
