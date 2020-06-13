@@ -31,6 +31,7 @@ class MainMenu : public vgui::EditablePanel, public IGameEventListener2
     void DrawLogo();
     void CheckVersion();
     void Paint() OVERRIDE;
+    void PerformLayout() override;
 
     void Activate();
 
