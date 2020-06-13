@@ -190,13 +190,6 @@ void CMomentumSettingsDialog::OnReloadControls()
     SetActivePanel(m_pCurrentSettingsPage);
 }
 
-void CMomentumSettingsDialog::OnScreenSizeChanged(int iOldWide, int iOldTall)
-{
-    BaseClass::OnScreenSizeChanged(iOldWide, iOldTall);
-
-    PostMessage(this, new KeyValues("ReloadControls"), 0.2);
-}
-
 void CMomentumSettingsDialog::OnCommand(const char *command)
 {
     if (FStrEq(command, "Input"))

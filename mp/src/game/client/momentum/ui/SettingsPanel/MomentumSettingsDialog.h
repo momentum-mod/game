@@ -20,7 +20,6 @@ class CMomentumSettingsDialog : public vgui::Frame
 protected:
     void OnThink() override;
     void OnReloadControls() override;
-    void OnScreenSizeChanged(int iOldWide, int iOldTall) override;
 
     void OnCommand(const char *command) override;
 

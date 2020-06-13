@@ -121,9 +121,6 @@ class CHudViewport : public CBaseViewport
     {
         BaseClass::OnScreenSizeChanged(iOldWide, iOldTall);
 
-        // Force a hud_reloadcontrols
-        OnReloadControls();
-
         static_cast<ClientModeMOMNormal*>(g_pClientMode)->SetupPointers();
     }
 };

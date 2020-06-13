@@ -133,6 +133,7 @@ protected:
 	virtual void OnSizeChanged(int wide, int tall);
 	virtual void OnClose();
     virtual void OnReloadControls() OVERRIDE;
+	void OnScreenSizeChanged(int oldwide, int oldtall) override;
 
 	// user configuration settings
 	// this is used for any control details the user wants saved between sessions
