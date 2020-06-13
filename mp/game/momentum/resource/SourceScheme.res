@@ -147,11 +147,11 @@ Scheme
 
         ListPanel.TextColor					"White"
         ListPanel.TextBgColor				"Blank"
-        ListPanel.BgColor					"MOM.Panel.Bg"
+        ListPanel.BgColor					"MomGreydientStep4"
         ListPanel.SelectedTextColor			"White"
         ListPanel.SelectedBgColor			"MomentumBlue"
         ListPanel.OutOfFocusSelectedTextColor	"Gray"
-        ListPanel.SelectedOutOfFocusBgColor	"132 183 241 100"
+        ListPanel.SelectedOutOfFocusBgColor	"MomentumBlueHO"
         ListPanel.EmptyListInfoTextColor	"White"
 
         Menu.TextColor					"White"
@@ -170,9 +170,9 @@ Scheme
 
         PropertyDialog.ButtonFont   "Default"
 
-        PropertySheet.TextColor			"10 10 10 200"
-        PropertySheet.SelectedTextColor	"10 10 10 255"
-        PropertySheet.SelectedBgColor	"10 10 10 255"
+        PropertySheet.TextColor			"MomGreydientStep8"
+        PropertySheet.SelectedTextColor	"White"
+        PropertySheet.SelectedBgColor	"MomentumBlue"
         PropertySheet.TransitionEffectTime	"0.25"	// time to change from one tab to another
         PropertySheet.BgColor "0 0 0 255"
         PropertySheet.TabFontSmall "DefaultSmall"
@@ -246,18 +246,6 @@ Scheme
         // fonts listed later in the order will only be used if they fulfill a range not already filled
         // if a font fails to load then the subsequent fonts will replace
         // fonts are used in order that they are listed
-        "MapListFont"
-        {
-            "1"
-            {
-                "name" "BigNoodleTitling"
-                "tall" "30"
-                "weight" "0"
-                "antialias" "1"
-                "custom" "1"
-            }
-        }
-        
         "DebugFixed"
         {
             "1"
@@ -469,6 +457,37 @@ Scheme
                 "name" "Noto Sans"
                 "tall" "22"
                 "antialias" "1"
+            }
+        }
+
+        "Titling20"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "20"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Titling22"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "22"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Titling24"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "24"
+                "antialias" "1"
+                "dropshadow" "1"
             }
         }
         
@@ -1010,10 +1029,12 @@ Scheme
         ComboBoxBorder	DepressedBorder
         MenuBorder		FrameBorder
         BrowserBorder	DepressedBorder
-        PropertySheetBorder	RaisedBorder
+        PropertySheetBorder	FrameBorder
         ButtonKeyFocusBorder FrameBorder // this is the border used for default buttons (the button that gets pressed when you hit enter)
         ButtonDepressedBorder FrameBorder
         CheckButtonBorder FrameBorder
+        ListPanelColumnButtonBorder FrameBorder
+        PropertySheetBorder FrameBorder
 
         FrameBorder
         {
@@ -1422,7 +1443,7 @@ Scheme
             {
                 "1"
                 {
-                    "color" "Border.Subtle"
+                    "color" "MomentumBlue"
                     "offset" "0 0"
                 }
             }
@@ -1431,7 +1452,7 @@ Scheme
             {
                 "1"
                 {
-                    "color" "Border.Subtle"
+                    "color" "MomentumBlue"
                     "offset" "0 0"
                 }
             }
@@ -1440,7 +1461,7 @@ Scheme
             {
                 "1"
                 {
-                    "color" "Border.Subtle"
+                    "color" "MomentumBlue"
                     "offset" "0 0"
                 }
             }
