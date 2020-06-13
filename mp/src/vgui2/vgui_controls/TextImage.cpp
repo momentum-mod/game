@@ -867,9 +867,14 @@ void TextImage::SetAllCaps( bool bAllCaps )
 
 void TextImage::ResizeImageToContentMaxWidth( int nMaxWidth )
 {
-	SetDrawWidth(nMaxWidth);
-
 	ResizeImageToContent();
+
+	int drawWidth;
+	GetDrawWidth(drawWidth);
+	if (drawWidth > nMaxWidth)
+	{
+	    SetDrawWidth(nMaxWidth);
+	}
 }
 
 //-----------------------------------------------------------------------------

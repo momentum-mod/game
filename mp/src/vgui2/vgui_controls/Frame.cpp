@@ -1555,9 +1555,9 @@ void Frame::PaintBackground()
 
 		if (m_bCenterTitle)
 		{
-			int contentWide, contentTall;
+			int contentWide;
 			_title->ResizeImageToContentMaxWidth(wide);
-		    _title->GetContentSize(contentWide, contentTall);
+		    _title->GetDrawWidth(contentWide);
 
 			_title->SetPos((wide - contentWide) / 2, nTitleY);
 		}
