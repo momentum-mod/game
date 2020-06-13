@@ -52,11 +52,13 @@ class CMapSelectorDialog : public vgui::Frame
 
   public:
     // Construction/destruction
-    CMapSelectorDialog(vgui::VPANEL parent);
-    ~CMapSelectorDialog(void);
+    CMapSelectorDialog();
+    ~CMapSelectorDialog();
+
+    static void Init();
 
     // displays the dialog, moves it into focus, updates if it has to
-    void Open(void);
+    void Open();
 
     void OnClose() OVERRIDE;
 
@@ -188,5 +190,4 @@ protected:
     uint32 m_uStartMapWhenReady;
 };
 
-// singleton accessor
-extern CMapSelectorDialog &MapSelectorDialog();
+extern CMapSelectorDialog *g_pMapSelector;

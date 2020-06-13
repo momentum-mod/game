@@ -91,7 +91,7 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
 //-----------------------------------------------------------------------------
 CDialogMapInfo::~CDialogMapInfo()
 {
-    MapSelectorDialog().RemoveMapInfoDialog(m_pMapData->m_uID);
+    g_pMapSelector->RemoveMapInfoDialog(m_pMapData->m_uID);
     m_pMapData = nullptr;
 }
 

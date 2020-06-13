@@ -52,16 +52,16 @@ void CMapListPanel::OnMouseReleased(MouseCode code)
                 if (col == HEADER_MAP_IN_LIBRARY)
                 {
                     if (pMap->GetInt(KEYNAME_MAP_IN_LIBRARY) == INDX_MAP_IN_LIBRARY)
-                        MapSelectorDialog().OnRemoveMapFromLibrary(mapID);
+                        g_pMapSelector->OnRemoveMapFromLibrary(mapID);
                     else
-                        MapSelectorDialog().OnAddMapToLibrary(mapID);
+                        g_pMapSelector->OnAddMapToLibrary(mapID);
                 }
                 else if (col == HEADER_MAP_IN_FAVORITES)
                 {
                     if (pMap->GetInt(KEYNAME_MAP_IN_FAVORITES) == INDX_MAP_IN_FAVORITES)
-                        MapSelectorDialog().OnRemoveMapFromFavorites(mapID);
+                        g_pMapSelector->OnRemoveMapFromFavorites(mapID);
                     else
-                        MapSelectorDialog().OnAddMapToFavorites(mapID);
+                        g_pMapSelector->OnAddMapToFavorites(mapID);
                 }
             }
         }
@@ -73,7 +73,7 @@ Panel* CMapListPanel::GetCellRenderer(int itemID, int column)
     // Find the itemID
     uint32 mapID = GetItemUserData(itemID);
 
-    MapDownloadProgress *pOverridePanel = MapSelectorDialog().GetDownloadProgressPanel(mapID);
+    MapDownloadProgress *pOverridePanel = g_pMapSelector->GetDownloadProgressPanel(mapID);
 
     if (pOverridePanel && column == HEADER_MAP_NAME)
     {

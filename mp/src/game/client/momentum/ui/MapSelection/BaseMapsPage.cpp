@@ -103,7 +103,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->CalculateAutoResize(pWide, pTall);
 
     // Images
-    m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
+    m_pMapList->SetImageList(g_pMapSelector->GetImageList(), false);
 
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "",
@@ -235,7 +235,7 @@ void CBaseMapsPage::SetListCellColors(MapData *pData, KeyValues *pKvInto)
 //-----------------------------------------------------------------------------
 // Purpose: loads filter settings (from disk) from the keyvalues
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::LoadFilters() { MapSelectorDialog().LoadTabFilterData(GetName()); }
+void CBaseMapsPage::LoadFilters() { g_pMapSelector->LoadTabFilterData(GetName()); }
 
 //-----------------------------------------------------------------------------
 // Purpose: applies only the game filter to the current list
@@ -365,16 +365,16 @@ uint32 CBaseMapsPage::TryStartMapFromRow(int itemID)
     {
         if (pMapData->m_bMapFileNeedsUpdate)
         {
-            MapSelectorDialog().OnStartMapDownload(iMapID);
+            g_pMapSelector->OnStartMapDownload(iMapID);
         }
         else
         {
-            MapSelectorDialog().OnMapStart(iMapID);
+            g_pMapSelector->OnMapStart(iMapID);
         }
     }
     else
     {
-        MapSelectorDialog().OnAddMapToLibrary(iMapID);
+        g_pMapSelector->OnAddMapToLibrary(iMapID);
     }
 
     return iMapID;
@@ -394,14 +394,14 @@ void CBaseMapsPage::OnMapListDataUpdate(int mapID)
     else
     {
         // Otherwise we need to add it
-        const auto pData = MapSelectorDialog().GetMapListDataByID(mapID);
+        const auto pData = g_pMapSelector->GetMapListDataByID(mapID);
         if (pData)
         {
             pMapDisplay->m_iListID = m_pMapList->AddItem(pData->m_pKv, mapID, false, false, false);
         }
         else
         {
-            MapSelectorDialog().CreateMapListData(pMapDisplay->m_pMap);
+            g_pMapSelector->CreateMapListData(pMapDisplay->m_pMap);
         }
     }
 }
@@ -454,9 +454,9 @@ bool CBaseMapsPage::OnGameListEnterPressed()
     return TryStartMapFromRow(m_pMapList->GetSelectedItem(0)) != 0;
 }
 
-int CBaseMapsPage::GetFilteredItemsCount() 
-{ 
-    return m_pMapList->GetItemCount(); 
+int CBaseMapsPage::GetFilteredItemsCount()
+{
+    return m_pMapList->GetItemCount();
 }
 
 void CBaseMapsPage::StartRandomMap()
@@ -466,7 +466,7 @@ void CBaseMapsPage::StartRandomMap()
     if (iVisibleItemsCount == 0)
         return;
 
-    if (MapSelectorDialog().GetMapToStart() > 0)
+    if (g_pMapSelector->GetMapToStart() > 0)
         return;
 
     const auto iListID = m_pMapList->GetItemIDFromRow(RandomInt(0, iVisibleItemsCount - 1));
@@ -474,7 +474,7 @@ void CBaseMapsPage::StartRandomMap()
     if (iMapID == 0)
         return;
 
-    MapSelectorDialog().SetMapToStart(iMapID);
+    g_pMapSelector->SetMapToStart(iMapID);
 
     TryStartMapFromRow(iListID);
 }
@@ -486,7 +486,7 @@ int CBaseMapsPage::GetSelectedItemsCount() { return m_pMapList->GetSelectedItems
 
 MapFilters_t CBaseMapsPage::GetFilters()
 {
-    KeyValues *pKv = MapSelectorDialog().GetTabFilterData(GetName());
+    KeyValues *pKv = g_pMapSelector->GetTabFilterData(GetName());
     MapFilters_t filters;
     filters.FromKV(pKv);
     return filters;
@@ -547,6 +547,6 @@ void CBaseMapsPage::OnOpenContextMenu(int itemID)
         return;
 
     // Activate context menu
-    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu();
+    CMapContextMenu *menu = g_pMapSelector->GetContextMenu();
     menu->ShowMenu(pMapData);
 }
