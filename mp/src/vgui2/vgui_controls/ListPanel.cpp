@@ -52,7 +52,7 @@ void ColumnButton::ApplySchemeSettings(IScheme *pScheme)
 {
 	Button::ApplySchemeSettings(pScheme);
 
-	SetFont(pScheme->GetFont("DefaultSmall", IsProportional()));
+	SetFont(GetSchemeFont(pScheme, nullptr, "ListPanelHeader.Font", "DefaultSmall"));
     const auto pBorder = pScheme->GetBorder("ListPanelColumnButtonBorder");
     if (pBorder)
         SetDefaultBorder(pBorder);
