@@ -884,14 +884,11 @@ void PropertySheet::ApplySchemeSettings(IScheme *pScheme)
 	}
 
 	SetBorder(pBorder);
-	m_flPageTransitionEffectTime = atof(pScheme->GetResourceString("PropertySheet.TransitionEffectTime"));
 
-    const char *pTabFontName = pScheme->GetResourceString(m_bSmallTabs ? "PropertySheet.TabFontSmall" : "PropertySheet.TabFont");
-
-    if (!pTabFontName || !pTabFontName[0])
-	    pTabFontName = m_bSmallTabs ? "DefaultVerySmall" : "Default";
+	m_flPageTransitionEffectTime = Q_atof(pScheme->GetResourceString("PropertySheet.TransitionEffectTime"));
     
-    m_tabFont = pScheme->GetFont(pTabFontName, IsProportional());
+    m_tabFont = GetSchemeFont(pScheme, nullptr, m_bSmallTabs ? "PropertySheet.TabFontSmall" : "PropertySheet.TabFont",
+		                                        m_bSmallTabs ? "DefaultVerySmall" : "Default");
 
     for (int i = 0; i < m_PageTabs.Count(); i++)
     {
@@ -901,26 +898,8 @@ void PropertySheet::ApplySchemeSettings(IScheme *pScheme)
         m_PageTabs[i]->SetFont(m_tabFont);
     }
 
-
-	//=============================================================================
-	// HPE_BEGIN:
-	// [tj] Here, we used to use a single size variable and overwrite it when we scaled.
-	//		This led to problems when we changes resolutions, so now we recalcuate the absolute 
-	//      size from the relative size each time (based on proportionality)
-	//=============================================================================
-	if ( IsProportional() )
-	{
-		m_iTabHeight = scheme()->GetProportionalScaledValueEx( GetScheme(), m_iSpecifiedTabHeight );
-		m_iTabHeightSmall = scheme()->GetProportionalScaledValueEx( GetScheme(), m_iSpecifiedTabHeightSmall );
-	}
-	else
-	{
-		m_iTabHeight = m_iSpecifiedTabHeight;
-		m_iTabHeightSmall = m_iSpecifiedTabHeightSmall;
-	}
-	//=============================================================================
-	// HPE_END
-	//=============================================================================
+	m_iTabHeight = GetScaledVal(m_iSpecifiedTabHeight);
+	m_iTabHeightSmall = GetScaledVal(m_iSpecifiedTabHeightSmall);
 }
 
 //-----------------------------------------------------------------------------
