@@ -263,6 +263,8 @@ public:
     virtual void SetRowHeight(int newHeight) { m_iRowHeight = newHeight; }
     virtual int GetRowHeight() { return m_iRowHeight; }
 
+	void SetAutoTallHeaderToFont(bool bTall) { m_bAutoTallHeaderToFont = bTall; }
+
 private:
 	// Cleans up allocations associated with a particular item
 	void CleanupItem( FastSortListPanelItem *data );
@@ -373,6 +375,8 @@ private:
 	void ResetColumnHeaderCommands();
 
     CUtlString m_FontName;
+
+	bool m_bAutoTallHeaderToFont;
 };
 
 }
