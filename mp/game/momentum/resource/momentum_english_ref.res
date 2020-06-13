@@ -252,7 +252,7 @@
         "MOM_MF_Strafes" "Strafes: %s1"
 
         // Settings Panel
-        "MOM_Settings_Title" "Momentum Settings"
+        "MOM_Settings_Title" "Settings"
         
         // Input
         "MOM_Settings_Input" "Input"
@@ -573,41 +573,18 @@
         "GameUI2_HostLobby" "Host lobby"
         "GameUI2_LeaveLobby" "Leave lobby"
         "GameUI2_InviteLobby" "Invite friends"
+        "GameUI2_Respawn" "Respawn"
 
         // Main menu
         "GameUI2_LogoRight" "Mod"
-
         "GameUI2_ResumeGame" "RESUME GAME"
-        "GameUI2_ResumeGameDescription" "Back into the action"
-
         "GameUI2_Spectate" "SPECTATE"
-        "GameUI2_SpectateDescription" "Start spectating"
-
+        "GameUI2_Play" "PLAY"
         "GameUI2_SelectMap" "SELECT MAP"
-        "GameUI2_SelectMapDescription" "Choose a map to play"
-
-        "GameUI2_Options" "OPTIONS"
-        "GameUI2_OptionsDescription" "Setup audio, video, mouse and other settings"
-
-        "GameUI2_MomSettings" "MOMENTUM SETTINGS"
-        "GameUI2_MomSettingsDescription" "Change Momentum-related settings"
-
+        "GameUI2_Settings" "SETTINGS"
         "GameUI2_Quit2Menu" "QUIT TO MAIN MENU"
-        "GameUI2_Quit2MenuDescription" "Return to the main menu"
-
         "GameUI2_Credits" "CREDITS"
-        "GameUI2_CreditsDescription" "See who all helped make this game"
-
         "GameUI2_Quit" "QUIT"
-        "GameUI2_QuitDescription" "Close the game"
-
-        "GameUI2_SendFeedback" "SEND FEEDBACK"
-        "GameUI2_SendFeedbackDescription" "Send feedback to the team"
-
-        "GameUI2_Respawn" "Respawn"
-        "GameUI2_RespawnDescription" "Spawn back in game"
-
-        "GameUI2_TitleOptions" "Options"
 
         // Game tips
         // Specific
@@ -657,7 +634,7 @@
         "MOM_Tip_Surf_2" "Tip: The smoother your mouse movement, the better your momentum."
         "MOM_Tip_Surf_3" "Tip: The faster you’re going, the slower you need to turn in order to preserve speed."
         "MOM_Tip_Surf_4" "Tip: Avoid crouching, especially at high speeds, as it can negatively affect your ability to air strafe."
-        "MOM_Tip_Surf_5" "Tip: Having trouble completing spins? Try assigning keys to turn left/right in the Momentum Settings menu." // Pyrt
+        "MOM_Tip_Surf_5" "Tip: Having trouble completing spins? Try assigning keys to turn left/right in the Settings menu." // Pyrt
         "MOM_Tip_Surf_6" "Tip: You can maintain more speed by 'boarding' ramps more smoothly. Try not to smack into ramps!" // Imbellis
         "MOM_Tip_Surf_7" "Tip: Landing as high as you can on ramps, without losing speed to do so, helps maintain high speeds." // Bela
         "MOM_Tip_Surf_8" "Tip: Be sure to practice your Bhop skills. Bhop trains your strafing, which helps you navigate in the air. Having a better strafe ability will make you a better surfer!" // Garanimal
