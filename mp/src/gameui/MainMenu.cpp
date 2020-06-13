@@ -4,8 +4,6 @@
 #include "MainMenuButton.h"
 
 #include "vgui/ISurface.h"
-#include "vgui/IVGui.h"
-#include "vgui/IInput.h"
 
 #include "filesystem.h"
 #include "KeyValues.h"
@@ -82,8 +80,9 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonSpectate->SetButtonType(IN_GAME);
     m_pButtonSpectate->SetContentAlignment(Label::a_east);
 
-    m_pVersionLabel = new Button(this, "VersionLabel", CFmtStr("v%s", MOM_CURRENT_VERSION).Access(), this, "ShowVersion");
+    m_pVersionLabel = new Button(this, "VersionLabel", "v" MOM_CURRENT_VERSION, this, "ShowVersion");
     m_pVersionLabel->SetPaintBackgroundEnabled(false);
+    m_pVersionLabel->SetPaintBorderEnabled(false);
     m_pVersionLabel->SetAutoWide(true);
     m_pVersionLabel->SetAutoTall(true);
     // MOM_TODO: LoadControlSettings("resource/ui/MainMenuLayout.res");
@@ -91,14 +90,12 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     CheckVersion();
 
     MakeReadyForUse();
+    InvalidateLayout(true);
     RequestFocus();
 }
 
 MainMenu::~MainMenu()
 {
-    ivgui()->RemoveTickSignal(GetVPanel());
-
-    // Stop listening for events
     if (gameeventmanager)
     {
         gameeventmanager->RemoveListener(this);
@@ -183,6 +180,8 @@ void MainMenu::FireGameEvent(IGameEvent* event)
         m_pButtonSpectate->SetText("#GameUI2_Spectate");
         m_pButtonSpectate->SetEngineCommand("mom_spectate");
     }
+
+    InvalidateLayout();
 }
 
 void MainMenu::CreateMenu()
@@ -229,8 +228,6 @@ int32 __cdecl ButtonsPositionTop(MainMenuButton *const *s1, MainMenuButton *cons
     return ((*s1)->GetPriority() < (*s2)->GetPriority());
 }
 
-#define SC(val) scheme()->GetProportionalScaledValueEx(GetScheme(), val)
-
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
@@ -261,17 +258,13 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
         m_iLogoHeight = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height")));
         // Size and pos are handled in Paint()
     }
-    m_bLogoPlayerCount = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.PlayerCount"));
-    m_fLogoPlayerCount = pScheme->GetFont("MainMenu.Logo.PlayerCount.Font", true);
-    m_cLogoPlayerCount = pScheme->GetColor("MainMenu.Logo.PlayerCount.Color", Color(255, 255, 255, 255));
 
     m_fLogoFont = pScheme->GetFont("MainMenu.Logo.Font", true);
 
-    m_hFontVersionLabel = pScheme->GetFont("MainMenu.VersionLabel.Font", true);
-    if (m_pVersionLabel)
+    const auto hVersionLabelFont = pScheme->GetFont("MainMenu.VersionLabel.Font", true);
+    if (m_pVersionLabel && hVersionLabelFont)
     {
-        m_pVersionLabel->SetFont(m_hFontVersionLabel);
-        m_pVersionLabel->InvalidateLayout(true, true);
+        m_pVersionLabel->SetFont(hVersionLabelFont);
     }
 
     Q_strncpy(m_pszMenuOpenSound, pScheme->GetResourceString("MainMenu.Sound.Open"), sizeof(m_pszMenuOpenSound));
@@ -400,15 +393,6 @@ void MainMenu::DrawLogo()
         m_pLogoImage->SetPos(logoX, logoY);
 
         m_pLogoImage->SetSize(m_iLogoWidth, m_iLogoHeight);
-
-        /*if (m_bLogoPlayerCount)
-        {
-            surface()->DrawSetTextColor(m_cLogoPlayerCount);
-            surface()->DrawSetTextFont(m_fLogoPlayerCount);
-            surface()->DrawSetTextPos(m_pLogoImage->GetXPos(), m_pLogoImage->GetTall() + m_pLogoImage->GetYPos());
-            const wchar_t* currentTotalPlayers = g_pMomentumSteamHelper->GetCurrentTotalPlayersAsString();
-            surface()->DrawPrintText(currentTotalPlayers, wcslen(currentTotalPlayers));
-        }*/
     }
 }
 
