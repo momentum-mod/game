@@ -5108,7 +5108,7 @@ bool Panel::HasUserConfigSettings()
 //-----------------------------------------------------------------------------
 void Panel::InternalInvalidateLayout()
 {
-	InvalidateLayout(false, false);
+	InvalidateLayout(true, true);
 }
 
 //-----------------------------------------------------------------------------
