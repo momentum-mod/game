@@ -1802,7 +1802,6 @@ void ListPanel::PerformLayout()
 	if ( m_hEditModePanel.Get() )
 	{
 		m_iTableStartX = 0; 
-		m_iTableStartY = m_vbar->GetWide();
 
 		int nTotalRows = m_VisibleItems.Count();
 		int nRowsPerPage = GetRowsPerPage();
@@ -1831,6 +1830,8 @@ void ListPanel::PerformLayout()
 
 				if (!header->IsVisible())
 					continue;
+
+				m_iTableStartY = header->GetTall();
 
 				int headerWide = header->GetWide();
 
@@ -1879,8 +1880,7 @@ void ListPanel::Paint()
 	int panelWide, tall;
   	GetSize( panelWide, tall );
 
-	m_iTableStartX = 0; 
-	m_iTableStartY = m_vbar->GetWide();
+	m_iTableStartX = 0;
 
 	int nTotalRows = m_VisibleItems.Count();
 	int nRowsPerPage = GetRowsPerPage();
@@ -1918,6 +1918,8 @@ void ListPanel::Paint()
 
 			if (!header->IsVisible())
 				continue;
+
+			m_iTableStartY = header->GetTall();
 
 			int colWide = header->GetWide();
 
