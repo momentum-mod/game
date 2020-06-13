@@ -126,13 +126,11 @@ inline void VGui_CreateMomentumPanels()
 {
     VPANEL gameMenu = enginevgui->GetPanel(PANEL_GAMEUIDLL);
     mapselector->Create(gameMenu);
-    changelogpanel->Create(gameMenu);
 }
 
 inline void VGui_DestroyMomentumPanels()
 {
     mapselector->Destroy();
-    changelogpanel->Destroy();
     g_pMessageBox->DiscardMessageboxes();
 }
 
@@ -190,6 +188,7 @@ static void VGui_OneTimeInit()
     g_pMaterialSystem->AddModeChangeCallBack( &VGui_VideoMode_AdjustForModeChange );
 
 	CMomentumSettingsDialog::Init();
+	CChangelogPanel::Init();
 }
 
 bool VGui_Startup( CreateInterfaceFn appSystemFactory )
