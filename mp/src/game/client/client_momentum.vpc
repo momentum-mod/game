@@ -173,7 +173,6 @@ $Project "Client (Momentum)"
                 
                 $Folder "Changelog"
                 {
-                    $File   "momentum\ui\IChangelogPanel.h"
                     $File   "momentum\ui\ChangelogPanel.cpp"
                     $File   "momentum\ui\ChangelogPanel.h"
                 }

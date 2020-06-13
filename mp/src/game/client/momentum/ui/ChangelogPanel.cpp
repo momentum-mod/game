@@ -4,20 +4,22 @@
 #include "mom_shareddefs.h"
 #include "vgui_controls/RichText.h"
 #include "vgui/ILocalize.h"
-#include "vgui/ISystem.h"
 #include "fmtstr.h"
+#include "ienginevgui.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogPanel")
+static CChangelogPanel *g_pChangelogPanel = nullptr;
+
+CChangelogPanel::CChangelogPanel() : BaseClass(nullptr, "ChangelogPanel")
 {
     V_memset(m_cOnlineVersion, 0, sizeof(m_cOnlineVersion));
     m_pwOnlineChangelog = nullptr;
 
     SetProportional(true);
-    SetParent(parent);
+    SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     SetTitle("#MOM_ChangeLog", false);
     m_pChangeLog = new RichText(this, "ChangeLog");
 
@@ -43,20 +45,22 @@ CChangelogPanel::~CChangelogPanel()
     free(m_pwOnlineChangelog);
 }
 
+void CChangelogPanel::Init()
+{
+    g_pChangelogPanel = new CChangelogPanel;
+}
+
 void CChangelogPanel::SetChangelogText(const char* pChangelogText)
 {
-    if (m_pChangeLog)
+    if (m_pwOnlineChangelog)
     {
-        if (m_pwOnlineChangelog)
-        {
-            free(m_pwOnlineChangelog);
-            m_pwOnlineChangelog = nullptr;
-        }
-
-        g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelogText, &m_pwOnlineChangelog);
-
-        m_pChangeLog->SetText(m_pwOnlineChangelog);
+        free(m_pwOnlineChangelog);
+        m_pwOnlineChangelog = nullptr;
     }
+
+    g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelogText, &m_pwOnlineChangelog);
+
+    m_pChangeLog->SetText(m_pwOnlineChangelog);
 }
 
 void CChangelogPanel::ApplySchemeSettings(IScheme* pScheme)
@@ -131,17 +135,6 @@ void CChangelogPanel::ChangelogCallback(HTTPRequestCompleted_t* pParam, bool bIO
     SteamHTTP()->ReleaseHTTPRequest(pParam->m_hRequest);
 }
 
-
-CChangelogInterface::CChangelogInterface()
-{
-    pPanel = nullptr;
-}
-
-void CChangelogInterface::Create(vgui::VPANEL parent)
-{
-    pPanel = new CChangelogPanel(parent);
-}
-
 CON_COMMAND(mom_version, "Prints mod current installed version\n")
 {
     Log("Momentum Mod v%s\n", MOM_CURRENT_VERSION);
@@ -149,9 +142,5 @@ CON_COMMAND(mom_version, "Prints mod current installed version\n")
 
 CON_COMMAND(mom_show_changelog, "Shows the changelog for the mod.\n")
 {
-    changelogpanel->Activate();
+    g_pChangelogPanel->Activate();
 }
-
-// Interface this class to the rest of the DLL
-static CChangelogInterface g_Changelog;
-IChangelogPanel *changelogpanel = &g_Changelog;
