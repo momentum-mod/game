@@ -96,9 +96,6 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     // Init UI
     m_pMapList = new CMapListPanel(this, "MapList");
-    m_pMapList->SetAllowUserModificationOfColumns(true);
-    m_pMapList->SetMultiselectEnabled(false);
-    m_pMapList->SetShouldCenterEmptyListText(true);
     m_pMapList->SetAutoResize(PIN_TOPLEFT, AUTORESIZE_DOWNANDRIGHT, 0, 0, 0, 0);
     m_pMapList->CalculateAutoResize(pWide, pTall);
 
@@ -107,31 +104,40 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "",
-								GetScaledVal(50), GetScaledVal(50), GetScaledVal(50),
-                                ListPanel::COLUMN_IMAGE| ListPanel::COLUMN_IMAGE_SIZETOFIT);
+        GetScaledVal(50), GetScaledVal(50), GetScaledVal(50),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE),
-                                GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+        GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE),
-                                GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+        GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps",
-								GetScaledVal(100), GetScaledVal(50), GetScaledVal(1000),
-                                ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
+        GetScaledVal(100), GetScaledVal(50), GetScaledVal(1000),
+        ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout",
-								GetScaledVal(30), GetScaledVal(30), GetScaledVal(30),
-								ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
-								ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+        GetScaledVal(45), GetScaledVal(45), GetScaledVal(60),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
+        ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty",
-                                GetScaledVal(20), GetScaledVal(20), GetScaledVal(20), 0);
+        GetScaledVal(30), GetScaledVal(30), GetScaledVal(45), 0);
+
     m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord",
-								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+        GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+
     m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_PERSONAL_BEST, "#MOM_PersonalBest",
-								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+        GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate",
-                                GetScaledVal(65), 0, GetScaledVal(100), 0);
+        GetScaledVal(65), 0, GetScaledVal(100), 0);
+
     m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed",
-                                GetScaledVal(1), GetScaledVal(1), 9001, 0);
+        GetScaledVal(1), GetScaledVal(1), 9001, 0);
 
     // Images happen in ApplySchemeSettings
 

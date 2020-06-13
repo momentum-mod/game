@@ -21,6 +21,10 @@ CMapListPanel::CMapListPanel(CBaseMapsPage *pOuter, const char *pName) : BaseCla
     m_pOuter = pOuter;
     SetRowHeight(GetScaledVal(28));
     SetRowHeightOnFontChange(false);
+    SetShouldCenterEmptyListText(true);
+    SetAllowUserModificationOfColumns(true);
+    SetMultiselectEnabled(false);
+    SetAutoTallHeaderToFont(true);
 }
 
 //-----------------------------------------------------------------------------
