@@ -11,8 +11,7 @@
 
 using namespace vgui;
 
-MainMenuButton::MainMenuButton(Panel *parent) : BaseClass(parent, "", "", parent, ""),
-    m_ButtonText(nullptr), m_ButtonDescription(nullptr)
+MainMenuButton::MainMenuButton(Panel *parent) : BaseClass(parent, "", "", parent, "")
 {
     SetProportional(true);
     m_bIsBlank = false;
@@ -38,17 +37,6 @@ void MainMenuButton::SetButtonText(const char *text)
     }
 
     GameUI().GetLocalizedString(text, &m_ButtonText);
-}
-
-void MainMenuButton::SetButtonDescription(const char *description)
-{
-    if (m_ButtonDescription)
-    {
-        free(m_ButtonDescription);
-        m_ButtonDescription = nullptr;
-    }
-
-    GameUI().GetLocalizedString(description, &m_ButtonDescription);
 }
 
 void MainMenuButton::SetCommand(const char* pCmd)
@@ -89,14 +77,6 @@ void MainMenuButton::ApplySchemeSettings(IScheme *pScheme)
     m_iTextOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetX")));
     m_iTextOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetY")));
 
-    m_iDescriptionOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetX")));
-    m_iDescriptionOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetY")));
-
-    m_bDescriptionHideOut = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Out"));
-    m_bDescriptionHideOver = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Over"));
-    m_bDescriptionHidePressed = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Pressed"));
-    m_bDescriptionHideReleased = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Released"));
-
     m_fAnimationWidth = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Width"));
     m_fAnimationHeight = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Height"));
     m_fAnimationBackground = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Background"));
@@ -118,11 +98,6 @@ void MainMenuButton::ApplySchemeSettings(IScheme *pScheme)
     m_cTextPressed = GetSchemeColor("MainMenu.Button.Text.Pressed", pScheme);
     m_cTextReleased = GetSchemeColor("MainMenu.Button.Text.Released", pScheme);
 
-    m_cDescription = m_cDescriptionOut = GetSchemeColor("MainMenu.Button.Description.Out", pScheme);
-    m_cDescriptionOver = GetSchemeColor("MainMenu.Button.Description.Over", pScheme);
-    m_cDescriptionPressed = GetSchemeColor("MainMenu.Button.Description.Pressed", pScheme);
-    m_cDescriptionReleased = GetSchemeColor("MainMenu.Button.Description.Released", pScheme);
-
     m_cBackgroundBlurAlpha = Color(0, 0, 0, 0);
     m_bBackgroundBlurOut = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Out"));
     m_bBackgroundBlurOver = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Over"));
@@ -130,7 +105,6 @@ void MainMenuButton::ApplySchemeSettings(IScheme *pScheme)
     m_bBackgroundBlurReleased = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Released"));
 
     m_fTextFont = pScheme->GetFont("MainMenu.Button.Text.Font", true);
-    m_fDescriptionFont = pScheme->GetFont("MainMenu.Button.Description.Font", true);
 
     m_sButtonState = m_sButtonStateOld = Out;
 }
@@ -152,8 +126,6 @@ void MainMenuButton::Animations()
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextOut, 0.0f, m_fAnimationText,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOut, 0.0f,
-                                                   m_fAnimationDescription, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(
                 this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOut ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0),
                 0.0f, m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -170,8 +142,6 @@ void MainMenuButton::Animations()
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextOver, 0.0f, m_fAnimationText,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOver, 0.0f,
-                                                   m_fAnimationDescription, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(
                 this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOver ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0),
                 0.0f, m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -188,8 +158,6 @@ void MainMenuButton::Animations()
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextPressed, 0.0f, m_fAnimationText,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionPressed, 0.0f,
-                                                   m_fAnimationDescription, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(
                 this, "m_cBackgroundBlurAlpha",
                 m_bBackgroundBlurPressed ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground,
@@ -207,8 +175,6 @@ void MainMenuButton::Animations()
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextReleased, 0.0f, m_fAnimationText,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionReleased, 0.0f,
-                                                   m_fAnimationDescription, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(
                 this, "m_cBackgroundBlurAlpha",
                 m_bBackgroundBlurReleased ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground,
@@ -226,8 +192,6 @@ void MainMenuButton::Animations()
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextOut, 0.0f, m_fAnimationText,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOut, 0.0f,
-                                                   m_fAnimationDescription, AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(
                 this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOut ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0),
                 0.0f, m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -283,29 +247,6 @@ void MainMenuButton::CalculateTextX(int textOffset, int textWide, int &out)
     }
 }
 
-int MainMenuButton::CalculateDescOffsetX(int descWide)
-{
-    int toReturn;
-    int descOffset = m_iDescriptionOffsetX;
-    switch (m_iTextAlignment)
-    {
-    default:
-    case LEFT:
-        toReturn = m_iTextPositionX + descOffset;
-        break;
-    case CENTER:
-        toReturn = descOffset;//Doesn't matter for center
-        break;
-    case RIGHT:
-        toReturn = descWide <= m_iTextSizeX ? 
-            (m_iTextSizeX - descWide + descOffset) : // Shift off the difference so we line up with the text's start
-            m_iWidth - (m_iTextPositionX + m_iTextSizeX) + descOffset; // Shift our end to match the end of the main text
-        break;
-    }
-
-    return toReturn;
-}
-
 void MainMenuButton::DrawText()
 {
     surface()->DrawSetTextColor(m_cText);
@@ -319,26 +260,6 @@ void MainMenuButton::DrawText()
     surface()->DrawPrintText(m_ButtonText, Q_wcslen(m_ButtonText));
 }
 
-void MainMenuButton::DrawDescription()
-{
-    if ((m_sButtonState == Out && m_bDescriptionHideOut) ||
-        (m_sButtonState == Over && m_bDescriptionHideOver) ||
-        (m_sButtonState == Pressed && m_bDescriptionHidePressed) ||
-        (m_sButtonState == Released && m_bDescriptionHideReleased))
-        return;
-
-    surface()->DrawSetTextColor(m_cDescription);
-    surface()->DrawSetTextFont(m_fDescriptionFont);
-    int descWide, descTall;
-    surface()->GetTextSize(m_fDescriptionFont, m_ButtonDescription, descWide, descTall);
-    int offsetX = CalculateDescOffsetX(descWide);
-    int descriptionX;
-    CalculateTextX(offsetX, descWide, descriptionX);
-
-    surface()->DrawSetTextPos(descriptionX, m_iTextPositionY + m_iTextSizeY + m_iDescriptionOffsetY);
-    surface()->DrawPrintText(m_ButtonDescription, Q_wcslen(m_ButtonDescription));
-}
-
 void MainMenuButton::Paint()
 {
     if (m_bIsBlank)
@@ -348,7 +269,6 @@ void MainMenuButton::Paint()
 
     DrawButton();
     DrawText();
-    DrawDescription();
 }
 
 void MainMenuButton::OnCursorExited()
