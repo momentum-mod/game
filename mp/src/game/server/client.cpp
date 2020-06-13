@@ -552,7 +552,8 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
-	bool bAllowed = (sAllowPointCommand == eAllowAlways || sAllowPointCommand == eAllowWhitelist);
+	bool bAllowed = (sAllowPointCommand == eAllowAlways || sAllowPointCommand == eAllowWhitelist)
+                    || FStrEq(STRING(gpGlobals->mapname), "credits");
 
     if (!bAllowed)
     {

@@ -237,7 +237,8 @@ void CMomentumGameRules::RunPointServerCommandWhitelisted(const char *pCmd)
 static char* const g_szWhitelistedClientCmds[] = {
     "r_screenoverlay",
     "play",
-    "playgamesound"
+    "playgamesound",
+    "disconnect",    // for credits
 };
 
 void CMomentumGameRules::RunPointClientCommandWhitelisted(edict_t* pClient, const char* pCmd)
