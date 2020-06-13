@@ -115,9 +115,9 @@ void MapFilterPanel::LoadFilterSettings(KeyValues *pTabFilters)
 void MapFilterPanel::UpdateFilterSettings(bool bApply /* = true*/)
 {
     // copy filter settings into filter file
-    KeyValues *filter = MapSelectorDialog().GetCurrentTabFilterData();
+    KeyValues *filter = g_pMapSelector->GetCurrentTabFilterData();
     m_Filters.ToKV(filter);
-    MapSelectorDialog().SaveUserData();
+    g_pMapSelector->SaveUserData();
 
     if (bApply)
         ApplyFilters();
@@ -125,7 +125,7 @@ void MapFilterPanel::UpdateFilterSettings(bool bApply /* = true*/)
 
 void MapFilterPanel::ApplyFilters()
 {
-    MapSelectorDialog().ApplyFiltersToCurrentTab(m_Filters);
+    g_pMapSelector->ApplyFiltersToCurrentTab(m_Filters);
 
     ResetFeelingLucky();
 }
@@ -137,10 +137,10 @@ void MapFilterPanel::ResetFilters()
 
 void MapFilterPanel::ResetFeelingLucky()
 {
-    m_pFeelingLuckyButton->SetEnabled(MapSelectorDialog().GetMapToStart() == 0 && MapSelectorDialog().GetFilteredItemsCount() > 0);
+    m_pFeelingLuckyButton->SetEnabled(g_pMapSelector->GetMapToStart() == 0 && g_pMapSelector->GetFilteredItemsCount() > 0);
 }
 
-void MapFilterPanel::OnCommand(const char* command)
+void MapFilterPanel::OnCommand(const char *command)
 {
     if (FStrEq(command, "ApplyFilters"))
     {
@@ -159,7 +159,7 @@ void MapFilterPanel::OnCommand(const char* command)
     else if (FStrEq(command, "FeelingLucky"))
     {
         m_pFeelingLuckyButton->SetEnabled(false);
-        MapSelectorDialog().StartRandomMapFromCurrentTab();
+        g_pMapSelector->StartRandomMapFromCurrentTab();
     }
     else
     {

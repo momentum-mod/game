@@ -6,6 +6,7 @@
 #include "LibraryMaps.h"
 #include "BrowseMaps.h"
 #include "FavoriteMaps.h"
+#include "ienginevgui.h"
 #include "MapContextMenu.h"
 #include "MapInfoDialog.h"
 #include "MapFilterPanel.h"
@@ -27,12 +28,7 @@ using namespace vgui;
 
 extern ConVar mom_map_download_cancel_confirm;
 
-static CMapSelectorDialog *s_MapDlg = nullptr;
-
-CMapSelectorDialog &MapSelectorDialog()
-{
-    return *s_MapDlg;
-}
+CMapSelectorDialog *g_pMapSelector = nullptr;
 
 MapListData::MapListData(): m_pMapData(nullptr), m_pKv(nullptr), m_iThumbnailImageIndx(INDX_MAP_THUMBNAIL_UNKNOWN), m_pImage(nullptr)
 {
@@ -44,22 +40,25 @@ MapListData::~MapListData()
         m_pKv->deleteThis();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
-CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
+CON_COMMAND_F(ShowMapSelectionPanel, "Shows MapSelectorPanel", FCVAR_CLIENTDLL | FCVAR_HIDDEN)
 {
+    g_pMapSelector->Open();
+};
+
+CMapSelectorDialog::CMapSelectorDialog() : Frame(nullptr, "CMapSelectorDialog")
+{
+    g_pMapSelector = this;
+
     SetDefLessFunc(m_mapMapListData);
     SetDefLessFunc(m_mapMapDownloads);
     SetDefLessFunc(m_mapCancelConfirmDlgs);
     SetDefLessFunc(m_mapMapInfoDialogs);
     SetDefLessFunc(m_mapOverwriteConfirmDlgs);
 
-    SetParent(parent);
+    SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
     SetSize(GetScaledVal(600), GetScaledVal(300));
-    s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
     m_uStartMapWhenReady = 0;
@@ -154,6 +153,11 @@ CMapSelectorDialog::~CMapSelectorDialog()
     g_pModuleComms->RemoveListener("map_download_size", m_iDownloadSizeIndx);
     g_pModuleComms->RemoveListener("map_download_progress", m_iDownloadProgressIndx);
     g_pModuleComms->RemoveListener("map_download_end", m_iDownloadEndIndx);
+}
+
+void CMapSelectorDialog::Init()
+{
+    g_pMapSelector = new CMapSelectorDialog;
 }
 
 //-----------------------------------------------------------------------------

@@ -56,10 +56,10 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
             {
                 // Check to see if we should download
                 if (pMapData->m_bMapFileNeedsUpdate &&
-                    (mom_map_download_auto.GetBool() || MapSelectorDialog().GetMapToStart() == pMapData->m_uID) &&
-                    !MapSelectorDialog().IsMapDownloading(id))
+                    (mom_map_download_auto.GetBool() || g_pMapSelector->GetMapToStart() == pMapData->m_uID) &&
+                    !g_pMapSelector->IsMapDownloading(id))
                 {
-                    MapSelectorDialog().OnStartMapDownload(id);
+                    g_pMapSelector->OnStartMapDownload(id);
                 }
             }
             else
