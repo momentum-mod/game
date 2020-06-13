@@ -17,13 +17,6 @@ enum ButtonType
     IN_GAME
 };
 
-enum TextAlignment
-{
-    LEFT,
-    CENTER,
-    RIGHT
-};
-
 class MainMenuButton : public vgui::Button
 {
     DECLARE_CLASS_SIMPLE(MainMenuButton, vgui::Button);
@@ -33,9 +26,7 @@ class MainMenuButton : public vgui::Button
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnThink() OVERRIDE;
-    virtual void DrawButton();
     virtual void DrawButton_Blur();
-    virtual void DrawText();
     void Paint() OVERRIDE;
     virtual void Animations();
 
@@ -45,7 +36,6 @@ class MainMenuButton : public vgui::Button
     void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
     void OnMousePressed(vgui::MouseCode code) OVERRIDE;
 
-    virtual void SetButtonText(const char *text);
     int32 GetWidth() const { return m_iWidth; }
     int32 GetHeight() const { return m_iHeight; }
 
@@ -55,7 +45,6 @@ class MainMenuButton : public vgui::Button
     virtual void SetBlank(bool blank) { m_bIsBlank = blank; }
     bool IsBlank() const { return m_bIsBlank; }
 
-    virtual void SetTextAlignment(TextAlignment alignment) { m_iTextAlignment = alignment; }
     virtual void SetButtonType(ButtonType type) { m_nType = type; }
     virtual ButtonType GetButtonType() const { return m_nType; }
 
@@ -64,11 +53,8 @@ class MainMenuButton : public vgui::Button
 
   private:
 
-    void CalculateTextX(int textOffset, int textWide, int &out);
-
     ButtonState m_sButtonState;
     ButtonState m_sButtonStateOld;
-    wchar_t *m_ButtonText;
     int32 m_iPriority;
     int32 m_iTextPositionX;
     int32 m_iTextPositionY;
@@ -117,14 +103,6 @@ class MainMenuButton : public vgui::Button
     Color m_cTextPressed;
     Color m_cTextReleased;
 
-    bool m_bBackgroundBlurOut;
-    bool m_bBackgroundBlurOver;
-    bool m_bBackgroundBlurPressed;
-    bool m_bBackgroundBlurReleased;
-
-    vgui::HFont m_fTextFont;
-
     bool m_bIsBlank;
-    TextAlignment m_iTextAlignment;
     ButtonType m_nType;
 };

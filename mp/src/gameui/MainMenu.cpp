@@ -66,13 +66,13 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonLobby->SetText("#GameUI2_HostLobby");
     m_pButtonLobby->SetEngineCommand("mom_lobby_create");
     m_pButtonLobby->SetVisible(true);
-    m_pButtonLobby->SetTextAlignment(RIGHT);
+    m_pButtonLobby->SetContentAlignment(Label::a_east);
     m_pButtonLobby->SetButtonType(SHARED);
 
     m_pButtonInviteFriends = new MainMenuButton(this);
     m_pButtonInviteFriends->SetText("#GameUI2_InviteLobby");
     m_pButtonInviteFriends->SetEngineCommand("mom_lobby_invite");
-    m_pButtonInviteFriends->SetTextAlignment(RIGHT);
+    m_pButtonInviteFriends->SetContentAlignment(Label::a_east);
     m_pButtonInviteFriends->SetButtonType(SHARED);
 
     m_pButtonSpectate = new MainMenuButton(this);
@@ -80,7 +80,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonSpectate->SetEngineCommand("mom_spectate");
     m_pButtonSpectate->SetPriority(90);
     m_pButtonSpectate->SetButtonType(IN_GAME);
-    m_pButtonSpectate->SetTextAlignment(RIGHT);
+    m_pButtonSpectate->SetContentAlignment(Label::a_east);
 
     m_pVersionLabel = new Button(this, "VersionLabel", CFmtStr("v%s", MOM_CURRENT_VERSION).Access(), this, "ShowVersion");
     m_pVersionLabel->SetPaintBackgroundEnabled(false);
@@ -235,11 +235,11 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_iButtonsSpace = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.Space")));
-    m_iButtonsOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetX")));
-    m_iButtonsOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetY")));
-    m_iLogoOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetX")));
-    m_iLogoOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetY")));
+    m_iButtonsSpace = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.Space")));
+    m_iButtonsOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetX")));
+    m_iButtonsOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetY")));
+    m_iLogoOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetX")));
+    m_iLogoOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetY")));
     m_cLogoLeft = GetSchemeColor("MainMenu.Logo.Left", pScheme);
     m_cLogoRight = GetSchemeColor("MainMenu.Logo.Right", pScheme);
     m_bLogoAttachToMenu = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.AttachToMenu"));
@@ -257,8 +257,8 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 
         m_pLogoImage->SetShouldScaleImage(true);
         m_pLogoImage->SetImage(pScheme->GetResourceString("MainMenu.Logo.Image"));
-        m_iLogoWidth = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width")));
-        m_iLogoHeight = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height")));
+        m_iLogoWidth = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width")));
+        m_iLogoHeight = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height")));
         // Size and pos are handled in Paint()
     }
     m_bLogoPlayerCount = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.PlayerCount"));
