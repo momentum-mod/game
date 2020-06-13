@@ -13,8 +13,7 @@
 #include "vgui_controls/CvarTextEntry.h"
 #include "vgui_controls/QueryBox.h"
 
-#include "CvarNegateCheckButton.h"
-#include "VControlsListPanel.h"
+#include "controls/VControlsListPanel.h"
 
 #include "tier0/memdbgon.h"
 
