@@ -258,15 +258,12 @@ void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_flFrameFadeInTime = atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
+    m_flFrameFadeInTime = Q_atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
 
     // work out current focus - find the topmost panel
     SetBgColor(Color(0, 0, 0, 0));
 
     m_BackdropColor = pScheme->GetColor("mainmenu.backdrop", Color(0, 0, 0, 128));
-
-    char filename[MAX_PATH];
-
 
     int screenWide, screenTall;
     surface()->GetScreenSize(screenWide, screenTall);
@@ -277,12 +274,22 @@ void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
     // pc uses blurry backgrounds based on the background level
     char background[MAX_PATH];
     engine->GetMainMenuBackgroundName(background, sizeof(background));
+
+    char filename[MAX_PATH];
     Q_snprintf(filename, sizeof(filename), "console/%s%s", background, (bIsWidescreen ? "_widescreen" : ""));
 
+    if (m_iBackgroundImageID)
+    {
+        surface()->DestroyTextureID(m_iBackgroundImageID);
+    }
     m_iBackgroundImageID = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile(m_iBackgroundImageID, filename, false, false);
 
     // load the loading icon
+    if (m_iLoadingImageID)
+    {
+        surface()->DestroyTextureID(m_iLoadingImageID);
+    }
     m_iLoadingImageID = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile(m_iLoadingImageID, "console/startup_loading", false, false);
 }
