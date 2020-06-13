@@ -707,15 +707,6 @@ void Label::SetFont(HFont font)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Resond to resizing of the panel
-//-----------------------------------------------------------------------------
-void Label::OnSizeChanged(int wide, int tall)
-{
-	InvalidateLayout();
-	Panel::OnSizeChanged(wide, tall);
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Get the font the textImage is drawn in.
 //-----------------------------------------------------------------------------
 HFont Label::GetFont()
