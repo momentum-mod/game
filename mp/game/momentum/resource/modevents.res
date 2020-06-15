@@ -141,4 +141,8 @@
     {
         "speed" "float"
     }
+    "player_explosive_hit"
+    {
+        "speed" "float"
+    }
 }
