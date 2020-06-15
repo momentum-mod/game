@@ -2021,6 +2021,13 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
     float force = Min(info.GetDamage() * flScale, 1000.0f);
     Vector vecForce = -vecDir * force;
     ApplyAbsVelocityImpulse(vecForce);
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("player_explosive_hit");
+    if (pEvent)
+    {
+        pEvent->SetFloat("speed", GetAbsVelocity().Length());
+        gameeventmanager->FireEvent(pEvent);
+    }
 }
 
 bool CMomentumPlayer::CanPaint() { return m_flNextPaintTime <= gpGlobals->curtime; }
