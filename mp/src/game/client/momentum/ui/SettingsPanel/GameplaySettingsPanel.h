@@ -25,6 +25,12 @@ private:
     vgui::CvarSlider *m_pYawSpeedSlider;
     vgui::CvarTextEntry *m_pYawSpeedEntry;
 
+    // Run safeguards
+    vgui::CvarComboBox *m_pPracticeModeSafeguards;
+    vgui::CvarComboBox *m_pRestartMapSafeguards;
+    vgui::CvarComboBox *m_pSavelocTeleSafeguards;
+    vgui::CvarComboBox *m_pChatOpenSafeguards;
+
     // Gamemode
     vgui::CvarToggleCheckButton *m_pRJEnableTrailParticle, *m_pRJEnableExplosionParticle, *m_pRJEnableShootSound,
         *m_pRJToggleRocketTrailSound, *m_pRJToggleRocketExplosionSound, *m_pRJToggleRocketDecals,
