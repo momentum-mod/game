@@ -9,6 +9,7 @@
 #include "mom_ghostdefs.h"
 #include "mom_player_shared.h"
 #include "fmtstr.h"
+#include "run/mom_run_safeguards.h"
 
 #include "tier0/memdbgon.h"
 
@@ -456,6 +457,9 @@ void CMOMSaveLocSystem::TeleportToSavelocIndex(int indx)
 
 void CMOMSaveLocSystem::TeleportToCurrentSaveloc()
 {
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_SAVELOC_TELE))
+        return; 
+
     TeleportToSavelocIndex(m_iCurrentSavelocIndx);
     FireUpdateEvent();
 }
