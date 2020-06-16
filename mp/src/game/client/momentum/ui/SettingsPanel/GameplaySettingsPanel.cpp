@@ -27,6 +27,27 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pPlayBlockSound = new CvarToggleCheckButton(this, "PlayBlockSound", "#MOM_Settings_Play_BlockSound", "mom_bhop_playblocksound");
     m_pSaveCheckpoints = new CvarToggleCheckButton(this, "SaveCheckpoints", "#MOM_Settings_Save_Checkpoints", "mom_saveloc_save_between_sessions");
 
+    // Safeguard controls
+    m_pPracticeModeSafeguards = new CvarComboBox(this, "PracticeModeSafeguard", "mom_run_safeguard_practicemode");
+    m_pPracticeModeSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pPracticeModeSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pPracticeModeSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pRestartMapSafeguards = new CvarComboBox(this, "RestartMapSafeguard", "mom_run_safeguard_restart");
+    m_pRestartMapSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pRestartMapSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pRestartMapSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pSavelocTeleSafeguards = new CvarComboBox(this, "SavelocTeleSafeguard", "mom_run_safeguard_saveloc_tele");
+    m_pSavelocTeleSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pSavelocTeleSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pSavelocTeleSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
+    m_pChatOpenSafeguards = new CvarComboBox(this, "ChatOpenSafeguard", "mom_run_safeguard_chat_open");
+    m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
     // Gamemode specific settings
     // Rocket Jump controls
     m_pRJEnableTrailParticle = new CvarToggleCheckButton(this, "RJEnableTrailParticle", "#MOM_Settings_RJ_Enable_Trail_Particle", "mom_rj_particle_trail_enable");

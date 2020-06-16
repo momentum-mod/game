@@ -320,8 +320,6 @@
         "MOM_Settings_Yaw_Speed" "Yaw speed"
         "MOM_Settings_Yaw_Speed_TT" "This controls how fast your turn binds turn you, if you use any."
         "MOM_Settings_Play_BlockSound" "Play bhop block sound"
-        "MOM_Settings_Practice_Safeguard" "Enable the practice mode safeguard"
-        "MOM_Settings_Practice_Safeguard_TT" "The safeguard prevents you from accidentally turning on practice mode while doing a run.\nIf enabled, practice mode will not enable if you are pressing any movement keys."
         "MOM_Settings_Save_Checkpoints" "Save user savelocs to file on map end"
         "MOM_Settings_Worldlight_Shadows" "World lights determine shadow direction"
         "MOM_Settings_Worldlight_Shadows_TT" "When enabled, world lights will determine entity shadow direction. NOTE: Can cause significant performance decreases in some maps!"
@@ -329,6 +327,16 @@
         "MOM_Settings_Overlapping_Keys_TT" "When checked, key presses will overlap and null each other out, much like null binds."
         "MOM_Settings_Release_Forward_On_Jump" "Release forward key on jump"
         "MOM_Settings_Release_Forward_On_Jump_TT" "When checked the game will determine the forward key based on movement while on ground and release the determined key when you jump."
+
+        // Gameplay - run safeguards
+        "MOM_Settings_Title_Gameplay_Run_Safeguards" "Run Safeguards"
+        "MOM_Settings_Run_Safeguard_Practice_Mode" "Practice Mode Enable"
+        "MOM_Settings_Run_Safeguard_Restart_Map" "Run Restart"
+        "MOM_Settings_Run_Safeguard_Saveloc_Tele" "Saveloc Teleport"
+        "MOM_Settings_Run_Safeguard_Open_Chat" "Opening Chat"
+        "MOM_Settings_Run_Safeguard_Modes_None" "None"
+        "MOM_Settings_Run_Safeguard_Modes_1" "When no movement keys held"
+        "MOM_Settings_Run_Safeguard_Modes_2" "On double press only"
 
         // Gameplay - sub Rocket Jump settings
         "MOM_Settings_Title_Gameplay_RJ" "Rocket Jump Settings"
