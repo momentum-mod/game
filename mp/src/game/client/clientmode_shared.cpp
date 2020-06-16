@@ -37,6 +37,7 @@
 #include "hud_vote.h"
 #include "ienginevgui.h"
 #include "viewpostprocess.h"
+#include "run/mom_run_safeguards.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_item_view.h"
@@ -709,6 +710,9 @@ void ClientModeShared::StartMessageMode( int iMessageModeType )
 
     // avoid softlock of starting message mode when hud/viewport isn't visible
     if ( !m_pViewport->IsVisible() )
+        return;
+
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_CHAT_OPEN))
         return;
 
 	if ( m_pChatElement )
