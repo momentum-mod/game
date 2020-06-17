@@ -23,7 +23,7 @@
 #include "hintsystem.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "c_env_fog_controller.h"
-#include "c_postProcessController.h"
+#include "c_postprocesscontroller.h"
 #include "igameevents.h"
 #include "GameEventListener.h"
 
