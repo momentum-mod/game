@@ -6700,3 +6700,37 @@
     // Inputs
     input ModifySpeed(float) : "Modifies player speed by X ammount."
 ]
+
+@PointClass base(Targetname) iconsprite("editor/postprocess_controller.vmt") color(255 255 255) = postprocess_controller : 
+    "An entity that controls the postprocess settings in the map."
+[
+    // Inputs
+    input SetFadeTime(float) : "Set the fade time between post process settings."
+    input SetLocalContrastStrength(float) : "Set the local contrast strength."
+    input SetLocalContrastEdgeStrength(float) : "Set the local contrast strength at the edge of the screen (controlled by vignette)."
+    input SetVignetteStart(float) : "Set the vignette start distance (from screen center)."
+    input SetVignetteEnd(float) : "Set the vignette end distance."
+    input SetVignetteBlurStrength(float) : "Set the strength of the desaturated blur on the vignette."
+    input SetFadeToBlackStrength(float) : "Set the fadeout strength."
+    input SetDepthBlurFocalDistance(float) : "Set the focal distance of the depth blur effect (in the range [0,1])."
+    input SetDepthBlurStrength(float) : "Set the depth blur effect strength."
+    input SetScreenBlurStrength(float) : "Set the screen blur effect strength."
+    input SetFilmGrainStrength(float) : "Set the film grain effect strength."
+    
+    fadetime(float) : "Fade time" : "2"
+    localcontraststrength(float) : "Local contrast strength [-1..x]" : "0"
+    localcontrastedgestrength(float) : "Local contrast edge strength [0..1]" : "0"
+    vignettestart(float) : "Vignette start distance [0..1]" : "0.8"
+    vignetteend(float) : "Vignette end distance [0..x]" : "1.1"
+    vignetteblurstrength(float) : "Vignette blur strength [0..1]" : "0"
+    fadetoblackstrength(float) : "Fade to black strength [0..1]" : "0"
+    depthblurfocaldistance(float) : "Depth-blur focal plane distance [0..1]" : "0"
+    depthblurstrength(float) : "Depth-blur effect strength [0..x]" : "0"
+    screenblurstrength(float) : "Full-screen blur strength [0..1]" : "0"
+    filmgrainstrength(float) : "Film grain strength [0..x]" : "0"
+    
+    spawnflags(flags) =
+    [
+        1 : "Master (Has priority if multiple postprocess_controllers exist)" : 0
+    ]
+]
