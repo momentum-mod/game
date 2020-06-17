@@ -10,18 +10,36 @@
 
 class pbr_vs30_Static_Index
 {
+	unsigned int m_nWVT : 2;
+#ifdef _DEBUG
+	bool m_bWVT : 1;
+#endif	// _DEBUG
 public:
+	void SetWVT( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nWVT = i;
+#ifdef _DEBUG
+		m_bWVT = true;
+#endif	// _DEBUG
+	}
+
 	pbr_vs30_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
+		m_nWVT = 0;
+#ifdef _DEBUG
+		m_bWVT = false;
+#endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		return 0;
+		Assert( m_bWVT );
+		return ( 80 * m_nWVT ) + 0;
 	}
 };
 
-#define shaderStaticTest_pbr_vs30 1
+#define shaderStaticTest_pbr_vs30 vsh_forgot_to_set_static_WVT
 
 
 class pbr_vs30_Dynamic_Index
