@@ -27,7 +27,7 @@
     
     "$localcontrastenable" "1"
     "$noiseEnable" "1"
-    "$vignetteEnable" "1"
+    "$vignetteEnable" "0"
 
     "Proxies"
     {
