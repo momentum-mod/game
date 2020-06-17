@@ -3172,6 +3172,9 @@ void TextEntry::DeleteSelectedRange(int x0, int x1)
 
     // move the cursor to just after the deleted section
     _cursorPos = x0;
+	_select[1] = _cursorPos;
+	if (_cursorPos < _currentStartIndex)
+		_currentStartIndex = _cursorPos;
 
     _dataChanged = true;
 
