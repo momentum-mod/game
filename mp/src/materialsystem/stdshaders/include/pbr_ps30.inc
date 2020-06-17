@@ -38,12 +38,14 @@ class pbr_ps30_Static_Index
 	unsigned int m_nLIGHTMAPPED : 2;
 	unsigned int m_nEMISSIVE : 2;
 	unsigned int m_nPARALLAXOCCLUSION : 2;
+	unsigned int m_nWVT : 2;
 #ifdef _DEBUG
 	bool m_bFLASHLIGHT : 1;
 	bool m_bFLASHLIGHTDEPTHFILTERMODE : 1;
 	bool m_bLIGHTMAPPED : 1;
 	bool m_bEMISSIVE : 1;
 	bool m_bPARALLAXOCCLUSION : 1;
+	bool m_bWVT : 1;
 #endif	// _DEBUG
 public:
 	void SetFLASHLIGHT( int i )
@@ -91,6 +93,15 @@ public:
 #endif	// _DEBUG
 	}
 
+	void SetWVT( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nWVT = i;
+#ifdef _DEBUG
+		m_bWVT = true;
+#endif	// _DEBUG
+	}
+
 	pbr_ps30_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
 		m_nFLASHLIGHT = 0;
@@ -98,23 +109,25 @@ public:
 		m_nLIGHTMAPPED = 0;
 		m_nEMISSIVE = 0;
 		m_nPARALLAXOCCLUSION = 0;
+		m_nWVT = 0;
 #ifdef _DEBUG
 		m_bFLASHLIGHT = false;
 		m_bFLASHLIGHTDEPTHFILTERMODE = false;
 		m_bLIGHTMAPPED = false;
 		m_bEMISSIVE = false;
 		m_bPARALLAXOCCLUSION = false;
+		m_bWVT = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bFLASHLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bLIGHTMAPPED && m_bEMISSIVE && m_bPARALLAXOCCLUSION );
-		return ( 80 * m_nFLASHLIGHT ) + ( 160 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 480 * m_nLIGHTMAPPED ) + ( 960 * m_nEMISSIVE ) + ( 1920 * m_nPARALLAXOCCLUSION ) + 0;
+		Assert( m_bFLASHLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bLIGHTMAPPED && m_bEMISSIVE && m_bPARALLAXOCCLUSION && m_bWVT );
+		return ( 80 * m_nFLASHLIGHT ) + ( 160 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 480 * m_nLIGHTMAPPED ) + ( 960 * m_nEMISSIVE ) + ( 1920 * m_nPARALLAXOCCLUSION ) + ( 3840 * m_nWVT ) + 0;
 	}
 };
 
-#define shaderStaticTest_pbr_ps30 psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_LIGHTMAPPED + psh_forgot_to_set_static_EMISSIVE + psh_forgot_to_set_static_PARALLAXOCCLUSION
+#define shaderStaticTest_pbr_ps30 psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_LIGHTMAPPED + psh_forgot_to_set_static_EMISSIVE + psh_forgot_to_set_static_PARALLAXOCCLUSION + psh_forgot_to_set_static_WVT
 
 
 class pbr_ps30_Dynamic_Index
