@@ -522,7 +522,8 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 	_pixelsIndent = m_CachedRenderState.pixelsIndent;
 	_currentTextClickable = m_CachedRenderState.textClickable;
 	TRenderState renderState = m_CachedRenderState;
-	
+
+	const auto panelTall = GetTall();
 	bool onRightLine = false;
 	int i;
 	for (i = startIndex; i < m_TextStream.Count(); i++)
@@ -550,7 +551,35 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 		if (cy < yStart)
 		{
 			// cursor is above panel
-			onRightLine = true;
+			if (lineBreakIndexIndex < 2)
+			{
+				if (lineBreakIndexIndex == 0)
+				{
+					onRightLine = true;
+				}
+				else
+				{
+				    return m_LineBreaks[lineBreakIndexIndex - 1] - 1;
+				}
+			}
+			else
+			{
+			    // Jump up a line
+				return m_LineBreaks[lineBreakIndexIndex - 2] - 1;
+			}
+		}
+		else if (cy > panelTall)
+		{
+			// cursor is below panel
+			if (lineBreakIndexIndex == m_LineBreaks.Count() - 1)
+			{
+				onRightLine = true;
+			}
+			else
+			{
+				// Jump down a line
+				return m_LineBreaks[_vertScrollBar->GetValue() + _vertScrollBar->GetRangeWindow()];
+			}
 		}
 		else if (cy >= y && (cy < (y + fontTall)))
 		{
@@ -1704,6 +1733,17 @@ void RichText::OnCursorMoved(int newX, int newY)
 		if (_cursorPos != _select[1])
 		{
 			_select[1] = _cursorPos;
+			const auto cursorLine = GetCursorLine();
+			if (cursorLine < _vertScrollBar->GetValue())
+			{
+			    _vertScrollBar->SetValue(cursorLine);
+				_recalcSavedRenderState = true;
+			}
+			else if (cursorLine > _vertScrollBar->GetValue() + _vertScrollBar->GetRangeWindow())
+			{
+				_vertScrollBar->SetValue(_vertScrollBar->GetValue() + 1);
+				_recalcSavedRenderState = true;
+			}
 			Repaint();
 		}
 		// Msg( "selecting range [%d..%d]\n", _select[0], _select[1] );
