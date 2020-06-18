@@ -1757,30 +1757,34 @@ void RichText::OnMousePressed(MouseCode code)
 {
 	if (code == MOUSE_LEFT)
 	{
-		// clear current selection
-		SelectNone();
+		const auto isShiftClicking = input()->IsKeyDown(KEY_LSHIFT) || input()->IsKeyDown(KEY_RSHIFT);
 
-		// move the cursor to where the mouse was pressed
+		if (!isShiftClicking)
+		    SelectNone();
+
 		int x, y;
 		input()->GetCursorPos(x, y);
 		ScreenToLocal(x, y);
-		
-		_cursorPos = PixelToCursorSpace(x, y);
-		
-		if ( m_bInteractive )
+
+		const auto newPos = PixelToCursorSpace(x, y);
+
+		if (!isShiftClicking)
+			_cursorPos = newPos;
+
+		if (m_bInteractive)
 		{
 			// enter selection mode
 			input()->SetMouseCapture(GetVPanel());
 			_mouseSelection = true;
-			
+
 			if (_select[0] < 0)
 			{
 				// if no initial selection position, Start selection position at cursor
 				_select[0] = _cursorPos;
 			}
-			_select[1] = _cursorPos;
+			_select[1] = newPos;
 		}
-		
+
 		RequestFocus();
 		Repaint();
 	}
