@@ -48,6 +48,8 @@ DECLARE_HUDELEMENT(CHudStickyCharge);
 CHudStickyCharge::CHudStickyCharge(const char *pElementName)
     : CHudElement(pElementName), EditablePanel(g_pClientMode->GetViewport(), "HudStickyCharge")
 {
+    SetHiddenBits(HIDEHUD_LEADERBOARDS);
+
     m_pLauncher = nullptr;
     m_pChargeMeter = new ContinuousProgressBar(this, "ChargeMeter");
     m_pChargeLabel = new Label(this, "ChargeMeterLabel", "CHARGE");

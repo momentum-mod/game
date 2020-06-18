@@ -79,7 +79,7 @@ CHudCrosshair::CHudCrosshair( const char *pElementName ) :
 
     m_vecCrossHairOffsetAngle.Init();
 
-    SetHiddenBits( HIDEHUD_PLAYERDEAD | HIDEHUD_CROSSHAIR );
+    SetHiddenBits( HIDEHUD_PLAYERDEAD | HIDEHUD_CROSSHAIR | HIDEHUD_LEADERBOARDS );
 }
 
 CHudCrosshair::~CHudCrosshair()
@@ -105,8 +105,6 @@ void CHudCrosshair::ApplySchemeSettings( IScheme *scheme )
 //-----------------------------------------------------------------------------
 bool CHudCrosshair::ShouldDraw( void )
 {
-    bool bNeedsDraw;
-
     if ( m_bHideCrosshair )
         return false;
 
@@ -125,7 +123,7 @@ bool CHudCrosshair::ShouldDraw( void )
     */
 
     // draw a crosshair only if alive or spectating in eye
-    bNeedsDraw = m_pCrosshair && 
+    bool bNeedsDraw = m_pCrosshair && 
         crosshair.GetInt() &&
         !engine->IsDrawingLoadingImage() &&
         !engine->IsPaused() && 
