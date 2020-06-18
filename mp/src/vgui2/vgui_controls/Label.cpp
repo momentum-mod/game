@@ -1001,11 +1001,7 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 		_textImage->SetSize(wide, tall);
 	}
 
-	if ( m_bAutoWideToContents || m_bAutoTallToContents )
-	{
-		m_bAutoSizeDirty = true;
-		HandleAutoSizing();
-	}
+	m_bAutoSizeDirty = m_bAutoWideToContents || m_bAutoTallToContents;
 
 	// clear out any the images, since they will have been invalidated
 	for (int i = 0; i < _imageDar.Count(); i++)
