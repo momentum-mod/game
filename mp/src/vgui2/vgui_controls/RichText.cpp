@@ -552,7 +552,7 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 			// cursor is above panel
 			onRightLine = true;
 		}
-		else if (cy >= y && (cy < (y + fontTall + _drawOffsetY)))
+		else if (cy >= y && (cy < (y + fontTall)))
 		{
 			onRightLine = true;
 		}
@@ -562,10 +562,7 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 		// if we've found the position, break
 		if (onRightLine)
 		{
-			if (cx > GetWide())	  // off right side of window
-			{
-			}
-			else if (cx < (_drawOffsetX + renderState.pixelsIndent) || cy < yStart)	 // off left side of window
+			if (cx < (_drawOffsetX + renderState.pixelsIndent) || cy < yStart)	 // off left side of window
 			{
 				// Msg( "PixelToCursorSpace() off left size, returning %d '%c'\n", i, m_TextStream[i] );
 				return i; // move cursor one to left
@@ -1324,7 +1321,7 @@ void RichText::InsertClickableTextEnd()
 void RichText::AddAnotherLine(int &cx, int &cy)
 {
 	cx = _drawOffsetX + _pixelsIndent;
-	cy += (GetLineHeight() + _drawOffsetY);
+	cy += GetLineHeight();
 }
 
 //-----------------------------------------------------------------------------
@@ -1564,7 +1561,7 @@ void RichText::LayoutVerticalScrollBarSlider()
 	bool bCurrentlyAtEnd = false;
     int rmin, rmax;
     _vertScrollBar->GetRange(rmin, rmax);
-    if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
+    if (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax)
     {
         bCurrentlyAtEnd = true;
     }
@@ -1578,10 +1575,10 @@ void RichText::LayoutVerticalScrollBarSlider()
 	_vertScrollBar->SetSize( _vertScrollBar->GetWide(), tall );
 	
 	// calculate how many lines we can fully display
-    const auto offY = GetLineHeight() + _drawOffsetY;
+    const auto offY = GetLineHeight();
 
 	int displayLines = offY ? tall / offY : 0;
-	int numLines = m_LineBreaks.Count();
+	int numLines = m_LineBreaks.Count() - 1;
 	
 	if (numLines <= displayLines)
 	{
@@ -2602,7 +2599,7 @@ void RichText::SetToFullHeight()
 	int wide, tall;
 	GetSize(wide, tall);
 	
-	tall = GetNumLines() * (GetLineHeight() + _drawOffsetY) + _drawOffsetY + 2;
+	tall = GetNumLines() * GetLineHeight() + _drawOffsetY + 2;
 	SetSize (wide, tall);
 	PerformLayout();
 }
@@ -2876,7 +2873,7 @@ bool RichText::HasText() const
 //-----------------------------------------------------------------------------
 int RichText::GetLineHeight()
 {
-	return m_font == INVALID_FONT ? 0 : surface()->GetFontTall( m_font );
+	return m_font == INVALID_FONT ? 0 : surface()->GetFontTall( m_font ) + _drawOffsetY;
 }
 
 
