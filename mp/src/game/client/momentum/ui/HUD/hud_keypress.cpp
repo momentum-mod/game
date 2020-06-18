@@ -20,8 +20,8 @@
 
 #define KEYDRAW_MIN 0.07f
 
-#define STR_M1      L"M1"
-#define STR_M2      L"M2"
+#define STR_M1      L"A1"
+#define STR_M2      L"A2"
 #define STR_JUMP    L"JUMP"
 #define STR_DUCK    L"DUCK"
 #define STR_WALK    L"WALK"
