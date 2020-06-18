@@ -1,17 +1,12 @@
 #include "cbase.h"
 
-#include <vgui/ILocalize.h>
-#include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/ProgressBar.h>
 #include <vgui_controls/Label.h>
 
 #include "c_mom_player.h"
-#include "hud.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "ienginevgui.h"
 
 #include "mom_system_gamemode.h"
 #include "weapon/weapon_mom_stickybomblauncher.h"
@@ -30,14 +25,17 @@ static MAKE_CONVAR(mom_hud_sj_chargemeter_units, "0", FCVAR_ARCHIVE,
 
 class CHudStickyCharge : public CHudElement, public EditablePanel
 {
+  public:
     DECLARE_CLASS_SIMPLE(CHudStickyCharge, EditablePanel);
 
-  public:
     CHudStickyCharge(const char *pElementName);
 
     bool ShouldDraw() OVERRIDE;
     void OnThink() OVERRIDE;
     void Reset() OVERRIDE;
+
+    CPanelAnimationVar(Color, m_cChargeColor, "ChargeColor", "MomGreydientStep8");
+    CPanelAnimationVar(Color, m_cChargeDisabled, "ChargeDisabledColor", "MomentumRed");
 
   private:
     CMomentumStickybombLauncher *m_pLauncher;
@@ -96,7 +94,7 @@ void CHudStickyCharge::OnThink()
     // Turn charge meter red while inside start zone to indicate that stickies can't be charged
     if (!m_pLauncher->IsChargeEnabled())
     {
-        m_pChargeMeter->SetFgColor(Color(192, 28, 0, 140));
+        m_pChargeMeter->SetFgColor(m_cChargeDisabled);
         m_pChargeMeter->SetProgress(1.0f);
 
         m_pChargeLabel->SetVisible(false);
@@ -107,7 +105,7 @@ void CHudStickyCharge::OnThink()
         if (!m_pChargeLabel->IsVisible())
             m_pChargeLabel->SetVisible(true);
 
-        m_pChargeMeter->SetFgColor(Color(235, 235, 235, 255));
+        m_pChargeMeter->SetFgColor(m_cChargeColor);
         float flChargeMaxTime = m_pLauncher->GetChargeMaxTime();
 
         if (!CloseEnough(flChargeMaxTime, 0.0f, FLT_EPSILON))

@@ -12,6 +12,8 @@
         "tall"          "15"
         "paintbackground" "0"
         "bgcolor_override" "0 0 0 0"
+        "ChargeColor" "MomentumBlue"
+        "ChargeDisabledColor" "MomentumRed"
     }
 
     "ChargeMeter"
