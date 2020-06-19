@@ -25,7 +25,7 @@ using namespace vgui;
 C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY, false, false)
 {
     m_pViewport = pViewport;
-
+    SetSize(2, 2);
     SetProportional(true);
     SetMoveable(true);
     SetSizeable(false);
@@ -79,7 +79,6 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     LoadControlSettings("resource/ui/ReplayUI.res");
 
     SetVisible(false);
-    SetBounds(20, 100, GetScaledVal(280), GetScaledVal(150));
     SetTitle("#MOM_ReplayControls", true);
 
     m_pSpecGUI = nullptr;
@@ -93,17 +92,7 @@ void C_MOMReplayUI::OnThink()
     int x, y;
     input()->GetCursorPosition(x, y);
     const bool bWithin = IsWithin(x, y);
-    if (bWithin)
-    {
-        const auto mouseOver = input()->GetMouseOver();
-        SetKeyBoardInputEnabled(mouseOver == GetVPanel() ||
-                                mouseOver == m_pGotoTick->GetVPanel() ||
-                                mouseOver == m_pTimescaleEntry->GetVPanel());
-    }
-    else
-    {
-        SetKeyBoardInputEnabled(false);
-    }
+    SetKeyBoardInputEnabled(bWithin);
 
     if (!IsMouseInputEnabled() && bWithin)
     {
