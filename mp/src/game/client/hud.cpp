@@ -134,9 +134,6 @@ void LoadHudTextures(CUtlDict<CHudTexture*> &list, KeyValues *pKvInput)
 	}
 }
 
-// Globally-used fonts
-vgui::HFont g_hFontTrebuchet24 = vgui::INVALID_FONT;
-
 
 //=======================================================================================================================
 // Hud Element Visibility handling
@@ -378,8 +375,6 @@ void CHud::Init( void )
 	HOOK_HUD_MESSAGE( gHUD, SendAudio );
 #endif
 
-	InitFonts();
-
 	// Create all the Hud elements
 	CHudElementHelper::CreateAllElements();
 
@@ -456,16 +451,6 @@ void CHud::InitColors( vgui::IScheme *scheme )
 	m_clrNormal = scheme->GetColor( "Normal", Color( 255, 208, 64 ,255 ) );
 	m_clrCaution = scheme->GetColor( "Caution", Color( 255, 48, 0, 255 ) );
 	m_clrYellowish = scheme->GetColor( "Yellowish", Color( 255, 160, 0, 255 ) );
-}
-
-//-----------------------------------------------------------------------------
-// Initializes fonts
-//-----------------------------------------------------------------------------
-void CHud::InitFonts()
-{
-	vgui::HScheme scheme = vgui::scheme()->GetScheme( "ClientScheme" );
-	vgui::IScheme *pScheme = vgui::scheme()->GetIScheme( scheme );
-	g_hFontTrebuchet24 = pScheme->GetFont("CenterPrintText", true);
 }
 
 //-----------------------------------------------------------------------------
