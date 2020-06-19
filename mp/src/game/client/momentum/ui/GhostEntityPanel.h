@@ -1,13 +1,14 @@
 #pragma once
 
-#include <vgui_controls/Panel.h>
+#include <vgui_controls/EditablePanel.h>
 
 class C_MomentumOnlineGhostEntity;
 class CAvatarImage;
 
-class CGhostEntityPanel : public vgui::Panel
+class CGhostEntityPanel : public vgui::EditablePanel
 {
-    DECLARE_CLASS_SIMPLE(CGhostEntityPanel, vgui::Panel);
+public:
+    DECLARE_CLASS_SIMPLE(CGhostEntityPanel, vgui::EditablePanel);
 
     CGhostEntityPanel();
     ~CGhostEntityPanel();
@@ -21,7 +22,10 @@ class CGhostEntityPanel : public vgui::Panel
     void SetShouldDrawEntityName(bool bState) { m_bPaintName = bState; }
 
     bool GetEntityPosition(int& sx, int& sy);
-    void ComputeAndSetSize();
+
+    // Offset from entity that we should draw
+    CPanelAnimationVar(int, m_OffsetX, "OffsetX", "-74");
+    CPanelAnimationVar(int, m_OffsetY, "OffsetY", "-60");
 
 private:
 
@@ -32,12 +36,6 @@ private:
     vgui::ImagePanel *m_pAvatarImagePanel;
     CAvatarImage *m_pAvatarImage;
 
-    int m_iOrgWidth;
-    int m_iOrgHeight;
-    int m_iOrgOffsetX;
-    int m_iOrgOffsetY;
-    // Offset from entity that we should draw
-    int m_OffsetX, m_OffsetY;
     // Position of the panel
     int m_iPosX, m_iPosY;
 };
