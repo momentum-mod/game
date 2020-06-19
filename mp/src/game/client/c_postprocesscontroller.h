@@ -1,14 +1,4 @@
-//========= Copyright © 1996-2008, Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-//=============================================================================//
-
-#ifndef C_POSTPROCESSCONTROLLER_H
-#define C_POSTPROCESSCONTROLLER_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "postprocess_shared.h"
 
@@ -36,6 +26,3 @@ private:
 
 	static C_PostProcessController* ms_pMasterController;
 };
-
-
-#endif // C_POSTPROCESSCONTROLLER_H

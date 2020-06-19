@@ -38,6 +38,7 @@ class C_BaseViewModel;
 class C_FuncLadder;
 class CFlashlightEffect;
 class C_EconWearable;
+class C_PostProcessController;
 
 extern int g_nKillCamMode;
 extern int g_nKillCamTarget1;
@@ -603,7 +604,7 @@ private:
 	// One for left and one for right side of step
 	StepSoundCache_t		m_StepSoundCache[ 2 ];
 
-    CNetworkHandle(CPostProcessController, m_hPostProcessCtrl);	// active postprocessing controller
+    CNetworkHandle(C_PostProcessController, m_hPostProcessCtrl);	// active postprocessing controller
 
 public:
 

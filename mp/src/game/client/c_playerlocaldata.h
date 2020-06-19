@@ -16,12 +16,6 @@
 #include "mathlib/vector.h"
 #include "playernet_vars.h"
 
-#ifdef CLIENT_DLL
-#define CPostProcessController C_PostProcessController
-#endif
-
-class CPostProcessController;
-
 //-----------------------------------------------------------------------------
 // Purpose: Player specific data ( sent only to local player, too )
 //-----------------------------------------------------------------------------
