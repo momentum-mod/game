@@ -1,14 +1,4 @@
-//========= Copyright © 1996-2008, Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-//=============================================================================//
-
-#ifndef POSTPROCESSCONTROLLER_H
-#define POSTPROCESSCONTROLLER_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "GameEventListener.h"
 #include "postprocess_shared.h"
@@ -17,9 +7,8 @@
 #define SF_POSTPROCESS_MASTER		0x0001
 
 //=============================================================================
-//
 // Class Postprocess Controller:
-//
+//=============================================================================
 class CPostProcessController : public CBaseEntity
 {
 public:
@@ -30,8 +19,6 @@ public:
 	CPostProcessController();
 	virtual ~CPostProcessController();
 
-	// Parse data from a map file
-	virtual void Activate();
 	virtual int UpdateTransmitState();
 
 	// Input handlers
@@ -50,9 +37,9 @@ public:
 	void InputTurnOn(inputdata_t &data);
 	void InputTurnOff(inputdata_t &data);
 
-	void Spawn( void );
+	void Spawn();
 
-	bool IsMaster( void ) const { return HasSpawnFlags( SF_FOG_MASTER ); }
+	bool IsMaster() const { return HasSpawnFlags( SF_FOG_MASTER ); }
 
 public:
 	CNetworkArray( float, m_flPostProcessParameters, POST_PROCESS_PARAMETER_COUNT );
@@ -71,26 +58,23 @@ public:
 	// Creation/Init.
 	CPostProcessSystem( char const *name ) : CAutoGameSystem( name ) 
 	{
-		m_hMasterController = NULL;
+		m_hMasterController = nullptr;
 	}
 
 	~CPostProcessSystem()
 	{
-		m_hMasterController = NULL;
+		m_hMasterController = nullptr;
 	}
 
 	virtual void LevelInitPreEntity();
 	virtual void LevelInitPostEntity();
 	virtual void FireGameEvent( IGameEvent *pEvent );
-	CPostProcessController *GetMasterPostProcessController( void )			{ return m_hMasterController; }
+	CPostProcessController *GetMasterPostProcessController()			{ return m_hMasterController; }
 
 private:
 
-	void InitMasterController( void );
+	void InitMasterController();
 	CHandle< CPostProcessController > m_hMasterController;
 };
 
-CPostProcessSystem *PostProcessSystem( void );
-
-
-#endif // POSTPROCESSCONTROLLER_H
+CPostProcessSystem *PostProcessSystem();

@@ -1,8 +1,8 @@
-//========= Copyright © 1996-2007, Valve Corporation, All rights reserved. ====
+//========= Copyright © 1996-2007, Valve Corporation, All rights reserved. ==========
 //
-// An entity that allows level designer control over the fog parameters.
+// An entity that allows level designer control over the post-processing parameters.
 //
-//=============================================================================
+//===================================================================================
 
 #include "cbase.h"
 #include "postprocesscontroller.h"
@@ -22,7 +22,7 @@ CPostProcessSystem s_PostProcessSystem( "PostProcessSystem" );
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-CPostProcessSystem *PostProcessSystem( void )
+CPostProcessSystem *PostProcessSystem()
 {
 	return &s_PostProcessSystem;
 }
@@ -72,24 +72,13 @@ CPostProcessController::~CPostProcessController()
 {
 }
 
-void CPostProcessController::Spawn( void )
+void CPostProcessController::Spawn()
 {
 	BaseClass::Spawn();
 
 	m_bMaster = IsMaster();
 }
 
-//-----------------------------------------------------------------------------
-// Activate!
-//-----------------------------------------------------------------------------
-void CPostProcessController::Activate( ) 
-{
-	BaseClass::Activate();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 int CPostProcessController::UpdateTransmitState()
 {
 	return SetTransmitState( FL_EDICT_ALWAYS );
@@ -153,9 +142,9 @@ void CPostProcessController::InputSetFilmGrainStrength( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 // Purpose: Clear out the PostProcess controller.
 //-----------------------------------------------------------------------------
-void CPostProcessSystem::LevelInitPreEntity( void )
+void CPostProcessSystem::LevelInitPreEntity()
 {
-	m_hMasterController = NULL;
+	m_hMasterController = nullptr;
 	ListenForGameEvent( "round_start" );
 }
 
@@ -163,16 +152,16 @@ void CPostProcessSystem::LevelInitPreEntity( void )
 // Purpose: Find the master controller.  If no controller is 
 //			set as Master, use the first controller found.
 //-----------------------------------------------------------------------------
-void CPostProcessSystem::InitMasterController( void )
+void CPostProcessSystem::InitMasterController()
 {
-	CPostProcessController *pPostProcessController = NULL;
+	CPostProcessController *pPostProcessController = nullptr;
 
 	do
 	{
 		pPostProcessController = dynamic_cast<CPostProcessController*>( gEntList.FindEntityByClassname( pPostProcessController, "postprocess_controller" ) );
 		if ( pPostProcessController )
 		{
-			if ( m_hMasterController.Get() == NULL )
+			if ( m_hMasterController.Get() == nullptr )
 			{
 				m_hMasterController = pPostProcessController;
 			}
@@ -199,7 +188,7 @@ void CPostProcessSystem::FireGameEvent( IGameEvent *pEvent )
 // Purpose: On level load find the master PostProcess controller.  If no controller is 
 //			set as Master, use the first PostProcess controller found.
 //-----------------------------------------------------------------------------
-void CPostProcessSystem::LevelInitPostEntity( void )
+void CPostProcessSystem::LevelInitPostEntity()
 {
 	InitMasterController();
 
@@ -210,7 +199,7 @@ void CPostProcessSystem::LevelInitPostEntity( void )
 	if ( gpGlobals->maxClients == 1 )
 	{
 		CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-		if ( pPlayer && ( pPlayer->m_hPostProcessCtrl.Get() == NULL ) )
+		if ( pPlayer && ( pPlayer->m_hPostProcessCtrl.Get() == nullptr ) )
 		{
 			pPlayer->InitPostProcessController();
 		}
