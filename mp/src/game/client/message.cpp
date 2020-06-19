@@ -180,14 +180,9 @@ ITextMessage *textmessage = NULL;
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CHudMessage::CHudMessage( const char *pElementName ) :
-	CHudElement( pElementName ), BaseClass( NULL, "HudMessage" )
+CHudMessage::CHudMessage( const char *pElementName ) : CHudElement( pElementName ), BaseClass(g_pClientMode->GetViewport(), "HudMessage" )
 {
-	vgui::Panel *pParent = g_pClientMode->GetViewport();
-	SetParent( pParent );
 	textmessage = this;
-	m_hFont = g_hFontTrebuchet24;
-	m_hDefaultFont = m_hFont;
 	// Clear memory out
 	ResetCharacters();
 }
@@ -197,11 +192,14 @@ CHudMessage::~CHudMessage()
 	textmessage = NULL;
 }
 
-void CHudMessage::ApplySchemeSettings( IScheme *scheme )
+void CHudMessage::ApplySchemeSettings( IScheme *pScheme )
 {
-	BaseClass::ApplySchemeSettings( scheme );
+	BaseClass::ApplySchemeSettings( pScheme );
 
 	SetPaintBackgroundEnabled( false );
+
+	m_hDefaultFont = GetSchemeFont(pScheme, nullptr, "HudMessage.Font", "DefaultLarge");
+	m_hFont = m_hDefaultFont;
 }
 
 //-----------------------------------------------------------------------------
@@ -447,13 +445,11 @@ void CHudMessage::MessageScanStart( void )
 		break;
 	}
 
-	m_parms.font = g_hFontTrebuchet24;
+	m_parms.font = m_hDefaultFont;
 
-	if ( m_parms.vguiFontName != NULL && 
-		m_parms.vguiFontName[ 0 ] )
+	if ( m_parms.vguiFontName && m_parms.vguiFontName[ 0 ] )
 	{
-
-		SetFont( vgui::scheme()->GetDefaultScheme(), m_parms.vguiFontName );
+		SetFont( GetScheme(), m_parms.vguiFontName );
 	}
 }
 
@@ -462,7 +458,7 @@ void CHudMessage::MessageScanStart( void )
 //-----------------------------------------------------------------------------
 void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 {
-	int i, j, length, width;
+	int length, width;
 	const wchar_t *pText;
 	wchar_t textBuf[ 1024 ];
 
@@ -497,7 +493,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 	m_parms.totalWidth = 0;
 	m_parms.vguiFontName = pMessage->pVGuiSchemeFontName;
 
-	m_parms.font = g_hFontTrebuchet24;
+	m_parms.font = m_hDefaultFont;
 
 	while ( *pText )
 	{
@@ -555,7 +551,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 	}
 
 	wchar_t line[ 512 ];
-	for ( i = 0; i < m_parms.lines; i++ )
+	for ( int i = 0; i < m_parms.lines; i++ )
 	{
 		m_parms.lineLength = 0;
 		m_parms.width = 0;
@@ -581,7 +577,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 		if (m_parms.fadeBlend > 255)
 			m_parms.fadeBlend = 255;
 		
-		for ( j = 0; j < m_parms.lineLength; j++ )
+		for ( int j = 0; j < m_parms.lineLength; j++ )
 		{
 			m_parms.text = line[j];
 			MessageScanNextChar();
