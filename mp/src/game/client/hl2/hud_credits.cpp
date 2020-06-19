@@ -135,6 +135,8 @@ class CHudCredits : public CHudElement, public Panel
     Color m_cColor;
 
     float m_flCreditsPixelHeight;
+
+    HFont m_hTFont;
 };
 
 void CHudCredits::PrepareCredits(const char *pKeyName)
@@ -271,10 +273,10 @@ void CHudCredits::DrawOutroCreditsName(void)
     int iWidth, iTall;
     GetHudSize(iWidth, iTall);
 
-    float p_flDesiedScrollTime = m_flScrollTime;
+    float flDesiredScrollTime = m_flScrollTime;
     if (::input->GetButtonBits(1) & IN_ATTACK2)
     {
-        p_flDesiedScrollTime = m_flScrollTime * 0.27f;
+        flDesiredScrollTime = m_flScrollTime * 0.27f;
     }
 
     const auto hScheme = scheme()->GetScheme("ClientScheme");
@@ -287,9 +289,9 @@ void CHudCredits::DrawOutroCreditsName(void)
         if (pCredit == nullptr)
             continue;
 
-        HFont m_hTFont = pScheme->GetFont(pCredit->szFontName, true);
+        const auto hCreditFont = pScheme->GetFont(pCredit->szFontName, true);
 
-        int iFontTall = surface()->GetFontTall(m_hTFont);
+        int iFontTall = surface()->GetFontTall(hCreditFont);
 
         if (pCredit->flYPos < -iFontTall || pCredit->flYPos > iTall)
         {
@@ -312,7 +314,7 @@ void CHudCredits::DrawOutroCreditsName(void)
                 {
                     if (m_Alpha > 0)
                     {
-                        m_Alpha -= gpGlobals->frametime * (p_flDesiedScrollTime * 2.0f);
+                        m_Alpha -= gpGlobals->frametime * (flDesiredScrollTime * 2.0f);
 
                         if (m_Alpha <= 0)
                         {
@@ -326,7 +328,7 @@ void CHudCredits::DrawOutroCreditsName(void)
             }
             else
             {
-                pCredit->flYPos -= gpGlobals->frametime * (m_flCreditsPixelHeight / p_flDesiedScrollTime);
+                pCredit->flYPos -= gpGlobals->frametime * (m_flCreditsPixelHeight / flDesiredScrollTime);
 
                 if (int(pCredit->flYPos) + (iFontTall / 2) <= iTall / 2)
                 {
@@ -338,13 +340,13 @@ void CHudCredits::DrawOutroCreditsName(void)
         }
         else
         {
-            pCredit->flYPos -= gpGlobals->frametime * (m_flCreditsPixelHeight / p_flDesiedScrollTime);
+            pCredit->flYPos -= gpGlobals->frametime * (m_flCreditsPixelHeight / flDesiredScrollTime);
         }
 
         if (pCredit->bActive == false)
             continue;
 
-        surface()->DrawSetTextFont(m_hTFont);
+        surface()->DrawSetTextFont(hCreditFont);
         surface()->DrawSetTextColor(cColor);
 
         wchar_t unicode[256];
@@ -358,7 +360,7 @@ void CHudCredits::DrawOutroCreditsName(void)
             g_pVGuiLocalize->ConvertANSIToUnicode(pCredit->szCreditName, unicode, sizeof(unicode));
         }
 
-        int iStringWidth = GetStringPixelWidth(unicode, m_hTFont);
+        int iStringWidth = GetStringPixelWidth(unicode, hCreditFont);
 
         surface()->DrawSetTextPos((iWidth / 2) - (iStringWidth / 2), pCredit->flYPos);
         surface()->DrawUnicodeString(unicode);
@@ -420,21 +422,7 @@ void CHudCredits::DrawLogo(void)
     int iWidth, iTall;
     GetHudSize(iWidth, iTall);
 
-    char szLogoFont[64];
-
-    if (hl2_episodic.GetBool())
-    {
-        Q_snprintf(szLogoFont, sizeof(szLogoFont), "ClientTitleFont");
-    }
-    else
-    {
-        Q_snprintf(szLogoFont, sizeof(szLogoFont), "WeaponIcons");
-    }
-
-    HScheme scheme = vgui::scheme()->GetScheme("ClientScheme");
-    HFont m_hTFont = vgui::scheme()->GetIScheme(scheme)->GetFont(szLogoFont);
-
-    int iFontTall = surface()->GetFontTall(m_hTFont);
+    const auto iFontTall = surface()->GetFontTall(m_hTFont);
 
     Color cColor = m_TextColor;
     cColor[3] = m_Alpha;
@@ -510,11 +498,11 @@ void CHudCredits::DrawIntroCreditsName(void)
         if (pCredit->bActive == false)
             continue;
 
-        HFont m_hTFont = pScheme->GetFont(pCredit->szFontName);
+        const auto hCreditFont = pScheme->GetFont(pCredit->szFontName, true);
 
         float localTime = gpGlobals->curtime - pCredit->flTimeStart;
 
-        surface()->DrawSetTextFont(m_hTFont);
+        surface()->DrawSetTextFont(hCreditFont);
         surface()->DrawSetTextColor(
             m_cColor[0], m_cColor[1], m_cColor[2],
             FadeBlend(m_flFadeInTime, m_flFadeOutTime, m_flFadeHoldTime + pCredit->flTimeAdd, localTime) * m_cColor[3]);
@@ -577,6 +565,8 @@ void CHudCredits::ApplySchemeSettings(IScheme *pScheme)
     SetVisible(ShouldDraw());
 
     SetBgColor(Color(0, 0, 0, 0));
+    
+    m_hTFont = pScheme->GetFont(hl2_episodic.GetBool() ? "ClientTitleFont" : "WeaponIcons", true);
 }
 
 void CHudCredits::PerformLayout()
@@ -657,14 +647,14 @@ void CHudCredits::PrepareOutroCredits(void)
         if (pCredit == nullptr)
             continue;
 
-        HFont m_hTFont = pScheme->GetFont(pCredit->szFontName, true);
+        const auto hCreditFont = pScheme->GetFont(pCredit->szFontName, true);
 
         pCredit->flYPos = iHeight;
         pCredit->bActive = false;
 
-        iHeight += surface()->GetFontTall(m_hTFont) + m_flSeparation;
+        iHeight += surface()->GetFontTall(hCreditFont) + m_flSeparation;
 
-        PrepareLine(m_hTFont, pCredit->szCreditName);
+        PrepareLine(hCreditFont, pCredit->szCreditName);
     }
 
     SetActive(true);
@@ -688,9 +678,9 @@ void CHudCredits::PrepareIntroCredits(void)
         if (pCredit == nullptr)
             continue;
 
-        HFont m_hTFont = pScheme->GetFont(pCredit->szFontName);
+        const auto hCreditsFont = pScheme->GetFont(pCredit->szFontName, true);
 
-        pCredit->flYPos = m_flY + (iSlot * surface()->GetFontTall(m_hTFont));
+        pCredit->flYPos = m_flY + (iSlot * surface()->GetFontTall(hCreditsFont));
         pCredit->flXPos = m_flX;
 
         if (i < 3)
@@ -709,7 +699,7 @@ void CHudCredits::PrepareIntroCredits(void)
 
         iSlot = (iSlot + 1) % 3;
 
-        PrepareLine(m_hTFont, pCredit->szCreditName);
+        PrepareLine(hCreditsFont, pCredit->szCreditName);
     }
 
     SetActive(true);
