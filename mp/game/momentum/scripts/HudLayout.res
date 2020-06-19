@@ -51,7 +51,7 @@
         "ypos"          "465" // Used to shove it in the bottom left corner
         "visible"       "1"
         "enabled"       "1"
-        "TextFont"      "MomHudDropText"
+        "font"          "Default12"
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
     }

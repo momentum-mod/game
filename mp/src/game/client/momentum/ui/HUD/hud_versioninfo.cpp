@@ -23,7 +23,6 @@ class CHudVersionInfo : public CHudElement, public Label
 protected:
     void VidInit() OVERRIDE;
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
-    CPanelAnimationStringVar(32, m_szTextFont, "TextFont", "MomHudDropText");
 };
 
 DECLARE_HUDELEMENT(CHudVersionInfo);
@@ -58,6 +57,5 @@ void CHudVersionInfo::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    SetFont(pScheme->GetFont(m_szTextFont, true));
     InvalidateLayout(true);
 }
