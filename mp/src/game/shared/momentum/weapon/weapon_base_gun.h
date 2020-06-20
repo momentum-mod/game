@@ -30,8 +30,6 @@ class CWeaponBaseGun : public CWeaponBase
     // Usually plays the shot sound. Guns with silencers can play different sounds.
     virtual void DoFireEffects();
     virtual void ItemPostFrame();
-    // Mostly takes care of lowering the weapon
-    virtual void ProcessAnimationEvents();
 
   protected:
     float m_zoomFullyActiveTime;
