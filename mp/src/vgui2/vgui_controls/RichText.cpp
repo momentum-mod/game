@@ -578,7 +578,13 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 			else
 			{
 				// Jump down a line
-				return m_LineBreaks[_vertScrollBar->GetValue() + _vertScrollBar->GetRangeWindow()];
+				const auto nextOffset = _vertScrollBar->GetValue() + _vertScrollBar->GetRangeWindow();
+				if (nextOffset < m_LineBreaks.Count())
+				{
+				    return m_LineBreaks[nextOffset];
+				}
+
+				return m_LineBreaks[m_LineBreaks.Count() - 1] + 1;
 			}
 		}
 		else if (cy >= y && (cy < (y + fontTall)))
@@ -1607,7 +1613,8 @@ void RichText::LayoutVerticalScrollBarSlider()
     const auto offY = GetLineHeight();
 
 	int displayLines = offY ? tall / offY : 0;
-	int numLines = m_LineBreaks.Count() - 1;
+	const bool bLastCharIsNewline = m_LineBreaks.Count() > 1 && m_LineBreaks[m_LineBreaks.Count() - 2] == m_TextStream.Count();
+	int numLines = m_LineBreaks.Count() - (bLastCharIsNewline ? 1 : 0);
 	
 	if (numLines <= displayLines)
 	{
