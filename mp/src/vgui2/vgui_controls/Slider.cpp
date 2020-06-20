@@ -23,7 +23,7 @@ using namespace vgui;
 
 DECLARE_BUILD_FACTORY( Slider );
 
-#define DEFAULT_THUMB_WIDTH 8.0f
+#define DEFAULT_THUMB_WIDTH 4.0f
 #define DEFAULT_TRACK_OFFSET_Y 8
 #define DEFAULT_TRACK_HEIGHT 4
 #define DEFAULT_TICK_OFFSET 4
@@ -58,7 +58,7 @@ Slider::Slider(Panel *parent, const char *panelName ) : BaseClass(parent, panelN
 	_tickOffset = GetScaledVal(DEFAULT_TICK_OFFSET);
 	_tickHeight = GetScaledVal(DEFAULT_TICK_HEIGHT);
 
-	SetThumbWidth( DEFAULT_THUMB_WIDTH );
+	SetThumbWidth( GetScaledVal(DEFAULT_THUMB_WIDTH) );
 	RecomputeNobPosFromValue();
 	AddActionSignalTarget(this);
 	SetBlockDragChaining( true );
@@ -349,7 +349,7 @@ void Slider::ApplySettings(KeyValues *inResourceData)
 	float thumbWidth = inResourceData->GetFloat("thumbwidth", DEFAULT_THUMB_WIDTH);
 	if (thumbWidth > 0.0f)
 	{
-		SetThumbWidth(thumbWidth);
+		SetThumbWidth(GetScaledVal(thumbWidth));
 	}
 
 	const char *left = inResourceData->GetString("leftText", nullptr);
