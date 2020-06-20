@@ -63,6 +63,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // CAutoGameSystem:
     void LevelInitPostEntity() OVERRIDE;
 
+    void OnReloadControls() override;
+
     void MoveToCenterOfScreen();
 
     CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34"); // Avatar width doesn't scale with resolution
