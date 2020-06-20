@@ -31,8 +31,6 @@ CLeaderboardsStats::CLeaderboardsStats(Panel* pParent) : BaseClass(pParent, "CLe
     m_pPlayerName = new Label(this, "PlayerName", "");
     m_pPlayerMapRank = new Label(this, "PlayerMapRank", "");
     m_pPlayerLevel = new Label(this, "PlayerLevel", "");
-    m_pPlayerPersonalBest = new Label(this, "PlayerPersonalBest", "");
-    m_pPlayerGlobalRank = new Label(this, "PlayerGlobalRank", "");
     m_pPlayerRankXP = new Label(this, "RankXP", "");
     m_pPlayerCosXP = new Label(this, "CosXP", "");
     m_pMapsCompleted = new Label(this, "MapsCompleted", "");
@@ -90,8 +88,6 @@ void CLeaderboardsStats::LoadData(bool bFullUpdate)
 
         m_pPlayerLevel->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_Level"), pDumDum));
         m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), pDumDum));
-        m_pPlayerGlobalRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_GlobalRank"), pDumDum));
-        m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), pDumDum));
         m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pDumDum));
         m_pPlayerCosXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_CosXP"), pDumDum));
         m_pMapsCompleted->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapsCompleted"), pDumDum));
@@ -166,16 +162,6 @@ void CLeaderboardsStats::OnPlayerStats(KeyValues* kv)
 
         m_pPlayerMapRank->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_MapRank"), pMapRank));
         m_pPlayerRankXP->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_RankXP"), pMapRank));
-        m_pPlayerPersonalBest->SetText(CConstructLocalizedString(g_pVGuiLocalize->Find("MOM_PersonalBestTime"), pMapRank));
-
-        /*if (grank > -1 && gtotal > -1)
-        {
-            char p_sGlobalRank[BUFSIZELOCL];
-            char p_sLocalized[BUFSIZELOCL];
-            LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
-            Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sGlobalRank, grank, gtotal);
-            m_pPlayerGlobalRank->SetText(p_sLocalized);
-        }*/
     }
     else if (pErr)
     {
