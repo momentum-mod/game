@@ -319,3 +319,10 @@ void CClientTimesDisplay::LevelInitPostEntity()
     m_pStats->NeedsUpdate();
     m_pTimes->LevelInit();
 }
+
+void CClientTimesDisplay::OnReloadControls()
+{
+    BaseClass::OnReloadControls();
+
+    LevelInitPostEntity();
+}
