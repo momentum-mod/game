@@ -14,6 +14,7 @@
         "visible"		"0"
         "enabled"		"1"
         "tabPosition"		"0"
+        "BgColor_override" "Blank"
         "MapImageOpacityMax" "0.5"
     }
 

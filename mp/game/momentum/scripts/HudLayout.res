@@ -63,7 +63,7 @@
         "wide"          "120"
         "tall"          "10"
         "InitialValue"  "0"
-        "BackgroundColor" "MOM.Panel.Bg"
+        "BackgroundColor" "Blank"
         "FillColor"     "255 255 255 225"
         "visible"       "1"
         "enabled"       "1"
@@ -108,6 +108,7 @@
         "LossColor" "MOM.Compare.Loss"
         "TieColor" "MOM.Compare.Tie"
         "TextFont" "HudHintTextSmall"
+        "bgcolor_override" "BlackHO"
         "format_spacing" "2"//Number of pixels between each component of the comparison panel, only if mom_comparisons_format_output has value 1
         "text_xpos" "5"
         "text_ypos" "2"
@@ -142,8 +143,7 @@
     HudWeaponSelection
     {
         "fieldName" "HudWeaponSelection"
-        "ypos"  "16"    [$WIN32]
-        "ypos"  "32"    [$X360]
+        "ypos"  "16"
         "visible" "1"
         "enabled" "1"
         "SmallBoxSize" "32"
@@ -160,6 +160,13 @@
         "SelectionNumberYPos" "4"
         "SelectionGrowTime" "0.4"
         "TextYPos" "64"
+        "TextFont" "HudSelectionText"
+        "NumberFont" "HudSelectionNumbers"
+        "NumberColor" "MomGreydientStep8"
+        "EmptyBoxColor" "SelectionEmptyBoxBg"
+        "BoxColor" "SelectionBoxBg"
+        "SelectedBoxColor" "SelectionSelectedBoxBg"
+        "SelectedFgColor" "MomentumBlue"
     }
 
     HudCrosshair
