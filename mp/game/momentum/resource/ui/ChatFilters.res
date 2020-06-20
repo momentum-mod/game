@@ -4,13 +4,16 @@
 	{
 		"ControlName"		"EditablePanel"
 		"fieldName"		"HudChatFilterPanel"
-		"xpos"			"10"
-		"ypos"			"c-50"
+		"xpos"			"4"
+		"ypos"			"0"
 		"zpos"			"0"
 		"wide"			"110"
 		"tall"			"60"
 		"visible"		"0"
 		"enabled"		"1"
+        "pin_to_sibling" "ChatFiltersButton"
+		"pin_corner_to_sibling"		"2"
+		"pin_to_sibling_corner"		"3"
 	}
 
 	"joinleave_button"

@@ -24,7 +24,6 @@ class Panel;
 #define CHAT_HISTORY_FADE_TIME 0.25f
 #define CHAT_HISTORY_IDLE_TIME 15.0f
 #define CHAT_HISTORY_IDLE_FADE_TIME 2.5f
-#define CHAT_HISTORY_ALPHA 127
 
 extern Color g_ColorBlue;
 extern Color g_ColorRed;
@@ -113,25 +112,25 @@ class CBaseHudChatLine : public vgui::RichText
     CBaseHudChatLine(Panel *parent, const char *panelName);
     ~CBaseHudChatLine();
 
-    void SetExpireTime(void);
+    void SetExpireTime();
 
-    bool IsReadyToExpire(void);
+    bool IsReadyToExpire();
 
-    void Expire(void);
+    void Expire();
 
-    float GetStartTime(void);
+    float GetStartTime();
 
-    int GetCount(void);
+    int GetCount();
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
     vgui::HFont GetFont() { return m_hFont; }
 
-    Color GetTextColor(void) { return m_clrText; }
+    Color GetTextColor() { return m_clrText; }
     void SetNameLength(int iLength) { m_iNameLength = iLength; }
     void SetNameColor(Color cColor) { m_clrNameColor = cColor; }
 
-    virtual void PerformFadeout(void);
+    virtual void PerformFadeout();
     virtual void InsertAndColorizeText(wchar_t *buf, int clientIndex);
     virtual void Colorize(int alpha = 255); ///< Re-inserts the text in the appropriate colors at the given alpha
 
@@ -168,7 +167,7 @@ class CHudChatHistory : public vgui::RichText
   public:
     CHudChatHistory(Panel *pParent, const char *panelName);
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 };
 
 class CHudChatFilterCheckButton : public vgui::CheckButton
@@ -178,7 +177,7 @@ class CHudChatFilterCheckButton : public vgui::CheckButton
   public:
     CHudChatFilterCheckButton(Panel *pParent, const char *pName, const char *pText, int iFlag);
 
-    int GetFilterFlag(void) { return m_iFlag; }
+    int GetFilterFlag() { return m_iFlag; }
 
   private:
     int m_iFlag;
@@ -203,10 +202,10 @@ class CBaseHudChat : public CHudElement, public vgui::EditablePanel
     CBaseHudChat(const char *pElementName);
     ~CBaseHudChat();
 
-    virtual void Init(void);
+    void Init() override;
 
-    void LevelInit();
-    void LevelShutdown(void);
+    void LevelInit() override;
+    void LevelShutdown() override;
 
     void MsgFunc_TextMsg(const char *pszName, int iSize, void *pbuf);
 
@@ -214,25 +213,26 @@ class CBaseHudChat : public CHudElement, public vgui::EditablePanel
     virtual void FMTFUNCTION_WIN(4, 5) ChatPrintf(int iPlayerIndex, int iFilter, PRINTF_FORMAT_STRING const char *fmt, ...) FMTFUNCTION(4, 5);
 
     virtual void StartMessageMode(int iMessageModeType);
-    virtual void StopMessageMode(void);
-    void Send(void);
+    virtual void StopMessageMode();
+    void Send();
 
     MESSAGE_FUNC(OnChatEntrySend, "ChatEntrySend");
     MESSAGE_FUNC(OnChatEntryStopMessageMode, "ChatEntryStopMessageMode");
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-    virtual void Paint(void);
-    virtual void OnTick(void);
-    virtual void Reset();
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+    void OnKeyCodeReleased(vgui::KeyCode code) override;
+    void Paint() override;
+    void OnTick() override;
+    void Reset() override;
     void OnCommand(const char* command) OVERRIDE;
-    CBaseHudChatEntry *GetInputPanel(void);
+    CBaseHudChatEntry *GetInputPanel();
 
     static int m_nLineCounter;
 
-    virtual int GetChatInputOffset(void);
+    virtual int GetChatInputOffset();
 
     // IGameEventListener interface:
-    virtual void FireGameEvent(IGameEvent *event);
+    void FireGameEvent(IGameEvent *event) override;
 
     CHudChatHistory *GetChatHistory() const { return m_pChatHistory; }
 
@@ -244,14 +244,13 @@ class CBaseHudChat : public CHudElement, public vgui::EditablePanel
     virtual void MsgFunc_SayText2(bf_read &msg);
     virtual void MsgFunc_TextMsg(bf_read &msg);
 
-    CBaseHudChatInputLine *GetChatInput(void) { return m_pChatInput; }
-    CHudChatFilterPanel *GetChatFilterPanel(void);
+    CBaseHudChatEntry *GetChatInput() { return m_pChatInput; }
 
-    virtual int GetFilterFlags(void) { return m_iFilterFlags; }
+    virtual int GetFilterFlags() { return m_iFilterFlags; }
     void SetFilterFlag(int iFilter);
 
     //-----------------------------------------------------------------------------
-    virtual Color GetDefaultTextColor(void);
+    virtual Color GetDefaultTextColor();
     virtual Color GetTextColorForClient(TextColor colorNum, int clientIndex);
     virtual Color GetClientColor(int clientIndex);
 
@@ -259,17 +258,17 @@ class CBaseHudChat : public CHudElement, public vgui::EditablePanel
 
     virtual const char *GetDisplayedSubtitlePlayerName(int clientIndex);
 
-    bool IsVoiceSubtitle(void) { return m_bEnteringVoice; }
+    bool IsVoiceSubtitle() { return m_bEnteringVoice; }
     void SetVoiceSubtitleState(bool bState) { m_bEnteringVoice = bState; }
-    int GetMessageMode(void) { return m_nMessageMode; }
+    int GetMessageMode() { return m_nMessageMode; }
 
     void SetCustomColor(Color colNew) { m_ColorCustom = colNew; }
     void SetCustomColor(const char *pszColorName);
 
   protected:
-    CBaseHudChatLine *FindUnusedChatLine(void);
+    CBaseHudChatLine *FindUnusedChatLine();
 
-    CBaseHudChatInputLine *m_pChatInput;
+    CBaseHudChatEntry *m_pChatInput;
     CBaseHudChatLine *m_ChatLine;
     int m_iFontHeight;
 
@@ -280,8 +279,10 @@ class CBaseHudChat : public CHudElement, public vgui::EditablePanel
 
     Color m_ColorCustom;
 
+    CPanelAnimationVar(int, m_iHistoryAlpha, "HistoryAlpha", "192");
+
   private:
-    void Clear(void);
+    void Clear();
 
     int ComputeBreakChar(int width, const char *text, int textlen);
 
@@ -299,81 +300,13 @@ class CBaseHudChatEntry : public vgui::TextEntry
 {
     DECLARE_CLASS_SIMPLE(CBaseHudChatEntry, TextEntry);
 
-    CBaseHudChatEntry(Panel *parent, char const *panelName, Panel *pChat) : BaseClass(parent, panelName)
-    {
-        SetCatchEnterKey(true);
-        SetAllowNonAsciiCharacters(true);
-        SetDrawLanguageIDAtLeft(true);
-        m_pHudChat = pChat;
-    }
+    CBaseHudChatEntry(Panel *parent, char const *panelName);
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme)
-    {
-        BaseClass::ApplySchemeSettings(pScheme);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+    void OnKeyCodeTyped(vgui::KeyCode code) override;
 
-        SetPaintBorderEnabled(false);
-    }
-
-    virtual void OnKeyCodeTyped(vgui::KeyCode code)
-    {
-        if (code == KEY_ENTER || code == KEY_PAD_ENTER || code == KEY_ESCAPE)
-        {
-            if (code != KEY_ESCAPE)
-            {
-                if (m_pHudChat)
-                {
-                    PostMessage(m_pHudChat, new KeyValues("ChatEntrySend"));
-                }
-            }
-
-            // End message mode.
-            if (m_pHudChat)
-            {
-                PostMessage(m_pHudChat, new KeyValues("ChatEntryStopMessageMode"));
-            }
-        }
-        else if (code == KEY_TAB)
-        {
-            // Ignore tab, otherwise vgui will screw up the focus.
-            return;
-        }
-        else
-        {
-            BaseClass::OnKeyCodeTyped(code);
-        }
-    }
-
-  private:
-    Panel *m_pHudChat;
-};
-
-//-----------------------------------------------------------------------------
-// Purpose: The prompt and text entry area for chat messages
-//-----------------------------------------------------------------------------
-class CBaseHudChatInputLine : public vgui::Panel
-{
-    DECLARE_CLASS_SIMPLE(CBaseHudChatInputLine, vgui::Panel);
-
-    CBaseHudChatInputLine(Panel *parent, char const *panelName);
-
-    void SetPrompt(const wchar_t *prompt);
-    void ClearEntry(void);
-    void SetEntry(const wchar_t *entry);
-    void GetMessageText(OUT_Z_BYTECAP(buffersizebytes) wchar_t *buffer, int buffersizebytes);
-
-    virtual void PerformLayout();
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-
-    CBaseHudChatEntry *GetInputPanel(void);
-    virtual vgui::VPANEL GetCurrentKeyFocus() { return m_pInput->GetVPanel(); }
-
-    virtual void Paint() { BaseClass::Paint(); }
-
-    vgui::Label *GetPrompt(void) { return m_pPrompt; }
-
-  protected:
-    vgui::Label *m_pPrompt;
-    CBaseHudChatEntry *m_pInput;
+    CPanelAnimationStringVar(32, m_FontName, "font", "Default");
+    CPanelAnimationVar(Color, m_cTypingColor, "TypingText", "White");
 };
 
 class CHudChatFilterPanel : public vgui::EditablePanel
@@ -383,10 +316,9 @@ class CHudChatFilterPanel : public vgui::EditablePanel
   public:
     CHudChatFilterPanel(Panel *pParent, const char *pName);
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
     MESSAGE_FUNC_PTR(OnFilterButtonChecked, "CheckButtonChecked", panel);
 
-    CBaseHudChat *GetChatParent(void) { return dynamic_cast<CBaseHudChat *>(GetParent()); }
+    CBaseHudChat *GetChatParent() { return dynamic_cast<CBaseHudChat *>(GetParent()); }
 
-    virtual void SetVisible(bool state);
+    void SetVisible(bool state) override;
 };
