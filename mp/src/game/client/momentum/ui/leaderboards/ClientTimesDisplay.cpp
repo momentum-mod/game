@@ -5,9 +5,12 @@
 #include "LeaderboardsStats.h"
 #include "LeaderboardsTimes.h"
 
+#include "clientmode.h"
+
 #include "vgui/ISurface.h"
 #include "voice_status.h"
 #include <inputsystem/iinputsystem.h>
+#include "vgui_controls/AnimationController.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -192,8 +195,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     }
     else
     {
-        SetVisible(false);
-        SetMouseInputEnabled(false); // Turn mouse off
+        Close();
     }
 }
 
@@ -204,6 +206,7 @@ void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
     if (bState)
     {
         m_bToggledOpen = true;
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusGain");
     }
 }
 
@@ -219,6 +222,8 @@ void CClientTimesDisplay::Close()
     m_bToggledOpen = false;
     SetVisible(false);
     SetMouseInputEnabled(false);
+
+    g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusLost");
 }
 
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
