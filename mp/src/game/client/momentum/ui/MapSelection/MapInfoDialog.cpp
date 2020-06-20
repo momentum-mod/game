@@ -66,10 +66,11 @@ CDialogMapInfo::CDialogMapInfo(Panel *parent, MapData *pMapData) : Frame(parent,
     SetTitleBarVisible(false);
     SetCloseButtonVisible(true);
 
-    m_pTimesList->AddColumnHeader(0, "rank", "#MOM_Rank", 54);
-    m_pTimesList->AddColumnHeader(1, "name", "#MOM_Name", 166);
-    m_pTimesList->AddColumnHeader(2, "time", "#MOM_Time", 120);
-    m_pTimesList->AddColumnHeader(3, "date", "#MOM_Achieved", 100);
+    m_pTimesList->AddColumnHeader(0, "rank", "#MOM_Rank", GetScaledVal(40));
+    m_pTimesList->AddColumnHeader(1, "name", "#MOM_Name", GetScaledVal(100));
+    m_pTimesList->AddColumnHeader(2, "time", "#MOM_Time", GetScaledVal(50));
+    m_pTimesList->AddColumnHeader(3, "date", "#MOM_Achieved", GetScaledVal(50));
+    m_pTimesList->SetAutoTallHeaderToFont(true);
 
     m_pTimesList->SetSortFunc(2, &PlayerTimeColumnSortFunc);
     m_pTimesList->SetSortColumn(2);
@@ -285,15 +286,23 @@ void CDialogMapInfo::GetMapTimes(TimeType_t type)
     bool bSent = false;
 
     if (type == TIMES_TOP10)
+    {
         bSent = g_pAPIRequests->GetTop10MapTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnTop10TimesCallback));
+    }
     else if (type == TIMES_AROUND)
+    {
         bSent = g_pAPIRequests->GetAroundTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnAroundTimesCallback));
+    }
     else if (type == TIMES_FRIENDS)
     {
         if (m_bUnauthorizedFriendsList)
+        {
             m_pTimesList->SetEmptyListText(g_szTimesStatusStrings[STATUS_UNAUTHORIZED_FRIENDS_LIST]);
+        }
         else
+        {
             bSent = g_pAPIRequests->GetFriendsTimes(m_pMapData->m_uID, UtlMakeDelegate(this, &CDialogMapInfo::OnFriendsTimesCallback));
+        }
     }
 
     if (bSent)
