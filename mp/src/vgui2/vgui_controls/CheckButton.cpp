@@ -61,7 +61,10 @@ void CheckImage::Paint()
 			DrawSetTextColor(_checkColor);
 		}
 
-		DrawPrintChar(0, 1, 'b');
+		int charWide = surface()->GetCharacterWidth(GetFont(), 'b');
+		int charTall = surface()->GetFontTall(GetFont());
+
+		DrawPrintChar((wide / 2) - (charWide / 2), (tall / 2) - (charTall / 2), 'b');
 	}
 }
 
