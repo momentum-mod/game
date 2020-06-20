@@ -52,8 +52,9 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
 
     m_pFilterPanel = new EditablePanel(pParent, "FilterPanel");
     m_pFilterPanel->SetSize(10, 10);
-    m_pFilterPanel->AddActionSignalTarget(this);
     m_pFilterPanel->LoadControlSettings("resource/ui/leaderboards/filter_panel.res");
+    m_pFilterPanel->AddActionSignalTarget(this);
+    m_pFilterPanel->SetVisible(false);
 
     m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
 

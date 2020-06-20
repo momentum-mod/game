@@ -22,7 +22,7 @@
         "auto_wide_tocontents" "1"
         "textAlignment"		"center"
         "command" "ToggleScrollOnly"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
     }
@@ -51,7 +51,7 @@
         "auto_wide_tocontents" "1"
         "textAlignment"		"center"
         "command" "ToggleWOnly"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
     }
@@ -68,7 +68,7 @@
         "auto_wide_tocontents" "1"
         "textAlignment"		"center"
         "command" "ToggleHSW"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
     }
@@ -85,7 +85,7 @@
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ToggleSideways"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
     }
@@ -102,7 +102,7 @@
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ToggleBackwards"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
     }
@@ -119,7 +119,7 @@
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ToggleBonus"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
     }
@@ -136,7 +136,7 @@
         "auto_wide_tocontents" "1"
         "textAlignment" "center"
         "command" "ResetFlags"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
     }
