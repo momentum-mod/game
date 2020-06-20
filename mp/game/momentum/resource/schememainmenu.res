@@ -12,13 +12,13 @@
         //If this is 1, the logo is text, found in gameui2_english.txt
         "MainMenu.Logo.Text"                            "0"
         //Note: The following is only used if the above is "0"
-        "MainMenu.Logo.Image"                           "menu/logo"//This is based in materials/vgui !!
-        "MainMenu.Logo.Image.Width"                     "350"
-        "MainMenu.Logo.Image.Height"                    "90"
+        "MainMenu.Logo.Image"                           "menu/MomentumTitle"//This is based in materials/vgui !!
+        "MainMenu.Logo.Image.Width"                     "400"
+        "MainMenu.Logo.Image.Height"                    "100"
         
         //Note: These are used for position if the logo is not attached to the menu
 		"MainMenu.Logo.OffsetX"							"10"
-		"MainMenu.Logo.OffsetY"							"10"
+		"MainMenu.Logo.OffsetY"							"0"
 
         //Makes the Logo (text OR image) stick to the menu
 		"MainMenu.Logo.AttachToMenu"					"0"

@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture"	"vgui/menu/MomentumTitle"
+	"$translucent" "1"
+	"$ignorez" "1"
+}
