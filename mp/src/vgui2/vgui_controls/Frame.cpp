@@ -1144,45 +1144,41 @@ void Frame::OnFrameFocusChanged(bool bHasFocus)
 
 int Frame::GetDraggerSize()
 {
-	const int DRAGGER_SIZE = 5;
 	if ( m_bSmallCaption )
 	{
-		return 3;
+		return GetScaledVal(3);
 	}
 	
-	return DRAGGER_SIZE;
+	return GetScaledVal(5);
 }
 
 int Frame::GetCornerSize()
 {
-	const int CORNER_SIZE = 8;
 	if ( m_bSmallCaption )
 	{
-		return 6;
+		return GetScaledVal(4);
 	}
 	
-	return CORNER_SIZE;
+	return GetScaledVal(6);
 }
 
 int Frame::GetBottomRightSize()
 {
-	const int BOTTOMRIGHTSIZE = 18;
 	if ( m_bSmallCaption )
 	{
-		return 12;
+		return GetScaledVal(8);
 	}
 	
-	return BOTTOMRIGHTSIZE;
+	return GetScaledVal(12);
 }
 
 int Frame::GetCaptionHeight()
 {
-	const int CAPTIONHEIGHT = 23;
-	if ( m_bSmallCaption )
+	if (m_bSmallCaption)
 	{
-		return 12;
+		return GetScaledVal(8);
 	}
-	return CAPTIONHEIGHT;
+	return GetScaledVal(16);
 }
 
 //-----------------------------------------------------------------------------
