@@ -2,6 +2,20 @@ event LevelInit
 {
 }
 
+event LeaderboardsBgFocusGain
+{
+    Animate CLeaderboardsHeader BgColor "MomGreydientStep3" Linear 0.0 0.1
+    Animate CLeaderboardsTimes BgColor "MomGreydientStep3" Linear 0.0 0.1
+    Animate CLeaderboardsStats BgColor "MomGreydientStep3" Linear 0.0 0.1
+}
+
+event LeaderboardsBgFocusLost
+{
+    Animate CLeaderboardsHeader BgColor "MomGreydientHOStep3" Spline 0.0 0.001
+    Animate CLeaderboardsTimes BgColor "MomGreydientHOStep3" Spline 0.0 0.001
+    Animate CLeaderboardsStats BgColor "MomGreydientHOStep3" Spline 0.0 0.001
+}
+
 event TimerFailStart
 {
     Animate HudTimer StatusColor "255 0 0 255" Spline 0.0 0.3
