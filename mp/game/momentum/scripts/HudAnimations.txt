@@ -10,8 +10,8 @@ event TimerFailStart
 
 event VersionPulse
 {
-    Animate VersionLabel alpha "0" Spline 0.0 1.0
-    Animate VersionLabel alpha "255" Spline 1.0 1.0
+    Animate VersionLabel FgColor "White" Spline 0.0 1.0
+    Animate VersionLabel FgColor "MomentumBlue" Spline 1.0 1.0
     RunEvent VersionPulseLoop 2.0
 }
 
@@ -23,7 +23,7 @@ event VersionPulseLoop
 event VersionPulseStop
 {
     StopEvent VersionPulse 0.0
-    Animate VersionLabel alpha 255 Linear 0.0 0.000001
+    Animate VersionLabel FgColor "White" Linear 0.0 0.000001
 }
 
 event MenuPulse
