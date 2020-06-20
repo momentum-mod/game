@@ -101,6 +101,6 @@ void ScrollableEditablePanel::OnScrollBarSliderMoved()
 void ScrollableEditablePanel::OnMouseWheeled(int delta)
 {
 	int val = m_pScrollBar->GetValue();
-	val -= (delta * 50);
+	val -= (delta * GetScaledVal(40));
 	m_pScrollBar->SetValue( val );
 }
