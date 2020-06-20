@@ -10,6 +10,9 @@
         "ypos"          "0"
         "wide"			"20"
         "tall"			"22"
+        "pin_to_sibling" "HudStickyCharge"
+        "pin_to_sibling_corner" "6" //bottom center
+        "pin_corner_to_sibling" "4" //top center
         "fgcolor_override"		"0 0 0 0"
         "bgcolor_override"		"0 0 0 0"
     }
