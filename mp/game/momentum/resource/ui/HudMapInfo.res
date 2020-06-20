@@ -29,7 +29,7 @@
         "textAlignment"		"center"
         "dulltext"		"0"
         "brighttext"		"0"
-        "font"		"MomHudDropText"
+        "font"		"Default12"
         "wrap"		"0"
         "auto_tall_tocontents" "1"
     }
@@ -45,7 +45,7 @@
         "textAlignment"		"west"
         "dulltext"		"0"
         "brighttext"		"0"
-        "font"		"MomHudDropText"
+        "font"		"Default12"
         "wrap"		"0"
         "auto_tall_tocontents" "1"
         "auto_wide_tocontents" "1"

@@ -14,6 +14,7 @@
         "enabled"		"1"
         "tabPosition"	"2"
         "paintborder" "1"
+        "BgColor_override" "MomGreydientStep3"
     }
     "LobbyLabel"
     {
@@ -31,7 +32,7 @@
         "textAlignment"	"west"
         "dulltext"		"0"
         "brighttext"	"1"
-        "font"			"BigNoodleSmall"
+        "font"			"Titling18"
         "wrap"			"0"
         "centerwrap"	"0"
         "textinsetx"	"0"
@@ -58,7 +59,7 @@
         "textAlignment"	"west"
         "dulltext"		"0"
         "brighttext"	"1"
-        "font"			"BigNoodleSmall"
+        "font"			"Titling18"
         "wrap"			"0"
         "centerwrap"	"0"
         "textinsetx"	"0"
@@ -114,7 +115,7 @@
         "auto_wide_tocontents"		"1"
         "use_proportional_insets"		"0"
         "Default"		"0"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "actionsignallevel" "1"
         "mouseinputenabled" "1"
     }
@@ -146,7 +147,7 @@
         "auto_wide_tocontents"		"1"
         "use_proportional_insets"		"0"
         "Default"		"0"
-        "Font"			"BigNoodleSmall"
+        "Font"			"Titling18"
         "actionsignallevel" "1"
         "mouseinputenabled" "1"
     }
@@ -168,5 +169,6 @@
         "mouseinputenabled" "1"
         "keyboardinputenabled" "1"
         "proportionalToParent" "1"
+        "BgColor_override" "MomGreydientStep4"
     }
 }

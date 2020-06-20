@@ -14,6 +14,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
         "PaintBackgroundType" "2"
+        "bgcolor_override" "BlackHO"
 	}
 	"MainStatusLabel"
 	{
