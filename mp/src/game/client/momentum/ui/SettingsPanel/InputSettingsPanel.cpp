@@ -195,8 +195,6 @@ void InputSettingsPanel::ParseActionDescriptions()
     char szBinding[256];
     char szDescription[256];
 
-    KeyValues *item;
-
     // Load the default keys list
     CUtlBuffer buf(0, 0, CUtlBuffer::TEXT_BUFFER);
     if (!g_pFullFileSystem->ReadFile("scripts/kb_act.lst", NULL, buf))
@@ -239,14 +237,13 @@ void InputSettingsPanel::ParseActionDescriptions()
             else
             {
                 // Create a new: blank item
-                item = new KeyValues("Item");
+                KeyValuesAD item("Item");
 
                 item->SetString("Action", szDescription);
                 item->SetString("Binding", szBinding);
                 item->SetString("Key", "");
 
                 m_pKeyBindList->AddItem(sectionIndex, item);
-                item->deleteThis();
             }
         }
     }
