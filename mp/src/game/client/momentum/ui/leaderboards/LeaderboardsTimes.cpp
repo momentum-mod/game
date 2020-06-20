@@ -156,8 +156,8 @@ void CLeaderboardsTimes::InitLeaderboardSections()
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
         m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, GetScaledVal(m_aiColumnWidths[2]));
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[0]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, m_aiColumnWidths[0]);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
@@ -173,28 +173,20 @@ void CLeaderboardsTimes::InitLeaderboardSections()
         panel->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         panel->SetSectionAlwaysVisible(m_iSectionId);
         panel->SetImageList(m_pImageList, false);
-        panel->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-                                  GetScaledVal(m_aiColumnWidths[1]));
-        panel->AddColumnToSection(m_iSectionId, "avatar", "",
-                                  SectionedListPanel::COLUMN_IMAGE,
-                                  DEFAULT_AVATAR_SIZE + 4);
-        panel->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        panel->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        panel->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        panel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
-                                  0, 160);
-        panel->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
-                                  0, GetScaledVal(m_aiColumnWidths[2]));
-        panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[0]));
+        panel->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER, m_aiColumnWidths[1] + GetScaledVal(6));
+        panel->AddColumnToSection(m_iSectionId, "avatar", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(DEFAULT_AVATAR_SIZE + 2));
+        panel->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
+        panel->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
+        panel->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
+        panel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, GetScaledVal(120));
+        panel->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, m_aiColumnWidths[2]);
+        panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, m_aiColumnWidths[0]);
         // Scroll only icon
-        panel->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
-                                  16);
+        panel->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
         // HSW/SW/BW/WOnly Icons
-        panel->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
-                                  16);
+        panel->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
         // Bonus Icon
-        panel->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE,
-                                  16);
+        panel->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
     }
 }
 
