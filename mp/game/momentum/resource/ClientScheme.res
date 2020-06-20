@@ -216,7 +216,7 @@ Scheme
 			{
 				"name"		"Noto Sans"
 				"tall"		"12"
-				"weight"	"1000"
+				"weight"	"700"
 				"antialias" "1"
                 "dropshadow" "1"
 			}
@@ -227,7 +227,7 @@ Scheme
 			{
 				"name"		"Noto Sans"
 				"tall"		"10"
-				"weight"	"1000"
+				"weight"	"700"
 				"antialias" "1"
                 "dropshadow" "1"
 			}
@@ -238,7 +238,7 @@ Scheme
 			{
 				"name"		"Noto Sans"
 				"tall"		"16"
-				"weight"	"1000"
+				"weight"	"700"
 				"blur"		"2" //4
 				"scanlines" "1" //2
 				"additive"	"1"
@@ -262,7 +262,7 @@ Scheme
 			{
 				"name"		"Noto Sans"
 				"tall"		"14"
-				"weight"	"1000"
+				"weight"	"700"
 				"antialias" "1"
 				"additive"	"1"
 			}
