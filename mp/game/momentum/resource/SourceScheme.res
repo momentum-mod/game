@@ -17,12 +17,14 @@ Scheme
     {
         // base colors
         "White"				"255 255 255 255"
+        "WhiteHO"           "255 255 255 128"
         "OffWhite"			"221 221 221 255"
         "DullWhite"			"190 190 190 255"
         "Light Gray"		"211 211 211 20"
         "Gray" 				"128 128 128 150"
         "Dark Gray" 		"64 64 64 200"
         "Black"                "0 0 0 255"
+        "BlackHO"           "0 0 0 128"
         "TransparentBlack"    "0 0 0 196"
         "TransparentLightBlack"    "0 0 0 90"
 
@@ -35,9 +37,6 @@ Scheme
         "AchievementsLightGrey"		"79 79 79 255"
         "AchievementsDarkGrey"		"55 55 55 255"
         "AchievementsInactiveFG"	"130 130 130 255"
-
-        "MOM.Panel.Fg"				"255 255 255 125"
-        "MOM.Panel.Bg"				"211 211 211 50"
 
         "MomentumRed"	    "255 106 106 255"
         "MomentumGreen"	    "152 255 153 255"
@@ -73,6 +72,9 @@ Scheme
         "MOM.Compare.Gain" "MomentumBlue"
         "MOM.Compare.Loss" "MomentumRed"
         "MOM.Compare.Tie" "MOM.Panel.Fg"
+
+        "MOM.Panel.Fg"				"WhiteHO"
+        "MOM.Panel.Bg"				"MomGreydientStep3"
 
         // vgui_controls color specifications
         Border.Bright					"200 200 200 255"	// the lit side of a control
@@ -160,8 +162,8 @@ Scheme
         Menu.ArmedBgColor				"MomentumBlue"
         Menu.TextInset					"6"
 
-        Panel.FgColor					"Gray"
-        Panel.BgColor					"Blank"
+        Panel.FgColor					"White"
+        Panel.BgColor					"MomGreydientStep3"
 
         ProgressBar.FgColor				"MomentumBlue"
         ProgressBar.BgColor				"MomGreydientStep1"
@@ -251,8 +253,8 @@ Scheme
             "1"
             {
                 "name"		"Courier New"
-                "tall"		"10"
-                "weight"	"500"
+                "tall"		"14"
+                "weight"	"400"
                 "antialias" "1"
             }
         }
@@ -262,8 +264,8 @@ Scheme
             "1"
             {
                 "name"		"Courier New"
-                "tall"		"7"
-                "weight"	"500"
+                "tall"		"12"
+                "weight"	"400"
                 "antialias" "1"
             }
         }
@@ -361,6 +363,28 @@ Scheme
                 "antialias" "1"
             }
         }
+        "Default6"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"6"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Default8"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"8"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
         "Default10"
         {
             "1"
@@ -405,12 +429,45 @@ Scheme
                 "dropshadow" "1"
             }
         }
+        "Default18"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"18"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
         "Default20"
         {
             "1"
             {
                 "name"		"Noto Sans"
                 "tall"		"20"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Default22"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"22"
+                "weight" "400"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Default24"
+        {
+            "1"
+            {
+                "name"		"Noto Sans"
+                "tall"		"24"
                 "weight" "400"
                 "antialias" "1"
                 "dropshadow" "1"
@@ -460,6 +517,36 @@ Scheme
             }
         }
 
+        "Titling14"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "14"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Titling16"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "16"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Titling18"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "18"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
         "Titling20"
         {
             "1"
@@ -490,47 +577,38 @@ Scheme
                 "dropshadow" "1"
             }
         }
+        "Titling30"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "30"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
+        "Titling40"
+        {
+            "1"
+            {
+                "name" "Bebas Neue"
+                "tall" "40"
+                "antialias" "1"
+                "dropshadow" "1"
+            }
+        }
         
         "UiBold"
         {
-            "1"	[$WIN32]
+            "1"
             {
                 "name"		"Tahoma" [!$LINUX]
                 "name"		"Verdana" [$LINUX]
                 "tall"		"12"
                 "weight"	"1000"
             }
-            "1"	[$X360]
-            {
-                "name"		"Tahoma"
-                "tall"		"24"
-                "weight"	"2000"
-                "outline"	"1"
-            }
         }
-        "ChapterTitle"	[$X360]
-        {
-            "1"
-            {
-                "name"			"Tahoma"
-                "tall"			"20"
-                "tall_hidef"	"28"
-                "weight"		"2000"
-                "outline"		"1"
-            }
-        }
-        "ChapterTitleBlur"	[$X360]
-        {
-            "1"
-            {
-                "name"			"Tahoma"
-                "tall"			"20"
-                "tall_hidef"	"28"
-                "weight"		"2000"
-                "blur"			"3"
-                "blur_hidef"	"5"
-            }
-        }
+        
         "LoadingLarge"
         {
             "1"
@@ -620,21 +698,6 @@ Scheme
                 "yres"	 "481 10000"
             }
         }
-        
-        GameUIButtons
-        {
-            "1"	[$X360]
-            {
-                "bitmap"	"1"
-                "name"		"Buttons"
-                "scalex"	"0.63"
-                "scaley"	"0.63"
-                "scalex_hidef"	"1.0"
-                "scaley_hidef"	"1.0"
-                "scalex_lodef"	"0.75"
-                "scaley_lodef"	"0.75"
-            }
-        }
 
         // this is the symbol font
         "Marlett"
@@ -677,6 +740,18 @@ Scheme
                 "weight"	"900"
             }
         }
+
+        CenterPrintText
+		{
+			"1"
+			{
+				"name"		"Noto Sans"
+				"tall"		"28"
+				"weight"	"900"
+				"antialias" "1"
+                "dropshadow" "1"
+			}
+		}
 
         // HUD numbers
         // We use multiple fonts to 'pulse' them in the HUD, hence the need for many of near size
@@ -838,34 +913,8 @@ Scheme
                 "custom"	"1"
             }
         }
-
-        AppchooserGameTitleFont	[$X360]
-        {
-            "1"
-            {
-                "name"			"Trebuchet MS"
-                "tall"			"16"
-                "tall_hidef"	"24"
-                "weight"		"900"
-                "antialias"		"1"
-            }
-        }
-
-        AppchooserGameTitleFontBlur	[$X360]
-        {
-            "1"
-            {
-                "name"			"Trebuchet MS"
-                "tall"			"16"
-                "tall_hidef"	"24"
-                "weight"		"900"
-                "blur"			"3"
-                "blur_hidef"	"5"
-                "antialias"		"1"
-            }
-        }
         
-        StatsTitle	[$WIN32]
+        StatsTitle
         {
             "1"
             {
@@ -877,7 +926,7 @@ Scheme
             }
         }
         
-        StatsText	[$WIN32]
+        StatsText
         {
             "1"
             {
@@ -889,7 +938,7 @@ Scheme
             }
         }
         
-        AchievementItemTitle	[$WIN32]
+        AchievementItemTitle
         {
             "1"
             {
@@ -902,7 +951,7 @@ Scheme
             }
         }
 
-        AchievementItemDate	[$WIN32]
+        AchievementItemDate
         {
             "1"
             {
@@ -928,7 +977,7 @@ Scheme
             }
         }
         
-        AchievementItemTitleLarge	[$WIN32]
+        AchievementItemTitleLarge
         {
             "1"
             {
@@ -941,7 +990,7 @@ Scheme
             }
         }
         
-        AchievementItemDescription	[$WIN32]
+        AchievementItemDescription
         {
             "1"
             {
