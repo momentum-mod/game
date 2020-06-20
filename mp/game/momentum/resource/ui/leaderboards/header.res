@@ -1,11 +1,21 @@
 "resource/ui/leaderboards/header.res"
 {
+    "CLeaderboardsHeader"
+    {
+        "fieldName" "CLeaderboardsHeader"
+        "proportionalToParent" "1"
+		"wide"	"474"
+		"ypos" "50"
+        "wide" "f0"
+		"tall"  "29"
+    }
+
     "MapName"
 	{
 		"ControlName"	"Label"
 		"fieldName"		"MapName"
 		"xpos"			"3"
-		"ypos"			"3"
+		"ypos"			"0"
 		"wide"			"628"
 		"tall"			"24"
 		"autoResize"	"0"
@@ -15,19 +25,20 @@
 		"labelText"		"MAP NAME HERE"
 		"textAlignment"	"west"
 		"brighttext"	"1"
-		"Font"			"BigNoodle"
+		"Font"			"Titling30"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"
 		"textinsety"	"0"
 		"auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
 	}
     "MapAuthor"
     {
         "ControlName"	"Label"
 		"fieldName"		"MapAuthor"
 		"xpos"			"5"
-		"ypos"			"0"
+		"ypos"			"-3"
 		"wide"			"628"
 		"tall"			"24"
 		"autoResize"	"0"
@@ -37,7 +48,7 @@
 		"labelText"		"BY (AUTHOR)" // Determined in code
 		"textAlignment"	"west"
 		"brighttext"	"1"
-		"Font"			"BigNoodleVerySmall"
+		"Font"			"Titling14"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"
@@ -52,9 +63,10 @@
 	{
 		"ControlName"	"Label"
 		"fieldName"		"MapDetails"
-		"xpos"			"310"
-		"ypos"			"1"
-		"wide"			"156"
+        "proportionalToParent" "1"
+		"xpos"			"0"
+		"ypos"			"0"
+		"wide"			"f3"
 		"tall"			"28"
 		"autoResize"	"0"
 		"pinCorner"		"0"
@@ -63,11 +75,12 @@
 		"labelText"		""
 		"textAlignment"	"east"
 		"brighttext"	"1"
-		"Font"			"BigNoodleSmall"
+		"Font"			"Titling18"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"
 		"textinsety"	"0"
 		"auto_wide_tocontents" "0"
+        "auto_tall_tocontents" "1"
 	}
 }
