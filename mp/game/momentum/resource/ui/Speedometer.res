@@ -5,7 +5,7 @@
         "ControlName" "CHudSpeedMeter"
         "fieldName"   "HudSpeedMeter"
         "xpos"        "c-60"
-        "ypos"        "c+35"
+        "ypos"        "c+22"
         "wide"        "120"
         "tall"        "60"
         "BgColor"     "Blank"
