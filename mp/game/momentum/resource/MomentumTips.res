@@ -1,6 +1,6 @@
 "resource/MomentumTips.res"
 {
-    "#MOM_NotApplicable" // General tips
+    "#MOM_GameType_Unknown" // General tips
     {
         "1" "#MOM_Tip_General_1"
         "2" "#MOM_Tip_General_2"
