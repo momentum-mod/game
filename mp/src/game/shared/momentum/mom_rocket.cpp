@@ -39,12 +39,15 @@ void CMomRocket::Spawn()
 
     SetMoveType(MOVETYPE_FLY, MOVECOLLIDE_FLY_CUSTOM);
     AddEFlags(EFL_NO_WATER_VELOCITY_CHANGE);
+    AddEffects(EF_BONEMERGE);
     SetSize(Vector(0, 0, 0), Vector(0, 0, 0));
 
     SetGravity(0.0f);
 
     SetTouch(&CMomRocket::RocketTouch);
     SetNextThink(gpGlobals->curtime);
+
+    SpawnRocketSurprise();
 #endif
 }
 
@@ -68,6 +71,21 @@ void CMomRocket::CreateTrailParticles()
 void CMomRocket::StopTrailSound()
 {
     StopSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "RocketTrail"));
+}
+
+void CMomRocket::SpawnRocketSurprise()
+{
+    if (random->RandomInt(0, 10000) != 234 /*official number picked by kurt*/)
+        return;
+
+    const auto pModelEnt = CreateNoSpawn("prop_dynamic", GetAbsOrigin(), GetAbsAngles(), this);
+    if (pModelEnt)
+    {
+        pModelEnt->SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_ROCKETLAUNCHER, "surprise"));
+        pModelEnt->AddEffects(EF_NOSHADOW);
+        DispatchSpawn(pModelEnt);
+        pModelEnt->FollowEntity(this);
+    }
 }
 
 void CMomRocket::Destroy(bool bShowFizzleSprite)
