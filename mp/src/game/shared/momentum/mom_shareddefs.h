@@ -97,7 +97,7 @@ enum GameMode_t
 };
 
 const char * const g_szGameModes[] = {
-    "#MOM_NotApplicable",
+    "#MOM_GameType_Unknown",
     "#MOM_GameType_Surf",
     "#MOM_GameType_Bhop",
     "#MOM_GameType_KZ",

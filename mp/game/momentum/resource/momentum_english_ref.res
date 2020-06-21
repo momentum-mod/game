@@ -180,6 +180,7 @@
 
         // Gametypes
         "MOM_GameType" "Game Type"
+        "MOM_GameType_Unknown" "Unknown"
         "MOM_GameType_Surf" "Surf"
         "MOM_GameType_Bhop" "Bhop"
         "MOM_GameType_KZ" "Climb"
