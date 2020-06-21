@@ -20,8 +20,8 @@ using namespace vgui;
 
 HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseClass(pParent, "HUDPage", pAssociate)
 {
-    m_pSpeedometerGameType = new ComboBox(this, "SpeedoGameType", GAMEMODE_COUNT - 1, false);
-    for (auto i = 1; i < GAMEMODE_COUNT; i++)
+    m_pSpeedometerGameType = new ComboBox(this, "SpeedoGameType", GAMEMODE_COUNT, false);
+    for (auto i = 0; i < GAMEMODE_COUNT; i++)
     {
         m_pSpeedometerGameType->AddItem(g_szGameModes[i], nullptr);
     }
@@ -157,7 +157,7 @@ void HUDSettingsPanel::OnPageShow()
 {
     BaseClass::OnPageShow();
 
-    m_pSpeedometerGameType->SilentActivateItemByRow(g_pSpeedometerData->GetCurrentlyLoadedGameMode() - 1);
+    m_pSpeedometerGameType->SilentActivateItemByRow(g_pSpeedometerData->GetCurrentlyLoadedGameMode());
     LoadSpeedoSetup();
 }
 
@@ -166,7 +166,7 @@ void HUDSettingsPanel::OnCheckboxChecked(Panel *panel)
     if (panel == m_pSpeedometerShow)
     {
         GetSpeedoLabelFromType()->SetVisible(m_pSpeedometerShow->IsSelected());
-        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
+        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
     }
     // Comparisons
     else if (panel == m_pCompareShow)
@@ -233,19 +233,19 @@ void HUDSettingsPanel::OnTextChanged(Panel *panel, const char *text)
     {
         if (panel == m_pSpeedometerGameType) // load if game type changed
         {
-            g_pSpeedometerData->LoadGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
+            g_pSpeedometerData->LoadGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
         }
         LoadSpeedoSetup();
     }
     else if (panel == m_pSpeedometerUnits)
     {
         GetSpeedoLabelFromType()->SetUnitType(m_pSpeedometerUnits->GetCurrentItem());
-        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
+        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
     }
     else if (panel == m_pSpeedometerColorize)
     {
         GetSpeedoLabelFromType()->SetColorizeType(m_pSpeedometerColorize->GetCurrentItem());
-        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem() + 1);
+        g_pSpeedometerData->SaveGamemodeData(m_pSpeedometerGameType->GetCurrentItem());
     }
 }
 
