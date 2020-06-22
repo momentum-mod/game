@@ -510,78 +510,1117 @@ void PhysDestroyObject( IPhysicsObject *pObject, CBaseEntity *pEntity )
 	}
 }
 
-struct SurfacePropFileHash
+#define SP(propName) pKey = propsKV->CreateNewKey(); pKey->SetName(propName);
+#define SP_KV(key, value) pKey->SetString(key, value);
+
+void GetSurfaceProperties(CUtlBuffer &out)
 {
-    const char *pFileName;
-    const char *pFileHash;
-};
+	KeyValuesAD propsKV("surfaceprops");
 
-static const SurfacePropFileHash s_SurfacePropFiles[] = {
-    {"scripts/surfaceproperties.txt", "1c054b66d1f05298634294c6f93f5dcce5f81285"},
-    {"scripts/surfaceproperties_hl2.txt", "7bb21971c24982aa8d5b62002707c0986591300d"},
-    {"scripts/surfaceproperties_cs.txt", "145f4fc7e1f21b20db3b8e662871a9c39ce84797"},
-    {"scripts/surfaceproperties_tf.txt", "2074c1b2c2df38d5edf925ec8d4aaf48bbdee8b9"},
-};
+	KeyValues *pKey = nullptr;
 
-bool AddSurfacepropFile(const char *pFileName, IPhysicsSurfaceProps *pProps, IFileSystem *pFileSystem,
-                        const char *pFileHashToVerify = nullptr)
-{
-    CUtlBuffer buf;
-    buf.SetBufferType(true, true);
-    if (pFileSystem->ReadFile(pFileName, "GAME", buf))
-    {
-        if (pFileHashToVerify)
-        {
-            char hash[41];
-            if (!MomUtil::GetSHA1Hash(buf, hash, 41))
-                return false;
+	SP("default");
+	{
+		SP_KV("density", "2000");
+		SP_KV("elasticity", "0.25");
+		SP_KV("friction", "0.8");
+		SP_KV("dampening", "0.0");
 
-            if (!FStrEq(hash, pFileHashToVerify))
-                return false;
-        }
+		SP_KV("stepleft", "Default.StepLeft");
+		SP_KV("stepright", "Default.StepRight");
+		SP_KV("bulletimpact", "Default.BulletImpact");
+		SP_KV("scraperough", "Default.ScrapeRough");
+		SP_KV("scrapesmooth", "Default.ScrapeSmooth");
+		SP_KV("impacthard", "Default.ImpactHard");
+		SP_KV("impactsoft", "Default.ImpactSoft");
 
-        pProps->ParseSurfaceData(pFileName, buf.String());
-        return true;
-    }
+		SP_KV("audioreflectivity", "0.66");
+		SP_KV("audiohardnessfactor", "1.0");
+		SP_KV("audioroughnessfactor", "1.0");
 
-    return false;
+		SP_KV("scrapeRoughThreshold", "0.5");
+		SP_KV("impactHardThreshold", "0.5");
+
+		SP_KV("gamematerial", "C");
+		SP_KV("jumpfactor", "1.0");
+		SP_KV("maxspeedfactor", "1.0");
+		SP_KV("climbable", "0");
+	}
+	SP("solidmetal");
+	{
+		SP_KV("density", "2700");
+		SP_KV("elasticity", "0.1");
+		SP_KV("audioreflectivity", "0.83");
+		SP_KV("friction", "0.8");
+		SP_KV("stepleft", "SolidMetal.StepLeft");
+		SP_KV("stepright", "SolidMetal.StepRight");
+		SP_KV("impacthard", "SolidMetal.ImpactHard");
+		SP_KV("impactsoft", "SolidMetal.ImpactSoft");
+		SP_KV("scraperough", "SolidMetal.ScrapeRough");
+		SP_KV("scrapesmooth", "SolidMetal.ScrapeSmooth");
+		SP_KV("bulletimpact", "SolidMetal.BulletImpact");
+
+		SP_KV("gamematerial", "M");
+	}
+	SP("Metal_Box");
+	{
+		SP_KV("base", "solidmetal");
+		SP_KV("thickness", "0.1");
+
+		SP_KV("stepleft", "Metal_Box.StepLeft");
+		SP_KV("stepright", "Metal_Box.StepRight");
+		SP_KV("bulletimpact", "Metal_Box.BulletImpact");
+		SP_KV("scraperough", "Metal_Box.ScrapeRough");
+		SP_KV("scrapesmooth", "Metal_Box.ScrapeSmooth");
+		SP_KV("impacthard", "Metal_Box.ImpactHard");
+		SP_KV("impactsoft", "Metal_Box.ImpactSoft");
+
+		SP_KV("break", "Metal_Box.Break");
+	}
+	SP("metal");
+	{
+		SP_KV("base", "solidmetal");
+		SP_KV("elasticity", "0.25");
+		SP_KV("thickness", "0.1");
+	}
+
+	SP("metal_bouncy");
+	{
+		SP_KV("base", "solidmetal");
+		SP_KV("elasticity", "1000");
+		SP_KV("friction", "0");
+		SP_KV("density", "10000");
+	}
+	SP("slipperymetal");
+	{
+		SP_KV("base", "metal");
+		SP_KV("friction", "0.1");
+		SP_KV("elasticity", "0.15");
+
+		SP_KV("audioreflectivity", "0.83");
+		SP_KV("audioroughnessfactor", "0.1");
+	}
+	SP("metalgrate");
+	{
+		SP_KV("thickness", "0.5");
+		SP_KV("density", "1600");
+		SP_KV("elasticity", "0.25");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "MetalGrate.StepLeft");
+		SP_KV("stepright", "MetalGrate.StepRight");
+		SP_KV("impacthard", "MetalGrate.ImpactHard");
+		SP_KV("impactsoft", "MetalGrate.ImpactSoft");
+		SP_KV("scraperough", "MetalGrate.ScrapeRough");
+		SP_KV("scrapeSmooth", "MetalGrate.ScrapeSmooth");
+		SP_KV("bulletimpact", "MetalGrate.BulletImpact");
+
+		SP_KV("audioreflectivity", "0.83");
+
+		SP_KV("gamematerial", "G");
+	}
+	SP("metalvent");
+	{
+		SP_KV("base", "metal_box");
+		SP_KV("thickness", "0.04");
+		SP_KV("density", "2700");
+		SP_KV("elasticity", "0.1");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "MetalVent.StepLeft");
+		SP_KV("stepright", "MetalVent.StepRight");
+		SP_KV("impacthard", "MetalVent.ImpactHard");
+
+		SP_KV("audioreflectivity", "0.33");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("gamematerial", "V");
+	}
+	SP("metalpanel");
+	{
+		SP_KV("base", "metal");
+		SP_KV("thickness", "0.1");
+		SP_KV("density", "2700");
+		SP_KV("elasticity", "0.2");
+		SP_KV("friction", "0.8");
+
+		SP_KV("audioreflectivity", "0.33");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("gamematerial", "M");
+	}
+
+	SP("dirt");
+	{
+		SP_KV("density", "1600");
+		SP_KV("elasticity", "0.01");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "Dirt.StepLeft");
+		SP_KV("stepright", "Dirt.StepRight");
+		SP_KV("impacthard", "Dirt.Impact");
+		SP_KV("scraperough", "Dirt.Scrape");
+		SP_KV("bulletimpact", "Dirt.BulletImpact");
+
+		SP_KV("audioreflectivity", "0.03");
+		SP_KV("audiohardnessfactor", "0.25");
+
+		SP_KV("gamematerial", "D");
+	}
+
+	SP("mud");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("friction", "0.6");
+		SP_KV("dampening", "6.0");
+
+		SP_KV("stepleft", "Mud.StepLeft");
+		SP_KV("stepright", "Mud.StepRight");
+
+		SP_KV("audiohardnessfactor", "0.0");
+		SP_KV("audioroughnessfactor", "0.1");
+	}
+
+	SP("slipperyslime");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("friction", "0.1");
+		SP_KV("jumpfactor", "0.7");
+
+		SP_KV("stepleft", "SlipperySlime.StepLeft");
+		SP_KV("stepright", "SlipperySlime.StepRight");
+
+		SP_KV("audiohardnessfactor", "0.0");
+		SP_KV("audioroughnessfactor", "0.1");
+	}
+
+	SP("grass");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("stepleft", "Grass.StepLeft");
+		SP_KV("stepright", "Grass.StepRight");
+
+		SP_KV("gamematerial", "U");
+	}
+
+	SP("tile");
+	{
+		SP_KV("thickness", "0.5");
+		SP_KV("density", "2700");
+		SP_KV("elasticity", "0.3");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "Tile.StepLeft");
+		SP_KV("stepright", "Tile.StepRight");
+
+		SP_KV("audioreflectivity", "0.99");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("bulletimpact", "Tile.BulletImpact");
+		SP_KV("gamematerial", "T");
+	}
+	SP("Wood");
+	{
+		SP_KV("density", "700");
+		SP_KV("elasticity", "0.1");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "Wood.StepLeft");
+		SP_KV("stepright", "Wood.StepRight");
+		SP_KV("bulletimpact", "Wood.BulletImpact");
+		SP_KV("scraperough", "Wood.ScrapeRough");
+		SP_KV("scrapesmooth", "Wood.ScrapeSmooth");
+		SP_KV("impacthard", "Wood.ImpactHard");
+		SP_KV("impactsoft", "Wood.ImpactSoft");
+		SP_KV("break", "Wood.Break");
+
+		SP_KV("audioreflectivity", "0.33");
+		SP_KV("audiohardnessfactor", "0.25");
+
+		SP_KV("gamematerial", "W");
+	}
+
+	SP("Wood_lowdensity");
+	{
+		SP_KV("base", "Wood");
+		SP_KV("density", "300");
+	}
+	SP("Wood_Box");
+	{
+		SP_KV("base", "Wood");
+
+		SP_KV("stepleft", "Wood_Box.StepLeft");
+		SP_KV("stepright", "Wood_Box.StepRight");
+		SP_KV("bulletimpact", "Wood_Box.BulletImpact");
+		SP_KV("scraperough", "Wood_Box.ScrapeRough");
+		SP_KV("scrapesmooth", "Wood_Box.ScrapeSmooth");
+		SP_KV("impacthard", "Wood_Box.ImpactHard");
+		SP_KV("impactsoft", "Wood_Box.ImpactSoft");
+		SP_KV("break", "Wood_Box.Break");
+
+	}
+	SP("Wood_Crate");
+	{
+		SP_KV("base", "Wood");
+
+		SP_KV("stepleft", "Wood_Crate.StepLeft");
+		SP_KV("stepright", "Wood_Crate.StepRight");
+		SP_KV("scraperough", "Wood_Crate.ScrapeRough");
+		SP_KV("scrapesmooth", "Wood_Crate.ScrapeSmooth");
+		SP_KV("impacthard", "Wood_Crate.ImpactHard");
+		SP_KV("impactsoft", "Wood_Crate.ImpactSoft");
+		SP_KV("break", "Wood_Crate.Break");
+
+	}
+	SP("Wood_Plank");
+	{
+		SP_KV("base", "Wood_Box");
+
+		SP_KV("bulletimpact", "Wood_Plank.BulletImpact");
+		SP_KV("scraperough", "Wood_Plank.ScrapeRough");
+		SP_KV("scrapesmooth", "Wood_Plank.ScrapeSmooth");
+		SP_KV("impacthard", "Wood_Plank.ImpactHard");
+		SP_KV("impactsoft", "Wood_Plank.ImpactSoft");
+		SP_KV("break", "Wood_Plank.Break");
+	}
+	SP("Wood_Solid");
+	{
+		SP_KV("base", "Wood");
+
+		SP_KV("bulletimpact", "Wood_Solid.BulletImpact");
+		SP_KV("scraperough", "Wood_Solid.ScrapeRough");
+		SP_KV("scrapesmooth", "Wood_Solid.ScrapeSmooth");
+		SP_KV("impacthard", "Wood_Solid.ImpactHard");
+		SP_KV("impactsoft", "Wood_Solid.ImpactSoft");
+		SP_KV("break", "Wood_Solid.Break");
+	}
+	SP("Wood_Furniture");
+	{
+		SP_KV("base", "Wood_Box");
+		SP_KV("impactsoft", "Wood_Furniture.ImpactSoft");
+		SP_KV("break", "Wood_Furniture.Break");
+	}
+	SP("Wood_Panel");
+	{
+		SP_KV("base", "Wood_Crate");
+		SP_KV("thickness", "1.0");
+
+		SP_KV("stepleft", "Wood_Panel.StepLeft");
+		SP_KV("stepright", "Wood_Panel.StepRight");
+		SP_KV("bulletimpact", "Wood_Panel.BulletImpact");
+		SP_KV("scraperough", "Wood_Panel.ScrapeRough");
+		SP_KV("scrapesmooth", "Wood_Panel.ScrapeSmooth");
+		SP_KV("impacthard", "Wood_Panel.ImpactHard");
+		SP_KV("impactsoft", "Wood_Panel.ImpactSoft");
+		SP_KV("break", "Wood_Panel.Break");
+	}
+	SP("water");
+	{
+		SP_KV("density", "1000");
+		SP_KV("elasticity", "0.1");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "Water.StepLeft");
+		SP_KV("stepright", "Water.StepRight");
+		SP_KV("bulletimpact", "Water.BulletImpact");
+
+		SP_KV("impacthard", "Water.ImpactHard");
+		SP_KV("impactsoft", "Water.ImpactSoft");
+
+		SP_KV("audioreflectivity", "0.33");
+		SP_KV("audioroughnessfactor", "0.1");
+		SP_KV("audiohardnessfactor", "0.0");
+
+		SP_KV("gamematerial", "S");
+	}
+	SP("slime");
+	{
+		SP_KV("density", "2000");
+		SP_KV("elasticity", "0.1");
+		SP_KV("friction", "0.9");
+		SP_KV("dampening", "200.0");
+
+		SP_KV("stepleft", "Mud.StepLeft");
+		SP_KV("stepright", "Mud.StepRight");
+		SP_KV("bulletimpact", "Water.BulletImpact");
+
+		SP_KV("gamematerial", "S");
+
+		SP_KV("audioreflectivity", "0.33");
+		SP_KV("audiohardnessfactor", "0.0");
+		SP_KV("audioroughnessfactor", "0.1");
+	}
+	SP("quicksand");
+	{
+		SP_KV("density", "600");
+		SP_KV("elasticity", "2.0");
+
+		SP_KV("audioreflectivity", "0.33");
+		SP_KV("audiohardnessfactor", "0.0");
+		SP_KV("audioroughnessfactor", "1.0");
+
+		SP_KV("gamematerial", "N");
+	}
+	SP("wade");
+	{
+		SP_KV("base", "water");
+		SP_KV("stepleft", "Wade.StepLeft");
+		SP_KV("stepright", "Wade.StepRight");
+
+		SP_KV("audioreflectivity", "0.33");
+
+		SP_KV("gamematerial", "X");
+	}
+	SP("ladder");
+	{
+		SP_KV("base", "metal");
+		SP_KV("climbable", "1.0");
+		SP_KV("stepleft", "Ladder.StepLeft");
+		SP_KV("stepright", "Ladder.StepRight");
+
+		SP_KV("audioreflectivity", "0.33");
+
+		SP_KV("gamematerial", "X");
+	}
+	SP("woodladder");
+	{
+		SP_KV("base", "wood");
+		SP_KV("climbable", "1.0");
+		SP_KV("stepleft", "Ladder.WoodStepLeft");
+		SP_KV("stepright", "Ladder.WoodStepRight");
+
+		SP_KV("audioreflectivity", "0.33");
+
+		SP_KV("gamematerial", "X");
+	}
+	SP("glass");
+	{
+		SP_KV("thickness", "0.5");
+		SP_KV("density", "2700");
+		SP_KV("elasticity", "0.2");
+		SP_KV("friction", "0.5");
+
+		SP_KV("stepleft", "Glass.StepLeft");
+		SP_KV("stepright", "Glass.StepRight");
+		SP_KV("scraperough", "Glass.ScrapeRough");
+		SP_KV("scrapesmooth", "Glass.ScrapeSmooth");
+		SP_KV("impacthard", "Glass.ImpactHard");
+		SP_KV("impactsoft", "Glass.ImpactSoft");
+
+		SP_KV("bulletimpact", "Glass.BulletImpact");
+		SP_KV("break", "Glass.Break");
+
+		SP_KV("audioreflectivity", "0.66");
+		SP_KV("audiohardnessfactor", "1.0");
+
+		SP_KV("audioroughnessfactor", "0.0");
+		SP_KV("gamematerial", "Y");
+	}
+	SP("computer");
+	{
+		SP_KV("base", "metal_box");
+
+		SP_KV("bulletimpact", "Computer.BulletImpact");
+		SP_KV("impacthard", "Computer.ImpactHard");
+		SP_KV("impactsoft", "Computer.ImpactSoft");
+
+		SP_KV("gamematerial", "P");
+	}
+	SP("concrete");
+	{
+		SP_KV("density", "2400");
+		SP_KV("elasticity", "0.2");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "Concrete.StepLeft");
+		SP_KV("stepright", "Concrete.StepRight");
+		SP_KV("scraperough", "Concrete.ScrapeRough");
+		SP_KV("scrapesmooth", "Concrete.ScrapeSmooth");
+		SP_KV("impacthard", "Concrete.ImpactHard");
+		SP_KV("impactsoft", "Concrete.ImpactSoft");
+		SP_KV("bulletimpact", "Concrete.BulletImpact");
+
+		SP_KV("audioreflectivity", "0.66");
+
+		SP_KV("gamematerial", "C");
+	}
+	SP("rock");
+	{
+		SP_KV("base", "concrete");
+		SP_KV("impacthard", "Rock.ImpactHard");
+		SP_KV("impactsoft", "Rock.ImpactSoft");
+		SP_KV("scraperough", "Rock.ImpactHard");
+		SP_KV("scrapesmooth", "Rock.ImpactSoft");
+
+	}
+	SP("porcelain");
+	{
+		SP_KV("base", "rock");
+	}
+	SP("boulder");
+	{
+		SP_KV("base", "rock");
+		SP_KV("scraperough", "Boulder.ScrapeRough");
+		SP_KV("scrapesmooth", "Boulder.ScrapeSmooth");
+		SP_KV("impacthard", "Boulder.ImpactHard");
+		SP_KV("impactsoft", "Boulder.ImpactSoft");
+	}
+	SP("gravel");
+	{
+		SP_KV("base", "rock");
+		SP_KV("friction", "0.8");
+		SP_KV("stepleft", "Gravel.StepLeft");
+		SP_KV("stepright", "Gravel.StepRight");
+	}
+
+	SP("brick");
+	{
+		SP_KV("base", "rock");
+	}
+	SP("concrete_block");
+	{
+
+		SP_KV("base", "concrete");
+		SP_KV("impacthard", "Concrete_Block.ImpactHard");
+	}
+	SP("chainlink");
+	{
+		SP_KV("thickness", "0.5");
+		SP_KV("density", "1600");
+		SP_KV("elasticity", "0.25");
+		SP_KV("friction", "0.8");
+		SP_KV("stepleft", "ChainLink.StepLeft");
+		SP_KV("stepright", "ChainLink.StepRight");
+		SP_KV("impacthard", "ChainLink.ImpactHard");
+		SP_KV("impactsoft", "ChainLink.ImpactSoft");
+		SP_KV("scraperough", "ChainLink.ScrapeRough");
+		SP_KV("scrapesmooth", "ChainLink.ScrapeSmooth");
+		SP_KV("bulletimpact", "ChainLink.BulletImpact");
+		SP_KV("gamematerial", "G");
+	}
+	SP("chain");
+	{
+		SP_KV("base", "chainlink");
+		SP_KV("impacthard", "ChainLink.ImpactHard");
+		SP_KV("impactsoft", "ChainLink.ImpactSoft");
+		SP_KV("scraperough", "ChainLink.ScrapeRough");
+		SP_KV("scrapesmooth", "ChainLink.ScrapeSmooth");
+		SP_KV("bulletimpact", "ChainLink.BulletImpact");
+		SP_KV("gamematerial", "G");
+	}
+	SP("flesh");
+	{
+		SP_KV("density", "900");
+
+		SP_KV("stepleft", "Flesh.StepLeft");
+		SP_KV("stepright", "Flesh.StepRight");
+		SP_KV("bulletimpact", "Flesh.BulletImpact");
+		SP_KV("impacthard", "Flesh.ImpactHard");
+		SP_KV("impactsoft", "Flesh.ImpactSoft");
+		SP_KV("scraperough", "Flesh.ScrapeRough");
+		SP_KV("scrapesmooth", "Flesh.ScrapeSmooth");
+		SP_KV("break", "Flesh.Break");
+
+		SP_KV("audiohardnessfactor", "0.25");
+		SP_KV("audioHardMinVelocity", "500");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("gamematerial", "F");
+	}
+
+	SP("bloodyflesh");
+	{
+		SP_KV("base", "flesh");
+
+		SP_KV("impacthard", "Flesh_Bloody.ImpactHard");
+
+		SP_KV("gamematerial", "B");
+	}
+
+	SP("alienflesh");
+	{
+		SP_KV("base", "flesh");
+
+		SP_KV("gamematerial", "H");
+	}
+
+	SP("armorflesh");
+	{
+		SP_KV("base", "flesh");
+		SP_KV("bulletimpact", "ArmorFlesh.BulletImpact");
+
+		SP_KV("audiohardnessfactor", "1.0");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("gamematerial", "M");
+	}
+
+	SP("watermelon");
+	{
+		SP_KV("density", "900");
+		SP_KV("bulletimpact", "Watermelon.BulletImpact");
+		SP_KV("impacthard", "Watermelon.Impact");
+		SP_KV("scraperough", "Watermelon.Scrape");
+
+		SP_KV("audiohardnessfactor", "0.25");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("gamematerial", "W");
+	}
+
+	SP("snow");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("density", "800");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "Snow.StepLeft");
+		SP_KV("stepright", "Snow.StepRight");
+
+		SP_KV("audiohardnessfactor", "0.25");
+
+		SP_KV("gamematerial", "J");
+	}
+
+	SP("ice");
+	{
+		SP_KV("density", "917");
+		SP_KV("friction", "0.1");
+		SP_KV("elasticity", "0.1");
+
+		SP_KV("audioroughnessfactor", "0.1");
+	}
+	SP("carpet");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("density", "500");
+		SP_KV("thickness", "0.1");
+		SP_KV("elasticity", "0.01");
+		SP_KV("friction", "0.8");
+
+		SP_KV("impacthard", "Carpet.Impact");
+		SP_KV("bulletimpact", "Carpet.BulletImpact");
+		SP_KV("scraperough", "Carpet.Scrape");
+
+		SP_KV("audioreflectivity", "0.03");
+		SP_KV("audiohardnessfactor", "0.25");
+		SP_KV("audioroughnessfactor", "0.1");
+	}
+	SP("plaster");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("audiohardnessfactor", "0.5");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("stepleft", "drywall.StepLeft");
+		SP_KV("stepright", "drywall.StepRight");
+		SP_KV("bulletimpact", "drywall.ImpactHard");
+		SP_KV("scraperough", "ceiling_tile.ScrapeRough");
+		SP_KV("scrapesmooth", "ceiling_tile.ScrapeSmooth");
+		SP_KV("impacthard", "drywall.ImpactHard");
+		SP_KV("impactsoft", "drywall.ImpactSoft");
+		SP_KV("break", "Cardboard.Break");
+
+	}
+	SP("cardboard");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("density", "500");
+		SP_KV("thickness", "0.25");
+
+		SP_KV("audiohardnessfactor", "0.25");
+		SP_KV("audioroughnessfactor", "0.25");
+
+		SP_KV("stepleft", "Cardboard.StepLeft");
+		SP_KV("stepright", "Cardboard.StepRight");
+		SP_KV("bulletimpact", "Cardboard.BulletImpact");
+		SP_KV("scraperough", "Cardboard.ScrapeRough");
+		SP_KV("scrapesmooth", "Cardboard.ScrapeSmooth");
+		SP_KV("impacthard", "Cardboard.ImpactHard");
+		SP_KV("impactsoft", "Cardboard.ImpactSoft");
+		SP_KV("break", "Cardboard.Break");
+	}
+	SP("plastic_barrel");
+	{
+		SP_KV("density", "500");
+		SP_KV("thickness", "0.25");
+		SP_KV("elasticity", "0.01");
+		SP_KV("friction", "0.8");
+
+		SP_KV("audiohardnessfactor", "0.25");
+		SP_KV("audioroughnessfactor", "0.25");
+
+		SP_KV("stepleft", "Plastic_Barrel.StepLeft");
+		SP_KV("stepright", "Plastic_Barrel.StepRight");
+		SP_KV("bulletimpact", "Plastic_Barrel.BulletImpact");
+		SP_KV("scraperough", "Plastic_Barrel.ScrapeRough");
+		SP_KV("scrapesmooth", "Plastic_Barrel.ScrapeSmooth");
+		SP_KV("impacthard", "Plastic_Barrel.ImpactHard");
+		SP_KV("impactsoft", "Plastic_Barrel.ImpactSoft");
+		SP_KV("break", "Plastic_Barrel.Break");
+
+		SP_KV("gamematerial", "L");
+	}
+	SP("Plastic_Box");
+	{
+		SP_KV("density", "500");
+		SP_KV("elasticity", "0.01");
+		SP_KV("friction", "0.8");
+		SP_KV("thickness", "0.25");
+
+		SP_KV("audiohardnessfactor", "0.25");
+		SP_KV("audioroughnessfactor", "0.25");
+
+		SP_KV("stepleft", "Plastic_Box.StepLeft");
+		SP_KV("stepright", "Plastic_Box.StepRight");
+		SP_KV("bulletimpact", "Plastic_Box.BulletImpact");
+		SP_KV("scraperough", "Plastic_Box.ScrapeRough");
+		SP_KV("scrapesmooth", "Plastic_Box.ScrapeSmooth");
+		SP_KV("impacthard", "Plastic_Box.ImpactHard");
+		SP_KV("impactsoft", "Plastic_Box.ImpactSoft");
+		SP_KV("break", "Plastic_Box.Break");
+
+		SP_KV("gamematerial", "L");
+	}
+	SP("plastic");
+	{
+		SP_KV("base", "Plastic_Box");
+		SP_KV("audioroughnessfactor", "0.1");
+
+		SP_KV("bulletimpact", "Plastic_Box.ImpactHard");
+	}
+	SP("item");
+	{
+		SP_KV("base", "Plastic_Box");
+		SP_KV("density", "600");
+
+		SP_KV("bulletimpact", "Plastic_Box.ImpactHard");
+	}
+	SP("floatingstandable");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("density", "800");
+	}
+	SP("sand");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("stepleft", "Sand.StepLeft");
+		SP_KV("stepright", "Sand.StepRight");
+		SP_KV("bulletimpact", "Sand.BulletImpact");
+
+		SP_KV("audioreflectivity", "0.03");
+
+		SP_KV("gamematerial", "N");
+	}
+	SP("rubber");
+	{
+		SP_KV("base", "dirt");
+		SP_KV("elasticity", "0.2");
+		SP_KV("friction", "0.8");
+
+		SP_KV("stepleft", "Rubber.StepLeft");
+		SP_KV("stepright", "Rubber.StepRight");
+		SP_KV("impacthard", "Rubber.ImpactHard");
+		SP_KV("impactsoft", "Rubber.ImpactSoft");
+		SP_KV("bulletimpact", "Rubber.BulletImpact");
+
+		SP_KV("audioroughnessfactor", "0.1");
+		SP_KV("audiohardnessfactor", "0.2");
+
+	}
+	SP("rubbertire");
+	{
+		SP_KV("base", "rubber");
+
+		SP_KV("bulletimpact", "Rubber_Tire.BulletImpact");
+		SP_KV("impacthard", "Rubber_Tire.ImpactHard");
+		SP_KV("impactsoft", "Rubber_Tire.ImpactSoft");
+		SP_KV("friction", "1.0");
+	}
+	SP("jeeptire");
+	{
+		SP_KV("base", "rubber");
+
+		SP_KV("bulletimpact", "Rubber_Tire.BulletImpact");
+		SP_KV("impacthard", "Rubber_Tire.ImpactHard");
+		SP_KV("impactsoft", "Rubber_Tire.ImpactSoft");
+		SP_KV("friction", "1.337");
+	}
+
+	SP("slidingrubbertire");
+	{
+		SP_KV("base", "rubber");
+		SP_KV("friction", "0.2");
+	}
+
+	SP("brakingrubbertire");
+	{
+		SP_KV("base", "rubber");
+		SP_KV("friction", "0.6");
+	}
+
+	SP("slidingrubbertire_front");
+	{
+		SP_KV("base", "rubber");
+		SP_KV("friction", "0.2");
+	}
+
+	SP("slidingrubbertire_rear");
+	{
+		SP_KV("base", "rubber");
+		SP_KV("friction", "0.2");
+	}
+	SP("glassbottle");
+	{
+		SP_KV("base", "glass");
+		SP_KV("friction", "0.4");
+		SP_KV("elasticity", "0.3");
+
+		SP_KV("stepleft", "GlassBottle.StepLeft");
+		SP_KV("stepright", "GlassBottle.StepRight");
+		SP_KV("impacthard", "GlassBottle.ImpactHard");
+		SP_KV("impactsoft", "GlassBottle.ImpactSoft");
+		SP_KV("scraperough", "GlassBottle.ScrapeRough");
+		SP_KV("scrapesmooth", "GlassBottle.ScrapeSmooth");
+		SP_KV("bulletimpact", "GlassBottle.BulletImpact");
+
+		SP_KV("break", "GlassBottle.Break");
+	}
+	SP("pottery");
+	{
+		SP_KV("base", "glassbottle");
+		SP_KV("friction", "0.4");
+		SP_KV("elasticity", "0.3");
+
+		SP_KV("impacthard", "Pottery.ImpactHard");
+		SP_KV("impactsoft", "Pottery.ImpactSoft");
+		SP_KV("bulletimpact", "Pottery.BulletImpact");
+
+		SP_KV("break", "Pottery.Break");
+	}
+	SP("grenade");
+	{
+		SP_KV("base", "metalpanel");
+		SP_KV("friction", "0.9");
+		SP_KV("elasticity", "0.01");
+
+
+		SP_KV("audiohardnessfactor", "1.0");
+		SP_KV("audioroughnessfactor", "0.4");
+
+		SP_KV("stepleft", "Grenade.StepLeft");
+		SP_KV("stepright", "Grenade.StepRight");
+		SP_KV("bulletimpact", "Grenade.ImpactHard");
+		SP_KV("scraperough", "Grenade.ScrapeRough");
+		SP_KV("scrapesmooth", "Grenade.ScrapeSmooth");
+		SP_KV("impacthard", "Grenade.ImpactHard");
+		SP_KV("impactsoft", "Grenade.ImpactSoft");
+	}
+	SP("canister");
+	{
+		SP_KV("base", "metalpanel");
+		SP_KV("impacthard", "Canister.ImpactHard");
+		SP_KV("impactsoft", "Canister.ImpactSoft");
+		SP_KV("scraperough", "Canister.ScrapeRough");
+		SP_KV("scrapesmooth", "Canister.ScrapeSmooth");
+	}
+	SP("metal_barrel");
+	{
+		SP_KV("base", "metal_box");
+		SP_KV("impacthard", "Metal_Barrel.ImpactHard");
+		SP_KV("impactsoft", "Metal_Barrel.ImpactSoft");
+		SP_KV("bulletimpact", "Metal_Barrel.BulletImpact");
+	}
+	SP("floating_metal_barrel");
+	{
+		SP_KV("base", "metal_barrel");
+		SP_KV("density", "500");
+	}
+	SP("plastic_barrel_buoyant");
+	{
+		SP_KV("base", "plastic_barrel");
+		SP_KV("density", "150");
+	}
+	SP("roller");
+	{
+		SP_KV("base", "metalpanel");
+		SP_KV("friction", "0.7");
+		SP_KV("elasticity", "0.3");
+		SP_KV("impacthard", "Roller.Impact");
+	}
+	SP("popcan");
+	{
+		SP_KV("base", "metal_box");
+		SP_KV("friction", "0.3");
+		SP_KV("elasticity", "0.99");
+		SP_KV("impacthard", "Popcan.ImpactHard");
+		SP_KV("impactsoft", "Popcan.ImpactSoft");
+		SP_KV("scraperough", "Popcan.ScrapeRough");
+		SP_KV("scrapesmooth", "Popcan.ScrapeSmooth");
+		SP_KV("bulletimpact", "Popcan.BulletImpact");
+	}
+	SP("paintcan");
+	{
+		SP_KV("base", "popcan");
+		SP_KV("friction", "0.3");
+		SP_KV("elasticity", "0.99");
+		SP_KV("impacthard", "Paintcan.ImpactHard");
+		SP_KV("impactsoft", "Paintcan.ImpactSoft");
+	}
+	SP("paper");
+	{
+		SP_KV("base", "cardboard");
+	}
+	SP("papercup");
+	{
+		SP_KV("base", "paper");
+		SP_KV("friction", "0.8");
+		SP_KV("elasticity", "0.1");
+		SP_KV("impacthard", "Papercup.Impact");
+		SP_KV("scraperough", "Popcan.ScrapeRough");
+	}
+	SP("ceiling_tile");
+	{
+		SP_KV("base", "cardboard");
+
+		SP_KV("stepleft", "ceiling_tile.StepLeft");
+		SP_KV("stepright", "ceiling_tile.StepRight");
+		SP_KV("bulletimpact", "ceiling_tile.BulletImpact");
+		SP_KV("scraperough", "ceiling_tile.ScrapeRough");
+		SP_KV("scrapesmooth", "ceiling_tile.ScrapeSmooth");
+		SP_KV("impacthard", "ceiling_tile.ImpactHard");
+		SP_KV("impactsoft", "ceiling_tile.ImpactSoft");
+
+		SP_KV("break", "ceiling_tile.Break");
+	}
+	SP("weapon");
+	{
+		SP_KV("base", "metal");
+		SP_KV("stepleft", "weapon.StepLeft");
+		SP_KV("stepright", "weapon.StepRight");
+		SP_KV("bulletimpact", "weapon.BulletImpact");
+		SP_KV("scraperough", "weapon.ScrapeRough");
+		SP_KV("scrapesmooth", "weapon.ScrapeSmooth");
+		SP_KV("impacthard", "weapon.ImpactHard");
+		SP_KV("impactsoft", "weapon.ImpactSoft");
+	}
+	SP("default_silent");
+	{
+		SP_KV("gamematerial", "X");
+	}
+	SP("player");
+	{
+		SP_KV("density", "1000");
+		SP_KV("friction", "0.5");
+		SP_KV("elasticity", "0.001");
+		SP_KV("audiohardnessfactor", "0.0");
+		SP_KV("audioroughnessfactor", "0.0");
+	}
+	SP("player_control_clip");
+	{
+		SP_KV("gamematerial", "I");
+	}
+	SP("no_decal");
+	{
+		SP_KV("density", "900");
+		SP_KV("gamematerial", "-");
+	}
+	SP("foliage");
+	{
+		SP_KV("base", "Wood_Solid");
+
+		SP_KV("density", "700");
+		SP_KV("elasticity", "0.1");
+		SP_KV("friction", "0.8");
+
+		SP_KV("gamematerial", "O");
+	}
+	SP("metalvehicle");
+	{
+		SP_KV("base", "metal");
+		SP_KV("thickness", "0.1");
+		SP_KV("density", "2700");
+		SP_KV("elasticity", "0.2");
+		SP_KV("friction", "0.8");
+
+		SP_KV("audioreflectivity", "0.33");
+		SP_KV("audioroughnessfactor", "0.1");
+		SP_KV("audioHardMinVelocity", "500");
+
+		SP_KV("impactHardThreshold", "0.5");
+
+
+		SP_KV("impacthard", "MetalVehicle.ImpactHard");
+		SP_KV("impactsoft", "MetalVehicle.ImpactSoft");
+		SP_KV("scraperough", "MetalVehicle.ScrapeRough");
+		SP_KV("scrapesmooth", "MetalVehicle.ScrapeSmooth");
+
+		SP_KV("gamematerial", "M");
+	}
+	SP("crowbar");
+	{
+		SP_KV("base", "metal");
+		SP_KV("impactsoft", "Weapon_Crowbar.Melee_HitWorld");
+		SP_KV("impacthard", "Weapon_Crowbar.Melee_HitWorld");
+	}
+	SP("antlionsand");
+	{
+		SP_KV("base", "sand");
+	}
+
+	SP("metal_seafloorcar");
+	{
+		SP_KV("base", "metal");
+		SP_KV("bulletimpact", "Metal_SeafloorCar.BulletImpact");
+	}
+
+	SP("gunship");
+	{
+		SP_KV("base", "metal");
+		SP_KV("friction", "0.3");
+		SP_KV("impacthard", "Gunship.Impact");
+		SP_KV("scraperough", "Gunship.Scrape");
+	}
+
+	SP("strider");
+	{
+		SP_KV("base", "metal");
+
+		SP_KV("impacthard", "Strider.Impact");
+		SP_KV("scraperough", "Strider.Scrape");
+	}
+
+	SP("antlion");
+	{
+		SP_KV("base", "alienflesh");
+
+		SP_KV("gamematerial", "A");
+	}
+
+	SP("combine_metal");
+	{
+		SP_KV("base", "solidmetal");
+	}
+
+	SP("combine_glass");
+	{
+		SP_KV("base", "glass");
+	}
+
+	SP("zombieflesh");
+	{
+		SP_KV("base", "flesh");
+		SP_KV("impacthard", "Flesh_Bloody.ImpactHard");
+	}
+	SP("brass_bell_large");
+	{
+		SP_KV("bulletimpact", "BrassBell.C");
+	}
+
+	SP("brass_bell_medium");
+	{
+		SP_KV("bulletimpact", "BrassBell.D");
+	}
+
+	SP("brass_bell_small");
+	{
+		SP_KV("bulletimpact", "BrassBell.E");
+	}
+
+	SP("brass_bell_smallest");
+	{
+		SP_KV("bulletimpact", "BrassBell.F");
+	}
+
+	SP("hay");
+	{
+		SP_KV("base", "wood");
+		SP_KV("stepleft", "Grass.StepLeft");
+		SP_KV("stepright", "Grass.StepRight");
+	}
+	SP("grenade_napalm");
+	{
+		SP_KV("base", "grenade");
+		SP_KV("friction", "0.05");
+		SP_KV("elasticity", "2");
+	}
+
+	SP("wrecking_ball");
+	{
+		SP_KV("base", "metal");
+
+		SP_KV("friction", "0");
+		SP_KV("elasticity", "0");
+	}
+
+	SP("demoman_grenade");
+	{
+		SP_KV("base", "metal");
+
+		SP_KV("bulletimpact", "Grenade.ImpactHard");
+		SP_KV("scraperough", "Grenade.ScrapeRough");
+		SP_KV("scrapesmooth", "Grenade.ScrapeSmooth");
+		SP_KV("impacthard", "Grenade.ImpactHard");
+		SP_KV("impactsoft", "Grenade.ImpactSoft");
+		SP_KV("rolling", "Grenade.Roll");
+	}
+
+	SP("scout_baseball");
+	{
+		SP_KV("base", "rubber");
+
+		SP_KV("bulletimpact", "Weapon_Baseball.HitWorld");
+		SP_KV("scraperough", "Grenade.ScrapeRough");
+		SP_KV("scrapesmooth", "Grenade.ScrapeSmooth");
+		SP_KV("impacthard", "Weapon_Baseball.HitWorld");
+		SP_KV("impactsoft", "Weapon_Baseball.HitWorld");
+		SP_KV("rolling", "Grenade.Roll");
+	}
+
+	SP("scout_ornament");
+	{
+		SP_KV("base", "glass");
+
+		SP_KV("bulletimpact", "BallBuster.Ball_HitWorld");
+		SP_KV("impacthard", "BallBuster.Ball_HitWorld");
+		SP_KV("impactsoft", "BallBuster.Ball_HitWorld");
+	}
+
+	SP("ball_bouncy");
+	{
+		SP_KV("base", "rubber");
+
+		SP_KV("friction", ".3");
+		SP_KV("elasticity", "3");
+		SP_KV("density", "500");
+	}
+
+	SP("passtime_ball");
+	{
+		SP_KV("base", "rubber");
+		SP_KV("elasticity", "1");
+		SP_KV("friction", "1");
+
+		SP_KV("bulletimpact", "Grenade.ImpactHard");
+		SP_KV("scraperough", "Grenade.ScrapeRough");
+		SP_KV("scrapesmooth", "Grenade.ScrapeSmooth");
+		SP_KV("impacthard", "Grenade.ImpactHard");
+		SP_KV("impactsoft", "Grenade.ImpactSoft");
+		SP_KV("rolling", "Grenade.Roll");
+	}
+
+	FOR_EACH_SUBKEY(propsKV, propKV)
+	{
+		propKV->RecursiveSaveToFile(out, 0);
+	}
 }
 
 void PhysParseSurfaceData(IPhysicsSurfaceProps *pProps, IFileSystem *pFileSystem)
 {
-    if (!CommandLine()->FindParm("-mapping"))
-    {
-        for (const auto &entry : s_SurfacePropFiles)
-        {
-            if (!AddSurfacepropFile(entry.pFileName, pProps, pFileSystem, entry.pFileHash))
-                Error("Error loading surface properties, try validating your game cache.\n");
-        }
-    }
-    else
-    {
-        KeyValuesAD manifest(SURFACEPROP_MANIFEST_FILE);
-        if (manifest->LoadFromFile(pFileSystem, SURFACEPROP_MANIFEST_FILE, "GAME"))
-        {
-            for (KeyValues *sub = manifest->GetFirstSubKey(); sub != nullptr; sub = sub->GetNextKey())
-            {
-                if (FStrEq(sub->GetName(), "file"))
-                {
-                    const auto pFileName = sub->GetString();
-                    if (!AddSurfacepropFile(pFileName, pProps, pFileSystem))
-                        Warning("Unable to load surfaceprop file '%s'\n", pFileName);
-                }
-                else
-                {
-                    Warning("surfaceprops::Init: Manifest '%s' with bogus file type '%s', expecting 'file'\n",
-                            SURFACEPROP_MANIFEST_FILE, sub->GetName());
-                }
-            }
-        }
-        else
-        {
-            Error("Unable to load manifest file '%s'\n", SURFACEPROP_MANIFEST_FILE);
-        }
-    }
+	CUtlBuffer buf;
+	buf.SetBufferType(true, true);
+	GetSurfaceProperties(buf);
+	pProps->ParseSurfaceData("surfaceprops.txt", buf.String());
 }
 
 void PhysCreateVirtualTerrain( CBaseEntity *pWorld, const objectparams_t &defaultParams )
