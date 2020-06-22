@@ -227,36 +227,39 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(STR_DUCK, 4);
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_WALK)
+        && (nButtons & IN_WALK))
     {
-        if (nButtons & IN_WALK)
-        {
-            CHECK_INPUT_P(IN_WALK);
-            surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_WALK), walk_row_ypos);
-            surface()->DrawPrintText(STR_WALK, 4);
-        }
-        if (nButtons & IN_SPEED)
-        {
-            CHECK_INPUT_P(IN_SPEED);
-            surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_SPEED), sprint_row_ypos);
-            surface()->DrawPrintText(STR_SPEED, 5);
-        }
+        CHECK_INPUT_P(IN_WALK);
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_WALK), walk_row_ypos);
+        surface()->DrawPrintText(STR_WALK, 4);
+    }
+
+    if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT)
+        && nButtons & IN_SPEED)
+    {
+        CHECK_INPUT_P(IN_SPEED);
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_SPEED), sprint_row_ypos);
+        surface()->DrawPrintText(STR_SPEED, 5);
     }
 
     // Add M1 and M2 buttons
-    if (nButtons & IN_ATTACK)
+    if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_ATTACK))
     {
-        CHECK_INPUT_P(IN_ATTACK);
-        int xposM1 = GetTextCenter(m_hWordTextFont, STR_M1) - (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M1)) * 1.5;
-        surface()->DrawSetTextPos(xposM1, top_row_ypos);
-        surface()->DrawPrintText(STR_M1, 2);
-    }
-    if (nButtons & IN_ATTACK2)
-    {
-        CHECK_INPUT_P(IN_ATTACK2);
-        int xposM2 = GetTextCenter(m_hWordTextFont, STR_M2) + (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M2)) * 1.5;
-        surface()->DrawSetTextPos(xposM2, top_row_ypos);
-        surface()->DrawPrintText(STR_M2, 2);
+        if (nButtons & IN_ATTACK)
+        {
+            CHECK_INPUT_P(IN_ATTACK);
+            int xposM1 = GetTextCenter(m_hWordTextFont, STR_M1) - (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M1)) * 1.5;
+            surface()->DrawSetTextPos(xposM1, top_row_ypos);
+            surface()->DrawPrintText(STR_M1, 2);
+        }
+        if (nButtons & IN_ATTACK2)
+        {
+            CHECK_INPUT_P(IN_ATTACK2);
+            int xposM2 = GetTextCenter(m_hWordTextFont, STR_M2) + (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M2)) * 1.5;
+            surface()->DrawSetTextPos(xposM2, top_row_ypos);
+            surface()->DrawPrintText(STR_M2, 2);
+        }
     }
     // ----------
     if (m_bShouldDrawCounts)
@@ -264,21 +267,27 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawSetTextColor(m_Normal); // Back to normal, counts don't get disabled
         surface()->DrawSetTextFont(m_hCounterTextFont);
 
-        wchar_t strafes[BUFSIZESHORT];
-        char cstr_strafes[BUFSIZESHORT];
-        Q_snprintf(cstr_strafes, sizeof(cstr_strafes), "( %i )", m_nStrafes);
-        g_pVGuiLocalize->ConvertANSIToUnicode(cstr_strafes, strafes, sizeof(strafes));
+        if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_STRAFES))
+        {
+            wchar_t strafes[BUFSIZESHORT];
+            char cstr_strafes[BUFSIZESHORT];
+            Q_snprintf(cstr_strafes, sizeof(cstr_strafes), "( %i )", m_nStrafes);
+            g_pVGuiLocalize->ConvertANSIToUnicode(cstr_strafes, strafes, sizeof(strafes));
 
-        surface()->DrawSetTextPos(strafe_count_xpos, mid_row_ypos);
-        surface()->DrawPrintText(strafes, wcslen(strafes));
+            surface()->DrawSetTextPos(strafe_count_xpos, mid_row_ypos);
+            surface()->DrawPrintText(strafes, wcslen(strafes));
+        }
 
-        wchar_t jumps[BUFSIZESHORT];
-        char cstr_jumps[BUFSIZESHORT];
-        Q_snprintf(cstr_jumps, sizeof(cstr_jumps), "( %i )", m_nJumps);
-        g_pVGuiLocalize->ConvertANSIToUnicode(cstr_jumps, jumps, sizeof(jumps));
+        if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS))
+        {
+            wchar_t jumps[BUFSIZESHORT];
+            char cstr_jumps[BUFSIZESHORT];
+            Q_snprintf(cstr_jumps, sizeof(cstr_jumps), "( %i )", m_nJumps);
+            g_pVGuiLocalize->ConvertANSIToUnicode(cstr_jumps, jumps, sizeof(jumps));
 
-        surface()->DrawSetTextPos(jump_count_xpos, jump_row_ypos);
-        surface()->DrawPrintText(jumps, wcslen(jumps));
+            surface()->DrawSetTextPos(jump_count_xpos, jump_row_ypos);
+            surface()->DrawPrintText(jumps, wcslen(jumps));
+        }
     }
 }
 void CHudKeyPressDisplay::OnThink()
@@ -367,24 +376,30 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_DUCK), duck_row_ypos);
     surface()->DrawPrintText(STR_DUCK, 4);
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_WALK))
     {
         CHECK_INPUT_N(IN_WALK);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_WALK), walk_row_ypos);
         surface()->DrawPrintText(STR_WALK, 4);
+    }
 
+    if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT))
+    {
         CHECK_INPUT_N(IN_SPEED);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, STR_SPEED), sprint_row_ypos);
         surface()->DrawPrintText(STR_SPEED, 5);
     }
 
-    CHECK_INPUT_N(IN_ATTACK);
-    int xposM1 = GetTextCenter(m_hWordTextFont, STR_M1) - (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M1)) * 1.5;
-    surface()->DrawSetTextPos(xposM1, top_row_ypos);
-    surface()->DrawPrintText(STR_M1, 2);
+    if (g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_KEYPRESS_ATTACK))
+    {
+        CHECK_INPUT_N(IN_ATTACK);
+        int xposM1 = GetTextCenter(m_hWordTextFont, STR_M1) - (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M1)) * 1.5;
+        surface()->DrawSetTextPos(xposM1, top_row_ypos);
+        surface()->DrawPrintText(STR_M1, 2);
 
-    CHECK_INPUT_N(IN_ATTACK2);
-    int xposM2 = GetTextCenter(m_hWordTextFont, STR_M2) + (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M2)) * 1.5;
-    surface()->DrawSetTextPos(xposM2, top_row_ypos);
-    surface()->DrawPrintText(STR_M2, 2);
+        CHECK_INPUT_N(IN_ATTACK2);
+        int xposM2 = GetTextCenter(m_hWordTextFont, STR_M2) + (UTIL_ComputeStringWidth(m_hWordTextFont, STR_M2)) * 1.5;
+        surface()->DrawSetTextPos(xposM2, top_row_ypos);
+        surface()->DrawPrintText(STR_M2, 2);
+    }
 }

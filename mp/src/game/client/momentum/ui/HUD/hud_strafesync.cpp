@@ -6,6 +6,7 @@
 #include "util/mom_util.h"
 #include "hud_fillablebar.h"
 #include "c_mom_player.h"
+#include "mom_system_gamemode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -60,7 +61,9 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     void OnThink() OVERRIDE;
     bool ShouldDraw() OVERRIDE
     {
-        return strafesync_draw.GetInt() && CHudElement::ShouldDraw() && ShouldDrawLocal();
+        return strafesync_draw.GetInt() && CHudElement::ShouldDraw() && 
+               g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_SYNC) &&
+               ShouldDrawLocal();
     }
 
     void Reset() OVERRIDE
@@ -198,7 +201,9 @@ class CHudStrafeSyncBar : public CHudElement, public CHudFillableBar
     void OnThink() OVERRIDE;
     bool ShouldDraw() OVERRIDE
     {
-        return mom_hud_strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && ShouldDrawLocal();
+        return mom_hud_strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() &&
+            g_pGameModeSystem->GetGameMode()->HasCapability(GameModeHUDCapability_t::CAP_HUD_SYNC_BAR) &&
+            ShouldDrawLocal();
     }
 
     void Reset() OVERRIDE
