@@ -73,11 +73,25 @@ void CGameModeBase::ExecGameModeCfg()
 #endif
 }
 
+bool CGameModeBase::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_STRAFES ||
+           capability == GameModeHUDCapability_t::CAP_HUD_SYNC ||
+           capability == GameModeHUDCapability_t::CAP_HUD_SYNC_BAR ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_ATTACK;
+}
+
 bool CGameMode_Surf::WeaponIsAllowed(WeaponID_t weapon)
 {
     // Surf only blacklists weapons
     return weapon != WEAPON_ROCKETLAUNCHER &&
            weapon != WEAPON_STICKYLAUNCHER;
+}
+
+bool CGameMode_Surf::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
 }
 
 void CGameMode_Bhop::SetGameModeVars()
@@ -96,6 +110,14 @@ bool CGameMode_Bhop::WeaponIsAllowed(WeaponID_t weapon)
            weapon != WEAPON_STICKYLAUNCHER;
 }
 
+bool CGameMode_Bhop::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_STRAFES ||
+           capability == GameModeHUDCapability_t::CAP_HUD_SYNC ||
+           capability == GameModeHUDCapability_t::CAP_HUD_SYNC_BAR;
+}
+
 void CGameMode_KZ::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
@@ -110,6 +132,14 @@ bool CGameMode_KZ::WeaponIsAllowed(WeaponID_t weapon)
     // KZ only blacklists weapons
     return weapon != WEAPON_ROCKETLAUNCHER &&
            weapon != WEAPON_STICKYLAUNCHER;
+}
+
+bool CGameMode_KZ::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_STRAFES ||
+           capability == GameModeHUDCapability_t::CAP_HUD_SYNC ||
+           capability == GameModeHUDCapability_t::CAP_HUD_SYNC_BAR;
 }
 
 void CGameMode_RJ::SetGameModeVars()
@@ -150,6 +180,12 @@ bool CGameMode_RJ::WeaponIsAllowed(WeaponID_t weapon)
            weapon == WEAPON_PAINTGUN;
 }
 
+bool CGameMode_RJ::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_ATTACK;
+}
+
+
 void CGameMode_SJ::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
@@ -188,6 +224,11 @@ bool CGameMode_SJ::WeaponIsAllowed(WeaponID_t weapon)
            weapon == WEAPON_PAINTGUN;
 }
 
+bool CGameMode_SJ::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_ATTACK;
+}
+
 void CGameMode_Tricksurf::SetGameModeVars()
 {
     CGameModeBase::SetGameModeVars();
@@ -213,6 +254,13 @@ void CGameMode_Ahop::SetGameModeVars()
 float CGameMode_Ahop::GetJumpFactor()
 {
     return 160.0f;
+}
+
+bool CGameMode_Ahop::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_WALK ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT;
 }
 
 void CGameMode_Ahop::OnPlayerSpawn(CMomentumPlayer *pPlayer)

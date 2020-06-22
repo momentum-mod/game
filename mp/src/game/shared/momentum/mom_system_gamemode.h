@@ -8,6 +8,17 @@
 
 class CMomentumPlayer;
 
+enum class GameModeHUDCapability_t
+{
+    CAP_HUD_SYNC = 0,
+    CAP_HUD_SYNC_BAR,
+    CAP_HUD_KEYPRESS_STRAFES,
+    CAP_HUD_KEYPRESS_JUMPS,
+    CAP_HUD_KEYPRESS_ATTACK,
+    CAP_HUD_KEYPRESS_WALK,
+    CAP_HUD_KEYPRESS_SPRINT,
+};
+
 abstract_class IGameMode
 {
 public:
@@ -23,6 +34,7 @@ public:
     virtual void        ExecGameModeCfg() = 0;
     virtual float       GetIntervalPerTick() = 0;
     virtual bool        WeaponIsAllowed(WeaponID_t weapon) = 0;
+    virtual bool        HasCapability(GameModeHUDCapability_t capability) = 0;
 
     // Movement vars
     virtual float       GetViewScale() = 0;
@@ -51,6 +63,7 @@ public:
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     void ExecGameModeCfg() override;
     bool WeaponIsAllowed(WeaponID_t weapon) override { return true; } // Unknown allows all weapons
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_Surf : public CGameModeBase
@@ -62,6 +75,7 @@ public:
     const char* GetMapPrefix() override { return "surf_"; }
     const char* GetGameModeCfg() override { return "surf.cfg"; }
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_Bhop : public CGameModeBase
@@ -75,6 +89,7 @@ public:
     float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_KZ : public CGameModeBase
@@ -89,6 +104,7 @@ public:
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_RJ : public CGameModeBase
@@ -107,6 +123,7 @@ public:
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_SJ : public CGameModeBase
@@ -120,6 +137,7 @@ class CGameMode_SJ : public CGameModeBase
     float GetViewScale() override { return 1.0f; }
     float GetJumpFactor() override;
     bool CanBhop() override { return false; }
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
@@ -155,6 +173,7 @@ public:
     void SetGameModeVars() override;
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 
     float GetViewScale() override { return 1.0f; }
     float GetJumpFactor() override;
