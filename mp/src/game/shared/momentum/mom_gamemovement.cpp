@@ -331,6 +331,14 @@ void CMomentumGameMovement::WalkMove()
 
 void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
 {
+#ifdef USE_NEW_RNGFIX
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+#endif
+    {
+        BaseClass::StepMove(vecDestination, trace);
+        return;
+    }
+
     Vector vecEndPos;
     VectorCopy(vecDestination, vecEndPos);
 
@@ -1447,6 +1455,7 @@ void CMomentumGameMovement::CategorizePosition()
                     }
                 }
 
+#ifdef USE_NEW_RNGFIX
                 if (bGrounded)
                 {
                     if (sv_slope_fix.GetBool())
@@ -1479,6 +1488,23 @@ void CMomentumGameMovement::CategorizePosition()
                         SetGroundEntity(&pm);
                     }
                 }
+#else
+                ClipVelocity(vecNextVelocity, pm.plane.normal, vecNextVelocity, 1.0f);
+
+                // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
+                // grounded (exception if the player wants to bhop)
+                if (vecNextVelocity.z <= NON_JUMP_VELOCITY && bGrounded)
+                {
+                    // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
+                    // velocity.z
+                    if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                    {
+                        VectorCopy(vecNextVelocity, mv->m_vecVelocity);
+                    }
+
+                    SetGroundEntity(&pm);
+                }
+#endif
             }
             else
             {
@@ -2073,6 +2099,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             {
                 TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
+#ifdef USE_NEW_RNGFIX
                 if (sv_slope_fix.GetBool() && player->GetMoveType() == MOVETYPE_WALK &&
                     player->GetGroundEntity() == nullptr && player->GetWaterLevel() < WL_Waist &&
                     g_pGameModeSystem->GetGameMode()->CanBhop() && !g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
@@ -2106,6 +2133,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                         }
                     }
                 }
+#endif
             }
         }
 
@@ -2445,6 +2473,35 @@ void CMomentumGameMovement::ReduceTimers()
 
     BaseClass::ReduceTimers();
 }
+
+#ifndef USE_NEW_RNGFIX
+int CMomentumGameMovement::ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce)
+{
+    const int blocked = BaseClass::ClipVelocity(in, normal, out, overbounce);
+
+    // Check if the jump button is held to predict if the player wants to jump up an incline. Not checking for jumping
+    // could allow players that hit the slope almost perpendicularly and still surf up the slope because they would
+    // retain their horizontal speed
+    if (sv_slope_fix.GetBool() && m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP))
+    {
+        bool canJump = normal[2] >= 0.7f && out.z <= NON_JUMP_VELOCITY;
+
+        if (m_pPlayer->m_CurrentSlideTrigger)
+            canJump &= m_pPlayer->m_CurrentSlideTrigger->m_bAllowingJump;
+
+        // If the player do not gain horizontal speed while going up an incline, then act as if the surface is flat
+        if (canJump && (normal.x * in.x + normal.y * in.y < 0.0f) && out.Length2DSqr() <= in.Length2DSqr())
+        {
+            out.x = in.x;
+            out.y = in.y;
+            out.z = 0.0f;
+        }
+    }
+
+    // Return blocking flags.
+    return blocked;
+}
+#endif
 
 // Expose our interface.
 static CMomentumGameMovement g_GameMovement;
