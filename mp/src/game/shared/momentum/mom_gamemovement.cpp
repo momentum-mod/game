@@ -686,6 +686,12 @@ bool CMomentumGameMovement::CanUnduck()
 
 void CMomentumGameMovement::Friction()
 {
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        BaseClass::Friction();
+        return;
+    }
+
     // Friction shouldn't be affected by z velocity
     Vector velocity = mv->m_vecVelocity;
     velocity.z = 0.0f;
