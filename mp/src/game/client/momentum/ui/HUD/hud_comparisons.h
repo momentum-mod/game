@@ -41,16 +41,9 @@ public:
     void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
     //Bogus Pulse is a flag-based variable, using the run_compare enum. Allows for multiple parsing.
-    void SetBogusPulse(int i)
-    {
-        m_nCurrentBogusPulse |= i;
-    }
+    void SetBogusPulse(int i);
 
-    void SetPanelSize(int wide, int tall)
-    {
-        SetSize(wide, tall);
-        PostActionSignal(new KeyValues("OnSizeChange", "wide", wide, "tall", tall));
-    }
+    void SetPanelSize(int wide, int tall);
 
     int GetCurrentZone() const;
 

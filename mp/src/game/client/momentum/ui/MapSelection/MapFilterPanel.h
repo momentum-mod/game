@@ -16,6 +16,8 @@ class MapFilterPanel : public vgui::EditablePanel
     void ApplyFilters();
     void ResetFilters();
 
+    void ResetFeelingLucky();
+
 protected:
     void OnCommand(const char* command) OVERRIDE;
 
@@ -28,7 +30,7 @@ private:
     vgui::TextEntry *m_pMapNameFilter, *m_pDifficultyLowerBound, *m_pDifficultyHigherBound;
     vgui::CheckButton *m_pHideCompletedFilterCheck;//Used for local maps only
     vgui::ComboBox *m_pMapLayoutFilter;//0 = ALL, 1 = LINEAR ONLY, 2 = STAGED ONLY
-    vgui::Button *m_pApplyFiltersButton, *m_pResetFiltersButton;
+    vgui::Button *m_pApplyFiltersButton, *m_pResetFiltersButton, *m_pFeelingLuckyButton;
 
     // filter data
     MapFilters_t m_Filters;

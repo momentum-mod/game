@@ -29,58 +29,49 @@ vgui::Panel *MessageBox_Factory()
 }
 
 DECLARE_BUILD_FACTORY_CUSTOM( MessageBox, MessageBox_Factory );
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
-MessageBox::MessageBox(const char *title, const char *text, Panel *parent) : Frame(parent, NULL, false)
+
+
+MessageBox::MessageBox(const char *title, const char *text, Panel *parent) : Frame(parent, "MessageBoxFrame", false)
 {
 	SetTitle(title, true);
-	m_pMessageLabel = new Label(this, NULL, text);
+	m_pMessageLabel = new Label(this, "MessageLabel", text);
 
 	Init();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
-MessageBox::MessageBox(const wchar_t *wszTitle, const wchar_t *wszText, Panel *parent) : Frame(parent, NULL, false)
+MessageBox::MessageBox(const wchar_t *wszTitle, const wchar_t *wszText, Panel *parent) : Frame(parent, "MessageBoxFrame", false)
 {	
 	SetTitle(wszTitle, true);
-	m_pMessageLabel = new Label(this, NULL, wszText);
+	m_pMessageLabel = new Label(this, "MessageLabel", wszText);
 
 	Init();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor Helper
-//-----------------------------------------------------------------------------
 void MessageBox::Init()
 {
 	SetDeleteSelfOnClose(true);
-	m_pFrameOver = NULL;
+	m_pFrameOver = nullptr;
 	m_bShowMessageBoxOverCursor = false;
 
 	SetMenuButtonResponsive(false);
 	SetMinimizeButtonVisible(false);
 	SetCloseButtonVisible(false);
 	SetSizeable(false);
+	SetProportional(true);
 	
-	m_pOkButton = new Button(this, NULL, "#MessageBox_OK");
+	m_pOkButton = new Button(this, "OkButton", "#MessageBox_OK");
 	m_pOkButton->SetCommand( "OnOk" );
 	m_pOkButton->AddActionSignalTarget(this);
 
-	m_pCancelButton = new Button(this, NULL, "#MessageBox_Cancel");
+	m_pCancelButton = new Button(this, "CancelButton", "#MessageBox_Cancel");
 	m_pCancelButton->SetCommand( "OnCancel" );
 	m_pCancelButton->AddActionSignalTarget(this);
 	m_pCancelButton->SetVisible( false );
 
-	m_OkCommand = m_CancelCommand = NULL;
+	m_OkCommand = m_CancelCommand = nullptr;
 	m_bNoAutoClose = false;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
 MessageBox::~MessageBox()
 {
 	if ( m_OkCommand )
@@ -93,24 +84,16 @@ MessageBox::~MessageBox()
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// Shows the message box over the cursor
-//-----------------------------------------------------------------------------
 void MessageBox::ShowMessageBoxOverCursor( bool bEnable )
 {
 	m_bShowMessageBoxOverCursor = bEnable;
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: size the message label properly
-//-----------------------------------------------------------------------------
 void MessageBox::OnCommand( const char *pCommand )
 {
-	if ( vgui::input()->GetAppModalSurface() == GetVPanel() )
+	if ( input()->GetAppModalSurface() == GetVPanel() )
 	{
-		vgui::input()->ReleaseAppModalSurface();
+		input()->ReleaseAppModalSurface();
 	}
 
 	if ( !Q_stricmp( pCommand, "OnOk" ) )
@@ -131,47 +114,6 @@ void MessageBox::OnCommand( const char *pCommand )
 	if ( !m_bNoAutoClose )
 	{
 		OnShutdownRequest();
-	}
-}
-
-	
-//-----------------------------------------------------------------------------
-// Purpose: size the message label properly
-//-----------------------------------------------------------------------------
-void MessageBox::ApplySchemeSettings(IScheme *pScheme)
-{
-	BaseClass::ApplySchemeSettings(pScheme);
-
-	int wide, tall;
-	m_pMessageLabel->GetContentSize(wide, tall);
-	m_pMessageLabel->SetSize(wide, tall);
-
-	wide += 100;
-	tall += 100;
-	SetSize(wide, tall);
-
-	if ( m_bShowMessageBoxOverCursor )
-	{
-		PlaceUnderCursor();
-		return;
-	}
-
-	// move to the middle of the screen
-	if ( m_pFrameOver )
-	{
-		int frameX, frameY;
-		int frameWide, frameTall;
-		m_pFrameOver->GetPos(frameX, frameY);
-		m_pFrameOver->GetSize(frameWide, frameTall);
-
-		SetPos((frameWide - wide) / 2 + frameX, (frameTall - tall) / 2 + frameY);
-	}
-	else
-	{
-		int swide, stall;
-		surface()->GetScreenSize(swide, stall);
-		// put the dialog in the middle of the screen
-		SetPos((swide - wide) / 2, (stall - tall) / 2);
 	}
 }
 
@@ -239,11 +181,8 @@ void MessageBox::ShowWindow(Frame *pFrameOver)
 	InvalidateLayout();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Put the text and OK buttons in correct place
-//-----------------------------------------------------------------------------
 void MessageBox::PerformLayout()
-{	
+{
 	int x, y, wide, tall;
 	GetClientArea(x, y, wide, tall);
 	wide += x;
@@ -272,31 +211,51 @@ void MessageBox::PerformLayout()
 		m_pCancelButton->SetSize(btnWide2, btnTall2);
 	}
 
-	boxWidth = max(boxWidth, m_pMessageLabel->GetWide() + 100);
+	boxWidth = max(boxWidth, m_pMessageLabel->GetWide() + GetScaledVal(50));
 	boxWidth = max(boxWidth, (btnWide + btnWide2) * 2 + 30);
 	SetSize(boxWidth, boxTall);
-
-	GetSize(boxWidth, boxTall);
 
 	m_pMessageLabel->SetPos((wide/2)-(m_pMessageLabel->GetWide()/2) + x, y + 5 );
 	if ( !m_pCancelButton->IsVisible() )
 	{
-		m_pOkButton->SetPos((wide/2)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - 15);
+		m_pOkButton->SetPos((wide/2)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
 	}
 	else
 	{
-		m_pOkButton->SetPos((wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - 15);
-		m_pCancelButton->SetPos((3*wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - 15);
+		m_pOkButton->SetPos((wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
+		m_pCancelButton->SetPos((3*wide/4)-(m_pOkButton->GetWide()/2) + x, tall - m_pOkButton->GetTall() - GetScaledVal(15));
+	}
+
+	m_pMessageLabel->GetContentSize(wide, tall);
+	m_pMessageLabel->SetSize(wide, tall);
+
+	wide += GetScaledVal(75);
+	tall += GetScaledVal(75);
+	SetSize(wide, tall);
+
+	if (m_bShowMessageBoxOverCursor)
+	{
+		PlaceUnderCursor();
+		return;
+	}
+
+	if (m_pFrameOver)
+	{
+		int frameX, frameY;
+		int frameWide, frameTall;
+		m_pFrameOver->GetPos(frameX, frameY);
+		m_pFrameOver->GetSize(frameWide, frameTall);
+
+		SetPos((frameWide - wide) / 2 + frameX, (frameTall - tall) / 2 + frameY);
+	}
+	else
+	{
+		MoveToCenterOfScreen();
 	}
 
 	BaseClass::PerformLayout();
-	GetSize(boxWidth, boxTall);
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: Set a string command to be sent when the OK button is pressed.
-//-----------------------------------------------------------------------------
 void MessageBox::SetCommand(const char *command)
 {
 	if (m_OkCommand)
@@ -306,9 +265,6 @@ void MessageBox::SetCommand(const char *command)
 	m_OkCommand = new KeyValues("Command", "command", command);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Sets the command
-//-----------------------------------------------------------------------------
 void MessageBox::SetCommand(KeyValues *command)
 {
 	if (m_OkCommand)
@@ -318,45 +274,29 @@ void MessageBox::SetCommand(KeyValues *command)
 	m_OkCommand = command;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void MessageBox::OnShutdownRequest()
 {
 	// Shutdown the dialog
 	PostMessage(this, new KeyValues("Close"));
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Set the visibility of the OK button.
-//-----------------------------------------------------------------------------
 void MessageBox::SetOKButtonVisible(bool state)
 {
 	m_pOkButton->SetVisible(state);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Sets the Text on the OK button
-//-----------------------------------------------------------------------------
 void MessageBox::SetOKButtonText(const char *buttonText)
 {
 	m_pOkButton->SetText(buttonText);
 	InvalidateLayout();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Sets the Text on the OK button
-//-----------------------------------------------------------------------------
 void MessageBox::SetOKButtonText(const wchar_t *wszButtonText)
 {
 	m_pOkButton->SetText(wszButtonText);
 	InvalidateLayout();
 }
 
-
-//-----------------------------------------------------------------------------
-// Cancel button (off by default)
-//-----------------------------------------------------------------------------
 void MessageBox::SetCancelButtonVisible(bool state)
 {
 	m_pCancelButton->SetVisible(state);
@@ -383,10 +323,7 @@ void MessageBox::SetCancelCommand( KeyValues *command )
 	}
 	m_CancelCommand = command;
 }
-	
-//-----------------------------------------------------------------------------
-// Purpose: Toggles visibility of the close box.
-//-----------------------------------------------------------------------------
+
 void MessageBox::DisableCloseButton(bool state)
 {
 	BaseClass::SetCloseButtonVisible(state);

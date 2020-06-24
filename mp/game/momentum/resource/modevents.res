@@ -115,4 +115,34 @@
     {
         "id" "byte"
     }
+    "lobby_update_msg"
+    {
+        "type" "byte"
+        "id" "string"
+    }
+    "lobby_spec_update_msg"
+    {
+        "type" "byte"
+        "id" "string"     // Person speccing
+        "target" "string" // Spec target
+    }
+    "mapcache_map_load"
+    {
+        "map" "string"
+    }
+    "player_jumped"
+    {
+    }
+    "ramp_board"
+    {
+        "speed" "float"
+    }
+    "ramp_leave"
+    {
+        "speed" "float"
+    }
+    "player_explosive_hit"
+    {
+        "speed" "float"
+    }
 }

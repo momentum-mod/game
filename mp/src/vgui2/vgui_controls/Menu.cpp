@@ -9,7 +9,10 @@
 
 // memdbgon must be the last include file in a .cpp file
 #include "tier0/memdbgon.h"
+
 #define MENU_SEPARATOR_HEIGHT 3
+#define DEFAULT_MENU_ITEM_HEIGHT 22 // height of items in the menu by default
+#define DEFAULT_MENU_ITEM_HEIGHT_OFFSET 4 // Offset, pixels between each menu item
 
 using namespace vgui;
 
@@ -76,16 +79,9 @@ Menu::Menu(Panel *parent, const char *panelName) : Panel(parent, panelName)
 	m_bUseFallbackFont = false;
 	m_hFallbackItemFont = INVALID_FONT;
 
-	if (IsProportional())
-	{
-		m_iMenuItemHeight =  scheme()->GetProportionalScaledValueEx( GetScheme(), DEFAULT_MENU_ITEM_HEIGHT );
-	}
-	else
-	{
-		m_iMenuItemHeight =  DEFAULT_MENU_ITEM_HEIGHT;
-	}
+	m_iMenuItemHeightOffset = GetScaledVal(DEFAULT_MENU_ITEM_HEIGHT_OFFSET);
+	m_iMenuItemHeight = GetScaledVal(DEFAULT_MENU_ITEM_HEIGHT) + m_iMenuItemHeightOffset;
 	m_hItemFont = INVALID_FONT;
-
 
 	m_eTypeAheadMode = COMPAT_MODE;
 	m_szTypeAheadBuf[0] = '\0';
@@ -545,7 +541,7 @@ void Menu::SetFixedWidth(int width)
 //-----------------------------------------------------------------------------
 void Menu::SetMenuItemHeight(int itemHeight)
 {
-	m_iMenuItemHeight = itemHeight;
+	m_iMenuItemHeight = itemHeight + m_iMenuItemHeightOffset;
 }
 
 int  Menu::GetMenuItemHeight() const
@@ -1611,36 +1607,41 @@ void Menu::OnMouseWheeled(int delta)
 //-----------------------------------------------------------------------------
 void Menu::OnKillFocus()
 {
+	const auto calculatedFocus = input()->GetCalculatedFocus();
+
+	if (!calculatedFocus)
+		return;
+
 	// check to see if it's a child taking it
-	if (!input()->GetFocus() || !ipanel()->HasParent(input()->GetFocus(), GetVPanel()))
+	const bool bFocusWentToChild = ipanel()->HasParent(calculatedFocus, GetVPanel());
+	if (bFocusWentToChild)
+		return;
+
+	// if we don't accept keyboard input, then we have to ignore the killfocus if it's not actually being stolen
+	if (!IsKeyBoardInputEnabled())
+		return;
+
+	// get the parent of this menu. 
+	MenuItem *item = GetParentMenuItem();
+	// if the parent is a menu item, this menu is a cascading menu
+	// if the panel that is getting focus is the parent menu, don't close this menu.
+	if ( (item) && (input()->GetFocus() == item->GetVParent()) )
 	{
-		// if we don't accept keyboard input, then we have to ignore the killfocus if it's not actually being stolen
-		if (!IsKeyBoardInputEnabled() && !input()->GetFocus())
-			return;
-
-		// get the parent of this menu. 
-		MenuItem *item = GetParentMenuItem();
-		// if the parent is a menu item, this menu is a cascading menu
-		// if the panel that is getting focus is the parent menu, don't close this menu.
-		if ( (item) && (input()->GetFocus() == item->GetVParent()) )
+		// if we are in mouse mode and we clicked on the menuitem that
+		// triggers the cascading menu, leave it open.
+		if (m_iInputMode == MOUSE)
 		{
-			// if we are in mouse mode and we clicked on the menuitem that
-			// triggers the cascading menu, leave it open.
-			if (m_iInputMode == MOUSE)
-			{
-				// return the focus to the cascading menu.
-				MoveToFront();
-				return;
-			}
+			// return the focus to the cascading menu.
+			MoveToFront();
+			return;
 		}
-
-		// forward the message to the parent.
-		PostActionSignal(new KeyValues("MenuClose"));
-
-		// hide this menu
-		SetVisible(false);
 	}
-	
+
+	// forward the message to the parent.
+	PostActionSignal(new KeyValues("MenuClose"));
+
+	// hide this menu
+	SetVisible(false);
 }
 
 namespace vgui
@@ -2594,7 +2595,7 @@ void Menu::SetFont( HFont font )
 	m_hItemFont = font;
 	if ( font )
 	{
-		m_iMenuItemHeight = surface()->GetFontTall( font ) + 2;
+		SetMenuItemHeight(surface()->GetFontTall(font));
 	}
 	InvalidateLayout();
 }

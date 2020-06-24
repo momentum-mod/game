@@ -13,7 +13,7 @@
 #include "controls/FileImage.h"
 #include "vgui_controls/Tooltip.h"
 
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 
 #include "mom_shareddefs.h"
 #include "vgui_avatarimage.h"
@@ -27,6 +27,8 @@
 #include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
+
+extern bool g_bRollingCredits;
 
 using namespace vgui;
 
@@ -62,6 +64,7 @@ LobbyMembersPanel::LobbyMembersPanel(IViewPort *pParent) : BaseClass(nullptr, PA
     m_pMemberList->SetRowHeightOnFontChange(false);
     m_pMemberList->SetRowHeight(GetScaledVal(20));
     m_pMemberList->SetMultiselectEnabled(false);
+    m_pMemberList->SetAutoTallHeaderToFont(true);
     m_pLobbyToggle = new Button(this, "LobbyToggle", "#GameUI2_HostLobby", this, "HostLobby");
     m_pInviteFriends = new Button(this, "InviteFriends", "#GameUI2_InviteLobby", this, "InviteFriends");
 
@@ -296,6 +299,9 @@ void LobbyMembersPanel::ShowPanel(bool bShow)
 
     if (bShow)
     {
+        if (g_bRollingCredits)
+            return;
+
         Reset();
         SetVisible(true);
         // SetEnabled(true);
@@ -460,7 +466,7 @@ void LobbyMembersPanel::OnLobbyEnter(LobbyEnter_t* pParam)
             "Too many join attempts in a very short period of time. Try waiting a bit before trying again." // k_EChatRoomEnterResponseRatelimitExceeded
         };
 
-        messageboxpanel->CreateMessagebox("#MOM_Lobby_JoinFail", szJoinFails[pParam->m_EChatRoomEnterResponse - 2]);
+        g_pMessageBox->CreateMessagebox("#MOM_Lobby_JoinFail", szJoinFails[pParam->m_EChatRoomEnterResponse - 2]);
     }
 }
 
@@ -502,13 +508,13 @@ void LobbyMembersPanel::InitLobbyPanelSections()
     InitImageList();
 
     m_pMemberList->SetImageList(m_pImageListLobby, false);
-    m_pMemberList->AddColumnHeader(0, "isOwner", "", 40, 
+    m_pMemberList->AddColumnHeader(0, "isOwner", "", GetScaledVal(30), 
                                    ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_DISABLED);
-    m_pMemberList->AddColumnHeader(1, "avatar", "", 40, 
+    m_pMemberList->AddColumnHeader(1, "avatar", "", GetScaledVal(30), 
                                    ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_DISABLED);
-    m_pMemberList->AddColumnHeader(2, "personaname", "#MOM_Name", 160, 40, 160, 0);
-    m_pMemberList->AddColumnHeader(3, "map", "#MOM_MapSelector_Map", 160, 0);
-    m_pMemberList->AddColumnHeader(4, "state", "#MOM_Lobby_Member_State", 40);
+    m_pMemberList->AddColumnHeader(2, "personaname", "#MOM_Name", GetScaledVal(90), GetScaledVal(30), GetScaledVal(100), 0);
+    m_pMemberList->AddColumnHeader(3, "map", "#MOM_MapSelector_Map", GetScaledVal(120), 0);
+    m_pMemberList->AddColumnHeader(4, "state", "#MOM_Lobby_Member_State", GetScaledVal(30));
 
     m_pMemberList->SetSortFunc(2, StaticLobbyMemberSortFunc);
     m_pMemberList->SetSortColumn(2);

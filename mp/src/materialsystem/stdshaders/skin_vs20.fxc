@@ -28,7 +28,7 @@ const float4 cDetailTexCoordTransform[2]	: register( SHADER_SPECIFIC_CONST_4 );
 const float3 cMorphTargetTextureDim			: register( SHADER_SPECIFIC_CONST_6 );
 const float4 cMorphSubrect					: register( SHADER_SPECIFIC_CONST_7 );
 
-sampler2D morphSampler : register( D3DVERTEXTEXTURESAMPLER0, s0 );
+sampler2D morphSampler : register( s0 );
 #endif
 
 
@@ -66,9 +66,7 @@ struct VS_OUTPUT
 {
 	// Stuff that isn't seen by the pixel shader
 	float4 projPos					: POSITION;	
-#if !defined( _X360 )    
 	float  fog						: FOG;
-#endif
 	// Stuff that is seen by the pixel shader
 	float4 baseTexCoord				: TEXCOORD0;			// includes detail tex coord
 	float3 lightAtten				: TEXCOORD1;
@@ -124,9 +122,7 @@ VS_OUTPUT main( const VS_INPUT v )
 
 	o.projPos_fWrinkleWeight.xyz = vProjPos.xyz;
 
-#if !defined( _X360 )
 	o.fog = CalcFog( worldPos, vProjPos.xyz, g_FogType );
-#endif
 	// Needed for water fog alpha and diffuse lighting 
 	// FIXME: we shouldn't have to compute this all the time.
 	o.worldPos_atten3.xyz = worldPos;

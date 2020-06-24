@@ -1,0 +1,10 @@
+VertexLitGeneric
+{
+	"$bumpmap" "dev/flat_normal"
+
+	"$phong" "1"
+	"$phongfresnelranges" "[0 0.5 1]"
+	"$phongexponent" "10"
+
+	"$color2" "[0.13 0.13 0.13]"
+}

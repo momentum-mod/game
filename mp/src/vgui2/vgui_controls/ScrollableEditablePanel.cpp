@@ -16,16 +16,35 @@
 
 using namespace vgui;
 
-ScrollableEditablePanel::ScrollableEditablePanel( Panel *pParent, EditablePanel *pChild, const char *pName ) :
-	BaseClass( pParent, pName )
+Panel *CreateScrollableEditablePanel()
 {
-	m_pChild = pChild;
-	m_pChild->SetParent( this );
+    return new ScrollableEditablePanel( nullptr, nullptr, nullptr );
+}
 
+DECLARE_BUILD_FACTORY_CUSTOM(ScrollableEditablePanel, CreateScrollableEditablePanel);
+
+ScrollableEditablePanel::ScrollableEditablePanel( Panel *pParent, EditablePanel *pChild, const char *pName ) : BaseClass( pParent, pName )
+{
 	m_pScrollBar = new ScrollBar( this, "VerticalScrollBar", true ); 
 	m_pScrollBar->SetWide( 16 );
 	m_pScrollBar->SetAutoResize( PIN_TOPRIGHT, AUTORESIZE_DOWN, 0, 0, -16, 0 );
 	m_pScrollBar->AddActionSignalTarget( this );
+
+	SetChild(pChild);
+}
+
+void ScrollableEditablePanel::SetChild(Panel *pChild)
+{
+	m_pChild = pChild;
+
+	if (m_pChild)
+	{
+	    m_pChild->SetParent(this);
+		m_pScrollBar->SetZPos(m_pChild->GetZPos() + 1);
+	}
+
+	ScrollToTop();
+	InvalidateLayout();
 }
 
 void ScrollableEditablePanel::ApplySettings( KeyValues *pInResourceData )
@@ -43,27 +62,22 @@ void ScrollableEditablePanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	m_pChild->SetWide( GetWide() - m_pScrollBar->GetWide() );
-	m_pScrollBar->SetRange( 0, m_pChild->GetTall() );
-	m_pScrollBar->SetRangeWindow( GetTall() );
-
-	if ( m_pScrollBar->GetSlider() )
+	if (m_pChild)
 	{
-		m_pScrollBar->GetSlider()->SetFgColor( GetFgColor() );
-	}
-	if ( m_pScrollBar->GetButton(0) )
-	{
-		m_pScrollBar->GetButton(0)->SetFgColor( GetFgColor() );
-	}
-	if ( m_pScrollBar->GetButton(1) )
-	{
-		m_pScrollBar->GetButton(1)->SetFgColor( GetFgColor() );
+		m_pChild->SetWide(GetWide());
+		m_pScrollBar->SetRange(0, m_pChild->GetTall());
+		m_pScrollBar->SetRangeWindow(GetTall());
 	}
 }
 
 void ScrollableEditablePanel::ScrollToTop()
 {
     m_pScrollBar->SetValue(0);
+	// Guarantee the child sets its position
+	if (m_pChild)
+	{
+	    m_pChild->SetPos(0, 0);
+	}
     Repaint();
 }
 
@@ -74,8 +88,11 @@ void ScrollableEditablePanel::OnScrollBarSliderMoved()
 {
 	InvalidateLayout();
 
-	int nScrollAmount = m_pScrollBar->GetValue();
-	m_pChild->SetPos( 0, -nScrollAmount ); 
+	if (m_pChild)
+	{
+		int nScrollAmount = m_pScrollBar->GetValue();
+		m_pChild->SetPos(0, -nScrollAmount);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -84,6 +101,6 @@ void ScrollableEditablePanel::OnScrollBarSliderMoved()
 void ScrollableEditablePanel::OnMouseWheeled(int delta)
 {
 	int val = m_pScrollBar->GetValue();
-	val -= (delta * 50);
+	val -= (delta * GetScaledVal(40));
 	m_pScrollBar->SetValue( val );
 }

@@ -31,6 +31,7 @@ class MainMenu : public vgui::EditablePanel, public IGameEventListener2
     void DrawLogo();
     void CheckVersion();
     void Paint() OVERRIDE;
+    void PerformLayout() override;
 
     void Activate();
 
@@ -59,17 +60,13 @@ private:
 
     int m_iLogoWidth, m_iLogoHeight;
 
-    bool m_bLogoPlayerCount;
     bool m_bLogoText;
     vgui::ImagePanel *m_pLogoImage;
     bool m_bLogoAttachToMenu;
 
     Color m_cLogoLeft;
     Color m_cLogoRight;
-    Color m_cLogoPlayerCount;
 
-    vgui::HFont m_hFontVersionLabel;
-    vgui::HFont m_fLogoPlayerCount;
     vgui::HFont m_fLogoFont;
     int m_nSortFlags;
     bool m_bNeedSort;

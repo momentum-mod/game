@@ -11,7 +11,7 @@
 #include "vgui/ISurface.h"
 
 #include "ClientTimesDisplay.h"
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 #include "LeaderboardsContextMenu.h"
 
 #include "hud_comparisons.h"
@@ -52,8 +52,9 @@ CLeaderboardsTimes::CLeaderboardsTimes(CClientTimesDisplay* pParent) : BaseClass
 
     m_pFilterPanel = new EditablePanel(pParent, "FilterPanel");
     m_pFilterPanel->SetSize(10, 10);
-    m_pFilterPanel->AddActionSignalTarget(this);
     m_pFilterPanel->LoadControlSettings("resource/ui/leaderboards/filter_panel.res");
+    m_pFilterPanel->AddActionSignalTarget(this);
+    m_pFilterPanel->SetVisible(false);
 
     m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
 
@@ -155,8 +156,8 @@ void CLeaderboardsTimes::InitLeaderboardSections()
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
         m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, GetScaledVal(m_aiColumnWidths[2]));
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[0]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, m_aiColumnWidths[0]);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
@@ -172,28 +173,20 @@ void CLeaderboardsTimes::InitLeaderboardSections()
         panel->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         panel->SetSectionAlwaysVisible(m_iSectionId);
         panel->SetImageList(m_pImageList, false);
-        panel->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-                                  GetScaledVal(m_aiColumnWidths[1]));
-        panel->AddColumnToSection(m_iSectionId, "avatar", "",
-                                  SectionedListPanel::COLUMN_IMAGE,
-                                  DEFAULT_AVATAR_SIZE + 4);
-        panel->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        panel->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        panel->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        panel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
-                                  0, 160);
-        panel->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
-                                  0, GetScaledVal(m_aiColumnWidths[2]));
-        panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, GetScaledVal(m_aiColumnWidths[0]));
+        panel->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER, m_aiColumnWidths[1] + GetScaledVal(6));
+        panel->AddColumnToSection(m_iSectionId, "avatar", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(DEFAULT_AVATAR_SIZE + 2));
+        panel->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
+        panel->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
+        panel->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
+        panel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, GetScaledVal(120));
+        panel->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, m_aiColumnWidths[2]);
+        panel->AddColumnToSection(m_iSectionId, "date", "#MOM_Achieved", 0, m_aiColumnWidths[0]);
         // Scroll only icon
-        panel->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
-                                  16);
+        panel->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
         // HSW/SW/BW/WOnly Icons
-        panel->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
-                                  16);
+        panel->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
         // Bonus Icon
-        panel->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE,
-                                  16);
+        panel->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, GetScaledVal(10));
     }
 }
 
@@ -320,9 +313,12 @@ void CLeaderboardsTimes::FillLeaderboards(bool bFullUpdate)
     }
 }
 
-void CLeaderboardsTimes::SetPlaceColors(vgui::SectionedListPanel* panel, TimeType_t type) const
+void CLeaderboardsTimes::SetPlaceColors(SectionedListPanel* panel, TimeType_t type) const
 {
     int itemCount = panel->GetItemCount();
+    if (itemCount == 0)
+        return;
+
     if (type == TIMES_LOCAL || type == TIMES_TOP10)
     {
         panel->SetItemBgColor(panel->GetItemIDFromRow(0), m_cFirstPlace);
@@ -573,7 +569,7 @@ void CLeaderboardsTimes::ResetLeaderboardContextMenu()
     m_pLeaderboardReplayCMenu->DeleteAllItems();
 }
 
-bool CLeaderboardsTimes::StaticLocalTimeSortFunc(vgui::SectionedListPanel* list, int itemID1, int itemID2)
+bool CLeaderboardsTimes::StaticLocalTimeSortFunc(SectionedListPanel* list, int itemID1, int itemID2)
 {
     KeyValues *it1 = list->GetItemData(itemID1);
     KeyValues *it2 = list->GetItemData(itemID2);
@@ -591,7 +587,7 @@ bool CLeaderboardsTimes::StaticLocalTimeSortFunc(vgui::SectionedListPanel* list,
     return itemID1 < itemID2;
 }
 
-bool CLeaderboardsTimes::StaticOnlineTimeSortFunc(vgui::SectionedListPanel* list, int itemID1, int itemID2)
+bool CLeaderboardsTimes::StaticOnlineTimeSortFunc(SectionedListPanel* list, int itemID1, int itemID2)
 {
     // Uses rank insetad of time (Momentum page will handle players with same times)
     KeyValues *it1 = list->GetItemData(itemID1);
@@ -839,6 +835,7 @@ void CLeaderboardsTimes::OnReplayDownloadEnd(KeyValues* pKvEnd)
             // Play it
             CFmtStr command("mom_replay_play %s/%s-%lld%s\n", RECORDING_ONLINE_PATH, m_pParentPanel->MapName(), m_mapReplayDownloads[fileIndx], EXT_RECORDING_FILE);
             engine->ClientCmd(command.Get());
+            m_pParentPanel->Close();
         }
 
         m_mapReplayDownloads.RemoveAt(fileIndx);
@@ -954,7 +951,7 @@ void CLeaderboardsTimes::OnCommand(const char* pCommand)
     }
 }
 
-void CLeaderboardsTimes::ApplySchemeSettings(vgui::IScheme* pScheme)
+void CLeaderboardsTimes::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
@@ -1003,7 +1000,7 @@ void CLeaderboardsTimes::OnContextDeleteReplay(int itemID, const char* runName)
 
         KeyValues *pCommand = new KeyValues("ConfirmDeleteReplay", "file", file);
         pCommand->SetInt("itemID", itemID);
-        messageboxpanel->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay",
+        g_pMessageBox->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay",
                                                "#MOM_MB_DeleteRunConfirmation", pCommand,
                                                nullptr, "#MOM_Leaderboards_DeleteReplay");
     }
@@ -1014,7 +1011,7 @@ void CLeaderboardsTimes::OnContextVisitProfile(uint64 profile)
     if (profile != 0 && SteamFriends())
     {
         SteamFriends()->ActivateGameOverlayToUser("steamid", CSteamID(profile));
-        m_pParentPanel->ShowPanel(false);
+        m_pParentPanel->Close();
     }
 }
 
@@ -1040,12 +1037,14 @@ void CLeaderboardsTimes::OnContextWatchOnlineReplay(KeyValues* data)
         DevLog("Already had the replay locally, no need to download!\n");
         CFmtStr comm("mom_replay_play %s\n", fileNameLocal.Get());
         engine->ClientCmd(comm.Get());
+        m_pParentPanel->Close();
     }
     else if (MomUtil::FileExists(filePathOnline.Get(), pReplayHash, "MOD"))
     {
         DevLog("Already downloaded the replay, no need to download again!\n");
         CFmtStr command("mom_replay_play %s/%s\n", RECORDING_ONLINE_PATH, fileNameOnline.Get());
         engine->ClientCmd(command.Get());
+        m_pParentPanel->Close();
     }
     else
     {
@@ -1096,7 +1095,7 @@ void CLeaderboardsTimes::OnContextWatchReplay(const char* runName)
         char command[MAX_PATH];
         Q_snprintf(command, MAX_PATH, "mom_replay_play %s", runName);
         engine->ServerCmd(command);
-        m_pParentPanel->ShowPanel(false);
+        m_pParentPanel->Close();
     }
 }
 

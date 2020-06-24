@@ -12,11 +12,13 @@
 
 using namespace vgui;
 
+extern ConVar mom_map_download_auto;
+extern ConVar mom_map_delete_queue;
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps"), m_cvarAutoDownload("mom_map_download_auto"),
-    m_cvarDeleteQueue("mom_map_delete_queue")
+CLibraryMaps::CLibraryMaps(Panel *parent) : CBaseMapsPage(parent, "LibraryMaps")
 {
     m_bLoadedMaps = false;
     m_pMapList->SetColumnVisible(HEADER_MAP_IN_LIBRARY, false);
@@ -53,9 +55,11 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
             if (pMapData->m_bInLibrary)
             {
                 // Check to see if we should download
-                if (pMapData->m_bMapFileNeedsUpdate && m_cvarAutoDownload.GetBool() && !MapSelectorDialog().IsMapDownloading(id))
+                if (pMapData->m_bMapFileNeedsUpdate &&
+                    (mom_map_download_auto.GetBool() || g_pMapSelector->GetMapToStart() == pMapData->m_uID) &&
+                    !g_pMapSelector->IsMapDownloading(id))
                 {
-                    MapSelectorDialog().OnStartMapDownload(id);
+                    g_pMapSelector->OnStartMapDownload(id);
                 }
             }
             else
@@ -63,7 +67,7 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
                 // Remove this map only if we have it and it's no longer in the library
                 if (pMapData->m_bMapFileExists)
                 {
-                    if (m_cvarDeleteQueue.GetBool())
+                    if (mom_map_delete_queue.GetBool())
                     {
                         g_pMapCache->AddMapToDeleteQueue(pMapData);
                     }
@@ -114,7 +118,7 @@ void CLibraryMaps::OnMapListDataUpdate(int id)
 
             if (pMapData->m_bMapFileNeedsUpdate)
             {
-                if (!m_cvarAutoDownload.GetBool())
+                if (!mom_map_download_auto.GetBool())
                 {
                     pMapData->m_bUpdated = true;
                     pMapData->SendDataUpdate();

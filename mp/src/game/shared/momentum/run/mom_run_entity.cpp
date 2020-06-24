@@ -17,21 +17,15 @@
 CMomRunEntity::CMomRunEntity()
 {
 #ifdef GAME_DLL
-    if (g_pGameModeSystem->IsTF2BasedMode())
-    {
-        gEntList.AddListenerEntity(this);
-    }
+    gEntList.AddListenerEntity(this);
 #endif
 }
 
 CMomRunEntity::~CMomRunEntity()
 {
 #ifdef GAME_DLL
-    if (g_pGameModeSystem->IsTF2BasedMode())
-    {
-        gEntList.RemoveListenerEntity(this);
-        DestroyExplosives();
-    }
+    gEntList.RemoveListenerEntity(this);
+    DestroyExplosives();
 #endif
 }
 

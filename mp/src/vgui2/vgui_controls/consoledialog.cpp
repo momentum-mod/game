@@ -24,13 +24,17 @@
 #include "icvar.h"
 #include "filesystem.h"
 
-#include <stdlib.h>
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
+#define DEFAULT_CONSOLE_COLOR Color(216, 222, 211, 255)
+#define DEFAULT_CONSOLED_COLOR Color(196, 181, 80, 255)
+#define DEFAULT_USER_COLOR Color(24, 150, 211, 255)
+
+#define MAX_COMPLETION_ITEMS	10
+#define MAX_HISTORY_ITEMS		100
 
 //-----------------------------------------------------------------------------
 // Used by the autocompletion system
@@ -84,7 +88,7 @@ public:
 		}
 		else if ( code == KEY_ENTER )
 		{
-			// submit is the default button whose click event will have been called already
+			GetParent()->OnCommand("Submit");
 		}
 		else
 		{
@@ -260,56 +264,39 @@ const char *CConsolePanel::CompletionItem::GetCommand( void ) const
 //-----------------------------------------------------------------------------
 // Purpose: Constructor, destuctor
 //-----------------------------------------------------------------------------
-CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bStatusVersion ) : 
-	BaseClass( pParent, pName ), m_bStatusVersion( bStatusVersion )
+CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName ) : BaseClass( pParent, pName )
 {
 	SetKeyBoardInputEnabled( true );
 
-	if ( !m_bStatusVersion )
-	{
-		SetMinimumSize(100,100);
-	}
+	SetMinimumSize(100,100);
 
 	// create controls
 	m_pHistory = new RichText(this, "ConsoleHistory");
 	m_pHistory->SetAllowKeyBindingChainToParent( false );
-	SETUP_PANEL( m_pHistory );
-	m_pHistory->SetVerticalScrollbar( !m_bStatusVersion );
-	if ( m_bStatusVersion )
-	{
-		m_pHistory->SetDrawOffsets( 3, 3 );
-	}
+	m_pHistory->SetVerticalScrollbar(true);
 	m_pHistory->GotoTextEnd();
-	
-	m_pSubmit = new Button(this, "ConsoleSubmit", "#Console_Submit");
-	m_pSubmit->SetCommand("submit");
-	m_pSubmit->SetVisible( !m_bStatusVersion );
-    m_pSubmit->SetContentAlignment(Label::a_center);
-    m_pSubmit->SetAutoWide(true);
-    m_pSubmit->SetAutoTall(true);
 
-	CNonFocusableMenu *pCompletionList = new CNonFocusableMenu( this, "CompletionList" );
-	m_pCompletionList = pCompletionList;
+	m_pCompletionList = new CNonFocusableMenu( this, "CompletionList" );
 	m_pCompletionList->SetVisible(false);
 
 	m_pEntry = new TabCatchingTextEntry(this, "ConsoleEntry", m_pCompletionList->GetVPanel() );
 	m_pEntry->AddActionSignalTarget(this);
-	m_pEntry->SendNewLine(true);
-	pCompletionList->SetFocusPanel( m_pEntry );
+	m_pEntry->SetTabPosition(1);
+	GetFocusNavGroup().SetDefaultButton(m_pEntry);
 
-    m_pEntry->PinToSibling("ConsoleHistory", PIN_TOPLEFT, PIN_BOTTOMLEFT);
-    m_pSubmit->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_TOPRIGHT);
-    pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
+	m_pCompletionList->SetFocusPanel( m_pEntry );
+	m_pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
 
 	// need to set up default colors, since ApplySchemeSettings won't be called until later
-	m_PrintColor = Color(216, 222, 211, 255);
-	m_DPrintColor = Color(196, 181, 80, 255);
-
-	m_pEntry->SetTabPosition(1);
+	m_PrintColor = DEFAULT_CONSOLE_COLOR;
+	m_DPrintColor = DEFAULT_CONSOLED_COLOR;
+	m_UserColor = DEFAULT_USER_COLOR;
 
 	m_bAutoCompleteMode = false;
 	m_szPartialText[0] = 0;
-	m_szPreviousPartialText[0]=0;
+	m_szPreviousPartialText[0] = 0;
+
+	LoadControlSettings("resource/ui/ConsolePanel.res");
 
 	// Add to global console list
 	g_pCVar->InstallConsoleDisplayFunc( this );
@@ -359,11 +346,6 @@ void CConsolePanel::Clear()
 //-----------------------------------------------------------------------------
 void CConsolePanel::ColorPrint( const Color& clr, const char *msg )
 {
-	if ( m_bStatusVersion )
-	{
-		Clear();
-	}
-
 	m_pHistory->InsertColorChange( clr );
 	m_pHistory->InsertString( msg );
 }
@@ -389,13 +371,7 @@ void CConsolePanel::DPrint( const char *msg )
 
 void CConsolePanel::ClearCompletionList()
 {
-	int c = m_CompletionList.Count();
-	int i;
-	for ( i = c - 1; i >= 0; i-- )
-	{
-		delete m_CompletionList[ i ];
-	}
-	m_CompletionList.Purge();
+	m_CompletionList.PurgeAndDeleteElements();
 }
 
 
@@ -447,34 +423,36 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 
 	bool bNormalBuild = true;
 
-	// if there is a space in the text, and the command isn't of the type to know how to autocomplet, then command completion is over
+	// if there is a space in the text, and the command isn't of the type to know how to autocomplete, then command completion is over
 	const char *space = strstr( text, " " );
 	if ( space )
 	{
 		ConCommand *pCommand = FindAutoCompleteCommmandFromPartial( text );
-		if ( !pCommand )
-			return;
-
-		bNormalBuild = false;
-
-		CUtlVector< CUtlString > commands;
-		int count = pCommand->AutoCompleteSuggest( text, commands );
-		Assert( count <= COMMAND_COMPLETION_MAXITEMS );
-		int i;
-
-		for ( i = 0; i < count; i++ )
+		if ( pCommand )
 		{
-			// match found, add to list
-			CompletionItem *item = new CompletionItem();
-			m_CompletionList.AddToTail( item );
-			item->m_bIsCommand = false;
-			item->m_pCommand = nullptr;
-			item->m_pText = new CHistoryItem( commands[ i ].String() );
+			bNormalBuild = false;
+
+			CUtlVector< CUtlString > commands;
+			int count = pCommand->AutoCompleteSuggest( text, commands );
+			Assert( count <= COMMAND_COMPLETION_MAXITEMS );
+
+			for ( int i = 0; i < count; i++ )
+			{
+				// match found, add to list
+				CompletionItem *item = new CompletionItem();
+				m_CompletionList.AddToTail( item );
+				item->m_bIsCommand = false;
+				item->m_pCommand = nullptr;
+				item->m_pText = new CHistoryItem( commands[ i ].String() );
+			}
 		}
 	}
 				 
 	if ( bNormalBuild )
 	{
+		// First character as space means we should search commands rather than autocomplete
+		bool bSearch = ( text[0] == ' ' );
+
 		// look through the command list for all matches
 		ConCommandBase const *cmd = (ConCommandBase const *)cvar->GetCommands();
 		while (cmd)
@@ -485,7 +463,20 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 				continue;
 			}
 
-			if ( !strnicmp(text, cmd->GetName(), len))
+			bool bMatch;
+			if ( bSearch )
+			{
+				// Substring search, starting after space
+				// If only space is there then match all
+				bMatch = ( len == 1 ) || V_stristr( cmd->GetName(), &text[1] );
+			}
+			else
+			{
+				// Simple autocomplete
+				bMatch = !strnicmp( text, cmd->GetName(), len );
+			}
+
+			if ( bMatch )
 			{
 				// match found, add to list
 				CompletionItem *item = new CompletionItem();
@@ -547,7 +538,46 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 			}
 		}
 	}
+}
 
+void CConsolePanel::SubmitCommand()
+{
+	// submit the entry as a console commmand
+	char szCommand[256];
+	m_pEntry->GetText(szCommand, sizeof(szCommand));
+
+	CUtlString comm(szCommand);
+	comm.Trim(); // Do whitespace trimming here so we're all good for later on
+	PostActionSignal(new KeyValues("CommandSubmitted", "command", comm.Get()));
+
+	// add to the history
+	ColorPrint(m_UserColor, "] ");
+	Print(comm);
+	Print("\n");
+
+	// clear the field
+	m_pEntry->SetText("");
+
+	// clear the completion state
+	OnTextChanged(m_pEntry);
+
+	// always go the end of the buffer when the user has typed something
+	m_pHistory->GotoTextEnd();
+
+	// Extract the extra variables, if any
+	CUtlString ex;
+	const char *extra = strchr(comm, ' ');
+	if (extra)
+	{
+		int indx = extra - comm.Get();
+		ex = comm.Slice(indx + 1);
+		comm.SetLength(indx);
+	}
+
+	if (!comm.IsEmpty())
+		AddToHistory(comm, ex);
+
+	m_pCompletionList->SetVisible(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -588,6 +618,8 @@ void CConsolePanel::OnAutoComplete(bool reverse)
 	char completedText[256];
 	CompletionItem *item = m_CompletionList[m_iNextCompletion];
 	Assert( item );
+	if (!item)
+		return;
 
 	if ( !item->m_bIsCommand && item->m_pCommand )
 	{
@@ -667,14 +699,13 @@ void CConsolePanel::OnTextChanged(Panel *panel)
 	{
 		m_pCompletionList->SetVisible(true);
 		m_pCompletionList->DeleteAllItems();
-		const int MAX_MENU_ITEMS = 10;
 
 		// add the first ten items to the list
-		for (int i = 0; i < m_CompletionList.Count() && i < MAX_MENU_ITEMS; i++)
+		for (int i = 0; i < m_CompletionList.Count() && i < MAX_COMPLETION_ITEMS; i++)
 		{
 			char text[256];
 			text[0] = 0;
-			if (i == MAX_MENU_ITEMS - 1)
+			if (i == MAX_COMPLETION_ITEMS - 1)
 			{
 				Q_strncpy(text, "...", sizeof( text ) );
 			}
@@ -703,42 +734,7 @@ void CConsolePanel::OnCommand(const char *command)
 {
 	if ( !Q_stricmp( command, "Submit" ) )
 	{
-		// submit the entry as a console commmand
-		char szCommand[256];
-		m_pEntry->GetText(szCommand, sizeof(szCommand));
-        CUtlString comm(szCommand);
-        comm.Trim(); // Do whitespace trimming here so we're all good for later on
-		PostActionSignal( new KeyValues( "CommandSubmitted", "command", comm.Get() ) );
-
-		// add to the history
-		Print("] ");
-		Print(comm);
-		Print("\n");
-
-		// clear the field
-		m_pEntry->SetText("");
-
-		// clear the completion state
-		OnTextChanged(m_pEntry);
-
-		// always go the end of the buffer when the user has typed something
-		m_pHistory->GotoTextEnd();
-
-        // Extract the extra variables, if any
-        CUtlString ex;
-		const char *extra = strchr(comm, ' ');
-		if ( extra )
-		{
-            int indx = extra - comm.Get();
-            ex = comm.Slice(indx+1);
-            comm.SetLength(indx);
-		}
-
-        // Add the command to the history
-        if (!comm.IsEmpty())
-            AddToHistory(comm, ex);
-
-		m_pCompletionList->SetVisible(false);
+		SubmitCommand();
 	}
 	else
 	{
@@ -807,45 +803,15 @@ void CConsolePanel::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	// setup tab ordering
-	GetFocusNavGroup().SetDefaultButton(m_pSubmit);
-
-	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
-	m_pEntry->SetBorder(pScheme->GetBorder("DepressedButtonBorder"));
-	m_pHistory->SetBorder(pScheme->GetBorder("DepressedButtonBorder"));
-
-	// layout controls
 	int wide, tall;
 	GetSize(wide, tall);
 
-	if ( !m_bStatusVersion )
-	{
-		const int inset = 8;
-		const int entryHeight = surface()->GetFontTall(m_pEntry->GetFont());
-		const int topHeight = 4;
-		const int entryInset = 4;
-		const int submitWide = m_pSubmit->GetWide();
+	m_pEntry->SetToFullHeight();
 
-		m_pHistory->SetPos(inset, inset + topHeight); 
-		m_pHistory->SetSize(wide - (inset * 2), tall - (entryInset * 2 + inset * 2 + topHeight + entryHeight));
-		m_pHistory->InvalidateLayout();
+	m_pHistory->SetBounds(0, 0, wide, tall - m_pEntry->GetTall());
 
-	     m_pEntry->SetSize( wide - submitWide - 2 * inset, entryHeight);
-	}
-	else
-	{
-		const int inset = 2;
-
-		int entryWidth = wide / 2;
-		if ( wide > 400 )
-		{
-			entryWidth = 200;
-		}
-
-		m_pEntry->SetBounds( inset, inset, entryWidth, tall - 2 * inset );
-
-		m_pHistory->SetBounds( inset + entryWidth + inset, inset, ( wide - entryWidth ) - inset, tall - 2 * inset );
-	}
+	m_pEntry->SetPos(0, m_pHistory->GetTall());
+	m_pEntry->SetWide(wide);
 
 	UpdateCompletionListPosition();
 }
@@ -878,10 +844,14 @@ void CConsolePanel::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	m_PrintColor = GetSchemeColor("Console.TextColor", pScheme);
-	m_DPrintColor = GetSchemeColor("Console.DevTextColor", pScheme);
-	m_pHistory->SetFont( pScheme->GetFont( "ConsoleText", IsProportional() ) );
-	m_pCompletionList->SetFont( pScheme->GetFont( "DefaultSmall", IsProportional() ) );
+	m_PrintColor = GetSchemeColor("Console.TextColor", DEFAULT_CONSOLE_COLOR, pScheme);
+	m_DPrintColor = GetSchemeColor("Console.DevTextColor", DEFAULT_CONSOLED_COLOR, pScheme);
+	m_UserColor = GetSchemeColor("Console.UserInputColor", DEFAULT_USER_COLOR, pScheme);
+
+	m_pHistory->SetFont(GetSchemeFont(pScheme, "ConsoleText", nullptr, "DefaultSmall"));
+	m_pEntry->SetFont(GetSchemeFont(pScheme, "ConsoleEntryTextFont", nullptr, "DefaultSmall"));
+	m_pCompletionList->SetFont(GetSchemeFont(pScheme, "ConsoleCompletionListFont", nullptr, "DefaultSmall"));
+
 	InvalidateLayout();
 }
 
@@ -1039,46 +1009,41 @@ void CConsolePanel::DumpConsoleTextToFile()
 // Console dialog starts here
 //
 //-----------------------------------------------------------------------------
-CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bStatusVersion ) : 
-	BaseClass( pParent, pName )
+CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName ) : BaseClass( pParent, pName )
 {
-	// initialize dialog
 	SetVisible( false );
-    SetProportional(!bStatusVersion);
+    SetProportional(true);
 	SetTitle( "#Console_Title", true );
-	m_pConsolePanel = new CConsolePanel( this, "ConsolePage", bStatusVersion );
+
+	HScheme consoleScheme = scheme()->LoadSchemeFromFile("resource/ConsoleScheme.res", "ConsoleScheme");
+	if (consoleScheme)
+	{
+		SetScheme(consoleScheme);
+	}
+
+	m_pConsolePanel = new CConsolePanel( this, "ConsolePage" );
 	m_pConsolePanel->AddActionSignalTarget( this );
 
-    HScheme consoleScheme = scheme()->LoadSchemeFromFile("resource/ConsoleScheme.res", "ConsoleScheme");
-    if (consoleScheme)
-    {
-        SetScheme(consoleScheme);
-    }
+	LoadControlSettings("resource/ui/ConsoleDialog.res");
+}
+
+void CConsoleDialog::SizeToScreen()
+{
+	// set the console to taking up most of the right-half of the screen
+	int swide, stall;
+	surface()->GetScreenSize(swide, stall);
+	int offset = scheme()->GetProportionalScaledValue(16);
+
+	SetBounds(swide / 2 - (offset * 4), offset, (swide / 2) + (offset * 3), stall - (offset * 8));
+
+	InvalidateLayout();
 }
 
 void CConsoleDialog::OnScreenSizeChanged( int iOldWide, int iOldTall )
 {
 	BaseClass::OnScreenSizeChanged( iOldWide, iOldTall );
 
-	int sx, sy;
-	surface()->GetScreenSize( sx, sy );
-									 
-	int w, h;
-	GetSize( w, h );
-	if ( w > sx || h > sy  )
-	{
-		if ( w > sx )
-		{
-			w = sx;
-		}
-		if ( h > sy )
-		{
-			h = sy;
-		}
-
-		// Try and lower the size to match the screen bounds
-		SetSize( w, h );
-	}
+	SizeToScreen();
 }
 
 

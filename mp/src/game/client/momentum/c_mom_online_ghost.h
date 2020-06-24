@@ -14,14 +14,11 @@ public:
     C_MomentumOnlineGhostEntity();
     ~C_MomentumOnlineGhostEntity();
 
-    void Spawn(void) OVERRIDE;
-    void ClientThink(void) OVERRIDE;
+    void Spawn() OVERRIDE;
+    void ClientThink() OVERRIDE;
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
-    //recieved from CMomentumOnlineGhostEntity serverclass 
-    uint32 m_uiAccountID;
-    uint64 m_SteamID;
     bool m_bSpectating; /// Is this ghost currently spectating?
 
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_ONLINE; }

@@ -539,6 +539,8 @@ void Label::Paint()
 					x -= _textInset[0];
 					break;
 				}
+				default:
+				    break;
 			}
 		}
 
@@ -702,15 +704,6 @@ void Label::SetFont(HFont font)
 
 	_textImage->SetFont(font);
 	Repaint();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Resond to resizing of the panel
-//-----------------------------------------------------------------------------
-void Label::OnSizeChanged(int wide, int tall)
-{
-	InvalidateLayout();
-	Panel::OnSizeChanged(wide, tall);
 }
 
 //-----------------------------------------------------------------------------
@@ -988,15 +981,7 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	if (!_fontOverrideName.IsEmpty())
-	{
-		// use the custom specified font since we have one set
-		SetFont(pScheme->GetFont(_fontOverrideName, IsProportional()));
-	}
-	if ( GetFont() == INVALID_FONT )
-	{
-		SetFont( pScheme->GetFont( "Default", IsProportional() ) );
-	}	
+	SetFont(GetSchemeFont(pScheme, _fontOverrideName, "Label.Font"));
 
 	if ( m_bWrap || m_bCenterWrap )
 	{
@@ -1016,11 +1001,7 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 		_textImage->SetSize(wide, tall);
 	}
 
-	if ( m_bAutoWideToContents || m_bAutoTallToContents )
-	{
-		m_bAutoSizeDirty = true;
-		HandleAutoSizing();
-	}
+	m_bAutoSizeDirty = m_bAutoWideToContents || m_bAutoTallToContents;
 
 	// clear out any the images, since they will have been invalidated
 	for (int i = 0; i < _imageDar.Count(); i++)
@@ -1305,10 +1286,7 @@ void Label::PerformLayout()
 			_textImage->GetContentSize(twide, ttall);
 			
 			// tell the textImage how much space we have to draw in
-			if ( wide < twide)
-				_textImage->SetSize(wide, ttall);
-			else
-				_textImage->SetSize(twide, ttall);
+			_textImage->SetSize(min(wide, twide), ttall);
 		}
 
 		HandleAutoSizing();
@@ -1336,7 +1314,7 @@ void Label::PerformLayout()
 		// add up the bounds
 		int iWide, iTall;
 		image->GetSize(iWide, iTall);		
-		widthOfImages += iWide;
+		widthOfImages += iWide + imageInfo.offset;
 	}
 
 	// so this is how much room we have to draw the textimage part
@@ -1349,7 +1327,7 @@ void Label::PerformLayout()
 	int twide, ttall;
 	_textImage->GetSize (twide, ttall);
 	// tell the textImage how much space we have to draw in
-	_textImage->SetSize(spaceAvail, ttall);	
+	_textImage->SetSize(m_bAutoWideToContents ? max(spaceAvail, twide) : min(spaceAvail, twide), ttall);
 
 	HandleAutoSizing();
 }
@@ -1396,10 +1374,17 @@ void Label::HandleAutoSizing( void )
 	{
 		m_bAutoSizeDirty = false;
 
-		// Only change our width to match our content
-		int wide, tall;
-		GetContentSize(wide, tall);
-		SetSize(m_bAutoWideToContents ? wide : GetWide(), m_bAutoTallToContents ? tall : GetTall());
+		if ( m_bAutoWideToContents && m_bAutoTallToContents )
+		{
+		    SizeToContents();
+		}
+		else
+		{
+			// Only change our width/tall to match our content
+			int wide, tall;
+			GetContentSize(wide, tall);
+			SetSize(m_bAutoWideToContents ? wide : GetWide(), m_bAutoTallToContents ? tall : GetTall());
+		}
 	}
 }
 

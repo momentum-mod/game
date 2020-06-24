@@ -15,7 +15,7 @@ namespace vgui
         DECLARE_CLASS_SIMPLE(CvarTextEntry, vgui::TextEntry);
 
     public:
-        CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname);
+        CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname, int precision = 2);
 
         MESSAGE_FUNC(OnTextChanged, "TextChanged");
         MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");
@@ -23,14 +23,26 @@ namespace vgui
         void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
         void ApplySettings(KeyValues* inResourceData) OVERRIDE;
         void GetSettings(KeyValues* outResourceData) OVERRIDE;
+        void SetText(const char *text) OVERRIDE;
         void InitSettings() OVERRIDE;
         void Reset();
         void OnThink() OVERRIDE;
+        void OnKillFocus() OVERRIDE;
         bool HasBeenModified();
         bool HasBeenModifiedExternally() const;
+        void SetPrecision(int precision);
+        int GetPrecision() const { return m_iPrecision; }
 
     private:
+        bool ShouldUpdate(const char *szText);
+        void SetCvarVal(const char *szText);
+        int GetPrecisionOfText(const char *szText);
+
         ConVarRef m_cvarRef;
+        int m_iPrecision;
+        float m_fClosestToZeroPossible;
+        bool m_bCvarMinAboveZero;
         char m_pszStartValue[64];
+        char m_szNumberFormat[8];
     };
 }

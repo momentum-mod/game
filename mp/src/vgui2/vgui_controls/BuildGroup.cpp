@@ -1050,10 +1050,10 @@ void BuildGroup::ReloadControlSettings()
 
 	_controlGroup.RemoveAll();	
 
-    m_hBuildDialog = CreateBuildDialog();
-
-    if (bWasVisible)
+	if (bWasVisible)
+	{
 	    ActivateBuildDialog();	
+	}
 }
 
 //-----------------------------------------------------------------------------

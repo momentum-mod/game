@@ -8,6 +8,8 @@
 
 class CMomentumPlayer;
 
+// #define USE_NEW_RNGFIX
+
 class CMomentumGameMovement : public CGameMovement
 {
     typedef CGameMovement BaseClass;
@@ -23,6 +25,10 @@ class CMomentumGameMovement : public CGameMovement
     void AirMove() override;
     void WalkMove() override;
 
+#ifndef USE_NEW_RNGFIX
+    int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;
+#endif
+
     // Ladder
     float LadderDistance() const override;
     bool GameHasLadders() const override;
@@ -36,6 +42,7 @@ class CMomentumGameMovement : public CGameMovement
 
     int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr) override;
     void FullWalkMove() override;
+    void StepMove(Vector &vecDestination, trace_t &trace) override;
     void CategorizePosition() override;
 
     void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) override;
@@ -63,8 +70,6 @@ class CMomentumGameMovement : public CGameMovement
     void StartGravity() override;
     float GetPlayerGravity() override;
     void FinishGravity() override;
-
-    int ClipVelocity(Vector in, Vector &normal, Vector &out, float overbounce) override;
 
     // Momentum-specific
     virtual void StuckGround();

@@ -35,6 +35,7 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     // Buttons
     m_pResetFiltersButton = new Button(this, "ResetFilters", "#MOM_MapSelector_FilterReset", this, "ResetFilters");
     m_pApplyFiltersButton = new Button(this, "ApplyFilters", "#MOM_MapSelector_FilterApply", this, "ApplyFilters");
+    m_pFeelingLuckyButton = new Button(this, "FeelingLucky", "#MOM_MapSelector_FeelingLucky", this, "FeelingLucky");
 
     LoadControlSettings("resource/ui/mapselector/MapFilters.res");
 
@@ -45,7 +46,7 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     m_pGameModeFilter->AddItem("#MOM_GameType_RJ", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_SJ", nullptr);
     m_pGameModeFilter->AddItem("#MOM_GameType_Tricksurf", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_Trikz", nullptr);
+    m_pGameModeFilter->AddItem("#MOM_GameType_Ahop", nullptr);
     m_pGameModeFilter->AddActionSignalTarget(this);
 
     m_pMapNameFilter->SetMaximumCharCount(MAX_MAP_NAME);
@@ -114,9 +115,9 @@ void MapFilterPanel::LoadFilterSettings(KeyValues *pTabFilters)
 void MapFilterPanel::UpdateFilterSettings(bool bApply /* = true*/)
 {
     // copy filter settings into filter file
-    KeyValues *filter = MapSelectorDialog().GetCurrentTabFilterData();
+    KeyValues *filter = g_pMapSelector->GetCurrentTabFilterData();
     m_Filters.ToKV(filter);
-    MapSelectorDialog().SaveUserData();
+    g_pMapSelector->SaveUserData();
 
     if (bApply)
         ApplyFilters();
@@ -124,7 +125,9 @@ void MapFilterPanel::UpdateFilterSettings(bool bApply /* = true*/)
 
 void MapFilterPanel::ApplyFilters()
 {
-    MapSelectorDialog().ApplyFiltersToCurrentTab(m_Filters);
+    g_pMapSelector->ApplyFiltersToCurrentTab(m_Filters);
+
+    ResetFeelingLucky();
 }
 
 void MapFilterPanel::ResetFilters()
@@ -132,7 +135,12 @@ void MapFilterPanel::ResetFilters()
     m_Filters.Reset();
 }
 
-void MapFilterPanel::OnCommand(const char* command)
+void MapFilterPanel::ResetFeelingLucky()
+{
+    m_pFeelingLuckyButton->SetEnabled(g_pMapSelector->GetMapToStart() == 0 && g_pMapSelector->GetFilteredItemsCount() > 0);
+}
+
+void MapFilterPanel::OnCommand(const char *command)
 {
     if (FStrEq(command, "ApplyFilters"))
     {
@@ -148,8 +156,15 @@ void MapFilterPanel::OnCommand(const char* command)
         m_pResetFiltersButton->SetEnabled(false);
         m_pApplyFiltersButton->SetEnabled(false);
     }
+    else if (FStrEq(command, "FeelingLucky"))
+    {
+        m_pFeelingLuckyButton->SetEnabled(false);
+        g_pMapSelector->StartRandomMapFromCurrentTab();
+    }
     else
+    {
         BaseClass::OnCommand(command);
+    }
 }
 
 void MapFilterPanel::OnTextChanged(KeyValues* pKv)

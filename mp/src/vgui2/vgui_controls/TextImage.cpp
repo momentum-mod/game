@@ -174,8 +174,12 @@ void TextImage::SetText(const char *text)
 //-----------------------------------------------------------------------------
 void TextImage::SetDrawWidth(int width)
 {
-	_drawWidth = width;
-	m_bRecalculateTruncation = true;
+	const auto bChanged = _drawWidth != width;
+	if (bChanged)
+	{
+		_drawWidth = width;
+		m_bRecalculateTruncation = true;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -286,8 +290,12 @@ StringIndex_t TextImage::GetUnlocalizedTextSymbol()
 //-----------------------------------------------------------------------------
 void TextImage::SetFont(HFont font)
 {
-	_font = font;
-	m_bRecalculateTruncation = true;
+	const auto bChanged = _font != font;
+	if (bChanged)
+	{
+		_font = font;
+		m_bRecalculateTruncation = true;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -309,8 +317,7 @@ HFont TextImage::GetFont()
 void TextImage::SetSize(int wide, int tall)
 {
 	Image::SetSize(wide, tall);
-	_drawWidth = wide;
-	m_bRecalculateTruncation = true;
+	SetDrawWidth(wide);
 }
 
 //-----------------------------------------------------------------------------
@@ -860,20 +867,14 @@ void TextImage::SetAllCaps( bool bAllCaps )
 
 void TextImage::ResizeImageToContentMaxWidth( int nMaxWidth )
 {
-	_drawWidth = nMaxWidth;
-	// Since we might have to use the "fallback" font, go ahead and recalc the ellipses state first to see if that's the case
-	// NOTE:  I think there may be a race condition lurking here, but this seems to work.
-	if ( m_bRecalculateTruncation )
-	{
-		if ( m_bWrap || m_bWrapCenter )
-		{
-			RecalculateNewLinePositions();
-		}
-
-		RecalculateEllipsesPosition();
-	}
-
 	ResizeImageToContent();
+
+	int drawWidth;
+	GetDrawWidth(drawWidth);
+	if (drawWidth > nMaxWidth)
+	{
+	    SetDrawWidth(nMaxWidth);
+	}
 }
 
 //-----------------------------------------------------------------------------

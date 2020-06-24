@@ -1,0 +1,62 @@
+#include "common_fog_vs_fxc.h"
+
+#include "common_vs_fxc.h"
+
+static const int g_FogType = DOWATERFOG;
+
+const float4 cBaseTexCoordTransform[2]			: register( SHADER_SPECIFIC_CONST_0 );
+const float4 cTextureJitter[2]					: register( SHADER_SPECIFIC_CONST_2 );
+
+struct VS_INPUT
+{
+	// This is all of the stuff that we ever use.
+	float4 vPos				: POSITION;
+	float4 vColor			: COLOR0;
+	float4 vTexCoord0		: TEXCOORD0;
+	float3 vFalloffParams	: TEXCOORD1;
+};
+
+struct VS_OUTPUT
+{
+    float4 projPos					: POSITION;	
+#if !defined( SHADER_MODEL_VS_3_0 )
+	float  fog						: FOG;
+#endif
+	HALF4 worldPos_projPosZ		    : TEXCOORD0;
+	float4 vFalloffParams			: TEXCOORD1;
+	float3 texCoord0_shadowAlpha	: TEXCOORD2;
+	float4 texCoord1_2				: TEXCOORD3;
+	float4 texCoord3_4				: TEXCOORD4;
+};
+
+VS_OUTPUT main( const VS_INPUT v )
+{
+	VS_OUTPUT o = ( VS_OUTPUT )0;
+
+	float3 worldPos;
+	float2 texCoord;
+	worldPos = mul( v.vPos, cModel[0] );
+
+	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
+	o.projPos = projPos;
+	
+#if !defined( SHADER_MODEL_VS_3_0 )
+	o.fog = CalcFog( worldPos, projPos.xyz, g_FogType );
+#endif
+
+	o.worldPos_projPosZ = float4( worldPos, projPos.z );
+
+	o.vFalloffParams.xyz = v.vFalloffParams;
+	o.vFalloffParams.w = v.vTexCoord0.z;
+	texCoord.x = dot( v.vTexCoord0, cBaseTexCoordTransform[0] );
+	texCoord.y = dot( v.vTexCoord0, cBaseTexCoordTransform[1] );
+
+	o.texCoord0_shadowAlpha.xy = texCoord;
+	o.texCoord1_2.xy = texCoord + cTextureJitter[0];
+	o.texCoord1_2.wz = texCoord - cTextureJitter[0];
+	o.texCoord3_4.xy = texCoord + cTextureJitter[1];
+	o.texCoord3_4.wz = texCoord - cTextureJitter[1];
+
+	o.texCoord0_shadowAlpha.z = v.vColor.a;
+	return o;
+}

@@ -83,12 +83,6 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
 
     SetMouseInputEnabled(false);
     InvalidateLayout();
-
-    FIND_LOCALIZATION(m_pwGainControl, "#MOM_SpecGUI_GainControl");
-    FIND_LOCALIZATION(m_pwRunTime, "#MOM_MF_RunTime");
-    FIND_LOCALIZATION(m_pwSpecMap, "#Spec_Map");
-    FIND_LOCALIZATION(m_pwWatchingGhost, "#MOM_WatchingGhost");
-    FIND_LOCALIZATION(m_pwWatchingReplay, "#MOM_WatchingReplay");
 }
 
 //-----------------------------------------------------------------------------
@@ -209,9 +203,16 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
 
     SetVisible(bShow);
 
-    if (!bShow)
+    if (bShow)
     {
-
+        FIND_LOCALIZATION(m_pwGainControl, "#MOM_SpecGUI_GainControl");
+        FIND_LOCALIZATION(m_pwRunTime, "#MOM_MF_RunTime");
+        FIND_LOCALIZATION(m_pwSpecMap, "#Spec_Map");
+        FIND_LOCALIZATION(m_pwWatchingGhost, "#MOM_WatchingGhost");
+        FIND_LOCALIZATION(m_pwWatchingReplay, "#MOM_WatchingReplay");
+    }
+    else
+    {
         if (m_pReplayControls)
         {
             m_pReplayControls->SetWasClosed(false);

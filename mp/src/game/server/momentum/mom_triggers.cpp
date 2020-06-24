@@ -6,6 +6,7 @@
 #include "mom_replay_entity.h"
 #include "mom_system_gamemode.h"
 #include "mom_system_progress.h"
+#include "mom_stickybomb.h"
 #include "fmtstr.h"
 #include "mom_timer.h"
 #include "mom_modulecomms.h"
@@ -13,6 +14,12 @@
 #include "dt_utlvector_send.h"
 
 #include "tier0/memdbgon.h"
+
+static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_bbox_enable, "0", FCVAR_DEVELOPMENTONLY,
+                          "Toggles showing the bounding boxes for momentum triggers, needs map restart if changed!\n");
+
+static MAKE_TOGGLE_CONVAR(mom_triggers_overlay_text_enable, "0", FCVAR_DEVELOPMENTONLY,
+                          "Toggles showing the entity text for momentum triggers, needs map restart if changed!\n");
 
 // ------------- Base Trigger ------------------------------------
 BEGIN_DATADESC(CBaseMomentumTrigger)
@@ -29,8 +36,9 @@ void CBaseMomentumTrigger::Spawn()
     AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
     BaseClass::Spawn();
     InitTrigger();
-    // temporary
-    m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+
+    m_debugOverlays |= ((OVERLAY_BBOX_BIT * mom_triggers_overlay_bbox_enable.GetBool()) |
+                        (OVERLAY_TEXT_BIT * mom_triggers_overlay_text_enable.GetBool()));
 }
 
 bool CBaseMomentumTrigger::PassesTriggerFilters(CBaseEntity* pOther)
@@ -726,6 +734,10 @@ void CTriggerLimitMovement::ToggleButtons(CMomRunEntity* pEnt, bool bEnable)
         pEnt->SetButtonsEnabled(IN_JUMP, bEnable);
     if (m_spawnflags & SF_LIMIT_CROUCH)
         pEnt->SetButtonsEnabled(IN_DUCK, bEnable);
+    if (m_spawnflags & SF_LIMIT_WALK)
+        pEnt->SetButtonsEnabled(IN_WALK, bEnable);
+    if (m_spawnflags & SF_LIMIT_SPRINT)
+        pEnt->SetButtonsEnabled(IN_SPEED, bEnable);
     if (m_spawnflags & SF_LIMIT_BHOP)
         pEnt->SetBhopEnabled(bEnable);
 }
@@ -1464,6 +1476,10 @@ static CUtlVector<CNoGrenadesZone *> s_vecNoGrenadeZones;
 
 LINK_ENTITY_TO_CLASS(func_nogrenades, CNoGrenadesZone);
 
+BEGIN_DATADESC(CNoGrenadesZone)
+DEFINE_KEYFIELD(m_bAirborneOnly, FIELD_BOOLEAN, "airborne_only")
+END_DATADESC();
+
 CNoGrenadesZone::~CNoGrenadesZone()
 {
     s_vecNoGrenadeZones.FindAndFastRemove(this);
@@ -1490,11 +1506,18 @@ bool CNoGrenadesZone::IsInsideNoGrenadesZone(CBaseEntity *pOther)
 {
     if ( pOther )
     {
+        const auto pSticky = dynamic_cast<CMomStickybomb*>(pOther);
         FOR_EACH_VEC(s_vecNoGrenadeZones, i)
         {
             const auto pNoGrenadeZone = s_vecNoGrenadeZones[i];
-            if (!pNoGrenadeZone->m_bDisabled && pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
-                return true;
+
+            if (pNoGrenadeZone->m_bDisabled || !pNoGrenadeZone->PointIsWithin(pOther->GetAbsOrigin()))
+                continue;
+
+            if (!pSticky)
+                return true; // This is a rocket in a nonade zone and should fizzle
+
+            return !pNoGrenadeZone->m_bAirborneOnly || !pSticky->DidHitWorld();
         }
     }
 

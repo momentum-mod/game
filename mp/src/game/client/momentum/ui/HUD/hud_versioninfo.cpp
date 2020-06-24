@@ -11,16 +11,18 @@
 
 using namespace vgui;
 
+static MAKE_TOGGLE_CONVAR(mom_hud_versioninfo_enable, "1", FLAG_HUD_CVAR, "Toggles showing the current momentum version string. 0 = OFF, 1 = ON.\n");
+
 class CHudVersionInfo : public CHudElement, public Label
 {
     DECLARE_CLASS_SIMPLE(CHudVersionInfo, Label);
 
     CHudVersionInfo(const char *pElementName);
+    bool ShouldDraw() override;
 
 protected:
     void VidInit() OVERRIDE;
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
-    CPanelAnimationStringVar(32, m_szTextFont, "TextFont", "MomHudDropText");
 };
 
 DECLARE_HUDELEMENT(CHudVersionInfo);
@@ -34,6 +36,11 @@ CHudVersionInfo::CHudVersionInfo(const char *pElementName) : CHudElement(pElemen
     SetMouseInputEnabled(false);
     SetAutoWide(true);
     SetAutoTall(true);
+}
+
+bool CHudVersionInfo::ShouldDraw()
+{
+    return CHudElement::ShouldDraw() && mom_hud_versioninfo_enable.GetBool();
 }
 
 void CHudVersionInfo::VidInit()
@@ -50,6 +57,5 @@ void CHudVersionInfo::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    SetFont(pScheme->GetFont(m_szTextFont, true));
     InvalidateLayout(true);
 }

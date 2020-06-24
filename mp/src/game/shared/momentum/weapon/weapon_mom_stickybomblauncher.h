@@ -47,7 +47,7 @@ class CMomentumStickybombLauncher : public CWeaponBaseGun
     float CalculateProjectileSpeed(float flProgress);
 
     bool IsChargeEnabled() { return m_bIsChargeEnabled.Get(); }
-    bool SetChargeEnabled(bool state) { return m_bIsChargeEnabled.Set(state); }
+    bool SetChargeEnabled(bool state);
 
     CMomStickybomb *GetStickyByCount(int count) { return m_Stickybombs[count]; }
     void SetChargeBeginTime(float value) { m_flChargeBeginTime = value; }

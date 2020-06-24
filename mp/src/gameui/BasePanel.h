@@ -36,22 +36,13 @@ class CBasePanel : public vgui::EditablePanel
     void OnGameUIActivated();
     void OnGameUIHidden();
 
-    // game dialogs
-    void OnOpenOptionsDialog();
-    void OnOpenAchievementsDialog();
-
-    void PositionDialog(vgui::PHandle dlg);
-
-    // forces any changed options dialog settings to be applied immediately, if it's open
-    void ApplyOptionsDialogSettings();
-
     MainMenu *GetMainMenu() const { return m_pMainMenu; }
 
     // fading to game
     MESSAGE_FUNC_CHARPTR(RunEngineCommand, "RunEngineCommand", command);
     MESSAGE_FUNC_CHARPTR(RunMenuCommand, "RunMenuCommand", command);
     
-    EBackgroundState GetMenuBackgroundState() { return m_eBackgroundState; }
+    EBackgroundState GetMenuBackgroundState() const { return m_eBackgroundState; }
 
 protected:
     void OnThink() OVERRIDE;
@@ -62,8 +53,6 @@ protected:
 private:
     void SetBackgroundRenderState(EBackgroundState state);
 
-    vgui::DHANDLE<vgui::PropertyDialog> m_hOptionsDialog;
-    vgui::DHANDLE<vgui::Frame> m_hAchievementsDialog;
     MainMenu *m_pMainMenu;
 
     // sets the menu alpha [0..255]

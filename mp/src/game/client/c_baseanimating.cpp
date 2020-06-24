@@ -205,6 +205,10 @@ IMPLEMENT_CLIENTCLASS_DT(C_BaseAnimating, DT_BaseAnimating, CBaseAnimating)
 	RecvPropFloat( RECVINFO( m_fadeMaxDist ) ), 
 	RecvPropFloat( RECVINFO( m_flFadeScale ) ), 
 
+    RecvPropBool(RECVINFO(m_bGlowEnabled)),
+    RecvPropFloat(RECVINFO(m_flGlowMaxDist)),
+    RecvPropInt(RECVINFO(m_clrGlow), 0, RecvProxy_IntToColor32),
+
 END_RECV_TABLE()
 
 BEGIN_PREDICTION_DATA( C_BaseAnimating )
@@ -739,6 +743,10 @@ C_BaseAnimating::C_BaseAnimating() :
 	Q_memset(&m_mouth, 0, sizeof(m_mouth));
 	m_flCycle = 0;
 	m_flOldCycle = 0;
+
+    m_pGlowEffect = NULL;
+    m_bGlowEnabled = false;
+    m_bOldGlowEnabled = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -779,6 +787,8 @@ C_BaseAnimating::~C_BaseAnimating()
 		m_pAttachedTo->RemoveBoneAttachment( this );
 		m_pAttachedTo = NULL;
 	}
+
+    DestroyGlowEffect();
 }
 
 bool C_BaseAnimating::UsesPowerOfTwoFrameBufferTexture( void )
@@ -4560,6 +4570,8 @@ void C_BaseAnimating::OnPreDataChanged( DataUpdateType_t updateType )
 	BaseClass::OnPreDataChanged( updateType );
 
 	m_bLastClientSideFrameReset = m_bClientSideFrameReset;
+
+    m_bOldGlowEnabled = m_bGlowEnabled;
 }
 
 bool C_BaseAnimating::ForceSetupBonesAtTime( matrix3x4_t *pBonesOut, float flTime )
@@ -4777,7 +4789,7 @@ void C_BaseAnimating::OnDataChanged( DataUpdateType_t updateType )
 		m_nRestoreSequence = -1;
 	}
 
-
+    UpdateGlowEffect();
 
 	bool modelchanged = false;
 
@@ -4847,6 +4859,64 @@ void C_BaseAnimating::OnDataChanged( DataUpdateType_t updateType )
 		delete m_pRagdollInfo;
 		m_pRagdollInfo = NULL;
 	}
+}
+
+void C_BaseAnimating::ClientThink()
+{
+    BaseClass::ClientThink();
+
+    UpdateGlowEffect();
+}
+
+
+//=========================================================
+// Glow effect
+//=========================================================
+Vector C_BaseAnimating::GetGlowEffectColor()
+{
+    return Vector(m_clrGlow.r, m_clrGlow.g, m_clrGlow.b);
+}
+
+void C_BaseAnimating::UpdateGlowEffect(void)
+{
+    if (!m_bGlowEnabled)
+    {
+        DestroyGlowEffect();
+        return;
+    }
+
+    float flAlpha = 1.0f;
+
+    if (m_flGlowMaxDist > 0.0f)
+    {
+        C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+
+        // Lerp alpha based on distance
+        if (pPlayer)
+        {
+            float flDistance = 0;
+            flDistance = (GetAbsOrigin() - pPlayer->GetAbsOrigin()).Length();
+            flAlpha = clamp(1.0f - (flDistance / m_flGlowMaxDist), 0.0f, 1.0f);
+        }
+    }
+
+    if (!m_pGlowEffect)
+        m_pGlowEffect = new CGlowObject(this);
+
+    m_pGlowEffect->SetColor(GetGlowEffectColor());
+    m_pGlowEffect->SetAlpha(flAlpha);
+    m_pGlowEffect->SetRenderFlags(true, false);
+
+    SetNextClientThink(gpGlobals->curtime + 0.1f);
+}
+
+void C_BaseAnimating::DestroyGlowEffect(void)
+{
+    if (m_pGlowEffect)
+    {
+        delete m_pGlowEffect;
+        m_pGlowEffect = NULL;
+    }
 }
 
 //-----------------------------------------------------------------------------

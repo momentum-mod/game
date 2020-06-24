@@ -11,13 +11,15 @@
 #include "vgui/ILocalize.h"
 #include "vgui/ISurface.h"
 #include "vgui_controls/AnimationController.h"
+#include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 CHudMenuStatic::CHudMenuStatic(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMenuStatic")
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMenuStatic"),
+    m_bLoadedFromFile(false), m_kvFromFile(nullptr)
 {
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetPaintBackgroundEnabled(false);
@@ -94,11 +96,92 @@ void CHudMenuStatic::HideMenu(bool bImmediate)
     }
 }
 
+void CHudMenuStatic::SelectMenuItemFromFile(int menu_item)
+{
+    if (!m_kvFromFile)
+        return;
+
+    if (menu_item == 0) // close button
+    {
+        CloseFunc();
+        return;
+    }
+
+    if (menu_item < 0 || menu_item > 9) // unknown
+    {
+        C_BasePlayer *cPlayer = C_BasePlayer::GetLocalPlayer();
+        if (cPlayer)
+        {
+            cPlayer->EmitSound("Momentum.UIMissingMenuSelection");
+        }
+        return;
+    }
+
+    char strMenuItem[4];
+    Q_snprintf(strMenuItem, sizeof(strMenuItem), "%i", menu_item);
+    KeyValues *pButtonKV = m_kvFromFile->FindKey(strMenuItem);
+    if (pButtonKV) // menu item is defined in KVs
+    {
+        const auto pCmd = pButtonKV->GetString("command", nullptr);
+        if (pCmd)
+            engine->ExecuteClientCmd(pCmd);
+    }
+}
+
+void CHudMenuStatic::ShowMenu(const char *filename, void (*ClosFunc)())
+{
+    if (m_kvFromFile)
+        m_kvFromFile->deleteThis();
+
+    char strTemp[64];
+    m_kvFromFile = new KeyValues(filename);
+
+    Q_snprintf(strTemp, sizeof(strTemp), "cfg/%s.vdf", filename);
+
+    // Copy from default file if there is no non-default file
+    if (!g_pFullFileSystem->FileExists(strTemp))
+    {
+        char strFileNameDefault[64];
+        Q_snprintf(strFileNameDefault, sizeof(strFileNameDefault), "cfg/%s_default.vdf", filename);
+        KeyValues *pKVTemp = new KeyValues(filename);
+        pKVTemp->LoadFromFile(g_pFullFileSystem, strFileNameDefault, "MOD");
+        pKVTemp->SaveToFile(g_pFullFileSystem, strTemp, "MOD");
+        pKVTemp->deleteThis();
+    }
+
+    m_kvFromFile->LoadFromFile(g_pFullFileSystem, strTemp, "MOD");
+    KeyValues *pKv = new KeyValues(m_kvFromFile->GetString("menu_name", "NOT FOUND"));
+
+    // keep 9 max (0 for cancel & >10 isn't reachable)
+    // also retrieves by number, not by order in file, & ignores the rest
+    for (int iCtr = 1; iCtr <= 9; iCtr++)
+    {
+        Q_snprintf(strTemp, sizeof(strTemp), "%i", iCtr);
+        KeyValues *subKV = m_kvFromFile->FindKey(strTemp);
+
+        if (!subKV) // no more defined
+            break;
+
+        pKv->AddSubKey(new KeyValues(subKV->GetString("label", "NOT FOUND")));
+    }
+
+    CloseFunc = ClosFunc;
+    m_bLoadedFromFile = true;
+    ShowMenu_KeyValueItems(pKv);
+    pKv->deleteThis();
+}
+
 // Overridden because we want the menu to stay up after selection
 void CHudMenuStatic::SelectMenuItem(int menu_item)
 {
-    if (SelectFunc)
+    if (m_bLoadedFromFile)
+    {
+        SelectMenuItemFromFile(menu_item);
+    }
+    else if (SelectFunc)
+    {
         SelectFunc(menu_item);
+    }
 
     m_flSelectionTime = gpGlobals->realtime;
     m_nSelectedItem = menu_item;

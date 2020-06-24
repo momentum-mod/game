@@ -29,10 +29,10 @@ class CMomentumPistol : public CWeaponBaseGun
 #endif
     void WeaponIdle() OVERRIDE;
 
-    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
+    WeaponID_t GetWeaponID() const OVERRIDE { return WEAPON_PISTOL; }
 
   private:
-    CMomentumPistol(const CMomentumPistol &);
+    void ToggleBurst(CMomentumPlayer *pPlayer);
 
     CNetworkVar(bool, m_bBurstMode);
 

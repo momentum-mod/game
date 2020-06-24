@@ -5,7 +5,7 @@
 #endif
 
 // Main Version (0 is private alpha, 1 is public beta, 2 is full release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
-#define MOM_CURRENT_VERSION "0.8.4"
+#define MOM_CURRENT_VERSION "0.8.5"
 
 #define MAX_TRACKS 64
 #define MAX_ZONES 64
@@ -47,6 +47,28 @@ enum RunSubmitState_t
     RUN_SUBMIT_COUNT
 };
 
+enum SpeedometerUnits_t
+{
+    SPEEDOMETER_UNITS_UPS = 0,
+    SPEEDOMETER_UNITS_KMH,
+    SPEEDOMETER_UNITS_MPH,
+    SPEEDOMETER_UNITS_ENERGY,
+
+    SPEEDOMETER_UNITS_FIRST = SPEEDOMETER_UNITS_UPS,
+    SPEEDOMETER_UNITS_LAST = SPEEDOMETER_UNITS_ENERGY
+};
+
+enum SpeedometerColorize_t
+{
+    SPEEDOMETER_COLORIZE_NONE = 0,
+    SPEEDOMETER_COLORIZE_RANGE,
+    SPEEDOMETER_COLORIZE_COMPARISON,
+    SPEEDOMETER_COLORIZE_COMPARISON_SEPARATE,
+
+    SPEEDOMETER_COLORIZE_FIRST = SPEEDOMETER_COLORIZE_NONE,
+    SPEEDOMETER_COLORIZE_LAST = SPEEDOMETER_COLORIZE_COMPARISON_SEPARATE
+};
+
 static const char *const g_szSubmitStates[] = {
     "#MOM_MF_RunSubmitFail_Unknown",          // RUN_SUBMIT_UNKNOWN
     "#MOM_MF_RunSubmitted",                   // RUN_SUBMIT_SUCCESS
@@ -67,7 +89,7 @@ enum GameMode_t
     GAMEMODE_RJ = 4,
     GAMEMODE_SJ = 5,
     GAMEMODE_TRICKSURF = 6,
-    GAMEMODE_TRIKZ = 7,
+    GAMEMODE_AHOP = 7,
     // MOM_TODO: etc
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
@@ -75,14 +97,14 @@ enum GameMode_t
 };
 
 const char * const g_szGameModes[] = {
-    "#MOM_NotApplicable",
+    "#MOM_GameType_Unknown",
     "#MOM_GameType_Surf",
     "#MOM_GameType_Bhop",
     "#MOM_GameType_KZ",
     "#MOM_GameType_RJ",
     "#MOM_GameType_SJ",
     "#MOM_GameType_Tricksurf",
-    "#MOM_GameType_Trikz"
+    "#MOM_GameType_Ahop"
 };
 
 // Run Flags
@@ -181,12 +203,12 @@ enum LobbyMessageType_t
 
 enum SpectateMessageType_t
 {
-    SPEC_UPDATE_JOIN = 0,           // Started spectating
+    SPEC_UPDATE_STARTED = 0,           // Started spectating
     SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
     SPEC_UPDATE_STOP,           // Stopped spectating; respawned
     SPEC_UPDATE_LEAVE,       // This player left the map/lobby
 
-    SPEC_UPDATE_FIRST = SPEC_UPDATE_JOIN,
+    SPEC_UPDATE_FIRST = SPEC_UPDATE_STARTED,
     SPEC_UPDATE_LAST = SPEC_UPDATE_LEAVE,
     SPEC_UPDATE_INVALID = -1,
 };
@@ -260,10 +282,12 @@ enum SpectateMessageType_t
     Warning("%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
     __FUNCTION__, __LINE__, #steam_interface); ret; }
 
+#define CHECK_STEAM_API_I(steam_interface) ____CHECK_STEAM_API(steam_interface, return 0)
 #define CHECK_STEAM_API_B(steam_interface) ____CHECK_STEAM_API(steam_interface, return false)
 #define CHECK_STEAM_API(steam_interface) ____CHECK_STEAM_API(steam_interface, return)
 
 #define MAP_FOLDER "maps"
+#define ZONE_FOLDER "zones"
 #define RECORDING_PATH "replays"
 #define RECORDING_ONLINE_PATH "online"
 #define EXT_ZONE_FILE ".zon"

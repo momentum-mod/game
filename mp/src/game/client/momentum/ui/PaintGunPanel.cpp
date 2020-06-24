@@ -4,6 +4,7 @@
 
 #include <vgui_controls/Button.h>
 #include <vgui_controls/CvarSlider.h>
+#include <vgui_controls/CvarTextEntry.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include "controls/ColorPicker.h"
 #include "clientmode_shared.h"
@@ -46,9 +47,9 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
     m_pToggleSound->AddActionSignalTarget(this);
 
     m_pPickColorButton = new Button(this, "PickColorButton", "", this, "picker");
-    m_pSliderScale = new CvarSlider(this, "SliderScale");
+    m_pSliderScale = new CvarSlider(this, "SliderScale", "mom_paintgun_scale", 2, true);
 
-    m_pTextSliderScale = new TextEntry(this, "TextSliderScale");
+    m_pTextSliderScale = new CvarTextEntry(this, "TextSliderScale", "mom_paintgun_scale", 2);
     m_pTextSliderScale->AddActionSignalTarget(this);
     m_pTextSliderScale->SetAllowNumericInputOnly(true);
 
@@ -65,7 +66,6 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
         m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
     }
 
-    SetLabelText();
     m_pColorPicker = new ColorPicker(this, this);
     m_pColorPicker->SetAutoDelete(true);
 
@@ -74,50 +74,6 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
 }
 
 PaintGunPanel::~PaintGunPanel() {}
-
-void PaintGunPanel::SetLabelText() const
-{
-    if (m_pSliderScale && m_pTextSliderScale)
-    {
-        mom_paintgun_scale.SetValue(m_pSliderScale->GetSliderValue());
-
-        char buf[64];
-        Q_snprintf(buf, sizeof(buf), "%.2f", m_pSliderScale->GetSliderValue());
-        m_pTextSliderScale->SetText(buf);
-
-        m_pSliderScale->ApplyChanges();
-    }
-}
-
-void PaintGunPanel::OnControlModified(Panel *p)
-{
-    if (p == m_pSliderScale && m_pSliderScale->HasBeenModified())
-    {
-        SetLabelText();
-    }
-    else if (p == m_pToggleViewmodel || p == m_pToggleSound)
-    {
-        m_pToggleViewmodel->ApplyChanges();
-        m_pToggleSound->ApplyChanges();
-    }
-}
-
-void PaintGunPanel::OnTextChanged(Panel *p)
-{
-    if (p == m_pTextSliderScale)
-    {
-        char buf[64];
-        m_pTextSliderScale->GetText(buf, 64);
-
-        float fValue = float(atof(buf));
-        float fMin, fMax;
-        if (mom_paintgun_scale.GetMin(fMin) && fValue >= fMin && mom_paintgun_scale.GetMax(fMax) && fValue <= fMax)
-        {
-            m_pSliderScale->SetSliderValue(fValue);
-            m_pSliderScale->ApplyChanges();
-        }
-    }
-}
 
 void PaintGunPanel::OnColorSelected(KeyValues *pKv)
 {
@@ -162,7 +118,7 @@ void PaintGunPanel::OnCommand(const char *pCommand)
         if (MomUtil::GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
         {
             m_pColorPicker->SetPickerColor(TextureColor);
-            m_pColorPicker->Show();
+            m_pColorPicker->DoModal();
         }
     }
     else if (FStrEq(pCommand, "Close"))

@@ -9,21 +9,27 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Label.h>
 #include "vgui_controls/Tooltip.h"
+#include <vgui_controls/AnimationController.h>
 #include <vgui/IInput.h>
 #include "vgui/ISurface.h"
 #include "vgui/ILocalize.h"
 
 #include "util/mom_util.h"
 #include "c_mom_replay_entity.h"
+#include "run/mom_replay_base.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
+static MAKE_TOGGLE_CONVAR(mom_mapfinished_movement_enable, "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                          "Toggles being able to move after completing a run. 0 = OFF, 1 = ON\n");
+
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName),
-    BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
+    BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog"),
+    m_cvarVelType("mom_hud_velocity_type")
 {
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetProportional(true);
@@ -32,6 +38,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_bIsGhost = false;
     m_bCanClose = false;
     m_iCurrentPage = 0;
+    SetAlpha(255);
 
     ListenForGameEvent("spec_start");
     ListenForGameEvent("spec_stop");
@@ -46,7 +53,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pPrevZoneButton = new ImagePanel(this, "Prev_Zone");
     m_pPlayReplayButton = new ImagePanel(this, "Replay_Icon");
     m_pRepeatButton = new ImagePanel(this, "Repeat_Button");
-    m_pDetachMouseLabel = new Label(this, "Detach_Mouse", "#MOM_MF_DetachMouse");
+    m_pMouseStateLabel = new Label(this, "Mouse_State", "#MOM_MF_MouseToggle");
     m_pCurrentZoneLabel = new Label(this, "Current_Zone", "#MOM_MF_OverallStats");
     m_pZoneOverallTime = new Label(this, "Zone_Overall_Time", "#MOM_MF_RunTime");
     m_pZoneEnterTime = new Label(this, "Zone_Enter_Time", "#MOM_MF_Zone_Enter");
@@ -63,6 +70,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pXPGainCosmetic = new Label(this, "XP_Gain_Cos", "#MOM_MF_XPGainCos");
     m_pXPGainRank = new Label(this, "XP_Gain_Rank", "#MOM_MF_XPGainRank");
     m_pLevelGain = new Label(this, "Cos_Level_Gain", "#MOM_MF_CosLvlGain");
+    m_pComparisonLabel = new Label(this, "ComparisonLabel", "");
 
     LoadControlSettings("resource/ui/MapFinishedDialog.res");
 
@@ -72,6 +80,7 @@ CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudEle
     m_pPrevZoneButton->InstallMouseHandler(this);
     m_pPlayReplayButton->SetMouseInputEnabled(true);
     m_pPlayReplayButton->InstallMouseHandler(this);
+    m_pPlayReplayButton->SetEnabled(false); // enabled upon replay save event
     m_pRepeatButton->SetMouseInputEnabled(true);
     m_pRepeatButton->InstallMouseHandler(this);
     m_pClosePanelButton->SetMouseInputEnabled(true);
@@ -94,8 +103,7 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     {
         m_bCanClose = true;
 
-        SetRunSaved(pEvent->GetBool("save"));
-        SetCurrentPage(m_iCurrentPage);
+        SetRunSaved(pEvent->GetBool("save") && IsVisible());
         // MOM_TODO: There's a file name parameter as well, do we want to use it here?
     }
     else if (FStrEq(pEvent->GetName(), "run_submit"))
@@ -105,9 +113,10 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     else if (FStrEq(pEvent->GetName(), "run_upload"))
     {
         const auto bPosted = pEvent->GetBool("run_posted");
-        SetRunUploaded(bPosted);
-        if (bPosted)
+        // don't write to labels if panel is not visible
+        if (bPosted && IsVisible())
         {
+            SetRunUploaded(true);
             const auto cXP = pEvent->GetInt("cos_xp");
             m_pXPGainCosmetic->SetVisible(cXP > 0);
             if (cXP)
@@ -137,6 +146,11 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
     }
 }
 
+void CHudMapFinishedDialog::LevelInitPostEntity() 
+{
+    LoadPlayerBestTime(); 
+}
+
 void CHudMapFinishedDialog::LevelShutdown()
 {
     m_pRunStats = nullptr;
@@ -149,18 +163,16 @@ void CHudMapFinishedDialog::OnThink()
 {
     BaseClass::OnThink();
 
-    static ConVarRef hvel("mom_hud_speedometer_hvel");
-    m_iVelocityType = hvel.GetBool();
-
     m_pPlayReplayButton->SetVisible(!m_bIsGhost);
     m_pRunUploadStatus->SetVisible(!m_bIsGhost);
     m_pRunSaveStatus->SetVisible(!m_bIsGhost);
-}
 
-void CHudMapFinishedDialog::SetMouseInputEnabled(bool state)
-{
-    BaseClass::SetMouseInputEnabled(state);
-    m_pDetachMouseLabel->SetVisible(!state);
+    // hacky but works well
+    if (mom_mapfinished_movement_enable.GetBool() && !m_bIsGhost && GetAlpha() < 0.5f)
+    {
+        if (ClosePanel())
+            FirePanelClosedEvent(false);
+    }
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
@@ -184,7 +196,7 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     BaseClass::ApplySchemeSettings(pScheme);
 
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
-    m_pDetachMouseLabel->SetFont(m_hTextFont);
+    m_pMouseStateLabel->SetFont(m_hTextFont);
     m_pCurrentZoneLabel->SetFont(m_hTextFont);
     m_pZoneOverallTime->SetFont(m_hTextFont);
     m_pZoneEnterTime->SetFont(m_hTextFont);
@@ -200,14 +212,19 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     m_pRunUploadStatus->SetFont(m_hTextFont);
     m_pXPGainCosmetic->SetFont(m_hTextFont);
     m_pXPGainRank->SetFont(m_hTextFont);
+    m_pComparisonLabel->SetFont(m_hTextFont);
     m_pLevelGain->SetFont(m_hTextFont);
     m_pLevelGain->SetFgColor(COLOR_GREEN);
+    m_cGain = GetSchemeColor("MOM.Compare.Gain", pScheme);
+    m_cLoss = GetSchemeColor("MOM.Compare.Loss", pScheme);
+    m_cTie = GetSchemeColor("MOM.Compare.Tie", pScheme);
 }
 
 void CHudMapFinishedDialog::SetRunSaved(bool bState)
 {
     m_pRunSaveStatus->SetText(bState ? "#MOM_MF_RunSaved" : "#MOM_MF_RunNotSaved");
     m_pRunSaveStatus->SetFgColor(bState ? COLOR_GREEN : COLOR_RED);
+    m_pPlayReplayButton->SetEnabled(bState);
 }
 
 void CHudMapFinishedDialog::SetRunUploaded(bool bState)
@@ -240,10 +257,14 @@ bool CHudMapFinishedDialog::ClosePanel()
     if (!m_bCanClose && !m_bIsGhost)
         return false;
 
+    LoadPlayerBestTime();
+
     SetMouseInputEnabled(false);
     SetRunSaved(false);
     SetRunUploaded(false);
     m_bCanClose = false;
+    g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
+    SetAlpha(255);
 
     return true;
 }
@@ -261,10 +282,18 @@ void CHudMapFinishedDialog::FirePanelClosedEvent(bool bRestartingMap)
 
 void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
 {
+    //prevent from closing when pressing mouse (irrelevant when in replay)
+    if (mom_mapfinished_movement_enable.GetBool() && !m_bIsGhost)
+    {
+        g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
+        SetAlpha(255);
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutMapFinishedPanel");
+    }
+
     if (code == MOUSE_LEFT)
     {
         const auto panelOver = input()->GetMouseOver();
-        if (panelOver == m_pPlayReplayButton->GetVPanel())
+        if (panelOver == m_pPlayReplayButton->GetVPanel() && m_pPlayReplayButton->IsEnabled())
         {
             engine->ClientCmd_Unrestricted("mom_replay_play_loaded\n");
             ClosePanel();
@@ -296,6 +325,19 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
                 FirePanelClosedEvent(false);
         }
     }
+    else if (code == MOUSE_RIGHT)
+    {
+        // disable mouse input
+        if (m_bIsGhost)
+        {
+            const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+            if (pSpecUI && pSpecUI->IsVisible())
+            {
+                ipanel()->SetMouseInputEnabled(pSpecUI->GetVPanel(), false);
+            }
+        }
+        SetMouseInputEnabled(false);
+    }
 }
 
 void CHudMapFinishedDialog::Reset()
@@ -305,6 +347,8 @@ void CHudMapFinishedDialog::Reset()
     SetRunSaved(false);
     SetRunUploaded(false);
     m_bCanClose = false;
+    m_pPlayReplayButton->SetEnabled(false);
+    SetAlpha(255);
 
     // --- cache localization tokens ---
     FIND_LOCALIZATION(m_pwCurrentPageOverall, "#MOM_MF_OverallStats");
@@ -336,24 +380,36 @@ void CHudMapFinishedDialog::SetVisible(bool bVisible)
     if (bVisible)
     {
         SetCurrentPage(0);
+        SetAlpha(255);
 
         const auto pSpecUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
         if (pSpecUI && pSpecUI->IsVisible() && ipanel()->IsMouseInputEnabled(pSpecUI->GetVPanel()))
             SetMouseInputEnabled(true);
+
+        g_pClientMode->GetViewportAnimationController()->StopAnimationSequence(this, "FadeOutMapFinishedPanel");
+        if (mom_mapfinished_movement_enable.GetBool())
+        {
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutMapFinishedPanel");
+        }
     }
 }
 
 void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
 {
+    if (!engine->IsInGame())
+        return;
+
     m_iCurrentPage = pageNum;
+    SetComparisonForPage(m_iCurrentPage);
 
     wchar_t unicodeTime[BUFSIZETIME];
+
     //"Time:" shows up when m_iCurrentPage  == 0
     if (m_iCurrentPage < 1)// == 0, but I'm lazy to do an else-if
     {
         m_pCurrentZoneLabel->SetText(m_pwCurrentPageOverall);
 
-        MomUtil::FormatTime(m_pRunData ? float(m_pRunData->m_iRunTime) * m_pRunData->m_flTickRate : 0.0f, m_pszEndRunTime);
+        MomUtil::FormatTime(float(m_pRunData->m_iRunTime) * m_pRunData->m_flTickRate, m_pszEndRunTime);
         ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
         m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwOverallTime, unicodeTime));//"Time" (overall run time)
 
@@ -366,7 +422,7 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
 
         //"Zone Time:" shows up when m_iCurrentPage > 0
         char ansiTime[BUFSIZETIME];
-        MomUtil::FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneTicks(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
+        MomUtil::FormatTime(float(m_pRunStats->GetZoneTicks(m_iCurrentPage)) * m_pRunData->m_flTickRate, ansiTime);
         ANSI_TO_UNICODE(ansiTime, unicodeTime);
         m_pZoneOverallTime->SetText(CConstructLocalizedString(m_pwZoneTime, unicodeTime));//"Zone time" (time for that zone)
 
@@ -375,7 +431,7 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
         {
             m_pZoneEnterTime->SetEnabled(true);
             m_pZoneEnterTime->SetVisible(true);
-            MomUtil::FormatTime(m_pRunStats ? float(m_pRunStats->GetZoneEnterTick(m_iCurrentPage)) * m_pRunData->m_flTickRate : 0.0f, ansiTime);
+            MomUtil::FormatTime(float(m_pRunStats->GetZoneEnterTick(m_iCurrentPage)) * m_pRunData->m_flTickRate, ansiTime);
             ANSI_TO_UNICODE(ansiTime, unicodeTime);
             m_pZoneEnterTime->SetText(CConstructLocalizedString(m_pwZoneEnterTime, unicodeTime));//"Zone enter time:" (time entered that zone)
         }
@@ -389,22 +445,95 @@ void CHudMapFinishedDialog::SetCurrentPage(int pageNum)
     //MOM_TODO: Set every label's Y pos higher if there's no ZoneEnterTime visible
 
     m_pZoneJumps->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone,
-                                                    m_pRunStats ? m_pRunStats->GetZoneJumps(m_iCurrentPage) : 0));
+                                                    m_pRunStats->GetZoneJumps(m_iCurrentPage)));
 
     m_pZoneStrafes->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone,
-                                                      m_pRunStats ? m_pRunStats->GetZoneStrafes(m_iCurrentPage) : 0));
+                                                      m_pRunStats->GetZoneStrafes(m_iCurrentPage)));
 
     m_pZoneSync1->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone,
-                                                    m_pRunStats ? m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage) : 0.0f));
+                                                    m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage)));
 
     m_pZoneSync2->SetText(CConstructLocalizedString(m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone,
-                                                    m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f));
+                                                    m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage)));
 
-    m_pZoneVelEnter->SetText(CConstructLocalizedString(m_pwVelZoneEnter, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    int velType = m_cvarVelType.GetInt();
+    m_pZoneVelEnter->SetText(CConstructLocalizedString(m_pwVelZoneEnter, m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, velType)));
 
-    m_pZoneVelExit->SetText(CConstructLocalizedString(m_pwVelZoneExit, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    m_pZoneVelExit->SetText(CConstructLocalizedString(m_pwVelZoneExit, m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, velType)));
 
-    m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    m_pZoneVelAvg->SetText(CConstructLocalizedString(m_pwVelAvg, m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, velType)));
 
-    m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, m_iVelocityType) : 0.0f));
+    m_pZoneVelMax->SetText(CConstructLocalizedString(m_pwVelMax, m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, velType)));
+}
+
+void CHudMapFinishedDialog::LoadPlayerBestTime()
+{
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (!pPlayer)
+        return;
+
+    const auto pRunData = pPlayer->GetCurrentUIEntData();
+
+    CMomReplayBase *pBase = MomUtil::GetBestTime(g_pGameRules->MapName(), pRunData->m_flTickRate,
+                                                 pRunData->m_iCurrentTrack, pRunData->m_iRunFlags);
+
+    if (!pBase)
+    {
+        m_pPbRunStats.Init();
+        return;
+    }
+    
+    m_pPbRunStats.FullyCopyFrom(*pBase->GetRunStats());
+
+    delete pBase;
+}
+
+void CHudMapFinishedDialog::GetDiffString(float diff, char* compareStringOut, Color* compareColorOut) 
+{
+    char tempANSITimeOutput[BUFSIZETIME];
+
+    if (CloseEnough(diff, 0.0f, FLT_EPSILON))
+    {
+        compareColorOut->SetRawColor(m_cTie.GetRawColor());
+        MomUtil::FormatTime(diff, tempANSITimeOutput);
+        V_snprintf(compareStringOut, BUFSIZELOCL, "(%s)", tempANSITimeOutput);
+        return;
+    }
+
+    char diffSign = diff > 0.0f ? '+' : '-';
+    compareColorOut->SetRawColor(diff > 0.0f ? m_cLoss.GetRawColor() : m_cGain.GetRawColor());
+
+    diff = fabs(diff);
+    MomUtil::FormatTime(diff, tempANSITimeOutput);
+    V_snprintf(compareStringOut, BUFSIZELOCL, "(%c %s)", diffSign, tempANSITimeOutput);
+}
+
+void CHudMapFinishedDialog::SetComparisonForPage(int iPage)
+{
+    if (m_pPbRunStats.GetZoneTicks(0) == 0)
+    {
+        m_pComparisonLabel->SetText("");
+        return;
+    }
+
+    int runTicks = iPage == 0 ? m_pRunData->m_iRunTime : static_cast<int>(m_pRunStats->GetZoneTicks(iPage));
+
+    float diff = static_cast<float>(runTicks - static_cast<int>(m_pPbRunStats.GetZoneTicks(iPage))) * m_pRunData->m_flTickRate;
+
+    char diffString[BUFSIZETIME];
+    Color diffColor;
+    GetDiffString(diff, diffString, &diffColor);
+
+    m_pComparisonLabel->SetFgColor(diffColor);
+    m_pComparisonLabel->SetText(diffString);
+}
+
+void CHudMapFinishedDialog::Paint() 
+{
+    BaseClass::Paint();
+
+    if (!mom_mapfinished_movement_enable.GetBool() || m_bIsGhost)
+    {
+        SetAlpha(255);
+    }
 }

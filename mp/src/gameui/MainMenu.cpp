@@ -4,8 +4,6 @@
 #include "MainMenuButton.h"
 
 #include "vgui/ISurface.h"
-#include "vgui/IVGui.h"
-#include "vgui/IInput.h"
 
 #include "filesystem.h"
 #include "KeyValues.h"
@@ -63,30 +61,28 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     CreateMenu();
 
     m_pButtonLobby = new MainMenuButton(this);
-    m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
-    m_pButtonLobby->SetButtonDescription("");
+    m_pButtonLobby->SetText("#GameUI2_HostLobby");
     m_pButtonLobby->SetEngineCommand("mom_lobby_create");
     m_pButtonLobby->SetVisible(true);
-    m_pButtonLobby->SetTextAlignment(RIGHT);
+    m_pButtonLobby->SetContentAlignment(Label::a_east);
     m_pButtonLobby->SetButtonType(SHARED);
 
     m_pButtonInviteFriends = new MainMenuButton(this);
-    m_pButtonInviteFriends->SetButtonText("#GameUI2_InviteLobby");
-    m_pButtonInviteFriends->SetButtonDescription("");
+    m_pButtonInviteFriends->SetText("#GameUI2_InviteLobby");
     m_pButtonInviteFriends->SetEngineCommand("mom_lobby_invite");
-    m_pButtonInviteFriends->SetTextAlignment(RIGHT);
+    m_pButtonInviteFriends->SetContentAlignment(Label::a_east);
     m_pButtonInviteFriends->SetButtonType(SHARED);
 
     m_pButtonSpectate = new MainMenuButton(this);
-    m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
-    m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
+    m_pButtonSpectate->SetText("#GameUI2_Spectate");
     m_pButtonSpectate->SetEngineCommand("mom_spectate");
     m_pButtonSpectate->SetPriority(90);
     m_pButtonSpectate->SetButtonType(IN_GAME);
-    m_pButtonSpectate->SetTextAlignment(RIGHT);
+    m_pButtonSpectate->SetContentAlignment(Label::a_east);
 
-    m_pVersionLabel = new Button(this, "VersionLabel", CFmtStr("v%s", MOM_CURRENT_VERSION).Access(), this, "ShowVersion");
+    m_pVersionLabel = new Button(this, "VersionLabel", "v" MOM_CURRENT_VERSION, this, "ShowVersion");
     m_pVersionLabel->SetPaintBackgroundEnabled(false);
+    m_pVersionLabel->SetPaintBorderEnabled(false);
     m_pVersionLabel->SetAutoWide(true);
     m_pVersionLabel->SetAutoTall(true);
     // MOM_TODO: LoadControlSettings("resource/ui/MainMenuLayout.res");
@@ -94,14 +90,12 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     CheckVersion();
 
     MakeReadyForUse();
+    InvalidateLayout(true);
     RequestFocus();
 }
 
 MainMenu::~MainMenu()
 {
-    ivgui()->RemoveTickSignal(GetVPanel());
-
-    // Stop listening for events
     if (gameeventmanager)
     {
         gameeventmanager->RemoveListener(this);
@@ -164,46 +158,46 @@ void MainMenu::FireGameEvent(IGameEvent* event)
 {
     if (!Q_strcmp(event->GetName(), "lobby_leave"))
     {
-        m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
+        m_pButtonLobby->SetText("#GameUI2_HostLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_create");
         m_pButtonInviteFriends->SetVisible(false);
         m_pButtonSpectate->SetVisible(false);
     }
     else if (!Q_strcmp(event->GetName(), "lobby_join"))
     {
-        m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
+        m_pButtonLobby->SetText("#GameUI2_LeaveLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_leave");
         m_pButtonInviteFriends->SetVisible(true);
         m_pButtonSpectate->SetVisible(true);
     }
     else if (!Q_strcmp(event->GetName(), "spec_start"))
     {
-        m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
+        m_pButtonSpectate->SetText("#GameUI2_Respawn");
         m_pButtonSpectate->SetEngineCommand("mom_spectate_stop");
     }
     else if (!Q_strcmp(event->GetName(), "spec_stop"))
     {
-        m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
+        m_pButtonSpectate->SetText("#GameUI2_Spectate");
         m_pButtonSpectate->SetEngineCommand("mom_spectate");
     }
+
+    InvalidateLayout();
 }
 
 void MainMenu::CreateMenu()
 {
     m_pButtons.PurgeAndDeleteElements();
 
-    KeyValues *datafile = new KeyValues("MainMenu");
+    KeyValuesAD datafile("MainMenu");
     datafile->UsesEscapeSequences(true);
     if (datafile->LoadFromFile(g_pFullFileSystem, "resource/mainmenu.res", "GAME"))
     {
         FOR_EACH_SUBKEY(datafile, dat)
         {
             MainMenuButton *button = new MainMenuButton(this);
+            button->SetName(dat->GetName());
             button->SetPriority(dat->GetInt("priority", 1));
-            button->SetButtonText(dat->GetString("text", "no text"));
-            button->SetButtonDescription(dat->GetString("description", "no description"));
+            button->SetText(dat->GetString("text", "no text"));
             button->SetBlank(dat->GetBool("blank"));
 
             button->SetCommand(dat->GetString("command", nullptr));
@@ -211,15 +205,17 @@ void MainMenu::CreateMenu()
 
             const char *specifics = dat->GetString("specifics", "shared");
             if (!Q_strcasecmp(specifics, "ingame"))
+            {
                 button->SetButtonType(IN_GAME);
+            }
             else if (!Q_strcasecmp(specifics, "mainmenu"))
+            {
                 button->SetButtonType(MAIN_MENU);
+            }
 
             m_pButtons.AddToTail(button);
         }
     }
-
-    datafile->deleteThis();
 }
 
 int32 __cdecl ButtonsPositionBottom(MainMenuButton *const *s1, MainMenuButton *const *s2)
@@ -232,17 +228,15 @@ int32 __cdecl ButtonsPositionTop(MainMenuButton *const *s1, MainMenuButton *cons
     return ((*s1)->GetPriority() < (*s2)->GetPriority());
 }
 
-#define SC(val) scheme()->GetProportionalScaledValueEx(GetScheme(), val)
-
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_iButtonsSpace = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.Space")));
-    m_iButtonsOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetX")));
-    m_iButtonsOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetY")));
-    m_iLogoOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetX")));
-    m_iLogoOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetY")));
+    m_iButtonsSpace = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.Space")));
+    m_iButtonsOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetX")));
+    m_iButtonsOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetY")));
+    m_iLogoOffsetX = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetX")));
+    m_iLogoOffsetY = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetY")));
     m_cLogoLeft = GetSchemeColor("MainMenu.Logo.Left", pScheme);
     m_cLogoRight = GetSchemeColor("MainMenu.Logo.Right", pScheme);
     m_bLogoAttachToMenu = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.AttachToMenu"));
@@ -250,27 +244,27 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
     if (!m_bLogoText)
     {
         if (m_pLogoImage)
+        {
             m_pLogoImage->EvictImage();
+        }
         else
+        {
             m_pLogoImage = new ImagePanel(this, "GameLogo");
+        }
 
         m_pLogoImage->SetShouldScaleImage(true);
         m_pLogoImage->SetImage(pScheme->GetResourceString("MainMenu.Logo.Image"));
-        m_iLogoWidth = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width")));
-        m_iLogoHeight = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height")));
+        m_iLogoWidth = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width")));
+        m_iLogoHeight = GetScaledVal(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height")));
         // Size and pos are handled in Paint()
     }
-    m_bLogoPlayerCount = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.PlayerCount"));
-    m_fLogoPlayerCount = pScheme->GetFont("MainMenu.Logo.PlayerCount.Font", true);
-    m_cLogoPlayerCount = pScheme->GetColor("MainMenu.Logo.PlayerCount.Color", Color(255, 255, 255, 255));
 
     m_fLogoFont = pScheme->GetFont("MainMenu.Logo.Font", true);
 
-    m_hFontVersionLabel = pScheme->GetFont("MainMenu.VersionLabel.Font", true);
-    if (m_pVersionLabel)
+    const auto hVersionLabelFont = pScheme->GetFont("MainMenu.VersionLabel.Font", true);
+    if (m_pVersionLabel && hVersionLabelFont)
     {
-        m_pVersionLabel->SetFont(m_hFontVersionLabel);
-        m_pVersionLabel->InvalidateLayout(true, true);
+        m_pVersionLabel->SetFont(hVersionLabelFont);
     }
 
     Q_strncpy(m_pszMenuOpenSound, pScheme->GetResourceString("MainMenu.Sound.Open"), sizeof(m_pszMenuOpenSound));
@@ -344,19 +338,6 @@ void MainMenu::DrawMainMenu()
                 GameUI().GetViewport().y - (m_iButtonsOffsetY + m_pButtons[i]->GetHeight()));
         }
     }
-
-    const Vector2D vp = GameUI().GetViewport();
-
-    m_pButtonLobby->SetPos(vp.x - m_pButtonLobby->GetWidth() - m_iButtonsOffsetX, 
-        vp.y - m_pButtonLobby->GetTall() - m_iButtonsOffsetY);
-
-    m_pButtonInviteFriends->SetPos(vp.x - m_pButtonInviteFriends->GetWidth() - m_iButtonsOffsetX, 
-        m_pButtonLobby->GetYPos() - m_pButtonInviteFriends->GetTall() - m_iButtonsSpace);
-
-    m_pButtonSpectate->SetPos(vp.x - m_pButtonSpectate->GetWidth() - m_iButtonsOffsetX, 
-        m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_iButtonsSpace);
-
-    m_pVersionLabel->SetPos(vp.x - m_pVersionLabel->GetWide() - 4, 2);
 }
 
 void MainMenu::DrawLogo()
@@ -412,15 +393,6 @@ void MainMenu::DrawLogo()
         m_pLogoImage->SetPos(logoX, logoY);
 
         m_pLogoImage->SetSize(m_iLogoWidth, m_iLogoHeight);
-
-        /*if (m_bLogoPlayerCount)
-        {
-            surface()->DrawSetTextColor(m_cLogoPlayerCount);
-            surface()->DrawSetTextFont(m_fLogoPlayerCount);
-            surface()->DrawSetTextPos(m_pLogoImage->GetXPos(), m_pLogoImage->GetTall() + m_pLogoImage->GetYPos());
-            const wchar_t* currentTotalPlayers = g_pMomentumSteamHelper->GetCurrentTotalPlayersAsString();
-            surface()->DrawPrintText(currentTotalPlayers, wcslen(currentTotalPlayers));
-        }*/
     }
 }
 
@@ -448,6 +420,25 @@ void MainMenu::Paint()
 
     DrawMainMenu();
     DrawLogo();
+}
+
+void MainMenu::PerformLayout()
+{
+    BaseClass::PerformLayout();
+
+    int screenWide, screenTall;
+    surface()->GetScreenSize(screenWide, screenTall);
+
+    m_pButtonLobby->SetPos(screenWide - m_pButtonLobby->GetWidth() - m_iButtonsOffsetX,
+                           screenTall - m_pButtonLobby->GetTall() - m_iButtonsOffsetY);
+
+    m_pButtonInviteFriends->SetPos(screenWide - m_pButtonInviteFriends->GetWidth() - m_iButtonsOffsetX,
+        m_pButtonLobby->GetYPos() - m_pButtonInviteFriends->GetTall() - m_iButtonsSpace);
+
+    m_pButtonSpectate->SetPos(screenWide - m_pButtonSpectate->GetWidth() - m_iButtonsOffsetX,
+        m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_iButtonsSpace);
+
+    m_pVersionLabel->SetPos(screenWide - m_pVersionLabel->GetWide() - GetScaledVal(4), GetScaledVal(2));
 }
 
 void MainMenu::Activate()

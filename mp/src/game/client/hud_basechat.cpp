@@ -351,84 +351,6 @@ float CBaseHudChatLine::GetStartTime(void) { return m_flStartTime; }
 //-----------------------------------------------------------------------------
 void CBaseHudChatLine::Expire(void) { SetVisible(false); }
 
-//-----------------------------------------------------------------------------
-// Purpose: The prompt and text entry area for chat messages
-//-----------------------------------------------------------------------------
-CBaseHudChatInputLine::CBaseHudChatInputLine(Panel *parent, char const *panelName) : Panel(parent, panelName)
-{
-    SetMouseInputEnabled(false);
-
-    m_pPrompt = new Label(this, "ChatInputPrompt", L"Enter text:");
-
-    m_pInput = new CBaseHudChatEntry(this, "ChatInput", parent);
-    m_pInput->SetMaximumCharCount(127);
-}
-
-void CBaseHudChatInputLine::ApplySchemeSettings(IScheme *pScheme)
-{
-    BaseClass::ApplySchemeSettings(pScheme);
-
-    // FIXME:  Outline
-    HFont hFont = pScheme->GetFont("ChatFont");
-
-    m_pPrompt->SetFont(hFont);
-    m_pInput->SetFont(hFont);
-
-    m_pInput->SetFgColor(
-        pScheme->GetColor("Chat.TypingText", pScheme->GetColor("Panel.FgColor", Color(255, 255, 255, 255))));
-
-    SetPaintBackgroundEnabled(true);
-    m_pPrompt->SetPaintBackgroundEnabled(true);
-    m_pPrompt->SetContentAlignment(Label::a_west);
-    m_pPrompt->SetTextInset(2, 0);
-
-    m_pInput->SetMouseInputEnabled(true);
-
-    SetBgColor(Color(0, 0, 0, 0));
-}
-
-void CBaseHudChatInputLine::SetPrompt(const wchar_t *prompt)
-{
-    Assert(m_pPrompt);
-    m_pPrompt->SetText(prompt);
-    InvalidateLayout();
-}
-
-void CBaseHudChatInputLine::ClearEntry(void)
-{
-    Assert(m_pInput);
-    SetEntry(L"");
-}
-
-void CBaseHudChatInputLine::SetEntry(const wchar_t *entry)
-{
-    Assert(m_pInput);
-    Assert(entry);
-
-    m_pInput->SetText(entry);
-}
-
-void CBaseHudChatInputLine::GetMessageText(OUT_Z_BYTECAP(buffersizebytes) wchar_t *buffer, int buffersizebytes)
-{
-    m_pInput->GetText(buffer, buffersizebytes);
-}
-
-void CBaseHudChatInputLine::PerformLayout()
-{
-    BaseClass::PerformLayout();
-
-    int wide, tall;
-    GetSize(wide, tall);
-
-    int w, h;
-    m_pPrompt->GetContentSize(w, h);
-    m_pPrompt->SetBounds(0, 0, w, tall);
-
-    m_pInput->SetBounds(w + 2, 0, wide - w - 2, tall);
-}
-
-CBaseHudChatEntry *CBaseHudChatInputLine::GetInputPanel(void) { return m_pInput; }
-
 CHudChatFilterCheckButton::CHudChatFilterCheckButton(Panel *pParent, const char *pName, const char *pText, int iFlag)
     : BaseClass(pParent, pName, pText)
 {
@@ -457,16 +379,11 @@ CHudChatFilterPanel::CHudChatFilterPanel(Panel *pParent, const char *pName) : Ba
     // HPE_END
     //=============================================================================
     LoadControlSettings("resource/ui/ChatFilters.res");
-}
 
-void CHudChatFilterPanel::ApplySchemeSettings(IScheme *pScheme)
-{
-    BaseClass::ApplySchemeSettings(pScheme);
-
-    Color cColor = pScheme->GetColor("DullWhite", GetBgColor());
-    SetBgColor(Color(cColor.r(), cColor.g(), cColor.b(), CHAT_HISTORY_ALPHA));
-
-    SetFgColor(pScheme->GetColor("Blank", GetFgColor()));
+    InvalidateLayout(true, true);
+    SetMouseInputEnabled(true);
+    SetPaintBorderEnabled(true);
+    SetVisible(false);
 }
 
 void CHudChatFilterPanel::OnFilterButtonChecked(Panel *panel)
@@ -520,7 +437,6 @@ void CHudChatHistory::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    SetFont(pScheme->GetFont("ChatFont"));
     SetAlpha(255);
 }
 
@@ -528,11 +444,9 @@ int CBaseHudChat::m_nLineCounter = 1;
 //-----------------------------------------------------------------------------
 // Purpose: Text chat input/output hud element
 //-----------------------------------------------------------------------------
-CBaseHudChat::CBaseHudChat(const char *pElementName)
-    : CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "HudChat")
+CBaseHudChat::CBaseHudChat(const char *pElementName) : CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "HudChat")
 {
-    HScheme chatScheme =
-        scheme()->LoadSchemeFromFileEx(enginevgui->GetPanel(PANEL_CLIENTDLL), "resource/ChatScheme.res", "ChatScheme");
+    HScheme chatScheme = scheme()->LoadSchemeFromFileEx(enginevgui->GetPanel(PANEL_CLIENTDLL), "resource/ChatScheme.res", "ChatScheme");
     SetScheme(chatScheme);
 
     g_pVGuiLocalize->AddFile("resource/chat_%language%.txt");
@@ -547,7 +461,7 @@ CBaseHudChat::CBaseHudChat(const char *pElementName)
 
     SetHiddenBits(HIDEHUD_CHAT);
 
-    m_pFiltersButton = new Button(this, "ChatFiltersButton", "FiltersToggle");
+    m_pFiltersButton = new Button(this, "ChatFiltersButton", "Filters", this, "FiltersToggle");
 
     if (m_pFiltersButton)
     {
@@ -564,43 +478,42 @@ CBaseHudChat::CBaseHudChat(const char *pElementName)
     m_ChatLine = new CBaseHudChatLine(this, "ChatLine1");
     m_ChatLine->SetVisible(false);
 
-    m_pChatInput = new CBaseHudChatInputLine(this, "ChatInputLine");
+    m_pChatInput = new CBaseHudChatEntry(this, "ChatInputLine");
     m_pChatInput->SetVisible(false);
 
     m_pFilterPanel = new CHudChatFilterPanel(this, "HudChatFilterPanel");
-
-    if (m_pFilterPanel)
-    {
-        m_pFilterPanel->InvalidateLayout(true, true);
-        m_pFilterPanel->SetMouseInputEnabled(true);
-        m_pFilterPanel->SetPaintBackgroundType(2);
-        m_pFilterPanel->SetPaintBorderEnabled(true);
-        m_pFilterPanel->SetVisible(false);
-    }
 
     m_iFilterFlags = cl_chatfilters.GetInt();
 }
 
 CBaseHudChat::~CBaseHudChat() { ivgui()->RemoveTickSignal(GetVPanel()); }
 
-CHudChatFilterPanel *CBaseHudChat::GetChatFilterPanel(void) { return m_pFilterPanel; }
-
 void CBaseHudChat::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-
-    SetPaintBackgroundType(2);
-    SetPaintBorderEnabled(true);
-    SetPaintBackgroundEnabled(true);
 
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     m_nVisibleHeight = 0;
 
-    Color cColor = pScheme->GetColor("DullWhite", GetBgColor());
-    SetBgColor(Color(cColor.r(), cColor.g(), cColor.b(), CHAT_HISTORY_ALPHA));
-
     m_pChatHistory->SetVerticalScrollbar(false);
+}
+
+void CBaseHudChat::OnKeyCodeReleased(KeyCode code)
+{
+    if (code == KEY_ENTER || code == KEY_PAD_ENTER || code == KEY_ESCAPE)
+    {
+        if (code != KEY_ESCAPE)
+        {
+            OnChatEntrySend();
+        }
+
+        StopMessageMode();
+    }
+    else
+    {
+        BaseClass::OnKeyCodeReleased(code);
+    }
 }
 
 void CBaseHudChat::Reset(void)
@@ -616,18 +529,15 @@ void CBaseHudChat::OnCommand(const char *command)
     {
         m_pChatInput->RequestFocus();
 
-        if (m_pFilterPanel)
+        if (m_pFilterPanel->IsVisible())
         {
-            if (m_pFilterPanel->IsVisible())
-            {
-                m_pFilterPanel->SetVisible(false);
-            }
-            else
-            {
-                m_pFilterPanel->SetVisible(true);
-                m_pFilterPanel->MakePopup();
-                m_pFilterPanel->SetMouseInputEnabled(true);
-            }
+            m_pFilterPanel->SetVisible(false);
+        }
+        else
+        {
+            m_pFilterPanel->SetVisible(true);
+            m_pFilterPanel->MakePopup();
+            m_pFilterPanel->SetMouseInputEnabled(true);
         }
     }
     else
@@ -847,33 +757,6 @@ void CBaseHudChat::OnTick(void)
 {
     m_nVisibleHeight = 0;
 
-    CBaseHudChatLine *line = m_ChatLine;
-
-    if (line)
-    {
-        HFont font = line->GetFont();
-        m_iFontHeight = surface()->GetFontTall(font) + 2;
-
-        // Put input area at bottom
-
-        int iChatX, iChatY, iChatW, iChatH;
-        int iInputX, iInputY, iInputW, iInputH;
-
-        m_pChatInput->GetBounds(iInputX, iInputY, iInputW, iInputH);
-        GetBounds(iChatX, iChatY, iChatW, iChatH);
-
-        m_pChatInput->SetBounds(iInputX, iChatH - (m_iFontHeight * 1.75) - 20, iInputW, m_iFontHeight);
-
-        // Resize the History Panel so it fits more lines depending on the screen resolution.
-        int iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH;
-
-        m_pChatHistory->GetBounds(iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH);
-
-        iChatHistoryH = (iChatH - (m_iFontHeight * 2.25)) - iChatHistoryY;
-
-        m_pChatHistory->SetBounds(iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH - 20);
-    }
-
     FadeChatHistory();
 }
 
@@ -929,6 +812,50 @@ int CBaseHudChat::ComputeBreakChar(int width, const char *text, int textlen)
     return textlen;
 }
 
+CBaseHudChatEntry::CBaseHudChatEntry(Panel *parent, char const *panelName): BaseClass(parent, panelName)
+{
+    SetCatchEnterKey(true);
+    SetAllowNonAsciiCharacters(true);
+    SetDrawLanguageIDAtLeft(true);
+    SetMaximumCharCount(127);
+}
+
+void CBaseHudChatEntry::ApplySchemeSettings(IScheme *pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+
+    const auto hFont = GetSchemeFont(pScheme, m_FontName, "Chat.Font");
+    SetFont(hFont);
+
+    SetFgColor(m_cTypingColor);
+
+    SetMouseInputEnabled(true);
+    SetPaintBorderEnabled(false);
+}
+
+void CBaseHudChatEntry::OnKeyCodeTyped(KeyCode code)
+{
+    if (code == KEY_ENTER || code == KEY_PAD_ENTER || code == KEY_ESCAPE)
+    {
+        if (code != KEY_ESCAPE)
+        {
+            PostMessage(GetVParent(), new KeyValues("ChatEntrySend"));
+        }
+
+        // End message mode.
+        PostMessage(GetVParent(), new KeyValues("ChatEntryStopMessageMode"));
+    }
+    else if (code == KEY_TAB)
+    {
+        // Ignore tab, otherwise vgui will screw up the focus.
+        return;
+    }
+    else
+    {
+        BaseClass::OnKeyCodeTyped(code);
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 // Input  : *fmt -
@@ -953,25 +880,7 @@ void CBaseHudChat::StartMessageMode(int iMessageModeType)
 {
     m_nMessageMode = iMessageModeType;
 
-    m_pChatInput->ClearEntry();
-
-    const wchar_t *pszPrompt =
-        (m_nMessageMode == MM_SAY) ? g_pVGuiLocalize->Find("#chat_say") : g_pVGuiLocalize->Find("#chat_say_team");
-    if (pszPrompt)
-    {
-        m_pChatInput->SetPrompt(pszPrompt);
-    }
-    else
-    {
-        if (m_nMessageMode == MM_SAY)
-        {
-            m_pChatInput->SetPrompt(L"Say :");
-        }
-        else
-        {
-            m_pChatInput->SetPrompt(L"Say (TEAM) :");
-        }
-    }
+    m_pChatInput->SetText(L"");
 
     m_pChatHistory->SetMouseInputEnabled(true);
     m_pChatHistory->SetKeyBoardInputEnabled(false);
@@ -1019,7 +928,7 @@ void CBaseHudChat::StopMessageMode(void)
     m_pChatHistory->SelectNoText();
 
     // Clear the entry since we wont need it anymore.
-    m_pChatInput->ClearEntry();
+    m_pChatInput->SetText(L"");
 
     // hide filter panel
     m_pFilterPanel->SetVisible(false);
@@ -1043,29 +952,25 @@ void CBaseHudChat::FadeChatHistory(void)
 {
     float frac = (m_flHistoryFadeTime - gpGlobals->curtime) / CHAT_HISTORY_FADE_TIME;
 
-    int alpha = frac * CHAT_HISTORY_ALPHA;
-    alpha = clamp(alpha, 0, CHAT_HISTORY_ALPHA);
+    int alpha = frac * m_iHistoryAlpha;
+    alpha = clamp(alpha, 0, m_iHistoryAlpha);
 
-    if (alpha >= 0)
+    const auto histBg = m_pChatHistory->GetBgColor();
+    if (IsMouseInputEnabled())
     {
-        if (IsMouseInputEnabled())
-        {
-            SetAlpha(255);
-            m_pChatHistory->SetBgColor(Color(0, 0, 0, CHAT_HISTORY_ALPHA - alpha));
-            m_pChatInput->GetPrompt()->SetAlpha((CHAT_HISTORY_ALPHA * 2) - alpha);
-            m_pChatInput->GetInputPanel()->SetAlpha((CHAT_HISTORY_ALPHA * 2) - alpha);
-            SetBgColor(Color(GetBgColor().r(), GetBgColor().g(), GetBgColor().b(), CHAT_HISTORY_ALPHA - alpha));
-            m_pFiltersButton->SetAlpha((CHAT_HISTORY_ALPHA * 2) - alpha);
-        }
-        else
-        {
-            m_pChatHistory->SetBgColor(Color(0, 0, 0, alpha));
-            SetBgColor(Color(GetBgColor().r(), GetBgColor().g(), GetBgColor().b(), alpha));
+        SetAlpha(255);
+        m_pChatHistory->SetBgColor(Color(histBg.r(), histBg.g(), histBg.b(), m_iHistoryAlpha - alpha));
+        m_pChatInput->SetAlpha((m_iHistoryAlpha * 2) - alpha);
+        SetBgColor(Color(GetBgColor().r(), GetBgColor().g(), GetBgColor().b(), m_iHistoryAlpha - alpha));
+        m_pFiltersButton->SetAlpha((m_iHistoryAlpha * 2) - alpha);
+    }
+    else
+    {
+        m_pChatHistory->SetBgColor(Color(histBg.r(), histBg.g(), histBg.b(), alpha));
+        SetBgColor(Color(GetBgColor().r(), GetBgColor().g(), GetBgColor().b(), alpha));
 
-            m_pChatInput->GetPrompt()->SetAlpha(alpha);
-            m_pChatInput->GetInputPanel()->SetAlpha(alpha);
-            m_pFiltersButton->SetAlpha(alpha);
-        }
+        m_pChatInput->SetAlpha(alpha);
+        m_pFiltersButton->SetAlpha(alpha);
     }
 }
 
@@ -1338,7 +1243,7 @@ void CBaseHudChat::Send(void)
 {
     wchar_t szTextbuf[128];
 
-    m_pChatInput->GetMessageText(szTextbuf, sizeof(szTextbuf));
+    m_pChatInput->GetText(szTextbuf, sizeof(szTextbuf));
 
     char ansi[128];
     g_pVGuiLocalize->ConvertUnicodeToANSI(szTextbuf, ansi, sizeof(ansi));
@@ -1370,14 +1275,14 @@ cropped or not.
         engine->ClientCmd_Unrestricted(szbuf);
     }
 
-    m_pChatInput->ClearEntry();
+    m_pChatInput->SetText(L"");
 }
 
 //-----------------------------------------------------------------------------
 // Purpose:
 // Output : vgui::Panel
 //-----------------------------------------------------------------------------
-CBaseHudChatEntry *CBaseHudChat::GetInputPanel(void) { return m_pChatInput->GetInputPanel(); }
+CBaseHudChatEntry *CBaseHudChat::GetInputPanel(void) { return m_pChatInput; }
 
 //-----------------------------------------------------------------------------
 // Purpose:

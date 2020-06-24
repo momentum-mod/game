@@ -118,6 +118,12 @@ abstract_class IMapList
     // Applies filters to the list
     virtual void ApplyFilters(MapFilters_t filters) = 0;
 
+    // Gets the number of items filtered and displayed
+    virtual int GetFilteredItemsCount() = 0;
+
     // invalid server index
     virtual int GetInvalidMapListID() = 0;
+
+    // Starts a random map from the current list
+    virtual void StartRandomMap() = 0;
 };

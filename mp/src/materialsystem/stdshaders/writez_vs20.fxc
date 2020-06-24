@@ -1,0 +1,39 @@
+// DYNAMIC: "SKINNING"					"0..1"
+// DYNAMIC: "COMPRESSED_VERTS"			"0..1"
+#include "common_fog_vs_fxc.h"
+
+#include "common_vs_fxc.h"
+
+struct VS_INPUT
+{
+	float4 vPos		: POSITION;
+#if (SKINNING == 1)
+	float4 vBoneWeights	: BLENDWEIGHT;
+	float4 vBoneIndices : BLENDINDICES;
+#endif
+};
+
+struct VS_OUTPUT
+{
+	float4 vProjPos		: POSITION;
+};
+
+
+VS_OUTPUT main( const VS_INPUT v )
+{
+	VS_OUTPUT o = ( VS_OUTPUT )0;
+	
+#	if (SKINNING == 1)
+	{
+		float3 vWorldPos;
+		SkinPosition( true, v.vPos, v.vBoneWeights, v.vBoneIndices, vWorldPos );
+		o.vProjPos = mul( float4( vWorldPos, 1 ), cViewProj );
+	}
+#	else
+	{
+		o.vProjPos = mul( v.vPos, cModelViewProj );
+	}
+#	endif
+	
+	return o;
+}

@@ -184,7 +184,7 @@ CHAPTER13_TITLE
 $position 0.1 0.1
 $effect 2
 // This is the final color
-$color 100 100 100
+$color 220 220 220
 // This is the highlight color
 $color2 240 110 0
 // This is the time it takes to fade each character
@@ -206,9 +206,19 @@ GAMESAVING_360
 
 $position 0.65 -1
 
+PRACTICE_MODE_WARN
+{
+#MOM_Practice_Warning
+}
+
 CHEATER
 {
 #MOM_Cheater_Message
 }
 
-$position -1 0.65
+$position 0.6 0.6
+
+NON_DEFAULT_TICKRATE
+{
+#MOM_Tickrate_Warning
+}

@@ -1,13 +1,13 @@
 VertexLitGeneric
 {
-	$basetexture 		"models/weapons/mom_sl_classic/mom_sl_ring_d"
-	$bumpmap 			"models/weapons/mom_sl_classic/mom_sl_ring_n"
+	$basetexture 				"models/weapons/mom_sl_classic/mom_sl_ring_d"
+	$bumpmap 				"models/weapons/mom_sl_classic/mom_sl_ring_n"
 	
 	$normalMapAlphaEnvMapMask	0
 	$selfIllum				1
-	$selfIllumTint			"[0 0 0]"
-	//$selfIllumFresnel		1
-	//$selfIllumFresnelMinMaxExp	"[0 0 0]"
+	$selfIllumTint			"[1 1 1]"
+	$selfIllumFresnel		1
+	$selfIllumFresnelMinMaxExp	"[0 1 0]"
 	
 	//$halfLambert			1
 	
@@ -21,12 +21,13 @@ VertexLitGeneric
 	$rimlightboost			2
 	$rimlightexponent		38
 	
+	
 	Proxies
 	{
 		PlayerSpeed
 		{
 			scale		0.003
-			resultvar	$selfIllumTint	"[.4 .4 .4]"
+			resultvar	"$selfIllumFresnelMinMaxExp[1]"
 		}
 	}
 }

@@ -32,6 +32,10 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     bool HasAutoBhop() { return m_bAutoBhop; }
     // void ResetStrafeSync();
 
+    // Ramp stuff
+    void SetRampBoardVelocity(const Vector &vecVel);
+    void SetRampLeaveVelocity(const Vector &vecVel);
+
     // Returns the replay entity that the player is watching (first person only)
     int GetSpecEntIndex() const;
 
@@ -47,12 +51,17 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     CNetworkVar(int, m_iShotsFired); // Used in various weapon code
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
+    CNetworkVar(bool, m_bSurfing);
+    CNetworkVector(m_vecRampBoardVel);
+    CNetworkVector(m_vecRampLeaveVel);
 
     CNetworkArray(int, m_iZoneCount, MAX_TRACKS); // The number of zones for a given track
     CNetworkArray(bool, m_iLinearTracks, MAX_TRACKS); // If a given track is linear or not
 
+    float m_fDuckTimer;
     int m_afButtonDisabled;
     CNetworkVar(bool, m_bAutoBhop);
+    bool m_bIsSprinting, m_bIsWalking;
 
     // CMomRunEnt stuff
     RUN_ENT_TYPE GetEntType() OVERRIDE { return RUN_ENT_PLAYER; }
@@ -62,6 +71,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; };
     virtual int GetEntIndex() OVERRIDE { return m_index; }
     virtual float GetCurrentRunTime() OVERRIDE;
+    uint64 GetSteamID() override;
 
     CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
 

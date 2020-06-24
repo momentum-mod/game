@@ -26,10 +26,15 @@
 #include "tier0/memdbgon.h"
 
 #define AVERAGE_STATS_INTERVAL 0.1
+#define SND_SPRINT "HL2Player.SprintStart"
 
-static MAKE_TOGGLE_CONVAR(
-    mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-    "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
+static MAKE_TOGGLE_CONVAR(mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                          "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
+
+static MAKE_TOGGLE_CONVAR(mom_practice_warning_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                          "Toggles the warning for enabling practice mode during a run. 0 = OFF, 1 = ON\n");
+
+static MAKE_TOGGLE_CONVAR(mom_ahop_sound_sprint_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the sound made when enabling sprint. 0 = OFF, 1 = ON.\n");
 
 CON_COMMAND_F(
     mom_practice,
@@ -116,7 +121,9 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), 
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
+SendPropBool(SENDINFO(m_bIsSprinting)),
+SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
 SendPropInt(SENDINFO(m_iLandTick)),
@@ -127,6 +134,10 @@ SendPropInt(SENDINFO(m_iLastZoomFOV), 8, SPROP_UNSIGNED),
 SendPropInt(SENDINFO(m_afButtonDisabled)),
 SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
+SendPropFloat(SENDINFO(m_fDuckTimer)),
+SendPropBool(SENDINFO(m_bSurfing)),
+SendPropVector(SENDINFO(m_vecRampBoardVel)),
+SendPropVector(SENDINFO(m_vecRampLeaveVel)),
 SendPropArray3(SENDINFO_ARRAY3(m_iZoneCount), SendPropInt(SENDINFO_ARRAY(m_iZoneCount), 7, SPROP_UNSIGNED)),
 SendPropArray3(SENDINFO_ARRAY3(m_iLinearTracks), SendPropInt(SENDINFO_ARRAY(m_iLinearTracks), 1, SPROP_UNSIGNED)),
 SendPropDataTable(SENDINFO_DT(m_Data), &REFERENCE_SEND_TABLE(DT_MomRunEntityData)),
@@ -167,7 +178,6 @@ static MAKE_CONVAR_C(mom_trail_length, "4", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_
                      APPEARANCE_TRAIL_LEN_MIN, APPEARANCE_TRAIL_LEN_MAX, AppearanceCallback);
 
 static MAKE_TOGGLE_CONVAR_C(mom_trail_enable, "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", AppearanceCallback);
-
 // Equivalent to "tf_damagescale_self_soldier" (default: 0.6) in TF2
 // Used for scaling damage when not on ground and not in water
 #define MOM_DAMAGESCALE_SELF_ROCKET 0.6f
@@ -187,8 +197,12 @@ static CMomentumPlayer *s_pPlayer = nullptr;
 CMomentumPlayer::CMomentumPlayer()
     : m_flStamina(0.0f),
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
-      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1)
+      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_iProgressNumber(-1), 
+      m_cvarMapFinMoveEnable("mom_mapfinished_movement_enable")
 {
+    m_bSurfing = false;
+    m_vecRampBoardVel.Init();
+    m_vecRampLeaveVel.Init();
     m_bAllowUserTeleports = true;
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -223,6 +237,9 @@ CMomentumPlayer::CMomentumPlayer()
     {
         m_pStartZoneMarks[i] = nullptr;
     }
+
+    m_bIsWalking = false;
+    m_bIsSprinting = false;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -235,6 +252,11 @@ CMomentumPlayer::~CMomentumPlayer()
     // Clear our spectating status just in case we leave the map while spectating
     StopObserverMode();
     g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
+}
+
+void CMomentumPlayer::PostClientActive()
+{
+    g_MapZoneSystem.DispatchMapInfo(this);
 }
 
 CMomentumPlayer* CMomentumPlayer::CreatePlayer(const char *className, edict_t *ed)
@@ -257,6 +279,7 @@ void CMomentumPlayer::Precache()
 
     PrecacheScriptSound(SND_FLASHLIGHT_ON);
     PrecacheScriptSound(SND_FLASHLIGHT_OFF);
+    PrecacheScriptSound(SND_SPRINT);
 
     BaseClass::Precache();
 }
@@ -279,50 +302,6 @@ void CMomentumPlayer::CreateViewModel(int index)
         vm->FollowEntity(this, false);
         m_hViewModel.Set(index, vm);
     }
-}
-
-// Overridden so the player isn't frozen on a new map change
-void CMomentumPlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
-{
-    m_touchedPhysObject = false;
-
-    if (pl.fixangle == FIXANGLE_NONE)
-    {
-        VectorCopy(ucmd->viewangles, pl.v_angle.GetForModify());
-    }
-    else if (pl.fixangle == FIXANGLE_ABSOLUTE)
-    {
-        VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
-    }
-
-    // Handle FL_FROZEN.
-    if (GetFlags() & FL_FROZEN)
-    {
-        ucmd->forwardmove = 0;
-        ucmd->sidemove = 0;
-        ucmd->upmove = 0;
-        ucmd->buttons = 0;
-        ucmd->impulse = 0;
-        VectorCopy(pl.v_angle.Get(), ucmd->viewangles);
-    }
-    else if (GetToggledDuckState()) // Force a duck if we're toggled
-    {
-        ConVarRef xc_crouch_debounce("xc_crouch_debounce");
-        // If this is set, we've altered our menu options and need to debounce the duck
-        if (xc_crouch_debounce.GetBool())
-        {
-            ToggleDuck();
-
-            // Mark it as handled
-            xc_crouch_debounce.SetValue(0);
-        }
-        else
-        {
-            ucmd->buttons |= IN_DUCK;
-        }
-    }
-
-    PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }
 
 void CMomentumPlayer::SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize)
@@ -373,6 +352,7 @@ bool CMomentumPlayer::BumpWeapon(CBaseCombatWeapon *pWeapon)
     {
         // Switch to that weapon for convenience
         Weapon_Switch(pCurrWeapon);
+        UTIL_Remove(pWeapon);
         return false;
     }
     // Otherwise we can try to pick up that weapon
@@ -790,14 +770,77 @@ void CMomentumPlayer::DoMuzzleFlash()
     }
 }
 
+bool CMomentumPlayer::CanSprint() const
+{
+    return !(m_afButtonDisabled & IN_SPEED) &&
+           !m_bIsWalking &&
+           !(m_Local.m_bDucked && !m_Local.m_bDucking) &&
+           GetWaterLevel() < 3;
+}
+
+void CMomentumPlayer::ToggleSprint(bool bShouldSprint)
+{
+    m_bIsSprinting = bShouldSprint;
+    SetMaxSpeed(bShouldSprint ? AHOP_SPRINT_SPEED : AHOP_NORM_SPEED);
+
+    if (bShouldSprint && mom_ahop_sound_sprint_enable.GetBool())
+    {
+        EmitSound(SND_SPRINT);
+    }
+}
+
+void CMomentumPlayer::ToggleWalk(bool bShouldWalk)
+{
+    m_bIsWalking = bShouldWalk;
+    SetMaxSpeed(m_bIsWalking ? AHOP_WALK_SPEED : AHOP_NORM_SPEED);
+}
+
+void CMomentumPlayer::HandleSprintAndWalkChanges()
+{
+    const int buttonsChanged = m_afButtonPressed | m_afButtonReleased;
+
+    const bool bWantSprint = (CanSprint() && (m_nButtons & IN_SPEED));
+    if (m_bIsSprinting != bWantSprint && (buttonsChanged & IN_SPEED))
+    {
+        // If someone wants to sprint, make sure they've pressed the button to do so. We want to prevent the
+        // case where a player can hold down the sprint key and burn tiny bursts of sprint as the suit recharges
+        // We want a full debounce of the key to resume sprinting after the suit is completely drained
+        ToggleSprint(bWantSprint);
+
+        if (!bWantSprint)
+        {
+            // Reset key, so it will be activated post whatever is suppressing it.
+            m_nButtons &= ~IN_SPEED;
+        }
+    }
+
+    if (m_bIsSprinting)
+    {
+        // Disable sprint while ducked unless we're in the air (jumping)
+        if (IsDucked() && GetGroundEntity())
+        {
+            ToggleSprint(false);
+        }
+    }
+
+    // have suit, pressing button, not sprinting or ducking
+    const auto bWantWalk = (m_nButtons & IN_WALK) && !m_bIsSprinting && !(m_nButtons & IN_DUCK);
+
+    if (m_bIsWalking != bWantWalk)
+    {
+        ToggleWalk(bWantWalk);
+    }
+}
+
 void CMomentumPlayer::PreThink()
 {
-    BaseClass::PreThink();
+    // Handle Ahop related things
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+    {
+        HandleSprintAndWalkChanges();
+    }
 
-    if (m_nButtons & IN_SCORE)
-        m_Local.m_iHideHUD |= HIDEHUD_LEADERBOARDS;
-    else
-        m_Local.m_iHideHUD &= ~HIDEHUD_LEADERBOARDS;
+    BaseClass::PreThink();
 }
 
 void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
@@ -815,7 +858,13 @@ void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClie
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
-    if (!m_bAllowUserTeleports || m_Data.m_bMapFinished)
+    if (!m_bAllowUserTeleports)
+        return;
+
+    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
+        return;
+
+    if (m_bHasPracticeMode && (m_nButtons & IN_JUMP))
         return;
 
     // No need to remove the trail here, CreateTrail() already does it for us
@@ -916,7 +965,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             {
                 if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
                 {
-                    const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetActiveWeapon());
+                    const auto pLauncher = static_cast<CMomentumStickybombLauncher *> (GetWeapon(WEAPON_STICKYLAUNCHER));
                     if (pLauncher)
                     {
                         pLauncher->SetChargeEnabled(false);
@@ -1051,7 +1100,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
         {
             // Re-enable charge on start zone exit and set charge time to 0 to prevent pre-charged stickies
-            const auto pLauncher = dynamic_cast<CMomentumStickybombLauncher *>(GetActiveWeapon());
+            const auto pLauncher = static_cast<CMomentumStickybombLauncher *>(GetWeapon(WEAPON_STICKYLAUNCHER));
             if (pLauncher)
             {
                 pLauncher->SetChargeEnabled(true);
@@ -1086,6 +1135,11 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
     }
 
     CMomRunEntity::OnZoneExit(pTrigger);
+}
+
+uint64 CMomentumPlayer::GetSteamID()
+{
+    return SteamUser() ? SteamUser()->GetSteamID().ConvertToUint64() : 0;
 }
 
 void CMomentumPlayer::ResetMovementProperties()
@@ -1304,7 +1358,7 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
         if (FStrEq(target->GetClassname(), "mom_online_ghost")) // target is an online ghost
         {
             CMomentumOnlineGhostEntity *pEntity = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
-            return pEntity && !pEntity->m_bSpectating;
+            return pEntity && !pEntity->IsSpectating();
         }
         return false;
     }
@@ -1347,7 +1401,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         if (pGhostToSpectate->IsOnlineGhost())
         {
             const auto pOnlineEnt = static_cast<CMomentumOnlineGhostEntity*>(target);
-            m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
+            m_sSpecTargetSteamID = pOnlineEnt->GetSteamID();
         }
         else if (pGhostToSpectate->IsReplayGhost())
         {
@@ -1403,7 +1457,7 @@ int CMomentumPlayer::GetNextObserverSearchStartPoint(bool bReverse)
 
 inline bool TestGhost(CMomentumOnlineGhostEntity *pEnt)
 {
-    return pEnt && !pEnt->m_bSpectating;
+    return pEnt && !pEnt->IsSpectating();
 }
 
 inline CBaseEntity *IterateAndFindViableNextGhost(uint16 startIndx, bool bReverse, CBaseEntity *pReplay, bool bTestStart)
@@ -1466,7 +1520,7 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
                 const auto pOnlineEnt = static_cast<CMomentumOnlineGhostEntity*>(pGhostEnt);
                 if (pOnlineEnt)
                 {
-                    const auto indx = pOnlineGhostMap->Find(pOnlineEnt->GetGhostSteamID().ConvertToUint64());
+                    const auto indx = pOnlineGhostMap->Find(pOnlineEnt->GetSteamID());
                     return IterateAndFindViableNextGhost(indx, bReverse, pCurrentReplayEnt, false);
                 }
             }
@@ -1583,14 +1637,13 @@ void CMomentumPlayer::TravelSpectateTargets(bool bReverse)
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
     // slowdown when map is finished
-    if (m_Data.m_bMapFinished)
+    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
         // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else
         m_flTweenVelValue = GetLaggedMovementValue(); // Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
-
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "TWEEN");
 }
 
@@ -1742,14 +1795,23 @@ void CMomentumPlayer::EnablePracticeMode()
     if (m_bHasPracticeMode)
         return;
 
-    if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
+    if (g_pMomentumTimer->IsRunning())
     {
-        const auto safeGuard = (m_nButtons & (IN_FORWARD|IN_MOVELEFT|IN_MOVERIGHT|IN_BACK|IN_JUMP|IN_DUCK|IN_WALK)) != 0;
-        if (safeGuard)
+        if (mom_practice_safeguard.GetBool())
         {
-            Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with "
-                    "\"mom_practice_safeguard\"!\n");
-            return;
+            const auto safeGuard = (m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
+            if (safeGuard)
+            {
+                Warning("You cannot enable practice mode while moving when the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
+                return;
+            }
+        }
+
+        if (mom_practice_warning_enable.GetBool())
+        {
+            UTIL_ShowMessage("PRACTICE_MODE_WARN", this);
+            Warning("NOTE: Upon disabling practice mode, you will return to your current spot in the run!\n"
+                    "To cancel this, stop your time with \"mom_timer_stop\".\nYou can disable this warning with \"mom_practice_warning_enable 0\"\n");
         }
     }
 
@@ -1959,6 +2021,13 @@ void CMomentumPlayer::ApplyPushFromDamage(const CTakeDamageInfo &info, Vector &v
     float force = Min(info.GetDamage() * flScale, 1000.0f);
     Vector vecForce = -vecDir * force;
     ApplyAbsVelocityImpulse(vecForce);
+
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("player_explosive_hit");
+    if (pEvent)
+    {
+        pEvent->SetFloat("speed", GetAbsVelocity().Length());
+        gameeventmanager->FireEvent(pEvent);
+    }
 }
 
 bool CMomentumPlayer::CanPaint() { return m_flNextPaintTime <= gpGlobals->curtime; }
@@ -1974,4 +2043,19 @@ void CMomentumPlayer::DoPaint()
 
     // Delay next time we paint
     m_flNextPaintTime = gpGlobals->curtime + CMomentumPaintGun::GetPrimaryCycleTime();
+}
+
+CON_COMMAND(toggle_duck, "Toggles duck state of the player. Only usable in the Ahop gamemode!\n")
+{
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+        return;
+
+    const auto pPlayer = UTIL_GetCommandClient();
+    if (!pPlayer)
+        return;
+
+    if (pPlayer->GetFlags() & FL_FROZEN)
+        return;
+
+    pPlayer->ToggleDuck();
 }

@@ -210,6 +210,14 @@ BEGIN_DATADESC( CBaseAnimating )
 	DEFINE_INPUT( m_fadeMaxDist, FIELD_FLOAT, "fademaxdist" ),
 	DEFINE_KEYFIELD( m_flFadeScale, FIELD_FLOAT, "fadescale" ),
 
+    DEFINE_KEYFIELD(m_flGlowMaxDist, FIELD_FLOAT, "glowdist"),
+    DEFINE_KEYFIELD(m_bGlowEnabled, FIELD_BOOLEAN, "glowenabled"),
+    DEFINE_KEYFIELD(m_clrGlow, FIELD_COLOR32, "glowcolor"),
+    DEFINE_INPUTFUNC(FIELD_VOID, "SetGlowEnabled", InputSetGlowEnabled),
+    DEFINE_INPUTFUNC(FIELD_VOID, "SetGlowDisabled", InputSetGlowDisabled),
+    DEFINE_INPUTFUNC(FIELD_COLOR32, "SetGlowColor", InputSetGlowColor),
+    DEFINE_INPUTFUNC(FIELD_FLOAT, "SetGlowDistance", InputSetGlowDistance),
+
 	DEFINE_KEYFIELD( m_flModelScale, FIELD_FLOAT, "modelscale" ),
 	DEFINE_INPUTFUNC( FIELD_VECTOR, "SetModelScale", InputSetModelScale ),
 
@@ -261,6 +269,10 @@ IMPLEMENT_SERVERCLASS_ST(CBaseAnimating, DT_BaseAnimating)
 	SendPropFloat( SENDINFO( m_fadeMaxDist ), 0, SPROP_NOSCALE ),
 	SendPropFloat( SENDINFO( m_flFadeScale ), 0, SPROP_NOSCALE ),
 
+    SendPropBool(SENDINFO(m_bGlowEnabled)),
+    SendPropFloat(SENDINFO(m_flGlowMaxDist)),
+    SendPropInt(SENDINFO(m_clrGlow), 32, SPROP_UNSIGNED, SendProxy_Color32ToInt),
+
 END_SEND_TABLE()
 
 
@@ -288,6 +300,9 @@ CBaseAnimating::CBaseAnimating()
 	m_fadeMaxDist = 0;
 	m_flFadeScale = 0.0f;
 	m_fBoneCacheFlags = 0;
+    m_bGlowEnabled.Set(false);
+    m_clrGlow.Init(255, 255, 255);
+    m_flGlowMaxDist = 0.0f;
 }
 
 CBaseAnimating::~CBaseAnimating()
@@ -306,6 +321,13 @@ void CBaseAnimating::Precache()
 #endif
 
 	BaseClass::Precache();
+}
+
+void CBaseAnimating::UpdateOnRemove()
+{
+    RemoveGlowEffect();
+
+    BaseClass::UpdateOnRemove();
 }
 
 //-----------------------------------------------------------------------------
@@ -348,6 +370,14 @@ void CBaseAnimating::SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways )
 	{
 		m_hLightingOriginRelative->SetTransmit( pInfo, bAlways );
 	}
+}
+
+int CBaseAnimating::ShouldTransmit(const CCheckTransmitInfo* pInfo)
+{
+    if (IsGlowEffectActive())
+        return FL_EDICT_ALWAYS;
+
+    return BaseClass::ShouldTransmit(pInfo);
 }
 
 //-----------------------------------------------------------------------------
@@ -619,6 +649,56 @@ void CBaseAnimating::InputSetModelScale( inputdata_t &inputdata )
 	inputdata.value.Vector3D( vecScale );
 
 	SetModelScale( vecScale.x, vecScale.y );
+}
+
+
+//=========================================================
+// Input handlers for glow
+//=========================================================
+
+void CBaseAnimating::InputSetGlowEnabled(inputdata_t& inputdata)
+{
+    AddGlowEffect();
+}
+
+void CBaseAnimating::InputSetGlowDisabled(inputdata_t& inputdata)
+{
+    RemoveGlowEffect();
+}
+
+void CBaseAnimating::InputSetGlowColor(inputdata_t& inputdata)
+{
+    SetGlowColor(inputdata.value.Color32());
+}
+
+void CBaseAnimating::InputSetGlowDistance(inputdata_t& inputdata)
+{
+    SetGlowDistance(inputdata.value.Float());
+}
+
+void CBaseAnimating::AddGlowEffect(void)
+{
+    m_bGlowEnabled.Set(true);
+}
+
+void CBaseAnimating::RemoveGlowEffect(void)
+{
+    m_bGlowEnabled.Set(false);
+}
+
+bool CBaseAnimating::IsGlowEffectActive(void)
+{
+    return m_bGlowEnabled;
+}
+
+void CBaseAnimating::SetGlowColor(color32 color)
+{
+    m_clrGlow.Set(color);
+}
+
+void CBaseAnimating::SetGlowDistance(float distance)
+{
+    m_flGlowMaxDist = distance;
 }
 
 

@@ -12,8 +12,9 @@
 
 static LightmappedGeneric_DX9_Vars_t s_info;
 
+DEFINE_FALLBACK_SHADER( SDK_LightmappedGeneric, LightmappedGeneric );
 
-BEGIN_VS_SHADER( SDK_LightmappedGeneric,
+BEGIN_VS_SHADER( LightmappedGeneric,
 				 "Help for LightmappedGeneric" )
 
 	BEGIN_SHADER_PARAMS

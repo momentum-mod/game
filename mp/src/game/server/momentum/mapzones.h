@@ -17,6 +17,8 @@ public:
     void LevelShutdownPostEntity() OVERRIDE;
     void FrameUpdatePostEntityThink() OVERRIDE;
 
+    void PostInit() OVERRIDE;
+
     bool ZoneTypeToClass(int type, char *dest, int maxlen);
 
     void ClearMapZones();
@@ -29,7 +31,7 @@ public:
     CMapZoneEdit *GetZoneEditor() { return &m_Editor; }
 
     // Calculates the stage count
-    void CalculateZoneCounts(CMomentumPlayer *pDispatch);
+    void CalculateZoneCounts();
     // Gets the total stage count
     int GetZoneCount(int track) const { return (track >= 0 && track < MAX_TRACKS) ? m_iZoneCount[track] : -1; }
 

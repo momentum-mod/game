@@ -28,7 +28,6 @@ public:
     void OnTabSelected() OVERRIDE;
 
 private:
-    ConVarRef m_cvarAutoDownload, m_cvarDeleteQueue;
     bool m_bLoadedMaps;
 
 };

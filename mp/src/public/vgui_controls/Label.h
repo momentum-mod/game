@@ -171,7 +171,6 @@ protected:
 	virtual void OnRequestFocus(VPANEL subFocus, VPANEL defaultPanel);
 	MESSAGE_FUNC( OnHotkeyPressed, "Hotkey" );
 	virtual void OnMousePressed(MouseCode code);
-	virtual void OnSizeChanged(int wide, int tall);
 
 	// makes sure that the maxIndex will be a valid index
 	virtual void EnsureImageCapacity(int maxIndex);

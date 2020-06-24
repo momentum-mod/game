@@ -37,24 +37,41 @@ static CViewVectors g_ViewVectorsMom(Vector(0, 0, 64), // eye position
                                      Vector(0, 0, 14) // dead view height
 );
 
-static CViewVectors g_ViewVectorsTF2(Vector(0, 0, 68), // eye position
-                                     Vector(-24, -24, 0), // hull min
-                                     Vector(24, 24, 82),  // hull max
+static CViewVectors g_ViewVectorsTF2(Vector(0, 0, 68),      // eye position
+                                     Vector(-24, -24, 0),   // hull min
+                                     Vector(24, 24, 82),    // hull max
 
-                                     Vector(-24, -24, 0), // duck hull min
-                                     Vector(24, 24, 62),  // duck hull max
-                                     Vector(0, 0, 45),    // duck view
+                                     Vector(-24, -24, 0),   // duck hull min
+                                     Vector(24, 24, 62),    // duck hull max
+                                     Vector(0, 0, 45),      // duck view
 
                                      Vector(-10, -10, -10), // observer hull min
                                      Vector(10, 10, 10),    // observer hull max
 
-                                     Vector(0, 0, 14) // dead view height
+                                     Vector(0, 0, 14)       // dead view height
+);
+
+static CViewVectors g_ViewVectorsAhop(Vector(0, 0, 64),      // eye position
+                                      Vector(-16, -16, 0),   // hull min
+                                      Vector(16, 16, 72),    // hull max
+
+                                      Vector(-16, -16, 0),   // duck hull min
+                                      Vector(16, 16, 36),    // duck hull max
+                                      Vector(0, 0, 28),      // duck view
+
+                                      Vector(-10, -10, -10), // observer hull min
+                                      Vector(10, 10, 10),    // observer hull max
+
+                                      Vector(0, 0, 14)       // dead view height
 );
 
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
     if (g_pGameModeSystem->IsTF2BasedMode())
         return &g_ViewVectorsTF2;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
+        return &g_ViewVectorsAhop;
 
     return &g_ViewVectorsMom;
 }
@@ -173,13 +190,13 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
     return pPlayer->ClientCommand(args);
 }
 
-struct WhiteListedCmd
+struct WhiteListedServerCmd
 {
     const char *pName;
     ConVar *pVar;
 };
 
-static WhiteListedCmd const g_szWhitelistedCmds[] = {
+static WhiteListedServerCmd const g_szWhitelistedServerCmds[] = {
     { "sv_gravity", &sv_gravity },
     { "sv_maxvelocity", &sv_maxvelocity },
     { "sv_airaccelerate", &sv_airaccelerate },
@@ -187,23 +204,65 @@ static WhiteListedCmd const g_szWhitelistedCmds[] = {
     { "disconnect", nullptr }
 };
 
-void CMomentumGameRules::PointCommandWhitelisted(const char *pCmd)
+void CMomentumGameRules::RunPointServerCommandWhitelisted(const char *pCmd)
 {
     CUtlVector<char *> vec;
     V_SplitString(pCmd, ";", vec);
     FOR_EACH_VEC(vec, i)
     {
-        for (const auto pWl : g_szWhitelistedCmds)
+        bool bAllowed = false;
+        for (const auto pWl : g_szWhitelistedServerCmds)
         {
             const auto strLen = V_strlen(pWl.pName);
             if (!V_strnicmp(vec[i], pWl.pName, strLen))
             {
+                bAllowed = true;
+
                 if (pWl.pVar)
                     pWl.pVar->SetValue(vec[i] + strLen + 1);
                 else
                     engine->ServerCommand(vec[i]);
+
+                break;
             }
         }
+
+        if (!bAllowed)
+            Warning("point_servercommand \"%s\" usage blocked by sv_allow_point_command setting\n", vec[i]);
+    }
+
+    vec.PurgeAndDeleteElements();
+}
+
+static char* const g_szWhitelistedClientCmds[] = {
+    "r_screenoverlay",
+    "play",
+    "playgamesound",
+    "disconnect",    // for credits
+};
+
+void CMomentumGameRules::RunPointClientCommandWhitelisted(edict_t* pClient, const char* pCmd)
+{
+    CUtlVector<char*> vec;
+    V_SplitString(pCmd, ";", vec);
+    FOR_EACH_VEC(vec, i)
+    {
+        bool bAllowed = false;
+        for (const auto pWl : g_szWhitelistedClientCmds)
+        {
+            const auto strLen = V_strlen(pWl);
+            if (!V_strnicmp(vec[i], pWl, strLen))
+            {
+                bAllowed = true;
+
+                engine->ClientCommand(pClient, "%s\n", vec[i]);
+
+                break;
+            }
+        }
+
+        if (!bAllowed)
+            Warning("point_clientcommand \"%s\" usage blocked by sv_allow_point_command setting\n", vec[i]);
     }
 
     vec.PurgeAndDeleteElements();

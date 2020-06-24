@@ -12,11 +12,9 @@ class CHudChat : public CBaseHudChat
   public:
     CHudChat(const char *pElementName);
 
-    virtual void Init(void);
+    void Init() override;
 
-    void MsgFunc_SayText(bf_read &msg);
-    void MsgFunc_SpecUpdateMsg(bf_read &msg);
-    void MsgFunc_LobbyUpdateMsg(bf_read &msg);
+    void MsgFunc_SayText(bf_read &msg) override;
 
     // MOM_TODO: Move these elsewhere. Maybe in clientmode? Something that has access to multiple UI components.
     STEAM_CALLBACK(CHudChat, OnLobbyEnter, LobbyEnter_t);

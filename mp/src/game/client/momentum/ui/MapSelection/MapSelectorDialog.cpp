@@ -6,6 +6,7 @@
 #include "LibraryMaps.h"
 #include "BrowseMaps.h"
 #include "FavoriteMaps.h"
+#include "ienginevgui.h"
 #include "MapContextMenu.h"
 #include "MapInfoDialog.h"
 #include "MapFilterPanel.h"
@@ -16,7 +17,7 @@
 #include "util/mom_util.h"
 #include "controls/FileImage.h"
 
-#include "IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 #include "vgui_controls/PropertySheet.h"
 #include "vgui_controls/ImageList.h"
 #include "vgui/IVGui.h"
@@ -25,12 +26,9 @@
 
 using namespace vgui;
 
-static CMapSelectorDialog *s_MapDlg = nullptr;
+extern ConVar mom_map_download_cancel_confirm;
 
-CMapSelectorDialog &MapSelectorDialog()
-{
-    return *s_MapDlg;
-}
+CMapSelectorDialog *g_pMapSelector = nullptr;
 
 MapListData::MapListData(): m_pMapData(nullptr), m_pKv(nullptr), m_iThumbnailImageIndx(INDX_MAP_THUMBNAIL_UNKNOWN), m_pImage(nullptr)
 {
@@ -42,24 +40,28 @@ MapListData::~MapListData()
         m_pKv->deleteThis();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
-CMapSelectorDialog::CMapSelectorDialog(VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
+CON_COMMAND_F(ShowMapSelectionPanel, "Shows MapSelectorPanel", FCVAR_CLIENTDLL | FCVAR_HIDDEN)
 {
+    g_pMapSelector->Open();
+};
+
+CMapSelectorDialog::CMapSelectorDialog() : Frame(nullptr, "CMapSelectorDialog")
+{
+    g_pMapSelector = this;
+
     SetDefLessFunc(m_mapMapListData);
     SetDefLessFunc(m_mapMapDownloads);
     SetDefLessFunc(m_mapCancelConfirmDlgs);
     SetDefLessFunc(m_mapMapInfoDialogs);
     SetDefLessFunc(m_mapOverwriteConfirmDlgs);
 
-    SetParent(parent);
+    SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     SetScheme(scheme()->LoadSchemeFromFile("resource/MapSelectorScheme.res", "MapSelectorScheme"));
     SetProportional(true);
     SetSize(GetScaledVal(600), GetScaledVal(300));
-    s_MapDlg = this;
     m_pSavedData = nullptr;
     m_pFilterData = nullptr;
+    m_uStartMapWhenReady = 0;
 
     LoadUserData();
 
@@ -151,6 +153,11 @@ CMapSelectorDialog::~CMapSelectorDialog()
     g_pModuleComms->RemoveListener("map_download_size", m_iDownloadSizeIndx);
     g_pModuleComms->RemoveListener("map_download_progress", m_iDownloadProgressIndx);
     g_pModuleComms->RemoveListener("map_download_end", m_iDownloadEndIndx);
+}
+
+void CMapSelectorDialog::Init()
+{
+    g_pMapSelector = new CMapSelectorDialog;
 }
 
 //-----------------------------------------------------------------------------
@@ -400,6 +407,11 @@ void CMapSelectorDialog::UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo
     pDataKv->SetInt(KEYNAME_MAP_IMAGE, pMap->m_iThumbnailImageIndx);
 
     PostActionSignal(new KeyValues("MapListDataUpdate", "id", pMapData->m_uID));
+
+    if (m_uStartMapWhenReady == pMapData->m_uID && g_pMapCache->MapFileExists(pMapData))
+    {
+        OnMapStart(pMapData->m_uID);
+    }
 }
 
 MapListData* CMapSelectorDialog::GetMapListDataByID(uint32 uMapID)
@@ -482,6 +494,11 @@ void CMapSelectorDialog::OnMapDownloadEnd(KeyValues* pKv)
     const auto pMsg = pKv->MakeCopy();
     pMsg->SetName("MapDownloadEnd");
     PostActionSignal(pMsg);
+
+    if (m_uStartMapWhenReady > 0 && m_uStartMapWhenReady == uID)
+    {
+        OnMapStart(uID);
+    }
 }
 
 bool CMapSelectorDialog::IsMapDownloading(uint32 uMapID) const
@@ -514,7 +531,7 @@ void CMapSelectorDialog::OnStartMapDownload(int id)
             }
             else
             {
-                const auto pPanel = messageboxpanel->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmOverwrite", 
+                const auto pPanel = g_pMessageBox->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmOverwrite", 
                                                                            "#MOM_MapSelector_ConfirmOverwriteMsg",
                                                        new KeyValues("ConfirmOverwrite", "id", id),
                                                        new KeyValues("RejectOverwrite", "id", id),
@@ -536,12 +553,12 @@ void CMapSelectorDialog::OnRemoveFromQueue(int id)
 
 void CMapSelectorDialog::OnCancelMapDownload(int id)
 {
-    if (ConVarRef("mom_map_download_cancel_confirm").GetBool())
+    if (mom_map_download_cancel_confirm.GetBool())
     {
         const auto indx = m_mapCancelConfirmDlgs.Find(id);
         if (!m_mapCancelConfirmDlgs.IsValidIndex(indx))
         {
-            Panel *pConfirm = messageboxpanel->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmCancel", "#MOM_MapSelector_ConfirmCancelMsg",
+            Panel *pConfirm = g_pMessageBox->CreateConfirmationBox(this, "#MOM_MapSelector_ConfirmCancel", "#MOM_MapSelector_ConfirmCancelMsg",
                                                                      new KeyValues("ConfirmCancelDownload", "id", id),
                                                                      new KeyValues("RejectCancelDownload", "id", id),
                                                                      "#GameUI_Yes", "#GameUI_No");
@@ -591,6 +608,9 @@ void CMapSelectorDialog::OnAddMapToLibrary(int id)
 
 void CMapSelectorDialog::OnMapStart(int id)
 {
+    m_uStartMapWhenReady = 0;
+    m_pFilterPanel->ResetFeelingLucky();
+
     if (g_pMapCache->PlayMap(id))
     {
         CloseMapInfoDialog(id);
@@ -764,6 +784,19 @@ void CMapSelectorDialog::ApplyFiltersToCurrentTab(MapFilters_t filters)
 {
     if (m_pCurrentMapList)
         m_pCurrentMapList->ApplyFilters(filters);
+}
+
+int CMapSelectorDialog::GetFilteredItemsCount() 
+{ 
+     if (m_pCurrentMapList)
+        return m_pCurrentMapList->GetFilteredItemsCount();
+    return 0; 
+}
+
+void CMapSelectorDialog::StartRandomMapFromCurrentTab()
+{
+    if (m_pCurrentMapList)
+        m_pCurrentMapList->StartRandomMap();
 }
 
 //-----------------------------------------------------------------------------

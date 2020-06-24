@@ -24,6 +24,10 @@
 using namespace vgui;
 
 static MAKE_TOGGLE_CONVAR(mom_hud_timer, "1", FCVAR_ARCHIVE, "Toggle displaying the timer. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_timer_sound_fail_enable, "1", FCVAR_ARCHIVE, "Toggle sound on timer fail. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_timer_sound_start_enable, "1", FCVAR_ARCHIVE, "Toggle sound on timer start. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_timer_sound_stop_enable, "1", FCVAR_ARCHIVE, "Toggle sound on timer stop. 0 = OFF, 1 = ON\n");
+static MAKE_TOGGLE_CONVAR(mom_timer_sound_finish_enable, "1", FCVAR_ARCHIVE, "Toggle sound on timer finish. 0 = OFF, 1 = ON\n");
 
 class CHudTimer : public CHudElement, public EditablePanel
 {
@@ -137,17 +141,29 @@ void CHudTimer::MsgFunc_Timer_Event(bf_read &msg)
     switch(type)
     {
     case TIMER_EVENT_STARTED:
-        pPlayer->EmitSound("Momentum.StartTimer");
+        if (mom_timer_sound_start_enable.GetBool())
+        {
+            pPlayer->EmitSound("Momentum.StartTimer");
+        }
         break;
     case TIMER_EVENT_FINISHED:
-        pPlayer->EmitSound("Momentum.FinishTimer");
+        if (mom_timer_sound_finish_enable.GetBool())
+        {
+            pPlayer->EmitSound("Momentum.FinishTimer");
+        }
         break;
     case TIMER_EVENT_STOPPED:
         SetToNoTimer();
-        pPlayer->EmitSound("Momentum.StopTimer");
+        if (mom_timer_sound_stop_enable.GetBool())
+        {
+            pPlayer->EmitSound("Momentum.StopTimer");
+        }
         break;
     case TIMER_EVENT_FAILED:
-        pPlayer->EmitSound("Momentum.FailedStartTimer");
+        if (mom_timer_sound_fail_enable.GetBool())
+        {
+            pPlayer->EmitSound("Momentum.FailedStartTimer");
+        }
         g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("TimerFailStart");
     default:
         break;

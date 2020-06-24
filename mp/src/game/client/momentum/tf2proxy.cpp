@@ -34,9 +34,10 @@ EXPOSE_INTERFACE(CYellowLevelProxy, IMaterialProxy, "YellowLevel" IMATERIAL_PROX
 class CBurnLevelProxy : public CResultProxy
 {
   public:
-    bool Init(IMaterial *pMaterial, KeyValues *pKeyValues) { return true; }
-    void OnBind(void *pC_BaseEntity) {}
-    IMaterial *GetMaterial() { return nullptr; }
+    void OnBind(void *pC_BaseEntity)
+    {
+        m_pResult->SetFloatValue(0.0f);
+    }
 };
 
 EXPOSE_INTERFACE(CBurnLevelProxy, IMaterialProxy, "BurnLevel" IMATERIAL_PROXY_INTERFACE_VERSION);

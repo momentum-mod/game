@@ -79,6 +79,10 @@ public:
     virtual void OnApplyFilters(MapFilters_t filters);
     virtual bool MapPassesFilters(MapData *pData, MapFilters_t filters);
 
+    // Called when the Feeling Lucky button is pressed
+    virtual void StartRandomMap() OVERRIDE;
+    virtual int GetFilteredItemsCount() OVERRIDE;
+
     // Called when the map selector has a map updated in its list
     MESSAGE_FUNC_INT(OnMapListDataUpdate, "MapListDataUpdate", id);
     // Called when the map selector opens
@@ -97,6 +101,8 @@ protected:
     void UpdateStatus();
 
     virtual void AddMapToList(MapData *pData);
+
+    uint32 TryStartMapFromRow(int itemID);
 
     // Removes map from list
     void RemoveMap(MapDisplay_t&);

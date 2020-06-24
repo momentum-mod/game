@@ -144,20 +144,22 @@ void CMomentumReplaySystem::FinishRecording()
     SetReplayHeaderAndStats();
 
     char newRecordingPath[MAX_PATH];
-    if (StoreReplay(newRecordingPath, MAX_PATH))
+    bool bStoredReplay = StoreReplay(newRecordingPath, MAX_PATH);
+
+    const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+    if (pReplaySavedEvent)
     {
-        Log("Recording Stopped! Ticks: %i\n", m_pRecordingReplay->GetFrameCount());
+        pReplaySavedEvent->SetBool("save", bStoredReplay);
+        pReplaySavedEvent->SetString("filepath", newRecordingPath);
+        pReplaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
+        gameeventmanager->FireEvent(pReplaySavedEvent);
+    }
 
-        const auto pReplaySavedEvent = gameeventmanager->CreateEvent("replay_save");
-        if (pReplaySavedEvent)
-        {
-            pReplaySavedEvent->SetBool("save", true);
-            // replaySavedEvent->SetString("filename", newRecordingName);
-            pReplaySavedEvent->SetString("filepath", newRecordingPath);
-            pReplaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
-            gameeventmanager->FireEvent(pReplaySavedEvent);
-        }
-
+    if (bStoredReplay)
+    {
+        char szRuntime[BUFSIZETIME];
+        MomUtil::FormatTime(m_pRecordingReplay->GetRunTime(), szRuntime);
+        Log("Recording Stopped! Ticks: %i | Time: %s\n", m_pRecordingReplay->GetFrameCount(), szRuntime);
         UnloadPlayback();
         m_pPlaybackReplay = m_pRecordingReplay;
         LoadReplayGhost();
@@ -298,7 +300,8 @@ void CMomentumReplaySystem::SetReplayHeaderAndStats()
     // Stats
     CMomRunStats *stats = m_pRecordingReplay->CreateRunStats(pPlayer->m_RunStats.GetTotalZones());
     stats->FullyCopyFrom(pPlayer->m_RunStats);
-    // MOM_TODO uncomment: stats->SetZoneTime(0, m_pRecordingReplay->GetRunTime());
+    // Store Overall Time at iZoneTicks[0]
+    stats->SetZoneTicks(0, (m_pRecordingReplay->GetStopTick() - m_pRecordingReplay->GetStartTick()));
 }
 
 void CMomentumReplaySystem::SetTeleportedThisFrame()
@@ -385,7 +388,7 @@ class CMOMReplayCommands
             auto pLoaded = g_ReplaySystem.LoadPlayback(recordingName);
             if (pLoaded)
             {
-                if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
+                if (!Q_stricmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
                 {
                     g_ReplaySystem.StartPlayback(firstperson);
                 }

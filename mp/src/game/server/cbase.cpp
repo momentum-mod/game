@@ -1048,6 +1048,19 @@ void CEventQueue::CancelEvents( CBaseEntity *pCaller )
 	}
 }
 
+bool CEventQueue::EventAffectsEntity(EventQueuePrioritizedEvent_t* event, CBaseEntity* pTarget)
+{
+	CBaseEntity* pSearchingEntity = event->m_pCaller;
+	if (event->m_pActivator == pTarget ||
+		event->m_pEntTarget == pTarget ||
+		pTarget == gEntList.FindEntityByName(nullptr, event->m_iTarget, pSearchingEntity, event->m_pActivator, event->m_pCaller))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Removes all pending events of the specified type from the I/O queue of the specified target
 // Input  : *pTarget - 
@@ -1066,9 +1079,7 @@ void CEventQueue::CancelEventOn( CBaseEntity *pTarget, const char *sInputName )
 	while (pCur != nullptr)
 	{
 		bool bDelete = false;
-		CBaseEntity *pSearchingEntity = pCur->m_pCaller;
-		if (pCur->m_pEntTarget == pTarget ||
-			pTarget == gEntList.FindEntityByName(nullptr, pCur->m_iTarget, pSearchingEntity, pCur->m_pActivator, pCur->m_pCaller))
+		if (EventAffectsEntity(pCur, pTarget))
 		{
 			if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 			{
@@ -1102,9 +1113,7 @@ bool CEventQueue::HasEventPending( CBaseEntity *pTarget, const char *sInputName 
 	const size_t inputNameSize = sInputName ? strlen(sInputName) : 0;
 	while (pCur != nullptr)
 	{
-		CBaseEntity *pSearchingEntity = pCur->m_pCaller;
-		if (pCur->m_pEntTarget == pTarget ||
-			pTarget == gEntList.FindEntityByName(nullptr, pCur->m_iTarget, pSearchingEntity, pCur->m_pActivator, pCur->m_pCaller))
+		if (EventAffectsEntity(pCur, pTarget))
 		{
 			if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 				return true;
@@ -1235,7 +1244,7 @@ void CEventQueue::SaveAll( CEventQueueState& state )
 		state.m_vecEvents.AddToTail();
 
 		CEventQueueEvent &e = state.m_vecEvents.Tail();
-		e.FromPrioritizedEvent( pe );
+		e.FromPrioritizedEvent( pe, nullptr );
 	}
 }
 
@@ -1247,7 +1256,7 @@ void CEventQueue::RestoreAll( const CEventQueueState &state )
 	FOR_EACH_VEC( state.m_vecEvents, i )
 	{
 		EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
-		state.m_vecEvents[i].ToPrioritizedEvent(newEvent);
+		state.m_vecEvents[i].ToPrioritizedEvent( newEvent, nullptr );
 		AddEvent( newEvent );
 	}
 }
@@ -1257,16 +1266,13 @@ void CEventQueue::SaveForTarget( CBaseEntity *pTarget, CEventQueueState &state )
 	state.m_vecEvents.RemoveAll();
 	for ( EventQueuePrioritizedEvent_t *pe = m_Events.m_pNext; pe != nullptr; pe = pe->m_pNext )
 	{
-		// Only add the event if it has the correct target ent
-		CBaseEntity *pSearchingEntity = pe->m_pCaller;
-
-		if ( pTarget == pe->m_pEntTarget ||
-			pTarget == gEntList.FindEntityByName( nullptr, pe->m_iTarget, pSearchingEntity, pe->m_pActivator, pe->m_pCaller ) )
+		// Only add the event if it affects the entity of interest
+		if (EventAffectsEntity(pe, pTarget))
 		{
 			state.m_vecEvents.AddToTail();
 
 			CEventQueueEvent &e = state.m_vecEvents.Tail();
-			e.FromPrioritizedEvent( pe );
+			e.FromPrioritizedEvent( pe, pTarget );
 		}
 	}
 }
@@ -1280,7 +1286,7 @@ void CEventQueue::RestoreForTarget( CBaseEntity *pTarget, const CEventQueueState
 	FOR_EACH_VEC( state.m_vecEvents, i )
 	{
 		EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
-		state.m_vecEvents[i].ToPrioritizedEvent( newEvent );
+		state.m_vecEvents[i].ToPrioritizedEvent( newEvent, pTarget );
 		AddEvent( newEvent );
 	}
 }
@@ -1294,7 +1300,7 @@ static CBaseEntity *GetEntityFromName( string_t name )
 	return gEntList.FindEntityByName( nullptr, name );
 }
 
-void CEventQueueEvent::FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe )
+void CEventQueueEvent::FromPrioritizedEvent( const EventQueuePrioritizedEvent_t *pe, CBaseEntity *pAbstractedEntity )
 {
 	// Convert from absolute tick count to an offset so its correct regardless of current tickcount
 	m_iFireDelayTicks = pe->m_iFireTick - gpGlobals->tickcount;
@@ -1305,18 +1311,56 @@ void CEventQueueEvent::FromPrioritizedEvent( const EventQueuePrioritizedEvent_t 
 	m_iCaller = pe->m_pCaller ? pe->m_pCaller->entindex() : 0;
 	m_szEntTarget = pe->m_pEntTarget ? pe->m_pEntTarget->GetEntityName() : NULL_STRING;
 	m_VariantValue = pe->m_VariantValue;
+
+	if (pAbstractedEntity)
+	{
+		m_bAbstractTarget = (pe->m_pEntTarget == pAbstractedEntity);
+		m_bAbstractActivator = (pe->m_pActivator == pAbstractedEntity);
+		m_bAbstractCaller = (pe->m_pCaller == pAbstractedEntity);
+	}
+	else
+	{
+		m_bAbstractTarget = false;
+		m_bAbstractActivator = false;
+		m_bAbstractCaller = false;
+	}
 }
 
-void CEventQueueEvent::ToPrioritizedEvent(EventQueuePrioritizedEvent_t* pe) const
+void CEventQueueEvent::ToPrioritizedEvent(EventQueuePrioritizedEvent_t* pe, CBaseEntity *pAbstractedEntity ) const
 {
 	// Convert from tick offset to absolute tick count
 	pe->m_iFireTick = m_iFireDelayTicks + gpGlobals->tickcount;
 	pe->m_iOutputID = m_iOutputID;
 	pe->m_iTarget = m_iTarget;
 	pe->m_iTargetInput = m_iTargetInput;
-	pe->m_pActivator = GetEntityFromName( m_szActivator );
-	pe->m_pCaller = UTIL_EntityByIndex( m_iCaller );
-	pe->m_pEntTarget = GetEntityFromName( m_szEntTarget );;
+
+	if ( pAbstractedEntity && m_bAbstractActivator )
+	{
+		pe->m_pActivator = pAbstractedEntity;
+	}
+	else
+	{
+		pe->m_pActivator = GetEntityFromName( m_szActivator );
+	}
+
+	if ( pAbstractedEntity && m_bAbstractCaller )
+	{
+		pe->m_pCaller = pAbstractedEntity;
+	}
+	else
+	{
+		pe->m_pCaller = UTIL_EntityByIndex( m_iCaller );
+	}
+
+	if ( pAbstractedEntity && m_bAbstractTarget )
+	{
+		pe->m_pEntTarget = pAbstractedEntity;
+	}
+	else
+	{
+		pe->m_pEntTarget = GetEntityFromName( m_szEntTarget );
+	}
+
 	pe->m_VariantValue = m_VariantValue;
 }
 
@@ -1333,6 +1377,10 @@ void CEventQueueEvent::LoadFromKeyValues( KeyValues *kv )
 	fieldtype_t fieldtype = (fieldtype_t)kv->GetInt( "variant_field_type" );
 	m_VariantValue.SetString( MAKE_STRING( kv->GetString( "variant_value" ) ) );
 	m_VariantValue.Convert( fieldtype );
+
+	m_bAbstractTarget = kv->GetBool( "abstract_target" );
+	m_bAbstractActivator = kv->GetBool( "abstract_activator" );
+	m_bAbstractCaller = kv->GetBool( "abstract_caller" );
 }
 
 void CEventQueueEvent::SaveToKeyValues( KeyValues *kv ) const
@@ -1352,6 +1400,9 @@ void CEventQueueEvent::SaveToKeyValues( KeyValues *kv ) const
 	kv->SetString( "ent_target", STRING( m_szEntTarget ) );
 	kv->SetInt( "variant_field_type", m_VariantValue.FieldType() );
 	kv->SetString( "variant_value", m_VariantValue.String() );
+	kv->SetBool( "abstract_target", m_bAbstractTarget );
+	kv->SetBool( "abstract_activator", m_bAbstractActivator );
+	kv->SetBool( "abstract_caller", m_bAbstractCaller );
 }
 
 void CEventQueueState::LoadFromKeyValues( KeyValues *kv )

@@ -74,7 +74,7 @@ void SectionedListPanelHeader::ApplySchemeSettings(IScheme *pScheme)
 	SetFgColor(GetSchemeColor("SectionedListPanel.HeaderTextColor", pScheme));
 	m_SectionDividerColor = GetSchemeColor("SectionedListPanel.DividerColor", pScheme);
 	SetBgColor(GetSchemeColor("SectionedListPanelHeader.BgColor", GetBgColor(), pScheme));
-	SetFont(pScheme->GetFont("DefaultVerySmall", IsProportional()));
+	SetFont(GetSchemeFont(pScheme, nullptr, "SectionedListPanel.HeaderFont", "DefaultVerySmall"));
 	ClearImages();
 	
 	HFont hFont = m_pListPanel->GetHeaderFont();
@@ -976,7 +976,7 @@ void SectionedListPanel::LayoutPanels(int &contentTall)
 		        {
 		            int cx, cwide;
 		            item->GetCellBounds(1, cx, cwide);
-		            m_hEditModePanel->SetBounds(cx, y, cwide, tall);
+		            m_hEditModePanel->SetBounds(cx, y, cwide, m_iLineSpacing);
 		        }
 
 		        y += m_iLineSpacing;
@@ -1048,7 +1048,21 @@ void SectionedListPanel::ApplySchemeSettings(IScheme *pScheme)
 	BaseClass::ApplySchemeSettings(pScheme);
 
 	SetBgColor(GetSchemeColor("SectionedListPanel.BgColor", GetBgColor(), pScheme));
-	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+
+	const auto pDefinedBorder = GetBorderOverrideName();
+	if (!pDefinedBorder || !pDefinedBorder[0])
+	{
+		const char *pSchemeBorder = pScheme->GetResourceString("SectionedListPanel.Border");
+		if (pSchemeBorder && pSchemeBorder[0])
+		{
+		    SetBorder(pScheme->GetBorder(pSchemeBorder));
+		}
+		else
+		{
+		    SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+		}
+	}
+
 
 	FOR_EACH_LL( m_Items, j )
 	{
@@ -1094,25 +1108,9 @@ HFont SectionedListPanel::GetRowFont( void ) const
 void SectionedListPanel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
-	m_iLineSpacing = inResourceData->GetInt("linespacing", 0);
-	if (!m_iLineSpacing)
-	{
-		m_iLineSpacing = DEFAULT_LINE_SPACING;
-	}
-	if (IsProportional())
-	{
-		m_iLineSpacing = scheme()->GetProportionalScaledValueEx(GetScheme(), m_iLineSpacing);
-	}
 
-	m_iSectionGap = inResourceData->GetInt("sectiongap", 0);
-	if (!m_iSectionGap)
-	{
-		m_iSectionGap = DEFAULT_SECTION_GAP;
-	}
-	if (IsProportional())
-	{
-		m_iSectionGap = scheme()->GetProportionalScaledValueEx(GetScheme(), m_iSectionGap);
-	}
+	m_iLineSpacing = GetScaledVal(inResourceData->GetInt("linespacing", DEFAULT_LINE_SPACING));
+	m_iSectionGap = GetScaledVal(inResourceData->GetInt("sectiongap", DEFAULT_SECTION_GAP));
 
     SetClickable(inResourceData->GetBool("clickable", true));
     SetVerticalScrollbar(inResourceData->GetBool("vertical_scrollbar", true));

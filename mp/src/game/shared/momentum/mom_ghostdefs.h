@@ -7,7 +7,6 @@ enum PacketType
 {
     PACKET_TYPE_POSITION = 0,
     PACKET_TYPE_DECAL,
-    PACKET_TYPE_SPEC_UPDATE,
     PACKET_TYPE_SAVELOC_REQ,
 
     PACKET_TYPE_COUNT
@@ -72,7 +71,11 @@ class MomentumPacket
     virtual PacketType GetType() const = 0;
     virtual ~MomentumPacket() {};
 
-    virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(GetType()); }
+    virtual void Write(CUtlBuffer &buf)
+    {
+        buf.SetBigEndian(false);
+        buf.PutUnsignedChar(GetType());
+    }
 };
 
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
@@ -175,39 +178,6 @@ struct ReceivedFrame_t
     {
         this->recvTime = recvTime;
         frame = recvFrame;
-    }
-};
-
-class SpecUpdatePacket : public MomentumPacket
-{
-  public:
-    uint64 specTarget;
-    SpectateMessageType_t spec_type;
-
-    SpecUpdatePacket(uint64 uID, SpectateMessageType_t specType)
-    {
-        specTarget = uID;
-        spec_type = specType;
-    }
-
-    SpecUpdatePacket(CUtlBuffer &buf)
-    {
-        specTarget = static_cast<uint64>(buf.GetInt64());
-
-        auto iSpecType = buf.GetInt();
-        if (iSpecType < SPEC_UPDATE_FIRST || iSpecType > SPEC_UPDATE_LAST)
-            iSpecType = SPEC_UPDATE_INVALID;
-
-        spec_type = static_cast<SpectateMessageType_t>(iSpecType);
-    }
-
-    PacketType GetType() const OVERRIDE { return PACKET_TYPE_SPEC_UPDATE; }
-
-    void Write(CUtlBuffer& buf) OVERRIDE
-    {
-        MomentumPacket::Write(buf);
-        buf.PutUint64(specTarget);
-        buf.PutInt(spec_type);
     }
 };
 

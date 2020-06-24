@@ -8,6 +8,17 @@
 
 class CMomentumPlayer;
 
+enum class GameModeHUDCapability_t
+{
+    CAP_HUD_SYNC = 0,
+    CAP_HUD_SYNC_BAR,
+    CAP_HUD_KEYPRESS_STRAFES,
+    CAP_HUD_KEYPRESS_JUMPS,
+    CAP_HUD_KEYPRESS_ATTACK,
+    CAP_HUD_KEYPRESS_WALK,
+    CAP_HUD_KEYPRESS_SPRINT,
+};
+
 abstract_class IGameMode
 {
 public:
@@ -23,9 +34,12 @@ public:
     virtual void        ExecGameModeCfg() = 0;
     virtual float       GetIntervalPerTick() = 0;
     virtual bool        WeaponIsAllowed(WeaponID_t weapon) = 0;
+    virtual bool        HasCapability(GameModeHUDCapability_t capability) = 0;
 
     // Movement vars
     virtual float       GetViewScale() = 0;
+    virtual bool        CanBhop() = 0;
+    virtual float       GetJumpFactor() = 0;
 
     virtual ~IGameMode() {}
 };
@@ -41,12 +55,15 @@ public:
     const char* GetGameModeCfg() override { return nullptr; }
     float GetIntervalPerTick() override { return 0.015f; }
     float GetViewScale() override { return 0.5f; }
+    bool CanBhop() override { return true; }
+    float GetJumpFactor() override;
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return true; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     void ExecGameModeCfg() override;
     bool WeaponIsAllowed(WeaponID_t weapon) override { return true; } // Unknown allows all weapons
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_Surf : public CGameModeBase
@@ -58,6 +75,7 @@ public:
     const char* GetMapPrefix() override { return "surf_"; }
     const char* GetGameModeCfg() override { return "surf.cfg"; }
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_Bhop : public CGameModeBase
@@ -71,6 +89,7 @@ public:
     float GetIntervalPerTick() override { return 0.01f; }
     void SetGameModeVars() override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_KZ : public CGameModeBase
@@ -85,6 +104,7 @@ public:
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_RJ : public CGameModeBase
@@ -96,11 +116,14 @@ public:
     const char* GetMapPrefix() override { return "rj_"; }
     const char* GetGameModeCfg() override { return "rj.cfg"; }
     float GetViewScale() override { return 1.0f; }
+    float GetJumpFactor() override;
+    bool CanBhop() override { return false; }
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 };
 
 class CGameMode_SJ : public CGameModeBase
@@ -112,6 +135,9 @@ class CGameMode_SJ : public CGameModeBase
     const char *GetMapPrefix() override { return "sj_"; }
     const char *GetGameModeCfg() override { return "sj.cfg"; }
     float GetViewScale() override { return 1.0f; }
+    float GetJumpFactor() override;
+    bool CanBhop() override { return false; }
+    bool HasCapability(GameModeHUDCapability_t capability) override;
 
     void SetGameModeVars() override;
     bool PlayerHasAutoBhop() override { return false; }
@@ -131,14 +157,26 @@ public:
     void SetGameModeVars() override;
 };
 
-// MOM_TODO
-class CGameMode_Trikz : public CGameModeBase
+// Ahop-specific defines
+#define AHOP_WALK_SPEED   150.0f
+#define AHOP_NORM_SPEED   190.0f
+#define AHOP_SPRINT_SPEED 320.0f
+
+class CGameMode_Ahop : public CGameModeBase
 {
 public:
-    GameMode_t GetType() override { return GAMEMODE_TRIKZ; }
-    const char* GetDiscordIcon() override { return "mom_icon_trikz"; }
-    const char* GetMapPrefix() override { return "trikz_"; }
-    const char* GetGameModeCfg() override { return "trikz.cfg"; }
+    GameMode_t GetType() override { return GAMEMODE_AHOP; }
+    const char *GetStatusString() override { return "Accelerated hopping"; }
+    const char *GetDiscordIcon() override { return "mom_icon_ahop"; }
+    const char *GetMapPrefix() override { return "ahop_"; }
+    const char *GetGameModeCfg() override { return "ahop.cfg"; }
+    void SetGameModeVars() override;
+    void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
+    bool WeaponIsAllowed(WeaponID_t weapon) override;
+    bool HasCapability(GameModeHUDCapability_t capability) override;
+
+    float GetViewScale() override { return 1.0f; }
+    float GetJumpFactor() override;
 };
 
 class CGameModeSystem : public CAutoGameSystem
@@ -155,11 +193,16 @@ public:
     IGameMode *GetGameMode() const { return m_pCurrentGameMode; }
     /// Gets a specific game mode instance by type
     IGameMode *GetGameMode(int eMode) const;
+    /// Gets a game mode based off of the map name
+    IGameMode *GetGameModeFromMapName(const char *pMapName);
     /// Checks if the game mode is the given one.
     /// (convenience method; functionally equivalent to `GetGameMode()->GetType() == eCheck`)
     bool GameModeIs(GameMode_t eCheck) const { return m_pCurrentGameMode->GetType() == eCheck; }
     /// Another convenience method to check if the current game mode is a TF2-based one (RJ || SJ)
     bool IsTF2BasedMode() const { return GameModeIs(GAMEMODE_RJ) || GameModeIs(GAMEMODE_SJ); }
+    /// Another convenience method to check if the current game mode is a CS-based one (Surf || Bhop || KZ || Unknown)
+    bool IsCSBasedMode() const { return GameModeIs(GAMEMODE_SURF) || GameModeIs(GAMEMODE_BHOP) ||
+                                        GameModeIs(GAMEMODE_KZ) || GameModeIs(GAMEMODE_UNKNOWN); }
     /// Sets the game mode directly
     void SetGameMode(GameMode_t eMode);
     /// Sets the game mode from a map name (backup method)

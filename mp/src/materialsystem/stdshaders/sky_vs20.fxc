@@ -19,15 +19,11 @@ struct VS_OUTPUT
 {
     float4 projPos					: POSITION;
     
-//#if defined( _X360 )
-//	float2 baseTexCoord		: TEXCOORD0;
-//#else
 	float2 baseTexCoord00 : TEXCOORD0;
 	float2 baseTexCoord01 : TEXCOORD1;
 	float2 baseTexCoord10 : TEXCOORD2;
 	float2 baseTexCoord11 : TEXCOORD3;
 	float2 baseTexCoord_In_Pixels: TEXCOORD4;
-//#endif
 };
 
 VS_OUTPUT main( const VS_INPUT v )
@@ -41,9 +37,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	vTexCoord.x = dot( vTexCoordInput.xyzw, g_mBaseTexCoordTransform[0] );
 	vTexCoord.y = dot( vTexCoordInput.xyzw, g_mBaseTexCoordTransform[1] );
 
-//#if defined( _X360 )
-//	o.baseTexCoord.xy = vTexCoord.xy;
-//#else
 	// Compute quantities needed for pixel shader texture lerping
 	o.baseTexCoord00.x = vTexCoord.x - TEXEL_XINCR;
 	o.baseTexCoord00.y = vTexCoord.y - TEXEL_YINCR;
@@ -58,7 +51,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.baseTexCoord_In_Pixels.xy = o.baseTexCoord00.xy;
 	o.baseTexCoord_In_Pixels.x *= U_TO_PIXEL_COORD_SCALE;
 	o.baseTexCoord_In_Pixels.y *= V_TO_PIXEL_COORD_SCALE;
-//#endif
 
 	return o;
 }

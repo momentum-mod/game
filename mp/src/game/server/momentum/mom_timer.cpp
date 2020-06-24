@@ -5,6 +5,7 @@
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
+#include "mom_system_gamemode.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
 
@@ -25,8 +26,8 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 };
 
 CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
-    m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
-    m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
+      m_iStartTick(0), m_iEndTick(0), m_bIsRunning(false),
+      m_bCanStart(false), m_bWasCheatsMsgShown(false), m_iTrackNumber(0), m_bShouldUseStartZoneOffset(false)
 {
 }
 
@@ -62,6 +63,11 @@ void CMomentumTimer::DispatchCheatsMessage(CMomentumPlayer *pPlayer)
     UTIL_ShowMessage("CHEATER", pPlayer);
     // MOM_TODO play a special sound here?
     m_bWasCheatsMsgShown = true;
+}
+
+void CMomentumTimer::DispatchTickrateMessage(CMomentumPlayer *pPlayer)
+{
+    UTIL_ShowMessage("NON_DEFAULT_TICKRATE", pPlayer);
 }
 
 bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
@@ -103,6 +109,12 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     {
         // We allow cheats to be enabled but we should warn the player that times won't submit
         DispatchCheatsMessage(pPlayer);
+    }
+    if (!CloseEnough(gpGlobals->interval_per_tick, g_pGameModeSystem->GetGameMode()->GetIntervalPerTick(), FLT_EPSILON))
+    {
+        // We also allow different tickrates, but warn the player that times won't submit on anything other than the
+        // default tickrate for the current game mode
+        DispatchTickrateMessage(pPlayer);
     }
 
     m_iStartTick = gpGlobals->tickcount;

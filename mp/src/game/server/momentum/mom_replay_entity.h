@@ -74,4 +74,6 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;
     Vector m_vecLastVel;
+
+    ConVarRef m_cvarMapFinMoveEnable;
 };

@@ -29,7 +29,7 @@ static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPane
 }
 
 static int __cdecl MapPersonalBestSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1,
-                                        const vgui::ListPanelItem &item2)
+                                           const vgui::ListPanelItem &item2)
 {
     const auto left = item1.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
     const auto right = item2.kv->GetFloat(KEYNAME_MAP_PERSONAL_BEST_SORT);
@@ -96,42 +96,48 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
 
     // Init UI
     m_pMapList = new CMapListPanel(this, "MapList");
-    m_pMapList->SetAllowUserModificationOfColumns(true);
-    m_pMapList->SetMultiselectEnabled(false);
-    m_pMapList->SetShouldCenterEmptyListText(true);
     m_pMapList->SetAutoResize(PIN_TOPLEFT, AUTORESIZE_DOWNANDRIGHT, 0, 0, 0, 0);
     m_pMapList->CalculateAutoResize(pWide, pTall);
 
     // Images
-    m_pMapList->SetImageList(MapSelectorDialog().GetImageList(), false);
+    m_pMapList->SetImageList(g_pMapSelector->GetImageList(), false);
 
     // Add the column headers
     m_pMapList->AddColumnHeader(HEADER_MAP_IMAGE, KEYNAME_MAP_IMAGE, "",
-								GetScaledVal(50), GetScaledVal(50), GetScaledVal(50),
-                                ListPanel::COLUMN_IMAGE| ListPanel::COLUMN_IMAGE_SIZETOFIT);
+        GetScaledVal(50), GetScaledVal(50), GetScaledVal(50),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_LIBRARY, KEYNAME_MAP_IN_LIBRARY, "", GetScaledVal(HEADER_ICON_SIZE),
-                                GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+        GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_IN_FAVORITES, KEYNAME_MAP_IN_FAVORITES, "", GetScaledVal(HEADER_ICON_SIZE),
-                                GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
-                                ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+        GetScaledVal(HEADER_ICON_SIZE), GetScaledVal(HEADER_ICON_SIZE),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_NAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps",
-								GetScaledVal(100), GetScaledVal(50), GetScaledVal(1000),
-                                ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
+        GetScaledVal(100), GetScaledVal(50), GetScaledVal(1000),
+        ListPanel::COLUMN_UNHIDABLE | ListPanel::COLUMN_RESIZEWITHWINDOW);
+
     m_pMapList->AddColumnHeader(HEADER_MAP_LAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout",
-								GetScaledVal(30), GetScaledVal(30), GetScaledVal(30),
-								ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
-								ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+        GetScaledVal(45), GetScaledVal(45), GetScaledVal(60),
+        ListPanel::COLUMN_IMAGE | ListPanel::COLUMN_IMAGE_SIZETOFIT |
+        ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_IMAGE_SIZE_MAINTAIN_ASPECT_RATIO);
+
     m_pMapList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty",
-                                GetScaledVal(20), GetScaledVal(20), GetScaledVal(20), 0);
+        GetScaledVal(30), GetScaledVal(30), GetScaledVal(45), 0);
+
     m_pMapList->AddColumnHeader(HEADER_WORLD_RECORD, KEYNAME_MAP_WORLD_RECORD, "#MOM_WorldRecord",
-								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+        GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+
     m_pMapList->AddColumnHeader(HEADER_BEST_TIME, KEYNAME_MAP_PERSONAL_BEST, "#MOM_PersonalBest",
-								GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+        GetScaledVal(70), 0, GetScaledVal(100), ListPanel::COLUMN_RESIZEWITHWINDOW);
+
     m_pMapList->AddColumnHeader(HEADER_DATE_CREATED, KEYNAME_MAP_CREATION_DATE, "#MOM_MapSelector_CreationDate",
-                                GetScaledVal(65), 0, GetScaledVal(100), 0);
+        GetScaledVal(65), 0, GetScaledVal(100), 0);
+
     m_pMapList->AddColumnHeader(HEADER_LAST_PLAYED, KEYNAME_MAP_LAST_PLAYED, "#MOM_MapSelector_LastPlayed",
-                                GetScaledVal(1), GetScaledVal(1), 9001, 0);
+        GetScaledVal(1), GetScaledVal(1), 9001, 0);
 
     // Images happen in ApplySchemeSettings
 
@@ -156,6 +162,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name) : PropertyPa
     m_pMapList->SetColumnTextAlignment(HEADER_BEST_TIME, Label::a_center);
 
     // Sort Functions
+    m_pMapList->SetColumnSortable(HEADER_MAP_IN_LIBRARY, false);
+    m_pMapList->SetColumnSortable(HEADER_MAP_IN_FAVORITES, false);
     m_pMapList->SetSortFunc(HEADER_MAP_NAME, MapNameSortFunc);
     m_pMapList->SetSortFunc(HEADER_WORLD_RECORD, MapWorldRecordSortFunc);
     m_pMapList->SetSortFunc(HEADER_BEST_TIME, MapPersonalBestSortFunc);
@@ -233,7 +241,7 @@ void CBaseMapsPage::SetListCellColors(MapData *pData, KeyValues *pKvInto)
 //-----------------------------------------------------------------------------
 // Purpose: loads filter settings (from disk) from the keyvalues
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::LoadFilters() { MapSelectorDialog().LoadTabFilterData(GetName()); }
+void CBaseMapsPage::LoadFilters() { g_pMapSelector->LoadTabFilterData(GetName()); }
 
 //-----------------------------------------------------------------------------
 // Purpose: applies only the game filter to the current list
@@ -349,24 +357,57 @@ void CBaseMapsPage::AddMapToList(MapData *pData)
     UpdateStatus();
 }
 
-void CBaseMapsPage::OnMapListDataUpdate(int mapID)
+uint32 CBaseMapsPage::TryStartMapFromRow(int itemID)
 {
-    MapDisplay_t *pMapDisplay = GetMapDisplayByID(mapID);
+    const auto iMapID = m_pMapList->GetItemUserData(itemID);
+    if (iMapID == 0)
+        return 0;
 
-    if (pMapDisplay)
+    const auto pMapData = g_pMapCache->GetMapDataByID(iMapID);
+    if (!pMapData)
+        return 0;
+
+    if (pMapData->m_bInLibrary)
     {
-        if (m_pMapList->IsValidItemID(pMapDisplay->m_iListID))
+        if (pMapData->m_bMapFileNeedsUpdate)
         {
-            m_pMapList->ApplyItemChanges(pMapDisplay->m_iListID);
+            g_pMapSelector->OnStartMapDownload(iMapID);
         }
         else
         {
-            // Otherwise we need to add it
-            MapListData *pData = MapSelectorDialog().GetMapListDataByID(mapID);
-            if (pData)
-                pMapDisplay->m_iListID = m_pMapList->AddItem(pData->m_pKv, mapID, false, false, false);
-            else
-                MapSelectorDialog().CreateMapListData(pMapDisplay->m_pMap);
+            g_pMapSelector->OnMapStart(iMapID);
+        }
+    }
+    else
+    {
+        g_pMapSelector->OnAddMapToLibrary(iMapID);
+    }
+
+    return iMapID;
+}
+
+void CBaseMapsPage::OnMapListDataUpdate(int mapID)
+{
+    const auto pMapDisplay = GetMapDisplayByID(mapID);
+
+    if (!pMapDisplay)
+        return;
+
+    if (m_pMapList->IsValidItemID(pMapDisplay->m_iListID))
+    {
+        m_pMapList->ApplyItemChanges(pMapDisplay->m_iListID);
+    }
+    else
+    {
+        // Otherwise we need to add it
+        const auto pData = g_pMapSelector->GetMapListDataByID(mapID);
+        if (pData)
+        {
+            pMapDisplay->m_iListID = m_pMapList->AddItem(pData->m_pKv, mapID, false, false, false);
+        }
+        else
+        {
+            g_pMapSelector->CreateMapListData(pMapDisplay->m_pMap);
         }
     }
 }
@@ -413,30 +454,35 @@ void CBaseMapsPage::OnMapDownloadEnd(KeyValues *pKv)
 //-----------------------------------------------------------------------------
 bool CBaseMapsPage::OnGameListEnterPressed()
 {
-    if (GetSelectedItemsCount() > 0)
-    {
-        const auto iListID = m_pMapList->GetSelectedItem(0);
-        const auto iMapID = m_pMapList->GetItemUserData(iListID);
-        if (iMapID == 0)
-            return false;
+    if (GetSelectedItemsCount() == 0)
+        return false;
 
-        const auto pMapData = g_pMapCache->GetMapDataByID(iMapID);
-        if (pMapData)
-        {
-            if (pMapData->m_bInLibrary)
-            {
-                if (pMapData->m_bMapFileNeedsUpdate)
-                    MapSelectorDialog().OnStartMapDownload(iMapID);
-                else
-                    MapSelectorDialog().OnMapStart(iMapID);
-            }
-            else
-                MapSelectorDialog().OnAddMapToLibrary(iMapID);
-            
-            return true;
-        }
-    }
-    return false;
+    return TryStartMapFromRow(m_pMapList->GetSelectedItem(0)) != 0;
+}
+
+int CBaseMapsPage::GetFilteredItemsCount()
+{
+    return m_pMapList->GetItemCount();
+}
+
+void CBaseMapsPage::StartRandomMap()
+{
+    const auto iVisibleItemsCount = GetFilteredItemsCount();
+
+    if (iVisibleItemsCount == 0)
+        return;
+
+    if (g_pMapSelector->GetMapToStart() > 0)
+        return;
+
+    const auto iListID = m_pMapList->GetItemIDFromRow(RandomInt(0, iVisibleItemsCount - 1));
+    const auto iMapID = m_pMapList->GetItemUserData(iListID);
+    if (iMapID == 0)
+        return;
+
+    g_pMapSelector->SetMapToStart(iMapID);
+
+    TryStartMapFromRow(iListID);
 }
 
 //-----------------------------------------------------------------------------
@@ -446,7 +492,7 @@ int CBaseMapsPage::GetSelectedItemsCount() { return m_pMapList->GetSelectedItems
 
 MapFilters_t CBaseMapsPage::GetFilters()
 {
-    KeyValues *pKv = MapSelectorDialog().GetTabFilterData(GetName());
+    KeyValues *pKv = g_pMapSelector->GetTabFilterData(GetName());
     MapFilters_t filters;
     filters.FromKV(pKv);
     return filters;
@@ -484,7 +530,9 @@ void CBaseMapsPage::GetNewMapList()
     g_pMapCache->GetMapList(vecMaps, GetMapListType());
 
     FOR_EACH_VEC(vecMaps, i)
+    {
         AddMapToList(vecMaps[i]);
+    }
 
     OnGetNewMapList();
 }
@@ -505,6 +553,6 @@ void CBaseMapsPage::OnOpenContextMenu(int itemID)
         return;
 
     // Activate context menu
-    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu();
+    CMapContextMenu *menu = g_pMapSelector->GetContextMenu();
     menu->ShowMenu(pMapData);
 }

@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -6,15 +6,15 @@
 //===========================================================================//
 
 #include "BaseVSShader.h"
-#include "BlurFilter_vs20.inc"
-#include "BlurFilter_ps20.inc"
-#include "BlurFilter_ps20b.inc"
+#include "blurfilter_vs20.inc"
+#include "blurfilter_ps20b.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 BEGIN_VS_SHADER_FLAGS( BlurFilterX, "Help for BlurFilterX", SHADER_NOT_EDITABLE )
 	BEGIN_SHADER_PARAMS
+		SHADER_PARAM( KERNEL, SHADER_PARAM_TYPE_INTEGER, "0", "Kernel type" )
 	END_SHADER_PARAMS
 
 	SHADER_INIT
@@ -23,14 +23,15 @@ BEGIN_VS_SHADER_FLAGS( BlurFilterX, "Help for BlurFilterX", SHADER_NOT_EDITABLE 
 		{
 			LoadTexture( BASETEXTURE );
 		}
+
+		if ( !( params[ KERNEL ]->IsDefined() ) )
+		{
+			params[ KERNEL ]->SetIntValue( 0 );
+		}
 	}
 	
 	SHADER_FALLBACK
 	{
-		if ( g_pHardwareConfig->GetDXSupportLevel() < 90 )
-		{
-			return "BlurFilterX_DX80";
-		}
 		return 0;
 	}
 
@@ -43,28 +44,17 @@ BEGIN_VS_SHADER_FLAGS( BlurFilterX, "Help for BlurFilterX", SHADER_NOT_EDITABLE 
 			pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
 
-			// Render targets are pegged as sRGB on POSIX, so just force these reads and writes
-			bool bForceSRGBReadAndWrite = IsOSX() && g_pHardwareConfig->CanDoSRGBReadFromRTs();
-			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, bForceSRGBReadAndWrite );
-			pShaderShadow->EnableSRGBWrite( bForceSRGBReadAndWrite );
+			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, false );
+			pShaderShadow->EnableSRGBWrite( false );
 
-			// Pre-cache shaders
-			blurfilter_vs20_Static_Index vshIndex;
-			pShaderShadow->SetVertexShader( "BlurFilter_vs20", vshIndex.GetIndex() );
-			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( blurfilter_ps20b );
-#ifndef _X360
-				SET_STATIC_PIXEL_SHADER_COMBO( APPROX_SRGB_ADAPTER, bForceSRGBReadAndWrite );
-#endif
-				SET_STATIC_PIXEL_SHADER( blurfilter_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( blurfilter_ps20 );
-				SET_STATIC_PIXEL_SHADER( blurfilter_ps20 );
-			}
+			DECLARE_STATIC_VERTEX_SHADER( blurfilter_vs20 );
+			SET_STATIC_VERTEX_SHADER_COMBO( KERNEL, params[ KERNEL ]->GetIntValue() ? 1 : 0 );
+			SET_STATIC_VERTEX_SHADER( blurfilter_vs20 );
+
+			DECLARE_STATIC_PIXEL_SHADER( blurfilter_ps20b );
+			SET_STATIC_PIXEL_SHADER_COMBO( KERNEL, params[ KERNEL ]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER_COMBO( CLEAR_COLOR, false );
+			SET_STATIC_PIXEL_SHADER( blurfilter_ps20b );
 
 			if ( IS_FLAG_SET( MATERIAL_VAR_ADDITIVE ) )
 				EnableAlphaBlending( SHADER_BLEND_ONE, SHADER_BLEND_ONE );
@@ -84,6 +74,8 @@ BEGIN_VS_SHADER_FLAGS( BlurFilterX, "Help for BlurFilterX", SHADER_NOT_EDITABLE 
 			// Tap offsets
 			v[0] = 1.3366f * dX;
 			v[1] = 0.0f;
+			v[2] = 0;
+			v[3] = 0;
 			pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, v, 1 );
 			v[0] = 3.4295f * dX;
 			v[1] = 0.0f;
@@ -101,21 +93,19 @@ BEGIN_VS_SHADER_FLAGS( BlurFilterX, "Help for BlurFilterX", SHADER_NOT_EDITABLE 
 			v[0] = 11.4401f * dX;
 			v[1] = 0.0f;
 			pShaderAPI->SetPixelShaderConstant( 2, v, 1 );
+
 			v[0] = v[1] = v[2] = v[3] = 1.0;
 			pShaderAPI->SetPixelShaderConstant( 3, v, 1 );
 
-			pShaderAPI->SetVertexShaderIndex( 0 );
-			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( blurfilter_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( blurfilter_ps20 );
-			}
+			v[0] = v[1] = v[2] = v[3] = 0.0;
+			v[0] = dX;
+			pShaderAPI->SetPixelShaderConstant( 4, v, 1 );
+
+			DECLARE_DYNAMIC_VERTEX_SHADER( blurfilter_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( blurfilter_vs20 );
+
+			DECLARE_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER( blurfilter_ps20b );
 		}
 		Draw();
 	}

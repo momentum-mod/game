@@ -24,9 +24,7 @@ struct VS_OUTPUT
 	
 	float4 fogFactorW	: COLOR1;
 
-#if !defined( _X360 )    
 	float  fog			: FOG;
-#endif
 };
 
 
@@ -43,9 +41,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.vProjPos = mul( float4( worldPos, 1 ), cViewProj );
 	
 	o.fogFactorW = CalcFog( worldPos, o.vProjPos, g_FogType );
-#if !defined( _X360 )
 	o.fog = o.fogFactorW;
-#endif
 
 	// stick the normal in the color channel
 	o.vDiffuse.rgb = worldNormal;

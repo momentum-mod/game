@@ -30,6 +30,7 @@ USING_BUILD_FACTORY( CBitmapImagePanel );
 USING_BUILD_FACTORY( CheckButton );
 USING_BUILD_FACTORY(CheckButtonList);
 USING_BUILD_FACTORY( ComboBox );
+USING_BUILD_FACTORY( CvarComboBox );
 USING_BUILD_FACTORY( CvarToggleCheckButton );
 USING_BUILD_FACTORY( Divider );
 USING_BUILD_FACTORY( ExpandButton );
@@ -59,5 +60,6 @@ USING_BUILD_FACTORY( URLLabel );
 USING_BUILD_FACTORY(ScrubbableProgressBar);
 USING_BUILD_FACTORY(CvarSlider);
 USING_BUILD_FACTORY(CvarTextEntry);
+USING_BUILD_FACTORY(ScrollableEditablePanel);
 
 int g_nYou_Must_Add_Public_Vgui_Controls_Vgui_ControlsCpp_To_Your_Project = 0;

@@ -18,6 +18,8 @@
 
 using namespace vgui;
 
+#define PADDING GetScaledVal(4)
+
 // Overall visibility
 static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run comparison panel. 0 = OFF, 1 = ON");
 
@@ -79,7 +81,7 @@ C_RunComparisons *g_pMOMRunCompare = nullptr;
 
 C_RunComparisons::C_RunComparisons(const char *pElementName, Panel *pParent /* = nullptr*/)
     : CHudElement(pElementName), Panel(pParent ? pParent : g_pClientMode->GetViewport(), pElementName),
-    m_cvarVelType("mom_hud_speedometer_hvel")
+    m_cvarVelType("mom_hud_velocity_type")
 {
     SetProportional(true);
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?
@@ -101,21 +103,6 @@ C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
 
 void C_RunComparisons::Init()
 {
-    // LOCALIZE STUFF HERE
-    FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
-    FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
-    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Zone", stageTimeLocalized);
-    LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
-    LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
-    LOCALIZE_TOKEN(VelAvg, "#MOM_Compare_Velocity_Avg", velocityAvgLocalized);
-    LOCALIZE_TOKEN(VelMax, "#MOM_Compare_Velocity_Max", velocityMaxLocalized);
-    LOCALIZE_TOKEN(VelEnter, "#MOM_Compare_Velocity_Enter", velocityStartLocalized);
-    LOCALIZE_TOKEN(VelExit, "#MOM_Compare_Velocity_Exit", velocityExitLocalized);
-    LOCALIZE_TOKEN(Sync1, "#MOM_Compare_Sync1", sync1Localized);
-    LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
-    LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
-    LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
-
     if (!m_bLoadedBogusComparison)
         ListenForGameEvent("replay_save");
 }
@@ -145,6 +132,21 @@ void C_RunComparisons::Reset()
     m_iMaxWide = m_iDefaultWidth;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
+
+    // LOCALIZE STUFF HERE
+    FIND_LOCALIZATION(m_wStage, "#MOM_Stage");
+    FIND_LOCALIZATION(m_wCheckpoint, "#MOM_Checkpoint");
+    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Zone", stageTimeLocalized);
+    LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
+    LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
+    LOCALIZE_TOKEN(VelAvg, "#MOM_Compare_Velocity_Avg", velocityAvgLocalized);
+    LOCALIZE_TOKEN(VelMax, "#MOM_Compare_Velocity_Max", velocityMaxLocalized);
+    LOCALIZE_TOKEN(VelEnter, "#MOM_Compare_Velocity_Enter", velocityStartLocalized);
+    LOCALIZE_TOKEN(VelExit, "#MOM_Compare_Velocity_Exit", velocityExitLocalized);
+    LOCALIZE_TOKEN(Sync1, "#MOM_Compare_Sync1", sync1Localized);
+    LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
+    LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
+    LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
 }
 
 void C_RunComparisons::LoadComparisons()
@@ -162,7 +164,7 @@ void C_RunComparisons::LoadComparisons()
         {
             UnloadComparisons();
             m_rcCurrentComparison = new RunCompare_t();
-            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+            m_bLoadedComparison = MomUtil::GetRunComparison(szMapName, tickRate, pRunData->m_iCurrentTrack, runFlags, m_rcCurrentComparison);
         }
     }
 }
@@ -286,7 +288,7 @@ void C_RunComparisons::OnThink()
 int C_RunComparisons::GetMaximumTall()
 {
     int toReturn = 0;
-    int fontTall = surface()->GetFontTall(m_hTextFont) + 2; // font tall and padding
+    int fontTall = surface()->GetFontTall(m_hTextFont) + PADDING; // font tall and padding
     toReturn += fontTall;                                   // Comparing against: (run)
     int stageBuffer = mom_comparisons_max_zones.GetInt();
     int lowerBound = GetCurrentZone() - stageBuffer;
@@ -338,7 +340,7 @@ int C_RunComparisons::GetMaximumTall()
         }
     }
 
-    return toReturn + 5; // extra padding
+    return toReturn + PADDING*2; // extra padding
 }
 
 void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain /*= true*/)
@@ -616,10 +618,10 @@ void C_RunComparisons::SetMaxWide(int newWide)
         m_iMaxWide = newWide;
 }
 
-void C_RunComparisons::ApplySchemeSettings(vgui::IScheme* pScheme)
+void C_RunComparisons::ApplySchemeSettings(IScheme* pScheme)
 {
     Panel::ApplySchemeSettings(pScheme);
-    m_hTextFont = pScheme->GetFont("HudHintTextSmall", true);
+    m_hTextFont = GetSchemeFont(pScheme, "HudHintTextSmall", nullptr);
     SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
     m_cGain = GetSchemeColor("MOM.Compare.Gain", pScheme);
     m_cLoss = GetSchemeColor("MOM.Compare.Loss", pScheme);
@@ -627,6 +629,18 @@ void C_RunComparisons::ApplySchemeSettings(vgui::IScheme* pScheme)
     GetSize(m_iDefaultWidth, m_iDefaultTall); //gets "wide" and "tall" from scheme .res file
     m_iMaxWide = m_iDefaultWidth;
     GetPos(m_iDefaultXPos, m_iDefaultYPos); //gets "xpos" and "ypos" from scheme .res file
+}
+
+void C_RunComparisons::SetBogusPulse(int i)
+{
+    bogus_alpha = 255.0f;
+    m_nCurrentBogusPulse |= i;
+}
+
+void C_RunComparisons::SetPanelSize(int wide, int tall)
+{
+    SetSize(wide, tall);
+    PostActionSignal(new KeyValues("OnSizeChange", "wide", wide, "tall", tall));
 }
 
 int C_RunComparisons::GetCurrentZone() const
@@ -644,7 +658,7 @@ void C_RunComparisons::Paint()
     int newY = m_iDefaultYPos + (m_iDefaultTall - maxTall);
     if (!m_bLoadedBogusComparison)
         SetPos(m_iDefaultXPos, newY);  // Dynamic placement, only when it's not bogus
-    SetPanelSize(m_iMaxWide, maxTall); // Dynamic sizing
+    SetPanelSize(m_iMaxWide + PADDING, maxTall); // Dynamic sizing
 
     // Get player current stage
     int currentStage = GetCurrentZone();
@@ -679,7 +693,7 @@ void C_RunComparisons::Paint()
     surface()->DrawSetTextPos(text_xpos, text_ypos);
     surface()->DrawPrintText(compareUnicode, wcslen(compareUnicode));
 
-    int yToIncrementBy = surface()->GetFontTall(m_hTextFont) + 2; //+2 for padding
+    int yToIncrementBy = surface()->GetFontTall(m_hTextFont) + PADDING;
     int Y = text_ypos + yToIncrementBy;
 
     const int ZONE_BUFFER = mom_comparisons_max_zones.GetInt();
@@ -793,7 +807,7 @@ void C_RunComparisons::Paint()
 
                 int newXPos = text_xpos                                           // Base starting X pos
                               + UTIL_ComputeStringWidth(m_hTextFont, pwZoneStr) //"Stage ## "
-                              + 2;                                                // Padding
+                              + PADDING;
 
                 Color comparisonColor = Color(GetFgColor());
 
@@ -806,7 +820,7 @@ void C_RunComparisons::Paint()
                 }
 
                 // See if this updates our max width.
-                SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, timeComparisonString) + 2);
+                SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, timeComparisonString));
 
                 ANSI_TO_UNICODE(timeComparisonString, timeComparisonStringUnicode);
 

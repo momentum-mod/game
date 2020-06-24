@@ -15,10 +15,9 @@
 #include "tier1/utlvector.h"
 #include "vgui_controls/EditablePanel.h"
 #include "vgui_controls/Frame.h"
-#include "icvar.h"
 
+class CNonFocusableMenu;
 class ConCommandBase;
-
 
 namespace vgui
 {
@@ -51,7 +50,7 @@ class CConsolePanel : public vgui::EditablePanel, public IConsoleDisplayFunc
 	DECLARE_CLASS_SIMPLE( CConsolePanel, vgui::EditablePanel );
 
 public:
-	CConsolePanel( Panel *pParent, const char *pName, bool bStatusVersion );
+	CConsolePanel( Panel *pParent, const char *pName );
 	~CConsolePanel();
 
 	// Inherited from IConsoleDisplayFunc
@@ -72,13 +71,8 @@ public:
 	bool TextEntryHasFocus() const;
 	void TextEntryRequestFocus();
 
-
-
 private:
-	enum
-	{
-		MAX_HISTORY_ITEMS = 100,
-	};
+	void SubmitCommand();
 
 	class CompletionItem
 	{
@@ -116,17 +110,15 @@ protected:
 
 	vgui::RichText *m_pHistory;
 	vgui::TextEntry *m_pEntry;
-	vgui::Button *m_pSubmit;
-	vgui::Menu *m_pCompletionList;
+	CNonFocusableMenu *m_pCompletionList;
 	Color m_PrintColor;
 	Color m_DPrintColor;
+	Color m_UserColor;
 
 	int m_iNextCompletion;		// the completion that we'll next go to
 	char m_szPartialText[256];
 	char m_szPreviousPartialText[256];
 	bool m_bAutoCompleteMode;	// true if the user is currently tabbing through completion options
-	bool m_bWasBackspacing;
-	bool m_bStatusVersion;
 
 	CUtlVector< CompletionItem * > m_CompletionList;
 	CUtlVector< CHistoryItem >	m_CommandHistory;
@@ -140,7 +132,9 @@ class CConsoleDialog : public vgui::Frame
 	DECLARE_CLASS_SIMPLE( CConsoleDialog, vgui::Frame );
 
 public:
-	CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bStatusVersion );
+	CConsoleDialog( vgui::Panel *pParent, const char *pName );
+
+	void SizeToScreen();
 
 	virtual void OnScreenSizeChanged( int iOldWide, int iOldTall );
 	virtual void Close();

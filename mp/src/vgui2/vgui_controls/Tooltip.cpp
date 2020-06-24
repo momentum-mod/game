@@ -292,13 +292,7 @@ void TextTooltip::ApplySchemeSettings(HScheme hScheme)
         s_TooltipWindow->SetFgColor(s_TooltipWindow->GetSchemeColor("Tooltip.TextColor", s_TooltipWindow->GetFgColor(), pScheme));
         s_TooltipWindow->SetBorder(pScheme->GetBorder("ToolTipBorder"));
 
-        const char *pFontName = pScheme->GetResourceString("Tooltip.TextFont");
-        HFont font = INVALID_FONT;
-	    if (pFontName && pFontName[0] != '\0') 
-            font = pScheme->GetFont(pFontName, s_TooltipWindow->IsProportional());
-        if (font == INVALID_FONT)
-	        font = pScheme->GetFont("DefaultSmall", s_TooltipWindow->IsProportional());
-        s_TooltipWindow->SetFont(font);
+		s_TooltipWindow->SetFont(s_TooltipWindow->GetSchemeFont(pScheme, nullptr, "Tooltip.TextFont", "DefaultSmall"));
 	}
 }
 
@@ -339,13 +333,11 @@ void TextTooltip::PerformLayout()
 
 	_isDirty = false;
     _visible = true;
+
 	s_TooltipWindow->SetVisible(true);
-	s_TooltipWindow->MakePopup( false, true );
+	surface()->MovePopupToFront(s_TooltipWindow->GetVPanel());
 	s_TooltipWindow->SetKeyBoardInputEnabled( false );
 	s_TooltipWindow->SetMouseInputEnabled( false );
-
-	// relayout the textwindow immediately so that we know it's size
-	//m_pTextEntry->InvalidateLayout(true);
 
     SizeTextWindow();
     PositionWindow();

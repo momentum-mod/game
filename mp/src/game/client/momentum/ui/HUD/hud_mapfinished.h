@@ -20,10 +20,10 @@ public:
     void Reset() OVERRIDE;
     void SetVisible(bool) OVERRIDE;
     void FireGameEvent(IGameEvent*) OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
     void LevelShutdown() OVERRIDE;
     void OnThink() OVERRIDE;
-
-    void SetMouseInputEnabled(bool state) OVERRIDE;
+    void Paint() OVERRIDE;
 
     bool IsBuildGroupEnabled() OVERRIDE { return false; }
 
@@ -32,6 +32,9 @@ public:
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
     void SetCurrentPage(int pageNum);
+    void LoadPlayerBestTime();
+    void GetDiffString(float diff, char *compareString, Color *compareColorOut);
+    void SetComparisonForPage(int iPage);
 
     void SetRunSaved(bool bState);
     void SetRunUploaded(bool bState);
@@ -71,7 +74,7 @@ private:
     vgui::ImagePanel *m_pRepeatButton;
     vgui::ImagePanel *m_pNextZoneButton;
     vgui::ImagePanel *m_pPrevZoneButton;
-    vgui::Label *m_pDetachMouseLabel;
+    vgui::Label *m_pMouseStateLabel;
     vgui::Label *m_pCurrentZoneLabel;
     vgui::Label *m_pZoneOverallTime;//Also known as "Zone Time"
     vgui::Label *m_pZoneEnterTime;
@@ -86,12 +89,18 @@ private:
     vgui::Label *m_pRunSaveStatus;
     vgui::Label *m_pRunUploadStatus;
     vgui::Label *m_pXPGainCosmetic, *m_pXPGainRank, *m_pLevelGain;
+    vgui::Label *m_pComparisonLabel;
+
+    Color m_cGain, m_cLoss, m_cTie;
 
     CMomRunStats* m_pRunStats;
+    CMomRunStats m_pPbRunStats;
     C_MomRunEntityData *m_pRunData;
 
     bool m_bIsGhost;
     bool m_bCanClose;
 
-    int m_iCurrentPage, m_iVelocityType;
+    int m_iCurrentPage;
+
+    ConVarRef m_cvarVelType;
 };

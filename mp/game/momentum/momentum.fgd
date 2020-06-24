@@ -5,7 +5,14 @@
 // TF2 COMPATIBILITY
 //
 // -----------------------------------------------------------------------
-@SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." []
+@SolidClass base(Targetname, EnableDisable, Toggle) = func_nogrenades : "Rockets and grenades will not detonate inside this area." 
+[
+    airborne_only(choices) : "Prevent airborne explosions only" : 0 = 
+    [
+        0 : "False"
+        1 : "True"
+    ]
+]
 
 @PointClass base(Targetname,Studiomodel,Origin,Angles) studioprop() = momentum_generic_bomb : "Generic Bomb"
 [
@@ -164,6 +171,8 @@
         131072: "Prevent the player from jumping" : 0
         262144: "Prevent the player from crouching" : 0
         524288: "Prevent the player from bhopping" : 0
+        1048576: "Prevent the player from walking" : 0
+        2097152: "Prevent the player from sprinting" : 0
     ]
 ]
 
@@ -318,11 +327,11 @@
         0 : "Unknown"
         1 : "Surf"
         2 : "Bhop"
-        3 : "Kz (Climbing)"
+        3 : "Climb"
         4 : "RJ"
         5 : "SJ"
         6 : "Tricksurf"
-        7 : "Trikz"
+        7 : "Ahop"
     ]
 ]
 

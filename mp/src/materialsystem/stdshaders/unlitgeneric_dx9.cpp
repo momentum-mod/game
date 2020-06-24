@@ -9,9 +9,9 @@
 #include "BaseVSShader.h"
 #include "vertexlitgeneric_dx9_helper.h"
 
-//extern ConVar r_flashlight_version2;
+DEFINE_FALLBACK_SHADER( SDK_UnlitGeneric, UnlitGeneric );
 
-BEGIN_VS_SHADER( SDK_UnlitGeneric, "Help for SDK_UnlitGeneric" )
+BEGIN_VS_SHADER( UnlitGeneric, "Help for UnlitGeneric" )
 
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM( ALBEDO, SHADER_PARAM_TYPE_TEXTURE, "shadertest/BaseTexture", "albedo (Base texture with no baked lighting)" )
@@ -49,7 +49,7 @@ BEGIN_VS_SHADER( SDK_UnlitGeneric, "Help for SDK_UnlitGeneric" )
 
 		SHADER_PARAM( SOFTEDGES, SHADER_PARAM_TYPE_BOOL, "0", "Enable soft edges to distance coded textures.")
 		SHADER_PARAM( SCALEEDGESOFTNESSBASEDONSCREENRES, SHADER_PARAM_TYPE_BOOL, "0", "Scale the size of the soft edges based upon resolution. 1024x768 = nominal.")
-	    SHADER_PARAM( EDGESOFTNESSSTART, SHADER_PARAM_TYPE_FLOAT, "0.6", "Start value for soft edges for distancealpha.");
+		SHADER_PARAM( EDGESOFTNESSSTART, SHADER_PARAM_TYPE_FLOAT, "0.6", "Start value for soft edges for distancealpha.");
 		SHADER_PARAM( EDGESOFTNESSEND, SHADER_PARAM_TYPE_FLOAT, "0.5", "End value for soft edges for distancealpha.");
 
 		SHADER_PARAM( GLOW, SHADER_PARAM_TYPE_BOOL, "0", "Enable glow/shadow for distance coded textures.")
@@ -187,39 +187,29 @@ BEGIN_VS_SHADER( SDK_UnlitGeneric, "Help for SDK_UnlitGeneric" )
 		VertexLitGeneric_DX9_Vars_t vars;
 		SetupVars( vars );
 
-		//bool bNewFlashlightPath = ( r_flashlight_version2.GetInt() != 0 );
-		//if ( ( pShaderShadow == NULL ) && ( pShaderAPI != NULL ) && !bNewFlashlightPath && pShaderAPI->InFlashlightMode() ) // Not snapshotting && flashlight pass
-		//{
-		//	Draw( false );
-		//}
-		//else
-		//{
-		//	DrawVertexLitGeneric_DX9( this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr );
-		//}
+		const bool bSnapshotting = pShaderShadow != nullptr;
+		const bool bHasFlashlight = pShaderAPI && pShaderAPI->InFlashlightMode();
+		const bool bCanReceiveFlashlight = params[RECEIVEFLASHLIGHT]->GetIntValue() != 0;
 
-        const bool bSnapshotting = pShaderShadow != nullptr;
-        const bool bHasFlashlight = pShaderAPI && pShaderAPI->InFlashlightMode();
-        const bool bCanReceiveFlashlight = params[RECEIVEFLASHLIGHT]->GetIntValue() != 0;
+		if (bCanReceiveFlashlight)
+		{
+			if (bSnapshotting || bHasFlashlight)
+			{
+				DrawVertexLitGeneric_DX9(this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr, true);
+			}
+			else
+			{
+				Draw(false);
+			}
+		}
 
-        if (bCanReceiveFlashlight)
-        {
-            if (bSnapshotting || bHasFlashlight)
-            {
-                DrawVertexLitGeneric_DX9(this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr, true);
-            }
-            else
-            {
-                Draw(false);
-            }
-        }
-
-        if (bSnapshotting || !bHasFlashlight)
-        {
-            DrawVertexLitGeneric_DX9(this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr);
-        }
-        else
-        {
-            Draw(false);
-        }
+		if (bSnapshotting || !bHasFlashlight)
+		{
+			DrawVertexLitGeneric_DX9(this, params, pShaderAPI, pShaderShadow, false, vars, vertexCompression, pContextDataPtr);
+		}
+		else
+		{
+			Draw(false);
+		}
 	}
 END_SHADER

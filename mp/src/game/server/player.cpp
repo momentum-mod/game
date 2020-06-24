@@ -395,6 +395,8 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_nNumCrateHudHints, FIELD_INTEGER ),
 
+    DEFINE_FIELD( m_hPostProcessCtrl, FIELD_EHANDLE ),
+
 
 
 	// DEFINE_FIELD( m_nBodyPitchPoseParam, FIELD_INTEGER ),
@@ -577,6 +579,8 @@ CBasePlayer::CBasePlayer( )
 	m_flMovementTimeForUserCmdProcessingRemaining = 0.0f;
 
 	m_flLastObjectiveTime = -1.f;
+
+    m_hPostProcessCtrl.Set(NULL);
 }
 
 CBasePlayer::~CBasePlayer( )
@@ -3558,9 +3562,6 @@ void CBasePlayer::DumpPerfToRecipient( CBasePlayer *pRecipient, int nMaxRecords 
 	}
 }
 
-// Duck debouncing code to stop menu changes from disallowing crouch/uncrouch
-ConVar xc_crouch_debounce( "xc_crouch_debounce", "0", FCVAR_NONE );
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : *ucmd - 
@@ -3574,11 +3575,13 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	{
 		VectorCopy ( ucmd->viewangles, pl.v_angle.GetForModify() );
 	}
+	else if (pl.fixangle == FIXANGLE_ABSOLUTE)
+	{
+		VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
+	}
 
-	// Handle FL_FROZEN.
-	// Prevent player moving for some seconds after New Game, so that they pick up everything
-	if( GetFlags() & FL_FROZEN || 
-		(developer.GetInt() == 0 && gpGlobals->eLoadType == MapLoad_NewGame && gpGlobals->curtime < 3.0 ) )
+	// Handle FL_FROZEN
+	if( GetFlags() & FL_FROZEN )
 	{
 		ucmd->forwardmove = 0;
 		ucmd->sidemove = 0;
@@ -3587,24 +3590,9 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->impulse = 0;
 		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
 	}
-	else
+	else if ( GetToggledDuckState() )
 	{
-		// Force a duck if we're toggled
-		if ( GetToggledDuckState() )
-		{
-			// If this is set, we've altered our menu options and need to debounce the duck
-			if ( xc_crouch_debounce.GetBool() )
-			{
-				ToggleDuck();
-				
-				// Mark it as handled
-				xc_crouch_debounce.SetValue( 0 );
-			}
-			else
-			{
-				ucmd->buttons |= IN_DUCK;
-			}
-		}
+		ucmd->buttons |= IN_DUCK;
 	}
 	
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
@@ -4836,8 +4824,9 @@ void CBasePlayer::Spawn( void )
 
 	IncrementInterpolationFrame();
 
-	// Initialize the fog and postprocess controllers.
-	InitFogController();
+    // Initialize the fog and postprocess controllers.
+    InitFogController();
+    InitPostProcessController();
 
 	m_DmgTake		= 0;
 	m_DmgSave		= 0;
@@ -5370,7 +5359,7 @@ CBaseEntity	*CBasePlayer::GiveNamedItem( const char *pszName, int iSubType )
 		return NULL;
 	}
 
-	pent->SetLocalOrigin( GetLocalOrigin() );
+	pent->SetLocalOrigin( CollisionProp()->WorldSpaceCenter() );
 	pent->AddSpawnFlags( SF_NORESPAWN );
 
 	CBaseCombatWeapon *pWeapon = dynamic_cast<CBaseCombatWeapon*>( (CBaseEntity*)pent );
@@ -6099,12 +6088,6 @@ bool CBasePlayer::BumpWeapon( CBaseCombatWeapon *pWeapon )
 	{
 		// Don't let the player touch the item unless unobstructed
 		if ( !UTIL_ItemCanBeTouchedByPlayer( pWeapon, this ) && !gEvilImpulse101 )
-			return false;
-	}
-	else
-	{
-		// Don't let the player fetch weapons through walls (use MASK_SOLID so that you can't pickup through windows)
-		if( pWeapon->FVisible( this, MASK_SOLID ) == false && !(GetFlags() & FL_NOTARGET) )
 			return false;
 	}
 	
@@ -7109,6 +7092,9 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropArray	( SendPropEHandle( SENDINFO_ARRAY( m_hViewModel ) ), m_hViewModel ),
 		SendPropString	(SENDINFO(m_szLastPlaceName) ),
 
+        // Postprocess data
+        SendPropEHandle(SENDINFO(m_hPostProcessCtrl)),
+
 #if defined USES_ECON_ITEMS
 		SendPropUtlVector( SENDINFO_UTLVECTOR( m_hMyWearables ), MAX_WEARABLES_SENT_FROM_SERVER, SendPropEHandle( NULL, 0 ) ),
 #endif // USES_ECON_ITEMS
@@ -7783,6 +7769,37 @@ void CBasePlayer::InitFogController( void )
 {
 	// Setup with the default master controller.
 	m_Local.m_PlayerFog.m_hCtrl = FogSystem()->GetMasterFogController();
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InitPostProcessController(void)
+{
+    // Setup with the default master controller.
+    m_hPostProcessCtrl = PostProcessSystem()->GetMasterPostProcessController();
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InputSetPostProcessController(inputdata_t& inputdata)
+{
+    // Find the postprocess controller with the given name.
+    CPostProcessController* pController = NULL;
+    if (inputdata.value.FieldType() == FIELD_EHANDLE)
+    {
+        pController = dynamic_cast<CPostProcessController*>(inputdata.value.Entity().Get());
+    }
+    else
+    {
+        pController = dynamic_cast<CPostProcessController*>(gEntList.FindEntityByName(NULL, inputdata.value.String()));
+    }
+
+    if (pController)
+    {
+        m_hPostProcessCtrl.Set(pController);
+    }
 }
 
 //-----------------------------------------------------------------------------

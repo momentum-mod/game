@@ -44,6 +44,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CMomentumPlayer();
     ~CMomentumPlayer(void);
 
+    void PostClientActive() override;
+
     static CMomentumPlayer* CreatePlayer(const char *className, edict_t *ed);
     static CMomentumPlayer* GetLocalPlayer();
 
@@ -60,7 +62,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void Precache() OVERRIDE;
 
     void CreateViewModel(int index = 0) OVERRIDE;
-    void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) OVERRIDE;
     void SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize) OVERRIDE;
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
@@ -109,6 +110,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     virtual CMomRunStats *GetRunStats() OVERRIDE { return &m_RunStats; }
     virtual int GetEntIndex() OVERRIDE { return entindex(); }
+    uint64 GetSteamID() override;
 
     CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
     CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
@@ -117,6 +119,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(int, m_iShotsFired); // Used in various weapon code
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
     CNetworkVar(int, m_iLastZoomFOV); // Last FOV when zooming
+    CNetworkVar(bool, m_bSurfing);
+    CNetworkVector(m_vecRampBoardVel);
+    CNetworkVector(m_vecRampLeaveVel);
 
     CNetworkArray(int, m_iZoneCount, MAX_TRACKS); // The number of zones for a given track
     CNetworkArray(bool, m_iLinearTracks, MAX_TRACKS); // If a given track is linear or not
@@ -128,6 +133,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     int m_iSuccessiveBhops;   // How many successive bhops this player has
     CNetworkVar(bool, m_bAutoBhop); // Is the player using auto bhop?
 
+    CNetworkVar(float, m_fDuckTimer);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, 
                     CBaseEntity *pevAttacker, bool bDoEffects, float x, float y);
@@ -223,7 +229,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     void ClearStartMark(int track);
 
     void DoMuzzleFlash() OVERRIDE;
-    void PreThink() OVERRIDE;
+    void PreThink() override;
     void PostThink() OVERRIDE;
 
     int OnTakeDamage_Alive(const CTakeDamageInfo &info) OVERRIDE;
@@ -249,6 +255,18 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool IsInAirDueToJump() const { return m_bInAirDueToJump; }
 
     SavedState_t *GetSavedRunState() { return &m_SavedRunState; }
+
+    // Ahop stuff
+    CNetworkVar(bool, m_bIsSprinting);
+    CNetworkVar(bool, m_bIsWalking);
+    void HandleSprintAndWalkChanges();
+    bool CanSprint() const;
+    void ToggleSprint(bool bShouldSprint);
+    void ToggleWalk(bool bShouldWalk);
+
+    // Ramp stuff
+    void SetRampBoardVelocity(const Vector &vecVel);
+    void SetRampLeaveVelocity(const Vector &vecVel);
 
   private:
     // Player think function called every tick
@@ -328,4 +346,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     SavedState_t m_SavedRunState; // Used when either entering practice mode or spectating while in a run
     SavedState_t m_PracticeModeState; // Only used when the path is (in a run) -> (enters Practice) -> (spectates)
+
+    ConVarRef m_cvarMapFinMoveEnable;
 };

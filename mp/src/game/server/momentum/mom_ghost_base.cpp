@@ -38,6 +38,7 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumGhostBaseEntity, DT_MOM_GHOST_BASE)
 SendPropInt(SENDINFO(m_nGhostButtons)),
 SendPropInt(SENDINFO(m_iDisabledButtons)),
 SendPropBool(SENDINFO(m_bBhopDisabled)),
+SendPropInt(SENDINFO(m_AccountID), -1, SPROP_UNSIGNED),
 SendPropString(SENDINFO(m_szGhostName)),
 SendPropBool(SENDINFO(m_bSpectated)),
 SendPropInt(SENDINFO(m_fFlags), PLAYER_FLAG_BITS, SPROP_UNSIGNED|SPROP_CHANGES_OFTEN, SendProxy_CropFlagsToPlayerFlagBitsLength),
@@ -50,6 +51,8 @@ END_DATADESC();
 
 CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr)
 {
+    m_AccountID = 0;
+    m_SteamID = 0;
     m_nGhostButtons = 0;
     m_iDisabledButtons = 0;
     m_szGhostName.GetForModify()[0] = '\0';
@@ -134,7 +137,7 @@ bool CMomentumGhostBaseEntity::GetBhopEnabled() const
 bool CMomentumGhostBaseEntity::ShouldCollide(int collisionGroup, int contentsMask) const
 {
     if (collisionGroup == COLLISION_GROUP_PROJECTILE)
-        return false; // MOM_TODO allow if it's trikz gamemode
+        return false;
 
     return BaseClass::ShouldCollide(collisionGroup, contentsMask);
 }
@@ -153,6 +156,12 @@ void CMomentumGhostBaseEntity::FinishTimer()
     {
         g_pMomentumTimer->DispatchTimerEventMessage(m_pCurrentSpecPlayer, entindex(), TIMER_EVENT_FINISHED);
     }
+}
+
+void CMomentumGhostBaseEntity::SetSteamID(uint64 steamIDNumeric)
+{
+    m_SteamID = steamIDNumeric;
+    m_AccountID = CSteamID(steamIDNumeric).GetAccountID();
 }
 
 void CMomentumGhostBaseEntity::SetSpectator(CMomentumPlayer *player)

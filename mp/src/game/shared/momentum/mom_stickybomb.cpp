@@ -7,10 +7,14 @@
 #include "weapon/weapon_def.h"
 
 #ifndef CLIENT_DLL
+#include "vcollide_parse.h"
 #include "momentum/mom_triggers.h"
 #include "IEffects.h"
 #include "fx_mom_shared.h"
 #include "physics_collisionevent.h"
+#include "momentum/mom_stickybomb_verts.h"
+#else
+#include "functionproxy.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -39,6 +43,8 @@ PRECACHE_WEAPON_REGISTER(momentum_stickybomb);
 #ifdef CLIENT_DLL
 static MAKE_CONVAR(mom_sj_stickybomb_drawdelay, "0", FCVAR_ARCHIVE,
                    "Determines how long it takes for stickies to start being drawn upon spawning.\n", 0, 1);
+static MAKE_TOGGLE_CONVAR(mom_sj_particle_trail_enable, "1", FCVAR_ARCHIVE,
+                          "Toggles the sticky trail particle. 0 = OFF, 1 = ON\n");
 #else
 static MAKE_TOGGLE_CONVAR(mom_sj_decals_enable, "1", FCVAR_ARCHIVE, "Toggles creating decals on sticky explosion. 0 = OFF, 1 = ON\n");
 #endif
@@ -50,7 +56,7 @@ CMomStickybomb::CMomStickybomb()
 #ifdef GAME_DLL
     m_bFizzle = false;
     m_flCreationTime = 0.0f;
-    m_bUseImpactNormal = false;
+    m_bDidHitWorld = false;
     m_vecImpactNormal.Init();
 #else
     m_bPulsed = false;
@@ -76,13 +82,40 @@ void CMomStickybomb::Spawn()
 {
     BaseClass::Spawn();
 
+    SetRenderMode(kRenderTransColor);
+
 #ifdef GAME_DLL
     SetModel(g_pWeaponDef->GetWeaponModel(WEAPON_STICKYLAUNCHER, "sticky"));
-
-    SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
+    
     SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
 
-    VPhysicsInitNormal(SOLID_BBOX, 0, false);
+    objectparams_t params;
+    params.massCenterOverride = nullptr;
+    params.mass = 5.0f;
+    params.inertia = 1.0f;
+    params.damping = 0.0f;
+    params.rotdamping = 0.0f;
+    params.rotInertiaLimit = 0.05f;
+    params.pName = "stickybombmod";
+    params.pGameData = this;
+    params.volume = 336.820007f;
+    params.dragCoefficient = 1.0f;
+    params.enableCollisions = true;
+
+    const auto pNewObject = physenv->CreatePolyObject(GetStickybombCollide(), 0, GetAbsOrigin(), GetAbsAngles(), &params);
+
+    pNewObject->EnableCollisions(true);
+    pNewObject->EnableGravity(true);
+    pNewObject->EnableDrag(true);
+    pNewObject->EnableMotion(true);
+
+    VPhysicsDestroyObject();
+
+    SetSolid(SOLID_BBOX);
+
+    VPhysicsSetObject(pNewObject);
+    SetMoveType(MOVETYPE_VPHYSICS);
+    pNewObject->Wake();
 
     m_flCreationTime = gpGlobals->curtime;
     SetGravity(MOM_STICKYBOMB_GRAVITY);
@@ -109,6 +142,9 @@ float CMomStickybomb::GetDrawDelayTime()
 
 void CMomStickybomb::CreateTrailParticles()
 {
+    if (!mom_sj_particle_trail_enable.GetBool())
+        return;
+
     ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombTrail"), PATTACH_ABSORIGIN_FOLLOW);
 }
 
@@ -130,7 +166,7 @@ void CMomStickybomb::OnDataChanged(DataUpdateType_t type)
 
 void CMomStickybomb::Simulate()
 {
-    if (!m_bPulsed && IsArmed())
+    if (!m_bPulsed && (gpGlobals->curtime - m_flSpawnTime) > (MOM_STICKYBOMB_ARMTIME - 0.25f))
     {
         ParticleProp()->Create(g_pWeaponDef->GetWeaponParticle(WEAPON_STICKYLAUNCHER, "StickybombPulse"), PATTACH_ABSORIGIN_FOLLOW);
 
@@ -139,6 +175,26 @@ void CMomStickybomb::Simulate()
 
     BaseClass::Simulate();
 }
+
+class CStickybombArmTimeProxy : public CResultProxy
+{
+public:
+    void OnBind(void *pC_BaseEntity) override
+    {
+        Assert(m_pResult);
+
+        if (!pC_BaseEntity)
+            return;
+
+        const auto pEntity = BindArgToEntity(pC_BaseEntity);
+        if (!pEntity)
+            return;
+
+        m_pResult->SetFloatValue(RemapValClamped(gpGlobals->curtime - pEntity->m_flSpawnTime, MOM_STICKYBOMB_ARMTIME - 0.15f, MOM_STICKYBOMB_ARMTIME, 0.0f, 1.0f));
+    }
+};
+
+EXPOSE_INTERFACE(CStickybombArmTimeProxy, IMaterialProxy, "ArmTime" IMATERIAL_PROXY_INTERFACE_VERSION);
 
 #else
 
@@ -216,7 +272,7 @@ void CMomStickybomb::Explode(trace_t *pTrace, CBaseEntity *pOther)
     Vector vecOrigin = GetAbsOrigin();
     CPVSFilter filter(vecOrigin);
 
-    const Vector vecNormal = m_bUseImpactNormal ? m_vecImpactNormal : pTrace->plane.normal;
+    const Vector vecNormal = m_bDidHitWorld ? m_vecImpactNormal : pTrace->plane.normal;
     TE_TFExplosion(filter, vecOrigin, vecNormal, WEAPON_STICKYLAUNCHER);
 
     const auto pOwner = GetOwnerEntity();
@@ -264,7 +320,7 @@ void CMomStickybomb::VPhysicsCollision(int index, gamevcollisionevent_t *pEvent)
         g_PostSimulationQueue.QueueCall(VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false);
 
         // Save impact data for explosions.
-        m_bUseImpactNormal = true;
+        m_bDidHitWorld = true;
         pEvent->pInternalData->GetSurfaceNormal(m_vecImpactNormal);
         m_vecImpactNormal.Negate();
     }

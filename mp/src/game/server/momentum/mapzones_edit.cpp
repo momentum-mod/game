@@ -66,7 +66,8 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
                 UTIL_Remove(pEnt);
 
                 // Update zone count
-                g_MapZoneSystem.CalculateZoneCounts(CMomentumPlayer::GetLocalPlayer());
+                g_MapZoneSystem.CalculateZoneCounts();
+                g_MapZoneSystem.DispatchMapInfo(CMomentumPlayer::GetLocalPlayer());
             }
         }
         else
@@ -82,7 +83,8 @@ CON_COMMAND_F(mom_zone_delete, "Delete zone types. Accepts start/stop/stage or a
                 }
 
                 // Update zone count
-                g_MapZoneSystem.CalculateZoneCounts(CMomentumPlayer::GetLocalPlayer());
+                g_MapZoneSystem.CalculateZoneCounts();
+                g_MapZoneSystem.DispatchMapInfo(CMomentumPlayer::GetLocalPlayer());
             }
         }
     }
@@ -450,7 +452,8 @@ void CMapZoneEdit::OnCreate(int zonetype)
     DevMsg("Created zone entity %i.\n", pEnt->entindex());
 
     // Update zone count
-    g_MapZoneSystem.CalculateZoneCounts(pPlayer);
+    g_MapZoneSystem.CalculateZoneCounts();
+    g_MapZoneSystem.DispatchMapInfo(pPlayer);
 }
 
 void CMapZoneEdit::OnRemove()

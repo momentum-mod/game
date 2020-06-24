@@ -14,6 +14,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+static MAKE_TOGGLE_CONVAR(mom_paintgun_limit_to_world, "0", FCVAR_ARCHIVE, "Limits applying paint decals to only world geometry. 0 = OFF, 1 = ON\n");
+
 //-----------------------------------------------------------------------------
 // Purpose: Handle gauss impacts
 //-----------------------------------------------------------------------------
@@ -105,16 +107,13 @@ bool Painting(Vector &vecOrigin, Vector &vecStart, int iHitbox, C_BaseEntity *pE
     if (!pEntity)
         return false;
 
-    if ((pEntity->entindex() == 0) && (iHitbox != 0))
+    if (pEntity->entindex() == 0 && iHitbox != 0)
     {
-        staticpropmgr->AddColorDecalToStaticProp(vecStart, traceExt, iHitbox - 1, decalNumber, true, tr, true,
-                                                    color);
+        staticpropmgr->AddColorDecalToStaticProp(vecStart, traceExt, iHitbox - 1, decalNumber, true, tr, true, color);
     }
     else
     {
-        // Here we deal with decals on entities.
-        pEntity->AddColoredDecal(vecStart, traceExt, vecOrigin, iHitbox, decalNumber, true, tr, color,
-            ADDDECAL_TO_ALL_LODS, nFlags);
+        pEntity->AddColoredDecal(vecStart, traceExt, vecOrigin, iHitbox, decalNumber, true, tr, color, ADDDECAL_TO_ALL_LODS, nFlags);
     }
 
     return true;
@@ -127,8 +126,7 @@ void PaintingCallback(const CEffectData &data)
     Vector vecOrigin, vecStart, vecShotDir;
     int iMaterial, iDamageType, iHitbox;
     short nSurfaceProp;
-    C_BaseEntity *pEntity =
-        ParseImpactData(data, &vecOrigin, &vecStart, &vecShotDir, nSurfaceProp, iMaterial, iDamageType, iHitbox);
+    const auto pEntity = ParseImpactData(data, &vecOrigin, &vecStart, &vecShotDir, nSurfaceProp, iMaterial, iDamageType, iHitbox);
     if (!pEntity)
     {
         // This happens for impacts that occur on an object that's then destroyed.
@@ -138,8 +136,8 @@ void PaintingCallback(const CEffectData &data)
         return;
     }
 
-    // Let's only allow the world for now...
-    if (pEntity->entindex() != 0)
+    // Let's only allow the world if the user wants us to
+    if (pEntity->entindex() != 0 && mom_paintgun_limit_to_world.GetBool())
         return;
 
     Color color;
@@ -178,8 +176,7 @@ void KnifeSlash(const CEffectData &data)
     int iMaterial, iDamageType, iHitbox;
     short nSurfaceProp;
 
-    C_BaseEntity *pEntity =
-        ParseImpactData(data, &vecOrigin, &vecStart, &vecShotDir, nSurfaceProp, iMaterial, iDamageType, iHitbox);
+    const auto pEntity = ParseImpactData(data, &vecOrigin, &vecStart, &vecShotDir, nSurfaceProp, iMaterial, iDamageType, iHitbox);
 
     if (!pEntity)
         return;

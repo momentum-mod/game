@@ -8,23 +8,10 @@
 
 using namespace vgui;
 
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
 CLeaderboardsContextMenu::CLeaderboardsContextMenu(Panel *parent) : Menu(parent, "LeaderboardsContextMenu")
 {
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Destructor
-//-----------------------------------------------------------------------------
-CLeaderboardsContextMenu::~CLeaderboardsContextMenu()
-{
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Activates the menu
-//-----------------------------------------------------------------------------
 void CLeaderboardsContextMenu::ShowMenu()
 {
     int x, y, gx, gy;
@@ -34,16 +21,4 @@ void CLeaderboardsContextMenu::ShowMenu()
     SetVisible(true);
     SetMouseInputEnabled(true);
     MoveToFront();
-}
-
-void CLeaderboardsContextMenu::OnCursorExitedMenuItem(int vpanel)
-{
-    BaseClass::OnCursorExitedMenuItem(vpanel);
-    int x, y;
-    input()->GetCursorPosition(x, y);
-    bool inside = IsWithin(x, y);
-    if (!inside)
-    {
-        SetVisible(false);
-    }
 }

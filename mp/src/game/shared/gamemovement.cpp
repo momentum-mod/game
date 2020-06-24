@@ -7,13 +7,11 @@
 #include "cbase.h"
 #include "gamemovement.h"
 #include "in_buttons.h"
-#include <stdarg.h>
 #include "movevars_shared.h"
 #include "engine/IEngineTrace.h"
-#include "SoundEmitterSystem/isoundemittersystembase.h"
-#include "decals.h"
 #include "coordsize.h"
 #include "mom_system_gamemode.h"
+#include "filesystem.h"
 
 #if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
 	#include "hl_movedata.h"
@@ -25,16 +23,12 @@
 #define	STOP_EPSILON		0.1
 #define	MAX_CLIP_PLANES		5
 
-#include "filesystem.h"
-#include <stdarg.h>
-
-extern IFileSystem *filesystem;
-
 #ifndef CLIENT_DLL
 	#include "env_player_surface_trigger.h"
 	static ConVar dispcoll_drawplane( "dispcoll_drawplane", "0" );
 #endif
 
+MAKE_TOGGLE_CONVAR(sv_debug_velocity_check, "0", FCVAR_NONE, "Prints out checks with velocity. 0 = OFF, 1 = ON.\n");
 
 // tickcount currently isn't set during prediction, although gpGlobals->curtime and
 // gpGlobals->frametime are. We should probably set tickcount (to player->m_nTickBase),
@@ -44,10 +38,6 @@ extern IFileSystem *filesystem;
 
 #if defined( HL2_DLL )
 ConVar xc_uncrouch_on_jump( "xc_uncrouch_on_jump", "1", FCVAR_ARCHIVE, "Uncrouch when jump occurs" );
-#endif
-
-#if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
-ConVar player_limit_jump_speed( "player_limit_jump_speed", "1", FCVAR_REPLICATED );
 #endif
 
 #ifdef STAGING_ONLY
@@ -1269,10 +1259,10 @@ float CGameMovement::GetPlayerGravity()
 void CGameMovement::CheckWaterJump( void )
 {
 	Vector	flatforward;
-	Vector forward;
+	Vector forward, right;
 	Vector	flatvelocity;
 
-	AngleVectors( mv->m_vecViewAngles, &forward );  // Determine movement angles
+	AngleVectors( mv->m_vecViewAngles, &forward, &right, nullptr );  // Determine movement angles
 
 	// Already water jumping.
 	if (player->m_flWaterJumpTime)
@@ -1291,13 +1281,28 @@ void CGameMovement::CheckWaterJump( void )
 	float curspeed = VectorNormalize( flatvelocity );
 	
 	// see if near an edge
-	flatforward[0] = forward[0];
-	flatforward[1] = forward[1];
+	if (g_pGameModeSystem->IsTF2BasedMode())
+	{
+		const auto forwardMove = mv->m_flForwardMove;
+		const auto sideMove = mv->m_flSideMove;
+
+		for (int axis = 0; axis < 2; ++axis)
+		{
+			flatforward[axis] = forward[axis] * forwardMove + right[axis] * sideMove;
+		}
+	}
+	else
+	{
+		flatforward[0] = forward[0];
+		flatforward[1] = forward[1];
+	}
+
 	flatforward[2] = 0;
-	VectorNormalize (flatforward);
+	VectorNormalize(flatforward);
 
 	// Are we backing into water from steps or something?  If so, don't pop forward
-	if ( curspeed != 0.0 && ( DotProduct( flatvelocity, flatforward ) < 0.0 ) )
+	const bool bJumpCheck = g_pGameModeSystem->IsTF2BasedMode() ? (mv->m_nButtons & IN_JUMP) != 0 : false;
+	if ( curspeed != 0.0 && ( DotProduct( flatvelocity, flatforward ) < 0.0 ) && !bJumpCheck )
 		return;
 
 	// Start line trace at waist height (using the center of the player for this here)
@@ -3001,23 +3006,12 @@ bool CGameMovement::LadderMove( void )
 #if !defined(_STATIC_LINKED) || defined(CLIENT_DLL)
 const char *DescribeAxis( int axis )
 {
-	static char sz[ 32 ];
+	if (axis < 0 || axis > 2)
+		return "BAD AXIS!";
 
-	switch ( axis )
-	{
-	case 0:
-		Q_strncpy( sz, "X", sizeof( sz ) );
-		break;
-	case 1:
-		Q_strncpy( sz, "Y", sizeof( sz ) );
-		break;
-	case 2:
-	default:
-		Q_strncpy( sz, "Z", sizeof( sz ) );
-		break;
-	}
+	static const char *pArray[] = { "X", "Y", "Z" };
 
-	return sz;
+	return pArray[axis];
 }
 #else
 const char *DescribeAxis( int axis );
@@ -3028,26 +3022,25 @@ const char *DescribeAxis( int axis );
 //-----------------------------------------------------------------------------
 void CGameMovement::CheckVelocity( void )
 {
-	int i;
-
-	//
-	// bound velocity
-	//
-
 	Vector org = mv->GetAbsOrigin();
+	const bool bPrint = sv_debug_velocity_check.GetBool();
 
-	for (i=0; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		// See if it's bogus.
 		if (IS_NAN(mv->m_vecVelocity[i]))
 		{
-			DevMsg( 1, "PM  Got a NaN velocity %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a NaN velocity %s\n", DescribeAxis( i ) );
+
 			mv->m_vecVelocity[i] = 0;
 		}
 
 		if (IS_NAN(org[i]))
 		{
-			DevMsg( 1, "PM  Got a NaN origin on %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a NaN origin on %s\n", DescribeAxis( i ) );
+
 			org[ i ] = 0;
 			mv->SetAbsOrigin( org );
 		}
@@ -3055,12 +3048,16 @@ void CGameMovement::CheckVelocity( void )
 		// Bound it.
 		if (mv->m_vecVelocity[i] > sv_maxvelocity.GetFloat()) 
 		{
-			DevMsg( 1, "PM  Got a velocity too high on %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a velocity too high on %s\n", DescribeAxis( i ) );
+
 			mv->m_vecVelocity[i] = sv_maxvelocity.GetFloat();
 		}
 		else if (mv->m_vecVelocity[i] < -sv_maxvelocity.GetFloat())
 		{
-			DevMsg( 1, "PM  Got a velocity too low on %s\n", DescribeAxis( i ) );
+			if (bPrint)
+			    DevMsg( 1, "PM  Got a velocity too low on %s\n", DescribeAxis( i ) );
+
 			mv->m_vecVelocity[i] = -sv_maxvelocity.GetFloat();
 		}
 	}
@@ -3515,7 +3512,7 @@ bool CGameMovement::CheckWater( void )
 		{
 			// Now check the waist point and see if that's underwater
 			point[2] = mv->GetAbsOrigin().z + (vPlayerMins.z + vPlayerMaxs.z) * 0.5f + GetWaterWaistOffset();
-			iContents = GetPointContentsCached(point, 1);
+			iContents = GetPointContentsCached(point, 2);
 			if (iContents & MASK_WATER)
 			{
 				iWaterType = WL_Waist;
@@ -4473,12 +4470,8 @@ void CGameMovement::Duck( void )
 	// his view height is at the standing height.
 	else if ( !IsDead() && !player->IsObserver() )
 	{
-		if ( ( player->m_Local.m_flDuckJumpTime == 0.0f ) && ( fabs(player->GetViewOffset().z - GetPlayerViewOffset( false ).z) > 0.1 ) )
+		if ( ( player->m_Local.m_flDuckJumpTime == 0.0f ) && ( fabsf(player->GetViewOffset().z - GetPlayerViewOffset( false ).z) > 0.1f ) )
 		{
-			// we should rarely ever get here, so assert so a coder knows when it happens
-			Assert(0);
-			DevMsg( 1, "Restoring player view height\n" );
-
 			// set the eye height to the non-ducked height
 			SetDuckedEyeOffset(0.0f);
 		}

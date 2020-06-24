@@ -1,87 +1,28 @@
-version: 2
-jobs:
+version: 2.1
 
+jobs:
   build_linux:
     docker:
       - image: gocnak/steam-runtime-i386:momentum
-      
-    working_directory: ~/mom_build
-    resource_class: medium
     environment:
-      USING_DOCKER: h*ckyeahIam
-    
+      USING_DOCKER: true
     steps:
       - checkout
-            
-      # Ready, willing, and fully enabled
       - run:
           name: Creating game project files
-          command: |
-            cd mp/src
-            ./creategameprojects
-      
-      - run: 
-          name: Building the game
-          command: |
-            cd ~/mom_build/mp/src
-            make -f games.mak
-            
+          working_directory: mp/src
+          command: ./creategameprojects
       - run:
-          name: Cleaning up debug/etc files
-          command: |
-            cd ~/mom_build/mp/game
-            rm -rf bin/*.dbg
-            rm -rf momentum/bin/*.dbg
-            rm -rf momentum/bin/*.dll
-        
+          name: Building the game
+          working_directory: mp/src
+          command: make -f games.mak
       - run:
           name: Zipping up artifacts
-          command: |
-            cd ~/mom_build/mp/game
-            zip -r binaries_linux.zip bin momentum/bin
-            
+          command: tar --exclude=*.{dbg,dll} -C mp/game -czvf binaries_linux.tar.gz bin momentum/bin
       - store_artifacts:
-          path: ~/mom_build/mp/game/binaries_linux.zip
-  
-  build_mac:
-    macos:
-      xcode: "9.4.1"
-
-    working_directory: ~/mom_build
-
-    steps:
-      - checkout
-
-      - run:
-          name: Create game project files
-          command: |
-            cd mp/src
-            ./creategameprojects
-       
-      - run: 
-          name: Building the game
-          command: |
-            cd ~/mom_build/mp/src
-            xcodebuild -quiet -project games.xcodeproj -configuration Release -arch i386 -xcconfig devtools/release.xcconfig
-      
-      - run:
-          name: Cleaning up files...
-          command: |
-            cd ~/mom_build/mp/game/momentum/bin
-            rm -rf *.dll
-      
-      - run:
-          name: Zipping up artifacts
-          command: |
-            cd ~/mom_build/mp/game
-            zip -r binaries_mac.zip bin momentum/bin
-            
-      - store_artifacts:
-          path: ~/mom_build/mp/game/binaries_mac.zip
+          path: binaries_linux.tar.gz
 
 workflows:
-  version: 2
   build_game:
     jobs:
-      #- build_mac
       - build_linux

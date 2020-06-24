@@ -25,31 +25,30 @@ static MAKE_TOGGLE_CONVAR(mom_entpanels_fade_enable, "1", FLAG_HUD_CVAR, "Fades 
 static MAKE_CONVAR(mom_entpanels_fade_dist, "100", FLAG_HUD_CVAR, "The amount of units to linearly fade the entity panel over.\n", 1, MAX_TRACE_LENGTH);
 static MAKE_CONVAR(mom_entpanels_fade_start, "4096", FLAG_HUD_CVAR, "The distance (in units) at which entity panels start to fade.\n", 1, MAX_TRACE_LENGTH);
 
-CGhostEntityPanel::CGhostEntityPanel() : Panel(g_pClientMode->GetViewport()), m_pEntity(nullptr), m_pAvatarImage(nullptr)
+CGhostEntityPanel::CGhostEntityPanel() : BaseClass(g_pClientMode->GetViewport(), "GhostEntityPanel"), m_pEntity(nullptr), m_pAvatarImage(nullptr)
 {
-    SetPaintBackgroundEnabled(false);
+    SetProportional(true);
+    SetSize(2, 2);
 
     m_pAvatarImagePanel = new ImagePanel(this, "GhostEntityPanelAvatar");
     m_pAvatarImage = new CAvatarImage();
     m_pNameLabel = new Label(this, "GhostEntityPanelName", "");
-    m_pNameLabel->SetAutoWide(true);
+
+    LoadControlSettings("resource/ui/GhostEntityPanel.res");
+
+    SetVisible(false);
+    SetPaintBackgroundEnabled(false);
+
     m_pAvatarImage->SetDrawFriend(false);
     m_pAvatarImage->SetAvatarSize(32, 32);
     m_pAvatarImagePanel->SetImage(m_pAvatarImage);
     m_pAvatarImagePanel->SetSize(32, 32);
-    SetVisible(false);
-    SetSize(150, 60);
 }
 
 void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
 {
     m_pEntity = pEnt;
-    m_OffsetX = -75;
-    m_OffsetY = -40;
-    m_iOrgWidth = 128;
-    m_iOrgHeight = 128;
-    m_iOrgOffsetX = m_OffsetX;
-    m_iOrgOffsetY = m_OffsetY;
+
     m_iPosX = m_iPosY = -1;
     
     SetVisible(true);
@@ -58,17 +57,13 @@ void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
 
 void CGhostEntityPanel::OnThink()
 {
-    // Recalculate our size
-    ComputeAndSetSize();
-
-    // Set the position
     SetPos(static_cast<int>(m_iPosX + m_OffsetX + 0.5f), static_cast<int>(m_iPosY + m_OffsetY + 0.5f));
 
     if (m_pEntity)
     {
-        if (!m_pAvatarImage->IsValid() && m_pEntity->m_SteamID)
+        if (!m_pAvatarImage->IsValid() && m_pEntity->GetSteamID())
         {
-            m_pAvatarImage->SetAvatarSteamID(CSteamID(m_pEntity->m_SteamID), k_EAvatarSize64x64);
+            m_pAvatarImage->SetAvatarSteamID(CSteamID(m_pEntity->GetSteamID()), k_EAvatarSize64x64);
         }
 
         // MOM_TODO: Blink the panel if they're typing? Maybe an icon or something? Idk
@@ -156,26 +151,6 @@ bool CGhostEntityPanel::GetEntityPosition(int& sx, int& sy)
         sx, sy, nullptr);
 }
 
-void CGhostEntityPanel::ComputeAndSetSize()
-{
-    int panelWide, panelHigh;
-    GetSize(panelWide, panelHigh);
-
-    if (mom_entpanels_enable_avatars.GetBool())
-        m_pAvatarImagePanel->SetPos((panelWide / 2) - 16, 0);
-
-    if (mom_entpanels_enable_names.GetBool())
-    {
-        HFont font = m_pNameLabel->GetFont();
-        wchar_t playerName[MAX_PLAYER_NAME_LENGTH];
-        ANSI_TO_UNICODE(m_pEntity->m_szGhostName.Get(), playerName);
-        int nameWide = UTIL_ComputeStringWidth(font, playerName) + 6;
-        int fontHeight = surface()->GetFontTall(font);
-
-        m_pNameLabel->SetPos(panelWide / 2 - (nameWide / 2), mom_entpanels_enable_avatars.GetBool() ? 33 : (panelHigh / 2 - fontHeight / 2) - 4);
-    }
-}
-
 CGhostEntityPanel::~CGhostEntityPanel()
 {
     if (m_pAvatarImage)
@@ -184,17 +159,7 @@ CGhostEntityPanel::~CGhostEntityPanel()
         delete m_pAvatarImage;
     }
 
-    if (m_pAvatarImagePanel)
-    {
-        m_pAvatarImagePanel->DeletePanel();
-    }
-
-    if (m_pNameLabel)
-    {
-        m_pNameLabel->DeletePanel();
-    }
-        
     m_pAvatarImage = nullptr;
-    m_pAvatarImagePanel = nullptr;
-    m_pNameLabel = nullptr;
+
+    ivgui()->RemoveTickSignal(GetVPanel());
 }

@@ -32,11 +32,11 @@ void DownloadQueueParallelCallback(IConVar *var, const char *pOldValue, float fl
     g_pMapCache->OnDownloadQueueSizeChanged();   
 }
 
-static MAKE_TOGGLE_CONVAR(mom_map_delete_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to be deleted upon game close.\nIf 0, maps are deleted the moment they are confirmed to have been removed from library.\n");
-static MAKE_TOGGLE_CONVAR(mom_map_download_auto, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will automatically download when updated/added to library.\n");
-static MAKE_TOGGLE_CONVAR_C(mom_map_download_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to download, allowing mom_map_download_queue_parallel parallel downloads.\n", DownloadQueueCallback);
-static MAKE_CONVAR_C(mom_map_download_queue_parallel, "3", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The number of parallel map downloads if mom_map_download_queue is 1.\n", 1, 20, DownloadQueueParallelCallback);
-static MAKE_TOGGLE_CONVAR(mom_map_download_cancel_confirm, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, a messagebox will be created to ask to confirm cancelling downloads.\n");
+MAKE_TOGGLE_CONVAR(mom_map_delete_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to be deleted upon game close.\nIf 0, maps are deleted the moment they are confirmed to have been removed from library.\n");
+MAKE_TOGGLE_CONVAR(mom_map_download_auto, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will automatically download when updated/added to library.\n");
+MAKE_TOGGLE_CONVAR_C(mom_map_download_queue, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, maps will be queued to download, allowing mom_map_download_queue_parallel parallel downloads.\n", DownloadQueueCallback);
+MAKE_CONVAR_C(mom_map_download_queue_parallel, "3", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The number of parallel map downloads if mom_map_download_queue is 1.\n", 1, 3, DownloadQueueParallelCallback);
+MAKE_TOGGLE_CONVAR(mom_map_download_cancel_confirm, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "If 1, a messagebox will be created to ask to confirm cancelling downloads.\n");
 
 // =============================================================================================
 
@@ -713,6 +713,13 @@ void CMapCache::PreLevelInit(KeyValues* pKv)
     }
 
     SetMapGamemode(pMapName);
+
+    const auto pEvent = gameeventmanager->CreateEvent("mapcache_map_load");
+    if (pEvent)
+    {
+        pEvent->SetString("map", pMapName);
+        gameeventmanager->FireEventClientSide(pEvent);
+    }
 }
 
 void CMapCache::LevelInitPreEntity()

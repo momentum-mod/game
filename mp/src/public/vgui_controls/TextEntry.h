@@ -315,6 +315,7 @@ private:
 public:
 	Menu *GetEditMenu(); // retrieve copy/cut/paste menu
 
+    void SetDrawOffset(int x, int y);
 private:
 	void	FlipToLastIME();
 
@@ -367,6 +368,8 @@ private:
 	bool			   _wrap;
 	bool			   _sendNewLines;
 	int				   _drawWidth;
+	int					_drawOffsetX;
+	int					_drawOffsetY;
 
 	// selection data
 	Menu				*m_pEditMenu; ///cut/copy/paste popup

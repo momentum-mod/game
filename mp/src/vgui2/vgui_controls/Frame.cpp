@@ -39,7 +39,7 @@
 using namespace vgui;
 
 static const int DEFAULT_SNAP_RANGE = 10; // number of pixels distance before the frame will snap to an edge
-static const int CAPTION_TITLE_BORDER = 7;
+static const int CAPTION_TITLE_BORDER = 4;
 static const int CAPTION_TITLE_BORDER_SMALL = 0;
 
 namespace
@@ -56,6 +56,7 @@ namespace
 			_dragging = false;
 			_dragMultX = xdir;
 			_dragMultY = ydir;
+			SetZPos(500);
 			SetPaintEnabled(false);
 			SetPaintBackgroundEnabled(false);
 			SetPaintBorderEnabled(false);
@@ -195,11 +196,21 @@ namespace
 			GetParent()->OnMouseDoublePressed(code);
 		}
 
+		void PerformLayout() override
+		{
+		    Panel::PerformLayout();
+
+			MoveToFront();
+		}
+
 		void Paint()
 		{
 			// draw the grab handle in the bottom right of the frame
 			surface()->DrawSetTextFont(_marlettFont);
-			surface()->DrawSetTextPos(0, 0);
+
+			int wide = surface()->GetCharacterWidth(_marlettFont, 'p');
+			int tall = surface()->GetFontTall(_marlettFont);
+			surface()->DrawSetTextPos(GetWide() - wide - 3, GetTall() - tall - 3);
 			
 			// thin highlight lines
 			surface()->DrawSetTextColor(GetFgColor());
@@ -210,7 +221,10 @@ namespace
 		{
 			// draw the grab handle in the bottom right of the frame
 			surface()->DrawSetTextFont(_marlettFont);
-			surface()->DrawSetTextPos(0, 0);
+
+			int wide = surface()->GetCharacterWidth(_marlettFont, 'o');
+			int tall = surface()->GetFontTall(_marlettFont);
+			surface()->DrawSetTextPos(GetWide() - wide - 3, GetTall() - tall - 3);
 			
 			// thick shadow lines
 			surface()->DrawSetTextColor(GetBgColor());
@@ -232,9 +246,8 @@ namespace
 		void ApplySchemeSettings(IScheme *pScheme)
 		{
 			Panel::ApplySchemeSettings(pScheme);
-			bool isSmall = ((Frame *)GetParent())->IsSmallCaption();
 
-			_marlettFont = pScheme->GetFont( isSmall ? "MarlettSmall" : "Marlett");
+			_marlettFont = pScheme->GetFont( _frame->IsSmallCaption() ? "MarlettSmall" : "Marlett");
 			SetFgColor(GetSchemeColor("FrameGrip.Color1", pScheme));
 			SetBgColor(GetSchemeColor("FrameGrip.Color2", pScheme));
 
@@ -265,6 +278,7 @@ namespace
 	public:
 		CaptionGripPanel(Frame* frame, const char *name) : GripPanel(frame, name, 0, 0)
 		{
+			SetZPos(0);
 		}
 		
 		void moved(int dx, int dy)
@@ -501,28 +515,17 @@ namespace vgui
 		bool _disabledLook;
 	
 	public:
-	
-		static int GetButtonSide( Frame *pFrame )
-		{
-			if ( pFrame->IsSmallCaption() )
-			{
-				return 12;
-			}
-
-			return 18;
-		}
-		
-		
 		FrameButton(Panel *parent, const char *name, const char *text) : Button(parent, name, text)
 		{
-			SetSize( FrameButton::GetButtonSide( (Frame *)parent ), FrameButton::GetButtonSide( (Frame *)parent ) );
 			_brightBorder = NULL;
 			_depressedBorder = NULL;
 			_disabledBorder = NULL;
 			_disabledLook = true;
-			SetContentAlignment(Label::a_northwest);
+			SetContentAlignment(a_center);
 			SetTextInset(2, 1);
 			SetBlockDragChaining( true );
+			SetAutoWide(true);
+			SetAutoTall(true);
 		}
 		
 		virtual void ApplySchemeSettings(IScheme *pScheme)
@@ -538,6 +541,18 @@ namespace vgui
 			_brightBorder = pScheme->GetBorder("TitleButtonBorder");
 			_depressedBorder = pScheme->GetBorder("TitleButtonDepressedBorder");
 			_disabledBorder = pScheme->GetBorder("TitleButtonDisabledBorder");
+
+			HFont marfont = INVALID_FONT;
+			if (static_cast<Frame*>(GetParent())->IsSmallCaption())
+			{
+				marfont = pScheme->GetFont("MarlettSmall", IsProportional());
+			}
+			else
+			{
+				marfont = pScheme->GetFont("Marlett", IsProportional());
+			}
+
+			SetFont(marfont);
 			
 			SetDisabledLook(_disabledLook);
 		}
@@ -573,11 +588,14 @@ namespace vgui
 				SetArmedColor(_disabledFgColor, _disabledBgColor);
 				SetDepressedColor(_disabledFgColor, _disabledBgColor);
 			}
+
+			InvalidateLayout();
 		}
 
         virtual void PerformLayout()
         {
             Button::PerformLayout();
+			MoveToFront();
             Repaint();
         }
 		
@@ -766,7 +784,7 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 
 	m_hPreviousModal = 0;
 
-	_title=null;
+	_title = new TextImage("");
 	_moveable=true;
 	_sizeable=true;
 	m_bHasFocus=false;
@@ -787,6 +805,7 @@ Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*
 	m_bChainKeysToParent = false;
 	m_bPrimed = false;
 	m_hCustomTitleFont = INVALID_FONT;
+	m_bCenterTitle = false;
 
 	SetTitle("#Frame_Untitled", parent ? false : true);
 	
@@ -869,20 +888,6 @@ Frame::~Frame()
 		}
 	}
 
-	delete _topGrip;
-	delete _bottomGrip;
-	delete _leftGrip;
-	delete _rightGrip;
-	delete _topLeftGrip;
-	delete _topRightGrip;
-	delete _bottomLeftGrip;
-	delete _bottomRightGrip;
-	delete _captionGrip;
-	delete _minimizeButton;
-	delete _maximizeButton;
-	delete _closeButton;
-	delete _menuButton;
-	delete _minimizeToSysTrayButton;
 	delete _title;
 }
 
@@ -1019,26 +1024,6 @@ void Frame::MoveToCenterOfScreen()
 	SetPos((ww - GetWide()) / 2, (wt - GetTall()) / 2);
 }
 
-
-void Frame::LayoutProportional( FrameButton *bt )
-{
-	float scale = 1.0;
-
-	if( IsProportional() )
-	{	
-		int screenW, screenH;
-		surface()->GetScreenSize( screenW, screenH );
-
-		int proW,proH;
-		surface()->GetProportionalBase( proW, proH );
-
-		scale =	( (float)( screenH ) / (float)( proH ) );
-	}
-
-	bt->SetSize( (int)( FrameButton::GetButtonSide( this ) * scale ), (int)( FrameButton::GetButtonSide( this ) * scale ) );
-	bt->SetTextInset( (int)( ceil( 2 * scale ) ), (int) ( ceil(1 * scale ) ) );
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: per-frame thinking, used for transition effects
 //			only gets called if the Frame is visible
@@ -1115,10 +1100,6 @@ void Frame::OnFrameFocusChanged(bool bHasFocus)
 	_closeButton->SetDisabledLook(!bHasFocus);
 	_minimizeToSysTrayButton->SetDisabledLook(!bHasFocus);
 	_menuButton->SetEnabled(bHasFocus);
-	_minimizeButton->InvalidateLayout();
-	_maximizeButton->InvalidateLayout();
-	_minimizeToSysTrayButton->InvalidateLayout();
-	_closeButton->InvalidateLayout();
 	_menuButton->InvalidateLayout();
 
 	if (bHasFocus)
@@ -1163,45 +1144,41 @@ void Frame::OnFrameFocusChanged(bool bHasFocus)
 
 int Frame::GetDraggerSize()
 {
-	const int DRAGGER_SIZE = 5;
 	if ( m_bSmallCaption )
 	{
-		return 3;
+		return GetScaledVal(3);
 	}
 	
-	return DRAGGER_SIZE;
+	return GetScaledVal(5);
 }
 
 int Frame::GetCornerSize()
 {
-	const int CORNER_SIZE = 8;
 	if ( m_bSmallCaption )
 	{
-		return 6;
+		return GetScaledVal(4);
 	}
 	
-	return CORNER_SIZE;
+	return GetScaledVal(6);
 }
 
 int Frame::GetBottomRightSize()
 {
-	const int BOTTOMRIGHTSIZE = 18;
 	if ( m_bSmallCaption )
 	{
-		return 12;
+		return GetScaledVal(8);
 	}
 	
-	return BOTTOMRIGHTSIZE;
+	return GetScaledVal(12);
 }
 
 int Frame::GetCaptionHeight()
 {
-	const int CAPTIONHEIGHT = 23;
-	if ( m_bSmallCaption )
+	if (m_bSmallCaption)
 	{
-		return 12;
+		return GetScaledVal(8);
 	}
-	return CAPTIONHEIGHT;
+	return GetScaledVal(16);
 }
 
 //-----------------------------------------------------------------------------
@@ -1235,68 +1212,41 @@ void Frame::PerformLayout()
 	
 	_captionGrip->SetSize(wide-10,GetCaptionHeight());
 	
-	_topGrip->MoveToFront();
-	_bottomGrip->MoveToFront();
-	_leftGrip->MoveToFront();
-	_rightGrip->MoveToFront();
-	_topLeftGrip->MoveToFront();
-	_topRightGrip->MoveToFront();
-	_bottomLeftGrip->MoveToFront();
-	_bottomRightGrip->MoveToFront();
-	
-	_maximizeButton->MoveToFront();
-	_menuButton->MoveToFront();
-	_minimizeButton->MoveToFront();
-	_minimizeToSysTrayButton->MoveToFront();
-	_menuButton->SetBounds(5+2, 5+3, GetCaptionHeight()-5, GetCaptionHeight()-5);
+	_menuButton->SetBounds(7, 8, GetCaptionHeight()-5, GetCaptionHeight()-5);
 
-	float scale = 1;
-	if (IsProportional())
-	{
-		int screenW, screenH;
-		surface()->GetScreenSize( screenW, screenH );
-
-		int proW,proH;
-		surface()->GetProportionalBase( proW, proH );
-
-		scale =	( (float)( screenH ) / (float)( proH ) );
-	}
-
-	int offset_start = (int)( 20 * scale );
+	int offset_start = GetScaledVal(20);
 	int offset = offset_start;
 
-	int top_border_offset = (int) ( ( 5+3 ) * scale );
+	int top_border_offset = GetScaledVal(6);
 	if ( m_bSmallCaption )
 	{
-		top_border_offset = (int) ( ( 3 ) * scale );
+		top_border_offset = GetScaledVal(3);
 	}
 
-	int side_border_offset = (int) ( 5 * scale );
+	int side_border_offset = GetScaledVal(5);
 	// push the buttons against the east side
 	if (_closeButton->IsVisible())
 	{
-		_closeButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
+		offset = wide - _closeButton->GetWide() - top_border_offset;
+		_closeButton->SetPos(offset, top_border_offset);
 		offset += offset_start;
-		LayoutProportional( _closeButton );
-
 	}
+
 	if (_minimizeToSysTrayButton->IsVisible())
 	{
 		_minimizeToSysTrayButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
 		offset += offset_start;
-		LayoutProportional( _minimizeToSysTrayButton );
 	}
+
 	if (_maximizeButton->IsVisible())
 	{
 		_maximizeButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
 		offset += offset_start;
-		LayoutProportional( _maximizeButton );
 	}
+
 	if (_minimizeButton->IsVisible())
 	{
 		_minimizeButton->SetPos((wide-side_border_offset)-offset,top_border_offset);
-		offset += offset_start;
-		LayoutProportional( _minimizeButton );
 	}
 }
 
@@ -1305,12 +1255,6 @@ void Frame::PerformLayout()
 //-----------------------------------------------------------------------------
 void Frame::SetTitle(const char *title, bool surfaceTitle)
 {
-	if (!_title)
-	{
-		_title = new TextImage( "" );
-	}
-
-	Assert(title);
 	_title->SetText(title);
 
     // see if the combobox text has changed, and if so, post a message detailing the new text
@@ -1347,10 +1291,6 @@ void Frame::SetTitle(const char *title, bool surfaceTitle)
 //-----------------------------------------------------------------------------
 void Frame::SetTitle(const wchar_t *title, bool surfaceTitle)
 {
-	if (!_title)
-	{
-		_title = new TextImage( "" );
-	}
 	_title->SetText(title);
 	if (surfaceTitle)
 	{
@@ -1425,7 +1365,7 @@ void Frame::GetClientArea(int &x, int &y, int &wide, int &tall)
 	{
 		int captionTall = surface()->GetFontTall(_title->GetFont());
 
-		int border = m_bSmallCaption ? CAPTION_TITLE_BORDER_SMALL : CAPTION_TITLE_BORDER;
+		int border = m_bSmallCaption ? CAPTION_TITLE_BORDER_SMALL : GetScaledVal(CAPTION_TITLE_BORDER);
 		int yinset = m_bSmallCaption ? 0 : m_iClientInsetY;
 
 		yinset += m_iTitleTextInsetYOverride;
@@ -1592,37 +1532,48 @@ void Frame::PaintBackground()
 		int wide = GetWide();
 		int tall = surface()->GetFontTall(_title->GetFont());
 
+		int nTitleY;
+		if (m_iTitleTextInsetYOverride)
+		{
+			nTitleY = m_iTitleTextInsetYOverride;
+		}
+		else
+		{
+			nTitleY = m_bSmallCaption ? 2 : 9;
+		}
+
 		// caption
 		surface()->DrawSetColor(titleColor);
 		int inset = m_bSmallCaption ? 3 : 5;
-		int captionHeight = m_bSmallCaption ? 14: 28;
+		int captionHeight = m_bSmallCaption ? 14 : 28;
 
-		surface()->DrawFilledRect(inset, inset, wide - inset, captionHeight );
-		
-		if (_title)
+		surface()->DrawFilledRect(inset, inset, wide - inset, captionHeight);
+
+		if (m_bCenterTitle)
+		{
+			int contentWide;
+			_title->ResizeImageToContentMaxWidth(wide);
+		    _title->GetDrawWidth(contentWide);
+
+			_title->SetPos((wide - contentWide) / 2, nTitleY);
+		}
+		else
 		{
 			int nTitleX = m_iTitleTextInsetXOverride ? m_iTitleTextInsetXOverride : m_iTitleTextInsetX;
 			int nTitleWidth = wide - 72;
-			if ( _menuButton && _menuButton->IsVisible() )
+			if (_menuButton && _menuButton->IsVisible())
 			{
 				int mw, mh;
-				_menuButton->GetImageSize( mw, mh );
+				_menuButton->GetImageSize(mw, mh);
 				nTitleX += mw;
 				nTitleWidth -= mw;
 			}
-			int nTitleY;
-			if ( m_iTitleTextInsetYOverride )
-			{
-				nTitleY = m_iTitleTextInsetYOverride;
-			}
-			else
-			{
-				nTitleY = m_bSmallCaption ? 2 : 9;
-			}
-			_title->SetPos( nTitleX, nTitleY );		
-			_title->SetSize( nTitleWidth, tall);
-			_title->Paint();
+
+			_title->SetPos(nTitleX, nTitleY);
+			_title->SetSize(nTitleWidth, tall);
 		}
+
+		_title->Paint();
 	}
 }
 
@@ -1639,7 +1590,7 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 	SetOverridableColor( &_titleBarDisabledFgColor, GetSchemeColor("FrameTitleBar.DisabledTextColor", pScheme) );
 	SetOverridableColor( &_titleBarDisabledBgColor, GetSchemeColor("FrameTitleBar.DisabledBgColor", pScheme) );
 
-	const char *font = NULL;
+	const char *font = nullptr;
 	if ( m_bSmallCaption )
 	{
 		font = pScheme->GetResourceString("FrameTitleBar.SmallFont");
@@ -1659,23 +1610,8 @@ void Frame::ApplySchemeSettings(IScheme *pScheme)
 		titlefont = pScheme->GetFont((font && *font) ? font : "Default", IsProportional());
 	}
 
-	_title->SetFont( titlefont );
+	_title->SetFont(titlefont);
 	_title->ResizeImageToContent();
-
-	HFont marfont = (HFont)0;
-	if ( m_bSmallCaption )
-	{
-		marfont = pScheme->GetFont( "MarlettSmall", IsProportional() );
-	}
-	else
-	{
-		marfont = pScheme->GetFont( "Marlett", IsProportional() );
-	}
-
-	_minimizeButton->SetFont(marfont);
-	_maximizeButton->SetFont(marfont);
-	_minimizeToSysTrayButton->SetFont(marfont);
-	_closeButton->SetFont(marfont);
 
 	m_flTransitionEffectTime = atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
 	m_flFocusTransitionEffectTime = atof(pScheme->GetResourceString("Frame.FocusTransitionEffectTime"));
@@ -1722,8 +1658,6 @@ void Frame::SetFadeEffectDisableOverride( bool disabled )
 //-----------------------------------------------------------------------------
 void Frame::ApplySettings(KeyValues *inResourceData)
 {
-	// Don't change the frame's visibility, remove that setting from the config data
-	inResourceData->SetInt("visible", -1);
 	BaseClass::ApplySettings(inResourceData);
 
 	// if "title" is "0" then don't draw the title bar
@@ -1756,6 +1690,8 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 		m_iClientInsetX = pKV->GetInt();
 		m_iClientInsetXOverridden = true;
 	}
+
+	m_bCenterTitle = inResourceData->GetBool("center_title");
 }
 
 //-----------------------------------------------------------------------------
@@ -1769,14 +1705,11 @@ void Frame::GetSettings(KeyValues *outResourceData)
 	outResourceData->SetBool("settitlebarvisible", _drawTitleBar );
     outResourceData->SetBool("cliptoparent", m_bClipToParent);
 
-	if (_title)
+	char buf[256];
+	_title->GetUnlocalizedText( buf, 255 );
+	if (buf[0])
 	{
-		char buf[256];
-		_title->GetUnlocalizedText( buf, 255 );
-		if (buf[0])
-		{
-			outResourceData->SetString("title", buf);
-		}
+		outResourceData->SetString("title", buf);
 	}
 
     if (m_hCustomTitleFont != INVALID_FONT)
@@ -1792,6 +1725,8 @@ void Frame::GetSettings(KeyValues *outResourceData)
 	{
 		outResourceData->SetInt( "clientinsetx_override", m_iClientInsetX );
 	}
+
+	outResourceData->SetBool("center_title", m_bCenterTitle);
 }
 
 void Frame::InitSettings()
@@ -1802,7 +1737,8 @@ void Frame::InitSettings()
     {"settitlebarvisible", TYPE_BOOL},
     {"title_font", TYPE_STRING},
     {"clientinsetx_override", TYPE_INTEGER},
-    {"cliptoparent", TYPE_BOOL}
+    {"cliptoparent", TYPE_BOOL},
+	{"center_title", TYPE_BOOL}
     END_PANEL_SETTINGS();
 }
 
@@ -2161,6 +2097,10 @@ void Frame::OnKeyCodeTyped(KeyCode code)
             ivgui()->PostMessage(top, new KeyValues("OnScreenSizeChanged", "oldwide", wi, "oldtall", ta), NULL);
             ivgui()->RunFrame();
 		}
+	}
+	else if (ctrl && shift && alt && code == KEY_L)
+	{
+	    g_pVGuiLocalize->ReloadLocalizationFiles();
 	}
 	else if (alt && code == KEY_F4)
 	{

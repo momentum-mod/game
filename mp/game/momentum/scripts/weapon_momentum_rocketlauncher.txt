@@ -21,7 +21,8 @@ WeaponData
         "view"  "models/weapons/v_mom_rocketlauncher.mdl"
         "world" "models/weapons/w_mom_rocketlauncher.mdl"
 
-        "rocket" "models/weapons/w_missile.mdl"
+        "rocket"    "models/weapons/w_missile.mdl"
+        "surprise"  "models/custom_props/yee_rider.mdl"
     }
 
     // Sounds for the weapon

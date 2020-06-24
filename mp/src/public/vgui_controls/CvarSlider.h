@@ -10,16 +10,14 @@ namespace vgui
 
     public:
         CvarSlider(Panel *parent, const char *panelName);
-        CvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
-            char const *cvarname, bool bAllowOutOfRange = false, bool bAutoApplyChanges = false);
-        ~CvarSlider();
+        CvarSlider(Panel *parent, const char *panelName, char const *cvarname, int precision, bool bAutoApplyChanges = false);
+        CvarSlider(Panel *parent, const char *panelName, char const *cvarname, float minValue, float maxValue,
+                   int precision, bool bAutoApplyChanges = false);
 
-        void SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange,
-                         bool bAutoApplyChanges);
+        void SetupSlider(const char *cvarname, int precision, bool bAutoApplyChanges, bool bUseCvarBounds = true,
+                         float minValue = 0.0f, float maxValue = 1.0f);
 
         void SetCVarName(char const *cvarname);
-        void SetMinMaxValues(float minValue, float maxValue, bool bSetTickdisplay = true);
-        void SetTickColor(Color color);
 
         void Paint() OVERRIDE;
 
@@ -29,6 +27,8 @@ namespace vgui
 
         bool ShouldAutoApplyChanges() const { return m_bAutoApplyChanges; }
         void SetAutoApplyChanges(bool val) { m_bAutoApplyChanges = val; }
+        void SetPrecision(int precision);
+        int GetPrecision() const { return m_iPrecision; }
 
         void ApplyChanges();
         float GetSliderValue();
@@ -40,18 +40,18 @@ namespace vgui
         MESSAGE_FUNC(OnSliderMoved, "SliderMoved");
         MESSAGE_FUNC(OnApplyChanges, "ApplyChanges");
 
-        bool m_bAllowOutOfRange;
-        bool m_bModifiedOnce;
-        float m_fStartValue;
-        int m_iStartValue;
-        int m_iLastSliderValue;
-        float m_fCurrentValue;
-        char m_szCvarName[64];
-        ConVarRef m_cvar;
+        void SetMinMaxValues();
 
-        bool m_bAutoApplyChanges;
-        bool m_bCreatedInCode;
-        float m_flMinValue;
-        float m_flMaxValue;
+        bool m_bUseCvarBounds, m_bModifiedOnce;
+        int m_iStartValue, m_iLastSliderValue;
+        float m_fStartValue, m_fCurrentValue, m_fScaleFactor;
+        char m_szCvarName[64];
+
+        bool m_bAutoApplyChanges, m_bCreatedInCode;
+        float m_flMinValue, m_flMaxValue;
+        int m_iPrecision;
+        char m_szPrecisionFormat[8];
+
+        ConVarRef m_cvar;
     };
 }

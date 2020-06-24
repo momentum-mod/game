@@ -170,21 +170,8 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 	// set default foreground color to black
 	_defaultTextColor =  Color(0, 0, 0, 0);
 
-	if ( IsProportional() )
-	{
-		int width, height;
-		int sw,sh;
-		surface()->GetProportionalBase( width, height );
-		surface()->GetScreenSize(sw, sh);
-		
-		_drawOffsetX = static_cast<int>( static_cast<float>( DRAW_OFFSET_X )*( static_cast<float>( sw )/ static_cast<float>( width )));
-		_drawOffsetY = static_cast<int>( static_cast<float>( DRAW_OFFSET_Y )*( static_cast<float>( sw )/ static_cast<float>( width )));
-	}
-	else
-	{
-		_drawOffsetX = DRAW_OFFSET_X;
-		_drawOffsetY = DRAW_OFFSET_Y;
-	}
+	_drawOffsetX = GetScaledVal(DRAW_OFFSET_X);
+	_drawOffsetY = GetScaledVal(DRAW_OFFSET_Y);
 
     // initialize the line break array
     InvalidateLineBreakStream(false);
@@ -255,6 +242,15 @@ void RichText::ApplySchemeSettings(IScheme *pScheme)
 	if ( Q_strlen( pScheme->GetResourceString( "RichText.InsetX" ) ) )
 	{
 		SetDrawOffsets( atoi( pScheme->GetResourceString( "RichText.InsetX" ) ), atoi( pScheme->GetResourceString( "RichText.InsetY" ) ) );
+	}
+
+	if (!GetBorderOverrideName()[0])
+	{
+		const auto pBorderName = pScheme->GetResourceString("RichText.Border");
+		if (pBorderName && *pBorderName)
+		{
+			SetBorder(pScheme->GetBorder(pBorderName));
+		}
 	}
 }
 
@@ -526,7 +522,8 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 	_pixelsIndent = m_CachedRenderState.pixelsIndent;
 	_currentTextClickable = m_CachedRenderState.textClickable;
 	TRenderState renderState = m_CachedRenderState;
-	
+
+	const auto panelTall = GetTall();
 	bool onRightLine = false;
 	int i;
 	for (i = startIndex; i < m_TextStream.Count(); i++)
@@ -554,9 +551,43 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 		if (cy < yStart)
 		{
 			// cursor is above panel
-			onRightLine = true;
+			if (lineBreakIndexIndex < 2)
+			{
+				if (lineBreakIndexIndex == 0)
+				{
+					onRightLine = true;
+				}
+				else
+				{
+				    return m_LineBreaks[lineBreakIndexIndex - 1] - 1;
+				}
+			}
+			else
+			{
+			    // Jump up a line
+				return m_LineBreaks[lineBreakIndexIndex - 2] - 1;
+			}
 		}
-		else if (cy >= y && (cy < (y + fontTall + _drawOffsetY)))
+		else if (cy > panelTall)
+		{
+			// cursor is below panel
+			if (lineBreakIndexIndex == m_LineBreaks.Count() - 1)
+			{
+				onRightLine = true;
+			}
+			else
+			{
+				// Jump down a line
+				const auto nextOffset = _vertScrollBar->GetValue() + _vertScrollBar->GetRangeWindow();
+				if (nextOffset < m_LineBreaks.Count())
+				{
+				    return m_LineBreaks[nextOffset];
+				}
+
+				return m_LineBreaks[m_LineBreaks.Count() - 1] + 1;
+			}
+		}
+		else if (cy >= y && (cy < (y + fontTall)))
 		{
 			onRightLine = true;
 		}
@@ -566,10 +597,7 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 		// if we've found the position, break
 		if (onRightLine)
 		{
-			if (cx > GetWide())	  // off right side of window
-			{
-			}
-			else if (cx < (_drawOffsetX + renderState.pixelsIndent) || cy < yStart)	 // off left side of window
+			if (cx < (_drawOffsetX + renderState.pixelsIndent) || cy < yStart)	 // off left side of window
 			{
 				// Msg( "PixelToCursorSpace() off left size, returning %d '%c'\n", i, m_TextStream[i] );
 				return i; // move cursor one to left
@@ -1328,7 +1356,7 @@ void RichText::InsertClickableTextEnd()
 void RichText::AddAnotherLine(int &cx, int &cy)
 {
 	cx = _drawOffsetX + _pixelsIndent;
-	cy += (GetLineHeight() + _drawOffsetY);
+	cy += GetLineHeight();
 }
 
 //-----------------------------------------------------------------------------
@@ -1344,7 +1372,10 @@ void RichText::RecalculateLineBreaks()
 
 	_recalcSavedRenderState = true;
 	if (!HasText())
+	{
+	    LayoutVerticalScrollBarSlider();
 		return;
+	}
 	
 	int selection0 = -1, selection1 = -1;
 
@@ -1565,7 +1596,7 @@ void RichText::LayoutVerticalScrollBarSlider()
 	bool bCurrentlyAtEnd = false;
     int rmin, rmax;
     _vertScrollBar->GetRange(rmin, rmax);
-    if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
+    if (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax)
     {
         bCurrentlyAtEnd = true;
     }
@@ -1579,10 +1610,11 @@ void RichText::LayoutVerticalScrollBarSlider()
 	_vertScrollBar->SetSize( _vertScrollBar->GetWide(), tall );
 	
 	// calculate how many lines we can fully display
-    const auto offY = GetLineHeight() + _drawOffsetY;
+    const auto offY = GetLineHeight();
 
 	int displayLines = offY ? tall / offY : 0;
-	int numLines = m_LineBreaks.Count();
+	const bool bLastCharIsNewline = m_LineBreaks.Count() > 1 && m_LineBreaks[m_LineBreaks.Count() - 2] == m_TextStream.Count();
+	int numLines = m_LineBreaks.Count() - (bLastCharIsNewline ? 1 : 0);
 	
 	if (numLines <= displayLines)
 	{
@@ -1708,6 +1740,17 @@ void RichText::OnCursorMoved(int newX, int newY)
 		if (_cursorPos != _select[1])
 		{
 			_select[1] = _cursorPos;
+			const auto cursorLine = GetCursorLine();
+			if (cursorLine < _vertScrollBar->GetValue())
+			{
+			    _vertScrollBar->SetValue(cursorLine);
+				_recalcSavedRenderState = true;
+			}
+			else if (cursorLine > _vertScrollBar->GetValue() + _vertScrollBar->GetRangeWindow())
+			{
+				_vertScrollBar->SetValue(_vertScrollBar->GetValue() + 1);
+				_recalcSavedRenderState = true;
+			}
 			Repaint();
 		}
 		// Msg( "selecting range [%d..%d]\n", _select[0], _select[1] );
@@ -1721,30 +1764,34 @@ void RichText::OnMousePressed(MouseCode code)
 {
 	if (code == MOUSE_LEFT)
 	{
-		// clear current selection
-		SelectNone();
+		const auto isShiftClicking = input()->IsKeyDown(KEY_LSHIFT) || input()->IsKeyDown(KEY_RSHIFT);
 
-		// move the cursor to where the mouse was pressed
+		if (!isShiftClicking)
+		    SelectNone();
+
 		int x, y;
 		input()->GetCursorPos(x, y);
 		ScreenToLocal(x, y);
-		
-		_cursorPos = PixelToCursorSpace(x, y);
-		
-		if ( m_bInteractive )
+
+		const auto newPos = PixelToCursorSpace(x, y);
+
+		if (!isShiftClicking)
+			_cursorPos = newPos;
+
+		if (m_bInteractive)
 		{
 			// enter selection mode
 			input()->SetMouseCapture(GetVPanel());
 			_mouseSelection = true;
-			
+
 			if (_select[0] < 0)
 			{
 				// if no initial selection position, Start selection position at cursor
 				_select[0] = _cursorPos;
 			}
-			_select[1] = _cursorPos;
+			_select[1] = newPos;
 		}
-		
+
 		RequestFocus();
 		Repaint();
 	}
@@ -2603,7 +2650,7 @@ void RichText::SetToFullHeight()
 	int wide, tall;
 	GetSize(wide, tall);
 	
-	tall = GetNumLines() * (GetLineHeight() + _drawOffsetY) + _drawOffsetY + 2;
+	tall = GetNumLines() * GetLineHeight() + _drawOffsetY + 2;
 	SetSize (wide, tall);
 	PerformLayout();
 }
@@ -2877,7 +2924,7 @@ bool RichText::HasText() const
 //-----------------------------------------------------------------------------
 int RichText::GetLineHeight()
 {
-	return m_font == INVALID_FONT ? 0 : surface()->GetFontTall( m_font );
+	return m_font == INVALID_FONT ? 0 : surface()->GetFontTall( m_font ) + _drawOffsetY;
 }
 
 

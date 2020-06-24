@@ -29,6 +29,14 @@ $Project "Client (Momentum)"
         {
             $Folder "UI"
             {
+                $Folder "LoadingScreen"
+                {
+                    $File "momentum\ui\loadingscreen\LoadingScreen.cpp"
+                    $File "momentum\ui\loadingscreen\LoadingScreen.h"
+                    $File "momentum\ui\loadingscreen\TipManager.h"
+                    $File "momentum\ui\loadingscreen\TipManager.cpp"
+                }
+
                 $Folder "Zone Menu"
                 {
                     $File "momentum\ui\ZoneMenu\ZoneMenu.h"
@@ -47,13 +55,11 @@ $Project "Client (Momentum)"
                     {
                         $File "momentum\ui\MapSelection\BaseMapsPage.h"
                         $File "momentum\ui\MapSelection\IMapList.h"
-                        $File "momentum\ui\MapSelection\IMapSelector.h"
                         $File "momentum\ui\MapSelection\LibraryMaps.h"
                         $File "momentum\ui\MapSelection\FavoriteMaps.h"
                         $File "momentum\ui\MapSelection\MapContextMenu.h"
                         $File "momentum\ui\MapSelection\MapDownloadProgress.h"
                         $File "momentum\ui\MapSelection\MapInfoDialog.h"
-                        $File "momentum\ui\MapSelection\MapSelector.h"
                         $File "momentum\ui\MapSelection\MapSelectorDialog.h"
                         $File "momentum\ui\MapSelection\BrowseMaps.h"
                         $File "momentum\ui\MapSelection\CMapListPanel.h"
@@ -64,8 +70,7 @@ $Project "Client (Momentum)"
                           "momentum\ui\MapSelection\LibraryMaps.cpp" \ 
                           "momentum\ui\MapSelection\MapContextMenu.cpp" \
                           "momentum\ui\MapSelection\MapDownloadProgress.cpp" \
-                          "momentum\ui\MapSelection\MapInfoDialog.cpp" \ 
-                          "momentum\ui\MapSelection\MapSelector.cpp" \
+                          "momentum\ui\MapSelection\MapInfoDialog.cpp" \
                           "momentum\ui\MapSelection\MapSelectorDialog.cpp" \
                           "momentum\ui\MapSelection\BrowseMaps.cpp" \
                           "momentum\ui\MapSelection\CMapListPanel.cpp" \
@@ -74,26 +79,22 @@ $Project "Client (Momentum)"
                 
                 $Folder "SettingsPanel"
                 {
-                    $Folder "Headers"
-                    {
-                        $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
-                        $File "momentum\ui\SettingsPanel\SettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\OnlineSettingsPage.h"
-                        $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.h"
-                    }
-
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
-                    $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\OnlineSettingsPage.cpp"
-                    $File "momentum\ui\SettingsPanel\GamemodeSettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.h"
+                    $File "momentum\ui\SettingsPanel\SettingsPanel.cpp"
+                    $File "momentum\ui\SettingsPanel\SettingsPanel.h"
+                    $File "momentum\ui\SettingsPanel\InputSettingsPanel.cpp"
+                    $File "momentum\ui\SettingsPanel\InputSettingsPanel.h"
+                    $File "momentum\ui\SettingsPanel\AudioSettingsPanel.cpp"
+                    $File "momentum\ui\SettingsPanel\AudioSettingsPanel.h"
+                    $File "momentum\ui\SettingsPanel\VideoSettingsPanel.cpp"
+                    $File "momentum\ui\SettingsPanel\VideoSettingsPanel.h"
+                    $File "momentum\ui\SettingsPanel\OnlineSettingsPanel.cpp"
+                    $File "momentum\ui\SettingsPanel\OnlineSettingsPanel.h"
+                    $File "momentum\ui\SettingsPanel\GameplaySettingsPanel.cpp"
+                    $File "momentum\ui\SettingsPanel\GameplaySettingsPanel.h"
+                    $File "momentum\ui\SettingsPanel\HUDSettingsPanel.cpp"
+                    $File "momentum\ui\SettingsPanel\HUDSettingsPanel.h"
                 }
                 
                 $Folder "HUD"
@@ -105,7 +106,12 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_comparisons.cpp"
                     $File "momentum\ui\HUD\hud_comparisons.h"
                     $File "momentum\ui\HUD\hud_mapinfo.cpp"
+                    $File "momentum\ui\HUD\hud_speedometer.h"
                     $File "momentum\ui\HUD\hud_speedometer.cpp"
+                    $File "momentum\ui\HUD\hud_speedometer_label.h"
+                    $File "momentum\ui\HUD\hud_speedometer_label.cpp"
+                    $File "momentum\ui\HUD\hud_speedometer_data.h"
+                    $File "momentum\ui\HUD\hud_speedometer_data.cpp"
                     $File "momentum\ui\HUD\hud_strafesync.cpp"
                     $File "momentum\ui\HUD\hud_timer.cpp"
                     $File "momentum\ui\HUD\hud_saveloc_menu.cpp"
@@ -133,8 +139,11 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\controls\ModelPanel.cpp"
                     $File "momentum\ui\controls\FileImage.cpp"
                     $File "momentum\ui\controls\FileImage.h"
+                    $File "momentum\ui\FileImageCache.h"
                     $File "momentum\ui\controls\ImageGallery.h"
                     $File "momentum\ui\controls\ImageGallery.cpp"
+                    $File "momentum\ui\controls\VControlsListPanel.h"
+                    $File "momentum\ui\controls\VControlsListPanel.cpp"
                 }
 
                 $Folder "Lobby"
@@ -161,14 +170,12 @@ $Project "Client (Momentum)"
                 
                 $Folder "Changelog"
                 {
-                    $File   "momentum\ui\IChangelogPanel.h"
                     $File   "momentum\ui\ChangelogPanel.cpp"
                     $File   "momentum\ui\ChangelogPanel.h"
                 }
                 
                 $Folder "Messagebox"
                 {
-                    $File "momentum\ui\IMessageboxPanel.h"
                     $File "momentum\ui\MessageboxPanel.cpp"
                     $File "momentum\ui\MessageboxPanel.h"
                 }
@@ -346,12 +353,6 @@ $Project "Client (Momentum)"
             $File "$SRCDIR\game\shared\momentum\run\mom_run_entity.cpp"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.cpp"
-            
-            $Folder "Project-9"
-            {
-                $File "momentum\dynamicrendertargets.cpp"
-                $File "momentum\dynamicrendertargets.h"
-            }
         }
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"

@@ -1,23 +1,18 @@
 #include "BasePanel.h"
 #include "GameUI_Interface.h"
 #include "MainMenu.h"
-#include "vgui/ILocalize.h"
 #include "vgui/ISurface.h"
-#include "vgui/IVGui.h"
 #include "tier0/icommandline.h"
-#include "OptionsDialog.h"
-#include "steam/steam_api.h"
 #include "EngineInterface.h"
 #include "vgui_controls/MessageBox.h"
 #include "vgui_controls/AnimationController.h"
-#include "LoadingDialog.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-extern DHANDLE<CLoadingDialog> g_hLoadingDialog;
+extern VPANEL g_hLoadingBackgroundDialog;
 
 static CBasePanel *g_pBasePanel;
 CBasePanel *GetBasePanel() { return g_pBasePanel; }
@@ -40,6 +35,8 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
 {
     g_pBasePanel = this;
 
+    m_iBackgroundImageID = 0;
+    m_iLoadingImageID = 0;
     m_bLevelLoading = false;
     m_eBackgroundState = BACKGROUND_INITIAL;
     m_flTransitionStartTime = 0.0f;
@@ -50,8 +47,6 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
     m_bEverActivated = false;
     m_bHaveDarkenedBackground = false;
     m_BackdropColor = Color(0, 0, 0, 128);
-
-    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
     SetZPos(-100);
     m_pMainMenu = new MainMenu(this);
@@ -115,75 +110,12 @@ void CBasePanel::OnGameUIActivated()
     if (GameUI().IsInLevel())
     {
         OnCommand("OpenPauseMenu");
-
-        if (m_hAchievementsDialog.Get())
-        {
-            // Achievement dialog refreshes it's data if the player looks at the pause menu
-            m_hAchievementsDialog->OnCommand("OnGameUIActivated");
-        }
     }
 }
 
 void CBasePanel::OnGameUIHidden()
 {
-    if (m_hOptionsDialog.Get())
-    {
-        PostMessage(m_hOptionsDialog.Get(), new KeyValues("GameUIHidden"));
-    }
-
     m_pMainMenu->SetVisible(false);
-
-    // HACKISH: Force this dialog closed so it gets data updates upon reopening.
-    Frame* pAchievementsFrame = m_hAchievementsDialog.Get();
-    if (pAchievementsFrame)
-    {
-        pAchievementsFrame->Close();
-    }
-}
-
-void CBasePanel::OnOpenOptionsDialog()
-{
-    if (!m_hOptionsDialog.Get())
-    {
-        m_hOptionsDialog = new COptionsDialog(this);
-        PositionDialog(m_hOptionsDialog);
-    }
-
-    m_hOptionsDialog->Activate();
-}
-
-void CBasePanel::OnOpenAchievementsDialog()
-{
-    Warning("MOM_TODO: Implement the achievements dialog!\n");
-#if 0
-    if (!m_hAchievementsDialog.Get())
-    {
-        m_hAchievementsDialog = new CAchievementsDialog(this);
-        PositionDialog(m_hAchievementsDialog);
-    }
-    m_hAchievementsDialog->Activate();
-#endif
-}
-
-void CBasePanel::PositionDialog(PHandle dlg)
-{
-    if (!dlg.Get())
-        return;
-
-    int x, y, ww, wt, wide, tall;
-    surface()->GetWorkspaceBounds(x, y, ww, wt);
-    dlg->GetSize(wide, tall);
-
-    // Center it, keeping requested size
-    dlg->SetPos(x + ((ww - wide) / 2), y + ((wt - tall) / 2));
-}
-
-void CBasePanel::ApplyOptionsDialogSettings()
-{
-    if (m_hOptionsDialog.Get())
-    {
-        m_hOptionsDialog->ApplyChanges();
-    }
 }
 
 void CBasePanel::SetMenuAlpha(int alpha)
@@ -326,15 +258,12 @@ void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_flFrameFadeInTime = atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
+    m_flFrameFadeInTime = Q_atof(pScheme->GetResourceString("Frame.TransitionEffectTime"));
 
     // work out current focus - find the topmost panel
     SetBgColor(Color(0, 0, 0, 0));
 
     m_BackdropColor = pScheme->GetColor("mainmenu.backdrop", Color(0, 0, 0, 128));
-
-    char filename[MAX_PATH];
-
 
     int screenWide, screenTall;
     surface()->GetScreenSize(screenWide, screenTall);
@@ -345,19 +274,29 @@ void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
     // pc uses blurry backgrounds based on the background level
     char background[MAX_PATH];
     engine->GetMainMenuBackgroundName(background, sizeof(background));
+
+    char filename[MAX_PATH];
     Q_snprintf(filename, sizeof(filename), "console/%s%s", background, (bIsWidescreen ? "_widescreen" : ""));
 
+    if (m_iBackgroundImageID)
+    {
+        surface()->DestroyTextureID(m_iBackgroundImageID);
+    }
     m_iBackgroundImageID = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile(m_iBackgroundImageID, filename, false, false);
 
     // load the loading icon
+    if (m_iLoadingImageID)
+    {
+        surface()->DestroyTextureID(m_iLoadingImageID);
+    }
     m_iLoadingImageID = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile(m_iLoadingImageID, "console/startup_loading", false, false);
 }
 
 void CBasePanel::PaintBackground()
 {
-    if (!GameUI().IsInLevel() || g_hLoadingDialog.Get())
+    if (!GameUI().IsInLevel() || ipanel()->IsVisible(g_hLoadingBackgroundDialog))
     {
         // not in the game or loading dialog active or exiting, draw the ui background
         DrawBackgroundImage();
@@ -386,20 +325,6 @@ void CBasePanel::RunMenuCommand(const char* command)
             // MOM_TODO: Do we even need to do this?
             PostMessage(m_pMainMenu, new KeyValues("Command", "command", "Open"));
         }
-    }
-    else if (!Q_stricmp(command, "OpenOptionsDialog"))
-    {
-        OnOpenOptionsDialog();
-    }
-    else if (!Q_stricmp(command, "OpenAchievementsDialog"))
-    {
-        if (!SteamUser() || !SteamUser()->BLoggedOn())
-        {
-            MessageBox *pMessageBox = new MessageBox("#GameUI_Achievements_SteamRequired_Title", "#GameUI_Achievements_SteamRequired_Message");
-            pMessageBox->DoModal();
-            return;
-        }
-        OnOpenAchievementsDialog();
     }
     else if (!Q_stricmp(command, "Quit") || !Q_stricmp(command, "QuitNoConfirm"))
     {

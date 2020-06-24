@@ -110,11 +110,7 @@ static ConVar r_drawopaqueworld( "r_drawopaqueworld", "1", FCVAR_CHEAT );
 static ConVar r_drawtranslucentworld( "r_drawtranslucentworld", "1", FCVAR_CHEAT );
 static ConVar r_3dsky( "r_3dsky","1", 0, "Enable the rendering of 3d sky boxes" );
 static ConVar r_skybox( "r_skybox","1", FCVAR_CHEAT, "Enable the rendering of sky boxes" );
-#ifdef TF_CLIENT_DLL
-ConVar r_drawviewmodel( "r_drawviewmodel","1", FCVAR_ARCHIVE );
-#else
-ConVar r_drawviewmodel( "r_drawviewmodel","1", FCVAR_CHEAT );
-#endif
+ConVar r_drawviewmodel( "r_drawviewmodel", "1", FCVAR_ARCHIVE );
 static ConVar r_drawtranslucentrenderables( "r_drawtranslucentrenderables", "1", FCVAR_CHEAT );
 static ConVar r_drawopaquerenderables( "r_drawopaquerenderables", "1", FCVAR_CHEAT );
 static ConVar r_threaded_renderables( "r_threaded_renderables", "0" );
@@ -779,11 +775,7 @@ CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffects)
 	CLIENTEFFECT_MATERIAL( "dev/blurfiltery_nohdr" )
 	CLIENTEFFECT_MATERIAL( "dev/bloomadd" )
 	CLIENTEFFECT_MATERIAL( "dev/downsample" )
-	#ifdef CSTRIKE_DLL
-		CLIENTEFFECT_MATERIAL( "dev/downsample_non_hdr_cstrike" )
-	#else
-		CLIENTEFFECT_MATERIAL( "dev/downsample_non_hdr" )
-	#endif
+	CLIENTEFFECT_MATERIAL( "dev/downsample_non_hdr_cstrike" )
 	CLIENTEFFECT_MATERIAL( "dev/no_pixel_write" )
 	CLIENTEFFECT_MATERIAL( "dev/lumcompare" )
 	CLIENTEFFECT_MATERIAL( "dev/floattoscreen_combine" )
@@ -1988,7 +1980,7 @@ void CViewRender::RenderView( const CViewSetup &viewSetup, int nClearFlags, int 
 				pRenderContext.GetFrom( materials );
 				{
 					PIXEVENT( pRenderContext, "DoImageSpaceMotionBlur" );
-					DoImageSpaceMotionBlur( viewSetup, viewSetup.x, viewSetup.y, viewSetup.width, viewSetup.height );
+					DoImageSpaceMotionBlur( viewSetup );
 				}
 				pRenderContext.SafeRelease();
 			}

@@ -612,6 +612,14 @@ void EditablePanel::OnReloadControls()
     BaseClass::OnReloadControls();
 }
 
+void EditablePanel::OnScreenSizeChanged(int oldwide, int oldtall)
+{
+	BaseClass::OnScreenSizeChanged(oldwide, oldtall);
+
+	PostMessage(this, new KeyValues("ReloadControls"), 0.2);
+	PostMessage(this, new KeyValues("Invalidate"), 0.3);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Handle information requests
 //-----------------------------------------------------------------------------
@@ -732,6 +740,9 @@ void EditablePanel::OnSetFocus()
 //-----------------------------------------------------------------------------
 void EditablePanel::ApplySettings(KeyValues *inResourceData)
 {
+	// Don't show things that shouldn't be shown
+	inResourceData->SetInt("visible", IsVisible());
+
 	BaseClass::ApplySettings(inResourceData);
 
 	_buildGroup->ApplySettings(inResourceData);

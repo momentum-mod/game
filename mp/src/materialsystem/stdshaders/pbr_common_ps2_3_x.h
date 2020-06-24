@@ -104,30 +104,28 @@ float3 calculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, fl
     // Calculate geometric attenuation for specular BRDF
     float G = gaSchlickGGX(cosLightIn, lightDirectionAngle, roughness);
 
+    // Cook-Torrance specular microfacet BRDF
+    float3 specularBRDF = (F * D * G) / max(EPSILON, 4.0 * cosLightIn * lightDirectionAngle);
+
+#if LIGHTMAPPED && !FLASHLIGHT
+
+    // Ambient light from static lights is already precomputed in the lightmap. Don't add it again
+    return specularBRDF * lightIntensity * cosLightIn;
+
+#else
+
     // Diffuse scattering happens due to light being refracted multiple times by a dielectric medium
     // Metals on the other hand either reflect or absorb energso diffuse contribution is always, zero
     // To be energy conserving we must scale diffuse BRDF contribution based on Fresnel factor & metalness
-#if SPECULAR
-    // Metalness is not used if F0 map is available
-    float3 kd = float3(1, 1, 1) - F;
-#else
     float3 kd = lerp(float3(1, 1, 1) - F, float3(0, 0, 0), metalness);
-#endif
-
     float3 diffuseBRDF = kd * albedo;
-
-    // Cook-Torrance specular microfacet BRDF
-    float3 specularBRDF = (F * D * G) / max(EPSILON, 4.0 * cosLightIn * lightDirectionAngle);
-#if LIGHTMAPPED
-    // Ambient light from static lights is already precomputed in the lightmap. Don't add it again
-    return specularBRDF * lightIntensity * cosLightIn;
-#else
     return (diffuseBRDF + specularBRDF) * lightIntensity * cosLightIn;
-#endif
+
+#endif // LIGHTMAPPED && !FLASHLIGHT
 }
 
 // Get diffuse ambient light
-float3 ambientLookupLightmap(float3 normal, float3 EnvAmbientCube[6], float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation)
+float3 ambientLookupLightmap(float3 normal, float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation)
 {
     float2 bumpCoord1;
     float2 bumpCoord2;
@@ -156,27 +154,13 @@ float3 ambientLookupLightmap(float3 normal, float3 EnvAmbientCube[6], float3 tex
     return diffuseLighting;
 }
 
-float3 ambientLookup(float3 normal, float3 EnvAmbientCube[6], float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation)
+float3 ambientLookup(float3 normal, float3 ambientCube[6], float3 textureNormal, float4 lightmapTexCoord1And2, float4 lightmapTexCoord3, sampler LightmapSampler, float4 g_DiffuseModulation)
 {
 #if LIGHTMAPPED
-    return ambientLookupLightmap(normal, EnvAmbientCube, textureNormal, lightmapTexCoord1And2, lightmapTexCoord3, LightmapSampler, g_DiffuseModulation);
+    return ambientLookupLightmap(normal, textureNormal, lightmapTexCoord1And2, lightmapTexCoord3, LightmapSampler, g_DiffuseModulation);
 #else
-    return PixelShaderAmbientLight(normal, EnvAmbientCube);
+    return PixelShaderAmbientLight(normal, ambientCube);
 #endif
-}
-
-// Create an ambient cube from the envmap
-void setupEnvMapAmbientCube(out float3 EnvAmbientCube[6], sampler EnvmapSampler)
-{
-    float4 directionPosX = { 1, 0, 0, 12 }; float4 directionNegX = {-1, 0, 0, 12 };
-    float4 directionPosY = { 0, 1, 0, 12 }; float4 directionNegY = { 0,-1, 0, 12 };
-    float4 directionPosZ = { 0, 0, 1, 12 }; float4 directionNegZ = { 0, 0,-1, 12 };
-    EnvAmbientCube[0] = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, directionPosX).rgb;
-    EnvAmbientCube[1] = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, directionNegX).rgb;
-    EnvAmbientCube[2] = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, directionPosY).rgb;
-    EnvAmbientCube[3] = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, directionNegY).rgb;
-    EnvAmbientCube[4] = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, directionPosZ).rgb;
-    EnvAmbientCube[5] = ENV_MAP_SCALE * texCUBElod(EnvmapSampler, directionNegZ).rgb;
 }
 
 #if PARALLAXOCCLUSION
@@ -212,6 +196,7 @@ float2 parallaxCorrect(float2 texCoord, float3 viewRelativeDir, sampler depthMap
 
     float2 texOffset2 = 0;
 
+    [unroll]
     while ( nStepIndex < nNumSteps ) 
     {
         vTexCurrentOffset -= vTexOffsetPerStep;

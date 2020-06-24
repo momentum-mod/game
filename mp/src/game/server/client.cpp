@@ -552,13 +552,8 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
-	bool bAllowed = (sAllowPointCommand == eAllowAlways);
-
-    if (sAllowPointCommand == eAllowWhitelist)
-    {
-        GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
-        return;
-    }
+	bool bAllowed = (sAllowPointCommand == eAllowAlways || sAllowPointCommand == eAllowWhitelist)
+                    || FStrEq(STRING(gpGlobals->mapname), "credits");
 
     if (!bAllowed)
     {
@@ -590,7 +585,14 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !pClient || !pClient->GetUnknown() )
 		return;
 
-	engine->ClientCommand( pClient, "%s\n", inputdata.value.String() );
+	if (sAllowPointCommand == eAllowWhitelist)
+	{
+		GameRulesMomentum()->RunPointClientCommandWhitelisted(pClient, inputdata.value.String());
+	}
+	else
+	{
+		engine->ClientCommand(pClient, "%s\n", inputdata.value.String());
+	}
 }
 
 BEGIN_DATADESC( CPointClientCommand )
@@ -622,7 +624,7 @@ void CPointServerCommand::InputCommand( inputdata_t& inputdata )
 	bool bAllowed = ( sAllowPointCommand == eAllowAlways );
     if (sAllowPointCommand == eAllowWhitelist)
     {
-        GameRulesMomentum()->PointCommandWhitelisted(inputdata.value.String());
+        GameRulesMomentum()->RunPointServerCommandWhitelisted(inputdata.value.String());
         return;
     }
 
@@ -904,6 +906,12 @@ CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCom
 			Warning("The weapon %s is not allowed in this gamemode!\n", args.Arg(1));
 			return;
 		}
+
+        if (FStrEq(STRING(gpGlobals->mapname), "credits") || gpGlobals->eLoadType == MapLoad_Background)
+        {
+            Warning("Cannot give weapons in this map!");
+            return;
+        }
 
 		pPlayer->GiveWeapon(foundID);
 	}

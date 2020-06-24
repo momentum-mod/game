@@ -49,10 +49,12 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pSaveZonesButton = new Button(this, "SaveZonesButton", "#MOM_ZoneMenu_SaveZones", this, "SaveZones");
 
     m_pTrackNumberLabel = new Label(this, "TrackNumberLabel", "#MOM_ZoneMenu_TrackNumber");
-    m_pTrackNumberEntry = new CvarTextEntry(this, "TrackNumberEntry", "mom_zone_track");
+    m_pTrackNumberEntry = new CvarTextEntry(this, "TrackNumberEntry", "mom_zone_track", 0);
+    m_pTrackNumberEntry->SetAllowNumericInputOnly(true);
 
     m_pZoneNumberLabel = new Label(this, "ZoneNumberLabel", "#MOM_ZoneMenu_ZoneNumber");
-    m_pZoneNumberEntry = new CvarTextEntry(this, "ZoneNumberEntry", "mom_zone_zonenum");
+    m_pZoneNumberEntry = new CvarTextEntry(this, "ZoneNumberEntry", "mom_zone_zonenum", 0);
+    m_pZoneNumberEntry->SetAllowNumericInputOnly(true);
 
     m_pZoneTypeLabel = new Label(this, "ZoneTypeLabel", "#MOM_ZoneMenu_ZoneType");
     m_pZoneTypeCombo = new ComboBox(this, "ZoneTypeCombo", 7, false);
@@ -65,9 +67,9 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pZoneTypeCombo->ActivateItemByRow(0);
 
     m_pGridSizeLabel = new Label(this, "GridSizeLabel", "");
-    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider");
-    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid");
-    m_bUpdateGridSizeSlider = false;
+    m_pGridSizeSlider = new CvarSlider(this, "GridSizeSlider", "mom_zone_grid", 0, true);
+    m_pGridSizeTextEntry = new CvarTextEntry(this, "GridSizeTextEntry", "mom_zone_grid", 0);
+    m_pGridSizeTextEntry->SetAllowNumericInputOnly(true);
 
     LoadControlSettingsAndUserConfig("resource/ui/ZoneMenu.res");
 
@@ -194,44 +196,9 @@ void C_MomZoneMenu::OnClose()
     BaseClass::OnClose();
 }
 
-void C_MomZoneMenu::OnControlModified(Panel *pPanel)
-{
-    if (pPanel == m_pGridSizeSlider)
-    {
-        // Don't retrigger the cvar change if it was already updated by textentry
-        if (!m_bUpdateGridSizeSlider)
-        {
-            m_bUpdateGridSizeSlider = true;
-            return;
-        }
-
-        // Round val to whole number, because no one wants to align to 6.1238765426
-        float flVal = roundf(m_pGridSizeSlider->GetSliderValue());
-        m_pGridSizeSlider->SetSliderValue(flVal);
-        m_pGridSizeSlider->ApplyChanges();
-        // update textentry control
-        char szVal[32];
-        Q_snprintf(szVal, sizeof(szVal), "%.0f", flVal);
-        m_pGridSizeTextEntry->SetText(szVal);
-    }
-    else if (pPanel == m_pToggleZoneEdit)
-        m_pToggleZoneEdit->ApplyChanges();
-    else if (pPanel == m_pToggleUsePointMethod)
-        m_pToggleUsePointMethod->ApplyChanges();
-}
-
 void C_MomZoneMenu::OnTextChanged(Panel *pPanel)
 {
-    if (pPanel == m_pGridSizeTextEntry)
-    {
-        m_bUpdateGridSizeSlider = false;
-        m_pGridSizeTextEntry->ApplyChanges();
-    }
-    else if (pPanel == m_pTrackNumberEntry)
-        m_pTrackNumberEntry->ApplyChanges();
-    else if (pPanel == m_pZoneNumberEntry)
-        m_pZoneNumberEntry->ApplyChanges();
-    else if (pPanel == m_pZoneTypeCombo)
+    if (pPanel == m_pZoneTypeCombo)
     {
         static ConVarRef mom_zone_type("mom_zone_type");
 

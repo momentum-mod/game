@@ -1,5 +1,10 @@
 #include "cbase.h"
+
 #include "hud_spectatorinfo.h"
+
+#include "c_mom_player.h"
+#include "c_mom_online_ghost.h"
+
 #include "clientmode.h"
 #include "mom_shareddefs.h"
 #include "vgui/ILocalize.h"
@@ -15,8 +20,7 @@ DECLARE_HUDELEMENT(CHudSpectatorInfo);
 
 static MAKE_CONVAR(mom_hud_spectator_info_show, "1", FLAG_HUD_CVAR, "Toggles showing the spectator panel. 0 = OFF, 1 = ON (when there are spectators), 2 = ALWAYS ON\n", 0, 2);
 static MAKE_TOGGLE_CONVAR(mom_hud_spectator_info_show_names, "1", FLAG_HUD_CVAR, "Toggles showing the names of who is spectating you.\n");
-static MAKE_CONVAR(mom_hud_spectator_info_name_count, "5", FLAG_HUD_CVAR, "Controls the max number of names to print of who is spectating you."
-    "\n0 = unlimited (as many as the panel can handle)\n", 0, 100);
+static MAKE_CONVAR(mom_hud_spectator_info_name_count, "5", FLAG_HUD_CVAR, "Controls the max number of names to print of who is spectating you.\n0 = unlimited (as many as the panel can handle)\n", 0, 100);
 
 CHudSpectatorInfo::CHudSpectatorInfo(const char *pName) : CHudElement(pName), BaseClass(g_pClientMode->GetViewport(), pName)
 {
@@ -24,12 +28,11 @@ CHudSpectatorInfo::CHudSpectatorInfo(const char *pName) : CHudElement(pName), Ba
     SetHiddenBits(HIDEHUD_LEADERBOARDS);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetDefLessFunc(m_mapNameMap);
+    SetDefLessFunc(m_mapTargetToSpectateList);
+    SetDefLessFunc(m_mapSpectatorToTargetMap);
 
-    if (SteamUser())
-        m_idLocal = SteamUser()->GetSteamID().ConvertToUint64();
-    else
-        m_idLocal = 0;
+    m_CurrentSpecTargetSteamID = 0;
+    m_iSpecCount = 0;
 }
 
 CHudSpectatorInfo::~CHudSpectatorInfo()
@@ -38,7 +41,25 @@ CHudSpectatorInfo::~CHudSpectatorInfo()
 
 bool CHudSpectatorInfo::ShouldDraw()
 {
-    m_iSpecCount = m_mapNameMap.Count();
+    m_iSpecCount = 0;
+    m_CurrentSpecTargetSteamID = 0;
+
+    const auto pPlayer = C_MomentumPlayer::GetLocalMomPlayer();
+    if (!pPlayer)
+        return false;
+
+    const auto pUIEntity = pPlayer->GetCurrentUIEntity();
+    if (pUIEntity->GetEntType() == RUN_ENT_PLAYER || pUIEntity->GetEntType() == RUN_ENT_ONLINE)
+    {
+        m_CurrentSpecTargetSteamID = pUIEntity->GetSteamID();
+
+        const auto index = m_mapTargetToSpectateList.Find(m_CurrentSpecTargetSteamID);
+        if (m_mapTargetToSpectateList.IsValidIndex(index))
+        {
+            m_iSpecCount = m_mapTargetToSpectateList[index]->m_vecSpectators.Count();
+        }
+    }
+
     const int showVal = mom_hud_spectator_info_show.GetInt();
     const bool showFromCount = showVal == 2 || (showVal == 1 && m_iSpecCount > 0);
 
@@ -64,47 +85,74 @@ void CHudSpectatorInfo::Paint()
 
     if (mom_hud_spectator_info_show_names.GetBool() && m_iSpecCount > 0)
     {
-        unsigned short index = m_mapNameMap.FirstInorder();
-        int desiredCount = mom_hud_spectator_info_name_count.GetInt() == 0 ? INT_MAX : mom_hud_spectator_info_name_count.GetInt();
-        int loopCount = 0;
-        while (index != m_mapNameMap.InvalidIndex() && loopCount <= desiredCount)
+        const auto index = m_mapTargetToSpectateList.Find(m_CurrentSpecTargetSteamID);
+        if (m_mapTargetToSpectateList.IsValidIndex(index))
         {
-            yPos += fontTall + 2;
-            //MOM_TODO: Allow customizing this text position
-            surface()->DrawSetTextPos(2, yPos);
-            wchar_t *pName = m_mapNameMap.Element(index);
-            surface()->DrawPrintText(pName, Q_wcslen(pName));
+            CUtlVector<uint64> *pVecSpec = &m_mapTargetToSpectateList[index]->m_vecSpectators;
+            int desiredCount = mom_hud_spectator_info_name_count.GetInt() == 0 ? INT_MAX : mom_hud_spectator_info_name_count.GetInt();
+            for (int i = 0; i < pVecSpec->Count() && i < desiredCount; i++)
+            {
+                yPos += fontTall + 2;
 
-            index = m_mapNameMap.NextInorder(index);
-            loopCount++;
+                //MOM_TODO: Allow customizing this text position
+
+                surface()->DrawSetTextPos(2, yPos);
+                const auto specUser = pVecSpec->Element(i);
+
+                const char *pName = SteamFriends()->GetFriendPersonaName(CSteamID(specUser));
+                wchar_t pNameUnicode[MAX_PLAYER_NAME_LENGTH];
+                ANSI_TO_UNICODE(pName, pNameUnicode);
+
+                surface()->DrawPrintText(pNameUnicode, Q_wcslen(pNameUnicode));
+            }
         }
     }
 }
 
 void CHudSpectatorInfo::LevelShutdown()
 {
-    m_mapNameMap.PurgeAndDeleteElements(true);
+    m_mapTargetToSpectateList.PurgeAndDeleteElements();
+    m_mapSpectatorToTargetMap.RemoveAll();
 }
 
 void CHudSpectatorInfo::SpectatorUpdate(const CSteamID& person, const CSteamID& target)
 {
-    unsigned short indx = m_mapNameMap.Find(person.ConvertToUint64());
-    const bool found = indx != m_mapNameMap.InvalidIndex();
+    auto index = m_mapSpectatorToTargetMap.Find(person.ConvertToUint64());
+    if (m_mapSpectatorToTargetMap.IsValidIndex(index))
+    {
+        uint64 previousTarget = m_mapSpectatorToTargetMap[index];
 
-    if (target.ConvertToUint64() == m_idLocal && !found)
-    {
-        CHECK_STEAM_API(SteamFriends());
-        const char *pName = SteamFriends()->GetFriendPersonaName(person);
-        wchar_t pNameUnicode[MAX_PLAYER_NAME_LENGTH];
-        wchar_t *pNameCopy = new wchar_t[MAX_PLAYER_NAME_LENGTH];
-        ANSI_TO_UNICODE(pName, pNameUnicode);
-        Q_wcsncpy(pNameCopy, pNameUnicode, MAX_PLAYER_NAME_LENGTH * sizeof(wchar_t));
-        m_mapNameMap.Insert(person.ConvertToUint64(), pNameCopy);
+        // Remove me from previous target's spectator list (if valid)
+        if (previousTarget > 1)
+        {
+            const auto prevTargetIndex = m_mapTargetToSpectateList.Find(previousTarget);
+            if (m_mapTargetToSpectateList.IsValidIndex(prevTargetIndex))
+            {
+                m_mapTargetToSpectateList[prevTargetIndex]->m_vecSpectators.FindAndRemove(person.ConvertToUint64());
+            }
+        }
+
+        m_mapSpectatorToTargetMap[index] = target.ConvertToUint64();
     }
-    else if (found)
+    else
     {
-        wchar_t *pName = m_mapNameMap.Element(indx);
-        delete[] pName; // clear the memory we allocated with new[]
-        m_mapNameMap.RemoveAt(indx);
+        m_mapSpectatorToTargetMap.Insert(person.ConvertToUint64(), target.ConvertToUint64());
+    }
+
+    if (target.ConvertToUint64() > 1)
+    {
+        index = m_mapTargetToSpectateList.Find(target.ConvertToUint64());
+        const bool found = m_mapTargetToSpectateList.IsValidIndex(index);
+
+        if (found)
+        {
+            m_mapTargetToSpectateList[index]->m_vecSpectators.AddToTail(person.ConvertToUint64());
+        }
+        else
+        {
+            SpecList *list = new SpecList;
+            list->m_vecSpectators.AddToTail(person.ConvertToUint64());
+            m_mapTargetToSpectateList.Insert(target.ConvertToUint64(), list);
+        }
     }
 }

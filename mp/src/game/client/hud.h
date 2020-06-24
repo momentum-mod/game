@@ -171,7 +171,6 @@ public:
 	CUtlVector< CHudElement * >	m_HudList;
 
 private:
-	void						InitFonts();
 
 	void						SetupNewHudTexture( CHudTexture *t );
 
@@ -191,7 +190,6 @@ extern CHud gHUD;
 //-----------------------------------------------------------------------------
 // Global fonts used in the client DLL
 //-----------------------------------------------------------------------------
-extern vgui::HFont g_hFontTrebuchet24;
 
 void LoadHudTextures(CUtlDict<CHudTexture*>& list, const char *szFilenameWithoutExtension);
 void LoadHudTextures(CUtlDict<CHudTexture*>& list, KeyValues *pKvInput);

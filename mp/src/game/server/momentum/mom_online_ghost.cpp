@@ -1,8 +1,8 @@
 #include "cbase.h"
 #include "mom_online_ghost.h"
+
 #include "mom_player_shared.h"
 
-#include "in_buttons.h"
 #include "fx_mom_shared.h"
 #include "mom_grenade_projectile.h"
 #include "mom_rocket.h"
@@ -17,7 +17,6 @@
 LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
-SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
 SendPropBool(SENDINFO(m_bSpectating)),
 SendPropFloat(SENDINFO_VECTORELEM(m_vecViewOffset, 0), 8, SPROP_ROUNDDOWN, -32.0, 32.0f),
 SendPropFloat(SENDINFO_VECTORELEM(m_vecViewOffset, 1), 8, SPROP_ROUNDDOWN, -32.0, 32.0f),
@@ -39,29 +38,34 @@ static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_
 
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                           "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
+
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                             "Toggle overriding other player's ghost alpha values to the one defined in "
                             "\"mom_ghost_online_color_alpha_override\".\n",
                             RefreshGhostData);
+
 static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                      "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
+
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE,
                             "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
+
 extern ConVar mom_paintgun_shoot_sound;
 
 static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_flashlights_enable, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles drawing other ghosts' flashlights. 0 = OFF, 1 = ON\n", RefreshGhostData);
+
+static MAKE_CONVAR(mom_ghost_online_sticky_alpha, "50", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Sets the ghost stickybomb alpha value. 10 = more transparent, 255 = opaque.", 10.0f, 255.0f);
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
     ListenForGameEvent("mapfinished_panel_closed");
     m_nGhostButtons = 0;
     m_bSpectating = false;
-    m_GhostSteamID.Clear();
+    m_specTargetID = 0;
 }
 
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
-    m_GhostSteamID.Clear();
     m_vecPositionPackets.Purge();
     m_vecDecalPackets.Purge();
 }
@@ -116,12 +120,6 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket &decal)
     default:
         break;
     }
-}
-
-void CMomentumOnlineGhostEntity::SetGhostSteamID(const CSteamID &steamID)
-{
-    m_GhostSteamID = steamID;
-    m_uiAccountID = m_GhostSteamID.ConvertToUint64();
 }
 
 void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
@@ -203,12 +201,21 @@ void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket& packet)
 
 void CMomentumOnlineGhostEntity::FireRocket(const DecalPacket &packet)
 {
+    EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_ROCKETLAUNCHER, "single_shot"));
+
     CMomRocket::EmitRocket(packet.vOrigin, packet.vAngle, this);
 }
 
 void CMomentumOnlineGhostEntity::FireSticky(const DecalPacket &packet)
 {
-    CMomStickybomb::Create(packet.vOrigin, packet.vAngle, packet.data.stickyShoot.velocity, this);
+    EmitSound(g_pWeaponDef->GetWeaponSound(WEAPON_STICKYLAUNCHER, "single_shot"));
+
+    const auto pSticky = CMomStickybomb::Create(packet.vOrigin, packet.vAngle, packet.data.stickyShoot.velocity, this);
+
+    if (pSticky)
+    {
+        pSticky->SetRenderColorA(mom_ghost_online_sticky_alpha.GetInt());
+    }
 
     // If we've gone over the max stickybomb count, fizzle the oldest
     if (m_vecExplosives.Count() > MOM_WEAPON_STICKYBOMB_COUNT)
@@ -432,6 +439,37 @@ void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
     }
 }
 
+SpectateMessageType_t CMomentumOnlineGhostEntity::UpdateSpectateState(bool bIsSpec, uint64 specTargetID)
+{
+    SpectateMessageType_t type = SPEC_UPDATE_INVALID;
+    const auto bTargetChanged = m_specTargetID != specTargetID;
+    if (bTargetChanged)
+    {
+        m_specTargetID = specTargetID;
+    }
+
+    const auto bStateChanged = bIsSpec != m_bSpectating;
+    if (bStateChanged)
+    {
+        if (!m_bSpectating && bIsSpec)
+        {
+            type = SPEC_UPDATE_STARTED;
+        }
+        else if (m_bSpectating && !bIsSpec)
+        {
+            type = SPEC_UPDATE_STOP;
+        }
+
+        SetIsSpectating(bIsSpec);
+    }
+    else if (bTargetChanged)
+    {
+        type = SPEC_UPDATE_CHANGETARGET;
+    }
+
+    return type;
+}
+
 void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
 {
     if (!mom_ghost_online_flashlights_enable.GetBool())
@@ -453,5 +491,20 @@ void CMomentumOnlineGhostEntity::SetGhostFlashlight(bool bEnable)
         RemoveEffects(EF_DIMLIGHT);
         if (mom_ghost_online_sounds.GetBool())
             EmitSound(SND_FLASHLIGHT_OFF);
+    }
+}
+
+void CMomentumOnlineGhostEntity::SetIsSpectating(bool bState)
+{
+    m_bSpectating = bState;
+
+    if (m_bSpectating)
+    {
+        DestroyExplosives();
+        HideGhost();
+    }
+    else
+    {
+        UnHideGhost();
     }
 }

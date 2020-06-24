@@ -21,7 +21,7 @@ public:
     void Shutdown() OVERRIDE;
     // MOM_TODO uncomment this for server STEAM_CALLBACK(, HandleFriendJoin, GameRichPresenceJoinRequested_t); // Joining from a friend's "JOIN GAME" option from steam
 
-    void ClearCurrentGhosts(bool);
+    void ClearCurrentGhosts(bool bLeavingLobby);
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
     void ResetOtherAppearanceData(); // Resets every ghost's appearance data, mostly done when overrides are toggled, to apply them

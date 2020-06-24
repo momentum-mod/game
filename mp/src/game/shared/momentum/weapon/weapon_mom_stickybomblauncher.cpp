@@ -144,6 +144,9 @@ void CMomentumStickybombLauncher::LaunchGrenade()
     m_bEarlyPrimaryFire = false;
 
     DoFireEffects();
+
+    StopWeaponSound(GetWeaponSound("charge"));
+
     WeaponSound(GetWeaponSound("single_shot"));
 
     m_flChargeBeginTime = 0;
@@ -228,7 +231,15 @@ void CMomentumStickybombLauncher::PrimaryAttack()
         float flTotalChargeTime = gpGlobals->curtime - m_flChargeBeginTime;
         if (flTotalChargeTime >= MOM_STICKYBOMB_MAX_CHARGE_TIME)
         {
-            LaunchGrenade();
+            if (m_bIsChargeEnabled)
+            {
+                LaunchGrenade();
+            }
+            else
+            {
+                // stop this from getting too large
+                m_flChargeBeginTime = 0.0f;
+            }
         }
     }
 }
@@ -273,6 +284,19 @@ float CMomentumStickybombLauncher::CalculateProjectileSpeed(float flProgress)
 {
     return RemapValClamped(flProgress, 0.0f, MOM_STICKYBOMB_MAX_CHARGE_TIME,
                            MOM_STICKYBOMB_MIN_CHARGE_VEL, MOM_STICKYBOMB_MAX_CHARGE_VEL);
+}
+
+bool CMomentumStickybombLauncher::SetChargeEnabled(bool state) 
+{
+    if (!state)
+    {
+        StopWeaponSound(GetWeaponSound("charge"));
+        if (m_flChargeBeginTime > 0) // was charging when disabled
+        {
+            WeaponSound(GetWeaponSound("chargestop"));
+        }
+    }
+    return m_bIsChargeEnabled.Set(state); 
 }
 
 //-----------------------------------------------------------------------------

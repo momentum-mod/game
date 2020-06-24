@@ -30,10 +30,8 @@ struct VS_OUTPUT
 	float4 vColor : COLOR0;
 
 	float4 fogFactorW	: COLOR1;
-
-#if !defined( _X360 )    
+  
 	float  fog		: FOG;
-#endif
 };
 
 
@@ -50,9 +48,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.worldPos_projPosZ = float4( worldPos.xyz, vProjPos.z );
 
 	o.fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
 	o.fog = o.fogFactorW;
-#endif
 
 
 	// Compute the texture coordinates given the offset between

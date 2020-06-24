@@ -9,7 +9,6 @@
 #include "BaseVSShader.h"
 
 #include "cable_vs20.inc"
-#include "cable_ps20.inc"
 #include "cable_ps20b.inc"
 #include "cpp_shader_constant_register_map.h"
 
@@ -76,16 +75,8 @@ BEGIN_VS_SHADER( Cable_DX9,
 			DECLARE_STATIC_VERTEX_SHADER( cable_vs20 );
 			SET_STATIC_VERTEX_SHADER( cable_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( cable_ps20b );
-				SET_STATIC_PIXEL_SHADER( cable_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( cable_ps20 );
-				SET_STATIC_PIXEL_SHADER( cable_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( cable_ps20b );
+			SET_STATIC_PIXEL_SHADER( cable_ps20b );
 
 			// we are writing linear values from this shader.
 			// This is kinda wrong.  We are writing linear or gamma depending on "IsHDREnabled" below.
@@ -122,19 +113,10 @@ BEGIN_VS_SHADER( Cable_DX9,
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 			SET_DYNAMIC_VERTEX_SHADER( cable_vs20 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( cable_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
-				SET_DYNAMIC_PIXEL_SHADER( cable_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( cable_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( cable_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( cable_ps20b );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
+			SET_DYNAMIC_PIXEL_SHADER( cable_ps20b );
 		}
 		Draw();
 	}

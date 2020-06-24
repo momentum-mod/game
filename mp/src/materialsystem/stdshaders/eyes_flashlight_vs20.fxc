@@ -36,7 +36,7 @@ const float4 cIrisProjectionV	:  register( SHADER_SPECIFIC_CONST_9 );
 const float3 cMorphTargetTextureDim : register( SHADER_SPECIFIC_CONST_10 );
 const float4 cMorphSubrect		: register( SHADER_SPECIFIC_CONST_11 );
 
-sampler2D morphSampler			: register( D3DVERTEXTEXTURESAMPLER0, s0 );
+sampler2D morphSampler			: register( s0 );
 #endif
 
 struct VS_INPUT
@@ -58,9 +58,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos				: POSITION;			// Projection-space position
-#if !defined( _X360 )
 	float  fog					: FOG;				// Fixed-function fog factor
-#endif
 	float4 spotTexCoord			: TEXCOORD0;		// Spotlight texture coordinates
 	float2 baseTexCoord			: TEXCOORD1;		// Base texture coordinates
 	float2 irisTexCoord			: TEXCOORD3;		// Iris texture coordinates
@@ -107,10 +105,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.projPosXYZ = projPos.xyz;
 	o.worldPos   = worldPos.xyz;
 
-#if !defined( _X360 )
 	// Set fixed-function fog factor
 	o.fog = CalcFog( worldPos, o.projPos, g_FogType );
-#endif
 
 	// Base texture coordinates
 	o.baseTexCoord = v.vTexCoord0;

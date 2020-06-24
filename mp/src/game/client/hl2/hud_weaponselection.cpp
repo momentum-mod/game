@@ -146,13 +146,11 @@ private:
 	CPanelAnimationVar( float, m_flAlphaOverride, "Alpha", "0" );
 	CPanelAnimationVar( float, m_flSelectionAlphaOverride, "SelectionAlpha", "0" );
 
-	CPanelAnimationVar( Color, m_TextColor, "TextColor", "SelectionTextFg" );
-	CPanelAnimationVar( Color, m_NumberColor, "NumberColor", "SelectionNumberFg" );
-	CPanelAnimationVar( Color, m_EmptyBoxColor, "EmptyBoxColor", "SelectionEmptyBoxBg" );
-	CPanelAnimationVar( Color, m_BoxColor, "BoxColor", "SelectionBoxBg" );
-	CPanelAnimationVar( Color, m_SelectedBoxColor, "SelectedBoxColor", "SelectionSelectedBoxBg" );
-	CPanelAnimationVar( Color, m_SelectedFgColor, "SelectedFgColor", "FgColor" );
-	CPanelAnimationVar( Color, m_BrightBoxColor, "SelectedFgColor", "BgColor" );
+	CPanelAnimationVar( Color, m_NumberColor,		"NumberColor", "SelectionNumberFg" );
+	CPanelAnimationVar( Color, m_EmptyBoxColor,		"EmptyBoxColor", "SelectionEmptyBoxBg" );
+	CPanelAnimationVar( Color, m_BoxColor,			"BoxColor", "SelectionBoxBg" );
+	CPanelAnimationVar( Color, m_SelectedBoxColor,	"SelectedBoxColor", "SelectionSelectedBoxBg" );
+	CPanelAnimationVar( Color, m_SelectedFgColor,	"SelectedFgColor", "FgColor" );
 
 	CPanelAnimationVar( float, m_flWeaponPickupGrowTime, "SelectionGrowTime", "0.1" );
 
@@ -182,10 +180,8 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CHudWeaponSelection::CHudWeaponSelection( const char *pElementName ) : CBaseHudWeaponSelection(pElementName), BaseClass(NULL, "HudWeaponSelection")
+CHudWeaponSelection::CHudWeaponSelection( const char *pElementName ) : CBaseHudWeaponSelection(pElementName), BaseClass(g_pClientMode->GetViewport(), "HudWeaponSelection")
 {
-	vgui::Panel *pParent = g_pClientMode->GetViewport();
-	SetParent( pParent );
     m_bFadingOut = false;
     SetHiddenBits(HIDEHUD_PLAYERDEAD);
 }
@@ -632,9 +628,6 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 		break;
 	}
 
-	// draw text
-	col = m_TextColor;
-
 	if ( bSelected )
 	{
 		wchar_t text[128];
@@ -656,7 +649,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 			g_pVGuiLocalize->ConvertANSIToUnicode(pWeapon->GetPrintName(), text, sizeof(text));
 		}
 
-		surface()->DrawSetTextColor( col );
+		surface()->DrawSetTextColor( GetFgColor() );
 		surface()->DrawSetTextFont( m_hTextFont );
 
 		// count the position

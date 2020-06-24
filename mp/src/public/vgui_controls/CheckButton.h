@@ -27,29 +27,20 @@ class TextImage;
 class CheckImage : public TextImage
 {
 public:
-	CheckImage(CheckButton *CheckButton) : TextImage( "g" )
-	{
-		_CheckButton = CheckButton;
+    CheckImage(CheckButton *CheckButton);
 
-		SetSize(20, 13);
-	}
+    void Paint() override;
 
-	virtual void Paint();
+	void SetBkColor(Color color) override { _bgColor = color; }
+	void SetCheckColor(Color checkColor) { _checkColor = checkColor; }
 
-	virtual void SetColor(Color color)
-	{
-		_borderColor1 = color;
-		_borderColor2 = color;
-		_checkColor = color;
-	}
-
-	Color _borderColor1;
-	Color _borderColor2;
-	Color _checkColor;
-
-	Color _bgColor;
+	void SetBorder(IBorder *pBorder) { _border = pBorder; }
 
 private:
+	Color _checkColor;
+	Color _bgColor;
+
+	IBorder *_border;
 	CheckButton *_CheckButton;
 };
 
@@ -65,7 +56,8 @@ public:
 	~CheckButton();
 
 	// Check the button
-	virtual void SetSelected(bool state );
+    virtual void SetSelected(bool state);
+    virtual void SilentSetSelected(bool state);
 
 	// sets whether or not the state of the check can be changed
 	// if this is set to false, then no input in the code or by the user can change it's state
@@ -76,6 +68,8 @@ public:
 	Color GetDisabledBgColor() { return _disabledBgColor; }
 
 	CheckImage *GetCheckImage() { return _checkBoxImage; }
+
+	void SetCheckInset(int inset) { m_iCheckInset = inset; }
 
 	virtual void SetHighlightColor(Color fgColor);
 
@@ -93,7 +87,9 @@ protected:
 
 
 private:
-	enum { CHECK_INSET = 6 };
+    void SetSelected(bool state, bool bPostActionSignal);
+
+	int m_iCheckInset;
 	bool m_bCheckButtonCheckable;
 	CheckImage *_checkBoxImage;
 	Color _disabledFgColor;

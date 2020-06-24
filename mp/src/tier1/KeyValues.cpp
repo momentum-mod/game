@@ -955,9 +955,19 @@ void KeyValues::SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, File
 				break;
 			}
 		case TYPE_COLOR:
-			DevMsg(1, "KeyValues::RecursiveSaveToFile: TODO, missing code for TYPE_COLOR.\n");
-			break;
+            {
+                WriteIndents(filesystem, f, pBuf, indentLevel + 1);
+                INTERNALWRITE("\"", 1);
+                INTERNALWRITE(dat->GetName(), Q_strlen(dat->GetName()));
+                INTERNALWRITE("\"\t\t\"", 4);
 
+                char buf[64];
+                Q_snprintf(buf, sizeof(buf), "%d %d %d %d", dat->m_Color[0], dat->m_Color[1], dat->m_Color[2], dat->m_Color[3]);
+
+                INTERNALWRITE(buf, Q_strlen(buf));
+                INTERNALWRITE("\"\n", 2);
+                break;
+            }
 		default:
 			break;
 		}

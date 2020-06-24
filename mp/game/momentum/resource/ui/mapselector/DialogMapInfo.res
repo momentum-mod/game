@@ -34,7 +34,7 @@
         "tabPosition"		"0"
         "labelText"		"<Map Name Here>"
         "textAlignment"		"west"
-        "dulltext"		"1"
+        "dulltext"		"0"
         "brighttext"		"0"
         "wrap"		"0"
         "centerwrap"		"0"
@@ -43,7 +43,7 @@
         "auto_wide_tocontents"		"1"
         "auto_tall_tocontents" "1"
         "use_proportional_insets"		"0"
-        "font" "DefaultVeryLarge"
+        "font" "Titling24"
     }
     "AuthorLabel"
     {

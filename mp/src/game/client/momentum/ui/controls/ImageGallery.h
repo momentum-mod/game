@@ -23,6 +23,9 @@ class ImageGallery : public vgui::EditablePanel
 
     virtual void PreviousImage();
     virtual void NextImage();
+
+    virtual void ShowGalleryModal();
+    virtual void OnGalleryModalClosed() { m_pGalleryModal = nullptr; }
 protected:
     MESSAGE_FUNC(OnCursorExited, "OnCursorExited");
     MESSAGE_FUNC(OnCursorEntered, "OnCursorEntered");
@@ -41,4 +44,5 @@ private:
     vgui::ImageList *m_pImages;
     vgui::IImage *m_pCurrentImage;
     GalleryNavButton *m_pPrevButton, *m_pNextButton;
+    vgui::Frame *m_pGalleryModal;
 };

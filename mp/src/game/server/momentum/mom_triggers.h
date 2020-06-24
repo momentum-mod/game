@@ -435,7 +435,9 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
         SF_LIMIT_BACK = 1 << 16,    // prevent moving backwards
         SF_LIMIT_JUMP = 1 << 17,    // prevent player from jumping
         SF_LIMIT_CROUCH = 1 << 18,  // prevent player from crouching
-        SF_LIMIT_BHOP = 1 << 19     // prevent player from bhopping
+        SF_LIMIT_BHOP = 1 << 19,     // prevent player from bhopping
+        SF_LIMIT_WALK = 1 << 20,    // prevent player from +walking
+        SF_LIMIT_SPRINT = 1 << 21,  // prevent player from +sprinting
     };
 private:
     void ToggleButtons(CMomRunEntity *pEnt, bool bEnable);
@@ -664,6 +666,7 @@ class CNoGrenadesZone : public CBaseTrigger
 {
 public:
     DECLARE_CLASS(CNoGrenadesZone, CBaseTrigger);
+    DECLARE_DATADESC();
 
     ~CNoGrenadesZone();
 
@@ -675,4 +678,6 @@ public:
     void InputToggle(inputdata_t &inputdata) override { m_bDisabled = !m_bDisabled; }
 
     static bool IsInsideNoGrenadesZone(CBaseEntity *pOther);
+
+    bool m_bAirborneOnly;
 };

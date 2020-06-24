@@ -31,7 +31,7 @@ const float4 const4	:  register( SHADER_SPECIFIC_CONST_1 );
 const float3 cMorphTargetTextureDim			: register( SHADER_SPECIFIC_CONST_6 );
 const float4 cMorphSubrect					: register( SHADER_SPECIFIC_CONST_7 );
 
-sampler2D morphSampler : register( D3DVERTEXTEXTURESAMPLER0, s0 );
+sampler2D morphSampler : register( s0 );
 #endif
 
 struct VS_INPUT
@@ -55,9 +55,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos							: POSITION;
-#if !defined( _X360 )    	
 	float  fog								: FOG;
-#endif
 	float2 baseTexCoord						: TEXCOORD0;
 	float4 worldVertToEyeVector_Darkening	: TEXCOORD1;
 	float3x3 tangentSpaceTranspose			: TEXCOORD2;
@@ -106,10 +104,10 @@ VS_OUTPUT main( const VS_INPUT v )
 	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
 
 	o.worldPos_projPosZ = float4( worldPos, vProjPos.z );
-#if !defined( _X360 )
+	
 	// Set fixed-function fog factor
 	o.fog = CalcFog( worldPos, vProjPos, g_FogType );
-#endif
+	
 	// Needed for specular
 	o.worldVertToEyeVector_Darkening.xyz = cEyePos - worldPos;
 

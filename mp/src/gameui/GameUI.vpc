@@ -53,7 +53,6 @@ $Project "GameUI"
         $File   "EngineInterface.h"
         $File   "GameConsole.h"
         $File   "GameUI_Interface.h"
-        $File   "LoadingDialog.h"
         $File   "ModInfo.h"
         $File   "MouseMessageForwardingPanel.h"
         $File   "PanelListPanel.h"
@@ -89,31 +88,12 @@ $Project "GameUI"
         $File   "KeyToggleCheckButton.h"
         $File   "LabeledCommandComboBox.cpp"
         $File   "LabeledCommandComboBox.h"
-        $File   "URLButton.cpp"
-        $File   "URLButton.h"
-        $File   "VControlsListPanel.cpp"
-        $File   "VControlsListPanel.h"
     }
 
     $Folder "Dialogs"
     {
         $File   "GameConsoleDialog.cpp"
         $File   "GameConsoleDialog.h"
-        $File   "LoadingDialog.cpp"
-    }
-
-    $Folder "Options Dialog"
-    {
-        $File   "OptionsDialog.cpp"
-        $File   "OptionsDialog.h"
-        $File   "OptionsSubAudio.cpp"
-        $File   "OptionsSubAudio.h"
-        $File   "OptionsSubKeyboard.cpp"
-        $File   "OptionsSubKeyboard.h"
-        $File   "OptionsSubMouse.cpp"
-        $File   "OptionsSubMouse.h"
-        $File   "OptionsSubVideo.cpp"
-        $File   "OptionsSubVideo.h"
     }
 
     $Folder "Link Libraries"

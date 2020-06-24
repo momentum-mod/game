@@ -26,6 +26,7 @@
 #include "ragdoll_shared.h"
 #include "tier0/threadtools.h"
 #include "datacache/idatacache.h"
+#include "glow_outline_effect.h"
 
 #define LIPSYNC_POSEPARAM_NAME "mouth"
 #define NUM_HITBOX_FIRES	10
@@ -232,6 +233,8 @@ public:
 
 	//bool solveIK(float a, float b, const Vector &Foot, const Vector &Knee1, Vector &Knee2);
 	//void DebugIK( mstudioikchain_t *pikchain );
+
+    virtual void                    ClientThink();
 
 	virtual void					PreDataUpdate( DataUpdateType_t updateType );
 	virtual void					PostDataUpdate( DataUpdateType_t updateType );
@@ -635,6 +638,22 @@ private:
 	mutable CStudioHdr				*m_pStudioHdr;
 	mutable MDLHandle_t				m_hStudioHdr;
 	CThreadFastMutex				m_StudioHdrInitLock;
+
+    // Glow effect
+public:
+    CGlowObject                     *GetGlowObject(void) { return m_pGlowEffect; }
+    virtual Vector                  GetGlowEffectColor(void);
+
+protected:
+    virtual void                    UpdateGlowEffect(void);
+    virtual void                    DestroyGlowEffect(void);
+
+private:
+    bool                            m_bGlowEnabled;
+    float                           m_flGlowMaxDist;
+    color32                         m_clrGlow;
+    bool                            m_bOldGlowEnabled;
+    CGlowObject                     *m_pGlowEffect;
 };
 
 enum 

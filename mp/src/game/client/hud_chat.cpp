@@ -16,8 +16,6 @@ DECLARE_HUDELEMENT(CHudChat);
 DECLARE_HUD_MESSAGE(CHudChat, SayText);
 DECLARE_HUD_MESSAGE(CHudChat, SayText2);
 DECLARE_HUD_MESSAGE(CHudChat, TextMsg);
-DECLARE_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
-DECLARE_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
 
 using namespace vgui;
 
@@ -37,6 +35,8 @@ CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName), m_pSpect
     LoadControlSettings("resource/ui/BaseChat.res");
 
     ListenForGameEvent("lobby_leave");
+    ListenForGameEvent("lobby_update_msg");
+    ListenForGameEvent("lobby_spec_update_msg");
 }
 
 void CHudChat::Init(void)
@@ -46,8 +46,6 @@ void CHudChat::Init(void)
     HOOK_HUD_MESSAGE(CHudChat, SayText);
     HOOK_HUD_MESSAGE(CHudChat, SayText2);
     HOOK_HUD_MESSAGE(CHudChat, TextMsg);
-    HOOK_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
-    HOOK_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
 
     //@tuxxi: I tired to query this automatically but we can only query steamgroups we are members of.. rip.
     // So i'm just hard coding this here for now
@@ -120,57 +118,6 @@ void CHudChat::MsgFunc_SayText(bf_read &msg)
     */
 }
 
-void CHudChat::MsgFunc_SpecUpdateMsg(bf_read &msg)
-{
-    uint8 type = msg.ReadByte();
-
-    uint64 person, target;
-    msg.ReadBytes(&person, sizeof(uint64));
-    CSteamID personID = CSteamID(person);
-    const char *pName = SteamFriends()->GetFriendPersonaName(personID);
-
-    msg.ReadBytes(&target, sizeof(uint64));
-    CSteamID targetID = CSteamID(target);
-
-    const char *spectateText = target != 1 ? "%s is now spectating." : "%s is now watching a replay.";
-    if (type == SPEC_UPDATE_STOP)
-    {
-        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has respawned.", pName);
-    }
-    else if (type == SPEC_UPDATE_JOIN)
-    {
-        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, spectateText, pName);
-    }
-    else if (type == SPEC_UPDATE_CHANGETARGET)
-    {
-        // MOM_TODO: Removeme?
-        const char *pTargetName = SteamFriends()->GetFriendPersonaName(targetID);
-        DevLog("%s is now spectating %s.\n", pName, pTargetName);
-        // Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-        //    "%s is now spectating %s.", pName, pTargetName);
-    }
-
-    SpectatorUpdate(personID, target);
-}
-
-void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read &msg)
-{
-    uint8 type = msg.ReadByte();
-
-    bool isJoin = (type == LOBBY_UPDATE_MEMBER_JOIN_MAP) || (type == LOBBY_UPDATE_MEMBER_JOIN);
-    bool isMap = (type == LOBBY_UPDATE_MEMBER_JOIN_MAP) || (type == LOBBY_UPDATE_MEMBER_LEAVE_MAP);
-
-    uint64 person;
-    msg.ReadBytes(&person, sizeof(uint64));
-    CSteamID personID = CSteamID(person);
-    const char *pName = SteamFriends()->GetFriendPersonaName(personID);
-    Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has %s the %s.", pName, isJoin ? "joined" : "left",
-           isMap ? "map" : "lobby");
-
-    if (!isJoin)
-        SpectatorUpdate(personID, k_steamIDNil);
-}
-
 void CHudChat::GetTimestamp(char *pBuffer, int maxLen)
 {
     if (!mom_chat_timestamps_enable.GetBool())
@@ -224,6 +171,58 @@ void CHudChat::FireGameEvent(IGameEvent *event)
     {
         m_LobbyID.Clear();
         m_vTypingMembers.RemoveAll();
+    }
+    else if (FStrEq(event->GetName(), "lobby_spec_update_msg"))
+    {
+        uint8 type = event->GetInt("type");
+        uint64 person = Q_atoui64(event->GetString("id"));
+        uint64 target = Q_atoui64(event->GetString("target"));
+
+        CSteamID personID = CSteamID(person);
+        CSteamID targetID = CSteamID(target);
+
+        const char *pName = SteamFriends()->GetFriendPersonaName(personID);
+
+        if (type == SPEC_UPDATE_STOP && CBasePlayer::GetLocalPlayer())
+        {
+            Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has respawned.", pName);
+        }
+        else if (type == SPEC_UPDATE_STARTED && CBasePlayer::GetLocalPlayer())
+        {
+            const char *spectateText = target != 1 ? "%s is now spectating." : "%s is now watching a replay.";
+            Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, spectateText, pName);
+        }
+        else if (type == SPEC_UPDATE_CHANGETARGET)
+        {
+            if (target > 1)
+            {
+                const char *pTargetName = SteamFriends()->GetFriendPersonaName(targetID);
+                DevLog("%s is now spectating %s.\n", pName, pTargetName);
+            }
+            // Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
+            //    "%s is now spectating %s.", pName, pTargetName);
+        }
+
+        SpectatorUpdate(personID, target);
+    }
+    else if (FStrEq(event->GetName(), "lobby_update_msg"))
+    {
+        uint8 type = event->GetInt("type");
+
+        bool isJoin = (type == LOBBY_UPDATE_MEMBER_JOIN_MAP) || (type == LOBBY_UPDATE_MEMBER_JOIN);
+        bool isMap = (type == LOBBY_UPDATE_MEMBER_JOIN_MAP) || (type == LOBBY_UPDATE_MEMBER_LEAVE_MAP);
+
+        uint64 person = Q_atoui64(event->GetString("id"));
+
+        CSteamID personID = CSteamID(person);
+        if (CBasePlayer::GetLocalPlayer())
+        {
+            const char *pName = SteamFriends()->GetFriendPersonaName(personID);
+            Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has %s the %s.", pName, isJoin ? "joined" : "left", isMap ? "map" : "lobby");
+        }
+
+        if (!isJoin)
+            SpectatorUpdate(personID, k_steamIDNil);
     }
 
     BaseClass::FireGameEvent(event);

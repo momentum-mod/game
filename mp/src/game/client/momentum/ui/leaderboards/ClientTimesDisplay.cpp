@@ -5,12 +5,17 @@
 #include "LeaderboardsStats.h"
 #include "LeaderboardsTimes.h"
 
+#include "clientmode.h"
+
 #include "vgui/ISurface.h"
 #include "voice_status.h"
 #include <inputsystem/iinputsystem.h>
+#include "vgui_controls/AnimationController.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+extern bool g_bRollingCredits;
 
 using namespace vgui;
 
@@ -24,6 +29,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     SetSize(10, 10); // Quiet the "parent not sized yet" spew, actual size in leaderboards.res
 
     m_nCloseKey = BUTTON_CODE_INVALID;
+
+    m_bToggledOpen = false;
+    m_flNextUpdateTime = 0.0f;
 
     m_pViewPort = pViewPort;
     // initialize dialog
@@ -107,7 +115,7 @@ void CClientTimesDisplay::Reset() { Reset(false); }
 
 void CClientTimesDisplay::Reset(bool bFullReset)
 {
-    m_flNextUpdateTime = 0;
+    m_flNextUpdateTime = 0.0f;
 
     // add all the sections
     if (m_pTimes)
@@ -151,6 +159,15 @@ void CClientTimesDisplay::PerformLayout()
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::ShowPanel(bool bShow)
 {
+    if (m_bToggledOpen)
+    {
+        if (bShow == false)
+        {
+            m_bToggledOpen = false;
+        }
+        return;
+    }
+
     if (m_pTimes)
         m_pTimes->OnPanelShow(bShow);
 
@@ -164,6 +181,9 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 
     if (bShow)
     {
+        if (g_bRollingCredits)
+            return;
+
         Reset(true);
         SetVisible(true);
         MoveToFront();
@@ -175,9 +195,35 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     }
     else
     {
-        SetVisible(false);
-        SetMouseInputEnabled(false); // Turn mouse off
+        Close();
     }
+}
+
+void CClientTimesDisplay::SetMouseInputEnabled(bool bState)
+{
+    BaseClass::SetMouseInputEnabled(bState);
+
+    if (bState)
+    {
+        m_bToggledOpen = true;
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusGain");
+    }
+}
+
+void CClientTimesDisplay::SetVisible(bool bState)
+{
+    BaseClass::SetVisible(bState);
+
+    SetLeaderboardsHideHud(bState);
+}
+
+void CClientTimesDisplay::Close()
+{
+    m_bToggledOpen = false;
+    SetVisible(false);
+    SetMouseInputEnabled(false);
+
+    g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(GetParent(), "LeaderboardsBgFocusLost");
 }
 
 void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
@@ -198,15 +244,18 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
     }
 }
 
-bool CClientTimesDisplay::NeedsUpdate(void) { return (m_flNextUpdateTime < gpGlobals->curtime); }
+bool CClientTimesDisplay::NeedsUpdate() { return (m_flNextUpdateTime < gpGlobals->curtime); }
 
 //-----------------------------------------------------------------------------
 // Purpose: Recalculate the internal scoreboard data
 //-----------------------------------------------------------------------------
-void CClientTimesDisplay::Update(void) { Update(false); }
+void CClientTimesDisplay::Update() { Update(false); }
 
 void CClientTimesDisplay::Update(bool pFullUpdate)
 {
+    if (!NeedsUpdate())
+        return;
+
     FillScoreBoard(pFullUpdate);
 
     MoveToCenterOfScreen();
@@ -225,20 +274,34 @@ void CClientTimesDisplay::FillScoreBoard()
 
 void CClientTimesDisplay::FillScoreBoard(bool bFullUpdate)
 {
-    // Header
+    if (!engine->IsInGame())
+        return;
+
     if (m_pHeader)
         m_pHeader->LoadData(MapName(), bFullUpdate);
 
-    // Stats
     if (m_pStats)
-    {
         m_pStats->LoadData(bFullUpdate);
-    }
 
     if (m_pTimes)
         m_pTimes->FillLeaderboards(bFullUpdate);
 }
 
+void CClientTimesDisplay::SetLeaderboardsHideHud(bool bState)
+{
+    C_BasePlayer* player = C_BasePlayer::GetLocalPlayer();
+    if (player)
+    {
+        if (bState)
+        {
+            player->m_Local.m_iHideHUD |= HIDEHUD_LEADERBOARDS;
+        }
+        else
+        {
+            player->m_Local.m_iHideHUD &= ~HIDEHUD_LEADERBOARDS;
+        }
+    }
+}
 //-----------------------------------------------------------------------------
 // Purpose: Center the dialog on the screen.  (vgui has this method on
 //          Frame, but we're an EditablePanel, need to roll our own.)
@@ -255,4 +318,11 @@ void CClientTimesDisplay::LevelInitPostEntity()
     m_pHeader->Reset();
     m_pStats->NeedsUpdate();
     m_pTimes->LevelInit();
+}
+
+void CClientTimesDisplay::OnReloadControls()
+{
+    BaseClass::OnReloadControls();
+
+    LevelInitPostEntity();
 }

@@ -1,10 +1,15 @@
 #include "cbase.h"
 #include "c_mom_player.h"
+
+#include <steam/isteamuser.h>
+
 #include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
+RecvPropBool(RECVINFO(m_bIsSprinting)),
+RecvPropBool(RECVINFO(m_bIsWalking)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
 RecvPropInt(RECVINFO(m_iLandTick)),
@@ -15,6 +20,10 @@ RecvPropInt(RECVINFO(m_iLastZoomFOV), SPROP_UNSIGNED),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 RecvPropBool(RECVINFO(m_bAutoBhop)),
+RecvPropFloat(RECVINFO(m_fDuckTimer)),
+RecvPropBool(RECVINFO(m_bSurfing)),
+RecvPropVector(RECVINFO(m_vecRampBoardVel)),
+RecvPropVector(RECVINFO(m_vecRampLeaveVel)),
 RecvPropArray3(RECVINFO_ARRAY(m_iZoneCount), RecvPropInt(RECVINFO(m_iZoneCount[0]), SPROP_UNSIGNED)),
 RecvPropArray3(RECVINFO_ARRAY(m_iLinearTracks), RecvPropInt(RECVINFO(m_iLinearTracks[0]), SPROP_UNSIGNED)),
 RecvPropDataTable(RECVINFO_DT(m_Data), SPROP_PROXY_ALWAYS_YES | SPROP_CHANGES_OFTEN, &REFERENCE_RECV_TABLE(DT_MomRunEntityData)),
@@ -24,6 +33,10 @@ END_RECV_TABLE();
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
 DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_fDuckTimer, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_bSurfing, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_vecRampBoardVel, FIELD_VECTOR, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_vecRampLeaveVel, FIELD_VECTOR, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
 static C_MomentumPlayer *s_pLocalPlayer = nullptr;
@@ -32,6 +45,9 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
+    m_bSurfing = false;
+    m_vecRampBoardVel.Init();
+    m_vecRampLeaveVel.Init();
     m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
     m_flStartSpeed = 0.0f;
@@ -39,9 +55,12 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
 
+    m_bIsSprinting = false;
+    m_bIsWalking = false;
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
     m_RunStats.Init();
+    m_fDuckTimer = 0.0f;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
@@ -149,4 +168,9 @@ float C_MomentumPlayer::GetCurrentRunTime()
         iTotalTicks = m_Data.m_iRunTime;
 
     return float(iTotalTicks) * m_Data.m_flTickRate;
+}
+
+uint64 C_MomentumPlayer::GetSteamID()
+{
+    return SteamUser() ? SteamUser()->GetSteamID().ConvertToUint64() : 0;
 }

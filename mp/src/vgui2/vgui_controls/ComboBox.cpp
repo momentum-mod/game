@@ -29,7 +29,7 @@ using namespace vgui;
 
 namespace vgui
 {
-ComboBoxButton::ComboBoxButton(ComboBox *parent, const char *panelName, const char *text) : Button(parent, panelName, text)
+ComboBoxButton::ComboBoxButton(ComboBox *parent, const char *panelName, const char *text) : Button(parent, panelName, text, parent, "ButtonClicked")
 {
 	SetButtonActivationType(ACTIVATE_ONPRESSED);
 }
@@ -38,19 +38,15 @@ void ComboBoxButton::ApplySchemeSettings(IScheme *pScheme)
 {
 	Button::ApplySchemeSettings(pScheme);
 	
-	SetFont(pScheme->GetFont("Marlett", IsProportional()));
-	SetContentAlignment(Label::a_west);
-#ifdef OSX
-	SetTextInset(-3, 0);
-#else
-	SetTextInset(3, 0);
-#endif
+	SetFont(GetSchemeFont(pScheme, nullptr, "ComboBoxButton.Font", "Marlett"));
+	SetContentAlignment(a_center);
 	SetDefaultBorder(pScheme->GetBorder("ScrollBarButtonBorder"));
 	
 	// arrow changes color but the background doesnt.
-	SetDefaultColor(GetSchemeColor("ComboBoxButton.ArrowColor", pScheme), GetSchemeColor("ComboBoxButton.BgColor", pScheme));
-	SetArmedColor(GetSchemeColor("ComboBoxButton.ArmedArrowColor", pScheme), GetSchemeColor("ComboBoxButton.BgColor", pScheme));
-	SetDepressedColor(GetSchemeColor("ComboBoxButton.ArmedArrowColor", pScheme), GetSchemeColor("ComboBoxButton.BgColor", pScheme));
+	const auto cBgColor = GetSchemeColor("ComboBoxButton.BgColor", pScheme);
+	SetDefaultColor(GetSchemeColor("ComboBoxButton.ArrowColor", pScheme), cBgColor);
+	SetArmedColor(GetSchemeColor("ComboBoxButton.ArmedArrowColor", pScheme), cBgColor);
+	SetDepressedColor(GetSchemeColor("ComboBoxButton.ArmedArrowColor", pScheme), cBgColor);
 	m_DisabledBgColor = GetSchemeColor("ComboBoxButton.DisabledBgColor", pScheme);
 }
 
@@ -97,8 +93,6 @@ ComboBox::ComboBox(Panel *parent, const char *panelName, int numLines, bool allo
 
 	// button to Activate menu
 	m_pButton = new ComboBoxButton(this, "Button", "u");
-	m_pButton->SetCommand("ButtonClicked");
-	m_pButton->AddActionSignalTarget(this);
 
 	SetNumberOfEditLines(numLines);
 
@@ -114,8 +108,6 @@ ComboBox::ComboBox(Panel *parent, const char *panelName, int numLines, bool allo
 //-----------------------------------------------------------------------------
 ComboBox::~ComboBox()
 {
-	m_pDropDown->DeletePanel();
-	m_pButton->DeletePanel();
 }
 
 //-----------------------------------------------------------------------------
@@ -320,19 +312,8 @@ void ComboBox::PerformLayout()
 
 	BaseClass::PerformLayout();
 
-	HFont buttonFont = m_pButton->GetFont();
-	int fontTall = surface()->GetFontTall( buttonFont );
+	m_pButton->SetBounds(wide - tall, 0, tall, tall);
 
-	int buttonSize = min( tall, fontTall );
-	
-	int buttonY = ( ( tall - 1 ) - buttonSize ) / 2;
-
-	// Some dropdown button icons in our games are wider than they are taller. We need to factor that in.
-	int button_wide, button_tall;
-	m_pButton->GetContentSize(button_wide, button_tall);
-	button_wide = max( buttonSize, button_wide );
-
-	m_pButton->SetBounds( wide - button_wide, buttonY, button_wide, buttonSize );
 	if ( IsEditable() )
 	{
 		SetCursor(dc_ibeam);
@@ -373,6 +354,16 @@ void ComboBox::SortItems( void )
 int ComboBox::GetActiveItem()
 {
 	return m_pDropDown->GetActiveItem();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: return the index of the current item. Returns the highlighted item unless
+// no item is highlighted, in which case returns the active item.
+//-----------------------------------------------------------------------------
+int ComboBox::GetCurrentItem()
+{
+    int iHLItem = m_pDropDown->GetCurrentlyHighlightedItem();
+    return iHLItem >= 0 ? iHLItem : m_pDropDown->GetActiveItem();
 }
 
 //-----------------------------------------------------------------------------
@@ -842,7 +833,10 @@ void ComboBox::OnKeyCodeTyped(KeyCode code)
 //-----------------------------------------------------------------------------
 void ComboBox::OnKeyTyped(wchar_t unichar)
 {
-	if ( IsEditable() || unichar == '\t') // don't play with key presses in edit mode
+    // don't play with key presses in edit mode
+    // x1b = escape key. This is needed as escape conflicts with hiding settings in game
+    // (combobox was being reset to first item when settings are hidden)
+	if ( IsEditable() || unichar == '\t' || unichar == '\x1b') 
 	{
 		BaseClass::OnKeyTyped( unichar );
 		return;

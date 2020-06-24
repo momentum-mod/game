@@ -18,7 +18,7 @@ public:
     void CallResult_LobbyJoined(LobbyEnter_t *pEntered, bool IOFailure);
 
     void StartLobby();
-    void LeaveLobby();
+    void LeaveLobby() const;
     bool TryJoinLobby(const CSteamID &lobbyID);
     bool TryJoinLobbyFromString(const char *pString);
 
@@ -39,30 +39,33 @@ public:
     static CSteamID m_sLobbyID;
     static float m_flNextUpdateTime;
 
-    static CSteamID GetLobbyId();
+    static CSteamID GetLobbyId() { return m_sLobbyID; }
     static bool LobbyValid() { return m_sLobbyID.IsValid() && m_sLobbyID.IsLobby(); }
 
     void LevelChange(const char *pMapName); // This client has changed levels to (potentially) a different map
-    void CheckToAdd(CSteamID *pID);
+
+    void CreateLobbyGhostEntity(const CSteamID &lobbyMember);
+    void CreateLobbyGhostEntities(); // Creates everyone's ghosts if possible
 
     void SendAndReceiveP2PPackets();
-    void SetAppearanceInMemberData(const AppearanceData_t &appearance);
+
     void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
-    void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SpectateMessageType_t type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
+    uint64 GetSpectatingTargetFromMemberData(const CSteamID &person);
+
     bool SendDecalPacket(DecalPacket *packet);
 
     void OnLobbyMaxPlayersChanged(int newMax);
     void OnLobbyTypeChanged(int newType);
 
-    void SetGameInfoStatus();
+    void SetAppearanceInMemberData(const AppearanceData_t &appearance);
     bool GetAppearanceFromMemberData(const CSteamID &member, AppearanceData_t &out);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);
 
-    void ClearCurrentGhosts(bool bRemoveEnts); // Clears the current ghosts stored in the map
+    void ClearCurrentGhosts(bool bLeavingLobby); // Clears the current ghosts stored in the map
 
     CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineEntMap() { return &m_mapLobbyGhosts;}
 
@@ -73,11 +76,22 @@ private:
 
     bool m_bHostingLobby;
 
-    // Sends a packet to a specific person, or everybody (if pTarget is null)
-    bool SendPacket(MomentumPacket *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
+    // Sends a packet to a specific person
+    bool SendPacket(MomentumPacket *packet, const CSteamID &target, EP2PSend sendType = k_EP2PSendUnreliable) const;
+    bool SendPacketToEveryone(MomentumPacket *pPacket, EP2PSend sendType = k_EP2PSendUnreliable);
 
     void WriteLobbyMessage(LobbyMessageType_t type, uint64 id);
-    void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 ghostID);
+    void WriteSpecMessage(SpectateMessageType_t type, uint64 playerID, uint64 targetID);
+
+    bool IsInSameMapAs(const CSteamID &other);
+    bool IsInLobby(const CSteamID &other);
+    bool IsUserBlocked(const CSteamID &other);
+
+    void UpdateLobbyEntityFromMemberData(CMomentumOnlineGhostEntity *pEntity);
+    void OnLobbyMemberDataChanged(const CSteamID &memberID);
+
+    // When the lobby member leaves either the map or the lobby
+    void OnLobbyMemberLeave(const CSteamID &member);
 
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;

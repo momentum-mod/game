@@ -1,0 +1,80 @@
+//========== Copyright (c) Valve Corporation, All rights reserved. ==========//
+
+// STATIC: "BLOBBY_SHADOWS"		"0..1"
+#include "common_fog_ps_fxc.h"
+
+#define HDRTYPE HDR_TYPE_NONE
+#include "common_ps_fxc.h"
+
+const HALF4 g_ShadowColor						: register( c1 );
+const HALF3 g_EyePos							: register( c2 );
+const HALF4 g_FogParams							: register( c3 );
+const float4 g_DeferredParams					: register( c4 );
+#define g_MaxFalloffAmount	g_DeferredParams.x
+
+sampler ShadowSampler	: register( s0 );
+sampler sDepth			: register( s1 );
+
+//////////////////////////////////
+// NORMAL SHADOW SHADER
+//////////////////////////////////
+
+// CENTROID: TEXCOORD1
+// CENTROID: TEXCOORD2
+// CENTROID: TEXCOORD3
+struct PS_INPUT
+{
+	HALF4 worldPos_projPosZ		    : TEXCOORD0;
+	float4 vFalloffParams			: TEXCOORD1;
+	float3 texCoord0_shadowAlpha	: TEXCOORD2;
+	float4 texCoord1_2				: TEXCOORD3;
+	float4 texCoord3_4				: TEXCOORD4;
+};
+
+float4 main( PS_INPUT i ) : COLOR
+{
+	HALF shadowCoverage;
+	
+	#if BLOBBY_SHADOWS == 1
+	{
+		shadowCoverage = tex2D( ShadowSampler, i.texCoord0_shadowAlpha.xy ).a;
+	}
+	#else
+	{
+		HALF samples0;
+		HALF4  samples1_4;
+		samples0 = tex2D( ShadowSampler, i.texCoord0_shadowAlpha.xy ).a;
+		samples1_4.x = tex2D( ShadowSampler, i.texCoord1_2.xy ).a;
+		samples1_4.y = tex2D( ShadowSampler, i.texCoord1_2.wz ).a;
+		samples1_4.z = tex2D( ShadowSampler, i.texCoord3_4.xy ).a;
+		samples1_4.w = tex2D( ShadowSampler, i.texCoord3_4.wz ).a;
+
+		// Interpolate between a bunch of jittered shadow samples.
+		shadowCoverage = samples0 * 0.2 + dot( samples1_4, HALF4( 0.2, 0.2, 0.2, 0.2 ) );
+	}
+	#endif
+
+	// compute "vertex" alpha
+	// NOTE: 0 means black, non-zero adds towards white...
+	float fVertAlpha = i.texCoord0_shadowAlpha.z;
+
+	// To accomplish shadow fading, subtract vertex alpha from texture alpha
+	shadowCoverage = saturate( shadowCoverage - fVertAlpha );
+		
+	// Blend between white and the constant color...
+	// return lerp( 1.0-shadowCoverage, 1.0, g_ShadowColor );  
+	
+	// this is equivalent, and saves an instruction
+	HALF4 result = shadowCoverage*g_ShadowColor - shadowCoverage;
+	result = 1.0 + result;
+
+	float alpha = 1.0f;
+
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
+	
+	// Apply fog here to compensate for our srcColor*dstColor alpha blend into already fogged pixels
+	result.rgb = 1.0f - ( ( 1.0f - result.rgb ) * pow( ( 1.0f - fogFactor ), 4.0f ) );
+
+	// Call FinalOutput without fog!
+	return FinalOutput( float4( result.rgb, alpha ), fogFactor, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_NONE );
+}

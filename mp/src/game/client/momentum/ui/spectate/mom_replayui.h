@@ -28,7 +28,6 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
     // Command issued
     virtual void OnCommand(const char *command) OVERRIDE;
 
-    void SetLabelText() const;
     void SetWasClosed(bool bWasClosed);
     bool WasClosed() const;
 
@@ -49,12 +48,6 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
     virtual void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); };
 
   protected:
-    // When the slider changes, we want to update the text panel
-    MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
-
-    // When the text entry updates, we want to update the slider
-    MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
-
     // When the user clicks (and potentially drags) on the Progress Bar
     MESSAGE_FUNC_FLOAT(OnNewProgress, "ScrubbedProgress", scale);
 
@@ -73,7 +66,7 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
     vgui::Button *m_pGo;
 
     vgui::CvarSlider *m_pTimescaleSlider;
-    vgui::TextEntry *m_pTimescaleEntry;
+    vgui::CvarTextEntry *m_pTimescaleEntry;
     vgui::Label *m_pTimescaleLabel;
 
     vgui::ScrubbableProgressBar *m_pProgress;

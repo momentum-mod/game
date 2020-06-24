@@ -1,32 +1,16 @@
 "Resource/HudLayout.res"
 {
-    //Speedometer
-    HudSpeedMeter
-    {
-        "fieldName"     "HudSpeedMeter"
-        "xpos"          "c-60"
-        "ypos"          "310"
-        "wide"          "120"
-        "tall"          "80"
-        "visible"       "1"
-        "enabled"       "1"
-        "NumberFont"    "HudNumbersSmallBold"
-        "SmallNumberFont" "HudNumbersExtremelySmall"
-        "text_ypos"     "5"
-        "digit_ypos"    "15"
-        "digit2_ypos"   "30"
-        "PrimaryValueColor" "MOM.Panel.Fg"
-        "SecondaryValueColor" "Light Gray"
-        "LabelColor"    "MOM.Panel.Fg"
-        "BgColor"   "Blank"
-        "StageAlpha" "0.0"//Used for fading
-        "JumpAlpha" "0.0"//Used for fading
-    }
     //Timer
     HudTimer
     {
         "fieldName"     "HudTimer"
         // See resource/ui/Timer.res for changing settings
+    }
+    //Speedometer
+    HudSpeedMeter
+    {
+        "fieldName"		"HudSpeedMeter"
+         // See resource/ui/Speedometer.res for changing settings
     }
     //Strafe Sync Meter
     CHudSyncMeter
@@ -67,7 +51,7 @@
         "ypos"          "465" // Used to shove it in the bottom left corner
         "visible"       "1"
         "enabled"       "1"
-        "TextFont"      "MomHudDropText"
+        "font"          "Default12"
         "auto_wide_tocontents" "1"
         "auto_tall_tocontents" "1"
     }
@@ -79,7 +63,7 @@
         "wide"          "120"
         "tall"          "10"
         "InitialValue"  "0"
-        "BackgroundColor" "MOM.Panel.Bg"
+        "BackgroundColor" "Blank"
         "FillColor"     "255 255 255 225"
         "visible"       "1"
         "enabled"       "1"
@@ -99,6 +83,8 @@
         "lower_row_ypos"    "35"
         "jump_row_ypos" "45"
         "duck_row_ypos" "55"
+        "walk_row_ypos" "65"
+        "sprint_row_ypos" "75"
         "strafe_count_xpos" "110"
         "jump_count_xpos"   "110"
         "TextFont"      "MomentumIcons"
@@ -122,6 +108,7 @@
         "LossColor" "MOM.Compare.Loss"
         "TieColor" "MOM.Compare.Tie"
         "TextFont" "HudHintTextSmall"
+        "bgcolor_override" "BlackHO"
         "format_spacing" "2"//Number of pixels between each component of the comparison panel, only if mom_comparisons_format_output has value 1
         "text_xpos" "5"
         "text_ypos" "2"
@@ -156,8 +143,7 @@
     HudWeaponSelection
     {
         "fieldName" "HudWeaponSelection"
-        "ypos"  "16"    [$WIN32]
-        "ypos"  "32"    [$X360]
+        "ypos"  "16"
         "visible" "1"
         "enabled" "1"
         "SmallBoxSize" "32"
@@ -174,6 +160,13 @@
         "SelectionNumberYPos" "4"
         "SelectionGrowTime" "0.4"
         "TextYPos" "64"
+        "TextFont" "HudSelectionText"
+        "NumberFont" "HudSelectionNumbers"
+        "NumberColor" "MomGreydientStep8"
+        "EmptyBoxColor" "SelectionEmptyBoxBg"
+        "BoxColor" "SelectionBoxBg"
+        "SelectedBoxColor" "SelectionSelectedBoxBg"
+        "SelectedFgColor" "MomentumBlue"
     }
 
     HudCrosshair
@@ -398,5 +391,8 @@
     CHudStickybombs
     {
         "fieldName"		"CHudStickybombs"
+        "pin_to_sibling" "HudStickyCharge"
+        "pin_to_sibling_corner" "6" //bottom center
+        "pin_corner_to_sibling" "4" //top center
     }
 }

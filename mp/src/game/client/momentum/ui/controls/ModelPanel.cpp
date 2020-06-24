@@ -10,6 +10,8 @@
 
 using namespace vgui;
 
+#define DEFAULT_FOV 70
+
 CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
 {
     render_ang.Init();
@@ -17,7 +19,7 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     render_offset.Init();
     render_offset_modelBase.Init();
     m_pModelInstance = nullptr;
-    m_bSizeToParent = true;
+    m_bSizeToParent = false;
 
     ResetView();
 
@@ -25,7 +27,7 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     m_iCachedMpos_x = 0;
     m_iCachedMpos_y = 0;
 
-    m_nFOV = 70;
+    m_nFOV = DEFAULT_FOV;
 
     __view.Identity();
     __proj.Identity();
@@ -118,7 +120,7 @@ void CRenderPanel::ResetView()
     m_flPitch = 45;
     m_flYaw = 180;
     lightAng.Init(45, -135, 0);
-    m_nFOV = 70;
+    m_nFOV = DEFAULT_FOV;
 
     GetModelCenter(render_offset_modelBase);
 
@@ -175,6 +177,7 @@ void CRenderPanel::ResetModel()
 {
     if (!IsModelReady())
         return;
+
     m_pModelInstance->m_flAnimTime = gpGlobals->curtime;
     m_pModelInstance->m_flOldAnimTime = gpGlobals->curtime;
 }
@@ -196,17 +199,9 @@ void CRenderPanel::GetModelCenter(Vector &vecInto)
 
 void CRenderPanel::OnMouseWheeled(int delta)
 {
-    BaseClass::OnMouseWheeled(delta);
-
     float amt = RemapVal(m_flDist, 0, 100, 2, 25);
     m_flDist -= delta * amt;
     m_flDist = clamp(m_flDist, 5, 16000);
-}
-
-void CRenderPanel::ApplySchemeSettings(IScheme* pScheme)
-{
-    BaseClass::ApplySchemeSettings(pScheme);
-    SetBorder(pScheme->GetBorder("Default"));
 }
 
 void CRenderPanel::DestroyModel()
@@ -291,6 +286,7 @@ void CRenderPanel::OnMouseReleased(MouseCode code)
     input()->SetMouseCapture(NULL);
     m_iDragMode = RDRAG_NONE;
 }
+
 void CRenderPanel::OnCursorMoved(int x, int y) {}
 
 void CRenderPanel::SetupView(CViewSetup &setup)

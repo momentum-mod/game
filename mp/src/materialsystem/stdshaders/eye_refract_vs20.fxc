@@ -41,7 +41,7 @@ const float4 g_vFlashlightMatrixRow4  :  register( SHADER_SPECIFIC_CONST_9 );
 const float3 cMorphTargetTextureDim		: register( SHADER_SPECIFIC_CONST_10 );
 const float4 cMorphSubrect				: register( SHADER_SPECIFIC_CONST_11 );
 
-sampler2D morphSampler					: register( D3DVERTEXTEXTURESAMPLER0, s0 );
+sampler2D morphSampler					: register( s0 );
 #endif
 
 struct VS_INPUT
@@ -62,9 +62,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos							: POSITION;		// Projection-space position
-#if !defined( _X360 )
 	float  fog								: FOG;			// Fixed-function fog factor
-#endif
 	float4 vAmbientOcclUv_fallbackCorneaUv	: TEXCOORD0;	// Base texture coordinate
 	float4 cVertexLight						: TEXCOORD1;	// Vertex-lit color (Note: w is used for flashlight pass)
 	float4 vTangentViewVector				: TEXCOORD2;	// Tangent view vector (Note: w is used for flashlight pass)
@@ -117,10 +115,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	
 	o.vWorldPosition_ProjPosZ.w = vProjPos.z;
 
-#if !defined( _X360 )
 	// Set fixed-function fog factor
 	o.fog = CalcFog( vWorldPosition, vProjPos, g_iFogType );
-#endif
 
 	// Normal = (Pos - Eye origin)
 	float3 vWorldNormal = normalize( vWorldPosition.xyz - g_cEyeOrigin.xyz );

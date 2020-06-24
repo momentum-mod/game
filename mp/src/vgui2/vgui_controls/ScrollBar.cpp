@@ -142,7 +142,7 @@ ScrollBar::ScrollBar(Panel *parent, const char *panelName, bool vertical) : Pane
 	m_pLine = nullptr;
 	m_pDownArrow = nullptr;
 	m_pBox = nullptr;
-	m_bNoButtons = false;
+	m_bNoButtons = true;
 	m_pOverriddenButtons[0] = nullptr;
 	m_pOverriddenButtons[1] = nullptr;
     m_iSchemeScrollWide = 0;
@@ -246,7 +246,7 @@ void ScrollBar::PerformLayout()
 	{
 		int wide, tall;
 		GetPaintSize(wide,tall);
-		if(_slider->IsVertical())
+		if (_slider->IsVertical())
 		{
 			if ( m_bNoButtons )
 			{
@@ -305,6 +305,11 @@ void ScrollBar::PerformLayout()
 	if ( m_bAutoHideButtons )
 	{
 		SetScrollbarButtonsVisible( _slider->IsSliderVisible() );
+	}
+
+	if (m_bNoButtons)
+	{
+	    SetScrollbarButtonsVisible(false);
 	}
 
 	// get tooltips to draw
@@ -576,7 +581,7 @@ void ScrollBar::SetScrollbarButtonsVisible(bool visible)
     {
         if (pButton)
         {
-            pButton->SetShouldPaint(visible);
+            pButton->SetVisible(visible);
             pButton->SetEnabled(visible);
         }
     }
@@ -762,7 +767,7 @@ void ScrollBar::ApplySettings( KeyValues *pInResourceData )
 {
 	BaseClass::ApplySettings( pInResourceData );
 
-	m_bNoButtons = pInResourceData->GetBool( "nobuttons", false );
+	m_bNoButtons = pInResourceData->GetBool( "nobuttons", true );
 
 	KeyValues *pSliderKV = pInResourceData->FindKey( "Slider" );
 	if ( pSliderKV && _slider )

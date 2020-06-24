@@ -40,6 +40,8 @@ class CMomStickybomb : public CMomExplosive
     void Fizzle();
     void Detonate();
     void VPhysicsCollision(int index, gamevcollisionevent_t *pEvent) OVERRIDE;
+
+    bool DidHitWorld() const { return m_bDidHitWorld; }
 #endif
 
   private:
@@ -48,7 +50,7 @@ class CMomStickybomb : public CMomExplosive
     bool m_bPulsed;
 #else
     bool m_bFizzle;
-    bool m_bUseImpactNormal;
+    bool m_bDidHitWorld;
     Vector m_vecImpactNormal;
     float m_flCreationTime;
 #endif

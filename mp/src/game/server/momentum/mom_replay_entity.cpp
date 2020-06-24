@@ -31,7 +31,7 @@ END_DATADESC();
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_bHasJumped(false),
       m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0), m_nOldReplayButtons(0),
-      m_vecLastVel(vec3_origin)
+      m_vecLastVel(vec3_origin), m_cvarMapFinMoveEnable("mom_mapfinished_movement_enable")
 {
     m_RunStats.Init();
     m_bIsPaused = false;
@@ -60,7 +60,7 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
 
 void CMomentumReplayGhostEntity::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
-    if (m_Data.m_bMapFinished)
+    if (m_Data.m_bMapFinished && !m_cvarMapFinMoveEnable.GetBool())
         return;
 
     BaseClass::Teleport(newPosition, newAngles, newVelocity);
@@ -158,6 +158,8 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 void CMomentumReplayGhostEntity::LoadFromReplayBase(CMomReplayBase *pReplay)
 {
     m_pPlaybackReplay = pReplay;
+
+    SetSteamID(pReplay->GetPlayerSteamID());
 
     m_RunStats.FullyCopyFrom(*m_pPlaybackReplay->GetRunStats());
     m_Data.m_iRunTime = m_pPlaybackReplay->GetStopTick() - m_pPlaybackReplay->GetStartTick();

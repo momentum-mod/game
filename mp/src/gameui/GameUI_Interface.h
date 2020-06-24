@@ -19,7 +19,7 @@ class CGameUI : public IGameUI
 {
   public:
     CGameUI();
-    ~CGameUI();
+    virtual ~CGameUI();
 
     void Initialize(CreateInterfaceFn appFactory) OVERRIDE;
     void Connect(CreateInterfaceFn gameFactory) OVERRIDE;
@@ -39,7 +39,8 @@ class CGameUI : public IGameUI
     void PreventEngineHideGameUI();
     void AllowEngineHideGameUI();
 
-    void SetLoadingBackgroundDialog(vgui::VPANEL panel) OVERRIDE;;
+    void SetLoadingBackgroundDialog(vgui::VPANEL panel) OVERRIDE;
+    vgui::VPANEL GetLoadingBackgroundDialog();
 
     // notifications
     void OnGameUIActivated() OVERRIDE;
@@ -50,13 +51,6 @@ class CGameUI : public IGameUI
 
     // progress
     bool UpdateProgressBar(float progress, const char *statusText) OVERRIDE;
-    // Shows progress desc, returns previous setting... (used with custom progress bars )
-    bool SetShowProgressText(bool show) OVERRIDE;
-
-    // Allows the level loading progress to show map-specific info
-    virtual void SetProgressLevelName(const char *levelName);
-
-    void SetProgressOnStart() OVERRIDE;
 
     void SendMainMenuCommand(const char *pszCommand) OVERRIDE;
     void OnConfirmQuit() OVERRIDE;
@@ -83,6 +77,9 @@ class CGameUI : public IGameUI
     void ShowNewGameDialog(int chapter) OVERRIDE{}
     void SetMainMenuOverride(vgui::VPANEL panel) OVERRIDE{}
 	void UpdatePlayerInfo() OVERRIDE {}
+    // Progress
+    void SetProgressOnStart() OVERRIDE {}
+    bool SetShowProgressText(bool show) OVERRIDE { return false; }
     // Connection
     void OLD_OnConnectToServer(const char *game, int IP, int port) OVERRIDE {} // OLD: use OnConnectToServer2
     void OnConnectToServer2(const char *game, int IP, int connectionPort, int queryPort) OVERRIDE {}
@@ -94,34 +91,18 @@ class CGameUI : public IGameUI
     bool IsInBackgroundLevel();
     bool IsInMenu();
     bool IsInMultiplayer();
-    bool HasSavedThisMenuSession();
-    void SetSavedThisMenuSession(bool bState);
 
     void ShowLoadingBackgroundDialog();
     void HideLoadingBackgroundDialog();
-    bool HasLoadingBackgroundDialog();
 
     virtual Vector2D GetViewport() const;
 
     void GetLocalizedString(const char *pToken, wchar_t **pOut);
 
   private:
-    virtual void StartProgressBar();
     virtual bool ContinueProgressBar(float progressFraction);
-    virtual void StopProgressBar(bool bError, const char *failureReason, const char *extendedReason = NULL);
-    virtual bool SetProgressBarStatusText(const char *statusText);
 
-    //!! these functions currently not implemented
-    virtual void SetSecondaryProgressBar(float progress /* range [0..1] */);
-    virtual void SetSecondaryProgressBarText(const char *statusText);
-
-    bool m_bActivatedUI : 1;
-    bool m_bHasSavedThisMenuSession : 1;
-    bool m_bOpenProgressOnStart : 1;
     int m_iPlayGameStartupSound;
-
-    char m_szPreviousStatusText[128];
-    char m_szPlatformDir[MAX_PATH];
 };
 
 // Purpose: singleton accessor

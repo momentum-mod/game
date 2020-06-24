@@ -9,7 +9,6 @@ class C_MomZoneMenu : public vgui::Frame
   public: // vgui::Frame
     C_MomZoneMenu();
 
-    MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
     MESSAGE_FUNC_PTR_INT(OnButtonChecked, "CheckButtonChecked", panel, state);
 
@@ -49,7 +48,6 @@ protected:
     vgui::Label         *m_pGridSizeLabel;
     vgui::CvarSlider    *m_pGridSizeSlider;
     vgui::CvarTextEntry *m_pGridSizeTextEntry;
-    bool                 m_bUpdateGridSizeSlider;
 
     // Whether or not menu should bind mouse/keyboard input to zoning commands
     bool m_bBindKeys;

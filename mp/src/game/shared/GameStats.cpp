@@ -801,13 +801,6 @@ void CBaseGameStats_Driver::UpdatePerfStats( void )
 		}
 	}
 	m_flLastRealTime = flCurTime;
-
-#ifdef CLIENT_DLL
-	if ( g_pGameRules && g_pGameRules->IsMultiplayer() )
-	{
-		m_bDidVoiceChat |= GetClientVoiceMgr()->IsLocalPlayerSpeaking();
-	}
-#endif
 }
 
 void CBaseGameStats_Driver::PossibleMapChange( void )

@@ -23,6 +23,9 @@
 
 #include "clienteffectprecachesystem.h"
 
+#include "loadingscreen/LoadingScreen.h"
+#include "GameUI/IGameUI.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -33,12 +36,12 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Globals
 //-----------------------------------------------------------------------------
-static MAKE_TOGGLE_CONVAR(
-    mom_enable_overlapping_keys, "1", FCVAR_ARCHIVE,
-    "If enabled the game will allow you to press 2 keys at once which will null out the movement gain.");
+static MAKE_TOGGLE_CONVAR(mom_enable_overlapping_keys, "1", FCVAR_ARCHIVE,
+                          "If enabled the game will allow you to press 2 keys at once which will null out the movement gain.\n");
+
 static MAKE_TOGGLE_CONVAR(mom_release_forward_on_jump, "0", FCVAR_ARCHIVE,
                           "When enabled the game will auto release the forward key which is determined by movement, so "
-                          "it can be used on all styles except \"half\" styles e.g. HSW.");
+                          "it can be used on all styles except \"half\" styles e.g. HSW.\n");
 
 CON_COMMAND(hud_reloadcontrols, "Reloads the control res files for hud elements.")
 {
@@ -54,6 +57,9 @@ extern ConVar cl_sidespeed;
 
 HScheme g_hVGuiCombineScheme = 0;
 
+static CDllDemandLoader g_GameUI("GameUI");
+
+CLoadingScreen *g_pLoadingScreen = nullptr;
 
 // Instance the singleton and expose the interface to it.
 IClientMode *GetClientModeNormal()
@@ -115,9 +121,6 @@ class CHudViewport : public CBaseViewport
     {
         BaseClass::OnScreenSizeChanged(iOldWide, iOldTall);
 
-        // Force a hud_reloadcontrols
-        OnReloadControls();
-
         static_cast<ClientModeMOMNormal*>(g_pClientMode)->SetupPointers();
     }
 };
@@ -144,9 +147,6 @@ ClientModeMOMNormal::~ClientModeMOMNormal()
     // MOM_TODO: delete pointers (m_pViewport) here?
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void ClientModeMOMNormal::Init()
 {
     BaseClass::Init();
@@ -155,9 +155,21 @@ void ClientModeMOMNormal::Init()
     g_hVGuiCombineScheme = scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
         "resource/CombinePanelScheme.res", "CombineScheme");
+
     if (!g_hVGuiCombineScheme)
     {
         Warning("Couldn't load combine panel scheme!\n");
+    }
+
+    const auto gameUIFactory = g_GameUI.GetFactory();
+    if (gameUIFactory)
+    {
+        const auto pGameUI = static_cast<IGameUI*>(gameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
+        if (pGameUI)
+        {
+            g_pLoadingScreen = new CLoadingScreen();
+            pGameUI->SetLoadingBackgroundDialog(g_pLoadingScreen->GetVPanel());
+        }
     }
 }
 
@@ -233,25 +245,27 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
             m_pSpectatorGUI->SetMouseInputEnabled(!bMouseState);
             if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
                 m_pHudMapFinished->SetMouseInputEnabled(!bMouseState);
+            if (m_pLobbyMembers && m_pLobbyMembers->IsVisible())
+                m_pLobbyMembers->SetMouseInputEnabled(!bMouseState);
             // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             // m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
             return 0; // we handled it, don't handle twice or send to server
         }
 
-        if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack") &&
-            !m_pSpectatorGUI->IsMouseInputEnabled())
+        bool shouldEatSpecInput = (m_pHudMapFinished && m_pHudMapFinished->IsVisible()) ||
+            (m_pLobbyMembers && m_pLobbyMembers->IsVisible()) || m_pSpectatorGUI->IsMouseInputEnabled();
+        if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_next");
             return 0;
         }
-        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack2") &&
-                 !m_pSpectatorGUI->IsMouseInputEnabled())
+        else if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+attack2") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_prev");
             return 0;
         }
-        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+jump"))
+        else if (down && pszCurrentBinding && FStrEq(pszCurrentBinding, "+jump") && !shouldEatSpecInput)
         {
             engine->ClientCmd("spec_mode");
             return 0;
@@ -268,9 +282,7 @@ CLIENTEFFECT_REGISTER_END_CONDITIONAL(engine->GetDXSupportLevel() >= 90)
 
 bool ClientModeMOMNormal::DoPostScreenSpaceEffects(const CViewSetup* pSetup)
 {
-#ifdef GLOW_ENABLE
     g_GlowObjectManager.RenderGlowEffects(pSetup, 0);
-#endif
 
     return BaseClass::DoPostScreenSpaceEffects(pSetup);
 }

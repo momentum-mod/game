@@ -1,18 +1,5 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================//
-
-#ifndef SLIDER_H
-#define SLIDER_H
-
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include <vgui/VGUI.h>
 #include <vgui_controls/Panel.h>
 
 namespace vgui
@@ -34,10 +21,6 @@ public:
 	virtual void GetRange(int &min, int &max);
 	virtual void GetNobPos(int &min, int &max);	// get current Slider position
 	virtual void SetButtonOffset(int buttonOffset);
-	virtual void OnCursorMoved(int x, int y);
-	virtual void OnMousePressed(MouseCode code);
-	virtual void OnMouseDoublePressed(MouseCode code);
-	virtual void OnMouseReleased(MouseCode code);
 	virtual void SetTickCaptions(const wchar_t *left, const wchar_t *right);
 	virtual void SetTickCaptions(const char *left, const char *right);
 	virtual void SetNumTicks(int ticks);
@@ -60,16 +43,20 @@ public:
 	virtual void SetSliderThumbSubRange( bool bEnable, int nMin = 0, int nMax = 100 );
 
 protected:
-	virtual void OnSizeChanged(int wide, int tall);
-	virtual void Paint();
-	virtual void PaintBackground();
-	virtual void PerformLayout();
-	virtual void ApplySchemeSettings(IScheme *pScheme);
-	virtual void GetSettings(KeyValues *outResourceData);
-	virtual void ApplySettings(KeyValues *inResourceData);
-    void InitSettings() OVERRIDE;
+    void OnSizeChanged(int wide, int tall) override;
+    void Paint() override;
+    void PaintBackground() override;
+    void PerformLayout() override;
+    void ApplySchemeSettings(IScheme *pScheme) override;
+    void GetSettings(KeyValues *outResourceData) override;
+    void ApplySettings(KeyValues *inResourceData) override;
+    void InitSettings() override;
 
-	virtual void OnKeyCodeTyped(KeyCode code);
+    void OnKeyCodeTyped(KeyCode code) override;
+	void OnCursorMoved(int x, int y) override;
+	void OnMousePressed(MouseCode code) override;
+	void OnMouseDoublePressed(MouseCode code) override;
+	void OnMouseReleased(MouseCode code) override;
 
 	virtual void DrawNob();
 	virtual void DrawTicks();
@@ -77,7 +64,6 @@ protected:
 
 	virtual void GetTrackRect( int &x, int &y, int &w, int &h );
 
-protected:
 	virtual void RecomputeNobPosFromValue();
 	virtual void RecomputeValueFromNobPos();
 	
@@ -85,8 +71,11 @@ protected:
 	virtual void SendSliderDragStartMessage();
 	virtual void SendSliderDragEndMessage();
 
+	void SetTickColor(Color color) { m_TickColor = color; }
+
 	void ClampRange();
 
+private:
 	bool _dragging;
 	int _nobPos[2];
 	int _nobDragStartPos[2];
@@ -97,7 +86,12 @@ protected:
 	int _buttonOffset;
 	IBorder *_sliderBorder;
 	IBorder *_insetBorder;
-	float _nobSize;
+	float _thumbWidth;
+	int _trackOffsetX;
+	int _trackOffsetY;
+	int _trackHeight;
+	int _tickOffset;
+	int _tickHeight;
 
 	TextImage *_leftCaption;
 	TextImage *_rightCaption;
@@ -108,11 +102,9 @@ protected:
 	Color m_DisabledTextColor2;
 
 	int		m_nNumTicks;
-	bool	m_bIsDragOnRepositionNob : 1;
-	bool	m_bUseSubRange : 1;
-	bool	m_bInverted : 1;
+	bool	m_bIsDragOnRepositionNob;
+	bool	m_bUseSubRange;
+	bool	m_bInverted;
 };
 
 }
-
-#endif // SLIDER_H

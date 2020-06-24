@@ -45,7 +45,7 @@ CHudWeapon::CHudWeapon( const char *pElementName ) :
 
 	m_pCrosshair = NULL;
 
-	SetHiddenBits( HIDEHUD_WEAPONSELECTION );
+	SetHiddenBits( HIDEHUD_WEAPONSELECTION | HIDEHUD_LEADERBOARDS );
 }
 
 //-----------------------------------------------------------------------------

@@ -27,11 +27,11 @@
 #include "hud.h"
 
 //Momentum
-#include "momentum/ui/MapSelection/IMapSelector.h"
-#include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
-#include "momentum/ui/IMessageboxPanel.h"
+#include "MessageboxPanel.h"
 #include "clientmode_mom_normal.h"
 #include "ChangelogPanel.h"
+#include "MapSelectorDialog.h"
+#include "MomentumSettingsDialog.h"
 
 #if defined( TF_CLIENT_DLL )
 #include "tf_gamerules.h"
@@ -124,19 +124,11 @@ static CHudTextureHandleProperty textureHandleConverter;
 // Momentum-related VGUI Panels
 inline void VGui_CreateMomentumPanels()
 {
-    VPANEL gameMenu = enginevgui->GetPanel(PANEL_GAMEUIDLL);
-    mapselector->Create(gameMenu);
-    changelogpanel->Create(gameMenu);
-    momentum_settings->Create(gameMenu);
-    messageboxpanel->Create(gameMenu);
 }
 
 inline void VGui_DestroyMomentumPanels()
 {
-    mapselector->Destroy();
-    changelogpanel->Destroy();
-    momentum_settings->Destroy();
-    messageboxpanel->Destroy();
+    g_pMessageBox->DiscardMessageboxes();
 }
 
 
@@ -190,8 +182,11 @@ static void VGui_OneTimeInit()
 
 	vgui::Panel::AddPropertyConverter( "CHudTextureHandle", &textureHandleConverter );
 
-
     g_pMaterialSystem->AddModeChangeCallBack( &VGui_VideoMode_AdjustForModeChange );
+
+	CMomentumSettingsDialog::Init();
+	CChangelogPanel::Init();
+	CMapSelectorDialog::Init();
 }
 
 bool VGui_Startup( CreateInterfaceFn appSystemFactory )

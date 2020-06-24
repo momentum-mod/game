@@ -7,7 +7,7 @@
         "xpos"          "c-110"
         "ypos"          "c-150"
         "wide"          "220"
-        "tall"          "215"
+        "tall"          "245"
         "TextFont"      "Default"
     }
     
@@ -139,6 +139,8 @@
         "dulltext"      "0"
         "brighttext"    "0"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Enter_Time"
@@ -162,6 +164,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Strafes"
@@ -185,6 +188,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Jumps"
@@ -208,6 +212,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Vel_Enter"
@@ -231,6 +236,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Vel_Exit"
@@ -254,6 +260,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Vel_Avg"
@@ -277,6 +284,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Vel_Max"
@@ -300,6 +308,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Sync1"
@@ -323,6 +332,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Zone_Sync2"
@@ -346,6 +356,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Run_Save_Status"
@@ -369,6 +380,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
     "Run_Upload_Status"
@@ -392,6 +404,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
 
     "XP_Gain_Cos"
@@ -415,6 +428,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
 
     "Cos_Level_Gain"
@@ -438,6 +452,7 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"1"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
 
     "XP_Gain_Rank"
@@ -461,12 +476,13 @@
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"2"
         "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     
-    "Detach_Mouse"
+    "Mouse_State"
     {
         "ControlName" "Label"
-        "fieldName" "Detach_Mouse"
+        "fieldName" "Mouse_State"
         "font"          "Default"//Set by "TextFont" 
         "xpos"          "6"
         "ypos"          "5"
@@ -476,7 +492,7 @@
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "labelText"     "#MOM_MF_DetachMouse"
+        "labelText"     "#MOM_MF_MouseToggle"
         "textAlignment" "center"
         "dulltext"      "0"
         "brighttext"    "0"
@@ -486,5 +502,29 @@
         "pin_corner_to_sibling" "0"
         "auto_wide_tocontents" "0"
         "auto_tall_tocontents" "1"
+    }
+    
+    "ComparisonLabel"
+    {
+        "ControlName" "Label"
+        "fieldName"  "ComparisonLabel"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
+        "wide"          "100"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "1"
+        "visible"       "1"
+        "enabled"       "1"
+        "textAlignment" "west"
+        "dulltext"      "0"
+        "brighttext"    "0"
+        "pin_to_sibling" "Zone_Overall_Time"
+        "pin_corner_to_sibling" "0"
+        "pin_to_sibling_corner" "1"
+        "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
+        "UnpinnedCornerOffsetX" "3"
     }
 }

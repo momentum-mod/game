@@ -126,7 +126,7 @@
 
 "StickybombLauncher.Detonate"
 {
-    "channel"	"CHAN_WEAPON"
+    "channel"	"CHAN_AUTO"
     "volume"	"1.0"
     "soundlevel"	"SNDLVL_94dB"
     "wave"		"weapons/stickybomblauncher_det.wav"
@@ -134,7 +134,7 @@
 
 "StickybombLauncher.Deny"
 {
-    "channel"	"CHAN_WEAPON"
+    "channel"	"CHAN_AUTO"
     "volume"	"1.0"
     "soundlevel"	"SNDLVL_94dB"
     "wave"		"weapons/stickylauncher/stickybomblauncher_deny.wav"
@@ -142,10 +142,18 @@
 
 "StickybombLauncher.Charge"
 {
-    "channel"	"CHAN_WEAPON"
+    "channel"	"CHAN_AUTO"
     "volume"	"1.0"
     "soundlevel"	"SNDLVL_94dB"
     "wave"		"weapons/stickybomblauncher_charge_up.wav"
+}
+
+"StickybombLauncher.ChargeStop"
+{
+    "channel"	"CHAN_AUTO"
+    "volume"	"1.0"
+    "soundlevel"	"SNDLVL_94dB"
+    "wave"		"common/wpn_denyselect.wav"
 }
 
 "StickybombLauncher.Explosion"

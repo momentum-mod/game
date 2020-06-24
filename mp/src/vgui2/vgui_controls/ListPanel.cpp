@@ -5,21 +5,9 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include <stdio.h>
-
-#define PROTECTED_THINGS_DISABLE
-
-#include <vgui/Cursor.h>
-#include <vgui/IInput.h>
-#include <vgui/ILocalize.h>
-#include <vgui/IPanel.h>
-#include <vgui/IScheme.h>
-#include <vgui/ISystem.h>
-#include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
-#include <vgui/KeyCode.h>
-#include <KeyValues.h>
-#include <vgui/MouseCode.h>
+#include "vgui/IInput.h"
+#include "vgui/ISurface.h"
+#include "vgui/IVGui.h"
 
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Controls.h>
@@ -28,6 +16,7 @@
 #include <vgui_controls/Label.h>
 #include <vgui_controls/ListPanel.h>
 #include <vgui_controls/ScrollBar.h>
+#include <vgui_controls/ScrollBarSlider.h>
 #include <vgui_controls/TextImage.h>
 #include <vgui_controls/Menu.h>
 #include <vgui_controls/Tooltip.h>
@@ -36,19 +25,6 @@
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
-
-
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)    (((a) < (b)) ? (a) : (b))
-#endif
-
-#ifndef clamp
-#define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
-#endif
 
 //-----------------------------------------------------------------------------
 //
@@ -76,7 +52,7 @@ void ColumnButton::ApplySchemeSettings(IScheme *pScheme)
 {
 	Button::ApplySchemeSettings(pScheme);
 
-	SetFont(pScheme->GetFont("DefaultSmall", IsProportional()));
+	SetFont(GetSchemeFont(pScheme, nullptr, "ListPanelHeader.Font", "DefaultSmall"));
     const auto pBorder = pScheme->GetBorder("ListPanelColumnButtonBorder");
     if (pBorder)
         SetDefaultBorder(pBorder);
@@ -438,6 +414,7 @@ DECLARE_BUILD_FACTORY( ListPanel );
 //-----------------------------------------------------------------------------
 ListPanel::ListPanel(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
+	m_bAutoTallHeaderToFont = false;
 	m_bIgnoreDoubleClick = false;
 	m_bMultiselectEnabled = true;
 	m_iEditModeItemID = 0;
@@ -534,6 +511,7 @@ void ListPanel::SetImageList(ImageList *imageList, bool deleteImageListWhenDone)
 void ListPanel::SetColumnHeaderHeight( int height )
 {
 	m_iHeaderHeight = height;
+	InvalidateLayout();
 }
 
 //-----------------------------------------------------------------------------
@@ -597,7 +575,7 @@ void ListPanel::AddColumnHeader(int index, const char *columnName, const char *c
 	// create the column header button
 	Button *pButton = SETUP_PANEL(new ColumnButton(this, columnName, columnText));  // the cell rendering mucks with the button visibility during the solvetraverse loop,
 																					//so force applyschemesettings to make sure its run
-	pButton->SetSize(width, 24);
+	pButton->SetSize(width, m_iHeaderHeight);
 	pButton->AddActionSignalTarget(this);
 	pButton->SetContentAlignment(Label::a_west);
 	pButton->SetTextInset(5, 0);
@@ -1660,7 +1638,7 @@ void ListPanel::PerformLayout()
 	m_vbar->SetSize(m_vbar->GetWide(), tall);
 	m_vbar->InvalidateLayout();
 
-	int buttonMaxXPos = wide - m_vbar->GetWide();
+	int buttonMaxXPos = wide - (m_vbar->IsVisible() && m_vbar->GetSlider()->IsSliderVisible() ? m_vbar->GetWide() : 0);
 	
 	int nColumns = m_CurrentColumns.Count();
 	// number of bars that can be resized
@@ -1747,13 +1725,18 @@ void ListPanel::PerformLayout()
 		m_lastBarWidth = buttonMaxXPos;
 	}
 
+	int iMaxHeaderTall = 0;
 	// Make sure nothing is smaller than minwidth to start with or else we'll get into trouble below.
 	for ( int i=0; i < nColumns; i++ )
 	{
 		column_t &column = m_ColumnsData[m_CurrentColumns[i]];
-		Panel *header = column.m_pHeader;
+		auto header = column.m_pHeader;
 		if ( header->GetWide() < column.m_iMinWidth )
 			header->SetWide( column.m_iMinWidth );
+
+		int dummy, headerContentTall;
+		header->GetContentSize(dummy, headerContentTall);
+		iMaxHeaderTall = max(iMaxHeaderTall, headerContentTall + GetScaledVal(3));
 	}
 
 	// Place headers as is
@@ -1804,7 +1787,8 @@ void ListPanel::PerformLayout()
 			hWide = column.m_iMaxWidth;
 		}
 
-		header->SetSize(hWide, m_vbar->GetWide());
+		int headerHeight = m_bAutoTallHeaderToFont ? iMaxHeaderTall : m_iHeaderHeight;
+		header->SetSize(hWide, headerHeight);
 		x += hWide;
 
 		// set the resizers
@@ -1819,14 +1803,13 @@ void ListPanel::PerformLayout()
 		}
 		sizer->MoveToFront();
 		sizer->SetPos(x - 4, 0);
-		sizer->SetSize(8, m_vbar->GetWide());
+		sizer->SetSize(8, headerHeight);
 	}
 
 	// setup edit mode
 	if ( m_hEditModePanel.Get() )
 	{
 		m_iTableStartX = 0; 
-		m_iTableStartY = m_vbar->GetWide();
 
 		int nTotalRows = m_VisibleItems.Count();
 		int nRowsPerPage = GetRowsPerPage();
@@ -1855,6 +1838,8 @@ void ListPanel::PerformLayout()
 
 				if (!header->IsVisible())
 					continue;
+
+				m_iTableStartY = header->GetTall();
 
 				int headerWide = header->GetWide();
 
@@ -1903,8 +1888,7 @@ void ListPanel::Paint()
 	int panelWide, tall;
   	GetSize( panelWide, tall );
 
-	m_iTableStartX = 0; 
-	m_iTableStartY = m_vbar->GetWide();
+	m_iTableStartX = 0;
 
 	int nTotalRows = m_VisibleItems.Count();
 	int nRowsPerPage = GetRowsPerPage();
@@ -1916,7 +1900,7 @@ void ListPanel::Paint()
 		nStartItem = m_vbar->GetValue();
 	}
 
-	int vbarInset = m_vbar->IsVisible() ? m_vbar->GetWide() : 0;
+	int vbarInset = (m_vbar->IsVisible() && m_vbar->GetSlider()->IsSliderVisible() ? m_vbar->GetWide() : 0);
 	int maxw = panelWide - vbarInset;
 
 //	debug timing functions
@@ -1942,6 +1926,8 @@ void ListPanel::Paint()
 
 			if (!header->IsVisible())
 				continue;
+
+			m_iTableStartY = header->GetTall();
 
 			int colWide = header->GetWide();
 
@@ -2475,7 +2461,15 @@ void ListPanel::ApplySchemeSettings(IScheme *pScheme)
 
     m_BgColor = GetSchemeColor("ListPanel.BgColor", pScheme);
 	SetBgColor(m_BgColor);
-	SetBorder(pScheme->GetBorder("ButtonDepressedBorder"));
+
+	if (!GetBorderOverrideName()[0])
+	{
+		auto pBorder = pScheme->GetBorder("ListPanel.Border");
+		if (!pBorder)
+			pBorder = pScheme->GetBorder("ButtonDepressedBorder");
+
+		SetBorder(pBorder);
+	}
 
 	m_pLabel->SetBgColor(m_BgColor);
 

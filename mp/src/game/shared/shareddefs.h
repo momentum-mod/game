@@ -108,7 +108,7 @@ public:
 #define MAX_PITCHDOWN       89.0f
 #define MIN_PITCHUP        -89.0f
 
-#define MAX_WEAPON_SLOTS		6	// hud item selection slots
+#define MAX_WEAPON_SLOTS		5	// hud item selection slots
 #define MAX_WEAPON_POSITIONS	20	// max number of items within a slot
 #define MAX_ITEM_TYPES			6	// hud item selection slots
 

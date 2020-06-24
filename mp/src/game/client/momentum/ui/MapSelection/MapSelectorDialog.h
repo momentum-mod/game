@@ -52,11 +52,13 @@ class CMapSelectorDialog : public vgui::Frame
 
   public:
     // Construction/destruction
-    CMapSelectorDialog(vgui::VPANEL parent);
-    ~CMapSelectorDialog(void);
+    CMapSelectorDialog();
+    ~CMapSelectorDialog();
+
+    static void Init();
 
     // displays the dialog, moves it into focus, updates if it has to
-    void Open(void);
+    void Open();
 
     void OnClose() OVERRIDE;
 
@@ -78,6 +80,9 @@ class CMapSelectorDialog : public vgui::Frame
     void LoadTabFilterData(const char *pTabName);
     void ApplyFiltersToCurrentTab(MapFilters_t filters);
 
+    int GetFilteredItemsCount();
+    void StartRandomMapFromCurrentTab();
+
     // load/saves filter & favorites settings from disk
     void LoadUserData();
     void SaveUserData();
@@ -91,6 +96,10 @@ class CMapSelectorDialog : public vgui::Frame
     void CreateMapListData(MapData *pData);
     void UpdateMapListData(uint32 uMapID, bool bMain, bool bInfo, bool bPB, bool bWR, bool bThumbnail);
     MapListData *GetMapListDataByID(uint32 uMapID);
+
+    // Selected random map to play
+    uint32 GetMapToStart() const { return m_uStartMapWhenReady; }
+    void SetMapToStart(uint32 uMapID) { m_uStartMapWhenReady = uMapID; }
 
     // Callbacks for download
     void OnMapDownloadQueued(KeyValues *pKv);
@@ -177,7 +186,8 @@ protected:
         m_iDownloadProgressIndx, m_iDownloadEndIndx;
 
     Color m_cMapDownloadQueued, m_cMapDownloadNeeded;
+
+    uint32 m_uStartMapWhenReady;
 };
 
-// singleton accessor
-extern CMapSelectorDialog &MapSelectorDialog();
+extern CMapSelectorDialog *g_pMapSelector;
