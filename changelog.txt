@@ -1,26 +1,136 @@
+0.8.5
+= Added
+  Zones folder for holding zone files
+  Added mom_sj_particle_trail_enable in order to toggle stickybomb trail visibility
+  Added SJ settings to the game settings panel
+  Added mom_mapfinished_movement_enable to allow for movement during the map finish UI
+  Added a warning when running on non-standard tickrates
+  Added the ability to detonate stickies with the pistol out
+  Added mom_ghost_online_sticky_alpha to change the transparency of online player's sticky bombs
+  Added shooting sound effect when an online ghost shoots sticky bombs
+  Added mom_practice_warning_enable to warn players who enter practice mode while in a run that they will resume the run from their previous location
+  Added mom_hud_mapinfo_show_status for zone label and mom_hud_versioninfo_enable for version label
+  Made players emit rocket launcher firing sounds online
+  Added an appropriate whitelist for commands issued by point_clientcommand
+  Add ahop gamemode movement (official gamemode coming next update!)
+  Added sticky armtime proxy that changes the blue glow on the stickybomb to fade in when during arming
+  Added "feeling lucky" button to the map selector 
+  Added a time comparison on the map finished panel)
+  Added toggle timer sound convars
+  Added airborne_only flag to func_nogrenades
+  Added PBR parameters MRAO scale and Emission scale to PS30 version of PBR shader
+  Added new fonts - Bebas Neue, Noto Sans, Source Code Pro, and credited them in FontCredits.txt
+  Added necessary flags for buttons that can be +use'd and are also non-solid, as in some CSS maps
+  Can now hold +jump to prevent being teleported in practice mode
+  Console search features (enter a space to search cvars/ccommands)
+  Added vertical, ramp board/leave, and explosive speedometers
+  Entity glow effect
+  New consolidated Settings panel 
+  Backported Alien Swarm's postprocess_controller entity
+  Added a 1/10000 chance for a wild wild western rider on your rockets
+
+= Fixed
+  Fixed paint doing damage to buttons when using +paint with other weapons out
+  Fixed the map finished panel status messages not being reset when using mom_restart or mom_reset
+  Fixed keyboard bindings not displaying or updating properly in the options menu
+  Fixed hud and game text being activated by online ghosts
+  Fixed lobby menu sometimes not accepting mouse input
+  Prevented spectator mode and player changes when showing the map finished panel
+  Fixed the sticky launcher's charge rate only being reset in start zones if it was the active weapon
+  Fixed sticky bombs from firing before mouse release when charge is disabled
+  Fixed sticky launcher sounds cancelling each other out
+  Fixed sticky bomb using different physics models based on the model it's given, causing custom sticky models to behave differently
+  Allowed stickies shot in practice mode to do damage when the timer isn't running
+  Fixed stickies persisting even when a player goes into spectate in a lobby
+  Made r_drawviewmodel not require sv_cheats
+  Made leaderboard panel close properly when it is closed by another event such as watching a replay or viewing a profile
+  Fixed ducking and water in RJ/SJ to make it more familiar
+  Fixed the "Blank" color having 1 alpha which caused supposedly invisible hud elements to show slightly
+  Disabled trigger debug text and bbox by default with developer 1, it can be enabled with mom_triggers_overlay_bbox and text_enable in dev builds
+  Re-added vprof
+  Fixed run comparisons comparing against runs of differing track number
+  Fixed weapons spawning in the floor which prevented them from being picked up by the player
+  Fixed map info & leaderboards not showing author(s) if map info is not looked at
+  Fixed rockets not firing while attack2 is held
+  Fixed TF2 models having burn effects
+  Limited mom_map_download_queue_parallel to 3, since only 3 maps can be actively downloaded at a time
+  Fixed jump heights not being effected by sv_gravity
+  Fixed chat's filters button not properly showing
+  Fixed P2P connections being accepted from blocked players
+  Fixed weapons casting shadows while in spectator mode
+  Added missing PCF files for missing particles (some on rj_iT)
+  Fixed replays not playing on rj_iT (and other maps with capitals)
+  Resolution change crashes
+  Fixed leaderboards attempting to update while not in a map
+  Fixed PBR default values
+  Fixed softlock when chat is opened and cl_drawhud is 0
+  Fix PBR flashlight on brushes
+  Fixed black outline around paint decals
+  Revert lightmappedgeneric to a version where parallax cubemaps worked
+  Prevented giving of weapons in the main menu/credits
+  Fixed bloom being more intense than in CSS
+  Fixed escape key clearing comboboxes when toggling between main menu/settings and the game
+  Fixed sorting by favorites/library on the map selector defaulting to sort by name by removing them. There are already tabs for favorites/library.
+  Fixed map finished panel not being closable when replay file can't be written
+  Stopped stage enter/exit velocity on speedometer from showing on stage re-enter. Stops it from showing again when failing a jump on RJ/SJ gamemodes.
+  Removed weapon lowering functionality
+  Fixed sticky charge meter and crosshair not hiding when leaderboards were open
+
+= Improved
+  Made the leaderboards stay open when tab is released if the user has right clicked it
+  Removed all cvar_value fields from resource files since defaults are set in code
+  Various VGUI improvements not seen by the user
+  Discord rich presence improvements: show game mode on image hover & when not doing a run.
+  Steam rich presence improvements: allow users to toggle it through the cvar mom_steam_rich_presence, show current status (making it more discord-like), updates without needing to be in a lobby, & shows group.
+  Various improvements to the Speedometer
+  Message boxes now scale with resolution & are more readable
+  Auto-apply momentum settings & remove the OK/Apply/Cancel buttons
+  Improved entity IO for saving/restoring savelocs
+  Show spectate list for other spectators
+  Moved localization methods, allowing localization files to be changed without needing to restart the game
+  Updated the grenade animations to not be default HL2 ones
+  Auto-apply momentum options & remove OK/Apply/Cancel buttons. Added a "write to cfg" button
+  Disabled mouse accel by default
+  Replaced/updated shader compile
+  New console design
+  Removed PBR bloat
+  Improved image resizing
+  Made static menus (saveloc & ruler menu) configurable through files cfg/savelocmenu_default.vdf and cfg/rulermenu_default.vdf
+  Proportional color picker with new design
+  New speedometer
+  Loading Screen UI
+  Moved sticky charge meter/bomb count underneath speedometer
+  Fog shader now uses radial-based fog calculations for more consistent appearance
+  Main menu scheme to match new UI direction
+  Map selector scheme to match new UI direction
+  Main menu logo model touchup
+  HUD elements are now hiding parts that aren't relevant to specific game modes
+  RichText (chat, console) panels render more accurately, have shift + click selection, and scroll-by-selection
+  HUD based elements now match new UI direction
+
 0.8.4
 = Added
   Added Stickybomb Launcher from TF2 and the Sticky Jumping gamemode
   Stickybombs are networked to others in a lobby
-  Added “mom_sj_stickybomb_drawdelay”, defaulted to 0
-  Added “mom_rj_rocket_drawdelay” to match stickybomb convar
-  Added “mom_hud_sj_stickycount_autohide” which auto-hides the count if 0
-  Add ConVar “mom_hud_sj_chargemeter_units” to show stickybomb speed when charged
+  Added "mom_sj_stickybomb_drawdelay", defaulted to 0
+  Added "mom_rj_rocket_drawdelay" to match stickybomb convar
+  Added "mom_hud_sj_stickycount_autohide" which auto-hides the count if 0
+  Add ConVar "mom_hud_sj_chargemeter_units" to show stickybomb speed when charged
   Added 0.05 second buffer to firing Stickybomb Launcher
   Charge mechanic is disabled whilst inside a start trigger
-  Added “sv_edge_fix” (off by default)
+  Added "sv_edge_fix" (off by default)
   Added "r_viewmodel_opacity" to adjust viewmodel opacity
   The PBR Shader has been added, supporting the Metal/Roughness workflow and Parallax Occlusion
-  Various PBR assets and “shadertest” map
-  Added “sv_tickrate” convar for simpler tickrate adjustments
-  Added a “ModelData” block inside weapon scripts that define the path to every model the weapon uses
-  Added TF2 override scripts inside “custom/overrides/scripts/” with a README on how to use them (weapon model hotswitching has been removed in favor of these)
-  Added “give_weapon” command that autocompletes which weapons you can give yourself depending on gamemodes
+  Various PBR assets and "shadertest" map
+  Added "sv_tickrate" convar for simpler tickrate adjustments
+  Added a "ModelData" block inside weapon scripts that define the path to every model the weapon uses
+  Added TF2 override scripts inside "custom/overrides/scripts/" with a README on how to use them (weapon model hotswitching has been removed in favor of these)
+  Added "give_weapon" command that autocompletes which weapons you can give yourself depending on gamemodes
 
 = Fixed
   Fixed changing weapons from and to the rocket launcher allowing faster rocket firing
   Fixed TF2 materials from going pitch black
-  Fixed showing default “dots” crosshair with weapon crosshairs and fix custom crosshair files
+  Fixed showing default "dots" crosshair with weapon crosshairs and fix custom crosshair files
   Fixed the player_speedmod entity defaulting to the local player
   Fixed missing default crosshair
   Fixed incorrect sound playing when landing on a slope
@@ -33,11 +143,11 @@
 = Improved
   Make RJ/SJ follow the other gamemodes' start zone logic (reset on landing, limit speed on enter)
   Center fire is now the default RJ firing mode to better cater to newer players
-  Officially changed the map prefix for RJ from “jump_” to “rj_”
+  Officially changed the map prefix for RJ from "jump_" to "rj_"
   Added updated RJ trail/explosion particles by Vortex
   Shotgun material has been reworked
   The options for HDR bloom and tonemapping now use combo boxes
-  Consolidate gamemode settings pages into a single “Gamemodes” tab
+  Consolidate gamemode settings pages into a single "Gamemodes" tab
   The momentum rocket model now has and uses the "trail" bone for TF2-consistency (thanks to bonjorno7)
   Updated the Main Menu background for SJ Gamemode
   Skybox is no longer culled at >90 FoV
@@ -46,69 +156,4 @@
   Removed controller support
   Removed Logitech G15 integration
   Removed Mumble integration
-  Gamemodes define which weapons they can use, with the “unknown” gamemode allowing any weapon
-
-0.8.3
-= Added
-  Added the ability to toggle between official momentum and TF2 sounds, models and particles
-  Added a new rocket model, launcher model, scorch decal, explosion particle and sound effect for rocket jumping
-  Added support for custom explosion effects and sound in the rocket launcher weapon script
-  Added sv_ground_trigger_fix to toggle bounces and jumpbugs
-  Added sv_duck_collision_fix to toggle on and off the headbug fix
-  Added further customization options for the game crosshair such as cl_crosshairstyle and cl_crosshaircolor with RGB values
-  Added timestamps to chat messages in the console as well as mom_chat_timestamps_enable to toggle timestamps in chat
-  Added support for tf_generic_bomb entities (renamed to momentum_generic_bomb)
-  Added damage indicators to the hud along with mom_hud_damageindicator customization settings
-  Added indicators for mouse1 and mouse2 on the keypress display
-  Added support for gamemode specific config files (surf/bhop/jump.cfg)
-  Added networking for rockets fired in online lobbies
-  Added a few entities by backporting them from Alien Swarm
-  Added a new RJ settings panel to the Momentum Settings dialog
-
-= Fixed
-  Removed the ability to toggle mom_rj_centerfire and cl_righthand while in a run
-  Refactored the ammo and weapon script system so that weapon scripts can only be used for cosmetic customization
-  Blocked players from doing damage to buttons while in practice mode
-  Fixed mom_spectate_stop teleporting players even when not spectating
-  Fixed lobby members panel being emptied upon changing resolution or using hud_reloadcontrols.
-  Fixed the player being able to fire directly after entering and leaving practice mode regardless of what the cooldown was in the actual run
-  Fixed error causing runs to display as unix epoch
-  Fixed ghosts doing damage to things like buttons in the local player’s game
-  Fixed start zones not resetting player gravity from savelocs
-  Fixed “Enable Overlapping Keys” breaking limitmovement triggers
-  Fixed visual errors when the sync bar went below 5%
-  Fixed the deploy time and fire rate of weapons varying depending on the animations
-  Fixed the slopeboost fix giving negative speed uphill
-  Fixed issues with smooth ducking transitions
-  Fixed bug that let the player stay in the air when considered walking
-  Fixed mom_start_mark commands not working for tracks with multiple start zones
-  Fixed paint not being applied to surfaces covered by water
-  Fixed resetting in a start zone attempting to stop the timer even when it isn’t running
-  Fixed zones breaking if they were made with a negative height value
-  Removed the ability to use “give” commands while spectating
-  Fixed the AllowingJump property of slide triggers to work properly
-  Prevented the timer from starting when teleporting to someone from a start zone in a lobby
-  Fixed the player outline for the leaderboard not resetting on map change
-  Removed some leftover test commands and placed many potential cheat commands behind -mapping
-  Set the default interp to 0.1 as 0 was causing model animations to lag
-  Fixed doors being locked on RJ maps
-  Removed ladder movement from RJ maps
-  Fixed shotgun not firing underwater for RJ maps
-  Fixed game crash on resolution change with the momentum settings dialog open
-  Added validation on paint decal radius
-  Fixed arrows on the map image gallery not changing position upon window resize
-
-= Improved
-  Simplified the process of reading appearance data in lobbies and removed duplicated code related to appearance
-  Cleaned up memory leaks and processes in the replay system
-  Made shotgun spread fixed and consistent to remove RNG
-  Improved the ruler tool (showRuler) to account for distance on multiple axis
-  Improved the layout, scaling and coloring in the Map Selector UI
-  Improved the font size and bounding areas of the Momentum Settings UI
-  Improved the player stats region of the leaderboards to better format the information
-  Changed map selector’s initial size and position to take up empty space instead of covering the menu buttons
-  Improved the Spectator UI layout
-  Changed the shotgun fire range from 3000 units to 8192 units
-  Online packets are now validated to ensure garbage/malicious packets do not affect the game negatively
-  Improved the shotgun’s animations
-  Refactored weapon script code to make more sense and limit script changes to visual modifications
+  Gamemodes define which weapons they can use, with the "unknown" gamemode allowing any weapon
