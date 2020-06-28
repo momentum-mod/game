@@ -108,6 +108,10 @@ const float3 cubemapPos : register(c21);
 const float4x4 obbMatrix : register(c22); //through c25
 #endif
 
+#if ACES_TONEMAPPING
+const float g_flExposure : register(c26);
+#endif
+
 sampler BaseTextureSampler		: register( s0 );
 sampler LightmapSampler			: register( s1 );
 sampler EnvmapSampler			: register( s2 );
@@ -595,7 +599,11 @@ HALF4 main( PS_INPUT i ) : COLOR
 	alpha = fogFactor;
 #endif
 
+#if ACES_TONEMAPPING
+	return FinalOutput( float4( result.rgb, alpha ), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_ACES, bWriteDepthToAlpha, i.worldPos_projPosZ.w, g_flExposure );
+#else
 	return FinalOutput( float4( result.rgb, alpha ), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR, bWriteDepthToAlpha, i.worldPos_projPosZ.w );
+#endif
 
 #endif
 }

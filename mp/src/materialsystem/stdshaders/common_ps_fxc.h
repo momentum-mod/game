@@ -60,6 +60,7 @@ const float4 cLightScale : register( c30 );
 #define TONEMAP_SCALE_NONE 0
 #define TONEMAP_SCALE_LINEAR 1
 #define TONEMAP_SCALE_GAMMA 2
+#define TONEMAP_SCALE_ACES 3
 
 #define PIXEL_FOG_TYPE_NONE -1 //MATERIAL_FOG_NONE is handled by PIXEL_FOG_TYPE_RANGE, this is for explicitly disabling fog in the shader
 #define PIXEL_FOG_TYPE_RANGE 0 //range+none packed together in ps2b. Simply none in ps20 (instruction limits)
@@ -324,8 +325,44 @@ float DepthToDestAlpha( const float flProjZ )
 #endif
 }
 
+static const float3x3 ACESInputMat =
+{
+    {0.59719, 0.35458, 0.04823},
+    {0.07600, 0.90834, 0.01566},
+    {0.02840, 0.13383, 0.83777}
+};
 
-float4 FinalOutput( const float4 vShaderColor, float pixelFogFactor, const int iPIXELFOGTYPE, const int iTONEMAP_SCALE_TYPE, const bool bWriteDepthToDestAlpha = false, const float flProjZ = 1.0f )
+// ODT_SAT => XYZ => D60_2_D65 => sRGB
+static const float3x3 ACESOutputMat =
+{
+    { 1.60475, -0.53108, -0.07367},
+    {-0.10208,  1.10813, -0.00605},
+    {-0.00327, -0.07276,  1.07602}
+};
+
+float3 RRTAndODTFit(float3 v)
+{
+    float3 a = v * (v + 0.0245786f) - 0.000090537f;
+    float3 b = v * (0.983729f * v + 0.4329510f) + 0.238081f;
+    return a / b;
+}
+
+float3 ACESFitted(float3 color)
+{
+    color = mul(ACESInputMat, color);
+
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    color = mul(ACESOutputMat, color);
+
+    // Clamp to [0, 1]
+    color = saturate(color);
+
+    return color;
+}
+
+float4 FinalOutput( const float4 vShaderColor, float pixelFogFactor, const int iPIXELFOGTYPE, const int iTONEMAP_SCALE_TYPE, const bool bWriteDepthToDestAlpha = false, const float flProjZ = 1.0f, const float flExposure = 1.0f )
 {
 	float4 result;
 	if( iTONEMAP_SCALE_TYPE == TONEMAP_SCALE_LINEAR )
@@ -335,6 +372,10 @@ float4 FinalOutput( const float4 vShaderColor, float pixelFogFactor, const int i
 	else if( iTONEMAP_SCALE_TYPE == TONEMAP_SCALE_GAMMA )
 	{
 		result.rgb = vShaderColor.rgb * GAMMA_LIGHT_SCALE;
+	}
+	else if( iTONEMAP_SCALE_TYPE == TONEMAP_SCALE_ACES )
+	{
+		result.rgb = ACESFitted(vShaderColor.rgb) * flExposure;
 	}
 	else if( iTONEMAP_SCALE_TYPE == TONEMAP_SCALE_NONE )
 	{

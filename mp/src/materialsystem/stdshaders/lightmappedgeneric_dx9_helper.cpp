@@ -19,6 +19,8 @@ ConVar mat_disable_lightwarp( "mat_disable_lightwarp", "0" );
 ConVar mat_disable_fancy_blending( "mat_disable_fancy_blending", "0" );
 ConVar mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
 ConVar my_mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
+ConVar mat_aces_enable( "mat_aces_enable", "0" );
+ConVar mat_aces_exposure( "mat_aces_exposure", "1" );
 
 class CLightmappedGeneric_DX9_Context : public CBasePerMaterialContextData
 {
@@ -966,6 +968,9 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 			bWriteWaterFogToAlpha = false;
 		}
 
+		float exposure[4] = { mat_aces_exposure.GetFloat(), 0.0f, 0.0f, 0.0f };
+		pShaderAPI->SetPixelShaderConstant( 26, exposure );
+
 		float envmapContrast = params[info.m_nEnvmapContrast]->GetFloatValue();
 		DECLARE_DYNAMIC_PIXEL_SHADER(lightmappedgeneric_ps20b);
 		SET_DYNAMIC_PIXEL_SHADER_COMBO( FASTPATH,  bPixelShaderFastPath || pContextData->m_bPixelShaderForceFastPathBecauseOutline );
@@ -976,6 +981,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bWriteDepthToAlpha );
 		SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha );
 		SET_DYNAMIC_PIXEL_SHADER_COMBO( LIGHTING_PREVIEW, nFixedLightingMode );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( ACES_TONEMAPPING, mat_aces_enable.GetBool() );
 
 		SET_DYNAMIC_PIXEL_SHADER_CMD(DynamicCmdsOut, lightmappedgeneric_ps20b);
 

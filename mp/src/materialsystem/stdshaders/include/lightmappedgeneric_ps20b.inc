@@ -16,6 +16,7 @@
 // ($DETAIL_BLEND_MODE == 5 ) || ($DETAIL_BLEND_MODE == 6 ) || ($DETAIL_BLEND_MODE == 7 )
 // ($DETAIL_BLEND_MODE == 8 ) || ($DETAIL_BLEND_MODE == 9 )
 // $PARALLAXCORRECT && !$CUBEMAP
+// $ACES_TONEMAPPING && $LIGHTING_PREVIEW
 // $BUMPMAP2 && $WARPLIGHTING
 // $WARPLIGHTING && $DETAILTEXTURE
 // $ENVMAPMASK && $BUMPMAP
@@ -388,7 +389,7 @@ public:
 	int GetIndex() const
 	{
 		Assert( m_bMASKEDBLENDING && m_bBASETEXTURE2 && m_bDETAILTEXTURE && m_bBUMPMAP && m_bBUMPMAP2 && m_bCUBEMAP && m_bENVMAPMASK && m_bBASEALPHAENVMAPMASK && m_bSELFILLUM && m_bNORMALMAPALPHAENVMAPMASK && m_bDIFFUSEBUMPMAP && m_bBASETEXTURENOENVMAP && m_bBASETEXTURE2NOENVMAP && m_bWARPLIGHTING && m_bFANCY_BLENDING && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bOUTLINE && m_bSOFTEDGES && m_bBUMPMASK && m_bNORMAL_DECODE_MODE && m_bNORMALMASK_DECODE_MODE && m_bDETAIL_BLEND_MODE && m_bPARALLAXCORRECT );
-		return ( 96 * m_nMASKEDBLENDING ) + ( 192 * m_nBASETEXTURE2 ) + ( 384 * m_nDETAILTEXTURE ) + ( 768 * m_nBUMPMAP ) + ( 2304 * m_nBUMPMAP2 ) + ( 4608 * m_nCUBEMAP ) + ( 9216 * m_nENVMAPMASK ) + ( 18432 * m_nBASEALPHAENVMAPMASK ) + ( 36864 * m_nSELFILLUM ) + ( 73728 * m_nNORMALMAPALPHAENVMAPMASK ) + ( 147456 * m_nDIFFUSEBUMPMAP ) + ( 294912 * m_nBASETEXTURENOENVMAP ) + ( 589824 * m_nBASETEXTURE2NOENVMAP ) + ( 1179648 * m_nWARPLIGHTING ) + ( 2359296 * m_nFANCY_BLENDING ) + ( 4718592 * m_nRELIEF_MAPPING ) + ( 4718592 * m_nSEAMLESS ) + ( 9437184 * m_nOUTLINE ) + ( 18874368 * m_nSOFTEDGES ) + ( 37748736 * m_nBUMPMASK ) + ( 75497472 * m_nNORMAL_DECODE_MODE ) + ( 75497472 * m_nNORMALMASK_DECODE_MODE ) + ( 75497472 * m_nDETAIL_BLEND_MODE ) + ( 905969664 * m_nPARALLAXCORRECT ) + 0;
+		return ( 192 * m_nMASKEDBLENDING ) + ( 384 * m_nBASETEXTURE2 ) + ( 768 * m_nDETAILTEXTURE ) + ( 1536 * m_nBUMPMAP ) + ( 4608 * m_nBUMPMAP2 ) + ( 9216 * m_nCUBEMAP ) + ( 18432 * m_nENVMAPMASK ) + ( 36864 * m_nBASEALPHAENVMAPMASK ) + ( 73728 * m_nSELFILLUM ) + ( 147456 * m_nNORMALMAPALPHAENVMAPMASK ) + ( 294912 * m_nDIFFUSEBUMPMAP ) + ( 589824 * m_nBASETEXTURENOENVMAP ) + ( 1179648 * m_nBASETEXTURE2NOENVMAP ) + ( 2359296 * m_nWARPLIGHTING ) + ( 4718592 * m_nFANCY_BLENDING ) + ( 9437184 * m_nRELIEF_MAPPING ) + ( 9437184 * m_nSEAMLESS ) + ( 18874368 * m_nOUTLINE ) + ( 37748736 * m_nSOFTEDGES ) + ( 75497472 * m_nBUMPMASK ) + ( 150994944 * m_nNORMAL_DECODE_MODE ) + ( 150994944 * m_nNORMALMASK_DECODE_MODE ) + ( 150994944 * m_nDETAIL_BLEND_MODE ) + ( 1811939328 * m_nPARALLAXCORRECT ) + 0;
 	}
 };
 
@@ -403,6 +404,7 @@ class lightmappedgeneric_ps20b_Dynamic_Index
 	unsigned int m_nPIXELFOGTYPE : 2;
 	unsigned int m_nLIGHTING_PREVIEW : 2;
 	unsigned int m_nWRITE_DEPTH_TO_DESTALPHA : 2;
+	unsigned int m_nACES_TONEMAPPING : 2;
 #ifdef _DEBUG
 	bool m_bFASTPATHENVMAPCONTRAST : 1;
 	bool m_bFASTPATH : 1;
@@ -410,6 +412,7 @@ class lightmappedgeneric_ps20b_Dynamic_Index
 	bool m_bPIXELFOGTYPE : 1;
 	bool m_bLIGHTING_PREVIEW : 1;
 	bool m_bWRITE_DEPTH_TO_DESTALPHA : 1;
+	bool m_bACES_TONEMAPPING : 1;
 #endif	// _DEBUG
 public:
 	void SetFASTPATHENVMAPCONTRAST( int i )
@@ -466,6 +469,15 @@ public:
 #endif	// _DEBUG
 	}
 
+	void SetACES_TONEMAPPING( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nACES_TONEMAPPING = i;
+#ifdef _DEBUG
+		m_bACES_TONEMAPPING = true;
+#endif	// _DEBUG
+	}
+
 	lightmappedgeneric_ps20b_Dynamic_Index( IShaderDynamicAPI* pShaderAPI )
 	{
 		m_nFASTPATHENVMAPCONTRAST = 0;
@@ -474,6 +486,7 @@ public:
 		m_nPIXELFOGTYPE = 0;
 		m_nLIGHTING_PREVIEW = 0;
 		m_nWRITE_DEPTH_TO_DESTALPHA = 0;
+		m_nACES_TONEMAPPING = 0;
 #ifdef _DEBUG
 		m_bFASTPATHENVMAPCONTRAST = false;
 		m_bFASTPATH = false;
@@ -481,17 +494,18 @@ public:
 		m_bPIXELFOGTYPE = false;
 		m_bLIGHTING_PREVIEW = false;
 		m_bWRITE_DEPTH_TO_DESTALPHA = false;
+		m_bACES_TONEMAPPING = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bFASTPATHENVMAPCONTRAST && m_bFASTPATH && m_bWRITEWATERFOGTODESTALPHA && m_bPIXELFOGTYPE && m_bLIGHTING_PREVIEW && m_bWRITE_DEPTH_TO_DESTALPHA );
-		return ( 1 * m_nFASTPATHENVMAPCONTRAST ) + ( 2 * m_nFASTPATH ) + ( 4 * m_nWRITEWATERFOGTODESTALPHA ) + ( 8 * m_nPIXELFOGTYPE ) + ( 16 * m_nLIGHTING_PREVIEW ) + ( 48 * m_nWRITE_DEPTH_TO_DESTALPHA ) + 0;
+		Assert( m_bFASTPATHENVMAPCONTRAST && m_bFASTPATH && m_bWRITEWATERFOGTODESTALPHA && m_bPIXELFOGTYPE && m_bLIGHTING_PREVIEW && m_bWRITE_DEPTH_TO_DESTALPHA && m_bACES_TONEMAPPING );
+		return ( 1 * m_nFASTPATHENVMAPCONTRAST ) + ( 2 * m_nFASTPATH ) + ( 4 * m_nWRITEWATERFOGTODESTALPHA ) + ( 8 * m_nPIXELFOGTYPE ) + ( 16 * m_nLIGHTING_PREVIEW ) + ( 48 * m_nWRITE_DEPTH_TO_DESTALPHA ) + ( 96 * m_nACES_TONEMAPPING ) + 0;
 	}
 };
 
-#define shaderDynamicTest_lightmappedgeneric_ps20b psh_forgot_to_set_dynamic_FASTPATHENVMAPCONTRAST + psh_forgot_to_set_dynamic_FASTPATH + psh_forgot_to_set_dynamic_WRITEWATERFOGTODESTALPHA + psh_forgot_to_set_dynamic_PIXELFOGTYPE + psh_forgot_to_set_dynamic_LIGHTING_PREVIEW + psh_forgot_to_set_dynamic_WRITE_DEPTH_TO_DESTALPHA
+#define shaderDynamicTest_lightmappedgeneric_ps20b psh_forgot_to_set_dynamic_FASTPATHENVMAPCONTRAST + psh_forgot_to_set_dynamic_FASTPATH + psh_forgot_to_set_dynamic_WRITEWATERFOGTODESTALPHA + psh_forgot_to_set_dynamic_PIXELFOGTYPE + psh_forgot_to_set_dynamic_LIGHTING_PREVIEW + psh_forgot_to_set_dynamic_WRITE_DEPTH_TO_DESTALPHA + psh_forgot_to_set_dynamic_ACES_TONEMAPPING
 
 
 #endif	// LIGHTMAPPEDGENERIC_PS20B_H
