@@ -124,6 +124,7 @@ SendPropBool(SENDINFO(m_bIsSprinting)),
 SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
+SendPropInt(SENDINFO(m_iJumpTick)),
 SendPropInt(SENDINFO(m_iLandTick)),
 SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iShotsFired), 16, SPROP_UNSIGNED),
@@ -225,6 +226,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_iSuccessiveBhops = 0;
     m_bPreventPlayerBhop = false;
     m_iLandTick = 0;
+    m_iJumpTick = 0;
 
     m_RunStats.Init();
 
@@ -519,6 +521,8 @@ void CMomentumPlayer::SetAutoBhopEnabled(bool bEnable)
 
 void CMomentumPlayer::OnJump()
 {
+    m_iJumpTick = gpGlobals->tickcount;
+
     // OnCheckBhop code
     m_bDidPlayerBhop = gpGlobals->tickcount - m_iLandTick < NUM_TICKS_TO_BHOP;
     if (!m_bDidPlayerBhop)
