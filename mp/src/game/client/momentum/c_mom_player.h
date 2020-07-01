@@ -60,6 +60,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 
     float m_fDuckTimer;
     int m_afButtonDisabled;
+    int m_iJumpTick;
     CNetworkVar(bool, m_bAutoBhop);
     bool m_bIsSprinting, m_bIsWalking;
 

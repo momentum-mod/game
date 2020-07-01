@@ -12,6 +12,7 @@ RecvPropBool(RECVINFO(m_bIsSprinting)),
 RecvPropBool(RECVINFO(m_bIsWalking)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
+RecvPropInt(RECVINFO(m_iJumpTick)),
 RecvPropInt(RECVINFO(m_iLandTick)),
 RecvPropBool(RECVINFO(m_bResumeZoom)),
 RecvPropInt(RECVINFO(m_iShotsFired), SPROP_UNSIGNED),
@@ -55,6 +56,8 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
 
+    m_iLandTick = 0;
+    m_iJumpTick = 0;
     m_bIsSprinting = false;
     m_bIsWalking = false;
     m_bAutoBhop = true;

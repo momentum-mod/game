@@ -30,8 +30,8 @@ struct SavedState_t
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
-#define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
-#define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
+#define NUM_TICKS_TO_BHOP 10     // The number of ticks a player can be on a ground before considered "not bunnyhopping"
+#define MAX_PREVIOUS_ORIGINS 3   // The number of previous origins saved
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CMomRunEntity
 {
@@ -115,6 +115,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(bool, m_bHasPracticeMode); // Does the player have practice mode enabled?
     CNetworkVar(bool, m_bPreventPlayerBhop); // Used by trigger_limitmovement's BHOP flag
     CNetworkVar(int, m_iLandTick); // Tick at which the player landed on the ground
+    CNetworkVar(int, m_iJumpTick); // Tick at which the player jumped off the ground
     CNetworkVar(bool, m_bResumeZoom); // Used by various weapon code
     CNetworkVar(int, m_iShotsFired); // Used in various weapon code
     CNetworkVar(int, m_iDirection); // Used in kickback effects for player
