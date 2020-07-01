@@ -65,6 +65,20 @@ static CViewVectors g_ViewVectorsAhop(Vector(0, 0, 64),      // eye position
                                       Vector(0, 0, 14)       // dead view height
 );
 
+static CViewVectors g_ViewVectorsParkour(Vector(0, 0, 60),      // eye position
+                                         Vector(-16, -16, 0),   // hull min
+                                         Vector(16, 16, 72),    // hull max
+
+                                         Vector(-16, -16, 0),   // duck hull min
+                                         Vector(16, 16, 47),    // duck hull max
+                                         Vector(0, 0, 38),      // duck view
+
+                                         Vector(-10, -10, -10), // observer hull min
+                                         Vector(10, 10, 10),    // observer hull max
+
+                                         Vector(0, 0, 14)       // dead view height
+);
+
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
     if (g_pGameModeSystem->IsTF2BasedMode())
@@ -72,6 +86,9 @@ const CViewVectors *CMomentumGameRules::GetViewVectors() const
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
         return &g_ViewVectorsAhop;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return &g_ViewVectorsParkour;
 
     return &g_ViewVectorsMom;
 }
