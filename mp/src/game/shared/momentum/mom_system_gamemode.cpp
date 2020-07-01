@@ -279,6 +279,41 @@ bool CGameMode_Ahop::WeaponIsAllowed(WeaponID_t weapon)
            weapon != WEAPON_STICKYLAUNCHER;
 }
 
+void CGameMode_Parkour::SetGameModeVars()
+{
+    CGameModeBase::SetGameModeVars();
+
+    // Parkour-specific
+    sv_gravity.SetValue(750);
+    sv_airaccelerate.SetValue(500);
+    sv_accelerate.SetValue(10);
+    sv_maxspeed.SetValue(320);
+    sv_stopspeed.SetValue(100);
+    sv_considered_on_ground.SetValue(2);
+}
+
+void CGameMode_Parkour::OnPlayerSpawn(CMomentumPlayer *pPlayer)
+{
+    CGameModeBase::OnPlayerSpawn(pPlayer);
+
+#ifdef GAME_DLL
+    pPlayer->SetAutoBhopEnabled(false);
+    pPlayer->ToggleSprint(false);
+#endif
+}
+
+bool CGameMode_Parkour::WeaponIsAllowed(WeaponID_t weapon)
+{
+    return weapon != WEAPON_ROCKETLAUNCHER &&
+           weapon != WEAPON_STICKYLAUNCHER;
+}
+
+bool CGameMode_Parkour::HasCapability(GameModeHUDCapability_t capability)
+{
+    return capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_SPRINT ||
+           capability == GameModeHUDCapability_t::CAP_HUD_KEYPRESS_JUMPS;
+}
+
 CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
 {
     m_pCurrentGameMode = new CGameModeBase; // Unknown game mode
@@ -290,6 +325,7 @@ CGameModeSystem::CGameModeSystem() : CAutoGameSystem("CGameModeSystem")
     m_vecGameModes.AddToTail(new CGameMode_SJ);
     m_vecGameModes.AddToTail(new CGameMode_Tricksurf);
     m_vecGameModes.AddToTail(new CGameMode_Ahop);
+    m_vecGameModes.AddToTail(new CGameMode_Parkour);
 }
 
 CGameModeSystem::~CGameModeSystem()
