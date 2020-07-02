@@ -112,4 +112,9 @@ class CWeaponBase : public CBaseCombatWeapon
     CMomentumPlayer *m_prevOwner;
 
     int m_iDefaultExtraAmmo;
+
+    float   m_flBobKickZ; // auto-decaying bob to dip after jumping and landing
+    bool    m_bTgtBobKickZ; // kick push to max first, then set this to false to decay
+    float   m_flPrevPlayerVelZ; // remember the player's previous z velocity, and use the delta to adjust the BobKick
+    float   m_flRollAdj; // crowbar slash uses roll adjustment
 };
