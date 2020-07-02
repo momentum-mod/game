@@ -215,6 +215,24 @@ enum SpectateMessageType_t
     SPEC_UPDATE_INVALID = -1,
 };
 
+enum AirJumpState
+{
+    AIRJUMP_READY = 1,    // Player has not airjumped yet
+    AIRJUMP_NORM_JUMPING, // Player is normal jumping
+    AIRJUMP_NOW,          // Player is airjumping right now
+    AIRJUMP_DONE          // Player has airjumped already
+};
+
+enum WallRunState
+{
+    WALLRUN_NOT = 0, // Not wallrunning
+    WALLRUN_LEAN_IN, // About to start wall running, lean in
+    WALLRUN_RUNNING, // Wallrunning
+    WALLRUN_JUMPING, // Jumping off the wall
+    WALLRUN_STALL,   // Wallrunning, but facing into the wall or otherwise not moving along it
+    WALLRUN_SCRAMBLE // basically waterjumping - vertical velocity is allowed
+};
+
 #define PANEL_TIMES "times"
 #define PANEL_REPLAY "replaycontrols"
 #define PANEL_LOBBY_MEMBERS "LobbyMembers"
