@@ -146,9 +146,6 @@ public:
 	// Are we using editor materials?
 	bool CanUseEditorMaterials();
 
-	// Gets the builder...
-	CMeshBuilder* MeshBuilder();
-
 	// Loads a texture
 	void LoadTexture( int nTextureVar, int nAdditionalCreationFlags = 0 );
 
@@ -200,77 +197,21 @@ public:
 	void SingleTextureLightmapBlendMode( );
 
 	// Helpers for color modulation
-	void SetColorState( int colorVar, bool setAlpha = false );
 	bool IsAlphaModulating();
-	bool IsColorModulating();
 	void ComputeModulationColor( float* color );
-	void SetModulationShadowState( int tintVar = -1 );
-	void SetModulationDynamicState( int tintVar = -1 );
 
 	// Helpers for HDR
 	bool IsHDREnabled( void );
 
-	// Loads the identity matrix into the texture
-	void LoadIdentity( MaterialMatrixMode_t matrixMode );
-
-	// Loads the camera to world transform
-	void LoadCameraToWorldTransform( MaterialMatrixMode_t matrixMode );
-	void LoadCameraSpaceSphereMapTransform( MaterialMatrixMode_t matrixMode );
-
-	// Sets a texture translation transform in fixed function
-	void SetFixedFunctionTextureTranslation( MaterialMatrixMode_t mode, int translationVar );
-	void SetFixedFunctionTextureScale( MaterialMatrixMode_t mode, int scaleVar );
-	void SetFixedFunctionTextureScaledTransform( MaterialMatrixMode_t textureTransform, int transformVar, int scaleVar );
-	void SetFixedFunctionTextureTransform( MaterialMatrixMode_t textureTransform, int transformVar );
-
-	void CleanupDynamicStateFixedFunction( );
-
-	// Fixed function Base * detail pass
-	void FixedFunctionBaseTimesDetailPass( int baseTextureVar, int frameVar, 
-		int baseTextureTransformVar, int detailVar, int detailScaleVar );
-
-	// Fixed function Self illumination pass
-	void FixedFunctionSelfIlluminationPass( Sampler_t sampler, 
-		int baseTextureVar, int frameVar, int baseTextureTransformVar, int selfIllumTintVar );
-
-	// Masked environment map
-	void FixedFunctionMaskedEnvmapPass( int envMapVar, int envMapMaskVar, 
-		int baseTextureVar, int envMapFrameVar, int envMapMaskFrameVar, 
-		int frameVar, int maskOffsetVar, int maskScaleVar, int tintVar = -1 );
-
-	// Additive masked environment map
-	void FixedFunctionAdditiveMaskedEnvmapPass( int envMapVar, int envMapMaskVar, 
-		int baseTextureVar, int envMapFrameVar, int envMapMaskFrameVar, 
-		int frameVar, int maskOffsetVar, int maskScaleVar, int tintVar = -1 );
-
-	// Modulate by detail texture pass
-	void FixedFunctionMultiplyByDetailPass( int baseTextureVar, int frameVar, 
-		int textureOffsetVar, int detailVar, int detailScaleVar );
-
-	// Multiply by lightmap pass
-	void FixedFunctionMultiplyByLightmapPass( int baseTextureVar, int frameVar, 
-		int baseTextureTransformVar, float alphaOverride = -1 );
-
- 	// Helper methods for environment mapping
-	int SetShadowEnvMappingState( int envMapMaskVar, int tintVar = -1 );
-	void SetDynamicEnvMappingState( int envMapVar, int envMapMaskVar, 
-		int baseTextureVar, int envMapFrameVar, int envMapMaskFrameVar, 
-		int frameVar, int maskOffsetVar, int maskScaleVar, int tintVar = -1 );
-
 	bool UsingFlashlight( IMaterialVar **params ) const;
 	bool UsingEditor( IMaterialVar **params ) const;
 
-	void DrawFlashlight_dx70( IMaterialVar** params, IShaderDynamicAPI *pShaderAPI, 
-							  IShaderShadow* pShaderShadow, 
-							  int flashlightTextureVar, int flashlightTextureFrameVar, 
-							  bool suppress_lighting = false );
-
-	void SetFlashlightFixedFunctionTextureTransform( MaterialMatrixMode_t matrix );
-
-	void GetColorParameter( IMaterialVar** params, float *pColorOut ) const; // return tint color (color*color2)
 	void ApplyColor2Factor( float *pColorOut ) const;		// (*pColorOut) *= COLOR2
 
 	static IMaterialVar **s_ppParams;
+
+private:
+	FORCEINLINE void SetFogMode( ShaderFogMode_t fogMode );
 
 protected:
 	SoftwareVertexShader_t m_SoftwareVertexShader;
