@@ -120,7 +120,11 @@ BEGIN_SHADER_FLAGS( Decal, "Help for Decal", SHADER_NOT_EDITABLE )
 		}
 		DYNAMIC_STATE
 		{
-			SetColorState( COLOR );
+			float color[4];
+			ComputeModulationColor( color );
+			color[3] = 1.0f; // Don't modulate alpha
+
+			pShaderAPI->Color4fv( color );
 		}
 		Draw();
 	}
