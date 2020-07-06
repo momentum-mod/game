@@ -449,7 +449,8 @@ bool CMomentumLobbySystem::IsInSameMapAs(const CSteamID &other)
     const char *pMapName = gpGlobals->mapname.ToCStr();
     const char *pOtherMap = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, other, LOBBY_DATA_MAP);
 
-    return pMapName && pMapName[0] && gpGlobals->eLoadType != MapLoad_Background && !FStrEq(pMapName, "credits") && FStrEq(pMapName, pOtherMap);
+    return pMapName && pMapName[0] && pOtherMap && gpGlobals->eLoadType != MapLoad_Background && 
+           !FStrEq(pMapName, "credits") && FStrEq(pMapName, pOtherMap);
 }
 
 bool CMomentumLobbySystem::IsInLobby(const CSteamID &other)
