@@ -415,77 +415,19 @@ CON_COMMAND_F(mom_restart_stage,
     if (!pPlayer)
         return;
 
-    if (args.ArgC() <= 1)
+    int stage = 0, track = 0;
+    if (args.ArgC() > 1)
     {
-        pPlayer->TimerCommand_RestartStage();
-        return;
-    }
-
-    if (!pPlayer->AllowUserTeleports())
-        return;
-
-    // tele to specific stage
-    const Vector *pVec = nullptr;
-    const QAngle *pAng = nullptr;
-    int track = args.ArgC() > 2 ? Q_atoi(args[2]) : pPlayer->m_Data.m_iCurrentTrack;
-
-    // We get the desired index from the command (Remember that for us, args are 1 indexed)
-    const auto desiredIndex = Q_atoi(args[1]);
-    if (desiredIndex == 1)
-    {
-        // Index 1 is the start. If the timer has a mark, we use it
-        const auto pStartMark = pPlayer->GetStartMark(track);
-        if (pStartMark)
-        {
-            pVec = &pStartMark->pos;
-            pAng = &pStartMark->ang;
-        }
-        else
-        {
-            // If no mark was found, we teleport to the center of the start trigger
-            CBaseEntity *pEnt = g_pMomentumTimer->GetStartTrigger(track);
-            if (pEnt)
-            {
-                pVec = &pEnt->GetAbsOrigin();
-
-                if (track != pPlayer->m_Data.m_iCurrentTrack)
-                {
-                    pPlayer->ResetRunStats();
-                    pPlayer->m_Data.m_iCurrentTrack = track;
-                }
-            }
-        }
+        stage = Q_atoi(args[1]);
+        track = args.ArgC() > 2 ? Q_atoi(args[2]) : pPlayer->m_Data.m_iCurrentTrack;
     }
     else
     {
-        // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
-        // stuff so...)
-        CTriggerStage *pStage = nullptr;
-
-        while ((pStage = static_cast<CTriggerStage *>(
-                    gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
-        {
-            if (pStage && pStage->GetZoneNumber() == desiredIndex && pStage->GetTrackNumber() == track)
-            {
-                pVec = &pStage->GetAbsOrigin();
-                pAng = &pStage->GetAbsAngles();
-                break;
-            }
-        }
+        stage = pPlayer->m_Data.m_iCurrentZone;
+        track = pPlayer->m_Data.m_iCurrentTrack;
     }
 
-    // Teleport if we have a destination
-    if (pVec)
-    {
-        // pAng can be null here, it's okay
-        pPlayer->Teleport(pVec, pAng, &vec3_origin);
-        // Stop *after* the teleport
-        g_pMomentumTimer->Stop(pPlayer);
-    }
-    else
-    {
-        Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);
-    }
+    pPlayer->TimerCommand_RestartStage(stage, track);
 }
 
 static CMomentumTimer s_Timer;
