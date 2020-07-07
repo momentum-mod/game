@@ -22,7 +22,7 @@
     //Controls
         "MOM_Controls_Title" "MOMENTUM CONTROLS"
         "MOM_Controls_Restart" "Restart run"
-        "MOM_Controls_Reset" "Reset to start of current stage"
+        "MOM_Controls_RestartStage" "Restart current stage"
         "MOM_Controls_StopTimer" "Stop the timer"
         "MOM_Controls_ToggleSavelocMenu" "Toggle showing Saved Locations Menu"
         "MOM_Controls_Practice" "Toggle Practice Mode"
