@@ -14,7 +14,7 @@
 "blank"			"#MOM_Controls_Title"
 "blank"			"=========================="
 "mom_restart"	"#MOM_Controls_Restart"
-"mom_reset"		"#MOM_Controls_Reset"
+"mom_restart_stage"	"#MOM_Controls_RestartStage"
 "mom_timer_stop" "#MOM_Controls_StopTimer"
 "+showtimes"    "#MOM_Controls_ToggleTimes"
 "+show_lobby_members" "#MOM_Controls_ToggleLobbyMembers"
