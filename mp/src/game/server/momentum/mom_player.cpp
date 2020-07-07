@@ -1739,9 +1739,13 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
     }
 }
 
-void CMomentumPlayer::TimerCommand_RestartStage()
+void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
 {
-    if (AllowUserTeleports())
+    if (!AllowUserTeleports())
+        return;
+
+    // in a run and teleporting to current stage & track
+    if (g_pMomentumTimer->IsRunning() && track == m_Data.m_iCurrentTrack && stage == m_Data.m_iCurrentZone)
     {
         const auto pCurrentZone = GetCurrentZoneTrigger();
         if (pCurrentZone)
@@ -1751,10 +1755,65 @@ void CMomentumPlayer::TimerCommand_RestartStage()
             // MOM_TODO do a trace downwards from the top of the trigger's center to touchable land, teleport the player there
             Teleport(&pCurrentZone->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
+        return;
+    }
+
+    const Vector *pVec = nullptr;
+    const QAngle *pAng = nullptr;
+
+    if (stage == 1)
+    {
+        // Stage 1 is the start zone. If the timer has a mark, we use it
+        const auto pStartMark = GetStartMark(track);
+        if (pStartMark)
+        {
+            pVec = &pStartMark->pos;
+            pAng = &pStartMark->ang;
+        }
         else
         {
-            Warning("Cannot reset, you have no current zone!\n");
+            // If no mark was found, we teleport to the center of the start trigger
+            CBaseEntity *pEnt = g_pMomentumTimer->GetStartTrigger(track);
+            if (pEnt)
+            {
+                pVec = &pEnt->GetAbsOrigin();
+
+                if (track != m_Data.m_iCurrentTrack)
+                {
+                    ResetRunStats();
+                    m_Data.m_iCurrentTrack = track;
+                }
+            }
         }
+    }
+    else
+    {
+        // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
+        // stuff so...)
+        CTriggerStage *pStage = nullptr;
+
+        while ((pStage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
+        {
+            if (pStage && pStage->GetZoneNumber() == stage && pStage->GetTrackNumber() == track)
+            {
+                pVec = &pStage->GetAbsOrigin();
+                pAng = &pStage->GetAbsAngles();
+                break;
+            }
+        }
+    }
+
+    // Teleport if we have a destination
+    if (pVec)
+    {
+        // pAng can be null here, it's okay
+        Teleport(pVec, pAng, &vec3_origin);
+        // Stop *after* the teleport
+        g_pMomentumTimer->Stop(this);
+    }
+    else
+    {
+        Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", stage);
     }
 }
 

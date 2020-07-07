@@ -167,7 +167,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     // Timer commands
     void TimerCommand_Restart(int track);
-    void TimerCommand_RestartStage(); // To the current stage, if any
+    void TimerCommand_RestartStage(int stage, int track);
 
     // Practice mode
     void TogglePracticeMode();
