@@ -397,16 +397,11 @@ CON_COMMAND_F(mom_restart,
               FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    if (pPlayer)
-    {
-        int track = pPlayer->m_Data.m_iCurrentTrack;
-        if (args.ArgC() > 1)
-        {
-            track = Q_atoi(args[1]);
-        }
+    if (!pPlayer)
+        return;
 
-        pPlayer->TimerCommand_Restart(track);
-    }
+    int track = args.ArgC() > 1 ? Q_atoi(args[1]) : pPlayer->m_Data.m_iCurrentTrack;
+    pPlayer->TimerCommand_Restart(track);
 }
 
 CON_COMMAND_F(mom_restart_stage, 
