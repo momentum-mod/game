@@ -8,6 +8,7 @@
 #include "mom_system_gamemode.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
+#include "run/mom_run_safeguards.h"
 
 #include "tier0/memdbgon.h"
 
@@ -398,6 +399,9 @@ CON_COMMAND_F(mom_restart,
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (!pPlayer)
+        return;
+
+    if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART))
         return;
 
     int track = args.ArgC() > 1 ? Q_atoi(args[1]) : pPlayer->m_Data.m_iCurrentTrack;

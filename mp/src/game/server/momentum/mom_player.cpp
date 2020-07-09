@@ -1702,7 +1702,7 @@ void CMomentumPlayer::StopSpectating()
 
 void CMomentumPlayer::TimerCommand_Restart(int track)
 {
-    if (!AllowUserTeleports() || g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_RESTART))
+    if (!AllowUserTeleports())
         return;
 
     g_pMomentumTimer->Stop(this);
@@ -1741,10 +1741,15 @@ void CMomentumPlayer::TimerCommand_Restart(int track)
 
 void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
 {
+    if (stage == 1) // start zone
+    {
+        TimerCommand_Restart(track);
+        return;
+    }
+
     if (!AllowUserTeleports())
         return;
 
-    // in a run and teleporting to current stage & track
     if (g_pMomentumTimer->IsRunning() && track == m_Data.m_iCurrentTrack && stage == m_Data.m_iCurrentZone)
     {
         const auto pCurrentZone = GetCurrentZoneTrigger();
@@ -1758,63 +1763,22 @@ void CMomentumPlayer::TimerCommand_RestartStage(int stage, int track)
         return;
     }
 
-    const Vector *pVec = nullptr;
-    const QAngle *pAng = nullptr;
+    // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
+    // stuff so...)
+    CTriggerStage *pStage = nullptr;
 
-    if (stage == 1)
+    while ((pStage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
     {
-        // Stage 1 is the start zone. If the timer has a mark, we use it
-        const auto pStartMark = GetStartMark(track);
-        if (pStartMark)
+        if (pStage->GetZoneNumber() == stage && pStage->GetTrackNumber() == track)
         {
-            pVec = &pStartMark->pos;
-            pAng = &pStartMark->ang;
-        }
-        else
-        {
-            // If no mark was found, we teleport to the center of the start trigger
-            CBaseEntity *pEnt = g_pMomentumTimer->GetStartTrigger(track);
-            if (pEnt)
-            {
-                pVec = &pEnt->GetAbsOrigin();
-
-                if (track != m_Data.m_iCurrentTrack)
-                {
-                    ResetRunStats();
-                    m_Data.m_iCurrentTrack = track;
-                }
-            }
-        }
-    }
-    else
-    {
-        // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
-        // stuff so...)
-        CTriggerStage *pStage = nullptr;
-
-        while ((pStage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
-        {
-            if (pStage && pStage->GetZoneNumber() == stage && pStage->GetTrackNumber() == track)
-            {
-                pVec = &pStage->GetAbsOrigin();
-                pAng = &pStage->GetAbsAngles();
-                break;
-            }
+            Teleport(&pStage->GetAbsOrigin(), &pStage->GetAbsAngles(), &vec3_origin);
+            // Stop *after* the teleport
+            g_pMomentumTimer->Stop(this);
+            return;
         }
     }
 
-    // Teleport if we have a destination
-    if (pVec)
-    {
-        // pAng can be null here, it's okay
-        Teleport(pVec, pAng, &vec3_origin);
-        // Stop *after* the teleport
-        g_pMomentumTimer->Stop(this);
-    }
-    else
-    {
-        Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", stage);
-    }
+    Warning("Could not teleport to stage %i on track %i! Perhaps it doesn't exist?\n", stage, track);
 }
 
 void CMomentumPlayer::TogglePracticeMode()
