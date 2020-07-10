@@ -21,6 +21,7 @@ enum MomZoneType_t
     ZONE_TYPE_START,
     ZONE_TYPE_STAGE,
     ZONE_TYPE_CHECKPOINT,
+    ZONE_TYPE_TRICK,
     // Should be last
     ZONE_TYPE_COUNT,
 };
