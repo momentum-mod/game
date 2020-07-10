@@ -2417,8 +2417,6 @@ void CTempEnts::LevelInit()
 	m_pCS_9MMShell		= (model_t *)engine->LoadModel( "models/Shells/shell_9mm.mdl" );
 	m_pCS_57Shell		= (model_t *)engine->LoadModel( "models/Shells/shell_57.mdl" );
 	m_pCS_12GaugeShell	= (model_t *)engine->LoadModel( "models/Shells/shell_12gauge.mdl" );
-	m_pCS_556Shell		= (model_t *)engine->LoadModel( "models/Shells/shell_556.mdl" );
-	m_pCS_762NATOShell	= (model_t *)engine->LoadModel( "models/Shells/shell_762nato.mdl" );
 	m_pCS_338MAGShell	= (model_t *)engine->LoadModel( "models/Shells/shell_338mag.mdl" );
 #endif
 }
@@ -2454,8 +2452,6 @@ void CTempEnts::Init (void)
 	m_pCS_9MMShell		= NULL;
 	m_pCS_57Shell		= NULL;
 	m_pCS_12GaugeShell	= NULL;
-	m_pCS_556Shell		= NULL;
-	m_pCS_762NATOShell	= NULL;
 	m_pCS_338MAGShell	= NULL;
 #endif
 
@@ -3349,14 +3345,6 @@ void CTempEnts::CSEjectBrass( const Vector &vecPosition, const QAngle &angVeloci
 	case AMMO_TYPE_SHOTGUN:
 		hitsound = TE_SHOTGUN_SHELL;
 		pModel = m_pCS_12GaugeShell;
-		break;
-	case AMMO_TYPE_LMG:
-		hitsound = TE_RIFLE_SHELL;
-		pModel = m_pCS_556Shell;
-		break;
-	case AMMO_TYPE_RIFLE:
-		hitsound = TE_RIFLE_SHELL;
-		pModel = m_pCS_762NATOShell;
 		break;
 	}
 #endif

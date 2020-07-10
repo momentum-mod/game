@@ -1,10 +1,8 @@
 #include "cbase.h"
-#include "weapon_mom_rifle.h"
 #include "weapon_mom_sniper.h"
 #include "weapon_mom_pistol.h"
 #include "weapon_mom_shotgun.h"
 #include "weapon_mom_smg.h"
-#include "weapon_mom_lmg.h"
 #include "weapon_mom_grenade.h"
 
 #include "tier0/memdbgon.h"
@@ -46,12 +44,12 @@
 #endif
 
 //Rifles
-CS_WEP_OVERRIDE(CAK47,        CMomentumRifle, weapon_ak47,  weapon_momentum_rifle);
-CS_WEP_OVERRIDE(CWeaponAug,   CMomentumRifle, weapon_aug,   weapon_momentum_rifle);
-CS_WEP_OVERRIDE(CWeaponFamas, CMomentumRifle, weapon_famas, weapon_momentum_rifle);
-CS_WEP_OVERRIDE(CWeaponGalil, CMomentumRifle, weapon_galil, weapon_momentum_rifle);
-CS_WEP_OVERRIDE(CWeaponM4A1,  CMomentumRifle, weapon_m4a1,  weapon_momentum_rifle);
-CS_WEP_OVERRIDE(CWeaponSG552, CMomentumRifle, weapon_sg552, weapon_momentum_rifle);
+CS_WEP_OVERRIDE(CAK47,        CMomentumSMG, weapon_ak47,  weapon_momentum_smg);
+CS_WEP_OVERRIDE(CWeaponAug,   CMomentumSMG, weapon_aug,   weapon_momentum_smg);
+CS_WEP_OVERRIDE(CWeaponFamas, CMomentumSMG, weapon_famas, weapon_momentum_smg);
+CS_WEP_OVERRIDE(CWeaponGalil, CMomentumSMG, weapon_galil, weapon_momentum_smg);
+CS_WEP_OVERRIDE(CWeaponM4A1,  CMomentumSMG, weapon_m4a1,  weapon_momentum_smg);
+CS_WEP_OVERRIDE(CWeaponSG552, CMomentumSMG, weapon_sg552, weapon_momentum_smg);
 
 //Snipers
 CS_WEP_OVERRIDE(CWeaponScout, CMomentumSniper, weapon_scout, weapon_momentum_sniper);
@@ -79,7 +77,7 @@ CS_WEP_OVERRIDE(CWeaponXM1014,  CMomentumShotgun, weapon_xm1014,    weapon_momen
 CS_WEP_OVERRIDE(CWeaponM3,      CMomentumShotgun, weapon_m3,        weapon_momentum_shotgun);
 
 //LMG
-CS_WEP_OVERRIDE(CWeaponM249, CMomentumLMG, weapon_m249, weapon_momentum_lmg);
+CS_WEP_OVERRIDE(CWeaponM249, CMomentumSMG, weapon_m249, weapon_momentum_smg);
 
 //Grenades
 CS_WEP_OVERRIDE(CHEGrenade,     CMomentumGrenade, weapon_hegrenade,     weapon_momentum_grenade);

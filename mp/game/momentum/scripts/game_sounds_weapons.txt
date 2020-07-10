@@ -426,25 +426,6 @@
 
 }
 
-// weapon_irifle.txt
-"Weapon_IRifle.Empty"
-{
-	"channel"		"CHAN_WEAPON"
-	"volume"		"0.7"
-	"soundlevel"	"SNDLVL_NORM"
-
-	"wave"		"weapons/ar2/ar2_empty.wav"
-}
-
-"Weapon_IRifle.Single"
-{
-	"channel"		"CHAN_WEAPON"
-	"volume"		"0.55"
-	"soundlevel"	"SNDLVL_GUNFIRE"
-
-	"wave"				")weapons/irifle/irifle_fire2.wav"
-}
-
 // weapon_physcannon.txt
 "Weapon_PhysCannon.Launch"
 {
