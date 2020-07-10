@@ -30,6 +30,7 @@ private:
     vgui::CvarComboBox *m_pRestartMapSafeguards;
     vgui::CvarComboBox *m_pSavelocTeleSafeguards;
     vgui::CvarComboBox *m_pChatOpenSafeguards;
+    vgui::CvarComboBox *m_pRestartStageSafeguards;
 
     // Gamemode
     vgui::CvarToggleCheckButton *m_pRJEnableTrailParticle, *m_pRJEnableExplosionParticle, *m_pRJEnableShootSound,

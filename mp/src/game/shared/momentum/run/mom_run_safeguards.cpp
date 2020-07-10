@@ -42,6 +42,13 @@ static MAKE_CONVAR(mom_run_safeguard_chat_open, "1", FCVAR_ARCHIVE | FCVAR_REPLI
     "1 = Enable when not pressing any movement keys,\n"
     "2 - Enable on double press.\n",
     RUN_SAFEGUARD_MODE_NONE, RUN_SAFEGUARD_MODE_DOUBLEPRESS);
+    
+static MAKE_CONVAR(mom_run_safeguard_restart_stage, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+    "Changes the safeguard for teleporting to a stage/restarting the current stage during a run.\n"
+    "0 = OFF,\n"
+    "1 = Enable when not pressing any movement keys,\n"
+    "2 - Enable on double press.\n",
+    RUN_SAFEGUARD_MODE_NONE, RUN_SAFEGUARD_MODE_DOUBLEPRESS);
 
 CRunSafeguard::CRunSafeguard(const char *szAction) : m_flLastTimePressed(0.0f), m_bDoublePressSafeguard(true)
 {
@@ -124,6 +131,7 @@ MomRunSafeguards::MomRunSafeguards()
     m_pSafeguards[RUN_SAFEGUARD_RESTART] = new CRunSafeguard("restart map");
     m_pSafeguards[RUN_SAFEGUARD_SAVELOC_TELE] = new CRunSafeguard("teleport to saveloc");
     m_pSafeguards[RUN_SAFEGUARD_CHAT_OPEN] = new CRunSafeguard("open chat");
+    m_pSafeguards[RUN_SAFEGUARD_RESTART_STAGE] = new CRunSafeguard("teleport to a stage");
 }
 
 bool MomRunSafeguards::IsSafeguarded(RunSafeguardType_t type)
@@ -155,6 +163,8 @@ RunSafeguardMode_t MomRunSafeguards::GetModeFromType(RunSafeguardType_t type)
         return RunSafeguardMode_t(mom_run_safeguard_saveloc_tele.GetInt());
     case RUN_SAFEGUARD_CHAT_OPEN:
         return RunSafeguardMode_t(mom_run_safeguard_chat_open.GetInt());
+    case RUN_SAFEGUARD_RESTART_STAGE:
+        return RunSafeguardMode_t(mom_run_safeguard_restart_stage.GetInt());
     default:
         return RUN_SAFEGUARD_MODE_INVALID;
     }
@@ -190,6 +200,9 @@ void MomRunSafeguards::SetMode(RunSafeguardType_t type, RunSafeguardMode_t mode)
         break;
     case RUN_SAFEGUARD_CHAT_OPEN:
         mom_run_safeguard_chat_open.SetValue(mode);
+        break;
+    case RUN_SAFEGUARD_RESTART_STAGE:
+        mom_run_safeguard_restart_stage.SetValue(mode);
         break;
     }
 }
