@@ -697,5 +697,8 @@ int CMapZoneEdit::ShortNameToZoneType(const char *in)
         return ZONE_TYPE_CHECKPOINT;
     }
 
+    if (FStrEq(in, "trick"))
+        return ZONE_TYPE_TRICK;
+
     return -1;
 }
