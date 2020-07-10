@@ -25,7 +25,7 @@ public:
     void LoadZonesFromSite(KeyValues *pKvTracks, CBaseEntity *pEnt);
     void LoadZonesFromFile();
     bool LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite);
-    void SaveZoneTrigger(CTriggerZone *pZoneTrigger, KeyValues *pKvInto);
+    void SaveZoneTrigger(CBaseMomZoneTrigger *pZoneTrigger, KeyValues *pKvInto);
     void SaveZonesToFile();
 
     CMapZoneEdit *GetZoneEditor() { return &m_Editor; }
