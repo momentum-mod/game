@@ -3,6 +3,9 @@
 #include "model_types.h"
 #include "util/mom_util.h"
 
+#include "momentum/mom_system_tricks.h"
+#undef CTriggerTrickZone
+
 #include "mom_shareddefs.h"
 #include "dt_utlvector_recv.h"
 #include "debugoverlay_shared.h"
@@ -205,6 +208,47 @@ bool C_TriggerCheckpoint::GetOutlineColor()
     return MomUtil::GetColorFromHex(mom_zone_checkpoint_outline_color.GetString(), m_OutlineRenderer.outlineColor);
 }
 
+// ====================================
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_trick, C_TriggerTrickZone);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerTrickZone, DT_TriggerTrickZone, CTriggerTrickZone)
+RecvPropInt(RECVINFO(m_iID)),
+RecvPropString(RECVINFO(m_szZoneName)),
+RecvPropInt(RECVINFO(m_iDrawState)),
+END_RECV_TABLE();
+
+C_TriggerTrickZone::C_TriggerTrickZone()
+{
+    m_iID = -1;
+    m_szZoneName.GetForModify()[0] = '\0';
+    m_iDrawState = TRICK_DRAW_NONE;
+}
+
+bool C_TriggerTrickZone::ShouldDrawOutline()
+{
+    return m_iDrawState > TRICK_DRAW_NONE;
+}
+
+bool C_TriggerTrickZone::GetOutlineColor()
+{
+    // MOM_TODO allow customization here
+
+    Color clr;
+    if (m_iDrawState == TRICK_DRAW_REQUIRED)
+        clr = COLOR_ORANGE;
+    else if (m_iDrawState == TRICK_DRAW_OPTIONAL)
+        clr = COLOR_WHITE;
+    else if (m_iDrawState == TRICK_DRAW_END)
+        clr = COLOR_RED;
+    else
+        clr = COLOR_GREEN;
+
+    m_OutlineRenderer.outlineColor = clr;
+    return true;
+}
+
+// ======================================
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
