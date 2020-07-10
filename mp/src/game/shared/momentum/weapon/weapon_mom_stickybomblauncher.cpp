@@ -90,6 +90,7 @@ void CMomentumStickybombLauncher::Precache()
 bool CMomentumStickybombLauncher::Holster(CBaseCombatWeapon *pSwitchingTo)
 {
     m_flChargeBeginTime = 0;
+    StopWeaponSound(GetWeaponSound("charge"));
 
     return BaseClass::Holster(pSwitchingTo);
 }
