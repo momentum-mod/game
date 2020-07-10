@@ -75,6 +75,23 @@ public:
     bool GetOutlineColor() OVERRIDE;
 };
 
+class C_TriggerTrickZone : public C_BaseMomZoneTrigger
+{
+public:
+    DECLARE_CLASS(C_TriggerTrickZone, C_BaseMomZoneTrigger);
+    DECLARE_CLIENTCLASS();
+
+    C_TriggerTrickZone();
+
+    bool ShouldDrawOutline() override;
+    bool GetOutlineColor() override;
+
+    CNetworkVar(int, m_iID);
+    CNetworkString(m_szZoneName, 32);
+
+    CNetworkVar(int, m_iDrawState);
+};
+
 class C_TriggerSlide : public C_BaseMomZoneTrigger
 {
   public:
