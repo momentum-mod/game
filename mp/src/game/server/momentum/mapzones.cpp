@@ -138,6 +138,9 @@ bool CMapZoneSystem::ZoneTypeToClass(int type, char *dest, int maxlen)
     case ZONE_TYPE_STAGE:
         Q_strncpy(dest, "trigger_momentum_timer_stage", maxlen);
         return true;
+    case ZONE_TYPE_TRICK:
+        Q_strncpy(dest, "trigger_momentum_trick", maxlen);
+        return true;
     default:
         return false;
     }
@@ -251,7 +254,7 @@ bool CMapZoneSystem::LoadZonesFromKeyValues(KeyValues *pKvTracks, bool bFromSite
     return !m_Zones.IsEmpty();
 }
 
-void CMapZoneSystem::SaveZoneTrigger(CTriggerZone *pZoneTrigger, KeyValues *pKvInto)
+void CMapZoneSystem::SaveZoneTrigger(CBaseMomZoneTrigger *pZoneTrigger, KeyValues *pKvInto)
 {
     bool bSuccess = false;
     const auto pKvTrigger = pKvInto->CreateNewKey();

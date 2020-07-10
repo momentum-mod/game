@@ -63,6 +63,7 @@ C_MomZoneMenu::C_MomZoneMenu() : Frame(g_pClientMode->GetViewport(), "ZoneMenu")
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_End", new KeyValues("vals", "zone_type", "end"));
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Stage", new KeyValues("vals", "zone_type", "stage"));
     m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Checkpoint", new KeyValues("vals", "zone_type", "cp"));
+    m_pZoneTypeCombo->AddItem("#MOM_ZoneMenu_ZoneType_Trick", new KeyValues("vals", "zone_type", "trick"));
     m_pZoneTypeCombo->GetMenu()->SetTypeAheadMode(Menu::NO_TYPE_AHEAD_MODE); // Disable the annoying type ahead
     m_pZoneTypeCombo->ActivateItemByRow(0);
 
