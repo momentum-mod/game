@@ -332,6 +332,7 @@
         "MOM_Settings_Title_Gameplay_Run_Safeguards" "Run Safeguards"
         "MOM_Settings_Run_Safeguard_Practice_Mode" "Practice Mode Enable"
         "MOM_Settings_Run_Safeguard_Restart_Map" "Run Restart"
+        "MOM_Settings_Run_Safeguard_Restart_Stage" "Stage Restart/Teleport"
         "MOM_Settings_Run_Safeguard_Saveloc_Tele" "Saveloc Teleport"
         "MOM_Settings_Run_Safeguard_Open_Chat" "Opening Chat"
         "MOM_Settings_Run_Safeguard_Modes_None" "None"

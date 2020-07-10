@@ -48,6 +48,11 @@ GameplaySettingsPanel::GameplaySettingsPanel(Panel *pParent, Button *pAssociate)
     m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
     m_pChatOpenSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
 
+    m_pRestartStageSafeguards = new CvarComboBox(this, "RestartStageSafeguard", "mom_run_safeguard_restart_stage");
+    m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_None", nullptr);
+    m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_1", nullptr);
+    m_pRestartStageSafeguards->AddItem("#MOM_Settings_Run_Safeguard_Modes_2", nullptr);
+
     // Gamemode specific settings
     // Rocket Jump controls
     m_pRJEnableTrailParticle = new CvarToggleCheckButton(this, "RJEnableTrailParticle", "#MOM_Settings_RJ_Enable_Trail_Particle", "mom_rj_particle_trail_enable");
