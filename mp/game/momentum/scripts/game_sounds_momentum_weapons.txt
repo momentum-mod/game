@@ -58,16 +58,6 @@
     "wave" "weapons/paintgun/paintgun_shot.wav"
 }
 
-"Weapon_Rifle.Single"
-{
-    "channel" "CHAN_WEAPON"
-    "volume" "0.32"
-    "soundlevel" "SNDLVL_GUNFIRE"
-    "pitch" "PITCH_NORM"
-    
-    "wave" "weapons/rifle/Energy_Rifle_Lower_Bass.wav"
-}
-
 "Weapon_RL.Single"
 {
     "channel" "CHAN_WEAPON"
