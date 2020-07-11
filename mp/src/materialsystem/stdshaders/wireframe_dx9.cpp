@@ -12,6 +12,9 @@
 
 DEFINE_FALLBACK_SHADER( Wireframe, Wireframe_DX9 )
 
+// Missing shaders fall back to Wireframe_DX8, so make sure that exists
+DEFINE_FALLBACK_SHADER( Wireframe_DX8, Wireframe )
+
 BEGIN_VS_SHADER( Wireframe_DX9,
 			  "Help for Wireframe_DX9" )
 
