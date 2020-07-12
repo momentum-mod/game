@@ -95,4 +95,8 @@
 
         "shared1" "#MOM_Tip_Bhop_3"
     }
+    "#MOM_GameType_Parkour"
+    {
+        "1" "IF YOU SEE THIS TIP AFTER PARKOUR IS FULLY RELEASED, YELL AT GOCNAK!!!!"
+    }
 }
