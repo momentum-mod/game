@@ -3338,7 +3338,7 @@ void CTempEnts::CSEjectBrass( const Vector &vecPosition, const QAngle &angVeloci
 		hitsound = TE_PISTOL_SHELL;
 		pModel = m_pCS_9MMShell;
 		break;
-	case AMMO_TYPE_SMG:
+	case AMMO_TYPE_MACHINEGUN:
 		hitsound = TE_PISTOL_SHELL;
 		pModel = m_pCS_57Shell;
 		break;

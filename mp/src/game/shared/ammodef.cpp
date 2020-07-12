@@ -41,9 +41,9 @@ CAmmoPistol::CAmmoPistol()
     m_fRangeModifier = 0.75f;
 }
 
-CAmmoSMG::CAmmoSMG()
+CAmmoMachinegun::CAmmoMachinegun()
 {
-    m_WeaponID = WEAPON_SMG;
+    m_WeaponID = WEAPON_MACHINEGUN;
     m_iDamageAmount = 26;
     m_iMinSplashSize = 4;
     m_iMaxSplashSize = 8;
@@ -93,7 +93,7 @@ CAmmoDef::CAmmoDef()
 {
     m_AmmoTypes.EnsureCount(AMMO_TYPE_MAX);
     m_AmmoTypes[AMMO_TYPE_PISTOL] = new CAmmoPistol;
-    m_AmmoTypes[AMMO_TYPE_SMG] = new CAmmoSMG;
+    m_AmmoTypes[AMMO_TYPE_MACHINEGUN] = new CAmmoMachinegun;
     m_AmmoTypes[AMMO_TYPE_SNIPER] = new CAmmoSniper;
     m_AmmoTypes[AMMO_TYPE_SHOTGUN] = new CAmmoShotgun;
     m_AmmoTypes[AMMO_TYPE_GRENADE] = new CAmmoGrenade;

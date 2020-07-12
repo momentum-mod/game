@@ -44,12 +44,12 @@
 #endif
 
 //Rifles
-CS_WEP_OVERRIDE(CAK47,        CMomentumSMG, weapon_ak47,  weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponAug,   CMomentumSMG, weapon_aug,   weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponFamas, CMomentumSMG, weapon_famas, weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponGalil, CMomentumSMG, weapon_galil, weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponM4A1,  CMomentumSMG, weapon_m4a1,  weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponSG552, CMomentumSMG, weapon_sg552, weapon_momentum_smg);
+CS_WEP_OVERRIDE(CAK47,        CMomentumMachinegun, weapon_ak47,  weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponAug,   CMomentumMachinegun, weapon_aug,   weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponFamas, CMomentumMachinegun, weapon_famas, weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponGalil, CMomentumMachinegun, weapon_galil, weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponM4A1,  CMomentumMachinegun, weapon_m4a1,  weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponSG552, CMomentumMachinegun, weapon_sg552, weapon_momentum_machinegun);
 
 //Snipers
 CS_WEP_OVERRIDE(CWeaponScout, CMomentumSniper, weapon_scout, weapon_momentum_sniper);
@@ -66,18 +66,18 @@ CS_WEP_OVERRIDE(CWeaponP228,        CMomentumPistol, weapon_p228,       weapon_m
 CS_WEP_OVERRIDE(CWeaponUSP,         CMomentumPistol, weapon_usp,        weapon_momentum_pistol);
 
 //SMGs
-CS_WEP_OVERRIDE(CWeaponMAC10,   CMomentumSMG, weapon_mac10,     weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponMP5Navy, CMomentumSMG, weapon_mp5navy,   weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponP90,     CMomentumSMG, weapon_p90,       weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponTMP,     CMomentumSMG, weapon_tmp,       weapon_momentum_smg);
-CS_WEP_OVERRIDE(CWeaponUMP45,   CMomentumSMG, weapon_ump45,     weapon_momentum_smg);
+CS_WEP_OVERRIDE(CWeaponMAC10,   CMomentumMachinegun, weapon_mac10,     weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponMP5Navy, CMomentumMachinegun, weapon_mp5navy,   weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponP90,     CMomentumMachinegun, weapon_p90,       weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponTMP,     CMomentumMachinegun, weapon_tmp,       weapon_momentum_machinegun);
+CS_WEP_OVERRIDE(CWeaponUMP45,   CMomentumMachinegun, weapon_ump45,     weapon_momentum_machinegun);
 
 //Shotguns
 CS_WEP_OVERRIDE(CWeaponXM1014,  CMomentumShotgun, weapon_xm1014,    weapon_momentum_shotgun);
 CS_WEP_OVERRIDE(CWeaponM3,      CMomentumShotgun, weapon_m3,        weapon_momentum_shotgun);
 
 //LMG
-CS_WEP_OVERRIDE(CWeaponM249, CMomentumSMG, weapon_m249, weapon_momentum_smg);
+CS_WEP_OVERRIDE(CWeaponM249, CMomentumMachinegun, weapon_m249, weapon_momentum_machinegun);
 
 //Grenades
 CS_WEP_OVERRIDE(CHEGrenade,     CMomentumGrenade, weapon_hegrenade,     weapon_momentum_grenade);

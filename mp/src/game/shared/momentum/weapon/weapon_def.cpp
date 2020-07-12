@@ -188,7 +188,7 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_NONE] = new WeaponDefinition("none");
     m_vecWeaponDefs[WEAPON_PISTOL]          = ParseWeaponScript(g_szWeaponNames[WEAPON_PISTOL]);
     m_vecWeaponDefs[WEAPON_SHOTGUN]         = ParseWeaponScript(g_szWeaponNames[WEAPON_SHOTGUN]);
-    m_vecWeaponDefs[WEAPON_SMG]             = ParseWeaponScript(g_szWeaponNames[WEAPON_SMG]);
+    m_vecWeaponDefs[WEAPON_MACHINEGUN]      = ParseWeaponScript(g_szWeaponNames[WEAPON_MACHINEGUN]);
     m_vecWeaponDefs[WEAPON_SNIPER]          = ParseWeaponScript(g_szWeaponNames[WEAPON_SNIPER]);
     m_vecWeaponDefs[WEAPON_GRENADE]         = ParseWeaponScript(g_szWeaponNames[WEAPON_GRENADE]);
     m_vecWeaponDefs[WEAPON_KNIFE]           = ParseWeaponScript(g_szWeaponNames[WEAPON_KNIFE]);

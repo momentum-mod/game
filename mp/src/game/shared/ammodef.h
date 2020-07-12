@@ -34,7 +34,7 @@ type funcName(int iAmmoIndex) \
 }
 
 MAKE_AMMO_CLASS(CAmmoPistol);
-MAKE_AMMO_CLASS(CAmmoSMG);
+MAKE_AMMO_CLASS(CAmmoMachinegun);
 MAKE_AMMO_CLASS(CAmmoSniper);
 MAKE_AMMO_CLASS(CAmmoShotgun);
 MAKE_AMMO_CLASS(CAmmoGrenade);

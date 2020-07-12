@@ -5,7 +5,7 @@ WeaponData
     "BuiltRightHanded"          "1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#MOM_Weapon_SMG" 
+    "printname"         "#MOM_Weapon_Machinegun" 
     
     "anim_prefix"       "anim"
     "bucket"            "0"
