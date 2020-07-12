@@ -4,7 +4,7 @@
     "Tokens"
     {
     // Weapons
-        "MOM_Weapon_SMG" "Bullet Sinkhole"
+        "MOM_Weapon_Machinegun" "Bullet Sinkhole"
         "MOM_Weapon_Paintgun" "Graffiti Enabler"
         "MOM_Weapon_Knife" "Stabby McStabface"
         "MOM_Weapon_Grenade" "Spontaneous Combustion"

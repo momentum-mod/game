@@ -5,27 +5,27 @@
 
 #include "tier0/memdbgon.h"
 
-IMPLEMENT_NETWORKCLASS_ALIASED(MomentumSMG, DT_MomentumSMG);
+IMPLEMENT_NETWORKCLASS_ALIASED(MomentumMachinegun, DT_MomentumMachinegun);
 
-BEGIN_NETWORK_TABLE(CMomentumSMG, DT_MomentumSMG)
+BEGIN_NETWORK_TABLE(CMomentumMachinegun, DT_MomentumMachinegun)
 END_NETWORK_TABLE();
 
-BEGIN_PREDICTION_DATA(CMomentumSMG)
+BEGIN_PREDICTION_DATA(CMomentumMachinegun)
 END_PREDICTION_DATA();
 
-LINK_ENTITY_TO_CLASS(weapon_momentum_smg, CMomentumSMG);
-PRECACHE_WEAPON_REGISTER(weapon_momentum_smg);
+LINK_ENTITY_TO_CLASS(weapon_momentum_machinegun, CMomentumMachinegun);
+PRECACHE_WEAPON_REGISTER(weapon_momentum_machinegun);
 
 
-CMomentumSMG::CMomentumSMG()
+CMomentumMachinegun::CMomentumMachinegun()
 {
     m_flIdleInterval = 20.0f;
     m_flTimeToIdleAfterFire = 2.0f;
 
-    m_iPrimaryAmmoType = AMMO_TYPE_SMG;
+    m_iPrimaryAmmoType = AMMO_TYPE_MACHINEGUN;
 }
 
-void CMomentumSMG::PrimaryAttack()
+void CMomentumMachinegun::PrimaryAttack()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)

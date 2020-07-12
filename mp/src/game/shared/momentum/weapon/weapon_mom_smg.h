@@ -3,19 +3,19 @@
 #include "weapon_base_gun.h"
 
 #ifdef CLIENT_DLL
-#define CMomentumSMG C_MomentumSMG
+#define CMomentumMachinegun C_MomentumMachinegun
 #endif
 
-class CMomentumSMG : public CWeaponBaseGun
+class CMomentumMachinegun : public CWeaponBaseGun
 {
   public:
-    DECLARE_CLASS(CMomentumSMG, CWeaponBaseGun);
+    DECLARE_CLASS(CMomentumMachinegun, CWeaponBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumSMG();
+    CMomentumMachinegun();
 
     void PrimaryAttack() OVERRIDE;
 
-    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_SMG; }
+    WeaponID_t GetWeaponID(void) const OVERRIDE { return WEAPON_MACHINEGUN; }
 };

@@ -27,7 +27,7 @@ void Mom_FX_EjectBrass_9mm_Callback(const CEffectData &data)
 
 void Mom_FX_EjectBrass_57_Callback(const CEffectData &data)
 {
-    Mom_EjectBrass(AMMO_TYPE_SMG, data);
+    Mom_EjectBrass(AMMO_TYPE_MACHINEGUN, data);
 }
 
 void Mom_FX_EjectBrass_12Gauge_Callback(const CEffectData &data)
