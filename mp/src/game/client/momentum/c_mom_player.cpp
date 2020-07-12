@@ -114,6 +114,15 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
+    // clear the sprint toggle if we just stopped not sprinting
+    /*if (m_bWasSprinting && !m_bIsSprinting)
+    {
+        IN_ClearSpeedToggle();
+    }
+
+    m_bWasSprinting = m_bIsSprinting;*/
+
+
     BaseClass::OnDataChanged(type);
 
     UpdateVisibility();
