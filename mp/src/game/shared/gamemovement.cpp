@@ -63,8 +63,6 @@ bool g_bMovementOptimizations = true;
 #define CHECK_LADDER_INTERVAL			0.2f
 #define CHECK_LADDER_TICK_INTERVAL		( (int)( CHECK_LADDER_INTERVAL / TICK_INTERVAL ) )
 
-#define	NUM_CROUCH_HINTS	3
-
 extern IGameMovement *g_pGameMovement;
 
 #if defined( PLAYER_GETTING_STUCK_TESTING )
@@ -1198,8 +1196,16 @@ void CGameMovement::FinishMove( void )
 //-----------------------------------------------------------------------------
 void CGameMovement::DecayPunchAngle( void )
 {
-	if ( player->m_Local.m_vecPunchAngle->LengthSqr() > 0.001 || player->m_Local.m_vecPunchAngleVel->LengthSqr() > 0.001 )
+	if ( player->m_Local.m_vecPunchAngle->LengthSqr() > 0.001 ||
+		 player->m_Local.m_vecPunchAngleVel->LengthSqr() > 0.001 ||
+		 player->m_Local.m_vecTargetPunchAngle->LengthSqr() > 0.001)
 	{
+		const auto punch_delta = player->m_Local.m_vecPunchAngle - player->m_Local.m_vecTargetPunchAngle;
+
+		// If we have reached the target angle, reset to 0
+		if (punch_delta.LengthSqr() < 0.01)
+			player->m_Local.m_vecTargetPunchAngle.Init(0, 0, 0);
+
 		player->m_Local.m_vecPunchAngle += player->m_Local.m_vecPunchAngleVel * gpGlobals->frametime;
 		float damping = 1 - (PUNCH_DAMPING * gpGlobals->frametime);
 		
@@ -1207,13 +1213,14 @@ void CGameMovement::DecayPunchAngle( void )
 		{
 			damping = 0;
 		}
+
 		player->m_Local.m_vecPunchAngleVel *= damping;
 		 
 		// torsional spring
 		// UNDONE: Per-axis spring constant?
 		float springForceMagnitude = PUNCH_SPRING_CONSTANT * gpGlobals->frametime;
 		springForceMagnitude = clamp(springForceMagnitude, 0.f, 2.f );
-		player->m_Local.m_vecPunchAngleVel -= player->m_Local.m_vecPunchAngle * springForceMagnitude;
+		player->m_Local.m_vecPunchAngleVel -= punch_delta * springForceMagnitude;
 
 		// don't wrap around
 		player->m_Local.m_vecPunchAngle.Init( 
@@ -1225,6 +1232,7 @@ void CGameMovement::DecayPunchAngle( void )
 	{
 		player->m_Local.m_vecPunchAngle.Init( 0, 0, 0 );
 		player->m_Local.m_vecPunchAngleVel.Init( 0, 0, 0 );
+		player->m_Local.m_vecTargetPunchAngle.Init(0, 0, 0);
 	}
 }
 
@@ -1637,15 +1645,17 @@ void CGameMovement::DoFriction(Vector &velocity)
 	float drop = 0.0f;
 
 	// apply ground friction
-	if (player->GetGroundEntity() != nullptr)  // On an entity that is the ground
+	if (ShouldApplyGroundFriction())
 	{
+		// For wallrunning, this might need to be revisited. Wallrunning on steep 
+		// rock walls is weirdly slow, and I think it might be because those surfaces 
+		// have low friction to stop you standing on them. So it might be better to 
+		// ignore surface info and just assume full friction when wallrunning.
 		float friction = sv_friction.GetFloat() * player->m_surfaceFriction;
 
 		// Bleed off some speed, but if we have less than the bleed
 		//  threshold, bleed the threshold amount.
-		float control;
-
-		control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
+		float control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
 
 		// Add the amount to the drop amount.
 		drop += control * friction * gpGlobals->frametime;
@@ -3587,6 +3597,10 @@ void CGameMovement::SetGroundEntity( trace_t *pm )
 
 		// Then we are not in water jump sequence
 		player->m_flWaterJumpTime = 0;
+
+		// Not jumping or duck jumping
+		player->m_Local.m_flDuckJumpTime = 0;
+		player->m_Local.m_flJumpTime = 0;
 
 		// Standing on an entity other than the world, so signal that we are touching something.
 		if ( !pm->DidHitWorld() )

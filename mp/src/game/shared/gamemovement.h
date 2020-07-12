@@ -94,11 +94,12 @@ protected:
 	virtual void	WaterMove( void );
 	virtual void    CalculateWaterWishVelocityZ(Vector &wishVel, const Vector &forward);
 
-	void			WaterJump( void );
+	virtual void	WaterJump( void );
 
 	// Handles both ground friction and water friction
 	virtual void			Friction( void );
 	virtual void			DoFriction( Vector &velocity );
+	virtual bool			ShouldApplyGroundFriction() { return player->GetGroundEntity() != nullptr; }
 
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
@@ -176,7 +177,7 @@ protected:
 	virtual float	LadderLateralMultiplier( void ) const { return 1.0f; }
 
 	// See if the player has a bogus velocity value.
-	void			CheckVelocity( void );
+	virtual void CheckVelocity( void );
 
 	// Does not change the entities velocity at all
 	void			PushEntity( Vector& push, trace_t *pTrace );
