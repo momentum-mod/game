@@ -1376,6 +1376,12 @@ void CBasePlayer::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNear, 
 	{
 		CalcPlayerView( eyeOrigin, eyeAngles, fov );
 	}
+
+	// Little hack to reduce zNear when using wider FOV. (otherwise you can see through walls)
+	if (fov > 90.0f)
+	{
+		zNear -= MIN((fov - 90.0f) / 5.0f, 5.0f);
+	}
 }
 
 
