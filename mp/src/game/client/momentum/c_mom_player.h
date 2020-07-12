@@ -8,7 +8,7 @@ class C_MomentumReplayGhostEntity;
 
 class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
 {
-  public:
+public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
     DECLARE_CLIENTCLASS();
     DECLARE_PREDICTABLE();
@@ -29,7 +29,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     void OnDataChanged(DataUpdateType_t type) OVERRIDE;
     bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
 
-    bool HasAutoBhop() { return m_bAutoBhop; }
+    bool HasAutoBhop() const { return m_bAutoBhop; }
     // void ResetStrafeSync();
 
     // Ramp stuff
@@ -74,7 +74,7 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     virtual float GetCurrentRunTime() OVERRIDE;
     uint64 GetSteamID() override;
 
-    CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
+    CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, int iBulletType, CBaseEntity *pevAttacker, bool bDoEffects,
                     float x, float y);
@@ -93,7 +93,19 @@ class C_MomentumPlayer : public C_BasePlayer, public CMomRunEntity
     void SetLastCollision(const trace_t &tr);
     int GetLastCollisionTick() const { return m_iLastCollisionTick; }
     trace_t& GetLastCollisionTrace() { return m_trLastCollisionTrace; }
-  private:
+
+    // Mobility sound functions
+    void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
+    virtual void PlayAirjumpSound(const Vector &vecOrigin);
+    virtual void PlayPowerSlideSound(const Vector &vecOrigin);
+    virtual void StopPowerSlideSound();
+    virtual void PlayWallRunSound(const Vector &vecOrigin);
+    virtual void StopWallRunSound();
+
+private:
+    // Mobility mod (parkour)
+    HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
+    HSOUNDSCRIPTHANDLE m_hssWallRunSound;
     // Ladder stuff
     float m_flGrabbableLadderTime;
 

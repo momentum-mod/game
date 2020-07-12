@@ -264,6 +264,16 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     bool CanSprint() const;
     void ToggleSprint(bool bShouldSprint);
     void ToggleWalk(bool bShouldWalk);
+    // Mobility mod (parkour)
+    void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
+    virtual void PlayAirjumpSound(const Vector &vecOrigin);
+    virtual void PlayPowerSlideSound(const Vector &vecOrigin);
+    virtual void StopPowerSlideSound();
+    virtual void PlayWallRunSound(const Vector &vecOrigin);
+    virtual void StopWallRunSound();
+
+    HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
+    HSOUNDSCRIPTHANDLE m_hssWallRunSound;
 
     // Ramp stuff
     void SetRampBoardVelocity(const Vector &vecVel);
