@@ -155,6 +155,7 @@ BEGIN_RECV_TABLE_NOBASE( CPlayerLocalData, DT_Local )
 	RecvPropFloat	(RECVINFO_NAME( m_vecPunchAngleVel.m_Value[2], m_vecPunchAngleVel[2] )),
 #else
 	RecvPropVector	(RECVINFO(m_vecPunchAngle)),
+	RecvPropVector	(RECVINFO(m_vecTargetPunchAngle)),
 	RecvPropVector	(RECVINFO(m_vecPunchAngleVel)),
 #endif
 
