@@ -240,6 +240,9 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_bIsWalking = false;
     m_bIsSprinting = false;
+
+    m_bIsPowerSliding = false;
+    m_nWallRunState = WALLRUN_NOT;
 }
 
 CMomentumPlayer::~CMomentumPlayer()

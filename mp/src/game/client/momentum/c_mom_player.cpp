@@ -64,6 +64,10 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_CurrentSlideTrigger = nullptr;
     m_RunStats.Init();
     m_fDuckTimer = 0.0f;
+
+    m_bIsPowerSliding = false;
+    m_nWallRunState = WALLRUN_NOT;
+    m_bWasSprinting = false;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
