@@ -40,13 +40,10 @@ MapFilterPanel::MapFilterPanel(Panel *pParent) : EditablePanel(pParent, "MapFilt
     LoadControlSettings("resource/ui/mapselector/MapFilters.res");
 
     m_pGameModeFilter->AddItem("#MOM_All", nullptr);//All
-    m_pGameModeFilter->AddItem("#MOM_GameType_Surf", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_Bhop", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_KZ", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_RJ", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_SJ", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_Tricksurf", nullptr);
-    m_pGameModeFilter->AddItem("#MOM_GameType_Ahop", nullptr);
+    for (int i = 1; i < GAMEMODE_COUNT; i++)
+    {
+        m_pGameModeFilter->AddItem(g_szGameModes[i], nullptr);
+    }
     m_pGameModeFilter->AddActionSignalTarget(this);
 
     m_pMapNameFilter->SetMaximumCharCount(MAX_MAP_NAME);
