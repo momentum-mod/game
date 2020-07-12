@@ -7,6 +7,8 @@
 #include "te_effect_dispatch.h"
 #else
 #include "c_te_effect_dispatch.h"
+#include "prediction.h"
+#define CRecipientFilter C_RecipientFilter
 #endif
 #include "decals.h"
 #include "engine/ivdebugoverlay.h"
@@ -376,4 +378,96 @@ void CMomentumPlayer::SetLastCollision(const trace_t &tr)
         m_trLastCollisionTrace.startpos.z += flOffset;
         m_trLastCollisionTrace.endpos.z   += flOffset;
     }
+}
+
+void CMomentumPlayer::PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force)
+{
+    if (m_bIsPowerSliding)
+        return;
+
+    BaseClass::PlayStepSound(vecOrigin, psurface, fvol, force);
+}
+
+void CMomentumPlayer::PlayAirjumpSound(const Vector &vecOrigin)
+{
+#if defined( CLIENT_DLL )
+    // during prediction play footstep sounds only once
+    if (prediction->InPrediction() && !prediction->IsFirstTimePredicted())
+        return;
+#endif
+
+    CRecipientFilter filter;
+    filter.AddRecipientsByPAS(vecOrigin);
+
+#ifndef CLIENT_DLL
+    // in MP, server removes all players in the vecOrigin's PVS, these players generate the footsteps client side
+    if (gpGlobals->maxClients > 1)
+    {
+        filter.RemoveRecipientsByPVS(vecOrigin);
+    }
+#endif
+
+    EmitSound(filter, entindex(), "Player.AirJump", &vecOrigin);
+}
+
+void CMomentumPlayer::PlayPowerSlideSound(const Vector &vecOrigin)
+{
+#if defined( CLIENT_DLL )
+    // during prediction play footstep sounds only once
+    if (prediction->InPrediction() && !prediction->IsFirstTimePredicted())
+        return;
+#endif
+
+    CRecipientFilter filter;
+    filter.AddRecipientsByPAS(vecOrigin);
+
+#ifndef CLIENT_DLL
+    // in MP, server removes all players in the vecOrigin's PVS, these players generate the footsteps client side
+    if (gpGlobals->maxClients > 1)
+    {
+        filter.RemoveRecipientsByPVS(vecOrigin);
+    }
+#endif
+
+    EmitSound(
+        filter,
+        entindex(),
+        "Player.PowerSlide",
+        m_hssPowerSlideSound);
+}
+
+void CMomentumPlayer::StopPowerSlideSound()
+{
+    StopSound("Player.PowerSlide", m_hssPowerSlideSound);
+}
+
+void CMomentumPlayer::PlayWallRunSound(const Vector &vecOrigin)
+{
+#if defined( CLIENT_DLL )
+    // during prediction play footstep sounds only once
+    if (prediction->InPrediction() && !prediction->IsFirstTimePredicted())
+        return;
+#endif
+
+    CRecipientFilter filter;
+    filter.AddRecipientsByPAS(vecOrigin);
+
+#ifndef CLIENT_DLL
+    // in MP, server removes all players in the vecOrigin's PVS, these players generate the footsteps client side
+    if (gpGlobals->maxClients > 1)
+    {
+        filter.RemoveRecipientsByPVS(vecOrigin);
+    }
+#endif
+
+    EmitSound(
+        filter,
+        entindex(),
+        "Player.WallRun",
+        m_hssWallRunSound);
+}
+
+void CMomentumPlayer::StopWallRunSound(void)
+{
+    StopSound("Player.WallRun", m_hssWallRunSound);
 }
