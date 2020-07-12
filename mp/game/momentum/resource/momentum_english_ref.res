@@ -186,6 +186,7 @@
         "MOM_GameType_SJ" "Sticky Jump"
         "MOM_GameType_Tricksurf" "Tricksurf"
         "MOM_GameType_Ahop" "Ahop"
+        "MOM_GameType_Parkour" "Parkour"
 
         // Map Info Dialog
         "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode:"
