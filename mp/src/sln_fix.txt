@@ -16,6 +16,10 @@ Global
 		{A2ACA839-712B-1CD6-60AA-5D1BC7C8BAE6}.Debug|x86.Build.0 = Debug|Win32
 		{A2ACA839-712B-1CD6-60AA-5D1BC7C8BAE6}.Release|x86.ActiveCfg = Release|Win32
 		{A2ACA839-712B-1CD6-60AA-5D1BC7C8BAE6}.Release|x86.Build.0 = Release|Win32
+		{1A1149D9-CB1B-BF85-19CA-C9C2996BFDE8}.Debug|x86.ActiveCfg = Debug|Win32
+		{1A1149D9-CB1B-BF85-19CA-C9C2996BFDE8}.Debug|x86.Build.0 = Debug|Win32
+		{1A1149D9-CB1B-BF85-19CA-C9C2996BFDE8}.Release|x86.ActiveCfg = Release|Win32
+		{1A1149D9-CB1B-BF85-19CA-C9C2996BFDE8}.Release|x86.Build.0 = Release|Win32
 		{610C80B7-91A7-9D36-C7D1-62637ABBCE94}.Debug|x86.ActiveCfg = Debug|Win32
 		{610C80B7-91A7-9D36-C7D1-62637ABBCE94}.Debug|x86.Build.0 = Debug|Win32
 		{610C80B7-91A7-9D36-C7D1-62637ABBCE94}.Release|x86.ActiveCfg = Release|Win32
@@ -101,6 +105,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {CD9BE620-8117-41CF-97ED-6C77755F47ED}
+		SolutionGuid = {0421D43E-B863-483C-98D2-A36D19B31366}
 	EndGlobalSection
 EndGlobal

@@ -22,6 +22,7 @@ $Group "game"
 	"server"
 	"tier1"
 	"vgui_controls"
+	"shaderlib"
 	"game_shader_dx9"
 	"GameUI"
 	"libcryptopp"
@@ -29,6 +30,7 @@ $Group "game"
 
 $Group "shaders"
 {
+	"shaderlib"
 	"game_shader_dx9"
 }
 
@@ -37,6 +39,7 @@ $Group "everything"
 	"captioncompiler"
 	"client"
 	"fgdlib"
+	"shaderlib"
 	"game_shader_dx9"
 	"glview"
 	"height2normal"
