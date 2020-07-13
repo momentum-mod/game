@@ -11,7 +11,7 @@
 #include "cpp_shader_constant_register_map.h"
 #include "skin_vs20.inc"
 #include "skin_ps20b.inc"
-#include "commandbuilder.h"
+#include "shaderlib/commandbuilder.h"
 
 #include "skin_vs30.inc"
 #include "skin_ps30.inc"
