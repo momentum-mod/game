@@ -166,8 +166,6 @@ void CWeaponBase::ItemPostFrame()
             }
 
             SecondaryAttack();
-
-            pPlayer->m_nButtons &= ~IN_ATTACK2;
         }
 
         if (bPrimaryAttack)
@@ -179,7 +177,6 @@ void CWeaponBase::ItemPostFrame()
             }
 
             PrimaryAttack();
-            //---
         }
     }
     else if (pPlayer->m_nButtons & IN_RELOAD && GetMaxClip1() != WEAPON_NOCLIP && !m_bInReload && m_flNextPrimaryAttack < gpGlobals->curtime)
