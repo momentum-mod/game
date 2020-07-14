@@ -6,6 +6,7 @@ particles_manifest
     "file"      "!particles/weapons.pcf"
     "file"      "!particles/mom_rocket.pcf"
     "file"      "!particles/mom_stickybomb.pcf"
+    "file"      "particles/TF2_fx.pcf"
 
     // HL2 Particles
     "file"        "particles/antlion_blood.pcf"
