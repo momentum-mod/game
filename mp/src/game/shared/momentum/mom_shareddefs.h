@@ -54,8 +54,18 @@ enum SpeedometerUnits_t
     SPEEDOMETER_UNITS_MPH,
     SPEEDOMETER_UNITS_ENERGY,
 
+    SPEEDOMETER_UNITS_COUNT,
+
     SPEEDOMETER_UNITS_FIRST = SPEEDOMETER_UNITS_UPS,
     SPEEDOMETER_UNITS_LAST = SPEEDOMETER_UNITS_ENERGY
+};
+
+static const char *const g_szSpeedometerUnits[] =
+{
+    "#MOM_Settings_Speedometer_Units_UPS",
+    "#MOM_Settings_Speedometer_Units_KPH",
+    "#MOM_Settings_Speedometer_Units_MPH",
+    "#MOM_Settings_Speedometer_Units_Energy"
 };
 
 enum SpeedometerColorize_t

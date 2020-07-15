@@ -44,10 +44,10 @@ HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseCla
     m_pSpeedometerShow->AddActionSignalTarget(this);
 
     m_pSpeedometerUnits = new ComboBox(this, "SpeedoUnits", 4, false);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_UPS", nullptr);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_KPH", nullptr);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_MPH", nullptr);
-    m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_Energy", nullptr);
+    for (int i = SPEEDOMETER_UNITS_FIRST; i < SPEEDOMETER_UNITS_COUNT; i++)
+    {
+        m_pSpeedometerUnits->AddItem(g_szSpeedometerUnits[i], nullptr);
+    }
     m_pSpeedometerUnits->AddActionSignalTarget(this);
 
     m_pSpeedometerColorize = new ComboBox(this, "SpeedoColorize", 4, false);
