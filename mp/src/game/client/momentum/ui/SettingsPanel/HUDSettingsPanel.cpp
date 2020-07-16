@@ -20,6 +20,8 @@ using namespace vgui;
 
 HUDSettingsPanel::HUDSettingsPanel(Panel *pParent, Button *pAssociate) : BaseClass(pParent, "HUDPage", pAssociate)
 {
+    g_pSpeedometerData->Init();
+
     m_pSpeedometerGameType = new ComboBox(this, "SpeedoGameType", GAMEMODE_COUNT, false);
     for (auto i = 0; i < GAMEMODE_COUNT; i++)
     {

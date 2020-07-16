@@ -12,6 +12,8 @@ class SpeedometerData
     // gets what game mode pertains to the settings currently loaded
     GameMode_t GetCurrentlyLoadedGameMode() { return m_CurrentlyLoadedGamemodeSettings; }
 
+    void Init();
+
     void LoadGamemodeData();
     void LoadGamemodeData(int gametype);
     void LoadGamemodeData(GameMode_t gametype);
@@ -23,6 +25,7 @@ class SpeedometerData
   private:
     SpeedometerLabel *GetLabelFromName(const char *name);
 
+    KeyValues *m_pDefaultSpeedoData;
     KeyValues *m_pGamemodeSetupData;
     GameMode_t m_CurrentlyLoadedGamemodeSettings;
 };
