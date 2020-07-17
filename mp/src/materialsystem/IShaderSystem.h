@@ -37,10 +37,10 @@ class IShader;
 //-----------------------------------------------------------------------------
 enum
 {
-	SHADER_USING_ALPHA_MODULATION				= 0x1,
-	SHADER_USING_FLASHLIGHT						= 0x2,
-	SHADER_USING_FIXED_FUNCTION_BAKED_LIGHTING	= 0x4,
-	SHADER_USING_EDITOR							= 0x8,
+	SHADER_USING_ALPHA_MODULATION				= 0x2,
+	SHADER_USING_FLASHLIGHT						= 0x4,
+	SHADER_USING_FIXED_FUNCTION_BAKED_LIGHTING	= 0x8,
+	SHADER_USING_EDITOR							= 0x10,
 };
 
 
