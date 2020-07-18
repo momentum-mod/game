@@ -123,4 +123,8 @@
     {
         "1" "IF YOU SEE THIS TIP AFTER PARKOUR IS FULLY RELEASED, YELL AT GOCNAK!!!!"
     }
+    "#MOM_GameType_Conc"
+    {
+        "1" "TODO: Gamemode is still work in progress! Tips are to come with the full implementation of the mode."
+    }
 }

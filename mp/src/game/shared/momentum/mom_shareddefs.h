@@ -116,6 +116,7 @@ enum GameMode_t
     GAMEMODE_TRICKSURF = 6,
     GAMEMODE_AHOP = 7,
     GAMEMODE_PARKOUR = 8,
+    GAMEMODE_CONC = 9,
     // MOM_TODO: etc
 
     // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
@@ -131,7 +132,8 @@ const char * const g_szGameModes[] = {
     "#MOM_GameType_SJ",
     "#MOM_GameType_Tricksurf",
     "#MOM_GameType_Ahop",
-    "#MOM_GameType_Parkour"
+    "#MOM_GameType_Parkour",
+    "#MOM_GameType_Conc"
 };
 
 // Run Flags

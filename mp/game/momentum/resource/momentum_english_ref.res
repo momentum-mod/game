@@ -12,6 +12,7 @@
         "MOM_Weapon_Sniper" "360 Noscoper"
         "MOM_Weapon_RocketLauncher" "Controlled Combustion"
         "MOM_Weapon_StickybombLauncher" "Something Stickied This Way Comes"
+        "MOM_Weapon_ConcGrenade" "Controlled Concussion"
 
         "MOM_Weapon_SwitchToSemiAuto" "Switched to Semi-Auto mode"
         "MOM_Weapon_SwitchToBurstFire" "Switched to Burst Fire mode"
@@ -228,6 +229,7 @@
         "MOM_GameType_Tricksurf" "Tricksurf"
         "MOM_GameType_Ahop" "Ahop"
         "MOM_GameType_Parkour" "Parkour"
+        "MOM_GameType_Conc" "Conc"
 
         // Map Info Dialog
         "MOM_MapSelector_InfoDialog_Gamemode" "Gamemode:"
