@@ -84,10 +84,27 @@ static CViewVectors g_ViewVectorsParkour(Vector(0, 0, 60),      // eye position
                                          Vector(0, 0, 14)       // dead view height
 );
 
+static CViewVectors g_ViewVectorsConc(Vector(0, 0, 64),      // eye position
+                                      Vector(-16, -16, 0),   // hull min
+                                      Vector(16, 16, 72),    // hull max
+
+                                      Vector(-16, -16, 0),   // duck hull min
+                                      Vector(16, 16, 36),    // duck hull max
+                                      Vector(0, 0, 24),      // duck view
+
+                                      Vector(-10, -10, -10), // observer hull min
+                                      Vector(10, 10, 10),    // observer hull max
+
+                                      Vector(0, 0, 14)       // dead view height
+);
+
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
     if (g_pGameModeSystem->IsTF2BasedMode())
         return &g_ViewVectorsTF2;
+
+    if(g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+        return &g_ViewVectorsConc;
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
         return &g_ViewVectorsAhop;
@@ -357,15 +374,16 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
     }
 }
 
-bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) 
+bool CMomentumGameRules::AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info)
 {
     // Allow self damage from rockets, generic bombs and stickies
     if (pVictim == info.GetAttacker() && (FClassnameIs(info.GetInflictor(), "momentum_rocket") ||
                                           FClassnameIs(info.GetInflictor(), "momentum_generic_bomb") ||
-                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")))
+                                          FClassnameIs(info.GetInflictor(), "momentum_stickybomb")) ||
+                                          FClassnameIs(info.GetInflictor(), "momentum_concgrenade"))
         return true;
 
-    return !pVictim->IsPlayer(); 
+    return !pVictim->IsPlayer();
 }
 
 void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore)
@@ -413,6 +431,14 @@ void CMomentumGameRules::RadiusDamage(const CTakeDamageInfo &info, const Vector 
             if (FClassnameIs(pInflictor, "momentum_rocket"))
             {
                 flRadius = 121.0f; // Rocket self-damage radius is 121.0f
+            }
+        }
+
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_CONC))
+        {
+            if(FClassnameIs(pInflictor, "momentum_concgrenade"))
+            {
+                flRadius = 280.0f;
             }
         }
 
