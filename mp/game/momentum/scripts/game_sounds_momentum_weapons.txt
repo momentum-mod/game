@@ -230,3 +230,37 @@
         "wave"      ")weapons/mom_conc/mom_frag-bounce03.wav"
     }
 }
+
+"ConcussionGrenade.Bounce"
+{
+    "channel"       "CHAN_WEAPON"
+    "volume"        "VOL_NORM"
+    "pitch"         "PITCH_NORM"
+    "soundlevel"    "SNDLVL_90dB"
+
+    "wave"          "weapons/grenade/conc/bounce.wav"
+}
+
+"ConcussionGrenade.Explode"
+{
+    "channel"       "CHAN_WEAPON"
+    "volume"        "VOL_NORM"
+    "pitch"         "PITCH_NORM"
+    "soundlevel"    "SNDLVL_90dB"
+
+	"rndwave"
+    {
+        "wave" "weapons/grenade/conc/conc1.wav"
+        "wave" "weapons/grenade/conc/conc2.wav"
+    }
+}
+
+"ConcussionGrenade.Timer"
+{
+    "channel"       "CHAN_AUTO"
+    "volume"        "VOL_NORM"
+    "pitch"         "PITCH_NORM"
+    "soundlevel"    "SNDLVL_90dB"
+
+    "wave"          "weapons/grenade/conc/conctimer.wav"
+}
