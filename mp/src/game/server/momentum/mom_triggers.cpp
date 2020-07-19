@@ -523,14 +523,80 @@ void CTriggerTrickZone::OnEndTouch(CBaseEntity *pOther)
     }
 }
 
+//----------------------------------------------------------------------------------------------
+
+bool TeleportEntity(CBaseEntity* pTeleportTo, CBaseEntity* pEntToTeleport, int iMode = 0, Vector vecVelocityScaler = Vector(1.0f, 1.0f, 1.0f), bool bResetAngles = true)
+{
+    if (!(pTeleportTo && pEntToTeleport))
+        return false;
+
+    pEntToTeleport->SetGroundEntity(nullptr);
+
+    QAngle* pAngles = const_cast<QAngle*>(&pTeleportTo->GetAbsAngles());
+    Vector* pVelocity = const_cast<Vector*>(&pEntToTeleport->GetAbsVelocity());
+
+    matrix3x4_t matMyModelToWorld;
+    VMatrix matMyInverse, matRemoteTransform;
+    QAngle angVelocityAngle;
+
+    VectorMultiply(*pVelocity, vecVelocityScaler, *pVelocity);
+
+    switch (iMode)
+    {
+    // Redundant due to the velocity scaler but needed to maintain compatibility with existing maps that use momentum teleports
+    case TELEPORT_RESET:
+        pVelocity = const_cast<Vector*>(&vec3_origin);
+        break;
+
+    case TELEPORT_KEEP_NEGATIVE_Z:
+        pVelocity->x = 0;
+        pVelocity->y = 0;
+
+        if (pVelocity->z > 0.0f)
+            pVelocity->z = 0;
+
+        break;
+
+    case TELEPORT_SNAP_TO_DESTINATION:
+        // Build a transformation from the teleportee's velocity vector
+        VectorAngles(pEntToTeleport->GetAbsVelocity(), angVelocityAngle);
+        AngleMatrix(angVelocityAngle, matMyModelToWorld);
+        MatrixInverseGeneral(matMyModelToWorld, matMyInverse);
+        matRemoteTransform = pTeleportTo->EntityToWorldTransform();
+
+        // Reorient the velocity
+        *pVelocity = matMyInverse.ApplyRotation(*pVelocity);
+        *pVelocity = matRemoteTransform.ApplyRotation(*pVelocity);
+        break;
+
+    default:
+        pVelocity = nullptr;
+    };
+
+    if (!bResetAngles)
+        pAngles = nullptr;
+
+    pEntToTeleport->Teleport(&pTeleportTo->GetAbsOrigin(), pAngles, pVelocity);
+
+    return true;
+}
+
 //----------- CTriggerTeleport -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerMomentumTeleport);
 
 BEGIN_DATADESC(CTriggerMomentumTeleport)
-    DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
+    DEFINE_KEYFIELD(m_iMode, FIELD_INTEGER, "stop"),
+    DEFINE_KEYFIELD(m_vecVelocityScaler, FIELD_VECTOR, "velocityscale"),
     DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
     DEFINE_KEYFIELD(m_bFail, FIELD_BOOLEAN, "fail"),
 END_DATADESC()
+
+CTriggerMomentumTeleport::CTriggerMomentumTeleport()
+{
+    m_iMode = TELEPORT_DEFAULT;
+    m_vecVelocityScaler.Init(1.0f, 1.0f, 1.0f);
+    m_bResetAngles = true;
+}
 
 void CTriggerMomentumTeleport::OnStartTouch(CBaseEntity *pOther)
 {
@@ -567,24 +633,16 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
             DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
             return;
         }
-    }
 
-    DoTeleport(m_hDestinationEnt.Get(), pOther);
+        TeleportEntity(m_hDestinationEnt.Get(), pOther, m_iMode, m_vecVelocityScaler, m_bResetAngles);
+    }
 
     if (m_bFail)
         OnFailTeleport(pOther);
 }
 
-bool CTriggerMomentumTeleport::DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport)
 {
-    if (!(pTeleportTo && pEntToTeleport))
-        return false;
 
-    pEntToTeleport->Teleport(&pTeleportTo->GetAbsOrigin(),
-                             m_bResetAngles ? &pTeleportTo->GetAbsAngles() : nullptr,
-                     m_bResetVelocity ? &vec3_origin : nullptr);
-    AfterTeleport(pEntToTeleport);
-    return true;
 }
 
 void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
@@ -688,7 +746,7 @@ void CTriggerMultihop::Think()
                     const auto fEnterTime = m_mapOnStartTouchedTimes[m_mapOnStartTouchedTimes.Find(pPlayer->entindex())];
                     if (gpGlobals->curtime - fEnterTime >= m_fMaxHoldSeconds)
                     {
-                        DoTeleport(pPlayer->GetCurrentProgressTrigger(), pPlayer);
+                        TeleportEntity(pPlayer->GetCurrentProgressTrigger(), pPlayer, m_iMode, m_vecVelocityScaler, m_bResetAngles);
                     }
                 }
             }
@@ -719,7 +777,7 @@ void CTriggerOnehop::OnStartTouch(CBaseEntity *pOther)
     {
         if (pPlayer->FindOnehopOnList(this))
         {
-            DoTeleport(pPlayer->GetCurrentProgressTrigger(), pPlayer);
+            TeleportEntity(pPlayer->GetCurrentProgressTrigger(), pPlayer, m_iMode, m_vecVelocityScaler, m_bResetAngles);
         }
         else
         {
