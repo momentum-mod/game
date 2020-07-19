@@ -291,6 +291,14 @@ public:
     CNetworkVar(int, m_iDrawState);
 };
 
+enum
+{
+    TELEPORT_DEFAULT = 0,
+    TELEPORT_RESET,
+    TELEPORT_KEEP_NEGATIVE_Z,
+    TELEPORT_SNAP_TO_DESTINATION,
+};
+
 // Our teleport trigger override with extra convenience features
 class CTriggerMomentumTeleport : public CBaseMomentumTrigger
 {
@@ -298,28 +306,26 @@ class CTriggerMomentumTeleport : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
 public:
+    CTriggerMomentumTeleport();
+
     // This void teleports the touching entity!
     void OnStartTouch(CBaseEntity *) OVERRIDE;
     void OnEndTouch(CBaseEntity *) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
     void SetDestinationEnt(CBaseEntity *ent) { m_hDestinationEnt.Set(ent); }
-    bool ShouldStopPlayer() const { return m_bResetVelocity; }
+    bool GetVelocityMode() const { return m_iMode; }
     bool ShouldResetAngles() const { return m_bResetAngles; }
-    void SetShouldStopPlayer(const bool newB) { m_bResetVelocity = newB; }
+    void SetVelocityMode(const int newMode) { m_iMode = newMode; }
     void SetShouldResetAngles(const bool newB) { m_bResetAngles = newB; }
 
     // Default teleport method, uses the set destination target, if there is one.
     void HandleTeleport(CBaseEntity *pOther);
-    // Actual teleport method where the pEntToTeleport is teleported to pTeleportTo
-    // True if the entity was teleported, else false
-    virtual bool DoTeleport(CBaseEntity *pTeleportTo, CBaseEntity *pEntToTeleport);
-    // After teleporting, do this code. Base class does nothing.
-    virtual void AfterTeleport(CBaseEntity *pEntTeleported) {}
     // Called when teleported by a fail teleport
     void OnFailTeleport(CBaseEntity *pEntTeleported);
 
-private:
-    bool m_bResetVelocity;
+protected:
+    int m_iMode;
+    Vector m_vecVelocityScaler;
     bool m_bResetAngles;
     bool m_bFail;
     EHANDLE m_hDestinationEnt;
