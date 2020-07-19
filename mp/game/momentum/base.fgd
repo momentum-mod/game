@@ -7172,6 +7172,11 @@
 [
     target(target_destination) : "Remote Destination" : : "The entity specifying the point to which entities should be teleported."
     landmark(target_destination) : "Local Destination Landmark" : : "If specified, then teleported entities are offset from the target by their initial offset from the landmark."
+    reorient_landmark(choices) : "Reorient Landmark" : 0 : "Reorient angles and velocity in case the destination is rotated" =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
     spawnflags(flags) =
     [
         32: "Preserve angles even when a local landmark is not specified" : 0

@@ -2291,6 +2291,7 @@ public:
 	virtual void Touch( CBaseEntity *pOther ) OVERRIDE;
 
 	string_t m_iLandmark;
+	bool m_bReorientLandmark;
 
 	DECLARE_DATADESC();
 };
@@ -2300,6 +2301,7 @@ LINK_ENTITY_TO_CLASS( trigger_teleport, CTriggerTeleport );
 BEGIN_DATADESC( CTriggerTeleport )
 
 	DEFINE_KEYFIELD( m_iLandmark, FIELD_STRING, "landmark" ),
+    DEFINE_KEYFIELD( m_bReorientLandmark, FIELD_BOOLEAN, "reorient_landmark" ),
 
 END_DATADESC()
 
@@ -2315,74 +2317,82 @@ void CTriggerTeleport::Spawn( void )
 //
 //			If a landmark was specified, the toucher is offset from the target
 //			by their initial offset from the landmark and their angles are
-//			left alone.
+//			left alone unless reorient_landmark is set, in which case their 
+//			velocity and angles are reoriented to the destination's angles.
 //
 // Input  : pOther - The entity that touched us.
 //-----------------------------------------------------------------------------
-void CTriggerTeleport::Touch( CBaseEntity *pOther )
+void CTriggerTeleport::Touch(CBaseEntity* pOther)
 {
-	CBaseEntity	*pentTarget = NULL;
+    CBaseEntity* pentTarget = NULL;
 
-	if (!PassesTriggerFilters(pOther))
-	{
-		return;
-	}
+    if (!PassesTriggerFilters(pOther))
+    {
+        return;
+    }
 
-	// The activator and caller are the same
-	pentTarget = gEntList.FindEntityByName( pentTarget, m_target, NULL, pOther, pOther );
-	if (!pentTarget)
-	{
-	   return;
-	}
-	
-	//
-	// If a landmark was specified, offset the player relative to the landmark.
-	//
-	CBaseEntity	*pentLandmark = NULL;
-	Vector vecLandmarkOffset(0, 0, 0);
-	if (m_iLandmark != NULL_STRING)
-	{
-		// The activator and caller are the same
-		pentLandmark = gEntList.FindEntityByName(pentLandmark, m_iLandmark, NULL, pOther, pOther );
-		if (pentLandmark)
-		{
-			vecLandmarkOffset = pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
-		}
-	}
+    // The activator and caller are the same
+	pentTarget = gEntList.FindEntityByName( pentTarget, m_target, this, pOther, pOther );
+    if (!pentTarget)
+    {
+        return;
+    }
 
-	pOther->SetGroundEntity( NULL );
-	
-	Vector tmp = pentTarget->GetAbsOrigin();
+    //
+    // If a landmark was specified, offset the player relative to the landmark.
+    //
+    CBaseEntity* pentLandmark = NULL;
+    Vector vecLandmarkOffset(0, 0, 0);
+    if (m_iLandmark != NULL_STRING)
+    {
+        // The activator and caller are the same
+		pentLandmark = gEntList.FindEntityByName(pentLandmark, m_iLandmark, this, pOther, pOther );
+        if (pentLandmark)
+        {
+            vecLandmarkOffset = pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
+        }
+    }
 
-	if (!pentLandmark && pOther->IsPlayer())
-	{
-		// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
-		tmp.z -= pOther->WorldAlignMins().z;
-	}
+    pOther->SetGroundEntity(NULL);
 
-	//
-	// Only modify the toucher's angles and zero their velocity if no landmark was specified.
-	//
-	const QAngle *pAngles = NULL;
-	Vector *pVelocity = NULL;
+    Vector vecPentTargetOrigin = pentTarget->GetAbsOrigin();
 
-#ifdef HL1_DLL
-	Vector vecZero(0,0,0);		
-#endif
+    if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
+    {
+        pOther->Teleport(&pentTarget->GetAbsOrigin(), &pentTarget->GetAbsAngles(), NULL);
+    }
+    else if (pentLandmark && m_bReorientLandmark)
+    {
+        // Transform the activator's origin, angles, and velocity into the world space of the destination landmark
+        matrix3x4_t pTransformMatrix;
+        matrix3x4_t pLocalLandmarkMatrix;
+        matrix3x4_t pRemoteLandmarkMatrix = pentTarget->EntityToWorldTransform();
 
-	if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES) )
-	{
-		pAngles = &pentTarget->GetAbsAngles();
+        MatrixInvert(pentLandmark->EntityToWorldTransform(), pLocalLandmarkMatrix);
+        ConcatTransforms(pRemoteLandmarkMatrix, pLocalLandmarkMatrix, pTransformMatrix);
 
-#ifdef HL1_DLL
-		pVelocity = &vecZero;
-#else
-		pVelocity = NULL;	//BUGBUG - This does not set the player's velocity to zero!!!
-#endif
-	}
+        Vector vecNewActivatorOrigin;
+        Vector vecNewActivatorVelocity;
+        QAngle qActivatorEyeAngles = pOther->GetAbsAngles();
 
-	tmp += vecLandmarkOffset;
-	pOther->Teleport( &tmp, pAngles, pVelocity );
+        if (pOther->IsPlayer())
+        {
+            qActivatorEyeAngles = pOther->EyeAngles();
+        }
+
+        QAngle qNewActivatorEyeAngles = TransformAnglesToWorldSpace(qActivatorEyeAngles, pTransformMatrix);
+        VectorTransform(pOther->GetAbsOrigin(), pTransformMatrix, vecNewActivatorOrigin);
+        VectorRotate(pOther->GetAbsVelocity(), pTransformMatrix, vecNewActivatorVelocity);
+
+        pOther->Teleport(&vecNewActivatorOrigin, &qNewActivatorEyeAngles, &vecNewActivatorVelocity);
+    }
+    else
+    {
+        // Preserve angles flag is set or old landmark behavior
+        Vector vecNewActivatorOrigin = pentTarget->GetAbsOrigin() + vecLandmarkOffset;
+
+        pOther->Teleport(&vecNewActivatorOrigin, NULL, NULL);
+    }
 }
 
 
