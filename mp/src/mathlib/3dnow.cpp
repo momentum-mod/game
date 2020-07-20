@@ -61,7 +61,7 @@ float _3DNow_Sqrt(float x)
 	return root;
 }
 
-// NJS FIXME: Need to test Recripricol squareroot performance and accuraccy
+// NJS FIXME: Need to test Reciprocal squareroot performance and accuracy
 // on AMD's before using the specialized instruction.
 float _3DNow_RSqrt(float x)
 {
