@@ -641,10 +641,6 @@ void CTriggerMomentumTeleport::HandleTeleport(CBaseEntity *pOther)
         OnFailTeleport(pOther);
 }
 
-{
-
-}
-
 void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
 {
     const auto pPlayer = ToCMOMPlayer(pEntTeleported);
@@ -653,6 +649,34 @@ void CTriggerMomentumTeleport::OnFailTeleport(CBaseEntity *pEntTeleported)
 
     pPlayer->m_nButtonsToggled = 0;
 }
+//----------------------------------------------------------------------------------------------
+
+//---------- CEnvSurfaceTeleport ---------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(env_momentum_surface_teleport, CEnvSurfaceTeleport);
+
+void CEnvSurfaceTeleport::UpdateMaterialThink(void)
+{
+    if (m_iCurrentGameMaterial != m_iTargetGameMaterial)
+        return;
+
+    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+
+    if (!m_hDestinationEnt.Get())
+    {
+        if (m_target != NULL_STRING)
+        {
+            m_hDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pPlayer, pPlayer);
+        }
+        else
+        {
+            DevWarning("CEnvSurfaceTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+            return;
+        }
+    }
+
+    TeleportEntity(m_hDestinationEnt.Get(), pPlayer, TELEPORT_RESET);
+}
+//----------------------------------------------------------------------------------------------
 
 //---------- CTriggerProgress ----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_progress, CTriggerProgress);
