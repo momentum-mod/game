@@ -476,6 +476,7 @@ public:
     int m_ButtonRep;
     Key m_eKey;
     COutputEvent m_OnKeyPressed;
+    COutputEvent m_OnKeyReleased;
 };
 
 #define FL_BHOP_TIMER 0.15f

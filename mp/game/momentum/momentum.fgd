@@ -204,6 +204,7 @@
 @SolidClass base(Trigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
 [
     output OnKeyPressed(void) : "Fires when the desired key is pressed"
+    output OnKeyReleased(void) : "Fires when the desired key is released"
     lookedkey(choices) : "Key that fires" : "Forward" =
     [
         0 : "Forward"
