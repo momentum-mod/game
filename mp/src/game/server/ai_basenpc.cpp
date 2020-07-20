@@ -858,7 +858,7 @@ int CAI_BaseNPC::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 		ForceGatherConditions();
 
-		// Keep track of how much consecutive damage I have recieved
+		// Keep track of how much consecutive damage I have received
 		if ((gpGlobals->curtime - m_flLastDamageTime) < 1.0)
 		{
 			m_flSumDamage += info.GetDamage();
@@ -2488,7 +2488,7 @@ Vector CAI_BaseNPC::HeadDirection2D( void )
 	// This does not account for head rotations in the animation,
 	// only those done via bone controllers
 
-	// Head yaw is in local cooridnate so it must be added to the body's yaw
+	// Head yaw is in local coordinate so it must be added to the body's yaw
 	QAngle bodyAngles = BodyAngles();
 	float flWorldHeadYaw	= m_flHeadYaw + bodyAngles.y;
 
@@ -2509,7 +2509,7 @@ Vector CAI_BaseNPC::HeadDirection3D( void )
 	// This does not account for head rotations in the animation,
 	// only those done via bone controllers
 
-	// Head yaw is in local cooridnate so it must be added to the body's yaw
+	// Head yaw is in local coordinate so it must be added to the body's yaw
 	QAngle bodyAngles = BodyAngles();
 	float	flWorldHeadYaw	= m_flHeadYaw + bodyAngles.y;
 
@@ -6291,7 +6291,7 @@ void CAI_BaseNPC::MaintainActivity(void)
 
 	if ( m_lifeState == LIFE_DEAD )
 	{
-		// Don't maintain activities if we're daid.
+		// Don't maintain activities if we're dead.
 		// Blame Speyrer
 		return;
 	}
@@ -6455,7 +6455,7 @@ CBaseEntity *CAI_BaseNPC::GetNavTargetEntity(void)
 //			vecStart to vecEnd ignoring collisions with pTarget
 //
 //			if the throw fails, returns the distance
-//			that can be travelled before an obstacle is hit
+//			that can be traveled before an obstacle is hit
 //-----------------------------------------------------------------------------
 #include "ai_initutils.h"
 //#define _THROWDEBUG
@@ -6513,7 +6513,7 @@ float CAI_BaseNPC::ThrowLimit(	const Vector &vecStart,
 			// ----------------------------------------------------------
 			*pBlocker = pEntity;
 
-			// Return distance sucessfully traveled before block encountered
+			// Return distance successfully traveled before block encountered
 			return ((tr.endpos - vecStart).Length());
 		}
 #ifdef _THROWDEBUG
@@ -7120,7 +7120,7 @@ void CAI_BaseNPC::OnRangeAttack1()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Initialze the relationship table from the keyvalues
+// Purpose: Initialize the relationship table from the keyvalues
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
@@ -7280,7 +7280,7 @@ void CAI_BaseNPC::NPCInitThink ( void )
 }
 
 //=========================================================
-// StartNPC - final bit of initization before a npc
+// StartNPC - final bit of initialization before a npc
 // is turned over to the AI.
 //=========================================================
 void CAI_BaseNPC::StartNPC( void )
@@ -7589,7 +7589,7 @@ void CAI_BaseNPC::RememberUnreachable(CBaseEntity *pEntity, float duration )
 		}
 	}
 
-	// Add new unreachabe entity to list
+	// Add new unreachable entity to list
 	int nNewIndex = m_UnreachableEnts.AddToTail();
 	m_UnreachableEnts[nNewIndex].hUnreachableEnt = pEntity;
 	m_UnreachableEnts[nNewIndex].fExpireTime	 = gpGlobals->curtime + NPC_UNREACHABLE_TIMEOUT;
@@ -7617,7 +7617,7 @@ bool CAI_BaseNPC::IsUnreachable(CBaseEntity *pEntity)
 		}
 		else if (pEntity == m_UnreachableEnts[i].hUnreachableEnt)
 		{
-			// Test for reachablility on any elements that have timed out
+			// Test for reachability on any elements that have timed out
 			if ( gpGlobals->curtime > m_UnreachableEnts[i].fExpireTime ||
 				  pEntity->GetAbsOrigin().DistToSqr(m_UnreachableEnts[i].vLocationWhenUnreachable) > UNREACHABLE_DIST_TOLERANCE_SQ)
 			{
@@ -8820,7 +8820,7 @@ void CAI_BaseNPC::DrawDebugGeometryOverlays(void)
 						g = 0;
 						b = 0;
 					}
-					// Current traget drawn in magenta
+					// Current target drawn in magenta
 					else if (npcEnemy == GetTarget())
 					{
 						r = 255;
@@ -9063,7 +9063,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		}
 
 		// --------------
-		// Print Acitivity
+		// Print Activity
 		// --------------
 		if( m_Activity != ACT_INVALID && m_IdealActivity != ACT_INVALID && m_Activity != ACT_RESET)
 		{
@@ -9120,7 +9120,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 		}
 
 		// --------------
-		// Print Interrupte
+		// Print Interrupt
 		// --------------
 		if (m_interuptSchedule)
 		{
@@ -9154,7 +9154,7 @@ int CAI_BaseNPC::DrawDebugTextOverlays(void)
 
 
 		// -------------------------------
-		// Print any important condtions
+		// Print any important conditions
 		// -------------------------------
 		if (HasCondition(COND_ENEMY_TOO_FAR))
 		{
@@ -9395,7 +9395,7 @@ CanPlaySequence_t CAI_BaseNPC::CanPlaySequence( bool fDisregardNPCState, int int
 	{
 		// ok to go, no matter what the npc state. (scripted AI)
 
-		// No clue as to how to proced if they're climbing or jumping
+		// No clue as to how to proceed if they're climbing or jumping
 		// Assert( GetNavType() != NAV_JUMP && GetNavType() != NAV_CLIMB );
 
 		return eReturn;
@@ -9582,7 +9582,7 @@ float CAI_BaseNPC::GetSpreadBias( CBaseCombatWeapon *pWeapon, CBaseEntity *pTarg
 				Assert( scale >= 0.0 && scale <= 1.0 );
 				bias *= scale;
 			}
-			else if ( timeSinceReacquire < timeToFocus ) // handled seperately as might be tuning seperately
+			else if ( timeSinceReacquire < timeToFocus ) // handled separately as might be tuning separately
 			{
 				float scale = timeSinceReacquire / timeToFocus;
 				Assert( scale >= 0.0 && scale <= 1.0 );
@@ -10480,7 +10480,7 @@ void CAI_BaseNPC::OnScheduleChange ( void )
 
 	VacateStrategySlot();
 
-	// If I still have have a route, clear it
+	// If I still have a route, clear it
 	// FIXME: Routes should only be cleared inside of tasks (kenb)
 	GetNavigator()->ClearGoal();
 
@@ -11854,7 +11854,7 @@ bool CAI_BaseNPC::CineCleanup()
 			Vector oldOrigin = GetLocalOrigin();
 
 			// UNDONE: ugly hack.  Don't move NPC if they don't "seem" to move
-			// this really needs to be done with the AX,AY,etc. flags, but that aren't consistantly
+			// this really needs to be done with the AX,AY,etc. flags, but that aren't consistently
 			// being set, so animations that really do move won't be caught.
 			if ((oldOrigin - new_origin).Length2D() < 8.0)
 				new_origin = oldOrigin;
@@ -12030,7 +12030,7 @@ bool CAI_BaseNPC::ShouldFailNav( bool bMovementFailed )
 
 #endif // HL2_EPISODIC
 
-	// It's up to the schedule that requested movement to deal with failed movement.  Currently, only a handfull of 
+	// It's up to the schedule that requested movement to deal with failed movement.  Currently, only a handful of 
 	// schedules are considered Urgent, and they need to deal with what to do when there's no route, which by inspection
 	// they'd don't.
 
@@ -12089,7 +12089,7 @@ float CAI_BaseNPC::VecToYaw( const Vector &vecDir )
 //-----------------------------------------------------------------------------
 float CAI_BaseNPC::CalcYawSpeed( void )
 {
-	// Negative values are invalud
+	// Negative values are invalid
 	return -1.0f;
 }
 
