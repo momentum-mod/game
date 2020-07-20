@@ -29,14 +29,13 @@ public:
 	// Main interface to all surface triggers
 	static void	SetPlayerSurface( CBasePlayer *pPlayer, char gameMaterial );
 
-	void	UpdateMaterialThink( void );
+	virtual void UpdateMaterialThink( void );
 
-private:
+protected:
 	void	PlayerSurfaceChanged( CBasePlayer *pPlayer, char gameMaterial );
 	void	InputDisable( inputdata_t &inputdata );
 	void	InputEnable( inputdata_t &inputdata );
 
-private:
 	int		m_iTargetGameMaterial;
 	int		m_iCurrentGameMaterial;
 	bool	m_bDisabled;

@@ -61,8 +61,8 @@
 @BaseClass base(MomentumTrigger) = TeleTrigger
 [
     target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
-	
-	velocityscale(vector) : "Velocity Scale Factor (X Y Z)" : "1 1 1" : "Scale the player's velocity per-axis"
+    
+    velocityscale(vector) : "Velocity Scale Factor (X Y Z)" : "1 1 1" : "Scale the player's velocity per-axis"
     
     stop(choices) : "Velocity mode" : 1 = 
     [
@@ -103,6 +103,38 @@
         1024: "Physics debris" : 0
         2048: "Only NPCs in vehicles (respects player ally flag)" : 0
     ]
+]
+
+@PointClass base(Targetname) = env_momentum_surface_teleport : "An entity that teleports the player when they stand on a specified material surface"
+[
+    target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
+
+    gamematerial(choices) : "Game Material to Watch" : "0" : "The material to watch. When the player stands on this material, they will get teleported" =
+    [
+        0 : "None (player's in the air)"
+        67 : "Concrete"
+        77 : "Metal"
+        68 : "Dirt"
+        86 : "Vent"
+        71 : "Grate"
+        84 : "Tile"
+        83 : "Slosh"
+        87 : "Wood"
+        80 : "Computer"
+        89 : "Glass"
+        70 : "Flesh"
+        73 : "Clip"
+        79 : "Foliage"
+        78 : "Sand"
+    ]
+    
+    // Outputs
+    output OnSurfaceChangedToTarget(void) : "Fired when the player moves onto the specified game material."
+    output OnSurfaceChangedFromTarget(void) : "Fired when the player moves off the specified game material."
+    
+    // Inputs
+    input Enable(void) : "Start watching the player's surface."
+    input Disable(void) : "Stop watching the player's surface."
 ]
 
 @SolidClass base(ZoneTrigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
