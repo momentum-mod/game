@@ -354,7 +354,7 @@
         "MOM_Settings_RJ_Enable_Center_Fire" "Fire rocket projectiles from screen center"
         "MOM_Settings_RJ_Enable_Center_Fire_TT" "When enabled, rockets will fire from the center of the screen like the Original from Team Fortress 2 / Quake."
         "MOM_Settings_RJ_RocketDrawDelayEntry_Label" "Delay before rockets are rendered"
-        "MOM_Settings_RJ_RocketDrawDelayEntry_Tooltip" "In seconds. Default is 0.2, max 1."
+        "MOM_Settings_RJ_RocketDrawDelayEntry_TT" "In seconds. Default is 0.2, max 1."
 
         // Gameplay - sub Sticky Jump settings
         "MOM_Settings_Title_Gameplay_SJ" "Sticky Jump Settings"
@@ -376,7 +376,7 @@
         "MOM_Settings_SJ_Enable_Sticky_Counter_Autohide" "Autohide stickybomb counter"
         "MOM_Settings_SJ_Enable_Sticky_Counter_Autohide_TT" "Autohide when sticky count is 0."
         "MOM_Settings_SJ_DrawDelayEntry_Label" "Delay before stickybombs are rendered"
-        "MOM_Settings_SJ_DrawDelayEntry_Tooltip" "In seconds. Default is 0, max 1."
+        "MOM_Settings_SJ_DrawDelayEntry_TT" "In seconds. Default is 0, max 1."
 
         // HUD
         "MOM_Settings_HUD" "HUD"
@@ -439,7 +439,7 @@
         "MOM_Settings_Compare_Bogus_Run" "Example Run"
 
         "MOM_Settings_Compare_Time_Type_Label" "Time type:"
-        "MOM_Settings_Compare_Time_Type_Label_TT" "This is the time comparison shown next to past zones."
+        "MOM_Settings_Compare_Time_Type_TT" "This is the time comparison shown next to past zones."
         "MOM_Settings_Compare_Time_Type_Overall" "Overall run time"
         "MOM_Settings_Compare_Time_Type_PerZone" "Time spent per zone"
         "MOM_Settings_Compare_Show_Overall" "Overall time"
