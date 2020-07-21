@@ -51,7 +51,7 @@ static ConCommand ai_disable("ai_disable", CC_AI_Disable, "Bi-passes all AI logi
 //------------------------------------------------------------------------------
 void CC_AI_ShowHints( void )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -68,7 +68,7 @@ static ConCommand ai_show_hints("ai_show_hints", CC_AI_ShowHints, "Displays all 
 //------------------------------------------------------------------------------
 void CC_AI_ShowHull( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1),sizeof(entName) );
@@ -83,7 +83,7 @@ static ConCommand ai_show_hull("ai_show_hull", CC_AI_ShowHull, "Displays the all
 //------------------------------------------------------------------------------
 void CC_AI_ShowConnect( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -101,7 +101,7 @@ static ConCommand ai_show_connect("ai_show_connect", CC_AI_ShowConnect, "Display
 //------------------------------------------------------------------------------
 void CC_AI_ShowJumpConnect( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -120,7 +120,7 @@ static ConCommand ai_show_connect_jump("ai_show_connect_jump", CC_AI_ShowJumpCon
 //------------------------------------------------------------------------------
 void CC_AI_ShowFlyConnect( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -139,7 +139,7 @@ static ConCommand ai_show_connect_fly("ai_show_connect_fly", CC_AI_ShowFlyConnec
 //------------------------------------------------------------------------------
 void CC_AI_ShowGrid( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -181,7 +181,7 @@ static ConCommand ai_resume("ai_resume", CC_AI_Resume, "If NPC is stepping throu
 //------------------------------------------------------------------------------
 void CC_AI_NextHull( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -260,7 +260,7 @@ static ConCommand ai_hull("ai_hull", CC_AI_Hull, "Controls which connections are
 //------------------------------------------------------------------------------
 void CC_AI_Nodes( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//	static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -291,7 +291,7 @@ CON_COMMAND(ai_show_node, "Highlight the specified node")
 //------------------------------------------------------------------------------
 void CC_AI_ShowVisibility( const CCommand &args )
 {
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	// static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -317,14 +317,14 @@ static ConCommand ai_show_visibility("ai_show_visibility", CC_AI_ShowVisibility,
 
 //------------------------------------------------------------------------------
 // Purpose: Show what nodes the selected node is connected to using the
-//			 netowrk graph
+//			 network graph
 //------------------------------------------------------------------------------
 void CC_AI_GraphConnect( const CCommand &args )
 {
 	if ( !g_pAINetworkManager )
 		return;
 
-	// Eventually this will be done by name when mulitple
+	// Eventually this will be done by name when multiple
 	// networks are used, but for now have one big AINet
 	//static char entName[256];	
 	//Q_strncpy( entName, args[1],sizeof(entName) );
@@ -381,7 +381,7 @@ void CC_NPC_Enemies( const CCommand &args )
 static ConCommand npc_enemies("npc_enemies", CC_NPC_Enemies, "Shows memory of NPC.  Draws an X on top of each memory.\n\tEluded entities drawn in blue (don't know where it went)\n\tUnreachable entities drawn in green (can't get to it)\n\tCurrent enemy drawn in red\n\tCurrent target entity drawn in magenta\n\tAll other entities drawn in pink\n\tArguments:   	{npc_name} / {npc class_name} / no argument picks what player is looking at", FCVAR_CHEAT);
 
 //------------------------------------------------------------------------------
-// Purpose: Show seletected NPC's current enemy and target entity
+// Purpose: Show selected NPC's current enemy and target entity
 //------------------------------------------------------------------------------
 void CC_NPC_Focus( const CCommand &args )
 {
@@ -679,7 +679,7 @@ static ConCommand npc_go("npc_go", CC_NPC_Go, "Selected NPC(s) will go to the lo
 
 
 //------------------------------------------------------------------------------
-// Purpose: Tell seclected NPC to go to a random node location
+// Purpose: Tell selected NPC to go to a random node location
 //------------------------------------------------------------------------------
 void CC_NPC_GoRandom( void )
 {
