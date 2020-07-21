@@ -113,7 +113,7 @@ Vector CAI_BaseFlyingBot::VelocityToAvoidObstacles(float flInterval)
 		MASK_NPCSOLID_BRUSHONLY|CONTENTS_WATER, this, COLLISION_GROUP_NONE, &tr);
 	if (tr.fraction < 1)
 	{
-		// Clamp veloctiy
+		// Clamp velocity
 		if (tr.fraction < 0.1)
 		{
 			tr.fraction = 0.1;
