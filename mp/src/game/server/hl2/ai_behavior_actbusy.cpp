@@ -2356,7 +2356,7 @@ CAI_ActBusyBehavior *CAI_ActBusyGoal::GetBusyBehaviorForNPC( const char *pszActo
 	CBaseEntity *pEntity = gEntList.FindEntityByName( NULL, MAKE_STRING(pszActorName), NULL, pActivator, pCaller );
 	if ( !pEntity )
 	{
-		Msg("ai_goal_actbusy input %s fired targeting a non-existant entity (%s).\n", sInputName, pszActorName );
+		Msg("ai_goal_actbusy input %s fired targeting a non-existent entity (%s).\n", sInputName, pszActorName );
 		return NULL;
 	}
 
