@@ -1268,6 +1268,7 @@ void Menu::OnKeyCodeTyped(KeyCode keycode)
 		{
 			// hide the menu on ESC
 			SetVisible(false);
+            BaseClass::OnKeyCodeTyped(keycode);
 			break;
 		}
 		// arrow keys scroll through items on the list.
