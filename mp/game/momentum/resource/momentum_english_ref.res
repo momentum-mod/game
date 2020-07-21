@@ -304,7 +304,8 @@
         // Online - sub Online ghosts
         "MOM_Settings_Title_Online_Ghost" "Online Ghost Settings"
         "MOM_Settings_Override_Alpha_Enable" "Override online ghost color alpha"
-        "MOM_Settings_Override_Alpha_Enable_TT" "When enabled, this setting overrides the alpha component of all online ghosts' colors."
+        "MOM_Settings_Override_Alpha_Enable_TT" "When enabled, this setting overrides the transparency of all online ghosts' colors."
+        "MOM_Settings_Override_Alpha_Amount_TT" "The amount of transparency each online ghost has if the override is enabled."
         "MOM_Settings_Online_Rotations" "Wonky online ghost rotations"
         "MOM_Settings_Online_Rotations_TT" "When enabled, ghosts rotate about their origin." 
         "MOM_Settings_Online_Sounds" "Online ghost flashlight sounds"
