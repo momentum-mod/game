@@ -1221,6 +1221,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"labelText"		"#GameUI_Enabled"
+        "tooltiptext" "#MOM_Settings_Run_Disallow_TT"
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
