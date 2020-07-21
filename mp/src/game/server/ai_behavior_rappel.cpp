@@ -162,7 +162,7 @@ void CAI_RappelBehavior::CleanupOnDeath( CBaseEntity *pCulprit, bool bFireDeathO
 {
 	BaseClass::CleanupOnDeath( pCulprit, bFireDeathOutput );
 
-	//This will remove the beam and create a rope if the NPC dies while rappeling down.
+	//This will remove the beam and create a rope if the NPC dies while rappelling down.
 	if ( m_hLine )
 	{
 		 CAI_BaseNPC *pNPC = GetOuter();
@@ -341,7 +341,7 @@ int CAI_RappelBehavior::SelectSchedule()
 //-----------------------------------------------------------------------------
 void CAI_RappelBehavior::BeginRappel()
 {
-	// Send the message to begin rappeling!
+	// Send the message to begin rappelling!
 	SetCondition( COND_BEGIN_RAPPEL );
 
 	m_vecRopeAnchor = GetOuter()->GetAbsOrigin();
