@@ -618,7 +618,7 @@ void CAI_FollowBehavior::EndScheduleSelection()
 		GetOuter()->GetEnemies()->SetEnemyDiscardTime( m_flOriginalEnemyDiscardTime );
 	}
 
-	if ( m_SavedDistTooFar > 0.1 ) // backward savefile compatability
+	if ( m_SavedDistTooFar > 0.1 ) // backward savefile compatibility
 	{
 		GetOuter()->m_flDistTooFar = m_SavedDistTooFar;
 	}
@@ -2163,7 +2163,7 @@ void CAI_FollowGoal::InputOutsideTransition( inputdata_t &inputdata )
 // Purpose: Formation definitions
 //
 
-// @TODO (toml 11-21-03): rework follow so we don't have to have class specifc formations in this file
+// @TODO (toml 11-21-03): rework follow so we don't have to have class specific formations in this file
 
 struct AI_FollowSlot_t
 {
