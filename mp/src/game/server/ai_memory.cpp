@@ -380,7 +380,7 @@ bool CAI_Enemies::UpdateMemory(CAI_Network* pAINet, CBaseEntity *pEnemy, const V
 
 	pAddMemory->bEludedMe = false;
 
-	// I'm either remembering a postion of an enmey of just a danger position
+	// I'm either remembering a position of an enemy of just a danger position
 	pAddMemory->hEnemy = pEnemy;
 	pAddMemory->bDangerMemory = ( pEnemy == NULL );
 
@@ -436,7 +436,7 @@ void CAI_Enemies::MarkAsEluded( CBaseEntity *pEnemy )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Returns last known posiiton of given enemy
+// Purpose: Returns last known position of given enemy
 //-----------------------------------------------------------------------------
 const Vector &CAI_Enemies::LastKnownPosition( CBaseEntity *pEnemy )
 {
