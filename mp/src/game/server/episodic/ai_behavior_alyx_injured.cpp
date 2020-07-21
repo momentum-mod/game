@@ -30,7 +30,7 @@ Activity	ACT_INJURED_COWER;
 Activity	ACT_GESTURE_INJURED_COWER_FLINCH;
 
 #define	COVER_DISTANCE	128.0f			// Distance behind target to find cover
-#define	MIN_ENEMY_MOB	3				// Number of enemies considerd overwhelming
+#define	MIN_ENEMY_MOB	3				// Number of enemies considered overwhelming
 #define	MAX_DIST_FROM_FOLLOW_TARGET	256	// If the follow target is farther than this, the NPC will run to it
 
 //=============================================================================
