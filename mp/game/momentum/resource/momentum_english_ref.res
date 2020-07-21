@@ -253,6 +253,9 @@
 
         // Settings Panel
         "MOM_Settings_Title" "Settings"
+
+        // General Tooltips
+        "MOM_Settings_Run_Disallow_TT" "Note: The timer must not be running for this setting to change."
         
         // Input
         "MOM_Settings_Input" "Input"
