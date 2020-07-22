@@ -86,7 +86,7 @@ int CAI_GlobalNamespace::NextGlobalBase() const
 //
 // Purpose: Maps per class IDs to global IDs, so that various classes can use
 //			the same integer in local space to represent different globally 
-//			unique integers. Used for schedules, tasks, conditons and squads
+//			unique integers. Used for schedules, tasks, conditions and squads
 //
 
 CAI_LocalIdSpace::CAI_LocalIdSpace( bool fIsRoot )
