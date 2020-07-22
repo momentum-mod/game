@@ -1954,8 +1954,8 @@ bool CAI_Navigator::OnFailedSteer( AILocalMoveGoal_t *pMoveGoal, float distClear
 	}
 
 
-	// If fail steer more than once after a second with no measurable progres, fail completely
-	// This usually means a sucessful triangulation was not actually a valid avoidance.
+	// If fail steer more than once after a second with no measurable progress, fail completely
+	// This usually means a successful triangulation was not actually a valid avoidance.
 	const float MOVE_TOLERANCE = 12.0;
 	const float TIME_TOLERANCE = 1.0;
 
@@ -2404,7 +2404,7 @@ bool CAI_Navigator::Move( float flInterval )
 	if (flInterval > 1.0)
 	{
 		// Bound interval so we don't get ludicrous motion when debugging
-		// or when framerate drops catostrophically
+		// or when framerate drops catastrophically
 		flInterval = 1.0;
 	}
 
@@ -2621,7 +2621,7 @@ float CAI_Navigator::CalcYawSpeed( void )
 	if( IsGoalSet() && GetIdealSpeed() != 0.0)
 	{
 		// ---------------------------------------------------
-		// If not moving to a waypoint use a base turing speed
+		// If not moving to a waypoint use a base turning speed
 		// ---------------------------------------------------
 		if (!GetPath()->GetCurWaypoint()) 
 		{
@@ -3424,8 +3424,8 @@ bool CAI_Navigator::FindPath( bool fSignalTaskStatus, bool bDontIgnoreBadLinks )
 
 //-----------------------------------------------------------------------------
 // Purpose: Called when route fails.  Marks last link on which that failure
-//			occured as stale so when then next node route is build that link
-//			will be explictly checked for blockages
+//			occurred as stale so when then next node route is build that link
+//			will be explicitly checked for blockages
 // Input  :
 // Output : 
 //-----------------------------------------------------------------------------
@@ -3693,7 +3693,7 @@ bool CAI_Navigator::DoFindPathToPathcorner( CBaseEntity *pPathCorner )
 				if ( pPathCorner )
 				{
 					// Place a dummy node in that will be used to signal the next pathfind, also prevents
-					// animation system from decellerating when approaching a pathcorner
+					// animation system from decelerating when approaching a pathcorner
 					lastWaypoint->ModifyFlags( bits_WP_TO_GOAL, false );
 					// BRJ 10/4/02
 					// FIXME: I'm not certain about the navtype here
@@ -3713,7 +3713,7 @@ bool CAI_Navigator::DoFindPathToPathcorner( CBaseEntity *pPathCorner )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Attemps to find a route
+// Purpose: Attempts to find a route
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
