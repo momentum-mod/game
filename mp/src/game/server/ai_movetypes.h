@@ -190,7 +190,7 @@ public:
 
 	//---------------------------------
 	//
-	// Local navigation notifications, each allows services provider to overridde default result
+	// Local navigation notifications, each allows services provider to override default result
 	//
 	virtual bool OnCalcBaseMove( AILocalMoveGoal_t *pMoveGoal, 
 								float distClear, 
@@ -217,7 +217,7 @@ public:
 	
 	//---------------------------------
 	//
-	// Motor notifications, each allows services provider to overridde default result
+	// Motor notifications, each allows services provider to override default result
 	//
 	virtual bool OnMoveStalled( const AILocalMoveGoal_t &move ) = 0;
 	virtual bool OnMoveExecuteFailed( const AILocalMoveGoal_t &move, 
@@ -242,7 +242,7 @@ public:
 
 	//---------------------------------
 	//
-	// Local navigation notifications, each allows services provider to overridde default result
+	// Local navigation notifications, each allows services provider to override default result
 	//
 	virtual bool OnCalcBaseMove( AILocalMoveGoal_t *pMoveGoal, float distClear, AIMoveResult_t *pResult ) { return false; }
 	virtual bool OnObstructionPreSteer( AILocalMoveGoal_t *pMoveGoal, float distClear, AIMoveResult_t *pResult ) { return false;	}
@@ -253,7 +253,7 @@ public:
 	
 	//---------------------------------
 	//
-	// Motor notifications, each allows services provider to overridde default result
+	// Motor notifications, each allows services provider to override default result
 	//
 	virtual bool OnMoveStalled( const AILocalMoveGoal_t &move ) { return false;	}
 	virtual bool OnMoveExecuteFailed( const AILocalMoveGoal_t &move, const AIMoveTrace_t &trace, AIMotorMoveResult_t fMotorResult, AIMoveResult_t *pResult ) { return false;	}
@@ -282,7 +282,7 @@ public:
 
 	//---------------------------------
 	//
-	// Local navigation notifications, each allows services provider to overridde default result
+	// Local navigation notifications, each allows services provider to override default result
 	//
 	virtual bool OnCalcBaseMove( AILocalMoveGoal_t *pMoveGoal, 
 								float distClear, 
@@ -304,7 +304,7 @@ public:
 	
 	//---------------------------------
 	//
-	// Motor notifications, each allows services provider to overridde default result
+	// Motor notifications, each allows services provider to override default result
 	//
 	virtual bool OnMoveStalled( const AILocalMoveGoal_t &move );
 	virtual bool OnMoveExecuteFailed( const AILocalMoveGoal_t &move, const AIMoveTrace_t &trace, AIMotorMoveResult_t fMotorResult, AIMoveResult_t *pResult );
