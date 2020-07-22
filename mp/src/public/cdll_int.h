@@ -62,7 +62,7 @@ class IConVar;
 //-----------------------------------------------------------------------------
 
 // Engine player info, no game related infos here
-// If you change this, change the two byteswap defintions: 
+// If you change this, change the two byteswap definitions: 
 // cdll_client_int.cpp and cdll_engine_int.cpp
 typedef struct player_info_s
 {
@@ -71,7 +71,7 @@ typedef struct player_info_s
 	char			name[MAX_PLAYER_NAME_LENGTH];
 	// local server user ID, unique while server is running
 	int				userID;
-	// global unique player identifer
+	// global unique player identifier
 	char			guid[SIGNED_GUID_LEN + 1];
 	// friends identification number
 	uint32			friendsID;
@@ -129,7 +129,7 @@ enum ClientFrameStage_t
 	FRAME_UNDEFINED=-1,			// (haven't run any frames yet)
 	FRAME_START,
 
-	// A network packet is being recieved
+	// A network packet is being received
 	FRAME_NET_UPDATE_START,
 		// Data has been received and we're going to start calling PostDataUpdate
 		FRAME_NET_UPDATE_POSTDATAUPDATE_START,
@@ -176,7 +176,7 @@ struct OcclusionParams_t
 //-----------------------------------------------------------------------------
 #define VENGINE_CLIENT_RANDOM_INTERFACE_VERSION	"VEngineRandom001"
 
-// change this when the new version is incompatable with the old
+// change this when the new version is incompatible with the old
 #define VENGINE_CLIENT_INTERFACE_VERSION		"VEngineClient014"
 #define VENGINE_CLIENT_INTERFACE_VERSION_13		"VEngineClient013"
 
@@ -196,7 +196,7 @@ public:
 									SurfInfo *pInfos, 
 									const int nMaxInfos) = 0;
 	
-	// Get the lighting intensivty for a specified point
+	// Get the lighting intensity for a specified point
 	// If bClamp is specified, the resulting Vector is restricted to the 0.0 to 1.0 for each element
 	virtual Vector				GetLightForPoint(const Vector &pos, bool bClamp) = 0;
 
@@ -240,7 +240,7 @@ public:
 	// Get accurate, sub-frame clock ( profiling use )
 	virtual float				Time( void ) = 0; 
 
-	// Get the exact server timesstamp ( server time ) from the last message received from the server
+	// Get the exact server timestamp ( server time ) from the last message received from the server
 	virtual float				GetLastTimeStamp( void ) = 0; 
 
 	// Given a CAudioSource (opaque pointer), retrieve the underlying CSentence object ( stores the words, phonemes, and close
@@ -286,7 +286,7 @@ public:
 	// Is the specified world-space bounding box inside the view frustum?
 	virtual int					IsBoxVisible( const Vector& mins, const Vector& maxs ) = 0;
 
-	// Is the specified world-space boudning box in the same PVS cluster as the view origin?
+	// Is the specified world-space bounding box in the same PVS cluster as the view origin?
 	virtual int					IsBoxInViewCluster( const Vector& mins, const Vector& maxs ) = 0;
 	
 	// Returns true if the specified box is outside of the view frustum and should be culled
@@ -359,7 +359,7 @@ public:
 	// It should only be called once per frame.
 	virtual void		FireEvents() = 0;
 
-	// Returns an area index if all the leaves are in the same area. If they span multple areas, then it returns -1.
+	// Returns an area index if all the leaves are in the same area. If they span multiple areas, then it returns -1.
 	virtual int			GetLeavesArea( int *pLeaves, int nLeaves ) = 0;
 
 	// Returns true if the box touches the specified area's frustum.
@@ -612,7 +612,7 @@ public:
 	virtual void			IN_ActivateMouse( void ) = 0;
 	// Deactivates the mouse (shows the cursor and unlocks it)
 	virtual void			IN_DeactivateMouse( void ) = 0;
-	// This is only called during extra sound updates and just accumulates mouse x, y offets and recenters the mouse.
+	// This is only called during extra sound updates and just accumulates mouse x, y offsets and recenters the mouse.
 	//  This call is used to try to prevent the mouse from appearing out of the side of a windowed version of the engine if 
 	//  rendering or other processing is taking too long
 	virtual void			IN_Accumulate (void) = 0;
