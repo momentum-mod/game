@@ -165,7 +165,7 @@ public:
 		INVALID_ARGUMENT,
 		/// \brief BufferedTransformation received a Flush(true) signal but can't flush buffers
 		CANNOT_FLUSH,
-		/// \brief Data integerity check, such as CRC or MAC, failed
+		/// \brief Data integrity check, such as CRC or MAC, failed
 		DATA_INTEGRITY_CHECK_FAILED,
 		/// \brief Input data was received that did not conform to expected format
 		INVALID_DATA_FORMAT,
@@ -310,7 +310,7 @@ public:
 		/// \return the C++ mangled name of the type
 		const std::type_info & GetStoredTypeInfo() const {return m_stored;}
 
-		/// \brief Provides the retrieveing type
+		/// \brief Provides the retrieving type
 		/// \return the C++ mangled name of the type
 		const std::type_info & GetRetrievingTypeInfo() const {return m_retrieving;}
 
@@ -480,7 +480,7 @@ public:
 class NullNameValuePairs : public NameValuePairs
 {
 public:
-	NullNameValuePairs() {}    //  Clang complains a default ctor must be avilable
+	NullNameValuePairs() {}    //  Clang complains a default ctor must be available
 	bool GetVoidValue(const char *name, const std::type_info &valueType, void *pValue) const
 		{CRYPTOPP_UNUSED(name); CRYPTOPP_UNUSED(valueType); CRYPTOPP_UNUSED(pValue); return false;}
 };
@@ -654,7 +654,7 @@ public:
 	/// \returns the valid key length, in bytes
 	/// \details keylength is provided in bytes, not bits. If keylength is less than MIN_KEYLENGTH,
 	///   then the function returns MIN_KEYLENGTH. If keylength is greater than MAX_KEYLENGTH,
-	///   then the function returns MAX_KEYLENGTH. if If keylength is a multiple of KEYLENGTH_MULTIPLE,
+	///   then the function returns MAX_KEYLENGTH. If keylength is a multiple of KEYLENGTH_MULTIPLE,
 	///   then keylength is returned. Otherwise, the function returns a \a lower multiple of
 	///   KEYLENGTH_MULTIPLE.
 	virtual size_t GetValidKeyLength(size_t keylength) const =0;
@@ -1015,7 +1015,7 @@ public:
 	virtual unsigned int MinLastBlockSize() const {return 0;}
 
 	/// \brief Determines if the last block receives special processing
-	/// \returns true if the last block reveives special processing, false otherwise.
+	/// \returns true if the last block receives special processing, false otherwise.
 	/// \details Some authenticated encryption modes are not expressed well with
 	///   MandatoryBlockSize() and MinLastBlockSize(). For example, AES/OCB uses
 	///   16-byte blocks (MandatoryBlockSize = 16) and the last block requires special processing
@@ -1735,7 +1735,7 @@ public:
 		/// \throws NotImplemented
 		/// \details IsolatedInitialize() is used to initialize or reinitialize an object using a variable
 		///   number of arbitrarily typed arguments. The function avoids the need for multiple constructors providing
-		///   all possible combintations of configurable parameters.
+		///   all possible combinations of configurable parameters.
 		/// \details IsolatedInitialize() does not call Initialize() on attached transformations. If initialization
 		///   should be propagated, then use the Initialize() function.
 		/// \details If a derived class does not override IsolatedInitialize(), then the base class throws
@@ -1762,7 +1762,7 @@ public:
 		/// \param propagation the number of attached transformations the Initialize() signal should be passed
 		/// \details Initialize() is used to initialize or reinitialize an object using a variable number of
 		///   arbitrarily typed arguments. The function avoids the need for multiple constructors providing
-		///   all possible combintations of configurable parameters.
+		///   all possible combinations of configurable parameters.
 		/// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
 		///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
 		virtual void Initialize(const NameValuePairs &parameters=g_nullNameValuePairs, int propagation=-1);
@@ -1935,8 +1935,8 @@ public:
 		/// \return the number of bytes ready for retrieval
 		virtual lword TotalBytesRetrievable() const;
 
-		/// \brief Provides the number of meesages processed by this object
-		/// \return the number of meesages processed by this object
+		/// \brief Provides the number of messages processed by this object
+		/// \return the number of messages processed by this object
 		/// \details NumberOfMessages returns number of times MessageEnd() has been
 		///    received minus messages retrieved or skipped
 		virtual unsigned int NumberOfMessages() const;
@@ -1952,7 +1952,7 @@ public:
 		///   if no more messages exist or this message is not completely retrieved.
 		virtual bool GetNextMessage();
 
-		/// \brief Skip a number of meessages
+		/// \brief Skip a number of messages
 		/// \return 0 if the requested number of messages was skipped, non-0 otherwise
 		/// \details SkipMessages() skips count number of messages. If there is an AttachedTransformation()
 		///   then SkipMessages() is called on the attached transformation. If there is no attached
@@ -2000,7 +2000,7 @@ public:
 		void CopyAllTo(BufferedTransformation &target, const std::string &channel=DEFAULT_CHANNEL) const;
 
 		/// \brief Retrieve the next message in a series
-		/// \return true if a message was retreved, false otherwise
+		/// \return true if a message was retrieved, false otherwise
 		/// \details Internally, the base class implementation returns false.
 		virtual bool GetNextMessageSeries() {return false;}
 		/// \brief Provides the number of messages in a series
@@ -2314,7 +2314,7 @@ public:
 	/// \throws NotImplemented
 	/// \details Save() writes the material to a BufferedTransformation.
 	/// \details If the material is a key, then the key is written with ASN.1 DER encoding. The key
-	///   includes an object identifier with an algorthm id, like a subjectPublicKeyInfo.
+	///   includes an object identifier with an algorithm id, like a subjectPublicKeyInfo.
 	/// \details A "raw" key without the "key info" can be saved using a key's DEREncode() method.
 	/// \details If a derived class does not override Save(), then the base class throws
 	///   NotImplemented().
@@ -2331,7 +2331,7 @@ public:
 	///   <li>the key should be ASN.1 BER encoded
 	///   <li>the key should be a "key info"
 	///   </ul>
-	/// \details "key info" means the key should have an object identifier with an algorthm id,
+	/// \details "key info" means the key should have an object identifier with an algorithm id,
 	///   like a subjectPublicKeyInfo.
 	/// \details To read a "raw" key without the "key info", then call the key's BERDecode() method.
 	/// \note Load() generally does not check that the key is valid. Call Validate(), if needed.
@@ -2419,7 +2419,7 @@ class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE PrivateKey : public GeneratableCryptoMater
 {
 };
 
-/// \brief Interface for crypto prameters
+/// \brief Interface for crypto parameters
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CryptoParameters : public GeneratableCryptoMaterial
 {
 };
@@ -2615,7 +2615,7 @@ public:
 	/// \param parameters a set of NameValuePairs to initialize this object
 	/// \return the result of the decryption operation
 	/// \details If DecodingResult::isValidCoding is true, then DecodingResult::messageLength
-	///   is valid and holds the the actual length of the plaintext recovered. The result is undefined
+	///   is valid and holds the actual length of the plaintext recovered. The result is undefined
 	///   if decryption failed. If DecodingResult::isValidCoding is false, then DecodingResult::messageLength
 	///   is undefined.
 	/// \pre <tt>COUNTOF(plaintext) == MaxPlaintextLength(ciphertextLength)</tt> ensures the output
@@ -2641,7 +2641,7 @@ public:
 	/// \param parameters a set of NameValuePairs to initialize this object
 	/// \return the result of the decryption operation
 	/// \details If DecodingResult::isValidCoding is true, then DecodingResult::messageLength
-	///   is valid and holds the the actual length of the plaintext recovered. The result is undefined
+	///   is valid and holds the actual length of the plaintext recovered. The result is undefined
 	///   if decryption failed. If DecodingResult::isValidCoding is false, then DecodingResult::messageLength
 	///   is undefined.
 	/// \pre <tt>COUNTOF(plaintext) == MaxPlaintextLength(ciphertextLength)</tt> ensures the output
@@ -2715,7 +2715,7 @@ public:
 	virtual bool AllowNonrecoverablePart() const =0;
 
 	/// \brief Determines whether the signature must be input before the message
-	/// \return true if the signature must be input before the message during verifcation
+	/// \return true if the signature must be input before the message during verification
 	/// \details if SignatureUpfront() returns true, then you must input the signature before the message
 	///   during verification. Otherwise you can input the signature at anytime.
 	virtual bool SignatureUpfront() const {return false;}
@@ -2754,7 +2754,7 @@ public:
 	/// \brief Create a new HashTransformation to accumulate the message to be signed
 	/// \param rng a RandomNumberGenerator derived class
 	/// \return a pointer to a PK_MessageAccumulator
-	/// \details NewSignatureAccumulator() can be used with all signing methods. Sign() will autimatically delete the
+	/// \details NewSignatureAccumulator() can be used with all signing methods. Sign() will automatically delete the
 	///   accumulator pointer. The caller is responsible for deletion if a method is called that takes a reference.
 	virtual PK_MessageAccumulator * NewSignatureAccumulator(RandomNumberGenerator &rng) const =0;
 
@@ -2817,7 +2817,7 @@ public:
 
 	/// \brief Create a new HashTransformation to accumulate the message to be verified
 	/// \return a pointer to a PK_MessageAccumulator
-	/// \details NewVerificationAccumulator() can be used with all verification methods. Verify() will autimatically delete
+	/// \details NewVerificationAccumulator() can be used with all verification methods. Verify() will automatically delete
 	///   the accumulator pointer. The caller is responsible for deletion if a method is called that takes a reference.
 	virtual PK_MessageAccumulator * NewVerificationAccumulator() const =0;
 
@@ -2927,7 +2927,7 @@ public:
 	/// \param otherPublicKey a byte buffer with the other party's public key in this domain
 	/// \param validateOtherPublicKey a flag indicating if the other party's public key should be validated
 	/// \return true upon success, false in case of failure
-	/// \details Agree() derives an agreed value from your private keys and couterparty's public keys.
+	/// \details Agree() derives an agreed value from your private keys and counterparty's public keys.
 	/// \details The other party's public key is validated by default. If you have previously validated the
 	///   static public key, use <tt>validateStaticOtherPublicKey=false</tt> to save time.
 	/// \pre <tt>COUNTOF(agreedValue) == AgreedValueLength()</tt>
@@ -3016,7 +3016,7 @@ public:
 	/// \param ephemeralOtherPublicKey a byte buffer with the other party's ephemeral public key in this domain
 	/// \param validateStaticOtherPublicKey a flag indicating if the other party's public key should be validated
 	/// \return true upon success, false in case of failure
-	/// \details Agree() derives an agreed value from your private keys and couterparty's public keys.
+	/// \details Agree() derives an agreed value from your private keys and counterparty's public keys.
 	/// \details The other party's ephemeral public key is validated by default. If you have previously validated
 	///   the static public key, use <tt>validateStaticOtherPublicKey=false</tt> to save time.
 	/// \pre <tt>COUNTOF(agreedValue) == AgreedValueLength()</tt>
@@ -3141,7 +3141,7 @@ public:
 };
 #endif
 
-/// \brief Exception thrown when an ASN.1 BER decoing error is encountered
+/// \brief Exception thrown when an ASN.1 BER decoding error is encountered
 class CRYPTOPP_DLL BERDecodeErr : public InvalidArgument
 {
 public:
