@@ -90,7 +90,7 @@ public:
 
 	void SetVertexShaderConstant( int vertexReg, int constantVar );
 
-	// set rgb components of constant from a color parm and give an explicit w value
+	// set rgb components of constant from a color param and give an explicit w value
 	void SetPixelShaderConstant_W( int pixelReg, int constantVar, float fWValue );
 
 	// GR - fix for const/lerp issues
