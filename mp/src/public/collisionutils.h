@@ -65,7 +65,7 @@ bool ComputeIntersectionBarycentricCoordinates( const Ray_t& ray,
 //
 // IntersectRayWithRay
 //
-// Returns whether or not there was an intersection.  The "t" paramter is the
+// Returns whether or not there was an intersection.  The "t" parameter is the
 // distance along ray0 and the "s" parameter is the distance along ray1.  If 
 // the two lines to not intersect the "t" and "s" represent the closest approach.
 // "t" and "s" will not change if the rays are parallel.
