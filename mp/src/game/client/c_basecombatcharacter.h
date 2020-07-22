@@ -84,7 +84,7 @@ public:
 
 protected:
 
-	int			m_bloodColor;			// color of blood particless
+	int			m_bloodColor;			// color of blood particles
 
 private:
 	bool				ComputeLOS( const Vector &vecEyePosition, const Vector &vecTarget ) const;
