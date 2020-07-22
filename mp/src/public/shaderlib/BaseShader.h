@@ -49,7 +49,7 @@ enum ShaderMaterialVars_t
 };
 
 
-// Alpha belnd mode enums. Moved from basevsshader
+// Alpha blend mode enums. Moved from basevsshader
 enum BlendType_t
 {
 	// no alpha blending
@@ -264,7 +264,7 @@ class CBasePerMaterialContextData								// shaders can keep per material data i
 {
  public:
 	uint32 m_nVarChangeID;
-	bool m_bMaterialVarsChanged;							// set by mat system when material vars change. shader should rehtink and then clear the var
+	bool m_bMaterialVarsChanged;							// set by mat system when material vars change. shader should rethink and then clear the var
 
 	FORCEINLINE CBasePerMaterialContextData( void )
 	{
