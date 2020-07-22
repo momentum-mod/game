@@ -159,14 +159,14 @@ Navigation_t CAI_Pathfinder::ComputeWaypointType( CAI_Node **ppNodes, int parent
 		}
 	}
 
-	AssertMsg( navType != NAV_NONE, "Pathfinder appears to have output a path with consecutive nodes thate are not actually connected\n" );
+	AssertMsg( navType != NAV_NONE, "Pathfinder appears to have output a path with consecutive nodes that are not actually connected\n" );
 
 	return navType;
 }
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Given an array of parentID's and endID, contruct a linked 
+// Purpose: Given an array of parentID's and endID, construct a linked 
 //			list of waypoints through those parents
 //-----------------------------------------------------------------------------
 AI_Waypoint_t* CAI_Pathfinder::MakeRouteFromParents( int *parentArray, int endID ) 
@@ -244,7 +244,7 @@ bool CAI_Pathfinder::IsLinkStillStale(int moveType, CAI_Link *nodeLink)
 		m_flLastStaleLinkCheckTime = gpGlobals->curtime;
 	}
 	
-	// Test movement, if suceeds, clear the stale bit
+	// Test movement, if succeeds, clear the stale bit
 	if (CheckStaleRoute(GetNetwork()->GetNode(nodeLink->m_iSrcID)->GetPosition(GetHullType()),
 		GetNetwork()->GetNode(nodeLink->m_iDestID)->GetPosition(GetHullType()), moveType))
 	{
@@ -607,7 +607,7 @@ bool CAI_Pathfinder::IsLinkUsable(CAI_Link *pLink, int startID)
 		const char *pszAllowUse = STRING( pDynamicLink->m_strAllowUse );
 		if ( pDynamicLink->m_bInvertAllow )
 		{
-			// Exlude only the specified entity name or classname
+			// Exclude only the specified entity name or classname
 			if ( GetOuter()->NameMatches(pszAllowUse) || GetOuter()->ClassMatches( pszAllowUse ) )
 				return false;
 		}
@@ -660,7 +660,7 @@ bool CAI_Pathfinder::IsLinkUsable(CAI_Link *pLink, int startID)
 	}
 
 	// --------------------------------------------------------------------------
-	// Check if NPC has a reason not to use the desintion node
+	// Check if NPC has a reason not to use the destination node
 	// --------------------------------------------------------------------------
 	if (GetOuter()->IsUnusableNode(endID, pEndNode->GetHint()))
 	{
@@ -698,7 +698,7 @@ bool CAI_Pathfinder::IsLinkUsable(CAI_Link *pLink, int startID)
 
 static int NPCBuildFlags( CAI_BaseNPC *pNPC, const Vector &vecOrigin )
 {
-	// If vecOrigin the the npc's position and npc is climbing only climb nodes allowed
+	// If vecOrigin is the npc's position and npc is climbing only climb nodes allowed
 	if (pNPC->GetLocalOrigin() == vecOrigin && pNPC->GetNavType() == NAV_CLIMB) 
 	{
 		return bits_BUILD_CLIMB;
@@ -875,7 +875,7 @@ AI_Waypoint_t *CAI_Pathfinder::BuildComplexRoute( Navigation_t navType, const Ve
 			return new AI_Waypoint_t( vEnd, flYaw, navType, endFlags, nodeID );
 		}
 	
-		// ...or the vEnd is thegoal and I'm within tolerance, just move to vEnd
+		// ...or the vEnd is the goal and I'm within tolerance, just move to vEnd
 		if ( (buildFlags & bits_BUILD_GET_CLOSE) && 
 			 (endFlags & bits_WP_TO_GOAL) && 
 			 moveTrace.flDistObstructed <= goalTolerance ) 
@@ -936,7 +936,7 @@ AI_Waypoint_t *CAI_Pathfinder::BuildComplexRoute( Navigation_t navType, const Ve
 // Purpose: Attempts to build a jump route between vStart
 //			and vEnd, ignoring entity pTarget
 // Input  :
-// Output : Returns a route if sucessful or NULL if no local route was possible
+// Output : Returns a route if successful or NULL if no local route was possible
 //-----------------------------------------------------------------------------
 AI_Waypoint_t *CAI_Pathfinder::BuildJumpRoute(const Vector &vStart, const Vector &vEnd, 
 	const CBaseEntity *pTarget, int endFlags, int nodeID, int buildFlags, float flYaw)
@@ -950,7 +950,7 @@ AI_Waypoint_t *CAI_Pathfinder::BuildJumpRoute(const Vector &vStart, const Vector
 // Purpose: Attempts to build a climb route between vStart
 //			and vEnd, ignoring entity pTarget
 // Input  :
-// Output : Returns a route if sucessful or NULL if no climb route was possible
+// Output : Returns a route if successful or NULL if no climb route was possible
 //-----------------------------------------------------------------------------
 AI_Waypoint_t *CAI_Pathfinder::BuildClimbRoute(const Vector &vStart, const Vector &vEnd, const CBaseEntity *pTarget, int endFlags, int nodeID, int buildFlags, float flYaw)
 {
@@ -962,9 +962,9 @@ AI_Waypoint_t *CAI_Pathfinder::BuildClimbRoute(const Vector &vStart, const Vecto
 
 //-----------------------------------------------------------------------------
 // Purpose: Attempts to build a ground route between vStart
-//			and vEnd, ignoring entity pTarget the the given tolerance
+//			and vEnd, ignoring entity pTarget with the given tolerance
 // Input  :
-// Output : Returns a route if sucessful or NULL if no ground route was possible
+// Output : Returns a route if successful or NULL if no ground route was possible
 //-----------------------------------------------------------------------------
 AI_Waypoint_t *CAI_Pathfinder::BuildGroundRoute(const Vector &vStart, const Vector &vEnd, 
 	const CBaseEntity *pTarget, int endFlags, int nodeID, int buildFlags, float flYaw, float goalTolerance)
@@ -976,9 +976,9 @@ AI_Waypoint_t *CAI_Pathfinder::BuildGroundRoute(const Vector &vStart, const Vect
 
 //-----------------------------------------------------------------------------
 // Purpose: Attempts to build a fly route between vStart
-//			and vEnd, ignoring entity pTarget the the given tolerance
+//			and vEnd, ignoring entity pTarget with the given tolerance
 // Input  :
-// Output : Returns a route if sucessful or NULL if no ground route was possible
+// Output : Returns a route if successful or NULL if no ground route was possible
 //-----------------------------------------------------------------------------
 AI_Waypoint_t *CAI_Pathfinder::BuildFlyRoute(const Vector &vStart, const Vector &vEnd, 
 	const CBaseEntity *pTarget, int endFlags, int nodeID, int buildFlags, float flYaw, float goalTolerance)
@@ -992,7 +992,7 @@ AI_Waypoint_t *CAI_Pathfinder::BuildFlyRoute(const Vector &vStart, const Vector 
 // Purpose: Attempts to build a route between vStart and vEnd, requesting the
 //			pNPCBlocker to get out of the way
 // Input  :
-// Output : Returns a route if sucessful or NULL if giveway failed
+// Output : Returns a route if successful or NULL if giveway failed
 //-----------------------------------------------------------------------------
 bool CAI_Pathfinder::CanGiveWay( const Vector& vStart, const Vector& vEnd, CBaseEntity *pBlocker)
 {
@@ -1033,10 +1033,10 @@ bool CAI_Pathfinder::CanGiveWay( const Vector& vStart, const Vector& vEnd, CBase
 
 //-----------------------------------------------------------------------------
 // Purpose: Attempts to build a triangulation route between vStart
-//			and vEnd, ignoring entity pTarget the the given tolerance and
+//			and vEnd, ignoring entity pTarget with the given tolerance and
 //			triangulating around a blocking object at blockDist
 // Input  :
-// Output : Returns a route if sucessful or NULL if no local route was possible
+// Output : Returns a route if successful or NULL if no local route was possible
 //-----------------------------------------------------------------------------
 AI_Waypoint_t *CAI_Pathfinder::BuildTriangulationRoute(
 	  const Vector &vStart, // from where
@@ -1193,7 +1193,7 @@ inline int ClosestPointToPosition( const Vector &vecPosition, Vector *vecPoints,
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Find which winding through a circular list is shortest in physical distance travelled
+// Purpose: Find which winding through a circular list is shortest in physical distance traveled
 // Input  : &vecStart - Where we started from
 //			nStartPoint - Starting index into the points
 //			nEndPoint - Ending index into the points
@@ -1311,7 +1311,7 @@ AI_Waypoint_t *CAI_Pathfinder::BuildOBBAvoidanceRoute(	const Vector &vStart, con
 
 //-----------------------------------------------------------------------------
 // Purpose: Attempts to build a local route (not using nodes) between vStart
-//			and vEnd, ignoring entity pTarget the the given tolerance
+//			and vEnd, ignoring entity pTarget with the given tolerance
 // Input  :
 // Output : Returns a route if successful or NULL if no local route was possible
 //-----------------------------------------------------------------------------
@@ -1468,7 +1468,7 @@ AI_Waypoint_t *CAI_Pathfinder::BuildRadialRoute( const Vector &vStartPos, const 
 	// Make sure we have a minimum distance between nodes.  For the given 
 	// radius, calculate the angular step necessary for this distance.
 	// IMPORTANT: flStepDist must be large enough that given the 
-	//			  NPC's movment speed that it can come to a stop
+	//			  NPC's movement speed that it can come to a stop
 	// ------------------------------------------------------------------------------
 	float flAngleStep = 2.0f * atan((0.5f*flStepDist)/flRadius);	
 
@@ -1609,7 +1609,7 @@ bool CAI_Pathfinder::CheckStaleNavTypeRoute( Navigation_t navType, const Vector 
 // Purpose: Checks if a local route (not using nodes) between vStart
 //			and vEnd exists using the moveType
 // Input  :
-// Output : Returns a route if sucessful or NULL if no local route was possible
+// Output : Returns a route if successful or NULL if no local route was possible
 //-----------------------------------------------------------------------------
 bool CAI_Pathfinder::CheckStaleRoute(const Vector &vStart, const Vector &vEnd, int moveTypes)
 {
@@ -1754,9 +1754,9 @@ AI_Waypoint_t *CAI_Pathfinder::BuildNearestNodeRoute( const Vector &vGoal, bool 
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Attemps to build a node route between vStart and vEnd
+// Purpose: Attempts to build a node route between vStart and vEnd
 // Input  :
-// Output : Returns a route if sucessful or NULL if no node route was possible
+// Output : Returns a route if successful or NULL if no node route was possible
 //-----------------------------------------------------------------------------
 
 AI_Waypoint_t *CAI_Pathfinder::BuildNodeRoute(const Vector &vStart, const Vector &vEnd, int buildFlags, float goalTolerance)
@@ -1867,7 +1867,7 @@ bool CAI_Pathfinder::TestTriangulationRoute( Navigation_t navType, const Vector&
 
 //-----------------------------------------------------------------------------
 // Purpose: tries to overcome local obstacles by triangulating a path around them.
-// Input  : flDist is is how far the obstruction that we are trying
+// Input  : flDist is how far the obstruction that we are trying
 //			to triangulate around is from the npc
 // Output :
 //-----------------------------------------------------------------------------
