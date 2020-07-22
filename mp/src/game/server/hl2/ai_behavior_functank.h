@@ -35,7 +35,7 @@ class CAI_FuncTankBehavior : public CAI_SimpleBehavior
 	DECLARE_DATADESC();
 	
 public:
-	// Contructor/Deconstructor
+	// Constructor/Deconstructor
 	CAI_FuncTankBehavior();
 	~CAI_FuncTankBehavior();
 
