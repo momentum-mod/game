@@ -1,10 +1,10 @@
 // adv-simd.h - written and placed in the public domain by Jeffrey Walton
 //
 //    The SIMD based implementations for ciphers that use SSE, NEON and Power7
-//    have a commom pattern. Namely, they have a specialized implementation of
+//    have a common pattern. Namely, they have a specialized implementation of
 //    AdvancedProcessBlocks which processes multiple block using hardware
 //    acceleration. After several implementations we noticed a lot of copy and
-//    paste occuring. adv-simd.h provides a template to avoid the copy and paste.
+//    paste occurring. adv-simd.h provides a template to avoid the copy and paste.
 //
 //    There are 8 templates provided in this file. The number following the
 //    function name is the block size of the cipher. The name following that
