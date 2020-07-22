@@ -115,7 +115,7 @@ private:
 	void				JumpMoveLimit( const Vector &vecStart, const Vector &vecEnd, unsigned int collisionMask, const CBaseEntity *pTarget, AIMoveTrace_t* pMoveTrace) const;
 	void				ClimbMoveLimit( const Vector &vecStart, const Vector &vecEnd, const CBaseEntity *pTarget, AIMoveTrace_t* pMoveTrace) const;
 
-	// A floorPoint that is useful only in the contect of iterative movement
+	// A floorPoint that is useful only in the context of iterative movement
 	bool				IterativeFloorPoint( const Vector &vecStart, unsigned int collisionMask, Vector *pVecResult ) const;
 	bool				IterativeFloorPoint( const Vector &vecStart, unsigned int collisionMask, float flAddedStep, Vector *pVecResult ) const;
 	bool 				IsJumpLegal( const Vector &startPos, const Vector &apex, const Vector &endPos ) const;
