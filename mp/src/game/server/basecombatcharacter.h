@@ -428,7 +428,7 @@ private:
 	void				DestroyGlowEffect( void );
 
 protected:
-	int			m_bloodColor;			// color of blood particless
+	int			m_bloodColor;			// color of blood particles
 
 	// -------------------
 	// combat ability data
