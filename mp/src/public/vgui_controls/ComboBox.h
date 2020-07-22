@@ -52,7 +52,7 @@ public:
 	ComboBox(Panel *parent, const char *panelName, int numLines, bool allowEdit);
 	~ComboBox();
 
-	// functions designed to be overriden
+	// functions designed to be overridden
 	virtual void OnShowMenu(Menu *menu) {}
 	virtual void OnHideMenu(Menu *menu) {}
 
@@ -86,7 +86,7 @@ public:
 	// Sorts the items in the list - FIXME does nothing
 	virtual void SortItems();
 
-	// Set the visiblity of the drop down menu button.
+	// Set the visibility of the drop down menu button.
 	virtual void SetDropdownButtonVisible(bool state);
 
 	// Return true if the combobox current has the dropdown menu open
