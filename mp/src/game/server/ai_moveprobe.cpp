@@ -396,7 +396,7 @@ bool CAI_MoveProbe::CheckStep( const CheckStepArgs_t &args, CheckStepResult_t *p
 	AI_PROFILE_SCOPE_END();
 
 	// Checks to see if the thing we're on is a *type* of thing we
-	// are capable of standing on. Always true ffor our current ground ent
+	// are capable of standing on. Always true for our current ground ent
 	// otherwise we'll be stuck forever
 	CBaseEntity *pFloor = trace.m_pEnt;
 	if ( pFloor != GetOuter()->GetGroundEntity() && !CanStandOn( pFloor ) )
@@ -743,7 +743,7 @@ void CAI_MoveProbe::FlyMoveLimit( const Vector &vecStart, const Vector &vecEnd,
 		{
 			if ( pTarget == pBlocker )
 			{
-				// Colided with target entity, movement is ok
+				// Collided with target entity, movement is ok
 				pMoveTrace->vEndPosition = tr.endpos;
 				return;
 			}
@@ -768,7 +768,7 @@ void CAI_MoveProbe::FlyMoveLimit( const Vector &vecStart, const Vector &vecEnd,
 //			vecStart to vecEnd ignoring collisions with pTarget
 //
 //			if the jump fails, returns the distance
-//			that can be travelled before an obstacle is hit
+//			that can be traveled before an obstacle is hit
 //-----------------------------------------------------------------------------
 void CAI_MoveProbe::JumpMoveLimit( const Vector &vecStart, const Vector &vecEnd, 
 	unsigned int collisionMask, const CBaseEntity *pTarget, AIMoveTrace_t *pMoveTrace ) const
@@ -874,7 +874,7 @@ void CAI_MoveProbe::JumpMoveLimit( const Vector &vecStart, const Vector &vecEnd,
 
 				TraceHull( vecTest, nextPos, collisionMask, &trace );
 
-				if (trace.startsolid || trace.fraction < 0.99) // FIXME: getting inconsistant trace fractions, revisit after Jay resolves collision eplisons
+				if (trace.startsolid || trace.fraction < 0.99) // FIXME: getting inconsistent trace fractions, revisit after Jay resolves collision epsilons
 				{
 					// NDebugOverlay::Box( trace.endpos, WorldAlignMins(), WorldAlignMaxs(), 255, 255, 0, 0, 10.0 );
 					
@@ -1071,7 +1071,7 @@ bool CAI_MoveProbe::MoveLimit( Navigation_t navType, const Vector &vecStart,
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Returns a jump lauch velocity for the current target entity
+// Purpose: Returns a jump launch velocity for the current target entity
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
