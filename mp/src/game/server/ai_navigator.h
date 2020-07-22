@@ -147,7 +147,7 @@ enum AI_NavPathProgress_t
 
 struct AI_NavGoal_t
 {
-	// Goal is unspecifed, or not a specific location
+	// Goal is unspecified, or not a specific location
 	AI_NavGoal_t( GoalType_t    type	  = GOALTYPE_INVALID,
 				  Activity		activity  = AIN_DEF_ACTIVITY, 
 				  float			tolerance = AIN_DEF_TOLERANCE,
@@ -193,14 +193,14 @@ struct AI_NavGoal_t
 	Vector 			dest;
 	AI_PathNode_t	destNode;
 
-	// The activity to use, or none if a previosly set activity should be used
+	// The activity to use, or none if a previously set activity should be used
 	Activity		activity;
 	
 	// The predicted activity used after arrival
 	Activity		arrivalActivity;
 	int				arrivalSequence;
 
-	// The tolerance of success, or none if a previosly set tolerance should be used
+	// The tolerance of success, or none if a previously set tolerance should be used
 	float			tolerance;
 
 	// How far to permit an initial simplification of path
@@ -216,8 +216,8 @@ struct AI_NavGoal_t
 
 //-------------------------------------
 // Purpose: Used to describe rules for advance on a (fly) path. There's nothing
-// 			specifically "flying" about it, other than it came from an attempte
-//			to consolodate duplicated code in the various fliers. It may serve
+// 			specifically "flying" about it, other than it came from an attempt
+//			to consolidate duplicated code in the various fliers. It may serve
 //			a more general purpose in the future. The constructor takes those
 //			arguments that can usually be specified just once (as in a 
 //			local static constructor)
@@ -266,7 +266,7 @@ struct AI_ProgressFlyPathParams_t
 //-----------------------------------------------------------------------------
 // CAI_Navigator
 //
-// Purpose: Implements pathing and path navigaton logic
+// Purpose: Implements pathing and path navigation logic
 //-----------------------------------------------------------------------------
 
 class CAI_Navigator : public CAI_Component,
