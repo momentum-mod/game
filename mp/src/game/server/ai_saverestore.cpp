@@ -94,7 +94,7 @@ public:
 
 	void ReadRestoreHeaders( IRestore *pRestore )
 	{
-		// No reason why any future version shouldn't try to retain backward compatability. The default here is to not do so.
+		// No reason why any future version shouldn't try to retain backward compatibility. The default here is to not do so.
 		short version;
 		pRestore->ReadShort( &version );
 		m_fDoLoad = ( version == AI_SAVE_RESTORE_VERSION );
