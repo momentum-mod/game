@@ -220,7 +220,7 @@ private:
 	// Computes the surrounding collision bounds based on whatever algorithm we want...
 	void ComputeCollisionSurroundingBox( bool bUseVPhysics, Vector *pVecWorldMins, Vector *pVecWorldMaxs );
 
-	// Computes the surrounding collision bounds from the the OBB (not vphysics)
+	// Computes the surrounding collision bounds from the OBB (not vphysics)
 	void ComputeRotationExpandedBounds( Vector *pVecWorldMins, Vector *pVecWorldMaxs );
 
 	// Computes the surrounding collision bounds based on whatever algorithm we want...
