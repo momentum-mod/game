@@ -766,7 +766,7 @@ struct dleaf_version_0_t
 	unsigned short	numleafbrushes;
 	short			leafWaterDataID; // -1 for not in water
 
-	// Precaculated light info for entities.
+	// Precalculated light info for entities.
 	CompressedLightCube m_AmbientLighting;
 };
 
@@ -794,7 +794,7 @@ struct dleaf_t
 	short			leafWaterDataID; // -1 for not in water
 
 	// NOTE: removed this for version 1 and moved into separate lump "LUMP_LEAF_AMBIENT_LIGHTING" or "LUMP_LEAF_AMBIENT_LIGHTING_HDR"
-	// Precaculated light info for entities.
+	// Precalculated light info for entities.
 //	CompressedLightCube m_AmbientLighting;
 };
 #pragma warning( default:4201 )	// C4201: nonstandard extension used: nameless struct/union
