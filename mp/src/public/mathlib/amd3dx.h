@@ -69,7 +69,7 @@
               ex) p_pfrcp (MM7,MM6)
 
  NOTE: Not all instruction macros, nor all possible
-       combinations of operands have been explicitely
+       combinations of operands have been explicitly
        tested. If any errors are found, please report
        them.
 
@@ -764,7 +764,7 @@
 }
 
 /* Prefetch with a short offset, < 127 or > -127
-   Carefull!  Doesn't check for your offset being
+   Careful!  Doesn't check for your offset being
    in range. */
 
 #define PREFETCHM(src,off)					    \
