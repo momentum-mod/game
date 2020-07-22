@@ -30,7 +30,7 @@
 // Accuracy improved by O.D. (punkfloyd@rocketmail.com)
 // Used with Permission.
 
-// a compressed unit vector. reasonable fidelty for unit
+// a compressed unit vector. reasonable fidelity for unit
 // vectors in a 16 bit package. Good enough for surface normals
 // we hope.
 class cUnitVector // : public c3dMathObject
