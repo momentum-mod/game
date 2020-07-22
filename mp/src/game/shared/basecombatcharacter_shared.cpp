@@ -594,7 +594,7 @@ bool CBaseCombatCharacter::IsLookingTowards( const Vector &target, float cosTole
 
 //-----------------------------------------------------------------------------
 /**
-	Returns true if we are looking towards something within a tolerence determined 
+	Returns true if we are looking towards something within a tolerance determined 
 	by our field of view
 */
 bool CBaseCombatCharacter::IsInFieldOfView( CBaseEntity *entity ) const
@@ -627,7 +627,7 @@ bool CBaseCombatCharacter::IsInFieldOfView( CBaseEntity *entity ) const
 
 //-----------------------------------------------------------------------------
 /**
-	Returns true if we are looking towards something within a tolerence determined 
+	Returns true if we are looking towards something within a tolerance determined 
 	by our field of view
 */
 bool CBaseCombatCharacter::IsInFieldOfView( const Vector &pos ) const
