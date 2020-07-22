@@ -1,7 +1,7 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose:		A link that can be turned on and off.  Unlike normal links
-//				dyanimc links must be entities so they and receive messages.
+//				dynamic links must be entities so they and receive messages.
 //				They update the state of the actual links.  Allows us to save
 //				a lot of memory by not making all links into entities
 //
