@@ -1179,7 +1179,7 @@ bool CTraceFilterMelee::ShouldHitEntity( IHandleEntity *pHandleEntity, int conte
 //------------------------------------------------------------------------------
 CBaseEntity *CBaseCombatCharacter::CheckTraceHullAttack( const Vector &vStart, const Vector &vEnd, const Vector &mins, const Vector &maxs, int iDamage, int iDmgType, float flForceScale, bool bDamageAnyNPC )
 {
-	// Handy debuging tool to visualize HullAttack trace
+	// Handy debugging tool to visualize HullAttack trace
 	if ( ai_show_hull_attacks.GetBool() )
 	{
 		float length	 = (vEnd - vStart ).Length();
@@ -1340,7 +1340,7 @@ Vector CBaseCombatCharacter::CalcDamageForceVector( const CTakeDamageInfo &info 
 			// victim gets a slightly different trajectory. 
 			// This simulates features that usually vary from
 			// person-to-person variables such as bodyweight,
-			// which are all indentical for characters using the same model.
+			// which are all identical for characters using the same model.
 			float scale = random->RandomFloat( 0.85, 1.15 );
 			Vector force = info.GetDamageForce();
 			force.x *= scale;
@@ -2096,7 +2096,7 @@ void CBaseCombatCharacter::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 		if ( m_hActiveWeapon )
 		{
 			m_hActiveWeapon->Holster();
-			// FIXME: isn't this handeled by the weapon?
+			// FIXME: isn't this handled by the weapon?
 			m_hActiveWeapon->AddEffects( EF_NODRAW );
 		}
 		SetActiveWeapon( pWeapon );
@@ -3091,7 +3091,7 @@ void CBaseCombatCharacter::VPhysicsShadowCollision( int index, gamevcollisioneve
 //-----------------------------------------------------------------------------	
 void RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc, float flRadius, int iClassIgnore, CBaseEntity *pEntityIgnore )
 {
-	// NOTE: I did this this way so I wouldn't have to change a whole bunch of
+	// NOTE: I did it this way so I wouldn't have to change a whole bunch of
 	// code unnecessarily. We need TF2 specific rules for RadiusDamage, so I moved
 	// the implementation of radius damage into gamerules. All existing code calls
 	// this method, which calls the game rules method
