@@ -402,7 +402,7 @@ protected:
 
 	inline bool CanSpeakWhileScripting();
 
-	// Whether we are a vital ally (useful for wrting Classify() for classes that are only sometimes vital, 
+	// Whether we are a vital ally (useful for writing Classify() for classes that are only sometimes vital, 
 	// such as the Lone Vort in Ep2.) The usual means by which any other function should determine if a character
 	// is vital is to determine Classify() == CLASS_PLAYER_ALLY_VITAL. Do not use this function outside that
 	// context. 
