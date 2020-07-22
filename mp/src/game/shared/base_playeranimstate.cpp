@@ -584,7 +584,7 @@ void CBasePlayerAnimState::EstimateYaw()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Override for backpeddling
+// Purpose: Override for backpedaling
 // Input  : dt - 
 //-----------------------------------------------------------------------------
 void CBasePlayerAnimState::ComputePoseParam_MoveYaw( CStudioHdr *pStudioHdr )
@@ -770,7 +770,7 @@ int CBasePlayerAnimState::ConvergeAngles( float goal,float maxrate, float maxgap
 
 	if ( anglediffabs < maxmove )
 	{
-		// we are close enought, just set the final value
+		// we are close enough, just set the final value
 		current = goal;
 	}
 	else
