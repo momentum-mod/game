@@ -645,7 +645,7 @@ public:
 
 		if ( !p )
 		{
-			Error( "AI_ResponseSystem:  Unxpected TokenWaiting() with NULL buffer in %p", m_ScriptStack[ 0 ].name );
+			Error( "AI_ResponseSystem:  Unexpected TokenWaiting() with NULL buffer in %p", m_ScriptStack[ 0 ].name );
 			return false;
 		}
 
@@ -2369,7 +2369,7 @@ int CResponseSystem::ParseOneCriterion( const char *criterionName )
 				}
 				else
 				{
-					ResponseWarning( "Skipping unrecongized subcriterion '%s' in '%s'\n", m_token, criterionName );
+					ResponseWarning( "Skipping unrecognized subcriterion '%s' in '%s'\n", m_token, criterionName );
 				}
 			}
 			continue;
@@ -2387,7 +2387,7 @@ int CResponseSystem::ParseOneCriterion( const char *criterionName )
 		{
 			Assert( newCriterion.subcriteria.Count() == 0 );
 
-			// Assume it's the math info for a non-subcriteria resposne
+			// Assume it's the math info for a non-subcriteria response
 			Q_strncpy( key, m_token, sizeof( key ) );
 			ParseToken();
 			Q_strncpy( value, m_token, sizeof( value ) );
@@ -2953,7 +2953,7 @@ public:
 			}
 			else
 			{
-				// Custom reponse rules will manage/reload themselves - remove them.
+				// Custom response rules will manage/reload themselves - remove them.
 				m_InstancedSystems.RemoveAt( i );
 			}
 		}
@@ -3065,7 +3065,7 @@ public:
 	
 	void ReadRestoreHeaders( IRestore *pRestore )
 	{
-		// No reason why any future version shouldn't try to retain backward compatability. The default here is to not do so.
+		// No reason why any future version shouldn't try to retain backward compatibility. The default here is to not do so.
 		short version;
 		pRestore->ReadShort( &version );
 		m_fDoLoad = ( version == RESPONSESYSTEM_SAVE_RESTORE_VERSION );
@@ -3311,7 +3311,7 @@ void CDefaultResponseSystem::Shutdown()
 	// Wipe instanced versions
 	ClearInstanced();
 
-	// Clear outselves
+	// Clear ourselves
 	Clear();
 	// IServerSystem chain
 	BaseClass::Shutdown();
