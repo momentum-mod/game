@@ -86,7 +86,7 @@ public:
 	bool				IsDeceleratingToGoal() const				{ return false; }
 
 	//---------------------------------
-	// Raw ground step forward to the specifed position
+	// Raw ground step forward to the specified position
 	//
 
 	AIMotorMoveResult_t MoveGroundStep( const Vector &newPos, CBaseEntity *pMoveTarget = NULL, float yaw = -1, bool bAsFarAsCan = true, bool bTestZ = true, AIMoveTrace_t *pTraceResult = NULL );
