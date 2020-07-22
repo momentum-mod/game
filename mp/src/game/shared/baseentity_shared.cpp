@@ -642,7 +642,7 @@ void CBaseEntity::SetPredictionRandomSeed( const CUserCmd *cmd )
 
 
 //------------------------------------------------------------------------------
-// Purpose : Base implimentation for entity handling decals
+// Purpose : Base implementation for entity handling decals
 //------------------------------------------------------------------------------
 void CBaseEntity::DecalTrace( trace_t *pTrace, char const *decalName )
 {
@@ -1240,7 +1240,7 @@ IPhysicsObject *CBaseEntity::VPhysicsInitStatic( void )
 	if ( GetSolid() == SOLID_NONE )
 		return NULL;
 
-	// create a static physics objct
+	// create a static physics object
 	IPhysicsObject *pPhysicsObject = NULL;
 	if ( GetSolid() == SOLID_BBOX )
 	{
@@ -1831,7 +1831,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 #ifdef GAME_DLL
 			UpdateShotStatistics( tr );
 
-			// For shots that don't need persistance
+			// For shots that don't need persistence
 			int soundEntChannel = ( info.m_nFlags&FIRE_BULLETS_TEMPORARY_DANGER_SOUND ) ? SOUNDENT_CHANNEL_BULLET_IMPACT : SOUNDENT_CHANNEL_UNSPECIFIED;
 
 			CSoundEnt::InsertSound( SOUND_BULLET_IMPACT, tr.endpos, 200, 0.5, this, soundEntChannel );
@@ -1846,7 +1846,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 			float flActualDamage = info.m_flDamage;
 
 			// If we hit a player, and we have player damage specified, use that instead
-			// Adrian: Make sure to use the currect value if we hit a vehicle the player is currently driving.
+			// Adrian: Make sure to use the correct value if we hit a vehicle the player is currently driving.
 			if ( iPlayerDamage )
 			{
 				if ( tr.m_pEnt->IsPlayer() )
