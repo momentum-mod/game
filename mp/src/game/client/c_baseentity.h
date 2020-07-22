@@ -1641,7 +1641,7 @@ public:
 	EHANDLE							m_hEffectEntity;
 	
 	// This is a random seed used by the networking code to allow client - side prediction code
-	//  randon number generators to spit out the same random numbers on both sides for a particular
+	//  random number generators to spit out the same random numbers on both sides for a particular
 	//  usercmd input.
 	static int						m_nPredictionRandomSeed;
 	static C_BasePlayer				*m_pPredictionPlayer;
