@@ -215,7 +215,7 @@ public:
 	Vector AverageColor(void);								// average rgb value of all pixels
 	float BrightestColor(void);								// highest vector magnitude
 
-	void Clear(float r, float g, float b, float alpha);		// set all pixels to speicifed values (0..1 nominal)
+	void Clear(float r, float g, float b, float alpha);		// set all pixels to specified values (0..1 nominal)
 
 	void ScaleRGB(float scale_factor);						// for all pixels, r,g,b*=scale_factor
 
@@ -306,10 +306,10 @@ public:
 	// dot-product weighting will be used for the filtering operation.
 	void Resample(FloatCubeMap_t &dest, float flPhongExponent);
 
-	// returns the normalized direciton vector through a given pixel of a given face
+	// returns the normalized direction vector through a given pixel of a given face
 	Vector PixelDirection(int face, int x, int y);
 
-	// returns the direction vector throught the center of a cubemap face
+	// returns the direction vector through the center of a cubemap face
 	Vector FaceNormal( int nFaceNumber );
 };
 
