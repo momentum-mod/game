@@ -31,7 +31,7 @@ public:
 	void Spawn();
 	virtual void UpdateOnRemove();
 
-	// Force our constraint entity to be trasmitted
+	// Force our constraint entity to be transmitted
 	virtual void SetTransmit( CCheckTransmitInfo *pInfo, bool bAlways );
 
 	// Clean up when the entity goes away.
