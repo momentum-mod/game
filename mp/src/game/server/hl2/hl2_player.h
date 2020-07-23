@@ -27,7 +27,7 @@ enum HL2PlayerPhysFlag_e
 {
 	// 1 -- 5 are used by enum PlayerPhysFlag_e in player.h
 
-	PFLAG_ONBARNACLE	= ( 1<<6 )		// player is hangning from the barnalce
+	PFLAG_ONBARNACLE	= ( 1<<6 )		// player is hanging from the barnacle
 };
 
 class IPhysicsPlayerController;
