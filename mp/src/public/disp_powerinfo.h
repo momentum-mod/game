@@ -2,7 +2,7 @@
 //
 // Purpose: This module defines the CPowerInfo class, which contains a 
 //          whole bunch of precalculated data for each displacement power.
-//          It holds data that indicates how to tesselate, how to access
+//          It holds data that indicates how to tessellate, how to access
 //          neighbor displacements, etc.
 //
 // $NoKeywords: $
@@ -31,7 +31,7 @@ struct DispNodeInfo_t
 	};
 
 
-	// Indicates which tesselation indices are associated with a node
+	// Indicates which tessellation indices are associated with a node
 	unsigned short	m_FirstTesselationIndex;
 	unsigned char	m_Count;
 	unsigned char	m_Flags;
@@ -40,7 +40,7 @@ struct DispNodeInfo_t
 
 // ------------------------------------------------------------------------ //
 // CTesselateWindings are used to tell what order a node needs to visit
-// vertices while tesselating.
+// vertices while tessellating.
 // ------------------------------------------------------------------------ //
 class CTesselateVert
 {
@@ -116,7 +116,7 @@ public:
 };
 
 
-// Used for referencing triangles in the fully-tesselated displacement by index.
+// Used for referencing triangles in the fully-tessellated displacement by index.
 class CTriInfo
 {
 public:
