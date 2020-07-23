@@ -67,7 +67,7 @@ FORCEINLINE const char *AdjustFileExtensionForPlatform( const char *pSourceName,
 
 // simple file classes. File I/O mode (text/binary, read/write) is based upon the subclass chosen.
 // classes with the word Required on them abort with a message if the file can't be opened.
-// destructores close the file handle, or it can be explicitly closed with the Close() method.
+// destructors close the file handle, or it can be explicitly closed with the Close() method.
 
 class CBaseFile
 {
