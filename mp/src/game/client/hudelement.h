@@ -133,7 +133,7 @@ inline bool RenderGroupLessFunc( CHudElement * const &lhs, CHudElement * const &
 }
 
 // hud elements declare themselves to be part of a hud render group, by name
-// we register with each hudelement a list of indeces of groups they are in
+// we register with each hudelement a list of indices of groups they are in
 // then they can query by index the state of their render group
 class CHudRenderGroup
 {
