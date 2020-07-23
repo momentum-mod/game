@@ -40,7 +40,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // pStruct = the base structure of the datatable this variable is in (like C_BaseEntity)
-// pOut    = the variable that this this proxy represents (like C_BaseEntity::m_SomeValue).
+// pOut    = the variable that this proxy represents (like C_BaseEntity::m_SomeValue).
 //
 // Convert the network-standard-type value in m_Value into your own format in pStruct/pOut.
 //-----------------------------------------------------------------------------
