@@ -546,7 +546,7 @@ inline void SendTable::SetHasPropsEncodedAgainstTickcount( bool bState )
 //    typedef CBaseEntity BaseClass;
 //    };
 
-// If you don't want to interit a base class's properties, use BEGIN_SEND_TABLE_NOBASE.
+// If you don't want to inherit a base class's properties, use BEGIN_SEND_TABLE_NOBASE.
 // ------------------------------------------------------------------------------------------------------ //
 #define BEGIN_SEND_TABLE(className, tableName) \
 	BEGIN_SEND_TABLE_NOBASE(className, tableName) \
