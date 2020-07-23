@@ -18,7 +18,7 @@ class CPhysCollisionEntry;
 struct dmodel_t;
 
 
-// This provides the template functions that the engine's tessellation code needs
+// This provides the template functions that the engine's tesselation code needs
 // so we can share the code in VBSP.
 class CVBSPTesselateHelper : public CBaseTesselateHelper
 {
