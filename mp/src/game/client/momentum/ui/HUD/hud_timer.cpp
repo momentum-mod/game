@@ -106,6 +106,9 @@ void CHudTimer::Reset()
     FIND_LOCALIZATION(m_wNoTimer, "#MOM_NoTimer");
     FIND_LOCALIZATION(m_wStageNum, "#MOM_Stage");
     FIND_LOCALIZATION(m_wCheckpointNum, "#MOM_Checkpoint");
+
+    // ensure timer StatusColor is reset upon respawn
+    g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("TimerColorReset");
 }
 
 void CHudTimer::FireGameEvent(IGameEvent* event)
