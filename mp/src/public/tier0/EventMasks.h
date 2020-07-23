@@ -233,7 +233,7 @@ typedef union EVENT_MASK(tc_ms_xfer)
 {
     struct 
     {
-        uint16 CISC:1; // A TC to MS transfer ocurred } }
+        uint16 CISC:1; // A TC to MS transfer occurred } }
     };
     uint16 flat;
 }EVENT_MASK(tc_ms_xfer);
