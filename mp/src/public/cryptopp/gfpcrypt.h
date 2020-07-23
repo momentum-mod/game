@@ -295,7 +295,7 @@ public:
         for (;;)
         {
             // We want qlen bits, but we support only hash functions with an output length
-            //   multiple of 8; hence, we will gather rlen bits, i.e., rolen octets.
+            //   multiple of 8; hence, we will gather rlen bits, i.e., rlen octets.
             size_t toff = 0;
             while (toff < rlen)
             {
@@ -630,7 +630,7 @@ struct DL_Keys_DSA
 /// \tparam H HashTransformation derived class
 /// \details The class is named DSA2 instead of DSA for backwards compatibility because
 ///   DSA was a non-template class.
-/// \details DSA default method GenerateRandom uses a 2048-bit modulus and a 224-bit subgoup by default.
+/// \details DSA default method GenerateRandom uses a 2048-bit modulus and a 224-bit subgroup by default.
 ///   The modulus can be changed using the following code:
 /// <pre>
 ///   DSA::PrivateKey privateKey;
@@ -689,7 +689,7 @@ CRYPTOPP_DLL_TEMPLATE_CLASS DL_PrivateKey_WithSignaturePairwiseConsistencyTest<D
 /// \tparam LABEL_OCTETS flag indicating the label is octet count
 /// \details DL_EncryptionAlgorithm_Xor is based on an early P1363 draft, which itself appears to be based on an
 ///   early Certicom SEC-1 draft (or an early SEC-1 draft was based on a P1363 draft). Crypto++ 4.2 used it in its Integrated
-///   Ecryption Schemes with <tt>NoCofactorMultiplication</tt>, <tt>DHAES_MODE=false</tt> and <tt>LABEL_OCTETS=true</tt>.
+///   Encryption Schemes with <tt>NoCofactorMultiplication</tt>, <tt>DHAES_MODE=false</tt> and <tt>LABEL_OCTETS=true</tt>.
 /// \details If you need this method for Crypto++ 4.2 compatibility, then use the ECIES template class with
 ///   <tt>NoCofactorMultiplication</tt>, <tt>DHAES_MODE=false</tt> and <tt>LABEL_OCTETS=true</tt>.
 /// \details If you need this method for Bouncy Castle 1.54 and Botan 1.11 compatibility, then use the ECIES template class with
@@ -809,7 +809,7 @@ public:
 
 /// \brief Discrete Log Integrated Encryption Scheme
 /// \tparam COFACTOR_OPTION cofactor multiplication option
-/// \tparam HASH HashTransformation derived class used for key drivation and MAC computation
+/// \tparam HASH HashTransformation derived class used for key derivation and MAC computation
 /// \tparam DHAES_MODE flag indicating if the MAC includes addition context parameters such as the label
 /// \tparam LABEL_OCTETS flag indicating if the label size is specified in octets or bits
 /// \details DLIES is an Integer based Integrated Encryption Scheme (IES). The scheme combines a Key Encapsulation Method (KEM)
@@ -817,7 +817,7 @@ public:
 ///   <A HREF="http://en.wikipedia.org/wiki/ciphertext_indistinguishability">IND-CCA2</A>, which is a strong notion of security.
 ///   You should prefer an Integrated Encryption Scheme over homegrown schemes.
 /// \details The library's original implementation is based on an early P1363 draft, which itself appears to be based on an early Certicom
-///   SEC-1 draft (or an early SEC-1 draft was based on a P1363 draft). Crypto++ 4.2 used the early draft in its Integrated Ecryption
+///   SEC-1 draft (or an early SEC-1 draft was based on a P1363 draft). Crypto++ 4.2 used the early draft in its Integrated Encryption
 ///   Schemes with <tt>NoCofactorMultiplication</tt>, <tt>DHAES_MODE=false</tt> and <tt>LABEL_OCTETS=true</tt>.
 /// \details If you desire an Integrated Encryption Scheme with Crypto++ 4.2 compatibility, then use the DLIES template class with
 ///   <tt>NoCofactorMultiplication</tt>, <tt>DHAES_MODE=false</tt> and <tt>LABEL_OCTETS=true</tt>.
