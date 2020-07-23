@@ -148,7 +148,7 @@ protected:
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	// Recalculate the position of all items
 	virtual void PerformLayout();
-	// Respond when a close message is recieved.  Can be called directly to close a frame.
+	// Respond when a close message is received.  Can be called directly to close a frame.
 	virtual void OnClose();
 	// Respond to a window finishing its closure. i.e. when a fading window has fully finished its fadeout.
 	virtual void OnFinishedClose();
