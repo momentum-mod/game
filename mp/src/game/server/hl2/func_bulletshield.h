@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------------------
 // Purpose: shield that stops bullets, but not other objects
 // enabled state:	brush is visible
-// disabled staute:	brush not visible
+// disabled state:	brush not visible
 //-----------------------------------------------------------------------------
 class CFuncBulletShield : public CFuncBrush
 {
