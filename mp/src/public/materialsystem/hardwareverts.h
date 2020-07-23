@@ -7,7 +7,7 @@
 // portion (header), the latter contains the streamable compliant portion.
 // The streamable component starts and ends on a sector (512) aligned boundary.
 // The header identifies the vertex format of the data and the atomic sizes of each component.
-// The hierarchial mesh is flattened for dma but the vertex counts are available
+// The hierarchical mesh is flattened for dma but the vertex counts are available
 // per mesh to transfer each mesh individually.
 //=============================================================================//
 
