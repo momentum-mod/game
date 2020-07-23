@@ -130,7 +130,7 @@ private:
 	string_t 	m_iszGibModel;
 	string_t 	m_iszSpawnObject;
 	int			m_ExplosionMagnitude;
-	float		m_flPressureDelay;		// Delay before breaking when destoyed by pressure
+	float		m_flPressureDelay;		// Delay before breaking when destroyed by pressure
 	int			m_iMinHealthDmg;		// minimum damage attacker must have to cause damage
 	bool		m_bTookPhysicsDamage;
 
