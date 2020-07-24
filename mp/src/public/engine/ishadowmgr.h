@@ -29,7 +29,7 @@ typedef unsigned short ModelInstanceHandle_t;
 class IClientRenderable;
 class ITexture;
 
-// change this when the new version is incompatable with the old
+// change this when the new version is incompatible with the old
 #define ENGINE_SHADOWMGR_INTERFACE_VERSION	"VEngineShadowMgr002"
 
 
@@ -118,7 +118,7 @@ public:
 	// The two points specify the upper left coordinate and the lower-right
 	// coordinate of the shadow specified in a shadow "viewplane". The
 	// projection matrix is a shadow viewplane->world transformation,
-	// and can be orthographic orperspective.
+	// and can be orthographic or perspective.
 
 	// I expect that the client DLL will call this method any time the shadow
 	// changes because the light changes, or because the entity casting the
