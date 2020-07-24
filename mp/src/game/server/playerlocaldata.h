@@ -50,7 +50,7 @@ public:
 	CNetworkVar( bool, m_bDucking );
 	// In process of duck-jumping
 	CNetworkVar( bool, m_bInDuckJump );
-	// During ducking process, amount of time before full duc
+	// During ducking process, amount of time before full duck
 	CNetworkVar( float, m_flDucktime );
 	CNetworkVar( float, m_flDuckJumpTime );
 	// Jump time, time to auto unduck (since we auto crouch jump now).
