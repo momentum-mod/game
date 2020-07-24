@@ -59,7 +59,7 @@ vgui::Panel *CBuildFactoryHelper::CreatePanel()
 	return ( *m_CreateFunc )();
 }
 
-// private static meethod
+// private static method
 bool CBuildFactoryHelper::HasFactory( char const *className )
 {
 	CBuildFactoryHelper *p = m_sHelpers;
