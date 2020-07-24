@@ -13,7 +13,7 @@
 // The operations in this file can perform basic matrix operations on matrices represented
 // using any class that supports the necessary operations:
 //
-//  .Element( row, col )  - return the element at a given matrox position
+//  .Element( row, col )  - return the element at a given matrix position
 //  .SetElement( row, col, val ) - modify an element
 //  .Width(), .Height() - get dimensions
 //  .SetDimensions( nrows, ncols) - set a matrix to be un-initted and the appropriate size
@@ -159,7 +159,7 @@ namespace MatrixMath
 	}
 
 
-	/// row and colum accessors. treat a row or a column as a column vector
+	/// row and column accessors. treat a row or a column as a column vector
 	template<class MATRIXTYPE> class MatrixRowAccessor
 	{
 	public:
@@ -225,7 +225,7 @@ namespace MatrixMath
 		MATRIXTYPE const *m_pMatrix;
 	};
 
-	/// this tranpose returns a wrapper around it's argument, allowing things like AddMatrixToMatrix( Transpose( matA ), &matB ) without an extra copy
+	/// this transpose returns a wrapper around it's argument, allowing things like AddMatrixToMatrix( Transpose( matA ), &matB ) without an extra copy
 	template<class MATRIXCLASSIN>
 	MatrixTransposeAccessor<MATRIXCLASSIN> TransposeMatrix( MATRIXCLASSIN const &matrixIn )
 	{
@@ -278,7 +278,7 @@ namespace MatrixMath
 		}
 	}
 
-	/// solve Ax=B via the conjugate graident method. Code and naming conventions based on the
+	/// solve Ax=B via the conjugate gradient method. Code and naming conventions based on the
 	/// wikipedia article.
 	template<class ATYPE, class XTYPE, class BTYPE>
 	void ConjugateGradient( ATYPE const &matA, BTYPE const &vecB, XTYPE &vecX, float flTolerance = 1.0e-20 )
