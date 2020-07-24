@@ -137,7 +137,7 @@ public:
 	virtual float		HostFrameTime() = 0; // host_frametime
 	virtual float		HostTime() = 0; // host_time
 	virtual int			HostTick() = 0; // host_tickcount
-	virtual int			HostFrameCount() = 0; // total famecount
+	virtual int			HostFrameCount() = 0; // total framecount
 
 	virtual float		ServerTime() = 0; // gpGlobals->curtime on server
 	virtual float		ServerFrameTime() = 0; // gpGlobals->frametime on server
