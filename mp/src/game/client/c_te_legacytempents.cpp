@@ -678,7 +678,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// Purpose: Adds brekable to list, starts new context if needed
+// Purpose: Adds breakable to list, starts new context if needed
 // Input  : *entity - 
 //			isSlave - 
 //-----------------------------------------------------------------------------
