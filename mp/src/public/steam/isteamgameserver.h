@@ -22,7 +22,7 @@ class ISteamGameServer
 public:
 
 //
-// Basic server data.  These properties, if set, must be set before before calling LogOn.  They
+// Basic server data.  These properties, if set, must be set before calling LogOn.  They
 // may not be changed after logged in.
 //
 
@@ -244,7 +244,7 @@ public:
 	STEAM_CALL_RESULT( AssociateWithClanResult_t )
 	virtual SteamAPICall_t AssociateWithClan( CSteamID steamIDClan ) = 0;
 	
-	// ask if any of the current players dont want to play with this new player - or vice versa
+	// ask if any of the current players don't want to play with this new player - or vice versa
 	STEAM_CALL_RESULT( ComputeNewPlayerCompatibilityResult_t )
 	virtual SteamAPICall_t ComputeNewPlayerCompatibility( CSteamID steamIDNewPlayer ) = 0;
 
