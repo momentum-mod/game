@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -49,7 +49,7 @@ public:
 	// sets the parent of the main module panel
 	virtual void SetParent(vgui::VPANEL parent) = 0;
 
-	// messages sent through through the panel returned by GetPanel():
+	// messages sent through the panel returned by GetPanel():
 	//
 	//  "ConnectedToGame"	"ip" "port" "gamedir"
 	//	"DisconnectedFromGame"
