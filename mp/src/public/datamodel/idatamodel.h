@@ -127,7 +127,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// Used only by aplpications to hook in the element framework
+// Used only by applications to hook in the element framework
 //-----------------------------------------------------------------------------
 #define VDMELEMENTFRAMEWORK_VERSION	"VDmElementFrameworkVersion001"
 
@@ -513,7 +513,7 @@ public:
 	// Call before you make any undo records
 	virtual void SetUndoDepth( int nSize ) = 0;
 
-	// Displats memory stats to the console
+	// Displays memory stats to the console
 	virtual void DisplayMemoryStats() = 0;
 };
 
