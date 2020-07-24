@@ -92,7 +92,7 @@ struct ShaderNonInteractiveInfo_t
 
 //-----------------------------------------------------------------------------
 // For vertex/index buffers. What type is it?
-// (NOTE: mirror this with a similarly named enum at the material system level for backwards compatability.)
+// (NOTE: mirror this with a similarly named enum at the material system level for backwards compatibility.)
 //-----------------------------------------------------------------------------
 enum ShaderBufferType_t
 {
@@ -153,7 +153,7 @@ public:
 	// Returns info about each adapter
 	virtual void GetAdapterInfo( int nAdapter, MaterialAdapterInfo_t& info ) const = 0;
 
-	// Gets recommended congifuration for a particular adapter at a particular dx level
+	// Gets recommended configuration for a particular adapter at a particular dx level
 	virtual bool GetRecommendedConfigurationInfo( int nAdapter, int nDXLevel, KeyValues *pConfiguration ) = 0;
 
 	// Returns the number of modes
