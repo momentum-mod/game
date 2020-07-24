@@ -403,7 +403,7 @@ struct FlashlightState_t
 		m_bEnableShadows = false;						// Provide reasonable defaults for shadow depth mapping parameters
 		m_bDrawShadowFrustum = false;
 		m_flShadowMapResolution = 1024.0f;
-		m_flShadowFilterSize = 0.2f; //Max recommanded
+		m_flShadowFilterSize = 0.2f; //Max recommended
 		m_flShadowSlopeScaleDepthBias = 16.0f;
 		m_flShadowDepthBias = 0.0005f;
 		m_flShadowJitterSeed = 0.0f;
@@ -648,7 +648,7 @@ public:
 
 	virtual bool				SupportsMSAAMode( int nMSAAMode ) = 0;
 
-	// FIXME: REMOVE! Get video card identitier
+	// FIXME: REMOVE! Get video card identifier
 	virtual const MaterialSystemHardwareIdentifier_t &GetVideoCardIdentifier( void ) const = 0;
 
 	// Use this to spew information about the 3D layer 
@@ -805,7 +805,7 @@ public:
 	// The name of a material is a full path to 
 	// the vmt file starting from "hl2/materials" (or equivalent) without
 	// a file extension.
-	// eg. "dev/dev_bumptest" refers to somethign similar to:
+	// eg. "dev/dev_bumptest" refers to something similar to:
 	// "d:/hl2/hl2/materials/dev/dev_bumptest.vmt"
 	//
 	// Most of the texture groups for pTextureGroupName are listed in texture_group_names.h.
@@ -1029,7 +1029,7 @@ public:
 	// for the old games because it's easier than testing them.
 	virtual void				OverrideRenderTargetAllocation( bool rtAlloc ) = 0;
 
-	// creates a texture compositor that will attempt to composite a new textuer from the steps of the specified KeyValues.
+	// creates a texture compositor that will attempt to composite a new texture from the steps of the specified KeyValues.
 	virtual ITextureCompositor*	NewTextureCompositor( int w, int h, const char* pCompositeName, int nTeamNum, uint64 randomSeed, KeyValues* stageDesc, uint32 texCompositeCreateFlags = 0 ) = 0;
 
 	// Loads the texture with the specified name, calls pRecipient->OnAsyncFindComplete with the result from the main thread.
@@ -1250,7 +1250,7 @@ public:
 	// By default, the material system applies the VIEW and PROJECTION matrices	to the user clip
 	// planes (which are specified in world space) to generate projection-space user clip planes
 	// Occasionally (for the particle system in hl2, for example), we want to override that
-	// behavior and explictly specify a ViewProj transform for user clip planes
+	// behavior and explicitly specify a ViewProj transform for user clip planes
 	virtual void	EnableUserClipTransformOverride( bool bEnable ) = 0;
 	virtual void	UserClipTransform( const VMatrix &worldToView ) = 0;
 
