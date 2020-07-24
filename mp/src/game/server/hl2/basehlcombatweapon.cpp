@@ -175,7 +175,7 @@ void CHLMachineGun::DoMachineGunKick( CBasePlayer *pPlayer, float dampEasy, floa
 	vecScratch.y = -( KICK_MIN_Y + ( maxVerticleKickAngle * kickPerc ) ) / 3;
 	vecScratch.z = KICK_MIN_Z + ( maxVerticleKickAngle * kickPerc ) / 8;
 
-	//Wibble left and right
+	//Wiggle left and right
 	if ( random->RandomInt( -1, 1 ) >= 0 )
 		vecScratch.y *= -1;
 
@@ -277,7 +277,7 @@ BEGIN_DATADESC( CHLSelectFireMachineGun )
 	DEFINE_FIELD( m_iBurstSize,		FIELD_INTEGER ),
 	DEFINE_FIELD( m_iFireMode,		FIELD_INTEGER ),
 	
-	// Function pinters
+	// Function pointers
 	DEFINE_FUNCTION( BurstThink ),
 
 END_DATADESC()
