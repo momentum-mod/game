@@ -92,7 +92,7 @@ public:
 	virtual int  GetCurrentIMEHandle() = 0;
 	virtual int  GetEnglishIMEHandle() = 0;
 
-	// Returns the Language Bar label (Chinese, Korean, Japanese, Russion, Thai, etc.)
+	// Returns the Language Bar label (Chinese, Korean, Japanese, Russian, Thai, etc.)
 	virtual void GetIMELanguageName( OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *buf, int unicodeBufferSizeInBytes ) = 0;
 	// Returns the short code for the language (EN, CH, KO, JP, RU, TH, etc. ).
 	virtual void GetIMELanguageShortCode( OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *buf, int unicodeBufferSizeInBytes ) = 0;
@@ -166,7 +166,7 @@ public:
 	// Posts unhandled message to all interested panels
 	virtual void OnKeyCodeUnhandled( int keyCode ) = 0;
 
-	// Assumes subTree is a child panel of the root panel for the vgui contect
+	// Assumes subTree is a child panel of the root panel for the vgui context
 	//  if restrictMessagesToSubTree is true, then mouse and kb messages are only routed to the subTree and it's children and mouse/kb focus
 	//   can only be on one of the subTree children, if a mouse click occurs outside of the subtree, and "UnhandledMouseClick" message is sent to unhandledMouseClickListener panel
 	//   if it's set
