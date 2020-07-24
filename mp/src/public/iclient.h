@@ -28,8 +28,8 @@ public:
 	// set the client in a pending state waiting for a new game
 	virtual void	Inactivate( void ) = 0;
 	
-	// Reconnect without dropiing the netchannel
-	virtual	void	Reconnect( void ) = 0;				// froce reconnect
+	// Reconnect without dropping the netchannel
+	virtual	void	Reconnect( void ) = 0;				// force reconnect
 
 	// disconnects a client with a given reason
 	virtual void	Disconnect( PRINTF_FORMAT_STRING const char *reason, ... ) = 0;
