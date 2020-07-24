@@ -175,7 +175,7 @@ private:
 
 	// Has the mouse been initialized?
 	bool		m_fMouseInitialized;
-	// Is the mosue active?
+	// Is the mouse active?
 	bool		m_fMouseActive;
 
 	// Accumulated mouse deltas
