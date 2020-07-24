@@ -29,7 +29,7 @@ extern "C" {
 /// \brief Null signal handler function
 /// \param unused the signal number
 /// \details NullSignalHandler is provided as a stand alone function with external "C" linkage
-///   and not a static member function due to the the member function's implicit
+///   and not a static member function due to the member function's implicit
 ///   external "C++" linkage.
 /// \sa SignalHandler, SignalHandlerFn
 extern "C" {
@@ -38,7 +38,7 @@ extern "C" {
 
 /// Signal handler for Linux and Unix compatibles
 /// \tparam S Signal number
-/// \tparam O Flag indicating exsting handler should be overwriiten
+/// \tparam O Flag indicating existing handler should be overwritten
 /// \details SignalHandler() can be used to install a signal handler with the signature
 ///   <tt>void handler_fn(int)</tt>. If <tt>SignalHandlerFn</tt> is not <tt>NULL</tt>, then
 ///   the sigaction is set to the function and the sigaction flags is set to the flags.
