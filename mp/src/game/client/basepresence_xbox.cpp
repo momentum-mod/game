@@ -61,7 +61,7 @@ void CBasePresence::UserSetContext( unsigned int nUserIndex, unsigned int nConte
 
 
 //-----------------------------------------------------------------------------
-// Properties are (usually) numeric values that can be insterted into context strings.
+// Properties are (usually) numeric values that can be inserted into context strings.
 //-----------------------------------------------------------------------------
 void CBasePresence::UserSetProperty( unsigned int nUserIndex, unsigned int nPropertyId, unsigned int nBytes, const void *pvValue, bool bAsync )
 {
