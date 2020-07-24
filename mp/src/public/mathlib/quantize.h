@@ -35,7 +35,7 @@ struct QuantizedValue {
 	uint8 *Mins;											// min box for children and this
 	uint8 *Maxs;											// max box for children and this
 	int NQuant;												// the number of samples which were
-															// quantzied to this node since the
+															// quantized to this node since the
 															// last time OptimizeQuantizer()
 															// was called.
 	int *Sums;												// sum used by OptimizeQuantizer
