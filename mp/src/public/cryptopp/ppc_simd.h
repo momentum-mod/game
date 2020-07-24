@@ -4,8 +4,8 @@
 /// \brief Support functions for PowerPC and vector operations
 /// \details This header provides an agnostic interface into GCC and
 ///   IBM XL C/C++ compilers modulo their different built-in functions
-///   for accessing vector intructions.
-/// \details The abstractions are necesssary to support back to GCC 4.8.
+///   for accessing vector instructions.
+/// \details The abstractions are necessary to support back to GCC 4.8.
 ///   GCC 4.8 and 4.9 are still popular, and they are the default
 ///   compiler for GCC112, GCC118 and others on the compile farm. Older
 ///   IBM XL C/C++ compilers also experience it due to lack of
@@ -78,7 +78,7 @@ inline T VecReverse(const T src)
 ///   of <tt>dest</tt> is aligned, and uses <tt>vec_lvsl</tt> and <tt>vec_perm</tt>
 ///   otherwise.
 ///   <tt>vec_lvsl</tt> and <tt>vec_perm</tt> are relatively expensive so you should
-///   provide aligned memory adresses.
+///   provide aligned memory addresses.
 /// \details VecLoad_ALTIVEC() is used automatically when POWER7 or above
 ///   and unaligned loads is not available.
 /// \note VecLoad does not require an aligned array.
@@ -107,7 +107,7 @@ inline uint32x4_p VecLoad_ALTIVEC(const byte src[16])
 ///   of <tt>dest</tt> is aligned, and uses <tt>vec_lvsl</tt> and <tt>vec_perm</tt>
 ///   otherwise.
 ///   <tt>vec_lvsl</tt> and <tt>vec_perm</tt> are relatively expensive so you should
-///   provide aligned memory adresses.
+///   provide aligned memory addresses.
 /// \note VecLoad does not require an aligned array.
 /// \since Crypto++ 6.0
 inline uint32x4_p VecLoad_ALTIVEC(int off, const byte src[16])
@@ -285,7 +285,7 @@ inline uint32x4_p VecLoadBE(int off, const byte src[16])
 /// \details VecStore_ALTIVEC() uses <tt>vec_st</tt> if the effective address
 ///   of <tt>dest</tt> is aligned, and uses <tt>vec_ste</tt> otherwise.
 ///   <tt>vec_ste</tt> is relatively expensive so you should provide aligned
-///   memory adresses.
+///   memory addresses.
 /// \details VecStore_ALTIVEC() is used automatically when POWER7 or above
 ///   and unaligned loads is not available.
 /// \note VecStore does not require an aligned array.
@@ -321,7 +321,7 @@ inline void VecStore_ALTIVEC(const T data, byte dest[16])
 /// \details VecStore_ALTIVEC() uses <tt>vec_st</tt> if the effective address
 ///   of <tt>dest</tt> is aligned, and uses <tt>vec_ste</tt> otherwise.
 ///   <tt>vec_ste</tt> is relatively expensive so you should provide aligned
-///   memory adresses.
+///   memory addresses.
 /// \details VecStore_ALTIVEC() is used automatically when POWER7 or above
 ///   and unaligned loads is not available.
 /// \note VecStore does not require an aligned array.
