@@ -105,11 +105,11 @@ CRYPTOPP_DLL bool CRYPTOPP_API IsPrime(const Integer &p);
 /// \param level the level of thoroughness of testing
 /// \returns true if p is a strong probable prime, false otherwise
 /// \details VerifyPrime() is suitable for testing candidate primes created by others. Internally,
-///   VerifyPrime() utilizes IsPrime() and one-round RabinMillerTest(). If the candiate passes and
+///   VerifyPrime() utilizes IsPrime() and one-round RabinMillerTest(). If the candidate passes and
 ///   level is greater than 1, then 10 round RabinMillerTest() primality testing is performed.
 CRYPTOPP_DLL bool CRYPTOPP_API VerifyPrime(RandomNumberGenerator &rng, const Integer &p, unsigned int level = 1);
 
-/// \brief Application callback to signal suitability of a cabdidate prime
+/// \brief Application callback to signal suitability of a candidate prime
 class CRYPTOPP_DLL PrimeSelector
 {
 public:
@@ -180,7 +180,7 @@ CRYPTOPP_DLL Integer CRYPTOPP_API CRT(const Integer &xp, const Integer &p, const
 /// \brief Calculate the Jacobi symbol
 /// \param a the first term
 /// \param b the second term
-/// \returns the the Jacobi symbol.
+/// \returns the Jacobi symbol.
 /// \details Jacobi symbols are calculated using the following rules:
 ///  -# if <tt>b</tt> is prime, then <tt>Jacobi(a, b)</tt>, then return 0
 ///  -# if <tt>a%b</tt>==0 AND <tt>a</tt> is quadratic residue <tt>mod b</tt>, then return 1
@@ -304,7 +304,7 @@ public:
 	const Integer& SubPrime() const {return q;}
 
 	/// \brief Retrieve the generator
-	/// \returns Generator() returns the the generator g.
+	/// \returns Generator() returns the generator g.
 	const Integer& Generator() const {return g;}
 
 private:
