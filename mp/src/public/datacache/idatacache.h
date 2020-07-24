@@ -172,7 +172,7 @@ enum DataCacheAddFlags_t
 // IDataCacheSection
 //
 // Purpose: Implements a sub-section of the global cache. Subsections are
-//			areas of the cache with thier own memory constraints and common
+//			areas of the cache with their own memory constraints and common
 //			management.
 //-----------------------------------------------------------------------------
 abstract_class IDataCacheSection
@@ -214,7 +214,7 @@ public:
 
 
 	//--------------------------------------------------------
-	// Purpose: Get an item out of the cache and remove it. No callbacks are executed unless explicity specified.
+	// Purpose: Get an item out of the cache and remove it. No callbacks are executed unless explicitly specified.
 	//--------------------------------------------------------
 	virtual DataCacheRemoveResult_t Remove( DataCacheHandle_t handle, const void **ppItemData, unsigned *pItemSize = NULL, bool bNotify = false ) = 0;
 	DataCacheRemoveResult_t Remove( DataCacheHandle_t handle, bool bNotify = false )	{ return Remove( handle, NULL, NULL, bNotify ); }
