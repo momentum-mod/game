@@ -14,7 +14,7 @@
 // Format of the performance event IDs within this header file in case you
 // wish to add any additional events that may not be present here.
 //
-// BITS 0-8	Unit Mask, Unsed on P5 processors
+// BITS 0-8	Unit Mask, Unused on P5 processors
 // BIT  9	Set if event can be set on counter 0
 // BIT  10	Set if event can be set on counter 1
 // BITS 11-15	Unused Set to zero
