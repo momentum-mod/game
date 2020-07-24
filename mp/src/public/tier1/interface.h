@@ -21,13 +21,13 @@
 //    expose it for the old interface.
 
 // Static Linking:
-// Must mimic unique seperate class 'InterfaceReg' constructors per subsystem.
+// Must mimic unique separate class 'InterfaceReg' constructors per subsystem.
 // Each subsystem can then import and export interfaces as expected.
 // This is achieved through unique namespacing 'InterfaceReg' via symbol _SUBSYSTEM.
 // Static Linking also needs to generate unique symbols per interface so as to
 // provide a 'stitching' method whereby these interface symbols can be referenced
 // via the lib's primary module (usually the lib's interface exposure)
-// therby stitching all of that lib's code/data together for eventual final exe link inclusion.
+// thereby stitching all of that lib's code/data together for eventual final exe link inclusion.
 
 #ifndef INTERFACE_H
 #define INTERFACE_H
