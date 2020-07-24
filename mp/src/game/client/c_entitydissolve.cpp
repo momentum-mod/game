@@ -201,7 +201,7 @@ void C_EntityDissolve::BuildTeslaEffect( mstudiobbox_t *pHitBox, const matrix3x4
 	{
 		iTries++;
 
-		// Some beams are deliberatly aimed around the point, the rest are random.
+		// Some beams are deliberately aimed around the point, the rest are random.
 		if ( !bRandom )
 		{
 			QAngle vecTemp = vecAngles;
