@@ -85,7 +85,7 @@ public:
 	mp_break_t		GetMultiplayerBreakMode( void ) const { return MULTIPLAYER_BREAK_DEFAULT; }
 
 
-// static management fucntions:
+// static management functions:
 	static void RecreateAll(); // recreate all clientside props in map
 	static void DestroyAll();  // clear all clientside created phys props
 	static C_PhysPropClientside *CreateNew(bool bForce = false);
