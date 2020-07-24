@@ -252,13 +252,13 @@ protected:
 
 	Vector	m_MapOrigin;	// read from KeyValues files
 	float	m_fMapScale;	// origin and scale used when screenshot was made
-	bool	m_bRotateMap;	// if true roatate map around 90 degress, so it fits better to 4:3 screen ratio
+	bool	m_bRotateMap;	// if true rotate map around 90 degrees, so it fits better to 4:3 screen ratio
 
 	int		m_nFollowEntity;// entity number to follow, 0 = off
 	CPanelAnimationVar( float, m_fZoom, "zoom", "1.0" );	// current zoom n = overview panel shows 1/n^2 of whole map'
 	float	m_fFullZoom;	// best zoom factor for full map view (1.0 is map is a square) 
-	Vector2D m_ViewOrigin;	// map coordinates that are in the center of the pverview panel
-	Vector2D m_MapCenter;	// map coordinates that are in the center of the pverview panel
+	Vector2D m_ViewOrigin;	// map coordinates that are in the center of the overview panel
+	Vector2D m_MapCenter;	// map coordinates that are in the center of the overview panel
 
 	float	m_fNextUpdateTime;
 	float	m_fViewAngle;	// rotation of overview map
