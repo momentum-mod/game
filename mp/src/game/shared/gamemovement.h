@@ -233,7 +233,7 @@ protected:
 
 	float			SplineFraction( float value, float scale );
 
-	void			CategorizeGroundSurface( trace_t &pm );
+	void			CategorizeGroundSurface( const trace_t &pm );
 
 	bool			InWater( void );
 
@@ -251,7 +251,7 @@ protected:
 	// Figures out how the constraint should slow us down
 	float			ComputeConstraintSpeedFactor( void );
 
-	virtual void	SetGroundEntity( trace_t *pm );
+	virtual void	SetGroundEntity( const trace_t *pm );
 
 	virtual void	StepMove( Vector &vecDestination, trace_t &trace );
 

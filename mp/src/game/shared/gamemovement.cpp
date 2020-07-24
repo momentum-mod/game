@@ -899,7 +899,7 @@ void CBasePlayer::UpdateWetness()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CGameMovement::CategorizeGroundSurface( trace_t &pm )
+void CGameMovement::CategorizeGroundSurface( const trace_t &pm )
 {
 	IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
 	player->m_surfaceProps = pm.surface.surfaceProps;
@@ -3567,7 +3567,7 @@ bool CGameMovement::CheckWater( void )
 	return (player->GetWaterLevel() > WL_Feet);
 }
 
-void CGameMovement::SetGroundEntity( trace_t *pm )
+void CGameMovement::SetGroundEntity( const trace_t *pm )
 {
 	CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
 
