@@ -213,7 +213,7 @@ struct s_source_t
 	Vector2D		*texcoord;
 
 	int numfaces;
-	s_face_t *face;						// vertex indexs per face
+	s_face_t *face;						// vertex indexes per face
 
 	// raw skeletal animation	
 	int numframes;
