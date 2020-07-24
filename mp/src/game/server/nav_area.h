@@ -131,7 +131,7 @@ public:
 		EXPOSED				= 0x08							// spot in the open, usually on a ledge or cliff
 	};
 
-	bool HasGoodCover( void ) const			{ return (m_flags & IN_COVER) ? true : false; }	// return true if hiding spot in in cover
+	bool HasGoodCover( void ) const			{ return (m_flags & IN_COVER) ? true : false; }	// return true if hiding spot in cover
 	bool IsGoodSniperSpot( void ) const		{ return (m_flags & GOOD_SNIPER_SPOT) ? true : false; }
 	bool IsIdealSniperSpot( void ) const	{ return (m_flags & IDEAL_SNIPER_SPOT) ? true : false; }
 	bool IsExposed( void ) const			{ return (m_flags & EXPOSED) ? true : false; }	
@@ -359,7 +359,7 @@ public:
 	void GetNodes( NavDirType dir, CUtlVector< CNavNode * > *nodes ) const;	// build a vector of nodes along the given direction
 	CNavNode *FindClosestNode( const Vector &pos, NavDirType dir ) const;	// returns the closest node along the given edge to the given point
 
-	bool IsContiguous( const CNavArea *other ) const;			// return true if the given area and 'other' share a colinear edge (ie: no drop-down or step/jump/climb)
+	bool IsContiguous( const CNavArea *other ) const;			// return true if the given area and 'other' share a collinear edge (ie: no drop-down or step/jump/climb)
 	float ComputeAdjacentConnectionHeightChange( const CNavArea *destinationArea ) const;			// return height change between edges of adjacent nav areas (not actual underlying ground)
 
 	bool IsEdge( NavDirType dir ) const;						// return true if there are no bi-directional links on the given side
@@ -1038,7 +1038,7 @@ inline float CNavArea::GetZ( const Vector & pos ) const RESTRICT
 */
 inline Vector CNavArea::GetCorner( NavCornerType corner ) const
 {
-	// @TODO: Confirm compiler does the "right thing" in release builds, or change this function to to take a pointer [2/4/2009 tom]
+	// @TODO: Confirm compiler does the "right thing" in release builds, or change this function to take a pointer [2/4/2009 tom]
 	Vector pos;
 
 	switch( corner )
