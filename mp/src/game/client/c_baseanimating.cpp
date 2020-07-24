@@ -397,7 +397,7 @@ void C_ClientRagdoll::ImpactTrace( trace_t *pTrace, int iDamageType, const char 
 
 	if ( iDamageType == DMG_BLAST )
 	{
-		dir *= 500;  // adjust impact strenght
+		dir *= 500;  // adjust impact strength
 
 		// apply force at object mass center
 		pPhysicsObject->ApplyForceCenter( dir );
@@ -409,7 +409,7 @@ void C_ClientRagdoll::ImpactTrace( trace_t *pTrace, int iDamageType, const char 
 		VectorMA( pTrace->startpos, pTrace->fraction, dir, hitpos );
 		VectorNormalize( dir );
 
-		dir *= 4000;  // adjust impact strenght
+		dir *= 4000;  // adjust impact strength
 
 		// apply force where we hit it
 		pPhysicsObject->ApplyForceOffset( dir, hitpos );	
@@ -1923,7 +1923,7 @@ void C_BaseAnimating::ChildLayerBlend( Vector pos[], Quaternion q[], float curre
 				pChildAnimating->m_pBoneMergeCache->CopyParentToChild( pos, q, childPos, childQ, boneMask );
 
 				// FIXME: needs some kind of sequence
-				// merge over whatever bones the childs sequence modifies
+				// merge over whatever bones the child's sequence modifies
 				childBoneSetup.AccumulatePose( childPos, childQ, 0, GetCycle(), 1.0, currentTime, NULL );
 
 				// copy the result back into the parents bones
@@ -2520,7 +2520,7 @@ void C_BaseAnimating::CalculateIKLocks( float currentTime )
 						pTarget->SetNormal( trace.plane.normal );
 						pTarget->SetOnWorld( true );
 
-						// only do this on forward tracking or commited IK ground rules
+						// only do this on forward tracking or committed IK ground rules
 						if (pTarget->est.release < 0.1)
 						{
 							// keep track of ground height
@@ -2544,7 +2544,7 @@ void C_BaseAnimating::CalculateIKLocks( float currentTime )
 						pTarget->SetPos( trace.endpos );
 						pTarget->SetAngles( GetRenderAngles() );
 
-						// only do this on forward tracking or commited IK ground rules
+						// only do this on forward tracking or committed IK ground rules
 						if (pTarget->est.release < 0.1)
 						{
 							float offset = DotProduct( pTarget->est.pos, up );
@@ -2869,7 +2869,7 @@ bool C_BaseAnimating::SetupBones( matrix3x4_t *pBoneToWorldOut, int nMaxBones, i
 		g_PreviousBoneSetups.AddToTail( this );
 	}
 
-	// Keep track of everthing asked for over the entire frame
+	// Keep track of everything asked for over the entire frame
 	m_iAccumulatedBoneMask |= boneMask;
 
 	// Make sure that we know that we've already calculated some bone stuff this time around.
@@ -5432,7 +5432,7 @@ void C_BaseAnimating::ResetSequenceInfo( void )
 	m_nNewSequenceParity = ( m_nNewSequenceParity + 1 ) & EF_PARITY_MASK;
 	m_nResetEventsParity = ( m_nResetEventsParity + 1 ) & EF_PARITY_MASK;
 
-	// FIXME: why is this called here?  Nothing should have changed to make this nessesary
+	// FIXME: why is this called here?  Nothing should have changed to make this necessary
 	if ( pStudioHdr )
 	{
 		SetEventIndexForSequence( pStudioHdr->pSeqdesc( GetSequence() ) );
