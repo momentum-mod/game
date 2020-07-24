@@ -1655,7 +1655,7 @@ void C_BaseFlex::ProcessSceneEvents( bool bFlexEvents )
 		return;
 	}
 
-	// slowly decay to netural expression
+	// slowly decay to neutral expression
 
 	if ( bFlexEvents )
 	{
