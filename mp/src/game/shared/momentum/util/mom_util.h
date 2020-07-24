@@ -31,7 +31,7 @@ namespace MomUtil
     Color ColorLerp(float prog, const Color& A, const Color& B);
     // Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours,
     // etc
-    // Precision is miliseconds by default
+    // Precision is milliseconds by default
     void FormatTime(float seconds, char *pOut, const int precision = 3, const bool fileName = false,
                     const bool negativeTime = false);
 
