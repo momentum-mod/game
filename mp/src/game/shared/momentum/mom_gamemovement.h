@@ -17,7 +17,7 @@ class CMomentumGameMovement : public CGameMovement
 public:
     CMomentumGameMovement();
 
-    void SetGroundEntity(trace_t *pm) override;
+    void SetGroundEntity(const trace_t *pm) override;
 
     bool CanAccelerate() override;
     bool CheckJumpButton() override;

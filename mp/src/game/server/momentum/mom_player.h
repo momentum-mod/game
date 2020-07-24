@@ -243,7 +243,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Last collision
     void SetLastCollision(const trace_t &tr);
     int GetLastCollisionTick() const { return m_iLastCollisionTick; }
-    trace_t& GetLastCollisionTrace() { return m_trLastCollisionTrace; }
+    const trace_t& GetLastCollisionTrace() const { return m_trLastCollisionTrace; }
 
     void SetLastEyeAngles(const QAngle &ang) { m_qangLastAngle = ang; }
     const QAngle &LastEyeAngles() const { return m_qangLastAngle; }

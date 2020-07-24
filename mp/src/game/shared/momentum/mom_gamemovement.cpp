@@ -1985,7 +1985,7 @@ void CMomentumGameMovement::FullWalkMove()
         }
 
         // Let player bhop after an edgebug
-        trace_t &tr = m_pPlayer->GetLastCollisionTrace();
+        const trace_t &tr = m_pPlayer->GetLastCollisionTrace();
         if (sv_edge_fix.GetBool() && !bIsSliding &&
             bInAirBefore && bInAirAfter && m_pPlayer->GetLastCollisionTick() == gpGlobals->tickcount && // Player edgebugged
             (m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)) && // Player wants to bhop
@@ -2792,7 +2792,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     return blocked;
 }
 
-void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
+void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this

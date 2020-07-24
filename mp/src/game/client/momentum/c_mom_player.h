@@ -92,7 +92,7 @@ public:
     // Last collision
     void SetLastCollision(const trace_t &tr);
     int GetLastCollisionTick() const { return m_iLastCollisionTick; }
-    trace_t& GetLastCollisionTrace() { return m_trLastCollisionTrace; }
+    const trace_t& GetLastCollisionTrace() const { return m_trLastCollisionTrace; }
 
     // Mobility sound functions
     void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
