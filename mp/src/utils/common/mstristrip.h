@@ -38,6 +38,6 @@ void ComputeVertexPermutation
     int numstripindices,            // Number of strip indices
     WORD *pstripindices,            // Strip indices
     int *pnumverts,                 // Number of verts (in and out)
-    WORD **ppvertexpermutation      // Map from orignal index to remapped index
+    WORD **ppvertexpermutation      // Map from original index to remapped index
 );
 
