@@ -22,7 +22,7 @@ Before an IceKey can be used to encrypt data, its key schedule must be set with 
 The length of the key required is determined by the level, as described above. 
 
 The member functions encrypt() and decrypt() encrypt and decrypt respectively data 
-in blocks of eight chracters, using the specified key. 
+in blocks of eight characters, using the specified key. 
 
 Two functions keySize() and blockSize() are provided 
 which return the key and block size respectively, measured in bytes. 
