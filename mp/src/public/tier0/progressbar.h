@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: Provide a shared place for library fucntions to report progress % for display
+// Purpose: Provide a shared place for library functions to report progress % for display
 //
 //=============================================================================//
 
