@@ -577,7 +577,7 @@ public:
 	virtual void TriggerRepeatedHapticPulse( InputHandle_t inputHandle, ESteamControllerPad eTargetPad, unsigned short usDurationMicroSec, unsigned short usOffMicroSec, unsigned short unRepeat, unsigned int nFlags ) = 0;
 
 	//-----------------------------------------------------------------------------
-	// Utility functions availible without using the rest of Steam Input API
+	// Utility functions available without using the rest of Steam Input API
 	//-----------------------------------------------------------------------------
 
 	// Invokes the Steam overlay and brings up the binding screen if the user is using Big Picture Mode
@@ -605,7 +605,7 @@ public:
 	virtual EInputActionOrigin GetActionOriginFromXboxOrigin( InputHandle_t inputHandle, EXboxOrigin eOrigin ) = 0;
 
 	// Convert an origin to another controller type - for inputs not present on the other controller type this will return k_EInputActionOrigin_None
-	// When a new input type is added you will be able to pass in k_ESteamInputType_Unknown amd the closest origin that your version of the SDK regonized will be returned
+	// When a new input type is added you will be able to pass in k_ESteamInputType_Unknown amd the closest origin that your version of the SDK recognized will be returned
 	// ex: if a Playstation 5 controller was released this function would return Playstation 4 origins.
 	virtual EInputActionOrigin TranslateActionOrigin( ESteamInputType eDestinationInputType, EInputActionOrigin eSourceOrigin ) = 0;
 };
