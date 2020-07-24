@@ -289,7 +289,7 @@ void CBaseButton::InputPressOut( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 int CBaseButton::OnTakeDamage( const CTakeDamageInfo &info )
 {
-	// dvsents2: remove obselete health keyvalue from func_button
+	// dvsents2: remove obsolete health keyvalue from func_button
 	if (!HasSpawnFlags(SF_BUTTON_DAMAGE_ACTIVATES) && (m_iHealth == 0))
 	{
 		return(0);
