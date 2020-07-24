@@ -598,7 +598,7 @@ public:
 	// accept no lobbies with playercount greater than nMaxTeamSize
 	// the set of lobbies returned must be partitionable into teams of no more than nMaxTeamSize
 	// RequestPlayersForGameNotificationCallback_t callback will be sent when the search has started
-	// multple RequestPlayersForGameResultCallback_t callbacks will follow when players are found
+	// multiple RequestPlayersForGameResultCallback_t callbacks will follow when players are found
 	virtual EGameSearchErrorCode_t RequestPlayersForGame( int nPlayerMin, int nPlayerMax, int nMaxTeamSize ) = 0;
 
 	// accept the player list and release connection details to players
