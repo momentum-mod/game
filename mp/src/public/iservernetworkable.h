@@ -103,7 +103,7 @@ public:
 	// In place of a generic QueryInterface.
 	virtual CBaseNetworkable* GetBaseNetworkable() = 0;
 	virtual CBaseEntity*	GetBaseEntity() = 0; // Only used by game code.
-	virtual PVSInfo_t*		GetPVSInfo() = 0; // get current visibilty data
+	virtual PVSInfo_t*		GetPVSInfo() = 0; // get current visibility data
 
 protected:
 	// Should never call delete on this! 
