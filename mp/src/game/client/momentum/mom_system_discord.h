@@ -11,7 +11,7 @@ struct DiscordUser;
 
 // A class to manage the Discord Rich Presence feature
 // Uses the discord-rpc library
-// Libary source code is here: https://github.com/discordapp/discord-rpc
+// Library source code is here: https://github.com/discordapp/discord-rpc
 // Docs are here: https://discordapp.com/developers/docs/rich-presence/how-to
 class CMomentumDiscord : public CAutoGameSystemPerFrame, public CGameEventListener 
 {
@@ -68,7 +68,7 @@ public:
     char m_szDiscordLargeImageKey[DISCORD_MAX_BUFFER_SIZE];   // name of the uploaded image for the large profile artwork
     char m_szDiscordLargeImageText[DISCORD_MAX_BUFFER_SIZE];  // tooltip for the largeImageKey
     char m_szDiscordSmallImageKey[DISCORD_MAX_BUFFER_SIZE];   // name of the uploaded image for the small profile artwork
-    char m_szDiscordSmallImageText[DISCORD_MAX_BUFFER_SIZE];  // tootltip for the smallImageKey
+    char m_szDiscordSmallImageText[DISCORD_MAX_BUFFER_SIZE];  // tooltip for the smallImageKey
     char m_szDiscordPartyId[DISCORD_MAX_BUFFER_SIZE];         // id of the player's party, lobby, or group
     int m_iDiscordPartySize;                              // current size of the player's party, lobby, or group 1
     int m_iDiscordPartyMax;                               // maximum size of the player's party, lobby, or group 5
