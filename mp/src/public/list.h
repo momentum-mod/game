@@ -23,7 +23,7 @@ typedef _Position *Position;
 template <class T> class GList;
 template <class T> class GListIterator;
 
-// GListNode: Class decleration and definition
+// GListNode: Class declaration and definition
 template <class T> class GListNode
 {
 private:
@@ -51,11 +51,11 @@ GListNode<T>::GListNode( T item )
 	prev = NULL;
 }
 
-// GList: Class decleration and definition
+// GList: Class declaration and definition
 template <class T> class GList
 {
 public:
-	// Contructors/destructors
+	// Constructors/destructors
 	GList();
 	
 	//
@@ -236,7 +236,7 @@ T GList<T>::GetItemAtIndex( int index )
 	return GetItemAtPosition( GetPositionAtIndex( index ) );
 }
 
-// GListIterator: Class decleration and definition
+// GListIterator: Class declaration and definition
 template<class T> class GListIterator
 {
 public:
