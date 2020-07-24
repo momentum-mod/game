@@ -17,7 +17,7 @@
 // traces and other trace-like queries. 
 
 // a. By maintaining a set of incrementally updated trace results, it makes it simple to have ai
-// code use hyteresis on traces as an optimization method.
+// code use hysteresis on traces as an optimization method.
 
 // b. By updating the cache entries outside of the entity think functions, the update is done in a
 // fully multi-threaded fashion
