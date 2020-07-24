@@ -487,7 +487,7 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
     // Force in units per seconds applied to the player
     float m_fPushForce;
     // 1: SetPlayerVelocity to final push force
-    // 2: Increase player's current velocity by push final foce ammount // This is almost like the default trigger_push
+    // 2: Increase player's current velocity by push final force amount // This is almost like the default trigger_push
     // behaviour
     // 3: Only set the player's velocity to the final push velocity if player's velocity is lower than final push
     // velocity
