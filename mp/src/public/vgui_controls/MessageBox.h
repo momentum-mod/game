@@ -33,7 +33,7 @@ class MessageBox : public Frame
 public:
 	// title - Text to be displayed in the title bar of the window
 	// text - Text message in the message box
-	// startMinimized - wether message box starts minimized. Starts invisible by default
+	// startMinimized - whether message box starts minimized. Starts invisible by default
 	// parent - parent panel of the message box, by default it has no parent. This will keep the box visible until the OK button is pressed. 
 	MessageBox(const char *title, const char *text, Panel *parent = NULL);
 	MessageBox(const wchar_t *wszTitle, const wchar_t *wszText, Panel *parent = NULL);
