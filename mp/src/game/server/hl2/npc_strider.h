@@ -620,7 +620,7 @@ private:
 	StriderMinigunAnimController_t m_pitch;
 	bool		m_bWarnedAI;
 	float		m_shootDuration;
-	Vector		m_vecAnchor;		// A burst starts here and goes to the target's orgin.
+	Vector		m_vecAnchor;		// A burst starts here and goes to the target's origin.
 	bool		m_bOverrideEnemy;	// The minigun wants something other than the Strider's enemy as a target right now.
 	Vector		m_vecLastTargetPos;	// Last place minigun saw the target.
 	int			m_iOnTargetShots;
