@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2014 Valve Corporation, All rights reserved. =======
+//====== Copyright Â© 1996-2014 Valve Corporation, All rights reserved. =======
 //
 // Purpose: interface to Steam Inventory
 //
@@ -160,7 +160,7 @@ public:
 	// or replayed across different game sessions. A result set can be serialized
 	// on the local client, transmitted to other players via your game networking,
 	// and deserialized by the remote players. This is a secure way of preventing
-	// hackers from lying about posessing rare/high-value items.
+	// hackers from lying about possessing rare/high-value items.
 
 	// Serializes a result set with signature bytes to an output buffer. Pass
 	// NULL as an output buffer to get the required size via punOutBufferSize.
