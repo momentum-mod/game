@@ -208,7 +208,7 @@ public:
 
 //=============================================================================
 //
-// Rope mananger.
+// Rope manager.
 //
 struct RopeSegData_t
 {
@@ -483,7 +483,7 @@ void CRopeManager::DrawRenderCache_NonQueued( bool bShadowDepth, RopeRenderData_
 
 		if ( materials->GetRenderContext()->GetCallQueue() != NULL && pBuildRopeQueuedData == NULL )
 		{
-			// We build ropes outside of queued mode for holidy lights
+			// We build ropes outside of queued mode for holiday lights
 			// But we don't want to render them
 			continue;
 		}
@@ -911,7 +911,7 @@ void C_RopeKeyframe::CPhysicsDelegate::GetNodeForces( CSimplePhysics::CNode *pNo
 		*pAccel += RandomVector( -scale, scale );
 	}
 
-	// Apply any instananeous forces and reset
+	// Apply any instantaneous forces and reset
 	*pAccel += ROPE_IMPULSE_SCALE * m_pKeyframe->m_flImpulse;
 	m_pKeyframe->m_flImpulse *= ROPE_IMPULSE_DECAY;
 }
