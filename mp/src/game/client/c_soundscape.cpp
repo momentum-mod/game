@@ -586,7 +586,7 @@ void C_SoundscapeSystem::StartNewSoundscape( KeyValues *pSoundscape )
 		m_loopingSounds[i].volumeTarget = 0;
 		if ( !pSoundscape )
 		{
-			// if we're cancelling the soundscape, stop the sound immediately
+			// if we're canceling the soundscape, stop the sound immediately
 			m_loopingSounds[i].volumeCurrent = 0;
 		}
 	}
@@ -778,7 +778,7 @@ void C_SoundscapeSystem::ProcessPlayLooping( KeyValues *pAmbient, const subsound
 		positionIndex = params.positionOverride;
 	}
 
-	// Sound is mared as "suppress_on_restore" so don't restart it
+	// Sound is marked as "suppress_on_restore" so don't restart it
 	if ( IsBeingRestored() && suppress )
 	{
 		return;
@@ -983,7 +983,7 @@ void C_SoundscapeSystem::ProcessPlayRandom( KeyValues *pPlayRandom, const subsou
 		randomPosition = false; // override trumps random position
 	}
 
-	// Sound is mared as "suppress_on_restore" so don't restart it
+	// Sound is marked as "suppress_on_restore" so don't restart it
 	if ( IsBeingRestored() && suppress )
 	{
 		return;
@@ -1300,7 +1300,7 @@ void C_SoundscapeSystem::UpdateRandomSounds( float gameTime )
 			// float dt = m_randomSounds[i].nextPlayTime - gameTime;
 			PlayRandomSound( m_randomSounds[i] );
 
-			// now schedule the next occurrance
+			// now schedule the next occurrence
 			// UNDONE: add support for "play once" sounds? FastRemove() here.
 			m_randomSounds[i].nextPlayTime = gameTime + RandomInterval( m_randomSounds[i].time );
 		}
