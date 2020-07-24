@@ -251,7 +251,7 @@ void C_BreakableSurface::OnRestore()
 
 	// FIXME:  This restores the general state, but not the random edge bits
 	//  those would need to be serialized separately...
-	// traverse everthing and restore bits
+	// traverse everything and restore bits
 	// Initialize panels
 	for (int w=0;w<m_nNumWide;w++)
 	{ 
@@ -944,7 +944,7 @@ void C_BreakableSurface::DrawSolidBlocks(IBrushSurface* pBrushSurface)
 				nHCount++;
 			}
 
-			// Drow the strip and start counting again
+			// Draw the strip and start counting again
 			else if (nHCount > 0)
 			{
 				vCurPos = m_vCorner + vWidthStep*width + vHeightStep*(height-nHCount);
@@ -1321,7 +1321,7 @@ void CBreakableSurfaceProxy::OnBind( C_BaseEntity *pC_BaseEntity )
 		return;
 	}
 
-	// Use the current base texture specified by the suface
+	// Use the current base texture specified by the surface
 	m_BaseTextureVar->SetTextureValue( pEnt->m_pCurrentDetailTexture );
 }
 
