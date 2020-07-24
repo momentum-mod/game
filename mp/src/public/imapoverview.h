@@ -46,7 +46,7 @@ public:
 	virtual void  GetBounds(int& x, int& y, int& wide, int& tall) = 0; // get current pos & size
 	virtual float GetZoom( void )= 0;
 
-	// deatils properties
+	// details properties
 	virtual	void ShowPlayerNames(bool state) = 0;	// show player names under icons
 	virtual	void ShowTracers(bool state) = 0;	// show shooting traces as lines
 	virtual	void ShowExplosions(bool state) = 0;	// show, smoke, flash & HE grenades
