@@ -202,7 +202,7 @@ int CPredictableList::GetPredictableCount( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Searc predictables for previously created entity (by testId)
+// Purpose: Search predictables for previously created entity (by testId)
 // Input  : testId - 
 // Output : static C_BaseEntity
 //-----------------------------------------------------------------------------
@@ -304,7 +304,7 @@ int CRecordingList::Count()
 
 //-----------------------------------------------------------------------------
 // Purpose: Decodes animtime and notes when it changes
-// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changine
+// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changing
 //			*pVarData - 
 //			*pIn - 
 //			objectID - 
@@ -3058,7 +3058,7 @@ void C_BaseEntity::CheckInterpolatedVarParanoidMeasurement()
 		if ( pEnt->entindex() == 1 && engine->Con_IsVisible() )
 			continue;
 			
-		// View models tend to screw up this test unnecesarily because they modify origin,
+		// View models tend to screw up this test unnecessarily because they modify origin,
 		// angles, and 
 		if ( dynamic_cast<C_BaseViewModel*>( pEnt ) )
 			continue;
@@ -3096,7 +3096,7 @@ void C_BaseEntity::ProcessInterpolatedList()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Add entity to visibile entities list
+// Purpose: Add entity to visible entities list
 //-----------------------------------------------------------------------------
 void C_BaseEntity::AddEntity( void )
 {
@@ -3114,7 +3114,7 @@ void C_BaseEntity::AddEntity( void )
 //-----------------------------------------------------------------------------
 void C_BaseEntity::GetAimEntOrigin( IClientEntity *pAttachedTo, Vector *pOrigin, QAngle *pAngles )
 {
-	// Should be overridden for things that attach to attchment points
+	// Should be overridden for things that attach to attachment points
 
 	// Slam origin to the origin of the entity we are attached to...
 	*pOrigin = pAttachedTo->GetAbsOrigin();
@@ -3788,7 +3788,7 @@ void C_BaseEntity::RemoveAllDecals( void )
 bool C_BaseEntity::SnatchModelInstance( C_BaseEntity *pToEntity )
 {
 	if ( !modelrender->ChangeInstance(  GetModelInstance(), pToEntity ) )
-		return false;  // engine could move modle handle
+		return false;  // engine could move model handle
 
 	// remove old handle from toentity if any
 	if ( pToEntity->GetModelInstance() != MODEL_INSTANCE_INVALID )
