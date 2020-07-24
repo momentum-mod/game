@@ -21,7 +21,7 @@ struct AudioState_t;
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Exported from engine to client .dll to marshall tool framework calls
+// Purpose: Exported from engine to client .dll to marshal tool framework calls
 // into IToolSystems
 //-----------------------------------------------------------------------------
 class IClientEngineTools : public IBaseInterface
