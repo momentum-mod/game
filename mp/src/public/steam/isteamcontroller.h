@@ -565,7 +565,7 @@ public:
 	virtual void SetLEDColor( ControllerHandle_t controllerHandle, uint8 nColorR, uint8 nColorG, uint8 nColorB, unsigned int nFlags ) = 0;
 
 	//-----------------------------------------------------------------------------
-	// Utility functions availible without using the rest of Steam Input API
+	// Utility functions available without using the rest of Steam Input API
 	//-----------------------------------------------------------------------------
 
 	// Invokes the Steam overlay and brings up the binding screen if the user is using Big Picture Mode
