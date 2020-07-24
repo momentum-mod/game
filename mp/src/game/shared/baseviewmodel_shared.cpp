@@ -500,7 +500,7 @@ static void RecvProxy_Weapon( const CRecvProxyData *pData, void *pStruct, void *
 	CBaseViewModel *pViewModel = ((CBaseViewModel*)pStruct);
 	CBaseCombatWeapon *pOldWeapon = pViewModel->GetOwningWeapon();
 
-	// Chain through to the default recieve proxy ...
+	// Chain through to the default receive proxy ...
 	RecvProxy_IntToEHandle( pData, pStruct, pOut );
 
 	// ... and reset our cycle index if the server is switching weapons on us
