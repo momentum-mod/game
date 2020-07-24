@@ -2,7 +2,7 @@
 //
 // Purpose: NOTE: This file is for backward compat!
 // We'll get rid of it soon. Most of the contents of this file were moved
-// into shaderpi/ishadershadow.h, shaderapi/ishaderdynamic.h, or
+// into shaderapi/ishadershadow.h, shaderapi/ishaderdynamic.h, or
 // shaderapi/shareddefs.h
 //
 // $NoKeywords: $
