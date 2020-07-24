@@ -25,7 +25,7 @@
 
 //-----------------------------------------------------------------------------
 // Purpose: Decodes animtime and notes when it changes
-// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changine
+// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changing
 //			*pVarData - 
 //			*pIn - 
 //			objectID - 
@@ -953,7 +953,7 @@ void C_SceneEntity::DispatchEndExpression( CChoreoScene *scene, C_BaseFlex *acto
 //-----------------------------------------------------------------------------
 void C_SceneEntity::DispatchStartGesture( CChoreoScene *scene, C_BaseFlex *actor, CChoreoEvent *event )
 {
-	// Ingore null gestures
+	// Ignore null gestures
 	if ( !Q_stricmp( event->GetName(), "NULL" ) )
 		return;
 
@@ -967,7 +967,7 @@ void C_SceneEntity::DispatchStartGesture( CChoreoScene *scene, C_BaseFlex *actor
 //-----------------------------------------------------------------------------
 void C_SceneEntity::DispatchProcessGesture( CChoreoScene *scene, C_BaseFlex *actor, CChoreoEvent *event )
 {
-	// Ingore null gestures
+	// Ignore null gestures
 	if ( !Q_stricmp( event->GetName(), "NULL" ) )
 		return;
 
@@ -982,7 +982,7 @@ void C_SceneEntity::DispatchProcessGesture( CChoreoScene *scene, C_BaseFlex *act
 //-----------------------------------------------------------------------------
 void C_SceneEntity::DispatchEndGesture( CChoreoScene *scene, C_BaseFlex *actor, CChoreoEvent *event )
 {
-	// Ingore null gestures
+	// Ignore null gestures
 	if ( !Q_stricmp( event->GetName(), "NULL" ) )
 		return;
 
