@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //
 //=============================================================================//
- //========= Copyright © 1996-2003, Valve LLC, All rights reserved. ============
+ //========= Copyright Â© 1996-2003, Valve LLC, All rights reserved. ============
 //
 // The copyright to the contents herein is the property of Valve, L.L.C.
 // The contents may be used and/or copied only with the written permission of
@@ -174,7 +174,7 @@ void BuildGroup::ToggleRulerDisplay()
 
 
 //-----------------------------------------------------------------------------
-// Purpose:	Tobble visibility of ruler number labels
+// Purpose:	Toggle visibility of ruler number labels
 //-----------------------------------------------------------------------------
 void BuildGroup::SetRulerLabelsVisible(bool state)
 {
@@ -210,7 +210,7 @@ void BuildGroup::DrawRulers()
 		SetRulerLabelsVisible(true);
 	
 	int x, y, wide, tall;
-	// get base panel's postition
+	// get base panel's position
 	m_pBuildContext->GetBounds(x, y, wide, tall);
 	m_pBuildContext->ScreenToLocal(x,y);
 	
@@ -267,7 +267,7 @@ void BuildGroup::DrawRulers()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: respond to cursor movments
+// Purpose: respond to cursor movements
 //-----------------------------------------------------------------------------
 bool BuildGroup::CursorMoved(int x, int y, Panel *panel)
 {
@@ -1373,7 +1373,7 @@ void BuildGroup::RemoveSettings()
 	int i;
 	for( i = 0; i < _controlGroup.Count(); i++ )
 	{		
-		// only delete delatable panels
+		// only delete deletable panels
 		if ( _controlGroup[i].Get()->IsBuildModeDeletable())
 		{
 			delete _controlGroup[i].Get();
