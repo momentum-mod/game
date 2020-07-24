@@ -305,7 +305,7 @@ void CClient_Precipitation::Simulate(float dt)
         return;
     }
 
-    // NOTE: When client-side prechaching works, we need to remove this
+    // NOTE: When client-side precaching works, we need to remove this
     Precache();
 
     m_flHalfScreenWidth = static_cast<float>(ScreenWidth()) / 2.f;
