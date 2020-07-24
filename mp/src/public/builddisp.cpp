@@ -19,7 +19,7 @@
 //
 
 //-----------------------------------------------------------------------------
-// should make this more programatic and extensible!
+// should make this more programmatic and extensible!
 //-----------------------------------------------------------------------------
 int GetNodeLevel( int index )
 {
@@ -139,21 +139,21 @@ bool CalcBarycentricCooefs( Vector const &v0, Vector const &v1, Vector const &v2
 	float totalArea = vCross.Length() * 0.5f;
 	float ooTotalArea = totalArea ? 1.0f / totalArea : 0.0f;
 
-	// get the area for cooeficient 0 (pt, v1, v2)
+	// get the area for coefficient 0 (pt, v1, v2)
 	vSeg0 = v1 - pt;
 	vSeg1 = v2 - pt;
 	vCross = vSeg0.Cross( vSeg1 );
 	float subArea = vCross.Length() * 0.5f;
 	c0 = subArea * ooTotalArea;
 
-	// get the area for cooeficient 1 (v0, pt, v2)
+	// get the area for coefficient 1 (v0, pt, v2)
 	vSeg0 = v2 - pt;
 	vSeg1 = v0 - pt;
 	vCross = vSeg0.Cross( vSeg1 );
 	subArea = vCross.Length() * 0.5f;
 	c1 = subArea * ooTotalArea;
 
-	// get the area for cooeficient 2 (v0, v1, pt)
+	// get the area for coefficient 2 (v0, v1, pt)
 	vSeg0 = v0 - pt;
 	vSeg1 = v1 - pt;
 	vCross = vSeg0.Cross( vSeg1 );
@@ -934,7 +934,7 @@ void CCoreDispInfo::GenerateCollisionSurface( void )
 	int nHeight = ( ( 1 << m_Power ) + 1 );
 
 	//
-	// generate a fan tesselated (at quadtree node) rendering index list
+	// generate a fan tessellated (at quadtree node) rendering index list
 	//
 	m_RenderIndexCount = 0;
 	for ( int iV = 0; iV < ( nHeight - 1 ); iV++ )
@@ -1431,7 +1431,7 @@ void CCoreDispInfo::CalcNodeInfo( int nodeIndex, int terminationLevel )
 		// calculate the error term at the node
 		CalcErrorTermAtNode( nodeIndex, level );
 
-		// calcluate the axial-aligned bounding box at the node
+		// calculate the axial-aligned bounding box at the node
 		CalcBoundingBoxAtNode( nodeIndex );
 
 		// calculate the triangular surface info at the node
