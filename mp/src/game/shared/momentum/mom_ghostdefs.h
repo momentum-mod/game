@@ -165,7 +165,7 @@ public:
     }
 };
 
-// Used for keeping track of when we recieve certain packets.
+// Used for keeping track of when we receive certain packets.
 // NOTE: The packet used as the Generic (T) here needs to have
 // a default constructor and an operator= overload!
 template <class T>
