@@ -33,7 +33,7 @@ outPropsSize -
      In:  the pointer to the size of outProps buffer; *outPropsSize = LZMA_PROPS_SIZE = 5.
      Out: the pointer to the size of written properties in outProps buffer; *outPropsSize = LZMA_PROPS_SIZE = 5.
 
-  LZMA Encoder will use defult values for any parameter, if it is
+  LZMA Encoder will use default values for any parameter, if it is
   -1  for any from: level, loc, lp, pb, fb, numThreads
    0  for dictSize
   
@@ -80,7 +80,7 @@ fb - Word size (the number of fast bytes).
      Usually, a big number gives a little bit better compression ratio and
      slower compression process.
 
-numThreads - The number of thereads. 1 or 2. The default value is 2.
+numThreads - The number of threads. 1 or 2. The default value is 2.
      Fast mode (algo = 0) can use only 1 thread.
 
 Out:
@@ -88,7 +88,7 @@ Out:
 Returns:
   SZ_OK               - OK
   SZ_ERROR_MEM        - Memory allocation error
-  SZ_ERROR_PARAM      - Incorrect paramater
+  SZ_ERROR_PARAM      - Incorrect parameter
   SZ_ERROR_OUTPUT_EOF - output buffer overflow
   SZ_ERROR_THREAD     - errors in multithreading functions (only for Mt version)
 */
@@ -118,7 +118,7 @@ Out:
 Returns:
   SZ_OK                - OK
   SZ_ERROR_DATA        - Data error
-  SZ_ERROR_MEM         - Memory allocation arror
+  SZ_ERROR_MEM         - Memory allocation error
   SZ_ERROR_UNSUPPORTED - Unsupported properties
   SZ_ERROR_INPUT_EOF   - it needs more bytes in input buffer (src)
 */
