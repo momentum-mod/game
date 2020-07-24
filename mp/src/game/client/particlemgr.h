@@ -557,7 +557,7 @@ private:
 	Vector							m_Min;
 	Vector							m_Max;
 
-	// paramter copies to detect changes
+	// parameter copies to detect changes
 	Vector							m_LastMin;
 	Vector							m_LastMax;
 	
