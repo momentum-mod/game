@@ -8,7 +8,7 @@
 // =============================================================================
 // Interface to the LIPSinc TalkBack 1.1 library (TalkBack_*.lib).
 //
-// Copyright © 1998-2002 LIPSinc. All rights reserved.
+// Copyright Â© 1998-2002 LIPSinc. All rights reserved.
 
 #if !defined(TalkBack_h)
 #define TalkBack_h
@@ -674,7 +674,7 @@ TalkBackGetWordEndTime(
 // affected by phoneme editing.
 //
 // NOTE: phoneme editing is only provided in order to support Ventriloquist-like
-// applications where tweaking of the phoneme segmenation (and subsequent
+// applications where tweaking of the phoneme segmentation (and subsequent
 // recalculation of the animation data) is required. Most customers probably
 // won't need this functionality.
 
