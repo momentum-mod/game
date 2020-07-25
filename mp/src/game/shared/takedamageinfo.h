@@ -119,7 +119,7 @@ protected:
 	EHANDLE			m_hWeapon;
 	float			m_flDamage;
 	float			m_flMaxDamage;
-	float			m_flBaseDamage;			// The damage amount before skill leve adjustments are made. Used to get uniform damage forces.
+	float			m_flBaseDamage;			// The damage amount before skill level adjustments are made. Used to get uniform damage forces.
 	int				m_bitsDamageType;
 	int				m_iDamageCustom;
 	int				m_iDamageStats;
