@@ -125,7 +125,7 @@ public:
 	// invalid index (M will never allocate an element at this index)
 	inline static S  InvalidIndex()  { return ( S )M::InvalidIndex(); }
 
-	// Is a given index valid to use? (representible by S and not the invalid index)
+	// Is a given index valid to use? (representable by S and not the invalid index)
 	static bool IndexInRange( I index );
 
 	inline static size_t ElementSize() { return sizeof( ListElem_t ); }
@@ -963,7 +963,7 @@ void  CUtlLinkedList<T,S,ML,I,M>::LinkBefore( I before, I elem )
 	// The element *after* our newly linked one is the one we linked before.
 	pNewElem->m_Next = before;
 	
-	S newElem_mPrevious; // we need to hang on to this for the compairson against InvalidIndex()
+	S newElem_mPrevious; // we need to hang on to this for the comparison against InvalidIndex()
 					// below; otherwise we get a a load-hit-store on pNewElem->m_Previous, even
 					// with RESTRICT
 	if (before == InvalidIndex())
@@ -1085,7 +1085,7 @@ inline void CUtlLinkedList<T,S,ML,I,M>::LinkToTail( I elem )
 
 
 //-----------------------------------------------------------------------------
-// Class to drop in to replace a CUtlLinkedList that needs to be more memory agressive
+// Class to drop in to replace a CUtlLinkedList that needs to be more memory aggressive
 //-----------------------------------------------------------------------------
 
 DECLARE_POINTER_HANDLE( UtlPtrLinkedListIndex_t ); // to enforce correct usage
