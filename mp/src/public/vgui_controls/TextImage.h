@@ -72,7 +72,7 @@ public:
 
 	// set the width of the text to be drawn
 	// use this function if the textImage is in another window to cause 
-	// the text to be truncated to the width of the window (elipsis added)
+	// the text to be truncated to the width of the window (ellipsis added)
 	void SetDrawWidth(int width);
 	// get the width of the text to be drawn
 	void GetDrawWidth(int &width); 
@@ -123,7 +123,7 @@ private:
 	vgui::HFont _font;	// font of the text string
 	vgui::HFont _fallbackFont;
 	int _drawWidth;		// this is the width of the window we are drawing into. 
-						// if there is not enough room truncate the txt	and add an elipsis
+						// if there is not enough room truncate the txt	and add an ellipsis
 
 	StringIndex_t _unlocalizedTextSymbol;	// store off the unlocalized text index for build mode
 	wchar_t *m_pwszEllipsesPosition;
