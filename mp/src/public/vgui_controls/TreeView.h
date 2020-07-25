@@ -74,7 +74,7 @@ public:
 	virtual void GetSelectedItems( CUtlVector< int >& list );
 	virtual void GetSelectedItemData( CUtlVector< KeyValues * >& list );
 
-	// set colors for individual elments
+	// set colors for individual elements
 	virtual void SetItemFgColor(int itemIndex, const Color& color);
 	virtual void SetItemBgColor(int itemIndex, const Color& color);
 	virtual void SetItemSelectionTextColor( int itemIndex, const Color& clr );
