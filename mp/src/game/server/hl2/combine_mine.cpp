@@ -376,7 +376,7 @@ void CBounceBomb::SetMineState( int iState )
 }
 
 //---------------------------------------------------------
-// Bouncbomb flips to try to right itself, try to get off
+// Bouncebomb flips to try to right itself, try to get off
 // of and object that it's not allowed to clamp to, or 
 // to get away from a hint node that inhibits placement
 // of mines.
