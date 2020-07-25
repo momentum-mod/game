@@ -24,7 +24,7 @@ public:
 
 	CScratchPadGraph();
 
-	// Initialze the orientation and scales of the two axes.
+	// Initialize the orientation and scales of the two axes.
 	// Axis indices are 0, 1, or 2 for x, y, and z.
 	void Init( 
 		IScratchPad3D *pPad,
