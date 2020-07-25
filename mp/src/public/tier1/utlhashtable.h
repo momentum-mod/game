@@ -138,7 +138,7 @@ protected:
 	int DoInsertUnconstructed( unsigned int h, bool allowGrow );
 
 	// Implementation for Insert functions, constructs a KVPair
-	// with either a default-construted or copy-constructed value
+	// with either a default-constructed or copy-constructed value
 	template <typename KeyParamT> handle_t DoInsert( KeyParamT k, unsigned int h );
 	template <typename KeyParamT> handle_t DoInsert( KeyParamT k, typename ArgumentTypeInfo<ValueT>::Arg_t v, unsigned int h, bool* pDidInsert );
 	template <typename KeyParamT> handle_t DoInsertNoCheck( KeyParamT k, typename ArgumentTypeInfo<ValueT>::Arg_t v, unsigned int h );
