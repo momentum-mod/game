@@ -74,7 +74,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
 	m_HLTVSpectators = 0;
 	m_ReplaySpectators = 0;
 	
-	// update scoreboard instantly if on of these events occure
+	// update scoreboard instantly if on of these events occurs
 	ListenForGameEvent( "hltv_status" );
 	ListenForGameEvent( "server_spawn" );
 
@@ -373,7 +373,7 @@ void CClientScoreBoardDialog::UpdatePlayerInfo()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: adds the top header of the scoreboars
+// Purpose: adds the top header of the scoreboard
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::AddHeader()
 {
