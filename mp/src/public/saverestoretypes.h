@@ -145,7 +145,7 @@ struct entitytable_t
 	string_t	classname;		// entity class name
 	string_t	globalname;		// entity global name
 	Vector		landmarkModelSpace;	// a fixed position in model space for comparison
-									// NOTE: Brush models can be built in different coordiante systems
+									// NOTE: Brush models can be built in different coordinate systems
 									//		in different levels, so this fixes up local quantities to match
 									//		those differences.
 	string_t	modelname;
@@ -266,7 +266,7 @@ public:
 	}
 
 	saverestorelevelinfo_t levelInfo;
-	Vector		modelSpaceOffset;			// used only for globaly entity brushes modelled in different coordinate systems.
+	Vector		modelSpaceOffset;			// used only for globally entity brushes modeled in different coordinate systems.
 	
 private:
 	int			m_tableCount;		// Number of elements in the entity table
