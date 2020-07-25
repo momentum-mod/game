@@ -205,7 +205,7 @@ public:
 	float	m_flDamageCap;		// Maximum damage per second.
 	float	m_flLastDmgTime;	// Time that we last applied damage.
 	float	m_flDmgResetTime;	// For forgiveness, the time to reset the counter that accumulates damage.
-	int		m_bitsDamageInflict;	// DMG_ damage type that the door or tigger does
+	int		m_bitsDamageInflict;	// DMG_ damage type that the door or trigger does
 	int		m_damageModel;
 	bool	m_bNoDmgForce;		// Should damage from this trigger impart force on what it's hurting
 
