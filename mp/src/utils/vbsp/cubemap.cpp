@@ -404,7 +404,7 @@ void CreateDefaultCubemaps( bool bHDR )
 				}
 				else
 				{
-					// ERROR! This code only supports square and rectangluar 2x wide
+					// ERROR! This code only supports square and rectangular 2x wide
 					Warning( "%s - Couldn't create default cubemap because texture res is %dx%d\n", skyboxMaterialName, pSrcVTFTextures[iFace]->Width(), pSrcVTFTextures[iFace]->Height() );
 					memset( pDstBits, 0, iSize );
 					return;
@@ -832,7 +832,7 @@ void Cubemap_InitCubemapSideData( void )
 		CubemapInfo_t info;
 		info.m_nTableId = pTexData->nameStringTableID;
 
-		// Have we encountered this materal? If so, then copy the data we cached off before
+		// Have we encountered this material? If so, then copy the data we cached off before
 		int i = lookup.Find( info );
 		if ( i != lookup.InvalidIndex() )
 		{
