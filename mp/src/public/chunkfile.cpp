@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: Implements an interface for reading and writing heirarchical
+// Purpose: Implements an interface for reading and writing hierarchical
 //			text files of key value pairs. The format of the file is as follows:
 //
 // chunkname0
