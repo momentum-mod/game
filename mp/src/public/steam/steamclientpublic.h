@@ -344,7 +344,7 @@ enum EChatEntryType
 	k_EChatEntryTypeWasKicked = 8,		// user was kicked (data: 64-bit steamid of actor performing the kick)
 	k_EChatEntryTypeWasBanned = 9,		// user was banned (data: 64-bit steamid of actor performing the ban)
 	k_EChatEntryTypeDisconnected = 10,	// user disconnected
-	k_EChatEntryTypeHistoricalChat = 11,	// a chat message from user's chat history or offilne message
+	k_EChatEntryTypeHistoricalChat = 11,	// a chat message from user's chat history or offline message
 	//k_EChatEntryTypeReserved1 = 12, // No longer used
 	//k_EChatEntryTypeReserved2 = 13, // No longer used
 	k_EChatEntryTypeLinkBlocked = 14, // a link was removed by the chat filter.
@@ -452,7 +452,7 @@ enum EBroadcastUploadResult
 	k_EBroadcastUploadResultNotAllowedToPlay = 14, // Broadcast does not have permissions to play game
 	k_EBroadcastUploadResultBusy = 15, // RTMP host to busy to take new broadcast stream, choose another
 	k_EBroadcastUploadResultBanned = 16, // Account banned from community broadcast
-	k_EBroadcastUploadResultAlreadyActive = 17, // We already already have an stream running.
+	k_EBroadcastUploadResultAlreadyActive = 17, // We already have a stream running.
 	k_EBroadcastUploadResultForcedOff = 18, // We explicitly shutting down a broadcast
 	k_EBroadcastUploadResultAudioBehind = 19, // Audio stream was too far behind video 
 	k_EBroadcastUploadResultShutdown = 20,	// Broadcast Server was shut down
@@ -1360,7 +1360,7 @@ enum EGameSearchErrorCode_t
 	k_EGameSearchErrorCode_Failed_No_Host_Available = 5, // no host is available that matches those search params
 	k_EGameSearchErrorCode_Failed_Search_Params_Invalid = 6, // search params are invalid
 	k_EGameSearchErrorCode_Failed_Offline = 7, // offline, could not communicate with server
-	k_EGameSearchErrorCode_Failed_NotAuthorized = 8, // either the user or the application does not have priveledges to do this
+	k_EGameSearchErrorCode_Failed_NotAuthorized = 8, // either the user or the application does not have privileges to do this
 	k_EGameSearchErrorCode_Failed_Unknown_Error = 9, // unknown error
 };
 
