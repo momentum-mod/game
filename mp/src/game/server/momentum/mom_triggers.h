@@ -398,7 +398,7 @@ public:
 
     void OnStartTouch(CBaseEntity *) OVERRIDE;
     void OnEndTouch(CBaseEntity *) OVERRIDE;
-    void Think() OVERRIDE;
+    void Touch(CBaseEntity *) OVERRIDE;
 
     float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(const float fHoldTime) { m_fMaxHoldSeconds = fHoldTime; }
@@ -455,12 +455,9 @@ public:
 
     CTriggerUserInput();
     void Spawn() OVERRIDE;
-    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
-    void Think() OVERRIDE;
+    void Touch(CBaseEntity* pOther);
 
   private:
-    void CheckEnt(CBaseEntity *pOther);
-
     enum Key
     {
         KEY_FORWARD = 0,
