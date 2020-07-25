@@ -52,7 +52,7 @@ private:
 	// Set up a projection matrix for a 90 degree fov
 	void SetupProjectionMatrix( int nWidth, int nHeight );
 
-	// Sets the camera to look at the the thing we're spinning around
+	// Sets the camera to look at the thing we're spinning around
 	void LookAt( const Vector &vecLookAt, float flRadius );
 
 	// Draw a sphere
