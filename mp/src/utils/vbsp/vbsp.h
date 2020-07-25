@@ -29,7 +29,7 @@ class CUtlBuffer;
 #define	MAX_BRUSH_SIDES	128
 #define	CLIP_EPSILON	0.1
 
-#define	TEXINFO_NODE		-1		// side is allready on a node
+#define	TEXINFO_NODE		-1		// side is already on a node
 
 // this will output glview files for the given brushmodel.  Brushmodel 1 is the world, 2 is the first brush entity, etc.
 #define DEBUG_BRUSHMODEL 0
@@ -71,8 +71,8 @@ struct side_t
 	side_t			*original;	    // bspbrush_t sides will reference the mapbrush_t sides
 	int			    contents;		// from miptex
 	int			    surf;			// from miptex
-	qboolean	    visible;		// choose visble planes first
-	qboolean	    tested;			// this plane allready checked as a split
+	qboolean	    visible;		// choose visible planes first
+	qboolean	    tested;			// this plane already checked as a split
 	qboolean	    bevel;			// don't ever use for bsp splitting
 
     side_t			*next;
