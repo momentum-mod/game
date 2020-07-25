@@ -420,7 +420,7 @@ CommandHandle_t CCommandBuffer::GetNextCommandHandle()
 ===============
 Cmd_Alias_f
 
-Creates a new command that executes a command string (possibly ; seperated)
+Creates a new command that executes a command string (possibly ; separated)
 ===============
 */
 void Cmd_Alias_f (void)
