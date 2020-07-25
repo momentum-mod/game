@@ -1194,7 +1194,7 @@ CChoreoEvent *CChoreoScene::ParseEvent( CChoreoActor *actor, CChoreoChannel *cha
 	e->SetActor( actor );
 	e->SetChannel( channel );
 
-	// It had old sytle ramp and none of the new style stuff
+	// It had old style ramp and none of the new style stuff
 	//  Convert it
 	if ( hadramp && !e->GetRampCount() )
 	{
@@ -1497,7 +1497,7 @@ void CChoreoScene::RemoveEventsExceptTypes( int* typeList, int count )
 		}
 	}
 
-	// Remvoe non-matching global events, too
+	// Remove non-matching global events, too
 	for ( i = m_Events.Count() - 1 ; i >= 0; --i )
 	{
 		CChoreoEvent *e = m_Events[ i ];
@@ -3024,7 +3024,7 @@ void CChoreoScene::ResumeSimulation( void )
 		// Start any suppressed dependencies immediately, should only be .wav files!!!
 		// These are .wav files which are placed at or just after the SECTION pause event
 		//  in the .vcd, but due to the user's sound system latency, they would have triggered before the
-		//  pause (we pre-queue sounds).  Since we suppressed that, we need to unsupress / start these sounds 
+		//  pause (we pre-queue sounds).  Since we suppressed that, we need to unsuppress / start these sounds 
 		//  now that the SECTION pause is being resumed from
 		CUtlVector< CChoreoEvent * > deps;
 		CChoreoEvent *pauseEvent = m_PauseEvents[ m_nLastPauseEvent ];
