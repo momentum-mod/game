@@ -745,7 +745,6 @@ void CTriggerMultihop::OnStartTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         m_mapOnStartTouchedTimes.InsertOrReplace(pOther->entindex(), gpGlobals->curtime);
-        SetNextThink(gpGlobals->curtime);
     }
 }
 
@@ -756,29 +755,20 @@ void CTriggerMultihop::OnEndTouch(CBaseEntity *pOther)
     m_mapOnStartTouchedTimes.Remove(pOther->entindex());
 }
 
-void CTriggerMultihop::Think()
+void CTriggerMultihop::Touch(CBaseEntity *pOther)
 {
-    if (m_hTouchingEntities.Count())
+    if (PassesTriggerFilters(pOther) && pOther->IsPlayer())
     {
-        FOR_EACH_VEC_BACK(m_hTouchingEntities, i)
+        const auto pPlayer = static_cast<CMomentumPlayer*>(pOther);
+        if (pPlayer && m_mapOnStartTouchedTimes.IsValidIndex(m_mapOnStartTouchedTimes.Find(pPlayer->entindex())))
         {
-            if (m_hTouchingEntities[i]->IsPlayer())
+            const auto fEnterTime = m_mapOnStartTouchedTimes[m_mapOnStartTouchedTimes.Find(pPlayer->entindex())];
+            if (gpGlobals->curtime - fEnterTime >= m_fMaxHoldSeconds)
             {
-                const auto pPlayer = static_cast<CMomentumPlayer*>(m_hTouchingEntities[i].Get());
-                if (pPlayer && m_mapOnStartTouchedTimes.IsValidIndex(m_mapOnStartTouchedTimes.Find(pPlayer->entindex())))
-                {
-                    const auto fEnterTime = m_mapOnStartTouchedTimes[m_mapOnStartTouchedTimes.Find(pPlayer->entindex())];
-                    if (gpGlobals->curtime - fEnterTime >= m_fMaxHoldSeconds)
-                    {
-                        TeleportEntity(pPlayer->GetCurrentProgressTrigger(), pPlayer, m_iMode, m_vecVelocityScaler, m_bResetAngles);
-                    }
-                }
+                HandleTeleport(pOther);
             }
         }
-        SetNextThink(gpGlobals->curtime);
     }
-    else
-        SetNextThink(TICK_NEVER_THINK);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -895,48 +885,19 @@ void CTriggerUserInput::Spawn()
     BaseClass::Spawn();
 }
 
-void CTriggerUserInput::OnStartTouch(CBaseEntity *pOther)
+void CTriggerUserInput::Touch(CBaseEntity *pOther)
 {
-    BaseClass::OnStartTouch(pOther);
-
-    if (pOther->IsPlayer())
+    if (PassesTriggerFilters(pOther))
     {
-        CheckEnt(pOther);
-        SetNextThink(gpGlobals->curtime);
-    }
-}
-
-void CTriggerUserInput::Think()
-{
-    if (m_hTouchingEntities.Count())
-    {
-        FOR_EACH_VEC(m_hTouchingEntities, i)
+        const auto pPlayer = static_cast<CBasePlayer*>(pOther);
+        if (pPlayer)
         {
-            const auto pEnt = m_hTouchingEntities[i].Get();
-            CheckEnt(pEnt);
+            if (pPlayer->m_afButtonPressed & m_ButtonRep)
+                m_OnKeyPressed.FireOutput(pPlayer, this);
+
+            if (pPlayer->m_afButtonReleased & m_ButtonRep)
+                m_OnKeyReleased.FireOutput(pPlayer, this);
         }
-
-        SetNextThink(gpGlobals->curtime);
-    }
-    else
-    {
-        SetNextThink(TICK_NEVER_THINK);
-    }
-}
-
-void CTriggerUserInput::CheckEnt(CBaseEntity *pOther)
-{
-    if (!(pOther && pOther->IsPlayer()))
-        return;
-
-    const auto pPlayer = static_cast<CBasePlayer*>(pOther);
-    if (pPlayer)
-    {
-        if (pPlayer->m_afButtonPressed & m_ButtonRep)
-            m_OnKeyPressed.FireOutput(pPlayer, this);
-
-        if (pPlayer->m_afButtonReleased & m_ButtonRep)
-            m_OnKeyReleased.FireOutput(pPlayer, this);
     }
 }
 
