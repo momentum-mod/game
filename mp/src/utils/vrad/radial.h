@@ -28,7 +28,7 @@
 // The radial_t data structure is used to accumulate irregularly spaced and irregularly 
 // shaped direct and indirect lighting samples into a uniformly spaced and shaped luxel grid.
 // 
-// The name "radial" is more historical than discriptive; it stems from the filtering method, 
+// The name "radial" is more historical than descriptive; it stems from the filtering method, 
 // one of several methods initially tried.  Since all the other methods have since been deleted, 
 // it would probably be more accurate to rename it something like "LuxelAccumulationBucket" or 
 // something similar, but since "radial" is fairly meaningless it's not like it's actually confusing 
