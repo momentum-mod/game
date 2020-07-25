@@ -299,7 +299,7 @@ public:
 //-----------------------------------------------------------------------------
 // The CUtlVectorUltra Conservative class:
 // A array class with a very conservative allocation scheme, with customizable allocator
-// Especialy useful if you have a lot of vectors that are sparse, or if you're
+// Especially useful if you have a lot of vectors that are sparse, or if you're
 // carefully packing holders of vectors
 //-----------------------------------------------------------------------------
 #if defined(_MSC_VER)
