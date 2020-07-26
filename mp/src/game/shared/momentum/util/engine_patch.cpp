@@ -42,6 +42,16 @@ CEnginePatch g_EnginePatches[] =
         PATCH_REFERENCE,
         -1.0f
     },
+    // Replace == (jz = 74) with >= (jge = 7D) to prevent static props above 4095 from bypassing this check and causing crashes
+    // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/staticpropmgr.cpp#L1748
+    {
+        "IsStaticPropPatch",
+        "\x55\x8B\xEC\x8B\x4D\x08\x85\xC9\x74\x19\x8B\x01",
+        "xxxxxxxxxxxx",
+        27,
+        PATCH_IMMEDIATE,
+        "\x7D\x06\x32\xC0"
+    },
     // Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
     //{
     //    "BrushLimit",
@@ -70,6 +80,16 @@ CEnginePatch g_EnginePatches[] =
         20,
         PATCH_REFERENCE,
         -1.0f
+    },
+    // Replace == (setz = 0F 94) with >= (setae = 0F 93) to prevent static props above 4095 from bypassing this check and causing crashes
+    // https://github.com/VSES/SourceEngine2007/blob/master/se2007/engine/staticpropmgr.cpp#L1748
+    {
+        "IsStaticPropPatch",
+        "\x55\xB8\x00\x00\x00\x00\x89\xE5\x83\xEC\x18\x8B\x55\x0C\x85\xD2\x74\x15",
+        "xx????xxxxxxxxxxxx",
+        36,
+        PATCH_IMMEDIATE,
+        "\x0F\x94\xC0\xC9"
     },
     // Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
     //{
