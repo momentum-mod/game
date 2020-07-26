@@ -26,15 +26,15 @@ enum SavedLocationComponent_t
 // Saved Location used in the "Saveloc menu"
 struct SavedLocation_t
 {
-    bool crouched;
-    Vector pos;
-    Vector vel;
-    QAngle ang;
-    char targetName[512];
-    char targetClassName[512];
-    float gravityScale;
-    float movementLagScale;
-    int disabledButtons;
+    bool m_bCrouched;
+    Vector m_vecPos;
+    Vector m_vecVel;
+    QAngle m_qaAng;
+    char m_szTargetName[512];
+    char m_szTargetClassName[512];
+    float m_fGravityScale;
+    float m_fMovementLagScale;
+    int m_iDisabledButtons;
     CEventQueueState entEventsState;
 
     int m_savedComponents;
