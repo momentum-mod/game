@@ -83,7 +83,7 @@ bool CMomentumTimer::Start(CMomentumPlayer *pPlayer)
     }
 
     // Perform all the checks to ensure player can start
-    if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
+    if (g_pSavelocSystem->IsUsingSaveLocMenu())
     {
         // MOM_TODO: Allow it based on gametype
         Warning("Cannot start timer while using save loc menu!\n");
@@ -164,7 +164,7 @@ void CMomentumTimer::Stop(CMomentumPlayer *pPlayer, bool bFinished /* = false */
 void CMomentumTimer::Reset(CMomentumPlayer *pPlayer)
 {
     // It'll get set to true if they teleport to a CP out of here
-    g_pMOMSavelocSystem->SetUsingSavelocMenu(false);
+    g_pSavelocSystem->SetUsingSavelocMenu(false);
     pPlayer->ResetRunStats();
     pPlayer->m_Data.m_bMapFinished = false;
     pPlayer->m_Data.m_bTimerRunning = false;
