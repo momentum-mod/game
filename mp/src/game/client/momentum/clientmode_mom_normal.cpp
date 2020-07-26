@@ -371,14 +371,12 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
     static int dominant_buttons = 0;
     static int prev_flags = 0;
 
-    int mdir;
-
     if (!local_player)
     {
         return false;
     }
 
-    mdir = MovementDirection(cmd->viewangles, local_player->GetAbsVelocity());
+    int mdir = MovementDirection(cmd->viewangles, local_player->GetAbsVelocity());
 
     if (mom_release_forward_on_jump.GetBool() && prev_flags & FL_ONGROUND && FL_ONGROUND & local_player->GetFlags() &&
         local_player->GetGroundEntity() &&
@@ -417,7 +415,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         }
     }
 
-    if (!mom_enable_overlapping_keys.GetBool())
+    if (mom_enable_overlapping_keys.GetBool())
     {
         cmd->buttons &= ~local_player->m_afButtonDisabled;
 
