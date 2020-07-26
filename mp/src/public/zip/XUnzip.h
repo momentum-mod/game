@@ -218,7 +218,7 @@ ZRESULT GetZipItemW(HZIP hz, int index, ZIPENTRYW *ze);
 // of items except by calling GetZipItem on each one of them in turn,
 // starting at 0, until eventually the call fails. Also, in the event that
 // you are opening through a pipe and the zip was itself created into a pipe,
-// then then comp_size and sometimes unc_size as well may not be known until
+// then comp_size and sometimes unc_size as well may not be known until
 // after the item has been unzipped.
 
 
@@ -417,7 +417,7 @@ bool IsZipHandleU(HZIP hz);
 #define FormatZipMessage FormatZipMessageU
 #endif
 
-// safe defintion of unzip, catches exceptions
+// safe definition of unzip, catches exceptions
 bool SafeUnzipMemory( const void *pvZipped, int cubZipped, void *pvDest, int cubDest /* should be the exact expected unzipped size */ );
 
 
