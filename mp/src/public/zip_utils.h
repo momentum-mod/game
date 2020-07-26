@@ -33,7 +33,7 @@ public:
 	// Whether a file is contained in a zip - maintains alignment
 	virtual bool			FileExistsInZip		( const char *pRelativeName ) = 0;
 
-	// Reads a file from the zip - maintains alignement.
+	// Reads a file from the zip - maintains alignment.
 	virtual bool			ReadFileFromZip		( const char *pRelativeName, bool bTextMode, CUtlBuffer &buf ) = 0;
 	virtual bool			ReadFileFromZip		( HANDLE hFile, const char *pRelativeName, bool bTextMode, CUtlBuffer &buf ) = 0;
 
@@ -75,7 +75,7 @@ public:
 
 	virtual unsigned int	GetAlignment() = 0;
 
-	// Sets the endianess of the zip
+	// Sets the endianness of the zip
 	virtual void			SetBigEndian( bool bigEndian ) = 0;
 	virtual void			ActivateByteSwapping( bool bActivate ) = 0;
 
