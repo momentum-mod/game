@@ -19,7 +19,12 @@ event LeaderboardsBgFocusLost
 event TimerFailStart
 {
     Animate HudTimer StatusColor "255 0 0 255" Spline 0.0 0.3
-    Animate HudTimer StatusColor "Mom.Panel.Fg" Spline 0.3 0.3
+    RunEvent TimerColorReset 0.3
+}
+
+event TimerColorReset
+{
+    Animate HudTimer StatusColor "Mom.Panel.Fg" Spline 0.0 0.3
 }
 
 event VersionPulse
@@ -929,9 +934,4 @@ event HideVoteBackgrounds
 	Animate		LabelOption3	Alpha	255 Linear	0.0 0.001
 	Animate		LabelOption4	Alpha	255 Linear	0.0 0.001
 	Animate		LabelOption5	Alpha	255 Linear	0.0 0.001
-}
-
-event TimerColorReset
-{
-	Animate HudTimer StatusColor "Mom.Panel.Fg" Spline 0.3 0.3
 }
