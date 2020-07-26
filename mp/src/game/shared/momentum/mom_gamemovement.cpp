@@ -2053,7 +2053,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed()
 {
 #ifndef CLIENT_DLL
     if (m_pPlayer->m_Data.m_bIsInZone && m_pPlayer->m_Data.m_iCurrentZone == 1 &&
-        !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
+        !g_pSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
     {
         // set bhop flag to true so we can't prespeed with practice mode
         if (m_pPlayer->m_bHasPracticeMode)

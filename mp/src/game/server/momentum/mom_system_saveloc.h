@@ -130,4 +130,4 @@ private:
     bool m_bUsingSavelocMenu;
 };
 
-extern CMOMSaveLocSystem *g_pMOMSavelocSystem;
+extern CMOMSaveLocSystem *g_pSavelocSystem;

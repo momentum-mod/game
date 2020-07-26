@@ -574,41 +574,41 @@ void CMOMSaveLocSystem::UpdateRequesters()
 
 CON_COMMAND_F(mom_saveloc_create, "Creates a saveloc that saves a player's state.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->CreateAndSaveLocation();
+    g_pSavelocSystem->CreateAndSaveLocation();
 }
 CON_COMMAND_F(mom_saveloc_current, "Teleports the player to their current saved location.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->TeleportToCurrentSaveloc();
+    g_pSavelocSystem->TeleportToCurrentSaveloc();
 }
 CON_COMMAND_F(mom_saveloc_nav_next, "Goes forwards through the saveloc list, while teleporting the player to each.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->GotoNextSaveloc();
+    g_pSavelocSystem->GotoNextSaveloc();
 }
 CON_COMMAND_F(mom_saveloc_nav_prev, "Goes backwards through the saveloc list, while teleporting the player to each.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->GotoPrevSaveloc();
+    g_pSavelocSystem->GotoPrevSaveloc();
 }
 CON_COMMAND_F(mom_saveloc_nav_first, "Goes to the first saveloc in the list, teleporting the player to it.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->GotoFirstSaveloc();
+    g_pSavelocSystem->GotoFirstSaveloc();
 }
 CON_COMMAND_F(mom_saveloc_nav_last, "Goes to the last saveloc in the list, teleporting the player to it.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->GotoLastSaveloc();
+    g_pSavelocSystem->GotoLastSaveloc();
 }
 CON_COMMAND_F(mom_saveloc_remove_current, "Removes the current saveloc.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->RemoveCurrentSaveloc();
+    g_pSavelocSystem->RemoveCurrentSaveloc();
 }
 CON_COMMAND_F(mom_saveloc_remove_all, "Removes all of the created savelocs for this map.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->RemoveAllSavelocs();
+    g_pSavelocSystem->RemoveAllSavelocs();
 }
 CON_COMMAND_F(mom_saveloc_close, "Closes the saveloc menu.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    g_pMOMSavelocSystem->SetUsingSavelocMenu(false);
+    g_pSavelocSystem->SetUsingSavelocMenu(false);
 }
 
 //Expose this to the DLL
 static CMOMSaveLocSystem s_MOMSavelocSystem("MOMSavelocSystem");
-CMOMSaveLocSystem *g_pMOMSavelocSystem = &s_MOMSavelocSystem;
+CMOMSaveLocSystem *g_pSavelocSystem = &s_MOMSavelocSystem;

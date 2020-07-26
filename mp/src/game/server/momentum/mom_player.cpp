@@ -1145,7 +1145,7 @@ void CMomentumPlayer::OnZoneExit(CTriggerZone *pTrigger)
         }
         // g_pMomentumTimer->CalculateTickIntervalOffset(this, ZONE_TYPE_START, 1);
         g_pMomentumTimer->TryStart(this, true);
-        if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pMOMSavelocSystem->IsUsingSaveLocMenu())
+        if (m_bShouldLimitPlayerSpeed && !m_bHasPracticeMode && !g_pSavelocSystem->IsUsingSaveLocMenu())
         {
             const auto pStart = static_cast<CTriggerTimerStart*>(pTrigger);
 
