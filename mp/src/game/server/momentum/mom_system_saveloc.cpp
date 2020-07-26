@@ -19,6 +19,7 @@ MAKE_TOGGLE_CONVAR(mom_saveloc_save_between_sessions, "1", FCVAR_ARCHIVE, "Defin
 
 SavedLocation_t::SavedLocation_t() : m_bCrouched(false), m_vecPos(vec3_origin), m_vecVel(vec3_origin), m_qaAng(vec3_angle),
                                      m_fGravityScale(1.0f), m_fMovementLagScale(1.0f), m_iDisabledButtons(0), m_savedComponents(SAVELOC_NONE),
+                                     m_iZone(-1), m_iTrack(-1)
 {
     m_szTargetName[0] = '\0';
     m_szTargetClassName[0] = '\0';
@@ -55,6 +56,12 @@ SavedLocation_t::SavedLocation_t(CMomentumPlayer* pPlayer, int components /*= SA
     if ( components & SAVELOC_DISABLED_BTNS )
         m_iDisabledButtons = pPlayer->m_afButtonDisabled.Get();
 
+    if ( components & SAVELOC_TRACK )
+        m_iTrack = pPlayer->m_Data.m_iCurrentTrack;
+
+    if ( components & SAVELOC_ZONE )
+        m_iZone = pPlayer->m_Data.m_iCurrentZone;
+
     if ( components & SAVELOC_EVENT_QUEUE )
         g_EventQueue.SaveForTarget(pPlayer, entEventsState);
 }
@@ -90,6 +97,12 @@ void SavedLocation_t::Save(KeyValues* kvCP) const
     if ( m_savedComponents & SAVELOC_DISABLED_BTNS )
         kvCP->SetInt("disabledButtons", m_iDisabledButtons);
 
+    if ( m_savedComponents & SAVELOC_TRACK )
+        kvCP->SetInt( "track", m_iTrack );
+
+    if ( m_savedComponents & SAVELOC_ZONE )
+        kvCP->SetInt( "zone", m_iZone );
+
     if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
         entEventsState.SaveToKeyValues(kvCP);
 }
@@ -106,6 +119,8 @@ void SavedLocation_t::Load(KeyValues* pKv)
     m_fGravityScale = pKv->GetFloat("gravityScale", 1.0f);
     m_fMovementLagScale = pKv->GetFloat("movementLagScale", 1.0f);
     m_iDisabledButtons = pKv->GetInt("disabledButtons");
+    m_iTrack = pKv->GetInt( "track", -1 );
+    m_iZone = pKv->GetInt( "zone", -1 );
     entEventsState.LoadFromKeyValues(pKv);
 }
 
@@ -141,6 +156,12 @@ void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
 
     if ( m_savedComponents & SAVELOC_MOVEMENTLAG )
         pPlayer->SetLaggedMovementValue(m_fMovementLagScale);
+
+    if ( m_savedComponents & SAVELOC_TRACK && m_iTrack > -1 )
+        pPlayer->m_Data.m_iCurrentTrack = m_iTrack;
+
+    if ( m_savedComponents & SAVELOC_ZONE && m_iZone > -1 )
+        pPlayer->m_Data.m_iCurrentZone = m_iZone;
 
     if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
         g_EventQueue.RestoreForTarget(pPlayer, entEventsState);
