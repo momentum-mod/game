@@ -899,13 +899,21 @@ void Frame::SetupResizeCursors()
 	if (IsSizeable())
 	{
 		_topGrip->SetCursor(dc_sizens);
+		_topGrip->SetVisible(true);
 		_bottomGrip->SetCursor(dc_sizens);
+		_bottomGrip->SetVisible(true);
 		_leftGrip->SetCursor(dc_sizewe);
+		_leftGrip->SetVisible(true);
 		_rightGrip->SetCursor(dc_sizewe);
+		_rightGrip->SetVisible(true);
 		_topLeftGrip->SetCursor(dc_sizenwse);
+		_topLeftGrip->SetVisible(true);
 		_topRightGrip->SetCursor(dc_sizenesw);
+		_topRightGrip->SetVisible(true);
 		_bottomLeftGrip->SetCursor(dc_sizenesw);
+		_bottomLeftGrip->SetVisible(true);
 		_bottomRightGrip->SetCursor(dc_sizenwse);
+		_bottomRightGrip->SetVisible(true);
 
 		_bottomRightGrip->SetPaintEnabled(true);
 		_bottomRightGrip->SetPaintBackgroundEnabled(true);
@@ -914,13 +922,21 @@ void Frame::SetupResizeCursors()
 	{
 		// not resizable, so just use the default cursor
 		_topGrip->SetCursor(dc_arrow);
+		_topGrip->SetVisible(false);
 		_bottomGrip->SetCursor(dc_arrow);
+		_bottomGrip->SetVisible(false);
 		_leftGrip->SetCursor(dc_arrow);
+		_leftGrip->SetVisible(false);
 		_rightGrip->SetCursor(dc_arrow);
+		_rightGrip->SetVisible(false);
 		_topLeftGrip->SetCursor(dc_arrow);
+		_topLeftGrip->SetVisible(false);
 		_topRightGrip->SetCursor(dc_arrow);
+		_topRightGrip->SetVisible(false);
 		_bottomLeftGrip->SetCursor(dc_arrow);
+		_bottomLeftGrip->SetVisible(false);
 		_bottomRightGrip->SetCursor(dc_arrow);
+		_bottomRightGrip->SetVisible(false);
 
 		_bottomRightGrip->SetPaintEnabled(false);
 		_bottomRightGrip->SetPaintBackgroundEnabled(false);
