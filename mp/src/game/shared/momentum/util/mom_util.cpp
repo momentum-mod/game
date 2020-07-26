@@ -432,38 +432,6 @@ bool MomUtil::IsInBounds(const int x, const int y, const int rectX, const int re
     return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY), Vector2D(rectX + rectW, rectY + rectH));
 }
 
-#define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
-    if (!kvInto || !pName)                                                                                             \
-        return;                                                                                                        \
-    char value[512];                                                                                                   \
-    Q_snprintf(value, 512, "%f %f %f", toSave.x, toSave.y, toSave.z);                                                  \
-    kvInto->SetString(pName, value);
-
-#define LOAD_3D_FROM_KV(kvFrom, pName, into)                                                                           \
-    if (!kvFrom || !pName)                                                                                             \
-        return;                                                                                                        \
-    sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
-
-void MomUtil::KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave)
-{
-    SAVE_3D_TO_KV(kvInto, pName, toSave);
-}
-
-void MomUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto)
-{
-    LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
-}
-
-void MomUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave)
-{
-    SAVE_3D_TO_KV(kvInto, pName, toSave);
-}
-
-void MomUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto)
-{
-    LOAD_3D_FROM_KV(kvFrom, pName, angInto);
-}
-
 bool MomUtil::GetSHA1Hash(const CUtlBuffer& buf, char* pOut, size_t outLen)
 {
     CryptoPP::SHA1 hash;
