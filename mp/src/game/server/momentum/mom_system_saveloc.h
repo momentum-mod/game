@@ -56,11 +56,11 @@ struct SavedLocation_t
     bool Write(CUtlBuffer &mem);
 };
 
-class CMOMSaveLocSystem : public CAutoGameSystem
+class CSaveLocSystem : public CAutoGameSystem
 {
 public:
-    CMOMSaveLocSystem(const char* pName);
-    ~CMOMSaveLocSystem();
+    CSaveLocSystem(const char* pName);
+    ~CSaveLocSystem();
     void PostInit() OVERRIDE;
     void LevelInitPreEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
@@ -130,4 +130,4 @@ private:
     bool m_bUsingSavelocMenu;
 };
 
-extern CMOMSaveLocSystem *g_pSavelocSystem;
+extern CSaveLocSystem *g_pSavelocSystem;
