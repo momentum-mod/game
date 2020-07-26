@@ -5,6 +5,24 @@
 class CMomentumPlayer;
 class SavelocReqPacket;
 
+enum SavedLocationComponent_t
+{
+    SAVELOC_NONE = 0,
+
+    SAVELOC_POS = 1 << 0,
+    SAVELOC_VEL = 1 << 1,
+    SAVELOC_ANG = 1 << 2,
+    SAVELOC_TARGETNAME = 1 << 3,
+    SAVELOC_CLASSNAME = 1 << 4,
+    SAVELOC_GRAVITY = 1 << 5,
+    SAVELOC_MOVEMENTLAG = 1 << 6,
+    SAVELOC_DISABLED_BTNS = 1 << 7,
+    SAVELOC_EVENT_QUEUE = 1 << 8,
+    SAVELOC_DUCKED = 1 << 9,
+
+    SAVELOC_ALL = ~SAVELOC_NONE,
+};
+
 // Saved Location used in the "Saveloc menu"
 struct SavedLocation_t
 {
@@ -19,10 +37,12 @@ struct SavedLocation_t
     int disabledButtons;
     CEventQueueState entEventsState;
 
+    int m_savedComponents;
+
     SavedLocation_t();
 
     // Called when the player creates a checkpoint
-    SavedLocation_t(CMomentumPlayer* pPlayer);
+    SavedLocation_t(CMomentumPlayer* pPlayer, int components = SAVELOC_ALL);
 
     // Called when saving the checkpoint to file
     void Save(KeyValues* kvCP) const;
@@ -65,7 +85,7 @@ public:
     // Is the player currently using the saveloc menu?
     bool IsUsingSaveLocMenu() const { return m_bUsingSavelocMenu; }
     // Creates a saveloc on the location of the player
-    SavedLocation_t *CreateSaveloc();
+    SavedLocation_t *CreateSaveloc(int components = SAVELOC_ALL);
     // Creates and saves a checkpoint to the saveloc menu
     void CreateAndSaveLocation();
     // Add a Saveloc to the list

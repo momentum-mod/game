@@ -18,47 +18,90 @@
 MAKE_TOGGLE_CONVAR(mom_saveloc_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if savelocs should be saved between sessions of the same map.\n");
 
 SavedLocation_t::SavedLocation_t(): crouched(false), pos(vec3_origin), vel(vec3_origin), ang(vec3_angle),
-                                    gravityScale(1.0f), movementLagScale(1.0f), disabledButtons(0)
+                                    gravityScale(1.0f), movementLagScale(1.0f), disabledButtons(0), m_savedComponents(SAVELOC_NONE)
 {
     targetName[0] = '\0';
     targetClassName[0] = '\0';
 }
 
-SavedLocation_t::SavedLocation_t(CMomentumPlayer* pPlayer)
+SavedLocation_t::SavedLocation_t(CMomentumPlayer* pPlayer, int components /*= SAVELOC_ALL*/) : SavedLocation_t()
 {
-    Q_strncpy(targetName, pPlayer->GetEntityName().ToCStr(), sizeof(targetName));
-    Q_strncpy(targetClassName, pPlayer->GetClassname(), sizeof(targetClassName));
-    vel = pPlayer->GetAbsVelocity();
-    pos = pPlayer->GetAbsOrigin();
-    ang = pPlayer->GetAbsAngles();
-    crouched = pPlayer->m_Local.m_bDucked || pPlayer->m_Local.m_bDucking;
-    gravityScale = pPlayer->GetGravity();
-    movementLagScale = pPlayer->GetLaggedMovementValue();
-    disabledButtons = pPlayer->m_afButtonDisabled.Get();
-    g_EventQueue.SaveForTarget(pPlayer, entEventsState);
+    m_savedComponents = components;
+
+    if ( components & SAVELOC_TARGETNAME )
+        Q_strncpy(targetName, pPlayer->GetEntityName().ToCStr(), sizeof(targetName));
+
+    if ( components & SAVELOC_CLASSNAME )
+        Q_strncpy(targetClassName, pPlayer->GetClassname(), sizeof(targetClassName));
+
+    if ( components & SAVELOC_VEL )
+        vel = pPlayer->GetAbsVelocity();
+
+    if ( components & SAVELOC_POS )
+        pos = pPlayer->GetAbsOrigin();
+
+    if ( components & SAVELOC_ANG )
+        ang = pPlayer->GetAbsAngles();
+
+    if ( components & SAVELOC_DUCKED )
+        crouched = pPlayer->m_Local.m_bDucked || pPlayer->m_Local.m_bDucking;
+
+    if ( components & SAVELOC_GRAVITY )
+        gravityScale = pPlayer->GetGravity();
+
+    if ( components & SAVELOC_MOVEMENTLAG )
+        movementLagScale = pPlayer->GetLaggedMovementValue();
+
+    if ( components & SAVELOC_DISABLED_BTNS )
+        disabledButtons = pPlayer->m_afButtonDisabled.Get();
+
+    if ( components & SAVELOC_EVENT_QUEUE )
+        g_EventQueue.SaveForTarget(pPlayer, entEventsState);
 }
 
 void SavedLocation_t::Save(KeyValues* kvCP) const
 {
-    kvCP->SetString("targetName", targetName);
-    kvCP->SetString("targetClassName", targetClassName);
-    MomUtil::KVSaveVector(kvCP, "vel", vel);
-    MomUtil::KVSaveVector(kvCP, "pos", pos);
-    MomUtil::KVSaveQAngles(kvCP, "ang", ang);
-    kvCP->SetBool("crouched", crouched);
-    kvCP->SetFloat("gravityScale", gravityScale);
-    kvCP->SetFloat("movementLagScale", movementLagScale);
-    kvCP->SetInt("disabledButtons", disabledButtons);
-    entEventsState.SaveToKeyValues(kvCP);
+    kvCP->SetInt( "components", m_savedComponents );
+
+    if ( m_savedComponents & SAVELOC_TARGETNAME )
+        kvCP->SetString("targetName", targetName);
+
+    if ( m_savedComponents & SAVELOC_CLASSNAME )
+        kvCP->SetString("targetClassName", targetClassName);
+
+    if ( m_savedComponents & SAVELOC_VEL )
+        MomUtil::Save3DToKeyValues( kvCP, "vel", vel );
+
+    if ( m_savedComponents & SAVELOC_POS )
+        MomUtil::Save3DToKeyValues( kvCP, "pos", pos );
+
+    if ( m_savedComponents & SAVELOC_ANG )
+        MomUtil::Save3DToKeyValues( kvCP, "ang", ang );
+
+    if ( m_savedComponents & SAVELOC_DUCKED )
+        kvCP->SetBool("crouched", crouched);
+
+    if ( m_savedComponents & SAVELOC_GRAVITY )
+        kvCP->SetFloat("gravityScale", gravityScale);
+
+    if ( m_savedComponents & SAVELOC_MOVEMENTLAG )
+        kvCP->SetFloat("movementLagScale", movementLagScale);
+
+    if ( m_savedComponents & SAVELOC_DISABLED_BTNS )
+        kvCP->SetInt("disabledButtons", disabledButtons);
+
+    if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
+        entEventsState.SaveToKeyValues(kvCP);
 }
 
 void SavedLocation_t::Load(KeyValues* pKv)
 {
+    m_savedComponents = pKv->GetInt( "components", SAVELOC_ALL );
     Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
     Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));
-    MomUtil::KVLoadVector(pKv, "pos", pos);
-    MomUtil::KVLoadVector(pKv, "vel", vel);
-    MomUtil::KVLoadQAngles(pKv, "ang", ang);
+    MomUtil::Load3DFromKeyValues( pKv, "pos", pos );
+    MomUtil::Load3DFromKeyValues( pKv, "vel", vel );
+    MomUtil::Load3DFromKeyValues( pKv, "ang", ang );
     crouched = pKv->GetBool("crouched");
     gravityScale = pKv->GetFloat("gravityScale", 1.0f);
     movementLagScale = pKv->GetFloat("movementLagScale", 1.0f);
@@ -68,26 +111,39 @@ void SavedLocation_t::Load(KeyValues* pKv)
 
 void SavedLocation_t::Teleport(CMomentumPlayer* pPlayer)
 {
-    // Handle custom ent flags that old maps do
-    pPlayer->SetName(MAKE_STRING(targetName));
-    pPlayer->SetClassname(targetClassName);
+    if ( m_savedComponents & SAVELOC_TARGETNAME )
+        pPlayer->SetName(MAKE_STRING(targetName));
 
-    // Handle the crouched state
-    if (crouched && !pPlayer->m_Local.m_bDucked)
-        pPlayer->ToggleDuckThisFrame(true);
-    else if (!crouched && pPlayer->m_Local.m_bDucked)
-        pPlayer->ToggleDuckThisFrame(false);
+    if ( m_savedComponents & SAVELOC_CLASSNAME )
+        pPlayer->SetClassname(targetClassName);
 
-    // Teleport the player
-    pPlayer->Teleport(&pos, &ang, &vel);
+    if ( m_savedComponents & SAVELOC_DUCKED )
+    {
+        if ( crouched && !pPlayer->m_Local.m_bDucked )
+        {
+            pPlayer->ToggleDuckThisFrame( true );
+        }
+        else if ( !crouched && pPlayer->m_Local.m_bDucked )
+        {
+            pPlayer->ToggleDuckThisFrame( false );
+        }
+    }
 
-    // Handle miscellaneous states like gravity and speed
-    pPlayer->SetGravity(gravityScale);
-    pPlayer->DisableButtons(disabledButtons);
-    pPlayer->SetLaggedMovementValue(movementLagScale);
+    pPlayer->Teleport(&pos,
+                      m_savedComponents & SAVELOC_ANG ? &ang : nullptr,
+                      m_savedComponents & SAVELOC_VEL ? &vel : nullptr);
 
-    // Restore entity event queue state
-    g_EventQueue.RestoreForTarget(pPlayer, entEventsState);
+    if ( m_savedComponents & SAVELOC_GRAVITY )
+        pPlayer->SetGravity(gravityScale);
+
+    if ( m_savedComponents & SAVELOC_DISABLED_BTNS )
+        pPlayer->DisableButtons(disabledButtons);
+
+    if ( m_savedComponents & SAVELOC_MOVEMENTLAG )
+        pPlayer->SetLaggedMovementValue(movementLagScale);
+
+    if ( m_savedComponents & SAVELOC_EVENT_QUEUE )
+        g_EventQueue.RestoreForTarget(pPlayer, entEventsState);
 }
 
 bool SavedLocation_t::Read(CUtlBuffer &mem)
@@ -155,10 +211,12 @@ void CMOMSaveLocSystem::LevelInitPreEntity()
                     m_iCurrentSavelocIndx = kvMapSavelocs->GetInt("cur");
 
                     KeyValues *kvCPs = kvMapSavelocs->FindKey("cps");
-                    if (!kvCPs) return;
+                    if (!kvCPs)
+                        return;
+
                     FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
                     {
-                        SavedLocation_t *c = new SavedLocation_t();
+                        auto c = new SavedLocation_t;
                         c->Load(kvCheckpoint);
                         m_rcSavelocs.AddToTail(c);
                     }
@@ -349,10 +407,10 @@ bool CMOMSaveLocSystem::ReadReceivedSavelocs(SavelocReqPacket *input, const uint
     return false;
 }
 
-SavedLocation_t* CMOMSaveLocSystem::CreateSaveloc()
+SavedLocation_t* CMOMSaveLocSystem::CreateSaveloc(int components /*= SAVELOC_ALL*/)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
-    return pPlayer ? new SavedLocation_t(pPlayer) : nullptr;
+    return pPlayer ? new SavedLocation_t(pPlayer, components) : nullptr;
 }
 
 void CMOMSaveLocSystem::CreateAndSaveLocation()
