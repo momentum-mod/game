@@ -10,6 +10,7 @@
 "+walk"         "#Valve_Walk"
 "+jump"			"#Valve_Jump"
 "+duck"			"#Valve_Duck"
+"+speed"        "#Valve_Sprint"
 "blank"			"=========================="
 "blank"			"#MOM_Controls_Title"
 "blank"			"=========================="
