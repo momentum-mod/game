@@ -747,10 +747,9 @@ void CMomentumPlayer::CreateStartMark()
     {
         ClearStartMark(m_Data.m_iCurrentTrack);
 
-        m_pStartZoneMarks[m_Data.m_iCurrentTrack] = g_pMOMSavelocSystem->CreateSaveloc();
+        m_pStartZoneMarks[m_Data.m_iCurrentTrack] = g_pSavelocSystem->CreateSaveloc(SAVELOC_POS | SAVELOC_ANG);
         if (m_pStartZoneMarks[m_Data.m_iCurrentTrack])
         {
-            m_pStartZoneMarks[m_Data.m_iCurrentTrack]->vel = vec3_origin; // Rid the velocity
             DevLog("Successfully created a starting mark!\n");
         }
         else
