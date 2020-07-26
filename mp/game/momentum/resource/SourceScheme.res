@@ -17,14 +17,14 @@ Scheme
     {
         // base colors
         "White"				"255 255 255 255"
-        "WhiteHO"           "255 255 255 128"
+        "WhiteHO"           "255 255 255 127"
         "OffWhite"			"221 221 221 255"
         "DullWhite"			"190 190 190 255"
         "Light Gray"		"211 211 211 20"
         "Gray" 				"128 128 128 150"
         "Dark Gray" 		"64 64 64 200"
         "Black"                "0 0 0 255"
-        "BlackHO"           "0 0 0 128"
+        "BlackHO"           "0 0 0 127"
         "TransparentBlack"    "0 0 0 196"
         "TransparentLightBlack"    "0 0 0 90"
 
@@ -41,7 +41,7 @@ Scheme
         "MomentumRed"	    "255 106 106 255"
         "MomentumGreen"	    "152 255 153 255"
         "MomentumBlue"	    "24 150 211 255"
-        "MomentumBlueHO"    "24 150 211 128"
+        "MomentumBlueHO"    "24 150 211 127"
         "MomentumLightBlue"	"76 139 180 255"
 
         "MomGreydientStep1" "32 32 32 255"
