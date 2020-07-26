@@ -165,7 +165,7 @@ bool SavedLocation_t::Write(CUtlBuffer &mem)
     return write->WriteAsBinary(mem);
 }
 
-CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName)
+CSaveLocSystem::CSaveLocSystem(const char* pName): CAutoGameSystem(pName)
 {
     m_pSavedLocsKV = new KeyValues(pName);
     m_iRequesting = 0;
@@ -173,19 +173,19 @@ CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName)
     m_bUsingSavelocMenu = false;
 }
 
-CMOMSaveLocSystem::~CMOMSaveLocSystem()
+CSaveLocSystem::~CSaveLocSystem()
 {
     if (m_pSavedLocsKV)
         m_pSavedLocsKV->deleteThis();
     m_pSavedLocsKV = nullptr;
 }
 
-void CMOMSaveLocSystem::PostInit()
+void CSaveLocSystem::PostInit()
 {
-    g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &CMOMSaveLocSystem::OnSavelocRequestEvent));
+    g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &CSaveLocSystem::OnSavelocRequestEvent));
 }
 
-void CMOMSaveLocSystem::LevelInitPreEntity()
+void CSaveLocSystem::LevelInitPreEntity()
 {
     // We don't check mom_savelocs_save_between_sessions because we want to be able to load savelocs from friends
     DevLog("Loading savelocs from %s ...\n", SAVELOC_FILE_NAME);
@@ -229,7 +229,7 @@ void CMOMSaveLocSystem::LevelInitPreEntity()
     }
 }
 
-void CMOMSaveLocSystem::LevelShutdownPreEntity()
+void CSaveLocSystem::LevelShutdownPreEntity()
 {
     if (CMomentumPlayer::GetLocalPlayer() && m_pSavedLocsKV && mom_saveloc_save_between_sessions.GetBool())
     {
@@ -275,7 +275,7 @@ void CMOMSaveLocSystem::LevelShutdownPreEntity()
     RemoveAllSavelocs();
 }
 
-void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
+void CSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
 {
     int stage = pKv->GetInt("stage", SAVELOC_REQ_STAGE_INVALID);
     CSteamID target(pKv->GetUint64("target"));
@@ -310,7 +310,7 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
     }
 }
 
-bool CMOMSaveLocSystem::AddSavelocRequester(const uint64& newReq)
+bool CSaveLocSystem::AddSavelocRequester(const uint64& newReq)
 {
     if (m_vecRequesters.HasElement(newReq))
         return false;
@@ -319,7 +319,7 @@ bool CMOMSaveLocSystem::AddSavelocRequester(const uint64& newReq)
     return true;
 }
 
-void CMOMSaveLocSystem::RequesterLeft(const uint64& requester)
+void CSaveLocSystem::RequesterLeft(const uint64& requester)
 {
     // The person we are requesting savelocs from just left
     if (requester == m_iRequesting)
@@ -336,7 +336,7 @@ void CMOMSaveLocSystem::RequesterLeft(const uint64& requester)
     m_vecRequesters.FindAndFastRemove(requester);
 }
 
-void CMOMSaveLocSystem::SetRequestingSavelocsFrom(const uint64& from)
+void CSaveLocSystem::SetRequestingSavelocsFrom(const uint64& from)
 {
     if (m_iRequesting && from != 0)
     {
@@ -347,7 +347,7 @@ void CMOMSaveLocSystem::SetRequestingSavelocsFrom(const uint64& from)
     m_iRequesting = from;
 }
 
-bool CMOMSaveLocSystem::WriteRequestedSavelocs(SavelocReqPacket *input, SavelocReqPacket *output, const uint64 &requester)
+bool CSaveLocSystem::WriteRequestedSavelocs(SavelocReqPacket *input, SavelocReqPacket *output, const uint64 &requester)
 {
     if (!m_vecRequesters.HasElement(requester))
         return false;
@@ -377,7 +377,7 @@ bool CMOMSaveLocSystem::WriteRequestedSavelocs(SavelocReqPacket *input, SavelocR
     return true;
 }
 
-bool CMOMSaveLocSystem::ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender)
+bool CSaveLocSystem::ReadReceivedSavelocs(SavelocReqPacket *input, const uint64 &sender)
 {
     if (sender != m_iRequesting)
         return false;
@@ -407,13 +407,13 @@ bool CMOMSaveLocSystem::ReadReceivedSavelocs(SavelocReqPacket *input, const uint
     return false;
 }
 
-SavedLocation_t* CMOMSaveLocSystem::CreateSaveloc(int components /*= SAVELOC_ALL*/)
+SavedLocation_t* CSaveLocSystem::CreateSaveloc(int components /*= SAVELOC_ALL*/)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     return pPlayer ? new SavedLocation_t(pPlayer, components) : nullptr;
 }
 
-void CMOMSaveLocSystem::CreateAndSaveLocation()
+void CSaveLocSystem::CreateAndSaveLocation()
 {
     SavedLocation_t *created = CreateSaveloc();
     if (created)
@@ -424,7 +424,7 @@ void CMOMSaveLocSystem::CreateAndSaveLocation()
     }
 }
 
-void CMOMSaveLocSystem::AddSaveloc(SavedLocation_t* saveloc)
+void CSaveLocSystem::AddSaveloc(SavedLocation_t* saveloc)
 {
     if (!saveloc)
         return;
@@ -439,7 +439,7 @@ void CMOMSaveLocSystem::AddSaveloc(SavedLocation_t* saveloc)
     FireUpdateEvent();
 }
 
-void CMOMSaveLocSystem::RemoveCurrentSaveloc()
+void CSaveLocSystem::RemoveCurrentSaveloc()
 {
     if (m_rcSavelocs.IsEmpty())
         return;
@@ -455,7 +455,7 @@ void CMOMSaveLocSystem::RemoveCurrentSaveloc()
     UpdateRequesters();
 }
 
-void CMOMSaveLocSystem::RemoveAllSavelocs()
+void CSaveLocSystem::RemoveAllSavelocs()
 {
     m_rcSavelocs.PurgeAndDeleteElements();
     m_iCurrentSavelocIndx = -1;
@@ -464,7 +464,7 @@ void CMOMSaveLocSystem::RemoveAllSavelocs()
     UpdateRequesters();
 }
 
-void CMOMSaveLocSystem::GotoNextSaveloc()
+void CSaveLocSystem::GotoNextSaveloc()
 {
     auto count = GetSavelocCount();
     if (count > 0)
@@ -474,7 +474,7 @@ void CMOMSaveLocSystem::GotoNextSaveloc()
     }
 }
 
-void CMOMSaveLocSystem::GotoFirstSaveloc()
+void CSaveLocSystem::GotoFirstSaveloc()
 {
     if (!m_rcSavelocs.IsEmpty())
     {
@@ -483,7 +483,7 @@ void CMOMSaveLocSystem::GotoFirstSaveloc()
     }
 }
 
-void CMOMSaveLocSystem::GotoLastSaveloc()
+void CSaveLocSystem::GotoLastSaveloc()
 {
     auto count = GetSavelocCount();
     if (count > 0)
@@ -493,7 +493,7 @@ void CMOMSaveLocSystem::GotoLastSaveloc()
     }
 }
 
-void CMOMSaveLocSystem::GotoPrevSaveloc()
+void CSaveLocSystem::GotoPrevSaveloc()
 {
     auto count = GetSavelocCount();
     if (count > 0)
@@ -503,7 +503,7 @@ void CMOMSaveLocSystem::GotoPrevSaveloc()
     }
 }
 
-void CMOMSaveLocSystem::TeleportToSavelocIndex(int indx)
+void CSaveLocSystem::TeleportToSavelocIndex(int indx)
 {
     const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
     if (indx < 0 || indx > m_rcSavelocs.Count() || !pPlayer || !pPlayer->AllowUserTeleports())
@@ -513,7 +513,7 @@ void CMOMSaveLocSystem::TeleportToSavelocIndex(int indx)
     m_rcSavelocs[indx]->Teleport(pPlayer);
 }
 
-void CMOMSaveLocSystem::TeleportToCurrentSaveloc()
+void CSaveLocSystem::TeleportToCurrentSaveloc()
 {
     if (g_pRunSafeguards->IsSafeguarded(RUN_SAFEGUARD_SAVELOC_TELE))
         return; 
@@ -522,13 +522,13 @@ void CMOMSaveLocSystem::TeleportToCurrentSaveloc()
     FireUpdateEvent();
 }
 
-void CMOMSaveLocSystem::SetUsingSavelocMenu(bool bIsUsingSLMenu)
+void CSaveLocSystem::SetUsingSavelocMenu(bool bIsUsingSLMenu)
 {
     m_bUsingSavelocMenu = bIsUsingSLMenu;
     FireUpdateEvent();
 }
 
-void CMOMSaveLocSystem::CheckTimer()
+void CSaveLocSystem::CheckTimer()
 {
     if (g_pMomentumTimer->IsRunning())
     {
@@ -543,7 +543,7 @@ void CMOMSaveLocSystem::CheckTimer()
     m_bUsingSavelocMenu = true;
 }
 
-void CMOMSaveLocSystem::FireUpdateEvent() const
+void CSaveLocSystem::FireUpdateEvent() const
 {
     const auto pEvent = gameeventmanager->CreateEvent("saveloc_upd8");
     if (pEvent)
@@ -555,7 +555,7 @@ void CMOMSaveLocSystem::FireUpdateEvent() const
     }
 }
 
-void CMOMSaveLocSystem::UpdateRequesters()
+void CSaveLocSystem::UpdateRequesters()
 {
     if (m_vecRequesters.IsEmpty())
         return;
@@ -610,5 +610,5 @@ CON_COMMAND_F(mom_saveloc_close, "Closes the saveloc menu.\n", FCVAR_CLIENTCMD_C
 }
 
 //Expose this to the DLL
-static CMOMSaveLocSystem s_MOMSavelocSystem("MOMSavelocSystem");
-CMOMSaveLocSystem *g_pSavelocSystem = &s_MOMSavelocSystem;
+static CSaveLocSystem s_MOMSavelocSystem("MOMSavelocSystem");
+CSaveLocSystem *g_pSavelocSystem = &s_MOMSavelocSystem;
