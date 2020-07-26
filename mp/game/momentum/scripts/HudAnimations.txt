@@ -18,7 +18,7 @@ event LeaderboardsBgFocusLost
 
 event TimerFailStart
 {
-    Animate HudTimer StatusColor "255 0 0 255" Spline 0.0 0.3
+    Animate HudTimer StatusColor "MomentumRed" Spline 0.0 0.3
     RunEvent TimerColorReset 0.3
 }
 
@@ -78,10 +78,10 @@ event MenuClose
 	// Hide it
 	Animate CHudMenuStatic Alpha 		"0" Linear 0.0 1
 	Animate CHudMenuStatic SelectionAlpha 	"0" Linear 0.0 1
-	Animate CHudMenuStatic FgColor		"0 0 0 0" Linear 0.0 1
-	Animate CHudMenuStatic MenuColor		"0 0 0 0" Linear 0.0 1
-    Animate CHudMenuStatic MenuBoxColor     "0 0 0 0" Linear 0.0 1
-	Animate CHudMenuStatic MenuItemColor	"0 0 0 0" Linear 0.0 1
+	Animate CHudMenuStatic FgColor		"Blank" Linear 0.0 1
+	Animate CHudMenuStatic MenuColor		"Blank" Linear 0.0 1
+    Animate CHudMenuStatic MenuBoxColor     "Blank" Linear 0.0 1
+	Animate CHudMenuStatic MenuItemColor	"Blank" Linear 0.0 1
 }
 
 event FadeOutMapFinishedPanel
@@ -160,8 +160,8 @@ event OpenWeaponSelectionMenu
 event CloseWeaponSelectionMenu
 {
 	// hide the whole thing near immediately
-	Animate HudWeaponSelection FgColor		"0 0 0 0"	Linear 0.0 0.1
-	Animate HudWeaponSelection TextColor		"0 0 0 0"	Linear 0.0 0.1
+	Animate HudWeaponSelection FgColor		"Blank"	Linear 0.0 0.1
+	Animate HudWeaponSelection TextColor		"Blank"	Linear 0.0 0.1
 	Animate HudWeaponSelection Alpha		"0" 		Linear 0.0 0.1
 	Animate HudWeaponSelection SelectionAlpha 	"0" 		Linear 0.0 0.1
 }
@@ -169,21 +169,21 @@ event CloseWeaponSelectionMenu
 event FadeOutWeaponSelectionMenu
 {
 	// slowly hide the whole thing
-	Animate HudWeaponSelection FgColor		"0 0 0 0"	Linear 0.5 1.0
-	Animate HudWeaponSelection TextColor		"0 0 0 0"	Linear 0.5 1.0
+	Animate HudWeaponSelection FgColor		"Blank"	Linear 0.5 1.0
+	Animate HudWeaponSelection TextColor		"Blank"	Linear 0.5 1.0
 	Animate HudWeaponSelection Alpha		"0" 		Linear 0.5 1.0
 	Animate HudWeaponSelection SelectionAlpha 	"0" 		Linear 0.5 1.0
 
-	Animate HudWeaponSelection WeaponBoxDist1Alpha	"0 0 0 0"	Linear 0.0 0.5
-	Animate HudWeaponSelection WeaponBoxDist2Alpha	"0 0 0 0"	Linear 0.0 0.5
-	Animate HudWeaponSelection WeaponBoxDist3Alpha	"0 0 0 0"	Linear 0.0 0.5
+	Animate HudWeaponSelection WeaponBoxDist1Alpha	"Blank"	Linear 0.0 0.5
+	Animate HudWeaponSelection WeaponBoxDist2Alpha	"Blank"	Linear 0.0 0.5
+	Animate HudWeaponSelection WeaponBoxDist3Alpha	"Blank"	Linear 0.0 0.5
 }
 
 event SuitAuxPowerMax
 {
 	// hide the suit power
-	Animate HudSuitPower BgColor		"0 0 0 0"		Linear 0.0 0.4
-	Animate HudSuitPower AuxPowerColor	"0 0 0 0"		Linear 0.0 0.4
+	Animate HudSuitPower BgColor		"Blank"		Linear 0.0 0.4
+	Animate HudSuitPower AuxPowerColor	"Blank"		Linear 0.0 0.4
 }
 
 event SuitAuxPowerNotMax
@@ -251,8 +251,8 @@ event SuitFlashlightOn
 event SuitFlashlightOff
 {
 	StopEvent SuitFlashlightOn	0.0
-	Animate HudFlashlight TextColor		"0 0 0 0"	Linear 0.0 0.4
-	Animate HudFlashlight BgColor		"0 0 0 0"	Linear 0.0 0.4
+	Animate HudFlashlight TextColor		"Blank"	Linear 0.0 0.4
+	Animate HudFlashlight BgColor		"Blank"	Linear 0.0 0.4
 }
 
 event HudTakeDamageFront
@@ -644,8 +644,8 @@ event WeaponUsesSecondaryAmmo
 event WeaponDoesNotUseSecondaryAmmo
 {
 	StopPanelAnimations	HudAmmoSecondary 	0.0
-	Animate HudAmmoSecondary	FgColor		"0 0 0 0"	Linear	0.0		0.4
-	Animate HudAmmoSecondary	BgColor		"0 0 0 0"	Linear	0.0		0.4
+	Animate HudAmmoSecondary	FgColor		"Blank"	Linear	0.0		0.4
+	Animate HudAmmoSecondary	BgColor		"Blank"	Linear	0.0		0.4
 	Animate HudAmmoSecondary	Alpha		0		Linear	0.0		0.1
 }
 
