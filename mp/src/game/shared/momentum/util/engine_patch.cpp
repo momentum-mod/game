@@ -28,6 +28,7 @@
 // m_iOffset:       Patch offset
 // m_bImmediate:    Immediate or referenced variable
 // m_pPatch:        Patch bytes (int/float/char*)
+// m_iLength:       Patch length (only with char* patches)
 //==============================
 CEnginePatch g_EnginePatches[] =
 {
@@ -50,7 +51,8 @@ CEnginePatch g_EnginePatches[] =
         "xxxxxxxxxxxx",
         27,
         PATCH_IMMEDIATE,
-        "\x7D\x06\x32\xC0"
+        "\x7D",
+        1
     },
     // Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
     //{
@@ -68,7 +70,8 @@ CEnginePatch g_EnginePatches[] =
     //    "xxxxx????",
     //    5,
     //    PATCH_IMMEDIATE,
-    //    "\x00\x40\x00\x00"
+    //    "\x00\x40\x00\x00",
+    //    4
     //}
 #elif __linux__
     // Prevent the culling of skyboxes at high FOVs
@@ -89,7 +92,8 @@ CEnginePatch g_EnginePatches[] =
         "xx????xxxxxxxxxxxx",
         36,
         PATCH_IMMEDIATE,
-        "\x0F\x94\xC0\xC9"
+        "\x0F\x93",
+        2
     },
     // Example patch: Trigger "Map has too many brushes" error at 16384 brushes instead of 8192
     //{
@@ -107,7 +111,8 @@ CEnginePatch g_EnginePatches[] =
     //    "x????xxxxxxxxx",
     //    14,
     //    PATCH_IMMEDIATE,
-    //    "\x00\x40\x00\x00"
+    //    "\x00\x40\x00\x00",
+    //    4
     //}
 #endif //_WIN32
 };
@@ -269,9 +274,9 @@ CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t
     Q_memcpy(m_pPatch, &value, m_iLength);
 }
 
-CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate, char* bytes)
+CEnginePatch::CEnginePatch(const char* name, char* signature, char* mask, size_t offset, bool immediate, char* bytes, size_t length)
     : CEnginePatch(name, signature, mask, offset, immediate)
 {
-    m_iLength = sizeof(bytes);
+    m_iLength = length;
     m_pPatch = bytes;
 }
