@@ -14,7 +14,7 @@ ConVar mm_updaterate("mom_ghost_online_updaterate", "25",
 
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {
-    if (gpGlobals->eLoadType == MapLoad_Background || FStrEq(gpGlobals->mapname.ToCStr(), "credits"))
+    if (gpGlobals->eLoadType == MapLoad_Background)
         return;
 
     auto pPlayer = CMomentumPlayer::GetLocalPlayer();

@@ -29,8 +29,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern bool g_bRollingCredits;
-
 using namespace vgui;
 
 //-----------------------------------------------------------------------------
@@ -172,8 +170,6 @@ void ClientModeMOMNormal::Init()
         }
     }
 }
-
-bool ClientModeMOMNormal::ShouldDrawCrosshair(void) { return (g_bRollingCredits == false); }
 
 int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {

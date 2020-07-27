@@ -52,7 +52,7 @@ void CSteamRichPresenceSystem::Update(bool bLevelShutdown /* = false*/)
     SteamFriends()->SetRichPresence("steam_player_group_size", bInLobby ? CFmtStr("%i", numPlayers).Get() : nullptr);
 
     const char *pSteamStatusStr;
-    if (!pMap || !pMap[0] || FStrEq(pMap, "credits") || gpGlobals->eLoadType == MapLoad_Background)
+    if (!pMap || !pMap[0] || gpGlobals->eLoadType == MapLoad_Background)
     {
         pSteamStatusStr = "#Main_Menu";
 

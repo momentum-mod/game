@@ -6457,18 +6457,6 @@
     input EnablePlayerCollision(void) : "Enable collisions against the player."
 ]
 
-@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) = env_credits : 
-    "An entity to control the rolling credits."
-[
-    // Inputs
-    input RollCredits(void) : "Start the intro credits rolling."
-    input RollOutroCredits(void) : "Start the outro credits rolling."
-    input ShowLogo(void) : "Show the HL2 logo."
-    
-    // Outputs
-    output OnCreditsDone(void)  : "Fired when the credits having finished rolling."
-]
-
 @PointClass base(Parentname, Targetname) size(-8 -8 -8, 8 8 8 ) = material_modify_control : 
     "An entity that can be used to directly control material vars. To use it, you need to read the .vmt of the material you "+
     "intend to change. Parent this entity to a brush model entity who's material you want to control."

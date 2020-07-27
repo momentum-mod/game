@@ -28,8 +28,6 @@
 
 #include "tier0/memdbgon.h"
 
-extern bool g_bRollingCredits;
-
 using namespace vgui;
 
 static CSteamID s_LobbyID = k_steamIDNil;
@@ -172,13 +170,10 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
             if (!pMap)
                 pMap = "";
             const auto bMainMenu = Q_strlen(pMap) == 0;
-            auto bCredits = false;
             auto bBackground = false;
             if (!bMainMenu)
             {
                 bBackground = !Q_strnicmp(pMap, "bg_", 3);
-                if (!bBackground)
-                    bCredits = FStrEq(pMap, "credits");
             }
 
             pData->SetString("map", bMainMenu ? "Main Menu" : pMap);
@@ -186,7 +181,7 @@ void LobbyMembersPanel::UpdateLobbyMemberData(const CSteamID& memberID)
             const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(s_LobbyID, memberID, LOBBY_DATA_IS_SPEC);
             if (pSpec && pSpec[0])
                 pData->SetString("state", "#MOM_Lobby_Member_Spectating");
-            else if (!(bMainMenu || bCredits || bBackground))
+            else if (!(bMainMenu || bBackground))
                 pData->SetString("state", "#MOM_ReplayStatusPlaying");
             else
                 pData->SetString("state", "");
@@ -299,9 +294,6 @@ void LobbyMembersPanel::ShowPanel(bool bShow)
 
     if (bShow)
     {
-        if (g_bRollingCredits)
-            return;
-
         Reset();
         SetVisible(true);
         // SetEnabled(true);
@@ -625,13 +617,10 @@ void LobbyMembersPanel::OnItemContextMenu(int itemID)
     const char *pMap = pKVData->GetString("map");
     const char *pOurMap = g_pGameRules->MapName();
     const auto bMainMenu = FStrEq(pMap, "Main Menu");
-    auto bCredits = false;
     auto bBackground = false;
     if (!bMainMenu)
     {
         bBackground = !Q_strnicmp(pMap, "bg_", 3);
-        if (!bBackground)
-            bCredits = FStrEq(pMap, "credits");
     }
 
     const auto pSpec = SteamMatchmaking()->GetLobbyMemberData(s_LobbyID, CSteamID(steamID), LOBBY_DATA_IS_SPEC);
@@ -659,7 +648,7 @@ void LobbyMembersPanel::OnItemContextMenu(int itemID)
         pKv->SetUint64("target", steamID);
         m_pContextMenu->AddMenuItem("ReqSavelocs", "#MOM_Saveloc_Frame", pKv, this);
     }
-    else if (!(bMainMenu || bCredits || bBackground))
+    else if (!(bMainMenu || bBackground))
     {
         pKv = new KeyValues("ContextGoToMap");
         pKv->SetString("map", pMap);

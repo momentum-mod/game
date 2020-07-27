@@ -115,8 +115,8 @@ void CMomentumDiscord::LevelInitPostEntity()
     if (!m_bValid)
         return;
 
-    // Ignore background map(s) and credits
-    if (!Q_strncmp(MapName(), "bg_", 3) || FStrEq(MapName(), "credits"))
+    // Ignore background map(s)
+    if (!Q_strncmp(MapName(), "bg_", 3))
     {
         V_strncpy(m_szDiscordState, MAIN_MENU_STR, sizeof(m_szDiscordState));
         V_strncpy(m_szDiscordLargeImageKey, MOM_ICON_LOGO, sizeof(m_szDiscordLargeImageKey));
