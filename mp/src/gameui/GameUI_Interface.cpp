@@ -9,7 +9,6 @@
 #include "EngineInterface.h"
 #include "ienginevgui.h"
 #include "IGameUIFuncs.h"
-#include "ModInfo.h"
 #include "game/client/IGameClientExports.h"
 #include "iachievementmgr.h"
 #include "materialsystem/imaterialsystem.h"
@@ -82,9 +81,6 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     // load localization file
     g_pVGuiLocalize->AddFile("resource/gameui_%language%.txt", "GAME", true);
     g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt", "GAME", true);
-
-    // load mod info
-    ModInfo().LoadCurrentGameInfo();
 
     // load localization file for kb_act.lst
     g_pVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME", true);
@@ -238,8 +234,6 @@ void CGameUI::Start()
 //-----------------------------------------------------------------------------
 void CGameUI::Shutdown()
 {
-    ModInfo().FreeModInfo();
-
     ConVar_Unregister();
     DisconnectTier3Libraries();
     DisconnectTier2Libraries();
