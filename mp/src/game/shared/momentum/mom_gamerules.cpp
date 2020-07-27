@@ -254,8 +254,7 @@ void CMomentumGameRules::RunPointServerCommandWhitelisted(const char *pCmd)
 static char* const g_szWhitelistedClientCmds[] = {
     "r_screenoverlay",
     "play",
-    "playgamesound",
-    "disconnect",    // for credits
+    "playgamesound"
 };
 
 void CMomentumGameRules::RunPointClientCommandWhitelisted(edict_t* pClient, const char* pCmd)
@@ -291,10 +290,7 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 {
     if (pPlayer)
     {
-        ConVarRef map("host_map");
-        const char *pMapName = map.GetString();
-
-        if (gpGlobals->eLoadType == MapLoad_Background || !Q_strcmp(pMapName, "credits"))
+        if (gpGlobals->eLoadType == MapLoad_Background)
         {
             // Hide HUD on background maps
             pPlayer->m_Local.m_iHideHUD |= HIDEHUD_ALL;

@@ -552,8 +552,7 @@ void CPointClientCommand::InputCommand( inputdata_t& inputdata )
 	if ( !inputdata.value.String()[0] )
 		return;
 
-	bool bAllowed = (sAllowPointCommand == eAllowAlways || sAllowPointCommand == eAllowWhitelist)
-                    || FStrEq(STRING(gpGlobals->mapname), "credits");
+	bool bAllowed = (sAllowPointCommand == eAllowAlways || sAllowPointCommand == eAllowWhitelist);
 
     if (!bAllowed)
     {
@@ -907,7 +906,7 @@ CON_COMMAND_F_COMPLETION(give_weapon, "Gives the player a weapon.", 0, WeaponCom
 			return;
 		}
 
-        if (FStrEq(STRING(gpGlobals->mapname), "credits") || gpGlobals->eLoadType == MapLoad_Background)
+        if (gpGlobals->eLoadType == MapLoad_Background)
         {
             Warning("Cannot give weapons in this map!");
             return;
