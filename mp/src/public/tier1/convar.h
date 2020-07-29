@@ -359,6 +359,12 @@ public:
         m_nFlags = flags;
     }
 
+    FORCEINLINE_CVAR void SetHelpString(char* text)
+    {
+        m_pParent->m_pszHelpString = text;
+        m_pszHelpString = text;
+    }
+
     void SetMin(float min);
     void SetMax(float max);
 

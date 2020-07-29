@@ -915,6 +915,14 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	// Initialize the console variables.
 	ConVar_Register( FCVAR_CLIENTDLL );
 
+    // Allow fps_max to be changed ingame
+    ConVar *fps_max = g_pCVar->FindVar("fps_max");
+    if (fps_max)
+    {
+        fps_max->SetFlags(FCVAR_ARCHIVE);
+        fps_max->SetHelpString("Frame rate limiter");
+    }
+
     //Remove cheat flag for this cvar
     ConVar *mat_dynamic_tonemapping = g_pCVar->FindVar("mat_dynamic_tonemapping");
     if (mat_dynamic_tonemapping)
