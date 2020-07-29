@@ -81,7 +81,7 @@ char		vismatfile[_MAX_PATH] = "";
 char		incrementfile[_MAX_PATH] = "";
 
 IIncremental *g_pIncremental = 0;
-bool		g_bInterrupt = false;	// Wsed with background lighting in WC. Tells VRAD
+bool		g_bInterrupt = false;	// Used with background lighting in WC. Tells VRAD
 									// to stop lighting.
 float g_SunAngularExtent=0.0;
 
@@ -399,7 +399,7 @@ void BaseLightForFace( dface_t *f, Vector& light, float *parea, Vector& reflecti
 	dtexdata_t	*texdata;
 
 	//
-	// check for light emited by texture
+	// check for light emitted by texture
 	//
 	tx = &texinfo[f->texinfo];
 	texdata = &dtexdata[tx->texdata];
@@ -1229,7 +1229,7 @@ void MakeScales ( int ndxPatch, transfer_t *all_transfers )
 			total += t2->transfer;
 		}
 
-		// the total transfer should be PI, but we need to correct errors due to overlaping surfaces
+		// the total transfer should be PI, but we need to correct errors due to overlapping surfaces
 		if (total > M_PI)
 			total = 1.0f/total;
 		else	
@@ -2652,7 +2652,7 @@ int ParseCommandLine( int argc, char **argv, bool *onlydetail )
 				dispchop = ( float )atof( argv[i] );
 				if ( dispchop < 1.0f )
 				{
-					Warning( "Error: expected positive value after '-dipschop'\n" );
+					Warning( "Error: expected positive value after '-dispchop'\n" );
 					return -1;
 				}
 			}
