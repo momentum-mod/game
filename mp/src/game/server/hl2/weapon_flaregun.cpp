@@ -20,7 +20,7 @@
 
 
 /********************************************************************
- NOTE: if you are looking at this file becase you would like flares 
+ NOTE: if you are looking at this file because you would like flares 
  to be considered as fires (and thereby trigger gas traps), be aware 
  that the env_flare class is actually found in weapon_flaregun.cpp 
  and is really a repurposed piece of ammunition. (env_flare isn't the 
