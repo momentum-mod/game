@@ -1517,7 +1517,7 @@ void CWeaponRPG::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatChara
 			Vector altLaunchPoint;
 			if (GetAttachment( "missile", altLaunchPoint ))
 			{
-				// check to see if it's relativly free
+				// check to see if it's relatively free
 				trace_t tr;
 				AI_TraceHull( altLaunchPoint, altLaunchPoint + vecShootDir * (10.0f*12.0f), Vector( -24, -24, -24 ), Vector( 24, 24, 24 ), MASK_NPCSOLID, NULL, &tr );
 
@@ -1736,7 +1736,7 @@ void CWeaponRPG::ItemPostFrame( void )
 		m_bInitialStateUpdate = false;
 	}
 
-	// Supress our guiding effects if we're lowered
+	// Suppress our guiding effects if we're lowered
 	if ( GetIdealActivity() == ACT_VM_IDLE_LOWERED || GetIdealActivity() == ACT_VM_RELOAD )
 	{
 		SuppressGuiding();
