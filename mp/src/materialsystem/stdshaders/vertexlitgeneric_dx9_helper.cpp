@@ -149,7 +149,7 @@ void InitParamsVertexLitGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** para
 	InitFloatParam( info.m_nEnvmapSaturation, params, 1.0f );
 	InitFloatParam( info.m_nSeamlessScale, params, 0.0 );
 
-	// handle line art parms
+	// handle line art params
 	InitFloatParam( info.m_nEdgeSoftnessStart, params, 0.5 );
 	InitFloatParam( info.m_nEdgeSoftnessEnd, params, 0.5 );
 	InitFloatParam( info.m_nGlowAlpha, params, 1.0 );
@@ -896,7 +896,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 			{
 				float flSoftStart = GetFloatParam( info.m_nEdgeSoftnessStart, params );
 				float flSoftEnd = GetFloatParam( info.m_nEdgeSoftnessEnd, params );
-				// set all line art shader parms
+				// set all line art shader params
 				bool bScaleEdges = IsBoolSet( info.m_nScaleEdgeSoftnessBasedOnScreenRes, params );
 				bool bScaleOutline = IsBoolSet( info.m_nScaleOutlineSoftnessBasedOnScreenRes, params );
 
@@ -941,14 +941,14 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					// c6 - glow color
 					0,0,0,										// will be filled in
 					GetFloatParam( info.m_nGlowAlpha, params ),
-					// c7 - mask range parms
+					// c7 - mask range params
 					flSoftStart,
 					flSoftEnd,
 					0,0,
 					// c8 - outline color
 					0,0,0,
 					GetFloatParam( info.m_nOutlineAlpha, params ),
-					// c9 - outline parms. ordered for optimal ps20 .wzyx swizzling
+					// c9 - outline params. ordered for optimal ps20 .wzyx swizzling
 					flOutlineStart0,
 					flOutlineEnd1,
 					flOutlineEnd0,
