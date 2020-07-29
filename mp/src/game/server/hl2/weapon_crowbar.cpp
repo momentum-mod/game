@@ -173,7 +173,7 @@ void CWeaponCrowbar::HandleAnimEventMeleeHit( animevent_t *pEvent, CBaseCombatCh
 		// play sound
 		WeaponSound( MELEE_HIT );
 
-		// Fake a trace impact, so the effects work out like a player's crowbaw
+		// Fake a trace impact, so the effects work out like a player's crowbar
 		trace_t traceHit;
 		UTIL_TraceLine( pOperator->Weapon_ShootPosition(), pHurt->GetAbsOrigin(), MASK_SHOT_HULL, pOperator, COLLISION_GROUP_NONE, &traceHit );
 		ImpactEffect( traceHit );
