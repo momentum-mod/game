@@ -225,7 +225,7 @@ void CWeaponShotgun::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatC
 //			NPC's fight from a stationary position, their animation events
 //			govern when they fire so the rate of fire is specified by the
 //			animation. When NPC's move-and-shoot, the rate of fire is 
-//			specifically controlled by the shot regulator, so it's imporant
+//			specifically controlled by the shot regulator, so it's important
 //			that GetMinRestTime and GetMaxRestTime are implemented and provide
 //			reasonable defaults for the weapon. To address difficulty concerns,
 //			we are going to fix the combine's rate of shotgun fire in episodic.
@@ -550,7 +550,7 @@ void CWeaponShotgun::SecondaryAttack( void )
 }
 	
 //-----------------------------------------------------------------------------
-// Purpose: Override so shotgun can do mulitple reloads in a row
+// Purpose: Override so shotgun can do multiple reloads in a row
 //-----------------------------------------------------------------------------
 void CWeaponShotgun::ItemPostFrame( void )
 {
