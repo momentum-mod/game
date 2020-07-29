@@ -36,7 +36,7 @@ BEGIN_NETWORK_TABLE(CWeaponBase, DT_WeaponBase)
 #ifdef CLIENT_DLL
 
 #else
-// world weapon models have no aminations
+// world weapon models have no animations
 SendPropExclude("DT_AnimTimeMustBeFirst", "m_flAnimTime"),
 SendPropExclude("DT_BaseAnimating", "m_nSequence"),
 //	SendPropExclude( "DT_LocalActiveWeaponData", "m_flTimeWeaponIdle" ),
@@ -643,7 +643,7 @@ bool CWeaponBase::IsUseable()
     {
         if (pPlayer->GetAmmoCount(GetPrimaryAmmoType()) <= 0 && GetMaxClip1() != -1)
         {
-            // clip is empty (or nonexistant) and the player has no more ammo of this type. 
+            // clip is empty (or nonexistent) and the player has no more ammo of this type. 
             return false;
         }
     }
