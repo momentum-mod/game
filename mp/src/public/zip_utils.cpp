@@ -414,7 +414,7 @@ private:
 		// Name of entry
 		CUtlSymbol		m_Name;
 
-		// Lenth of data element
+		// Length of data element
 		int				m_nCompressedSize;
 
 		// Original, uncompressed size
@@ -1329,7 +1329,7 @@ void CZipFile::ParseXZipCommentString( const char *pCommentString )
 			m_bCompatibleFormat = false;
 		}
 
-		// parse out the alignement configuration
+		// parse out the alignment configuration
 		if ( !m_bForceAlignment )
 		{
 			m_AlignmentSize = 0;
@@ -1663,7 +1663,7 @@ public:
 	// Whether a file is contained in a zip - maintains alignment
 	virtual bool			FileExistsInZip( const char *pRelativeName ) OVERRIDE;
 
-	// Reads a file from the zip - maintains alignement
+	// Reads a file from the zip - maintains alignment
 	virtual bool			ReadFileFromZip( const char *pRelativeName, bool bTextMode, CUtlBuffer &buf ) OVERRIDE;
 	virtual bool			ReadFileFromZip( HANDLE hZipFile, const char *relativename, bool bTextMode, CUtlBuffer &buf ) OVERRIDE;
 
@@ -1701,7 +1701,7 @@ public:
 	// Return to using files' individual alignment sizes by passing FALSE.
 	virtual void			ForceAlignment( bool aligned, bool bCompatibleFormat, unsigned int alignmentSize ) OVERRIDE;
 
-	// Sets the endianess of the zip
+	// Sets the endianness of the zip
 	virtual void			SetBigEndian( bool bigEndian ) OVERRIDE;
 	virtual void			ActivateByteSwapping( bool bActivate ) OVERRIDE;
 
