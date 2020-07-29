@@ -165,7 +165,7 @@ void NWCEdit::CreateAINode( CBasePlayer *pPlayer )
 		testHull->SetLocalOrigin( vNewNodePos );
 
 		// -----------------------------------------------------------------------
-		// If a ground node, drop to floor and make sure can stand at test postion
+		// If a ground node, drop to floor and make sure can stand at test position
 		// -----------------------------------------------------------------------
 		if (!g_pAINetworkManager->GetEditOps()->m_bAirEditMode)
 		{
@@ -369,7 +369,7 @@ void NWCEdit::DestroyAINode( CBasePlayer *pPlayer )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: For restroring links in WC edit mode.  This actually means
+// Purpose: For restoring links in WC edit mode.  This actually means
 //			destroying links in WC that have been marked as 
 // Input  :
 // Output :
