@@ -283,7 +283,7 @@ void CWeaponStunStick::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseComba
 						UTIL_ScreenFade( pPlayer, red, 0.5f, 0.1f, FFADE_IN );
 					}
 					
-					// Force the player to drop anyting they were holding
+					// Force the player to drop anything they were holding
 					pPlayer->ForceDropOfCarriedPhysObjects();
 				}
 				
