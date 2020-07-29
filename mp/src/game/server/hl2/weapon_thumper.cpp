@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose:	'weapon' what lets the player controll the rollerbuddy.
+// Purpose:	'weapon' what lets the player control the rollerbuddy.
 //
 // $Revision: $
 // $NoKeywords: $
