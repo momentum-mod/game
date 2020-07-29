@@ -130,7 +130,7 @@ Vector UTIL_YawToVector( float yaw )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Helper function get get determinisitc random values for shared/prediction code
+// Purpose: Helper function gets deterministic random values for shared/prediction code
 // Input  : seedvalue - 
 //			*module - 
 //			line - 
