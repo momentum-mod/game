@@ -39,7 +39,7 @@ void AssignOccluderAreas();
 ============
 EmitPlanes
 
-There is no oportunity to discard planes, because all of the original
+There is no opportunity to discard planes, because all of the original
 brushes will be saved in the map.
 ============
 */
@@ -238,7 +238,7 @@ int CreateOrigFace( face_t *f )
 	of = &dorigfaces[numorigfaces];
     numorigfaces++;
 
-    // set original face to -1 -- it is an origianl face!
+    // set original face to -1 -- it is an original face!
     of->origFace = -1;
 
     //
@@ -450,7 +450,7 @@ void EmitFace( face_t *f, qboolean onNode )
 		Error( "Too many faces in map, max = %d", MAX_MAP_FACES );
 	df = &dfaces[numfaces];
 
-	// Save the correlation between dfaces and faces -- since dfaces doesnt have worldcraft face id
+	// Save the correlation between dfaces and faces -- since dfaces doesn't have worldcraft face id
 	dfaceids.AddToTail();
 	dfaceids[numfaces].hammerfaceid = f->originalface->id;
 
@@ -1272,7 +1272,7 @@ void EndBSPFile (void)
 	// Compute bounds after creating disp info because we need to reference it
 	ComputeBoundsNoSkybox();
 
-	// Make sure that we have a water lod control eneity if we have water in the map.
+	// Make sure that we have a water lod control entity if we have water in the map.
 	EnsurePresenceOfWaterLODControlEntity();
 
 	// Doing this here because stuff about may filter out entities
@@ -1389,7 +1389,7 @@ int PointLeafnum ( dmodel_t* pModel, const Vector& p )
 
 
 //-----------------------------------------------------------------------------
-// Adds a noew to the bounding box
+// Adds a node to the bounding box
 //-----------------------------------------------------------------------------
 static void AddNodeToBounds(int node, CUtlVector<int>& skipAreas, Vector& mins, Vector& maxs)
 {
