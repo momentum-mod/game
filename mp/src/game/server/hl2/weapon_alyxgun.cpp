@@ -90,7 +90,7 @@ acttable_t	CWeaponAlyxGun::m_acttable[] =
 IMPLEMENT_ACTTABLE(CWeaponAlyxGun);
 
 #define TOOCLOSETIMER_OFF	0.0f
-#define ALYX_TOOCLOSETIMER	1.0f		// Time an enemy must be tooclose before Alyx is allowed to shoot it.
+#define ALYX_TOOCLOSETIMER	1.0f		// Time an enemy must be too close before Alyx is allowed to shoot it.
 
 //=========================================================
 CWeaponAlyxGun::CWeaponAlyxGun( )
