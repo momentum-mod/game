@@ -334,7 +334,7 @@ void WizardPanel::ActivatePrevSubPanel()
 		WizardSubPanel *searchPanel = _currentSubPanel->GetPrevSubPanel();
 		if (searchPanel && _subPanelStack.HasElement(searchPanel))
 		{
-			// keep poping the stack till we find it
+			// keep popping the stack till we find it
 			while (_subPanelStack.GetCount() && prevPanel != searchPanel)
 			{
 				prevPanel = _subPanelStack[_subPanelStack.GetCount() - 1];
