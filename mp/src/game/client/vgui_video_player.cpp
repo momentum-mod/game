@@ -26,7 +26,7 @@ VideoPlayerPanel::VideoPlayerPanel( vgui::Panel *parent, const char *panelName, 
 {
 	Assert( g_pVideo != NULL );
 
-	// init all the video realted member vars
+	// init all the video related member vars
 	ClearVideo();
 
 	SetVisible( false );
