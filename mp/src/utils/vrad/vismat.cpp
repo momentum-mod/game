@@ -446,7 +446,7 @@ void BuildVisLeafs( int threadnum, void *pUserData )
 	{
 		//
 		// build a minimal BSP tree that only
-		// covers areas relevent to the PVS
+		// covers areas relevant to the PVS
 		//
 		// JAY: Now this returns a cluster index
 		int iCluster = GetThreadWork();
