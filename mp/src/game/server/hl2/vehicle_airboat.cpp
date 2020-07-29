@@ -1894,7 +1894,7 @@ void CPropAirboat::CreateDangerSounds( void )
 //-----------------------------------------------------------------------------
 void CPropAirboat::DampenEyePosition( Vector &vecVehicleEyePos, QAngle &vecVehicleEyeAngles )
 {
-	// Get the frametime. (Check to see if enough time has passed to warrent dampening).
+	// Get the frametime. (Check to see if enough time has passed to warrant dampening).
 	float flFrameTime = gpGlobals->frametime;
 	if ( flFrameTime < AIRBOAT_FRAMETIME_MIN )
 	{
