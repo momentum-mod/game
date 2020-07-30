@@ -254,7 +254,7 @@ int	FindMiptex (const char *name)
 		if ( !bKeepLighting && !Q_strncasecmp( pShaderName, "water", 5 ) || !Q_strncasecmp( pShaderName, "UnlitGeneric", 12 ) )
 		{
 			//if ( !(textureref[i].flags & SURF_NOLIGHT) )
-			//	Warning("Forcing lit materal %s to nolight\n", name );
+			//	Warning("Forcing lit material %s to nolight\n", name );
 			textureref[i].flags |= SURF_NOLIGHT;
 		}
 
