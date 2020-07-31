@@ -7,12 +7,11 @@
 #include "cbase.h"
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
+#include <vgui/IInput.h>
 #include <vgui_controls/AnimationController.h>
 #include <vgui_controls/Frame.h>
 #include "filesystem.h"
 #include "iclientmode.h"
-#include "in_buttons.h"
-#include "input.h"
 #include "ienginevgui.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -34,6 +33,7 @@ struct creditname_t
 };
 
 #define CREDITS_FILE "scripts/credits.txt"
+#define CREDITS_SPEEDUP_FACTOR 0.27f
 
 enum
 {
@@ -134,22 +134,23 @@ CHudCredits::CHudCredits() : BaseClass(nullptr, "HudCredits")
     SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     SetProportional(true);
 
+    // for mouse speedup
+    SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
-    SetMouseInputEnabled(false);
-    SetDeleteSelfOnClose(false);
     SetCursor(null);
 
+    SetMoveable(false);
+    SetSizeable(false);
+    SetDeleteSelfOnClose(false);
     SetMinimizeToSysTrayButtonVisible(false);
+    SetSysMenu(nullptr);
 
     SetTitleBarVisible(false);
     SetMenuButtonVisible(false);
     SetMenuButtonResponsive(false);
-    SetSysMenu(nullptr);
     SetMinimizeButtonVisible(false);
     SetMaximizeButtonVisible(false);
     SetCloseButtonVisible(false);
-    SetMoveable(false);
-    SetSizeable(false);
     SetPaintBorderEnabled(false);
 
     int iWidth, iTall;
@@ -278,9 +279,9 @@ void CHudCredits::DrawOutroCreditsName(void)
         return;
 
     float flDesiredScrollTime = m_flScrollTime;
-    if (::input->GetButtonBits(1) & IN_ATTACK2)
+    if (input()->IsMouseDown(MOUSE_RIGHT))
     {
-        flDesiredScrollTime = m_flScrollTime * 0.27f;
+        flDesiredScrollTime = m_flScrollTime * CREDITS_SPEEDUP_FACTOR;
     }
 
     FOR_EACH_VEC(m_CreditsList, i)
