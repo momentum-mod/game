@@ -13,7 +13,7 @@ enum SortFlags_t
     FL_SORT_MENU = 1 << 2
 };
 
-class MainMenu : public vgui::EditablePanel, public IGameEventListener2
+class MainMenu : public vgui::EditablePanel, public CGameEventListener
 {
     DECLARE_CLASS_SIMPLE(MainMenu, vgui::EditablePanel);
 

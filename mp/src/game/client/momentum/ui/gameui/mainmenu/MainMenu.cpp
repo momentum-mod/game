@@ -9,7 +9,6 @@
 
 #include "filesystem.h"
 #include "KeyValues.h"
-#include "igameevents.h"
 
 #include "mom_shareddefs.h"
 #include "fmtstr.h"
@@ -51,10 +50,10 @@ MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
     SetBounds(0, 0, screenWide, screenTall);
 
     // Listen for game events
-    gameeventmanager->AddListener(this, "lobby_leave", false);
-    gameeventmanager->AddListener(this, "lobby_join", false);
-    gameeventmanager->AddListener(this, "spec_start", false);
-    gameeventmanager->AddListener(this, "spec_stop", false);
+    ListenForGameEvent("lobby_leave");
+    ListenForGameEvent("lobby_join");
+    ListenForGameEvent("spec_start");
+    ListenForGameEvent("spec_stop");
 
     if (!GetAnimationController()->SetScriptFile(GetVPanel(), "scripts/HudAnimations.txt"))
         AssertMsg(0, "Couldn't load the animations!");
@@ -108,10 +107,6 @@ MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
 
 MainMenu::~MainMenu()
 {
-    if (gameeventmanager)
-    {
-        gameeventmanager->RemoveListener(this);
-    }
 }
 
 void MainMenu::OnThink()
