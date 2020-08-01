@@ -27,6 +27,7 @@
 #include "hud.h"
 
 //Momentum
+#include "gameui/BaseMenuPanel.h"
 #include "MessageboxPanel.h"
 #include "clientmode_mom_normal.h"
 #include "ChangelogPanel.h"
@@ -184,6 +185,7 @@ static void VGui_OneTimeInit()
 
     g_pMaterialSystem->AddModeChangeCallBack( &VGui_VideoMode_AdjustForModeChange );
 
+	CBaseMenuPanel::Init();
 	CMomentumSettingsDialog::Init();
 	CChangelogPanel::Init();
 	CMapSelectorDialog::Init();

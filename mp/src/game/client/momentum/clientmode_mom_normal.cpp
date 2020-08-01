@@ -23,9 +23,6 @@
 
 #include "clienteffectprecachesystem.h"
 
-#include "loadingscreen/LoadingScreen.h"
-#include "GameUI/IGameUI.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -56,10 +53,6 @@ extern ConVar cl_forwardspeed;
 extern ConVar cl_sidespeed;
 
 HScheme g_hVGuiCombineScheme = 0;
-
-static CDllDemandLoader g_GameUI("GameUI");
-
-CLoadingScreen *g_pLoadingScreen = nullptr;
 
 // Instance the singleton and expose the interface to it.
 IClientMode *GetClientModeNormal()
@@ -159,17 +152,6 @@ void ClientModeMOMNormal::Init()
     if (!g_hVGuiCombineScheme)
     {
         Warning("Couldn't load combine panel scheme!\n");
-    }
-
-    const auto gameUIFactory = g_GameUI.GetFactory();
-    if (gameUIFactory)
-    {
-        const auto pGameUI = static_cast<IGameUI*>(gameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
-        if (pGameUI)
-        {
-            g_pLoadingScreen = new CLoadingScreen();
-            pGameUI->SetLoadingBackgroundDialog(g_pLoadingScreen->GetVPanel());
-        }
     }
 }
 
