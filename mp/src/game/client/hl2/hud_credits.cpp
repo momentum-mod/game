@@ -27,12 +27,12 @@ struct creditname_t
 #define CREDITS_SPEEDUP_FACTOR 0.27f
 #define CREDITS_MUSIC_FILEPATH "*#music/clarity.mp3" // need *# to be effected by music volume
 
-class CHudCredits : public Frame
+class CreditsDialog : public Frame
 {
-    DECLARE_CLASS_SIMPLE(CHudCredits, vgui::Frame);
+    DECLARE_CLASS_SIMPLE(CreditsDialog, vgui::Frame);
 
   public:
-    CHudCredits();
+    CreditsDialog();
 
     static void Init();
 
@@ -51,9 +51,9 @@ class CHudCredits : public Frame
 
     void PrepareLine(HFont hFont, char const *pchLine);
     void PrepareCredits(const char *pKeyName);
-    void PrepareOutroCredits(void);
+    void PrepareCredits();
 
-    void DrawOutroCreditsName(void);
+    void DrawCreditsName();
 
     CPanelAnimationVar(Color, m_TextColor, "TextColor", "White");
 
@@ -72,9 +72,9 @@ class CHudCredits : public Frame
 
 using namespace vgui;
 
-static CHudCredits *g_pCreditsDialog = nullptr;
+static CreditsDialog *g_pCreditsDialog = nullptr;
 
-CHudCredits::CHudCredits() : BaseClass(nullptr, "HudCredits")
+CreditsDialog::CreditsDialog() : BaseClass(nullptr, "CreditsDialog")
 {
     g_pCreditsDialog = this;
 
@@ -110,7 +110,7 @@ CHudCredits::CHudCredits() : BaseClass(nullptr, "HudCredits")
     SetVisible(false);
 }
 
-void CHudCredits::PrepareCredits(const char *pKeyName)
+void CreditsDialog::PrepareCredits(const char *pKeyName)
 {
     Clear();
 
@@ -137,15 +137,15 @@ void CHudCredits::PrepareCredits(const char *pKeyName)
     pKV->deleteThis();
 }
 
-void CHudCredits::Init()
+void CreditsDialog::Init()
 {
     if (g_pCreditsDialog)
         return;
 
-    g_pCreditsDialog = new CHudCredits;
+    g_pCreditsDialog = new CreditsDialog;
 }
 
-void CHudCredits::Clear(void)
+void CreditsDialog::Clear()
 {
     m_CreditsList.RemoveAll();
     m_bLastOneInPlace = false;
@@ -153,16 +153,16 @@ void CHudCredits::Clear(void)
     m_flCreditsPixelHeight = 0.0f;
 }
 
-void CHudCredits::OnClose()
+void CreditsDialog::OnClose()
 {
     enginesound->StopSoundByGuid(m_iMusicGUID);
 
     BaseClass::OnClose();
 }
 
-void CHudCredits::Activate()
+void CreditsDialog::Activate()
 {
-    PrepareOutroCredits();
+    PrepareCredits();
 
     enginesound->EmitAmbientSound(CREDITS_MUSIC_FILEPATH, 1.0f);
     m_iMusicGUID = enginesound->GetGuidForLastSoundEmitted();
@@ -170,11 +170,11 @@ void CHudCredits::Activate()
     BaseClass::Activate();
 }
 
-void CHudCredits::ReadNames(KeyValues *pKeyValue)
+void CreditsDialog::ReadNames(KeyValues *pKeyValue)
 {
     if (pKeyValue == nullptr)
     {
-        Assert(!"CHudCredits couldn't be initialized!");
+        Assert(!"Credits dialog couldn't be initialized!");
         return;
     }
 
@@ -195,11 +195,11 @@ void CHudCredits::ReadNames(KeyValues *pKeyValue)
     }
 }
 
-void CHudCredits::ReadParams(KeyValues *pKeyValue)
+void CreditsDialog::ReadParams(KeyValues *pKeyValue)
 {
     if (pKeyValue == nullptr)
     {
-        Assert(!"CHudCredits couldn't be initialized!");
+        Assert(!"Credits dialog couldn't be initialized!");
         return;
     }
 
@@ -207,7 +207,7 @@ void CHudCredits::ReadParams(KeyValues *pKeyValue)
     m_flSeparation = pKeyValue->GetFloat("separation", 5);
 }
 
-void CHudCredits::DrawOutroCreditsName(void)
+void CreditsDialog::DrawCreditsName()
 {
     if (m_CreditsList.Count() == 0)
         return;
@@ -302,7 +302,7 @@ void CHudCredits::DrawOutroCreditsName(void)
     }
 }
 
-void CHudCredits::PerformLayout()
+void CreditsDialog::PerformLayout()
 {
     BaseClass::PerformLayout();
 
@@ -311,12 +311,12 @@ void CHudCredits::PerformLayout()
     SetBounds(0, 0, iWidth, iTall);
 }
 
-void CHudCredits::Paint()
+void CreditsDialog::Paint()
 {
-    DrawOutroCreditsName();
+    DrawCreditsName();
 }
 
-void CHudCredits::PrepareLine(HFont hFont, char const *pchLine)
+void CreditsDialog::PrepareLine(HFont hFont, char const *pchLine)
 {
     Assert(pchLine);
 
@@ -334,9 +334,9 @@ void CHudCredits::PrepareLine(HFont hFont, char const *pchLine)
     surface()->PrecacheFontCharacters(hFont, unicode);
 }
 
-void CHudCredits::PrepareOutroCredits(void)
+void CreditsDialog::PrepareCredits()
 {
-    PrepareCredits("OutroCreditsNames");
+    PrepareCredits("CreditsNames");
 
     if (m_CreditsList.Count() == 0)
         return;
@@ -365,7 +365,7 @@ CON_COMMAND_F(mom_credits_show, "Shows the credits.\n", FCVAR_CLIENTCMD_CAN_EXEC
 {
     if (!g_pCreditsDialog)
     {
-        CHudCredits::Init();
+        CreditsDialog::Init();
     }
 
     g_pCreditsDialog->DoModal();

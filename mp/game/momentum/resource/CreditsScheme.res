@@ -9,7 +9,7 @@ Scheme
 
     Fonts
     {
-        CreditsOutroLogos
+        CreditsLogos
         {
             "1"
             {
@@ -21,7 +21,7 @@ Scheme
                 "custom"    "1"
             }
         }
-        CreditsOutroText
+        CreditsText
         {
             "1"
             {
@@ -31,7 +31,7 @@ Scheme
                 "antialias" "1"
             }
         }
-        CreditsOutroTextItalic
+        CreditsTextItalic
         {
             "1"
             {
@@ -42,7 +42,7 @@ Scheme
                 "antialias" "1"
             }
         }
-        CreditsOutroTextBold
+        CreditsTextBold
         {
             "1"
             {
@@ -52,7 +52,7 @@ Scheme
                 "antialias" "1"
             }
         }
-        CreditsOutroTextLarge
+        CreditsTextLarge
         {
             "1"
             {
@@ -62,7 +62,7 @@ Scheme
                 "antialias" "1"
             }
         }
-        CreditsOutroTextExtraLarge
+        CreditsTextExtraLarge
         {
             "1"
             {
