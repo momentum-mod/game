@@ -67,7 +67,7 @@ static MAKE_CONVAR_C(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Set
 
 void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
 {
-    if (!IsInLobby(m_sLobbyID))
+    if (!IsInLobby(info->m_steamIDRemote))
         return;
 
     if (IsUserBlocked(info->m_steamIDRemote) && !m_vecBlocked.HasElement(info->m_steamIDRemote))
