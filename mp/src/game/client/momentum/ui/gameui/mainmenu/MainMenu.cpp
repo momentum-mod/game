@@ -1,7 +1,9 @@
-#include "BasePanel.h"
-#include "GameUI_Interface.h"
+#include "cbase.h"
+
 #include "MainMenu.h"
 #include "MainMenuButton.h"
+#include "gameui/BaseMenuPanel.h"
+#include "gameui/GameUIUtil.h"
 
 #include "vgui/ISurface.h"
 
@@ -12,6 +14,8 @@
 #include "mom_shareddefs.h"
 #include "fmtstr.h"
 
+#include "vgui/ILocalize.h"
+
 #include "vgui_controls/ImagePanel.h"
 #include "vgui_controls/AnimationController.h"
 
@@ -20,10 +24,18 @@
 
 using namespace vgui;
 
-extern IGameEventManager2 *gameeventmanager;
+static MainMenu *g_pMainMenu = nullptr;
 
-MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
+CON_COMMAND(reload_menu, "Reloads the main menu\n")
 {
+    g_pMainMenu->CreateMenu();
+}
+
+MainMenu::MainMenu(CBaseMenuPanel *pParent) : BaseClass(pParent, "MainMenu")
+{
+    m_pBasePanel = pParent;
+    g_pMainMenu = this;
+
     MakePopup(false);
     SetProportional(true);
     SetMouseInputEnabled(true);
@@ -34,16 +46,15 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     SetZPos(0);
 
     // Set our initial size
-    SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
+    int screenWide, screenTall;
+    surface()->GetScreenSize(screenWide, screenTall);
+    SetBounds(0, 0, screenWide, screenTall);
 
     // Listen for game events
-    if (gameeventmanager)
-    {
-        gameeventmanager->AddListener(this, "lobby_leave", false);
-        gameeventmanager->AddListener(this, "lobby_join", false);
-        gameeventmanager->AddListener(this, "spec_start", false);
-        gameeventmanager->AddListener(this, "spec_stop", false);
-    }
+    gameeventmanager->AddListener(this, "lobby_leave", false);
+    gameeventmanager->AddListener(this, "lobby_join", false);
+    gameeventmanager->AddListener(this, "spec_start", false);
+    gameeventmanager->AddListener(this, "spec_stop", false);
 
     if (!GetAnimationController()->SetScriptFile(GetVPanel(), "scripts/HudAnimations.txt"))
         AssertMsg(0, "Couldn't load the animations!");
@@ -54,8 +65,9 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_bNeedSort = false;
     m_nSortFlags = FL_SORT_SHARED;
 
-    GameUI().GetLocalizedString("#MOM_Momentum", &m_logoLeft);
-    GameUI().GetLocalizedString("#GameUI2_LogoRight", &m_logoRight);
+    Q_wcsncpy(m_logoLeft, g_pVGuiLocalize->FindSafe("#MOM_Momentum"), sizeof(m_logoLeft));
+    Q_wcsncpy(m_logoRight, g_pVGuiLocalize->FindSafe("#GameUI2_LogoRight"), sizeof(m_logoRight));
+
     m_pLogoImage = nullptr;
 
     CreateMenu();
@@ -109,12 +121,9 @@ void MainMenu::OnThink()
     surface()->MovePopupToBack(GetVPanel());
 }
 
-bool MainMenu::IsVisible(void)
+bool MainMenu::IsVisible()
 {
-    if (GetBasePanel()->IsInLoading())
-        return false;
-
-    return BaseClass::IsVisible();
+    return !m_pBasePanel->IsInLoading() && BaseClass::IsVisible();
 }
 
 void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
@@ -123,7 +132,7 @@ void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
     const char *pEngineCommand = pKv->GetString("EngineCommand", nullptr);
     if (pNormalCommand)
     {
-        GameUI().SendMainMenuCommand(pNormalCommand);
+        m_pBasePanel->RunMenuCommand(pNormalCommand);
     }
     else if (pEngineCommand)
     {
@@ -137,7 +146,7 @@ void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
         }
         else // fallback to old code
         {
-            GetBasePanel()->RunEngineCommand(pEngineCommand);
+            engine->ClientCmd(pEngineCommand);
         }
     }
 }
@@ -146,12 +155,13 @@ void MainMenu::OnCommand(char const *cmd)
 {
     if (!Q_strcmp(cmd, "ShowVersion"))
     {
-        GetBasePanel()->RunEngineCommand("mom_show_changelog\n");
+        engine->ClientCmd("mom_show_changelog\n");
         GetAnimationController()->StartAnimationSequence(this, "VersionPulseStop");
     }
 
-     GameUI().SendMainMenuCommand(cmd);
-     BaseClass::OnCommand(cmd);
+    m_pBasePanel->RunMenuCommand(cmd);
+
+    BaseClass::OnCommand(cmd);
 }
 
 void MainMenu::FireGameEvent(IGameEvent* event)
@@ -291,25 +301,25 @@ void MainMenu::DrawMainMenu()
         {
         default:
         case SHARED:
-            pButton->SetVisible(GameUI().IsInLevel() || GameUI().IsInMenu());
+            pButton->SetVisible(GameUIUtil::IsInLevel() || GameUIUtil::IsInMenu());
             break;
         case IN_GAME:
-            pButton->SetVisible(GameUI().IsInLevel());
+            pButton->SetVisible(GameUIUtil::IsInLevel());
             break;
         case MAIN_MENU:
-            pButton->SetVisible(GameUI().IsInMenu());
+            pButton->SetVisible(GameUIUtil::IsInMenu());
             break;
         }
     }
 
-    if (GameUI().IsInLevel())
+    if (GameUIUtil::IsInLevel())
     {
         m_nSortFlags &= ~FL_SORT_MENU;
 
         m_bNeedSort = (!m_bNeedSort && !(m_nSortFlags & FL_SORT_INGAME));
         m_nSortFlags |= FL_SORT_INGAME;
     }
-    else if (GameUI().IsInMenu())
+    else if (GameUIUtil::IsInMenu())
     {
         m_nSortFlags &= ~FL_SORT_INGAME;
 
@@ -335,7 +345,7 @@ void MainMenu::DrawMainMenu()
         else
         {
             m_pButtons[i]->SetPos(m_iButtonsOffsetX,
-                GameUI().GetViewport().y - (m_iButtonsOffsetY + m_pButtons[i]->GetHeight()));
+                ScreenHeight() - (m_iButtonsOffsetY + m_pButtons[i]->GetHeight()));
         }
     }
 }

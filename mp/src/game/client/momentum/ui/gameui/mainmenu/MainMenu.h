@@ -4,6 +4,7 @@
 #include "igameevents.h"
 
 class MainMenuButton;
+class CBaseMenuPanel;
 
 enum SortFlags_t
 {
@@ -16,7 +17,7 @@ class MainMenu : public vgui::EditablePanel, public IGameEventListener2
 {
     DECLARE_CLASS_SIMPLE(MainMenu, vgui::EditablePanel);
 
-    MainMenu(Panel *parent);
+    MainMenu(CBaseMenuPanel *pParent);
     ~MainMenu();
 
     void OnThink() OVERRIDE;
@@ -49,8 +50,8 @@ private:
     char m_pszMenuCloseSound[MAX_PATH];
 
     bool m_bFocused;
-    wchar_t *m_logoLeft;
-    wchar_t *m_logoRight;
+    wchar_t m_logoLeft[128];
+    wchar_t m_logoRight[128];
 
     int m_iButtonsSpace;
 
@@ -72,4 +73,6 @@ private:
     bool m_bNeedSort;
 
     vgui::Label *m_pVersionLabel;
+
+    CBaseMenuPanel *m_pBasePanel;
 };

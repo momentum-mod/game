@@ -1,10 +1,15 @@
-#include "BasePanel.h"
-#include "GameUI_Interface.h"
-#include "MainMenu.h"
+#include "cbase.h"
+
+#include "BaseMenuPanel.h"
+#include "mainmenu/MainMenu.h"
+#include "loadingscreen/LoadingScreen.h"
+
+#include "gameui/GameUIUtil.h"
+
 #include "vgui/ISurface.h"
 #include "tier0/icommandline.h"
-#include "EngineInterface.h"
-#include "vgui_controls/MessageBox.h"
+#include "ienginevgui.h"
+
 #include "vgui_controls/AnimationController.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -12,28 +17,37 @@
 
 using namespace vgui;
 
-extern VPANEL g_hLoadingBackgroundDialog;
-
-static CBasePanel *g_pBasePanel;
-CBasePanel *GetBasePanel() { return g_pBasePanel; }
-
-CON_COMMAND(reload_menu, "Reloads the menu\n")
+bool GameUIUtil::IsInLevel()
 {
-    GetBasePanel()->GetMainMenu()->CreateMenu();
+    return engine->IsInGame() && !engine->IsLevelMainMenuBackground();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: hack function to give the module loader access to the main panel handle
-//			only used in VguiSystemModuleLoader
-//-----------------------------------------------------------------------------
-VPANEL GetGameUIBasePanel()
+bool GameUIUtil::IsInBackgroundLevel()
 {
-    return GetBasePanel()->GetVPanel();
+    return engine->IsInGame() && engine->IsLevelMainMenuBackground();
 }
 
-CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
+bool GameUIUtil::IsInMenu()
+{
+    return IsInBackgroundLevel() || g_pBasePanel->GetMenuBackgroundState() == BACKGROUND_DISCONNECTED;
+}
+
+CBaseMenuPanel *g_pBasePanel = nullptr;
+
+CBaseMenuPanel::CBaseMenuPanel() : BaseClass(nullptr, "BaseGameUIPanel")
 {
     g_pBasePanel = this;
+
+    SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
+
+    SetBounds(0, 0, 640, 480);
+    SetPaintBorderEnabled(false);
+    SetPaintBackgroundEnabled(true);
+    SetPaintEnabled(true);
+    SetVisible(true);
+
+    SetMouseInputEnabled(true);
+    SetKeyBoardInputEnabled(true);
 
     m_iBackgroundImageID = 0;
     m_iLoadingImageID = 0;
@@ -50,45 +64,50 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
 
     SetZPos(-100);
     m_pMainMenu = new MainMenu(this);
-    SETUP_PANEL(m_pMainMenu);
+
+    m_pLoadingScreen = new CLoadingScreen(this);
+
+    OnGameUIActivated(); // Done here because normally it was done earlier than construction of this panel
 }
 
-CBasePanel::~CBasePanel()
+CBaseMenuPanel::~CBaseMenuPanel()
 {
     g_pBasePanel = nullptr;
 }
 
-void CBasePanel::OnLevelLoadingStarted()
+void CBaseMenuPanel::Init()
+{
+    if (g_pBasePanel)
+        return;
+
+    g_pBasePanel = new CBaseMenuPanel;
+}
+
+void CBaseMenuPanel::OnLevelLoadingStarted(KeyValues *pKvData)
 {
     m_bLevelLoading = true;
+
+    m_pLoadingScreen->Activate();
 }
 
-void CBasePanel::OnLevelLoadingFinished()
+void CBaseMenuPanel::OnLevelLoadingFinished(KeyValues *pKvData)
 {
     m_bLevelLoading = false;
+
+    m_pLoadingScreen->Deactivate();
 }
 
-bool CBasePanel::IsInLoading() const
+void CBaseMenuPanel::OnLoadProgress(float percent)
+{
+    m_pLoadingScreen->ProgressUpdate(percent);
+}
+
+bool CBaseMenuPanel::IsInLoading() const
 {
     return m_bLevelLoading;
 }
 
-void CBasePanel::RunFrame()
-{
-    GetAnimationController()->UpdateAnimations(engine->Time());
-
-    UpdateBackgroundState();
-}
-
-void CBasePanel::FadeToBlackAndRunEngineCommand(const char* engineCommand)
-{
-    KeyValues *pKV = new KeyValues("RunEngineCommand", "command", engineCommand);
-
-    // execute immediately, with no delay
-    PostMessage(this, pKV, 0);
-}
-
-void CBasePanel::OnGameUIActivated()
+void CBaseMenuPanel::OnGameUIActivated()
 {
     // If the load failed, we're going to bail out here
     if (engine->MapLoadFailed())
@@ -107,30 +126,34 @@ void CBasePanel::OnGameUIActivated()
 
     m_pMainMenu->SetVisible(true);
 
-    if (GameUI().IsInLevel())
+    if (GameUIUtil::IsInLevel())
     {
         OnCommand("OpenPauseMenu");
     }
 }
 
-void CBasePanel::OnGameUIHidden()
+void CBaseMenuPanel::OnGameUIHidden()
 {
     m_pMainMenu->SetVisible(false);
 }
 
-void CBasePanel::SetMenuAlpha(int alpha)
+Panel* CBaseMenuPanel::GetMainMenu()
 {
-    if (m_pMainMenu)
-        m_pMainMenu->SetAlpha(alpha);
+    return m_pMainMenu;
 }
 
-void CBasePanel::UpdateBackgroundState()
+void CBaseMenuPanel::SetMenuAlpha(int alpha)
 {
-    if (GameUI().IsInLevel())
+    m_pMainMenu->SetAlpha(alpha);
+}
+
+void CBaseMenuPanel::UpdateBackgroundState()
+{
+    if (GameUIUtil::IsInLevel())
     {
         SetBackgroundRenderState(BACKGROUND_LEVEL);
     }
-    else if (GameUI().IsInBackgroundLevel() && !m_bLevelLoading)
+    else if (GameUIUtil::IsInBackgroundLevel() && !m_bLevelLoading)
     {
         // level loading is truly completed when the progress bar is gone, then transition to main menu
         SetBackgroundRenderState(BACKGROUND_MAINMENU);
@@ -148,7 +171,7 @@ void CBasePanel::UpdateBackgroundState()
     // fill over the top if we have any dialogs up
     int i;
     bool bHaveActiveDialogs = false;
-    bool bIsInLevel = GameUI().IsInLevel();
+    bool bIsInLevel = GameUIUtil::IsInLevel();
     int childCount = GetChildCount();
     for (i = 0; i < childCount; ++i)
     {
@@ -200,7 +223,7 @@ void CBasePanel::UpdateBackgroundState()
     }
 }
 
-void CBasePanel::DrawBackgroundImage()
+void CBaseMenuPanel::DrawBackgroundImage()
 {
     int wide, tall;
     GetSize(wide, tall);
@@ -238,7 +261,9 @@ void CBasePanel::DrawBackgroundImage()
         // goes from [0..255]
         alpha = (frametime - m_flFadeMenuStartTime) / (m_flFadeMenuEndTime - m_flFadeMenuStartTime) * 255;
         alpha = clamp(alpha, 0, 255);
+
         m_pMainMenu->SetAlpha(alpha);
+
         if (alpha == 255)
         {
             m_bFadingInMenus = false;
@@ -246,15 +271,21 @@ void CBasePanel::DrawBackgroundImage()
     }
 }
 
-void CBasePanel::OnThink()
+void CBaseMenuPanel::OnThink()
 {
     BaseClass::OnThink();
 
+    UpdateBackgroundState();
+    
     if (ipanel())
-        SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
+    {
+        int screenWide, screenTall;
+        engine->GetScreenSize(screenWide, screenTall);
+        SetBounds(0, 0, screenWide, screenTall);
+    }
 }
 
-void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
+void CBaseMenuPanel::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
@@ -294,9 +325,9 @@ void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
     surface()->DrawSetTextureFile(m_iLoadingImageID, "console/startup_loading", false, false);
 }
 
-void CBasePanel::PaintBackground()
+void CBaseMenuPanel::PaintBackground()
 {
-    if (!GameUI().IsInLevel() || ipanel()->IsVisible(g_hLoadingBackgroundDialog))
+    if (!GameUIUtil::IsInLevel() || m_pLoadingScreen->IsVisible())
     {
         // not in the game or loading dialog active or exiting, draw the ui background
         DrawBackgroundImage();
@@ -311,12 +342,12 @@ void CBasePanel::PaintBackground()
     }
 }
 
-void CBasePanel::RunEngineCommand(const char* command)
+void CBaseMenuPanel::RunEngineCommand(const char* command)
 {
     engine->ClientCmd_Unrestricted(command);
 }
 
-void CBasePanel::RunMenuCommand(const char* command)
+void CBaseMenuPanel::RunMenuCommand(const char* command)
 {
     if (!Q_stricmp(command, "OpenGameMenu"))
     {
@@ -335,7 +366,7 @@ void CBasePanel::RunMenuCommand(const char* command)
     }
     else if (!Q_stricmp(command, "ResumeGame"))
     {
-        GameUI().HideGameUI();
+        engine->ExecuteClientCmd("gameui_hide");
     }
     else if (!Q_stricmp(command, "Disconnect"))
     {
@@ -354,7 +385,7 @@ void CBasePanel::RunMenuCommand(const char* command)
         const char *engineCMD = strstr(command, "engine ") + strlen("engine ");
         if (strlen(engineCMD) > 0)
         {
-            engine->ClientCmd_Unrestricted(const_cast<char *>(engineCMD));
+            engine->ClientCmd_Unrestricted(engineCMD);
         }
     }
     else
@@ -363,7 +394,18 @@ void CBasePanel::RunMenuCommand(const char* command)
     }
 }
 
-void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
+bool CBaseMenuPanel::RequestInfo(KeyValues* data)
+{
+    if (!Q_strcmp(data->GetName(), "menu_visible"))
+    {
+        data->SetBool("response", m_pMainMenu->IsVisible());
+        return true;
+    }
+
+    return BaseClass::RequestInfo(data);
+}
+
+void CBaseMenuPanel::SetBackgroundRenderState(EBackgroundState state)
 {
     if (state == m_eBackgroundState)
     {

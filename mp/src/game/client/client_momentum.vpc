@@ -29,12 +29,27 @@ $Project "Client (Momentum)"
         {
             $Folder "UI"
             {
-                $Folder "LoadingScreen"
+                $Folder "GameUI"
                 {
-                    $File "momentum\ui\loadingscreen\LoadingScreen.cpp"
-                    $File "momentum\ui\loadingscreen\LoadingScreen.h"
-                    $File "momentum\ui\loadingscreen\TipManager.h"
-                    $File "momentum\ui\loadingscreen\TipManager.cpp"
+                    $File "momentum\ui\gameui\GameUIUtil.h"
+                    $File "momentum\ui\gameui\BaseMenuPanel.h"
+                    $File "momentum\ui\gameui\BaseMenuPanel.cpp"
+
+                    $Folder "MainMenu"
+                    {
+                        $File "momentum\ui\gameui\mainmenu\MainMenu.cpp"
+                        $File "momentum\ui\gameui\mainmenu\MainMenu.h"
+                        $File "momentum\ui\gameui\mainmenu\MainMenuButton.cpp"
+                        $File "momentum\ui\gameui\mainmenu\MainMenuButton.h"
+                    }
+
+                    $Folder "LoadingScreen"
+                    {
+                        $File "momentum\ui\gameui\loadingscreen\LoadingScreen.cpp"
+                        $File "momentum\ui\gameui\loadingscreen\LoadingScreen.h"
+                        $File "momentum\ui\gameui\loadingscreen\TipManager.h"
+                        $File "momentum\ui\gameui\loadingscreen\TipManager.cpp"
+                    }
                 }
 
                 $Folder "Zone Menu"

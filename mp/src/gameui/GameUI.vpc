@@ -33,7 +33,6 @@ $Project "GameUI"
 {
     $Folder "Source Files"
     {
-        $File   "BasePanel.cpp"
         $File   "GameConsole.cpp"
         $File   "GameUI_Interface.cpp"
         $File   "MouseMessageForwardingPanel.cpp"
@@ -41,20 +40,15 @@ $Project "GameUI"
         $File   "TextEntryBox.cpp"
         $File   "$SRCDIR\public\vgui_controls\vgui_controls.cpp"
         $File   "$SRCDIR\common\language.cpp"
-        $File   "MainMenu.cpp"
-        $File   "MainMenuButton.cpp"
     }
 
     $Folder "Header Files"
     {
-        $File   "BasePanel.h"
         $File   "GameConsole.h"
         $File   "GameUI_Interface.h"
         $File   "MouseMessageForwardingPanel.h"
         $File   "PanelListPanel.h"
         $File   "TextEntryBox.h"
-        $File   "MainMenu.h"
-        $File   "MainMenuButton.h"
         $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
     }
 

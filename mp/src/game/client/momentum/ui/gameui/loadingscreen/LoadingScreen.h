@@ -4,6 +4,8 @@
 #include "GameEventListener.h"
 #include "TipManager.h"
 
+class CBaseMenuPanel;
+
 namespace vgui
 {
     class ContinuousProgressBar;
@@ -16,16 +18,19 @@ class CLoadingScreen : public vgui::EditablePanel, public CGameEventListener
 public:
     DECLARE_CLASS_SIMPLE(CLoadingScreen, vgui::EditablePanel);
 
-    CLoadingScreen();
+    CLoadingScreen(CBaseMenuPanel *pPanel);
+    ~CLoadingScreen();
 
     void FireGameEvent(IGameEvent *event) override;
 
     void LoadMapData(const char *pMapName);
 
+    void Activate();
+    void Deactivate();
+
+    void ProgressUpdate(float percent);
+
 protected:
-    MESSAGE_FUNC(OnActivate, "Activate");
-    MESSAGE_FUNC_INT(OnDeactivate, "Deactivate", loaded_into_game);
-    MESSAGE_FUNC_FLOAT(OnLoadProgress, "ProgressFraction", percent);
     MESSAGE_FUNC(OnLargeImageLoad, "ImageLoad");
 
     void OnKeyCodeTyped(vgui::KeyCode code) override;

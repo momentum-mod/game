@@ -1,6 +1,7 @@
 #include "cbase.h"
 
 #include "LoadingScreen.h"
+#include "gameui/BaseMenuPanel.h"
 
 #include "vgui_controls/Label.h"
 #include "vgui_controls/Button.h"
@@ -21,8 +22,12 @@
 
 using namespace vgui;
 
-CLoadingScreen::CLoadingScreen() : BaseClass(nullptr, "LoadingScreen")
+static CLoadingScreen *g_pLoadingScreen = nullptr;
+
+CLoadingScreen::CLoadingScreen(CBaseMenuPanel *pParent) : BaseClass(pParent, "LoadingScreen")
 {
+    g_pLoadingScreen = this;
+
     m_pMapImage = nullptr;
     m_pMapImageStreaming = nullptr;
     m_fMapImageOpacityMax = 0.5;
@@ -49,12 +54,17 @@ CLoadingScreen::CLoadingScreen() : BaseClass(nullptr, "LoadingScreen")
     ListenForGameEvent("mapcache_map_load");
 }
 
+CLoadingScreen::~CLoadingScreen()
+{
+    g_pLoadingScreen = nullptr;
+}
+
 void CLoadingScreen::FireGameEvent(IGameEvent *event)
 {
     LoadMapData(event->GetString("map"));
 }
 
-void CLoadingScreen::OnActivate()
+void CLoadingScreen::Activate()
 {
     GetBuildGroup()->ReloadControlSettings();
 
@@ -66,14 +76,14 @@ void CLoadingScreen::OnActivate()
     m_pAuthorsLabel->SetText("");
     m_pDifficultyLayoutLabel->SetText("");
     m_pTrackZonesLabel->SetText("");
-    OnLoadProgress(0.0f);
+    ProgressUpdate(0.0f);
 
     ipanel()->MoveToFront(GetVPanel());
     input()->SetAppModalSurface(GetVPanel());
     surface()->RestrictPaintToSinglePanel(GetVPanel());
 }
 
-void CLoadingScreen::OnDeactivate(int loaded_into_game)
+void CLoadingScreen::Deactivate()
 {
     SetVisible(false);
     CleanupMapImage();
@@ -83,7 +93,7 @@ void CLoadingScreen::OnDeactivate(int loaded_into_game)
     surface()->RestrictPaintToSinglePanel(NULL);
 }
 
-void CLoadingScreen::OnLoadProgress(float percent)
+void CLoadingScreen::ProgressUpdate(float percent)
 {
     m_pProgressBar->SetProgress(percent);
     m_pLoadingPercentLabel->SetText(CFmtStr("Loading... %i%%", static_cast<int>(percent * 100)));
@@ -205,7 +215,7 @@ void CLoadingScreen::OnKeyCodeTyped(KeyCode code)
 {
     if (code == KEY_ESCAPE)
     {
-        OnDeactivate(0);
+        Deactivate();
         engine->DisconnectInternal();
     }
 
