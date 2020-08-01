@@ -95,19 +95,5 @@ $Project "GameUI"
         $Lib       tier2
         $Lib       tier3
         $Lib       vgui_controls
-        $Lib       vtf
-        $ImpLib    steam_api
-        
-        $Lib $LIBCOMMON/libcrypto [$POSIX]
-
-        $ImpLib "$LIBCOMMON\curl" [$OSXALL]
-
-        $Lib   "$LIBCOMMON\libcurl" [$WIN32]
-        $Lib   "libz" [$WIN32]
-
-        $Libexternal libz [$LINUXALL]
-        $Libexternal "$LIBCOMMON/libcurl" [$LINUXALL]
-        $Libexternal "$LIBCOMMON/libcurlssl" [$LINUXALL]
-        $Libexternal "$LIBCOMMON/libssl" [$LINUXALL]
     }
 }

@@ -1,10 +1,3 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose: Defines the interface that the GameUI dll exports
-//
-// $NoKeywords: $
-//=============================================================================//
-
 #pragma once
 
 #include "GameUI/IGameUI.h"
@@ -12,9 +5,6 @@
 class IGameClientExports;
 class CCommand;
 
-//-----------------------------------------------------------------------------
-// Purpose: Implementation of GameUI's exposed interface
-//-----------------------------------------------------------------------------
 class CGameUI : public IGameUI
 {
   public:
@@ -39,17 +29,13 @@ class CGameUI : public IGameUI
     void PreventEngineHideGameUI();
     void AllowEngineHideGameUI();
 
-    void SetLoadingBackgroundDialog(vgui::VPANEL panel) OVERRIDE;
-    vgui::VPANEL GetLoadingBackgroundDialog();
-
     // notifications
     void OnGameUIActivated() OVERRIDE;
     void OnGameUIHidden() OVERRIDE;
 
+    bool IsInLoading() const { return m_bIsInLoading; }
     void OnLevelLoadingStarted(bool bShowProgressDialog) OVERRIDE;
     void OnLevelLoadingFinished(bool bError, const char *failureReason, const char *extendedReason) OVERRIDE;
-
-    // progress
     bool UpdateProgressBar(float progress, const char *statusText) OVERRIDE;
 
     void SendMainMenuCommand(const char *pszCommand) OVERRIDE;
@@ -75,7 +61,8 @@ class CGameUI : public IGameUI
     int BonusMapNumAdvancedCompleted() OVERRIDE { return 0; }
     // Dialogs
     void ShowNewGameDialog(int chapter) OVERRIDE{}
-    void SetMainMenuOverride(vgui::VPANEL panel) OVERRIDE{}
+    void SetMainMenuOverride(vgui::VPANEL panel) OVERRIDE {}
+    void SetLoadingBackgroundDialog(vgui::VPANEL panel) OVERRIDE {}
 	void UpdatePlayerInfo() OVERRIDE {}
     // Progress
     void SetProgressOnStart() OVERRIDE {}
@@ -86,27 +73,12 @@ class CGameUI : public IGameUI
     void OnDisconnectFromServer(uint8 eSteamLoginFailure) OVERRIDE{}
     void OnDisconnectFromServer_OLD(uint8 eSteamLoginFailure, const char *username) OVERRIDE{}
 
-    // state
-    bool IsInLevel();
-    bool IsInBackgroundLevel();
-    bool IsInMenu();
-    bool IsInMultiplayer();
-
-    void ShowLoadingBackgroundDialog();
-    void HideLoadingBackgroundDialog();
-
-    virtual Vector2D GetViewport() const;
-
-    void GetLocalizedString(const char *pToken, wchar_t **pOut);
-
   private:
-    virtual bool ContinueProgressBar(float progressFraction);
-
     int m_iPlayGameStartupSound;
+    bool m_bIsInLoading;
+
+    vgui::VPANEL m_hBasePanel;
 };
 
 // Purpose: singleton accessor
 extern CGameUI &GameUI();
-
-// expose client interface
-extern IGameClientExports *GameClientExports();
