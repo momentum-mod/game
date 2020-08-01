@@ -2,34 +2,9 @@
 {
     "CreditsParams"
     {
-        "logo" "HALF-LIFE'"
-        
-        "fadeintime"	"2.5"
-        "fadeouttime"	"1"
-        "fadeholdtime"	"1.0"
-        "nextfadetime"	"1.0"
-        "pausebetweenwaves" "1.0"
-        "logotime" "1.0"
-        "posx"	"96"
-        "posy"	"360"
-
-        "color" "255 255 255 128"
-
-        //Outro Parameters
         "scrolltime" "111" // When setting scrolltime value, don't make it too slow/too fast!
         "separation"  "10"
     }
-
-    //========================================================
-    //These are the names used in the intro (trainride)
-    //========================================================
-    "IntroCreditsNames"
-    {
-        "V"	"WeaponIcons"
-        " "	"CreditsText"
-        " "	"CreditsText"
-    }
-
 
     //================================================================================
     //	These are the names used in the credits.
