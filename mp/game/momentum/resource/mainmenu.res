@@ -43,7 +43,7 @@
     "Credits"
     {
         "text" "#GameUI2_Credits"
-        "EngineCommand" "map credits"
+        "EngineCommand" "mom_credits_show"
         "priority" "50"
         "specifics" "mainmenu"
     }
