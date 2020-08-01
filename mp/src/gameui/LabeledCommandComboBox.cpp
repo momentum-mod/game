@@ -6,14 +6,16 @@
 //=============================================================================//
 
 #include "LabeledCommandComboBox.h"
-#include "EngineInterface.h"
 #include <KeyValues.h>
 #include <vgui/ILocalize.h>
+#include "cdll_int.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
 using namespace vgui;
+
+extern IVEngineClient *engine;
 
 CLabeledCommandComboBox::CLabeledCommandComboBox( vgui::Panel *parent, const char *panelName ) : vgui::ComboBox( parent, panelName, 6, false )
 {

@@ -28,7 +28,6 @@ protected:
     MESSAGE_FUNC_CHARPTR(OnCommandSubmitted, "CommandSubmitted", command);
 
     void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
-    void OnCommand(const char *command) OVERRIDE;
 };
 
 #endif // GAMECONSOLEDIALOG_H

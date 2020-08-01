@@ -4,33 +4,17 @@
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
 #include "vgui/KeyCode.h"
-#include "EngineInterface.h"
-#include "BasePanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "cdll_int.h"
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-CGameConsoleDialog::CGameConsoleDialog() : BaseClass(nullptr, "GameConsole") { AddActionSignalTarget(this); }
+extern IVEngineClient *engine;
+extern IGameUIFuncs *gameuifuncs;
 
-//-----------------------------------------------------------------------------
-// Purpose: generic vgui command handler
-//-----------------------------------------------------------------------------
-void CGameConsoleDialog::OnCommand(const char *command)
-{
-    if (!Q_stricmp(command, "Close"))
-    {
-        if (GameUI().IsInBackgroundLevel())
-        {
-            // Tell the engine we've hid the console, so that it unpauses the game
-            // even though we're still sitting at the menu.
-            engine->ClientCmd_Unrestricted("unpause");
-        }
-    }
-
-    BaseClass::OnCommand(command);
-}
+CGameConsoleDialog::CGameConsoleDialog() : BaseClass(nullptr, "GameConsole") { }
 
 //-----------------------------------------------------------------------------
 // HACK: Allow F key bindings to operate even when typing in the text entry field
@@ -65,13 +49,9 @@ void CGameConsoleDialog::OnCommandSubmitted(const char *pCommand) { engine->Clie
 
 void CGameConsoleDialog::OnClosedByHittingTilde()
 {
-    if (!GetBasePanel()->IsInLoading())
+    if (!GameUI().IsInLoading())
     {
         Hide();
         GameUI().HideGameUI();
-    }
-    else
-    {
-        surface()->RestrictPaintToSinglePanel(GameUI().GetLoadingBackgroundDialog());
     }
 }
