@@ -119,7 +119,6 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_menu_static.cpp"
                     $File "momentum\ui\HUD\hud_fillablebar.h"
                     $File "momentum\ui\HUD\hud_measuretool.cpp"
-                    $File "hl2\hud_credits.cpp"
                     $File "hud_chat.cpp"
                     $File "hl2\hud_weaponselection.cpp"
                     $File "momentum\ui\HUD\hud_spectatorinfo.h"
@@ -194,6 +193,11 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\PaintGunPanel.h"
                     $File "momentum\ui\PaintGunScreenPanel.h"
                     $File "momentum\ui\PaintGunScreenPanel.cpp"
+                }
+
+                $Folder "Credits"
+                {
+                    $File "momentum\ui\CreditsDialog.cpp"
                 }
             }
 
