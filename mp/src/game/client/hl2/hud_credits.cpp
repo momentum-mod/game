@@ -13,6 +13,7 @@
 #include "filesystem.h"
 #include "iclientmode.h"
 #include "ienginevgui.h"
+#include "engine/IEngineSound.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -34,6 +35,7 @@ struct creditname_t
 
 #define CREDITS_FILE "scripts/credits.txt"
 #define CREDITS_SPEEDUP_FACTOR 0.27f
+#define CREDITS_MUSIC_FILEPATH "*#music/clarity.mp3" // need *# to be effected by music volume
 
 enum
 {
@@ -57,6 +59,7 @@ class CHudCredits : public Frame
 
     int GetStringPixelWidth(wchar_t *pString, HFont hFont);
 
+    void OnClose() override;
     void Activate() override;
 
   protected:
@@ -202,9 +205,20 @@ void CHudCredits::Clear(void)
     m_flCreditsPixelHeight = 0.0f;
 }
 
+void CHudCredits::OnClose()
+{
+    enginesound->StopSoundByGuid(m_iMusicGUID);
+
+    BaseClass::OnClose();
+}
+
 void CHudCredits::Activate()
 {
     PrepareOutroCredits();
+
+    enginesound->EmitAmbientSound(CREDITS_MUSIC_FILEPATH, 1.0f);
+    m_iMusicGUID = enginesound->GetGuidForLastSoundEmitted();
+
     BaseClass::Activate();
 }
 
