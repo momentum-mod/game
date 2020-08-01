@@ -40,6 +40,7 @@ class CHudCredits : public Frame
     void Activate() override;
 
   protected:
+    void PerformLayout() override;
     void Paint() override;
 
   private:
@@ -80,6 +81,12 @@ CHudCredits::CHudCredits() : BaseClass(nullptr, "HudCredits")
     SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     SetProportional(true);
 
+    const auto creditsScheme = scheme()->LoadSchemeFromFile("resource/CreditsScheme.res", "CreditsScheme");
+    if (creditsScheme)
+    {
+        SetScheme(creditsScheme);
+    }
+
     // for mouse speedup
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
@@ -99,9 +106,8 @@ CHudCredits::CHudCredits() : BaseClass(nullptr, "HudCredits")
     SetCloseButtonVisible(false);
     SetPaintBorderEnabled(false);
 
-    int iWidth, iTall;
-    surface()->GetScreenSize(iWidth, iTall);
-    SetBounds(0, 0, iWidth, iTall);
+    LoadControlSettings("resource/ui/settings/CreditsDialog.res");
+    SetVisible(false);
 }
 
 void CHudCredits::PrepareCredits(const char *pKeyName)
@@ -175,13 +181,13 @@ void CHudCredits::ReadNames(KeyValues *pKeyValue)
     // Now try and parse out each act busy anim
     KeyValues *pKVNames = pKeyValue->GetFirstSubKey();
 
+    const auto pScheme = scheme()->GetIScheme(GetScheme());
+
     while (pKVNames)
     {
         creditname_t Credits;
         V_strcpy_safe(Credits.szCreditName, pKVNames->GetName());
 
-        const auto hScheme = scheme()->GetScheme("ClientScheme");
-        const auto pScheme = scheme()->GetIScheme(hScheme);
         Credits.font = pScheme->GetFont(pKeyValue->GetString(Credits.szCreditName, "Default"), true);
 
         m_CreditsList.AddToTail(Credits);
@@ -294,6 +300,15 @@ void CHudCredits::DrawOutroCreditsName(void)
         surface()->DrawSetTextPos((GetWide() / 2) - (iStringWidth / 2), pCredit->flYPos);
         surface()->DrawUnicodeString(unicode);
     }
+}
+
+void CHudCredits::PerformLayout()
+{
+    BaseClass::PerformLayout();
+
+    int iWidth, iTall;
+    surface()->GetScreenSize(iWidth, iTall);
+    SetBounds(0, 0, iWidth, iTall);
 }
 
 void CHudCredits::Paint()
