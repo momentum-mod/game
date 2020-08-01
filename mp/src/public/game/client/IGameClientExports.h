@@ -43,6 +43,8 @@ public:
     //=============================================================================
 
 	virtual const char *GetHolidayString() = 0;
+
+    virtual vgui::VPANEL GetBasePanel() = 0;
 };
 
 #define GAMECLIENTEXPORTS_INTERFACE_VERSION "GameClientExports001"

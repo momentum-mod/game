@@ -139,7 +139,7 @@
 #include "PortalRender.h"
 #endif
 
-#include "GameUI_Interface.h"
+#include "gameui/BaseMenuPanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -382,6 +382,12 @@ public:
 	const char *GetHolidayString()
 	{
 		return UTIL_GetActiveHolidayString();
+	}
+
+	vgui::VPANEL GetBasePanel() override
+	{
+		AssertMsg(g_pBasePanel, "Null base panel!!");
+	    return g_pBasePanel->GetVPanel();
 	}
 };
 
