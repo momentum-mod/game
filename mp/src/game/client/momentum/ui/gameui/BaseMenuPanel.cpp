@@ -349,7 +349,7 @@ void CBaseMenuPanel::RunEngineCommand(const char* command)
 
 void CBaseMenuPanel::RunMenuCommand(const char* command)
 {
-    if (!Q_stricmp(command, "OpenGameMenu"))
+    if (FStrEq(command, "OpenGameMenu"))
     {
         if (m_pMainMenu)
         {
@@ -357,33 +357,33 @@ void CBaseMenuPanel::RunMenuCommand(const char* command)
             PostMessage(m_pMainMenu, new KeyValues("Command", "command", "Open"));
         }
     }
-    else if (!Q_stricmp(command, "Quit") || !Q_stricmp(command, "QuitNoConfirm"))
+    else if (FStrEq(command, "Quit") || FStrEq(command, "QuitNoConfirm"))
     {
         // hide everything while we quit
         SetVisible(false);
         surface()->RestrictPaintToSinglePanel(GetVPanel());
         engine->ClientCmd_Unrestricted("quit\n");
     }
-    else if (!Q_stricmp(command, "ResumeGame"))
+    else if (FStrEq(command, "ResumeGame"))
     {
         engine->ExecuteClientCmd("gameui_hide");
     }
-    else if (!Q_stricmp(command, "Disconnect"))
+    else if (FStrEq(command, "Disconnect"))
     {
         engine->ClientCmd_Unrestricted("disconnect");
     }
-    else if (!Q_stricmp(command, "DisconnectNoConfirm"))
+    else if (FStrEq(command, "DisconnectNoConfirm"))
     {
         // Leave our current session, if we have one
     }
-    else if (!Q_stricmp(command, "ReleaseModalWindow"))
+    else if (FStrEq(command, "ReleaseModalWindow"))
     {
         surface()->RestrictPaintToSinglePanel(NULL);
     }
     else if (Q_stristr(command, "engine "))
     {
-        const char *engineCMD = strstr(command, "engine ") + strlen("engine ");
-        if (strlen(engineCMD) > 0)
+        const char *engineCMD = Q_strstr(command, "engine ") + Q_strlen("engine ");
+        if (Q_strlen(engineCMD) > 0)
         {
             engine->ClientCmd_Unrestricted(engineCMD);
         }
@@ -396,7 +396,7 @@ void CBaseMenuPanel::RunMenuCommand(const char* command)
 
 bool CBaseMenuPanel::RequestInfo(KeyValues* data)
 {
-    if (!Q_strcmp(data->GetName(), "menu_visible"))
+    if (FStrEq(data->GetName(), "menu_visible"))
     {
         data->SetBool("response", m_pMainMenu->IsVisible());
         return true;
