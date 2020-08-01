@@ -153,7 +153,7 @@ void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
 
 void MainMenu::OnCommand(char const *cmd)
 {
-    if (!Q_strcmp(cmd, "ShowVersion"))
+    if (FStrEq(cmd, "ShowVersion"))
     {
         engine->ClientCmd("mom_show_changelog\n");
         GetAnimationController()->StartAnimationSequence(this, "VersionPulseStop");
@@ -166,26 +166,26 @@ void MainMenu::OnCommand(char const *cmd)
 
 void MainMenu::FireGameEvent(IGameEvent* event)
 {
-    if (!Q_strcmp(event->GetName(), "lobby_leave"))
+    if (FStrEq(event->GetName(), "lobby_leave"))
     {
         m_pButtonLobby->SetText("#GameUI2_HostLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_create");
         m_pButtonInviteFriends->SetVisible(false);
         m_pButtonSpectate->SetVisible(false);
     }
-    else if (!Q_strcmp(event->GetName(), "lobby_join"))
+    else if (FStrEq(event->GetName(), "lobby_join"))
     {
         m_pButtonLobby->SetText("#GameUI2_LeaveLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_leave");
         m_pButtonInviteFriends->SetVisible(true);
         m_pButtonSpectate->SetVisible(true);
     }
-    else if (!Q_strcmp(event->GetName(), "spec_start"))
+    else if (FStrEq(event->GetName(), "spec_start"))
     {
         m_pButtonSpectate->SetText("#GameUI2_Respawn");
         m_pButtonSpectate->SetEngineCommand("mom_spectate_stop");
     }
-    else if (!Q_strcmp(event->GetName(), "spec_stop"))
+    else if (FStrEq(event->GetName(), "spec_stop"))
     {
         m_pButtonSpectate->SetText("#GameUI2_Spectate");
         m_pButtonSpectate->SetEngineCommand("mom_spectate");

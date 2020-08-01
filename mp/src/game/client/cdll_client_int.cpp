@@ -386,7 +386,6 @@ public:
 
 	vgui::VPANEL GetBasePanel() override
 	{
-		AssertMsg(g_pBasePanel, "Null base panel!!");
 	    return g_pBasePanel->GetVPanel();
 	}
 };
