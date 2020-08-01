@@ -79,23 +79,23 @@ void MomUtil::MountGameFiles()
         folderLen = SteamApps()->GetAppInstallDir(240, installPath, MAX_PATH);
         if (folderLen)
         {
-            filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/cstrike/cstrike_pak.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/cstrike/download", installPath), "download");
+            filesystem->AddSearchPath(CFmtStr("%s/cstrike", installPath), "GAME");
         }
 
         // TF2
         folderLen = SteamApps()->GetAppInstallDir(440, installPath, MAX_PATH);
         if (folderLen)
         {
-            filesystem->AddSearchPath(CFmtStr("%s/tf", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_misc.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_misc.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_sound_vo_english.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/tf2_textures.vpk", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "GAME");
             filesystem->AddSearchPath(CFmtStr("%s/tf/download", installPath), "download");
+            filesystem->AddSearchPath(CFmtStr("%s/tf", installPath), "GAME");
         }
 
         if (developer.GetInt())
