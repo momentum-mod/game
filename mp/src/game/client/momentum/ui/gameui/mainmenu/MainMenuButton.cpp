@@ -1,3 +1,5 @@
+#include "cbase.h"
+
 #include "MainMenuButton.h"
 
 #include "vgui/ILocalize.h"

@@ -3,6 +3,7 @@
 #include "vgui_controls/EditablePanel.h"
 
 class MainMenu;
+class CLoadingScreen;
 
 enum EBackgroundState
 {
@@ -13,34 +14,30 @@ enum EBackgroundState
     BACKGROUND_DISCONNECTED
 };
 
-class CBasePanel : public vgui::EditablePanel
+class CBaseMenuPanel : public vgui::EditablePanel
 {
-    DECLARE_CLASS_SIMPLE(CBasePanel, vgui::EditablePanel);
+    DECLARE_CLASS_SIMPLE(CBaseMenuPanel, vgui::EditablePanel);
 
-    CBasePanel();
-    virtual ~CBasePanel();
+    CBaseMenuPanel();
+    ~CBaseMenuPanel();
 
-    // notifications
-    void OnLevelLoadingStarted();
-    void OnLevelLoadingFinished();
+    static void Init();
 
     bool IsInLoading() const;
 
-    // update the taskbar a frame
-    void RunFrame();
-
-    // fades to black then runs an engine command (usually to start a level)
-    void FadeToBlackAndRunEngineCommand(const char *engineCommand);
-
-    // handles gameUI being shown/hidden
-    void OnGameUIActivated();
-    void OnGameUIHidden();
-
-    MainMenu *GetMainMenu() const { return m_pMainMenu; }
+    Panel* GetMainMenu();
 
     // fading to game
     MESSAGE_FUNC_CHARPTR(RunEngineCommand, "RunEngineCommand", command);
     MESSAGE_FUNC_CHARPTR(RunMenuCommand, "RunMenuCommand", command);
+
+    MESSAGE_FUNC(OnGameUIActivated, "GameUIActivated");
+    MESSAGE_FUNC(OnGameUIHidden, "GameUIHidden");
+
+    MESSAGE_FUNC_FLOAT(OnLoadProgress, "ProgressFraction", percent);
+
+    MESSAGE_FUNC_PARAMS(OnLevelLoadingStarted, "LevelLoadStarted", pKvData);
+    MESSAGE_FUNC_PARAMS(OnLevelLoadingFinished, "LevelLoadFinished", pKvData);
     
     EBackgroundState GetMenuBackgroundState() const { return m_eBackgroundState; }
 
@@ -49,11 +46,13 @@ protected:
     void PaintBackground() OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnCommand(const char *command) OVERRIDE{ RunMenuCommand(command); }
+    bool RequestInfo(KeyValues* data) override;
 
 private:
     void SetBackgroundRenderState(EBackgroundState state);
 
     MainMenu *m_pMainMenu;
+    CLoadingScreen *m_pLoadingScreen;
 
     // sets the menu alpha [0..255]
     void SetMenuAlpha(int alpha);
@@ -83,4 +82,4 @@ private:
     CPanelAnimationVar(float, m_flBackgroundFillAlpha, "m_flBackgroundFillAlpha", "0");
 };
 
-extern CBasePanel *GetBasePanel();
+extern CBaseMenuPanel *g_pBasePanel;
