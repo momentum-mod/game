@@ -1112,7 +1112,7 @@ bool IsEntityPositionReasonable(const Vector &pos)
 
 bool IsEntityVelocityReasonable(const Vector &vel)
 {
-    const float max = sv_maxvelocity.GetFloat();
+    const float max = 60000.0f;
     Vector velAbs;
     VectorAbs(vel, velAbs);
     return velAbs.x < max && velAbs.y < max && velAbs.z < max;
