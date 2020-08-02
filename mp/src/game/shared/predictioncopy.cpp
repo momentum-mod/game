@@ -2205,7 +2205,7 @@ void CPredictionCopyTester::RunTests( void )
 	}
 
 	{
-		Msg( "Comparing and coyping same != objects, should spew and have non-zero diffcount\n" );
+		Msg( "Comparing and copying same != objects, should spew and have non-zero diffcount\n" );
 
 		CPredictionCopy tester( PC_NON_NETWORKED_ONLY, foo1, false, foo2, false, true );
 		int diff_count = 0;
