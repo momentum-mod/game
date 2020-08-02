@@ -786,12 +786,12 @@ CON_COMMAND_F( spec_mode, "Set spectator mode", FCVAR_CLIENTCMD_CAN_EXECUTE )
 		}
 		else
 		{
-			// we can choose any mode, not loked to PVS
+			// we can choose any mode, not locked to PVS
 			int mode;
 
 			if ( args.ArgC() == 2 )
 			{
-				// set specifc mode
+				// set specific mode
 				mode = Q_atoi( args[1] );
 			}
 			else
@@ -831,7 +831,7 @@ CON_COMMAND_F( spec_player, "Spectate player by name", FCVAR_CLIENTCMD_CAN_EXECU
 
 	if ( engine->IsHLTV() )
 	{
-		// we can only switch primary spectator targets is PVS isnt locked by auto-director
+		// we can only switch primary spectator targets is PVS isn't locked by auto-director
 		if ( !HLTVCamera()->IsPVSLocked() )
 		{
 			HLTVCamera()->SpecNamedPlayer( args[1] );
