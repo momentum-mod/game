@@ -704,7 +704,7 @@ const char *GetMassEquivalent(float flMass)
 		{ 2.5e-3,	"ping-pong ball" },
 		{ 5e-3,		"penny" },
 		{ 0.05,		"golf ball" },
-		{ 0.17,		"billard ball" },
+		{ 0.17,		"billiard ball" },
 		{ 2,		"bag of sugar" },
 		{ 7,		"male cat" },
 		{ 10,		"bowling ball" },
@@ -776,7 +776,7 @@ private:
 };
 
 BEGIN_DATADESC( CGameGibManager )
-	// Silence perfidous classcheck!
+	// Silence perfidious classcheck!
 	//DEFINE_FIELD( m_iCurrentMaxPieces, FIELD_INTEGER ),
 	//DEFINE_FIELD( m_iLastFrame, FIELD_INTEGER ),
 	//DEFINE_FIELD( m_iDXLevel, FIELD_INTEGER ),
