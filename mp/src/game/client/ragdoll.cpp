@@ -663,7 +663,7 @@ void C_ServerRagdoll::UpdateOnRemove()
 		anim->CreateUnragdollInfo( this );
 	}
 
-	// Do last to mimic destrictor order
+	// Do last to mimic destructor order
 	BaseClass::UpdateOnRemove();
 }
 
