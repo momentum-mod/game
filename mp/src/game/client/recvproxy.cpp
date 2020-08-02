@@ -140,7 +140,7 @@ void RecvProxy_InterpolationAmountChanged( const CRecvProxyData *pData, void *pS
 
 //-----------------------------------------------------------------------------
 // Purpose: Decodes a time value
-// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changine
+// Input  : *pStruct - ( C_BaseEntity * ) used to flag animtime is changing
 //			*pVarData - 
 //			*pIn - 
 //			objectID - 
