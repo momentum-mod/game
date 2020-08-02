@@ -1,7 +1,7 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: A camera entity that's used by the -makedevshots system to take
-//			dev screenshots everytime the map is checked into source control.
+//			dev screenshots every time the map is checked into source control.
 //
 // $NoKeywords: $
 //=============================================================================//
@@ -21,7 +21,7 @@ int g_iDevShotCameraCount = 0;
 
 //-----------------------------------------------------------------------------
 // Purpose: A camera entity that's used by the -makedevshots system to take
-//			dev screenshots everytime the map is checked into source control.
+//			dev screenshots every time the map is checked into source control.
 //-----------------------------------------------------------------------------
 class CPointDevShotCamera : public CBaseEntity
 {
