@@ -236,7 +236,7 @@ const char *COperationFileListFrame::GetOperation( int i )
 
 
 //-----------------------------------------------------------------------------
-// Retreives the description (only if it was shown)
+// Retrieves the description (only if it was shown)
 //-----------------------------------------------------------------------------
 const char *COperationFileListFrame::GetDescription()
 {
