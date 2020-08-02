@@ -436,7 +436,7 @@ void CAI_ScriptedSequence::InputScriptPlayerDeath( inputdata_t &inputdata )
 //
 //			Scripts wait for two reasons:
 //
-//			1. To frame-syncronize with other scripts of the same name.
+//			1. To frame-synchronize with other scripts of the same name.
 //			2. To wait indefinitely for the BeginSequence input after the NPC
 //				moves to the script position.
 //-----------------------------------------------------------------------------
@@ -753,7 +753,7 @@ void CAI_ScriptedSequence::StartScript( void )
 
 		pTarget->SetIdealState(NPC_STATE_SCRIPT);
 
-		// FIXME: not sure why this is happening, or what to do about truely dormant NPCs
+		// FIXME: not sure why this is happening, or what to do about truly dormant NPCs
 		if ( pTarget->IsEFlagSet( EFL_NO_THINK_FUNCTION ) && pTarget->GetNextThink() != TICK_NEVER_THINK )
 		{
 			DevWarning( "scripted_sequence %d:%s - restarting dormant entity %d:%s : %.1f:%.1f\n", entindex(), GetDebugName(), pTarget->entindex(), pTarget->GetDebugName(), gpGlobals->curtime, pTarget->GetNextThink() );
@@ -782,7 +782,7 @@ void CAI_ScriptedSequence::ScriptThink( void )
 		CancelScript( );
 		DevMsg( 2,  "scripted_sequence %d:\"%s\" can't find NPC \"%s\"\n", entindex(), GetDebugName(), STRING( m_iszEntity ) );
 		// FIXME: just trying again is bad.  This should fire an output instead.
-		// FIXME: Think about puting output triggers in both StartScript() and CancelScript().
+		// FIXME: Think about putting output triggers in both StartScript() and CancelScript().
 		SetNextThink( gpGlobals->curtime + 1.0f );
 	}
 }
@@ -790,7 +790,7 @@ void CAI_ScriptedSequence::ScriptThink( void )
 
 //-----------------------------------------------------------------------------
 // Purpose: Callback for firing the begin sequence output. Called by the NPC that
-//			is running the script as it starts the action seqeunce.
+//			is running the script as it starts the action sequence.
 //-----------------------------------------------------------------------------
 void CAI_ScriptedSequence::OnBeginSequence( void )
 {
@@ -1680,7 +1680,7 @@ void CAI_ScriptedSchedule::ScriptThink( void )
 	{
 		DevMsg( 2,  "scripted_schedule \"%s\" can't find NPC \"%s\"\n", GetDebugName(), STRING( m_iszEntity ) );
 		// FIXME: just trying again is bad.  This should fire an output instead.
-		// FIXME: Think about puting output triggers on success true and sucess false
+		// FIXME: Think about putting output triggers on success true and success false
 		// FIXME: also needs to check the result of StartSchedule(), which can fail and not complain
 		SetNextThink( gpGlobals->curtime + 1.0f );
 	}
