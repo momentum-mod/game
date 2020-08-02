@@ -1779,7 +1779,7 @@ void CStudioHdr::CActivityToSequenceMapping::Initialize( CStudioHdr * __restrict
 
 }
 
-/// Force Initialize() to occur again, even if it has already occured.
+/// Force Initialize() to occur again, even if it has already occurred.
 void CStudioHdr::CActivityToSequenceMapping::Reinitialize( CStudioHdr *pstudiohdr )
 {
 	m_bIsInitialized = false;
