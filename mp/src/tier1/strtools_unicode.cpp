@@ -547,7 +547,7 @@ int Q_UTF32CharsToUTF16( const uchar32 *pUTF32, int nElements, uchar16 *pUTF16, 
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Repair a UTF-8 string by removing or replacing invalid seqeuences. Returns non-zero on success.
+// Purpose: Repair a UTF-8 string by removing or replacing invalid sequences. Returns non-zero on success.
 //-----------------------------------------------------------------------------
 int Q_UnicodeRepair( char *pUTF8, EStringConvertErrorPolicy ePolicy )
 {
@@ -555,7 +555,7 @@ int Q_UnicodeRepair( char *pUTF8, EStringConvertErrorPolicy ePolicy )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Repair a UTF-16 string by removing or replacing invalid seqeuences. Returns non-zero on success.
+// Purpose: Repair a UTF-16 string by removing or replacing invalid sequences. Returns non-zero on success.
 //-----------------------------------------------------------------------------
 int Q_UnicodeRepair( uchar16 *pUTF16, EStringConvertErrorPolicy ePolicy )
 {
@@ -563,7 +563,7 @@ int Q_UnicodeRepair( uchar16 *pUTF16, EStringConvertErrorPolicy ePolicy )
 }
 	
 //-----------------------------------------------------------------------------
-// Purpose: Repair a UTF-32 string by removing or replacing invalid seqeuences. Returns non-zero on success.
+// Purpose: Repair a UTF-32 string by removing or replacing invalid sequences. Returns non-zero on success.
 //-----------------------------------------------------------------------------
 int Q_UnicodeRepair( uchar32 *pUTF32, EStringConvertErrorPolicy ePolicy )
 {
