@@ -1665,7 +1665,7 @@ HScheme Panel::GetScheme()
 		return m_iScheme; // return our internal scheme
 	}
 	
-	if (GetVParent()) // recurse down the heirarchy 
+	if (GetVParent()) // recurse down the hierarchy 
 	{
 		return ipanel()->GetScheme(GetVParent());
 	}
@@ -2610,7 +2610,7 @@ bool Panel::ParseKeyBindings( KeyValues *kv )
 					KeyBindingMap_t *alreadyBound = LookupBindingByKeyCode( (KeyCode)defaultKey->keycode, defaultKey->modifiers );
 					if ( alreadyBound )
 					{
-						Warning( "No binding for '%s', defautl key already bound to '%s'\n", binding->bindingname, alreadyBound->bindingname );
+						Warning( "No binding for '%s', default key already bound to '%s'\n", binding->bindingname, alreadyBound->bindingname );
 					}
 					else
 					{
@@ -3820,7 +3820,7 @@ void Panel::OnCommand(const char *command)
 	}
 	else
 	{
-		// if noone else caught this, pass along to the listeners
+		// if no one else caught this, pass along to the listeners
 		// (this is useful for generic dialogs - otherwise, commands just get ignored)
 		KeyValues *msg = new KeyValues( command );
 		PostActionSignal( msg );
@@ -7073,7 +7073,7 @@ void Panel::OnFinishDragging( bool mousereleased, MouseCode code, bool abort /*=
 		if ( target && !abort )
 		{
 			int localmousex = x, localmousey = y;
-			// Convert screen space coordintes to coordinates relative to drop window
+			// Convert screen space coordinates to coordinates relative to drop window
 			target->ScreenToLocal( localmousex, localmousey );
 
 			for ( int i = 0 ; i < c; ++i )
