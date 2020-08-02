@@ -51,7 +51,7 @@ void RadioImage::Paint()
 	}
 	DrawPrintChar(0, 1, 'n');
 
-	// draw border circl
+	// draw border circle
 	DrawSetTextColor(_borderColor1);
 	DrawPrintChar(0, 1, 'j');
 	DrawSetTextColor(_borderColor2);
@@ -192,7 +192,7 @@ void RadioButton::InternalSetSelected(bool state, bool bFireEvents)
 			msg->SetPtr("panel", this);
 			msg->SetInt("tabposition", _oldTabPosition);
 
-			// send a message to all other panels on the same level as heirarchy, 
+			// send a message to all other panels on the same level as hierarchy, 
 			// so that other radio buttons know to shut off
 			VPANEL radioParent = GetVParent();
 			if (radioParent)
