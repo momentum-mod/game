@@ -1460,7 +1460,7 @@ void CSceneEntity::DispatchEndFlexAnimation( CChoreoScene *scene, CBaseFlex *act
 //-----------------------------------------------------------------------------
 void CSceneEntity::DispatchStartGesture( CChoreoScene *scene, CBaseFlex *actor, CChoreoEvent *event )
 {
-	// Ingore null gestures
+	// Ignore null gestures
 	if ( !Q_stricmp( event->GetName(), "NULL" ) )
 		return;
 
@@ -1475,7 +1475,7 @@ void CSceneEntity::DispatchStartGesture( CChoreoScene *scene, CBaseFlex *actor, 
 //-----------------------------------------------------------------------------
 void CSceneEntity::DispatchEndGesture( CChoreoScene *scene, CBaseFlex *actor, CChoreoEvent *event )
 {
-	// Ingore null gestures
+	// Ignore null gestures
 	if ( !Q_stricmp( event->GetName(), "NULL" ) )
 		return;
 
@@ -2774,7 +2774,7 @@ void CSceneEntity::QueueResumePlayback( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Query whether the scene actually loaded. Only meaninful after Spawn()
+// Purpose: Query whether the scene actually loaded. Only meaningful after Spawn()
 //-----------------------------------------------------------------------------
 bool CSceneEntity::ValidScene() const
 {
@@ -3111,7 +3111,7 @@ void CSceneEntity::StartEvent( float currenttime, CChoreoScene *scene, CChoreoEv
 		break;
 	default:
 		{
-			// FIXME: Unhandeled event
+			// FIXME: Unhandled event
 			// Assert(0);
 		}
 		break;
@@ -3601,7 +3601,7 @@ public:
 private:
 	EHANDLE		m_hActor;
 
-	// To maintain backwards compatability, store off the first mark
+	// To maintain backwards compatibility, store off the first mark
 	// we find. If we find no truly valid marks, we'll just use the first.
 	EHANDLE		m_hEntityFound;
 };
@@ -4819,7 +4819,7 @@ void CSceneManager::Think()
 	float frameTime = ( gpGlobals->curtime - GetLastThink() );
 	frameTime = MIN( 0.1, frameTime );
 
-	// stop if AI is diabled
+	// stop if AI is disabled
 	if (CAI_BaseNPC::m_nDebugBits & bits_debugDisableAI)
 		return;
 
