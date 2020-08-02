@@ -12,6 +12,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     CMomentumTimer();
 
     // CAutoGameSystemPerFrame
+    bool Init() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
     void FrameUpdatePreEntityThink() OVERRIDE;

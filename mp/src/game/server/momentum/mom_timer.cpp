@@ -32,6 +32,26 @@ CMomentumTimer::CMomentumTimer() : CAutoGameSystemPerFrame("CMomentumTimer"),
 {
 }
 
+void CvarChangeCallback(IConVar* var, const char* pOldValue, float flOldValue)
+{
+    static bool s_bCvarReverted = false;
+
+    if (g_pMomentumTimer->IsRunning() && FStrEq(var->GetName(), "fps_max") && !s_bCvarReverted)
+    {
+        // Can't hook the change before it happens hence this jank
+        s_bCvarReverted = true;
+        var->SetValue(flOldValue);
+        s_bCvarReverted = false;
+        Warning("Cannot change fps_max while the timer is running!\n");
+    }
+}
+
+bool CMomentumTimer::Init()
+{
+    g_pCVar->InstallGlobalChangeCallback(CvarChangeCallback);
+    return true;
+}
+
 void CMomentumTimer::LevelInitPostEntity() { m_bWasCheatsMsgShown = false; }
 
 void CMomentumTimer::LevelShutdownPreEntity()
