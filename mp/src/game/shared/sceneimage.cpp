@@ -84,7 +84,7 @@ static CSceneTokenProcessor g_SceneTokenProcessor;
 ISceneTokenProcessor *tokenprocessor = &g_SceneTokenProcessor;
 
 // a simple case insensitive string pool
-// the final pool contains all the unique strings seperated by a null
+// the final pool contains all the unique strings separated by a null
 class CChoreoStringPool : public IChoreoStringPool
 {
 public:
@@ -294,7 +294,7 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 
 	Msg( "\n" );
 
-	// get all the VCD files according to the seacrh paths
+	// get all the VCD files according to the search paths
 	char searchPaths[512];
 	g_pFullFileSystem->GetSearchPath( "GAME", false, searchPaths, sizeof( searchPaths ) );
 	char *pPath = strtok( searchPaths, ";" );
@@ -421,7 +421,7 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 	{
 		SceneImageEntry_t imageEntry = { 0 };
 
-		// name needs to be normalized for determinstic later CRC name calc
+		// name needs to be normalized for deterministic later CRC name calc
 		// calc crc based on scenes\anydir\anyscene.vcd
 		char szCleanName[MAX_PATH];
 		V_strncpy( szCleanName, g_SceneFiles[i].fileName.String(), sizeof( szCleanName ) );
