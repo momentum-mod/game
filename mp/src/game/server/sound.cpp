@@ -92,7 +92,7 @@ typedef struct dynpitchvol
 
 						// Low Frequency Oscillator
 	int	lfotype;		// 0) off 1) square 2) triangle 3) random
-	int lforate;		// 0 - 1000, how fast lfo osciallates
+	int lforate;		// 0 - 1000, how fast lfo oscillates
 	
 	int lfomodpitch;	// 0-100 mod of current pitch. 0 is off.
 	int lfomodvol;		// 0-100 mod of current volume. 0 is off.
@@ -303,7 +303,7 @@ void CAmbientGeneric::ComputeMaxAudibleDistance( )
 	}
 
 	// Sadly, there's no direct way of getting at this. 
-	// We have to do an interative computation.
+	// We have to do an iterative computation.
 	if (enginesound->GetDistGainFromSoundLevel(m_iSoundLevel, m_radius) <= MIN_AUDIBLE_VOLUME )
 	{
 		m_flMaxRadius = m_radius;
@@ -919,7 +919,7 @@ void CAmbientGeneric::InputToggleSound( inputdata_t &inputdata )
 
 //-----------------------------------------------------------------------------
 // Purpose: Turns an ambient sound on or off.  If the ambient is a looping sound,
-//			mark sound as active (m_fActive) if it's playing, innactive if not.
+//			mark sound as active (m_fActive) if it's playing, inactive if not.
 //			If the sound is not a looping sound, never mark it as active.
 // Input  : pActivator - 
 //			pCaller - 
