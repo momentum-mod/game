@@ -18,7 +18,7 @@
 //extern int numthreads;
 
 // counters are only bumped when running single threaded,
-// because they are an awefull coherence problem
+// because they are an awful coherence problem
 int	c_active_windings;
 int	c_peak_windings;
 int	c_winding_allocs;
@@ -729,7 +729,7 @@ void ChopWindingInPlace (winding_t **inout, const Vector &normal, vec_t dist, ve
 ChopWinding
 
 Returns the fragment of in that is on the front side
-of the cliping plane.  The original is freed.
+of the clipping plane.  The original is freed.
 =================
 */
 winding_t *ChopWinding (winding_t *in, const Vector &normal, vec_t dist)
@@ -784,7 +784,7 @@ void CheckWinding (winding_t *w)
 		if (d < -ON_EPSILON || d > ON_EPSILON)
 			Error ("CheckWinding: point off plane");
 	
-	// check the edge isnt degenerate
+	// check the edge isn't degenerate
 		Vector& p2 = w->p[j];
 		VectorSubtract (p2, p1, dir);
 		
