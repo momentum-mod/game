@@ -47,14 +47,14 @@ void PropertyPage::OnApplyChanges()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Designed to be overriden
+// Purpose: Designed to be overridden
 //-----------------------------------------------------------------------------
 void PropertyPage::OnPageShow()
 {
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Designed to be overriden
+// Purpose: Designed to be overridden
 //-----------------------------------------------------------------------------
 void PropertyPage::OnPageHide()
 {
@@ -76,7 +76,7 @@ void PropertyPage::OnKeyCodeTyped(KeyCode code)
 {
 	switch (code)
 	{
-        // left and right only get propogated to parents if our tab has focus
+        // left and right only get propagated to parents if our tab has focus
 	case KEY_RIGHT:
 		{
             if (_pageTab != 0 && _pageTab->HasFocus())
