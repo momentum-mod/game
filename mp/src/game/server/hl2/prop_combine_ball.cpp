@@ -770,7 +770,7 @@ void CPropCombineBall::SetBallAsLaunched( void )
 }
 
 //-----------------------------------------------------------------------------
-// Lighten the mass so it's zippy toget to the gun
+// Lighten the mass so it's zippy to get to the gun
 //-----------------------------------------------------------------------------
 void CPropCombineBall::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t reason )
 {
