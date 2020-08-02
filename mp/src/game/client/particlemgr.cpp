@@ -780,7 +780,7 @@ int CParticleEffectBinding::DrawMaterialParticles(
 	if ( m_nActiveParticles > MAX_TOTAL_PARTICLES )
 		Error( "CParticleEffectBinding::DrawMaterialParticles: too many particles (%d should be less than %d)", m_nActiveParticles, MAX_TOTAL_PARTICLES );
 
-	// Simluate and render all the particles.
+	// Simulate and render all the particles.
 	CParticleRenderIterator renderIterator;
 
 	renderIterator.m_pEffectBinding = this;
@@ -1348,7 +1348,7 @@ void CParticleMgr::RemoveAllNewEffects()
 	for( CNewParticleEffect *pNewEffect = m_NewEffects.m_pHead; pNewEffect;  )
 	{
 		CNewParticleEffect *pNextEffect = pNewEffect->m_pNext;
-		// see it any entitiy has a particle prop pointing at this one. this loop through all
+		// see it any entity has a particle prop pointing at this one. this loop through all
 		// entities shouldn't be important perf-wise because it only happens on reload
 		C_BaseEntityIterator iterator;
 		C_BaseEntity *pEnt;
