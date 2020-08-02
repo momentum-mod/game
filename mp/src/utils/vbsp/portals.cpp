@@ -191,7 +191,7 @@ AddPortalToNodes
 void AddPortalToNodes (portal_t *p, node_t *front, node_t *back)
 {
 	if (p->nodes[0] || p->nodes[1])
-		Error ("AddPortalToNode: allready included");
+		Error ("AddPortalToNode: already included");
 
 	p->nodes[0] = front;
 	p->next[0] = front->portals;
@@ -738,7 +738,7 @@ qboolean PlaceOccupant (node_t *headnode, Vector& origin, entity_t *occupant)
 =============
 FloodEntities
 
-Marks all nodes that can be reached by entites
+Marks all nodes that can be reached by entities
 =============
 */
 qboolean FloodEntities (tree_t *tree)
@@ -764,7 +764,7 @@ qboolean FloodEntities (tree_t *tree)
 
 		origin[2] += 1;	// so objects on floor are ok
 
-		// nudge playerstart around if needed so clipping hulls allways
+		// nudge playerstart around if needed so clipping hulls always
 		// have a valid point
 		if (!strcmp (cl, "info_player_start"))
 		{
@@ -841,7 +841,7 @@ void FloodAreas_r (node_t *node, portal_t *pSeeThrough)
 		b = AreaportalBrushForNode( node );
 		e = &entities[b->original->entitynum];
 
-		// if the current area has allready touched this
+		// if the current area has already touched this
 		// portal, we are done
 		if (e->portalareas[0] == c_areas || e->portalareas[1] == c_areas)
 			return;
@@ -868,7 +868,7 @@ void FloodAreas_r (node_t *node, portal_t *pSeeThrough)
 	}
 
 	if (node->area)
-		return;		// allready got it
+		return;		// already got it
 	node->area = c_areas;
 
 	for (p=node->portals ; p ; p = p->next[s])
@@ -889,7 +889,7 @@ void FloodAreas_r (node_t *node, portal_t *pSeeThrough)
 =============
 FindAreas_r
 
-Just decend the tree, and for each node that hasn't had an
+Just descend the tree, and for each node that hasn't had an
 area set, flood fill out from there
 =============
 */
@@ -903,7 +903,7 @@ void FindAreas_r (node_t *node)
 	}
 
 	if (node->area)
-		return;		// allready got it
+		return;		// already got it
 
 	if (node->contents & CONTENTS_SOLID)
 		return;
@@ -911,7 +911,7 @@ void FindAreas_r (node_t *node)
 	if (!node->occupied)
 		return;			// not reachable by entities
 
-	// area portals are allways only flooded into, never
+	// area portals are always only flooded into, never
 	// out of
 	if (IsAreaportalNode(node))
 		return;
@@ -975,7 +975,7 @@ void ReportAreaportalLeak( tree_t *tree, node_t *node )
 =============
 SetAreaPortalAreas_r
 
-Just decend the tree, and for each node that hasn't had an
+Just descend the tree, and for each node that hasn't had an
 area set, flood fill out from there
 =============
 */
