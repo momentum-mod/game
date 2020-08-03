@@ -254,7 +254,7 @@ void CNPC_Bullseye::Event_Killed( const CTakeDamageInfo &info )
 }
 
 //------------------------------------------------------------------------------
-// Purpose : Override base implimentation to let decals pass through
+// Purpose : Override base implementation to let decals pass through
 //			 me onto the surface beneath
 // Input   :
 // Output  :
