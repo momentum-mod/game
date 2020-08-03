@@ -646,7 +646,7 @@ void CNPC_Hydra::MoveBody( )
 
 //-----------------------------------------------------------------------------
 // Purpose: Push physics objects around if they get hit
-// Input  : vecContact = point in space where contact supposidly happened
+// Input  : vecContact = point in space where contact supposedly happened
 //			vecSpeed = in/sec of contact
 // Output :
 //-----------------------------------------------------------------------------
@@ -671,7 +671,7 @@ void CNPC_Hydra::Nudge( CBaseEntity *pOther, const Vector &vecContact, const Vec
 
 //-----------------------------------------------------------------------------
 // Purpose: Push physics objects around if they get hit
-// Input  : vecContact = point in space where contact supposidly happened
+// Input  : vecContact = point in space where contact supposedly happened
 //			vecSpeed = in/sec of contact
 // Output :
 //-----------------------------------------------------------------------------
@@ -709,7 +709,7 @@ void CNPC_Hydra::Stab( CBaseEntity *pOther, const Vector &vecSpeed, trace_t &tr 
 
 //-----------------------------------------------------------------------------
 // Purpose: 
-// Input  : vecContact = point in space where contact supposidly happened
+// Input  : vecContact = point in space where contact supposedly happened
 //			vecSpeed = in/sec of contact
 // Output :
 //-----------------------------------------------------------------------------
@@ -721,7 +721,7 @@ void CNPC_Hydra::Kick( CBaseEntity *pHitEntity, const Vector &vecContact, const 
 
 //-----------------------------------------------------------------------------
 // Purpose: 
-// Input  : vecContact = point in space where contact supposidly happened
+// Input  : vecContact = point in space where contact supposedly happened
 //			vecSpeed = in/sec of contact
 // Output :
 //-----------------------------------------------------------------------------
@@ -763,7 +763,7 @@ void CNPC_Hydra::CheckLength( )
 
 		m_flCurrentLength += length;
 
-		// check for over streatched segements
+		// check for over stretched segments
 		if (length > m_idealSegmentLength * 3.0 && (m_body[i].bStuck || m_body[i+1].bStuck))
 		{
 			//NDebugOverlay::Line( m_body[i].vecPos, m_body[i+1].vecPos, 255, 0, 0, true, 1.0);
@@ -930,7 +930,7 @@ bool CNPC_Hydra::ContractBetweenStuckSegments( )
 	if (m_body.Count() <= 3)
 		return false;
 
-	// first first stuck segment closest to head;
+	// first stuck segment closest to head;
 	int iStuckHead = VirtualRoot( );
 	if (iStuckHead < 3)
 		return false;
@@ -1002,7 +1002,7 @@ bool CNPC_Hydra::ContractFromRoot( )
 
 int CNPC_Hydra::VirtualRoot( )
 {
-	// first first stuck segment closest to head;
+	// first stuck segment closest to head;
 	int iStuckHead;
 	for (iStuckHead = m_body.Count() - 2; iStuckHead > 1; iStuckHead--)
 	{
