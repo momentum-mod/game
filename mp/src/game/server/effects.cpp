@@ -1754,7 +1754,7 @@ void CEmbers::Spawn( void )
 
 	SetUse( &CEmbers::EmberUse );
 
-	//Start off if we're targetted (unless flagged)
+	//Start off if we're targeted (unless flagged)
 	m_bEmit = ( HasSpawnFlags( bitsSF_EMBERS_START_ON ) || ( !GetEntityName() ) );
 }
 
@@ -1774,7 +1774,7 @@ void CEmbers::Precache( void )
 //-----------------------------------------------------------------------------
 void CEmbers::EmberUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	//If we're not toggable, only allow one use
+	//If we're not toggle-able, only allow one use
 	if ( !HasSpawnFlags( bitsSF_EMBERS_TOGGLE ) )
 	{
 		SetUse( NULL );
