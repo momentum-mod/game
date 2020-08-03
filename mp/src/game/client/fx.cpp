@@ -29,7 +29,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//Precahce the effects
+//Precache the effects
 #ifndef TF_CLIENT_DLL
 CLIENTEFFECT_REGISTER_BEGIN( PrecacheMuzzleFlash )
 CLIENTEFFECT_MATERIAL( "effects/muzzleflash1" )
@@ -1059,7 +1059,7 @@ void FX_Tesla( const CTeslaInfo &teslaInfo )
 		{
 			iTries++;
 
-			// Some beams are deliberatly aimed around the point, the rest are random.
+			// Some beams are deliberately aimed around the point, the rest are random.
 			if ( i < iNumBeamsAround )
 			{
 				QAngle vecTemp = teslaInfo.m_vAngles;
