@@ -363,7 +363,7 @@ void MenuItem::OpenCascadeMenu()
 }
 
 //-----------------------------------------------------------------------------
-// Purpse: Return true if this item triggers a cascading menu
+// Purpose: Return true if this item triggers a cascading menu
 //-----------------------------------------------------------------------------
 bool MenuItem::HasMenu()
 {
