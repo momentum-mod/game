@@ -1007,7 +1007,7 @@ void CBaseDoor::DoorGoUp( void )
 		LinearMove(m_vecPosition2, m_flSpeed);
 	}
 
-	//Fire our open ouput
+	//Fire our open output
 	m_OnOpen.FireOutput( this, this );
 }
 
@@ -1304,7 +1304,7 @@ a trigger event.
 
 START_OPEN causes the door to move to its destination when spawned,  
 and operate in reverse.  It is used to temporarily or permanently  
-close off an area when triggered (not usefull for touch or  
+close off an area when triggered (not useful for touch or  
 takedamage doors).
 
 You need to have an origin brush as part of this entity.  The  
