@@ -315,7 +315,7 @@ void CBaseHeadcrab::Precache( void )
 void CBaseHeadcrab::CrawlFromCanister()
 {
 	// This is necessary to prevent ground computations, etc. from happening
-	// while the crawling animation is occuring
+	// while the crawling animation is occurring
 	AddFlag( FL_FLY );
 	m_bCrawlFromCanister = true;
 	SetNextThink( gpGlobals->curtime );
@@ -2615,7 +2615,7 @@ void CFastHeadcrab::DeathSound( const CTakeDamageInfo &info )
 //-----------------------------------------------------------------------------
 void CFastHeadcrab::PrescheduleThink( void )
 {
-#if 1 // #IF 0 this to stop the accelrating/decelerating movement.
+#if 1 // #IF 0 this to stop the accelerating/decelerating movement.
 #define HEADCRAB_ACCELERATION 0.1
 	if( IsAlive() && GetNavigator()->IsGoalActive() )
 	{
@@ -3951,7 +3951,7 @@ AI_BEGIN_CUSTOM_NPC( npc_headcrab, CBaseHeadcrab )
 	)
 
 	//==================================================
-	// Deatch from ceiling.
+	// Detach from ceiling.
 	//==================================================
 	DEFINE_SCHEDULE
 	(
