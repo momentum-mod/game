@@ -255,7 +255,7 @@ bool CNPC_EnemyFinder::FVisible( CBaseEntity *pTarget, int traceMask, CBaseEntit
 	trace_t tr;
 
 	// Trace from launch position to target position.  
-	// Use position above actual barral based on vertical launch speed
+	// Use position above actual barrel based on vertical launch speed
 	Vector vStartPos = GetAbsOrigin();
 	Vector vEndPos	 = pTarget->EyePosition();
 
@@ -308,7 +308,7 @@ bool CNPC_EnemyFinder::IsValidEnemy( CBaseEntity *pTarget )
 		return true;
 
 	// Trace from launch position to target position.  
-	// Use position above actual barral based on vertical launch speed
+	// Use position above actual barrel based on vertical launch speed
 	Vector vStartPos = GetAbsOrigin();
 	Vector vEndPos	 = pTarget->EyePosition();
 
