@@ -257,7 +257,7 @@ public:
 	{
 		DirWatcherOverlapped *pDirWatcherOverlapped = (DirWatcherOverlapped *)pOverlapped;
 
-		// see if we've been cancelled
+		// see if we've been canceled
 		if ( !pDirWatcherOverlapped->m_pDirWatcher )
 			return;
 
