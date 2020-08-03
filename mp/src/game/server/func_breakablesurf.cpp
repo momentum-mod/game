@@ -713,7 +713,7 @@ void CBreakableSurface::Die( CBaseEntity *pBreaker, const Vector &vAttackDir )
 }
 
 //------------------------------------------------------------------------------
-// Purpose: Set an instaneous force on the rope.
+// Purpose: Set an instantaneous force on the rope.
 // Input  : Force vector.
 //------------------------------------------------------------------------------
 void CBreakableSurface::InputShatter( inputdata_t &inputdata )
@@ -948,7 +948,7 @@ float CBreakableSurface::RecalcSupport(int nWidth, int nHeight)
 
 
 //------------------------------------------------------------------------------
-// Purpose : Itterate through the panels and make sure none have become
+// Purpose : Iterate through the panels and make sure none have become
 //			 unstable
 // Input   :
 // Output  :
@@ -990,7 +990,7 @@ void CBreakableSurface::BreakThink(void)
 				SetSupport( w, h, flSupport[w][h]/WINDOW_MAX_SUPPORT );
 				if (m_flSupport[w][h] < flBreakValue)
 				{
-					// Occasionaly drop a pane
+					// Occasionally drop a pane
 					if (random->RandomInt(0,1))
 					{
 						DropPane(w,h);
