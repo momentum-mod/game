@@ -140,7 +140,7 @@ void CNavMesh::GenerateNodes( const Extent &bounds )
 // Simplifies the selected set by reducing to 1x1 areas and re-merging them up with loosened tolerances
 void CNavMesh::SimplifySelectedAreas( void )
 {
-	// Save off somve cvars: we need to place nodes on ground, we need snap to grid set, and we loosen slope tolerances
+	// Save off some cvars: we need to place nodes on ground, we need snap to grid set, and we loosen slope tolerances
 	m_generationMode = GENERATE_SIMPLIFY;
 	bool savedSplitPlaceOnGround = nav_split_place_on_ground.GetBool();
 	nav_split_place_on_ground.SetValue( 1 );
