@@ -140,7 +140,7 @@ bool netadr_t::IsLocalhost() const
 
 bool netadr_t::IsLoopback() const
 {
-	// are we useding engine loopback buffers
+	// are we using engine loopback buffers
 	return type == NA_LOOPBACK;
 }
 
