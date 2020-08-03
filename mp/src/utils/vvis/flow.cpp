@@ -19,9 +19,9 @@ int g_TraceClusterStop = -1;
   portal mightsee
 
   for p2 = all other portals in leaf
-	get sperating planes
+	get separating planes
 	for all portals that might be seen by p2
-		mark as unseen if not present in seperating plane
+		mark as unseen if not present in separating plane
 	flood fill a new mightsee
 	save as passagemightsee
 
@@ -98,7 +98,7 @@ void FreeStackWinding (winding_t *w, pstack_t *stack)
 		return;		// not from local
 
 	if (stack->freewindings[i])
-		Error ("FreeStackWinding: allready free");
+		Error ("FreeStackWinding: already free");
 	stack->freewindings[i] = 1;
 }
 
@@ -224,7 +224,7 @@ ClipToSeperators
 
 Source, pass, and target are an ordering of portals.
 
-Generates seperating planes canidates by taking two points from source and one
+Generates separating planes candidates by taking two points from source and one
 point from pass, and clips target by them.
 
 If target is totally clipped away, that portal can not be seen through.
@@ -250,7 +250,7 @@ winding_t	*ClipToSeperators (winding_t *source, winding_t *pass, winding_t *targ
 		l = (i+1)%source->numpoints;
 		VectorSubtract (source->points[l] , source->points[i], v1);
 
-	// fing a vertex of pass that makes a plane that puts all of the
+	// find a vertex of pass that makes a plane that puts all of the
 	// vertexes of pass on the front side and all of the vertexes of
 	// source on the back side
 		for (j=0 ; j<pass->numpoints ; j++)
@@ -279,7 +279,7 @@ winding_t	*ClipToSeperators (winding_t *source, winding_t *pass, winding_t *targ
 			plane.dist = DotProduct (pass->points[j], plane.normal);
 
 		//
-		// find out which side of the generated seperating plane has the
+		// find out which side of the generated separating plane has the
 		// source portal
 		//
 #if 1
@@ -318,7 +318,7 @@ winding_t	*ClipToSeperators (winding_t *source, winding_t *pass, winding_t *targ
 #if 1
 		//
 		// if all of the pass portal points are now on the positive side,
-		// this is the seperating plane
+		// this is the separating plane
 		//
 			counts[0] = counts[1] = counts[2] = 0;
 			for (k=0 ; k<pass->numpoints ; k++)
@@ -334,10 +334,10 @@ winding_t	*ClipToSeperators (winding_t *source, winding_t *pass, winding_t *targ
 					counts[2]++;
 			}
 			if (k != pass->numpoints)
-				continue;	// points on negative side, not a seperating plane
+				continue;	// points on negative side, not a separating plane
 				
 			if (!counts[0])
-				continue;	// planar with seperating plane
+				continue;	// planar with separating plane
 #else
 			k = (j+1)%pass->numpoints;
 			d = DotProduct (pass->points[k], plane.normal) - plane.dist;
@@ -358,7 +358,7 @@ winding_t	*ClipToSeperators (winding_t *source, winding_t *pass, winding_t *targ
 			}
 			
 		//
-		// clip target by the seperating plane
+		// clip target by the separating plane
 		//
 			target = ChopWinding (target, stack, &plane);
 			if (!target)
@@ -521,7 +521,7 @@ void RecursiveLeafFlow (int leafnum, threaddata_t *thread, pstack_t *prevstack)
 			continue;	// can't possibly see it
 		}
 
-		// if the portal can't see anything we haven't allready seen, skip it
+		// if the portal can't see anything we haven't already seen, skip it
 		if (p->status == stat_done)
 		{
 			test = (long *)p->portalvis;
@@ -660,7 +660,7 @@ void PortalFlow (int iThread, int portalnum)
 /*
 ===============================================================================
 
-This is a rough first-order aproximation that is used to trivially reject some
+This is a rough first-order approximation that is used to trivially reject some
 of the final calculations.
 
 
@@ -806,7 +806,7 @@ void BasePortalVis (int iThread, int portalnum)
 /*
 ===============================================================================
 
-This is a second order aproximation 
+This is a second order approximation 
 
 Calculates portalvis bit vector
 
