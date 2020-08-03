@@ -804,7 +804,7 @@ void CNPC_Combine::StartTask( const Task_t *pTask )
 			{
 				// -----------------------------------------------------------
 				// If enemy isn't facing me and I haven't attacked in a while
-				// annouce my attack before I start wailing away
+				// announce my attack before I start wailing away
 				// -----------------------------------------------------------
 				CBaseCombatCharacter *pBCC = GetEnemyCombatCharacterPointer();
 
@@ -1197,7 +1197,7 @@ bool CNPC_Combine::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **
 	if( m_spawnflags & SF_COMBINE_NO_LOOK )
 	{
 		// When no look is set, if enemy has eluded the squad, 
-		// he's always invisble to me
+		// he's always invisible to me
 		if (GetEnemies()->HasEludedMe(pEntity))
 		{
 			return false;
@@ -1292,11 +1292,11 @@ void CNPC_Combine::BuildScheduleTestBits( void )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Translate base class activities into combot activites
+// Purpose: Translate base class activities into combot activities
 //-----------------------------------------------------------------------------
 Activity CNPC_Combine::NPC_TranslateActivity( Activity eNewActivity )
 {
-	//Slaming this back to ACT_COMBINE_BUGBAIT since we don't want ANYTHING to change our activity while we burn.
+	//Slamming this back to ACT_COMBINE_BUGBAIT since we don't want ANYTHING to change our activity while we burn.
 	if ( HasCondition( COND_COMBINE_ON_FIRE ) )
 		return BaseClass::NPC_TranslateActivity( ACT_COMBINE_BUGBAIT );
 
@@ -1344,7 +1344,7 @@ Activity CNPC_Combine::NPC_TranslateActivity( Activity eNewActivity )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Overidden for human grunts because they  hear the DANGER sound
+// Purpose: Overridden for human grunts because they  hear the DANGER sound
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
@@ -1379,7 +1379,7 @@ void CNPC_Combine::AnnounceAssault(void)
 	if (random->RandomInt(0,5) > 1)
 		return;
 
-	// If enemy can see me make assualt sound
+	// If enemy can see me make assault sound
 	CBaseCombatCharacter* pBCC = GetEnemyCombatCharacterPointer();
 
 	if (!pBCC)
@@ -1885,7 +1885,7 @@ int CNPC_Combine::SelectFailSchedule( int failedSchedule, int failedTask, AI_Tas
 		{
 			// This eases the effects of an unfortunate bug that usually plagues shotgunners. Since their rate of fire is low,
 			// they spend relatively long periods of time without an attack squad slot. If you corner a shotgunner, usually 
-			// the other memebers of the squad will hog all of the attack slots and pick schedules to move to establish line of
+			// the other members of the squad will hog all of the attack slots and pick schedules to move to establish line of
 			// fire. During this time, the shotgunner is prevented from attacking. If he also cannot find cover (the fallback case)
 			// he will stand around like an idiot, right in front of you. Instead of this, we have him run up to you for a melee attack.
 			return SCHED_COMBINE_MOVE_TO_MELEE;
@@ -2505,7 +2505,7 @@ Vector CNPC_Combine::Weapon_ShootPosition( )
 	}
 
 	// FIXME: rename this "estimated" since it's not based on animation
-	// FIXME: the orientation won't be correct when testing from arbitary positions for arbitary angles
+	// FIXME: the orientation won't be correct when testing from arbitrary positions for arbitrary angles
 
 	if  ( bStanding )
 	{
@@ -3753,7 +3753,7 @@ DEFINE_SCHEDULE
  "		COND_COMBINE_NO_FIRE"
  ""
  // Enemy_Occluded				Don't interrupt on this.  Means
- //								comibine will fire where player was after
+ //								combine will fire where player was after
  //								he has moved for a little while.  Good effect!!
  // WEAPON_SIGHT_OCCLUDED		Don't block on this! Looks better for railings, etc.
  )
@@ -3817,7 +3817,7 @@ DEFINE_SCHEDULE
  //=========================================================
  // 	SCHED_COMBINE_RANGE_ATTACK2	
  //
- //	secondary range attack. Overriden because base class stops attacking when the enemy is occluded.
+ //	secondary range attack. Overridden because base class stops attacking when the enemy is occluded.
  //	combines's grenade toss requires the enemy be occluded.
  //=========================================================
  DEFINE_SCHEDULE
