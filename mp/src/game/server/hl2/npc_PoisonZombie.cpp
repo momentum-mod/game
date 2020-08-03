@@ -142,7 +142,7 @@ class CNPC_PoisonZombie : public CAI_BlendingHost<CNPC_BaseZombie>
 public:
 
 	//
-	// CBaseZombie implemenation.
+	// CBaseZombie implementation.
 	//
 	virtual Vector HeadTarget( const Vector &posSrc );
 	bool ShouldBecomeTorso( const CTakeDamageInfo &info, float flDamageThreshold );
