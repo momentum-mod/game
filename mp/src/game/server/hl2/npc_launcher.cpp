@@ -347,7 +347,7 @@ bool CNPC_Launcher::IsValidEnemy( CBaseEntity *pTarget )
 	trace_t tr;
 
 	// Trace from launch position to target position.  
-	// Use position above actual barral based on vertical launch speed
+	// Use position above actual barrel based on vertical launch speed
 	Vector vStartPos = GetAbsOrigin() + Vector(0,0,0.2*m_flLaunchSpeed);
 	Vector vEndPos	 = pTarget->GetAbsOrigin();
 	AI_TraceLine( vStartPos, vEndPos, MASK_SHOT, pTarget, COLLISION_GROUP_NONE, &tr );
