@@ -108,8 +108,8 @@ IMotionEvent::simresult_e CRollerController::Simulate( IPhysicsMotionController 
 #define ROLLERMINE_IDLE_SEE_DIST					2048
 #define ROLLERMINE_NORMAL_SEE_DIST					2048
 #define ROLLERMINE_WAKEUP_DIST						256
-#define ROLLERMINE_SEE_VEHICLESONLY_BEYOND_IDLE		300		// See every other than vehicles upto this distance (i.e. old idle see dist)
-#define ROLLERMINE_SEE_VEHICLESONLY_BEYOND_NORMAL	800		// See every other than vehicles upto this distance (i.e. old normal see dist)
+#define ROLLERMINE_SEE_VEHICLESONLY_BEYOND_IDLE		300		// See every other than vehicles up to this distance (i.e. old idle see dist)
+#define ROLLERMINE_SEE_VEHICLESONLY_BEYOND_NORMAL	800		// See every other than vehicles up to this distance (i.e. old normal see dist)
 
 #define ROLLERMINE_RETURN_TO_PLAYER_DIST			(200*200)
 
