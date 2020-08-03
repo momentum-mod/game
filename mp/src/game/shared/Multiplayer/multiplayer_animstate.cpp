@@ -93,7 +93,7 @@ CMultiPlayerAnimState::CMultiPlayerAnimState( CBasePlayer *pPlayer, MultiPlayerM
 
 	// If you are forcing aim yaw, your code is almost definitely broken if you don't include a delay between 
 	// teleporting and forcing yaw. This is due to an unfortunate interaction between the command lookback window,
-	// and the fact that m_flEyeYaw is never propogated from the server to the client.
+	// and the fact that m_flEyeYaw is never propagated from the server to the client.
 	// TODO: Fix this after Halloween 2014.
 	m_bForceAimYaw = false;
 
@@ -365,7 +365,7 @@ bool CMultiPlayerAnimState::InitGestureSlots( void )
 	// Setup the number of gesture slots.
 	m_aGestureSlots.AddMultipleToTail( GESTURE_SLOT_COUNT );
 
-	// Assign all of the the CAnimationLayer pointers to null early in case we bail.
+	// Assign all of the CAnimationLayer pointers to null early in case we bail.
 	for ( int iGesture = 0; iGesture < GESTURE_SLOT_COUNT; ++iGesture )
 	{
 		m_aGestureSlots[iGesture].m_pAnimLayer = NULL;
@@ -1661,7 +1661,7 @@ void CMultiPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
 	// If we are moving or are prone and undeployed.
 	// If you are forcing aim yaw, your code is almost definitely broken if you don't include a delay between 
 	// teleporting and forcing yaw. This is due to an unfortunate interaction between the command lookback window,
-	// and the fact that m_flEyeYaw is never propogated from the server to the client.
+	// and the fact that m_flEyeYaw is never propagated from the server to the client.
 	// TODO: Fix this after Halloween 2014.
 	if ( bMoving || m_bForceAimYaw )
 	{
@@ -1698,7 +1698,7 @@ void CMultiPlayerAnimState::ComputePoseParam_AimYaw( CStudioHdr *pStudioHdr )
 	{
 		// If you are forcing aim yaw, your code is almost definitely broken if you don't include a delay between 
 		// teleporting and forcing yaw. This is due to an unfortunate interaction between the command lookback window,
-		// and the fact that m_flEyeYaw is never propogated from the server to the client.
+		// and the fact that m_flEyeYaw is never propagated from the server to the client.
 		// TODO: Fix this after Halloween 2014.
 		if ( m_bForceAimYaw )
 		{
