@@ -101,7 +101,7 @@ public:
 	void	DeathSound( const CTakeDamageInfo &info );
 
 	int m_iHatLayer;	// overlay layer for hat, don't save/restore.
-	int m_iHatState;	// hat state, persistant.
+	int m_iHatState;	// hat state, persistent.
 
 	DEFINE_CUSTOM_AI;
 };
