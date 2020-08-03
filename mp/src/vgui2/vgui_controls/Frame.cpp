@@ -1759,7 +1759,7 @@ void Frame::InitSettings()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Go invisible when a close message is recieved.
+// Purpose: Go invisible when a close message is received.
 //-----------------------------------------------------------------------------
 void Frame::OnClose()
 {
@@ -1781,7 +1781,7 @@ void Frame::OnClose()
 		// begin the hide transition effect
 		GetAnimationController()->RunAnimationCommand(this, "alpha", 0.0f, 0.0f, m_flTransitionEffectTime, AnimationController::INTERPOLATOR_LINEAR);
 		m_bFadingOut = true;
-		// move us to the back of the draw order (so that fading out over the top of other dialogs doesn't look wierd)
+		// move us to the back of the draw order (so that fading out over the top of other dialogs doesn't look weird)
 		surface()->MovePopupToBack(GetVPanel());
 	}
 	else
