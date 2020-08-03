@@ -202,7 +202,7 @@ bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
-        // arguments are initilized in the constructor of CTeleportTriggerTraceEnum
+        // arguments are initialized in the constructor of CTeleportTriggerTraceEnum
         SetTeleportEntity(pEnt);
         return false; // Stop, we hit our target.
     }
