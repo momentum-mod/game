@@ -83,7 +83,7 @@ void CMomentumPlayer::SetRampLeaveVelocity(const Vector &vecVel)
 #endif
 }
 
-void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
+void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting position
                                  const QAngle &shootAngles, // shooting angle
                                  float vecSpread,           // spread vector
                                  int iBulletType,           // ammo type
@@ -252,7 +252,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         }
 #endif
 
-        // check if bullet can penetarte another entity
+        // check if bullet can penetrate another entity
         if (iPenetration == 0 && !hitGrate)
             break; // no, stop
 
