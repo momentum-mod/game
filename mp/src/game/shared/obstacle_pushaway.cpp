@@ -276,7 +276,7 @@ void PerformObstaclePushaway( CBaseCombatCharacter *pPushingEntity )
 	
 	for ( int i=0; i < nEnts; i++ )
 	{
-		// If this entity uas PHYSICS_MULTIPLAYER_FULL set (ie: it's not just debris), and we're moving too slow, don't push it away.
+		// If this entity has PHYSICS_MULTIPLAYER_FULL set (ie: it's not just debris), and we're moving too slow, don't push it away.
 		// Instead, let the client bounce off it. This allows players to get close to and duck behind things without knocking them over.
 		IMultiplayerPhysics *pInterface = dynamic_cast<IMultiplayerPhysics*>( props[i] );
 
