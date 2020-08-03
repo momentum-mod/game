@@ -58,7 +58,7 @@ public:
 	// Numbered line printf
 	virtual void	Con_NPrintf( int idx, char const* fmt, ... );
 	
-	// These have separate server vs client impementations
+	// These have separate server vs client implementations
 	virtual void	StartSound( const Vector& origin, int channel, char const* sample, float volume, soundlevel_t soundlevel, int fFlags, int pitch );
 	virtual void	StartSound( const Vector& origin, const char *soundname ); 
 
