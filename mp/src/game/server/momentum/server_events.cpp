@@ -5,6 +5,7 @@
 #include "tickset.h"
 #include "icommandline.h"
 #include "util/mom_util.h"
+#include "mom_timer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -67,6 +68,30 @@ bool CMomServerEvents::Init()
 
             pCvar = pNext;
         }
+    }
+
+    // Allow fps_max to be changed while playing, but only when the timer isn't running
+    static ConVar* fps_max_original = g_pCVar->FindVar("fps_max");
+
+    if (fps_max_original)
+    {
+        // This only removes the cvar from the list so it can't be changed from the console
+        fps_max_original->Unload();
+
+        // We're defining this here because the original has to be unloaded first
+        static MAKE_CONVAR_CV(fps_max, "300", FCVAR_ARCHIVE, "Frame rate limiter", 0, 1000, nullptr,
+            [](IConVar* pVar, const char* pNewVal)
+        {
+            if (g_pMomentumTimer->IsRunning())
+            {
+                Warning("Cannot change frame rate while in a run! Stop your timer to be able to change it.\n");
+                return false;
+            }
+
+            fps_max_original->SetValue(pNewVal);
+            return true;
+        }
+        );
     }
 
     return true;
