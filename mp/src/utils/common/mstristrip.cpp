@@ -902,7 +902,7 @@ void ComputeVertexPermutation(int numstripindices, WORD* pstripindices,
     // Sort the table.
     sort(pSortTable, pSortTable + *pnumverts);
 
-    // Copy re-mapped to orignal vertex permutaion into output array.
+    // Copy re-mapped to original vertex permutation into output array.
     *ppvertexpermutation = new WORD[*pnumverts];
 
     for(i = 0; i < *pnumverts; i++)
