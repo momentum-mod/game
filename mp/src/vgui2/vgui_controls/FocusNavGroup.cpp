@@ -278,7 +278,7 @@ bool FocusNavGroup::RequestFocusNext(VPANEL panel)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: sets the panel that owns this FocusNavGroup to be the root in the focus traversal heirarchy
+// Purpose: sets the panel that owns this FocusNavGroup to be the root in the focus traversal hierarchy
 //-----------------------------------------------------------------------------
 void FocusNavGroup::SetFocusTopLevel(bool state)
 {
