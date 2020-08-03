@@ -370,7 +370,7 @@ void CNPC_Bullsquid::HandleAnimEvent( animevent_t *pEvent )
 				{
 					pHurt->ViewPunch( QAngle(20,0,-20) );
 							
-					// screeshake transforms the viewmodel as well as the viewangle. No problems with seeing the ends of the viewmodels.
+					// screenshake transforms the viewmodel as well as the viewangle. No problems with seeing the ends of the viewmodels.
 					UTIL_ScreenShake( pHurt->GetAbsOrigin(), 25.0, 1.5, 0.7, 2, SHAKE_START );
 
 					// If the player, throw him around
@@ -380,7 +380,7 @@ void CNPC_Bullsquid::HandleAnimEvent( animevent_t *pEvent )
 						AngleVectors( GetLocalAngles(), &forward, NULL, &up );
 						pHurt->ApplyAbsVelocityImpulse( forward * 300 + up * 300 );
 					}
-					// If not the player see if has bullsquid throw interatcion
+					// If not the player see if has bullsquid throw interaction
 					else
 					{
 						CBaseCombatCharacter *pVictim = ToBaseCombatCharacter( pHurt );
