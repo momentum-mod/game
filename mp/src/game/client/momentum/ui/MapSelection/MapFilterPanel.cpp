@@ -82,7 +82,7 @@ void MapFilterPanel::ReadFiltersFromControls()
 
     // Hide completed maps
     m_Filters.m_bHideCompleted = m_pHideCompletedFilterCheck->IsSelected();
-    // Showing specfic map layouts?
+    // Showing specific map layouts?
     m_Filters.m_iMapLayout = m_pMapLayoutFilter->GetActiveItem();
 }
 
