@@ -64,10 +64,23 @@ public:
     int GetProgressDirection() const { return m_iProgressDirection; }
     void SetProgressDirection(int val) { m_iProgressDirection = val; }
 
+    void SetSubdivMarksEnabled(bool bEnabled) { m_bSubdivMarksEnabled = bEnabled; }
+    void SetSubdivMarksVisible(bool bVisible) { m_bSubdivMarksVisible = bVisible; }
+    void SetSubdivMarksColor(Color color) { m_SubdivMarksColor = color; }
+    void SetSubdivMarksCount(int count) { m_iSubdivMarksCount = count; }
+    void SetSubdivMarksWidth(int width) { m_iSubdivMarksWidth = width; }
+
+    bool  GetSubdivMarksEnabled() const { return m_bSubdivMarksEnabled; }
+    bool  GetSubdivMarksVisible() const { return m_bSubdivMarksVisible; }
+    Color GetSubdivMarksColor() const { return m_SubdivMarksColor; }
+    int   GetSubdivMarksCount() const { return m_iSubdivMarksCount; }
+    int   GetSubdivMarksWidth() const { return m_iSubdivMarksWidth; }
+
 protected:
     virtual void Paint();
     void PerformLayout() override;
     void PaintSegment(int &x, int &y, int tall, int wide);
+    void PaintSubdivMarks(int x, int y, int tall, int wide);
     virtual void PaintBackground();
     virtual void ApplySchemeSettings(IScheme *pScheme);
     MESSAGE_FUNC_PARAMS(OnDialogVariablesChanged, "DialogVariables", dialogVariables);
@@ -88,6 +101,14 @@ private:
     int m_iBarMargin;
     CUtlString m_pszDialogVar;
     Label *m_pProgressPercent;
+
+    CPanelAnimationVar(Color, m_SubdivMarksColor, "subdivmarks_color", "MomentumRed");
+    CPanelAnimationVar(int, m_iSubdivMarksCount, "subdivmarks_count", "3");
+    CPanelAnimationVar(int, m_iSubdivMarksWidth, "subdivmarks_width", "2");
+    CPanelAnimationVar(bool, m_bSubdivMarksEnabled, "subdivmarks_enabled", "0");
+
+    // not user-facing; code can use this to toggle markings when they're enabled
+    bool m_bSubdivMarksVisible;
 };
 
 //-----------------------------------------------------------------------------

@@ -41,6 +41,8 @@ ProgressBar::ProgressBar(Panel *parent, const char *panelName) : Panel(parent, p
     SetBarInset(4);
     SetMargin(0);
     m_iProgressDirection = PROGRESS_EAST;
+
+    m_bSubdivMarksVisible = false;
 }
 
 ProgressBar::~ProgressBar()
@@ -111,6 +113,29 @@ void ProgressBar::PaintSegment(int &x, int &y, int tall, int wide)
     }
 }
 
+void ProgressBar::PaintSubdivMarks(int x, int y, int tall, int wide)
+{
+    if (!m_bSubdivMarksVisible || !m_bSubdivMarksEnabled || !m_iSubdivMarksCount || m_iSubdivMarksWidth <= 0 || !m_SubdivMarksColor.a())
+        return;
+
+    bool bVertical = m_iProgressDirection == PROGRESS_SOUTH || m_iProgressDirection == PROGRESS_NORTH;
+    surface()->DrawSetColor(m_SubdivMarksColor);
+    int iSubdivCoord = 0 - (m_iSubdivMarksWidth / 2);
+    for (int i = 0; i < m_iSubdivMarksCount; i++)
+    {
+        if (bVertical)
+        {
+            iSubdivCoord += tall / (m_iSubdivMarksCount + 1);
+            surface()->DrawFilledRect(x, iSubdivCoord, wide - x, iSubdivCoord + m_iSubdivMarksWidth);
+        }
+        else
+        {
+            iSubdivCoord += wide / (m_iSubdivMarksCount + 1);
+            surface()->DrawFilledRect(iSubdivCoord, y, iSubdivCoord + m_iSubdivMarksWidth, tall - y);
+        }
+    }
+}
+
 void ProgressBar::Paint()
 {
     int wide, tall;
@@ -156,11 +181,14 @@ void ProgressBar::Paint()
         break;
     }
 
+    int xTmp = x, yTmp = y;
     surface()->DrawSetColor(GetFgColor());
     for (int i = 0; i < segmentsDrawn; i++)
     {
-        PaintSegment(x, y, tall, wide);
+        PaintSegment(xTmp, yTmp, tall, wide);
     }
+
+    PaintSubdivMarks(x, y, tall, wide);
 }
 
 void ProgressBar::PerformLayout()
@@ -426,4 +454,6 @@ void ContinuousProgressBar::Paint()
         surface()->DrawFilledRect(x, y, x + wide, y + static_cast<int>(tall * _progress));
         break;
     }
+
+    PaintSubdivMarks(x, y, tall, wide);
 }
