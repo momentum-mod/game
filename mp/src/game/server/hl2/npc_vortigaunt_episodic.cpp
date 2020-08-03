@@ -34,7 +34,7 @@ class CVortigauntChargeToken;
 #define	VORTIGAUNT_LIMP_HEALTH				20
 #define	VORTIGAUNT_SENTENCE_VOLUME			(float)0.35 // volume of vortigaunt sentences
 #define	VORTIGAUNT_VOL						0.35		// volume of vortigaunt sounds
-#define	VORTIGAUNT_ATTN						ATTN_NORM	// attenutation of vortigaunt sentences
+#define	VORTIGAUNT_ATTN						ATTN_NORM	// attenuation of vortigaunt sentences
 #define	VORTIGAUNT_HEAL_RECHARGE			30.0		// How long to rest between heals
 #define	VORTIGAUNT_ZAP_GLOWGROW_TIME		0.5			// How long does glow last
 #define	VORTIGAUNT_HEAL_GLOWGROW_TIME		1.4			// How long does glow last
@@ -1024,7 +1024,7 @@ void CNPC_Vortigaunt::InputTurnBlack( inputdata_t &data )
 }
 
 //------------------------------------------------------------------------------
-// Purpose : Translate some activites for the Vortigaunt
+// Purpose : Translate some activities for the Vortigaunt
 //------------------------------------------------------------------------------
 Activity CNPC_Vortigaunt::NPC_TranslateActivity( Activity eNewActivity )
 {
@@ -1811,7 +1811,7 @@ void CNPC_Vortigaunt::OnRestore( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Do various non-schedule specific maintainence
+// Purpose: Do various non-schedule specific maintenance
 //-----------------------------------------------------------------------------
 void CNPC_Vortigaunt::PrescheduleThink( void )
 {
@@ -2025,7 +2025,7 @@ bool CNPC_Vortigaunt::IsValidEnemy( CBaseEntity *pEnemy )
 
 //-----------------------------------------------------------------------------
 // Purpose: Creates a blast where the beam has struck a target
-// Input  : &vecOrigin - position to eminate from
+// Input  : &vecOrigin - position to emanate from
 //-----------------------------------------------------------------------------
 void CNPC_Vortigaunt::CreateBeamBlast( const Vector &vecOrigin )
 {
