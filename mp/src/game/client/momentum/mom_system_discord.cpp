@@ -446,7 +446,7 @@ void CMomentumDiscord::UpdateDiscordPartyIdFromSteam()
         // We could do something to further "encrypt" the secrets but it's probably fine
         if (m_sSteamUserID.IsValid())
         {
-            // If we found a vaid steam user ID add it into the secret
+            // If we found a valid steam user ID add it into the secret
             V_snprintf(m_szDiscordJoinSecret, sizeof(m_szDiscordJoinSecret), "J%lld;%lld", lobbyID, m_sSteamUserID.ConvertToUint64());
         }
         else
@@ -661,7 +661,7 @@ void CMomentumDiscord::HandleDiscordSpectate(const char *secret)
     }
 }
 
-// When a differnt user is requesting to join the current user's lobby
+// When a different user is requesting to join the current user's lobby
 void CMomentumDiscord::HandleDiscordJoinRequest(const DiscordUser *request)
 {
     DevLog("\nDiscord-RPC: join request from %s#%s - %s\n", request->username, request->discriminator, request->userId);
