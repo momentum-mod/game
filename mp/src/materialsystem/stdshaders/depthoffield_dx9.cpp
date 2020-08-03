@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: Depth of field material
 //
@@ -191,7 +191,7 @@ BEGIN_VS_SHADER_FLAGS( DepthOfField_dx9, "Depth of Field", SHADER_NOT_EDITABLE )
 			vConst[1] = params[NEARFOCUSDEPTH]->GetFloatValue();
 			vConst[2] = params[FARFOCUSDEPTH]->GetFloatValue();
 			vConst[3] = params[FARBLURDEPTH]->GetFloatValue();;
-			// max blur radius will need to be set based on qulity level and screen res
+			// max blur radius will need to be set based on quality level and screen res
 			vConst[4] = mat_dof_max_blur_radius.GetFloat();
 			vConst[5] = MIN( params[NEARBLURRADIUS]->GetFloatValue(), vConst[4] ) / vConst[4];	// near and far blur radius as fraction of max radius
 			vConst[6] = MIN( params[FARBLURRADIUS]->GetFloatValue(), vConst[4] ) / vConst[4];
