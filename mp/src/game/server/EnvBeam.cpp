@@ -198,7 +198,7 @@ void CEnvBeam::Precache( void )
 	if ( !Q_stristr( STRING(m_iszSpriteName), ".vmt" ) )
 	{
 		// HACK/YWB:  This was almost always the laserbeam.spr, so alloc'ing the name a second time with the proper extension isn't going to
-		//  kill us on memrory.
+		//  kill us on memory.
 		//Warning( "Level Design Error:  %s (%i:%s) Sprite name (%s) missing .vmt extension!\n",
 		//	STRING( m_iClassname ), entindex(), GetEntityName(), STRING(m_iszSpriteName) );
 
