@@ -849,7 +849,7 @@ int CBreakable::OnTakeDamage( const CTakeDamageInfo &info )
 	if ( m_takedamage == DAMAGE_YES )
 	{
 		// Don't play shard noise if being burned.
-		// Don't play shard noise if cbreakable actually died.
+		// Don't play shard noise if breakable actually died.
 		if ( ( subInfo.GetDamageType() & DMG_BURN ) == false )
 		{
 			DamageSound();
