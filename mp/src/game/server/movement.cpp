@@ -221,7 +221,7 @@ CPathKeyFrame *CPathKeyFrame::PrevKey( int direction )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Creates and insterts a new keyframe into the sequence
+// Purpose: Creates and inserts a new keyframe into the sequence
 // Input  : newPos - 
 //			newAngles - 
 // Output : CPathKeyFrame
