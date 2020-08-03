@@ -566,7 +566,7 @@ void CNPC_Ichthyosaur::SetPoses( Vector moveRel, float speed )
 		pitch = -RAD2DEG( asin( GetAbsVelocity().z / speed ) );
 	}
 
-	//FIXME: Framerate dependant
+	//FIXME: Framerate dependent
 	QAngle angles = GetLocalAngles();
 
 	angles.x = (angles.x * 0.8f) + (pitch * 0.2f);
