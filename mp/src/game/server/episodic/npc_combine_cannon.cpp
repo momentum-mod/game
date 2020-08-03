@@ -1212,7 +1212,7 @@ bool CNPC_Combine_Cannon::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEn
 	// Now, if the check failed, see if the player is ducking and has recently
 	// fired a muzzleflash. If yes, see if you'd be able to see the player if 
 	// they were standing in their current position instead of ducking. Since
-	// the sniper doesn't have a clear shot in this situation, he will harrass
+	// the sniper doesn't have a clear shot in this situation, he will harass
 	// near the player.
 	CBasePlayer *pPlayer;
 
