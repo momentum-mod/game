@@ -33,7 +33,7 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
             const char *binding = gameuifuncs->GetBindingForButtonCode(code);
             if (binding && binding[0])
             {
-                // submit the entry as a console commmand
+                // submit the entry as a console command
                 char szCommand[256];
                 Q_strncpy(szCommand, binding, sizeof(szCommand));
                 engine->ClientCmd_Unrestricted(szCommand);
