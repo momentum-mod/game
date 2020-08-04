@@ -327,7 +327,7 @@ void CWeaponCycler::SecondaryAttack( void )
 
 
 
-// Flaming Wreakage
+// Flaming Wreckage
 class CWreckage : public CAI_BaseNPC
 {
 public:
