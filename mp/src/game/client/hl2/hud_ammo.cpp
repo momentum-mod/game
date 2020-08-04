@@ -166,7 +166,7 @@ void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 	}
 	else
 	{
-		// diferent weapon, change without triggering
+		// different weapon, change without triggering
 		SetAmmo(ammo1, false);
 		SetAmmo2(ammo2, false);
 
@@ -225,7 +225,7 @@ void CHudAmmo::UpdateVehicleAmmo( C_BasePlayer *player, IClientVehicle *pVehicle
 	}
 	else
 	{
-		// diferent weapon, change without triggering
+		// different weapon, change without triggering
 		SetAmmo(ammo1, false);
 		SetAmmo2(ammo2, false);
 
