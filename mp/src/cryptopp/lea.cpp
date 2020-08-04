@@ -10,7 +10,7 @@
 //           the zip is lea_core.c.
 //
 //           The LEA team appears to have applied optimizations to functions in lea_core.c.
-//           The implementation does not exactly follow the aglorithmic description from
+//           The implementation does not exactly follow the algorithmic description from
 //           the LEA paper.
 
 #include "pch.h"
