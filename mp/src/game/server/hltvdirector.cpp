@@ -533,7 +533,7 @@ void CHLTVDirector::StartRandomShot()
 
 void CHLTVDirector::CreateShotFromEvent( CHLTVGameEvent *event )
 {
-	// show event at least for 2 more seconds after it occured
+	// show event at least for 2 more seconds after it occurred
 	const char *name = event->m_Event->GetName();
 	
 	bool bPlayerHurt = Q_strcmp( "player_hurt", name ) == 0;
@@ -1022,7 +1022,7 @@ void CHLTVDirector::AnalyzeCameras()
 			float dist = VectorLength( vPlayerPos - vCamPos );
 
 			if ( dist > 1024.0f || dist < 4.0f )
-				continue;	// too colse or far away
+				continue;	// too close or far away
 
 			// check visibility
 			trace_t tr;
