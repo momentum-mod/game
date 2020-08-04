@@ -27,7 +27,7 @@ static ConVar cam_snapto( "cam_snapto", "0", FCVAR_ARCHIVE | FCVAR_CHEAT);	 // s
 static ConVar cam_ideallag( "cam_ideallag", "4.0", FCVAR_ARCHIVE| FCVAR_CHEAT, "Amount of lag used when matching offset to ideal angles in thirdperson view" );
 static ConVar cam_idealdelta( "cam_idealdelta", "4.0", FCVAR_ARCHIVE| FCVAR_CHEAT, "Controls the speed when matching offset to ideal angles in thirdperson view" );
 ConVar cam_idealyaw( "cam_idealyaw", "0", FCVAR_ARCHIVE| FCVAR_CHEAT );	 // thirdperson yaw
-ConVar cam_idealpitch( "cam_idealpitch", "0", FCVAR_ARCHIVE | FCVAR_CHEAT  );	 // thirperson pitch
+ConVar cam_idealpitch( "cam_idealpitch", "0", FCVAR_ARCHIVE | FCVAR_CHEAT  );	 // thirdperson pitch
 ConVar cam_idealdist( "cam_idealdist", "150", FCVAR_ARCHIVE | FCVAR_CHEAT );	 // thirdperson distance
 ConVar cam_idealdistright( "cam_idealdistright", "0", FCVAR_ARCHIVE | FCVAR_CHEAT );	 // thirdperson distance
 ConVar cam_idealdistup( "cam_idealdistup", "0", FCVAR_ARCHIVE | FCVAR_CHEAT );	 // thirdperson distance
