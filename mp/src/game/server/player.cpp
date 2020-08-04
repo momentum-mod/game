@@ -6442,11 +6442,16 @@ void CBasePlayer::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 	}
 #endif//HL2_DLL
 
-	// should we switch to this item?
-	if ( bShouldSwitch )
-	{
-		Weapon_Switch( pWeapon );
-	}
+    // should we switch to this item?
+    if ( bShouldSwitch )
+    {
+        Weapon_Switch( pWeapon );
+    }
+    //we didn't switch but if there is no last weapon yet, we set it to this one
+    else if(!GetLastWeapon())
+    {
+        Weapon_SetLast(pWeapon);
+    }
 }
 
 
