@@ -1,4 +1,4 @@
-﻿#include "cbase.h"
+#include "cbase.h"
 
 #include "hudelement.h"
 #include "iclientmode.h"
@@ -49,7 +49,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
-        SetBgColor(Color(0, 0, 0, 1)); // empty background, 1 alpha (out of 255) so game text doesnt obscure our text
+        SetBgColor(Color(0, 0, 0, 1)); // empty background, 1 alpha (out of 255) so game text doesn't obscure our text
     }
 
   protected:
