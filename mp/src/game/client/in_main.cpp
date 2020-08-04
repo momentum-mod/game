@@ -380,7 +380,7 @@ void KeyUp( kbutton_t *b, const char *c )
 	else if (b->down[1] == k)
 		b->down[1] = 0;
 	else
-		return;		// key up without coresponding down (menu pass through)
+		return;		// key up without corresponding down (menu pass through)
 
 	if (b->down[0] || b->down[1])
 	{
@@ -942,7 +942,7 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 		ControllerMove( frametime, cmd );
 	}
 
-	// Retreive view angles from engine ( could have been set in IN_AdjustAngles above )
+	// Retrieve view angles from engine ( could have been set in IN_AdjustAngles above )
 	engine->GetViewAngles( viewangles );
 
 	// Set button and flag bits, don't blow away state
@@ -1013,7 +1013,7 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 			ResetMouse();
 		}
 	}
-	// Retreive view angles from engine ( could have been set in IN_AdjustAngles above )
+	// Retrieve view angles from engine ( could have been set in IN_AdjustAngles above )
 	engine->GetViewAngles( viewangles );
 
 	// Latch and clear impulse
