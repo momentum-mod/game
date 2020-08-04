@@ -83,7 +83,7 @@ void CGhostEntityPanel::OnThink()
 
 void CGhostEntityPanel::OnTick()
 {
-    // Visbility checks
+    // Visibility checks
     // Check fade status
     bool bFadeShow = true;
     int iFadeAlpha = 255;
