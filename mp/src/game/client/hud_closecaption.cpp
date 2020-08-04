@@ -2758,7 +2758,7 @@ void OnCaptionLanguageChanged( IConVar *pConVar, const char *pOldString, float f
 
 
 
-ConVar cc_lang( "cc_lang", "", FCVAR_ARCHIVE, "Current close caption language (emtpy = use game UI language)", OnCaptionLanguageChanged );
+ConVar cc_lang( "cc_lang", "", FCVAR_ARCHIVE, "Current close caption language (empty = use game UI language)", OnCaptionLanguageChanged );
 
 CON_COMMAND( cc_findsound, "Searches for soundname which emits specified text." )
 {
