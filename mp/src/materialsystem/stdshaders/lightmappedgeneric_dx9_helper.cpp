@@ -179,7 +179,7 @@ void InitParamsLightmappedGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** pa
 	{
 		params[info.m_nSelfShadowedBumpFlag]->SetIntValue( 0 );
 	}
-	// handle line art parms
+	// handle line art params
 	InitFloatParam( info.m_nEdgeSoftnessStart, params, 0.5 );
 	InitFloatParam( info.m_nEdgeSoftnessEnd, params, 0.5 );
 	InitFloatParam( info.m_nOutlineAlpha, params, 1.0 );
@@ -369,7 +369,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 			{
 				nNormalDecodeMode = pBumpTex->GetNormalDecodeMode();
 
-				if ( hasBump2 )			// Check encoding of secondary normal if there is oneg
+				if ( hasBump2 )			// Check encoding of secondary normal if there is one
 				{
 					ITexture *pBumpTex2 = params[info.m_nBumpmap]->GetTextureValue();
 					if ( pBumpTex2 && ( pBumpTex2->GetNormalDecodeMode() != nNormalDecodeMode ) )
