@@ -164,7 +164,7 @@ CFleckParticles::~CFleckParticles()
 //			angularSpread - looseness of the spread
 //			minSpeed - minimum speed
 //			maxSpeed - maximum speed
-//			gravity - particle gravity for the sytem
+//			gravity - particle gravity for the system
 //			dampen - dampening amount on collisions
 //			flags - extra information
 //-----------------------------------------------------------------------------
