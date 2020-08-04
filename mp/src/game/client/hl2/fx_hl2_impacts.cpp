@@ -181,7 +181,7 @@ void FX_AirboatGunImpact( const Vector &origin, const Vector &normal, float scal
 
 #endif // _XBOX
 
-	// Add a quad to highlite the hit point
+	// Add a quad to highlight the hit point
 	FX_AddQuad( origin, 
 				normal, 
 				random->RandomFloat( 16, 32 ),
