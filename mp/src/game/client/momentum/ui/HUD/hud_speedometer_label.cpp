@@ -48,7 +48,7 @@ void SpeedometerLabel::SetVisible(bool bVisible)
 {
     m_pComparisonLabel->SetVisible(bVisible && m_bDrawComparison);
     BaseClass::SetVisible(bVisible);
-    // parent's layout depends on the visiblity of this, so invalidate it
+    // parent's layout depends on the visibility of this, so invalidate it
     GetParent()->InvalidateLayout();
 }
 
@@ -257,7 +257,7 @@ void SpeedometerLabel::ColorizeComparisonSeparate()
     if (!m_bDrawComparison)
         return;
 
-    if (!m_bCustomDiff) // calculate diff unless explicity told not to
+    if (!m_bCustomDiff) // calculate diff unless explicitly told not to
     {
         m_flDiff = m_flCurrentValue - m_flPastValue;
     }
