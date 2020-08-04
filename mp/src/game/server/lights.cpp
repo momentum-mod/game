@@ -23,7 +23,7 @@ BEGIN_DATADESC( CLight )
 	DEFINE_KEYFIELD( m_iDefaultStyle, FIELD_INTEGER, "defaultstyle" ),
 	DEFINE_KEYFIELD( m_iszPattern, FIELD_STRING, "pattern" ),
 
-	// Fuctions
+	// Functions
 	DEFINE_FUNCTION( FadeThink ),
 
 	// Inputs
