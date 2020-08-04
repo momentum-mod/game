@@ -642,7 +642,7 @@ void ListViewPanel::PerformLayout()
 	{
 		m_hbar->SetVisible(true);
 
-		// recalulate # per column now that we've made the hbar visible
+		// recalculate # per column now that we've made the hbar visible
 		itemsPerCol = GetItemsPerColumn();
 		cols = ( GetItemCount() + (itemsPerCol - 1) ) / (itemsPerCol > 0 ? itemsPerCol : 1 );
 
@@ -741,7 +741,7 @@ void ListViewPanel::OnMousePressed( MouseCode code)
 //-----------------------------------------------------------------------------
 void ListViewPanel::OnShiftSelect(int itemID)
 {
-	// if we dont' have a valid selected ItemID - then we just choose the first item
+	// if we don't have a valid selected ItemID - then we just choose the first item
 	if ( !m_DataItems.IsValidIndex(m_ShiftStartItemID) )
 	{
 		m_ShiftStartItemID = m_DataItems.Head();
