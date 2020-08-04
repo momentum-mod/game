@@ -1394,7 +1394,7 @@ void HTML::BrowserOpenNewTab( HTML_OpenLinkInNewTab_t *pCmd )
         return;
 
     OnBrowserOpenNewTab(pCmd);
-	// Not suppored by default, if a child class overrides us and knows how to handle tabs, then it can do this.
+	// Not supported by default, if a child class overrides us and knows how to handle tabs, then it can do this.
 }
 
 //-----------------------------------------------------------------------------
