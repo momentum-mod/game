@@ -136,7 +136,7 @@ void Label::GetContentSize(int &wide, int &tall)
 	int iWide, iTall;
 	_textImage->GetSize(iWide, iTall);
 	wide -=  iWide;
-	// get the full, untruncated (no elipsis) size of the text image.
+	// get the full, untruncated (no ellipsis) size of the text image.
 	_textImage->GetContentSize(iWide, iTall);
 	wide += iWide;
 
@@ -1295,7 +1295,7 @@ void Label::PerformLayout()
 	}
 
 	// assume the images in the dar cannot be resized, and if
-	// the images + the textimage are too wide we shring the textimage part
+	// the images + the textimage are too wide we shrink the textimage part
 	if (_textImageIndex < 0)
 		return;
 	
