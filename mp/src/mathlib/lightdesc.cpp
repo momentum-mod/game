@@ -259,7 +259,7 @@ void LightDesc_t::ComputeNonincidenceLightAtPoints( const FourVectors &pos, Four
 
 void LightDesc_t::SetupOldStyleAttenuation( float fQuadraticAttn, float fLinearAttn, float fConstantAttn )
 {
-	// old-style manually typed quadrtiac coefficients
+	// old-style manually typed quadratic coefficients
 	if ( fQuadraticAttn < EQUAL_EPSILON )
 		fQuadraticAttn = 0;
 	
