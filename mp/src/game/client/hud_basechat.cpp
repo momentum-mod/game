@@ -610,7 +610,7 @@ void CBaseHudChat::MsgFunc_SayText2(bf_read &msg)
     wchar_t *msg_text = ReadLocalizedString(msg, szBuf[0], sizeof(szBuf[0]), false, untranslated_msg_text,
                                             sizeof(untranslated_msg_text));
 
-    // keep reading strings and using C format strings for subsituting the strings into the localised text string
+    // keep reading strings and using C format strings for substituting the strings into the localised text string
     ReadChatTextString(msg, szBuf[1], sizeof(szBuf[1])); // player name
     ReadChatTextString(msg, szBuf[2], sizeof(szBuf[2])); // chat text
     ReadLocalizedString(msg, szBuf[3], sizeof(szBuf[3]), true);
@@ -684,7 +684,7 @@ void CBaseHudChat::MsgFunc_TextMsg(bf_read &msg)
         {
             if (i)
             {
-                StripEndNewlineFromString(tmpStr); // these strings are meant for subsitution into the main strings, so
+                StripEndNewlineFromString(tmpStr); // these strings are meant for substitution into the main strings, so
                                                    // cull the automatic end newlines
             }
             g_pVGuiLocalize->ConvertANSIToUnicode(tmpStr, szBuf[i], sizeof(szBuf[i]));
