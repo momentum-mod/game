@@ -244,7 +244,7 @@ bool CDarknessLightSourcesSystem::IsEntityVisibleToTarget( CBaseEntity *pLooker,
 				NDebugOverlay::Line( tr.endpos, pLightSource->GetAbsOrigin(), 128,0,0,true, 0.1);
 			}
 
-			// If the target is within the radius of the light, don't do sillhouette checks
+			// If the target is within the radius of the light, don't do silhouette checks
 			continue;
 		}
 
