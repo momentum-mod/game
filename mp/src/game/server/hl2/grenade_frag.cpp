@@ -385,7 +385,7 @@ bool CGrenadeFrag::HandleInteraction(int interactionType, void *data, CBaseComba
 	// allow fragnades to be grabbed by barnacles. 
 	if ( interactionType == g_interactionBarnacleVictimGrab )
 	{
-		// give the grenade another five seconds seconds so the player can have the satisfaction of blowing up the barnacle with it
+		// give the grenade another five seconds so the player can have the satisfaction of blowing up the barnacle with it
 		float timer = m_flDetonateTime - gpGlobals->curtime + 5.0f;
 		SetTimer( timer, timer - FRAG_GRENADE_WARN_TIME );
 
