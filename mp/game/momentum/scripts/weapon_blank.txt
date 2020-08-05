@@ -6,7 +6,7 @@ WeaponData
     "PlayerAnimationExtension"  "knife"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "No weapon"
+    "printname"         "#MOM_Weapon_Blank"
     "anim_prefix"       "anim"
     
     "bucket"            "4"
