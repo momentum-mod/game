@@ -16,6 +16,7 @@ WeaponData
     "weight"            "25"
     "item_flags"        "0"
     "autoswitchfrom" "0"
+    "autoswitchto" "0"
 
     "ModelData"
     {
