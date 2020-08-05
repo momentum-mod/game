@@ -207,7 +207,6 @@ void CMomentumGameMovement::WalkMove()
 
     wishvel[2] = 0.0f; // Zero out z part of velocity
 
-<<<<<<< HEAD
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) &&
         m_pPlayer->m_bIsPowerSliding &&
         (sv_slide_lock.GetBool()
@@ -228,9 +227,6 @@ void CMomentumGameMovement::WalkMove()
     }
 
 
-=======
-    VectorCopy(wishvel, wishdir); // Determine magnitude of speed of move
->>>>>>> Spelling fixes (mom_gamemovement.cpp)
     wishspeed = VectorNormalize(wishdir);
 
     //
