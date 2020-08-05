@@ -60,6 +60,9 @@ void CGameModeBase::OnPlayerSpawn(CMomentumPlayer *pPlayer)
 {
 #ifdef GAME_DLL
     pPlayer->SetAutoBhopEnabled(PlayerHasAutoBhop());
+
+    pPlayer->GiveWeapon(WEAPON_BLANK);
+    pPlayer->GiveWeapon(WEAPON_PAINTGUN);
 #endif
 }
 
@@ -166,8 +169,8 @@ void CGameMode_RJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
     CGameModeBase::OnPlayerSpawn(pPlayer);
 
 #ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
     pPlayer->GiveWeapon(WEAPON_SHOTGUN);
+    pPlayer->GiveWeapon(WEAPON_ROCKETLAUNCHER);
 #endif
 }
 
@@ -177,7 +180,8 @@ bool CGameMode_RJ::WeaponIsAllowed(WeaponID_t weapon)
     return weapon == WEAPON_ROCKETLAUNCHER ||
            weapon == WEAPON_SHOTGUN        ||
            weapon == WEAPON_KNIFE          ||
-           weapon == WEAPON_PAINTGUN;
+           weapon == WEAPON_PAINTGUN       ||
+           weapon == WEAPON_BLANK;
 }
 
 bool CGameMode_RJ::HasCapability(GameModeHUDCapability_t capability)
@@ -210,8 +214,8 @@ void CGameMode_SJ::OnPlayerSpawn(CMomentumPlayer *pPlayer)
     CGameModeBase::OnPlayerSpawn(pPlayer);
 
 #ifdef GAME_DLL
-    pPlayer->GiveWeapon(WEAPON_STICKYLAUNCHER);
     pPlayer->GiveWeapon(WEAPON_PISTOL);
+    pPlayer->GiveWeapon(WEAPON_STICKYLAUNCHER);
 #endif
 }
 
@@ -221,7 +225,8 @@ bool CGameMode_SJ::WeaponIsAllowed(WeaponID_t weapon)
     return weapon == WEAPON_STICKYLAUNCHER ||
            weapon == WEAPON_PISTOL         ||
            weapon == WEAPON_KNIFE          ||
-           weapon == WEAPON_PAINTGUN;
+           weapon == WEAPON_PAINTGUN       ||
+           weapon == WEAPON_BLANK;
 }
 
 bool CGameMode_SJ::HasCapability(GameModeHUDCapability_t capability)
