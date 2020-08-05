@@ -1,0 +1,55 @@
+WeaponData
+{
+    "CrosshairMinDistance"      "7"
+    "CrosshairDeltaDistance"    "3"
+    "BuiltRightHanded"          "1"
+    "PlayerAnimationExtension"  "knife"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "No weapon"
+    "anim_prefix"       "anim"
+    
+    "bucket"            "4"
+    "bucket_position"   "1"
+
+    "clip_size"         "-1"
+    "default_clip"      "1"
+    "weight"            "0"
+
+    "ModelData"
+    {
+        "view"  "models/weapons/v_knife_t.mdl"
+        "world" "models/weapons/w_knife_t.mdl"
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        "weapon"
+        {
+                "font"      "WeaponIcons"
+                "character" "u"
+        }
+        "weapon_s"
+        {   
+                "font"      "WeaponIconsSelected"
+                "character" "u"
+        }
+        "ammo"
+        {
+                "file"      "sprites/a_icons1"
+                "x"         "55"
+                "y"         "60"
+                "width"     "73"
+                "height"    "15"
+        }
+        "crosshair"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+    }
+}

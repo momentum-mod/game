@@ -193,6 +193,7 @@ void CWeaponDef::LoadWeaponDefinitions()
     m_vecWeaponDefs[WEAPON_GRENADE]         = ParseWeaponScript(g_szWeaponNames[WEAPON_GRENADE]);
     m_vecWeaponDefs[WEAPON_KNIFE]           = ParseWeaponScript(g_szWeaponNames[WEAPON_KNIFE]);
     m_vecWeaponDefs[WEAPON_PAINTGUN]        = ParseWeaponScript(g_szWeaponNames[WEAPON_PAINTGUN]);
+    m_vecWeaponDefs[WEAPON_BLANK]        = ParseWeaponScript(g_szWeaponNames[WEAPON_BLANK]);
     m_vecWeaponDefs[WEAPON_ROCKETLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_ROCKETLAUNCHER]);
     m_vecWeaponDefs[WEAPON_STICKYLAUNCHER]  = ParseWeaponScript(g_szWeaponNames[WEAPON_STICKYLAUNCHER]);
 }

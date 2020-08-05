@@ -18,6 +18,7 @@ enum WeaponID_t
     WEAPON_GRENADE,
     WEAPON_KNIFE,
     WEAPON_PAINTGUN,
+    WEAPON_BLANK,
     WEAPON_ROCKETLAUNCHER,
     WEAPON_STICKYLAUNCHER,
 
@@ -37,6 +38,7 @@ static const char *const g_szWeaponNames[WEAPON_MAX] =
     "weapon_momentum_grenade",
     "weapon_knife",
     "weapon_momentum_paintgun",
+    "weapon_blank",
     "weapon_momentum_rocketlauncher",
     "weapon_momentum_stickylauncher"
 };
