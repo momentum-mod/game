@@ -128,7 +128,7 @@ typedef signed char int8;
 	typedef unsigned __int64		uint64;
 
 	#ifdef PLATFORM_64BITS
-		typedef __int64 intp;				// intp is an integer that can accomodate a pointer
+		typedef __int64 intp;				// intp is an integer that can accommodate a pointer
 		typedef unsigned __int64 uintp;		// (ie, sizeof(intp) >= sizeof(int) && sizeof(intp) >= sizeof(void *)
 	#else
 		typedef __int32 intp;
@@ -465,7 +465,7 @@ typedef void * HINSTANCE;
 #define  stackfree( _p )			0
 
 // Linux had a few areas where it didn't construct objects in the same order that Windows does.
-// So when CVProfile::CVProfile() would access g_pMemAlloc, it would crash because the allocator wasn't initalized yet.
+// So when CVProfile::CVProfile() would access g_pMemAlloc, it would crash because the allocator wasn't initialized yet.
 #ifdef POSIX
 	#define CONSTRUCT_EARLY __attribute__((init_priority(101)))
 #else
@@ -571,8 +571,8 @@ typedef void * HINSTANCE;
 // Force a function call site -not- to inlined. (useful for profiling)
 #define DONT_INLINE(a) (((int)(a)+1)?(a):(a))
 
-// Pass hints to the compiler to prevent it from generating unnessecary / stupid code
-// in certain situations.  Several compilers other than MSVC also have an equivilent
+// Pass hints to the compiler to prevent it from generating unnecessary / stupid code
+// in certain situations.  Several compilers other than MSVC also have an equivalent
 // construct.
 //
 // Essentially the 'Hint' is that the condition specified is assumed to be true at
@@ -1089,7 +1089,7 @@ inline uint64 Plat_Rdtsc()
 // Processor Information:
 struct CPUInformation
 {
-	int	 m_Size;		// Size of this structure, for forward compatability.
+	int	 m_Size;		// Size of this structure, for forward compatibility.
 
 	bool m_bRDTSC : 1,	// Is RDTSC supported?
 		 m_bCMOV  : 1,  // Is CMOV supported?
@@ -1161,7 +1161,7 @@ PLATFORM_INTERFACE const char *Plat_GetCommandLineA();
 PLATFORM_INTERFACE bool Plat_VerifyHardwareKeyDriver();
 
 // Ok, so this isn't a very secure way to verify the hardware key for now.  It
-// is primarially depending on the fact that all the binaries have been wrapped
+// is primarily depending on the fact that all the binaries have been wrapped
 // with the secure wrapper provided by the hardware keys vendor.
 PLATFORM_INTERFACE bool Plat_VerifyHardwareKey();
 
@@ -1209,7 +1209,7 @@ PLATFORM_INTERFACE bool Is64BitOS();
 #define XBOX_HDD_SECTORSIZE			512
 
 //-----------------------------------------------------------------------------
-// Include additional dependant header components.
+// Include additional dependent header components.
 //-----------------------------------------------------------------------------
 #include "tier0/fasttimer.h"
 
@@ -1350,7 +1350,7 @@ inline void Destruct( T* pMemory )
 		return argument * argument;
 	}
 
-	is equivilent to the following:
+	is equivalent to the following:
 
 	(NOTE: the function has to be wrapped in a class due to code
 	generation bugs involved with directly specializing a function

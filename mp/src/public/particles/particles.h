@@ -86,7 +86,7 @@ DEFPARTICLE_ATTRIBUTE( ALPHA, 7 );
 // creation time stamp (relative to particle system creation)
 DEFPARTICLE_ATTRIBUTE( CREATION_TIME, 8 );
 
-// sequnece # (which animation sequence number this particle uses )
+// sequence # (which animation sequence number this particle uses )
 DEFPARTICLE_ATTRIBUTE( SEQUENCE_NUMBER, 9 );
 
 // length of the trail 
@@ -98,7 +98,7 @@ DEFPARTICLE_ATTRIBUTE( PARTICLE_ID, 11 );
 // unique rotation around up vector
 DEFPARTICLE_ATTRIBUTE( YAW, 12 );
 
-// second sequnece # (which animation sequence number this particle uses )
+// second sequence # (which animation sequence number this particle uses )
 DEFPARTICLE_ATTRIBUTE( SEQUENCE_NUMBER1, 13 );
 
 // hit box index
@@ -377,9 +377,9 @@ public:
 	CParticleSystemDefinition* FindParticleSystem( const DmObjectId_t& id );
 
 	void CommitProfileInformation( bool bCommit );			// call after simulation, if you want
-															// sim time recorded. if oyu pass
-															// flase, info will be thrown away and
-															// uncomitted time reset.  Having this
+															// sim time recorded. if you pass
+															// false, info will be thrown away and
+															// uncommitted time reset.  Having this
 															// function lets you only record
 															// profile data for slow frames if
 															// desired.
@@ -398,7 +398,7 @@ public:
 	int Debug_GetTotalParticleCount() const;
 	bool Debug_FrameWarningNeededTestAndReset();
 	float ParticleThrottleScaling() const;		// Returns 1.0 = not restricted, 0.0 = fully restricted (i.e. don't draw!)
-	bool ParticleThrottleRandomEnable() const;	// Retruns a randomish bool to say if you should draw this particle.
+	bool ParticleThrottleRandomEnable() const;	// Returns a randomish bool to say if you should draw this particle.
 	
 	void TallyParticlesRendered( int nVertexCount, int nIndexCount = 0 );
 
@@ -449,7 +449,7 @@ private:
 	typedef CUtlStringMap< CSheet* > SheetsCache_t;
 	SheetsCache_t m_SheetList;
 
-	// attaching and dtaching killlists. when simulating, a particle system gets a kill list. after
+	// attaching and detaching killlists. when simulating, a particle system gets a kill list. after
 	// simulating, the memory for that will be used for the next particle system.  This matters for
 	// threaded particles, because we don't want to share the same kill list between simultaneously
 	// simulating particle systems.
@@ -650,7 +650,7 @@ public:
 	}
 
 
-	// this is called for each constarint every frame. It can set up data like nearby world traces,
+	// this is called for each constraint every frame. It can set up data like nearby world traces,
 	// etc
 	virtual void SetupConstraintPerFrameData( CParticleCollection *pParticles,
 											  void *pContext ) const
@@ -658,7 +658,7 @@ public:
 	}
 
 
-	// a constraint overrides this. It shold return a true if it did anything
+	// a constraint overrides this. It should return a true if it did anything
 	virtual bool EnforceConstraint( int nStartBlock,
 									int nNumBlocks,
 									CParticleCollection *pParticles,
@@ -692,18 +692,18 @@ public:
 	{
 	}
 
-	// init new particles in blocks of 4. initters that have sse smarts should over ride this. the scalar particle initter will still be cllaed for head/tail.
+	// init new particles in blocks of 4. initters that have sse smarts should over ride this. the scalar particle initter will still be called for head/tail.
 	virtual void InitNewParticlesBlock( CParticleCollection *pParticles, int start_block, int n_blocks, int attribute_write_mask, void *pContext ) const
 	{
 		// default behaviour is to call the scalar one 4x times
 		InitNewParticlesScalar( pParticles, 4*start_block, 4*n_blocks, attribute_write_mask, pContext );
 	}
 
-	// splits particle initialization up into scalar and block sections, callingt he right code
+	// splits particle initialization up into scalar and block sections, calling the right code
 	void InitNewParticles( CParticleCollection *pParticles, int nFirstParticle, int n_particles, int attribute_write_mask , void *pContext) const;
 
 
-	// this function is queried to determine if a particle system is over and doen with. A particle
+	// this function is queried to determine if a particle system is over and done with. A particle
 	// system is done with when it has noparticles and no operators intend to create any more
 	virtual bool MayCreateMoreParticles( CParticleCollection *pParticles, void *pContext ) const
 	{
@@ -917,7 +917,7 @@ enum
 
 // sorting functionality for rendering. Call GetRenderList( bool bSorted ) to get the list of
 // particles to render (sorted or not, including children).
-// **do not casually change this structure**. The sorting code treats it interchangably as an SOA
+// **do not casually change this structure**. The sorting code treats it interchangeably as an SOA
 // and accesses it using sse. Any changes to this struct need the sort code updated.**
 struct ParticleRenderData_t
 {
@@ -992,7 +992,7 @@ struct CParticleControlPoint
 };
 
 
-// struct for simd xform to transform a point from an identitiy coordinate system to that of the control point
+// struct for simd xform to transform a point from an identity coordinate system to that of the control point
 struct CParticleSIMDTransformation
 {
 	FourVectors m_v4Origin;
@@ -1075,7 +1075,7 @@ public:
 	void Simulate( float dt, bool updateBboxOnly );
 	void SkipToTime( float t );
 
-	// the camera objetc may be compared for equality against control point objects
+	// the camera object may be compared for equality against control point objects
 	void Render( IMatRenderContext *pRenderContext, bool bTranslucentOnly = false, void *pCameraObject = NULL );
 
 	bool IsValid( void ) const;
@@ -1885,7 +1885,7 @@ FORCEINLINE void CParticleCollection::KillParticle( int nPidx )
 	Assert( nPidx < m_nActiveParticles + 4 );
 
 	// note that it is permissible to kill particles with indices>the number of active
-	// particles, in order to faciliate easy sse coding
+	// particles, in order to facilitate easy sse coding
 	Assert( m_nNumParticlesToKill < MAX_PARTICLES_IN_A_SYSTEM );
 	m_pParticleKillList[ m_nNumParticlesToKill++ ] = nPidx;
 }
@@ -2085,7 +2085,7 @@ private:
 
 public:
 	float m_flMaxDrawDistance;								// distance at which to not draw. 
-	float m_flNoDrawTimeToGoToSleep;						// after not beeing seen for this long, the system will sleep
+	float m_flNoDrawTimeToGoToSleep;						// after not being seen for this long, the system will sleep
 
 	int m_nMaxParticles;
 	int m_nSkipRenderControlPoint;							// if the camera is attached to the

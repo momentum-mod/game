@@ -31,7 +31,7 @@ enum
 };
 
 // This is the lighting value that is used to determine when something can be 
-// culle from lighting because it is close enough to black to be virtually black.
+// culled from lighting because it is close enough to black to be virtually black.
 //#define MIN_LIGHTING_VALUE	(1.0f/256.0f)
 
 // This is the broken value of MIN_LIGHTING_VALUE that we have to take into consideration

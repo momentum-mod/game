@@ -307,7 +307,7 @@ struct DL_CryptoKeys_LUC
 
 /// \brief LUC Integrated Encryption Scheme
 /// \tparam COFACTOR_OPTION cofactor multiplication option
-/// \tparam HASH HashTransformation derived class used for key drivation and MAC computation
+/// \tparam HASH HashTransformation derived class used for key derivation and MAC computation
 /// \tparam DHAES_MODE flag indicating if the MAC includes additional context parameters such as <em>u·V</em>, <em>v·U</em> and label
 /// \tparam LABEL_OCTETS flag indicating if the label size is specified in octets or bits
 /// \sa CofactorMultiplicationOption

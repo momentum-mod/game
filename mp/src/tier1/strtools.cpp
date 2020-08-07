@@ -1631,7 +1631,7 @@ void V_binarytohex( const byte *in, int inputbytes, char *out, int outsize )
 	}
 }
 
-// Even though \ on Posix (Linux&Mac) isn't techincally a path separator we are
+// Even though \ on Posix (Linux&Mac) isn't technically a path separator we are
 // now counting it as one even Posix since so many times our filepaths aren't actual
 // paths but rather text strings passed in from data files, treating \ as a pathseparator
 // covers the full range of cases
@@ -2340,7 +2340,7 @@ bool V_StrSubst(
 		const char *pTestPos = ( bCaseSensitive ? strstr( pInStart, pMatch ) : V_stristr( pInStart, pMatch ) );
 		if ( pTestPos )
 		{
-			// Found an occurence of pMatch. First, copy whatever leads up to the string.
+			// Found an occurrence of pMatch. First, copy whatever leads up to the string.
 			int copyLen = pTestPos - pInStart;
 			if ( !CopyToMaxChars( pOutPos, nRemainingOut, pInStart, copyLen ) )
 				return false;
@@ -2620,7 +2620,7 @@ char *V_AddBackSlashesToSpecialChars( char const *pSrc )
 		for(char const *pCharSet=s_BackSlashMap; *pCharSet; pCharSet += 2 )
 		{
 			if ( *pCharSet == *pScan )
-				nSpaceNeeded++;								// we need to store a bakslash
+				nSpaceNeeded++;								// we need to store a backslash
 		}
 	}
 	char *pRet = new char[ nSpaceNeeded + 1 ];				// +1 for null

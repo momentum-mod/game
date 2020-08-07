@@ -415,8 +415,8 @@ public:
 	// By default, the material system applies the VIEW and PROJECTION matrices	to the user clip
 	// planes (which are specified in world space) to generate projection-space user clip planes
 	// Occasionally (for the particle system in hl2, for example), we want to override that
-	// behavior and explictly specify a View transform for user clip planes. The PROJECTION
-	// will be mutliplied against this instead of the normal VIEW matrix.
+	// behavior and explicitly specify a View transform for user clip planes. The PROJECTION
+	// will be multiplied against this instead of the normal VIEW matrix.
 	virtual void EnableUserClipTransformOverride( bool bEnable ) = 0;
 	virtual void UserClipTransform( const VMatrix &worldToView ) = 0;
 

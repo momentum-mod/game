@@ -224,7 +224,7 @@ public:
 	static CAI_Hint		*FindHint( const Vector &position, const CHintCriteria &hintCriteria );
 	static CAI_Hint		*FindHint( CAI_BaseNPC *pNPC, Hint_e nHintType, int nFlags, float flMaxDist, const Vector *pMaxDistFrom = NULL );
 
-	// Purpose: Finds a random suitable hint within the requested radious of the npc
+	// Purpose: Finds a random suitable hint within the requested radius of the npc
 	static CAI_Hint		*FindHintRandom( CAI_BaseNPC *pNPC, const Vector &position, const CHintCriteria &hintCriteria );
 	static int			FindAllHints( CAI_BaseNPC *pNPC, const Vector &position, const CHintCriteria &hintCriteria, CUtlVector<CAI_Hint *> *pResult );
 	static int			FindAllHints( const Vector &position, const CHintCriteria &hintCriteria, CUtlVector<CAI_Hint *> *pResult )	{ return FindAllHints( NULL, position, hintCriteria, pResult ); }

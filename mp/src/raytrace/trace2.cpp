@@ -71,14 +71,14 @@ void RayTracingEnvironment::RenderScene(
 	dyvector*=(1.0/height);
 
 
-	// block_offsets-relative offsets for eahc of the 4 pixels in the block, in sse format
+	// block_offsets-relative offsets for each of the 4 pixels in the block, in sse format
 	FourVectors block_offsets;
 	block_offsets.LoadAndSwizzle(Vector(0,0,0),dxvector,dyvector,dxvector+dyvector);
 	
 	FourRays myrays;
 	myrays.origin.DuplicateVector(CameraOrigin);
 	
-	// tmprays is used fo rthe case when we cannot trace 4 rays at once.
+	// tmprays is used for the case when we cannot trace 4 rays at once.
 	FourRays tmprays;
 	tmprays.origin.DuplicateVector(CameraOrigin);
 

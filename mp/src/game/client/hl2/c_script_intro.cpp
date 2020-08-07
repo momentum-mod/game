@@ -59,7 +59,7 @@ private:
 	float	m_flFadeAlpha;				// Server's desired fade alpha
 	float	m_flPrevServerFadeAlpha;	// Previous server's desired fade alpha
 	float	m_flFadeDuration;			// Time it should take to reach the server's new fade alpha
-	float	m_flFadeTimeStartedAt;		// Time at which we last recieved a new desired fade alpha
+	float	m_flFadeTimeStartedAt;		// Time at which we last received a new desired fade alpha
 	float	m_flFadeAlphaStartedAt;		// Alpha at which we last received a new desired fade alpha
 };
 

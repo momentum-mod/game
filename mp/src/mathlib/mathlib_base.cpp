@@ -1340,7 +1340,7 @@ bool SolveInverseQuadratic( float x1, float y1, float x2, float y2, float x3, fl
 bool SolveInverseQuadraticMonotonic( float x1, float y1, float x2, float y2, float x3, float y3, 
 									 float &a, float &b, float &c )
 {
-	// use SolveInverseQuadratic, but if the sigm of the derivative at the start point is the wrong
+	// use SolveInverseQuadratic, but if the sign of the derivative at the start point is the wrong
 	// sign, displace the mid point
 	
 	// first, sort parameters
@@ -1360,7 +1360,7 @@ bool SolveInverseQuadraticMonotonic( float x1, float y1, float x2, float y2, flo
 		V_swap(y1,y2);
 	}
 	// this code is not fast. what it does is when the curve would be non-monotonic, slowly shifts
-	// the center point closer to the linear line between the endpoints. Should anyone need htis
+	// the center point closer to the linear line between the endpoints. Should anyone need this
 	// function to be actually fast, it would be fairly easy to change it to be so.
 	for(float blend_to_linear_factor=0.0;blend_to_linear_factor<=1.0;blend_to_linear_factor+=0.05)
 	{
@@ -1577,7 +1577,7 @@ void QuaternionIdentityBlend( const Quaternion &p, float t, Quaternion &qt )
 }
 
 //-----------------------------------------------------------------------------
-// Quaternion sphereical linear interpolation
+// Quaternion spherical linear interpolation
 //-----------------------------------------------------------------------------
 
 void QuaternionSlerp( const Quaternion &p, const Quaternion &q, float t, Quaternion &qt )
@@ -1863,7 +1863,7 @@ void QuaternionMatrix( const Quaternion &q, matrix3x4_t& matrix )
 #endif
 
 // Original code
-// This should produce the same code as below with optimization, but looking at the assmebly,
+// This should produce the same code as below with optimization, but looking at the assembly,
 // it doesn't.  There are 7 extra multiplies in the release build of this, go figure.
 #if 1
 	matrix[0][0] = 1.0 - 2.0 * q.y * q.y - 2.0 * q.z * q.z;
@@ -1884,7 +1884,7 @@ void QuaternionMatrix( const Quaternion &q, matrix3x4_t& matrix )
 #else
    float wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
 
-    // precalculate common multiplitcations
+    // precalculate common multiplications
     x2 = q.x + q.x; 
 	y2 = q.y + q.y; 
     z2 = q.z + q.z;

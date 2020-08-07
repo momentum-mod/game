@@ -480,7 +480,7 @@ int inflate (z_streamp strm, int flush);
 //  may be used for the single inflate() call.
 //
 //     If a preset dictionary is needed at this point (see inflateSetDictionary
-//  below), inflate sets strm-adler to the adler32 checksum of the
+//  below), inflate sets strm->adler to the adler32 checksum of the
 //  dictionary chosen by the compressor and returns Z_NEED_DICT; otherwise
 //  it sets strm->adler to the adler32 checksum of all output produced
 //  so far (that is, total_out bytes) and returns Z_OK, Z_STREAM_END or
@@ -547,7 +547,7 @@ int inflateSync (z_streamp strm);
 //    inflateSync returns Z_OK if a full flush point has been found, Z_BUF_ERROR
 //  if no more input was provided, Z_DATA_ERROR if no flush point has been found,
 //  or Z_STREAM_ERROR if the stream structure was inconsistent. In the success
-//  case, the application may save the current current value of total_in which
+//  case, the application may save the current value of total_in which
 //  indicates where valid compressed data was found. In the error case, the
 //  application may repeatedly call inflateSync, providing more input each time,
 //  until success or end of the input data.
@@ -1380,7 +1380,7 @@ const uInt border[] = { // Order of the bit length code lengths
 //    end-of-block.  Note however that the static length tree defines
 //    288 codes just to fill out the Huffman codes.  Codes 286 and 287
 //    cannot be used though, since there is no length base or extra bits
-//    defined for them.  Similarily, there are up to 30 distance codes.
+//    defined for them.  Similarly, there are up to 30 distance codes.
 //    However, static trees define 32 codes (all 5 bits) to fill out the
 //    Huffman codes, but the last two had better not show up in the data.
 // 7. Unzip can check dynamic Huffman blocks for complete code sets.
@@ -2906,7 +2906,7 @@ typedef struct
 	uLong crc32_wait;           // crc32 we must obtain after decompress all
 	uLong rest_read_compressed; // number of byte to be decompressed
 	uLong rest_read_uncompressed;//number of byte to be obtained after decomp
-	LUFILE* file;                 // io structore of the zipfile
+	LUFILE* file;                 // io structure of the zipfile
 	uLong compression_method;   // compression method (0==store)
 	uLong byte_before_the_zipfile;// byte before the zipfile, (>0 for sfx)
 } file_in_zip_read_info_s;
@@ -2915,7 +2915,7 @@ typedef struct
 // unz_s contain internal information about the zipfile
 typedef struct
 {
-	LUFILE* file;               // io structore of the zipfile
+	LUFILE* file;               // io structure of the zipfile
 	unz_global_info gi;         // public global information
 	uLong byte_before_the_zipfile;// byte before the zipfile, (>0 for sfx)
 	uLong num_file;             // number of the current file in the zipfile
@@ -2958,7 +2958,7 @@ int unzGetLocalExtrafield (unzFile file, voidp buf, unsigned len);
 // ===========================================================================
 //   Read a byte from a gz_stream; update next_in and avail_in. Return EOF
 // for end of file.
-// IN assertion: the stream s has been sucessfully opened for reading.
+// IN assertion: the stream s has been successfully opened for reading.
 
 int unzlocal_getByte(LUFILE *fin,int *pi)
 { unsigned char c;
@@ -3052,8 +3052,8 @@ int strcmpcasenosensitive_internal (const char* fileName1,const char *fileName2)
 
 //
 // Compare two filename (fileName1,fileName2).
-// If iCaseSenisivity = 1, comparision is case sensitivity (like strcmp)
-// If iCaseSenisivity = 2, comparision is not case sensitivity (like strcmpi or strcasecmp)
+// If iCaseSenisivity = 1, comparison is case sensitivity (like strcmp)
+// If iCaseSenisivity = 2, comparison is not case sensitivity (like strcmpi or strcasecmp)
 //
 int unzStringFileNameCompare (const char*fileName1,const char*fileName2,int iCaseSensitivity)
 { if (iCaseSensitivity==1) return strcmp(fileName1,fileName2);
@@ -3120,7 +3120,7 @@ unzFile unzOpenInternal(LUFILE *fin)
   uLong number_disk;          // number of the current dist, used for spanning ZIP, unsupported, always 0
   if (unzlocal_getShort(fin,&number_disk)!=UNZ_OK) err=UNZ_ERRNO;
   // number of the disk with the start of the central directory
-  uLong number_disk_with_CD;  // number the the disk with central dir, used for spaning ZIP, unsupported, always 0
+  uLong number_disk_with_CD;  // number of the disk with central dir, used for spanning ZIP, unsupported, always 0
   if (unzlocal_getShort(fin,&number_disk_with_CD)!=UNZ_OK) err=UNZ_ERRNO;
   // total number of entries in the central dir on this disk
   if (unzlocal_getShort(fin,&us.gi.number_entry)!=UNZ_OK) err=UNZ_ERRNO;
@@ -3185,7 +3185,7 @@ int unzGetGlobalInfo (unzFile file,unz_global_info *pglobal_info)
 }
 
 
-//   Translate date/time from Dos format to tm_unz (readable more easilty)
+//   Translate date/time from Dos format to tm_unz (readable more easily)
 void unzlocal_DosDateToTmuDate (uLong ulDosDate, tm_unz* ptm)
 {
     uLong uDate;
@@ -3656,7 +3656,7 @@ int unzOpenCurrentFile (unzFile file)
 //  Read bytes from the current file.
 //  buf contain buffer where data must be copied
 //  len the size of buf.
-//  return the number of byte copied if somes bytes are copied
+//  return the number of byte copied if some bytes are copied
 //  return 0 if the end of file was reached
 //  return <0 with error code if there is an error
 //    (UNZ_ERRNO for IO error, or zLib error for uncompress error)
@@ -4277,7 +4277,7 @@ unsigned int FormatZipMessageU(ZRESULT code, char *buf,unsigned int len)
   const char *msg="unknown zip result code";
   switch (code)
   { case ZR_OK: msg="Success"; break;
-    case ZR_NODUPH: msg="Culdn't duplicate handle"; break;
+    case ZR_NODUPH: msg="Couldn't duplicate handle"; break;
     case ZR_NOFILE: msg="Couldn't create/open file"; break;
     case ZR_NOALLOC: msg="Failed to allocate memory"; break;
     case ZR_WRITE: msg="Error writing to file"; break;

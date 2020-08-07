@@ -56,7 +56,7 @@ public:
 	// For keeping info about each (non-ignored) 3dsMax node in the tree
 	typedef struct
 	{
-		char		szNodeName[MAX_NAME_CHARS];	// usefull for lookups
+		char		szNodeName[MAX_NAME_CHARS];	// useful for lookups
 		Matrix3		mat3NodeTM;					// node's transformation matrix (at time zero)
 		Matrix3		mat3ObjectTM;				// object-offset transformation matrix (at time zero)
 		int			imaxnodeParent;				// cached index of parent node

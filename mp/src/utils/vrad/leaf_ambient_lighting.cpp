@@ -472,7 +472,7 @@ public:
 	CUtlVector<int> m_list;
 };
 
-// conver short[3] to vector
+// convert short[3] to vector
 static void LeafBounds( int leafIndex, Vector &mins, Vector &maxs )
 {
 	for ( int i = 0; i < 3; i++ )

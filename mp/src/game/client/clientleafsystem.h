@@ -149,7 +149,7 @@ public:
 	virtual void SetDetailObjectsInLeaf( int leaf, int firstDetailObject, int detailObjectCount ) = 0;
 	virtual void GetDetailObjectsInLeaf( int leaf, int& firstDetailObject, int& detailObjectCount ) = 0;
 
-	// Indicates which leaves detail objects should be rendered from, returns the detais objects in the leaf
+	// Indicates which leaves detail objects should be rendered from, returns the detail objects in the leaf
 	virtual void DrawDetailObjectsInLeaf( int leaf, int frameNumber, int& firstDetailObject, int& detailObjectCount ) = 0;
 
 	// Should we draw detail objects (sprites or models) in this leaf (because it's close enough to the view)

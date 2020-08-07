@@ -156,7 +156,7 @@ inline void UpdateScreenEffectTexture( void )
 	UpdateScreenEffectTexture( 0, pViewSetup->x, pViewSetup->y, pViewSetup->width, pViewSetup->height);
 }
 
-// reset the tonem apping to a constant value, and clear the filter bank
+// reset the tone mapping to a constant value, and clear the filter bank
 void ResetToneMapping(float value);
 
 void UpdateFullScreenDepthTexture( void );

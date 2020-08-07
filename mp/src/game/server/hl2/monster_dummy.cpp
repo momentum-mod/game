@@ -7,15 +7,15 @@
 // this file to be rebuilt with the rest of the game ensures
 // that it stays up to date with the rest of the NPC code.
 //
-// Replace occurances of CNewNPC with the new NPC's
-// classname. Don't forget the lower-case occurance in 
+// Replace occurrences of CNewNPC with the new NPC's
+// classname. Don't forget the lower-case occurrence in 
 // LINK_ENTITY_TO_CLASS()
 //
 //
 // ASSUMPTIONS MADE:
 //
 // You're making a character based on CAI_BaseNPC. If this 
-// is not true, make sure you replace all occurances
+// is not true, make sure you replace all occurrences
 // of 'CAI_BaseNPC' in this file with the appropriate 
 // parent class.
 //

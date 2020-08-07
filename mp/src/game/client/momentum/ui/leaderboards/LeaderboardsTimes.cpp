@@ -589,7 +589,7 @@ bool CLeaderboardsTimes::StaticLocalTimeSortFunc(SectionedListPanel* list, int i
 
 bool CLeaderboardsTimes::StaticOnlineTimeSortFunc(SectionedListPanel* list, int itemID1, int itemID2)
 {
-    // Uses rank insetad of time (Momentum page will handle players with same times)
+    // Uses rank instead of time (Momentum page will handle players with same times)
     KeyValues *it1 = list->GetItemData(itemID1);
     KeyValues *it2 = list->GetItemData(itemID2);
     Assert(it1 && it2);

@@ -20,7 +20,7 @@ namespace vgui
 {
 
 //-----------------------------------------------------------------------------
-// Purpose: Radio buton image
+// Purpose: Radio button image
 //-----------------------------------------------------------------------------
 class RadioImage : public TextImage
 {

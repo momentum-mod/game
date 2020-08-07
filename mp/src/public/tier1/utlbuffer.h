@@ -131,7 +131,7 @@ public:
 	// Constructors for growable + external buffers for serialization/unserialization
 	CUtlBuffer( int growSize = 0, int initSize = 0, int nFlags = 0 );
 	CUtlBuffer( const void* pBuffer, int size, int nFlags = 0 );
-	// This one isn't actually defined so that we catch contructors that are trying to pass a bool in as the third param.
+	// This one isn't actually defined so that we catch constructors that are trying to pass a bool in as the third param.
 	CUtlBuffer( const void *pBuffer, int size, bool crap );
 
 	unsigned char	GetFlags() const;

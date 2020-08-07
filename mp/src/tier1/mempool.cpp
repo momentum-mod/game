@@ -101,7 +101,7 @@ void CUtlMemoryPool::ReportLeaks()
 	g_ReportFunc("Memory leak: mempool blocks left in memory: %d\n", m_BlocksAllocated);
 
 #ifdef _DEBUG
-	// walk and destroy the free list so it doesn't intefere in the scan
+	// walk and destroy the free list so it doesn't interfere in the scan
 	while (m_pHeadOfFreeList != NULL)
 	{
 		void *next = *((void**)m_pHeadOfFreeList);

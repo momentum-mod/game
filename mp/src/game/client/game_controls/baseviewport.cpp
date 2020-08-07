@@ -503,7 +503,7 @@ CBaseViewport::~CBaseViewport()
 
 //-----------------------------------------------------------------------------
 // Purpose: called when the VGUI subsystem starts up
-//			Creates the sub panels and initialises them
+//			Creates the sub panels and initializes them
 //-----------------------------------------------------------------------------
 void CBaseViewport::Start( IGameUIFuncs *pGameUIFuncs, IGameEventManager2 * pGameEventManager )
 {
@@ -563,7 +563,7 @@ bool CBaseViewport::AllowedToPrintText( void )
 	/* int iId = GetCurrentMenuID();
 	if ( iId == MENU_TEAM || iId == MENU_CLASS || iId == MENU_INTRO || iId == MENU_CLASSHELP )
 		return false; */
-	// TODO ask every aktive elemet if it allows to draw text while visible
+	// TODO ask every active element if it allows to draw text while visible
 
 	return ( m_pActivePanel == NULL);
 } 
@@ -642,7 +642,7 @@ void CBaseViewport::ActivateClientUI()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: called when the engine hides the base client VGUI panel (i.e when the GameUI is comming up ) 
+// Purpose: called when the engine hides the base client VGUI panel (i.e when the GameUI is coming up ) 
 //-----------------------------------------------------------------------------
 void CBaseViewport::HideClientUI()
 {

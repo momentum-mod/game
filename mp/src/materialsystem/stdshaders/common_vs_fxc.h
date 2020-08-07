@@ -16,7 +16,7 @@
 // Put global skip commands here. . make sure and check that the appropriate vars are defined
 // so these aren't used on the wrong shaders!
 // --------------------------------------------------------------------------------
-// Ditch all fastpath attemps if we are doing LIGHTING_PREVIEW.
+// Ditch all fastpath attempts if we are doing LIGHTING_PREVIEW.
 //	SKIP: defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 // --------------------------------------------------------------------------------
 

@@ -41,7 +41,7 @@ struct LightDesc_t
     float m_Falloff;										//< angular falloff exponent for spot lights
     float m_Attenuation0;									//< constant distance falloff term
     float m_Attenuation1;									//< linear term of falloff
-    float m_Attenuation2;									//< quadatic term of falloff
+    float m_Attenuation2;									//< quadratic term of falloff
     float m_Theta;											//< inner cone angle. no angular falloff 
 															//< within this cone
     float m_Phi;											//< outer cone angle
@@ -71,7 +71,7 @@ public:
 	}
 	
 	/// a simple light. cone boundaries in radians. you pass a look_at point and the
-	/// direciton is derived from that.
+	/// direction is derived from that.
 	LightDesc_t( const Vector &pos, const Vector &color, const Vector &point_at,
 				float inner_cone_boundary, float outer_cone_boundary )
 	{
@@ -145,7 +145,7 @@ inline void LightDesc_t::InitDirectional( const Vector &dir, const Vector &color
 
 //-----------------------------------------------------------------------------
 // a simple light. cone boundaries in radians. you pass a look_at point and the
-// direciton is derived from that.
+// direction is derived from that.
 //-----------------------------------------------------------------------------
 inline void LightDesc_t::InitSpot(const Vector &pos, const Vector &color, const Vector &point_at,
 	float inner_cone_boundary, float outer_cone_boundary)

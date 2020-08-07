@@ -504,7 +504,7 @@ double MaximumError(struct QuantizedValue const *q, uint8 const *sample,
 
 				     
 
-// heap (priority queue) routines used for nearest-neghbor searches
+// heap (priority queue) routines used for nearest-neighbor searches
 struct FHeap {
 	int heap_n;
 	double *heap[MAXQUANT];

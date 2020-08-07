@@ -28,7 +28,7 @@ public:
 	virtual void	SetNetChannel(INetChannel * netchan) = 0; // netchannel this message is from/for
 	virtual void	SetReliable( bool state ) = 0;	// set to true if it's a reliable message
 	
-	virtual bool	Process( void ) = 0; // calles the recently set handler to process this message
+	virtual bool	Process( void ) = 0; // calls the recently set handler to process this message
 	
 	virtual	bool	ReadFromBuffer( bf_read &buffer ) = 0; // returns true if parsing was OK
 	virtual	bool	WriteToBuffer( bf_write &buffer ) = 0;	// returns true if writing was OK

@@ -841,7 +841,7 @@ public:
 		int u = RoundFloatToInt( uv[0] * tex.width );
 		int v = RoundFloatToInt( uv[1] * tex.height );
 		
-		// asume power of 2, clamp or wrap
+		// assume power of 2, clamp or wrap
 		// UNDONE: Support clamp?  This code should work
 #if 0
 		u = tex.clampU ? clamp(u,0,(tex.width-1)) : (u & (tex.width-1));
@@ -1477,7 +1477,7 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 					}
 
 					// crawl toward best position
-					// sudivide to determine a closer valid point to the bad vertex, and re-light
+					// subdivide to determine a closer valid point to the bad vertex, and re-light
 					Vector midPosition;
 					int numIterations = 20;
 					while ( --numIterations > 0 )
@@ -1511,7 +1511,7 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 }
 
 //-----------------------------------------------------------------------------
-// Write the lighitng to bsp pak lump
+// Write the lighting to bsp pak lump
 //-----------------------------------------------------------------------------
 void CVradStaticPropMgr::SerializeLighting()
 {
@@ -1881,7 +1881,7 @@ void CVradStaticPropMgr::AddPolysForRayTrace( void )
 		bool bInitTriangles = dict.m_triangleMaterialIndex.Count() ? false : true;
 		int triangleIndex = 0;
 
-		// meshes are deeply hierarchial, divided between three stores, follow the white rabbit
+		// meshes are deeply hierarchical, divided between three stores, follow the white rabbit
 		// body parts -> models -> lod meshes -> strip groups -> strips
 		// the vertices and indices are pooled, the trick is knowing the offset to determine your indexed base 
 		for ( int bodyID = 0; bodyID < pStudioHdr->numbodyparts; ++bodyID )
@@ -2085,7 +2085,7 @@ void CVradStaticPropMgr::BuildTriList( CStaticProp &prop )
 		return;
 	}
 
-	// meshes are deeply hierarchial, divided between three stores, follow the white rabbit
+	// meshes are deeply hierarchical, divided between three stores, follow the white rabbit
 	// body parts -> models -> lod meshes -> strip groups -> strips
 	// the vertices and indices are pooled, the trick is knowing the offset to determine your indexed base 
 	for ( int bodyID = 0; bodyID < pStudioHdr->numbodyparts; ++bodyID )
@@ -2417,7 +2417,7 @@ static void GenerateLightmapSamplesForMesh( const matrix3x4_t& _matPos, const ma
 			// Are any of the eight neighbors valid??
 			if ( colorTexels[linearPos].m_bPossiblyInteresting )
 			{
-				// Look at our neighborhood (3x3 centerd on us). 
+				// Look at our neighborhood (3x3 centered on us). 
 				shouldProcess = shouldProcess
 				             || colorTexels[ComputeLinearPos( i - 1, j - 1, _lightmapResX, _lightmapResY )].m_bValid  // TL
 							 || colorTexels[ComputeLinearPos( i    , j - 1, _lightmapResX, _lightmapResY )].m_bValid  // T

@@ -717,7 +717,7 @@ private:
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Utility macros to quicky generate a simple console command
+// Purpose: Utility macros to quickly generate a simple console command
 //-----------------------------------------------------------------------------
 #define CON_COMMAND( name, description ) \
    static void name( const CCommand &args ); \

@@ -762,7 +762,7 @@ bool Slider::IsDragged( void ) const
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Respond to mouse presses. Trigger Record staring positon.
+// Purpose: Respond to mouse presses. Trigger Record staring position.
 //-----------------------------------------------------------------------------
 void Slider::OnMousePressed(MouseCode code)
 {

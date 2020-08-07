@@ -105,7 +105,7 @@ public:
 	virtual QAngle			GetAbsAngles( HTOOLHANDLE handle );
 	virtual void			ReloadParticleDefintions( const char *pFileName, const void *pBufData, int nLen );
 
-	// Sends a mesage from the tool to the client
+	// Sends a message from the tool to the client
 	virtual void			PostToolMessage( KeyValues *pKeyValues );
 
 	// Indicates whether the client should render particle systems
@@ -347,7 +347,7 @@ HTOOLHANDLE CClientTools::AttachToEntity( EntitySearchResult entityToAttach )
 
 	HTOOLHANDLE curHandle = ent->GetToolHandle();
 	if ( curHandle != 0 )
-		return curHandle; // Already attaached
+		return curHandle; // Already attached
 
 	HToolEntry_t newHandle( s_nNextHandle++, ent );
 
@@ -719,7 +719,7 @@ QAngle CClientTools::GetAbsAngles( HTOOLHANDLE handle )
 
 
 //-----------------------------------------------------------------------------
-// Sends a mesage from the tool to the client
+// Sends a message from the tool to the client
 //-----------------------------------------------------------------------------
 void CClientTools::PostToolMessage( KeyValues *pKeyValues )
 {

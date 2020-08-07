@@ -376,7 +376,7 @@ void CHudMapFinishedDialog::Reset()
 void CHudMapFinishedDialog::SetVisible(bool bVisible)
 {
     BaseClass::SetVisible(bVisible);
-    //We reset the page to 0 when this this panel is shown because Reset() is not always called.
+    //We reset the page to 0 when this panel is shown because Reset() is not always called.
     if (bVisible)
     {
         SetCurrentPage(0);

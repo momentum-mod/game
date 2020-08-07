@@ -5,7 +5,7 @@
 /// \details Authenticated encryption (AE) schemes combine confidentiality and authenticity
 ///   into a single mode of operation They gained traction in the early 2000's because manually
 ///   combining them was error prone for the typical developer. Around that time, the desire to
-///   authenticate but not ecrypt additional data (AAD) was also identified. When both features
+///   authenticate but not encrypt additional data (AAD) was also identified. When both features
 ///   are available from a scheme, the system is referred to as an AEAD scheme.
 /// \details Crypto++ provides four authenticated encryption modes of operation - CCM, EAX, GCM
 ///   and OCB mode. All modes derive from AuthenticatedSymmetricCipherBase() and the

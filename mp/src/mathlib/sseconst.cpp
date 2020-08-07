@@ -100,7 +100,7 @@ void FourVectors::RotateManyBy(FourVectors * RESTRICT pVectors, unsigned int num
 
 	{
 		// Load the matrix into local vectors. Sadly, matrix3x4_ts are 
-		// often unaligned. The w components will be the tranpose row of
+		// often unaligned. The w components will be the transpose row of
 		// the matrix, but we don't really care about that.
 		fltx4 matCol0 = LoadUnalignedSIMD(rotationMatrix[0]);
 		fltx4 matCol1 = LoadUnalignedSIMD(rotationMatrix[1]);

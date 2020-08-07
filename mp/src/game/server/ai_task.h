@@ -16,7 +16,7 @@ class CStringRegistry;
 // ----------------------------------------------------------------------
 // Failure messages
 //
-// UNDONE: do this diffently so when not in developer mode we can 
+// UNDONE: do this differently so when not in developer mode we can 
 //		   not use any memory for these text strings
 // ----------------------------------------------------------------------
 
@@ -223,7 +223,7 @@ enum sharedtasks_e
 		// Path to source of loudest heard sound that I care about
 		TASK_GET_PATH_TO_BESTSOUND,
 
-		// Path to source of the strongest scend that I care about
+		// Path to source of the strongest scent that I care about
 		TASK_GET_PATH_TO_BESTSCENT,
 
 		// Run the current path
@@ -399,7 +399,7 @@ enum sharedtasks_e
 		// Find a place to hide from the enemy that's within the specified distance
 		TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY,
 
-		// data for this one is there MINIMUM aceptable distance to the cover.
+		// data for this one is there MINIMUM acceptable distance to the cover.
 		TASK_FIND_FAR_NODE_COVER_FROM_ENEMY,
 
 		// Find a place to go that can't see to where I am now.
@@ -466,7 +466,7 @@ enum sharedtasks_e
 		// wait until you are on ground
 		TASK_FALL_TO_GROUND,
 
-		// Wander for a specfied amound of time
+		// Wander for a specified amount of time
 		TASK_WANDER,
 
 		TASK_FREEZE,

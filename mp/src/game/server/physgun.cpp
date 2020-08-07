@@ -964,7 +964,7 @@ void CWeaponGravityGun::SoundUpdate( void )
 				EmitSound( filter, GetOwner()->entindex(), ep );
 			}
 
-			// attenutate the movement sounds over 200 units of movement
+			// attenuate the movement sounds over 200 units of movement
 			float distance = UTIL_LineFraction( m_movementLength, 0, 200, 1.0 );
 
 			// blend the "mass" sounds between 50 and 500 kg

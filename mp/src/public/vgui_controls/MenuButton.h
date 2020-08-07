@@ -32,7 +32,7 @@ public:
 	MenuButton(Panel *parent, const char *panelName, const char *text);
 	~MenuButton();
 
-	// functions designed to be overriden
+	// functions designed to be overridden
 	virtual void OnShowMenu(Menu *menu) {}
 	virtual void OnHideMenu(Menu *menu) {}
 	virtual int	 OnCheckMenuItemCount() { return 0; }
@@ -58,7 +58,7 @@ public:
 	virtual void ApplySchemeSettings( IScheme *pScheme );
 	virtual void OnCursorMoved( int x, int y );
 
-	// This style is like the IE "back" button where the left side acts like a regular button, the the right side has a little
+	// This style is like the IE "back" button where the left side acts like a regular button, the right side has a little
 	//  combo box dropdown indicator and presents and submenu
 	void  SetDropMenuButtonStyle( bool state );
 	bool	IsDropMenuButtonStyle() const;

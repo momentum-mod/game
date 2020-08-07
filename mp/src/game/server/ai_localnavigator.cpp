@@ -53,7 +53,7 @@ CAI_LocalNavigator::~CAI_LocalNavigator()
 void CAI_LocalNavigator::Init( IAI_MovementSink *pMovementServices )	
 { 
 	CAI_ProxyMovementSink::Init( pMovementServices );
-	m_pMoveProbe = GetOuter()->GetMoveProbe(); // @TODO (toml 03-30-03): this is a "bad" way to grab this pointer. Components should have an explcit "init" phase.
+	m_pMoveProbe = GetOuter()->GetMoveProbe(); // @TODO (toml 03-30-03): this is a "bad" way to grab this pointer. Components should have an explicit "init" phase.
 }
 
 //-------------------------------------

@@ -105,7 +105,7 @@ CAI_Motor::~CAI_Motor()
 void CAI_Motor::Init( IAI_MovementSink *pMovementServices )	
 { 
 	CAI_ProxyMovementSink::Init( pMovementServices );
-	m_pMoveProbe = GetOuter()->GetMoveProbe(); // @TODO (toml 03-30-03): this is a "bad" way to grab this pointer. Components should have an explcit "init" phase.
+	m_pMoveProbe = GetOuter()->GetMoveProbe(); // @TODO (toml 03-30-03): this is a "bad" way to grab this pointer. Components should have an explicit "init" phase.
 }
 
 //-----------------------------------------------------------------------------
@@ -392,7 +392,7 @@ AIMoveResult_t CAI_Motor::MoveJumpStop()
 			return AIMR_CHANGE_TYPE;
 
 		SetActivity( ACT_LAND );
-		// FIXME: find out why the client doesn't interpolate immediatly after sequence change
+		// FIXME: find out why the client doesn't interpolate immediately after sequence change
 		// GetOuter()->SetCycle( flTime - gpGlobals->curtime );
 	}
 	if (GetOuter()->GetActivity() != ACT_LAND || GetOuter()->IsActivityFinished())

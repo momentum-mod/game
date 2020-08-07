@@ -69,7 +69,7 @@ public:
 	// Numbered line printf
 	virtual void	Con_NPrintf( int idx, PRINTF_FORMAT_STRING char const* fmt, ... ) = 0;
 
-	// These have separate server vs client impementations
+	// These have separate server vs client implementations
 	virtual void	StartSound( const Vector& origin, int channel, char const* sample, float volume, soundlevel_t soundlevel, int fFlags, int pitch ) = 0;
 	virtual void	StartSound( const Vector& origin, const char *soundname ) = 0; 
 	virtual void	PlaybackEventFull( int flags, int clientindex, unsigned short eventindex, float delay, Vector& origin, Vector& angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 ) = 0;

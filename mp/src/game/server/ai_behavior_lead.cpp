@@ -444,7 +444,7 @@ void CAI_LeadBehavior::GatherConditions( void )
 				{
 					if ( m_args.bStopScenesWhenPlayerLost )
 					{
-						// Try and stop me speaking my monolog, if I am
+						// Try and stop me speaking my monologue, if I am
 						if ( !m_hasPausedScenes && IsRunningScriptedScene( GetOuter() ) )
 						{
 							//Msg("Stopping scenes.\n");
@@ -468,7 +468,7 @@ void CAI_LeadBehavior::GatherConditions( void )
 			}
 			else
 			{
-				// If I was speaking a monolog, resume it
+				// If I was speaking a monologue, resume it
 				if ( m_args.bStopScenesWhenPlayerLost && m_hasPausedScenes )
 				{
 					if ( IsRunningScriptedScene( GetOuter() ) )

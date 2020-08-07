@@ -18,7 +18,7 @@
 class C_BaseEntity;
 class C_BasePlayer;
 
-// Enumator class for finding other players and objects close to the
+// Enumerator class for finding other players and objects close to the
 //  local player
 class CPlayerAndObjectEnumerator : public IPartitionEnumerator
 {

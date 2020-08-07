@@ -4,8 +4,8 @@
 /// \brief Support functions for PowerPC and vector operations
 /// \details This header provides an agnostic interface into GCC and
 ///   IBM XL C/C++ compilers modulo their different built-in functions
-///   for accessing vector intructions.
-/// \details The abstractions are necesssary to support back to GCC 4.8.
+///   for accessing vector instructions.
+/// \details The abstractions are necessary to support back to GCC 4.8.
 ///   GCC 4.8 and 4.9 are still popular, and they are the default
 ///   compiler for GCC112, GCC118 and others on the compile farm. Older
 ///   IBM XL C/C++ compilers also experience it due to lack of
@@ -140,7 +140,7 @@ inline T Reverse(const T& src)
 /// \brief Loads a vector from a byte array
 /// \param src the byte array
 /// \details Loads a vector in big endian format from a byte array.
-///   VectorLoadBE will swap endianess on little endian systems.
+///   VectorLoadBE will swap endianness on little endian systems.
 /// \note VectorLoadBE() does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -161,7 +161,7 @@ inline uint32x4_p VectorLoadBE(const uint8_t src[16])
 /// \param src the byte array
 /// \param off offset into the src byte array
 /// \details Loads a vector in big endian format from a byte array.
-///   VectorLoadBE will swap endianess on little endian systems.
+///   VectorLoadBE will swap endianness on little endian systems.
 /// \note VectorLoadBE does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -181,7 +181,7 @@ inline uint32x4_p VectorLoadBE(int off, const uint8_t src[16])
 /// \brief Loads a vector from a byte array
 /// \param src the byte array
 /// \details Loads a vector in big endian format from a byte array.
-///   VectorLoad will swap endianess on little endian systems.
+///   VectorLoad will swap endianness on little endian systems.
 /// \note VectorLoad does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -194,7 +194,7 @@ inline uint32x4_p VectorLoad(const byte src[16])
 /// \param src the byte array
 /// \param off offset into the src byte array
 /// \details Loads a vector in big endian format from a byte array.
-///   VectorLoad will swap endianess on little endian systems.
+///   VectorLoad will swap endianness on little endian systems.
 /// \note VectorLoad does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -206,7 +206,7 @@ inline uint32x4_p VectorLoad(int off, const byte src[16])
 /// \brief Loads a vector from a byte array
 /// \param src the byte array
 /// \details Loads a vector from a byte array.
-///   VectorLoadKey does not swap endianess on little endian systems.
+///   VectorLoadKey does not swap endianness on little endian systems.
 /// \note VectorLoadKey does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -222,7 +222,7 @@ inline uint32x4_p VectorLoadKey(const byte src[16])
 /// \brief Loads a vector from a 32-bit word array
 /// \param src the 32-bit word array
 /// \details Loads a vector from a 32-bit word array.
-///   VectorLoadKey does not swap endianess on little endian systems.
+///   VectorLoadKey does not swap endianness on little endian systems.
 /// \note VectorLoadKey does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -239,7 +239,7 @@ inline uint32x4_p VectorLoadKey(const word32 src[4])
 /// \param src the byte array
 /// \param off offset into the src byte array
 /// \details Loads a vector from a byte array.
-///   VectorLoadKey does not swap endianess on little endian systems.
+///   VectorLoadKey does not swap endianness on little endian systems.
 /// \note VectorLoadKey does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -257,7 +257,7 @@ inline uint32x4_p VectorLoadKey(int off, const byte src[16])
 /// \param src the vector
 /// \param dest the byte array
 /// \details Stores a vector in big endian format to a byte array.
-///   VectorStoreBE will swap endianess on little endian systems.
+///   VectorStoreBE will swap endianness on little endian systems.
 /// \note VectorStoreBE does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -280,7 +280,7 @@ inline void VectorStoreBE(const T& src, uint8_t dest[16])
 /// \param off offset into the dest byte array
 /// \param dest the byte array
 /// \details Stores a vector in big endian format to a byte array.
-///   VectorStoreBE will swap endianess on little endian systems.
+///   VectorStoreBE will swap endianness on little endian systems.
 /// \note VectorStoreBE does not require an aligned array.
 /// \sa Reverse(), VectorLoadBE(), VectorLoad(), VectorLoadKey()
 /// \since Crypto++ 6.0
@@ -303,7 +303,7 @@ inline void VectorStoreBE(const T& src, int off, uint8_t dest[16])
 /// \param src the vector
 /// \param dest the byte array
 /// \details Stores a vector in big endian format to a byte array.
-///   VectorStore will swap endianess on little endian systems.
+///   VectorStore will swap endianness on little endian systems.
 /// \note VectorStore does not require an aligned array.
 /// \since Crypto++ 6.0
 template<class T>
@@ -327,7 +327,7 @@ inline void VectorStore(const T& src, byte dest[16])
 /// \param off offset into the dest byte array
 /// \param dest the byte array
 /// \details Stores a vector in big endian format to a byte array.
-///   VectorStore will swap endianess on little endian systems.
+///   VectorStore will swap endianness on little endian systems.
 /// \note VectorStore does not require an aligned array.
 /// \since Crypto++ 6.0
 template<class T>

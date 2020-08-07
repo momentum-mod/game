@@ -535,7 +535,7 @@ void CRopeKeyframe::PropagateForce(CBaseEntity *pActivator, CBaseEntity *pCaller
 }
 
 //------------------------------------------------------------------------------
-// Purpose: Set an instaneous force on the rope.
+// Purpose: Set an instantaneous force on the rope.
 // Input  : Force vector.
 //------------------------------------------------------------------------------
 void CRopeKeyframe::InputSetForce( inputdata_t &inputdata )

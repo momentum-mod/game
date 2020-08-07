@@ -113,7 +113,7 @@ bool CMomentumGameMovement::IsValidMovementTrace(trace_t &tr)
         return false;
     }
 
-    // Maybe we dont need this one
+    // Maybe we don't need this one
     if (CloseEnough(tr.fraction, 0.0f, FLT_EPSILON))
     {
         return false;
@@ -997,7 +997,7 @@ void CMomentumGameMovement::FinishUnDuck()
     }
     else
     {
-        // If in air an letting go of croush, make sure we can offset origin to make
+        // If in air an letting go of crouch, make sure we can offset origin to make
         //  up for uncrouching
         Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
         Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
@@ -1232,7 +1232,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         else if (player->GetWaterType() == CONTENTS_SLIME)
             mv->m_vecVelocity[2] = 80;
 
-        // play swiming sound
+        // play swimming sound
         if (player->m_flSwimSoundTime <= 0.0f)
         {
             // Don't play sound again for 1 second
@@ -1343,7 +1343,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         flGroundFactor = player->m_pSurfaceData->game.jumpFactor;
     }
 
-    // Acclerate upward
+    // Accelerate upward
     float startz = mv->m_vecVelocity[2];
 
     if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
@@ -2045,7 +2045,7 @@ void CMomentumGameMovement::FullWalkMove()
 
 // This limits the player's speed in the start zone, depending on which gamemode the player is currently playing.
 // On surf/other, it only limits practice mode speed. On bhop/scroll, it limits the movement speed above a certain
-// threshhold, and clamps the player's velocity if they go above it.
+// threshold, and clamps the player's velocity if they go above it.
 // This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
 // bhop.
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
@@ -2097,7 +2097,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed()
                 Vector& velocity = mv->m_vecVelocity;
                 float PunishVelSquared = startTrigger->GetSpeedLimit() * startTrigger->GetSpeedLimit();
 
-                if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
+                if (velocity.Length2DSqr() > PunishVelSquared) // more efficient to check against the square of velocity
                 {
                     float flOldz = velocity.z;
                     VectorNormalizeFast(velocity);
@@ -2122,16 +2122,16 @@ void CMomentumGameMovement::StuckGround()
     /*
         How it works:
 
-                  TRIGGER                              A-B segment is the distance we want to get to compare if, when we were inside the trigger, the trigger touched a solid surface under our feets.             
+                  TRIGGER                              A-B segment is the distance we want to get to compare if, when we were inside the trigger, the trigger touched a solid surface under our feet.
         ---------------------------                    In this way, we can avoid teleporting the player directly to the skybox stupidly. And makes less efforts for putting the trigger.
         |                         |                   
         |      PLAYER ORIGIN      |                     
-        |            A            |                    The Problem: Since we can't trace directly PLAYER_ORIGIN to A as the ClipTraceToEntity is considerating that the player is being in a solid,
+        |            A            |                    The Problem: Since we can't trace directly PLAYER_ORIGIN to A as the ClipTraceToEntity is considering that the player is being in a solid,
         |            |            |                    it avoids the trace between A & B so we can't calculate it like this.
         |            |            |                    We can't also considerate that the trigger is only a rectangle, so stuffs can be really complicated since I'm bad at maths.
         -------------B-------------                    
-                     |                                 To solve this problem, we can get the distance between PLAYER ORIGIN and SURFACE, and substract it with B & C. 
-                     |                                 Or better, check if B-C < 0.0 wich means basically if the surface hits the trigger.
+                     |                                 To solve this problem, we can get the distance between PLAYER ORIGIN and SURFACE, and subtract it with B & C.
+                     |                                 Or better, check if B-C < 0.0 which means basically if the surface hits the trigger.
                      |
     _________________C___________________ 
     _____________________________________               
@@ -2147,7 +2147,7 @@ void CMomentumGameMovement::StuckGround()
 
     Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
 
-    // So a trigger can be that huge? I doub't it. But we might change the value in case.
+    // So a trigger can be that huge? I doubt it. But we might change the value in case.
     vEnd.z -= 8192.0f;
 
     ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
@@ -2236,7 +2236,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     blocked = 0;   // Assume not blocked
     numplanes = 0; //  and not sliding along any planes
 
-    stuck_on_ramp = false;   // lets assume client isnt stuck already
+    stuck_on_ramp = false;   // lets assume client isn't stuck already
     has_valid_plane = false; // no plane info gathered yet
 
     VectorCopy(mv->m_vecVelocity, original_velocity); // Store original velocity
@@ -2299,7 +2299,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             }
             else // We were actually going to be stuck, lets try and find a valid plane..
             {
-                // this way we know fixed_origin isnt going to be stuck
+                // this way we know fixed_origin isn't going to be stuck
                 float offsets[] = {(bumpcount * 2) * -sv_ramp_initial_retrace_length.GetFloat(), 0.0f,
                                    (bumpcount * 2) * sv_ramp_initial_retrace_length.GetFloat()};
                 int valid_planes = 0;
@@ -2468,7 +2468,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             if ((!bumpcount || player->GetGroundEntity() != nullptr || !sv_ramp_fix.GetBool()) && numbumps > 0 && pm.fraction == 1.0f)
             {
                 // There's a precision issue with terrain tracing that can cause a swept box to successfully trace
-                // when the end position is stuck in the triangle.  Re-run the test with an uswept box to catch that
+                // when the end position is stuck in the triangle.  Re-run the test with an unswept box to catch that
                 // case until the bug is fixed.
                 // If we detect getting stuck, don't allow the movement
                 trace_t stuck;
@@ -2528,7 +2528,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  for contact
         // Add it if it's not already in the list!!!
         MoveHelper()->AddToTouched(pm, mv->m_vecVelocity);
-        if (!CloseEnough(pm.plane.normal[2], 0.0f)) // Filter out staight walls
+        if (!CloseEnough(pm.plane.normal[2], 0.0f)) // Filter out straight walls
             m_pPlayer->SetLastCollision(pm);
 
         // If the plane we hit has a high z component in the normal, then
@@ -2689,7 +2689,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
             //
             // if original velocity is against the original velocity, stop dead
-            // to avoid tiny occilations in sloping corners
+            // to avoid tiny oscillations in sloping corners
             //
             d = mv->m_vecVelocity.Dot(primal_velocity);
             if (d <= 0)
@@ -2703,7 +2703,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
     if (CloseEnough(allFraction, 0.0f, FLT_EPSILON))
     {
-        // We dont want to touch this!
+        // We don't want to touch this!
         // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity
         // that can build up for ever. 
         // ...

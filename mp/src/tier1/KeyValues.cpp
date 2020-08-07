@@ -345,7 +345,7 @@ void KeyValues::SetUseGrowableStringTable( bool bUseGrowableTable )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Bodys of the function pointers used for interacting with the key
+// Purpose: Bodies of the function pointers used for interacting with the key
 //	name string table
 //-----------------------------------------------------------------------------
 int KeyValues::GetSymbolForStringClassic( const char *name, bool bCreate )
@@ -999,7 +999,7 @@ KeyValues *KeyValues::FindKey(const char *keyName, bool bCreate)
 	if (!keyName || !keyName[0])
 		return this;
 
-	// look for '/' characters deliminating sub fields
+	// look for '/' characters delimiting sub fields
 	char szBuf[256];
 	const char *subStr = strchr(keyName, '/');
 	const char *searchStr = keyName;
@@ -2774,7 +2774,7 @@ bool KeyValues::ReadAsBinary( CUtlBuffer &buffer, int nStackDepth )
 			break;
 		}
 
-		if ( !buffer.IsValid() ) // error occured
+		if ( !buffer.IsValid() ) // error occurred
 			return false;
 
 		type = (types_t)buffer.GetUnsignedChar();

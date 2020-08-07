@@ -104,7 +104,7 @@ struct FriendGameInfo_t
 #pragma pack( pop )
 
 // maximum number of characters in a user's name. Two flavors; one for UTF-8 and one for UTF-16.
-// The UTF-8 version has to be very generous to accomodate characters that get large when encoded
+// The UTF-8 version has to be very generous to accommodate characters that get large when encoded
 // in UTF-8.
 enum
 {
@@ -180,7 +180,7 @@ public:
 	// this is the same name as on the users community profile page
 	// this is stored in UTF-8 format
 	// like all the other interface functions that return a char *, it's important that this pointer is not saved
-	// off; it will eventually be free'd or re-allocated
+	// off; it will eventually be freed or re-allocated
 	virtual const char *GetPersonaName() = 0;
 
 	// Sets the player name, stores it on the server and publishes the changes to all friends who are online.
@@ -216,7 +216,7 @@ public:
 
 	// returns the name another user - guaranteed to not be NULL.
 	// same rules as GetFriendPersonaState() apply as to whether or not the user knowns the name of the other user
-	// note that on first joining a lobby, chat room or game server the local user will not known the name of the other users automatically; that information will arrive asyncronously
+	// note that on first joining a lobby, chat room or game server the local user will not known the name of the other users automatically; that information will arrive asynchronously
 	// 
 	virtual const char *GetFriendPersonaName( CSteamID steamIDFriend ) = 0;
 
@@ -361,7 +361,7 @@ public:
 
 	// Rich invite support.
 	// If the target accepts the invite, a GameRichPresenceJoinRequested_t callback is posted containing the connect string.
-	// (Or you can configure yout game so that it is passed on the command line instead.  This is a deprecated path; ask us if you really need this.)
+	// (Or you can configure your game so that it is passed on the command line instead.  This is a deprecated path; ask us if you really need this.)
 	// Invites can only be sent to friends.
 	virtual bool InviteUserToGame( CSteamID steamIDFriend, const char *pchConnectString ) = 0;
 

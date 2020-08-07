@@ -196,7 +196,7 @@ float FASTCALL _SSE_VectorNormalize (Vector& vec)
 	Assert( s_bMathlibInitialized );
 
 	// NOTE: This is necessary to prevent an memory overwrite...
-	// sice vec only has 3 floats, we can't "movaps" directly into it.
+	// since vec only has 3 floats, we can't "movaps" directly into it.
 #ifdef _WIN32
 	__declspec(align(16)) float result[4];
 #elif POSIX

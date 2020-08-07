@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: linux dependant ASM code for CPU capability detection
+// Purpose: linux dependent ASM code for CPU capability detection
 //
 // $Workfile:     $
 // $NoKeywords: $

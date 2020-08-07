@@ -599,7 +599,7 @@ void CAntlionGrub::IdleThink( void )
 	bool bPlayerWithinAgitationRange = ( flDistToPlayerSqr <= Square( (6*12) ) );
 	bool bAgitated = (bPlayerWithinAgitationRange || bFlinching );
 
-	// If we're idle and the player has come close enough, get agry
+	// If we're idle and the player has come close enough, get angry
 	if ( ( m_State == GRUB_STATE_IDLE ) && bAgitated )
 	{
 		SetSequence( SelectWeightedSequence( ACT_SMALL_FLINCH ) );

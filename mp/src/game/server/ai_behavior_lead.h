@@ -190,7 +190,7 @@ private:
 	// --------------------------------
 	//
 	// Sink notifiers. Isolated to limit exposure to actual sink storage,
-	// provide debugging pinch pount, and allow for class-local logic
+	// provide debugging pinch point, and allow for class-local logic
 	// in addition to sink logic
 	//
 	void NotifyEvent( int event )								{ if ( m_pSink ) m_pSink->OnEvent( event ) ; }

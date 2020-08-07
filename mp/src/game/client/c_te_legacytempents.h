@@ -21,7 +21,7 @@ struct model_t;
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Interface for lecacy temp entities
+// Purpose: Interface for legacy temp entities
 //-----------------------------------------------------------------------------
 abstract_class ITempEnts
 {

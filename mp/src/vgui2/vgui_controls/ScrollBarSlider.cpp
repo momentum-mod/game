@@ -68,7 +68,7 @@ void ScrollBarSlider::SetValue(int value)
 
 	if (value > _range[1] - _rangeWindow)
 	{
-		// note our scrolling range must take into acount _rangeWindow
+		// note our scrolling range must take into account _rangeWindow
 		value = _range[1] - _rangeWindow;	
 	}
 
@@ -216,7 +216,7 @@ void ScrollBarSlider::RecomputeValueFromNobPos()
 			fnobsize = width;
 		}
 		
-		// Our scroll bar actually doesnt scroll through all frange lines in the truerange, we
+		// Our scroll bar actually doesn't scroll through all frange lines in the truerange, we
 		// actually only scroll through frange-frangewindow number of lines so we must take that 
 		// into account when we calculate the value
 		// convert to our local size system

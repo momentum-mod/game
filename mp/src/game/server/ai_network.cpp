@@ -28,7 +28,7 @@ extern float MOVE_HEIGHT_EPSILON;
 
 //-----------------------------------------------------------------------------
 // For now we just have one AINetwork called "BigNet".  At some
-// later point we will probabaly have multiple AINetworkds per level
+// later point we will probably have multiple AINetworkds per level
 CAI_Network*		g_pBigAINet;			
 
 //-----------------------------------------------------------------------------

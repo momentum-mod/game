@@ -358,7 +358,7 @@ void CGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecSrc
 			continue;
 		}
 
-		// blast's don't tavel into or out of water
+		// blast's don't travel into or out of water
 		if (bInWater && pEntity->GetWaterLevel() == 0)
 			continue;
 

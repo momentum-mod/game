@@ -352,7 +352,7 @@ class CFixedBitVecBase
 public:
 	bool	IsFixedSize() const								{ return true; }
 	int		GetNumBits(void) const							{ return NUM_BITS; }
-	void	Resize( int numBits, bool bClearAll = false )	{ Assert(numBits == NUM_BITS); if ( bClearAll ) Plat_FastMemset( m_Ints, 0, NUM_INTS * sizeof(uint32) ); }// for syntatic consistency (for when using templates)
+	void	Resize( int numBits, bool bClearAll = false )	{ Assert(numBits == NUM_BITS); if ( bClearAll ) Plat_FastMemset( m_Ints, 0, NUM_INTS * sizeof(uint32) ); }// for syntactic consistency (for when using templates)
 	
 	int 			GetNumDWords() const					{ return NUM_INTS; }
 	uint32 *		Base()									{ return m_Ints;	}

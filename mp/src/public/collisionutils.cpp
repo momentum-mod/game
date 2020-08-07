@@ -193,7 +193,7 @@ int IntersectTriangleWithPlaneBarycentric( const Vector& org, const Vector& edge
 	// This uses a barycentric method, since we need that to determine
 	// interpolated points, alphas, and normals
 	// Given the plane equation P dot N + d = 0
-	// and the barycentric coodinate equation P = Org + EdgeU * u + EdgeV * v
+	// and the barycentric coordinate equation P = Org + EdgeU * u + EdgeV * v
 	// Plug em in. Intersection occurs at u = 0 or v = 0 or u + v = 1
 
 	float orgDotNormal = DotProduct( org, plane.AsVector3D() );
@@ -1442,7 +1442,7 @@ bool IntersectRayWithOBB( const Ray_t &ray, const matrix3x4_t &matOBBToWorld,
 	// Basically we're going to do the GJK thing explicitly. We'll shrink the ray down
 	// to a point, and bloat the OBB by the ray's extents. This will generate facet
 	// planes which are perpendicular to all of the separating axes typically seen in
-	// a standard seperating axis implementation.
+	// a standard separating axis implementation.
 
 	// We're going to create a number of planes through various vertices in the OBB
 	// which represent all of the separating planes. Then we're going to bloat the planes
@@ -2957,7 +2957,7 @@ bool OBBHasFullyContainedIntersectionWithQuad( const Vector &vOBBExtent1_Scaled,
 			int iAxisCrossings[3];
 			iAxisCrossings[0] = i ^ 4; //upper 4 vs lower 4 crosses vOBBExtent1 axis
 			iAxisCrossings[1] = ((i + 1) & 3) + (i & 4); //cycle to the next element while staying within the upper 4 or lower 4, this will cross either vOBBExtent2 or vOBBExtent3 axis, we don't care which
-			iAxisCrossings[2] = ((i - 1) & 3) + (i & 4); //cylce to the previous element while staying within the upper 4 or lower 4, this will cross the axis iAxisCrossings[1] didn't cross
+			iAxisCrossings[2] = ((i - 1) & 3) + (i & 4); //cycle to the previous element while staying within the upper 4 or lower 4, this will cross the axis iAxisCrossings[1] didn't cross
 
 			for( int j = 0; j != 3; ++j )
 			{
@@ -3134,7 +3134,7 @@ bool RayHasFullyContainedIntersectionWithQuad( const Ray_t &ray,
 						int iAxisCrossings[3];
 						iAxisCrossings[0] = i ^ 4; //upper 4 vs lower 4 crosses X axis
 						iAxisCrossings[1] = ((i + 1) & 3) + (i & 4); //cycle to the next element while staying within the upper 4 or lower 4, this will cross either Y or Z axis, we don't care which
-						iAxisCrossings[2] = ((i - 1) & 3) + (i & 4); //cylce to the previous element while staying within the upper 4 or lower 4, this will cross the axis iAxisCrossings[1] didn't cross
+						iAxisCrossings[2] = ((i - 1) & 3) + (i & 4); //cycle to the previous element while staying within the upper 4 or lower 4, this will cross the axis iAxisCrossings[1] didn't cross
 
 						for( int j = 0; j != 3; ++j )
 						{

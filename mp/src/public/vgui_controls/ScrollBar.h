@@ -32,7 +32,7 @@ public:
 	// Get the value of the scroll bar slider.
 	virtual int     GetValue();
 
-	// Set the rangeof numbers the slider can scroll through
+	// Set the range of numbers the slider can scroll through
 	virtual void    SetRange(int min,int max);
 
     virtual void    GetRange(int &min, int &max);

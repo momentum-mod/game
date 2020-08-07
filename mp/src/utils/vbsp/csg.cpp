@@ -127,7 +127,7 @@ bspbrush_t *IntersectBrush (bspbrush_t *a, bspbrush_t *b)
 ===============
 BrushesDisjoint
 
-Returns true if the two brushes definately do not intersect.
+Returns true if the two brushes definitely do not intersect.
 There will be false negatives for some non-axial combinations.
 ===============
 */
@@ -729,7 +729,7 @@ newlist:
 				continue;		// neither one can bite
 
 			// only accept if it didn't fragment
-			// (commening this out allows full fragmentation)
+			// (commenting this out allows full fragmentation)
 			if (c1 > 1 && c2 > 1)
 			{
 				const int contents1 = b1->original->contents;

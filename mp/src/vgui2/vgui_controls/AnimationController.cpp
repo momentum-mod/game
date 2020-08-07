@@ -467,7 +467,7 @@ bool AnimationController::ParseScriptFile(char *pMem, int length)
 				else if (!stricmp(token,"Pulse"))
 				{
 					cmdAnimate.interpolationFunction = INTERPOLATOR_PULSE;
-					// frequencey
+					// frequency
 					pMem = ParseFile(pMem, token, NULL);
 					cmdAnimate.interpolationParameter = (float)atof(token);
 				}

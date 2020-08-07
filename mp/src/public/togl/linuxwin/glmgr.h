@@ -1141,7 +1141,7 @@ enum EGLMDebugCallSite
 {
 	eBeginFrame,		// inside begin frame func - frame number has been inc'd, batch number should be -1
 	eClear,				// inside clear func
-	eDrawElements,		// inside repeat loop, prior to draw call - batch numberhas been inc'd
+	eDrawElements,		// inside repeat loop, prior to draw call - batch number has been inc'd
 	eEndFrame,			// end frame
 	ePresent			// before showing pixels
 };

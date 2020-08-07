@@ -1563,7 +1563,7 @@ void CNPC_Manhack::Bump( CBaseEntity *pHitEntity, float flInterval, trace_t &tr 
 	if ( !VPhysicsGetObject() )
 		return;
 
-	// Surpressing this behavior
+	// Suppressing this behavior
 	if ( m_flBumpSuppressTime > gpGlobals->curtime )
 		return;
 
@@ -1654,7 +1654,7 @@ void CNPC_Manhack::Bump( CBaseEntity *pHitEntity, float flInterval, trace_t &tr 
 		if ( tr.allsolid || tr.startsolid )
 		{
 			// Build a fake reflection back along our current velocity because we can't know how to reflect off
-			// a non-existant surface! -- jdw
+			// a non-existent surface! -- jdw
 
 			Vector vecRandomDir = RandomVector( -1.0f, 1.0f );
 			SetCurrentVelocity( vecRandomDir * 50.0f );
@@ -2274,7 +2274,7 @@ int CNPC_Manhack::MeleeAttack1Conditions( float flDot, float flDist )
 	}
 
 	// Assume the this check is in regards to my current enemy
-	// for the Manhacks spetial condition
+	// for the Manhacks special condition
 	float deltaZ = GetAbsOrigin().z - GetEnemy()->EyePosition().z;
 	if ( (deltaZ > 12.0f) || (deltaZ < -24.0f) )
 	{

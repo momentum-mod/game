@@ -216,7 +216,7 @@ unsigned int CSoundCombiner::CheckSumWork( IFileSystem *filesystem, CUtlVector< 
 		return 0;
 	}
 
-	// Checkum work items
+	// Checksum work items
 	unsigned int checksum = ComputeChecksum();
 
 	return checksum;
@@ -248,7 +248,7 @@ bool CSoundCombiner::IsCombinedFileChecksumValid( IFileSystem *filesystem, char 
 	}
 	else
 	{
-		Warning( "CSoundCombiner::IsCombinedFileChecksumValid:  Unabled to load %s\n", fullpath );
+		Warning( "CSoundCombiner::IsCombinedFileChecksumValid:  Unable to load %s\n", fullpath );
 	}
 
 	CleanupWork();
@@ -647,7 +647,7 @@ bool CSoundCombiner::AppendStereo16Data( short samples[ 2 ] )
 		}
 		else if ( m_nBytesPerSample == 2 )
 		{
-			// Conver to 16 bit mono
+			// Convert to 16 bit mono
 			float s1 = (float)( samples[ 0 ] );
 			float s2 = (float)( samples[ 1 ] );
 

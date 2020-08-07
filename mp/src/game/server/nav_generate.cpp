@@ -112,7 +112,7 @@ inline CNavArea *findFirstAreaInDirection( const Vector *start, NavDirType dir, 
 	{
 		AddDirectionVector( &pos, dir, GenerationStepSize );
 
-		// make sure we dont look thru the wall
+		// make sure we don't look thru the wall
 		trace_t result;
 
 		UTIL_TraceHull( *start, pos, NavTraceMins, NavTraceMaxs, TheNavMesh->GetGenerationTraceMask(), traceIgnore, COLLISION_GROUP_NONE, &result );
@@ -371,10 +371,10 @@ void CNavLadder::ConnectGeneratedLadder( float maxHeightAboveTopArea )
 	const float nearLadderRange = 75.0f;		// 50
 
 	//
-	// Find naviagtion area at bottom of ladder
+	// Find navigation area at bottom of ladder
 	//
 
-	// get approximate postion of player on ladder
+	// get approximate position of player on ladder
 	Vector center = m_bottom + Vector( 0, 0, GenerationStepSize );
 	AddDirectionVector( &center, m_dir, HalfHumanWidth );
 
@@ -393,7 +393,7 @@ void CNavLadder::ConnectGeneratedLadder( float maxHeightAboveTopArea )
 	// Find adjacent navigation areas at the top of the ladder
 	//
 
-	// get approximate postion of player on ladder
+	// get approximate position of player on ladder
 	center = m_top + Vector( 0, 0, GenerationStepSize );
 	AddDirectionVector( &center, m_dir, HalfHumanWidth );
 
@@ -608,7 +608,7 @@ void CNavMesh::MarkPlayerClipAreas( void )
 	{
 		TerrorNavArea *area = static_cast< TerrorNavArea * >(TheNavAreas[it]);
 
-		// Trace upward a bit from our center point just colliding wtih PLAYERCLIP to see if we're in one, if we are, mark us as accordingly.
+		// Trace upward a bit from our center point just colliding with PLAYERCLIP to see if we're in one, if we are, mark us as accordingly.
 		trace_t trace;
 		Vector start = area->GetCenter() + Vector(0.0f, 0.0f, 16.0f );
 		Vector end = area->GetCenter() + Vector(0.0f, 0.0f, 32.0f );
@@ -1735,7 +1735,7 @@ inline bool testJumpDown( const Vector *fromPos, const Vector *toPos )
 {
 	float dz = fromPos->z - toPos->z;
 
-	// drop can't be too far, or too short (or nonexistant)
+	// drop can't be too far, or too short (or nonexistent)
 	if (dz <= JumpCrouchHeight || dz >= DeathDrop)
 		return false;
 

@@ -111,7 +111,7 @@ public:
     memcpy(publicKey, privateKey+StaticPrivateKeyLength(), EphemeralPublicKeyLength());
   }
 
-  /// derive agreed value from your private keys and couterparty's public keys, return false in case of failure
+  /// derive agreed value from your private keys and counterparty's public keys, return false in case of failure
   /*! \note The ephemeral public key will always be validated.
   If you have previously validated the static public key, use validateStaticOtherPublicKey=false to save time.
   \pre size of agreedValue == AgreedValueLength()

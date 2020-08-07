@@ -73,7 +73,7 @@ public:
 	/// \returns the valid key length, in bytes
 	/// \details keylength is provided in bytes, not bits. If keylength is less than MIN_KEYLENGTH,
 	///   then the function returns MIN_KEYLENGTH. If keylength is greater than MAX_KEYLENGTH,
-	///   then the function returns MAX_KEYLENGTH. if If keylength is a multiple of KEYLENGTH_MULTIPLE,
+	///   then the function returns MAX_KEYLENGTH. If keylength is a multiple of KEYLENGTH_MULTIPLE,
 	///   then keylength is returned. Otherwise, the function returns a \a lower multiple of
 	///   KEYLENGTH_MULTIPLE.
 	size_t GetValidKeyLength(size_t keylength) const {return m_cipher->GetValidKeyLength(keylength);}

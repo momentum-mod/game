@@ -163,7 +163,7 @@ C_SteamJet::~C_SteamJet()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Called after a data update has occured
+// Purpose: Called after a data update has occurred
 // Input  : bnewentity - 
 //-----------------------------------------------------------------------------
 void C_SteamJet::OnDataChanged(DataUpdateType_t updateType)
@@ -436,7 +436,7 @@ void C_SteamJet::RenderParticles( CParticleRenderIterator *pIterator )
 
 void C_SteamJet::SimulateParticles( CParticleSimulateIterator *pIterator )
 {
-	//Don't simulate if we're emiting particles...
+	//Don't simulate if we're emitting particles...
 	//This fixes the cases where looking away from a steam jet and then looking back would cause a break on the stream.
 	if ( m_ParticleEffect.WasDrawnPrevFrame() == false && m_bEmit )
 		return;

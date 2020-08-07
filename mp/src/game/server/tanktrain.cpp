@@ -393,7 +393,7 @@ void CTankTrainAI::Activate( void )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Dumb linear serach of the path
+// Purpose: Dumb linear search of the path
 // Input  : *pStart - starting path node
 //			&startPosition - starting position
 //			&destination - position to move close to
@@ -448,7 +448,7 @@ int PathFindDirection( CPathTrack *pStart, const Vector &startPosition, const Ve
 			}
 			// don't take the reverse path to old node
 			nearestReverse = nearestForward + 1;
-			// dont' take forward path to new node (if we find one)
+			// don't take forward path to new node (if we find one)
 			length = (float)COORD_EXTENT * (float)COORD_EXTENT; // HACKHACK: Max quad length
 		}
 

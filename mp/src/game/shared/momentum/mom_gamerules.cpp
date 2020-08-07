@@ -141,7 +141,7 @@ Vector CMomentumGameRules::DropToGround(CBaseEntity *pMainEnt, const Vector &vPo
 
 CBaseEntity *CMomentumGameRules::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 {
-    // gat valid spwan point
+    // get valid spawn point
     if (pPlayer)
     {
         CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
@@ -517,7 +517,7 @@ void InitBodyQue(void)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: make a body que entry for the given ent so the ent can be respawned elsewhere
+// Purpose: make a body queue entry for the given ent so the ent can be respawned elsewhere
 // GLOBALS ASSUMED SET:  g_eoBodyQueueHead
 //-----------------------------------------------------------------------------
 void CopyToBodyQue(CBaseAnimating *pCorpse)
@@ -541,7 +541,7 @@ void CopyToBodyQue(CBaseAnimating *pCorpse)
     g_pBodyQueueHead = static_cast<CCorpse *>(pHead->GetOwnerEntity());
 }
 
-// Overidden for FOV changes
+// Overridden for FOV changes
 void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
 {
     const char *pszName = engine->GetClientConVarValue(pPlayer->entindex(), "name");

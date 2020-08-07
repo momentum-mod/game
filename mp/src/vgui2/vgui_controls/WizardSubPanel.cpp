@@ -69,7 +69,7 @@ void WizardSubPanel::GetSettings( KeyValues *outResourceData )
 //-----------------------------------------------------------------------------
 void WizardSubPanel::ApplySettings(KeyValues *inResourceData)
 {
-	// don't adjust visiblity during settings application (since it's our parent who really controls it)
+	// don't adjust visibility during settings application (since it's our parent who really controls it)
 	bool bVisible = IsVisible();
 
 	BaseClass::ApplySettings(inResourceData);

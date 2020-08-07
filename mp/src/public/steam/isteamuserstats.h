@@ -217,7 +217,7 @@ public:
 	//				assert( leaderboardEntry.m_cDetails == 3 );
 	//				...
 	//			}
-	// once you've accessed all the entries, the data will be free'd, and the SteamLeaderboardEntries_t handle will become invalid
+	// once you've accessed all the entries, the data will be freed, and the SteamLeaderboardEntries_t handle will become invalid
 	virtual bool GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t hSteamLeaderboardEntries, int index, LeaderboardEntry_t *pLeaderboardEntry, int32 *pDetails, int cDetailsMax ) = 0;
 
 	// Uploads a user score to the Steam back-end.
@@ -359,7 +359,7 @@ struct UserAchievementStored_t
 struct LeaderboardFindResult_t
 {
 	enum { k_iCallback = k_iSteamUserStatsCallbacks + 4 };
-	SteamLeaderboard_t m_hSteamLeaderboard;	// handle to the leaderboard serarched for, 0 if no leaderboard found
+	SteamLeaderboard_t m_hSteamLeaderboard;	// handle to the leaderboard searched for, 0 if no leaderboard found
 	uint8 m_bLeaderboardFound;				// 0 if no leaderboard found
 };
 

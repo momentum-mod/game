@@ -1288,7 +1288,7 @@ void CAntlionTemplateMaker::BlockedCheckFunc( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Makes the antlion immediatley unburrow if it started burrowed
+// Purpose: Makes the antlion immediately unburrow if it started burrowed
 //-----------------------------------------------------------------------------
 void CAntlionTemplateMaker::ChildPostSpawn( CAI_BaseNPC *pChild )
 {
@@ -1613,7 +1613,7 @@ int CAntlionTemplateMaker::DrawDebugTextOverlays( void )
 		EntityText( text_offset, tempstr, 0 );
 		text_offset++;
 
-		// Print the chilrens' state
+		// Print the childrens' state
 		Q_snprintf( tempstr, sizeof(tempstr), "Spawn Frequency: %f\n", m_flSpawnFrequency );
 		EntityText( text_offset, tempstr, 0 );
 		text_offset++;
@@ -1631,7 +1631,7 @@ int CAntlionTemplateMaker::DrawDebugTextOverlays( void )
 			text_offset++;
 		}
 
-		// Print the chilrens' state
+		// Print the childrens' state
 		Q_snprintf( tempstr, sizeof(tempstr), "Live Children: (%d/%d)\n", m_nLiveChildren, m_nMaxLiveChildren );
 		EntityText( text_offset, tempstr, 0 );
 		text_offset++;

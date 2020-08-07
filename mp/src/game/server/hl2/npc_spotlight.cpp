@@ -9,7 +9,7 @@
 #include "ai_basenpc.h"
 #include "AI_Default.h"
 #include "AI_Senses.h"
-#include "ai_node.h"	  // for hint defintions
+#include "ai_node.h"	  // for hint definitions
 #include "ai_network.h"
 #include "AI_Hint.h"
 #include "ai_squad.h"
@@ -409,7 +409,7 @@ CBaseEntity* CNPC_Spotlight::BestInspectTarget(void)
 	CBaseEntity*	pBestEntity			= BestEnemy();
 	if (pBestEntity)
 	{
-		// If the enemy isn't visibile
+		// If the enemy isn't visible
 		if (!FVisible(pBestEntity))
 		{
 			// If he hasn't been seen in a while and hasn't already eluded
@@ -424,7 +424,7 @@ CBaseEntity* CNPC_Spotlight::BestInspectTarget(void)
 			pBestEntity = NULL;
 		}
 
-		// If he has eluded me or isn't in the legal range of my spotligth reject
+		// If he has eluded me or isn't in the legal range of my spotlight reject
 		else if (GetEnemies()->HasEludedMe(pBestEntity)									||
 				 !SpotlightIsPositionLegal(GetEnemies()->LastKnownPosition(pBestEntity))	)
 		{
@@ -498,7 +498,7 @@ CBaseEntity* CNPC_Spotlight::BestInspectTarget(void)
 			}
 
 			// -------------------------------------------
-			//  Choose hated entites over everything else
+			//  Choose hated entities over everything else
 			// -------------------------------------------
 			if (nTestRelationship == D_HT && nBestRelationship != D_HT)
 			{
@@ -544,7 +544,7 @@ CBaseEntity* CNPC_Spotlight::BestInspectTarget(void)
 
 //------------------------------------------------------------------------------
 // Purpose : Clears any previous inspect target and set inspect target to
-//			 the given entity and set the durection of the inspection
+//			 the given entity and set the duration of the inspection
 // Input   :
 // Output  :
 //------------------------------------------------------------------------------
@@ -557,7 +557,7 @@ void CNPC_Spotlight::SetInspectTargetToEntity(CBaseEntity *pEntity, float fInspe
 
 //------------------------------------------------------------------------------
 // Purpose : Clears any previous inspect target and set inspect target to
-//			 the given entity and set the durection of the inspection
+//			 the given entity and set the duration of the inspection
 // Input   :
 // Output  :
 //------------------------------------------------------------------------------
@@ -576,7 +576,7 @@ void CNPC_Spotlight::SetInspectTargetToEnemy(CBaseEntity *pEntity)
 
 //------------------------------------------------------------------------------
 // Purpose : Clears any previous inspect target and set inspect target to
-//			 the given hint node and set the durection of the inspection
+//			 the given hint node and set the duration of the inspection
 // Input   :
 // Output  :
 //------------------------------------------------------------------------------
@@ -610,7 +610,7 @@ void CNPC_Spotlight::SetInspectTargetToHint(CAI_Hint *pHintNode, float fInspectD
 
 //------------------------------------------------------------------------------
 // Purpose : Clears any previous inspect target and set inspect target to
-//			 the given position and set the durection of the inspection
+//			 the given position and set the duration of the inspection
 // Input   :
 // Output  :
 //------------------------------------------------------------------------------
@@ -759,7 +759,7 @@ void CNPC_Spotlight::UpdateTargets(void)
 						AISquadIter_t iter;
 						for (CAI_BaseNPC *pSquadMember = m_pSquad->GetFirstMember( &iter ); pSquadMember; pSquadMember = m_pSquad->GetNextMember( &iter ) )
 						{
-							// reset members who aren't activly engaged in fighting
+							// reset members who aren't actively engaged in fighting
 							if (pSquadMember->GetEnemy() != pBestEntity && !pSquadMember->HasCondition( COND_SEE_ENEMY))
 							{
 								// give them a new enemy
@@ -781,12 +781,12 @@ void CNPC_Spotlight::UpdateTargets(void)
 			// If its not an enemy
 			else
 			{
-				// If I'm not already inspeting something take it
+				// If I'm not already inspecting something take it
 				if (GetTarget() == NULL)
 				{
 					SetInspectTargetToEntity(pBestEntity,SPOTLIGHT_ENTITY_INSPECT_LENGTH);
 				}
-				// If I am inspecting somethin, take if priority is higher
+				// If I am inspecting something, take if priority is higher
 				else
 				{
 					if (IRelationPriority(pBestEntity) > IRelationPriority(GetTarget()))
@@ -1331,7 +1331,7 @@ void CNPC_Spotlight::SpotlightUpdate(void)
 	m_pSpotlightTarget->SetAbsVelocity( vecNewVelocity );
 	m_pSpotlightTarget->m_vSpotlightOrg = GetAbsOrigin();
 
-	// Avoid sudden change in where beam fades out when cross disconinuities
+	// Avoid sudden change in where beam fades out when cross discontinuities
 	m_pSpotlightTarget->m_vSpotlightDir = m_pSpotlightTarget->GetLocalOrigin() - m_pSpotlightTarget->m_vSpotlightOrg;
 	float flBeamLength	= VectorNormalize( m_pSpotlightTarget->m_vSpotlightDir );
 	m_flSpotlightCurLength = (0.60*m_flSpotlightCurLength) + (0.4*flBeamLength);

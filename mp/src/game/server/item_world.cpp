@@ -373,7 +373,7 @@ bool UTIL_ItemCanBeTouchedByPlayer( CBaseEntity *pItem, CBasePlayer *pPlayer )
 
 //-----------------------------------------------------------------------------
 // Purpose: Whether or not the item can be touched and picked up by the player, taking
-//			into account obstructions and other hinderances
+//			into account obstructions and other hindrances
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
 bool CItem::ItemCanBeTouchedByPlayer( CBasePlayer *pPlayer )
@@ -394,7 +394,7 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
 
 	// Must be a valid pickup scenario (no blocking). Though this is a more expensive
-	// check than some that follow, this has to be first Obecause it's the only one
+	// check than some that follow, this has to be first because it's the only one
 	// that inhibits firing the output OnCacheInteraction.
 	if ( ItemCanBeTouchedByPlayer( pPlayer ) == false )
 		return;
@@ -451,7 +451,7 @@ CBaseEntity* CItem::Respawn( void )
 	SetSolid( SOLID_BBOX );
 	AddSolidFlags( FSOLID_TRIGGER );
 
-	UTIL_SetOrigin( this, g_pGameRules->VecItemRespawnSpot( this ) );// blip to whereever you should respawn.
+	UTIL_SetOrigin( this, g_pGameRules->VecItemRespawnSpot( this ) );// blip to wherever you should respawn.
 	SetAbsAngles( g_pGameRules->VecItemRespawnAngles( this ) );// set the angles.
 
 #if !defined( TF_DLL )

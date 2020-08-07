@@ -16,7 +16,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-// Enumator class for ragdolls being affected by explosive forces
+// Enumerator class for ragdolls being affected by explosive forces
 CPlayerAndObjectEnumerator::CPlayerAndObjectEnumerator( float radius )
 {
 	m_flRadiusSquared		= radius * radius;

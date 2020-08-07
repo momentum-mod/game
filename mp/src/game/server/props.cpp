@@ -3653,7 +3653,7 @@ void CBasePropDoor::Activate( void )
 
 		// Find our slaves.
 		// If we have a specified slave name, then use that to find slaves.
-		// Otherwise, see if there are any other doors that match our name (Backwards compatability).
+		// Otherwise, see if there are any other doors that match our name (Backwards compatibility).
 		string_t iszSearchName = GetEntityName();
 		if ( m_SlaveName != NULL_STRING )
 		{

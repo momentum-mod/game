@@ -25,7 +25,7 @@ public:
 	// shuts down Network, closes all UPD/TCP channels
 	virtual void Shutdown( void ) = 0;
 
-	// must be called each system frame to do any asynchronouse TCP stuff 
+	// must be called each system frame to do any asynchronous TCP stuff 
 	virtual void RunFrame( double time ) = 0;
 
 	virtual void ProcessSocket( netsrc_t sock, IConnectionlessPacketHandler * handler ) = 0;

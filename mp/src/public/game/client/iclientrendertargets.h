@@ -28,7 +28,7 @@ public:
 	// at the time they receive this call.
 	virtual void InitClientRenderTargets( IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig ) = 0;
 
-	// Call shutdown on every created refrence-- Clients keep track of this themselves
+	// Call shutdown on every created reference-- Clients keep track of this themselves
 	// and should add shutdown code to this function whenever they add a new render target.
 	virtual void ShutdownClientRenderTargets( void ) = 0;
 

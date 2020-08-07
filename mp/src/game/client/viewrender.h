@@ -58,7 +58,7 @@ struct IntroData_t
 extern IntroData_t *g_pIntroData;
 
 // This identifies the view for certain systems that are unique per view (e.g. pixel visibility)
-// NOTE: This is identifying which logical part of the scene an entity is being redered in
+// NOTE: This is identifying which logical part of the scene an entity is being rendered in
 // This is not identifying a particular render target necessarily.  This is mostly needed for entities that
 // can be rendered more than once per frame (pixel vis queries need to be identified per-render call)
 enum view_id_t
@@ -127,7 +127,7 @@ struct ViewCustomVisibility_t
 	}
 
 	// Set to true if you want to use multiple origins for doing client side map vis culling
-	// NOTE:  In generaly, you won't want to do this, and by default the 3d origin of the camera, as above,
+	// NOTE:  In general, you won't want to do this, and by default the 3d origin of the camera, as above,
 	//  will be used as the origin for vis, too.
 	int				m_nNumVisOrigins;
 	// Array of origins
@@ -136,7 +136,7 @@ struct ViewCustomVisibility_t
 	// The view data overrides for visibility calculations with area portals
 	VisOverrideData_t m_VisData;
 
-	// The starting leaf to determing which area to start in when performing area portal culling on the engine
+	// The starting leaf to determine which area to start in when performing area portal culling on the engine
 	// Default behavior is to use the leaf the camera position is in.
 	int				m_iForceViewLeaf;
 };

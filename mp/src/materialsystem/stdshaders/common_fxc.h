@@ -113,7 +113,7 @@ void ComputeBumpedLightmapCoordinates( HALF4 Lightmap1and2Coord, HALF2 Lightmap3
 }
 #endif
 
-// Versions of matrix multiply functions which force HLSL compiler to explictly use DOTs, 
+// Versions of matrix multiply functions which force HLSL compiler to explicitly use DOTs, 
 // not giving it the option of using MAD expansion.  In a perfect world, the compiler would
 // always pick the best strategy, and these shouldn't be needed.. but.. well.. umm..
 //

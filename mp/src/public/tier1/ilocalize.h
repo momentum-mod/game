@@ -212,7 +212,7 @@ public:
 
 // --------------------------------------------------------------------------
 // Purpose: CLocalizedStringArg<> is a class that will take a variable of any
-//			arbitary type and convert it to a string of whatever character type
+//			arbitrary type and convert it to a string of whatever character type
 //			we're using for localization (locchar_t).
 //
 //			Independently it isn't very useful, though it can be used to sort-of-

@@ -24,7 +24,7 @@ void StartDataCollection( void )
 	}
 
 	collector = new CDataCollector;
-	Msg( "Data colletion started.\n" );
+	Msg( "Data collection started.\n" );
 }
 ConCommand data_collection_start( "data_collection_start", StartDataCollection, "Start collecting game event data." );
 

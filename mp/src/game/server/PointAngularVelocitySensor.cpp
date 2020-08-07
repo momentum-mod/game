@@ -2,7 +2,7 @@
 //
 // Purpose: Used to fire events based on the orientation of a given entity.
 //
-//			Looks at its target's anglular velocity every frame and fires outputs
+//			Looks at its target's angular velocity every frame and fires outputs
 //			as the angular velocity passes a given threshold value.
 //
 //=============================================================================//

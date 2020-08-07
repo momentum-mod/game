@@ -639,7 +639,7 @@ bool CAI_PlaneSolver::RunMoveSolver( const AILocalMoveGoal_t &goal, const AIMove
 	
 	if ( m_Solver.HaveRegulations() )
 	{
-		// @TODO (toml 07-19-02): add a movement threshhold here (the target may be the same,
+		// @TODO (toml 07-19-02): add a movement threshold here (the target may be the same,
 		// but the ai is nowhere near where the last solution was derived)
 		bool fNewTarget = ( !m_fSolvedPrev || m_PrevTarget != goal.target );
 		

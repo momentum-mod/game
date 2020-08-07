@@ -752,7 +752,7 @@ void CAI_StandoffBehavior::UpdateBattleLines()
 
 		if ( bHaveGoalPosition )
 		{
-			// If we have a valid standoff goal position, it takes precendence.
+			// If we have a valid standoff goal position, it takes precedence.
 			const float DIST_GOAL_PLANE = 180;
 			
 			BattleLine_t goalLine;

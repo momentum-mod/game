@@ -121,7 +121,7 @@ public:
 	// tell the input system that we're not a game, we're console text mode.
 	// this is used for dedicated servers to not initialize joystick system.
 	// this needs to be called before CInputSystem::Init (e.g. in PreInit of
-	// some system) if you want ot prevent the joystick system from ever
+	// some system) if you want to prevent the joystick system from ever
 	// being initialized.
 	virtual void SetConsoleTextMode( bool bConsoleTextMode ) = 0;
 };

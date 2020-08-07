@@ -105,7 +105,7 @@ class GameData
 
 		// Instance Remapping
 		Vector		m_InstanceOrigin;			// the origin offset of the instance
-		QAngle		m_InstanceAngle;			// the rotation of the the instance
+		QAngle		m_InstanceAngle;			// the rotation of the instance
 		matrix3x4_t	m_InstanceMat;				// matrix of the origin and rotation of rendering
 		char		m_InstancePrefix[ 128 ];	// the prefix used for the instance name remapping
 		GDclass		*m_InstanceClass;			// the entity class that is being remapped

@@ -51,7 +51,7 @@ struct DrawModelState_t
 // Model Rendering + instance data
 //-----------------------------------------------------------------------------
 
-// change this when the new version is incompatable with the old
+// change this when the new version is incompatible with the old
 #define VENGINE_HUDMODEL_INTERFACE_VERSION	"VEngineModel016"
 
 typedef unsigned short ModelInstanceHandle_t;

@@ -427,7 +427,7 @@ struct edict_t : public CBaseEdict
 public:
 	ICollideable *GetCollideable();
 
-	// The server timestampe at which the edict was freed (so we can try to use other edicts before reallocating this one)
+	// The server timestamp at which the edict was freed (so we can try to use other edicts before reallocating this one)
 	float		freetime;	
 };
 

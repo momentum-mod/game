@@ -968,7 +968,7 @@ void CWeaponStriderBuster::BusterFlyThink()
 			}
 		}
 
-		if (bestFit >= 0) // we found something and should attract towards it. (hysterisis later?)
+		if (bestFit >= 0) // we found something and should attract towards it. (hysteresis later?)
 		{
 			if ( striderbuster_debugseek.GetBool() )
 			{

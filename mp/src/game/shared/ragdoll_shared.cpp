@@ -729,7 +729,7 @@ bool ShouldRemoveThisRagdoll( CBaseAnimating *pRagdoll )
 	/* we no longer ignore enemies just because they are on fire -- a ragdoll in front of me
 	   is always a higher priority for retention than a flaming zombie behind me. At the 
 	   time I put this in, the ragdolls do clean up their own effects if culled via SUB_Remove().
-	   If you're encountering trouble with ragdolls leaving effects behind, try renabling the code below.
+	   If you're encountering trouble with ragdolls leaving effects behind, try re-enabling the code below.
     /////////////////////
 	//Just ignore it until we're done burning/dissolving.
 	if ( pRagdoll->GetEffectEntity() )

@@ -266,7 +266,7 @@ bool KVPacker::ReadAsBinary( KeyValues *pNode, CUtlBuffer &buffer )
 			break;
 		}
 
-		if ( !buffer.IsValid() ) // error occured
+		if ( !buffer.IsValid() ) // error occurred
 			return false;
 
 		ePackType = (EPackType)buffer.GetUnsignedChar();

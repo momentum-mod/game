@@ -36,7 +36,7 @@ public:
 	virtual bool	PlayerFallingDamage(void);
 	virtual void	PlayerSetAnimation( PLAYER_ANIM eAnim );
 
-	// These have separate server vs client impementations
+	// These have separate server vs client implementations
 	virtual void	StartSound( const Vector& origin, int channel, char const* sample, float volume, soundlevel_t soundlevel, int fFlags, int pitch );
 	virtual void	StartSound( const Vector& origin, const char *soundname ); 
 	virtual void	PlaybackEventFull( int flags, int clientindex, unsigned short eventindex, float delay, Vector& origin, Vector& angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );

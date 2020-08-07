@@ -110,7 +110,7 @@ END_PREDICTION_DATA()
 // Grenades flagged with this will be triggered when the owner calls detonateSatchelCharges
 #define SF_DETONATE		0x0001
 
-// UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
+// UNDONE: temporary scorching for PreAlpha - find a less sleazy permanent solution.
 void CBaseGrenade::Explode( trace_t *pTrace, int bitsDamageType )
 {
 #if !defined( CLIENT_DLL )

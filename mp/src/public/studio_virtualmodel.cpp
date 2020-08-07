@@ -82,7 +82,7 @@ void virtualmodel_t::AppendModels( int group, const studiohdr_t *pStudioHdr )
 {
 	AUTO_LOCK_( CThreadTerminalMutex<CThreadFastMutex>, m_Lock );
 
-	// build a search table if necesary
+	// build a search table if necessary
 	CModelLookupContext ctx(group, pStudioHdr);
 
 	AppendSequences( group, pStudioHdr );
@@ -341,12 +341,12 @@ void virtualmodel_t::AppendBonemap( int group, const studiohdr_t *pStudioHdr )
 				{
 					if ((pStudioHdr->pBone( j )->parent != -1) || (pBaseStudioHdr->pBone( k )->parent != -1))
 					{
-						Warning( "%s/%s : missmatched parent bones on \"%s\"\n", pBaseStudioHdr->pszName(), pStudioHdr->pszName(), pStudioHdr->pBone( j )->pszName() );
+						Warning( "%s/%s : mismatched parent bones on \"%s\"\n", pBaseStudioHdr->pszName(), pStudioHdr->pszName(), pStudioHdr->pBone( j )->pszName() );
 					}
 				}
 				else if (m_group[ group ].masterBone[ pStudioHdr->pBone( j )->parent ] != m_group[ 0 ].masterBone[ pBaseStudioHdr->pBone( k )->parent ])
 				{
-					Warning( "%s/%s : missmatched parent bones on \"%s\"\n", pBaseStudioHdr->pszName(), pStudioHdr->pszName(), pStudioHdr->pBone( j )->pszName() );
+					Warning( "%s/%s : mismatched parent bones on \"%s\"\n", pBaseStudioHdr->pszName(), pStudioHdr->pszName(), pStudioHdr->pBone( j )->pszName() );
 				}
 			}
 			else

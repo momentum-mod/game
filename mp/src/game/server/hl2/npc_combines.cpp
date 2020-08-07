@@ -406,7 +406,7 @@ bool CNPC_CombineS::IsHeavyDamage( const CTakeDamageInfo &info )
 
 #if HL2_EPISODIC
 //-----------------------------------------------------------------------------
-// Purpose: Translate base class activities into combot activites
+// Purpose: Translate base class activities into combot activities
 //-----------------------------------------------------------------------------
 Activity CNPC_CombineS::NPC_TranslateActivity( Activity eNewActivity )
 {

@@ -29,7 +29,7 @@ struct ShaderHeader_t
 	int32	m_nDynamicCombos;
 	uint32	m_nFlags;
 	uint32	m_nCentroidMask;
-	uint32	m_nNumStaticCombos;			// includes sentinal key
+	uint32	m_nNumStaticCombos;			// includes sentinel key
 	uint32	m_nSourceCRC32;				// NOTE: If you move this, update copyshaders.pl, *_prep.pl, updateshaders.pl
 };
 #pragma pack()

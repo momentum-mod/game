@@ -17,7 +17,7 @@
 
 //-----------------------------------------------------------------------------
 // Purpose: Allocates memory for strings, checking for duplicates first,
-//			reusing exising strings if duplicate found.
+//			reusing existing strings if duplicate found.
 //-----------------------------------------------------------------------------
 
 class CStringPool

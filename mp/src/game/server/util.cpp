@@ -350,7 +350,7 @@ int UTIL_DropToFloor( CBaseEntity *pEntity, unsigned int mask, CBaseEntity *pIgn
 	trace_t	trace;
 
 #ifndef HL2MP
-	// HACK: is this really the only sure way to detect crossing a terrain boundry?
+	// HACK: is this really the only sure way to detect crossing a terrain boundary?
 	UTIL_TraceEntity( pEntity, pEntity->GetAbsOrigin(), pEntity->GetAbsOrigin(), mask, pIgnore, pEntity->GetCollisionGroup(), &trace );
 	if (trace.fraction == 0.0)
 		return -1;
@@ -761,7 +761,7 @@ void UTIL_GetPlayerConnectionInfo( int playerIndex, int& ping, int &packetloss )
 		latency -= TICKS_TO_TIME( 0.5f );
 
 		ping = latency * 1000.0f; // as msecs
-		ping = clamp( ping, 5, 1000 ); // set bounds, dont show pings under 5 msecs
+		ping = clamp( ping, 5, 1000 ); // set bounds, don't show pings under 5 msecs
 		
 		packetloss = 100.0f * nci->GetAvgLoss( FLOW_INCOMING ); // loss in percentage
 		packetloss = clamp( packetloss, 0, 100 );
@@ -2231,7 +2231,7 @@ static edict_t *UTIL_GetCurrentCheckClient()
 	ent = engine->PEntityOfEntIndex( g_CheckClient.m_lastcheck );
 
 	// Allow dead clients -- JAY
-	// Our monsters know the difference, and this function gates alot of behavior
+	// Our monsters know the difference, and this function gates a lot of behavior
 	// It's annoying to die and see monsters stop thinking because you're no longer
 	// "in" their PVS
 	if ( !ent || ent->IsFree() || !ent->GetUnknown())
@@ -2423,9 +2423,9 @@ CBaseEntity *UTIL_EntitiesInPVS( CBaseEntity *pPVSEntity, CBaseEntity *pStarting
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Get the predicted postion of an entity of a certain number of seconds
+// Purpose: Get the predicted position of an entity of a certain number of seconds
 //			Use this function with caution, it has great potential for annoying the player, especially
-//			if used for target firing predition
+//			if used for target firing prediction
 // Input  : *pTarget - target entity to predict
 //			timeDelta - amount of time to predict ahead (in seconds)
 //			&vecPredictedPosition - output

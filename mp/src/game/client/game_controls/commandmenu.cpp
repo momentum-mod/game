@@ -196,7 +196,7 @@ void CommandMenu::UpdateMenu()
 		if ( !keys )
 			continue;
 
-		// let custom menu items update themself
+		// let custom menu items update themselves
 		Q_strncpy( text,  keys->GetString("custom"), sizeof(text) );
 				
 		if ( text[0] )

@@ -392,7 +392,7 @@ LINK_ENTITY_TO_CLASS( player, C_BasePlayer );
 // -------------------------------------------------------------------------------- //
 C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset("C_BasePlayer::m_iv_vecViewOffset")
 {
-	//Animation, because they aren't really anymore based on viewangle change or position FIX: Oh yeh because punchangle doesn't use angles and viewoffset use origin?!
+	//Animation, because they aren't really anymore based on viewangle change or position FIX: Oh yeah because punchangle doesn't use angles and viewoffset use origin?!
 	AddVar(&m_vecViewOffset, &m_iv_vecViewOffset, LATCH_SIMULATION_VAR);
 	AddVar(&m_Local.m_vecPunchAngle, &m_Local.m_iv_vecPunchAngle, LATCH_SIMULATION_VAR);
 	AddVar(&m_Local.m_vecPunchAngleVel, &m_Local.m_iv_vecPunchAngleVel, LATCH_SIMULATION_VAR);
@@ -834,7 +834,7 @@ void C_BasePlayer::OnRestore()
 		input->GetButtonBits( 0 );
 	}
 
-	// For ammo history icons to current value so they don't flash on level transtions
+	// For ammo history icons to current value so they don't flash on level transitions
 	for ( int i = 0; i < MAX_AMMO_TYPES; i++ )
 	{
 		m_iOldAmmo[i] = GetAmmoCount(i);
@@ -1078,7 +1078,7 @@ void C_BasePlayer::UpdateFlashlight()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Creates player flashlight if it's ative
+// Purpose: Creates player flashlight if it's active
 //-----------------------------------------------------------------------------
 void C_BasePlayer::Flashlight( void )
 {
@@ -1208,7 +1208,7 @@ void C_BasePlayer::CreateWaterEffects( void )
 }
 
 //-----------------------------------------------------------------------------
-// Called when not in tactical mode. Allows view to be overriden for things like driving a tank.
+// Called when not in tactical mode. Allows view to be overridden for things like driving a tank.
 //-----------------------------------------------------------------------------
 void C_BasePlayer::OverrideView( CViewSetup *pSetup )
 {
@@ -1533,7 +1533,7 @@ void C_BasePlayer::CalcInEyeCamView(Vector& eyeOrigin, QAngle& eyeAngles, float&
 		return;
 	}
 
-	fov = GetFOV();	// TODO use tragets FOV
+	fov = GetFOV();	// TODO use targets FOV
 
 	m_flObserverChaseDistance = 0.0;
 
@@ -1593,7 +1593,7 @@ void C_BasePlayer::CalcDeathCamView(Vector& eyeOrigin, QAngle& eyeAngles, float&
 	QAngle aForward = eyeAngles;
 	Vector origin = EyePosition();			
 
-	// NOTE:  This will create the ragdoll in CSS if m_hRagdoll is set, but m_pRagdoll is not yet presetn
+	// NOTE:  This will create the ragdoll in CSS if m_hRagdoll is set, but m_pRagdoll is not yet present
 	IRagdoll *pRagdoll = GetRepresentativeRagdoll();
 	if ( pRagdoll )
 	{

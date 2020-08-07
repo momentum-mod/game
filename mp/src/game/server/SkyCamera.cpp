@@ -17,7 +17,7 @@ CEntityClassList<CSkyCamera> g_SkyList;
 template <> CSkyCamera *CEntityClassList<CSkyCamera>::m_pClassList = NULL;
 
 //-----------------------------------------------------------------------------
-// Retrives the current skycamera
+// Retrieves the current skycamera
 //-----------------------------------------------------------------------------
 CSkyCamera*	GetCurrentSkyCamera()
 {

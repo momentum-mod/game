@@ -499,7 +499,7 @@ int CNPC_GroundTurret::TranslateSchedule( int scheduleType )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Override base class activiites
+// Purpose: Override base class activities
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------

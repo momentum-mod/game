@@ -67,7 +67,7 @@ int CBaseViewModel::UpdateTransmitState()
 
 int CBaseViewModel::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 {
-	// check if receipient owns this weapon viewmodel
+	// check if recipient owns this weapon viewmodel
 	CBasePlayer *pOwner = ToBasePlayer( m_hOwner );
 
 	if ( pOwner && pOwner->edict() == pInfo->m_pClientEnt )

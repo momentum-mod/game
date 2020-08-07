@@ -25,7 +25,7 @@ class ISceneFileCache : public IAppSystem
 {
 public:
 
-	// async implemenation
+	// async implementation
 	virtual size_t		GetSceneBufferSize( char const *filename ) = 0;
 	virtual bool		GetSceneData( char const *filename, byte *buf, size_t bufsize ) = 0;
 

@@ -267,7 +267,7 @@ private:
 	float					m_yawCenter;	// "Center" yaw
 	float					m_yawCenterWorld;	// "Center" yaw in world space
 	float					m_yawRate;		// Max turn rate to track targets
-	float					m_yawRange;		// Range of turning motion (one-sided: 30 is +/- 30 degress from center)
+	float					m_yawRange;		// Range of turning motion (one-sided: 30 is +/- 30 degrees from center)
 											// Zero is full rotation
 	float					m_yawTolerance;	// Tolerance angle
 

@@ -101,7 +101,7 @@ public:
     void GotoNextSaveloc();
     // Goes to the previous saveloc in the list, wrapping around
     void GotoPrevSaveloc();
-    // Goes to the first saveloc (indx 0) in the list
+    // Goes to the first saveloc (index 0) in the list
     void GotoFirstSaveloc();
     // Goes to the last saveloc (count - 1) in the list
     void GotoLastSaveloc();
@@ -115,7 +115,7 @@ public:
     int GetSavelocCount() const { return m_rcSavelocs.Size(); }
     // Gets a saveloc given an index (number)
     SavedLocation_t *GetSaveloc(int indx) { return indx > -1 && indx < m_rcSavelocs.Count() ? m_rcSavelocs[indx] : nullptr; }
-    // Sets wheter or not we're using the Saveloc Menu
+    // Sets whether or not we're using the Saveloc Menu
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 

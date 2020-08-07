@@ -26,7 +26,7 @@ struct Language_t
 // REVIEW
 // es_ES - use new world spanish country code instead?
 // zh_CN - validate that SC date formats come through
-// bt_BR - assume we should use Brazilian rather than Iberian portguese
+// bt_BR - assume we should use Brazilian rather than Iberian portuguese
 
 static const Language_t s_LanguageNames[] = 
 {
@@ -60,7 +60,7 @@ static const Language_t s_LanguageNames[] =
 };	
 
 //-----------------------------------------------------------------------------
-// Purpose: translate language enum into closests windows language code ID
+// Purpose: translate language enum into closest windows language code ID
 //-----------------------------------------------------------------------------
 int GetLanguageCodeID(ELanguage eLang)
 {

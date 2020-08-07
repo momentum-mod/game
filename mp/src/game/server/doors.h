@@ -15,7 +15,7 @@
 
 //Since I'm here, might as well explain how these work.  Base.fgd is the file that connects
 //flags to entities.  It is full of lines with this number, a label, and a default value.
-//Voila, dynamicly generated checkboxes on the Flags tab of Entity Properties.
+//Voila, dynamically generated checkboxes on the Flags tab of Entity Properties.
 
 // doors
 #define SF_DOOR_ROTATE_YAW			0		// yaw by default
@@ -83,7 +83,7 @@ public:
 
 	virtual bool IsRotatingDoor() { return false; }
 	virtual bool ShouldSavePhysics();
-	// used to selectivly override defaults
+	// used to selectively override defaults
 	void DoorTouch( CBaseEntity *pOther );
 
 	// local functions

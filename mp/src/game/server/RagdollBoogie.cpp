@@ -20,7 +20,7 @@
 #include "tier0/memdbgon.h"
 
 //-----------------------------------------------------------------------------
-// Make electriciy every so often
+// Make electricity every so often
 //-----------------------------------------------------------------------------
 static const char *s_pZapContext = "ZapContext";
 

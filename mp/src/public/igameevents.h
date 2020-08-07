@@ -101,7 +101,7 @@ abstract_class IGameEventListener2
 public:
 	virtual	~IGameEventListener2( void ) {};
 
-	// FireEvent is called by EventManager if event just occured
+	// FireEvent is called by EventManager if event just occurred
 	// KeyValue memory will be freed by manager if not needed anymore
 	virtual void FireGameEvent( IGameEvent *event ) = 0;
 };
@@ -154,7 +154,7 @@ abstract_class IGameEventListener
 public:
 	virtual	~IGameEventListener( void ) {};
 
-	// FireEvent is called by EventManager if event just occured
+	// FireEvent is called by EventManager if event just occurred
 	// KeyValue memory will be freed by manager if not needed anymore
 	virtual void FireGameEvent( KeyValues * event) = 0;
 };

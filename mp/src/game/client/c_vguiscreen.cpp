@@ -638,7 +638,7 @@ bool C_VGuiScreen::IsInputOnlyToOwner( void )
 
 //-----------------------------------------------------------------------------
 //
-// Enumator class for finding vgui screens close to the local player
+// Enumerator class for finding vgui screens close to the local player
 //
 //-----------------------------------------------------------------------------
 class CVGuiScreenEnumerator : public IPartitionEnumerator

@@ -644,7 +644,7 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( point_servercommand, CPointServerCommand );
 
 //------------------------------------------------------------------------------
-// Purpose : Draw a line betwen two points.  White if no world collisions, red if collisions
+// Purpose : Draw a line between two points.  White if no world collisions, red if collisions
 // Input   :
 // Output  :
 //------------------------------------------------------------------------------
@@ -1123,7 +1123,7 @@ static bool TestEntityPosition ( CBasePlayer *pPlayer )
 
 //------------------------------------------------------------------------------
 // Searches along the direction ray in steps of "step" to see if 
-// the entity position is passible.
+// the entity position is passable.
 // Used for putting the player in valid space when toggling off noclip mode.
 //------------------------------------------------------------------------------
 static int FindPassableSpace( CBasePlayer *pPlayer, const Vector& direction, float step, Vector& oldorigin )

@@ -4059,7 +4059,7 @@ void CNPC_AttackHelicopter::ComputeAngularVelocity( const Vector &vecGoalUp, con
 		goalAngAccel.z	= 0;
 	}
 
-	// limit angular accel changes to similate mechanical response times
+	// limit angular accel changes to simulate mechanical response times
 	QAngle angAccelAccel;
 	float dt = 0.1;
 	angAccelAccel.x = (goalAngAccel.x - m_vecAngAcceleration.x) / dt;
@@ -4785,7 +4785,7 @@ void CNPC_AttackHelicopter::Hunt( void )
 
 	if ( !(m_fHelicopterFlags & BITS_HELICOPTER_GUN_ON) )
 	{
-		// !!!HACKHACK This is a fairly unsavoury hack that allows the attack
+		// !!!HACKHACK This is a fairly unsavory hack that allows the attack
 		// chopper to continue to carpet bomb even with the gun turned off
 		// (Normally the chopper will carpet bomb inside FireGun(), but FireGun()
 		// doesn't get called by the above call to FireWeapons() if the gun is turned off)
@@ -5066,7 +5066,7 @@ void CGrenadeHelicopter::Spawn( void )
 
 
 //------------------------------------------------------------------------------
-// On Remve
+// On Remove
 //------------------------------------------------------------------------------
 void CGrenadeHelicopter::UpdateOnRemove()
 {

@@ -17,7 +17,7 @@
 #include "tier0/memdbgon.h"
 
 BEGIN_SIMPLE_DATADESC(CAI_Path)
-	//					m_Waypoints	(reconsititute on load)
+	//					m_Waypoints	(reconstitute on load)
 	DEFINE_FIELD( m_goalTolerance,	FIELD_FLOAT ),
 	DEFINE_CUSTOM_FIELD( m_activity,	ActivityDataOps() ),
 	DEFINE_FIELD( m_target,			FIELD_EHANDLE ),
@@ -528,7 +528,7 @@ void CAI_Path::Clear( void )
 	m_routeStartTime	= FLT_MAX;
 
 	m_goalTolerance		= 0.0;					// How close do we need to get to the goal
-	// FIXME: split m_goalTolerance into m_buildTolerance and m_moveTolerance, let them be seperatly controllable.
+	// FIXME: split m_goalTolerance into m_buildTolerance and m_moveTolerance, let them be separately controllable.
 
 	m_activity			= ACT_INVALID;
 	m_sequence			= ACT_INVALID;

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2008, Valve LLC, All rights reserved. ============
+//========= Copyright Â© 1996-2008, Valve LLC, All rights reserved. ============
 //
 // Purpose:
 //
@@ -49,7 +49,7 @@ typedef int64 lint64;
 typedef uint64 ulint64;
 
 #ifdef X64BITS
-typedef __int64 intp;				// intp is an integer that can accomodate a pointer
+typedef __int64 intp;				// intp is an integer that can accommodate a pointer
 typedef unsigned __int64 uintp;		// (ie, sizeof(intp) >= sizeof(int) && sizeof(intp) >= sizeof(void *)
 #else
 typedef __int32 intp;
@@ -151,7 +151,7 @@ const PhysicalItemId_t k_uPhysicalItemIdInvalid = 0x0;
 // this is baked into client messages and interfaces as an int, 
 // make sure we never break this.  AppIds and DepotIDs also presently
 // share the same namespace, but since we'd like to change that in the future
-// I've defined it seperately here.
+// I've defined it separately here.
 typedef uint32 DepotId_t;
 const DepotId_t k_uDepotIdInvalid = 0x0;
 

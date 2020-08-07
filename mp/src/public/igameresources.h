@@ -38,7 +38,7 @@ public:
 	virtual int		GetHealth( int index ) = 0;
 };
 
-extern IGameResources *GameResources( void ); // singelton accessor
+extern IGameResources *GameResources( void ); // singleton accessor
 
 #endif
 

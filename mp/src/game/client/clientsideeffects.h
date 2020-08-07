@@ -28,9 +28,9 @@ public:
 	virtual void		Draw( double frametime ) = 0;
 	// Returns name of effect
 	virtual const char	*GetName( void );
-	// Retuns whether the effect is still active
+	// Returns whether the effect is still active
 	virtual bool		IsActive( void );
-	// Sets the effect to inactive so it can be destroed
+	// Sets the effect to inactive so it can be destroyed
 	virtual void		Destroy( void );
 
 	// Sets the effect name (useful for debugging).
@@ -57,7 +57,7 @@ public:
 	virtual void	RemoveEffect( CClientSideEffect *effect ) = 0;
 	// Simulate/Update/Draw effects on list
 	virtual void	DrawEffects( double frametime ) = 0;
-	// Flush out all effects fbrom the list
+	// Flush out all effects from the list
 	virtual void	Flush( void ) = 0;
 };
 

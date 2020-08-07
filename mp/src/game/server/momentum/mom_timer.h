@@ -62,7 +62,7 @@ class CMomentumTimer : public CAutoGameSystemPerFrame
     void SetShouldUseStartZoneOffset(bool use) { m_bShouldUseStartZoneOffset = use; }
     void SetCanStart(bool canStart) { m_bCanStart = canStart; }
 
-    // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
+    // creates fraction of a tick to be used as a time "offset" in precisely calculating the real run time.
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, int zoneType, int iZoneNumber);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
 

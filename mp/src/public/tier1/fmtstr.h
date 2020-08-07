@@ -24,7 +24,7 @@
 
 //=============================================================================
 
-// using macro to be compatable with GCC
+// using macro to be compatible with GCC
 #define FmtStrVSNPrintf( szBuf, nBufSize, bQuietTruncation, ppszFormat, nPrevLen, lastArg ) \
 	do \
 	{ \
@@ -48,7 +48,7 @@
 	} \
 	while (0)
 
-// using macro to be compatable with GCC
+// using macro to be compatible with GCC
 #define FmtStrVSNPrintfNoLengthFixup( szBuf, nBufSize, bQuietTruncation, ppszFormat, nPrevLen, lastArg ) \
 	do \
 	{ \

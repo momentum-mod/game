@@ -188,7 +188,7 @@ void WorldVertexTransitionFixup( void )
 	{
 		side_t *pSide = &g_MainMap->brushsides[iSide];
 
-		// skip displacments
+		// skip displacements
 		if ( pSide->pMapDisp )
 			continue;
 

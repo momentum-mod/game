@@ -1025,7 +1025,7 @@ bool CCollisionProperty::ComputeEntitySpaceHitboxSurroundingBox( Vector *pVecWor
 }
 
 //-----------------------------------------------------------------------------
-// Computes the surrounding collision bounds from the the OBB (not vphysics)
+// Computes the surrounding collision bounds from the OBB (not vphysics)
 //-----------------------------------------------------------------------------
 void CCollisionProperty::ComputeRotationExpandedBounds( Vector *pVecWorldMins, Vector *pVecWorldMaxs )
 {

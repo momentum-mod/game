@@ -208,7 +208,7 @@ public:
 
 	// Hotkey handling
 	virtual void OnKeyTyped(wchar_t unichar);
-	// Menu nagivation etc.
+	// Menu navigation etc.
 	virtual void OnKeyCodeTyped( KeyCode code );
 
 	// Visibility

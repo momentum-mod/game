@@ -36,7 +36,7 @@ private:
     bool m_bContentLoaded;
 };
 
-// Constuctor: Initializes the Panel
+// Constructor: Initializes the Panel
 CContactPanel::CContactPanel(VPANEL parent)
     : BaseClass(nullptr, "CBugReportPanel")
 {

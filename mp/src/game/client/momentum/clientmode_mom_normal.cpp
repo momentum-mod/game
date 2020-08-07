@@ -335,7 +335,7 @@ int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector
             return MD_Backwards; // Backwards
         }
     }
-    return MD_NONE; // Unknown should never happend
+    return MD_NONE; // Unknown should never happen
 }
 
 bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)

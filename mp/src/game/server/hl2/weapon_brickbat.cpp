@@ -580,7 +580,7 @@ void CWeaponBrickbat::DrawAmmo( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Override so shotgun can do mulitple reloads in a row
+// Purpose: Override so shotgun can do multiple reloads in a row
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------

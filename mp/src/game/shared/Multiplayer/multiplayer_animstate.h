@@ -209,7 +209,7 @@ public:
 	// Feet.
 	// If you are forcing aim yaw, your code is almost definitely broken if you don't include a delay between 
 	// teleporting and forcing yaw. This is due to an unfortunate interaction between the command lookback window,
-	// and the fact that m_flEyeYaw is never propogated from the server to the client.
+	// and the fact that m_flEyeYaw is never propagated from the server to the client.
 	// TODO: Fix this after Halloween 2014.
 	bool	m_bForceAimYaw;
 

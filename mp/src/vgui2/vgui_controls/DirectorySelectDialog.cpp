@@ -178,7 +178,7 @@ inline const char *MoveToNextSubDir( const char *pStart, int *nCount )
 		nMoved++;
 	}
 
-	// Move past the current block of text until we've hit the next path seperator (or end)
+	// Move past the current block of text until we've hit the next path separator (or end)
 	while ( pStart[nMoved] != '\\' && pStart[nMoved] != '\0' )
 	{
 		nMoved++;

@@ -114,7 +114,7 @@ void CWeaponBugBait::Spawn( void )
 //-----------------------------------------------------------------------------
 void CWeaponBugBait::FallInit( void )
 {
-	// Bugbait shouldn't be physics, because it musn't roll/move away from it's spawnpoint.
+	// Bugbait shouldn't be physics, because it mustn't roll/move away from it's spawnpoint.
 	// The game will break if the player can't pick it up, so it must stay still.
 	SetModel( GetWorldModel() );
 

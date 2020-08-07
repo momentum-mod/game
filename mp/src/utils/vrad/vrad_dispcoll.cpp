@@ -545,7 +545,7 @@ void CVRADDispColl::CreateChildPatches( int iParentPatch, int nLevel )
 		return;
 	}
 
-	// Calculate the the area of the patch (triangle!).
+	// Calculate the area of the patch (triangle!).
 	Assert( pParentPatch->winding->numpoints == 3 );
 	if ( pParentPatch->winding->numpoints != 3 )
 		return;
@@ -653,7 +653,7 @@ void CVRADDispColl::CreateChildPatchesSub( int iParentPatch )
 	if ( !pParentPatch )
 		return;
 
-	// Calculate the the area of the patch (triangle!).
+	// Calculate the area of the patch (triangle!).
 	Assert( pParentPatch->winding->numpoints == 3 );
 	if ( pParentPatch->winding->numpoints != 3 )
 		return;
@@ -692,7 +692,7 @@ void CVRADDispColl::CreateChildPatchesSub( int iParentPatch )
 	if ( flTestArea < flMinArea )
 		return;
 
-	// Create children patchs - 2 of them.
+	// Create children patches - 2 of them.
 	Vector vecChildPoints[2][3];
 	switch ( iLongEdge )
 	{

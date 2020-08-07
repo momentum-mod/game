@@ -2,7 +2,7 @@
 
 /// \file pubkey.h
 /// \brief This file contains helper classes/functions for implementing public key algorithms.
-/// \details The class hierachies in this header file tend to look like this:
+/// \details The class hierarchies in this header file tend to look like this:
 ///
 /// <pre>
 ///                   x1
@@ -87,7 +87,7 @@ public:
 	/// \details The default implementation returns <tt>PreimageBound() - 1</tt>.
 	virtual Integer MaxPreimage() const {return --PreimageBound();}
 	/// \brief Returns the maximum size of a message after the trapdoor function is applied bound to a public key
-	/// \returns the the maximum size of a message after the trapdoor function is applied bound to a public key
+	/// \returns the maximum size of a message after the trapdoor function is applied bound to a public key
 	/// \details The default implementation returns <tt>ImageBound() - 1</tt>.
 	virtual Integer MaxImage() const {return --ImageBound();}
 };
@@ -625,7 +625,7 @@ public:
 	void SetKeyPtr(const KEY *pKey) {m_pKey = pKey;}
 
 	const KEY & GetKey() const {return *m_pKey;}
-	KEY & AccessKey() {throw NotImplemented("TF_ObjectImplExtRef: cannot modify refererenced key");}
+	KEY & AccessKey() {throw NotImplemented("TF_ObjectImplExtRef: cannot modify referenced key");}
 
 private:
 	const KEY * m_pKey;
@@ -690,7 +690,7 @@ public:
 	/// \brief Generate and apply mask
 	/// \param hash HashTransformation derived class
 	/// \param output the destination byte array
-	/// \param outputLength the size fo the the destination byte array
+	/// \param outputLength the size of the destination byte array
 	/// \param input the message to hash
 	/// \param inputLength the size of the message
 	/// \param mask flag indicating whether to apply the mask
@@ -701,7 +701,7 @@ public:
 /// \brief P1363 mask generation function
 /// \param hash HashTransformation derived class
 /// \param output the destination byte array
-/// \param outputLength the size fo the the destination byte array
+/// \param outputLength the size of the destination byte array
 /// \param input the message to hash
 /// \param inputLength the size of the message
 /// \param derivationParams additional derivation parameters
@@ -842,7 +842,7 @@ public:
 	}
 
 	/// \brief Exponentiates an element
-	/// \param base the base elemenet
+	/// \param base the base element
 	/// \param exponent the exponent to raise the base
 	/// \return the result of the exponentiation
 	/// \details Internally, ExponentiateElement() calls SimultaneousExponentiate().
@@ -886,7 +886,7 @@ public:
 	/// \brief Retrieves the encoded element's size
 	/// \param reversible flag indicating the encoding format
 	/// \return encoded element's size, in bytes
-	/// \details The format of the encoded element varies by the underlyinhg type of the element and the
+	/// \details The format of the encoded element varies by the underlying type of the element and the
 	///   reversible flag. GetEncodedElementSize() must be implemented in a derived class.
 	/// \sa GetEncodedElementSize(), EncodeElement(), DecodeElement()
 	virtual unsigned int GetEncodedElementSize(bool reversible) const =0;
@@ -951,7 +951,7 @@ public:
 	/// \brief Determines if an element is an identity
 	/// \param element element to check
 	/// \return true if the element is an identity, false otherwise
-	/// \details The identity element or or neutral element is a special element in a group that leaves
+	/// \details The identity element or neutral element is a special element in a group that leaves
 	///   other elements unchanged when combined with it.
 	/// \details IsIdentity() must be implemented in a derived class.
 	virtual bool IsIdentity(const Element &element) const =0;
@@ -1050,7 +1050,7 @@ public:
 				CRYPTOPP_GET_FUNCTION_ENTRY(PublicElement);
 	}
 
-	/// \brief Initialize or reinitialize this this key
+	/// \brief Initialize or reinitialize this key
 	/// \param source NameValuePairs to assign
 	void AssignFrom(const NameValuePairs &source);
 
@@ -1135,7 +1135,7 @@ public:
 				CRYPTOPP_GET_FUNCTION_ENTRY(PrivateExponent);
 	}
 
-	/// \brief Initialize or reinitialize this this key
+	/// \brief Initialize or reinitialize this key
 	/// \param source NameValuePairs to assign
 	void AssignFrom(const NameValuePairs &source)
 	{
@@ -1514,7 +1514,7 @@ public:
 		{return GetMessageEncodingInterface().MaxRecoverableLength(0, GetHashIdentifier().second, GetDigestSize());}
 
 	/// \brief Provides the maximum recoverable length
-	/// \param signatureLength the size fo the signature
+	/// \param signatureLength the size of the signature
 	/// \returns maximum recoverable length based on signature length, in bytes
 	/// \details this function is not implemented and always returns 0.
 	size_t MaxRecoverableLengthFromSignatureLength(size_t signatureLength) const
@@ -1658,7 +1658,7 @@ protected:
 	}
 };
 
-/// \brief Discret Log (DL) Verifier base class
+/// \brief Discrete Log (DL) Verifier base class
 /// \tparam T Field element
 template <class T>
 class CRYPTOPP_NO_VTABLE DL_VerifierBase : public DL_SignatureSchemeBase<PK_Verifier, DL_PublicKey<T> >

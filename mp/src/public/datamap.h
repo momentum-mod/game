@@ -208,7 +208,7 @@ extern ISaveRestoreOps *eventFuncs;
 #define FTYPEDESC_SAVE				0x0002		// This field is saved to disk
 #define FTYPEDESC_KEY				0x0004		// This field can be requested and written to by string name at load time
 #define FTYPEDESC_INPUT				0x0008		// This field can be written to by string name at run time, and a function called
-#define FTYPEDESC_OUTPUT			0x0010		// This field propogates it's value to all targets whenever it changes
+#define FTYPEDESC_OUTPUT			0x0010		// This field propagates it's value to all targets whenever it changes
 #define FTYPEDESC_FUNCTIONTABLE		0x0020		// This is a table entry for a member function pointer
 #define FTYPEDESC_PTR				0x0040		// This field is a pointer, not an embedded object
 #define FTYPEDESC_OVERRIDE			0x0080		// The field is an override for one in a base class (only used by prediction system for now)
@@ -399,7 +399,7 @@ struct datamap_t
 	};
 
 //-----------------------------------------------------------------------------
-// Forward compatability with potential seperate byteswap datadescs
+// Forward compatibility with potential separate byteswap datadescs
 
 #define DECLARE_BYTESWAP_DATADESC() DECLARE_SIMPLE_DATADESC()
 #define BEGIN_BYTESWAP_DATADESC(name) BEGIN_SIMPLE_DATADESC(name) 

@@ -44,7 +44,7 @@ extern double g_flDispCollInCallTimer;
 struct RayDispOutput_t
 {
 	short	ndxVerts[4];	// 3 verts and a pad
-	float	u, v;			// the u, v paramters (edgeU = v1 - v0, edgeV = v2 - v0)
+	float	u, v;			// the u, v parameters (edgeU = v1 - v0, edgeV = v2 - v0)
 	float	dist;			// intersection distance
 };
 

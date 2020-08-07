@@ -582,7 +582,7 @@ bool CTextureAllocator::UseTexture( TextureHandle_t h, bool bWillRedraw, float f
 	// Disconnect existing texture from this fragment (if necessary)
 	DisconnectTextureFromFragment(f);
 
-	// Connnect new texture to this fragment
+	// Connect new texture to this fragment
 	info.m_Fragment = f;
 	m_Fragments[f].m_Texture = h;
 

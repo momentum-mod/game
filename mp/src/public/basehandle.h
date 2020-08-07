@@ -36,7 +36,7 @@ public:
 	void Init( int iEntry, int iSerialNumber );
 	void Term();
 
-	// Even if this returns true, Get() still can return return a non-null value.
+	// Even if this returns true, Get() still can return a non-null value.
 	// This just tells if the handle has been initted with any values.
 	bool IsValid() const;
 

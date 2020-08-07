@@ -249,7 +249,7 @@ public:
 	virtual void			GenderExpandString( gender_t gender, char const *in, char *out, int maxlen ) = 0;
 	virtual bool			IsUsingGenderToken( char const *soundname ) = 0;
 
-	// For blowing away caches based on filetimstamps of the manifest, or of any of the
+	// For blowing away caches based on filetimestamps of the manifest, or of any of the
 	//  .txt files that are read into the sound emitter system
 	virtual unsigned int	GetManifestFileTimeChecksum() = 0;
 

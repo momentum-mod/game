@@ -46,7 +46,7 @@ public:
 	CMDLPanel( vgui::Panel *pParent, const char *pName );
 	virtual ~CMDLPanel();
 
-	// Overriden methods of vgui::Panel
+	// Overridden methods of vgui::Panel
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 
 	virtual void OnTick();

@@ -67,7 +67,7 @@ enum CompiledVtfFlags
 
 	TEXTUREFLAGS_CLAMPU                        = 0x02000000,
 
-	TEXTUREFLAGS_VERTEXTEXTURE                 = 0x04000000,					// Useable as a vertex texture
+	TEXTUREFLAGS_VERTEXTEXTURE                 = 0x04000000,					// Usable as a vertex texture
 
 	TEXTUREFLAGS_SSBUMP                        = 0x08000000,
 					
@@ -189,7 +189,7 @@ public:
 	virtual void *SetResourceData( uint32 eType, void const *pData, size_t nDataSize ) = 0;
 
 	// find the resource data and return a pointer to it. The data pointed to by this pointer will
-	// go away when the ivtftexture does. retruns null if resource not present
+	// go away when the ivtftexture does. returns null if resource not present
 	virtual void *GetResourceData( uint32 eType, size_t *pDataSize ) const = 0;
 
 	// Locates the resource entry info if it's present, easier than crawling array types
@@ -197,7 +197,7 @@ public:
 
 	// Retrieve available resource types of this IVTFTextures
 	//		arrTypesBuffer			buffer to be filled with resource types available.
-	//		numTypesBufferElems		how many resource types the buffer can accomodate.
+	//		numTypesBufferElems		how many resource types the buffer can accommodate.
 	// Returns:
 	//		number of resource types available (can be greater than "numTypesBufferElems"
 	//		in which case only first "numTypesBufferElems" are copied to "arrTypesBuffer")
@@ -242,7 +242,7 @@ public:
 	virtual int LowResHeight() const = 0;
 	virtual ImageFormat LowResFormat() const = 0;
 
-	// NOTE: reflectivity[0] = blue, [1] = greem, [2] = red
+	// NOTE: reflectivity[0] = blue, [1] = green, [2] = red
 	virtual const Vector &Reflectivity() const = 0;
 
 	virtual bool IsCubeMap() const = 0;
@@ -328,7 +328,7 @@ public:
 	// (which happens to be different from the way cubemaps have their faces).
 	virtual void MatchCubeMapBorders( int iStage, ImageFormat finalFormat, bool bSkybox ) = 0;
 
-	// Sets threshhold values for alphatest mipmapping
+	// Sets threshold values for alphatest mipmapping
 	virtual void SetAlphaTestThreshholds( float flBase, float flHighFreq ) = 0;
 
 	// Sets post-processing flags (settings are copied, pointer passed to distinguish between structure versions)
@@ -474,7 +474,7 @@ struct VTFFileHeaderV7_2_t : public VTFFileHeaderV7_1_t
 // Special section for stock resources types
 enum ResourceEntryType
 {
-	// Legacy stock resources, readin/writing are handled differently (i.e. they do not have the length tag word!)
+	// Legacy stock resources, reading/writing are handled differently (i.e. they do not have the length tag word!)
 	VTF_LEGACY_RSRC_LOW_RES_IMAGE	= MK_VTF_RSRC_ID( 0x01, 0, 0 ),	// Low-res image data
 	VTF_LEGACY_RSRC_IMAGE			= MK_VTF_RSRC_ID( 0x30, 0, 0 ),	// Image data
 
@@ -536,7 +536,7 @@ struct VTFFileHeader_t : public VTFFileHeaderV7_3_t
 #define VTF_RSRC_TEXTURE_LOD_SETTINGS ( MK_VTF_RSRC_ID( 'L','O','D' ) )
 struct TextureLODControlSettings_t
 {
-	// What to clamp the dimenstions to, mip-map wise, when at picmip 0. keeps texture from
+	// What to clamp the dimensions to, mip-map wise, when at picmip 0. keeps texture from
 	// exceeding (1<<m_ResolutionClamp) at picmip 0.  at picmip 1, it won't exceed
 	// (1<<(m_ResolutionClamp-1)), etc.
 	uint8 m_ResolutionClampX;

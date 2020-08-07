@@ -15,15 +15,15 @@
 
 
 // format of diff output:
-// 0NN (N=1..127)  copy next N literaly
+// 0NN (N=1..127)  copy next N literally
 //
-// 1NN (N=1..127) ofs (-128..127) copy next N bytes from original, changin offset by N bytes from
+// 1NN (N=1..127) ofs (-128..127) copy next N bytes from original, changing offset by N bytes from
 // last copy end
 // 100 N ofs(-32768..32767) copy next N, with larger delta offset
 // 00 NNNN(1..65535) ofs(-32768..32767) big copy from old
 // 80 00 NN NN NN big raw copy
 //
-// available codes (could be used for additonal compression ops)
+// available codes (could be used for additional compression ops)
 // long offset form whose offset could have fit in short offset
 
 // note - this algorithm uses storage equal to 8* the old buffer size. 64k=.5mb

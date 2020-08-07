@@ -244,7 +244,7 @@ struct CPatch
 
 
 extern CUtlVector<CPatch>	g_Patches;
-extern CUtlVector<int>		g_FacePatches;		// constains all patches, children first
+extern CUtlVector<int>		g_FacePatches;		// contains all patches, children first
 extern CUtlVector<int>		faceParents;		// contains only root patches, use next parent to iterate
 extern CUtlVector<int>		clusterChildren;
 

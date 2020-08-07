@@ -977,7 +977,7 @@ void CHudControlPointIcons::PerformLayout( void )
 		{
 			bUseDefaultLines = false;
 
-			// Cap layout is a string with indexes of cap points seperated by ',' to denote
+			// Cap layout is a string with indexes of cap points separated by ',' to denote
 			// a new line. So "3,1 2" would create a pyramid, with cap point 3 on the 
 			// first line, and caps 1 & 2 on the second line.
 			int iLine = 0;

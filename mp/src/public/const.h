@@ -211,7 +211,7 @@ enum MoveCollide_t
 	// These ones only work for MOVETYPE_FLY + MOVETYPE_FLYGRAVITY
 	MOVECOLLIDE_FLY_BOUNCE,	// bounces, reflects, based on elasticity of surface and object - applies friction (adjust velocity)
 	MOVECOLLIDE_FLY_CUSTOM,	// Touch() will modify the velocity however it likes
-	MOVECOLLIDE_FLY_SLIDE,  // slides along surfaces (no bounce) - applies friciton (adjusts velocity)
+	MOVECOLLIDE_FLY_SLIDE,  // slides along surfaces (no bounce) - applies friction (adjusts velocity)
 
 	MOVECOLLIDE_COUNT,		// Number of different movecollides
 

@@ -1614,7 +1614,7 @@ static void SwapPhyscollideLump( byte *pDestBase, byte *pSrcBase, unsigned int &
 					pPhysModel->dataSize += padBytes;
 				}
 
-				// Copy data and size into alligned buffer
+				// Copy data and size into aligned buffer
 				int newsize = size + padBytes;
 				if ( g_bSwapOnLoad )
 					newsize = SwapLong( newsize );

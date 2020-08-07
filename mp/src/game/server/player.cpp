@@ -536,7 +536,7 @@ CBasePlayer::CBasePlayer( )
 
 	m_hZoomOwner = NULL;
 
-	m_nUpdateRate = 1.0f/TICK_INTERVAL;  // cl_updaterate defualt
+	m_nUpdateRate = 1.0f/TICK_INTERVAL;  // cl_updaterate default
 	m_fLerpTime = TICK_INTERVAL; // cl_interp default
 	m_bPredictWeapons = true;
 	m_bLagCompensation = false;
@@ -685,7 +685,7 @@ bool CBasePlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, cons
 	const Vector &vHisOrigin = pPlayer->GetAbsOrigin();
 
 	// get max distance player could have moved within max lag compensation time, 
-	// multiply by 1.5 to to avoid "dead zones"  (sqrt(2) would be the exact value)
+	// multiply by 1.5 to avoid "dead zones"  (sqrt(2) would be the exact value)
 	float maxDistance = 1.5 * pPlayer->MaxSpeed() * sv_maxunlag.GetFloat();
 
 	// If the player is within this distance, lag compensate them in case they're running past us.
@@ -3795,7 +3795,7 @@ void CBasePlayer::PreThink(void)
 
 		#define DMG_PARALYZE		(1 << 14)	// slows affected creature down
 		#define DMG_NERVEGAS		(1 << 15)	// nerve toxins, very bad
-		#define DMG_POISON			(1 << 16)	// blood poisioning
+		#define DMG_POISON			(1 << 16)	// blood poisoning
 		#define DMG_RADIATION		(1 << 17)	// radiation exposure
 		#define DMG_DROWNRECOVER	(1 << 18)	// drown recovery
 		#define DMG_ACID			(1 << 19)	// toxic chemicals or acid burns
@@ -3823,7 +3823,7 @@ void CBasePlayer::PreThink(void)
 							- recharged by suit recharger
 		Air In Lungs		- drowning damage is done to air in lungs first, then to body
 							- recharged by poking head out of water
-							- 10 seconds if swiming fast
+							- 10 seconds if swimming fast
 		Air In SCUBA		- drowning damage is done to air in tanks first, then to body
 							- 2 minutes in tanks. Need new tank once empty.
 		Radiation Syringe	- Each syringe full provides protection vs one radiation dosage
@@ -4781,7 +4781,7 @@ void CBasePlayer::InitialSpawn( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Called everytime the player respawns
+// Purpose: Called every time the player respawns
 //-----------------------------------------------------------------------------
 void CBasePlayer::Spawn( void )
 {
@@ -4841,7 +4841,7 @@ void CBasePlayer::Spawn( void )
 	m_flNextDecalTime	= 0;// let this player decal as soon as he spawns.
 
 	m_flgeigerDelay = gpGlobals->curtime + 2.0;	// wait a few seconds until user-defined message registrations
-												// are recieved by all clients
+												// are received by all clients
 	
 	m_flFieldOfView		= 0.766;// some NPCs use this to determine whether or not the player is looking at them.
 
@@ -4968,7 +4968,7 @@ void CBasePlayer::Precache( void )
 	// was loaded, fix all of the node graph pointers before the game starts.
 	
 	// !!!BUGBUG - now that we have multiplayer, this needs to be moved!
-	/* todo - put in better spot and use new ainetowrk stuff
+	/* todo - put in better spot and use new ainetwork stuff
 	if ( WorldGraph.m_fGraphPresent && !WorldGraph.m_fGraphPointersSet )
 	{
 		if ( !WorldGraph.FSetGraphPointers() )
@@ -5445,7 +5445,7 @@ CBaseEntity *FindEntityForward( CBasePlayer *pMe, bool fHull )
 //-----------------------------------------------------------------------------
 // Purpose: Finds the nearest entity in front of the player of the given
 //			classname, preferring collidable entities, but allows selection of 
-//			enities that are on the other side of walls or objects
+//			entities that are on the other side of walls or objects
 //
 // Input  :
 // Output :
@@ -5469,7 +5469,7 @@ CBaseEntity *FindPickerEntityClass( CBasePlayer *pPlayer, char *classname )
 
 //-----------------------------------------------------------------------------
 // Purpose: Finds the nearest entity in front of the player, preferring
-//			collidable entities, but allows selection of enities that are
+//			collidable entities, but allows selection of entities that are
 //			on the other side of walls or objects
 // Input  :
 // Output :
@@ -5958,7 +5958,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		
 		return true;
 	}
-	else if ( stricmp( cmd, "spec_prev" ) == 0 ) // chase prevoius player
+	else if ( stricmp( cmd, "spec_prev" ) == 0 ) // chase previous player
 	{
 		if ( GetObserverMode() > OBS_MODE_FIXED )
 		{
@@ -6519,7 +6519,7 @@ void CBasePlayer::RemoveWearable( CEconWearable *pItem )
 			break;
 		}
 
-		// Integrety is failing, remove NULLs
+		// Integrity is failing, remove NULLs
 		if ( !pWearable )
 		{
 			m_hMyWearables.Remove( i );
@@ -7128,7 +7128,7 @@ void CBasePlayer::SetupVPhysicsShadow( const Vector &vecAbsOrigin, const Vector 
 	m_pShadowStand = PhysModelCreateCustom( this, pStandModel, GetLocalOrigin(), GetLocalAngles(), pStandHullName, false, &solid );
 	m_pShadowStand->SetCallbackFlags( CALLBACK_GLOBAL_COLLISION | CALLBACK_SHADOW_COLLISION );
 
-	// create crouchig hull
+	// create crouching hull
 	m_pShadowCrouch = PhysModelCreateCustom( this, pCrouchModel, GetLocalOrigin(), GetLocalAngles(), pCrouchHullName, false, &solid );
 	m_pShadowCrouch->SetCallbackFlags( CALLBACK_GLOBAL_COLLISION | CALLBACK_SHADOW_COLLISION );
 

@@ -85,7 +85,7 @@ void SendProxy_FishAngle( const SendProp *pProp, const void *pStruct, const void
 
 /**
  * NOTE: Do NOT use SPROP_CHANGES_OFTEN, as it will reorder this list.
- * The pool origin must arrive befoore m_x and m_y or the fish will
+ * The pool origin must arrive before m_x and m_y or the fish will
  * respawn at the origin and zip back to their proper places.
  */
 IMPLEMENT_SERVERCLASS_ST_NOBASE( CFish, DT_CFish )
@@ -229,7 +229,7 @@ void CFish::FlockTo( CFish *other, float amount )
 		{
 			const float avoidPower = 5.0f;
 
-			// their comin' right at us! - avoid
+			// they're comin' right at us! - avoid
 			if (DotProduct( m_perp, to ) > 0.0f)
 			{
 				m_angleChange -= avoidPower * (1.0f - range/avoidRange);

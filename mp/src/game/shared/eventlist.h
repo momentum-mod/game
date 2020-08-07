@@ -24,7 +24,7 @@
 
 typedef enum
 {
-	AE_INVALID = -1,			// So we have something more succint to check for than '-1'
+	AE_INVALID = -1,			// So we have something more succinct to check for than '-1'
 	AE_EMPTY,
 	AE_NPC_LEFTFOOT, // #define	NPC_EVENT_LEFTFOOT			2050
 	AE_NPC_RIGHTFOOT, // #define NPC_EVENT_RIGHTFOOT			2051

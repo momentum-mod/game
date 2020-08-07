@@ -13,7 +13,7 @@
 
 #include "ispatialpartition.h"
 
-//Enumator class for ragdolls being affected by explosive forces
+//Enumerator class for ragdolls being affected by explosive forces
 class CRagdollExplosionEnumerator : public IPartitionEnumerator
 {
 	DECLARE_CLASS_GAMEROOT( CRagdollExplosionEnumerator, IPartitionEnumerator );

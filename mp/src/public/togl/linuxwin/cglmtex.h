@@ -161,7 +161,7 @@ struct GLMTexLayout
 
 	// derived values:	
 	GLMTexFormatDesc	*m_format;					// format specific info
-	int					m_mipCount;					// derived by starying at base size and working down towards 1x1
+	int					m_mipCount;					// derived by starting at base size and working down towards 1x1
 	int					m_faceCount;				// 1 for 2d/3d, 6 for cubemap
 	int					m_sliceCount;				// product of faces and mips
 	int					m_storageTotalSize;			// size of storage slab required

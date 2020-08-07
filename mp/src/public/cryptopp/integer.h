@@ -233,7 +233,7 @@ public:
 
 		/// \brief Encode absolute value as big-endian octet string
 		/// \param bt BufferedTransformation object
-		/// \param length the number of mytes to decode
+		/// \param length the number of bytes to decode
 		void DEREncodeAsOctetString(BufferedTransformation &bt, size_t length) const;
 
 		/// \brief Encode absolute value in OpenPGP format
@@ -296,7 +296,7 @@ public:
 
 	/// \name ACCESSORS
 	//@{
-		/// \brief Determines if the Integer is convertable to Long
+		/// \brief Determines if the Integer is convertible to Long
 		/// \returns true if *this can be represented as a signed long
 		/// \sa ConvertToLong()
 		bool IsConvertableToLong() const;
@@ -529,7 +529,7 @@ public:
 	/// \name BINARY OPERATORS
 	//@{
 		/// \brief Perform signed comparison
-		/// \param a the Integer to comapre
+		/// \param a the Integer to compare
 		///   \retval -1 if <tt>*this < a</tt>
 		///   \retval  0 if <tt>*this = a</tt>
 		///   \retval  1 if <tt>*this > a</tt>
@@ -649,7 +649,7 @@ public:
 
 		/// \brief Calculate greatest common divisor
 		/// \param a a reference to the first number
-		/// \param n a reference to the secind number
+		/// \param n a reference to the second number
 		/// \returns the greatest common divisor <tt>a</tt> and <tt>n</tt>.
 		static Integer CRYPTOPP_API Gcd(const Integer &a, const Integer &n);
 

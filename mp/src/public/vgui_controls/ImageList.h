@@ -21,7 +21,7 @@ namespace vgui
 
 //-----------------------------------------------------------------------------
 // Purpose: holds a collection of images
-//			used by controls so that images can be refered to by indices
+//			used by controls so that images can be referred to by indices
 //-----------------------------------------------------------------------------
 class ImageList
 {

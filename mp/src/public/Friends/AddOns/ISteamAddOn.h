@@ -30,7 +30,7 @@ public:
 	virtual void SetParent( vgui::Panel *parent ) = 0;
 
 	// notifies the SteamAddOn of the user's ID and username. 
-	// Note: username can be set mulitple times due to changing of name
+	// Note: username can be set multiple times due to changing of name
 	virtual void SetUserID(unsigned int userID) = 0;
 	virtual void SetUserName(const char *userName) = 0;
 
@@ -47,7 +47,7 @@ public:
 	// if session doesn't exist, then the SteamAddOn body should deal with it
 	virtual bool OnReceiveMsg(SessionInt64 addOnSessionID, CUtlMsgBuffer *msgBuffer) = 0;
 
-	// Let's the SteamAddOn know when when any friend's status has changed
+	// Let's the SteamAddOn know when any friend's status has changed
 	virtual void OnFriendStatusChanged() = 0;
 
 	// A request to start/join this AddOn with this user ID/name. addOnSessionID will be zero if it's a new session request

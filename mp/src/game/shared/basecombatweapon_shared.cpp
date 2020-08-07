@@ -38,7 +38,7 @@
 #include "tier0/memdbgon.h"
 
 // The minimum time a hud hint for a weapon should be on screen. If we switch away before
-// this, then teh hud hint counter will be deremented so the hint will be shown again, as
+// this, then the hud hint counter will be decremented so the hint will be shown again, as
 // if it had never been seen. The total display time for a hud hint is specified in client
 // script HudAnimations.txt (which I can't read here). 
 #define MIN_HUDHINT_DISPLAY_TIME 7.0f
@@ -1182,7 +1182,7 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 	// If we don't have any ammo, switch to the next best weapon
 	if ( !HasAnyAmmo() && m_flNextPrimaryAttack < gpGlobals->curtime && m_flNextSecondaryAttack < gpGlobals->curtime )
 	{
-		// weapon isn't useable, switch.
+		// weapon isn't usable, switch.
 		if ( g_pGameRules->SwitchToNextBestWeapon( pOwner, this ) )
 		{
 			m_flNextPrimaryAttack = gpGlobals->curtime + 0.3;
@@ -1191,7 +1191,7 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 	}
 	else
 	{
-		// Weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
+		// Weapon is usable. Reload if empty and weapon has waited as long as it has to after firing
 		if ( UsesClipsForAmmo1() && !AutoFiresFullClip() && 
 			 (m_iClip1 == 0) && 
 			 m_flNextPrimaryAttack < gpGlobals->curtime && 

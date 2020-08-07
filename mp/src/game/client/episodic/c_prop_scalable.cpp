@@ -112,7 +112,7 @@ C_PropScalable::C_PropScalable( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Calculates the scake of the object once per frame
+// Purpose: Calculates the scale of the object once per frame
 //-----------------------------------------------------------------------------
 void C_PropScalable::CalculateScale( void )
 {

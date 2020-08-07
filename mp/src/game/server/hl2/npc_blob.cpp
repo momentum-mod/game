@@ -953,7 +953,7 @@ void CNPC_Blob::DoBlobBatchedAI( int iStart, int iEnd )
 }
 
 //-----------------------------------------------------------------------------
-// Throw out all elements and their entities except for the the specified 
+// Throw out all elements and their entities except for the specified 
 // index into the UTILVector. This is useful for isolating elements that 
 // get into a bad state.
 //-----------------------------------------------------------------------------

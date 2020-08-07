@@ -3,7 +3,7 @@
 // Purpose: Dr. Magnusson, a grumpy bastard who builds satellites and rockets
 //			at the White Forest missile silo. Instantly unlikeable, he is also
 //			the inventor of the Magnusson Device aka "strider buster", which
-//			is purported to resemble his cantelope-like head.
+//			is purported to resemble his cantaloupe-like head.
 //
 //=============================================================================
 

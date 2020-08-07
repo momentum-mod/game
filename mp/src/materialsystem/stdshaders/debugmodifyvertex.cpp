@@ -6,7 +6,7 @@
 // Modifications must take place during the DYNAMIC_STATE block.
 // Use the function MeshBuilder() to build the mesh 
 //
-// Also note: Using thie feature is *really expensive*! It makes a copy of
+// Also note: Using this feature is *really expensive*! It makes a copy of
 // the vertex data *per pass!* If you wish to modify vertex data to be used
 // with all passes, your best bet is to construct a dynamic mesh instead.
 //

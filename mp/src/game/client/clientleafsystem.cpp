@@ -708,7 +708,7 @@ void CClientLeafSystem::EnableAlternateSorting( ClientRenderHandle_t handle, boo
 //-----------------------------------------------------------------------------
 void CClientLeafSystem::AddRenderable( IClientRenderable* pRenderable, RenderGroup_t group )
 {
-	// force a relink we we try to draw it for the first time
+	// force a relink when we try to draw it for the first time
 	int flags = RENDER_FLAGS_HASCHANGED;
 
 	if ( group == RENDER_GROUP_TWOPASS )
@@ -733,7 +733,7 @@ void CClientLeafSystem::RemoveRenderable( ClientRenderHandle_t handle )
 	Assert( handle == pRenderable->RenderHandle() );
 	pRenderable->RenderHandle() = INVALID_CLIENT_RENDER_HANDLE;
 
-	// Reemove the renderable from the dirty list
+	// Remove the renderable from the dirty list
 	if ( m_Renderables[handle].m_Flags & RENDER_FLAGS_HASCHANGED )
 	{
 		// NOTE: This isn't particularly fast (linear search),
@@ -781,7 +781,7 @@ int CClientLeafSystem::GetRenderableLeaves( ClientRenderHandle_t handle, int lea
 // If pInIterator is not specified, pOutLeaf is the first leaf in the list.
 // if pInIterator is specified, that iterator is used to return the next leaf
 // in the list in pOutLeaf.
-// the pOutIterator parameter is filled with the iterater which index to the pOutLeaf returned.
+// the pOutIterator parameter is filled with the iterator which index to the pOutLeaf returned.
 //
 // Returns false on failure cases where pOutLeaf will be invalid. CHECK THE RETURN!
 //-----------------------------------------------------------------------------

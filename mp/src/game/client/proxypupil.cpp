@@ -80,7 +80,7 @@ void CPupilProxy::OnBind( C_BaseEntity *pBaseEntity )
 	ITexture *pTexture = m_pAnimatedTextureVar->GetTextureValue();
 	int nFrameCount = pTexture->GetNumAnimationFrames();
 
-	// Compute the lighting at the eye position of the entity; use it to dialate the pupil
+	// Compute the lighting at the eye position of the entity; use it to dilate the pupil
 	Vector forward;
 	pBaseEntity->GetVectors( &forward, NULL, NULL );
 

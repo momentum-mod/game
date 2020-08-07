@@ -273,14 +273,14 @@ typedef enum _D3DSHADER_COMPARISON
 #define D3DPMISCCAPS_CLIPTLVERTS        0x00000200L /* device will clip post-transformed vertex primitives */
 #define D3DPMISCCAPS_TSSARGTEMP         0x00000400L /* device supports D3DTA_TEMP for temporary register */
 #define D3DPMISCCAPS_BLENDOP            0x00000800L /* device supports D3DRS_BLENDOP */
-#define D3DPMISCCAPS_NULLREFERENCE      0x00001000L /* Reference Device that doesnt render */
+#define D3DPMISCCAPS_NULLREFERENCE      0x00001000L /* Reference Device that doesn't render */
 #define D3DPMISCCAPS_PERSTAGECONSTANT   0x00008000L /* Device supports per-stage constants */
 #define D3DPMISCCAPS_MRTINDEPENDENTBITDEPTHS    0x00040000L /* Device supports different bit depths for MRT */
 #define D3DPMISCCAPS_FOGVERTEXCLAMPED           0x00100000L /* Device clamps fog blend factor per vertex */
 
 // Flags field for Issue
 #define D3DISSUE_END (1 << 0) // Tells the runtime to issue the end of a query, changing it's state to "non-signaled".
-#define D3DISSUE_BEGIN (1 << 1) // Tells the runtime to issue the beginng of a query.
+#define D3DISSUE_BEGIN (1 << 1) // Tells the runtime to issue the beginning of a query.
 
 
 #define D3DPRESENT_INTERVAL_ONE         0x00000001L

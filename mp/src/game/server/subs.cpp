@@ -249,7 +249,7 @@ void CBaseToggle::LinearMoveDone( void )
 }
 
 
-// DVS TODO: obselete, remove?
+// DVS TODO: obsolete, remove?
 bool CBaseToggle::IsLockedByMaster( void )
 {
 	if (m_sMaster != NULL_STRING && !UTIL_IsMasterTriggered(m_sMaster, m_hActivator))

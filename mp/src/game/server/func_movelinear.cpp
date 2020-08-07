@@ -340,7 +340,7 @@ void CFuncMoveLinear::InputSetPosition(inputdata_t &inputdata)
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Called every frame when the bruch is blocked while moving
+// Purpose: Called every frame when the brush is blocked while moving
 // Input  : pOther - The blocking entity.
 //-----------------------------------------------------------------------------
 void CFuncMoveLinear::Blocked(CBaseEntity *pOther)
@@ -402,7 +402,7 @@ int CFuncMoveLinear::DrawDebugTextOverlays(void)
 }
 /* BM: Overriding this to run a fix when it is called */
 //-----------------------------------------------------------------------------
-// Purpose: Runs a fix atfer the base version clearly dosen't cut it.
+// Purpose: Runs a fix after the base version clearly doesn't cut it.
 //-----------------------------------------------------------------------------
 void CFuncMoveLinear::SetParent(CBaseEntity *pParentEntity, int iAttachment)
 {

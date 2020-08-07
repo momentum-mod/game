@@ -6,7 +6,7 @@
 //
 //=============================================================================//
 //
-// MessageBuffer - handy for packing and upacking
+// MessageBuffer - handy for packing and unpacking
 // structures to be sent as messages  
 //
 #ifndef _MESSAGEBUFFER

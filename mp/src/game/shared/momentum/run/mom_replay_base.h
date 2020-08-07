@@ -18,7 +18,7 @@ class CMomReplayBase : public ISerializable
     virtual ~CMomReplayBase() {}
 
   public:
-    // All these are virtual so they can be overriden in later versions.
+    // All these are virtual so they can be overridden in later versions.
     virtual const char *GetMapName() { return m_rhHeader.m_szMapName; }
     virtual const char *GetMapHash() { return m_rhHeader.m_szMapHash; }
     virtual const char *GetPlayerName() { return m_rhHeader.m_szPlayerName; }

@@ -571,7 +571,7 @@ void CAI_AssaultBehavior::StartTask( const Task_t *pTask )
 		break;
 
 	case TASK_HIT_RALLY_POINT:
-		// Once we're stading on it and facing the correct direction,
+		// Once we're standing on it and facing the correct direction,
 		// we have arrived at rally point.
 		GetOuter()->SpeakSentence( ASSAULT_SENTENCE_HIT_RALLY_POINT );
 

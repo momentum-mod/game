@@ -44,7 +44,7 @@ public:
 	CPotteryWheelPanel( vgui::Panel *pParent, const char *pName );
 	virtual ~CPotteryWheelPanel();
 
-	// Overriden methods of vgui::Panel
+	// Overridden methods of vgui::Panel
 	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void Init( int x, int y, int wide, int tall );
 	virtual void Paint();
@@ -59,7 +59,7 @@ public:
 
 	virtual void OnMouseCaptureLost();
 
-	// Sets the camera to look at the the thing we're spinning around
+	// Sets the camera to look at the thing we're spinning around
 	void LookAt( const Vector &vecCenter, float flRadius );
 	void LookAt( float flRadius );
 

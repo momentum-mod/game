@@ -32,7 +32,7 @@ static void AddArguments( int &argc, char **&argv, const char *str )
 		token = strtok( NULL, " " );
 	}
 
-	// Make sure someting was actually found in the file
+	// Make sure something was actually found in the file
 	if( argCt > argc )
 	{
 		sFoundConfigArgs = true;

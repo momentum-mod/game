@@ -42,7 +42,7 @@ void CAI_BaseNPC::ForceSelectedGo(CBaseEntity *pPlayer, const Vector &targetPos,
 		{
 			Vector chasePosition = targetPos;
 			npc->TranslateNavGoal( pPlayer, chasePosition );
-			// It it legal to drop me here
+			// Is it legal to drop me here
 			Vector	vUpBit = chasePosition;
 			vUpBit.z += 1;
 
@@ -217,7 +217,7 @@ bool CAI_BaseNPC::ValidateNavGoal()
 
 
 			// For now we have to drop the node to the floor so we can
-			// get an accurate postion of the NPC.  Should change once Ken checks in
+			// get an accurate position of the NPC.  Should change once Ken checks in
 			float floorZ = GetFloorZ(vCoverLocation);
 			vCoverLocation.z = floorZ;
 
@@ -337,7 +337,7 @@ Vector CAI_BaseNPC::CalcThrowVelocity(const Vector &startPos, const Vector &endP
 	float throwHeight = 0;
 
 	// -----------------------------------------------------------------
-	// Now calcluate the distance to a point halfway between our current
+	// Now calculate the distance to a point halfway between our current
 	// and target position.  (the apex of our throwing arc)
 	// -----------------------------------------------------------------
 	Vector targetDir2D = endPos - startPos;

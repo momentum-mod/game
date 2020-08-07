@@ -499,7 +499,7 @@ inline void Vector4DMA( Vector4D const& start, float s, Vector4D const& dir, Vec
 }
 
 // FIXME: Remove
-// For backwards compatability
+// For backwards compatibility
 inline void	Vector4D::MulAdd(Vector4D const& a, Vector4D const& b, float scalar)
 {
 	x = a.x + b.x * scalar;
@@ -526,7 +526,7 @@ inline vec_t DotProduct4D(const Vector4D& a, const Vector4D& b)
 	return( a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w ); 
 }
 
-// for backwards compatability
+// for backwards compatibility
 inline vec_t Vector4D::Dot( Vector4D const& vOther ) const
 {
 	return DotProduct4D( *this, vOther );

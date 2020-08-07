@@ -1256,7 +1256,7 @@ enum
 
 
 //------------------------------------------------------------------------------
-// Reesponsible for changing levels when the player touches it
+// Responsible for changing levels when the player touches it
 //------------------------------------------------------------------------------
 class CChangeLevel : public CBaseTrigger
 {
@@ -2942,7 +2942,7 @@ void CTriggerCamera::Spawn( void )
 
 int CTriggerCamera::UpdateTransmitState()
 {
-	// always tranmit if currently used by a monitor
+	// always transmit if currently used by a monitor
 	if ( m_state == USE_ON )
 	{
 		return SetTransmitState( FL_EDICT_ALWAYS );

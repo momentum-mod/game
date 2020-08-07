@@ -57,7 +57,7 @@ struct demoheader_t
 	float	playback_time;					// Time of track
 	int     playback_ticks;					// # of ticks in track
 	int     playback_frames;				// # of frames in track
-	int		signonlength;					// length of sigondata in bytes
+	int		signonlength;					// length of signondata in bytes
 };
 
 inline void ByteSwap_demoheader_t( demoheader_t &swap )

@@ -16,7 +16,7 @@
 #include "tier0/memdbgon.h"
 
 // generate high quality noise based upon "sparse convolution". HIgher quality than perlin noise,
-// and no direcitonal artifacts.
+// and no directional artifacts.
 
 #include "noisedata.h"
 

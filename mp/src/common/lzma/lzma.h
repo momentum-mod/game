@@ -19,7 +19,7 @@
 
 //-----------------------------------------------------------------------------
 //	These routines are designed for TOOL TIME encoding/decoding on the PC!
-//	They have not been made to encode/decode on the PPC and lack big endian awarnesss.
+//	They have not been made to encode/decode on the PPC and lack big endian awareness.
 //	Lightweight GAME TIME Decoding is part of tier1.lib, via CLZMA.
 //-----------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ unsigned int	inputSize,
 unsigned int	*pOutputSize );
 
 //-----------------------------------------------------------------------------
-// Decoding glue. Returns TRUE if succesful.
+// Decoding glue. Returns TRUE if successful.
 //-----------------------------------------------------------------------------
 bool LZMA_Uncompress(
 unsigned char	*pInput,

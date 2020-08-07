@@ -192,7 +192,7 @@ void C_HLTVCamera::CalcChaseCamView( Vector& eyeOrigin, QAngle& eyeAngles, float
 	}
 	else
 	{
-		// target2 is missing, just keep angelsm, reset offset
+		// target2 is missing, just keep angles, reset offset
 		angleOffset.Init();
 	}
 
@@ -511,7 +511,7 @@ void C_HLTVCamera::CalcView(Vector& origin, QAngle& angles, float& fov)
 {
 	if ( m_bEntityPacketReceived )
 	{
-		// try to fixup movment pareents
+		// try to fixup movement parents
 		FixupMovmentParents();
 		m_bEntityPacketReceived = false;
 	}

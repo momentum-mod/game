@@ -204,7 +204,7 @@ void CColorCorrectionVolume::ThinkFunc( )
 		}
 		else
 		{
-			// we most recently exitted the volume
+			// we most recently exited the volume
 		
 			if( m_Weight > 0.0f )
 			{

@@ -18,7 +18,7 @@
 #define NPC_ADVISOR_HAS_BEHAVIOR 0
 
 #if NPC_ADVISOR_HAS_BEHAVIOR
-// Message ID constants used for communciation between client and server.
+// Message ID constants used for communication between client and server.
 enum 
 {
 	ADVISOR_MSG_START_BEAM = 10,

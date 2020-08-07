@@ -253,7 +253,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-// Purpose: Template provides provides back bridge to owning class and 
+// Purpose: Template provides back bridge to owning class and 
 //			establishes namespace settings
 //-----------------------------------------------------------------------------
 
@@ -325,7 +325,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // Purpose: Some bridges a little more complicated to allow behavior to see 
-//			what base class would do or control order in which it's donw
+//			what base class would do or control order in which it's done
 //-----------------------------------------------------------------------------
 
 abstract_class IBehaviorBackBridge

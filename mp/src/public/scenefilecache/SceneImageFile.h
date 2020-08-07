@@ -16,7 +16,7 @@
 #define SCENE_IMAGE_ID			MAKEID( 'V','S','I','F' )
 #define SCENE_IMAGE_VERSION		2
 
-// scene summary: cached calcs for commmon startup queries, variable sized
+// scene summary: cached calcs for common startup queries, variable sized
 struct SceneImageSummary_t
 {
 	unsigned int	msecs;

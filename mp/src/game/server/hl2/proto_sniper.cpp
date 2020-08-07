@@ -2001,7 +2001,7 @@ void CProtoSniper::StartTask( const Task_t *pTask )
 		break;
 
 	case TASK_SNIPER_PAINT_ENEMY:
-		// Everytime we start to paint an enemy, this is reset to false.
+		// Every time we start to paint an enemy, this is reset to false.
 		m_bWarnedTargetEntity = false;
 
 		// If the sniper has a sweep target, clear it, unless it's flagged to resume
@@ -2703,7 +2703,7 @@ bool CProtoSniper::FindFrustratedShot( float flNoise )
 
 			if( !GetEnemy()->FVisible( tr.endpos ) )
 			{
-				// Dont accept this point unless we are out of tries!
+				// Don't accept this point unless we are out of tries!
 				if( i != MAX_TRIES - 1 )
 				{
 					continue;
@@ -2813,7 +2813,7 @@ bool CProtoSniper::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **
 	// Now, if the check failed, see if the player is ducking and has recently
 	// fired a muzzleflash. If yes, see if you'd be able to see the player if 
 	// they were standing in their current position instead of ducking. Since
-	// the sniper doesn't have a clear shot in this situation, he will harrass
+	// the sniper doesn't have a clear shot in this situation, he will harass
 	// near the player.
 	CBasePlayer *pPlayer;
 

@@ -166,7 +166,7 @@ void CLogicMirrorMovement::Think()
 	// Make sure all entities are valid
 	if ( m_hMirrorTarget.Get() && m_hMovementTarget.Get() && m_hRemoteTarget.Get() && m_hMirrorRelative.Get() )
 	{	
-		// Get our two portal's world transforms transforms
+		// Get our two portal's world transforms
 		VMatrix matPortal1ToWorldInv, matPortal2ToWorld;
 		MatrixInverseGeneral( m_hMirrorRelative->EntityToWorldTransform(), matPortal1ToWorldInv );
 		matPortal2ToWorld = m_hRemoteTarget->EntityToWorldTransform();

@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //
 // This file defines a number of constants and structured which are used to build up a command
-// buffer to pass to ShaderAPI for state setting and other operations.  Since the prupose of these
+// buffer to pass to ShaderAPI for state setting and other operations.  Since the purpose of these
 // command buffers is to minimize and optimize calls into shaderapi, their structure is not
 // abstract - they are built out by the calling process.
 //

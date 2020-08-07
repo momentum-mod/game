@@ -88,7 +88,7 @@ public:
 
 	void ReadRestoreHeaders( IRestore *pRestore )
 	{
-		// No reason why any future version shouldn't try to retain backward compatability. The default here is to not do so.
+		// No reason why any future version shouldn't try to retain backward compatibility. The default here is to not do so.
 		short version;
 		pRestore->ReadShort( &version );
 		// only load if version matches and if we are loading a game, not a transition

@@ -473,7 +473,7 @@ void C_PhysPropClientside::Break()
 	// no damage/damage force? set a burst of 100 for some movement
 	params.defBurstScale = 100;
 
-	// spwan break chunks
+	// spawn break chunks
 	PropBreakableCreateAll( GetModelIndex(), pPhysics, params, this, -1, false );
 
 	Release(); // destroy object
@@ -548,7 +548,7 @@ void C_PhysPropClientside::ImpactTrace( trace_t *pTrace, int iDamageType, const 
 	if ( iDamageType == DMG_BLAST )
 	{
 		iDamage = VectorLength( dir );
-		dir *= 500;  // adjust impact strenght
+		dir *= 500;  // adjust impact strength
 
 		// apply force at object mass center
 		pPhysicsObject->ApplyForceCenter( dir );
@@ -570,7 +570,7 @@ void C_PhysPropClientside::ImpactTrace( trace_t *pTrace, int iDamageType, const 
 			iDamage = 50;
 		}
 		 
-		dir *= 4000;  // adjust impact strenght
+		dir *= 4000;  // adjust impact strength
 
 		// apply force where we hit it
 		pPhysicsObject->ApplyForceOffset( dir, hitpos );	
@@ -614,7 +614,7 @@ const char *C_PhysPropClientside::ParseEntity( const char *pEntData )
 
 	if ( !Q_strcmp( className, "prop_physics_multiplayer" ) )
 	{
-		// always force clientside entitis placed in maps
+		// always force clientside entities placed in maps
 		C_PhysPropClientside *pEntity = C_PhysPropClientside::CreateNew( true ); 
 
 		if ( pEntity )

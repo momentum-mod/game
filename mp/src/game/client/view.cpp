@@ -613,7 +613,7 @@ void CViewRender::SetUpViews()
 	{
 		if ( cl_demoviewoverride.GetFloat() > 0.0f )
 		{
-			// Retreive view angles from engine ( could have been set in IN_AdjustAngles above )
+			// Retrieve view angles from engine ( could have been set in IN_AdjustAngles above )
 			CalcDemoViewOverride( viewSetup.origin, viewSetup.angles );
 		}
 		else

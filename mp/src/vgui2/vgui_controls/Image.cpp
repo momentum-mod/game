@@ -18,7 +18,7 @@
 using namespace vgui;
 
 //-----------------------------------------------------------------------------
-// Purpose: Conctructor. Start with default position and default color.
+// Purpose: Constructor. Start with default position and default color.
 //-----------------------------------------------------------------------------
 Image::Image()
 {
@@ -163,7 +163,7 @@ void Image::DrawSetTextColor(Color sc)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Set the text color useing RGBA ints
+// Purpose: Set the text color using RGBA ints
 //-----------------------------------------------------------------------------
 void Image::DrawSetTextColor(int r,int g,int b,int a)
 {

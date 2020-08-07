@@ -529,7 +529,7 @@ int CNewParticleEffect::DrawModel( int flags )
 			DebugDrawBbox ( true );
 		}
 
-		// Still need to make sure we set this or they won't follow their attachemnt points.
+		// Still need to make sure we set this or they won't follow their attachment points.
 		m_flNextSleepTime = Max ( m_flNextSleepTime, ( g_pParticleSystemMgr->GetLastSimulationTime() + m_pDef->m_flNoDrawTimeToGoToSleep ));
 
 		return 0;

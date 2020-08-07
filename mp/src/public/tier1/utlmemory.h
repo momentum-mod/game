@@ -417,7 +417,7 @@ template< class T, class I >
 CUtlMemory<T,I>::CUtlMemory( T* pMemory, int numElements ) : m_pMemory(pMemory),
 	m_nAllocationCount( numElements )
 {
-	// Special marker indicating externally supplied modifyable memory
+	// Special marker indicating externally supplied modifiable memory
 	m_nGrowSize = EXTERNAL_BUFFER_MARKER;
 }
 
@@ -425,7 +425,7 @@ template< class T, class I >
 CUtlMemory<T,I>::CUtlMemory( const T* pMemory, int numElements ) : m_pMemory( (T*)pMemory ),
 	m_nAllocationCount( numElements )
 {
-	// Special marker indicating externally supplied modifyable memory
+	// Special marker indicating externally supplied modifiable memory
 	m_nGrowSize = EXTERNAL_CONST_BUFFER_MARKER;
 }
 

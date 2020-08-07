@@ -431,10 +431,10 @@ void CNPC_Barnacle::InitTonguePosition( void )
 
 //-----------------------------------------------------------------------------
 // Purpose: 
-// TODO: The LostPrey(true) at the top of 	if ( m_hRagdoll ) isnt' quite right:
+// TODO: The LostPrey(true) at the top of 	if ( m_hRagdoll ) isn't quite right:
 // it will make the barnacle drop anything that's shot on the way up. This is a 
 // quick fix for the antlions which crashed otherwise (they have somewhat anomalous
-// ragdoll behaivor) but should be revisted.
+// ragdoll behavior) but should be revisited.
 //-----------------------------------------------------------------------------
 void CNPC_Barnacle::BarnacleThink ( void )
 {
@@ -1359,7 +1359,7 @@ void CNPC_Barnacle::AttachTongueToTarget( CBaseEntity *pTouchEnt, Vector vecGrab
 	m_OnGrab.Set( pTouchEnt, this, this );
 #endif
 
-	// Reset this valricue each time we attach prey. If it needs to be reduced, code below will do so.
+	// Reset this value each time we attach prey. If it needs to be reduced, code below will do so.
 	m_flBarnaclePullSpeed = BARNACLE_PULL_SPEED;
 
 	if ( RandomFloat(0,1) > 0.5 )
@@ -1401,7 +1401,7 @@ void CNPC_Barnacle::AttachTongueToTarget( CBaseEntity *pTouchEnt, Vector vecGrab
 
 	SetEnemy( pTouchEnt );
 #if HL2_EPISODIC
-	// Disable collision between myself and the obejct I've seized.
+	// Disable collision between myself and the object I've seized.
 	PhysDisableEntityCollisions( this, pTouchEnt );
 #endif
 
@@ -1644,7 +1644,7 @@ void CNPC_Barnacle::BitePrey( void )
 	m_bSwallowingPoison = IsPoisonous(pVictim);
 	unsigned int enemyClass = GetEnemy()->Classify();
 #endif
-	// DMG_CRUSH because we don't wan't to impart physics forces
+	// DMG_CRUSH because we don't want to impart physics forces
 
 	pVictim->TakeDamage( CTakeDamageInfo( this, this, nDamage, iDamageType | DMG_CRUSH ) );
 
@@ -1809,7 +1809,7 @@ void CNPC_Barnacle::SwallowPrey( void )
 		m_hTongueTip->SetAbsVelocity( vec3_origin );
 
 #if HL2_EPISODIC
-		// digest poisonous things for just a moment before being killed by them (it looks wierd if it's instant)
+		// digest poisonous things for just a moment before being killed by them (it looks weird if it's instant)
 		// Parentheses were probably intended around the ?: part of the expression, but putting them there now
 		// would change the behavior which is undesirable, so parentheses were placed around the '+' to suppress
 		// compiler warnings.

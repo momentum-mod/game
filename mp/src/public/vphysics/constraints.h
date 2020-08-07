@@ -41,7 +41,7 @@ struct constraint_breakableparams_t
 	float		strength;				// strength of the constraint 0.0 - 1.0
 	float		forceLimit;				// constraint force limit to break (0 means never break)
 	float		torqueLimit;			// constraint torque limit to break (0 means never break)
-	float		bodyMassScale[2];		// scale applied to mass of reference/attached object before solving constriant
+	float		bodyMassScale[2];		// scale applied to mass of reference/attached object before solving constraint
 	bool		isActive;
 
 	inline void Defaults()

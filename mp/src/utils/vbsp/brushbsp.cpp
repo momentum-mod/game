@@ -640,7 +640,7 @@ int	TestBrushToPlanenum (bspbrush_t *brush, int planenum,
 WindingIsTiny
 
 Returns true if the winding would be crunched out of
-existance by the vertex snapping.
+existence by the vertex snapping.
 ================
 */
 #define	EDGE_LENGTH	0.2
@@ -843,7 +843,7 @@ qboolean CheckPlaneAgainstVolume (int pnum, node_t *node)
 ================
 SelectSplitSide
 
-Using a hueristic, choses one of the sides out of the brushlist
+Using a heuristic, choses one of the sides out of the brushlist
 to partition the brushes with.
 Returns NULL if there are no valid planes to split with..
 ================
@@ -880,20 +880,20 @@ side_t *SelectSplitSide (bspbrush_t *brushes, node_t *node)
 				side = brush->sides + i;
 
 				if (side->bevel)
-					continue;	// never use a bevel as a spliter
+					continue;	// never use a bevel as a splitter
 				if (!side->winding)
 					continue;	// nothing visible, so it can't split
 				if (side->texinfo == TEXINFO_NODE)
-					continue;	// allready a node splitter
+					continue;	// already a node splitter
 				if (side->tested)
-					continue;	// we allready have metrics for this plane
+					continue;	// we already have metrics for this plane
 				if (side->surf & SURF_SKIP)
 					continue;	// skip surfaces are never chosen
 				if ( side->visible ^ (pass<1) )
 					continue;	// only check visible faces on first pass
 				
 				pnum = side->planenum;
-				pnum &= ~1;	// allways use positive facing plane
+				pnum &= ~1;	// always use positive facing plane
 
 				CheckPlaneAgainstParents (pnum, node);
 
@@ -958,7 +958,7 @@ side_t *SelectSplitSide (bspbrush_t *brushes, node_t *node)
 					value = 9999999;
 
 				// save off the side test so we don't need
-				// to recalculate it when we actually seperate
+				// to recalculate it when we actually separate
 				// the brushes
 				if (value > bestvalue)
 				{
@@ -1294,7 +1294,7 @@ void SplitBrushList (bspbrush_t *brushes,
 
 		newbrush = CopyBrush (brush);
 
-		// if the planenum is actualy a part of the brush
+		// if the planenum is actually a part of the brush
 		// find the plane and flag it as used so it won't be tried
 		// as a splitter again
 		if (sides & PSIDE_FACING)

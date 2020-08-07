@@ -425,7 +425,7 @@ void SentryStatus( edict_t *pEntity )
 		Msg("Sentry Level: %i\n", sentryLevel );
 	}
 	else
-		Msg("Unable to retrive sentry level\n");
+		Msg("Unable to retrieve sentry level\n");
 
 	if (playerinfo->GetCustomInfo(TFPLAYERINFO_SENTRY_PROGRESS, value, emptyVariant))
 	{
@@ -801,7 +801,7 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 		Msg("Player Counts:\n");
 		for (int i = 0;i<teamCount;i++)
 		{
-			//If this failes, we can assume the rest is invalid too.
+			//If this fails, we can assume the rest is invalid too.
 			if (!gameInfo->GetInfo_GetTeamName(i) )
 				continue;
 			Msg("Team: %s, Players: %i\n", gameInfo->GetInfo_GetTeamName(i), gameInfo->GetInfo_NumPlayersOnTeam(i) );

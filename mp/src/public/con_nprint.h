@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: Debug overlay / notfication printing 
+// Purpose: Debug overlay / notification printing 
 //
 //=============================================================================//
 
@@ -12,7 +12,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// Purpose:  Debug overlay / notfication printing 
+// Purpose:  Debug overlay / notification printing 
 // NOTE:  Structure cannot be changed by mods
 //-----------------------------------------------------------------------------
 typedef struct con_nprint_s

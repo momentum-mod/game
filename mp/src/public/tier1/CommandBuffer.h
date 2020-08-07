@@ -66,7 +66,7 @@ public:
 	// Delays all queued commands to execute at a later time
 	void DelayAllQueuedCommands( int nTickDelay );
 
-	// Indicates how long to delay when encoutering a 'wait' command
+	// Indicates how long to delay when encountering a 'wait' command
 	void SetWaitDelayTime( int nTickDelay );
 
 	// Returns a handle to the next command to process

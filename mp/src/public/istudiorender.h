@@ -253,7 +253,7 @@ struct model_array_instance_t
 // Cache Callback Function
 // implementation can either statically persist data (tools) or lru cache (engine) it.
 // caller returns base pointer to resident data.
-// code expectes data to be dynamic and invokes cache callback prior to iterative access.
+// code expects data to be dynamic and invokes cache callback prior to iterative access.
 // virtualModel is member passed in via studiohdr_t and passed back for model identification.
 //-----------------------------------------------------------------------------
 #define STUDIO_DATA_CACHE_INTERFACE_VERSION "VStudioDataCache005"

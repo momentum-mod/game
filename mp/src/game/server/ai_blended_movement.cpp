@@ -1568,7 +1568,7 @@ void CAI_BlendedMotor::MaintainTurnActivity( void )
 
 	if (m_flNextTurnGesture > gpGlobals->curtime || m_flNextTurnAct > gpGlobals->curtime || GetOuter()->IsMoving() )
 	{
-		// clear out turn detection if currently turing or moving
+		// clear out turn detection if currently turning or moving
 		m_doTurn = m_doRight = m_doLeft = 0;
 		if ( GetOuter()->IsMoving())
 		{
@@ -1625,7 +1625,7 @@ void CAI_BlendedMotor::MaintainTurnActivity( void )
 					rate *= 1.5;
 				}
 				GetOuter()->SetLayerPlaybackRate( iLayer, rate );
-				// disable turing for the duration of the gesture
+				// disable turning for the duration of the gesture
 				m_flNextTurnAct = gpGlobals->curtime + GetOuter()->GetLayerDuration( iLayer );
 			}
 			else

@@ -369,7 +369,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 
 	// Get true latency
 
-	// correct is the amout of time we have to correct game time
+	// correct is the amount of time we have to correct game time
 	float correct = 0.0f;
 
 	INetChannelInfo *nci = engine->GetPlayerNetInfo( player->entindex() ); 
@@ -441,7 +441,7 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 	// get track history of this player
 	CUtlFixedLinkedList< LagRecord > *track = &m_PlayerTrack[ pl_index ];
 
-	// check if we have at leat one entry
+	// check if we have at least one entry
 	if ( track->Count() <= 0 )
 		return;
 

@@ -186,7 +186,7 @@ void Dragger::SetMovable(bool state)
 		if (state)
 		{
 			// if its not movable we stick with the default arrow
-			// if parent windows Start getting fancy cursors we should probably retrive a parent
+			// if parent windows Start getting fancy cursors we should probably retrieve a parent
 			// cursor and set it to that
 			SetCursor(dc_sizewe); 
 		}
@@ -243,7 +243,7 @@ static int __cdecl AscendingSortFunc(const void *elem1, const void *elem2)
 	int result = s_pSortFunc( s_pCurrentSortingListPanel, *p1, *p2 );
 	if (result == 0)
 	{
-		// use the secondary sort functino
+		// use the secondary sort function
 		result = s_pSortFuncSecondary( s_pCurrentSortingListPanel, *p1, *p2 );
 
 		if (!s_bSortAscendingSecondary)
@@ -278,7 +278,7 @@ static int __cdecl AscendingSortFunc(const void *elem1, const void *elem2)
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Default column sorting function, puts things in alpabetical order
+// Purpose: Default column sorting function, puts things in alphabetical order
 //          If images are the same returns 1, else 0
 //-----------------------------------------------------------------------------
 static int __cdecl DefaultSortFunc(
@@ -1226,7 +1226,7 @@ void ListPanel::RemoveAll()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: obselete, use RemoveAll();
+// Purpose: obsolete, use RemoveAll();
 //-----------------------------------------------------------------------------
 void ListPanel::DeleteAllItems()
 {
@@ -1238,7 +1238,7 @@ void ListPanel::DeleteAllItems()
 //-----------------------------------------------------------------------------
 void ListPanel::ResetScrollBar()
 {
-	// delete and reallocate to besure the scroll bar's
+	// delete and reallocate to be sure the scroll bar's
 	// information is correct.
 	delete m_vbar;
 	m_vbar = new ScrollBar(this, "VertScrollBar", true);
@@ -1701,7 +1701,7 @@ void ListPanel::PerformLayout()
 		m_lastBarWidth = buttonMaxXPos;
 
 	}
-	else if ( oldSizeX != 0 ) // make sure this isnt the first time we opened the window
+	else if ( oldSizeX != 0 ) // make sure this isn't the first time we opened the window
 	{
 		int dx = buttonMaxXPos - m_lastBarWidth;  // this is how much we grew or shrank.
 
@@ -1709,7 +1709,7 @@ void ListPanel::PerformLayout()
 		dxPerBar=(int)((float)dx/(float)numToResize);
 		m_lastBarWidth = buttonMaxXPos;
 	}
-	else // this is the first time we've opened the window, make sure all our colums fit! resize if needed
+	else // this is the first time we've opened the window, make sure all our columns fit! resize if needed
 	{
 		int startingBarWidth=0;
 		for (int i = 0; i < nColumns; i++)
@@ -2189,7 +2189,7 @@ void ListPanel::OnMouseWheeled(int delta)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Double-click act like the the item under the mouse was selected
+// Purpose: Double-click act like the item under the mouse was selected
 //			and then the enter key hit
 //-----------------------------------------------------------------------------
 void ListPanel::OnMouseDoublePressed(MouseCode code)
@@ -2416,7 +2416,7 @@ bool ListPanel::GetCellAtPos(int x, int y, int &row, int &col)
 	// make sure it's still in valid area
 	if ( x >= 0 && y >= 0 )
 	{
-		// walk the rows (for when row height is independant each row)  
+		// walk the rows (for when row height is independent each row)  
 		// NOTE: if we do height independent rows, we will need to change GetCellBounds as well
 		for ( row = startitem ; row < m_VisibleItems.Count() ; row++ )
 		{
@@ -2958,7 +2958,7 @@ void ListPanel::ResizeColumnToContents(int column)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Changes the visibilty of a column
+// Purpose: Changes the visibility of a column
 //-----------------------------------------------------------------------------
 void ListPanel::OnToggleColumnVisible(int col)
 {

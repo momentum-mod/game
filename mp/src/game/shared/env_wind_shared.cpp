@@ -219,7 +219,7 @@ void CEnvWindShared::UpdateTreeSway(float flTime)
 
 float CEnvWindShared::WindThink( float flTime )
 {
-	// NOTE: This algorithm can be client-server neutal because we're using 
+	// NOTE: This algorithm can be client-server neutral because we're using 
 	// the random number generator to generate *time* at which the wind changes.
 	// We therefore need to structure the algorithm so that no matter the
 	// frequency of calls to this function we produce the same wind speeds...

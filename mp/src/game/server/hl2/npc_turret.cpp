@@ -440,7 +440,7 @@ void CBaseTurret::ActiveThink(void)
 	VectorNormalize( vecDirToEnemy );
 	VectorAngles( vecDirToEnemy, vecAnglesToEnemy );
 
-	// Current enmey is not visible.
+	// Current enemy is not visible.
 	if (!fEnemyVisible || (flDistToEnemy > TURRET_RANGE))
 	{
 		// DevMsg( "lost you\n" );
@@ -508,7 +508,7 @@ void CBaseTurret::ActiveThink(void)
 		{
 			m_vecGoalAngles.y = random->RandomFloat(-180,180);
 			m_vecGoalAngles.x = random->RandomFloat(-90,90);
-			OnTakeDamage( CTakeDamageInfo( this, this, 1, DMG_GENERIC ) ); // don't beserk forever
+			OnTakeDamage( CTakeDamageInfo( this, this, 1, DMG_GENERIC ) ); // don't berserk forever
 			return;
 		}
 	} 
@@ -616,7 +616,7 @@ void CBaseTurret::Retire(void)
 //
 // This search function will sit with the turret deployed and look for a new target. 
 // After a set amount of time, the barrel will spin down. After m_flMaxWait, the turret will
-// retact.
+// retract.
 //
 void CBaseTurret::SearchThink(void)
 {

@@ -118,7 +118,7 @@ private:
 };
 
 /// \brief Combines two sets of NameValuePairs
-/// \details CombinedNameValuePairs allows you to provide two sets of of NameValuePairs.
+/// \details CombinedNameValuePairs allows you to provide two sets of NameValuePairs.
 ///   If a name is not found in the first set, then the second set is searched for the
 ///   name and value pair. The second set of NameValuePairs often provides default values.
 class CRYPTOPP_DLL CombinedNameValuePairs : public NameValuePairs
@@ -339,7 +339,7 @@ public:
 	/// \param name the parameter name
 	/// \param throwIfNotUsed flags indicating whether an exception should be thrown
 	/// \details If throwIfNotUsed is true, then a ParameterNotUsed exception
-	///   will be thrown in the destructor if the parameter is not not retrieved.
+	///   will be thrown in the destructor if the parameter is not retrieved.
 	AlgorithmParametersBase(const char *name, bool throwIfNotUsed)
 		: m_name(name), m_throwIfNotUsed(throwIfNotUsed), m_used(false) {}
 
@@ -369,7 +369,7 @@ public:
 	/// \param value a reference to the value
 	/// \param throwIfNotUsed flags indicating whether an exception should be thrown
 	/// \details If throwIfNotUsed is true, then a ParameterNotUsed exception
-	///   will be thrown in the destructor if the parameter is not not retrieved.
+	///   will be thrown in the destructor if the parameter is not retrieved.
 	AlgorithmParametersTemplate(const char *name, const T &value, bool throwIfNotUsed)
 		: AlgorithmParametersBase(name, throwIfNotUsed), m_value(value)
 	{

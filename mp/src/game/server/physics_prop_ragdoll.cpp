@@ -933,7 +933,7 @@ void CRagdollProp::Teleport( const Vector *newPosition, const QAngle *newAngles,
 	{
 		PositionMatrix( *newPosition, endMatrix );
 	}
-	// now endMatrix is the refernce matrix for the entity at the target position
+	// now endMatrix is the reference matrix for the entity at the target position
 	matrix3x4_t xform;
 	ConcatTransforms( endMatrix, startMatrixInv, xform );
 	// now xform is the relative transform the entity must undergo

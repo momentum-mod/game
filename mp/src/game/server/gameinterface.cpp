@@ -556,7 +556,7 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	SteamAPI_Init();
 	s_SteamGameServerAPIContext.Init();
 
-	// init each (seperated for ease of debugging)
+	// init each (separated for ease of debugging)
 	if ( (engine = (IVEngineServer*)appSystemFactory(INTERFACEVERSION_VENGINESERVER, NULL)) == NULL )
 		return false;
 	if ( (g_pVoiceServer = (IVoiceServer*)appSystemFactory(INTERFACEVERSION_VOICESERVER, NULL)) == NULL )

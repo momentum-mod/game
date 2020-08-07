@@ -321,7 +321,7 @@ void C_BaseEntity::PhysicsDispatchThink( BASEPTR thinkFunc )
 		if ( time > thinkLimit )
 		{
 #if 0
-			// If its an NPC print out the shedule/task that took so long
+			// If its an NPC print out the schedule/task that took so long
 			CAI_BaseNPC *pNPC = MyNPCPointer();
 			if (pNPC && pNPC->GetCurSchedule())
 			{

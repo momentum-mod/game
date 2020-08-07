@@ -790,7 +790,7 @@ void CNPC_Antlion::ManageFleeCapabilities( bool bEnable )
 {
 	if ( bEnable == false )
 	{
-		//Remove the jump capabilty when we build our route.
+		//Remove the jump capability when we build our route.
 		//We'll enable it back again after the route has been built.
 		CapabilitiesRemove( bits_CAP_MOVE_JUMP );
 
@@ -1442,7 +1442,7 @@ void CNPC_Antlion::StartTask( const Task_t *pTask )
 			}
 			else
 			{
-				// no coverwhatsoever.
+				// no cover whatsoever.
 				TaskFail(FAIL_NO_COVER);
 			}
 		}
@@ -3284,7 +3284,7 @@ bool CNPC_Antlion::FindBurrow( const Vector &origin, float distance, int type, b
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:	Cause the antlion to unborrow
+// Purpose:	Cause the antlion to unburrow
 // Input  : *pActivator - 
 //			*pCaller - 
 //			useType - 
@@ -4216,7 +4216,7 @@ void CNPC_Antlion::SetFollowTarget( CBaseEntity *pTarget )
 
 	SetCondition( COND_ANTLION_RECEIVED_ORDERS );
 
-	// Play an acknowledgement noise
+	// Play an acknowledgment noise
 	if ( m_flNextAcknowledgeTime < gpGlobals->curtime )
 	{
 		EmitSound( "NPC_Antlion.Distracted" );
@@ -4322,7 +4322,7 @@ void CNPC_Antlion::Flip( bool bZapped /*= false*/ )
 	if ( ( GetFlags() & FL_ONGROUND ) == false ) 
 		return;
 
-	// Can't be in a dynamic interation
+	// Can't be in a dynamic interaction
 	if ( IsRunningDynamicInteraction() )
 		return;
 
@@ -4633,7 +4633,7 @@ AI_BEGIN_CUSTOM_NPC( npc_antlion, CNPC_Antlion )
 	)
 
 	//==================================================
-	// Wait for unborrow (once burrow has been triggered)
+	// Wait for unburrow (once burrow has been triggered)
 	//==================================================
 
 	DEFINE_SCHEDULE
@@ -4726,7 +4726,7 @@ AI_BEGIN_CUSTOM_NPC( npc_antlion, CNPC_Antlion )
 	)
 
 	//==================================================
-	// Wait for unborrow (triggered)
+	// Wait for unburrow (triggered)
 	//==================================================
 
 	DEFINE_SCHEDULE

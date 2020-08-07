@@ -43,7 +43,7 @@ enum RenderGroup_t
 
 	RENDER_GROUP_OPAQUE_BRUSH,					// Brushes
 
-	RENDER_GROUP_OTHER,							// Unclassfied. Won't get drawn.
+	RENDER_GROUP_OTHER,							// Unclassified. Won't get drawn.
 
 	// This one's always gotta be last
 	RENDER_GROUP_COUNT

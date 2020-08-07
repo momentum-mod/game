@@ -281,7 +281,7 @@ void bf_write::WriteVarInt64( uint64 data )
 		int size;
 
 		// Here we can't really optimize for small numbers, since the data is
-		// split into three parts.  Cheking for numbers < 128, for instance,
+		// split into three parts.  Checking for numbers < 128, for instance,
 		// would require three comparisons, since you'd have to make sure part1
 		// and part2 are zero.  However, if the caller is using 64-bit integers,
 		// it is likely that they expect the numbers to often be very large, so

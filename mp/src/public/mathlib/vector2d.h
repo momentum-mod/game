@@ -446,7 +446,7 @@ inline void Vector2DMA( const Vector2D& start, float s, const Vector2D& dir, Vec
 }
 
 // FIXME: Remove
-// For backwards compatability
+// For backwards compatibility
 inline void	Vector2D::MulAdd(const Vector2D& a, const Vector2D& b, float scalar)
 {
 	x = a.x + b.x * scalar;
@@ -468,7 +468,7 @@ inline vec_t DotProduct2D(const Vector2D& a, const Vector2D& b)
 	return( a.x*b.x + a.y*b.y ); 
 }
 
-// for backwards compatability
+// for backwards compatibility
 inline vec_t Vector2D::Dot( const Vector2D& vOther ) const
 {
 	return DotProduct2D( *this, vOther );

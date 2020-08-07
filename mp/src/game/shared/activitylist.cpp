@@ -379,7 +379,7 @@ void ActivityList_RegisterSharedActivities( void )
 	REGISTER_SHARED_ACTIVITY( ACT_GESTURE_TURN_LEFT90_FLAT );
 	REGISTER_SHARED_ACTIVITY( ACT_GESTURE_TURN_RIGHT90_FLAT );
 
-	// registered for Half-Life HGRUNT compatability
+	// registered for Half-Life HGRUNT compatibility
 	REGISTER_SHARED_ACTIVITY( ACT_BARNACLE_HIT );
 	REGISTER_SHARED_ACTIVITY( ACT_BARNACLE_PULL );
 	REGISTER_SHARED_ACTIVITY( ACT_BARNACLE_CHOMP );
@@ -454,7 +454,7 @@ void ActivityList_RegisterSharedActivities( void )
 //===========================
 // HL2 Specific Activities
 //===========================
-	// SLAM Specialty Activites
+	// SLAM Specialty Activities
 	REGISTER_SHARED_ACTIVITY( ACT_SLAM_STICKWALL_IDLE);
 	REGISTER_SHARED_ACTIVITY( ACT_SLAM_STICKWALL_ND_IDLE);
 	REGISTER_SHARED_ACTIVITY( ACT_SLAM_STICKWALL_ATTACH);

@@ -2198,7 +2198,7 @@ void CNPC_CombineGunship::Flight( void )
 	goalAngAccel.y = clamp( goalAngAccel.y, -120, 120 );
 	goalAngAccel.z = clamp( goalAngAccel.z, -300, 300 );
 
-	// limit angular accel changes to similate mechanical response times
+	// limit angular accel changes to simulate mechanical response times
 	dt = 0.1;
 	QAngle angAccelAccel;
 	angAccelAccel.x = (goalAngAccel.x - m_vecAngAcceleration.x) / dt;

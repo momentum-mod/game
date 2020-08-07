@@ -43,7 +43,7 @@ void CBaseGrenadeContact::Spawn( void )
 	VectorAngles(GetAbsVelocity(), angles);
 	SetLocalAngles( angles );
 	
-	// make NPCs afaid of it while in the air
+	// make NPCs afraid of it while in the air
 	SetThink( &CBaseGrenadeContact::DangerSoundThink );
 	SetNextThink( gpGlobals->curtime );
 	

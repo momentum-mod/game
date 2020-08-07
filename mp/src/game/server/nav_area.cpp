@@ -61,7 +61,7 @@ ConVar nav_show_contiguous( "nav_show_continguous", "0", FCVAR_CHEAT, "Highlight
 
 const float DEF_NAV_VIEW_DISTANCE = 1500.0;
 ConVar nav_max_view_distance( "nav_max_view_distance", "6000", FCVAR_CHEAT, "Maximum range for precomputed nav mesh visibility (0 = default 1500 units)" );
-ConVar nav_update_visibility_on_edit( "nav_update_visibility_on_edit", "0", FCVAR_CHEAT, "If nonzero editing the mesh will incrementally recompue visibility" );
+ConVar nav_update_visibility_on_edit( "nav_update_visibility_on_edit", "0", FCVAR_CHEAT, "If nonzero editing the mesh will incrementally recompute visibility" );
 ConVar nav_potentially_visible_dot_tolerance( "nav_potentially_visible_dot_tolerance", "0.98", FCVAR_CHEAT );
 ConVar nav_show_potentially_visible( "nav_show_potentially_visible", "0", FCVAR_CHEAT, "Show areas that are potentially visible from the current nav area" );
 
@@ -1008,7 +1008,7 @@ void CNavArea::MergeAdjacentConnections( CNavArea *adjArea )
 	
 	// Change other references to adjArea to refer instead to us
 	// We can't just replace existing connections, as several adjacent areas may have been merged into one,
-	// resulting in a large area adjacent to all of them ending up with multiple redunandant connections
+	// resulting in a large area adjacent to all of them ending up with multiple redundant connections
 	// into the merged area, one for each of the adjacent subsumed smaller ones.
 	// If an area has a connection to the merged area, we must remove all references to adjArea, and add
 	// a single connection to us.

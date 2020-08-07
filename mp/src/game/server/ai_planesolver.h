@@ -46,7 +46,7 @@ public:
 	// constructor
 	CAI_PlaneSolver( CAI_BaseNPC *pNpc );
 	
-	// Attempt to find a valid move direction for the specifed goal
+	// Attempt to find a valid move direction for the specified goal
 	bool Solve( const AILocalMoveGoal_t &goal, float distClear, Vector *pSolution );
 
 	float CalcProbeDist( float speed );

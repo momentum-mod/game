@@ -17,7 +17,7 @@
 #include "materialsystem/imaterialsystem.h"
 
 //-----------------------------------------------------------------------------
-// forward declaraions
+// forward declarations
 //-----------------------------------------------------------------------------
 
 class IMaterialVar;

@@ -247,26 +247,26 @@ void Interpolator_CurveInterpolate( int interpolationType,
 	case INTERPOLATE_EASE_IN:
 		{
 			f = sin( M_PI * f * 0.5f );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			VectorLerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_EASE_OUT:
 		{
 			f = 1.0f - sin( M_PI * f * 0.5f + 0.5f * M_PI );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			VectorLerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_EASE_INOUT:
 		{
 			f = SimpleSpline( f );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			VectorLerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_LINEAR_INTERP:
-		// Fixme, since this ignores vPre and vNext we could omit computing them aove
+		// Fixme, since this ignores vPre and vNext we could omit computing them above
 		VectorLerp( vStart, vEnd, f, vOut );
 		break;
 	case INTERPOLATE_KOCHANEK_BARTELS:
@@ -359,26 +359,26 @@ void Interpolator_CurveInterpolate_NonNormalized( int interpolationType,
 	case INTERPOLATE_EASE_IN:
 		{
 			f = sin( M_PI * f * 0.5f );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			VectorLerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_EASE_OUT:
 		{
 			f = 1.0f - sin( M_PI * f * 0.5f + 0.5f * M_PI );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			VectorLerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_EASE_INOUT:
 		{
 			f = SimpleSpline( f );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			VectorLerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_LINEAR_INTERP:
-		// Fixme, since this ignores vPre and vNext we could omit computing them aove
+		// Fixme, since this ignores vPre and vNext we could omit computing them above
 		VectorLerp( vStart, vEnd, f, vOut );
 		break;
 	case INTERPOLATE_KOCHANEK_BARTELS:
@@ -466,32 +466,32 @@ void Interpolator_CurveInterpolate_NonNormalized( int interpolationType,
 	case INTERPOLATE_KOCHANEK_BARTELS_LATE:
 	case INTERPOLATE_SIMPLE_CUBIC:
 	case INTERPOLATE_BSPLINE:
-		// FIXME, since this ignores vPre and vNext we could omit computing them aove
+		// FIXME, since this ignores vPre and vNext we could omit computing them above
 		QuaternionSlerp( vStart, vEnd, f, vOut );
 		break;
 	case INTERPOLATE_EASE_IN:
 		{
 			f = sin( M_PI * f * 0.5f );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			QuaternionSlerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_EASE_OUT:
 		{
 			f = 1.0f - sin( M_PI * f * 0.5f + 0.5f * M_PI );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			QuaternionSlerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_EASE_INOUT:
 		{
 			f = SimpleSpline( f );
-			// Fixme, since this ignores vPre and vNext we could omit computing them aove
+			// Fixme, since this ignores vPre and vNext we could omit computing them above
 			QuaternionSlerp( vStart, vEnd, f, vOut );
 		}
 		break;
 	case INTERPOLATE_LINEAR_INTERP:
-		// Fixme, since this ignores vPre and vNext we could omit computing them aove
+		// Fixme, since this ignores vPre and vNext we could omit computing them above
 		QuaternionSlerp( vStart, vEnd, f, vOut );
 		break;
 	case INTERPOLATE_EXPONENTIAL_DECAY:

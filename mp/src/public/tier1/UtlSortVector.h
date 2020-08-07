@@ -28,7 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #ifndef _WIN32
-// gcc has no qsort_s, so i need to use a static var to hold the sort context. this makes cutlsortvector _not_ thread sfae under linux
+// gcc has no qsort_s, so i need to use a static var to hold the sort context. this makes cutlsortvector _not_ thread safe under linux
 extern void *g_pUtlSortVectorQSortContext;
 #endif
 
@@ -79,7 +79,7 @@ public:
 	void	RedoSort( bool bForceSort = false );
 
 	/// Use this to insert at a specific insertion point; using FindLessOrEqual
-	/// is required for use this this. This will test that what you've inserted
+	/// is required for use with this. This will test that what you've inserted
 	/// produces a correctly ordered list.
 	int		InsertAfter( int nElemIndex, const T &src );
 

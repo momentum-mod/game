@@ -543,7 +543,7 @@ bool Q_AggressiveStripPrecedingAndTrailingWhitespace( char *pch );
 bool Q_AggressiveStripPrecedingAndTrailingWhitespaceW( wchar_t *pwch );
 bool Q_RemoveAllEvilCharacters( char *pch );
 
-// Functions for converting hexidecimal character strings back into binary data etc.
+// Functions for converting hexadecimal character strings back into binary data etc.
 //
 // e.g., 
 // int output;
@@ -585,7 +585,7 @@ void V_ExtractFileExtension( const char *path, char *dest, int destSize );
 const char *V_GetFileExtension( const char * path );
 
 // returns a pointer to just the filename part of the path
-// (everything after the last path seperator)
+// (everything after the last path separator)
 const char *V_GetFileName( const char * path );
 
 // This removes "./" and "../" from the pathname. pFilename should be a full pathname.
@@ -614,7 +614,7 @@ void V_AppendSlash( INOUT_Z_CAP(strSize) char *pStr, int strSize );
 // Returns true if the path is an absolute path.
 bool V_IsAbsolutePath( IN_Z const char *pPath );
 
-// Scans pIn and replaces all occurences of pMatch with pReplaceWith.
+// Scans pIn and replaces all occurrences of pMatch with pReplaceWith.
 // Writes the result to pOut.
 // Returns true if it completed successfully.
 // If it would overflow pOut, it fills as much as it can and returns false.
@@ -985,7 +985,7 @@ private:
 void Q_URLEncodeRaw( OUT_Z_CAP(nDestLen) char *pchDest, int nDestLen, const char *pchSource, int nSourceLen );
 
 // Decodes a string (or binary data) from URL encoding format, see rfc1738 section 2.2.
-// Dest buffer should be at least as large as source buffer to gurantee room for decode.
+// Dest buffer should be at least as large as source buffer to guarantee room for decode.
 // Dest buffer being the same as the source buffer (decode in-place) is explicitly allowed.
 //
 // Returns the amount of space actually used in the output buffer.  
@@ -998,14 +998,14 @@ void Q_URLEncode( OUT_Z_CAP(nDestLen) char *pchDest, int nDestLen, const char *p
 
 // Decodes a string (or binary data) in URL encoding format, this isn't the strict rfc1738 format, but instead uses + for spaces.  
 // This is for historical reasons and HTML spec foolishness that lead to + becoming a de facto standard for spaces when encoding form data.
-// Dest buffer should be at least as large as source buffer to gurantee room for decode.
+// Dest buffer should be at least as large as source buffer to guarantee room for decode.
 // Dest buffer being the same as the source buffer (decode in-place) is explicitly allowed.
 //
 // Returns the amount of space actually used in the output buffer.  
 size_t Q_URLDecode( OUT_CAP(nDecodeDestLen) char *pchDecodeDest, int nDecodeDestLen, const char *pchEncodedSource, int nEncodedSourceLen );
 
 
-// NOTE: This is for backward compatability!
+// NOTE: This is for backward compatibility!
 // We need to DLL-export the Q methods in vstdlib but not link to them in other projects
 #if !defined( VSTDLIB_BACKWARD_COMPAT )
 

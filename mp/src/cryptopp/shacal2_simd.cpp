@@ -49,7 +49,7 @@ void SHACAL2_Enc_ProcessAndXorBlock_SHANI(const word32* subKeys, const byte *inB
 	B0 = TMP;
 
 #if 0
-	// SSE2 + SSSE3, but 0.2 cpb slower on a Celeraon J3455
+	// SSE2 + SSSE3, but 0.2 cpb slower on a Celeron J3455
 	const __m128i MASK1 = _mm_set_epi8(8,9,10,11,  12,13,14,15,  0,1,2,3,  4,5,6,7);
 	const __m128i MASK2 = _mm_set_epi8(0,1,2,3,  4,5,6,7,  8,9,10,11,  12,13,14,15);
 

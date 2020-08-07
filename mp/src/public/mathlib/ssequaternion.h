@@ -22,7 +22,7 @@
 // we don't as of Sept 1, 2007). So, it's best not to allow these
 // functions to exist at all. It's not good enough to simply replace
 // the contents of the functions with scalar math, because each call
-// to LoadAligned and StoreAligned will result in an unnecssary copy
+// to LoadAligned and StoreAligned will result in an unnecessary copy
 // of the quaternion, and several moves to and from the XMM registers.
 //
 // Basically, the problem you run into is that for efficient SIMD code,
@@ -197,7 +197,7 @@ FORCEINLINE fltx4 QuaternionScaleSIMD( const fltx4 &p, float t )
 
 
 //-----------------------------------------------------------------------------
-// Quaternion sphereical linear interpolation
+// Quaternion spherical linear interpolation
 //-----------------------------------------------------------------------------
 
 // SSE and STDC

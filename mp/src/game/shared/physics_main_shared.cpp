@@ -1561,7 +1561,7 @@ void CBaseEntity::PerformFlyCollisionResolution( trace_t &trace, Vector &move )
 
 	case MOVECOLLIDE_FLY_SLIDE:
 	case MOVECOLLIDE_DEFAULT:
-	// NOTE: The default fly collision state is the same as a slide (for backward capatability).
+	// NOTE: The default fly collision state is the same as a slide (for backward compatibility).
 		{
 			ResolveFlyCollisionSlide( trace, move );
 			break;
@@ -1945,7 +1945,7 @@ bool CBaseEntity::PhysicsRunThink( thinkmethods_t thinkMethod )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: For testing if all thinks are occuring at the same time
+// Purpose: For testing if all thinks are occurring at the same time
 //-----------------------------------------------------------------------------
 struct ThinkSync
 {
@@ -1975,7 +1975,7 @@ static ConVar sv_thinktimecheck( "sv_thinktimecheck", "0", 0, "Check for thinkti
 #endif
 
 //-----------------------------------------------------------------------------
-// Purpose: For testing if all thinks are occuring at the same time
+// Purpose: For testing if all thinks are occurring at the same time
 //-----------------------------------------------------------------------------
 class CThinkSyncTester
 {

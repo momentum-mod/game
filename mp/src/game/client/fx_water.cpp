@@ -508,7 +508,7 @@ float CSplashParticle::UpdateRoll( SimpleParticle *pParticle, float timeDelta )
 //-----------------------------------------------------------------------------
 void CSplashParticle::UpdateVelocity( SimpleParticle *pParticle, float timeDelta )
 {
-	//Decellerate
+	//Decelerate
 	static float dtime;
 	static float decay;
 

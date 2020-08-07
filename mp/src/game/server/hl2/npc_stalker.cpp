@@ -226,7 +226,7 @@ bool CNPC_Stalker::IsValidEnemy( CBaseEntity *pEnemy )
 
 	if( enemyClass == CLASS_BULLSEYE && pEnemy->GetParent() )
 	{
-		// This bullseye is in heirarchy with something. If that
+		// This bullseye is in hierarchy with something. If that
 		// something is held by the physcannon, this bullseye is 
 		// NOT a valid enemy.
 		IPhysicsObject *pPhys = pEnemy->GetParent()->VPhysicsGetObject();
@@ -508,7 +508,7 @@ void CNPC_Stalker::StartTask( const Task_t *pTask )
 	case TASK_ANNOUNCE_ATTACK:
 	{
 		// If enemy isn't facing me and I haven't attacked in a while
-		// annouce my attack before I start wailing away
+		// announce my attack before I start wailing away
 		CBaseCombatCharacter *pBCC = GetEnemyCombatCharacterPointer();
 
 		if	(pBCC && (!pBCC->FInViewCone ( this )) &&

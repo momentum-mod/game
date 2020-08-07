@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: Force feeback OS level handlers
+// Purpose: Force feedback OS level handlers
 //
 //=============================================================================
 #include <windows.h>
@@ -784,7 +784,7 @@ void CInput::ForceFeedback_Start( int effectnum, const FFBaseParams_t& params )
 			}
 			else if( params.m_flDuration >= 0.001f )
 			{
-				// Convert to microsseconds
+				// Convert to microseconds
 				effect.dwDuration = (DWORD)( params.m_flDuration * 1000000.0f );
 			}
 

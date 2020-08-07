@@ -21,7 +21,7 @@
 #define	OLD_EXPLOSION	0
 
 
-// Enumator class for ragdolls being affected by explosive forces
+// Enumerator class for ragdolls being affected by explosive forces
 CRagdollExplosionEnumerator::CRagdollExplosionEnumerator( Vector origin, float radius, float magnitude )
 {
 	m_vecOrigin		= origin;
@@ -76,7 +76,7 @@ CRagdollExplosionEnumerator::~CRagdollExplosionEnumerator()
 
 		// tricky, adjust tr.start so end-start->= force
 		tr.startpos = tr.endpos - dir;
-		// move expolsion center a bit down, so things fly higher 
+		// move explosion center a bit down, so things fly higher 
 		tr.startpos.z -= 32.0f;
 
 		pModel->ImpactTrace( &tr, DMG_BLAST, NULL );

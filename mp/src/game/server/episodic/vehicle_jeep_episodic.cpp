@@ -1243,7 +1243,7 @@ static void KillBlockingEnemyNPCs( CBasePlayer *pPlayer, CBaseEntity *pVehicleEn
 		// Is this an enemy NPC with a small enough mass?
 		if ( pNPC && pPlayer->IRelationType(pNPC) != D_LI && ((otherMass*2.0f) < vehicleMass) )
 		{
-			// accumulate the stress force for this NPC in the lsit
+			// accumulate the stress force for this NPC in the list
 			float force = pSnapshot->GetNormalForce();
 			Vector normal;
 			pSnapshot->GetSurfaceNormal(normal);

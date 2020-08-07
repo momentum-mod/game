@@ -156,7 +156,7 @@ protected:
 public:
 
 
-	CSOAContainer( void )									// an empoty one with no attributes
+	CSOAContainer( void )									// an empty one with no attributes
 	{
 		Init();
 	}

@@ -201,7 +201,7 @@ C_SmokeStack::~C_SmokeStack()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Called after a data update has occured
+// Purpose: Called after a data update has occurred
 // Input  : bnewentity - 
 //-----------------------------------------------------------------------------
 void C_SmokeStack::OnDataChanged(DataUpdateType_t updateType)
@@ -213,7 +213,7 @@ void C_SmokeStack::OnDataChanged(DataUpdateType_t updateType)
 		Start(ParticleMgr(), NULL);
 	}
 
-	// Recalulate lifetime in case length or speed changed.
+	// Recalculate lifetime in case length or speed changed.
 	m_InvLifetime = m_Speed / m_JetLength;
 }
 

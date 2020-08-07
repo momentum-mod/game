@@ -45,7 +45,7 @@ typedef int WaitForResourcesHandle_t;
 
 // Turn on some extra pure server debug spew in certain builds.
 // WARNING: This spew can be used by hackers to locate places to hack
-// the code to bypas sv_pure!  Be careful!
+// the code to bypass sv_pure!  Be careful!
 #if defined( _DEBUG ) || defined( STAGING_ONLY )
 	#define PURE_SERVER_DEBUG_SPEW
 #endif
@@ -146,7 +146,7 @@ enum DVDMode_t
 {
 	DVDMODE_OFF    = 0, // not using dvd
 	DVDMODE_STRICT = 1, // dvd device only
-	DVDMODE_DEV    = 2, // dev mode, mutiple devices ok
+	DVDMODE_DEV    = 2, // dev mode, multiple devices ok
 };
 
 // In non-retail builds, enable the file blocking access tracking stuff...
@@ -708,7 +708,7 @@ public:
 	virtual void AsyncRemoveFetcher( IAsyncFileFetch *pFetcher ) = 0;
 
 	//------------------------------------
-	// Functions to hold a file open if planning on doing mutiple reads. Use is optional,
+	// Functions to hold a file open if planning on doing multiple reads. Use is optional,
 	// and is taken only as a hint
 	//------------------------------------
 	virtual FSAsyncStatus_t	AsyncBeginRead( const char *pszFile, FSAsyncFile_t *phFile ) = 0;
@@ -763,7 +763,7 @@ public:
 	virtual void			AddLoggingFunc( void (*pfnLogFunc)( const char *fileName, const char *accessType ) ) = 0;
 	virtual void			RemoveLoggingFunc( FileSystemLoggingFunc_t logFunc ) = 0;
 
-	// Returns the file system statistics retreived by the implementation.  Returns NULL if not supported.
+	// Returns the file system statistics retrieved by the implementation.  Returns NULL if not supported.
 	virtual const FileSystemStatistics *GetFilesystemStatistics() = 0;
 
 	//--------------------------------------------------------

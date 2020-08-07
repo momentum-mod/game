@@ -241,7 +241,7 @@ void CC_ToggleZoom( void )
 static ConCommand toggle_zoom("toggle_zoom", CC_ToggleZoom, "Toggles zoom display" );
 
 // ConVar cl_forwardspeed( "cl_forwardspeed", "400", FCVAR_CHEAT ); // Links us to the client's version
-ConVar xc_crouch_range( "xc_crouch_range", "0.85", FCVAR_ARCHIVE, "Percentarge [1..0] of joystick range to allow ducking within" );	// Only 1/2 of the range is used
+ConVar xc_crouch_range( "xc_crouch_range", "0.85", FCVAR_ARCHIVE, "Percentage [1..0] of joystick range to allow ducking within" );	// Only 1/2 of the range is used
 ConVar xc_use_crouch_limiter( "xc_use_crouch_limiter", "0", FCVAR_ARCHIVE, "Use the crouch limiting logic on the controller" );
 
 //------------------------------------------------------------------------------
@@ -3211,7 +3211,7 @@ void CHL2_Player::UpdateClientData( void )
 		m_DmgSave = clamp( m_DmgSave, 0, 255 );
 
 		// If we're poisoned, but it wasn't this frame, don't send the indicator
-		// Without this check, any damage that occured to the player while they were
+		// Without this check, any damage that occurred to the player while they were
 		// recovering from a poison bite would register as poisonous as well and flash
 		// the whole screen! -- jdw
 		if ( visibleDamageBits & DMG_POISON )

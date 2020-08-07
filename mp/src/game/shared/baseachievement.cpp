@@ -176,7 +176,7 @@ void CBaseAchievement::SetComponentPrefix( const char *pPrefix )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: called when a kill that passes filter critera occurs.  This
+// Purpose: called when a kill that passes filter criteria occurs.  This
 //			is the default implementation, achievements can override to
 //			do special handling
 //-----------------------------------------------------------------------------

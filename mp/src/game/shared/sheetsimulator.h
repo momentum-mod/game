@@ -85,7 +85,7 @@ public:
 	void DetectCollision( int i, float flOffset );
 	void InitPosition( int i );
 
-	// For offseting the control points
+	// For offsetting the control points
 	void SetControlPointOffset( const Vector& offset );
 
 	// Gravity

@@ -52,7 +52,7 @@ void CKeyToggleCheckButton::Paint()
 	bool isdown;
 	if ( gameuifuncs->IsKeyDown( m_pszKeyName, isdown ) )
 	{
-		// if someone changed the value using the consoel
+		// if someone changed the value using the console
 		if ( m_bStartValue != isdown )
 		{
 			SetSelected( isdown );

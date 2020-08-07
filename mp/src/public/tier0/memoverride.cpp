@@ -1347,7 +1347,7 @@ struct _tiddata {
      * the thread */
     pthreadmbcinfo  ptmbcinfo;
 
-    /* pointer to the copy of the locale informaton used by the thead */
+    /* pointer to the copy of the locale information used by the thread */
     pthreadlocinfo  ptlocinfo;
     int         _ownlocale;     /* if 1, this thread owns its own locale */
 
@@ -1462,7 +1462,7 @@ struct _tiddata {
      * the thread */
     pthreadmbcinfo  ptmbcinfo;
 
-    /* pointer to the copy of the locale informaton used by the thead */
+    /* pointer to the copy of the locale information used by the thread */
     pthreadlocinfo  ptlocinfo;
     int         _ownlocale;     /* if 1, this thread owns its own locale */
 

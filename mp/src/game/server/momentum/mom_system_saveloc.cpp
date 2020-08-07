@@ -392,7 +392,7 @@ bool CSaveLocSystem::WriteRequestedSavelocs(SavelocReqPacket *input, SavelocReqP
         return false;
 
     // We set the count here because we may have a different number of savelocs than requested
-    // (eg. when we delete some savelocs while the packet to request the original amount/indicies is still live)
+    // (eg. when we delete some savelocs while the packet to request the original amount/indices is still live)
     output->saveloc_count = count;
 
     return true;

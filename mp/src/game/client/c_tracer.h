@@ -33,7 +33,7 @@ void Tracer_Draw( CMeshBuilder *pMeshBuilder, Vector& start, Vector& delta, floa
 // Computes the four verts to draw the tracer with, in the following order:
 //	start vertex left side, start vertex right side 
 //	end vertex left side, end vertex right side 
-// returne false if the tracer is offscreen
+// returns false if the tracer is offscreen
 //-----------------------------------------------------------------------------
 bool Tracer_ComputeVerts( const Vector &start, const Vector &delta, float width, Vector *pVerts );
 

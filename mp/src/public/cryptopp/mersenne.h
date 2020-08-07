@@ -2,7 +2,7 @@
 
 /// \file mersenne.h
 /// \brief Class file for Mersenne Twister
-/// \warning MersenneTwister is suitable for Monte-Carlo simulations, where uniformaly distrubuted
+/// \warning MersenneTwister is suitable for Monte-Carlo simulations, where uniformly distributed
 ///   numbers are required quickly. It should not be used for cryptographic purposes.
 /// \since Crypto++ 5.6.3
 #ifndef CRYPTOPP_MERSENNE_TWISTER_H
@@ -21,7 +21,7 @@ NAMESPACE_BEGIN(CryptoPP)
 /// \tparam F Multiplier constant
 /// \tparam S Initial seed
 /// \details Provides the MersenneTwister implementation. The class is a header-only implementation.
-/// \warning MersenneTwister is suitable for simulations, where uniformaly distrubuted numbers are
+/// \warning MersenneTwister is suitable for simulations, where uniformly distributed numbers are
 ///   required quickly. It should not be used for cryptographic purposes.
 /// \sa MT19937, MT19937ar
 /// \since Crypto++ 5.6.3
@@ -145,7 +145,7 @@ protected:
 
 	/// \brief Returns the next 32-bit word from the state array
 	/// \returns the next 32-bit word from the state array
-	/// \details fetches the next word frm the state array, performs bit operations on
+	/// \details fetches the next word from the state array, performs bit operations on
 	///   it, and then returns the value to the caller.
 	word32 NextMersenneWord()
 	{
@@ -160,7 +160,7 @@ protected:
 		return temp ^ (temp >> 18);
 	}
 
-	/// \brief Performs the twist operaton on the state array
+	/// \brief Performs the twist operation on the state array
 	void Twist()
 	{
 		static const word32 magic[2]={0x0UL, K};

@@ -230,7 +230,7 @@ void CTriggerAreaCapture::EndTouch(CBaseEntity *pOther)
 			gameeventmanager->FireEvent( event );
 		}
 
-		// incase we leave but the area keeps capturing
+		// in case we leave but the area keeps capturing
 		CBaseMultiplayerPlayer *pPlayer = ToBaseMultiplayerPlayer(pOther);
 		if ( pPlayer )
 		{
@@ -263,7 +263,7 @@ void CTriggerAreaCapture::AreaTouch( CBaseEntity *pOther )
 	if ( !TeamplayGameRules()->PointsMayBeCaptured() )
 		return;
 
-	// dont touch for non-alive or non-players
+	// don't touch for non-alive or non-players
 	if( !pOther->IsPlayer() || !pOther->IsAlive() )
 		return;
 
@@ -1127,7 +1127,7 @@ bool CTriggerAreaCapture::CheckIfDeathCausesBlock( CBaseMultiplayerPlayer *pVict
 	if ( iTeam != m_nCapturingTeam )
 		return true;
 
-	// break early incase we kill multiple people in the same frame
+	// break early in case we kill multiple people in the same frame
 	bool bBreakCap = false;
 	if ( CaptureModeScalesWithPlayers() )
 	{

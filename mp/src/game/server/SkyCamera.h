@@ -38,7 +38,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// Retrives the current skycamera
+// Retrieves the current skycamera
 //-----------------------------------------------------------------------------
 CSkyCamera*		GetCurrentSkyCamera();
 CSkyCamera*		GetSkyCameraList();

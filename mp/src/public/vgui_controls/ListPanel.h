@@ -128,7 +128,7 @@ public:
 	virtual void RereadAllItems(); // updates the view with the new data
 
 	virtual void RemoveAll();		// clears and deletes all the memory used by the data items
-	virtual void DeleteAllItems();	// obselete, use RemoveAll();
+	virtual void DeleteAllItems();	// obsolete, use RemoveAll();
 
 	virtual void GetCellText(int itemID, int column, OUT_Z_BYTECAP(bufferSizeInBytes) wchar_t *buffer, int bufferSizeInBytes); // returns the data held by a specific cell
 	virtual IImage *GetCellImage(int itemID, int column); //, ImagePanel *&buffer); // returns the image held by a specific cell

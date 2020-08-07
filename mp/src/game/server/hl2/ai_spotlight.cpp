@@ -354,7 +354,7 @@ void CAI_Spotlight::UpdateSpotlightEndpoint( void )
 	m_hSpotlightTarget->m_vSpotlightOrg = vecStartPoint;
 	m_hSpotlightTarget->m_vSpotlightDir = vecSpotDir;
 
-	// Avoid sudden change in where beam fades out when cross disconinuities
+	// Avoid sudden change in where beam fades out when cross discontinuities
 	m_flSpotlightCurLength = Lerp( 0.20f, m_flSpotlightCurLength, flBeamLength );
 
 	// Fade out spotlight end if past max length.  

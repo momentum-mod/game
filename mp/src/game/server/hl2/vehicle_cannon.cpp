@@ -722,7 +722,7 @@ void CCannonServerVehicle::GetVehicleViewPosition( int nRole, Vector *pAbsOrigin
 	GetCannon()->GetAttachment( "vehicle_driver_eyes", vehicleEyeOrigin, vehicleEyeAngles );
 	AngleMatrix( vehicleEyeAngles, vehicleEyePosToWorld );
 
-	// Compute the relative rotation between the unperterbed eye attachment + the eye angles
+	// Compute the relative rotation between the unperturbed eye attachment + the eye angles
 	matrix3x4_t cameraToWorld;
 	AngleMatrix( *pAbsAngles, cameraToWorld );
 
@@ -732,12 +732,12 @@ void CCannonServerVehicle::GetVehicleViewPosition( int nRole, Vector *pAbsOrigin
 	matrix3x4_t vehicleCameraToEyePos;
 	ConcatTransforms( worldToEyePos, cameraToWorld, vehicleCameraToEyePos );
 
-	// Now perterb the attachment point
+	// Now perturb the attachment point
 	vehicleEyeAngles.x = RemapAngleRange( PITCH_CURVE_ZERO * flPitchFactor, PITCH_CURVE_LINEAR, vehicleEyeAngles.x );
 	vehicleEyeAngles.z = RemapAngleRange( ROLL_CURVE_ZERO * flPitchFactor, ROLL_CURVE_LINEAR, vehicleEyeAngles.z );
 	AngleMatrix( vehicleEyeAngles, vehicleEyeOrigin, vehicleEyePosToWorld );
 
-	// Now treat the relative eye angles as being relative to this new, perterbed view position...
+	// Now treat the relative eye angles as being relative to this new, perturbed view position...
 	matrix3x4_t newCameraToWorld;
 	ConcatTransforms( vehicleEyePosToWorld, vehicleCameraToEyePos, newCameraToWorld );
 

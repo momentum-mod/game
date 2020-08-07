@@ -417,7 +417,7 @@ void DiffPrint( bool bServer, int nCommandNumber, char const *fmt, ... )
 
 	if ( g_pDiffMgr )
 	{
-		// Strip any \n at the end that the user accidently put int
+		// Strip any \n at the end that the user accidentally put in
 		if ( len > 0 && string[ len -1 ] == '\n' )
 		{
 			string[ len - 1 ] = 0;
@@ -1192,7 +1192,7 @@ void CGameMovement::FinishMove( void )
 
 //-----------------------------------------------------------------------------
 // Purpose: Decays the punchangle toward 0,0,0.
-//			Modelled as a damped spring
+//			Modeled as a damped spring
 //-----------------------------------------------------------------------------
 void CGameMovement::DecayPunchAngle( void )
 {
@@ -1767,7 +1767,7 @@ void CGameMovement::AirMove( void )
 		wishvel[i] = forward[i]*fmove + right[i]*smove;
 	wishvel[2] = 0;             // Zero out z part of velocity
 
-	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
+	VectorCopy (wishvel, wishdir);   // Determine magnitude of speed of move
 	wishspeed = VectorNormalize(wishdir);
 
 	//
@@ -1831,7 +1831,7 @@ void CGameMovement::Accelerate( Vector& wishdir, float wishspeed, float accel )
 	if (addspeed <= 0)
 		return;
 
-	// Determine amount of accleration.
+	// Determine amount of acceleration.
 	accelspeed = accel * gpGlobals->frametime * wishspeed * player->m_surfaceFriction;
 
 	// Cap at addspeed
@@ -1936,7 +1936,7 @@ void CGameMovement::WalkMove( void )
 	
 	wishvel[2] = 0;             // Zero out z part of velocity
 
-	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
+	VectorCopy (wishvel, wishdir);   // Determine magnitude of speed of move
 	wishspeed = VectorNormalize(wishdir);
 
 	//
@@ -2082,7 +2082,7 @@ void CGameMovement::FullWalkMove( )
 			mv->m_nOldButtons &= ~IN_JUMP;
 		}
 
-		// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor, 
+		// Friction is handled before we add in any base velocity. That way, if we are on a conveyor, 
 		//  we don't slow when standing still, relative to the conveyor.
 		if (player->GetGroundEntity() != NULL)
 		{
@@ -2194,7 +2194,7 @@ void CGameMovement::FullObserverMove( void )
 		wishvel[i] = forward[i]*fmove + right[i]*smove;
 	wishvel[2] += mv->m_flUpMove;
 
-	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
+	VectorCopy (wishvel, wishdir);   // Determine magnitude of speed of move
 	wishspeed = VectorNormalize(wishdir);
 
 	//
@@ -2210,7 +2210,7 @@ void CGameMovement::FullObserverMove( void )
 		wishspeed = maxspeed;
 	}
 
-	// Set pmove velocity, give observer 50% acceration bonus
+	// Set pmove velocity, give observer 50% acceleration bonus
 	Accelerate ( wishdir, wishspeed, sv_specaccelerate.GetFloat() );
 
 	float spd = VectorLength( mv->m_vecVelocity );
@@ -2271,7 +2271,7 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 		wishvel[i] = forward[i]*fmove + right[i]*smove;
 	wishvel[2] += mv->m_flUpMove * sv_noclipspeed_vertical.GetFloat();
 
-	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
+	VectorCopy (wishvel, wishdir);   // Determine magnitude of speed of move
 	wishspeed = VectorNormalize(wishdir);
 
 	//
@@ -2296,7 +2296,7 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 		}
 		
 		// Bleed off some speed, but if we have less than the bleed
-		//  threshhold, bleed the theshold amount.
+		//  threshold, bleed the threshold amount.
 		float control = (spd < maxspeed/4.0) ? maxspeed/4.0 : spd;
 		
 		float friction = sv_friction.GetFloat() * player->m_surfaceFriction;
@@ -2375,7 +2375,7 @@ bool CGameMovement::CheckJumpButton( void )
 		else if (player->GetWaterType() == CONTENTS_SLIME)
 			mv->m_vecVelocity[2] = 80;
 		
-		// play swiming sound
+		// play swimming sound
 		if ( player->m_flSwimSoundTime <= 0 )
 		{
 			// Don't play sound again for 1 second
@@ -2441,7 +2441,7 @@ bool CGameMovement::CheckJumpButton( void )
 		flMul = sqrt(2 * GetCurrentGravity() * GAMEMOVEMENT_JUMP_HEIGHT);
 	}
 
-	// Acclerate upward
+	// Accelerate upward
 	// If we are ducking...
 	float startz = mv->m_vecVelocity[2];
 	if ( (  player->m_Local.m_bDucking ) || (  player->GetFlags() & FL_DUCKING ) )
@@ -2773,7 +2773,7 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
 
 			//
 			// if original velocity is against the original velocity, stop dead
-			// to avoid tiny occilations in sloping corners
+			// to avoid tiny oscillations in sloping corners
 			//
 			d = mv->m_vecVelocity.Dot(primal_velocity);
 			if (d <= 0)
@@ -3758,7 +3758,7 @@ void CGameMovement::CategorizePosition( void )
 	Vector point;
 	trace_t pm;
 
-	// Reset this each time we-recategorize, otherwise we have bogus friction when we jump into water and plunge downward really quickly
+	// Reset this each time we recategorize, otherwise we have bogus friction when we jump into water and plunge downward really quickly
 	player->m_surfaceFriction = 1.0f;
 
 	// if the player hull point one unit down is solid, the player
@@ -4473,7 +4473,7 @@ void CGameMovement::Duck( void )
 			}
 		}
 	}
-	// HACK: (jimd 5/25/2006) we have a reoccuring bug (#50063 in Tracker) where the player's
+	// HACK: (jimd 5/25/2006) we have a reoccurring bug (#50063 in Tracker) where the player's
 	// view height gets left at the ducked height while the player is standing, but we haven't
 	// been  able to repro it to find the cause.  It may be fixed now due to a change I'm
 	// also making in UpdateDuckJumpEyeOffset but just in case, this code will sense the 
@@ -4573,7 +4573,7 @@ void CGameMovement::PlayerMove( void )
         }
     }
 
-	// Don't run ladder code if dead on on a train
+	// Don't run ladder code if dead on a train
 	if ( !player->pl.deadflag && !(player->GetFlags() & FL_ONTRAIN) )
 	{
 		// If was not on a ladder now, but was on one before, 
@@ -4748,7 +4748,7 @@ void CGameMovement::FullTossMove( void )
 
 		wishvel[2] += mv->m_flUpMove;
 
-		VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
+		VectorCopy (wishvel, wishdir);   // Determine magnitude of speed of move
 		wishspeed = VectorNormalize(wishdir);
 
 		//
@@ -4879,7 +4879,7 @@ void CGameMovement::TracePlayerBBox( const Vector& start, const Vector& end, uns
 
 
 //-----------------------------------------------------------------------------
-// Purpose: overridded by game classes to limit results (to standable objects for example)
+// Purpose: overridden by game classes to limit results (to standable objects for example)
 //-----------------------------------------------------------------------------
 void  CGameMovement::TryTouchGround( const Vector& start, const Vector& end, const Vector& mins, const Vector& maxs, unsigned int fMask, int collisionGroup, trace_t& pm )
 {

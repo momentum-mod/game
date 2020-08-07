@@ -42,7 +42,7 @@ DBG_INTERFACE void Test_TerminateThread();
 
 // yields to the main thread for a single frame
 // passing in is a count of the number of frames that have been yielded by this yield macro
-// can be used to assert if a test thread is blocked foor
+// can be used to assert if a test thread is blocked for
 DBG_INTERFACE void TestThread_Yield();
 
 // utility functions to pause the test frame until the selected condition is true

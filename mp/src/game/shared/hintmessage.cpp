@@ -215,7 +215,7 @@ void CHintMessageTimers::Update()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Register a new timer that the system should should keep track of.
+// Purpose: Register a new timer that the system should keep track of.
 // Input  : iHintID - The ID of the hint message
 //			timer_duration - the total time the timer should run for until it fires the hint message
 //			message_duration - the duration passed into the hint message system when the hint fires

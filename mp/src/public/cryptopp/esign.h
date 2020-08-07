@@ -51,7 +51,7 @@ public:
 	void SetPublicExponent(const Integer &e) {m_e = e;}
 
 protected:
-	// Covertiy finding on overflow. The library allows small values for research purposes.
+	// Coverity finding on overflow. The library allows small values for research purposes.
 	unsigned int GetK() const {return SaturatingSubtract(m_n.BitCount()/3, 1U);}
 
 	Integer m_n, m_e;
@@ -76,7 +76,7 @@ public:
 
 	/// \brief Create a ESIGN private key
 	/// \param rng a RandomNumberGenerator derived class
-	/// \param modulusBits the size of the modulud, in bits
+	/// \param modulusBits the size of the modulus, in bits
 	/// \details This function overload of Initialize() creates a new private key because it
 	///   takes a RandomNumberGenerator() as a parameter. If you have an existing keypair,
 	///   then use one of the other Initialize() overloads.

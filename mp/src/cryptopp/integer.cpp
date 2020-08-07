@@ -20,7 +20,7 @@
 //  them. Initialization priorities are init_priority() on Linux and init_seg()
 //  on Windows. AIX, OS X and several other platforms lack them. Initialization
 //  priorities are platform specific but they are also the most trouble free
-//  with determisitic destruction.
+//  with deterministic destruction.
 // Second, if C++11 dynamic initialization is available, then we use it. After
 //  the std::call_once fiasco we dropped the priority dynamic initialization
 //  to avoid unknown troubles platforms that are tested less frequently. In
@@ -39,7 +39,7 @@
 //  resource acquisition in reverse. For resources provided through the
 //  Singletons, there is no way to express the dependency order to safely
 //  destroy resources. (That's one of the problems C++11 dynamic
-//  intitialization with concurrent execution is supposed to solve).
+//  initialization with concurrent execution is supposed to solve).
 // The final problem with Singletons is resource/memory exhaustion in languages
 //  like Java and .Net. Java and .Net load and unload a native DLL hundreds or
 //  thousands of times during the life of a program. Each load produces a
@@ -2251,7 +2251,7 @@ inline int Subtract(word *C, const word *A, const word *B, size_t N)
 // R[2*N] - result = A*B
 // T[2*N] - temporary work space
 // A[N] --- multiplier
-// B[N] --- multiplicant
+// B[N] --- multiplicand
 
 void RecursiveMultiply(word *R, word *T, const word *A, const word *B, size_t N)
 {
@@ -2318,7 +2318,7 @@ void RecursiveSquare(word *R, word *T, const word *A, size_t N)
 // R[N] - bottom half of A*B
 // T[3*N/2] - temporary work space
 // A[N] - multiplier
-// B[N] - multiplicant
+// B[N] - multiplicand
 
 void RecursiveMultiplyBottom(word *R, word *T, const word *A, const word *B, size_t N)
 {
@@ -2342,7 +2342,7 @@ void RecursiveMultiplyBottom(word *R, word *T, const word *A, const word *B, siz
 // T[2*N] - temporary work space
 // L[N] --- lower half of A*B
 // A[N] --- multiplier
-// B[N] --- multiplicant
+// B[N] --- multiplicand
 
 void MultiplyTop(word *R, word *T, const word *L, const word *A, const word *B, size_t N)
 {
@@ -2411,7 +2411,7 @@ inline void MultiplyBottom(word *R, word *T, const word *A, const word *B, size_
 // R[NA+NB] - result = A*B
 // T[NA+NB] - temporary work space
 // A[NA] ---- multiplier
-// B[NB] ---- multiplicant
+// B[NB] ---- multiplicand
 
 void AsymmetricMultiply(word *R, word *T, const word *A, size_t NA, const word *B, size_t NB)
 {
@@ -3227,7 +3227,7 @@ static Integer StringToInteger(const T *str, ByteOrder order)
 		{
 			int digit, ch = static_cast<int>(str[i]);
 
-			//  Profiling showd the second and third Else needed to be swapped
+			//  Profiling shows the second and third Else needed to be swapped
 			// The code change occurred at Commit dc99266599a0e72d.
 			if (ch >= '0' && ch <= '9')
 				digit = ch - '0';
@@ -4696,11 +4696,11 @@ const Integer& MontgomeryRepresentation::MultiplicativeInverse(const Integer &a)
 }
 
 // Specialization declared in misc.h to allow us to print integers
-//  with additional control options, like arbirary bases and uppercase.
+//  with additional control options, like arbitrary bases and uppercase.
 template <> CRYPTOPP_DLL
 std::string IntToString<Integer>(Integer value, unsigned int base)
 {
-	// Hack... set the high bit for uppercase. Set the next bit fo a suffix.
+	// Hack... set the high bit for uppercase. Set the next bit for a suffix.
 	static const unsigned int BIT_32 = (1U << 31);
 	const bool UPPER = !!(base & BIT_32);
 	static const unsigned int BIT_31 = (1U << 30);

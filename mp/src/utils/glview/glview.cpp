@@ -389,7 +389,7 @@ void ReadPolyFileType(const char *name, int nList, BOOL drawLines)
 	for (i = 0; i < 3; i++)  // Find the center point so we can put the viewer there by default
 		g_Center[i] = 0.0f;
 
-	if (drawLines)           // Slight hilite
+	if (drawLines)           // Slight highlight
 		glLineWidth(1.5);
 
 	while (1)

@@ -161,7 +161,7 @@ struct mstudiojigglebone_t
 	int				flags;
 
 	// general params
-	float			length;					// how from from bone base, along bone, is tip
+	float			length;					// how far from bone base, along bone, is tip
 	float			tipMass;
 
 	// flexible params
@@ -253,7 +253,7 @@ struct mstudiobone_t
 	int					procindex;		// procedural rule
 	mutable int			physicsbone;	// index into physically simulated bone
 	inline void *pProcedure( ) const { if (procindex == 0) return NULL; else return  (void *)(((byte *)this) + procindex); };
-	int					surfacepropidx;	// index into string tablefor property name
+	int					surfacepropidx;	// index into string table for property name
 	inline char * const pszSurfaceProp( void ) const { return ((char *)this) + surfacepropidx; }
 	int					contents;		// See BSPFlags.h for the contents flags
 
@@ -547,7 +547,7 @@ struct mstudioikrule_t
 	float		end;	// end of all influence
 
 	float		unused3;	// 
-	float		contact;	// frame footstep makes ground concact
+	float		contact;	// frame footstep makes ground contact
 	float		drop;		// how far down the foot should drop when reaching for IK
 	float		top;		// top of the foot box
 
@@ -1650,7 +1650,7 @@ class virtualgroup_t
 {
 public:
 	virtualgroup_t( void ) { cache = NULL; };
-	// tool dependant.  In engine this is a model_t, in tool it's a direct pointer
+	// tool dependent.  In engine this is a model_t, in tool it's a direct pointer
 	void *cache;
 	// converts cache entry into a usable studiohdr_t *
 	const studiohdr_t *GetStudioHdr( void ) const;
@@ -2166,7 +2166,7 @@ struct studiohdr_t
 	int					GetNumAttachments( void ) const;
 	const mstudioattachment_t &pAttachment( int i ) const;
 	int					GetAttachmentBone( int i );
-	// used on my tools in hlmv, not persistant
+	// used on my tools in hlmv, not persistent
 	void				SetAttachmentBone( int iAttachment, int iBone );
 
 	// animation node to animation node transition graph
@@ -2385,7 +2385,7 @@ public:
 	int					GetNumAttachments( void ) const;
 	const mstudioattachment_t &pAttachment( int i );
 	int					GetAttachmentBone( int i );
-	// used on my tools in hlmv, not persistant
+	// used on my tools in hlmv, not persistent
 	void				SetAttachmentBone( int iAttachment, int iBone );
 
 	int					EntryNode( int iSequence );
@@ -2608,7 +2608,7 @@ public:
 		/// build the hash of activities to sequences and populate m_pSequenceTuples.
 		void Initialize( CStudioHdr *pstudiohdr );
 
-		/// Force Initialize() to occur again, even if it has already occured.
+		/// Force Initialize() to occur again, even if it has already occurred.
 		void Reinitialize( CStudioHdr *pstudiohdr );
 
 		/// A more efficient version of the old SelectWeightedSequence() function in animation.cpp. 
@@ -2846,7 +2846,7 @@ inline int flexsetting_t::psetting( byte *base, int i, flexweight_t **weights ) 
 
 //-----------------------------------------------------------------------------
 // For a given flex controller ui struct, these return the index of the
-// studiohdr_t flex controller that correspond to the the left and right
+// studiohdr_t flex controller that correspond to the left and right
 // flex controllers if the ui controller is a stereo control.
 // nWayValueIndex returns the index of the flex controller that is the value
 // flex controller for an NWAY combination
@@ -2975,7 +2975,7 @@ inline const mstudioflexcontroller_t *mstudioflexcontrollerui_t::pController( in
 #define STUDIO_AL_POST		0x0010		// 
 //							0x0020
 #define STUDIO_AL_SPLINE	0x0040		// convert layer ramp in/out curve is a spline instead of linear
-#define STUDIO_AL_XFADE		0x0080		// pre-bias the ramp curve to compense for a non-1 weight, assuming a second layer is also going to accumulate
+#define STUDIO_AL_XFADE		0x0080		// pre-bias the ramp curve to compensate for a non-1 weight, assuming a second layer is also going to accumulate
 //							0x0100
 #define STUDIO_AL_NOBLEND	0x0200		// animation always blends at 1.0 (ignores weight)
 //							0x0400

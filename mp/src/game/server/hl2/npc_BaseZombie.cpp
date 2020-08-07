@@ -1709,7 +1709,7 @@ void CNPC_BaseZombie::Spawn( void )
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Pecaches all resources this NPC needs.
+// Purpose: Precaches all resources this NPC needs.
 //-----------------------------------------------------------------------------
 void CNPC_BaseZombie::Precache( void )
 {

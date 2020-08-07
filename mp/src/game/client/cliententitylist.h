@@ -82,12 +82,12 @@ public:
 
 
 //
-// This is the IClientEntityList implemenation. It serves two functions:
+// This is the IClientEntityList implementation. It serves two functions:
 //
 // 1. It converts server entity indices into IClientNetworkables for the engine.
 //
 // 2. It provides a place to store IClientUnknowns and gives out ClientEntityHandle_t's
-//    so they can be indexed and retreived. For example, this is how static props are referenced
+//    so they can be indexed and retrieved. For example, this is how static props are referenced
 //    by the spatial partition manager - it doesn't know what is being inserted, so it's 
 //	  given ClientEntityHandle_t's, and the handlers for spatial partition callbacks can
 //    use the client entity list to look them up and check for supported interfaces.

@@ -5348,7 +5348,7 @@ void CNPC_Hunter::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &v
 		}
 	}
 
-	// HUnters have special resisitance to some types of damage.
+	// Hunters have special resistance to some types of damage.
 	if ( ( info.GetDamageType() & DMG_BULLET ) ||
 		 ( info.GetDamageType() & DMG_BUCKSHOT ) ||
 		 ( info.GetDamageType() & DMG_CLUB ) ||
@@ -5547,7 +5547,7 @@ void CNPC_Hunter::ConsiderFlinching( const CTakeDamageInfo &info )
 //-----------------------------------------------------------------------------
 // This is done from a think function because when the hunter is killed,
 // the physics code puts the vehicle's pre-collision velocity back so the jostle
-// is basically discared.
+// is basically discarded.
 //-----------------------------------------------------------------------------
 void CNPC_Hunter::JostleVehicleThink()
 {
@@ -6653,7 +6653,7 @@ void CAI_HunterEscortBehavior::OnDamage( const CTakeDamageInfo &info )
 		GetFollowTarget() && ( AIGetNumFollowers( GetFollowTarget() ) > 1 ) &&
 		( GetOuter()->GetSquad()->GetSquadSoundWaitTime() <= gpGlobals->curtime ) ) // && !FarFromFollowTarget()
 	{
-		// Start the clock ticking. We'll return the the strider when the timer elapses.
+		// Start the clock ticking. We'll return the strider when the timer elapses.
 		m_flTimeEscortReturn = gpGlobals->curtime + random->RandomFloat( 15.0f, 25.0f );
 		GetOuter()->GetSquad()->SetSquadSoundWaitTime( m_flTimeEscortReturn + 1.0 ); // prevent others from breaking escort
 	}

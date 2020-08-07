@@ -692,7 +692,7 @@ void CPhysicsPushedEntities::GenerateBlockingEntityList()
 		pPusher->CollisionProp()->WorldSpaceAABB( &vecAbsMins, &vecAbsMaxs );
 		partition->EnumerateElementsInBox( PARTITION_ENGINE_NON_STATIC_EDICTS, vecAbsMins, vecAbsMaxs, false, &blockerEnum );
 
-		//Go back throught the generated list.
+		//Go back through the generated list.
 	}
 }
 
@@ -732,7 +732,7 @@ void CPhysicsPushedEntities::GenerateBlockingEntityListAddBox( const Vector &vec
 
 		partition->EnumerateElementsInBox( PARTITION_ENGINE_NON_STATIC_EDICTS, vecAbsMins, vecAbsMaxs, false, &blockerEnum );
 
-		//Go back throught the generated list.
+		//Go back through the generated list.
 	}
 }
 
@@ -941,7 +941,7 @@ void CBaseEntity::PhysicsDispatchThink( BASEPTR thinkFunc )
 		float fTime = ( engine->Time() - startTime ) * 1000.0f;
 		if ( fTime > thinkLimit )
 		{
-			// If its an NPC print out the shedule/task that took so long
+			// If its an NPC print out the schedule/task that took so long
 			CAI_BaseNPC *pNPC = MyNPCPointer();
 			if (pNPC && pNPC->GetCurSchedule())
 			{
@@ -1089,7 +1089,7 @@ int CBaseEntity::PhysicsTryMove( float flTime, trace_t *steptrace )
 		numplanes++;
 
 		// modify original_velocity so it parallels all of the clip planes
-		if ( GetMoveType() == MOVETYPE_WALK && (!(GetFlags() & FL_ONGROUND) || GetFriction()!=1) )	// relfect player velocity
+		if ( GetMoveType() == MOVETYPE_WALK && (!(GetFlags() & FL_ONGROUND) || GetFriction()!=1) )	// reflect player velocity
 		{
 			for ( i = 0; i < numplanes; i++ )
 			{
@@ -1162,7 +1162,7 @@ int CBaseEntity::PhysicsTryMove( float flTime, trace_t *steptrace )
 //			Simulation should be done assuming average velocity over the time 
 //			interval.  Since that would effect a lot of code, and since most of 
 //			that code is going away, it's easier to just add in the average effect 
-//			of gravity on the velocity over the interval at the beginning of similation, 
+//			of gravity on the velocity over the interval at the beginning of simulation, 
 //			then add it in again at the end of simulation so that the final velocity is
 //			correct for the entire interval.
 //-----------------------------------------------------------------------------
@@ -1672,7 +1672,7 @@ void CBaseEntity::PhysicsStep()
 {
 	// EVIL HACK: Force these to appear as if they've changed!!!
 	// The underlying values don't actually change, but we need the network sendproxy on origin/angles
-	//  to get triggered, and that only happens if NetworkStateChanged() appears to have occured.
+	//  to get triggered, and that only happens if NetworkStateChanged() appears to have occurred.
 	// Getting them for modify marks them as changed automagically.
 	m_vecOrigin.GetForModify();
 	m_angRotation.GetForModify();
@@ -2016,7 +2016,7 @@ void Physics_RunThinkFunctions( bool simulating )
 	g_bTestMoveTypeStepSimulation = sv_teststepsimulation.GetBool();
 
 	float starttime = gpGlobals->curtime;
-	// clear all entites freed outside of this loop
+	// clear all entities freed outside of this loop
 	gEntList.CleanupDeleteList();
 
 	if ( !simulating )

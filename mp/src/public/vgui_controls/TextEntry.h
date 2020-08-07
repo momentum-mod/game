@@ -213,12 +213,12 @@ public:
 	int GetDrawWidth();
 	void SetHorizontalScrolling(bool status); // turn horizontal scrolling on or off.
 
-	// sets whether non-asci characters (unicode chars > 127) are allowed in the control - defaults to OFF
+	// sets whether non-ascii characters (unicode chars > 127) are allowed in the control - defaults to OFF
 	void SetAllowNonAsciiCharacters(bool state);
 
 	// sets whether or not number input only is allowed
 	void SetAllowNumericInputOnly(bool state);
-    // gets wheter or not number input only is allowed
+    // gets whether or not number input only is allowed
     bool GetAllowNumericInputOnly() const;
 
 	// By default, we draw the language shortname on the right hand side of the control

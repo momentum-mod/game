@@ -88,7 +88,7 @@ public:
 	/// \param lookup table of values
 	/// \param alphabet table of ASCII characters
 	/// \param base the base for the encoder
-	/// \param caseInsensitive flag indicating whether the alphabet is case sensitivie
+	/// \param caseInsensitive flag indicating whether the alphabet is case sensitive
 	/// \pre COUNTOF(lookup) == 256
 	/// \pre COUNTOF(alphabet) == base
 	/// \details Internally, the function sets the first 256 elements in the lookup table to
@@ -115,7 +115,7 @@ public:
 	/// \brief Construct a Grouper
 	/// \param groupSize the size of the grouping
 	/// \param separator the separator to use between groups
-	/// \param terminator the terminator appeand after processing
+	/// \param terminator the terminator append after processing
 	/// \param attachment a BufferedTransformation to attach to this object
 	Grouper(int groupSize, const std::string &separator, const std::string &terminator, BufferedTransformation *attachment=NULLPTR)
 		: m_groupSize(0), m_counter(0)
