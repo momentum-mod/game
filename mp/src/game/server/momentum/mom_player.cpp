@@ -409,6 +409,9 @@ void CMomentumPlayer::FlashlightToggle(bool bOn, bool bEmitSound)
 
 void CMomentumPlayer::LoadAppearance(bool bForceUpdate)
 {
+    if (IsObserver())
+        return;
+
     AppearanceData_t newData;
     uint32 newHexColor = MomUtil::GetHexFromColor(mom_trail_color.GetString());
     newData.m_iTrailRGBAColorAsHex = newHexColor;
