@@ -32,6 +32,10 @@
         "dulltext"		"0"
         "brighttext"	"0"
         "bgcolor_override" "0 0 0 100"
+        "subdivmarks_enabled" "0"
+        "subdivmarks_color" "MomentumRed"
+        "subdivmarks_count" "3"
+        "subdivmarks_width" "2"
     }
     "ChargeMeterLabel"
     {
