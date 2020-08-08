@@ -96,6 +96,7 @@ void CHudStickyCharge::OnThink()
     // Turn charge meter red while inside start zone to indicate that stickies can't be charged
     if (!m_pLauncher->IsChargeEnabled())
     {
+        m_pChargeMeter->SetSubdivMarksVisible(false);
         m_pChargeMeter->SetFgColor(m_cChargeDisabled);
         m_pChargeMeter->SetProgress(1.0f);
 
@@ -107,6 +108,7 @@ void CHudStickyCharge::OnThink()
         if (!m_pChargeLabel->IsVisible())
             m_pChargeLabel->SetVisible(true);
 
+        m_pChargeMeter->SetSubdivMarksVisible(true);
         m_pChargeMeter->SetFgColor(m_cChargeColor);
         float flChargeMaxTime = m_pLauncher->GetChargeMaxTime();
 
