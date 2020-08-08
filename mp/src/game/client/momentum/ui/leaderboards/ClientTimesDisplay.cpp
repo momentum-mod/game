@@ -58,6 +58,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     // update scoreboard instantly if one of these events occur
     ListenForGameEvent("replay_save");
     ListenForGameEvent("run_upload");
+
+    // can be toggled on at start of game launch if starts visible
+    SetVisible(false);
 }
 
 //-----------------------------------------------------------------------------
