@@ -133,14 +133,13 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         return;
 
     // zone enter/exit
-    const auto ent = pEvent->GetInt("ent");
-    if (ent != pLocal->GetCurrentUIEntity()->GetEntIndex())
+    if (pEvent->GetInt("ent") != pLocal->GetCurrentUIEntity()->GetEntIndex())
         return;
 
-    int iCurrentZone = m_pRunEntData->m_iCurrentZone;
+    int iCurrentZone = pEvent->GetInt("num");
     const bool bExit = FStrEq(pEvent->GetName(), "zone_exit"), bEnter = FStrEq(pEvent->GetName(), "zone_enter");
 
-    if (m_pRunEntData->m_bIsInZone && iCurrentZone == 1 && bEnter)
+    if (bEnter && iCurrentZone == 1)
     {
         // disappear when entering start zone
         m_fExplosiveJumpVelAlpha = 0.0f;
@@ -168,8 +167,7 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         if (bComparisonLoaded)
         {
             // set the label's custom diff
-            float diff = act - g_pMOMRunCompare->GetRunComparisons()->runStats.GetZoneEnterSpeed(
-                                    m_pRunEntData->m_iCurrentZone, velType);
+            float diff = act - g_pMOMRunCompare->GetRunComparisons()->runStats.GetZoneEnterSpeed(iCurrentZone, velType);
             m_pStageEnterExitVelLabel->SetCustomDiff(diff);
         }
         m_pStageEnterExitVelLabel->SetDrawComparison(bComparisonLoaded);
