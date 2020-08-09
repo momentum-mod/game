@@ -202,6 +202,12 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\spectate\mom_replayui.h"
                 }
 
+                $Folder "Paint"
+                {
+                    $File "momentum\ui\PaintPreviewPanel.cpp"
+                    $File "momentum\ui\PaintPreviewPanel.h"
+                }
+
                 $Folder "Credits"
                 {
                     $File "momentum\ui\CreditsDialog.cpp"

@@ -2,6 +2,12 @@
 
 #include "SettingsPanel.h"
 
+namespace vgui
+{
+    class ColorPicker;
+}
+class PaintPreviewPanel;
+
 class GameplaySettingsPanel : public SettingsPanel
 {
 public:
@@ -12,6 +18,11 @@ public:
     void OnPageShow() override;
 
     void OnCheckboxChecked(Panel *panel) override;
+
+protected:
+    MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
+    void OnCommand(const char *command) override;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
 private:
     // General gameplay settings
@@ -24,6 +35,18 @@ private:
     vgui::CvarToggleCheckButton *m_pSaveCheckpoints;
     vgui::CvarSlider *m_pYawSpeedSlider;
     vgui::CvarTextEntry *m_pYawSpeedEntry;
+
+    // Paint
+    vgui::CvarSlider *m_pPaintDecalScaleSlider;
+    vgui::CvarTextEntry *m_pPaintDecalScaleEntry;
+
+    vgui::CvarToggleCheckButton *m_pTogglePaintApplySound;
+    vgui::CvarToggleCheckButton *m_pTogglePaintLimitToWorld;
+
+    vgui::ColorPicker *m_pPaintColorPicker;
+    vgui::Button *m_pPickPaintColorButton;
+
+    vgui::DHANDLE<PaintPreviewPanel> m_pPaintPreviewPanel;
 
     // Run safeguards
     vgui::CvarComboBox *m_pPracticeModeSafeguards;
@@ -46,4 +69,7 @@ private:
     vgui::CvarComboBox *m_pSJChargeMeterUnits;
 
     vgui::CvarTextEntry *m_pSJStickyDrawDelayEntry;
+
+    // paint cvars
+    ConVarRef m_cvarPaintColor;
 };
