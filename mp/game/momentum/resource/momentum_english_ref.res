@@ -330,6 +330,13 @@
         "MOM_Settings_Release_Forward_On_Jump" "Release forward key on jump"
         "MOM_Settings_Release_Forward_On_Jump_TT" "When checked the game will determine the forward key based on movement while on ground and release the determined key when you jump."
 
+        // Gameplay - paint
+        "MOM_Settings_Title_Gameplay_Paint" "Paint Settings"
+        "MOM_Settings_Paint_Scale_Label" "Paint Decal Scale"
+        "MOM_Settings_Paint_Color_Label" "Paint Decal Color"
+        "MOM_Settings_Paint_Apply_Sound" "Paint Apply Sound Enable"
+        "MOM_Settings_Paint_Limit_To_World" "Limit Paint Decals to World Geometry"
+
         // Gameplay - run safeguards
         "MOM_Settings_Title_Gameplay_Run_Safeguards" "Run Safeguards"
         "MOM_Settings_Run_Safeguard_Practice_Mode" "Practice Mode Enable"
