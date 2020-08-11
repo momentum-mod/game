@@ -979,6 +979,9 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
                 // FL_DUCKING flag is the important bit here,
                 // as it will allow for ctaps.
                 player->AddFlag(FL_DUCKING);
+
+                if (!(player->GetGroundEntity() != nullptr || m_pPlayer->m_CurrentSlideTrigger)) // From CanUnduck()
+                    m_pPlayer->UpdateLastAction(SurfInt::ACTION_CTAP);
             }
         }
     }
@@ -1352,12 +1355,18 @@ bool CMomentumGameMovement::CheckJumpButton()
                                                 m_pPlayer->m_nAirJumpState == AIRJUMP_NOW))
     {
         mv->m_vecVelocity[2] = flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+
+        if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
+            m_pPlayer->UpdateLastAction(SurfInt::ACTION_DUCKJUMP);
     }
     else
     {
         // NOTE: CS-based modes should automatically come down here and use this branch ONLY. It is
         // part of the fixes to make 64s more consistent done a while ago
         mv->m_vecVelocity[2] += flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+
+        if (!player->GetGroundEntity() && !m_pPlayer->m_CurrentSlideTrigger)
+            m_pPlayer->UpdateLastAction(SurfInt::ACTION_JUMP);
     }
 
     // stamina stuff (scroll/kz gamemode only)
@@ -1931,6 +1940,9 @@ void CMomentumGameMovement::FullWalkMove()
 
             WalkMove();
 
+            SurfInt::Action action = (player->GetFlags() & FL_DUCKING) ? SurfInt::ACTION_DUCKWALK : SurfInt::ACTION_WALK;
+            m_pPlayer->UpdateLastAction(action);
+
             if (g_pGameModeSystem->IsCSBasedMode())
             {
                 CategorizePosition();
@@ -1985,14 +1997,25 @@ void CMomentumGameMovement::FullWalkMove()
             m_pPlayer->SetRampLeaveVelocity(mv->m_vecVelocity);
         }
 
-        // Let player bhop after an edgebug
-        const trace_t &tr = m_pPlayer->GetInteraction(0).trace;
-        if (sv_edge_fix.GetBool() && !bIsSliding &&
-            bInAirBefore && bInAirAfter && m_pPlayer->GetInteraction(0).tick == gpGlobals->tickcount && // Player edgebugged
-            (m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP)) && // Player wants to bhop
-            tr.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY) // Player can jump on what they edgebugged on
+        const SurfInt &surfInt = m_pPlayer->GetInteraction(0);
+        if (bInAirBefore && bInAirAfter && surfInt.tick == gpGlobals->tickcount)
         {
-            SetGroundEntity(&tr); // Allows the player to jump next tick
+            // Check if player edgebugged
+            if (surfInt.trace.plane.normal.z >= 0.7f && mv->m_vecVelocity.z <= NON_JUMP_VELOCITY) // Player would be grounded
+            {
+                m_pPlayer->UpdateLastAction(SurfInt::ACTION_EDGEBUG);
+
+                // Let player bhop after an edgebug
+                if (sv_edge_fix.GetBool() && !bIsSliding &&
+                    (m_pPlayer->HasAutoBhop() && (mv->m_nButtons & IN_JUMP))) // Player wants to bhop
+                {
+                    SetGroundEntity(&surfInt.trace); // Allows the player to jump next tick
+                }
+            }
+            else if (m_pPlayer->GetInteractionIndex(SurfInt::TYPE_FLOOR) == 0)
+            {
+                m_pPlayer->UpdateLastAction(SurfInt::ACTION_SLIDE);
+            }
         }
 
         // Make sure velocity is valid.
@@ -2852,7 +2875,11 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     }
     else if (m_pPlayer->GetGroundEntity()) // Leaving ground
     {
+        SurfInt::Action action = m_pPlayer->GetInteraction(0).action;
         m_pPlayer->SetLastInteraction(m_pPlayer->GetInteraction(0).trace, mv->m_vecVelocity, SurfInt::TYPE_LEAVE);
+        
+        if (action != SurfInt::ACTION_LAND && action != SurfInt::ACTION_GROUNDED)
+            m_pPlayer->UpdateLastAction(action);
     }
 
     BaseClass::SetGroundEntity(pm);
